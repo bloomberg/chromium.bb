@@ -1,0 +1,59 @@
+<html>
+<br> <canvas id="canvasTransferControlWorker" width="60" height="60"></canvas>
+
+<script id="worker" type="text/worker">
+  self.onmessage = function(msg) {
+    var ctx = msg.data[0].getContext("bitmaprenderer");
+    var bmap = msg.data[1];
+    ctx.transferFromImageBitmap(bmap);
+    self.postMessage("done");
+  }
+</script>
+
+<script>
+  function requestAnimationFrameNtimesThen(times, fn) {
+    if(times>0) {
+      requestAnimationFrame(() => {
+        requestAnimationFrameNtimesThen(times-1, fn);
+      });
+    } else
+      fn();
+  };
+
+  if (window.testRunner) {
+    testRunner.waitUntilDone();
+  }
+  // source content as canvas
+  var htmlCanvas = document.createElement('canvas');
+  htmlCanvas.width = 60;
+  htmlCanvas.height = 60;
+  var htmlCanvasCtx = htmlCanvas.getContext("2d");
+  htmlCanvasCtx.fillStyle = "blue";
+  htmlCanvasCtx.fillRect(0, 0, 15, 60);
+  htmlCanvasCtx.fillStyle = "red";
+  htmlCanvasCtx.fillRect(15, 0, 45, 30);
+  htmlCanvasCtx.fillStyle = "green";
+  htmlCanvasCtx.fillRect(15, 30, 45, 30);
+
+  // Fill canvasToBlobWorker and canvasTrasnferControlWorker
+  var blob = new Blob([document.getElementById("worker").textContent]);
+  var worker = new Worker(URL.createObjectURL(blob));
+
+  var canvasTransferControlWorker = document.getElementById("canvasTransferControlWorker");
+  var offscreenCanvasToWorker = canvasTransferControlWorker.transferControlToOffscreen();
+
+  worker.addEventListener('message', msg => { 
+    if (window.testRunner) {
+      requestAnimationFrameNtimesThen(100, () => {
+        testRunner.notifyDone();
+      });
+    }
+  });
+
+  createImageBitmap(htmlCanvas).then(function(bmap){
+    worker.postMessage([offscreenCanvasToWorker,bmap],
+                       [offscreenCanvasToWorker,bmap]);
+  });
+
+</script>
+</html>

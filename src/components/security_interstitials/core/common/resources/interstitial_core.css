@@ -1,0 +1,44 @@
+/* Copyright 2017 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+a {
+  color: rgb(88, 88, 88);
+}
+
+body {
+  --google-blue-600: rgb(26, 115, 232);
+  --google-blue-700: rgb(25, 103, 210);
+  --google-gray-50: rgb(248, 249, 250);
+  --google-gray-300: rgb(218, 220, 224);
+  --google-gray-500: rgb(154, 160, 166);
+  --google-gray-600: rgb(128, 134, 139);
+  --google-gray-700: rgb(95, 99, 104);
+  --google-gray-900: rgb(32, 33, 36);
+  background-color: #fff;
+  color: var(--google-gray-700);
+  word-wrap: break-word;
+}
+
+.nav-wrapper .secondary-button {
+  background: #fff;
+  border: 1px solid var(--google-gray-500);
+  color: var(--google-gray-700);
+  float: none;
+  margin: 0;
+  padding: 8px 16px;
+}
+
+.hidden {
+  display: none;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  font-size: 125%;
+}
+
+.icon {
+  background-repeat: no-repeat;
+  background-size: 100%;
+}

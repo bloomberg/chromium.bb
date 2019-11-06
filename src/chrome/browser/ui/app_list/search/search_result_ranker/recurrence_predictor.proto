@@ -1,0 +1,59 @@
+// Copyright 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto2";
+
+option optimize_for = LITE_RUNTIME;
+
+package app_list;
+
+// Fake predictor used for testing.
+message FakePredictorProto {
+  // Maps target IDs to scores.
+  map<uint32, float> counts = 1;
+}
+
+// Zero-state frecency predictor.
+message ZeroStateFrecencyPredictorProto {
+  // Field 1 (targets) has been deleted.
+  reserved 1;
+
+  // Records all data relating to a particular stored target, corresponding
+  // exactly to the ZeroStateFrecencyPredictor::ValueData struct.
+  message TargetData {
+    required uint32 id = 1;
+    // The last calculated score associated with a value.
+    required float last_score = 2;
+    // The model's number of updates when the score was last calculated.
+    required uint32 last_num_updates = 3;
+  }
+
+  repeated TargetData targets = 4;
+
+  required uint32 num_updates = 5;
+}
+
+// Zero-state hour bin predictor
+message ZeroStateHourBinPredictorProto {
+  // Records all data related to a single hour bin.
+  message FrequencyTable {
+    // Total number of training counts in a bin.
+    required uint32 total_counts = 1;
+    // A map from a particular app to it's frequency.
+    map<uint32, uint32> frequency = 2;
+  }
+  // A map from an hour bin to it's FrequencyTable;
+  map<uint32, FrequencyTable> binned_frequency_table = 3;
+  // Timestamp since last decay.
+  optional uint32 last_decay_timestamp = 4;
+}
+
+// Represents the serialisation of one particular predictor.
+message RecurrencePredictorProto {
+  oneof predictor {
+    FakePredictorProto fake_predictor = 1;
+    ZeroStateFrecencyPredictorProto zero_state_frecency_predictor = 2;
+    ZeroStateHourBinPredictorProto zero_state_hour_bin_predictor = 3;
+  }
+}

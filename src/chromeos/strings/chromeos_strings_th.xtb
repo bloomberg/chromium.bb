@@ -1,0 +1,29 @@
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="th">
+<translation id="1510238584712386396">ตัวเรียกใช้งาน</translation>
+<translation id="1734367976349034509">อุปกรณ์นี้ได้รับการจัดการโดยองค์กร</translation>
+<translation id="1930797645656624981">บริการวิธีการป้อนข้อมูลของ Chrome OS</translation>
+<translation id="2049639323467105390">อุปกรณ์นี้ได้รับการจัดการโดย <ph name="DOMAIN" /></translation>
+<translation id="2083960536266308407">ไม่พบสิ่งใดในหน้าจอ</translation>
+<translation id="2338501278241028356">เปิดบลูทูธเพื่อค้นหาอุปกรณ์ใกล้เคียง</translation>
+<translation id="2805756323405976993">แอป</translation>
+<translation id="2872961005593481000">ปิด</translation>
+<translation id="3147142846278915599">Launcher (กำลังซิงค์แอป...)</translation>
+<translation id="3442261357327209537">คลิกที่นี่เพื่อเลือกรหัสผ่านใหม่</translation>
+<translation id="3506732833599356229">รหัสผ่านหมดอายุแล้ว</translation>
+<translation id="4731797938093519117">การเข้าถึงของผู้ปกครอง</translation>
+<translation id="476166673298332917">ผู้ดูแลระบบของอุปกรณ์อาจตรวจสอบกิจกรรมการท่องเว็บของคุณ</translation>
+<translation id="5212543919916444558">ฉันไม่พบสิ่งที่จะช่วยได้ในหน้าจอ
+ลองแตะไมโครโฟนเพื่อถามเรื่องอะไรก็ได้</translation>
+<translation id="5222676887888702881">ออกจากระบบ</translation>
+<translation id="5457599981699367932">ท่องเว็บในฐานะผู้มาเยือน</translation>
+<translation id="54609108002486618">มีการจัดการ</translation>
+<translation id="5832805196449965646">เพิ่มบุคคล</translation>
+<translation id="5895138241574237353">ปิดแล้วเปิดอีกครั้ง</translation>
+<translation id="6574601967010742428">ผู้ดูแลระบบของอุปกรณ์อาจมีสิทธิ์ตรวจสอบกิจกรรมของคุณได้</translation>
+<translation id="7467001599725918325">รหัสผ่านใกล้หมดอายุแล้ว</translation>
+<translation id="7505377169174526985">{NUM_DAYS,plural, =0{รหัสผ่านปัจจุบันของคุณหมดอายุแล้ว}=1{รหัสผ่านปัจจุบันของคุณจะหมดอายุในไม่ถึง 1 วัน}other{รหัสผ่านปัจจุบันของคุณจะหมดอายุในไม่ถึง # วัน}}</translation>
+<translation id="7658239707568436148">ยกเลิก</translation>
+<translation id="9111102763498581341">ปลดล็อก</translation>
+</translationbundle>

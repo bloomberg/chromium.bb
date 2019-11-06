@@ -1,0 +1,9 @@
+include_rules = [
+  "+jni",
+  "+components/remote_cocoa/browser/window.h",
+  "+ui/android/window_android.h",
+  "+ui/aura",
+  "+ui/base",
+  "+ui/gfx",
+  "+ui/strings/grit/ui_strings.h",
+]

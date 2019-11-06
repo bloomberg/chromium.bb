@@ -1,0 +1,69 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
+
+<link rel="import" href="chrome://resources/cr_elements/cr_input/cr_input.html">
+<link rel="import" href="chrome://resources/cr_elements/paper_button_style_css.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
+
+<dom-module id="passphrase-dialog">
+  <template>
+    <style include="paper-button-style">
+      cr-input,
+      paper-button {
+        -webkit-app-region: no-drag;
+      }
+
+      :host {
+        align-items: stretch;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        justify-content: space-between;
+      }
+
+      #buttons {
+        align-items: center;
+        display: flex;
+        justify-content: flex-end;
+      }
+
+      #input {
+        --cr-input-error-display: none;
+        font-family: inherit;
+        font-size: 13px;
+        font-weight: inherit;
+        line-height: inherit;
+      }
+
+      #title {
+        color: black;
+        font-size: 14px;
+        margin: 4px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      paper-button + paper-button {
+        margin-inline-start: 8px;
+      }
+    </style>
+    <span id="title" i18n-content="ZIP_ARCHIVER_PASSPHRASE_TITLE"></span>
+    <cr-input type="password"
+              id="input"
+              autofocus
+              i18n-values="placeholder:ZIP_ARCHIVER_PASSPHRASE_INPUT_LABEL;aria-label:ZIP_ARCHIVER_PASSPHRASE_INPUT_LABEL">
+    </cr-input>
+    <div id="buttons">
+      <paper-button on-click="cancel"
+                    id="cancelButton"
+                    i18n-content="ZIP_ARCHIVER_PASSPHRASE_CANCEL">
+      </paper-button>
+      <paper-button class="action-button"
+                    on-click="accept"
+                    id="acceptButton"
+                    i18n-content="ZIP_ARCHIVER_PASSPHRASE_ACCEPT">
+      </paper-button>
+    </div>
+  </template>
+</dom-module>
+
+<script src="../js/passphrase-dialog.js"></script>

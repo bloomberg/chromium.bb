@@ -1,0 +1,16 @@
+Name: gRPC
+URL: https://github.com/grpc/grpc
+Version: 0
+Date: Feb 3, 2019
+Revision: b245ad4ae810ed6bc13378421edfd3986a8ffac3
+License: Apache 2.0
+License File: NOT_SHIPPED
+Security Critical: yes
+
+Description:
+gRPC is a library to make remote procedure calls (RPC) between server and client
+applications. This is currently used by Chrome Remote Desktop during the
+signaling process.
+
+Local Modifications:
+None

@@ -1,0 +1,9 @@
+file://components/download/OWNERS
+
+asanka@chromium.org
+dbeam@chromium.org
+
+per-file *.mojom=set noparent
+per-file *.mojom=file://ipc/SECURITY_OWNERS
+
+# COMPONENT: UI>Browser>Downloads

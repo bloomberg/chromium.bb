@@ -1,0 +1,18 @@
+This is a testharness.js-based test.
+FAIL Test that promise is rejected with TypeError if NDEFMessageSource is invalid. NFCWriter is not defined
+FAIL 'Test that promise is rejected with SyntaxError if NDEFMessageSource contains invalid records. NFCWriter is not defined
+FAIL NFCWriter.push should fail if abort push request before push happends. promise_test: Unhandled rejection with value: object "ReferenceError: NFCWriter is not defined"
+FAIL NFCWriter.push should fail if signal's aborted flag is set. NFCWriter is not defined
+FAIL NFCWriter.push should fail if signal is not an AbortSignal. NFCWriter is not defined
+FAIL NFCWriter.push should fail with TypeError when invalid timeout is provided. NFCWriter is not defined
+FAIL NFCWriter.push should fail with TypeError when invalid negative timeout value is provided. NFCWriter is not defined
+FAIL NFCWriter.push should fail with TimeoutError when timer expires. NFCWriter is not defined
+FAIL Reject promise with NotSupportedError if NFC message size exceeds 32KB. NFCWriter is not defined
+FAIL Reject promise with SyntaxError if WebNFC Id cannot be created from provided URL. NFCWriter is not defined
+FAIL Reject promise with SyntaxError if 'json' record cannot be serialized. NFCWriter is not defined
+FAIL NFCWriter.push should fail with TypeError when invalid target value is provided. NFCWriter is not defined
+FAIL Test that WebNFC API is not accessible from iframe context. promise_test: Unhandled rejection with value: undefined
+FAIL Test that promise is rejected with TypeError if NDEFMessageSource contains non-string url. NFCWriter is not defined
+FAIL Test that promise is rejected with TypeError if NDEFMessageSource contains non-string serialNumber. NFCWriter is not defined
+Harness: the test ran to completion.
+

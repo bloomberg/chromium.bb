@@ -1,0 +1,11 @@
+CONSOLE WARNING: line 9: Element.createShadowRoot is deprecated and will be removed in M80, around February 2020. Please use Element.attachShadow instead. See https://www.chromestatus.com/features/4507242028072960 and https://developers.google.com/web/updates/2019/07/web-components-time-to-upgrade for more details.
+importNode should throw informative errors for unsupported node types
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+PASS document.importNode(doc) threw exception NotSupportedError: Failed to execute 'importNode' on 'Document': The node provided is a document, which may not be imported..
+PASS document.importNode(shadow) threw exception NotSupportedError: Failed to execute 'importNode' on 'Document': The node provided is a shadow root, which may not be imported..
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

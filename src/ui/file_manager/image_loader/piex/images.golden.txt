@@ -1,0 +1,31 @@
+test: images/SONY_A500_01.ARW
+test: images/SONY_A500_01.ARW preview hash 962c7faa4a {"colorSpace":"sRgb","orientation":1,"format":0,"offset":163891,"length":903326,"width":1616,"height":1080,"type":"preview"}
+test: images/SONY_A500_01.ARW thumbnail hash 5b77ade47 {"colorSpace":"sRgb","orientation":1,"format":0,"offset":47796,"length":4813,"width":160,"height":120,"type":"thumbnail"}
+test: images/EOS_XS_REBEL.CR2
+test: images/EOS_XS_REBEL.CR2 preview hash 1c0e9e8cbf6 {"colorSpace":"sRgb","orientation":8,"format":0,"offset":46568,"length":842753,"width":1936,"height":1288,"type":"preview"}
+test: images/EOS_XS_REBEL.CR2 thumbnail hash 2dadc4e1ea {"colorSpace":"sRgb","orientation":8,"format":0,"offset":38124,"length":8441,"width":160,"height":120,"type":"thumbnail"}
+test: images/RAW_CANON_1DM2.CR2
+test: images/RAW_CANON_1DM2.CR2 preview hash ffea0d8b0c {"colorSpace":"adobeRgb","orientation":1,"format":0,"offset":9996,"length":551740,"width":1536,"height":1024,"type":"preview"}
+test: images/RAW_CANON_1DM2.CR2 thumbnail hash 17c37d76a2 {"colorSpace":"adobeRgb","orientation":1,"format":0,"offset":561766,"length":8680,"width":160,"height":120,"type":"thumbnail"}
+test: images/L100_4220.DNG
+test: images/L100_4220.DNG thumbnail hash e55ce7a0ea {"colorSpace":"sRgb","orientation":1,"format":1,"offset":7044,"length":207360,"width":320,"height":216,"size":207360,"type":"thumbnail"}
+test: images/RAW_LEICA_M8.DNG
+test: images/RAW_LEICA_M8.DNG thumbnail hash abea89dfb7 {"colorSpace":"sRgb","orientation":1,"format":1,"offset":3936,"length":230400,"width":320,"height":240,"size":230400,"type":"thumbnail"}
+test: images/FUJI_E550_RAW.RAF
+test: images/FUJI_E550_RAW.RAF preview hash ada7914438 {"colorSpace":"sRgb","orientation":1,"format":0,"offset":148,"length":667499,"width":0,"height":0,"type":"preview"}
+test: images/FUJI_E550_RAW.RAF thumbnail hash 136fb97598 {"colorSpace":"sRgb","orientation":1,"format":0,"offset":1466,"length":9312,"width":0,"height":0,"type":"thumbnail"}
+test: images/NIKON_UB20_O35.NEF
+test: images/NIKON_UB20_O35.NEF thumbnail hash 71591f3c17 {"colorSpace":"sRgb","orientation":1,"format":1,"offset":32418,"length":57600,"width":160,"height":120,"size":57600,"type":"thumbnail"}
+test: images/NIKON_GDN0447.NEF
+test: images/NIKON_GDN0447.NEF preview hash a49796a236 {"colorSpace":"sRgb","orientation":1,"format":0,"offset":175616,"length":1747382,"width":4256,"height":2832,"type":"preview"}
+test: images/NIKON_GDN0447.NEF thumbnail hash ec18fa833 {"colorSpace":"sRgb","orientation":1,"format":1,"offset":117638,"length":57600,"width":160,"height":120,"size":57600,"type":"thumbnail"}
+test: images/OLYMPUS_SC877.ORF
+test: images/OLYMPUS_SC877.ORF preview hash 66b589cb7f {"colorSpace":"sRgb","orientation":1,"format":0,"offset":52224,"length":922386,"width":0,"height":0,"type":"preview"}
+test: images/OLYMPUS_SC877.ORF thumbnail hash 1ca4452baf {"colorSpace":"sRgb","orientation":1,"format":0,"offset":23808,"length":9441,"width":0,"height":0,"type":"thumbnail"}
+test: images/NIKON_CPIX78.NRW
+test: images/NIKON_CPIX78.NRW preview hash e7f9b6542b {"colorSpace":"sRgb","orientation":1,"format":0,"offset":24421226,"length":2620351,"width":4000,"height":3000,"type":"preview"}
+test: images/NIKON_CPIX78.NRW thumbnail hash f7bdde6f0 {"colorSpace":"sRgb","orientation":1,"format":0,"offset":31429,"length":4261,"width":160,"height":120,"type":"thumbnail"}
+test: images/PANASONIC_DMC.RW2
+test: images/PANASONIC_DMC.RW2 preview hash c4b5f92809 {"colorSpace":"sRgb","orientation":1,"format":0,"offset":1536,"length":690176,"width":1920,"height":1440,"type":"preview"}
+test: images/PANASONIC_DMC.RW2 thumbnail hash 405666a33 {"colorSpace":"sRgb","orientation":1,"format":0,"offset":16384,"length":5560,"width":0,"height":0,"type":"thumbnail"}
+test: images/UNKNOWN_FORMAT.JPG

@@ -1,0 +1,79 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
+
+<link rel="import" href="shared_style.html">
+<link rel="import" href="store_client.html">
+<link rel="import" href="util.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
+<link rel="import" href="chrome://resources/cr_elements/paper_button_style_css.html">
+
+<dom-module id="app-management-chrome-app-permission-view">
+  <template>
+    <style include="app-management-shared-css paper-button-style">
+      ul {
+        list-style: disc inside;
+        margin: 0;
+        margin-inline-start: 24px;
+        padding: 0;
+      }
+
+      #app-description {
+        padding: 24px;
+      }
+
+      #no-permissions {
+        padding-inline-start: 24px;
+      }
+    </style>
+    <app-management-permission-view-header>
+    </app-management-permission-view-header>
+    <div class="card-container">
+      <div id="app-description" class="permission-card-row secondary-text">
+        [[app_.description]]
+      </div>
+      <div id="permissions-card" class="permission-card-row">
+        <div class="subpermission-list">
+          <div class="subpermission-row separated-row">
+            <div class="header-text">$i18n{thisAppCan}</div>
+          </div>
+          <template is="dom-if" if="[[!hasPermissions_(messages_)]]">
+            <div id="no-permissions">
+              $i18n{appNoPermission}
+            </div>
+          </template>
+          <ul>
+            <template is="dom-repeat"
+              items="[[getPermissionMessages_(messages_)]]" as="message">
+              <li>[[message]]</li>
+              <ul>
+                <template is="dom-repeat"
+                  items="[[getPermissionSubmessagesByMessage_(index, messages_)]]"
+                  as="submessage">
+                  <li>[[submessage]]</li>
+                </template>
+              </ul>
+            </template>
+          </ul>
+          <!-- TODO(crbug.com/906508): For apps which are hosted apps but not
+            bookmark apps, this button will actually open the site settings page
+            corresponding to the app, since hosted apps are not listed in
+            chrome://extensions.
+            This is not a long-term problem since hosted apps are being
+            replaced, but in the mean time it might be necessary to change the
+            text of the button depending on whether or not it is a hosted
+            app. -->
+          <!-- TODO:(crbug.com/958269) Change behaviour of "more settings"
+            based on the app. -->
+          <div id="more-settings" class="subpermission-row separated-row"
+            on-click="onClickExtensionsSettingsButton_">
+            <div class="header-text">More settings</div>
+            <cr-icon-button class="native-settings-icon icon-external" noink>
+            </cr-icon-button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <app-management-metadata-view></app-management-metadata-view>
+  </template>
+  <script src="chrome_app_permission_view.js"></script>
+</dom-module>

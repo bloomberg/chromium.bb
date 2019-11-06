@@ -1,0 +1,13 @@
+CONSOLE ERROR: line 23: Uncaught TypeError: Cannot read property 'start' of null
+CONSOLE ERROR: line 17: Uncaught (in promise) TypeError: Cannot read property 'constructor' of null
+CONSOLE ERROR: line 41: Uncaught (in promise) TypeError: Cannot read property 'addEventListener' of null
+CONSOLE ERROR: line 45: Uncaught (in promise) Error: assert_array_equals: there should be no ports in the event lengths differ, expected 0 got 1
+CONSOLE ERROR: line 5: Uncaught TypeError: Failed to execute 'postMessage' on 'Window': Value at index 0 is an untransferable 'null' value.
+This is a testharness.js-based test.
+Harness Error. harness_status.status = 1 , harness_status.message = assert_array_equals: there should be no ports in the event lengths differ, expected 0 got 1
+FAIL window.postMessage should be able to transfer a ReadableStream assert_true: the original stream should be locked expected true got false
+FAIL port.postMessage should be able to transfer a ReadableStream assert_true: the original stream should be locked expected true got false
+FAIL the same ReadableStream posted multiple times should arrive together object null is not iterable (cannot read property Symbol(Symbol.iterator))
+FAIL transfer to and from an iframe should work assert_array_equals: there should be no ports in the event lengths differ, expected 0 got 1
+Harness: the test ran to completion.
+

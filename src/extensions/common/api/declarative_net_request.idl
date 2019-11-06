@@ -1,0 +1,233 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// The <code>chrome.declarativeNetRequest</code> API is used to block or modify
+// network requests by specifying declarative rules.
+[generate_error_messages]
+namespace declarativeNetRequest {
+  // This describes the resource type of the network request.
+  enum ResourceType {
+    main_frame,
+    sub_frame,
+    stylesheet,
+    script,
+    image,
+    font,
+    object,
+    xmlhttprequest,
+    ping,
+    csp_report,
+    media,
+    websocket,
+    other
+  };
+
+  // This describes whether the request is first or third party to the frame in
+  // which it originated. A request is said to be first party if it has the same
+  // domain (eTLD+1) as the frame in which the request originated.
+  enum DomainType {
+    // The network request is first party to the frame in which it originated.
+    firstParty,
+    // The network request is third party to the frame in which it originated.
+    thirdParty
+  };
+
+  // This describes the headers which can be removed from the network request.
+  enum RemoveHeaderType {
+    cookie,
+    referer,
+    setCookie
+  };
+
+  // Describes the kind of action to take if a given RuleCondition matches.
+  enum RuleActionType {
+    // Block the network request.
+    block,
+    // Redirect the network request.
+    redirect,
+    // Allow the network request. The request won't be intercepted if there is
+    // an allow rule which matches it.
+    allow,
+    // Remove request/response headers from the network request.
+    removeHeaders
+  };
+
+  dictionary RuleCondition {
+
+    // The pattern which is matched against the network request url.
+    // Supported constructs:
+    //
+    // <b>'*'</b>  : Wildcard: Matches any number of characters.
+    //
+    // <b>'|'</b>  : Left/right anchor: If used at either end of the pattern,
+    //               specifies the beginning/end of the url respectively.
+    //
+    // <b>'||'</b> : Domain name anchor: If used at the beginning of the pattern,
+    //               specifies the start of a (sub-)domain of the URL.
+    //
+    // <b>'^'</b>  : Separator character: This matches anything except a letter, a
+    //               digit or one of the following: _ - . %. This can also match
+    //               the end of the URL.
+    //
+    // Therefore <code>urlFilter</code> is composed of the following parts:
+    // (optional Left/Domain name anchor) + pattern + (optional Right anchor).
+    //
+    // If omitted, all urls are matched. An empty string is not allowed.
+    //
+    // Note: The <code>urlFilter</code> must be composed of only ASCII
+    // characters. This is matched against a url where the host is encoded in
+    // the punycode format (in case of internationalized domains) and any other
+    // non-ascii characters are url encoded in utf-8.
+    // For example, when the request url is http://abc.рф?q=ф, the
+    // <code>urlFilter</code> will be matched against the url
+    // http://abc.xn--p1ai/?q=%D1%84.
+    DOMString? urlFilter;
+
+    // Whether the <code>urlFilter</code> is case sensitive. Default is true.
+    boolean? isUrlFilterCaseSensitive;
+
+    // The rule will only match network requests originating from the list of
+    // <code>domains</code>. If the list is omitted, the rule is applied to
+    // requests from all domains. An empty list is not allowed.
+    //
+    // Note: sub-domains like "a.example.com" are also allowed.
+    // The entries must consist of only ascii characters. Use punycode encoding
+    // for internationalized domains.
+    DOMString[]? domains;
+
+    // The rule will not match network requests originating from the list of
+    // <code> excludedDomains</code>. If the list is empty or omitted, no domains
+    // are excluded. This takes precedence over <code> domains</code>.
+    //
+    // Note: sub-domains like "a.example.com" are also allowed.
+    // The entries must consist of only ascii characters. Use punycode encoding
+    // for internationalized domains.
+    DOMString[]? excludedDomains;
+
+    // List of resource types which the rule can match. An empty list is not
+    // allowed.
+    ResourceType[]? resourceTypes;
+
+    // List of resource types which the rule won't match. Only one of
+    // <code>resourceTypes</code> and <code>excludedResourceTypes</code> should
+    // be specified. If neither of them is specified, all resource types except
+    // "main_frame" are blocked.
+    ResourceType[]? excludedResourceTypes;
+
+    // Specifies whether the network request is first-party or third-party to
+    // the domain from which it originated. If omitted, all requests are
+    // accepted.
+    DomainType? domainType;
+  };
+
+  dictionary RuleAction {
+    // The type of action to perform.
+    RuleActionType type;
+
+    // The redirect url. Only valid if RuleActionType is "redirect". Can be
+    // specified as an absolute url or a relative url (starting with '/'), which
+    // is relative to the extension which specified the rule.
+    DOMString? redirectUrl;
+
+    // The headers to remove from the request. Only valid if RuleActionType is
+    // "removeHeaders".
+    RemoveHeaderType[]? removeHeadersList;
+  };
+
+  dictionary Rule {
+    // An id which uniquely identifies a rule. Mandatory and should be >= 1.
+    long id;
+
+    // Rule priority. Mandatory for redirect rules and should be >= 1. This is
+    // used to break ties between multiple matching redirect rules.
+    long? priority;
+
+    // The condition under which this rule is triggered.
+    RuleCondition condition;
+
+    // The action to take if this rule is matched.
+    RuleAction action;
+  };
+
+  callback EmptyCallback = void();
+  callback GetAllowedPagesCallback = void(DOMString[] result);
+  callback GetRulesCallback = void(Rule[] rules);
+
+  interface Functions {
+
+    // Adds <code>rules</code> to the current set of dynamic rules for the
+    // extension. These rules are persisted across browser sessions.
+    // Note: <a href="#property-MAX_NUMBER_OF_DYNAMIC_RULES">
+    // MAX_NUMBER_OF_DYNAMIC_RULES</a> is the maximum number of dynamic rules an
+    // extension can add.
+    // |rules|: The rules to add.
+    // |callback|: Called once the given <code>rules</code> are added. In case
+    // of an error, $(ref:runtime.lastError) will be set to denote the error
+    // message and no rules will be added. This can happen for multiple reasons,
+    // such as invalid rule format, duplicate rule ID, rule count limit
+    // exceeded, internal errors, and others.
+    static void addDynamicRules(Rule[] rules, optional EmptyCallback callback);
+
+    // Removes rules corresponding to <code>rule_ids</code> from the current set
+    // of dynamic rules for the extension. Any <code>rule_ids</code> not already
+    // present are ignored. Note that static rules specified as part of the
+    // extension package can not be removed using this function.
+    // |rule_ids|: The IDs of dynamic rules to remove.
+    // |callback|: Called once the rules are removed. In case of an error,
+    // $(ref:runtime.lastError) will be set to denote the error message and no
+    // rules will be removed. This may happen due to internal errors.
+    static void removeDynamicRules(long[] rule_ids,
+        optional EmptyCallback callback);
+
+    // Returns the current set of dynamic rules for the extension.
+    // |callback|: Called with the set of dynamic rules. An error might be
+    // raised in case of transient internal errors.
+    static void getDynamicRules(GetRulesCallback callback);
+
+    // Adds <code>page_patterns</code> to the set of allowed pages. Requests
+    // from these pages are not intercepted by the extension. These are
+    // persisted across browser sessions.
+    // Note: <a href="#property-MAX_NUMBER_OF_ALLOWED_PAGES">
+    // MAX_NUMBER_OF_ALLOWED_PAGES</a> is the maximum number of
+    // allowed page an extension can add. Also, adding page patterns is
+    // atomic. In case of an error, no page pattern is added.
+    // |page_patterns| : Array of
+    // <a href="/extensions/match_patterns">match patterns</a> which are to be
+    // allowed.
+    // |callback|: Called after the <code>page_patterns</code> have been added.
+    // $(ref:runtime.lastError) will be set in case of an error, for example if
+    // an invalid page pattern is specified or the extension exceeded the
+    // maximum page patterns limit.
+    static void addAllowedPages(DOMString[] page_patterns,
+        optional EmptyCallback callback);
+
+    // Removes <code>page_patterns</code> from the set of allowed pages.
+    // Note: Removing page patterns is atomic. In case of an error, no page
+    // pattern is removed.
+    // |page_patterns| : Array of
+    // <a href="/extensions/match_patterns">match patterns</a> which are to be
+    // removed.
+    // |callback|: Called after the <code>page_patterns</code> have been
+    // removed. $(ref:runtime.lastError) will be set in case of an error.
+    static void removeAllowedPages(DOMString[] page_patterns,
+        optional EmptyCallback callback);
+
+    // Returns the current set of allowed pages.
+    // |callback|: Called with the set of currently allowed pages.
+    static void getAllowedPages(GetAllowedPagesCallback callback);
+  };
+
+  interface Properties {
+    // The maximum number of allowed pages that an extension can add.
+    [value=100] static long MAX_NUMBER_OF_ALLOWED_PAGES();
+
+    // The maximum number of rules that an extension can specify in the rule
+    // resources file. Any excess rules will be ignored and an install warning
+    // will be raised.
+    [value=30000] static long MAX_NUMBER_OF_RULES();
+
+    // The maximum number of dynamic rules that an extension can add.
+    [value=5000] static long MAX_NUMBER_OF_DYNAMIC_RULES();
+  };
+};

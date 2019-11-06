@@ -1,0 +1,57 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
+
+<link rel="import" href="search_service.html">
+<link rel="import" href="browser_proxy.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_action_menu/cr_action_menu.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_toast/cr_toast_manager.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_toolbar/cr_toolbar.html">
+<link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
+<link rel="import" href="chrome://resources/cr_elements/icons.html">
+<link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
+<link rel="import" href="chrome://resources/html/assert.html">
+<link rel="import" href="chrome://resources/html/cr.html">
+<link rel="import" href="chrome://resources/html/util.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
+
+<dom-module id="downloads-toolbar">
+  <template>
+    <style include="cr-hidden-style">
+      :host {
+        align-items: center;
+        display: flex;
+        min-height: 56px;
+      }
+
+      #toolbar {
+        flex: 1;
+      }
+
+      cr-icon-button {
+        justify-content: flex-end;
+        margin: 4px;
+      }
+
+      :host-context(html:not([dark])) cr-icon-button {
+        --cr-icon-button-color: currentColor;
+      }
+    </style>
+    <cr-toolbar id="toolbar" page-name="$i18n{title}"
+        search-prompt="$i18n{search}" clear-label="$i18n{clearSearch}"
+        spinner-active="{{spinnerActive}}" on-search-changed="onSearchChanged_">
+      <cr-icon-button id="moreActions" iron-icon="cr:more-vert"
+          class="dropdown-trigger" title="$i18n{moreActions}"
+          on-click="onMoreActionsTap_" aria-haspopup="menu"></cr-icon-button>
+    </cr-toolbar>
+    <cr-action-menu id="moreActionsMenu"
+        aria-label="$i18n{actionMenuDescription}">
+      <button class="dropdown-item clear-all" on-click="onClearAllTap_">
+        $i18n{clearAll}
+      </button>
+      <button class="dropdown-item" on-click="onOpenDownloadsFolderTap_">
+        $i18n{openDownloadsFolder}
+      </button>
+    </cr-action-menu>
+  </template>
+  <script src="toolbar.js"></script>
+</dom-module>

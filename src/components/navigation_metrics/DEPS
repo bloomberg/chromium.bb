@@ -1,0 +1,4 @@
+include_rules = [
+  "+components/dom_distiller/core",
+  "+components/url_formatter",
+]

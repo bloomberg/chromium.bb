@@ -1,0 +1,6 @@
+file://content/browser/serial/OWNERS
+
+per-file *.mojom=set noparent
+per-file *.mojom=file://ipc/SECURITY_OWNERS
+
+# COMPONENT: Blink>Serial

@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<body>
+<script>
+  promise_test(async () => {
+    var portal = document.createElement("portal");
+    portal.src = "http://{{hosts[alt][www]}}:{{ports[http][0]}}/portals/resources/simple-portal.html";
+    var receiveMessage = new Promise((resolve, reject) => {
+      portal.onmessage = e => { resolve(e.data) };
+    });
+    document.body.appendChild(portal);
+    var message = await receiveMessage;
+    assert_equals(message, "loaded");
+  });
+</script>
+</body>

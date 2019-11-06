@@ -1,0 +1,26 @@
+include_rules = [
+  "+components/crx_file/id_util.h",
+  "+components/os_crypt",
+  "+components/keyed_service",
+  "+components/pref_registry",
+  "+components/prefs",
+  "+components/sync/driver",
+  "+components/sync/protocol",
+  "+components/sync_preferences",
+  "+components/timers",  # Only used for Chrome OS builds.
+  "+components/version_info",
+  "+content/public/browser/browser_context.h",
+
+  # Whitelist specific headers from //google_apis/gaia. Contact
+  # blundell@chromium.org if looking to add more.
+  "+google_apis/gaia/gaia_oauth_client.h",
+  "+google_apis/gaia/google_service_auth_error.h",
+  "+google_apis/gcm",
+  "+jni",
+  "+net",
+  "+services/identity/public",
+  "+services/network/public/cpp",
+  "+services/network/public/mojom",
+  "+services/network/test",
+  "+third_party/leveldatabase",  # Only used for tests.
+]

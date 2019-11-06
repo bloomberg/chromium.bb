@@ -1,0 +1,29 @@
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="vi">
+<translation id="1510238584712386396">Trình chạy</translation>
+<translation id="1734367976349034509">Thiết bị này do doanh nghiệp quản lý</translation>
+<translation id="1930797645656624981">Dịch vụ cung cấp phương thức nhập trên Chrome OS</translation>
+<translation id="2049639323467105390">Thiết bị này được <ph name="DOMAIN" /> quản lý.</translation>
+<translation id="2083960536266308407">Không có gì trên màn hình</translation>
+<translation id="2338501278241028356">Bật Bluetooth để khám phá các thiết bị lân cận</translation>
+<translation id="2805756323405976993">Ứng dụng</translation>
+<translation id="2872961005593481000">Tắt</translation>
+<translation id="3147142846278915599">Trình khởi chạy (đang đồng bộ hóa ứng dụng...)</translation>
+<translation id="3442261357327209537">Hãy nhấp vào đây để chọn mật khẩu mới</translation>
+<translation id="3506732833599356229">Mật khẩu đã hết hạn</translation>
+<translation id="4731797938093519117">Quyền truy cập của cha mẹ</translation>
+<translation id="476166673298332917">Quản trị viên thiết bị có thể theo dõi hoạt động duyệt web của bạn.</translation>
+<translation id="5212543919916444558">Tôi không tìm thấy nội dung nào trên màn hình để có thể trợ giúp cho bạn.
+Hãy thử nhấn vào micrô để hỏi tôi bất cứ điều gì.</translation>
+<translation id="5222676887888702881">Đăng xuất</translation>
+<translation id="5457599981699367932">Duyệt với tư cách Khách</translation>
+<translation id="54609108002486618">Được quản lý</translation>
+<translation id="5832805196449965646">Thêm người</translation>
+<translation id="5895138241574237353">Khởi động lại</translation>
+<translation id="6574601967010742428">Quản trị viên thiết bị có thể theo dõi hoạt động của bạn.</translation>
+<translation id="7467001599725918325">Mật khẩu sắp hết hạn</translation>
+<translation id="7505377169174526985">{NUM_DAYS,plural, =0{Mật khẩu hiện tại của bạn đã hết hạn!}=1{Còn chưa đến 1 ngày nữa là mật khẩu hiện tại của bạn sẽ hết hạn!}other{Còn chưa đến # ngày nữa là mật khẩu hiện tại của bạn sẽ hết hạn!}}</translation>
+<translation id="7658239707568436148">Hủy</translation>
+<translation id="9111102763498581341">Mở khóa</translation>
+</translationbundle>

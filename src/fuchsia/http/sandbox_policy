@@ -1,0 +1,8 @@
+{
+  "features": [ "root-ssl-certificates" ],
+  "services": [
+      "fuchsia.logger.LogSink",
+      "fuchsia.net.SocketProvider",
+      "fuchsia.netstack.Netstack"
+  ]
+}

@@ -1,0 +1,29 @@
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="ar">
+<translation id="1510238584712386396">المشغّل</translation>
+<translation id="1734367976349034509">يخضع هذا الجهاز لإدارة المؤسسة</translation>
+<translation id="1930797645656624981">‏خدمة أسلوب الإدخال لنظام التشغيل Chrome</translation>
+<translation id="2049639323467105390">تتم إدارة هذا الجهاز بواسطة <ph name="DOMAIN" />.</translation>
+<translation id="2083960536266308407">لم يتم العثور على أي نتائج على الشاشة</translation>
+<translation id="2338501278241028356">تشغيل البلوتوث لاكتشاف الأجهزة القريبة</translation>
+<translation id="2805756323405976993">التطبيقات</translation>
+<translation id="2872961005593481000">إيقاف التشغيل</translation>
+<translation id="3147142846278915599">‏Launcher (مزامنة التطبيقات...)</translation>
+<translation id="3442261357327209537">يمكنك النقر هنا لاختيار كلمة مرور جديدة.</translation>
+<translation id="3506732833599356229">انتهت صلاحية كلمة المرور</translation>
+<translation id="4731797938093519117">وصول أحد الوالدين</translation>
+<translation id="476166673298332917">قد يراقب مشرف الجهاز نشاط التصفُح.</translation>
+<translation id="5212543919916444558">يتعذَّر عليَّ العثور على شيء مفيد في هذه الشاشة.
+يُرجى تجربة النقر على الميكروفون لمطالبتي بأي شيء.</translation>
+<translation id="5222676887888702881">تسجيل الخروج</translation>
+<translation id="5457599981699367932">تصفَّح كزائر</translation>
+<translation id="54609108002486618">تتم إدارته</translation>
+<translation id="5832805196449965646">إضافة شخص</translation>
+<translation id="5895138241574237353">إعادة التشغيل</translation>
+<translation id="6574601967010742428">قد يتمكَّن مشرف الجهاز من مراقبة نشاطك.</translation>
+<translation id="7467001599725918325">ستنتهي صلاحية كلمة المرور قريبًا</translation>
+<translation id="7505377169174526985">{NUM_DAYS,plural, =0{لقد انتهت صلاحية كلمة مرورك الحالية.}=1{ستنتهي صلاحية كلمة مرورك الحالية بعد أقل من يوم واحد.}two{ستنتهي صلاحية كلمة مرورك الحالية بعد أقل من يومين (#).}few{ستنتهي صلاحية كلمة مرورك الحالية بعد أقل من # أيام.}many{ستنتهي صلاحية كلمة مرورك الحالية بعد أقل من # يومًا.}other{ستنتهي صلاحية كلمة مرورك الحالية بعد أقل من # يوم.}}</translation>
+<translation id="7658239707568436148">إلغاء</translation>
+<translation id="9111102763498581341">فتح القفل</translation>
+</translationbundle>

@@ -1,0 +1,159 @@
+{
+    "0": {
+        "benchmarks": {
+            "blink_perf.accessibility": {},
+            "blink_perf.bindings": {},
+            "blink_perf.canvas": {},
+            "blink_perf.css": {},
+            "blink_perf.dom": {},
+            "blink_perf.events": {},
+            "blink_perf.image_decoder": {},
+            "blink_perf.layout": {
+                "end": 11
+            }
+        }
+    },
+    "1": {
+        "benchmarks": {
+            "blink_perf.layout": {
+                "begin": 11
+            },
+            "blink_perf.owp_storage": {},
+            "blink_perf.paint": {},
+            "blink_perf.parser": {},
+            "blink_perf.shadow_dom": {},
+            "blink_perf.svg": {
+                "end": 7
+            }
+        }
+    },
+    "2": {
+        "benchmarks": {
+            "blink_perf.svg": {
+                "begin": 7
+            },
+            "dromaeo": {},
+            "dummy_benchmark.noisy_benchmark_1": {},
+            "dummy_benchmark.stable_benchmark_1": {},
+            "jetstream": {},
+            "kraken": {},
+            "loading.mobile": {
+                "end": 70
+            }
+        }
+    },
+    "3": {
+        "benchmarks": {
+            "loading.mobile": {
+                "begin": 70
+            },
+            "media.mobile": {},
+            "memory.top_10_mobile": {},
+            "octane": {},
+            "power.typical_10_mobile": {
+                "end": 1
+            }
+        }
+    },
+    "4": {
+        "benchmarks": {
+            "power.typical_10_mobile": {
+                "begin": 1
+            },
+            "rasterize_and_record_micro.partial_invalidation": {},
+            "rasterize_and_record_micro.top_25": {},
+            "rendering.mobile": {
+                "end": 74
+            }
+        }
+    },
+    "5": {
+        "benchmarks": {
+            "rendering.mobile": {
+                "begin": 74,
+                "end": 222
+            }
+        }
+    },
+    "6": {
+        "benchmarks": {
+            "rendering.mobile": {
+                "begin": 222
+            },
+            "speedometer": {},
+            "speedometer-future": {},
+            "speedometer2": {},
+            "speedometer2-future": {},
+            "startup.mobile": {},
+            "system_health.common_mobile": {
+                "end": 8
+            }
+        }
+    },
+    "7": {
+        "benchmarks": {
+            "system_health.common_mobile": {
+                "begin": 8
+            },
+            "system_health.memory_mobile": {
+                "end": 6
+            }
+        }
+    },
+    "8": {
+        "benchmarks": {
+            "system_health.memory_mobile": {
+                "begin": 6,
+                "end": 27
+            }
+        }
+    },
+    "9": {
+        "benchmarks": {
+            "system_health.memory_mobile": {
+                "begin": 27,
+                "end": 74
+            }
+        }
+    },
+    "10": {
+        "benchmarks": {
+            "system_health.memory_mobile": {
+                "begin": 74
+            },
+            "system_health.webview_startup": {},
+            "tracing.tracing_with_background_memory_infra": {},
+            "v8.browsing_mobile": {
+                "end": 20
+            }
+        }
+    },
+    "11": {
+        "benchmarks": {
+            "v8.browsing_mobile": {
+                "begin": 20
+            },
+            "v8.browsing_mobile-future": {},
+            "webrtc": {}
+        }
+    },
+    "extra_infos": {
+        "num_stories": 1151,
+        "predicted_min_shard_time": 6124.0,
+        "predicted_min_shard_index": 10,
+        "predicted_max_shard_time": 6450.0,
+        "predicted_max_shard_index": 9,
+        "shard #0": 6268.0,
+        "shard #1": 6278.0,
+        "shard #2": 6288.0,
+        "shard #3": 6218.0,
+        "shard #4": 6326.0,
+        "shard #5": 6272.0,
+        "shard #6": 6254.0,
+        "shard #7": 6296.0,
+        "shard #8": 6186.0,
+        "shard #9": 6450.0,
+        "shard #10": 6124.0,
+        "shard #11": 6312.0
+    }
+}

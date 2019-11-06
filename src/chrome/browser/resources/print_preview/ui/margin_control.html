@@ -1,0 +1,115 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
+
+<link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_input/cr_input.html">
+<link rel="import" href="chrome://resources/html/i18n_behavior.html">
+<link rel="import" href="../print_preview_utils.html">
+<link rel="import" href="../data/coordinate2d.html">
+<link rel="import" href="../data/margins.html">
+<link rel="import" href="../data/size.html">
+<link rel="import" href="input_behavior.html">
+<link rel="import" href="strings.html">
+
+<dom-module id="print-preview-margin-control">
+  <template>
+    <style>
+      :host {
+        display: block;
+        position: absolute;
+        transition: opacity 150ms linear;
+      }
+
+      :host([invisible]) {
+        opacity: 0;
+      }
+
+      :host([disabled]),
+      :host([invisible]) {
+        pointer-events: none;
+      }
+
+      :host([side=top]),
+      :host([side=bottom]) {
+        cursor: ns-resize;
+        padding: 8px 0;
+        width: 100%;
+      }
+
+      :host([side=left]),
+      :host([side=right]) {
+        cursor: ew-resize;
+        height: 100%;
+        padding: 0 8px;
+      }
+
+      #line {
+        border: 1px dashed var(--google-blue-500);
+      }
+
+      :host-context([dark]) #line {
+        border-color: var(--google-blue-refresh-300);
+      }
+
+      :host([side=top]) #line,
+      :host([side=bottom]) #line {
+        width: 100%;
+      }
+
+      :host([side=left]) #line,
+      :host([side=right]) #line {
+        height: 100%;
+      }
+
+      #textbox {
+        --cr-input-error-display: none;
+        --cr-input-row-container: {
+          min-height: 25px;
+        }
+        box-sizing: border-box;
+        font-size: 0.8rem;
+        padding: 1px;
+        position: absolute;
+        text-align: center;
+        width: 60px;
+      }
+
+      :host-context(html:not([dark])) #textbox {
+        --cr-input-background-color: var(--cr-primary-text-color);
+        --cr-input-color: white;
+        color: white;
+      }
+
+      :host-context([dark]) #textbox {
+        --cr-input-background-color: #1b1c1e;  /* GG900 + 30% black */
+        --cr-input-color: var(--cr-primary-text-color);
+      }
+
+      :host([side=top]) #textbox {
+        left: 50%;
+        top: 8px;
+      }
+
+      :host([side=right]) #textbox {
+        right: 8px;
+        top: 50%;
+      }
+
+      :host([side=bottom]) #textbox {
+        bottom: 8px;
+        right: 50%;
+      }
+
+      :host([side=left]) #textbox {
+        bottom: 50%;
+        left: 8px;
+      }
+    </style>
+    <div id="line"></div>
+    <cr-input id="textbox" aria-hidden$="[[getAriaHidden_(invisible)]]"
+        aria-label$="[[i18n(side)]]" type="text" disabled="[[disabled]]"
+        invalid="[[invalid]]" on-blur="onBlur_" on-focus="onFocus_"
+        data-timeout-delay="1000">
+    </cr-input>
+  </template>
+  <script src="margin_control.js"></script>
+</dom-module>

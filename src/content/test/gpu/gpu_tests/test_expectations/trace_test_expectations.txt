@@ -1,0 +1,36 @@
+# tags: [ android chromeos linux mac win win10 win7 ]
+# tags: [ debug ]
+# tags: [ intel nvidia qualcomm-adreno-(tm)-418 ]
+
+ # TODO(kbr): flakily timing out on this configuration.
+crbug.com/648369 [ linux debug intel ] TraceTest_* [ RetryOnFailure ]
+
+# Device traces are not supported on all machines.
+DeviceTraceTest_* [ Skip ]
+
+# We do not have software H.264 decoding on Android, so it can't survive a
+# context loss which results in hardware decoder loss.
+crbug.com/580386 [ android ] TraceTest_Video_Context_Loss_MP4 [ Skip ]
+crbug.com/580386 [ android ] DeviceTraceTest_Video_Context_Loss_MP4 [ Skip ]
+
+# Skip on platforms where DirectComposition isn't supported
+crbug.com/867136 [ mac ] VideoPathTraceTest_* [ Skip ]
+crbug.com/867136 [ linux ] VideoPathTraceTest_* [ Skip ]
+crbug.com/867136 [ android ] VideoPathTraceTest_* [ Skip ]
+crbug.com/867136 [ chromeos ] VideoPathTraceTest_* [ Skip ]
+crbug.com/867136 [ win7 ] VideoPathTraceTest_* [ Skip ]
+crbug.com/867136 [ mac ] OverlayModeTraceTest_* [ Skip ]
+crbug.com/867136 [ linux ] OverlayModeTraceTest_* [ Skip ]
+crbug.com/867136 [ android ] OverlayModeTraceTest_* [ Skip ]
+crbug.com/867136 [ chromeos ] OverlayModeTraceTest_* [ Skip ]
+crbug.com/867136 [ win7 ] OverlayModeTraceTest_* [ Skip ]
+
+# VP9 videos fail to trigger zero copy video presentation path.
+crbug.com/930343 [ win intel ] VideoPathTraceTest_DirectComposition_Video_VP9_Fullsize [ Failure ]
+
+# Complex overlays test is flaky on Nvidia probably due to its small size.
+crbug.com/937545 [ win10 nvidia ] VideoPathTraceTest_DirectComposition_ComplexOverlays [ RetryOnFailure ]
+
+# Flaky for unknown reason.
+crbug.com/960007 [ win10 nvidia ] OverlayModeTraceTest_DirectComposition_Nonroot [ RetryOnFailure ]
+crbug.com/965730 [ android qualcomm-adreno-(tm)-418 ] TraceTest_Video_Context_Loss_VP9 [ Skip ]

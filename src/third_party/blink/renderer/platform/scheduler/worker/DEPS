@@ -1,0 +1,13 @@
+specific_include_rules = {
+  "non_main_thread_task_queue.h": [
+    "+base/task/sequence_manager/task_queue_impl.h",
+  ],
+  "worker_thread.h": [
+    "+base/threading/simple_thread.h",
+    "+third_party/blink/renderer/platform/heap/gc_task_runner.h",
+  ],
+  "worker_thread.cc": [
+    "+third_party/blink/renderer/platform/memory_pressure_listener.h",
+    "+third_party/blink/renderer/platform/heap/gc_task_runner.h",
+  ],
+}

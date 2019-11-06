@@ -1,0 +1,8 @@
+Files related to the Lookalike URL warning.
+
+This interstitial is triggered when a user visits a domain that is similar to
+that of a domain of a popular site.
+
+It does not trigger on sites that are likely to be non-malicious, such as
+popular sites, sites with a higher site engagement scores, or sites whose domain
+names are quite short.

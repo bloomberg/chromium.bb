@@ -1,0 +1,3 @@
+AriaProperties changed on role=option, name=Banana
+AutomationFocusChanged on role=option, name=Banana
+SelectionItem_ElementSelected on role=option, name=Banana

@@ -1,0 +1,30 @@
+// Copyright 2019 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto2";
+
+option optimize_for = LITE_RUNTIME;
+
+package notifications.proto;
+
+// Stores data used to display a notification in the UI.
+// Next tag: 6
+// TODO(xingliu): Add other fields if necessary.
+message NotificationData {
+  // Identifier of the notification.
+  optional string id = 1;
+
+  // Title of the notification.
+  optional string title = 2;
+
+  // Body text of the notification.
+  optional string message = 3;
+
+  // The unique identifier of the icon of the notification. Each time we should
+  // only load one icon asynchronously into memory with the uuid.
+  optional string icon_uuid = 4;
+
+  // URL of the web site responsible for showing the notification.
+  optional string url = 5;
+}

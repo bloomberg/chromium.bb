@@ -1,0 +1,53 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "ash/mojo_test_interface_factory.h"
+
+#include <utility>
+
+#include "ash/login/login_screen_test_api.h"
+#include "ash/public/interfaces/login_screen_test_api.test-mojom.h"
+#include "ash/public/interfaces/shelf_test_api.test-mojom.h"
+#include "ash/public/interfaces/status_area_widget_test_api.test-mojom.h"
+#include "ash/shelf/shelf_test_api.h"
+#include "ash/system/status_area_widget_test_api.h"
+#include "base/bind.h"
+#include "base/single_thread_task_runner.h"
+
+namespace ash {
+namespace mojo_test_interface_factory {
+namespace {
+
+// These functions aren't strictly necessary, but exist to make threading and
+// arguments clearer.
+
+void BindLoginScreenTestApiOnMainThread(
+    mojom::LoginScreenTestApiRequest request) {
+  LoginScreenTestApi::BindRequest(std::move(request));
+}
+
+void BindShelfTestApiOnMainThread(mojom::ShelfTestApiRequest request) {
+  ShelfTestApi::BindRequest(std::move(request));
+}
+
+void BindStatusAreaWidgetTestApiOnMainThread(
+    mojom::StatusAreaWidgetTestApiRequest request) {
+  StatusAreaWidgetTestApi::BindRequest(std::move(request));
+}
+
+}  // namespace
+
+void RegisterInterfaces(
+    service_manager::BinderRegistry* registry,
+    scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner) {
+  registry->AddInterface(base::Bind(&BindLoginScreenTestApiOnMainThread),
+                         main_thread_task_runner);
+  registry->AddInterface(base::Bind(&BindShelfTestApiOnMainThread),
+                         main_thread_task_runner);
+  registry->AddInterface(base::Bind(&BindStatusAreaWidgetTestApiOnMainThread),
+                         main_thread_task_runner);
+}
+
+}  // namespace mojo_test_interface_factory
+}  // namespace ash

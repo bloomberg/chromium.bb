@@ -1,0 +1,4 @@
+region
+++document
+++++group
+++++++textbox Value.Value='someone@example.com'

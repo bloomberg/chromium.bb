@@ -1,0 +1,52 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
+
+<link rel="import" href="chrome://resources/cr_elements/paper_button_style_css.html">
+<link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
+<link rel="import" href="chrome://resources/html/assert.html">
+<link rel="import" href="chrome://resources/html/cr.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
+<link rel="import" href="../data/destination.html">
+<link rel="import" href="../data/state.html">
+<link rel="import" href="strings.html">
+
+<dom-module id="print-preview-button-strip">
+  <template>
+    <style include="paper-button-style">
+      :host {
+        display: flex;
+        flex-direction: row;
+        justify-content: flex-end;
+        padding-bottom: 16px;
+        padding-inline-end: 16px;
+        padding-top: 16px;
+      }
+
+      :host-context(html:not([dark])) {
+        background-color: white;
+      }
+
+      :host paper-button:not(:last-child) {
+        margin-inline-end: 8px;
+      }
+
+      :host paper-button:last-child {
+        margin-inline-end: 0;
+      }
+    </style>
+<if expr="not is_win">
+    <paper-button class="cancel-button" on-click="onCancelClick_">
+      $i18n{cancel}
+    </paper-button>
+</if>
+    <paper-button class="action-button" on-click="onPrintClick_"
+        disabled$="[[!printButtonEnabled_]]">
+      [[printButtonLabel_]]
+    </paper-button>
+<if expr="is_win">
+    <paper-button class="cancel-button" on-click="onCancelClick_">
+      $i18n{cancel}
+    </paper-button>
+</if>
+  </template>
+  <script src="button_strip.js"></script>
+</dom-module>

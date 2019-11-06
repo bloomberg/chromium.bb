@@ -1,0 +1,38 @@
+# For Android
+boliu@chromium.org
+
+# These are for the common case of adding or renaming files. If you're doing
+# structural changes, please get a review from a reviewer in this file.
+per-file BUILD.gn=*
+
+# For security review.
+per-file child_process_security_policy_impl.*=set noparent
+per-file child_process_security_policy_impl.*=alexmos@chromium.org
+per-file child_process_security_policy_impl.*=creis@chromium.org
+per-file child_process_security_policy_impl.*=lukasza@chromium.org
+per-file child_process_security_policy_impl.*=mkwst@chromium.org
+per-file child_process_security_policy_impl.*=tsepez@chromium.org
+per-file child_process_security_policy_unittest.cc=set noparent
+per-file child_process_security_policy_unittest.cc=alexmos@chromium.org
+per-file child_process_security_policy_unittest.cc=creis@chromium.org
+per-file child_process_security_policy_unittest.cc=lukasza@chromium.org
+per-file child_process_security_policy_unittest.cc=mkwst@chromium.org
+per-file child_process_security_policy_unittest.cc=tsepez@chromium.org
+
+per-file host_zoom_*=wjmaclean@chromium.org
+per-file find_request_manager*=paulmeyer@chromium.org
+per-file site_per_process_*=kenrb@chromium.org
+
+# Mac Sandbox parameters and unit tests.
+per-file sandbox_parameters_mac.*=file://sandbox/mac/OWNERS
+per-file sandbox_mac_unittest.*=file://sandbox/mac/OWNERS
+
+# Linux sandboxing.
+per-file sandbox_host_linux.*=file://sandbox/linux/OWNERS
+per-file sandbox_ipc_linux.*=file://sandbox/linux/OWNERS
+
+# Service manifests provided by content require security review
+per-file builtin_service_manifests.cc=set noparent
+per-file builtin_service_manifests.cc=file://ipc/SECURITY_OWNERS
+per-file builtin_service_manifests.h=set noparent
+per-file builtin_service_manifests.h=file://ipc/SECURITY_OWNERS

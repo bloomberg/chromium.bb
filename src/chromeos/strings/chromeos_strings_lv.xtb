@@ -1,0 +1,29 @@
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="lv">
+<translation id="1510238584712386396">Lietojumprogrammu palaidējs</translation>
+<translation id="1734367976349034509">Šo ierīci pārvalda uzņēmums</translation>
+<translation id="1930797645656624981">Chrome OS ievades metodes pakalpojums</translation>
+<translation id="2049639323467105390">Šo ierīci pārvalda vietne <ph name="DOMAIN" />.</translation>
+<translation id="2083960536266308407">Ekrānā nekas netika atrasts</translation>
+<translation id="2338501278241028356">Ieslēdziet Bluetooth, lai atklātu tuvumā esošas ierīces</translation>
+<translation id="2805756323405976993">Lietotnes</translation>
+<translation id="2872961005593481000">Beidzēt</translation>
+<translation id="3147142846278915599">Palaišanas programma (notiek lietotņu sinhronizēšana...)</translation>
+<translation id="3442261357327209537">Noklikšķiniet šeit, lai izvēlētos jaunu paroli.</translation>
+<translation id="3506732833599356229">Ir beidzies paroles derīguma termiņš</translation>
+<translation id="4731797938093519117">Vecāku piekļuve</translation>
+<translation id="476166673298332917">Ierīces administrators var novērot visas jūsu pārlūkošanas darbības.</translation>
+<translation id="5212543919916444558">Ekrānā neredzu neko, ar ko varētu palīdzēt.
+Pieskarieties mikrofonam, lai uzdotu man jautājumu.</translation>
+<translation id="5222676887888702881">Izrakstīties</translation>
+<translation id="5457599981699367932">Pārlūkot kā viesim</translation>
+<translation id="54609108002486618">Pārvaldītais</translation>
+<translation id="5832805196449965646">Pievienot personu</translation>
+<translation id="5895138241574237353">Restartēt</translation>
+<translation id="6574601967010742428">Jūsu darbības var pārraudzīt ierīces pārvaldnieks.</translation>
+<translation id="7467001599725918325">Drīz beigsies paroles derīguma termiņš</translation>
+<translation id="7505377169174526985">{NUM_DAYS,plural, =0{Jūsu pašreizējai parolei ir beidzies derīguma termiņš.}=1{Jūsu pašreizējās paroles derīguma termiņš beigsies pēc mazāk nekā vienas dienas.}zero{Jūsu pašreizējās paroles derīguma termiņš beigsies pēc mazāk nekā # dienām.}one{Jūsu pašreizējās paroles derīguma termiņš beigsies pēc mazāk nekā # dienas.}other{Jūsu pašreizējās paroles derīguma termiņš beigsies pēc mazāk nekā # dienām.}}</translation>
+<translation id="7658239707568436148">Atcelt</translation>
+<translation id="9111102763498581341">Atbloķēt</translation>
+</translationbundle>

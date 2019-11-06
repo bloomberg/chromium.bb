@@ -1,0 +1,9 @@
+[document web]
+++[section]
+++++[video] name='Unable to play media.'
+++++++[section]
+++++++++[section]
+++++++++[section]
+++++++++++[section]
+++++++++++++[push button] name='show more media controls' description='more options'
+++++++++++[slider] description='video time scrubber' horizontal

@@ -1,0 +1,425 @@
+<!doctype html>
+<html dir="$i18n{textdirection}" lang="$i18n{language}" $i18n{dark}>
+  <head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="chrome://resources/css/md_colors.css">
+    <style>
+      html {
+        background-color: var(--md-background-color);
+      }
+    </style>
+    </custom-style>
+    <link rel="import" href="chrome://resources/cr_elements/paper_button_style_css.html">
+    <link rel="import" href="chrome://resources/html/polymer.html">
+    <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
+    <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
+    <link rel="import" href="signin_shared_css.html">
+    <link rel="stylesheet" href="chrome://resources/css/text_defaults_md.css">
+    <custom-style>
+      <style include="signin-dialog-shared paper-button-style">
+        .picture img {
+          border-radius: 50%;
+          max-height: 100%;
+          max-width: 100%;
+        }
+
+        .details {
+          padding: 0 24px;
+        }
+
+        #picture-container {
+          align-items: center;
+          display: flex;
+          justify-content: center;
+          padding-bottom: 32px;
+          padding-top: 24px;
+        }
+
+        .picture {
+          height: 96px;
+          margin-inline-start: 84px;
+          position: relative;
+          width: 96px;
+        }
+
+        #profile-picture,
+        .checkmark-circle {
+          position: absolute;
+        }
+
+        .message-container {
+          display: flex;
+          margin-bottom: 16px;
+        }
+
+        .message-container:last-child {
+          margin-bottom: 32px;
+        }
+
+        .message-container .logo {
+          background-size: cover;
+          flex-shrink: 0;
+          height: 20px;
+          margin-inline-end: 20px;
+          position: relative;
+          top: -2px;
+          width: 20px;
+        }
+
+        #chrome-logo {
+          background-image: url(../../../../../ui/webui/resources/images/200-logo_chrome.png);
+        }
+
+        #googleg-logo {
+          background-image: url(../../../../../ui/webui/resources/images/200-logo_googleg.png);
+        }
+
+        .message-container .title {
+          font-weight: 500;
+          margin-bottom: 4px;
+        }
+
+        .message-container .body {
+          color: var(--cr-secondary-text-color);
+        }
+
+        .message-container .text {
+          line-height: 20px;
+        }
+
+        .message-container #activityControlsCheckbox {
+          margin-inline-start: 40px;
+        }
+
+        #undoButton {
+<if expr="is_macosx or is_linux">
+          margin-inline-end: 8px;
+</if>
+<if expr="not is_macosx and not is_linux">
+          margin-inline-start: 8px;
+</if>
+        }
+
+        #syncDisabledDetails {
+          line-height: 20px;
+          margin-bottom: 8px;
+          margin-top: 16px;
+          padding: 0 24px;
+        }
+
+        #illustration {
+          height: 96px;
+          margin: 0 auto;
+          position: relative;
+          width: 264px;
+        }
+
+        #checkmark-circle {
+          background: var(--google-blue-refresh-500);
+          border: 2px solid #fff;
+          border-radius: 50%;
+          bottom: 0;
+          height: 24px;
+          position: absolute;
+          right: 0;
+          transform: scale(0);
+          width: 24px;
+        }
+
+        [dark] #checkmark-circle {
+          background: var(--google-blue-refresh-300);
+          border-color: var(--google-grey-900);
+        }
+
+        .loaded #checkmark-circle {
+          animation: scale-circle 300ms cubic-bezier(0, 0, 0.2, 1) forwards;
+        }
+
+        @keyframes scale-circle {
+          from { transform: scale(0); }
+          to { transform: scale(1); }
+        }
+
+        #checkmark-check {
+          left: 5px;
+          position: absolute;
+          top: 7px;
+        }
+
+        .loaded #checkmark-path {
+          animation: draw-path 300ms cubic-bezier(0, 0, 0.2, 1) 100ms forwards;
+        }
+
+        @keyframes draw-path {
+          from { stroke-dashoffset: 16; }
+          to { stroke-dashoffset: 0; }
+        }
+
+        #icons {
+          height: 96px;
+          position: absolute;
+          width: 264px;
+        }
+
+        #icons > div {
+          -webkit-mask-repeat: no-repeat;
+          -webkit-mask-size: cover;
+          animation-delay: 200ms;
+          animation-duration: 1.4s;
+          animation-fill-mode: forwards;
+          animation-timing-function: cubic-bezier(0.25, 0.45, 0.4, 0.7);
+          background-color: black;
+          opacity: 0;
+          position: absolute;
+        }
+
+        [dark] #icons > div {
+          background-color: white;
+        }
+
+        #icon-bookmarks {
+          -webkit-mask-image: url(../../../../../ui/webui/resources/images/icon_bookmarks.svg);
+          height: 36px;
+          left: 58px;
+          top: 0;
+          width: 36px;
+        }
+
+        #icon-extensions {
+          -webkit-mask-image: url(../../../../../ui/webui/resources/images/icon_extensions.svg);
+          height: 24px;
+          left: 30px;
+          top: 30px;
+          width: 24px;
+        }
+
+        #icon-passwords {
+          -webkit-mask-image: url(../../../../../ui/webui/resources/images/icon_passwords.svg);
+          height: 30px;
+          left: 38px;
+          top: 66px;
+          width: 40px;
+        }
+
+        #icon-history {
+          -webkit-mask-image: url(../../../../../ui/webui/resources/images/icon_history.svg);
+          height: 36px;
+          left: 190px;
+          top: 6px;
+          width: 36px;
+        }
+
+        #icon-tabs {
+          -webkit-mask-image: url(../../../../../ui/webui/resources/images/icon_tabs.svg);
+          height: 24px;
+          left: 222px;
+          top: 44px;
+          width: 24px;
+        }
+
+        #icon-themes {
+          -webkit-mask-image: url(../../../../../ui/webui/resources/images/icon_themes.svg);
+          height: 30px;
+          left: 184px;
+          top: 62px;
+          width: 32px;
+        }
+
+        #icon-circle-open {
+          border: 2px solid #000;
+          border-radius: 50%;
+          height: 8px;
+          left: 6px;
+          top: 56px;
+          width: 8px;
+        }
+
+        [dark] #icon-circle-open {
+          border-color: white;
+        }
+
+        .icon-circle {
+          border-radius: 50%;
+          height: 4px;
+          width: 4px;
+        }
+
+        #icon-circle-1 {
+          left: 64px;
+          top: 50px;
+        }
+
+        #icon-circle-2 {
+          left: 178px;
+          top: 18px;
+        }
+
+        #icon-circle-3 {
+          left: 194px;
+          top: 50px;
+        }
+
+        #icon-circle-4 {
+          left: 258px;
+          top: 36px;
+        }
+
+        .loaded .fade-top-left {
+          animation-name: fade-in, icon-top-left;
+        }
+
+        .loaded .fade-top-right {
+          animation-name: fade-in, icon-top-right;
+        }
+
+        .loaded .fade-middle-left {
+          animation-name: fade-in, icon-middle-left;
+        }
+
+        .loaded .fade-middle-right {
+          animation-name: fade-in, icon-middle-right;
+        }
+
+        .loaded .fade-bottom-left {
+          animation-name: fade-in, icon-bottom-left;
+        }
+
+        .loaded .fade-bottom-right {
+          animation-name: fade-in, icon-bottom-right;
+        }
+
+        @keyframes fade-in {
+          from { opacity: 0; }
+          to { opacity: .1; }
+        }
+
+        @keyframes icon-top-left {
+          from { transform: translate(0, 0); }
+          to { transform: translate(-4px, -4px); }
+        }
+
+        @keyframes icon-top-right {
+          from { transform: translate(0, 0); }
+          to { transform: translate(4px, -4px); }
+        }
+
+        @keyframes icon-middle-left {
+          from { transform: translate(0, 0); }
+          to { transform: translate(-4px, 0); }
+        }
+
+        @keyframes icon-middle-right {
+          from { transform: translate(0, 0); }
+          to { transform: translate(4px, 0); }
+        }
+
+        @keyframes icon-bottom-left {
+          from { transform: translate(0, 0); }
+          to { transform: translate(-4px, 4px); }
+        }
+
+        @keyframes icon-bottom-right {
+          from { transform: translate(0, 0); }
+          to { transform: translate(4px, 4px); }
+        }
+      </style>
+    </custom-style>
+  </head>
+  <body>
+    <!--
+      Use the 'consent-description' attribute to annotate all the UI elements
+      that are part of the text the user reads before consenting to the Sync
+      data collection . Similarly, use 'consent-confirmation' on UI elements on
+      which user clicks to indicate consent.
+    -->
+    <div class="container">
+      <div class="top-title-bar" consent-description>
+        $i18n{syncConfirmationTitle}
+      </div>
+      <div class="details" id="syncConfirmationDetails">
+        <div id="picture-container">
+          <div id="illustration">
+            <div id="icons">
+              <div id="icon-bookmarks" class="fade-top-left"></div>
+              <div id="icon-extensions" class="fade-top-left"></div>
+              <div id="icon-passwords" class="fade-bottom-left"></div>
+              <div id="icon-history" class="fade-top-right"></div>
+              <div id="icon-tabs" class="fade-middle-right"></div>
+              <div id="icon-themes" class="fade-bottom-right"></div>
+              <div id="icon-circle-open" class="fade-middle-left"></div>
+              <div id="icon-circle-1" class="icon-circle fade-middle-left"></div>
+              <div id="icon-circle-2" class="icon-circle fade-top-right"></div>
+              <div id="icon-circle-3" class="icon-circle fade-middle-right"></div>
+              <div id="icon-circle-4" class="icon-circle fade-top-right"></div>
+            </div>
+            <div class="picture">
+              <img id="profile-picture">
+              <div id="checkmark-circle">
+                <svg id="checkmark-check" width="13" height="10" viewBox="0 0 13 10">
+                  <path id="checkmark-path" d="M1 5l3.5 3.5L12 1" stroke="#FFF"
+                        stroke-width="2" stroke-dasharray="16"
+                        stroke-dashoffset="16" fill="none"></path>
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="message-container">
+          <!--
+            "Chrome sync" is the Google Cloud Based services used for sync. Thus
+            this section uses the Chrome logo even for Chromium builds.
+          -->
+          <div id="chrome-logo" class="logo"></div>
+          <div>
+            <div class="title" consent-description>
+              $i18n{syncConfirmationChromeSyncTitle}
+            </div>
+            <div class="body text" consent-description>
+              $i18n{syncConfirmationChromeSyncBody}
+            </div>
+          </div>
+        </div>
+        <div class="message-container">
+          <!--
+            This section uses the Google logo even for Chromium builds as the
+            user can personalize their Google services from this screen.
+          -->
+          <div id="googleg-logo" class="logo"></div>
+          <div>
+            <div class="title" consent-description>
+              $i18n{syncConfirmationPersonalizeServicesTitle}
+            </div>
+            <div class="body text" consent-description>
+              $i18n{syncConfirmationPersonalizeServicesBody}
+            </div>
+          </div>
+        </div>
+        <div class="message-container">
+          <div class="body" consent-description consent-confirmation>
+            $i18nRaw{syncConfirmationSyncSettingsLinkBody}
+          </div>
+        </div>
+      </div>
+      <div class="details" id="syncDisabledDetails">
+        <div class="body text" consent-description>
+          $i18n{syncDisabledConfirmationDetails}
+        </div>
+      </div>
+      <div class="action-container">
+        <paper-button class="action-button" id="confirmButton"
+            consent-confirmation>
+          $i18n{syncConfirmationConfirmLabel}
+        </paper-button>
+        <paper-button id="undoButton">
+          $i18n{syncConfirmationUndoLabel}
+        </paper-button>
+      </div>
+    </div>
+  </body>
+  <link rel="import" href="chrome://resources/html/cr.html">
+  <link rel="import" href="chrome://resources/html/load_time_data.html">
+  <link rel="import" href="chrome://resources/html/util.html">
+  <script src="sync_confirmation.js"></script>
+  <script src="chrome://sync-confirmation/strings.js"></script>
+  <link rel="import" href="chrome://resources/html/dark_mode.html">
+</html>

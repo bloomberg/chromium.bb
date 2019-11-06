@@ -1,0 +1,23 @@
+<body>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+<script>
+
+test(() => {
+  const frame = document.createElement('iframe');
+  document.body.appendChild(frame);
+  const tw = frame.contentWindow.taskWorklet;
+  frame.remove();
+  assert_throws('InvalidStateError', () => tw.postTask(i => i, 2));
+}, 'taskWorklet.postTask() with a function on a detached frame.');
+
+test(() => {
+  const frame = document.createElement('iframe');
+  document.body.appendChild(frame);
+  const tw = frame.contentWindow.taskWorklet;
+  frame.remove();
+  assert_throws('InvalidStateError', () => tw.postTask('sum', 1, 2));
+}, 'taskWorklet.postTask() with a named task on a detached frame.');
+
+</script>
+</body>

@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
+<script src="file:///gen/device/vr/public/mojom/vr_service.mojom.js"></script>
+<script src="../external/wpt/resources/chromium/webxr-test.js"></script>
+<script src="../external/wpt/webxr/resources/webxr_test_constants.js"></script>
+<script src="../xr/resources/xr-internal-device-mocking.js"></script>
+<script src="../xr/resources/xr-test-utils.js"></script>
+<canvas id="webgl-canvas"></canvas>
+
+<script>
+let testName = "Transient input sources fire events in the right order";
+
+let watcherDone = new Event("watcherdone");
+
+let fakeDeviceInitParams = { supportsImmersive:true };
+
+let requestSessionModes = ['immersive-vr'];
+
+let testFunction = function(session, t, fakeDeviceController) {
+  let eventWatcher = new EventWatcher(
+    t, session, ["inputsourceschange", "selectstart", "select", "selectend", "watcherdone"]);
+  let eventPromise = eventWatcher.wait_for(
+    ["inputsourceschange", "selectstart", "select", "selectend", "inputsourceschange", "watcherdone"]);
+
+  // Need to have a valid pose or input events don't process.
+  fakeDeviceController.setXRPresentationFrameData(VALID_POSE_MATRIX, [{
+      eye:"left",
+      projectionMatrix: VALID_PROJECTION_MATRIX,
+      viewMatrix: VALID_VIEW_MATRIX
+    }, {
+      eye:"right",
+      projectionMatrix: VALID_PROJECTION_MATRIX,
+      viewMatrix: VALID_VIEW_MATRIX
+    }]);
+
+  let inputChangeEvents = 0;
+  let cached_input_source = null;
+  function onInputSourcesChange(event) {
+    t.step(() => {
+      inputChangeEvents++;
+      assert_equals(event.session, session);
+
+      // The first change event should be adding our controller.
+      if (inputChangeEvents === 1) {
+        validateAdded(event.added, 1);
+        validateRemoved(event.removed, 0);
+        cached_input_source = session.inputSources[0];
+        assert_not_equals(cached_input_source, null);
+      } else if (inputChangeEvents === 2) {
+        // The second event should be removing our controller.
+        validateAdded(event.added, 0);
+        validateRemoved(event.removed, 1);
+        assert_true(event.removed.includes(cached_input_source));
+        session.dispatchEvent(watcherDone);
+      }
+    });
+  }
+
+  function validateAdded(added, length) {
+    t.step(() => {
+      assert_not_equals(added, null);
+      assert_equals(added.length, length,
+          "Added length matches expectations");
+
+      let currentSources = Array.from(session.inputSources.values());
+      added.forEach((source) => {
+        assert_true(currentSources.includes(source),
+          "Every element in added should be in the input source list");
+      });
+    });
+  }
+
+  function validateRemoved(removed, length) {
+    t.step(() => {
+      assert_not_equals(removed, null);
+        assert_equals(removed.length, length,
+            "Removed length matches expectations");
+
+      let currentSources = Array.from(session.inputSources.values());
+      removed.forEach((source) => {
+        assert_false(currentSources.includes(source),
+          "No element in removed should be in the input source list");
+      });
+    });
+  }
+
+  session.addEventListener('inputsourceschange', onInputSourcesChange, false);
+
+  // Session must have a baseLayer or frame requests will be ignored.
+  session.updateRenderState({ baseLayer: new XRWebGLLayer(session, gl) });
+
+  // Create our input source and immediately toggle the primary input so that
+  // it appears as already needing to send a click event when it appears.
+  let input_source = new MockXRInputSource();
+  input_source.primaryInputPressed = true;
+  input_source.primaryInputPressed = false;
+  fakeDeviceController.addInputSource(input_source);
+
+  // Make our input source disappear after one frame, and wait an additional
+  // frame for that disappearance to propogate.
+  session.requestAnimationFrame((time, xrFrame) => {
+    fakeDeviceController.removeInputSource(input_source);
+    session.requestAnimationFrame((time, xrFrame) => {
+
+    });
+  });
+
+  return eventPromise;
+};
+
+xr_session_promise_test(
+  testFunction, fakeDeviceInitParams, requestSessionModes, testName);
+</script>

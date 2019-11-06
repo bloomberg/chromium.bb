@@ -1,0 +1,8 @@
+This is a testharness.js-based test.
+PASS Property image-rendering value 'auto' computes to 'auto'
+FAIL Property image-rendering value 'smooth' computes to 'smooth' assert_equals: expected "smooth" but got "auto"
+FAIL Property image-rendering value 'high-quality' computes to 'high-quality' assert_equals: expected "high-quality" but got "auto"
+FAIL Property image-rendering value 'crisp-edges' computes to 'crisp-edges' assert_equals: expected "crisp-edges" but got "auto"
+PASS Property image-rendering value 'pixelated' computes to 'pixelated'
+Harness: the test ran to completion.
+

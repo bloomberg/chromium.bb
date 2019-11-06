@@ -1,0 +1,112 @@
+// Copyright 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// open_and_verify_leveldb_database.pdf was created from this file by
+// https://www.code2flow.com/app
+
+function OpenLevelDB {
+  |Read free disk space|;
+  Histogram(FreeDiskSpace);
+  switch (leveldb_env::OpenDB) {
+    case Status Not OK:{
+      Histogram(LevelDBOpenErrors);
+      if (disk space < 100kb)
+        Report disk space as failure reason;
+      return leveldb_env::OpenDB error status;
+    }
+    case Status OK: {
+      Histogram(LevelDB.OpenTime);
+      return Status::OK;
+    }
+  }
+}
+
+OpenAndVerifyLevelDBDatabase;
+switch (Create IDB Directory) {
+  case Failure:
+    Histogram(FAILED_DIRECTORY);
+    return IOError("Unable to create IndexedDB database path");
+  case Success:
+}
+Create File path & blob path;
+if (File Path is too long) {
+  Histogram(ORIGIN_TOO_LONG);
+  return IOError("File path too long);
+}
+
+call OpenLevelDB;
+
+switch(OpenLevelDB status) {
+  case IOError:
+    Histogram(OPEN_NO_RECOVERY);
+    return OpenLevelDB error status;
+  case Corruption:
+    Set data loss info;
+    break;
+  case OK:
+    if (Corruption Info Exists & Last Open was corrupt) {
+      Histogram(FAILED_PRIOR_CORRUPTION);
+      db_.reset();
+      Populate data loss info
+      (previous corruption);
+      break;
+    }
+    switch (try to read schema) {
+      case Failure reading schema:
+        Histogram(FAILED_IO_ERROR_CHECKING_SCHEMA);
+        db_.reset();
+        Populate data loss info
+        (schema checking failure);
+        break;
+      case Schema is unknown:
+        Histogram(FAILED_UNKNOWN_SCHEMA);
+        db_.reset();
+        Populate data loss info
+        (unknown schema);
+        break;
+      case Success & Valid:
+        Histogram(OPEN_SUCCESS);
+        goto end;
+    }
+}
+switch(DestroyLevelDB(file_path)) {
+  case Not OK:
+    Histogram(CLEANUP_DESTROY_FAILED);
+    return DestroyLevelDB error status;
+  case OK:
+}
+call OpenLevelDB;
+switch(OpenLevelDB status) {
+  case Not OK:
+    Histogram(CLEANUP_REOPEN_FAILED);
+    return OpenLevelDB error status;
+  case OK:
+    Histogram(CLEANUP_REOPEN_SUCCESS);
+}
+
+end:
+Histogram(OPEN_SUCCESS);
+block {
+Create BackingStore;
+switch (Parse schema & metadata) {
+  case Failure:
+    Delete Database & BackingStore;
+    break;
+  case Success:
+    if (Should we clean blob journal?) {
+    switch(CleanUpBlobJournal) {
+      case OK:
+        report `Status::OK`;
+        goto done;
+      case Not OK:
+        Histogram(FAILED_CLEANUP_JOURNAL_ERROR);
+        return CleanUpBlobJournal error status;
+    }
+  }
+}
+return BackingStore error status;
+}
+
+done:
+return done;

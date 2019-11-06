@@ -1,0 +1,13 @@
+Name: 
+Short Name: core
+URL: https://github.com/google-ar/arcore-android-sdk
+Version: 1.8.0
+License: Apache 2.0
+License File: LICENSE
+Security Critical: yes
+
+Description:
+
+
+Local Modifications:
+No modifications.

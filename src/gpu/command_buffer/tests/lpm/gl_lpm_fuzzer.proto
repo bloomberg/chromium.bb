@@ -1,0 +1,130 @@
+// Copyright 2019 The Chromium Authors. All rights reserved.
+
+// This proto description is adapted from the one used in clang-proto-fuzzer.
+
+syntax = "proto2";
+package fuzzing;
+
+// TODO(nedwill): fuzz the following features
+// function prototypes
+// (in)variance
+// structs
+// interface blocks
+// swizzles
+// all binary operators
+// all unary operators
+// all ternary operators
+// switch/case statements
+// loops
+// branches (case, break, continue, return, kill)
+// preprocessor directives
+
+enum Var {
+  VAR_0 = 0;
+  VAR_1 = 1;
+  VAR_2 = 2;
+  VAR_3 = 3;
+}
+
+message Lvalue {
+  optional Var var = 1;
+}
+
+message Const {
+  optional int32 val = 1;
+}
+
+message BinaryOp {
+  enum Op {
+    // TODO: actually use ops from GLSL spec, not c++
+    PLUS = 0;
+    MINUS = 1;
+    MUL = 2;
+    DIV = 3;
+    MOD = 4;
+    XOR = 5;
+    AND = 6;
+    OR = 7;
+    EQ = 8;
+    NE = 9;
+    LE = 10;
+    GE = 11;
+    LT = 12;
+    GT = 13;
+  };
+  optional Op op = 1;
+  optional Rvalue left = 2;
+  optional Rvalue right = 3;
+}
+
+message Declare {
+  optional Type type = 1;
+  optional Var var = 2;
+}
+
+message Rvalue {
+  oneof rvalue {
+    Var var = 1;
+    Const cons = 2;
+    BinaryOp binary_op = 3;
+  }
+}
+
+message Assignment {
+  optional Lvalue lvalue = 1;
+  optional Rvalue rvalue = 2;
+}
+
+message IfElse {
+  optional Rvalue cond = 1;
+  optional Block if_body = 2;
+  optional Block else_body = 3;
+}
+
+message While {
+  optional Rvalue cond = 1;
+  optional Block body = 2;
+}
+
+message Statement {
+  oneof statement {
+    Assignment assignment = 1;
+    IfElse ifelse = 2;
+    While while_stmt = 3;
+    Rvalue return_stmt = 4;
+    Declare declare = 5;
+  }
+}
+
+enum FunctionName {
+  MAIN = 0;
+  NAME_1 = 1;
+  NAME_2 = 2;
+  NAME_3 = 3;
+}
+
+message Block {
+  repeated Statement statements = 1;
+}
+
+enum Type {
+  // Use suffix to avoid clashing with VOID define on Windows
+  VOID_TYPE = 0;
+  INT = 1;
+}
+
+message Function {
+  optional FunctionName function_name = 1;
+  optional Block block = 2;
+  optional Rvalue return_stmt = 3;
+  optional Type type = 4;
+}
+
+message Shader {
+  repeated Function functions = 1;
+}
+
+message Session {
+  optional Shader vertex_shader = 1;
+  optional Shader fragment_shader = 2;
+}

@@ -1,0 +1,29 @@
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="sk">
+<translation id="1510238584712386396">Spúšťač</translation>
+<translation id="1734367976349034509">Toto zariadenie je spravované organizáciou</translation>
+<translation id="1930797645656624981">Služba metódy vstupu systému Chrome OS</translation>
+<translation id="2049639323467105390">Toto zariadenie je spravované doménou <ph name="DOMAIN" />.</translation>
+<translation id="2083960536266308407">Na obrazovke sa nič nenašlo</translation>
+<translation id="2338501278241028356">Ak chcete nájsť zariadenia v okolí, zapnite Bluetooth</translation>
+<translation id="2805756323405976993">Aplikácie</translation>
+<translation id="2872961005593481000">Vypnúť</translation>
+<translation id="3147142846278915599">Spúšťač (synchronizujú sa aplikácie...)</translation>
+<translation id="3442261357327209537">Kliknite tu a vyberte nové heslo</translation>
+<translation id="3506732833599356229">Platnosť hesla vypršala</translation>
+<translation id="4731797938093519117">Rodičovský prístup</translation>
+<translation id="476166673298332917">Správca zariadenia môže sledovať vašu aktivitu prehliadania.</translation>
+<translation id="5212543919916444558">Na obrazovke nie je nič, s čím by som mohol pomôcť.
+Skúste klepnúť na mikrofón a niečo prikázať.</translation>
+<translation id="5222676887888702881">Odhlásiť sa</translation>
+<translation id="5457599981699367932">Prehliadať ako hosť</translation>
+<translation id="54609108002486618">Spravovaný</translation>
+<translation id="5832805196449965646">Pridať osobu</translation>
+<translation id="5895138241574237353">Reštartovať</translation>
+<translation id="6574601967010742428">Správca zariadenia môže sledovať vašu aktivitu.</translation>
+<translation id="7467001599725918325">Platnosť hesla čoskoro vyprší</translation>
+<translation id="7505377169174526985">{NUM_DAYS,plural, =0{Platnosť vášho aktuálneho hesla vypršala.}=1{Platnosť vášho aktuálneho hesla vyprší za menej ako deň.}few{Platnosť vášho aktuálneho hesla vyprší za menej ako # dni.}many{Platnosť vášho aktuálneho hesla vyprší za menej ako # dňa.}other{Platnosť vášho aktuálneho hesla vyprší za menej ako # dní.}}</translation>
+<translation id="7658239707568436148">Zrušiť</translation>
+<translation id="9111102763498581341">Odomknúť</translation>
+</translationbundle>

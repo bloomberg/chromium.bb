@@ -1,0 +1,23 @@
+<body>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+<script>
+
+test(() => {
+  const frame = document.createElement('iframe');
+  document.body.appendChild(frame);
+  const wtq = frame.contentWindow.WorkerTaskQueue;
+  frame.remove();
+  assert_throws('InvalidStateError', () => new wtq('background'));
+}, 'WorkerTaskQueue construction on a detached frame.');
+
+test(() => {
+  const frame = document.createElement('iframe');
+  document.body.appendChild(frame);
+  const queue = new frame.contentWindow.WorkerTaskQueue('background');
+  frame.remove();
+  assert_throws('InvalidStateError', () => queue.postTask(i => i, 2));
+}, 'postTask() on a detached frame.');
+
+</script>
+</body>

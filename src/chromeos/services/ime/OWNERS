@@ -1,0 +1,5 @@
+googleo@chromium.org
+shuchen@chromium.org
+
+
+per-file ime_sandbox_hook.*=file://sandbox/linux/OWNERS

@@ -1,0 +1,29 @@
+// Copyright 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// https://github.com/gpuweb/gpuweb/blob/master/design/sketch.webidl
+
+[
+    RuntimeEnabled=WebGPU
+] interface GPUDevice {
+    readonly attribute GPUAdapter adapter;
+
+    GPUBuffer createBuffer(GPUBufferDescriptor descriptor);
+    GPUTexture createTexture(GPUTextureDescriptor descriptor);
+    GPUSampler createSampler(GPUSamplerDescriptor descriptor);
+
+    GPUBindGroup createBindGroup(GPUBindGroupDescriptor descriptor);
+    GPUBindGroupLayout createBindGroupLayout(GPUBindGroupLayoutDescriptor descriptor);
+    GPUPipelineLayout createPipelineLayout(GPUPipelineLayoutDescriptor descriptor);
+
+    GPUShaderModule createShaderModule(GPUShaderModuleDescriptor descriptor);
+    [CallWith=ScriptState] GPURenderPipeline createRenderPipeline(GPURenderPipelineDescriptor descriptor);
+    GPUComputePipeline createComputePipeline(GPUComputePipelineDescriptor descriptor);
+
+    GPUCommandEncoder createCommandEncoder(GPUCommandEncoderDescriptor descriptor);
+
+    GPUQueue getQueue();
+};
+
+typedef (GPUOutOfMemoryError or GPUValidationError) GPUError;
