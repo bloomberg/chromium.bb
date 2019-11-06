@@ -4546,6 +4546,15 @@
       }
     },
 
+    'opus_tests': {
+      'opus_tests': {
+        'args': [
+          '--shard-timeout=3000'
+        ],
+        'test': 'opus_tests',
+      },
+    },
+
     'ozone_linux_gtests': {
       'services_unittests': {},
       'ozone_unittests': {},
