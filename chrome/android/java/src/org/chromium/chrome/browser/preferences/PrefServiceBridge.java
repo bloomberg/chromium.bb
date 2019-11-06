@@ -292,48 +292,6 @@ public class PrefServiceBridge {
     }
 
     /**
-     * @return Whether Safe Browsing Extended Reporting is currently enabled.
-     */
-    public boolean isSafeBrowsingExtendedReportingEnabled() {
-        return PrefServiceBridgeJni.get().getSafeBrowsingExtendedReportingEnabled();
-    }
-
-    /**
-     * @param enabled Whether Safe Browsing Extended Reporting should be enabled.
-     */
-    public void setSafeBrowsingExtendedReportingEnabled(boolean enabled) {
-        PrefServiceBridgeJni.get().setSafeBrowsingExtendedReportingEnabled(enabled);
-    }
-
-    /**
-     * @return Whether Safe Browsing Extended Reporting is managed
-     */
-    public boolean isSafeBrowsingExtendedReportingManaged() {
-        return PrefServiceBridgeJni.get().getSafeBrowsingExtendedReportingManaged();
-    }
-
-    /**
-     * @return Whether Safe Browsing is currently enabled.
-     */
-    public boolean isSafeBrowsingEnabled() {
-        return PrefServiceBridgeJni.get().getSafeBrowsingEnabled();
-    }
-
-    /**
-     * @param enabled Whether Safe Browsing should be enabled.
-     */
-    public void setSafeBrowsingEnabled(boolean enabled) {
-        PrefServiceBridgeJni.get().setSafeBrowsingEnabled(enabled);
-    }
-
-    /**
-     * @return Whether Safe Browsing is managed
-     */
-    public boolean isSafeBrowsingManaged() {
-        return PrefServiceBridgeJni.get().getSafeBrowsingManaged();
-    }
-
-    /**
      * @return Whether there is a user set value for kNetworkPredictionOptions.  This should only be
      * used for preference migration. See http://crbug.com/334602
      */
@@ -685,12 +643,6 @@ public class PrefServiceBridge {
         void setSensorsEnabled(boolean enabled);
         void setSoundEnabled(boolean enabled);
         boolean canPrefetchAndPrerender();
-        boolean getSafeBrowsingExtendedReportingEnabled();
-        void setSafeBrowsingExtendedReportingEnabled(boolean enabled);
-        boolean getSafeBrowsingExtendedReportingManaged();
-        boolean getSafeBrowsingEnabled();
-        void setSafeBrowsingEnabled(boolean enabled);
-        boolean getSafeBrowsingManaged();
         boolean getNetworkPredictionManaged();
         boolean obsoleteNetworkPredictionOptionsHasUserSetting();
         boolean getNetworkPredictionEnabled();

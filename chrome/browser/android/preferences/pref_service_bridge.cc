@@ -39,7 +39,6 @@
 #include "components/metrics/metrics_pref_names.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_service.h"
-#include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "components/signin/public/base/signin_pref_names.h"
 #include "components/web_resource/web_resource_pref_names.h"
 #include "content/public/browser/browser_thread.h"
@@ -314,40 +313,6 @@ static jboolean JNI_PrefServiceBridge_GetNetworkPredictionManaged(JNIEnv* env) {
 
 static jboolean JNI_PrefServiceBridge_GetPasswordEchoEnabled(JNIEnv* env) {
   return GetPrefService()->GetBoolean(prefs::kWebKitPasswordEchoEnabled);
-}
-
-static jboolean JNI_PrefServiceBridge_GetSafeBrowsingExtendedReportingEnabled(
-    JNIEnv* env) {
-  return safe_browsing::IsExtendedReportingEnabled(*GetPrefService());
-}
-
-static void JNI_PrefServiceBridge_SetSafeBrowsingExtendedReportingEnabled(
-    JNIEnv* env,
-    jboolean enabled) {
-  safe_browsing::SetExtendedReportingPrefAndMetric(
-      GetPrefService(), enabled,
-      safe_browsing::SBER_OPTIN_SITE_ANDROID_SETTINGS);
-}
-
-static jboolean JNI_PrefServiceBridge_GetSafeBrowsingExtendedReportingManaged(
-    JNIEnv* env) {
-  PrefService* pref_service = GetPrefService();
-  return pref_service->IsManagedPreference(
-      prefs::kSafeBrowsingScoutReportingEnabled);
-}
-
-static jboolean JNI_PrefServiceBridge_GetSafeBrowsingEnabled(JNIEnv* env) {
-  return GetPrefService()->GetBoolean(prefs::kSafeBrowsingEnabled);
-}
-
-static void JNI_PrefServiceBridge_SetSafeBrowsingEnabled(
-    JNIEnv* env,
-    jboolean enabled) {
-  GetPrefService()->SetBoolean(prefs::kSafeBrowsingEnabled, enabled);
-}
-
-static jboolean JNI_PrefServiceBridge_GetSafeBrowsingManaged(JNIEnv* env) {
-  return GetPrefService()->IsManagedPreference(prefs::kSafeBrowsingEnabled);
 }
 
 static jboolean JNI_PrefServiceBridge_GetNotificationsEnabled(JNIEnv* env) {

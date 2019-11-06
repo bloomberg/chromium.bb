@@ -64,6 +64,7 @@ TEST_F(PrefsTest, TestIndex) {
             GetPrefName(OFFLINE_PREFETCH_USER_SETTING_ENABLED));
   EXPECT_EQ(prefs::kSafeBrowsingExtendedReportingOptInAllowed,
             GetPrefName(SAFE_BROWSING_EXTENDED_REPORTING_OPT_IN_ALLOWED));
+  EXPECT_EQ(prefs::kSafeBrowsingEnabled, GetPrefName(SAFE_BROWSING_ENABLED));
   EXPECT_EQ(password_manager::prefs::kPasswordManagerOnboardingState,
             GetPrefName(PASSWORD_MANAGER_ONBOARDING_STATE));
   EXPECT_EQ(prefs::kSearchSuggestEnabled, GetPrefName(SEARCH_SUGGEST_ENABLED));
