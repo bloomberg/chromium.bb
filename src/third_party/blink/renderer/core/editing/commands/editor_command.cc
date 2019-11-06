@@ -41,6 +41,8 @@
 #include "third_party/blink/renderer/core/editing/commands/format_block_command.h"
 #include "third_party/blink/renderer/core/editing/commands/indent_outdent_command.h"
 #include "third_party/blink/renderer/core/editing/commands/insert_commands.h"
+#include "third_party/blink/renderer/core/editing/commands/indent_block_command.h"
+#include "third_party/blink/renderer/core/editing/commands/outdent_block_command.h"
 #include "third_party/blink/renderer/core/editing/commands/move_commands.h"
 #include "third_party/blink/renderer/core/editing/commands/remove_format_command.h"
 #include "third_party/blink/renderer/core/editing/commands/style_commands.h"
@@ -665,6 +667,20 @@ static bool ExecuteIndent(LocalFrame& frame,
   return MakeGarbageCollected<IndentOutdentCommand>(
              *frame.GetDocument(), IndentOutdentCommand::kIndent)
       ->Apply();
+}
+
+static bool ExecuteIndentBlock(LocalFrame& frame, Event*, EditorCommandSource, const String&)
+{
+    DCHECK(frame.GetDocument());
+    IndentBlockCommand::create(*frame.GetDocument())->Apply();
+    return true;
+}
+
+static bool ExecuteOutdentBlock(LocalFrame& frame, Event*, EditorCommandSource, const String&)
+{
+    DCHECK(frame.GetDocument());
+    OutdentBlockCommand::create(*frame.GetDocument())->Apply();
+    return true;
 }
 
 static bool ExecuteJustifyCenter(LocalFrame& frame,
@@ -1796,6 +1812,12 @@ static const EditorInternalCommand* InternalCommand(
 
 
       // patch section: indent-block/outdent-block
+      {WebEditingCommandType::kIndentBlock, ExecuteIndentBlock, Supported,
+       EnabledInRichlyEditableText, StateNone, ValueStateOrNull,
+       kNotTextInsertion, CanNotExecuteWhenDisabled},
+      {WebEditingCommandType::kOutdentBlock, ExecuteOutdentBlock, Supported,
+       EnabledInRichlyEditableText, StateNone, ValueStateOrNull,
+       kNotTextInsertion, CanNotExecuteWhenDisabled},
 
 
 
