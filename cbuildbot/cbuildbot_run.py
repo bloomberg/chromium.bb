@@ -187,6 +187,7 @@ class RunAttributes(object):
       'test_artifacts_uploaded',      # Set by UploadHWTestArtifacts.
       'autotest_tarball_generated',   # Set by ArchiveStage.
       'instruction_urls_per_channel', # Set by ArchiveStage
+      'release_artifacts_generated',  # Set by ArchiveStage
       'success',                      # Set by cbuildbot.py:Builder
       'packages_under_test',          # Set by BuildPackagesStage.
       'signed_images_ready',          # Set by SigningStage

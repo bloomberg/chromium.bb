@@ -374,6 +374,7 @@ class ArchiveStage(generic_stages.BoardSpecificBuilderStage,
       with self.ArtifactUploader(self._release_upload_queue, archive=False):
         steps = [BuildAndArchiveAllImages, ArchiveFirmwareImages]
         parallel.RunParallelSteps(steps)
+      self.board_runattrs.SetParallel('release_artifacts_generated', True)
       PushImage()
 
     def BuildAndArchiveArtifacts():
