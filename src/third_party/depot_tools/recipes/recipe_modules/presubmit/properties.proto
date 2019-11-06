@@ -1,0 +1,15 @@
+// Copyright 2019 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto3";
+package recipe_modules.depot_tools.presubmit;
+
+message InputProperties {
+  // Whether gclient hooks should be run when setting up the checkout.
+  bool runhooks = 1;
+  // Timeout for presubmit execution, in seconds.
+  int32 timeout_s = 2;
+  // The path to the vpython spec to use, relative to the repository root.
+  string vpython_spec_path = 3;
+}
