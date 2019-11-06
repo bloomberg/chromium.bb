@@ -41,7 +41,6 @@ typedef void (*decode_block_visitor_fn_t)(const AV1_COMMON *const cm,
 
 typedef void (*predict_inter_block_visitor_fn_t)(AV1_COMMON *const cm,
                                                  MACROBLOCKD *const xd,
-                                                 int mi_row, int mi_col,
                                                  BLOCK_SIZE bsize);
 
 typedef void (*cfl_store_inter_block_visitor_fn_t)(AV1_COMMON *const cm,

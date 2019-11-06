@@ -1050,19 +1050,19 @@ void av1_mv_pred(const AV1_COMP *cpi, MACROBLOCK *x, uint8_t *ref_y_buffer,
 
 void av1_setup_pred_block(const MACROBLOCKD *xd,
                           struct buf_2d dst[MAX_MB_PLANE],
-                          const YV12_BUFFER_CONFIG *src, int mi_row, int mi_col,
+                          const YV12_BUFFER_CONFIG *src,
                           const struct scale_factors *scale,
                           const struct scale_factors *scale_uv,
                           const int num_planes) {
-  int i;
-
   dst[0].buf = src->y_buffer;
   dst[0].stride = src->y_stride;
   dst[1].buf = src->u_buffer;
   dst[2].buf = src->v_buffer;
   dst[1].stride = dst[2].stride = src->uv_stride;
 
-  for (i = 0; i < num_planes; ++i) {
+  const int mi_row = xd->mi_row;
+  const int mi_col = xd->mi_col;
+  for (int i = 0; i < num_planes; ++i) {
     setup_pred_plane(dst + i, xd->mi[0]->sb_type, dst[i].buf,
                      i ? src->uv_crop_width : src->y_crop_width,
                      i ? src->uv_crop_height : src->y_crop_height,

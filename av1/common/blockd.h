@@ -509,6 +509,9 @@ typedef struct macroblockd {
   int mb_to_top_edge;
   int mb_to_bottom_edge;
 
+  int mi_row;
+  int mi_col;
+
   /* pointers to reference frame scale factors */
   const struct scale_factors *block_ref_scale_factors[2];
 

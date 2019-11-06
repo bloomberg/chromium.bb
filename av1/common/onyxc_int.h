@@ -844,6 +844,9 @@ static INLINE void set_mi_row_col(MACROBLOCKD *xd, const TileInfo *const tile,
   xd->mb_to_left_edge = -((mi_col * MI_SIZE) * 8);
   xd->mb_to_right_edge = ((mi_cols - bw - mi_col) * MI_SIZE) * 8;
 
+  xd->mi_row = mi_row;
+  xd->mi_col = mi_col;
+
   // Are edges available for intra prediction?
   xd->up_available = (mi_row > tile->mi_row_start);
 

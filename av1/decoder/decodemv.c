@@ -680,7 +680,7 @@ static void read_intrabc_info(AV1_COMMON *const cm, MACROBLOCKD *const xd,
 
     av1_find_mv_refs(cm, xd, mbmi, INTRA_FRAME, xd->ref_mv_count,
                      xd->ref_mv_stack, xd->weight, ref_mvs, /*global_mvs=*/NULL,
-                     mi_row, mi_col, inter_mode_ctx);
+                     inter_mode_ctx);
 
     int_mv nearestmv, nearmv;
 
@@ -1270,8 +1270,7 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
 
   const MV_REFERENCE_FRAME ref_frame = av1_ref_frame_type(mbmi->ref_frame);
   av1_find_mv_refs(cm, xd, mbmi, ref_frame, xd->ref_mv_count, xd->ref_mv_stack,
-                   xd->weight, ref_mvs, /*global_mvs=*/NULL, mi_row, mi_col,
-                   inter_mode_ctx);
+                   xd->weight, ref_mvs, /*global_mvs=*/NULL, inter_mode_ctx);
 
   mbmi->ref_mv_idx = 0;
 
@@ -1389,10 +1388,9 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
   mbmi->motion_mode = SIMPLE_TRANSLATION;
   if (is_motion_variation_allowed_bsize(mbmi->sb_type) && !mbmi->skip_mode &&
       !has_second_ref(mbmi)) {
-    mbmi->num_proj_ref =
-        av1_findSamples(cm, xd, mi_row, mi_col, pts, pts_inref);
+    mbmi->num_proj_ref = av1_findSamples(cm, xd, pts, pts_inref);
   }
-  av1_count_overlappable_neighbors(cm, xd, mi_row, mi_col);
+  av1_count_overlappable_neighbors(cm, xd);
 
   if (mbmi->ref_frame[1] != INTRA_FRAME)
     mbmi->motion_mode = read_motion_mode(cm, xd, mbmi, r);

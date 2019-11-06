@@ -84,8 +84,6 @@ typedef struct SubpelParams {
 
 struct build_prediction_ctxt {
   const AV1_COMMON *cm;
-  int mi_row;
-  int mi_col;
   uint8_t **tmp_buf;
   int *tmp_width;
   int *tmp_height;
@@ -338,15 +336,13 @@ void av1_setup_build_prediction_by_left_pred(MACROBLOCKD *xd, int rel_mi_row,
                                              struct build_prediction_ctxt *ctxt,
                                              const int num_planes);
 void av1_build_obmc_inter_prediction(const AV1_COMMON *cm, MACROBLOCKD *xd,
-                                     int mi_row, int mi_col,
                                      uint8_t *above[MAX_MB_PLANE],
                                      int above_stride[MAX_MB_PLANE],
                                      uint8_t *left[MAX_MB_PLANE],
                                      int left_stride[MAX_MB_PLANE]);
 
 const uint8_t *av1_get_obmc_mask(int length);
-void av1_count_overlappable_neighbors(const AV1_COMMON *cm, MACROBLOCKD *xd,
-                                      int mi_row, int mi_col);
+void av1_count_overlappable_neighbors(const AV1_COMMON *cm, MACROBLOCKD *xd);
 
 #define MASK_MASTER_SIZE ((MAX_WEDGE_SIZE) << 1)
 #define MASK_MASTER_STRIDE (MASK_MASTER_SIZE)

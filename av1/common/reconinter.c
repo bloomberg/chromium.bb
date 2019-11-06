@@ -745,8 +745,7 @@ static INLINE void increment_int_ptr(MACROBLOCKD *xd, int rel_mi_row,
   (void)num_planes;
 }
 
-void av1_count_overlappable_neighbors(const AV1_COMMON *cm, MACROBLOCKD *xd,
-                                      int mi_row, int mi_col) {
+void av1_count_overlappable_neighbors(const AV1_COMMON *cm, MACROBLOCKD *xd) {
   MB_MODE_INFO *mbmi = xd->mi[0];
 
   mbmi->overlappable_neighbors[0] = 0;
@@ -754,9 +753,9 @@ void av1_count_overlappable_neighbors(const AV1_COMMON *cm, MACROBLOCKD *xd,
 
   if (!is_motion_variation_allowed_bsize(mbmi->sb_type)) return;
 
-  foreach_overlappable_nb_above(cm, xd, mi_col, INT_MAX, increment_int_ptr,
+  foreach_overlappable_nb_above(cm, xd, INT_MAX, increment_int_ptr,
                                 &mbmi->overlappable_neighbors[0]);
-  foreach_overlappable_nb_left(cm, xd, mi_row, INT_MAX, increment_int_ptr,
+  foreach_overlappable_nb_left(cm, xd, INT_MAX, increment_int_ptr,
                                &mbmi->overlappable_neighbors[1]);
 }
 
@@ -881,7 +880,6 @@ static INLINE void build_obmc_inter_pred_left(
 // prediction. We assume the original prediction (bmc) is stored in
 // xd->plane[].dst.buf
 void av1_build_obmc_inter_prediction(const AV1_COMMON *cm, MACROBLOCKD *xd,
-                                     int mi_row, int mi_col,
                                      uint8_t *above[MAX_MB_PLANE],
                                      int above_stride[MAX_MB_PLANE],
                                      uint8_t *left[MAX_MB_PLANE],
@@ -890,13 +888,13 @@ void av1_build_obmc_inter_prediction(const AV1_COMMON *cm, MACROBLOCKD *xd,
 
   // handle above row
   struct obmc_inter_pred_ctxt ctxt_above = { above, above_stride };
-  foreach_overlappable_nb_above(cm, xd, mi_col,
+  foreach_overlappable_nb_above(cm, xd,
                                 max_neighbor_obmc[mi_size_wide_log2[bsize]],
                                 build_obmc_inter_pred_above, &ctxt_above);
 
   // handle left column
   struct obmc_inter_pred_ctxt ctxt_left = { left, left_stride };
-  foreach_overlappable_nb_left(cm, xd, mi_row,
+  foreach_overlappable_nb_left(cm, xd,
                                max_neighbor_obmc[mi_size_high_log2[bsize]],
                                build_obmc_inter_pred_left, &ctxt_left);
 }
@@ -906,8 +904,8 @@ void av1_setup_address_for_obmc(MACROBLOCKD *xd, int mi_row_offset,
                                 struct build_prediction_ctxt *ctxt,
                                 const int num_planes) {
   const BLOCK_SIZE ref_bsize = AOMMAX(BLOCK_8X8, ref_mbmi->sb_type);
-  const int ref_mi_row = ctxt->mi_row + mi_row_offset;
-  const int ref_mi_col = ctxt->mi_col + mi_col_offset;
+  const int ref_mi_row = xd->mi_row + mi_row_offset;
+  const int ref_mi_col = xd->mi_col + mi_col_offset;
 
   for (int plane = 0; plane < num_planes; ++plane) {
     struct macroblockd_plane *const pd = &xd->plane[plane];
@@ -937,7 +935,7 @@ void av1_setup_build_prediction_by_above_pred(
     MB_MODE_INFO *above_mbmi, struct build_prediction_ctxt *ctxt,
     const int num_planes) {
   const BLOCK_SIZE a_bsize = AOMMAX(BLOCK_8X8, above_mbmi->sb_type);
-  const int above_mi_col = ctxt->mi_col + rel_mi_col;
+  const int above_mi_col = xd->mi_col + rel_mi_col;
 
   av1_modify_neighbor_predictor_for_obmc(above_mbmi);
 
@@ -960,7 +958,7 @@ void av1_setup_build_prediction_by_above_pred(
     if ((!av1_is_valid_scale(sf)))
       aom_internal_error(xd->error_info, AOM_CODEC_UNSUP_BITSTREAM,
                          "Reference frame has invalid dimensions");
-    av1_setup_pre_planes(xd, ref, &ref_buf->buf, ctxt->mi_row, above_mi_col, sf,
+    av1_setup_pre_planes(xd, ref, &ref_buf->buf, xd->mi_row, above_mi_col, sf,
                          num_planes);
   }
 
@@ -975,7 +973,7 @@ void av1_setup_build_prediction_by_left_pred(MACROBLOCKD *xd, int rel_mi_row,
                                              struct build_prediction_ctxt *ctxt,
                                              const int num_planes) {
   const BLOCK_SIZE l_bsize = AOMMAX(BLOCK_8X8, left_mbmi->sb_type);
-  const int left_mi_row = ctxt->mi_row + rel_mi_row;
+  const int left_mi_row = xd->mi_row + rel_mi_row;
 
   av1_modify_neighbor_predictor_for_obmc(left_mbmi);
 
@@ -999,7 +997,7 @@ void av1_setup_build_prediction_by_left_pred(MACROBLOCKD *xd, int rel_mi_row,
     if ((!av1_is_valid_scale(ref_scale_factors)))
       aom_internal_error(xd->error_info, AOM_CODEC_UNSUP_BITSTREAM,
                          "Reference frame has invalid dimensions");
-    av1_setup_pre_planes(xd, ref, &ref_buf->buf, left_mi_row, ctxt->mi_col,
+    av1_setup_pre_planes(xd, ref, &ref_buf->buf, left_mi_row, xd->mi_col,
                          ref_scale_factors, num_planes);
   }
 

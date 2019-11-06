@@ -909,8 +909,7 @@ int av1_find_best_sub_pixel_tree(
 #undef CHECK_BETTER
 
 unsigned int av1_compute_motion_cost(const AV1_COMP *cpi, MACROBLOCK *const x,
-                                     BLOCK_SIZE bsize, int mi_row, int mi_col,
-                                     const MV *this_mv) {
+                                     BLOCK_SIZE bsize, const MV *this_mv) {
   const AV1_COMMON *const cm = &cpi->common;
   MACROBLOCKD *xd = &x->e_mbd;
   const uint8_t *const src = x->plane[0].src.buf;
@@ -921,6 +920,8 @@ unsigned int av1_compute_motion_cost(const AV1_COMP *cpi, MACROBLOCK *const x,
   const int_mv ref_mv = av1_get_ref_mv(x, 0);
   unsigned int mse;
   unsigned int sse;
+  const int mi_row = xd->mi_row;
+  const int mi_col = xd->mi_col;
 
   av1_enc_build_inter_predictor(cm, xd, mi_row, mi_col, NULL, bsize,
                                 AOM_PLANE_Y, AOM_PLANE_Y);
@@ -932,8 +933,7 @@ unsigned int av1_compute_motion_cost(const AV1_COMP *cpi, MACROBLOCK *const x,
 
 // Refine MV in a small range
 unsigned int av1_refine_warped_mv(const AV1_COMP *cpi, MACROBLOCK *const x,
-                                  BLOCK_SIZE bsize, int mi_row, int mi_col,
-                                  int *pts0, int *pts_inref0,
+                                  BLOCK_SIZE bsize, int *pts0, int *pts_inref0,
                                   int total_samples) {
   const AV1_COMMON *const cm = &cpi->common;
   MACROBLOCKD *xd = &x->e_mbd;
@@ -957,10 +957,11 @@ unsigned int av1_refine_warped_mv(const AV1_COMP *cpi, MACROBLOCK *const x,
 
   // Calculate the center position's error
   assert(bc >= minc && bc <= maxc && br >= minr && br <= maxr);
-  bestmse = av1_compute_motion_cost(cpi, x, bsize, mi_row, mi_col,
-                                    &mbmi->mv[0].as_mv);
+  bestmse = av1_compute_motion_cost(cpi, x, bsize, &mbmi->mv[0].as_mv);
 
   // MV search
+  const int mi_row = xd->mi_row;
+  const int mi_col = xd->mi_col;
   for (ite = 0; ite < 2; ++ite) {
     int best_idx = -1;
     int idx;
@@ -983,8 +984,7 @@ unsigned int av1_refine_warped_mv(const AV1_COMP *cpi, MACROBLOCK *const x,
 
         if (!av1_find_projection(mbmi->num_proj_ref, pts, pts_inref, bsize, *tr,
                                  *tc, &mbmi->wm_params, mi_row, mi_col)) {
-          thismse =
-              av1_compute_motion_cost(cpi, x, bsize, mi_row, mi_col, &this_mv);
+          thismse = av1_compute_motion_cost(cpi, x, bsize, &this_mv);
 
           if (thismse < bestmse) {
             best_idx = idx;

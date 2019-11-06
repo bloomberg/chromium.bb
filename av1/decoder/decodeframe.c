@@ -200,12 +200,9 @@ static AOM_INLINE void decode_block_void(const AV1_COMMON *const cm,
 
 static AOM_INLINE void predict_inter_block_void(AV1_COMMON *const cm,
                                                 MACROBLOCKD *const xd,
-                                                int mi_row, int mi_col,
                                                 BLOCK_SIZE bsize) {
   (void)cm;
   (void)xd;
-  (void)mi_row;
-  (void)mi_col;
   (void)bsize;
 }
 
@@ -920,7 +917,7 @@ static INLINE void dec_build_prediction_by_above_pred(
     MACROBLOCKD *xd, int rel_mi_row, int rel_mi_col, uint8_t op_mi_size,
     int dir, MB_MODE_INFO *above_mbmi, void *fun_ctxt, const int num_planes) {
   struct build_prediction_ctxt *ctxt = (struct build_prediction_ctxt *)fun_ctxt;
-  const int above_mi_col = ctxt->mi_col + rel_mi_col;
+  const int above_mi_col = xd->mi_col + rel_mi_col;
   int mi_x, mi_y;
   MB_MODE_INFO backup_mbmi = *above_mbmi;
 
@@ -930,7 +927,7 @@ static INLINE void dec_build_prediction_by_above_pred(
   av1_setup_build_prediction_by_above_pred(xd, rel_mi_col, op_mi_size,
                                            &backup_mbmi, ctxt, num_planes);
   mi_x = above_mi_col << MI_SIZE_LOG2;
-  mi_y = ctxt->mi_row << MI_SIZE_LOG2;
+  mi_y = xd->mi_row << MI_SIZE_LOG2;
 
   const BLOCK_SIZE bsize = xd->mi[0]->sb_type;
 
@@ -947,9 +944,9 @@ static INLINE void dec_build_prediction_by_above_pred(
 }
 
 static AOM_INLINE void dec_build_prediction_by_above_preds(
-    const AV1_COMMON *cm, MACROBLOCKD *xd, int mi_row, int mi_col,
-    uint8_t *tmp_buf[MAX_MB_PLANE], int tmp_width[MAX_MB_PLANE],
-    int tmp_height[MAX_MB_PLANE], int tmp_stride[MAX_MB_PLANE]) {
+    const AV1_COMMON *cm, MACROBLOCKD *xd, uint8_t *tmp_buf[MAX_MB_PLANE],
+    int tmp_width[MAX_MB_PLANE], int tmp_height[MAX_MB_PLANE],
+    int tmp_stride[MAX_MB_PLANE]) {
   if (!xd->up_available) return;
 
   // Adjust mb_to_bottom_edge to have the correct value for the OBMC
@@ -958,17 +955,15 @@ static AOM_INLINE void dec_build_prediction_by_above_preds(
   int this_height = xd->n4_h * MI_SIZE;
   int pred_height = AOMMIN(this_height / 2, 32);
   xd->mb_to_bottom_edge += (this_height - pred_height) * 8;
-
-  struct build_prediction_ctxt ctxt = { cm,         mi_row,
-                                        mi_col,     tmp_buf,
+  struct build_prediction_ctxt ctxt = { cm,         tmp_buf,
                                         tmp_width,  tmp_height,
                                         tmp_stride, xd->mb_to_right_edge };
   BLOCK_SIZE bsize = xd->mi[0]->sb_type;
-  foreach_overlappable_nb_above(cm, xd, mi_col,
+  foreach_overlappable_nb_above(cm, xd,
                                 max_neighbor_obmc[mi_size_wide_log2[bsize]],
                                 dec_build_prediction_by_above_pred, &ctxt);
 
-  xd->mb_to_left_edge = -((mi_col * MI_SIZE) * 8);
+  xd->mb_to_left_edge = -((xd->mi_col * MI_SIZE) * 8);
   xd->mb_to_right_edge = ctxt.mb_to_far_edge;
   xd->mb_to_bottom_edge -= (this_height - pred_height) * 8;
 }
@@ -977,7 +972,7 @@ static INLINE void dec_build_prediction_by_left_pred(
     MACROBLOCKD *xd, int rel_mi_row, int rel_mi_col, uint8_t op_mi_size,
     int dir, MB_MODE_INFO *left_mbmi, void *fun_ctxt, const int num_planes) {
   struct build_prediction_ctxt *ctxt = (struct build_prediction_ctxt *)fun_ctxt;
-  const int left_mi_row = ctxt->mi_row + rel_mi_row;
+  const int left_mi_row = xd->mi_row + rel_mi_row;
   int mi_x, mi_y;
   MB_MODE_INFO backup_mbmi = *left_mbmi;
 
@@ -986,7 +981,7 @@ static INLINE void dec_build_prediction_by_left_pred(
 
   av1_setup_build_prediction_by_left_pred(xd, rel_mi_row, op_mi_size,
                                           &backup_mbmi, ctxt, num_planes);
-  mi_x = ctxt->mi_col << MI_SIZE_LOG2;
+  mi_x = xd->mi_col << MI_SIZE_LOG2;
   mi_y = left_mi_row << MI_SIZE_LOG2;
   const BLOCK_SIZE bsize = xd->mi[0]->sb_type;
 
@@ -1003,9 +998,9 @@ static INLINE void dec_build_prediction_by_left_pred(
 }
 
 static AOM_INLINE void dec_build_prediction_by_left_preds(
-    const AV1_COMMON *cm, MACROBLOCKD *xd, int mi_row, int mi_col,
-    uint8_t *tmp_buf[MAX_MB_PLANE], int tmp_width[MAX_MB_PLANE],
-    int tmp_height[MAX_MB_PLANE], int tmp_stride[MAX_MB_PLANE]) {
+    const AV1_COMMON *cm, MACROBLOCKD *xd, uint8_t *tmp_buf[MAX_MB_PLANE],
+    int tmp_width[MAX_MB_PLANE], int tmp_height[MAX_MB_PLANE],
+    int tmp_stride[MAX_MB_PLANE]) {
   if (!xd->left_available) return;
 
   // Adjust mb_to_right_edge to have the correct value for the OBMC
@@ -1015,16 +1010,15 @@ static AOM_INLINE void dec_build_prediction_by_left_preds(
   int pred_width = AOMMIN(this_width / 2, 32);
   xd->mb_to_right_edge += (this_width - pred_width) * 8;
 
-  struct build_prediction_ctxt ctxt = { cm,         mi_row,
-                                        mi_col,     tmp_buf,
+  struct build_prediction_ctxt ctxt = { cm,         tmp_buf,
                                         tmp_width,  tmp_height,
                                         tmp_stride, xd->mb_to_bottom_edge };
   BLOCK_SIZE bsize = xd->mi[0]->sb_type;
-  foreach_overlappable_nb_left(cm, xd, mi_row,
+  foreach_overlappable_nb_left(cm, xd,
                                max_neighbor_obmc[mi_size_high_log2[bsize]],
                                dec_build_prediction_by_left_pred, &ctxt);
 
-  xd->mb_to_top_edge = -((mi_row * MI_SIZE) * 8);
+  xd->mb_to_top_edge = -((xd->mi_row * MI_SIZE) * 8);
   xd->mb_to_right_edge -= (this_width - pred_width) * 8;
   xd->mb_to_bottom_edge = ctxt.mb_to_far_edge;
 }
@@ -1055,9 +1049,7 @@ static void set_dst_buf_highbd(MACROBLOCKD *xd, uint8_t **dst_buf1,
 #endif
 
 static AOM_INLINE void dec_build_obmc_inter_predictors_sb(const AV1_COMMON *cm,
-                                                          MACROBLOCKD *xd,
-                                                          int mi_row,
-                                                          int mi_col) {
+                                                          MACROBLOCKD *xd) {
   const int num_planes = av1_num_planes(cm);
   uint8_t *dst_buf1[MAX_MB_PLANE], *dst_buf2[MAX_MB_PLANE];
   int dst_stride1[MAX_MB_PLANE] = { MAX_SB_SIZE, MAX_SB_SIZE, MAX_SB_SIZE };
@@ -1077,14 +1069,16 @@ static AOM_INLINE void dec_build_obmc_inter_predictors_sb(const AV1_COMMON *cm,
   set_dst_buf(xd, dst_buf1, dst_buf2);
 #endif
 
-  dec_build_prediction_by_above_preds(cm, xd, mi_row, mi_col, dst_buf1,
-                                      dst_width1, dst_height1, dst_stride1);
-  dec_build_prediction_by_left_preds(cm, xd, mi_row, mi_col, dst_buf2,
-                                     dst_width2, dst_height2, dst_stride2);
+  dec_build_prediction_by_above_preds(cm, xd, dst_buf1, dst_width1, dst_height1,
+                                      dst_stride1);
+  dec_build_prediction_by_left_preds(cm, xd, dst_buf2, dst_width2, dst_height2,
+                                     dst_stride2);
+  const int mi_row = xd->mi_row;
+  const int mi_col = xd->mi_col;
   av1_setup_dst_planes(xd->plane, xd->mi[0]->sb_type, &cm->cur_frame->buf,
                        mi_row, mi_col, 0, num_planes);
-  av1_build_obmc_inter_prediction(cm, xd, mi_row, mi_col, dst_buf1, dst_stride1,
-                                  dst_buf2, dst_stride2);
+  av1_build_obmc_inter_prediction(cm, xd, dst_buf1, dst_stride1, dst_buf2,
+                                  dst_stride2);
 }
 
 static AOM_INLINE void cfl_store_inter_block(AV1_COMMON *const cm,
@@ -1096,10 +1090,12 @@ static AOM_INLINE void cfl_store_inter_block(AV1_COMMON *const cm,
 }
 
 static AOM_INLINE void predict_inter_block(AV1_COMMON *const cm,
-                                           MACROBLOCKD *const xd, int mi_row,
-                                           int mi_col, BLOCK_SIZE bsize) {
+                                           MACROBLOCKD *const xd,
+                                           BLOCK_SIZE bsize) {
   MB_MODE_INFO *mbmi = xd->mi[0];
   const int num_planes = av1_num_planes(cm);
+  const int mi_row = xd->mi_row;
+  const int mi_col = xd->mi_col;
   for (int ref = 0; ref < 1 + has_second_ref(mbmi); ++ref) {
     const MV_REFERENCE_FRAME frame = mbmi->ref_frame[ref];
     if (frame < LAST_FRAME) {
@@ -1119,7 +1115,7 @@ static AOM_INLINE void predict_inter_block(AV1_COMMON *const cm,
 
   dec_build_inter_predictors_sb(cm, xd, mi_row, mi_col, NULL, bsize);
   if (mbmi->motion_mode == OBMC_CAUSAL) {
-    dec_build_obmc_inter_predictors_sb(cm, xd, mi_row, mi_col);
+    dec_build_obmc_inter_predictors_sb(cm, xd);
   }
 #if CONFIG_MISMATCH_DEBUG
   for (int plane = 0; plane < num_planes; ++plane) {
@@ -1208,7 +1204,7 @@ static AOM_INLINE void decode_token_recon_block(AV1Decoder *const pbi,
       }
     }
   } else {
-    td->predict_inter_block_visit(cm, xd, mi_row, mi_col, bsize);
+    td->predict_inter_block_visit(cm, xd, bsize);
     // Reconstruction
     if (!mbmi->skip) {
       int eobtotal = 0;

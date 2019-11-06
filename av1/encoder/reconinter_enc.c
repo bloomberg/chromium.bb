@@ -326,8 +326,8 @@ static INLINE void build_obmc_prediction(MACROBLOCKD *xd, int rel_mi_row,
   av1_setup_address_for_obmc(xd, rel_mi_row, rel_mi_col, above_mbmi, ctxt,
                              num_planes);
 
-  int mi_x = (ctxt->mi_col + rel_mi_col) << MI_SIZE_LOG2;
-  int mi_y = (ctxt->mi_row + rel_mi_row) << MI_SIZE_LOG2;
+  const int mi_x = (xd->mi_col + rel_mi_col) << MI_SIZE_LOG2;
+  const int mi_y = (xd->mi_row + rel_mi_row) << MI_SIZE_LOG2;
 
   const BLOCK_SIZE bsize = xd->mi[0]->sb_type;
 
@@ -368,7 +368,6 @@ static INLINE void build_obmc_prediction(MACROBLOCKD *xd, int rel_mi_row,
 }
 
 void av1_build_prediction_by_above_preds(const AV1_COMMON *cm, MACROBLOCKD *xd,
-                                         int mi_row, int mi_col,
                                          uint8_t *tmp_buf[MAX_MB_PLANE],
                                          int tmp_width[MAX_MB_PLANE],
                                          int tmp_height[MAX_MB_PLANE],
@@ -382,22 +381,20 @@ void av1_build_prediction_by_above_preds(const AV1_COMMON *cm, MACROBLOCKD *xd,
   int pred_height = AOMMIN(this_height / 2, 32);
   xd->mb_to_bottom_edge += (this_height - pred_height) * 8;
 
-  struct build_prediction_ctxt ctxt = { cm,         mi_row,
-                                        mi_col,     tmp_buf,
+  struct build_prediction_ctxt ctxt = { cm,         tmp_buf,
                                         tmp_width,  tmp_height,
                                         tmp_stride, xd->mb_to_right_edge };
   BLOCK_SIZE bsize = xd->mi[0]->sb_type;
-  foreach_overlappable_nb_above(cm, xd, mi_col,
+  foreach_overlappable_nb_above(cm, xd,
                                 max_neighbor_obmc[mi_size_wide_log2[bsize]],
                                 build_obmc_prediction, &ctxt);
 
-  xd->mb_to_left_edge = -((mi_col * MI_SIZE) * 8);
+  xd->mb_to_left_edge = -((xd->mi_col * MI_SIZE) * 8);
   xd->mb_to_right_edge = ctxt.mb_to_far_edge;
   xd->mb_to_bottom_edge -= (this_height - pred_height) * 8;
 }
 
 void av1_build_prediction_by_left_preds(const AV1_COMMON *cm, MACROBLOCKD *xd,
-                                        int mi_row, int mi_col,
                                         uint8_t *tmp_buf[MAX_MB_PLANE],
                                         int tmp_width[MAX_MB_PLANE],
                                         int tmp_height[MAX_MB_PLANE],
@@ -411,22 +408,20 @@ void av1_build_prediction_by_left_preds(const AV1_COMMON *cm, MACROBLOCKD *xd,
   int pred_width = AOMMIN(this_width / 2, 32);
   xd->mb_to_right_edge += (this_width - pred_width) * 8;
 
-  struct build_prediction_ctxt ctxt = { cm,         mi_row,
-                                        mi_col,     tmp_buf,
+  struct build_prediction_ctxt ctxt = { cm,         tmp_buf,
                                         tmp_width,  tmp_height,
                                         tmp_stride, xd->mb_to_bottom_edge };
   BLOCK_SIZE bsize = xd->mi[0]->sb_type;
-  foreach_overlappable_nb_left(cm, xd, mi_row,
+  foreach_overlappable_nb_left(cm, xd,
                                max_neighbor_obmc[mi_size_high_log2[bsize]],
                                build_obmc_prediction, &ctxt);
 
-  xd->mb_to_top_edge = -((mi_row * MI_SIZE) * 8);
+  xd->mb_to_top_edge = -((xd->mi_row * MI_SIZE) * 8);
   xd->mb_to_right_edge -= (this_width - pred_width) * 8;
   xd->mb_to_bottom_edge = ctxt.mb_to_far_edge;
 }
 
-void av1_build_obmc_inter_predictors_sb(const AV1_COMMON *cm, MACROBLOCKD *xd,
-                                        int mi_row, int mi_col) {
+void av1_build_obmc_inter_predictors_sb(const AV1_COMMON *cm, MACROBLOCKD *xd) {
   const int num_planes = av1_num_planes(cm);
   uint8_t *dst_buf1[MAX_MB_PLANE], *dst_buf2[MAX_MB_PLANE];
   int dst_stride1[MAX_MB_PLANE] = { MAX_SB_SIZE, MAX_SB_SIZE, MAX_SB_SIZE };
@@ -456,22 +451,26 @@ void av1_build_obmc_inter_predictors_sb(const AV1_COMMON *cm, MACROBLOCKD *xd,
     dst_buf2[1] = xd->tmp_obmc_bufs[1] + MAX_SB_SQUARE;
     dst_buf2[2] = xd->tmp_obmc_bufs[1] + MAX_SB_SQUARE * 2;
   }
-  av1_build_prediction_by_above_preds(cm, xd, mi_row, mi_col, dst_buf1,
-                                      dst_width1, dst_height1, dst_stride1);
-  av1_build_prediction_by_left_preds(cm, xd, mi_row, mi_col, dst_buf2,
-                                     dst_width2, dst_height2, dst_stride2);
+
+  const int mi_row = xd->mi_row;
+  const int mi_col = xd->mi_col;
+  av1_build_prediction_by_above_preds(cm, xd, dst_buf1, dst_width1, dst_height1,
+                                      dst_stride1);
+  av1_build_prediction_by_left_preds(cm, xd, dst_buf2, dst_width2, dst_height2,
+                                     dst_stride2);
   av1_setup_dst_planes(xd->plane, xd->mi[0]->sb_type, &cm->cur_frame->buf,
                        mi_row, mi_col, 0, num_planes);
-  av1_build_obmc_inter_prediction(cm, xd, mi_row, mi_col, dst_buf1, dst_stride1,
-                                  dst_buf2, dst_stride2);
+  av1_build_obmc_inter_prediction(cm, xd, dst_buf1, dst_stride1, dst_buf2,
+                                  dst_stride2);
 }
 
 void av1_build_inter_predictors_for_planes_single_buf(
-    MACROBLOCKD *xd, BLOCK_SIZE bsize, int plane_from, int plane_to, int mi_row,
-    int mi_col, int ref, uint8_t *ext_dst[3], int ext_dst_stride[3]) {
+    MACROBLOCKD *xd, BLOCK_SIZE bsize, int plane_from, int plane_to, int ref,
+    uint8_t *ext_dst[3], int ext_dst_stride[3]) {
   assert(bsize < BLOCK_SIZES_ALL);
   const MB_MODE_INFO *mi = xd->mi[0];
-  int plane;
+  const int mi_row = xd->mi_row;
+  const int mi_col = xd->mi_col;
   const int mi_x = mi_col * MI_SIZE;
   const int mi_y = mi_row * MI_SIZE;
   WarpTypesAllowed warp_types;
@@ -479,7 +478,7 @@ void av1_build_inter_predictors_for_planes_single_buf(
   warp_types.global_warp_allowed = is_global_mv_block(mi, wm->wmtype);
   warp_types.local_warp_allowed = mi->motion_mode == WARPED_CAUSAL;
 
-  for (plane = plane_from; plane <= plane_to; ++plane) {
+  for (int plane = plane_from; plane <= plane_to; ++plane) {
     const struct macroblockd_plane *pd = &xd->plane[plane];
     const BLOCK_SIZE plane_bsize =
         get_plane_block_size(bsize, pd->subsampling_x, pd->subsampling_y);

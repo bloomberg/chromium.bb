@@ -253,8 +253,8 @@ static INLINE void find_predictors(
     AV1_COMP *cpi, MACROBLOCK *x, MV_REFERENCE_FRAME ref_frame,
     int_mv frame_mv[MB_MODE_COUNT][REF_FRAMES], int const_motion[REF_FRAMES],
     int *ref_frame_skip_mask, const int flag_list[4], TileDataEnc *tile_data,
-    int mi_row, int mi_col, struct buf_2d yv12_mb[8][MAX_MB_PLANE],
-    BLOCK_SIZE bsize, int force_skip_low_temp_var, int comp_pred_allowed) {
+    struct buf_2d yv12_mb[8][MAX_MB_PLANE], BLOCK_SIZE bsize,
+    int force_skip_low_temp_var, int comp_pred_allowed) {
   AV1_COMMON *const cm = &cpi->common;
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = xd->mi[0];
@@ -271,11 +271,10 @@ static INLINE void find_predictors(
   if ((cpi->ref_frame_flags & flag_list[ref_frame]) && (yv12 != NULL)) {
     const struct scale_factors *const sf =
         get_ref_scale_factors_const(cm, ref_frame);
-    av1_setup_pred_block(xd, yv12_mb[ref_frame], yv12, mi_row, mi_col, sf, sf,
-                         num_planes);
+    av1_setup_pred_block(xd, yv12_mb[ref_frame], yv12, sf, sf, num_planes);
     av1_find_mv_refs(cm, xd, mbmi, ref_frame, mbmi_ext->ref_mv_count,
                      xd->ref_mv_stack, xd->weight, NULL, mbmi_ext->global_mvs,
-                     mi_row, mi_col, mbmi_ext->mode_context);
+                     mbmi_ext->mode_context);
     // TODO(Ravi): Populate mbmi_ext->ref_mv_stack[ref_frame][4] and
     // mbmi_ext->weight[ref_frame][4] inside av1_find_mv_refs.
     av1_copy_usable_ref_mv_stack_and_weight(xd, mbmi_ext, ref_frame);
@@ -291,7 +290,7 @@ static INLINE void find_predictors(
   } else {
     *ref_frame_skip_mask |= (1 << ref_frame);
   }
-  av1_count_overlappable_neighbors(cm, xd, mi_row, mi_col);
+  av1_count_overlappable_neighbors(cm, xd);
   mbmi->num_proj_ref = 1;
 }
 
@@ -1363,9 +1362,8 @@ static void compute_intra_yprediction(const AV1_COMMON *cm,
 }
 
 void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
-                                  MACROBLOCK *x, int mi_row, int mi_col,
-                                  RD_STATS *rd_cost, BLOCK_SIZE bsize,
-                                  PICK_MODE_CONTEXT *ctx,
+                                  MACROBLOCK *x, RD_STATS *rd_cost,
+                                  BLOCK_SIZE bsize, PICK_MODE_CONTEXT *ctx,
                                   int64_t best_rd_so_far) {
   AV1_COMMON *const cm = &cpi->common;
   MACROBLOCKD *const xd = &x->e_mbd;
@@ -1447,7 +1445,7 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
   }
 
   av1_collect_neighbors_ref_counts(xd);
-  av1_count_overlappable_neighbors(cm, xd, mi_row, mi_col);
+  av1_count_overlappable_neighbors(cm, xd);
 
   estimate_single_ref_frame_costs(cm, xd, x, segment_id, ref_costs_single);
   if (cpi->sf.use_comp_ref_nonrd)
@@ -1488,6 +1486,8 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
     usable_ref_frame = LAST_FRAME;
   }
 
+  const int mi_row = xd->mi_row;
+  const int mi_col = xd->mi_col;
   if (cpi->sf.short_circuit_low_temp_var &&
       x->nonrd_reduce_golden_mode_search) {
     force_skip_low_temp_var =
@@ -1521,9 +1521,8 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
         !(cpi->ref_frame_flags & flag_list[ref_frame_iter]);
     if (!skip_ref_find_pred[ref_frame_iter]) {
       find_predictors(cpi, x, ref_frame_iter, frame_mv, const_motion,
-                      &ref_frame_skip_mask, flag_list, tile_data, mi_row,
-                      mi_col, yv12_mb, bsize, force_skip_low_temp_var,
-                      comp_modes > 0);
+                      &ref_frame_skip_mask, flag_list, tile_data, yv12_mb,
+                      bsize, force_skip_low_temp_var, comp_modes > 0);
     }
   }
   const int large_block = bsize >= BLOCK_32X32;

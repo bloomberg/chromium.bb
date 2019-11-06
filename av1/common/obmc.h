@@ -18,15 +18,14 @@ typedef void (*overlappable_nb_visitor_t)(MACROBLOCKD *xd, int rel_mi_row,
                                           void *fun_ctxt, const int num_planes);
 
 static INLINE void foreach_overlappable_nb_above(const AV1_COMMON *cm,
-                                                 MACROBLOCKD *xd, int mi_col,
-                                                 int nb_max,
+                                                 MACROBLOCKD *xd, int nb_max,
                                                  overlappable_nb_visitor_t fun,
                                                  void *fun_ctxt) {
-  const int num_planes = av1_num_planes(cm);
   if (!xd->up_available) return;
 
+  const int num_planes = av1_num_planes(cm);
   int nb_count = 0;
-
+  const int mi_col = xd->mi_col;
   // prev_row_mi points into the mi array, starting at the beginning of the
   // previous row.
   MB_MODE_INFO **prev_row_mi = xd->mi - mi_col - 1 * xd->mi_stride;
@@ -56,17 +55,16 @@ static INLINE void foreach_overlappable_nb_above(const AV1_COMMON *cm,
 }
 
 static INLINE void foreach_overlappable_nb_left(const AV1_COMMON *cm,
-                                                MACROBLOCKD *xd, int mi_row,
-                                                int nb_max,
+                                                MACROBLOCKD *xd, int nb_max,
                                                 overlappable_nb_visitor_t fun,
                                                 void *fun_ctxt) {
-  const int num_planes = av1_num_planes(cm);
   if (!xd->left_available) return;
 
+  const int num_planes = av1_num_planes(cm);
   int nb_count = 0;
-
   // prev_col_mi points into the mi array, starting at the top of the
   // previous column
+  const int mi_row = xd->mi_row;
   MB_MODE_INFO **prev_col_mi = xd->mi - 1 - mi_row * xd->mi_stride;
   const int end_row = AOMMIN(mi_row + xd->n4_h, cm->mi_rows);
   uint8_t mi_step;
