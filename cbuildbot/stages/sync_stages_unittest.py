@@ -1450,15 +1450,15 @@ pre-cq-configs: grunt-pre-cq
     pre_cq_launcher_id = self.buildstore.InsertBuild(
         'pre-cq-launcher', 1, 'pre-cq-launcher', 'test_hostname')
     pre_cq_id = self.buildstore.InsertBuild(
-        'binhost-pre-cq',
+        'chromite-pre-cq',
         2,
-        'binhost-pre-cq',
+        'chromite-pre-cq',
         'test_hostname',
         buildbucket_id='100')
     c = clactions.GerritPatchTuple(1, 1, True)
     old_build_action = clactions.CLAction(
         0, pre_cq_launcher_id, constants.CL_ACTION_TRYBOT_LAUNCHING,
-        'binhost-pre-cq', 'config', c.gerrit_number, c.patch_number,
+        'chromite-pre-cq', 'config', c.gerrit_number, c.patch_number,
         'internal' if c.internal else 'external',
         datetime.datetime.now() - datetime.timedelta(hours=1), '100', None)
     self.fake_db.InsertCLActions(pre_cq_launcher_id, [old_build_action])
@@ -1493,9 +1493,9 @@ pre-cq-configs: grunt-pre-cq
         'CancelBuildRequest',
         return_value=cancel_content)
     pre_cq_id = self.buildstore.InsertBuild(
-        'binhost-pre-cq',
+        'chromite-pre-cq',
         2,
-        'binhost-pre-cq',
+        'chromite-pre-cq',
         'test_hostname',
         buildbucket_id='100')
     old_build_action = mock.Mock()
@@ -1511,18 +1511,18 @@ pre-cq-configs: grunt-pre-cq
     db = mock.Mock()
     change = metadata_lib.GerritPatchTuple(1, 3, False)
     c1 = clactions.CLAction(
-        0, 1, constants.CL_ACTION_TRYBOT_LAUNCHING, 'binhost-pre-cq', 'config',
+        0, 1, constants.CL_ACTION_TRYBOT_LAUNCHING, 'chromite-pre-cq', 'config',
         1, 1, 'external',
         datetime.datetime.now() - datetime.timedelta(hours=5), '100', None)
     c2 = clactions.CLAction(
-        0, 1, constants.CL_ACTION_TRYBOT_LAUNCHING, 'binhost-pre-cq', 'config',
+        0, 1, constants.CL_ACTION_TRYBOT_LAUNCHING, 'chromite-pre-cq', 'config',
         1, 2, 'external',
         datetime.datetime.now() - datetime.timedelta(hours=1), '100', None)
     c3 = clactions.CLAction(0, 1, constants.CL_ACTION_VALIDATION_PENDING_PRE_CQ,
-                            'binhost-pre-cq', 'config', 1, 3, 'external',
+                            'chromite-pre-cq', 'config', 1, 3, 'external',
                             datetime.datetime.now(), None, None)
     c4 = clactions.CLAction(0, 1, constants.CL_ACTION_TRYBOT_LAUNCHING,
-                            'binhost-pre-cq', 'config', 1, 3, 'external',
+                            'chromite-pre-cq', 'config', 1, 3, 'external',
                             datetime.datetime.now(), '101', None)
     action_history = clactions.CLActionHistory([c1, c2, c3, c4])
     mock_cancel = self.PatchObject(sync_stages.PreCQLauncherStage,
@@ -1542,10 +1542,10 @@ pre-cq-configs: grunt-pre-cq
     self.PatchObject(
         cq_config.CQConfigParser,
         'GetPreCQConfigs',
-        return_value={'default', 'binhost-pre-cq', 'eve-pre-cq'})
+        return_value={'default', 'chromite-pre-cq', 'eve-pre-cq'})
     pre_cqs = self.sync_stage._GetPreCQConfigsFromOptions(change)
     expected_pre_cq = set(constants.PRE_CQ_DEFAULT_CONFIGS +
-                          ['binhost-pre-cq', 'eve-pre-cq'])
+                          ['chromite-pre-cq', 'eve-pre-cq'])
     self.assertCountEqual(pre_cqs, expected_pre_cq)
 
     pre_cqs = self.sync_stage._GetPreCQConfigsFromOptions(
@@ -1564,11 +1564,11 @@ pre-cq-configs: grunt-pre-cq
     self.PatchObject(
         cq_config.CQConfigParser,
         'GetUnionedPreCQConfigs',
-        return_value={'default', 'binhost-pre-cq', 'eve-pre-cq'})
+        return_value={'default', 'chromite-pre-cq', 'eve-pre-cq'})
     pre_cqs = self.sync_stage._GetPreCQConfigsFromOptions(change)
 
     expected_pre_cq = set(constants.PRE_CQ_DEFAULT_CONFIGS +
-                          ['binhost-pre-cq', 'eve-pre-cq'])
+                          ['chromite-pre-cq', 'eve-pre-cq'])
     self.assertCountEqual(pre_cqs, expected_pre_cq)
 
     self.assertRaises(

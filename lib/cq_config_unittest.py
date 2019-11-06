@@ -105,7 +105,7 @@ class CQConfigParserTest(cros_test_lib.MockTestCase):
     """Test GetOption."""
     with osutils.TempDir(set_global=True) as tempdir:
       foo_path = os.path.join(tempdir, 'foo.ini')
-      osutils.WriteFile(foo_path, '[GENERAL]\npre-cq-configs: binhost-pre-cq\n')
+      osutils.WriteFile(foo_path, '[GENERAL]\npre-cq-configs: chromite-pre-cq\n')
       bar_path = os.path.join(tempdir, 'bar', 'bar.ini')
       osutils.WriteFile(bar_path, '[GENERAL]\npre-cq-configs: lumpy-pre-cq\n',
                         makedirs=True)
@@ -113,7 +113,7 @@ class CQConfigParserTest(cros_test_lib.MockTestCase):
 
       self.assertEqual(parser.GetOption(constants.CQ_CONFIG_SECTION_GENERAL,
                                         constants.CQ_CONFIG_PRE_CQ_CONFIGS),
-                       'binhost-pre-cq')
+                       'chromite-pre-cq')
       self.assertEqual(parser.GetOption(constants.CQ_CONFIG_SECTION_GENERAL,
                                         constants.CQ_CONFIG_PRE_CQ_CONFIGS,
                                         config_path=bar_path),
@@ -145,11 +145,11 @@ class CQConfigParserTest(cros_test_lib.MockTestCase):
     with osutils.TempDir(set_global=True) as tempdir:
       path = os.path.join(tempdir, 'foo.ini')
       osutils.WriteFile(path,
-                        '[GENERAL]\npre-cq-configs: default binhost-pre-cq\n')
+                        '[GENERAL]\npre-cq-configs: default chromite-pre-cq\n')
       parser = self.CreateCQConfigParser(common_config_file=path)
       pre_cq_configs = parser.GetPreCQConfigs()
 
-      self.assertCountEqual(pre_cq_configs, ['default', 'binhost-pre-cq'])
+      self.assertCountEqual(pre_cq_configs, ['default', 'chromite-pre-cq'])
 
   def testGetStagesToIgnore(self):
     """Test if we can get the ignored stages from a good config file."""

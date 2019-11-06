@@ -127,36 +127,36 @@ class TestCLActionHistory(cros_test_lib.TestCase):
 
     a1 = clactions.CLAction.FromGerritPatchAndAction(
         c1, constants.CL_ACTION_TRYBOT_LAUNCHING,
-        reason='binhost-pre-cq',
+        reason='chromite-pre-cq',
         timestamp=datetime.datetime.now() - datetime.timedelta(hours=5))
     a2 = clactions.CLAction.FromGerritPatchAndAction(
         c1, constants.CL_ACTION_TRYBOT_LAUNCHING,
-        reason='binhost-pre-cq',
+        reason='chromite-pre-cq',
         timestamp=datetime.datetime.now() - datetime.timedelta(hours=4),
         buildbucket_id='1')
     a3 = clactions.CLAction.FromGerritPatchAndAction(
         c1, constants.CL_ACTION_TRYBOT_LAUNCHING,
-        reason='binhost-pre-cq',
+        reason='chromite-pre-cq',
         timestamp=datetime.datetime.now() - datetime.timedelta(hours=3),
         buildbucket_id='2')
     a4 = clactions.CLAction.FromGerritPatchAndAction(
         c1, constants.CL_ACTION_TRYBOT_LAUNCHING,
-        reason='pbinhost-pre-cq',
+        reason='pchromite-pre-cq',
         timestamp=datetime.datetime.now() - datetime.timedelta(hours=3),
         buildbucket_id='3')
     a5 = clactions.CLAction.FromGerritPatchAndAction(
         c1, constants.CL_ACTION_TRYBOT_CANCELLED,
-        reason='binhost-pre-cq',
+        reason='chromite-pre-cq',
         timestamp=datetime.datetime.now() - datetime.timedelta(hours=3),
         buildbucket_id='3')
     a6 = clactions.CLAction.FromGerritPatchAndAction(
         c1, constants.CL_ACTION_TRYBOT_LAUNCHING,
-        reason='binhost-pre-cq',
+        reason='chromite-pre-cq',
         timestamp=datetime.datetime.now() - datetime.timedelta(hours=1),
         buildbucket_id='4')
     a7 = clactions.CLAction.FromGerritPatchAndAction(
         c2, constants.CL_ACTION_TRYBOT_LAUNCHING,
-        reason='binhost-pre-cq',
+        reason='chromite-pre-cq',
         timestamp=datetime.datetime.now(),
         buildbucket_id='5')
 
@@ -191,14 +191,14 @@ class TestCLActionHistory(cros_test_lib.TestCase):
     build_id = self.fake_db.InsertBuild('n', 1, 'c', 'h')
     a1 = clactions.CLAction.FromGerritPatchAndAction(
         c1, constants.CL_ACTION_TRYBOT_CANCELLED,
-        reason='binhost-pre-cq')
+        reason='chromite-pre-cq')
     a2 = clactions.CLAction.FromGerritPatchAndAction(
         c1, constants.CL_ACTION_TRYBOT_LAUNCHING,
-        reason='binhost-pre-cq',
+        reason='chromite-pre-cq',
         buildbucket_id='1')
     a3 = clactions.CLAction.FromGerritPatchAndAction(
         c1, constants.CL_ACTION_TRYBOT_CANCELLED,
-        reason='binhost-pre-cq',
+        reason='chromite-pre-cq',
         buildbucket_id='2')
     cl_actions = [a1, a2, a3]
     self.fake_db.InsertCLActions(build_id, cl_actions)
