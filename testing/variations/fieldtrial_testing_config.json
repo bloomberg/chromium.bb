@@ -1517,21 +1517,6 @@
             ]
         }
     ],
-    "ChromeCleanupProtobufIPC": [
-        {
-            "platforms": [
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "ChromeCleanupProtobufIPC"
-                    ]
-                }
-            ]
-        }
-    ],
     "ChromeSmartSelection": [
         {
             "platforms": [
