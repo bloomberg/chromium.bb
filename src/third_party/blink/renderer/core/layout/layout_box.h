@@ -738,6 +738,11 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
     LogicalMarginToPhysicalSetter(override_style).SetEnd(value);
   }
 
+  // This is overridden in RenderListItem to indent the list item by the width
+  // of the list marker.  It is also overridden in RenderBlock to shift non-li
+  // blocks under list nodes by the margin of the previous list item.
+  virtual LayoutUnit AdditionalMarginStart() const { return LayoutUnit(0); }
+
   // The following functions are used to implement collapsing margins.
   // All objects know their maximal positive and negative margins. The formula
   // for computing a collapsed margin is |maxPosMargin| - |maxNegmargin|.
