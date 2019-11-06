@@ -175,11 +175,6 @@ GREYElementInteraction* CellWithMatcher(id<GREYMatcher> matcher) {
 // Tests that when the page is reloaded using the tools menu, the suggestions
 // are updated.
 - (void)testReloadPage {
-// TODO(crbug.com/1021649): Enable this test.
-#if defined(CHROME_EARL_GREY_2)
-  EARL_GREY_TEST_DISABLED(@"Fails with EG2");
-#endif
-
   // Add 2 suggestions, persisted accross page loads.
   [ContentSuggestionsAppInterface addNumberOfSuggestions:2
                                 additionalSuggestionsURL:nil];
