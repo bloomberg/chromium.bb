@@ -4156,12 +4156,12 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
 
   GURL url = embedded_test_server()->GetURL("a.com", "/title1.html");
   EXPECT_TRUE(NavigateToURL(shell(), url));
-  EXPECT_EQ(web_contents->max_frame_count_, 1u);
+  EXPECT_EQ(web_contents->max_loaded_frame_count_, 1u);
 
   GURL url_with_iframes_out_of_process =
       embedded_test_server()->GetURL("b.com", "/page_with_iframe.html");
   EXPECT_TRUE(NavigateToURL(shell(), url_with_iframes_out_of_process));
-  EXPECT_EQ(web_contents->max_frame_count_, 2u);
+  EXPECT_EQ(web_contents->max_loaded_frame_count_, 2u);
 
   // There should be two samples for kFrameCountUMA.
   histogram_tester.ExpectTotalCount(kFrameCountUMA, 2);
@@ -4180,7 +4180,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   GURL url_with_multiple_iframes = embedded_test_server()->GetURL(
       "b.com", "/cross_site_iframe_factory.html?b(a,c(b),d,b)");
   EXPECT_TRUE(NavigateToURL(shell(), url_with_multiple_iframes));
-  EXPECT_EQ(web_contents->max_frame_count_, 6u);
+  EXPECT_EQ(web_contents->max_loaded_frame_count_, 6u);
 
   histogram_tester.ExpectTotalCount(kMaxFrameCountUMA, 2);
   histogram_tester.ExpectBucketCount(kMaxFrameCountUMA, 1, 1);
@@ -4208,16 +4208,14 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   GURL url_with_iframes =
       embedded_test_server()->GetURL("a.com", "/page_with_iframe.html");
   EXPECT_TRUE(NavigateToURL(shell(), url_with_iframes));
-  EXPECT_EQ(web_contents->max_frame_count_, 2u);
+  EXPECT_EQ(web_contents->max_loaded_frame_count_, 2u);
 
   // |url_with_iframes| contains another iframe inside it. This means that we
   // have 4 iframes inside.
   auto* rfh =
       static_cast<RenderFrameHostImpl*>(CreateSubframe(url_with_iframes));
 
-  EXPECT_EQ(web_contents->max_frame_count_, 4u);
-  EXPECT_EQ(web_contents->frame_count_, 4u);
-
+  EXPECT_EQ(web_contents->max_loaded_frame_count_, 4u);
   ASSERT_NE(rfh, nullptr);
 
   shell()->Close();
@@ -4243,13 +4241,12 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   GURL url_with_iframes =
       embedded_test_server()->GetURL("a.com", "/page_with_iframe.html");
   EXPECT_TRUE(NavigateToURL(shell(), url_with_iframes));
-  EXPECT_EQ(web_contents->max_frame_count_, 2u);
+  EXPECT_EQ(web_contents->max_loaded_frame_count_, 2u);
 
   GURL url = embedded_test_server()->GetURL("a.com", "/title1.html");
   auto* rfh = static_cast<RenderFrameHostImpl*>(CreateSubframe(url));
   ASSERT_NE(rfh, nullptr);
-  EXPECT_EQ(web_contents->max_frame_count_, 3u);
-  EXPECT_EQ(web_contents->frame_count_, 3u);
+  EXPECT_EQ(web_contents->max_loaded_frame_count_, 3u);
 
   // Let's remove the first child.
   auto* main_frame = web_contents->GetMainFrame();
@@ -4260,8 +4257,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
                             "iframe').parentNode);"));
   observer.Wait();
 
-  EXPECT_EQ(web_contents->max_frame_count_, 3u);
-  EXPECT_EQ(web_contents->frame_count_, 2u);
+  EXPECT_EQ(web_contents->max_loaded_frame_count_, 3u);
 
   // Let's remove the second child.
   node_to_remove = main_frame->child_at(0);
@@ -4271,8 +4267,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
       "document.body.removeChild(document.querySelector('iframe'));"));
   observer_second.Wait();
 
-  EXPECT_EQ(web_contents->max_frame_count_, 3u);
-  EXPECT_EQ(web_contents->frame_count_, 1u);
+  EXPECT_EQ(web_contents->max_loaded_frame_count_, 3u);
 
   shell()->Close();
 

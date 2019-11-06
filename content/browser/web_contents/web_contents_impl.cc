@@ -4394,13 +4394,6 @@ void WebContentsImpl::ReadyToCommitNavigation(
     NavigationHandle* navigation_handle) {
   TRACE_EVENT1("navigation", "WebContentsImpl::ReadyToCommitNavigation",
                "navigation_handle", navigation_handle);
-
-  if (!navigation_handle->GetParentFrame() &&
-      record_max_frame_count_when_leaving_current_page_) {
-    RecordMaxFrameCountUMA(max_frame_count_);
-    record_max_frame_count_when_leaving_current_page_ = false;
-  }
-
   for (auto& observer : observers_)
     observer.ReadyToCommitNavigation(navigation_handle);
 
@@ -4493,15 +4486,20 @@ void WebContentsImpl::DidFinishNavigation(NavigationHandle* navigation_handle) {
     should_focus_location_bar_by_default_ = false;
   }
 
-  // If navigation has successfully finished in the main page, set
-  // |record_max_frame_count_when_leaving_current_page_| to true so that when
-  // the main frame navigates away from this page we know to record this page's
-  // max frame count.
-  if (navigation_handle->IsInMainFrame() && !navigation_handle->IsErrorPage()) {
-    record_max_frame_count_when_leaving_current_page_ = true;
+  if (navigation_handle->IsInMainFrame() && first_navigation_completed_)
+    RecordMaxFrameCountUMA(max_loaded_frame_count_);
 
-    // Navigation has completed in main frame. Reset |max_frame_count_| to 1.
-    max_frame_count_ = 1;
+  // If navigation has successfully finished in the main frame, set
+  // |first_navigation_completed_| to true so that we will record
+  // |max_loaded_frame_count_| above when future main frame navigations finish.
+  if (navigation_handle->IsInMainFrame() && !navigation_handle->IsErrorPage()) {
+    first_navigation_completed_ = true;
+
+    // Navigation has completed in main frame. Reset |max_loaded_frame_count_|.
+    // |max_loaded_frame_count_| is not necessarily 1 if the navigation was
+    // served from BackForwardCache.
+    max_loaded_frame_count_ =
+        GetMainFrame()->frame_tree_node()->GetFrameTreeSize();
   }
 }
 
@@ -4858,13 +4856,15 @@ void WebContentsImpl::OnDidFinishLoad(RenderFrameHostImpl* source,
   GURL validated_url(url);
   source->GetProcess()->FilterURL(false, &validated_url);
 
-  if (!source->GetParent()) {
-    size_t frame_count = source->frame_tree_node()->GetFrameTreeSize();
-    UMA_HISTOGRAM_COUNTS_1000("Navigation.MainFrame.FrameCount", frame_count);
-  }
-
   for (auto& observer : observers_)
     observer.DidFinishLoad(source, validated_url);
+
+  size_t tree_size = frame_tree_.root()->GetFrameTreeSize();
+  if (max_loaded_frame_count_ < tree_size)
+    max_loaded_frame_count_ = tree_size;
+
+  if (!source->GetParent())
+    UMA_HISTOGRAM_COUNTS_1000("Navigation.MainFrame.FrameCount", tree_size);
 }
 
 void WebContentsImpl::OnGoToEntryAtOffset(RenderFrameHostImpl* source,
@@ -5298,12 +5298,6 @@ void WebContentsImpl::NotifyViewSwapped(RenderViewHost* old_host,
 void WebContentsImpl::NotifyFrameSwapped(RenderFrameHost* old_host,
                                          RenderFrameHost* new_host,
                                          bool is_main_frame) {
-  if (!old_host) {
-    frame_count_++;
-    if (max_frame_count_ < frame_count_)
-      max_frame_count_ = frame_count_;
-  }
-
 #if defined(OS_ANDROID)
   // Copy importance from |old_host| if |new_host| is a main frame.
   if (old_host && !new_host->GetParent()) {
@@ -5408,18 +5402,18 @@ void WebContentsImpl::RenderFrameCreated(RenderFrameHost* render_frame_host) {
 }
 
 void WebContentsImpl::RenderFrameDeleted(RenderFrameHost* render_frame_host) {
-  if (!render_frame_host->GetParent() && IsBeingDestroyed() &&
-      record_max_frame_count_when_leaving_current_page_ &&
+  if (IsBeingDestroyed() && !render_frame_host->GetParent() &&
+      first_navigation_completed_ &&
       !static_cast<RenderFrameHostImpl*>(render_frame_host)
            ->is_in_back_forward_cache()) {
     // Main frame has been deleted because WebContents is being destroyed.
     // Note that we aren't recording this here when the main frame is in the
     // back-forward cache because that means we've actually already navigated
     // away from it (and we got to this point because the WebContents is
-    // deleted), which means |max_frame_count_| is already overwritten.
-    // The |max_frame_count_| value will instead be recorded from within
-    // |WebContentsImpl::ReadyToCommitNavigation()|.
-    RecordMaxFrameCountUMA(max_frame_count_);
+    // deleted), which means |max_loaded_frame_count_| is already overwritten.
+    // The |max_loaded_frame_count_| value will instead be recorded from within
+    // |WebContentsImpl::DidFinishNavigation()|.
+    RecordMaxFrameCountUMA(max_loaded_frame_count_);
   }
 
   is_notifying_observers_ = true;
@@ -6820,8 +6814,6 @@ gfx::Size WebContentsImpl::GetSizeForNewRenderView(bool is_main_frame) {
 }
 
 void WebContentsImpl::OnFrameRemoved(RenderFrameHost* render_frame_host) {
-  frame_count_--;
-
   for (auto& observer : observers_)
     observer.FrameDeleted(render_frame_host);
 }

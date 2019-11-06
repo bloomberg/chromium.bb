@@ -1929,19 +1929,13 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   std::unique_ptr<JavaScriptDialogNavigationDeferrer>
       javascript_dialog_navigation_deferrer_;
 
-  // The number of frames currently in this WebContents.
-  size_t frame_count_ = 0;
+  // The max number of loaded frames that have been seen in this WebContents.
+  // This number is reset with each main frame navigation.
+  size_t max_loaded_frame_count_ = 0;
 
-  // The max number of frames seen in the current page hosted by this
-  // WebContents.
-  size_t max_frame_count_ = 0;
-
-  // This boolean value is used to keep track of whether we should record
-  // |max_frame_count_| when the main frame navigation is ready to commit.
-  // |max_frame_count_| should not be recorded for initial navigation for
-  // example. This is because |max_frame_count_| refers to the page that is
-  // being navigated away from.
-  bool record_max_frame_count_when_leaving_current_page_ = false;
+  // This boolean value is used to keep track of whether we finished the first
+  // successful navigation in this WebContents.
+  bool first_navigation_completed_ = false;
 
   base::WeakPtrFactory<WebContentsImpl> loading_weak_factory_{this};
   base::WeakPtrFactory<WebContentsImpl> weak_factory_{this};
