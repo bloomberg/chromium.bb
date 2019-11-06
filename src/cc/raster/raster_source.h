@@ -124,6 +124,7 @@ class CC_EXPORT RasterSource : public base::RefCountedThreadSafe<RasterSource> {
 
   size_t* max_op_size_hint() { return &max_op_size_hint_; }
 
+  SkColor DefaultLCDBackgroundColor() const;
  protected:
   // RecordingSource is the only class that can create a raster source.
   friend class RecordingSource;
@@ -153,6 +154,7 @@ class CC_EXPORT RasterSource : public base::RefCountedThreadSafe<RasterSource> {
   const gfx::Rect recorded_viewport_;
   const gfx::Size size_;
   const int slow_down_raster_scale_factor_for_debug_;
+  const SkColor default_lcd_background_color_;
   const float recording_scale_factor_;
 };
 
