@@ -778,6 +778,8 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void ResetAutoResizeSize() override;
   InputEventShim* GetInputEventShim() const override;
   RenderFrameHostImpl* GetFocusedFrameFromFocusedDelegate() override;
+  void OnVerticalScrollDirectionChanged(
+      viz::VerticalScrollDirection scroll_direction) override;
 
 #if !defined(OS_ANDROID)
   double GetPendingPageZoomLevel() override;

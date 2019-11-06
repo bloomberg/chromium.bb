@@ -26,6 +26,7 @@
 #include "content/browser/compositor/test/test_image_transport_factory.h"
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/renderer_host/frame_connector_delegate.h"
+#include "content/browser/renderer_host/frame_token_message_queue.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/common/frame_visual_properties.h"
@@ -126,7 +127,8 @@ class RenderWidgetHostViewChildFrameTest : public testing::Test {
     widget_impl_ = std::make_unique<MockWidgetImpl>(
         widget.InitWithNewPipeAndPassReceiver());
     widget_host_ = new RenderWidgetHostImpl(
-        &delegate_, process_host, routing_id, std::move(widget), false);
+        &delegate_, process_host, routing_id, std::move(widget),
+        /*hidden=*/false, std::make_unique<FrameTokenMessageQueue>());
     view_ = RenderWidgetHostViewChildFrame::Create(widget_host_);
 
     test_frame_connector_ =

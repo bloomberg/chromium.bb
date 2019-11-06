@@ -12,6 +12,7 @@
 
 #include "base/callback.h"
 #include "build/build_config.h"
+#include "components/viz/common/vertical_scroll_direction.h"
 #include "content/browser/renderer_host/input_event_shim.h"
 #include "content/common/content_export.h"
 #include "content/common/drag_event_source_info.h"
@@ -330,6 +331,15 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
 
   // Returns the focused frame across all delegates, or nullptr if none.
   virtual RenderFrameHostImpl* GetFocusedFrameFromFocusedDelegate();
+
+  // Invoked when the vertical scroll direction of the root layer changes. Note
+  // that if a scroll in a given direction occurs, the scroll is completed, and
+  // then another scroll in the *same* direction occurs, we will not consider
+  // the second scroll event to have caused a change in direction. Also note
+  // note that this API will *never* be called with |kNull| which only exists to
+  // indicate the absence of a vertical scroll direction.
+  virtual void OnVerticalScrollDirectionChanged(
+      viz::VerticalScrollDirection scroll_direction) {}
 
  protected:
   virtual ~RenderWidgetHostDelegate() {}

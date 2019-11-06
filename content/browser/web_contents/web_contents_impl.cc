@@ -73,6 +73,7 @@
 #include "content/browser/media/media_web_contents_observer.h"
 #include "content/browser/media/session/media_session_impl.h"
 #include "content/browser/plugin_content_origin_whitelist.h"
+#include "content/browser/renderer_host/frame_token_message_queue.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_delegate_view.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
@@ -1645,6 +1646,12 @@ RenderFrameHostImpl* WebContentsImpl::GetFocusedFrameFromFocusedDelegate() {
   return focused_node ? focused_node->current_frame_host() : nullptr;
 }
 
+void WebContentsImpl::OnVerticalScrollDirectionChanged(
+    viz::VerticalScrollDirection scroll_direction) {
+  for (auto& observer : observers_)
+    observer.DidChangeVerticalScrollDirection(scroll_direction);
+}
+
 void WebContentsImpl::OnAudioStateChanged() {
   // This notification can come from any embedded contents or from this
   // WebContents' stream monitor. Aggregate these signals to get the actual
@@ -2993,7 +3000,8 @@ void WebContentsImpl::CreateNewWidget(int32_t render_process_id,
   }
 
   RenderWidgetHostImpl* widget_host = new RenderWidgetHostImpl(
-      this, process, route_id, std::move(widget), IsHidden());
+      this, process, route_id, std::move(widget), IsHidden(),
+      std::make_unique<FrameTokenMessageQueue>());
   RenderWidgetHostViewBase* widget_view =
       static_cast<RenderWidgetHostViewBase*>(
           view_->CreateViewForChildWidget(widget_host));
