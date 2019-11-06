@@ -630,7 +630,7 @@ int MockHostResolverBase::ResolveProc(
   if (cache_.get()) {
     HostCache::Key key(host.host(),
                        AddressFamilyToDnsQueryType(requested_address_family),
-                       flags, source);
+                       flags, source, network_isolation_key);
     // Storing a failure with TTL 0 so that it overwrites previous value.
     base::TimeDelta ttl;
     if (rv == OK) {
