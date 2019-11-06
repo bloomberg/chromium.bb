@@ -1091,6 +1091,8 @@ void AddDeviceStrings(content::WebUIDataSource* html_source) {
       {"storageSpaceCriticallyLowMessageLine2",
        IDS_SETTINGS_STORAGE_SPACE_CRITICALLY_LOW_MESSAGE_LINE_2},
       {"storageExternal", IDS_SETTINGS_STORAGE_EXTERNAL},
+      {"storageExternalStorageEmptyListHeader",
+       IDS_SETTINGS_STORAGE_EXTERNAL_STORAGE_EMPTY_LIST_HEADER},
       {"storageExternalStorageListHeader",
        IDS_SETTINGS_STORAGE_EXTERNAL_STORAGE_LIST_HEADER}};
   AddLocalizedStringsBulk(html_source, kStorageStrings,
