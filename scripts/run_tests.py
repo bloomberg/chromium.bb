@@ -184,7 +184,6 @@ PYTHON2_ONLY_TESTS = {
     'lib/kernel_cmdline_unittest',
     'lib/luci/prpc/client_unittest',
     'lib/paygen/signer_payloads_client_unittest',
-    'lib/remote_access_unittest',
     'lib/repo_manifest_unittest',
     'lib/toolchain_unittest',
     'lib/toolchain_util_unittest',

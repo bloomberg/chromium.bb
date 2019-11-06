@@ -340,6 +340,7 @@ class RemoteAccess(object):
       the ssh_error_ok flag.
     """
     kwargs.setdefault('capture_output', True)
+    kwargs.setdefault('encoding', 'utf-8')
     kwargs.setdefault('debug_level', self.debug_level)
     # Force English SSH messages. SSHConnectionError.IsKnownHostsMismatch()
     # requires English errors to detect a known_hosts key mismatch error.
