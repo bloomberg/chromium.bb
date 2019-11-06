@@ -79,7 +79,8 @@ IdentityManager::IdentityManager(
 
 #if defined(OS_ANDROID)
   java_identity_manager_ = Java_IdentityManager_create(
-      base::android::AttachCurrentThread(), reinterpret_cast<intptr_t>(this));
+      base::android::AttachCurrentThread(), reinterpret_cast<intptr_t>(this),
+      token_service_->GetDelegate()->GetJavaObject());
 #endif
 }
 
