@@ -311,12 +311,13 @@ void LocalDOMWindow::DispatchWindowLoadEvent() {
 
 void LocalDOMWindow::DocumentWasClosed() {
   DispatchWindowLoadEvent();
-  EnqueueNonPersistedPageshowEvent();
+  EnqueuePageshowEvent(kPageTransitionEventNotPersisted);
   if (pending_state_object_)
     EnqueuePopstateEvent(std::move(pending_state_object_));
 }
 
-void LocalDOMWindow::EnqueueNonPersistedPageshowEvent() {
+void LocalDOMWindow::EnqueuePageshowEvent(
+    PageTransitionEventPersistence persisted) {
   // FIXME: https://bugs.webkit.org/show_bug.cgi?id=36334 Pageshow event needs
   // to fire asynchronously.  As per spec pageshow must be triggered
   // asynchronously.  However to be compatible with other browsers blink fires
@@ -324,23 +325,14 @@ void LocalDOMWindow::EnqueueNonPersistedPageshowEvent() {
   if (ScopedEventQueue::Instance()->ShouldQueueEvents() && document_) {
     // The task source should be kDOMManipulation, but the spec doesn't say
     // anything about this.
-    EnqueueWindowEvent(*PageTransitionEvent::Create(event_type_names::kPageshow,
-                                                    false /* persisted */),
-                       TaskType::kMiscPlatformAPI);
+    EnqueueWindowEvent(
+        *PageTransitionEvent::Create(event_type_names::kPageshow, persisted),
+        TaskType::kMiscPlatformAPI);
     return;
   }
-  DispatchEvent(*PageTransitionEvent::Create(event_type_names::kPageshow,
-                                             false /* persisted */),
-                document_.Get());
-}
-
-void LocalDOMWindow::DispatchPersistedPageshowEvent(
-    base::TimeTicks navigation_start) {
-  // Persisted pageshow events are dispatched for pages that are restored from
-  // the back forward cache, and the event's timestamp should reflect the
-  // |navigation_start| time of the back navigation.
-  DispatchEvent(*PageTransitionEvent::CreatePersistedPageshow(navigation_start),
-                document_.Get());
+  DispatchEvent(
+      *PageTransitionEvent::Create(event_type_names::kPageshow, persisted),
+      document_.Get());
 }
 
 void LocalDOMWindow::EnqueueHashchangeEvent(const String& old_url,

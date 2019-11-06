@@ -2000,10 +2000,9 @@ void RenderViewImpl::PutPageIntoBackForwardCache() {
     webview()->PutPageIntoBackForwardCache();
 }
 
-void RenderViewImpl::RestorePageFromBackForwardCache(
-    base::TimeTicks navigation_start) {
+void RenderViewImpl::RestorePageFromBackForwardCache() {
   if (webview())
-    webview()->RestorePageFromBackForwardCache(navigation_start);
+    webview()->RestorePageFromBackForwardCache();
 }
 
 // This function receives TextAutosizerPageInfo from the main frame's renderer

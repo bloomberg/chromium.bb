@@ -464,7 +464,7 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   void OnPageVisibilityChanged(PageVisibilityState visibility_state);
   void SetPageFrozen(bool frozen);
   void PutPageIntoBackForwardCache();
-  void RestorePageFromBackForwardCache(base::TimeTicks navigation_start);
+  void RestorePageFromBackForwardCache();
   void OnTextAutosizerPageInfoChanged(
       const blink::WebTextAutosizerPageInfo& page_info);
 

@@ -624,10 +624,9 @@ void RenderFrameHostManager::RestoreFromBackForwardCache(
   bfcache_entry_to_restore_ = std::move(entry);
 }
 
-void RenderFrameHostManager::UnfreezeCurrentFrameHost(
-    base::TimeTicks navigation_start) {
+void RenderFrameHostManager::UnfreezeCurrentFrameHost() {
   delegate_->GetControllerForRenderManager().GetBackForwardCache().Resume(
-      current_frame_host(), navigation_start);
+      current_frame_host());
 }
 
 void RenderFrameHostManager::ResetProxyHosts() {

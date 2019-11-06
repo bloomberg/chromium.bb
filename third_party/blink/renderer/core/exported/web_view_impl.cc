@@ -3452,8 +3452,7 @@ void WebViewImpl::PutPageIntoBackForwardCache() {
   }
 }
 
-void WebViewImpl::RestorePageFromBackForwardCache(
-    base::TimeTicks navigation_start) {
+void WebViewImpl::RestorePageFromBackForwardCache() {
   // Unhook eviction.
   Page* page = AsView().page;
   if (page) {
@@ -3472,8 +3471,8 @@ void WebViewImpl::RestorePageFromBackForwardCache(
     for (Frame* frame = page->MainFrame(); frame;
          frame = frame->Tree().TraverseNext()) {
       if (frame->DomWindow() && frame->DomWindow()->IsLocalDOMWindow()) {
-        frame->DomWindow()->ToLocalDOMWindow()->DispatchPersistedPageshowEvent(
-            navigation_start);
+        frame->DomWindow()->ToLocalDOMWindow()->DispatchPageshowEvent(
+            PageTransitionEventPersistence::kPageTransitionEventPersisted);
       }
     }
   }

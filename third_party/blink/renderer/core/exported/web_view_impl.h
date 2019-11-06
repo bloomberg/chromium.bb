@@ -199,8 +199,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   void AcceptLanguagesChanged() override;
   void SetPageFrozen(bool frozen) override;
   void PutPageIntoBackForwardCache() override;
-  void RestorePageFromBackForwardCache(
-      base::TimeTicks navigation_start) override;
+  void RestorePageFromBackForwardCache() override;
   WebWidget* MainFrameWidget() override;
   void SetBaseBackgroundColor(SkColor) override;
   void SetBackgroundColorOverride(SkColor) override;
