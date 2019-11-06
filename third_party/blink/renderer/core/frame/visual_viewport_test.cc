@@ -2696,5 +2696,27 @@ TEST_F(VisualViewportSimTest, UsedColorSchemeFromRootElement) {
   EXPECT_EQ(WebColorScheme::kDark, visual_viewport.UsedColorScheme());
 }
 
+TEST_P(VisualViewportTest, SetLocationBeforePrePaint) {
+  InitializeWithAndroidSettings();
+  WebView()->MainFrameWidget()->Resize(WebSize(100, 100));
+  RegisterMockedHttpURLLoad("content-width-1000.html");
+  NavigateTo(base_url_ + "content-width-1000.html");
+
+  // Simulate that the visual viewport is just created and FrameLoader is
+  // restoring the previously saved scale and scroll state.
+  VisualViewport& visual_viewport = GetFrame()->GetPage()->GetVisualViewport();
+  visual_viewport.DisposeImpl();
+  ASSERT_FALSE(visual_viewport.LayerForScrolling());
+  visual_viewport.SetScaleAndLocation(1.75, false, FloatPoint(12, 34));
+  EXPECT_EQ(FloatPoint(12, 34), visual_viewport.ScrollPosition());
+
+  UpdateAllLifecyclePhases();
+  EXPECT_EQ(FloatPoint(12, 34), visual_viewport.ScrollPosition());
+  // When we create the scrolling layer, we should update its scroll offset.
+  ASSERT_TRUE(visual_viewport.LayerForScrolling());
+  EXPECT_EQ(gfx::ScrollOffset(12, 34),
+            visual_viewport.LayerForScrolling()->CurrentScrollOffset());
+}
+
 }  // namespace
 }  // namespace blink
