@@ -129,12 +129,15 @@ void DesktopWindowTreeHostWin::Init(const Widget::InitParams& params) {
     parent_hwnd = params.parent->GetHost()->GetAcceleratedWidget();
 
   remove_standard_frame_ = params.remove_standard_frame;
+  reroute_mouse_wheel_to_any_related_window_ = params.reroute_mouse_wheel_to_any_related_window;
+
   has_non_client_view_ = Widget::RequiresNonClientView(params.type);
 
   // We don't have an HWND yet, so scale relative to the nearest screen.
   gfx::Rect pixel_bounds =
       display::win::ScreenWin::DIPToScreenRect(nullptr, params.bounds);
   message_handler_->Init(parent_hwnd, pixel_bounds);
+  message_handler_->set_reroute_mouse_wheel_to_any_related_window(params.reroute_mouse_wheel_to_any_related_window);
   CreateCompositor(viz::FrameSinkId(), params.force_software_compositing);
   OnAcceleratedWidgetAvailable();
   InitHost();

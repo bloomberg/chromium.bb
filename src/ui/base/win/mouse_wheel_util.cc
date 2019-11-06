@@ -56,7 +56,7 @@ ViewProp* SetWindowSupportsRerouteMouseWheel(HWND hwnd) {
                       reinterpret_cast<HANDLE>(true));
 }
 
-bool RerouteMouseWheel(HWND window, WPARAM w_param, LPARAM l_param) {
+bool RerouteMouseWheel(HWND window, WPARAM w_param, LPARAM l_param, bool reroute_to_any_related_window) {
   // Since this is called from a subclass for every window, we can get
   // here recursively. This will happen if, for example, a control
   // reflects wheel scroll messages to its parent. Bail out if we got
@@ -91,12 +91,15 @@ bool RerouteMouseWheel(HWND window, WPARAM w_param, LPARAM l_param) {
         // we don't want to reroute the wheel message.
         return false;
       } else {
-        // The wheel is scrolling over an unrelated window. Make sure that we
-        // have marked that window as supporting mouse wheel rerouting.
-        // Otherwise, we cannot send random WM_MOUSEWHEEL messages to arbitrary
-        // windows. So just drop the message.
-        if (!WindowSupportsRerouteMouseWheel(window_under_wheel))
-          return true;
+        if (!reroute_to_any_related_window ||
+            (GetAncestor(window, GA_ROOTOWNER) != GetAncestor(window_under_wheel, GA_ROOTOWNER))) {
+          // The wheel is scrolling over an unrelated window. Make sure that we
+          // have marked that window as supporting mouse wheel rerouting.
+          // Otherwise, we cannot send random WM_MOUSEWHEEL messages to arbitrary
+          // windows. So just drop the message.
+          if (!WindowSupportsRerouteMouseWheel(window_under_wheel))
+            return true;
+        }
       }
     }
 
