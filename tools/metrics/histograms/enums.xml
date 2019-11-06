@@ -66657,6 +66657,10 @@ Full version information for the fingerprint enum values:
   <int value="498163647" label="Windows 7 Service Pack 1 (Build 7601.24511)"/>
   <int value="498163651" label="Windows 7 Service Pack 1 (Build 7601.24515)"/>
   <int value="498163655" label="Windows 7 Service Pack 1 (Build 7601.24519)"/>
+  <int value="498163661" label="Windows 7 Service Pack 1 (Build 7601.24525)"/>
+  <int value="498163666" label="Windows 7 Service Pack 1 (Build 7601.24530)"/>
+  <int value="498163669" label="Windows 7 Service Pack 1 (Build 7601.24533)"/>
+  <int value="498163670" label="Windows 7 Service Pack 1 (Build 7601.24534)"/>
   <int value="550502400" label="Windows 8 Preview (Build 8400.0)"/>
   <int value="602931200" label="Windows 8 (Build 9200.0)"/>
   <int value="602931201" label="Windows 8 (Build 9200.1)"/>
@@ -66741,6 +66745,9 @@ Full version information for the fingerprint enum values:
   <int value="629165031" label="Windows 8.1 (Build 9600.19431)"/>
   <int value="629165060" label="Windows 8.1 (Build 9600.19460)"/>
   <int value="629165063" label="Windows 8.1 (Build 9600.19463)"/>
+  <int value="629165103" label="Windows 8.1 (Build 9600.19503)"/>
+  <int value="629165105" label="Windows 8.1 (Build 9600.19505)"/>
+  <int value="629165107" label="Windows 8.1 (Build 9600.19507)"/>
   <int value="671090283" label="Windows 10 1507 (Build 10240.1643)"/>
   <int value="671090292" label="Windows 10 1507 (Build 10240.1652)"/>
   <int value="671090299" label="Windows 10 1507 (Build 10240.1659)"/>
@@ -66948,6 +66955,8 @@ Full version information for the fingerprint enum values:
   <int value="943262792" label="Windows 10 1607 (Build 14393.3144)"/>
   <int value="943262829" label="Windows 10 1607 (Build 14393.3181)"/>
   <int value="943262852" label="Windows 10 1607 (Build 14393.3204)"/>
+  <int value="943262922" label="Windows 10 1607 (Build 14393.3274)"/>
+  <int value="943262948" label="Windows 10 1607 (Build 14393.3300)"/>
   <int value="987168768" label="Windows 10 1703 (Build 15063.0)"/>
   <int value="987168779" label="Windows 10 1703 (Build 15063.11)"/>
   <int value="987168781" label="Windows 10 1703 (Build 15063.13)"/>
@@ -67017,6 +67026,7 @@ Full version information for the fingerprint enum values:
   <int value="987170756" label="Windows 10 1703 (Build 15063.1988)"/>
   <int value="987170789" label="Windows 10 1703 (Build 15063.2021)"/>
   <int value="987170813" label="Windows 10 1703 (Build 15063.2045)"/>
+  <int value="987170876" label="Windows 10 1703 (Build 15063.2108)"/>
   <int value="1068171279" label="Windows 10 1709 (Build 16299.15)"/>
   <int value="1068171283" label="Windows 10 1709 (Build 16299.19)"/>
   <int value="1068171328" label="Windows 10 1709 (Build 16299.64)"/>
@@ -67071,6 +67081,7 @@ Full version information for the fingerprint enum values:
   <int value="1068172595" label="Windows 10 1709 (Build 16299.1331)"/>
   <int value="1068172629" label="Windows 10 1709 (Build 16299.1365)"/>
   <int value="1068172651" label="Windows 10 1709 (Build 16299.1387)"/>
+  <int value="1068172715" label="Windows 10 1709 (Build 16299.1451)"/>
   <int value="1122893825" label="Windows 10 1803 (Build 17134.1)"/>
   <int value="1122893829" label="Windows 10 1803 (Build 17134.5)"/>
   <int value="1122893856" label="Windows 10 1803 (Build 17134.32)"/>
@@ -67115,6 +67126,9 @@ Full version information for the fingerprint enum values:
   <int value="1122894774" label="Windows 10 1803 (Build 17134.950)"/>
   <int value="1122894808" label="Windows 10 1803 (Build 17134.984)"/>
   <int value="1122894830" label="Windows 10 1803 (Build 17134.1006)"/>
+  <int value="1122894864" label="Windows 10 1803 (Build 17134.1040)"/>
+  <int value="1122894893" label="Windows 10 1803 (Build 17134.1069)"/>
+  <int value="1122894923" label="Windows 10 1803 (Build 17134.1099)"/>
   <int value="1164115969" label="Windows 10 1809 (Build 17763.1)"/>
   <int value="1164115985" label="Windows 10 1809 (Build 17763.17)"/>
   <int value="1164116023" label="Windows 10 1809 (Build 17763.55)"/>
@@ -67147,6 +67161,9 @@ Full version information for the fingerprint enum values:
   <int value="1164116646" label="Windows 10 1809 (Build 17763.678)"/>
   <int value="1164116688" label="Windows 10 1809 (Build 17763.720)"/>
   <int value="1164116705" label="Windows 10 1809 (Build 17763.737)"/>
+  <int value="1164116743" label="Windows 10 1809 (Build 17763.775)"/>
+  <int value="1164116773" label="Windows 10 1809 (Build 17763.805)"/>
+  <int value="1164116800" label="Windows 10 1809 (Build 17763.832)"/>
   <int value="1203372033" label="Windows 10 1903 (Build 18362.1)"/>
   <int value="1203372062" label="Windows 10 1903 (Build 18362.30)"/>
   <int value="1203372085" label="Windows 10 1903 (Build 18362.53)"/>
@@ -67166,6 +67183,9 @@ Full version information for the fingerprint enum values:
   <int value="1203372359" label="Windows 10 1903 (Build 18362.327)"/>
   <int value="1203372361" label="Windows 10 1903 (Build 18362.329)"/>
   <int value="1203372388" label="Windows 10 1903 (Build 18362.356)"/>
+  <int value="1203372420" label="Windows 10 1903 (Build 18362.388)"/>
+  <int value="1203372450" label="Windows 10 1903 (Build 18362.418)"/>
+  <int value="1203372481" label="Windows 10 1903 (Build 18362.449)"/>
   <int value="1203382032" label="Windows 10 1903 (Build 18362.10000)"/>
   <int value="1203382037" label="Windows 10 1903 (Build 18362.10005)"/>
   <int value="1203382038" label="Windows 10 1903 (Build 18362.10006)"/>
@@ -67174,6 +67194,7 @@ Full version information for the fingerprint enum values:
   <int value="1203382046" label="Windows 10 1903 (Build 18362.10014)"/>
   <int value="1203382047" label="Windows 10 1903 (Build 18362.10015)"/>
   <int value="1203382051" label="Windows 10 1903 (Build 18362.10019)"/>
+  <int value="1203382056" label="Windows 10 1903 (Build 18362.10024)"/>
   <int value="1239155688" label="Windows 10 Insider (Build 18908.1000)"/>
   <int value="1240073192" label="Windows 10 Insider (Build 18922.1000)"/>
   <int value="1240728552" label="Windows 10 Insider (Build 18932.1000)"/>
