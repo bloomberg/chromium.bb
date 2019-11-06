@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package com.android.webview.chromium;
+package org.chromium.android_webview.app;
 
 import android.annotation.TargetApi;
 import android.content.ContentProvider;

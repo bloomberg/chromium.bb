@@ -2,14 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package com.android.webview.chromium;
+package org.chromium.android_webview.app;
 
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
+
+import org.chromium.base.Log;
 
 /**
  * Activity for displaying WebView OSS licenses.
@@ -17,6 +18,8 @@ import android.util.Log;
  * other than LicenseContentProvider.
  */
 public class LicenseActivity extends Activity {
+    private static final String TAG = "WebView";
+
     private static final String LICENSES_URI_SUFFIX = "LicenseContentProvider/webview_licenses";
     private static final String LICENSES_CONTENT_TYPE = "text/html";
 
@@ -42,7 +45,7 @@ public class LicenseActivity extends Activity {
         try {
             startActivity(intent);
         } catch (ActivityNotFoundException e) {
-            Log.e("WebView", "Failed to find viewer", e);
+            Log.e(TAG, "Failed to find viewer", e);
         }
         finish();
     }
