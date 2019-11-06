@@ -27,9 +27,9 @@
 
 namespace {
 
-class GpuTestsSuite : public base::TestSuite {
+class GlTestsSuite : public base::TestSuite {
  public:
-  GpuTestsSuite(int argc, char** argv) : base::TestSuite(argc, argv) {}
+  GlTestsSuite(int argc, char** argv) : base::TestSuite(argc, argv) {}
 
  protected:
   void Initialize() override {
@@ -49,9 +49,9 @@ class GpuTestsSuite : public base::TestSuite {
     ui::OzonePlatform::InitializeForUI(params);
     ui::OzonePlatform::InitializeForGPU(params);
 #endif
-    gpu::GLTestHelper::InitializeGLDefault();
+  gpu::GLTestHelper::InitializeGLDefault();
 
-    ::gles2::Initialize();
+  ::gles2::Initialize();
   }
 
  private:
@@ -64,12 +64,12 @@ int main(int argc, char** argv) {
   base::CommandLine::Init(argc, argv);
   mojo::core::Init();
 
-  GpuTestsSuite gpu_tests_suite(argc, argv);
+  GlTestsSuite gl_tests_suite(argc, argv);
 #if defined(OS_MACOSX)
   base::mac::ScopedNSAutoreleasePool pool;
 #endif
   testing::InitGoogleMock(&argc, argv);
   return base::LaunchUnitTestsSerially(
       argc, argv,
-      base::BindOnce(&GpuTestsSuite::Run, base::Unretained(&gpu_tests_suite)));
+      base::BindOnce(&GlTestsSuite::Run, base::Unretained(&gl_tests_suite)));
 }
