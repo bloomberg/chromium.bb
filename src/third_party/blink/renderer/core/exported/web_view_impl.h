@@ -114,6 +114,8 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   // WebWidgetClient while a local main frame is attached.
   bool does_composite() const { return does_composite_; }
 
+  void DidChangeWindowRect() override;
+
   // WebView methods:
   void DidAttachLocalMainFrame(WebWidgetClient*) override;
   void DidAttachRemoteMainFrame(WebWidgetClient*) override;
