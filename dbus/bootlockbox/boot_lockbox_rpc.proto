@@ -4,6 +4,9 @@
 
 // The messages in this file comprise the DBus/Proto interface for bootlockboxd.
 
+// Run "roll-dep src/third_party/cros_system_api" in chromium source tree to
+// update chromium DEPS file.
+
 syntax = "proto2";
 
 option optimize_for = LITE_RUNTIME;
@@ -12,9 +15,12 @@ package cryptohome;
 
 enum BootLockboxErrorCode {
   BOOTLOCKBOX_ERROR_NOT_SET = 0;
-  BOOTLOCKBOX_ERROR_CANNOT_STORE = 1;
-  BOOTLOCKBOX_ERROR_MISSING_KEY = 2;
-  BOOTLOCKBOX_ERROR_TPM_COMM_ERROR = 3;
+  BOOTLOCKBOX_ERROR_WRITE_LOCKED = 1;
+  BOOTLOCKBOX_ERROR_WRITE_FAILED = 2;
+  BOOTLOCKBOX_ERROR_MISSING_KEY = 3;
+  BOOTLOCKBOX_ERROR_NVSPACE_UNDEFINED = 4;
+  BOOTLOCKBOX_ERROR_NVSPACE_UNINITIALIZED = 5;
+  BOOTLOCKBOX_ERROR_NVSPACE_OTHER = 6;
 }
 
 message BootLockboxBaseReply {
