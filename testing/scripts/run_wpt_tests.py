@@ -73,7 +73,7 @@ class WPTTestAdapter(common.BaseIsolatedScriptArgsAdapter):
             "--manifest=../../third_party/blink/web_tests/external/"
                 "WPT_BASE_MANIFEST_6.json",
             # Enable mach logging to aid debugging
-            "--log-mach -"
+            "--log-mach=-"
         ])
         return rest_args
 
