@@ -46,6 +46,10 @@ using namespace dwrite_font_file_util;
 
 namespace {
 
+#if defined(OS_WIN)
+static  FontCollection* font_collection_ = nullptr;
+#endif
+
 // These are the fonts that Blink tries to load in getLastResortFallbackFont,
 // and will crash if none can be loaded.
 const wchar_t* kLastResortFontNames[] = {
@@ -126,6 +130,13 @@ void DWriteFontProxyImpl::Create(
   mojo::MakeStrongBinding(std::make_unique<DWriteFontProxyImpl>(),
                           std::move(request));
 }
+
+#if defined(OS_WIN)
+void DWriteFontProxyImpl::SetFontCollection(FontCollection* collection)
+{
+  font_collection_= collection;
+}
+#endif
 
 void DWriteFontProxyImpl::SetWindowsFontsPathForTesting(base::string16 path) {
   windows_fonts_path_.swap(path);
@@ -531,7 +542,20 @@ void DWriteFontProxyImpl::InitializeDirectWrite() {
   // done through indexing system fonts using DWriteFontLookupTableBuilder.
   factory.As<IDWriteFactory3>(&factory3_);
 
-  HRESULT hr = factory->GetSystemFontCollection(&collection_);
+  HRESULT hr;
+
+#if defined(OS_WIN)
+  if (font_collection_) {
+    hr = font_collection_->GetFontCollection(factory.Get(),
+                                             collection_.GetAddressOf());
+  }
+  else {
+    hr = factory->GetSystemFontCollection(&collection_);
+  }
+#else
+  hr = factory->GetSystemFontCollection(&collection_);
+#endif
+
   DCHECK(SUCCEEDED(hr));
 
   if (!collection_) {
