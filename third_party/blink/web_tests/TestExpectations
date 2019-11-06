@@ -1905,25 +1905,6 @@ crbug.com/626703 [ Win7 ] external/wpt/xhr/responsexml-document-properties.htm [
 crbug.com/626703 [ Win7 ] external/wpt/html/dom/documents/resource-metadata-management/document-lastModified-01.html [ Failure ]
 crbug.com/626703 [ Win7 ] virtual/omt-worker-fetch/external/wpt/xhr/responsexml-document-properties.htm [ Failure ]
 
-# The 'overflow-wrap: anywhere' feature is not implemented yet
-crbug.com/905315 external/wpt/css/css-text/overflow-wrap/overflow-wrap-anywhere-001.html [ Skip ]
-crbug.com/905315 external/wpt/css/css-text/overflow-wrap/overflow-wrap-anywhere-002.html [ Skip ]
-crbug.com/905315 external/wpt/css/css-text/overflow-wrap/overflow-wrap-anywhere-003.html [ Skip ]
-crbug.com/905315 external/wpt/css/css-text/overflow-wrap/overflow-wrap-anywhere-004.html [ Skip ]
-crbug.com/905315 external/wpt/css/css-text/overflow-wrap/overflow-wrap-anywhere-005.html [ Skip ]
-crbug.com/905315 external/wpt/css/css-text/overflow-wrap/overflow-wrap-anywhere-span-001.html [ Skip ]
-crbug.com/905315 external/wpt/css/css-text/overflow-wrap/overflow-wrap-anywhere-span-002.html [ Skip ]
-crbug.com/905315 external/wpt/css/css-text/overflow-wrap/overflow-wrap-anywhere-fit-content-001.html [ Skip ]
-crbug.com/905315 external/wpt/css/css-text/overflow-wrap/overflow-wrap-min-content-size-001.html [ Skip ]
-crbug.com/905315 external/wpt/css/css-text/overflow-wrap/overflow-wrap-min-content-size-002.html [ Skip ]
-crbug.com/905315 external/wpt/css/css-text/overflow-wrap/overflow-wrap-min-content-size-003.html [ Skip ]
-crbug.com/905315 external/wpt/css/css-text/overflow-wrap/overflow-wrap-min-content-size-004.html [ Skip ]
-crbug.com/905315 external/wpt/css/css-text/word-break/word-break-break-word-overflow-wrap-interactions.html [ Skip ]
-crbug.com/905315 external/wpt/css/css-text/white-space/break-spaces-before-first-char-003.html [ Skip ]
-crbug.com/905315 external/wpt/css/css-text/white-space/break-spaces-before-first-char-006.html [ Skip ]
-crbug.com/905315 external/wpt/css/css-text/white-space/break-spaces-before-first-char-013.html [ Skip ]
-crbug.com/905315 external/wpt/css/css-text/white-space/break-spaces-tab-004.html [ Skip ]
-
 # These are added to W3CImportExpectations as Skip, remove when next import is done.
 crbug.com/666657 external/wpt/css/css-text/hanging-punctuation [ Skip ]
 
@@ -2895,7 +2876,6 @@ crbug.com/626703 [ Win ] external/wpt/speech-api/SpeechSynthesisUtterance-volume
 crbug.com/626703 [ Mac10.11 ] external/wpt/speech-api/SpeechSynthesisUtterance-volume-manual.html [ Skip ]
 crbug.com/626703 [ Mac10.10 ] external/wpt/animation-worklet/worklet-animation-with-scroll-timeline-and-display-none.https.html [ Failure ]
 crbug.com/626703 [ Mac10.11 ] external/wpt/animation-worklet/worklet-animation-with-scroll-timeline-and-display-none.https.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-text/overflow-wrap/overflow-wrap-shaping-002.html [ Failure ]
 crbug.com/626703 [ Mac10.11 ] external/wpt/webrtc/no-media-call.html [ Timeout ]
 crbug.com/626703 external/wpt/css/css-writing-modes/writing-mode-vlr-table-001-manual.html [ Skip ]
 crbug.com/626703 external/wpt/css/css-writing-modes/writing-mode-vlr-009-manual.html [ Skip ]
@@ -2960,7 +2940,6 @@ crbug.com/626703 external/wpt/css/css-animations/animationevent-marker-pseudoele
 crbug.com/626703 external/wpt/css/css-text/line-breaking/line-breaking-016.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/line-breaking/line-breaking-atomic-008.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/line-breaking/line-breaking-replaced-005.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-text/overflow-wrap/overflow-wrap-cluster-002.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/overflow-wrap/overflow-wrap-normal-keep-all-001.html [ Failure ]
 crbug.com/626703 [ Mac10.12 ] external/wpt/media-source/mediasource-config-change-webm-a-bitrate.html [ Timeout ]
 crbug.com/626703 external/wpt/html/semantics/embedded-content/media-elements/src_object_blob.html [ Timeout ]
@@ -3717,6 +3696,11 @@ crbug.com/626703 virtual/omt-worker-fetch/external/wpt/xhr/setrequestheader-head
 crbug.com/626703 [ Win10 ] external/wpt/preload/delaying-onload-link-preload-after-discovery.html [ Timeout ]
 crbug.com/626703 [ Win ] external/wpt/css/css-writing-modes/box-offsets-rel-pos-vlr-005.xht [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/css-writing-modes/box-offsets-rel-pos-vrl-004.xht [ Failure ]
+
+crbug.com/1020749 external/wpt/css/css-text/overflow-wrap/overflow-wrap-anywhere-inline-002.html [ Failure ]
+crbug.com/1020749 external/wpt/css/css-text/overflow-wrap/overflow-wrap-anywhere-inline-003.html [ Failure ]
+crbug.com/1020749 external/wpt/css/css-text/word-break/word-break-break-all-inline-009.html [ Failure ]
+crbug.com/1020749 external/wpt/css/css-text/word-break/word-break-break-all-inline-010.html [ Failure ]
 
 # Sheriff 2019-08-19:
 crbug.com/626703 external/wpt/html/cross-origin-embedder-policy/none.https.html [ Failure ]
