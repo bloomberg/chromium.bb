@@ -273,8 +273,37 @@ void PrepareDragData(const DropData& drop_data,
     provider->SetPickledData(GetFileSystemFileFormatType(), pickle);
   }
   if (!drop_data.custom_data.empty()) {
+    std::unordered_map<base::string16, base::string16> custom_data;
+
+    for (auto it = drop_data.custom_data.begin();
+         it != drop_data.custom_data.end(); ++it) {
+      // Look for a special format topic.  In addition to adding them as chromium
+      // WebCustomDataFormat, also add these formats separately to clipboard.
+      int format = 0;
+      std::wstring sft;
+      if (it->first.compare(0, 4, L"blp_") == 0) {
+        sft = it->first.substr(4);
+        format = std::stoi(sft);
+      }
+
+      if (format) {
+        FORMATETC formatetc;
+        formatetc.cfFormat = format;
+        formatetc.ptd = NULL;
+        formatetc.dwAspect = DVASPECT_CONTENT;
+        formatetc.lindex = -1;
+        formatetc.tymed = TYMED_HGLOBAL;
+
+        provider->SetCustomData(formatetc, it->second);
+        custom_data.insert(std::make_pair(sft, it->second));
+      }
+      else {
+        custom_data.insert(std::make_pair(it->first, it->second));
+      }
+    }
+    
     base::Pickle pickle;
-    ui::WriteCustomDataToPickle(drop_data.custom_data, &pickle);
+    ui::WriteCustomDataToPickle(custom_data, &pickle);
     provider->SetPickledData(ui::ClipboardFormatType::GetWebCustomDataType(),
                              pickle);
   }
@@ -359,6 +388,20 @@ void PrepareDropData(DropData* drop_data, const ui::OSExchangeData& data) {
                           &pickle))
     ui::ReadCustomDataIntoMap(
         pickle.data(), pickle.size(), &drop_data->custom_data);
+}
+
+// Utility to fill custom DropData object from ui::OSExchangeData.targe
+void ExtractCustomData(DropData* drop_data, const ui::OSExchangeData& data) {
+
+  drop_data->did_originate_from_renderer = data.DidOriginateFromRenderer();
+  std::vector<FORMATETC> custom_data_formats;
+  data.provider().EnumerateCustomData(&custom_data_formats);
+  for (const auto& format_etc : custom_data_formats) {
+    std::wstring key = L"blp_" + std::to_wstring(format_etc.cfFormat);
+    base::string16 value;
+    data.provider().GetCustomData(format_etc, &value);
+    drop_data->custom_data.insert(std::make_pair(key, value));
+  }
 }
 
 // Utilities to convert between blink::WebDragOperationsMask and
@@ -1363,6 +1406,7 @@ int WebContentsViewAura::OnPerformDrop(const ui::DropTargetEvent& event) {
     return ui::DragDropTypes::DRAG_NONE;
 
   const int key_modifiers = ui::EventFlagsToWebEventModifiers(event.flags());
+  ExtractCustomData(current_drop_data_.get(), event.data());
 #if defined(OS_WIN)
   if (ShouldIncludeVirtualFiles(*current_drop_data_) &&
       event.data().HasVirtualFilenames()) {
