@@ -3424,10 +3424,16 @@ void WebViewImpl::PutPageIntoBackForwardCache() {
   SetIsHidden(/*is_hidden=*/true, /*is_initial_state=*/false);
 
   Page* page = AsView().page;
-  if (page && page->MainFrame() && page->MainFrame()->DomWindow() &&
-      page->MainFrame()->DomWindow()->IsLocalDOMWindow())
-    page->MainFrame()->DomWindow()->ToLocalDOMWindow()->DispatchPagehideEvent(
-        PageTransitionEventPersistence::kPageTransitionEventPersisted);
+  if (page) {
+    for (Frame* frame = page->MainFrame(); frame;
+         frame = frame->Tree().TraverseNext()) {
+      if (frame->DomWindow() && frame->DomWindow()->IsLocalDOMWindow()) {
+        frame->DomWindow()->ToLocalDOMWindow()->DispatchPagehideEvent(
+            PageTransitionEventPersistence::kPageTransitionEventPersisted);
+      }
+    }
+  }
+
   // Freeze the page.
   Scheduler()->SetPageFrozen(/*frozen =*/true);
   // Hook eviction.
@@ -3457,10 +3463,15 @@ void WebViewImpl::RestorePageFromBackForwardCache() {
 
   // Resume the page.
   Scheduler()->SetPageFrozen(/*frozen =*/false);
-  if (page && page->MainFrame() && page->MainFrame()->DomWindow() &&
-      page->MainFrame()->DomWindow()->IsLocalDOMWindow())
-    page->MainFrame()->DomWindow()->ToLocalDOMWindow()->DispatchPageshowEvent(
-        PageTransitionEventPersistence::kPageTransitionEventPersisted);
+  if (page) {
+    for (Frame* frame = page->MainFrame(); frame;
+         frame = frame->Tree().TraverseNext()) {
+      if (frame->DomWindow() && frame->DomWindow()->IsLocalDOMWindow()) {
+        frame->DomWindow()->ToLocalDOMWindow()->DispatchPageshowEvent(
+            PageTransitionEventPersistence::kPageTransitionEventPersisted);
+      }
+    }
+  }
   SetIsHidden(/*is_hidden=*/false, /*is_initial_state=*/false);
 }
 
