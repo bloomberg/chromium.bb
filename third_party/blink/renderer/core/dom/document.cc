@@ -2133,7 +2133,7 @@ void Document::setTitle(const String& title) {
       title_element_ = MakeGarbageCollected<HTMLTitleElement>(*this);
       head_element->AppendChild(title_element_.Get());
     }
-    if (auto* html_title = ToHTMLTitleElementOrNull(title_element_.Get()))
+    if (auto* html_title = DynamicTo<HTMLTitleElement>(title_element_.Get()))
       html_title->setText(title);
   }
 }
@@ -2158,7 +2158,7 @@ void Document::SetTitleElement(Element* title_element) {
     }
   }
 
-  if (auto* html_title = ToHTMLTitleElementOrNull(title_element_.Get()))
+  if (auto* html_title = DynamicTo<HTMLTitleElement>(title_element_.Get()))
     UpdateTitle(html_title->text());
   else if (auto* svg_title = ToSVGTitleElementOrNull(title_element_.Get()))
     UpdateTitle(svg_title->textContent());
