@@ -185,6 +185,8 @@ WebUITabStripContainerView::WebUITabStripContainerView(
           this,
           base::Bind(&WebUITabStripContainerView::CloseContainer,
                      base::Unretained(this)))) {
+  animation_.SetTweenType(gfx::Tween::Type::FAST_OUT_SLOW_IN);
+
   SetVisible(false);
   // TODO(crbug.com/1010589) WebContents are initially assumed to be visible by
   // default unless explicitly hidden. The WebContents need to be set to hidden
@@ -268,8 +270,10 @@ void WebUITabStripContainerView::SetContainerTargetVisibility(
     bool target_visible) {
   if (target_visible) {
     SetVisible(true);
+    animation_.SetSlideDuration(base::TimeDelta::FromMilliseconds(250));
     animation_.Show();
   } else {
+    animation_.SetSlideDuration(base::TimeDelta::FromMilliseconds(200));
     animation_.Hide();
   }
   auto_closer_->set_enabled(target_visible);
