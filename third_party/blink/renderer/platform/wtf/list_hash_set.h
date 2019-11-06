@@ -381,8 +381,8 @@ struct ListHashSetAllocator : public PartitionAllocator {
 
   bool InPool(Node* node) { return node >= Pool() && node < PastPool(); }
 
-  static void TraceValue(typename PartitionAllocator::Visitor* visitor,
-                         Node* node) {}
+  template <typename VisitorDispatcher>
+  static void TraceValue(VisitorDispatcher, Node*) {}
 
  private:
   Node* Pool() { return reinterpret_cast_ptr<Node*>(pool_); }
@@ -451,8 +451,8 @@ class ListHashSetNode : public ListHashSetNodeBase<ValueArg> {
     allocator->Deallocate(this);
   }
 
-  template <typename VisitorDispatcher>
-  void Trace(VisitorDispatcher visitor) {
+  template <typename VisitorDispatcher, typename A = NodeAllocator>
+  std::enable_if_t<A::kIsGarbageCollected> Trace(VisitorDispatcher visitor) {
     // The conservative stack scan can find nodes that have been removed
     // from the set and destructed. We don't need to trace these, and it
     // would be wrong to do so, because the class will not expect the trace

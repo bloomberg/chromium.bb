@@ -18,13 +18,8 @@
 
 namespace WTF {
 
-class PartitionAllocatorDummyVisitor {
-  DISALLOW_NEW();
-};
-
 class WTF_EXPORT PartitionAllocator {
  public:
-  typedef PartitionAllocatorDummyVisitor Visitor;
   static constexpr bool kIsGarbageCollected = false;
 
   template <typename T>
