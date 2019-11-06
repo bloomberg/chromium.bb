@@ -1,0 +1,19 @@
+[
+  {
+    "cmd": [
+      "python",
+      "-u",
+      "RECIPE_REPO[depot_tools]/presubmit_support.py"
+    ],
+    "env_prefixes": {
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "name": "presubmit"
+  },
+  {
+    "jsonResult": null,
+    "name": "$result"
+  }
+]
