@@ -89,12 +89,17 @@ void PrintingMessageFilter::SetDelegateForTesting(TestDelegate* delegate) {
   g_test_delegate = delegate;
 }
 
+extern PrintJobManager* g_print_job_manager;
+
 PrintingMessageFilter::PrintingMessageFilter(int render_process_id,
-                                             Profile* profile)
+                                             Profile *profile)
     : BrowserMessageFilter(PrintMsgStart),
       render_process_id_(render_process_id),
-      queue_(g_browser_process->print_job_manager()->queue()) {
+      queue_(g_print_job_manager->queue()) {
   DCHECK(queue_.get());
+
+  // blpwtk2: Remove dependency on Profile
+#if 0
   printing_shutdown_notifier_ =
       PrintingMessageFilterShutdownNotifierFactory::GetInstance()
           ->Get(profile)
@@ -103,6 +108,7 @@ PrintingMessageFilter::PrintingMessageFilter(int render_process_id,
   is_printing_enabled_.Init(prefs::kPrintingEnabled, profile->GetPrefs());
   is_printing_enabled_.MoveToThread(
       base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}));
+#endif
 }
 
 PrintingMessageFilter::~PrintingMessageFilter() {
@@ -111,8 +117,11 @@ PrintingMessageFilter::~PrintingMessageFilter() {
 
 void PrintingMessageFilter::ShutdownOnUIThread() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  // blpwtk2: Remove dependency on Profile
+#if 0
   is_printing_enabled_.Destroy();
   printing_shutdown_notifier_.reset();
+#endif
 }
 
 void PrintingMessageFilter::OnDestruct() const {
@@ -138,11 +147,14 @@ bool PrintingMessageFilter::OnMessageReceived(const IPC::Message& message) {
 void PrintingMessageFilter::OnGetDefaultPrintSettings(IPC::Message* reply_msg) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   scoped_refptr<PrinterQuery> printer_query;
+  // blpwtk2: Remove dependency on Profile
+#if 0
   if (!is_printing_enabled_.GetValue()) {
     // Reply with NULL query.
     OnGetDefaultPrintSettingsReply(printer_query, reply_msg);
     return;
   }
+#endif
   printer_query = queue_->PopPrinterQuery(0);
   if (!printer_query.get()) {
     printer_query =
@@ -228,11 +240,14 @@ void PrintingMessageFilter::OnUpdatePrintSettings(int document_cookie,
                                                   base::Value job_settings,
                                                   IPC::Message* reply_msg) {
   scoped_refptr<PrinterQuery> printer_query;
+  // blpwtk2: Remove dependency on Profile
+#if 0
   if (!is_printing_enabled_.GetValue()) {
     // Reply with NULL query.
     OnUpdatePrintSettingsReply(printer_query, reply_msg);
     return;
   }
+#endif
   printer_query = queue_->PopPrinterQuery(document_cookie);
   if (!printer_query.get()) {
     printer_query = queue_->CreatePrinterQuery(
