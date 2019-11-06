@@ -7,6 +7,7 @@ include_rules = [
   "+chrome/browser/ui/android/widget",
   "+chrome/browser/download/android/java",
   "+chrome/browser/image_fetcher/android/java",
+  "+chrome/browser/preferences/android/java",
   "+chrome/browser/util/android/java",
   "+chrome/lib/lifecycle/public",
   "+components/embedder_support/android",
