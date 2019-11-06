@@ -10,7 +10,6 @@
 #include "base/run_loop.h"
 #include "base/task/single_thread_task_executor.h"
 #include "fuchsia/base/init_logging.h"
-#include "fuchsia/runners/common/detect_vulkan_hack.h"
 #include "fuchsia/runners/common/web_content_runner.h"
 
 int main(int argc, char** argv) {
@@ -23,19 +22,17 @@ int main(int argc, char** argv) {
     return 1;
   }
 
-  fuchsia::web::ContextFeatureFlags features =
+  constexpr fuchsia::web::ContextFeatureFlags kWebRunnerFeatures =
       fuchsia::web::ContextFeatureFlags::NETWORK |
       fuchsia::web::ContextFeatureFlags::AUDIO |
       fuchsia::web::ContextFeatureFlags::VULKAN |
       fuchsia::web::ContextFeatureFlags::HARDWARE_VIDEO_DECODER |
       fuchsia::web::ContextFeatureFlags::WIDEVINE_CDM;
 
-  // Vulkan is not currently available in our integration test environment.
-  DisableVulkanIfUnavailable(&features);
-
   WebContentRunner runner(
       base::fuchsia::ComponentContextForCurrentProcess()->outgoing().get(),
-      base::BindOnce(&WebContentRunner::CreateDefaultWebContext, features));
+      base::BindOnce(&WebContentRunner::CreateDefaultWebContext,
+                     kWebRunnerFeatures));
 
   base::fuchsia::ComponentContextForCurrentProcess()
       ->outgoing()
