@@ -210,6 +210,8 @@ component("ash") {
     "assistant/assistant_view_delegate_impl.h",
     "assistant/assistant_web_ui_controller.cc",
     "assistant/assistant_web_ui_controller.h",
+    "assistant/assistant_web_view_delegate_impl.cc",
+    "assistant/assistant_web_view_delegate_impl.h",
     "autoclick/autoclick_controller.cc",
     "autoclick/autoclick_controller.h",
     "autoclick/autoclick_drag_event_rewriter.cc",
