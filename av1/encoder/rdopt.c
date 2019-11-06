@@ -8275,6 +8275,16 @@ static int64_t masked_compound_type_rd(
   return rd;
 }
 
+#define MAX_INTERP_FILTER_STATS 64
+typedef struct {
+  int_interpfilters filters;
+  int_mv mv[2];
+  int8_t ref_frames[2];
+  COMPOUND_TYPE comp_type;
+  int64_t rd;
+  unsigned int pred_sse;
+} INTERPOLATION_FILTER_STATS;
+
 typedef struct {
   // OBMC secondary prediction buffers and respective strides
   uint8_t *above_pred_buf[MAX_MB_PLANE];
@@ -8296,6 +8306,9 @@ typedef struct {
   INTERINTRA_MODE *inter_intra_mode;
   int single_ref_first_pass;
   SimpleRDState *simple_rd_state;
+  // [comp_idx][saved stat_idx]
+  INTERPOLATION_FILTER_STATS interp_filter_stats[2][MAX_INTERP_FILTER_STATS];
+  int interp_filter_stats_idx[2];
 } HandleInterModeArgs;
 
 /* If the current mode shares the same mv with other modes with higher cost,
@@ -8938,12 +8951,14 @@ static INLINE int is_comp_rd_match(const AV1_COMP *const cpi,
   return 1;
 }
 
-static INLINE int find_interp_filter_in_stats(MACROBLOCK *x,
-                                              MB_MODE_INFO *const mbmi) {
+static INLINE int find_interp_filter_in_stats(
+    MB_MODE_INFO *const mbmi,
+    INTERPOLATION_FILTER_STATS (*interp_filter_stats)[MAX_INTERP_FILTER_STATS],
+    int *interp_filter_stats_idx) {
   const int comp_idx = mbmi->compound_idx;
-  const int offset = x->interp_filter_stats_idx[comp_idx];
+  const int offset = interp_filter_stats_idx[comp_idx];
   for (int j = 0; j < offset; ++j) {
-    const INTERPOLATION_FILTER_STATS *st = &x->interp_filter_stats[comp_idx][j];
+    const INTERPOLATION_FILTER_STATS *st = &interp_filter_stats[comp_idx][j];
     if (is_interp_filter_match(st, mbmi)) {
       mbmi->interp_filters = st->filters;
       return j;
@@ -8967,12 +8982,12 @@ static INLINE int find_comp_rd_in_stats(const AV1_COMP *const cpi,
   return 0;  // no match result found
 }
 
-static INLINE void save_interp_filter_search_stat(MACROBLOCK *x,
-                                                  MB_MODE_INFO *const mbmi,
-                                                  int64_t rd,
-                                                  unsigned int pred_sse) {
+static INLINE void save_interp_filter_search_stat(
+    MB_MODE_INFO *const mbmi, int64_t rd, unsigned int pred_sse,
+    INTERPOLATION_FILTER_STATS (*interp_filter_stats)[MAX_INTERP_FILTER_STATS],
+    int *interp_filter_stats_idx) {
   const int comp_idx = mbmi->compound_idx;
-  const int offset = x->interp_filter_stats_idx[comp_idx];
+  const int offset = interp_filter_stats_idx[comp_idx];
   if (offset < MAX_INTERP_FILTER_STATS) {
     INTERPOLATION_FILTER_STATS stat = { mbmi->interp_filters,
                                         { mbmi->mv[0], mbmi->mv[1] },
@@ -8981,8 +8996,8 @@ static INLINE void save_interp_filter_search_stat(MACROBLOCK *x,
                                         mbmi->interinter_comp.type,
                                         rd,
                                         pred_sse };
-    x->interp_filter_stats[comp_idx][offset] = stat;
-    x->interp_filter_stats_idx[comp_idx]++;
+    interp_filter_stats[comp_idx][offset] = stat;
+    interp_filter_stats_idx[comp_idx]++;
   }
 }
 
@@ -9014,15 +9029,15 @@ static INLINE void save_comp_rd_search_stat(MACROBLOCK *x,
   }
 }
 
-static INLINE int find_interp_filter_match(MACROBLOCK *const x,
-                                           const AV1_COMP *const cpi,
-                                           const InterpFilter assign_filter,
-                                           const int need_search) {
-  MACROBLOCKD *const xd = &x->e_mbd;
-  MB_MODE_INFO *const mbmi = xd->mi[0];
+static INLINE int find_interp_filter_match(
+    MB_MODE_INFO *const mbmi, const AV1_COMP *const cpi,
+    const InterpFilter assign_filter, const int need_search,
+    INTERPOLATION_FILTER_STATS (*interp_filter_stats)[MAX_INTERP_FILTER_STATS],
+    int *interp_filter_stats_idx) {
   int match_found_idx = -1;
   if (cpi->sf.skip_repeat_interpolation_filter_search && need_search)
-    match_found_idx = find_interp_filter_in_stats(x, mbmi);
+    match_found_idx = find_interp_filter_in_stats(mbmi, interp_filter_stats,
+                                                  interp_filter_stats_idx);
 
   if (!need_search || match_found_idx == -1)
     set_default_interp_filters(mbmi, assign_filter);
@@ -9103,14 +9118,15 @@ static int64_t interpolation_filter_search(
   int match_found_idx = -1;
   const InterpFilter assign_filter = cm->interp_filter;
 
-  match_found_idx =
-      find_interp_filter_match(x, cpi, assign_filter, need_search);
+  match_found_idx = find_interp_filter_match(
+      mbmi, cpi, assign_filter, need_search, args->interp_filter_stats,
+      args->interp_filter_stats_idx);
 
   if (match_found_idx != -1) {
     const int comp_idx = mbmi->compound_idx;
-    *rd = x->interp_filter_stats[comp_idx][match_found_idx].rd;
+    *rd = args->interp_filter_stats[comp_idx][match_found_idx].rd;
     x->pred_sse[ref_frame] =
-        x->interp_filter_stats[comp_idx][match_found_idx].pred_sse;
+        args->interp_filter_stats[comp_idx][match_found_idx].pred_sse;
     return 0;
   }
 
@@ -9220,7 +9236,9 @@ static int64_t interpolation_filter_search(
   // save search results
   if (cpi->sf.skip_repeat_interpolation_filter_search) {
     assert(match_found_idx == -1);
-    save_interp_filter_search_stat(x, mbmi, *rd, x->pred_sse[ref_frame]);
+    save_interp_filter_search_stat(mbmi, *rd, x->pred_sse[ref_frame],
+                                   args->interp_filter_stats,
+                                   args->interp_filter_stats_idx);
   }
   return 0;
 }
@@ -10927,7 +10945,9 @@ static int64_t handle_inter_mode(
       const int need_search = av1_is_interp_needed(xd);
       const InterpFilter assign_filter = cm->interp_filter;
       int is_luma_interp_done = 0;
-      find_interp_filter_match(x, cpi, assign_filter, need_search);
+      find_interp_filter_match(mbmi, cpi, assign_filter, need_search,
+                               args->interp_filter_stats,
+                               args->interp_filter_stats_idx);
 
       int64_t best_rd_compound;
       int64_t rd_thresh;
@@ -11931,10 +11951,6 @@ static AOM_INLINE void set_params_rd_pick_inter_mode(
   // Set params for mode evaluation
   set_mode_eval_params(cpi, x, MODE_EVAL);
 
-  if (cpi->sf.skip_repeat_interpolation_filter_search) {
-    x->interp_filter_stats_idx[0] = 0;
-    x->interp_filter_stats_idx[1] = 0;
-  }
   x->comp_rd_stats_idx = 0;
 }
 
@@ -12927,7 +12943,9 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
                                0,
                                interintra_modes,
                                1,
-                               NULL };
+                               NULL,
+                               { { { { 0 }, { { 0 } }, { 0 }, 0, 0, 0 } } },
+                               { 0 } };
   for (i = 0; i < REF_FRAMES; ++i) x->pred_sse[i] = INT_MAX;
 
   av1_invalid_rd_stats(rd_cost);
@@ -13539,10 +13557,6 @@ static AOM_INLINE void set_params_nonrd_pick_inter_mode(
     x->use_default_inter_tx_type = 1;
   else
     x->use_default_inter_tx_type = 0;
-  if (cpi->sf.skip_repeat_interpolation_filter_search) {
-    x->interp_filter_stats_idx[0] = 0;
-    x->interp_filter_stats_idx[1] = 0;
-  }
 }
 
 // TODO(kyslov): now this is very similar to av1_rd_pick_inter_mode_sb except:
@@ -13588,7 +13602,9 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
                                0,
                                NULL,
                                1,
-                               NULL };
+                               NULL,
+                               { { { { 0 }, { { 0 } }, { 0 }, 0, 0, 0 } } },
+                               { 0 } };
   for (i = 0; i < REF_FRAMES; ++i) x->pred_sse[i] = INT_MAX;
 
   av1_invalid_rd_stats(rd_cost);

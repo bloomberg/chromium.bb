@@ -182,16 +182,6 @@ typedef struct {
 // 4: NEAREST, NEW, NEAR, GLOBAL
 #define SINGLE_REF_MODES ((REF_FRAMES - 1) * 4)
 
-#define MAX_INTERP_FILTER_STATS 64
-typedef struct {
-  int_interpfilters filters;
-  int_mv mv[2];
-  int8_t ref_frames[2];
-  COMPOUND_TYPE comp_type;
-  int64_t rd;
-  unsigned int pred_sse;
-} INTERPOLATION_FILTER_STATS;
-
 #define MAX_COMP_RD_STATS 64
 typedef struct {
   int32_t rate[COMPOUND_TYPES];
@@ -225,10 +215,6 @@ struct macroblock {
   // search model to select prediction modes, or full complexity model
   // to select transform kernel.
   int rd_model;
-
-  // [comp_idx][saved stat_idx]
-  INTERPOLATION_FILTER_STATS interp_filter_stats[2][MAX_INTERP_FILTER_STATS];
-  int interp_filter_stats_idx[2];
 
   // prune_comp_search_by_single_result (3:MAX_REF_MV_SEARCH)
   SimpleRDState simple_rd_state[SINGLE_REF_MODES][3];
