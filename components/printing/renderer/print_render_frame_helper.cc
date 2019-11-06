@@ -2266,10 +2266,12 @@ void PrintRenderFrameHelper::RequestPrintPreview(PrintPreviewRequestType type) {
   print_preview_context_.source_frame()->DispatchBeforePrintEvent();
   if (!weak_this)
     return;
+  const bool is_from_arc = print_preview_context_.IsForArc();
   const bool is_modifiable = print_preview_context_.IsModifiable();
   const bool is_pdf = print_preview_context_.IsPdf();
   const bool has_selection = print_preview_context_.HasSelection();
   PrintHostMsg_RequestPrintPreview_Params params;
+  params.is_from_arc = is_from_arc;
   params.is_modifiable = is_modifiable;
   params.is_pdf = is_pdf;
   params.has_selection = has_selection;
