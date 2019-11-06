@@ -134,6 +134,9 @@ class ASH_EXPORT ShelfConfig : public TabletModeObserver,
     return shelf_tooltip_preview_min_ratio_;
   }
   int shelf_blur_radius() const { return shelf_blur_radius_; }
+  int mousewheel_scroll_offset_threshold() const {
+    return mousewheel_scroll_offset_threshold_;
+  }
 
   // Gets the current color for the shelf control buttons.
   SkColor GetShelfControlButtonColor() const;
@@ -226,6 +229,10 @@ class ASH_EXPORT ShelfConfig : public TabletModeObserver,
 
   // The blur radius used for the shelf.
   const int shelf_blur_radius_;
+
+  // The threshold at which mousewheel and touchpad scrolls are either ignored
+  // or acted upon.
+  const int mousewheel_scroll_offset_threshold_;
 
   base::ObserverList<Observer> observers_;
 

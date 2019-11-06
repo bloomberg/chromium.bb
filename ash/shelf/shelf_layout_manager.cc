@@ -658,6 +658,19 @@ void ShelfLayoutManager::ProcessGestureEventFromShelfWidget(
     event_in_screen->StopPropagation();
 }
 
+void ShelfLayoutManager::ProcessMouseWheelEventFromShelf(
+    ui::MouseWheelEvent* event) {
+  if (event->y_offset() <=
+      ShelfConfig::Get()->mousewheel_scroll_offset_threshold()) {
+    return;
+  }
+  Shell::Get()->app_list_controller()->ToggleAppList(
+      display::Screen::GetScreen()
+          ->GetDisplayNearestWindow(shelf_widget_->GetNativeWindow())
+          .id(),
+      kScrollFromShelf, event->time_stamp());
+}
+
 ShelfBackgroundType ShelfLayoutManager::GetShelfBackgroundType() const {
   if (state_.pre_lock_screen_animation_active)
     return SHELF_BACKGROUND_DEFAULT;

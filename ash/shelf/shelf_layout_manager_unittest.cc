@@ -64,6 +64,7 @@
 #include "base/i18n/rtl.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/metrics/user_action_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "chromeos/constants/chromeos_switches.h"
@@ -532,6 +533,19 @@ class ShelfLayoutManagerTestBase : public AshTestBase {
     GetEventGenerator()->MoveMouseTo(1, display_bottom - 1);
     ASSERT_TRUE(TriggerAutoHideTimeout());
     EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, GetPrimaryShelf()->GetAutoHideState());
+  }
+
+  // Move mouse to |location| and do a two-finger vertical scroll.
+  void DoTwoFingerVerticalScrollAtLocation(gfx::Point location, int y_offset) {
+    GetEventGenerator()->ScrollSequence(location, base::TimeDelta(),
+                                        /*x_offset=*/0, y_offset, /*steps=*/1,
+                                        /*num_fingers=*/2);
+  }
+
+  // Move mouse to |location| and do a mousewheel scroll.
+  void DoMouseWheelScrollAtLocation(gfx::Point location, int delta_y) {
+    GetEventGenerator()->MoveMouseTo(location);
+    GetEventGenerator()->MoveMouseWheel(/*delta_x=*/0, delta_y);
   }
 
  private:
@@ -4480,6 +4494,65 @@ TEST_F(ShelfLayoutManagerTest, ShelfShowsPinnedAppsOnOtherDisplays) {
           << "screen edge on display " << display_index << " with " << app_count
           << " apps";
     }
+  }
+}
+
+// Tests that the mousewheel scroll and the two finger gesture when the mouse is
+// over the shelf shows the app list in peeking state.
+TEST_P(ShelfLayoutManagerTest, ScrollUpFromShelfToShowPeekingAppList) {
+  const struct {
+    views::View* view;
+    bool with_mousewheel_scroll;
+  } test_table[]{
+      {GetPrimaryShelf()->GetShelfViewForTesting(), false},
+      {GetShelfWidget()->status_area_widget()->GetContentsView(), false},
+      {GetShelfWidget()->navigation_widget()->GetContentsView(), false},
+      {GetShelfWidget()->status_area_widget()->GetContentsView(), true},
+      {GetShelfWidget()->navigation_widget()->GetContentsView(), true},
+  };
+  base::HistogramTester histogram_tester;
+  const int scroll_offset_threshold =
+      ShelfConfig::Get()->mousewheel_scroll_offset_threshold();
+  int bucket_count = 0;
+
+  for (auto test : test_table) {
+    ASSERT_EQ(SHELF_ALIGNMENT_BOTTOM, GetPrimaryShelf()->alignment());
+
+    // Scrolling up from the center of the view above the threshold should show
+    // the peeking app list.
+    const gfx::Point start = test.view->GetBoundsInScreen().CenterPoint();
+    if (test.with_mousewheel_scroll)
+      DoMouseWheelScrollAtLocation(start, scroll_offset_threshold + 1);
+    else
+      DoTwoFingerVerticalScrollAtLocation(start, scroll_offset_threshold + 10);
+
+    GetAppListTestHelper()->WaitUntilIdle();
+    GetAppListTestHelper()->CheckState(AppListViewState::kPeeking);
+    GetAppListTestHelper()->CheckVisibility(true);
+    histogram_tester.ExpectBucketCount("Apps.AppListShowSource",
+                                       AppListShowSource::kScrollFromShelf,
+                                       ++bucket_count);
+
+    GetAppListTestHelper()->DismissAndRunLoop();
+    GetAppListTestHelper()->CheckVisibility(false);
+
+    // Scrolling up from the center of the view below the threshold should not
+    // show the app list.
+    if (test.with_mousewheel_scroll) {
+      DoMouseWheelScrollAtLocation(start, scroll_offset_threshold);
+    } else {
+      // A ScrollEvent gets amplified when transformed into a mousewheel event.
+      // We need to set a lower offset so when it gets amplified, it still is
+      // under the threshold.
+      DoTwoFingerVerticalScrollAtLocation(start, scroll_offset_threshold - 10);
+    }
+
+    GetAppListTestHelper()->WaitUntilIdle();
+    GetAppListTestHelper()->CheckState(AppListViewState::kClosed);
+    GetAppListTestHelper()->CheckVisibility(false);
+    histogram_tester.ExpectBucketCount("Apps.AppListShowSource",
+                                       AppListShowSource::kScrollFromShelf,
+                                       bucket_count);
   }
 }
 

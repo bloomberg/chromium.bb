@@ -42,6 +42,7 @@ class EventHandler;
 class ImplicitAnimationObserver;
 class LocatedEvent;
 class MouseEvent;
+class MouseWheelEvent;
 }  // namespace ui
 
 namespace ash {
@@ -141,6 +142,9 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
 
   // Handles events from ShelfWidget.
   void ProcessGestureEventFromShelfWidget(ui::GestureEvent* event_in_screen);
+
+  // Handles mouse wheel events from the shelf.
+  void ProcessMouseWheelEventFromShelf(ui::MouseWheelEvent* event);
 
   // Returns how the shelf background should be painted.
   ShelfBackgroundType GetShelfBackgroundType() const;
