@@ -146,8 +146,8 @@ void RasterSource::PlaybackToCanvas(
   raster_canvas->clipRect(SkRect::Make(raster_bounds));
   raster_canvas->translate(raster_transform.translation().x(),
                            raster_transform.translation().y());
-  raster_canvas->scale(raster_transform.scale() / recording_scale_factor_,
-                       raster_transform.scale() / recording_scale_factor_);
+  raster_canvas->scale(raster_transform.scale().width() / recording_scale_factor_,
+                       raster_transform.scale().height() / recording_scale_factor_);
 
   if (is_partial_raster && requires_clear_) {
     // TODO(enne): Should this be considered a partial clear?

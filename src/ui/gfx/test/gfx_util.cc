@@ -51,7 +51,8 @@ bool FloatAlmostEqual(float a, float b) {
     const char* rhs_expr,
     const AxisTransform2d& lhs,
     const AxisTransform2d& rhs) {
-  if (FloatAlmostEqual(lhs.scale(), rhs.scale()) &&
+if (FloatAlmostEqual(lhs.scale_x(), rhs.scale_x()) &&
+      FloatAlmostEqual(lhs.scale_y(), rhs.scale_y()) &&
       FloatAlmostEqual(lhs.translation().x(), rhs.translation().x()) &&
       FloatAlmostEqual(lhs.translation().y(), rhs.translation().y())) {
     return ::testing::AssertionSuccess();
