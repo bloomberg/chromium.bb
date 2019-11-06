@@ -34,7 +34,6 @@
 #include "third_party/blink/public/platform/web_rtc_rtp_transceiver.h"
 #include "third_party/blink/public/platform/web_rtc_session_description.h"
 #include "third_party/blink/public/platform/web_rtc_stats.h"
-#include "third_party/blink/public/platform/web_rtc_void_request.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/web/modules/peerconnection/peer_connection_dependency_factory.h"
@@ -49,6 +48,7 @@
 #include "third_party/blink/renderer/platform/peerconnection/rtc_event_log_output_sink_proxy.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_offer_options_platform.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_session_description_request.h"
+#include "third_party/blink/renderer/platform/peerconnection/rtc_void_request.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
 #include "third_party/webrtc/api/rtc_event_log_output.h"
@@ -654,7 +654,7 @@ class RTCPeerConnectionHandler::WebRtcSetDescriptionObserverImpl
  public:
   WebRtcSetDescriptionObserverImpl(
       base::WeakPtr<RTCPeerConnectionHandler> handler,
-      blink::WebRTCVoidRequest web_request,
+      blink::RTCVoidRequest* web_request,
       base::WeakPtr<PeerConnectionTracker> tracker,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       PeerConnectionTracker::Action action,
@@ -675,8 +675,8 @@ class RTCPeerConnectionHandler::WebRtcSetDescriptionObserverImpl
             handler_.get(), action_, "OnFailure",
             String::FromUTF8(error.message()));
       }
-      web_request_.RequestFailed(error);
-      web_request_.Reset();
+      web_request_->RequestFailed(error);
+      web_request_ = nullptr;
       return;
     }
 
@@ -766,8 +766,8 @@ class RTCPeerConnectionHandler::WebRtcSetDescriptionObserverImpl
   ~WebRtcSetDescriptionObserverImpl() override {}
 
   void ResolvePromise() {
-    web_request_.RequestSucceeded();
-    web_request_.Reset();
+    web_request_->RequestSucceeded();
+    web_request_ = nullptr;
   }
 
   void ProcessStateChangesPlanB(WebRtcSetDescriptionObserver::States states) {
@@ -837,7 +837,7 @@ class RTCPeerConnectionHandler::WebRtcSetDescriptionObserverImpl
 
   base::WeakPtr<RTCPeerConnectionHandler> handler_;
   scoped_refptr<base::SequencedTaskRunner> main_thread_;
-  blink::WebRTCVoidRequest web_request_;
+  Persistent<blink::RTCVoidRequest> web_request_;
   base::WeakPtr<PeerConnectionTracker> tracker_;
   PeerConnectionTracker::Action action_;
   webrtc::SdpSemantics sdp_semantics_;
@@ -1255,7 +1255,7 @@ bool IsOfferOrAnswer(const webrtc::SessionDescriptionInterface* native_desc) {
 }
 
 void RTCPeerConnectionHandler::SetLocalDescription(
-    const blink::WebRTCVoidRequest& request) {
+    blink::RTCVoidRequest* request) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::setLocalDescription");
 
@@ -1291,7 +1291,7 @@ void RTCPeerConnectionHandler::SetLocalDescription(
 }
 
 void RTCPeerConnectionHandler::SetLocalDescription(
-    const blink::WebRTCVoidRequest& request,
+    blink::RTCVoidRequest* request,
     const blink::WebRTCSessionDescription& description) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::setLocalDescription");
@@ -1325,8 +1325,10 @@ void RTCPeerConnectionHandler::SetLocalDescription(
     // arbitrary JavaScript to be executed synchronously. As a result, it is
     // possible for |this| to be deleted after this line. See
     // https://crbug.com/1005251.
-    request.RequestFailed(webrtc::RTCError(webrtc::RTCErrorType::INTERNAL_ERROR,
-                                           reason_str.ToString().Utf8()));
+    if (request) {
+      request->RequestFailed(webrtc::RTCError(
+          webrtc::RTCErrorType::INTERNAL_ERROR, reason_str.ToString().Utf8()));
+    }
     return;
   }
 
@@ -1369,7 +1371,7 @@ void RTCPeerConnectionHandler::SetLocalDescription(
 }
 
 void RTCPeerConnectionHandler::SetRemoteDescription(
-    const blink::WebRTCVoidRequest& request,
+    blink::RTCVoidRequest* request,
     const blink::WebRTCSessionDescription& description) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::setRemoteDescription");
@@ -1403,9 +1405,11 @@ void RTCPeerConnectionHandler::SetRemoteDescription(
     // arbitrary JavaScript to be executed synchronously. As a result, it is
     // possible for |this| to be deleted after this line. See
     // https://crbug.com/1005251.
-    request.RequestFailed(
-        webrtc::RTCError(webrtc::RTCErrorType::UNSUPPORTED_OPERATION,
-                         reason_str.ToString().Utf8()));
+    if (request) {
+      request->RequestFailed(
+          webrtc::RTCError(webrtc::RTCErrorType::UNSUPPORTED_OPERATION,
+                           reason_str.ToString().Utf8()));
+    }
     return;
   }
 
@@ -1555,7 +1559,7 @@ webrtc::RTCErrorType RTCPeerConnectionHandler::SetConfiguration(
 }
 
 bool RTCPeerConnectionHandler::AddICECandidate(
-    const blink::WebRTCVoidRequest& request,
+    blink::RTCVoidRequest* request,
     scoped_refptr<blink::WebRTCICECandidate> candidate) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::addICECandidate");
@@ -1603,19 +1607,19 @@ bool RTCPeerConnectionHandler::AddICECandidate(
 }
 
 void RTCPeerConnectionHandler::OnaddICECandidateResult(
-    const blink::WebRTCVoidRequest& webkit_request,
+    blink::RTCVoidRequest* webkit_request,
     bool result) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::OnaddICECandidateResult");
   if (!result) {
     // We don't have the actual error code from the libjingle, so for now
     // using a generic error string.
-    return webkit_request.RequestFailed(
+    return webkit_request->RequestFailed(
         webrtc::RTCError(webrtc::RTCErrorType::UNSUPPORTED_OPERATION,
                          std::move("Error processing ICE candidate")));
   }
 
-  return webkit_request.RequestSucceeded();
+  return webkit_request->RequestSucceeded();
 }
 
 void RTCPeerConnectionHandler::RestartIce() {

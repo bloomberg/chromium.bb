@@ -38,10 +38,10 @@ class MockWebRTCPeerConnectionHandler : public WebRTCPeerConnectionHandler {
                     const WebMediaConstraints&) override;
   void CreateAnswer(RTCSessionDescriptionRequest*,
                     RTCAnswerOptionsPlatform*) override;
-  void SetLocalDescription(const WebRTCVoidRequest&) override;
-  void SetLocalDescription(const WebRTCVoidRequest&,
+  void SetLocalDescription(RTCVoidRequest*) override;
+  void SetLocalDescription(RTCVoidRequest*,
                            const WebRTCSessionDescription&) override;
-  void SetRemoteDescription(const WebRTCVoidRequest&,
+  void SetRemoteDescription(RTCVoidRequest*,
                             const WebRTCSessionDescription&) override;
   WebRTCSessionDescription LocalDescription() override;
   WebRTCSessionDescription RemoteDescription() override;

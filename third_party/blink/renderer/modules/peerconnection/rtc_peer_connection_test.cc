@@ -659,44 +659,17 @@ enum class AsyncOperationAction {
 };
 
 template <typename RequestType>
-void CompleteRequestDeprecated(RequestType request, bool resolve);
+void CompleteRequest(RequestType* request, bool resolve);
 
 template <>
-void CompleteRequestDeprecated(WebRTCVoidRequest request, bool resolve) {
+void CompleteRequest(RTCVoidRequest* request, bool resolve) {
   if (resolve) {
-    request.RequestSucceeded();
+    request->RequestSucceeded();
   } else {
-    request.RequestFailed(
+    request->RequestFailed(
         webrtc::RTCError(webrtc::RTCErrorType::INVALID_MODIFICATION));
   }
 }
-
-template <typename RequestType>
-void PostToCompleteRequestDeprecated(AsyncOperationAction action,
-                                     const RequestType& request) {
-  switch (action) {
-    case AsyncOperationAction::kLeavePending:
-      return;
-    case AsyncOperationAction::kResolve:
-      scheduler::GetSequencedTaskRunnerForTesting()->PostTask(
-          FROM_HERE, base::BindOnce(&CompleteRequestDeprecated<RequestType>,
-                                    request, true));
-      return;
-    case AsyncOperationAction::kReject:
-      scheduler::GetSequencedTaskRunnerForTesting()->PostTask(
-          FROM_HERE, base::BindOnce(&CompleteRequestDeprecated<RequestType>,
-                                    request, false));
-      return;
-  }
-}
-
-// TODO(crbug.com/787254): The template definitions below temporarily
-// duplicate the variant above.
-// Use this one for both RTCSessionDescriptionRequest
-// and RTCVoidRequest when the later gets used everywhere instead of
-// WebRTCVoidRequest.
-template <typename RequestType>
-void CompleteRequest(RequestType* request, bool resolve);
 
 template <>
 void CompleteRequest(RTCSessionDescriptionRequest* request, bool resolve) {
@@ -758,16 +731,14 @@ class FakeWebRTCPeerConnectionHandler : public MockWebRTCPeerConnectionHandler {
                                                         request);
   }
 
-  void SetLocalDescription(const WebRTCVoidRequest& request,
+  void SetLocalDescription(RTCVoidRequest* request,
                            const WebRTCSessionDescription&) override {
-    PostToCompleteRequestDeprecated<WebRTCVoidRequest>(async_operation_action_,
-                                                       request);
+    PostToCompleteRequest<RTCVoidRequest>(async_operation_action_, request);
   }
 
-  void SetRemoteDescription(const WebRTCVoidRequest& request,
+  void SetRemoteDescription(RTCVoidRequest* request,
                             const WebRTCSessionDescription&) override {
-    PostToCompleteRequestDeprecated<WebRTCVoidRequest>(async_operation_action_,
-                                                       request);
+    PostToCompleteRequest<RTCVoidRequest>(async_operation_action_, request);
   }
 
   void set_async_operation_action(AsyncOperationAction action) {

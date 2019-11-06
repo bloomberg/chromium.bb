@@ -37,7 +37,6 @@
 #include "third_party/blink/public/platform/web_rtc_session_description.h"
 #include "third_party/blink/public/platform/web_rtc_stats.h"
 #include "third_party/blink/public/platform/web_rtc_stats_request.h"
-#include "third_party/blink/public/platform/web_rtc_void_request.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
 #include "third_party/blink/public/web/modules/webrtc/webrtc_audio_device_impl.h"
@@ -51,6 +50,7 @@
 #include "third_party/blink/renderer/modules/peerconnection/mock_web_rtc_peer_connection_handler_client.h"
 #include "third_party/blink/renderer/modules/peerconnection/peer_connection_tracker.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_audio_source.h"
+#include "third_party/blink/renderer/platform/peerconnection/rtc_void_request.h"
 #include "third_party/webrtc/api/peer_connection_interface.h"
 #include "third_party/webrtc/api/rtp_receiver_interface.h"
 #include "third_party/webrtc/stats/test/rtc_test_stats.h"
@@ -639,7 +639,6 @@ TEST_F(RTCPeerConnectionHandlerTest, CreateAnswer) {
 }
 
 TEST_F(RTCPeerConnectionHandlerTest, setLocalDescription) {
-  blink::WebRTCVoidRequest request;
   blink::WebRTCSessionDescription description;
   description.Initialize(kDummySdpType, kDummySdp);
   // PeerConnectionTracker::TrackSetSessionDescription is expected to be called
@@ -651,7 +650,7 @@ TEST_F(RTCPeerConnectionHandlerTest, setLocalDescription) {
                                          PeerConnectionTracker::SOURCE_LOCAL));
   EXPECT_CALL(*mock_peer_connection_, SetLocalDescription(_, _));
 
-  pc_handler_->SetLocalDescription(request, description);
+  pc_handler_->SetLocalDescription(nullptr /*RTCVoidRequest*/, description);
   RunMessageLoopsUntilIdle();
   EXPECT_EQ(description.GetType(), pc_handler_->LocalDescription().GetType());
   EXPECT_EQ(description.Sdp(), pc_handler_->LocalDescription().Sdp());
@@ -669,7 +668,6 @@ TEST_F(RTCPeerConnectionHandlerTest, setLocalDescription) {
 // Test that setLocalDescription with invalid SDP will result in a failure, and
 // is tracked as a failure with PeerConnectionTracker.
 TEST_F(RTCPeerConnectionHandlerTest, setLocalDescriptionParseError) {
-  blink::WebRTCVoidRequest request;
   blink::WebRTCSessionDescription description;
   description.Initialize(kDummySdpType, kDummySdp);
   testing::InSequence sequence;
@@ -687,14 +685,13 @@ TEST_F(RTCPeerConnectionHandlerTest, setLocalDescriptionParseError) {
 
   // Used to simulate a parse failure.
   mock_dependency_factory_->SetFailToCreateSessionDescription(true);
-  pc_handler_->SetLocalDescription(request, description);
+  pc_handler_->SetLocalDescription(nullptr /*RTCVoidRequest*/, description);
   RunMessageLoopsUntilIdle();
   // A description that failed to be applied shouldn't be stored.
   EXPECT_TRUE(pc_handler_->LocalDescription().IsNull());
 }
 
 TEST_F(RTCPeerConnectionHandlerTest, setRemoteDescription) {
-  blink::WebRTCVoidRequest request;
   blink::WebRTCSessionDescription description;
   description.Initialize(kDummySdpType, kDummySdp);
 
@@ -707,7 +704,7 @@ TEST_F(RTCPeerConnectionHandlerTest, setRemoteDescription) {
                                          PeerConnectionTracker::SOURCE_REMOTE));
   EXPECT_CALL(*mock_peer_connection_, SetRemoteDescriptionForMock(_, _));
 
-  pc_handler_->SetRemoteDescription(request, description);
+  pc_handler_->SetRemoteDescription(nullptr /*RTCVoidRequest*/, description);
   RunMessageLoopsUntilIdle();
   EXPECT_EQ(description.GetType(), pc_handler_->RemoteDescription().GetType());
   EXPECT_EQ(description.Sdp(), pc_handler_->RemoteDescription().Sdp());
@@ -725,7 +722,6 @@ TEST_F(RTCPeerConnectionHandlerTest, setRemoteDescription) {
 // Test that setRemoteDescription with invalid SDP will result in a failure, and
 // is tracked as a failure with PeerConnectionTracker.
 TEST_F(RTCPeerConnectionHandlerTest, setRemoteDescriptionParseError) {
-  blink::WebRTCVoidRequest request;
   blink::WebRTCSessionDescription description;
   description.Initialize(kDummySdpType, kDummySdp);
   testing::InSequence sequence;
@@ -743,7 +739,7 @@ TEST_F(RTCPeerConnectionHandlerTest, setRemoteDescriptionParseError) {
 
   // Used to simulate a parse failure.
   mock_dependency_factory_->SetFailToCreateSessionDescription(true);
-  pc_handler_->SetRemoteDescription(request, description);
+  pc_handler_->SetRemoteDescription(nullptr /*RTCVoidRequest*/, description);
   RunMessageLoopsUntilIdle();
   // A description that failed to be applied shouldn't be stored.
   EXPECT_TRUE(pc_handler_->RemoteDescription().IsNull());
