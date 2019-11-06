@@ -95,6 +95,8 @@ bool InitializeStaticEGLInternal(GLImplementation implementation) {
     return false;
   }
 
+  LOG(INFO) << "Loaded Graphics driver from gles_path = " << gles_path;
+
   // When using EGL, first try eglGetProcAddress and then Windows
   // GetProcAddress on both the EGL and GLES2 DLLs.
   base::NativeLibrary egl_library =
