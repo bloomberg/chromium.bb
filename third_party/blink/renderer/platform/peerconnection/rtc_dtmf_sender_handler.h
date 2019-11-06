@@ -11,7 +11,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "third_party/blink/public/platform/web_rtc_dtmf_sender_handler_client.h"
-#include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/webrtc/api/dtmf_sender_interface.h"
@@ -39,11 +38,9 @@ class PLATFORM_EXPORT RtcDtmfSenderHandler final {
   ~RtcDtmfSenderHandler();
 
   void SetClient(blink::WebRTCDTMFSenderHandlerClient* client);
-  blink::WebString CurrentToneBuffer();
+  String CurrentToneBuffer();
   bool CanInsertDTMF();
-  bool InsertDTMF(const blink::WebString& tones,
-                  int duration,
-                  int interToneGap);
+  bool InsertDTMF(const String& tones, int duration, int inter_tone_gap);
 
   void OnToneChange(const String& tone);
 

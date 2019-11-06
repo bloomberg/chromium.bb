@@ -9,10 +9,9 @@
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
-#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -69,19 +68,19 @@ void RtcDtmfSenderHandler::SetClient(
   webkit_client_ = client;
 }
 
-blink::WebString RtcDtmfSenderHandler::CurrentToneBuffer() {
-  return blink::WebString::FromUTF8(dtmf_sender_->tones());
+String RtcDtmfSenderHandler::CurrentToneBuffer() {
+  return String::FromUTF8(dtmf_sender_->tones());
 }
 
 bool RtcDtmfSenderHandler::CanInsertDTMF() {
   return dtmf_sender_->CanInsertDtmf();
 }
 
-bool RtcDtmfSenderHandler::InsertDTMF(const blink::WebString& tones,
+bool RtcDtmfSenderHandler::InsertDTMF(const String& tones,
                                       int duration,
-                                      int interToneGap) {
+                                      int inter_tone_gap) {
   std::string utf8_tones = tones.Utf8();
-  return dtmf_sender_->InsertDtmf(utf8_tones, duration, interToneGap);
+  return dtmf_sender_->InsertDtmf(utf8_tones, duration, inter_tone_gap);
 }
 
 void RtcDtmfSenderHandler::OnToneChange(const String& tone) {
@@ -89,6 +88,8 @@ void RtcDtmfSenderHandler::OnToneChange(const String& tone) {
     LOG(ERROR) << "WebRTCDTMFSenderHandlerClient not set.";
     return;
   }
+  // TODO(crbug.com/787254): Remove the respective web_string.h header inclusion
+  // when WebRtcDtmfSenderHandlerClient moves out of the Blink API.
   webkit_client_->DidPlayTone(tone);
 }
 
