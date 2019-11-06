@@ -38,11 +38,12 @@ class StyleTraversalRootTestImpl : public StyleTraversalRoot {
   bool IsDirty(const Node& node) const final {
     return dirty_nodes_.Contains(&node);
   }
-  void ClearChildDirtyForAncestors(ContainerNode& parent) const override {
+  void RootRemoved(ContainerNode& parent) override {
     for (ContainerNode* ancestor = &parent; ancestor;
          ancestor = ParentInternal(*ancestor)) {
       child_dirty_nodes_.erase(ancestor);
     }
+    Clear();
   }
 
   HeapHashSet<Member<const Node>> dirty_nodes_;

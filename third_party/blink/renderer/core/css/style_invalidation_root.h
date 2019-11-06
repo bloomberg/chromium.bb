@@ -21,7 +21,7 @@ class CORE_EXPORT StyleInvalidationRoot : public StyleTraversalRoot {
   bool IsChildDirty(const ContainerNode& node) const final;
 #endif  // DCHECK_IS_ON()
   bool IsDirty(const Node& node) const final;
-  void ClearChildDirtyForAncestors(ContainerNode& parent) const final;
+  void RootRemoved(ContainerNode& parent) final;
 };
 
 }  // namespace blink
