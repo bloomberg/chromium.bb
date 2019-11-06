@@ -29,6 +29,7 @@ import org.chromium.weblayer_private.aidl.ObjectWrapper;
  */
 @JNINamespace("weblayer")
 public final class BrowserControllerImpl extends IBrowserController.Stub {
+    private static int sNextId = 1;
     private long mNativeBrowserController;
 
     private ProfileImpl mProfile;
@@ -41,6 +42,9 @@ public final class BrowserControllerImpl extends IBrowserController.Stub {
     // BrowserFragmentControllerImpl this BrowserControllerImpl is in. This is only null during
     // creation.
     private BrowserFragmentControllerImpl mFragment;
+    private NewBrowserCallbackProxy mNewBrowserCallbackProxy;
+    private IBrowserControllerClient mClient;
+    private final int mId;
 
     private static class InternalAccessDelegateImpl
             implements ViewEventSink.InternalAccessDelegate {
@@ -64,9 +68,28 @@ public final class BrowserControllerImpl extends IBrowserController.Stub {
     }
 
     public BrowserControllerImpl(ProfileImpl profile, WindowAndroid windowAndroid) {
+        mId = ++sNextId;
+        init(profile, windowAndroid,
+                BrowserControllerImplJni.get().createBrowserController(
+                        profile.getNativeProfile(), this));
+    }
+
+    /**
+     * This constructor is called when the native side triggers creation of a BrowserControllerImpl
+     * (as happens with popups).
+     */
+    public BrowserControllerImpl(
+            ProfileImpl profile, WindowAndroid windowAndroid, long nativeBrowserController) {
+        mId = ++sNextId;
+        BrowserControllerImplJni.get().setJavaImpl(
+                nativeBrowserController, BrowserControllerImpl.this);
+        init(profile, windowAndroid, nativeBrowserController);
+    }
+
+    private void init(
+            ProfileImpl profile, WindowAndroid windowAndroid, long nativeBrowserController) {
         mProfile = profile;
-        mNativeBrowserController = BrowserControllerImplJni.get().createBrowserController(
-                profile.getNativeProfile(), this);
+        mNativeBrowserController = nativeBrowserController;
         mWebContents = BrowserControllerImplJni.get().getWebContents(
                 mNativeBrowserController, BrowserControllerImpl.this);
         mViewAndroidDelegate = new ViewAndroidDelegate(null) {
@@ -82,6 +105,14 @@ public final class BrowserControllerImpl extends IBrowserController.Stub {
                 windowAndroid, WebContents.createDefaultInternalsHolder());
     }
 
+    public ProfileImpl getProfile() {
+        return mProfile;
+    }
+
+    public IBrowserControllerClient getClient() {
+        return mClient;
+    }
+
     /**
      * Sets the BrowserFragmentControllerImpl this BrowserControllerImpl is contained in.
      */
@@ -95,6 +126,21 @@ public final class BrowserControllerImpl extends IBrowserController.Stub {
         return mFragment;
     }
 
+    @Override
+    public void setNewBrowsersEnabled(boolean enable) {
+        if (enable && mNewBrowserCallbackProxy == null) {
+            mNewBrowserCallbackProxy = new NewBrowserCallbackProxy(this);
+        } else if (!enable && mNewBrowserCallbackProxy != null) {
+            mNewBrowserCallbackProxy.destroy();
+            mNewBrowserCallbackProxy = null;
+        }
+    }
+
+    @Override
+    public int getId() {
+        return mId;
+    }
+
     /**
      * Called when this BrowserControllerImpl becomes the active BrowserControllerImpl.
      */
@@ -105,7 +151,6 @@ public final class BrowserControllerImpl extends IBrowserController.Stub {
                 BrowserControllerImpl.this, topControlsContainerViewHandle);
         mWebContents.onShow();
     }
-
     /**
      * Called when this BrowserControllerImpl is no longer the active BrowserControllerImpl.
      */
@@ -133,6 +178,7 @@ public final class BrowserControllerImpl extends IBrowserController.Stub {
 
     @Override
     public void setClient(IBrowserControllerClient client) {
+        mClient = client;
         mBrowserCallbackProxy = new BrowserCallbackProxy(mNativeBrowserController, client);
     }
 
@@ -195,6 +241,10 @@ public final class BrowserControllerImpl extends IBrowserController.Stub {
             mFullscreenCallbackProxy.destroy();
             mFullscreenCallbackProxy = null;
         }
+        if (mNewBrowserCallbackProxy != null) {
+            mNewBrowserCallbackProxy.destroy();
+            mNewBrowserCallbackProxy = null;
+        }
         mNavigationController = null;
         BrowserControllerImplJni.get().deleteBrowserController(mNativeBrowserController);
         mNativeBrowserController = 0;
@@ -208,7 +258,7 @@ public final class BrowserControllerImpl extends IBrowserController.Stub {
 
     /**
      * Returns the BrowserFragmentViewController for this BrowserControllerImpl, but only if this
-     * the active BrowserControllerImpl.
+     * is the active BrowserControllerImpl.
      */
     private BrowserFragmentViewController getViewController() {
         return (mFragment.getActiveBrowserController() == this) ? mFragment.getViewController()
@@ -218,6 +268,7 @@ public final class BrowserControllerImpl extends IBrowserController.Stub {
     @NativeMethods
     interface Natives {
         long createBrowserController(long profile, BrowserControllerImpl caller);
+        void setJavaImpl(long nativeBrowserControllerImpl, BrowserControllerImpl impl);
         void setTopControlsContainerView(long nativeBrowserControllerImpl,
                 BrowserControllerImpl caller, long nativeTopControlsContainerView);
         void deleteBrowserController(long browserController);

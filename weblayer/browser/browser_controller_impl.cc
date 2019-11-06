@@ -40,24 +40,24 @@ namespace weblayer {
 
 namespace {
 
-NewBrowserDisposition NewBrowserDispositionFromWindowDisposition(
+NewBrowserType NewBrowserTypeFromWindowDisposition(
     WindowOpenDisposition disposition) {
   // WindowOpenDisposition has a *ton* of types, but the following are really
   // the only ones that should be hit for this code path.
   switch (disposition) {
     case WindowOpenDisposition::NEW_FOREGROUND_TAB:
-      return NewBrowserDisposition::kForeground;
+      return NewBrowserType::FOREGROUND_TAB;
     case WindowOpenDisposition::NEW_BACKGROUND_TAB:
-      return NewBrowserDisposition::kBackground;
+      return NewBrowserType::BACKGROUND_TAB;
     case WindowOpenDisposition::NEW_POPUP:
-      return NewBrowserDisposition::kNewPopup;
+      return NewBrowserType::NEW_POPUP;
     case WindowOpenDisposition::NEW_WINDOW:
-      return NewBrowserDisposition::kNewWindow;
+      return NewBrowserType::NEW_WINDOW;
     default:
       // The set of allowed types are in
       // ContentBrowserClientImpl::CanCreateWindow().
       NOTREACHED();
-      return NewBrowserDisposition::kForeground;
+      return NewBrowserType::FOREGROUND_TAB;
   }
 }
 
@@ -239,6 +239,14 @@ void BrowserControllerImpl::ExecuteScript(
                 base::BindOnce(&HandleJavaScriptResult, jcallback));
 }
 
+void BrowserControllerImpl::SetJavaImpl(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& impl) {
+  // This should only be called early on and only once.
+  DCHECK(!java_impl_);
+  java_impl_ = impl;
+}
+
 #endif
 
 content::WebContents* BrowserControllerImpl::OpenURLFromTab(
@@ -282,7 +290,9 @@ void BrowserControllerImpl::RunFileChooser(
 
 int BrowserControllerImpl::GetTopControlsHeight() {
 #if defined(OS_ANDROID)
-  return top_controls_container_view_->GetTopControlsHeight();
+  return top_controls_container_view_
+             ? top_controls_container_view_->GetTopControlsHeight()
+             : 0;
 #else
   return 0;
 #endif
@@ -345,8 +355,7 @@ void BrowserControllerImpl::AddNewContents(
       std::make_unique<BrowserControllerImpl>(profile_,
                                               std::move(new_contents));
   new_browser_delegate_->OnNewBrowser(
-      std::move(browser),
-      NewBrowserDispositionFromWindowDisposition(disposition));
+      std::move(browser), NewBrowserTypeFromWindowDisposition(disposition));
 }
 
 void BrowserControllerImpl::DidFinishNavigation(

@@ -132,7 +132,7 @@ public class InstrumentationActivity extends FragmentActivity {
 
         mBrowserFragmentController.setTopView(mTopContentsContainer);
 
-        mBrowserController = mBrowserFragmentController.getBrowserController();
+        mBrowserController = mBrowserFragmentController.getActiveBrowserController();
         mBrowserController.registerBrowserCallback(new BrowserCallback() {
             @Override
             public void visibleUrlChanged(Uri uri) {

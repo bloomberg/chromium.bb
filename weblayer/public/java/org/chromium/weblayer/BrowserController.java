@@ -34,10 +34,14 @@ public final class BrowserController {
     private FullscreenCallbackClientImpl mFullscreenCallbackClient;
     private final NavigationController mNavigationController;
     private final ObserverList<BrowserCallback> mCallbacks;
+    private BrowserFragmentController mBrowserFragmentController;
     private DownloadCallbackClientImpl mDownloadCallbackClient;
+    private NewBrowserCallback mNewBrowserCallback;
 
-    BrowserController(IBrowserController impl) {
+    BrowserController(
+            IBrowserController impl, BrowserFragmentController browserFragmentController) {
         mImpl = impl;
+        mBrowserFragmentController = browserFragmentController;
         try {
             mImpl.setClient(new BrowserClientImpl());
         } catch (RemoteException e) {
@@ -46,6 +50,12 @@ public final class BrowserController {
 
         mCallbacks = new ObserverList<BrowserCallback>();
         mNavigationController = NavigationController.create(mImpl);
+        mBrowserFragmentController.registerBrowserController(this);
+    }
+
+    public BrowserFragmentController getBrowserFragmentController() {
+        ThreadCheck.ensureOnUiThread();
+        return mBrowserFragmentController;
     }
 
     public void setDownloadCallback(@Nullable DownloadCallback callback) {
@@ -116,6 +126,16 @@ public final class BrowserController {
         }
     }
 
+    public void setNewBrowserCallback(@Nullable NewBrowserCallback callback) {
+        ThreadCheck.ensureOnUiThread();
+        mNewBrowserCallback = callback;
+        try {
+            mImpl.setNewBrowsersEnabled(mNewBrowserCallback != null);
+        } catch (RemoteException e) {
+            throw new APICallException(e);
+        }
+    }
+
     @Nullable
     public FullscreenCallback getFullscreenCallback() {
         ThreadCheck.ensureOnUiThread();
@@ -149,6 +169,16 @@ public final class BrowserController {
             for (BrowserCallback callback : mCallbacks) {
                 callback.visibleUrlChanged(uri);
             }
+        }
+
+        @Override
+        public void onNewBrowser(IBrowserController browser, int mode) {
+            // This should only be hit if setNewBrowserCallback() has been called with a non-null
+            // value.
+            assert mNewBrowserCallback != null;
+            BrowserController browserController =
+                    new BrowserController(browser, mBrowserFragmentController);
+            mNewBrowserCallback.onNewBrowser(browserController, mode);
         }
     }
 

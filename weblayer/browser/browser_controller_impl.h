@@ -70,12 +70,13 @@ class BrowserControllerImpl : public BrowserController,
                      const base::android::JavaParamRef<jstring>& script,
                      bool use_separate_isolate,
                      const base::android::JavaParamRef<jobject>& callback);
+  void SetJavaImpl(JNIEnv* env,
+                   const base::android::JavaParamRef<jobject>& impl);
 #endif
 
   DownloadDelegate* download_delegate() { return download_delegate_; }
   FullscreenDelegate* fullscreen_delegate() { return fullscreen_delegate_; }
 
- private:
   // BrowserController:
   void SetDownloadDelegate(DownloadDelegate* delegate) override;
   void SetFullscreenDelegate(FullscreenDelegate* delegate) override;
@@ -90,6 +91,7 @@ class BrowserControllerImpl : public BrowserController,
   void AttachToView(views::WebView* web_view) override;
 #endif
 
+ private:
   // content::WebContentsDelegate:
   content::WebContents* OpenURLFromTab(
       content::WebContents* source,

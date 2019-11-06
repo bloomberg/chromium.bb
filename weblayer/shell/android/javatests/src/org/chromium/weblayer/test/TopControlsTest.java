@@ -59,7 +59,7 @@ public class TopControlsTest {
                     .commitNow();
             mBrowserFragmentController = BrowserFragmentController.fromFragment(fragment);
             mBrowserFragmentController.setTopView(new FrameLayout(activity));
-            mBrowserController = mBrowserFragmentController.getBrowserController();
+            mBrowserController = mBrowserFragmentController.getActiveBrowserController();
         });
 
         mActivityTestRule.navigateAndWait(

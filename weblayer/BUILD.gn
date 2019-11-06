@@ -218,6 +218,8 @@ jumbo_static_library("weblayer_lib") {
       "browser/download_callback_proxy.h",
       "browser/fullscreen_callback_proxy.cc",
       "browser/fullscreen_callback_proxy.h",
+      "browser/new_browser_callback_proxy.cc",
+      "browser/new_browser_callback_proxy.h",
       "browser/top_controls_container_view.cc",
       "browser/top_controls_container_view.h",
     ]
