@@ -723,6 +723,8 @@ source_set("chromeos") {
     "bluetooth/debug_logs_manager_factory.h",
     "boot_times_recorder.cc",
     "boot_times_recorder.h",
+    "browser_context_keyed_service_factories.cc",
+    "browser_context_keyed_service_factories.h",
     "camera_detector.cc",
     "camera_detector.h",
     "camera_presence_notifier.cc",
