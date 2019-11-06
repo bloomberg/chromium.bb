@@ -172,6 +172,7 @@ chrome_junit_test_java_sources = [
   "junit/src/org/chromium/chrome/browser/payments/PaymentManifestVerifierTest.java",
   "junit/src/org/chromium/chrome/browser/preferences/PrefServiceBridgeTest.java",
   "junit/src/org/chromium/chrome/browser/preferences/SearchEngineAdapterTest.java",
+  "junit/src/org/chromium/chrome/browser/preferences/about/AboutSettingsBridgeTest.java",
   "junit/src/org/chromium/chrome/browser/preferences/password/DialogManagerTest.java",
   "junit/src/org/chromium/chrome/browser/preferences/password/EnsureAsyncPostingRule.java",
   "junit/src/org/chromium/chrome/browser/preferences/password/ExportWarningDialogFragmentTest.java",

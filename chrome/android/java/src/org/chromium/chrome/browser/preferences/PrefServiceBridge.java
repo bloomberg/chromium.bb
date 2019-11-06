@@ -39,33 +39,6 @@ public class PrefServiceBridge {
 
     private static final String LOG_TAG = "PrefServiceBridge";
 
-    /**
-     * Structure that holds all the version information about the current Chrome browser.
-     */
-    public static class AboutVersionStrings {
-        private final String mApplicationVersion;
-        private final String mOSVersion;
-
-        private AboutVersionStrings(String applicationVersion, String osVersion) {
-            mApplicationVersion = applicationVersion;
-            mOSVersion = osVersion;
-        }
-
-        public String getApplicationVersion() {
-            return mApplicationVersion;
-        }
-
-        public String getOSVersion() {
-            return mOSVersion;
-        }
-    }
-
-    @CalledByNative
-    private static AboutVersionStrings createAboutVersionStrings(String applicationVersion,
-            String osVersion) {
-        return new AboutVersionStrings(applicationVersion, osVersion);
-    }
-
     // Singleton constructor. Do not call directly unless for testing purpose.
     @VisibleForTesting
     protected PrefServiceBridge() {}
@@ -604,14 +577,6 @@ public class PrefServiceBridge {
     }
 
     /**
-     * Get all the version strings from native.
-     * @return AboutVersionStrings about version strings.
-     */
-    public AboutVersionStrings getAboutVersionStrings() {
-        return PrefServiceBridgeJni.get().getAboutVersionStrings();
-    }
-
-    /**
       * @return Whether usage and crash reporting pref is enabled.
       */
     public boolean isMetricsReportingEnabled() {
@@ -720,7 +685,6 @@ public class PrefServiceBridge {
         void setSensorsEnabled(boolean enabled);
         void setSoundEnabled(boolean enabled);
         boolean canPrefetchAndPrerender();
-        AboutVersionStrings getAboutVersionStrings();
         boolean getSafeBrowsingExtendedReportingEnabled();
         void setSafeBrowsingExtendedReportingEnabled(boolean enabled);
         boolean getSafeBrowsingExtendedReportingManaged();

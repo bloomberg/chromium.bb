@@ -2535,6 +2535,7 @@ jumbo_static_library("browser") {
       "android/payments/service_worker_payment_app_bridge.cc",
       "android/photo_picker_sandbox_bridge.cc",
       "android/policy/policy_auditor.cc",
+      "android/preferences/about_settings_bridge.cc",
       "android/preferences/autofill/autofill_profile_bridge.cc",
       "android/preferences/browser_prefs_android.cc",
       "android/preferences/browser_prefs_android.h",

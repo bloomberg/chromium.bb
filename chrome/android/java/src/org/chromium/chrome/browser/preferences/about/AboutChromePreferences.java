@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.preferences;
+package org.chromium.chrome.browser.preferences.about;
 
 import android.content.Context;
 import android.content.pm.PackageInfo;
@@ -14,7 +14,7 @@ import android.text.format.DateUtils;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeVersionInfo;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge.AboutVersionStrings;
+import org.chromium.chrome.browser.preferences.PreferenceUtils;
 import org.chromium.chrome.browser.preferences.developer.DeveloperPreferences;
 import org.chromium.ui.widget.Toast;
 
@@ -50,13 +50,12 @@ public class AboutChromePreferences
         getActivity().setTitle(R.string.prefs_about_chrome);
         PreferenceUtils.addPreferencesFromResource(this, R.xml.about_chrome_preferences);
 
-        PrefServiceBridge prefServiceBridge = PrefServiceBridge.getInstance();
-        AboutVersionStrings versionStrings = prefServiceBridge.getAboutVersionStrings();
         Preference p = findPreference(PREF_APPLICATION_VERSION);
-        p.setSummary(getApplicationVersion(getActivity(), versionStrings.getApplicationVersion()));
+        p.setSummary(
+                getApplicationVersion(getActivity(), AboutSettingsBridge.getApplicationVersion()));
         p.setOnPreferenceClickListener(this);
         p = findPreference(PREF_OS_VERSION);
-        p.setSummary(versionStrings.getOSVersion());
+        p.setSummary(AboutSettingsBridge.getOSVersion());
         p = findPreference(PREF_LEGAL_INFORMATION);
         int currentYear = Calendar.getInstance().get(Calendar.YEAR);
         p.setSummary(getString(R.string.legal_information_summary, currentYear));
@@ -74,15 +73,13 @@ public class AboutChromePreferences
         // For developer builds, show how recently the app was installed/updated.
         PackageInfo info;
         try {
-            info = context.getPackageManager().getPackageInfo(
-                    context.getPackageName(), 0);
+            info = context.getPackageManager().getPackageInfo(context.getPackageName(), 0);
         } catch (NameNotFoundException e) {
             return version;
         }
         CharSequence updateTimeString = DateUtils.getRelativeTimeSpanString(
                 info.lastUpdateTime, System.currentTimeMillis(), 0);
-        return context.getString(R.string.version_with_update_time, version,
-                updateTimeString);
+        return context.getString(R.string.version_with_update_time, version, updateTimeString);
     }
 
     @Override

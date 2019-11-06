@@ -12,7 +12,6 @@
 #include <string>
 #include <vector>
 
-#include "base/android/build_info.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
@@ -32,7 +31,6 @@
 #include "chrome/browser/net/prediction_options.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/android/android_about_app_info.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -43,7 +41,6 @@
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "components/signin/public/base/signin_pref_names.h"
-#include "components/version_info/version_info.h"
 #include "components/web_resource/web_resource_pref_names.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -625,24 +622,6 @@ static jboolean JNI_PrefServiceBridge_GetFirstRunEulaAccepted(JNIEnv* env) {
 
 static void JNI_PrefServiceBridge_SetEulaAccepted(JNIEnv* env) {
   g_browser_process->local_state()->SetBoolean(prefs::kEulaAccepted, true);
-}
-
-// Sends all information about the different versions to Java.
-// From browser_about_handler.cc
-static ScopedJavaLocalRef<jobject> JNI_PrefServiceBridge_GetAboutVersionStrings(
-    JNIEnv* env) {
-  std::string os_version = version_info::GetOSType();
-  os_version += " " + AndroidAboutAppInfo::GetOsInfo();
-
-  base::android::BuildInfo* android_build_info =
-        base::android::BuildInfo::GetInstance();
-  std::string application(android_build_info->host_package_label());
-  application.append(" ");
-  application.append(version_info::GetVersionNumber());
-
-  return Java_PrefServiceBridge_createAboutVersionStrings(
-      env, ConvertUTF8ToJavaString(env, application),
-      ConvertUTF8ToJavaString(env, os_version));
 }
 
 // static
