@@ -1042,13 +1042,13 @@ if (!is_android) {
       "../browser/plugins/flash_permission_browsertest.cc",
       "../browser/plugins/plugin_power_saver_browsertest.cc",
       "../browser/plugins/plugin_response_interceptor_url_loader_throttle_browsertest.cc",
+      "../browser/policy/cloud/chrome_browser_cloud_management_browsertest.cc",
       "../browser/policy/cloud/cloud_policy_browsertest.cc",
       "../browser/policy/cloud/cloud_policy_manager_browsertest.cc",
       "../browser/policy/cloud/cloud_policy_test_utils.cc",
       "../browser/policy/cloud/cloud_policy_test_utils.h",
       "../browser/policy/cloud/component_cloud_policy_browsertest.cc",
       "../browser/policy/cloud/device_management_service_browsertest.cc",
-      "../browser/policy/cloud/machine_level_user_cloud_policy_browsertest.cc",
       "../browser/policy/policy_browsertest.cc",
       "../browser/policy/policy_initialization_browsertest.cc",
       "../browser/policy/policy_network_browsertest.cc",
@@ -2382,7 +2382,7 @@ if (!is_android) {
         "../browser/ui/webui/signin/user_manager_ui_browsertest.cc",
 
         # chromeos does not support machine level user cloud policies
-        "../browser/policy/cloud/machine_level_user_cloud_policy_browsertest.cc",
+        "../browser/policy/cloud/chrome_browser_cloud_management_browsertest.cc",
       ]
     } else {  # !is_chromeos
       sources -= [
@@ -2446,8 +2446,8 @@ if (!is_android) {
         "//chrome:chrome_framework",
       ]
       sources += [
-        "../browser/policy/cloud/machine_level_user_cloud_policy_browsertest_mac_util.h",
-        "../browser/policy/cloud/machine_level_user_cloud_policy_browsertest_mac_util.mm",
+        "../browser/policy/cloud/chrome_browser_cloud_management_browsertest_mac_util.h",
+        "../browser/policy/cloud/chrome_browser_cloud_management_browsertest_mac_util.mm",
         "../browser/renderer_host/chrome_render_widget_host_view_mac_history_swiper_browsertest.mm",
         "../browser/spellchecker/spell_check_host_chrome_impl_mac_browsertest.cc",
         "../browser/ui/cocoa/accelerators_cocoa_browsertest.mm",

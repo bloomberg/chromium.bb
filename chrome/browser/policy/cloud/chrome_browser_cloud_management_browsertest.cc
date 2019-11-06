@@ -52,13 +52,13 @@
 #include "ui/views/test/widget_test.h"
 
 #if defined(OS_MACOSX)
-#include "chrome/browser/policy/cloud/machine_level_user_cloud_policy_browsertest_mac_util.h"
+#include "chrome/browser/policy/cloud/chrome_browser_cloud_management_browsertest_mac_util.h"
 #endif
 
+using testing::_;
 using testing::DoAll;
 using testing::Invoke;
 using testing::InvokeWithoutArgs;
-using testing::_;
 
 namespace em = enterprise_management;
 
@@ -195,10 +195,10 @@ class PolicyFetchClientObserver : public CloudPolicyClient::Observer {
 
 }  // namespace
 
-class MachineLevelUserCloudPolicyServiceIntegrationTest
+class ChromeBrowserCloudManagementServiceIntegrationTest
     : public InProcessBrowserTest,
       public testing::WithParamInterface<std::string(
-          MachineLevelUserCloudPolicyServiceIntegrationTest::*)(void)> {
+          ChromeBrowserCloudManagementServiceIntegrationTest::*)(void)> {
  public:
   MOCK_METHOD4(OnJobDone,
                void(DeviceManagementService::Job*,
@@ -219,7 +219,7 @@ class MachineLevelUserCloudPolicyServiceIntegrationTest
     if (expect_success) {
       EXPECT_CALL(*this, OnJobDone(_, testing::Eq(DM_STATUS_SUCCESS), _, _))
           .WillOnce(DoAll(
-              Invoke(this, &MachineLevelUserCloudPolicyServiceIntegrationTest::
+              Invoke(this, &ChromeBrowserCloudManagementServiceIntegrationTest::
                                RecordToken),
               InvokeWithoutArgs(&run_loop, &base::RunLoop::QuitWhenIdle)));
     } else {
@@ -240,7 +240,7 @@ class MachineLevelUserCloudPolicyServiceIntegrationTest
             g_browser_process->system_network_context_manager()
                 ->GetSharedURLLoaderFactory(),
             base::BindOnce(
-                &MachineLevelUserCloudPolicyServiceIntegrationTest::OnJobDone,
+                &ChromeBrowserCloudManagementServiceIntegrationTest::OnJobDone,
                 base::Unretained(this)),
             base::DoNothing());
 
@@ -277,7 +277,7 @@ class MachineLevelUserCloudPolicyServiceIntegrationTest
         g_browser_process->system_network_context_manager()
             ->GetSharedURLLoaderFactory(),
         base::BindOnce(
-            &MachineLevelUserCloudPolicyServiceIntegrationTest::OnJobDone,
+            &ChromeBrowserCloudManagementServiceIntegrationTest::OnJobDone,
             base::Unretained(this)),
         base::DoNothing());
 
@@ -323,21 +323,21 @@ class MachineLevelUserCloudPolicyServiceIntegrationTest
   std::unique_ptr<LocalPolicyTestServer> test_server_;
 };
 
-IN_PROC_BROWSER_TEST_P(MachineLevelUserCloudPolicyServiceIntegrationTest,
+IN_PROC_BROWSER_TEST_P(ChromeBrowserCloudManagementServiceIntegrationTest,
                        Registration) {
   ASSERT_TRUE(token_.empty());
   PerformRegistration(kEnrollmentToken, kMachineName, /*expect_success=*/true);
   EXPECT_FALSE(token_.empty());
 }
 
-IN_PROC_BROWSER_TEST_P(MachineLevelUserCloudPolicyServiceIntegrationTest,
+IN_PROC_BROWSER_TEST_P(ChromeBrowserCloudManagementServiceIntegrationTest,
                        RegistrationNoEnrollmentToken) {
   ASSERT_TRUE(token_.empty());
   PerformRegistration(std::string(), kMachineName, /*expect_success=*/false);
   EXPECT_TRUE(token_.empty());
 }
 
-IN_PROC_BROWSER_TEST_P(MachineLevelUserCloudPolicyServiceIntegrationTest,
+IN_PROC_BROWSER_TEST_P(ChromeBrowserCloudManagementServiceIntegrationTest,
                        RegistrationNoMachineName) {
   ASSERT_TRUE(token_.empty());
   PerformRegistration(kEnrollmentToken, std::string(),
@@ -345,17 +345,17 @@ IN_PROC_BROWSER_TEST_P(MachineLevelUserCloudPolicyServiceIntegrationTest,
   EXPECT_TRUE(token_.empty());
 }
 
-IN_PROC_BROWSER_TEST_P(MachineLevelUserCloudPolicyServiceIntegrationTest,
+IN_PROC_BROWSER_TEST_P(ChromeBrowserCloudManagementServiceIntegrationTest,
                        ChromeDesktopReport) {
   em::ChromeDesktopReportRequest chrome_desktop_report;
   UploadChromeDesktopReport(&chrome_desktop_report);
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    MachineLevelUserCloudPolicyServiceIntegrationTestInstance,
-    MachineLevelUserCloudPolicyServiceIntegrationTest,
+    ChromeBrowserCloudManagementServiceIntegrationTestInstance,
+    ChromeBrowserCloudManagementServiceIntegrationTest,
     testing::Values(
-        &MachineLevelUserCloudPolicyServiceIntegrationTest::InitTestServer));
+        &ChromeBrowserCloudManagementServiceIntegrationTest::InitTestServer));
 
 class CloudPolicyStoreObserverStub : public CloudPolicyStore::Observer {
  public:
@@ -418,11 +418,11 @@ IN_PROC_BROWSER_TEST_F(MachineLevelUserCloudPolicyManagerTest, WithDmToken) {
   EXPECT_TRUE(CreateAndInitManager("dummy_dm_token"));
 }
 
-class MachineLevelUserCloudPolicyEnrollmentTest
+class ChromeBrowserCloudManagementEnrollmentTest
     : public InProcessBrowserTest,
       public ::testing::WithParamInterface<std::tuple<bool, bool, bool>> {
  public:
-  MachineLevelUserCloudPolicyEnrollmentTest() {
+  ChromeBrowserCloudManagementEnrollmentTest() {
     BrowserDMTokenStorage::SetForTesting(&storage_);
     storage_.SetEnrollmentToken(is_enrollment_token_valid()
                                     ? kEnrollmentToken
@@ -505,10 +505,10 @@ class MachineLevelUserCloudPolicyEnrollmentTest
   FakeBrowserDMTokenStorage storage_;
   ChromeBrowserCloudManagementControllerObserver observer_;
 
-  DISALLOW_COPY_AND_ASSIGN(MachineLevelUserCloudPolicyEnrollmentTest);
+  DISALLOW_COPY_AND_ASSIGN(ChromeBrowserCloudManagementEnrollmentTest);
 };
 
-IN_PROC_BROWSER_TEST_P(MachineLevelUserCloudPolicyEnrollmentTest, Test) {
+IN_PROC_BROWSER_TEST_P(ChromeBrowserCloudManagementEnrollmentTest, Test) {
   // Test body is run only if enrollment is succeeded or failed without error
   // message.
   EXPECT_TRUE(is_enrollment_token_valid() || !should_display_error_message());
@@ -526,7 +526,7 @@ IN_PROC_BROWSER_TEST_P(MachineLevelUserCloudPolicyEnrollmentTest, Test) {
 }
 
 INSTANTIATE_TEST_SUITE_P(,
-                         MachineLevelUserCloudPolicyEnrollmentTest,
+                         ChromeBrowserCloudManagementEnrollmentTest,
                          ::testing::Combine(::testing::Bool(),
                                             ::testing::Bool(),
                                             ::testing::Bool()));

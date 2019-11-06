@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/policy/cloud/machine_level_user_cloud_policy_browsertest_mac_util.h"
+#include "chrome/browser/policy/cloud/chrome_browser_cloud_management_browsertest_mac_util.h"
 
 #import <Cocoa/Cocoa.h>
 
