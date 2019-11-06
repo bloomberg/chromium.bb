@@ -683,6 +683,10 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
   }
   if (speed >= 8) {
     sf->use_fast_nonrd_pick_mode = 1;
+    // Consider moving nonrd_merge_partition to speed 7
+#if 0
+    sf->nonrd_merge_partition = 1;
+#endif
     sf->mv.subpel_search_method = SUBPEL_TREE_PRUNED_MORE;
     sf->tx_size_search_level = 1;
     sf->estimate_motion_for_var_based_partition = 0;
@@ -911,6 +915,7 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
   sf->disable_smooth_intra = 0;
   sf->perform_best_rd_based_gating_for_chroma = 0;
   sf->prune_obmc_prob_thresh = 0;
+  sf->nonrd_merge_partition = 0;
 
   if (oxcf->mode == GOOD)
     set_good_speed_features_framesize_independent(cpi, sf, speed);

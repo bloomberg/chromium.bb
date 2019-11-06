@@ -930,6 +930,7 @@ static void store_coding_context(MACROBLOCK *x, PICK_MODE_CONTEXT *ctx) {
   ctx->best_mode_index = mode_index;
 #endif  // CONFIG_INTERNAL_STATS
   ctx->mic = *xd->mi[0];
+  ctx->skippable = x->skip;
   ctx->mbmi_ext = *x->mbmi_ext;
   ctx->comp_pred_diff = 0;
   ctx->hybrid_pred_diff = 0;
