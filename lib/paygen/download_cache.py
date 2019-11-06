@@ -268,12 +268,18 @@ class DownloadCache(object):
           fetch_func(uri, cache_file)
           # Make the file read-only by everyone.
           os.chmod(cache_file, stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH)
-        except:
+        except Exception as e:
           # If there was any error with the download, make sure no partial
           # file was left behind.
           logging.info('Failed to fetch %s to %s', uri, cache_file)
           if os.path.exists(cache_file):
             os.unlink(cache_file)
+          elif isinstance(e, OSError) and e.errno == 2:
+            # TODO(crbug/1016555): This failure seems to be due to thread
+            # exhaustion.  Log the state of tasks on the machine.
+            os.execv('/bin/bash', [
+                'bash', '-c',
+                'exec ls -ld /proc/*/{exe,task/*} 2>/dev/null || true'])
           raise
 
     except locking.LockNotAcquiredError:
