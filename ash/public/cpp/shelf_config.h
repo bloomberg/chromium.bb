@@ -60,6 +60,9 @@ class ASH_EXPORT ShelfConfig : public TabletModeObserver,
   // Size of the shelf when an app is visible in tablet mode.
   int in_app_shelf_size() const;
 
+  // Size of the shelf when not in tablet mode, or when no apps are visible.
+  int system_shelf_size() const;
+
   // Size of the hotseat, which contains the scrollable shelf in tablet mode.
   int hotseat_size() const;
 
@@ -163,6 +166,11 @@ class ASH_EXPORT ShelfConfig : public TabletModeObserver,
 
   // Updates |is_dense_| and notifies all observers of the update.
   void UpdateIsDense();
+
+  // Gets the current shelf size.
+  // |ignore_in_app_state| - Whether the returned shelf size should be
+  //                         calculated as if is_in_app() returns false.
+  int GetShelfSize(bool ignore_in_app_state) const;
 
   // Whether shelf is currently standard or dense.
   bool is_dense_;
