@@ -3742,8 +3742,10 @@ void RenderFrameHostImpl::EvictFromBackForwardCacheWithReasons(
   // TODO(hajimehoshi): Record the 'race condition' by JavaScript execution when
   // |is_in_back_forward_cache()| is false.
   BackForwardCacheMetrics* metrics = top_document->GetBackForwardCacheMetrics();
-  if (is_in_back_forward_cache() && metrics)
-    metrics->MarkNotRestoredWithReasons(reasons);
+  if (is_in_back_forward_cache() && metrics) {
+    BackForwardCacheCanStoreDocumentResult can_store(reasons);
+    metrics->MarkNotRestoredWithReason(can_store);
+  }
 
   if (!in_back_forward_cache) {
     BackForwardCacheMetrics::RecordEvictedAfterDocumentRestored(
@@ -7872,7 +7874,7 @@ void RenderFrameHostImpl::MaybeEvictFromBackForwardCache() {
 
   // TODO(hajimehoshi): Pass and record the other information of |can_store|
   // like blocklisted features.
-  EvictFromBackForwardCacheWithReasons(can_store.not_stored_reasons);
+  EvictFromBackForwardCacheWithReasons(can_store.not_stored_reasons());
 }
 
 void RenderFrameHostImpl::LogCannotCommitOriginCrashKeys(
