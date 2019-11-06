@@ -1,0 +1,1970 @@
+#============================================================= -*-perl-*-
+#
+# Template::Manual::Directives
+#
+# AUTHOR
+#   Andy Wardley  <abw@wardley.org>
+#
+# COPYRIGHT
+#   Copyright (C) 1996-2007 Andy Wardley.  All Rights Reserved.
+#
+#   This module is free software; you can redistribute it and/or
+#   modify it under the same terms as Perl itself.
+#
+#========================================================================
+
+=head1 NAME
+
+Template::Manual::Directives - Template directives
+
+=head1 Accessing and Updating Template Variables
+
+=head2 GET
+
+The C<GET> directive retrieves and outputs the value of the named variable.
+
+    [% GET foo %]
+
+The C<GET> keyword is optional.  A variable can be specified in a directive
+tag by itself.
+
+    [% foo %]
+
+The variable can have an unlimited number of elements, each separated by a
+dot. Each element can have arguments specified within parentheses.
+
+    [% foo %]
+    [% bar.baz %]
+    [% biz.baz(10) %]
+    ...etc...
+
+See L<Template::Manual::Variables> for a full discussion on template
+variables.
+
+You can also specify expressions using the logical (C<and>, C<or>, C<not>, C<?>, C<:>) and
+mathematic operators (C<+>, C<->, C<*>, C</>, C<%>, C<mod>, C<div>).
+
+    [% template.title or default.title %]
+    
+    [% score * 100 %]
+    
+    [% order.nitems ? checkout(order.total) : 'no items' %]
+
+The C<div> operator returns the integer result of division.  Both C<%> and 
+C<mod> return the modulus (i.e. remainder) of division. 
+
+    [% 15 / 6 %]            # 2.5
+    [% 15 div 6 %]          # 2
+    [% 15 mod 6 %]          # 3
+
+=head2 CALL
+
+The C<CALL> directive is similar to C<GET> in evaluating the variable named,
+but doesn't print the result returned.  This can be useful when a
+variable is bound to a sub-routine or object method which you want to
+call but aren't interested in the value returned.
+
+    [% CALL dbi.disconnect %]
+    
+    [% CALL inc_page_counter(page_count) %]
+
+=head2 SET
+
+The C<SET> directive allows you to assign new values to existing variables
+or create new temporary variables.
+
+    [% SET title = 'Hello World' %]
+
+The C<SET> keyword is also optional.
+   
+    [% title = 'Hello World' %]
+
+Variables may be assigned the values of other variables, unquoted
+numbers (2.718), literal text ('single quotes') or quoted text
+("double quotes").  In the latter case, any variable references within
+the text will be interpolated when the string is evaluated.  Variables
+should be prefixed by C<$>, using curly braces to explicitly scope
+the variable name where necessary.
+
+    [% foo  = 'Foo'  %]               # literal value 'Foo'
+    [% bar  =  foo   %]               # value of variable 'foo'
+    [% cost = '$100' %]               # literal value '$100'
+    [% item = "$bar: ${cost}.00" %]   # value "Foo: $100.00"
+
+Multiple variables may be assigned in the same directive and are 
+evaluated in the order specified.  Thus, the above could have been 
+written:
+
+    [% foo  = 'Foo'
+       bar  = foo
+       cost = '$100'
+       item = "$bar: ${cost}.00"
+    %]
+
+Simple expressions can also be used, as per C<GET>.
+
+    [% ten    = 10 
+       twenty = 20
+       thirty = twenty + ten
+       forty  = 2 * twenty 
+       fifty  = 100 div 2
+       six    = twenty mod 7
+    %]
+
+You can concatenate strings together using the C<' _ '> operator.  In Perl 5,
+the C<.> is used for string concatenation, but in Perl 6, as in the Template
+Toolkit, the C<.> will be used as the method calling operator and C<' _ '> will
+be used for string concatenation.  Note that the operator must be 
+specified with surrounding whitespace which, as Larry says, is construed as
+a feature:
+
+    [% copyright = '(C) Copyright' _ year _ ' ' _ author %]
+
+You can, of course, achieve a similar effect with double quoted string 
+interpolation.
+
+    [% copyright = "(C) Copyright $year $author" %]
+
+=head2 DEFAULT
+
+The C<DEFAULT> directive is similar to C<SET> but only updates variables 
+that are currently undefined or have no "true" value (in the Perl
+sense).
+
+    [% DEFAULT
+        name = 'John Doe'
+        id   = 'jdoe'
+    %]
+
+This can be particularly useful in common template components to
+ensure that some sensible default are provided for otherwise 
+undefined variables.
+
+    [% DEFAULT 
+       title = 'Hello World'
+       bgcol = '#ffffff'
+    %]
+    <html>
+      <head>
+        <title>[% title %]</title>
+      </head>
+      <body bgcolor="[% bgcol %]">
+        ...etc...
+
+=head1 Processing Template Files and Blocks
+
+=head2 INSERT
+
+The C<INSERT> directive is used to insert the contents of an external file
+at the current position.
+
+    [% INSERT myfile %]
+
+No attempt to parse or process the file is made.  The contents,
+possibly including any embedded template directives, are inserted
+intact.
+
+The filename specified should be relative to one of the C<INCLUDE_PATH>
+directories.  Absolute (i.e. starting with C</>) and relative
+(i.e. starting with C<.>) filenames may be used if the C<ABSOLUTE> and
+C<RELATIVE> options are set, respectively.  Both these options are
+disabled by default.
+
+    my $template = Template->new({
+        INCLUDE_PATH => '/here:/there',
+    });
+    
+    $template->process('myfile');
+
+F<myfile>:
+
+    [% INSERT foo %]            # looks for /here/foo then /there/foo
+    [% INSERT /etc/passwd %]    # file error: ABSOLUTE not set
+    [% INSERT ../secret %]      # file error: RELATIVE not set
+
+For convenience, the filename does not need to be quoted as long as it
+contains only alphanumeric characters, underscores, dots or forward
+slashes.  Names containing any other characters should be quoted.
+
+    [% INSERT misc/legalese.txt            %]
+    [% INSERT 'dos98/Program Files/stupid' %]
+
+To evaluate a variable to specify a filename, you should explicitly
+prefix it with a C<$> or use double-quoted string interpolation.
+
+    [% language = 'en'
+       legalese = 'misc/legalese.txt' 
+    %]
+    
+    [% INSERT $legalese %]              # misc/legalese.txt
+    [% INSERT "$language/$legalese" %]  # en/misc/legalese.txt
+
+Multiple files can be specified using C<+> as a delimiter.  All files
+should be unquoted names or quoted strings.  Any variables should be
+interpolated into double-quoted strings.
+
+    [% INSERT legalese.txt + warning.txt %]
+    [% INSERT  "$legalese" + warning.txt %]  # requires quoting
+
+=head2 INCLUDE
+
+The C<INCLUDE> directive is used to process and include the output of
+another template file or block.
+
+    [% INCLUDE header %]
+
+If a C<BLOCK> of the specified name is defined in the same file, or in a file
+from which the current template has been called (i.e. a parent template) then
+it will be used in preference to any file of the same name.
+
+    [% INCLUDE table %]     # uses BLOCK defined below
+    
+    [% BLOCK table %]
+       <table>
+         ...
+       </table>
+    [% END %]
+
+If a C<BLOCK> definition is not currently visible then the template name
+should be a file relative to one of the C<INCLUDE_PATH> directories, or
+an absolute or relative file name if the C<ABSOLUTE>/C<RELATIVE> options are
+appropriately enabled.  The C<INCLUDE> directive automatically quotes the
+filename specified, as per C<INSERT> described above.  When a variable
+contains the name of the template for the C<INCLUDE> directive, it should
+be explicitly prefixed by C<$> or double-quoted
+
+    [% myheader = 'my/misc/header' %]
+    [% INCLUDE   myheader  %]           # 'myheader'
+    [% INCLUDE  $myheader  %]           # 'my/misc/header'
+    [% INCLUDE "$myheader" %]           # 'my/misc/header'
+
+Any template directives embedded within the file will be processed
+accordingly.  All variables currently defined will be visible and 
+accessible from within the included template.  
+
+    [% title = 'Hello World' %]
+    [% INCLUDE header %]
+    <body>
+    ...
+
+F<header>:
+
+    <html>
+    <title>[% title %]</title>
+
+output:
+
+    <html>
+    <title>Hello World</title>
+    <body>
+    ...
+
+Local variable definitions may be specified after the template name,
+temporarily masking any existing variables.  Insignificant whitespace
+is ignored within directives so you can add variable definitions on the
+same line, the next line or split across several line with comments
+interspersed, if you prefer.
+
+    [% INCLUDE table %]
+    
+    [% INCLUDE table title="Active Projects" %]
+    
+    [% INCLUDE table 
+         title   = "Active Projects" 
+         bgcolor = "#80ff00"    # chartreuse
+         border  = 2
+    %]
+
+The C<INCLUDE> directive localises (i.e. copies) all variables before
+processing the template.  Any changes made within the included
+template will not affect variables in the including template.
+
+    [% foo = 10 %]
+    
+    foo is originally [% foo %]
+    [% INCLUDE bar %]
+    foo is still [% foo %]
+    
+    [% BLOCK bar %]
+       foo was [% foo %]
+       [% foo = 20 %]
+       foo is now [% foo %]
+    [% END %]
+
+output:
+
+    foo is originally 10
+       foo was 10
+       foo is now 20
+    foo is still 10
+
+Technical Note: the localisation of the stash (that is, the process by
+which variables are copied before an C<INCLUDE> to prevent being
+overwritten) is only skin deep.  The top-level variable namespace
+(hash) is copied, but no attempt is made to perform a deep-copy of
+other structures (hashes, arrays, objects, etc.)  Therefore, a C<foo>
+variable referencing a hash will be copied to create a new C<foo>
+variable but which points to the same hash array.  Thus, if you update
+compound variables (e.g. C<foo.bar>) then you will change the original
+copy, regardless of any stash localisation.  If you're not worried
+about preserving variable values, or you trust the templates you're
+including then you might prefer to use the C<PROCESS> directive which is
+faster by virtue of not performing any localisation.
+
+You can specify dotted variables as "local" variables to an C<INCLUDE> directive.
+However, be aware that because of the localisation issues explained above (if
+you skipped the previous Technical Note above then you might want to go back
+and read it or skip this section too), the variables might not actually be
+"local". If the first element of the variable name already references a hash
+array then the variable update will affect the original variable.
+
+    [% foo = {
+           bar = 'Baz'
+       }
+    %]
+    
+    [% INCLUDE somefile foo.bar='Boz' %]
+    
+    [% foo.bar %]           # Boz
+
+This behaviour can be a little unpredictable (and may well be improved
+upon in a future version).  If you know what you're doing with it and 
+you're sure that the variables in question are defined (nor not) as you 
+expect them to be, then you can rely on this feature to implement some
+powerful "global" data sharing techniques.  Otherwise, you might prefer
+to steer well clear and always pass simple (undotted) variables as 
+parameters to C<INCLUDE> and other similar directives.
+
+If you want to process several templates in one go then you can 
+specify each of their names (quoted or unquoted names only, no unquoted
+C<$variables>) joined together by C<+>.  The C<INCLUDE> directive
+will then process them in order.
+
+    [% INCLUDE html/header + "site/$header" + site/menu
+         title = "My Groovy Web Site"
+    %]
+
+The variable stash is localised once and then the templates specified
+are processed in order, all within that same variable context.  This
+makes it slightly faster than specifying several separate C<INCLUDE>
+directives (because you only clone the variable stash once instead of
+n times), but not quite as "safe" because any variable changes in the
+first file will be visible in the second, third and so on.  This
+might be what you want, of course, but then again, it might not.
+
+=head2 PROCESS
+
+The PROCESS directive is similar to C<INCLUDE> but does not perform any 
+localisation of variables before processing the template.  Any changes
+made to variables within the included template will be visible in the
+including template.
+
+    [% foo = 10 %]
+    
+    foo is [% foo %]
+    [% PROCESS bar %]
+    foo is [% foo %]
+    
+    [% BLOCK bar %]
+       [% foo = 20 %]
+       changed foo to [% foo %]
+    [% END %]
+
+output:
+
+    foo is 10
+       changed foo to 20
+    foo is 20
+
+Parameters may be specified in the C<PROCESS> directive, but these too will 
+become visible changes to current variable values.
+
+    [% foo = 10 %]
+    foo is [% foo %]
+    [% PROCESS bar
+       foo = 20 
+    %]
+    foo is [% foo %]
+    
+    [% BLOCK bar %]
+       this is bar, foo is [% foo %]
+    [% END %]
+
+output:
+
+    foo is 10
+       this is bar, foo is 20
+    foo is 20
+
+The C<PROCESS> directive is slightly faster than C<INCLUDE> because it
+avoids the need to localise (i.e. copy) the variable stash before
+processing the template.  As with C<INSERT> and C<INCLUDE>, the first
+parameter does not need to be quoted as long as it contains only
+alphanumeric characters, underscores, periods or forward slashes.
+A C<$> prefix can be used to explicitly indicate a variable which 
+should be interpolated to provide the template name:
+
+    [% myheader = 'my/misc/header' %]
+    [% PROCESS  myheader %]              # 'myheader'
+    [% PROCESS $myheader %]              # 'my/misc/header'
+
+As with C<INCLUDE>, multiple templates can be specified, delimited by
+C<+>, and are processed in order.
+
+    [% PROCESS html/header + my/header %]
+
+=head2 WRAPPER
+
+It's not unusual to find yourself adding common headers and footers to 
+pages or sub-sections within a page.  Something like this:
+
+    [% INCLUDE section/header
+       title = 'Quantum Mechanics'
+    %]
+       Quantum mechanics is a very interesting subject wish 
+       should prove easy for the layman to fully comprehend.
+    [% INCLUDE section/footer %]
+    
+    [% INCLUDE section/header
+       title = 'Desktop Nuclear Fusion for under $50'
+    %]
+       This describes a simple device which generates significant 
+       sustainable electrical power from common tap water by process 
+       of nuclear fusion.
+    [% INCLUDE section/footer %]
+
+The individual template components being included might look like these:
+
+section/header:
+
+    <p>
+    <h2>[% title %]</h2>
+
+section/footer:
+
+    </p>
+
+The C<WRAPPER> directive provides a way of simplifying this a little. It
+encloses a block up to a matching C<END> directive, which is first processed
+to generate some output. This is then passed to the named template file or
+C<BLOCK> as the C<content> variable.
+
+    [% WRAPPER section
+       title = 'Quantum Mechanics'
+    %]
+       Quantum mechanics is a very interesting subject wish 
+       should prove easy for the layman to fully comprehend.
+    [% END %]
+    
+    [% WRAPPER section
+       title = 'Desktop Nuclear Fusion for under $50'
+    %]
+       This describes a simple device which generates significant 
+       sustainable electrical power from common tap water by process 
+       of nuclear fusion.
+    [% END %]
+
+The single 'section' template can then be defined as:
+
+    <h2>[% title %]</h2>
+    <p>
+      [% content %]
+    </p>
+
+Like other block directives, it can be used in side-effect notation:
+
+    [% INSERT legalese.txt WRAPPER big_bold_table %]
+
+It's also possible to specify multiple templates to a C<WRAPPER> directive.
+The specification order indicates outermost to innermost wrapper templates.
+For example, given the following template block definitions:
+
+    [% BLOCK bold   %]<b>[% content %]</b>[% END %]
+    [% BLOCK italic %]<i>[% content %]</i>[% END %]
+
+the directive 
+
+    [% WRAPPER bold+italic %]Hello World[% END %]
+
+would generate the following output:
+
+    <b><i>Hello World</i></b>
+
+=head2 BLOCK
+
+The C<BLOCK>...C<END> construct can be used to define template component
+blocks which can be processed with the C<INCLUDE>, C<PROCESS> and C<WRAPPER>
+directives.
+
+    [% BLOCK tabrow %]
+    <tr>
+      <td>[% name %]<td>
+      <td>[% email %]</td>
+    </tr>
+    [% END %]
+    
+    <table>
+      [% PROCESS tabrow  name='Fred'  email='fred@nowhere.com' %]
+      [% PROCESS tabrow  name='Alan'  email='alan@nowhere.com' %]
+    </table>
+
+A C<BLOCK> definition can be used before it is defined, as long as the
+definition resides in the same file.  The block definition itself does
+not generate any output.
+
+    [% PROCESS tmpblk %]
+    
+    [% BLOCK tmpblk %] This is OK [% END %]
+
+You can use an anonymous C<BLOCK> to capture the output of a template
+fragment.  
+
+    [% julius = BLOCK %]
+       And Caesar's spirit, ranging for revenge,
+       With Ate by his side come hot from hell,
+       Shall in these confines with a monarch's voice
+       Cry  'Havoc', and let slip the dogs of war;
+       That this foul deed shall smell above the earth
+       With carrion men, groaning for burial.
+    [% END %]
+
+Like a named block, it can contain any other template directives which 
+are processed when the block is defined.  The output generated by the 
+block is then assigned to the variable C<julius>.
+
+Anonymous C<BLOCK>s can also be used to define block macros.  The
+enclosing block is processed each time the macro is called.
+
+    [% MACRO locate BLOCK %]
+       The [% animal %] sat on the [% place %].
+    [% END %]
+    
+    [% locate(animal='cat', place='mat') %]    # The cat sat on the mat
+    [% locate(animal='dog', place='log') %]    # The dog sat on the log
+
+=head1 Conditional Processing
+
+=head2 IF / UNLESS / ELSIF / ELSE
+
+The C<IF> and C<UNLESS> directives can be used to process or ignore a
+block based on some run-time condition.  
+
+    [% IF frames %]
+       [% INCLUDE frameset %]
+    [% END %]
+    
+    [% UNLESS text_mode %]
+       [% INCLUDE biglogo %]
+    [% END %]
+
+Multiple conditions may be joined with C<ELSIF> and/or C<ELSE> blocks.
+
+    [% IF age < 10 %]
+       Hello [% name %], does your mother know you're 
+       using her AOL account?
+    [% ELSIF age < 18 %]
+       Sorry, you're not old enough to enter 
+       (and too dumb to lie about your age)
+    [% ELSE %]
+       Welcome [% name %].
+    [% END %]
+
+The following conditional and boolean operators may be used:
+
+    == != < <= > >= && || ! and or not
+
+Conditions may be arbitrarily complex and are evaluated with the same
+precedence as in Perl.  Parenthesis may be used to explicitly
+determine evaluation order.
+
+    # ridiculously contrived complex example
+    [% IF (name == 'admin' || uid <= 0) && mode == 'debug' %]
+       I'm confused.
+    [% ELSIF more > less %]
+       That's more or less correct.
+    [% END %]
+
+The C<and>, C<or> and C<not> operator are provided as aliases for
+C<&&>, C<||> and C<!>, respectively.  Unlike Perl, which treats 
+C<and>, C<or> and C<not> as separate, lower-precedence versions of the 
+other operators, the Template Toolkit performs a straightforward substitution
+of C<and> for C<&&>, and so on.  That means that C<and>, C<or> and C<not>
+have the same operator precedence as C<&&>, C<||> and C<!>.
+
+=head2 SWITCH / CASE
+
+The C<SWITCH> / C<CASE> construct can be used to perform a multi-way
+conditional test.  The C<SWITCH> directive expects an expression which is
+first evaluated and then compared against each CASE statement in turn.
+Each C<CASE> directive should contain a single value or a list of values
+which should match.  C<CASE> may also be left blank or written as 
+C<[% CASE DEFAULT %]> to specify a default match.  Only one C<CASE> matches,
+there is no drop-through between C<CASE> statements.
+
+    [% SWITCH myvar %]
+    [%   CASE 'value1' %]
+           ...
+    [%   CASE ['value2', 'value3'] %]   # multiple values
+           ...
+    [%   CASE myhash.keys %]            # ditto
+           ...
+    [%   CASE %]                        # default
+           ...
+    [% END %]
+
+=head1 Loop Processing
+
+=head2 FOREACH
+
+The C<FOREACH> directive will iterate through the items in a list, processing
+the enclosed block for each one.
+
+    [% foo   = 'Foo'
+       items = [ 'one', 'two', 'three' ]
+    %]
+    
+    Things:
+    [% FOREACH thing IN [ foo 'Bar' "$foo Baz" ] %]
+       * [% thing %]
+    [% END %]
+    
+    Items:
+    [% FOREACH i IN items %]
+       * [% i %]
+    [% END %]
+    
+    Stuff:
+    [% stuff = [ foo "$foo Bar" ] %]
+    [% FOREACH s IN stuff %]
+       * [% s %]
+    [% END %]
+
+output:
+
+    Things:
+      * Foo
+      * Bar
+      * Foo Baz
+    
+    Items:
+      * one
+      * two
+      * three
+    
+    Stuff:
+      * Foo
+      * Foo Bar
+
+You can use also use C<=> instead of C<IN> if you prefer.
+
+    [% FOREACH i = items %]
+
+When the C<FOREACH> directive is used without specifying a target variable, 
+any iterated values which are hash references will be automatically 
+imported.
+
+    [% userlist = [
+        { id => 'tom',   name => 'Thomas'  },
+        { id => 'dick',  name => 'Richard'  },
+        { id => 'larry', name => 'Lawrence' },
+       ]
+    %]
+    
+    [% FOREACH user IN userlist %]
+       [% user.id %] [% user.name %]
+    [% END %]
+
+short form:
+
+    [% FOREACH userlist %]
+       [% id %] [% name %]
+    [% END %]
+
+Note that this particular usage creates a localised variable context
+to prevent the imported hash keys from overwriting any existing
+variables.  The imported definitions and any other variables defined
+in such a C<FOREACH> loop will be lost at the end of the loop, when the 
+previous context and variable values are restored.
+
+However, under normal operation, the loop variable remains in scope
+after the C<FOREACH> loop has ended (caveat: overwriting any variable
+previously in scope). This is useful as the loop variable is secretly
+an iterator object (see below) and can be used to analyse the last
+entry processed by the loop.
+
+The C<FOREACH> directive can also be used to iterate through the entries
+in a hash array.  Each entry in the hash is returned in sorted order
+(based on the key) as a hash array containing 'key' and 'value' items.
+
+    [% users = {
+         tom   => 'Thomas',
+         dick  => 'Richard',
+         larry => 'Lawrence',
+       }
+    %]
+    
+    [% FOREACH u IN users %]
+       * [% u.key %] : [% u.value %]
+    [% END %]
+
+Output:
+
+       * dick : Richard
+       * larry : Lawrence
+       * tom : Thomas      
+
+The C<NEXT> directive starts the next iteration in the C<FOREACH> loop.
+
+    [% FOREACH user IN userlist %]
+       [% NEXT IF user.isguest %]
+       Name: [% user.name %]    Email: [% user.email %]
+    [% END %]
+
+The C<LAST> directive can be used to prematurely exit the loop.  C<BREAK> is
+also provided as an alias for C<LAST>.
+
+    [% FOREACH match IN results.nsort('score').reverse %]
+       [% LAST IF match.score < 50 %]
+       [% match.score %] : [% match.url %]
+    [% END %]
+
+The C<FOREACH> directive is implemented using the L<Template::Iterator>
+module.  A reference to the iterator object for a C<FOREACH> directive is
+implicitly available in the C<loop> variable.  The following methods 
+can be called on the C<loop> iterator.
+
+    size()      number of elements in the list
+    max()       index number of last element (size - 1)
+    index()     index of current iteration from 0 to max()
+    count()     iteration counter from 1 to size() (i.e. index() + 1)
+    first()     true if the current iteration is the first
+    last()      true if the current iteration is the last
+    prev()      return the previous item in the list
+    next()      return the next item in the list
+
+See L<Template::Iterator> for further details.
+
+Example:
+
+    [% FOREACH item IN [ 'foo', 'bar', 'baz' ] -%]
+       [%- "<ul>\n" IF loop.first %]
+       <li>[% loop.count %]/[% loop.size %]: [% item %]
+       [%- "</ul>\n" IF loop.last %]
+    [% END %]
+
+Output:
+
+    <ul>
+    <li>1/3: foo
+    <li>2/3: bar
+    <li>3/3: baz
+    </ul>
+
+Nested loops will work as expected, with the C<loop> variable correctly 
+referencing the innermost loop and being restored to any previous 
+value (i.e. an outer loop) at the end of the loop.
+
+    [% FOREACH group IN grouplist;
+         # loop => group iterator
+         "Groups:\n" IF loop.first;
+         
+         FOREACH user IN group.userlist;
+            # loop => user iterator
+            "$loop.count: $user.name\n";
+         END;
+         
+         # loop => group iterator
+         "End of Groups\n" IF loop.last;
+       END 
+    %]
+
+The C<iterator> plugin can also be used to explicitly create an
+iterator object.  This can be useful within nested loops where you
+need to keep a reference to the outer iterator within the inner loop.
+The iterator plugin effectively allows you to create an iterator by a
+name other than C<loop>.  See L<Template::Plugin::Iterator> for further
+details.
+
+    [% USE giter = iterator(grouplist) %]
+    
+    [% FOREACH group IN giter %]
+       [% FOREACH user IN group.userlist %]
+             user #[% loop.count %] in
+             group [% giter.count %] is
+             named [% user.name %]
+       [% END %]
+    [% END %]
+
+=head2 WHILE
+
+The C<WHILE> directive can be used to repeatedly process a template block
+while a conditional expression evaluates true.  The expression may 
+be arbitrarily complex as per C<IF> / C<UNLESS>.
+
+    [% WHILE total < 100 %]
+       ...
+       [% total = calculate_new_total %]
+    [% END %]
+
+An assignment can be enclosed in parenthesis to evaluate the assigned
+value.
+
+    [% WHILE (user = get_next_user_record) %]
+       [% user.name %]
+    [% END %]
+
+The C<NEXT> directive can be used to start the next iteration of a 
+C<WHILE> loop and C<BREAK> can be used to exit the loop, both as per C<FOREACH>.
+
+The Template Toolkit uses a failsafe counter to prevent runaway C<WHILE>
+loops which would otherwise never terminate.  If the loop exceeds 1000
+iterations then an C<undef> exception will be thrown, reporting the
+error:
+
+    WHILE loop terminated (> 1000 iterations)
+
+The C<$Template::Directive::WHILE_MAX> variable controls this behaviour
+and can be set to a higher value if necessary.
+
+=head1 Filters, Plugins, Macros and Perl
+
+=head2 FILTER
+
+The C<FILTER> directive can be used to post-process the output of a
+block.  A number of standard filters are provided with the Template
+Toolkit.  The C<html> filter, for example, escapes the 'E<lt>', 'E<gt>'
+and '&' characters to prevent them from being interpreted as HTML tags
+or entity reference markers.
+
+    [% FILTER html %]
+       HTML text may have < and > characters embedded
+       which you want converted to the correct HTML entities.
+    [% END %]
+
+output:
+
+       HTML text may have &lt; and &gt; characters embedded
+       which you want converted to the correct HTML entities.
+
+The C<FILTER> directive can also follow various other non-block directives.
+For example:
+
+    [% INCLUDE mytext FILTER html %]
+
+The C<|> character can also be used as an alias for C<FILTER>.
+
+    [% INCLUDE mytext | html %]
+
+Multiple filters can be chained together and will be called in sequence.
+
+    [% INCLUDE mytext FILTER html FILTER html_para %]
+
+or
+
+    [% INCLUDE mytext | html | html_para %]
+
+Filters come in two flavours, known as 'static' or 'dynamic'.  A
+static filter is a simple subroutine which accepts a text string as
+the only argument and returns the modified text.  The C<html> filter is
+an example of a static filter, implemented as:
+
+    sub html_filter {
+        my $text = shift;
+        for ($text) {
+            s/&/&amp;/g;
+            s/</&lt;/g;
+            s/>/&gt;/g;
+        }
+        return $text;
+    }
+
+Dynamic filters can accept arguments which are specified when the filter
+is called from a template.  The C<repeat> filter is such an example, 
+accepting a numerical argument which specifies the number of times
+that the input text should be repeated.
+
+    [% FILTER repeat(3) %]blah [% END %]
+
+output:
+
+    blah blah blah
+
+These are implemented as filter 'factories'.  The factory subroutine
+is passed a reference to the current L<Template::Context> object along
+with any additional arguments specified.  It should then return a
+subroutine reference (e.g. a closure) which implements the filter.
+The C<repeat> filter factory is implemented like this:
+
+    sub repeat_filter_factory {
+        my ($context, $iter) = @_;
+        $iter = 1 unless defined $iter;
+        
+        return sub {
+            my $text = shift;
+            $text = '' unless defined $text;
+            return join('\n', $text) x $iter;
+        }
+    }
+
+The C<FILTERS> option, described in L<Template::Manual::Config>, allows custom
+filters to be defined when a Template object is instantiated. The
+L<define_filter()|Template::Context#define_filter()> method allows further
+filters to be defined at any time.
+
+When using a filter, it is possible to assign an alias to it for 
+further use.  This is most useful for dynamic filters that you want 
+to re-use with the same configuration.
+
+    [% FILTER echo = repeat(2) %]
+    Is there anybody out there?
+    [% END %]
+    
+    [% FILTER echo %]
+    Mother, should I build a wall?
+    [% END %]
+
+Output:
+
+    Is there anybody out there?
+    Is there anybody out there?
+
+    Mother, should I build a wall?
+    Mother, should I build a wall?
+
+The C<FILTER> directive automatically quotes the name of the filter.  As
+with C<INCLUDE> et al, you can use a variable to provide the name of the 
+filter, prefixed by C<$>.
+
+    [% myfilter = 'html' %]
+    [% FILTER $myfilter %]      # same as [% FILTER html %]
+       ...
+    [% END %]
+
+A template variable can also be used to define a static filter
+subroutine.  However, the Template Toolkit will automatically call any
+subroutine bound to a variable and use the value returned.  Thus, the
+above example could be implemented as:
+
+    my $vars = {
+        myfilter => sub { return 'html' },
+    };
+
+template:
+
+    [% FILTER $myfilter %]      # same as [% FILTER html %]
+       ...
+    [% END %]
+
+To define a template variable that evaluates to a subroutine reference
+that can be used by the C<FILTER> directive, you should create a
+subroutine that, when called automatically by the Template Toolkit,
+returns another subroutine reference which can then be used to perform
+the filter operation.  Note that only static filters can be
+implemented in this way.
+
+    my $vars = {
+        myfilter => sub { \&my_filter_sub },
+    };
+    
+    sub my_filter_sub {
+        my $text = shift;
+        # do something
+        return $text;
+    }
+
+template:
+
+    [% FILTER $myfilter %]
+       ...
+    [% END %]
+
+Alternately, you can bless a subroutine reference into a class (any
+class will do) to fool the Template Toolkit into thinking it's an
+object rather than a subroutine.  This will then bypass the automatic
+"call-a-subroutine-to-return-a-value" magic.
+
+    my $vars = {
+        myfilter => bless(\&my_filter_sub, 'anything_you_like'),
+    };
+
+template:
+
+    [% FILTER $myfilter %]          
+       ...
+    [% END %]
+
+Filters bound to template variables remain local to the variable context in
+which they are defined. That is, if you define a filter in a C<PERL> block
+within a template that is loaded via C<INCLUDE>, then the filter definition
+will only exist until the end of that template when the stash is delocalised,
+restoring the previous variable state. If you want to define a filter which
+persists for the lifetime of the processor, or define additional dynamic
+filter factories, then you can call the
+L<define_filter()|Template::Context#define_filter()> method on the current
+L<Template::Context> object.
+
+See L<Template::Manual::Filters> for a complete list of available filters,
+their descriptions and examples of use.
+
+=head2 USE
+
+The C<USE> directive can be used to load and initialise "plugin"
+extension modules.
+
+    [% USE myplugin %]
+
+A plugin is a regular Perl module that conforms to a particular
+object-oriented interface, allowing it to be loaded into and used
+automatically by the Template Toolkit.  For details of this interface
+and information on writing plugins, consult L<Template::Plugin>. 
+
+A number of standard plugins are included with the Template Toolkit
+(see below and L<Template::Manual::Plugins>).  The names of these
+standard plugins are case insensitive.  
+
+    [% USE CGI   %]        # => Template::Plugin::CGI
+    [% USE Cgi   %]        # => Template::Plugin::CGI
+    [% USE cgi   %]        # => Template::Plugin::CGI
+
+You can also define further plugins using the C<PLUGINS> option.  
+
+    my $tt = Template->new({
+        PLUGINS => {
+            foo => 'My::Plugin::Foo',
+            bar => 'My::Plugin::Bar',
+        },
+    });
+
+The recommended convention is to specify these plugin names in lower
+case.  The Template Toolkit first looks for an exact case-sensitive
+match and then tries the lower case conversion of the name specified.
+
+    [% USE Foo %]      # look for 'Foo' then 'foo'
+
+If you define all your C<PLUGINS> with lower case names then they will be
+located regardless of how the user specifies the name in the C<USE>
+directive.  If, on the other hand, you define your C<PLUGINS> with upper
+or mixed case names then the name specified in the C<USE> directive must
+match the case exactly.  
+
+If the plugin isn't defined in either the standard plugins
+(C<$Template::Plugins::STD_PLUGINS>) or via the C<PLUGINS> option, then 
+the C<PLUGIN_BASE> is searched.
+
+In this case the plugin name I<is> case-sensitive.  It is appended to
+each of the C<PLUGIN_BASE> module namespaces in turn (default:
+C<Template::Plugin>) to construct a full module name which it attempts
+to locate and load.  Any periods, 'C<.>', in the name will be converted
+to 'C<::>'.
+
+    [% USE MyPlugin %]     #  => Template::Plugin::MyPlugin
+    [% USE Foo.Bar  %]     #  => Template::Plugin::Foo::Bar
+
+The C<LOAD_PERL> option (disabled by default) provides a further way by
+which external Perl modules may be loaded.  If a regular Perl module
+(i.e. not a C<Template::Plugin::*> or other module relative to some
+C<PLUGIN_BASE>) supports an object-oriented interface and a C<new()>
+constructor then it can be loaded and instantiated automatically.  The
+following trivial example shows how the IO::File module might be used.
+
+    [% USE file = IO.File('/tmp/mydata') %]
+    
+    [% WHILE (line = file.getline) %]
+       <!-- [% line %] -->
+    [% END %]
+
+Any additional parameters supplied in parenthesis after the plugin
+name will be also be passed to the C<new()> constructor.  A reference to
+the current L<Template::Context> object is passed as the first
+parameter.
+
+    [% USE MyPlugin('foo', 123) %]
+
+equivalent to:
+
+    Template::Plugin::MyPlugin->new($context, 'foo', 123);
+
+The only exception to this is when a module is loaded via the
+C<LOAD_PERL> option.  In this case the C<$context> reference is I<not>
+passed to the C<new()> constructor.  This is based on the assumption that
+the module is a regular Perl module rather than a Template Toolkit
+plugin so isn't expecting a context reference and wouldn't know what
+to do with it anyway.
+
+Named parameters may also be specified.  These are collated into a
+hash which is passed by reference as the last parameter to the
+constructor, as per the general code calling interface.
+
+    [% USE url('/cgi-bin/foo', mode='submit', debug=1) %]
+
+equivalent to:
+
+    Template::Plugin::URL->new(
+        $context, 
+        '/cgi-bin/foo'
+        { mode => 'submit', debug => 1 }
+    );
+
+The plugin may represent any data type; a simple variable, hash, list or
+code reference, but in the general case it will be an object reference.
+Methods can be called on the object (or the relevant members of the
+specific data type) in the usual way:
+
+    [% USE table(mydata, rows=3) %]
+    
+    [% FOREACH row IN table.rows %]
+       <tr>    
+       [% FOREACH item IN row %]
+        <td>[% item %]</td>
+       [% END %]
+       </tr>
+    [% END %]
+
+An alternative name may be provided for the plugin by which it can be 
+referenced:
+
+    [% USE scores = table(myscores, cols=5) %]
+    
+    [% FOREACH row IN scores.rows %]
+       ...
+    [% END %]
+
+You can use this approach to create multiple plugin objects with
+different configurations.  This example shows how the 
+L<format|Template::Plugin::Format> plugin is used to create 
+sub-routines bound to variables for formatting text as per C<printf()>.
+
+    [% USE bold = format('<b>%s</b>') %]
+    [% USE ital = format('<i>%s</i>') %]
+    [% bold('This is bold')   %]
+    [% ital('This is italic') %]
+
+Output:
+
+    <b>This is bold</b>
+    <i>This is italic</i>
+
+This next example shows how the L<URL|Template::Plugin::URL> plugin can be
+used to build dynamic URLs from a base part and optional query parameters.
+
+    [% USE mycgi = URL('/cgi-bin/foo.pl', debug=1) %]
+    <a href="[% mycgi %]">...
+    <a href="[% mycgi(mode='submit') %]"...
+
+Output:
+
+    <a href="/cgi-bin/foo.pl?debug=1">...
+    <a href="/cgi-bin/foo.pl?mode=submit&debug=1">...
+
+The L<CGI|Template::Plugin::CGI> plugin is an example of one which delegates
+to another Perl module. In this case, to Lincoln Stein's C<CGI> module.
+All of the methods provided by the C<CGI> module are available via the plugin.
+
+    [% USE CGI;
+       CGI.start_form;
+       CGI.checkbox_group( name   = 'colours', 
+                           values = [ 'red' 'green' 'blue' ] );
+       CGI.popup_menu( name   = 'items', 
+                       values = [ 'foo' 'bar' 'baz' ] );
+       CGI.end_form 
+    %]
+
+See L<Template::Manual::Plugins> for more information on the plugins
+distributed with the toolkit or available from CPAN.
+
+=head2 MACRO
+
+The C<MACRO> directive allows you to define a directive or directive block
+which is then evaluated each time the macro is called. 
+
+    [% MACRO header INCLUDE header %]
+
+Calling the macro as:
+
+    [% header %]
+
+is then equivalent to:
+
+    [% INCLUDE header %]
+
+Macros can be passed named parameters when called.  These values remain 
+local to the macro.
+
+    [% header(title='Hello World') %]  
+
+equivalent to:
+
+    [% INCLUDE header title='Hello World' %]
+
+A C<MACRO> definition may include parameter names.  Values passed to the 
+macros are then mapped to these local variables.  Other named parameters
+may follow these.
+
+    [% MACRO header(title) INCLUDE header %]
+    [% header('Hello World') %]
+    [% header('Hello World', bgcol='#123456') %]
+
+equivalent to:
+
+    [% INCLUDE header title='Hello World' %]
+    [% INCLUDE header title='Hello World' bgcol='#123456' %]
+
+Here's another example, defining a macro for display numbers
+in comma-delimited groups of 3, using the chunk and join virtual
+method.
+
+    [% MACRO number(n) GET n.chunk(-3).join(',') %]
+    [% number(1234567) %]    # 1,234,567
+
+A C<MACRO> may precede any directive and must conform to the structure 
+of the directive.
+
+    [% MACRO header IF frames %]
+       [% INCLUDE frames/header %]
+    [% ELSE %]
+       [% INCLUDE header %]
+    [% END %]
+    
+    [% header %]
+
+A C<MACRO> may also be defined as an anonymous C<BLOCK>.  The block will be
+evaluated each time the macro is called. 
+
+    [% MACRO header BLOCK %]
+       ...content...
+    [% END %]
+    
+    [% header %]
+
+If you've got the C<EVAL_PERL> option set, then you can even define a
+C<MACRO> as a C<PERL> block (see below):
+
+    [% MACRO triple(n) PERL %]
+         my $n = $stash->get('n');
+         print $n * 3;
+    [% END -%]
+
+=head2 PERL
+
+(for the advanced reader)
+
+The C<PERL> directive is used to mark the start of a block which contains
+Perl code for evaluation.  The C<EVAL_PERL> option must be enabled for Perl
+code to be evaluated or a C<perl> exception will be thrown with the 
+message 'C<EVAL_PERL not set>'.
+
+Perl code is evaluated in the C<Template::Perl> package.  The C<$context>
+package variable contains a reference to the current L<Template::Context>
+object.  This can be used to access the functionality of the Template
+Toolkit to process other templates, load plugins, filters, etc.
+See L<Template::Context> for further details.
+
+    [% PERL %]
+       print $context->include('myfile');
+    [% END %]
+
+The L<$stash> variable contains a reference to the top-level stash object
+which manages template variables.  Through this, variable values can
+be retrieved and updated.  See L<Template::Stash> for further details.
+
+    [% PERL %]
+       $stash->set(foo => 'bar');
+       print "foo value: ", $stash->get('foo');
+    [% END %]
+
+Output:
+
+    foo value: bar
+
+Output is generated from the C<PERL> block by calling C<print()>.  Note that
+the C<Template::Perl::PERLOUT> handle is selected (tied to an output
+buffer) instead of C<STDOUT>.
+
+    [% PERL %]
+       print "foo\n";                           # OK
+       print PERLOUT "bar\n";                   # OK, same as above
+       print Template::Perl::PERLOUT "baz\n";   # OK, same as above
+       print STDOUT "qux\n";                    # WRONG!
+    [% END %]
+
+The C<PERL> block may contain other template directives.  These are
+processed before the Perl code is evaluated.
+
+    [% name = 'Fred Smith' %]
+    
+    [% PERL %]
+       print "[% name %]\n";
+    [% END %]
+
+Thus, the Perl code in the above example is evaluated as:
+
+    print "Fred Smith\n";
+
+Exceptions may be thrown from within C<PERL> blocks using C<die()>.
+They will be correctly caught by enclosing C<TRY> blocks.
+
+    [% TRY %]
+       [% PERL %]
+          die "nothing to live for\n";
+       [% END %]
+    [% CATCH %]
+       error: [% error.info %]
+    [% END %]
+
+output:
+       error: nothing to live for
+
+=head2 RAWPERL
+
+(for the very advanced reader)
+
+The Template Toolkit parser reads a source template and generates the
+text of a Perl subroutine as output.  It then uses C<eval()> to evaluate
+it into a subroutine reference.  This subroutine is then called to
+process the template, passing a reference to the current
+L<Template::Context> object through which the functionality of the
+Template Toolkit can be accessed.  The subroutine reference can be
+cached, allowing the template to be processed repeatedly without
+requiring any further parsing.
+
+For example, a template such as:
+
+    [% PROCESS header %]
+    The [% animal %] sat on the [% location %]
+    [% PROCESS footer %]
+
+is converted into the following Perl subroutine definition:
+
+    sub {
+        my $context = shift;
+        my $stash   = $context->stash;
+        my $output  = '';
+        my $error;
+        
+        eval { BLOCK: {
+            $output .=  $context->process('header');
+            $output .=  "The ";
+            $output .=  $stash->get('animal');
+            $output .=  " sat on the ";
+            $output .=  $stash->get('location');
+            $output .=  $context->process('footer');
+            $output .=  "\n";
+        } };
+        if ($@) {
+            $error = $context->catch($@, \$output);
+            die $error unless $error->type eq 'return';
+        }
+    
+        return $output;
+    }
+
+To examine the Perl code generated, such as in the above example, set
+the C<$Template::Parser::DEBUG> package variable to any true value.  You
+can also set the C<$Template::Directive::PRETTY> variable true to have
+the code formatted in a readable manner for human consumption.  The
+source code for each generated template subroutine will be printed to
+C<STDERR> on compilation (i.e. the first time a template is used).
+
+    $Template::Parser::DEBUG = 1;
+    $Template::Directive::PRETTY = 1;
+    
+    $template->process($file, $vars)
+        || die $template->error(), "\n";
+
+The C<PERL> ... C<END> construct allows Perl code to be embedded into a
+template when the C<EVAL_PERL> option is set.  It is evaluated at
+"runtime" using C<eval()> each time the template subroutine is called.
+This is inherently flexible, but not as efficient as it could be,
+especially in a persistent server environment where a template may be
+processed many times.  
+
+The C<RAWPERL> directive allows you to write Perl code that is integrated
+directly into the generated Perl subroutine text.  It is evaluated
+once at compile time and is stored in cached form as part of the
+compiled template subroutine.  This makes C<RAWPERL> blocks more
+efficient than C<PERL> blocks.
+
+The downside is that you must code much closer to the metal. For example, in a
+C<PERL> block you can call L<print()> to generate some output. C<RAWPERL>
+blocks don't afford such luxury. The code is inserted directly into the
+generated subroutine text and should conform to the convention of appending to
+the C<$output> variable.
+
+    [% PROCESS  header %]
+    
+    [% RAWPERL %]
+       $output .= "Some output\n";
+       ...
+       $output .= "Some more output\n";
+    [% END %]
+
+The critical section of the generated subroutine for this example would 
+then look something like:
+
+    ...
+    eval { BLOCK: {
+        $output .=  $context->process('header');
+        $output .=  "\n";
+        $output .= "Some output\n";
+        ...
+        $output .= "Some more output\n";
+        $output .=  "\n";
+    } };
+    ...
+
+As with C<PERL> blocks, the L<$context|Template::Context> and
+L<$stash|Template::Stash> references are pre-defined and available for use
+within C<RAWPERL> code.
+
+=head1 Exception Handling and Flow Control
+
+=head2 TRY / THROW / CATCH / FINAL
+
+(more advanced material)
+
+The Template Toolkit supports fully functional, nested exception
+handling.  The C<TRY> directive introduces an exception handling scope 
+which continues until the matching C<END> directive.  Any errors that 
+occur within that block will be caught and can be handled by one
+of the C<CATCH> blocks defined.
+
+    [% TRY %]
+       ...blah...blah...
+       [% CALL somecode %]
+       ...etc...
+       [% INCLUDE someblock %]
+       ...and so on...
+    [% CATCH %]
+       An error occurred!
+    [% END %]
+
+Errors are raised as exceptions (objects of the L<Template::Exception> class)
+which contain two fields: C<type> and C<info>. The exception C<type> is used
+to indicate the kind of error that occurred. It is a simple text string which
+can contain letters, numbers, 'C<_>' or 'C<.>'. The C<info> field contains an
+error message indicating what actually went wrong. Within a catch block, the
+exception object is aliased to the C<error> variable. You can access the C<type>
+and C<info> fields directly.
+
+    [% mydsn = 'dbi:MySQL:foobar' %]
+    ...
+    
+    [% TRY %]
+       [% USE DBI(mydsn) %]
+    [% CATCH %]
+       ERROR! Type: [% error.type %]
+              Info: [% error.info %]
+    [% END %]
+
+output (assuming a non-existent database called 'C<foobar>'):
+
+    ERROR!  Type: DBI
+            Info: Unknown database "foobar"
+
+The C<error> variable can also be specified by itself and will return a 
+string of the form "C<$type error - $info>".
+
+    ...
+    [% CATCH %]
+    ERROR: [% error %]
+    [% END %]
+
+Output:
+
+    ERROR: DBI error - Unknown database "foobar"
+
+Each C<CATCH> block may be specified with a particular exception type
+denoting the kind of error that it should catch.  Multiple C<CATCH>
+blocks can be provided to handle different types of exception that may
+be thrown in the C<TRY> block.  A C<CATCH> block specified without any type,
+as in the previous example, is a default handler which will catch any
+otherwise uncaught exceptions.  This can also be specified as 
+C<[% CATCH DEFAULT %]>.
+
+    [% TRY %]
+       [% INCLUDE myfile %]
+       [% USE DBI(mydsn) %]
+       [% CALL somecode %]
+    [% CATCH file %]
+       File Error! [% error.info %]
+    [% CATCH DBI %]
+       [% INCLUDE database/error.html %]
+    [% CATCH %]
+       [% error %]
+    [% END %]
+
+Remember that you can specify multiple directives within a single tag,
+each delimited by 'C<;>'.  So the above example can be written more
+concisely as:
+
+    [% TRY;
+           INCLUDE myfile;
+           USE DBI(mydsn);
+           CALL somecode;
+       CATCH file;
+           "File Error! $error.info";
+       CATCH DBI;
+           INCLUDE database/error.html;
+       CATCH;
+           error;
+       END 
+    %]
+
+The C<DBI> plugin throws exceptions of the C<DBI> type (in case that
+wasn't already obvious).  The other specific exception caught here is
+of the C<file> type.
+
+A C<file> exception is automatically thrown by the Template Toolkit when it
+can't find a file, or fails to load, parse or process a file that has been
+requested by an C<INCLUDE>, C<PROCESS>, C<INSERT> or C<WRAPPER> directive. 
+If C<myfile> can't be found in the example above, the C<[% INCLUDE myfile %]>
+directive will raise a C<file> exception which is then caught by the 
+C<[% CATCH file %]> block.  The output generated would be:
+
+    File Error! myfile: not found
+
+Note that the C<DEFAULT> option (disabled by default) allows you to specify a
+default file to be used any time a template file can't be found. This will
+prevent file exceptions from ever being raised when a non-existent file is
+requested (unless, of course, the C<DEFAULT> file your specify doesn't exist).
+Errors encountered once the file has been found (i.e. read error, parse error)
+will be raised as file exceptions as per usual.
+
+Uncaught exceptions (i.e. if the C<TRY> block doesn't have a type specific or
+default C<CATCH> handler) may be caught by enclosing C<TRY> blocks which can
+be nested indefinitely across multiple templates. If the error isn't caught at
+any level then processing will stop and the Template
+L<process()|Template#process()> method will return a false value to the
+caller. The relevant L<Template::Exception> object can be retrieved by calling
+the L<error()|Template#error()> method.
+
+    [% TRY %]
+       ...
+       [% TRY %]
+          [% INCLUDE $user.header %]
+       [% CATCH file %]
+          [% INCLUDE header %]
+       [% END %]
+       ...
+    [% CATCH DBI %]
+       [% INCLUDE database/error.html %]
+    [% END %]
+
+In this example, the inner C<TRY> block is used to ensure that the first
+C<INCLUDE> directive works as expected.  We're using a variable to
+provide the name of the template we want to include, C<user.header>, and
+it's possible this contains the name of a non-existent template, or
+perhaps one containing invalid template directives.  If the C<INCLUDE> fails
+with a C<file> error then we C<CATCH> it in the inner block and C<INCLUDE>
+the default C<header> file instead.  Any C<DBI> errors that occur within
+the scope of the outer C<TRY> block will be caught in the relevant C<CATCH>
+block, causing the C<database/error.html> template to be processed.
+Note that included templates inherit all currently defined template
+variable so these error files can quite happily access the <error>
+variable to retrieve information about the currently caught exception.
+For example, the C<database/error.html> template might look like this:
+
+    <h2>Database Error</h2>
+    A database error has occurred: [% error.info %]
+
+You can also specify a C<FINAL> block.  This is always processed
+regardless of the outcome of the C<TRY> and/or C<CATCH> blocks.  If an
+exception is uncaught then the C<FINAL> block is processed before jumping
+to the enclosing block or returning to the caller.
+
+    [% TRY %]
+       ...
+    [% CATCH this %] 
+       ...
+    [% CATCH that %] 
+       ...
+    [% FINAL %]
+       All done!
+    [% END %]
+
+The output from the C<TRY> block is left intact up to the point where an
+exception occurs.  For example, this template:
+
+    [% TRY %]
+       This gets printed 
+       [% THROW food 'carrots' %]
+       This doesn't
+    [% CATCH food %]
+       culinary delights: [% error.info %]
+    [% END %]    
+
+generates the following output:
+
+    This gets printed
+    culinary delights: carrots
+
+The C<CLEAR> directive can be used in a C<CATCH> or C<FINAL> block to clear
+any output created in the C<TRY> block.
+
+    [% TRY %]
+       This gets printed 
+       [% THROW food 'carrots' %]
+       This doesn't
+    [% CATCH food %]
+       [% CLEAR %]
+       culinary delights: [% error.info %]
+    [% END %]    
+
+Output:
+
+    culinary delights: carrots
+
+Exception types are hierarchical, with each level being separated by
+the familiar dot operator.  A C<DBI.connect> exception is a more
+specific kind of C<DBI> error.  Similarly, an C<example.error.barf> is a
+more specific kind of C<example.error> type which itself is also a
+C<example> error.  
+
+A C<CATCH> handler that specifies a general exception
+type (such as C<DBI> or C<example.error>) will also catch more specific
+types that have the same prefix as long as a more specific handler
+isn't defined.  Note that the order in which C<CATCH> handlers are
+defined is irrelevant; a more specific handler will always catch an
+exception in preference to a more generic or default one.
+
+    [% TRY %]
+       ...
+    [% CATCH DBI ;
+         INCLUDE database/error.html ;
+       CATCH DBI.connect ;
+         INCLUDE database/connect.html ;
+       CATCH ; 
+         INCLUDE error.html ;
+       END
+    %]
+
+In this example, a C<DBI.connect> error has it's own handler, a more general
+C<DBI> block is used for all other C<DBI> or C<DBI.*> errors and a default
+handler catches everything else.
+
+Exceptions can be raised in a template using the C<THROW> directive.  The
+first parameter is the exception type which doesn't need to be quoted
+(but can be, it's the same as C<INCLUDE>) followed by the relevant error
+message which can be any regular value such as a quoted string,
+variable, etc.
+
+    [% THROW food "Missing ingredients: $recipe.error" %]
+    [% THROW user.login 'no user id: please login' %]
+    [% THROW $myerror.type "My Error: $myerror.info" %]
+
+It's also possible to specify additional positional or named 
+parameters to the C<THROW> directive if you want to pass more than 
+just a simple message back as the error info field.  
+
+    [% THROW food 'eggs' 'flour' msg='Missing Ingredients' %]
+
+In this case, the error C<info> field will be a hash array containing the
+named arguments and an C<args> item which contains a list of the positional
+arguments.
+
+    type => 'food',
+    info => {
+        msg  => 'Missing Ingredients',
+        args => ['eggs', 'flour'],
+    }
+
+In addition to specifying individual positional arguments as
+C<[% error.info.args.n %]>, the C<info> hash contains keys directly 
+pointing to the positional arguments, as a convenient shortcut.
+
+    [% error.info.0 %]   # same as [% error.info.args.0 %]
+
+Exceptions can also be thrown from Perl code which you've bound to
+template variables, or defined as a plugin or other extension.  To
+raise an exception, call C<die()> passing a reference to a
+L<Template::Exception> object as the argument.  This will then be caught
+by any enclosing C<TRY> blocks from where the code was called.
+
+    use Template::Exception;
+    ...
+    my $vars = {
+        foo => sub {
+            # ... do something ...
+            die Template::Exception->new('myerr.naughty',
+                                         'Bad, bad error');
+        },
+    };
+
+Template:
+
+    [% TRY %]
+       [% foo %]
+    [% CATCH myerr ;
+         "Error: $error" ;
+       END
+    %]
+
+Output:
+
+    Error: myerr.naughty error - Bad, bad error
+
+The C<info> field can also be a reference to another object or data
+structure, if required.
+
+    die Template::Exception->new('myerror', { 
+        module => 'foo.pl', 
+        errors => [ 'bad permissions', 'naughty boy' ],
+    });
+
+Later, in a template:
+
+    [% TRY %]
+       ...
+    [% CATCH myerror %]
+       [% error.info.errors.size or 'no';
+          error.info.errors.size == 1 ? ' error' : ' errors' %]
+       in [% error.info.module %]: 
+          [% error.info.errors.join(', ') %].
+    [% END %]
+
+Generating the output:
+
+       2 errors in foo.pl:
+          bad permissions, naughty boy.
+
+You can also call C<die()> with a single string, as is common in much 
+existing Perl code.  This will automatically be converted to an 
+exception of the 'C<undef>' type (that's the literal string 'C<undef>', 
+not the undefined value).  If the string isn't terminated with a 
+newline then Perl will append the familiar C<" at $file line $line">
+message.
+
+    sub foo {
+        # ... do something ...
+        die "I'm sorry, Dave, I can't do that\n";
+    }
+
+If you're writing a plugin, or some extension code that has the current
+L<Template::Context> in scope (you can safely skip this section if this means
+nothing to you) then you can also raise an exception by calling the context
+L<throw()|Template::Context#throw()> method. You can pass it an
+L<Template::Exception> object reference, a pair of C<($type, $info)>
+parameters or just an C<$info> string to create an exception of 'C<undef>' type.
+
+    $context->throw($e);            # exception object
+    $context->throw('Denied');      # 'undef' type
+    $context->throw('user.passwd', 'Bad Password');
+
+=head2 NEXT
+
+The C<NEXT> directive can be used to start the next iteration of a C<FOREACH> 
+or C<WHILE> loop.
+
+    [% FOREACH user IN users %]
+       [% NEXT IF user.isguest %]
+       Name: [% user.name %]    Email: [% user.email %]
+    [% END %]
+
+=head2 LAST
+
+The C<LAST> directive can be used to prematurely exit a C<FOREACH> or C<WHILE>
+loop.
+
+    [% FOREACH user IN users %]
+       Name: [% user.name %]    Email: [% user.email %]
+       [% LAST IF some.condition %]
+    [% END %]
+
+C<BREAK> can also be used as an alias for C<LAST>.
+
+=head2 RETURN
+
+The C<RETURN> directive can be used to stop processing the current template
+and return to the template from which it was called, resuming processing at
+the point immediately after the C<INCLUDE>, C<PROCESS> or C<WRAPPER>
+directive. If there is no enclosing template then the Template
+L<process()|Template#process()> method will return to the calling code with a
+true value.
+
+    Before
+    [% INCLUDE half_wit %]
+    After
+    
+    [% BLOCK half_wit %]
+    This is just half...
+    [% RETURN %]
+    ...a complete block
+    [% END %]
+
+Output:
+
+    Before
+    This is just half...
+    After
+
+=head2 STOP
+
+The C<STOP> directive can be used to indicate that the processor should stop
+gracefully without processing any more of the template document. This is a
+planned stop and the Template L<process()|Template#process()> method will
+return a B<true> value to the caller. This indicates that the template was
+processed successfully according to the directives within it.
+
+    [% IF something.terrible.happened %]
+       [% INCLUDE fatal/error.html %]
+       [% STOP %]
+    [% END %]
+    
+    [% TRY %]
+       [% USE DBI(mydsn) %]
+       ...
+    [% CATCH DBI.connect %]
+       <h1>Cannot connect to the database: [% error.info %]</h1>
+       <p>
+         We apologise for the inconvenience.
+       </p>
+       [% INCLUDE footer %]
+       [% STOP %]
+    [% END %]
+
+=head2 CLEAR
+
+The C<CLEAR> directive can be used to clear the output buffer for the current
+enclosing block.   It is most commonly used to clear the output generated
+from a C<TRY> block up to the point where the error occurred.
+
+    [% TRY %]
+       blah blah blah            # this is normally left intact
+       [% THROW some 'error' %]  # up to the point of error
+       ...
+    [% CATCH %]
+       [% CLEAR %]               # clear the TRY output
+       [% error %]               # print error string
+    [% END %]
+
+=head1 Miscellaneous
+
+=head2 META
+
+The C<META> directive allows simple metadata items to be defined within a
+template. These are evaluated when the template is parsed and as such may only
+contain simple values (e.g. it's not possible to interpolate other variables
+values into C<META> variables).
+
+    [% META
+       title   = 'The Cat in the Hat'
+       author  = 'Dr. Seuss'
+       version = 1.23 
+    %]
+
+The C<template> variable contains a reference to the main template 
+being processed.  These metadata items may be retrieved as attributes
+of the template.  
+
+    <h1>[% template.title %]</h1>
+    <h2>[% template.author %]</h2>
+
+The C<name> and C<modtime> metadata items are automatically defined for each
+template to contain its name and modification time in seconds since the epoch.
+
+    [% USE date %]              # use Date plugin to format time
+    ...
+    [% template.name %] last modified
+    at [% date.format(template.modtime) %]
+
+The C<PRE_PROCESS> and C<POST_PROCESS> options allow common headers and 
+footers to be added to all templates.  The C<template> reference is
+correctly defined when these templates are processed, allowing headers
+and footers to reference metadata items from the main template.
+
+    $template = Template->new({
+        PRE_PROCESS  => 'header',
+        POST_PROCESS => 'footer',
+    });
+    
+    $template->process('cat_in_hat');
+
+header:
+
+    <html>
+      <head>
+        <title>[% template.title %]</title>
+      </head>
+      <body>
+
+cat_in_hat:
+
+    [% META
+         title   = 'The Cat in the Hat'
+         author  = 'Dr. Seuss'
+         version = 1.23 
+         year    = 2000
+    %]
+    
+        The cat in the hat sat on the mat.
+
+footer:
+
+        <hr>
+        &copy; [% template.year %] [% template.author %]
+      </body>
+    </html>
+
+The output generated from the above example is:
+
+    <html>
+      <head>
+        <title>The Cat in the Hat</title>
+      </head>
+      <body>
+        The cat in the hat sat on the mat.
+        <hr>
+        &copy; 2000 Dr. Seuss
+      </body>
+    </html>
+
+=head2 TAGS
+
+The C<TAGS> directive can be used to set the C<START_TAG> and C<END_TAG> values
+on a per-template file basis.
+
+    [% TAGS <+ +> %]
+    
+    <+ INCLUDE header +>
+
+The TAGS directive may also be used to set a named C<TAG_STYLE>
+
+    [% TAGS html %]
+    <!-- INCLUDE header -->
+
+See the L<TAGS|Template::Manual::Config#TAGS> and L<TAG_STYLE|Template::Manual::Config#TAG_STYLE> 
+configuration options for further details.
+
+=head2 DEBUG
+
+The C<DEBUG> directive can be used to enable or disable directive debug
+messages within a template.  The C<DEBUG> configuration option must be
+set to include C<DEBUG_DIRS> for the C<DEBUG> directives to have any effect.
+If C<DEBUG_DIRS> is not set then the parser will automatically ignore and
+remove any C<DEBUG> directives.
+
+The C<DEBUG> directive can be used with an C<on> or C<off> parameter to
+enable or disable directive debugging messages from that point
+forward.  When enabled, the output of each directive in the generated
+output will be prefixed by a comment indicate the file, line and
+original directive text.
+
+    [% DEBUG on %]
+    directive debugging is on (assuming DEBUG option is set true)
+    [% DEBUG off %]
+    directive debugging is off
+
+The C<format> parameter can be used to change the format of the debugging
+message.
+
+    [% DEBUG format '<!-- $file line $line : [% $text %] -->' %]
+
+=cut
+
+# Local Variables:
+# mode: perl
+# perl-indent-level: 4
+# indent-tabs-mode: nil
+# End:
+#
+# vim: expandtab shiftwidth=4:

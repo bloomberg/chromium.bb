@@ -1,0 +1,47 @@
+=for comment POD_DERIVED_INDEX_GENERATED
+The following documentation is automatically generated.  Please do not edit
+this file, but rather the original, inline with DBIx::Class::ResultSource::Table
+at lib/DBIx/Class/ResultSource/Table.pm
+(on the system that originally ran this).
+If you do edit this file, and don't want your changes to be removed, make
+sure you change the first line.
+
+=cut
+
+=head1 NAME
+
+DBIx::Class::ResultSource::Table - Table object
+
+=head1 SYNOPSIS
+
+=head1 DESCRIPTION
+
+Table object that inherits from L<DBIx::Class::ResultSource>.
+
+=head1 METHODS
+
+=head2 from
+
+Returns the FROM entry for the table (i.e. the table name)
+
+=head1 INHERITED METHODS
+
+=over 4
+
+=item L<DBIx::Class::ResultSource>
+
+L<add_column|DBIx::Class::ResultSource/add_column>, L<add_columns|DBIx::Class::ResultSource/add_columns>, L<add_relationship|DBIx::Class::ResultSource/add_relationship>, L<add_unique_constraint|DBIx::Class::ResultSource/add_unique_constraint>, L<add_unique_constraints|DBIx::Class::ResultSource/add_unique_constraints>, L<column_info|DBIx::Class::ResultSource/column_info>, L<column_info_from_storage|DBIx::Class::ResultSource/column_info_from_storage>, L<columns|DBIx::Class::ResultSource/columns>, L<columns_info|DBIx::Class::ResultSource/columns_info>, L<default_sqlt_deploy_hook|DBIx::Class::ResultSource/default_sqlt_deploy_hook>, L<handle|DBIx::Class::ResultSource/handle>, L<has_column|DBIx::Class::ResultSource/has_column>, L<has_relationship|DBIx::Class::ResultSource/has_relationship>, L<name|DBIx::Class::ResultSource/name>, L<name_unique_constraint|DBIx::Class::ResultSource/name_unique_constraint>, L<new|DBIx::Class::ResultSource/new>, L<primary_columns|DBIx::Class::ResultSource/primary_columns>, L<related_class|DBIx::Class::ResultSource/related_class>, L<related_source|DBIx::Class::ResultSource/related_source>, L<relationship_info|DBIx::Class::ResultSource/relationship_info>, L<relationships|DBIx::Class::ResultSource/relationships>, L<remove_column|DBIx::Class::ResultSource/remove_column>, L<remove_columns|DBIx::Class::ResultSource/remove_columns>, L<result_class|DBIx::Class::ResultSource/result_class>, L<resultset|DBIx::Class::ResultSource/resultset>, L<resultset_attributes|DBIx::Class::ResultSource/resultset_attributes>, L<resultset_class|DBIx::Class::ResultSource/resultset_class>, L<reverse_relationship_info|DBIx::Class::ResultSource/reverse_relationship_info>, L<schema|DBIx::Class::ResultSource/schema>, L<sequence|DBIx::Class::ResultSource/sequence>, L<set_primary_key|DBIx::Class::ResultSource/set_primary_key>, L<source_info|DBIx::Class::ResultSource/source_info>, L<source_name|DBIx::Class::ResultSource/source_name>, L<sqlt_deploy_callback|DBIx::Class::ResultSource/sqlt_deploy_callback>, L<storage|DBIx::Class::ResultSource/storage>, L<throw_exception|DBIx::Class::ResultSource/throw_exception>, L<unique_constraint_columns|DBIx::Class::ResultSource/unique_constraint_columns>, L<unique_constraint_names|DBIx::Class::ResultSource/unique_constraint_names>, L<unique_constraints|DBIx::Class::ResultSource/unique_constraints>
+
+=back
+
+=head1 FURTHER QUESTIONS?
+
+Check the list of L<additional DBIC resources|DBIx::Class/GETTING HELP/SUPPORT>.
+
+=head1 COPYRIGHT AND LICENSE
+
+This module is free software L<copyright|DBIx::Class/COPYRIGHT AND LICENSE>
+by the L<DBIx::Class (DBIC) authors|DBIx::Class/AUTHORS>. You can
+redistribute it and/or modify it under the same terms as the
+L<DBIx::Class library|DBIx::Class/COPYRIGHT AND LICENSE>.
+

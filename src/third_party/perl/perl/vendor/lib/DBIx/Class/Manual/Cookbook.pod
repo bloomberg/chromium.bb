@@ -1,0 +1,2292 @@
+=head1 NAME
+
+DBIx::Class::Manual::Cookbook - Miscellaneous recipes
+
+=head1 SEARCHING
+
+=head2 Paged results
+
+When you expect a large number of results, you can ask L<DBIx::Class> for a
+paged resultset, which will fetch only a defined number of records at a time:
+
+  my $rs = $schema->resultset('Artist')->search(
+    undef,
+    {
+      page => 1,  # page to return (defaults to 1)
+      rows => 10, # number of results per page
+    },
+  );
+
+  return $rs->all(); # all records for page 1
+
+  return $rs->page(2); # records for page 2
+
+You can get a L<Data::Page> object for the resultset (suitable for use
+in e.g. a template) using the C<pager> method:
+
+  return $rs->pager();
+
+=head2 Complex WHERE clauses
+
+Sometimes you need to formulate a query using specific operators:
+
+  my @albums = $schema->resultset('Album')->search({
+    artist => { 'like', '%Lamb%' },
+    title  => { 'like', '%Fear of Fours%' },
+  });
+
+This results in something like the following C<WHERE> clause:
+
+  WHERE artist LIKE ? AND title LIKE ?
+
+And the following bind values for the placeholders: C<'%Lamb%'>, C<'%Fear of
+Fours%'>.
+
+Other queries might require slightly more complex logic:
+
+  my @albums = $schema->resultset('Album')->search({
+    -or => [
+      -and => [
+        artist => { 'like', '%Smashing Pumpkins%' },
+        title  => 'Siamese Dream',
+      ],
+      artist => 'Starchildren',
+    ],
+  });
+
+This results in the following C<WHERE> clause:
+
+  WHERE ( artist LIKE '%Smashing Pumpkins%' AND title = 'Siamese Dream' )
+    OR artist = 'Starchildren'
+
+For more information on generating complex queries, see
+L<SQL::Abstract/WHERE CLAUSES>.
+
+=head2 Retrieve one and only one row from a resultset
+
+Sometimes you need only the first "top" row of a resultset. While this
+can be easily done with L<< $rs->first|DBIx::Class::ResultSet/first
+>>, it is suboptimal, as a full blown cursor for the resultset will be
+created and then immediately destroyed after fetching the first row
+object.  L<< $rs->single|DBIx::Class::ResultSet/single >> is designed
+specifically for this case - it will grab the first returned result
+without even instantiating a cursor.
+
+Before replacing all your calls to C<first()> with C<single()> please observe the
+following CAVEATS:
+
+=over
+
+=item *
+
+While single() takes a search condition just like search() does, it does
+_not_ accept search attributes. However one can always chain a single() to
+a search():
+
+  my $top_cd = $cd_rs->search({}, { order_by => 'rating' })->single;
+
+
+=item *
+
+Since single() is the engine behind find(), it is designed to fetch a
+single row per database query. Thus a warning will be issued when the
+underlying SELECT returns more than one row. Sometimes however this usage
+is valid: i.e. we have an arbitrary number of cd's but only one of them is
+at the top of the charts at any given time. If you know what you are doing,
+you can silence the warning by explicitly limiting the resultset size:
+
+  my $top_cd = $cd_rs->search ({}, { order_by => 'rating', rows => 1 })->single;
+
+=back
+
+=head2 Arbitrary SQL through a custom ResultSource
+
+Sometimes you have to run arbitrary SQL because your query is too complex
+(e.g. it contains Unions, Sub-Selects, Stored Procedures, etc.) or has to
+be optimized for your database in a special way, but you still want to
+get the results as a L<DBIx::Class::ResultSet>.
+
+This is accomplished by defining a
+L<ResultSource::View|DBIx::Class::ResultSource::View> for your query,
+almost like you would define a regular ResultSource.
+
+  package My::Schema::Result::UserFriendsComplex;
+  use strict;
+  use warnings;
+  use base qw/DBIx::Class::Core/;
+
+  __PACKAGE__->table_class('DBIx::Class::ResultSource::View');
+
+  # For the time being this is necessary even for virtual views
+  __PACKAGE__->table($view_name);
+
+  #
+  # ->add_columns, etc.
+  #
+
+  # do not attempt to deploy() this view
+  __PACKAGE__->result_source_instance->is_virtual(1);
+
+  __PACKAGE__->result_source_instance->view_definition(q[
+    SELECT u.* FROM user u
+    INNER JOIN user_friends f ON u.id = f.user_id
+    WHERE f.friend_user_id = ?
+    UNION
+    SELECT u.* FROM user u
+    INNER JOIN user_friends f ON u.id = f.friend_user_id
+    WHERE f.user_id = ?
+  ]);
+
+Next, you can execute your complex query using bind parameters like this:
+
+  my $friends = $schema->resultset( 'UserFriendsComplex' )->search( {},
+    {
+      bind  => [ 12345, 12345 ]
+    }
+  );
+
+... and you'll get back a perfect L<DBIx::Class::ResultSet> (except, of course,
+that you cannot modify the rows it contains, e.g. cannot call
+L<update|DBIx::Class::ResultSet/update> or
+L<delete|DBIx::Class::ResultSet/delete> on it).
+
+Note that you cannot have bind parameters unless is_virtual is set to true.
+
+=over
+
+=item * NOTE
+
+If you're using the old deprecated C<< $rsrc_instance->name(\'( SELECT ...') >>
+method for custom SQL execution, you are highly encouraged to update your code
+to use a virtual view as above. If you do not want to change your code, and just
+want to suppress the deprecation warning when you call
+L<DBIx::Class::Schema/deploy>, add this line to your source definition, so that
+C<deploy> will exclude this "table":
+
+  sub sqlt_deploy_hook { $_[1]->schema->drop_table ($_[1]) }
+
+=back
+
+=head2 Using specific columns
+
+When you only want specific columns from a table, you can use
+C<columns> to specify which ones you need. This is useful to avoid
+loading columns with large amounts of data that you aren't about to
+use anyway:
+
+  my $rs = $schema->resultset('Artist')->search(
+    undef,
+    {
+      columns => [qw/ name /]
+    }
+  );
+
+  # Equivalent SQL:
+  # SELECT artist.name FROM artist
+
+This is a shortcut for C<select> and C<as>, see below. C<columns>
+cannot be used together with C<select> and C<as>.
+
+=head2 Using database functions or stored procedures
+
+The combination of C<select> and C<as> can be used to return the result of a
+database function or stored procedure as a column value. You use C<select> to
+specify the source for your column value (e.g. a column name, function, or
+stored procedure name). You then use C<as> to set the column name you will use
+to access the returned value:
+
+  my $rs = $schema->resultset('Artist')->search(
+    {},
+    {
+      select => [ 'name', { LENGTH => 'name' } ],
+      as     => [qw/ name name_length /],
+    }
+  );
+
+  # Equivalent SQL:
+  # SELECT name name, LENGTH( name )
+  # FROM artist
+
+Note that the C<as> attribute B<has absolutely nothing to do> with the SQL
+syntax C< SELECT foo AS bar > (see the documentation in
+L<DBIx::Class::ResultSet/ATTRIBUTES>). You can control the C<AS> part of the
+generated SQL via the C<-as> field attribute as follows:
+
+  my $rs = $schema->resultset('Artist')->search(
+    {},
+    {
+      join => 'cds',
+      distinct => 1,
+      '+select' => [ { count => 'cds.cdid', -as => 'amount_of_cds' } ],
+      '+as' => [qw/num_cds/],
+      order_by => { -desc => 'amount_of_cds' },
+    }
+  );
+
+  # Equivalent SQL
+  # SELECT me.artistid, me.name, me.rank, me.charfield, COUNT( cds.cdid ) AS amount_of_cds
+  #   FROM artist me LEFT JOIN cd cds ON cds.artist = me.artistid
+  # GROUP BY me.artistid, me.name, me.rank, me.charfield
+  # ORDER BY amount_of_cds DESC
+
+
+If your alias exists as a column in your base class (i.e. it was added with
+L<add_columns|DBIx::Class::ResultSource/add_columns>), you just access it as
+normal. Our C<Artist> class has a C<name> column, so we just use the C<name>
+accessor:
+
+  my $artist = $rs->first();
+  my $name = $artist->name();
+
+If on the other hand the alias does not correspond to an existing column, you
+have to fetch the value using the C<get_column> accessor:
+
+  my $name_length = $artist->get_column('name_length');
+
+If you don't like using C<get_column>, you can always create an accessor for
+any of your aliases using either of these:
+
+  # Define accessor manually:
+  sub name_length { shift->get_column('name_length'); }
+
+  # Or use DBIx::Class::AccessorGroup:
+  __PACKAGE__->mk_group_accessors('column' => 'name_length');
+
+See also L</Using SQL functions on the left hand side of a comparison>.
+
+=head2 SELECT DISTINCT with multiple columns
+
+  my $rs = $schema->resultset('Artist')->search(
+    {},
+    {
+      columns => [ qw/artist_id name rank/ ],
+      distinct => 1
+    }
+  );
+
+  my $rs = $schema->resultset('Artist')->search(
+    {},
+    {
+      columns => [ qw/artist_id name rank/ ],
+      group_by => [ qw/artist_id name rank/ ],
+    }
+  );
+
+  # Equivalent SQL:
+  # SELECT me.artist_id, me.name, me.rank
+  # FROM artist me
+  # GROUP BY artist_id, name, rank
+
+=head2 SELECT COUNT(DISTINCT colname)
+
+  my $rs = $schema->resultset('Artist')->search(
+    {},
+    {
+      columns => [ qw/name/ ],
+      distinct => 1
+    }
+  );
+
+  my $rs = $schema->resultset('Artist')->search(
+    {},
+    {
+      columns => [ qw/name/ ],
+      group_by => [ qw/name/ ],
+    }
+  );
+
+  my $count = $rs->count;
+
+  # Equivalent SQL:
+  # SELECT COUNT( * ) FROM (SELECT me.name FROM artist me GROUP BY me.name) me:
+
+=head2 Grouping results
+
+L<DBIx::Class> supports C<GROUP BY> as follows:
+
+  my $rs = $schema->resultset('Artist')->search(
+    {},
+    {
+      join     => [qw/ cds /],
+      select   => [ 'name', { count => 'cds.id' } ],
+      as       => [qw/ name cd_count /],
+      group_by => [qw/ name /]
+    }
+  );
+
+  # Equivalent SQL:
+  # SELECT name, COUNT( cd.id ) FROM artist
+  # LEFT JOIN cd ON artist.id = cd.artist
+  # GROUP BY name
+
+Please see L<DBIx::Class::ResultSet/ATTRIBUTES> documentation if you
+are in any way unsure about the use of the attributes above (C< join
+>, C< select >, C< as > and C< group_by >).
+
+=head2 Subqueries
+
+You can write subqueries relatively easily in DBIC.
+
+  my $inside_rs = $schema->resultset('Artist')->search({
+    name => [ 'Billy Joel', 'Brittany Spears' ],
+  });
+
+  my $rs = $schema->resultset('CD')->search({
+    artist_id => { -in => $inside_rs->get_column('id')->as_query },
+  });
+
+The usual operators ( '=', '!=', -in, -not_in, etc.) are supported.
+
+B<NOTE>: You have to explicitly use '=' when doing an equality comparison.
+The following will B<not> work:
+
+  my $rs = $schema->resultset('CD')->search({
+    artist_id => $inside_rs->get_column('id')->as_query,  # does NOT work
+  });
+
+=head3 Support
+
+Subqueries are supported in the where clause (first hashref), and in the
+from, select, and +select attributes.
+
+=head3 Correlated subqueries
+
+  my $cdrs = $schema->resultset('CD');
+  my $rs = $cdrs->search({
+    year => {
+      '=' => $cdrs->search(
+        { artist_id => { -ident => 'me.artist_id' } },
+        { alias => 'sub_query' }
+      )->get_column('year')->max_rs->as_query,
+    },
+  });
+
+That creates the following SQL:
+
+  SELECT me.cdid, me.artist, me.title, me.year, me.genreid, me.single_track
+    FROM cd me
+  WHERE year = (
+    SELECT MAX(sub_query.year)
+      FROM cd sub_query
+    WHERE artist_id = me.artist_id
+  )
+
+=head2 Predefined searches
+
+You can define frequently used searches as methods by subclassing
+L<DBIx::Class::ResultSet>:
+
+  package My::DBIC::ResultSet::CD;
+  use strict;
+  use warnings;
+  use base 'DBIx::Class::ResultSet';
+
+  sub search_cds_ordered {
+      my ($self) = @_;
+
+      return $self->search(
+          {},
+          { order_by => 'name DESC' },
+      );
+  }
+
+  1;
+
+If you're using L<DBIx::Class::Schema/load_namespaces>, simply place the file
+into the C<ResultSet> directory next to your C<Result> directory, and it will
+be automatically loaded.
+
+If however you are still using L<DBIx::Class::Schema/load_classes>, first tell
+DBIx::Class to create an instance of the ResultSet class for you, in your
+My::DBIC::Schema::CD class:
+
+  # class definition as normal
+  use base 'DBIx::Class::Core';
+  __PACKAGE__->table('cd');
+
+  # tell DBIC to use the custom ResultSet class
+  __PACKAGE__->resultset_class('My::DBIC::ResultSet::CD');
+
+Note that C<resultset_class> must be called after C<load_components> and C<table>, or you will get errors about missing methods.
+
+Then call your new method in your code:
+
+   my $ordered_cds = $schema->resultset('CD')->search_cds_ordered();
+
+=head2 Using SQL functions on the left hand side of a comparison
+
+Using SQL functions on the left hand side of a comparison is generally not a
+good idea since it requires a scan of the entire table. (Unless your RDBMS
+supports indexes on expressions - including return values of functions - and
+you create an index on the return value of the function in question.) However,
+it can be accomplished with C<DBIx::Class> when necessary by resorting to
+literal SQL:
+
+  $rs->search(
+    \[ 'YEAR(date_of_birth) = ?', 1979 ]
+  );
+
+  # Equivalent SQL:
+  # SELECT * FROM employee WHERE YEAR(date_of_birth) = ?
+
+To include the function as part of a larger search, use the '-and' keyword
+to collect the search conditions:
+
+  $rs->search({ -and => [
+    name => 'Bob',
+    \[ 'YEAR(date_of_birth) = ?', 1979 ]
+  ]});
+
+  # Equivalent SQL:
+  # SELECT * FROM employee WHERE name = ? AND YEAR(date_of_birth) = ?
+
+Note: the syntax for specifying the bind value's datatype and value is
+explained in L<DBIx::Class::ResultSet/DBIC BIND VALUES>.
+
+See also L<SQL::Abstract/Literal SQL with placeholders and bind values
+(subqueries)>.
+
+=head2 Software Limits
+
+When your RDBMS does not have a working SQL limit mechanism (e.g. Sybase ASE)
+and L<GenericSubQ|DBIx::Class::SQLMaker::LimitDialects/GenericSubQ> is either
+too slow or does not work at all, you can try the
+L<software_limit|DBIx::Class::ResultSet/software_limit>
+L<DBIx::Class::ResultSet> attribute, which skips over records to simulate limits
+in the Perl layer.
+
+For example:
+
+  my $paged_rs = $rs->search({}, {
+    rows => 25,
+    page => 3,
+    order_by => [ 'me.last_name' ],
+    software_limit => 1,
+  });
+
+You can set it as a default for your schema by placing the following in your
+C<Schema.pm>:
+
+  __PACKAGE__->default_resultset_attributes({ software_limit => 1 });
+
+B<WARNING:> If you are dealing with large resultsets and your L<DBI> or
+ODBC/ADO driver does not have proper cursor support (i.e. it loads the whole
+resultset into memory) then this feature will be extremely slow and use huge
+amounts of memory at best, and may cause your process to run out of memory and
+cause instability on your server at worst, beware!
+
+=head1 JOINS AND PREFETCHING
+
+=head2 Using joins and prefetch
+
+You can use the C<join> attribute to allow searching on, or sorting your
+results by, one or more columns in a related table.
+
+This requires that you have defined the L<DBIx::Class::Relationship>. For example :
+
+  My::Schema::CD->has_many( artists => 'My::Schema::Artist', 'artist_id');
+
+To return all CDs matching a particular artist name, you specify the name of the relationship ('artists'):
+
+  my $rs = $schema->resultset('CD')->search(
+    {
+      'artists.name' => 'Bob Marley'
+    },
+    {
+      join => 'artists', # join the artist table
+    }
+  );
+
+  # Equivalent SQL:
+  # SELECT cd.* FROM cd
+  # JOIN artist ON cd.artist = artist.id
+  # WHERE artist.name = 'Bob Marley'
+
+In that example both the join, and the condition use the relationship name rather than the table name
+(see L<DBIx::Class::Manual::Joining> for more details on aliasing ).
+
+If required, you can now sort on any column in the related tables by including
+it in your C<order_by> attribute, (again using the aliased relation name rather than table name) :
+
+  my $rs = $schema->resultset('CD')->search(
+    {
+      'artists.name' => 'Bob Marley'
+    },
+    {
+      join     => 'artists',
+      order_by => [qw/ artists.name /]
+    }
+  );
+
+  # Equivalent SQL:
+  # SELECT cd.* FROM cd
+  # JOIN artist ON cd.artist = artist.id
+  # WHERE artist.name = 'Bob Marley'
+  # ORDER BY artist.name
+
+Note that the C<join> attribute should only be used when you need to search or
+sort using columns in a related table. Joining related tables when you only
+need columns from the main table will make performance worse!
+
+Now let's say you want to display a list of CDs, each with the name of the
+artist. The following will work fine:
+
+  while (my $cd = $rs->next) {
+    print "CD: " . $cd->title . ", Artist: " . $cd->artist->name;
+  }
+
+There is a problem however. We have searched both the C<cd> and C<artist> tables
+in our main query, but we have only returned data from the C<cd> table. To get
+the artist name for any of the CD objects returned, L<DBIx::Class> will go back
+to the database:
+
+  SELECT artist.* FROM artist WHERE artist.id = ?
+
+A statement like the one above will run for each and every CD returned by our
+main query. Five CDs, five extra queries. A hundred CDs, one hundred extra
+queries!
+
+Thankfully, L<DBIx::Class> has a C<prefetch> attribute to solve this problem.
+This allows you to fetch results from related tables in advance:
+
+  my $rs = $schema->resultset('CD')->search(
+    {
+      'artists.name' => 'Bob Marley'
+    },
+    {
+      join     => 'artists',
+      order_by => [qw/ artists.name /],
+      prefetch => 'artists' # return artist data too!
+    }
+  );
+
+  # Equivalent SQL (note SELECT from both "cd" and "artist"):
+  # SELECT cd.*, artist.* FROM cd
+  # JOIN artist ON cd.artist = artist.id
+  # WHERE artist.name = 'Bob Marley'
+  # ORDER BY artist.name
+
+The code to print the CD list remains the same:
+
+  while (my $cd = $rs->next) {
+    print "CD: " . $cd->title . ", Artist: " . $cd->artist->name;
+  }
+
+L<DBIx::Class> has now prefetched all matching data from the C<artist> table,
+so no additional SQL statements are executed. You now have a much more
+efficient query.
+
+Also note that C<prefetch> should only be used when you know you will
+definitely use data from a related table. Pre-fetching related tables when you
+only need columns from the main table will make performance worse!
+
+=head2 Multiple joins
+
+In the examples above, the C<join> attribute was a scalar.  If you
+pass an array reference instead, you can join to multiple tables.  In
+this example, we want to limit the search further, using
+C<LinerNotes>:
+
+  # Relationships defined elsewhere:
+  # CD->belongs_to('artist' => 'Artist');
+  # CD->has_one('liner_notes' => 'LinerNotes', 'cd');
+  my $rs = $schema->resultset('CD')->search(
+    {
+      'artist.name' => 'Bob Marley'
+      'liner_notes.notes' => { 'like', '%some text%' },
+    },
+    {
+      join     => [qw/ artist liner_notes /],
+      order_by => [qw/ artist.name /],
+    }
+  );
+
+  # Equivalent SQL:
+  # SELECT cd.*, artist.*, liner_notes.* FROM cd
+  # JOIN artist ON cd.artist = artist.id
+  # JOIN liner_notes ON cd.id = liner_notes.cd
+  # WHERE artist.name = 'Bob Marley' AND liner_notes.notes LIKE '%some text%'
+  # ORDER BY artist.name
+
+=head2 Multi-step joins
+
+Sometimes you want to join more than one relationship deep. In this example,
+we want to find all C<Artist> objects who have C<CD>s whose C<LinerNotes>
+contain a specific string:
+
+  # Relationships defined elsewhere:
+  # Artist->has_many('cds' => 'CD', 'artist');
+  # CD->has_one('liner_notes' => 'LinerNotes', 'cd');
+
+  my $rs = $schema->resultset('Artist')->search(
+    {
+      'liner_notes.notes' => { 'like', '%some text%' },
+    },
+    {
+      join => {
+        'cds' => 'liner_notes'
+      }
+    }
+  );
+
+  # Equivalent SQL:
+  # SELECT artist.* FROM artist
+  # LEFT JOIN cd ON artist.id = cd.artist
+  # LEFT JOIN liner_notes ON cd.id = liner_notes.cd
+  # WHERE liner_notes.notes LIKE '%some text%'
+
+Joins can be nested to an arbitrary level. So if we decide later that we
+want to reduce the number of Artists returned based on who wrote the liner
+notes:
+
+  # Relationship defined elsewhere:
+  # LinerNotes->belongs_to('author' => 'Person');
+
+  my $rs = $schema->resultset('Artist')->search(
+    {
+      'liner_notes.notes' => { 'like', '%some text%' },
+      'author.name' => 'A. Writer'
+    },
+    {
+      join => {
+        'cds' => {
+          'liner_notes' => 'author'
+        }
+      }
+    }
+  );
+
+  # Equivalent SQL:
+  # SELECT artist.* FROM artist
+  # LEFT JOIN cd ON artist.id = cd.artist
+  # LEFT JOIN liner_notes ON cd.id = liner_notes.cd
+  # LEFT JOIN author ON author.id = liner_notes.author
+  # WHERE liner_notes.notes LIKE '%some text%'
+  # AND author.name = 'A. Writer'
+
+=head2 Multi-step and multiple joins
+
+With various combinations of array and hash references, you can join
+tables in any combination you desire.  For example, to join Artist to
+CD and Concert, and join CD to LinerNotes:
+
+  # Relationships defined elsewhere:
+  # Artist->has_many('concerts' => 'Concert', 'artist');
+
+  my $rs = $schema->resultset('Artist')->search(
+    { },
+    {
+      join => [
+        {
+          cds => 'liner_notes'
+        },
+        'concerts'
+      ],
+    }
+  );
+
+  # Equivalent SQL:
+  # SELECT artist.* FROM artist
+  # LEFT JOIN cd ON artist.id = cd.artist
+  # LEFT JOIN liner_notes ON cd.id = liner_notes.cd
+  # LEFT JOIN concert ON artist.id = concert.artist
+
+=head2 Multi-step prefetch
+
+C<prefetch> can be nested more than one relationship
+deep using the same syntax as a multi-step join:
+
+  my $rs = $schema->resultset('Tag')->search(
+    {},
+    {
+      prefetch => {
+        cd => 'artist'
+      }
+    }
+  );
+
+  # Equivalent SQL:
+  # SELECT tag.*, cd.*, artist.* FROM tag
+  # JOIN cd ON tag.cd = cd.id
+  # JOIN artist ON cd.artist = artist.id
+
+Now accessing our C<cd> and C<artist> relationships does not need additional
+SQL statements:
+
+  my $tag = $rs->first;
+  print $tag->cd->artist->name;
+
+=head1 ROW-LEVEL OPERATIONS
+
+=head2 Retrieving a result object's Schema
+
+It is possible to get a Schema object from a result object like so:
+
+  my $schema = $cd->result_source->schema;
+  # use the schema as normal:
+  my $artist_rs = $schema->resultset('Artist');
+
+This can be useful when you don't want to pass around a Schema object to every
+method.
+
+=head2 Getting the value of the primary key for the last database insert
+
+AKA getting last_insert_id
+
+Thanks to the core component PK::Auto, this is straightforward:
+
+  my $foo = $rs->create(\%blah);
+  # do more stuff
+  my $id = $foo->id; # foo->my_primary_key_field will also work.
+
+If you are not using autoincrementing primary keys, this will probably
+not work, but then you already know the value of the last primary key anyway.
+
+=head2 Stringification
+
+Employ the standard stringification technique by using the L<overload>
+module.
+
+To make an object stringify itself as a single column, use something
+like this (replace C<name> with the column/method of your choice):
+
+  use overload '""' => sub { shift->name}, fallback => 1;
+
+For more complex stringification, you can use an anonymous subroutine:
+
+  use overload '""' => sub { $_[0]->name . ", " .
+                             $_[0]->address }, fallback => 1;
+
+=head3 Stringification Example
+
+Suppose we have two tables: C<Product> and C<Category>. The table
+specifications are:
+
+  Product(id, Description, category)
+  Category(id, Description)
+
+C<category> is a foreign key into the Category table.
+
+If you have a Product object C<$obj> and write something like
+
+  print $obj->category
+
+things will not work as expected.
+
+To obtain, for example, the category description, you should add this
+method to the class defining the Category table:
+
+  use overload "" => sub {
+      my $self = shift;
+
+      return $self->Description;
+  }, fallback => 1;
+
+=head2 Want to know if find_or_create found or created a row?
+
+Just use C<find_or_new> instead, then check C<in_storage>:
+
+  my $obj = $rs->find_or_new({ blah => 'blarg' });
+  unless ($obj->in_storage) {
+    $obj->insert;
+    # do whatever else you wanted if it was a new row
+  }
+
+=head2 Static sub-classing DBIx::Class result classes
+
+AKA adding additional relationships/methods/etc. to a model for a
+specific usage of the (shared) model.
+
+B<Schema definition>
+
+    package My::App::Schema;
+
+    use base 'DBIx::Class::Schema';
+
+    # load subclassed classes from My::App::Schema::Result/ResultSet
+    __PACKAGE__->load_namespaces;
+
+    # load classes from shared model
+    load_classes({
+        'My::Shared::Model::Result' => [qw/
+            Foo
+            Bar
+        /]});
+
+    1;
+
+B<Result-Subclass definition>
+
+    package My::App::Schema::Result::Baz;
+
+    use strict;
+    use warnings;
+    use base 'My::Shared::Model::Result::Baz';
+
+    # WARNING: Make sure you call table() again in your subclass,
+    # otherwise DBIx::Class::ResultSourceProxy::Table will not be called
+    # and the class name is not correctly registered as a source
+    __PACKAGE__->table('baz');
+
+    sub additional_method {
+        return "I'm an additional method only needed by this app";
+    }
+
+    1;
+
+=head2 Dynamic Sub-classing DBIx::Class proxy classes
+
+AKA multi-class object inflation from one table
+
+L<DBIx::Class> classes are proxy classes, therefore some different
+techniques need to be employed for more than basic subclassing.  In
+this example we have a single user table that carries a boolean bit
+for admin.  We would like to give the admin users
+objects (L<DBIx::Class::Row>) the same methods as a regular user but
+also special admin only methods.  It doesn't make sense to create two
+separate proxy-class files for this.  We would be copying all the user
+methods into the Admin class.  There is a cleaner way to accomplish
+this.
+
+Overriding the C<inflate_result> method within the User proxy-class
+gives us the effect we want.  This method is called by
+L<DBIx::Class::ResultSet> when inflating a result from storage.  So we
+grab the object being returned, inspect the values we are looking for,
+bless it if it's an admin object, and then return it.  See the example
+below:
+
+B<Schema Definition>
+
+    package My::Schema;
+
+    use base qw/DBIx::Class::Schema/;
+
+    __PACKAGE__->load_namespaces;
+
+    1;
+
+
+B<Proxy-Class definitions>
+
+    package My::Schema::Result::User;
+
+    use strict;
+    use warnings;
+    use base qw/DBIx::Class::Core/;
+
+    ### Define what our admin class is, for ensure_class_loaded()
+    my $admin_class = __PACKAGE__ . '::Admin';
+
+    __PACKAGE__->table('users');
+
+    __PACKAGE__->add_columns(qw/user_id   email    password
+                                firstname lastname active
+                                admin/);
+
+    __PACKAGE__->set_primary_key('user_id');
+
+    sub inflate_result {
+        my $self = shift;
+        my $ret = $self->next::method(@_);
+        if( $ret->admin ) {### If this is an admin, rebless for extra functions
+            $self->ensure_class_loaded( $admin_class );
+            bless $ret, $admin_class;
+        }
+        return $ret;
+    }
+
+    sub hello {
+        print "I am a regular user.\n";
+        return ;
+    }
+
+    1;
+
+
+    package My::Schema::Result::User::Admin;
+
+    use strict;
+    use warnings;
+    use base qw/My::Schema::Result::User/;
+
+    # This line is important
+    __PACKAGE__->table('users');
+
+    sub hello
+    {
+        print "I am an admin.\n";
+        return;
+    }
+
+    sub do_admin_stuff
+    {
+        print "I am doing admin stuff\n";
+        return ;
+    }
+
+    1;
+
+B<Test File> test.pl
+
+    use warnings;
+    use strict;
+    use My::Schema;
+
+    my $user_data = { email    => 'someguy@place.com',
+                      password => 'pass1',
+                      admin    => 0 };
+
+    my $admin_data = { email    => 'someadmin@adminplace.com',
+                       password => 'pass2',
+                       admin    => 1 };
+
+    my $schema = My::Schema->connection('dbi:Pg:dbname=test');
+
+    $schema->resultset('User')->create( $user_data );
+    $schema->resultset('User')->create( $admin_data );
+
+    ### Now we search for them
+    my $user = $schema->resultset('User')->single( $user_data );
+    my $admin = $schema->resultset('User')->single( $admin_data );
+
+    print ref $user, "\n";
+    print ref $admin, "\n";
+
+    print $user->password , "\n"; # pass1
+    print $admin->password , "\n";# pass2; inherited from User
+    print $user->hello , "\n";# I am a regular user.
+    print $admin->hello, "\n";# I am an admin.
+
+    ### The statement below will NOT print
+    print "I can do admin stuff\n" if $user->can('do_admin_stuff');
+    ### The statement below will print
+    print "I can do admin stuff\n" if $admin->can('do_admin_stuff');
+
+Alternatively you can use L<DBIx::Class::DynamicSubclass> that implements
+exactly the above functionality.
+
+=head2 Skip result object creation for faster results
+
+DBIx::Class is not built for speed, it's built for convenience and
+ease of use, but sometimes you just need to get the data, and skip the
+fancy objects.
+
+To do this simply use L<DBIx::Class::ResultClass::HashRefInflator>.
+
+ my $rs = $schema->resultset('CD');
+
+ $rs->result_class('DBIx::Class::ResultClass::HashRefInflator');
+
+ my $hash_ref = $rs->find(1);
+
+Wasn't that easy?
+
+Beware, changing the Result class using
+L<DBIx::Class::ResultSet/result_class> will replace any existing class
+completely including any special components loaded using
+load_components, eg L<DBIx::Class::InflateColumn::DateTime>.
+
+=head2 Get raw data for blindingly fast results
+
+If the L<HashRefInflator|DBIx::Class::ResultClass::HashRefInflator> solution
+above is not fast enough for you, you can use a DBIx::Class to return values
+exactly as they come out of the database with none of the convenience methods
+wrapped round them.
+
+This is used like so:
+
+  my $cursor = $rs->cursor
+  while (my @vals = $cursor->next) {
+      # use $val[0..n] here
+  }
+
+You will need to map the array offsets to particular columns (you can
+use the L<DBIx::Class::ResultSet/select> attribute of L<DBIx::Class::ResultSet/search> to force ordering).
+
+=head1 RESULTSET OPERATIONS
+
+=head2 Getting Schema from a ResultSet
+
+To get the L<DBIx::Class::Schema> object from a ResultSet, do the following:
+
+ $rs->result_source->schema
+
+=head2 Getting Columns Of Data
+
+AKA Aggregating Data
+
+If you want to find the sum of a particular column there are several
+ways, the obvious one is to use search:
+
+  my $rs = $schema->resultset('Items')->search(
+    {},
+    {
+       select => [ { sum => 'Cost' } ],
+       as     => [ 'total_cost' ], # remember this 'as' is for DBIx::Class::ResultSet not SQL
+    }
+  );
+  my $tc = $rs->first->get_column('total_cost');
+
+Or, you can use the L<DBIx::Class::ResultSetColumn>, which gets
+returned when you ask the C<ResultSet> for a column using
+C<get_column>:
+
+  my $cost = $schema->resultset('Items')->get_column('Cost');
+  my $tc = $cost->sum;
+
+With this you can also do:
+
+  my $minvalue = $cost->min;
+  my $maxvalue = $cost->max;
+
+Or just iterate through the values of this column only:
+
+  while ( my $c = $cost->next ) {
+    print $c;
+  }
+
+  foreach my $c ($cost->all) {
+    print $c;
+  }
+
+C<ResultSetColumn> only has a limited number of built-in functions. If
+you need one that it doesn't have, then you can use the C<func> method
+instead:
+
+  my $avg = $cost->func('AVERAGE');
+
+This will cause the following SQL statement to be run:
+
+  SELECT AVERAGE(Cost) FROM Items me
+
+Which will of course only work if your database supports this function.
+See L<DBIx::Class::ResultSetColumn> for more documentation.
+
+=head2 Creating a result set from a set of rows
+
+Sometimes you have a (set of) result objects that you want to put into a
+resultset without the need to hit the DB again. You can do that by using the
+L<set_cache|DBIx::Class::ResultSet/set_cache> method:
+
+ my @uploadable_groups;
+ while (my $group = $groups->next) {
+   if ($group->can_upload($self)) {
+     push @uploadable_groups, $group;
+   }
+ }
+ my $new_rs = $self->result_source->resultset;
+ $new_rs->set_cache(\@uploadable_groups);
+ return $new_rs;
+
+
+=head1 USING RELATIONSHIPS
+
+=head2 Create a new row in a related table
+
+  my $author = $book->create_related('author', { name => 'Fred'});
+
+=head2 Search in a related table
+
+Only searches for books named 'Titanic' by the author in $author.
+
+  my $books_rs = $author->search_related('books', { name => 'Titanic' });
+
+=head2 Delete data in a related table
+
+Deletes only the book named Titanic by the author in $author.
+
+  $author->delete_related('books', { name => 'Titanic' });
+
+=head2 Ordering a relationship result set
+
+If you always want a relation to be ordered, you can specify this when you
+create the relationship.
+
+To order C<< $book->pages >> by descending page_number, create the relation
+as follows:
+
+  __PACKAGE__->has_many('pages' => 'Page', 'book', { order_by => { -desc => 'page_number'} } );
+
+=head2 Filtering a relationship result set
+
+If you want to get a filtered result set, you can just add to $attr as follows:
+
+ __PACKAGE__->has_many('pages' => 'Page', 'book', { where => { scrap => 0 } } );
+
+=head2 Many-to-many relationship bridges
+
+This is straightforward using L<ManyToMany|DBIx::Class::Relationship/many_to_many>:
+
+  package My::User;
+  use base 'DBIx::Class::Core';
+  __PACKAGE__->table('user');
+  __PACKAGE__->add_columns(qw/id name/);
+  __PACKAGE__->set_primary_key('id');
+  __PACKAGE__->has_many('user_address' => 'My::UserAddress', 'user');
+  __PACKAGE__->many_to_many('addresses' => 'user_address', 'address');
+
+  package My::UserAddress;
+  use base 'DBIx::Class::Core';
+  __PACKAGE__->table('user_address');
+  __PACKAGE__->add_columns(qw/user address/);
+  __PACKAGE__->set_primary_key(qw/user address/);
+  __PACKAGE__->belongs_to('user' => 'My::User');
+  __PACKAGE__->belongs_to('address' => 'My::Address');
+
+  package My::Address;
+  use base 'DBIx::Class::Core';
+  __PACKAGE__->table('address');
+  __PACKAGE__->add_columns(qw/id street town area_code country/);
+  __PACKAGE__->set_primary_key('id');
+  __PACKAGE__->has_many('user_address' => 'My::UserAddress', 'address');
+  __PACKAGE__->many_to_many('users' => 'user_address', 'user');
+
+  $rs = $user->addresses(); # get all addresses for a user
+  $rs = $address->users(); # get all users for an address
+
+  my $address = $user->add_to_addresses(    # returns a My::Address instance,
+                                            # NOT a My::UserAddress instance!
+    {
+      country => 'United Kingdom',
+      area_code => 'XYZ',
+      town => 'London',
+      street => 'Sesame',
+    }
+  );
+
+=head2 Relationships across DB schemas
+
+Mapping relationships across L<DB schemas|DBIx::Class::Manual::Glossary/DB schema>
+is easy as long as the schemas themselves are all accessible via the same DBI
+connection. In most cases, this means that they are on the same database host
+as each other and your connecting database user has the proper permissions to them.
+
+To accomplish this one only needs to specify the DB schema name in the table
+declaration, like so...
+
+  package MyApp::Schema::Result::Artist;
+  use base qw/DBIx::Class::Core/;
+
+  __PACKAGE__->table('database1.artist'); # will use "database1.artist" in FROM clause
+
+  __PACKAGE__->add_columns(qw/ artist_id name /);
+  __PACKAGE__->set_primary_key('artist_id');
+  __PACKAGE__->has_many('cds' => 'MyApp::Schema::Result::Cd');
+
+  1;
+
+Whatever string you specify there will be used to build the "FROM" clause in SQL
+queries.
+
+The big drawback to this is you now have DB schema names hardcoded in your
+class files. This becomes especially troublesome if you have multiple instances
+of your application to support a change lifecycle (e.g. DEV, TEST, PROD) and
+the DB schemas are named based on the environment (e.g. database1_dev).
+
+However, one can dynamically "map" to the proper DB schema by overriding the
+L<connection|DBIx::Class::Schema/connection> method in your Schema class and
+building a renaming facility, like so:
+
+  package MyApp::Schema;
+  use Moose;
+
+  extends 'DBIx::Class::Schema';
+
+  around connection => sub {
+    my ( $inner, $self, $dsn, $username, $pass, $attr ) = ( shift, @_ );
+
+    my $postfix = delete $attr->{schema_name_postfix};
+
+    $inner->(@_);
+
+    if ( $postfix ) {
+        $self->append_db_name($postfix);
+    }
+  };
+
+  sub append_db_name {
+    my ( $self, $postfix ) = @_;
+
+    my @sources_with_db
+        = grep
+            { $_->name =~ /^\w+\./mx }
+            map
+                { $self->source($_) }
+                $self->sources;
+
+    foreach my $source (@sources_with_db) {
+        my $name = $source->name;
+        $name =~ s{^(\w+)\.}{${1}${postfix}\.}mx;
+
+        $source->name($name);
+    }
+  }
+
+  1;
+
+By overriding the L<connection|DBIx::Class::Schema/connection>
+method and extracting a custom option from the provided \%attr hashref one can
+then simply iterate over all the Schema's ResultSources, renaming them as
+needed.
+
+To use this facility, simply add or modify the \%attr hashref that is passed to
+L<connection|DBIx::Class::Schema/connect>, as follows:
+
+  my $schema
+    = MyApp::Schema->connect(
+      $dsn,
+      $user,
+      $pass,
+      {
+        schema_name_postfix => '_dev'
+        # ... Other options as desired ...
+      })
+
+Obviously, one could accomplish even more advanced mapping via a hash map or a
+callback routine.
+
+=head1 TRANSACTIONS
+
+=head2 Transactions with txn_do
+
+As of version 0.04001, there is improved transaction support in
+L<DBIx::Class::Storage> and L<DBIx::Class::Schema>.  Here is an
+example of the recommended way to use it:
+
+  my $genus = $schema->resultset('Genus')->find(12);
+
+  my $coderef2 = sub {
+    $genus->extinct(1);
+    $genus->update;
+  };
+
+  my $coderef1 = sub {
+    $genus->add_to_species({ name => 'troglodyte' });
+    $genus->wings(2);
+    $genus->update;
+    $schema->txn_do($coderef2); # Can have a nested transaction. Only the outer will actualy commit
+    return $genus->species;
+  };
+
+  use Try::Tiny;
+  my $rs;
+  try {
+    $rs = $schema->txn_do($coderef1);
+  } catch {
+    # Transaction failed
+    die "the sky is falling!"           #
+      if ($_ =~ /Rollback failed/);     # Rollback failed
+
+    deal_with_failed_transaction();
+  };
+
+Note: by default C<txn_do> will re-run the coderef one more time if an
+error occurs due to client disconnection (e.g. the server is bounced).
+You need to make sure that your coderef can be invoked multiple times
+without terrible side effects.
+
+Nested transactions will work as expected. That is, only the outermost
+transaction will actually issue a commit to the $dbh, and a rollback
+at any level of any transaction will cause the entire nested
+transaction to fail.
+
+=head2 Nested transactions and auto-savepoints
+
+If savepoints are supported by your RDBMS, it is possible to achieve true
+nested transactions with minimal effort. To enable auto-savepoints via nested
+transactions, supply the C<< auto_savepoint = 1 >> connection attribute.
+
+Here is an example of true nested transactions. In the example, we start a big
+task which will create several rows. Generation of data for each row is a
+fragile operation and might fail. If we fail creating something, depending on
+the type of failure, we want to abort the whole task, or only skip the failed
+row.
+
+  my $schema = MySchema->connect("dbi:Pg:dbname=my_db");
+
+  # Start a transaction. Every database change from here on will only be
+  # committed into the database if the try block succeeds.
+  use Try::Tiny;
+  my $exception;
+  try {
+    $schema->txn_do(sub {
+      # SQL: BEGIN WORK;
+
+      my $job = $schema->resultset('Job')->create({ name=> 'big job' });
+      # SQL: INSERT INTO job ( name) VALUES ( 'big job' );
+
+      for (1..10) {
+
+        # Start a nested transaction, which in fact sets a savepoint.
+        try {
+          $schema->txn_do(sub {
+            # SQL: SAVEPOINT savepoint_0;
+
+            my $thing = $schema->resultset('Thing')->create({ job=>$job->id });
+            # SQL: INSERT INTO thing ( job) VALUES ( 1 );
+
+            if (rand > 0.8) {
+              # This will generate an error, thus setting $@
+
+              $thing->update({force_fail=>'foo'});
+              # SQL: UPDATE thing SET force_fail = 'foo'
+              #      WHERE ( id = 42 );
+            }
+          });
+        } catch {
+          # SQL: ROLLBACK TO SAVEPOINT savepoint_0;
+
+          # There was an error while creating a $thing. Depending on the error
+          # we want to abort the whole transaction, or only rollback the
+          # changes related to the creation of this $thing
+
+          # Abort the whole job
+          if ($_ =~ /horrible_problem/) {
+            print "something horrible happened, aborting job!";
+            die $_;                # rethrow error
+          }
+
+          # Ignore this $thing, report the error, and continue with the
+          # next $thing
+          print "Cannot create thing: $_";
+        }
+        # There was no error, so save all changes since the last
+        # savepoint.
+
+        # SQL: RELEASE SAVEPOINT savepoint_0;
+      }
+    });
+  } catch {
+    $exception = $_;
+  };
+
+  if ($exception) {
+    # There was an error while handling the $job. Rollback all changes
+    # since the transaction started, including the already committed
+    # ('released') savepoints. There will be neither a new $job nor any
+    # $thing entry in the database.
+
+    # SQL: ROLLBACK;
+
+    print "ERROR: $exception\n";
+  }
+  else {
+    # There was no error while handling the $job. Commit all changes.
+    # Only now other connections can see the newly created $job and
+    # @things.
+
+    # SQL: COMMIT;
+
+    print "Ok\n";
+  }
+
+In this example it might be hard to see where the rollbacks, releases and
+commits are happening, but it works just the same as for plain
+L<txn_do|DBIx::Class::Storage/txn_do>: If the L<try|Try::Tiny/try>-block
+around L<txn_do|DBIx::Class::Storage/txn_do> fails, a rollback is issued.
+If the L<try|Try::Tiny/try> succeeds, the transaction is committed
+(or the savepoint released).
+
+While you can get more fine-grained control using C<svp_begin>, C<svp_release>
+and C<svp_rollback>, it is strongly recommended to use C<txn_do> with coderefs.
+
+=head2 Simple Transactions with DBIx::Class::Storage::TxnScopeGuard
+
+An easy way to use transactions is with
+L<DBIx::Class::Storage::TxnScopeGuard>. See L</Automatically creating
+related objects> for an example.
+
+Note that unlike txn_do, TxnScopeGuard will only make sure the connection is
+alive when issuing the C<BEGIN> statement. It will not (and really can not)
+retry if the server goes away mid-operations, unlike C<txn_do>.
+
+=head1 SQL
+
+=head2 Creating Schemas From An Existing Database
+
+L<DBIx::Class::Schema::Loader> will connect to a database and create a
+L<DBIx::Class::Schema> and associated sources by examining the database.
+
+The recommend way of achieving this is to use the L<dbicdump> utility or the
+L<Catalyst> helper, as described in
+L<Manual::Intro|DBIx::Class::Manual::Intro/Using DBIx::Class::Schema::Loader>.
+
+Alternatively, use the
+L<make_schema_at|DBIx::Class::Schema::Loader/make_schema_at> method:
+
+  perl -MDBIx::Class::Schema::Loader=make_schema_at,dump_to_dir:./lib \
+    -e 'make_schema_at("My::Schema", \
+    { db_schema => 'myschema', components => ["InflateColumn::DateTime"] }, \
+    [ "dbi:Pg:dbname=foo", "username", "password" ])'
+
+This will create a tree of files rooted at C<./lib/My/Schema/> containing source
+definitions for all the tables found in the C<myschema> schema in the C<foo>
+database.
+
+=head2 Creating DDL SQL
+
+The following functionality requires you to have L<SQL::Translator>
+(also known as "SQL Fairy") installed.
+
+To create a set of database-specific .sql files for the above schema:
+
+ my $schema = My::Schema->connect($dsn);
+ $schema->create_ddl_dir(['MySQL', 'SQLite', 'PostgreSQL'],
+                        '0.1',
+                        './dbscriptdir/'
+                        );
+
+By default this will create schema files in the current directory, for
+MySQL, SQLite and PostgreSQL, using the $VERSION from your Schema.pm.
+
+To create a new database using the schema:
+
+ my $schema = My::Schema->connect($dsn);
+ $schema->deploy({ add_drop_table => 1});
+
+To import created .sql files using the mysql client:
+
+  mysql -h "host" -D "database" -u "user" -p < My_Schema_1.0_MySQL.sql
+
+To create C<ALTER TABLE> conversion scripts to update a database to a
+newer version of your schema at a later point, first set a new
+C<$VERSION> in your Schema file, then:
+
+ my $schema = My::Schema->connect($dsn);
+ $schema->create_ddl_dir(['MySQL', 'SQLite', 'PostgreSQL'],
+                         '0.2',
+                         '/dbscriptdir/',
+                         '0.1'
+                         );
+
+This will produce new database-specific .sql files for the new version
+of the schema, plus scripts to convert from version 0.1 to 0.2. This
+requires that the files for 0.1 as created above are available in the
+given directory to diff against.
+
+=head2 Select from dual
+
+Dummy tables are needed by some databases to allow calling functions
+or expressions that aren't based on table content, for examples of how
+this applies to various database types, see:
+L<http://troels.arvin.dk/db/rdbms/#other-dummy_table>.
+
+Note: If you're using Oracles dual table don't B<ever> do anything
+other than a select, if you CRUD on your dual table you *will* break
+your database.
+
+Make a table class as you would for any other table
+
+  package MyAppDB::Dual;
+  use strict;
+  use warnings;
+  use base 'DBIx::Class::Core';
+  __PACKAGE__->table("Dual");
+  __PACKAGE__->add_columns(
+    "dummy",
+    { data_type => "VARCHAR2", is_nullable => 0, size => 1 },
+  );
+
+Once you've loaded your table class select from it using C<select>
+and C<as> instead of C<columns>
+
+  my $rs = $schema->resultset('Dual')->search(undef,
+    { select => [ 'sydate' ],
+      as     => [ 'now' ]
+    },
+  );
+
+All you have to do now is be careful how you access your resultset, the below
+will not work because there is no column called 'now' in the Dual table class
+
+  while (my $dual = $rs->next) {
+    print $dual->now."\n";
+  }
+  # Can't locate object method "now" via package "MyAppDB::Dual" at headshot.pl line 23.
+
+You could of course use 'dummy' in C<as> instead of 'now', or C<add_columns> to
+your Dual class for whatever you wanted to select from dual, but that's just
+silly, instead use C<get_column>
+
+  while (my $dual = $rs->next) {
+    print $dual->get_column('now')."\n";
+  }
+
+Or use C<cursor>
+
+  my $cursor = $rs->cursor;
+  while (my @vals = $cursor->next) {
+    print $vals[0]."\n";
+  }
+
+In case you're going to use this "trick" together with L<DBIx::Class::Schema/deploy> or
+L<DBIx::Class::Schema/create_ddl_dir> a table called "dual" will be created in your
+current schema. This would overlap "sys.dual" and you could not fetch "sysdate" or
+"sequence.nextval" anymore from dual. To avoid this problem, just tell
+L<SQL::Translator> to not create table dual:
+
+    my $sqlt_args = {
+        add_drop_table => 1,
+        parser_args    => { sources => [ grep $_ ne 'Dual', schema->sources ] },
+    };
+    $schema->create_ddl_dir( [qw/Oracle/], undef, './sql', undef, $sqlt_args );
+
+Or use L<DBIx::Class::ResultClass::HashRefInflator>
+
+  $rs->result_class('DBIx::Class::ResultClass::HashRefInflator');
+  while ( my $dual = $rs->next ) {
+    print $dual->{now}."\n";
+  }
+
+Here are some example C<select> conditions to illustrate the different syntax
+you could use for doing stuff like
+C<oracles.heavily(nested(functions_can('take', 'lots'), OF), 'args')>
+
+  # get a sequence value
+  select => [ 'A_SEQ.nextval' ],
+
+  # get create table sql
+  select => [ { 'dbms_metadata.get_ddl' => [ "'TABLE'", "'ARTIST'" ]} ],
+
+  # get a random num between 0 and 100
+  select => [ { "trunc" => [ { "dbms_random.value" => [0,100] } ]} ],
+
+  # what year is it?
+  select => [ { 'extract' => [ \'year from sysdate' ] } ],
+
+  # do some math
+  select => [ {'round' => [{'cos' => [ \'180 * 3.14159265359/180' ]}]}],
+
+  # which day of the week were you born on?
+  select => [{'to_char' => [{'to_date' => [ "'25-DEC-1980'", "'dd-mon-yyyy'" ]}, "'day'"]}],
+
+  # select 16 rows from dual
+  select   => [ "'hello'" ],
+  as       => [ 'world' ],
+  group_by => [ 'cube( 1, 2, 3, 4 )' ],
+
+
+
+=head2 Adding Indexes And Functions To Your SQL
+
+Often you will want indexes on columns on your table to speed up searching. To
+do this, create a method called C<sqlt_deploy_hook> in the relevant source
+class (refer to the advanced
+L<callback system|DBIx::Class::ResultSource/sqlt_deploy_callback> if you wish
+to share a hook between multiple sources):
+
+ package My::Schema::Result::Artist;
+
+ __PACKAGE__->table('artist');
+ __PACKAGE__->add_columns(id => { ... }, name => { ... })
+
+ sub sqlt_deploy_hook {
+   my ($self, $sqlt_table) = @_;
+
+   $sqlt_table->add_index(name => 'idx_name', fields => ['name']);
+ }
+
+ 1;
+
+Sometimes you might want to change the index depending on the type of the
+database for which SQL is being generated:
+
+  my ($db_type = $sqlt_table->schema->translator->producer_type)
+    =~ s/^SQL::Translator::Producer:://;
+
+You can also add hooks to the schema level to stop certain tables being
+created:
+
+ package My::Schema;
+
+ ...
+
+ sub sqlt_deploy_hook {
+   my ($self, $sqlt_schema) = @_;
+
+   $sqlt_schema->drop_table('table_name');
+ }
+
+You could also add views, procedures or triggers to the output using
+L<SQL::Translator::Schema/add_view>,
+L<SQL::Translator::Schema/add_procedure> or
+L<SQL::Translator::Schema/add_trigger>.
+
+
+=head2 Schema versioning
+
+The following example shows simplistically how you might use DBIx::Class to
+deploy versioned schemas to your customers. The basic process is as follows:
+
+=over 4
+
+=item 1.
+
+Create a DBIx::Class schema
+
+=item 2.
+
+Save the schema
+
+=item 3.
+
+Deploy to customers
+
+=item 4.
+
+Modify schema to change functionality
+
+=item 5.
+
+Deploy update to customers
+
+=back
+
+B<Create a DBIx::Class schema>
+
+This can either be done manually, or generated from an existing database as
+described under L</Creating Schemas From An Existing Database>
+
+B<Save the schema>
+
+Call L<DBIx::Class::Schema/create_ddl_dir> as above under L</Creating DDL SQL>.
+
+B<Deploy to customers>
+
+There are several ways you could deploy your schema. These are probably
+beyond the scope of this recipe, but might include:
+
+=over 4
+
+=item 1.
+
+Require customer to apply manually using their RDBMS.
+
+=item 2.
+
+Package along with your app, making database dump/schema update/tests
+all part of your install.
+
+=back
+
+B<Modify the schema to change functionality>
+
+As your application evolves, it may be necessary to modify your schema
+to change functionality. Once the changes are made to your schema in
+DBIx::Class, export the modified schema and the conversion scripts as
+in L</Creating DDL SQL>.
+
+B<Deploy update to customers>
+
+Add the L<DBIx::Class::Schema::Versioned> schema component to your
+Schema class. This will add a new table to your database called
+C<dbix_class_schema_vesion> which will keep track of which version is installed
+and warn if the user tries to run a newer schema version than the
+database thinks it has.
+
+Alternatively, you can send the conversion SQL scripts to your
+customers as above.
+
+=head2 Setting quoting for the generated SQL
+
+If the database contains column names with spaces and/or reserved words, they
+need to be quoted in the SQL queries. This is done using:
+
+ $schema->storage->sql_maker->quote_char([ qw/[ ]/] );
+ $schema->storage->sql_maker->name_sep('.');
+
+The first sets the quote characters. Either a pair of matching
+brackets, or a C<"> or C<'>:
+
+ $schema->storage->sql_maker->quote_char('"');
+
+Check the documentation of your database for the correct quote
+characters to use. C<name_sep> needs to be set to allow the SQL
+generator to put the quotes the correct place, and defaults to
+C<.> if not supplied.
+
+In most cases you should set these as part of the arguments passed to
+L<DBIx::Class::Schema/connect>:
+
+ my $schema = My::Schema->connect(
+  'dbi:mysql:my_db',
+  'db_user',
+  'db_password',
+  {
+    quote_char => '"',
+    name_sep   => '.'
+  }
+ )
+
+In some cases, quoting will be required for all users of a schema. To enforce
+this, you can also overload the C<connection> method for your schema class:
+
+ sub connection {
+     my $self = shift;
+     my $rv = $self->next::method( @_ );
+     $rv->storage->sql_maker->quote_char([ qw/[ ]/ ]);
+     $rv->storage->sql_maker->name_sep('.');
+     return $rv;
+ }
+
+=head2 Working with PostgreSQL array types
+
+You can also assign values to PostgreSQL array columns by passing array
+references in the C<\%columns> (C<\%vals>) hashref of the
+L<DBIx::Class::ResultSet/create> and L<DBIx::Class::Row/update> family of
+methods:
+
+  $resultset->create({
+    numbers => [1, 2, 3]
+  });
+
+  $result->update(
+    {
+      numbers => [1, 2, 3]
+    },
+    {
+      day => '2008-11-24'
+    }
+  );
+
+In conditions (e.g. C<\%cond> in the L<DBIx::Class::ResultSet/search> family of
+methods) you cannot directly use array references (since this is interpreted as
+a list of values to be C<OR>ed), but you can use the following syntax to force
+passing them as bind values:
+
+  $resultset->search(
+    {
+      numbers => \[ '= ?', [numbers => [1, 2, 3]] ]
+    }
+  );
+
+See L<SQL::Abstract/array_datatypes> and L<SQL::Abstract/Literal SQL with
+placeholders and bind values (subqueries)> for more explanation. Note that
+L<DBIx::Class> sets L<SQL::Abstract/bindtype> to C<columns>, so you must pass
+the bind values (the C<[1, 2, 3]> arrayref in the above example) wrapped in
+arrayrefs together with the column name, like this:
+C<< [column_name => value] >>.
+
+=head2 Formatting DateTime objects in queries
+
+To ensure C<WHERE> conditions containing L<DateTime> arguments are properly
+formatted to be understood by your RDBMS, you must use the L<DateTime>
+formatter returned by L<DBIx::Class::Storage::DBI/datetime_parser> to format
+any L<DateTime> objects you pass to L<search|DBIx::Class::ResultSet/search>
+conditions. Any L<Storage|DBIx::Class::Storage> object attached to your
+L<Schema|DBIx::Class::Schema> provides a correct L<DateTime> formatter, so
+all you have to do is:
+
+  my $dtf = $schema->storage->datetime_parser;
+  my $rs = $schema->resultset('users')->search(
+    {
+      signup_date => {
+        -between => [
+          $dtf->format_datetime($dt_start),
+          $dtf->format_datetime($dt_end),
+        ],
+      }
+    },
+  );
+
+Without doing this the query will contain the simple stringification of the
+C<DateTime> object, which almost never matches the RDBMS expectations.
+
+This kludge is necessary only for conditions passed to
+L<search|DBIx::Class::ResultSet/search> and L<DBIx::Class::ResultSet/find>,
+whereas L<create|DBIx::Class::ResultSet/create> and
+L<DBIx::Class::Row/update> (but not L<DBIx::Class::ResultSet/update>) are
+L<DBIx::Class::InflateColumn>-aware and will do the right thing when supplied
+an inflated L<DateTime> object.
+
+=head2 Using Unicode
+
+When using unicode character data there are two alternatives -
+either your database supports unicode characters (including setting
+the utf8 flag on the returned string), or you need to encode/decode
+data appropriately each time a string field is inserted into or
+retrieved from the database. It is better to avoid
+encoding/decoding data and to use your database's own unicode
+capabilities if at all possible.
+
+The L<DBIx::Class::UTF8Columns> component handles storing selected
+unicode columns in a database that does not directly support
+unicode. If used with a database that does correctly handle unicode
+then strange and unexpected data corrupt B<will> occur.
+
+The Catalyst Wiki Unicode page at
+L<http://wiki.catalystframework.org/wiki/tutorialsandhowtos/using_unicode>
+has additional information on the use of Unicode with Catalyst and
+DBIx::Class.
+
+The following databases do correctly handle unicode data:-
+
+=head3 MySQL
+
+MySQL supports unicode, and will correctly flag utf8 data from the
+database if the C<mysql_enable_utf8> is set in the connect options.
+
+  my $schema = My::Schema->connection('dbi:mysql:dbname=test',
+                                      $user, $pass,
+                                      { mysql_enable_utf8 => 1} );
+
+
+When set, a data retrieved from a textual column type (char,
+varchar, etc) will have the UTF-8 flag turned on if necessary. This
+enables character semantics on that string. You will also need to
+ensure that your database / table / column is configured to use
+UTF8. See Chapter 10 of the mysql manual for details.
+
+See L<DBD::mysql> for further details.
+
+=head3 Oracle
+
+Information about Oracle support for unicode can be found in
+L<DBD::Oracle/UNICODE>.
+
+=head3 PostgreSQL
+
+PostgreSQL supports unicode if the character set is correctly set
+at database creation time. Additionally the C<pg_enable_utf8>
+should be set to ensure unicode data is correctly marked.
+
+  my $schema = My::Schema->connection('dbi:Pg:dbname=test',
+                                      $user, $pass,
+                                      { pg_enable_utf8 => 1} );
+
+Further information can be found in L<DBD::Pg>.
+
+=head3 SQLite
+
+SQLite version 3 and above natively use unicode internally. To
+correctly mark unicode strings taken from the database, the
+C<sqlite_unicode> flag should be set at connect time (in versions
+of L<DBD::SQLite> prior to 1.27 this attribute was named
+C<unicode>).
+
+  my $schema = My::Schema->connection('dbi:SQLite:/tmp/test.db',
+                                      '', '',
+                                      { sqlite_unicode => 1} );
+
+=head1 BOOTSTRAPPING/MIGRATING
+
+=head2 Easy migration from class-based to schema-based setup
+
+You want to start using the schema-based approach to L<DBIx::Class>
+(see L<DBIx::Class::Manual::Intro/Setting it up manually>), but have an
+established class-based setup with lots of existing classes that you don't
+want to move by hand. Try this nifty script instead:
+
+  use MyDB;
+  use SQL::Translator;
+
+  my $schema = MyDB->schema_instance;
+
+  my $translator           =  SQL::Translator->new(
+      debug                => $debug          ||  0,
+      trace                => $trace          ||  0,
+      no_comments          => $no_comments    ||  0,
+      show_warnings        => $show_warnings  ||  0,
+      add_drop_table       => $add_drop_table ||  0,
+      validate             => $validate       ||  0,
+      parser_args          => {
+         'DBIx::Schema'    => $schema,
+                              },
+      producer_args   => {
+          'prefix'         => 'My::Schema',
+                         },
+  );
+
+  $translator->parser('SQL::Translator::Parser::DBIx::Class');
+  $translator->producer('SQL::Translator::Producer::DBIx::Class::File');
+
+  my $output = $translator->translate(@args) or die
+          "Error: " . $translator->error;
+
+  print $output;
+
+You could use L<Module::Find> to search for all subclasses in the MyDB::*
+namespace, which is currently left as an exercise for the reader.
+
+=head1 OVERLOADING METHODS
+
+L<DBIx::Class> uses the L<Class::C3> package, which provides for redispatch of
+method calls, useful for things like default values and triggers. You have to
+use calls to C<next::method> to overload methods. More information on using
+L<Class::C3> with L<DBIx::Class> can be found in
+L<DBIx::Class::Manual::Component>.
+
+=head2 Setting default values for a row
+
+It's as simple as overriding the C<new> method.  Note the use of
+C<next::method>.
+
+  sub new {
+    my ( $class, $attrs ) = @_;
+
+    $attrs->{foo} = 'bar' unless defined $attrs->{foo};
+
+    my $new = $class->next::method($attrs);
+
+    return $new;
+  }
+
+For more information about C<next::method>, look in the L<Class::C3>
+documentation. See also L<DBIx::Class::Manual::Component> for more
+ways to write your own base classes to do this.
+
+People looking for ways to do "triggers" with DBIx::Class are probably
+just looking for this.
+
+=head2 Changing one field whenever another changes
+
+For example, say that you have three columns, C<id>, C<number>, and
+C<squared>.  You would like to make changes to C<number> and have
+C<squared> be automagically set to the value of C<number> squared.
+You can accomplish this by wrapping the C<number> accessor with the C<around>
+method modifier, available through either L<Class::Method::Modifiers>,
+L<Moose|Moose::Manual::MethodModifiers> or L<Moose-like|Moo> modules):
+
+  around number => sub {
+    my ($orig, $self) = (shift, shift);
+
+    if (@_) {
+      my $value = $_[0];
+      $self->squared( $value * $value );
+    }
+
+    $self->$orig(@_);
+  };
+
+Note that the hard work is done by the call to C<< $self->$orig >>, which
+redispatches your call to store_column in the superclass(es).
+
+Generally, if this is a calculation your database can easily do, try
+and avoid storing the calculated value, it is safer to calculate when
+needed, than rely on the data being in sync.
+
+=head2 Automatically creating related objects
+
+You might have a class C<Artist> which has many C<CD>s.  Further, you
+want to create a C<CD> object every time you insert an C<Artist> object.
+You can accomplish this by overriding C<insert> on your objects:
+
+  sub insert {
+    my ( $self, @args ) = @_;
+    $self->next::method(@args);
+    $self->create_related ('cds', \%initial_cd_data );
+    return $self;
+  }
+
+If you want to wrap the two inserts in a transaction (for consistency,
+an excellent idea), you can use the awesome
+L<DBIx::Class::Storage::TxnScopeGuard>:
+
+  sub insert {
+    my ( $self, @args ) = @_;
+
+    my $guard = $self->result_source->schema->txn_scope_guard;
+
+    $self->next::method(@args);
+    $self->create_related ('cds', \%initial_cd_data );
+
+    $guard->commit;
+
+    return $self
+  }
+
+
+=head2 Wrapping/overloading a column accessor
+
+B<Problem:>
+
+Say you have a table "Camera" and want to associate a description
+with each camera. For most cameras, you'll be able to generate the description from
+the other columns. However, in a few special cases you may want to associate a
+custom description with a camera.
+
+B<Solution:>
+
+In your database schema, define a description field in the "Camera" table that
+can contain text and null values.
+
+In DBIC, we'll overload the column accessor to provide a sane default if no
+custom description is defined. The accessor will either return or generate the
+description, depending on whether the field is null or not.
+
+First, in your "Camera" schema class, define the description field as follows:
+
+  __PACKAGE__->add_columns(description => { accessor => '_description' });
+
+Next, we'll define the accessor-wrapper subroutine:
+
+  sub description {
+      my $self = shift;
+
+      # If there is an update to the column, we'll let the original accessor
+      # deal with it.
+      return $self->_description(@_) if @_;
+
+      # Fetch the column value.
+      my $description = $self->_description;
+
+      # If there's something in the description field, then just return that.
+      return $description if defined $description && length $descripton;
+
+      # Otherwise, generate a description.
+      return $self->generate_description;
+  }
+
+=head1 DEBUGGING AND PROFILING
+
+=head2 DBIx::Class objects with Data::Dumper
+
+L<Data::Dumper> can be a very useful tool for debugging, but sometimes it can
+be hard to find the pertinent data in all the data it can generate.
+Specifically, if one naively tries to use it like so,
+
+  use Data::Dumper;
+
+  my $cd = $schema->resultset('CD')->find(1);
+  print Dumper($cd);
+
+several pages worth of data from the CD object's schema and result source will
+be dumped to the screen. Since usually one is only interested in a few column
+values of the object, this is not very helpful.
+
+Luckily, it is possible to modify the data before L<Data::Dumper> outputs
+it. Simply define a hook that L<Data::Dumper> will call on the object before
+dumping it. For example,
+
+  package My::DB::CD;
+
+  sub _dumper_hook {
+    $_[0] = bless {
+      %{ $_[0] },
+      result_source => undef,
+    }, ref($_[0]);
+  }
+
+  [...]
+
+  use Data::Dumper;
+
+  local $Data::Dumper::Freezer = '_dumper_hook';
+
+  my $cd = $schema->resultset('CD')->find(1);
+  print Dumper($cd);
+         # dumps $cd without its ResultSource
+
+If the structure of your schema is such that there is a common base class for
+all your table classes, simply put a method similar to C<_dumper_hook> in the
+base class and set C<$Data::Dumper::Freezer> to its name and L<Data::Dumper>
+will automagically clean up your data before printing it. See
+L<Data::Dumper/EXAMPLES> for more information.
+
+=head2 Profiling
+
+When you enable L<DBIx::Class::Storage>'s debugging it prints the SQL
+executed as well as notifications of query completion and transaction
+begin/commit.  If you'd like to profile the SQL you can subclass the
+L<DBIx::Class::Storage::Statistics> class and write your own profiling
+mechanism:
+
+  package My::Profiler;
+  use strict;
+
+  use base 'DBIx::Class::Storage::Statistics';
+
+  use Time::HiRes qw(time);
+
+  my $start;
+
+  sub query_start {
+    my $self = shift();
+    my $sql = shift();
+    my @params = @_;
+
+    $self->print("Executing $sql: ".join(', ', @params)."\n");
+    $start = time();
+  }
+
+  sub query_end {
+    my $self = shift();
+    my $sql = shift();
+    my @params = @_;
+
+    my $elapsed = sprintf("%0.4f", time() - $start);
+    $self->print("Execution took $elapsed seconds.\n");
+    $start = undef;
+  }
+
+  1;
+
+You can then install that class as the debugging object:
+
+  __PACKAGE__->storage->debugobj(new My::Profiler());
+  __PACKAGE__->storage->debug(1);
+
+A more complicated example might involve storing each execution of SQL in an
+array:
+
+  sub query_end {
+    my $self = shift();
+    my $sql = shift();
+    my @params = @_;
+
+    my $elapsed = time() - $start;
+    push(@{ $calls{$sql} }, {
+        params => \@params,
+        elapsed => $elapsed
+    });
+  }
+
+You could then create average, high and low execution times for an SQL
+statement and dig down to see if certain parameters cause aberrant behavior.
+You might want to check out L<DBIx::Class::QueryLog> as well.
+
+=head1 IMPROVING PERFORMANCE
+
+=over
+
+=item *
+
+Install L<Class::XSAccessor> to speed up L<Class::Accessor::Grouped>.
+
+=item *
+
+On Perl 5.8 install L<Class::C3::XS>.
+
+=item *
+
+L<prefetch|DBIx::Class::ResultSet/prefetch> relationships, where possible. See
+L</Using joins and prefetch>.
+
+=item *
+
+Use L<populate|DBIx::Class::ResultSet/populate> in void context to insert data
+when you don't need the resulting L<result|DBIx::Class::Manual::ResultClass> objects,
+if possible, but see the caveats.
+
+When inserting many rows, for best results, populate a large number of rows at a
+time, but not so large that the table is locked for an unacceptably long time.
+
+If using L<create|DBIx::Class::ResultSet/create> instead, use a transaction and
+commit every C<X> rows; where C<X> gives you the best performance without
+locking the table for too long.
+
+=item *
+
+When selecting many rows, if you don't need full-blown L<DBIx::Class::Row>
+objects, consider using L<DBIx::Class::ResultClass::HashRefInflator>.
+
+=item *
+
+See also L</STARTUP SPEED> and L</MEMORY USAGE> in this document.
+
+=back
+
+=head1 STARTUP SPEED
+
+L<DBIx::Class|DBIx::Class> programs can have a significant startup delay
+as the ORM loads all the relevant classes. This section examines
+techniques for reducing the startup delay.
+
+These tips are listed in order of decreasing effectiveness - so the
+first tip, if applicable, should have the greatest effect on your
+application.
+
+=head2 Statically Define Your Schema
+
+If you are using
+L<DBIx::Class::Schema::Loader|DBIx::Class::Schema::Loader> to build the
+classes dynamically based on the database schema then there will be a
+significant startup delay.
+
+For production use a statically defined schema (which can be generated
+using L<DBIx::Class::Schema::Loader> to dump the database schema once - see
+L<make_schema_at|DBIx::Class::Schema::Loader/make_schema_at> and
+L<dump_directory|DBIx::Class::Schema::Loader::Base/dump_directory> for more
+details on creating static schemas from a database).
+
+=head2 Move Common Startup into a Base Class
+
+Typically L<DBIx::Class> result classes start off with
+
+    use base qw/DBIx::Class::Core/;
+    __PACKAGE__->load_components(qw/InflateColumn::DateTime/);
+
+If this preamble is moved into a common base class:-
+
+    package MyDBICbase;
+
+    use base qw/DBIx::Class::Core/;
+    __PACKAGE__->load_components(qw/InflateColumn::DateTime/);
+    1;
+
+and each result class then uses this as a base:-
+
+    use base qw/MyDBICbase/;
+
+then the load_components is only performed once, which can result in a
+considerable startup speedup for schemas with many classes.
+
+=head2 Explicitly List Schema Result Classes
+
+The schema class will normally contain
+
+    __PACKAGE__->load_classes();
+
+to load the result classes. This will use L<Module::Find|Module::Find>
+to find and load the appropriate modules. Explicitly defining the
+classes you wish to load will remove the overhead of
+L<Module::Find|Module::Find> and the related directory operations:
+
+    __PACKAGE__->load_classes(qw/ CD Artist Track /);
+
+If you are instead using the L<load_namespaces|DBIx::Class::Schema/load_namespaces>
+syntax to load the appropriate classes there is not a direct alternative
+avoiding L<Module::Find|Module::Find>.
+
+=head1 MEMORY USAGE
+
+=head2 Cached statements
+
+L<DBIx::Class> normally caches all statements with
+L<prepare_cached()|DBI/prepare_cached>. This is normally a good idea, but if
+too many statements are cached, the database may use too much memory and may
+eventually run out and fail entirely. If you suspect this may be the case,
+you may want to examine DBI's L<CachedKids|DBI/CachedKids> hash:
+
+    # print all currently cached prepared statements
+    print for keys %{$schema->storage->dbh->{CachedKids}};
+    # get a count of currently cached prepared statements
+    my $count = scalar keys %{$schema->storage->dbh->{CachedKids}};
+
+If it's appropriate, you can simply clear these statements, automatically deallocating them in the
+database:
+
+    my $kids = $schema->storage->dbh->{CachedKids};
+    delete @{$kids}{keys %$kids} if scalar keys %$kids > 100;
+
+But what you probably want is to expire unused statements and not those that are used frequently.
+You can accomplish this with L<Tie::Cache> or L<Tie::Cache::LRU>:
+
+    use Tie::Cache;
+    use DB::Main;
+    my $schema = DB::Main->connect($dbi_dsn, $user, $pass, {
+        on_connect_do => sub { tie %{shift->_dbh->{CachedKids}}, 'Tie::Cache', 100 },
+    });
+
+=cut
+
+=head1 FURTHER QUESTIONS?
+
+Check the list of L<additional DBIC resources|DBIx::Class/GETTING HELP/SUPPORT>.
+
+=head1 COPYRIGHT AND LICENSE
+
+This module is free software L<copyright|DBIx::Class/COPYRIGHT AND LICENSE>
+by the L<DBIx::Class (DBIC) authors|DBIx::Class/AUTHORS>. You can
+redistribute it and/or modify it under the same terms as the
+L<DBIx::Class library|DBIx::Class/COPYRIGHT AND LICENSE>.

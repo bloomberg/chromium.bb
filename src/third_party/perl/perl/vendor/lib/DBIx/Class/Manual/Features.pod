@@ -1,0 +1,677 @@
+=head1 NAME
+
+DBIx::Class::Manual::Features - A boatload of DBIx::Class features with links to respective documentation
+
+=head1 META
+
+=head2 Large Community
+
+There are L<hundres of DBIC contributors|DBIx::Class/AUTHORS> listed in
+F<AUTHORS>. That ranges from documentation help, to test help, to added
+features, to entire database support.
+
+=head2 Active Community
+
+Currently (June 9, 2010) 6 active branches (committed to
+in the last two weeks) in git.  Last release (0.08122)
+had 14 new features, and 16 bug fixes.  Of course that
+L<ebbs and flows|https://metacpan.org/changes/distribution/DBIx-Class>.)
+
+=head2 Responsive Community
+
+=over 1
+
+=item I needed MSSQL order-by support; the community helped me add support
+
+=item generally very welcoming of people willing to help
+
+=back
+
+=head1 General ORM
+
+These are things that are in most other ORMs, but are still reasons to use
+DBIC over raw SQL.
+
+=head2 Cross DB
+
+The vast majority of code should run on all databases without needing tweaking
+
+=head2 Basic CRUD
+
+=over 1
+
+=item C - Create
+
+=item R - Retrieve
+
+=item U - Update
+
+=item D - Delete
+
+=back
+
+=head2 SQL: Create
+
+ my $sth = $dbh->prepare('
+    INSERT INTO books
+    (title, author_id)
+    values (?,?)
+ ');
+
+ $sth->execute( 'A book title', $author_id );
+
+=head2 DBIC: Create
+
+ my $book = $book_rs->create({
+    title     => 'A book title',
+    author_id => $author_id,
+ });
+
+See L<DBIx::Class::ResultSet/create>
+
+=over 1
+
+=item No need to pair placeholders and values
+
+=item Automatically gets autoincremented id for you
+
+=item Transparently uses INSERT ... RETURNING for databases that support it
+
+=back
+
+=head2 SQL: Read
+
+ my $sth = $dbh->prepare('
+    SELECT title,
+    authors.name as author_name
+    FROM books, authors
+    WHERE books.author = authors.id
+ ');
+
+ while ( my $book = $sth->fetchrow_hashref ) {
+   say "Author of $book->{title} is $book->{author_name}";
+ }
+
+=head2 DBIC: Read
+
+ my $book = $book_rs->find($book_id);
+
+or
+
+ my $book = $book_rs->search({ title => 'A book title' }, { rows => 1 })->next;
+
+or
+
+ my @books = $book_rs->search({ author => $author_id })->all;
+
+or
+
+ while( my $book = $books_rs->next ) {
+   printf "Author of %s is %s\n", $book->title, $book->author->name;
+ }
+
+See L<DBIx::Class::ResultSet/find>, L<DBIx::Class::ResultSet/search>, L<DBIx::Class::ResultSet/next>, and L<DBIx::Class::ResultSet/all>
+
+B<TMTOWTDI!>
+
+=head2 SQL: Update
+
+ my $update = $dbh->prepare('
+    UPDATE books
+    SET title = ?
+    WHERE id = ?
+ ');
+
+ $update->execute( 'New title', $book_id );
+
+=head2 DBIC: Update
+
+ $book->update({ title => 'New title' });
+
+See L<DBIx::Class::Row/update>
+
+Will not update unless value changes
+
+=head2 SQL: Delete
+
+ my $delete = $dbh->prepare('DELETE FROM books WHERE id = ?');
+
+ $delete->execute($book_id);
+
+=head2 DBIC: Delete
+
+ $book->delete
+
+See L<DBIx::Class::Row/delete>
+
+=head2 SQL: Search
+
+ my $sth = $dbh->prepare('
+   SELECT title,
+   authors.name as author_name
+   FROM books
+   WHERE books.name LIKE "%monte cristo%" AND
+   books.topic = "jailbreak"
+ ');
+
+=head2 DBIC: Search
+
+ my $book = $book_rs->search({
+    'me.name'  => { -like => '%monte cristo%' },
+    'me.topic' => 'jailbreak',
+ })->next;
+
+=over 1
+
+=item See L<SQL::Abstract>, L<DBIx::Class::ResultSet/next>, and L<DBIx::Class::ResultSet/search>
+
+=item (kinda) introspectible
+
+=item Prettier than SQL
+
+=back
+
+=head2 OO Overridability
+
+=over 1
+
+=item Override new if you want to do validation
+
+=item Override delete if you want to disable deletion
+
+=item and on and on
+
+=back
+
+=head2 Convenience Methods
+
+=over 1
+
+=item L<DBIx::Class::ResultSet/find_or_create>
+
+=item L<DBIx::Class::ResultSet/update_or_create>
+
+=back
+
+=head2 Non-column methods
+
+Need a method to get a user's gravatar URL?  Add a C<gravatar_url> method to the
+Result class
+
+=head2 RELATIONSHIPS
+
+=over 1
+
+=item L<DBIx::Class::Relationship/belongs_to>
+
+=item L<DBIx::Class::Relationship/has_many>
+
+=item L<DBIx::Class::Relationship/might_have>
+
+=item L<DBIx::Class::Relationship/has_one>
+
+=item L<DBIx::Class::Relationship/many_to_many>
+
+=item SET AND FORGET
+
+=back
+
+=head1 DBIx::Class Specific Features
+
+These things may be in other ORM's, but they are very specific, so doubtful
+
+=head2 ->deploy
+
+Create a database from your DBIx::Class schema.
+
+ my $schema = Frew::Schema->connect( $dsn, $user, $pass );
+
+ $schema->deploy
+
+See L<DBIx::Class::Schema/deploy>.
+
+See also: L<DBIx::Class::DeploymentHandler>
+
+=head2 Schema::Loader
+
+Create a DBIx::Class schema from your database.
+
+ package Frew::Schema;
+
+ use strict;
+ use warnings;
+
+ use base 'DBIx::Class::Schema::Loader';
+
+ __PACKAGE__->loader_options({
+    naming => 'v7',
+    debug  => $ENV{DBIC_TRACE},
+ });
+
+ 1;
+
+ # elsewhere...
+
+ my $schema = Frew::Schema->connect( $dsn, $user, $pass );
+
+See L<DBIx::Class::Schema::Loader> and L<DBIx::Class::Schema::Loader::Base/CONSTRUCTOR OPTIONS>.
+
+=head2 Populate
+
+Made for inserting lots of rows very quickly into database
+
+ $schema->populate([ Users =>
+    [qw( username password )],
+    [qw( frew     >=4char$ )],
+    [qw(      ...          )],
+    [qw(      ...          )],
+ );
+
+See L<DBIx::Class::Schema/populate>
+
+I use populate L<here|http://blog.afoolishmanifesto.com/archives/1255> to export our whole
+(200M~) db to SQLite
+
+=head2 Multicreate
+
+Create an object and its related objects all at once
+
+ $schema->resultset('Author')->create({
+    name => 'Stephen King',
+    books => [{ title => 'The Dark Tower' }],
+    address => {
+       street => '123 Turtle Back Lane',
+       state  => { abbreviation => 'ME' },
+       city   => { name => 'Lowell'     },
+    },
+ });
+
+See L<DBIx::Class::ResultSet/create>
+
+=over 1
+
+=item books is a has_many
+
+=item address is a belongs_to which in turn belongs to state and city each
+
+=item for this to work right state and city must mark abbreviation and name as unique
+
+=back
+
+=head2 Extensible
+
+DBIx::Class helped pioneer fast MI in Perl 5 with Class::C3, so it is made to
+allow extensions to nearly every part of it.
+
+=head2 Extensibility example: DBIx::Class::Helpers
+
+=over 1
+
+=item L<DBIx::Class::Helper::ResultSet::IgnoreWantarray>
+
+=item L<DBIx::Class::Helper::ResultSet::Random>
+
+=item L<DBIx::Class::Helper::ResultSet::SetOperations>
+
+=item L<DBIx::Class::Helper::Row::JoinTable>
+
+=item L<DBIx::Class::Helper::Row::NumifyGet>
+
+=item L<DBIx::Class::Helper::Row::SubClass>
+
+=item L<DBIx::Class::Helper::Row::ToJSON>
+
+=item L<DBIx::Class::Helper::Row::StorageValues>
+
+=item L<DBIx::Class::Helper::Row::OnColumnChange>
+
+=back
+
+=head2 Extensibility example: DBIx::Class::TimeStamp
+
+=over 1
+
+=item See L<DBIx::Class::TimeStamp>
+
+=item Cross DB
+
+=item set_on_create
+
+=item set_on_update
+
+=back
+
+=head2 Extensibility example: Kioku
+
+=over 1
+
+=item See L<DBIx::Class::Schema::KiokuDB>
+
+=item Kioku is the new hotness
+
+=item Mix RDBMS with Object DB
+
+=back
+
+=head2 Result vs ResultSet
+
+=over 1
+
+=item Result == Row
+
+=item ResultSet == Query Plan
+
+=over 1
+
+=item Internal Join Optimizer for all DB's (!!!)
+
+=back
+
+=item (less important but...)
+
+=item ResultSource == Queryable collection of rows (Table, View, etc)
+
+=item Storage == Database
+
+=item Schema == associates a set of ResultSources with a Storage
+
+=back
+
+=head2 ResultSet methods
+
+ package MyApp::Schema::ResultSet::Book;
+
+ use strict;
+ use warnings;
+
+ use base 'DBIx::Class::ResultSet';
+
+ sub good {
+    my $self = shift;
+    $self->search({
+       $self->current_source_alias . '.rating' => { '>=' => 4 }
+    })
+ };
+
+ sub cheap {
+    my $self = shift;
+    $self->search({
+       $self->current_source_alias . '.price' => { '<=' => 5}
+    })
+ };
+
+ # ...
+
+ 1;
+
+See L<DBIx::Class::Manual::Cookbook/Predefined searches>
+
+=over 1
+
+=item All searches should be ResultSet methods
+
+=item Name has obvious meaning
+
+=item L<DBIx::Class::ResultSet/current_source_alias> helps things to work no matter what
+
+=back
+
+=head2 ResultSet method in Action
+
+ $schema->resultset('Book')->good
+
+=head2 ResultSet Chaining
+
+ $schema->resultset('Book')
+    ->good
+    ->cheap
+    ->recent
+
+=head2 search_related
+
+ my $score = $schema->resultset('User')
+    ->search({'me.userid' => 'frew'})
+    ->related_resultset('access')
+    ->related_resultset('mgmt')
+    ->related_resultset('orders')
+    ->telephone
+    ->search_related( shops => {
+       'shops.datecompleted' => {
+          -between => ['2009-10-01','2009-10-08']
+       }
+    })->completed
+    ->related_resultset('rpt_score')
+    ->search(undef, { rows => 1})
+    ->get_column('raw_scores')
+    ->next;
+
+The SQL that this produces (with placeholders filled in for clarity's sake)
+on our system (Microsoft SQL) is:
+
+ SELECT raw_scores
+   FROM (
+     SELECT raw_scores, ROW_NUMBER() OVER (
+         ORDER BY (
+             SELECT (1)
+           )
+       ) AS rno__row__index
+       FROM (
+         SELECT rpt_score.raw_scores
+           FROM users me
+           JOIN access access
+             ON access.userid = me.userid
+           JOIN mgmt mgmt
+             ON mgmt.mgmtid = access.mgmtid
+           JOIN [order] orders
+             ON orders.mgmtid = mgmt.mgmtid
+           JOIN shop shops
+             ON shops.orderno = orders.orderno
+           JOIN rpt_scores rpt_score
+             ON rpt_score.shopno = shops.shopno
+         WHERE (
+           datecompleted IS NOT NULL AND
+           (
+             (shops.datecompleted BETWEEN '2009-10-01' AND '2009-10-08')  AND
+             (type = '1' AND me.userid = 'frew')
+           )
+         )
+       ) rpt_score
+   ) rpt_score
+ WHERE rno__row__index BETWEEN 1 AND 1
+
+See: L<DBIx::Class::ResultSet/related_resultset>,
+L<DBIx::Class::ResultSet/search_related>, and
+L<DBIx::Class::ResultSet/get_column>.
+
+=head2 bonus rel methods
+
+ my $book = $author->create_related(
+    books => {
+       title => 'Another Discworld book',
+    }
+ );
+
+ my $book2 = $pratchett->add_to_books({
+    title => 'MOAR Discworld book',
+ });
+
+See L<DBIx::Class::Relationship::Base/create_related> and L<DBIx::Class::Relationship::Base/add_to_$rel>
+
+Note that it automatically fills in foreign key for you
+
+=head2 Excellent Transaction Support
+
+ $schema->txn_do(sub {
+    ...
+ });
+
+ $schema->txn_begin; # <-- low level
+ # ...
+ $schema->txn_commit;
+
+See L<DBIx::Class::Schema/txn_do>, L<DBIx::Class::Schema/txn_begin>,
+and L<DBIx::Class::Schema/txn_commit>.
+
+=head2 InflateColumn
+
+ package Frew::Schema::Result::Book;
+
+ use strict;
+ use warnings;
+
+ use base 'DBIx::Class::Core';
+
+ use DateTime::Format::MySQL;
+
+ # Result code here
+
+ __PACKAGE__->load_components('InflateColumn');
+
+ __PACKAGE__->inflate_column(
+    date_published => {
+       inflate => sub { DateTime::Format::MySQL->parse_date( shift ) },
+       deflate => sub { shift->ymd },
+    },
+ );
+
+See L<DBIx::Class::InflateColumn>, L<DBIx::Class::InflateColumn/inflate_column>, and
+L<DBIx::Class::InflateColumn::DateTime>.
+
+=head2 InflateColumn: deflation
+
+ $book->date_published(DateTime->now);
+ $book->update;
+
+=head2 InflateColumn: inflation
+
+ say $book->date_published->month_abbr; # Nov
+
+=head2 FilterColumn
+
+ package Frew::Schema::Result::Book;
+
+ use strict;
+ use warnings;
+
+ use base 'DBIx::Class::Core';
+
+ # Result code here
+
+ __PACKAGE__->load_components('FilterColumn');
+
+ __PACKAGE__->filter_column(
+    length => {
+       to_storage   => 'to_metric',
+       from_storage => 'to_imperial',
+    },
+ );
+
+ sub to_metric   { $_[1] * .305 }
+ sub to_imperial { $_[1] * 3.28 }
+
+See L<DBIx::Class::FilterColumn> and L<DBIx::Class::FilterColumn/filter_column>
+
+=head2 ResultSetColumn
+
+ my $rsc = $schema->resultset('Book')->get_column('price');
+ $rsc->first;
+ $rsc->all;
+ $rsc->min;
+ $rsc->max;
+ $rsc->sum;
+
+See L<DBIx::Class::ResultSetColumn>
+
+=head2 Aggregates
+
+ my @res = $rs->search(undef, {
+    select   => [
+       'price',
+       'genre',
+       { max => price },
+       { avg => price },
+    ],
+    as       => [
+       qw(price genre max_price avg_price)
+    ],
+    group_by => [qw(price genre)],
+ });
+ for (@res) {
+    say $_->price . ' ' . $_->genre;
+    say $_->get_column('max_price');
+    say $_->get_column('avg_price');
+ }
+
+See L<DBIx::Class::ResultSet/select>, L<DBIx::Class::ResultSet/as>, and
+L<DBIx::Class::ResultSet/group_by>
+
+=over 1
+
+=item Careful, get_column can basically mean B<three> things
+
+=item private in which case you should use an accessor
+
+=item public for what there is no accessor for
+
+=item public for get resultset column (prev example)
+
+=back
+
+=head2 HRI
+
+ $rs->search(undef, {
+   result_class => 'DBIx::Class::ResultClass::HashRefInflator',
+ });
+
+See L<DBIx::Class::ResultSet/result_class> and L<DBIx::Class::ResultClass::HashRefInflator>.
+
+=over 1
+
+=item Easy on memory
+
+=item Mega fast
+
+=item Great for quick debugging
+
+=item Great for performance tuning (we went from 2m to < 3s)
+
+=back
+
+=head2 Subquery Support
+
+ my $inner_query = $schema->resultset('Artist')
+    ->search({
+     name => [ 'Billy Joel', 'Brittany Spears' ],
+ })->get_column('id')->as_query;
+
+ my $rs = $schema->resultset('CD')->search({
+     artist_id => { -in => $inner_query },
+ });
+
+See L<DBIx::Class::Manual::Cookbook/Subqueries>
+
+=head2 Bare SQL w/ Placeholders
+
+ $rs->update({
+    # !!! SQL INJECTION VECTOR
+    price => \"price + $inc", # DON'T DO THIS
+ });
+
+Better:
+
+ $rs->update({
+    price => \['price + ?', [inc => $inc]],
+ });
+
+See L<SQL::Abstract/Literal SQL with placeholders and bind values (subqueries)>
+
+=head1 FURTHER QUESTIONS?
+
+Check the list of L<additional DBIC resources|DBIx::Class/GETTING HELP/SUPPORT>.
+
+=head1 COPYRIGHT AND LICENSE
+
+This module is free software L<copyright|DBIx::Class/COPYRIGHT AND LICENSE>
+by the L<DBIx::Class (DBIC) authors|DBIx::Class/AUTHORS>. You can
+redistribute it and/or modify it under the same terms as the
+L<DBIx::Class library|DBIx::Class/COPYRIGHT AND LICENSE>.

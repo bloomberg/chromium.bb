@@ -1,0 +1,153 @@
+@rem = '--*-Perl-*--
+@echo off
+if "%OS%" == "Windows_NT" goto WinNT
+IF EXIST "%~dp0perl.exe" (
+"%~dp0perl.exe" -x -S "%0" %1 %2 %3 %4 %5 %6 %7 %8 %9
+) ELSE IF EXIST "%~dp0..\..\bin\perl.exe" (
+"%~dp0..\..\bin\perl.exe" -x -S "%0" %1 %2 %3 %4 %5 %6 %7 %8 %9
+) ELSE (
+perl -x -S "%0" %1 %2 %3 %4 %5 %6 %7 %8 %9
+)
+
+goto endofperl
+:WinNT
+IF EXIST "%~dp0perl.exe" (
+"%~dp0perl.exe" -x -S %0 %*
+) ELSE IF EXIST "%~dp0..\..\bin\perl.exe" (
+"%~dp0..\..\bin\perl.exe" -x -S %0 %*
+) ELSE (
+perl -x -S %0 %*
+)
+
+if NOT "%COMSPEC%" == "%SystemRoot%\system32\cmd.exe" goto endofperl
+if %errorlevel% == 9009 echo You do not have Perl in your PATH.
+if errorlevel 1 goto script_failed_so_exit_with_non_zero_val 2>nul
+goto endofperl
+@rem ';
+#!/usr/bin/perl
+#line 29
+
+#######################################################################
+#
+# extract_vba - A utility to extract a vbaProject.bin binary from an
+# Excel 2007+ xlsm file for insertion into an Excel::Writer::XLSX file.
+#
+# reverse('©'), September 2007, John McNamara, jmcnamara@cpan.org
+#
+# Documentation after __END__
+#
+
+
+use strict;
+use warnings;
+use Getopt::Long;
+use Pod::Usage;
+use Archive::Zip;
+
+# Ignore Archive::Zip error messages. Use its return codes only.
+Archive::Zip::setErrorHandler( sub { } );
+
+my $help        = 0;
+my $filename    = $ARGV[0];
+my $vba_project = 'vbaProject.bin';
+
+
+# Use Getopt to read the command-line and Pod::Usage to handle usage
+# and documentation.
+GetOptions(
+    'help|?' => \$help,
+) or pod2usage( 2 );
+
+pod2usage( -verbose => 2 ) if $help;
+pod2usage() if @ARGV == 0 && -t STDIN;
+
+
+# Use Archive::Zip to handle the Excel xlsm/zip file.
+my $zip   = Archive::Zip->new();
+my $error = $zip->read( $filename );
+
+if ( $error == 3 ) {
+    die "File '$filename' doesn't appear to be an 'xlsxm/zip' file.\n";
+}
+elsif ( $error != 0 ) {
+    die "Couldn't read '$filename': $!.\n";
+}
+
+# Extract the vbaProject.bin from the Excel xlsm/zip file.
+$error = $zip->extractMemberWithoutPaths( 'xl/' . $vba_project );
+
+if ( !$error ) {
+    print "Extracted '$vba_project' successfully\n";
+}
+else {
+    die "Failed to extract '$vba_project' from $filename.\n";
+}
+
+
+# The mod data on vbaProject.bin isn't generally set correctly in the xlsm/zip
+# file. This can cause issues on Windows so reset it to the current data.
+my $mtime = time;
+utime $mtime, $mtime, $vba_project;
+
+
+__END__
+
+
+=head1 NAME
+
+extract_vba - A utility to extract a VBA project from an Excel 2007+ xlsm file.
+
+=head1 DESCRIPTION
+
+This utility is used  to extract the VBA project binary from an Excel 2007+ xlsm file. The VBA project can then be added to an L<Excel::Writer::XLSX> file to enable it to have macros.
+
+An C<xlsm> file is a version of an Excel C<xlsx> file that contains an additional VBA project binary file. The C<xlsm> file format is a collection of mainly XML files in a ZIP container.
+
+The extracted VBA project is an OLE Compound Document in binary format. It is named C<vbaProject.bin> and is generally located in the C<xl> directory of the C<xlsm> file.
+
+See the C<add_vba_project()> section of the  L<Excel::Writer::XLSX> documentation for more details.
+
+Note: you can also extract the VBA project from an C<xlsm> file using the standard Linux C<unzip> command:
+
+    unzip -j macro01.xlsm xl/vbaProject.bin
+
+On Windows you can use any suitable Unzip application.
+
+
+=head1 SYNOPSIS
+
+    $ extract_vba file.xlsm
+    Extracted 'vbaProject.bin' successfully
+
+    $ extract_vba -h # For help.
+
+=head1 OPTIONS
+
+=over 4
+
+=item B<--help or -h>
+
+Print the help documentation.
+
+=back
+
+
+=head1 AUTHOR
+
+John McNamara jmcnamara@cpan.org
+
+
+=head1 VERSION
+
+Version 0.01.
+
+=head1 COPYRIGHT
+
+(c) MMXV, John McNamara.
+
+All Rights Reserved. This program is free software. It may be used, redistributed and/or modified under the same terms as Perl itself.
+
+=cut
+
+__END__
+:endofperl

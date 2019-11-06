@@ -1,0 +1,246 @@
+
+=encoding utf-8
+
+=head1 NAME
+
+Test::LeakTrace::JA - メモリリークを追跡する
+
+=head1 VERSION
+
+This document describes Test::LeakTrace version 0.16.
+
+=head1 SYNOPSIS
+
+	use Test::LeakTrace;
+
+	# simple report
+	leaktrace{
+		# ...
+	};
+
+	# verbose output
+	leaktrace{
+		# ...
+	} -verbose;
+
+	# with callback
+	leaktrace{
+		# ...
+	} sub {
+		my($ref, $file, $line) = @_;
+		warn "leaked $ref from $file line\n";
+	};
+
+	my @refs = leaked_refs{
+		# ...
+	};
+	my @info = leaked_info{
+		# ...
+	};
+
+	my $count = leaked_count{
+		# ...
+	};
+
+	# standard test interface
+	use Test::LeakTrace;
+
+	no_leaks_ok{
+		# ...
+	} "description";
+
+	leaks_cmp_ok{
+		# ...
+	} '<', 10;
+
+=head1 DESCRIPTION
+
+PerlのGCはリファレンスカウンタを用いたものなので，オブジェクトが開放されるタイミングが明確であることや体感速度が高速であることなど数々の利点があります。
+その一方で，循環参照を開放できないこと，Cレベルでの操作でミスしやすいなど，問題点がいくつかあります。それらの問題点のほとんどはメモリリークに関することですから，メモリリークを追跡することは非常に重要な課題です。
+
+C<Test::LeakTrce>はメモリリークを追跡するためのいくつかのユーティリティとC<Test::Builder>ベースのテスト関数を提供します。このモジュールはPerlのメモリアロケーションシステムであるアリーナを走査するため，SVに関することであれば与えられたコードのどんなメモリリークでも検出できます。つまり，Perlレベルでの循環参照を始めとして，XSモジュールやPerl自身のバグによるメモリリークを追跡することができます。
+
+ここでB<リーク>とは，特定のスコープ内で新たに作成されて，そのスコープ終了後にも残っている値を意味します。これは，新たに作成されたグローバルな値やPerlが暗黙のうちに作成するキャッシュの値も含みます。たとえば，リーク追跡を行っている最中に新たに名前つきサブルーチンを定義すれば，それはリークとみなされます。また，継承したメソッドを呼び出したり，オブジェクトを作成したりするだけで様々なキャッシュが生成され，リークが報告される可能性があります。
+
+=head1 INTERFACE
+
+=head2 Exported functions
+
+=head3 C<< leaked_info { BLOCK } >>
+
+I<BLOCK>を実行し，追跡結果をリストで返します。
+結果はリークした値のリファレンス，ファイル名，行番号の三要素を持つ配列，つまりC<< [$ref, $file, $line] >>のリストとなっています。
+
+なお，この関数はPerl内部で使用する値を返す可能性があります。そのような内部用の値を変更するとPerl実行環境に致命的な影響を与える可能性があるので注意してください。また，配列やハッシュの要素として，リファレンスではない配列やハッシュそれ自体が含まれる可能性があります。そのような値は通常Perlレベルで操作することができません。たとえばC<Data::Dumper>などで出力することはできません。
+
+=head3 C<< leaked_refs { BLOCK } >>
+
+I<BLOCK>を実行し，リークしたSVのリファレンスのリストを返します。
+
+C<< map{ $_->[0] } leaked_info{ BLOCK } >>と同じですが，より高速です。
+
+=head3 C<< leaked_count { BLOCK } >>
+
+I<BLOCK>を実行し，リークしたSVのリファレンスの個数を返します。
+
+C<leaked_info()>とC<leaked_refs()>もスカラコンテキストでは個数を返しますが，
+C<leaked_count()>はコンテキストに依存しません。
+
+=head3 C<< leaktrace { BLOCK } ?($mode | \&callback) >>
+
+I<BLOCK>を実行し，その中で起きたメモリリークをC<*STDERR>に報告します。
+
+メモリリークの報告はI<$mode>で指定したモードに従います。
+受け付けるI<$mode>は以下の通りです：
+
+=over 4
+
+=item -simple
+
+デフォルトのモードです。リークしたSVの型とアドレス，ファイル名，行番号を報告します。
+
+=item -sv_dump
+
+B<-simple>に加えて，C<sv_dump()>でSVの中身をダンプします。
+これは，C<Devel::Peek::Dump()>の出力とほぼ同じです。
+
+=item -lines
+
+B<-simple>に加えて，リークしていると見られる行の周辺を出力します。
+
+=item -verbose
+
+B<-simple>とB<-sv_dump>とB<-lines>の全てを出力します。
+
+=back
+
+より細かな制御のためにコールバックを指定することもできます。
+I<\&callback>はリークしたSV毎に呼び出され，その引数はリークしたSVのリファレンス，ファイル名，行番号の3つです。
+
+=head3 C<< no_leaks_ok { BLOCK } ?$description >>
+
+I<BLOCK>にメモリリークがないことテストします。
+これはC<Test::Builder>ベースのテスト関数です。
+
+なお，I<BLOCK>は複数回実行されます。これは，初回の実行でキャッシュを用意する可能性を考慮するためです。
+
+=head3 C<< leaks_cmp_ok { BLOCK } $cmp_op, $count, ?$description >>
+
+I<BLOCK>のメモリリーク数と特定の数値を比較するテストを行います。
+これはC<Test::Builder>ベースのテスト関数です。
+
+なお，I<BLOCK>は複数回実行されます。これは，初回の実行でキャッシュを用意する可能性を考慮するためです。
+
+=head2 Script interface
+
+C<Devel::LeakTrace>と同様に，スクリプトのリーク追跡のためにC<Test::LeakTrace::Script>が提供されます。C<use Test::LeakTrace::Script>宣言の引数はC<leaktrace()>と同じです。
+
+	$ TEST_LEAKTRACE=-sv_dump perl -MTest::LeakTrace::Script script.pl
+	$ perl -MTest::LeakTrace::Script=-verbose script.pl
+
+	#!perl
+	# ...
+
+	use Test::LeakTrace::Script sub{
+		my($ref, $file, $line) = @_;
+		# ...
+	};
+
+	# ...
+
+=head1 EXAMPLES
+
+=head2 Testing modules
+
+以下はモジュールのメモリリークをチェックするテストスクリプトのテンプレートです。
+
+	#!perl -w
+	use strict;
+	use constant HAS_LEAKTRACE => eval{ require Test::LeakTrace };
+	use Test::More HAS_LEAKTRACE ? (tests => 1) : (skip_all => 'require Test::LeakTrace');
+	use Test::LeakTrace;
+
+	use Some::Module;
+
+	leaks_cmp_ok{
+		my $o = Some::Module->new();
+		$o->something();
+		$o->something_else();
+	} '<', 1;
+
+=head1 GUTS
+
+C<Test::LeakTrace>はアリーナを走査します。アリーナとは，Perlが作成するSVのためのメモリアロケーションシステムであり，F<sv.c>で実装されています。
+アリーナの走査にはF<sv.c>にあるC<S_visit()>のコードを元にしたマクロを用いています。
+
+さて，アリーナを走査すれば，メモリリークの検出そのものは簡単にできるように思えます。まず，コードブロックを実行する前に一度アリーナを走査し，全てのSVに「使用済み」の印を付けておきます。次に，コードブロック実行後にもう一度アリーナを走査し，使用済みの印がついていないSVがあれば，それはコードブロック内で作成され，開放されなかったSVだと考えます。あとはそれを報告するだけです。実際には，SVに対して使用済みの印を付けるスペースがないため，インサイドアウト法を応用して外部のコンテナに使用済みの印を保存します。
+これを仮にPerlコードで書くと以下のようになります。
+
+	my %used_sv;
+	foreach my $sv(@ARENA){
+		$used_sv{$sv}++;
+	}
+	$block->();
+
+	my @leaked
+	foreach my $sv(@ARENA){
+		if(not exists $used_sv{$sv}){
+			push @leaked, $sv;
+		}
+	}
+	say 'leaked count: ', scalar @leaked;
+
+リークしたSVを得るだけならこの方法で十分です。実際，C<leaked_refs()>とC<leaked_count()>はこのような方法でリークしたSVやその個数を調べています。
+
+しかし，リークしたSVのステートメントの情報，つまりファイル名や行番号を得るためにはこれだけでは不十分です。Perl 5.10以降にはSVが作成されたときのステートメント情報を追跡する機能があるのですが，この機能を利用するためには，コンパイラオプションとしてにC<-DDEBUG_LEAKING_SCALARS>を与えてPerlをビルドしなければなりません。
+
+そこで，C<Test::LeakTrace>では拡張可能なC<PL_runops>を利用して，Perl VMがOPコードを実行する1ステートメント毎にアリーナを走査し，ステートメント情報を記録します。これは，1ステートメント毎にマーク＆スイープのような処理を行うのに等しく，非常に時間が掛かります。しかし，Perlを特殊な条件の下でビルドする必要もなく，バージョンに依存した機能もほとんど使用しないため，多くの環境で動かすことができます。
+
+また，C<no_leaks_ok()>のようなテスト関数はまずC<leaked_count()>でリークしたSVの個数を得てから，必要に応じてリークした位置を特定するためにC<leaktrace()>を実行するため，テストが成功する限りは時間の掛かる追跡処理はしません。
+
+
+=head1 DEPENDENCIES
+
+Perl 5.8.1 or later, and a C compiler.
+
+=head1 CAVEATS
+
+C<Test::LeakTrace>はC<Devel::Cover>と一緒に動かすことはできません。
+したがって，C<Devel::Cover>の元で動いていることが検出されると，テスト関数は何も行わずにテストをパスさせます。
+
+=head1 BUGS
+
+No bugs have been reported.
+
+Please report any bugs or feature requests to the author.
+
+=head1 SEE ALSO
+
+L<Devel::LeakTrace>.
+
+L<Devel::LeakTrace::Fast>.
+
+L<Test::TraceObject>.
+
+L<Test::Weak>.
+
+For guts:
+
+L<perlguts>.
+
+L<perlhack>.
+
+L<sv.c>.
+
+=head1 AUTHOR
+
+Goro Fuji E<lt>gfuji(at)cpan.orgE<gt>.
+
+=head1 LICENSE AND COPYRIGHT
+
+Copyright (c) 2009, Goro Fuji. Some rights reserved.
+
+This library is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself.
+
+=cut

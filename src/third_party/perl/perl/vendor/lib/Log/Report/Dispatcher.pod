@@ -1,0 +1,408 @@
+=encoding utf8
+
+=head1 NAME
+
+Log::Report::Dispatcher - manage message dispatching, display or logging
+
+=head1 INHERITANCE
+
+ Log::Report::Dispatcher is extended by
+   Log::Report::Dispatcher::Callback
+   Log::Report::Dispatcher::File
+   Log::Report::Dispatcher::Log4perl
+   Log::Report::Dispatcher::LogDispatch
+   Log::Report::Dispatcher::Perl
+   Log::Report::Dispatcher::Syslog
+   Log::Report::Dispatcher::Try
+
+=head1 SYNOPSIS
+
+ use Log::Report;
+
+ # The following will be created for you automatically
+ dispatcher 'PERL', 'default', accept => 'NOTICE-';
+ dispatcher close => 'default';  # after deamonize
+
+ dispatcher 'FILE', 'log'
+   , mode => 'DEBUG', to => '/var/log/mydir/myfile';
+
+ # Full package name is used, same as 'FILE'
+ dispatcher Log::Report::Dispatch::File => 'stderr'
+   , to => \*STDERR, accept => 'NOTICE-';
+
+=head1 DESCRIPTION
+
+In L<Log::Report|Log::Report>, dispatchers are used to handle (exception) messages
+which are created somewhere else.  Those message were produced (thrown)
+by L<Log::Report::error()|Log::Report/"Abbreviations for report()"> and friends.
+
+This base-class handles the creation of dispatchers, plus the common
+filtering rules.  See the L</DETAILS> section, below.
+
+=head1 METHODS
+
+=head2 Constructors
+
+=over 4
+
+=item $obj-E<gt>B<close>()
+
+Terminate the dispatcher activities.  The dispatcher gets disabled,
+to avoid the case that it is accidentally used.  Returns C<undef> (false)
+if the dispatcher was already closed.
+
+=item Log::Report::Dispatcher-E<gt>B<new>($type, $name, %options)
+
+Create a dispatcher.  The $type of back-end to start is required, and listed
+in the L</DESCRIPTION> part of this manual-page. For various external
+back-ends, special wrappers are created.
+
+The $name must be uniquely identifying this dispatcher.  When a second
+dispatcher is created (via L<Log::Report::dispatcher()|Log::Report/"Report Production and Configuration">) with the name
+of an existing dispatcher, the existing one will get replaced.
+
+All %options which are not consumed by this base constructor are passed
+to the wrapped back-end.  Some of them will check whether all %options
+are understood, other ignore unknown %options.
+
+ -Option       --Default
+  accept         depend on mode
+  charset        <undef>
+  format_reason  'LOWERCASE'
+  locale         <system locale>
+  mode           'NORMAL'
+
+=over 2
+
+=item accept => REASONS
+
+See L<Log::Report::Util::expand_reasons()|Log::Report::Util/"Reasons"> for possible values.  If
+the initial mode for this dispatcher does not need verbose or debug
+information, then those levels will not be accepted.
+
+When the mode equals "NORMAL" (the default) then C<accept>'s default
+is C<NOTICE->.  In case of "VERBOSE" it will be C<INFO->, C<ASSERT>
+results in C<ASSERT->, and "DEBUG" in C<ALL>.
+
+=item charset => CHARSET
+
+Convert the messages in the specified character-set (codeset).  By
+default, no conversion will take place, because the right choice cannot
+be determined automatically.
+
+=item format_reason => 'UPPERCASE'|'LOWERCASE'|'UCFIRST'|'IGNORE'|CODE
+
+How to show the reason text which is printed before the message. When
+a CODE is specified, it will be called with a translated text and the
+returned text is used.
+
+=item locale => LOCALE
+
+Overrules the global setting.  Can be overruled by
+L<Log::Report::report(locale)|Log::Report/"Report Production and Configuration">.
+
+=item mode => 'NORMAL'|'VERBOSE'|'ASSERT'|'DEBUG'|0..3
+
+Possible values are C<NORMAL> (or C<0> or C<undef>), which will not show
+C<INFO> or debug messages, C<VERBOSE> (C<1>; shows C<INFO> not debug),
+C<ASSERT> (C<2>; only ignores C<TRACE> messages), or C<DEBUG> (C<3>)
+which shows everything.  See section L<Log::Report/Run modes>.
+
+You are advised to use the symbolic mode names when the mode is
+changed within your program: the numerical values are available
+for smooth Getopt::Long integration.
+
+=back
+
+=back
+
+=head2 Accessors
+
+=over 4
+
+=item $obj-E<gt>B<isDisabled>()
+
+=item $obj-E<gt>B<mode>()
+
+Returns the mode in use for the dispatcher as number.  See L<new(mode)|Log::Report::Dispatcher/"Constructors">
+and L<Log::Report/Run modes>.
+
+=item $obj-E<gt>B<name>()
+
+Returns the unique name of this dispatcher.
+
+=item $obj-E<gt>B<needs>( [$reason] )
+
+Returns the list with all REASONS which are needed to fulfill this
+dispatcher's needs.  When disabled, the list is empty, but not forgotten.
+
+[0.999] when only one $reason is specified, it is returned if in the
+list.
+
+=item $obj-E<gt>B<type>()
+
+The dispatcher $type, which is usually the same as the class of this
+object, but not in case of wrappers like for Log::Dispatch.
+
+=back
+
+=head2 Logging
+
+=over 4
+
+=item $obj-E<gt>B<addSkipStack>(@CODE)
+
+=item Log::Report::Dispatcher-E<gt>B<addSkipStack>(@CODE)
+
+[1.13] Add one or more CODE blocks of caller lines which should not be
+collected for stack-traces or location display.  A CODE gets
+called with an ARRAY of caller information, and returns true
+when that line should get skipped.
+
+B<Warning:> this logic is applied globally: on all dispatchers.
+
+example: 
+
+By default, all lines in the Log::Report packages are skipped from
+display, with a simple CODE as this:
+
+  sub in_lr { $_[0][0] =~ m/^Log\:\:Report(?:\:\:|$)/ }
+  Log::Report::Dispatcher->addSkipStack(\&in_lr);
+
+The only parameter to in_lr is the return of caller().  The first
+element of that ARRAY is the package name of a stack line.
+
+=item $obj-E<gt>B<collectLocation>()
+
+=item Log::Report::Dispatcher-E<gt>B<collectLocation>()
+
+Collect the information to be displayed as line where the error occurred.
+
+=item $obj-E<gt>B<collectStack>( [$maxdepth] )
+
+=item Log::Report::Dispatcher-E<gt>B<collectStack>( [$maxdepth] )
+
+Returns an ARRAY of ARRAYs with text, filename, line-number.
+
+=item $obj-E<gt>B<log>(HASH-$of-%options, $reason, $message, $domain)
+
+This method is called by L<Log::Report::report()|Log::Report/"Report Production and Configuration"> and should not be called
+directly.  Internally, it will call L<translate()|Log::Report::Dispatcher/"Logging">, which does most $of
+the work.
+
+=item $obj-E<gt>B<skipStack>()
+
+[1.13] Returns the number of nestings in the stack which should be skipped
+to get outside the Log::Report (and related) modules.  The end-user
+does not want to see those internals in stack-traces.
+
+=item $obj-E<gt>B<stackTraceLine>(%options)
+
+=item Log::Report::Dispatcher-E<gt>B<stackTraceLine>(%options)
+
+ -Option    --Default
+  abstract    1
+  call        <required>
+  filename    <required>
+  linenr      <required>
+  max_line    undef
+  max_params  8
+  package     <required>
+  params      <required>
+
+=over 2
+
+=item abstract => INTEGER
+
+The higher the abstraction value, the less details are given
+about the caller.  The minimum abstraction is specified, and
+then increased internally to make the line fit within the C<max_line>
+margin.
+
+=item call => STRING
+
+=item filename => STRING
+
+=item linenr => INTEGER
+
+=item max_line => INTEGER
+
+=item max_params => INTEGER
+
+=item package => CLASS
+
+=item params => ARRAY
+
+=back
+
+=item $obj-E<gt>B<translate>(HASH-$of-%options, $reason, $message)
+
+See L</Processing the message>, which describes the actions taken by
+this method.  A string is returned, which ends on a new-line, and
+may be multi-line (in case a stack trace is produced).
+
+=back
+
+=head1 DETAILS
+
+=head2 Available back-ends
+
+When a dispatcher is created (via L<new()|Log::Report::Dispatcher/"Constructors"> or L<Log::Report::dispatcher()|Log::Report/"Report Production and Configuration">),
+you must specify the TYPE of the dispatcher.  This can either be a class
+name, which extends a L<Log::Report::Dispatcher|Log::Report::Dispatcher>, or a pre-defined
+abbreviation of a class name.  Implemented are:
+
+=over 4
+
+=item L<Log::Report::Dispatcher::Perl|Log::Report::Dispatcher::Perl> (abbreviation 'PERL')
+
+Use Perl's own C<print()>, C<warn()> and C<die()> to ventilate
+reports.  This is the default dispatcher.
+
+=item L<Log::Report::Dispatcher::File|Log::Report::Dispatcher::File> (abbreviation 'FILE')
+
+Logs the message into a file, which can either be opened by the
+class or be opened before the dispatcher is created.
+
+=item L<Log::Report::Dispatcher::Syslog|Log::Report::Dispatcher::Syslog> (abbreviation 'SYSLOG')
+
+Send messages into the system's syslog infrastructure, using
+Sys::Syslog.
+
+=item L<Log::Report::Dispatcher::Callback|Log::Report::Dispatcher::Callback> (abbreviation 'CALLBACK')
+
+Calls any CODE reference on receipt of each selected message, for
+instance to send important message as email or SMS.
+
+=item C<Log::Dispatch::*>
+
+All of the Log::Dispatch::Output extensions can be used directly.
+The L<Log::Report::Dispatcher::LogDispatch|Log::Report::Dispatcher::LogDispatch> will wrap around that
+back-end.
+
+=item C<Log::Log4perl>
+
+Use the Log::Log4perl main object to write to dispatchers.  This
+infrastructure uses a configuration file.
+
+=item L<Log::Report::Dispatcher::Try|Log::Report::Dispatcher::Try> (abbreviation 'TRY')
+
+Used by function L<Log::Report::try()|Log::Report/"Report Production and Configuration">.  It collects the exceptions
+and can produce them on request.
+
+=back
+
+=head2 Processing the message
+
+=head3 Addition information
+
+The modules which use C<Log::Report> will only specify the base of
+the message string.  The base dispatcher and the back-ends will extend
+this message with additional information:
+
+=over 4
+
+=item . the reason
+
+=item . the filename/line-number where the problem appeared
+
+=item . the filename/line-number where it problem was reported
+
+=item . the error text in C<$!>
+
+=item . a stack-trace
+
+=item . a trailing new-line
+
+=back
+
+When the message is a translatable object (L<Log::Report::Message|Log::Report::Message>, for
+instance created with L<Log::Report::__()|Log::Report/"Messages (optionally translatable)">), then the added components
+will get translated as well.  Otherwise, all will be in English.
+
+Exactly what will be added depends on the actual mode of the dispatcher
+(change it with L<mode()|Log::Report::Dispatcher/"Accessors">, initiate it with L<new(mode)|Log::Report::Dispatcher/"Constructors">).
+
+                        mode mode mode mode
+ REASON   SOURCE   TE!  NORM VERB ASSE DEBUG
+ trace    program  ...                 S
+ assert   program  ...            SL   SL
+ info     program  T..       S    S    S
+ notice   program  T..  S    S    S    S
+ mistake  user     T..  S    S    S    SL
+ warning  program  T..  S    S    SL   SL
+ error    user     TE.  S    S    SL   SC
+ fault    system   TE!  S    S    SL   SC
+ alert    system   T.!  SL   SL   SC   SC
+ failure  system   TE!  SL   SL   SC   SC
+ panic    program  .E.  SC   SC   SC   SC
+
+ T - usually translated
+ E - exception (execution interrupted)
+ ! - will include $! text at display
+ L - include filename and linenumber
+ S - show/print when accepted
+ C - stack trace (like Carp::confess())
+
+=head3 Filters
+
+With a filter, you can block or modify specific messages before
+translation.  There may be a wish to change the REASON of a report
+or its content.  It is not possible to avoid the exit which is
+related to the original message, because a module's flow depends
+on it to happen.
+
+When there are filters defined, they will be called in order of
+definition.  For each of the dispatchers which are called for a
+certain REASON (which C<accept> that REASON), it is checked whether
+its name is listed for the filter (when no names where specified,
+then the filter is applied to all dispatchers).
+
+When selected, the filter's CODE reference is called with four arguments:
+the dispatcher object (a L<Log::Report::Dispatcher|Log::Report::Dispatcher>), the HASH-of-OPTIONS
+passed as optional first argument to L<Log::Report::report()|Log::Report/"Report Production and Configuration">, the
+REASON, and the MESSAGE.  Returned is the new REASON and MESSAGE.
+When the returned REASON is C<undef>, then the message will be ignored
+for that dispatcher.
+
+Be warned about processing the MESSAGE: it is a L<Log::Report::Message|Log::Report::Message>
+object which may have a C<prepend> string and C<append> string or
+object.  When the call to L<Log::Report::report()|Log::Report/"Report Production and Configuration"> contained multiple
+comma-separated components, these will already have been joined together
+using concatenation (see L<Log::Report::Message::concat()|Log::Report::Message/"Processing">.
+
+B<. Example: a filter on syslog>
+
+ dispatcher filter => \&myfilter, 'syslog';
+
+ # ignore all translatable and non-translatable messages containing
+ # the word "skip"
+ sub myfilter($$$$)
+ {   my ($disp, $opts, $reason, $message) = @_;
+     return () if $message->untranslated =~ m/\bskip\b/;
+     ($reason, $message);
+ }
+
+B<. Example: take all mistakes and warnings serious>
+
+ dispatch filter => \&take_warns_seriously;
+ sub take_warns_seriously($$$$)
+ {   my ($disp, $opts, $reason, $message) = @_;
+       $reason eq 'MISTAKE' ? (ERROR   => $message)
+     : $reason eq 'WARNING' ? (FAULT   => $message)
+     :                        ($reason => $message);
+ }
+
+=head1 SEE ALSO
+
+This module is part of Log-Report distribution version 1.28,
+built on May 14, 2019. Website: F<http://perl.overmeer.net/CPAN/>
+
+=head1 LICENSE
+
+Copyrights 2007-2019 by [Mark Overmeer <markov@cpan.org>]. For other contributors see ChangeLog.
+
+This program is free software; you can redistribute it and/or modify it
+under the same terms as Perl itself.
+See F<http://dev.perl.org/licenses/>
+

@@ -1,0 +1,369 @@
+=pod
+
+=head1 NAME
+
+SQL::Statement::Structure - parse and examine structure of SQL queries
+
+=head1 SYNOPSIS
+
+    use SQL::Statement;
+    my $sql    = "SELECT a FROM b JOIN c WHERE c=? AND e=7 ORDER BY f DESC LIMIT 5,2";
+    my $parser = SQL::Parser->new();
+    $parser->{RaiseError}=1;
+    $parser->{PrintError}=0;
+    $parser->parse("LOAD 'MyLib::MySyntax' ");
+    my $stmt = SQL::Statement->new($sql,$parser);
+    printf "Command             %s\n",$stmt->command;
+    printf "Num of Placeholders %s\n",scalar $stmt->params;
+    printf "Columns             %s\n",join( ',', map {$_->name} $stmt->column_defs() );
+    printf "Tables              %s\n",join( ',', map {$_->name} $stmt->tables() );
+    printf "Where operator      %s\n",join( ',', $stmt->where->op() );
+    printf "Limit               %s\n",$stmt->limit();
+    printf "Offset              %s\n",$stmt->offset();
+
+    # these will work not before $stmt->execute()
+    printf "Order Columns       %s\n",join(',', map {$_->column} $stmt->order() );
+
+=head1 DESCRIPTION
+
+The L<SQL::Statement> module can be used by itself, without DBI and without
+a subclass to parse SQL statements and to allow you to examine the structure
+of the statement (table names, column names, where clause predicates, etc.).
+It will also execute statements using in-memory tables.  That means that
+you can create and populate some tables, then query them and fetch the
+results of the queries as well as examine the differences between statement
+metadata during different phases of prepare, execute, fetch. See the
+remainder of this document for a description of how to create and modify
+a parser object and how to use it to parse and examine SQL statements.
+See L<SQL::Statement> for other uses of the module.
+
+=head1 B<Creating a parser object>
+
+The parser object only needs to be created once per script. It can
+then be reused to parse any number of SQL statements. The basic
+creation of a parser is this:
+
+    my $parser = SQL::Parser->new();
+
+You can set the error-reporting for the parser the same way you do in DBI:
+
+    $parser->{RaiseError}=1;   # turn on die-on-error behaviour
+    $parser->{PrinteError}=1;  # turn on warnings-on-error behaviour
+
+As with DBI, RaiseError defaults to 0 (off) and PrintError defaults to 1 (on).
+
+For many purposes, the built-in SQL syntax should be sufficient. However, if
+you need to, you can change the behaviour of the parser by extending the
+supported SQL syntax either by loading a file containing definitions; or by
+issuing SQL commands that modify the way the parser treats types, keywords,
+functions, and operators.
+
+    $parser->parse("LOAD MyLib::MySyntax");
+    $parser->parse("CREATE TYPE myDataType");
+
+See L<SQL::Statement::Syntax> for details of the supported SQL syntax and
+for methods of extending the syntax.
+
+=head1 B<Parsing SQL statements>
+
+While you only need to define a new SQL::Parser object once per script, you
+need to define a new SQL::Statment object once for each statement you want
+to parse.
+
+    my $stmt = SQL::Statement->new($sql, $parser);
+
+The call to new() takes two arguments - the SQL string you want to parse,
+and the SQL::Parser object you previously created.  The call to new is the
+equivalent of a DBI call to prepare() - it parses the SQL into a structure
+but does not attempt to execute the SQL unless you explicitly call execute().
+
+=head1 Examining the structure of SQL statements
+
+The following methods can be used to obtain information about a query:
+
+=head2 B<command>
+
+Returns the SQL command. See L<SQL::Statement::Syntax> for supported
+command. Example:
+
+    my $command = $stmt->command();
+
+=head2 B<column definitions>
+
+    my $numColumns = $stmt->column_defs();  # Scalar context
+    my @columnList = $stmt->column_defs();  # Array context
+    my($col1, $col2) = ($stmt->column_defs(0), $stmt->column_defs(1));
+
+This method is used to retrieve column lists. The meaning depends on
+the query command:
+
+    SELECT $col1, $col2, ... $colN FROM $table WHERE ...
+    UPDATE $table SET $col1 = $val1, $col2 = $val2, ...
+        $colN = $valN WHERE ...
+    INSERT INTO $table ($col1, $col2, ..., $colN) VALUES (...)
+
+When used without arguments, the method returns a list of the columns
+C<$col1>, C<$col2>, ..., C<$colN>, you may alternatively use a column number
+as argument. Note that the column list may be empty as in
+
+    INSERT INTO $table VALUES (...)
+
+and in I<CREATE> or I<DROP> statements.
+
+But what does "returning a column" mean? It is returning an
+C<SQL::Statement::Util::Column> instance, a class that implements the methods
+C<table> and C<name>, both returning the respective scalar. For example,
+consider the following statements:
+
+    INSERT INTO foo (bar) VALUES (1)
+    SELECT bar FROM foo WHERE ...
+    SELECT foo.bar FROM foo WHERE ...
+
+In all these cases exactly one column instance would be returned with
+
+    $col->name() eq 'bar'
+    $col->table() eq 'foo'
+
+=head2 B<tables>
+
+    my $tableNum = $stmt->tables();  # Scalar context
+    my @tables = $stmt->tables();    # Array context
+    my($table1, $table2) = ($stmt->tables(0), $stmt->tables(1));
+
+Similar to C<columns>, this method returns instances of
+C<SQL::Statement::Table>. For I<UPDATE>, I<DELETE>, I<INSERT>,
+I<CREATE> and I<DROP>, a single table will always be returned.
+I<SELECT> statements can return more than one table, in case
+of joins. Table objects offer a single method, C<name> which
+returns the table name.
+
+=head2 B<params>
+
+    my $paramNum = $stmt->params();  # Scalar context
+    my @params = $stmt->params();    # Array context
+    my($p1, $p2) = ($stmt->params(0), $stmt->params(1));
+
+The C<params> method returns information about the input parameters
+used in a statement. For example, consider the following:
+
+    INSERT INTO foo VALUES (?, ?)
+
+This would return two instances of C<SQL::Statement::Param>. Param objects
+implement a single method, C<$param->num()>, which retrieves the parameter
+number. (0 and 1, in the above example). As of now, not very useful ... :-)
+
+=head2 B<row_values>
+
+    my $rowValueNum = $stmt->row_values(); # Scalar context
+    my @rowValues = $stmt->row_values(0);  # Array context
+    my($rval1, $rval2) = ($stmt->row_values(0,0),
+                          $stmt->row_values(0,1));
+
+This method is used for statements like
+
+    UPDATE $table SET $col1 = $val1, $col2 = $val2, ...
+        $colN = $valN WHERE ...
+    INSERT INTO $table (...) VALUES ($val1, $val2, ..., $valN),
+                                    ($val1, $val2, ..., $valN)
+
+to read the values C<$val1>, C<$val2>, ... C<$valN>. It returns (lists of)
+scalar values or C<SQL::Statement::Param> instances.
+
+=head2 B<order>
+
+    my $orderNum = $stmt->order();   # Scalar context
+    my @order = $stmt->order();      # Array context
+    my($o1, $o2) = ($stmt->order(0), $stmt->order(1));
+
+In I<SELECT> statements you can use this for looking at the ORDER clause.
+Example:
+
+    SELECT * FROM FOO ORDER BY id DESC, name
+
+In this case, C<order> could return 2 instances of C<SQL::Statement::Order>.
+You can use the methods C<$o-E<gt>table()>, C<$o-E<gt>column()>,
+C<$o-E<gt>direction()> and C<$o-E<gt>desc()> to examine the order object.
+
+=head2 B<limit>
+
+    my $limit = $stmt->limit();
+
+In a SELECT statement you can use a C<LIMIT> clause to implement
+cursoring:
+
+    SELECT * FROM FOO LIMIT 5
+    SELECT * FROM FOO LIMIT 5, 5
+    SELECT * FROM FOO LIMIT 10, 5
+
+These three statements would retrieve the rows C<0..4>, C<5..9>, C<10..14>
+of the table FOO, respectively. If no C<LIMIT> clause is used, then the
+method C<$stmt-E<gt>limit> returns undef. Otherwise it returns the limit
+number (the maximum number of rows) from the statement (C<5> or C<10> for
+the statements above).
+
+=head2 B<offset>
+
+    my $offset = $stmt->offset();
+
+If no C<LIMIT> clause is used, then the method C<$stmt-E<gt>limit> returns
+I<undef>. Otherwise it returns the offset number (the index of the first row
+to be included in the limit clause).
+
+=head2 B<where_hash>
+
+    my $where_hash = $stmt->where_hash();
+
+To manually evaluate the I<WHERE> clause, fetch the topmost where clause node
+with the C<where_hash> method. Then evaluate the left-hand and right-hand side
+of the operation, perhaps recursively. Once that is done, apply the operator
+and finally negate the result, if required.
+
+The where clause nodes have (up to) 4 attributes:
+
+=over 12
+ 
+=item op
+ 
+contains the operator, one of C<AND>, C<OR>, C<=>, C<E<lt>E<gt>>, C<E<gt>=>,
+C<E<gt>>, C<E<lt>=>, C<E<lt>>, C<LIKE>, C<CLIKE>, C<IS>, C<IN>, C<BETWEEN> or
+a user defined operator, if any.
+ 
+=item arg1
+
+contains the left-hand side of the operator. This can be a scalar value, a
+hash containing column or function definition, a parameter definition (hash has
+attribute C<type> defined) or another operation (hash has attribute C<op>
+defined).
+
+=item arg2
+
+contains the right-hand side of the operator. This can be a scalar value, a
+hash containing column or function definition, a parameter definition (hash has
+attribute C<type> defined) or another operation (hash has attribute C<op>
+defined).
+
+=item neg
+
+contains a TRUE value, if the operation result must be negated after evaluation.
+
+=back
+
+To illustrate the above, consider the following WHERE clause:
+
+    WHERE NOT (id > 2 AND name = 'joe') OR name IS NULL
+
+We can represent this clause by the following tree:
+
+              (id > 2)   (name = 'joe')
+                     \   /
+          NOT         AND
+                         \      (name IS NULL)
+                          \    /
+                            OR
+
+Thus the WHERE clause would return an SQL::Statement::Op instance with
+the op() field set to 'OR'. The arg2() field would return another
+SQL::Statement::Op instance with arg1() being the SQL::Statement::Column
+instance representing id, the arg2() field containing the value undef
+(NULL) and the op() field being 'IS'.
+
+The arg1() field of the topmost Op instance would return an Op instance
+with op() eq 'AND' and neg() returning TRUE. The arg1() and arg2()
+fields would be Op's representing "id > 2" and "name = 'joe'".
+
+Of course there's a ready-for-use method for WHERE clause evaluation:
+
+The WHERE clause evaluation depends on an object being used for
+fetching parameter and column values. Usually this can be an
+SQL::Statement::RAM::Table object or SQL::Eval object, but in fact it
+can be any object that supplies the methods
+
+    $val = $eval->param($paramNum);
+    $val = $eval->column($table, $column);
+
+Once you have such an object, you can call eval_where;
+
+    $match = $stmt->eval_where($eval);
+
+=head2 B<where>
+
+    my $where = $stmt->where();
+
+This method is used to examine the syntax tree of the C<WHERE> clause. It
+returns I<undef> (if no C<WHERE> clause was used) or an instance of
+L<SQL::Statement::Term>.
+
+The where clause is evaluated automatically on the current selected row of
+the table currently worked on when it's C<value()> method is invoked.
+
+C<SQL::Statement> creates the object tree for where clause evaluation
+directly after successfully parsing a statement from the given
+C<where_clause>, if any.
+
+=head1 Executing and fetching data from SQL statements
+
+=head2 execute
+
+When called from a DBD or other subclass of SQL::Statement, the execute()
+method will be executed against whatever datasource (persistent storage) is
+supplied by the DBD or the subclass (e.g. CSV files for L<DBD::CSV>, or
+BerkeleyDB for L<DBD::DBM>). If you are using L<SQL::Statement> directly
+rather than as a subclass, you can call the execute() method and the
+statements will be executed() using temporary in-memory tables. When used
+directly, like that, you need to create a cache hashref and pass it as the
+first argument to execute:
+
+  my $cache  = {};
+  my $parser = SQL::Parser->new();
+  my $stmt   = SQL::Statement->new('CREATE TABLE x (id INT)',$parser);
+  $stmt->execute( $cache );
+
+If you are using a statement with placeholders, those can be passed to
+execute after the C<$cache>:
+
+  $stmt      = SQL::Statement->new('INSERT INTO y VALUES(?,?)',$parser);
+  $stmt->execute( $cache, 7, 'foo' );
+
+=head2 fetch
+
+Only a single C<fetch()> method is provided - it returns a single row of
+data as an arrayref. Use a loop to fetch all rows:
+
+ while (my $row = $stmt->fetch()) {
+     # ...
+ }
+
+=head2 an example of executing and fetching
+
+ #!/usr/bin/perl -w
+ use strict;
+ use SQL::Statement;
+
+ my $cache={};
+ my $parser = SQL::Parser->new();
+ for my $sql(split /\n/,
+ "  CREATE TABLE a (b INT)
+    INSERT INTO a VALUES(1)
+    INSERT INTO a VALUES(2)
+    SELECT MAX(b) FROM a  "
+ )
+ {
+    $stmt = SQL::Statement->new($sql,$parser);
+    $stmt->execute($cache);
+    next unless $stmt->command eq 'SELECT';
+    while (my $row=$stmt->fetch)
+    {
+        print "@$row\n";
+    }
+ }
+ __END__
+
+=head1 AUTHOR & COPYRIGHT
+
+Copyright (c) 2005, Jeff Zucker <jzuckerATcpan.org>, all rights reserved.
+Copyright (c) 2009, Jens Rehsack <rehsackATcpan.org>, all rights reserved.
+
+This document may be freely modified and distributed under the same terms
+as Perl itself.
+
+=cut

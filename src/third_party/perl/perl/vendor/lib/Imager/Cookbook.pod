@@ -1,0 +1,548 @@
+=head1 NAME
+
+Imager::Cookbook - recipes working with Imager
+
+=head1 DESCRIPTION
+
+Various simple and not so simple ways to do things with Imager.
+
+=head1 FILES
+
+This is described in detail in L<Imager::Files>.
+
+=head2 Reading an image from a file
+
+  my $image = Imager->new;
+
+  $image->read(file=>$filename) or die $image->errstr;
+
+Or:
+
+  my $image = Imager->new(file => $filename)
+    or die Imager->errstr;
+
+See L<Imager::Files>.
+
+=head2 Writing an image to a file
+
+  $image->write(file=>$filename) or die $image->errstr;
+
+=head2 Write an animated GIF
+
+  # build an array of images to use in the gif
+  my  @images;
+  # synthesize the images or read them from files, it doesn't matter
+  ...
+
+  # write the gif
+  Imager->write_multi({ file=>$filename, type=>'gif' }, @images)
+    or die Imager->errstr;
+
+See L<Imager::Files/"Writing an animated GIF"> for a more detailed
+example.
+
+=head2 Reading multiple images from one file
+
+Some formats, like GIF and TIFF support multiple images per file.  Use
+the L<read_multi()|Imager::Files> method to read them:
+
+  my @images = Imager->read_multi(file=>$filename)
+    or die Imager->errstr;
+
+=head2 Converting from one file format to another
+
+This is as simple as reading the original file and writing the new
+file, for single images:
+
+  my $image = Imager->new;
+  # Imager auto-detects the input file type
+  $image->read(file => $input_filename)
+    or die $image->errstr;
+  # Imager derives the output file format from the filename
+  $image->write(file => $output_filename)
+    or die $image->errstr;
+
+  # or you can supply a type parameter:
+  $image->write(file => $output_filename, type => 'gif')
+    or die $image->errstr;
+
+The main issue that can occur with this is if the input file has
+transparency and the output file format doesn't support that.  This
+can be a problem when converting from GIF files to JPEG files for
+example.
+
+By default, if the output format doesn't support transparency, Imager
+will compose the image onto a black background.  You can override that
+by supplying an C<i_background> option to C<write()> or
+C<write_multi()>:
+
+  $image->write(file => "foo.jpg", i_background => "#808080")
+    or die $image->errstr;
+
+Some formats support multiple files, so if you want to convert from
+say TIFF to JPEG, you'll need multiple output files:
+
+  my @images = Imager->read_multi(file => 'input.tif')
+    or die Imager->errstr;
+  my $index = 1;
+  for my $image (@images) {
+    $image->write(file => sprintf('output%02d.jpg', $index++))
+      or die $image->errstr;
+  }
+
+=head2 Transparent PNG
+
+To save to a transparent PNG (or GIF or TIFF) you need to start with
+an image with transparency.
+
+To make a transparent image, create an image object with 2 or 4
+channels:
+
+  # RGB with alpha channel
+  my $rgba = Imager->new(xsize => $width, ysize => $height, channels => 4);
+
+  # Gray with alpha channel
+  my $graya = Imager->new(xsize => $width, ysize => $height, channels => 2);
+
+By default, the created image will be transparent.
+
+Otherwise, if you have an existing image file with transparency,
+simply read it, and the transparency will be preserved.
+
+=head1 IMAGE SYNTHESIS
+
+=head2 Creating an image
+
+To create a simple RGB image, supply the image width and height to the
+new() method:
+
+  my $rgb = Imager->new(xsize=>$width, ysize=>$height);
+
+If you also want an alpha channel:
+
+  my $rgb_alpha = Imager->new(xsize=>$width, ysize=>$height, channels=>4);
+
+To make a gray-scale image:
+
+  my $gray = Imager->new(xsize=>$width, ysize=>$height, channels=>1);
+
+and a gray-scale image with an alpha channel:
+
+  my $gray_alpha = Imager->new(xsize=>$width, ysize=>$height, channels=>2);
+
+When a new image is created this way all samples are set to zero -
+black for 1 or 3 channel images, transparent black for 2 or 4 channel
+images.
+
+You can also create paletted images and images with more than 8-bits
+per channel, see L<Imager::ImageTypes> for more details.
+
+=head2 Setting the background of a new image
+
+To set the background of a new image to a solid color, use the box()
+method with no limits, and C<< filled=>1 >>:
+
+  $image->box(filled=>1, color=>$color);
+
+As always, a color can be specified as an L<Imager::Color> object:
+
+  my $white = Imager::Color->new(255, 255, 255);
+  $image->box(filled=>1, color=>$white);
+
+or you supply any single scalar that Imager::Color's new() method
+accepts as a color description:
+
+  $image->box(filled=>1, color=>'white');
+  $image->box(filled=>1, color=>'#FF0000');
+  $image->box(filled=>1, color=>[ 255, 255, 255 ]);
+
+You can also fill the image with a fill object:
+
+  use Imager::Fill;
+  # create the fill object
+  my $fill = Imager::Fill->new(hatch=>'check1x1')
+  $image->box(fill=>$fill);
+
+  # let Imager create one automatically
+  $image->box(fill=>{ hatch=>'check1x1' });
+
+See L<Imager::Fill> for information on Imager's fill objects.
+
+=head1 WORLD WIDE WEB
+
+As with any CGI script it's up to you to validate data and set limits
+on any parameters supplied to Imager.
+
+For example, if you allow the caller to set the size of an output
+image you should limit the size to prevent the client from specifying
+an image size that will consume all available memory.
+
+This is beside any other controls you need over access to data.
+
+See L<CGI> for a module useful for processing CGI submitted data.
+
+=head2 Returning an image from a CGI script
+
+This is similar to writing to a file, but you also need to supply the
+information needed by the web browser to identify the file format:
+
+  my $img = ....; # create the image and generate the contents
+  ++$|; # make sure the content type isn't buffered
+  print "Content-Type: image/png\n\n";
+  binmode STDOUT;
+  $img->write(fd=>fileno(STDOUT), type=>'png')
+    or die $img->errstr;
+
+You need to set the Content-Type header depending on the file format
+you send to the web browser.
+
+If you want to supply a content-length header, write the image to a
+scalar as a buffer:
+
+  my $img = ....; # create the image and generate the contents
+  my $data;
+  $img->write(type=>'png', data=>\$data)
+    or die $img->errstr;
+  print "Content-Type: image/png\n";
+  print "Content-Length: ",length($data),"\n\n";
+  binmode STDOUT;
+  print $data;
+
+See C<samples/samp-scale.cgi> and C<samples/samp-image.cgi> for a
+couple of simple examples of producing an image from CGI.
+
+=head2 Inserting a CGI image in a page
+
+There's occasionally confusion on how to display an image generated by
+Imager in a page generated by a CGI.
+
+Your web browser handles this process as two requests, one for the
+HTML page, and another for the image itself.
+
+Each request needs to perform validation since an attacker can control
+the values supplied to both requests.
+
+How you make the data available to the image generation code depends
+on your application.
+
+See C<samples/samp-form.cgi> and C<samples/samp-image.cgi> in the
+Imager distribution for one approach.  The POD in C<samp-form.cgi>
+also discusses some of the issues involved.
+
+=head2 Parsing an image posted via CGI
+
+C<WARNING>: file format attacks have become a common attack vector,
+make sure you have up to date image file format libraries, otherwise
+trying to parse uploaded files, whether with Imager or some other
+tool, may result in a remote attacker being able to run their own code
+on your system.
+
+If your HTML form uses the correct magic, it can upload files to your
+CGI script, in particular, you need to use C< method="post" > and
+C<enctype="multipart/form-data"> in the C<form> tag, and use
+C<type="file"> in the C<input>, for example:
+
+  <form action="/cgi-bin/yourprogram" method="post" 
+        enctype="multipart/form-data">
+    <input type="file" name="myimage" />
+    <input type="submit value="Upload Image" />
+  </form>
+
+To process the form:
+
+=over
+
+=item 1.
+
+first check that the user supplied a file
+
+=item 2.
+
+get the file handle
+
+=item 3.
+
+have Imager read the image
+
+=back
+
+  # returns the client's name for the file, don't open this locally
+  my $cgi = CGI->new;
+  # 1. check the user supplied a file
+  my $filename = $cgi->param('myimage');
+  if ($filename) {
+    # 2. get the file handle
+    my $fh = $cgi->upload('myimage');
+    if ($fh) {
+      binmode $fh;
+      
+      # 3. have Imager read the image
+      my $img = Imager->new;
+      if ($img->read(fh=>$fh)) {
+        # we can now process the image
+      }
+    }
+    # else, you probably have an incorrect form or input tag
+  }
+  # else, the user didn't select a file
+
+See C<samples/samp-scale.cgi> and C<samples/samp-tags.cgi> in the
+Imager distribution for example code.
+
+You may also want to set limits on the size of the image read, using
+Imager's C<set_file_limits> method, documented in
+L<Imager::Files/set_file_limits()>.  For example:
+
+  # limit to 10 million bytes of memory usage
+  Imager->set_file_limits(bytes => 10_000_000);
+
+  # limit to 1024 x 1024
+  Imager->set_file_limits(width => 1024, height => 1024);
+
+=head1 DRAWING
+
+=head2 Adding a border to an image
+
+First make a new image with space for the border:
+
+  my $border_width = ...;
+  my $border_height = ...;
+  my $out = Imager->new(xsize => $source->getwidth() + 2 * $border_width,
+                        ysize => $source->getheight() + 2 * $border_height,
+                        bits => $source->bits,
+                        channels => $source->getchannels);
+
+Then paste the source image into the new image:
+
+  $out->paste(left => $border_width,
+              top => $border_height,
+              img => $source);
+
+Whether you draw the border before or after pasting the original image
+depends on whether you want the border to overlap the image, for
+example a semi-transparent border drawn after pasting the source image
+could overlap the edge without hiding it.
+
+If you want a solid border you could just fill the image before
+pasting the source for simplicity:
+
+  $out->box(filled=>1, color=>'red');
+  $out->paste(left => $border_width,
+              top => $border_height,
+              img => $source);
+
+
+=head1 TEXT
+
+=head2 Drawing text
+
+=head2 Aligning text
+
+=head2 Measuring text
+
+=head2 Word wrapping text
+
+=head2 Shearing (slanting) or Rotating text
+
+This requires that you have Imager installed with FreeType 2.x support
+installed, and that the font be created using the FreeType 2.x driver,
+for example:
+
+  my $font = Imager::Font->new(file=>$fontfile, type=>'ft2');
+
+First you need a transformation matrix, for shearing that could be:
+
+  my $angle_in_radians = ...;
+  my $tan_angle = sin($angle_rads) / cos($angle_rads);
+  # shear horizontally, supply this as y instead to do it vertically
+  my $matrix = Imager::Matrix2d->shear(x=>$tan_angle);
+
+For rotation that would be:
+
+  my $matrix = Imager::Matrix2d->rotate(radians => $angle_in_radians);
+
+or:
+
+  my $matrix = Imager::Matrix2d->rotate(degrees => $angle_in_degrees);
+
+Feed that to the font object:
+
+  $font->transform(matrix => $matrix);
+
+and draw the text as normal:
+
+  $image->string(string => $text,
+                 x => $where_x,
+                 y => $where_y,
+                 color => $color,
+                 font => $font);
+
+See samples/slant_text.pl for a comprehensive example, including
+calculating the transformed bounding box to create an image to fit the
+transformed text into.
+
+=head1 IMAGE TRANSFORMATION
+
+=head2 Shearing an image
+
+=head2 Convert to gray-scale
+
+To convert an RGB image to a gray-scale image, use the convert method:
+
+  my $grey = $image->convert(preset => 'gray');
+
+convert() returns a new image.
+
+See: L<Imager::Transformations/"Color transformations">
+
+=head1 METADATA
+
+=head2 Image format
+
+When Imager reads a file it does a magic number check to determine the
+file type, so C<foo.png> could actually be a GIF image, and Imager
+will read it anyway.
+
+You can check the actual format of the image by looking at the
+C<i_format> tag.
+
+  my $format = $image->tags(name=>'i_format');
+
+=head2 Image spatial resolution
+
+Most image file formats store information about the physical size of
+the pixels, though in some cases that information isn't useful.
+
+Imager stores this information in the tags C<i_xres> and C<i_yres>,
+and this is always stored in dots per inch.
+
+Some formats, including TIFF and JPEG allow you to change the units
+spatial resolution information is stored in, if you set the tag that
+changes this the Imager will convert C<i_xres> and C<i_yres> to those
+units when it writes the file.
+
+For example to set the resolution to 300 dpi:
+
+  $image->settag(name => 'i_xres', value => 300);
+  $image->settag(name => 'i_yres', value => 300);
+
+If you want the file format to store the resolution in some other
+unit, for example you can write a TIFF file that stores the resolution
+in pixels per centimeter, you would do:
+
+  # 150 pixels/cm
+  $image->settag(name => 'i_xres', value => 150 * 2.54);
+  $image->settag(name => 'i_yres', value => 150 * 2.54);
+  $image->settag(name => 'tiff_resolutionunit', value => 3);
+
+Keywords: DPI
+
+=head1 IMAGE MANIPULATION
+
+=head2 Replacing a color with transparency
+X<replacing colors>
+
+To replace a color with transparency you can use the
+L<Imager::Filters/difference()> method.
+
+  # make a work image the same size as our input
+  my $work = Imager->new(xsize => $in->getwidth, ysize => $in->getheight,
+                         channels => $in->getchannels);
+  # and fill it with the color we want transparent
+  $work->box(filled => 1, color => $color);
+
+  # get an image with that color replaced with transparent black
+  my $out = $work->difference(other => $in);
+
+=head1 SPECIAL EFFECTS
+
+=head2 Drop Shadows
+X<drop shadow>X<effects, drop shadow>
+
+This can be used for a glow effect as well.
+
+First create a new image, either with an alpha channel (if you want
+transparency behind the shadow) or without, if you want a background
+color:
+
+  my $out = Imager->new
+     (
+     xsize => $shadow_size * 2 + $src->getwidth,
+     ysize => $shadow_size * 2 + $src->getheight,
+     channels => 4,
+     );
+  # fill it with your background color, if you want one
+  # $out->box(filled => 1, color => $back_color);
+
+Make a work image to render the shadow on:
+
+  my $shadow_work = Imager->new
+    (
+    xsize => $back->getwidth,
+    ysize => $back->getheight,
+    channels => 1,
+    );
+
+Extract the alpha channel from the source image, first the alpha version:
+
+  my $alpha = $src->convert(preset => "alpha");
+
+and draw that on the work shadow:
+
+  $shadow_work->paste
+    (
+    src => $slpha,
+    left => $shadow_size,
+    top => $shadow_size,
+    );
+
+otherwise just draw a box for the non-alpha source:
+
+  $shadow_work->box
+    (
+    filled => 1,
+    color => [ 255 ],
+    xmin => $shadow_size,
+    ymin => $shadow_size,
+    xmax => $shadow_size + $src->getwidth() - 1,
+    ymax => $shadow_size + $src->getheight() - 1,
+    );
+
+Blur the work shadow:
+
+  $shadow_work->filter(type => "gaussian", stddev => $shadow_size);
+
+Convert it to an RGB image with alpha:
+
+  $shadow_work = $shadow_work->convert
+     (
+      matrix => [ [ 0, $red / 255 ],
+                   [ 0, $green / 255 ],
+                   [ 0, $blue / 255 ],
+                   [ 1 ] ]
+     );
+
+Draw that on the output image:
+
+  $out->rubthrough(src => $shadow_work);
+
+Draw our original image on the output image, perhaps with an offset:
+
+  $out->rubthrough
+    (
+    src => $src,
+    tx => $shadow_size + $x_offset,
+    ty => $shadow_size + $y_offset,
+    );
+
+See F<samples/drop_shadow.pl> for an example of this recipe.
+
+=head1 AUTHOR
+
+Tony Cook <tony@develop-help.com>
+
+=head1 SEE ALSO
+
+L<Imager>, L<Imager::Files>, L<Imager::Draw>.
+
+=cut

@@ -1,0 +1,1405 @@
+=head1 NAME
+
+Imager::Draw - Draw primitives to images
+
+=head1 SYNOPSIS
+
+  use Imager;
+  use Imager::Fill;
+
+  $img = ...;
+  $blue = Imager::Color->new( 0, 0, 255 );
+  $fill = Imager::Fill->new(hatch=>'stipple');
+
+  $img->line(color=>$blue, x1=>10, x2=>100,
+                           y1=>20, y2=>50, aa=>1, endp=>1 );
+
+  $img->polyline(points=>[[$x0,$y0], [$x1,$y1], [$x2,$y2]],
+                 color=>$blue);
+  $img->polyline(x=>[$x0,$x1,$x2], y=>[$y0,$y1,$y2], aa=>1);
+
+  $img->box(color=> $blue, xmin=> 10, ymin=>30,
+                           xmax=>200, ymax=>300, filled=>1);
+  $img->box(fill=>$fill);
+
+  $img->arc(color=>$blue, r=>20, x=>200, y=>100,
+            d1=>10, d2=>20 );
+
+  $img->circle(color=>$blue, r=>50, x=>200, y=>100);
+
+  $img->polygon(points=>[[$x0,$y0], [$x1,$y1], [$x2,$y2]], 
+                color=>$blue);
+
+  $img->polygon(x=>[$x0,$x1,$x2], y=>[$y0,$y1,$y2]);
+  
+  $img->flood_fill(x=>50, y=>50, color=>$color);
+
+  $img->setpixel(x=>50, y=>70, color=>$color);
+
+  $img->setpixel(x=>[ 50, 60, 70 ], y=>[20, 30, 40], color=>$color);
+
+  my $color = $img->getpixel(x=>50, y=>70);
+
+  my @colors = $img->getpixel(x=>[ 50, 60, 70 ], y=>[20, 30, 40]);
+
+  # drawing text
+  my $font = Imager::Font->new(...) or die;
+  $img->string(x => 50, y => 70,
+               font => $font,
+               string => "Hello, World!",
+               color => 'red',
+               size => 30,
+               aa => 1);
+
+  # bottom right-hand corner of the image
+  $img->align_string(x => $img->getwidth() - 1,
+                     y => $img->getheight() - 1,
+                     halign => 'right',
+                     valign => 'bottom',
+                     string => 'Imager',
+                     font => $font,
+                     size => 12);
+
+  # low-level functions
+  my @colors = $img->getscanline(y=>50, x=>10, width=>20);
+  
+  $img->setscanline(y=>60, x=>20, pixels=>\@colors);
+
+  my @samples = $img->getsamples(y=>50, x=>10, width=>20, 
+                                 channels=>[ 2, 0 ]);
+
+=head1 DESCRIPTION
+
+It is possible to draw with graphics primitives onto images.  Such
+primitives include boxes, arcs, circles, polygons and lines.  The
+coordinate system in Imager has the origin C<(0,0)> in the upper left
+corner of an image with co-ordinates increasing to the right and
+bottom.  For non anti-aliasing operation all coordinates are rounded
+towards the nearest integer.  For anti-aliased operations floating
+point coordinates are used.
+
+Drawing is assumed to take place in a coordinate system of infinite
+resolution.  This is the typical convention and really only matters when
+it is necessary to check for off-by-one cases.  Typically it's useful to 
+think of C<(10, 20)> as C<(10.00, 20.00)> and consider the consequences.
+
+=head2 Color Parameters
+
+X<color parameters>The C<color> parameter for any of the drawing
+methods can be an L<Imager::Color> object, a simple scalar that
+Imager::Color can understand, a hashref of parameters that
+Imager::Color->new understands, or an arrayref of red, green, blue
+values, for example:
+
+  $image->box(..., color=>'red');
+  $image->line(..., color=>'#FF0000');
+  $image->flood_fill(..., color=>[ 255, 0, 255 ]);
+
+While supplying colors as names, array references or CSS color
+specifiers is convenient, for maximum performance you should supply
+the color as an L<Imager::Color> object:
+
+  my @colors = map Imager::Color->new($_), qw/red green blue/
+  for my $i (1..1000) {
+    $image->box(..., color => $colors[rand @colors]);
+  }
+
+=head2 Fill Parameters
+
+X<fill parameters>All filled primitives, i.e. C<arc()>, C<box()>,
+C<circle()>, C<polygon()> and the C<flood_fill()> method can take a
+C<fill> parameter instead of a C<color> parameter which can either be
+an Imager::Fill object, or a reference to a hash containing the
+parameters used to create the fill, for example:
+
+  $image->box(..., fill=>{ hatch => 'check1x1' });
+  my $fillimage = Imager->new;
+  $fillimage->read(file=>$somefile) or die;
+  $image->flood_fill(..., fill=>{ image=>$fillimage });
+
+Currently you can create opaque or transparent plain color fills,
+hatched fills, image based fills and fountain fills.  See
+L<Imager::Fill> for more information.
+
+=head2 Polygon Fill Modes
+
+When filling a polygon that overlaps itself, or when filling several
+polygons with polypolygon() that overlap each other, you can supply a
+C<mode> parameter that controls how the overlap is resolved.  This can
+have one of two possible values:
+
+=over
+
+=item *
+
+C<evenodd> - if areas overlap an odd number of times, they are filled,
+and are otherwise unfilled.  This is the default and the historical
+Imager polygon fill mode.
+
+=item *
+
+C<nonzero> - areas that have an unbalanced clockwise and
+anti-clockwise boundary are filled.  This is the same as
+C<WindingRule> for X and C<WINDING> for Win32 GDI.
+
+=back
+
+C<nonzero> allows polygons to overlap, either with itself, or with
+another polygon in the same polypolygon() call, without producing
+unfilled area in the overlap, and also allows areas to be cut out of
+the area by specifying the points making up a cut-out in the opposite
+order.
+
+=head2 List of primitives
+
+=over
+
+=item line()
+
+  $img->line(color=>$green, x1=>10, x2=>100,
+                            y1=>20, y2=>50, aa=>1, endp=>1 );
+
+X<line method>Draws a line from (x1,y1) to (x2,y2).  The endpoint
+(x2,y2) is drawn by default.  If C<endp> of 0 is specified then the
+endpoint will not be drawn.  If C<aa> is set then the line will be
+drawn anti-aliased.  The C<antialias> parameter is still available for
+backwards compatibility.
+
+Parameters:
+
+=over
+
+=item *
+
+C<x1>, C<y1> - starting point of the line.  Required.
+
+=item *
+
+C<x2>, C<y2> - end point of the line. Required.
+
+=item *
+
+C<color> - the color of the line.  See L</"Color Parameters">.  Default:
+black.
+
+=item *
+
+C<endp> - if zero the end point of the line is not drawn.  Default: 1
+- the end point is drawn.  This is useful to set to 0 when drawing a
+series of connected lines.
+
+=item *
+
+C<aa> - if true the line is drawn anti-aliased.  Default: 0.
+
+=back
+
+=item polyline()
+
+  $img->polyline(points=>[[$x0,$y0],[$x1,$y1],[$x2,$y2]],color=>$red);
+  $img->polyline(x=>[$x0,$x1,$x2], y=>[$y0,$y1,$y2], aa=>1);
+
+X<polyline method>C<polyline> is used to draw multiple lines between a
+series of points.  The point set can either be specified as an
+arrayref to an array of array references (where each such array
+represents a point).  The other way is to specify two array
+references.
+
+The C<antialias> parameter is still available for backwards compatibility.
+
+=over
+
+=item *
+
+points - a reference to an array of references to arrays containing
+the co-ordinates of the points in the line, for example:
+
+  my @points = ( [ 0, 0 ], [ 100, 0 ], [ 100, 100 ], [ 0, 100 ] );
+  $img->polyline(points => \@points);
+
+=item *
+
+x, y - each is an array of x or y ordinates.  This is an alternative
+to supplying the C<points> parameter.
+
+  # same as the above points example
+  my @x = ( 0, 100, 100, 0 );
+  my @y = ( 0, 0, 100, 100 );
+  $img->polyline(x => \@x, y => \@y);
+
+=item *
+
+C<color> - the color of the line.  See L</"Color Parameters">.
+Default: black.
+
+=item *
+
+C<aa> - if true the line is drawn anti-aliased.  Default: 0.  Can also
+be supplied as C<antialias> for backward compatibility.
+
+=back
+
+=item box()
+
+  $blue = Imager::Color->new( 0, 0, 255 );
+  $img->box(color => $blue, xmin=>10, ymin=>30, xmax=>200, ymax=>300, 
+            filled=>1);
+
+X<box method>If any of the edges of the box are omitted it will snap
+to the outer edge of the image in that direction.  If C<filled> is
+omitted the box is drawn as an outline.  Instead of a color it is
+possible to use a C<fill> pattern:
+
+  $fill = Imager::Fill->new(hatch=>'stipple');
+  $img->box(fill=>$fill);  # fill entire image with a given fill pattern
+
+  $img->box(xmin=>10, ymin=>30, xmax=>150, ymax=>60,
+            fill => { hatch=>'cross2' });
+
+Also if a color is omitted a color with (255,255,255,255) is used
+instead.  [NOTE: This may change to use C<$img-E<gt>fgcolor()> in the future].
+
+Box does not support fractional coordinates yet.
+
+Parameters:
+
+=over
+
+=item *
+
+C<xmin> - left side of the box.  Default: 0 (left edge of the image)
+
+=item *
+
+C<ymin> - top side of the box.  Default: 0 (top edge of the image)
+
+=item *
+
+C<xmax> - right side of the box.  Default: C<< $img->getwidth-1
+>>. (right edge of the image)
+
+=item *
+
+C<ymax> - bottom side of the box.  Default: C<< $img->getheight-1
+>>. (bottom edge of the image)
+
+Note: C<xmax> and C<ymax> are I<inclusive> - the number of pixels
+drawn for a filled box is C<(xmax-xmin+1) * (ymax-ymin+1)>.
+
+=item *
+
+C<box> - a reference to an array of (left, top, right, bottom)
+co-ordinates.  This is an alternative to supplying C<xmin>, C<ymin>,
+C<xmax>, C<ymax> and overrides their values.
+
+=item *
+
+C<color> - the color of the line.  See L</"Color Parameters">.
+Default: white.  This is ignored if the filled parameter
+
+=item *
+
+C<filled> - if non-zero the box is filled with I<color> instead of
+outlined.  Default: an outline is drawn.
+
+=item *
+
+C<fill> - the fill for the box.  If this is supplied then the box will be
+filled.  See L</"Fill Parameters">.
+
+=back
+
+=item arc()
+
+  $img->arc(color=>$red, r=>20, x=>200, y=>100, d1=>10, d2=>20 );
+
+This creates a filled red arc with a 'center' at (200, 100) and spans
+10 degrees and the slice has a radius of 20.
+
+It's also possible to supply a C<fill> parameter.
+
+To draw just an arc outline - just the curve, not the radius lines,
+set filled to 0:
+
+Parameters:
+
+  $img->arc(color=>$red, r=>20, x=>200, y=>100, d1=>10, d2=>20, filled=>0 );
+
+=over
+
+=item *
+
+C<x>, C<y> - center of the filled arc.  Default: center of the image.
+
+=item *
+
+C<r> - radius of the arc.  Default: 1/3 of min(image height, image width).
+
+=item *
+
+C<d1> - starting angle of the arc, in degrees.  Default: 0
+
+=item *
+
+C<d2> - ending angle of the arc, in degrees.  Default: 361.
+
+=item *
+
+C<color> - the color of the filled arc.  See L</"Color Parameters">.
+Default: white.  Overridden by C<fill>.
+
+=item *
+
+C<fill> - the fill for the filled arc.  See L</"Fill Parameters">
+
+=item *
+
+C<aa> - if true the filled arc is drawn anti-aliased.  Default: false.
+
+Anti-aliased arc() is experimental for now, I'm not entirely happy
+with the results in some cases.
+
+=item *
+
+C<filled> - set to 0 to draw only an outline.
+
+=back
+
+  # arc going through angle zero:
+  $img->arc(d1=>320, d2=>40, x=>100, y=>100, r=>50, color=>'blue');
+
+  # complex fill arc
+  $img->arc(d1=>135, d2=>45, x=>100, y=>150, r=>50, 
+            fill=>{ solid=>'red', combine=>'diff' });
+
+  # draw an anti-aliased circle outline
+  $img->arc(x => 100, y => 150, r => 150, filled => 0, 
+            color => '#F00', aa => 1);
+
+  # draw an anti-aliased arc
+  $img->arc(x => 100, y => 150, r => 90, filled => 0,
+            color => '#0f0', aa => 1, d1 => 90, d2 => 180);
+
+=item circle()
+
+  $img->circle(color=>$green, r=>50, x=>200, y=>100, aa=>1, filled=>1);
+
+This creates an anti-aliased green circle with its center at (200, 100)
+and has a radius of 50.  It's also possible to supply a C<fill> parameter
+instead of a color parameter.
+
+  $img->circle(r => 50, x=> 150, y => 150, fill=>{ hatch => 'stipple' });
+
+To draw a circular outline, set C<filled> to 0:
+
+  $img->circle(color=>$green, r=>50, x=>200, y=>100, aa=>1, filled=>0);
+
+=over
+
+=item *
+
+C<x>, C<y> - center of the filled circle.  Default: center of the image.
+
+=item *
+
+C<r> - radius of the circle.  Default: 1/3 of min(image height, image width).
+
+=item *
+
+C<color> - the color of the filled circle.  See L</"Color Parameters">.
+Default: white.  Overridden by C<fill>.
+
+=item *
+
+C<fill> - the fill for the filled circle.  See L</"Fill Parameters">
+
+=item *
+
+C<aa> - if true the filled circle is drawn anti-aliased.  Default: false.
+
+=item *
+
+C<filled> - set to 0 to just draw an outline.
+
+=back
+
+=item polygon()
+
+  $img->polygon(points=>[[$x0,$y0],[$x1,$y1],[$x2,$y2]],color=>$red);
+  $img->polygon(x=>[$x0,$x1,$x2], y=>[$y0,$y1,$y2], fill=>$fill);
+
+Polygon is used to draw a filled polygon.  Currently the polygon is
+always drawn anti-aliased, although that will change in the future.
+Like other anti-aliased drawing functions its coordinates can be
+specified with floating point values.  As with other filled shapes 
+it's possible to use a C<fill> instead of a color.
+
+=over
+
+=item *
+
+C<points> - a reference to an array of references to arrays containing
+the co-ordinates of the points in the line, for example:
+
+  my @points = ( [ 0, 0 ], [ 100, 0 ], [ 100, 100 ], [ 0, 100 ] );
+  $img->polygon(points => \@points);
+
+=item *
+
+C<x>, C<y> - each is an array of x or y ordinates.  This is an alternative
+to supplying the C<points> parameter.
+
+  # same as the above points example
+  my @x = ( 0, 100, 100, 0 );
+  my @y = ( 0, 0, 100, 100 );
+  $img->polygon(x => \@x, y => \@y);
+
+=item *
+
+C<color> - the color of the filled polygon.  See L</"Color Parameters">.
+Default: black.  Overridden by C<fill>.
+
+=item *
+
+C<fill> - the fill for the filled circle.  See L</"Fill Parameters">
+
+=item *
+
+C<mode> - fill mode for the polygon.  See L</"Polygon Fill Modes">
+
+=back
+
+Note: the points specified are as offsets from the top-left of the
+image, I<not> as pixel locations.  This means that:
+
+  $img->polygon(points => [ [ 0, 0 ], [ 1, 0 ], [ 1, 1 ], [ 0, 1 ] ]);
+
+fills only a single pixel at C<(0, 0)>, not four.
+
+=item polypolygon()
+X<polypolygon() method>X<methods, polypolygon>
+
+  $img->polypolygon(points => $points, color => $color);
+
+Draw multiple polygons, either filled or unfilled.
+
+=over
+
+=item *
+
+C<points> - is an array reference containing polygon definitions, each
+polygon definition is a reference to an array containing two arrays,
+one each for the C<x> and C<y> co-ordinates.
+
+=item *
+
+C<filled> - if true, fill the polygons with the color defined by
+C<color>.
+
+=item *
+
+C<color> - the color to draw the polygons with if C<fill> is not
+supplied.
+
+=item *
+
+C<fill> - fill the polygons with this fill if supplied.
+
+=item *
+
+C<mode> - fill mode for the polygon.  See L</"Polygon Fill Modes">
+
+=back
+
+Note: the points specified are as offsets from the top-left of the
+image, I<not> as pixel locations.  This means that:
+
+  $img->polypolygon(points => [ [ [ 0, 1, 1, 0 ], [ 0, 0, 1, 1 ] ] ],
+                    filled => 1);
+
+fills only a single pixel at C<(0, 0)>, not four.
+
+=item flood_fill()
+
+X<flood_fill>You can fill a region that all has the same color using
+the flood_fill() method, for example:
+
+  $img->flood_fill(x=>50, y=>50, color=>$color);
+
+will fill all regions the same color connected to the point (50, 50).
+
+Alternatively you can fill a region limited by a given border color:
+
+  # stop at the red border
+  $im->flood_fill(x=>50, y=>50, color=>$color, border=>"red");
+
+You can also fill with a complex fill:
+
+  $img->flood_fill(x=>50, y=>50, fill=>{ hatch=>'cross1x1' });
+
+Parameters:
+
+=over
+
+=item *
+
+C<x>, C<y> - the start point of the fill.  
+
+=item *
+
+C<color> - the color of the filled area.  See L</"Color Parameters">.
+Default: white.  Overridden by C<fill>.
+
+=item *
+
+C<fill> - the fill for the filled area.  See L</"Fill Parameters">
+
+=item *
+
+C<border> - the border color of the region to be filled.  If this
+parameter is supplied flood_fill() will stop when it finds this color.
+If this is not supplied then a normal fill is done.  C<border> can be
+supplied as a L</"Color Parameters">.
+
+=back
+
+=item setpixel()
+
+  $img->setpixel(x=>50, y=>70, color=>$color);
+  $img->setpixel(x=>[ 50, 60, 70 ], y=>[20, 30, 40], color=>$color);
+
+setpixel() is used to set one or more individual pixels.
+
+You can supply a single set of co-ordinates as scalar C<x> and C<y>
+parameters, or set either to an arrayref of ordinates.
+
+If one array is shorter than another the final value in the shorter
+will be duplicated until they match in length.
+
+If only one of C<x> or C<y> is an array reference then setpixel() will
+behave as if the non-reference value were an array reference
+containing only that value.
+
+eg.
+
+  my $count = $img->setpixel(x => 1, y => [ 0 .. 3 ], color => $color);
+
+behaves like:
+
+  my $count = $img->setpixel(x => [ 1 ], y => [ 0 .. 3 ], color => $color);
+
+and since the final element in the shorter array is duplicated, this
+behaves like:
+
+  my $count = $img->setpixel(x => [ 1, 1, 1, 1 ], y => [ 0 .. 3 ],
+                             color => $color);
+
+Parameters:
+
+=over
+
+=item *
+
+x, y - either integers giving the co-ordinates of the pixel to set or
+array references containing a set of pixels to be set.
+
+=item *
+
+color - the color of the pixels drawn.  See L</"Color Parameters">.
+Default: white.
+
+=back
+
+Returns the number of pixels drawn, if no pixels were drawn, but none
+of the errors below occur, returns C<"0 but true">.
+
+For other errors, setpixel() returns an empty list and sets errstr().
+
+Possible errors conditions include:
+
+=over
+
+=item * the image supplied is empty
+
+=item * a reference to an empty array was supplied for C<x> or C<y>
+
+=item * C<x> or C<y> wasn't supplied
+
+=item * C<color> isn't a valid color, and can't be converted to a
+color.
+
+=back
+
+=item getpixel()
+
+  my $color = $img->getpixel(x=>50, y=>70); my @colors =
+  $img->getpixel(x=>[ 50, 60, 70 ], y=>[20, 30, 40]); my $colors_ref =
+  $img->getpixel(x=>[ 50, 60, 70 ], y=>[20, 30, 40]);
+
+getpixel() is used to retrieve one or more individual pixels.
+
+You can supply a single set of co-ordinates as scalar C<x> and C<y>
+parameters, or set each to an arrayref of ordinates.
+
+If one array is shorter than another the final value in the shorter
+will be duplicated until they match in length.
+
+If only one of C<x> or C<y> is an array reference then getpixel() will
+behave as if the non-reference value were an array reference
+containing only that value.
+
+eg.
+
+  my @colors = $img->getpixel(x => 0, y => [ 0 .. 3 ]);
+
+behaves like:
+
+  my @colors = $img->getpixel(x => [ 0 ], y => [ 0 .. 3 ]);
+
+and since the final element in the shorter array is duplicated, this
+behaves like:
+
+  my @colors = $img->getpixel(x => [ 0, 0, 0, 0 ], y => [ 0 .. 3 ]);
+
+To receive floating point colors from getpixel(), set the C<type>
+parameter to 'float'.
+
+Parameters:
+
+=over
+
+=item *
+
+C<x>, C<y> - either integers giving the co-ordinates of the pixel to set or
+array references containing a set of pixels to be set.
+
+=item *
+
+C<type> - the type of color object to return, either C<'8bit'> for
+L<Imager::Color> objects or C<'float'> for L<Imager::Color::Float>
+objects.  Default: C<'8bit'>.
+
+=back
+
+When called with an array reference for either or C<x> or C<y>,
+getpixel() will return a list of colors in list context, and an
+arrayref in scalar context.
+
+If a supplied co-ordinate is outside the image then C<undef> is
+returned for the pixel.
+
+Each color is returned as an L<Imager::Color> object or as an
+L<Imager::Color::Float> object if C<type> is set to C<"float">.
+
+Possible errors conditions include:
+
+=over
+
+=item * the image supplied is empty
+
+=item * a reference to an empty array was supplied for C<x> or C<y>
+
+=item * C<x> or C<y> wasn't supplied
+
+=item * C<type> isn't a valid value.
+
+=back
+
+For any of these errors getpixel() returns an empty list.
+
+=item string()
+
+  my $font = Imager::Font->new(file=>"foo.ttf");
+  $img->string(x => 50, y => 70,
+               string => "Hello, World!",
+               font => $font,
+               size => 30,
+               aa => 1,
+               color => 'white');
+
+Draws text on the image.
+
+Parameters:
+
+=over
+
+=item *
+
+C<x>, C<y> - the point to draw the text from.  If C<align> is 0 this
+is the top left of the string.  If C<align> is 1 (the default) then
+this is the left of the string on the baseline.  Required.
+
+=item *
+
+C<string> - the text to draw.  Required unless you supply the C<text>
+parameter.
+
+=item *
+
+C<font> - an L<Imager::Font> object representing the font to draw the
+text with.  Required.
+
+=item *
+
+C<aa> - if non-zero the output will be anti-aliased.  Default: the value
+set in Imager::Font->new() or 0 if not set.
+
+=item *
+
+C<align> - if non-zero the point supplied in (x,y) will be on the
+base-line, if zero then (x,y) will be at the top-left of the string.
+
+i.e. if drawing the string C<"yA"> and align is 0 the point (x,y) will
+aligned with the top of the A.  If align is 1 (the default) it will be
+aligned with the baseline of the font, typically bottom of the A,
+depending on the font used.
+
+Default: the value set in Imager::Font->new, or 1 if not set.
+
+=item *
+
+C<channel> - if present, the text will be written to the specified
+channel of the image and the color parameter will be ignore.
+
+=item *
+
+C<color> - the color to draw the text in.  Default: the color supplied to
+Imager::Font->new, or red if none.
+
+=item *
+
+C<size> - the point size to draw the text at.  Default: the size
+supplied to Imager::Font->new, or 15.
+
+=item *
+
+C<sizew> - the width scaling to draw the text at.  Default: the value
+of C<size>.
+
+=item *
+
+C<utf8> - for drivers that support it, treat the string as UTF-8
+encoded.  For versions of perl that support Unicode (5.6 and later),
+this will be enabled automatically if the C<string> parameter is
+already a UTF-8 string. See L<Imager::Font/"UTF-8"> for more
+information.
+
+=item *
+
+C<vlayout> - for drivers that support it, draw the text vertically.
+Note: I haven't found a font that has the appropriate metrics yet.
+
+=item *
+
+C<text> - alias for the C<string> parameter.
+
+=back
+
+On error, string() returns false and you can use $img->errstr to get
+the reason for the error.
+
+=item align_string()
+
+Draws text aligned around a point on the image.
+
+  # "Hello" centered at 100, 100 in the image.
+  my ($left, $top, $right, $bottom) = 
+    $img->align_string(string=>"Hello",
+                       x=>100, y=>100, 
+                       halign=>'center', valign=>'center', 
+                       font=>$font);
+
+Parameters:
+
+=over
+
+=item *
+
+C<x>, C<y> - the point to draw the text from.  If C<align> is 0 this
+is the top left of the string.  If C<align> is 1 (the default) then
+this is the left of the string on the baseline.  Required.
+
+=item *
+
+C<string> - the text to draw.  Required unless you supply the C<text>
+parameter.
+
+=item *
+
+C<font> - an L<Imager::Font> object representing the font to draw the
+text with.  Required.
+
+=item *
+
+C<aa> - if non-zero the output will be anti-aliased
+
+=item *
+
+C<valign> - vertical alignment of the text against (x,y)
+
+=over
+
+=item *
+
+C<top> - Point is at the top of the text.
+
+=item *
+
+C<bottom> - Point is at the bottom of the text.
+
+=item *
+
+C<baseline> - Point is on the baseline of the text.  This is the default.
+
+=item *
+
+C<center> - Point is vertically centered within the text.
+
+=back
+
+=item *
+
+C<halign> - horizontal alignment of the text against (x,y)
+
+=over
+
+=item *
+
+C<left> - The point is at the left of the text.  This is the default.
+
+=item *
+
+C<start> - The point is at the start point of the text.
+
+=item *
+
+C<center> - The point is horizontally centered within the text.
+
+=item *
+
+C<right> - The point is at the right end of the text.
+
+=item *
+
+C<end> - The point is at the end point of the text.
+
+=back
+
+=item *
+
+C<channel> - if present, the text will be written to the specified
+channel of the image and the color parameter will be ignore.
+
+=item *
+
+C<color> - the color to draw the text in.  Default: the color supplied to
+Imager::Font->new, or red if none.
+
+=item *
+
+C<size> - the point size to draw the text at.  Default: the size supplied
+to Imager::Font->new, or 15.
+
+=item *
+
+C<sizew> - the width scaling to draw the text at.  Default: the value of
+C<size>.
+
+=item *
+
+C<utf8> - for drivers that support it, treat the string as UTF-8
+encoded.  For versions of perl that support Unicode (5.6 and later),
+this will be enabled automatically if the C<string> parameter is
+already a UTF-8 string. See L<Imager::Font/"UTF-8"> for more
+information.
+
+=item *
+
+C<vlayout> - for drivers that support it, draw the text vertically.
+Note: I haven't found a font that has the appropriate metrics yet.
+
+=item *
+
+C<text> - alias for the C<string> parameter.
+
+=back
+
+On success returns a list of bounds of the drawn text, in the order
+left, top, right, bottom.
+
+On error, align_string() returns an empty list and you can use 
+C<< $img->errstr >> to get the reason for the error.
+
+=item setscanline()
+
+Set all or part of a horizontal line of pixels to an image.  This
+method is most useful in conjunction with L</getscanline()>.
+
+The parameters you can pass are:
+
+=over
+
+=item *
+
+C<y> - vertical position of the scan line.  This parameter is required.
+
+=item *
+
+C<x> - position to start on the scan line.  Default: 0
+
+=item *
+
+C<pixels> - either a reference to an array containing Imager::Color
+objects, an reference to an array containing Imager::Color::Float
+objects or a scalar containing packed color data.
+
+If C<type> is C<index> then this can either be a reference to an array
+of palette color indexes or a scalar containing packed indexes.
+
+See L</"Packed Color Data"> for information on the format of packed
+color data.
+
+=item *
+
+C<type> - the type of pixel data supplied.  If you supply an array
+reference then this is determined automatically.  If you supply packed
+color data this defaults to C<'8bit'>, if your data is packed floating
+point color data then you need to set this to C<'float'>.
+
+You can use C<float> or C<8bit> samples with any image.
+
+If this is C<index> then C<pixels> should be either an array of
+palette color indexes or a packed string of color indexes.
+
+=back
+
+Returns the number of pixels set.
+
+Each of the following sets 5 pixels from (5, 10) through (9, 10) to
+blue, red, blue, red, blue:
+
+  my $red_color = Imager::Color->new(255, 0, 0);
+  my $blue_color = Imager::Color->new(0, 0, 255);
+
+  $image->setscanline(y=>10, x=>5, pixels=>
+                      [ ($blue_color, $red_color) x 2, $blue_color ]);
+
+  # use floating point color instead, for 16-bit plus images
+  my $red_colorf = Imager::Color::Float->new(1.0, 0, 0);
+  my $blue_colorf = Imager::Color::Float->new(0, 0, 1.0);
+
+  $image->setscanline(y=>10, x=>5, pixels=>
+                      [ ($blue_colorf, $red_colorf) x 2, $blue_colorf ]);
+
+  # packed 8-bit data
+  $image->setscanline(y=>10, x=>5, pixels=>
+                      pack("C*", ((0, 0, 255, 255), (255, 0, 0, 255)) x 2,
+                            (0, 0, 255, 255)));
+
+  # packed floating point samples
+  $image->setscanline(y=>10, x=>5, type=>'float', pixels=>
+                      pack("d*", ((0, 0, 1.0, 1.0), (1.0, 0, 0, 1.0)) x 2,
+                            (0, 0, 1.0, 1.0)));
+
+
+Copy even rows from one image to another:
+
+  for (my $y = 0; $y < $im2->getheight; $y+=2) {
+    $im1->setscanline(y=>$y,
+                      pixels=>scalar($im2->getscanline(y=>$y)));
+  }
+
+
+Set the blue channel to 0 for all pixels in an image.  This could be
+done with convert too:
+
+  for my $y (0..$im->getheight-1) {
+    my $row = $im->getscanline(y=>$y);
+    $row =~ s/(..).(.)/$1\0$2/gs;
+    $im->setscanline(y=>$y, pixels=>$row);
+  }
+
+=item getscanline()
+
+Read all or part of a horizontal line of pixels from an image.  This
+method is most useful in conjunction with L</setscanline()>.
+
+The parameters you can pass are:
+
+=over
+
+=item *
+
+C<y> - vertical position of the scan line.  This parameter is required.
+
+=item *
+
+C<x> - position to start on the scan line.  Default: 0
+
+=item *
+
+C<width> - number of pixels to read.  Default: $img->getwidth - x
+
+=item *
+
+C<type> - the type of pixel data to return.  Default: C<8bit>.
+
+Permitted values are C<8bit> and C<float> and C<index>.
+
+=back
+
+In list context this method will return a list of Imager::Color
+objects when I<type> is C<8bit>, or a list of Imager::Color::Float
+objects when I<type> if C<float>, or a list of integers when I<type>
+is C<index>.
+
+In scalar context this returns a packed 8-bit pixels when I<type> is
+C<8bit>, or a list of packed floating point pixels when I<type> is
+C<float>, or packed palette color indexes when I<type> is C<index>.
+
+The values of samples for which the image does not have channels is
+undefined.  For example, for a single channel image the values of
+channels 1 through 3 are undefined.
+
+Check image for a given color:
+
+  my $found;
+  YLOOP: for my $y (0..$img->getheight-1) {
+    my @colors = $img->getscanline(y=>$y);
+    for my $color (@colors) {
+      my ($red, $green, $blue, $alpha) = $color->rgba;
+      if ($red == $test_red && $green == $test_green && $blue == $test_blue
+          && $alpha == $test_alpha) {
+        ++$found;
+        last YLOOP;
+      }
+    }
+  }
+
+Or do it using packed data:
+
+  my $found;
+  my $test_packed = pack("CCCC", $test_red, $test_green, $test_blue, 
+                         $test_alpha);
+  YLOOP: for my $y (0..$img->getheight-1) {
+    my $colors = $img->getscanline(y=>$y);
+    while (length $colors) {
+      if (substr($colors, 0, 4, '') eq $test_packed) {
+        ++$found;
+        last YLOOP;
+      }
+    }
+  }
+
+Some of the examples for L</setscanline()> for more examples.
+
+=item getsamples()
+
+Read specified channels from all or part of a horizontal line of
+pixels from an image.
+
+The parameters you can pass are:
+
+=over
+
+=item *
+
+C<y> - vertical position of the scan line.  This parameter is required.
+
+=item *
+
+C<x> - position to start on the scan line.  Default: 0
+
+=item *
+
+C<width> - number of pixels to read.  Default: C<< $img->getwidth - x >>
+
+=item *
+
+C<type> - the type of sample data to return.  Default: C<8bit>.
+
+Permitted values are C<8bit> and C<float>.
+
+As of Imager 0.61 this can be C<16bit> only for 16 bit images.
+
+=item *
+
+C<channels> - a reference to an array of channels to return, where 0
+is the first channel.  Default: C<< [ 0 .. $self->getchannels()-1 ] >>
+
+=item *
+
+C<target> - if an array reference is supplied in target then the samples
+will be stored here instead of being returned.
+
+=item *
+
+C<offset> - the offset within the array referenced by I<target>
+
+=back
+
+In list context this will return a list of integers between 0 and 255
+inclusive when I<type> is C<8bit>, or a list of floating point numbers
+between 0.0 and 1.0 inclusive when I<type> is C<float>.
+
+In scalar context this will return a string of packed bytes, as with
+C< pack("C*", ...) > when I<type> is C<8bit> or a string of packed
+doubles as with C< pack("d*", ...) > when I<type> is C<float>.
+
+If the I<target> option is supplied then only a count of samples is
+returned.
+
+Example: Check if any pixels in an image have a non-zero alpha
+channel:
+
+  my $has_coverage;
+  for my $y (0 .. $img->getheight()-1) {
+    my $alpha = $img->getsamples(y=>$y, channels=>[0]);
+    if ($alpha =~ /[^\0]/) {
+      ++$has_coverage;
+      last;
+    }
+  }
+
+Example: Convert a 2 channel gray image into a 4 channel RGBA image:
+
+  # this could be done with convert() instead
+  my $out = Imager->new(xsize => $src->getwidth(), 
+                        ysize => $src->getheight(),
+                        channels => 4);
+  for my $y ( 0 .. $src->getheight()-1 ) {
+    my $data = $src->getsamples(y=>$y, channels=>[ 0, 0, 0, 1 ]);
+    $out->setscanline(y=>$y, pixels=>$data);
+  }
+
+Retrieve 16-bit samples:
+
+  if ($img->bits == 16) {
+    my @samples;
+    $img->getsamples(x => 0, y => $y, target => \@samples, type => '16bit');
+  }
+
+=item setsamples()
+
+This allows writing of samples to an image.
+
+Parameters:
+
+=over
+
+=item *
+
+C<y> - vertical position of the scan line.  This parameter is required.
+
+=item *
+
+C<x> - position to start on the scan line.  Default: 0
+
+=item *
+
+C<width> - number of pixels to write.  Default: C<< $img->getwidth - x >>.
+The minimum of this and the number of pixels represented by the
+samples provided will be written.
+
+=item *
+
+C<type> - the type of sample data to write.  This parameter is required.
+
+This can be C<8bit>, C<float> or for 16-bit images only, C<16bit>.
+
+=item *
+
+C<channels> - a reference to an array of channels to return, where 0 is
+the first channel.  Default: C<< [ 0 .. $self->getchannels()-1 ] >>
+
+=item *
+
+C<data> - for a type of C<8bit> or C<float> this can be a reference to
+an array of samples or a scalar containing packed samples.  If C<data>
+is a scalar it may only contain characters from \x00 to \xFF.
+
+For a type of C<16bit> this can only be a reference to an array of
+samples to write.
+
+Required.
+
+=item *
+
+C<offset> - the starting offset within the array referenced by
+I<data>.  If C<data> is a scalar containing packed samples this offset
+is in samples.
+
+=back
+
+Returns the number of samples written.
+
+  $targ->setsamples(y => $y, data => \@data);
+
+  $targ->setsamples(y => $y, data => \@data, offset => $src->getchannels);
+
+Copy from one image to another:
+
+  my $targ = Imager->new(xsize => $src->getwidth,
+        ysize => $src->getheight, channels => $src->getchannels);
+  for my $y (0 .. $targ->getheight()-1) {
+    my $row = $src->getsamples(y => $y)
+      or die $src->errstr;
+    $targ->setsamples(y => $y, data => $row)
+      or die $targ->errstr;;
+  }
+
+Compose an image from separate source channels:
+
+  my @src = ...; # images to work from, up to 4
+  my $targ = Imager->new(xsize => $src[0]->getwidth,
+     ysize => $src[0]->getheight, channels => scalar(@src));
+  for my $y (0 .. $targ->getheight()-1) {
+    for my $ch (0 .. $#src) {
+      my $row = $src[$ch]->getsamples(y => $y, channels => [ 0 ]);
+      $targ->setsamples(y => $y, data => $row, channels => [ $ch ] );
+    }
+  }
+
+=back
+
+=head1 Packed Color Data
+
+The getscanline() and setscanline() methods can work with pixels
+packed into scalars.  This is useful to remove the cost of creating
+color objects, but should only be used when performance is an issue.
+
+The getsamples() and setsamples() methods can work with samples packed
+into scalars.
+
+Packed data can either be 1 byte per sample or 1 double per sample.
+
+Each pixel returned by getscanline() or supplied to setscanline()
+contains 4 samples, even if the image has fewer then 4 channels.  The
+values of the extra samples as returned by getscanline() is not
+specified.  The extra samples passed to setscanline() are ignored.
+
+To produce packed 1 byte/sample pixels, use the pack C<C> template:
+
+  my $packed_8bit_pixel = pack("CCCC", $red, $blue, $green, $alpha);
+
+To produce packed double/sample pixels, use the pack C<d> template:
+
+  my $packed_float_pixel = pack("dddd", $red, $blue, $green, $alpha);
+
+Note that double/sample data is always stored using the C C<double>
+type, never C<long double>, even if C<perl> is built with
+C<-Duselongdouble>.
+
+If you use a I<type> parameter of C<index> then the values are palette
+color indexes, not sample values:
+
+  my $im = Imager->new(xsize => 100, ysize => 100, type => 'paletted');
+  my $black_index = $im->addcolors(colors => [ 'black' ]);
+  my $red_index = $im->addcolors(colors => [ 'red' ]);
+  # 2 pixels
+  my $packed_index_data = pack("C*", $black_index, $red_index);
+  $im->setscanline(y => $y, pixels => $packed_index_data, type => 'index');
+
+=head1 Combine Types
+
+Some methods accept a C<combine> parameter, this can be any of the
+following:
+
+=over
+
+=item C<none>
+
+The fill pixel replaces the target pixel.
+
+=item C<normal>
+
+The fill pixels alpha value is used to combine it with the target pixel.
+
+=item C<multiply>
+
+=item C<mult>
+
+Each channel of fill and target is multiplied, and the result is
+combined using the alpha channel of the fill pixel.
+
+=item C<dissolve>
+
+If the alpha of the fill pixel is greater than a random number, the
+fill pixel is alpha combined with the target pixel.
+
+=item C<add>
+
+The channels of the fill and target are added together, clamped to the range of the samples and alpha combined with the target.
+
+=item C<subtract>
+
+The channels of the fill are subtracted from the target, clamped to be
+>= 0, and alpha combined with the target.
+
+=item C<diff>
+
+The channels of the fill are subtracted from the target and the
+absolute value taken this is alpha combined with the target.
+
+=item C<lighten>
+
+The higher value is taken from each channel of the fill and target
+pixels, which is then alpha combined with the target.
+
+=item C<darken>
+
+The higher value is taken from each channel of the fill and target
+pixels, which is then alpha combined with the target.
+
+=item C<hue>
+
+The combination of the saturation and value of the target is combined
+with the hue of the fill pixel, and is then alpha combined with the
+target.
+
+=item C<sat>
+
+The combination of the hue and value of the target is combined
+with the saturation of the fill pixel, and is then alpha combined with the
+target.
+
+=item C<value>
+
+The combination of the hue and value of the target is combined
+with the value of the fill pixel, and is then alpha combined with the
+target.
+
+=item C<color>
+
+The combination of the value of the target is combined with the hue
+and saturation of the fill pixel, and is then alpha combined with the
+target.
+
+=back
+
+=over
+
+=item combines()
+
+Returns a list of possible combine types.
+
+=back
+
+=head1 BUGS
+
+box() does not support anti-aliasing yet.  Default color is not
+unified yet.
+
+=head1 AUTHOR
+
+Tony Cook <tonyc@cpan.org>, Arnar M. Hrafnkelsson.
+
+=head1 SEE ALSO
+
+L<Imager>(3), L<Imager::Cookbook>(3)
+
+=head1 REVISION
+
+$Revision$
+
+=cut
