@@ -28,12 +28,12 @@
 int
 main (void)
 {
-    const FcChar8 *doc = ""
+    const FcChar8 *doc = (const FcChar8 *) ""
 	"<fontconfig>\n"
 	"  <cachedir></cachedir>\n"
 	"</fontconfig>\n"
 	"";
-    const FcChar8 *doc2 = ""
+    const FcChar8 *doc2 = (const FcChar8 *) ""
 	"<fontconfig>\n"
 	"  <cachedir prefix=\"xdg\"></cachedir>\n"
 	"</fontconfig>\n"

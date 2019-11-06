@@ -39,7 +39,7 @@ run_query (void)
     FcPattern *pat = FcPatternCreate (), *match;
     FcResult result;
 
-    FcPatternAddString (pat, FC_FAMILY, "sans-serif");
+    FcPatternAddString (pat, FC_FAMILY, (const FcChar8 *) "sans-serif");
     FcPatternAddBool (pat, FC_SCALABLE, FcTrue);
     FcConfigSubstitute (NULL, pat, FcMatchPattern);
     FcDefaultSubstitute (pat);
