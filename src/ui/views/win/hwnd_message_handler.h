@@ -594,6 +594,10 @@ class VIEWS_EXPORT HWNDMessageHandler : public gfx::WindowImpl,
 
   bool use_system_default_icon_;
 
+  // Whether or not the cursor has been overridden by WM_SETCURSOR.  When this
+  // is true, |SetCursor| will be a no-op.
+  bool is_cursor_overridden_;
+
   // Whether all ancestors have been enabled. This is only used if is_modal_ is
   // true.
   bool restored_enabled_;
