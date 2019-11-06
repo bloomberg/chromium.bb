@@ -2,17 +2,12 @@
   metadata: {
     namespace: "MathML",
     namespaceURI: "http://www.w3.org/1998/Math/MathML",
+    attrsNullNamespace: true,
+    export: "CORE_EXPORT",
   },
 
   data: [
-    "math",
-    "mi",
-    "mn",
-    "mo",
-    "mtext",
-    "ms",
-    "mglyph",
-    "malignmark",
-    "annotation-xml",
+    "definitionURL",
+    "encoding",
   ],
 }

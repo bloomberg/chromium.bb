@@ -1701,8 +1701,8 @@ bool Node::CanStartSelection() const {
 // inline style, or other things that this apparently guards against.
 bool Node::IsStyledElement() const {
   auto* this_element = DynamicTo<Element>(this);
-  return IsHTMLElement() || IsSVGElement() ||
-         (this_element &&
+  return IsHTMLElement() || IsSVGElement() || IsMathMLElement() ||
+         (!RuntimeEnabledFeatures::MathMLCoreEnabled() && this_element &&
           this_element->namespaceURI() == mathml_names::kNamespaceURI);
 }
 

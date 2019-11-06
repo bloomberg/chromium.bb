@@ -244,6 +244,9 @@
 #include "third_party/blink/renderer/core/loader/prerenderer_client.h"
 #include "third_party/blink/renderer/core/loader/progress_tracker.h"
 #include "third_party/blink/renderer/core/loader/text_resource_decoder_builder.h"
+#include "third_party/blink/renderer/core/mathml/mathml_element.h"
+#include "third_party/blink/renderer/core/mathml_element_factory.h"
+#include "third_party/blink/renderer/core/mathml_names.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/event_with_hit_test_results.h"
@@ -1384,6 +1387,14 @@ Element* Document::CreateRawElement(const QualifiedName& qname,
     element = SVGElementFactory::Create(qname.LocalName(), *this, flags);
     if (!element)
       element = MakeGarbageCollected<SVGUnknownElement>(qname, *this);
+    saw_elements_in_known_namespaces_ = true;
+  } else if (RuntimeEnabledFeatures::MathMLCoreEnabled() &&
+             qname.NamespaceURI() == mathml_names::kNamespaceURI) {
+    element = MathMLElementFactory::Create(qname.LocalName(), *this, flags);
+    // TODO(crbug.com/1021837): Determine if we need to introduce a
+    // MathMLUnknownClass.
+    if (!element)
+      element = MakeGarbageCollected<MathMLElement>(qname, *this);
     saw_elements_in_known_namespaces_ = true;
   } else {
     element = Element::Create(qname, this);
