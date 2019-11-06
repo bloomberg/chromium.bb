@@ -617,13 +617,13 @@ void Node::CallDistributeScroll(ScrollState& scroll_state) {
     NativeDistributeScroll(scroll_state);
     return;
   }
-  if (callback->NativeScrollBehavior() !=
+  if (callback->GetNativeScrollBehavior() !=
       NativeScrollBehavior::kPerformAfterNativeScroll)
     callback->Invoke(&scroll_state);
-  if (callback->NativeScrollBehavior() !=
+  if (callback->GetNativeScrollBehavior() !=
       NativeScrollBehavior::kDisableNativeScroll)
     NativeDistributeScroll(scroll_state);
-  if (callback->NativeScrollBehavior() ==
+  if (callback->GetNativeScrollBehavior() ==
       NativeScrollBehavior::kPerformAfterNativeScroll)
     callback->Invoke(&scroll_state);
 }
@@ -663,13 +663,13 @@ void Node::CallApplyScroll(ScrollState& scroll_state) {
     NativeApplyScroll(scroll_state);
     return;
   }
-  if (callback->NativeScrollBehavior() !=
+  if (callback->GetNativeScrollBehavior() !=
       NativeScrollBehavior::kPerformAfterNativeScroll)
     callback->Invoke(&scroll_state);
-  if (callback->NativeScrollBehavior() !=
+  if (callback->GetNativeScrollBehavior() !=
       NativeScrollBehavior::kDisableNativeScroll)
     NativeApplyScroll(scroll_state);
-  if (callback->NativeScrollBehavior() ==
+  if (callback->GetNativeScrollBehavior() ==
       NativeScrollBehavior::kPerformAfterNativeScroll)
     callback->Invoke(&scroll_state);
 }
