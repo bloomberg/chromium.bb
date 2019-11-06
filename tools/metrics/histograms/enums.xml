@@ -59552,6 +59552,18 @@ Called by update_net_trust_anchors.py.-->
   <int value="2" label="ACTION_ADDED_ANOTHER_ACCOUNT"/>
 </enum>
 
+<enum name="StabilityEventType">
+  <summary>
+    One of several separate stability metrics. The values are non-contiguous as
+    they are a subset of values matching fields of the Stability proto (from the
+    SystemProfile).
+  </summary>
+  <int value="2" label="Pageload count"/>
+  <int value="3" label="Renderer crash count"/>
+  <int value="5" label="Extensions renderer count"/>
+  <int value="16" label="Browser crash count"/>
+</enum>
+
 <enum name="StarsLaunchLocation">
   <int value="0" label="All Items"/>
   <int value="1" label="Uncategorized"/>
