@@ -8526,7 +8526,7 @@ void Document::ProcessDisplayLockActivationObservation(
       auto* context = entry->target()->GetDisplayLockContext();
       DCHECK(context);
       DCHECK(context->ShouldCommitForActivation(
-          DisplayLockActivationReason::kViewport));
+          DisplayLockActivationReason::kViewportIntersection));
       context->CommitForActivationWithSignal(entry->target());
     }
   }
