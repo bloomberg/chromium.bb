@@ -334,6 +334,9 @@ CHAR-LIMIT guidelines:
       <message name="IDS_NOTIFICATION_CATEGORY_PERMISSION_REQUESTS" desc="Label for permission requests, within a list of notification categories. [CHAR-LIMIT=32]">
        Permission requests
       </message>
+      <message name="IDS_UNSUPPORTED" desc="Message displayed to the user when an attempted action is not supported.">
+        Unsupported
+      </message>
 
       <!-- Sign-in, sync and personalization preferences -->
       <message name="IDS_PREFS_SECTION_ACCOUNT" desc="Title for the group of account-related entries in Settings. [CHAR-LIMIT=32]">
