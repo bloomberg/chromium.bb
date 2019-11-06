@@ -3732,8 +3732,7 @@ static int get_tpl_stats_b(AV1_COMP *cpi, BLOCK_SIZE bsize, int mi_row,
 // analysis_type 2: Use cost reduction from intra to inter for best inter
 //                  predictor chosen
 static int get_q_for_deltaq_objective(AV1_COMP *const cpi, BLOCK_SIZE bsize,
-                                      int analysis_type, int mi_row,
-                                      int mi_col) {
+                                      int mi_row, int mi_col) {
   AV1_COMMON *const cm = &cpi->common;
   assert(IMPLIES(cpi->gf_group.size > 0,
                  cpi->gf_group.index < cpi->gf_group.size));
@@ -3789,28 +3788,13 @@ static int get_q_for_deltaq_objective(AV1_COMP *const cpi, BLOCK_SIZE bsize,
 
   int offset = 0;
   double beta = 1.0;
-  if (analysis_type == 0) {
-    if (mc_dep_cost > 0 && intra_cost > 0) {
-      const double r0 = cpi->rd.r0;
-      const double rk = (double)intra_cost / mc_dep_cost;
-      beta = (r0 / rk);
-      assert(beta > 0.0);
-    }
-#if !USE_TPL_CLASSIC_MODEL
-  } else if (analysis_type == 1) {
-    const double mc_count_base = (mi_count * cpi->rd.mc_count_base);
-    beta = (mc_count + 1.0) / (mc_count_base + 1.0);
-    beta = pow(beta, 0.5);
-  } else if (analysis_type == 2) {
-    const double mc_saved_base = (mi_count * cpi->rd.mc_saved_base);
-    beta = (mc_saved + 1.0) / (mc_saved_base + 1.0);
-    beta = pow(beta, 0.5);
-#endif  // !USE_TPL_CLASSIC_MODEL
+  if (mc_dep_cost > 0 && intra_cost > 0) {
+    const double r0 = cpi->rd.r0;
+    const double rk = (double)intra_cost / mc_dep_cost;
+    beta = (r0 / rk);
+    assert(beta > 0.0);
   }
-  offset = (7 * av1_get_deltaq_offset(cpi, cm->base_qindex, beta)) / 8;
-  // printf("[%d/%d]: beta %g offset %d\n", pyr_lev_from_top,
-  //        cpi->gf_group.pyramid_height, beta, offset);
-
+  offset = av1_get_deltaq_offset(cpi, cm->base_qindex, beta);
   aom_clear_system_state();
 
   const DeltaQInfo *const delta_q_info = &cm->delta_q_info;
@@ -3852,8 +3836,7 @@ static AOM_INLINE void setup_delta_q(AV1_COMP *const cpi, ThreadData *td,
   } else if (cpi->oxcf.deltaq_mode == DELTA_Q_OBJECTIVE) {
     assert(cpi->oxcf.enable_tpl_model);
     // Setup deltaq based on tpl stats
-    current_qindex =
-        get_q_for_deltaq_objective(cpi, sb_size, 0, mi_row, mi_col);
+    current_qindex = get_q_for_deltaq_objective(cpi, sb_size, mi_row, mi_col);
   }
 
   const int delta_q_res = delta_q_info->delta_q_res;
