@@ -21,6 +21,8 @@ import subprocess
 
 import cherrypy  # pylint: disable=import-error
 
+from chromite.lib import constants
+from chromite.lib import osutils
 from chromite.lib.xbuddy import cherrypy_log_util
 
 
@@ -401,19 +403,9 @@ def IsInsideChroot():
 
 def IsRunningOnMoblab():
   """Returns True if this code is running on a chromiumOS DUT."""
-  cmd = ['cat', '/etc/lsb-release']
   try:
-    proc = subprocess.Popen(cmd, stdout=subprocess.PIPE,
-                            stderr=subprocess.PIPE)
-    cmd_output, cmd_error = proc.communicate()
-
-    if cmd_error:
-      _Log('Error happened while reading lsb-release file: %s',
-           cmd_error.rstrip())
-      return False
-
-    return bool(re.search(r'[_-]+moblab', cmd_output))
-  except subprocess.CalledProcessError as e:
-    _Log('Error happened while checking whether devserver package is running '
-         'on a DUT: %s\n%s', e, e.output)
+    return bool(re.search(
+        r'[_-]+moblab', osutils.ReadFile(constants.LSB_RELEASE_PATH)))
+  except IOError:
+    # File doesn't exist.
     return False
