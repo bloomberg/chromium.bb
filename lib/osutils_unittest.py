@@ -269,6 +269,27 @@ class TestOsutils(cros_test_lib.TempDirTestCase):
     self.assertEqual(new_user, User(filename))
     self.assertEqual(new_group, Group(filename))
 
+    # Recursive.
+    dirname = os.path.join(self.tempdir, 'chowntestsdir')
+    osutils.SafeMakedirs(dirname)
+    filename = os.path.join(dirname, 'chowntestsfile')
+    osutils.Touch(filename)
+    # Chown without recursive.
+    osutils.Chown(dirname, user=new_user, group=new_group)
+    self.assertEqual(new_user, User(dirname))
+    self.assertEqual(new_group, Group(dirname))
+    self.assertEqual(user, User(filename))
+    self.assertEqual(group, Group(filename))
+    # Chown with recursive.
+    osutils.Chown(dirname, user=new_user, group=new_group, recursive=True)
+    self.assertEqual(new_user, User(filename))
+    self.assertEqual(new_group, Group(filename))
+    osutils.Chown(dirname, user=user, group=group, recursive=True)
+    self.assertEqual(user, User(dirname))
+    self.assertEqual(group, Group(dirname))
+    self.assertEqual(user, User(filename))
+    self.assertEqual(group, Group(filename))
+
 
 class TestEmptyDir(cros_test_lib.TempDirTestCase):
   """Test osutils.EmptyDir."""

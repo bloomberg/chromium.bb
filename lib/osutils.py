@@ -182,7 +182,7 @@ def Touch(path, makedirs=False, mode=None):
   os.utime(path, None)
 
 
-def Chown(path, user=None, group=None):
+def Chown(path, user=None, group=None, recursive=False):
   """Simple sudo chown path to the user.
 
   Defaults to user running command. Does nothing if run as root user unless
@@ -192,6 +192,7 @@ def Chown(path, user=None, group=None):
     path: str - File/directory to chown.
     user: str|int|None - User to chown the file to. Defaults to current user.
     group: str|int|None - Group to assign the file to.
+    recursive: Also chown child files/directories recursively.
   """
   if user is None:
     user = GetNonRootUser() or ''
@@ -201,8 +202,11 @@ def Chown(path, user=None, group=None):
   group = '' if group is None else str(group)
 
   if user or group:
-    owner = '%s:%s' % (user, group)
-    cros_build_lib.sudo_run(['chown', owner, path], print_cmd=False,
+    cmd = ['chown']
+    if recursive:
+      cmd += ['-R']
+    cmd += ['%s:%s' % (user, group), path]
+    cros_build_lib.sudo_run(cmd, print_cmd=False,
                             redirect_stderr=True, redirect_stdout=True)
 
 

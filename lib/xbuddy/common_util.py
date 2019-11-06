@@ -10,18 +10,17 @@ from __future__ import print_function
 import ast
 import base64
 import distutils.version  # pylint: disable=no-name-in-module,import-error
-import errno
 import hashlib
 import os
 import re
 import shutil
 import tempfile
 import threading
-import subprocess
 
 import cherrypy  # pylint: disable=import-error
 
 from chromite.lib import constants
+from chromite.lib import cros_build_lib
 from chromite.lib import osutils
 from chromite.lib.xbuddy import cherrypy_log_util
 
@@ -59,18 +58,13 @@ def MkDirP(directory):
   recursively with current user and group to make sure current process has full
   access to the directory.
   """
-  try:
-    os.makedirs(directory)
-  except OSError as e:
-    if e.errno == errno.EEXIST and os.path.isdir(directory):
-      # Fix permissions and ownership of the directory and its subfiles by
-      # calling chown recursively with current user and group.
-      chown_command = [
-          'sudo', 'chown', '-R', '%s:%s' % (os.getuid(), os.getgid()), directory
-      ]
-      subprocess.Popen(chown_command).wait()
-    else:
-      raise
+  if os.path.isdir(directory):
+    # Fix permissions and ownership of the directory and its subfiles by
+    # calling chown recursively with current user and group.
+    osutils.Chown(directory, user=os.getuid(), group=os.getgid(),
+                  recursive=True)
+  else:
+    osutils.SafeMakedirs(directory)
 
 
 def GetLatestBuildVersion(static_dir, target, milestone=None):
@@ -376,24 +370,21 @@ def ExtractTarball(tarball_path, install_path, files_to_extract=None,
   if files_to_extract:
     cmd.extend(files_to_extract)
 
-  cmd_output = ''
   try:
-    proc = subprocess.Popen(cmd, stdout=subprocess.PIPE,
-                            stderr=subprocess.PIPE)
-    cmd_output, cmd_error = proc.communicate()
-    if cmd_error:
+    result = cros_build_lib.run(cmd, capture_output=True, encoding='utf-8')
+    if result.stderr:
       _Log('Error happened while in extracting tarball: %s',
-           cmd_error.rstrip())
+           result.stderr.rstrip())
 
     if return_extracted_files:
       return [os.path.join(install_path, filename)
-              for filename in cmd_output.strip('\n').splitlines()
+              for filename in result.stdout.splitlines()
               if not filename.endswith('/')]
     return []
-  except subprocess.CalledProcessError as e:
+  except cros_build_lib.RunCommandError as e:
     raise CommonUtilError(
-        'An error occurred when attempting to untar %s:\n%s\n%s' %
-        (tarball_path, e, e.output))
+        'An error occurred when attempting to untar %s:\n%s' %
+        (tarball_path, e))
 
 
 def IsInsideChroot():

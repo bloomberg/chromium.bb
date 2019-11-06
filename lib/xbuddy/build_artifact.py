@@ -12,11 +12,11 @@ import os
 import pickle
 import re
 import shutil
-import subprocess
 import traceback
 
 import six
 
+from chromite.lib import cros_build_lib
 from chromite.lib.xbuddy import artifact_info
 from chromite.lib.xbuddy import common_util
 from chromite.lib.xbuddy import devserver_constants
@@ -479,8 +479,9 @@ class BundledArtifact(Artifact):
       cmd.extend(self._exclude)
 
     try:
-      return subprocess.check_output(cmd).strip('\n').splitlines()
-    except subprocess.CalledProcessError as e:
+      return cros_build_lib.run(
+          cmd, capture_output=True, encoding='utf-8').stdout.splitlines()
+    except cros_build_lib.RunCommandError as e:
       raise ArtifactDownloadError(
           'An error occurred when attempting to unzip %s:\n%s' %
           (self.install_path, e))
@@ -548,8 +549,8 @@ class AutotestTarball(BundledArtifact):
       cmd = ['autotest/utils/packager.py', '--action=upload', '--repository',
              autotest_pkgs_dir, '--all']
       try:
-        subprocess.check_call(cmd, cwd=self.install_dir)
-      except subprocess.CalledProcessError as e:
+        cros_build_lib.run(cmd, cwd=self.install_dir)
+      except cros_build_lib.RunCommandError as e:
         raise ArtifactDownloadError(
             'Failed to create autotest packages!:\n%s' % e)
     else:

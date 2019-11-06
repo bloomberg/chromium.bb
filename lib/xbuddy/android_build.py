@@ -8,13 +8,13 @@
 from __future__ import print_function
 
 import io
-import subprocess
 
 import apiclient
 import httplib2  # pylint: disable=import-error
 
 from oauth2client.client import SignedJwtAssertionCredentials
 
+from chromite.lib import osutils
 from chromite.lib.xbuddy import retry
 
 
@@ -146,8 +146,8 @@ class BuildAccessor(object):
     service_obj = cls._GetServiceObject()
     cls._VerifyBranch(service_obj, branch, build_id, target)
 
-    # Delete partially downloaded file if exists.
-    subprocess.call(['rm', '-rf', dest_file])
+    # Delete partially downloaded file.
+    osutils.SafeUnlink(dest_file)
 
     build_type = cls._GetBuildType(build_id)
     # TODO(dshi): Add retry logic here to avoid API flakes.

@@ -20,6 +20,7 @@ import unittest
 
 import mock
 
+from chromite.lib import cros_test_lib
 from chromite.lib.xbuddy import build_artifact
 from chromite.lib.xbuddy import devserver_constants
 from chromite.lib.xbuddy import downloader
@@ -101,7 +102,7 @@ _TEST_GOLO_FOR_DELTAS = (
     'gs://chromeos-image-archive/' + _TEST_GOLO_FOR_DELTAS_BUILD_ID)
 
 
-class BuildArtifactTest(unittest.TestCase):
+class BuildArtifactTest(cros_test_lib.RunCommandTestCase):
   """Test different BuildArtifact operations."""
 
   def setUp(self):
@@ -178,8 +179,7 @@ class BuildArtifactTest(unittest.TestCase):
   @mock.patch.object(build_artifact.AutotestTarball, '_UpdateName')
   @mock.patch.object(downloader.GoogleStorageDownloader, 'Fetch')
   @mock.patch.object(downloader.GoogleStorageDownloader, 'Wait')
-  @mock.patch('subprocess.check_call')
-  def testDownloadAutotest(self, check_call_mock, wait_mock, fetch_mock,
+  def testDownloadAutotest(self, wait_mock, fetch_mock,
                            update_name_mock, extract_mock):
     """Downloads a real autotest tarball for test."""
     artifact = build_artifact.AutotestTarball(
@@ -200,12 +200,12 @@ class BuildArtifactTest(unittest.TestCase):
 
     wait_mock.assert_called_with('autotest.tar', False, 1)
     fetch_mock.assert_called_with('autotest.tar', install_dir + '/')
-    check_call_mock.assert_called_with(
+    update_name_mock.assert_called()
+    extract_mock.assert_called()
+    self.assertCommandContains(
         ['autotest/utils/packager.py', '--action=upload', '--repository',
          os.path.join(install_dir, 'autotest/packages'), '--all'],
         cwd=install_dir)
-    update_name_mock.assert_called()
-    extract_mock.assert_called()
 
   @unittest.skip('crbug.com/640063 Broken test.')
   def testAUTestPayloadBuildArtifact(self):
