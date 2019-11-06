@@ -49,7 +49,7 @@ class SamlChallengeKeyHandler final {
   void ReturnResult(const attestation::TpmChallengeKeyResult& result);
 
   Profile* profile_ = nullptr;
-  std::string challenge_;
+  std::string decoded_challenge_;
   // Callback to return a result of ChallengeKey.
   CallbackType callback_;
 

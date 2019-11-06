@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/chromeos/login/saml_challenge_key_handler.h"
 
+#include "base/base64.h"
 #include "base/bind.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
@@ -18,6 +19,7 @@ const char kDeviceWebBasedAttestationUrlError[] =
     "Device web based attestation is not enabled for the provided URL";
 const char kDeviceWebBasedAttestationNotOobeError[] =
     "Device web based attestation is only available on the OOBE screen";
+const char kChallengeBadBase64Error[] = "Challenge is not base64 encoded.";
 
 const char kSuccessField[] = "success";
 const char kResponseField[] = "response";
@@ -56,12 +58,18 @@ void SamlChallengeKeyHandler::Run(Profile* profile,
   DCHECK(!callback_);
   callback_ = std::move(callback);
   profile_ = profile;
-  challenge_ = challenge;
 
   // Device attestation is currently allowed only on the OOBE screen.
   if (LoginState::Get()->IsUserLoggedIn()) {
     ReturnResult(attestation::TpmChallengeKeyResult::MakeError(
         kDeviceWebBasedAttestationNotOobeError));
+    return;
+  }
+
+  if (!base::Base64Decode(challenge, &decoded_challenge_)) {
+    ReturnResult(attestation::TpmChallengeKeyResult::MakeError(
+        kChallengeBadBase64Error));
+    return;
   }
 
   BuildResponseForWhitelistedUrl(url);
@@ -112,7 +120,7 @@ void SamlChallengeKeyHandler::BuildChallengeResponse() {
       GetTpmResponseTimeout(), attestation::KEY_DEVICE, profile_,
       base::BindOnce(&SamlChallengeKeyHandler::ReturnResult,
                      weak_factory_.GetWeakPtr()),
-      challenge_, /*register_key=*/false, /*key_name_for_spkac=*/"");
+      decoded_challenge_, /*register_key=*/false, /*key_name_for_spkac=*/"");
 }
 
 base::TimeDelta SamlChallengeKeyHandler::GetTpmResponseTimeout() const {
@@ -130,8 +138,11 @@ void SamlChallengeKeyHandler::ReturnResult(
     LOG(WARNING) << "Device attestation error: " << result.error_message;
   }
 
+  std::string encoded_result_data;
+  base::Base64Encode(result.data, &encoded_result_data);
+
   js_result.SetKey(kSuccessField, base::Value(result.is_success));
-  js_result.SetKey(kResponseField, base::Value(result.data));
+  js_result.SetKey(kResponseField, base::Value(encoded_result_data));
 
   std::move(callback_).Run(std::move(js_result));
   tpm_key_challenger_.reset();
