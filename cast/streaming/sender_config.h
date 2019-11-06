@@ -7,14 +7,10 @@
 
 #include <chrono>  // NOLINT
 #include <memory>
-#include <string>
 #include <utility>
-#include <vector>
 
-#include "absl/types/optional.h"
 #include "cast/streaming/session_config.h"
 #include "cast/streaming/video_codec_params.h"
-#include "streaming/cast/rtp_defines.h"
 
 namespace cast {
 namespace streaming {

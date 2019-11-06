@@ -1,0 +1,16 @@
+# Copyright 2019 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+source_set("streaming") {
+  sources = [
+    "reciever_config.h",
+    "sender_config.h",
+    "session_config.h",
+    "video_codec_params.h",
+  ]
+
+  public_deps = [
+    "../../streaming/cast:common",
+  ]
+}
