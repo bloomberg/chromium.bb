@@ -934,6 +934,12 @@ IPC_MESSAGE_ROUTED2(FrameMsg_MediaPlayerActionAt,
 // fallback contents (i.e., <object>).
 IPC_MESSAGE_ROUTED0(FrameMsg_RenderFallbackContent)
 
+// Tell the renderer to add a property to the WebUI binding object.  This
+// only works if we allowed WebUI bindings.
+IPC_MESSAGE_ROUTED2(FrameMsg_SetWebUIProperty,
+                    std::string /* property_name */,
+                    std::string /* property_value_json */)
+
 // -----------------------------------------------------------------------------
 // Messages sent from the renderer to the browser.
 

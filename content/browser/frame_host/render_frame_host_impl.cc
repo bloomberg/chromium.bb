@@ -3229,6 +3229,18 @@ int RenderFrameHostImpl::GetEnabledBindings() {
   return enabled_bindings_;
 }
 
+void RenderFrameHostImpl::SetWebUIProperty(const std::string& name,
+                                           const std::string& value) {
+  // This is a sanity check before telling the renderer to enable the property.
+  // It could lie and send the corresponding IPC messages anyway, but we will
+  // not act on them if enabled_bindings_ doesn't agree. If we get here without
+  // WebUI bindings, terminate the renderer process.
+  if (enabled_bindings_ & BINDINGS_POLICY_WEB_UI)
+    Send(new FrameMsg_SetWebUIProperty(routing_id_, name, value));
+  else
+    ReceivedBadMessage(GetProcess(), bad_message::RVH_WEB_UI_BINDINGS_MISMATCH);
+}
+
 void RenderFrameHostImpl::DisableBeforeUnloadHangMonitorForTesting() {
   beforeunload_timeout_.reset();
 }

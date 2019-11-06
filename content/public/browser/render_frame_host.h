@@ -311,6 +311,11 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // RenderFrame. See BindingsPolicy for details.
   virtual int GetEnabledBindings() = 0;
 
+  // Sets a property with the given name and value on the WebUI object
+  // associated with this RenderFrameHost, if one exists.
+  virtual void SetWebUIProperty(const std::string& name,
+                                const std::string& value) = 0;
+
 #if defined(OS_ANDROID)
   // Returns an InterfaceProvider for Java-implemented interfaces that are
   // scoped to this RenderFrameHost. This provides access to interfaces
