@@ -8289,7 +8289,6 @@ typedef struct {
   // Pointer to array of predicted rate-distortion
   // Should point to first of 2 arrays in 2D array
   int64_t (*modelled_rd)[MAX_REF_MV_SEARCH][REF_FRAMES];
-  InterpFilter single_filter[MB_MODE_COUNT][REF_FRAMES];
   int ref_frame_cost;
   int single_comp_cost;
   int64_t (*simple_rd)[MAX_REF_MV_SEARCH][REF_FRAMES];
@@ -9086,9 +9085,8 @@ static int64_t interpolation_filter_search(
     MACROBLOCK *const x, const AV1_COMP *const cpi,
     const TileDataEnc *tile_data, BLOCK_SIZE bsize, int mi_row, int mi_col,
     const BUFFER_SET *const tmp_dst, const BUFFER_SET *const orig_dst,
-    InterpFilter (*const single_filter)[REF_FRAMES], int64_t *const rd,
-    int *const switchable_rate, int *skip_build_pred, HandleInterModeArgs *args,
-    int64_t ref_best_rd) {
+    int64_t *const rd, int *const switchable_rate, int *skip_build_pred,
+    HandleInterModeArgs *args, int64_t ref_best_rd) {
   const AV1_COMMON *cm = &cpi->common;
   const int num_planes = av1_num_planes(cm);
   MACROBLOCKD *const xd = &x->e_mbd;
@@ -9102,7 +9100,6 @@ static int64_t interpolation_filter_search(
   av1_init_rd_stats(&rd_stats_luma);
   av1_init_rd_stats(&rd_stats);
 
-  (void)single_filter;
   int match_found_idx = -1;
   const InterpFilter assign_filter = cm->interp_filter;
 
@@ -10971,9 +10968,9 @@ static int64_t handle_inter_mode(
 #if CONFIG_COLLECT_COMPONENT_TIMING
     start_timing(cpi, interpolation_filter_search_time);
 #endif
-    ret_val = interpolation_filter_search(
-        x, cpi, tile_data, bsize, mi_row, mi_col, &tmp_dst, &orig_dst,
-        args->single_filter, &rd, &rs, &skip_build_pred, args, ref_best_rd);
+    ret_val = interpolation_filter_search(x, cpi, tile_data, bsize, mi_row,
+                                          mi_col, &tmp_dst, &orig_dst, &rd, &rs,
+                                          &skip_build_pred, args, ref_best_rd);
 #if CONFIG_COLLECT_COMPONENT_TIMING
     end_timing(cpi, interpolation_filter_search_time);
 #endif
@@ -10988,10 +10985,6 @@ static int64_t handle_inter_mode(
       restore_dst_buf(xd, orig_dst, num_planes);
       continue;
     }
-
-    if (!is_comp_pred)
-      args->single_filter[this_mode][refs[0]] =
-          mbmi->interp_filters.as_filters.y_filter;
 
     if (args->modelled_rd != NULL) {
       if (is_comp_pred) {
@@ -11817,9 +11810,6 @@ static AOM_INLINE void set_params_rd_pick_inter_mode(
   MB_MODE_INFO *const mbmi = xd->mi[0];
   MB_MODE_INFO_EXT *const mbmi_ext = x->mbmi_ext;
   unsigned char segment_id = mbmi->segment_id;
-
-  for (int i = 0; i < MB_MODE_COUNT; ++i)
-    for (int k = 0; k < REF_FRAMES; ++k) args->single_filter[i][k] = SWITCHABLE;
 
   if (is_cur_buf_hbd(xd)) {
     int len = sizeof(uint16_t);
@@ -12922,16 +12912,22 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
     INTERINTRA_MODES, INTERINTRA_MODES, INTERINTRA_MODES, INTERINTRA_MODES,
     INTERINTRA_MODES, INTERINTRA_MODES, INTERINTRA_MODES, INTERINTRA_MODES
   };
-  HandleInterModeArgs args = {
-    { NULL },  { MAX_SB_SIZE, MAX_SB_SIZE, MAX_SB_SIZE },
-    { NULL },  { MAX_SB_SIZE >> 1, MAX_SB_SIZE >> 1, MAX_SB_SIZE >> 1 },
-    NULL,      NULL,
-    NULL,      search_state.modelled_rd,
-    { { 0 } }, INT_MAX,
-    INT_MAX,   search_state.simple_rd,
-    0,         interintra_modes,
-    1,         NULL
-  };
+  HandleInterModeArgs args = { { NULL },
+                               { MAX_SB_SIZE, MAX_SB_SIZE, MAX_SB_SIZE },
+                               { NULL },
+                               { MAX_SB_SIZE >> 1, MAX_SB_SIZE >> 1,
+                                 MAX_SB_SIZE >> 1 },
+                               NULL,
+                               NULL,
+                               NULL,
+                               search_state.modelled_rd,
+                               INT_MAX,
+                               INT_MAX,
+                               search_state.simple_rd,
+                               0,
+                               interintra_modes,
+                               1,
+                               NULL };
   for (i = 0; i < REF_FRAMES; ++i) x->pred_sse[i] = INT_MAX;
 
   av1_invalid_rd_stats(rd_cost);
@@ -13477,9 +13473,6 @@ static AOM_INLINE void set_params_nonrd_pick_inter_mode(
   MB_MODE_INFO_EXT *const mbmi_ext = x->mbmi_ext;
   unsigned char segment_id = mbmi->segment_id;
 
-  for (int i = 0; i < MB_MODE_COUNT; ++i)
-    for (int k = 0; k < REF_FRAMES; ++k) args->single_filter[i][k] = SWITCHABLE;
-
   if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
     int len = sizeof(uint16_t);
     args->above_pred_buf[0] = CONVERT_TO_BYTEPTR(x->above_pred_buf);
@@ -13580,16 +13573,22 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
 
   InterModeSearchState search_state;
   init_inter_mode_search_state(&search_state, cpi, x, bsize, best_rd_so_far);
-  HandleInterModeArgs args = {
-    { NULL },  { MAX_SB_SIZE, MAX_SB_SIZE, MAX_SB_SIZE },
-    { NULL },  { MAX_SB_SIZE >> 1, MAX_SB_SIZE >> 1, MAX_SB_SIZE >> 1 },
-    NULL,      NULL,
-    NULL,      search_state.modelled_rd,
-    { { 0 } }, INT_MAX,
-    INT_MAX,   search_state.simple_rd,
-    0,         NULL,
-    1,         NULL
-  };
+  HandleInterModeArgs args = { { NULL },
+                               { MAX_SB_SIZE, MAX_SB_SIZE, MAX_SB_SIZE },
+                               { NULL },
+                               { MAX_SB_SIZE >> 1, MAX_SB_SIZE >> 1,
+                                 MAX_SB_SIZE >> 1 },
+                               NULL,
+                               NULL,
+                               NULL,
+                               search_state.modelled_rd,
+                               INT_MAX,
+                               INT_MAX,
+                               search_state.simple_rd,
+                               0,
+                               NULL,
+                               1,
+                               NULL };
   for (i = 0; i < REF_FRAMES; ++i) x->pred_sse[i] = INT_MAX;
 
   av1_invalid_rd_stats(rd_cost);
