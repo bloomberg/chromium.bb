@@ -788,18 +788,19 @@ void ServiceWorkerVersion::RemoveControlleeFromBackForwardCacheMap(
 void ServiceWorkerVersion::OnControlleeDestroyed(
     const std::string& client_uuid) {
   if (!IsBackForwardCacheEnabled() ||
-      !ServiceWorkerContext::IsServiceWorkerOnUIEnabled())
+      !ServiceWorkerContext::IsServiceWorkerOnUIEnabled()) {
     RemoveControllee(client_uuid);
-
-  if (base::Contains(controllee_map_, client_uuid)) {
-    RemoveControllee(client_uuid);
-  } else if (base::Contains(bfcached_controllee_map_, client_uuid)) {
-    RemoveControlleeFromBackForwardCacheMap(client_uuid);
+  } else {
+    if (base::Contains(controllee_map_, client_uuid)) {
+      RemoveControllee(client_uuid);
+    } else if (base::Contains(bfcached_controllee_map_, client_uuid)) {
+      RemoveControlleeFromBackForwardCacheMap(client_uuid);
+    }
+    // It is possible that the controllee belongs to neither |controllee_map_|
+    // or |bfcached_controllee_map_|. This happens when a BackForwardCached
+    // controllee is deleted after eviction, which has already removed it from
+    // |bfcached_controllee_map_|.
   }
-  // It is possible that the controllee belongs to neither |controllee_map_| or
-  // |bfcached_controllee_map_|. This happens when a BackForwardCached
-  // controllee is deleted after eviction, which has already removed it from
-  // |bfcached_controllee_map_|.
 }
 
 void ServiceWorkerVersion::EvictBackForwardCachedControllees() {
