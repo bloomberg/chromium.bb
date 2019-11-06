@@ -37204,6 +37204,7 @@ from previous Chrome versions.
   <int value="-45067971" label="NewPrintPreview:disabled"/>
   <int value="-41672681" label="WebUITabStripDemoOptions:disabled"/>
   <int value="-40935502" label="ContextualSuggestionsSlimPeekUI:enabled"/>
+  <int value="-36503306" label="HomepageLocationPolicy:enabled"/>
   <int value="-35388407" label="AshNewSystemMenu:disabled"/>
   <int value="-31444029" label="MediaInspectorLogging:disabled"/>
   <int value="-30966385" label="enable-hardware-overlays"/>
@@ -37816,6 +37817,7 @@ from previous Chrome versions.
   <int value="752939691" label="disable-tab-for-desktop-share"/>
   <int value="760542355" label="ServiceWorkerScriptFullCodeCache:enabled"/>
   <int value="762700519" label="enable-checker-imaging"/>
+  <int value="763947368" label="HomepageLocationPolicy:disabled"/>
   <int value="765306424" label="ModuleScriptsDynamicImport:disabled"/>
   <int value="765803208" label="AutofillShowTypePredictions:enabled"/>
   <int value="766898398" label="sampling-heap-profiler"/>

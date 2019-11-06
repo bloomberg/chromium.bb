@@ -4772,6 +4772,13 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(arc::kEnableApplicationZoomFeature)},
 #endif  // defined(OS_CHROMEOS)
 
+#if defined(OS_ANDROID)
+    {"enable-home-page-location-policy",
+     flag_descriptions::kHomepageLocationName,
+     flag_descriptions::kHomepageLocationDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kHomepageLocation)},
+#endif  // defined(OS_ANDROID)
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the
