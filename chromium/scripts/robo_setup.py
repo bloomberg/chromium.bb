@@ -142,8 +142,9 @@ def FetchAdditionalWindowsBinaries(robo_configuration):
   sometimes remove these.  Re-run this if you're missing llvm-nm or llvm-ar."""
   robo_configuration.chdir_to_chrome_src()
   log("Downloading some additional compiler tools")
-  if robo_configuration.Call(["tools/clang/scripts/download_objdump.py"]):
-    raise Exception("download_objdump.py failed")
+  if robo_configuration.Call(["tools/clang/scripts/update.py",
+                              "--package=objdump"]):
+    raise Exception("update.py --package=objdump failed")
 
 
 def FetchMacSDK(robo_configuration):

@@ -77,8 +77,8 @@ Platform specific build notes:
     https://chromium.googlesource.com/chromium/src/+/master/docs/win_cross.md
 
     Once you have a working Chromium build that can cross-compile, you'll also
-    need to run $chrome_dir/tools/clang/scripts/download_objdump.py to pick up
-    the llvm-ar and llvm-nm tools. You can then build as normal.
+    need to run $chrome_dir/tools/clang/scripts/update.py --package=objdump to
+    pick up the llvm-ar and llvm-nm tools. You can then build as normal.
 
     If not cross-compiling, script must be run on Windows with VS2015 or higher
     under Cygwin (or MinGW, but as of 1.0.11, it has serious performance issues
