@@ -1891,27 +1891,39 @@ void SAMLDeviceAttestationTest::SetAllowedUrlsPolicy(
 // Verify that device attestation is not available when
 // DeviceWebBasedAttestationAllowedUrls policy is not set.
 IN_PROC_BROWSER_TEST_F(SAMLDeviceAttestationTest, DefaultPolicy) {
+  base::HistogramTester histogram_tester;
+
   // Leave policy unset.
 
   StartSamlAndWaitForIdpPageLoad(kDeviceAttestationSAMLUserEmail);
 
   ASSERT_FALSE(fake_saml_idp()->IsLastChallengeResponseExists());
+  histogram_tester.ExpectUniqueSample(kSamlChallengeKeyHandlerResultMetric,
+                                      attestation::TpmChallengeKeyResultCode::
+                                          kDeviceWebBasedAttestationUrlError,
+                                      1);
 }
 
 // Verify that device attestation is not available when
 // DeviceWebBasedAttestationAllowedUrls policy is set to empty list of allowed
 // URLs.
 IN_PROC_BROWSER_TEST_F(SAMLDeviceAttestationTest, EmptyPolicy) {
+  base::HistogramTester histogram_tester;
   SetAllowedUrlsPolicy({/* empty list */});
 
   StartSamlAndWaitForIdpPageLoad(kDeviceAttestationSAMLUserEmail);
 
   ASSERT_FALSE(fake_saml_idp()->IsLastChallengeResponseExists());
+  histogram_tester.ExpectUniqueSample(kSamlChallengeKeyHandlerResultMetric,
+                                      attestation::TpmChallengeKeyResultCode::
+                                          kDeviceWebBasedAttestationUrlError,
+                                      1);
 }
 
 // Verify that device attestation is not available when device is not enterprise
 // enrolled.
 IN_PROC_BROWSER_TEST_F(SAMLDeviceAttestationTest, NotEnterpriseEnrolledError) {
+  base::HistogramTester histogram_tester;
   SetAllowedUrlsPolicy({"login.corp.example.com"});
 
   StartSamlAndWaitForIdpPageLoad(kDeviceAttestationSAMLUserEmail);
@@ -1921,12 +1933,16 @@ IN_PROC_BROWSER_TEST_F(SAMLDeviceAttestationTest, NotEnterpriseEnrolledError) {
   }
 
   ASSERT_FALSE(fake_saml_idp()->IsLastChallengeResponseExists());
+  histogram_tester.ExpectUniqueSample(
+      kSamlChallengeKeyHandlerResultMetric,
+      attestation::TpmChallengeKeyResultCode::kNonEnterpriseDeviceError, 1);
 }
 
 // Verify that device attestation is not available when device attestation is
 // not enabled.
 IN_PROC_BROWSER_TEST_F(SAMLDeviceAttestationTest,
                        DeviceAttestationNotEnabledError) {
+  base::HistogramTester histogram_tester;
   SetAllowedUrlsPolicy({"login.corp.example.com"});
   stub_install_attributes_.Get()->SetCloudManaged("google.com", "device_id");
 
@@ -1937,10 +1953,14 @@ IN_PROC_BROWSER_TEST_F(SAMLDeviceAttestationTest,
   }
 
   ASSERT_FALSE(fake_saml_idp()->IsLastChallengeResponseExists());
+  histogram_tester.ExpectUniqueSample(
+      kSamlChallengeKeyHandlerResultMetric,
+      attestation::TpmChallengeKeyResultCode::kDevicePolicyDisabledError, 1);
 }
 
 // Verify that device attestation works when all policies configured correctly.
 IN_PROC_BROWSER_TEST_F(SAMLDeviceAttestationTest, Success) {
+  base::HistogramTester histogram_tester;
   SetAllowedUrlsPolicy({"login.corp.example.com"});
   stub_install_attributes_.Get()->SetCloudManaged("google.com", "device_id");
   settings_provider_->SetBoolean(chromeos::kDeviceAttestationEnabled, true);
@@ -1954,11 +1974,15 @@ IN_PROC_BROWSER_TEST_F(SAMLDeviceAttestationTest, Success) {
   ASSERT_TRUE(fake_saml_idp()->IsLastChallengeResponseExists());
   ASSERT_EQ(fake_saml_idp()->GetLastChallengeResponse(),
             GetTpmResponseBase64());
+  histogram_tester.ExpectUniqueSample(
+      kSamlChallengeKeyHandlerResultMetric,
+      attestation::TpmChallengeKeyResultCode::kSuccess, 1);
 }
 
 // Verify that device attestation is not available for URLs that are not in the
 // allowed URLs list.
 IN_PROC_BROWSER_TEST_F(SAMLDeviceAttestationTest, PolicyNoMatchError) {
+  base::HistogramTester histogram_tester;
   SetAllowedUrlsPolicy({"example.com"});
   stub_install_attributes_.Get()->SetCloudManaged("google.com", "device_id");
   settings_provider_->SetBoolean(chromeos::kDeviceAttestationEnabled, true);
@@ -1970,11 +1994,16 @@ IN_PROC_BROWSER_TEST_F(SAMLDeviceAttestationTest, PolicyNoMatchError) {
   }
 
   ASSERT_FALSE(fake_saml_idp()->IsLastChallengeResponseExists());
+  histogram_tester.ExpectUniqueSample(kSamlChallengeKeyHandlerResultMetric,
+                                      attestation::TpmChallengeKeyResultCode::
+                                          kDeviceWebBasedAttestationUrlError,
+                                      1);
 }
 
 // Verify that device attestation is available for URLs that match a pattern
 // from allowed URLs list.
 IN_PROC_BROWSER_TEST_F(SAMLDeviceAttestationTest, PolicyRegexSuccess) {
+  base::HistogramTester histogram_tester;
   SetAllowedUrlsPolicy({"[*.]example.com"});
   stub_install_attributes_.Get()->SetCloudManaged("google.com", "device_id");
   settings_provider_->SetBoolean(chromeos::kDeviceAttestationEnabled, true);
@@ -1988,11 +2017,15 @@ IN_PROC_BROWSER_TEST_F(SAMLDeviceAttestationTest, PolicyRegexSuccess) {
   ASSERT_TRUE(fake_saml_idp()->IsLastChallengeResponseExists());
   ASSERT_EQ(fake_saml_idp()->GetLastChallengeResponse(),
             GetTpmResponseBase64());
+  histogram_tester.ExpectUniqueSample(
+      kSamlChallengeKeyHandlerResultMetric,
+      attestation::TpmChallengeKeyResultCode::kSuccess, 1);
 }
 
 // Verify that device attestation works in case of multiple items in allowed
 // URLs list.
 IN_PROC_BROWSER_TEST_F(SAMLDeviceAttestationTest, PolicyTwoEntriesSuccess) {
+  base::HistogramTester histogram_tester;
   SetAllowedUrlsPolicy({"example2.com", "login.corp.example.com"});
   stub_install_attributes_.Get()->SetCloudManaged("google.com", "device_id");
   settings_provider_->SetBoolean(chromeos::kDeviceAttestationEnabled, true);
@@ -2006,9 +2039,13 @@ IN_PROC_BROWSER_TEST_F(SAMLDeviceAttestationTest, PolicyTwoEntriesSuccess) {
   ASSERT_TRUE(fake_saml_idp()->IsLastChallengeResponseExists());
   ASSERT_EQ(fake_saml_idp()->GetLastChallengeResponse(),
             GetTpmResponseBase64());
+  histogram_tester.ExpectUniqueSample(
+      kSamlChallengeKeyHandlerResultMetric,
+      attestation::TpmChallengeKeyResultCode::kSuccess, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(SAMLDeviceAttestationTest, TimeoutError) {
+  base::HistogramTester histogram_tester;
   SetAllowedUrlsPolicy({"example2.com", "login.corp.example.com"});
   stub_install_attributes_.Get()->SetCloudManaged("google.com", "device_id");
   settings_provider_->SetBoolean(chromeos::kDeviceAttestationEnabled, true);
@@ -2031,6 +2068,9 @@ IN_PROC_BROWSER_TEST_F(SAMLDeviceAttestationTest, TimeoutError) {
   }
 
   ASSERT_FALSE(fake_saml_idp()->IsLastChallengeResponseExists());
+  histogram_tester.ExpectUniqueSample(
+      kSamlChallengeKeyHandlerResultMetric,
+      attestation::TpmChallengeKeyResultCode::kTimeoutError, 1);
 }
 
 }  // namespace chromeos

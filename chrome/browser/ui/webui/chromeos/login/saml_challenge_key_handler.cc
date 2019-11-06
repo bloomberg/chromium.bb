@@ -6,25 +6,31 @@
 
 #include "base/base64.h"
 #include "base/bind.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/attestation/tpm_challenge_key_result.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/login/login_state/login_state.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 
 namespace chromeos {
-namespace {
 
-const char kDeviceWebBasedAttestationUrlError[] =
-    "Device web based attestation is not enabled for the provided URL";
-const char kDeviceWebBasedAttestationNotOobeError[] =
-    "Device web based attestation is only available on the OOBE screen";
-const char kChallengeBadBase64Error[] = "Challenge is not base64 encoded.";
+const char kSamlChallengeKeyHandlerResultMetric[] =
+    "ChromeOS.SAML.SamlChallengeKeyHandlerResult";
+
+namespace {
 
 const char kSuccessField[] = "success";
 const char kResponseField[] = "response";
 
 const size_t kPatternsSizeWarningLevel = 500;
+
+void RecordChallengeKeyResult(
+    attestation::TpmChallengeKeyResultCode result_code) {
+  base::UmaHistogramEnumeration(kSamlChallengeKeyHandlerResultMetric,
+                                result_code);
+}
 
 // Checks if |url| matches one of the |patterns|.
 bool IsDeviceWebBasedAttestationEnabledForUrl(const GURL& url,
@@ -62,13 +68,14 @@ void SamlChallengeKeyHandler::Run(Profile* profile,
   // Device attestation is currently allowed only on the OOBE screen.
   if (LoginState::Get()->IsUserLoggedIn()) {
     ReturnResult(attestation::TpmChallengeKeyResult::MakeError(
-        kDeviceWebBasedAttestationNotOobeError));
+        attestation::TpmChallengeKeyResultCode::
+            kDeviceWebBasedAttestationNotOobeError));
     return;
   }
 
   if (!base::Base64Decode(challenge, &decoded_challenge_)) {
     ReturnResult(attestation::TpmChallengeKeyResult::MakeError(
-        kChallengeBadBase64Error));
+        attestation::TpmChallengeKeyResultCode::kChallengeBadBase64Error));
     return;
   }
 
@@ -106,7 +113,8 @@ void SamlChallengeKeyHandler::BuildResponseForWhitelistedUrl(const GURL& url) {
 
   if (!IsDeviceWebBasedAttestationEnabledForUrl(url, patterns)) {
     ReturnResult(attestation::TpmChallengeKeyResult::MakeError(
-        kDeviceWebBasedAttestationUrlError));
+        attestation::TpmChallengeKeyResultCode::
+            kDeviceWebBasedAttestationUrlError));
     return;
   }
 
@@ -132,16 +140,17 @@ base::TimeDelta SamlChallengeKeyHandler::GetTpmResponseTimeout() const {
 
 void SamlChallengeKeyHandler::ReturnResult(
     const attestation::TpmChallengeKeyResult& result) {
-  base::Value js_result(base::Value::Type::DICTIONARY);
+  RecordChallengeKeyResult(result.result_code);
 
-  if (!result.is_success) {
-    LOG(WARNING) << "Device attestation error: " << result.error_message;
+  base::Value js_result(base::Value::Type::DICTIONARY);
+  if (!result.IsSuccess()) {
+    LOG(WARNING) << "Device attestation error: " << result.GetErrorMessage();
   }
 
   std::string encoded_result_data;
   base::Base64Encode(result.data, &encoded_result_data);
 
-  js_result.SetKey(kSuccessField, base::Value(result.is_success));
+  js_result.SetKey(kSuccessField, base::Value(result.IsSuccess()));
   js_result.SetKey(kResponseField, base::Value(encoded_result_data));
 
   std::move(callback_).Run(std::move(js_result));
