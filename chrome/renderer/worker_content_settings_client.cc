@@ -72,7 +72,6 @@ bool WorkerContentSettingsClient::AllowCacheStorage() {
 
 bool WorkerContentSettingsClient::AllowRunningInsecureContent(
     bool allowed_per_settings,
-    const blink::WebSecurityOrigin& context,
     const blink::WebURL& url) {
   if (!allow_running_insecure_content_ && !allowed_per_settings) {
     EnsureContentSettingsManager();

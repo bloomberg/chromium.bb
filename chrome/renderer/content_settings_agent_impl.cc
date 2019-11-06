@@ -429,7 +429,6 @@ bool ContentSettingsAgentImpl::AllowMutationEvents(bool default_value) {
 
 bool ContentSettingsAgentImpl::AllowRunningInsecureContent(
     bool allowed_per_settings,
-    const blink::WebSecurityOrigin& origin,
     const blink::WebURL& resource_url) {
   bool allow = allowed_per_settings;
 
