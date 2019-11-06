@@ -35,6 +35,7 @@ import org.chromium.chrome.browser.preferences.privacy.BrowsingDataBridge;
 import org.chromium.chrome.browser.profiles.ProfileManagerUtils;
 import org.chromium.chrome.browser.share.ShareHelper;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.translate.TranslateBridge;
 import org.chromium.ui.base.ResourceBundle;
 
 import java.util.Locale;
@@ -222,7 +223,7 @@ public class ChromeActivitySessionTracker {
             SharedPreferences.Editor editor = prefs.edit();
             editor.putString(PREF_LOCALE, newLocale);
             editor.apply();
-            PrefServiceBridge.getInstance().resetAcceptLanguages(newLocale);
+            TranslateBridge.resetAcceptLanguages(newLocale);
             // We consider writing the initial value to prefs as _not_ changing the locale.
             return previousLocale != null;
         }

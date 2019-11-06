@@ -21,6 +21,7 @@
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/payments/core/payment_prefs.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
+#include "components/translate/core/browser/translate_pref_names.h"
 
 // A preference exposed to Java.
 // A Java counterpart will be generated for this enum.
@@ -56,6 +57,7 @@ enum Pref {
   BLOCK_THIRD_PARTY_COOKIES,
   ENABLE_DO_NOT_TRACK,
   PRINTING_ENABLED,
+  OFFER_TRANSLATE_ENABLED,
   // PREF_NUM_PREFS must be the last entry.
   PREF_NUM_PREFS
 };
@@ -100,7 +102,7 @@ const char* const kPrefsExposedToJava[] = {
     prefs::kBlockThirdPartyCookies,
     prefs::kEnableDoNotTrack,
     prefs::kPrintingEnabled,
-
+    prefs::kOfferTranslateEnabled,
 };
 
 #endif  // CHROME_BROWSER_ANDROID_PREFERENCES_PREFS_H_

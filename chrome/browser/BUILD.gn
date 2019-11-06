@@ -2879,6 +2879,7 @@ jumbo_static_library("browser") {
       "sync/profile_sync_service_android.cc",
       "sync/profile_sync_service_android.h",
       "translate/android/translate_bridge.cc",
+      "translate/android/translate_bridge.h",
       "updates/update_notification_client.cc",
       "updates/update_notification_client.h",
       "updates/update_notification_config.cc",

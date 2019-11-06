@@ -2,25 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/android/preferences/pref_service_bridge.h"
+#include "chrome/browser/translate/android/translate_bridge.h"
 
 #include <string>
 
 #include "testing/gtest/include/gtest/gtest.h"
 
-
-// A test class for PrefServiceBridge class.
-class PrefServiceBridgeTest : public testing::Test {
+// A test class for TranslateBridge class.
+class TranslateBridgeTest : public testing::Test {
  public:
   std::string GetAcceptLanguages(std::string locale,
                                  std::string accept_languages) {
-    PrefServiceBridge::PrependToAcceptLanguagesIfNecessary(locale,
-                                                           &accept_languages);
+    TranslateBridge::PrependToAcceptLanguagesIfNecessary(locale,
+                                                         &accept_languages);
     return accept_languages;
   }
 };
 
-TEST_F(PrefServiceBridgeTest, PrependToAcceptLanguagesAsNecessary) {
+TEST_F(TranslateBridgeTest, PrependToAcceptLanguagesAsNecessary) {
   EXPECT_EQ("ms-MY,ms,en-US,en", GetAcceptLanguages("ms-MY", "en-US,en"));
   EXPECT_EQ("de-CH,de,zh-TW,zh,en-US,en",
             GetAcceptLanguages("de-CH,zh-TW", "en-US,en"));
@@ -49,8 +48,7 @@ TEST_F(PrefServiceBridgeTest, PrependToAcceptLanguagesAsNecessary) {
   EXPECT_EQ("mas,en-US,en", GetAcceptLanguages("mas", "en-US,en"));
 }
 
-TEST_F(PrefServiceBridgeTest,
-       ShouldNotPrependToAcceptLanguagesWhenNotNecessary) {
+TEST_F(TranslateBridgeTest, ShouldNotPrependToAcceptLanguagesWhenNotNecessary) {
   // This logic should not affect cases where original accept language already
   // reflects the language code in the locale.
   EXPECT_EQ("mas,en-US,en", GetAcceptLanguages("mas", "en-US,en"));
