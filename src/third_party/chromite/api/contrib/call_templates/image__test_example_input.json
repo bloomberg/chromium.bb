@@ -1,0 +1,9 @@
+{
+  "build_target": {
+    "name": "betty"
+  },
+  "image": {
+    "path": "/mnt/host/source/src/build/images/betty/latest"
+  },
+  "result_directory": "/tmp/image_test_results"
+}

@@ -1,0 +1,3 @@
+include ../OWNERS.ci
+
+per-file afdo*=file:chromiumos/third_party/toolchain-utils:/OWNERS.toolchain

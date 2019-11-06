@@ -1,0 +1,8 @@
+# CI Team
+include ../OWNERS.ci
+
+# APAC Config Reviewers
+chavey@google.com
+cywang@chromium.org
+hidehiko@chromium.org
+stimim@chromium.org
