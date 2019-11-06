@@ -20,14 +20,14 @@ import android.webkit.WebViewFactory;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import org.chromium.weblayer_private.aidl.APICallException;
-import org.chromium.weblayer_private.aidl.BrowserFragmentArgs;
-import org.chromium.weblayer_private.aidl.IBrowserFragment;
-import org.chromium.weblayer_private.aidl.IProfile;
-import org.chromium.weblayer_private.aidl.IRemoteFragmentClient;
-import org.chromium.weblayer_private.aidl.IWebLayer;
-import org.chromium.weblayer_private.aidl.ObjectWrapper;
-import org.chromium.weblayer_private.aidl.WebLayerVersion;
+import org.chromium.weblayer_private.interfaces.APICallException;
+import org.chromium.weblayer_private.interfaces.BrowserFragmentArgs;
+import org.chromium.weblayer_private.interfaces.IBrowserFragment;
+import org.chromium.weblayer_private.interfaces.IProfile;
+import org.chromium.weblayer_private.interfaces.IRemoteFragmentClient;
+import org.chromium.weblayer_private.interfaces.IWebLayer;
+import org.chromium.weblayer_private.interfaces.ObjectWrapper;
+import org.chromium.weblayer_private.interfaces.WebLayerVersion;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;

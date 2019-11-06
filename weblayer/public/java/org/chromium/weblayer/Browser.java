@@ -12,10 +12,10 @@ import android.webkit.ValueCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import org.chromium.weblayer_private.aidl.APICallException;
-import org.chromium.weblayer_private.aidl.IBrowser;
-import org.chromium.weblayer_private.aidl.ITab;
-import org.chromium.weblayer_private.aidl.ObjectWrapper;
+import org.chromium.weblayer_private.interfaces.APICallException;
+import org.chromium.weblayer_private.interfaces.IBrowser;
+import org.chromium.weblayer_private.interfaces.ITab;
+import org.chromium.weblayer_private.interfaces.ObjectWrapper;
 
 import java.util.ArrayList;
 import java.util.HashMap;

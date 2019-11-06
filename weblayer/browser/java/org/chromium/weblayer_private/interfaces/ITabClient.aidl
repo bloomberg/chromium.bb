@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.weblayer_private.aidl;
+package org.chromium.weblayer_private.interfaces;
 
 /**
  * Interface used by Tab to inform the client of changes. This largely duplicates the

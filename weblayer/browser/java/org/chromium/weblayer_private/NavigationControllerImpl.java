@@ -9,8 +9,8 @@ import android.os.RemoteException;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
-import org.chromium.weblayer_private.aidl.INavigationController;
-import org.chromium.weblayer_private.aidl.INavigationControllerClient;
+import org.chromium.weblayer_private.interfaces.INavigationController;
+import org.chromium.weblayer_private.interfaces.INavigationControllerClient;
 
 /**
  * Acts as the bridge between java and the C++ implementation of of NavigationController.

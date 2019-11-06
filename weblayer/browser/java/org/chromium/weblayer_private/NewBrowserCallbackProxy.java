@@ -9,7 +9,7 @@ import android.os.RemoteException;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
-import org.chromium.weblayer_private.aidl.NewBrowserType;
+import org.chromium.weblayer_private.interfaces.NewBrowserType;
 
 /**
  * Owns the c++ NewBrowserCallback class, which is responsible for forwarding all

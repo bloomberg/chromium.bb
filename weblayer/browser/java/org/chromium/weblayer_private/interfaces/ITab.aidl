@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.weblayer_private.aidl;
+package org.chromium.weblayer_private.interfaces;
 
-import org.chromium.weblayer_private.aidl.ITabClient;
-import org.chromium.weblayer_private.aidl.IFullscreenCallbackClient;
-import org.chromium.weblayer_private.aidl.INavigationController;
-import org.chromium.weblayer_private.aidl.INavigationControllerClient;
+import org.chromium.weblayer_private.interfaces.ITabClient;
+import org.chromium.weblayer_private.interfaces.IFullscreenCallbackClient;
+import org.chromium.weblayer_private.interfaces.INavigationController;
+import org.chromium.weblayer_private.interfaces.INavigationControllerClient;
 
 interface ITab {
   void setClient(in ITabClient client) = 0;

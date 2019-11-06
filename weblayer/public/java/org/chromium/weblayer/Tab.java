@@ -14,13 +14,13 @@ import androidx.annotation.Nullable;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import org.chromium.weblayer_private.aidl.APICallException;
-import org.chromium.weblayer_private.aidl.IDownloadCallbackClient;
-import org.chromium.weblayer_private.aidl.IFullscreenCallbackClient;
-import org.chromium.weblayer_private.aidl.IObjectWrapper;
-import org.chromium.weblayer_private.aidl.ITab;
-import org.chromium.weblayer_private.aidl.ITabClient;
-import org.chromium.weblayer_private.aidl.ObjectWrapper;
+import org.chromium.weblayer_private.interfaces.APICallException;
+import org.chromium.weblayer_private.interfaces.IDownloadCallbackClient;
+import org.chromium.weblayer_private.interfaces.IFullscreenCallbackClient;
+import org.chromium.weblayer_private.interfaces.IObjectWrapper;
+import org.chromium.weblayer_private.interfaces.ITab;
+import org.chromium.weblayer_private.interfaces.ITabClient;
+import org.chromium.weblayer_private.interfaces.ObjectWrapper;
 
 /**
  * Represents a single tab in a browser. More specifically, owns a NavigationController, and allows

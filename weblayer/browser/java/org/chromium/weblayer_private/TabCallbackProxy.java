@@ -9,7 +9,7 @@ import android.os.RemoteException;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
-import org.chromium.weblayer_private.aidl.ITabClient;
+import org.chromium.weblayer_private.interfaces.ITabClient;
 
 /**
  * Owns the C++ TabCallbackProxy class, which is responsible for forwarding all

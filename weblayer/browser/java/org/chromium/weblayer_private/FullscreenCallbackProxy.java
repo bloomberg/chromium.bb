@@ -10,8 +10,8 @@ import android.webkit.ValueCallback;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
-import org.chromium.weblayer_private.aidl.IFullscreenCallbackClient;
-import org.chromium.weblayer_private.aidl.ObjectWrapper;
+import org.chromium.weblayer_private.interfaces.IFullscreenCallbackClient;
+import org.chromium.weblayer_private.interfaces.ObjectWrapper;
 
 /**
  * Owns the c++ FullscreenCallbackProxy class, which is responsible for forwarding all

@@ -17,13 +17,13 @@ import org.chromium.content_public.browser.ViewEventSink;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.ViewAndroidDelegate;
 import org.chromium.ui.base.WindowAndroid;
-import org.chromium.weblayer_private.aidl.IDownloadCallbackClient;
-import org.chromium.weblayer_private.aidl.IFullscreenCallbackClient;
-import org.chromium.weblayer_private.aidl.INavigationControllerClient;
-import org.chromium.weblayer_private.aidl.IObjectWrapper;
-import org.chromium.weblayer_private.aidl.ITab;
-import org.chromium.weblayer_private.aidl.ITabClient;
-import org.chromium.weblayer_private.aidl.ObjectWrapper;
+import org.chromium.weblayer_private.interfaces.IDownloadCallbackClient;
+import org.chromium.weblayer_private.interfaces.IFullscreenCallbackClient;
+import org.chromium.weblayer_private.interfaces.INavigationControllerClient;
+import org.chromium.weblayer_private.interfaces.IObjectWrapper;
+import org.chromium.weblayer_private.interfaces.ITab;
+import org.chromium.weblayer_private.interfaces.ITabClient;
+import org.chromium.weblayer_private.interfaces.ObjectWrapper;
 
 /**
  * Implementation of ITab.

@@ -12,11 +12,11 @@ import android.view.ViewGroup;
 import android.webkit.ValueCallback;
 
 import org.chromium.ui.base.WindowAndroid;
-import org.chromium.weblayer_private.aidl.IBrowser;
-import org.chromium.weblayer_private.aidl.IObjectWrapper;
-import org.chromium.weblayer_private.aidl.IProfile;
-import org.chromium.weblayer_private.aidl.ITab;
-import org.chromium.weblayer_private.aidl.ObjectWrapper;
+import org.chromium.weblayer_private.interfaces.IBrowser;
+import org.chromium.weblayer_private.interfaces.IObjectWrapper;
+import org.chromium.weblayer_private.interfaces.IProfile;
+import org.chromium.weblayer_private.interfaces.ITab;
+import org.chromium.weblayer_private.interfaces.ObjectWrapper;
 
 import java.util.ArrayList;
 import java.util.List;

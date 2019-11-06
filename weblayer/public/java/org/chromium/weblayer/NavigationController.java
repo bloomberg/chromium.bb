@@ -9,12 +9,12 @@ import android.os.RemoteException;
 
 import androidx.annotation.NonNull;
 
-import org.chromium.weblayer_private.aidl.APICallException;
-import org.chromium.weblayer_private.aidl.IClientNavigation;
-import org.chromium.weblayer_private.aidl.INavigation;
-import org.chromium.weblayer_private.aidl.INavigationController;
-import org.chromium.weblayer_private.aidl.INavigationControllerClient;
-import org.chromium.weblayer_private.aidl.ITab;
+import org.chromium.weblayer_private.interfaces.APICallException;
+import org.chromium.weblayer_private.interfaces.IClientNavigation;
+import org.chromium.weblayer_private.interfaces.INavigation;
+import org.chromium.weblayer_private.interfaces.INavigationController;
+import org.chromium.weblayer_private.interfaces.INavigationControllerClient;
+import org.chromium.weblayer_private.interfaces.ITab;
 
 /**
  * Provides methods to control navigation, along with maintaining the current list of navigations.

@@ -26,13 +26,13 @@ import org.chromium.content_public.browser.BrowserStartupController;
 import org.chromium.content_public.browser.ChildProcessCreationParams;
 import org.chromium.content_public.browser.DeviceUtils;
 import org.chromium.ui.base.ResourceBundle;
-import org.chromium.weblayer_private.aidl.IBrowserFragment;
-import org.chromium.weblayer_private.aidl.IObjectWrapper;
-import org.chromium.weblayer_private.aidl.IProfile;
-import org.chromium.weblayer_private.aidl.IRemoteFragmentClient;
-import org.chromium.weblayer_private.aidl.IWebLayer;
-import org.chromium.weblayer_private.aidl.ObjectWrapper;
-import org.chromium.weblayer_private.aidl.WebLayerVersion;
+import org.chromium.weblayer_private.interfaces.IBrowserFragment;
+import org.chromium.weblayer_private.interfaces.IObjectWrapper;
+import org.chromium.weblayer_private.interfaces.IProfile;
+import org.chromium.weblayer_private.interfaces.IRemoteFragmentClient;
+import org.chromium.weblayer_private.interfaces.IWebLayer;
+import org.chromium.weblayer_private.interfaces.ObjectWrapper;
+import org.chromium.weblayer_private.interfaces.WebLayerVersion;
 
 import java.io.File;
 

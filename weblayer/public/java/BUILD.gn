@@ -51,7 +51,7 @@ android_library("java") {
     "//third_party/android_deps:androidx_annotation_annotation_java",
     "//third_party/android_deps:com_android_support_support_compat_java",
     "//third_party/android_deps:com_android_support_support_fragment_java",
-    "//weblayer/browser/java:client_java",
+    "//weblayer/browser/java:interfaces_java",
   ]
 
   # Needed for android.webkit.WebViewDelegate.

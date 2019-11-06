@@ -10,11 +10,11 @@ import android.os.Bundle;
 import android.view.View;
 
 import org.chromium.components.embedder_support.application.ClassLoaderContextWrapperFactory;
-import org.chromium.weblayer_private.aidl.BrowserFragmentArgs;
-import org.chromium.weblayer_private.aidl.IBrowser;
-import org.chromium.weblayer_private.aidl.IBrowserFragment;
-import org.chromium.weblayer_private.aidl.IRemoteFragment;
-import org.chromium.weblayer_private.aidl.IRemoteFragmentClient;
+import org.chromium.weblayer_private.interfaces.BrowserFragmentArgs;
+import org.chromium.weblayer_private.interfaces.IBrowser;
+import org.chromium.weblayer_private.interfaces.IBrowserFragment;
+import org.chromium.weblayer_private.interfaces.IRemoteFragment;
+import org.chromium.weblayer_private.interfaces.IRemoteFragmentClient;
 
 public class BrowserFragmentImpl extends RemoteFragmentImpl {
     private final ProfileImpl mProfile;
