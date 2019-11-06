@@ -254,6 +254,8 @@ static void set_good_speed_features_framesize_independent(
   sf->use_dist_wtd_comp_flag = DIST_WTD_COMP_SKIP_MV_SEARCH;
   sf->model_based_prune_tx_search_level = 1;
   sf->model_based_post_interp_filter_breakout = 1;
+  // TODO(any): Clean-up code related to hash_me in inter frames
+  sf->disable_hash_me = frame_is_intra_only(cm) ? 0 : 1;
 
   // TODO(debargha): Test, tweak and turn on either 1 or 2
   sf->inter_mode_rd_model_estimation = 1;
@@ -282,9 +284,6 @@ static void set_good_speed_features_framesize_independent(
 
   if (speed >= 1) {
     sf->selective_ref_frame = 2;
-    // TODO(any): Experiment with this speed feature for speed=0 and clean-up
-    // the code altogether.
-    sf->disable_hash_me = frame_is_intra_only(cm) ? 0 : 1;
 
     sf->prune_ref_frame_for_gm_search = boosted ? 0 : 1;
     sf->intra_tx_size_search_init_depth_rect = 1;
