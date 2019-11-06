@@ -11,6 +11,7 @@
 
 #include "base/component_export.h"
 #include "base/macros.h"
+#include "chromeos/services/assistant/media_session/assistant_media_session.h"
 #include "libassistant/shared/public/platform_audio_output.h"
 #include "media/base/audio_block_fifo.h"
 #include "media/base/audio_parameters.h"
@@ -23,12 +24,14 @@ namespace chromeos {
 namespace assistant {
 
 class COMPONENT_EXPORT(ASSISTANT_SERVICE) AudioDeviceOwner
-    : public media::AudioRendererSink::RenderCallback {
+    : public media::AudioRendererSink::RenderCallback,
+      AssistantMediaSession::DuckingObserver {
  public:
   AudioDeviceOwner(
       scoped_refptr<base::SequencedTaskRunner> task_runner,
       scoped_refptr<base::SequencedTaskRunner> background_task_runner,
-      const std::string& device_id);
+      const std::string& device_id,
+      AssistantMediaSession* media_session);
   ~AudioDeviceOwner() override;
 
   void StartOnMainThread(
@@ -37,6 +40,9 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AudioDeviceOwner
       const assistant_client::OutputStreamFormat& format);
 
   void StopOnBackgroundThread();
+
+  // AssistantMediaSession::DuckingObserver overrides:
+  void SetDucking(bool is_ducking) override;
 
   // media::AudioRenderSink::RenderCallback overrides:
   int Render(base::TimeDelta delay,
@@ -77,6 +83,8 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AudioDeviceOwner
   std::vector<uint8_t> audio_data_;
   assistant_client::OutputStreamFormat format_;
   media::AudioParameters audio_param_;
+
+  AssistantMediaSession* media_session_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioDeviceOwner);
 };

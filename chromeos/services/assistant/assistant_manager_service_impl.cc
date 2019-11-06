@@ -1357,7 +1357,6 @@ void AssistantManagerServiceImpl::MediaSessionMetadataChanged(
   UpdateMediaState();
 }
 
-
 void AssistantManagerServiceImpl::OnPlaybackStateChange(
     const MediaStatus& status) {
   if (media_session_)

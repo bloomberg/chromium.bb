@@ -48,7 +48,8 @@ class AudioOutputImpl : public assistant_client::AudioOutput {
             std::make_unique<AudioStreamHandler>(task_runner)),
         device_owner_(std::make_unique<AudioDeviceOwner>(task_runner,
                                                          background_task_runner,
-                                                         device_id)) {}
+                                                         device_id,
+                                                         media_session)) {}
 
   ~AudioOutputImpl() override {
     // This ensures that it will be executed after StartOnMainThread.
