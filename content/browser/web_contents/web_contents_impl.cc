@@ -2554,8 +2554,10 @@ void WebContentsImpl::UpdateVisibilityAndNotifyPageAndView(
   // as soon as they are shown. But the Page and other classes do not expect to
   // be producing frames when the Page is hidden. So we make sure the Page is
   // shown first.
-  if (page_is_visible)
-    SendPageMessage(new PageMsg_WasShown(MSG_ROUTING_NONE));
+  if (page_is_visible) {
+    SendPageMessage(new PageMsg_VisibilityChanged(
+        MSG_ROUTING_NONE, PageVisibilityState::kVisible));
+  }
 
   // |GetRenderWidgetHostView()| can be null if the user middle clicks a link to
   // open a tab in the background, then closes the tab before selecting it.
@@ -2589,7 +2591,8 @@ void WebContentsImpl::UpdateVisibilityAndNotifyPageAndView(
   if (!page_is_visible) {
     // Similar to when showing the page, we only hide the page after
     // hiding the individual RenderWidgets.
-    SendPageMessage(new PageMsg_WasHidden(MSG_ROUTING_NONE));
+    SendPageMessage(new PageMsg_VisibilityChanged(
+        MSG_ROUTING_NONE, PageVisibilityState::kHidden));
   } else {
     for (FrameTreeNode* node : frame_tree_.Nodes()) {
       RenderFrameProxyHost* parent = node->render_manager()->GetProxyToParent();
