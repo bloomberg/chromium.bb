@@ -2084,6 +2084,9 @@
           '--target',
           'Release_x64',
         ],
+        'swarming': {
+          "shards": 24
+        },
       },
       'Win10 Tests x64 (dbg)': {
         'args': [
