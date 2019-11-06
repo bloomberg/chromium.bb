@@ -382,6 +382,7 @@ HWNDMessageHandler::HWNDMessageHandler(HWNDMessageHandlerDelegate* delegate,
       waiting_for_close_now_(false),
       use_system_default_icon_(false),
       restored_enabled_(false),
+      handled_wm_destroy_(false),
       current_cursor_(nullptr),
       previous_cursor_(nullptr),
       dpi_(0),
@@ -983,6 +984,9 @@ LRESULT HWNDMessageHandler::OnWndProc(UINT message,
   if (delegate_) {
     delegate_->PostHandleMSG(message, w_param, l_param);
     if (message == WM_NCDESTROY) {
+      if (!handled_wm_destroy_) {
+        OnDestroy();
+      }
       RestoreEnabledIfNecessary();
       delegate_->HandleDestroyed();
     }
@@ -1612,6 +1616,8 @@ void HWNDMessageHandler::OnDestroy() {
     // discarded.
     UiaReturnRawElementProvider(hwnd(), 0, 0, nullptr);
   }
+
+  handled_wm_destroy_ = true;
 }
 
 void HWNDMessageHandler::OnDisplayChange(UINT bits_per_pixel,
