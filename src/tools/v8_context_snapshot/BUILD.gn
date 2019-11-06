@@ -12,6 +12,7 @@ import("//tools/v8_context_snapshot/v8_context_snapshot.gni")
 import("//build/config/c++/c++.gni")
 import("//build/config/compiler/compiler.gni")
 import("//v8/gni/snapshot_toolchain.gni")
+import("//blpwtk2/blpwtk2.gni")
 
 if (is_android) {
   import("//build/config/android/rules.gni")
@@ -59,6 +60,11 @@ if (use_v8_context_snapshot) {
   action("generate_v8_context_snapshot") {
     script = "//build/gn_run_binary.py"
     output_file = "$root_out_dir/v8_context_snapshot.bin"
+
+    if (bb_version != "") {
+      output_file = "$root_out_dir/v8_context_snapshot.$bb_version.bin"
+    }
+
     output_path = rebase_path(output_file, root_build_dir)
 
     args = [

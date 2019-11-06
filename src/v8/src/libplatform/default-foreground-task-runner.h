@@ -7,7 +7,7 @@
 
 #include <queue>
 
-#include "include/libplatform/libplatform.h"
+#include "include/v8-default-platform.h"
 #include "include/v8-platform.h"
 #include "src/base/platform/condition-variable.h"
 #include "src/base/platform/mutex.h"

@@ -2,11 +2,13 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//blpwtk2/blpwtk2.gni")
+
 declare_args() {
   # Optimize parts of Chrome's UI written with web technologies (HTML/CSS/JS)
   # for runtime performance purposes. This does more work at compile time for
   # speed benefits at runtime (so we skip in debug builds).
-  optimize_webui = !is_debug
+  optimize_webui = !is_debug && !defined(is_blpwtk2)
 
   # Enable closure type-checking for Chrome's web technology-based UI. This
   # enables the webui_closure_compile target which does a no-op without this

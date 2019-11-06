@@ -75,6 +75,10 @@ BLINK_EXPORT void SetMockThemeEnabledForTest(bool);
 // Alters the rendering of fonts for web tests.
 BLINK_EXPORT void SetFontAntialiasingEnabledForTest(bool);
 BLINK_EXPORT bool FontAntialiasingEnabledForTest();
+ 
+// By default, timers on hidden pages are aligned so that they fire once per
+// second at most.  This API changes that alignment interval.
+BLINK_EXPORT void SetTimerHiddenPageAlignmentInterval(double);
 
 // Purge the plugin list cache. This can cause a web-visible and out-of-spec
 // change to |navigator.plugins| if the plugin list has changed (see

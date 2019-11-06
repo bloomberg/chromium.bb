@@ -1062,6 +1062,11 @@ void ChromeClientImpl::SetHasScrollEventHandlers(LocalFrame* frame,
 
   WebFrameWidgetBase* widget =
       WebLocalFrameImpl::FromFrame(frame)->LocalRootFrameWidget();
+
+  // widget maybe in the closing status after WillCloseLayerTreeView() is called
+  if (widget && !widget->GetLayerTreeView())
+    return;
+
   if (widget && widget->GetLayerTreeView())
     widget->GetLayerTreeView()->SetHaveScrollEventHandlers(has_event_handlers);
 }

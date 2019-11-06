@@ -821,7 +821,9 @@ class ExternalTwoByteString : public ExternalString {
 // A flat string reader provides random access to the contents of a
 // string independent of the character width of the string.  The handle
 // must be valid as long as the reader is being used.
-class V8_EXPORT_PRIVATE FlatStringReader : public Relocatable {
+// blpwtk2: Remove V8_EXPORT_PRIVATE to avoid DLL export in static build.
+// V8_EXPORT_PRIVATE requires extra dependencies resulting static build failure.
+class FlatStringReader : public Relocatable {
  public:
   FlatStringReader(Isolate* isolate, Handle<String> str);
   FlatStringReader(Isolate* isolate, Vector<const char> input);

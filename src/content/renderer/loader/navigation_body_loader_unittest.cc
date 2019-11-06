@@ -45,7 +45,7 @@ class NavigationBodyLoaderTest : public ::testing::Test,
         CommonNavigationParams(), CommitNavigationParams(), 1 /* request_id */,
         network::ResourceResponseHead(), std::move(endpoints),
         blink::scheduler::GetSingleThreadTaskRunnerForTesting(),
-        2 /* render_frame_id */, true /* is_main_frame */, &navigation_params);
+        2 /* render_frame_id */, true /* is_main_frame */, &navigation_params, nullptr);
     loader_ = std::move(navigation_params.body_loader);
   }
 

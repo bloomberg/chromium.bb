@@ -4,6 +4,7 @@
 
 import("//build/config/jumbo.gni")
 import("//build/config/ui.gni")
+import("//blpwtk2/blpwtk2.gni")
 import("//ui/gl/features.gni")
 
 jumbo_component("init") {
@@ -33,6 +34,10 @@ jumbo_component("init") {
   public_deps = [
     "//ui/gl",
   ]
+
+  if (is_blpwtk2) {
+    defines += [ "IS_BLPWTK2" ]
+  }
 
   if (is_android) {
     sources += [

@@ -475,6 +475,12 @@ v8::Local<v8::Object> WebRemoteFrameImpl::GlobalProxy() const {
 WebRect WebRemoteFrameImpl::GetCompositingRect() {
   return GetFrame()->View()->GetCompositingRect();
 }
+ 
+v8::Isolate* WebRemoteFrameImpl::ScriptIsolate() const
+{
+  NOTREACHED();
+  return nullptr;
+}
 
 void WebRemoteFrameImpl::RenderFallbackContent() const {
   // TODO(ekaramad): If the owner renders its own content, then the current

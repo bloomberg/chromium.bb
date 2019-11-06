@@ -13,6 +13,7 @@ import("//ppapi/buildflags/buildflags.gni")
 import("//tools/grit/grit_rule.gni")
 import("//tools/grit/repack.gni")
 import("//tools/v8_context_snapshot/v8_context_snapshot.gni")
+import("//blpwtk2/blpwtk2.gni")
 if (is_android) {
   import("//build/config/android/config.gni")
 } else if (is_mac) {
@@ -26,8 +27,7 @@ if (is_android) {
 
 declare_args() {
   content_shell_product_name = "Content Shell"
-  content_shell_version = "99.77.34.5"
-  content_shell_major_version = "99"
+# blpwtk2: declaration of content_shell_version is moved into blpwtk2.gni
 }
 
 config("content_shell_lib_warnings") {
@@ -297,6 +297,7 @@ jumbo_static_library("content_shell_lib") {
     "//components/url_formatter",
     "//components/web_cache/renderer",
     "//content:resources",
+    "//content:sandbox_helper_win",
     "//content/app/resources",
     "//content/app/strings",
     "//content/gpu",
@@ -344,6 +345,10 @@ jumbo_static_library("content_shell_lib") {
     "//ui/base/clipboard",
     "//ui/base/ime/init",
     "//ui/display",
+
+    # blpwtk2: Add this dependency for LayerAnimationObserver
+    "//ui/compositor",
+
     "//ui/events:events_base",
     "//ui/gfx",
     "//ui/gfx/geometry",
@@ -601,8 +606,15 @@ if (is_android) {
     }
 
     defines = []
+    deps = []
 
-    deps = [
+    # Put sandbox at the early beginning to make sure the sandboxed functions
+    # (sandbox\win\src\interception.cc) are not ignored by linker in case SANDBOX_EXPORTS is defined.
+    if(is_win) {
+      deps += [ "//sandbox" ]
+    }
+
+    deps += [
       ":content_shell_lib",
       ":pak",
       "//build/win:default_exe_manifest",
@@ -613,9 +625,19 @@ if (is_android) {
       "//tools/v8_context_snapshot:v8_context_snapshot",
     ]
 
-    if (is_win) {
-      deps += [ "//sandbox" ]
+    data = []
+    if (bb_version == "") {
+      data += [
+        "$root_out_dir/v8_context_snapshot.bin",
+      ]
+    }
+    else {
+      data += [
+        "$root_out_dir/v8_context_snapshot.$bb_version.bin"
+      ]
+    }
 
+    if (is_win) {
       # This is a large module that can't do incremental linking in some cases.
       configs -= [ "//build/config/win:default_incremental_linking" ]
       configs +=
@@ -627,7 +649,13 @@ if (is_android) {
         configs -= [ "//build/config/win:console" ]
         configs += [ "//build/config/win:windowed" ]
       }
-
+      if (bb_generate_map_files) {
+        configs += [ "//blpwtk2:blpwtk2_gen_map" ]
+      }
+      if (is_official_build) {
+        configs -= [ "//build/config/compiler:default_optimization" ]
+        configs += [ "//build/config/compiler:optimize_max" ]
+      }
       data_deps +=
           [ "//third_party/crashpad/crashpad/handler:crashpad_handler" ]
     }

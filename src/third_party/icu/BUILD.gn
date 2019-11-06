@@ -4,6 +4,7 @@
 
 import("//build/config/host_byteorder.gni")
 import("//third_party/icu/config.gni")
+import("//blpwtk2/blpwtk2.gni")
 
 if (is_android) {
   import("//build/config/android/rules.gni")
@@ -1113,8 +1114,16 @@ if (icu_use_data_file) {
   } else {
     copy("icudata") {
       sources = [ "$data_dir/$data_bundle" ]
-      outputs = [ "$root_out_dir/$data_bundle" ]
-      data = [ "$root_out_dir/$data_bundle" ]
+
+      if (bb_version == "") {
+        outputs = [ "$root_out_dir/$data_bundle" ]
+        data = [ "$root_out_dir/$data_bundle" ]
+
+      } else {
+        bb_data_bundle = "${data_bundle_prefix}.$bb_version.dat"
+        outputs = [ "$root_out_dir/$bb_data_bundle" ]
+        data = [ "$root_out_dir/$bb_data_bundle" ]
+      }
     }
   }
 } else {

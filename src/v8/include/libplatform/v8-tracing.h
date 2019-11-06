@@ -28,7 +28,7 @@ class TraceEventListener;
 
 const int kTraceMaxNumArgs = 2;
 
-class V8_PLATFORM_EXPORT TraceObject {
+class BLPV8_PLATFORM_EXPORT TraceObject {
  public:
   union ArgValue {
     bool as_bool;
@@ -108,7 +108,7 @@ class V8_PLATFORM_EXPORT TraceObject {
   void operator=(const TraceObject&) = delete;
 };
 
-class V8_PLATFORM_EXPORT TraceWriter {
+class BLPV8_PLATFORM_EXPORT TraceWriter {
  public:
   TraceWriter() = default;
   virtual ~TraceWriter() = default;
@@ -149,7 +149,7 @@ class V8_PLATFORM_EXPORT TraceBufferChunk {
   void operator=(const TraceBufferChunk&) = delete;
 };
 
-class V8_PLATFORM_EXPORT TraceBuffer {
+class BLPV8_PLATFORM_EXPORT TraceBuffer {
  public:
   TraceBuffer() = default;
   virtual ~TraceBuffer() = default;
@@ -185,7 +185,7 @@ enum TraceRecordMode {
   ECHO_TO_CONSOLE,
 };
 
-class V8_PLATFORM_EXPORT TraceConfig {
+class BLPV8_PLATFORM_EXPORT TraceConfig {
  public:
   typedef std::vector<std::string> StringList;
 
@@ -222,7 +222,7 @@ class V8_PLATFORM_EXPORT TraceConfig {
 #define V8_PLATFORM_NON_EXPORTED_BASE(code) code
 #endif  // defined(_MSC_VER)
 
-class V8_PLATFORM_EXPORT TracingController
+class BLPV8_PLATFORM_EXPORT TracingController
     : public V8_PLATFORM_NON_EXPORTED_BASE(v8::TracingController) {
  public:
   // The pointer returned from GetCategoryGroupEnabled() points to a value with
@@ -290,7 +290,12 @@ class V8_PLATFORM_EXPORT TracingController
   std::unique_ptr<TraceConfig> trace_config_;
   std::unique_ptr<base::Mutex> mutex_;
   std::unordered_set<v8::TracingController::TraceStateObserver*> observers_;
+#if defined(MSVC_2015_PLUS)
   std::atomic_bool recording_{false};
+#else
+  std::atomic_bool recording_;
+#endif
+
 #ifdef V8_USE_PERFETTO
   std::atomic_bool perfetto_recording_{false};
   std::unique_ptr<PerfettoTracingController> perfetto_tracing_controller_;
