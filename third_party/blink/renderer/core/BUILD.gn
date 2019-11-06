@@ -1277,7 +1277,6 @@ jumbo_source_set("unit_tests") {
     "frame/local_frame_view_test.cc",
     "frame/mhtml_archive_test.cc",
     "frame/mhtml_loading_test.cc",
-    "frame/origins_using_features_test.cc",
     "frame/performance_monitor_test.cc",
     "frame/reporting_context_test.cc",
     "frame/root_frame_viewport_test.cc",
