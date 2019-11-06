@@ -335,7 +335,6 @@ const chromeos::NetworkState* GetShillBackedNetwork(
 // Convenience helper for translating a vector of NetworkState objects to a
 // vector of mojo NetworkConfiguration objects.
 std::vector<arc::mojom::NetworkConfigurationPtr> TranslateNetworkStates(
-    const std::string& default_network_path,
     const std::string& arc_vpn_path,
     const chromeos::NetworkStateHandler::NetworkStateList& network_states) {
   std::vector<arc::mojom::NetworkConfigurationPtr> networks;
@@ -355,7 +354,8 @@ std::vector<arc::mojom::NetworkConfigurationPtr> TranslateNetworkStates(
     }
     auto network = TranslateONCConfiguration(
         state, chromeos::network_util::TranslateNetworkStateToONC(state).get());
-    network->is_default_network = network_path == default_network_path;
+    network->is_default_network =
+        (network_path == GetStateHandler()->default_network_path());
     networks.push_back(std::move(network));
   }
   return networks;
@@ -553,8 +553,8 @@ void ArcNetHostImpl::GetNetworks(mojom::GetNetworksRequestType type,
         kGetNetworksListLimit, &network_states);
   }
 
-  std::vector<mojom::NetworkConfigurationPtr> networks = TranslateNetworkStates(
-      default_network_path_, arc_vpn_service_path_, network_states);
+  std::vector<mojom::NetworkConfigurationPtr> networks =
+      TranslateNetworkStates(arc_vpn_service_path_, network_states);
   std::move(callback).Run(mojom::GetNetworksResponseType::New(
       arc::mojom::NetworkResult::SUCCESS, std::move(networks)));
 }
@@ -797,7 +797,6 @@ void ArcNetHostImpl::UpdateDefaultNetwork() {
 
   if (!default_network) {
     VLOG(1) << "No default network";
-    default_network_path_.clear();
     auto* net_instance = ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service_->net(),
                                                      DefaultNetworkChanged);
     if (net_instance)
@@ -807,7 +806,6 @@ void ArcNetHostImpl::UpdateDefaultNetwork() {
 
   VLOG(1) << "New default network: " << default_network->path() << " ("
           << default_network->type() << ")";
-  default_network_path_ = default_network->path();
   std::string user_id_hash = chromeos::LoginState::Get()->primary_user_hash();
   GetManagedConfigurationHandler()->GetProperties(
       user_id_hash, default_network->path(),
@@ -819,6 +817,15 @@ void ArcNetHostImpl::UpdateDefaultNetwork() {
 void ArcNetHostImpl::DefaultNetworkChanged(
     const chromeos::NetworkState* network) {
   UpdateDefaultNetwork();
+
+  // If the the default network switched between two networks, also send an
+  // ActiveNetworkChanged notification to let ARC observe the switch.
+  chromeos::NetworkStateHandler::NetworkStateList network_states;
+  GetStateHandler()->GetActiveNetworkListByType(
+      chromeos::NetworkTypePattern::Default(), &network_states);
+  if (network_states.size() > 1) {
+    ActiveNetworksChanged(network_states);
+  }
 }
 
 void ArcNetHostImpl::DeviceListChanged() {
@@ -1046,8 +1053,7 @@ void ArcNetHostImpl::ActiveNetworksChanged(
     return;
 
   std::vector<arc::mojom::NetworkConfigurationPtr> network_configurations =
-      TranslateNetworkStates(default_network_path_, arc_vpn_service_path_,
-                             active_networks);
+      TranslateNetworkStates(arc_vpn_service_path_, active_networks);
   net_instance->ActiveNetworksChanged(std::move(network_configurations));
 }
 
