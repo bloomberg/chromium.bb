@@ -29,7 +29,7 @@
 #if 0
 #include <cstdio>
 
-#include "third_party/abseil-cpp/absl/strings/str_cat.h"
+#include "absl/strings/str_cat.h"
 
 constexpr bool kEnablePrintRegs = true;
 
