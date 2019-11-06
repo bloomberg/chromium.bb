@@ -131,24 +131,6 @@ class NavigationRequestTest : public RenderViewHostImplTestHarness {
                        base::Unretained(this)));
   }
 
-  // Helper function to call WillProcessResponse on |handle|. If this function
-  // returns DEFER, |callback_result_| will be set to the actual result of the
-  // throttle checks when they are finished.
-  // TODO(clamy): this should also simulate that WillStartRequest was called if
-  // it has not been called before.
-  void SimulateWillProcessResponse() {
-    was_callback_called_ = false;
-    callback_result_ = NavigationThrottle::DEFER;
-
-    // It's safe to use base::Unretained since the NavigationHandle is owned by
-    // the NavigationRequestTest. The ConnectionInfo is different from that sent
-    // to WillRedirectRequest to verify that it's correctly plumbed in both
-    // cases.
-    request_->WillProcessResponse(
-        base::BindOnce(&NavigationRequestTest::UpdateThrottleCheckResult,
-                       base::Unretained(this)));
-  }
-
   // Whether the callback was called.
   bool was_callback_called() const { return was_callback_called_; }
 
