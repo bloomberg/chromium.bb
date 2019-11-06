@@ -15,7 +15,6 @@
 #include "chrome/browser/apps/app_service/uninstall_dialog.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/services/app_service/app_service_impl.h"
-#include "chrome/services/app_service/public/cpp/instance_registry.h"
 #include "chrome/services/app_service/public/cpp/intent_filter_util.h"
 #include "chrome/services/app_service/public/cpp/intent_util.h"
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
@@ -163,12 +162,6 @@ mojo::Remote<apps::mojom::AppService>& AppServiceProxy::AppService() {
 apps::AppRegistryCache& AppServiceProxy::AppRegistryCache() {
   return cache_;
 }
-
-#if defined(OS_CHROMEOS)
-apps::InstanceRegistry& AppServiceProxy::InstanceRegistry() {
-  return instance_registry_;
-}
-#endif
 
 apps::PreferredApps& AppServiceProxy::PreferredApps() {
   return preferred_apps_;
