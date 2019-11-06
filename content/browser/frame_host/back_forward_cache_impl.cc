@@ -8,6 +8,8 @@
 #include <string>
 
 #include "base/metrics/field_trial_params.h"
+#include "base/strings/string_split.h"
+#include "build/build_config.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/render_frame_host_delegate.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
@@ -78,7 +80,15 @@ bool IsServiceWorkerSupported() {
 
 bool IsGeolocationSupported() {
   static constexpr base::FeatureParam<bool> geolocation_supported(
-      &features::kBackForwardCache, "geolocation_supported", false);
+      &features::kBackForwardCache, "geolocation_supported",
+#if defined(OS_ANDROID)
+      true
+#else
+      // TODO(crbug.com/989847): Omnibox icon should be updated when the page
+      //                         enters or is restored from BackForwardCache.
+      false
+#endif
+  );
   return geolocation_supported.Get();
 }
 
