@@ -11,7 +11,6 @@ import android.text.TextUtils;
 import org.chromium.base.ApplicationState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ApplicationStatus.ApplicationStateListener;
-import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 
@@ -57,7 +56,7 @@ public class WebContentsDarkModeController implements ApplicationStateListener {
 
     private static boolean shouldEnableWebContentsDarkMode() {
         return GlobalNightModeStateProviderHolder.getInstance().isInNightMode()
-                && ChromePreferenceManager.getInstance().readBoolean(
+                && SharedPreferencesManager.getInstance().readBoolean(
                         DARKEN_WEBSITES_ENABLED_KEY, false);
     }
 
