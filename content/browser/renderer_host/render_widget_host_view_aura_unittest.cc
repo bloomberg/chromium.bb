@@ -664,6 +664,7 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
 
     TextInputState state_with_type_text;
     state_with_type_text.type = type;
+    state_with_type_text.show_ime_if_needed = true;
     view->TextInputStateChanged(state_with_type_text);
   }
 
@@ -6759,7 +6760,7 @@ class RenderWidgetHostViewAuraKeyboardTest
 
 TEST_F(RenderWidgetHostViewAuraKeyboardTest, KeyboardObserverDestroyed) {
   parent_view_->SetLastPointerType(ui::EventPointerType::POINTER_TYPE_TOUCH);
-  parent_view_->FocusedNodeTouched(true);
+  ActivateViewForTextInputManager(parent_view_, ui::TEXT_INPUT_TYPE_TEXT);
   EXPECT_NE(parent_view_->keyboard_observer_.get(), nullptr);
   EXPECT_EQ(keyboard_controller_observer_count(), 1u);
   // Detach the RenderWidgetHostViewAura from the IME.
@@ -6772,12 +6773,12 @@ TEST_F(RenderWidgetHostViewAuraKeyboardTest,
        KeyboardObserverForOnlyTouchInput) {
   // Show virtual keyboard for touch inputs.
   parent_view_->SetLastPointerType(ui::EventPointerType::POINTER_TYPE_TOUCH);
-  parent_view_->FocusedNodeTouched(true);
+  ActivateViewForTextInputManager(parent_view_, ui::TEXT_INPUT_TYPE_TEXT);
   EXPECT_NE(parent_view_->keyboard_observer_.get(), nullptr);
   EXPECT_EQ(keyboard_controller_observer_count(), 1u);
   // Do not show virtual keyboard for mouse inputs.
   parent_view_->SetLastPointerType(ui::EventPointerType::POINTER_TYPE_MOUSE);
-  parent_view_->FocusedNodeTouched(true);
+  ActivateViewForTextInputManager(parent_view_, ui::TEXT_INPUT_TYPE_TEXT);
   EXPECT_EQ(parent_view_->keyboard_observer_.get(), nullptr);
   EXPECT_EQ(keyboard_controller_observer_count(), 0u);
 }

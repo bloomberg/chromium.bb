@@ -2898,20 +2898,6 @@ void RenderWidget::DidHandleGestureEvent(const WebGestureEvent& event,
     else
       ShowVirtualKeyboard();
   }
-// TODO(ananta): Piggyback off existing IPCs to communicate this information,
-// crbug/420130.
-#if defined(OS_WIN)
-  if (event.GetType() == blink::WebGestureEvent::kGestureTap) {
-    // TODO(estade): hit test the event against focused node to make sure
-    // the tap actually hit the focused node.
-    blink::WebInputMethodController* controller = GetInputMethodController();
-    blink::WebTextInputType text_input_type =
-        controller ? controller->TextInputType() : blink::kWebTextInputTypeNone;
-
-    Send(new WidgetHostMsg_FocusedNodeTouched(
-        routing_id_, text_input_type != blink::kWebTextInputTypeNone));
-  }
-#endif
 #endif
 }
 

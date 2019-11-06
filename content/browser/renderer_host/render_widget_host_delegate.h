@@ -307,11 +307,6 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
   // Note: This is also exposed by the RenderFrameHostDelegate.
   virtual ukm::SourceId GetUkmSourceIdForLastCommittedSource() const;
 
-  // Notifies the delegate that a focused editable element has been touched
-  // inside this RenderWidgetHost. If |editable| is true then the focused
-  // element accepts text input.
-  virtual void FocusedNodeTouched(bool editable) {}
-
   // Return this object cast to a WebContents, if it is one. If the object is
   // not a WebContents, returns nullptr.
   virtual WebContents* GetAsWebContents();

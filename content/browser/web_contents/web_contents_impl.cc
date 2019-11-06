@@ -7315,15 +7315,6 @@ bool WebContentsImpl::AddDomainInfoToRapporSample(rappor::Sample* sample) {
   return true;
 }
 
-void WebContentsImpl::FocusedNodeTouched(bool editable) {
-#if defined(OS_WIN)
-  RenderWidgetHostView* view = GetRenderWidgetHostView();
-  if (!view)
-    return;
-  view->FocusedNodeTouched(editable);
-#endif
-}
-
 void WebContentsImpl::ShowInsecureLocalhostWarningIfNeeded() {
   bool allow_localhost = base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kAllowInsecureLocalhost);

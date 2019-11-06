@@ -268,11 +268,6 @@ IPC_MESSAGE_ROUTED3(WidgetHostMsg_LockMouse,
 // WidgetHostMsg_UnlockMouse).
 IPC_MESSAGE_ROUTED0(WidgetHostMsg_UnlockMouse)
 
-// Message sent from renderer to the browser when the element that is focused
-// has been touched. A bool is passed in this message which indicates if the
-// node is editable.
-IPC_MESSAGE_ROUTED1(WidgetHostMsg_FocusedNodeTouched, bool /* editable */)
-
 // Sent by the renderer process in response to an earlier WidgetMsg_ForceRedraw
 // message. The reply includes the snapshot-id from the request.
 IPC_MESSAGE_ROUTED1(WidgetHostMsg_ForceRedrawComplete, int /* snapshot_id */)

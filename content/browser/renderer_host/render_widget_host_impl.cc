@@ -640,7 +640,6 @@ bool RenderWidgetHostImpl::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(WidgetHostMsg_UnlockMouse, OnUnlockMouse)
     IPC_MESSAGE_HANDLER(WidgetHostMsg_SelectionBoundsChanged,
                         OnSelectionBoundsChanged)
-    IPC_MESSAGE_HANDLER(WidgetHostMsg_FocusedNodeTouched, OnFocusedNodeTouched)
     IPC_MESSAGE_HANDLER(DragHostMsg_StartDragging, OnStartDragging)
     IPC_MESSAGE_HANDLER(DragHostMsg_UpdateDragCursor, OnUpdateDragCursor)
     IPC_MESSAGE_HANDLER(WidgetHostMsg_FrameSwapMessages,
@@ -1798,11 +1797,6 @@ void RenderWidgetHostImpl::OnSelectionBoundsChanged(
     const WidgetHostMsg_SelectionBounds_Params& params) {
   if (view_)
     view_->SelectionBoundsChanged(params);
-}
-
-void RenderWidgetHostImpl::OnFocusedNodeTouched(bool editable) {
-  if (delegate_)
-    delegate_->FocusedNodeTouched(editable);
 }
 
 void RenderWidgetHostImpl::OnStartDragging(

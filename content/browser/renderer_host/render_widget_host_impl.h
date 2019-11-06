@@ -900,7 +900,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void OnSelectionBoundsChanged(
       const WidgetHostMsg_SelectionBounds_Params& params);
   void OnSetNeedsBeginFrames(bool needs_begin_frames);
-  void OnFocusedNodeTouched(bool editable);
   void OnStartDragging(const DropData& drop_data,
                        blink::WebDragOperationsMask operations_allowed,
                        const SkBitmap& bitmap,
