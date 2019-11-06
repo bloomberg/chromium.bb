@@ -100,6 +100,15 @@ SPECIAL_TESTS = {
     'scripts/test_image_unittest': INSIDE,
     'service/dependency_unittest': INSIDE,
 
+    # These require 3rd party modules that are in the chroot.
+    'cli/cros/cros_bisect_unittest': INSIDE,
+    'cli/cros/cros_flash_unittest': INSIDE,
+    'cli/cros/cros_stage_unittest': INSIDE,
+    'lib/xbuddy/build_artifact_unittest': INSIDE,
+    'lib/xbuddy/common_util_unittest': INSIDE,
+    'lib/xbuddy/downloader_unittest': INSIDE,
+    'lib/xbuddy/xbuddy_unittest': INSIDE,
+
     # Tests that need to run outside the chroot.
     'lib/cgroups_unittest': OUTSIDE,
 
