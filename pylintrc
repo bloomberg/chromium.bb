@@ -28,6 +28,7 @@ load-plugins=
     pylint.extensions.bad_builtin,
     pylint.extensions.docstyle,
     pylint.extensions.redefined_variable_type,
+    pylint.extensions.overlapping_exceptions,
 
 # Configure quote preferences.
 string-quote = single-avoid-escape

@@ -358,9 +358,7 @@ def FindDuplicates(symbols, status_url, api_key, timeout=DEDUPE_TIMEOUT):
                            timeout,
                            api_key=api_key,
                            data=json.dumps(symbol_data))
-    except (requests.exceptions.HTTPError,
-            requests.exceptions.Timeout,
-            requests.exceptions.RequestException) as e:
+    except requests.exceptions.RequestException as e:
       logging.warning('could not identify duplicates: HTTP error: %s', e)
     for b in batch:
       b.status = SymbolFile.INITIAL
@@ -449,9 +447,7 @@ def PerformSymbolsFileUpload(symbols, upload_url, api_key):
           logging.info('upload of %10i bytes took %s', s.FileSize(),
                        timer.delta)
           s.status = SymbolFile.UPLOADED
-      except (requests.exceptions.HTTPError,
-              requests.exceptions.Timeout,
-              requests.exceptions.RequestException) as e:
+      except requests.exceptions.RequestException as e:
         logging.warning('could not upload: %s: HTTP error: %s',
                         s.display_name, e)
         s.status = SymbolFile.ERROR

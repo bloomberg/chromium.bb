@@ -465,7 +465,7 @@ class XBuddy(build_util.BuildObject):
         version = self._ctx.LS(
             '%s/%s' % (devserver_constants.GS_IMAGE_DIR, build_id))
         return build_id
-      except (gs.GSCommandError, gs.GSContextException, gs.GSNoSuchKey):
+      except gs.GSContextException:
         continue
 
     raise XBuddyException('Could not find remote build_id for %s %s' % (
