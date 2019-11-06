@@ -2,29 +2,31 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_NOW_PLAYING_REMOTE_COMMAND_CENTER_DELEGATE_NS_H_
-#define UI_BASE_NOW_PLAYING_REMOTE_COMMAND_CENTER_DELEGATE_NS_H_
+#ifndef COMPONENTS_SYSTEM_MEDIA_CONTROLS_MAC_REMOTE_COMMAND_CENTER_DELEGATE_COCOA_H_
+#define COMPONENTS_SYSTEM_MEDIA_CONTROLS_MAC_REMOTE_COMMAND_CENTER_DELEGATE_COCOA_H_
 
 #import <Cocoa/Cocoa.h>
 #import <MediaPlayer/MediaPlayer.h>
 
-namespace now_playing {
-class RemoteCommandCenterDelegateImpl;
-}  // namespace now_playing
+namespace system_media_controls {
+namespace internal {
+class RemoteCommandCenterDelegate;
+}  // namespace internal
+}  // namespace system_media_controls
 
 API_AVAILABLE(macos(10.12.2))
-@interface RemoteCommandCenterDelegateNS : NSObject {
+@interface RemoteCommandCenterDelegateCocoa : NSObject {
  @private
-  now_playing::RemoteCommandCenterDelegateImpl* delegate_;
+  system_media_controls::internal::RemoteCommandCenterDelegate* delegate_;
 }
 
 - (instancetype)initWithDelegate:
-    (now_playing::RemoteCommandCenterDelegateImpl*)delegate;
+    (system_media_controls::internal::RemoteCommandCenterDelegate*)delegate;
 
 // Called by the OS via the MPRemoteCommandCenter.
 - (MPRemoteCommandHandlerStatus)onCommand:(MPRemoteCommandEvent*)event;
 
-// Called by the RemoteCommandCenterDelegateImpl to enable/disable different
+// Called by the RemoteCommandCenterDelegate to enable/disable different
 // commands.
 - (void)setCanPlay:(bool)can_play;
 - (void)setCanPause:(bool)can_pause;
@@ -35,4 +37,4 @@ API_AVAILABLE(macos(10.12.2))
 
 @end
 
-#endif  // UI_BASE_NOW_PLAYING_REMOTE_COMMAND_CENTER_DELEGATE_NS_H_
+#endif  // COMPONENTS_SYSTEM_MEDIA_CONTROLS_MAC_REMOTE_COMMAND_CENTER_DELEGATE_COCOA_H_

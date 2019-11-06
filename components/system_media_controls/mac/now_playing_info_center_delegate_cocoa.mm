@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/base/now_playing/now_playing_info_center_delegate_cocoa.h"
+#include "components/system_media_controls/mac/now_playing_info_center_delegate_cocoa.h"
 
 #import <MediaPlayer/MediaPlayer.h>
 

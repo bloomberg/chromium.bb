@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/base/now_playing/remote_command_center_delegate_ns.h"
+#include "components/system_media_controls/mac/remote_command_center_delegate_cocoa.h"
 
 #import <MediaPlayer/MediaPlayer.h>
 
-#include "ui/base/now_playing/remote_command_center_delegate_impl.h"
+#include "components/system_media_controls/mac/remote_command_center_delegate.h"
 
 API_AVAILABLE(macos(10.12.2))
-@interface RemoteCommandCenterDelegateNS ()
+@interface RemoteCommandCenterDelegateCocoa ()
 
 - (void)setCommand:(MPRemoteCommand*)command enabled:(bool)enabled;
 - (void)enableCommand:(MPRemoteCommand*)command;
@@ -17,10 +17,10 @@ API_AVAILABLE(macos(10.12.2))
 
 @end
 
-@implementation RemoteCommandCenterDelegateNS
+@implementation RemoteCommandCenterDelegateCocoa
 
 - (instancetype)initWithDelegate:
-    (now_playing::RemoteCommandCenterDelegateImpl*)delegate {
+    (system_media_controls::internal::RemoteCommandCenterDelegate*)delegate {
   if (self = [super init]) {
     delegate_ = delegate;
 
