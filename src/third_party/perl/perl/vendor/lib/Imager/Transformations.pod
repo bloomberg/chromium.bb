@@ -1,0 +1,973 @@
+=head1 NAME
+
+Imager::Transformations - Simple transformations of one image into another.
+
+=head1 SYNOPSIS
+
+  use Imager;
+
+  $newimg = $img->copy();
+
+  $newimg = $img->scale(xpixels=>400, qtype => 'mixing');
+  $newimg = $img->scale(xpixels=>400, ypixels=>400);
+  $newimg = $img->scale(xpixels=>400, ypixels=>400, type=>'min');
+  $newimg = $img->scale(scalefactor=>0.25);
+
+  $newimg = $img->scaleX(pixels=>400);
+  $newimg = $img->scaleX(scalefactor=>0.25);
+  $newimg = $img->scaleY(pixels=>400);
+  $newimg = $img->scaleY(scalefactor=>0.25);
+
+  $newimg = $img->crop(left=>50, right=>100, top=>10, bottom=>100); 
+  $newimg = $img->crop(left=>50, top=>10, width=>50, height=>90);
+
+  $dest->paste(left=>40,top=>20,img=>$logo);
+
+  $img->rubthrough(src=>$srcimage,tx=>30, ty=>50);
+  $img->rubthrough(src=>$srcimage,tx=>30, ty=>50,
+                   src_minx=>20, src_miny=>30,
+                   src_maxx=>20, src_maxy=>30);
+
+  $img->compose(src => $src, tx => 30, ty => 20, combine => 'color');
+  $img->compose(src => $src, tx => 30, ty => 20, combine => 'color');
+                mask => $mask, opacity => 0.5);
+
+  $img->flip(dir=>"h");       # horizontal flip
+  $img->flip(dir=>"vh");      # vertical and horizontal flip
+  $newimg = $img->copy->flip(dir=>"v"); # make a copy and flip it vertically
+
+  my $rot20 = $img->rotate(degrees=>20);
+  my $rotpi4 = $img->rotate(radians=>3.14159265/4);
+
+
+  # Convert image to gray
+  $new = $img->convert(preset=>'grey');          
+
+  # Swap red/green channel  
+  $new = $img->convert(matrix=>[ [ 0, 1, 0 ],
+                                 [ 1, 0, 0 ],
+                                 [ 0, 0, 1 ] ]);
+
+  # build an image using channels from multiple input images
+  $new = $img->combine(src => [ $im1, $im2, $im3 ]);
+  $new = $img->combine(src => [ $im1, $im2, $im3 ],
+                       channels => [ 2, 1, 0 ]);
+
+  # limit the range of red channel from 0..255 to 0..127
+  @map = map { int( $_/2 } 0..255;
+  $img->map( red=>\@map );
+
+  # Apply a Gamma of 1.4
+  my $gamma = 1.4;
+  my @map = map { int( 0.5 + 255*($_/255)**$gamma ) } 0..255;
+  $img->map(all=>\@map);  # inplace conversion
+
+=head1 DESCRIPTION
+
+The methods described in Imager::Transformations fall into two categories.
+Either they take an existing image and modify it in place, or they 
+return a modified copy.
+
+Functions that modify inplace are C<flip()>, C<paste()>,
+C<rubthrough()> and C<compose()>.  If the original is to be left
+intact it's possible to make a copy and alter the copy:
+
+  $flipped = $img->copy()->flip(dir=>'h');
+
+=head2 Image copying/resizing/cropping/rotating
+
+A list of the transformations that do not alter the source image follows:
+
+=over
+
+=item copy()
+
+To create a copy of an image use the C<copy()> method.  This is useful
+if you want to keep an original after doing something that changes the image.
+
+  $newimg = $orig->copy();
+
+=item scale()
+
+X<scale>To scale an image so proportions are maintained use the
+C<$img-E<gt>scale()> method.  if you give either a C<xpixels> or
+C<ypixels> parameter they will determine the width or height
+respectively.  If both are given the one resulting in a larger image
+is used, unless you set the C<type> parameter to C<'min'>.  example:
+C<$img> is 700 pixels wide and 500 pixels tall.
+
+  $newimg = $img->scale(xpixels=>400); # 400x285
+  $newimg = $img->scale(ypixels=>400); # 560x400
+
+  $newimg = $img->scale(xpixels=>400,ypixels=>400); # 560x400
+  $newimg = $img->scale(xpixels=>400,ypixels=>400,type=>'min'); # 400x285
+
+  $newimg = $img->scale(xpixels=>400, ypixels=>400),type=>'nonprop'); # 400x400
+
+  $newimg = $img->scale(scalefactor=>0.25); 175x125 
+  $newimg = $img->scale(); # 350x250
+
+If you want to create low quality previews of images you can pass
+C<qtype=E<gt>'preview'> to scale and it will use nearest neighbor
+sampling instead of filtering. It is much faster but also generates
+worse looking images - especially if the original has a lot of sharp
+variations and the scaled image is by more than 3-5 times smaller than
+the original.
+
+=over
+
+=item *
+
+C<xpixels>, C<ypixels> - desired size of the scaled image.  The
+C<type> parameter controls whether the larger or smaller of the two
+possible sizes is chosen, or if the image is scaled
+non-proportionally.
+
+=item *
+
+C<constrain> - an Image::Math::Constrain object defining the way in
+which the image size should be constrained.
+
+=item *
+
+C<scalefactor> - if none of C<xpixels>, C<ypixels>, C<xscalefactor>,
+C<yscalefactor> or C<constrain> is supplied then this is used as the
+ratio to scale by.  Default: 0.5.
+
+=item *
+
+C<xscalefactor>, C<yscalefactor> - if both are supplied then the image is
+scaled as per these parameters, whether this is proportionally or not.
+New in Imager 0.54.
+
+=item *
+
+C<type> - controls whether the larger or smaller of the two possible
+sizes is chosen, possible values are:
+
+=over
+
+=item *
+
+C<min> - the smaller of the 2 sizes are chosen.
+
+=item *
+
+C<max> - the larger of the 2 sizes.  This is the default.
+
+=item *
+
+C<nonprop> - non-proportional scaling.  New in Imager 0.54.
+
+=back
+
+scale() will fail if C<type> is set to some other value.
+
+For example, if the original image is 400 pixels wide by 200 pixels
+high and C<xpixels> is set to 300, and C<ypixels> is set to 160.  When
+C<type> is C<'min'> the resulting image is 300 x 150, when C<type> is
+C<'max'> the resulting image is 320 x 160.
+
+C<type> is only used if both C<xpixels> and C<ypixels> are supplied.
+
+=item *
+
+C<qtype> - defines the quality of scaling performed.  Possible values are:
+
+=over
+
+=item *
+
+C<normal> - high quality scaling.  This is the default.
+
+=item *
+
+C<preview> - lower quality.  When scaling down this will skip input
+pixels, eg. scaling by 0.5 will skip every other pixel.  When scaling
+up this will duplicate pixels.
+
+=item *
+
+C<mixing> - implements the mixing algorithm implemented by
+F<pnmscale>.  This retains more detail when scaling down than
+C<normal>.  When scaling down this proportionally accumulates sample
+data from the pixels, resulting in a proportional mix of all of the
+pixels.  When scaling up this will mix pixels when the sampling grid
+crosses a pixel boundary but will otherwise copy pixel values.
+
+=back
+
+scale() will fail if C<qtype> is set to some other value.
+
+C<preview> is faster than C<mixing> which is much faster than C<normal>.
+
+=back
+
+To scale an image on a given axis without maintaining proportions, it
+is best to call the scaleX() and scaleY() methods with the required
+dimensions. eg.
+
+  my $scaled = $img->scaleX(pixels=>400)->scaleY(pixels=>200);
+
+From Imager 0.54 you can scale without maintaining proportions either
+by supplying both the C<xscalefactor> and C<yscalefactor> arguments:
+
+  my $scaled = $img->scale(xscalefactor => 0.5, yscalefactor => 0.67);
+
+or by supplying C<xpixels> and C<ypixels> and setting C<type> to
+<nonprop>:
+
+  my $scaled = $im->scale(xpixels => 200, ypixels => 200, type => 'nonprop');
+
+Returns a new scaled image on success.  The source image is not
+modified.
+
+Returns false on failure, check the errstr() method for the reason for
+failure.
+
+A mandatory warning is produced if scale() is called in void context.
+
+  # setup
+  my $image = Imager->new;
+  $image->read(file => 'somefile.jpg')
+    or die $image->errstr;
+
+  # all full quality unless indicated otherwise
+  # half the size:
+  my $half = $image->scale;
+
+  # double the size
+  my $double = $image->scale(scalefactor => 2.0);
+
+  # so a 400 x 400 box fits in the resulting image:
+  my $fit400x400inside = $image->scale(xpixels => 400, ypixels => 400);
+  my $fit400x400inside2 = $image->scale(xpixels => 400, ypixels => 400,
+                                        type=>'max');
+
+  # fit inside a 400 x 400 box
+  my $inside400x400 = $image->scale(xpixels => 400, ypixels => 400,
+                              type=>'min');
+
+  # make it 400 pixels wide or high
+  my $width400 = $image->scale(xpixels => 400);
+  my $height400 = $image->scale(ypixels => 400);
+
+  # low quality scales:
+  # to half size
+  my $low = $image->scale(qtype => 'preview');
+
+  # mixing method scale
+  my $mixed = $image->scale(qtype => 'mixing', scalefactor => 0.1);
+
+  # using an Image::Math::Constrain object
+  use Image::Math::Constrain;
+  my $constrain = Image::Math::Constrain->new(800, 600);
+  my $scaled = $image->scale(constrain => $constrain);
+
+  # same as Image::Math::Constrain version
+  my $scaled2 = $image->scale(xpixels => 800, ypixels => 600, type => 'min');
+
+=item scaleX()
+
+scaleX() will scale along the X dimension, return a new image with the
+new width:
+
+  my $newimg = $img->scaleX(pixels=>400); # 400x500
+  $newimg = $img->scaleX(scalefactor=>0.25) # 175x500
+
+=over
+
+=item *
+
+C<scalefactor> - the amount to scale the X axis.  Ignored if C<pixels> is
+provided.  Default: 0.5.
+
+=item *
+
+C<pixels> - the new width of the image.
+
+=back
+
+Returns a new scaled image on success.  The source image is not
+modified.
+
+Returns false on failure, check the errstr() method for the reason for
+failure.
+
+A mandatory warning is produced if scaleX() is called in void context.
+
+=item scaleY()
+
+scaleY() will scale along the Y dimension, return a new image with the
+new height:
+
+  $newimg = $img->scaleY(pixels=>400); # 700x400
+  $newimg = $img->scaleY(scalefactor=>0.25) # 700x125
+
+=over
+
+=item *
+
+C<scalefactor> - the amount to scale the Y axis.  Ignored if C<pixels> is
+provided.  Default: 0.5.
+
+=item *
+
+C<pixels> - the new height of the image.
+
+=back
+
+Returns a new scaled image on success.  The source image is not
+modified.
+
+Returns false on failure, check the errstr() method for the reason for
+failure.
+
+A mandatory warning is produced if scaleY() is called in void context.
+
+=item scale_calculate()
+
+Performs the same calculations that the scale() method does to
+calculate the scaling factors from the parameters you pass.
+
+scale_calculate() can be called as an object method, or as a class
+method.
+
+Takes the following parameters over scale():
+
+=over
+
+=item *
+
+C<width>, C<height> - the image width and height to base the scaling on.
+Required if scale_calculate() is called as a class method.  If called
+as an object method these default to the image width and height
+respectively.
+
+=back
+
+You might use scale_calculate() as a class method when generating an
+HTML C<IMG> tag, for example.
+
+Returns an empty list on failure.
+
+Returns a list containing horizontal scale factor, vertical scale
+factor, new width, new height, on success.
+
+  my ($x_scale, $y_scale, $new_width, $new_height) =
+	Imager->scale_calculate(width => 1024, height => 768,
+				ypixels => 180, type => 'min');
+
+  my ($x_scale, $y_scale, $new_width, $new_height) =
+	$img->scale_calculate(xpixels => 200, type => 'min');
+
+=item crop()
+
+=for stopwords resize
+
+Another way to resize an image is to crop it.  The parameters to
+crop are the edges of the area that you want in the returned image,
+where the right and bottom edges are non-inclusive.  If a parameter is
+omitted a default is used instead.
+
+crop() returns the cropped image and does not modify the source image.
+
+The possible parameters are:
+
+=over
+
+=item *
+
+C<left> - the left edge of the area to be cropped.  Default: 0
+
+=item *
+
+C<top> - the top edge of the area to be cropped.  Default: 0
+
+=item *
+
+C<right> - the right edge of the area to be cropped.  Default: right
+edge of image.
+
+=item *
+
+C<bottom> - the bottom edge of the area to be cropped.  Default:
+bottom edge of image.
+
+=item *
+
+C<width> - width of the crop area.  Ignored if both C<left> and C<right> are
+supplied.  Centered on the image if neither C<left> nor C<right> are
+supplied.
+
+=item *
+
+C<height> - height of the crop area.  Ignored if both C<top> and
+C<bottom> are supplied.  Centered on the image if neither C<top> nor
+C<bottom> are supplied.
+
+=back
+
+For example:
+
+  # these produce the same image
+  $newimg = $img->crop(left=>50, right=>100, top=>10, bottom=>100); 
+  $newimg = $img->crop(left=>50, top=>10, width=>50, height=>90);
+  $newimg = $img->crop(right=>100, bottom=>100, width=>50, height=>90);
+
+  # and the following produce the same image
+  $newimg = $img->crop(left=>50, right=>100);
+  $newimg = $img->crop(left=>50, right=>100, top=>0, 
+                       bottom=>$img->getheight);
+
+  # grab the top left corner of the image
+  $newimg = $img->crop(right=>50, bottom=>50);
+
+You can also specify width and height parameters which will produce a
+new image cropped from the center of the input image, with the given
+width and height.
+
+  $newimg = $img->crop(width=>50, height=>50);
+
+If you supply C<left>, C<width> and C<right> values, the C<right>
+value will be ignored.  If you supply C<top>, C<height> and C<bottom>
+values, the C<bottom> value will be ignored.
+
+The edges of the cropped area default to the edges of the source
+image, for example:
+
+  # a vertical bar from the middle from top to bottom
+  $newimg = $img->crop(width=>50);
+
+  # the right half
+  $newimg = $img->crop(left=>$img->getwidth() / 2);
+
+If the resulting image would have zero width or height then crop()
+returns false and $img->errstr is an appropriate error message.
+
+A mandatory warning is produced if crop() is called in void context.
+
+=item rotate()
+
+Use the rotate() method to rotate an image.  This method will return a
+new, rotated image.
+
+To rotate by an exact amount in degrees or radians, use the 'degrees'
+or 'radians' parameter:
+
+  my $rot20 = $img->rotate(degrees=>20);
+  my $rotpi4 = $img->rotate(radians=>3.14159265/4);
+
+Exact image rotation uses the same underlying transformation engine as
+the matrix_transform() method (see Imager::Engines).
+
+You can also supply a C<back> argument which acts as a background
+color for the areas of the image with no samples available (outside
+the rectangle of the source image.)  This can be either an
+Imager::Color or Imager::Color::Float object.  This is B<not> mixed
+transparent pixels in the middle of the source image, it is B<only>
+used for pixels where there is no corresponding pixel in the source
+image.
+
+To rotate in steps of 90 degrees, use the 'right' parameter:
+
+  my $rotated = $img->rotate(right=>270);
+
+Rotations are clockwise for positive values.
+
+Parameters:
+
+=over
+
+=item *
+
+C<right> - rotate by an exact multiple of 90 degrees, specified in
+degrees.
+
+=item *
+
+C<radians> - rotate by an angle specified in radians.
+
+=item *
+
+C<degrees> - rotate by an angle specified in degrees.
+
+=item *
+
+C<back> - for C<radians> and C<degrees> this is the color used for the
+areas not covered by the original image.  For example, the corners of
+an image rotated by 45 degrees.
+
+This can be either an Imager::Color object, an Imager::Color::Float
+object or any parameter that Imager can convert to a color object, see
+L<Imager::Draw/Color Parameters> for details.
+
+This is B<not> mixed transparent pixels in the middle of the source
+image, it is B<only> used for pixels where there is no corresponding
+pixel in the source image.
+
+Default: transparent black.
+
+=back
+
+  # rotate 45 degrees clockwise, 
+  my $rotated = $img->rotate(degrees => 45);
+
+  # rotate 10 degrees counter-clockwise
+  # set pixels not sourced from the original to red
+  my $rotated = $img->rotate(degrees => -10, back => 'red');
+
+=back
+
+=head2 Image pasting/flipping
+
+A list of the transformations that alter the source image follows:
+
+=over
+
+=item paste()
+
+X<paste>To copy an image to onto another image use the C<paste()>
+method.
+
+  $dest->paste(left=>40, top=>20, src=>$logo);
+
+That copies the entire C<$logo> image onto the C<$dest> image so that the
+upper left corner of the C<$logo> image is at (40,20).
+
+Parameters:
+
+=over
+
+=item *
+
+C<src>, C<img> - the source image.  C<src> added for compatibility with
+rubthrough().
+
+=item *
+
+C<left>, C<top> - position in output of the top left of the pasted image.
+Default: (0,0)
+
+=item *
+
+C<src_minx>, C<src_miny> - the top left corner in the source image to start
+the paste from.  Default: (0, 0)
+
+=item *
+
+C<src_maxx>, C<src_maxy> - the bottom right in the source image of the sub
+image to paste.  This position is B<non> inclusive.  Default: bottom
+right corner of the source image.
+
+=item *
+
+C<width>, C<height> - if the corresponding src_maxx or src_maxy is not
+defined then width or height is used for the width or height of the
+sub image to be pasted.
+
+=back
+
+  # copy the 20x20 pixel image from (20,20) in $src_image to (10,10) in $img
+  $img->paste(src=>$src_image,
+              left => 10, top => 10,
+              src_minx => 20, src_miny => 20,
+              src_maxx => 40, src_maxx => 40);
+
+If the source image has an alpha channel and the target doesn't, then
+the source is treated as if composed onto a black background.
+
+If the source image is color and the target is gray scale, the
+source is treated as if run through C<< convert(preset=>'gray') >>.
+
+=item rubthrough()
+
+A more complicated way of blending images is where one image is
+put 'over' the other with a certain amount of opaqueness.  The
+method that does this is rubthrough().
+
+  $img->rubthrough(src=>$overlay,
+                   tx=>30,       ty=>50,
+                   src_minx=>20, src_miny=>30,
+                   src_maxx=>20, src_maxy=>30);
+
+That will take the sub image defined by I<$overlay> and
+I<[src_minx,src_maxx)[src_miny,src_maxy)> and overlay it on top of
+I<$img> with the upper left corner at (30,50).  You can rub 2 or 4
+channel images onto a 3 channel image, or a 2 channel image onto a 1
+channel image.  The last channel is used as an alpha channel.  To add
+an alpha channel to an image see I<convert()>.
+
+Parameters:
+
+=over
+
+=item *
+
+C<tx>, C<ty> - location in the target image ($self) to render the
+top left corner of the source.
+
+=item *
+
+C<src_minx>, C<src_miny> - the top left corner in the source to transfer to
+the target image.  Default: (0, 0).
+
+=item *
+
+C<src_maxx>, C<src_maxy> - the bottom right in the source image of the sub
+image to overlay.  This position is B<non> inclusive.  Default: bottom
+right corner of the source image.
+
+=back
+
+  # overlay all of $source onto $targ
+  $targ->rubthrough(tx => 20, ty => 25, src => $source);
+
+  # overlay the top left corner of $source onto $targ
+  $targ->rubthrough(tx => 20, ty => 25, src => $source,
+                    src_maxx => 20, src_maxy => 20);
+
+  # overlay the bottom right corner of $source onto $targ
+  $targ->rubthrough(tx => 20, ty => 30, src => $src,
+                    src_minx => $src->getwidth() - 20,
+                    src_miny => $src->getheight() - 20);
+
+rubthrough() returns true on success.  On failure check
+C<< $target->errstr >> for the reason for failure.
+
+=item compose()
+
+Draws the source image over the target image, with the source alpha
+channel modified by the optional mask and the opacity.
+
+  $img->compose(src=>$overlay,
+                tx=>30,       ty=>50,
+                src_minx=>20, src_miny=>30,
+                src_maxx=>20, src_maxy=>30,
+                mask => $mask, opacity => 0.5);
+
+That will take the sub image defined by I<$overlay> and
+I<[src_minx,src_maxx)[src_miny,src_maxy)> and overlay it on top of
+I<$img> with the upper left corner at (30,50).  You can rub 2 or 4
+channel images onto a 3 channel image, or a 2 channel image onto a 1
+channel image.
+
+Parameters:
+
+=over
+
+=item *
+
+C<src> - the source image to draw onto the target.  Required.
+
+=item *
+
+C<tx>, C<ty> - location in the target image ($self) to render the top
+left corner of the source.  These can also be supplied as C<left> and
+C<right>.  Default: (0, 0).
+
+=item *
+
+C<src_minx>, C<src_miny> - the top left corner in the source to transfer to
+the target image.  Default: (0, 0).
+
+=item *
+
+C<src_maxx>, C<src_maxy> - the bottom right in the source image of the sub
+image to overlay.  This position is B<non> inclusive.  Default: bottom
+right corner of the source image.
+
+=item *
+
+C<mask> - a mask image.  The first channel of this image is used to
+modify the alpha channel of the source image.  This can be used to
+mask out portions of the source image.  Where the first channel is
+zero none of the source image will be used, where the first channel is
+maximum the full alpha of the source image will be used, as further
+modified by the opacity.
+
+=item *
+
+opacity - further modifies the alpha channel of the source image, in
+the range 0.0 to 1.0.  Default: 1.0.
+
+=item *
+
+combine - the method to combine the source pixels with the target.
+See the combine option documentation in Imager::Fill.  Default:
+normal.
+
+=back
+
+Calling compose() with no mask, combine set to C<normal>, opacity set
+to C<1.0> is equivalent to calling rubthrough().
+
+compose() is intended to be produce similar effects to layers in
+interactive paint software.
+
+  # overlay all of $source onto $targ
+  $targ->compose(tx => 20, ty => 25, src => $source);
+
+  # overlay the top left corner of $source onto $targ
+  $targ->compose(tx => 20, ty => 25, src => $source,
+                    src_maxx => 20, src_maxy => 20);
+
+  # overlay the bottom right corner of $source onto $targ
+  $targ->compose(tx => 20, ty => 30, src => $src,
+                    src_minx => $src->getwidth() - 20,
+                    src_miny => $src->getheight() - 20);
+
+compose() returns true on success.  On failure check $target->errstr
+for the reason for failure.
+
+=item flip()
+
+An inplace horizontal or vertical flip is possible by calling the
+C<flip()> method.  If the original is to be preserved it's possible to
+make a copy first.  The only parameter it takes is the C<dir>
+parameter which can take the values C<h>, C<v>, C<vh> and C<hv>.
+
+  $img->flip(dir=>"h");       # horizontal flip
+  $img->flip(dir=>"vh");      # vertical and horizontal flip
+  $nimg = $img->copy->flip(dir=>"v"); # make a copy and flip it vertically
+
+flip() returns true on success.  On failure check $img->errstr for the
+reason for failure.
+
+=back
+
+=head2 Color transformations
+
+=over
+
+=item convert()
+
+You can use the convert method to transform the color space of an
+image using a matrix.  For ease of use some presets are provided.
+
+The convert method can be used to:
+
+=over
+
+=item *
+
+convert an RGB or RGBA image to gray scale.
+
+=item *
+
+convert a gray scale image to RGB.
+
+=item *
+
+extract a single channel from an image.
+
+=item *
+
+set a given channel to a particular value (or from another channel)
+
+=back
+
+The currently defined presets are:
+
+=over
+
+=item *
+
+C<gray>, C<grey> - converts an RGBA image into a gray scale image with
+alpha channel, or an RGB image into a gray scale image without an
+alpha channel.
+
+This weights the RGB channels at 22.2%, 70.7% and 7.1% respectively.
+
+=item *
+
+C<noalpha> - removes the alpha channel from a 2 or 4 channel image.
+An identity for other images.  Warning: this removes the alpha channel
+without applying it.
+
+=item *
+
+C<red>, C<channel0> - extracts the first channel of the image into a
+single channel image
+
+=item *
+
+C<green>, C<channel1> - extracts the second channel of the image into
+a single channel image
+
+=item *
+
+C<blue>, C<channel2> - extracts the third channel of the image into a
+single channel image
+
+=item *
+
+C<alpha> - extracts the alpha channel of the image into a single
+channel image.
+
+If the image has 1 or 3 channels (assumed to be gray scale or RGB) then
+the resulting image will be all white.
+
+=item *
+
+C<rgb>
+
+converts a gray scale image to RGB, preserving the alpha channel if any
+
+=item *
+
+C<addalpha> - adds an alpha channel to a gray scale or RGB image.
+Preserves an existing alpha channel for a 2 or 4 channel image.
+
+=back
+
+For example, to convert an RGB image into a gray scale image:
+
+  $new = $img->convert(preset=>'grey'); # or gray
+
+or to convert a gray scale image to an RGB image:
+
+  $new = $img->convert(preset=>'rgb');
+
+The presets aren't necessary simple constants in the code, some are
+generated based on the number of channels in the input image.
+
+If you want to perform some other color transformation, you can use
+the 'matrix' parameter.
+
+For each output pixel the following matrix multiplication is done:
+
+  | channel[0] |   | $c00, ...,  $c0k |   | inchannel[0] |
+  |    ...     | = |       ...        | x |     ...      |
+  | channel[k] |   | $ck0, ...,  $ckk |   | inchannel[k] |
+                                                          1
+Where C<k = $img-E<gt>getchannels()-1>.
+
+So if you want to swap the red and green channels on a 3 channel image:
+
+  $new = $img->convert(matrix=>[ [ 0, 1, 0 ],
+                                 [ 1, 0, 0 ],
+                                 [ 0, 0, 1 ] ]);
+
+or to convert a 3 channel image to gray scale using equal weightings:
+
+  $new = $img->convert(matrix=>[ [ 0.333, 0.333, 0.334 ] ])
+
+Convert a 2 channel image (gray scale with alpha) to an RGBA image with
+the gray converted to the specified RGB color:
+
+  # set (RGB) scaled on the grey scale portion and copy the alpha
+  # channel as is
+  my $colored = $gray->convert(matrix=>[ [ ($red/255),   0 ], 
+                                         [ ($green/255), 0 ], 
+                                         [ ($blue/255),  0 ], 
+                                         [ 0,            1 ],
+                                       ]);
+
+To convert a 3 channel image to a 4 channel image with a 50 percent
+alpha channel:
+
+  my $withalpha = $rgb->convert(matrix =>[ [ 1, 0, 0, 0 ],
+                                           [ 0, 1, 0, 0 ],
+                                           [ 0, 0, 1, 0 ],
+                                           [ 0, 0, 0, 0.5 ],
+                                         ]);
+
+=item combine()
+X<combine>
+
+Combine channels from one or more input images into a new image.
+
+Parameters:
+
+=over
+
+=item *
+
+C<src> - a reference to an array of input images.  There must be at least
+one input image.  A given image may appear more than once in C<src>.
+
+=item *
+
+C<channels> - a reference to an array of channels corresponding to the
+source images.  If C<channels> is not supplied then the first channel
+from each input image is used.  If the array referenced by C<channels>
+is shorter than that referenced by C<src> then the first channel is
+used from the extra images.
+
+=back
+
+  # make an rgb image from red, green, and blue images
+  my $rgb = Imager->combine(src => [ $red, $green, $blue ]);
+
+  # convert a BGR image into RGB
+  my $rgb = Imager->combine(src => [ $bgr, $bgr, $bgr ],
+                            channels => [ 2, 1, 0 ]);
+
+  # add an alpha channel from another image
+  my $rgba = Imager->combine(src => [ $rgb, $rgb, $rgb, $alpha ],
+                     channels => [ 0, 1, 2, 0 ]);
+
+=back
+
+=head2 Color Mappings
+
+=over
+
+=item map()
+
+You can use the map method to map the values of each channel of an
+image independently using a list of look-up tables.  It's important to
+realize that the modification is made inplace.  The function simply
+returns the input image again or undef on failure.
+
+Each channel is mapped independently through a look-up table with 256
+entries.  The elements in the table should not be less than 0 and not
+greater than 255.  If they are out of the 0..255 range they are
+clamped to the range.  If a table does not contain 256 entries it is
+silently ignored.
+
+Single channels can mapped by specifying their name and the mapping
+table.  The channel names are C<red>, C<green>, C<blue>, C<alpha>.
+
+  @map = map { int( $_/2 } 0..255;
+  $img->map( red=>\@map );
+
+It is also possible to specify a single map that is applied to all
+channels, alpha channel included.  For example this applies a gamma
+correction with a gamma of 1.4 to the input image.
+
+  $gamma = 1.4;
+  @map = map { int( 0.5 + 255*($_/255)**$gamma ) } 0..255;
+  $img->map(all=> \@map);
+
+The C<all> map is used as a default channel, if no other map is
+specified for a channel then the C<all> map is used instead.  If we
+had not wanted to apply gamma to the alpha channel we would have used:
+
+  $img->map(all=> \@map, alpha=>[]);
+
+Since C<[]> contains fewer than 256 element the gamma channel is
+unaffected.
+
+It is also possible to simply specify an array of maps that are
+applied to the images in the RGBA order.  For example to apply
+maps to the C<red> and C<blue> channels one would use:
+
+  $img->map(maps=>[\@redmap, [], \@bluemap]);
+
+=back
+
+=head1 SEE ALSO
+
+L<Imager>, L<Imager::Engines>
+
+=head1 AUTHOR
+
+Tony Cook <tonyc@cpan.org>, Arnar M. Hrafnkelsson
+
+=head1 REVISION
+
+$Revision$
+
+=cut

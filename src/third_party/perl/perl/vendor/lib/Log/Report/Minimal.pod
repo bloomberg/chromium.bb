@@ -1,0 +1,135 @@
+=encoding utf8
+
+=head1 NAME
+
+Log::Report::Minimal - simulate Log::Report functions simple
+
+=head1 INHERITANCE
+
+ Log::Report::Minimal
+   is a Exporter
+
+=head1 SYNOPSIS
+
+ # See Log::Report, most functions get "hollow" behavior
+ use Log::Report::Optional mode => 'DEBUG';
+
+=head1 DESCRIPTION
+
+This module implements the functions provided by Log::Report, but then
+as simple as possible: no support for translations, no dispatchers, no
+smart exceptions.  The package uses C<Log::Report> in an C<::Optional>
+way, the main script determines whether it wants the C<::Minimal> or
+full-blown feature set.
+
+=head1 FUNCTIONS
+
+=over 4
+
+=item B<textdomain>( <[$name],$config>|<$name, 'DELETE'|'EXISTS'>|$domain )
+
+=back
+
+=head2 Report Production and Configuration
+
+=over 4
+
+=item B<dispatcher>( <$type, $name, %options>|<$command, @names> )
+
+Not supported.
+
+=item B<report>( [$options], $reason, $message|<STRING,$params> )
+
+Be warned that %options is a HASH here.
+
+ -Option  --Default
+  errno     $! or 1
+  is_fatal  <depends on reason>
+
+=over 2
+
+=item errno => INTEGER
+
+=item is_fatal => BOOLEAN
+
+=back
+
+=item B<try>(CODE, %options)
+
+=back
+
+=head2 Abbreviations for report()
+
+=over 4
+
+=item B<alert>($message)
+
+=item B<assert>($message)
+
+=item B<error>($message)
+
+=item B<failure>($message)
+
+=item B<fault>($message)
+
+=item B<info>($message)
+
+=item B<mistake>($message)
+
+=item B<notice>($message)
+
+=item B<panic>($message)
+
+=item B<trace>($message)
+
+=item B<warning>($message)
+
+=back
+
+=head2 Language Translations
+
+No translations, no L<Log::Report::Message> objects returned.
+
+=over 4
+
+=item B<N__>($msgid)
+
+=item B<N__n>($single_msgid, $plural_msgid)
+
+=item B<N__w>(STRING)
+
+=item B<__>($msgid)
+
+=item B<__n>($msgid, $plural_msgid, $count, PAIRS)
+
+=item B<__nx>($msgid, $plural_msgid, $count, PAIRS)
+
+=item B<__x>($msgid, PAIRS)
+
+=item B<__xn>($single_msgid, $plural_msgid, $count, PAIRS)
+
+=back
+
+=head2 Configuration
+
+=over 4
+
+=item $obj-E<gt>B<import>( [$domain], %options )
+
+See Log::Report subroutine import.
+
+=back
+
+=head1 SEE ALSO
+
+This module is part of Log-Report-Optional distribution version 1.06,
+built on February 02, 2018. Website: F<http://perl.overmeer.net/CPAN/>
+
+=head1 LICENSE
+
+Copyrights 2013-2018 by [Mark Overmeer <mark@overmeer.net>]. For other contributors see ChangeLog.
+
+This program is free software; you can redistribute it and/or modify it
+under the same terms as Perl itself.
+See F<http://dev.perl.org/licenses/>
+

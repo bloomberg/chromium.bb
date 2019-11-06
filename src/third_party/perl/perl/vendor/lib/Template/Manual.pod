@@ -1,0 +1,91 @@
+#============================================================= -*-perl-*-
+#
+# Template::Manual
+#
+# DESCRIPTION
+#   Front-page for the TT manual.
+#
+# AUTHOR
+#   Andy Wardley  <abw@wardley.org>
+#
+# COPYRIGHT
+#   Copyright (C) 1996-2007 Andy Wardley.  All Rights Reserved.
+#
+#   This module is free software; you can redistribute it and/or
+#   modify it under the same terms as Perl itself.
+#
+#========================================================================
+
+=head1 NAME
+
+Template::Manual - Template Toolkit User Manual
+
+=head1 Template Toolkit Manual
+
+The Template Toolkit manual contains documentation on using and extending 
+the Template Toolkit.
+
+=head2 Template::Manual::Intro
+
+The L<Template::Manual::Intro> page provides an introduction to the Template Toolkit
+
+=head2 Template::Manual::Syntax
+
+The L<Template::Manual::Syntax> describes the syntax and structure of 
+templates and the directive tags embedded within them.
+
+=head2 Template::Manual::Directives
+
+The L<Template::Manual::Directives> page lists all the Template Toolkit
+directives and gives examples of their use.
+
+=head2 Template::Manual::Variables
+
+The L<Template::Manual::Variables> page describes the use of variables
+in templates.
+
+=head2 Template::Manual::VMethods
+
+The L<Template::Manual::VMethods> page provides a full list of virtual 
+methods that can be used in conjunction with variables, and gives examples
+of their use. 
+
+=head2 Template::Manual::Config
+
+The L<Template::Manual::Config> page describes all of the Template Toolkit
+configuration options.
+
+=head2 Template::Manual::Filters
+
+The L<Template::Manual::Filters> page lists all of the Template Toolkit
+filters and gives examples of their use.
+
+=head2 Template::Manual::Plugins
+
+The L<Template::Manual::Plugins> page lists all of the standard plugins
+distributed with Template Toolkit and gives examples of their use.
+
+=head2 Template::Manual::Internals
+
+The L<Template::Manual::Internals> page describes the internal workings of the
+Template Toolkit. It is aimed at developers who wish to extend or modify the
+
+=head2 Template::Manual::Views
+
+The L<Template::Manual::Views> page describes the experimental C<VIEW>
+directive.
+
+=head2 Template::Manual::Credits
+
+The L<Template::Manual::Credits> page lists the people who have contributed to 
+the Template Toolkit.
+
+=cut
+
+# Local Variables:
+# mode: perl
+# perl-indent-level: 4
+# indent-tabs-mode: nil
+# End:
+#
+# vim: expandtab shiftwidth=4:

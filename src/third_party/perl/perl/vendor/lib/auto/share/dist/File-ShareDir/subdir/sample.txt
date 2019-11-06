@@ -1,0 +1,7 @@
+This is a sample shared file.
+
+You should be able to locate it using the following
+
+  use File::ShareDir ();
+  
+  module_file('File::ShareDir', 'subdir/sample.txt');

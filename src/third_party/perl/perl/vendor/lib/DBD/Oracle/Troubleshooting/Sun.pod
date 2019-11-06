@@ -1,0 +1,76 @@
+#PODNAME: DBD::Oracle::Troubleshooting::Sun
+#ABSTRACT: Tips and Hints to Troubleshoot DBD::Oracle on Sun
+
+__END__
+
+=pod
+
+=encoding UTF-8
+
+=head1 NAME
+
+DBD::Oracle::Troubleshooting::Sun - Tips and Hints to Troubleshoot DBD::Oracle on Sun
+
+=head1 VERSION
+
+version 1.76
+
+=head1 General Info
+
+If you get this on a Solaris 9 and 10 box
+
+  "Outofmemory!
+   Callback called exit.
+   END failed--call queue aborted."
+
+The solution may be as simple as not having you "ORACLE_HOME" Defined in the
+environment.
+
+It seems that having it defined will prevent the error.
+
+=head1 Setting library load path for instant client libraries
+
+Usually you set LD_LIBRARY_PATH to point to the location of
+your Oracle Instant Client (you need to do this when building
+DBD::Oracle). However, afterwards it can be a pain to keep
+ensuring this is set and changing LD_LIBRARY_PATH in your Perl
+script does not work (needs to be done beforehand) as the dynamic
+linker caches its value.
+
+An alternative under newer versions of Solaris is:
+
+root>  crle -u -l /youroracledir/lib/instantclient_11_2
+
+however, make sure you check the crle options as you may need to
+set the architecture etc as well.
+
+=head1 AUTHORS
+
+=over 4
+
+=item *
+
+Tim Bunce <timb@cpan.org>
+
+=item *
+
+John Scoles <byterock@cpan.org>
+
+=item *
+
+Yanick Champoux <yanick@cpan.org>
+
+=item *
+
+Martin J. Evans <mjevans@cpan.org>
+
+=back
+
+=head1 COPYRIGHT AND LICENSE
+
+This software is copyright (c) 2018, 2014, 2013, 2012, 2011, 2010 by Tim Bunce.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
+
+=cut

@@ -1,0 +1,1951 @@
+=encoding utf-8
+
+=head1 NAME
+
+Time::Moment - Represents a date and time of day with an offset from UTC
+
+=head1 SYNOPSIS
+
+    $tm = Time::Moment->new(
+        year       => 2012,
+        month      => 12,
+        day        => 24,
+        hour       => 15,
+        minute     => 30,
+        second     => 45,
+        nanosecond => 123456789,
+        offset     => 0,
+    );
+    $tm = Time::Moment->now;
+    $tm = Time::Moment->now_utc;
+    $tm = Time::Moment->from_epoch($seconds);
+    $tm = Time::Moment->from_object($object);
+    $tm = Time::Moment->from_string($string);
+    $tm = Time::Moment->from_rd($rd);
+    $tm = Time::Moment->from_jd($jd);
+    $tm = Time::Moment->from_mjd($mjd);
+    
+    $year         = $tm->year;                      # [1, 9999]
+    $quarter      = $tm->quarter;                   # [1, 4]
+    $month        = $tm->month;                     # [1, 12]
+    $week         = $tm->week;                      # [1, 53]
+    
+    $day          = $tm->day_of_year;               # [1, 366]
+    $day          = $tm->day_of_quarter;            # [1, 92]
+    $day          = $tm->day_of_month;              # [1, 31]
+    $day          = $tm->day_of_week;               # [1=Monday, 7=Sunday]
+    
+    $hour         = $tm->hour;                      # [0, 23]
+    $minute       = $tm->minute;                    # [0, 59]
+    $minute       = $tm->minute_of_day;             # [0, 1439]
+    $second       = $tm->second;                    # [0, 59]
+    $second       = $tm->second_of_day;             # [0, 86_399]
+    $millisecond  = $tm->millisecond;               # [0, 999]
+    $millisecond  = $tm->millisecond_of_day;        # [0, 86_399_999]
+    $microsecond  = $tm->microsecond;               # [0, 999_999]
+    $microsecond  = $tm->microsecond_of_day;        # [0, 86_399_999_999]
+    $nanosecond   = $tm->nanosecond;                # [0, 999_999_999]
+    $nanosecond   = $tm->nanosecond_of_day;         # [0, 86_399_999_999_999]
+    
+    $epoch        = $tm->epoch;
+    $offset       = $tm->offset;                    # [-1080, 1080] (±18:00)
+    
+    $jd           = $tm->jd;                        # Julian Date
+    $mjd          = $tm->mjd;                       # Modified Julian Date
+    $rd           = $tm->rd;                        # Rata Die
+    
+    $tm2          = $tm1->with($adjuster);
+    $tm2          = $tm1->with_year($year);
+    $tm2          = $tm1->with_quarter($quarter);
+    $tm2          = $tm1->with_month($month);
+    $tm2          = $tm1->with_week($week);
+    $tm2          = $tm1->with_day_of_year($day);
+    $tm2          = $tm1->with_day_of_quarter($day);
+    $tm2          = $tm1->with_day_of_month($day);
+    $tm2          = $tm1->with_day_of_week($day);
+    $tm2          = $tm1->with_hour($hour);
+    $tm2          = $tm1->with_minute($minute);
+    $tm2          = $tm1->with_minute_of_day($minute);
+    $tm2          = $tm1->with_second($second);
+    $tm2          = $tm1->with_second_of_day($second);
+    $tm2          = $tm1->with_millisecond($millisecond);
+    $tm2          = $tm1->with_millisecond_of_day($millisecond);
+    $tm2          = $tm1->with_microsecond($microsecond);
+    $tm2          = $tm1->with_microsecond_of_day($microsecond);
+    $tm2          = $tm1->with_nanosecond($nanosecond);
+    $tm2          = $tm1->with_nanosecond_of_day($nanosecond);
+    
+    $tm2          = $tm1->with_offset_same_instant($offset);
+    $tm2          = $tm1->with_offset_same_local($offset);
+    
+    $tm2          = $tm1->with_precision($precision);
+    
+    $tm2          = $tm1->plus_years($years);
+    $tm2          = $tm1->plus_months($months);
+    $tm2          = $tm1->plus_weeks($weeks);
+    $tm2          = $tm1->plus_days($days);
+    $tm2          = $tm1->plus_hours($hours);
+    $tm2          = $tm1->plus_minutes($minutes);
+    $tm2          = $tm1->plus_seconds($seconds);
+    $tm2          = $tm1->plus_milliseconds($milliseconds);
+    $tm2          = $tm1->plus_microseconds($microseconds);
+    $tm2          = $tm1->plus_nanoseconds($nanoseconds);
+    
+    $tm2          = $tm1->minus_years($years);
+    $tm2          = $tm1->minus_months($months);
+    $tm2          = $tm1->minus_weeks($weeks);
+    $tm2          = $tm1->minus_days($days);
+    $tm2          = $tm1->minus_hours($hours);
+    $tm2          = $tm1->minus_minutes($minutes);
+    $tm2          = $tm1->minus_seconds($seconds);
+    $tm2          = $tm1->minus_milliseconds($milliseconds);
+    $tm2          = $tm1->minus_microseconds($microseconds);
+    $tm2          = $tm1->minus_nanoseconds($nanoseconds);
+    
+    $years        = $tm1->delta_years($tm2);
+    $months       = $tm1->delta_months($tm2);
+    $weeks        = $tm1->delta_weeks($tm2);
+    $days         = $tm1->delta_days($tm2);
+    $hours        = $tm1->delta_hours($tm2);
+    $minutes      = $tm1->delta_minutes($tm2);
+    $seconds      = $tm1->delta_seconds($tm2);
+    $milliseconds = $tm1->delta_milliseconds($tm2);
+    $microseconds = $tm1->delta_microseconds($tm2);
+    $nanoseconds  = $tm1->delta_nanoseconds($tm2);
+    
+    $tm2          = $tm1->at_utc;
+    
+    $tm2          = $tm1->at_midnight;              # T00:00:00.0
+    $tm2          = $tm1->at_noon;                  # T12:00:00.0
+    
+    $tm2          = $tm1->at_last_day_of_year;
+    $tm2          = $tm1->at_last_day_of_quarter;
+    $tm2          = $tm1->at_last_day_of_month;
+    
+    $boolean      = $tm1->is_before($tm2);
+    $boolean      = $tm1->is_after($tm2);
+    $boolean      = $tm1->is_equal($tm2);
+    
+    $integer      = $tm1->compare($tm2);
+    
+    $boolean      = $tm->is_leap_year;
+    
+    $string       = $tm->to_string;
+    $string       = $tm->strftime($format);
+    
+    $integer      = $tm->length_of_year;            # [365, 366]
+    $integer      = $tm->length_of_quarter;         # [90, 92]
+    $integer      = $tm->length_of_month;           # [28, 31]
+    $integer      = $tm->length_of_week_year;       # [52, 53]
+    
+    @values       = $tm->utc_rd_values;
+    $seconds      = $tm->utc_rd_as_seconds;
+    @values       = $tm->local_rd_values;
+    $seconds      = $tm->local_rd_as_seconds;
+    
+    $integer      = $tm1 <=> $tm2;
+    
+    $boolean      = $tm1 == $tm2;
+    $boolean      = $tm1 != $tm2;
+    $boolean      = $tm1 <  $tm2;
+    $boolean      = $tm1 >  $tm2;
+    $boolean      = $tm1 <= $tm2;
+    $boolean      = $tm1 >= $tm2;
+    
+    $string       = "$tm";
+
+=head1 DESCRIPTION
+
+C<Time::Moment> is an immutable object representing a date and time of day 
+with an offset from UTC in the ISO 8601 calendar system.
+
+Time is measured in nanoseconds since C<0001-01-01T00Z>. In C<Time:Moment> 
+leap seconds are ignored. It is assumed that there are exactly 
+C<86,400,000,000,000> nanoseconds per day. C<Time::Moment> can represent 
+all epoch integers from C<-62,135,596,800> to C<253,402,300,799>; this 
+range suffices to measure times to nanosecond precision for any instant 
+that is within C<0001-01-01T00:00:00Z> to C<9999-12-31T23:59:59Z>.
+
+=head1 CONSTRUCTORS
+
+=head2 new
+
+    $tm = Time::Moment->new(
+        year       => 2012,
+        month      => 12,
+        day        => 24,
+        hour       => 15,
+        minute     => 30,
+        second     => 45,
+        nanosecond => 123456789,
+        offset     => 0,
+    );
+
+Constructs an instance of C<Time::Moment> from the given components.
+
+B<Parameters:>
+
+=over 4
+
+=item year
+
+The year [1, 9999].
+
+=item month
+
+The month of the year [1, 12].
+
+=item day
+
+The day of the month [1, 31]. The day must be valid for the year and month, 
+otherwise an exception is raised.
+
+=item hour
+
+The hour of the day [0, 23].
+
+=item minute
+
+The minute of the hour [0, 59].
+
+=item second
+
+The second of the minute [0, 59].
+
+=item nanosecond
+
+The nanosecond of the second [0, 999_999_999].
+
+=item offset
+
+The offset from UTC in minutes [-1080, 1080] (±18:00).
+
+=back
+
+=head2 now
+
+    $tm = Time::Moment->now;
+
+Constructs an instance of C<Time::Moment> that is set to the current date 
+and time from the system clock in the system time zone, with the offset 
+set to the system's time zone offset from UTC.
+
+=head2 now_utc
+
+    $tm = Time::Moment->now_utc;
+
+Constructs an instance of C<Time::Moment> that is set to the current date 
+and time from the system clock in the UTC time zone.
+
+=head2 from_epoch
+
+    $tm = Time::Moment->from_epoch($seconds);
+    $tm = Time::Moment->from_epoch($seconds, $nanosecond);
+    $tm = Time::Moment->from_epoch($seconds [, nanosecond => 0] [, precision => 6]);
+
+Constructs an instance of C<Time::Moment> from the given I<seconds> from the 
+epoch of 1970-01-01T00Z. Fractional seconds is supported if the constructor 
+is invoked with I<seconds> only, the default precision is 6 (microseconds).
+
+B<Parameters:>
+
+=over 4
+
+=item nanosecond
+
+    $tm = Time::Moment->from_epoch($seconds, nanosecond => 0);
+
+The optional parameter I<nanosecond> [0, 999_999_999] specifies the 
+nanosecond of the second.
+
+=item precision
+
+    $tm = Time::Moment->from_epoch($seconds, precision => 6);
+
+The optional parameter I<precision> [0, 9] specifies the precision of the
+fractional seconds. The default precision is 6 (microseconds).
+
+=back
+
+=head2 from_object
+
+    $tm = Time::Moment->from_object($object);
+
+Constructs an instance of C<Time::Moment> from the given I<object>. If the 
+given object is an instance of C<Time::Moment> it's returned otherwise an 
+attempt is made to coerce the given object to an instance of C<Time::Moment>.
+
+C<Time::Moment> implements coercion handlers for the following object types:
+
+=over 4
+
+=item L<DateTime>
+
+    $tm = Time::Moment->from_object( DateTime->now );
+
+The given C<DateTime> object must be within the supported range and must have 
+a time zone or an offset from UTC, coercing from the 'floating' time zone is 
+not supported.
+
+=item L<Time::Piece>
+
+    $tm = Time::Moment->from_object( scalar Time::Piece::localtime() );
+
+The given C<Time::Piece> object must be within the supported date range.
+
+=back
+
+The coercion scheme is extensible and implemented as documented in 
+L<Params::Coerce>:
+
+    $tm = Params::Coerce::coerce('Time::Moment', scalar Time::Piece::localtime());
+    $tm = Params::Coerce::coerce('Time::Moment', DateTime->now);
+
+C<Time::Moment> also implements a coercion handler from C<Time::Moment> to 
+C<DateTime> and C<Time::Piece>:
+
+    $dt = Params::Coerce::coerce('DateTime', Time::Moment->now);
+    $tp = Params::Coerce::coerce('Time::Piece', Time::Moment->now);
+
+=head2 from_string
+
+    $tm = Time::Moment->from_string($string);
+    $tm = Time::Moment->from_string($string [, lenient => false]);
+
+Constructs an instance of C<Time::Moment> from the given I<string>. The 
+string must consist of a complete date representation and time of day 
+followed by a zone designator. The time of day may be reduced to hour 
+of the day, the second of the minute may have a decimal fraction. The decimal 
+sign can be either the comma [,] or the full stop [.]. A decimal fraction 
+must have at least one digit and may have a total of nine digits, if the 
+fractional precision is greater than nine digits, the value will be 
+truncated.
+
+The following are examples of complete date and time of day representations:
+
+    Basic format:                 Example:
+    YYYYMMDDThhmmssZ              20121224T121530Z
+    YYYYMMDDThhmmss±hhmm          20121224T121530+0100
+    YYYYMMDDThhmmss±hh            20121224T121530+01
+    
+    YYYYMMDDThhmmss.ssZ           20121224T121530.500Z
+    YYYYMMDDThhmmss.ss±hhmm       20121224T121530.500+0100
+    YYYYMMDDThhmmss.ss±hh         20121224T121530.500+01
+    
+    YYYYMMDDThhZ                  20121224T12Z              (reduced accuracy)
+    YYYYMMDDThhmmZ                20121224T1215Z            (reduced accuracy)
+    YYYYMMDDThhmm±hhmm            20121224T1215+0100        (reduced accuracy)
+    YYYYMMDDThhmm±hh              20121224T1215+01          (reduced accuracy)
+    
+    Extended format:              Example:
+    YYYY-MM-DDThh:mm:ssZ          2012-12-24T12:15:30Z
+    YYYY-MM-DDThh:mm:ss±hh:mm     2012-12-24T12:15:30+01:00
+    YYYY-MM-DDThh:mm:ss±hh        2012-12-24T12:15:30+01
+    
+    YYYY-MM-DDThh:mm:ss.ssZ       2012-12-24T12:15:30.500Z
+    YYYY-MM-DDThh:mm:ss.ss±hh:mm  2012-12-24T12:15:30.500+01:00
+    YYYY-MM-DDThh:mm:ss.ss±hh     2012-12-24T12:15:30.500+01
+    
+    YYYY-MM-DDThhZ                2012-12-24T12Z            (reduced accuracy)
+    YYYY-MM-DDThh:mmZ             2012-12-24T12:15Z         (reduced accuracy)
+    YYYY-MM-DDThh:mm±hh:mm        2012-12-24T12:15+01:00    (reduced accuracy)
+    YYYY-MM-DDThh:mm±hh           2012-12-24T12:15+01       (reduced accuracy)
+
+Where representations using calendar dates are shown, ordinal dates or week 
+dates may be substituted. This ISO 8601 profile correspond to a subset of 
+ISO 8601:2004 4.3 Date and time of day.
+
+If the optional boolean parameter I<lenient> is true, the following examples
+are also accepted:
+
+    YYYY-MM-DD hh:mm:ssZ          2012-12-24 12:15:30Z
+    YYYY-MM-DD hh:mm:ssz          2012-12-24 12:15:30z
+    YYYY-MM-DD hh:mm:ss±hhmm      2012-12-24 12:15:30+0100
+    YYYY-MM-DD hh:mm:ss±hh:mm     2012-12-24 12:15:30+01:00
+    YYYY-MM-DD hh:mm:ss±hh        2012-12-24 12:15:30+01
+    
+    YYYY-MM-DD hh:mm:ss.ssZ       2012-12-24 12:15:30.500Z
+    YYYY-MM-DD hh:mm:ss.ssz       2012-12-24 12:15:30.500z
+    YYYY-MM-DD hh:mm:ss.ss±hhmm   2012-12-24 12:15:30.500+0100
+    YYYY-MM-DD hh:mm:ss.ss±hh:mm  2012-12-24 12:15:30.500+01:00
+    YYYY-MM-DD hh:mm:ss.ss±hh     2012-12-24 12:15:30.500+01
+    
+    YYYY-MM-DD hh:mmZ             2012-12-24 12:15Z
+    YYYY-MM-DD hh:mmz             2012-12-24 12:15z
+    YYYY-MM-DD hh:mm±hhmm         2012-12-24 12:15+0100
+    YYYY-MM-DD hh:mm±hh:mm        2012-12-24 12:15+01:00
+    YYYY-MM-DD hh:mm±hh           2012-12-24 12:15+01
+    
+    YYYY-MM-DD hh:mm:ss ±hh:mm    2012-12-24 12:15:30 +01:00
+    YYYY-MM-DD hh:mm:ss ±hhmm     2012-12-24 12:15:30 +0100
+    YYYY-MM-DD hh:mm:ss ±hh       2012-12-24 12:15:30 +01
+    YYYY-MM-DD hh:mm:ss GMT       2012-12-24 12:15:30 GMT
+    YYYY-MM-DD hh:mm:ss GMT±hh    2012-12-24 12:15:30 GMT+01
+    YYYY-MM-DD hh:mm:ss UTC       2012-12-24 12:15:30 UTC
+    YYYY-MM-DD hh:mm:ss UTC±hh    2012-12-24 12:15:30 UTC+01
+    
+    YYYY-MM-DD hh:mm:ss.ss ±hhmm  2012-12-24 12:15:30.500 +0100
+    YYYY-MM-DD hh:mm:ss.ss ±hh:mm 2012-12-24 12:15:30.500 +01:00
+    YYYY-MM-DD hh:mm:ss.ss ±hh    2012-12-24 12:15:30.500 +01
+    
+    YYYY-MM-DD hh:mm ±hh:mm       2012-12-24 12:15 +01:00
+    YYYY-MM-DD hh:mm ±hhmm        2012-12-24 12:15 +0100
+    YYYY-MM-DD hh:mm ±hh          2012-12-24 12:15 +01
+
+The string representation may consist of a mixture of the basic format and 
+the extended format. The time designator [T] may be in lower case [t] or 
+replaced with a single space. A single space is also accepted between the 
+time of day and the zone designator. The UTC designator [Z] may also be in 
+lower case [z]. The literal string GMT or UTC may be used as a UTC designator 
+and may have an offset. Usage of these string representations is strongly 
+discouraged as they do not conform to the ISO 8601 standard.
+
+=head2 from_rd
+
+    $tm = Time::Moment->from_rd($rd);
+    $tm = Time::Moment->from_rd($rd [, offset => 0] [, precision => 3] [, epoch => 0]);
+
+Constructs an instance of C<Time::Moment> from the given Rata Die. 
+The Rata Die is a count of days elapsed since 0000-12-31T00. The 
+fractional part corresponds to the fraction of the day after midnight. 
+The minimum acceptable Rata Die is C<1> which corresponds to 
+0001-01-01T00.
+
+B<Parameters:>
+
+=over 4
+
+=item offset
+
+    $tm = Time::Moment->from_rd($rd, offset => 0);
+
+The optional parameter I<offset> [-1080, 1080] (±18:00) specifies the 
+offset from UTC in minutes. The default offset is 0.
+
+=item precision
+
+    $tm = Time::Moment->from_rd($rd, precision => 3);
+
+The optional parameter I<precision> [0, 9] specifies the precision of the
+fractional seconds. The default precision is 3 (milliseconds).
+
+=item epoch
+
+    $tm = Time::Moment->from_rd($rd, epoch => 0);
+
+The optional parameter I<epoch> specifies the epoch date relative to 
+0000-12-31T00. The epoch date for the Rata Die is C<0>.
+
+=back
+
+=head2 from_jd
+
+    $tm = Time::Moment->from_jd($jd);
+    $tm = Time::Moment->from_jd($jd [, precision => 3] [, epoch => -1721424.5]);
+
+Constructs an instance of C<Time::Moment> from the given Julian Date. 
+The Julian Date is a count of days elapsed since -4713-11-24T12Z. The 
+fractional part corresponds to the fraction of the day after noon. The 
+minimum acceptable Julian Date is C<1721425.5> which corresponds to 
+0001-01-01T00Z.
+
+B<Parameters:>
+
+=over 4
+
+=item precision
+
+    $tm = Time::Moment->from_jd($jd, precision => 3);
+
+The optional parameter I<precision> [0, 9] specifies the precision of the
+fractional seconds. The default precision is 3 (milliseconds).
+
+=item epoch
+
+    $tm = Time::Moment->from_jd($jd, epoch => -1721424.5);
+
+The optional parameter I<epoch> specifies the epoch date relative to 
+0000-12-31T00Z. The epoch date for the Julian Date is C<-1721424.5>.
+
+=back
+
+=head2 from_mjd
+
+    $tm = Time::Moment->from_mjd($mjd);
+    $tm = Time::Moment->from_mjd($mjd [, precision => 3] [, epoch => 678576]);
+
+Constructs an instance of C<Time::Moment> from the given Modified Julian 
+Date. The Modified Julian Date is a count of days elapsed since 
+1858-11-17T00Z. The fractional part corresponds to the fraction of the day 
+after midnight. The minimum acceptable Modified Julian Date is C<-678575> 
+which corresponds to 0001-01-01T00Z.
+
+B<Parameters:>
+
+=over 4
+
+=item precision
+
+    $tm = Time::Moment->from_mjd($mjd, precision => 3);
+
+The optional parameter I<precision> [0, 9] specifies the precision of the
+fractional seconds. The default precision is 3 (milliseconds).
+
+=item epoch
+
+    $tm = Time::Moment->from_mjd($mjd, epoch => 678576);
+
+The optional parameter I<epoch> specifies the epoch date relative to 
+0000-12-31T00Z. The epoch date for the Modified Julian Date is C<678576>.
+
+=back
+
+=head1 INSTANCE METHODS
+
+=head2 year
+
+    $year = $tm->year;
+
+Returns the year [1, 9999].
+
+=head2 quarter
+
+    $quarter = $tm->quarter;
+
+Returns the quarter of the year [1, 4].
+
+=head2 month
+
+    $month = $tm->month;
+
+Returns the month of the year [1, 12].
+
+=head2 week
+
+    $week = $tm->week;
+
+Returns the week of the year [1, 53].
+
+=head2 day_of_year
+
+    $day = $tm->day_of_year;
+
+Returns the day of the year [1, 366].
+
+=head2 day_of_quarter
+
+    $day = $tm->day_of_quarter;
+
+Returns the day of the quarter [1, 92].
+
+=head2 day_of_month
+
+    $day = $tm->day_of_month;
+
+Returns the day of the month [1, 31].
+
+=head2 day_of_week
+
+    $day = $tm->day_of_week;
+
+Returns the day of the week [1=Monday, 7=Sunday].
+
+=head2 hour
+
+    $hour = $tm->hour;
+
+Returns the hour of the day [0, 23].
+
+=head2 minute
+
+    $minute = $tm->minute;
+
+Returns the minute of the hour [0, 59].
+
+=head2 minute_of_day
+
+    $minute = $tm->minute_of_day;
+
+Returns the minute of the day [0, 1439].
+
+=head2 second
+
+    $second = $tm->second;
+
+Returns the second of the minute [0, 59].
+
+=head2 second_of_day
+
+    $second = $tm->second_of_day;
+
+Returns the second of the day [0, 86_399].
+
+=head2 millisecond
+
+    $millisecond = $tm->millisecond;
+
+Returns the millisecond of the second [0, 999].
+
+=head2 millisecond_of_day
+
+    $millisecond = $tm->millisecond_of_day;
+
+Returns the millisecond of the day [0, 86_399_999].
+
+=head2 microsecond
+
+    $microsecond = $tm->microsecond;
+
+Returns the microsecond of the second [0, 999_999].
+
+=head2 microsecond_of_day
+
+    $microsecond = $tm->microsecond_of_day;
+
+Returns the microsecond of the day [0, 86_399_999_999].
+
+=head2 nanosecond
+
+    $nanosecond = $tm->nanosecond;
+
+Returns the nanosecond of the second [0, 999_999_999].
+
+=head2 nanosecond_of_day
+
+    $nanosecond = $tm->nanosecond_of_day;
+
+Returns the nanosecond of the day [0, 86_399_999_999_999].
+
+=head2 epoch
+
+    $epoch = $tm->epoch;
+
+Returns the number of integral seconds from the epoch of 1970-01-01T00Z.
+
+=head2 offset
+
+    $offset = $tm->offset;
+
+Returns the offset from UTC in minutes [-1080, 1080] (±18:00).
+
+=head2 precision
+
+    $precision = $tm->precision;
+
+Returns the precision of the time of the day [-3, 9]. Please see 
+L<with_precision|/with_precision> for an explanation of the 
+returned precision value.
+
+=head2 jd
+
+    $jd = $tm->jd;
+    $jd = $tm->jd([precision => 3]);
+
+Returns the Julian Date. The Julian Date is a count of days elapsed since 
+-4713-11-24T12Z. The fractional part corresponds to the fraction of the 
+day after noon. The optional named parameter I<precision> [0, 9] specifies 
+the precision of the fractional seconds. The default precision is 3 
+(milliseconds).
+
+=head2 mjd
+
+    $mjd = $tm->mjd;
+    $mjd = $tm->mjd([precision => 3]);
+
+Returns the Modified Julian Date. The Modified Julian Date is a count of days 
+elapsed since 1858-11-17T00Z. The fractional part corresponds to the fraction 
+of the day after midnight. The optional named parameter I<precision> [0, 9] 
+specifies the precision of the fractional seconds. The default precision is 3 
+(milliseconds).
+
+=head2 rd
+
+    $rd = $tm->rd;
+    $rd = $tm->rd([precision => 3]);
+
+Returns the Rata Die. The Rata Die is a count of days elapsed since 
+0000-12-31T00. The fractional part corresponds to the fraction of the day 
+after midnight. The optional named parameter I<precision> [0, 9] specifies 
+the precision of the fractional seconds. The default precision is 3 
+(milliseconds).
+
+=head2 with
+
+    $tm2 = $tm1->with($adjuster);
+
+Returns a copy of this instance adjusted by the given I<adjuster>. The 
+adjuster is a CODE reference invoked with an instance of Time::Moment and
+is expected to return an instance of Time::Moment. Please see 
+L<Time::Moment::Adjusters> for available adjusters.
+
+=head2 with_year
+
+    $tm2 = $tm1->with_year($year);
+
+Returns a copy of this instance with the given I<year> [1, 9999] altered. The
+day of the month of the date is unchanged unless the day does not exist in the 
+month. In that case, the day is set to the last day of the month.
+
+=head2 with_quarter
+
+    $tm2 = $tm1->with_quarter($quarter);
+
+Returns a copy of this instance with the given I<quarter> of the year [1, 4] 
+altered. The day of the month of the date is unchanged unless the day does 
+not exist in the month of the quarter. In that case, the day is set to the 
+last day of the month.
+
+=head2 with_month
+
+    $tm2 = $tm1->with_month($month);
+
+Returns a copy of this instance with the given I<month> of the year [1, 12] 
+altered. The day of the month of the date is unchanged unless the day does not 
+exist in the given month. In that case, the day is set to the last day of the 
+given month.
+
+=head2 with_week
+
+    $tm2 = $tm1->with_week($week);
+
+Returns a copy of this instance with the given I<week> of the year [1, 53] 
+altered. The week must be valid for the year, otherwise an exception is raised.
+
+=head2 with_day_of_year
+
+    $tm2 = $tm1->with_day_of_year($day);
+
+Returns a copy of this instance with the given I<day> of the year [1, 366] 
+altered. The day must be valid for the year, otherwise an exception is raised.
+
+=head2 with_day_of_quarter
+
+    $tm2 = $tm1->with_day_of_quarter($day);
+
+Returns a copy of this instance with the given I<day> of the quarter [1, 92] 
+altered. The day must be valid for the year and quarter, otherwise an 
+exception is raised.
+
+=head2 with_day_of_month
+
+    $tm2 = $tm1->with_day_of_month($day);
+
+Returns a copy of this instance with the given I<day> of the month [1, 31] 
+altered. The day must be valid for the year and month, otherwise an exception 
+is raised.
+
+=head2 with_day_of_week
+
+    $tm2 = $tm1->with_day_of_week($day);
+
+Returns a copy of this instance with the given I<day> of the week 
+[1=Monday, 7=Sunday] altered.
+
+=head2 with_hour
+
+    $tm2 = $tm1->with_hour($hour);
+
+Returns a copy of this instance with the given I<hour> of the day [0, 23] 
+altered.
+
+=head2 with_minute
+
+    $tm2 = $tm1->with_minute($minute);
+
+Returns a copy of this instance with the given I<minute> of the hour [0, 59] 
+altered.
+
+=head2 with_minute_of_day
+
+    $tm2 = $tm1->with_minute_of_day($minute);
+
+Returns a copy of this instance with the given I<minute> of the day [0, 1439] 
+altered, any lower-order time elements is unaltered.
+
+=head2 with_second
+
+    $tm2 = $tm1->with_second($second);
+
+Returns a copy of this instance with the given I<second> of the minute [0, 59] 
+altered.
+
+=head2 with_second_of_day
+
+    $tm2 = $tm1->with_second_of_day($second);
+
+Returns a copy of this instance with the given I<second> of the day [0, 86_399] 
+altered, any lower-order time elements is unaltered.
+
+=head2 with_millisecond
+
+    $tm2 = $tm1->with_millisecond($millisecond);
+
+Returns a copy of this instance with the given I<millisecond> of the second 
+[0, 999] altered. The nanosecond of the second is replaced with the given
+I<millisecond> multiplied by 1,000,000.
+
+=head2 with_millisecond_of_day
+
+    $tm2 = $tm1->with_millisecond_of_day($millisecond);
+
+Returns a copy of this instance with the given I<millisecond> of the day 
+[0, 86_400_000] altered. A millisecond value of 86_400_000 (T24:00) is 
+normalized to midnight of the following day, any lower-order time elements 
+is truncated.
+
+=head2 with_microsecond
+
+    $tm2 = $tm1->with_microsecond($microsecond);
+
+Returns a copy of this instance with the given I<microsecond> of the second 
+[0, 999_999] altered. The nanosecond of the second is replaced with the given
+I<microsecond> multiplied by 1,000.
+
+=head2 with_microsecond_of_day
+
+    $tm2 = $tm1->with_microsecond_of_day($microsecond);
+
+Returns a copy of this instance with the given I<microsecond> of the day 
+[0, 86_400_000_000] altered. A microsecond value of 86_400_000_000 (T24:00) 
+is normalized to midnight of the following day, any lower-order time elements 
+is truncated.
+
+=head2 with_nanosecond
+
+    $tm2 = $tm1->with_nanosecond($nanosecond);
+
+Returns a copy of this instance with the given I<nanosecond> of the second 
+[0, 999_999_999] altered.
+
+=head2 with_nanosecond_of_day
+
+    $tm2 = $tm1->with_nanosecond_of_day($nanosecond);
+
+Returns a copy of this instance with the given I<nanosecond> of the day 
+[0, 86_400_000_000_000] altered. A nanosecond value of 86_400_000_000_000 
+(T24:00) is normalized to midnight of the following day.
+
+=head2 with_offset_same_instant
+
+    $tm2 = $tm1->with_offset_same_instant($offset);
+
+Returns a copy of this instance with the given I<offset> from UTC in 
+minutes [-1080, 1080] (±18:00) altered. The resulting time is at the same 
+instant.
+
+    $tm = Time::Moment->from_string('2012-12-24T15-05')
+                      ->with_offset_same_instant(0);
+    say $tm; # 2012-12-24T20Z
+
+=head2 with_offset_same_local
+
+    $tm2 = $tm1->with_offset_same_local($offset);
+
+Returns a copy of this instance with the given I<offset> from UTC in 
+minutes [-1080, 1080] (±18:00) altered. The resulting time has the same 
+local time.
+
+    $tm = Time::Moment->from_string('2012-12-24T15-05')
+                      ->with_offset_same_local(0);
+    say $tm; # 2012-12-24T15Z
+
+=head2 with_precision
+
+    $tm2 = $tm1->with_precision($precision);
+
+Returns a copy of this instance with the time of the day altered to the 
+given I<precision> [-3, 9]. A precision value between [0, 9] alters the 
+precision of the fractional seconds. A precision of C<-1> truncates to 
+minute of the hour; C<-2> truncates to hour of the day; C<-3> truncates 
+to midnight of the day.
+
+    $tm = Time::Moment->from_string('2012-12-24T12:30:45.123456789Z');
+    say $tm->with_precision(6);  # T12:30:45.123456Z
+    say $tm->with_precision(3);  # T12:30:45.123Z
+    say $tm->with_precision(0);  # T12:30:45Z
+    say $tm->with_precision(-1); # T12:30:00Z
+    say $tm->with_precision(-2); # T12:00:00Z
+    say $tm->with_precision(-3); # T00:00:00Z
+
+=head2 plus_years
+
+    $tm2 = $tm1->plus_years($years);
+
+Returns a copy of this instance with the given number of I<years> added. The 
+day of the month of the date is unchanged unless the day does not exist in the 
+resulting month. In that case, the day is set to the last day of the resulting 
+month. For example, 2012-02-29 plus one year results in 2013-02-28.
+
+=head2 plus_months
+
+    $tm2 = $tm1->plus_months($months);
+
+Returns a copy of this instance with the given number of I<months> added. The 
+day of the month of the date is unchanged unless the day does not exist in the 
+resulting month. In that case, the day is set to the last day of the resulting 
+month. For example, 2013-01-31 plus one month results in 2013-02-28; 
+2013-02-28 plus one month results in 2013-03-28.
+
+=head2 plus_weeks
+
+    $tm2 = $tm1->plus_weeks($weeks);
+
+Returns a copy of this instance with the given number of I<weeks> added.
+
+=head2 plus_days
+
+    $tm2 = $tm1->plus_days($days);
+
+Returns a copy of this instance with the given number of I<days> added.
+
+=head2 plus_hours
+
+    $tm2 = $tm1->plus_hours($hours);
+
+Returns a copy of this instance with the given number of I<hours> added.
+
+=head2 plus_minutes
+
+    $tm2 = $tm1->plus_minutes($minutes);
+
+Returns a copy of this instance with the given number of I<minutes> added.
+
+=head2 plus_seconds
+
+    $tm2 = $tm1->plus_seconds($seconds);
+
+Returns a copy of this instance with the given number of I<seconds> added.
+
+=head2 plus_milliseconds
+
+    $tm2 = $tm1->plus_milliseconds($milliseconds);
+
+Returns a copy of this instance with the given number of I<milliseconds> 
+added.
+
+=head2 plus_microseconds
+
+    $tm2 = $tm1->plus_microseconds($microseconds);
+
+Returns a copy of this instance with the given number of I<microseconds> 
+added.
+
+=head2 plus_nanoseconds
+
+    $tm2 = $tm1->plus_nanoseconds($nanoeconds);
+
+Returns a copy of this instance with the given number of I<nanoseconds> 
+added.
+
+=head2 minus_years
+
+    $tm2 = $tm1->minus_years($years);
+
+Returns a copy of this instance with the given number of I<years> subtracted. 
+The day of the month of the date is unchanged unless the day does not exist in 
+the resulting month. In that case, the day is set to the last day of the 
+resulting month. For example, 2012-02-29 minus one year results in 2011-02-28.
+
+=head2 minus_months
+
+    $tm2 = $tm1->minus_months($months);
+
+Returns a copy of this instance with the given number of I<months> subtracted. 
+The day of the month of the date is unchanged unless the day does not exist in 
+the resulting month. In that case, the day is set to the last day of the 
+resulting month. For example, 2013-03-31 minus one month results in 2013-02-28; 
+2013-02-28 minus one month results in 2013-01-28.
+
+=head2 minus_weeks
+
+    $tm2 = $tm1->minus_weeks($weeks);
+
+Returns a copy of this instance with the given number of I<weeks> subtracted.
+
+=head2 minus_days
+
+    $tm2 = $tm1->minus_days($days);
+
+Returns a copy of this instance with the given number of I<days> subtracted.
+
+=head2 minus_hours
+
+    $tm2 = $tm1->minus_hours($hours);
+
+Returns a copy of this instance with the given number of I<hours> subtracted.
+
+=head2 minus_minutes
+
+    $tm2 = $tm1->minus_minutes($minutes);
+
+Returns a copy of this instance with the given number of I<minutes> subtracted.
+
+=head2 minus_seconds
+
+    $tm2 = $tm1->minus_seconds($seconds);
+
+Returns a copy of this instance with the given number of I<seconds> subtracted.
+
+=head2 minus_milliseconds
+
+    $tm2 = $tm1->minus_milliseconds($milliseconds);
+
+Returns a copy of this instance with the given number of I<milliseconds> 
+subtracted.
+
+=head2 minus_microseconds
+
+    $tm2 = $tm1->minus_microseconds($microseconds);
+
+Returns a copy of this instance with the given number of I<microseconds> 
+subtracted.
+
+=head2 minus_nanoseconds
+
+    $tm2 = $tm1->minus_nanoseconds($nanoseconds);
+
+Returns a copy of this instance with the given number of I<nanoseconds> 
+subtracted.
+
+=head2 delta_years
+
+    $years = $tm->delta_years($other);
+
+Returns the difference between the local date of this moment and the I<other> 
+in terms of complete years. The result will be negative if the local date of 
+the I<other> moment is before this.
+
+=head2 delta_months
+
+    $months = $tm->delta_months($other);
+
+Returns the difference between the local date of this moment and the I<other> 
+in terms of complete months. The result will be negative if the local date of 
+the I<other> moment is before this.
+
+=head2 delta_weeks
+
+    $weeks = $tm->delta_weeks($other);
+
+Returns the difference between the local date of this moment and the I<other> 
+in terms of complete weeks. The result will be negative if the local date of 
+the I<other> moment is before this.
+
+=head2 delta_days
+
+    $days = $tm->delta_days($other);
+
+Returns the difference between the local date of this moment and the I<other> 
+in terms of complete days. The result will be negative if the local date of 
+the I<other> moment is before this.
+
+=head2 delta_hours
+
+    $hours = $tm->delta_hours($other);
+
+Returns the difference between the instant of this moment and the I<other> 
+in terms of complete hours. The result will be negative if the instant of 
+the I<other> moment is before this.
+
+=head2 delta_minutes
+
+    $minutes = $tm->delta_minutes($other);
+
+Returns the difference between the instant of this moment and the I<other> 
+in terms of complete minutes. The result will be negative if the instant of 
+the I<other> moment is before this.
+
+=head2 delta_seconds
+
+    $seconds = $tm->delta_seconds($other);
+
+Returns the difference between the instant of this moment and the I<other> in 
+terms of complete seconds. The result will be negative if the instant of the 
+I<other> moment is before this.
+
+=head2 delta_milliseconds
+
+    $milliseconds = $tm->delta_milliseconds($other);
+
+Returns the difference between the instant of this moment and the I<other> in 
+terms of complete milliseconds. The result will be negative if the instant of 
+the I<other> moment is before this.
+
+=head2 delta_microseconds
+
+    $microseconds = $tm->delta_microseconds($other);
+
+Returns the difference between the instant of this moment and the I<other> in 
+terms of complete microseconds. The result will be negative if the instant of 
+the I<other> moment is before this.
+
+=head2 delta_nanoseconds
+
+    $nanoseconds = $tm->delta_nanoseconds($other);
+
+Returns the difference between the instant of this moment and the I<other> in 
+terms of complete nanoseconds. The result will be negative if the instant of 
+the I<other> moment is before this.
+
+=head2 at_utc
+
+    $tm2 = $tm1->at_utc;
+
+Returns a copy of this instance with the offset from UTC set to zero. This 
+method is equivalent to:
+
+    $tm2 = $tm1->with_offset_same_instant(0);
+
+=head2 at_midnight
+
+    $tm2 = $tm1->at_midnight;
+
+Returns a copy of this instance with the time of day set to midnight, 
+T00:00:00.0. This method is equivalent to:
+
+    $tm2 = $tm1->with_hour(0)
+               ->with_minute(0)
+               ->with_second(0)
+               ->with_nanosecond(0);
+
+=head2 at_noon
+
+    $tm2 = $tm1->at_noon;
+
+Returns a copy of this instance with the time of day set to noon, 
+T12:00:00.0. This method is equivalent to:
+
+    $tm2 = $tm1->with_hour(12)
+               ->with_minute(0)
+               ->with_second(0)
+               ->with_nanosecond(0);
+
+=head2 at_last_day_of_year
+
+    $tm2 = $tm1->at_last_day_of_year;
+
+Returns a copy of this instance with the date adjusted to the last day of 
+the year, the time of the day is unaltered.
+
+=head2 at_last_day_of_quarter
+
+    $tm2 = $tm1->at_last_day_of_quarter;
+
+Returns a copy of this instance with the date adjusted to the last day of 
+the quarter, the time of the day is unaltered.
+
+=head2 at_last_day_of_month
+
+    $tm2 = $tm1->at_last_day_of_month;
+
+Returns a copy of this instance with the date adjusted to the last day of 
+the month, the time of the day is unaltered.
+
+=head2 is_before
+
+    $boolean = $tm->is_before($other);
+
+Returns a boolean indicating whether or not the instant of this time is before 
+the I<other> time.
+
+=head2 is_after
+
+    $boolean = $tm->is_after($other);
+
+Returns a boolean indicating whether or not the instant of this time is after 
+the I<other> time.
+
+=head2 is_equal
+
+    $boolean = $tm->is_equal($other);
+
+Returns a boolean indicating whether or not the instant of this time is equal 
+the I<other> time.
+
+=head2 compare
+
+    $integer = $tm->compare($other);
+    $integer = $tm->compare($other [, precision => 9]);
+
+Returns an integer indicating whether the instant of this time is before, 
+after or equal the I<other> time. Returns a value less than zero if this 
+time is before the other; zero if this date is equal the other time; a value 
+greater than zero if this time is after the other time. The optional parameter
+I<precision> [-3, 9] specifies the precision of the comparison. The default 
+precision is 9 (nanoseconds). Please see L<with_precision|/with_precision> 
+for an explanation of the precision value.
+
+=head2 is_leap_year
+
+    $boolean = $tm->is_leap_year;
+
+Returns a boolean indicating whether or not the year of the local date of 
+this moment is a leap year.
+
+=head2 to_string
+
+    $string = $tm->to_string;
+    $string = $tm->to_string([reduced => false]);
+
+Returns a string representation of the instance. If the optional named 
+boolean parameter I<reduced> is true a shorter representation is attempted.
+
+The string will be in one of the following representations:
+
+    YYYY-MM-DDThh:mm                (only if reduced => true)
+    YYYY-MM-DDThh:mm:ss
+    YYYY-MM-DDThh:mm:ss.fff
+    YYYY-MM-DDThh:mm:ss.ffffff
+    YYYY-MM-DDThh:mm:ss.fffffffff
+
+Followed by a zone designator in one of the following representations:
+
+    Z
+    ±hh                             (only if reduced => true)
+    ±hh:mm
+
+The shortest representation will be used where the omitted parts are implied 
+to be zero.
+
+=head2 strftime
+
+    $string = $tm->strftime($format);
+
+Formats time according to the conversion specifications in the given C<$format>
+string. The format string consists of zero or more conversion specifications 
+and ordinary characters. All ordinary characters are copied directly into the 
+resulting string. A conversion specification consists of a percent sign C<%> 
+and one other character.
+
+The following conversion specifications are supported:
+
+=over 4
+
+=item C<%a>
+
+Replaced by the C locale's abbreviated day of the week name. 
+Example: Mon, Tue, ..., Sun.
+
+=item C<%A>
+
+Replaced by the C locale's full day of the week name.
+Example: Monday, Tuesday, ..., Sunday.
+
+=item C<%b>
+
+Replaced by the C locale's abbreviated month name.
+Example: Jan, Feb, ..., Dec.
+
+=item C<%B>
+
+Replaced by the C locale's full month name.
+Example: January, February, ..., December.
+
+=item C<%c>
+
+Replaced by the C locale's date and time representation. 
+Equivalent to C<"%a %b %e %H:%M:%S %Y">.
+
+=item C<%C>
+
+Replaced by the year divided by 100 and truncated to an integer, as a 
+decimal number [00, 99].
+
+=item C<%d>
+
+Replaced by the day of the month as a decimal number [01, 31].
+
+=item C<%D>
+
+Equivalent to C<"%m/%d/%y">.
+
+=item C<%e>
+
+Replaced by the day of the month as a decimal number [1, 31]; 
+a single digit is preceded by a space.
+
+=item C<%f>
+
+Replaced by the fractional second including the preceding decimal point or 
+by an empty string if no fractional seconds are present. This conversion 
+specification permits use of an optional maximum field width [0, 9] where 
+the default field width of 0 will use the shortest of the following 
+representations:
+
+    .fff        (millisecond)
+    .ffffff     (microsecond)
+    .fffffffff  (nanosecond)
+
+Example:
+
+    $tm = Time::Moment->from_string('2012-12-24T15:30:45.123456Z');
+    $tm->strftime('%f');    # '.123456'
+    $tm->strftime('%3f');   # '.123'
+    $tm->strftime('%9f');   # '.123456000'
+    
+    $tm = Time::Moment->from_string('2012-12-24T15:30:45Z');
+    $tm->strftime('%f');    # ''
+    $tm->strftime('%3f');   # ''
+
+C<%3f> is replaced by decimal point and exactly three fractional digits 
+(zero-padded on the right or truncated if needed) if fractional seconds 
+are present.
+
+I<This conversion specification is an extension to the 
+L<"IEEE Std 1003.1"|http://pubs.opengroup.org/onlinepubs/9699919799/functions/strftime.html>>.
+
+=item C<%F>
+
+Equivalent to C<"%Y-%m-%d">.
+
+=item C<%g>
+
+Replaced by the last 2 digits of the year of the week as a decimal 
+number [00, 99].
+
+=item C<%G>
+
+Replaced by the week-based year as a decimal number [0001, 9999].
+
+=item C<%h>
+
+Equivalent to C<%b>.
+
+=item C<%H>
+
+Replaced by the hour of day (24-hour clock) as a decimal number [00, 23].
+
+=item C<%I>
+
+Replaced by the hour of day (12-hour clock) as a decimal number [01, 12].
+
+=item C<%j>
+
+Replaced by the day of the year as a decimal number [001, 366].
+
+=item C<%k>
+
+Replaced by the hour of day (24-hour clock) as a decimal number [1, 23]; 
+a single digit is preceded by a space.
+
+I<This conversion specification is an extension to the 
+L<"IEEE Std 1003.1"|http://pubs.opengroup.org/onlinepubs/9699919799/functions/strftime.html>>.
+
+=item C<%l>
+
+Replaced by the hour of day (12-hour clock) as a decimal number [1, 12]; 
+a single digit is preceded by a space.
+
+I<This conversion specification is an extension to the 
+L<"IEEE Std 1003.1"|http://pubs.opengroup.org/onlinepubs/9699919799/functions/strftime.html>>.
+
+=item C<%m>
+
+Replaced by the month of the year as a decimal number [01, 12].
+
+=item C<%M>
+
+Replaced by the minute of hour as a decimal number [00, 59].
+
+=item C<%n>
+
+Replaced by a <newline> character.
+
+=item C<%N>
+
+Replaced by the fractional second as a decimal number. This conversion 
+specification permits use of an optional maximum field width [0, 9] where 
+the default field width of 0 will use the shortest of the following 
+representations:
+
+    fff        (millisecond)
+    ffffff     (microsecond)
+    fffffffff  (nanosecond)
+
+Example:
+
+    $tm = Time::Moment->from_string('2012-12-24T15:30:45.123456Z');
+    $tm->strftime('%N');    # '123456'
+    $tm->strftime('%3N');   # '123'
+    $tm->strftime('%9N');   # '123456000'
+
+C<%3N> is replaced by exactly three fractional digits (zero-padded on the 
+right or truncated if needed).
+
+I<This conversion specification is an extension to the 
+L<"IEEE Std 1003.1"|http://pubs.opengroup.org/onlinepubs/9699919799/functions/strftime.html>>.
+
+=item C<%p>
+
+Replaced by the C locale's meridian notation. Example: AM, PM.
+
+=item C<%r>
+
+Replaced by the C locale's time in a.m. and p.m. notation. Equivalent 
+to C<"%I:%M:%S %p">.
+
+=item C<%R>
+
+Replaced by the time in 24-hour notation. Equivalent to C<"%H:%M">.
+
+=item C<%s>
+
+Replaced by the number of seconds from the epoch of 1970-01-01T00:00:00Z 
+as a decimal number.
+
+I<This conversion specification is an extension to the 
+L<"IEEE Std 1003.1"|http://pubs.opengroup.org/onlinepubs/9699919799/functions/strftime.html>>.
+
+=item C<%S>
+
+Replaced by the second of hour as a decimal number [00, 59].
+
+=item C<%t>
+
+Replaced by a <tab> character.
+
+=item C<%T>
+
+Replaced by the time of day. Equivalent to C<"%H:%M:%S">.
+
+=item C<%u>
+
+Replaced by the day of the week as a decimal number [1, 7], with 1 
+representing Monday.
+
+=item C<%U>
+
+Replaced by the week number of the year as a decimal number [00, 53]. The 
+first Sunday of January is the first day of week 1; days in the new year 
+before this are in week 0.
+
+=item C<%V>
+
+Replaced by the week number of the year (Monday as the first day of the week) 
+as a decimal number [01, 53]. If the week containing 1 January has four or 
+more days in the new year, then it is considered week 1. Otherwise, it is the 
+last week of the previous year, and the next week is week 1. Both January 4th 
+and the first Thursday of January are always in week 1.
+
+=item C<%w>
+
+Replaced by the day of the week as a decimal number [0, 6], with 0 
+representing Sunday.
+
+=item C<%W>
+
+Replaced by the week number of the year as a decimal number [00, 53]. The 
+first Monday of January is the first day of week 1; days in the new year 
+before this are in week 0.
+
+=item C<%x>
+
+Replaced by the C locale's date representation. Equivalent to C<"%m/%d/%y">.
+
+=item C<%X>
+
+Replaced by the C locale's time representation. Equivalent to C<"%H:%M:%S">.
+
+=item C<%y>
+
+Replaced by the last two digits of the year as a decimal number [00, 99].
+
+=item C<%Y>
+
+Replaced by the year as a decimal number [0001, 9999].
+
+=item C<%z>
+
+Replaced by the offset from UTC in the ISO 8601 basic format (±hhmm).
+
+=item C<%:z>
+
+Replaced by the offset from UTC in the ISO 8601 extended format (±hh:mm).
+
+=item C<%Z>
+
+Replaced by the offset from UTC in the ISO 8601 extended format or by UTC 
+designator (±hh:mm or Z).
+
+=item C<%%>
+
+Replaced by %.
+
+=back
+
+=head2 length_of_year
+
+    $integer = $tm->length_of_year;
+
+Returns the length of the year in days [365, 366].
+
+=head2 length_of_quarter
+
+    $integer = $tm->length_of_quarter;
+
+Returns the length of the quarter of the year in days [90, 92].
+
+=head2 length_of_month
+
+    $integer = $tm->length_of_month;
+
+Returns the length of the month of the year in days [28, 31].
+
+=head2 length_of_week_year
+
+    $integer = $tm->length_of_week_year;
+
+Returns the length of the week of the year in weeks [52, 53].
+
+=head2 utc_rd_values
+
+    ($rdn, $sod, $nanosecond) = $tm->utc_rd_values;
+
+Returns a list of three elements:
+
+=over 4
+
+=item C<$rdn>
+
+The number of integral days from the Rata Die epoch of 0000-12-31.
+
+=item C<$sod>
+
+The second of the day [0, 86_399].
+
+=item C<$nanosecond>
+
+The nanosecond of the second [0, 999_999_999].
+
+=back
+
+=head2 utc_rd_as_seconds
+
+    $seconds = $tm->utc_rd_as_seconds;
+
+Returns the number of integral seconds from the Rata Die epoch of 
+0000-12-31T00:00:00Z.
+
+=head2 local_rd_values
+
+    ($rdn, $sod, $nanosecond) = $tm->local_rd_values;
+
+Returns a list of three elements:
+
+=over 4
+
+=item C<$rdn>
+
+The number of integral days from the Rata Die epoch of 0000-12-31.
+
+=item C<$sod>
+
+The second of the day [0, 86_399].
+
+=item C<$nanosecond>
+
+The nanosecond of the second [0, 999_999_999].
+
+=back
+
+=head2 local_rd_as_seconds
+
+    $seconds = $tm->local_rd_as_seconds;
+
+Returns the number of integral seconds from the Rata Die epoch of 
+0000-12-31T00:00:00.
+
+=head1 OVERLOADED OPERATORS
+
+=head2 stringification
+
+    $string = "$tm";
+
+The C<$string> will be in one of the following representations:
+
+    YYYY-MM-DDThh:mm:ss
+    YYYY-MM-DDThh:mm:ss.fff
+    YYYY-MM-DDThh:mm:ss.ffffff
+    YYYY-MM-DDThh:mm:ss.fffffffff
+
+Followed by a zone designator in one of the following representations:
+
+    Z
+    ±hh:mm
+
+The shortest representation will be used where the omitted parts are implied 
+to be zero. This representation is conformant with ISO 8601 profiles, such as:
+
+=over 4
+
+=item * L<RFC 3339 Date and Time on the Internet: Timestamps|http://tools.ietf.org/html/rfc3339>
+
+=item * L<RFC 4287 The Atom Syndication Format|http://tools.ietf.org/html/rfc4287#section-3.3>
+
+=item * L<W3C Date and Time Formats|http://www.w3.org/TR/NOTE-datetime>
+
+=item * L<HTML5|http://www.w3.org/TR/html5/infrastructure.html#global-dates-and-times>
+
+=item * L<XML Schema|http://www.w3.org/TR/xmlschema-2/#dateTime>
+
+=back
+
+The C<to_string> method or the C<strftime> format string C<"%Y-%m-%dT%H:%M:%S%f%Z"> 
+produces an equivalent string representation:
+
+    "$tm" eq $tm->to_string;
+    "$tm" eq $tm->strftime("%Y-%m-%dT%H:%M:%S%f%Z");
+
+The total length of the string representation will be between 20 and 35 
+characters (inclusive).
+
+=head2 comparison
+
+    $integer      = $tm1 <=> $tm2;
+    
+    $boolean      = $tm1 == $tm2;
+    $boolean      = $tm1 != $tm2;
+    $boolean      = $tm1 <  $tm2;
+    $boolean      = $tm1 >  $tm2;
+    $boolean      = $tm1 <= $tm2;
+    $boolean      = $tm1 >= $tm2;
+
+=head1 SERIALIZATION
+
+=head2 Storable
+
+The serialized representation of a C<Time::Moment> is a string of 16 bytes that 
+contains MAGIC (2 bytes), time zone offset from UTC (2 bytes), the number 
+of days from Rata Die (4 bytes), second of the day (4 bytes) and nanosecond of 
+the second (4 bytes).
+
+The total size of the serialized C<Time::Moment> instance using C<nfreeze> is 
+34 bytes.
+
+=head2 JSON
+
+C<Time::Moment> implements a C<TO_JSON> method that returns the L<stringified|/stringification>
+representation of the instance.
+
+=head2 CBOR
+
+C<Time::Moment> implements a C<TO_CBOR> method that returns the L<stringified|/stringification>
+representation of the instance using tag C<0> (I<standard date/time string>).
+
+See L<CBOR::XS>, L<RFC 7049 Section 2.4.1|http://tools.ietf.org/html/rfc7049#section-2.4.1>
+and C<eg/cbor.pl> for an example how to roundtrip instances of C<Time::Moment>.
+
+=head2 Sereal
+
+L<Sereal> version 2.030 or later implements support for the generic serialization 
+protocol C<FREEZE/THAW>.
+
+=head2 FREEZE/THAW
+
+C<Time::Moment> implements a C<FREEZE> method that returns the L<stringified|/stringification>
+representation of the instance and a C<THAW> method according to the serialization 
+protocol specified in L<Types::Serialiser>.
+
+=head1 EXAMPLE FORMAT STRINGS
+
+=head2 ISO 8601 - Data elements and interchange formats
+
+=head3 Date
+
+Calendar date - 24 December 2012
+
+    Basic format:               Example:
+    %Y%m%d                      20121224
+    %y%m                        201212      (reduced accuracy)
+
+    Extended format:            Example:
+    %Y-%m-%d                    2012-12-24
+    %Y-%m                       2012-12     (reduced accuracy)
+
+Ordinal date - 24 December 2012
+
+    Basic format:               Example:
+    %Y%j                        2012359
+    
+    Extended format:            Example:
+    %Y-%j                       2012-359
+
+Week date - Monday, 24 December 2012
+
+    Basic format:               Example:
+    %GW%V%u                     2012W521
+    %GW%V                       2012W52     (reduced accuracy)
+
+    Extended format:            Example:
+    %G-W%V-%u                   2012-W52-1
+    %G-W%V                      2012-W52    (reduced accuracy)
+
+=head3 Time of day
+
+Local time - 30 minutes and 45 seconds past 15 hours
+
+    Basic format:               Example:
+    %H%M%S                      153045
+    %H%M                        1530        (reduced accuracy)
+
+    Extended format:            Example:
+    %H:%M:%S                    15:30:45
+    %H:%M                       15:30       (reduced accuracy)
+
+Local time with decimal fractions - 30 minutes and 45 and a half second 
+past 15 hours
+
+    Basic format:               Example:
+    %H%M%S%f                    153045.500
+    %H%M%S.%1N                  153045.5
+
+    Extended format:            Example:
+    %H:%M:%S%f                  15:30:45.500
+    %H:%M:%S.%1N                15:30:45.5
+
+Local time and the difference from UTC - 30 minutes and 45 seconds past 
+15 hours, one hour ahead of UTC
+
+    Basic format:               Example:
+    %H%M%S%z                    153045+0100
+
+    Extended format:            Example:
+    %H:%M:%S%Z                  15:30:45+01:00
+
+=head3 Date and time of day
+
+Combinations of calendar date and time of day
+
+    Basic format:               Example:
+    %Y%m%dT%H%M%S%z             20121224T153045+0100
+    %Y%m%dT%H%M%S%f%z           20121224T153045.500+0100
+    %Y%m%dT%H%M%z               20121224T1530+0100      (reduced accuracy)
+
+    Extended format:            Example:
+    %Y-%m-%dT%H:%M:%S%Z         2012-12-24T15:30:45+01:00
+    %Y-%m-%dT%H:%M:%S%f%Z       2012-12-24T15:30:45.500+01:00
+    %Y-%m-%dT%H:%M%Z            2012-12-24T15:30+01:00  (reduced accuracy)
+
+Combinations of ordinal date and time of day
+
+    Basic format:               Example:
+    %Y%jT%H%M%S%z               2012359T153045+0100
+    %Y%jT%H%M%S%f%z             2012359T153045.500+0100
+    %Y%jT%H%M%z                 2012359T1530+0100       (reduced accuracy)
+
+    Extended format:            Example:
+    %Y-%jT%H:%M:%S%Z            2012-359T15:30:45+01:00
+    %Y-%jT%H:%M:%S%f%Z          2012-359T15:30:45.500+01:00
+    %Y-%jT%H:%M%Z               2012-359T15:30+01:00    (reduced accuracy)
+
+Combinations of week date and time of day
+
+    Basic format:               Example:
+    %GW%V%uT%H%M%S%z            2012W521T153045+0100
+    %GW%V%uT%H%M%S%f%z          2012W521T153045.500+0100
+    %GW%V%uT%H%M%f%z            2012W521T1530+0100      (reduced accuracy)
+
+    Extended format:            Example:
+    %G-W%V-%uT%H:%M:%S%Z        2012-W52-1T15:30:45+01:00
+    %G-W%V-%uT%H:%M:%S%f%Z      2012-W52-1T15:30:45.500+01:00
+    %G-W%V-%uT%H:%M%Z           2012-W52-1T15:30+01:00  (reduced accuracy)
+
+=head2 ISO 9075 - Information technology - Database languages - SQL
+
+Literal values from Part 2: Foundation (SQL/Foundation)
+
+    Date:                       Example:
+    %Y-%m-%d                    2012-12-24
+    
+    Time:                       Example:
+    %H:%M:%S                    15:30:45
+    %H:%M:%S%f                  15:30:45.500
+    
+    Timestamp:                  Example:
+    %Y-%m-%d %H:%M:%S           2012-12-24 15:30:45
+    %Y-%m-%d %H:%M:%S %:z       2012-12-24 15:30:45 +01:00
+    %Y-%m-%d %H:%M:%S%f         2012-12-24 15:30:45.500
+    %Y-%m-%d %H:%M:%S%f %:z     2012-12-24 15:30:45.500 +01:00
+
+=head2 RFC 1123 - Requirements for Internet Hosts
+
+L<RFC 822|http://tools.ietf.org/html/rfc822#section-5> as updated by 
+L<RFC 1123|http://tools.ietf.org/html/rfc1123>.
+
+    Format:                     Example:
+    %a, %d %b %Y %H:%M:%S %z    Mon, 24 Dec 2012 15:30:45 +0100
+
+=head2 RFC 2616 - HTTP/1.1
+
+L<RFC 2616 - 3.3.1 Full Date|http://tools.ietf.org/html/rfc2616#section-3.3.1>.
+
+    Format:                     Example:
+    %a, %d %b %Y %H:%M:%S GMT   Mon, 24 Dec 2012 14:30:45 GMT
+
+An HTTP date value represents time as an instance of UTC:
+
+    $string = $tm->at_utc->strftime("%a, %d %b %Y %H:%M:%S GMT");
+
+=head2 RFC 5322 - Internet Message Format
+
+L<RFC 5322 - 3.3. Date and Time Specification|http://tools.ietf.org/html/rfc5322#section-3.3>.
+
+    Format:                     Example:
+    %a, %d %b %Y %H:%M:%S %z    Mon, 24 Dec 2012 15:30:45 +0100
+    %a, %d %b %Y %H:%M %z       Mon, 24 Dec 2012 15:30 +0100
+    %d %b %Y %H:%M:%S %z        24 Dec 2012 15:30:45 +0100
+    %d %b %Y %H:%M %z           24 Dec 2012 15:30 +0100
+
+=head1 TIME ZONES
+
+An instance of C<Time::Moment> represents an unambiguous point in time, 
+but it's not time zone aware. When performing arithmetic on the local 
+date/time or altering the components of the local date/time it may be 
+necessary to use a time zone to convert to the correct representation.
+
+C<Time::Moment> is API compatible with L<DateTime::TimeZone> and 
+L<DateTime::TimeZone::Tzfile>.
+
+=head2 Converting from instant time to designated time zone
+
+    $tm = Time::Moment->new(
+        year   => 2012,
+        month  => 12,
+        day    => 24,
+        hour   => 15
+    );
+    $zone   = DateTime::TimeZone->new(name => 'America/New_York');
+    $offset = $zone->offset_for_datetime($tm) / 60;
+    
+    say $tm->with_offset_same_instant($offset); # 2012-12-24T10-05
+
+=head2 Converting from local time to designated time zone
+
+    $tm = Time::Moment->new(
+        year   => 2012,
+        month  => 12,
+        day    => 24,
+        hour   => 15
+    );
+    $zone   = DateTime::TimeZone->new(name => 'America/New_York');
+    $offset = $zone->offset_for_local_datetime($tm) / 60;
+    
+    say $tm->with_offset_same_local($offset); # 2012-12-24T15-05
+
+=head2 The Effect of Daylight Saving Time
+
+The time zone I<Europe/Brussels> has 01:00 UTC as standard time, and 02:00 
+UTC as daylight savings time, with transition dates according to the 
+L<European Summer Time|http://en.wikipedia.org/wiki/Summer_Time_in_Europe>. 
+
+    $zone = DateTime::TimeZone->new(name => 'Europe/Brussels');
+    
+    sub convert_from_instant {
+        my ($tm, $zone) = @_;
+        my $offset = $zone->offset_for_datetime($tm) / 60;
+        return $tm->with_offset_same_instant($offset);
+    }
+    
+    sub convert_from_local {
+        my ($tm, $zone) = @_;
+        my $offset = $zone->offset_for_local_datetime($tm) / 60;
+        return $tm->with_offset_same_local($offset);
+    }
+
+European Summer Time begins (clocks go forward) at 01:00 UTC on the last 
+Sunday in March, in 2014 the transition date was March 30.
+
+    $tm1 = Time::Moment->from_string('2014-03-29T12+01');
+    $tm2 = $tm1->plus_hours(24);
+    say convert_from_instant($tm2, $zone); # 2014-03-30T13+02
+    say convert_from_local($tm2, $zone);   # 2014-03-30T12+02
+
+During the transition from standard time to daylight savings time, the 
+local time interval between 02:00:00 and 02:59:59 does not exist. Local 
+time values in that interval are invalid. C<DateTime::TimeZone> raises 
+an exception when attempting to convert non-existing local time.
+
+    $tm1 = Time::Moment->from_string('2014-03-29T22+01');
+    $tm2 = $tm1->plus_hours(4);
+    say convert_from_instant($tm2, $zone); # 2014-03-30T03+02
+    say convert_from_local($tm2, $zone);   # raises an exception
+
+European Summer Time ends (clocks go backward) at 01:00 UTC on the last 
+Sunday in October, in 2014 the transition date was October 26.
+
+    $tm1 = Time::Moment->from_string('2014-10-25T12+02');
+    $tm2 = $tm1->plus_hours(24);
+    say convert_from_instant($tm2, $zone); # 2014-10-26T11+01
+    say convert_from_local($tm2, $zone);   # 2014-10-26T12+01
+
+During the transition from daylight savings time to standard time, the
+local time interval between 02:00:00 and 02:59:59 is repeated. Local 
+time values in that interval are ambiguous because they occur twice.
+When C<DateTime::TimeZone> converts an ambiguous local time it returns 
+the numerically lowest offset (usually the standard one).
+
+    $tm1 = Time::Moment->from_string('2014-10-25T22+02');
+    $tm2 = $tm1->plus_hours(4);
+    say convert_from_instant($tm2, $zone); # 2014-10-26T02+02
+    say convert_from_local($tm2, $zone);   # 2014-10-26T02+01
+
+=head1 DIAGNOSTICS
+
+=over 4
+
+=item B<(F)> Usage: %s
+
+Method called with wrong number of arguments.
+
+=item B<(F)> Parameter '%s' is out of range
+
+=item B<(F)> Parameter '%s' is out of the range [%d, %d]
+
+=item B<(F)> Cannot coerce object of type %s to Time::Moment
+
+=item B<(F)> Could not parse the given string
+
+=item B<(F)> %s is not an instance of Time::Moment
+
+=item B<(F)> A %s object can only be compared to another %s object ('%s', '%s')
+
+=back
+
+=head1 THREAD SAFETY
+
+C<Time::Moment> is thread safe.
+
+=head1 SEE ALSO
+
+L<DateTime>
+
+L<Time::Piece>
+
+=head1 SUPPORT
+
+=head2 Bugs / Feature Requests
+
+Please report any bugs or feature requests through the issue tracker
+at L<https://github.com/chansen/p5-time-moment/issues>.
+You will be notified automatically of any progress on your issue.
+
+=head2 SOURCE CODE
+
+This is open source software. The code repository is available for public 
+review and contribution under the terms of the license.
+
+L<https://github.com/chansen/p5-time-moment>
+
+    git clone https://github.com/chansen/p5-time-moment
+
+=head1 AUTHOR
+
+Christian Hansen C<chansen@cpan.org>
+
+=head1 COPYRIGHT
+
+Copyright 2013-2017 by Christian Hansen.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
+
