@@ -12,6 +12,7 @@ import org.chromium.base.Callback;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
+import org.chromium.content_public.browser.SelectionPopupController;
 import org.chromium.content_public.browser.ViewEventSink;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.ViewAndroidDelegate;
@@ -120,6 +121,8 @@ public final class BrowserControllerImpl extends IBrowserController.Stub {
         mFragment = fragment;
         mWebContents.setTopLevelNativeWindow(fragment.getWindowAndroid());
         mViewAndroidDelegate.setContainerView(fragment.getViewAndroidDelegateContainerView());
+        SelectionPopupController.fromWebContents(mWebContents)
+                .setActionModeCallback(new ActionModeCallback(mWebContents));
     }
 
     public BrowserFragmentControllerImpl getFragment() {

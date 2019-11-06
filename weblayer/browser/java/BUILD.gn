@@ -33,6 +33,7 @@ android_library("java") {
     "org/chromium/weblayer_private/ContentView.java",
     "org/chromium/weblayer_private/ContentViewRenderView.java",
     "org/chromium/weblayer_private/DownloadCallbackProxy.java",
+    "org/chromium/weblayer_private/ActionModeCallback.java",
     "org/chromium/weblayer_private/FullscreenCallbackProxy.java",
     "org/chromium/weblayer_private/NavigationControllerImpl.java",
     "org/chromium/weblayer_private/NavigationImpl.java",
