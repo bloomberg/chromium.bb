@@ -3415,6 +3415,16 @@ hooks = [
                 '-s', 'src/third_party/test_fonts/test_fonts.tar.gz.sha1',
     ],
   },
+  # Download test resources for opus, i.e. audio files.
+  {
+    'name': 'opus_test_files',
+    'pattern': '.',
+    'action': ['download_from_google_storage',
+               '--no_auth',
+               '--quiet',
+               '--bucket', 'chromium-webrtc-resources',
+               '-d', 'src/third_party/opus/tests/resources'],
+  },
   # Pull order files for the win/clang build.
   {
     'name': 'orderfiles_win',
