@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "android_webview/test/webview_instrumentation_test_native_jni/MemoryMetricsLoggerTest_jni.h"
+#include "android_webview/test/webview_instrumentation_test_native_jni/MemoryMetricsLoggerUtils_jni.h"
 
 #include "android_webview/browser/metrics/memory_metrics_logger.h"
 #include "base/run_loop.h"
@@ -13,7 +13,7 @@
 namespace android_webview {
 
 // static
-jboolean JNI_MemoryMetricsLoggerTest_ForceRecordHistograms(JNIEnv* env) {
+jboolean JNI_MemoryMetricsLoggerUtils_ForceRecordHistograms(JNIEnv* env) {
   auto* memory_metrics_logger = MemoryMetricsLogger::GetInstanceForTesting();
   if (!memory_metrics_logger)
     return false;
