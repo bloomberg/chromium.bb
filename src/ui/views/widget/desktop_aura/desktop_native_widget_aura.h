@@ -270,6 +270,8 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
 
   std::unique_ptr<DesktopCaptureClient> capture_client_;
 
+  aura::Window* content_window_container_;
+
   // This is the return value from GetNativeView().
   // WARNING: this may be NULL, in particular during shutdown it becomes NULL.
   aura::Window* content_window_;
