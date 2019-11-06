@@ -52,7 +52,11 @@ const int g_num_builtin_categories = 3;
 // Skip default categories.
 v8::base::AtomicWord g_category_index = g_num_builtin_categories;
 
+#if defined(MSVC_2015_PLUS)
 TracingController::TracingController() = default;
+#else
+TracingController::TracingController():recording_(false){}
+#endif
 
 TracingController::~TracingController() {
   StopTracing();

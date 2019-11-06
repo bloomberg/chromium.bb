@@ -28,13 +28,16 @@ struct CpuProfileDeoptFrame {
 
 }  // namespace v8
 
-#ifdef V8_OS_WIN
+// SHEZ: Comment-out CpuProfileDepot stuff from the public interface
+// SHEZ: because exporting std::vector doesn't work when building V8
+// SHEZ: as a separate DLL.
+#if 0
 template class V8_EXPORT std::vector<v8::CpuProfileDeoptFrame>;
 #endif
 
 namespace v8 {
 
-struct V8_EXPORT CpuProfileDeoptInfo {
+struct CpuProfileDeoptInfo {
   /** A pointer to a static string owned by v8. */
   const char* deopt_reason;
   std::vector<CpuProfileDeoptFrame> stack;
@@ -42,7 +45,10 @@ struct V8_EXPORT CpuProfileDeoptInfo {
 
 }  // namespace v8
 
-#ifdef V8_OS_WIN
+// SHEZ: Comment-out CpuProfileDepot stuff from the public interface
+// SHEZ: because exporting std::vector doesn't work when building V8
+// SHEZ: as a separate DLL.
+#if 0
 template class V8_EXPORT std::vector<v8::CpuProfileDeoptInfo>;
 #endif
 
@@ -229,8 +235,13 @@ class V8_EXPORT CpuProfileNode {
   /** Retrieves the ancestor node, or null if the root. */
   const CpuProfileNode* GetParent() const;
 
+  // SHEZ: Comment-out CpuProfileDepot stuff from the public interface
+  // SHEZ: because exporting std::vector doesn't work when building V8
+  // SHEZ: as a separate DLL.
+#if 0
   /** Retrieves deopt infos for the node. */
   const std::vector<CpuProfileDeoptInfo>& GetDeoptInfos() const;
+#endif
 
   static const int kNoLineNumberInfo = Message::kNoLineNumberInfo;
   static const int kNoColumnNumberInfo = Message::kNoColumnInfo;
@@ -544,11 +555,11 @@ class V8_EXPORT OutputStream {  // NOLINT
     kContinue = 0,
     kAbort = 1
   };
-  virtual ~OutputStream() = default;
+  virtual ~OutputStream();
   /** Notify about the end of stream. */
   virtual void EndOfStream() = 0;
   /** Get preferred output chunk size. Called only once. */
-  virtual int GetChunkSize() { return 1024; }
+  virtual int GetChunkSize();
   /**
    * Writes the next chunk of snapshot data into the stream. Writing
    * can be stopped by returning kAbort as function result. EndOfStream
@@ -560,9 +571,7 @@ class V8_EXPORT OutputStream {  // NOLINT
    * can be stopped by returning kAbort as function result. EndOfStream
    * will not be called in case writing was aborted.
    */
-  virtual WriteResult WriteHeapStatsChunk(HeapStatsUpdate* data, int count) {
-    return kAbort;
-  }
+  virtual WriteResult WriteHeapStatsChunk(HeapStatsUpdate* data, int count);
 };
 
 

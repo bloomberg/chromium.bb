@@ -66,6 +66,7 @@ bool ShouldFilterPart(const std::string& str) {
   return false;
 }
 
+#if false
 // Helper function for expanding all environment variables in |path|.
 std::wstring ExpandEnvironmentVariables(const std::wstring& path) {
   static const DWORD kMaxBuffer = 32 * 1024;  // Max according to MSDN.
@@ -402,9 +403,11 @@ void MaybeAddUnregisteredAntiVirusProducts(bool report_full_names,
 
   products->push_back(av_product);
 }
+#endif
 
 }  // namespace
 
+#if false
 std::vector<AvProduct> GetAntiVirusProducts(bool report_full_names) {
   base::win::AssertComApartmentType(base::win::ComApartmentType::STA);
 
@@ -435,6 +438,11 @@ std::vector<AvProduct> GetAntiVirusProducts(bool report_full_names) {
   return av_products;
 }
 
+#else
+std::vector<AvProduct> GetAntiVirusProducts(bool report_full_names) {
+  return std::vector<AvProduct>{};
+}
+#endif
 namespace internal {
 
 std::string TrimVersionOfAvProductName(const std::string& av_product) {

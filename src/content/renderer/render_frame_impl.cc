@@ -3496,11 +3496,17 @@ void RenderFrameImpl::CommitNavigationInternal(
                                             WebString::FromUTF8(mime_type),
                                             WebString::FromUTF8(charset), data);
   } else {
+    auto bridge_creator = [](const ResourceRequestInfoProvider& request_info)
+        -> std::unique_ptr<blink::WebNavigationBodyLoader> {
+      return  GetContentClient()->renderer()->OverrideResourceLoaderBridge(
+          request_info);
+    };
+
     NavigationBodyLoader::FillNavigationParamsResponseAndBodyLoader(
         common_params, commit_params, request_id, head,
         std::move(url_loader_client_endpoints),
         GetTaskRunner(blink::TaskType::kInternalLoading), GetRoutingID(),
-        !frame_->Parent(), navigation_params.get());
+        !frame_->Parent(), navigation_params.get(), bridge_creator);
   }
 
   // The MHTML mime type should be same as the one we check in the browser

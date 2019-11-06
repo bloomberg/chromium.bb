@@ -92,17 +92,20 @@ FrameTree::FrameTree(Navigator* navigator,
                      RenderFrameHostDelegate* render_frame_delegate,
                      RenderViewHostDelegate* render_view_delegate,
                      RenderWidgetHostDelegate* render_widget_delegate,
-                     RenderFrameHostManager::Delegate* manager_delegate)
+                     RenderFrameHostManager::Delegate* manager_delegate,
+                     int render_process_affinity)
     : render_frame_delegate_(render_frame_delegate),
       render_view_delegate_(render_view_delegate),
       render_widget_delegate_(render_widget_delegate),
       manager_delegate_(manager_delegate),
+      render_process_affinity_(render_process_affinity),
       root_(new FrameTreeNode(this,
                               navigator,
                               nullptr,
                               // The top-level frame must always be in a
                               // document scope.
                               blink::WebTreeScopeType::kDocument,
+                              render_process_affinity,
                               std::string(),
                               std::string(),
                               false,
@@ -197,7 +200,7 @@ FrameTreeNode* FrameTree::AddFrame(
     return nullptr;
 
   std::unique_ptr<FrameTreeNode> new_node = base::WrapUnique(new FrameTreeNode(
-      this, parent->navigator(), parent, scope, frame_name, frame_unique_name,
+      this, parent->navigator(), parent, scope,  render_process_affinity_, frame_name, frame_unique_name,
       is_created_by_script, devtools_frame_token, frame_owner_properties,
       owner_type));
 

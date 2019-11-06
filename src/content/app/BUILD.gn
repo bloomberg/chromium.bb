@@ -38,6 +38,12 @@ template("implement_content_app") {
     "//ui/gfx/geometry",
   ]
 
+  if(target_name != "browser") {
+    # blpwtk2: Added this so that we can initialize V8's ICU in
+    #          content_main_runner.
+    content_app_deps += ["//v8"]
+  }
+
   if (is_win) {
     content_app_deps += [ "//sandbox" ]
   } else if (is_android) {

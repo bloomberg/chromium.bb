@@ -18,7 +18,7 @@
 #include "src/third_party/vtune/v8-vtune.h"
 #endif
 
-#include "include/libplatform/libplatform.h"
+#include "include/v8-default-platform.h"
 #include "include/libplatform/v8-tracing.h"
 #include "include/v8-inspector.h"
 #include "src/api/api-inl.h"
@@ -3330,7 +3330,9 @@ void Shell::CleanupWorkers() {
 }
 
 int Shell::Main(int argc, char* argv[]) {
+#if defined(USING_V8_BASE_SHARED)
   v8::base::EnsureConsoleOutput();
+#endif
   if (!SetOptions(argc, argv)) return 1;
 
   v8::V8::InitializeICUDefaultLocation(argv[0], options.icu_data_file);

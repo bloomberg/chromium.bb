@@ -8,6 +8,7 @@ import("//testing/libfuzzer/fuzzer_test.gni")
 import("//testing/test.gni")
 import("//third_party/protobuf/proto_library.gni")
 import("//ui/gl/features.gni")
+import("//build/config/win/manifest.gni")
 
 config("gpu_implementation") {
   defines = [ "GPU_IMPLEMENTATION" ]
@@ -34,6 +35,12 @@ config("webgpu_implementation") {
   configs = [ "//build/config/compiler:wexit_time_destructors" ]
 }
 
+windows_manifest("gpu_manifest") {
+  sources = [
+    default_compatibility_manifest,  # Want the normal OS compat list.
+  ]
+}
+
 component("gpu") {
   public_deps = [
     "//gpu/command_buffer/client:client_sources",
@@ -42,6 +49,7 @@ component("gpu") {
     "//gpu/config:config_sources",
     "//gpu/ipc/client:ipc_client_sources",
     "//gpu/ipc/common:ipc_common_sources",
+    ":gpu_manifest",
   ]
 }
 

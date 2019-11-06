@@ -97,7 +97,7 @@ base::Value GetPrinterCapabilitiesOnBlockingPoolThread(
 
 }  // namespace
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) && defined(ENABLE_PRINT_PREVIEW)
 std::string GetUserFriendlyName(const std::string& printer_name) {
   // |printer_name| may be a UNC path like \\printserver\printername.
   if (!base::StartsWith(printer_name, "\\\\",

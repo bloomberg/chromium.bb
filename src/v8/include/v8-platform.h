@@ -130,6 +130,21 @@ class ConvertableToTraceFormat {
 };
 
 /**
+ * ConvertableToTraceFormatShim to wrap ConvertableToTraceFormat for embedder.
+ */
+class ConvertableToTraceFormatShim : public ConvertableToTraceFormat {
+ public:
+  virtual ~ConvertableToTraceFormatShim() = default;
+
+  /**
+   * Return the string to be added by the function AppendAsTraceFormat
+   */
+  virtual const char* GetToBeAppendedTraceFormat() const = 0;
+
+  V8_EXPORT void AppendAsTraceFormat(std::string* out) const final;
+};
+
+/**
  * V8 Tracing controller.
  *
  * Can be implemented by an embedder to record trace events from V8.

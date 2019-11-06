@@ -441,7 +441,8 @@ class ContentClientInitializer {
       content_client->gpu_ = delegate->CreateContentGpuClient();
 
     if (process_type == switches::kRendererProcess ||
-        cmd->HasSwitch(switches::kSingleProcess))
+        (content_client->browser_ &&
+		 content_client->browser_->SupportsInProcessRenderer()))
       content_client->renderer_ = delegate->CreateContentRendererClient();
 
     if (process_type == switches::kUtilityProcess ||
@@ -524,8 +525,6 @@ static void RegisterMainThreadFactories() {
 #if !defined(CHROME_MULTIPLE_DLL_BROWSER) && !defined(CHROME_MULTIPLE_DLL_CHILD)
   UtilityProcessHost::RegisterUtilityMainThreadFactory(
       CreateInProcessUtilityThread);
-  RenderProcessHostImpl::RegisterRendererMainThreadFactory(
-      CreateInProcessRendererThread);
   content::RegisterGpuMainThreadFactory(CreateInProcessGpuThread);
 #else
   base::CommandLine& command_line = *base::CommandLine::ForCurrentProcess();
@@ -568,6 +567,7 @@ int RunOtherNamedProcessTypeMain(const std::string& process_type,
     {switches::kGpuProcess, GpuMain},
   };
 
+  RegisterMainThreadFactories();
   for (size_t i = 0; i < base::size(kMainFunctions); ++i) {
     if (process_type == kMainFunctions[i].name) {
       int exit_code = delegate->RunProcess(process_type, main_function_params);
@@ -690,6 +690,8 @@ int ContentMainRunnerImpl::Initialize(const ContentMainParams& params) {
     SetContentClient(&empty_content_client_);
   ContentClientInitializer::Set(process_type, delegate_);
 
+    RegisterMainThreadFactories();    
+
 #if !defined(OS_ANDROID)
     // Enable startup tracing asap to avoid early TRACE_EVENT calls being
     // ignored. For Android, startup tracing is enabled in an even earlier place
@@ -766,7 +768,12 @@ int ContentMainRunnerImpl::Initialize(const ContentMainParams& params) {
         return TerminateForFatalInitializationError();
     }
 #else
-    if (!base::i18n::InitializeICU())
+    const void* icu_data;
+    bool status = base::i18n::InitializeICU(&icu_data);
+#if !defined(COMPONENT_BUILD) && defined(USING_V8_SHARED)
+    status &= v8::V8::InitializeICUWithData(icu_data);
+#endif
+    if (!status)
       return TerminateForFatalInitializationError();
 #endif  // OS_ANDROID && (ICU_UTIL_DATA_IMPL == ICU_UTIL_DATA_FILE)
 

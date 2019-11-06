@@ -9,9 +9,12 @@
   <release seq="1">
     <includes>
       <part file="autofill_and_password_manager_internals_resources.grdp" />
+<!--
       <part file="about_ui_resources.grdp" />
       <part file="crash_resources.grdp" />
+!-->
       <part file="dom_distiller_resources.grdp" />
+<!--
       <part file="flags_ui_resources.grdp" />
       <part file="gcm_driver_resources.grdp" />
       <part file="net_log_resources.grdp" />
@@ -27,6 +30,7 @@
       <part file="translate_resources.grdp" />
       <part file="user_actions_ui_resources.grdp" />
       <part file="version_ui_resources.grdp" />
+!-->
     </includes>
   </release>
 </grit>

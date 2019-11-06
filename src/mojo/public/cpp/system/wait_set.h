@@ -21,6 +21,10 @@ class WaitableEvent;
 
 namespace mojo {
 
+class WaitSet;
+
+typedef base::RepeatingCallback<void(WaitSet*, base::WaitableEvent**, size_t*, Handle*, MojoResult*, MojoHandleSignalsState*)> UIWaitProxy;
+
 // WaitSet provides an efficient means of blocking a sequence on any number of
 // events and Mojo handle state changes.
 //
@@ -109,6 +113,8 @@ class MOJO_CPP_SYSTEM_EXPORT WaitSet {
             Handle* ready_handles,
             MojoResult* ready_results,
             MojoHandleSignalsState* signals_states = nullptr);
+
+  static void SetProxy(UIWaitProxy *proxy);
 
  private:
   class State;
