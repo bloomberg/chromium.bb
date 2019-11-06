@@ -14,14 +14,13 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 import static org.chromium.base.test.util.CallbackHelper.WAIT_TIMEOUT_SECONDS;
+import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.areAnimatorsEnabled;
 import static org.chromium.chrome.browser.util.UrlConstants.NTP_URL;
 import static org.chromium.content_public.browser.test.util.CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL;
 import static org.chromium.content_public.browser.test.util.CriteriaHelper.DEFAULT_POLLING_INTERVAL;
 
-import android.animation.ValueAnimator;
 import android.graphics.Bitmap;
 import android.os.Build;
-import android.provider.Settings;
 import android.support.annotation.Nullable;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.espresso.NoMatchingViewException;
@@ -40,7 +39,6 @@ import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.Callback;
-import org.chromium.base.ContextUtils;
 import org.chromium.base.GarbageCollectionTestUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.CommandLineFlags;
@@ -814,20 +812,5 @@ public class StartSurfaceLayoutTest {
             }
         }
         return true;
-    }
-
-    /**
-     * Should be the same as {@link ValueAnimator#areAnimatorsEnabled}, which requires API level 26.
-     * TODO(crbug.com/982018): put this interface in a place to share with
-     * TabListContainerViewBinderTest.areAnimatorsEnabled.
-     */
-    private static boolean areAnimatorsEnabled() {
-        // We default to assuming that animations are enabled in case ANIMATOR_DURATION_SCALE is not
-        // defined.
-        final float defaultScale = 1f;
-        float durationScale =
-                Settings.Global.getFloat(ContextUtils.getApplicationContext().getContentResolver(),
-                        Settings.Global.ANIMATOR_DURATION_SCALE, defaultScale);
-        return !(durationScale == 0.0);
     }
 }
