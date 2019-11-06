@@ -212,6 +212,12 @@ void SnapCoordinator::UpdateSnapContainerData(LayoutBox& snap_container) {
   }
 
   auto old_snap_container_data = GetSnapContainerData(snap_container);
+  // blpwtk2: optimization: avoid adding unnecessary none type snap containers with no snap areas
+  if (!old_snap_container_data.has_value() && !snap_container_data.size() &&
+      snap_container_data.scroll_snap_type().is_none) {
+    return;
+  }
+
   if (old_snap_container_data != snap_container_data)
     snap_container.SetNeedsPaintPropertyUpdate();
 
