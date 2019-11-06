@@ -2112,6 +2112,11 @@
           '--additional-driver-flag=--enable-blink-features=LayoutNGFragmentItem',
         ],
       },
+      'linux-layout-tests-fragment-paint': {
+        'args': [
+          '--additional-driver-flag=--enable-blink-features=LayoutNGFragmentPaint',
+        ],
+      },
       # client.v8.fyi
       'V8 Blink Linux Debug': {
         'args': [
