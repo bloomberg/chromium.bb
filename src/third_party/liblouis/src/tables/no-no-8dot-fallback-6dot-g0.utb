@@ -1,0 +1,45 @@
+# liblouis: Norwegian 8-dot braille table with fallback to uncontracted 6-dot
+#
+# -----------
+#-display-name: Norwegian computer braille
+#
+#+locale:no
+#+type:computer
+#+contraction:no
+#+dots:8
+#+grade:0
+#
+# TODO: Please correct the metadata above. It is not meant to be
+# accurate nor complete. It hasn't been verified by the table
+# author yet. It is merely an attempt by the liblouis maintainers
+# to get some sensible initial values in place.
+#
+# TODO: Please add a reference to official documentation about
+# the implemented braille code. Preferably submit the documents
+# to https://github.com/liblouis/braille-specs.
+# -----------
+#
+#  Copyright (C) 2015 NLB Norwegian library of talking books and braille, http://www.nlb.no/
+#
+#  This file is part of liblouis.
+#
+#  liblouis is free software: you can redistribute it and/or modify it
+#  under the terms of the GNU Lesser General Public License as
+#  published by the Free Software Foundation, either version 2.1 of the
+#  License, or (at your option) any later version.
+#
+#  liblouis is distributed in the hope that it will be useful, but
+#  WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+#  Lesser General Public License for more details.
+#
+#  You should have received a copy of the GNU Lesser General Public
+#  License along with liblouis. If not, see
+#  <http://www.gnu.org/licenses/>.
+
+# Created August 2015 by Jostein Austvik Jacobsen <jostein@nlb.com> and Ammar Usama <ammar.usama@nlb.no>
+
+include no-no-8dot.utb
+
+# If character not defined in 8-dot standard; follow 6-dot standard instead
+include no-no-chardefs6.uti
