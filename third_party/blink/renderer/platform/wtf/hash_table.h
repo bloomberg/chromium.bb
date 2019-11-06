@@ -2113,7 +2113,7 @@ HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
     // weakly multiple times.
     Allocator::template TraceHashTableBackingWeakly<ValueType, HashTable>(
         visitor, table_, &table_,
-        WeakProcessingHashTableHelper<GetWeakHandlingFlag<ValueType>(), Key,
+        WeakProcessingHashTableHelper<WeakHandlingTrait<ValueType>::value, Key,
                                       Value, Extractor, HashFunctions, Traits,
                                       KeyTraits, Allocator>::Process,
         this);

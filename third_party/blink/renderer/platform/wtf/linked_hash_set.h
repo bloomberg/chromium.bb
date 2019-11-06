@@ -162,9 +162,8 @@ class LinkedHashSetNode : public LinkedHashSetNodeBase {
 };
 
 template <typename T>
-struct IsWeak<LinkedHashSetNode<T>> {
-  static constexpr bool value = IsWeak<T>::value;
-};
+struct IsWeak<LinkedHashSetNode<T>>
+    : std::integral_constant<bool, IsWeak<T>::value> {};
 
 template <typename ValueArg,
           typename HashFunctions = typename DefaultHash<ValueArg>::Hash,

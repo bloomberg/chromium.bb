@@ -76,7 +76,7 @@ template <WTF::WeakHandlingFlag weakness,
           typename T,
           typename Traits,
           bool = WTF::IsTraceableInCollectionTrait<Traits>::value,
-          WTF::WeakHandlingFlag = WTF::GetWeakHandlingFlag<T>()>
+          WTF::WeakHandlingFlag = WTF::WeakHandlingTrait<T>::value>
 struct TraceCollectionIfEnabled;
 
 template <WTF::WeakHandlingFlag weakness, typename T, typename Traits>
@@ -586,10 +586,10 @@ struct TraceInCollectionTrait<kWeakHandling, KeyValuePair<Key, Value>, Traits> {
     // (ephemeron). Order of invocation does not matter as tracing weak key or
     // value does not have any side effects.
     return blink::TraceCollectionIfEnabled<
-               GetWeakHandlingFlag<Key>(), Key,
+               WeakHandlingTrait<Key>::value, Key,
                typename Traits::KeyTraits>::IsAlive(self.key) &&
            blink::TraceCollectionIfEnabled<
-               GetWeakHandlingFlag<Value>(), Value,
+               WeakHandlingTrait<Value>::value, Value,
                typename Traits::ValueTraits>::IsAlive(self.value);
   }
 
@@ -598,11 +598,11 @@ struct TraceInCollectionTrait<kWeakHandling, KeyValuePair<Key, Value>, Traits> {
     return visitor->VisitEphemeronKeyValuePair(
         helper.key, helper.value,
         blink::TraceCollectionIfEnabled<
-            GetWeakHandlingFlag<typename EphemeronHelper::KeyType>(),
+            WeakHandlingTrait<typename EphemeronHelper::KeyType>::value,
             typename EphemeronHelper::KeyType,
             typename EphemeronHelper::KeyTraits>::Trace,
         blink::TraceCollectionIfEnabled<
-            GetWeakHandlingFlag<typename EphemeronHelper::ValueType>(),
+            WeakHandlingTrait<typename EphemeronHelper::ValueType>::value,
             typename EphemeronHelper::ValueType,
             typename EphemeronHelper::ValueTraits>::Trace);
   }
