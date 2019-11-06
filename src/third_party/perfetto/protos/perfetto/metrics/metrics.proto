@@ -1,0 +1,94 @@
+/*
+ * Copyright (C) 2019 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+syntax = "proto2";
+option optimize_for = LITE_RUNTIME;
+
+package perfetto.protos;
+
+import "perfetto/metrics/android/batt_metric.proto";
+import "perfetto/metrics/android/cpu_metric.proto";
+import "perfetto/metrics/android/mem_metric.proto";
+import "perfetto/metrics/android/mem_unagg_metric.proto";
+import "perfetto/metrics/android/process_growth.proto";
+import "perfetto/metrics/android/ion_metric.proto";
+import "perfetto/metrics/android/lmk_metric.proto";
+import "perfetto/metrics/android/powrails_metric.proto";
+import "perfetto/metrics/android/startup_metric.proto";
+import "perfetto/metrics/android/heap_profile.proto";
+import "perfetto/metrics/android/package_list.proto";
+
+// Trace processor statistics (taken from the stats table schema and contents).
+// TODO: perhaps add the other columns once we have enum support
+message TraceStatistics {
+  message Entry {
+    optional string name = 1;
+    optional uint32 idx = 2;
+    optional int64 value = 3;
+  }
+
+  repeated Entry entry = 1;
+}
+
+// Root message for all Perfetto-based metrics.
+//
+// Next id: 13
+message TraceMetrics {
+  // Battery counters metric on Android.
+  optional AndroidBatteryMetric android_batt = 5;
+
+  // CPU usage per trace, process and thread.
+  optional AndroidCpuMetric android_cpu = 6;
+
+  // Memory metrics on Android (owned by the Android Telemetry team).
+  optional AndroidMemoryMetric android_mem = 1;
+
+  // Memory metrics on Android in unaggregated form. (owned by the Android
+  // Telemetry team).
+  // Note: this generates a lot of data so should not be requested unless it
+  // is clear that this data is necessary.
+  optional AndroidMemoryUnaggregatedMetric android_mem_unagg = 11;
+
+  // Package list.
+  optional AndroidPackageList android_package_list = 12;
+
+  // Per-process memory growth metrics.
+  optional AndroidProcessGrowth android_process_growth = 10;
+
+  // ion buffer memory metrics.
+  optional AndroidIonMetric android_ion = 9;
+
+  // Statistics about low memory kills.
+  optional AndroidLmkMetric android_lmk = 8;
+
+  // Power Rails metrics on Android.
+  optional AndroidPowerRails android_powrails = 7;
+
+  // Startup metrics on Android (owned by the Android Telemetry team).
+  optional AndroidStartupMetric android_startup = 2;
+
+  // Heap profile stats.
+  optional HeapProfile heap_profile = 4;
+
+  // Error statistics (applicable to all traces).
+  optional TraceStatistics error_statistics = 3;
+
+  // Demo extensions.
+  extensions 450 to 499;
+
+  // Vendor extensions.
+  extensions 500 to 1000;
+}

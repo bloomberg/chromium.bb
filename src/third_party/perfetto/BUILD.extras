@@ -1,0 +1,19 @@
+gensignature(
+    name = "trace_processor_sig",
+    srcs = [
+        ":trace_processor_shell",
+        ":trace_to_text",
+    ],
+    tags = [
+        "__TRACE_PROCESSOR_SIG_TAG1",
+        "__TRACE_PROCESSOR_SIG_TAG2",
+    ],
+)
+
+py_binary(
+    name = "gen_merged_sql_metrics_py",
+    srcs = [
+        "tools/gen_merged_sql_metrics.py",
+    ],
+    main = "tools/gen_merged_sql_metrics.py",
+)

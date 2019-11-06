@@ -1,0 +1,137 @@
+/*
+ * Copyright (C) 2018 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+syntax = "proto2";
+option optimize_for = LITE_RUNTIME;
+
+import "perfetto/trace/profiling/profile_common.proto";
+
+package perfetto.protos;
+
+message ProfilePacket {
+  // The following interning tables are only used in Android version Q.
+  // In newer versions, these tables are in InternedData
+  // (see protos/perfetto/trace/interned_data) and are shared across
+  // multiple ProfilePackets.
+  // For backwards compatibility, consumers need to first look up interned
+  // data in the tables within the ProfilePacket, and then, if they are empty,
+  // look up in the InternedData instead.
+  repeated InternedString strings = 1;
+  repeated Mapping mappings = 4;
+  repeated Frame frames = 2;
+  repeated Callstack callstacks = 3;
+
+  // Next ID: 9
+  message HeapSample {
+    optional uint64 callstack_id = 1;
+    // bytes allocated at this callstack.
+    optional uint64 self_allocated = 2;
+    // bytes allocated at this callstack that have been freed.
+    optional uint64 self_freed = 3;
+    // bytes allocated at this callstack but not used since the last
+    // dump.
+    // See documentation of idle_allocations in HeapprofdConfig for more
+    // details.
+    optional uint64 self_idle = 7;
+    // Bytes allocated by this callstack but not freed at the time the malloc
+    // heap usage of this process was maximal. This is only set if dump_at_max
+    // is true in HeapprofdConfig. In that case, self_allocated, self_freed and
+    // self_idle will not be set.
+    optional uint64 self_max = 8;
+    optional uint64 timestamp = 4;  // timestamp [opt]
+    // Number of allocations that were sampled at this callstack.
+    optional uint64 alloc_count = 5;
+    // Number of allocations that were sampled at this callstack that have been
+    // freed.
+    optional uint64 free_count = 6;
+  }
+
+  message Histogram {
+    message Bucket {
+      // This bucket counts values from the previous bucket's (or -infinity if
+      // this is the first bucket) upper_limit (inclusive) to this upper_limit
+      // (exclusive).
+      optional uint64 upper_limit = 1;
+      // This is the highest bucket. This is set instead of the upper_limit. Any
+      // values larger or equal to the previous bucket's upper_limit are counted
+      // in this bucket.
+      optional bool max_bucket = 2;
+      // Number of values that fall into this range.
+      optional uint64 count = 3;
+    }
+    repeated Bucket buckets = 1;
+  }
+
+  message ProcessStats {
+    optional uint64 unwinding_errors = 1;
+    optional uint64 heap_samples = 2;
+    optional uint64 map_reparses = 3;
+    optional Histogram unwinding_time_us = 4;
+    optional uint64 total_unwinding_time_us = 5;
+  }
+
+  repeated ProcessHeapSamples process_dumps = 5;
+  message ProcessHeapSamples {
+    optional uint64 pid = 1;
+
+    // This process was profiled from startup.
+    // If false, this process was already running when profiling started.
+    optional bool from_startup = 3;
+
+    // This process was not profiled because a concurrent session was active.
+    // If this is true, samples will be empty.
+    optional bool rejected_concurrent = 4;
+
+    // This process disconnected while it was profiled.
+    // If false, the process outlived the profiling session.
+    optional bool disconnected = 6;
+
+    // If disconnected, this disconnect was caused by the client overrunning
+    // the buffer.
+    optional bool buffer_overran = 7;
+
+    // If disconnected, this disconnected was caused by the shared memory
+    // buffer being corrupted. THIS IS ALWAYS A BUG IN HEAPPROFD OR CLIENT
+    // MEMORY CORRUPTION.
+    optional bool buffer_corrupted = 8;
+
+    // Timestamp of the state of the target process that this dump represents.
+    // This can be different to the timestamp of the TracePackets for various
+    // reasons:
+    // * If disconnected is set above, this is the timestamp of last state
+    //   heapprofd had of the process before it disconnected.
+    // * Otherwise, if the rate of events produced by the process is high,
+    //   heapprofd might be behind.
+    //
+    // TODO(fmayer): This is MONOTONIC_COARSE. Refactor ClockSnapshot::Clock
+    //               to have a type enum that we can reuse here.
+    optional uint64 timestamp = 9;
+
+    optional ProcessStats stats = 5;
+
+    repeated HeapSample samples = 2;
+  }
+
+  optional bool continued = 6;
+  optional uint64 index = 7;
+}
+
+// Message used to represent individual stack samples sampled at discrete
+// points in time, rather than aggregated over an interval.
+message StreamingProfilePacket {
+  repeated uint64 callstack_iid = 1;  // Index into InternedData.callstacks
+  repeated int64 timestamp_delta_us = 2;
+}
