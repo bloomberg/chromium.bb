@@ -18,8 +18,8 @@
 #include "content/common/visual_properties.h"
 #include "content/public/common/common_param_traits.h"
 #include "ipc/ipc_message_macros.h"
-#include "third_party/blink/public/common/frame/occlusion_state.h"
 #include "third_party/blink/public/common/screen_orientation/web_screen_orientation_type.h"
+#include "third_party/blink/public/platform/viewport_intersection_state.h"
 #include "third_party/blink/public/platform/web_float_point.h"
 #include "third_party/blink/public/platform/web_float_rect.h"
 #include "third_party/blink/public/platform/web_intrinsic_sizing_info.h"
@@ -164,12 +164,11 @@ IPC_MESSAGE_ROUTED2(WidgetMsg_UpdateScreenRects,
 // etc.).
 IPC_MESSAGE_ROUTED1(WidgetMsg_ForceRedraw, int /* snapshot_id */)
 
-// Sets the viewport intersection and compositor raster area on the widget for
-// an out-of-process iframe. Also see FrameMsg_UpdateViewportIntersection.
-IPC_MESSAGE_ROUTED3(WidgetMsg_SetViewportIntersection,
-                    gfx::Rect /* viewport_intersection */,
-                    gfx::Rect /* compositor_visible_rect */,
-                    blink::FrameOcclusionState /* occlusion_state */)
+// Sent by a parent frame to notify its child about the state of the child's
+// intersection with the parent's viewport, primarily for use by the
+// IntersectionObserver API. Also see FrameHostMsg_UpdateViewportIntersection.
+IPC_MESSAGE_ROUTED1(WidgetMsg_SetViewportIntersection,
+                    blink::ViewportIntersectionState /* intersection_state */)
 
 // Sent to an OOPIF widget when the browser receives a FrameHostMsg_SetIsInert
 // from the target widget's embedding renderer changing its inertness. When a
