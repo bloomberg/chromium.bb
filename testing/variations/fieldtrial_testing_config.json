@@ -6080,6 +6080,26 @@
             ]
         }
     ],
+    "SyncUssNigori": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "ios",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "SyncUSSNigori"
+                    ]
+                }
+            ]
+        }
+    ],
     "SyncUssPasswords'": [
         {
             "platforms": [
