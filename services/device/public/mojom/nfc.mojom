@@ -87,16 +87,12 @@ struct NDEFPushOptions {
   bool ignore_read;
 };
 
-struct NDEFRecordTypeFilter {
-  string? record_type;
-};
-
 struct NDEFScanOptions {
   // Defines filtering constraint for NFC messages with specified |url|.
   string? url;
 
-  // Defines filtering constraint for NFC records with specified record type.
-  NDEFRecordTypeFilter? record_filter;
+  // Defines record type filtering constraint.
+  string? record_type;
 
   // Defines media type filtering constraint.
   string? media_type;
