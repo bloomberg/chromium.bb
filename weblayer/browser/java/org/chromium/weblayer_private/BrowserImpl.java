@@ -184,7 +184,9 @@ public class BrowserImpl extends IBrowser.Stub {
             }
             mViewController = null;
         }
-        mWindowAndroid = null;
-        mViewController = null;
+        if (mWindowAndroid != null) {
+            mWindowAndroid.destroy();
+            mWindowAndroid = null;
+        }
     }
 }
