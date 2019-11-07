@@ -219,7 +219,6 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
       blink::WebContentDecryptionModule* cdm,
       blink::WebContentDecryptionModuleResult result) override;
 
-  bool SupportsOverlayFullscreenVideo() override;
   void EnteredFullscreen() override;
   void ExitedFullscreen() override;
   void BecameDominantVisibleContent(bool is_dominant) override;
@@ -813,9 +812,6 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
 
   std::unique_ptr<RendererFactorySelector> renderer_factory_selector_;
 
-  // For canceling ongoing surface creation requests when exiting fullscreen.
-  base::CancelableCallback<void(int)> surface_created_cb_;
-
   // For canceling AndroidOverlay routing token requests.
   base::CancelableCallback<void(const base::UnguessableToken&)>
       token_available_cb_;
@@ -951,9 +947,6 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   enum class OverlayMode {
     // All overlays are turned off.
     kNoOverlays,
-
-    // Use ContentVideoView for overlays.
-    kUseContentVideoView,
 
     // Use AndroidOverlay for overlays.
     kUseAndroidOverlay,

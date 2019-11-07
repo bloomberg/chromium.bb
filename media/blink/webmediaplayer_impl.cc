@@ -369,13 +369,10 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
   always_enable_overlays_ = base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kForceVideoOverlays);
 
-  if (base::FeatureList::IsEnabled(kOverlayFullscreenVideo)) {
-    bool use_android_overlay = base::FeatureList::IsEnabled(kUseAndroidOverlay);
-    overlay_mode_ = use_android_overlay ? OverlayMode::kUseAndroidOverlay
-                                        : OverlayMode::kUseContentVideoView;
-  } else {
+  if (base::FeatureList::IsEnabled(kOverlayFullscreenVideo))
+    overlay_mode_ = OverlayMode::kUseAndroidOverlay;
+  else
     overlay_mode_ = OverlayMode::kNoOverlays;
-  }
 
   delegate_id_ = delegate_->AddObserver(this);
   delegate_->SetIdle(delegate_id_, true);
@@ -550,15 +547,6 @@ void WebMediaPlayerImpl::OnSurfaceIdUpdated(viz::SurfaceId surface_id) {
     client_->OnPictureInPictureStateChange();
 }
 
-bool WebMediaPlayerImpl::SupportsOverlayFullscreenVideo() {
-#if defined(OS_ANDROID)
-  return !using_media_player_renderer_ &&
-         overlay_mode_ == OverlayMode::kUseContentVideoView;
-#else
-  return false;
-#endif
-}
-
 void WebMediaPlayerImpl::EnableOverlay() {
   overlay_enabled_ = true;
   if (request_routing_token_cb_ &&
@@ -579,9 +567,7 @@ void WebMediaPlayerImpl::EnableOverlay() {
 
 void WebMediaPlayerImpl::DisableOverlay() {
   overlay_enabled_ = false;
-  if (overlay_mode_ == OverlayMode::kUseContentVideoView) {
-    surface_created_cb_.Cancel();
-  } else if (overlay_mode_ == OverlayMode::kUseAndroidOverlay) {
+  if (overlay_mode_ == OverlayMode::kUseAndroidOverlay) {
     token_available_cb_.Cancel();
     overlay_routing_token_is_pending_ = false;
     overlay_routing_token_ = OverlayInfo::RoutingToken();
