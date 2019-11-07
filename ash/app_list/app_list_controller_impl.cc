@@ -981,7 +981,8 @@ void AppListControllerImpl::OpenSearchResult(const std::string& result_id,
                                              int event_flags,
                                              AppListLaunchedFrom launched_from,
                                              AppListLaunchType launch_type,
-                                             int suggestion_index) {
+                                             int suggestion_index,
+                                             bool launch_as_default) {
   SearchResult* result = search_model_.FindSearchResult(result_id);
   if (!result)
     return;
@@ -1044,7 +1045,8 @@ void AppListControllerImpl::OpenSearchResult(const std::string& result_id,
   } else {
     if (client_)
       client_->OpenSearchResult(result_id, event_flags, launched_from,
-                                launch_type, suggestion_index);
+                                launch_type, suggestion_index,
+                                launch_as_default);
   }
 
   ResetHomeLauncherIfShown();

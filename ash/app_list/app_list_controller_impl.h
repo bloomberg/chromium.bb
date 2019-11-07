@@ -167,7 +167,8 @@ class ASH_EXPORT AppListControllerImpl
                         int event_flags,
                         AppListLaunchedFrom launched_from,
                         AppListLaunchType launch_type,
-                        int suggestion_index) override;
+                        int suggestion_index,
+                        bool launch_as_default) override;
   void LogResultLaunchHistogram(SearchResultLaunchLocation launch_location,
                                 int suggestion_index) override;
   void LogSearchAbandonHistogram() override;
