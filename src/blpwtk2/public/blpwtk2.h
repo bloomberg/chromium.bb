@@ -46,6 +46,8 @@
 
 
 // patch section: embedder ipc
+#include <blpwtk2_processclientdelegate.h>
+#include <blpwtk2_processhostdelegate.h>
 
 
 
