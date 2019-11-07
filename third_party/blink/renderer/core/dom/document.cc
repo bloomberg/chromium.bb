@@ -51,7 +51,6 @@
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
-#include "third_party/blink/public/mojom/frame/document_interface_broker.mojom-blink.h"
 #include "third_party/blink/public/mojom/insecure_input/insecure_input_service.mojom-blink.h"
 #include "third_party/blink/public/mojom/ukm/ukm.mojom-blink.h"
 #include "third_party/blink/public/platform/interface_provider.h"
@@ -8039,13 +8038,6 @@ bool Document::IsSecureContext() const {
   return is_secure;
 }
 
-mojo::ScopedMessagePipeHandle Document::SetDocumentInterfaceBrokerForTesting(
-    mojo::ScopedMessagePipeHandle blink_handle) {
-  DCHECK(GetFrame());
-  return GetFrame()->SetDocumentInterfaceBrokerForTesting(
-      std::move(blink_handle));
-}
-
 void Document::DidEnforceInsecureRequestPolicy() {
   if (!GetFrame())
     return;
@@ -8142,13 +8134,6 @@ service_manager::InterfaceProvider* Document::GetInterfaceProvider() {
   return &GetFrame()->GetInterfaceProvider();
 }
 
-mojom::blink::DocumentInterfaceBroker* Document::GetDocumentInterfaceBroker() {
-  if (!GetFrame())
-    return nullptr;
-
-  return &GetFrame()->GetDocumentInterfaceBroker();
-}
-
 BrowserInterfaceBrokerProxy& Document::GetBrowserInterfaceBroker() {
   if (!GetFrame())
     return GetEmptyBrowserInterfaceBroker();
@@ -8165,13 +8150,6 @@ DocumentResourceCoordinator* Document::GetResourceCoordinator() {
     }
   }
   return resource_coordinator_.get();
-}
-
-void Document::BindDocumentInterfaceBroker(
-    mojo::ScopedMessagePipeHandle js_handle) {
-  if (!GetFrame())
-    return;
-  GetFrame()->BindDocumentInterfaceBroker(std::move(js_handle));
 }
 
 FrameOrWorkerScheduler* Document::GetScheduler() {

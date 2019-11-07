@@ -51,7 +51,6 @@
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/mojom/frame/document_interface_broker.mojom.h"
 #include "third_party/blink/public/platform/media/webmediaplayer_delegate.h"
 #include "third_party/blink/public/platform/web_fullscreen_video_status.h"
 #include "third_party/blink/public/platform/web_media_player.h"
@@ -100,13 +99,6 @@ MATCHER_P2(PlaybackRateChanged, old_rate_string, new_rate_string, "") {
   return CONTAINS_STRING(arg, "Effective playback rate changed from " +
                                   std::string(old_rate_string) + " to " +
                                   std::string(new_rate_string));
-}
-
-// returns a valid handle that can be passed to WebLocalFrame constructor
-mojo::ScopedMessagePipeHandle CreateStubDocumentInterfaceBrokerHandle() {
-  return mojo::PendingRemote<blink::mojom::DocumentInterfaceBroker>()
-      .InitWithNewPipeAndPassReceiver()
-      .PassPipe();
 }
 
 class MockWebMediaPlayerClient : public blink::WebMediaPlayerClient {
@@ -314,12 +306,11 @@ class WebMediaPlayerImplTest : public testing::Test {
                                          /*is_hidden=*/false,
                                          /*compositing_enabled=*/false,
                                          nullptr)),
-        web_local_frame_(blink::WebLocalFrame::CreateMainFrame(
-            web_view_,
-            &web_frame_client_,
-            nullptr,
-            CreateStubDocumentInterfaceBrokerHandle(),
-            nullptr)),
+        web_local_frame_(
+            blink::WebLocalFrame::CreateMainFrame(web_view_,
+                                                  &web_frame_client_,
+                                                  nullptr,
+                                                  nullptr)),
         context_provider_(viz::TestContextProvider::Create()),
         audio_parameters_(TestAudioParameters::Normal()) {
     media_thread_.StartAndWaitForTesting();
