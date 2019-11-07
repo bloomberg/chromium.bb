@@ -2085,9 +2085,6 @@ extern const char kEnableVideoPlayerNativeControlsDescription[];
 extern const char kEnableVirtualDesksName[];
 extern const char kEnableVirtualDesksDescription[];
 
-extern const char kEnableVirtualDesksGesturesName[];
-extern const char kEnableVirtualDesksGesturesDescription[];
-
 extern const char kTerminalSystemAppName[];
 extern const char kTerminalSystemAppDescription[];
 
