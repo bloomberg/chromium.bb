@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "components/sync/test/fake_server/fake_server.h"
 #include "net/base/net_errors.h"
@@ -108,10 +107,7 @@ bool FakeServerHttpPostProvider::MakeSynchronousPost(int* net_error_code,
     return false;
   }
 
-  {
-    base::ScopedAllowBaseSyncPrimitivesForTesting allow_wait;
-    synchronous_post_completion_.Wait();
-  }
+  synchronous_post_completion_.Wait();
 
   if (aborted_) {
     *net_error_code = net::ERR_ABORTED;

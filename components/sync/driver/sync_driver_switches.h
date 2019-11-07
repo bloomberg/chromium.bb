@@ -35,7 +35,6 @@ extern const base::Feature kSyncWifiConfigurations;
 extern const base::Feature kUpdateBookmarkGUIDWithNodeReplacement;
 extern const base::Feature kMergeBookmarksUsingGUIDs;
 extern const base::Feature kSyncDeviceInfoInTransportMode;
-extern const base::Feature kProfileSyncServiceUsesThreadPool;
 
 }  // namespace switches
 
