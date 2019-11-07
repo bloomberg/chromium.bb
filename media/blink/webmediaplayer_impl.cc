@@ -2782,6 +2782,9 @@ scoped_refptr<VideoFrame> WebMediaPlayerImpl::GetCurrentFrameFromCompositor()
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   TRACE_EVENT0("media", "WebMediaPlayerImpl::GetCurrentFrameFromCompositor");
 
+  if (current_frame_override_)
+    return current_frame_override_;
+
   // Can be null.
   scoped_refptr<VideoFrame> video_frame =
       compositor_->GetCurrentFrameOnAnyThread();
@@ -3286,6 +3289,28 @@ base::Optional<viz::SurfaceId> WebMediaPlayerImpl::GetSurfaceId() {
   return bridge_->GetSurfaceId();
 }
 
+void WebMediaPlayerImpl::RequestAnimationFrame() {
+  vfc_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&VideoFrameCompositor::SetOnFramePresentedCallback,
+                     base::Unretained(compositor_.get()),
+                     BindToCurrentLoop(base::BindOnce(
+                         &WebMediaPlayerImpl::OnNewFramePresentedCallback,
+                         weak_factory_.GetWeakPtr()))));
+}
+
+void WebMediaPlayerImpl::OnNewFramePresentedCallback(
+    scoped_refptr<VideoFrame> presented_frame,
+    base::TimeTicks presentation_time,
+    base::TimeTicks expected_presentation_time,
+    uint32_t presentation_counter) {
+  current_frame_override_ = std::move(presented_frame);
+  client_->OnRequestAnimationFrame(
+      presentation_time, expected_presentation_time, presentation_counter,
+      *current_frame_override_);
+  current_frame_override_.reset();
+}
+
 base::WeakPtr<blink::WebMediaPlayer> WebMediaPlayerImpl::AsWeakPtr() {
   return weak_this_;
 }
@@ -3635,6 +3660,11 @@ void WebMediaPlayerImpl::OnSimpleWatchTimerTick() {
 
 GURL WebMediaPlayerImpl::GetSrcAfterRedirects() {
   return mb_data_source_ ? mb_data_source_->GetUrlAfterRedirects() : GURL();
+}
+
+void WebMediaPlayerImpl::SetCurrentFrameOverrideForTesting(
+    scoped_refptr<VideoFrame> current_frame_override) {
+  current_frame_override_ = current_frame_override;
 }
 
 }  // namespace media
