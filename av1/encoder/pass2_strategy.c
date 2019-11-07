@@ -138,27 +138,17 @@ static int frame_max_bits(const RATE_CONTROL *rc,
 static const double q_pow_term[(QINDEX_RANGE >> 5) + 1] = { 0.65, 0.70, 0.75,
                                                             0.80, 0.85, 0.90,
                                                             0.95, 0.95, 0.95 };
-
-static double calc_correction_factor(double err_per_mb, double err_divisor,
-                                     int q) {
-  const double error_term = err_per_mb / err_divisor;
+#define ERR_DIVISOR 96.0
+static double calc_correction_factor(double err_per_mb, int q) {
+  const double error_term = err_per_mb / ERR_DIVISOR;
   const int index = q >> 5;
-  double power_term;
-
   // Adjustment to power term based on qindex
-  power_term =
+  const double power_term =
       q_pow_term[index] +
       (((q_pow_term[index + 1] - q_pow_term[index]) * (q % 32)) / 32.0);
-
-  // Calculate correction factor.
-  if (power_term < 1.0) assert(error_term >= 0.0);
-
+  assert(error_term >= 0.0);
   return fclamp(pow(error_term, power_term), 0.05, 5.0);
 }
-
-#define ERR_DIVISOR 96.0
-#define FACTOR_PT_LOW 0.70
-#define FACTOR_PT_HIGH 0.90
 
 static void twopass_update_bpm_factor(TWO_PASS *twopass) {
   // Based on recent history adjust expectations of bits per macroblock.
@@ -182,8 +172,7 @@ static int find_qindex_by_rate_with_correction(
 
   while (low < high) {
     const int mid = (low + high) >> 1;
-    const double mid_factor =
-        calc_correction_factor(error_per_mb, ERR_DIVISOR, mid);
+    const double mid_factor = calc_correction_factor(error_per_mb, mid);
     const int mid_bits_per_mb = av1_rc_bits_per_mb(
         frame_type, mid, mid_factor * group_weight_factor, bit_depth);
     if (mid_bits_per_mb > desired_bits_per_mb) {
