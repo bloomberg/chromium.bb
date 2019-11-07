@@ -128,8 +128,10 @@ class CastContentWindow {
 
   // The parameters used to create a CastContentWindow instance.
   struct CreateParams {
-    // The delegate for the CastContentWindow. Must be non-null.
-    Delegate* delegate = nullptr;
+    // The delegate for the CastContentWindow. Must be non-null. If the delegate
+    // is destroyed before CastContentWindow, the WeakPtr will be invalidated on
+    // the main UI thread.
+    base::WeakPtr<Delegate> delegate = nullptr;
 
     // True if this CastContentWindow is for a headless build.
     bool is_headless = false;
@@ -152,6 +154,7 @@ class CastContentWindow {
 
     CreateParams();
     CreateParams(const CreateParams& other);
+    ~CreateParams();
   };
 
   class Observer : public base::CheckedObserver {
@@ -163,7 +166,7 @@ class CastContentWindow {
     ~Observer() override {}
   };
 
-  CastContentWindow();
+  explicit CastContentWindow(const CreateParams& params);
   virtual ~CastContentWindow();
 
   // Creates a full-screen window for |cast_web_contents| and displays it if
@@ -218,6 +221,7 @@ class CastContentWindow {
   void RemoveObserver(Observer* observer);
 
  protected:
+  base::WeakPtr<Delegate> delegate_;
   base::ObserverList<Observer> observer_list_;
 };
 

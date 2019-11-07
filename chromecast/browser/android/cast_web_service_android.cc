@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromecast/browser/cast_web_contents_manager.h"
+#include "chromecast/browser/cast_web_service.h"
 
 #include <memory>
 
-#include "chromecast/browser/cast_content_window_aura.h"
+#include "chromecast/browser/android/cast_content_window_android.h"
 
 namespace chromecast {
 
-std::unique_ptr<CastContentWindow> CastWebContentsManager::CreateWindow(
+std::unique_ptr<CastContentWindow> CastWebService::CreateWindow(
     const CastContentWindow::CreateParams& params) {
-  return std::make_unique<CastContentWindowAura>(params, window_manager_);
+  return std::make_unique<CastContentWindowAndroid>(params);
 }
 
 }  // namespace chromecast
