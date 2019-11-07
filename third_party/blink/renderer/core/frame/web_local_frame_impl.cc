@@ -2107,14 +2107,19 @@ void WebLocalFrameImpl::ReportContentSecurityPolicyViolation(
   Vector<String> report_endpoints;
   for (const WebString& end_point : violation.report_endpoints)
     report_endpoints.push_back(end_point);
+  auto directive_type =
+      ContentSecurityPolicy::GetDirectiveType(violation.effective_directive);
+  LocalFrame* context_frame =
+      directive_type == ContentSecurityPolicy::DirectiveType::kFrameAncestors
+          ? GetFrame()
+          : nullptr;
   document->GetContentSecurityPolicy()->ReportViolation(
-      violation.directive,
-      ContentSecurityPolicy::GetDirectiveType(violation.effective_directive),
-      violation.console_message, violation.blocked_url, report_endpoints,
-      violation.use_reporting_api, violation.header,
+      violation.directive, directive_type, violation.console_message,
+      violation.blocked_url, report_endpoints, violation.use_reporting_api,
+      violation.header,
       static_cast<ContentSecurityPolicyHeaderType>(violation.disposition),
       ContentSecurityPolicy::ViolationType::kURLViolation,
-      std::move(source_location), nullptr /* LocalFrame */,
+      std::move(source_location), context_frame,
       violation.after_redirect ? RedirectStatus::kFollowedRedirect
                                : RedirectStatus::kNoRedirect,
       nullptr /* Element */);
