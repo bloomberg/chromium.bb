@@ -455,6 +455,30 @@
       ]
     },
     {
+      "id": 60,
+      "description": "Disable GPU acceleration on NVIDIA Geforce card",
+      "os": {
+        "type": "win"
+      },
+      "vendor_id": "0x10DE",
+      "device_id": ["0x1381"],
+      "features": [
+        "all"
+      ]
+    },
+    {
+      "id": 61,
+      "description": "Disable GPU acceleration on Matrox video cards",
+      "os": {
+        "type": "win"
+      },
+      "vendor_id": "0x102b",
+      "device_id": ["0x2539", "0x0540"],
+      "features": [
+        "all"
+      ]
+    },
+    {
       "id": 64,
       "description": "Hardware video decode is only supported in win7+",
       "cr_bugs": [159458],
@@ -470,21 +494,51 @@
       ]
     },
     {
-      "id": 68,
-      "description": "VMware Fusion 4 has corrupt rendering with Win Vista+",
-      "cr_bugs": [169470],
+      "id": 65,
+      "description": "Disable GPU acceleration on DisplayLink video cards",
       "os": {
-        "type": "win",
-        "version": {
-          "op": ">=",
-          "value": "6.0"
-        }
+        "type": "win"
+      },
+      "vendor_id": "0x1414",
+      "device_id": ["0x008C"],
+      "features": [
+        "all"
+      ]
+    },
+    {
+      "id": 66,
+      "description": "Disable GPU acceleration on Intel video cards",
+      "os": {
+        "type": "win"
+      },
+      "vendor_id": "0x8086",
+      "device_id": ["0x0152", "0x0156", "0x015A", "0x0162", "0x0166",
+                    "0x016A", "0x1616", "0x1916", "0x29C2", "0x29B2",
+                    "0x5912", "0x5916", "0x5917", "0x591B"
+                   ],
+      "features": [
+        "all"
+      ]
+    },
+    {
+      "id": 67,
+      "description": "Disable GPU acceleration on Citrix remote session",
+      "os": {
+        "type": "win"
+      },
+      "driver_vendor": "Citrix Systems Inc.",
+      "features": [
+        "all"
+      ]
+    },
+    {
+      "id": 68,
+      "description": "Disable GPU acceleration on VMWare",
+      "os": {
+        "type": "win"
       },
       "vendor_id": "0x15ad",
-      "driver_version": {
-        "op": "<=",
-        "value": "7.14.1.1134"
-      },
+      "device_id": ["0x0405"],
       "features": [
         "all"
       ]
