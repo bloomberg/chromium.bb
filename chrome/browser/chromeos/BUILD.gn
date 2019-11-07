@@ -1778,6 +1778,8 @@ source_set("chromeos") {
     "policy/policy_cert_service_factory.h",
     "policy/policy_oauth2_token_fetcher.cc",
     "policy/policy_oauth2_token_fetcher.h",
+    "policy/policy_pref_names.cc",
+    "policy/policy_pref_names.h",
     "policy/pre_signin_policy_fetcher.cc",
     "policy/pre_signin_policy_fetcher.h",
     "policy/remote_commands/affiliated_remote_commands_invalidator.cc",
