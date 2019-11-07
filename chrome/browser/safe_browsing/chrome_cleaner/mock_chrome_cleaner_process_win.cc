@@ -62,43 +62,9 @@ constexpr char kExpectedUserResponseSwitch[] = "mock-expected-user-response";
 
 class MockCleanerResults {
  public:
-  explicit MockCleanerResults(const MockChromeCleanerProcess::Options& options)
-      : options_(options) {}
-
-  virtual ~MockCleanerResults() = default;
-
-  virtual void SendScanResults(base::OnceClosure done_closure) = 0;
-
-  PromptUserResponse::PromptAcceptance received_prompt_acceptance() const {
-    return received_prompt_acceptance_;
-  }
-
-  void ReceivePromptAcceptance(
-      base::OnceClosure done_closure,
-      PromptUserResponse::PromptAcceptance acceptance) {
-    received_prompt_acceptance_ = acceptance;
-    if (options_.crash_point() == CrashPoint::kAfterResponseReceived)
-      ::exit(MockChromeCleanerProcess::kDeliberateCrashExitCode);
-    std::move(done_closure).Run();
-  }
-
- protected:
-  MockChromeCleanerProcess::Options options_;
-  PromptUserResponse::PromptAcceptance received_prompt_acceptance_ =
-      PromptUserResponse::UNSPECIFIED;
-
- private:
-  MockCleanerResults(const MockCleanerResults& other) = delete;
-  MockCleanerResults& operator=(const MockCleanerResults& other) = delete;
-};
-
-// MockCleanerResultsProtobuf
-
-class MockCleanerResultsProtobuf : public MockCleanerResults {
- public:
-  MockCleanerResultsProtobuf(const MockChromeCleanerProcess::Options& options,
-                             const base::CommandLine& command_line)
-      : MockCleanerResults(options) {
+  MockCleanerResults(const MockChromeCleanerProcess::Options& options,
+                     const base::CommandLine& command_line)
+      : options_(options) {
     uint32_t handle_value;
     if (base::StringToUint(command_line.GetSwitchValueNative(
                                chrome_cleaner::kChromeReadHandleSwitch),
@@ -112,9 +78,9 @@ class MockCleanerResultsProtobuf : public MockCleanerResults {
     }
   }
 
-  ~MockCleanerResultsProtobuf() override = default;
+  ~MockCleanerResults() = default;
 
-  void SendScanResults(base::OnceClosure done_closure) override {
+  void SendScanResults(base::OnceClosure done_closure) {
     base::ScopedClosureRunner call_done_closure(std::move(done_closure));
     if (!read_handle_.IsValid() || !write_handle_.IsValid()) {
       LOG(ERROR) << "IPC pipes were not connected correctly";
@@ -164,7 +130,7 @@ class MockCleanerResultsProtobuf : public MockCleanerResults {
       return;
     }
     ReceivePromptAcceptance(
-        base::BindOnce(&MockCleanerResultsProtobuf::SendCloseConnectionRequest,
+        base::BindOnce(&MockCleanerResults::SendCloseConnectionRequest,
                        base::Unretained(this), call_done_closure.Release()),
         response.prompt_acceptance());
   }
@@ -177,7 +143,23 @@ class MockCleanerResultsProtobuf : public MockCleanerResults {
     std::move(done_closure).Run();
   }
 
+  PromptUserResponse::PromptAcceptance received_prompt_acceptance() const {
+    return received_prompt_acceptance_;
+  }
+
+  void ReceivePromptAcceptance(
+      base::OnceClosure done_closure,
+      PromptUserResponse::PromptAcceptance acceptance) {
+    received_prompt_acceptance_ = acceptance;
+    if (options_.crash_point() == CrashPoint::kAfterResponseReceived)
+      ::exit(MockChromeCleanerProcess::kDeliberateCrashExitCode);
+    std::move(done_closure).Run();
+  }
+
  private:
+  MockCleanerResults(const MockCleanerResults& other) = delete;
+  MockCleanerResults& operator=(const MockCleanerResults& other) = delete;
+
   bool WriteMessage(const std::string& message) {
     uint32_t message_length = message.size();
     DWORD bytes_written = 0;
@@ -212,6 +194,10 @@ class MockCleanerResultsProtobuf : public MockCleanerResults {
     }
     return response_message;
   }
+
+  MockChromeCleanerProcess::Options options_;
+  PromptUserResponse::PromptAcceptance received_prompt_acceptance_ =
+      PromptUserResponse::UNSPECIFIED;
 
   base::win::ScopedHandle read_handle_;
   base::win::ScopedHandle write_handle_;
@@ -525,8 +511,7 @@ int MockChromeCleanerProcess::Run() {
   if (::testing::Test::HasFailure())
     return kInternalTestFailureExitCode;
 
-  auto mock_results =
-      std::make_unique<MockCleanerResultsProtobuf>(options_, *command_line_);
+  MockCleanerResults mock_results(options_, *command_line_);
 
   if (options_.crash_point() == CrashPoint::kAfterConnection)
     exit(kDeliberateCrashExitCode);
@@ -545,18 +530,18 @@ int MockChromeCleanerProcess::Run() {
 
   io_thread.task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&MockCleanerResults::SendScanResults,
-                                base::Unretained(mock_results.get()),
+                                base::Unretained(&mock_results),
                                 base::Passed(&quit_closure)));
 
   run_loop.Run();
 
-  EXPECT_NE(mock_results->received_prompt_acceptance(),
+  EXPECT_NE(mock_results.received_prompt_acceptance(),
             PromptUserResponse::UNSPECIFIED);
-  EXPECT_EQ(mock_results->received_prompt_acceptance(),
+  EXPECT_EQ(mock_results.received_prompt_acceptance(),
             options_.expected_user_response());
   if (::testing::Test::HasFailure())
     return kInternalTestFailureExitCode;
-  return options_.ExpectedExitCode(mock_results->received_prompt_acceptance());
+  return options_.ExpectedExitCode(mock_results.received_prompt_acceptance());
 }
 
 // Keep the printable names of these enums short since they're used in tests
