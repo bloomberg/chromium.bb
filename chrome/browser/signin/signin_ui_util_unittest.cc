@@ -14,7 +14,6 @@
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
-#include "chrome/browser/signin/scoped_account_consistency.h"
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
@@ -264,7 +263,6 @@ class DiceSigninUiUtilTest : public BrowserWithTestWindowTest {
     }
   }
 
-  const ScopedAccountConsistencyDice scoped_account_consistency_;
   signin_metrics::AccessPoint access_point_ =
       signin_metrics::AccessPoint::ACCESS_POINT_BOOKMARK_BUBBLE;
 
