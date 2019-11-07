@@ -333,6 +333,13 @@ void ReplaceControlCharactersWithSymbols(bool multiline, base::string16* text) {
     } else if (codepoint == 0x7F) {
       // Replace the 'del' codepoint by its symbol (u2421).
       (*text)[offset] = kSymbolsCodepoint + 0x21;
+    } else if (!U_IS_UNICODE_CHAR(codepoint)) {
+      // Unicode codepoint that can't be assigned a character. This handles:
+      // - single surrogate codepoints,
+      // - last two codepoints on each plane,
+      // - invalid characters (e.g. u+fdd0..u+fdef)
+      // - codepoints above u+10ffff
+      ReplaceCodepointAtIndex(offset, kReplacementCodepoint, text);
     } else if (codepoint > 0x7F) {
       // Private use codepoints are working with a pair of font and codepoint,
       // but they are not used in Chrome.
