@@ -75,6 +75,8 @@
 #include "chrome/browser/metrics/chrome_feature_list_creator.h"
 #include "chrome/browser/nacl_host/nacl_browser_delegate_impl.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
+#include "chrome/browser/net/profile_network_context_service.h"
+#include "chrome/browser/net/profile_network_context_service_factory.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/notifications/platform_notification_service_factory.h"
 #include "chrome/browser/notifications/platform_notification_service_impl.h"
@@ -4732,10 +4734,8 @@ ChromeContentBrowserClient::GetWebAuthenticationRequestDelegate(
 
 std::unique_ptr<net::ClientCertStore>
 ChromeContentBrowserClient::CreateClientCertStore(
-    content::ResourceContext* resource_context) {
-  if (!resource_context)
-    return nullptr;
-  return ProfileIOData::FromResourceContext(resource_context)
+    content::BrowserContext* browser_context) {
+  return ProfileNetworkContextServiceFactory::GetForContext(browser_context)
       ->CreateClientCertStore();
 }
 
