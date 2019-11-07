@@ -2041,7 +2041,7 @@ String AXNodeObject::StringValue() const {
     return String();
 
   if (auto* select_element = DynamicTo<HTMLSelectElement>(*node)) {
-    int selected_index = select_element->selectedIndex();
+    int selected_index = select_element->SelectedListIndex();
     const HeapVector<Member<HTMLElement>>& list_items =
         select_element->GetListItems();
     if (selected_index >= 0 &&
