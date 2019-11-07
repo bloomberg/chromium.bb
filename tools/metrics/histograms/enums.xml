@@ -62916,6 +62916,18 @@ Full version information for the fingerprint enum values:
   <int value="137457845" label="web_history_counter"/>
 </enum>
 
+<enum name="URLRequestReferrerPolicy">
+  <int value="0" label="CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE"/>
+  <int value="1"
+      label="REDUCE_REFERRER_GRANULARITY_ON_TRANSITION_CROSS_ORIGIN"/>
+  <int value="2" label="ORIGIN_ONLY_ON_TRANSITION_CROSS_ORIGIN"/>
+  <int value="3" label="NEVER_CLEAR_REFERRER"/>
+  <int value="4" label="ORIGIN"/>
+  <int value="5" label="CLEAR_REFERRER_ON_TRANSITION_CROSS_ORIGIN"/>
+  <int value="6" label="ORIGIN_CLEAR_ON_TRANSITION_FROM_SECURE_TO_INSECURE"/>
+  <int value="7" label="NO_REFERRER"/>
+</enum>
+
 <enum name="UrlResolutionResult">
   <int value="0" label="Absolute URL"/>
   <int value="1" label="Resolutions Differ"/>
