@@ -14,7 +14,6 @@ import ctypes.util
 import datetime
 import errno
 import glob
-import hashlib
 import os
 import pwd
 import re
@@ -242,19 +241,6 @@ def ReadFile(path, mode='r', encoding=None, errors=None):
     if 'b' not in mode:
       ret = ret.decode(encoding, errors)
     return ret
-
-
-def MD5HashFile(path):
-  """Calculate the md5 hash of a given file path.
-
-  Args:
-    path: The path of the file to hash.
-
-  Returns:
-    The hex digest of the md5 hash of the file.
-  """
-  contents = ReadFile(path, mode='rb')
-  return hashlib.md5(contents).hexdigest()
 
 
 def SafeSymlink(source, dest, sudo=False):
