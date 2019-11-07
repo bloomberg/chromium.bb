@@ -92,7 +92,10 @@ class PrintingMessageFilter : public content::BrowserMessageFilter {
   std::unique_ptr<KeyedServiceShutdownNotifier::Subscription>
       printing_shutdown_notifier_;
 
+  // blpwtk2: Remove dependency on Profile
+#if 0
   BooleanPrefMember is_printing_enabled_;
+#endif
 
   const int render_process_id_;
 
