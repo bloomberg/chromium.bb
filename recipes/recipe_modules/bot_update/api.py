@@ -190,6 +190,8 @@ class BotUpdateApi(recipe_api.RecipeApi):
       # e.g. they want to force refs/heads/master at the config level.
       main_repo_path = self._get_commit_repo_path(in_commit, cfg)
       revisions[main_repo_path] = revisions.get(main_repo_path) or in_commit_rev
+      if in_commit.id and in_commit.ref:
+        refs = [in_commit.ref] + refs
 
     # Guarantee that first solution has a revision.
     # TODO(machenbach): We should explicitly pass HEAD for ALL solutions
