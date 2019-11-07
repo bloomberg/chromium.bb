@@ -1153,7 +1153,16 @@ void ScrollableShelfView::HandleMouseWheelEvent(ui::MouseWheelEvent* event) {
     return;
 
   if (GetShelf()->IsHorizontalAlignment()) {
-    ScrollByXOffset(CalculatePageScrollingOffset(event->x_offset() < 0),
+    const float x_offset = event->x_offset();
+    const float y_offset = event->y_offset();
+    // If the shelf is bottom aligned, we can scroll over the shelf contents if
+    // the scroll is horizontal or vertical (in the case of a mousewheel
+    // scroll). We take the biggest offset difference of the vertical and
+    // horizontal components to determine the offset to scroll over the
+    // contents.
+    float max_absolute_offset =
+        abs(x_offset) > abs(y_offset) ? x_offset : y_offset;
+    ScrollByXOffset(CalculatePageScrollingOffset(max_absolute_offset < 0),
                     /*animating=*/true);
   } else {
     ScrollByYOffset(CalculatePageScrollingOffset(event->y_offset() < 0),
