@@ -15,10 +15,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.BaseJUnit4ClassRunner;
-import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServer;
-import org.chromium.weblayer.NewTabCallback;
 import org.chromium.weblayer.Tab;
 import org.chromium.weblayer.shell.InstrumentationActivity;
 
@@ -33,24 +31,6 @@ public class NewTabCallbackTest {
 
     private EmbeddedTestServer mTestServer;
     private InstrumentationActivity mActivity;
-
-    private static class NewTabCallbackImpl extends NewTabCallback {
-        private CallbackHelper mCallbackHelper = new CallbackHelper();
-
-        @Override
-        public void onNewTab(Tab tab, int mode) {
-            mCallbackHelper.notifyCalled();
-            tab.getBrowser().setActiveTab(tab);
-        }
-
-        public void waitForNewTab() {
-            try {
-                mCallbackHelper.waitForCallback(0);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        }
-    }
 
     @Before
     public void setUp() {

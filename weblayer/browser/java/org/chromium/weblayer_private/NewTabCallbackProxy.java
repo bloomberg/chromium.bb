@@ -36,8 +36,8 @@ public final class NewTabCallbackProxy {
         assert mTab.getBrowser() != null;
         TabImpl tab =
                 new TabImpl(mTab.getProfile(), mTab.getBrowser().getWindowAndroid(), nativeTab);
-        mTab.getBrowser().attachTab(tab);
-        mTab.getClient().onNewTab(tab, mode);
+        mTab.getBrowser().addTab(tab);
+        mTab.getClient().onNewTab(tab.getId(), mode);
     }
 
     @NativeMethods
