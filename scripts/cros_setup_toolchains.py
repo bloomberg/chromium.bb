@@ -252,12 +252,36 @@ class Crossdev(object):
     """Calls crossdev to initialize a cross target.
 
     Args:
-      targets: The list of targets to initialize using crossdev.
+      targets: The dict of targets to initialize using crossdev.
       usepkg: Copies the commandline opts.
       config_only: Just update.
     """
     configured_targets = cls._CACHE.setdefault('configured_targets', [])
+    started_targets = set()
 
+    # Schedule all of the targets in parallel, and let them run.
+    with parallel.BackgroundTaskRunner(cls._UpdateTarget) as queue:
+      for target_name in targets:
+        # We already started this target in this loop.
+        if target_name in started_targets:
+          continue
+        # The target is already configured.
+        if config_only and target_name in configured_targets:
+          continue
+        queue.put([target_name, targets[target_name], usepkg, config_only])
+        started_targets.add(target_name)
+
+  @classmethod
+  def _UpdateTarget(cls, target_name, target, usepkg, config_only):
+    """Calls crossdev to initialize a cross target.
+
+    Args:
+      target_name: The name of the target to initialize.
+      target: The target info for initializing.
+      usepkg: Copies the commandline opts.
+      config_only: Just update.
+    """
+    configured_targets = cls._CACHE.setdefault('configured_targets', [])
     cmdbase = ['crossdev', '--show-fail-log']
     cmdbase.extend(['--env', 'FEATURES=splitdebug'])
     # Pick stable by default, and override as necessary.
@@ -271,43 +295,35 @@ class Crossdev(object):
     cmdbase.extend(['--overlays', overlays])
     cmdbase.extend(['--ov-output', CROSSDEV_OVERLAY])
 
-    # Build target by the reversed alphabetical order to make sure
-    # armv7a-cros-linux-gnueabihf builds before armv7a-cros-linux-gnueabi
-    # because some dependency issue. This can be reverted once we
-    # migrated to armv7a-cros-linux-gnueabihf. crbug.com/711369
-    for target in sorted(targets, reverse=True):
-      if config_only and target in configured_targets:
-        continue
+    cmd = cmdbase + ['-t', target_name]
 
-      cmd = cmdbase + ['-t', target]
-
-      for pkg in GetTargetPackages(target):
-        if pkg == 'gdb':
-          # Gdb does not have selectable versions.
-          cmd.append('--ex-gdb')
-        elif pkg == 'ex_compiler-rt':
-          cmd.extend(CROSSDEV_COMPILER_RT_ARGS)
-        elif pkg == 'ex_go':
-          # Go does not have selectable versions.
-          cmd.extend(CROSSDEV_GO_ARGS)
-        elif pkg in LLVM_PKGS_TABLE:
-          cmd.extend(LLVM_PKGS_TABLE[pkg])
-        elif pkg in cls.MANUAL_PKGS:
-          pass
-        else:
-          # The first of the desired versions is the "primary" one.
-          version = GetDesiredPackageVersions(target, pkg)[0]
-          cmd.extend(['--%s' % pkg, version])
-
-      cmd.extend(targets[target]['crossdev'].split())
-      if config_only:
-        # In this case we want to just quietly reinit
-        cmd.append('--init-target')
-        cros_build_lib.run(cmd, print_cmd=False, redirect_stdout=True)
+    for pkg in GetTargetPackages(target_name):
+      if pkg == 'gdb':
+        # Gdb does not have selectable versions.
+        cmd.append('--ex-gdb')
+      elif pkg == 'ex_compiler-rt':
+        cmd.extend(CROSSDEV_COMPILER_RT_ARGS)
+      elif pkg == 'ex_go':
+        # Go does not have selectable versions.
+        cmd.extend(CROSSDEV_GO_ARGS)
+      elif pkg in LLVM_PKGS_TABLE:
+        cmd.extend(LLVM_PKGS_TABLE[pkg])
+      elif pkg in cls.MANUAL_PKGS:
+        pass
       else:
-        cros_build_lib.run(cmd)
+        # The first of the desired versions is the "primary" one.
+        version = GetDesiredPackageVersions(target_name, pkg)[0]
+        cmd.extend(['--%s' % pkg, version])
 
-      configured_targets.append(target)
+    cmd.extend(target['crossdev'].split())
+    if config_only:
+      # In this case we want to just quietly reinit
+      cmd.append('--init-target')
+      cros_build_lib.run(cmd, print_cmd=False, redirect_stdout=True)
+    else:
+      cros_build_lib.run(cmd)
+
+    configured_targets.append(target_name)
 
 
 def GetTargetPackages(target):
