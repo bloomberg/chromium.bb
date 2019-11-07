@@ -66,6 +66,9 @@ GL_EXPORT extern const char kOverrideUseSoftwareGLForTests[];
 GL_EXPORT extern const char* const kGLSwitchesCopiedFromGpuProcessHost[];
 GL_EXPORT extern const int kGLSwitchesCopiedFromGpuProcessHostNumSwitches;
 
+// Disable falling back to software compositor in case of a GPU fatal error
+GL_EXPORT extern const char kDisableGpuCompositorFallBackToSoftwareOnGLError[];
+
 }  // namespace switches
 
 namespace features {
