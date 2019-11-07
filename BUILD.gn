@@ -93,6 +93,7 @@ proto_library("system_api-cryptohome-protos") {
   proto_out_dir = "include/cryptohome/proto_bindings"
   sources = [
     "${proto_in_dir}/UserDataAuth.proto",
+    "${proto_in_dir}/fido.proto",
     "${proto_in_dir}/key.proto",
     "${proto_in_dir}/rpc.proto",
     "${proto_in_dir}/signed_secret.proto",
