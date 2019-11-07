@@ -19,7 +19,7 @@
 #include "base/strings/string_piece.h"
 #include "base/task_runner.h"
 #include "base/task_runner_util.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "chrome/browser/chromeos/certificate_provider/certificate_provider.h"
 #include "net/base/net_errors.h"
 #include "third_party/boringssl/src/include/openssl/digest.h"
@@ -32,14 +32,14 @@ namespace {
 void PostSignResult(net::SSLPrivateKey::SignCallback callback,
                     net::Error error,
                     const std::vector<uint8_t>& signature) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), error, signature));
 }
 
 void PostIdentities(
     base::OnceCallback<void(net::ClientCertIdentityList)> callback,
     net::ClientCertIdentityList certs) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), std::move(certs)));
 }
 
