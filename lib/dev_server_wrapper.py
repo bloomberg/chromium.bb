@@ -17,7 +17,11 @@ import tempfile
 from six.moves import http_client as httplib
 from six.moves import urllib
 
-import cherrypy  # pylint: disable=import-error
+# cherrypy may not be available outside the chroot.
+try:
+  import cherrypy  # pylint: disable=import-error
+except ImportError:
+  cherrypy = None
 
 from chromite.lib import constants
 from chromite.cli import command
@@ -131,7 +135,7 @@ def GetImagePathWithXbuddy(path, board, version=None,
   os.environ['PATH'] = os.pathsep.join(upath)
 
   # If we are using the progress bar, quiet the logging output of cherrypy.
-  if command.UseProgressBar():
+  if cherrypy and command.UseProgressBar():
     if (hasattr(cherrypy.log, 'access_log') and
         hasattr(cherrypy.log, 'error_log')):
       cherrypy.log.access_log.setLevel(logging.NOTICE)
