@@ -2853,13 +2853,6 @@ const char kAndroidNightModeDescription[] =
 
 #else  // !defined(OS_ANDROID)
 
-const char kAccountConsistencyName[] =
-    "Identity consistency between browser and cookie jar";
-const char kAccountConsistencyDescription[] =
-    "When enabled, the browser manages signing in and out of Google accounts.";
-const char kAccountConsistencyChoiceMirror[] = "Mirror";
-const char kAccountConsistencyChoiceDice[] = "Dice";
-
 const char kForceDiceMigrationName[] = "Force the migration to Dice";
 const char kForceDiceMigrationDescription[] =
     "When enabled the account reconcilor will force the migration to dice";

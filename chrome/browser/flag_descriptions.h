@@ -1667,11 +1667,6 @@ extern const char kAndroidNightModeDescription[];
 
 #else  // !defined(OS_ANDROID)
 
-extern const char kAccountConsistencyName[];
-extern const char kAccountConsistencyDescription[];
-extern const char kAccountConsistencyChoiceMirror[];
-extern const char kAccountConsistencyChoiceDice[];
-
 extern const char kForceDiceMigrationName[];
 extern const char kForceDiceMigrationDescription[];
 
