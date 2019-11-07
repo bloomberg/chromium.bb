@@ -125,6 +125,10 @@ class CONTENT_EXPORT RenderViewHost : public IPC::Sender {
   // Passes a list of Webkit preferences to the renderer.
   virtual void UpdateWebkitPreferences(const WebPreferences& prefs) = 0;
 
+#define BB_RENDER_VIEW_HOST_SUPPORTS_RUBBERBANDING
+  // Enable alt-drag rubberbanding.
+  virtual void EnableAltDragRubberbanding(bool enable) = 0;
+
  private:
   // This interface should only be implemented inside content.
   friend class RenderViewHostImpl;
