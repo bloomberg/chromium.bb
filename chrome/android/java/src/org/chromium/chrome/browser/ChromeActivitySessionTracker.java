@@ -30,6 +30,7 @@ import org.chromium.chrome.browser.metrics.VariationsSession;
 import org.chromium.chrome.browser.notifications.NotificationPlatformBridge;
 import org.chromium.chrome.browser.notifications.chime.ChimeSession;
 import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomizations;
+import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.privacy.BrowsingDataBridge;
 import org.chromium.chrome.browser.profiles.ProfileManagerUtils;
@@ -239,9 +240,13 @@ public class ChromeActivitySessionTracker {
                 Settings.System.getInt(ContextUtils.getApplicationContext().getContentResolver(),
                         Settings.System.TEXT_SHOW_PASSWORD, 1)
                 == 1;
-        if (PrefServiceBridge.getInstance().getPasswordEchoEnabled() == systemEnabled) return;
+        if (PrefServiceBridge.getInstance().getBoolean(Pref.WEBKIT_PASSWORD_ECHO_ENABLED)
+                == systemEnabled) {
+            return;
+        }
 
-        PrefServiceBridge.getInstance().setPasswordEchoEnabled(systemEnabled);
+        PrefServiceBridge.getInstance().setBoolean(
+                Pref.WEBKIT_PASSWORD_ECHO_ENABLED, systemEnabled);
     }
 
     /**

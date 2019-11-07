@@ -39,7 +39,6 @@
 #include "components/metrics/metrics_pref_names.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/public/base/signin_pref_names.h"
 #include "components/web_resource/web_resource_pref_names.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -311,17 +310,8 @@ static jboolean JNI_PrefServiceBridge_GetNetworkPredictionManaged(JNIEnv* env) {
       prefs::kNetworkPredictionOptions);
 }
 
-static jboolean JNI_PrefServiceBridge_GetPasswordEchoEnabled(JNIEnv* env) {
-  return GetPrefService()->GetBoolean(prefs::kWebKitPasswordEchoEnabled);
-}
-
 static jboolean JNI_PrefServiceBridge_GetNotificationsEnabled(JNIEnv* env) {
   return GetBooleanForContentSetting(ContentSettingsType::NOTIFICATIONS);
-}
-
-static jboolean JNI_PrefServiceBridge_GetNotificationsVibrateEnabled(
-    JNIEnv* env) {
-  return GetPrefService()->GetBoolean(prefs::kNotificationsVibrateEnabled);
 }
 
 static jboolean JNI_PrefServiceBridge_GetAllowLocationEnabled(JNIEnv* env) {
@@ -348,16 +338,6 @@ static jboolean JNI_PrefServiceBridge_GetAllowLocationManagedByCustodian(
   return IsContentSettingManagedByCustodian(ContentSettingsType::GEOLOCATION);
 }
 
-static jboolean JNI_PrefServiceBridge_GetResolveNavigationErrorEnabled(
-    JNIEnv* env) {
-  return GetPrefService()->GetBoolean(prefs::kAlternateErrorPagesEnabled);
-}
-
-static jboolean JNI_PrefServiceBridge_GetResolveNavigationErrorManaged(
-    JNIEnv* env) {
-  return GetPrefService()->IsManagedPreference(
-      prefs::kAlternateErrorPagesEnabled);
-}
 static jboolean JNI_PrefServiceBridge_GetIncognitoModeEnabled(JNIEnv* env) {
   PrefService* prefs = GetPrefService();
   IncognitoModePrefs::Availability incognito_pref =
@@ -508,28 +488,9 @@ static void JNI_PrefServiceBridge_SetNotificationsEnabled(
       allow ? CONTENT_SETTING_ASK : CONTENT_SETTING_BLOCK);
 }
 
-static void JNI_PrefServiceBridge_SetNotificationsVibrateEnabled(
-    JNIEnv* env,
-    jboolean enabled) {
-  GetPrefService()->SetBoolean(prefs::kNotificationsVibrateEnabled, enabled);
-}
-
 static jboolean JNI_PrefServiceBridge_CanPrefetchAndPrerender(JNIEnv* env) {
   return chrome_browser_net::CanPrefetchAndPrerenderUI(GetPrefService()) ==
       chrome_browser_net::NetworkPredictionStatus::ENABLED;
-}
-
-static ScopedJavaLocalRef<jstring> JNI_PrefServiceBridge_GetSyncLastAccountName(
-    JNIEnv* env) {
-  return ConvertUTF8ToJavaString(
-      env, GetPrefService()->GetString(prefs::kGoogleServicesLastUsername));
-}
-
-static void JNI_PrefServiceBridge_SetPasswordEchoEnabled(
-    JNIEnv* env,
-    jboolean passwordEchoEnabled) {
-  GetPrefService()->SetBoolean(prefs::kWebKitPasswordEchoEnabled,
-                               passwordEchoEnabled);
 }
 
 static jboolean JNI_PrefServiceBridge_GetCameraEnabled(JNIEnv* env) {
@@ -575,12 +536,6 @@ JNI_PrefServiceBridge_ObsoleteNetworkPredictionOptionsHasUserSetting(
       prefs::kNetworkPredictionOptions) != NULL;
 }
 
-static void JNI_PrefServiceBridge_SetResolveNavigationErrorEnabled(
-    JNIEnv* env,
-    jboolean enabled) {
-  GetPrefService()->SetBoolean(prefs::kAlternateErrorPagesEnabled, enabled);
-}
-
 static jboolean JNI_PrefServiceBridge_GetFirstRunEulaAccepted(JNIEnv* env) {
   return g_browser_process->local_state()->GetBoolean(prefs::kEulaAccepted);
 }
@@ -619,10 +574,4 @@ const char* PrefServiceBridge::GetPrefNameExposedToJava(int pref_index) {
   DCHECK_GE(pref_index, 0);
   DCHECK_LT(pref_index, Pref::PREF_NUM_PREFS);
   return kPrefsExposedToJava[pref_index];
-}
-
-static void JNI_PrefServiceBridge_SetForceWebContentsDarkModeEnabled(
-    JNIEnv* env,
-    jboolean enabled) {
-  GetPrefService()->SetBoolean(prefs::kWebKitForceDarkModeEnabled, enabled);
 }

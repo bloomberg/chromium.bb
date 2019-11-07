@@ -21,6 +21,7 @@
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/payments/core/payment_prefs.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
+#include "components/signin/public/base/signin_pref_names.h"
 #include "components/translate/core/browser/translate_pref_names.h"
 
 // A preference exposed to Java.
@@ -59,6 +60,11 @@ enum Pref {
   ENABLE_DO_NOT_TRACK,
   PRINTING_ENABLED,
   OFFER_TRANSLATE_ENABLED,
+  NOTIFICATIONS_VIBRATE_ENABLED,
+  ALTERNATE_ERROR_PAGES_ENABLED,
+  SYNC_LAST_ACCOUNT_NAME,
+  WEBKIT_PASSWORD_ECHO_ENABLED,
+  WEBKIT_FORCE_DARK_MODE_ENABLED,
   // PREF_NUM_PREFS must be the last entry.
   PREF_NUM_PREFS
 };
@@ -105,6 +111,11 @@ const char* const kPrefsExposedToJava[] = {
     prefs::kEnableDoNotTrack,
     prefs::kPrintingEnabled,
     prefs::kOfferTranslateEnabled,
+    prefs::kNotificationsVibrateEnabled,
+    prefs::kAlternateErrorPagesEnabled,
+    prefs::kGoogleServicesLastUsername,
+    prefs::kWebKitPasswordEchoEnabled,
+    prefs::kWebKitForceDarkModeEnabled,
 };
 
 #endif  // CHROME_BROWSER_ANDROID_PREFERENCES_PREFS_H_

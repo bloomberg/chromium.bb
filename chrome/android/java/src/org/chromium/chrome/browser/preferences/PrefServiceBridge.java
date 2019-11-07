@@ -204,18 +204,6 @@ public class PrefServiceBridge {
         return PrefServiceBridgeJni.get().getAcceptCookiesManagedByCustodian();
     }
 
-    // TODO(crbug.com/1016957): Inline downstream.
-    public boolean isBlockThirdPartyCookiesEnabled() {
-        return getBoolean(Pref.BLOCK_THIRD_PARTY_COOKIES);
-    }
-
-    /**
-     * @return Whether vibration is enabled for notifications.
-     */
-    public boolean isNotificationsVibrateEnabled() {
-        return PrefServiceBridgeJni.get().getNotificationsVibrateEnabled();
-    }
-
     /**
      * @return Whether geolocation information can be shared with content.
      */
@@ -243,10 +231,6 @@ public class PrefServiceBridge {
      */
     public boolean isAllowLocationManagedByCustodian() {
         return PrefServiceBridgeJni.get().getAllowLocationManagedByCustodian();
-    }
-
-    public boolean getPasswordEchoEnabled() {
-        return PrefServiceBridgeJni.get().getPasswordEchoEnabled();
     }
 
     /**
@@ -285,13 +269,6 @@ public class PrefServiceBridge {
     }
 
     /**
-     * @return the last account username associated with sync.
-     */
-    public String getSyncLastAccountName() {
-        return PrefServiceBridgeJni.get().getSyncLastAccountName();
-    }
-
-    /**
      * @return Whether there is a user set value for kNetworkPredictionOptions.  This should only be
      * used for preference migration. See http://crbug.com/334602
      */
@@ -327,40 +304,6 @@ public class PrefServiceBridge {
      */
     public boolean canPrefetchAndPrerender() {
         return PrefServiceBridgeJni.get().canPrefetchAndPrerender();
-    }
-
-    /**
-     * @return Whether the web service to resolve navigation error is enabled.
-     */
-    public boolean isResolveNavigationErrorEnabled() {
-        return PrefServiceBridgeJni.get().getResolveNavigationErrorEnabled();
-    }
-
-    /**
-     * @return Whether the web service to resolve navigation error is configured by policy.
-     */
-    public boolean isResolveNavigationErrorManaged() {
-        return PrefServiceBridgeJni.get().getResolveNavigationErrorManaged();
-    }
-
-    /**
-     * Sets whether the web service to resolve navigation error should be enabled.
-     */
-    public void setResolveNavigationErrorEnabled(boolean enabled) {
-        PrefServiceBridgeJni.get().setResolveNavigationErrorEnabled(enabled);
-    }
-
-    // TODO(crbug.com/1016957): Inline downstream.
-    public void setBlockThirdPartyCookiesEnabled(boolean enabled) {
-        setBoolean(Pref.BLOCK_THIRD_PARTY_COOKIES, enabled);
-    }
-
-    public void setNotificationsVibrateEnabled(boolean enabled) {
-        PrefServiceBridgeJni.get().setNotificationsVibrateEnabled(enabled);
-    }
-
-    public void setPasswordEchoEnabled(boolean enabled) {
-        PrefServiceBridgeJni.get().setPasswordEchoEnabled(enabled);
     }
 
     /**
@@ -569,13 +512,6 @@ public class PrefServiceBridge {
         PrefServiceBridgeJni.get().setDownloadAndSaveFileDefaultDirectory(directory);
     }
 
-    /**
-     * @param enabled The value to set whether or not ForceWebContentsDarkMode is enabled.
-     */
-    public void setForceWebContentsDarkModeEnabled(boolean enabled) {
-        PrefServiceBridgeJni.get().setForceWebContentsDarkModeEnabled(enabled);
-    }
-
     public void setContentSettingForPattern(int contentSettingType, String pattern, int setting) {
         PrefServiceBridgeJni.get().setContentSettingForPattern(
                 contentSettingType, pattern, setting);
@@ -612,7 +548,6 @@ public class PrefServiceBridge {
         boolean getAllowLocationUserModifiable();
         boolean getLocationAllowedByPolicy();
         boolean getAllowLocationManagedByCustodian();
-        boolean getPasswordEchoEnabled();
         boolean getFirstRunEulaAccepted();
         boolean getCameraEnabled();
         void setCameraEnabled(boolean enabled);
@@ -622,8 +557,6 @@ public class PrefServiceBridge {
         void setMicEnabled(boolean enabled);
         boolean getMicUserModifiable();
         boolean getMicManagedByCustodian();
-        boolean getResolveNavigationErrorEnabled();
-        boolean getResolveNavigationErrorManaged();
         boolean getIncognitoModeEnabled();
         boolean getIncognitoModeManaged();
         boolean getSensorsEnabled();
@@ -635,11 +568,8 @@ public class PrefServiceBridge {
         void setClipboardEnabled(boolean enabled);
         boolean getAllowLocationEnabled();
         boolean getNotificationsEnabled();
-        boolean getNotificationsVibrateEnabled();
         void setAllowLocationEnabled(boolean enabled);
         void setNotificationsEnabled(boolean enabled);
-        void setNotificationsVibrateEnabled(boolean enabled);
-        void setPasswordEchoEnabled(boolean enabled);
         void setSensorsEnabled(boolean enabled);
         void setSoundEnabled(boolean enabled);
         boolean canPrefetchAndPrerender();
@@ -647,14 +577,11 @@ public class PrefServiceBridge {
         boolean obsoleteNetworkPredictionOptionsHasUserSetting();
         boolean getNetworkPredictionEnabled();
         void setNetworkPredictionEnabled(boolean enabled);
-        void setResolveNavigationErrorEnabled(boolean enabled);
         void setEulaAccepted();
-        String getSyncLastAccountName();
         boolean isMetricsReportingEnabled();
         void setMetricsReportingEnabled(boolean enabled);
         boolean isMetricsReportingManaged();
         String getDownloadDefaultDirectory();
         void setDownloadAndSaveFileDefaultDirectory(String directory);
-        void setForceWebContentsDarkModeEnabled(boolean enabled);
     }
 }
