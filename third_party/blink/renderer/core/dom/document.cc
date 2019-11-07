@@ -8233,10 +8233,7 @@ void Document::AddComputedStyleMapItem(
 
 StylePropertyMapReadOnly* Document::RemoveComputedStyleMapItem(
     Element* element) {
-  StylePropertyMapReadOnly* computed_style =
-      element_computed_style_map_.at(element);
-  element_computed_style_map_.erase(element);
-  return computed_style;
+  return element_computed_style_map_.Take(element);
 }
 
 void Document::Trace(Visitor* visitor) {
