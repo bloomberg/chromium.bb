@@ -275,6 +275,10 @@ void WebViewImpl::setSecurityToken(v8::Isolate *isolate,
 
 
 // patch section: screen printing
+void WebViewImpl::drawContentsToBlob(Blob *blob, const DrawParams& params)
+{
+    NOTREACHED() << "drawContentsToBlob() not supported in WebViewImpl";
+}
 
 
 // patch section: print to pdf
