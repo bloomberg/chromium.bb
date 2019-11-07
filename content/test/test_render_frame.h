@@ -78,6 +78,9 @@ class TestRenderFrame : public RenderFrameImpl {
   service_manager::mojom::InterfaceProviderRequest
   TakeLastInterfaceProviderRequest();
 
+  mojo::PendingReceiver<blink::mojom::DocumentInterfaceBroker>
+  TakeLastDocumentInterfaceBrokerReceiver();
+
   mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>
   TakeLastBrowserInterfaceBrokerReceiver();
 

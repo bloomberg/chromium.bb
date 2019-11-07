@@ -156,6 +156,10 @@ class CONTENT_EXPORT FrameTree {
       int new_routing_id,
       service_manager::mojom::InterfaceProviderRequest
           interface_provider_request,
+      mojo::PendingReceiver<blink::mojom::DocumentInterfaceBroker>
+          document_interface_broker_content_receiver,
+      mojo::PendingReceiver<blink::mojom::DocumentInterfaceBroker>
+          document_interface_broker_blink_receiver,
       mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>
           browser_interface_broker_receiver,
       blink::WebTreeScopeType scope,

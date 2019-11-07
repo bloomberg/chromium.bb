@@ -100,6 +100,16 @@ class InterceptAndCancelDidCommitProvisionalLoad
     return intercepted_requests_;
   }
 
+  std::vector<mojo::PendingReceiver<blink::mojom::DocumentInterfaceBroker>>&
+  intercepted_broker_content_receivers() {
+    return intercepted_broker_content_receivers_;
+  }
+
+  std::vector<mojo::PendingReceiver<blink::mojom::DocumentInterfaceBroker>>&
+  intercepted_broker_blink_receivers() {
+    return intercepted_broker_blink_receivers_;
+  }
+
  protected:
   bool WillProcessDidCommitNavigation(
       RenderFrameHost* render_frame_host,
@@ -113,6 +123,16 @@ class InterceptAndCancelDidCommitProvisionalLoad
         *interface_params
             ? std::move((*interface_params)->interface_provider_request)
             : nullptr);
+    intercepted_broker_content_receivers_.push_back(
+        *interface_params
+            ? std::move((*interface_params)
+                            ->document_interface_broker_content_receiver)
+            : mojo::NullReceiver());
+    intercepted_broker_blink_receivers_.push_back(
+        *interface_params
+            ? std::move(
+                  (*interface_params)->document_interface_broker_blink_receiver)
+            : mojo::NullReceiver());
     if (loop_)
       loop_->Quit();
     // Do not send the message to the RenderFrameHostImpl.
@@ -126,6 +146,10 @@ class InterceptAndCancelDidCommitProvisionalLoad
       intercepted_messages_;
   std::vector<::service_manager::mojom::InterfaceProviderRequest>
       intercepted_requests_;
+  std::vector<mojo::PendingReceiver<blink::mojom::DocumentInterfaceBroker>>
+      intercepted_broker_content_receivers_;
+  std::vector<mojo::PendingReceiver<blink::mojom::DocumentInterfaceBroker>>
+      intercepted_broker_blink_receivers_;
   std::unique_ptr<base::RunLoop> loop_;
 };
 

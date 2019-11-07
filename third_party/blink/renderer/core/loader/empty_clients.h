@@ -37,6 +37,7 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
+#include "third_party/blink/public/mojom/frame/document_interface_broker.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_focus_type.h"
 #include "third_party/blink/public/platform/web_menu_source_type.h"
@@ -381,6 +382,10 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
     return &interface_provider_;
   }
 
+  mojom::blink::DocumentInterfaceBroker* GetDocumentInterfaceBroker() override;
+  mojo::ScopedMessagePipeHandle SetDocumentInterfaceBrokerForTesting(
+      mojo::ScopedMessagePipeHandle blink_handle) override;
+
   BrowserInterfaceBrokerProxy& GetBrowserInterfaceBroker() override {
     return GetEmptyBrowserInterfaceBroker();
   }
@@ -430,6 +435,8 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
   WebTextCheckClient* text_check_client_;
 
   service_manager::InterfaceProvider interface_provider_;
+  mojo::Remote<mojom::blink::DocumentInterfaceBroker>
+      document_interface_broker_;
 
   DISALLOW_COPY_AND_ASSIGN(EmptyLocalFrameClient);
 };

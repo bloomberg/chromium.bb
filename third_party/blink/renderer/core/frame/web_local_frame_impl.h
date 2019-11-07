@@ -103,7 +103,8 @@ class CORE_EXPORT WebLocalFrameImpl final
   // WebLocalFrame overrides:
   WebLocalFrameImpl* CreateLocalChild(WebTreeScopeType,
                                       WebLocalFrameClient*,
-                                      blink::InterfaceRegistry*) override;
+                                      blink::InterfaceRegistry*,
+                                      mojo::ScopedMessagePipeHandle) override;
   WebLocalFrameClient* Client() const override { return client_; }
   void SetAutofillClient(WebAutofillClient*) override;
   WebAutofillClient* AutofillClient() override;
@@ -354,18 +355,21 @@ class CORE_EXPORT WebLocalFrameImpl final
   static WebLocalFrameImpl* CreateMainFrame(WebView*,
                                             WebLocalFrameClient*,
                                             InterfaceRegistry*,
+                                            mojo::ScopedMessagePipeHandle,
                                             WebFrame* opener,
                                             const WebString& name,
                                             WebSandboxFlags,
                                             const FeaturePolicy::FeatureState&);
   static WebLocalFrameImpl* CreateProvisional(WebLocalFrameClient*,
                                               InterfaceRegistry*,
+                                              mojo::ScopedMessagePipeHandle,
                                               WebFrame*,
                                               const FramePolicy&);
 
   WebLocalFrameImpl(WebTreeScopeType,
                     WebLocalFrameClient*,
-                    blink::InterfaceRegistry*);
+                    blink::InterfaceRegistry*,
+                    mojo::ScopedMessagePipeHandle);
   ~WebLocalFrameImpl() override;
 
   LocalFrame* CreateChildFrame(const AtomicString& name,

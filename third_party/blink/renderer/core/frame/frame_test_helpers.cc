@@ -212,8 +212,11 @@ WebLocalFrameImpl* CreateLocalChild(WebLocalFrame& parent,
                                     TestWebFrameClient* client) {
   std::unique_ptr<TestWebFrameClient> owned_client;
   client = CreateDefaultClientIfNeeded(client, owned_client);
-  auto* frame =
-      To<WebLocalFrameImpl>(parent.CreateLocalChild(scope, client, nullptr));
+  auto* frame = To<WebLocalFrameImpl>(parent.CreateLocalChild(
+      scope, client, nullptr,
+      mojo::PendingRemote<mojom::blink::DocumentInterfaceBroker>()
+          .InitWithNewPipeAndPassReceiver()
+          .PassPipe()));
   client->Bind(frame, std::move(owned_client));
   return frame;
 }
@@ -224,8 +227,11 @@ WebLocalFrameImpl* CreateLocalChild(
     std::unique_ptr<TestWebFrameClient> self_owned) {
   DCHECK(self_owned);
   TestWebFrameClient* client = self_owned.get();
-  auto* frame =
-      To<WebLocalFrameImpl>(parent.CreateLocalChild(scope, client, nullptr));
+  auto* frame = To<WebLocalFrameImpl>(parent.CreateLocalChild(
+      scope, client, nullptr,
+      mojo::PendingRemote<mojom::blink::DocumentInterfaceBroker>()
+          .InitWithNewPipeAndPassReceiver()
+          .PassPipe()));
   client->Bind(frame, std::move(self_owned));
   return frame;
 }
@@ -235,7 +241,11 @@ WebLocalFrameImpl* CreateProvisional(WebRemoteFrame& old_frame,
   std::unique_ptr<TestWebFrameClient> owned_client;
   client = CreateDefaultClientIfNeeded(client, owned_client);
   auto* frame = To<WebLocalFrameImpl>(WebLocalFrame::CreateProvisional(
-      client, nullptr, &old_frame, FramePolicy()));
+      client, nullptr,
+      mojo::PendingRemote<mojom::blink::DocumentInterfaceBroker>()
+          .InitWithNewPipeAndPassReceiver()
+          .PassPipe(),
+      &old_frame, FramePolicy()));
   client->Bind(frame, std::move(owned_client));
   std::unique_ptr<TestWebWidgetClient> widget_client;
   // Create a local root, if necessary.
@@ -279,6 +289,9 @@ WebLocalFrameImpl* CreateLocalChild(WebRemoteFrame& parent,
   client = CreateDefaultClientIfNeeded(client, owned_client);
   auto* frame = To<WebLocalFrameImpl>(parent.CreateLocalChild(
       WebTreeScopeType::kDocument, name, FramePolicy(), client, nullptr,
+      mojo::PendingRemote<mojom::blink::DocumentInterfaceBroker>()
+          .InitWithNewPipeAndPassReceiver()
+          .PassPipe(),
       previous_sibling, properties, FrameOwnerElementType::kIframe, nullptr));
   client->Bind(frame, std::move(owned_client));
 
@@ -343,7 +356,11 @@ WebViewImpl* WebViewHelper::InitializeWithOpener(
   web_frame_client =
       CreateDefaultClientIfNeeded(web_frame_client, owned_web_frame_client);
   WebLocalFrame* frame = WebLocalFrame::CreateMainFrame(
-      web_view_, web_frame_client, nullptr, opener);
+      web_view_, web_frame_client, nullptr,
+      mojo::PendingRemote<mojom::blink::DocumentInterfaceBroker>()
+          .InitWithNewPipeAndPassReceiver()
+          .PassPipe(),
+      opener);
   web_frame_client->Bind(frame, std::move(owned_web_frame_client));
 
   test_web_widget_client_ = CreateDefaultClientIfNeeded(

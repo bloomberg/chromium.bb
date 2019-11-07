@@ -568,6 +568,10 @@ IPC_STRUCT_END()
 IPC_STRUCT_BEGIN(FrameHostMsg_CreateChildFrame_Params_Reply)
   IPC_STRUCT_MEMBER(int32_t, child_routing_id)
   IPC_STRUCT_MEMBER(mojo::MessagePipeHandle, new_interface_provider)
+  IPC_STRUCT_MEMBER(mojo::MessagePipeHandle,
+                    document_interface_broker_content_handle)
+  IPC_STRUCT_MEMBER(mojo::MessagePipeHandle,
+                    document_interface_broker_blink_handle)
   IPC_STRUCT_MEMBER(mojo::MessagePipeHandle, browser_interface_broker_handle)
   IPC_STRUCT_MEMBER(base::UnguessableToken, devtools_frame_token)
 IPC_STRUCT_END()

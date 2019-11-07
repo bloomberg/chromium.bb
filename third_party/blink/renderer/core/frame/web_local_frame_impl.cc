@@ -1598,34 +1598,40 @@ WebLocalFrame* WebLocalFrame::CreateMainFrame(
     WebView* web_view,
     WebLocalFrameClient* client,
     InterfaceRegistry* interface_registry,
+    mojo::ScopedMessagePipeHandle document_interface_broker_handle,
     WebFrame* opener,
     const WebString& name,
     WebSandboxFlags sandbox_flags,
     const FeaturePolicy::FeatureState& opener_feature_state) {
   return WebLocalFrameImpl::CreateMainFrame(
-      web_view, client, interface_registry, opener, name, sandbox_flags,
+      web_view, client, interface_registry,
+      std::move(document_interface_broker_handle), opener, name, sandbox_flags,
       opener_feature_state);
 }
 
 WebLocalFrame* WebLocalFrame::CreateProvisional(
     WebLocalFrameClient* client,
     InterfaceRegistry* interface_registry,
+    mojo::ScopedMessagePipeHandle document_interface_broker_handle,
     WebFrame* previous_frame,
     const FramePolicy& frame_policy) {
-  return WebLocalFrameImpl::CreateProvisional(client, interface_registry,
-                                              previous_frame, frame_policy);
+  return WebLocalFrameImpl::CreateProvisional(
+      client, interface_registry, std::move(document_interface_broker_handle),
+      previous_frame, frame_policy);
 }
 
 WebLocalFrameImpl* WebLocalFrameImpl::CreateMainFrame(
     WebView* web_view,
     WebLocalFrameClient* client,
     InterfaceRegistry* interface_registry,
+    mojo::ScopedMessagePipeHandle document_interface_broker_handle,
     WebFrame* opener,
     const WebString& name,
     WebSandboxFlags sandbox_flags,
     const FeaturePolicy::FeatureState& opener_feature_state) {
   WebLocalFrameImpl* frame = MakeGarbageCollected<WebLocalFrameImpl>(
-      WebTreeScopeType::kDocument, client, interface_registry);
+      WebTreeScopeType::kDocument, client, interface_registry,
+      std::move(document_interface_broker_handle));
   frame->SetOpener(opener);
   Page& page = *static_cast<WebViewImpl*>(web_view)->GetPage();
   DCHECK(!page.MainFrame());
@@ -1639,13 +1645,14 @@ WebLocalFrameImpl* WebLocalFrameImpl::CreateMainFrame(
 WebLocalFrameImpl* WebLocalFrameImpl::CreateProvisional(
     WebLocalFrameClient* client,
     blink::InterfaceRegistry* interface_registry,
+    mojo::ScopedMessagePipeHandle document_interface_broker_handle,
     WebFrame* previous_web_frame,
     const FramePolicy& frame_policy) {
   DCHECK(client);
   auto* web_frame = MakeGarbageCollected<WebLocalFrameImpl>(
       previous_web_frame->InShadowTree() ? WebTreeScopeType::kShadow
                                          : WebTreeScopeType::kDocument,
-      client, interface_registry);
+      client, interface_registry, std::move(document_interface_broker_handle));
   Frame* previous_frame = ToCoreFrame(*previous_web_frame);
   web_frame->SetParent(previous_web_frame->Parent());
   web_frame->SetOpener(previous_web_frame->Opener());
@@ -1690,9 +1697,11 @@ WebLocalFrameImpl* WebLocalFrameImpl::CreateProvisional(
 WebLocalFrameImpl* WebLocalFrameImpl::CreateLocalChild(
     WebTreeScopeType scope,
     WebLocalFrameClient* client,
-    blink::InterfaceRegistry* interface_registry) {
+    blink::InterfaceRegistry* interface_registry,
+    mojo::ScopedMessagePipeHandle document_interface_broker_handle) {
   WebLocalFrameImpl* frame = MakeGarbageCollected<WebLocalFrameImpl>(
-      scope, client, interface_registry);
+      scope, client, interface_registry,
+      std::move(document_interface_broker_handle));
   AppendChild(frame);
   return frame;
 }
@@ -1700,10 +1709,13 @@ WebLocalFrameImpl* WebLocalFrameImpl::CreateLocalChild(
 WebLocalFrameImpl::WebLocalFrameImpl(
     WebTreeScopeType scope,
     WebLocalFrameClient* client,
-    blink::InterfaceRegistry* interface_registry)
+    blink::InterfaceRegistry* interface_registry,
+    mojo::ScopedMessagePipeHandle document_interface_broker_handle)
     : WebNavigationControl(scope),
       client_(client),
-      local_frame_client_(MakeGarbageCollected<LocalFrameClientImpl>(this)),
+      local_frame_client_(MakeGarbageCollected<LocalFrameClientImpl>(
+          this,
+          std::move(document_interface_broker_handle))),
       autofill_client_(nullptr),
       find_in_page_(
           MakeGarbageCollected<FindInPage>(*this, interface_registry)),

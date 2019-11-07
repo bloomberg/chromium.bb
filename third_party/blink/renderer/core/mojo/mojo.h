@@ -56,6 +56,9 @@ class Mojo final : public ScriptWrappable {
                             MojoHandle*,
                             const String& scope,
                             bool use_browser_interface_broker);
+  static MojoHandle* getDocumentInterfaceBrokerHandle(ScriptState*);
+  static MojoHandle* replaceDocumentInterfaceBrokerForTesting(ScriptState*,
+                                                              MojoHandle*);
 };
 
 }  // namespace blink

@@ -399,6 +399,14 @@ class BLINK_EXPORT WebLocalFrameClient {
   // The provisional datasource is now committed.  The first part of the
   // response body has been received, and the encoding of the response
   // body is known.
+  // The mojo::ScopedMessagePipeHandle is a DocumentInterfaceBroker handle. When
+  // a load commits and a new Document is created, Blink creates a new
+  // DocumentInterfaceBroker endpoint to ensure that interface requests in the
+  // newly committed Document are associated with the correct origin (even if
+  // the origin of the old and the new Document are the same). The one
+  // exception is if the Window object is reused; in that case, the old
+  // DocumentInterfaceBroker handle will be reused, and the endpoint won't be
+  // bound to any requests.
   // When a load commits and a new Document is created, WebLocalFrameClient
   // creates a new BrowserInterfaceBroker endpoint to ensure that interface
   // receivers in the newly committed Document are associated with the correct
@@ -409,6 +417,7 @@ class BLINK_EXPORT WebLocalFrameClient {
   virtual void DidCommitProvisionalLoad(
       const WebHistoryItem&,
       WebHistoryCommitType,
+      mojo::ScopedMessagePipeHandle,
       bool should_reset_browser_interface_broker) {}
 
   // The frame's document has just been initialized.

@@ -100,6 +100,8 @@ class FrameTreeNodeBlameContextTest : public RenderViewHostImplTestHarness {
       tree()->AddFrame(
           node, process_id(), child_id,
           TestRenderFrameHost::CreateStubInterfaceProviderRequest(),
+          TestRenderFrameHost::CreateStubDocumentInterfaceBrokerReceiver(),
+          TestRenderFrameHost::CreateStubDocumentInterfaceBrokerReceiver(),
           TestRenderFrameHost::CreateStubBrowserInterfaceBrokerReceiver(),
           blink::WebTreeScopeType::kDocument, std::string(),
           base::StringPrintf("uniqueName%d", child_id), false,
