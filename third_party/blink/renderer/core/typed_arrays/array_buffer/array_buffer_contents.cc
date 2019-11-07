@@ -36,18 +36,12 @@ namespace blink {
 
 ArrayBufferContents::ArrayBufferContents(void* data,
                                          size_t length,
-                                         DataDeleter deleter,
-                                         SharingType is_shared) {
+                                         DataDeleter deleter) {
   if (!data) {
     return;
   }
-  if (is_shared == kNotShared) {
-    backing_store_ =
-        v8::ArrayBuffer::NewBackingStore(data, length, deleter, nullptr);
-  } else {
-    backing_store_ =
-        v8::SharedArrayBuffer::NewBackingStore(data, length, deleter, nullptr);
-  }
+  backing_store_ =
+      v8::ArrayBuffer::NewBackingStore(data, length, deleter, nullptr);
 }
 
 ArrayBufferContents::ArrayBufferContents(

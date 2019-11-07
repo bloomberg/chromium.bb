@@ -63,10 +63,7 @@ class CORE_EXPORT ArrayBufferContents {
                       size_t element_byte_size,
                       SharingType is_shared,
                       InitializationPolicy);
-  ArrayBufferContents(void* data,
-                      size_t length,
-                      DataDeleter deleter,
-                      SharingType is_shared);
+  ArrayBufferContents(void* data, size_t length, DataDeleter deleter);
   ArrayBufferContents(ArrayBufferContents&&) = default;
   explicit ArrayBufferContents(std::shared_ptr<v8::BackingStore> backing_store);
 
