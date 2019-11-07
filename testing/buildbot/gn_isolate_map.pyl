@@ -1527,6 +1527,10 @@
     "label": "//third_party/libaddressinput:libaddressinput_parse_format_rule_fuzzer",
     "type": "fuzzer",
   },
+  "libcups_unittests": {
+    "label": "//chrome/services/cups_proxy:libcups_unittests",
+    "type": "console_test_launcher",
+  },
   "libjingle_xmpp_unittests": {
     "label": "//third_party/libjingle_xmpp:libjingle_xmpp_unittests",
     "type": "console_test_launcher",
