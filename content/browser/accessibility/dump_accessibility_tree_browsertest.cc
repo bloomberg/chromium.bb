@@ -1063,6 +1063,11 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityAriaTreeGrid) {
   RunAriaTest(FILE_PATH_LITERAL("aria-treegrid.html"));
 }
 
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       AccessibilityAriaTreeDiscontinuous) {
+  RunAriaTest(FILE_PATH_LITERAL("aria-tree-discontinuous.html"));
+}
+
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityAriaUndefined) {
   RunAriaTest(FILE_PATH_LITERAL("aria-undefined.html"));
 }
