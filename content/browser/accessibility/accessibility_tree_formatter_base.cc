@@ -40,7 +40,8 @@ AccessibilityTreeFormatter::TestPass AccessibilityTreeFormatter::GetTestPass(
   return passes[index];
 }
 
-base::string16 AccessibilityTreeFormatter::DumpAccessibilityTreeFromManager(
+// static
+base::string16 AccessibilityTreeFormatterBase::DumpAccessibilityTreeFromManager(
     BrowserAccessibilityManager* ax_mgr,
     bool internal,
     std::vector<PropertyFilter> property_filters) {

@@ -3279,7 +3279,7 @@ base::string16 WebContentsImpl::DumpAccessibilityTree(
     std::vector<AccessibilityTreeFormatter::PropertyFilter> property_filters) {
   auto* ax_mgr = GetOrCreateRootBrowserAccessibilityManager();
   DCHECK(ax_mgr);
-  return AccessibilityTreeFormatter::DumpAccessibilityTreeFromManager(
+  return AccessibilityTreeFormatterBase::DumpAccessibilityTreeFromManager(
       ax_mgr, internal, property_filters);
 }
 
