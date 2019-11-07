@@ -6633,6 +6633,11 @@ Unknown properties are collapsed to zero. -->
   <int value="1" label="Latched"/>
 </enum>
 
+<enum name="BooleanLoadCollided">
+  <int value="0" label="Load did not collide"/>
+  <int value="1" label="Load collided"/>
+</enum>
+
 <enum name="BooleanLoaded">
   <int value="0" label="Not loaded"/>
   <int value="1" label="Loaded"/>
