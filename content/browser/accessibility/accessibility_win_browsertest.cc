@@ -894,7 +894,7 @@ class WebContentsUIAParentNavigationInDestroyedWatcher
     // Test navigating to the parent node via UIA
     Microsoft::WRL::ComPtr<IUIAutomationElement> parent;
     tree_walker_->GetParentElement(root_.Get(), &parent);
-    CHECK(parent.Get());
+    CHECK(parent.Get() == nullptr);
 
     run_loop_.Quit();
   }
