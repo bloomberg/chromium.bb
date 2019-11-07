@@ -74,10 +74,10 @@ class SignOutTestObserver : public IdentityManager::Observer {
 };
 
 // Live tests for SignIn.
-class DemoSignInTest : public signin::test::LiveTest {
+class LiveSignInTest : public signin::test::LiveTest {
  public:
-  DemoSignInTest() = default;
-  ~DemoSignInTest() override = default;
+  LiveSignInTest() = default;
+  ~LiveSignInTest() override = default;
 
   void SetUp() override {
     LiveTest::SetUp();
@@ -152,7 +152,7 @@ class DemoSignInTest : public signin::test::LiveTest {
 // Sings in an account through the settings page and checks that the account is
 // added to Chrome. Sync should be disabled because the test doesn't pass
 // through the Sync confirmation dialog.
-IN_PROC_BROWSER_TEST_F(DemoSignInTest, SimpleSignInFlow) {
+IN_PROC_BROWSER_TEST_F(LiveSignInTest, SimpleSignInFlow) {
   TestAccount ta;
   CHECK(GetTestAccountsUtil()->GetAccount("TEST_ACCOUNT_1", ta));
   SignInFromSettings(ta);
@@ -173,7 +173,7 @@ IN_PROC_BROWSER_TEST_F(DemoSignInTest, SimpleSignInFlow) {
 // Sync is enabled.
 // Then, signs out on the web and checks that the account is removed from
 // cookies and Sync paused error is displayed.
-IN_PROC_BROWSER_TEST_F(DemoSignInTest, WebSignOut) {
+IN_PROC_BROWSER_TEST_F(LiveSignInTest, WebSignOut) {
   TestAccount test_account;
   CHECK(GetTestAccountsUtil()->GetAccount("TEST_ACCOUNT_1", test_account));
   TurnOnSync(test_account);
@@ -207,7 +207,7 @@ IN_PROC_BROWSER_TEST_F(DemoSignInTest, WebSignOut) {
 // Sings in two accounts on the web and checks that cookies and refresh tokens
 // are added to Chrome. Sync should be disabled.
 // Then, signs out on the web and checks that accounts are removed from Chrome.
-IN_PROC_BROWSER_TEST_F(DemoSignInTest, WebSignInAndSignOut) {
+IN_PROC_BROWSER_TEST_F(LiveSignInTest, WebSignInAndSignOut) {
   TestAccount test_account_1;
   CHECK(GetTestAccountsUtil()->GetAccount("TEST_ACCOUNT_1", test_account_1));
   SignInFromWeb(test_account_1);
@@ -253,7 +253,7 @@ IN_PROC_BROWSER_TEST_F(DemoSignInTest, WebSignInAndSignOut) {
 // Sync is enabled. Signs in a second account on the web.
 // Then, turns Sync off from the settings page and checks that both accounts are
 // removed from Chrome and from cookies.
-IN_PROC_BROWSER_TEST_F(DemoSignInTest, TurnOffSync) {
+IN_PROC_BROWSER_TEST_F(LiveSignInTest, TurnOffSync) {
   TestAccount test_account_1;
   CHECK(GetTestAccountsUtil()->GetAccount("TEST_ACCOUNT_1", test_account_1));
   TurnOnSync(test_account_1);
