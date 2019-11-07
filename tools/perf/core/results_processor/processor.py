@@ -323,5 +323,5 @@ def main(args=None):
   """Entry point for the standalone version of the results_processor script."""
   parser = command_line.ArgumentParser(standalone=True)
   options = parser.parse_args(args)
-  command_line.ProcessOptions(options, standalone=True)
+  command_line.ProcessOptions(options)
   return ProcessResults(options)
