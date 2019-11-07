@@ -45,18 +45,18 @@ NewTabType NewTabTypeFromWindowDisposition(WindowOpenDisposition disposition) {
   // the only ones that should be hit for this code path.
   switch (disposition) {
     case WindowOpenDisposition::NEW_FOREGROUND_TAB:
-      return NewTabType::FOREGROUND_TAB;
+      return NewTabType::kForeground;
     case WindowOpenDisposition::NEW_BACKGROUND_TAB:
-      return NewTabType::BACKGROUND_TAB;
+      return NewTabType::kBackground;
     case WindowOpenDisposition::NEW_POPUP:
-      return NewTabType::NEW_POPUP;
+      return NewTabType::kNewPopup;
     case WindowOpenDisposition::NEW_WINDOW:
-      return NewTabType::NEW_WINDOW;
+      return NewTabType::kNewWindow;
     default:
       // The set of allowed types are in
       // ContentTabClientImpl::CanCreateWindow().
       NOTREACHED();
-      return NewTabType::FOREGROUND_TAB;
+      return NewTabType::kForeground;
   }
 }
 

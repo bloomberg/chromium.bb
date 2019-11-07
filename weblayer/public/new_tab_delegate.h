@@ -16,17 +16,17 @@ class Tab;
 // Corresponds to type of browser the page requested.
 enum class NewTabType {
   // The new browser should be opened in the foreground.
-  FOREGROUND_TAB = 0,
+  kForeground = 0,
 
   // The new browser should be opened in the foreground.
-  BACKGROUND_TAB,
+  kBackground,
 
   // The page requested the browser be shown in a new window with minimal
   // browser UI. For example, no tabstrip.
-  NEW_POPUP,
+  kNewPopup,
 
   // The page requested the browser be shown in a new window.
-  NEW_WINDOW,
+  kNewWindow,
 };
 
 // An interface that allows clients to handle requests for new browsers, or
