@@ -90,12 +90,12 @@ Practical advice:
    the [android-binary-size trybot][size-trybot].
    * Or use [//tools/binary_size/diagnose_bloat.py][diagnose_bloat] to create
      diffs locally.
- * Ensure no symbols exists that are used only by tests.
+ * Ensure no symbols exist that are used only by tests.
  * Be concise with strings used for error handling.
    * Identical strings throughout the codebase are de-duped. Take advantage of
      this for error-related strings.
 
-### Optimizating Native Code
+### Optimizing Native Code
  * If there's a notable increase in `.data.rel.ro`:
    * Ensure there are not [excessive relocations][relocations].
  * If there's a notable increase in `.rodata`:
@@ -112,7 +112,7 @@ Practical advice:
      * E.g. Use PODs wherever possible, and especially in containers. They will
        likely compile down to the same code as other pre-existing PODs.
        * Try also to use consistent field ordering within PODs.
-     * E.g. a `std::vector` of bare pointers will very likely by ICF'ed, but one
+     * E.g. a `std::vector` of bare pointers will very likely be ICF'ed, but one
        that uses smart pointers gets type-specific destructor logic inlined into
        it.
      * This advice is especially applicable to generated code.
@@ -125,7 +125,7 @@ Practical advice:
          separate `const char *` and `const std::string&` overloads rather than
          a single `base::StringPiece`.
 
-### Optimizating Java Code
+### Optimizing Java Code
  * Prefer fewer large JNI calls over many small JNI calls.
  * Minimize the use of class initializers (`<clinit>()`).
    * If R8 cannot determine that they are "trivial", they will prevent
@@ -150,7 +150,7 @@ Practical advice:
      single `onChanged()` that assumes everything changed.
  * Ensure unused code is optimized away by ProGuard / R8.
    * Add `@CheckDiscard` to methods or classes that you expect R8 to inline.
-   * Add `@RemovableInRelease` to force a method to be a no-op in when DCHECKs
+   * Add `@RemovableInRelease` to force a method to be a no-op when DCHECKs
      are disabled.
    * See [here][proguard-build-doc] for more info on how Chrome uses ProGuard.
 
