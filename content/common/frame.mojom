@@ -467,10 +467,6 @@ interface FrameHost {
   // navigation.
   FrameSizeChanged(gfx.mojom.Size size);
 
-  // Notifies the browser that the current frame has changed its visibility
-  // status.
-  VisibilityChanged(blink.mojom.FrameVisibility visibility);
-
   // Updates information to determine whether a user gesture should carryover to
   // future navigations. This is needed so navigations within a certain
   // timeframe of a request initiated by a gesture will be treated as if they

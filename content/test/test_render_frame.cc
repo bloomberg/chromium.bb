@@ -195,8 +195,6 @@ class MockFrameHost : public mojom::FrameHost {
 
   void FrameSizeChanged(const gfx::Size& frame_size) override {}
 
-  void VisibilityChanged(blink::mojom::FrameVisibility visibility) override {}
-
   void UpdateActiveSchedulerTrackedFeatures(uint64_t features_mask) override {}
 
   void DidAddMessageToConsole(blink::mojom::ConsoleMessageLevel log_level,

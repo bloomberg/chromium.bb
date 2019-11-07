@@ -376,8 +376,6 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
                                 int32_t world_id) override {}
   bool AllowScriptExtensions() override { return false; }
 
-  void VisibilityChanged(blink::mojom::FrameVisibility) override {}
-
   service_manager::InterfaceProvider* GetInterfaceProvider() override {
     return &interface_provider_;
   }
@@ -475,7 +473,6 @@ class CORE_EXPORT EmptyRemoteFrameClient : public RemoteFrameClient {
   void UpdateRemoteViewportIntersection(
       const ViewportIntersectionState& intersection_state) override {}
   void AdvanceFocus(WebFocusType, LocalFrame* source) override {}
-  void VisibilityChanged(blink::mojom::FrameVisibility) override {}
   void SetIsInert(bool) override {}
   void UpdateRenderThrottlingStatus(bool is_throttled,
                                     bool subtree_throttled) override {}

@@ -281,6 +281,8 @@ jumbo_source_set("testing") {
     "testing/dummy_page_holder.h",
     "testing/fake_local_frame_host.cc",
     "testing/fake_local_frame_host.h",
+    "testing/fake_remote_frame_host.cc",
+    "testing/fake_remote_frame_host.h",
     "testing/garbage_collected_script_wrappable.cc",
     "testing/garbage_collected_script_wrappable.h",
     "testing/gc_object_liveness_observer.h",

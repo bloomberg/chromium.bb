@@ -627,8 +627,6 @@ class BLINK_EXPORT WebLocalFrameClient {
   virtual void DidChangeActiveSchedulerTrackedFeatures(uint64_t features_mask) {
   }
 
-  virtual void VisibilityChanged(blink::mojom::FrameVisibility visibility) {}
-
   // UseCounter ----------------------------------------------------------
   // Blink exhibited a certain loading behavior that the browser process will
   // use for segregated histograms.

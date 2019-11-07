@@ -2770,11 +2770,6 @@ void RenderFrameImpl::UpdateBrowserControlsState(
   render_view_->UpdateBrowserControlsState(constraints, current, animate);
 }
 
-void RenderFrameImpl::VisibilityChanged(
-    blink::mojom::FrameVisibility visibility) {
-  GetFrameHost()->VisibilityChanged(visibility);
-}
-
 #if defined(OS_ANDROID)
 void RenderFrameImpl::ExtractSmartClipData(
     const gfx::Rect& rect,

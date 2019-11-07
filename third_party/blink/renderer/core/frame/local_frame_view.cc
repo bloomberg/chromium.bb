@@ -3979,6 +3979,11 @@ void LocalFrameView::VisibilityForThrottlingChanged() {
   }
 }
 
+void LocalFrameView::VisibilityChanged(
+    blink::mojom::FrameVisibility visibility) {
+  frame_->GetLocalFrameHostRemote().VisibilityChanged(visibility);
+}
+
 void LocalFrameView::RenderThrottlingStatusChanged() {
   TRACE_EVENT0("blink", "LocalFrameView::RenderThrottlingStatusChanged");
   DCHECK(!IsInPerformLayout());

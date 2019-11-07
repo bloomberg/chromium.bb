@@ -274,7 +274,7 @@ WebRemoteFrameImpl* CreateRemote(TestWebRemoteFrameClient* client) {
   auto* frame = MakeGarbageCollected<WebRemoteFrameImpl>(
       WebTreeScopeType::kDocument, client,
       InterfaceRegistry::GetEmptyInterfaceRegistry(),
-      AssociatedInterfaceProvider::GetEmptyAssociatedInterfaceProvider());
+      client->GetAssociatedInterfaceProvider());
   client->Bind(frame, std::move(owned_client));
   return frame;
 }
@@ -321,8 +321,7 @@ WebRemoteFrameImpl* CreateRemoteChild(
       WebTreeScopeType::kDocument, name, FramePolicy(),
       FrameOwnerElementType::kIframe, client,
       InterfaceRegistry::GetEmptyInterfaceRegistry(),
-      AssociatedInterfaceProvider::GetEmptyAssociatedInterfaceProvider(),
-      nullptr));
+      client->GetAssociatedInterfaceProvider(), nullptr));
   client->Bind(frame, std::move(owned_client));
   if (!security_origin)
     security_origin = SecurityOrigin::CreateUniqueOpaque();
@@ -431,8 +430,7 @@ WebViewImpl* WebViewHelper::InitializeRemote(
   WebRemoteFrameImpl* frame = WebRemoteFrameImpl::CreateMainFrame(
       web_view_, web_remote_frame_client,
       InterfaceRegistry::GetEmptyInterfaceRegistry(),
-      AssociatedInterfaceProvider::GetEmptyAssociatedInterfaceProvider(),
-      nullptr);
+      web_remote_frame_client->GetAssociatedInterfaceProvider(), nullptr);
   web_remote_frame_client->Bind(frame,
                                 std::move(owned_web_remote_frame_client));
   if (!security_origin)
@@ -517,7 +515,10 @@ int TestWebFrameClient::loads_in_progress_ = 0;
 
 TestWebFrameClient::TestWebFrameClient()
     : interface_provider_(new service_manager::InterfaceProvider()),
+      associated_interface_provider_(new AssociatedInterfaceProvider(nullptr)),
       effective_connection_type_(WebEffectiveConnectionType::kTypeUnknown) {}
+
+TestWebFrameClient::~TestWebFrameClient() = default;
 
 void TestWebFrameClient::Bind(WebLocalFrame* frame,
                               std::unique_ptr<TestWebFrameClient> self_owned) {
@@ -615,7 +616,14 @@ WebPlugin* TestWebFrameClient::CreatePlugin(const WebPluginParams& params) {
   return new FakeWebPlugin(params);
 }
 
-TestWebRemoteFrameClient::TestWebRemoteFrameClient() = default;
+AssociatedInterfaceProvider*
+TestWebFrameClient::GetRemoteNavigationAssociatedInterfaces() {
+  return associated_interface_provider_.get();
+}
+
+TestWebRemoteFrameClient::TestWebRemoteFrameClient()
+    : associated_interface_provider_(new AssociatedInterfaceProvider(nullptr)) {
+}
 
 void TestWebRemoteFrameClient::Bind(
     WebRemoteFrame* frame,
