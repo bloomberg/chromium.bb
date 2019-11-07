@@ -766,6 +766,7 @@ TEST_F(RenderTextTest, ObscuredText) {
   EXPECT_EQ(2U, render_text->cursor_position());
 
   // Test index conversion and cursor validity with a valid surrogate pair.
+  // Text contains "u+D800 u+DC00" and display text contains "u+2022".
   EXPECT_EQ(0U, test_api()->TextIndexToDisplayIndex(0U));
   EXPECT_EQ(0U, test_api()->TextIndexToDisplayIndex(1U));
   EXPECT_EQ(1U, test_api()->TextIndexToDisplayIndex(2U));
@@ -803,6 +804,19 @@ TEST_F(RenderTextTest, ObscuredText) {
     TestVisualCursorMotionInObscuredField(render_text, text, SELECTION_NONE);
     TestVisualCursorMotionInObscuredField(render_text, text, SELECTION_RETAIN);
   }
+}
+
+TEST_F(RenderTextTest, ObscuredTextMultiline) {
+  const base::string16 test = UTF8ToUTF16("a\nbc\ndef");
+  RenderText* render_text = GetRenderText();
+  render_text->SetText(test);
+  render_text->SetObscured(true);
+  render_text->SetMultiline(true);
+
+  // Newlines should be kept in multiline mode.
+  base::string16 display_text = render_text->GetDisplayText();
+  EXPECT_EQ(display_text[1], '\n');
+  EXPECT_EQ(display_text[4], '\n');
 }
 
 TEST_F(RenderTextTest, RevealObscuredText) {
@@ -4775,7 +4789,7 @@ TEST_F(RenderTextTest, PrivateUseCharacterReplacement) {
 
   // The private use characters should have been replaced. If the code point is
   // a surrogate pair, it needs to be replaced by two characters.
-  EXPECT_EQ(WideToUTF16(L"xx\ufffd\ufffda\ufffd\ufffdz"),
+  EXPECT_EQ(WideToUTF16(L"xx\ufffd\ufffda\ufffdz"),
             render_text->GetDisplayText());
 }
 
