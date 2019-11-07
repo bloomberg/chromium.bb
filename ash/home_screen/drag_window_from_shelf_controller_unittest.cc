@@ -448,8 +448,9 @@ TEST_F(DragWindowFromShelfControllerTest, HideOverviewDuringDragging) {
 }
 
 // Check the split view drag indicators window dragging states.
+// Flaky on ChromeOS. https://crbug.com/1022320
 TEST_F(DragWindowFromShelfControllerTest,
-       SplitViewDragIndicatorsWindowDraggingStates) {
+       DISABLED_SplitViewDragIndicatorsWindowDraggingStates) {
   UpdateDisplay("400x400");
   const gfx::Rect shelf_bounds =
       Shelf::ForWindow(Shell::GetPrimaryRootWindow())->GetIdealBounds();
