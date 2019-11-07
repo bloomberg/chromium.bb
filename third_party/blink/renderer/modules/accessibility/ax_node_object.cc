@@ -421,8 +421,8 @@ static bool IsRequiredOwnedElement(AXObject* parent,
   if (!current_element)
     return false;
   if (IsHTMLTableCellElement(*current_element))
-    return IsHTMLTableRowElement(*parent_node);
-  if (IsHTMLTableRowElement(*current_element))
+    return IsA<HTMLTableRowElement>(*parent_node);
+  if (IsA<HTMLTableRowElement>(*current_element))
     return IsHTMLTableSectionElement(parent_html_element);
 
   // In case of ListboxRole and its child, ListBoxOptionRole, inheritance of
@@ -637,7 +637,7 @@ ax::mojom::Role AXNodeObject::NativeRoleIgnoringAria() const {
     return IsDataTable() ? ax::mojom::Role::kTable
                          : ax::mojom::Role::kLayoutTable;
   }
-  if (IsHTMLTableRowElement(*GetNode()))
+  if (IsA<HTMLTableRowElement>(*GetNode()))
     return DetermineTableRowRole();
   if (IsHTMLTableCellElement(*GetNode()))
     return DetermineTableCellRole();
