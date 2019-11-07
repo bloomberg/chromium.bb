@@ -206,6 +206,11 @@ class ToolkitCreateParams
         // assuming their toolkits were initialized with an empty profile
         // directory.
 
+    BLPWTK2_EXPORT void enableRendererIOThread();
+        // By default, the renderer's main thread issues a 'wait' call
+        // whenever it sends a sync-ipc message. Enabling the renderer IO
+        // thread will cause the IO thread to issue the 'wait' call instead.
+
 
 
     // patch section: embedder ipc
@@ -241,6 +246,7 @@ class ToolkitCreateParams
     bool isInProcessResizeOptimizationDisabled() const;
     StringRef profileDirectory() const;
     bool isIsolatedProfile() const;
+    bool isRendererIOThreadEnabled() const;
 
 
 

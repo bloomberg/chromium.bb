@@ -630,8 +630,10 @@ ToolkitImpl::ToolkitImpl(const std::string&              dictionaryPath,
         ContentBrowserClientImpl* pBrowserClientImpl = d_mainDelegate.GetContentBrowserClientImpl();
         startRenderer(isHost, channelInfo, pBrowserClientImpl ? pBrowserClientImpl->GetClientInvitation() : nullptr);
 
-        renderer_io_thread_ = std::make_unique<RendererIOThread>();
-        mojo::WaitSet::SetProxy(renderer_io_thread_->proxy());
+        if (Statics::isRendererIOThreadEnabled) {
+            renderer_io_thread_ = std::make_unique<RendererIOThread>();
+            mojo::WaitSet::SetProxy(renderer_io_thread_->proxy());
+        }
     }
 
     ui::InitializeInputMethod();
