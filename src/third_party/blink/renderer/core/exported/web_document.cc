@@ -219,6 +219,18 @@ WebStyleSheetKey WebDocument::InsertStyleSheet(const WebString& source_code,
   return injection_key;
 }
 
+WebString WebDocument::bbHeaderText() const {
+  return WebString(ConstUnwrap<Document>()->bbHeaderText());
+}
+
+WebString WebDocument::bbFooterText() const {
+  return WebString(ConstUnwrap<Document>()->bbFooterText());
+}
+
+bool WebDocument::bbPrintPageNumbers() const {
+  return ConstUnwrap<Document>()->bbPrintPageNumbers();
+}
+
 void WebDocument::RemoveInsertedStyleSheet(const WebStyleSheetKey& key,
                                            CSSOrigin origin) {
   Unwrap<Document>()->GetStyleEngine().RemoveInjectedSheet(key, origin);
