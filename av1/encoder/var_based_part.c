@@ -463,7 +463,8 @@ static AOM_INLINE void set_low_temp_var_flag(
   // higher the more aggressive.
   if (ref_frame_partition == LAST_FRAME &&
       (cpi->sf.short_circuit_low_temp_var == 1 ||
-       (xd->mi[0]->mv[0].as_mv.col < mv_thr &&
+       (cpi->sf.estimate_motion_for_var_based_partition &&
+        xd->mi[0]->mv[0].as_mv.col < mv_thr &&
         xd->mi[0]->mv[0].as_mv.col > -mv_thr &&
         xd->mi[0]->mv[0].as_mv.row < mv_thr &&
         xd->mi[0]->mv[0].as_mv.row > -mv_thr))) {

@@ -690,7 +690,7 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->mv.subpel_search_method = SUBPEL_TREE_PRUNED_MORE;
     sf->tx_size_search_level = 1;
     sf->estimate_motion_for_var_based_partition = 0;
-    sf->short_circuit_low_temp_var = 3;
+    sf->short_circuit_low_temp_var = 1;
     sf->reuse_inter_pred_nonrd = 1;
     sf->max_intra_bsize = BLOCK_32X32;
     // This gives ~2% bdrate improvement but with 5-10% slowdown.
