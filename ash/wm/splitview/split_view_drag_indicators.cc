@@ -160,12 +160,6 @@ class SplitViewDragIndicators::RotatedImageLabelView : public views::View {
       WindowDraggingState window_dragging_state,
       WindowDraggingState previous_window_dragging_state,
       bool can_dragged_window_be_snapped) {
-    // In split view, the labels never show, and they do not need to be updated.
-    if (SplitViewController::Get(GetWidget()->GetNativeWindow())
-            ->InSplitViewMode()) {
-      return;
-    }
-
     // No top label for dragging from the top in portrait orientation.
     if (window_dragging_state == WindowDraggingState::kFromTop &&
         !IsCurrentScreenOrientationLandscape() && !is_right_or_bottom_) {
@@ -274,19 +268,25 @@ class SplitViewDragIndicators::SplitViewDragIndicatorsView
     previous_window_dragging_state_ = window_dragging_state_;
     window_dragging_state_ = window_dragging_state;
 
+    const bool previews_only =
+        window_dragging_state == WindowDraggingState::kFromShelf ||
+        SplitViewController::Get(GetWidget()->GetNativeWindow())
+            ->InSplitViewMode();
     const bool can_dragged_window_be_snapped =
         dragged_window_ && CanSnapInSplitview(dragged_window_);
-    left_rotated_view_->OnWindowDraggingStateChanged(
-        window_dragging_state, previous_window_dragging_state_,
-        can_dragged_window_be_snapped);
-    right_rotated_view_->OnWindowDraggingStateChanged(
-        window_dragging_state, previous_window_dragging_state_,
-        can_dragged_window_be_snapped);
+    if (!previews_only) {
+      left_rotated_view_->OnWindowDraggingStateChanged(
+          window_dragging_state, previous_window_dragging_state_,
+          can_dragged_window_be_snapped);
+      right_rotated_view_->OnWindowDraggingStateChanged(
+          window_dragging_state, previous_window_dragging_state_,
+          can_dragged_window_be_snapped);
+    }
     left_highlight_view_->OnWindowDraggingStateChanged(
-        window_dragging_state, previous_window_dragging_state_,
+        window_dragging_state, previous_window_dragging_state_, previews_only,
         can_dragged_window_be_snapped);
     right_highlight_view_->OnWindowDraggingStateChanged(
-        window_dragging_state, previous_window_dragging_state_,
+        window_dragging_state, previous_window_dragging_state_, previews_only,
         can_dragged_window_be_snapped);
 
     if (window_dragging_state != WindowDraggingState::kNoDrag ||

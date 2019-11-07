@@ -177,6 +177,7 @@ void SplitViewHighlightView::SetColor(SkColor color) {
 void SplitViewHighlightView::OnWindowDraggingStateChanged(
     SplitViewDragIndicators::WindowDraggingState window_dragging_state,
     SplitViewDragIndicators::WindowDraggingState previous_window_dragging_state,
+    bool previews_only,
     bool can_dragged_window_be_snapped) {
   // No top indicator for dragging from the top in portrait orientation.
   if (window_dragging_state ==
@@ -211,10 +212,6 @@ void SplitViewHighlightView::OnWindowDraggingStateChanged(
                      : SPLITVIEW_ANIMATION_OTHER_HIGHLIGHT_FADE_OUT);
     return;
   }
-
-  const bool previews_only =
-      SplitViewController::Get(GetWidget()->GetNativeWindow())
-          ->InSplitViewMode();
 
   if (previous_preview_position != SplitViewController::NONE) {
     // There was a snap preview showing, but now the user has dragged away from
