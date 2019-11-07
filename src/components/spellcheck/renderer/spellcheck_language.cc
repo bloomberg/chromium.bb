@@ -39,6 +39,7 @@ SpellcheckLanguage::SpellcheckWordResult SpellcheckLanguage::SpellCheckWord(
     int tag,
     size_t* skip_or_misspelling_start,
     size_t* skip_or_misspelling_len,
+    bool checkForContractions,
     std::vector<base::string16>* optional_suggestions) {
   DCHECK_GE(text_length, position_in_text);
   DCHECK(skip_or_misspelling_start && skip_or_misspelling_len)
@@ -93,7 +94,7 @@ SpellcheckLanguage::SpellcheckWordResult SpellcheckLanguage::SpellCheckWord(
 
     // If the given word is a concatenated word of two or more valid words
     // (e.g. "hello:hello"), we should treat it as a valid word.
-    if (IsValidContraction(word, tag))
+    if (checkForContractions && IsValidContraction(word, tag))
       continue;
 
     *skip_or_misspelling_start = position_in_text + word_start;
@@ -142,6 +143,10 @@ bool SpellcheckLanguage::IsValidContraction(const base::string16& contraction,
       return false;
   }
   return true;
+}
+
+UScriptCode SpellcheckLanguage::GetScriptCode() const {
+  return character_attributes_.GetScriptCode();
 }
 
 bool SpellcheckLanguage::IsEnabled() {
