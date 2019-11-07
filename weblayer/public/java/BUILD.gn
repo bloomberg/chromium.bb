@@ -54,10 +54,6 @@ android_library("java") {
     "//weblayer/browser/java:interfaces_java",
   ]
 
-  # Needed for android.webkit.WebViewDelegate.
-  alternative_android_sdk_dep =
-      "//third_party/android_sdk:public_framework_system_java"
-
   android_manifest_for_lint = weblayer_client_manifest
 }
 

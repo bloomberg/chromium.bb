@@ -16,12 +16,9 @@ interface IWebLayer {
   // It is expected that this method is called before anything else.
   //
   // @param appContext     A Context that refers to the Application using WebLayer.
-  // @param packageInfo    The PackageInfo for the package from which WebLayer is loaded. 
   // @param loadedCallback A ValueCallback that will be called when load completes.
   void initAndLoadAsync(in IObjectWrapper appContext,
-                        in IObjectWrapper packageInfo,
-                        in IObjectWrapper loadedCallback,
-                        int resourcesPackageId) = 1;
+                        in IObjectWrapper loadedCallback) = 1;
 
   // Blocks until loading has completed.
   void loadSync() = 2;

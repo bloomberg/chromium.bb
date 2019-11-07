@@ -70,6 +70,10 @@ android_library("java") {
   jar_excluded_patterns = [ "*/LocaleConfig.class" ]
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
 
+  # Needed for android.webkit.WebView(Delegate|Factory)
+  alternative_android_sdk_dep =
+      "//third_party/android_sdk:public_framework_system_java"
+
   # TODO(timvolodine): once the downstream implementation of GmsBridgeImpl.java
   # lands make sure to exclude this when "enable_chrome_android_internal" is true.
   deps += [ ":gms_bridge_upstream_impl_java" ]
