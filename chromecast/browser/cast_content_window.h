@@ -32,11 +32,16 @@ enum class VisibilityType {
   // Window occupies a portion of the screen, supporting user interaction.
   PARTIAL_OUT = 2,
 
-  // Window is hidden, and cannot be interacted with via touch.
+  // Window is hidden after dismissal by back gesture, and cannot be interacted
+  // with via touch.
   HIDDEN = 3,
 
   // Window is being displayed as a small visible tile.
-  TILE = 4
+  TILE = 4,
+
+  // Window is covered by other activities and cannot be interacted with via
+  // touch.
+  TRANSIENTLY_HIDDEN = 5
 };
 
 // Represents requested activity windowing behavior. Behavior includes:
