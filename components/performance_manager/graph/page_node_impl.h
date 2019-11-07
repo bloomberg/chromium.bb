@@ -107,6 +107,10 @@ class PageNodeImpl
     SetPageAlmostIdle(page_almost_idle);
   }
 
+  void SetIsHoldingWebLockForTesting(bool is_holding_weblock) {
+    SetIsHoldingWebLock(is_holding_weblock);
+  }
+
   base::WeakPtr<PageNodeImpl> GetWeakPtr() {
     return weak_factory_.GetWeakPtr();
   }

@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/task_environment.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -30,6 +31,9 @@
 #include "chrome/browser/ui/tabs/test_tab_strip_model_delegate.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/performance_manager/performance_manager_tab_helper.h"
+#include "components/performance_manager/public/performance_manager.h"
+#include "components/performance_manager/test_support/graph_impl.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
 #include "content/public/browser/navigation_controller.h"
@@ -433,7 +437,6 @@ class TabLifecycleUnitSourceTest
   std::unique_ptr<TabStripModel> tab_strip_model_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
- private:
   std::unique_ptr<content::WebContents> CreateAndNavigateWebContents() {
     std::unique_ptr<content::WebContents> web_contents =
         CreateTestWebContents();
@@ -446,6 +449,7 @@ class TabLifecycleUnitSourceTest
     return web_contents;
   }
 
+ private:
   TestTabStripModelDelegate tab_strip_model_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(TabLifecycleUnitSourceTest);
@@ -816,6 +820,49 @@ TEST_F(TabLifecycleUnitSourceTest, TabProactiveDiscardedByFrozenTimeout) {
   tab_strip_model_->GetWebContentsAt(0)->GetController().Reload(
       content::ReloadType::NORMAL, false);
   ::testing::Mock::VerifyAndClear(&tab_observer_);
+}
+
+TEST_F(TabLifecycleUnitSourceTest, AsyncInitialization) {
+  std::unique_ptr<content::WebContents> web_contents =
+      CreateAndNavigateWebContents();
+  content::WebContents* raw_web_contents = web_contents.get();
+  performance_manager::PerformanceManagerTabHelper::CreateForWebContents(
+      raw_web_contents);
+
+  auto page_node =
+      performance_manager::PerformanceManager::GetPageNodeForWebContents(
+          raw_web_contents);
+
+  // Set the |IsHoldingWebLock| property for the PageNode associated with
+  // |web_contents|.
+  base::RunLoop run_loop;
+  performance_manager::PerformanceManager::CallOnGraph(
+      FROM_HERE,
+      base::BindLambdaForTesting([&](performance_manager::Graph* unused) {
+        EXPECT_TRUE(page_node);
+        EXPECT_FALSE(page_node->IsHoldingWebLock());
+        auto* node_impl =
+            performance_manager::PageNodeImpl::FromNode(page_node.get());
+        node_impl->SetIsHoldingWebLockForTesting(true);
+        run_loop.Quit();
+      }));
+  run_loop.Run();
+
+  // Append the WebContents to the tab strip, this will cause the
+  // TabLifeCycleUnit to be created.
+  LifecycleUnit* unit = nullptr;
+  EXPECT_CALL(source_observer_, OnLifecycleUnitCreated(::testing::_))
+      .WillOnce(::testing::Invoke(
+          [&](LifecycleUnit* lifecycle_unit) { unit = lifecycle_unit; }));
+  tab_strip_model_->AppendWebContents(std::move(web_contents), true);
+  ::testing::Mock::VerifyAndClear(&source_observer_);
+  EXPECT_TRUE(unit);
+
+  // Wait for the |IsHoldingWebLock| to be set in the TabLifeCycleUnit.
+  while (!static_cast<TabLifecycleUnitSource::TabLifecycleUnit*>(unit)
+              ->IsHoldingWebLockForTesting()) {
+    task_environment()->RunUntilIdle();
+  }
 }
 
 namespace {
