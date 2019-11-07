@@ -4792,6 +4792,11 @@ TEST_F(RenderTextTest, PrivateUseCharacterReplacement) {
   // a surrogate pair, it needs to be replaced by two characters.
   EXPECT_EQ(WideToUTF16(L"xx\ufffd\ufffda\ufffdz"),
             render_text->GetDisplayText());
+
+  // The private use characters from Area-B must be replaced. The rewrite step
+  // replaced 2 characters by 1 character.
+  render_text->SetText(WideToUTF16(L"x\U00100000\U00100001\U00100002"));
+  EXPECT_EQ(WideToUTF16(L"x\ufffd\ufffd\ufffd"), render_text->GetDisplayText());
 }
 
 TEST_F(RenderTextTest, InvalidSurrogateCharacterReplacement) {
