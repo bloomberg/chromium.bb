@@ -927,6 +927,7 @@
     },
     {
       name: "MathMLCore",
+      status:"test",
     },
     {
       name:"MeasureMemory",
