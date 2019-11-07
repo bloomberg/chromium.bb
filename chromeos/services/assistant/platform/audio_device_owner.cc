@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <utility>
 
-#include "chromeos/services/assistant/media_session/assistant_media_session.h"
 #include "media/audio/audio_device_description.h"
 #include "media/base/limits.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
@@ -71,17 +70,13 @@ media::AudioParameters GetAudioParametersFromBufferFormat(
 AudioDeviceOwner::AudioDeviceOwner(
     scoped_refptr<base::SequencedTaskRunner> task_runner,
     scoped_refptr<base::SequencedTaskRunner> background_task_runner,
-    const std::string& device_id,
-    AssistantMediaSession* media_session)
+    const std::string& device_id)
     : main_task_runner_(task_runner),
       background_task_runner_(background_task_runner),
-      device_id_(device_id),
-      media_session_(media_session) {}
+      device_id_(device_id) {}
 
 AudioDeviceOwner::~AudioDeviceOwner() {
   DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
-  if (output_device_)
-    media_session_->RemoveDuckingObserver(this);
 }
 
 void AudioDeviceOwner::StartOnMainThread(
@@ -126,24 +121,12 @@ void AudioDeviceOwner::StartOnMainThread(
 
 void AudioDeviceOwner::StopOnBackgroundThread() {
   DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
-  media_session_->RemoveDuckingObserver(this);
+  base::AutoLock lock(lock_);
   output_device_.reset();
-  {
-    base::AutoLock lock(lock_);
-    if (delegate_) {
-      delegate_->OnStopped();
-      delegate_ = nullptr;
-    }
+  if (delegate_) {
+    delegate_->OnStopped();
+    delegate_ = nullptr;
   }
-}
-
-void AudioDeviceOwner::SetDucking(bool is_ducking) {
-  // |output_device_| is only accessed on background thread.
-  DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
-
-  constexpr double kDuckingVolume = 0.2;
-  if (output_device_)
-    output_device_->SetVolume(is_ducking ? kDuckingVolume : 1.0);
 }
 
 void AudioDeviceOwner::StartDeviceOnBackgroundThread(
@@ -152,8 +135,6 @@ void AudioDeviceOwner::StartDeviceOnBackgroundThread(
   output_device_ = std::make_unique<audio::OutputDevice>(
       std::move(stream_factory), audio_param_, this, device_id_);
   output_device_->Play();
-
-  media_session_->AddDuckingObserver(this);
 }
 
 int AudioDeviceOwner::Render(base::TimeDelta delay,

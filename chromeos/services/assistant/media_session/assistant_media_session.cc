@@ -4,10 +4,7 @@
 
 #include "chromeos/services/assistant/media_session/assistant_media_session.h"
 
-#include <utility>
-
 #include "base/bind.h"
-#include "base/memory/scoped_refptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chromeos/services/assistant/assistant_manager_service_impl.h"
 #include "services/media_session/public/cpp/features.h"
@@ -28,10 +25,7 @@ const char kAudioFocusSourceName[] = "assistant";
 AssistantMediaSession::AssistantMediaSession(
     mojom::Client* client,
     AssistantManagerServiceImpl* assistant_manager)
-    : assistant_manager_service_(assistant_manager),
-      client_(client),
-      ducking_observers_(base::MakeRefCounted<
-                         base::ObserverListThreadSafe<DuckingObserver>>()) {}
+    : assistant_manager_service_(assistant_manager), client_(client) {}
 
 AssistantMediaSession::~AssistantMediaSession() {
   AbandonAudioFocusIfNeeded();
@@ -58,18 +52,20 @@ void AssistantMediaSession::GetDebugInfo(GetDebugInfoCallback callback) {
   std::move(callback).Run(std::move(info));
 }
 
+// TODO(b/135064564): Update StartDucking() and StopDucking() after volume
+// control API for media streams is implemented.
 void AssistantMediaSession::StartDucking() {
   if (is_ducking_)
     return;
   is_ducking_ = true;
-  NotifyDucking(FROM_HERE);
+  Suspend(SuspendType::kSystem);
 }
 
 void AssistantMediaSession::StopDucking() {
   if (!is_ducking_)
     return;
   is_ducking_ = false;
-  NotifyDucking(FROM_HERE);
+  Resume(SuspendType::kSystem);
 }
 
 void AssistantMediaSession::Suspend(SuspendType suspend_type) {
@@ -137,40 +133,6 @@ void AssistantMediaSession::AbandonAudioFocusIfNeeded() {
   internal_audio_focus_id_ = base::UnguessableToken::Null();
 }
 
-void AssistantMediaSession::NotifyMediaSessionMetadataChanged(
-    const assistant_client::MediaStatus& status) {
-  media_session::MediaMetadata metadata;
-
-  metadata.title = base::UTF8ToUTF16(status.metadata.title);
-  metadata.artist = base::UTF8ToUTF16(status.metadata.artist);
-  metadata.album = base::UTF8ToUTF16(status.metadata.album);
-
-  bool metadata_changed = metadata_ != metadata;
-  if (!metadata_changed)
-    return;
-
-  metadata_ = metadata;
-
-  current_track_ = status.track_type;
-
-  for (auto& observer : observers_)
-    observer->MediaSessionMetadataChanged(this->metadata_);
-}
-
-void AssistantMediaSession::AddDuckingObserver(DuckingObserver* observer) {
-  ducking_observers_->AddObserver(observer);
-  if (is_ducking_)
-    observer->SetDucking(is_ducking_);
-}
-
-void AssistantMediaSession::RemoveDuckingObserver(DuckingObserver* observer) {
-  ducking_observers_->RemoveObserver(observer);
-}
-
-base::WeakPtr<AssistantMediaSession> AssistantMediaSession::GetWeakPtr() {
-  return weak_factory_.GetWeakPtr();
-}
-
 void AssistantMediaSession::EnsureServiceConnection() {
   DCHECK(base::FeatureList::IsEnabled(
       media_session::features::kMediaSessionService));
@@ -210,6 +172,26 @@ void AssistantMediaSession::SetAudioFocusInfo(State audio_focus_state,
   audio_focus_state_ = audio_focus_state;
   audio_focus_type_ = audio_focus_type;
   NotifyMediaSessionInfoChanged();
+}
+
+void AssistantMediaSession::NotifyMediaSessionMetadataChanged(
+    const assistant_client::MediaStatus& status) {
+  media_session::MediaMetadata metadata;
+
+  metadata.title = base::UTF8ToUTF16(status.metadata.title);
+  metadata.artist = base::UTF8ToUTF16(status.metadata.artist);
+  metadata.album = base::UTF8ToUTF16(status.metadata.album);
+
+  bool metadata_changed = metadata_ != metadata;
+  if (!metadata_changed)
+    return;
+
+  metadata_ = metadata;
+
+  current_track_ = status.track_type;
+
+  for (auto& observer : observers_)
+    observer->MediaSessionMetadataChanged(this->metadata_);
 }
 
 media_session::mojom::MediaSessionInfoPtr
@@ -258,10 +240,8 @@ bool AssistantMediaSession::IsSuspended() const {
   return audio_focus_state_ == State::SUSPENDED;
 }
 
-void AssistantMediaSession::NotifyDucking(const base::Location& location) {
-  ducking_observers_->Notify(
-      location, &AssistantMediaSession::DuckingObserver::SetDucking,
-      is_ducking_);
+base::WeakPtr<AssistantMediaSession> AssistantMediaSession::GetWeakPtr() {
+  return weak_factory_.GetWeakPtr();
 }
 
 }  // namespace assistant

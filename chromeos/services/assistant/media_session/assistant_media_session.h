@@ -6,8 +6,6 @@
 #define CHROMEOS_SERVICES_ASSISTANT_MEDIA_SESSION_ASSISTANT_MEDIA_SESSION_H_
 
 #include "base/macros.h"
-#include "base/memory/scoped_refptr.h"
-#include "base/observer_list_threadsafe.h"
 #include "base/timer/timer.h"
 #include "base/unguessable_token.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
@@ -34,12 +32,6 @@ class AssistantMediaSession : public media_session::mojom::MediaSession {
  public:
   enum class State { ACTIVE, SUSPENDED, INACTIVE };
 
-  class DuckingObserver {
-   public:
-    virtual ~DuckingObserver() = default;
-    virtual void SetDucking(bool is_ducking) = 0;
-  };
-
   explicit AssistantMediaSession(
       mojom::Client* client,
       AssistantManagerServiceImpl* assistant_manager);
@@ -57,6 +49,8 @@ class AssistantMediaSession : public media_session::mojom::MediaSession {
       override;
   void PreviousTrack() override {}
   void NextTrack() override {}
+  void NotifyMediaSessionMetadataChanged(
+      const assistant_client::MediaStatus& status);
   void SkipAd() override {}
   void Seek(base::TimeDelta seek_time) override {}
   void Stop(SuspendType suspend_type) override {}
@@ -70,12 +64,6 @@ class AssistantMediaSession : public media_session::mojom::MediaSession {
   // Requests/abandons audio focus to the AudioFocusManager.
   void RequestAudioFocus(media_session::mojom::AudioFocusType audio_focus_type);
   void AbandonAudioFocusIfNeeded();
-
-  void NotifyMediaSessionMetadataChanged(
-      const assistant_client::MediaStatus& status);
-
-  void AddDuckingObserver(DuckingObserver* observer);
-  void RemoveDuckingObserver(DuckingObserver* observer);
 
   base::WeakPtr<AssistantMediaSession> GetWeakPtr();
 
@@ -110,8 +98,6 @@ class AssistantMediaSession : public media_session::mojom::MediaSession {
   // Returns if the session is currently suspended.
   bool IsSuspended() const;
 
-  void NotifyDucking(const base::Location& from_here);
-
   // The current metadata associated with the current media session.
   media_session::MediaMetadata metadata_;
 
@@ -132,9 +118,6 @@ class AssistantMediaSession : public media_session::mojom::MediaSession {
   // is set to |true| after StartDucking(), and will be set to |false| after
   // StopDucking().
   bool is_ducking_ = false;
-
-  scoped_refptr<base::ObserverListThreadSafe<DuckingObserver>>
-      ducking_observers_;
 
   // If the media session has acquired audio focus then this will contain a
   // pointer to that requests AudioFocusRequestClient.
