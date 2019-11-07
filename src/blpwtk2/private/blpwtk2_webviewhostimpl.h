@@ -108,6 +108,7 @@ class WebViewHostImpl final : private WebViewImplClient
                      const POINT&  startPoint) override;
     void ncDragMove(WebView *source, const POINT& movePoint) override;
     void ncDragEnd(WebView *source, const POINT& endPoint) override;
+    void ncDoubleClick(WebView *source, const POINT& point) override;
     void findState(WebView *source,
                    int      numberOfMatches,
                    int      activeMatchOrdinal,
