@@ -199,11 +199,9 @@ def UploadArtifacts(test_result, upload_bucket, run_identifier):
   for name, artifact in artifacts.iteritems():
     if 'remoteUrl' in artifact:
       continue
-    # TODO(crbug.com/981349): Remove check for HISTOGRAM_DICTS_FILE
-    # after Telemetry does not save histograms as an artifact anymore.
-    # Another TODO(crbug.com/981349): Think of a more general way to
+    # TODO(crbug.com/981349): Think of a more general way to
     # specify which artifacts deserve uploading.
-    if name in [compute_metrics.HISTOGRAM_DICTS_FILE, MEASUREMENTS_NAME]:
+    if name == MEASUREMENTS_NAME:
       continue
     remote_name = '/'.join([run_identifier, test_result['testPath'], name])
     urlsafe_remote_name = re.sub(r'[^A-Za-z0-9/.-]+', '_', remote_name)
