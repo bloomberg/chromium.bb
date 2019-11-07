@@ -116,6 +116,9 @@ interface Element : Node {
     [Affects=Nothing] readonly attribute long clientWidth;
     [Affects=Nothing] readonly attribute long clientHeight;
 
+    // Bloomberg-specific extensions
+    void bbRequestSpellCheck();
+
     // Typed OM
     // https://drafts.css-houdini.org/css-typed-om/#inline-stylepropertymap-objects
     [SameObject, MeasureAs=CSSTypedOMStylePropertyMap] readonly attribute StylePropertyMap attributeStyleMap;
