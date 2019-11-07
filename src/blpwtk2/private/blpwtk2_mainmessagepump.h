@@ -124,6 +124,24 @@ class MainMessagePump final : public base::MessagePumpForUI {
 
     // base::MessagePumpForUI
     void ScheduleWork() override;
+
+    // While in scope, any modal loop entered will start a WM_TIMER to
+    // perform work that wouldn't otherwise occur in a window procedure.
+    class ScopedModalLoopWorkAllower {
+     public:
+      explicit ScopedModalLoopWorkAllower(MainMessagePump* pump)
+          : pump_(pump),
+            old_state_(pump_->d_isInsideModalLoop) {
+        pump_->modalLoop(true);
+      }
+      ~ScopedModalLoopWorkAllower() {
+        pump_->modalLoop(old_state_);
+      }
+
+     private:
+      MainMessagePump* pump_;
+      bool old_state_;
+    };
 };
 
 inline
