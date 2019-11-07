@@ -85,6 +85,9 @@ enum {
     IDM_EXIT,
     IDM_TEST,
     IDM_TEST_V8_APPEND_ELEMENT,
+    IDM_TEST_KEYBOARD_FOCUS,
+    IDM_TEST_LOGICAL_FOCUS,
+    IDM_TEST_LOGICAL_BLUR,
     IDM_TEST_PLAY_KEYBOARD_EVENTS,
     IDM_TEST_DUMP_LAYOUT_TREE,
     IDM_LANGUAGES,
@@ -915,7 +918,8 @@ int main(int, const char**)
         firstShell->webView()->loadUrl(g_url);
         ShowWindow(firstShell->d_mainWnd, SW_SHOW);
         UpdateWindow(firstShell->d_mainWnd);
-
+        firstShell->d_webView->takeKeyboardFocus();
+        firstShell->d_webView->setLogicalFocus(true);
         runMessageLoop();
     }
 
@@ -965,12 +969,18 @@ LRESULT CALLBACK shellWndProc(HWND hwnd,        // handle to window
         switch (wmId) {
         case IDC_BACK:
             shell->webView()->goBack();
+            shell->webView()->takeKeyboardFocus();
+            shell->webView()->setLogicalFocus(true);
             return 0;
         case IDC_FORWARD:
             shell->webView()->goForward();
+            shell->webView()->takeKeyboardFocus();
+            shell->webView()->setLogicalFocus(true);
             return 0;
         case IDC_RELOAD:
             shell->webView()->reload();
+            shell->webView()->takeKeyboardFocus();
+            shell->webView()->setLogicalFocus(true);
             return 0;
         case IDC_FIND_ENTRY:
             if (HIWORD(wParam) == EN_CHANGE) {
@@ -983,12 +993,16 @@ LRESULT CALLBACK shellWndProc(HWND hwnd,        // handle to window
             return 0;
         case IDC_STOP:
             shell->webView()->stop();
+            shell->d_webView->takeKeyboardFocus();
+            shell->d_webView->setLogicalFocus(true);
             return 0;
         case IDM_NEW_WINDOW:
             newShell = createShell(shell->d_profile);
             newShell->webView()->loadUrl(g_url);
             ShowWindow(newShell->d_mainWnd, SW_SHOW);
             UpdateWindow(newShell->d_mainWnd);
+            newShell->d_webView->takeKeyboardFocus();
+            newShell->d_webView->setLogicalFocus(true);
             return 0;
         case IDM_CLOSE_WINDOW:
             DestroyWindow(shell->d_mainWnd);
@@ -1012,6 +1026,15 @@ LRESULT CALLBACK shellWndProc(HWND hwnd,        // handle to window
 
 
         // patch section: focus
+        case IDM_TEST_KEYBOARD_FOCUS:
+            shell->d_webView->takeKeyboardFocus();
+            return 0;
+        case IDM_TEST_LOGICAL_FOCUS:
+            shell->d_webView->setLogicalFocus(true);
+            return 0;
+        case IDM_TEST_LOGICAL_BLUR:
+            shell->d_webView->setLogicalFocus(false);
+            return 0;
 
 
         // patch section: web script context
@@ -1067,6 +1090,8 @@ LRESULT CALLBACK shellWndProc(HWND hwnd,        // handle to window
             if (shell->d_inspectorShell) {
                 BringWindowToTop(shell->d_inspectorShell->d_mainWnd);
                 shell->d_inspectorShell->webView()->inspectElementAt(shell->d_contextMenuPoint);
+                shell->d_inspectorShell->d_webView->takeKeyboardFocus();
+                shell->d_inspectorShell->d_webView->setLogicalFocus(true);
                 return 0;
             }
             {
@@ -1078,6 +1103,8 @@ LRESULT CALLBACK shellWndProc(HWND hwnd,        // handle to window
             UpdateWindow(shell->d_inspectorShell->d_mainWnd);
             shell->d_inspectorShell->webView()->loadInspector(::GetCurrentProcessId(), shell->webView()->getRoutingId());
             shell->d_inspectorShell->webView()->inspectElementAt(shell->d_contextMenuPoint);
+            shell->d_inspectorShell->d_webView->takeKeyboardFocus();
+            shell->d_inspectorShell->d_webView->setLogicalFocus(true);
             return 0;
         case IDM_EXIT:
             std::vector<Shell*> shells(Shell::s_shells.begin(), Shell::s_shells.end());
@@ -1144,6 +1171,8 @@ LRESULT CALLBACK urlEntryWndProc(HWND hwnd,        // handle to window
             if (str_len > 0) {
                 str[str_len] = 0;  // EM_GETLINE doesn't NULL terminate.
                 shell->webView()->loadUrl(str);
+                shell->webView()->takeKeyboardFocus();
+                shell->webView()->setLogicalFocus(true);
             }
             return 0;
         }
@@ -1210,6 +1239,9 @@ Shell* createShell(blpwtk2::Profile* profile, blpwtk2::WebView* webView, bool fo
     AppendMenu(menu, MF_POPUP, (UINT_PTR)fileMenu, L"&File");
     HMENU testMenu = CreateMenu();
     AppendMenu(testMenu, MF_STRING, IDM_TEST_V8_APPEND_ELEMENT, L"Append Element Using &V8");
+    AppendMenu(testMenu, MF_STRING, IDM_TEST_KEYBOARD_FOCUS, L"Test Keyboard Focus");
+    AppendMenu(testMenu, MF_STRING, IDM_TEST_LOGICAL_FOCUS, L"Test Logical Focus");
+    AppendMenu(testMenu, MF_STRING, IDM_TEST_LOGICAL_BLUR, L"Test Logical Blur");
     AppendMenu(testMenu, MF_STRING, IDM_TEST_PLAY_KEYBOARD_EVENTS, L"Test Play Keyboard Events");
     AppendMenu(testMenu, MF_STRING, IDM_TEST_DUMP_LAYOUT_TREE, L"Dump Layout Tree");
 
