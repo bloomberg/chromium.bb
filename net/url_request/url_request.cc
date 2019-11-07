@@ -1109,16 +1109,26 @@ void URLRequest::OnCallToDelegateComplete() {
 
 void URLRequest::RecordReferrerGranularityMetrics(
     bool request_is_same_origin) const {
+  GURL referrer_url(referrer_);
+  bool referrer_more_descriptive_than_its_origin =
+      referrer_url.is_valid() && referrer_url.PathForRequestPiece().size() > 1;
+
   // To avoid renaming the existing enum, we have to use the three-argument
   // histogram macro.
   if (request_is_same_origin) {
     UMA_HISTOGRAM_ENUMERATION(
         "Net.URLRequest.ReferrerPolicyForRequest.SameOrigin", referrer_policy_,
         MAX_REFERRER_POLICY + 1);
+    UMA_HISTOGRAM_BOOLEAN(
+        "Net.URLRequest.ReferrerHasInformativePath.SameOrigin",
+        referrer_more_descriptive_than_its_origin);
   } else {
     UMA_HISTOGRAM_ENUMERATION(
         "Net.URLRequest.ReferrerPolicyForRequest.CrossOrigin", referrer_policy_,
         MAX_REFERRER_POLICY + 1);
+    UMA_HISTOGRAM_BOOLEAN(
+        "Net.URLRequest.ReferrerHasInformativePath.CrossOrigin",
+        referrer_more_descriptive_than_its_origin);
   }
 }
 

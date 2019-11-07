@@ -6813,6 +6813,11 @@ Unknown properties are collapsed to zero. -->
   <int value="1" label="Manual fallback"/>
 </enum>
 
+<enum name="BooleanPathIsInformative">
+  <int value="0" label="Path contains nothing except possibly a slash"/>
+  <int value="1" label="Path contains text beyond just an opening slash"/>
+</enum>
+
 <enum name="BooleanPending">
   <int value="0" label="Decided"/>
   <int value="1" label="Pending"/>
