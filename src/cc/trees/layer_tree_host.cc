@@ -133,6 +133,7 @@ LayerTreeHost::LayerTreeHost(InitParams params, CompositorMode mode)
       task_graph_runner_(params.task_graph_runner),
       content_source_id_(0),
       event_listener_properties_(),
+      routing_id_(params.routing_id),
       mutator_host_(params.mutator_host),
       defer_main_frame_update_weak_ptr_factory_(this) {
   DCHECK(task_graph_runner_);
@@ -1066,6 +1067,10 @@ bool LayerTreeHost::IsThreaded() const {
 void LayerTreeHost::RequestPresentationTimeForNextFrame(
     PresentationTimeCallback callback) {
   pending_presentation_time_callbacks_.push_back(std::move(callback));
+}
+
+int LayerTreeHost::GetRoutingId() const {
+  return routing_id_;
 }
 
 void LayerTreeHost::SetRootLayer(scoped_refptr<Layer> root_layer) {

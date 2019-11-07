@@ -57,6 +57,10 @@ void WebViewDelegate::findState(WebView* source,
 
 void WebViewDelegate::didParentStatus(WebView *source, int status, NativeView parent) {}
 
+void WebViewDelegate::startPerformanceTiming() {}
+
+void WebViewDelegate::stopPerformanceTiming() {}
+
 }  // close namespace blpwtk2
 
 // vim: ts=4 et
