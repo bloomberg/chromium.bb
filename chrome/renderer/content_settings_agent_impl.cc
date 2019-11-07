@@ -125,9 +125,7 @@ ContentSettingsAgentImpl::ContentSettingsAgentImpl(
   render_frame->GetAssociatedInterfaceRegistry()->AddInterface(
       base::Bind(&ContentSettingsAgentImpl::OnContentSettingsAgentRequest,
                  base::Unretained(this)));
-
-  render_frame->GetBrowserInterfaceBroker()->GetInterface(
-      content_settings_manager_.BindNewPipeAndPassReceiver());
+  EnsureContentSettingsManagerConnection();
 
   content::RenderFrame* main_frame =
       render_frame->GetRenderView()->GetMainRenderFrame();
@@ -146,6 +144,16 @@ ContentSettingsAgentImpl::ContentSettingsAgentImpl(
 }
 
 ContentSettingsAgentImpl::~ContentSettingsAgentImpl() {}
+
+void ContentSettingsAgentImpl::EnsureContentSettingsManagerConnection() {
+  if (content_settings_manager_.is_bound() &&
+      content_settings_manager_.is_connected())
+    return;
+
+  content_settings_manager_.reset();
+  render_frame()->GetBrowserInterfaceBroker()->GetInterface(
+      content_settings_manager_.BindNewPipeAndPassReceiver());
+}
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 void ContentSettingsAgentImpl::SetExtensionDispatcher(
@@ -203,6 +211,8 @@ void ContentSettingsAgentImpl::DidCommitProvisionalLoad(
   blink::WebLocalFrame* frame = render_frame()->GetWebFrame();
   if (frame->Parent())
     return;  // Not a top-level navigation.
+
+  EnsureContentSettingsManagerConnection();
 
   if (!is_same_document_navigation) {
     // Clear "block" flags for the new page. This needs to happen before any of
