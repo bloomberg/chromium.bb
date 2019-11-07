@@ -22,7 +22,6 @@
 #include "chrome/common/media_router/mojom/media_router.mojom.h"
 #include "chrome/common/net_benchmarking.mojom.h"
 #include "chrome/common/offline_page_auto_fetcher.mojom.h"
-#include "chrome/common/prerender.mojom.h"
 #include "chrome/test/data/webui/web_ui_test.mojom.h"
 #include "components/autofill/content/common/mojom/autofill_driver.mojom.h"
 #include "components/contextual_search/content/common/mojom/contextual_search_js_api_service.mojom.h"
@@ -149,7 +148,6 @@ const service_manager::Manifest& GetChromeContentBrowserOverlayManifest() {
                 autofill::mojom::AutofillDriver,
                 autofill::mojom::PasswordManagerDriver,
                 chrome::mojom::OfflinePageAutoFetcher,
-                chrome::mojom::PrerenderCanceler,
 #if defined(OS_CHROMEOS)
                 chromeos_camera::mojom::CameraAppHelper,
                 chromeos::crostini_installer::mojom::PageHandlerFactory,

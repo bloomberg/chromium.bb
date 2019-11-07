@@ -12,8 +12,10 @@
 #include "chrome/browser/accessibility/accessibility_labels_service_factory.h"
 #include "chrome/browser/content_settings/content_settings_manager_impl.h"
 #include "chrome/browser/navigation_predictor/navigation_predictor.h"
+#include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/insecure_sensitive_input_driver_factory.h"
+#include "chrome/common/prerender.mojom.h"
 #include "components/dom_distiller/content/browser/distillability_driver.h"
 #include "components/dom_distiller/content/common/mojom/distillability_service.mojom.h"
 #include "content/public/browser/browser_context.h"
@@ -72,7 +74,7 @@ void BindUnhandledTapWebContentsObserver(
 
 // Forward image Annotator requests to the profile's AccessibilityLabelsService.
 void BindImageAnnotator(
-    content::RenderFrameHost* const frame_host,
+    content::RenderFrameHost* frame_host,
     mojo::PendingReceiver<image_annotation::mojom::Annotator> receiver) {
   AccessibilityLabelsServiceFactory::GetForProfile(
       Profile::FromBrowserContext(
@@ -90,6 +92,16 @@ void BindDistillabilityService(
   if (!driver)
     return;
   driver->CreateDistillabilityService(std::move(receiver));
+}
+
+void BindPrerenderCanceler(
+    content::RenderFrameHost* frame_host,
+    mojo::PendingReceiver<mojom::PrerenderCanceler> receiver) {
+  auto* prerender_contents = prerender::PrerenderContents::FromWebContents(
+      content::WebContents::FromRenderFrameHost(frame_host));
+  if (!prerender_contents)
+    return;
+  prerender_contents->OnPrerenderCancelerReceiver(std::move(receiver));
 }
 
 #if defined(OS_ANDROID)
@@ -141,6 +153,9 @@ void PopulateChromeFrameBinders(
 
   map->Add<dom_distiller::mojom::DistillabilityService>(
       base::BindRepeating(&BindDistillabilityService));
+
+  map->Add<mojom::PrerenderCanceler>(
+      base::BindRepeating(&BindPrerenderCanceler));
 
 #if defined(OS_ANDROID)
   map->Add<blink::mojom::InstalledAppProvider>(base::BindRepeating(
