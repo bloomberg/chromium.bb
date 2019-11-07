@@ -315,6 +315,13 @@ assert.strictEqual = function(actual, expected, opt_message) {};
  * @param {*} expected
  * @param {string=} opt_message
  */
+assert.notStrictEqual = function(actual, expected, opt_message) {};
+
+/**
+ * @param {*} actual
+ * @param {*} expected
+ * @param {string=} opt_message
+ */
 assert.notEqual = function(actual, expected, opt_message) {};
 
 /**
@@ -534,6 +541,9 @@ chai.Assertion.prototype.assert = function(
 
 /** @const */
 chai.assert = assert;
+
+/** @const */
+chai.expect = expect;
 
 /** @const */
 chai.util = {};

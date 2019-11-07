@@ -16,3 +16,5 @@ Local Modifications:
  - Copied license text out of README.md.
  - Externs file from
 https://github.com/google/closure-compiler/tree/master/contrib/externs
+ - Add mising assert.notStrictEqual
+ - Add missing export of chai.expect
