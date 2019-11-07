@@ -231,8 +231,7 @@ message GetSpaceInfoReply {
 // A series of request and reply messages for the ownership interface methods.
 ////////////////////////////////////////////////////////////////////////////////
 message GetTpmStatusRequest {
-  // Whether to include TPM version info in the reply.
-  optional bool include_version_info = 1;
+  reserved 1;
 }
 
 message GetTpmStatusReply {
@@ -244,26 +243,30 @@ message GetTpmStatusReply {
   // Local TPM management data (including the owner password if available).
   optional LocalData local_data = 4;
 
-  reserved 5 to 8;
+  reserved 5 to 9;
+}
 
-  // TPM version information.
-  message TpmVersionInfo {
-    // TPM family. We use the TPM 2.0 style encoding, e.g.:
-    //  * TPM 1.2: "1.2" -> 0x312e3200
-    //  * TPM 2.0: "2.0" -> 0x322e3000
-    optional uint32 family = 1;
-    // TPM spec level.
-    optional uint64 spec_level = 2;
-    // Manufacturer code.
-    optional uint32 manufacturer = 3;
-    // TPM model number.
-    optional uint32 tpm_model = 4;
-    // Firmware version.
-    optional uint64 firmware_version = 5;
-    // Vendor specific information.
-    optional bytes vendor_specific = 6;
-  }
-  optional TpmVersionInfo version_info = 9;
+message GetVersionInfoRequest {
+}
+
+message GetVersionInfoReply {
+  // The success or error code of the call GetVersionInfo.
+  optional TpmManagerStatus status = 1;
+
+  // TPM family. We use the TPM 2.0 style encoding, e.g.:
+  //  * TPM 1.2: "1.2" -> 0x312e3200
+  //  * TPM 2.0: "2.0" -> 0x322e3000
+  optional uint32 family = 2;
+  // TPM spec level.
+  optional uint64 spec_level = 3;
+  // Manufacturer code.
+  optional uint32 manufacturer = 4;
+  // TPM model number.
+  optional uint32 tpm_model = 5;
+  // Firmware version.
+  optional uint64 firmware_version = 6;
+  // Vendor specific information.
+  optional bytes vendor_specific = 7;
 }
 
 message GetDictionaryAttackInfoRequest {
