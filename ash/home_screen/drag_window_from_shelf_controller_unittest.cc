@@ -518,7 +518,7 @@ TEST_F(DragWindowFromShelfControllerTest, NoBackdropDuringWindowScaleDown) {
 
 // Test that if drag is cancelled, overview should be dismissed and other
 // hidden windows should restore to its previous visibility state.
-// Flaky on ChromeOS. https://crbug.com/1022319
+// TODO(crbug.com/1022319): flaky.
 TEST_F(DragWindowFromShelfControllerTest, DISABLED_CancelDragDismissOverview) {
   auto window3 = CreateTestWindow();
   auto window2 = CreateTestWindow();
