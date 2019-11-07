@@ -4,29 +4,29 @@
 
 package org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller;
 
+import androidx.annotation.IntDef;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import org.chromium.base.ObserverList;
 import org.chromium.base.Promise;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.TrustedWebActivityModel;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabProvider;
+import org.chromium.chrome.browser.customtabs.content.TabObserverRegistrar;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.NativeInitObserver;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
-import org.chromium.chrome.browser.tab.TabObserverRegistrar;
 import org.chromium.content_public.browser.NavigationHandle;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 import javax.inject.Inject;
-
-import androidx.annotation.IntDef;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 
 /**
  * Checks whether the currently seen web page belongs to a verified origin and updates the
