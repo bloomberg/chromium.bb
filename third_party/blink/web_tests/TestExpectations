@@ -2462,11 +2462,6 @@ crbug.com/953847 [ Mac ] virtual/compositor_threaded_scrollbar_scrolling/fast/sc
 crbug.com/953847 [ Mac ] virtual/compositor_threaded_scrollbar_scrolling/fast/scrolling/scrollbars/scroll-chaining-for-gesture-based-scrolling.html [ Failure ]
 crbug.com/953847 [ Mac ] virtual/compositor_threaded_scrollbar_scrolling/fast/scrolling/scrollbars/scrollbar-occluded-by-div.html [ Failure ]
 crbug.com/953847 [ Mac ] virtual/compositor_threaded_scrollbar_scrolling/fast/scrolling/scrollbars/mouse-autoscrolling-on-scrollbar.html [ Failure Timeout ]
-crbug.com/953847 [ Mac ] virtual/compositor_threaded_scrollbar_scrolling_hidpi_nozoomfordsf/fast/scrolling/scrollbars/mouse-scrolling-on-div-scrollbar.html [ Failure ]
-crbug.com/953847 [ Mac ] virtual/compositor_threaded_scrollbar_scrolling_hidpi_nozoomfordsf/fast/scrolling/scrollbars/mouse-scrolling-on-root-scrollbar.html [ Failure ]
-crbug.com/953847 [ Mac ] virtual/compositor_threaded_scrollbar_scrolling_hidpi_nozoomfordsf/fast/scrolling/scrollbars/scrollbar-button-gesture-target.html [ Failure ]
-crbug.com/953847 [ Mac ] virtual/compositor_threaded_scrollbar_scrolling_hidpi_nozoomfordsf/fast/scrolling/scrollbars/scrollbar-occluded-by-div.html [ Failure ]
-crbug.com/953847 [ Mac ] virtual/compositor_threaded_scrollbar_scrolling_hidpi_nozoomfordsf/fast/scrolling/scrollbars/mouse-autoscrolling-on-scrollbar.html [ Failure Timeout ]
 crbug.com/953847 [ Mac ] virtual/scroll_customization/fast/scrolling/scrollbars/mouse-scrolling-on-div-scrollbar.html [ Failure ]
 crbug.com/953847 [ Mac ] virtual/scroll_customization/fast/scrolling/scrollbars/mouse-scrolling-on-root-scrollbar.html [ Failure ]
 crbug.com/953847 [ Mac ] virtual/scroll_customization/fast/scrolling/scrollbars/scroll-chaining-for-gesture-based-scrolling.html [ Failure ]
@@ -2482,13 +2477,7 @@ crbug.com/953847 [ Mac ] virtual/threaded-prefer-compositing/fast/scrolling/scro
 crbug.com/953847 [ Mac ] virtual/compositor_threaded_scrollbar_scrolling/fast/scrolling/scrollbars/scrollbar-button-gesture-target.html [ Failure ]
 
 # 1px scroll offset difference for compositor threaded scrollbar scrolling on Linux.
-crbug.com/1009892 [ Win ] virtual/compositor_threaded_scrollbar_scrolling_hidpi_nozoomfordsf/fast/scrolling/scrollbars/mouse-scrolling-on-div-scrollbar.html [ Failure ]
-crbug.com/1009892 [ Win ] virtual/compositor_threaded_scrollbar_scrolling_hidpi_nozoomfordsf/fast/scrolling/scrollbars/scrollbar-thumb-snapping.html [ Failure ]
-
-# TODO(arakeri): Mac is the only platform that runs with use_zoom_for_dsf=false. Get rid of this suite when crbug.com/716231 is fixed.
-# When DSF = 2 and use_zoom_for_dsf=false, the scroll offsets are different when compared to DSF = 2 and use_zoom_for_dsf=true.
-crbug.com/1016186 [ Win ] virtual/compositor_threaded_scrollbar_scrolling_hidpi_nozoomfordsf/fast/scrolling/scrollbars/dsf-ready/mouse-interactions-dsf-2.html [ Failure Timeout ]
-crbug.com/1016186 [ Linux ] virtual/compositor_threaded_scrollbar_scrolling_hidpi_nozoomfordsf/fast/scrolling/scrollbars/dsf-ready/mouse-interactions-dsf-2.html [ Failure Timeout ]
+crbug.com/1009892 [ Mac ] virtual/compositor_threaded_scrollbar_scrolling_hidpi/fast/scrolling/scrollbars/dsf-ready/mouse-interactions-dsf-2.html [ Failure Timeout ]
 
 # TODO (arakeri): Mac uses the "Option" modifier instead of "Shift" to do the non-animated jump. This hasn't been implemented yet.
 crbug.com/1016955 [ Mac ] fast/scrolling/scrollbars/dsf-ready/mouse-interactions-dsf-2.html [ Failure Timeout ]
@@ -2496,8 +2485,6 @@ crbug.com/1016955 [ Mac ] virtual/threaded-prefer-compositing/fast/scrolling/scr
 crbug.com/1016955 [ Mac ] virtual/scroll_customization/fast/scrolling/scrollbars/dsf-ready/mouse-interactions-dsf-2.html [ Failure Timeout ]
 crbug.com/1016955 [ Mac ] virtual/hidpi/fast/scrolling/scrollbars/dsf-ready/mouse-interactions-dsf-2.html [ Failure Timeout ]
 crbug.com/1016955 [ Mac ] virtual/compositor_threaded_scrollbar_scrolling/fast/scrolling/scrollbars/dsf-ready/mouse-interactions-dsf-2.html [ Failure Timeout ]
-crbug.com/1016955 [ Mac ] virtual/compositor_threaded_scrollbar_scrolling_hidpi/fast/scrolling/scrollbars/dsf-ready/mouse-interactions-dsf-2.html [ Failure Timeout ]
-crbug.com/1016955 [ Mac ] virtual/compositor_threaded_scrollbar_scrolling_hidpi_nozoomfordsf/fast/scrolling/scrollbars/dsf-ready/mouse-interactions-dsf-2.html [ Failure Timeout ]
 
 # Some control characters still not visible
 crbug.com/893490 [ Mac ] external/wpt/css/css-text/white-space/control-chars-001.html [ Failure ]
