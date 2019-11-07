@@ -22,5 +22,12 @@ class RunScriptTest(cros_test_lib.MockTempDirTestCase):
     """Test that the default log level is set to notice."""
     arg_parser = self.PatchObject(commandline, 'ArgumentParser',
                                   return_value=commandline.ArgumentParser())
-    cros.GetOptions({})
-    arg_parser.assert_called_with(caching=True, default_log_level='notice')
+    cros.GetOptions()
+    arg_parser.assert_called_with(caching=True, default_log_level='notice',
+                                  add_help=False)
+
+  def testSubcommand(self):
+    """Test parser when given a subcommand."""
+    parser = cros.GetOptions('lint')
+    opts = parser.parse_args(['lint'])
+    self.assertEqual(opts.subcommand, 'lint')
