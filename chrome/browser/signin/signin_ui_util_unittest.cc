@@ -273,7 +273,7 @@ class DiceSigninUiUtilTest : public BrowserWithTestWindowTest {
 };
 
 TEST_F(DiceSigninUiUtilTest, EnableSyncWithExistingAccount) {
-  std::string account_id =
+  CoreAccountId account_id =
       GetIdentityManager()->GetAccountsMutator()->AddOrUpdateAccount(
           kMainGaiaID, kMainEmail, "refresh_token", false,
           signin_metrics::SourceForRefreshTokenOperation::kUnknown);
@@ -327,7 +327,7 @@ TEST_F(DiceSigninUiUtilTest, EnableSyncWithExistingAccount) {
 
 TEST_F(DiceSigninUiUtilTest, EnableSyncWithAccountThatNeedsReauth) {
   AddTab(browser(), GURL("http://example.com"));
-  std::string account_id =
+  CoreAccountId account_id =
       GetIdentityManager()->GetAccountsMutator()->AddOrUpdateAccount(
           kMainGaiaID, kMainEmail, "refresh_token", false,
           signin_metrics::SourceForRefreshTokenOperation::kUnknown);
