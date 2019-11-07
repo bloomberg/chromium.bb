@@ -388,6 +388,7 @@ HWNDMessageHandler::HWNDMessageHandler(HWNDMessageHandlerDelegate* delegate,
       called_enable_non_client_dpi_scaling_(false),
       active_mouse_tracking_flags_(0),
       is_right_mouse_pressed_on_caption_(false),
+      is_delegate_nc_dragging_(false),
       lock_updates_count_(0),
       ignore_window_pos_changes_(false),
       last_monitor_(nullptr),
@@ -1530,6 +1531,12 @@ void HWNDMessageHandler::OnCancelMode() {
 }
 
 void HWNDMessageHandler::OnCaptureChanged(HWND window) {
+  if (is_delegate_nc_dragging_) {
+    is_delegate_nc_dragging_ = false;
+    delegate_->HandleNCDragEnd();
+    return;
+  }
+
   delegate_->HandleCaptureLost();
 }
 
@@ -1893,6 +1900,35 @@ LRESULT HWNDMessageHandler::OnMouseActivate(UINT message,
 LRESULT HWNDMessageHandler::OnMouseRange(UINT message,
                                          WPARAM w_param,
                                          LPARAM l_param) {
+  if (message == WM_NCLBUTTONDOWN) {
+    DCHECK(!is_delegate_nc_dragging_);
+    is_delegate_nc_dragging_ = delegate_->HandleNCDragBegin(w_param);
+    if (is_delegate_nc_dragging_) {
+      nc_dragging_hittest_code_ = w_param;
+      SetCapture();
+      return 0;
+    }
+  }
+  else if (is_delegate_nc_dragging_) {
+    // When the delegate handles non-client dragging, we do SetCaputure.  This
+    // causes subsequent mouse moves to come in as WM_MOUSEMOVE instead of
+    // coming in as WM_NCMOUSEMOVE.
+    if (message == WM_MOUSEMOVE) {
+      delegate_->HandleNCDragMove();
+      return 0;
+    }
+    else if (message == WM_LBUTTONUP) {
+      is_delegate_nc_dragging_ = false;
+      ReleaseCapture();
+      delegate_->HandleNCDragEnd();
+      return 0;
+    }
+  }
+  else if (message == WM_NCLBUTTONDBLCLK) {
+    delegate_->HandleNCDoubleClick();
+    return 0;
+  }
+
   return HandleMouseEventInternal(message, w_param, l_param, true);
 }
 
@@ -2130,6 +2166,20 @@ LRESULT HWNDMessageHandler::OnNCCreate(LPCREATESTRUCT lpCreateStruct) {
 }
 
 LRESULT HWNDMessageHandler::OnNCHitTest(const gfx::Point& point) {
+  if (is_delegate_nc_dragging_) {
+    return nc_dragging_hittest_code_;
+  }
+  else {
+    // Give the delegate a chance to do its own non-client hit testing.
+    // Note that this is similar to the GetNonClientComponent used below,
+    // but this is unconditional and gives the delegate a chance to handle
+    // this event regardless of how the aura/views setup has been done.
+    LRESULT result;
+    if (delegate_->HandleNCHitTest(&result, point)) {
+      return result;
+    }
+  }
+
   if (!delegate_->HasNonClientView()) {
     SetMsgHandled(FALSE);
     return 0;
