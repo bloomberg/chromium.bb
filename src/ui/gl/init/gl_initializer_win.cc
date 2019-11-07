@@ -65,9 +65,7 @@ bool InitializeStaticEGLInternal(GLImplementation implementation) {
   base::FilePath gles_path;
   if (implementation == kGLImplementationSwiftShaderGL) {
 #if BUILDFLAG(ENABLE_SWIFTSHADER)
-#if !defined(IS_BLPWTK2)
     gles_path = module_path.Append(L"swiftshader/");
-#endif
     // Preload library
     LoadLibrary(L"ddraw.dll");
 #else
@@ -96,6 +94,8 @@ bool InitializeStaticEGLInternal(GLImplementation implementation) {
     LOG(ERROR) << "gles dll not found in the path: " << gles_path;
     return false;
   }
+
+  LOG(INFO) << "Loaded Graphics driver from gles_path = " << gles_path;
 
   // When using EGL, first try eglGetProcAddress and then Windows
   // GetProcAddress on both the EGL and GLES2 DLLs.
