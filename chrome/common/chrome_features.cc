@@ -877,4 +877,10 @@ const base::Feature kAccessibilityInternalsPageImprovements{
     "AccessibilityInternalsPageImprovements",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables setting time limit for Chrome and PWA's on child user device.
+#if defined(OS_CHROMEOS)
+const base::Feature kWebTimeLimits{"WebTimeLimits",
+                                   base::FEATURE_DISABLED_BY_DEFAULT};
+#endif  // defined(OS_CHROMEOS)
+
 }  // namespace features
