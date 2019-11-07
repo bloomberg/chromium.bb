@@ -188,6 +188,9 @@ CHAR-LIMIT guidelines:
       <message name="IDS_LEARN_MORE" desc="Generic label for menu item to learn more about a feature. [CHAR-LIMIT=32]">
         Learn more
       </message>
+      <message name="IDS_MORE" desc="Generic label for a button to show more items or options. [CHAR-LIMIT=20]">
+        More
+      </message>
       <message name="IDS_CLOSE" desc="Content description for a button to close a dialog or popup" >
         Close
       </message>
@@ -3192,6 +3195,9 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       <message name="IDS_ACCESSIBILITY_CANCEL_SELECTION" desc="Content description for the cancel selection button that deselects the selected items in a selectable list view.">
         Cancel selection
       </message>
+      <message name="IDS_ACCESSIBILITY_LIST_MENU_BUTTON" desc="Content description for the button that shows option menu for a list item.">
+        <ph name="NAME_OF_LIST_ITEM">%1$s<ex>Movie Title</ex></ph> Options
+      </message>
       <message name="IDS_ACCESSIBILITY_TOOLBAR_SCREEN_POSITION" desc="Accessibility announcement to inform users about a toolbar's location.">
         <ph name="ITEM_COUNT">%1$s<ex>3</ex></ph> selected.  Options available near top of the screen
       </message>
@@ -3996,7 +4002,6 @@ The site does NOT gain access to the camera. The camera images are only visible 
       <message name="IDS_CHIME_MODULE_TITLE" desc="Text shown when the chime module is referenced in install start, success, failure UI (e.g. in IDS_MODULE_INSTALL_START_TEXT, which will expand to 'Installing Google Notifications Platform for Chrome…').">
         Google Notifications Platform
       </message>
-
     </messages>
   </release>
 </grit>
