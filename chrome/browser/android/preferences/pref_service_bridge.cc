@@ -556,20 +556,6 @@ void PrefServiceBridge::GetAndroidPermissionsForContentSetting(
       out);
 }
 
-static ScopedJavaLocalRef<jstring>
-JNI_PrefServiceBridge_GetDownloadDefaultDirectory(JNIEnv* env) {
-  return ConvertUTF8ToJavaString(
-      env, GetPrefService()->GetString(prefs::kDownloadDefaultDirectory));
-}
-
-static void JNI_PrefServiceBridge_SetDownloadAndSaveFileDefaultDirectory(
-    JNIEnv* env,
-    const JavaParamRef<jstring>& directory) {
-  base::FilePath path(ConvertJavaStringToUTF8(env, directory));
-  GetPrefService()->SetFilePath(prefs::kDownloadDefaultDirectory, path);
-  GetPrefService()->SetFilePath(prefs::kSaveFileDefaultDirectory, path);
-}
-
 const char* PrefServiceBridge::GetPrefNameExposedToJava(int pref_index) {
   DCHECK_GE(pref_index, 0);
   DCHECK_LT(pref_index, Pref::PREF_NUM_PREFS);

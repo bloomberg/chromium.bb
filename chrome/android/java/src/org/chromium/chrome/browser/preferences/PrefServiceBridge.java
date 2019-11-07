@@ -498,20 +498,6 @@ public class PrefServiceBridge {
         return PrefServiceBridgeJni.get().isMetricsReportingManaged();
     }
 
-    /**
-     * @return The stored download default directory.
-     */
-    public String getDownloadDefaultDirectory() {
-        return PrefServiceBridgeJni.get().getDownloadDefaultDirectory();
-    }
-
-    /**
-     * @param directory New directory to set as the download default directory.
-     */
-    public void setDownloadAndSaveFileDefaultDirectory(String directory) {
-        PrefServiceBridgeJni.get().setDownloadAndSaveFileDefaultDirectory(directory);
-    }
-
     public void setContentSettingForPattern(int contentSettingType, String pattern, int setting) {
         PrefServiceBridgeJni.get().setContentSettingForPattern(
                 contentSettingType, pattern, setting);
@@ -581,7 +567,5 @@ public class PrefServiceBridge {
         boolean isMetricsReportingEnabled();
         void setMetricsReportingEnabled(boolean enabled);
         boolean isMetricsReportingManaged();
-        String getDownloadDefaultDirectory();
-        void setDownloadAndSaveFileDefaultDirectory(String directory);
     }
 }
