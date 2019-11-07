@@ -77,17 +77,19 @@ void ReportValidationError(ValidationContext* context,
                  << " (" << description << ")";
     }
     if (context->message()) {
-      context->message()->NotifyBadMessage(base::StringPrintf(
-          "Validation failed for %s [%s (%s)]", context->description(),
-          ValidationErrorToString(error), description));
+      context->message()->NotifyBadMessage(
+          base::StringPrintf("Validation failed for %s [%s (%s)]",
+                             context->GetFullDescription().c_str(),
+                             ValidationErrorToString(error), description));
     }
   } else {
     if (!g_suppress_logging)
       LOG(ERROR) << "Invalid message: " << ValidationErrorToString(error);
     if (context->message()) {
-      context->message()->NotifyBadMessage(base::StringPrintf(
-          "Validation failed for %s [%s]", context->description(),
-          ValidationErrorToString(error)));
+      context->message()->NotifyBadMessage(
+          base::StringPrintf("Validation failed for %s [%s]",
+                             context->GetFullDescription().c_str(),
+                             ValidationErrorToString(error)));
     }
   }
 }
