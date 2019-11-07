@@ -1013,7 +1013,7 @@ NavigationRequest::NavigationRequest(
           render_view_host->GetWebkitPreferences().javascript_enabled;
       AddNavigationRequestClientHintsHeaders(
           common_params_->url, &client_hints_headers, browser_context,
-          javascript_enabled, client_hints_delegate);
+          javascript_enabled, client_hints_delegate, frame_tree_node_);
       headers.MergeFrom(client_hints_headers);
     }
 
@@ -2235,7 +2235,7 @@ void NavigationRequest::OnRedirectChecksComplete(
         render_view_host->GetWebkitPreferences().javascript_enabled;
     AddNavigationRequestClientHintsHeaders(
         common_params_->url, &client_hints_extra_headers, browser_context,
-        javascript_enabled, client_hints_delegate);
+        javascript_enabled, client_hints_delegate, frame_tree_node_);
     modified_headers.MergeFrom(client_hints_extra_headers);
   }
 

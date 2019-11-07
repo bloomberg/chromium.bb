@@ -284,8 +284,6 @@ jumbo_static_library("browser") {
     "client_hints/client_hints.h",
     "client_hints/client_hints_factory.cc",
     "client_hints/client_hints_factory.h",
-    "client_hints/client_hints_observer.cc",
-    "client_hints/client_hints_observer.h",
     "clipboard/clipboard_read_permission_context.cc",
     "clipboard/clipboard_read_permission_context.h",
     "clipboard/clipboard_write_permission_context.cc",
