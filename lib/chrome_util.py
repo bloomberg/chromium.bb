@@ -386,7 +386,7 @@ _COPY_PATHS_CHROME = (
     Path('Packages/chrome_mash/manifest.json', optional=True),
     Path('Packages/chrome_mash_content_browser/manifest.json', optional=True),
     Path('Packages/content_browser/manifest.json', optional=True),
-    Path('resources/'),
+    Path('resources/chromeos/'),
     Path('resources.pak'),
     Path('xdg-settings'),
     Path('*.png'),
