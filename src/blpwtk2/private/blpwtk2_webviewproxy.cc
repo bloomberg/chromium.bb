@@ -190,6 +190,32 @@ void WebViewProxy::stop()
     d_client->proxy()->stop();
 }
 
+void WebViewProxy::takeKeyboardFocus()
+{
+    DCHECK(Statics::isInApplicationMainThread());
+    d_client->takeKeyboardFocus();
+}
+
+void WebViewProxy::setLogicalFocus(bool focused)
+{
+    DCHECK(Statics::isInApplicationMainThread());
+    LOG(INFO) << "routingId=" << d_renderViewRoutingId
+              << ", setLogicalFocus " << (focused ? "true" : "false");
+
+    if (d_gotRenderViewInfo) {
+        // If we have the renderer in-process, then set the logical focus
+        // immediately so that handleInputEvents will work as expected.
+        content::RenderViewImpl *rv =
+            content::RenderViewImpl::FromRoutingID(d_renderViewRoutingId);
+        DCHECK(rv);
+        rv->SetFocus(focused);
+    }
+
+    // Send the message, which will update the browser-side aura::Window focus
+    // state.
+    d_client->proxy()->setLogicalFocus(focused); 
+}
+
 void WebViewProxy::show()
 {
     DCHECK(Statics::isInApplicationMainThread());
