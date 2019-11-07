@@ -62,6 +62,7 @@ inline int CountLeadingZeros(uint64_t n) {
 #elif defined(_MSC_VER)
 
 inline int CountLeadingZeros(uint32_t n) {
+  assert(n != 0);
   unsigned long first_set_bit;  // NOLINT(runtime/int)
   const unsigned char bit_set = _BitScanReverse(
       &first_set_bit, static_cast<unsigned long>(n));  // NOLINT(runtime/int)
@@ -71,6 +72,7 @@ inline int CountLeadingZeros(uint32_t n) {
 }
 
 inline int CountLeadingZeros(uint64_t n) {
+  assert(n != 0);
   unsigned long first_set_bit;  // NOLINT(runtime/int)
 #if defined(HAVE_BITSCANREVERSE64)
   const unsigned char bit_set =
