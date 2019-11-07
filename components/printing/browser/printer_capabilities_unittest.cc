@@ -52,9 +52,9 @@ TEST_F(PrinterCapabilitiesTest, NonNullForMissingPrinter) {
   PrinterBasicInfo basic_info;
   PrinterSemanticCapsAndDefaults::Papers no_additional_papers;
 
-  base::Value settings_dictionary =
-      GetSettingsOnBlockingPool(printer_name, basic_info, no_additional_papers,
-                                /* has_secure_protocol */ false, nullptr);
+  base::Value settings_dictionary = GetSettingsOnBlockingTaskRunner(
+      printer_name, basic_info, no_additional_papers,
+      /* has_secure_protocol */ false, nullptr);
 
   ASSERT_FALSE(settings_dictionary.DictEmpty());
 }
@@ -69,7 +69,7 @@ TEST_F(PrinterCapabilitiesTest, ProvidedCapabilitiesUsed) {
   caps->dpis = {{600, 600}};
   print_backend()->AddValidPrinter(printer_name, std::move(caps));
 
-  base::Value settings_dictionary = GetSettingsOnBlockingPool(
+  base::Value settings_dictionary = GetSettingsOnBlockingTaskRunner(
       printer_name, basic_info, no_additional_papers,
       /* has_secure_protocol */ false, print_backend());
 
@@ -99,7 +99,7 @@ TEST_F(PrinterCapabilitiesTest, NullCapabilitiesExcluded) {
   // Return false when attempting to retrieve capabilities.
   print_backend()->AddValidPrinter(printer_name, nullptr);
 
-  base::Value settings_dictionary = GetSettingsOnBlockingPool(
+  base::Value settings_dictionary = GetSettingsOnBlockingTaskRunner(
       printer_name, basic_info, no_additional_papers,
       /* has_secure_protocol */ false, print_backend());
 
@@ -127,7 +127,7 @@ TEST_F(PrinterCapabilitiesTest, AdditionalPapers) {
   additional_papers.push_back({"foo", "vendor", {200, 300}});
   additional_papers.push_back({"bar", "vendor", {600, 600}});
 
-  base::Value settings_dictionary = GetSettingsOnBlockingPool(
+  base::Value settings_dictionary = GetSettingsOnBlockingTaskRunner(
       printer_name, basic_info, additional_papers,
       /* has_secure_protocol */ false, print_backend());
 
@@ -198,9 +198,9 @@ TEST_F(PrinterCapabilitiesTest, HasNotSecureProtocol) {
   caps->pin_supported = true;
   print_backend()->AddValidPrinter(printer_name, std::move(caps));
 
-  base::Value settings_dictionary =
-      GetSettingsOnBlockingPool(printer_name, basic_info, no_additional_papers,
-                                has_secure_protocol, print_backend());
+  base::Value settings_dictionary = GetSettingsOnBlockingTaskRunner(
+      printer_name, basic_info, no_additional_papers, has_secure_protocol,
+      print_backend());
 
   // Verify settings were created.
   ASSERT_FALSE(settings_dictionary.DictEmpty());
