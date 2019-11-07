@@ -141,6 +141,7 @@
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/file_select_listener.h"
 #include "content/public/browser/global_routing_id.h"
+#include "content/public/browser/media_player_watch_time.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/permission_type.h"
 #include "content/public/browser/render_process_host.h"
@@ -172,7 +173,6 @@
 #include "media/media_buildflags.h"
 #include "media/mojo/mojom/remoting.mojom.h"
 #include "media/mojo/services/media_interface_provider.h"
-#include "media/mojo/services/media_metrics_provider.h"
 #include "media/mojo/services/video_decode_perf_history.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/message.h"
@@ -4711,7 +4711,10 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
                 ->GetBrowserContext()
                 ->GetLearningSession();
           },
-          weak_ptr_factory_.GetWeakPtr())));
+          weak_ptr_factory_.GetWeakPtr()),
+      base::BindRepeating(
+          &RenderFrameHostImpl::GetRecordAggregateWatchTimeCallback,
+          base::Unretained(this))));
 
   if (command_line->HasSwitch(cc::switches::kEnableGpuBenchmarking)) {
     registry_->AddInterface(base::BindRepeating(
@@ -4747,6 +4750,11 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
   registry_->AddInterface(base::BindRepeating(
       &GetRestrictedCookieManager, base::Unretained(this),
       GetProcess()->GetID(), routing_id_, GetProcess()->GetStoragePartition()));
+}
+
+media::MediaMetricsProvider::RecordAggregateWatchTimeCallback
+RenderFrameHostImpl::GetRecordAggregateWatchTimeCallback() {
+  return delegate_->GetRecordAggregateWatchTimeCallback();
 }
 
 void RenderFrameHostImpl::ResetWaitingState() {

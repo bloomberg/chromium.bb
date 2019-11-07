@@ -368,6 +368,9 @@ class WebMediaPlayerImplTest : public testing::Test {
         base::BindRepeating([]() { return learning::FeatureValue(0); }),
         VideoDecodePerfHistory::SaveCallback(),
         MediaMetricsProvider::GetLearningSessionCallback(),
+        base::BindRepeating(
+            &WebMediaPlayerImplTest::GetRecordAggregateWatchTimeCallback,
+            base::Unretained(this)),
         provider.BindNewPipeAndPassReceiver());
 
     // Initialize provider since none of the tests below actually go through the
@@ -449,6 +452,11 @@ class WebMediaPlayerImplTest : public testing::Test {
   void SetDuration(base::TimeDelta value) {
     wmpi_->SetPipelineMediaDurationForTest(value);
     wmpi_->OnDurationChange();
+  }
+
+  MediaMetricsProvider::RecordAggregateWatchTimeCallback
+  GetRecordAggregateWatchTimeCallback() {
+    return base::NullCallback();
   }
 
   base::TimeDelta GetCurrentTimeInternal() {

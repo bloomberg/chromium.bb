@@ -7241,6 +7241,23 @@ void WebContentsImpl::MediaWatchTimeChanged(
     observer.MediaWatchTimeChanged(watch_time);
 }
 
+media::MediaMetricsProvider::RecordAggregateWatchTimeCallback
+WebContentsImpl::GetRecordAggregateWatchTimeCallback() {
+  return base::BindRepeating(
+      [](base::WeakPtr<RenderFrameHostDelegate> delegate,
+         GURL last_committed_url, base::TimeDelta total_watch_time,
+         base::TimeDelta time_stamp) {
+        content::MediaPlayerWatchTime watch_time(last_committed_url,
+                                                 last_committed_url.GetOrigin(),
+                                                 total_watch_time, time_stamp);
+
+        // Save the watch time if the delegate is still alive.
+        if (delegate)
+          delegate->MediaWatchTimeChanged(watch_time);
+      },
+      weak_factory_.GetWeakPtr(), GetMainFrameLastCommittedURL());
+}
+
 RenderFrameHostImpl* WebContentsImpl::GetMainFrameForInnerDelegate(
     FrameTreeNode* frame_tree_node) {
   if (auto* web_contents = node_.GetInnerWebContentsInFrame(frame_tree_node))
