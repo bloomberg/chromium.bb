@@ -146,13 +146,6 @@ OmniboxPopupContentsView::OmniboxPopupContentsView(
 
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical));
-
-  // TODO(krb): Remove this when we're sure that nothing accesses the
-  // matches between here and UpdatePopupAppearance().
-  for (size_t i = 0; i < AutocompleteResult::GetMaxMatches(); ++i) {
-    AddChildView(std::make_unique<OmniboxResultView>(this, i, theme_provider_))
-        ->SetVisible(false);
-  }
 }
 
 OmniboxPopupContentsView::~OmniboxPopupContentsView() {
@@ -248,14 +241,14 @@ void OmniboxPopupContentsView::UpdatePopupAppearance() {
   // we have enough row views.
   const size_t result_size = model_->result().size();
   for (size_t i = 0; i < result_size; ++i) {
-    // The model can send us more results than we expected when the user
-    // enables loose-limit-on-submatches and has dedicated rows. Add rows to
-    // handle what they've sent.
+    // Create child views lazily.  Since especially the first result view may be
+    // expensive to create due to loading font data, this saves time and memory
+    // during browser startup.
     if (children().size() <= i) {
       AddChildView(
-          std::make_unique<OmniboxResultView>(this, i, theme_provider_))
-          ->SetVisible(false);
+          std::make_unique<OmniboxResultView>(this, i, theme_provider_));
     }
+
     OmniboxResultView* view = result_view_at(i);
     const AutocompleteMatch& match = GetMatchAtIndex(i);
     view->SetMatch(match);
