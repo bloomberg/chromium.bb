@@ -27,9 +27,6 @@ static_assert(
         static_cast<int>(OptimizationGuideStore::StoreEntryType::kMaxValue),
     "mismatched StoreEntryType enums");
 
-// The folder where the data will be stored on disk.
-constexpr char kOptimizationGuideStore[] = "previews_hint_cache_store";
-
 // The amount of data to build up in memory before converting to a sorted on-
 // disk file.
 constexpr size_t kDatabaseWriteBufferSizeBytes = 128 * 1024;
@@ -97,10 +94,8 @@ OptimizationGuideStore::OptimizationGuideStore(
     leveldb_proto::ProtoDatabaseProvider* database_provider,
     const base::FilePath& database_dir,
     scoped_refptr<base::SequencedTaskRunner> store_task_runner) {
-  base::FilePath hint_store_dir =
-      database_dir.AppendASCII(kOptimizationGuideStore);
   database_ = database_provider->GetDB<proto::StoreEntry>(
-      leveldb_proto::ProtoDbType::HINT_CACHE_STORE, hint_store_dir,
+      leveldb_proto::ProtoDbType::HINT_CACHE_STORE, database_dir,
       store_task_runner);
 
   RecordStatusChange(status_);

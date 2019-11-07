@@ -175,7 +175,8 @@ OptimizationGuideHintsManager::OptimizationGuideHintsManager(
       hint_cache_(std::make_unique<optimization_guide::HintCache>(
           std::make_unique<optimization_guide::OptimizationGuideStore>(
               database_provider,
-              profile_path,
+              profile_path.AddExtensionASCII(
+                  optimization_guide::kOptimizationGuideHintStore),
               background_task_runner_))),
       top_host_provider_(top_host_provider),
       url_loader_factory_(url_loader_factory),
