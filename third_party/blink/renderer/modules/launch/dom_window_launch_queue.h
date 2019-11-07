@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_LAUNCH_DOM_WINDOW_LAUNCH_PARAMS_H_
-#define THIRD_PARTY_BLINK_RENDERER_MODULES_LAUNCH_DOM_WINDOW_LAUNCH_PARAMS_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_LAUNCH_DOM_WINDOW_LAUNCH_QUEUE_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_LAUNCH_DOM_WINDOW_LAUNCH_QUEUE_H_
 
 #include "third_party/blink/renderer/modules/launch/launch_params.h"
+#include "third_party/blink/renderer/modules/launch/launch_queue.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
@@ -19,19 +20,19 @@ namespace blink {
 class LocalDOMWindow;
 class Visitor;
 
-class DOMWindowLaunchParams final
-    : public GarbageCollected<DOMWindowLaunchParams>,
+class DOMWindowLaunchQueue final
+    : public GarbageCollected<DOMWindowLaunchQueue>,
       public Supplement<LocalDOMWindow> {
-  USING_GARBAGE_COLLECTED_MIXIN(DOMWindowLaunchParams);
+  USING_GARBAGE_COLLECTED_MIXIN(DOMWindowLaunchQueue);
 
  public:
   static const char kSupplementName[];
 
-  explicit DOMWindowLaunchParams();
-  ~DOMWindowLaunchParams();
+  explicit DOMWindowLaunchQueue();
+  ~DOMWindowLaunchQueue();
 
   // IDL Interface.
-  static Member<LaunchParams> launchParams(LocalDOMWindow&);
+  static Member<LaunchQueue> launchQueue(LocalDOMWindow&);
 
   static void UpdateLaunchFiles(LocalDOMWindow*,
                                 HeapVector<Member<NativeFileSystemHandle>>);
@@ -39,11 +40,11 @@ class DOMWindowLaunchParams final
   void Trace(blink::Visitor*) override;
 
  private:
-  static DOMWindowLaunchParams* FromState(LocalDOMWindow* window);
+  static DOMWindowLaunchQueue* FromState(LocalDOMWindow* window);
 
-  Member<LaunchParams> launch_params_;
+  Member<LaunchQueue> launch_queue_;
 };
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_LAUNCH_DOM_WINDOW_LAUNCH_PARAMS_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_LAUNCH_DOM_WINDOW_LAUNCH_QUEUE_H_
