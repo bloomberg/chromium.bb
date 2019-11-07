@@ -25,31 +25,27 @@ void RoundNearZero(gfx::Transform* transform) {
   }
 }
 
+display::Display::Rotation RotationBetween(
+    display::Display::Rotation old_rotation,
+    display::Display::Rotation new_rotation) {
+  return static_cast<display::Display::Rotation>(
+      display::Display::Rotation::ROTATE_0 +
+      ((new_rotation - old_rotation) + 4) % 4);
+}
+
 }  // namespace
 
 gfx::Transform CreateRotationTransform(display::Display::Rotation old_rotation,
                                        display::Display::Rotation new_rotation,
                                        const gfx::SizeF& size_to_rotate) {
-  const int rotation_angle = 90 * (((new_rotation - old_rotation) + 4) % 4);
-  gfx::Transform rotate;
-  switch (rotation_angle) {
-    case 0:
-      break;
-    case 90:
-      rotate.Translate(size_to_rotate.height(), 0);
-      rotate.Rotate(90);
-      break;
-    case 180:
-      rotate.Translate(size_to_rotate.width(), size_to_rotate.height());
-      rotate.Rotate(180);
-      break;
-    case 270:
-      rotate.Translate(0, size_to_rotate.width());
-      rotate.Rotate(270);
-      break;
-  }
-  RoundNearZero(&rotate);
-  return rotate;
+  gfx::Transform transform = display::Display::GetRotationTransform(
+      RotationBetween(old_rotation, new_rotation), size_to_rotate);
+
+  // TODO(spang): Remove this; it shouldn't be necessary now that the rotation
+  // matrix is computed exactly.
+  RoundNearZero(&transform);
+
+  return transform;
 }
 
 gfx::OverlayTransform DisplayRotationToOverlayTransform(
