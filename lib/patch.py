@@ -22,7 +22,6 @@ from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import git
 from chromite.lib import gob_util
-from chromite.lib import metrics
 
 
 # We import mock so that we can identify mock.MagicMock instances in tests
@@ -999,9 +998,6 @@ class GitRepoPatch(PatchQuery):
     sha1 = self.HasBeenFetched(git_repo)
 
     if sha1 is None:
-      fields = {'project_url': self.project_url}
-      metrics.Counter(constants.MON_GIT_FETCH_COUNT).increment(fields=fields)
-
       git.RunGit(git_repo, ['fetch', '-f', self.project_url, self.ref],
                  print_cmd=True)
 
