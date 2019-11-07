@@ -142,7 +142,7 @@ public class CrashesListActivity extends Activity {
             }
             if (crashInfo.uploadTime >= 0) {
                 builder.append("upload time: ", new StyleSpan(android.graphics.Typeface.BOLD), 0)
-                        .append(new Date(crashInfo.uploadTime * 1000).toString())
+                        .append(new Date(crashInfo.uploadTime).toString())
                         .append("\n");
             }
             if (crashInfo.captureTime >= 0) {
