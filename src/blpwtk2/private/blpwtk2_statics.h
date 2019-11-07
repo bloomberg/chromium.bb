@@ -86,6 +86,10 @@ struct Statics {
     // in-process renderer should be enabled.
     static bool inProcessResizeOptimizationDisabled;
 
+    // Whether or not the renderer uses a worker thread to issue waits for
+    // sync IPC calls.
+    static bool isRendererIOThreadEnabled;
+
     static ToolkitDelegate *toolkitDelegate;
 
     // ====== some utility functions =============

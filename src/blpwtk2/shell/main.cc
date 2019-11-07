@@ -772,6 +772,7 @@ int main(int, const char**)
     bool isProcessHost = false;
     blpwtk2::ThreadMode host = blpwtk2::ThreadMode::ORIGINAL;
     int proxyPort = -1;
+    bool noRendererIOThread = false;
 
     {
         int argc;
@@ -804,6 +805,9 @@ int main(int, const char**)
             }
             else if (0 == wcscmp(L"--custom-tooltip", argv[i])) {
                 g_custom_tooltip = true;
+            }
+            else if (0 == wcscmp(L"--no-renderer-io-thread", argv[i])) {
+                noRendererIOThread = true;
             }
             else if (0 == wcsncmp(L"--local-proxy=", argv[i], 14)) {
                 char buf[1024];
@@ -880,6 +884,10 @@ int main(int, const char**)
     toolkitParams.setHeaderFooterHTML(getHeaderFooterHTMLContent());
     toolkitParams.enablePrintBackgroundGraphics();
     toolkitParams.setDictionaryPath(g_dictDir);
+
+    if (!noRendererIOThread) {
+        toolkitParams.enableRendererIOThread();
+    }
 
     g_toolkit = blpwtk2::ToolkitFactory::create(toolkitParams);
 
