@@ -1,6 +1,9 @@
-per-file auto_update*=dhaddock@chromium.org,ahassani@chromium.org
+per-file auto_update*=file:/OWNERS.au
 per-file chrome*=file:/OWNERS.chrome
 per-file cros_test*=file:/OWNERS.chrome
 per-file device*=file:/OWNERS.chrome
+per-file dev_server*=file:/OWNERS.au
 per-file toolchain_util*=file:chromiumos/third_party/toolchain-utils:/OWNERS.toolchain
 per-file vm*=file:/OWNERS.chrome
+
+# COMPONENT: Infra>ChromeOS>Build
