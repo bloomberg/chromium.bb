@@ -732,6 +732,15 @@ bool OmniboxViewViews::MaybeUnfocusTabButton() {
   return false;
 }
 
+bool OmniboxViewViews::MaybeSwitchToTab(const ui::KeyEvent& event) {
+  if (model()->popup_model()->selected_line_state() !=
+      OmniboxPopupModel::BUTTON_FOCUSED)
+    return false;
+  popup_view_->OpenMatch(WindowOpenDisposition::SWITCH_TO_TAB,
+                         event.time_stamp());
+  return true;
+}
+
 void OmniboxViewViews::SetWindowTextAndCaretPos(const base::string16& text,
                                                 size_t caret_pos,
                                                 bool update_popup,
@@ -1554,11 +1563,7 @@ bool OmniboxViewViews::HandleKeyEvent(views::Textfield* textfield,
   const bool command = event.IsCommandDown();
   switch (event.key_code()) {
     case ui::VKEY_RETURN:
-      if (model()->popup_model()->selected_line_state() ==
-          OmniboxPopupModel::BUTTON_FOCUSED) {
-        popup_view_->OpenMatch(WindowOpenDisposition::SWITCH_TO_TAB,
-                               event.time_stamp());
-      } else {
+      if (!MaybeSwitchToTab(event)) {
         if (alt || (shift && command)) {
           model()->AcceptInput(WindowOpenDisposition::NEW_FOREGROUND_TAB,
                                event.time_stamp());
@@ -1702,15 +1707,9 @@ bool OmniboxViewViews::HandleKeyEvent(views::Textfield* textfield,
       break;
 
     case ui::VKEY_SPACE:
-      if (!(control || alt || shift)) {
-        if (SelectionAtEnd() &&
-            model()->popup_model()->selected_line_state() ==
-                OmniboxPopupModel::BUTTON_FOCUSED) {
-          popup_view_->OpenMatch(WindowOpenDisposition::SWITCH_TO_TAB,
-                                 event.time_stamp());
-          return true;
-        }
-      }
+      if (!control && !alt && !shift && SelectionAtEnd() &&
+          MaybeSwitchToTab(event))
+        return true;
       break;
 
     default:
