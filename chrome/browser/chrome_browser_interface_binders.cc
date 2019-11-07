@@ -20,6 +20,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_features.h"
+#include "extensions/buildflags/buildflags.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/image_annotation/public/mojom/image_annotation.mojom.h"
 #include "third_party/blink/public/mojom/insecure_input/insecure_input_service.mojom.h"
@@ -44,6 +45,12 @@
 #else
 #include "chrome/browser/badging/badge_manager.h"
 #include "chrome/browser/payments/payment_request_factory.h"
+#endif
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+#include "extensions/browser/api/mime_handler_private/mime_handler_private.h"
+#include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest.h"
+#include "extensions/common/api/mime_handler.mojom.h"  // nogncheck
 #endif
 
 namespace chrome {
@@ -102,6 +109,22 @@ void ForwardToJavaFrame(content::RenderFrameHost* render_frame_host,
 }
 #endif
 
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+void BindMimeHandlerService(
+    content::RenderFrameHost* frame_host,
+    mojo::PendingReceiver<extensions::mime_handler::MimeHandlerService>
+        receiver) {
+  content::WebContents* contents =
+      content::WebContents::FromRenderFrameHost(frame_host);
+  auto* guest_view =
+      extensions::MimeHandlerViewGuest::FromWebContents(contents);
+  if (!guest_view)
+    return;
+  extensions::MimeHandlerServiceImpl::Create(guest_view->GetStreamWeakPtr(),
+                                             std::move(receiver));
+}
+#endif
+
 void PopulateChromeFrameBinders(
     service_manager::BinderMapWithContext<content::RenderFrameHost*>* map) {
   map->Add<mojom::ContentSettingsManager>(
@@ -149,6 +172,10 @@ void PopulateChromeFrameBinders(
     map->Add<payments::mojom::PaymentRequest>(
         base::BindRepeating(&payments::CreatePaymentRequest));
   }
+#endif
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  map->Add<extensions::mime_handler::MimeHandlerService>(
+      base::BindRepeating(&BindMimeHandlerService));
 #endif
 }
 

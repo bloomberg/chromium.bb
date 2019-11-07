@@ -163,7 +163,6 @@ const service_manager::Manifest& GetChromeContentBrowserOverlayManifest() {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
                 extensions::KeepAlive,
                 extensions::mime_handler::BeforeUnloadControl,
-                extensions::mime_handler::MimeHandlerService,
 #endif
                 media::mojom::MediaEngagementScoreDetailsProvider,
                 media_router::mojom::MediaRouter,
