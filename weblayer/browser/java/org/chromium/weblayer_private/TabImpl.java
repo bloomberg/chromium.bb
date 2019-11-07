@@ -76,16 +76,15 @@ public final class TabImpl extends ITab.Stub {
      * This constructor is called when the native side triggers creation of a TabImpl
      * (as happens with popups).
      */
-    public TabImpl(ProfileImpl profile, WindowAndroid windowAndroid, long nativeBrowserController) {
+    public TabImpl(ProfileImpl profile, WindowAndroid windowAndroid, long nativeTab) {
         mId = ++sNextId;
-        TabImplJni.get().setJavaImpl(nativeBrowserController, TabImpl.this);
-        init(profile, windowAndroid, nativeBrowserController);
+        TabImplJni.get().setJavaImpl(nativeTab, TabImpl.this);
+        init(profile, windowAndroid, nativeTab);
     }
 
-    private void init(
-            ProfileImpl profile, WindowAndroid windowAndroid, long nativeBrowserController) {
+    private void init(ProfileImpl profile, WindowAndroid windowAndroid, long nativeTab) {
         mProfile = profile;
-        mNativeTab = nativeBrowserController;
+        mNativeTab = nativeTab;
         mWebContents = TabImplJni.get().getWebContents(mNativeTab, TabImpl.this);
         mViewAndroidDelegate = new ViewAndroidDelegate(null) {
             @Override
@@ -160,7 +159,7 @@ public final class TabImpl extends ITab.Stub {
         return mWebContents;
     }
 
-    long getNativeBrowserController() {
+    long getNativeTab() {
         return mNativeTab;
     }
 
@@ -263,7 +262,7 @@ public final class TabImpl extends ITab.Stub {
         void setJavaImpl(long nativeTabImpl, TabImpl impl);
         void setTopControlsContainerView(
                 long nativeTabImpl, TabImpl caller, long nativeTopControlsContainerView);
-        void deleteTab(long browserController);
+        void deleteTab(long tab);
         WebContents getWebContents(long nativeTabImpl, TabImpl caller);
         void executeScript(long nativeTabImpl, String script, boolean useSeparateIsolate,
                 Callback<String> callback);

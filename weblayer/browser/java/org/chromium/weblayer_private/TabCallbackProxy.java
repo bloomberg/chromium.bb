@@ -14,17 +14,16 @@ import org.chromium.weblayer_private.interfaces.ITabClient;
 /**
  * Owns the C++ TabCallbackProxy class, which is responsible for forwarding all
  * BrowserObserver calls to this class, which in turn forwards to the TabClient.
- * To avoid unnecessary IPC only one TabCallbackProxy is created per BrowserController.
+ * To avoid unnecessary IPC only one TabCallbackProxy is created per Tab.
  */
 @JNINamespace("weblayer")
 public final class TabCallbackProxy {
     private long mNativeTabCallbackProxy;
     private ITabClient mClient;
 
-    TabCallbackProxy(long browserController, ITabClient client) {
+    TabCallbackProxy(long tab, ITabClient client) {
         mClient = client;
-        mNativeTabCallbackProxy =
-                TabCallbackProxyJni.get().createTabCallbackProxy(this, browserController);
+        mNativeTabCallbackProxy = TabCallbackProxyJni.get().createTabCallbackProxy(this, tab);
     }
 
     public void destroy() {
@@ -39,7 +38,7 @@ public final class TabCallbackProxy {
 
     @NativeMethods
     interface Natives {
-        long createTabCallbackProxy(TabCallbackProxy proxy, long browserController);
+        long createTabCallbackProxy(TabCallbackProxy proxy, long tab);
         void deleteTabCallbackProxy(long proxy);
     }
 }

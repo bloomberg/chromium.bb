@@ -21,8 +21,8 @@ public final class NewTabCallbackProxy {
 
     public NewTabCallbackProxy(TabImpl tab) {
         mTab = tab;
-        mNativeNewTabCallbackProxy = NewTabCallbackProxyJni.get().createNewTabCallbackProxy(
-                this, tab.getNativeBrowserController());
+        mNativeNewTabCallbackProxy =
+                NewTabCallbackProxyJni.get().createNewTabCallbackProxy(this, tab.getNativeTab());
     }
 
     public void destroy() {

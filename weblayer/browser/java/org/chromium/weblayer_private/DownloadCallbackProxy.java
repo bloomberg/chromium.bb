@@ -21,11 +21,11 @@ public final class DownloadCallbackProxy {
     private long mNativeDownloadCallbackProxy;
     private IDownloadCallbackClient mClient;
 
-    DownloadCallbackProxy(long browserController, IDownloadCallbackClient client) {
+    DownloadCallbackProxy(long tab, IDownloadCallbackClient client) {
         assert client != null;
         mClient = client;
         mNativeDownloadCallbackProxy =
-                DownloadCallbackProxyJni.get().createDownloadCallbackProxy(this, browserController);
+                DownloadCallbackProxyJni.get().createDownloadCallbackProxy(this, tab);
     }
 
     public void setClient(IDownloadCallbackClient client) {
@@ -46,7 +46,7 @@ public final class DownloadCallbackProxy {
 
     @NativeMethods
     interface Natives {
-        long createDownloadCallbackProxy(DownloadCallbackProxy proxy, long browserController);
+        long createDownloadCallbackProxy(DownloadCallbackProxy proxy, long tab);
         void deleteDownloadCallbackProxy(long proxy);
     }
 }

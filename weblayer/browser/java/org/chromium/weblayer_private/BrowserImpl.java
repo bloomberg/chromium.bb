@@ -82,7 +82,7 @@ public class BrowserImpl extends IBrowser.Stub {
 
     public BrowserViewController getViewController() {
         if (mViewController == null) {
-            throw new RuntimeException("Currently BrowserController requires Activity context, so "
+            throw new RuntimeException("Currently Tab requires Activity context, so "
                     + "it exists only while BrowserFragment is attached to an Activity");
         }
         return mViewController;

@@ -38,9 +38,9 @@ public final class Tab {
     private DownloadCallbackClientImpl mDownloadCallbackClient;
     private NewTabCallback mNewTabCallback;
 
-    Tab(ITab impl, Browser browserFragmentController) {
+    Tab(ITab impl, Browser browser) {
         mImpl = impl;
-        mBrowser = browserFragmentController;
+        mBrowser = browser;
         try {
             mImpl.setClient(new TabClientImpl());
         } catch (RemoteException e) {

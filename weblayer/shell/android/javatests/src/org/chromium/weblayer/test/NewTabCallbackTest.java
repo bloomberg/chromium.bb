@@ -74,9 +74,9 @@ public class NewTabCallbackTest {
         Assert.assertNotNull(mActivity);
         NewTabCallbackImpl callback = new NewTabCallbackImpl();
         Tab firstTab = TestThreadUtils.runOnUiThreadBlockingNoException(() -> {
-            Tab browserController = mActivity.getBrowser().getActiveTab();
-            browserController.setNewTabCallback(callback);
-            return browserController;
+            Tab tab = mActivity.getBrowser().getActiveTab();
+            tab.setNewTabCallback(callback);
+            return tab;
         });
 
         EventUtils.simulateTouchCenterOfView(mActivity.getWindow().getDecorView());

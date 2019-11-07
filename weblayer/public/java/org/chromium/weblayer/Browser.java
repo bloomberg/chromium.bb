@@ -129,7 +129,7 @@ public final class Browser {
      *
      * @throws IllegalStateException is {@link tab} is not in this Browser.
      */
-    public void disposeTab(Tab browserController) {
+    public void disposeTab(Tab tab) {
         ThreadCheck.ensureOnUiThread();
         // TODO(sky): implement this.
     }

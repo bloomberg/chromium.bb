@@ -242,11 +242,10 @@ void NavigationControllerImpl::NotifyLoadStateChanged() {
 }
 
 #if defined(OS_ANDROID)
-static jlong JNI_NavigationControllerImpl_GetNavigationController(
-    JNIEnv* env,
-    jlong browserController) {
+static jlong JNI_NavigationControllerImpl_GetNavigationController(JNIEnv* env,
+                                                                  jlong tab) {
   return reinterpret_cast<jlong>(
-      reinterpret_cast<Tab*>(browserController)->GetNavigationController());
+      reinterpret_cast<Tab*>(tab)->GetNavigationController());
 }
 #endif
 

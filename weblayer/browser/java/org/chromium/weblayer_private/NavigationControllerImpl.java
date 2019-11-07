@@ -24,8 +24,8 @@ public final class NavigationControllerImpl extends INavigationController.Stub {
     public NavigationControllerImpl(TabImpl tab, INavigationControllerClient client) {
         mNavigationControllerClient = client;
         mTab = tab;
-        mNativeNavigationController = NavigationControllerImplJni.get().getNavigationController(
-                tab.getNativeBrowserController());
+        mNativeNavigationController =
+                NavigationControllerImplJni.get().getNavigationController(tab.getNativeTab());
         NavigationControllerImplJni.get().setNavigationControllerImpl(
                 mNativeNavigationController, NavigationControllerImpl.this);
     }
@@ -140,7 +140,7 @@ public final class NavigationControllerImpl extends INavigationController.Stub {
     interface Natives {
         void setNavigationControllerImpl(
                 long nativeNavigationControllerImpl, NavigationControllerImpl caller);
-        long getNavigationController(long browserController);
+        long getNavigationController(long tab);
         void navigate(
                 long nativeNavigationControllerImpl, NavigationControllerImpl caller, String uri);
         void goBack(long nativeNavigationControllerImpl, NavigationControllerImpl caller);
