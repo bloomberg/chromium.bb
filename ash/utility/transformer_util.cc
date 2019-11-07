@@ -13,18 +13,6 @@
 namespace ash {
 namespace {
 
-// Round near zero value to zero.
-void RoundNearZero(gfx::Transform* transform) {
-  const float kEpsilon = 0.001f;
-  SkMatrix44& matrix = transform->matrix();
-  for (int x = 0; x < 4; ++x) {
-    for (int y = 0; y < 4; ++y) {
-      if (std::abs(SkMScalarToFloat(matrix.get(x, y))) < kEpsilon)
-        matrix.set(x, y, SkFloatToMScalar(0.0f));
-    }
-  }
-}
-
 display::Display::Rotation RotationBetween(
     display::Display::Rotation old_rotation,
     display::Display::Rotation new_rotation) {
@@ -40,10 +28,6 @@ gfx::Transform CreateRotationTransform(display::Display::Rotation old_rotation,
                                        const gfx::SizeF& size_to_rotate) {
   gfx::Transform transform = display::Display::GetRotationTransform(
       RotationBetween(old_rotation, new_rotation), size_to_rotate);
-
-  // TODO(spang): Remove this; it shouldn't be necessary now that the rotation
-  // matrix is computed exactly.
-  RoundNearZero(&transform);
 
   return transform;
 }
