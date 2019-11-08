@@ -105,7 +105,7 @@ def TemporaryDirectory():
         shutil.rmtree(name)
 
 
-def generate_interface_dependencies(runtime_enabled_features, cache_directory):
+def generate_interface_dependencies(runtime_enabled_features):
     def idl_paths_recursive(directory):
         # This is slow, especially on Windows, due to os.walk making
         # excess stat() calls. Faster versions may appear in Python 3.5 or
@@ -127,7 +127,7 @@ def generate_interface_dependencies(runtime_enabled_features, cache_directory):
         return idl_paths
 
     def collect_interfaces_info(idl_path_list):
-        info_collector = InterfaceInfoCollector(cache_directory)
+        info_collector = InterfaceInfoCollector()
         for idl_path in idl_path_list:
             info_collector.collect_info(idl_path)
         info = info_collector.get_info_as_dict()
@@ -208,9 +208,6 @@ def bindings_tests(output_directory, verbose, suppress_diff):
                 continue
             directory_with_component = os.path.join(directory, component)
             for filename in os.listdir(directory_with_component):
-                if filename in ('lextab.py', 'parsetab.pickle'):
-                    # Ignore tempfiles from PLY.
-                    continue
                 files.append(os.path.join(directory_with_component, filename))
         return files
 
@@ -291,10 +288,7 @@ def bindings_tests(output_directory, verbose, suppress_diff):
         return features_map
 
     try:
-        output_dir = os.path.join(output_directory, 'third_party/blink/renderer/bindings/tests/results')
-        if not os.path.exists(output_dir):
-            os.makedirs(output_dir)
-        generate_interface_dependencies(make_runtime_features_dict(), output_directory)
+        generate_interface_dependencies(make_runtime_features_dict())
         for component in COMPONENT_DIRECTORY:
             output_dir = os.path.join(output_directory, component)
             if not os.path.exists(output_dir):
@@ -303,7 +297,7 @@ def bindings_tests(output_directory, verbose, suppress_diff):
             options = IdlCompilerOptions(
                 output_directory=output_dir,
                 impl_output_directory=output_dir,
-                cache_directory=output_dir,
+                cache_directory=None,
                 target_component=component)
 
             if component == 'core':
@@ -314,7 +308,7 @@ def bindings_tests(output_directory, verbose, suppress_diff):
                 partial_interface_options = IdlCompilerOptions(
                     output_directory=partial_interface_output_dir,
                     impl_output_directory=None,
-                    cache_directory=output_dir,
+                    cache_directory=None,
                     target_component='modules')
 
             idl_filenames = []

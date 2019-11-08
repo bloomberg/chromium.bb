@@ -35,8 +35,7 @@ _PARTIAL = {
 
 class TestFunctions(unittest.TestCase):
     def setUp(self):
-        # We use debug=True to not have to worry about generated parser tables.
-        parser = BlinkIDLParser(debug=True)
+        parser = BlinkIDLParser()
         path = os.path.join(
             testdata_path, utilities.read_file_to_list(_FILE)[0])
         definitions = parse_file(parser, path)

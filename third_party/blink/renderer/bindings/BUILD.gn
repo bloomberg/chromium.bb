@@ -66,16 +66,11 @@ template("collect_idl_files") {
       invoker.component,
       "--output",
       rebase_path(invoker.output, root_build_dir),
-      "--cached-parser-tables-dir",
-      rebase_path(bindings_scripts_output_dir, root_build_dir),
     ]
 
     if (defined(invoker.deps)) {
       deps = invoker.deps
-    } else {
-      deps = []
     }
-    deps += [ "scripts:cached_lex_yacc_tables" ]
   }
 }
 

@@ -28,8 +28,6 @@ def parse_options():
                       help="specify a component name")
     parser.add_option('--output', type='string',
                       help="the output file path")
-    parser.add_option('--cached-parser-tables-dir',
-                      help='location of the generated LEX and YACC files')
     options, args = parser.parse_args()
 
     if options.idl_list_file is None:
@@ -38,9 +36,6 @@ def parse_options():
         parser.error("Specify the output file path with --output.")
     if options.component is None:
         parser.error("Specify a component with --component.")
-    if options.cached_parser_tables_dir is None:
-        parser.error("Specify the location of the generated "
-                     "LEX and YACC files with --cached-parser-tables-dir.")
 
     if args:
         parser.error("Unknown arguments {}".format(args))
@@ -52,7 +47,7 @@ def main():
     options, _ = parse_options()
 
     filepaths = utilities.read_idl_files_list_from_file(options.idl_list_file)
-    parser = blink_idl_parser.BlinkIDLParser(outputdir=options.cached_parser_tables_dir)
+    parser = blink_idl_parser.BlinkIDLParser()
     ast_group = web_idl.AstGroup(web_idl.Component(options.component))
     for filepath in filepaths:
         ast_group.add_ast_node(blink_idl_parser.parse_file(parser, filepath))

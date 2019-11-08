@@ -81,7 +81,7 @@ def validate_blink_idl_definitions(idl_filename, idl_file_basename,
 
 
 class IdlReader(object):
-    def __init__(self, interfaces_info=None, outputdir='', debug=False):
+    def __init__(self, interfaces_info=None, outputdir=''):
         self.extended_attribute_validator = IDLExtendedAttributeValidator()
         self.interfaces_info = interfaces_info
 
@@ -90,7 +90,7 @@ class IdlReader(object):
         else:
             self.interface_dependency_resolver = None
 
-        self.parser = BlinkIDLParser(outputdir=outputdir, debug=debug)
+        self.parser = BlinkIDLParser(outputdir=outputdir)
 
     def read_idl_definitions(self, idl_filename):
         """Returns a dictionary whose key is component and value is an IdlDefinitions object for an IDL file, including all dependencies."""

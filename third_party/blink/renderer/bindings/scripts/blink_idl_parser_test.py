@@ -16,7 +16,6 @@ class BlinkIDLParserTest(unittest.TestCase):
     def test_missing_semicolon_between_definitions(self):
         # No semicolon after enum definition.
         text = '''enum TestEnum { "value" } dictionary TestDictionary {};'''
-        # We use debug=True to not have to worry about generated parser tables.
-        parser = BlinkIDLParser(debug=True)
+        parser = BlinkIDLParser()
         parser.ParseText(filename='', data=text)
         self.assertGreater(parser.GetErrors(), 0)
