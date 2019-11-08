@@ -311,77 +311,89 @@ public class StartSurfaceLayoutTest {
 
     /**
      * Make Chrome have {@code numTabs} of regular Tabs and {@code numIncognitoTabs} of incognito
-     * tabs with {@code url} loaded.
+     * tabs with {@code url} loaded, and assert no bitmap fetching occurred.
      *
      * @param numTabs The number of regular tabs.
      * @param numIncognitoTabs The number of incognito tabs.
      * @param url The URL to load.
      */
     private void prepareTabs(int numTabs, int numIncognitoTabs, @Nullable String url) {
-        assertTrue(numTabs >= 1);
-        assertTrue(numIncognitoTabs >= 0);
-
         int oldCount = mTabListDelegate.getBitmapFetchCountForTesting();
-        assertEquals(1,
-                mActivityTestRule.getActivity().getTabModelSelector().getModel(false).getCount());
-        assertEquals(
-                0, mActivityTestRule.getActivity().getTabModelSelector().getModel(true).getCount());
-
-        if (numTabs == 1) {
-            if (url != null) mActivityTestRule.loadUrl(url);
-        } else {
-            // When Chrome started, there is already one Tab created by default.
-            createTabs(numTabs - 1, url, true, false);
-        }
-        if (numIncognitoTabs > 0) createTabs(numIncognitoTabs, url, true, true);
-
-        assertEquals(numTabs,
-                mActivityTestRule.getActivity().getTabModelSelector().getModel(false).getCount());
-        assertEquals(numIncognitoTabs,
-                mActivityTestRule.getActivity().getTabModelSelector().getModel(true).getCount());
+        prepareTabsWithThumbnail(mActivityTestRule, numTabs, numIncognitoTabs, url);
         assertEquals(0, mTabListDelegate.getBitmapFetchCountForTesting() - oldCount);
     }
 
     /**
-     * When Chrome started, there is already one Tab created by default. This method is used to add
-     * additional {@code numTabs} of {@link Tab}s with {@code url} loaded to Chrome.
+     * Make Chrome have {@code numTabs} of regular Tabs and {@code numIncognitoTabs} of incognito
+     * tabs with {@code url} loaded.
+     * @param rule The {@link ChromeTabbedActivityTestRule}.
+     * @param numTabs The number of regular tabs.
+     * @param numIncognitoTabs The number of incognito tabs.
+     * @param url The URL to load.
+     */
+    private static void prepareTabsWithThumbnail(ChromeTabbedActivityTestRule rule, int numTabs,
+            int numIncognitoTabs, @Nullable String url) {
+        assertTrue(numTabs >= 1);
+        assertTrue(numIncognitoTabs >= 0);
+
+        assertEquals(1, rule.getActivity().getTabModelSelector().getModel(false).getCount());
+        assertEquals(0, rule.getActivity().getTabModelSelector().getModel(true).getCount());
+
+        if (url != null) rule.loadUrl(url);
+        if (numTabs > 1) {
+            // When Chrome started, there is already one Tab created by default.
+            createTabsWithThumbnail(rule, numTabs - 1, url, false);
+        }
+        if (numIncognitoTabs > 0) createTabsWithThumbnail(rule, numIncognitoTabs, url, true);
+
+        assertEquals(numTabs, rule.getActivity().getTabModelSelector().getModel(false).getCount());
+        assertEquals(numIncognitoTabs,
+                rule.getActivity().getTabModelSelector().getModel(true).getCount());
+        if (url != null) {
+            verifyAllTabsHaveUrl(rule.getActivity().getTabModelSelector().getModel(false), url);
+            verifyAllTabsHaveUrl(rule.getActivity().getTabModelSelector().getModel(true), url);
+        }
+    }
+
+    private static void verifyAllTabsHaveUrl(TabModel tabModel, String url) {
+        for (int i = 0; i < tabModel.getCount(); i++) {
+            assertEquals(url, tabModel.getTabAt(i).getUrl());
+        }
+    }
+
+    /**
+     * Create {@code numTabs} of {@link Tab}s with {@code url} loaded to Chrome.
+     * Note that if the test doesn't care about thumbnail, use {@link TabUiTestHelper#createTabs}
+     * instead since it's faster.
+     *
+     * @param rule The {@link ChromeTabbedActivityTestRule}.
      * @param numTabs The number of tabs to create.
      * @param url The URL to load. Skip loading when null, but the thumbnail for the NTP might not
      *            be saved.
-     * @param waitForLoading Whether wait for URL loading.
      * @param isIncognito Whether the tab is incognito tab.
      */
-    private void createTabs(
-            int numTabs, @Nullable String url, boolean waitForLoading, boolean isIncognito) {
+    private static void createTabsWithThumbnail(ChromeTabbedActivityTestRule rule, int numTabs,
+            @Nullable String url, boolean isIncognito) {
         assertTrue(numTabs >= 1);
 
-        if (url != null) mActivityTestRule.loadUrl(url);
-
-        int previousTabCount = mActivityTestRule.getActivity()
-                                       .getTabModelSelector()
-                                       .getModel(isIncognito)
-                                       .getCount();
+        int previousTabCount =
+                rule.getActivity().getTabModelSelector().getModel(isIncognito).getCount();
 
         for (int i = 0; i < numTabs; i++) {
-            TabModel previousTabModel =
-                    mActivityTestRule.getActivity().getTabModelSelector().getCurrentModel();
+            TabModel previousTabModel = rule.getActivity().getTabModelSelector().getCurrentModel();
             int previousTabIndex = previousTabModel.index();
             Tab previousTab = previousTabModel.getTabAt(previousTabIndex);
 
             ChromeTabUtils.newTabFromMenu(InstrumentationRegistry.getInstrumentation(),
-                    mActivityTestRule.getActivity(), isIncognito, waitForLoading);
+                    rule.getActivity(), isIncognito, true);
 
-            if (url != null) mActivityTestRule.loadUrl(url);
-            if (!waitForLoading) continue;
+            if (url != null) rule.loadUrl(url);
 
-            TabModel currentTabModel =
-                    mActivityTestRule.getActivity().getTabModelSelector().getCurrentModel();
+            TabModel currentTabModel = rule.getActivity().getTabModelSelector().getCurrentModel();
             int currentTabIndex = currentTabModel.index();
 
-            boolean fixPendingReadbacks = mActivityTestRule.getActivity()
-                                                  .getTabContentManager()
-                                                  .getPendingReadbacksForTesting()
-                    != 0;
+            boolean fixPendingReadbacks =
+                    rule.getActivity().getTabContentManager().getPendingReadbacksForTesting() != 0;
 
             // When there are pending readbacks due to detached Tabs, try to fix it by switching
             // back to that tab.
@@ -404,24 +416,14 @@ public class StartSurfaceLayoutTest {
             }
         }
 
-        ChromeTabUtils.waitForTabPageLoaded(mActivityTestRule.getActivity().getActivityTab(), null,
-                null, WAIT_TIMEOUT_SECONDS * 10);
+        ChromeTabUtils.waitForTabPageLoaded(
+                rule.getActivity().getActivityTab(), null, null, WAIT_TIMEOUT_SECONDS * 10);
 
         assertEquals(numTabs + previousTabCount,
-                mActivityTestRule.getActivity()
-                        .getTabModelSelector()
-                        .getModel(isIncognito)
-                        .getCount());
+                rule.getActivity().getTabModelSelector().getModel(isIncognito).getCount());
 
-        if (waitForLoading) {
-            // clang-format off
-            CriteriaHelper.pollUiThread(Criteria.equals(0, () ->
-                mActivityTestRule.getActivity()
-                        .getTabContentManager()
-                        .getPendingReadbacksForTesting()
-            ));
-            // clang-format on
-        }
+        CriteriaHelper.pollUiThread(Criteria.equals(0,
+                () -> rule.getActivity().getTabContentManager().getPendingReadbacksForTesting()));
     }
 
     private void testTabToGrid(String fromUrl) throws InterruptedException {
@@ -476,10 +478,12 @@ public class StartSurfaceLayoutTest {
         if (!isEmulator()) return;
 
         for (int i = 0; i < 10; i++) {
-            mActivityTestRule.loadUrl(mUrl);
             // Quickly create some tabs, navigate to web pages, and don't wait for thumbnail
             // capturing.
-            createTabs(1, mUrl, false, false);
+            mActivityTestRule.loadUrl(mUrl);
+            ChromeTabUtils.newTabFromMenu(InstrumentationRegistry.getInstrumentation(),
+                    mActivityTestRule.getActivity(), false, false);
+            mActivityTestRule.loadUrl(mUrl);
             // Hopefully we are in a state where some pending readbacks are stuck because their tab
             // is not attached to the view.
             if (mActivityTestRule.getActivity()
@@ -859,7 +863,7 @@ public class StartSurfaceLayoutTest {
                 Criteria.equals(expectedDelta, () -> getCaptureCount() - initCount));
     }
 
-    private void checkThumbnailsExist(Tab tab) {
+    private static void checkThumbnailsExist(Tab tab) {
         File etc1File = TabContentManager.getTabThumbnailFileEtc1(tab);
         CriteriaHelper.pollInstrumentationThread(etc1File::exists,
                 "The thumbnail " + etc1File.getName() + " is not found",
