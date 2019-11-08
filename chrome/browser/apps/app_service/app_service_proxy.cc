@@ -125,8 +125,7 @@ void AppServiceProxy::Initialize() {
     return;
   }
 
-  app_service_impl_ = std::make_unique<apps::AppServiceImpl>(
-      content::BrowserContext::GetConnectorFor(profile_));
+  app_service_impl_ = std::make_unique<apps::AppServiceImpl>();
   app_service_impl_->BindReceiver(app_service_.BindNewPipeAndPassReceiver());
 
   if (app_service_.is_connected()) {
