@@ -21264,6 +21264,7 @@ Called by update_net_error_codes.py.-->
   <int value="1403" label="AUTOTESTPRIVATE_REMOVEACTIVEDESK"/>
   <int value="1404" label="TERMINALPRIVATE_GETCROSHSETTINGS"/>
   <int value="1405" label="AUTOTESTPRIVATE_ENABLEASSISTANTANDWAITFORREADY"/>
+  <int value="1406" label="INPUTMETHODPRIVATE_FINISHCOMPOSINGTEXT"/>
 </enum>
 
 <enum name="ExtensionIconState">
