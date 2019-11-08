@@ -7,10 +7,6 @@ package org.chromium.chrome.browser;
 import android.os.Bundle;
 import android.util.Pair;
 
-import org.chromium.base.ActivityState;
-import org.chromium.base.ApplicationStatus;
-import org.chromium.base.CommandLine;
-import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.dependency_injection.ChromeActivityComponent;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabBuilder;
@@ -21,7 +17,6 @@ import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
-import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 /**
  * Base class for task-focused activities that need to display a single tab.
@@ -32,8 +27,6 @@ import org.chromium.content_public.browser.UiThreadTaskTraits;
  */
 public abstract class SingleTabActivity<C extends ChromeActivityComponent>
         extends ChromeActivity<C> {
-    private static final int PREWARM_RENDERER_DELAY_MS = 500;
-
     protected static final String BUNDLE_TAB_ID = "tabId";
 
     @Override
@@ -136,31 +129,4 @@ public abstract class SingleTabActivity<C extends ChromeActivityComponent>
 
     @Override
     public void onUpdateStateChanged() {}
-
-    @Override
-    public void onStopWithNative() {
-        super.onStopWithNative();
-        if (CommandLine.getInstance().hasSwitch(ChromeSwitches.AGGRESSIVELY_PREWARM_RENDERERS)) {
-            PostTask.postDelayedTask(UiThreadTaskTraits.DEFAULT, new Runnable() {
-                @Override
-                public void run() {
-                    // If we're not still stopped, we don't need the spare WebContents.
-                    if (ApplicationStatus.getStateForActivity(SingleTabActivity.this)
-                            == ActivityState.STOPPED) {
-                        WarmupManager.getInstance().createSpareWebContents(!WarmupManager.FOR_CCT);
-                    }
-                }
-            }, PREWARM_RENDERER_DELAY_MS);
-        }
-    }
-
-    @Override
-    public void onTrimMemory(int level) {
-        super.onTrimMemory(level);
-        if (CommandLine.getInstance().hasSwitch(ChromeSwitches.AGGRESSIVELY_PREWARM_RENDERERS)) {
-            if (ChromeApplication.isSevereMemorySignal(level)) {
-                WarmupManager.getInstance().destroySpareWebContents();
-            }
-        }
-    }
 }
