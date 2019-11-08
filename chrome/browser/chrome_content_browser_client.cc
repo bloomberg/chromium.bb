@@ -3655,6 +3655,23 @@ void ChromeContentBrowserClient::BindCredentialManagerReceiver(
                                                      render_frame_host);
 }
 
+#if defined(OS_WIN) || defined(OS_MACOSX) || \
+    (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+bool ShouldEnableAudioSandbox(const policy::PolicyMap& policies) {
+  const base::Value* audio_sandbox_enabled_policy_value =
+      policies.GetValue(policy::key::kAudioSandboxEnabled);
+  if (audio_sandbox_enabled_policy_value) {
+    bool force_enable_audio_sandbox;
+    audio_sandbox_enabled_policy_value->GetAsBoolean(
+        &force_enable_audio_sandbox);
+    return force_enable_audio_sandbox;
+  }
+
+  return base::FeatureList::IsEnabled(
+      service_manager::features::kAudioServiceSandbox);
+}
+#endif
+
 void ChromeContentBrowserClient::WillStartServiceManager() {
 #if defined(OS_WIN) || defined(OS_MACOSX) || \
     (defined(OS_LINUX) && !defined(OS_CHROMEOS))
@@ -3679,14 +3696,9 @@ void ChromeContentBrowserClient::WillStartServiceManager() {
 #endif
     bool enable_audio_process =
         base::FeatureList::IsEnabled(features::kAudioServiceOutOfProcess);
-    bool enable_audio_sandbox = base::FeatureList::IsEnabled(
-        service_manager::features::kAudioServiceSandbox);
-    const base::Value* audio_sandbox_enabled_policy_value =
-        policies.GetValue(policy::key::kAudioSandboxEnabled);
-    if (audio_sandbox_enabled_policy_value)
-      audio_sandbox_enabled_policy_value->GetAsBoolean(&enable_audio_sandbox);
-    service_manager::EnableAudioSandbox(enable_audio_sandbox);
-    if (!enable_audio_sandbox || !enable_audio_process) {
+
+    service_manager::EnableAudioSandbox(ShouldEnableAudioSandbox(policies));
+    if (!service_manager::IsAudioSandboxEnabled() || !enable_audio_process) {
       // Disabling the audio process or audio sandbox implies disabling APM in
       // the audio service for security reasons. Append a switch so that this
       // is communicated to the audio and renderer processes.
