@@ -1287,6 +1287,18 @@ void LocalFrame::WasShown() {
     frame_view->ScheduleAnimation();
 }
 
+bool LocalFrame::ClipsContent() const {
+  // A paint preview shouldn't clip to the viewport if it is the main frame or a
+  // root remote frame.
+  if (GetDocument()->IsPaintingPreview() && IsLocalRoot())
+    return false;
+
+  if (IsMainFrame())
+    return GetSettings()->GetMainFrameClipsContent();
+  // By default clip to viewport.
+  return true;
+}
+
 void LocalFrame::SetViewportIntersectionFromParent(
     const ViewportIntersectionState& intersection_state) {
   // We only schedule an update if the viewport intersection or occlusion state

@@ -647,8 +647,9 @@ void LayoutView::CalculateScrollbarModes(ScrollbarMode& h_mode,
       RETURN_SCROLLBAR_MODE(ScrollbarMode::kAlwaysOff);
   }
 
-  if (document.Printing()) {
-    // When printing, frame-level scrollbars are never displayed.
+  if (document.IsCapturingLayout()) {
+    // When capturing layout (e.g. printing), frame-level scrollbars are never
+    // displayed.
     // TODO(szager): Figure out the right behavior when printing an overflowing
     // iframe.  https://bugs.chromium.org/p/chromium/issues/detail?id=777528
     RETURN_SCROLLBAR_MODE(ScrollbarMode::kAlwaysOff);
