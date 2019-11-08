@@ -4,10 +4,10 @@
 
 // https://gpuweb.github.io/gpuweb/
 
-dictionary GPUVertexInputDescriptor {
+dictionary GPUVertexStateDescriptor {
     GPUIndexFormat indexFormat = "uint32";
     // TODO(crbug.com/951629): Make this a sequence of nullables.
-    object vertexBuffers; // We validate this is an array of nullable GPUVertexBufferDescriptor
+    object vertexBuffers; // We validate this is an array of nullable GPUVertexBufferLayoutDescriptor
 };
 
 enum GPUIndexFormat {
