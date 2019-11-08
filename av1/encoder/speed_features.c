@@ -328,7 +328,6 @@ static void set_good_speed_features_framesize_independent(
     sf->reduce_inter_modes = boosted ? 1 : 2;
     sf->tx_type_search.prune_mode = PRUNE_2D_FAST;
     sf->prune_comp_type_by_model_rd = boosted ? 0 : 1;
-    sf->adaptive_overlay_encoding = 1;
   }
 
   if (speed >= 2) {
@@ -831,7 +830,7 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
   sf->disable_sb_level_mv_cost_upd = 0;
   sf->disable_overlay_frames = 0;
   // TODO(yunqing): turn it on for speed 0 if there is gain.
-  sf->adaptive_overlay_encoding = 0;
+  sf->adaptive_overlay_encoding = 1;
   sf->skip_interp_filter_search = 0;
   sf->force_tx_search_off = 0;
   sf->num_inter_modes_for_tx_search = INT_MAX;
