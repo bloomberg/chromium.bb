@@ -192,15 +192,9 @@ size_t RTCStats::MembersCount() const {
   return stats_members_.size();
 }
 
-std::unique_ptr<blink::WebRTCStatsMember> RTCStats::GetMember(size_t i) const {
+std::unique_ptr<RTCStatsMember> RTCStats::GetMember(size_t i) const {
   DCHECK_LT(i, stats_members_.size());
-  return CreateRTCStatsMember(stats_owner_, stats_members_[i]);
-}
-
-std::unique_ptr<blink::WebRTCStatsMember> CreateRTCStatsMember(
-    const scoped_refptr<const webrtc::RTCStatsReport>& stats_owner,
-    const webrtc::RTCStatsMemberInterface* member) {
-  return std::make_unique<RTCStatsMember>(std::move(stats_owner), member);
+  return std::make_unique<RTCStatsMember>(stats_owner_, stats_members_[i]);
 }
 
 RTCStatsMember::RTCStatsMember(

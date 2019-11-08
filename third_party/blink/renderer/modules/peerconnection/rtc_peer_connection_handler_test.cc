@@ -942,7 +942,7 @@ TEST_F(RTCPeerConnectionHandlerTest, GetRTCStats) {
       EXPECT_EQ(stats->Timestamp(), 2.0);
       std::set<webrtc::RTCStatsMemberInterface::Type> members;
       for (size_t i = 0; i < stats->MembersCount(); ++i) {
-        std::unique_ptr<blink::WebRTCStatsMember> member = stats->GetMember(i);
+        std::unique_ptr<RTCStatsMember> member = stats->GetMember(i);
         // TODO(hbos): A WebRTC-change is adding new members, this would cause
         // not all members to be defined. This if-statement saves Chromium from
         // crashing. As soon as the change has been rolled in, I will update

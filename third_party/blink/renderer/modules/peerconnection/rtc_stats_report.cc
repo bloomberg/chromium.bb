@@ -31,7 +31,7 @@ v8::Local<v8::Value> RTCStatsToValue(ScriptState* script_state,
   };
 
   for (size_t i = 0; i < stats->MembersCount(); ++i) {
-    std::unique_ptr<WebRTCStatsMember> member = stats->GetMember(i);
+    std::unique_ptr<RTCStatsMember> member = stats->GetMember(i);
     if (!member->IsDefined())
       continue;
     WebString name = member->GetName();
