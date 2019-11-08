@@ -116,8 +116,6 @@ if (is_chromeos) {
       "chromeos/drive_operation_queue.h",
       "chromeos/file_cache.cc",
       "chromeos/file_cache.h",
-      "chromeos/file_system.cc",
-      "chromeos/file_system.h",
       "chromeos/file_system/copy_operation.cc",
       "chromeos/file_system/copy_operation.h",
       "chromeos/file_system/create_directory_operation.cc",
@@ -192,10 +190,6 @@ if (is_chromeos) {
     sources = [
       "chromeos/drive_test_util.cc",
       "chromeos/drive_test_util.h",
-      "chromeos/dummy_file_system.cc",
-      "chromeos/dummy_file_system.h",
-      "chromeos/fake_file_system.cc",
-      "chromeos/fake_file_system.h",
       "chromeos/fake_free_disk_space_getter.cc",
       "chromeos/fake_free_disk_space_getter.h",
     ]
