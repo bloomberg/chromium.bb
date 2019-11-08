@@ -31,6 +31,7 @@ void CdefInit_NEON();
 }  // namespace libgav1
 
 #if LIBGAV1_ENABLE_NEON
+#define LIBGAV1_Dsp8bpp_CdefDirection LIBGAV1_CPU_NEON
 #define LIBGAV1_Dsp8bpp_CdefFilter LIBGAV1_CPU_NEON
 #endif  // LIBGAV1_ENABLE_NEON
 

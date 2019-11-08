@@ -27,6 +27,10 @@ namespace libgav1 {
 namespace dsp {
 namespace {
 
+// Silence unused function warnings when CdefDirection_C is obviated.
+#if LIBGAV1_ENABLE_ALL_DSP_FUNCTIONS ||        \
+    !defined(LIBGAV1_Dsp8bpp_CdefDirection) || \
+    (LIBGAV1_MAX_BITDEPTH >= 10 && !defined(LIBGAV1_Dsp10bpp_CdefDirection))
 constexpr int16_t kDivisionTable[] = {0,   840, 420, 280, 210,
                                       168, 140, 120, 105};
 
@@ -91,6 +95,10 @@ void CdefDirection_C(const void* const source, ptrdiff_t stride,
   }
   *variance = (best_cost - cost[(*direction + 4) & 7]) >> 10;
 }
+#endif  // LIBGAV1_ENABLE_ALL_DSP_FUNCTIONS ||
+        // !defined(LIBGAV1_Dsp8bpp_CdefDirection) ||
+        // (LIBGAV1_MAX_BITDEPTH >= 10 &&
+        // !defined(LIBGAV1_Dsp10bpp_CdefDirection))
 
 // Silence unused function warnings when CdefFilter_C is obviated.
 #if LIBGAV1_ENABLE_ALL_DSP_FUNCTIONS ||     \

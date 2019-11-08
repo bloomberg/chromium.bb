@@ -361,6 +361,19 @@ inline int8x8_t InterleaveHigh32(const int8x8_t a, const int8x8_t b) {
 }
 
 //------------------------------------------------------------------------------
+// Sum.
+
+inline int32_t SumVector(const int32x4_t a) {
+#if defined(__aarch64__)
+  return vaddvq_s32(a);
+#else
+  const int64x2_t b = vpaddlq_s32(a);
+  const int64x1_t c = vadd_s64(vget_low_s64(b), vget_high_s64(b));
+  return static_cast<int32_t>(vget_lane_s64(c, 0));
+#endif
+}
+
+//------------------------------------------------------------------------------
 // Transpose.
 
 // Transpose 32 bit elements such that:

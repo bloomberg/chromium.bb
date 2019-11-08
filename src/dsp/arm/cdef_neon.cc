@@ -34,7 +34,269 @@ namespace dsp {
 namespace low_bitdepth {
 namespace {
 
+// CdefDirection:
+// Mirror values and pad to 16 elements.
+constexpr int32_t kDivisionTable[] = {840, 420, 280, 210, 168, 140, 120, 105,
+                                      120, 140, 168, 210, 280, 420, 840, 0};
+
+// Used when calculating odd |cost[x]| values to mask off unwanted elements.
+// Holds elements 1 3 5 X 5 3 1 X
+constexpr int32_t kDivisionTableOdd[] = {420, 210, 140, 0, 140, 210, 420, 0};
+
+// Expand |a| to int8x16_t, left shift it by |shift| and sum the low
+// and high values with |b| and |c| respectively.
+// Used to calculate |partial[0][i + j]| and |partial[4][7 + i - j]|. The input
+// is |src[j]| and it is being added to |partial[]| based on the above indices.
+template <int shift, bool is_partial4 = false>
+void AddPartial0(int8x8_t a, int16x8_t* b, int16x8_t* c) {
+  // Allow vextq_s8() to compile when |shift| is out of range.
+  constexpr int safe_shift = (shift > 0) ? shift : 1;
+  if (is_partial4) a = vrev64_s8(a);
+  if (shift == 0) {
+    *b = vaddw_s8(*b, a);
+  } else {
+    const int8x16_t zero = vdupq_n_s8(0);
+    const int8x16_t src = vcombine_s8(a, vdup_n_s8(0));
+    const int8x16_t row = vextq_s8(zero, src, 16 - safe_shift);
+    *b = vaddw_s8(*b, vget_low_s8(row));
+    *c = vaddw_s8(*c, vget_high_s8(row));
+  }
+}
+
+// |[i + j / 2]| effectively adds two values to the same index:
+// partial[1][0 + 0 / 2] += src[j]
+// partial[1][0 + 1 / 2] += src[j + 1]
+// Pairwise add |a| to generate 4 values. Shift/extract as necessary to add
+// these values to |b| and |c|.
+//
+// |partial[3]| is the same with one exception: The values are reversed.
+// |i| |j| |3 + i - j / 2|
+//  0   0   3
+//  0   1   3
+//  0   2   2
+//  < ... >
+//  0   7   0
+//
+//  1   0   4
+//  < ... >
+//  1   7   1
+// Used to calculate |partial[1][i + j / 2]| and |partial[3][3 + i - j / 2]|.
+template <int shift, bool is_partial3 = false>
+void AddPartial1(const int8x8_t a, int16x8_t* b, int16x8_t* c) {
+  // Allow vextq_s16() to compile when |shift| is out of range.
+  constexpr int safe_shift = (shift > 0) ? shift : 1;
+  int16x4_t paired = vpaddl_s8(a);
+  if (is_partial3) paired = vrev64_s16(paired);
+  const int16x8_t extended = vcombine_s16(paired, vdup_n_s16(0));
+  if (shift == 0) {
+    *b = vaddq_s16(*b, extended);
+  } else {
+    const int16x8_t shifted_b =
+        vextq_s16(vdupq_n_s16(0), extended, 8 - safe_shift);
+    *b = vaddq_s16(*b, shifted_b);
+    if (shift > 4) {
+      // Split |paired| between |b| and |c|.
+      const int16x8_t shifted_c =
+          vextq_s16(extended, vdupq_n_s16(0), 8 - safe_shift);
+      *c = vaddq_s16(*c, shifted_c);
+    }
+  }
+}
+
+// Sum the lane and add it to the ith element.
+// TODO(johannkoenig): Consider storing this to an array instead of a vector.
+// Used to calculate |partial[2][i]|.
+template <int lane>
+void AddPartial2(const int8x8_t a, int16x8_t* b) {
+#if defined(__aarch64__)
+  // vaddv_s8() returns an int8_t value which makes it thoroughly useless.
+  const int16_t sum = vaddvq_s16(vmovl_s8(a));
+#else
+  const int16x4_t c = vpaddl_s8(a);
+  const int32x2_t d = vpaddl_s16(c);
+  const int64x1_t e = vpaddl_s32(d);
+  const int16_t sum = static_cast<int16_t>(vget_lane_s64(e, 0));
+#endif  // defined(__aarch64__)
+  *b = vsetq_lane_s16(sum, *b, lane);
+}
+
+// Simple add starting at [3] and stepping back every other row.
+// Used to calculate |partial[5][3 - i / 2 + j]|.
+template <int shift>
+void AddPartial5(const int8x8_t a, int16x8_t* b, int16x8_t* c) {
+  // Allow vextq_s16() to compile when |shift| is out of range.
+  constexpr int safe_shift = (shift < 6) ? shift : 1;
+  if (shift > 5) {
+    *b = vaddw_s8(*b, a);
+  } else {
+    const int16x8_t extended = vmovl_s8(a);
+    const int16x8_t shifted_b =
+        vextq_s16(vdupq_n_s16(0), extended, 5 + safe_shift / 2);
+    *b = vaddq_s16(*b, shifted_b);
+    const int16x8_t shifted_c =
+        vextq_s16(extended, vdupq_n_s16(0), 5 + safe_shift / 2);
+    *c = vaddq_s16(*c, shifted_c);
+  }
+}
+
+// Simple add.
+// Used to calculate |partial[6][j]|
+void AddPartial6(const int8x8_t a, int16x8_t* b) { *b = vaddw_s8(*b, a); }
+
+// Simple add starting at [0] and stepping forward every other row.
+// Used to calculate |partial[7][i / 2 + j]|.
+template <int shift>
+void AddPartial7(const int8x8_t a, int16x8_t* b, int16x8_t* c) {
+  // Allow vextq_s16() to compile when |shift| is out of range.
+  constexpr int safe_shift = (shift > 1) ? shift : 2;
+  if (shift < 2) {
+    *b = vaddw_s8(*b, a);
+  } else {
+    const int16x8_t extended = vmovl_s8(a);
+    const int16x8_t shifted_b =
+        vextq_s16(vdupq_n_s16(0), extended, 8 - safe_shift / 2);
+    *b = vaddq_s16(*b, shifted_b);
+    const int16x8_t shifted_c =
+        vextq_s16(extended, vdupq_n_s16(0), 8 - safe_shift / 2);
+    *c = vaddq_s16(*c, shifted_c);
+  }
+}
+
+template <int value>
+void AddPartial(int8x8_t source, int16x8_t dest_lo[8], int16x8_t dest_hi[8]) {
+  AddPartial0<value>(source, &dest_lo[0], &dest_hi[0]);
+  AddPartial1<value>(source, &dest_lo[1], &dest_hi[1]);
+  AddPartial2<value>(source, &dest_lo[2]);
+  AddPartial1<value, /*is_partial3=*/true>(source, &dest_lo[3], &dest_hi[3]);
+  AddPartial0<value, /*is_partial4=*/true>(source, &dest_lo[4], &dest_hi[4]);
+  AddPartial5<value>(source, &dest_lo[5], &dest_hi[5]);
+  AddPartial6(source, &dest_lo[6]);
+  AddPartial7<value>(source, &dest_lo[7], &dest_hi[7]);
+}
+
+int32x4_t Square(int16x4_t a) { return vmull_s16(a, a); }
+
+int32x4_t SquareAccumulate(int32x4_t a, int16x4_t b) {
+  return vmlal_s16(a, b, b);
+}
+
+// |cost[0]| and |cost[4]| square the input and sum with the corresponding
+// element from the other end of the vector:
+// |kDivisionTable[]| element:
+// cost[0] += (Square(partial[0][i]) + Square(partial[0][14 - i])) *
+//             kDivisionTable[i + 1];
+// cost[0] += Square(partial[0][7]) * kDivisionTable[8];
+// Because everything is being summed into a single value the distributive
+// property allows us to mirror the division table and accumulate once.
+int32_t Cost0Or4(const int16x8_t a, const int16x8_t b,
+                 const int32x4_t division_table[4]) {
+  int32x4_t c = vmulq_s32(Square(vget_low_s16(a)), division_table[0]);
+  c = vmlaq_s32(c, Square(vget_high_s16(a)), division_table[1]);
+  c = vmlaq_s32(c, Square(vget_low_s16(b)), division_table[2]);
+  c = vmlaq_s32(c, Square(vget_high_s16(b)), division_table[3]);
+  return SumVector(c);
+}
+
+// |cost[2]| and |cost[6]| square the input and accumulate:
+// cost[2] += Square(partial[2][i])
+int32_t SquareAccumulate(const int16x8_t a, const int16x8_t b) {
+  int32x4_t c = Square(vget_low_s16(a));
+  c = SquareAccumulate(c, vget_high_s16(a));
+  c = SquareAccumulate(c, vget_low_s16(b));
+  c = SquareAccumulate(c, vget_high_s16(b));
+  c = vmulq_n_s32(c, kDivisionTable[7]);
+  return SumVector(c);
+}
+
+int32_t CostOdd(const int16x8_t a, const int16x8_t b, const int32x4_t mask,
+                const int32x4_t division_table[2]) {
+  // Remove elements 0-2.
+  int32x4_t c = vandq_s32(mask, Square(vget_low_s16(a)));
+  c = vaddq_s32(c, Square(vget_high_s16(a)));
+  c = vmulq_n_s32(c, kDivisionTable[7]);
+
+  c = vmlaq_s32(c, Square(vget_low_s16(a)), division_table[0]);
+  c = vmlaq_s32(c, Square(vget_low_s16(b)), division_table[1]);
+  return SumVector(c);
+}
+
+void CdefDirection_NEON(const void* const source, ptrdiff_t stride,
+                        int* const direction, int* const variance) {
+  assert(direction != nullptr);
+  assert(variance != nullptr);
+  const auto* src = static_cast<const uint8_t*>(source);
+  int32_t cost[8];
+  int16x8_t partial_lo[8], partial_hi[8];
+  const uint8x8_t c128 = vdup_n_u8(128);
+
+  for (int i = 0; i < 8; ++i) {
+    partial_lo[i] = partial_hi[i] = vdupq_n_s16(0);
+  }
+
+  const int8x8_t src_row0 = vreinterpret_s8_u8(vsub_u8(vld1_u8(src), c128));
+  src += stride;
+  AddPartial<0>(src_row0, partial_lo, partial_hi);
+  const int8x8_t src_row1 = vreinterpret_s8_u8(vsub_u8(vld1_u8(src), c128));
+  src += stride;
+  AddPartial<1>(src_row1, partial_lo, partial_hi);
+  const int8x8_t src_row2 = vreinterpret_s8_u8(vsub_u8(vld1_u8(src), c128));
+  src += stride;
+  AddPartial<2>(src_row2, partial_lo, partial_hi);
+  const int8x8_t src_row3 = vreinterpret_s8_u8(vsub_u8(vld1_u8(src), c128));
+  src += stride;
+  AddPartial<3>(src_row3, partial_lo, partial_hi);
+  const int8x8_t src_row4 = vreinterpret_s8_u8(vsub_u8(vld1_u8(src), c128));
+  src += stride;
+  AddPartial<4>(src_row4, partial_lo, partial_hi);
+  const int8x8_t src_row5 = vreinterpret_s8_u8(vsub_u8(vld1_u8(src), c128));
+  src += stride;
+  AddPartial<5>(src_row5, partial_lo, partial_hi);
+  const int8x8_t src_row6 = vreinterpret_s8_u8(vsub_u8(vld1_u8(src), c128));
+  src += stride;
+  AddPartial<6>(src_row6, partial_lo, partial_hi);
+  const int8x8_t src_row7 = vreinterpret_s8_u8(vsub_u8(vld1_u8(src), c128));
+  AddPartial<7>(src_row7, partial_lo, partial_hi);
+
+  // TODO(johannkoenig): Try to figure out when these need to move up to
+  // int32_t. May be able to put it off for a bit.
+
+  cost[2] = SquareAccumulate(partial_lo[2], partial_hi[2]);
+  cost[6] = SquareAccumulate(partial_lo[6], partial_hi[6]);
+
+  const int32x4_t division_table[4] = {
+      vld1q_s32(kDivisionTable), vld1q_s32(kDivisionTable + 4),
+      vld1q_s32(kDivisionTable + 8), vld1q_s32(kDivisionTable + 12)};
+
+  cost[0] = Cost0Or4(partial_lo[0], partial_hi[0], division_table);
+  cost[4] = Cost0Or4(partial_lo[4], partial_hi[4], division_table);
+
+  const int32x4_t division_table_odd[2] = {vld1q_s32(kDivisionTableOdd),
+                                           vld1q_s32(kDivisionTableOdd + 4)};
+
+  const int32x4_t element_3_mask = {0, 0, 0, -1};
+
+  cost[1] =
+      CostOdd(partial_lo[1], partial_hi[1], element_3_mask, division_table_odd);
+  cost[3] =
+      CostOdd(partial_lo[3], partial_hi[3], element_3_mask, division_table_odd);
+  cost[5] =
+      CostOdd(partial_lo[5], partial_hi[5], element_3_mask, division_table_odd);
+  cost[7] =
+      CostOdd(partial_lo[7], partial_hi[7], element_3_mask, division_table_odd);
+
+  int32_t best_cost = 0;
+  *direction = 0;
+  for (int i = 0; i < 8; ++i) {
+    if (cost[i] > best_cost) {
+      best_cost = cost[i];
+      *direction = i;
+    }
+  }
+  *variance = (best_cost - cost[(*direction + 4) & 7]) >> 10;
+}
+
 // TODO(johannkoenig): Dedup these constants.
+// CdefFilter:
 constexpr int kBitdepth8 = 8;
 
 constexpr uint16_t kCdefLargeValue = 0x4000;
@@ -363,6 +625,7 @@ void CdefFilter_NEON(const void* const source, const ptrdiff_t source_stride,
 void Init8bpp() {
   Dsp* const dsp = dsp_internal::GetWritableDspTable(kBitdepth8);
   assert(dsp != nullptr);
+  dsp->cdef_direction = CdefDirection_NEON;
   dsp->cdef_filter = CdefFilter_NEON;
 }
 
