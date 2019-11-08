@@ -50,6 +50,10 @@ Configuration options:
 *   `LIBGAV1_LOG_LEVEL`: controls the maximum allowed log level, see `enum
     LogSeverity` in `src/utils/logging.h`. Automatically defined in
     `src/utils/logging.cc` if unset.
+*   `LIBGAV1_THREADPOOL_USE_STD_MUTEX`: controls use of std::mutex and
+    absl::Mutex in ThreadPool. Defining this to 1 will remove any Abseil
+    dependency from the core library. Automatically defined in
+    `src/utils/threadpool.h` if unset.
 
 For additional options see:
 

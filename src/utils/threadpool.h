@@ -24,17 +24,23 @@
 #include <TargetConditionals.h>
 #endif
 
+#if !defined(LIBGAV1_THREADPOOL_USE_STD_MUTEX)
 #if defined(__ANDROID__) || (defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE)
+#define LIBGAV1_THREADPOOL_USE_STD_MUTEX 1
+#else
+#define LIBGAV1_THREADPOOL_USE_STD_MUTEX 0
+#endif
+#endif
+
+#if LIBGAV1_THREADPOOL_USE_STD_MUTEX
 #include <condition_variable>  // NOLINT (unapproved c++11 header)
 #include <mutex>               // NOLINT (unapproved c++11 header)
-#define LIBGAV1_THREADPOOL_USE_STD_MUTEX 1
 #else
 // absl::Mutex & absl::CondVar are significantly faster than the pthread
 // variants on platforms other than Android. iOS may deadlock on Shutdown()
 // using absl, see b/142251739.
 #include "absl/base/thread_annotations.h"
 #include "absl/synchronization/mutex.h"
-#define LIBGAV1_THREADPOOL_USE_STD_MUTEX 0
 #endif
 
 #include "src/utils/compiler_attributes.h"
