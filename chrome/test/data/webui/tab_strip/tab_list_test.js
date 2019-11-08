@@ -511,4 +511,15 @@ suite('TabList', () => {
     assertEquals(
         testTabsApiProxy.getCallCount('setThumbnailTracked'), tabs.length);
   });
+
+  test(
+      'focusing and blurring the window focuses and blurs the first tab',
+      () => {
+        window.dispatchEvent(new Event('focus'));
+        assertEquals(document.activeElement, tabList);
+        assertEquals(tabList.shadowRoot.activeElement, getUnpinnedTabs()[0]);
+
+        window.dispatchEvent(new Event('blur'));
+        assertEquals(tabList.shadowRoot.activeElement, null);
+      });
 });

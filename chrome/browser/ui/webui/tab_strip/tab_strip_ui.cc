@@ -460,6 +460,7 @@ TabStripUI::TabStripUI(content::WebUI* web_ui)
       base::FeatureList::IsEnabled(features::kWebUITabStripDemoOptions));
 
   static constexpr LocalizedString kStrings[] = {
+      {"tabListTitle", IDS_ACCNAME_TAB_LIST},
       {"closeTab", IDS_ACCNAME_CLOSE},
       {"tabCrashed", IDS_TAB_AX_LABEL_CRASHED_FORMAT},
       {"tabNetworkError", IDS_TAB_AX_LABEL_NETWORK_ERROR_FORMAT},
