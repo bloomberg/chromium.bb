@@ -373,7 +373,7 @@ class InterceptionJob : public network::mojom::URLLoaderClient,
   std::unique_ptr<CreateLoaderParameters> create_loader_params_;
   const bool is_download_;
 
-  mojo::Binding<network::mojom::URLLoaderClient> client_binding_;
+  mojo::Receiver<network::mojom::URLLoaderClient> client_receiver_{this};
   mojo::Receiver<network::mojom::URLLoader> loader_receiver_{this};
 
   network::mojom::URLLoaderClientPtr client_;
@@ -676,7 +676,6 @@ InterceptionJob::InterceptionJob(
       interceptor_(interceptor),
       create_loader_params_(std::move(create_loader_params)),
       is_download_(is_download),
-      client_binding_(this),
       client_(std::move(client)),
       target_factory_(std::move(target_factory)),
       cookie_manager_(std::move(cookie_manager)),
@@ -785,7 +784,7 @@ void InterceptionJob::GetResponseBody(
   if (!body_reader_) {
     body_reader_ = std::make_unique<BodyReader>(base::BindOnce(
         &InterceptionJob::ResponseBodyComplete, base::Unretained(this)));
-    client_binding_.ResumeIncomingMethodCallProcessing();
+    client_receiver_.Resume();
     loader_->ResumeReadingBodyFromNet();
   }
   body_reader_->AddCallback(std::move(callback));
@@ -804,7 +803,7 @@ void InterceptionJob::TakeResponseBodyPipe(
   DCHECK(!!response_metadata_);
   state_ = State::kResponseTaken;
   pending_response_body_pipe_callback_ = std::move(callback);
-  client_binding_.ResumeIncomingMethodCallProcessing();
+  client_receiver_.Resume();
   loader_->ResumeReadingBodyFromNet();
 }
 
@@ -921,7 +920,7 @@ Response InterceptionJob::InnerContinueRequest(
     client_->OnReceiveResponse(response_metadata_->head);
     response_metadata_.reset();
     loader_->ResumeReadingBodyFromNet();
-    client_binding_.ResumeIncomingMethodCallProcessing();
+    client_receiver_.Resume();
     return Response::OK();
   }
 
@@ -1166,8 +1165,8 @@ void InterceptionJob::StartRequest() {
   state_ = State::kRequestSent;
 
   network::mojom::URLLoaderClientPtr loader_client;
-  client_binding_.Bind(MakeRequest(&loader_client));
-  client_binding_.set_connection_error_handler(
+  client_receiver_.Bind(MakeRequest(&loader_client));
+  client_receiver_.set_disconnect_handler(
       base::BindOnce(&InterceptionJob::Shutdown, base::Unretained(this)));
 
   target_factory_->CreateLoaderAndStart(
@@ -1183,7 +1182,7 @@ void InterceptionJob::StartRequest() {
 void InterceptionJob::CancelRequest() {
   if (state_ == State::kNotStarted)
     return;
-  client_binding_.Close();
+  client_receiver_.reset();
   loader_.reset();
   if (body_reader_) {
     body_reader_->CancelWithError(
@@ -1348,7 +1347,7 @@ void InterceptionJob::OnReceiveResponse(
     return;
   }
   loader_->PauseReadingBodyFromNet();
-  client_binding_.PauseIncomingMethodCallProcessing();
+  client_receiver_.Pause();
 
   response_metadata_ = std::make_unique<ResponseMetadata>(head);
 
@@ -1429,9 +1428,9 @@ void InterceptionJob::OnComplete(
     return;
   }
   response_metadata_->status = status;
-  // No need to listen to the channel any more, so just close it, so if the pipe
+  // No need to listen to the channel any more, so just reset it, so if the pipe
   // is closed by the other end, |shutdown| isn't run.
-  client_binding_.Close();
+  client_receiver_.reset();
   loader_.reset();
 }
 
