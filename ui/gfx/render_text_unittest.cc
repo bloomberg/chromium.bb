@@ -5770,7 +5770,7 @@ TEST_F(RenderTextTest, ZeroWidthCharacters) {
 
 // Ensure that the width reported by RenderText is sufficient for drawing. Draws
 // to a canvas and checks if any pixel beyond the bounding rectangle is colored.
-TEST_F(RenderTextTest, TextDoesntClip) {
+TEST_F(RenderTextTest, DISABLED_TextDoesntClip) {
   const char* kTestStrings[] = {
       "            ",
       // TODO(dschuyler): Underscores draw outside GetStringSize;
@@ -5850,7 +5850,7 @@ TEST_F(RenderTextTest, TextDoesntClip) {
 
 // Ensure that the text will clip to the display rect. Draws to a canvas and
 // checks whether any pixel beyond the bounding rectangle is colored.
-TEST_F(RenderTextTest, TextDoesClip) {
+TEST_F(RenderTextTest, DISABLED_TextDoesClip) {
   const char* kTestStrings[] = {"TEST", "W", "WWWW", "gAXAXWWWW"};
   const Size kCanvasSize(300, 50);
   const int kTestSize = 10;
