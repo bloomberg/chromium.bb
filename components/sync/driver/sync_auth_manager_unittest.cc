@@ -139,7 +139,7 @@ TEST_F(SyncAuthManagerTest, ForwardsPrimaryAccountEvents) {
 
 TEST_F(SyncAuthManagerTest, NotifiesOfSignoutBeforeAccessTokenIsGone) {
   // Start out already signed in before the SyncAuthManager is created.
-  std::string account_id =
+  CoreAccountId account_id =
       identity_env()->MakePrimaryAccountAvailable("test@email.com").account_id;
 
   base::MockCallback<AccountStateChangedCallback> account_state_changed;
