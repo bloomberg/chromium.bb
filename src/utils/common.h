@@ -79,7 +79,10 @@ inline int CountLeadingZeros(uint64_t n) {
       _BitScanReverse64(&first_set_bit, static_cast<unsigned __int64>(n));
 #else   // !defined(HAVE_BITSCANREVERSE64)
   const auto n_hi = static_cast<unsigned long>(n >> 32);  // NOLINT(runtime/int)
-  if (n_hi != 0 && _BitScanReverse(&first_set_bit, n_hi)) {
+  if (n_hi != 0) {
+    const unsigned char bit_set = _BitScanReverse(&first_set_bit, n_hi);
+    assert(bit_set != 0);
+    static_cast<void>(bit_set);
     return 31 - static_cast<int>(first_set_bit);
   }
   const unsigned char bit_set = _BitScanReverse(
