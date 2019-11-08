@@ -537,9 +537,10 @@ goma_mac_builder(
 )
 
 
-def goma_windows_builder(*, name, goma_enable_ats=True, **kwargs):
+def goma_windows_builder(*, name, goma_enable_ats=True, cores=32, **kwargs):
   return goma_builder(
       name = name,
+      cores = cores,
       goma_enable_ats = goma_enable_ats,
       os = os.WINDOWS_DEFAULT,
       **kwargs
@@ -582,5 +583,6 @@ goma_windows_builder(
 
 goma_windows_builder(
     name = 'CrWinGomaStaging',
+    cores = 8,
     goma_enable_ats = False,
 )
