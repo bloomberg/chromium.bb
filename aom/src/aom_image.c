@@ -288,7 +288,8 @@ int aom_img_plane_height(const aom_image_t *img, int plane) {
     return img->d_h;
 }
 
-aom_metadata_t *aom_img_metadata_alloc(uint8_t type, uint8_t *data, size_t sz) {
+aom_metadata_t *aom_img_metadata_alloc(uint32_t type, const uint8_t *data,
+                                       size_t sz) {
   aom_metadata_t *metadata =
       (aom_metadata_t *)calloc(1, sizeof(aom_metadata_t));
   if (!metadata) return NULL;
@@ -345,7 +346,7 @@ size_t aom_img_metadata_array_free(aom_metadata_array_t *arr) {
   return deleted_metadatas;
 }
 
-int aom_img_add_metadata(aom_image_t *img, uint8_t type, uint8_t *data,
+int aom_img_add_metadata(aom_image_t *img, uint32_t type, const uint8_t *data,
                          size_t sz) {
   if (!img) return -1;
   if (!img->metadata) {

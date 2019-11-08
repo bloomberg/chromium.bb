@@ -142,7 +142,7 @@ typedef struct aom_metadata_array aom_metadata_array_t;
 
 /*!\brief Metadata payload. */
 typedef struct aom_metadata {
-  uint8_t type;     /**< Metadata type */
+  uint32_t type;    /**< Metadata type */
   uint8_t *payload; /**< Metadata payload data */
   size_t sz;        /**< Metadata payload size */
 } aom_metadata_t;
@@ -347,7 +347,7 @@ int aom_img_plane_height(const aom_image_t *img, int plane);
  * \param[in]    data      Metadata contents
  * \param[in]    sz        Metadata contents size
  */
-int aom_img_add_metadata(aom_image_t *img, uint8_t type, uint8_t *data,
+int aom_img_add_metadata(aom_image_t *img, uint32_t type, const uint8_t *data,
                          size_t sz);
 
 /*!\brief Remove metadata from image.
@@ -373,7 +373,8 @@ size_t aom_img_remove_metadata(aom_image_t *img);
  * \param[in]    data      Metadata data pointer
  * \param[in]    sz        Metadata size
  */
-aom_metadata_t *aom_img_metadata_alloc(uint8_t type, uint8_t *data, size_t sz);
+aom_metadata_t *aom_img_metadata_alloc(uint32_t type, const uint8_t *data,
+                                       size_t sz);
 
 /*!\brief Free metadata struct.
  *
