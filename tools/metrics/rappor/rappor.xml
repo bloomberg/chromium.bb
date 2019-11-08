@@ -205,23 +205,6 @@ components/rappor/rappor_parameters.h.
   </summary>
 </rappor-metric>
 
-<rappor-metric name="PowerfulFeatureUse.Host.DeviceMotion.Insecure"
-    type="ETLD_PLUS_ONE">
-  <owner>jww@chromium.org</owner>
-  <summary>
-    The host of the URL that uses the device motion API from an insecure origin.
-  </summary>
-</rappor-metric>
-
-<rappor-metric name="PowerfulFeatureUse.Host.DeviceOrientation.Insecure"
-    type="ETLD_PLUS_ONE">
-  <owner>jww@chromium.org</owner>
-  <summary>
-    The host of the URL that uses the device orientation API from an insecure
-    origin.
-  </summary>
-</rappor-metric>
-
 <rappor-metric name="PowerfulFeatureUse.Host.Fullscreen.Insecure"
     type="ETLD_PLUS_ONE">
   <owner>jww@chromium.org</owner>
