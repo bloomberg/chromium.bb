@@ -231,6 +231,10 @@ enum class TaskType : unsigned char {
   // WebSchedulingTaskQueues.
   kExperimentalWebScheduling = 67,
 
+  // Tasks used to control frame lifecycle - they should run even when the frame
+  // is frozen.
+  kInternalFrameLifecycleControl = 68,
+
   ///////////////////////////////////////
   // The following task types are only for thread-local queues.
   ///////////////////////////////////////
@@ -254,7 +258,7 @@ enum class TaskType : unsigned char {
   kWorkerThreadTaskQueueV8 = 47,
   kWorkerThreadTaskQueueCompositor = 48,
 
-  kCount = 68,
+  kCount = 69,
 };
 
 }  // namespace blink

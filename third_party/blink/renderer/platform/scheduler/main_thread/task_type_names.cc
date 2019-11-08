@@ -135,6 +135,8 @@ const char* TaskTypeNames::TaskTypeToString(TaskType task_type) {
       return "InternalContinueScriptLoading";
     case TaskType::kExperimentalWebScheduling:
       return "ExperimentalWebScheduling";
+    case TaskType::kInternalFrameLifecycleControl:
+      return "InternalFrameLifecycleControl";
     case TaskType::kCount:
       return "Count";
   }

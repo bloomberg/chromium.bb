@@ -483,6 +483,7 @@ base::Optional<QueueTraits> FrameSchedulerImpl::CreateQueueTraitsForTaskType(
     // kWebLocks can be frozen if for entire page, but not for individual
     // frames. See https://crrev.com/c/1687716
     case TaskType::kWebLocks:
+    case TaskType::kInternalFrameLifecycleControl:
       return UnpausableTaskQueueTraits();
     case TaskType::kInternalTranslation:
       return ForegroundOnlyTaskQueueTraits();
