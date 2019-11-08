@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/web/public/test/crw_mock_web_state_delegate.h"
+#import "ios/web/public/test/crw_fake_web_state_delegate.h"
 
 #import "ios/web/public/ui/context_menu_params.h"
 #import "ios/web/public/web_state.h"
@@ -11,7 +11,7 @@
 #error "This file requires ARC support."
 #endif
 
-@implementation CRWMockWebStateDelegate {
+@implementation CRWFakeWebStateDelegate {
   // Backs up the property with the same name.
   std::unique_ptr<web::WebState::OpenURLParams> _openURLParams;
   // Backs up the property with the same name.
