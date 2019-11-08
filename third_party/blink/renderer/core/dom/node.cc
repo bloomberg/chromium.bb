@@ -1314,9 +1314,11 @@ void Node::MarkAncestorsWithChildNeedsStyleRecalc() {
       ContainerNode* style_parent = ancestor;
       while (style_parent && !style_parent->CanParticipateInFlatTree())
         style_parent = style_parent->GetStyleRecalcParent();
-      if (style_parent &&
-          style_parent->GetComputedStyle()->IsEnsuredOutsideFlatTree()) {
-        return;
+      if (style_parent) {
+        if (const auto* parent_style = style_parent->GetComputedStyle()) {
+          if (parent_style->IsEnsuredOutsideFlatTree())
+            return;
+        }
       }
     }
   }
