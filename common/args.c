@@ -56,14 +56,14 @@ static const char kMinpartWarningString[] =
 static const char kMaxpartWarningString[] =
     "max_partition_size has to be smaller or equal to super_block_size.";
 
-int parse_cfg(const char *file, cfg_options_t *pConfig) {
+int parse_cfg(const char *file, cfg_options_t *config) {
   char line[1024 * 10];
   FILE *f = fopen(file, "r");
   if (!f) return 1;
 
 #define GET_PARAMS(field)          \
   if (strcmp(left, #field) == 0) { \
-    pConfig->field = atoi(right);  \
+    config->field = atoi(right);   \
     continue;                      \
   }
 
@@ -126,21 +126,21 @@ int parse_cfg(const char *file, cfg_options_t *pConfig) {
     exit(-1);
   }
 
-  if (pConfig->super_block_size != 128 && pConfig->super_block_size != 64) {
+  if (config->super_block_size != 128 && config->super_block_size != 64) {
     fprintf(stderr, "\n%s", kSbSizeWarningString);
     exit(-1);
   }
-  if (pConfig->min_partition_size > pConfig->max_partition_size) {
+  if (config->min_partition_size > config->max_partition_size) {
     fprintf(stderr, "\n%s", kMinpartWarningString);
     exit(-1);
   }
-  if (pConfig->max_partition_size > pConfig->super_block_size) {
+  if (config->max_partition_size > config->super_block_size) {
     fprintf(stderr, "\n%s", kMaxpartWarningString);
     exit(-1);
   }
 
   fclose(f);
-  pConfig->init_by_cfg_file = 1;
+  config->init_by_cfg_file = 1;
 
   return 0;
 }
