@@ -24,26 +24,20 @@ Typical output looks like this:
 ninja.exe -C out\debug_component base -j 960 -l 48  -d keeprsp
 ninja: Entering directory `out\debug_component'
 [1 processes, 1/1 @ 0.3/s : 3.092s ] Regenerating ninja files
-[1 processes, 23/23 @ 0.9/s : 26.280s ] LINK(DLL) base.dll base.dll.lib
-    Longest build steps:
-           0.9 weighted s to build obj/base/base_jumbo_17.obj (5.0 s CPU time)
-           1.0 weighted s to build obj/base/base_jumbo_31.obj (13.1 s CPU time)
-           1.2 weighted s to build obj/base/base_jumbo_4.obj (14.7 s CPU time)
-           1.3 weighted s to build obj/base/base_jumbo_32.obj (15.0 s CPU time)
-           1.6 weighted s to build obj/base/base_jumbo_26.obj (17.1 s CPU time)
-           1.7 weighted s to build base.dll, base.dll.lib (1.7 s CPU time)
-           1.7 weighted s to build obj/base/base_jumbo_11.obj (15.9 s CPU time)
-           1.9 weighted s to build obj/base/base_jumbo_12.obj (18.5 s CPU time)
-           3.6 weighted s to build obj/base/base_jumbo_34.obj (20.1 s CPU time)
-           4.3 weighted s to build obj/base/base_jumbo_33.obj (22.3 s CPU time)
-    Time by build-step type:
-           0.1 s weighted time to generate 1 .c files (0.1 s CPU time)
-           0.1 s weighted time to generate 1 .stamp files (0.1 s CPU time)
-           0.2 s weighted time to generate 1 .h files (0.2 s CPU time)
-           1.7 s weighted time to generate 1 PEFile files (1.7 s CPU time)
-          24.3 s weighted time to generate 19 .obj files (233.4 s CPU time)
-    26.3 s weighted time (235.5 s CPU time, 9.0x parallelism)
-    23 build steps completed, average of 0.88/s
+Longest build steps:
+       0.1 weighted s to build obj/base/base/trace_log.obj (6.7 s elapsed time)
+       0.2 weighted s to build nasm.exe, nasm.exe.pdb (0.2 s elapsed time)
+       0.3 weighted s to build obj/base/base/win_util.obj (12.4 s elapsed time)
+       1.2 weighted s to build base.dll, base.dll.lib (1.2 s elapsed time)
+Time by build-step type:
+       0.0 s weighted time to generate 6 .lib files (0.3 s elapsed time sum)
+       0.1 s weighted time to generate 25 .stamp files (1.2 s elapsed time sum)
+       0.2 s weighted time to generate 20 .o files (2.8 s elapsed time sum)
+       1.7 s weighted time to generate 4 PEFile (linking) files (2.0 s elapsed
+time sum)
+      23.9 s weighted time to generate 770 .obj files (974.8 s elapsed time sum)
+26.1 s weighted time (982.9 s elapsed time sum, 37.7x parallelism)
+839 build steps completed, average of 32.17/s
 
 If no gn clean has been done then results will be for the last non-NULL
 invocation of ninja. Ideas for future statistics, and implementations are
@@ -265,7 +259,7 @@ def SummarizeEntries(entries):
     print('    Longest build steps:')
     entries.sort(key=lambda x: x.WeightedDuration())
     for target in entries[-long_count:]:
-      print('      %8.1f weighted s to build %s (%.1f s CPU time)' % (
+      print('      %8.1f weighted s to build %s (%.1f s elapsed time)' % (
             target.WeightedDuration(),
             target.DescribeTargets(), target.Duration()))
 
@@ -288,11 +282,11 @@ def SummarizeEntries(entries):
     # Print the slowest build target types (by weighted time):
     for time, extension in weighted_time_by_ext_sorted[-long_ext_count:]:
         print('      %8.1f s weighted time to generate %d %s files '
-               '(%1.1f s CPU time)' % (time, count_by_ext[extension],
+               '(%1.1f s elapsed time sum)' % (time, count_by_ext[extension],
                                         extension, time_by_ext[extension]))
 
-    print('    %.1f s weighted time (%.1f s CPU time, %1.1fx parallelism)' % (
-          length, total_cpu_time,
+    print('    %.1f s weighted time (%.1f s elapsed time sum, %1.1fx '
+          'parallelism)' % (length, total_cpu_time,
           total_cpu_time * 1.0 / length))
     print('    %d build steps completed, average of %1.2f/s' % (
           len(entries), len(entries) / (length)))
