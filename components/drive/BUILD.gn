@@ -17,22 +17,10 @@ static_library("drive") {
     "drive_uploader.h",
     "event_logger.cc",
     "event_logger.h",
-    "file_change.cc",
-    "file_change.h",
     "file_errors.cc",
     "file_errors.h",
     "file_system_core_util.cc",
     "file_system_core_util.h",
-    "file_system_metadata.cc",
-    "file_system_metadata.h",
-    "file_write_watcher.cc",
-    "file_write_watcher.h",
-    "job_list.cc",
-    "job_list.h",
-    "job_queue.cc",
-    "job_queue.h",
-    "resource_entry_conversion.cc",
-    "resource_entry_conversion.h",
     "resource_metadata_storage.cc",
     "resource_metadata_storage.h",
     "service/drive_api_service.cc",
@@ -42,17 +30,11 @@ static_library("drive") {
   ]
   deps = [
     "//base",
-    "//base:i18n",
     "//components/invalidation/public",
     "//components/keyed_service/core",
-    "//components/prefs",
-
-    # TODO(lukasza): Remove this dependency (see DEPS file for more info).
-    "//content/public/browser",
-    "//google_apis",
     "//google_apis/drive",
-    "//net",
     "//services/device/public/mojom",
+    "//services/network/public/cpp:cpp",
     "//third_party/cacheinvalidation",
     "//third_party/leveldatabase",
     "//third_party/re2",
@@ -80,11 +62,7 @@ static_library("test_support") {
   ]
   deps = [
     ":drive",
-    ":proto",
     "//base",
-    "//components/prefs:test_support",
-    "//content/test:test_support",
-    "//google_apis:test_support",
     "//google_apis/drive:test_support",
     "//net:net",
   ]
@@ -101,9 +79,6 @@ if (is_chromeos) {
       "//base",
       "//base:i18n",
       "//net",
-    ]
-    public_deps = [
-      ":proto",
     ]
   }
 }
