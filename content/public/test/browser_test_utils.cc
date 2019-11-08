@@ -135,7 +135,6 @@
 #if defined(OS_WIN)
 #include <uiautomation.h>
 #include <wrl/client.h>
-#include "base/win/atl.h"
 #include "base/win/scoped_safearray.h"
 #include "base/win/scoped_variant.h"
 #endif
@@ -2106,14 +2105,15 @@ void UiaGetPropertyValueVtArrayVtUnknownValidate(
 
   std::vector<std::string> names;
   for (LONG i = 0; i < size; ++i) {
-    CComPtr<IUnknown> unknown_element = nullptr;
-    ASSERT_HRESULT_SUCCEEDED(SafeArrayGetElement(V_ARRAY(result_variant.ptr()),
-                                                 &i, &unknown_element));
+    Microsoft::WRL::ComPtr<IUnknown> unknown_element;
+    ASSERT_HRESULT_SUCCEEDED(
+        SafeArrayGetElement(V_ARRAY(result_variant.ptr()), &i,
+                            static_cast<void**>(&unknown_element)));
     ASSERT_NE(nullptr, unknown_element);
 
-    CComPtr<IRawElementProviderSimple> raw_element_provider_simple = nullptr;
-    ASSERT_HRESULT_SUCCEEDED(
-        unknown_element->QueryInterface(&raw_element_provider_simple));
+    Microsoft::WRL::ComPtr<IRawElementProviderSimple>
+        raw_element_provider_simple;
+    ASSERT_HRESULT_SUCCEEDED(unknown_element.As(&raw_element_provider_simple));
     ASSERT_NE(nullptr, raw_element_provider_simple);
 
     base::win::ScopedVariant name;

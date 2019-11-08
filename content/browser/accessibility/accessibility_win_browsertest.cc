@@ -3788,10 +3788,10 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestIScrollProvider) {
 
     BrowserAccessibilityComWin* browser_accessibility_com_win =
         ToBrowserAccessibilityWin(browser_accessibility)->GetCOM();
-    CComPtr<IScrollProvider> scroll_provider;
+    Microsoft::WRL::ComPtr<IScrollProvider> scroll_provider;
 
     EXPECT_HRESULT_SUCCEEDED(browser_accessibility_com_win->GetPatternProvider(
-        UIA_ScrollPatternId, reinterpret_cast<IUnknown**>(&scroll_provider)));
+        UIA_ScrollPatternId, &scroll_provider));
 
     if (expected.can_scroll_vertical || expected.can_scroll_horizontal) {
       ASSERT_NE(nullptr, scroll_provider);
