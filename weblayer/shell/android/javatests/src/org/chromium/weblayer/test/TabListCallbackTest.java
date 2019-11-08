@@ -110,7 +110,7 @@ public class TabListCallbackTest {
     public void testActiveTabChanged() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             TabListCallbackImpl callback = new TabListCallbackImpl();
-            mActivity.getBrowser().addTabListCallback(callback);
+            mActivity.getBrowser().registerTabListCallback(callback);
             mActivity.getBrowser().setActiveTab(mFirstTab);
             Assert.assertTrue(callback.getObservedValues().contains(TabListCallbackImpl.ACTIVE));
         });
@@ -124,10 +124,10 @@ public class TabListCallbackTest {
                     Browser.fromFragment(mActivity.createBrowserFragment(0, new Bundle()));
             Browser browser1 = mActivity.getBrowser();
             TabListCallbackImpl callback1 = new TabListCallbackImpl();
-            browser1.addTabListCallback(callback1);
+            browser1.registerTabListCallback(callback1);
 
             TabListCallbackImpl callback2 = new TabListCallbackImpl();
-            browser2.addTabListCallback(callback2);
+            browser2.registerTabListCallback(callback2);
 
             // Move the active tab from browser1 to browser2.
             Tab tabToMove = browser1.getActiveTab();
@@ -157,7 +157,7 @@ public class TabListCallbackTest {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             TabListCallbackImpl callback = new TabListCallbackImpl();
             Browser browser = mActivity.getBrowser();
-            browser.addTabListCallback(callback);
+            browser.registerTabListCallback(callback);
             browser.destroyTab(mActivity.getBrowser().getActiveTab());
             Assert.assertTrue(callback.getObservedValues().contains(TabListCallbackImpl.ACTIVE));
             Assert.assertEquals(1, browser.getTabs().size());

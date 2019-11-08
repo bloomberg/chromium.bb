@@ -93,6 +93,7 @@ public final class Tab {
         mBrowser = browser;
     }
 
+    @NonNull
     public Browser getBrowser() {
         ThreadCheck.ensureOnUiThread();
         return mBrowser;
@@ -128,6 +129,7 @@ public final class Tab {
         }
     }
 
+    @Nullable
     public DownloadCallback getDownloadCallback() {
         ThreadCheck.ensureOnUiThread();
         return mDownloadCallbackClient != null ? mDownloadCallbackClient.getCallback() : null;
@@ -207,7 +209,7 @@ public final class Tab {
         public void visibleUrlChanged(String url) {
             Uri uri = Uri.parse(url);
             for (TabCallback callback : mCallbacks) {
-                callback.visibleUrlChanged(uri);
+                callback.onVisibleUrlChanged(uri);
             }
         }
 
@@ -238,7 +240,7 @@ public final class Tab {
         @Override
         public void downloadRequested(String url, String userAgent, String contentDisposition,
                 String mimetype, long contentLength) {
-            mCallback.downloadRequested(
+            mCallback.onDownloadRequested(
                     url, userAgent, contentDisposition, mimetype, contentLength);
         }
     }
@@ -258,12 +260,12 @@ public final class Tab {
         public void enterFullscreen(IObjectWrapper exitFullscreenWrapper) {
             ValueCallback<Void> exitFullscreenCallback = (ValueCallback<Void>) ObjectWrapper.unwrap(
                     exitFullscreenWrapper, ValueCallback.class);
-            mCallback.enterFullscreen(() -> exitFullscreenCallback.onReceiveValue(null));
+            mCallback.onEnterFullscreen(() -> exitFullscreenCallback.onReceiveValue(null));
         }
 
         @Override
         public void exitFullscreen() {
-            mCallback.exitFullscreen();
+            mCallback.onExitFullscreen();
         }
     }
 }

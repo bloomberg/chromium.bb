@@ -41,13 +41,13 @@ public class FullscreenCallbackTest {
         public Runnable mExitFullscreenRunnable;
 
         @Override
-        public void enterFullscreen(Runnable exitFullscreenRunner) {
+        public void onEnterFullscreen(Runnable exitFullscreenRunner) {
             mEnterFullscreenCount++;
             mExitFullscreenRunnable = exitFullscreenRunner;
         }
 
         @Override
-        public void exitFullscreen() {
+        public void onExitFullscreen() {
             mExitFullscreenCount++;
         }
 

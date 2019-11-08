@@ -47,7 +47,7 @@ public class DownloadCallbackTest {
         public long mContentLength;
 
         @Override
-        public void downloadRequested(String url, String userAgent, String contentDisposition,
+        public void onDownloadRequested(String url, String userAgent, String contentDisposition,
                 String mimetype, long contentLength) {
             mUrl = url;
             mUserAgent = userAgent;

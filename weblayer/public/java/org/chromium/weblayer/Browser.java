@@ -162,7 +162,7 @@ public final class Browser {
      *
      * @param callback The TabListCallback.
      */
-    public void addTabListCallback(@NonNull TabListCallback callback) {
+    public void registerTabListCallback(@NonNull TabListCallback callback) {
         ThreadCheck.ensureOnUiThread();
         mTabListCallbacks.addObserver(callback);
     }
@@ -172,7 +172,7 @@ public final class Browser {
      *
      * @param callback The TabListCallback.
      */
-    public void removeTabListCallback(@NonNull TabListCallback callback) {
+    public void unregisterTabListCallback(@NonNull TabListCallback callback) {
         ThreadCheck.ensureOnUiThread();
         mTabListCallbacks.removeObserver(callback);
     }

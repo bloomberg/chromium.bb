@@ -46,7 +46,7 @@ public class InstrumentationActivityTestRule extends ActivityTestRule<Instrument
 
         private NavigationCallback mNavigationCallback = new NavigationCallback() {
             @Override
-            public void navigationCompleted(Navigation navigation) {
+            public void onNavigationCompleted(Navigation navigation) {
                 if (navigation.getUri().toString().equals(mUrl)) {
                     mNavigationComplete = true;
                     checkComplete();
@@ -54,7 +54,7 @@ public class InstrumentationActivityTestRule extends ActivityTestRule<Instrument
             }
 
             @Override
-            public void loadStateChanged(boolean isLoading, boolean toDifferentDocument) {
+            public void onLoadStateChanged(boolean isLoading, boolean toDifferentDocument) {
                 mDoneLoading = !isLoading;
                 checkComplete();
             }
