@@ -1386,7 +1386,6 @@ crbug.com/591099 virtual/layout_ng_flex_box/css3/flexbox/auto-height-column-with
 crbug.com/591099 virtual/layout_ng_flex_box/css3/flexbox/flex-align-vertical-writing-mode.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_flex_box/css3/flexbox/flex-align.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_flex_box/css3/flexbox/flex-flow-2.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_flex_box/css3/flexbox/flex-flow-auto-margins.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_flex_box/css3/flexbox/flex-flow-border.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_flex_box/css3/flexbox/flex-flow-margins-auto-size.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_flex_box/css3/flexbox/flex-flow-padding.html [ Failure ]
@@ -1447,10 +1446,6 @@ crbug.com/591099 virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/table-a
 crbug.com/591099 virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/ttwf-reftest-flex-inline.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/hittest-overlapping-margin.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/hittest-overlapping-order.html [ Failure ]
-
-### virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/flex-lines/
-crbug.com/591099 virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/flex-lines/multi-line-wrap-reverse-column-reverse.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/flex-lines/multi-line-wrap-with-column-reverse.html [ Failure ]
 
 ### virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/getcomputedstyle/
 crbug.com/467127 virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/getcomputedstyle/flexbox_computedstyle_flex-basis-0percent.html [ Failure ]
