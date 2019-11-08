@@ -11,6 +11,7 @@
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
+#include "components/prefs/scoped_user_pref_update.h"
 #include "services/preferences/public/cpp/pref_service_factory.h"
 #include "services/service_manager/public/cpp/connector.h"
 
@@ -34,7 +35,6 @@ AppServiceImpl::AppServiceImpl(service_manager::Connector* connector) {
   if (connector) {
     ConnectToPrefService(connector);
   }
-  InitializePreferredApps();
 }
 
 AppServiceImpl::~AppServiceImpl() = default;
@@ -81,7 +81,9 @@ void AppServiceImpl::RegisterSubscriber(
   // TODO: store the opts somewhere.
 
   // Initialise the Preferred Apps in the Subscribers on register.
-  subscriber->InitializePreferredApps(preferred_apps_.GetValue());
+  if (preferred_apps_.IsInitialized()) {
+    subscriber->InitializePreferredApps(preferred_apps_.GetValue());
+  }
 
   // Add the new subscriber to the set.
   subscribers_.Add(std::move(subscriber));
@@ -173,7 +175,20 @@ void AppServiceImpl::AddPreferredApp(apps::mojom::AppType app_type,
                                      const std::string& app_id,
                                      apps::mojom::IntentFilterPtr intent_filter,
                                      apps::mojom::IntentPtr intent) {
+  // TODO(crbug.com/853604): Solve the issue where user set preferred app
+  // before pref connected.
+  if (!preferred_apps_.IsInitialized()) {
+    return;
+  }
+
   preferred_apps_.AddPreferredApp(app_id, intent_filter);
+
+  if (pref_service_) {
+    DictionaryPrefUpdate update(pref_service_.get(), kAppServicePreferredApps);
+    DCHECK(PreferredApps::VerifyPreferredApps(update.Get()));
+    PreferredApps::AddPreferredApp(app_id, intent_filter, update.Get());
+  }
+
   for (auto& subscriber : subscribers_) {
     subscriber->OnPreferredAppSet(app_id, intent_filter->Clone());
   }
@@ -186,17 +201,21 @@ void AppServiceImpl::AddPreferredApp(apps::mojom::AppType app_type,
                                   std::move(intent));
 }
 
-void AppServiceImpl::OnPublisherDisconnected(apps::mojom::AppType app_type) {
-  publishers_.erase(app_type);
-}
-
 PreferredApps& AppServiceImpl::GetPreferredAppsForTesting() {
   return preferred_apps_;
 }
 
+void AppServiceImpl::OnPublisherDisconnected(apps::mojom::AppType app_type) {
+  publishers_.erase(app_type);
+}
+
 void AppServiceImpl::InitializePreferredApps() {
-  // TODO(crbug.com/853604): Initialise from disk.
-  preferred_apps_.Init(nullptr);
+  DCHECK(pref_service_);
+  preferred_apps_.Init(
+      pref_service_->GetDictionary(kAppServicePreferredApps)->CreateDeepCopy());
+  for (auto& subscriber : subscribers_) {
+    subscriber->InitializePreferredApps(preferred_apps_.GetValue());
+  }
 }
 
 void AppServiceImpl::ConnectToPrefService(
@@ -218,12 +237,13 @@ void AppServiceImpl::ConnectToPrefService(
 
 void AppServiceImpl::OnPrefServiceConnected(
     std::unique_ptr<PrefService> pref_service) {
-  if (!pref_service)
+  if (!pref_service) {
+    // TODO(crbug.com/853604): Handle if not successfully connected.
     return;
+  }
   DCHECK_EQ(nullptr, pref_service_);
   pref_service_ = std::move(pref_service);
-
-  // TODO(crbug.com/853604): use the pref service to get and set preference.
+  InitializePreferredApps();
 }
 
 }  // namespace apps

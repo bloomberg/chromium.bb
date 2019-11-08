@@ -253,6 +253,7 @@ TEST_F(AppServiceImplTest, PubSub) {
 TEST_F(AppServiceImplTest, PreferredApps) {
   // Test Initialize.
   AppServiceImpl impl(nullptr);
+  impl.GetPreferredAppsForTesting().Init(nullptr);
 
   // TODO(crbug.com/853604): Update this test after reading from disk done.
   EXPECT_TRUE(impl.GetPreferredAppsForTesting().GetValue().DictEmpty());
