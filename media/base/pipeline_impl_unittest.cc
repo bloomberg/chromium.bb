@@ -146,28 +146,18 @@ class PipelineImplTest : public ::testing::Test {
 
  protected:
   // Sets up expectations to allow the demuxer to initialize.
-  typedef std::vector<MockDemuxerStream*> MockDemuxerStreamVector;
-  void SetDemuxerExpectations(MockDemuxerStreamVector* streams,
-                              const base::TimeDelta& duration) {
+  void SetDemuxerExpectations(base::TimeDelta duration) {
     EXPECT_CALL(callbacks_, OnDurationChange());
     EXPECT_CALL(*demuxer_, OnInitialize(_, _))
         .WillOnce(DoAll(SaveArg<0>(&demuxer_host_),
                         SetDemuxerProperties(duration),
                         PostCallback<1>(PIPELINE_OK)));
-
-    // Configure the demuxer to return the streams.
-    std::vector<DemuxerStream*> mock_streams;
-    for (size_t i = 0; i < streams->size(); ++i) {
-      DemuxerStream* stream = (*streams)[i];
-      mock_streams.push_back(stream);
-    }
-    EXPECT_CALL(*demuxer_, GetAllStreams())
-        .WillRepeatedly(Return(mock_streams));
+    EXPECT_CALL(*demuxer_, GetAllStreams()).WillRepeatedly(Return(streams_));
   }
 
-  void SetDemuxerExpectations(MockDemuxerStreamVector* streams) {
+  void SetDemuxerExpectations() {
     // Initialize with a default non-zero duration.
-    SetDemuxerExpectations(streams, base::TimeDelta::FromSeconds(10));
+    SetDemuxerExpectations(base::TimeDelta::FromSeconds(10));
   }
 
   std::unique_ptr<StrictMock<MockDemuxerStream>> CreateStream(
@@ -178,7 +168,7 @@ class PipelineImplTest : public ::testing::Test {
   }
 
   // Sets up expectations to allow the renderer to initialize.
-  void SetRendererExpectations() {
+  void ExpectRendererInitialization() {
     EXPECT_CALL(*renderer_, OnInitialize(_, _, _))
         .WillOnce(
             DoAll(SaveArg<1>(&renderer_client_), PostCallback<2>(PIPELINE_OK)));
@@ -219,6 +209,10 @@ class PipelineImplTest : public ::testing::Test {
 
     if (start_status == PIPELINE_OK) {
       EXPECT_CALL(callbacks_, OnMetadata(_)).WillOnce(SaveArg<0>(&metadata_));
+
+      if (start_type == Pipeline::StartType::kNormal)
+        ExpectRendererInitialization();
+
       if (post_start_status == PostStartStatus::kNormal)
         SetRendererPostStartExpectations();
     }
@@ -235,6 +229,7 @@ class PipelineImplTest : public ::testing::Test {
 
   void CreateAudioStream() {
     audio_stream_ = CreateStream(DemuxerStream::AUDIO);
+    streams_.push_back(audio_stream_.get());
   }
 
   void CreateVideoStream(bool is_encrypted = false) {
@@ -242,12 +237,15 @@ class PipelineImplTest : public ::testing::Test {
     video_stream_->set_video_decoder_config(
         is_encrypted ? TestVideoConfig::NormalEncrypted()
                      : TestVideoConfig::Normal());
+    streams_.push_back(video_stream_.get());
+  }
+
+  void CreateAudioAndVideoStream() {
+    CreateAudioStream();
+    CreateVideoStream();
   }
 
   void CreateEncryptedVideoStream() { CreateVideoStream(true); }
-
-  MockDemuxerStream* audio_stream() { return audio_stream_.get(); }
-  MockDemuxerStream* video_stream() { return video_stream_.get(); }
 
   void SetCdmAndExpect(bool expected_result) {
     EXPECT_CALL(*renderer_, OnSetCdm(_, _)).WillOnce(RunOnceCallback<1>(true));
@@ -307,7 +305,7 @@ class PipelineImplTest : public ::testing::Test {
   }
 
   void ExpectResume(const base::TimeDelta& seek_time) {
-    SetRendererExpectations();
+    ExpectRendererInitialization();
     EXPECT_CALL(*demuxer_, OnSeek(seek_time, _))
         .WillOnce(RunOnceCallback<1>(PIPELINE_OK));
     EXPECT_CALL(*renderer_, SetPlaybackRate(_));
@@ -362,6 +360,7 @@ class PipelineImplTest : public ::testing::Test {
   StrictMock<MockRenderer>* renderer_;
   std::unique_ptr<StrictMock<MockDemuxerStream>> audio_stream_;
   std::unique_ptr<StrictMock<MockDemuxerStream>> video_stream_;
+  std::vector<DemuxerStream*> streams_;
   RendererClient* renderer_client_;
   VideoDecoderConfig video_decoder_config_;
   PipelineMetadata metadata_;
@@ -433,10 +432,8 @@ TEST_F(PipelineImplTest, StartThenStopImmediately) {
 
 TEST_F(PipelineImplTest, StartSuspendedAndResumeAudioOnly) {
   CreateAudioStream();
-  MockDemuxerStreamVector streams;
-  streams.push_back(audio_stream());
+  SetDemuxerExpectations(base::TimeDelta::FromSeconds(3000));
 
-  SetDemuxerExpectations(&streams, base::TimeDelta::FromSeconds(3000));
   StartPipelineAndExpect(PIPELINE_OK,
                          Pipeline::StartType::kSuspendAfterMetadataForAudioOnly,
                          PostStartStatus::kSuspended);
@@ -449,13 +446,9 @@ TEST_F(PipelineImplTest, StartSuspendedAndResumeAudioOnly) {
 }
 
 TEST_F(PipelineImplTest, StartSuspendedAndResumeAudioVideo) {
-  CreateAudioStream();
-  CreateVideoStream();
-  MockDemuxerStreamVector streams;
-  streams.push_back(audio_stream());
-  streams.push_back(video_stream());
+  CreateAudioAndVideoStream();
+  SetDemuxerExpectations(base::TimeDelta::FromSeconds(3000));
 
-  SetDemuxerExpectations(&streams, base::TimeDelta::FromSeconds(3000));
   StartPipelineAndExpect(PIPELINE_OK,
                          Pipeline::StartType::kSuspendAfterMetadata,
                          PostStartStatus::kSuspended);
@@ -468,14 +461,13 @@ TEST_F(PipelineImplTest, StartSuspendedAndResumeAudioVideo) {
 }
 
 TEST_F(PipelineImplTest, StartSuspendedFailsOnVideoWithAudioOnlyExpectation) {
-  CreateAudioStream();
-  CreateVideoStream();
-  MockDemuxerStreamVector streams;
-  streams.push_back(audio_stream());
-  streams.push_back(video_stream());
+  CreateAudioAndVideoStream();
+  SetDemuxerExpectations(base::TimeDelta::FromSeconds(3000));
 
-  SetDemuxerExpectations(&streams, base::TimeDelta::FromSeconds(3000));
-  SetRendererExpectations();
+  // StartType kSuspendAfterMetadataForAudioOnly only applies to AudioOnly.
+  // Since this playback has video, renderer will be initialized and the
+  // pipeline is not suspended.
+  ExpectRendererInitialization();
   StartPipelineAndExpect(PIPELINE_OK,
                          Pipeline::StartType::kSuspendAfterMetadataForAudioOnly,
                          PostStartStatus::kNormal);
@@ -484,11 +476,7 @@ TEST_F(PipelineImplTest, StartSuspendedFailsOnVideoWithAudioOnlyExpectation) {
 
 TEST_F(PipelineImplTest, DemuxerErrorDuringStop) {
   CreateAudioStream();
-  MockDemuxerStreamVector streams;
-  streams.push_back(audio_stream());
-
-  SetDemuxerExpectations(&streams);
-  SetRendererExpectations();
+  SetDemuxerExpectations();
 
   StartPipelineAndExpect(PIPELINE_OK);
   base::RunLoop().RunUntilIdle();
@@ -509,11 +497,7 @@ TEST_F(PipelineImplTest, NoStreams) {
 
 TEST_F(PipelineImplTest, AudioStream) {
   CreateAudioStream();
-  MockDemuxerStreamVector streams;
-  streams.push_back(audio_stream());
-
-  SetDemuxerExpectations(&streams);
-  SetRendererExpectations();
+  SetDemuxerExpectations();
 
   StartPipelineAndExpect(PIPELINE_OK);
   EXPECT_TRUE(metadata_.has_audio);
@@ -522,11 +506,7 @@ TEST_F(PipelineImplTest, AudioStream) {
 
 TEST_F(PipelineImplTest, VideoStream) {
   CreateVideoStream();
-  MockDemuxerStreamVector streams;
-  streams.push_back(video_stream());
-
-  SetDemuxerExpectations(&streams);
-  SetRendererExpectations();
+  SetDemuxerExpectations();
 
   StartPipelineAndExpect(PIPELINE_OK);
   EXPECT_FALSE(metadata_.has_audio);
@@ -534,14 +514,8 @@ TEST_F(PipelineImplTest, VideoStream) {
 }
 
 TEST_F(PipelineImplTest, AudioVideoStream) {
-  CreateAudioStream();
-  CreateVideoStream();
-  MockDemuxerStreamVector streams;
-  streams.push_back(audio_stream());
-  streams.push_back(video_stream());
-
-  SetDemuxerExpectations(&streams);
-  SetRendererExpectations();
+  CreateAudioAndVideoStream();
+  SetDemuxerExpectations();
 
   StartPipelineAndExpect(PIPELINE_OK);
   EXPECT_TRUE(metadata_.has_audio);
@@ -550,20 +524,15 @@ TEST_F(PipelineImplTest, AudioVideoStream) {
 
 TEST_F(PipelineImplTest, EncryptedStream_SetCdmBeforeStart) {
   CreateEncryptedVideoStream();
-  MockDemuxerStreamVector streams;
-  streams.push_back(video_stream());
-  SetDemuxerExpectations(&streams);
+  SetDemuxerExpectations();
 
   SetCdmAndExpect(true);
-  SetRendererExpectations();
   StartPipelineAndExpect(PIPELINE_OK);
 }
 
 TEST_F(PipelineImplTest, EncryptedStream_SetCdmAfterStart) {
   CreateEncryptedVideoStream();
-  MockDemuxerStreamVector streams;
-  streams.push_back(video_stream());
-  SetDemuxerExpectations(&streams);
+  SetDemuxerExpectations();
 
   // Demuxer initialization and metadata reporting don't wait for CDM.
   EXPECT_CALL(callbacks_, OnMetadata(_)).WillOnce(SaveArg<0>(&metadata_));
@@ -576,21 +545,15 @@ TEST_F(PipelineImplTest, EncryptedStream_SetCdmAfterStart) {
       base::Bind(&CallbackHelper::OnStart, base::Unretained(&callbacks_)));
   run_loop.Run();
 
-  SetRendererExpectations();
+  ExpectRendererInitialization();
   EXPECT_CALL(callbacks_, OnStart(PIPELINE_OK));
   SetRendererPostStartExpectations();
   SetCdmAndExpect(true);
 }
 
 TEST_F(PipelineImplTest, Seek) {
-  CreateAudioStream();
-  CreateVideoStream();
-  MockDemuxerStreamVector streams;
-  streams.push_back(audio_stream());
-  streams.push_back(video_stream());
-
-  SetDemuxerExpectations(&streams, base::TimeDelta::FromSeconds(3000));
-  SetRendererExpectations();
+  CreateAudioAndVideoStream();
+  SetDemuxerExpectations(base::TimeDelta::FromSeconds(3000));
 
   // Initialize then seek!
   StartPipelineAndExpect(PIPELINE_OK);
@@ -603,11 +566,7 @@ TEST_F(PipelineImplTest, Seek) {
 
 TEST_F(PipelineImplTest, SeekAfterError) {
   CreateAudioStream();
-  MockDemuxerStreamVector streams;
-  streams.push_back(audio_stream());
-
-  SetDemuxerExpectations(&streams, base::TimeDelta::FromSeconds(3000));
-  SetRendererExpectations();
+  SetDemuxerExpectations(base::TimeDelta::FromSeconds(3000));
 
   // Initialize then seek!
   StartPipelineAndExpect(PIPELINE_OK);
@@ -625,14 +584,8 @@ TEST_F(PipelineImplTest, SeekAfterError) {
 }
 
 TEST_F(PipelineImplTest, SuspendResume) {
-  CreateAudioStream();
-  CreateVideoStream();
-  MockDemuxerStreamVector streams;
-  streams.push_back(audio_stream());
-  streams.push_back(video_stream());
-
-  SetDemuxerExpectations(&streams, base::TimeDelta::FromSeconds(3000));
-  SetRendererExpectations();
+  CreateAudioAndVideoStream();
+  SetDemuxerExpectations(base::TimeDelta::FromSeconds(3000));
 
   StartPipelineAndExpect(PIPELINE_OK);
 
@@ -661,11 +614,7 @@ TEST_F(PipelineImplTest, SuspendResume) {
 
 TEST_F(PipelineImplTest, SetVolume) {
   CreateAudioStream();
-  MockDemuxerStreamVector streams;
-  streams.push_back(audio_stream());
-
-  SetDemuxerExpectations(&streams);
-  SetRendererExpectations();
+  SetDemuxerExpectations();
 
   // The audio renderer should receive a call to SetVolume().
   float expected = 0.5f;
@@ -679,12 +628,8 @@ TEST_F(PipelineImplTest, SetVolume) {
 
 TEST_F(PipelineImplTest, Properties) {
   CreateVideoStream();
-  MockDemuxerStreamVector streams;
-  streams.push_back(video_stream());
-
-  const base::TimeDelta kDuration = base::TimeDelta::FromSeconds(100);
-  SetDemuxerExpectations(&streams, kDuration);
-  SetRendererExpectations();
+  const auto kDuration = base::TimeDelta::FromSeconds(100);
+  SetDemuxerExpectations(kDuration);
 
   StartPipelineAndExpect(PIPELINE_OK);
   EXPECT_EQ(kDuration.ToInternalValue(),
@@ -694,12 +639,8 @@ TEST_F(PipelineImplTest, Properties) {
 
 TEST_F(PipelineImplTest, GetBufferedTimeRanges) {
   CreateVideoStream();
-  MockDemuxerStreamVector streams;
-  streams.push_back(video_stream());
-
-  const base::TimeDelta kDuration = base::TimeDelta::FromSeconds(100);
-  SetDemuxerExpectations(&streams, kDuration);
-  SetRendererExpectations();
+  const auto kDuration = base::TimeDelta::FromSeconds(100);
+  SetDemuxerExpectations(kDuration);
 
   StartPipelineAndExpect(PIPELINE_OK);
   RunBufferedTimeRangesTest(kDuration / 8);
@@ -726,14 +667,8 @@ TEST_F(PipelineImplTest, BufferedTimeRangesCanChangeAfterStop) {
 }
 
 TEST_F(PipelineImplTest, EndedCallback) {
-  CreateAudioStream();
-  CreateVideoStream();
-  MockDemuxerStreamVector streams;
-  streams.push_back(audio_stream());
-  streams.push_back(video_stream());
-
-  SetDemuxerExpectations(&streams);
-  SetRendererExpectations();
+  CreateAudioAndVideoStream();
+  SetDemuxerExpectations();
   StartPipelineAndExpect(PIPELINE_OK);
 
   // The ended callback shouldn't run until all renderers have ended.
@@ -744,11 +679,7 @@ TEST_F(PipelineImplTest, EndedCallback) {
 
 TEST_F(PipelineImplTest, ErrorDuringSeek) {
   CreateAudioStream();
-  MockDemuxerStreamVector streams;
-  streams.push_back(audio_stream());
-
-  SetDemuxerExpectations(&streams);
-  SetRendererExpectations();
+  SetDemuxerExpectations();
   StartPipelineAndExpect(PIPELINE_OK);
 
   double playback_rate = 1.0;
@@ -794,11 +725,7 @@ static void TestNoCallsAfterError(
 
 TEST_F(PipelineImplTest, NoMessageDuringTearDownFromError) {
   CreateAudioStream();
-  MockDemuxerStreamVector streams;
-  streams.push_back(audio_stream());
-
-  SetDemuxerExpectations(&streams);
-  SetRendererExpectations();
+  SetDemuxerExpectations();
   StartPipelineAndExpect(PIPELINE_OK);
 
   // Trigger additional requests on the pipeline during tear down from error.
@@ -825,10 +752,7 @@ TEST_F(PipelineImplTest, NoMessageDuringTearDownFromError) {
 
 TEST_F(PipelineImplTest, DestroyAfterStop) {
   CreateAudioStream();
-  MockDemuxerStreamVector streams;
-  streams.push_back(audio_stream());
-  SetDemuxerExpectations(&streams);
-  SetRendererExpectations();
+  SetDemuxerExpectations();
   StartPipelineAndExpect(PIPELINE_OK);
 
   ExpectDemuxerStop();
@@ -837,14 +761,8 @@ TEST_F(PipelineImplTest, DestroyAfterStop) {
 }
 
 TEST_F(PipelineImplTest, Underflow) {
-  CreateAudioStream();
-  CreateVideoStream();
-  MockDemuxerStreamVector streams;
-  streams.push_back(audio_stream());
-  streams.push_back(video_stream());
-
-  SetDemuxerExpectations(&streams);
-  SetRendererExpectations();
+  CreateAudioAndVideoStream();
+  SetDemuxerExpectations();
   StartPipelineAndExpect(PIPELINE_OK);
 
   // Simulate underflow.
@@ -865,10 +783,7 @@ TEST_F(PipelineImplTest, PositiveStartTime) {
   start_time_ = base::TimeDelta::FromSeconds(1);
   EXPECT_CALL(*demuxer_, GetStartTime()).WillRepeatedly(Return(start_time_));
   CreateAudioStream();
-  MockDemuxerStreamVector streams;
-  streams.push_back(audio_stream());
-  SetDemuxerExpectations(&streams);
-  SetRendererExpectations();
+  SetDemuxerExpectations();
   StartPipelineAndExpect(PIPELINE_OK);
   ExpectDemuxerStop();
   pipeline_->Stop();
@@ -877,10 +792,7 @@ TEST_F(PipelineImplTest, PositiveStartTime) {
 
 TEST_F(PipelineImplTest, GetMediaTime) {
   CreateAudioStream();
-  MockDemuxerStreamVector streams;
-  streams.push_back(audio_stream());
-  SetDemuxerExpectations(&streams);
-  SetRendererExpectations();
+  SetDemuxerExpectations();
   StartPipelineAndExpect(PIPELINE_OK);
 
   // Pipeline should report the same media time returned by the renderer.
@@ -901,10 +813,7 @@ TEST_F(PipelineImplTest, GetMediaTime) {
 // to return the pre-seek time). Verifies fix for http://crbug.com/675556
 TEST_F(PipelineImplTest, GetMediaTimeAfterSeek) {
   CreateAudioStream();
-  MockDemuxerStreamVector streams;
-  streams.push_back(audio_stream());
-  SetDemuxerExpectations(&streams);
-  SetRendererExpectations();
+  SetDemuxerExpectations();
   StartPipelineAndExpect(PIPELINE_OK);
 
   // Pipeline should report the same media time returned by the renderer.
@@ -938,10 +847,7 @@ TEST_F(PipelineImplTest, GetMediaTimeAfterSeek) {
 TEST_F(PipelineImplTest, RendererErrorsReset) {
   // Basic setup
   CreateAudioStream();
-  MockDemuxerStreamVector streams;
-  streams.push_back(audio_stream());
-  SetDemuxerExpectations(&streams);
-  SetRendererExpectations();
+  SetDemuxerExpectations();
   StartPipelineAndExpect(PIPELINE_OK);
 
   // Trigger two errors. The second error will be ignored.
@@ -958,8 +864,7 @@ TEST_F(PipelineImplTest, RendererErrorsReset) {
   base::RunLoop().RunUntilIdle();
 
   ResetRenderer();
-  SetDemuxerExpectations(&streams);
-  SetRendererExpectations();
+  SetDemuxerExpectations();
   StartPipelineAndExpect(PIPELINE_OK);
 
   // New errors should propagate and not be ignored.
@@ -1049,10 +954,7 @@ class PipelineTeardownTest : public PipelineImplTest {
 
     CreateAudioStream();
     CreateVideoStream();
-    MockDemuxerStreamVector streams;
-    streams.push_back(audio_stream());
-    streams.push_back(video_stream());
-    SetDemuxerExpectations(&streams, base::TimeDelta::FromSeconds(3000));
+    SetDemuxerExpectations(base::TimeDelta::FromSeconds(3000));
 
     if (state == kInitRenderer) {
       if (stop_or_error == kStop) {
