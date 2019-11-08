@@ -26,14 +26,15 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from blinkpy.common.net.buildbot import BuildBot
+from blinkpy.common.net.results_fetcher import TestResultsFetcher
+
 
 # TODO(qyearsley): To be consistent with other fake ("mock") classes, this
-# could be changed so it's not a subclass of BuildBot.
-class MockBuildBot(BuildBot):
+# could be changed so it's not a subclass of TestResultsFetcher.
+class MockTestResultsFetcher(TestResultsFetcher):
 
     def __init__(self):
-        super(MockBuildBot, self).__init__()
+        super(MockTestResultsFetcher, self).__init__()
         self._canned_results = {}
         self._canned_retry_summary_json = {}
         self._webdriver_results = {}

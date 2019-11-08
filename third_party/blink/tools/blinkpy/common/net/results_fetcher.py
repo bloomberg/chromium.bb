@@ -53,8 +53,8 @@ class Build(collections.namedtuple('Build', ('builder_name', 'build_number'))):
         return super(Build, cls).__new__(cls, builder_name, build_number)
 
 
-class BuildBot(object):
-    """This class represents an interface to BuildBot-related functionality.
+class TestResultsFetcher(object):
+    """This class represents an interface to test results for particular builds.
 
     This includes fetching web test results from Google Storage;
     for more information about the web test result format, see:

@@ -30,7 +30,7 @@ import json
 import logging
 import unittest
 
-from blinkpy.common.net.buildbot import BuildBot, Build, filter_latest_builds
+from blinkpy.common.net.results_fetcher import TestResultsFetcher, Build, filter_latest_builds
 from blinkpy.common.net.web_mock import MockWeb
 from blinkpy.common.system.log_testing import LoggingTestCase
 
@@ -42,39 +42,39 @@ class BuilderTest(LoggingTestCase):
 
     def test_results_url_no_build_number(self):
         self.assertEqual(
-            BuildBot().results_url('Test Builder'),
+            TestResultsFetcher().results_url('Test Builder'),
             'https://test-results.appspot.com/data/layout_results/Test_Builder/results/layout-test-results')
 
     def test_results_url_with_build_number(self):
         self.assertEqual(
-            BuildBot().results_url('Test Builder', 10),
+            TestResultsFetcher().results_url('Test Builder', 10),
             'https://test-results.appspot.com/data/layout_results/Test_Builder/10/layout-test-results')
 
     def test_results_url_with_build_number_step_name(self):
         self.assertEqual(
-            BuildBot().results_url('Test Builder', 10,
+            TestResultsFetcher().results_url('Test Builder', 10,
                                    'webkit_layout_tests (with patch)'),
             'https://test-results.appspot.com/data/layout_results/Test_Builder'
             '/10/webkit_layout_tests%20%28with%20patch%29/layout-test-results')
 
     def test_results_url_with_non_numeric_build_number(self):
         with self.assertRaisesRegexp(AssertionError, 'expected numeric build number'):
-            BuildBot().results_url('Test Builder', 'ba5eba11')
+            TestResultsFetcher().results_url('Test Builder', 'ba5eba11')
 
     def test_builder_results_url_base(self):
         self.assertEqual(
-            BuildBot().builder_results_url_base('WebKit Mac10.8 (dbg)'),
+            TestResultsFetcher().builder_results_url_base('WebKit Mac10.8 (dbg)'),
             'https://test-results.appspot.com/data/layout_results/WebKit_Mac10_8__dbg_')
 
     def test_accumulated_results_url(self):
         self.assertEqual(
-            BuildBot().accumulated_results_url_base('WebKit Mac10.8 (dbg)'),
+            TestResultsFetcher().accumulated_results_url_base('WebKit Mac10.8 (dbg)'),
             'https://test-results.appspot.com/data/layout_results/WebKit_Mac10_8__dbg_/results/layout-test-results')
 
     def test_fetch_web_test_results_with_no_results_fetched(self):
-        buildbot = BuildBot()
-        buildbot.web = MockWeb()
-        results = buildbot.fetch_web_test_results(buildbot.results_url('B'))
+        fetcher = TestResultsFetcher()
+        fetcher.web = MockWeb()
+        results = fetcher.fetch_web_test_results(fetcher.results_url('B'))
         self.assertIsNone(results)
         self.assertLog([
             'DEBUG: Got 404 response from:\n'
@@ -82,8 +82,8 @@ class BuilderTest(LoggingTestCase):
         ])
 
     def test_fetch_results_with_weird_step_name(self):
-        buildbot = BuildBot()
-        buildbot.web = MockWeb(urls={
+        fetcher = TestResultsFetcher()
+        fetcher.web = MockWeb(urls={
             'https://test-results.appspot.com/testfile?buildnumber=123&'
             'callback=ADD_RESULTS&builder=builder&name=full_results.json':
                 'ADD_RESULTS(%s);' % (json.dumps(
@@ -94,19 +94,19 @@ class BuilderTest(LoggingTestCase):
             'layout-test-results/failing_results.json':
                 json.dumps({'passed': True}),
         })
-        results = buildbot.fetch_results(Build('builder', 123))
+        results = fetcher.fetch_results(Build('builder', 123))
         self.assertEqual(results._results, {  # pylint: disable=protected-access
             'passed': True
         })
         self.assertLog([])
 
     def test_fetch_results_without_build_number(self):
-        buildbot = BuildBot()
-        self.assertIsNone(buildbot.fetch_results(Build('builder', None)))
+        fetcher = TestResultsFetcher()
+        self.assertIsNone(fetcher.fetch_results(Build('builder', None)))
 
     def test_get_step_name(self):
-        buildbot = BuildBot()
-        buildbot.web = MockWeb(urls={
+        fetcher = TestResultsFetcher()
+        fetcher.web = MockWeb(urls={
             'https://test-results.appspot.com/testfile?buildnumber=5&'
             'callback=ADD_RESULTS&builder=foo&name=full_results.json':
                 'ADD_RESULTS(%s);' % (json.dumps(
@@ -115,33 +115,33 @@ class BuilderTest(LoggingTestCase):
                      {"TestType": "webkit_layout_tests (retry with patch)"},
                      {"TestType": "base_unittests (with patch)"}]))
         })
-        step_name = buildbot.get_layout_test_step_name(Build('foo', 5))
+        step_name = fetcher.get_layout_test_step_name(Build('foo', 5))
         self.assertEqual(step_name, 'webkit_layout_tests (with patch)')
         self.assertLog([])
 
     def test_get_step_name_without_build_number(self):
-        buildbot = BuildBot()
+        fetcher = TestResultsFetcher()
         self.assertIsNone(
-            buildbot.get_layout_test_step_name(Build('builder', None)))
+            fetcher.get_layout_test_step_name(Build('builder', None)))
 
     def test_fetch_webdriver_results_without_build_number(self):
-        buildbot = BuildBot()
-        self.assertIsNone(buildbot.fetch_webdriver_test_results(
+        fetcher = TestResultsFetcher()
+        self.assertIsNone(fetcher.fetch_webdriver_test_results(
             Build('builder', None), 'bar'))
         self.assertLog(
             ['DEBUG: Builder name or build number or master is None\n'])
 
     def test_fetch_webdriver_results_without_master(self):
-        buildbot = BuildBot()
-        self.assertIsNone(buildbot.fetch_webdriver_test_results(
+        fetcher = TestResultsFetcher()
+        self.assertIsNone(fetcher.fetch_webdriver_test_results(
             Build('builder', 1), ''))
         self.assertLog(
             ['DEBUG: Builder name or build number or master is None\n'])
 
     def test_fetch_webdriver_test_results_with_no_results(self):
-        buildbot = BuildBot()
-        buildbot.web = MockWeb()
-        results = buildbot.fetch_webdriver_test_results(
+        fetcher = TestResultsFetcher()
+        fetcher.web = MockWeb()
+        results = fetcher.fetch_webdriver_test_results(
             Build('bar-rel', 123), 'foo.chrome')
         self.assertIsNone(results)
         self.assertLog([
@@ -152,15 +152,15 @@ class BuilderTest(LoggingTestCase):
         ])
 
     def test_fetch_webdriver_results_success(self):
-        buildbot = BuildBot()
-        buildbot.web = MockWeb(urls={
+        fetcher = TestResultsFetcher()
+        fetcher.web = MockWeb(urls={
             'https://test-results.appspot.com/testfile?buildnumber=123&'
             'master=foo.chrome&builder=bar-rel&'
             'testtype=webdriver_tests_suite+%28with+patch%29&'
             'name=full_results.json':
                 json.dumps({'passed': True}),
         })
-        results = buildbot.fetch_webdriver_test_results(
+        results = fetcher.fetch_webdriver_test_results(
             Build('bar-rel', 123), 'foo.chrome')
         self.assertEqual(results._results, {  # pylint: disable=protected-access
             'passed': True
@@ -168,7 +168,7 @@ class BuilderTest(LoggingTestCase):
         self.assertLog([])
 
 
-class BuildBotHelperFunctionTest(unittest.TestCase):
+class TestResultsFetcherHelperFunctionTest(unittest.TestCase):
 
     def test_filter_latest_jobs_empty(self):
         self.assertEqual(filter_latest_builds([]), [])
