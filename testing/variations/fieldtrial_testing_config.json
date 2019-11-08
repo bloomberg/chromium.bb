@@ -6640,6 +6640,27 @@
             ]
         }
     ],
+    "UmaAndUkmDemographics": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows",
+                "ios"
+            ],
+            "experiments": [
+                {
+                    "name": "UKM_Enabled",
+                    "enable_features": [
+                        "DemographicMetricsReporting",
+                        "UkmReportNoisedUserBirthYearAndGender"
+                    ]
+                }
+            ]
+        }
+    ],
     "UnifiedAutoplay": [
         {
             "platforms": [
