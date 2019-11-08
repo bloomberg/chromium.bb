@@ -26,10 +26,10 @@
 #include "osp/public/protocol_connection_server_factory.h"
 #include "osp/public/service_listener.h"
 #include "osp/public/service_publisher.h"
-#include "platform/api/logging.h"
 #include "platform/api/network_interface.h"
 #include "platform/api/time.h"
 #include "platform/api/trace_logging.h"
+#include "platform/impl/logging.h"
 #include "platform/impl/socket_handle_waiter_thread.h"
 #include "platform/impl/task_runner.h"
 #include "platform/impl/task_runner_thread.h"
@@ -607,7 +607,7 @@ int main(int argc, char** argv) {
   const char* log_filename = is_receiver_demo
                                  ? openscreen::kReceiverLogFilename
                                  : openscreen::kControllerLogFilename;
-  openscreen::platform::LogInit(log_filename);
+  openscreen::platform::SetLogFifoOrDie(log_filename);
 
   LogLevel level = args.is_verbose ? LogLevel::kVerbose : LogLevel::kInfo;
   openscreen::platform::SetLogLevel(level);

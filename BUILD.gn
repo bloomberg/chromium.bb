@@ -17,7 +17,6 @@ group("gn_all") {
     "osp",
     "osp/msgs",
     "platform",
-    "platform:default_logger",
     "streaming/cast:receiver",
     "streaming/cast:sender",
     "third_party/abseil",

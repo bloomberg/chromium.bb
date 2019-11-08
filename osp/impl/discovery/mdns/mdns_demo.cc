@@ -12,9 +12,9 @@
 
 // TODO(rwkeane): Remove references to platform/impl
 #include "osp/impl/discovery/mdns/mdns_responder_adapter_impl.h"
-#include "platform/api/logging.h"
 #include "platform/api/time.h"
 #include "platform/base/error.h"
+#include "platform/impl/logging.h"
 #include "platform/impl/socket_handle_waiter_thread.h"
 #include "platform/impl/task_runner.h"
 #include "platform/impl/task_runner_thread.h"
@@ -338,7 +338,6 @@ void BrowseDemo(platform::TaskRunner* task_runner,
 }  // namespace openscreen
 
 int main(int argc, char** argv) {
-  openscreen::platform::LogInit(nullptr);
   openscreen::platform::SetLogLevel(openscreen::platform::LogLevel::kVerbose);
 
   std::string service_instance;

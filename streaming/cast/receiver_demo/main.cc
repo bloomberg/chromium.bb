@@ -2,11 +2,11 @@
 #include <chrono>
 #include <thread>
 
-#include "platform/api/logging.h"
 #include "platform/api/time.h"
 #include "platform/api/udp_socket.h"
 #include "platform/base/error.h"
 #include "platform/base/ip_address.h"
+#include "platform/impl/logging.h"
 #include "platform/impl/socket_handle_waiter_thread.h"
 #include "platform/impl/task_runner.h"
 #include "platform/impl/udp_socket_reader_posix.h"
@@ -74,7 +74,6 @@ constexpr std::array<uint8_t, 16> kDemoVideoCastIvMask{
 
 int main(int argc, const char* argv[]) {
   // Platform setup for this standalone demo app.
-  openscreen::platform::LogInit(nullptr /* stdout */);
   openscreen::platform::SetLogLevel(openscreen::platform::LogLevel::kInfo);
   const auto now_function = &openscreen::platform::Clock::now;
   openscreen::platform::TaskRunnerImpl task_runner(now_function);

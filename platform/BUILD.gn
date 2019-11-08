@@ -8,11 +8,11 @@ source_set("platform") {
   defines = []
 
   sources = [
+    "api/internal/logging_macros.h",
     "api/internal/trace_logging_internal.cc",
     "api/internal/trace_logging_internal.h",
     "api/internal/trace_logging_macros_internal.h",
     "api/logging.h",
-    "api/logging_util.cc",
     "api/network_interface.cc",
     "api/network_interface.h",
     "api/platform_client.cc",
@@ -58,6 +58,7 @@ source_set("platform") {
 
   if (!build_with_chromium) {
     sources += [
+      "impl/logging.h",
       "impl/socket_handle.h",
       "impl/socket_handle_waiter.cc",
       "impl/socket_handle_waiter.h",
@@ -94,6 +95,7 @@ source_set("platform") {
 
     if (is_posix) {
       sources += [
+        "impl/logging_posix.cc",
         "impl/platform_client_posix.cc",
         "impl/platform_client_posix.h",
         "impl/scoped_pipe.h",
@@ -120,10 +122,6 @@ source_set("platform") {
         "impl/udp_socket_reader_posix.h",
       ]
     }
-
-    deps = [
-      ":default_logger",
-    ]
   }
 }
 
@@ -142,21 +140,6 @@ source_set("test") {
   deps = [
     ":platform",
     "../third_party/googletest:gmock",
-  ]
-}
-
-source_set("default_logger") {
-  sources = [
-    "impl/logging.cc",
-  ]
-
-  if (is_posix) {
-    sources += [ "impl/log_initializer_posix.cc" ]
-  }
-
-  deps = [
-    "../third_party/abseil",
-    "../util",
   ]
 }
 
