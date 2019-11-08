@@ -119,8 +119,8 @@ ScopedSuppressValidationErrorLoggingForTests
 }
 
 ValidationErrorObserverForTesting::ValidationErrorObserverForTesting(
-    const base::Closure& callback)
-    : last_error_(VALIDATION_ERROR_NONE), callback_(callback) {
+    base::RepeatingClosure callback)
+    : last_error_(VALIDATION_ERROR_NONE), callback_(std::move(callback)) {
   DCHECK(!g_validation_error_observer);
   g_validation_error_observer = this;
 }
