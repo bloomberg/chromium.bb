@@ -134,7 +134,7 @@ android_library("gms_bridge_upstream_impl_java") {
 }
 
 android_aidl("aidl") {
-  import_include = [ "org/chromium/weblayer_private/interfaces" ]
+  import_include = [ "." ]
   sources = [
     "org/chromium/weblayer_private/interfaces/IBrowser.aidl",
     "org/chromium/weblayer_private/interfaces/IBrowserClient.aidl",
