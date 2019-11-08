@@ -5724,7 +5724,7 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled",
+                    "name": "Enabled_20191107",
                     "enable_features": [
                         "SetLowPriorityForBeacon"
                     ]
