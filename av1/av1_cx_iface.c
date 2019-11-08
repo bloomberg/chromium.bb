@@ -586,7 +586,6 @@ static void disable_superres(AV1EncoderConfig *const oxcf) {
   oxcf->superres_kf_qthresh = 255;
 }
 
-#if CONFIG_OPTIONS_FILE
 static void update_default_encoder_config(const cfg_options_t *cfg,
                                           struct av1_extracfg *extra_cfg) {
   extra_cfg->enable_cdef = (cfg->disable_cdef == 0);
@@ -630,16 +629,13 @@ static void update_default_encoder_config(const cfg_options_t *cfg,
   extra_cfg->enable_reduced_reference_set = cfg->reduced_reference_set;
   extra_cfg->reduced_tx_type_set = cfg->reduced_tx_type_set;
 }
-#endif
 
 static aom_codec_err_t set_encoder_config(AV1EncoderConfig *oxcf,
                                           const aom_codec_enc_cfg_t *cfg,
                                           struct av1_extracfg *extra_cfg) {
-#if CONFIG_OPTIONS_FILE
   if (cfg->encoder_cfg.init_by_cfg_file) {
     update_default_encoder_config(&cfg->encoder_cfg, extra_cfg);
   }
-#endif
 
   const int is_vbr = cfg->rc_end_usage == AOM_VBR;
   oxcf->profile = cfg->g_profile;
@@ -688,9 +684,7 @@ static aom_codec_err_t set_encoder_config(AV1EncoderConfig *oxcf,
     oxcf->init_framerate = 30;
     oxcf->timing_info_present = 0;
   }
-#if CONFIG_OPTIONS_FILE
   oxcf->encoder_cfg = &cfg->encoder_cfg;
-#endif
 
   switch (cfg->g_pass) {
     case AOM_RC_ONE_PASS: oxcf->pass = 0; break;

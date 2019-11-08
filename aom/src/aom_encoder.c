@@ -168,8 +168,6 @@ aom_codec_err_t aom_codec_enc_config_default(aom_codec_iface_t *iface,
       }
     }
   }
-
-#if CONFIG_OPTIONS_FILE
   /* default values */
   if (cfg) {
     memset(&cfg->encoder_cfg, 0, sizeof(cfg->encoder_cfg));
@@ -178,8 +176,6 @@ aom_codec_err_t aom_codec_enc_config_default(aom_codec_iface_t *iface,
     cfg->encoder_cfg.min_partition_size = 4;
     cfg->encoder_cfg.disable_trellis_quant = 3;
   }
-#endif
-
   return res;
 }
 

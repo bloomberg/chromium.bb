@@ -158,9 +158,7 @@ static const arg_def_t verbosearg =
     ARG_DEF("v", "verbose", 0, "Show encoder parameters");
 static const arg_def_t psnrarg =
     ARG_DEF(NULL, "psnr", 0, "Show PSNR in status line");
-#if CONFIG_OPTIONS_FILE
 static const arg_def_t use_cfg = ARG_DEF("c", "cfg", 1, "Config file to use");
-#endif
 
 static const struct arg_enum_list test_decode_enum[] = {
   { "off", TEST_DECODE_OFF },
@@ -203,9 +201,7 @@ static const arg_def_t input_chroma_subsampling_y = ARG_DEF(
     NULL, "input-chroma-subsampling-y", 1, "chroma subsampling y value.");
 
 static const arg_def_t *main_args[] = { &help,
-#if CONFIG_OPTIONS_FILE
                                         &use_cfg,
-#endif
                                         &debugmode,
                                         &outputfile,
                                         &codecarg,
@@ -1118,7 +1114,6 @@ static void validate_positive_rational(const char *msg,
   if (!rat->den) die("Error: %s has zero denominator\n", msg);
 }
 
-#if CONFIG_OPTIONS_FILE
 static void init_config(cfg_options_t *config) {
   memset(config, 0, sizeof(cfg_options_t));
   config->super_block_size = 0;  // Dynamic
@@ -1126,7 +1121,6 @@ static void init_config(cfg_options_t *config) {
   config->min_partition_size = 4;
   config->disable_trellis_quant = 3;
 }
-#endif
 
 /* Parses global config arguments into the AvxEncoderConfig. Note that
  * argv is modified and overwrites all parsed arguments.
@@ -1145,22 +1139,18 @@ static void parse_global_config(struct AvxEncoderConfig *global, char ***argv) {
   global->color_type = I420;
   global->csp = AOM_CSP_UNKNOWN;
 
-#if CONFIG_OPTIONS_FILE
   int cfg_included = 0;
   init_config(&global->encoder_config);
-#endif
 
   for (argi = argj = argv_local; (*argj = *argi); argi += arg.argv_step) {
     arg.argv_step = 1;
 
-#if CONFIG_OPTIONS_FILE
     if (arg_match(&arg, &use_cfg, argi)) {
       if (cfg_included) continue;
       parse_cfg(arg.val, &global->encoder_config);
       cfg_included = 1;
       continue;
     }
-#endif
     if (arg_match(&arg, &help, argi)) {
       show_help(stdout, 0);
       exit(EXIT_SUCCESS);
@@ -1352,11 +1342,8 @@ static struct stream_state *new_stream(struct AvxEncoderConfig *global,
 
     /* Allows removal of the application version from the EBML tags */
     stream->webm_ctx.debug = global->debug;
-
-#if CONFIG_OPTIONS_FILE
     memcpy(&stream->config.cfg.encoder_cfg, &global->encoder_config,
            sizeof(stream->config.cfg.encoder_cfg));
-#endif
   }
 
   /* Output files must be specified for each stream */
@@ -1745,7 +1732,6 @@ static void show_stream_config(struct stream_state *stream,
   SHOW(kf_min_dist);
   SHOW(kf_max_dist);
 
-#if CONFIG_OPTIONS_FILE
 #define SHOW_PARAMS(field)                    \
   fprintf(stderr, "    %-28s = %d\n", #field, \
           stream->config.cfg.encoder_cfg.field)
@@ -1784,7 +1770,6 @@ static void show_stream_config(struct stream_state *stream,
   SHOW_PARAMS(disable_ref_frame_mv);
   SHOW_PARAMS(reduced_reference_set);
   SHOW_PARAMS(reduced_tx_type_set);
-#endif
 }
 
 static void open_output_file(struct stream_state *stream,
@@ -2238,11 +2223,7 @@ int main(int argc, const char **argv_) {
   argv = argv_dup(argc - 1, argv_ + 1);
   parse_global_config(&global, &argv);
 
-#if CONFIG_OPTIONS_FILE
   if (argc < 2) usage_exit();
-#else
-  if (argc < 3) usage_exit();
-#endif
 
   switch (global.color_type) {
     case I420: input.fmt = AOM_IMG_FMT_I420; break;
