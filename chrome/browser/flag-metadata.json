@@ -555,7 +555,7 @@
     "expiry_milestone": 80
   },
   {
-    "name": "cross-origin-embedder-policy",
+    "name": "cross-origin-isolation",
     "owners": [ "yhirano" ],
     "expiry_milestone": 83
   },

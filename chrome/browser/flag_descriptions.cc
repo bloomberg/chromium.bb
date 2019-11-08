@@ -815,9 +815,9 @@ const char kEnableOutOfBlinkCorsName[] = "Out of blink CORS";
 const char kEnableOutOfBlinkCorsDescription[] =
     "CORS handling logic is moved out of blink.";
 
-const char kCrossOriginEmbedderPolicyName[] = "Cross Origin Embedder Policy";
-const char kCrossOriginEmbedderPolicyDescription[] =
-    "Enable Cross Origin Embedder Policy (https://mikewest.github.io/corpp/).";
+const char kCrossOriginIsolationName[] = "Cross Origin Isolation";
+const char kCrossOriginIsolationDescription[] =
+    "Enable Cross Origin Opener Policy and Cross Origin Embedder Policy.";
 
 const char kDisableKeepaliveFetchName[] = "Disable fetch with keepalive set";
 const char kDisableKeepaliveFetchDescription[] =

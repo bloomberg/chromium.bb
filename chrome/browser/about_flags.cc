@@ -3012,10 +3012,9 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableOutOfBlinkCorsDescription, kOsAll,
      FEATURE_VALUE_TYPE(network::features::kOutOfBlinkCors)},
 
-    {"cross-origin-embedder-policy",
-     flag_descriptions::kCrossOriginEmbedderPolicyName,
-     flag_descriptions::kCrossOriginEmbedderPolicyDescription, kOsAll,
-     FEATURE_VALUE_TYPE(network::features::kCrossOriginEmbedderPolicy)},
+    {"cross-origin-isolation", flag_descriptions::kCrossOriginIsolationName,
+     flag_descriptions::kCrossOriginIsolationDescription, kOsAll,
+     FEATURE_VALUE_TYPE(network::features::kCrossOriginIsolation)},
 
     {"disable-keepalive-fetch", flag_descriptions::kDisableKeepaliveFetchName,
      flag_descriptions::kDisableKeepaliveFetchDescription, kOsAll,

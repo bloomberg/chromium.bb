@@ -477,8 +477,8 @@ extern const char kEnableNotificationExpansionAnimationDescription[];
 extern const char kEnableOutOfBlinkCorsName[];
 extern const char kEnableOutOfBlinkCorsDescription[];
 
-extern const char kCrossOriginEmbedderPolicyName[];
-extern const char kCrossOriginEmbedderPolicyDescription[];
+extern const char kCrossOriginIsolationName[];
+extern const char kCrossOriginIsolationDescription[];
 
 extern const char kDisableKeepaliveFetchName[];
 extern const char kDisableKeepaliveFetchDescription[];
