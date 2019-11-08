@@ -209,7 +209,12 @@ class ManifestRepository(object):
 class CrosCheckout(object):
   """Represents a checkout of chromiumos on disk."""
 
-  def __init__(self, root, manifest=None, manifest_url=None, repo_url=None):
+  def __init__(self,
+               root,
+               manifest=None,
+               manifest_url=None,
+               repo_url=None,
+               groups=None):
     """Read the checkout manifest.
 
     Args:
@@ -217,11 +222,13 @@ class CrosCheckout(object):
       manifest: The checkout manifest. Read from `repo manifest` if None.
       manifest_url: Manifest repository URL. repo_sync_manifest sets default.
       repo_url: Repo repository URL. repo_sync_manifest sets default.
+      groups: Repo groups to sync.
     """
     self.root = root
     self.manifest = manifest or repo_util.Repository(root).Manifest()
     self.manifest_url = manifest_url
     self.repo_url = repo_url
+    self.groups = groups
 
   @staticmethod
   def TempRoot():
@@ -229,7 +236,12 @@ class CrosCheckout(object):
     return osutils.TempDir(prefix='cros-branch-')
 
   @classmethod
-  def Initialize(cls, root, manifest_url, repo_url=None, repo_branch=None):
+  def Initialize(cls,
+                 root,
+                 manifest_url,
+                 repo_url=None,
+                 repo_branch=None,
+                 groups=None):
     """Initialize the checkout if necessary. Otherwise a no-op.
 
     Args:
@@ -237,15 +249,20 @@ class CrosCheckout(object):
       manifest_url: Manifest repository URL.
       repo_url: Repo repository URL. Uses default googlesource repo if None.
       repo_branch: Repo repository branch.
+      groups: Repo groups to sync.
     """
     osutils.SafeMakedirs(root)
     if git.FindRepoCheckoutRoot(root) is None:
       logging.notice('Will initialize checkout %s for this run.', root)
       repo_util.Repository.Initialize(
-          root, manifest_url, repo_url=repo_url, repo_branch=repo_branch)
+          root, manifest_url,
+          repo_url=repo_url,
+          repo_branch=repo_branch,
+          groups=groups)
     else:
       logging.notice('Will use existing checkout %s for this run.', root)
-    return cls(root, manifest_url=manifest_url, repo_url=repo_url)
+    return cls(
+        root, manifest_url=manifest_url, repo_url=repo_url, groups=groups)
 
   def _Sync(self, manifest_args):
     """Run repo_sync_manifest command.
@@ -261,6 +278,9 @@ class CrosCheckout(object):
       cmd += ['--repo-url', self.repo_url]
     if self.manifest_url:
       cmd += ['--manifest-url', self.manifest_url]
+    if self.groups:
+      cmd += ['--groups', self.groups]
+
     cros_build_lib.run(cmd, print_cmd=True)
     self.manifest = repo_util.Repository(self.root).Manifest()
 
@@ -788,6 +808,8 @@ Delete Examples:
         '/chromeos/manifest-internal.git',
         help='URL of the manifest to be checked out. Defaults to googlesource '
         'URL for manifest-internal.')
+    sync_group.add_argument(
+        '--groups', help='repo groups to sync.', default='all')
 
     # Create subcommand and flags.
     subparser = parser.add_subparsers(dest='subcommand')
@@ -959,7 +981,8 @@ Delete Examples:
         root,
         self.options.manifest_url,
         repo_url=self.options.repo_url,
-        repo_branch=self.options.repo_branch)
+        repo_branch=self.options.repo_branch,
+        groups=self.options.groups)
     handlers = {
         'create': self._HandleCreate,
         'rename': self._HandleRename,

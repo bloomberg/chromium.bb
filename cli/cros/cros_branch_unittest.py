@@ -59,7 +59,8 @@ def AsAttrDict(*args):
 # as well as PROJECTS_EXTERNAL_XML and its internal equivalent.
 PROJECTS = AsAttrDict('manifest', 'manifest-internal', 'chromiumos-overlay',
                       'multicheckout-a', 'multicheckout-b', 'implicit-pinned',
-                      'explicit-tot', 'explicit-branch', 'explicit-pinned')
+                      'explicit-tot', 'explicit-branch', 'explicit-pinned',
+                      'non-default-group')
 
 # Categorize the projects above for use in testing.
 PINNED_PROJECTS = (PROJECTS.EXPLICIT_PINNED, PROJECTS.IMPLICIT_PINNED)
@@ -67,7 +68,8 @@ TOT_PROJECTS = (PROJECTS.EXPLICIT_TOT,)
 MULTI_CHECKOUT_PROJECTS = (PROJECTS.MULTICHECKOUT_A, PROJECTS.MULTICHECKOUT_B)
 SINGLE_CHECKOUT_PROJECTS = (PROJECTS.CHROMIUMOS_OVERLAY,
                             PROJECTS.EXPLICIT_BRANCH, PROJECTS.MANIFEST,
-                            PROJECTS.MANIFEST_INTERNAL)
+                            PROJECTS.MANIFEST_INTERNAL,
+                            PROJECTS.NON_DEFAULT_GROUP)
 BRANCHED_PROJECTS = SINGLE_CHECKOUT_PROJECTS + MULTI_CHECKOUT_PROJECTS
 NON_BRANCHED_PROJECTS = PINNED_PROJECTS + TOT_PROJECTS
 MANIFEST_PROJECTS = (PROJECTS.MANIFEST, PROJECTS.MANIFEST_INTERNAL)
@@ -116,6 +118,11 @@ PROJECTS_EXTERNAL_XML = """
   <project name="chromiumos/multicheckout"
            path="src/third_party/multicheckout-b"
            revision="refs/heads/multicheckout-b"/>
+
+  <project name="chromiumos/non-default-group"
+           path="src/third_party/non-default-group"
+           revision="refs/heads/master"
+           groups="notdefault,special-group"/>
 """
 
 PROJECTS_INTERNAL_XML = """
@@ -210,6 +217,11 @@ PROJECTS_EXTERNAL_BRANCHED_XML = """
   <project name="chromiumos/multicheckout"
            path="src/third_party/multicheckout-b"
            revision="refs/heads/old-branch-multicheckout-b"/>
+
+  <project name="chromiumos/non-default-group"
+           path="src/third_party/non-default-group"
+           revision="refs/heads/old-branch"
+           groups="notdefault,special-group"/>
 """
 
 PROJECTS_INTERNAL_BRANCHED_XML = """
@@ -584,14 +596,23 @@ class CrosCheckoutTest(ManifestTestCase, cros_test_lib.MockTestCase):
     """Test Initialize calls the correct functions with the correct data."""
     self.PatchObject(git, 'FindRepoCheckoutRoot', return_value=None)
     checkout = CrosCheckout.Initialize(
-        '/root', 'manifest.com', repo_url='repo', repo_branch='default')
+        '/root',
+        'manifest.com',
+        repo_url='repo',
+        repo_branch='default',
+        groups='all')
     self.assertEqual(checkout.root, '/root')
     self.assertEqual(checkout.manifest_url, 'manifest.com')
     self.assertEqual(checkout.repo_url, 'repo')
+    self.assertEqual(checkout.groups, 'all')
     self.assertEqual(self.make_dirs.call_count, 1)
     self.assertEqual(self.initialize.call_args_list, [
         mock.call(
-            '/root', 'manifest.com', repo_url='repo', repo_branch='default')
+            '/root',
+            'manifest.com',
+            repo_url='repo',
+            repo_branch='default',
+            groups='all')
     ])
 
   def testInitializeNoRepoInit(self):
