@@ -1576,7 +1576,6 @@ crbug.com/6606 external/wpt/mathml/relations/css-styling/color-002.html [ Failur
 crbug.com/6606 external/wpt/mathml/relations/css-styling/color-003.html [ Failure ]
 crbug.com/6606 external/wpt/mathml/relations/css-styling/color-004.html [ Failure ]
 crbug.com/6606 external/wpt/mathml/relations/css-styling/display-1.html [ Failure ]
-crbug.com/6606 external/wpt/mathml/relations/css-styling/display-contents.html [ Failure ]
 crbug.com/6606 external/wpt/mathml/relations/css-styling/displaystyle-011.html [ Failure ]
 crbug.com/6606 external/wpt/mathml/relations/css-styling/displaystyle-012.html [ Failure ]
 crbug.com/6606 external/wpt/mathml/relations/css-styling/displaystyle-013.html [ Failure ]
