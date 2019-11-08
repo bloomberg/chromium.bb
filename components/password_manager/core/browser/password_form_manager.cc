@@ -941,8 +941,7 @@ void PasswordFormManager::CreatePendingCredentials() {
     is_new_login_ = true;
     // No stored credentials can be matched to the submitted form. Offer to
     // save new credentials.
-    CreatePendingCredentialsForNewCredentials(*parsed_submitted_form_,
-                                              password_to_save.second);
+    CreatePendingCredentialsForNewCredentials(password_to_save.second);
     // Generate username correction votes.
     bool username_correction_found =
         votes_uploader_.FindCorrectedUsernameElement(
@@ -989,28 +988,14 @@ void PasswordFormManager::CreatePendingCredentials() {
 }
 
 void PasswordFormManager::CreatePendingCredentialsForNewCredentials(
-    const PasswordForm& submitted_password_form,
     const base::string16& password_element) {
   if (IsHttpAuth() || IsCredentialAPISave()) {
-    pending_credentials_ = submitted_password_form;
+    pending_credentials_ = *parsed_submitted_form_;
     return;
   }
 
-  // TODO(https://crbug.com/831123): Replace parsing of the observed form with
-  // usage of already parsed submitted form.
-  std::unique_ptr<PasswordForm> parsed_observed_form =
-      ParseFormAndMakeLogging(observed_form_, FormDataParser::Mode::kFilling);
-  if (!parsed_observed_form)
-    return;
-  pending_credentials_ = *parsed_observed_form;
-  pending_credentials_.username_element =
-      submitted_password_form.username_element;
-  pending_credentials_.username_value = submitted_password_form.username_value;
-  pending_credentials_.all_possible_usernames =
-      submitted_password_form.all_possible_usernames;
-  pending_credentials_.all_possible_passwords =
-      submitted_password_form.all_possible_passwords;
-
+  pending_credentials_ = *parsed_submitted_form_;
+  pending_credentials_.form_data = observed_form_;
   // The password value will be filled in later, remove any garbage for now.
   pending_credentials_.password_value.clear();
   // The password element should be determined earlier in |PasswordToSave|.

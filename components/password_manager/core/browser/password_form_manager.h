@@ -242,9 +242,8 @@ class PasswordFormManager : public PasswordFormManagerForUI,
   void ReportTimeBetweenStoreAndServerUMA();
 
   // Create pending credentials from provisionally saved form when this form
-  // represents credentials that were not previosly saved.
+  // represents credentials that were not previously saved.
   void CreatePendingCredentialsForNewCredentials(
-      const autofill::PasswordForm& submitted_password_form,
       const base::string16& password_element);
 
   void SetPasswordOverridden(bool password_overridden) {
