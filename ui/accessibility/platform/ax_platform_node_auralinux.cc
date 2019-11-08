@@ -2078,7 +2078,7 @@ int AXPlatformNodeAuraLinux::GetGTypeInterfaceMask() {
   // for each object.
   interface_mask |= 1 << ATK_ACTION_INTERFACE;
 
-  if (!ui::IsImage(GetData().role)) {
+  if (!ui::IsImageOrVideo(GetData().role)) {
     interface_mask |= 1 << ATK_TEXT_INTERFACE;
     if (!IsPlainTextField())
       interface_mask |= 1 << ATK_HYPERTEXT_INTERFACE;
