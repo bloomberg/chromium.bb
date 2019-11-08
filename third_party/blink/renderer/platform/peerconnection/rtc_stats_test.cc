@@ -26,8 +26,8 @@ TEST(RTCStatsTest, OnlyIncludeWhitelistedStats_GetStats) {
       new webrtc::RTCPeerConnectionStats(whitelisted_id, 42)));
 
   RTCStatsReportPlatform report(webrtc_report.get(), {});
-  EXPECT_FALSE(report.GetStats(blink::WebString::FromUTF8(not_whitelisted_id)));
-  EXPECT_TRUE(report.GetStats(blink::WebString::FromUTF8(whitelisted_id)));
+  EXPECT_FALSE(report.GetStats(not_whitelisted_id));
+  EXPECT_TRUE(report.GetStats(whitelisted_id));
 }
 
 TEST(RTCStatsTest, OnlyIncludeWhitelistedStats_Iteration) {

@@ -971,7 +971,7 @@ TEST_F(RTCPeerConnectionHandlerTest, GetRTCStats) {
             EXPECT_EQ(member->ValueDouble(), 42.0);
             break;
           case webrtc::RTCStatsMemberInterface::kString:
-            EXPECT_EQ(member->ValueString(), blink::WebString::FromUTF8("42"));
+            EXPECT_EQ(member->ValueString(), "42");
             break;
           case webrtc::RTCStatsMemberInterface::kSequenceBool:
             ExpectSequenceEquals(member->ValueSequenceBool(), 1);
@@ -997,7 +997,7 @@ TEST_F(RTCPeerConnectionHandlerTest, GetRTCStats) {
             break;
           case webrtc::RTCStatsMemberInterface::kSequenceString:
             ExpectSequenceEquals(member->ValueSequenceString(),
-                                 blink::WebString::FromUTF8("42"));
+                                 String::FromUTF8("42"));
             break;
           default:
             NOTREACHED();

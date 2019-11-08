@@ -9,6 +9,7 @@
 #include "base/single_thread_task_runner.h"
 #include "third_party/blink/public/platform/web_rtc_stats.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/webrtc/api/stats/rtc_stats.h"
 #include "third_party/webrtc/api/stats/rtc_stats_collector_callback.h"
 #include "third_party/webrtc/api/stats/rtc_stats_report.h"
@@ -27,8 +28,7 @@ class RTCStatsMember;
 // |RTCStatsReport|, from renderer/modules/peerconnection/rtc_stats_report.cc|h.
 //
 // TODO(crbug.com/787254): Switch over the classes below from using WebVector
-// and WebString to WTF::Vector and WTF::String, when their respective parent
-// classes are gone.
+// to WTF::Vector, when their respective parent classes are gone.
 class PLATFORM_EXPORT RTCStatsReportPlatform {
  public:
   RTCStatsReportPlatform(
@@ -41,7 +41,7 @@ class PLATFORM_EXPORT RTCStatsReportPlatform {
   std::unique_ptr<RTCStatsReportPlatform> CopyHandle() const;
 
   // Gets stats object by |id|, or null if no stats with that |id| exists.
-  std::unique_ptr<RTCStats> GetStats(blink::WebString id) const;
+  std::unique_ptr<RTCStats> GetStats(const String& id) const;
 
   // The next stats object, or null if the end has been reached.
   std::unique_ptr<RTCStats> Next();
@@ -66,8 +66,8 @@ class PLATFORM_EXPORT RTCStats {
       const blink::WebVector<webrtc::NonStandardGroupId>& exposed_group_ids);
   virtual ~RTCStats();
 
-  blink::WebString Id() const;
-  blink::WebString GetType() const;
+  String Id() const;
+  String GetType() const;
   double Timestamp() const;
 
   size_t MembersCount() const;
@@ -88,7 +88,7 @@ class PLATFORM_EXPORT RTCStatsMember {
                  const webrtc::RTCStatsMemberInterface* member);
   virtual ~RTCStatsMember();
 
-  blink::WebString GetName() const;
+  String GetName() const;
   webrtc::RTCStatsMemberInterface::Type GetType() const;
   bool IsDefined() const;
 
@@ -98,14 +98,14 @@ class PLATFORM_EXPORT RTCStatsMember {
   int64_t ValueInt64() const;
   uint64_t ValueUint64() const;
   double ValueDouble() const;
-  blink::WebString ValueString() const;
+  String ValueString() const;
   blink::WebVector<int> ValueSequenceBool() const;
   blink::WebVector<int32_t> ValueSequenceInt32() const;
   blink::WebVector<uint32_t> ValueSequenceUint32() const;
   blink::WebVector<int64_t> ValueSequenceInt64() const;
   blink::WebVector<uint64_t> ValueSequenceUint64() const;
   blink::WebVector<double> ValueSequenceDouble() const;
-  blink::WebVector<blink::WebString> ValueSequenceString() const;
+  blink::WebVector<String> ValueSequenceString() const;
 
  private:
   // Reference to keep the report that owns |member_|'s stats object alive.
