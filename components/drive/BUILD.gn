@@ -31,10 +31,6 @@ static_library("drive") {
     "job_list.h",
     "job_queue.cc",
     "job_queue.h",
-    "job_scheduler.cc",
-    "job_scheduler.h",
-    "local_file_reader.cc",
-    "local_file_reader.h",
     "resource_entry_conversion.cc",
     "resource_entry_conversion.h",
     "resource_metadata_storage.cc",
@@ -97,56 +93,17 @@ static_library("test_support") {
 if (is_chromeos) {
   source_set("drive_chromeos") {
     sources = [
-      "chromeos/change_list_processor.cc",
-      "chromeos/change_list_processor.h",
-      "chromeos/drive_file_util.cc",
-      "chromeos/drive_file_util.h",
-      "chromeos/drive_operation_queue.h",
-      "chromeos/file_cache.cc",
-      "chromeos/file_cache.h",
-      "chromeos/file_system_interface.cc",
-      "chromeos/file_system_interface.h",
-      "chromeos/file_system_observer.h",
-      "chromeos/remove_stale_cache_files.cc",
-      "chromeos/remove_stale_cache_files.h",
-      "chromeos/resource_metadata.cc",
-      "chromeos/resource_metadata.h",
       "chromeos/search_metadata.cc",
       "chromeos/search_metadata.h",
-      "chromeos/team_drive.cc",
-      "chromeos/team_drive.h",
-      "chromeos/team_drive_list_observer.h",
     ]
     deps = [
       ":drive",
       "//base",
       "//base:i18n",
-      "//components/prefs",
-      "//google_apis",
-      "//google_apis/drive",
       "//net",
     ]
     public_deps = [
       ":proto",
-    ]
-  }
-  static_library("test_support_chromeos") {
-    testonly = true
-    sources = [
-      "chromeos/drive_test_util.cc",
-      "chromeos/drive_test_util.h",
-      "chromeos/fake_free_disk_space_getter.cc",
-      "chromeos/fake_free_disk_space_getter.h",
-    ]
-    deps = [
-      ":drive",
-      ":drive_chromeos",
-      ":proto",
-      "//base",
-      "//components/prefs:test_support",
-      "//content/test:test_support",
-      "//google_apis:test_support",
-      "//google_apis/drive:test_support",
     ]
   }
 }
