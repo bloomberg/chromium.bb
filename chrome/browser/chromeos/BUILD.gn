@@ -2337,7 +2337,7 @@ source_set("chromeos") {
   }
 }
 
-copy("dbus_service_files") {
+action("dbus_service_files") {
   sources = [
     "dbus/org.chromium.ChromeFeaturesService.conf",
     "dbus/org.chromium.ComponentUpdaterService.conf",
@@ -2353,9 +2353,14 @@ copy("dbus_service_files") {
     "dbus/org.chromium.VirtualFileRequestService.conf",
     "dbus/org.chromium.VmApplicationsService.conf",
   ]
+  output_conf_file = "$root_out_dir/dbus/chrome_dbus_services.conf"
   outputs = [
-    "$root_out_dir/dbus/{{source_file_part}}",
+    output_conf_file,
   ]
+
+  script = "//chromeos/tools/concat_dbus_conf_files.py"
+  args = [ rebase_path(output_conf_file, root_build_dir) ]
+  args += rebase_path(sources, root_build_dir)
 }
 
 static_library("arc_test_support") {
