@@ -6,8 +6,6 @@
 
 namespace blink {
 
-WebRTCStats::~WebRTCStats() = default;
-
 WebRTCStatsMember::~WebRTCStatsMember() = default;
 
 }  // namespace blink

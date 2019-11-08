@@ -15,8 +15,8 @@ namespace blink {
 
 namespace {
 
-v8::Local<v8::Value> WebRTCStatsToValue(ScriptState* script_state,
-                                        const WebRTCStats* stats) {
+v8::Local<v8::Value> RTCStatsToValue(ScriptState* script_state,
+                                     const RTCStats* stats) {
   V8ObjectBuilder builder(script_state);
 
   builder.AddString("id", stats->Id());
@@ -105,11 +105,11 @@ class RTCStatsReportIterationSource final
             String& key,
             v8::Local<v8::Value>& value,
             ExceptionState& exception_state) override {
-    std::unique_ptr<WebRTCStats> stats = report_->Next();
+    std::unique_ptr<RTCStats> stats = report_->Next();
     if (!stats)
       return false;
     key = stats->Id();
-    value = WebRTCStatsToValue(script_state, stats.get());
+    value = RTCStatsToValue(script_state, stats.get());
     return true;
   }
 
@@ -153,10 +153,10 @@ bool RTCStatsReport::GetMapEntry(ScriptState* script_state,
                                  const String& key,
                                  v8::Local<v8::Value>& value,
                                  ExceptionState&) {
-  std::unique_ptr<WebRTCStats> stats = report_->GetStats(key);
+  std::unique_ptr<RTCStats> stats = report_->GetStats(key);
   if (!stats)
     return false;
-  value = WebRTCStatsToValue(script_state, stats.get());
+  value = RTCStatsToValue(script_state, stats.get());
   return true;
 }
 

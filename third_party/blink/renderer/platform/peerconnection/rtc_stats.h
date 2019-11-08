@@ -15,6 +15,8 @@
 
 namespace blink {
 
+class RTCStats;
+
 // Wrapper around a webrtc::RTCStatsReport. Filters out any stats objects that
 // aren't whitelisted. |filter| controls whether to include only standard
 // members (RTCStatsMemberInterface::is_standardized return true) or not
@@ -38,10 +40,10 @@ class PLATFORM_EXPORT RTCStatsReportPlatform {
   std::unique_ptr<RTCStatsReportPlatform> CopyHandle() const;
 
   // Gets stats object by |id|, or null if no stats with that |id| exists.
-  std::unique_ptr<blink::WebRTCStats> GetStats(blink::WebString id) const;
+  std::unique_ptr<RTCStats> GetStats(blink::WebString id) const;
 
   // The next stats object, or null if the end has been reached.
-  std::unique_ptr<blink::WebRTCStats> Next();
+  std::unique_ptr<RTCStats> Next();
 
   // The number of stats objects.
   size_t Size() const;
@@ -55,20 +57,20 @@ class PLATFORM_EXPORT RTCStatsReportPlatform {
   const size_t size_;
 };
 
-class PLATFORM_EXPORT RTCStats : public blink::WebRTCStats {
+class PLATFORM_EXPORT RTCStats {
  public:
   RTCStats(
       const scoped_refptr<const webrtc::RTCStatsReport>& stats_owner,
       const webrtc::RTCStats* stats,
       const blink::WebVector<webrtc::NonStandardGroupId>& exposed_group_ids);
-  ~RTCStats() override;
+  virtual ~RTCStats();
 
-  blink::WebString Id() const override;
-  blink::WebString GetType() const override;
-  double Timestamp() const override;
+  blink::WebString Id() const;
+  blink::WebString GetType() const;
+  double Timestamp() const;
 
-  size_t MembersCount() const override;
-  std::unique_ptr<blink::WebRTCStatsMember> GetMember(size_t i) const override;
+  size_t MembersCount() const;
+  std::unique_ptr<blink::WebRTCStatsMember> GetMember(size_t i) const;
 
  private:
   // Reference to keep the report that owns |stats_| alive.

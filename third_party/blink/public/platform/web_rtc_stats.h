@@ -18,7 +18,6 @@ class SingleThreadTaskRunner;
 }
 
 namespace webrtc {
-class RTCStats;
 class RTCStatsCollectorCallback;
 class RTCStatsMemberInterface;
 class RTCStatsReport;
@@ -27,27 +26,8 @@ enum class NonStandardGroupId;
 
 namespace blink {
 
-class WebRTCStats;
 class WebRTCStatsMember;
 class RTCStatsReportPlatform;
-
-class BLINK_PLATFORM_EXPORT WebRTCStats {
- public:
-  virtual ~WebRTCStats();
-
-  virtual WebString Id() const = 0;
-  virtual WebString GetType() const = 0;
-  virtual double Timestamp() const = 0;
-
-  virtual size_t MembersCount() const = 0;
-  virtual std::unique_ptr<WebRTCStatsMember> GetMember(size_t) const = 0;
-};
-
-BLINK_PLATFORM_EXPORT
-std::unique_ptr<WebRTCStats> CreateRTCStats(
-    const scoped_refptr<const webrtc::RTCStatsReport>& stats_owner,
-    const webrtc::RTCStats* stats,
-    const WebVector<webrtc::NonStandardGroupId>& exposed_group_ids);
 
 class BLINK_PLATFORM_EXPORT WebRTCStatsMember {
  public:
