@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.tasks.tab_management;
 
 import android.os.Build;
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 
 import org.junit.Before;
@@ -24,6 +25,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
+import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.test.util.UiRestriction;
@@ -181,6 +183,58 @@ public class TabSelectionEditorTest {
 
         mRobot.actionRobot.clickItemAtAdapterPosition(enableThreshold - 1);
         mRobot.resultRobot.verifyToolbarActionButtonDisabled();
+    }
+
+    @Test
+    @MediumTest
+    public void testShowTabsWithPreSelectedTabs() {
+        List<Tab> tabs = getTabsInCurrentTabModel();
+        int preSelectedTabCount = 1;
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { mTabSelectionEditorController.show(tabs, preSelectedTabCount); });
+
+        mRobot.resultRobot.verifyTabSelectionEditorIsVisible()
+                .verifyToolbarActionButtonDisabled()
+                .verifyToolbarActionButtonWithResourceId(R.string.tab_selection_editor_group)
+                .verifyToolbarSelectionText("1 selected")
+                .verifyHasAtLeastNItemVisible(tabs.size() + 1)
+                .verifyItemSelectedAtAdapterPosition(0)
+                .verifyHasItemViewTypeAtAdapterPosition(1, TabProperties.UiType.DIVIDER)
+                .verifyDividerAlwaysStartsAtTheEdgeOfScreen();
+    }
+
+    @Test
+    @MediumTest
+    public void testShowTabsWithPreSelectedTabs_10Tabs() {
+        int preSelectedTabCount = 10;
+        int additionalTabCount =
+                preSelectedTabCount + 1 - mTabModelSelector.getCurrentModel().getCount();
+
+        for (int i = 0; i < additionalTabCount; i++) {
+            ChromeTabUtils.newTabFromMenu(InstrumentationRegistry.getInstrumentation(),
+                    mActivityTestRule.getActivity(), mTabModelSelector.isIncognitoSelected(), true);
+        }
+
+        List<Tab> tabs = getTabsInCurrentTabModel();
+
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { mTabSelectionEditorController.show(tabs, preSelectedTabCount); });
+
+        mRobot.resultRobot.verifyToolbarSelectionText("10 selected")
+                .verifyHasItemViewTypeAtAdapterPosition(
+                        preSelectedTabCount, TabProperties.UiType.DIVIDER)
+                .verifyDividerAlwaysStartsAtTheEdgeOfScreenAtPosition(preSelectedTabCount);
+    }
+
+    @Test
+    @MediumTest
+    public void testDividerIsNotClickable() {
+        List<Tab> tabs = getTabsInCurrentTabModel();
+        int preSelectedTabCount = 1;
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { mTabSelectionEditorController.show(tabs, preSelectedTabCount); });
+
+        mRobot.resultRobot.verifyDividerNotClickableNotFocusable();
     }
 
     private List<Tab> getTabsInCurrentTabModel() {
