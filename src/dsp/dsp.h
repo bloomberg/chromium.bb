@@ -629,10 +629,32 @@ using ChromaAutoRegressionFunc = void (*)(const FilmGrainParams& params,
 using ChromaAutoRegressionFuncs =
     ChromaAutoRegressionFunc[/*use_luma*/ 2][kNumAutoRegressionLags];
 
+// Build an image-wide "stripe" of grain noise for every 32 rows in the image.
+// Section 7.18.3.5, first code block.
+// Each 32x32 luma block is copied at a random offset specified via
+// |grain_seed| from the grain template produced by autoregression, and the same
+// is done for chroma grains, subject to subsampling.
+// |width| and |height| are the dimensions of the overall image.
+// |plane| is either kPlaneY, kPlaneU, or kPlaneV, and indexes into the stripes
+// collection.
+// |noise_stripes_buffer| points to an Array2D<GrainType*> object, indexed first
+// by the stripe, then by the plane number.
+// Because this function treats all planes identically and independently, it is
+// simplified to take one grain buffer at a time. This means duplicating some
+// random number generations, but that work can be reduced in other ways.
+using ConstructNoiseStripesFunc = void (*)(const void* grain_buffer,
+                                           int grain_seed, int width,
+                                           int height, int plane,
+                                           int subsampling_x, int subsampling_y,
+                                           void* noise_stripes_buffer);
+using ConstructNoiseStripesFuncs =
+    ConstructNoiseStripesFunc[/*overlap_flag*/ 2];
+
 struct FilmGrainFuncs {
   FilmGrainSynthesisFunc synthesis;
   LumaAutoRegressionFuncs luma_auto_regression;
   ChromaAutoRegressionFuncs chroma_auto_regression;
+  ConstructNoiseStripesFuncs construct_noise_stripes;
 };
 //------------------------------------------------------------------------------
 

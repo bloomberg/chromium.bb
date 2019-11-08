@@ -25,6 +25,7 @@
 #include "src/dsp/constants.h"
 #include "src/dsp/dsp.h"
 #include "src/dsp/film_grain_impl.h"
+#include "src/utils/array_2d.h"
 #include "src/utils/common.h"
 #include "src/utils/compiler_attributes.h"
 #include "src/utils/logging.h"
@@ -641,18 +642,29 @@ bool FilmGrain<bitdepth>::AllocateNoiseStripes() {
   return true;
 }
 
-template <int bitdepth>
-void FilmGrain<bitdepth>::ConstructNoiseStripes() {
-  const int num_planes = is_monochrome_ ? kMaxPlanesMonochrome : kMaxPlanes;
-  const int half_width = DivideBy2(width_ + 1);
-  const int half_height = DivideBy2(height_ + 1);
-  constexpr int kNoiseStripeHeight = 34;
-  int luma_num = 0;
+// This implementation is for the condition overlap_flag == false.
+template <int bitdepth, typename GrainType>
+void ConstructNoiseStripes_C(const void* grain_buffer, int grain_seed,
+                             int width, int height, int plane,
+                             int subsampling_x, int subsampling_y,
+                             void* noise_stripes_buffer) {
+  auto* noise_stripes = static_cast<Array2D<GrainType*>*>(noise_stripes_buffer);
+  const auto* grain = static_cast<const GrainType*>(grain_buffer);
+  const int half_width = DivideBy2(width + 1);
+  const int half_height = DivideBy2(height + 1);
   assert(half_width > 0);
   assert(half_height > 0);
+  static_assert(kLumaWidth == kMaxChromaWidth,
+                "kLumaWidth width should be equal to kMaxChromaWidth");
+  const int grain_width =
+      (subsampling_x == 0) ? kMaxChromaWidth : kMinChromaWidth;
+  const int plane_width = (width + subsampling_x) >> subsampling_x;
+  constexpr int kNoiseStripeHeight = 34;
+  int luma_num = 0;
   int y = 0;
   do {
-    uint16_t seed = params_.grain_seed;
+    GrainType* const noise_stripe = (*noise_stripes)[luma_num][plane];
+    uint16_t seed = grain_seed;
     seed ^= ((luma_num * 37 + 178) & 255) << 8;
     seed ^= ((luma_num * 173 + 105) & 255);
     int x = 0;
@@ -660,70 +672,156 @@ void FilmGrain<bitdepth>::ConstructNoiseStripes() {
       const int rand = GetRandomNumber(8, &seed);
       const int offset_x = rand >> 4;
       const int offset_y = rand & 15;
-      for (int plane = (params_.num_y_points > 0) ? kPlaneY : kPlaneU;
-           plane < num_planes; ++plane) {
-        const int plane_sub_x = (plane > kPlaneY) ? subsampling_x_ : 0;
-        const int plane_sub_y = (plane > kPlaneY) ? subsampling_y_ : 0;
-        const int plane_offset_x =
-            (plane_sub_x != 0) ? 6 + offset_x : 9 + offset_x * 2;
-        const int plane_offset_y =
-            (plane_sub_y != 0) ? 6 + offset_y : 9 + offset_y * 2;
-        GrainType* const noise_stripe = noise_stripes_[luma_num][plane];
-        const int plane_width = (width_ + plane_sub_x) >> plane_sub_x;
-        int i = 0;
+      const int plane_offset_x =
+          (subsampling_x != 0) ? 6 + offset_x : 9 + offset_x * 2;
+      const int plane_offset_y =
+          (subsampling_y != 0) ? 6 + offset_y : 9 + offset_y * 2;
+      int i = 0;
+      do {
+        int j = 0;
         do {
-          int j = 0;
-          do {
-            int grain;
-            if (plane == kPlaneY) {
-              grain = luma_grain_[(plane_offset_y + i) * kLumaWidth +
-                                  (plane_offset_x + j)];
-            } else if (plane == kPlaneU) {
-              grain = u_grain_[(plane_offset_y + i) * chroma_width_ +
-                               (plane_offset_x + j)];
-            } else {
-              grain = v_grain_[(plane_offset_y + i) * chroma_width_ +
-                               (plane_offset_x + j)];
-            }
-            // Section 7.18.3.5 says:
-            //   noiseStripe[ lumaNum ][ 0 ] is 34 samples high and w samples
-            //   wide (a few additional samples across are actually written to
-            //   the array, but these are never read) ...
-            //
-            // Note: The warning in the parentheses also applies to
-            // noiseStripe[ lumaNum ][ 1 ] and noiseStripe[ lumaNum ][ 2 ].
-            //
-            // The writes beyond the width of each row would happen below. To
-            // prevent those writes, we skip the write if the column index
-            // (x * 2 + j or x + j) is >= plane_width.
-            if (plane_sub_x == 0) {
-              if (x * 2 + j >= plane_width) continue;
-              if (j < 2 && params_.overlap_flag && x > 0) {
-                const int old = noise_stripe[i * plane_width + (x * 2 + j)];
-                if (j == 0) {
-                  grain = old * 27 + grain * 17;
-                } else {
-                  grain = old * 17 + grain * 27;
-                }
-                grain = Clip3(RightShiftWithRounding(grain, 5),
-                              GetGrainMin<bitdepth>(), GetGrainMax<bitdepth>());
-              }
-              noise_stripe[i * plane_width + (x * 2 + j)] = grain;
-            } else {
-              if (x + j >= plane_width) continue;
-              if (j == 0 && params_.overlap_flag && x > 0) {
-                const int old = noise_stripe[i * plane_width + (x + j)];
-                grain = old * 23 + grain * 22;
-                grain = Clip3(RightShiftWithRounding(grain, 5),
-                              GetGrainMin<bitdepth>(), GetGrainMax<bitdepth>());
-              }
-              noise_stripe[i * plane_width + (x + j)] = grain;
-            }
-          } while (++j < (kNoiseStripeHeight >> plane_sub_x));
-        } while (++i < (kNoiseStripeHeight >> plane_sub_y));
-      }
+          // Section 7.18.3.5 says:
+          //   noiseStripe[ lumaNum ][ 0 ] is 34 samples high and w samples
+          //   wide (a few additional samples across are actually written to
+          //   the array, but these are never read) ...
+          //
+          // Note: The warning in the parentheses also applies to
+          // noiseStripe[ lumaNum ][ 1 ] and noiseStripe[ lumaNum ][ 2 ].
+          //
+          // The writes beyond the width of each row would happen below. To
+          // prevent those writes, we skip the write if the column index
+          // (x << (1 - subsampling_x)) + j is >= plane_width.
+          const int grain_sample =
+              grain[(plane_offset_y + i) * grain_width + (plane_offset_x + j)];
+          noise_stripe[i * plane_width + (x << (1 - subsampling_x)) + j] =
+              grain_sample;
+        } while (++j < std::min(kNoiseStripeHeight >> subsampling_x,
+                                plane_width - (x << (1 - subsampling_x))));
+      } while (++i < (kNoiseStripeHeight >> subsampling_y));
       x += 16;
     } while (x < half_width);
+
+    ++luma_num;
+    y += 16;
+  } while (y < half_height);
+}
+
+// This implementation is for the condition overlap_flag == true.
+template <int bitdepth, typename GrainType>
+void ConstructNoiseStripesWithOverlap_C(const void* grain_buffer,
+                                        int grain_seed, int width, int height,
+                                        int plane, int subsampling_x,
+                                        int subsampling_y,
+                                        void* noise_stripes_buffer) {
+  auto* noise_stripes = static_cast<Array2D<GrainType*>*>(noise_stripes_buffer);
+  const auto* grain = static_cast<const GrainType*>(grain_buffer);
+  const int half_width = DivideBy2(width + 1);
+  const int half_height = DivideBy2(height + 1);
+  assert(half_width > 0);
+  assert(half_height > 0);
+  static_assert(kLumaWidth == kMaxChromaWidth,
+                "kLumaWidth width should be equal to kMaxChromaWidth");
+  const int grain_width =
+      (subsampling_x == 0) ? kMaxChromaWidth : kMinChromaWidth;
+  const int plane_width = (width + subsampling_x) >> subsampling_x;
+  constexpr int kNoiseStripeHeight = 34;
+  int luma_num = 0;
+  int y = 0;
+  do {
+    GrainType* const noise_stripe = (*noise_stripes)[luma_num][plane];
+    uint16_t seed = grain_seed;
+    seed ^= ((luma_num * 37 + 178) & 255) << 8;
+    seed ^= ((luma_num * 173 + 105) & 255);
+    // Begin special iteration for x == 0.
+    const int rand = GetRandomNumber(8, &seed);
+    const int offset_x = rand >> 4;
+    const int offset_y = rand & 15;
+    const int plane_offset_x =
+        (subsampling_x != 0) ? 6 + offset_x : 9 + offset_x * 2;
+    const int plane_offset_y =
+        (subsampling_y != 0) ? 6 + offset_y : 9 + offset_y * 2;
+    // The overlap computation only occurs when x > 0, so it is omitted here.
+    int i = 0;
+    do {
+      int j = 0;
+      do {
+        const int grain_sample =
+            grain[(plane_offset_y + i) * grain_width + (plane_offset_x + j)];
+        noise_stripe[i * plane_width + j] = grain_sample;
+      } while (++j <
+               std::min(kNoiseStripeHeight >> subsampling_x, plane_width));
+    } while (++i < (kNoiseStripeHeight >> subsampling_y));
+    // End special iteration for x == 0.
+    for (int x = 16; x < half_width; x += 16) {
+      const int rand = GetRandomNumber(8, &seed);
+      const int offset_x = rand >> 4;
+      const int offset_y = rand & 15;
+      const int plane_offset_x =
+          (subsampling_x != 0) ? 6 + offset_x : 9 + offset_x * 2;
+      const int plane_offset_y =
+          (subsampling_y != 0) ? 6 + offset_y : 9 + offset_y * 2;
+      int i = 0;
+      do {
+        int j = 0;
+        int grain_sample =
+            grain[(plane_offset_y + i) * grain_width + plane_offset_x];
+        // The first iteration for j=0 (and j=1 if plane is not subsampled) are
+        // manually unrolled here to cover the "overlap" computation.
+        if (subsampling_x == 0) {
+          // if (j < 2 && x > 0)
+          // j = 0
+          int old = noise_stripe[i * plane_width + x * 2];
+          grain_sample = old * 27 + grain_sample * 17;
+          grain_sample =
+              Clip3(RightShiftWithRounding(grain_sample, 5),
+                    GetGrainMin<bitdepth>(), GetGrainMax<bitdepth>());
+          noise_stripe[i * plane_width + x * 2] = grain_sample;
+
+          // This check prevents overwriting for the iteration j = 1. The
+          // continue applies to the i-loop.
+          if (x * 2 + 1 >= plane_width) continue;
+          // j = 1
+          grain_sample =
+              grain[(plane_offset_y + i) * grain_width + plane_offset_x + 1];
+          old = noise_stripe[i * plane_width + x * 2 + 1];
+          grain_sample = old * 17 + grain_sample * 27;
+          grain_sample =
+              Clip3(RightShiftWithRounding(grain_sample, 5),
+                    GetGrainMin<bitdepth>(), GetGrainMax<bitdepth>());
+          noise_stripe[i * plane_width + x * 2 + 1] = grain_sample;
+          j = 2;
+        } else {
+          // if (j == 0 && x > 0)
+          const int old = noise_stripe[i * plane_width + x];
+          grain_sample = old * 23 + grain_sample * 22;
+          grain_sample =
+              Clip3(RightShiftWithRounding(grain_sample, 5),
+                    GetGrainMin<bitdepth>(), GetGrainMax<bitdepth>());
+          noise_stripe[i * plane_width + x] = grain_sample;
+          j = 1;
+        }
+        // Continue iterating over j.
+        for (; j < std::min(kNoiseStripeHeight >> subsampling_x,
+                            plane_width - (x << (1 - subsampling_x)));
+             ++j) {
+          // Section 7.18.3.5 says:
+          //   noiseStripe[ lumaNum ][ 0 ] is 34 samples high and w samples
+          //   wide (a few additional samples across are actually written to
+          //   the array, but these are never read) ...
+          //
+          // Note: The warning in the parentheses also applies to
+          // noiseStripe[ lumaNum ][ 1 ] and noiseStripe[ lumaNum ][ 2 ].
+          //
+          // The writes beyond the width of each row would happen below. To
+          // prevent those writes, we skip the write if the column index
+          // (x << (1 - subsampling_x)) + j is >= plane_width.
+          const int grain_sample =
+              grain[(plane_offset_y + i) * grain_width + (plane_offset_x + j)];
+          noise_stripe[i * plane_width + (x << (1 - subsampling_x)) + j] =
+              grain_sample;
+        }
+      } while (++i < (kNoiseStripeHeight >> subsampling_y));
+    }
 
     ++luma_num;
     y += 16;
@@ -930,7 +1028,27 @@ bool FilmGrain<bitdepth>::AddNoise(
     LIBGAV1_DLOG(ERROR, "AllocateNoiseStripes() failed.");
     return false;
   }
-  ConstructNoiseStripes();
+
+  const Dsp* dsp = GetDspTable(bitdepth);
+  assert(dsp != nullptr);
+  const bool use_luma = params_.num_y_points > 0;
+  if (use_luma) {
+    // The luma plane is never subsampled.
+    dsp->film_grain
+        .construct_noise_stripes[static_cast<int>(params_.overlap_flag)](
+            luma_grain_, params_.grain_seed, width_, height_, kPlaneY,
+            /*subsampling_x=*/0, /*subsampling_y=*/0, &noise_stripes_);
+  }
+  if (!is_monochrome_) {
+    dsp->film_grain
+        .construct_noise_stripes[static_cast<int>(params_.overlap_flag)](
+            u_grain_, params_.grain_seed, width_, height_, kPlaneU,
+            subsampling_x_, subsampling_y_, &noise_stripes_);
+    dsp->film_grain
+        .construct_noise_stripes[static_cast<int>(params_.overlap_flag)](
+            v_grain_, params_.grain_seed, width_, height_, kPlaneV,
+            subsampling_x_, subsampling_y_, &noise_stripes_);
+  }
 
   if (!AllocateNoiseImage()) {
     LIBGAV1_DLOG(ERROR, "AllocateNoiseImage() failed.");
@@ -987,6 +1105,12 @@ void Init8bpp() {
       ApplyAutoRegressiveFilterToChromaGrains_C<8, int8_t, 2, true>;
   dsp->film_grain.chroma_auto_regression[1][3] =
       ApplyAutoRegressiveFilterToChromaGrains_C<8, int8_t, 3, true>;
+
+  // ConstructNoiseStripesFunc
+  dsp->film_grain.construct_noise_stripes[0] =
+      ConstructNoiseStripes_C<8, int8_t>;
+  dsp->film_grain.construct_noise_stripes[1] =
+      ConstructNoiseStripesWithOverlap_C<8, int8_t>;
 #else  // !LIBGAV1_ENABLE_ALL_DSP_FUNCTIONS
   static_cast<void>(dsp);
 #ifndef LIBGAV1_Dsp8bpp_FilmGrainSynthesis
@@ -1020,6 +1144,12 @@ void Init8bpp() {
       ApplyAutoRegressiveFilterToChromaGrains_C<8, int8_t, 2, true>;
   dsp->film_grain.chroma_auto_regression[1][3] =
       ApplyAutoRegressiveFilterToChromaGrains_C<8, int8_t, 3, true>;
+#endif
+#ifndef LIBGAV1_Dsp8bpp_FilmGrainConstructNoiseStripes
+  dsp->film_grain.construct_noise_stripes[0] =
+      ConstructNoiseStripes_C<8, int8_t>;
+  dsp->film_grain.construct_noise_stripes[1] =
+      ConstructNoiseStripesWithOverlap_C<8, int8_t>;
 #endif
 #endif  // LIBGAV1_ENABLE_ALL_DSP_FUNCTIONS
 }
@@ -1059,6 +1189,12 @@ void Init10bpp() {
       ApplyAutoRegressiveFilterToChromaGrains_C<10, int16_t, 2, true>;
   dsp->film_grain.chroma_auto_regression[1][3] =
       ApplyAutoRegressiveFilterToChromaGrains_C<10, int16_t, 3, true>;
+
+  // ConstructNoiseStripesFunc
+  dsp->film_grain.construct_noise_stripes[0] =
+      ConstructNoiseStripes_C<10, int16_t>;
+  dsp->film_grain.construct_noise_stripes[1] =
+      ConstructNoiseStripesWithOverlap_C<10, int16_t>;
 #else  // !LIBGAV1_ENABLE_ALL_DSP_FUNCTIONS
   static_cast<void>(dsp);
 #ifndef LIBGAV1_Dsp10bpp_FilmGrainSynthesis
@@ -1092,6 +1228,12 @@ void Init10bpp() {
       ApplyAutoRegressiveFilterToChromaGrains_C<10, int16_t, 2, true>;
   dsp->film_grain.chroma_auto_regression[1][3] =
       ApplyAutoRegressiveFilterToChromaGrains_C<10, int16_t, 3, true>;
+#endif
+#ifndef LIBGAV1_Dsp10bpp_FilmGrainConstructNoiseStripes
+  dsp->film_grain.construct_noise_stripes[0] =
+      ConstructNoiseStripes_C<10, int16_t>;
+  dsp->film_grain.construct_noise_stripes[1] =
+      ConstructNoiseStripesWithOverlap_C<10, int16_t>;
 #endif
 #endif  // LIBGAV1_ENABLE_ALL_DSP_FUNCTIONS
 }
