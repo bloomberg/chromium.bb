@@ -56,8 +56,7 @@ TEST(MdnsReceiverTest, ReceiveQuery) {
   MdnsMessage message(1, MessageType::Query);
   message.AddQuestion(question);
 
-  UdpPacket packet(kQueryBytes.size());
-  packet.assign(kQueryBytes.data(), kQueryBytes.data() + kQueryBytes.size());
+  UdpPacket packet(kQueryBytes.data(), kQueryBytes.data() + kQueryBytes.size());
   packet.set_source(
       IPEndpoint{.address = IPAddress(192, 168, 1, 1), .port = 31337});
   packet.set_destination(

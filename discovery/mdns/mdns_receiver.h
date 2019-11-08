@@ -5,9 +5,9 @@
 #ifndef DISCOVERY_MDNS_MDNS_RECEIVER_H_
 #define DISCOVERY_MDNS_MDNS_RECEIVER_H_
 
-#include "platform/api/udp_packet.h"
 #include "platform/api/udp_socket.h"
 #include "platform/base/error.h"
+#include "platform/base/udp_packet.h"
 
 namespace openscreen {
 namespace discovery {

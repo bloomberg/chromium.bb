@@ -15,10 +15,10 @@
 #include "gtest/gtest.h"
 #include "platform/api/logging.h"
 #include "platform/api/time.h"
-#include "platform/api/udp_packet.h"
 #include "platform/api/udp_socket.h"
 #include "platform/base/error.h"
 #include "platform/base/ip_address.h"
+#include "platform/base/udp_packet.h"
 #include "platform/test/fake_clock.h"
 #include "platform/test/fake_task_runner.h"
 #include "streaming/cast/compound_rtcp_parser.h"
@@ -169,10 +169,9 @@ class MockSender : public CompoundRtcpParser::Client {
         sender_report_builder_.BuildPacket(sender_report, buffer);
 
     // Send the RTCP packet as a UdpPacket directly to the Receiver instance.
-    UdpPacket packet_to_send;
+    UdpPacket packet_to_send(packet_and_report_id.first.begin(),
+                             packet_and_report_id.first.end());
     packet_to_send.set_source(sender_endpoint_);
-    packet_to_send.assign(packet_and_report_id.first.begin(),
-                          packet_and_report_id.first.end());
     task_runner_->PostTask(
         [receiver = receiver_, packet = std::move(packet_to_send)]() mutable {
           receiver->OnRead(nullptr, ErrorOr<UdpPacket>(std::move(packet)));
@@ -215,9 +214,8 @@ class MockSender : public CompoundRtcpParser::Client {
     for (FramePacketId packet_id : packets_to_send) {
       const auto span =
           rtp_packetizer_.GeneratePacket(frame_being_sent_, packet_id, buffer);
-      UdpPacket packet_to_send;
+      UdpPacket packet_to_send(span.begin(), span.end());
       packet_to_send.set_source(sender_endpoint_);
-      packet_to_send.assign(span.begin(), span.end());
       task_runner_->PostTask(
           [receiver = receiver_, packet = std::move(packet_to_send)]() mutable {
             receiver->OnRead(nullptr, ErrorOr<UdpPacket>(std::move(packet)));

@@ -28,7 +28,6 @@ source_set("platform") {
     "api/trace_logging_platform.cc",
     "api/trace_logging_platform.h",
     "api/trace_logging_types.h",
-    "api/udp_packet.h",
     "api/udp_read_callback.h",
     "api/udp_socket.cc",
     "api/udp_socket.h",
@@ -44,6 +43,8 @@ source_set("platform") {
     "base/tls_credentials.cc",
     "base/tls_credentials.h",
     "base/tls_listen_options.h",
+    "base/udp_packet.cc",
+    "base/udp_packet.h",
   ]
 
   public_deps = [

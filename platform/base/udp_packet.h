@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file
 
-#ifndef PLATFORM_API_UDP_PACKET_H_
-#define PLATFORM_API_UDP_PACKET_H_
+#ifndef PLATFORM_BASE_UDP_PACKET_H_
+#define PLATFORM_BASE_UDP_PACKET_H_
 
+#include <stdint.h>
+
+#include <algorithm>
 #include <utility>
 #include <vector>
 
-#include "platform/api/logging.h"
 #include "platform/base/ip_address.h"
 
 namespace openscreen {
@@ -16,16 +18,26 @@ namespace platform {
 
 class UdpSocket;
 
-static constexpr size_t kUdpMaxPacketSize = 1 << 16;
-
+// A move-only std::vector of bytes that may not exceed the maximum possible
+// size of a UDP packet. Implicit copy construction/assignment is disabled to
+// prevent hidden copies (i.e., those not explicitly coded).
 class UdpPacket : public std::vector<uint8_t> {
  public:
-  explicit UdpPacket(size_t size) : std::vector<uint8_t>(size) {
-    OSP_DCHECK(size <= kUdpMaxPacketSize);
+  // C++14 vector constructors, sans Allocator foo, and no copy ctor.
+  UdpPacket();
+  explicit UdpPacket(size_type size);
+  explicit UdpPacket(size_type size, uint8_t fill_value);
+  template <typename InputIt>
+  UdpPacket(InputIt first, InputIt last)
+      : UdpPacket(std::distance(first, last)) {
+    std::copy(first, last, begin());
   }
-  UdpPacket() : UdpPacket(0) {}
-  UdpPacket(UdpPacket&& other) = default;
-  UdpPacket& operator=(UdpPacket&& other) = default;
+  UdpPacket(UdpPacket&& other);
+  UdpPacket(std::initializer_list<uint8_t> init);
+
+  ~UdpPacket();
+
+  UdpPacket& operator=(UdpPacket&& other);
 
   const IPEndpoint& source() const { return source_; }
   void set_source(IPEndpoint endpoint) { source_ = std::move(endpoint); }
@@ -38,6 +50,8 @@ class UdpPacket : public std::vector<uint8_t> {
   UdpSocket* socket() const { return socket_; }
   void set_socket(UdpSocket* socket) { socket_ = socket; }
 
+  static constexpr size_type kUdpMaxPacketSize = 1 << 16;
+
  private:
   IPEndpoint source_ = {};
   IPEndpoint destination_ = {};
@@ -49,4 +63,4 @@ class UdpPacket : public std::vector<uint8_t> {
 }  // namespace platform
 }  // namespace openscreen
 
-#endif  // PLATFORM_API_UDP_PACKET_H_
+#endif  // PLATFORM_BASE_UDP_PACKET_H_

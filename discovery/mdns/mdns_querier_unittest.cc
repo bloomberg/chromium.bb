@@ -11,7 +11,7 @@
 #include "discovery/mdns/mdns_writer.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "platform/api/udp_packet.h"
+#include "platform/base/udp_packet.h"
 #include "platform/test/fake_clock.h"
 #include "platform/test/fake_task_runner.h"
 
@@ -112,11 +112,10 @@ class MdnsQuerierTest : public testing::Test {
   UdpPacket CreatePacketWithRecord(const MdnsRecord& record) {
     MdnsMessage message(CreateMessageId(), MessageType::Response);
     message.AddAnswer(record);
-    std::vector<uint8_t> buffer(message.MaxWireSize());
-    MdnsWriter writer(buffer.data(), buffer.size());
+    UdpPacket packet(message.MaxWireSize());
+    MdnsWriter writer(packet.data(), packet.size());
     writer.Write(message);
-    UdpPacket packet(writer.offset());
-    packet.assign(buffer.data(), buffer.data() + writer.offset());
+    packet.resize(writer.offset());
     return packet;
   }
 
