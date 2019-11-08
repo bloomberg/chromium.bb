@@ -26,18 +26,25 @@ namespace blink {
 // TODO(crbug.com/787254): Switch over the classes below from using WebVector
 // and WebString to WTF::Vector and WTF::String, when their respective parent
 // classes are gone.
-class PLATFORM_EXPORT RTCStatsReportPlatform : public WebRTCStatsReport {
+class PLATFORM_EXPORT RTCStatsReportPlatform {
  public:
   RTCStatsReportPlatform(
       const scoped_refptr<const webrtc::RTCStatsReport>& stats_report,
       const blink::WebVector<webrtc::NonStandardGroupId>& exposed_group_ids);
-  ~RTCStatsReportPlatform() override;
-  std::unique_ptr<blink::WebRTCStatsReport> CopyHandle() const override;
+  virtual ~RTCStatsReportPlatform();
+  // Creates a new report object that is a handle to the same underlying stats
+  // report (the stats are not copied). The new report's iterator is reset,
+  // useful when needing multiple iterators.
+  std::unique_ptr<RTCStatsReportPlatform> CopyHandle() const;
 
-  std::unique_ptr<blink::WebRTCStats> GetStats(
-      blink::WebString id) const override;
-  std::unique_ptr<blink::WebRTCStats> Next() override;
-  size_t Size() const override;
+  // Gets stats object by |id|, or null if no stats with that |id| exists.
+  std::unique_ptr<blink::WebRTCStats> GetStats(blink::WebString id) const;
+
+  // The next stats object, or null if the end has been reached.
+  std::unique_ptr<blink::WebRTCStats> Next();
+
+  // The number of stats objects.
+  size_t Size() const;
 
  private:
   const scoped_refptr<const webrtc::RTCStatsReport> stats_report_;
@@ -107,7 +114,7 @@ class PLATFORM_EXPORT RTCStatsMember : public blink::WebRTCStatsMember {
 // A stats collector callback.
 // It is invoked on the WebRTC signaling thread and will post a task to invoke
 // |callback| on the thread given in the |main_thread| argument.
-// The argument to the callback will be a |blink::WebRTCStatsReport|.
+// The argument to the callback will be a |RTCStatsReportPlatform|.
 class PLATFORM_EXPORT RTCStatsCollectorCallbackImpl
     : public webrtc::RTCStatsCollectorCallback {
  public:

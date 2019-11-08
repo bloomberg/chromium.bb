@@ -120,7 +120,7 @@ TEST(RTCStatsTest, CopyHandle) {
 
   // Check that filtering options are preserved during copy.
   RTCStatsReportPlatform standard_members_report(webrtc_report.get(), {});
-  std::unique_ptr<blink::WebRTCStatsReport> standard_members_copy =
+  std::unique_ptr<RTCStatsReportPlatform> standard_members_copy =
       standard_members_report.CopyHandle();
 
   ASSERT_EQ(1u, standard_members_report.GetStats("id")->MembersCount());
@@ -129,7 +129,7 @@ TEST(RTCStatsTest, CopyHandle) {
   RTCStatsReportPlatform all_members_report(
       webrtc_report.get(), std::vector<webrtc::NonStandardGroupId>{
                                webrtc::NonStandardGroupId::kGroupIdForTesting});
-  std::unique_ptr<blink::WebRTCStatsReport> all_members_copy =
+  std::unique_ptr<RTCStatsReportPlatform> all_members_copy =
       all_members_report.CopyHandle();
   ASSERT_EQ(2u, all_members_report.GetStats("id")->MembersCount());
   ASSERT_EQ(2u, all_members_copy->GetStats("id")->MembersCount());

@@ -7,8 +7,8 @@
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/v8_object_builder.h"
+#include "third_party/blink/renderer/platform/peerconnection/rtc_stats.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
-
 #include "third_party/webrtc/api/stats/rtc_stats.h"
 
 namespace blink {
@@ -98,7 +98,7 @@ v8::Local<v8::Value> WebRTCStatsToValue(ScriptState* script_state,
 class RTCStatsReportIterationSource final
     : public PairIterable<String, v8::Local<v8::Value>>::IterationSource {
  public:
-  RTCStatsReportIterationSource(std::unique_ptr<WebRTCStatsReport> report)
+  RTCStatsReportIterationSource(std::unique_ptr<RTCStatsReportPlatform> report)
       : report_(std::move(report)) {}
 
   bool Next(ScriptState* script_state,
@@ -114,7 +114,7 @@ class RTCStatsReportIterationSource final
   }
 
  private:
-  std::unique_ptr<WebRTCStatsReport> report_;
+  std::unique_ptr<RTCStatsReportPlatform> report_;
 };
 
 }  // namespace
@@ -136,7 +136,7 @@ WebVector<webrtc::NonStandardGroupId> GetExposedGroupIds(
   return enabled_origin_trials;
 }
 
-RTCStatsReport::RTCStatsReport(std::unique_ptr<WebRTCStatsReport> report)
+RTCStatsReport::RTCStatsReport(std::unique_ptr<RTCStatsReportPlatform> report)
     : report_(std::move(report)) {}
 
 uint32_t RTCStatsReport::size() const {

@@ -29,27 +29,7 @@ namespace blink {
 
 class WebRTCStats;
 class WebRTCStatsMember;
-
-class BLINK_PLATFORM_EXPORT WebRTCStatsReport {
- public:
-  virtual ~WebRTCStatsReport();
-  // Creates a new report object that is a handle to the same underlying stats
-  // report (the stats are not copied). The new report's iterator is reset,
-  // useful when needing multiple iterators.
-  virtual std::unique_ptr<WebRTCStatsReport> CopyHandle() const = 0;
-
-  // Gets stats object by |id|, or null if no stats with that |id| exists.
-  virtual std::unique_ptr<WebRTCStats> GetStats(WebString id) const = 0;
-  // The next stats object, or null if the end has been reached.
-  virtual std::unique_ptr<WebRTCStats> Next() = 0;
-  // The number of stats objects.
-  virtual size_t Size() const = 0;
-};
-
-BLINK_PLATFORM_EXPORT
-std::unique_ptr<WebRTCStatsReport> CreateRTCStatsReport(
-    const scoped_refptr<const webrtc::RTCStatsReport>& stats_report,
-    const WebVector<webrtc::NonStandardGroupId>& exposed_group_ids);
+class RTCStatsReportPlatform;
 
 class BLINK_PLATFORM_EXPORT WebRTCStats {
  public:
@@ -102,7 +82,7 @@ std::unique_ptr<WebRTCStatsMember> CreateRTCStatsMember(
     const webrtc::RTCStatsMemberInterface* member);
 
 using WebRTCStatsReportCallback =
-    base::OnceCallback<void(std::unique_ptr<WebRTCStatsReport>)>;
+    base::OnceCallback<void(std::unique_ptr<RTCStatsReportPlatform>)>;
 
 BLINK_PLATFORM_EXPORT
 rtc::scoped_refptr<webrtc::RTCStatsCollectorCallback>

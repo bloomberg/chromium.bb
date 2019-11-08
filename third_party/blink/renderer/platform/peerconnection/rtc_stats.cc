@@ -118,13 +118,6 @@ size_t CountWhitelistedStats(
 
 }  // namespace
 
-std::unique_ptr<blink::WebRTCStatsReport> CreateRTCStatsReport(
-    const scoped_refptr<const webrtc::RTCStatsReport>& stats_report,
-    const blink::WebVector<webrtc::NonStandardGroupId>& exposed_group_ids) {
-  return std::make_unique<RTCStatsReportPlatform>(std::move(stats_report),
-                                                  exposed_group_ids);
-}
-
 RTCStatsReportPlatform::RTCStatsReportPlatform(
     const scoped_refptr<const webrtc::RTCStatsReport>& stats_report,
     const blink::WebVector<webrtc::NonStandardGroupId>& exposed_group_ids)
@@ -138,9 +131,10 @@ RTCStatsReportPlatform::RTCStatsReportPlatform(
 
 RTCStatsReportPlatform::~RTCStatsReportPlatform() {}
 
-std::unique_ptr<blink::WebRTCStatsReport> RTCStatsReportPlatform::CopyHandle()
+std::unique_ptr<RTCStatsReportPlatform> RTCStatsReportPlatform::CopyHandle()
     const {
-  return CreateRTCStatsReport(stats_report_, exposed_group_ids_);
+  return std::make_unique<RTCStatsReportPlatform>(stats_report_,
+                                                  exposed_group_ids_);
 }
 
 std::unique_ptr<blink::WebRTCStats> RTCStatsReportPlatform::GetStats(
@@ -362,7 +356,7 @@ void RTCStatsCollectorCallbackImpl::OnStatsDeliveredOnMainThread(
   DCHECK(report);
   DCHECK(callback_);
   // Make sure the callback is destroyed in the main thread as well.
-  std::move(callback_).Run(CreateRTCStatsReport(
+  std::move(callback_).Run(std::make_unique<RTCStatsReportPlatform>(
       base::WrapRefCounted(report.get()), exposed_group_ids_));
 }
 

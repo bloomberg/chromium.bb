@@ -50,6 +50,7 @@
 #include "third_party/blink/renderer/modules/peerconnection/peer_connection_tracker.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_audio_source.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_dtmf_sender_handler.h"
+#include "third_party/blink/renderer/platform/peerconnection/rtc_stats.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_void_request.h"
 #include "third_party/webrtc/api/peer_connection_interface.h"
 #include "third_party/webrtc/api/rtp_receiver_interface.h"
@@ -214,9 +215,9 @@ class MockPeerConnectionTracker : public PeerConnectionTracker {
                     const blink::WebMediaStreamTrack& track));
 };
 
-void OnStatsDelivered(std::unique_ptr<blink::WebRTCStatsReport>* result,
+void OnStatsDelivered(std::unique_ptr<RTCStatsReportPlatform>* result,
                       scoped_refptr<base::SingleThreadTaskRunner> main_thread,
-                      std::unique_ptr<blink::WebRTCStatsReport> report) {
+                      std::unique_ptr<RTCStatsReportPlatform> report) {
   EXPECT_TRUE(main_thread->BelongsToCurrentThread());
   EXPECT_TRUE(report);
   result->reset(report.release());
@@ -917,7 +918,7 @@ TEST_F(RTCPeerConnectionHandlerTest, GetRTCStats) {
       std::unique_ptr<const webrtc::RTCStats>(stats_defined_members.release()));
 
   pc_handler_->native_peer_connection()->SetGetStatsReport(report);
-  std::unique_ptr<blink::WebRTCStatsReport> result;
+  std::unique_ptr<RTCStatsReportPlatform> result;
   pc_handler_->GetStats(
       base::BindOnce(OnStatsDelivered, &result,
                      blink::scheduler::GetSingleThreadTaskRunnerForTesting()),
