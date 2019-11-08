@@ -133,6 +133,7 @@ android_library("java") {
     "java/src/org/chromium/chrome/browser/autofill_assistant/user_data/AssistantLoginSection.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/user_data/AssistantCollectUserDataSection.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/user_data/AssistantCollectUserDataNativeDelegate.java",
+    "java/src/org/chromium/chrome/browser/autofill_assistant/user_data/AssistantInfoPopup.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/user_data/AssistantPaymentMethodSection.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/user_data/AssistantCollectUserDataModel.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/user_data/AssistantDateChoiceOptions.java",
