@@ -4134,6 +4134,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kMediaSessionNotificationsDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kMediaSessionNotification)},
 
+    {"enable-neural-stylus-palm-rejection",
+     flag_descriptions::kEnableNeuralStylusPalmRejectionName,
+     flag_descriptions::kEnableNeuralStylusPalmRejectionDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ui::kEnableNeuralPalmDetectionFilter)},
+
     {"enable-heuristic-stylus-palm-rejection",
      flag_descriptions::kEnableHeuristicStylusPalmRejectionName,
      flag_descriptions::kEnableHeuristicStylusPalmRejectionDescription, kOsCrOS,

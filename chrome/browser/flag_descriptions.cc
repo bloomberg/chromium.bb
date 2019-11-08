@@ -3497,6 +3497,12 @@ const char kEnableHomeLauncherName[] = "Enable home launcher";
 const char kEnableHomeLauncherDescription[] =
     "Enable home launcher in tablet mode.";
 
+const char kEnableNeuralStylusPalmRejectionName[] =
+    "Enable Neural Palm Detection";
+const char kEnableNeuralStylusPalmRejectionDescription[] =
+    "Experimental: Enable Neural Palm detection. Not compatible with all "
+    "devices.";
+
 const char kEnableParentalControlsSettingsName[] =
     "Enable Parental controls settings";
 const char kEnableParentalControlsSettingsDescription[] =

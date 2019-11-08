@@ -2068,6 +2068,9 @@ extern const char kEnableHeuristicStylusPalmRejectionDescription[];
 extern const char kEnableHomeLauncherName[];
 extern const char kEnableHomeLauncherDescription[];
 
+extern const char kEnableNeuralStylusPalmRejectionName[];
+extern const char kEnableNeuralStylusPalmRejectionDescription[];
+
 extern const char kEnableParentalControlsSettingsName[];
 extern const char kEnableParentalControlsSettingsDescription[];
 

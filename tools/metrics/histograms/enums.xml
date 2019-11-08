@@ -37110,6 +37110,7 @@ from previous Chrome versions.
   <int value="-169745744" label="SyncPseudoUSSPreferences:enabled"/>
   <int value="-167744090" label="EnableHomeLauncher:enabled"/>
   <int value="-165756594" label="enable-touch-feedback"/>
+  <int value="-165006916" label="EnableNeuralPalmDetectionFilter:enabled"/>
   <int value="-164539906"
       label="OmniboxPreserveDefaultMatchAgainstAsyncUpdate:disabled"/>
   <int value="-161782023" label="AndroidMessagesProdEndpoint:enabled"/>
@@ -37853,6 +37854,7 @@ from previous Chrome versions.
   <int value="787385958" label="RegionalLocalesAsDisplayUI:enabled"/>
   <int value="799680074" label="ContextualSearchTranslationModel:enabled"/>
   <int value="803282885" label="PreferHtmlOverPlugins:disabled"/>
+  <int value="806035639" label="EnableNeuralPalmDetectionFilter:disabled"/>
   <int value="806334184" label="AndroidSpellChecker:enabled"/>
   <int value="807447752" label="ChromeMemex:disabled"/>
   <int value="807734471" label="tab-management-experiment-type-disabled"/>

@@ -1549,6 +1549,13 @@
     "expiry_milestone": -1
   },
   {
+    "name": "enable-neural-stylus-palm-rejection",
+    "owners": ["robsc", "napper", "adlr"],
+    // We add a neural net to change how fingers are handled. We set a milestone
+    // deep into the future to allow for experiments.
+    "expiry_milestone": 90
+  },
+  {
     "name": "enable-new-download-backend",
     "owners": [ "shaktisahu", "dtrainor" ],
     "expiry_milestone": 80
