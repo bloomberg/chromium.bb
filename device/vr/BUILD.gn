@@ -249,8 +249,6 @@ if (enable_vr) {
       "test/fake_vr_device.h",
       "test/fake_vr_device_provider.cc",
       "test/fake_vr_device_provider.h",
-      "test/fake_vr_display_impl_client.cc",
-      "test/fake_vr_display_impl_client.h",
       "test/fake_vr_service_client.cc",
       "test/fake_vr_service_client.h",
       "vr_export.h",
