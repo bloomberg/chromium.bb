@@ -133,6 +133,8 @@ enable=
 # TODO: Re-enable redefined-variable-type.
 # TODO: Re-enable inconsistent-return-statements.
 # TODO: Re-enable keyword-arg-before-vararg once we're on Python 3-only.
+# TODO: Re-enable useless-object-inheritance once we're on Python 3-only and
+#       we update the style guide.
 disable=
     broad-except,
     consider-iterating-dictionary,
@@ -160,6 +162,7 @@ disable=
     too-many-public-methods,
     too-many-return-statements,
     too-many-statements,
+    useless-object-inheritance,
 
 
 [REPORTS]
