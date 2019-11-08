@@ -71,9 +71,11 @@ static uint64_t gralloc0_convert_usage(int usage)
 		use_flags |= BO_USE_NONE;
 	if (usage & GRALLOC_USAGE_PROTECTED)
 		use_flags |= BO_USE_PROTECTED;
-	if (usage & GRALLOC_USAGE_HW_VIDEO_ENCODER)
+	if (usage & GRALLOC_USAGE_HW_VIDEO_ENCODER) {
+		use_flags |= BO_USE_HW_VIDEO_ENCODER;
 		/*HACK: See b/30054495 */
 		use_flags |= BO_USE_SW_READ_OFTEN;
+	}
 	if (usage & GRALLOC_USAGE_HW_CAMERA_WRITE)
 		use_flags |= BO_USE_CAMERA_WRITE;
 	if (usage & GRALLOC_USAGE_HW_CAMERA_READ)
