@@ -327,6 +327,34 @@ class ThemeColorObserver : public WebContentsObserver {
   base::Optional<SkColor> color_;
 };
 
+class DOMContentLoadedObserver : public WebContentsObserver {
+ public:
+  explicit DOMContentLoadedObserver(RenderFrameHostImpl* render_frame_host)
+      : WebContentsObserver(
+            WebContents::FromRenderFrameHost(render_frame_host)),
+        render_frame_host_(render_frame_host) {}
+
+  void DOMContentLoaded(RenderFrameHost* render_frame_host) override {
+    if (render_frame_host_ == render_frame_host)
+      run_loop_.Quit();
+  }
+
+  void Wait() {
+    if (render_frame_host_->dom_content_loaded())
+      run_loop_.Quit();
+    run_loop_.Run();
+  }
+
+ private:
+  RenderFrameHostImpl* render_frame_host_;
+  base::RunLoop run_loop_;
+};
+
+void WaitForDOMContentLoaded(RenderFrameHostImpl* rfh) {
+  DOMContentLoadedObserver observer(rfh);
+  observer.Wait();
+}
+
 }  // namespace
 
 // Navigate from A to B and go back.
@@ -1445,6 +1473,10 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
 
   // The navigation finishes while the image is still loading.
   navigation_manager.WaitForNavigationFinished();
+  // Wait for the document to load DOM to ensure that kLoading is not
+  // one of the reasons why the document wasn't cached.
+  WaitForDOMContentLoaded(current_frame_host());
+
   RenderFrameDeletedObserver delete_observer_rfh_a(current_frame_host());
 
   // 2) Navigate away.
