@@ -348,7 +348,7 @@
     "messages": [23125],
   },
   "ash/components/ash_components_strings.grd": {
-    "messages": [23740],
+    "messages": [23800],
   },
   "ash/keyboard/ui/keyboard_resources.grd": {
     "includes": [23960],
