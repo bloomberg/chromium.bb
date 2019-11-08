@@ -32,6 +32,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/size.h"
 
+using ::base::test::RunClosure;
 using ::base::test::RunOnceCallback;
 using ::base::test::RunOnceClosure;
 using ::testing::_;
@@ -97,6 +98,7 @@ class PipelineImplTest : public ::testing::Test {
     MOCK_METHOD1(OnSeek, void(PipelineStatus));
     MOCK_METHOD1(OnSuspend, void(PipelineStatus));
     MOCK_METHOD1(OnResume, void(PipelineStatus));
+    MOCK_METHOD1(OnCdmAttached, void(bool));
 
    private:
     DISALLOW_COPY_AND_ASSIGN(CallbackHelper);
@@ -175,7 +177,7 @@ class PipelineImplTest : public ::testing::Test {
     return stream;
   }
 
-  // Sets up expectations to allow the video renderer to initialize.
+  // Sets up expectations to allow the renderer to initialize.
   void SetRendererExpectations() {
     EXPECT_CALL(*renderer_, OnInitialize(_, _, _))
         .WillOnce(
@@ -188,6 +190,17 @@ class PipelineImplTest : public ::testing::Test {
     pipeline_->Start(
         start_type, demuxer_.get(), &callbacks_,
         base::Bind(&CallbackHelper::OnStart, base::Unretained(&callbacks_)));
+  }
+
+  void SetRendererPostStartExpectations() {
+    EXPECT_CALL(*renderer_, SetPlaybackRate(0.0));
+    EXPECT_CALL(*renderer_, SetVolume(1.0f));
+    EXPECT_CALL(*renderer_, StartPlayingFrom(start_time_))
+        .WillOnce(SetBufferingState(&renderer_client_, BUFFERING_HAVE_ENOUGH,
+                                    BUFFERING_CHANGE_REASON_UNKNOWN));
+    EXPECT_CALL(callbacks_,
+                OnBufferingStateChange(BUFFERING_HAVE_ENOUGH,
+                                       BUFFERING_CHANGE_REASON_UNKNOWN));
   }
 
   // Suspension status of the pipeline post Start().
@@ -206,17 +219,8 @@ class PipelineImplTest : public ::testing::Test {
 
     if (start_status == PIPELINE_OK) {
       EXPECT_CALL(callbacks_, OnMetadata(_)).WillOnce(SaveArg<0>(&metadata_));
-      if (post_start_status == PostStartStatus::kNormal) {
-        EXPECT_CALL(*renderer_, SetPlaybackRate(0.0));
-        EXPECT_CALL(*renderer_, SetVolume(1.0f));
-        EXPECT_CALL(*renderer_, StartPlayingFrom(start_time_))
-            .WillOnce(SetBufferingState(&renderer_client_,
-                                        BUFFERING_HAVE_ENOUGH,
-                                        BUFFERING_CHANGE_REASON_UNKNOWN));
-        EXPECT_CALL(callbacks_,
-                    OnBufferingStateChange(BUFFERING_HAVE_ENOUGH,
-                                           BUFFERING_CHANGE_REASON_UNKNOWN));
-      }
+      if (post_start_status == PostStartStatus::kNormal)
+        SetRendererPostStartExpectations();
     }
 
     StartPipeline(start_type);
@@ -233,14 +237,26 @@ class PipelineImplTest : public ::testing::Test {
     audio_stream_ = CreateStream(DemuxerStream::AUDIO);
   }
 
-  void CreateVideoStream() {
+  void CreateVideoStream(bool is_encrypted = false) {
     video_stream_ = CreateStream(DemuxerStream::VIDEO);
-    video_stream_->set_video_decoder_config(video_decoder_config_);
+    video_stream_->set_video_decoder_config(
+        is_encrypted ? TestVideoConfig::NormalEncrypted()
+                     : TestVideoConfig::Normal());
   }
 
-  MockDemuxerStream* audio_stream() { return audio_stream_.get(); }
+  void CreateEncryptedVideoStream() { CreateVideoStream(true); }
 
+  MockDemuxerStream* audio_stream() { return audio_stream_.get(); }
   MockDemuxerStream* video_stream() { return video_stream_.get(); }
+
+  void SetCdmAndExpect(bool expected_result) {
+    EXPECT_CALL(*renderer_, OnSetCdm(_, _)).WillOnce(RunOnceCallback<1>(true));
+    EXPECT_CALL(callbacks_, OnCdmAttached(expected_result));
+    pipeline_->SetCdm(&cdm_context_,
+                      base::BindRepeating(&CallbackHelper::OnCdmAttached,
+                                          base::Unretained(&callbacks_)));
+    base::RunLoop().RunUntilIdle();
+  }
 
   void ExpectSeek(const base::TimeDelta& seek_time, bool underflowed) {
     EXPECT_CALL(*demuxer_, AbortPendingReads());
@@ -338,6 +354,7 @@ class PipelineImplTest : public ::testing::Test {
   base::test::SingleThreadTaskEnvironment task_environment_;
   NullMediaLog media_log_;
   std::unique_ptr<PipelineImpl> pipeline_;
+  StrictMock<MockCdmContext> cdm_context_;
 
   std::unique_ptr<StrictMock<MockDemuxer>> demuxer_;
   DemuxerHost* demuxer_host_;
@@ -531,6 +548,40 @@ TEST_F(PipelineImplTest, AudioVideoStream) {
   EXPECT_TRUE(metadata_.has_video);
 }
 
+TEST_F(PipelineImplTest, EncryptedStream_SetCdmBeforeStart) {
+  CreateEncryptedVideoStream();
+  MockDemuxerStreamVector streams;
+  streams.push_back(video_stream());
+  SetDemuxerExpectations(&streams);
+
+  SetCdmAndExpect(true);
+  SetRendererExpectations();
+  StartPipelineAndExpect(PIPELINE_OK);
+}
+
+TEST_F(PipelineImplTest, EncryptedStream_SetCdmAfterStart) {
+  CreateEncryptedVideoStream();
+  MockDemuxerStreamVector streams;
+  streams.push_back(video_stream());
+  SetDemuxerExpectations(&streams);
+
+  // Demuxer initialization and metadata reporting don't wait for CDM.
+  EXPECT_CALL(callbacks_, OnMetadata(_)).WillOnce(SaveArg<0>(&metadata_));
+
+  base::RunLoop run_loop;
+  EXPECT_CALL(callbacks_, OnWaiting(_))
+      .WillOnce(RunClosure(run_loop.QuitClosure()));
+  pipeline_->Start(
+      Pipeline::StartType::kNormal, demuxer_.get(), &callbacks_,
+      base::Bind(&CallbackHelper::OnStart, base::Unretained(&callbacks_)));
+  run_loop.Run();
+
+  SetRendererExpectations();
+  EXPECT_CALL(callbacks_, OnStart(PIPELINE_OK));
+  SetRendererPostStartExpectations();
+  SetCdmAndExpect(true);
+}
+
 TEST_F(PipelineImplTest, Seek) {
   CreateAudioStream();
   CreateVideoStream();
@@ -684,7 +735,6 @@ TEST_F(PipelineImplTest, EndedCallback) {
   SetDemuxerExpectations(&streams);
   SetRendererExpectations();
   StartPipelineAndExpect(PIPELINE_OK);
-
 
   // The ended callback shouldn't run until all renderers have ended.
   EXPECT_CALL(callbacks_, OnEnded());
