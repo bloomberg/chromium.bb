@@ -77,6 +77,7 @@
 #include "components/sync/engine/passive_model_worker.h"
 #include "components/sync/engine/sequenced_model_worker.h"
 #include "components/sync/engine/ui_model_worker.h"
+#include "components/sync/model/model_type_store.h"
 #include "components/sync/model/model_type_store_service.h"
 #include "components/sync/model_impl/forwarding_model_type_controller_delegate.h"
 #include "components/sync_bookmarks/bookmark_sync_service.h"
@@ -120,13 +121,16 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/arc/arc_util.h"
+#include "chrome/browser/chromeos/printing/printers_model_type_controller.h"
 #include "chrome/browser/chromeos/printing/printers_sync_bridge.h"
 #include "chrome/browser/chromeos/printing/synced_printers_manager.h"
 #include "chrome/browser/chromeos/printing/synced_printers_manager_factory.h"
+#include "chrome/browser/chromeos/sync/os_preferences_model_type_controller.h"
 #include "chrome/browser/sync/wifi_configuration_sync_service_factory.h"
 #include "chrome/browser/ui/app_list/arc/arc_package_sync_model_type_controller.h"
 #include "chrome/browser/ui/app_list/arc/arc_package_syncable_service.h"
 #include "chromeos/components/sync_wifi/wifi_configuration_sync_service.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "components/arc/arc_util.h"
 #endif  // defined(OS_CHROMEOS)
 
@@ -301,6 +305,9 @@ ChromeSyncClient::CreateDataTypeControllers(syncer::SyncService* sync_service) {
   const base::RepeatingClosure dump_stack = base::BindRepeating(
       &syncer::ReportUnrecoverableError, chrome::GetChannel());
 
+  syncer::RepeatingModelTypeStoreFactory model_type_store_factory =
+      GetModelTypeStoreService()->GetStoreFactory();
+
   if (!disabled_types.Has(syncer::SECURITY_EVENTS)) {
     syncer::ModelTypeControllerDelegate* delegate =
         SecurityEventRecorderFactory::GetForProfile(profile_)
@@ -330,7 +337,7 @@ ChromeSyncClient::CreateDataTypeControllers(syncer::SyncService* sync_service) {
   // disabled.
   if (!disabled_types.Has(syncer::APPS)) {
     controllers.push_back(std::make_unique<ExtensionModelTypeController>(
-        syncer::APPS, GetModelTypeStoreService()->GetStoreFactory(),
+        syncer::APPS, model_type_store_factory,
         GetSyncableServiceForType(syncer::APPS), dump_stack, profile_));
   }
 
@@ -338,7 +345,7 @@ ChromeSyncClient::CreateDataTypeControllers(syncer::SyncService* sync_service) {
   // disabled.
   if (!disabled_types.Has(syncer::EXTENSIONS)) {
     controllers.push_back(std::make_unique<ExtensionModelTypeController>(
-        syncer::EXTENSIONS, GetModelTypeStoreService()->GetStoreFactory(),
+        syncer::EXTENSIONS, model_type_store_factory,
         GetSyncableServiceForType(syncer::EXTENSIONS), dump_stack, profile_));
   }
 
@@ -346,8 +353,7 @@ ChromeSyncClient::CreateDataTypeControllers(syncer::SyncService* sync_service) {
   // disabled.
   if (!disabled_types.Has(syncer::EXTENSION_SETTINGS)) {
     controllers.push_back(std::make_unique<ExtensionSettingModelTypeController>(
-        syncer::EXTENSION_SETTINGS,
-        GetModelTypeStoreService()->GetStoreFactory(),
+        syncer::EXTENSION_SETTINGS, model_type_store_factory,
         extensions::settings_sync_util::GetSyncableServiceProvider(
             profile_, syncer::EXTENSION_SETTINGS),
         dump_stack, profile_));
@@ -357,7 +363,7 @@ ChromeSyncClient::CreateDataTypeControllers(syncer::SyncService* sync_service) {
   // disabled.
   if (!disabled_types.Has(syncer::APP_SETTINGS)) {
     controllers.push_back(std::make_unique<ExtensionSettingModelTypeController>(
-        syncer::APP_SETTINGS, GetModelTypeStoreService()->GetStoreFactory(),
+        syncer::APP_SETTINGS, model_type_store_factory,
         extensions::settings_sync_util::GetSyncableServiceProvider(
             profile_, syncer::APP_SETTINGS),
         dump_stack, profile_));
@@ -380,7 +386,7 @@ ChromeSyncClient::CreateDataTypeControllers(syncer::SyncService* sync_service) {
   // Theme sync is enabled by default.  Register unless explicitly disabled.
   if (!disabled_types.Has(syncer::THEMES)) {
     controllers.push_back(std::make_unique<ExtensionModelTypeController>(
-        syncer::THEMES, GetModelTypeStoreService()->GetStoreFactory(),
+        syncer::THEMES, model_type_store_factory,
         GetSyncableServiceForType(syncer::THEMES), dump_stack, profile_));
   }
 
@@ -389,8 +395,7 @@ ChromeSyncClient::CreateDataTypeControllers(syncer::SyncService* sync_service) {
   if (!disabled_types.Has(syncer::SEARCH_ENGINES)) {
     controllers.push_back(
         std::make_unique<syncer::SyncableServiceBasedModelTypeController>(
-            syncer::SEARCH_ENGINES,
-            GetModelTypeStoreService()->GetStoreFactory(),
+            syncer::SEARCH_ENGINES, model_type_store_factory,
             GetSyncableServiceForType(syncer::SEARCH_ENGINES), dump_stack));
   }
 #endif  // !defined(OS_ANDROID)
@@ -401,7 +406,7 @@ ChromeSyncClient::CreateDataTypeControllers(syncer::SyncService* sync_service) {
   if (!chromeos::switches::IsTabletFormFactor()) {
     controllers.push_back(
         std::make_unique<syncer::SyncableServiceBasedModelTypeController>(
-            syncer::APP_LIST, GetModelTypeStoreService()->GetStoreFactory(),
+            syncer::APP_LIST, model_type_store_factory,
             GetSyncableServiceForType(syncer::APP_LIST), dump_stack));
   }
 #endif  // BUILDFLAG(ENABLE_APP_LIST)
@@ -411,7 +416,7 @@ ChromeSyncClient::CreateDataTypeControllers(syncer::SyncService* sync_service) {
   if (!disabled_types.Has(syncer::DICTIONARY)) {
     controllers.push_back(
         std::make_unique<syncer::SyncableServiceBasedModelTypeController>(
-            syncer::DICTIONARY, GetModelTypeStoreService()->GetStoreFactory(),
+            syncer::DICTIONARY, model_type_store_factory,
             GetSyncableServiceForType(syncer::DICTIONARY), dump_stack));
   }
 #endif  // defined(OS_LINUX) || defined(OS_WIN)
@@ -420,9 +425,29 @@ ChromeSyncClient::CreateDataTypeControllers(syncer::SyncService* sync_service) {
   if (arc::IsArcAllowedForProfile(profile_) &&
       !arc::IsArcAppSyncFlowDisabled()) {
     controllers.push_back(std::make_unique<ArcPackageSyncModelTypeController>(
-        GetModelTypeStoreService()->GetStoreFactory(),
+        model_type_store_factory,
         GetSyncableServiceForType(syncer::ARC_PACKAGE), dump_stack,
         sync_service, profile_));
+  }
+  if (chromeos::features::IsSplitSettingsSyncEnabled()) {
+    if (!disabled_types.Has(syncer::OS_PREFERENCES)) {
+      controllers.push_back(std::make_unique<OsPreferencesModelTypeController>(
+          syncer::OS_PREFERENCES, model_type_store_factory,
+          GetSyncableServiceForType(syncer::OS_PREFERENCES), dump_stack,
+          profile_->GetPrefs(), sync_service));
+    }
+    if (!disabled_types.Has(syncer::OS_PRIORITY_PREFERENCES)) {
+      controllers.push_back(std::make_unique<OsPreferencesModelTypeController>(
+          syncer::OS_PRIORITY_PREFERENCES, model_type_store_factory,
+          GetSyncableServiceForType(syncer::OS_PRIORITY_PREFERENCES),
+          dump_stack, profile_->GetPrefs(), sync_service));
+    }
+    if (!disabled_types.Has(syncer::PRINTERS)) {
+      controllers.push_back(std::make_unique<PrintersModelTypeController>(
+          std::make_unique<syncer::ForwardingModelTypeControllerDelegate>(
+              GetControllerDelegateForModelType(syncer::PRINTERS).get()),
+          profile_->GetPrefs(), sync_service));
+    }
   }
 #endif  // defined(OS_CHROMEOS)
 
