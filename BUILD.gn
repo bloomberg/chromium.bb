@@ -608,7 +608,7 @@ group("gn_all") {
   if (is_win) {
     deps += [
       "//base:pe_image_test",
-      "//chrome/chrome_cleaner:chrome_cleaner_unittests",
+      "//chrome/chrome_cleaner",
       "//chrome/chrome_elf:chrome_elf_unittests",
       "//chrome/chrome_elf:dll_hash_main",
       "//chrome/elevation_service:elevation_service_unittests",
