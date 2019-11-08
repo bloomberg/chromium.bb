@@ -204,9 +204,6 @@ void ChromeBrowserMainExtraPartsProfiles::
 
 #if defined(OS_CHROMEOS)
   chromeos::EnsureBrowserContextKeyedServiceFactoriesBuilt();
-#endif
-
-#if BUILDFLAG(ENABLE_APP_LIST)
   app_list::AppListSyncableServiceFactory::GetInstance();
 #endif
 

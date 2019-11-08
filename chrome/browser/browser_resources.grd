@@ -84,7 +84,7 @@
         <include name="IDR_CERTIFICATE_VIEWER_JS" file="resources\certificate_viewer.js" compress="gzip" type="BINDATA" />
         <include name="IDR_CERTIFICATE_VIEWER_CSS" file="resources\certificate_viewer.css" compress="gzip" type="BINDATA" />
       </if>
-      <if expr="enable_app_list">
+      <if expr="chromeos">
         <include name="IDR_CHROME_APP_MANIFEST" file="resources\chrome_app\manifest.json" type="BINDATA" />
       </if>
       <if expr="enable_printing">
