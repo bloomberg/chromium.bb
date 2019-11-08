@@ -14,6 +14,7 @@ import org.chromium.weblayer_private.interfaces.IClientNavigation;
 import org.chromium.weblayer_private.interfaces.INavigation;
 import org.chromium.weblayer_private.interfaces.INavigationControllerClient;
 
+import java.util.Arrays;
 import java.util.List;
 
 @JNINamespace("weblayer")
@@ -51,7 +52,8 @@ public final class NavigationImpl extends INavigation.Stub {
     @Override
     public List<String> getRedirectChain() {
         throwIfNativeDestroyed();
-        return NavigationImplJni.get().getRedirectChain(mNativeNavigationImpl, NavigationImpl.this);
+        return Arrays.asList(NavigationImplJni.get().getRedirectChain(
+                mNativeNavigationImpl, NavigationImpl.this));
     }
 
     @Override
@@ -77,7 +79,7 @@ public final class NavigationImpl extends INavigation.Stub {
         void setJavaNavigation(long nativeNavigationImpl, NavigationImpl caller);
         int getState(long nativeNavigationImpl, NavigationImpl caller);
         String getUri(long nativeNavigationImpl, NavigationImpl caller);
-        List<String> getRedirectChain(long nativeNavigationImpl, NavigationImpl caller);
+        String[] getRedirectChain(long nativeNavigationImpl, NavigationImpl caller);
         boolean isSameDocument(long nativeNavigationImpl, NavigationImpl caller);
     }
 }

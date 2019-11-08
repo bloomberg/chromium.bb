@@ -34,7 +34,7 @@ class NavigationImpl : public Navigation {
   base::android::ScopedJavaLocalRef<jstring> GetUri(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
-  base::android::ScopedJavaLocalRef<jobject> GetRedirectChain(
+  base::android::ScopedJavaLocalRef<jobjectArray> GetRedirectChain(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
   bool IsSameDocument(JNIEnv* env,

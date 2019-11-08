@@ -45,7 +45,7 @@ ScopedJavaLocalRef<jstring> NavigationImpl::GetUri(
       base::android::ConvertUTF8ToJavaString(env, GetURL().spec()));
 }
 
-ScopedJavaLocalRef<jobject> NavigationImpl::GetRedirectChain(
+ScopedJavaLocalRef<jobjectArray> NavigationImpl::GetRedirectChain(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj) {
   std::vector<std::string> jni_redirects;
