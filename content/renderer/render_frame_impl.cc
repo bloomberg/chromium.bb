@@ -4837,13 +4837,6 @@ void RenderFrameImpl::DidUpdateCurrentHistoryItem() {
   render_view_->StartNavStateSyncTimerIfNecessary(this);
 }
 
-void RenderFrameImpl::DidChangeThemeColor() {
-  if (frame_->Parent())
-    return;
-
-  GetFrameHost()->DidChangeThemeColor(frame_->GetDocument().ThemeColor());
-}
-
 void RenderFrameImpl::ForwardResourceTimingToParent(
     const blink::WebResourceTimingInfo& info) {
   Send(new FrameHostMsg_ForwardResourceTimingToParent(

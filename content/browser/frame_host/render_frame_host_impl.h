@@ -995,10 +995,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
                               const url::Origin& source_origin,
                               const base::Optional<url::Origin>& target_origin);
 
-  // mojom::FrameHost:
-  void VisibilityChanged(blink::mojom::FrameVisibility) override;
-  void DidChangeThemeColor(const base::Optional<SkColor>& theme_color) override;
-
   blink::mojom::FrameVisibility visibility() const { return visibility_; }
 
   // A CommitCallbackInterceptor is used to modify parameters for or cancel a
@@ -1206,6 +1202,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void DidDisplayInsecureContent() override;
   void DidContainInsecureFormAction() override;
   void SetNeedsOcclusionTracking(bool needs_tracking) override;
+  void LifecycleStateChanged(blink::mojom::FrameLifecycleState state) override;
+  void EvictFromBackForwardCache() override;
+  void VisibilityChanged(blink::mojom::FrameVisibility) override;
+  void DidChangeThemeColor(const base::Optional<SkColor>& theme_color) override;
 
  protected:
   friend class RenderFrameHostFactory;
@@ -1457,7 +1457,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
           validated_params,
       mojom::DidCommitProvisionalLoadInterfaceParamsPtr interface_params)
       override;
-  void EvictFromBackForwardCache() override;
 
   // This function mimics DidCommitProvisionalLoad but is a direct mojo
   // callback from NavigationClient::CommitNavigation.
@@ -1494,7 +1493,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void CancelInitialHistoryLoad() override;
   void UpdateEncoding(const std::string& encoding) override;
   void FrameSizeChanged(const gfx::Size& frame_size) override;
-  void LifecycleStateChanged(blink::mojom::FrameLifecycleState state) override;
   void DocumentOnLoadCompleted() override;
   void UpdateActiveSchedulerTrackedFeatures(uint64_t features_mask) override;
   void DidAddMessageToConsole(blink::mojom::ConsoleMessageLevel log_level,
