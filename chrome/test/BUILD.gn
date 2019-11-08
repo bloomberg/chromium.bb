@@ -525,6 +525,7 @@ if (is_android) {
 
     sources = [
       "../browser/engagement/important_sites_util_browsertest.cc",
+      "../browser/payments/empty_parameters_browsertest.cc",
       "../browser/payments/has_enrolled_instrument_browsertest.cc",
       "../browser/payments/has_enrolled_instrument_query_quota_browsertest.cc",
       "../browser/payments/hybrid_request_skip_ui_browsertest.cc",
@@ -1841,6 +1842,7 @@ if (!is_android) {
     }
     if (toolkit_views) {
       sources += [
+        "../browser/payments/empty_parameters_browsertest.cc",
         "../browser/payments/has_enrolled_instrument_browsertest.cc",
         "../browser/payments/has_enrolled_instrument_query_quota_browsertest.cc",
         "../browser/payments/journey_logger_browsertest.cc",
