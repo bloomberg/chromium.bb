@@ -195,8 +195,7 @@ void OmniboxPopupModel::SetSelectedLineState(LineState state) {
   view_->InvalidateLine(selected_line_);
 
   if (state == BUTTON_FOCUSED) {
-    edit_model_->view()->SetAccessibilityLabel(edit_model_->view()->GetText(),
-                                               match);
+    edit_model_->SetAccessibilityLabel(match);
     view_->ProvideButtonFocusHint(selected_line_);
   }
 }
