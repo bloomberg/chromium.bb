@@ -4395,11 +4395,12 @@ void Element::UpdateForceLegacyLayout(const ComputedStyle& new_style,
 
 void Element::ForceLegacyLayoutInFormattingContext(
     const ComputedStyle& new_style) {
-  if (DefinitelyNewFormattingContext(*this, new_style))
-    return;
-
-  bool found_bfc = false;
-  for (Element* ancestor = this; !found_bfc;) {
+  // TableNG requires that table elements are either all NG, or all Legacy.
+  bool needs_traverse_to_table =
+      RuntimeEnabledFeatures::LayoutNGTableEnabled() &&
+      new_style.IsDisplayTableType();
+  bool found_bfc = DefinitelyNewFormattingContext(*this, new_style);
+  for (Element* ancestor = this; !found_bfc || needs_traverse_to_table;) {
     ancestor =
         DynamicTo<Element>(LayoutTreeBuilderTraversal::Parent(*ancestor));
     if (!ancestor || ancestor->ShouldForceLegacyLayout())
@@ -4407,7 +4408,17 @@ void Element::ForceLegacyLayoutInFormattingContext(
     const ComputedStyle* style = ancestor->GetComputedStyle();
     if (style->Display() == EDisplay::kNone)
       break;
-    found_bfc = DefinitelyNewFormattingContext(*ancestor, *style);
+    found_bfc = found_bfc || DefinitelyNewFormattingContext(*ancestor, *style);
+    if (found_bfc && !needs_traverse_to_table) {
+      needs_traverse_to_table =
+          RuntimeEnabledFeatures::LayoutNGTableEnabled() &&
+          style->IsDisplayTableType();
+    }
+    if (needs_traverse_to_table) {
+      EDisplay display = style->Display();
+      if (display == EDisplay::kTable || display == EDisplay::kInlineTable)
+        needs_traverse_to_table = false;
+    }
     ancestor->SetShouldForceLegacyLayoutForChild(true);
     ancestor->SetNeedsReattachLayoutTree();
   }
