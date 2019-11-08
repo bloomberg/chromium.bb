@@ -671,44 +671,37 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->mv.search_method = FAST_DIAMOND;
     sf->partition_search_type = VAR_BASED_PARTITION;
     sf->mode_search_skip_flags |= FLAG_SKIP_INTRA_DIRMISMATCH;
-    sf->use_real_time_ref_set = 1;
-    // Can't use LARGEST TX mode with pre-calculated partition
-    // and disabled TX64
-    if (!cpi->oxcf.enable_tx64) sf->tx_size_search_level = 1;
+    sf->tx_size_search_level = 1;
     sf->use_nonrd_pick_mode = 1;
+    sf->use_fast_nonrd_pick_mode = 1;
     sf->use_comp_ref_nonrd = 0;
     sf->inter_mode_rd_model_estimation = 2;
     sf->cdef_pick_method = CDEF_PICK_FROM_Q;
-    sf->max_intra_bsize = BLOCK_16X16;
+    sf->max_intra_bsize = BLOCK_32X32;
     sf->skip_interp_filter_search = 0;
+    sf->short_circuit_low_temp_var = 0;
+    sf->reuse_inter_pred_nonrd = 0;
+    sf->nonrd_reduce_golden_mode_search = 0;
+    sf->nonrd_use_blockyrd_interp_filter = 1;
+    sf->nonrd_merge_partition = 1;
+    sf->use_nonrd_altref_frame = 1;
+    sf->mv.subpel_search_method = SUBPEL_TREE;
   }
   if (speed >= 8) {
-    sf->use_fast_nonrd_pick_mode = 1;
-    // Consider moving nonrd_merge_partition to speed 7
-#if 0
-    sf->nonrd_merge_partition = 1;
-#endif
+    sf->nonrd_merge_partition = 0;
     sf->mv.subpel_search_method = SUBPEL_TREE_PRUNED_MORE;
-    sf->tx_size_search_level = 1;
     sf->estimate_motion_for_var_based_partition = 0;
     sf->short_circuit_low_temp_var = 1;
     sf->reuse_inter_pred_nonrd = 1;
-    sf->max_intra_bsize = BLOCK_32X32;
+    sf->nonrd_use_blockyrd_interp_filter = 0;
+    sf->use_nonrd_altref_frame = 0;
     sf->nonrd_reduce_golden_mode_search = 1;
-    // This gives ~2% bdrate improvement but with 5-10% slowdown.
-    // sf->nonrd_use_blockyrd_interp_filter = 1;
 
 // TODO(kyslov) Enable when better model is available
 // It gives +5% speedup and 11% overall BDRate degradation
 // So, can not enable now until better CurvFit is there
 #if 0
     sf->use_modeled_non_rd_cost = 1;
-#endif
-// TODO(kyslov) Currently enabling ALTREF leads to 10%
-// slowdown with ~3% BDRate gain with current heuristics
-// We need to refine it before enabling ALTREF
-#if 0
-    sf->use_nonrd_altref_frame = 1;
 #endif
   }
 }
