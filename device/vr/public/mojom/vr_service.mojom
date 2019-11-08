@@ -483,12 +483,6 @@ interface VRService {
   RequestSession(XRSessionOptions options) => (RequestSessionResult result);
   SupportsSession(XRSessionOptions options) => (bool supports_session);
 
-  // WebVR 1.1 functionality compatibility method. Returns VRDisplayInfo for an
-  // immersive session if immersive is supported. If (and only if) immersive is
-  // not supported, will return a nullptr. This call might cause device specific
-  // UI to appear.
-  GetImmersiveVRDisplayInfo() => (VRDisplayInfo? info);
-
   // Shuts down an active immersive session. The callback is triggered
   // once teardown is complete and the system is again in a state where
   // a new immersive session could be started.

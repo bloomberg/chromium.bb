@@ -261,12 +261,6 @@ void GvrDevice::ResumeTracking() {
   }
 }
 
-void GvrDevice::EnsureInitialized(EnsureInitializedCallback callback) {
-  Init(base::BindOnce([](EnsureInitializedCallback callback,
-                         bool) { std::move(callback).Run(); },
-                      std::move(callback)));
-}
-
 GvrDelegateProvider* GvrDevice::GetGvrDelegateProvider() {
   // GvrDelegateProviderFactory::Create() may return a different
   // pointer each time. Do not cache it.

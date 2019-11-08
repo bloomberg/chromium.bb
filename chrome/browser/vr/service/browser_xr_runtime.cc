@@ -390,14 +390,6 @@ void BrowserXRRuntime::OnVisibilityStateChanged(
   }
 }
 
-void BrowserXRRuntime::OnInitialized() {
-  DVLOG(2) << __func__;
-  for (auto& callback : pending_initialization_callbacks_) {
-    std::move(callback).Run(display_info_.Clone());
-  }
-  pending_initialization_callbacks_.clear();
-}
-
 void BrowserXRRuntime::OnServiceAdded(VRServiceImpl* service) {
   DVLOG(2) << __func__ << ": id=" << id_;
   services_.insert(service);
@@ -486,21 +478,6 @@ void BrowserXRRuntime::OnRequestSessionResult(
 void BrowserXRRuntime::OnImmersiveSessionError() {
   DVLOG(2) << __func__ << ": id=" << id_;
   StopImmersiveSession(base::DoNothing());
-}
-
-void BrowserXRRuntime::InitializeAndGetDisplayInfo(
-    content::RenderFrameHost* render_frame_host,
-    device::mojom::VRService::GetImmersiveVRDisplayInfoCallback callback) {
-  DVLOG(2) << __func__ << ": id=" << id_;
-  device::mojom::VRDisplayInfoPtr device_info = GetVRDisplayInfo();
-  if (device_info) {
-    std::move(callback).Run(std::move(device_info));
-    return;
-  }
-
-  pending_initialization_callbacks_.push_back(std::move(callback));
-  runtime_->EnsureInitialized(
-      base::BindOnce(&BrowserXRRuntime::OnInitialized, base::Unretained(this)));
 }
 
 }  // namespace vr

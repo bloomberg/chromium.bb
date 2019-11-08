@@ -163,11 +163,6 @@ void OculusDevice::RequestSession(
   outstanding_session_requests_count_++;
 }
 
-void OculusDevice::EnsureInitialized(EnsureInitializedCallback callback) {
-  EnsureValidDisplayInfo();
-  std::move(callback).Run();
-}
-
 bool OculusDevice::EnsureValidDisplayInfo() {
   // Ensure we have had a valid display_info set at least once.
   if (!have_real_display_info_) {
