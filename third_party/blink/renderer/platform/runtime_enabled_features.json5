@@ -1044,7 +1044,7 @@
     },
     {
       name: "ModuleDedicatedWorker",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "ModuleServiceWorker",
