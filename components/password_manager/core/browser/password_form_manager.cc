@@ -302,7 +302,7 @@ void PasswordFormManager::Save() {
     newly_blacklisted_ = false;
   }
 
-  if (password_overridden_ &&
+  if (IsPasswordUpdate() &&
       pending_credentials_.type == PasswordForm::Type::kGenerated &&
       !HasGeneratedPassword()) {
     metrics_util::LogPasswordGenerationSubmissionEvent(
@@ -310,7 +310,7 @@ void PasswordFormManager::Save() {
     pending_credentials_.type = PasswordForm::Type::kManual;
   }
 
-  if (is_new_login_) {
+  if (IsNewLogin()) {
     metrics_util::LogNewlySavedPasswordIsGenerated(
         pending_credentials_.type == PasswordForm::Type::kGenerated);
     SanitizePossibleUsernames(&pending_credentials_);
@@ -319,6 +319,9 @@ void PasswordFormManager::Save() {
                                     GetBestMatches(), &pending_credentials_);
     SavePendingToStore(false /*update*/);
   } else {
+    // It sounds wrong that we still update even if the
+    // |pending_credentials_state_| is NONE. We should double check if this
+    // actually necessary. Currently some tests depend on this behavior.
     ProcessUpdate();
     SavePendingToStore(true /*update*/);
   }
@@ -346,7 +349,7 @@ void PasswordFormManager::Update(const PasswordForm& credentials_to_update) {
   pending_credentials_.skip_zero_click = skip_zero_click;
   pending_credentials_.preferred = true;
   pending_credentials_.date_last_used = base::Time::Now();
-  is_new_login_ = false;
+  pending_credentials_state_ = PendingCredentialsState::UPDATE;
   ProcessUpdate();
   SavePendingToStore(true /*update*/);
 
@@ -465,7 +468,8 @@ void PasswordFormManager::OnPasswordsRevealed() {
 }
 
 bool PasswordFormManager::IsNewLogin() const {
-  return is_new_login_;
+  return pending_credentials_state_ == PendingCredentialsState::NEW_LOGIN ||
+         pending_credentials_state_ == PendingCredentialsState::AUTOMATIC_SAVE;
 }
 
 FormFetcher* PasswordFormManager::GetFormFetcher() {
@@ -518,7 +522,7 @@ bool PasswordFormManager::IsPossibleChangePasswordFormWithoutUsername() const {
 }
 
 bool PasswordFormManager::IsPasswordUpdate() const {
-  return password_overridden_;
+  return pending_credentials_state_ == PendingCredentialsState::UPDATE;
 }
 
 base::WeakPtr<PasswordManagerDriver> PasswordFormManager::GetDriver() const {
@@ -608,8 +612,7 @@ std::unique_ptr<PasswordFormManager> PasswordFormManager::Clone() {
     result->parsed_submitted_form_.reset(
         new PasswordForm(*parsed_submitted_form_));
   }
-  result->is_new_login_ = is_new_login_;
-  result->password_overridden_ = password_overridden_;
+  result->pending_credentials_state_ = pending_credentials_state_;
   result->is_submitted_ = is_submitted_;
 
   return result;
@@ -907,8 +910,8 @@ void PasswordFormManager::CreatePendingCredentials() {
 
   // This function might be called multiple times so set variables that are
   // changed in this function to initial states.
-  is_new_login_ = true;
-  SetPasswordOverridden(false);
+  pending_credentials_state_ = PendingCredentialsState::NONE;
+  votes_uploader_.set_password_overridden(false);
 
   ValueElementPair password_to_save(PasswordToSave(*parsed_submitted_form_));
   // Look for the actually submitted credentials in the list of previously saved
@@ -916,16 +919,18 @@ void PasswordFormManager::CreatePendingCredentials() {
   const PasswordForm* saved_form = password_manager_util::GetMatchForUpdating(
       *parsed_submitted_form_, GetBestMatches());
   if (saved_form) {
-    // A similar credential exists in the store already.
+    // A similar credential exists in the store already. We should either update
+    // the password or create an new record if it's a PSL-matched credentials.
     pending_credentials_ = *saved_form;
-    SetPasswordOverridden(pending_credentials_.password_value !=
-                          password_to_save.first);
-    // If the autofilled credentials were a PSL match, store a copy with the
-    // current origin and signon realm. This ensures that on the next visit, a
-    // precise match is found.
-    is_new_login_ = pending_credentials_.is_public_suffix_match;
-
-    if (is_new_login_) {
+    if (pending_credentials_.password_value != password_to_save.first) {
+      // Password should be updated.
+      pending_credentials_state_ = PendingCredentialsState::UPDATE;
+      votes_uploader_.set_password_overridden(true);
+    } else if (pending_credentials_.is_public_suffix_match) {
+      // If the autofilled credentials were a PSL match, store a copy with the
+      // current origin and signon realm. This ensures that on the next visit, a
+      // precise match is found.
+      pending_credentials_state_ = PendingCredentialsState::AUTOMATIC_SAVE;
       // Update credential to reflect that it has been used for submission.
       // If this isn't updated, then password generation uploads are off for
       // sites where PSL matching is required to fill the login form, as two
@@ -938,7 +943,7 @@ void PasswordFormManager::CreatePendingCredentials() {
       pending_credentials_.action = parsed_submitted_form_->action;
     }
   } else {
-    is_new_login_ = true;
+    pending_credentials_state_ = PendingCredentialsState::NEW_LOGIN;
     // No stored credentials can be matched to the submitted form. Offer to
     // save new credentials.
     CreatePendingCredentialsForNewCredentials(password_to_save.second);
@@ -956,6 +961,8 @@ void PasswordFormManager::CreatePendingCredentials() {
               kCorrectedUsernameInForm);
     }
   }
+  // Whether it's a new credential or an update to existing one, we set the
+  // following fields.
   pending_credentials_.password_value =
       HasGeneratedPassword() ? generation_manager_->generated_password()
                              : password_to_save.first;
@@ -1133,7 +1140,7 @@ void PasswordFormManager::CalculateFillingAssistanceMetric(
 void PasswordFormManager::SavePendingToStore(bool update) {
   const PasswordForm* saved_form = password_manager_util::GetMatchForUpdating(
       *parsed_submitted_form_, GetBestMatches());
-  if ((update || password_overridden_) &&
+  if ((update || IsPasswordUpdate()) &&
       !pending_credentials_.IsFederatedCredential()) {
     DCHECK(saved_form);
   }
