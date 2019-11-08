@@ -2,11 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_MOJO_MOJOM_ENCRYPTION_SCHEME_MOJOM_TRAITS_H_
-#define MEDIA_MOJO_MOJOM_ENCRYPTION_SCHEME_MOJOM_TRAITS_H_
+#ifndef MEDIA_MOJO_MOJOM_ENCRYPTION_PATTERN_MOJOM_TRAITS_H_
+#define MEDIA_MOJO_MOJOM_ENCRYPTION_PATTERN_MOJOM_TRAITS_H_
 
 #include "media/base/encryption_pattern.h"
-#include "media/base/encryption_scheme.h"
 #include "media/base/ipc/media_param_traits.h"
 #include "media/mojo/mojom/media_types.mojom.h"
 
@@ -27,23 +26,6 @@ struct StructTraits<media::mojom::EncryptionPatternDataView,
                    media::EncryptionPattern* output);
 };
 
-template <>
-struct StructTraits<media::mojom::EncryptionSchemeDataView,
-                    media::EncryptionScheme> {
-  static media::EncryptionScheme::CipherMode mode(
-      const media::EncryptionScheme& input) {
-    return input.mode();
-  }
-
-  static media::EncryptionPattern pattern(
-      const media::EncryptionScheme& input) {
-    return input.pattern();
-  }
-
-  static bool Read(media::mojom::EncryptionSchemeDataView input,
-                   media::EncryptionScheme* output);
-};
-
 }  // namespace mojo
 
-#endif  // MEDIA_MOJO_MOJOM_ENCRYPTION_SCHEME_MOJOM_TRAITS_H_
+#endif  // MEDIA_MOJO_MOJOM_ENCRYPTION_PATTERN_MOJOM_TRAITS_H_
