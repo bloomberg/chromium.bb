@@ -206,6 +206,7 @@ test("ios_web_unittests") {
     "//ios/web/js_messaging:unittests",
     "//ios/web/security:unittests",
     "//ios/web/session:unittests",
+    "//ios/web/test:packed_resources",
     "//ios/web/web_view:unittests",
   ]
 
