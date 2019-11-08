@@ -181,7 +181,7 @@ class WatchTimeRecorderTest : public testing::Test {
     return base::BindRepeating(
         [](base::WeakPtr<content::RenderFrameHostDelegate> delegate,
            GURL last_committed_url, base::TimeDelta total_watch_time,
-           base::TimeDelta time_stamp) {
+           base::TimeDelta time_stamp, bool has_video, bool has_audio) {
           // Do nothing as this mock callback will never be called.
         },
         nullptr, GURL());
