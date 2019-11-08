@@ -5,6 +5,8 @@
 // https://gpuweb.github.io/gpuweb/
 
 [
-    Exposed(Window WebGPU, Worker WebGPU)
-] interface GPUTextureView {
+    Exposed=Worker,
+    ImplementedAs=WorkerNavigatorGPU
+] partial interface WorkerNavigator {
+    [SameObject, RuntimeEnabled=WebGPU, CallWith=ScriptState] readonly attribute GPU gpu;
 };
