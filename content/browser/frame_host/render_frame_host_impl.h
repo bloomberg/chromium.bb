@@ -1730,10 +1730,12 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Update this frame's last committed origin.
   void SetLastCommittedOrigin(const url::Origin& origin);
 
-  // Set the |last_committed_origin_| of |this| frame, inheriting the origin
-  // from |new_frame_creator| as appropriate (e.g. depending on whether |this|
-  // frame should be sandboxed / should have an opaque origin instead).
-  void SetOriginOfNewFrame(const url::Origin& new_frame_creator);
+  // Set the |last_committed_origin_| and |network_isolation_key_| of |this|
+  // frame, inheriting the origin from |new_frame_creator| as appropriate
+  // (e.g. depending on whether |this| frame should be sandboxed / should have
+  // an opaque origin instead).
+  void SetOriginAndNetworkIsolationKeyOfNewFrame(
+      const url::Origin& new_frame_creator);
 
   // Called when a navigation commits succesfully to |url|. This will update
   // |last_committed_site_url_| with the site URL corresponding to |url|.
@@ -2462,7 +2464,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // Network isolation key to be used for subresources from the currently
   // committed navigation. This is specific to a document and should be reset on
-  // every document commit.
+  // every cross-document commit. When a new frame is created, the new frame
+  // inherits the network isolation key from the creator frame, similarly to the
+  // last committed origin.
   net::NetworkIsolationKey network_isolation_key_;
 
   // Hold onto hashes of the last |kMaxCookieSameSiteDeprecationUrls| cookie
