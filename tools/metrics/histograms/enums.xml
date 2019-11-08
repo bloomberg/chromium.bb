@@ -46575,6 +46575,12 @@ Called by update_net_trust_anchors.py.-->
   <int value="9" label="Optimization Guide Decider not initialized">
     The OptimizationGuideDecider was not initialized yet.
   </int>
+  <int value="10" label="Hint was being fetched but was not available yet">
+    A fetch for a hint that matches the page load from the remote Optimization
+    Guide Service was started but was not available in time to make a decision.
+    (Added in M80, Previously, this was combined with &quot;No hint available
+    for page load&quot;.)
+  </int>
 </enum>
 
 <enum name="OptimizationGuideProcessHintsResult">
