@@ -1,8 +1,8 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-var vertexShader = [
+const vertexShader = [
   "attribute vec3 pos;",
   "void main(void)",
   "{",
@@ -10,7 +10,7 @@ var vertexShader = [
   "}"
 ].join("\n");
 
-var fragmentShader = [
+const fragmentShader = [
   "precision mediump float;",
   "void main(void)",
   "{",
@@ -18,23 +18,26 @@ var fragmentShader = [
   "}"
 ].join("\n");
 
-// TODO: We should test premultiplyAlpha as well.
-function initGL(canvas, antialias, alpha)
-{
-  var gl = null;
-  try {
-    gl = canvas.getContext("experimental-webgl",
-                           {"alpha": alpha, "antialias":antialias});
-  } catch (e) {}
-  if (!gl) {
-    try {
-      gl = canvas.getContext("webgl");
-    } catch (e) { }
+let gl;
+
+function sendResult(status, detail) {
+  console.log(detail);
+  if (window.domAutomationController) {
+    window.domAutomationController.send(status);
+  } else {
+    console.log(status);
   }
+}
+
+function initGL(canvas)
+{
+  try {
+    gl = canvas.getContext("webgl", { powerPreference: "low-power" });
+  } catch (e) {}
   return gl;
 }
 
-function setupShader(gl, source, type) {
+function setupShader(source, type) {
   var shader = gl.createShader(type);
   gl.shaderSource(shader, source);
   gl.compileShader(shader);
@@ -43,9 +46,9 @@ function setupShader(gl, source, type) {
   return shader;
 }
 
-function setupProgram(gl, vs_id, fs_id) {
-  var vs = setupShader(gl, vertexShader, gl.VERTEX_SHADER);
-  var fs = setupShader(gl, fragmentShader, gl.FRAGMENT_SHADER);
+function setupProgram(vs_id, fs_id) {
+  var vs = setupShader(vertexShader, gl.VERTEX_SHADER);
+  var fs = setupShader(fragmentShader, gl.FRAGMENT_SHADER);
   if (!vs || !fs)
     return null;
   var program = gl.createProgram();
@@ -62,15 +65,21 @@ function setupBuffer(gl) {
   var buffer = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
   var vertexData = [
-    0.0, 0.6, 0.0,  // Vertex 1 position
-    -0.6, -0.6, 0.0,  // Vertex 2 position
-    0.6, -0.6, 0.0,  // Vertex 3 position
+    // Triangle 1
+    -1.0, -1.0, 0.0,
+    1.0, 1.0, 0.0,
+    -1.0, 1.0, 0.0,
+
+    // Triangle 2
+    -1.0, -1.0, 0.0,
+    1.0, -1.0, 0.0,
+    1.0, 1.0, 0.0
   ];
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertexData), gl.STATIC_DRAW);
 }
 
-function setup(gl) {
-  var program = setupProgram(gl, "shader-vs", "shader-fs");
+function setupGL() {
+  var program = setupProgram("shader-vs", "shader-fs");
   if (!program)
     return false;
   var posAttr = gl.getAttribLocation(program, "pos");
@@ -79,41 +88,40 @@ function setup(gl) {
   var stride = 3 * Float32Array.BYTES_PER_ELEMENT;
   gl.vertexAttribPointer(posAttr, 3, gl.FLOAT, false, stride, 0);
   gl.clearColor(0.0, 0.0, 0.0, 0.0);
-  gl.viewport(0, 0, 200, 200);
+  gl.viewport(0, 0, 300, 300);
   gl.disable(gl.DEPTH_TEST);
   if (gl.getError() != gl.NO_ERROR)
     return false;
   return true;
 }
 
-function drawTriangle(gl) {
+function drawQuad() {
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-  gl.drawArrays(gl.TRIANGLES, 0, 3);
+  gl.drawArrays(gl.TRIANGLES, 0, 6);
 }
 
-var g_swapsBeforeAckUtil = 15;
-var g_glUtil;
-
-function makeMain(antialias, alpha)
+function setup()
 {
-  return function() {
-    var canvas = document.getElementById("c");
-    g_glUtil = initGL(canvas, antialias, alpha);
-    if (g_glUtil && setup(g_glUtil)) {
-      drawSomeFramesUtil();
+  let canvas = document.getElementById("c");
+  initGL(canvas);
+  if (gl && setupGL(gl))
+    return true;
+  domAutomationController.send("FAILURE");
+  return false;
+}
+
+function drawSomeFrames(callback)
+{
+  let swapsBeforeCallback = 15;
+
+  function drawSomeFramesHelper() {
+    if (--swapsBeforeCallback == 0) {
+      callback();
     } else {
-      domAutomationController.send("FAILURE");
+      drawQuad();
+      window.requestAnimationFrame(drawSomeFramesHelper);
     }
-  };
-}
-
-function drawSomeFramesUtil()
-{
-  if (g_swapsBeforeAckUtil == 0) {
-    domAutomationController.send("SUCCESS");
-  } else {
-    g_swapsBeforeAckUtil--;
-    drawTriangle(g_glUtil);
-    window.requestAnimationFrame(drawSomeFramesUtil);
   }
+
+  window.requestAnimationFrame(drawSomeFramesHelper);
 }

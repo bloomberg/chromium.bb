@@ -1017,7 +1017,7 @@ void RenderViewHostImpl::PostRenderViewReady() {
       &RenderViewHostImpl::RenderViewReady, weak_factory_.GetWeakPtr()));
 }
 
-void RenderViewHostImpl::OnGpuSwitched() {
+void RenderViewHostImpl::OnGpuSwitched(gl::GpuPreference active_gpu_heuristic) {
   OnHardwareConfigurationChanged();
 }
 
