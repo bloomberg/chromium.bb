@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_VIDEO_CAPTURE_PUBLIC_CPP_MOCK_RECEIVER_H_
-#define SERVICES_VIDEO_CAPTURE_PUBLIC_CPP_MOCK_RECEIVER_H_
+#ifndef SERVICES_VIDEO_CAPTURE_PUBLIC_CPP_MOCK_VIDEO_FRAME_HANDLER_H_
+#define SERVICES_VIDEO_CAPTURE_PUBLIC_CPP_MOCK_VIDEO_FRAME_HANDLER_H_
 
 #include <vector>
 
@@ -11,17 +11,18 @@
 #include "media/mojo/mojom/media_types.mojom.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
-#include "services/video_capture/public/mojom/receiver.mojom.h"
 #include "services/video_capture/public/mojom/scoped_access_permission.mojom.h"
+#include "services/video_capture/public/mojom/video_frame_handler.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace video_capture {
 
-class MockReceiver : public mojom::Receiver {
+class MockVideoFrameHandler : public mojom::VideoFrameHandler {
  public:
-  MockReceiver();
-  explicit MockReceiver(mojo::PendingReceiver<mojom::Receiver> receiver);
-  ~MockReceiver() override;
+  MockVideoFrameHandler();
+  explicit MockVideoFrameHandler(
+      mojo::PendingReceiver<mojom::VideoFrameHandler> handler);
+  ~MockVideoFrameHandler() override;
 
   void HoldAccessPermissions();
   void ReleaseAccessPermissions();
@@ -52,7 +53,7 @@ class MockReceiver : public mojom::Receiver {
   MOCK_METHOD0(OnStopped, void());
 
  private:
-  const mojo::Receiver<mojom::Receiver> receiver_;
+  const mojo::Receiver<mojom::VideoFrameHandler> video_frame_handler_;
   std::vector<int32_t> known_buffer_ids_;
   bool should_store_access_permissions_;
   std::vector<mojom::ScopedAccessPermissionPtr> access_permissions_;
@@ -60,4 +61,4 @@ class MockReceiver : public mojom::Receiver {
 
 }  // namespace video_capture
 
-#endif  // SERVICES_VIDEO_CAPTURE_PUBLIC_CPP_MOCK_RECEIVER_H_
+#endif  // SERVICES_VIDEO_CAPTURE_PUBLIC_CPP_MOCK_VIDEO_FRAME_HANDLER_H_

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/video_capture/public/cpp/mock_receiver.h"
+#include "services/video_capture/public/cpp/mock_video_frame_handler.h"
 
 #include "base/stl_util.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -10,25 +10,26 @@
 
 namespace video_capture {
 
-MockReceiver::MockReceiver()
-    : receiver_(this), should_store_access_permissions_(false) {}
+MockVideoFrameHandler::MockVideoFrameHandler()
+    : video_frame_handler_(this), should_store_access_permissions_(false) {}
 
-MockReceiver::MockReceiver(mojo::PendingReceiver<mojom::Receiver> receiver)
-    : receiver_(this, std::move(receiver)),
+MockVideoFrameHandler::MockVideoFrameHandler(
+    mojo::PendingReceiver<mojom::VideoFrameHandler> handler)
+    : video_frame_handler_(this, std::move(handler)),
       should_store_access_permissions_(false) {}
 
-MockReceiver::~MockReceiver() = default;
+MockVideoFrameHandler::~MockVideoFrameHandler() = default;
 
-void MockReceiver::HoldAccessPermissions() {
+void MockVideoFrameHandler::HoldAccessPermissions() {
   should_store_access_permissions_ = true;
 }
 
-void MockReceiver::ReleaseAccessPermissions() {
+void MockVideoFrameHandler::ReleaseAccessPermissions() {
   should_store_access_permissions_ = false;
   access_permissions_.clear();
 }
 
-void MockReceiver::OnNewBuffer(
+void MockVideoFrameHandler::OnNewBuffer(
     int32_t buffer_id,
     media::mojom::VideoBufferHandlePtr buffer_handle) {
   CHECK(!base::Contains(known_buffer_ids_, buffer_id));
@@ -36,7 +37,7 @@ void MockReceiver::OnNewBuffer(
   DoOnNewBuffer(buffer_id, &buffer_handle);
 }
 
-void MockReceiver::OnFrameReadyInBuffer(
+void MockVideoFrameHandler::OnFrameReadyInBuffer(
     int32_t buffer_id,
     int32_t frame_feedback_id,
     mojo::PendingRemote<mojom::ScopedAccessPermission> access_permission,
@@ -47,7 +48,7 @@ void MockReceiver::OnFrameReadyInBuffer(
     access_permissions_.emplace_back(std::move(access_permission));
 }
 
-void MockReceiver::OnBufferRetired(int32_t buffer_id) {
+void MockVideoFrameHandler::OnBufferRetired(int32_t buffer_id) {
   auto iter =
       std::find(known_buffer_ids_.begin(), known_buffer_ids_.end(), buffer_id);
   CHECK(iter != known_buffer_ids_.end());
