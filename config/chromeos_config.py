@@ -2732,6 +2732,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
           site_config.templates.unittest_only_paladin,
           site_config.templates.cq_luci_slave,
           unittests=True,
+          important=False, # crbug.com/1021952
       )
   )
   site_config.Add(
