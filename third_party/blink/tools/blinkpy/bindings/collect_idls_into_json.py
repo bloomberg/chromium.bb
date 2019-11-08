@@ -65,7 +65,8 @@ def get_definitions(paths):
     Returns:
       a generator which yields IDL node objects
     """
-    parser = BlinkIDLParser()
+    # We use debug=True to not have to worry about generated parser tables.
+    parser = BlinkIDLParser(debug=True)
     for path in paths:
         definitions = parse_file(parser, path)
         for definition in definitions.GetChildren():

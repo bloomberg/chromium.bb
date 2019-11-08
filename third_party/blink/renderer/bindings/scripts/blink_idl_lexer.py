@@ -79,10 +79,22 @@ class BlinkIDLLexer(IDLLexer):
             # Turn off optimization and caching to help debugging
             optimize = False
             outputdir = None
+
+        # Ensure that if we are writing tables, we got a real outputdir.
+        # Because of the way PLY loads the lexer (via import), it can
+        # be loaded from anywhere in sys.path; requiring an outputdir
+        # can help minimize the likelihood of inconsistencies between
+        # scripts.
+        assert debug or outputdir
+
         if outputdir:
             # Need outputdir in path because lex imports the cached lex table
-            # as a Python module
-            sys.path.append(outputdir)
+            # as a Python module. Putting this at the front of sys.path
+            # helps ensures that we get the one in outputdir, and not some
+            # module by the same name that might exist elsewhere in path,
+            # though it won't guarantee it.
+            if sys.path[0] != outputdir:
+                sys.path.insert(0, outputdir)
 
             if rewrite_tables:
                 tablefile_root = os.path.join(outputdir, LEXTAB)

@@ -93,6 +93,14 @@ class BlinkIDLParser(IDLParser):
             outputdir = None
             picklefile = None
             write_tables = True
+
+        # Ensure that if we are writing tables, we got a real outputdir.
+        # Because of the way PLY loads the lexer (via import), it can
+        # be loaded from anywhere in sys.path; requiring an outputdir
+        # can help minimize the likelihood of inconsistencies between
+        # scripts.
+        assert debug or not write_tables or outputdir
+
         if outputdir:
             picklefile = picklefile or os.path.join(outputdir, 'parsetab.pickle')
             if rewrite_tables:
