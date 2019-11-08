@@ -419,7 +419,7 @@ class GitWrapper(SCMWrapper):
     self.Print('Revision to patch is %r @ %r.' % (patch_repo, patch_rev))
     self.Print('Current dir is %r' % self.checkout_path)
     self._Capture(['reset', '--hard'])
-    self._Capture(['fetch', patch_repo, patch_rev])
+    self._Capture(['fetch', '--no-tags', patch_repo, patch_rev])
     patch_rev = self._Capture(['rev-parse', 'FETCH_HEAD'])
 
     if not options.rebase_patch_ref:
@@ -1335,6 +1335,8 @@ class GitWrapper(SCMWrapper):
       fetch_cmd.append('--prune')
     if options.verbose:
       fetch_cmd.append('--verbose')
+    if not hasattr(options, 'with_tags') or not options.with_tags:
+      fetch_cmd.append('--no-tags')
     elif quiet:
       fetch_cmd.append('--quiet')
     self._Run(fetch_cmd, options, show_header=options.verbose, retry=True)
