@@ -300,6 +300,12 @@ class BLINK_EXPORT WebLocalFrameClient {
   virtual void DidAddContentSecurityPolicies(
       const WebVector<WebContentSecurityPolicy>& policies) {}
 
+  virtual void DidAddMessageToConsoleWithCol(const WebConsoleMessage& message,
+                                             const WebString& source_name,
+                                             unsigned source_line,
+                                             unsigned source_column,
+                                             const WebString& stack_trace);
+
   // Some frame owner properties have changed for a child frame of this frame.
   // Frame owner properties currently include: scrolling, marginwidth and
   // marginheight.
@@ -871,6 +877,16 @@ class BLINK_EXPORT WebLocalFrameClient {
   virtual void UpdateSubresourceFactory(
       std::unique_ptr<blink::URLLoaderFactoryBundleInfo> info) {}
 };
+
+inline
+void WebLocalFrameClient::DidAddMessageToConsoleWithCol(
+    const WebConsoleMessage& message,
+    const WebString& source_name,
+    unsigned source_line,
+    unsigned source_column,
+    const WebString& stack_trace) {
+  DidAddMessageToConsole(message, source_name, source_line, stack_trace);
+}
 
 }  // namespace blink
 
