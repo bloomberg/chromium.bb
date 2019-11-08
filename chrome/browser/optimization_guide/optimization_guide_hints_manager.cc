@@ -935,7 +935,8 @@ void OptimizationGuideHintsManager::OnNavigationStartOrRedirect(
     return;
   }
 
-  if (IsAllowedToFetchNavigationHints(navigation_handle->GetURL())) {
+  if (IsAllowedToFetchNavigationHints(navigation_handle->GetURL()) &&
+      !hint_cache_->HasHint(navigation_handle->GetURL().host())) {
     std::vector<std::string> hosts{navigation_handle->GetURL().host()};
     navigation_hosts_last_fetched_real_time_.clear();
     navigation_hosts_last_fetched_real_time_.push_back(
