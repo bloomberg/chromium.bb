@@ -18,6 +18,20 @@
 
 namespace openscreen {
 namespace discovery {
+namespace {
+
+template <typename IteratorType>
+inline std::string ConvertToString(IteratorType it) {
+  return std::string(*it);
+}
+
+template <>
+inline std::string ConvertToString<std::vector<std::vector<uint8_t>>::iterator>(
+    std::vector<std::vector<uint8_t>>::iterator it) {
+  return std::string(reinterpret_cast<const char*>((*it).data()), (*it).size());
+}
+
+}  // namespace
 
 bool IsValidDomainLabel(absl::string_view label);
 
@@ -25,7 +39,7 @@ bool IsValidDomainLabel(absl::string_view label);
 // domain name length requirements are met.
 class DomainName {
  public:
-  DomainName() = default;
+  DomainName();
 
   template <typename IteratorType>
   DomainName(IteratorType first, IteratorType last) {
@@ -38,11 +52,14 @@ class DomainName {
     }
     OSP_DCHECK(max_wire_size_ <= kMaxDomainNameLength);
   }
-
-  explicit DomainName(const std::vector<std::string>& labels);
+  explicit DomainName(std::vector<std::string> labels);
   explicit DomainName(const std::vector<absl::string_view>& labels);
   explicit DomainName(std::initializer_list<absl::string_view> labels);
+  DomainName(const DomainName& other);
+  DomainName(DomainName&& other);
 
+  DomainName& operator=(const DomainName& rhs);
+  DomainName& operator=(DomainName&& rhs);
   bool operator==(const DomainName& rhs) const;
   bool operator!=(const DomainName& rhs) const;
 
@@ -72,10 +89,14 @@ class DomainName {
 // a raw record type that we do not know the identity of.
 class RawRecordRdata {
  public:
-  RawRecordRdata() = default;
+  RawRecordRdata();
   explicit RawRecordRdata(std::vector<uint8_t> rdata);
   RawRecordRdata(const uint8_t* begin, size_t size);
+  RawRecordRdata(const RawRecordRdata& other);
+  RawRecordRdata(RawRecordRdata&& other);
 
+  RawRecordRdata& operator=(const RawRecordRdata& rhs);
+  RawRecordRdata& operator=(RawRecordRdata&& rhs);
   bool operator==(const RawRecordRdata& rhs) const;
   bool operator!=(const RawRecordRdata& rhs) const;
 
@@ -99,12 +120,16 @@ class RawRecordRdata {
 // target: domain name (on-the-wire representation)
 class SrvRecordRdata {
  public:
-  SrvRecordRdata() = default;
+  SrvRecordRdata();
   SrvRecordRdata(uint16_t priority,
                  uint16_t weight,
                  uint16_t port,
                  DomainName target);
+  SrvRecordRdata(const SrvRecordRdata& other);
+  SrvRecordRdata(SrvRecordRdata&& other);
 
+  SrvRecordRdata& operator=(const SrvRecordRdata& rhs);
+  SrvRecordRdata& operator=(SrvRecordRdata&& rhs);
   bool operator==(const SrvRecordRdata& rhs) const;
   bool operator!=(const SrvRecordRdata& rhs) const;
 
@@ -131,9 +156,13 @@ class SrvRecordRdata {
 // 4 bytes for IP address.
 class ARecordRdata {
  public:
-  ARecordRdata() = default;
+  ARecordRdata();
   explicit ARecordRdata(IPAddress ipv4_address);
+  ARecordRdata(const ARecordRdata& other);
+  ARecordRdata(ARecordRdata&& other);
 
+  ARecordRdata& operator=(const ARecordRdata& rhs);
+  ARecordRdata& operator=(ARecordRdata&& rhs);
   bool operator==(const ARecordRdata& rhs) const;
   bool operator!=(const ARecordRdata& rhs) const;
 
@@ -153,9 +182,13 @@ class ARecordRdata {
 // 16 bytes for IP address.
 class AAAARecordRdata {
  public:
-  AAAARecordRdata() = default;
+  AAAARecordRdata();
   explicit AAAARecordRdata(IPAddress ipv6_address);
+  AAAARecordRdata(const AAAARecordRdata& other);
+  AAAARecordRdata(AAAARecordRdata&& other);
 
+  AAAARecordRdata& operator=(const AAAARecordRdata& rhs);
+  AAAARecordRdata& operator=(AAAARecordRdata&& rhs);
   bool operator==(const AAAARecordRdata& rhs) const;
   bool operator!=(const AAAARecordRdata& rhs) const;
 
@@ -175,9 +208,13 @@ class AAAARecordRdata {
 // domain: On the wire representation of domain name.
 class PtrRecordRdata {
  public:
-  PtrRecordRdata() = default;
+  PtrRecordRdata();
   explicit PtrRecordRdata(DomainName ptr_domain);
+  PtrRecordRdata(const PtrRecordRdata& other);
+  PtrRecordRdata(PtrRecordRdata&& other);
 
+  PtrRecordRdata& operator=(const PtrRecordRdata& rhs);
+  PtrRecordRdata& operator=(PtrRecordRdata&& rhs);
   bool operator==(const PtrRecordRdata& rhs) const;
   bool operator!=(const PtrRecordRdata& rhs) const;
 
@@ -198,7 +235,7 @@ class PtrRecordRdata {
 // a <character-string> is a length octet followed by as many characters.
 class TxtRecordRdata {
  public:
-  TxtRecordRdata() = default;
+  TxtRecordRdata();
 
   template <typename IteratorType>
   TxtRecordRdata(IteratorType first, IteratorType last) {
@@ -209,16 +246,21 @@ class TxtRecordRdata {
       max_wire_size_ = sizeof(uint16_t);
       for (IteratorType entry = first; entry != last; ++entry) {
         OSP_DCHECK(!entry->empty());
-        texts_.emplace_back(*entry);
+        texts_.push_back(std::move(ConvertToString(entry)));
         // Include the length byte in the size calculation.
         max_wire_size_ += entry->size() + 1;
       }
     }
   }
 
+  explicit TxtRecordRdata(std::vector<std::vector<uint8_t>> texts);
   explicit TxtRecordRdata(const std::vector<absl::string_view>& texts);
   explicit TxtRecordRdata(std::initializer_list<absl::string_view> texts);
+  TxtRecordRdata(const TxtRecordRdata& other);
+  TxtRecordRdata(TxtRecordRdata&& other);
 
+  TxtRecordRdata& operator=(const TxtRecordRdata& rhs);
+  TxtRecordRdata& operator=(TxtRecordRdata&& rhs);
   bool operator==(const TxtRecordRdata& rhs) const;
   bool operator!=(const TxtRecordRdata& rhs) const;
 
@@ -253,14 +295,18 @@ using Rdata = absl::variant<RawRecordRdata,
 // according to the TYPE and CLASS of the resource record.
 class MdnsRecord {
  public:
-  MdnsRecord() = default;
+  MdnsRecord();
   MdnsRecord(DomainName name,
              DnsType dns_type,
              DnsClass dns_class,
              RecordType record_type,
              std::chrono::seconds ttl,
              Rdata rdata);
+  MdnsRecord(const MdnsRecord& other);
+  MdnsRecord(MdnsRecord&& other);
 
+  MdnsRecord& operator=(const MdnsRecord& rhs);
+  MdnsRecord& operator=(MdnsRecord&& rhs);
   bool operator==(const MdnsRecord& other) const;
   bool operator!=(const MdnsRecord& other) const;
 

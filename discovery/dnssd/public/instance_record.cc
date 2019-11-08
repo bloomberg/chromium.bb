@@ -94,6 +94,17 @@ DnsSdInstanceRecord::DnsSdInstanceRecord(std::string instance_id,
   OSP_DCHECK(IsDomainValid(domain_id_));
 }
 
+uint16_t DnsSdInstanceRecord::port() const {
+  if (address_v4_.has_value()) {
+    return address_v4_.value().port;
+  } else if (address_v6_.has_value()) {
+    return address_v6_.value().port;
+  } else {
+    OSP_NOTREACHED();
+    return 0;
+  }
+}
+
 // static
 bool IsInstanceValid(absl::string_view instance) {
   // According to RFC6763, Instance names must:

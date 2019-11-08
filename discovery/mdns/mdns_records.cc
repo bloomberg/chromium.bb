@@ -17,7 +17,9 @@ bool IsValidDomainLabel(absl::string_view label) {
   return label_size > 0 && label_size <= kMaxLabelLength;
 }
 
-DomainName::DomainName(const std::vector<std::string>& labels)
+DomainName::DomainName() = default;
+
+DomainName::DomainName(std::vector<std::string> labels)
     : DomainName(labels.begin(), labels.end()) {}
 
 DomainName::DomainName(const std::vector<absl::string_view>& labels)
@@ -25,6 +27,14 @@ DomainName::DomainName(const std::vector<absl::string_view>& labels)
 
 DomainName::DomainName(std::initializer_list<absl::string_view> labels)
     : DomainName(labels.begin(), labels.end()) {}
+
+DomainName::DomainName(const DomainName& other) = default;
+
+DomainName::DomainName(DomainName&& other) = default;
+
+DomainName& DomainName::operator=(const DomainName& rhs) = default;
+
+DomainName& DomainName::operator=(DomainName&& rhs) = default;
 
 std::string DomainName::ToString() const {
   return absl::StrJoin(labels_, ".");
@@ -43,6 +53,8 @@ size_t DomainName::MaxWireSize() const {
   return max_wire_size_;
 }
 
+RawRecordRdata::RawRecordRdata() = default;
+
 RawRecordRdata::RawRecordRdata(std::vector<uint8_t> rdata)
     : rdata_(std::move(rdata)) {
   // Ensure RDATA length does not exceed the maximum allowed.
@@ -51,6 +63,14 @@ RawRecordRdata::RawRecordRdata(std::vector<uint8_t> rdata)
 
 RawRecordRdata::RawRecordRdata(const uint8_t* begin, size_t size)
     : RawRecordRdata(std::vector<uint8_t>(begin, begin + size)) {}
+
+RawRecordRdata::RawRecordRdata(const RawRecordRdata& other) = default;
+
+RawRecordRdata::RawRecordRdata(RawRecordRdata&& other) = default;
+
+RawRecordRdata& RawRecordRdata::operator=(const RawRecordRdata& rhs) = default;
+
+RawRecordRdata& RawRecordRdata::operator=(RawRecordRdata&& rhs) = default;
 
 bool RawRecordRdata::operator==(const RawRecordRdata& rhs) const {
   return rdata_ == rhs.rdata_;
@@ -65,6 +85,8 @@ size_t RawRecordRdata::MaxWireSize() const {
   return sizeof(uint16_t) + rdata_.size();
 }
 
+SrvRecordRdata::SrvRecordRdata() = default;
+
 SrvRecordRdata::SrvRecordRdata(uint16_t priority,
                                uint16_t weight,
                                uint16_t port,
@@ -73,6 +95,14 @@ SrvRecordRdata::SrvRecordRdata(uint16_t priority,
       weight_(weight),
       port_(port),
       target_(std::move(target)) {}
+
+SrvRecordRdata::SrvRecordRdata(const SrvRecordRdata& other) = default;
+
+SrvRecordRdata::SrvRecordRdata(SrvRecordRdata&& other) = default;
+
+SrvRecordRdata& SrvRecordRdata::operator=(const SrvRecordRdata& rhs) = default;
+
+SrvRecordRdata& SrvRecordRdata::operator=(SrvRecordRdata&& rhs) = default;
 
 bool SrvRecordRdata::operator==(const SrvRecordRdata& rhs) const {
   return priority_ == rhs.priority_ && weight_ == rhs.weight_ &&
@@ -89,10 +119,20 @@ size_t SrvRecordRdata::MaxWireSize() const {
          sizeof(port_) + target_.MaxWireSize();
 }
 
+ARecordRdata::ARecordRdata() = default;
+
 ARecordRdata::ARecordRdata(IPAddress ipv4_address)
     : ipv4_address_(std::move(ipv4_address)) {
   OSP_CHECK(ipv4_address_.IsV4());
 }
+
+ARecordRdata::ARecordRdata(const ARecordRdata& other) = default;
+
+ARecordRdata::ARecordRdata(ARecordRdata&& other) = default;
+
+ARecordRdata& ARecordRdata::operator=(const ARecordRdata& rhs) = default;
+
+ARecordRdata& ARecordRdata::operator=(ARecordRdata&& rhs) = default;
 
 bool ARecordRdata::operator==(const ARecordRdata& rhs) const {
   return ipv4_address_ == rhs.ipv4_address_;
@@ -107,10 +147,21 @@ size_t ARecordRdata::MaxWireSize() const {
   return sizeof(uint16_t) + IPAddress::kV4Size;
 }
 
+AAAARecordRdata::AAAARecordRdata() = default;
+
 AAAARecordRdata::AAAARecordRdata(IPAddress ipv6_address)
     : ipv6_address_(std::move(ipv6_address)) {
   OSP_CHECK(ipv6_address_.IsV6());
 }
+
+AAAARecordRdata::AAAARecordRdata(const AAAARecordRdata& other) = default;
+
+AAAARecordRdata::AAAARecordRdata(AAAARecordRdata&& other) = default;
+
+AAAARecordRdata& AAAARecordRdata::operator=(const AAAARecordRdata& rhs) =
+    default;
+
+AAAARecordRdata& AAAARecordRdata::operator=(AAAARecordRdata&& rhs) = default;
 
 bool AAAARecordRdata::operator==(const AAAARecordRdata& rhs) const {
   return ipv6_address_ == rhs.ipv6_address_;
@@ -125,8 +176,18 @@ size_t AAAARecordRdata::MaxWireSize() const {
   return sizeof(uint16_t) + IPAddress::kV6Size;
 }
 
+PtrRecordRdata::PtrRecordRdata() = default;
+
 PtrRecordRdata::PtrRecordRdata(DomainName ptr_domain)
     : ptr_domain_(ptr_domain) {}
+
+PtrRecordRdata::PtrRecordRdata(const PtrRecordRdata& other) = default;
+
+PtrRecordRdata::PtrRecordRdata(PtrRecordRdata&& other) = default;
+
+PtrRecordRdata& PtrRecordRdata::operator=(const PtrRecordRdata& rhs) = default;
+
+PtrRecordRdata& PtrRecordRdata::operator=(PtrRecordRdata&& rhs) = default;
 
 bool PtrRecordRdata::operator==(const PtrRecordRdata& rhs) const {
   return ptr_domain_ == rhs.ptr_domain_;
@@ -141,11 +202,24 @@ size_t PtrRecordRdata::MaxWireSize() const {
   return sizeof(uint16_t) + ptr_domain_.MaxWireSize();
 }
 
+TxtRecordRdata::TxtRecordRdata() = default;
+
+TxtRecordRdata::TxtRecordRdata(std::vector<std::vector<uint8_t>> texts)
+    : TxtRecordRdata(texts.begin(), texts.end()) {}
+
 TxtRecordRdata::TxtRecordRdata(const std::vector<absl::string_view>& texts)
     : TxtRecordRdata(texts.begin(), texts.end()) {}
 
 TxtRecordRdata::TxtRecordRdata(std::initializer_list<absl::string_view> texts)
     : TxtRecordRdata(texts.begin(), texts.end()) {}
+
+TxtRecordRdata::TxtRecordRdata(const TxtRecordRdata& other) = default;
+
+TxtRecordRdata::TxtRecordRdata(TxtRecordRdata&& other) = default;
+
+TxtRecordRdata& TxtRecordRdata::operator=(const TxtRecordRdata& rhs) = default;
+
+TxtRecordRdata& TxtRecordRdata::operator=(TxtRecordRdata&& rhs) = default;
 
 bool TxtRecordRdata::operator==(const TxtRecordRdata& rhs) const {
   return texts_ == rhs.texts_;
@@ -158,6 +232,8 @@ bool TxtRecordRdata::operator!=(const TxtRecordRdata& rhs) const {
 size_t TxtRecordRdata::MaxWireSize() const {
   return max_wire_size_;
 }
+
+MdnsRecord::MdnsRecord() = default;
 
 MdnsRecord::MdnsRecord(DomainName name,
                        DnsType dns_type,
@@ -185,6 +261,14 @@ MdnsRecord::MdnsRecord(DomainName name,
               absl::holds_alternative<TxtRecordRdata>(rdata_)) ||
              absl::holds_alternative<RawRecordRdata>(rdata_));
 }
+
+MdnsRecord::MdnsRecord(const MdnsRecord& other) = default;
+
+MdnsRecord::MdnsRecord(MdnsRecord&& other) = default;
+
+MdnsRecord& MdnsRecord::operator=(const MdnsRecord& rhs) = default;
+
+MdnsRecord& MdnsRecord::operator=(MdnsRecord&& rhs) = default;
 
 bool MdnsRecord::operator==(const MdnsRecord& rhs) const {
   return dns_type_ == rhs.dns_type_ && dns_class_ == rhs.dns_class_ &&

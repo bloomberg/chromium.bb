@@ -53,6 +53,9 @@ class DnsSdInstanceRecord {
   // Returns the TXT record associated with this DNS-SD record
   const DnsSdTxtRecord& txt() const { return txt_; }
 
+  // Returns the port associated with this instance record.
+  uint16_t port() const;
+
  private:
   DnsSdInstanceRecord(std::string instance_id,
                       std::string service_id,
