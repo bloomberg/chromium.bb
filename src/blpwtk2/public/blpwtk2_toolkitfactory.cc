@@ -128,6 +128,7 @@ Toolkit* ToolkitFactory::create(const ToolkitCreateParams& params)
     Statics::channelErrorHandler = params.channelErrorHandler();
     Statics::inProcessResizeOptimizationDisabled = params.isInProcessResizeOptimizationDisabled();
     Statics::toolkitDelegate = params.delegate();
+    Statics::isRendererIOThreadEnabled = params.isRendererIOThreadEnabled();
     Statics::rendererUIEnabled = params.rendererUIEnabled();
 
     // If this process is the host, then set the environment variable that

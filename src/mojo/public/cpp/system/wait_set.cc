@@ -360,7 +360,6 @@ MojoResult WaitSet::RemoveHandle(Handle handle) {
 }
 
 void WaitSet::SetProxy(UIWaitProxy *proxy) {
-  DCHECK(!g_lazy_tls.Pointer()->Get());
   g_lazy_tls.Pointer()->Set(proxy);
 }
 

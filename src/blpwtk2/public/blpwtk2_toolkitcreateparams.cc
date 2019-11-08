@@ -66,6 +66,7 @@ struct ToolkitCreateParamsImpl final
     std::string d_profileDirectory;
     bool d_isIsolatedProfile;
     ToolkitDelegate* d_delegate;
+    bool d_rendererIOThreadEnabled;
 
 
 
@@ -105,6 +106,7 @@ ToolkitCreateParamsImpl::ToolkitCreateParamsImpl()
     , d_inProcessResizeOptimizationDisabled(false)
     , d_isIsolatedProfile(true)
     , d_delegate(nullptr)
+    , d_rendererIOThreadEnabled(false)
 
 
 
@@ -298,6 +300,11 @@ void ToolkitCreateParams::disableIsolatedProfile()
     d_impl->d_isIsolatedProfile = false;
 }
 
+void ToolkitCreateParams::enableRendererIOThread()
+{
+    d_impl->d_rendererIOThreadEnabled = true;
+}
+
 
 
 // patch section: embedder ipc
@@ -466,6 +473,10 @@ bool ToolkitCreateParams::isIsolatedProfile() const
     return d_impl->d_profileDirectory.empty() && d_impl->d_isIsolatedProfile;
 }
 
+bool ToolkitCreateParams::isRendererIOThreadEnabled() const
+{
+    return d_impl->d_rendererIOThreadEnabled;
+}
 
 
 // patch section: embedder ipc
