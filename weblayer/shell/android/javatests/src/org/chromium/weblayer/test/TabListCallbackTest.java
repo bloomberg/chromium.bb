@@ -5,10 +5,8 @@
 package org.chromium.weblayer.test;
 
 import android.os.Bundle;
-import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -17,7 +15,6 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
-import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.weblayer.Browser;
 import org.chromium.weblayer.Tab;
 import org.chromium.weblayer.TabListCallback;
@@ -36,7 +33,6 @@ public class TabListCallbackTest {
     public InstrumentationActivityTestRule mActivityTestRule =
             new InstrumentationActivityTestRule();
 
-    private EmbeddedTestServer mTestServer;
     private InstrumentationActivity mActivity;
     private Tab mFirstTab;
     private Tab mSecondTab;
@@ -75,13 +71,7 @@ public class TabListCallbackTest {
 
     @Before
     public void setUp() {
-        mTestServer = new EmbeddedTestServer();
-        mTestServer.initializeNative(InstrumentationRegistry.getInstrumentation().getContext(),
-                EmbeddedTestServer.ServerHTTPSSetting.USE_HTTP);
-        mTestServer.addDefaultHandlers("weblayer/test/data");
-        Assert.assertTrue(mTestServer.start(0));
-
-        String url = mTestServer.getURL("/new_browser.html");
+        String url = mActivityTestRule.getTestDataURL("new_browser.html");
         mActivity = mActivityTestRule.launchShellWithUrl(url);
         Assert.assertNotNull(mActivity);
         NewTabCallbackImpl callback = new NewTabCallbackImpl();
@@ -98,11 +88,6 @@ public class TabListCallbackTest {
             mSecondTab = mActivity.getBrowser().getActiveTab();
             Assert.assertNotSame(mFirstTab, mSecondTab);
         });
-    }
-
-    @After
-    public void tearDown() {
-        mTestServer.stopAndDestroyServer();
     }
 
     @Test
