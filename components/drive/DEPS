@@ -22,10 +22,7 @@ specific_include_rules = {
 
   # The following test dependencies should be removed to fully componentize this
   # directory. crbug.com/498951
-  r"(about_resource_loader_unittest\.cc"
-  r"|change_list_loader_unittest\.cc"
-  r"|change_list_processor_unittest\.cc"
-  r"|directory_loader_unittest\.cc"
+  r"(change_list_processor_unittest\.cc"
   r"|drive_file_util_unittest\.cc"
   r"|file_cache_unittest\.cc"
   r"|file_system_core_util_unittest\.cc"
@@ -35,9 +32,6 @@ specific_include_rules = {
   r"|resource_metadata_storage_unittest\.cc"
   r"|resource_metadata_unittest\.cc"
   r"|search_metadata_unittest\.cc"
-  r"|start_page_token_loader_unittest\.cc"
-  r"|team_drive_change_list_loader_unittest\.cc"
-  r"|team_drive_list_loader_unittest\.cc"
   r")": [
     "+content/public/test/browser_task_environment.h",
   ],
