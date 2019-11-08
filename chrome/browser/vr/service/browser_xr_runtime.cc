@@ -116,12 +116,6 @@ device::mojom::VRDisplayInfoPtr ValidateVRDisplayInfo(
   // Rather than just cloning everything, we copy over each field and validate
   // individually.  This ensures new fields don't bypass validation.
   ret->id = id;
-  ret->display_name = info->display_name;
-  DCHECK(info->capabilities);  // Ensured by mojo.
-  ret->capabilities = device::mojom::VRDisplayCapabilities::New(
-      info->capabilities->has_position,
-      info->capabilities->has_external_display, info->capabilities->can_present,
-      info->capabilities->can_provide_environment_integration);
 
   // Maximum 1000km translation.
   if (info->stage_parameters &&
@@ -137,13 +131,6 @@ device::mojom::VRDisplayInfoPtr ValidateVRDisplayInfo(
 
   float kMinFramebufferScale = 0.1f;
   float kMaxFramebufferScale = 1.0f;
-  if (info->webvr_default_framebuffer_scale <= kMaxFramebufferScale &&
-      info->webvr_default_framebuffer_scale >= kMinFramebufferScale) {
-    ret->webvr_default_framebuffer_scale =
-        info->webvr_default_framebuffer_scale;
-  } else {
-    ret->webvr_default_framebuffer_scale = 1;
-  }
 
   if (info->webxr_default_framebuffer_scale <= kMaxFramebufferScale &&
       info->webxr_default_framebuffer_scale >= kMinFramebufferScale) {

@@ -223,20 +223,6 @@ struct XRHitResult {
   gfx.mojom.Transform hit_matrix;
 };
 
-struct VRDisplayCapabilities {
-  bool has_position;
-  bool has_external_display;
-
-  // Indicates whether the display can actively show imagery on a headset.
-  bool can_present;
-
-  // Whether the display gathers data about the environment (for AR like
-  // planes, point clouds, meshes, etc.). The backend will decide whether
-  // it needs to provide camera frames or not based on whether it is a
-  // see-through HMD or camera-based AR system.
-  bool can_provide_environment_integration;
-};
-
 // Information about the optical properties for an eye in a VRDisplay.
 struct VREyeParameters {
   VRFieldOfView field_of_view;
@@ -266,14 +252,11 @@ struct VRStageParameters {
 
 struct VRDisplayInfo {
   XRDeviceId id;
-  string display_name;
-  VRDisplayCapabilities capabilities;
   VRStageParameters? stage_parameters;
   // Parameters required to distort a scene for viewing in a VR headset. Only
   // required for devices which have the can_present capability.
   VREyeParameters? left_eye;
   VREyeParameters? right_eye;
-  float webvr_default_framebuffer_scale = 1.0;
   float webxr_default_framebuffer_scale = 1.0;
 };
 
