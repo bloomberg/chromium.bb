@@ -462,12 +462,11 @@ void LayoutView::SetShouldDoFullPaintInvalidationForViewAndAllDescendants() {
 void LayoutView::InvalidatePaintForViewAndCompositedLayers() {
   SetSubtreeShouldDoFullPaintInvalidation();
 
-  // The only way we know how to hit these ASSERTS below this point is via the
-  // Chromium OS login screen.
-  DisableCompositingQueryAsserts disabler;
-
-  if (Compositor()->InCompositingMode())
-    Compositor()->FullyInvalidatePaint();
+  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+    DisableCompositingQueryAsserts disabler;
+    if (Compositor()->InCompositingMode())
+      Compositor()->FullyInvalidatePaint();
+  }
 }
 
 bool LayoutView::MapToVisualRectInAncestorSpace(
