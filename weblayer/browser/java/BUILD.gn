@@ -96,6 +96,7 @@ android_library("interfaces_java") {
     "org/chromium/weblayer_private/interfaces/APICallException.java",
     "org/chromium/weblayer_private/interfaces/BrowserFragmentArgs.java",
     "org/chromium/weblayer_private/interfaces/BrowsingDataType.java",
+    "org/chromium/weblayer_private/interfaces/LoadError.java",
     "org/chromium/weblayer_private/interfaces/NavigationState.java",
     "org/chromium/weblayer_private/interfaces/NewTabType.java",
     "org/chromium/weblayer_private/interfaces/ObjectWrapper.java",

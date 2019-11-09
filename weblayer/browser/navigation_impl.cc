@@ -5,6 +5,7 @@
 #include "weblayer/browser/navigation_impl.h"
 
 #include "content/public/browser/navigation_handle.h"
+#include "net/base/net_errors.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/jni_array.h"
@@ -71,6 +72,32 @@ NavigationState NavigationImpl::GetState() {
 
 bool NavigationImpl::IsSameDocument() {
   return navigation_handle_->IsSameDocument();
+}
+
+bool NavigationImpl::IsErrorPage() {
+  return navigation_handle_->IsErrorPage();
+}
+
+Navigation::LoadError NavigationImpl::GetLoadError() {
+  auto error_code = navigation_handle_->GetNetErrorCode();
+  if (auto* response_headers = navigation_handle_->GetResponseHeaders()) {
+    auto response_code = response_headers->response_code();
+    if (response_code >= 400 && response_code < 500)
+      return kHttpClientError;
+    if (response_code >= 500 && response_code < 600)
+      return kHttpServerError;
+  }
+
+  if (error_code == net::OK)
+    return kNoError;
+
+  if (net::IsCertificateError(error_code))
+    return kSSLError;
+
+  if (error_code <= -100 && error_code > -200)
+    return kConnectivityError;
+
+  return kOtherError;
 }
 
 }  // namespace weblayer

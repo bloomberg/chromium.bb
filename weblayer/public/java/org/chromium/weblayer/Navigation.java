@@ -74,8 +74,35 @@ public final class Navigation extends IClientNavigation.Stub {
      *  - same page history navigation
      */
     public boolean isSameDocument() {
+        ThreadCheck.ensureOnUiThread();
         try {
             return mNavigationImpl.isSameDocument();
+        } catch (RemoteException e) {
+            throw new APICallException(e);
+        }
+    }
+
+    /**
+     * Whether the navigation resulted in an error page (e.g. interstitial). Note that if an error
+     * page reloads, this will return true even though GetNetErrorCode will be kNoError.
+     */
+    public boolean isErrorPage() {
+        ThreadCheck.ensureOnUiThread();
+        try {
+            return mNavigationImpl.isErrorPage();
+        } catch (RemoteException e) {
+            throw new APICallException(e);
+        }
+    }
+
+    /**
+     * Return information about the error, if any, that was encountered while loading the page.
+     */
+    @LoadError
+    public int getLoadError() {
+        ThreadCheck.ensureOnUiThread();
+        try {
+            return mNavigationImpl.getLoadError();
         } catch (RemoteException e) {
             throw new APICallException(e);
         }

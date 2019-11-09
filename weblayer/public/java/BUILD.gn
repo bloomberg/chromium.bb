@@ -30,6 +30,7 @@ android_library("java") {
     "org/chromium/weblayer/FullscreenCallback.java",
     "org/chromium/weblayer/ListenableFuture.java",
     "org/chromium/weblayer/ListenableResult.java",
+    "org/chromium/weblayer/LoadError.java",
     "org/chromium/weblayer/NavigationCallback.java",
     "org/chromium/weblayer/NavigationController.java",
     "org/chromium/weblayer/Navigation.java",
