@@ -177,7 +177,7 @@ static INLINE void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
             &inter_pred_params, b4_w, b4_h, (mi_y >> pd->subsampling_y) + y,
             (mi_x >> pd->subsampling_x) + x, pd->subsampling_x,
             pd->subsampling_y, xd->bd, is_cur_buf_hbd(xd), mi->use_intrabc, sf,
-            this_mbmi->interp_filters);
+            pre_buf, this_mbmi->interp_filters);
         av1_make_inter_predictor(pre, pre_buf->stride, dst, dst_buf->stride,
                                  &inter_pred_params, &subpel_params);
 
@@ -216,10 +216,11 @@ static INLINE void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
       warp_types.global_warp_allowed = is_global[ref];
       warp_types.local_warp_allowed = mi->motion_mode == WARPED_CAUSAL;
 
-      av1_init_inter_params(
-          &inter_pred_params, bw, bh, mi_y >> pd->subsampling_y,
-          mi_x >> pd->subsampling_x, pd->subsampling_x, pd->subsampling_y,
-          xd->bd, is_cur_buf_hbd(xd), mi->use_intrabc, sf, mi->interp_filters);
+      av1_init_inter_params(&inter_pred_params, bw, bh,
+                            mi_y >> pd->subsampling_y,
+                            mi_x >> pd->subsampling_x, pd->subsampling_x,
+                            pd->subsampling_y, xd->bd, is_cur_buf_hbd(xd),
+                            mi->use_intrabc, sf, pre_buf, mi->interp_filters);
 
       if (!build_for_obmc)
         av1_init_warp_params(&inter_pred_params, &pd->pre[ref], &warp_types,
@@ -475,10 +476,10 @@ void av1_build_inter_predictors_for_planes_single_buf(
 
     InterPredParams inter_pred_params;
 
-    av1_init_inter_params(&inter_pred_params, bw, bh, mi_y, mi_x,
-                          pd->subsampling_x, pd->subsampling_y, xd->bd,
-                          is_cur_buf_hbd(xd), 0,
-                          xd->block_ref_scale_factors[ref], mi->interp_filters);
+    av1_init_inter_params(
+        &inter_pred_params, bw, bh, mi_y, mi_x, pd->subsampling_x,
+        pd->subsampling_y, xd->bd, is_cur_buf_hbd(xd), 0,
+        xd->block_ref_scale_factors[ref], &pd->pre[ref], mi->interp_filters);
     inter_pred_params.conv_params = get_conv_params(0, plane, xd->bd);
     av1_init_warp_params(&inter_pred_params, &pd->pre[ref], &warp_types, ref,
                          xd, mi);

@@ -240,10 +240,13 @@ static AOM_INLINE void mode_estimation(
     motion_estimation(cpi, x, src_mb_buffer, ref_mb, src_stride, ref_stride,
                       bsize, mi_row, mi_col);
 
+    struct buf_2d ref_buf = { NULL, ref_frame_ptr->y_buffer,
+                              ref_frame_ptr->y_width, ref_frame_ptr->y_height,
+                              ref_frame_ptr->y_stride };
     InterPredParams inter_pred_params;
     av1_init_inter_params(&inter_pred_params, bw, bh, mi_col * MI_SIZE,
                           mi_row * MI_SIZE, 0, 0, xd->bd, is_cur_buf_hbd(xd), 0,
-                          sf, kernel);
+                          sf, &ref_buf, kernel);
     inter_pred_params.conv_params = get_conv_params(0, 0, xd->bd);
 
     av1_build_inter_predictor(ref_mb, ref_stride, predictor, bw,
@@ -291,13 +294,17 @@ static AOM_INLINE void mode_estimation(
 
   // Final encode
   if (is_inter_mode(best_mode)) {
+    const YV12_BUFFER_CONFIG *ref_frame_ptr = ref_frame[best_rf_idx];
+
     InterPredParams inter_pred_params;
+    struct buf_2d ref_buf = { NULL, ref_frame_ptr->y_buffer,
+                              ref_frame_ptr->y_width, ref_frame_ptr->y_height,
+                              ref_frame_ptr->y_stride };
     av1_init_inter_params(&inter_pred_params, bw, bh, mi_col * MI_SIZE,
                           mi_row * MI_SIZE, 0, 0, xd->bd, is_cur_buf_hbd(xd), 0,
-                          sf, kernel);
+                          sf, &ref_buf, kernel);
     inter_pred_params.conv_params = get_conv_params(0, 0, xd->bd);
 
-    const YV12_BUFFER_CONFIG *ref_frame_ptr = ref_frame[best_rf_idx];
     const int ref_mb_offset =
         mi_row * MI_SIZE * ref_frame_ptr->y_stride + mi_col * MI_SIZE;
     uint8_t *ref_mb = ref_frame_ptr->y_buffer + ref_mb_offset;
@@ -1055,10 +1062,12 @@ static AOM_INLINE void get_tpl_forward_stats(AV1_COMP *cpi, MACROBLOCK *x,
                         ref->y_buffer + mb_y_offset_ref, src->y_stride,
                         ref->y_stride, bsize, mi_row, mi_col);
 
+      struct buf_2d ref_buf = { NULL, ref->y_buffer, ref->y_width,
+                                ref->y_height, ref->y_stride };
       InterPredParams inter_pred_params;
       av1_init_inter_params(&inter_pred_params, bw, bh, mi_col * MI_SIZE,
                             mi_row * MI_SIZE, 0, 0, xd->bd, is_cur_buf_hbd(xd),
-                            0, &sf, kernel);
+                            0, &sf, &ref_buf, kernel);
       inter_pred_params.conv_params = get_conv_params(0, 0, xd->bd);
 
       av1_build_inter_predictor(ref->y_buffer + mb_y_offset_ref, ref->y_stride,

@@ -122,6 +122,7 @@ void av1_init_inter_params(InterPredParams *inter_pred_params, int block_width,
                            int subsampling_x, int subsampling_y, int bit_depth,
                            int use_hbd_buf, int is_intrabc,
                            const struct scale_factors *sf,
+                           const struct buf_2d *ref_buf,
                            int_interpfilters interp_filters);
 
 void av1_init_warp_params(InterPredParams *inter_pred_params,

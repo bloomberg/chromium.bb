@@ -6927,11 +6927,6 @@ static AOM_INLINE void joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
 
   InterPredParams inter_pred_params;
 
-  av1_init_inter_params(&inter_pred_params, pw, ph, mi_col * MI_SIZE,
-                        mi_row * MI_SIZE, 0, 0, xd->bd, is_cur_buf_hbd(xd), 0,
-                        &cm->sf_identity, interp_filters);
-  inter_pred_params.conv_params = get_conv_params(0, 0, xd->bd);
-
   // Do joint motion search in compound mode to get more accurate mv.
   struct buf_2d backup_yv12[2][MAX_MB_PLANE];
   int last_besterr[2] = { INT_MAX, INT_MAX };
@@ -6994,6 +6989,11 @@ static AOM_INLINE void joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
     // Initialize based on (possibly scaled) prediction buffers.
     ref_yv12[0] = xd->plane[plane].pre[0];
     ref_yv12[1] = xd->plane[plane].pre[1];
+
+    av1_init_inter_params(&inter_pred_params, pw, ph, mi_col * MI_SIZE,
+                          mi_row * MI_SIZE, 0, 0, xd->bd, is_cur_buf_hbd(xd), 0,
+                          &cm->sf_identity, &ref_yv12[!id], interp_filters);
+    inter_pred_params.conv_params = get_conv_params(0, 0, xd->bd);
 
     // Since we have scaled the reference frames to match the size of the
     // current frame we must use a unit scaling factor during mode selection.
@@ -7540,7 +7540,8 @@ static AOM_INLINE void build_second_inter_pred(const AV1_COMP *cpi,
 
   av1_init_inter_params(&inter_pred_params, pw, ph, p_col, p_row,
                         pd->subsampling_x, pd->subsampling_y, xd->bd,
-                        is_cur_buf_hbd(xd), 0, &sf, mbmi->interp_filters);
+                        is_cur_buf_hbd(xd), 0, &sf, &ref_yv12,
+                        mbmi->interp_filters);
   inter_pred_params.conv_params = get_conv_params(0, 0, xd->bd);
 
   // Get the prediction block from the 'other' reference frame.

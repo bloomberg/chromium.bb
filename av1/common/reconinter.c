@@ -61,6 +61,7 @@ void av1_init_inter_params(InterPredParams *inter_pred_params, int block_width,
                            int subsampling_x, int subsampling_y, int bit_depth,
                            int use_hbd_buf, int is_intrabc,
                            const struct scale_factors *sf,
+                           const struct buf_2d *ref_buf,
                            int_interpfilters interp_filters) {
   inter_pred_params->block_width = block_width;
   inter_pred_params->block_height = block_height;
@@ -72,6 +73,7 @@ void av1_init_inter_params(InterPredParams *inter_pred_params, int block_width,
   inter_pred_params->use_hbd_buf = use_hbd_buf;
   inter_pred_params->is_intrabc = is_intrabc;
   inter_pred_params->scale_factors = sf;
+  inter_pred_params->ref_frame_buf = *ref_buf;
   inter_pred_params->mode = UNIFORM_PRED;
 
   if (is_intrabc) {
