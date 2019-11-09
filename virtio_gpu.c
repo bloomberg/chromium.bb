@@ -30,6 +30,7 @@ static const uint32_t render_target_formats[] = { DRM_FORMAT_ABGR8888, DRM_FORMA
 						  DRM_FORMAT_XRGB8888 };
 
 static const uint32_t dumb_texture_source_formats[] = { DRM_FORMAT_R8, DRM_FORMAT_YVU420,
+							DRM_FORMAT_NV12,
 							DRM_FORMAT_YVU420_ANDROID };
 
 static const uint32_t texture_source_formats[] = { DRM_FORMAT_NV12, DRM_FORMAT_R8, DRM_FORMAT_RG88,
