@@ -522,4 +522,10 @@ suite('TabList', () => {
         window.dispatchEvent(new Event('blur'));
         assertEquals(tabList.shadowRoot.activeElement, null);
       });
+
+  test('should update the ID when a tab is replaced', () => {
+    assertEquals(getUnpinnedTabs()[0].tab.id, 0);
+    webUIListenerCallback('tab-replaced', tabs[0].id, 1000);
+    assertEquals(getUnpinnedTabs()[0].tab.id, 1000);
+  });
 });

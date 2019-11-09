@@ -171,11 +171,21 @@ class TabStripUIHandler : public content::WebUIMessageHandler,
             base::Value(move->to_index));
         break;
       }
-
-      case TabStripModelChange::kReplaced:
-      case TabStripModelChange::kGroupChanged:
+      case TabStripModelChange::kReplaced: {
+        auto* replace = change.GetReplace();
+        FireWebUIListener("tab-replaced",
+                          base::Value(extensions::ExtensionTabUtil::GetTabId(
+                              replace->old_contents)),
+                          base::Value(extensions::ExtensionTabUtil::GetTabId(
+                              replace->new_contents)));
+        break;
+      }
+      case TabStripModelChange::kGroupChanged: {
+        // Not yet implmented.
+        break;
+      }
       case TabStripModelChange::kSelectionOnly:
-        // Not yet implemented.
+        // Multi-selection is not supported for touch.
         break;
     }
 

@@ -170,6 +170,8 @@ class TabListElement extends CustomElement {
       addWebUIListener(
           'tab-moved', (tabId, newIndex) => this.onTabMoved_(tabId, newIndex));
       addWebUIListener('tab-removed', tabId => this.onTabRemoved_(tabId));
+      addWebUIListener(
+          'tab-replaced', (oldId, newId) => this.onTabReplaced_(oldId, newId));
       addWebUIListener('tab-updated', tab => this.onTabUpdated_(tab));
       addWebUIListener(
           'tab-active-changed', tabId => this.onTabActivated_(tabId));
@@ -411,6 +413,21 @@ class TabListElement extends CustomElement {
     if (tabElement) {
       this.addAnimationPromise_(tabElement.slideOut());
     }
+  }
+
+  /**
+   * @param {number} oldId
+   * @param {number} newId
+   * @private
+   */
+  onTabReplaced_(oldId, newId) {
+    const tabElement = this.findTabElement_(oldId);
+    if (!tabElement) {
+      return;
+    }
+
+    tabElement.tab = /** @type {!TabData} */ (
+        Object.assign({}, tabElement.tab, {id: newId}));
   }
 
   /**
