@@ -51,7 +51,7 @@ class NavigationImpl : public Navigation {
   // Navigation implementation:
   GURL GetURL() override;
   const std::vector<GURL>& GetRedirectChain() override;
-  State GetState() override;
+  NavigationState GetState() override;
   bool IsSameDocument() override;
 
   content::NavigationHandle* navigation_handle_;

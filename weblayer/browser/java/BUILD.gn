@@ -17,6 +17,7 @@ generate_product_config_srcjar("weblayer_product_config") {
 
 java_cpp_enum("generated_enums") {
   sources = [
+    "//weblayer/public/navigation.h",
     "//weblayer/public/new_tab_delegate.h",
     "//weblayer/public/profile.h",
   ]
@@ -95,6 +96,7 @@ android_library("interfaces_java") {
     "org/chromium/weblayer_private/interfaces/APICallException.java",
     "org/chromium/weblayer_private/interfaces/BrowserFragmentArgs.java",
     "org/chromium/weblayer_private/interfaces/BrowsingDataType.java",
+    "org/chromium/weblayer_private/interfaces/NavigationState.java",
     "org/chromium/weblayer_private/interfaces/NewTabType.java",
     "org/chromium/weblayer_private/interfaces/ObjectWrapper.java",
     "org/chromium/weblayer_private/interfaces/WebLayerVersion.java",

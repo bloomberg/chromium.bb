@@ -64,9 +64,9 @@ const std::vector<GURL>& NavigationImpl::GetRedirectChain() {
   return navigation_handle_->GetRedirectChain();
 }
 
-Navigation::State NavigationImpl::GetState() {
+NavigationState NavigationImpl::GetState() {
   NOTIMPLEMENTED() << "TODO: properly implement this";
-  return Navigation::State::kWaitingResponse;
+  return NavigationState::kWaitingResponse;
 }
 
 bool NavigationImpl::IsSameDocument() {

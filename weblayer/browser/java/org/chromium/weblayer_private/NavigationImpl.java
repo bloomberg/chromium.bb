@@ -13,6 +13,7 @@ import org.chromium.weblayer_private.interfaces.APICallException;
 import org.chromium.weblayer_private.interfaces.IClientNavigation;
 import org.chromium.weblayer_private.interfaces.INavigation;
 import org.chromium.weblayer_private.interfaces.INavigationControllerClient;
+import org.chromium.weblayer_private.interfaces.NavigationState;
 
 import java.util.Arrays;
 import java.util.List;
@@ -37,10 +38,28 @@ public final class NavigationImpl extends INavigation.Stub {
         return mClientNavigation;
     }
 
+    @NavigationState
+    private static int implTypeToJavaType(@ImplNavigationState int type) {
+        switch (type) {
+            case ImplNavigationState.WAITING_RESPONSE:
+                return NavigationState.WAITING_RESPONSE;
+            case ImplNavigationState.RECEIVING_BYTES:
+                return NavigationState.RECEIVING_BYTES;
+            case ImplNavigationState.COMPLETE:
+                return NavigationState.COMPLETE;
+            case ImplNavigationState.FAILED:
+                return NavigationState.FAILED;
+        }
+        assert false;
+        return NavigationState.FAILED;
+    }
+
     @Override
+    @NavigationState
     public int getState() {
         throwIfNativeDestroyed();
-        return NavigationImplJni.get().getState(mNativeNavigationImpl, NavigationImpl.this);
+        return implTypeToJavaType(
+                NavigationImplJni.get().getState(mNativeNavigationImpl, NavigationImpl.this));
     }
 
     @Override

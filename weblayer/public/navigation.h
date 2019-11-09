@@ -11,6 +11,17 @@ class GURL;
 
 namespace weblayer {
 
+// These types are sent over IPC and across different versions. Never remove
+// or change the order.
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.weblayer_private
+// GENERATED_JAVA_CLASS_NAME_OVERRIDE: ImplNavigationState
+enum class NavigationState {
+  kWaitingResponse = 0,
+  kReceivingBytes = 1,
+  kComplete = 2,
+  kFailed = 3,
+};
+
 class Navigation {
  public:
   virtual ~Navigation() {}
@@ -24,16 +35,7 @@ class Navigation {
   // there will be one entry in the list).
   virtual const std::vector<GURL>& GetRedirectChain() = 0;
 
-  // These types are sent over IPC and across different versions. Never remove
-  // or change the order.
-  enum State {
-    kWaitingResponse = 0,
-    kReceivingBytes = 1,
-    kComplete = 2,
-    kFailed = 3,
-  };
-
-  virtual State GetState() = 0;
+  virtual NavigationState GetState() = 0;
 
   // Whether the navigation happened without changing document. Examples of
   // same document navigations are:

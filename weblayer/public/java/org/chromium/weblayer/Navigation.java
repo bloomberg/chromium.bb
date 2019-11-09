@@ -21,37 +21,16 @@ import java.util.List;
  */
 public final class Navigation extends IClientNavigation.Stub {
     private final INavigation mNavigationImpl;
-    // TODO(sky): investigate using java_cpp_enum.
-    public enum State {
-        WAITING_RESPONSE,
-        RECEIVING_BYTES,
-        COMPLETE,
-        FAILED,
-    }
-
-    private static State ipcStateToState(int state) {
-        switch (state) {
-            case 0:
-                return State.WAITING_RESPONSE;
-            case 1:
-                return State.RECEIVING_BYTES;
-            case 2:
-                return State.COMPLETE;
-            case 3:
-                return State.FAILED;
-            default:
-                throw new IllegalArgumentException("Unexpected state " + state);
-        }
-    }
 
     Navigation(INavigation impl) {
         mNavigationImpl = impl;
     }
 
-    public State getState() {
+    @NavigationState
+    public int getState() {
         ThreadCheck.ensureOnUiThread();
         try {
-            return ipcStateToState(mNavigationImpl.getState());
+            return mNavigationImpl.getState();
         } catch (RemoteException e) {
             throw new APICallException(e);
         }
