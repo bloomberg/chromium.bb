@@ -323,12 +323,7 @@ void PaintLayer::UpdateLayerPositionsAfterLayout() {
   ClearClipRects();
   UpdateLayerPositionRecursive();
 
-  {
-    // FIXME: Remove incremental compositing updates after fixing the
-    // chicken/egg issues, https://crbug.com/343756
-    DisableCompositingQueryAsserts disabler;
-    UpdatePaginationRecursive(EnclosingPaginationLayer());
-  }
+  UpdatePaginationRecursive(EnclosingPaginationLayer());
 }
 
 void PaintLayer::UpdateLayerPositionRecursive() {
