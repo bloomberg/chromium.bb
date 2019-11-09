@@ -198,12 +198,6 @@ struct VRPose {
   // False when position is based on sensors tracking a 6DoF pose.
   bool emulated_position;
 
-  // Velocity/Acceleration is in global coordinates, as rad/s.
-  gfx.mojom.Vector3dF? angular_velocity;
-  gfx.mojom.Vector3dF? linear_velocity;
-  gfx.mojom.Vector3dF? angular_acceleration;
-  gfx.mojom.Vector3dF? linear_acceleration;
-
   // For WebXR sessions only, reports the state of all active input devices
   // synced with the head pose.
   array<XRInputSourceState>? input_state;
