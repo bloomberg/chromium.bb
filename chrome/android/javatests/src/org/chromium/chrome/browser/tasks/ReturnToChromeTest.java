@@ -27,6 +27,7 @@ import org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ApplicationTestUtils;
+import org.chromium.chrome.test.util.RenderTestRule;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.net.test.EmbeddedTestServer;
@@ -48,6 +49,9 @@ public class ReturnToChromeTest {
     public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
 
     private String mUrl;
+
+    @Rule
+    public RenderTestRule mRenderTestRule = new RenderTestRule();
 
     @Before
     public void setUp() {
@@ -100,5 +104,31 @@ public class ReturnToChromeTest {
                         .getCurrentTabModelFilter()::isTabModelRestored));
 
         assertEquals(2, mActivityTestRule.getActivity().getTabModelSelector().getTotalTabCount());
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"ReturnToChrome", "RenderTest"})
+    @CommandLineFlags.Add({BASE_PARAMS + "/" + TAB_SWITCHER_ON_RETURN_MS + "/0"})
+    public void testInitialScrollIndex() throws Exception {
+        TabUiTestHelper.prepareTabsWithThumbnail(mActivityTestRule, 10, 0, mUrl);
+        ApplicationTestUtils.finishActivity(mActivityTestRule.getActivity());
+
+        mActivityTestRule.startMainActivityFromLauncher();
+
+        Assert.assertTrue(mActivityTestRule.getActivity().getLayoutManager().overviewVisible());
+
+        CriteriaHelper.pollUiThread(Criteria.equals(true,
+                mActivityTestRule.getActivity()
+                        .getTabModelSelector()
+                        .getTabModelFilterProvider()
+                        .getCurrentTabModelFilter()::isTabModelRestored));
+
+        assertEquals(10, mActivityTestRule.getActivity().getTabModelSelector().getTotalTabCount());
+        assertEquals(9, mActivityTestRule.getActivity().getCurrentTabModel().index());
+        // Make sure the grid tab switcher is scrolled down to show the selected tab.
+        mRenderTestRule.render(mActivityTestRule.getActivity().findViewById(
+                                       org.chromium.chrome.tab_ui.R.id.tab_list_view),
+                "10_web_tabs-select_last");
     }
 }
