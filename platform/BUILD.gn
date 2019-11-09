@@ -15,8 +15,6 @@ source_set("platform") {
     "api/logging.h",
     "api/network_interface.cc",
     "api/network_interface.h",
-    "api/platform_client.cc",
-    "api/platform_client.h",
     "api/scoped_wake_lock.cc",
     "api/scoped_wake_lock.h",
     "api/socket.h",
