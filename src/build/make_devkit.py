@@ -92,7 +92,7 @@ def copyIncludeFiles(destDir):
       os.path.join(destDir, 'include', 'v8'),
       [os.path.join(srcDir, 'v8', 'include')])
 
-def generateMsvsMapFiles(version):
+def generateMsvsMapFiles(version, configs):
   productAppend = '.' + version
   products = [
     'blpwtk2' + productAppend + '.dll',
@@ -101,7 +101,6 @@ def generateMsvsMapFiles(version):
     'blpwtk2_subprocess' + productAppend + '.exe',
   ]
 
-  configs = ['debug', 'release']
   for config in configs:
     srcBinDir = os.path.join(srcDir, 'out', 'static_' + config)
     for p in products:
@@ -130,7 +129,7 @@ def generateMsvsMapFiles(version):
       else:
         print("Not generating MSVS map file for " + p)
 
-def copyBin(destDir, version, includeMap):
+def copyBin(destDir, version, configs, includeMap):
   productAppend = '.' + version
 
   products = [
@@ -162,7 +161,6 @@ def copyBin(destDir, version, includeMap):
       'blpwtk2_subprocess' + productAppend + '.map',
     ])
 
-  configs = ['debug', 'release']
   for config in configs:
     destBinDir = os.path.join(destDir, 'bin', config)
     srcBinDir = os.path.join(srcDir, 'out', 'static_' + config)
@@ -173,14 +171,13 @@ def copyBin(destDir, version, includeMap):
       shutil.copy(srcFile, destFile)
 
 
-def copyLib(destDir, version):
+def copyLib(destDir, version, configs):
   productAppend = '.' + version
 
   products = [
     'blpwtk2' + productAppend + '.dll.lib',
   ]
 
-  configs = ['debug', 'release']
   for config in configs:
     destBinDir = os.path.join(destDir, 'lib', config)
     srcBinDir = os.path.join(srcDir, 'out', 'static_' + config)
@@ -190,9 +187,7 @@ def copyLib(destDir, version):
       shutil.copy(srcFile, destFile)
 
 
-def addGenFiles():
-  configs = ['debug', 'release']
-
+def addGenFiles(configs):
   def wantedFile(fname):
     fname = fname.lower()
     return fname.endswith('.h')     \
@@ -227,6 +222,9 @@ def main(args):
   doTag = False
   doPushTag = True
   doGenerateMap = True
+  doMakeDebug = True
+  doMakeRelease = True
+  version = None
 
   for i in range(len(args)):
     if args[i] == '--outdir':
@@ -241,6 +239,10 @@ def main(args):
       doPushTag = False
     elif args[i] == '--nomap':
       doGenerateMap = False
+    elif args[i] == '--nodebug':
+      doMakeDebug = False
+    elif args[i] == '--norelease':
+      doMakeRelease = False
     elif args[i] == '--version':
       version = args[i+1]
     elif args[i].startswith('-'):
@@ -291,26 +293,28 @@ def main(args):
   if rc != 0:
     return rc
 
-  print("Building Debug...")
-  sys.stdout.flush()
-  rc = bbutil.shellExecNoPipe('python build/blpwtk2.py static debug --bb_version')
-  if rc != 0:
-    return rc
+  if doMakeDebug:
+    print("Building Debug...")
+    sys.stdout.flush()
+    rc = bbutil.shellExecNoPipe('python build/blpwtk2.py static debug --bb_version')
+    if rc != 0:
+      return rc
 
-  rc = bbutil.shellExecNoPipe('ninja.exe -C out/static_debug blpwtk2_all')
-  if rc != 0:
-    return rc
+    rc = bbutil.shellExecNoPipe('ninja.exe -C out/static_debug blpwtk2_all')
+    if rc != 0:
+      return rc
 
-  print("Building Release...")
-  sys.stdout.flush()
-  applyVariableToEnvironment('GN_DEFINES', 'is_official_build', 'true')
-  rc = bbutil.shellExecNoPipe('python build/blpwtk2.py static release --bb_version')
-  if rc != 0:
-    return rc
+  if doMakeRelease:
+    print("Building Release...")
+    sys.stdout.flush()
+    applyVariableToEnvironment('GN_DEFINES', 'is_official_build', 'true')
+    rc = bbutil.shellExecNoPipe('python build/blpwtk2.py static release --bb_version')
+    if rc != 0:
+      return rc
 
-  rc = bbutil.shellExecNoPipe('ninja.exe -C out/static_release blpwtk2_all')
-  if rc != 0:
-    return rc
+    rc = bbutil.shellExecNoPipe('ninja.exe -C out/static_release blpwtk2_all')
+    if rc != 0:
+      return rc
 
   os.chdir("..")
 
@@ -318,24 +322,32 @@ def main(args):
   sys.stdout.flush()
   os.mkdir(destDir)
   os.mkdir(os.path.join(destDir, 'bin'))
-  os.mkdir(os.path.join(destDir, 'bin', 'debug'))
-  os.mkdir(os.path.join(destDir, 'bin', 'release'))
   os.mkdir(os.path.join(destDir, 'include'))
   os.mkdir(os.path.join(destDir, 'lib'))
-  os.mkdir(os.path.join(destDir, 'lib', 'debug'))
-  os.mkdir(os.path.join(destDir, 'lib', 'release'))
+
+  configs = []
+
+  if doMakeDebug:
+    os.mkdir(os.path.join(destDir, 'bin', 'debug'))
+    os.mkdir(os.path.join(destDir, 'lib', 'debug'))
+    configs.append('debug')
+
+  if doMakeRelease:
+    os.mkdir(os.path.join(destDir, 'bin', 'release'))
+    os.mkdir(os.path.join(destDir, 'lib', 'release'))
+    configs.append('release')
 
   if doGenerateMap:
-    generateMsvsMapFiles(version)
+    generateMsvsMapFiles(version, configs)
 
   copyIncludeFiles(destDir)
-  copyBin(destDir, version, doGenerateMap)
-  copyLib(destDir, version)
+  copyBin(destDir, version, configs, doGenerateMap)
+  copyLib(destDir, version, configs)
 
   if doTag:
     print("Adding generated code to source control...")
     sys.stdout.flush()
-    addGenFiles()
+    addGenFiles(configs)
 
   # Copy version.txt *after* committing the generated files so that the sha in
   # the version.txt file includes the generated code.
