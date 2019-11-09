@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.tasks.tab_management;
 
-import android.os.Build;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 
@@ -15,7 +14,6 @@ import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.flags.FeatureUtilities;
@@ -38,8 +36,6 @@ import java.util.List;
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
-@DisableIf.Build(message = "crbug.com/1022200", sdk_is_greater_than = Build.VERSION_CODES.KITKAT,
-        sdk_is_less_than = Build.VERSION_CODES.M)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class TabSelectionEditorTest {
     @Rule

@@ -57,7 +57,7 @@ public class TabSelectionEditorTestingRobot {
 
             @Override
             public boolean matchesSafely(Root root) {
-                if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.LOLLIPOP) {
+                if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.LOLLIPOP_MR1) {
                     return withDecorView(
                             withClassName(is(TabSelectionEditorLayout.class.getName())))
                             .matches(root);
