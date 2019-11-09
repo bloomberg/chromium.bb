@@ -28,7 +28,6 @@
 #include "media/base/text_renderer.h"
 #include "media/base/text_track_config.h"
 #include "media/base/time_delta_interpolator.h"
-#include "testing/gmock_mutant.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -37,7 +36,6 @@ using ::base::test::RunOnceCallback;
 using ::base::test::RunOnceClosure;
 using ::testing::_;
 using ::testing::AnyNumber;
-using ::testing::CreateFunctor;
 using ::testing::DeleteArg;
 using ::testing::DoAll;
 using ::testing::Invoke;
@@ -729,9 +727,10 @@ TEST_F(PipelineImplTest, NoMessageDuringTearDownFromError) {
   StartPipelineAndExpect(PIPELINE_OK);
 
   // Trigger additional requests on the pipeline during tear down from error.
-  base::Callback<void(PipelineStatus)> cb =
-      base::Bind(&TestNoCallsAfterError, pipeline_.get(), &task_environment_);
-  ON_CALL(callbacks_, OnError(_)).WillByDefault(Invoke(CreateFunctor(cb)));
+  ON_CALL(callbacks_, OnError(_))
+      .WillByDefault(Invoke([=](PipelineStatus status) {
+        TestNoCallsAfterError(pipeline_.get(), &task_environment_, status);
+      }));
 
   base::TimeDelta seek_time = base::TimeDelta::FromSeconds(5);
 
