@@ -17,7 +17,7 @@ PASS window.outerWidth == 100 is true
 
 Testing - resizeTo: Full Screen Out of Bounds
 FAIL window.screenY == screen.availTop should be true. Was false.
-FAIL window.outerHeight == screen.availHeight should be true. Was false.
+PASS window.outerHeight == screen.availHeight is true
 FAIL window.screenX == screen.availLeft should be true. Was false.
 PASS window.outerWidth == screen.availWidth is true
 
@@ -62,17 +62,17 @@ PASS window.outerWidth == screen.availWidth is true
 
 
 Testing - moveTo: Bottom Right
-FAIL window.outerHeight == screen.availHeight should be true. Was false.
+PASS window.outerHeight == screen.availHeight is true
 PASS window.outerWidth == screen.availWidth is true
 
 
 Testing - moveTo: Bottom
-FAIL window.outerHeight == screen.availHeight should be true. Was false.
+PASS window.outerHeight == screen.availHeight is true
 PASS window.screenX == screen.availLeft is true
 
 
 Testing - moveTo: Bottom Left
-FAIL window.outerHeight == screen.availHeight should be true. Was false.
+PASS window.outerHeight == screen.availHeight is true
 FAIL window.screenX == screen.availLeft should be true. Was false.
 
 
@@ -120,16 +120,16 @@ PASS window.outerWidth == screen.availWidth is true
 
 
 Testing - moveBy: Bottom Right
-FAIL window.outerHeight == screen.availHeight should be true. Was false.
+PASS window.outerHeight == screen.availHeight is true
 PASS window.outerWidth == screen.availWidth is true
 
 
 Testing - moveBy: Bottom
-FAIL window.outerHeight == screen.availHeight should be true. Was false.
+PASS window.outerHeight == screen.availHeight is true
 
 
 Testing - moveBy: Bottom Left
-FAIL window.outerHeight == screen.availHeight should be true. Was false.
+PASS window.outerHeight == screen.availHeight is true
 FAIL window.screenX == screen.availLeft should be true. Was false.
 
 
