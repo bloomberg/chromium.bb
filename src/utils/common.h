@@ -19,6 +19,7 @@
 
 #if defined(_MSC_VER)
 #include <intrin.h>
+#pragma intrinsic(_BitScanForward)
 #pragma intrinsic(_BitScanReverse)
 #if defined(_M_X64) || defined(_M_ARM) || defined(_M_ARM64)
 #pragma intrinsic(_BitScanReverse64)
@@ -59,13 +60,17 @@ inline int CountLeadingZeros(uint64_t n) {
   return __builtin_clzll(n);
 }
 
+inline int CountTrailingZeros(uint32_t n) {
+  assert(n != 0);
+  return __builtin_ctz(n);
+}
+
 #elif defined(_MSC_VER)
 
 inline int CountLeadingZeros(uint32_t n) {
   assert(n != 0);
   unsigned long first_set_bit;  // NOLINT(runtime/int)
-  const unsigned char bit_set = _BitScanReverse(
-      &first_set_bit, static_cast<unsigned long>(n));  // NOLINT(runtime/int)
+  const unsigned char bit_set = _BitScanReverse(&first_set_bit, n);
   assert(bit_set != 0);
   static_cast<void>(bit_set);
   return 31 - static_cast<int>(first_set_bit);
@@ -95,6 +100,15 @@ inline int CountLeadingZeros(uint64_t n) {
 
 #undef HAVE_BITSCANREVERSE64
 
+inline int CountTrailingZeros(uint32_t n) {
+  assert(n != 0);
+  unsigned long first_set_bit;  // NOLINT(runtime/int)
+  const unsigned char bit_set = _BitScanForward(&first_set_bit, n);
+  assert(bit_set != 0);
+  static_cast<void>(bit_set);
+  return static_cast<int>(first_set_bit);
+}
+
 #else  // !defined(__GNUC__) && !defined(_MSC_VER)
 
 template <const int kMSB, typename T>
@@ -112,6 +126,23 @@ inline int CountLeadingZeros(T n) {
 inline int CountLeadingZeros(uint32_t n) { return CountLeadingZeros<31>(n); }
 
 inline int CountLeadingZeros(uint64_t n) { return CountLeadingZeros<63>(n); }
+
+// This is the algorithm on the left in Figure 5-23, Hacker's Delight, Second
+// Edition, page 109. The book says:
+//   If the number of trailing 0's is expected to be small or large, then the
+//   simple loops shown in Figure 5-23 are quite fast.
+inline int CountTrailingZeros(uint32_t n) {
+  assert(n != 0);
+  // Create a word with 1's at the positions of the trailing 0's in |n|, and
+  // 0's elsewhere (e.g., 01011000 => 00000111).
+  n = ~n & (n - 1);
+  int count = 0;
+  while (n != 0) {
+    ++count;
+    n >>= 1;
+  }
+  return count;
+}
 
 #endif  // defined(__GNUC__)
 
