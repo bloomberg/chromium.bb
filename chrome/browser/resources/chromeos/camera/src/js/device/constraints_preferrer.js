@@ -383,13 +383,8 @@ cca.device.VideoConstraintsPreferrer =
             this.prefFpses_[deviceId] && this.prefFpses_[deviceId][r] || 30;
         constFpses = prefFps == 30 ? [30, 60] : [60, 30];
       } else {
-        constFpses = [null];
-        if (constFpsInfo.length > 0) {
-          const maxConstFps = Math.max(...constFpsInfo);
-          if (maxConstFps >= 30) {
-            constFpses.unshift(maxConstFps);
-          }
-        }
+        constFpses =
+            [...constFpsInfo.filter((fps) => fps >= 30).sort().reverse(), null];
       }
       return constFpses.map((fps) => ({r, fps}));
     };
