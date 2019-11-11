@@ -1705,17 +1705,16 @@ static void vbr_rate_correction(AV1_COMP *cpi, int *this_frame_target) {
   RATE_CONTROL *const rc = &cpi->rc;
   int64_t vbr_bits_off_target = rc->vbr_bits_off_target;
   int max_delta;
-  double position_factor = 1.0;
+  const int frame_window =
+      AOMMIN(16, (int)cpi->twopass.total_stats.count -
+                     cpi->common.current_frame.frame_number);
 
-  // How far through the clip are we.
-  // This number is used to damp the per frame rate correction.
-  // Range 0 - 1.0
-  if (cpi->twopass.total_stats.count != 0.) {
-    position_factor = sqrt((double)cpi->common.current_frame.frame_number /
-                           cpi->twopass.total_stats.count);
-  }
-  max_delta = (int)(position_factor *
-                    ((*this_frame_target * VBR_PCT_ADJUSTMENT_LIMIT) / 100));
+  max_delta = (vbr_bits_off_target > 0)
+                  ? (int)(vbr_bits_off_target / frame_window)
+                  : (int)(-vbr_bits_off_target / frame_window);
+
+  max_delta = AOMMIN(max_delta,
+                     ((*this_frame_target * VBR_PCT_ADJUSTMENT_LIMIT) / 100));
 
   // vbr_bits_off_target > 0 means we have extra bits to spend
   if (vbr_bits_off_target > 0) {
