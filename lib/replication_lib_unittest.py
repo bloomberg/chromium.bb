@@ -170,8 +170,8 @@ class ReplicateTest(cros_test_lib.TempDirTestCase):
   def testReplicateFileMode(self):
     """Tests file mode data is replicated."""
     # Check that the original mode is not 777 and then chmod.
-    self.assertNotEqual(stat.S_IMODE(os.stat(self.audio_path).st_mode), 777)
-    os.chmod(self.audio_path, 777)
+    self.assertNotEqual(stat.S_IMODE(os.stat(self.audio_path).st_mode), 0o777)
+    os.chmod(self.audio_path, 0o777)
 
     audio_dst_path = os.path.join(self.tempdir, 'dst', 'audio_file')
 
@@ -186,4 +186,4 @@ class ReplicateTest(cros_test_lib.TempDirTestCase):
 
     replication_lib.Replicate(replication_config)
 
-    self.assertEqual(stat.S_IMODE(os.stat(audio_dst_path).st_mode), 777)
+    self.assertEqual(stat.S_IMODE(os.stat(audio_dst_path).st_mode), 0o777)
