@@ -110,7 +110,7 @@ class FilmGrain {
 
   bool Init();
 
-  // Allocates noise_stripes_, which points to memory owned by noise_buffer_.
+  // Allocates noise_stripes_.
   bool AllocateNoiseStripes();
 
   void ConstructNoiseStripes();
@@ -154,25 +154,23 @@ class FilmGrain {
   // scaling_lut_v_ point to scaling_lut_y_.
   std::unique_ptr<uint8_t[]> scaling_lut_chroma_buffer_;
 
-  // A two-dimensional array of noise data. Generated for each 32 luma sample
-  // high stripe of the image. The first dimension is called luma_num. The
-  // second dimension is the plane.
+  // A two-dimensional array of noise data for each plane. Generated for each 32
+  // luma sample high stripe of the image. The first dimension is called
+  // luma_num. The second dimension is the size of one noise stripe.
   //
-  // Each element of the noise_stripes_ array points to a conceptually
-  // two-dimensional array of GrainType's. The two-dimensional array of
-  // GrainType's is flattened into a one-dimensional buffer in this
+  // Each row of the Array2D noise_stripes_[plane] is a conceptually
+  // two-dimensional array of |GrainType|s. The two-dimensional array of
+  // |GrainType|s is flattened into a one-dimensional buffer in this
   // implementation.
   //
-  // noise_stripes_[luma_num][kPlaneY] points to an array that has 34 rows and
+  // noise_stripes_[kPlaneY][luma_num] is an array that has 34 rows and
   // |width_| columns and contains noise for the luma component.
   //
-  // noise_stripes_[luma_num][kPlaneU] or noise_stripes_[luma_num][kPlaneV]
-  // points to an array that has (34 >> subsampling_y_) rows and
+  // noise_stripes_[kPlaneU][luma_num] or noise_stripes_[kPlaneV][luma_num]
+  // is an array that has (34 >> subsampling_y_) rows and
   // RightShiftWithRounding(width_, subsampling_x_) columns and contains noise
   // for the chroma components.
-  Array2D<GrainType*> noise_stripes_;
-  // Owns the memory pointed to by the elements of noise_stripes_.
-  std::unique_ptr<GrainType[]> noise_buffer_;
+  Array2D<GrainType> noise_stripes_[kMaxPlanes];
 
   Array2D<GrainType> noise_image_[kMaxPlanes];
 };

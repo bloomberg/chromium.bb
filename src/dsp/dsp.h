@@ -635,26 +635,38 @@ using ChromaAutoRegressionFuncs =
 // |grain_seed| from the grain template produced by autoregression, and the same
 // is done for chroma grains, subject to subsampling.
 // |width| and |height| are the dimensions of the overall image.
-// |plane| is either kPlaneY, kPlaneU, or kPlaneV, and indexes into the stripes
-// collection.
-// |noise_stripes_buffer| points to an Array2D<GrainType*> object, indexed first
-// by the stripe, then by the plane number.
+// |noise_stripes_buffer| points to an Array2D with one row for each stripe.
 // Because this function treats all planes identically and independently, it is
 // simplified to take one grain buffer at a time. This means duplicating some
 // random number generations, but that work can be reduced in other ways.
 using ConstructNoiseStripesFunc = void (*)(const void* grain_buffer,
                                            int grain_seed, int width,
-                                           int height, int plane,
-                                           int subsampling_x, int subsampling_y,
+                                           int height, int subsampling_x,
+                                           int subsampling_y,
                                            void* noise_stripes_buffer);
 using ConstructNoiseStripesFuncs =
     ConstructNoiseStripesFunc[/*overlap_flag*/ 2];
+
+// Fill a whole plane with film grain by copying out the noise stripes.
+// Section 7.18.3.5, second code block.
+// |width| and |height| are the dimensions of the overall image.
+// |noise_stripes_buffer| points to an Array2D with one row for each stripe.
+// |noise_image_buffer| points to an Array2D containing the allocated plane for
+// this frame.
+// Because this function treats all planes identically and independently, it is
+// simplified to take one grain buffer at a time.
+using ConstructNoiseImageFunc = void (*)(const void* noise_stripes_buffer,
+                                         int width, int height,
+                                         int subsampling_x, int subsampling_y,
+                                         void* noise_image_buffer);
+using ConstructNoiseImageFuncs = ConstructNoiseImageFunc[/*overlap_flag*/ 2];
 
 struct FilmGrainFuncs {
   FilmGrainSynthesisFunc synthesis;
   LumaAutoRegressionFuncs luma_auto_regression;
   ChromaAutoRegressionFuncs chroma_auto_regression;
   ConstructNoiseStripesFuncs construct_noise_stripes;
+  ConstructNoiseImageFuncs construct_noise_image;
 };
 //------------------------------------------------------------------------------
 

@@ -596,59 +596,42 @@ int ScaleLut(const uint8_t scaling_lut[256], int index) {
 
 template <int bitdepth>
 bool FilmGrain<bitdepth>::AllocateNoiseStripes() {
-  const int num_planes = is_monochrome_ ? kMaxPlanesMonochrome : kMaxPlanes;
   const int half_height = DivideBy2(height_ + 1);
+  assert(half_height > 0);
   // ceil(half_height / 16.0)
   const int max_luma_num = DivideBy16(half_height + 15);
-  if (!noise_stripes_.Reset(max_luma_num, num_planes,
-                            /*zero_initialize=*/false)) {
-    return false;
-  }
   constexpr int kNoiseStripeHeight = 34;
-  size_t noise_buffer_size = 0;
   if (params_.num_y_points > 0) {
-    noise_buffer_size += max_luma_num * kNoiseStripeHeight * width_;
+    if (!noise_stripes_[kPlaneY].Reset(max_luma_num,
+                                       kNoiseStripeHeight * width_, false)) {
+      return false;
+    }
   }
   if (!is_monochrome_) {
-    noise_buffer_size += max_luma_num * 2 *
-                         (kNoiseStripeHeight >> subsampling_y_) *
-                         RightShiftWithRounding(width_, subsampling_x_);
+    if (!noise_stripes_[kPlaneU].Reset(
+            max_luma_num,
+            (kNoiseStripeHeight >> subsampling_y_) *
+                RightShiftWithRounding(width_, subsampling_x_),
+            false)) {
+      return false;
+    }
+    if (!noise_stripes_[kPlaneV].Reset(
+            max_luma_num,
+            (kNoiseStripeHeight >> subsampling_y_) *
+                RightShiftWithRounding(width_, subsampling_x_),
+            false)) {
+      return false;
+    }
   }
-  noise_buffer_.reset(new (std::nothrow) GrainType[noise_buffer_size]);
-  if (noise_buffer_ == nullptr) return false;
-  GrainType* noise_stripe = noise_buffer_.get();
-  int luma_num = 0;
-  assert(half_height > 0);
-  int y = 0;
-  do {
-    if (params_.num_y_points > 0) {
-      noise_stripes_[luma_num][kPlaneY] = noise_stripe;
-      noise_stripe += kNoiseStripeHeight * width_;
-    } else {
-      noise_stripes_[luma_num][kPlaneY] = nullptr;
-    }
-    if (!is_monochrome_) {
-      noise_stripes_[luma_num][kPlaneU] = noise_stripe;
-      noise_stripe += (kNoiseStripeHeight >> subsampling_y_) *
-                      RightShiftWithRounding(width_, subsampling_x_);
-      noise_stripes_[luma_num][kPlaneV] = noise_stripe;
-      noise_stripe += (kNoiseStripeHeight >> subsampling_y_) *
-                      RightShiftWithRounding(width_, subsampling_x_);
-    }
-    ++luma_num;
-    y += 16;
-  } while (y < half_height);
-  assert(noise_stripe == noise_buffer_.get() + noise_buffer_size);
   return true;
 }
 
 // This implementation is for the condition overlap_flag == false.
 template <int bitdepth, typename GrainType>
 void ConstructNoiseStripes_C(const void* grain_buffer, int grain_seed,
-                             int width, int height, int plane,
-                             int subsampling_x, int subsampling_y,
-                             void* noise_stripes_buffer) {
-  auto* noise_stripes = static_cast<Array2D<GrainType*>*>(noise_stripes_buffer);
+                             int width, int height, int subsampling_x,
+                             int subsampling_y, void* noise_stripes_buffer) {
+  auto* noise_stripes = static_cast<Array2D<GrainType>*>(noise_stripes_buffer);
   const auto* grain = static_cast<const GrainType*>(grain_buffer);
   const int half_width = DivideBy2(width + 1);
   const int half_height = DivideBy2(height + 1);
@@ -663,7 +646,7 @@ void ConstructNoiseStripes_C(const void* grain_buffer, int grain_seed,
   int luma_num = 0;
   int y = 0;
   do {
-    GrainType* const noise_stripe = (*noise_stripes)[luma_num][plane];
+    GrainType* const noise_stripe = (*noise_stripes)[luma_num];
     uint16_t seed = grain_seed;
     seed ^= ((luma_num * 37 + 178) & 255) << 8;
     seed ^= ((luma_num * 173 + 105) & 255);
@@ -710,10 +693,9 @@ void ConstructNoiseStripes_C(const void* grain_buffer, int grain_seed,
 template <int bitdepth, typename GrainType>
 void ConstructNoiseStripesWithOverlap_C(const void* grain_buffer,
                                         int grain_seed, int width, int height,
-                                        int plane, int subsampling_x,
-                                        int subsampling_y,
+                                        int subsampling_x, int subsampling_y,
                                         void* noise_stripes_buffer) {
-  auto* noise_stripes = static_cast<Array2D<GrainType*>*>(noise_stripes_buffer);
+  auto* noise_stripes = static_cast<Array2D<GrainType>*>(noise_stripes_buffer);
   const auto* grain = static_cast<const GrainType*>(grain_buffer);
   const int half_width = DivideBy2(width + 1);
   const int half_height = DivideBy2(height + 1);
@@ -728,7 +710,7 @@ void ConstructNoiseStripesWithOverlap_C(const void* grain_buffer,
   int luma_num = 0;
   int y = 0;
   do {
-    GrainType* const noise_stripe = (*noise_stripes)[luma_num][plane];
+    GrainType* const noise_stripe = (*noise_stripes)[luma_num];
     uint16_t seed = grain_seed;
     seed ^= ((luma_num * 37 + 178) & 255) << 8;
     seed ^= ((luma_num * 173 + 105) & 255);
@@ -852,45 +834,76 @@ bool FilmGrain<bitdepth>::AllocateNoiseImage() {
   return true;
 }
 
-template <int bitdepth>
-void FilmGrain<bitdepth>::ConstructNoiseImage() {
-  const int num_planes = is_monochrome_ ? kMaxPlanesMonochrome : kMaxPlanes;
-  for (int plane = (params_.num_y_points > 0) ? kPlaneY : kPlaneU;
-       plane < num_planes; ++plane) {
-    const int plane_sub_x = (plane > kPlaneY) ? subsampling_x_ : 0;
-    const int plane_sub_y = (plane > kPlaneY) ? subsampling_y_ : 0;
-    const int plane_width = (width_ + plane_sub_x) >> plane_sub_x;
-    int y = 0;
+template <int bitdepth, typename GrainType>
+void ConstructNoiseImage_C(const void* noise_stripes_buffer, int width,
+                           int height, int subsampling_x, int subsampling_y,
+                           void* noise_image_buffer) {
+  const auto* noise_stripes =
+      static_cast<const Array2D<GrainType>*>(noise_stripes_buffer);
+  auto* noise_image = static_cast<Array2D<GrainType>*>(noise_image_buffer);
+  const int plane_width = (width + subsampling_x) >> subsampling_x;
+  const int plane_height = (height + subsampling_y) >> subsampling_y;
+  int y = 0;
+  do {
+    const int luma_num = y >> (5 - subsampling_y);
+    const int i = y - (luma_num << (5 - subsampling_y));
+    memcpy((*noise_image)[y], (*noise_stripes)[luma_num] + i * plane_width,
+           plane_width * sizeof(GrainType));
+  } while (++y < plane_height);
+}
+
+template <int bitdepth, typename GrainType>
+void ConstructNoiseImageWithOverlap_C(const void* noise_stripes_buffer,
+                                      int width, int height, int subsampling_x,
+                                      int subsampling_y,
+                                      void* noise_image_buffer) {
+  const auto* noise_stripes =
+      static_cast<const Array2D<GrainType>*>(noise_stripes_buffer);
+  auto* noise_image = static_cast<Array2D<GrainType>*>(noise_image_buffer);
+  const int plane_width = (width + subsampling_x) >> subsampling_x;
+  const int plane_height = (height + subsampling_y) >> subsampling_y;
+  const int stripe_height = 1 << (5 - subsampling_y);
+  const int stripe_mask = stripe_height - 1;
+  int y = 0;
+  // |luma_num| = y >> (5 - |subsampling_y|). Hence |luma_num| == 0 for all y up
+  // to either 16 or 32.
+  int luma_num = 0;
+  const GrainType* noise_stripe = (*noise_stripes)[luma_num];
+  do {
+    memcpy((*noise_image)[y], noise_stripe + y * plane_width,
+           plane_width * sizeof(GrainType));
+  } while (++y < std::min(stripe_height, plane_height));
+  // End special iterations for luma_num == 0.
+  for (; y < plane_height; ++y) {
+    const int luma_num = y >> (5 - subsampling_y);
+    assert(luma_num > 0);
+    const GrainType* noise_stripe = (*noise_stripes)[luma_num];
+    const GrainType* noise_stripe_prev = (*noise_stripes)[luma_num - 1];
+    const int i = y & stripe_mask;
+    int x = 0;
     do {
-      const int luma_num = y >> (5 - plane_sub_y);
-      const int i = y - (luma_num << (5 - plane_sub_y));
-      int x = 0;
-      do {
-        int grain = noise_stripes_[luma_num][plane][i * plane_width + x];
-        if (plane_sub_y == 0) {
-          if (i < 2 && luma_num > 0 && params_.overlap_flag) {
-            const int old =
-                noise_stripes_[luma_num - 1][plane][(i + 32) * plane_width + x];
-            if (i == 0) {
-              grain = old * 27 + grain * 17;
-            } else {
-              grain = old * 17 + grain * 27;
-            }
-            grain = Clip3(RightShiftWithRounding(grain, 5),
-                          GetGrainMin<bitdepth>(), GetGrainMax<bitdepth>());
+      int grain = noise_stripe[i * plane_width + x];
+      if (subsampling_y == 0) {
+        if (i < 2) {
+          const int old = noise_stripe_prev[(i + 32) * plane_width + x];
+          if (i == 0) {
+            grain = old * 27 + grain * 17;
+          } else {
+            grain = old * 17 + grain * 27;
           }
-        } else {
-          if (i < 1 && luma_num > 0 && params_.overlap_flag) {
-            const int old =
-                noise_stripes_[luma_num - 1][plane][(i + 16) * plane_width + x];
-            grain = old * 23 + grain * 22;
-            grain = Clip3(RightShiftWithRounding(grain, 5),
-                          GetGrainMin<bitdepth>(), GetGrainMax<bitdepth>());
-          }
+          grain = Clip3(RightShiftWithRounding(grain, 5),
+                        GetGrainMin<bitdepth>(), GetGrainMax<bitdepth>());
         }
-        noise_image_[plane][y][x] = grain;
-      } while (++x < plane_width);
-    } while (++y < ((height_ + plane_sub_y) >> plane_sub_y));
+      } else {
+        if (i == 0) {
+          const int old = noise_stripe_prev[16 * plane_width + x];
+          grain = old * 23 + grain * 22;
+          grain = Clip3(RightShiftWithRounding(grain, 5),
+                        GetGrainMin<bitdepth>(), GetGrainMax<bitdepth>());
+        }
+      }
+      (*noise_image)[y][x] = grain;
+    } while (++x < plane_width);
   }
 }
 
@@ -1036,26 +1049,41 @@ bool FilmGrain<bitdepth>::AddNoise(
     // The luma plane is never subsampled.
     dsp->film_grain
         .construct_noise_stripes[static_cast<int>(params_.overlap_flag)](
-            luma_grain_, params_.grain_seed, width_, height_, kPlaneY,
-            /*subsampling_x=*/0, /*subsampling_y=*/0, &noise_stripes_);
+            luma_grain_, params_.grain_seed, width_, height_,
+            /*subsampling_x=*/0, /*subsampling_y=*/0, &noise_stripes_[kPlaneY]);
   }
   if (!is_monochrome_) {
     dsp->film_grain
         .construct_noise_stripes[static_cast<int>(params_.overlap_flag)](
-            u_grain_, params_.grain_seed, width_, height_, kPlaneU,
-            subsampling_x_, subsampling_y_, &noise_stripes_);
+            u_grain_, params_.grain_seed, width_, height_, subsampling_x_,
+            subsampling_y_, &noise_stripes_[kPlaneU]);
     dsp->film_grain
         .construct_noise_stripes[static_cast<int>(params_.overlap_flag)](
-            v_grain_, params_.grain_seed, width_, height_, kPlaneV,
-            subsampling_x_, subsampling_y_, &noise_stripes_);
+            v_grain_, params_.grain_seed, width_, height_, subsampling_x_,
+            subsampling_y_, &noise_stripes_[kPlaneV]);
   }
 
   if (!AllocateNoiseImage()) {
     LIBGAV1_DLOG(ERROR, "AllocateNoiseImage() failed.");
     return false;
   }
-  ConstructNoiseImage();
 
+  if (use_luma) {
+    dsp->film_grain
+        .construct_noise_image[static_cast<int>(params_.overlap_flag)](
+            &noise_stripes_[kPlaneY], width_, height_, /*subsampling_x=*/0,
+            /*subsampling_y=*/0, &noise_image_[kPlaneY]);
+  }
+  if (!is_monochrome_) {
+    dsp->film_grain
+        .construct_noise_image[static_cast<int>(params_.overlap_flag)](
+            &noise_stripes_[kPlaneU], width_, height_, subsampling_x_,
+            subsampling_y_, &noise_image_[kPlaneU]);
+    dsp->film_grain
+        .construct_noise_image[static_cast<int>(params_.overlap_flag)](
+            &noise_stripes_[kPlaneV], width_, height_, subsampling_x_,
+            subsampling_y_, &noise_image_[kPlaneV]);
+  }
   BlendNoiseWithImage(source_plane_y, source_stride_y, source_plane_u,
                       source_stride_u, source_plane_v, source_stride_v,
                       dest_plane_y, dest_stride_y, dest_plane_u, dest_stride_u,
@@ -1111,6 +1139,11 @@ void Init8bpp() {
       ConstructNoiseStripes_C<8, int8_t>;
   dsp->film_grain.construct_noise_stripes[1] =
       ConstructNoiseStripesWithOverlap_C<8, int8_t>;
+
+  // ConstructNoiseImageFunc
+  dsp->film_grain.construct_noise_image[0] = ConstructNoiseImage_C<8, int8_t>;
+  dsp->film_grain.construct_noise_image[1] =
+      ConstructNoiseImageWithOverlap_C<8, int8_t>;
 #else  // !LIBGAV1_ENABLE_ALL_DSP_FUNCTIONS
   static_cast<void>(dsp);
 #ifndef LIBGAV1_Dsp8bpp_FilmGrainSynthesis
@@ -1150,6 +1183,11 @@ void Init8bpp() {
       ConstructNoiseStripes_C<8, int8_t>;
   dsp->film_grain.construct_noise_stripes[1] =
       ConstructNoiseStripesWithOverlap_C<8, int8_t>;
+#endif
+#ifndef LIBGAV1_Dsp8bpp_FilmGrainConstructNoiseImage
+  dsp->film_grain.construct_noise_image[0] = ConstructNoiseImage_C<8, int8_t>;
+  dsp->film_grain.construct_noise_image[1] =
+      ConstructNoiseImageWithOverlap_C<8, int8_t>;
 #endif
 #endif  // LIBGAV1_ENABLE_ALL_DSP_FUNCTIONS
 }
@@ -1195,6 +1233,11 @@ void Init10bpp() {
       ConstructNoiseStripes_C<10, int16_t>;
   dsp->film_grain.construct_noise_stripes[1] =
       ConstructNoiseStripesWithOverlap_C<10, int16_t>;
+
+  // ConstructNoiseImageFunc
+  dsp->film_grain.construct_noise_image[0] = ConstructNoiseImage_C<10, int16_t>;
+  dsp->film_grain.construct_noise_image[1] =
+      ConstructNoiseImageWithOverlap_C<10, int16_t>;
 #else  // !LIBGAV1_ENABLE_ALL_DSP_FUNCTIONS
   static_cast<void>(dsp);
 #ifndef LIBGAV1_Dsp10bpp_FilmGrainSynthesis
@@ -1234,6 +1277,11 @@ void Init10bpp() {
       ConstructNoiseStripes_C<10, int16_t>;
   dsp->film_grain.construct_noise_stripes[1] =
       ConstructNoiseStripesWithOverlap_C<10, int16_t>;
+#endif
+#ifndef LIBGAV1_Dsp10bpp_FilmGrainConstructNoiseImage
+  dsp->film_grain.construct_noise_image[0] = ConstructNoiseImage_C<10, int16_t>;
+  dsp->film_grain.construct_noise_image[1] =
+      ConstructNoiseImageWithOverlap_C<10, int16_t>;
 #endif
 #endif  // LIBGAV1_ENABLE_ALL_DSP_FUNCTIONS
 }
