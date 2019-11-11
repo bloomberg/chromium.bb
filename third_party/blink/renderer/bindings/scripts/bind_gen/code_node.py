@@ -379,6 +379,9 @@ class TextNode(CodeNode):
 class SequenceNode(CodeNode):
     """
     Represents a sequence of nodes.
+
+    append, extend, insert, and remove work just like built-in list's methods
+    except that addition and removal of None have no effect.
     """
 
     def __init__(self, code_nodes=None, separator=" ", separator_last=""):
@@ -420,6 +423,8 @@ ${node}\\
         return len(self._element_nodes)
 
     def append(self, node):
+        if node is None:
+            return
         assert isinstance(node, CodeNode)
         assert node.outer is None and node.prev is None
 
@@ -435,6 +440,8 @@ ${node}\\
             self.append(node)
 
     def insert(self, index, node):
+        if node is None:
+            return
         assert isinstance(index, (int, long))
         assert isinstance(node, CodeNode)
         assert node.outer is None and node.prev is None
@@ -455,6 +462,8 @@ ${node}\\
         self._element_nodes.insert(index, node)
 
     def remove(self, node):
+        if node is None:
+            return
         assert node in self
 
         index = self._element_nodes.index(node)
