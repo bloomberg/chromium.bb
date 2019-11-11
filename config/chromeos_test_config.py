@@ -730,10 +730,6 @@ def GeneralTemplates(site_config, ge_build_config):
   )
 
   # BEGIN Chrome PFQ
-  site_config.templates.chrome_pfq.apply(
-      site_config.templates.default_hw_tests_override,
-  )
-
   site_config.templates.chrome_pfq_cheets_informational.apply(
       site_config.templates.default_hw_tests_override,
       hw_tests=hw_test_list.SharedPoolPFQ(),
@@ -751,10 +747,6 @@ def GeneralTemplates(site_config, ge_build_config):
   # END Chrome PFQ
 
   # BEGIN Chromium PFQ
-  site_config.templates.chromium_pfq.apply(
-      site_config.templates.default_hw_tests_override,
-  )
-
   site_config.templates.chromium_pfq_informational.apply(
       site_config.templates.default_hw_tests_override,
   )

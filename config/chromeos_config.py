@@ -487,30 +487,6 @@ def GeneralTemplates(site_config):
       vm_tests_override=None,
   )
 
-  # TODO(davidjames): Convert this to an external config once the unified master
-  # logic is ready.
-  site_config.AddTemplate(
-      'chromium_pfq',
-      site_config.templates.internal,
-      site_config.templates.external_chromium_pfq,
-      display_label=config_lib.DISPLAY_LABEL_CHROME_PFQ,
-      description='Preflight Chromium Uprev & Build (internal)',
-      overlays=constants.BOTH_OVERLAYS,
-      prebuilts=constants.PUBLIC,
-      luci_builder=config_lib.LUCI_BUILDER_PFQ,
-      doc='https://dev.chromium.org/chromium-os/build/builder-overview#'
-          'TOC-Chrome-PFQ',
-  )
-
-  site_config.AddTemplate(
-      'chrome_pfq',
-      site_config.templates.chromium_pfq,
-      site_config.templates.official,
-      overlays=constants.BOTH_OVERLAYS,
-      description='Preflight Chrome Uprev & Build (internal)',
-      prebuilts=constants.PRIVATE,
-  )
-
   site_config.AddTemplate(
       'chrome_try',
       build_type=constants.CHROME_PFQ_TYPE,
