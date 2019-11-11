@@ -216,19 +216,12 @@ class HWTestList(object):
     """Return a list of HWTestConfigs for Canary which uses a shared pool.
 
     The returned suites will run in pool:critical by default, which is
-    shared with CQs. The first suite in the list is a blocking sanity suite
-    that verifies the build will not break dut.
+    shared with CQs.
     """
-    sanity_dict = dict(pool=constants.HWTEST_MACH_POOL, file_bugs=True)
-    sanity_dict.update(kwargs)
-    sanity_dict.update(dict(minimum_duts=1, suite_min_duts=1,
-                            blocking=True, quota_account='bvt-sync'))
     default_dict = dict(pool=constants.HWTEST_MACH_POOL,
                         suite_min_duts=6)
     default_dict.update(kwargs)
-    suite_list = [config_lib.HWTestConfig(constants.HWTEST_SANITY_SUITE,
-                                          **sanity_dict)]
-    suite_list.extend(self.DefaultListCanary(**default_dict))
+    suite_list = self.DefaultListCanary(**default_dict)
     return suite_list
 
   def AFDORecordTest(self, **kwargs):
