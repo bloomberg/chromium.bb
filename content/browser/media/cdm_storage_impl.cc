@@ -17,6 +17,8 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/storage_partition.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "ppapi/shared_impl/ppapi_constants.h"
 #include "storage/browser/file_system/file_system_context.h"
 #include "storage/browser/file_system/file_system_operation_context.h"
@@ -89,20 +91,20 @@ void CdmStorageImpl::Open(const std::string& file_name, OpenCallback callback) {
 
   if (!IsValidCdmFileSystemId(cdm_file_system_id_)) {
     DVLOG(1) << "CdmStorageImpl not initialized properly.";
-    std::move(callback).Run(Status::kFailure, nullptr);
+    std::move(callback).Run(Status::kFailure, mojo::NullAssociatedRemote());
     return;
   }
 
   if (file_name.empty()) {
     DVLOG(1) << "No file specified.";
-    std::move(callback).Run(Status::kFailure, nullptr);
+    std::move(callback).Run(Status::kFailure, mojo::NullAssociatedRemote());
     return;
   }
 
   // The file system should only be opened once. If it has been attempted and
   // failed, we can't create the CdmFile objects.
   if (file_system_state_ == FileSystemState::kError) {
-    std::move(callback).Run(Status::kFailure, nullptr);
+    std::move(callback).Run(Status::kFailure, mojo::NullAssociatedRemote());
     return;
   }
 
@@ -158,7 +160,8 @@ void CdmStorageImpl::OnFileSystemOpened(base::File::Error error) {
     file_system_state_ = FileSystemState::kError;
     // All pending calls will fail.
     for (auto& pending : pending_open_calls_) {
-      std::move(pending.second).Run(Status::kFailure, nullptr);
+      std::move(pending.second)
+          .Run(Status::kFailure, mojo::NullAssociatedRemote());
     }
     pending_open_calls_.clear();
     return;
@@ -183,7 +186,7 @@ void CdmStorageImpl::CreateCdmFile(const std::string& file_name,
   // initialize it (which only grabs the lock to prevent any other access to the
   // file except through this object).
   if (!CdmFileImpl::IsValidName(file_name)) {
-    std::move(callback).Run(Status::kFailure, nullptr);
+    std::move(callback).Run(Status::kFailure, mojo::NullAssociatedRemote());
     return;
   }
 
@@ -193,14 +196,14 @@ void CdmStorageImpl::CreateCdmFile(const std::string& file_name,
 
   if (!cdm_file_impl->Initialize()) {
     // Unable to initialize with the file requested.
-    std::move(callback).Run(Status::kInUse, nullptr);
+    std::move(callback).Run(Status::kInUse, mojo::NullAssociatedRemote());
     return;
   }
 
   // File was opened successfully, so create the binding and return success.
-  media::mojom::CdmFileAssociatedPtrInfo cdm_file;
-  cdm_file_bindings_.AddBinding(std::move(cdm_file_impl),
-                                mojo::MakeRequest(&cdm_file));
+  mojo::PendingAssociatedRemote<media::mojom::CdmFile> cdm_file;
+  cdm_file_receivers_.Add(std::move(cdm_file_impl),
+                          cdm_file.InitWithNewEndpointAndPassReceiver());
   std::move(callback).Run(Status::kSuccess, std::move(cdm_file));
 }
 
