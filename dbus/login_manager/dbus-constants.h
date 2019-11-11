@@ -23,6 +23,7 @@ const char kSessionManagerLoginScreenStorageDelete[] =
     "LoginScreenStorageDelete";
 const char kSessionManagerStartSession[] = "StartSession";
 const char kSessionManagerStopSession[] = "StopSession";
+const char kSessionManagerStopSessionWithReason[] = "StopSessionWithReason";
 const char kSessionManagerRestartJob[] = "RestartJob";
 const char kSessionManagerStorePolicyEx[] = "StorePolicyEx";
 const char kSessionManagerStoreUnsignedPolicyEx[] = "StoreUnsignedPolicyEx";
