@@ -88,16 +88,17 @@ constexpr int kOneByX[25] = {
 // Here we calculate the integral image, as well as the squared integral image.
 template <typename Pixel>
 void ComputeIntegralImage(const Pixel* const src, ptrdiff_t src_stride,
-                          int width, int height, int* integral_image,
-                          int64_t* square_integral_image,
+                          int width, int height, uint16_t* integral_image,
+                          uint32_t* square_integral_image,
                           ptrdiff_t image_stride) {
   memset(integral_image, 0, image_stride * sizeof(integral_image[0]));
   memset(square_integral_image, 0,
          image_stride * sizeof(square_integral_image[0]));
 
   const Pixel* src_ptr = src;
-  int* integral_image_ptr = integral_image + image_stride + 1;
-  int64_t* square_integral_image_ptr = square_integral_image + image_stride + 1;
+  uint16_t* integral_image_ptr = integral_image + image_stride + 1;
+  uint32_t* square_integral_image_ptr =
+      square_integral_image + image_stride + 1;
   int y = 0;
   do {
     integral_image_ptr[-1] = 0;
@@ -275,18 +276,34 @@ void LoopRestorationFuncs_C<bitdepth, Pixel>::BoxFilterPreProcess(
   // so the stride is kRestorationProcessingUnitSizeWithBorders + 1.
   // We fix the first row and first column of integral image be 0 to facilitate
   // computation.
-  int integral_image[(kRestorationProcessingUnitSizeWithBorders + 1) *
-                     (kRestorationProcessingUnitSizeWithBorders + 1)];
+
+  // Note that the max sum = (2 ^ bitdepth - 1) *
+  // kRestorationProcessingUnitSizeWithBorders *
+  // kRestorationProcessingUnitSizeWithBorders.
+  // The max sum is larger than 2^16.
+  // Case 8 bit and 10 bit:
+  // The final box sum has at most 25 pixels, which is within 16 bits. So
+  // keeping truncated 16-bit values is enough.
+  // Case 12 bit, radius 1:
+  // The final box sum has 9 pixels, which is within 16 bits. So keeping
+  // truncated 16-bit values is enough.
+  // Case 12 bit, radius 2:
+  // The final box sum has 25 pixels. It can be calculated by calculating the
+  // top 15 pixels and the bottom 10 pixels separately, and adding them
+  // together. So keeping truncated 16-bit values is enough.
+  // If it is slower than using 32-bit for specific CPU targets, please split
+  // into 2 paths.
+  uint16_t integral_image[(kRestorationProcessingUnitSizeWithBorders + 1) *
+                          (kRestorationProcessingUnitSizeWithBorders + 1)];
+
   // Note that the max squared sum =
   // (2 ^ bitdepth - 1) * (2 ^ bitdepth - 1) *
-  // kRestorationProcessingUnitSizeWithBorders
+  // kRestorationProcessingUnitSizeWithBorders *
   // kRestorationProcessingUnitSizeWithBorders.
-  // For 8 bit, int is enough. For 10 bit, the sum is larger than 2^32.
-  // So I use int64_t here.
-  // Probably int is good enough? See this implementation for reference:
-  // av1/common/x86/selfguided_sse4.c
-  // TODO(chengchen): Figure out whether int is enough.
-  int64_t
+  // For 8 bit, 32-bit is enough. For 10 bit and up, the sum could be larger
+  // than 2^32. However, the final box sum has at most 25 squares, which is
+  // within 32 bits. So keeping truncated 32-bit values is enough.
+  uint32_t
       square_integral_image[(kRestorationProcessingUnitSizeWithBorders + 1) *
                             (kRestorationProcessingUnitSizeWithBorders + 1)];
   const ptrdiff_t integral_image_stride =
@@ -329,12 +346,29 @@ void LoopRestorationFuncs_C<bitdepth, Pixel>::BoxFilterPreProcess(
       const int bottom_right =
           (y + kRestorationBorder + 1 + radius) * integral_image_stride + x +
           kRestorationBorder + 1 + radius;
-      auto a = static_cast<uint32_t>(square_integral_image[bottom_right] -
-                                     square_integral_image[bottom_left] -
-                                     square_integral_image[top_right] +
-                                     square_integral_image[top_left]);
-      uint32_t b = integral_image[bottom_right] - integral_image[bottom_left] -
-                   integral_image[top_right] + integral_image[top_left];
+      uint32_t a = square_integral_image[bottom_right] -
+                   square_integral_image[bottom_left] -
+                   square_integral_image[top_right] +
+                   square_integral_image[top_left];
+      uint32_t b;
+
+      if (bitdepth <= 10 || radius < 2) {
+        // The following cast is mandatory to get truncated sum.
+        b = static_cast<uint16_t>(
+            integral_image[bottom_right] - integral_image[bottom_left] -
+            integral_image[top_right] + integral_image[top_left]);
+      } else {
+        assert(radius == 2);
+        const uint16_t b_top_15_pixels =
+            integral_image[top_right + 3 * integral_image_stride] -
+            integral_image[top_left + 3 * integral_image_stride] -
+            integral_image[top_right] + integral_image[top_left];
+        const uint16_t b_bottom_10_pixels =
+            integral_image[bottom_right] - integral_image[bottom_left] -
+            integral_image[top_right + 3 * integral_image_stride] +
+            integral_image[top_left + 3 * integral_image_stride];
+        b = b_top_15_pixels + b_bottom_10_pixels;
+      }
 
       // a: before shift, max is 25 * (2^(bitdepth) - 1) * (2^(bitdepth) - 1).
       // since max bitdepth = 12, max < 2^31.
