@@ -29,6 +29,7 @@ from blpwtk2 import content_version
 scriptDir = os.path.dirname(os.path.realpath(__file__))
 srcDir = os.path.abspath(os.path.join(scriptDir, os.pardir))
 chromiumDir = os.path.abspath(os.path.join(srcDir, os.pardir))
+swiftFolderName = "swiftshader"
 
 def applyVariableToEnvironment(env, var, val):
   if env in os.environ:
@@ -99,6 +100,8 @@ def generateMsvsMapFiles(version, configs):
     'blpcr_egl' + productAppend + '.dll',
     'blpcr_glesv2' + productAppend + '.dll',
     'blpwtk2_subprocess' + productAppend + '.exe',
+    os.path.join(swiftFolderName, 'blpcr_egl' + productAppend + '.dll'),
+    os.path.join(swiftFolderName,  'blpcr_glesv2' + productAppend + '.dll'),
   ]
 
   for config in configs:
@@ -151,6 +154,10 @@ def copyBin(destDir, version, configs, includeMap):
     'blpcr_egl' + productAppend + '.dll.pdb',
     'blpcr_glesv2' + productAppend + '.dll.pdb',
     'blpwtk2_subprocess' + productAppend + '.exe.pdb',
+    os.path.join(swiftFolderName, 'blpcr_egl' + productAppend + '.dll'),
+    os.path.join(swiftFolderName,  'blpcr_glesv2' + productAppend + '.dll'),
+    os.path.join(swiftFolderName, 'blpcr_egl' + productAppend + '.dll.pdb'),
+    os.path.join(swiftFolderName,  'blpcr_glesv2' + productAppend + '.dll.pdb'),
   ]
 
   if includeMap:
@@ -159,6 +166,8 @@ def copyBin(destDir, version, configs, includeMap):
       'blpcr_egl' + productAppend + '.map',
       'blpcr_glesv2' + productAppend + '.map',
       'blpwtk2_subprocess' + productAppend + '.map',
+      os.path.join(swiftFolderName, 'blpcr_egl' + productAppend + '.map'),
+      os.path.join(swiftFolderName, 'blpcr_glesv2' + productAppend + '.map'),
     ])
 
   for config in configs:
@@ -330,11 +339,13 @@ def main(args):
   if doMakeDebug:
     os.mkdir(os.path.join(destDir, 'bin', 'debug'))
     os.mkdir(os.path.join(destDir, 'lib', 'debug'))
+    os.mkdir(os.path.join(destDir, 'bin', 'debug', swiftFolderName))
     configs.append('debug')
 
   if doMakeRelease:
     os.mkdir(os.path.join(destDir, 'bin', 'release'))
     os.mkdir(os.path.join(destDir, 'lib', 'release'))
+    os.mkdir(os.path.join(destDir, 'bin', 'release', swiftFolderName))
     configs.append('release')
 
   if doGenerateMap:
