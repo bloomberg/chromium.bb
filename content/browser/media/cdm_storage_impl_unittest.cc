@@ -16,13 +16,13 @@
 #include "media/mojo/mojom/cdm_storage.mojom.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
 using media::mojom::CdmFile;
 using media::mojom::CdmStorage;
-using media::mojom::CdmStoragePtr;
 
 namespace content {
 
@@ -92,7 +92,7 @@ class CdmStorageTest : public RenderViewHostTestHarness {
     // Create the CdmStorageImpl object. |cdm_storage_| will own the resulting
     // object.
     CdmStorageImpl::Create(rfh_, file_system_id,
-                           mojo::MakeRequest(&cdm_storage_));
+                           cdm_storage_.BindNewPipeAndPassReceiver());
   }
 
   // Open the file |name|. Returns true if the file returned is valid, false
@@ -209,7 +209,7 @@ class CdmStorageTest : public RenderViewHostTestHarness {
   }
 
   RenderFrameHost* rfh_ = nullptr;
-  CdmStoragePtr cdm_storage_;
+  mojo::Remote<CdmStorage> cdm_storage_;
   std::unique_ptr<RunLoopWithExpectedCount> run_loop_with_count_;
 };
 

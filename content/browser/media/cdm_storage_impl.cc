@@ -35,9 +35,10 @@
 namespace content {
 
 // static
-void CdmStorageImpl::Create(RenderFrameHost* render_frame_host,
-                            const std::string& cdm_file_system_id,
-                            media::mojom::CdmStorageRequest request) {
+void CdmStorageImpl::Create(
+    RenderFrameHost* render_frame_host,
+    const std::string& cdm_file_system_id,
+    mojo::PendingReceiver<media::mojom::CdmStorage> receiver) {
   DVLOG(3) << __func__;
   DCHECK(!render_frame_host->GetLastCommittedOrigin().opaque())
       << "Invalid origin specified for CdmStorageImpl::Create";
@@ -49,9 +50,9 @@ void CdmStorageImpl::Create(RenderFrameHost* render_frame_host,
   if (storage_partition)
     file_system_context = storage_partition->GetFileSystemContext();
 
-  // The created object is bound to (and owned by) |request|.
+  // The created object is bound to (and owned by) |receiver|.
   new CdmStorageImpl(render_frame_host, cdm_file_system_id,
-                     std::move(file_system_context), std::move(request));
+                     std::move(file_system_context), std::move(receiver));
 }
 
 // static
@@ -75,8 +76,8 @@ CdmStorageImpl::CdmStorageImpl(
     RenderFrameHost* render_frame_host,
     const std::string& cdm_file_system_id,
     scoped_refptr<storage::FileSystemContext> file_system_context,
-    media::mojom::CdmStorageRequest request)
-    : FrameServiceBase(render_frame_host, std::move(request)),
+    mojo::PendingReceiver<media::mojom::CdmStorage> receiver)
+    : FrameServiceBase(render_frame_host, std::move(receiver)),
       cdm_file_system_id_(cdm_file_system_id),
       file_system_context_(std::move(file_system_context)),
       child_process_id_(render_frame_host->GetProcess()->GetID()) {}
