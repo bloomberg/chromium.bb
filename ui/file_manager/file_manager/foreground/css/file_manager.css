@@ -230,8 +230,10 @@ html[class*='col-resize'] #directory-tree {
   z-index: 1;  /* Make sure the icon is on upper layer than paper-ripple. */
 }
 
-#directory-tree .tree-row > .external-link-icon {
-  background: url(../images/files/ui/external_link.svg) no-repeat center;
+#directory-tree .tree-row > .external-link-icon iron-icon {
+  --iron-icon-width: 16px;
+  --iron-icon-height: 16px;
+  padding: 12px;
 }
 
 #directory-tree .tree-row > .root-eject {

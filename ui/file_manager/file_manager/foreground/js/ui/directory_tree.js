@@ -1664,6 +1664,11 @@ class AndroidAppItem extends TreeItem {
     const externalLinkIcon = document.createElement('span');
     externalLinkIcon.className = 'external-link-icon align-right-icon';
 
+    // Append external-link iron-icon.
+    const ironIcon = document.createElement('iron-icon');
+    ironIcon.setAttribute('icon', 'files16:external-link');
+    externalLinkIcon.appendChild(ironIcon);
+
     // Add the external link as the last element of the tree row content.
     const parent = this.rowElement.querySelector('.label').parentElement;
     assert(parent).appendChild(externalLinkIcon);
