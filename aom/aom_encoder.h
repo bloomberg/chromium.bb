@@ -78,13 +78,6 @@ typedef struct aom_fixed_buf {
   size_t sz;       /**< Length of the buffer, in chars */
 } aom_fixed_buf_t; /**< alias for struct aom_fixed_buf */
 
-/*!\brief Time Stamp Type
- *
- * An integer, which when multiplied by the stream's time base, provides
- * the absolute time of a sample.
- */
-typedef int64_t aom_codec_pts_t;
-
 /*!\brief Compressed Frame Flags
  *
  * This type represents a bitfield containing information about a compressed

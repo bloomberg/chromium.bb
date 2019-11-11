@@ -173,6 +173,13 @@ typedef long aom_codec_caps_t;
  */
 typedef long aom_codec_flags_t;
 
+/*!\brief Time Stamp Type
+ *
+ * An integer, which when multiplied by the stream's time base, provides
+ * the absolute time of a sample.
+ */
+typedef int64_t aom_codec_pts_t;
+
 /*!\brief Codec interface structure.
  *
  * Contains function pointers and other data private to the codec

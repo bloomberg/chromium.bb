@@ -11,7 +11,7 @@
 #ifndef AOM_COMMON_IVFDEC_H_
 #define AOM_COMMON_IVFDEC_H_
 
-#include "aom/aom_encoder.h"
+#include "aom/aom_codec.h"
 #include "common/tools_common.h"
 
 #ifdef __cplusplus
