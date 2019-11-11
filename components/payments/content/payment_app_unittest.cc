@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/payments/core/payment_instrument.h"
+#include "components/payments/core/payment_app.h"
 
 #include <vector>
 
@@ -11,8 +11,8 @@
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/payments/content/mock_identity_observer.h"
-#include "components/payments/content/service_worker_payment_instrument.h"
-#include "components/payments/core/autofill_payment_instrument.h"
+#include "components/payments/content/service_worker_payment_app.h"
+#include "components/payments/core/autofill_payment_app.h"
 #include "components/payments/core/mock_payment_request_delegate.h"
 #include "content/public/browser/stored_payment_app.h"
 #include "content/public/test/browser_task_environment.h"
@@ -39,11 +39,10 @@ enum class RequiredPaymentOptions {
 
 }  // namespace
 
-class PaymentInstrumentTest
-    : public testing::TestWithParam<RequiredPaymentOptions>,
-      public PaymentRequestSpec::Observer {
+class PaymentAppTest : public testing::TestWithParam<RequiredPaymentOptions>,
+                       public PaymentRequestSpec::Observer {
  protected:
-  PaymentInstrumentTest()
+  PaymentAppTest()
       : address_(autofill::test::GetFullProfile()),
         local_card_(autofill::test::GetCreditCard()),
         billing_profiles_({&address_}),
@@ -52,12 +51,12 @@ class PaymentInstrumentTest
     CreateSpec();
   }
 
-  std::unique_ptr<ServiceWorkerPaymentInstrument>
-  CreateServiceWorkerPaymentInstrument(bool can_preselect,
-                                       bool handles_shipping,
-                                       bool handles_name,
-                                       bool handles_phone,
-                                       bool handles_email) {
+  std::unique_ptr<ServiceWorkerPaymentApp> CreateServiceWorkerPaymentApp(
+      bool can_preselect,
+      bool handles_shipping,
+      bool handles_name,
+      bool handles_phone,
+      bool handles_email) {
     constexpr int kBitmapDimension = 16;
 
     std::unique_ptr<content::StoredPaymentApp> stored_app =
@@ -83,7 +82,7 @@ class PaymentInstrumentTest
       stored_app->supported_delegations.payer_email = true;
     }
 
-    return std::make_unique<ServiceWorkerPaymentInstrument>(
+    return std::make_unique<ServiceWorkerPaymentApp>(
         &browser_context_, GURL("https://testmerchant.com"),
         GURL("https://testmerchant.com/bobpay"), spec_.get(),
         std::move(stored_app), &delegate_, identity_observer_.AsWeakPtr());
@@ -139,12 +138,12 @@ class PaymentInstrumentTest
   RequiredPaymentOptions required_options_;
   std::unique_ptr<PaymentRequestSpec> spec_;
 
-  DISALLOW_COPY_AND_ASSIGN(PaymentInstrumentTest);
+  DISALLOW_COPY_AND_ASSIGN(PaymentAppTest);
 };
 
 INSTANTIATE_TEST_SUITE_P(
     ,
-    PaymentInstrumentTest,
+    PaymentAppTest,
     ::testing::Values(
         RequiredPaymentOptions::kNone,
         RequiredPaymentOptions::kShippingAddress,
@@ -152,196 +151,196 @@ INSTANTIATE_TEST_SUITE_P(
         RequiredPaymentOptions::kPayerEmail,
         RequiredPaymentOptions::kContactInformationAndShippingAddress));
 
-TEST_P(PaymentInstrumentTest, SortInstruments) {
-  std::vector<PaymentInstrument*> instruments;
-  // Add a complete instrument with mismatching type.
+TEST_P(PaymentAppTest, SortApps) {
+  std::vector<PaymentApp*> apps;
+  // Add a complete app with mismatching type.
   autofill::CreditCard complete_dismatching_card = local_credit_card();
-  AutofillPaymentInstrument complete_dismatching_cc_instrument(
+  AutofillPaymentApp complete_dismatching_cc_app(
       "visa", complete_dismatching_card,
       /*matches_merchant_card_type_exactly=*/false, billing_profiles(), "en-US",
       nullptr);
-  instruments.push_back(&complete_dismatching_cc_instrument);
+  apps.push_back(&complete_dismatching_cc_app);
 
-  // Add an instrument with no billing address.
+  // Add an app with no billing address.
   autofill::CreditCard card_with_no_address = local_credit_card();
   card_with_no_address.set_billing_address_id("");
-  AutofillPaymentInstrument cc_instrument_with_no_address(
+  AutofillPaymentApp cc_app_with_no_address(
       "visa", card_with_no_address, /*matches_merchant_card_type_exactly=*/true,
       billing_profiles(), "en-US", nullptr);
-  instruments.push_back(&cc_instrument_with_no_address);
+  apps.push_back(&cc_app_with_no_address);
 
-  // Add an expired instrument.
+  // Add an expired app.
   autofill::CreditCard expired_card = local_credit_card();
   expired_card.SetExpirationYear(2016);
-  AutofillPaymentInstrument expired_cc_instrument(
-      "visa", expired_card, /*matches_merchant_card_type_exactly=*/true,
-      billing_profiles(), "en-US", nullptr);
-  instruments.push_back(&expired_cc_instrument);
+  AutofillPaymentApp expired_cc_app("visa", expired_card,
+                                    /*matches_merchant_card_type_exactly=*/true,
+                                    billing_profiles(), "en-US", nullptr);
+  apps.push_back(&expired_cc_app);
 
-  // Add a non-preselectable sw based payment instrument.
-  std::unique_ptr<ServiceWorkerPaymentInstrument>
-      non_preselectable_sw_instrument = CreateServiceWorkerPaymentInstrument(
+  // Add a non-preselectable sw based payment app.
+  std::unique_ptr<ServiceWorkerPaymentApp> non_preselectable_sw_app =
+      CreateServiceWorkerPaymentApp(
           false /* = can_preselect */, false /* = handles_shipping */,
           false /* = handles_name */, false /* = handles_phone */,
           false /* = handles_email */);
-  instruments.push_back(non_preselectable_sw_instrument.get());
+  apps.push_back(non_preselectable_sw_app.get());
 
-  // Add a preselectable sw based payment instrument.
-  std::unique_ptr<ServiceWorkerPaymentInstrument> preselectable_sw_instrument =
-      CreateServiceWorkerPaymentInstrument(
+  // Add a preselectable sw based payment app.
+  std::unique_ptr<ServiceWorkerPaymentApp> preselectable_sw_app =
+      CreateServiceWorkerPaymentApp(
           true /* = can_preselect */, false /* = handles_shipping */,
           false /* = handles_name */, false /* = handles_phone */,
           false /* = handles_email */);
-  instruments.push_back(preselectable_sw_instrument.get());
+  apps.push_back(preselectable_sw_app.get());
 
-  // Add an instrument with no name.
+  // Add an app with no name.
   autofill::CreditCard card_with_no_name = local_credit_card();
   card_with_no_name.SetInfo(
       autofill::AutofillType(autofill::CREDIT_CARD_NAME_FULL),
       base::ASCIIToUTF16(""), "en-US");
-  AutofillPaymentInstrument cc_instrument_with_no_name(
+  AutofillPaymentApp cc_app_with_no_name(
       "visa", card_with_no_name, /*matches_merchant_card_type_exactly=*/true,
       billing_profiles(), "en-US", nullptr);
-  instruments.push_back(&cc_instrument_with_no_name);
+  apps.push_back(&cc_app_with_no_name);
 
-  // Add a complete matching instrument.
+  // Add a complete matching app.
   autofill::CreditCard complete_matching_card = local_credit_card();
-  AutofillPaymentInstrument complete_matching_cc_instrument(
+  AutofillPaymentApp complete_matching_cc_app(
       "visa", complete_matching_card,
       /*matches_merchant_card_type_exactly=*/true, billing_profiles(), "en-US",
       nullptr);
-  instruments.push_back(&complete_matching_cc_instrument);
+  apps.push_back(&complete_matching_cc_app);
 
-  // Add an instrument with no number.
+  // Add an app with no number.
   autofill::CreditCard card_with_no_number = local_credit_card();
   card_with_no_number.SetNumber(base::ASCIIToUTF16(""));
-  AutofillPaymentInstrument cc_instrument_with_no_number(
+  AutofillPaymentApp cc_app_with_no_number(
       "visa", card_with_no_number, /*matches_merchant_card_type_exactly=*/true,
       billing_profiles(), "en-US", nullptr);
-  instruments.push_back(&cc_instrument_with_no_number);
+  apps.push_back(&cc_app_with_no_number);
 
-  // Add a complete matching instrument that is most frequently used.
+  // Add a complete matching app that is most frequently used.
   autofill::CreditCard complete_frequently_used_card = local_credit_card();
-  AutofillPaymentInstrument complete_frequently_used_cc_instrument(
+  AutofillPaymentApp complete_frequently_used_cc_app(
       "visa", complete_frequently_used_card,
       /*matches_merchant_card_type_exactly=*/true, billing_profiles(), "en-US",
       nullptr);
-  instruments.push_back(&complete_frequently_used_cc_instrument);
-  // Record use of this instrument.
-  complete_frequently_used_cc_instrument.credit_card()->RecordAndLogUse();
+  apps.push_back(&complete_frequently_used_cc_app);
+  // Record use of this app.
+  complete_frequently_used_cc_app.credit_card()->RecordAndLogUse();
 
-  // Sort the instruments and validate the new order.
-  PaymentInstrument::SortInstruments(&instruments);
+  // Sort the apps and validate the new order.
+  PaymentApp::SortApps(&apps);
   size_t i = 0;
-  EXPECT_EQ(instruments[i++], preselectable_sw_instrument.get());
-  EXPECT_EQ(instruments[i++], non_preselectable_sw_instrument.get());
+  EXPECT_EQ(apps[i++], preselectable_sw_app.get());
+  EXPECT_EQ(apps[i++], non_preselectable_sw_app.get());
 
-  // Autfill instruments (credit cards) come after sw instruments.
-  EXPECT_EQ(instruments[i++], &complete_frequently_used_cc_instrument);
-  EXPECT_EQ(instruments[i++], &complete_matching_cc_instrument);
-  EXPECT_EQ(instruments[i++], &complete_dismatching_cc_instrument);
-  EXPECT_EQ(instruments[i++], &expired_cc_instrument);
-  EXPECT_EQ(instruments[i++], &cc_instrument_with_no_name);
-  EXPECT_EQ(instruments[i++], &cc_instrument_with_no_address);
-  EXPECT_EQ(instruments[i++], &cc_instrument_with_no_number);
+  // Autfill apps (credit cards) come after sw apps.
+  EXPECT_EQ(apps[i++], &complete_frequently_used_cc_app);
+  EXPECT_EQ(apps[i++], &complete_matching_cc_app);
+  EXPECT_EQ(apps[i++], &complete_dismatching_cc_app);
+  EXPECT_EQ(apps[i++], &expired_cc_app);
+  EXPECT_EQ(apps[i++], &cc_app_with_no_name);
+  EXPECT_EQ(apps[i++], &cc_app_with_no_address);
+  EXPECT_EQ(apps[i++], &cc_app_with_no_number);
 }
 
-TEST_P(PaymentInstrumentTest, SortInstrumentsBasedOnSupportedDelegations) {
-  std::vector<PaymentInstrument*> instruments;
-  // Add a preselectable sw based payment instrument which does not support
+TEST_P(PaymentAppTest, SortAppsBasedOnSupportedDelegations) {
+  std::vector<PaymentApp*> apps;
+  // Add a preselectable sw based payment app which does not support
   // shipping or contact delegation.
-  std::unique_ptr<ServiceWorkerPaymentInstrument> does_not_support_delegations =
-      CreateServiceWorkerPaymentInstrument(
+  std::unique_ptr<ServiceWorkerPaymentApp> does_not_support_delegations =
+      CreateServiceWorkerPaymentApp(
           true /* = can_preselect */, false /* = handles_shipping */,
           false /* = handles_name */, false /* = handles_phone */,
           false /* = handles_email */);
-  instruments.push_back(does_not_support_delegations.get());
+  apps.push_back(does_not_support_delegations.get());
 
-  // Add a preselectable sw based payment instrument which handles shipping.
-  std::unique_ptr<ServiceWorkerPaymentInstrument> handles_shipping_address =
-      CreateServiceWorkerPaymentInstrument(
+  // Add a preselectable sw based payment app which handles shipping.
+  std::unique_ptr<ServiceWorkerPaymentApp> handles_shipping_address =
+      CreateServiceWorkerPaymentApp(
           true /* = can_preselect */, true /* = handles_shipping */,
           false /* = handles_name */, false /* = handles_phone */,
           false /* = handles_email */);
-  instruments.push_back(handles_shipping_address.get());
+  apps.push_back(handles_shipping_address.get());
 
-  // Add a preselectable sw based payment instrument which handles payer's
+  // Add a preselectable sw based payment app which handles payer's
   // email.
-  std::unique_ptr<ServiceWorkerPaymentInstrument> handles_payer_email =
-      CreateServiceWorkerPaymentInstrument(
+  std::unique_ptr<ServiceWorkerPaymentApp> handles_payer_email =
+      CreateServiceWorkerPaymentApp(
           true /* = can_preselect */, false /* = handles_shipping */,
           false /* = handles_name */, false /* = handles_phone */,
           true /* = handles_email */);
-  instruments.push_back(handles_payer_email.get());
+  apps.push_back(handles_payer_email.get());
 
-  // Add a preselectable sw based payment instrument which handles contact
+  // Add a preselectable sw based payment app which handles contact
   // information.
-  std::unique_ptr<ServiceWorkerPaymentInstrument> handles_contact_info =
-      CreateServiceWorkerPaymentInstrument(
+  std::unique_ptr<ServiceWorkerPaymentApp> handles_contact_info =
+      CreateServiceWorkerPaymentApp(
           true /* = can_preselect */, false /* = handles_shipping */,
           true /* = handles_name */, true /* = handles_phone */,
           true /* = handles_email */);
-  instruments.push_back(handles_contact_info.get());
+  apps.push_back(handles_contact_info.get());
 
-  // Add a preselectable sw based payment instrument which handles both shipping
+  // Add a preselectable sw based payment app which handles both shipping
   // address and contact information.
-  std::unique_ptr<ServiceWorkerPaymentInstrument> handles_shipping_and_contact =
-      CreateServiceWorkerPaymentInstrument(
+  std::unique_ptr<ServiceWorkerPaymentApp> handles_shipping_and_contact =
+      CreateServiceWorkerPaymentApp(
           true /* = can_preselect */, true /* = handles_shipping */,
           true /* = handles_name */, true /* = handles_phone */,
           true /* = handles_email */);
-  instruments.push_back(handles_shipping_and_contact.get());
+  apps.push_back(handles_shipping_and_contact.get());
 
-  PaymentInstrument::SortInstruments(&instruments);
+  PaymentApp::SortApps(&apps);
   size_t i = 0;
 
   switch (required_options()) {
     case RequiredPaymentOptions::kNone: {
-      // When no payemnt option is required the order of the payment instruments
+      // When no payemnt option is required the order of the payment apps
       // does not change.
-      EXPECT_EQ(instruments[i++], does_not_support_delegations.get());
-      EXPECT_EQ(instruments[i++], handles_shipping_address.get());
-      EXPECT_EQ(instruments[i++], handles_payer_email.get());
-      EXPECT_EQ(instruments[i++], handles_contact_info.get());
-      EXPECT_EQ(instruments[i++], handles_shipping_and_contact.get());
+      EXPECT_EQ(apps[i++], does_not_support_delegations.get());
+      EXPECT_EQ(apps[i++], handles_shipping_address.get());
+      EXPECT_EQ(apps[i++], handles_payer_email.get());
+      EXPECT_EQ(apps[i++], handles_contact_info.get());
+      EXPECT_EQ(apps[i++], handles_shipping_and_contact.get());
       break;
     }
     case RequiredPaymentOptions::kShippingAddress: {
-      // Instruments that handle shipping address come first.
-      EXPECT_EQ(instruments[i++], handles_shipping_address.get());
-      EXPECT_EQ(instruments[i++], handles_shipping_and_contact.get());
-      // The order is unchanged for instruments that do not handle shipping.
-      EXPECT_EQ(instruments[i++], does_not_support_delegations.get());
-      EXPECT_EQ(instruments[i++], handles_payer_email.get());
-      EXPECT_EQ(instruments[i++], handles_contact_info.get());
+      // apps that handle shipping address come first.
+      EXPECT_EQ(apps[i++], handles_shipping_address.get());
+      EXPECT_EQ(apps[i++], handles_shipping_and_contact.get());
+      // The order is unchanged for apps that do not handle shipping.
+      EXPECT_EQ(apps[i++], does_not_support_delegations.get());
+      EXPECT_EQ(apps[i++], handles_payer_email.get());
+      EXPECT_EQ(apps[i++], handles_contact_info.get());
       break;
     }
     case RequiredPaymentOptions::kContactInformation: {
-      // Instruments that handle all required contact information come first.
-      EXPECT_EQ(instruments[i++], handles_contact_info.get());
-      EXPECT_EQ(instruments[i++], handles_shipping_and_contact.get());
-      // The instrument that partially handles contact information comes next.
-      EXPECT_EQ(instruments[i++], handles_payer_email.get());
-      // The order for instruments that do not handle contact information is not
+      // apps that handle all required contact information come first.
+      EXPECT_EQ(apps[i++], handles_contact_info.get());
+      EXPECT_EQ(apps[i++], handles_shipping_and_contact.get());
+      // The app that partially handles contact information comes next.
+      EXPECT_EQ(apps[i++], handles_payer_email.get());
+      // The order for apps that do not handle contact information is not
       // changed.
-      EXPECT_EQ(instruments[i++], does_not_support_delegations.get());
-      EXPECT_EQ(instruments[i++], handles_shipping_address.get());
+      EXPECT_EQ(apps[i++], does_not_support_delegations.get());
+      EXPECT_EQ(apps[i++], handles_shipping_address.get());
       break;
     }
     case RequiredPaymentOptions::kPayerEmail: {
-      EXPECT_EQ(instruments[i++], handles_payer_email.get());
-      EXPECT_EQ(instruments[i++], handles_contact_info.get());
-      EXPECT_EQ(instruments[i++], handles_shipping_and_contact.get());
-      EXPECT_EQ(instruments[i++], does_not_support_delegations.get());
-      EXPECT_EQ(instruments[i++], handles_shipping_address.get());
+      EXPECT_EQ(apps[i++], handles_payer_email.get());
+      EXPECT_EQ(apps[i++], handles_contact_info.get());
+      EXPECT_EQ(apps[i++], handles_shipping_and_contact.get());
+      EXPECT_EQ(apps[i++], does_not_support_delegations.get());
+      EXPECT_EQ(apps[i++], handles_shipping_address.get());
       break;
     }
     case RequiredPaymentOptions::kContactInformationAndShippingAddress: {
-      EXPECT_EQ(instruments[i++], handles_shipping_and_contact.get());
-      EXPECT_EQ(instruments[i++], handles_shipping_address.get());
-      EXPECT_EQ(instruments[i++], handles_contact_info.get());
-      EXPECT_EQ(instruments[i++], handles_payer_email.get());
-      EXPECT_EQ(instruments[i++], does_not_support_delegations.get());
+      EXPECT_EQ(apps[i++], handles_shipping_and_contact.get());
+      EXPECT_EQ(apps[i++], handles_shipping_address.get());
+      EXPECT_EQ(apps[i++], handles_contact_info.get());
+      EXPECT_EQ(apps[i++], handles_payer_email.get());
+      EXPECT_EQ(apps[i++], does_not_support_delegations.get());
       break;
     }
   }

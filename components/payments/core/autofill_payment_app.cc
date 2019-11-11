@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/payments/core/autofill_payment_instrument.h"
+#include "components/payments/core/autofill_payment_app.h"
 
 #include <algorithm>
 #include <memory>
@@ -30,17 +30,16 @@
 
 namespace payments {
 
-AutofillPaymentInstrument::AutofillPaymentInstrument(
+AutofillPaymentApp::AutofillPaymentApp(
     const std::string& method_name,
     const autofill::CreditCard& card,
     bool matches_merchant_card_type_exactly,
     const std::vector<autofill::AutofillProfile*>& billing_profiles,
     const std::string& app_locale,
     PaymentRequestBaseDelegate* payment_request_delegate)
-    : PaymentInstrument(
-          autofill::data_util::GetPaymentRequestData(card.network())
-              .icon_resource_id,
-          PaymentInstrument::Type::AUTOFILL),
+    : PaymentApp(autofill::data_util::GetPaymentRequestData(card.network())
+                     .icon_resource_id,
+                 PaymentApp::Type::AUTOFILL),
       method_name_(method_name),
       credit_card_(card),
       matches_merchant_card_type_exactly_(matches_merchant_card_type_exactly),
@@ -48,10 +47,9 @@ AutofillPaymentInstrument::AutofillPaymentInstrument(
       app_locale_(app_locale),
       delegate_(nullptr),
       payment_request_delegate_(payment_request_delegate) {}
-AutofillPaymentInstrument::~AutofillPaymentInstrument() {}
+AutofillPaymentApp::~AutofillPaymentApp() {}
 
-void AutofillPaymentInstrument::InvokePaymentApp(
-    PaymentInstrument::Delegate* delegate) {
+void AutofillPaymentApp::InvokePaymentApp(PaymentApp::Delegate* delegate) {
   DCHECK(delegate);
   // There can be only one FullCardRequest going on at a time. If |delegate_| is
   // not null, there's already an active request, which shouldn't happen.
@@ -74,56 +72,39 @@ void AutofillPaymentInstrument::InvokePaymentApp(
   // Start the normalization of the billing address.
   payment_request_delegate_->GetAddressNormalizer()->NormalizeAddressAsync(
       billing_address_, /*timeout_seconds=*/5,
-      base::BindOnce(&AutofillPaymentInstrument::OnAddressNormalized,
+      base::BindOnce(&AutofillPaymentApp::OnAddressNormalized,
                      weak_ptr_factory_.GetWeakPtr()));
 
   payment_request_delegate_->DoFullCardRequest(credit_card_,
                                                weak_ptr_factory_.GetWeakPtr());
 }
 
-bool AutofillPaymentInstrument::IsCompleteForPayment() const {
+bool AutofillPaymentApp::IsCompleteForPayment() const {
   // COMPLETE or EXPIRED cards are considered valid for payment. The user will
   // be prompted to enter the new expiration at the CVC step.
   return GetCompletionStatusForCard(credit_card_, app_locale_,
                                     billing_profiles_) <= CREDIT_CARD_EXPIRED;
 }
 
-uint32_t AutofillPaymentInstrument::GetCompletenessScore() const {
+uint32_t AutofillPaymentApp::GetCompletenessScore() const {
   return ::payments::GetCompletenessScore(credit_card_, app_locale_,
                                           billing_profiles_);
 }
 
-bool AutofillPaymentInstrument::CanPreselect() const {
+bool AutofillPaymentApp::CanPreselect() const {
   return IsCompleteForPayment() && matches_merchant_card_type_exactly_;
 }
 
-void AutofillPaymentInstrument::RecordMissingFieldsForInstrument() const {
-  CreditCardCompletionStatus completion_status =
-      GetCompletionStatusForCard(credit_card_, app_locale_, billing_profiles_);
-  if (completion_status == CREDIT_CARD_COMPLETE &&
-      matches_merchant_card_type_exactly_) {
-    return;
-  }
-
-  // Record cases that the card type does not match the requested type(s) in
-  // addititon to missing fields from card completion status.
-  base::UmaHistogramSparse(
-      "PaymentRequest.MissingPaymentFields",
-      completion_status |
-          (matches_merchant_card_type_exactly_ ? 0
-                                               : CREDIT_CARD_TYPE_MISMATCH));
-}
-
-bool AutofillPaymentInstrument::IsExactlyMatchingMerchantRequest() const {
+bool AutofillPaymentApp::IsExactlyMatchingMerchantRequest() const {
   return matches_merchant_card_type_exactly_;
 }
 
-base::string16 AutofillPaymentInstrument::GetMissingInfoLabel() const {
+base::string16 AutofillPaymentApp::GetMissingInfoLabel() const {
   return GetCompletionMessageForCard(
       GetCompletionStatusForCard(credit_card_, app_locale_, billing_profiles_));
 }
 
-bool AutofillPaymentInstrument::IsValidForCanMakePayment() const {
+bool AutofillPaymentApp::IsValidForCanMakePayment() const {
   CreditCardCompletionStatus status =
       GetCompletionStatusForCard(credit_card_, app_locale_, billing_profiles_);
   if (PaymentsExperimentalFeatures::IsEnabled(
@@ -138,22 +119,22 @@ bool AutofillPaymentInstrument::IsValidForCanMakePayment() const {
            status & CREDIT_CARD_NO_NUMBER);
 }
 
-void AutofillPaymentInstrument::RecordUse() {
+void AutofillPaymentApp::RecordUse() {
   // Record the use of the credit card.
   payment_request_delegate_->GetPersonalDataManager()->RecordUseOf(
       credit_card_);
 }
 
-base::string16 AutofillPaymentInstrument::GetLabel() const {
+base::string16 AutofillPaymentApp::GetLabel() const {
   return credit_card_.NetworkAndLastFourDigits();
 }
 
-base::string16 AutofillPaymentInstrument::GetSublabel() const {
+base::string16 AutofillPaymentApp::GetSublabel() const {
   return credit_card_.GetInfo(
       autofill::AutofillType(autofill::CREDIT_CARD_NAME_FULL), app_locale_);
 }
 
-bool AutofillPaymentInstrument::IsValidForModifier(
+bool AutofillPaymentApp::IsValidForModifier(
     const std::string& method,
     bool supported_networks_specified,
     const std::set<std::string>& supported_networks,
@@ -192,18 +173,34 @@ bool AutofillPaymentInstrument::IsValidForModifier(
   return true;
 }
 
-void AutofillPaymentInstrument::IsValidForPaymentMethodIdentifier(
+void AutofillPaymentApp::IsValidForPaymentMethodIdentifier(
     const std::string& payment_method_identifier,
     bool* is_valid) const {
   // This instrument only matches basic-card.
   *is_valid = payment_method_identifier == methods::kBasicCard;
 }
 
-base::WeakPtr<PaymentInstrument> AutofillPaymentInstrument::AsWeakPtr() {
+base::WeakPtr<PaymentApp> AutofillPaymentApp::AsWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
 }
 
-void AutofillPaymentInstrument::OnFullCardRequestSucceeded(
+bool AutofillPaymentApp::HandlesShippingAddress() const {
+  return false;
+}
+
+bool AutofillPaymentApp::HandlesPayerName() const {
+  return false;
+}
+
+bool AutofillPaymentApp::HandlesPayerEmail() const {
+  return false;
+}
+
+bool AutofillPaymentApp::HandlesPayerPhone() const {
+  return false;
+}
+
+void AutofillPaymentApp::OnFullCardRequestSucceeded(
     const autofill::payments::FullCardRequest& /* full_card_request */,
     const autofill::CreditCard& card,
     const base::string16& cvc) {
@@ -216,14 +213,31 @@ void AutofillPaymentInstrument::OnFullCardRequestSucceeded(
     GenerateBasicCardResponse();
 }
 
-void AutofillPaymentInstrument::OnFullCardRequestFailed() {
+void AutofillPaymentApp::OnFullCardRequestFailed() {
   // The user may have cancelled the unmask or something has gone wrong (e.g.,
   // the network request failed). In all cases, reset the |delegate_| so another
   // request can start.
   delegate_ = nullptr;
 }
 
-void AutofillPaymentInstrument::GenerateBasicCardResponse() {
+void AutofillPaymentApp::RecordMissingFieldsForApp() const {
+  CreditCardCompletionStatus completion_status =
+      GetCompletionStatusForCard(credit_card_, app_locale_, billing_profiles_);
+  if (completion_status == CREDIT_CARD_COMPLETE &&
+      matches_merchant_card_type_exactly_) {
+    return;
+  }
+
+  // Record cases that the card type does not match the requested type(s) in
+  // addititon to missing fields from card completion status.
+  base::UmaHistogramSparse(
+      "PaymentRequest.MissingPaymentFields",
+      completion_status |
+          (matches_merchant_card_type_exactly_ ? 0
+                                               : CREDIT_CARD_TYPE_MISMATCH));
+}
+
+void AutofillPaymentApp::GenerateBasicCardResponse() {
   DCHECK(!is_waiting_for_billing_address_normalization_);
   DCHECK(!is_waiting_for_card_unmask_);
   DCHECK(delegate_);
@@ -241,7 +255,7 @@ void AutofillPaymentInstrument::GenerateBasicCardResponse() {
   cvc_ = base::UTF8ToUTF16("");
 }
 
-void AutofillPaymentInstrument::OnAddressNormalized(
+void AutofillPaymentApp::OnAddressNormalized(
     bool success,
     const autofill::AutofillProfile& normalized_profile) {
   DCHECK(is_waiting_for_billing_address_normalization_);
@@ -251,22 +265,6 @@ void AutofillPaymentInstrument::OnAddressNormalized(
 
   if (!is_waiting_for_card_unmask_)
     GenerateBasicCardResponse();
-}
-
-bool AutofillPaymentInstrument::HandlesShippingAddress() const {
-  return false;
-}
-
-bool AutofillPaymentInstrument::HandlesPayerName() const {
-  return false;
-}
-
-bool AutofillPaymentInstrument::HandlesPayerEmail() const {
-  return false;
-}
-
-bool AutofillPaymentInstrument::HandlesPayerPhone() const {
-  return false;
 }
 
 }  // namespace payments

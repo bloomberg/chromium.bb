@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PAYMENTS_CORE_AUTOFILL_PAYMENT_INSTRUMENT_H_
-#define COMPONENTS_PAYMENTS_CORE_AUTOFILL_PAYMENT_INSTRUMENT_H_
+#ifndef COMPONENTS_PAYMENTS_CORE_AUTOFILL_PAYMENT_APP_H_
+#define COMPONENTS_PAYMENTS_CORE_AUTOFILL_PAYMENT_APP_H_
 
 #include <set>
 #include <string>
@@ -16,31 +16,30 @@
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/payments/full_card_request.h"
-#include "components/payments/core/payment_instrument.h"
+#include "components/payments/core/payment_app.h"
 
 namespace payments {
 
 class PaymentRequestBaseDelegate;
 
-// Represents an Autofill/Payments credit card form of payment in Payment
-// Request.
-class AutofillPaymentInstrument
-    : public PaymentInstrument,
+// Represents an autofill credit card in Payment Request.
+class AutofillPaymentApp
+    : public PaymentApp,
       public autofill::payments::FullCardRequest::ResultDelegate {
  public:
   // |billing_profiles| is owned by the caller and should outlive this object.
   // |payment_request_delegate| must outlive this object.
-  AutofillPaymentInstrument(
+  AutofillPaymentApp(
       const std::string& method_name,
       const autofill::CreditCard& card,
       bool matches_merchant_card_type_exactly,
       const std::vector<autofill::AutofillProfile*>& billing_profiles,
       const std::string& app_locale,
       PaymentRequestBaseDelegate* payment_request_delegate);
-  ~AutofillPaymentInstrument() override;
+  ~AutofillPaymentApp() override;
 
-  // PaymentInstrument:
-  void InvokePaymentApp(PaymentInstrument::Delegate* delegate) override;
+  // PaymentApp:
+  void InvokePaymentApp(PaymentApp::Delegate* delegate) override;
   bool IsCompleteForPayment() const override;
   uint32_t GetCompletenessScore() const override;
   bool CanPreselect() const override;
@@ -59,7 +58,7 @@ class AutofillPaymentInstrument
   void IsValidForPaymentMethodIdentifier(
       const std::string& payment_method_identifier,
       bool* is_valid) const override;
-  base::WeakPtr<PaymentInstrument> AsWeakPtr() override;
+  base::WeakPtr<PaymentApp> AsWeakPtr() override;
   bool HandlesShippingAddress() const override;
   bool HandlesPayerName() const override;
   bool HandlesPayerEmail() const override;
@@ -72,7 +71,7 @@ class AutofillPaymentInstrument
       const base::string16& cvc) override;
   void OnFullCardRequestFailed() override;
 
-  void RecordMissingFieldsForInstrument() const;
+  void RecordMissingFieldsForApp() const;
 
   // Sets whether the complete and valid autofill data for merchant's request is
   // available.
@@ -108,7 +107,7 @@ class AutofillPaymentInstrument
 
   const std::string app_locale_;
 
-  PaymentInstrument::Delegate* delegate_;
+  PaymentApp::Delegate* delegate_;
   PaymentRequestBaseDelegate* payment_request_delegate_;
   autofill::AutofillProfile billing_address_;
 
@@ -122,11 +121,11 @@ class AutofillPaymentInstrument
   // variable is true only if the autofill data contains a valid email address.
   bool is_requested_autofill_data_available_ = false;
 
-  base::WeakPtrFactory<AutofillPaymentInstrument> weak_ptr_factory_{this};
+  base::WeakPtrFactory<AutofillPaymentApp> weak_ptr_factory_{this};
 
-  DISALLOW_COPY_AND_ASSIGN(AutofillPaymentInstrument);
+  DISALLOW_COPY_AND_ASSIGN(AutofillPaymentApp);
 };
 
 }  // namespace payments
 
-#endif  // COMPONENTS_PAYMENTS_CORE_AUTOFILL_PAYMENT_INSTRUMENT_H_
+#endif  // COMPONENTS_PAYMENTS_CORE_AUTOFILL_PAYMENT_APP_H_

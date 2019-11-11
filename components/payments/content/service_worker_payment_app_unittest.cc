@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/payments/content/service_worker_payment_instrument.h"
+#include "components/payments/content/service_worker_payment_app.h"
 
 #include <memory>
 
@@ -18,11 +18,11 @@
 
 namespace payments {
 
-class ServiceWorkerPaymentInstrumentTest : public testing::Test,
-                                           public PaymentRequestSpec::Observer {
+class ServiceWorkerPaymentAppTest : public testing::Test,
+                                    public PaymentRequestSpec::Observer {
  public:
-  ServiceWorkerPaymentInstrumentTest() {}
-  ~ServiceWorkerPaymentInstrumentTest() override {}
+  ServiceWorkerPaymentAppTest() {}
+  ~ServiceWorkerPaymentAppTest() override {}
 
  protected:
   const SkBitmap* icon_bitmap() const { return icon_bitmap_; }
@@ -91,7 +91,7 @@ class ServiceWorkerPaymentInstrumentTest : public testing::Test,
 
   void TearDown() override {}
 
-  void CreateServiceWorkerPaymentInstrument(bool with_url_method) {
+  void CreateServiceWorkerPaymentApp(bool with_url_method) {
     constexpr int kBitmapDimension = 16;
 
     std::unique_ptr<content::StoredPaymentApp> stored_app =
@@ -116,20 +116,20 @@ class ServiceWorkerPaymentInstrumentTest : public testing::Test,
     stored_app->prefer_related_applications = false;
 
     icon_bitmap_ = stored_app->icon.get();
-    instrument_ = std::make_unique<ServiceWorkerPaymentInstrument>(
+    app_ = std::make_unique<ServiceWorkerPaymentApp>(
         &browser_context_, GURL("https://testmerchant.com"),
         GURL("https://testmerchant.com/bobpay"), spec_.get(),
         std::move(stored_app), &delegate_, identity_observer_.AsWeakPtr());
   }
 
-  ServiceWorkerPaymentInstrument* GetInstrument() { return instrument_.get(); }
+  ServiceWorkerPaymentApp* GetApp() { return app_.get(); }
 
   mojom::PaymentRequestEventDataPtr CreatePaymentRequestEventData() {
-    return instrument_->CreatePaymentRequestEventData();
+    return app_->CreatePaymentRequestEventData();
   }
 
   mojom::CanMakePaymentEventDataPtr CreateCanMakePaymentEventData() {
-    return instrument_->CreateCanMakePaymentEventData();
+    return app_->CreateCanMakePaymentEventData();
   }
 
  private:
@@ -139,31 +139,31 @@ class ServiceWorkerPaymentInstrumentTest : public testing::Test,
   content::TestBrowserContext browser_context_;
 
   std::unique_ptr<PaymentRequestSpec> spec_;
-  std::unique_ptr<ServiceWorkerPaymentInstrument> instrument_;
+  std::unique_ptr<ServiceWorkerPaymentApp> app_;
   const SkBitmap* icon_bitmap_;
 
-  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerPaymentInstrumentTest);
+  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerPaymentAppTest);
 };
 
-// Test instrument info and status are correct.
-TEST_F(ServiceWorkerPaymentInstrumentTest, InstrumentInfo) {
-  CreateServiceWorkerPaymentInstrument(true);
+// Test app info and status are correct.
+TEST_F(ServiceWorkerPaymentAppTest, AppInfo) {
+  CreateServiceWorkerPaymentApp(true);
 
-  EXPECT_TRUE(GetInstrument()->IsCompleteForPayment());
-  EXPECT_TRUE(GetInstrument()->IsExactlyMatchingMerchantRequest());
+  EXPECT_TRUE(GetApp()->IsCompleteForPayment());
+  EXPECT_TRUE(GetApp()->IsExactlyMatchingMerchantRequest());
 
-  EXPECT_EQ(base::UTF16ToUTF8(GetInstrument()->GetLabel()), "bobpay");
-  EXPECT_EQ(base::UTF16ToUTF8(GetInstrument()->GetSublabel()), "bobpay.com");
+  EXPECT_EQ(base::UTF16ToUTF8(GetApp()->GetLabel()), "bobpay");
+  EXPECT_EQ(base::UTF16ToUTF8(GetApp()->GetSublabel()), "bobpay.com");
 
   const gfx::Size expected_size{icon_bitmap()->width(),
                                 icon_bitmap()->height()};
-  EXPECT_EQ(GetInstrument()->icon_image_skia().size(), expected_size);
+  EXPECT_EQ(GetApp()->icon_image_skia().size(), expected_size);
 }
 
 // Test payment request event data can be correctly constructed for invoking
 // InvokePaymentApp.
-TEST_F(ServiceWorkerPaymentInstrumentTest, CreatePaymentRequestEventData) {
-  CreateServiceWorkerPaymentInstrument(true);
+TEST_F(ServiceWorkerPaymentAppTest, CreatePaymentRequestEventData) {
+  CreateServiceWorkerPaymentApp(true);
 
   mojom::PaymentRequestEventDataPtr event_data =
       CreatePaymentRequestEventData();
@@ -195,13 +195,13 @@ TEST_F(ServiceWorkerPaymentInstrumentTest, CreatePaymentRequestEventData) {
 
 // Test CanMakePaymentEventData can be correctly constructed for invoking
 // Validate.
-TEST_F(ServiceWorkerPaymentInstrumentTest, CreateCanMakePaymentEvent) {
-  CreateServiceWorkerPaymentInstrument(false);
+TEST_F(ServiceWorkerPaymentAppTest, CreateCanMakePaymentEvent) {
+  CreateServiceWorkerPaymentApp(false);
   mojom::CanMakePaymentEventDataPtr event_data =
       CreateCanMakePaymentEventData();
   EXPECT_TRUE(event_data.is_null());
 
-  CreateServiceWorkerPaymentInstrument(true);
+  CreateServiceWorkerPaymentApp(true);
   event_data = CreateCanMakePaymentEventData();
   EXPECT_FALSE(event_data.is_null());
 
@@ -219,41 +219,38 @@ TEST_F(ServiceWorkerPaymentInstrumentTest, CreateCanMakePaymentEvent) {
             "https://bobpay.com");
 }
 
-// Test the case when CanMakePaymentEvent cannot be fired. The instrument should
-// be considered valid, but not ready for payment.
-TEST_F(ServiceWorkerPaymentInstrumentTest, ValidateCanMakePayment) {
-  // CanMakePaymentEvent is not fired because this test instrument does not have
-  // any explicitly verified methods.
-  CreateServiceWorkerPaymentInstrument(/*with_url_method=*/true);
-  GetInstrument()->ValidateCanMakePayment(
-      base::BindOnce([](ServiceWorkerPaymentInstrument*, bool result) {
-        EXPECT_TRUE(result);
-      }));
-  EXPECT_FALSE(GetInstrument()->IsValidForCanMakePayment());
+// Test the case when CanMakePaymentEvent cannot be fired. The app should be
+// considered valid, but not ready for payment.
+TEST_F(ServiceWorkerPaymentAppTest, ValidateCanMakePayment) {
+  // CanMakePaymentEvent is not fired because this test app does not have any
+  // explicitly verified methods.
+  CreateServiceWorkerPaymentApp(/*with_url_method=*/true);
+  GetApp()->ValidateCanMakePayment(base::BindOnce(
+      [](ServiceWorkerPaymentApp*, bool result) { EXPECT_TRUE(result); }));
+  EXPECT_FALSE(GetApp()->IsValidForCanMakePayment());
 }
 
 // Test modifiers can be matched based on capabilities.
-TEST_F(ServiceWorkerPaymentInstrumentTest, IsValidForModifier) {
-  CreateServiceWorkerPaymentInstrument(true);
+TEST_F(ServiceWorkerPaymentAppTest, IsValidForModifier) {
+  CreateServiceWorkerPaymentApp(true);
+
+  EXPECT_TRUE(GetApp()->IsValidForModifier("basic-card", false, {}, false, {}));
 
   EXPECT_TRUE(
-      GetInstrument()->IsValidForModifier("basic-card", false, {}, false, {}));
+      GetApp()->IsValidForModifier("https://bobpay.com", true, {}, true, {}));
 
-  EXPECT_TRUE(GetInstrument()->IsValidForModifier("https://bobpay.com", true,
-                                                  {}, true, {}));
+  EXPECT_FALSE(GetApp()->IsValidForModifier("basic-card", true, {"mastercard"},
+                                            false, {}));
 
-  EXPECT_FALSE(GetInstrument()->IsValidForModifier("basic-card", true,
-                                                   {"mastercard"}, false, {}));
+  EXPECT_TRUE(GetApp()->IsValidForModifier("basic-card", true, {"unionpay"},
+                                           false, {}));
 
-  EXPECT_TRUE(GetInstrument()->IsValidForModifier("basic-card", true,
-                                                  {"unionpay"}, false, {}));
-
-  EXPECT_TRUE(GetInstrument()->IsValidForModifier(
+  EXPECT_TRUE(GetApp()->IsValidForModifier(
       "basic-card", true, {"unionpay"}, true,
       {autofill::CreditCard::CardType::CARD_TYPE_DEBIT,
        autofill::CreditCard::CardType::CARD_TYPE_CREDIT}));
 
-  EXPECT_FALSE(GetInstrument()->IsValidForModifier(
+  EXPECT_FALSE(GetApp()->IsValidForModifier(
       "basic-card", true, {"unionpay"}, true,
       {autofill::CreditCard::CardType::CARD_TYPE_CREDIT}));
 }

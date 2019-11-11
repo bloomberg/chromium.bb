@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/payments/core/autofill_payment_instrument.h"
+#include "components/payments/core/autofill_payment_app.h"
 
 #include <memory>
 
@@ -32,9 +32,9 @@ namespace payments {
 
 namespace {
 
-class FakePaymentInstrumentDelegate : public PaymentInstrument::Delegate {
+class FakePaymentAppDelegate : public PaymentApp::Delegate {
  public:
-  FakePaymentInstrumentDelegate() {}
+  FakePaymentAppDelegate() {}
 
   void OnInstrumentDetailsReady(const std::string& method_name,
                                 const std::string& stringified_details,
@@ -131,9 +131,9 @@ class FakePaymentRequestDelegate : public PaymentRequestDelegate {
 
 }  // namespace
 
-class AutofillPaymentInstrumentTest : public testing::Test {
+class AutofillPaymentAppTest : public testing::Test {
  protected:
-  AutofillPaymentInstrumentTest()
+  AutofillPaymentAppTest()
       : address_(autofill::test::GetFullProfile()),
         local_card_(autofill::test::GetCreditCard()),
         billing_profiles_({&address_}) {
@@ -150,194 +150,189 @@ class AutofillPaymentInstrumentTest : public testing::Test {
   autofill::CreditCard local_card_;
   std::vector<autofill::AutofillProfile*> billing_profiles_;
 
-  DISALLOW_COPY_AND_ASSIGN(AutofillPaymentInstrumentTest);
+  DISALLOW_COPY_AND_ASSIGN(AutofillPaymentAppTest);
 };
 
-// A valid local credit card is a valid instrument for payment.
-TEST_F(AutofillPaymentInstrumentTest, IsCompleteForPayment) {
-  AutofillPaymentInstrument instrument(
-      "visa", local_credit_card(),
-      /*matches_merchant_card_type_exactly=*/true, billing_profiles(), "en-US",
-      nullptr);
-  EXPECT_TRUE(instrument.IsCompleteForPayment());
-  EXPECT_TRUE(instrument.GetMissingInfoLabel().empty());
+// A valid local credit card is a valid app for payment.
+TEST_F(AutofillPaymentAppTest, IsCompleteForPayment) {
+  AutofillPaymentApp app("visa", local_credit_card(),
+                         /*matches_merchant_card_type_exactly=*/true,
+                         billing_profiles(), "en-US", nullptr);
+  EXPECT_TRUE(app.IsCompleteForPayment());
+  EXPECT_TRUE(app.GetMissingInfoLabel().empty());
 }
 
-// An expired local card is still a valid instrument for payment.
-TEST_F(AutofillPaymentInstrumentTest, IsCompleteForPayment_Expired) {
+// An expired local card is still a valid app for payment.
+TEST_F(AutofillPaymentAppTest, IsCompleteForPayment_Expired) {
   autofill::CreditCard& card = local_credit_card();
   card.SetExpirationYear(2016);  // Expired.
-  AutofillPaymentInstrument instrument(
-      "visa", card, /*matches_merchant_card_type_exactly=*/true,
-      billing_profiles(), "en-US", nullptr);
-  EXPECT_TRUE(instrument.IsCompleteForPayment());
-  EXPECT_EQ(base::string16(), instrument.GetMissingInfoLabel());
+  AutofillPaymentApp app("visa", card,
+                         /*matches_merchant_card_type_exactly=*/true,
+                         billing_profiles(), "en-US", nullptr);
+  EXPECT_TRUE(app.IsCompleteForPayment());
+  EXPECT_EQ(base::string16(), app.GetMissingInfoLabel());
 }
 
-// A local card with no name is not a valid instrument for payment.
-TEST_F(AutofillPaymentInstrumentTest, IsCompleteForPayment_NoName) {
+// A local card with no name is not a valid app for payment.
+TEST_F(AutofillPaymentAppTest, IsCompleteForPayment_NoName) {
   autofill::CreditCard& card = local_credit_card();
   card.SetInfo(autofill::AutofillType(autofill::CREDIT_CARD_NAME_FULL),
                base::ASCIIToUTF16(""), "en-US");
   base::string16 missing_info;
-  AutofillPaymentInstrument instrument(
-      "visa", card, /*matches_merchant_card_type_exactly=*/true,
-      billing_profiles(), "en-US", nullptr);
-  EXPECT_FALSE(instrument.IsCompleteForPayment());
+  AutofillPaymentApp app("visa", card,
+                         /*matches_merchant_card_type_exactly=*/true,
+                         billing_profiles(), "en-US", nullptr);
+  EXPECT_FALSE(app.IsCompleteForPayment());
   EXPECT_EQ(l10n_util::GetStringUTF16(IDS_PAYMENTS_NAME_ON_CARD_REQUIRED),
-            instrument.GetMissingInfoLabel());
+            app.GetMissingInfoLabel());
 }
 
-// A local card with no name is not a valid instrument for payment.
-TEST_F(AutofillPaymentInstrumentTest, IsCompleteForPayment_NoNumber) {
+// A local card with no name is not a valid app for payment.
+TEST_F(AutofillPaymentAppTest, IsCompleteForPayment_NoNumber) {
   autofill::CreditCard& card = local_credit_card();
   card.SetNumber(base::ASCIIToUTF16(""));
   base::string16 missing_info;
-  AutofillPaymentInstrument instrument(
-      "visa", card, /*matches_merchant_card_type_exactly=*/true,
-      billing_profiles(), "en-US", nullptr);
-  EXPECT_FALSE(instrument.IsCompleteForPayment());
+  AutofillPaymentApp app("visa", card,
+                         /*matches_merchant_card_type_exactly=*/true,
+                         billing_profiles(), "en-US", nullptr);
+  EXPECT_FALSE(app.IsCompleteForPayment());
   EXPECT_EQ(l10n_util::GetStringUTF16(
                 IDS_PAYMENTS_CARD_NUMBER_INVALID_VALIDATION_MESSAGE),
-            instrument.GetMissingInfoLabel());
+            app.GetMissingInfoLabel());
 }
 
-// A local card with no billing address id is not a valid instrument for
+// A local card with no billing address id is not a valid app for
 // payment.
-TEST_F(AutofillPaymentInstrumentTest, IsCompleteForPayment_NoBillinbAddressId) {
+TEST_F(AutofillPaymentAppTest, IsCompleteForPayment_NoBillinbAddressId) {
   autofill::CreditCard& card = local_credit_card();
   card.set_billing_address_id("");
   base::string16 missing_info;
-  AutofillPaymentInstrument instrument(
-      "visa", card, /*matches_merchant_card_type_exactly=*/true,
-      billing_profiles(), "en-US", nullptr);
-  EXPECT_FALSE(instrument.IsCompleteForPayment());
+  AutofillPaymentApp app("visa", card,
+                         /*matches_merchant_card_type_exactly=*/true,
+                         billing_profiles(), "en-US", nullptr);
+  EXPECT_FALSE(app.IsCompleteForPayment());
   EXPECT_EQ(
       l10n_util::GetStringUTF16(IDS_PAYMENTS_CARD_BILLING_ADDRESS_REQUIRED),
-      instrument.GetMissingInfoLabel());
+      app.GetMissingInfoLabel());
 }
 
-// A local card with an invalid billing address id is not a valid instrument for
+// A local card with an invalid billing address id is not a valid app for
 // payment.
-TEST_F(AutofillPaymentInstrumentTest,
-       IsCompleteForPayment_InvalidBillinbAddressId) {
+TEST_F(AutofillPaymentAppTest, IsCompleteForPayment_InvalidBillinbAddressId) {
   autofill::CreditCard& card = local_credit_card();
   card.set_billing_address_id("InvalidBillingAddressId");
   base::string16 missing_info;
-  AutofillPaymentInstrument instrument(
-      "visa", card, /*matches_merchant_card_type_exactly=*/true,
-      billing_profiles(), "en-US", nullptr);
-  EXPECT_FALSE(instrument.IsCompleteForPayment());
+  AutofillPaymentApp app("visa", card,
+                         /*matches_merchant_card_type_exactly=*/true,
+                         billing_profiles(), "en-US", nullptr);
+  EXPECT_FALSE(app.IsCompleteForPayment());
   EXPECT_EQ(
       l10n_util::GetStringUTF16(IDS_PAYMENTS_CARD_BILLING_ADDRESS_REQUIRED),
-      instrument.GetMissingInfoLabel());
+      app.GetMissingInfoLabel());
 }
 
-// A local card with an incomplete billing address is not a complete instrument
+// A local card with an incomplete billing address is not a complete app
 // for payment.
-TEST_F(AutofillPaymentInstrumentTest,
-       IsCompleteForPayment_IncompleteBillinbAddress) {
+TEST_F(AutofillPaymentAppTest, IsCompleteForPayment_IncompleteBillinbAddress) {
   autofill::AutofillProfile incomplete_profile =
       autofill::test::GetIncompleteProfile2();
   billing_profiles()[0] = &incomplete_profile;
   autofill::CreditCard& card = local_credit_card();
   card.set_billing_address_id(incomplete_profile.guid());
   base::string16 missing_info;
-  AutofillPaymentInstrument instrument(
-      "visa", card, /*matches_merchant_card_type_exactly=*/true,
-      billing_profiles(), "en-US", nullptr);
-  EXPECT_FALSE(instrument.IsCompleteForPayment());
+  AutofillPaymentApp app("visa", card,
+                         /*matches_merchant_card_type_exactly=*/true,
+                         billing_profiles(), "en-US", nullptr);
+  EXPECT_FALSE(app.IsCompleteForPayment());
   EXPECT_EQ(
       l10n_util::GetStringUTF16(IDS_PAYMENTS_CARD_BILLING_ADDRESS_REQUIRED),
-      instrument.GetMissingInfoLabel());
+      app.GetMissingInfoLabel());
 }
 
-// A local card with no name and no number is not a valid instrument for
+// A local card with no name and no number is not a valid app for
 // payment.
-TEST_F(AutofillPaymentInstrumentTest,
-       IsCompleteForPayment_MultipleThingsMissing) {
+TEST_F(AutofillPaymentAppTest, IsCompleteForPayment_MultipleThingsMissing) {
   autofill::CreditCard& card = local_credit_card();
   card.SetNumber(base::ASCIIToUTF16(""));
   card.SetInfo(autofill::AutofillType(autofill::CREDIT_CARD_NAME_FULL),
                base::ASCIIToUTF16(""), "en-US");
-  AutofillPaymentInstrument instrument(
-      "visa", card, /*matches_merchant_card_type_exactly=*/true,
-      billing_profiles(), "en-US", nullptr);
-  EXPECT_FALSE(instrument.IsCompleteForPayment());
+  AutofillPaymentApp app("visa", card,
+                         /*matches_merchant_card_type_exactly=*/true,
+                         billing_profiles(), "en-US", nullptr);
+  EXPECT_FALSE(app.IsCompleteForPayment());
   EXPECT_EQ(l10n_util::GetStringUTF16(IDS_PAYMENTS_MORE_INFORMATION_REQUIRED),
-            instrument.GetMissingInfoLabel());
+            app.GetMissingInfoLabel());
 }
 
-// A Masked (server) card is a valid instrument for payment.
-TEST_F(AutofillPaymentInstrumentTest, IsCompleteForPayment_MaskedCard) {
+// A Masked (server) card is a valid app for payment.
+TEST_F(AutofillPaymentAppTest, IsCompleteForPayment_MaskedCard) {
   autofill::CreditCard card = autofill::test::GetMaskedServerCard();
   ASSERT_GT(billing_profiles().size(), 0UL);
   card.set_billing_address_id(billing_profiles()[0]->guid());
-  AutofillPaymentInstrument instrument(
-      "visa", card, /*matches_merchant_card_type_exactly=*/true,
-      billing_profiles(), "en-US", nullptr);
-  EXPECT_TRUE(instrument.IsCompleteForPayment());
-  EXPECT_TRUE(instrument.GetMissingInfoLabel().empty());
+  AutofillPaymentApp app("visa", card,
+                         /*matches_merchant_card_type_exactly=*/true,
+                         billing_profiles(), "en-US", nullptr);
+  EXPECT_TRUE(app.IsCompleteForPayment());
+  EXPECT_TRUE(app.GetMissingInfoLabel().empty());
 }
 
-// An expired masked (server) card is still a valid instrument for payment.
-TEST_F(AutofillPaymentInstrumentTest, IsCompleteForPayment_ExpiredMaskedCard) {
+// An expired masked (server) card is still a valid app for payment.
+TEST_F(AutofillPaymentAppTest, IsCompleteForPayment_ExpiredMaskedCard) {
   autofill::CreditCard card = autofill::test::GetMaskedServerCard();
   ASSERT_GT(billing_profiles().size(), 0UL);
   card.set_billing_address_id(billing_profiles()[0]->guid());
   card.SetExpirationYear(2016);  // Expired.
-  AutofillPaymentInstrument instrument(
-      "visa", card, /*matches_merchant_card_type_exactly=*/true,
-      billing_profiles(), "en-US", nullptr);
-  EXPECT_TRUE(instrument.IsCompleteForPayment());
-  EXPECT_EQ(base::string16(), instrument.GetMissingInfoLabel());
+  AutofillPaymentApp app("visa", card,
+                         /*matches_merchant_card_type_exactly=*/true,
+                         billing_profiles(), "en-US", nullptr);
+  EXPECT_TRUE(app.IsCompleteForPayment());
+  EXPECT_EQ(base::string16(), app.GetMissingInfoLabel());
 }
 
-// An expired card is a valid instrument for canMakePayment.
-TEST_F(AutofillPaymentInstrumentTest, IsValidForCanMakePayment_Minimal) {
+// An expired card is a valid app for canMakePayment.
+TEST_F(AutofillPaymentAppTest, IsValidForCanMakePayment_Minimal) {
   autofill::CreditCard& card = local_credit_card();
   card.SetExpirationYear(2016);  // Expired.
-  AutofillPaymentInstrument instrument(
-      "visa", card, /*matches_merchant_card_type_exactly=*/true,
-      billing_profiles(), "en-US", nullptr);
-  EXPECT_TRUE(instrument.IsValidForCanMakePayment());
+  AutofillPaymentApp app("visa", card,
+                         /*matches_merchant_card_type_exactly=*/true,
+                         billing_profiles(), "en-US", nullptr);
+  EXPECT_TRUE(app.IsValidForCanMakePayment());
 }
 
-// An expired Masked (server) card is a valid instrument for canMakePayment.
-TEST_F(AutofillPaymentInstrumentTest, IsValidForCanMakePayment_MaskedCard) {
+// An expired Masked (server) card is a valid app for canMakePayment.
+TEST_F(AutofillPaymentAppTest, IsValidForCanMakePayment_MaskedCard) {
   autofill::CreditCard card = autofill::test::GetMaskedServerCard();
   card.SetExpirationYear(2016);  // Expired.
-  AutofillPaymentInstrument instrument(
-      "visa", card, /*matches_merchant_card_type_exactly=*/true,
-      billing_profiles(), "en-US", nullptr);
-  EXPECT_TRUE(instrument.IsValidForCanMakePayment());
+  AutofillPaymentApp app("visa", card,
+                         /*matches_merchant_card_type_exactly=*/true,
+                         billing_profiles(), "en-US", nullptr);
+  EXPECT_TRUE(app.IsValidForCanMakePayment());
 }
 
-// A card with no name is not a valid instrument for canMakePayment.
-TEST_F(AutofillPaymentInstrumentTest, IsValidForCanMakePayment_NoName) {
+// A card with no name is not a valid app for canMakePayment.
+TEST_F(AutofillPaymentAppTest, IsValidForCanMakePayment_NoName) {
   autofill::CreditCard& card = local_credit_card();
   card.SetInfo(autofill::AutofillType(autofill::CREDIT_CARD_NAME_FULL),
                base::ASCIIToUTF16(""), "en-US");
-  AutofillPaymentInstrument instrument(
-      "visa", card, /*matches_merchant_card_type_exactly=*/true,
-      billing_profiles(), "en-US", nullptr);
-  EXPECT_FALSE(instrument.IsValidForCanMakePayment());
+  AutofillPaymentApp app("visa", card,
+                         /*matches_merchant_card_type_exactly=*/true,
+                         billing_profiles(), "en-US", nullptr);
+  EXPECT_FALSE(app.IsValidForCanMakePayment());
 }
 
-// A card with no number is not a valid instrument for canMakePayment.
-TEST_F(AutofillPaymentInstrumentTest, IsValidForCanMakePayment_NoNumber) {
+// A card with no number is not a valid app for canMakePayment.
+TEST_F(AutofillPaymentAppTest, IsValidForCanMakePayment_NoNumber) {
   autofill::CreditCard& card = local_credit_card();
   card.SetNumber(base::ASCIIToUTF16(""));
-  AutofillPaymentInstrument instrument(
-      "visa", card, /*matches_merchant_card_type_exactly=*/true,
-      billing_profiles(), "en-US", nullptr);
-  EXPECT_FALSE(instrument.IsValidForCanMakePayment());
+  AutofillPaymentApp app("visa", card,
+                         /*matches_merchant_card_type_exactly=*/true,
+                         billing_profiles(), "en-US", nullptr);
+  EXPECT_FALSE(app.IsValidForCanMakePayment());
 }
 
-// Tests that the autofill instrument only calls OnInstrumentDetailsReady when
+// Tests that the autofill app only calls OnappDetailsReady when
 // the billing address has been normalized and the card has been unmasked.
-TEST_F(AutofillPaymentInstrumentTest,
-       InvokePaymentApp_NormalizationBeforeUnmask) {
+TEST_F(AutofillPaymentAppTest, InvokePaymentApp_NormalizationBeforeUnmask) {
   auto personal_data_manager =
       std::make_unique<autofill::TestPersonalDataManager>();
   TestPaymentRequestDelegate delegate(personal_data_manager.get());
@@ -346,29 +341,28 @@ TEST_F(AutofillPaymentInstrumentTest,
 
   autofill::CreditCard& card = local_credit_card();
   card.SetNumber(base::ASCIIToUTF16(""));
-  AutofillPaymentInstrument instrument(
-      "visa", card, /*matches_merchant_card_type_exactly=*/true,
-      billing_profiles(), "en-US", &delegate);
+  AutofillPaymentApp app("visa", card,
+                         /*matches_merchant_card_type_exactly=*/true,
+                         billing_profiles(), "en-US", &delegate);
 
-  FakePaymentInstrumentDelegate instrument_delegate;
+  FakePaymentAppDelegate app_delegate;
 
-  instrument.InvokePaymentApp(&instrument_delegate);
-  EXPECT_FALSE(instrument_delegate.WasOnInstrumentDetailsReadyCalled());
-  EXPECT_FALSE(instrument_delegate.WasOnInstrumentDetailsErrorCalled());
+  app.InvokePaymentApp(&app_delegate);
+  EXPECT_FALSE(app_delegate.WasOnInstrumentDetailsReadyCalled());
+  EXPECT_FALSE(app_delegate.WasOnInstrumentDetailsErrorCalled());
 
   delegate.test_address_normalizer()->CompleteAddressNormalization();
-  EXPECT_FALSE(instrument_delegate.WasOnInstrumentDetailsReadyCalled());
-  EXPECT_FALSE(instrument_delegate.WasOnInstrumentDetailsErrorCalled());
+  EXPECT_FALSE(app_delegate.WasOnInstrumentDetailsReadyCalled());
+  EXPECT_FALSE(app_delegate.WasOnInstrumentDetailsErrorCalled());
 
   delegate.CompleteFullCardRequest();
-  EXPECT_TRUE(instrument_delegate.WasOnInstrumentDetailsReadyCalled());
-  EXPECT_FALSE(instrument_delegate.WasOnInstrumentDetailsErrorCalled());
+  EXPECT_TRUE(app_delegate.WasOnInstrumentDetailsReadyCalled());
+  EXPECT_FALSE(app_delegate.WasOnInstrumentDetailsErrorCalled());
 }
 
-// Tests that the autofill instrument only calls OnInstrumentDetailsReady when
+// Tests that the autofill app only calls OnappDetailsReady when
 // the billing address has been normalized and the card has been unmasked.
-TEST_F(AutofillPaymentInstrumentTest,
-       InvokePaymentApp_UnmaskBeforeNormalization) {
+TEST_F(AutofillPaymentAppTest, InvokePaymentApp_UnmaskBeforeNormalization) {
   auto personal_data_manager =
       std::make_unique<autofill::TestPersonalDataManager>();
   TestPaymentRequestDelegate delegate(personal_data_manager.get());
@@ -377,23 +371,23 @@ TEST_F(AutofillPaymentInstrumentTest,
 
   autofill::CreditCard& card = local_credit_card();
   card.SetNumber(base::ASCIIToUTF16(""));
-  AutofillPaymentInstrument instrument(
-      "visa", card, /*matches_merchant_card_type_exactly=*/true,
-      billing_profiles(), "en-US", &delegate);
+  AutofillPaymentApp app("visa", card,
+                         /*matches_merchant_card_type_exactly=*/true,
+                         billing_profiles(), "en-US", &delegate);
 
-  FakePaymentInstrumentDelegate instrument_delegate;
+  FakePaymentAppDelegate app_delegate;
 
-  instrument.InvokePaymentApp(&instrument_delegate);
-  EXPECT_FALSE(instrument_delegate.WasOnInstrumentDetailsReadyCalled());
-  EXPECT_FALSE(instrument_delegate.WasOnInstrumentDetailsErrorCalled());
+  app.InvokePaymentApp(&app_delegate);
+  EXPECT_FALSE(app_delegate.WasOnInstrumentDetailsReadyCalled());
+  EXPECT_FALSE(app_delegate.WasOnInstrumentDetailsErrorCalled());
 
   delegate.CompleteFullCardRequest();
-  EXPECT_FALSE(instrument_delegate.WasOnInstrumentDetailsReadyCalled());
-  EXPECT_FALSE(instrument_delegate.WasOnInstrumentDetailsErrorCalled());
+  EXPECT_FALSE(app_delegate.WasOnInstrumentDetailsReadyCalled());
+  EXPECT_FALSE(app_delegate.WasOnInstrumentDetailsErrorCalled());
 
   delegate.test_address_normalizer()->CompleteAddressNormalization();
-  EXPECT_TRUE(instrument_delegate.WasOnInstrumentDetailsReadyCalled());
-  EXPECT_FALSE(instrument_delegate.WasOnInstrumentDetailsErrorCalled());
+  EXPECT_TRUE(app_delegate.WasOnInstrumentDetailsReadyCalled());
+  EXPECT_FALSE(app_delegate.WasOnInstrumentDetailsErrorCalled());
 }
 
 }  // namespace payments
