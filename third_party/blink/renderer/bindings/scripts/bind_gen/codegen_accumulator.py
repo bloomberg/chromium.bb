@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 
-class CodeGenerationAccumulator(object):
+class CodeGenAccumulator(object):
     """
     Accumulates a variety of information and helps generate code based on the
     information.

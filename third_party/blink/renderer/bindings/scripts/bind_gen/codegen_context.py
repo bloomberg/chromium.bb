@@ -7,14 +7,14 @@ import copy
 from . import name_style
 
 
-class CodeGenerationContext(object):
+class CodeGenContext(object):
     """
     Represents a context of code generation.
 
     Note that this is not relevant to Mako template context or any contexts.
-    Also note that CodeGenerationContext's attributes will be global template
-    variables.  |CodeGenerationContext.interface| will be available in templates
-    as "${interface}".
+    Also note that CodeGenContext's attributes will be global template
+    variables.  |CodeGenContext.interface| will be available in templates as
+    "${interface}".
     """
 
     # "for_world" attribute values
@@ -86,7 +86,7 @@ class CodeGenerationContext(object):
         return "_{}".format(attr)
 
     def __init__(self, **kwargs):
-        assert CodeGenerationContext._was_initialized
+        assert CodeGenContext._was_initialized
 
         for arg in kwargs.iterkeys():
             assert arg in self._context_attrs, "Unknown argument: {}".format(
@@ -199,4 +199,4 @@ class CodeGenerationContext(object):
         return name_style.class_("v8", self.idl_definition.identifier)
 
 
-CodeGenerationContext.init()
+CodeGenContext.init()

@@ -11,7 +11,7 @@ specific bindings, such as ECMAScript bindings.
 import copy
 import string
 
-from .code_generation_accumulator import CodeGenerationAccumulator
+from .codegen_accumulator import CodeGenAccumulator
 from .mako_renderer import MakoRenderer
 
 
@@ -286,7 +286,7 @@ class CodeNode(object):
         return self._accumulator
 
     def set_accumulator(self, accumulator):
-        assert isinstance(accumulator, CodeGenerationAccumulator)
+        assert isinstance(accumulator, CodeGenAccumulator)
         assert self._accumulator is None
         self._accumulator = accumulator
 
