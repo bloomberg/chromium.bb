@@ -723,8 +723,7 @@ Element* Element::GetElementAttribute(const QualifiedName& name) {
     DCHECK_EQ(element_attribute_vector->size(), 1u);
     Element* explicitly_set_element = element_attribute_vector->at(0);
     // Only return the explicit element if it still exists in the same scope.
-    if (explicitly_set_element && ElementIsDescendantOfShadowIncludingAncestor(
-                                      *this, *explicitly_set_element))
+    if (explicitly_set_element)
       return explicitly_set_element;
   }
 
@@ -805,12 +804,7 @@ HeapVector<Member<Element>> Element::GetElementArrayAttribute(
       GetExplicitlySetElementsForAttr(this, name);
   is_null = false;
   if (explicitly_set_elements) {
-    HeapVector<Member<Element>> return_elements;
-    for (auto element : *explicitly_set_elements) {
-      if (ElementIsDescendantOfShadowIncludingAncestor(*this, *element))
-        return_elements.push_back(element);
-    }
-    return return_elements;
+    return *explicitly_set_elements;
   }
 
   String attribute_value = getAttribute(name).GetString();
