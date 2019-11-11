@@ -428,7 +428,7 @@ def _get_bucket_map(changelist, options, option_parser):
   if options.bucket:
     return {options.bucket: {b: [] for b in options.bot}}
   option_parser.error(
-      'Please specify the bucket, e.g. "-B luci.chromium.try".')
+      'Please specify the bucket, e.g. "-B chromium/try".')
 
 
 def _parse_bucket(raw_bucket):
