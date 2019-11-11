@@ -77,6 +77,7 @@ luci.milo(
 
 exec('//buckets/ci.star')
 exec('//buckets/findit.star')
+exec('//buckets/goma.star')
 exec('//buckets/try.star')
 exec('//buckets/webrtc.star')
 exec('//buckets/webrtc.fyi.star')
