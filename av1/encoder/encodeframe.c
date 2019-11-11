@@ -158,24 +158,14 @@ unsigned int av1_high_get_sby_perpixel_variance(const AV1_COMP *cpi,
                                                 const struct buf_2d *ref,
                                                 BLOCK_SIZE bs, int bd) {
   unsigned int var, sse;
-  switch (bd) {
-    case 10:
-      var =
-          cpi->fn_ptr[bs].vf(ref->buf, ref->stride,
-                             CONVERT_TO_BYTEPTR(AV1_HIGH_VAR_OFFS_10), 0, &sse);
-      break;
-    case 12:
-      var =
-          cpi->fn_ptr[bs].vf(ref->buf, ref->stride,
-                             CONVERT_TO_BYTEPTR(AV1_HIGH_VAR_OFFS_12), 0, &sse);
-      break;
-    case 8:
-    default:
-      var =
-          cpi->fn_ptr[bs].vf(ref->buf, ref->stride,
-                             CONVERT_TO_BYTEPTR(AV1_HIGH_VAR_OFFS_8), 0, &sse);
-      break;
-  }
+  assert(bd == 8 || bd == 10 || bd == 12);
+  const int off_index = (bd - 8) >> 1;
+  const uint16_t *high_var_offs[3] = { AV1_HIGH_VAR_OFFS_8,
+                                       AV1_HIGH_VAR_OFFS_10,
+                                       AV1_HIGH_VAR_OFFS_12 };
+  var =
+      cpi->fn_ptr[bs].vf(ref->buf, ref->stride,
+                         CONVERT_TO_BYTEPTR(high_var_offs[off_index]), 0, &sse);
   return ROUND_POWER_OF_TWO(var, num_pels_log2_lookup[bs]);
 }
 
