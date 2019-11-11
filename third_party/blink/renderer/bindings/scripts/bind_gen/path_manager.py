@@ -38,14 +38,6 @@ class PathManager(object):
             "third_party", "blink", "renderer", "")
         cls._is_initialized = True
 
-    @classmethod
-    def relpath_to_project_root(cls, path):
-        index = path.find(cls._blink_path_prefix)
-        if index < 0:
-            assert path.startswith(cls._blink_path_prefix[1:])
-            return path
-        return path[index + 1:]
-
     def __init__(self, idl_definition):
         assert self._is_initialized, self._REQUIRE_INIT_MESSAGE
 
@@ -90,7 +82,7 @@ class PathManager(object):
         Returns a path to a Blink implementation file relative to the project
         root directory, e.g. "third_party/blink/renderer/..."
         """
-        return self.relpath_to_project_root(
+        return self._rel_to_root(
             self._join(
                 dirpath=self._blink_dir,
                 filename=(filename or self._blink_basename),
@@ -128,8 +120,14 @@ class PathManager(object):
             filename=(filename or self._out_basename),
             ext=ext)
 
-    @staticmethod
-    def _join(dirpath, filename, ext=None):
+    def _rel_to_root(self, path):
+        index = path.find(self._blink_path_prefix)
+        if index < 0:
+            assert path.startswith(self._blink_path_prefix[1:])
+            return path
+        return path[index + 1:]
+
+    def _join(self, dirpath, filename, ext=None):
         if ext is not None:
             filename = os.path.extsep.join([filename, ext])
         return os.path.join(dirpath, filename)
