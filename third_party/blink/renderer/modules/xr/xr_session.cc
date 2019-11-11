@@ -505,19 +505,17 @@ ScriptPromise XRSession::CreateAnchor(ScriptState* script_state,
     return ScriptPromise();
   }
 
-  device::mojom::blink::VRPosePtr pose_ptr =
-      device::mojom::blink::VRPose::New();
-
-  pose_ptr->orientation =
+  // TODO(https://crbug.com/929841): Remove negation in quaternion once the bug
+  // is fixed.
+  device::mojom::blink::PosePtr pose_ptr = device::mojom::blink::Pose::New(
       gfx::Quaternion(-decomposed.quaternion_x, -decomposed.quaternion_y,
-                      -decomposed.quaternion_z, decomposed.quaternion_w);
-  pose_ptr->position = blink::FloatPoint3D(
-      decomposed.translate_x, decomposed.translate_y, decomposed.translate_z);
+                      -decomposed.quaternion_z, decomposed.quaternion_w),
+      blink::FloatPoint3D(decomposed.translate_x, decomposed.translate_y,
+                          decomposed.translate_z));
 
   DVLOG(3) << __func__
-           << ": pose_ptr->orientation = " << pose_ptr->orientation->ToString()
-           << ", pose_ptr->position = [" << pose_ptr->position->X() << ", "
-           << pose_ptr->position->Y() << ", " << pose_ptr->position->Z() << "]";
+           << ": pose_ptr->orientation = " << pose_ptr->orientation.ToString()
+           << ", pose_ptr->position = " << pose_ptr->position.ToString();
 
   if (plane) {
     xr_->xrEnvironmentProviderRemote()->CreatePlaneAnchor(
