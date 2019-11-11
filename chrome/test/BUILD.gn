@@ -1497,6 +1497,7 @@ if (!is_android) {
     if (!is_android && !is_chromeos) {
       sources += [
         "../browser/external_protocol/external_protocol_handler_browsertest.cc",
+        "../browser/lifetime/application_lifetime_browsertest.cc",
       ]
     }
 
