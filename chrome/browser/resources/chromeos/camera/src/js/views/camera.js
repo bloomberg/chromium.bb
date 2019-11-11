@@ -186,7 +186,9 @@ cca.views.Camera.prototype.beginTake_ = function() {
   this.take_ = (async () => {
     try {
       await cca.views.camera.timertick.start();
-
+      if (!cca.state.get('video-mode')) {
+        cca.util.animateOnce(this.preview_.video);
+      }
       await this.modes_.current.startCapture();
     } catch (e) {
       if (e && e.message == 'cancel') {
