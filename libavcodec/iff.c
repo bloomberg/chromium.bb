@@ -111,23 +111,23 @@ static const uint64_t plane8_lut[8][256] = {
     LUT8(4), LUT8(5), LUT8(6), LUT8(7),
 };
 
-#define LUT32(plane) {                                \
-             0,          0,          0,          0,   \
-             0,          0,          0, 1 << plane,   \
-             0,          0, 1 << plane,          0,   \
-             0,          0, 1 << plane, 1 << plane,   \
-             0, 1 << plane,          0,          0,   \
-             0, 1 << plane,          0, 1 << plane,   \
-             0, 1 << plane, 1 << plane,          0,   \
-             0, 1 << plane, 1 << plane, 1 << plane,   \
-    1 << plane,          0,          0,          0,   \
-    1 << plane,          0,          0, 1 << plane,   \
-    1 << plane,          0, 1 << plane,          0,   \
-    1 << plane,          0, 1 << plane, 1 << plane,   \
-    1 << plane, 1 << plane,          0,          0,   \
-    1 << plane, 1 << plane,          0, 1 << plane,   \
-    1 << plane, 1 << plane, 1 << plane,          0,   \
-    1 << plane, 1 << plane, 1 << plane, 1 << plane,   \
+#define LUT32(plane) {                                    \
+              0,           0,           0,           0,   \
+              0,           0,           0, 1U << plane,   \
+              0,           0, 1U << plane,           0,   \
+              0,           0, 1U << plane, 1U << plane,   \
+              0, 1U << plane,           0,           0,   \
+              0, 1U << plane,           0, 1U << plane,   \
+              0, 1U << plane, 1U << plane,           0,   \
+              0, 1U << plane, 1U << plane, 1U << plane,   \
+    1U << plane,           0,           0,           0,   \
+    1U << plane,           0,           0, 1U << plane,   \
+    1U << plane,           0, 1U << plane,           0,   \
+    1U << plane,           0, 1U << plane, 1U << plane,   \
+    1U << plane, 1U << plane,           0,           0,   \
+    1U << plane, 1U << plane,           0, 1U << plane,   \
+    1U << plane, 1U << plane, 1U << plane,           0,   \
+    1U << plane, 1U << plane, 1U << plane, 1U << plane,   \
 }
 
 // 32 planes * 4-bit mask * 4 lookup tables each
@@ -180,6 +180,10 @@ static int cmap_read_palette(AVCodecContext *avctx, uint32_t *pal)
             pal[i] = 0xFF000000 | gray2rgb((i * 255) >> avctx->bits_per_coded_sample);
     }
     if (s->masking == MASK_HAS_MASK) {
+        if ((1 << avctx->bits_per_coded_sample) < count) {
+            avpriv_request_sample(avctx, "overlapping mask");
+            return AVERROR_PATCHWELCOME;
+        }
         memcpy(pal + (1 << avctx->bits_per_coded_sample), pal, count * 4);
         for (i = 0; i < count; i++)
             pal[i] &= 0xFFFFFF;
