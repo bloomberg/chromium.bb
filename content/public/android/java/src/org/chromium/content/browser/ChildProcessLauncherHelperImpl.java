@@ -244,7 +244,8 @@ public final class ChildProcessLauncherHelperImpl {
         if (!sCheckedFeatures) {
             sCheckedFeatures = true;
             if (sSandboxedChildConnectionRanking != null
-                    && ContentFeatureList.isEnabled(ContentFeatureList.SERVICE_GROUP_IMPORTANCE)) {
+                    && ContentFeatureListImpl.isEnabled(
+                            ContentFeatureListImpl.SERVICE_GROUP_IMPORTANCE)) {
                 sSandboxedChildConnectionRanking.enableServiceGroupImportance();
             }
         }
@@ -504,8 +505,8 @@ public final class ChildProcessLauncherHelperImpl {
             boostForPendingViews = false;
         }
 
-        boolean mediaRendererHasModerate = ContentFeatureList.isEnabled(
-                ContentFeatureList.BACKGROUND_MEDIA_RENDERER_HAS_MODERATE_BINDING);
+        boolean mediaRendererHasModerate = ContentFeatureListImpl.isEnabled(
+                ContentFeatureListImpl.BACKGROUND_MEDIA_RENDERER_HAS_MODERATE_BINDING);
 
         @ChildProcessImportance
         int newEffectiveImportance;

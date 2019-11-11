@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,14 +9,12 @@ import org.chromium.base.annotations.MainDex;
 import org.chromium.base.annotations.NativeMethods;
 
 /**
+ * Implementation of {@link ContentFeatureList}.
  * Java accessor for base/feature_list.h state.
  */
 @JNINamespace("content::android")
 @MainDex
-public abstract class ContentFeatureList {
-    // Prevent instantiation.
-    private ContentFeatureList() {}
-
+public class ContentFeatureListImpl {
     /**
      * Returns whether the specified feature is enabled or not.
      *
@@ -27,7 +25,7 @@ public abstract class ContentFeatureList {
      * @return Whether the feature is enabled or not.
      */
     public static boolean isEnabled(String featureName) {
-        return ContentFeatureListJni.get().isEnabled(featureName);
+        return ContentFeatureListImplJni.get().isEnabled(featureName);
     }
 
     // Alphabetical:
