@@ -409,8 +409,6 @@ def make_install_interface_template_def(cg_context):
 
 
 def run_example(web_idl_database, output_dirs):
-    renderer = MakoRenderer()
-
     filename = 'v8_example.cc'
     filepath = os.path.join(output_dirs['core'], filename)
 
@@ -418,7 +416,8 @@ def run_example(web_idl_database, output_dirs):
 
     cg_context = CodeGenContext(namespace=namespace)
 
-    root_node = SymbolScopeNode(separator_last="\n", renderer=renderer)
+    root_node = SymbolScopeNode(separator_last="\n")
+    root_node.set_renderer(MakoRenderer())
 
     for attribute in namespace.attributes:
         root_node.append(
