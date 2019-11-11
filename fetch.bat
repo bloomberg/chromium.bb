@@ -13,7 +13,7 @@ set PATH=%PATH%;%~dp0
 
 :: Defer control.
 IF "%GCLIENT_PY3%" == "1" (
-  vpython3 "%~dp0\fetch.py" %*y
+  vpython3 "%~dp0\fetch.py" %*
 ) ELSE (
   vpython "%~dp0\fetch.py" %*
 )
