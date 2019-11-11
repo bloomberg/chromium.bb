@@ -259,7 +259,7 @@ bool NGInlineCursor::IsLineBreak() const {
     return false;
   }
   if (current_item_)
-    return current_item_->IsLineBreak();
+    return IsText() && current_item_->IsLineBreak();
   NOTREACHED();
   return false;
 }
