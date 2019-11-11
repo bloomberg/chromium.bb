@@ -22,7 +22,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='chromite.api',
   syntax='proto3',
   serialized_options=_b('Z6go.chromium.org/chromiumos/infra/proto/go/chromite/api'),
-  serialized_pb=_b('\n\x1c\x63hromite/api/toolchain.proto\x12\x0c\x63hromite.api\x1a\x1c\x63hromite/api/build_api.proto\x1a\x17\x63hromiumos/common.proto\"\x82\x01\n\x1aVerifyAFDOArtifactsRequest\x12-\n\x0c\x62uild_target\x18\x01 \x01(\x0b\x32\x17.chromiumos.BuildTarget\x12\x35\n\rartifact_type\x18\x02 \x01(\x0e\x32\x1e.chromite.api.AFDOArtifactType\"-\n\x1bVerifyAFDOArtifactsResponse\x12\x0e\n\x06status\x18\x01 \x01(\x08*f\n\x10\x41\x46\x44OArtifactType\x12\r\n\tNONE_TYPE\x10\x00\x12\r\n\tORDERFILE\x10\x01\x12\x12\n\x0e\x42\x45NCHMARK_AFDO\x10\x02\x12\x0f\n\x0bKERNEL_AFDO\x10\x03\x12\x0f\n\x0b\x43HROME_AFDO\x10\x04\x32\x8d\x02\n\x10ToolchainService\x12t\n\x1dUpdateEbuildWithAFDOArtifacts\x12(.chromite.api.VerifyAFDOArtifactsRequest\x1a).chromite.api.VerifyAFDOArtifactsResponse\x12p\n\x19UploadVettedAFDOArtifacts\x12(.chromite.api.VerifyAFDOArtifactsRequest\x1a).chromite.api.VerifyAFDOArtifactsResponse\x1a\x11\xc2\xed\x1a\r\n\ttoolchain\x10\x01\x42\x38Z6go.chromium.org/chromiumos/infra/proto/go/chromite/apib\x06proto3')
+  serialized_pb=_b('\n\x1c\x63hromite/api/toolchain.proto\x12\x0c\x63hromite.api\x1a\x1c\x63hromite/api/build_api.proto\x1a\x17\x63hromiumos/common.proto\"\x80\x01\n\x1aVerifyAFDOArtifactsRequest\x12-\n\x0c\x62uild_target\x18\x01 \x01(\x0b\x32\x17.chromiumos.BuildTarget\x12\x33\n\rartifact_type\x18\x02 \x01(\x0e\x32\x1c.chromiumos.AFDOArtifactType\"-\n\x1bVerifyAFDOArtifactsResponse\x12\x0e\n\x06status\x18\x01 \x01(\x08*f\n\x10\x41\x46\x44OArtifactType\x12\r\n\tNONE_TYPE\x10\x00\x12\r\n\tORDERFILE\x10\x01\x12\x12\n\x0e\x42\x45NCHMARK_AFDO\x10\x02\x12\x0f\n\x0bKERNEL_AFDO\x10\x03\x12\x0f\n\x0b\x43HROME_AFDO\x10\x04\x32\x8d\x02\n\x10ToolchainService\x12t\n\x1dUpdateEbuildWithAFDOArtifacts\x12(.chromite.api.VerifyAFDOArtifactsRequest\x1a).chromite.api.VerifyAFDOArtifactsResponse\x12p\n\x19UploadVettedAFDOArtifacts\x12(.chromite.api.VerifyAFDOArtifactsRequest\x1a).chromite.api.VerifyAFDOArtifactsResponse\x1a\x11\xc2\xed\x1a\r\n\ttoolchain\x10\x01\x42\x38Z6go.chromium.org/chromiumos/infra/proto/go/chromite/apib\x06proto3')
   ,
   dependencies=[chromite_dot_api_dot_build__api__pb2.DESCRIPTOR,chromiumos_dot_common__pb2.DESCRIPTOR,])
 
@@ -55,8 +55,8 @@ _AFDOARTIFACTTYPE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=281,
-  serialized_end=383,
+  serialized_start=279,
+  serialized_end=381,
 )
 _sym_db.RegisterEnumDescriptor(_AFDOARTIFACTTYPE)
 
@@ -103,7 +103,7 @@ _VERIFYAFDOARTIFACTSREQUEST = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=102,
-  serialized_end=232,
+  serialized_end=230,
 )
 
 
@@ -133,12 +133,12 @@ _VERIFYAFDOARTIFACTSRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=234,
-  serialized_end=279,
+  serialized_start=232,
+  serialized_end=277,
 )
 
 _VERIFYAFDOARTIFACTSREQUEST.fields_by_name['build_target'].message_type = chromiumos_dot_common__pb2._BUILDTARGET
-_VERIFYAFDOARTIFACTSREQUEST.fields_by_name['artifact_type'].enum_type = _AFDOARTIFACTTYPE
+_VERIFYAFDOARTIFACTSREQUEST.fields_by_name['artifact_type'].enum_type = chromiumos_dot_common__pb2._AFDOARTIFACTTYPE
 DESCRIPTOR.message_types_by_name['VerifyAFDOArtifactsRequest'] = _VERIFYAFDOARTIFACTSREQUEST
 DESCRIPTOR.message_types_by_name['VerifyAFDOArtifactsResponse'] = _VERIFYAFDOARTIFACTSRESPONSE
 DESCRIPTOR.enum_types_by_name['AFDOArtifactType'] = _AFDOARTIFACTTYPE
@@ -167,8 +167,8 @@ _TOOLCHAINSERVICE = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=0,
   serialized_options=_b('\302\355\032\r\n\ttoolchain\020\001'),
-  serialized_start=386,
-  serialized_end=655,
+  serialized_start=384,
+  serialized_end=653,
   methods=[
   _descriptor.MethodDescriptor(
     name='UpdateEbuildWithAFDOArtifacts',
