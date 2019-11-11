@@ -213,7 +213,7 @@ class CORE_EXPORT CSSAnimations final {
 
     void MaybeDispatch(Document::ListenerType,
                        const AtomicString& event_name,
-                       double elapsed_time);
+                       const AnimationTimeDelta& elapsed_time);
     Member<Element> animation_target_;
     const AtomicString name_;
     Timing::Phase previous_phase_;

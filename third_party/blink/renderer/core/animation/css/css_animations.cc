@@ -1104,7 +1104,7 @@ EventTarget* CSSAnimations::AnimationEventDelegate::GetEventTarget() const {
 void CSSAnimations::AnimationEventDelegate::MaybeDispatch(
     Document::ListenerType listener_type,
     const AtomicString& event_name,
-    double elapsed_time) {
+    const AnimationTimeDelta& elapsed_time) {
   if (animation_target_->GetDocument().HasListenerType(listener_type)) {
     String pseudo_element_name = PseudoElement::PseudoElementNameForEvents(
         animation_target_->GetPseudoId());
@@ -1132,7 +1132,8 @@ void CSSAnimations::AnimationEventDelegate::OnEventCondition(
       (previous_phase_ == Timing::kPhaseNone ||
        previous_phase_ == Timing::kPhaseBefore)) {
     const double start_delay = animation_node.SpecifiedTiming().start_delay;
-    const double elapsed_time = start_delay < 0 ? -start_delay : 0;
+    const auto& elapsed_time =
+        AnimationTimeDelta::FromSecondsD(start_delay < 0 ? -start_delay : 0);
     MaybeDispatch(Document::kAnimationStartListener,
                   event_type_names::kAnimationstart, elapsed_time);
   }
@@ -1149,15 +1150,15 @@ void CSSAnimations::AnimationEventDelegate::OnEventCondition(
         animation_node.SpecifiedTiming().iteration_duration.value() *
         (previous_iteration_.value() + 1);
     MaybeDispatch(Document::kAnimationIterationListener,
-                  event_type_names::kAnimationiteration,
-                  elapsed_time.InSecondsF());
+                  event_type_names::kAnimationiteration, elapsed_time);
   }
 
   if (current_phase == Timing::kPhaseAfter &&
       previous_phase_ != Timing::kPhaseAfter) {
     MaybeDispatch(Document::kAnimationEndListener,
                   event_type_names::kAnimationend,
-                  animation_node.SpecifiedTiming().ActiveDuration());
+                  AnimationTimeDelta::FromSecondsD(
+                      animation_node.SpecifiedTiming().ActiveDuration()));
   }
 
   previous_phase_ = current_phase;
