@@ -5854,10 +5854,9 @@ crbug.com/1016772 http/tests/devtools/sources/debugger-ui/source-url-comment.js 
 crbug.com/1019613 http/tests/devtools/sources/debugger/debug-inlined-scripts.js [ Pass Failure ]
 
 # eval+Trusted Types failures while the feature is implemented.
-crbug.com/940927 external/wpt/trusted-types/trusted-types-eval-reporting-report-only.tentative.https.html [ Timeout ]
-crbug.com/940927 external/wpt/trusted-types/trusted-types-eval-reporting.tentative.https.html [ Failure ]
-crbug.com/940927 external/wpt/trusted-types/trusted-types-eval-reporting-no-unsafe-eval.tentative.https.html [ Timeout ]
-crbug.com/940927 external/wpt/trusted-types/eval-with-permissive-csp.tentative.html [ Failure ]
+external/wpt/trusted-types/eval-csp-no-tt.tentative.html [ Failure ]
+external/wpt/trusted-types/eval-no-csp-no-tt.tentative.html [ Failure ]
+external/wpt/trusted-types/eval-no-csp-no-tt-default-policy.tentative.html [ Failure ]
 
 # Sheriff 2019-10-31
 crbug.com/1020036 [ Debug ] external/wpt/lifecycle/freeze.html [ Failure Pass ]
