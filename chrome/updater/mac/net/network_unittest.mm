@@ -64,9 +64,8 @@ class ChromeUpdaterNetworkMacTest : public ::testing::Test {
   void DownloadCallback(int net_error, int64_t content_size) {
     EXPECT_EQ(net_error, 200);
     EXPECT_GT(content_size, 0);
-    ASSERT_FALSE(testFilePath.empty());
-    ASSERT_TRUE(base::PathExists(testFilePath));
-    ASSERT_TRUE(base::DeleteFile(testFilePath, false));
+    EXPECT_FALSE(testFilePath.empty());
+    EXPECT_TRUE(base::PathExists(testFilePath));
     DownloadToFileCompleted();
   }
 
@@ -138,7 +137,8 @@ TEST_F(ChromeUpdaterNetworkMacTest, NetworkFetcherMacDownloadToFile) {
 
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  testFilePath = temp_dir.GetPath().Append(FILE_PATH_LITERAL("from_file"));
+  testFilePath =
+      temp_dir.GetPath().Append(FILE_PATH_LITERAL("downloaded_file"));
 
   fetcher->DownloadToFile(
       url, testFilePath,
