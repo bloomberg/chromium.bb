@@ -1704,27 +1704,18 @@ void av1_rc_update_framerate(AV1_COMP *cpi, int width, int height) {
 static void vbr_rate_correction(AV1_COMP *cpi, int *this_frame_target) {
   RATE_CONTROL *const rc = &cpi->rc;
   int64_t vbr_bits_off_target = rc->vbr_bits_off_target;
-  int max_delta;
-  const int frame_window = clamp((int)(cpi->twopass.total_stats.count -
-                                       cpi->common.current_frame.frame_number),
-                                 1, 16);
+  const int frame_window =
+      AOMMIN(16, (int)(cpi->twopass.total_stats.count -
+                       cpi->common.current_frame.frame_number));
 
-  max_delta = (vbr_bits_off_target > 0)
-                  ? (int)(vbr_bits_off_target / frame_window)
-                  : (int)(-vbr_bits_off_target / frame_window);
+  if (frame_window > 0) {
+    const int max_delta =
+        AOMMIN(abs((int)(vbr_bits_off_target / frame_window)),
+               (*this_frame_target * VBR_PCT_ADJUSTMENT_LIMIT) / 100);
 
-  max_delta = AOMMIN(max_delta,
-                     ((*this_frame_target * VBR_PCT_ADJUSTMENT_LIMIT) / 100));
-
-  // vbr_bits_off_target > 0 means we have extra bits to spend
-  if (vbr_bits_off_target > 0) {
-    *this_frame_target += (vbr_bits_off_target > max_delta)
-                              ? max_delta
-                              : (int)vbr_bits_off_target;
-  } else {
-    *this_frame_target -= (vbr_bits_off_target < -max_delta)
-                              ? max_delta
-                              : (int)-vbr_bits_off_target;
+    // vbr_bits_off_target > 0 means we have extra bits to spend
+    // vbr_bits_off_target < 0 we are currently overshooting
+    *this_frame_target += (vbr_bits_off_target >= 0) ? max_delta : -max_delta;
   }
 
   // Fast redistribution of bits arising from massive local undershoot.
