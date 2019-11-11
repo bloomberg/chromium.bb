@@ -470,7 +470,7 @@ public class SiteSettingsPreferencesTest {
     @Feature({"Preferences"})
     public void testOnlyExpectedPreferencesShown() {
         // If you add a category in the SiteSettings UI, please add a test for it below.
-        Assert.assertEquals(19, SiteSettingsCategory.Type.NUM_ENTRIES);
+        Assert.assertEquals(20, SiteSettingsCategory.Type.NUM_ENTRIES);
 
         String[] nullArray = new String[0];
         String[] binaryToggle = new String[] {"binary_toggle"};
@@ -497,6 +497,7 @@ public class SiteSettingsPreferencesTest {
         testCases.put(SiteSettingsCategory.Type.JAVASCRIPT,
                 new Pair<>(binaryToggleWithException, binaryToggleWithException));
         testCases.put(SiteSettingsCategory.Type.MICROPHONE, new Pair<>(binaryToggle, binaryToggle));
+        testCases.put(SiteSettingsCategory.Type.NFC, new Pair<>(binaryToggle, binaryToggle));
         testCases.put(SiteSettingsCategory.Type.NOTIFICATIONS,
                 new Pair<>(binaryToggleWithAllowed, binaryToggleWithAllowed));
         testCases.put(SiteSettingsCategory.Type.POPUPS, new Pair<>(binaryToggle, binaryToggle));
@@ -764,6 +765,34 @@ public class SiteSettingsPreferencesTest {
     @Feature({"Preferences"})
     public void testBlockBluetoothScanning() {
         doTestBluetoothScanningPermission(false);
+    }
+
+    /**
+     * Helper function to test allowing and blocking NFC feature.
+     * @param enabled true to test enabling NFC feature, false to test disabling the
+     *         feature.
+     */
+    private void doTestNfcPermission(final boolean enabled) {
+        setGlobalToggleForCategory(SiteSettingsCategory.Type.NFC, enabled);
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            Assert.assertEquals("NFC should be " + (enabled ? "enabled" : "disabled"),
+                    PrefServiceBridge.getInstance().isCategoryEnabled(ContentSettingsType.NFC),
+                    enabled);
+        });
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    public void testAllowNfc() {
+        doTestNfcPermission(true);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    public void testBlockNfc() {
+        doTestNfcPermission(false);
     }
 
     private int getTabCount() {

@@ -283,6 +283,10 @@ static jboolean JNI_PrefServiceBridge_GetAutoplayEnabled(JNIEnv* env) {
   return GetBooleanForContentSetting(ContentSettingsType::AUTOPLAY);
 }
 
+static jboolean JNI_PrefServiceBridge_GetNfcEnabled(JNIEnv* env) {
+  return GetBooleanForContentSetting(ContentSettingsType::NFC);
+}
+
 static jboolean JNI_PrefServiceBridge_GetSensorsEnabled(JNIEnv* env) {
   return GetBooleanForContentSetting(ContentSettingsType::SENSORS);
 }
@@ -387,6 +391,14 @@ static void JNI_PrefServiceBridge_SetClipboardEnabled(
       HostContentSettingsMapFactory::GetForProfile(GetOriginalProfile());
   host_content_settings_map->SetDefaultContentSetting(
       ContentSettingsType::CLIPBOARD_READ,
+      allow ? CONTENT_SETTING_ASK : CONTENT_SETTING_BLOCK);
+}
+
+static void JNI_PrefServiceBridge_SetNfcEnabled(JNIEnv* env, jboolean allow) {
+  HostContentSettingsMap* host_content_settings_map =
+      HostContentSettingsMapFactory::GetForProfile(GetOriginalProfile());
+  host_content_settings_map->SetDefaultContentSetting(
+      ContentSettingsType::NFC,
       allow ? CONTENT_SETTING_ASK : CONTENT_SETTING_BLOCK);
 }
 

@@ -48,6 +48,8 @@ public class WebsitePreferenceBridge {
             WebsitePreferenceBridgeJni.get().getMicrophoneOrigins(list, managedOnly);
         } else if (type == PermissionInfo.Type.MIDI) {
             WebsitePreferenceBridgeJni.get().getMidiOrigins(list);
+        } else if (type == PermissionInfo.Type.NFC) {
+            WebsitePreferenceBridgeJni.get().getNfcOrigins(list);
         } else if (type == PermissionInfo.Type.NOTIFICATION) {
             WebsitePreferenceBridgeJni.get().getNotificationOrigins(list);
         } else if (type == PermissionInfo.Type.PROTECTED_MEDIA_IDENTIFIER) {
@@ -100,6 +102,12 @@ public class WebsitePreferenceBridge {
     private static void insertMidiInfoIntoList(
             ArrayList<PermissionInfo> list, String origin, String embedder) {
         insertInfoIntoList(PermissionInfo.Type.MIDI, list, origin, embedder);
+    }
+
+    @CalledByNative
+    private static void insertNfcInfoIntoList(
+            ArrayList<PermissionInfo> list, String origin, String embedder) {
+        insertInfoIntoList(PermissionInfo.Type.NFC, list, origin, embedder);
     }
 
     @CalledByNative
@@ -223,6 +231,7 @@ public class WebsitePreferenceBridge {
         void getMicrophoneOrigins(Object list, boolean managedOnly);
         void getMidiOrigins(Object list);
         void getNotificationOrigins(Object list);
+        void getNfcOrigins(Object list);
         void getProtectedMediaIdentifierOrigins(Object list);
         void getSensorsOrigins(Object list);
         int getCameraSettingForOrigin(String origin, String embedder, boolean isIncognito);
@@ -230,6 +239,7 @@ public class WebsitePreferenceBridge {
         int getGeolocationSettingForOrigin(String origin, String embedder, boolean isIncognito);
         int getMicrophoneSettingForOrigin(String origin, String embedder, boolean isIncognito);
         int getMidiSettingForOrigin(String origin, String embedder, boolean isIncognito);
+        int getNfcSettingForOrigin(String origin, String embedder, boolean isIncognito);
         int getNotificationSettingForOrigin(String origin, boolean isIncognito);
         int getProtectedMediaIdentifierSettingForOrigin(
                 String origin, String embedder, boolean isIncognito);
@@ -241,6 +251,7 @@ public class WebsitePreferenceBridge {
         void setMicrophoneSettingForOrigin(String origin, int value, boolean isIncognito);
         void setMidiSettingForOrigin(
                 String origin, String embedder, int value, boolean isIncognito);
+        void setNfcSettingForOrigin(String origin, String embedder, int value, boolean isIncognito);
         void setNotificationSettingForOrigin(String origin, int value, boolean isIncognito);
         void reportNotificationRevokedForOrigin(
                 String origin, int newSettingValue, boolean isIncognito);

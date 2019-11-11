@@ -15,6 +15,7 @@ import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.PreferenceUtils;
 import org.chromium.chrome.browser.preferences.website.SiteSettingsCategory.Type;
+import org.chromium.content_public.browser.ContentFeatureList;
 import org.chromium.content_public.common.ContentSwitches;
 
 import java.util.ArrayList;
@@ -91,6 +92,9 @@ public class SiteSettingsPreferences
             if (!commandLine.hasSwitch(ContentSwitches.ENABLE_EXPERIMENTAL_WEB_PLATFORM_FEATURES)) {
                 getPreferenceScreen().removePreference(findPreference(Type.BLUETOOTH_SCANNING));
             }
+            if (!ContentFeatureList.isEnabled(ContentFeatureList.WEB_NFC)) {
+                getPreferenceScreen().removePreference(findPreference(Type.NFC));
+            }
         }
     }
 
@@ -118,6 +122,9 @@ public class SiteSettingsPreferences
             websitePrefs.add(Type.JAVASCRIPT);
             websitePrefs.add(Type.DEVICE_LOCATION);
             websitePrefs.add(Type.MICROPHONE);
+            if (ContentFeatureList.isEnabled(ContentFeatureList.WEB_NFC)) {
+                websitePrefs.add(Type.NFC);
+            }
             websitePrefs.add(Type.NOTIFICATIONS);
             websitePrefs.add(Type.POPUPS);
             websitePrefs.add(Type.SENSORS);

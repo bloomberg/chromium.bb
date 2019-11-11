@@ -90,6 +90,7 @@ public class SingleWebsitePreferences extends PreferenceFragmentCompat
             "location_access_list", // PermissionInfo.Type.GEOLOCATION
             "microphone_permission_list", // PermissionInfo.Type.MICROPHONE
             "midi_sysex_permission_list", // PermissionInfo.Type.MIDI
+            "nfc_permission_list", // PermissionInfo.Type.NFC
             "push_notifications_list", // PermissionInfo.Type.NOTIFICATION
             "protected_media_identifier_permission_list",
             // PermissionInfo.Type.PROTECTED_MEDIA_IDENTIFIER

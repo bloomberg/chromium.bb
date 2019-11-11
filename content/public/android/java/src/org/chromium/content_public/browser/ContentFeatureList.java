@@ -21,4 +21,12 @@ public class ContentFeatureList {
     public static boolean isEnabled(String featureName) {
         return ContentFeatureListImpl.isEnabled(featureName);
     }
+
+    // Alphabetical:
+    public static final String BACKGROUND_MEDIA_RENDERER_HAS_MODERATE_BINDING =
+            "BackgroundMediaRendererHasModerateBinding";
+
+    public static final String SERVICE_GROUP_IMPORTANCE = "ServiceGroupImportance";
+
+    public static final String WEB_NFC = "WebNFC";
 }

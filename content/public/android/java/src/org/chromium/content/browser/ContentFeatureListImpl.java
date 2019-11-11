@@ -28,12 +28,6 @@ public class ContentFeatureListImpl {
         return ContentFeatureListImplJni.get().isEnabled(featureName);
     }
 
-    // Alphabetical:
-    public static final String BACKGROUND_MEDIA_RENDERER_HAS_MODERATE_BINDING =
-            "BackgroundMediaRendererHasModerateBinding";
-
-    public static final String SERVICE_GROUP_IMPORTANCE = "ServiceGroupImportance";
-
     @NativeMethods
     interface Natives {
         boolean isEnabled(String featureName);

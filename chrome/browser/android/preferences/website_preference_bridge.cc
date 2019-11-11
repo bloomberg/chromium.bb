@@ -825,6 +825,34 @@ static jboolean JNI_WebsitePreferenceBridge_GetAdBlockingActivated(
       url, GURL(), ContentSettingsType::ADS_DATA, std::string(), nullptr);
 }
 
+static void JNI_WebsitePreferenceBridge_GetNfcOrigins(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& list) {
+  JNI_WebsitePreferenceBridge_GetOrigins(
+      env, ContentSettingsType::NFC,
+      &Java_WebsitePreferenceBridge_insertNfcInfoIntoList, list, false);
+}
+
+static jint JNI_WebsitePreferenceBridge_GetNfcSettingForOrigin(
+    JNIEnv* env,
+    const JavaParamRef<jstring>& origin,
+    const JavaParamRef<jstring>& embedder,
+    jboolean is_incognito) {
+  return JNI_WebsitePreferenceBridge_GetSettingForOrigin(
+      env, ContentSettingsType::NFC, origin, embedder, is_incognito);
+}
+
+static void JNI_WebsitePreferenceBridge_SetNfcSettingForOrigin(
+    JNIEnv* env,
+    const JavaParamRef<jstring>& origin,
+    const JavaParamRef<jstring>& embedder,
+    jint value,
+    jboolean is_incognito) {
+  JNI_WebsitePreferenceBridge_SetSettingForOrigin(
+      env, ContentSettingsType::NFC, origin, embedder,
+      static_cast<ContentSetting>(value), is_incognito);
+}
+
 static void JNI_WebsitePreferenceBridge_GetSensorsOrigins(
     JNIEnv* env,
     const JavaParamRef<jobject>& list) {

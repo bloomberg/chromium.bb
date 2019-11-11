@@ -363,6 +363,9 @@ public class PrefServiceBridge {
             case ContentSettingsType.MEDIASTREAM_MIC:
                 PrefServiceBridgeJni.get().setMicEnabled(allow);
                 break;
+            case ContentSettingsType.NFC:
+                PrefServiceBridgeJni.get().setNfcEnabled(allow);
+                break;
             case ContentSettingsType.NOTIFICATIONS:
                 PrefServiceBridgeJni.get().setNotificationsEnabled(allow);
                 break;
@@ -403,6 +406,8 @@ public class PrefServiceBridge {
                 return PrefServiceBridgeJni.get().getCameraEnabled();
             case ContentSettingsType.MEDIASTREAM_MIC:
                 return PrefServiceBridgeJni.get().getMicEnabled();
+            case ContentSettingsType.NFC:
+                return PrefServiceBridgeJni.get().getNfcEnabled();
             case ContentSettingsType.NOTIFICATIONS:
                 return PrefServiceBridgeJni.get().getNotificationsEnabled();
             case ContentSettingsType.SENSORS:
@@ -545,6 +550,7 @@ public class PrefServiceBridge {
         boolean getMicManagedByCustodian();
         boolean getIncognitoModeEnabled();
         boolean getIncognitoModeManaged();
+        boolean getNfcEnabled();
         boolean getSensorsEnabled();
         boolean getSoundEnabled();
         void setAutomaticDownloadsEnabled(boolean enabled);
@@ -556,6 +562,7 @@ public class PrefServiceBridge {
         boolean getNotificationsEnabled();
         void setAllowLocationEnabled(boolean enabled);
         void setNotificationsEnabled(boolean enabled);
+        void setNfcEnabled(boolean enabled);
         void setSensorsEnabled(boolean enabled);
         void setSoundEnabled(boolean enabled);
         boolean canPrefetchAndPrerender();

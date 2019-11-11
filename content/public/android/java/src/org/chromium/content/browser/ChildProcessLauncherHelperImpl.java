@@ -35,6 +35,7 @@ import org.chromium.content.app.ChromiumLinkerParams;
 import org.chromium.content.app.SandboxedProcessService;
 import org.chromium.content.common.ContentSwitchUtils;
 import org.chromium.content_public.browser.ChildProcessImportance;
+import org.chromium.content_public.browser.ContentFeatureList;
 import org.chromium.content_public.common.ContentSwitches;
 
 import java.io.IOException;
@@ -244,8 +245,7 @@ public final class ChildProcessLauncherHelperImpl {
         if (!sCheckedFeatures) {
             sCheckedFeatures = true;
             if (sSandboxedChildConnectionRanking != null
-                    && ContentFeatureListImpl.isEnabled(
-                            ContentFeatureListImpl.SERVICE_GROUP_IMPORTANCE)) {
+                    && ContentFeatureList.isEnabled(ContentFeatureList.SERVICE_GROUP_IMPORTANCE)) {
                 sSandboxedChildConnectionRanking.enableServiceGroupImportance();
             }
         }
@@ -505,8 +505,8 @@ public final class ChildProcessLauncherHelperImpl {
             boostForPendingViews = false;
         }
 
-        boolean mediaRendererHasModerate = ContentFeatureListImpl.isEnabled(
-                ContentFeatureListImpl.BACKGROUND_MEDIA_RENDERER_HAS_MODERATE_BINDING);
+        boolean mediaRendererHasModerate = ContentFeatureList.isEnabled(
+                ContentFeatureList.BACKGROUND_MEDIA_RENDERER_HAS_MODERATE_BINDING);
 
         @ChildProcessImportance
         int newEffectiveImportance;
