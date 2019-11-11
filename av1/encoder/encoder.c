@@ -5751,16 +5751,6 @@ static void refresh_reference_frames(AV1_COMP *cpi) {
   }
 }
 
-// Implementation and modifications of C. Yeo, H. L. Tan, and Y. H. Tan, "On
-// rate distortion optimization using SSIM," Circuits and Systems for Video
-// Technology, IEEE Transactions on, vol. 23, no. 7, pp. 1170-1181, 2013.
-// SSIM_VAR_SCALE defines the strength of the bias towards SSIM in RDO:
-// Test data set: mid_res (33 frames)
-// SSIM_VAR_SCALE    avg_psnr    ssim    ms-ssim
-//      8               8.2      -6.0      -6.4
-//      16              4.0      -5.7      -5.9
-//      32              1.6      -4.4      -4.5
-#define SSIM_VAR_SCALE 16.0
 static void set_mb_ssim_rdmult_scaling(AV1_COMP *cpi) {
   AV1_COMMON *cm = &cpi->common;
   ThreadData *td = &cpi->td;
@@ -5777,10 +5767,6 @@ static void set_mb_ssim_rdmult_scaling(AV1_COMP *cpi) {
   double log_sum = 0.0;
   int row, col;
   const int use_hbd = cpi->source->flags & YV12_FLAG_HIGHBITDEPTH;
-
-  // TODO(sdeng): tune this param for 12bit videos.
-  double c2 = 58.5225;  // (.03*255)^2
-  c2 *= SSIM_VAR_SCALE;
 
   // Loop through each 16x16 block.
   for (row = 0; row < num_rows; ++row) {
@@ -5813,7 +5799,10 @@ static void set_mb_ssim_rdmult_scaling(AV1_COMP *cpi) {
         }
       }
       var = var / num_of_var;
-      var = 2.0 * var + c2;
+
+      // Curve fitting with an exponential model on all 16x16 blocks from the
+      // midres dataset.
+      var = 67.035434 * (1 - exp(-0.0021489 * var)) + 17.492222;
       cpi->ssim_rdmult_scaling_factors[index] = var;
       log_sum += log(var);
     }
