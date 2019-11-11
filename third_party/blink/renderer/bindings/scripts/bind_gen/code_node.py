@@ -144,6 +144,7 @@ class CodeNode(object):
         self._template_vars = {}
 
         self._accumulator = None  # CodeGenAccumulator
+        self._accumulate_requests = []
 
         self._renderer = None  # MakoRenderer
 
@@ -178,6 +179,11 @@ class CodeNode(object):
                 renderer=self.renderer, last_render_state=last_render_state)
         finally:
             self._is_rendering = False
+
+        if self._accumulate_requests:
+            assert self.accumulator
+            for request in self._accumulate_requests:
+                request(self.accumulator)
 
         return text
 
@@ -285,6 +291,14 @@ class CodeNode(object):
         assert isinstance(accumulator, CodeGenAccumulator)
         assert self._accumulator is None
         self._accumulator = accumulator
+
+    def accumulate(self, request):
+        """
+        While rendering the code node, |request| will be called with the
+        argument of self.accumulator.
+        """
+        assert callable(request)
+        self._accumulate_requests.append(request)
 
     @property
     def renderer(self):
