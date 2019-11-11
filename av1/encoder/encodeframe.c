@@ -143,7 +143,7 @@ static const uint16_t AV1_HIGH_VAR_OFFS_12[MAX_SB_SIZE] = {
   128 * 16, 128 * 16
 };
 
-enum { PICK_MODE_RD = 0, PICK_MODE_NONRD, PICK_MODE_FAST_NONRD };
+enum { PICK_MODE_RD = 0, PICK_MODE_NONRD };
 
 unsigned int av1_get_sby_perpixel_variance(const AV1_COMP *cpi,
                                            const struct buf_2d *ref,
@@ -817,11 +817,6 @@ static AOM_INLINE void pick_sb_modes(AV1_COMP *const cpi,
         case PICK_MODE_NONRD:
           av1_nonrd_pick_inter_mode_sb(cpi, tile_data, x, mi_row, mi_col,
                                        rd_cost, bsize, ctx, best_rd.rdcost);
-          break;
-        case PICK_MODE_FAST_NONRD:
-          av1_fast_nonrd_pick_inter_mode_sb(cpi, tile_data, x, mi_row, mi_col,
-                                            rd_cost, bsize, ctx,
-                                            best_rd.rdcost);
           break;
         default: assert(0 && "Unknown pick mode type.");
       }
@@ -2145,7 +2140,6 @@ static AOM_INLINE void nonrd_use_partition(AV1_COMP *cpi, ThreadData *td,
                                            BLOCK_SIZE bsize, PC_TREE *pc_tree) {
   AV1_COMMON *const cm = &cpi->common;
   TileInfo *const tile_info = &tile_data->tile_info;
-  const SPEED_FEATURES *const sf = &cpi->sf;
   MACROBLOCK *const x = &td->mb;
   MACROBLOCKD *const xd = &x->e_mbd;
   // Only square blocks from 8x8 to 128x128 are supported
@@ -2180,24 +2174,20 @@ static AOM_INLINE void nonrd_use_partition(AV1_COMP *cpi, ThreadData *td,
     case PARTITION_NONE:
       pick_sb_modes(cpi, tile_data, x, mi_row, mi_col, &dummy_cost,
                     PARTITION_NONE, bsize, &pc_tree->none, invalid_rd,
-                    sf->use_fast_nonrd_pick_mode ? PICK_MODE_FAST_NONRD
-                                                 : PICK_MODE_NONRD);
+                    PICK_MODE_NONRD);
       encode_b(cpi, tile_data, td, tp, mi_row, mi_col, 0, bsize, partition,
                &pc_tree->none, NULL);
       break;
     case PARTITION_VERT:
       pick_sb_modes(cpi, tile_data, x, mi_row, mi_col, &dummy_cost,
                     PARTITION_VERT, subsize, &pc_tree->vertical[0], invalid_rd,
-                    sf->use_fast_nonrd_pick_mode ? PICK_MODE_FAST_NONRD
-                                                 : PICK_MODE_NONRD);
+                    PICK_MODE_NONRD);
       encode_b(cpi, tile_data, td, tp, mi_row, mi_col, 0, subsize,
                PARTITION_VERT, &pc_tree->vertical[0], NULL);
       if (mi_col + hbs < cm->mi_cols && bsize > BLOCK_8X8) {
         pick_sb_modes(cpi, tile_data, x, mi_row, mi_col + hbs, &dummy_cost,
                       PARTITION_VERT, subsize, &pc_tree->vertical[1],
-                      invalid_rd,
-                      sf->use_fast_nonrd_pick_mode ? PICK_MODE_FAST_NONRD
-                                                   : PICK_MODE_NONRD);
+                      invalid_rd, PICK_MODE_NONRD);
         encode_b(cpi, tile_data, td, tp, mi_row, mi_col + hbs, 0, subsize,
                  PARTITION_VERT, &pc_tree->vertical[1], NULL);
       }
@@ -2205,18 +2195,14 @@ static AOM_INLINE void nonrd_use_partition(AV1_COMP *cpi, ThreadData *td,
     case PARTITION_HORZ:
       pick_sb_modes(cpi, tile_data, x, mi_row, mi_col, &dummy_cost,
                     PARTITION_HORZ, subsize, &pc_tree->horizontal[0],
-                    invalid_rd,
-                    sf->use_fast_nonrd_pick_mode ? PICK_MODE_FAST_NONRD
-                                                 : PICK_MODE_NONRD);
+                    invalid_rd, PICK_MODE_NONRD);
       encode_b(cpi, tile_data, td, tp, mi_row, mi_col, 0, subsize,
                PARTITION_HORZ, &pc_tree->horizontal[0], NULL);
 
       if (mi_row + hbs < cm->mi_rows && bsize > BLOCK_8X8) {
         pick_sb_modes(cpi, tile_data, x, mi_row + hbs, mi_col, &dummy_cost,
                       PARTITION_HORZ, subsize, &pc_tree->horizontal[1],
-                      invalid_rd,
-                      sf->use_fast_nonrd_pick_mode ? PICK_MODE_FAST_NONRD
-                                                   : PICK_MODE_NONRD);
+                      invalid_rd, PICK_MODE_NONRD);
         encode_b(cpi, tile_data, td, tp, mi_row + hbs, mi_col, 0, subsize,
                  PARTITION_HORZ, &pc_tree->horizontal[1], NULL);
       }
@@ -2237,8 +2223,7 @@ static AOM_INLINE void nonrd_use_partition(AV1_COMP *cpi, ThreadData *td,
         pc_tree->partitioning = PARTITION_NONE;
         pick_sb_modes(cpi, tile_data, x, mi_row, mi_col, &none_rdc,
                       PARTITION_NONE, bsize, &pc_tree->none, invalid_rd,
-                      sf->use_fast_nonrd_pick_mode ? PICK_MODE_FAST_NONRD
-                                                   : PICK_MODE_NONRD);
+                      PICK_MODE_NONRD);
         none_rdc.rate += x->partition_cost[pl][PARTITION_NONE];
         none_rdc.rdcost = RDCOST(x->rdmult, none_rdc.rate, none_rdc.dist);
         restore_context(x, &x_ctx, mi_row, mi_col, bsize, 3);
@@ -2258,9 +2243,7 @@ static AOM_INLINE void nonrd_use_partition(AV1_COMP *cpi, ThreadData *td,
           pc_tree->split[i]->partitioning = PARTITION_NONE;
           pick_sb_modes(cpi, tile_data, x, mi_row + y_idx, mi_col + x_idx,
                         &block_rdc, PARTITION_NONE, subsize,
-                        &pc_tree->split[i]->none, invalid_rd,
-                        sf->use_fast_nonrd_pick_mode ? PICK_MODE_FAST_NONRD
-                                                     : PICK_MODE_NONRD);
+                        &pc_tree->split[i]->none, invalid_rd, PICK_MODE_NONRD);
           split_rdc.rate += block_rdc.rate;
           split_rdc.dist += block_rdc.dist;
 
@@ -4562,7 +4545,7 @@ void av1_encode_tile(AV1_COMP *cpi, ThreadData *td, int tile_row,
   const TileInfo *const tile_info = &this_tile->tile_info;
   int mi_row;
 
-  if (!cpi->sf.use_fast_nonrd_pick_mode) av1_inter_mode_data_init(this_tile);
+  if (!cpi->sf.use_nonrd_pick_mode) av1_inter_mode_data_init(this_tile);
 
   av1_zero_above_context(cm, &td->mb.e_mbd, tile_info->mi_col_start,
                          tile_info->mi_col_end, tile_row);

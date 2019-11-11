@@ -687,7 +687,7 @@ int av1_choose_var_based_partitioning(AV1_COMP *cpi, const TileInfo *const tile,
     // For non-SVC GOLDEN is another temporal reference. Check if it should be
     // used as reference for partitioning.
     if (!cpi->use_svc && (cpi->ref_frame_flags & AOM_GOLD_FLAG) &&
-        cpi->sf.use_fast_nonrd_pick_mode) {
+        cpi->sf.use_nonrd_pick_mode) {
       yv12_g = get_ref_frame_yv12_buf(cm, GOLDEN_FRAME);
       if (yv12_g && yv12_g != yv12) {
         av1_setup_pre_planes(xd, 0, yv12_g, mi_row, mi_col,

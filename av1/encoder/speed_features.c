@@ -494,7 +494,6 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
   sf->cb_pred_filter_search = 0;
   sf->use_nonrd_pick_mode = 0;
   sf->use_real_time_ref_set = 0;
-  sf->use_fast_nonrd_pick_mode = 0;
   sf->reuse_inter_pred_nonrd = 0;
   sf->estimate_motion_for_var_based_partition = 1;
   sf->use_comp_ref_nonrd = 1;
@@ -672,7 +671,6 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->mode_search_skip_flags |= FLAG_SKIP_INTRA_DIRMISMATCH;
     sf->tx_size_search_level = 1;
     sf->use_nonrd_pick_mode = 1;
-    sf->use_fast_nonrd_pick_mode = 1;
     sf->use_comp_ref_nonrd = 0;
     sf->inter_mode_rd_model_estimation = 2;
     sf->cdef_pick_method = CDEF_PICK_FROM_Q;

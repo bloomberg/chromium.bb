@@ -729,10 +729,6 @@ typedef struct SPEED_FEATURES {
   // TODO(any): Find out when we can actually skip tx_search on some modes.
   int inter_mode_rd_model_estimation_adaptive;
 
-  // Use very reduced set of inter mode checks and fast non-rd mode cost
-  // estimation. Only enabled when use_nonrd_pick_mode is != 0
-  int use_fast_nonrd_pick_mode;
-
   // Reuse inter prediction in fast non-rd mode.
   int reuse_inter_pred_nonrd;
 

@@ -1362,11 +1362,11 @@ static void compute_intra_yprediction(const AV1_COMMON *cm,
   pd->dst.buf = dst_buf_base;
 }
 
-void av1_fast_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
-                                       MACROBLOCK *x, int mi_row, int mi_col,
-                                       RD_STATS *rd_cost, BLOCK_SIZE bsize,
-                                       PICK_MODE_CONTEXT *ctx,
-                                       int64_t best_rd_so_far) {
+void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
+                                  MACROBLOCK *x, int mi_row, int mi_col,
+                                  RD_STATS *rd_cost, BLOCK_SIZE bsize,
+                                  PICK_MODE_CONTEXT *ctx,
+                                  int64_t best_rd_so_far) {
   AV1_COMMON *const cm = &cpi->common;
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *const mi = xd->mi[0];

@@ -231,9 +231,9 @@ static int get_ref_frame_flags(const AV1_COMP *const cpi) {
   for (int i = 1; i < INTER_REFS_PER_FRAME; ++i) {
     const RefCntBuffer *const this_ref = ref_frames[i];
     // If this_ref has appeared before, mark the corresponding ref frame as
-    // invalid. For fast_nonrd mode, only disable GOLDEN_FRAME if it's the same
+    // invalid. For nonrd mode, only disable GOLDEN_FRAME if it's the same
     // as LAST_FRAME.
-    int index = (cpi->sf.use_fast_nonrd_pick_mode &&
+    int index = (cpi->sf.use_nonrd_pick_mode &&
                  ref_frame_priority_order[i] == GOLDEN_FRAME)
                     ? 1
                     : i;
@@ -688,8 +688,8 @@ void av1_update_ref_frame_map(AV1_COMP *cpi,
       update_arf_stack(ref_map_index, ref_buffer_stack);
       stack_push(ref_buffer_stack->gld_stack, &ref_buffer_stack->gld_stack_size,
                  ref_map_index);
-      // For fast nonrd_mode: update LAST as well on GF_UPDATE frame.
-      if (cpi->sf.use_fast_nonrd_pick_mode)
+      // For nonrd_mode: update LAST as well on GF_UPDATE frame.
+      if (cpi->sf.use_nonrd_pick_mode)
         stack_push(ref_buffer_stack->lst_stack,
                    &ref_buffer_stack->lst_stack_size, ref_map_index);
       break;
