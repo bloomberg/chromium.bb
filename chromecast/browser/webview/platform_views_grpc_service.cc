@@ -7,6 +7,7 @@
 #include "base/callback.h"
 #include "chromecast/browser/webview/cast_app_rpc_instance.h"
 #include "chromecast/browser/webview/web_contents_provider.h"
+#include "chromecast/browser/webview/webview_rpc_instance.h"
 #include "third_party/grpc/src/include/grpcpp/grpcpp.h"
 #include "third_party/grpc/src/include/grpcpp/security/server_credentials.h"
 #include "third_party/grpc/src/include/grpcpp/server_builder.h"
@@ -35,9 +36,11 @@ void PlatformViewsAsyncService::ThreadMain() {
 
   void* tag;
   bool ok;
-  // This self-deletes.
+  // These self-delete.
   new CastAppRpcInstance(service_.get(), cq_.get(), ui_task_runner_,
                          &window_manager_, web_contents_provider_);
+  new WebviewRpcInstance(service_.get(), cq_.get(), ui_task_runner_,
+                         &window_manager_);
   // This thread is joined when this service is destroyed.
   while (cq_->Next(&tag, &ok)) {
     reinterpret_cast<GrpcCallback*>(tag)->Run(ok);
