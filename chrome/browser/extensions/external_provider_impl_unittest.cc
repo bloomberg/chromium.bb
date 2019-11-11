@@ -230,13 +230,7 @@ TEST_F(ExternalProviderImplTest, InAppPayments) {
       extension_misc::kInAppPaymentsSupportAppId));
 }
 
-// https://crbug.com/1023391
-#if defined(OS_LINUX)
-#define MAYBE_BlockedExternalUserProviders DISABLED_BlockedExternalUserProviders
-#else
-#define MAYBE_BlockedExternalUserProviders BlockedExternalUserProviders
-#endif
-TEST_F(ExternalProviderImplTest, MAYBE_BlockedExternalUserProviders) {
+TEST_F(ExternalProviderImplTest, BlockedExternalUserProviders) {
   OverrideExternalExtensionsPath();
   InitServiceWithExternalProviders(true);
 
