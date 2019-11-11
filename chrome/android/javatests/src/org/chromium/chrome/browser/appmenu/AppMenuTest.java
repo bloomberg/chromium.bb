@@ -613,6 +613,44 @@ public class AppMenuTest extends DummyUiActivityTestCase {
         Assert.assertTrue("Menu should be showing", mAppMenuHandler.isAppMenuShowing());
     }
 
+    @Test
+    @MediumTest
+    public void testDragHelper_ClickItem() throws Exception {
+        AppMenuButtonHelperImpl buttonHelper =
+                (AppMenuButtonHelperImpl) mAppMenuHandler.createAppMenuButtonHelper();
+
+        Assert.assertFalse("View should start unpressed",
+                mTestMenuButtonDelegate.getMenuButtonView().isPressed());
+        Assert.assertFalse("App menu should be not be active", buttonHelper.isAppMenuActive());
+
+        MotionEvent downMotionEvent = MotionEvent.obtain(0, 0, MotionEvent.ACTION_DOWN, 0, 0, 0);
+        sendMotionEventToButtonHelper(
+                buttonHelper, mTestMenuButtonDelegate.getMenuButtonView(), downMotionEvent);
+
+        waitForMenuToShow(0);
+        Assert.assertTrue("Menu should be showing", mAppMenuHandler.isAppMenuShowing());
+
+        View firstItem = mAppMenuHandler.getAppMenu().getListView().getChildAt(0);
+        Rect firstItemScreenRect =
+                mAppMenuHandler.getAppMenuDragHelper().getScreenVisibleRect(firstItem);
+        int eventX = firstItemScreenRect.left + (firstItemScreenRect.right / 2);
+        int eventY = firstItemScreenRect.top + (firstItemScreenRect.bottom / 2);
+        MotionEvent dragMotionEvent =
+                MotionEvent.obtain(0, 100, MotionEvent.ACTION_MOVE, eventX, eventY, 0);
+        sendMotionEventToButtonHelper(
+                buttonHelper, mTestMenuButtonDelegate.getMenuButtonView(), dragMotionEvent);
+
+        MotionEvent upMotionEvent =
+                MotionEvent.obtain(0, 150, MotionEvent.ACTION_UP, eventX, eventY, 0);
+        sendMotionEventToButtonHelper(
+                buttonHelper, mTestMenuButtonDelegate.getMenuButtonView(), upMotionEvent);
+
+        Assert.assertEquals("Item selected callback should have been called.", 1,
+                mDelegate.itemSelectedCallbackHelper.getCallCount());
+        Assert.assertEquals("Incorrect id for last selected item.", R.id.menu_item_one,
+                mDelegate.lastSelectedItemId);
+    }
+
     private void showMenuAndAssert() throws TimeoutException {
         int currentCallCount = mMenuObserver.menuShownCallback.getCallCount();
         TestThreadUtils.runOnUiThreadBlocking(
