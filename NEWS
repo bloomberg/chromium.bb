@@ -1,5 +1,32 @@
 liblouis NEWS -- history of user-visible changes.  	-*- org -*-
 
+* Noteworthy changes in release 3.12.0 (2019-09-02)
+
+For a detailed list of all the changes refer to [[https://github.com/liblouis/liblouis/milestone/22?closed=1][the list of closed
+issues]].
+
+** New features
+** Bug fixes
+** Braille table improvements
+** Other changes
+** Deprecation notice
+None
+
+** Backwards incompatible changes
+None
+
+** Invisible changes
+
+** New, renamed or removed tables
+*** New
+None
+
+*** Renamed
+None
+
+*** Removed
+None
+
 * Noteworthy changes in release 3.11.0 (2019-09-02)
 A tremendous amount of work by Dave Mielke and Bert Frees has gone
 into this release. They have improved liblouis for use on note taker
