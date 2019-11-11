@@ -95,4 +95,4 @@ def Replicate(replication_config):
       assert not rule.destination_fields.paths
 
       logging.info('Copying full file from %s to %s', src, dst)
-      shutil.copyfile(src, dst)
+      shutil.copy2(src, dst)

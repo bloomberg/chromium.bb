@@ -9,6 +9,7 @@ from __future__ import print_function
 
 import json
 import os
+import stat
 
 from google.protobuf.field_mask_pb2 import FieldMask
 from chromite.api.gen.config.replication_config_pb2 import (
@@ -165,3 +166,24 @@ class ReplicateTest(cros_test_lib.TempDirTestCase):
                   replication_type=REPLICATION_TYPE_FILTER,
               ),
           ]))
+
+  def testReplicateFileMode(self):
+    """Tests file mode data is replicated."""
+    # Check that the original mode is not 777 and then chmod.
+    self.assertNotEqual(stat.S_IMODE(os.stat(self.audio_path).st_mode), 777)
+    os.chmod(self.audio_path, 777)
+
+    audio_dst_path = os.path.join(self.tempdir, 'dst', 'audio_file')
+
+    replication_config = ReplicationConfig(file_replication_rules=[
+        FileReplicationRule(
+            source_path=self.audio_path,
+            destination_path=audio_dst_path,
+            file_type=FILE_TYPE_OTHER,
+            replication_type=REPLICATION_TYPE_COPY,
+        ),
+    ])
+
+    replication_lib.Replicate(replication_config)
+
+    self.assertEqual(stat.S_IMODE(os.stat(audio_dst_path).st_mode), 777)
