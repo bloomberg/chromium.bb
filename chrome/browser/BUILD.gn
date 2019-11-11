@@ -1061,6 +1061,8 @@ jumbo_static_library("browser") {
     "password_manager/account_storage/account_password_store_factory.h",
     "password_manager/chrome_password_manager_client.cc",
     "password_manager/chrome_password_manager_client.h",
+    "password_manager/field_info_manager_factory.cc",
+    "password_manager/field_info_manager_factory.h",
     "password_manager/password_manager_util_mac.h",
     "password_manager/password_manager_util_mac.mm",
     "password_manager/password_manager_util_win.cc",
