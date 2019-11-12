@@ -19,6 +19,7 @@
 #include "components/browser_sync/browser_sync_switches.h"
 #include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/driver/sync_driver_switches.h"
+#include "crypto/ec_private_key.h"
 
 namespace {
 
@@ -75,6 +76,7 @@ IN_PROC_BROWSER_TEST_F(LocalSyncTest, ShouldStart) {
   ASSERT_TRUE(SyncTransportActiveChecker(service).Wait());
 
   EXPECT_TRUE(service->IsLocalSyncEnabled());
+  EXPECT_FALSE(service->GetExperimentalAuthenticationKey());
 
   // Verify certain features are disabled.
   EXPECT_FALSE(send_tab_to_self::IsUserSyncTypeActive(browser()->profile()));
