@@ -273,18 +273,36 @@ void AutocompleteResult::SortAndCull(
     GroupSuggestionsBySearchVsURL(next, matches_.end());
   }
 
-  // There is no default match for chromeOS launcher zero prefix query
-  // suggestions.
-  if (input.text().empty() && (input.current_page_classification() ==
-                               metrics::OmniboxEventProto::CHROMEOS_APP_LIST)) {
+  // Early exit when there is no default match. This can occur in these cases:
+  //  1. There are no matches.
+  //  2. The first match doesn't have |allowed_to_be_default_match| as true.
+  //     This implies that NONE of the matches were allowed to be the default.
+  //  3. Hardcoded for ChromeOS Launcher empty-textfield on-focus suggestions.
+  //     TODO(tommycli): We should remove the ChromeOS launcher special case.
+  //     Instead, ensure none of the launcher matches are allowed to be default.
+  if (matches_.empty() || !matches_.begin()->allowed_to_be_default_match ||
+      (input.text().empty() &&
+       (input.current_page_classification() ==
+        metrics::OmniboxEventProto::CHROMEOS_APP_LIST))) {
     default_match_ = end();
     alternate_nav_url_ = GURL();
     return;
   }
 
+  // Since we didn't early exit, the first match must be the default match.
+  // TODO(tommycli): Once we eliminate the ChromeOS Launcher hardcoding above,
+  // we can delete |default_match_|, since if matches.begin() has a true
+  // |allowed_to_be_default_match|, it will always be the default match.
   default_match_ = matches_.begin();
 
-  if (default_match_ != matches_.end()) {
+  // TODO(tommycli): Simplify our state by not pre-computing this.
+  alternate_nav_url_ = ComputeAlternateNavUrl(input, *default_match_);
+
+  // Almost all matches are "navigable": they have a valid |destination_url|.
+  // One example exception is the user tabbing into keyword search mode,
+  // but not having typed a query yet. In that case, the default match should
+  // rightfully be non-navigable, and pressing Enter should do nothing.
+  if (default_match_->destination_url.is_valid()) {
     const base::string16 debug_info =
         base::ASCIIToUTF16("fill_into_edit=") + default_match_->fill_into_edit +
         base::ASCIIToUTF16(", provider=") +
@@ -293,49 +311,22 @@ void AutocompleteResult::SortAndCull(
              : base::string16()) +
         base::ASCIIToUTF16(", input=") + input.text();
 
-    // It's unusual if |default_match_| is not |allowed_to_be_default_match|.
-    // This can occur in two situations:
-    //  - Empty-textfield on-focus suggestions (i.e. NTP, ChromeOS launcher)
-    //  - Enterprise policy prohibiting a default search provider
-    //
-    // In those cases, hitting Enter should do nothing, so there should be
-    // legitimately no default match.
-    //
-    // TODO(tommycli): It seems odd that we are still setting |default_match_|
-    // in that case. We should fix that.
-    if (!default_match_->allowed_to_be_default_match) {
-      bool default_search_provider_exists =
-          template_url_service &&
-          template_url_service->GetDefaultSearchProvider();
-      DCHECK(input.text().empty() || !default_search_provider_exists)
-          << debug_info;
-    }
-
-    // For navigable default matches, make sure the destination type is what the
-    // user would expect given the input.
-    if (default_match_->allowed_to_be_default_match &&
-        default_match_->destination_url.is_valid()) {
-      if (AutocompleteMatch::IsSearchType(default_match_->type)) {
-        // We shouldn't get query matches for URL inputs.
-        DCHECK_NE(metrics::OmniboxInputType::URL, input.type()) << debug_info;
-      } else {
-        // If the user explicitly typed a scheme, the default match should
-        // have the same scheme.
-        if ((input.type() == metrics::OmniboxInputType::URL) &&
-            input.parts().scheme.is_nonempty()) {
-          const std::string& in_scheme = base::UTF16ToUTF8(input.scheme());
-          const std::string& dest_scheme =
-              default_match_->destination_url.scheme();
-          DCHECK(url_formatter::IsEquivalentScheme(in_scheme, dest_scheme))
-              << debug_info;
-        }
+    if (AutocompleteMatch::IsSearchType(default_match_->type)) {
+      // We shouldn't get query matches for URL inputs.
+      DCHECK_NE(metrics::OmniboxInputType::URL, input.type()) << debug_info;
+    } else {
+      // If the user explicitly typed a scheme, the default match should
+      // have the same scheme.
+      if ((input.type() == metrics::OmniboxInputType::URL) &&
+          input.parts().scheme.is_nonempty()) {
+        const std::string& in_scheme = base::UTF16ToUTF8(input.scheme());
+        const std::string& dest_scheme =
+            default_match_->destination_url.scheme();
+        DCHECK(url_formatter::IsEquivalentScheme(in_scheme, dest_scheme))
+            << debug_info;
       }
     }
   }
-
-  // Set the alternate nav URL.
-  alternate_nav_url_ = (default_match_ == matches_.end()) ?
-      GURL() : ComputeAlternateNavUrl(input, *default_match_);
 }
 
 void AutocompleteResult::DemoteOnDeviceSearchSuggestions() {
