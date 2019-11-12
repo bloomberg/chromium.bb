@@ -257,6 +257,8 @@ void ParseSizeInfo(const char* gzipped,
   // Construct raw symbols
   for (int section_idx = 0; section_idx < n_sections; section_idx++) {
     const char* cur_section_name = info->section_names[section_idx];
+    caspian::SectionId cur_section_id =
+        info->ShortSectionName(cur_section_name);
     const int cur_section_count = section_counts[section_idx];
     const std::vector<int64_t>& cur_addresses = addresses[section_idx];
     const std::vector<int32_t>& cur_sizes = sizes[section_idx];
@@ -295,7 +297,7 @@ void ParseSizeInfo(const char* gzipped,
           }
         }
       }
-      new_sym.section_name = cur_section_name;
+      new_sym.sectionId = cur_section_id;
       new_sym.address = cur_addresses[i];
       new_sym.size = cur_sizes[i];
       new_sym.object_path = info->object_paths[cur_path_indices[i]];
@@ -318,6 +320,10 @@ void ParseSizeInfo(const char* gzipped,
         alias_counter--;
       }
     }
+  }
+  for (caspian::Symbol& sym : info->raw_symbols) {
+    size_t alias_count = sym.aliases ? sym.aliases->size() : 1;
+    sym.pss = static_cast<float>(sym.size) / alias_count;
   }
 
   // If there are unparsed non-empty lines, something's gone wrong.

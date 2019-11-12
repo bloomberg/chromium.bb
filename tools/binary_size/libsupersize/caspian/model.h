@@ -44,34 +44,37 @@ enum class SectionId : char {
 struct Symbol {
   Symbol();
   Symbol(const Symbol& other);
-
-  float pss() const {
-    int alias_count = aliases ? aliases->size() : 1;
-    return static_cast<float>(size) / alias_count;
-  }
+  Symbol& operator=(const Symbol& other);
+  static Symbol DiffSymbolFrom(const Symbol* before, const Symbol* after);
 
   int32_t address = 0;
   int32_t size = 0;
   int32_t flags = 0;
   int32_t padding = 0;
+  float pss = 0.0f;
+  SectionId sectionId = SectionId::kNone;
+  std::string_view full_name;
   // Pointers into SizeInfo->raw_decompressed;
   const char* section_name = nullptr;
-  std::string_view full_name;
   const char* object_path = nullptr;
   const char* source_path = nullptr;
   const char* component = nullptr;
   std::vector<Symbol*>* aliases = nullptr;
 };
 
-struct SizeInfo {
+struct BaseSizeInfo {
+  BaseSizeInfo();
+  ~BaseSizeInfo();
+  std::vector<caspian::Symbol> raw_symbols;
+  Json::Value metadata;
+};
+
+struct SizeInfo : BaseSizeInfo {
   SizeInfo();
   ~SizeInfo();
   SizeInfo(const SizeInfo& other) = delete;
   SizeInfo& operator=(const SizeInfo& other) = delete;
   SectionId ShortSectionName(const char* section_name);
-
-  std::vector<caspian::Symbol> raw_symbols;
-  Json::Value metadata;
 
   // Entries in |raw_symbols| hold pointers to this data.
   std::vector<const char*> object_paths;
@@ -82,6 +85,16 @@ struct SizeInfo {
 
   // A container for each symbol group.
   std::deque<std::vector<Symbol*>> alias_groups;
+};
+
+struct DiffSizeInfo : BaseSizeInfo {
+  DiffSizeInfo(SizeInfo* before, SizeInfo* after);
+  ~DiffSizeInfo();
+  DiffSizeInfo(const DiffSizeInfo&) = delete;
+  DiffSizeInfo& operator=(const DiffSizeInfo&) = delete;
+
+  SizeInfo* before = nullptr;
+  SizeInfo* after = nullptr;
 };
 
 struct Stat {
