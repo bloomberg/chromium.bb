@@ -323,6 +323,11 @@ static INLINE int av1_is_interp_needed(const MACROBLOCKD *const xd) {
   return 1;
 }
 
+void av1_setup_address_for_obmc(MACROBLOCKD *xd, int mi_row_offset,
+                                int mi_col_offset, MB_MODE_INFO *ref_mbmi,
+                                struct build_prediction_ctxt *ctxt,
+                                const int num_planes);
+
 void av1_setup_build_prediction_by_above_pred(
     MACROBLOCKD *xd, int rel_mi_col, uint8_t above_mi_width,
     MB_MODE_INFO *above_mbmi, struct build_prediction_ctxt *ctxt,

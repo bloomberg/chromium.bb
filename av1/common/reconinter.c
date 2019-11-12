@@ -731,12 +731,15 @@ const uint8_t *av1_get_obmc_mask(int length) {
   }
 }
 
-static INLINE void increment_int_ptr(MACROBLOCKD *xd, int rel_mi_rc,
-                                     uint8_t mi_hw, MB_MODE_INFO *mi,
-                                     void *fun_ctxt, const int num_planes) {
+static INLINE void increment_int_ptr(MACROBLOCKD *xd, int rel_mi_row,
+                                     int rel_mi_col, uint8_t op_mi_size,
+                                     int dir, MB_MODE_INFO *mi, void *fun_ctxt,
+                                     const int num_planes) {
   (void)xd;
-  (void)rel_mi_rc;
-  (void)mi_hw;
+  (void)rel_mi_row;
+  (void)rel_mi_col;
+  (void)op_mi_size;
+  (void)dir;
   (void)mi;
   ++*(int *)fun_ctxt;
   (void)num_planes;
@@ -794,12 +797,12 @@ struct obmc_inter_pred_ctxt {
   int *adjacent_stride;
 };
 
-static INLINE void build_obmc_inter_pred_above(MACROBLOCKD *xd, int rel_mi_col,
-                                               uint8_t above_mi_width,
-                                               MB_MODE_INFO *above_mi,
-                                               void *fun_ctxt,
-                                               const int num_planes) {
+static INLINE void build_obmc_inter_pred_above(
+    MACROBLOCKD *xd, int rel_mi_row, int rel_mi_col, uint8_t op_mi_size,
+    int dir, MB_MODE_INFO *above_mi, void *fun_ctxt, const int num_planes) {
   (void)above_mi;
+  (void)rel_mi_row;
+  (void)dir;
   struct obmc_inter_pred_ctxt *ctxt = (struct obmc_inter_pred_ctxt *)fun_ctxt;
   const BLOCK_SIZE bsize = xd->mi[0]->sb_type;
   const int overlap =
@@ -807,7 +810,7 @@ static INLINE void build_obmc_inter_pred_above(MACROBLOCKD *xd, int rel_mi_col,
 
   for (int plane = 0; plane < num_planes; ++plane) {
     const struct macroblockd_plane *pd = &xd->plane[plane];
-    const int bw = (above_mi_width * MI_SIZE) >> pd->subsampling_x;
+    const int bw = (op_mi_size * MI_SIZE) >> pd->subsampling_x;
     const int bh = overlap >> pd->subsampling_y;
     const int plane_col = (rel_mi_col * MI_SIZE) >> pd->subsampling_x;
 
@@ -833,12 +836,12 @@ static INLINE void build_obmc_inter_pred_above(MACROBLOCKD *xd, int rel_mi_col,
   }
 }
 
-static INLINE void build_obmc_inter_pred_left(MACROBLOCKD *xd, int rel_mi_row,
-                                              uint8_t left_mi_height,
-                                              MB_MODE_INFO *left_mi,
-                                              void *fun_ctxt,
-                                              const int num_planes) {
+static INLINE void build_obmc_inter_pred_left(
+    MACROBLOCKD *xd, int rel_mi_row, int rel_mi_col, uint8_t op_mi_size,
+    int dir, MB_MODE_INFO *left_mi, void *fun_ctxt, const int num_planes) {
   (void)left_mi;
+  (void)rel_mi_col;
+  (void)dir;
   struct obmc_inter_pred_ctxt *ctxt = (struct obmc_inter_pred_ctxt *)fun_ctxt;
   const BLOCK_SIZE bsize = xd->mi[0]->sb_type;
   const int overlap =
@@ -847,7 +850,7 @@ static INLINE void build_obmc_inter_pred_left(MACROBLOCKD *xd, int rel_mi_row,
   for (int plane = 0; plane < num_planes; ++plane) {
     const struct macroblockd_plane *pd = &xd->plane[plane];
     const int bw = overlap >> pd->subsampling_x;
-    const int bh = (left_mi_height * MI_SIZE) >> pd->subsampling_y;
+    const int bh = (op_mi_size * MI_SIZE) >> pd->subsampling_y;
     const int plane_row = (rel_mi_row * MI_SIZE) >> pd->subsampling_y;
 
     if (av1_skip_u4x4_pred_in_obmc(bsize, pd, 1)) continue;
@@ -896,6 +899,37 @@ void av1_build_obmc_inter_prediction(const AV1_COMMON *cm, MACROBLOCKD *xd,
   foreach_overlappable_nb_left(cm, xd, mi_row,
                                max_neighbor_obmc[mi_size_high_log2[bsize]],
                                build_obmc_inter_pred_left, &ctxt_left);
+}
+
+void av1_setup_address_for_obmc(MACROBLOCKD *xd, int mi_row_offset,
+                                int mi_col_offset, MB_MODE_INFO *ref_mbmi,
+                                struct build_prediction_ctxt *ctxt,
+                                const int num_planes) {
+  const BLOCK_SIZE ref_bsize = AOMMAX(BLOCK_8X8, ref_mbmi->sb_type);
+  const int ref_mi_row = ctxt->mi_row + mi_row_offset;
+  const int ref_mi_col = ctxt->mi_col + mi_col_offset;
+
+  for (int plane = 0; plane < num_planes; ++plane) {
+    struct macroblockd_plane *const pd = &xd->plane[plane];
+    setup_pred_plane(&pd->dst, ref_bsize, ctxt->tmp_buf[plane],
+                     ctxt->tmp_width[plane], ctxt->tmp_height[plane],
+                     ctxt->tmp_stride[plane], mi_row_offset, mi_col_offset,
+                     NULL, pd->subsampling_x, pd->subsampling_y);
+  }
+
+  const MV_REFERENCE_FRAME frame = ref_mbmi->ref_frame[0];
+
+  const RefCntBuffer *const ref_buf = get_ref_frame_buf(ctxt->cm, frame);
+  const struct scale_factors *const sf =
+      get_ref_scale_factors_const(ctxt->cm, frame);
+
+  xd->block_ref_scale_factors[0] = sf;
+  if ((!av1_is_valid_scale(sf)))
+    aom_internal_error(xd->error_info, AOM_CODEC_UNSUP_BITSTREAM,
+                       "Reference frame has invalid dimensions");
+
+  av1_setup_pre_planes(xd, 0, &ref_buf->buf, ref_mi_row, ref_mi_col, sf,
+                       num_planes);
 }
 
 void av1_setup_build_prediction_by_above_pred(

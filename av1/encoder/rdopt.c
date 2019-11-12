@@ -9635,13 +9635,16 @@ struct obmc_check_mv_field_ctxt {
   int mv_field_check_result;
 };
 
-static INLINE void obmc_check_identical_mv(MACROBLOCKD *xd, int rel_mi_col,
-                                           uint8_t nb_mi_width,
-                                           MB_MODE_INFO *nb_mi, void *fun_ctxt,
+static INLINE void obmc_check_identical_mv(MACROBLOCKD *xd, int rel_mi_row,
+                                           int rel_mi_col, uint8_t op_mi_size,
+                                           int dir, MB_MODE_INFO *nb_mi,
+                                           void *fun_ctxt,
                                            const int num_planes) {
   (void)xd;
+  (void)rel_mi_row;
   (void)rel_mi_col;
-  (void)nb_mi_width;
+  (void)op_mi_size;
+  (void)dir;
   (void)num_planes;
   struct obmc_check_mv_field_ctxt *ctxt =
       (struct obmc_check_mv_field_ctxt *)fun_ctxt;
@@ -13556,10 +13559,12 @@ struct calc_target_weighted_pred_ctxt {
 };
 
 static INLINE void calc_target_weighted_pred_above(
-    MACROBLOCKD *xd, int rel_mi_col, uint8_t nb_mi_width, MB_MODE_INFO *nb_mi,
-    void *fun_ctxt, const int num_planes) {
+    MACROBLOCKD *xd, int rel_mi_row, int rel_mi_col, uint8_t op_mi_size,
+    int dir, MB_MODE_INFO *nb_mi, void *fun_ctxt, const int num_planes) {
   (void)nb_mi;
   (void)num_planes;
+  (void)rel_mi_row;
+  (void)dir;
 
   struct calc_target_weighted_pred_ctxt *ctxt =
       (struct calc_target_weighted_pred_ctxt *)fun_ctxt;
@@ -13576,7 +13581,7 @@ static INLINE void calc_target_weighted_pred_above(
     for (int row = 0; row < ctxt->overlap; ++row) {
       const uint8_t m0 = mask1d[row];
       const uint8_t m1 = AOM_BLEND_A64_MAX_ALPHA - m0;
-      for (int col = 0; col < nb_mi_width * MI_SIZE; ++col) {
+      for (int col = 0; col < op_mi_size * MI_SIZE; ++col) {
         wsrc[col] = m1 * tmp[col];
         mask[col] = m0;
       }
@@ -13590,7 +13595,7 @@ static INLINE void calc_target_weighted_pred_above(
     for (int row = 0; row < ctxt->overlap; ++row) {
       const uint8_t m0 = mask1d[row];
       const uint8_t m1 = AOM_BLEND_A64_MAX_ALPHA - m0;
-      for (int col = 0; col < nb_mi_width * MI_SIZE; ++col) {
+      for (int col = 0; col < op_mi_size * MI_SIZE; ++col) {
         wsrc[col] = m1 * tmp16[col];
         mask[col] = m0;
       }
@@ -13602,10 +13607,12 @@ static INLINE void calc_target_weighted_pred_above(
 }
 
 static INLINE void calc_target_weighted_pred_left(
-    MACROBLOCKD *xd, int rel_mi_row, uint8_t nb_mi_height, MB_MODE_INFO *nb_mi,
-    void *fun_ctxt, const int num_planes) {
+    MACROBLOCKD *xd, int rel_mi_row, int rel_mi_col, uint8_t op_mi_size,
+    int dir, MB_MODE_INFO *nb_mi, void *fun_ctxt, const int num_planes) {
   (void)nb_mi;
   (void)num_planes;
+  (void)rel_mi_col;
+  (void)dir;
 
   struct calc_target_weighted_pred_ctxt *ctxt =
       (struct calc_target_weighted_pred_ctxt *)fun_ctxt;
@@ -13619,7 +13626,7 @@ static INLINE void calc_target_weighted_pred_left(
   const int is_hbd = is_cur_buf_hbd(xd);
 
   if (!is_hbd) {
-    for (int row = 0; row < nb_mi_height * MI_SIZE; ++row) {
+    for (int row = 0; row < op_mi_size * MI_SIZE; ++row) {
       for (int col = 0; col < ctxt->overlap; ++col) {
         const uint8_t m0 = mask1d[col];
         const uint8_t m1 = AOM_BLEND_A64_MAX_ALPHA - m0;
@@ -13634,7 +13641,7 @@ static INLINE void calc_target_weighted_pred_left(
   } else {
     const uint16_t *tmp16 = CONVERT_TO_SHORTPTR(tmp);
 
-    for (int row = 0; row < nb_mi_height * MI_SIZE; ++row) {
+    for (int row = 0; row < op_mi_size * MI_SIZE; ++row) {
       for (int col = 0; col < ctxt->overlap; ++col) {
         const uint8_t m0 = mask1d[col];
         const uint8_t m1 = AOM_BLEND_A64_MAX_ALPHA - m0;

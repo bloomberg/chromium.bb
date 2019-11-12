@@ -917,14 +917,17 @@ static AOM_INLINE void dec_build_inter_predictors_sb(const AV1_COMMON *cm,
 }
 
 static INLINE void dec_build_prediction_by_above_pred(
-    MACROBLOCKD *xd, int rel_mi_col, uint8_t above_mi_width,
-    MB_MODE_INFO *above_mbmi, void *fun_ctxt, const int num_planes) {
+    MACROBLOCKD *xd, int rel_mi_row, int rel_mi_col, uint8_t op_mi_size,
+    int dir, MB_MODE_INFO *above_mbmi, void *fun_ctxt, const int num_planes) {
   struct build_prediction_ctxt *ctxt = (struct build_prediction_ctxt *)fun_ctxt;
   const int above_mi_col = ctxt->mi_col + rel_mi_col;
   int mi_x, mi_y;
   MB_MODE_INFO backup_mbmi = *above_mbmi;
 
-  av1_setup_build_prediction_by_above_pred(xd, rel_mi_col, above_mi_width,
+  (void)rel_mi_row;
+  (void)dir;
+
+  av1_setup_build_prediction_by_above_pred(xd, rel_mi_col, op_mi_size,
                                            &backup_mbmi, ctxt, num_planes);
   mi_x = above_mi_col << MI_SIZE_LOG2;
   mi_y = ctxt->mi_row << MI_SIZE_LOG2;
@@ -933,7 +936,7 @@ static INLINE void dec_build_prediction_by_above_pred(
 
   for (int j = 0; j < num_planes; ++j) {
     const struct macroblockd_plane *pd = &xd->plane[j];
-    int bw = (above_mi_width * MI_SIZE) >> pd->subsampling_x;
+    int bw = (op_mi_size * MI_SIZE) >> pd->subsampling_x;
     int bh = clamp(block_size_high[bsize] >> (pd->subsampling_y + 1), 4,
                    block_size_high[BLOCK_64X64] >> (pd->subsampling_y + 1));
 
@@ -971,14 +974,17 @@ static AOM_INLINE void dec_build_prediction_by_above_preds(
 }
 
 static INLINE void dec_build_prediction_by_left_pred(
-    MACROBLOCKD *xd, int rel_mi_row, uint8_t left_mi_height,
-    MB_MODE_INFO *left_mbmi, void *fun_ctxt, const int num_planes) {
+    MACROBLOCKD *xd, int rel_mi_row, int rel_mi_col, uint8_t op_mi_size,
+    int dir, MB_MODE_INFO *left_mbmi, void *fun_ctxt, const int num_planes) {
   struct build_prediction_ctxt *ctxt = (struct build_prediction_ctxt *)fun_ctxt;
   const int left_mi_row = ctxt->mi_row + rel_mi_row;
   int mi_x, mi_y;
   MB_MODE_INFO backup_mbmi = *left_mbmi;
 
-  av1_setup_build_prediction_by_left_pred(xd, rel_mi_row, left_mi_height,
+  (void)rel_mi_col;
+  (void)dir;
+
+  av1_setup_build_prediction_by_left_pred(xd, rel_mi_row, op_mi_size,
                                           &backup_mbmi, ctxt, num_planes);
   mi_x = ctxt->mi_col << MI_SIZE_LOG2;
   mi_y = left_mi_row << MI_SIZE_LOG2;
@@ -988,7 +994,7 @@ static INLINE void dec_build_prediction_by_left_pred(
     const struct macroblockd_plane *pd = &xd->plane[j];
     int bw = clamp(block_size_wide[bsize] >> (pd->subsampling_x + 1), 4,
                    block_size_wide[BLOCK_64X64] >> (pd->subsampling_x + 1));
-    int bh = (left_mi_height << MI_SIZE_LOG2) >> pd->subsampling_y;
+    int bh = (op_mi_size << MI_SIZE_LOG2) >> pd->subsampling_y;
 
     if (av1_skip_u4x4_pred_in_obmc(bsize, pd, 1)) continue;
     dec_build_inter_predictors(ctxt->cm, xd, j, &backup_mbmi, 1, bw, bh, mi_x,
