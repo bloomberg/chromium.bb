@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/child_accounts/consumer_status_reporting_service.h"
+#include "chrome/browser/chromeos/child_accounts/child_status_reporting_service.h"
 
 #include "base/bind.h"
 #include "base/logging.h"
@@ -32,7 +32,7 @@ constexpr base::TimeDelta kStatusUploadFrequency =
 
 }  // namespace
 
-ConsumerStatusReportingService::ConsumerStatusReportingService(
+ChildStatusReportingService::ChildStatusReportingService(
     content::BrowserContext* context)
     : context_(context) {
   Profile* profile = Profile::FromBrowserContext(context_);
@@ -56,7 +56,7 @@ ConsumerStatusReportingService::ConsumerStatusReportingService(
   pref_change_registrar_->Add(
       prefs::kUsageTimeLimit,
       base::BindRepeating(
-          &ConsumerStatusReportingService::OnTimeLimitsPolicyChanged,
+          &ChildStatusReportingService::OnTimeLimitsPolicyChanged,
           base::Unretained(this)));
 
   CreateStatusUploaderIfNeeded(user_cloud_policy_manager_->core()->client());
@@ -66,9 +66,9 @@ ConsumerStatusReportingService::ConsumerStatusReportingService(
   }
 }
 
-ConsumerStatusReportingService::~ConsumerStatusReportingService() = default;
+ChildStatusReportingService::~ChildStatusReportingService() = default;
 
-void ConsumerStatusReportingService::CreateStatusUploaderIfNeeded(
+void ChildStatusReportingService::CreateStatusUploaderIfNeeded(
     policy::CloudPolicyClient* client) {
   const base::DictionaryValue* time_limit =
       pref_change_registrar_->prefs()->GetDictionary(prefs::kUsageTimeLimit);
@@ -80,7 +80,7 @@ void ConsumerStatusReportingService::CreateStatusUploaderIfNeeded(
   if (status_uploader_ && (day_reset_time_ == new_day_reset_time))
     return;
 
-  VLOG(1) << "Creating status uploader for consumer status reporting.";
+  VLOG(1) << "Creating status uploader for child status reporting.";
   day_reset_time_ = new_day_reset_time;
   status_uploader_ = std::make_unique<policy::StatusUploader>(
       client,
@@ -92,11 +92,11 @@ void ConsumerStatusReportingService::CreateStatusUploaderIfNeeded(
       base::ThreadTaskRunnerHandle::Get(), kStatusUploadFrequency);
 }
 
-bool ConsumerStatusReportingService::RequestImmediateStatusReport() {
+bool ChildStatusReportingService::RequestImmediateStatusReport() {
   return status_uploader_->ScheduleNextStatusUploadImmediately();
 }
 
-base::TimeDelta ConsumerStatusReportingService::GetChildScreenTime() const {
+base::TimeDelta ChildStatusReportingService::GetChildScreenTime() const {
   // Notice that this cast works because we know that |status_uploader_| has a
   // ChildStatusCollector (see above).
   return static_cast<policy::ChildStatusCollector*>(
@@ -104,7 +104,7 @@ base::TimeDelta ConsumerStatusReportingService::GetChildScreenTime() const {
       ->GetActiveChildScreenTime();
 }
 
-void ConsumerStatusReportingService::OnTimeLimitsPolicyChanged() {
+void ChildStatusReportingService::OnTimeLimitsPolicyChanged() {
   CreateStatusUploaderIfNeeded(user_cloud_policy_manager_->core()->client());
 }
 
