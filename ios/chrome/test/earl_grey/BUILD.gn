@@ -74,7 +74,6 @@ chrome_ios_eg_test("ios_chrome_settings_egtests") {
 chrome_ios_eg_test("ios_chrome_ui_egtests") {
   deps = [
     "//ios/chrome/browser/ui/activity_services:eg_tests",
-    "//ios/chrome/browser/ui/alert_coordinator:eg_tests",
     "//ios/chrome/browser/ui/browser_view:eg_tests",
     "//ios/chrome/browser/ui/dialogs:eg_tests",
     "//ios/chrome/browser/ui/download:eg_tests",
