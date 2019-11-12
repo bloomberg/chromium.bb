@@ -671,25 +671,25 @@ void ConstructNoiseStripes_C(const void* grain_buffer, int grain_seed,
           (subsampling_y != 0) ? 6 + offset_y : 9 + offset_y * 2;
       int i = 0;
       do {
-        int j = 0;
-        do {
-          // Section 7.18.3.5 says:
-          //   noiseStripe[ lumaNum ][ 0 ] is 34 samples high and w samples
-          //   wide (a few additional samples across are actually written to
-          //   the array, but these are never read) ...
-          //
-          // Note: The warning in the parentheses also applies to
-          // noiseStripe[ lumaNum ][ 1 ] and noiseStripe[ lumaNum ][ 2 ].
-          //
-          // The writes beyond the width of each row would happen below. To
-          // prevent those writes, we skip the write if the column index
-          // (x << (1 - subsampling_x)) + j is >= plane_width.
-          const int grain_sample =
-              grain[(plane_offset_y + i) * grain_width + (plane_offset_x + j)];
-          noise_stripe[i * plane_width + (x << (1 - subsampling_x)) + j] =
-              grain_sample;
-        } while (++j < std::min(kNoiseStripeHeight >> subsampling_x,
-                                plane_width - (x << (1 - subsampling_x))));
+        // Section 7.18.3.5 says:
+        //   noiseStripe[ lumaNum ][ 0 ] is 34 samples high and w samples
+        //   wide (a few additional samples across are actually written to
+        //   the array, but these are never read) ...
+        //
+        // Note: The warning in the parentheses also applies to
+        // noiseStripe[ lumaNum ][ 1 ] and noiseStripe[ lumaNum ][ 2 ].
+        //
+        // Writes beyond the width of each row could happen below. To
+        // prevent those writes, we clip the number of pixels to copy against
+        // the remaining width.
+        // TODO(petersonab): Allocate aligned stripes with extra width to cover
+        // the size of the final stripe block, then remove this call to min.
+        const int copy_size =
+            std::min(kNoiseStripeHeight >> subsampling_x,
+                     plane_width - (x << (1 - subsampling_x)));
+        memcpy(&noise_stripe[i * plane_width + (x << (1 - subsampling_x))],
+               &grain[(plane_offset_y + i) * grain_width + plane_offset_x],
+               copy_size * sizeof(noise_stripe[0]));
       } while (++i < (kNoiseStripeHeight >> subsampling_y));
       x += 16;
     } while (x < half_width);
@@ -736,13 +736,13 @@ void ConstructNoiseStripesWithOverlap_C(const void* grain_buffer,
     // The overlap computation only occurs when x > 0, so it is omitted here.
     int i = 0;
     do {
-      int j = 0;
-      do {
-        const int grain_sample =
-            grain[(plane_offset_y + i) * grain_width + (plane_offset_x + j)];
-        noise_stripe[i * plane_width + j] = grain_sample;
-      } while (++j <
-               std::min(kNoiseStripeHeight >> subsampling_x, plane_width));
+      // TODO(petersonab): Allocate aligned stripes with extra width to cover
+      // the size of the final stripe block, then remove this call to min.
+      const int copy_size =
+          std::min(kNoiseStripeHeight >> subsampling_x, plane_width);
+      memcpy(&noise_stripe[i * plane_width],
+             &grain[(plane_offset_y + i) * grain_width + plane_offset_x],
+             copy_size * sizeof(noise_stripe[0]));
     } while (++i < (kNoiseStripeHeight >> subsampling_y));
     // End special iteration for x == 0.
     for (int x = 16; x < half_width; x += 16) {
@@ -758,9 +758,10 @@ void ConstructNoiseStripesWithOverlap_C(const void* grain_buffer,
         int j = 0;
         int grain_sample =
             grain[(plane_offset_y + i) * grain_width + plane_offset_x];
-        // The first iteration for j=0 (and j=1 if plane is not subsampled) are
-        // manually unrolled here to cover the "overlap" computation.
+        // The first pixel(s) of each segment of the noise_stripe are subject to
+        // the "overlap" computation.
         if (subsampling_x == 0) {
+          // Corresponds to the line in the spec:
           // if (j < 2 && x > 0)
           // j = 0
           int old = noise_stripe[i * plane_width + x * 2];
@@ -784,6 +785,7 @@ void ConstructNoiseStripesWithOverlap_C(const void* grain_buffer,
           noise_stripe[i * plane_width + x * 2 + 1] = grain_sample;
           j = 2;
         } else {
+          // Corresponds to the line in the spec:
           // if (j == 0 && x > 0)
           const int old = noise_stripe[i * plane_width + x];
           grain_sample = old * 23 + grain_sample * 22;
@@ -793,26 +795,29 @@ void ConstructNoiseStripesWithOverlap_C(const void* grain_buffer,
           noise_stripe[i * plane_width + x] = grain_sample;
           j = 1;
         }
-        // Continue iterating over j.
-        for (; j < std::min(kNoiseStripeHeight >> subsampling_x,
-                            plane_width - (x << (1 - subsampling_x)));
-             ++j) {
-          // Section 7.18.3.5 says:
-          //   noiseStripe[ lumaNum ][ 0 ] is 34 samples high and w samples
-          //   wide (a few additional samples across are actually written to
-          //   the array, but these are never read) ...
-          //
-          // Note: The warning in the parentheses also applies to
-          // noiseStripe[ lumaNum ][ 1 ] and noiseStripe[ lumaNum ][ 2 ].
-          //
-          // The writes beyond the width of each row would happen below. To
-          // prevent those writes, we skip the write if the column index
-          // (x << (1 - subsampling_x)) + j is >= plane_width.
-          const int grain_sample =
-              grain[(plane_offset_y + i) * grain_width + (plane_offset_x + j)];
-          noise_stripe[i * plane_width + (x << (1 - subsampling_x)) + j] =
-              grain_sample;
-        }
+        // The following covers the rest of the loop over j as described in the
+        // spec.
+        //
+        // Section 7.18.3.5 says:
+        //   noiseStripe[ lumaNum ][ 0 ] is 34 samples high and w samples
+        //   wide (a few additional samples across are actually written to
+        //   the array, but these are never read) ...
+        //
+        // Note: The warning in the parentheses also applies to
+        // noiseStripe[ lumaNum ][ 1 ] and noiseStripe[ lumaNum ][ 2 ].
+        //
+        // Writes beyond the width of each row could happen below. To
+        // prevent those writes, we clip the number of pixels to copy against
+        // the remaining width.
+        // TODO(petersonab): Allocate aligned stripes with extra width to cover
+        // the size of the final stripe block, then remove this call to min.
+        const int copy_size =
+            std::min(kNoiseStripeHeight >> subsampling_x,
+                     plane_width - (x << (1 - subsampling_x))) -
+            j;
+        memcpy(&noise_stripe[i * plane_width + (x << (1 - subsampling_x)) + j],
+               &grain[(plane_offset_y + i) * grain_width + plane_offset_x + j],
+               copy_size * sizeof(noise_stripe[0]));
       } while (++i < (kNoiseStripeHeight >> subsampling_y));
     }
 
