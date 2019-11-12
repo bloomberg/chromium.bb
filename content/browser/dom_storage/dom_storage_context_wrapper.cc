@@ -21,7 +21,6 @@
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
-#include "content/browser/dom_storage/dom_storage_task_runner.h"
 #include "content/browser/dom_storage/local_storage_context_mojo.h"
 #include "content/browser/dom_storage/session_storage_context_mojo.h"
 #include "content/browser/dom_storage/session_storage_namespace_impl.h"
@@ -110,16 +109,6 @@ scoped_refptr<DOMStorageContextWrapper> DOMStorageContextWrapper::Create(
   if (!profile_path.empty())
     data_path = profile_path.Append(local_partition_path);
 
-  scoped_refptr<base::SequencedTaskRunner> primary_sequence =
-      base::CreateSequencedTaskRunner(
-          {base::ThreadPool(), base::MayBlock(),
-           base::TaskPriority::USER_BLOCKING,
-           base::TaskShutdownBehavior::BLOCK_SHUTDOWN});
-  scoped_refptr<base::SequencedTaskRunner> commit_sequence =
-      base::CreateSequencedTaskRunner(
-          {base::ThreadPool(), base::MayBlock(),
-           base::TaskPriority::BEST_EFFORT,
-           base::TaskShutdownBehavior::BLOCK_SHUTDOWN});
   auto mojo_task_runner =
       base::CreateSingleThreadTaskRunner({BrowserThread::IO});
 
@@ -132,8 +121,10 @@ scoped_refptr<DOMStorageContextWrapper> DOMStorageContextWrapper::Create(
           : base::FilePath().AppendASCII(kLocalStorageDirectory);
   LocalStorageContextMojo* mojo_local_state = new LocalStorageContextMojo(
       data_path, mojo_task_runner,
-      new DOMStorageWorkerPoolTaskRunner(std::move(primary_sequence),
-                                         std::move(commit_sequence)),
+      base::CreateSequencedTaskRunner(
+          {base::ThreadPool(), base::MayBlock(),
+           base::TaskPriority::USER_BLOCKING,
+           base::TaskShutdownBehavior::BLOCK_SHUTDOWN}),
       legacy_localstorage_path, new_localstorage_path, special_storage_policy);
   SessionStorageContextMojo* mojo_session_state = nullptr;
   mojo_session_state = new SessionStorageContextMojo(
@@ -204,8 +195,8 @@ void DOMStorageContextWrapper::GetLocalStorageUsage(
                      base::BindOnce(&GotMojoLocalStorageUsage,
                                     base::ThreadTaskRunnerHandle::Get(),
                                     collect_callback)));
-  mojo_state_->legacy_task_runner()->PostShutdownBlockingTask(
-      FROM_HERE, DOMStorageTaskRunner::PRIMARY_SEQUENCE,
+  mojo_state_->legacy_task_runner()->PostTask(
+      FROM_HERE,
       base::BindOnce(&GetLegacyLocalStorageUsage, legacy_localstorage_path_,
                      base::ThreadTaskRunnerHandle::Get(),
                      std::move(collect_callback)));
@@ -252,8 +243,8 @@ void DOMStorageContextWrapper::DeleteLocalStorage(const url::Origin& origin,
           base::BindOnce(&GotMojoCallback, base::ThreadTaskRunnerHandle::Get(),
                          std::move(callback))));
   if (!legacy_localstorage_path_.empty()) {
-    mojo_state_->legacy_task_runner()->PostShutdownBlockingTask(
-        FROM_HERE, DOMStorageTaskRunner::PRIMARY_SEQUENCE,
+    mojo_state_->legacy_task_runner()->PostTask(
+        FROM_HERE,
         base::BindOnce(
             base::IgnoreResult(&sql::Database::Delete),
             legacy_localstorage_path_.Append(

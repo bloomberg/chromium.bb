@@ -11,13 +11,13 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
+#include "base/sequenced_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
 #include "build/build_config.h"
 #include "components/services/storage/public/mojom/key_value_pair.mojom.h"
 #include "content/browser/dom_storage/dom_storage_database.h"
-#include "content/browser/dom_storage/dom_storage_task_runner.h"
 #include "content/browser/dom_storage/dom_storage_types.h"
 #include "content/browser/dom_storage/test/storage_area_test_util.h"
 #include "content/public/browser/browser_thread.h"
@@ -108,9 +108,7 @@ class TestLevelDBObserver : public storage::mojom::DomStorageAreaObserver {
 class LocalStorageContextMojoTest : public testing::Test {
  public:
   LocalStorageContextMojoTest()
-      : task_runner_(new MockDOMStorageTaskRunner(
-            base::ThreadTaskRunnerHandle::Get().get())),
-        mock_special_storage_policy_(new MockSpecialStoragePolicy()) {
+      : mock_special_storage_policy_(new MockSpecialStoragePolicy()) {
     EXPECT_TRUE(temp_path_.CreateUniqueTempDir());
   }
 
@@ -300,7 +298,8 @@ class LocalStorageContextMojoTest : public testing::Test {
   BrowserTaskEnvironment task_environment_;
   base::ScopedTempDir temp_path_;
 
-  scoped_refptr<MockDOMStorageTaskRunner> task_runner_;
+  scoped_refptr<base::SequencedTaskRunner> task_runner_{
+      base::ThreadTaskRunnerHandle::Get()};
 
   LocalStorageContextMojo* context_ = nullptr;
 

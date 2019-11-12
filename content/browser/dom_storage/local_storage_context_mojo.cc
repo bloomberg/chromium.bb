@@ -287,10 +287,9 @@ class LocalStorageContextMojo::StorageAreaHolder final
     if (status.ok() && !deleted_old_data_ && !context_->directory_.empty() &&
         context_->task_runner_ && !context_->old_localstorage_path_.empty()) {
       deleted_old_data_ = true;
-      context_->task_runner_->PostShutdownBlockingTask(
-          FROM_HERE, DOMStorageTaskRunner::PRIMARY_SEQUENCE,
-          base::BindOnce(base::IgnoreResult(&sql::Database::Delete),
-                         sql_db_path()));
+      context_->task_runner_->PostTask(
+          FROM_HERE, base::BindOnce(base::IgnoreResult(&sql::Database::Delete),
+                                    sql_db_path()));
     }
 
     context_->OnCommitResult(status);
@@ -298,12 +297,11 @@ class LocalStorageContextMojo::StorageAreaHolder final
 
   void MigrateData(StorageAreaImpl::ValueMapCallback callback) override {
     if (context_->task_runner_ && !context_->old_localstorage_path_.empty()) {
-      context_->task_runner_->PostShutdownBlockingTask(
-          FROM_HERE, DOMStorageTaskRunner::PRIMARY_SEQUENCE,
-          base::BindOnce(
-              &MigrateStorageHelper, sql_db_path(),
-              base::ThreadTaskRunnerHandle::Get(),
-              base::BindOnce(&CallMigrationCalback, base::Passed(&callback))));
+      context_->task_runner_->PostTask(
+          FROM_HERE, base::BindOnce(&MigrateStorageHelper, sql_db_path(),
+                                    base::ThreadTaskRunnerHandle::Get(),
+                                    base::BindOnce(&CallMigrationCalback,
+                                                   base::Passed(&callback))));
       return;
     }
     std::move(callback).Run(nullptr);
@@ -423,7 +421,7 @@ url::Origin LocalStorageContextMojo::OriginFromLegacyDatabaseFileName(
 LocalStorageContextMojo::LocalStorageContextMojo(
     const base::FilePath& partition_directory,
     scoped_refptr<base::SequencedTaskRunner> task_runner,
-    scoped_refptr<DOMStorageTaskRunner> legacy_task_runner,
+    scoped_refptr<base::SequencedTaskRunner> legacy_task_runner,
     const base::FilePath& old_localstorage_path,
     const base::FilePath& subdirectory,
     scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy)
