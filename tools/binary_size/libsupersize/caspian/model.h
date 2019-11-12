@@ -47,6 +47,31 @@ struct Symbol {
   Symbol& operator=(const Symbol& other);
   static Symbol DiffSymbolFrom(const Symbol* before, const Symbol* after);
 
+  bool IsOverhead() const { return full_name.substr(0, 10) == "Overhead: "; }
+
+  bool IsBss() const { return sectionId == SectionId::kBss; }
+
+  bool IsDex() const {
+    return sectionId == SectionId::kDex || sectionId == SectionId::kDexMethod;
+  }
+
+  bool IsOther() const { return sectionId == SectionId::kOther; }
+
+  bool IsPak() const {
+    return sectionId == SectionId::kPakNontranslated ||
+           sectionId == SectionId::kPakTranslations;
+  }
+
+  bool IsNative() const {
+    return (sectionId == SectionId::kBss || sectionId == SectionId::kData ||
+            sectionId == SectionId::kDataRelRo ||
+            sectionId == SectionId::kText || sectionId == SectionId::kRoData);
+  }
+
+  int32_t SizeWithoutPadding() const { return size - padding; }
+
+  int32_t EndAddress() const { return address + SizeWithoutPadding(); }
+
   int32_t address = 0;
   int32_t size = 0;
   int32_t flags = 0;
@@ -61,6 +86,8 @@ struct Symbol {
   const char* component = nullptr;
   std::vector<Symbol*>* aliases = nullptr;
 };
+
+std::ostream& operator<<(std::ostream& os, const Symbol& sym);
 
 struct BaseSizeInfo {
   BaseSizeInfo();

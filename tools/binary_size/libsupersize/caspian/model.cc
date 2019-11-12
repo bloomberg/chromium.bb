@@ -90,6 +90,13 @@ TreeNode::~TreeNode() {
   }
 }
 
+std::ostream& operator<<(std::ostream& os, const Symbol& sym) {
+  return os << "Symbol(full_name=" << sym.full_name
+            << ", section=" << static_cast<char>(sym.sectionId)
+            << ", address=" << sym.address << ", size=" << sym.size
+            << ", flags=" << sym.flags << ", padding=" << sym.padding << ")";
+}
+
 BaseSizeInfo::BaseSizeInfo() = default;
 BaseSizeInfo::~BaseSizeInfo() = default;
 
