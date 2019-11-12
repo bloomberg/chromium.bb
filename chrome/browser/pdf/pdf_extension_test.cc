@@ -508,6 +508,50 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTestWithTestGuestViewManager,
             content::GetFocusedWebContents(embedder_web_contents));
 }
 
+// This test verifies that when a PDF is loaded, that (i) the embedder
+// WebContents' html consists of a single <embed> tag with appropriate
+// properties, and (ii) that the guest WebContents finishes loading and
+// has the correct URL for the PDF extension.
+// TODO(wjmaclean): Are there any attributes we can/should test with respect to
+// the extension's loaded html?
+IN_PROC_BROWSER_TEST_F(PDFExtensionTestWithTestGuestViewManager,
+                       PdfExtensionLoadedInGuest) {
+  // Load test HTML, and verify the text area has focus.
+  GURL main_url(embedded_test_server()->GetURL("/pdf/test.pdf"));
+  ui_test_utils::NavigateToURL(browser(), main_url);
+  auto* embedder_web_contents = GetActiveWebContents();
+
+  // Verify the pdf has loaded.
+  auto* guest_web_contents = GetGuestViewManager()->WaitForSingleGuestCreated();
+  ASSERT_TRUE(guest_web_contents);
+  EXPECT_NE(embedder_web_contents, guest_web_contents);
+  EXPECT_TRUE(content::WaitForLoadStop(guest_web_contents));
+
+  // Verify we loaded the extension.
+  const GURL extension_url(
+      "chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/index.html");
+  EXPECT_EQ(extension_url, guest_web_contents->GetURL());
+  EXPECT_EQ(main_url, embedder_web_contents->GetURL());
+
+  // Make sure the embedder has the correct html boilerplate.
+  EXPECT_EQ(1, content::EvalJs(embedder_web_contents,
+                               "document.body.children.length;")
+                   .ExtractInt());
+  EXPECT_EQ("EMBED", content::EvalJs(embedder_web_contents,
+                                     "document.body.firstChild.tagName;")
+                         .ExtractString());
+  EXPECT_EQ("application/pdf", content::EvalJs(embedder_web_contents,
+                                               "document.body.firstChild.type;")
+                                   .ExtractString());
+  EXPECT_EQ("about:blank", content::EvalJs(embedder_web_contents,
+                                           "document.body.firstChild.src;")
+                               .ExtractString());
+  EXPECT_TRUE(
+      content::EvalJs(embedder_web_contents,
+                      "document.body.firstChild.hasAttribute('internalid');")
+          .ExtractBool());
+}
+
 class PDFExtensionLoadTest : public PDFExtensionTest,
                              public testing::WithParamInterface<int> {
  public:
