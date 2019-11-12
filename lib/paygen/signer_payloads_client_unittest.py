@@ -15,13 +15,13 @@ import tempfile
 
 import mock
 
+from chromite.lib import chroot_util
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import gs
 from chromite.lib import gs_unittest
 from chromite.lib import osutils
-from chromite.lib import partial_mock
-from chromite.lib.paygen import filelib
+from chromite.lib import remote_access
 from chromite.lib.paygen import gslock
 from chromite.lib.paygen import gspaths
 from chromite.lib.paygen import signer_payloads_client
@@ -352,7 +352,7 @@ versionrev = foo-version
     # them all in this case.
 
 
-class SignerPayloadsClientIntegrationTest(cros_test_lib.TempDirTestCase):
+class SignerPayloadsClientIntegrationTest(cros_test_lib.MockTempDirTestCase):
   """Test suite integration with live signer servers."""
 
   def setUp(self):
@@ -365,14 +365,18 @@ class SignerPayloadsClientIntegrationTest(cros_test_lib.TempDirTestCase):
                       bucket='chromeos-releases'),
         work_dir=self.tempdir)
 
-  @cros_test_lib.NetworkTest()
   def testDownloadSignatures(self):
     """Test that we can correctly download a list of URIs."""
+    def fake_copy(uri, sig):
+      """Just write the uri address to the content of the file."""
+      osutils.WriteFile(sig, uri)
+
+    self.PatchObject(self.client._ctx, 'Copy', side_effect=fake_copy)
+
     uris = ['gs://chromeos-releases-test/sigining-test/foo',
             'gs://chromeos-releases-test/sigining-test/bar']
-
     downloads = self.client._DownloadSignatures(uris)
-    self.assertEqual(downloads, ['FooSig\r\n\r', 'BarSig'])
+    self.assertEqual(downloads, uris)
 
   @cros_test_lib.NetworkTest()
   def testGetHashSignatures(self):
@@ -431,42 +435,56 @@ class SignerPayloadsClientIntegrationTest(cros_test_lib.TempDirTestCase):
       self.assertRaises(gs.GSNoSuchKey, ctx.List, clean_uri)
 
     finally:
-      # Cleanup when we are over
+      # Cleanup when we are over.
       ctx.Remove(clean_uri, ignore_missing=True)
 
 
-class UnofficialPayloadSignerTest(cros_test_lib.RunCommandTempDirTestCase):
+class UnofficialPayloadSignerTest(cros_test_lib.TestCase):
   """Test suit for testing unofficial local payload signer."""
   def setUp(self):
-    self._private_key = 'private.pem'
+    # UnofficialSignerPayloadsClient need a temporary directory inside chroot so
+    # cros_test_lib.TempDirTestCase will not work if we run this unittest
+    # outside the chroot.
+    with chroot_util.TempDirInChroot(delete=False) as dir_in_chroot:
+      self._temp_dir = dir_in_chroot
+
     self._client = signer_payloads_client.UnofficialSignerPayloadsClient(
-        private_key=self._private_key, work_dir=self.tempdir)
+        private_key=remote_access.TEST_PRIVATE_KEY, work_dir=self._temp_dir)
+
+  def cleanUp(self):
+    shutil.rmtree(self._temp_dir)
 
   def testExtractPublicKey(self):
     """Tests the correct command is run to extract the public key."""
-    public_key = 'public.pem'
-    self._client.ExtractPublicKey(public_key)
-
-    self.assertCommandContains(['openssl', 'rsa', '-in', self._private_key,
-                                '-pubout', '-out', public_key])
+    with tempfile.NamedTemporaryFile() as public_key:
+      self._client.ExtractPublicKey(public_key.name)
+      self.assertIn('BEGIN PUBLIC KEY', public_key.read())
 
   def testGetHashSignatures(self):
     """Tests we correclty sign given hashes."""
-    self.PatchObject(osutils, 'ReadFile', return_value='content')
-    file_copy_mock = self.PatchObject(filelib, 'Copy')
-
-    hashes = ('hash-1', 'hash-2')
+    hashes = ('0' * 32, '1' * 32)
     keyset = 'foo-keys'
+    expected_sigs_hex = (
+        '4732bf3c12b5795d5f4dd015cf8a65d8294186710f71e1530aa3b10d364ed15dc71ce'
+        'f3bed312fd3f805d1b4ee79c1b868f7b8e175199d1c145838044fa3d037d67b142140'
+        'a7187cb18cd8fb6897cc88481cb258e9ba87e6508a3eb2670b13542107dfea51417ab'
+        'b3ee30c8ea81242d1b69c92b8c531e7b3799a28285c26ce5e9834648cf9601bdaf042'
+        '57ffe97111b7497e14e4530ef9d4e9b6cdbf473304fee948af68fb6c992340e20bcf7'
+        '8f0c6c28d7ea7d8f35322bc61d5d1456b3b868c16bfca9747887750e2734544b2dc0d'
+        '22f68866e6456243ad53fc847d957b7fc1e87d0b4eafbb98b61810a86bf5b587b7241'
+        'd0f92ba4323da3fc57ccd883fdc4d',
+        '63cefceefb45688c5af557949fd0ec408245f5867e1453d2037c2125511a0ef5d7ead'
+        '88cfebe04f6cda176a91707a6002a3a618fbb0ae8c956c0e7b56e1f29fb50c3ec3d47'
+        'e786131c07b14d15cf768bbaceefd8d900526d79f08a985df910f31d33c97ec9f1599'
+        '02e8478f4d0a1766bb21ea81677c67d11b2b17b0f4cf41599dcadb76549ee0b69badc'
+        'a94ba5fae3b54cea75468a7a670991ba595f622d21ccb1f47edf0366503200e4ee7fe'
+        'c686908f9099e4fc53f4a963769b42b856d2a8c94a15318d0620b7ed0b425989c599f'
+        'fd363390a82c175f4ebab80f46d2f07585f5924fe1014233ba76ca6a2b047baee0231'
+        '41ab38a027f56c963dd70550204ad',
+    )
+
+    expected_sigs = [[base64.b16decode(x, True)] for x in expected_sigs_hex]
+
     signatures = self._client.GetHashSignatures(hashes, keyset)
 
-    file_copy_mock.assert_called_with(
-        self._private_key, os.path.join(self.tempdir, 'update_key.pem'))
-
-    self.assertCommandCalled([partial_mock.HasString('sign_official_build.sh'),
-                              'update_payload',
-                              partial_mock.HasString('hash-'),
-                              self.tempdir,
-                              partial_mock.HasString('signature-')],
-                             enter_chroot=True)
-
-    self.assertEqual(signatures, [['content'], ['content']])
+    self.assertEqual(signatures, expected_sigs)

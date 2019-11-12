@@ -467,6 +467,6 @@ class UnofficialSignerPayloadsClient(SignerPayloadsClientGoogleStorage):
                           path_util.ToChrootPath(signature_file)],
                          enter_chroot=True)
 
-      signatures.append([osutils.ReadFile(signature_file)])
+      signatures.append([osutils.ReadFile(signature_file, mode='rb')])
 
     return signatures
