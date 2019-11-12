@@ -7559,6 +7559,18 @@
             ]
         }
     ],
+    "ZippedSystemLogsUpload": [
+        {
+            "platforms": [
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "ZippedSystemLogsUpload"
+                }
+            ]
+        }
+    ],
     "history-manipulation-intervention": [
         {
             "platforms": [
