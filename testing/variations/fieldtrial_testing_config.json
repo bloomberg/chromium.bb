@@ -6722,10 +6722,9 @@
             ],
             "experiments": [
                 {
-                    "name": "UKM_Enabled",
+                    "name": "UMA_Enabled",
                     "enable_features": [
-                        "DemographicMetricsReporting",
-                        "UkmReportNoisedUserBirthYearAndGender"
+                        "DemographicMetricsReporting"
                     ]
                 }
             ]
