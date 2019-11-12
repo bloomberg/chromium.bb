@@ -70,6 +70,7 @@ jumbo_source_set("browser") {
     "//components/services/filesystem:lib",
     "//components/services/quarantine:quarantine",
     "//components/services/storage",
+    "//components/services/storage/public/cpp",
     "//components/system_media_controls",
     "//components/tracing",
     "//components/tracing:startup_tracing",
