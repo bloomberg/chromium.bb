@@ -512,28 +512,7 @@ class PaygenPayload(object):
                     '--old_key', src_image, 'key',
                     default='test' if src_image.build.channel else '')]
 
-    # Run delta_generator for the purpose of generating an unsigned payload with
-    # considerations for available memory. This is an adaption of the previous
-    # version which used a simple semaphore. This was highly limiting because
-    # while delta_generator is parallel there are single threaded portions
-    # of it that were taking a very long time (i.e. long poles).
-    #
-    # Sometimes if a process cannot acquire the lock for a long
-    # period of time, the builder kills the process for not outputting any
-    # logs. So here we try to acquire the lock with a timeout of ten minutes in
-    # a loop and log some output so not to be killed by the builder.
-    while True:
-      acq_result = _mem_semaphore.acquire(timeout=self._SEMAPHORE_TIMEOUT)
-      if acq_result.result:
-        logging.info('Acquired lock (reason: %s)', acq_result.reason)
-        break
-      else:
-        logging.info('Failed to acquire the lock in 10 minutes (reason: %s)'
-                     ', trying again ...', acq_result.reason)
-    try:
-      self._RunGeneratorCmd(cmd)
-    finally:
-      _mem_semaphore.release()
+    self._RunGeneratorCmd(cmd)
 
   def _GenerateHashes(self):
     """Generate a payload hash and a metadata hash.
@@ -817,19 +796,45 @@ class PaygenPayload(object):
     logging.info('Generating %s payload %s',
                  'delta' if self.payload.src_image else 'full', self.payload)
 
-    # Fetch and prepare the tgt image.
-    self._PrepareImage(self.payload.tgt_image, self.tgt_image_file)
+    # TODO(lamontjones): Trial test of wrapping the downloads in the semaphore
+    # in addition to the actual generation of the unsigned payload.  See if the
+    # running of several gsutil cp commands in parallel is increasing the
+    # likelihood of EAGAIN from spawning a thread.  See crbug.com/1016555
+    #
+    # Run delta_generator for the purpose of generating an unsigned payload with
+    # considerations for available memory. This is an adaption of the previous
+    # version which used a simple semaphore. This was highly limiting because
+    # while delta_generator is parallel there are single threaded portions
+    # of it that were taking a very long time (i.e. long poles).
+    #
+    # Sometimes if a process cannot acquire the lock for a long
+    # period of time, the builder kills the process for not outputting any
+    # logs. So here we try to acquire the lock with a timeout of ten minutes in
+    # a loop and log some output so not to be killed by the builder.
+    while True:
+      acq_result = _mem_semaphore.acquire(timeout=self._SEMAPHORE_TIMEOUT)
+      if acq_result.result:
+        logging.info('Acquired lock (reason: %s)', acq_result.reason)
+        break
+      else:
+        logging.info('Failed to acquire the lock in 10 minutes (reason: %s)'
+                     ', trying again ...', acq_result.reason)
+    try:
+      # Fetch and prepare the tgt image.
+      self._PrepareImage(self.payload.tgt_image, self.tgt_image_file)
 
-    # Fetch and prepare the src image.
-    if self.payload.src_image:
-      self._PrepareImage(self.payload.src_image, self.src_image_file)
+      # Fetch and prepare the src image.
+      if self.payload.src_image:
+        self._PrepareImage(self.payload.src_image, self.src_image_file)
 
-    # Setup parameters about the payload like whether it is a DLC or not. Or
-    # parameters like the APPID, etc.
-    self._PreparePartitions()
+      # Setup parameters about the payload like whether it is a DLC or not. Or
+      # parameters like the APPID, etc.
+      self._PreparePartitions()
 
-    # Generate the unsigned payload.
-    self._GenerateUnsignedPayload()
+      # Generate the unsigned payload.
+      self._GenerateUnsignedPayload()
+    finally:
+      _mem_semaphore.release()
 
     # Sign the payload, if needed.
     _, metadata_signatures = self._SignPayload()
