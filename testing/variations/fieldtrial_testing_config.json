@@ -1585,6 +1585,21 @@
             ]
         }
     ],
+    "CloudPolicyOverFcm": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "CloudPolicyOverFCM"
+                }
+            ]
+        }
+    ],
     "CompositorImageAnimation": [
         {
             "platforms": [
