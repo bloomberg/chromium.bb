@@ -2788,6 +2788,18 @@ crbug.com/1022141 external/wpt/speech-api/SpeechSynthesis-speak-events.html [ Cr
 crbug.com/1022141 virtual/speech-with-unified-autoplay/external/wpt/speech-api/SpeechSynthesis-speak-events.html [ Crash Timeout ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Linux ] external/wpt/input-events/input-events-typing.html [ Timeout ]
+crbug.com/626703 [ Mac10.11 ] external/wpt/input-events/input-events-typing.html [ Timeout ]
+crbug.com/626703 [ Mac10.12 ] external/wpt/input-events/input-events-typing.html [ Timeout ]
+crbug.com/626703 [ Mac10.13 ] external/wpt/input-events/input-events-typing.html [ Timeout ]
+crbug.com/626703 [ Retina ] external/wpt/input-events/input-events-typing.html [ Timeout ]
+crbug.com/626703 [ Win ] external/wpt/input-events/input-events-typing.html [ Timeout ]
+crbug.com/626703 [ Linux ] external/wpt/mathml/relations/html5-tree/css-inline-style-dynamic.tentative.html [ Failure ]
+crbug.com/626703 [ Mac10.11 ] external/wpt/mathml/relations/html5-tree/css-inline-style-dynamic.tentative.html [ Failure ]
+crbug.com/626703 [ Mac10.12 ] external/wpt/mathml/relations/html5-tree/css-inline-style-dynamic.tentative.html [ Failure ]
+crbug.com/626703 [ Mac10.13 ] external/wpt/mathml/relations/html5-tree/css-inline-style-dynamic.tentative.html [ Failure ]
+crbug.com/626703 [ Retina ] external/wpt/mathml/relations/html5-tree/css-inline-style-dynamic.tentative.html [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/mathml/relations/html5-tree/css-inline-style-dynamic.tentative.html [ Failure ]
 crbug.com/626703 external/wpt/streams/readable-byte-streams/construct-byob-request.any.sharedworker.html [ Timeout ]
 crbug.com/626703 [ Linux ] external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/window-iframe-messagechannel.https.html [ Timeout ]
 crbug.com/626703 [ Mac ] external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/window-iframe-messagechannel.https.html [ Timeout ]
