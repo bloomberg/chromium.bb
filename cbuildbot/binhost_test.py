@@ -7,6 +7,8 @@
 
 from __future__ import print_function
 
+from chromite.lib import cros_test_lib
+
 
 class PrebuiltCompatibilityTest(cros_test_lib.TestCase):
   """Ensure that prebuilts are present for all builders and are compatible."""
