@@ -1705,9 +1705,9 @@ static void vbr_rate_correction(AV1_COMP *cpi, int *this_frame_target) {
   RATE_CONTROL *const rc = &cpi->rc;
   int64_t vbr_bits_off_target = rc->vbr_bits_off_target;
   int max_delta;
-  const int frame_window =
-      AOMMIN(16, (int)cpi->twopass.total_stats.count -
-                     cpi->common.current_frame.frame_number);
+  const int frame_window = clamp((int)(cpi->twopass.total_stats.count -
+                                       cpi->common.current_frame.frame_number),
+                                 1, 16);
 
   max_delta = (vbr_bits_off_target > 0)
                   ? (int)(vbr_bits_off_target / frame_window)
