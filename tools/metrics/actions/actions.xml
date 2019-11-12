@@ -749,6 +749,14 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Accel_Minimize_Top_Window_On_Back">
+  <owner>minch@chromium.org</owner>
+  <description>
+    Metric recorded when the user press back key in the keyboard to minimize the
+    top window at bottom page while in tablet mode.
+  </description>
+</action>
+
 <action name="Accel_Move_Active_Window_Between_Displays">
   <owner>warx@chromium.org</owner>
   <description>
