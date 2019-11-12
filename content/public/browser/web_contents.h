@@ -596,9 +596,12 @@ class WebContents : public PageNavigator,
   // but ideally it should be "about:blank" to avoid problems with beforeunload.
   // To ensure sane usage of this API users first should call the async API
   // RenderFrameHost::PrepareForInnerWebContentsAttach first.
+  // Note: If |is_full_page| is true, focus will be given to the inner
+  // WebContents.
   virtual void AttachInnerWebContents(
       std::unique_ptr<WebContents> inner_web_contents,
-      RenderFrameHost* render_frame_host) = 0;
+      RenderFrameHost* render_frame_host,
+      bool is_full_page) = 0;
 
   // Returns the outer WebContents frame, the same frame that this WebContents
   // was attached in AttachToOuterWebContentsFrame().

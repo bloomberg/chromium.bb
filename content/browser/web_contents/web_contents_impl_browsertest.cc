@@ -3983,8 +3983,8 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
       WebContents::Create(inner_params);
 
   // Attach grandchild to child.
-  child_contents_ptr->AttachInnerWebContents(std::move(grandchild_contents_ptr),
-                                             child_rfh);
+  child_contents_ptr->AttachInnerWebContents(
+      std::move(grandchild_contents_ptr), child_rfh, false /* is_full_page */);
 
   // At this point the child hasn't been attached to the root.
   EXPECT_EQ(1U, root_web_contents->GetInputEventRouter()
@@ -3992,7 +3992,8 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
 
   // Attach child+grandchild subtree to root.
   root_web_contents->AttachInnerWebContents(std::move(child_contents_ptr),
-                                            child_to_replace_rfh);
+                                            child_to_replace_rfh,
+                                            false /* is_full_page */);
 
   // Verify views registered for both child and grandchild.
   EXPECT_EQ(3U, root_web_contents->GetInputEventRouter()

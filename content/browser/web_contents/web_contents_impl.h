@@ -380,7 +380,8 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   bool NeedToFireBeforeUnload() override;
   void DispatchBeforeUnload(bool auto_cancel) override;
   void AttachInnerWebContents(std::unique_ptr<WebContents> inner_web_contents,
-                              RenderFrameHost* render_frame_host) override;
+                              RenderFrameHost* render_frame_host,
+                              bool is_full_page) override;
   RenderFrameHostImpl* GetOuterWebContentsFrame() override;
   WebContentsImpl* GetOuterWebContents() override;
   WebContentsImpl* GetOutermostWebContents() override;

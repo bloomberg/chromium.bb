@@ -469,12 +469,7 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTestWithTestGuestViewManager,
   auto* guest_web_contents = GetGuestViewManager()->WaitForSingleGuestCreated();
   ASSERT_TRUE(guest_web_contents);
   EXPECT_NE(embedder_web_contents, guest_web_contents);
-  while (guest_web_contents->IsLoading()) {
-    base::RunLoop run_loop;
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
-    run_loop.Run();
-  }
+  EXPECT_TRUE(content::WaitForLoadStop(guest_web_contents));
 
   // Make sure the text area still has focus.
   ASSERT_TRUE(
@@ -488,6 +483,29 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTestWithTestGuestViewManager,
           "  resolve(iframe1doc.hasFocus() && text_area_is_active);"
           "});")
           .ExtractBool());
+}
+
+// This test is a re-implementation of
+// WebPluginContainerTest.PluginDocumentPluginIsFocused, which was introduced
+// for https://crbug.com/536637. The original implementation checked that the
+// BrowserPlugin hosting the pdf extension was focused; in this re-write, we
+// make sure the guest view's WebContents has focus.
+IN_PROC_BROWSER_TEST_F(PDFExtensionTestWithTestGuestViewManager,
+                       PdfInMainFrameHasFocus) {
+  // Load test HTML, and verify the text area has focus.
+  GURL main_url(embedded_test_server()->GetURL("/pdf/test.pdf"));
+  ui_test_utils::NavigateToURL(browser(), main_url);
+  auto* embedder_web_contents = GetActiveWebContents();
+
+  // Verify the pdf has loaded.
+  auto* guest_web_contents = GetGuestViewManager()->WaitForSingleGuestCreated();
+  ASSERT_TRUE(guest_web_contents);
+  EXPECT_NE(embedder_web_contents, guest_web_contents);
+  EXPECT_TRUE(content::WaitForLoadStop(guest_web_contents));
+
+  // Make sure the guest WebContents has focus.
+  EXPECT_EQ(guest_web_contents,
+            content::GetFocusedWebContents(embedder_web_contents));
 }
 
 class PDFExtensionLoadTest : public PDFExtensionTest,

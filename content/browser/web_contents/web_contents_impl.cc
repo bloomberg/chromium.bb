@@ -1768,7 +1768,8 @@ void WebContentsImpl::DispatchBeforeUnload(bool auto_cancel) {
 
 void WebContentsImpl::AttachInnerWebContents(
     std::unique_ptr<WebContents> inner_web_contents,
-    RenderFrameHost* render_frame_host) {
+    RenderFrameHost* render_frame_host,
+    bool is_full_page) {
   WebContentsImpl* inner_web_contents_impl =
       static_cast<WebContentsImpl*>(inner_web_contents.get());
   DCHECK(!inner_web_contents_impl->node_.outer_web_contents());
@@ -1833,6 +1834,14 @@ void WebContentsImpl::AttachInnerWebContents(
         render_frame_host_impl->GetSiteInstance());
   }
   outer_render_manager->set_attach_complete();
+
+  // If the inner WebContents is full frame, give it focus.
+  if (is_full_page) {
+    // There should only ever be one inner WebContents when |is_full_page| is
+    // true, and it is the one we just attached.
+    DCHECK_EQ(1u, node_.GetInnerWebContents().size());
+    inner_web_contents_impl->SetAsFocusedWebContentsIfNecessary();
+  }
 }
 
 std::unique_ptr<WebContents> WebContentsImpl::DetachFromOuterWebContents() {
