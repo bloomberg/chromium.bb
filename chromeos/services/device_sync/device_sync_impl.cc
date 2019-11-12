@@ -89,13 +89,6 @@ enum class DeviceSyncSetSoftwareFeature {
   kMaxValue = kUnexpectedClientFeature
 };
 
-bool ShouldUseV2DeviceSync() {
-  return base::FeatureList::IsEnabled(
-             chromeos::features::kCryptAuthV2Enrollment) &&
-         base::FeatureList::IsEnabled(
-             chromeos::features::kCryptAuthV2DeviceSync);
-}
-
 DeviceSyncRequestFailureReason GetDeviceSyncRequestFailureReason(
     mojom::NetworkRequestResult failure_reason) {
   switch (failure_reason) {
@@ -292,7 +285,7 @@ void DeviceSyncImpl::RegisterProfilePrefs(PrefRegistrySimple* registry) {
     CryptAuthEnrollmentManagerImpl::RegisterPrefs(registry);
   }
 
-  if (ShouldUseV2DeviceSync()) {
+  if (features::ShouldUseV2DeviceSync()) {
     CryptAuthDeviceRegistryImpl::RegisterPrefs(registry);
   }
 }
@@ -370,7 +363,7 @@ void DeviceSyncImpl::ForceSyncNow(ForceSyncNowCallback callback) {
 
   cryptauth_device_manager_->ForceSyncNow(cryptauth::INVOCATION_REASON_MANUAL);
 
-  if (ShouldUseV2DeviceSync()) {
+  if (features::ShouldUseV2DeviceSync()) {
     cryptauth_v2_device_manager_->ForceDeviceSyncNow(
         cryptauthv2::ClientMetadata::MANUAL, base::nullopt /* session_id */);
   }
@@ -674,7 +667,7 @@ void DeviceSyncImpl::InitializeCryptAuthManagementObjects() {
       clock_, cryptauth_client_factory_.get(), cryptauth_gcm_manager_.get(),
       profile_prefs_);
 
-  if (ShouldUseV2DeviceSync()) {
+  if (features::ShouldUseV2DeviceSync()) {
     cryptauth_device_registry_ =
         CryptAuthDeviceRegistryImpl::Factory::Get()->BuildInstance(
             profile_prefs_);
@@ -697,7 +690,7 @@ void DeviceSyncImpl::CompleteInitializationAfterSuccessfulEnrollment() {
   // Now that enrollment has completed, the current device has been registered
   // with the CryptAuth back-end and can begin monitoring synced devices.
   cryptauth_device_manager_->Start();
-  if (ShouldUseV2DeviceSync()) {
+  if (features::ShouldUseV2DeviceSync()) {
     cryptauth_v2_device_manager_->Start();
   }
 
@@ -740,7 +733,7 @@ void DeviceSyncImpl::OnSetSoftwareFeatureStateSuccess() {
   cryptauth_device_manager_->ForceSyncNow(
       cryptauth::INVOCATION_REASON_FEATURE_TOGGLED);
 
-  if (ShouldUseV2DeviceSync()) {
+  if (features::ShouldUseV2DeviceSync()) {
     cryptauth_v2_device_manager_->ForceDeviceSyncNow(
         cryptauthv2::ClientMetadata::FEATURE_TOGGLED,
         base::nullopt /* session_id */);
