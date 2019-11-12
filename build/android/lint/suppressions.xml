@@ -332,6 +332,10 @@ Still reading?
   <issue id="UniqueConstants" severity="ignore"/>
   <issue id="UnusedResources">
     <!-- Do not add new suppressions without rationale. -->
+    <!-- crbug.com/1004570 remove this line and the following three lines after the bug resolved -->
+    <ignore regexp="The resource `R.string.tab_suggestion_review_button` appears to be unused"/>
+    <ignore regexp="The resource `R.string.tab_suggestion_close_tab_action_button` appears to be unused"/>
+    <ignore regexp="The resource `R.string.tab_suggestion_close_stale_message` appears to be unused"/>
     <!-- 3 raw resources are accessed by URL in various places -->
     <ignore regexp="PRODUCT_DIR/gen/remoting/android/.*/res/raw/credits.html"/>
     <ignore regexp="PRODUCT_DIR/gen/remoting/android/.*/res/raw/credits_css.css"/>
