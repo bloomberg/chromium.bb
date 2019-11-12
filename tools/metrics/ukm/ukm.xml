@@ -7248,7 +7248,7 @@ be describing additional metrics about the same event.
   </metric>
   <metric name="IsSwitchAccessEnabled">
     <summary>
-      Boolean value to represent whether switch access is currently enabled.
+      Boolean value to represent whether Switch Access is currently enabled.
     </summary>
   </metric>
   <metric name="IsVideoPlaying">
