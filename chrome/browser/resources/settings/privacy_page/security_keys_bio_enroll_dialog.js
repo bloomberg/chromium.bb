@@ -132,13 +132,13 @@ Polymer({
     switch (this.dialogPage_) {
       case 'initial':
         this.cancelButtonVisible_ = true;
-        this.cancelButtonDisabled = false;
+        this.cancelButtonDisabled_ = false;
         this.confirmButtonVisible_ = false;
         this.doneButtonVisible_ = false;
         break;
       case 'pinPrompt':
         this.cancelButtonVisible_ = true;
-        this.cancelButtonDisabled = false;
+        this.cancelButtonDisabled_ = false;
         this.confirmButtonVisible_ = true;
         this.confirmButtonDisabled_ = false;
         this.doneButtonVisible_ = false;
@@ -150,7 +150,7 @@ Polymer({
         break;
       case 'enroll':
         this.cancelButtonVisible_ = true;
-        this.cancelButtonDisabled = false;
+        this.cancelButtonDisabled_ = false;
         this.confirmButtonVisible_ = false;
         this.doneButtonVisible_ = false;
         break;
