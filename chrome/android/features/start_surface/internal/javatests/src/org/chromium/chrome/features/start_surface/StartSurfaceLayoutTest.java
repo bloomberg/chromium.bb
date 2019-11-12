@@ -41,6 +41,7 @@ import org.chromium.base.Callback;
 import org.chromium.base.GarbageCollectionTestUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
@@ -73,6 +74,7 @@ import java.lang.ref.WeakReference;
 import java.util.LinkedList;
 import java.util.List;
 
+// clang-format off
 /** Tests for the {@link StartSurfaceLayout} */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
@@ -80,7 +82,10 @@ import java.util.List;
         "force-fieldtrials=Study/Group"})
 @Restriction(
         {UiRestriction.RESTRICTION_TYPE_PHONE, Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE})
+@DisableIf.Build(sdk_is_less_than = Build.VERSION_CODES.M,
+        message = "https://crbug.com/1023833")
 public class StartSurfaceLayoutTest {
+    // clang-format on
     private static final String BASE_PARAMS = "force-fieldtrial-params="
             + "Study.Group:soft-cleanup-delay/0/cleanup-delay/0/skip-slow-zooming/false"
             + "/zooming-min-sdk-version/19/zooming-min-memory-mb/512";
