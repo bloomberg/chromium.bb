@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-#ifndef IOS_CHROME_TEST_BASE_SCOPED_BLOCK_SWIZZLER_H_
-#define IOS_CHROME_TEST_BASE_SCOPED_BLOCK_SWIZZLER_H_
+#ifndef IOS_TESTING_SCOPED_BLOCK_SWIZZLER_H_
+#define IOS_TESTING_SCOPED_BLOCK_SWIZZLER_H_
 
 #include <objc/runtime.h>
 
@@ -37,4 +37,4 @@ class ScopedBlockSwizzler {
   DISALLOW_COPY_AND_ASSIGN(ScopedBlockSwizzler);
 };
 
-#endif  // IOS_CHROME_TEST_BASE_SCOPED_BLOCK_SWIZZLER_H_
+#endif  // IOS_TESTING_SCOPED_BLOCK_SWIZZLER_H_

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/chrome/test/base/scoped_block_swizzler.h"
+#include "ios/testing/scoped_block_swizzler.h"
 
 #include "base/logging.h"
 
