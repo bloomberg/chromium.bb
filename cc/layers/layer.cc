@@ -1366,13 +1366,7 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   if (needs_show_scrollbars_)
     layer->set_needs_show_scrollbars(true);
 
-  // If the main thread commits multiple times before the impl thread actually
-  // draws, then damage tracking will become incorrect if we simply clobber the
-  // update_rect here. The LayerImpl's update_rect needs to accumulate (i.e.
-  // union) any update changes that have occurred on the main thread.
-  inputs_.update_rect.Union(layer->update_rect());
-  layer->SetUpdateRect(inputs_.update_rect);
-
+  layer->UnionUpdateRect(inputs_.update_rect);
   layer->SetHasWillChangeTransformHint(has_will_change_transform_hint());
   layer->SetNeedsPushProperties();
 
