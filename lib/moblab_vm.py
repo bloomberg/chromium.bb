@@ -451,6 +451,7 @@ def _CreateVMImage(src_dir, dest_dir):
         path_util.ToChrootPath(
             os.path.join(constants.CROSUTILS_DIR, 'image_to_vm.sh')),
         '--from=%s' % path_util.ToChrootPath(tempdir),
+        '--disk_layout=16gb-rootfs',
         '--test_image',
     ]
     try:
