@@ -1513,8 +1513,8 @@
   },
   {
     "name": "enable-md-rounded-corners-on-dialogs",
-    "owners": ["bsep", "sajadm"],
-    "expiry_milestone": 78
+    "owners": ["tluk"],
+    "expiry_milestone": 85
   },
   {
     "name": "enable-media-internals-devtools",
