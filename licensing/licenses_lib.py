@@ -984,7 +984,6 @@ class Licensing(object):
           'media-libs/vpu-fw',
           'sys-apps/accelerator-bootstrap',
           'sys-apps/eid',
-          'sys-apps/escalator',
           'sys-apps/loonix-hydrogen',
           'sys-boot/chromeos-firmware-ps8751',
           'sys-boot/chromeos-firmware-ps8805',
