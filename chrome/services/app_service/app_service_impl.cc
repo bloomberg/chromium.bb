@@ -237,11 +237,10 @@ void AppServiceImpl::ConnectToPrefService(
 
 void AppServiceImpl::OnPrefServiceConnected(
     std::unique_ptr<PrefService> pref_service) {
-  if (!pref_service) {
+  if (!pref_service || pref_service_) {
     // TODO(crbug.com/853604): Handle if not successfully connected.
     return;
   }
-  DCHECK_EQ(nullptr, pref_service_);
   pref_service_ = std::move(pref_service);
   InitializePreferredApps();
 }
