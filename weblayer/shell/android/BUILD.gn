@@ -154,6 +154,7 @@ android_apk("weblayer_support_apk") {
     "//android_webview:monochrome_webview_assets",
     "//android_webview:pak_file_assets",
     "//base:base_java",
+    "//weblayer:locale_pak_assets",
     "//weblayer/browser/java",
   ]
 

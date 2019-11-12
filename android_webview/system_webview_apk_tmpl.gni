@@ -31,6 +31,7 @@ template("system_webview_apk_tmpl") {
       "//android_webview/glue",
       "//android_webview/support_library:support_lib_glue_java",
       "//base:base_java",
+      "//weblayer:locale_pak_assets",
     ]
 
     target_sdk_version = android_sdk_version
