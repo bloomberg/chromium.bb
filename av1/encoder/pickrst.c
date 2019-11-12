@@ -624,7 +624,7 @@ static AOM_INLINE void av1_calc_proj_params_high_bd_c(
                                   dat_stride, flt0, flt0_stride, H, C);
   } else if (params->r[1] > 0) {
     calc_proj_params_r1_high_bd_c(src8, width, height, src_stride, dat8,
-                                  dat_stride, flt0, flt0_stride, H, C);
+                                  dat_stride, flt1, flt1_stride, H, C);
   }
 }
 
