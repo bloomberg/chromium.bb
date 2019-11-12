@@ -236,6 +236,8 @@ Still reading?
     <ignore regexp="Static interface  method requires API level 24"/>
     <!-- 1 This is for testonly target android_support_chromium_java in android_sdk. -->
     <ignore regexp="third_party/android_sdk/public/extras/chromium/support/src/org/chromium/android/support/PackageManagerWrapper.java"/>
+    <!-- 1 TaskInfo is refactored at API 29. -->
+    <ignore regexp="Field requires API level 29.*`android.app.TaskInfo"/>
     <!-- Endnote: Please specify number of suppressions when adding more -->
   </issue>
   <!-- This warning just adds a lot of false positives. -->
