@@ -33,15 +33,15 @@ import org.chromium.chrome.browser.ui.widget.FadingShadowView;
      */
     /* package */ PaymentHandlerToolbarView(Context context) {
         mToolbarHeightPx =
-                context.getResources().getDimensionPixelSize(R.dimen.preview_tab_toolbar_height);
+                context.getResources().getDimensionPixelSize(R.dimen.sheet_tab_toolbar_height);
 
-        mToolbarView = LayoutInflater.from(context).inflate(R.layout.ephemeral_tab_toolbar, null);
-        mOriginView = mToolbarView.findViewById(R.id.ephemeral_tab_caption);
-        mTitleView = mToolbarView.findViewById(R.id.ephemeral_tab_text);
+        mToolbarView = LayoutInflater.from(context).inflate(R.layout.sheet_tab_toolbar, null);
+        mOriginView = mToolbarView.findViewById(R.id.origin);
+        mTitleView = mToolbarView.findViewById(R.id.title);
         mProgressBar = mToolbarView.findViewById(R.id.progress_bar);
         mSecurityIconView = mToolbarView.findViewById(R.id.security_icon);
 
-        // These parts from ephemeral_tab_toolbar are not needed in this component.
+        // These parts from sheet_tab_toolbar are not needed in this component.
         mToolbarView.findViewById(R.id.open_in_new_tab).setVisibility(View.GONE);
         mToolbarView.findViewById(R.id.favicon).setVisibility(View.GONE);
 

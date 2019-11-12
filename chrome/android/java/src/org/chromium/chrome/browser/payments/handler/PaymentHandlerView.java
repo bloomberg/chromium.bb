@@ -41,7 +41,7 @@ import org.chromium.ui.base.ActivityWindowAndroid;
         mTabHeight = activity.getActivityTab().getHeight();
         mToolbarView = toolbarView;
         mToolbarHeightPx =
-                activity.getResources().getDimensionPixelSize(R.dimen.preview_tab_toolbar_height);
+                activity.getResources().getDimensionPixelSize(R.dimen.sheet_tab_toolbar_height);
         mContentView = (FrameLayout) LayoutInflater.from(activity).inflate(
                 R.layout.payment_handler_content, null);
 

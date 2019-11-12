@@ -3,17 +3,18 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 
+<!-- A toolbar layout designed for bottom-sheet based components -->
 <FrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="@dimen/preview_tab_toolbar_height">
+    android:layout_height="@dimen/sheet_tab_toolbar_height">
 
     <LinearLayout
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/preview_tab_toolbar_height"
+        android:layout_height="@dimen/sheet_tab_toolbar_height"
         android:orientation="vertical">
 
         <View
@@ -58,7 +59,7 @@
                 app:tint="@color/default_icon_color" />
 
             <TextView
-                android:id="@+id/ephemeral_tab_text"
+                android:id="@+id/title"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
@@ -75,18 +76,18 @@
                 android:layout_width="16dp"
                 android:layout_height="16dp"
                 android:layout_marginStart="8dp"
-                android:layout_below="@id/ephemeral_tab_text"
+                android:layout_below="@id/title"
                 android:layout_toEndOf="@id/favicon"
                 android:layout_marginTop="4dp"
                 app:tint="@color/default_icon_color" />
 
             <TextView
-                android:id="@+id/ephemeral_tab_caption"
+                android:id="@+id/origin"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_toStartOf="@id/open_in_new_tab"
                 android:layout_toEndOf="@id/security_icon"
-                android:layout_below="@id/ephemeral_tab_text"
+                android:layout_below="@id/title"
                 android:layout_marginLeft="4dp"
                 android:textAlignment="viewStart"
                 android:ellipsize="start"
@@ -113,6 +114,6 @@
         android:id="@+id/shadow"
         android:layout_width="match_parent"
         android:layout_height="@dimen/action_bar_shadow_height"
-        android:layout_marginTop="@dimen/preview_tab_toolbar_height"/>
+        android:layout_marginTop="@dimen/sheet_tab_toolbar_height"/>
 
 </FrameLayout>
