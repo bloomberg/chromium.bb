@@ -258,6 +258,8 @@ android_builder(
 
 android_builder(
     name = 'android-pie-arm64-rel',
+    goma_backend = goma.backend.RBE_PROD,
+    goma_jobs = goma.jobs.J300,
     tryjob = tryjob(
         experiment_percentage = 50,
     ),
