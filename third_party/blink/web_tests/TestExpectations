@@ -69,7 +69,6 @@ crbug.com/678482 http/tests/devtools/debugger/fetch-breakpoints.js [ Timeout Pas
 crbug.com/678491 http/tests/misc/webtiming-no-origin.html [ Crash Pass ]
 crbug.com/765779 http/tests/loading/bad-server-subframe.html [ Failure ]
 crbug.com/801992 http/tests/misc/iframe-script-modify-attr.html [ Pass Crash ]
-crbug.com/819800 external/wpt/payment-request/allowpaymentrequest/setting-allowpaymentrequest-timing.https.sub.html [ Failure ]
 crbug.com/872952 http/tests/media/autoplay/document-user-activation-feature-policy-iframe-no-gesture.html [ Failure Pass Timeout ]
 crbug.com/872952 virtual/audio-service/http/tests/media/autoplay/document-user-activation-feature-policy-iframe-no-gesture.html [ Failure Pass Timeout ]
 crbug.com/895001 external/wpt/html/user-activation/message-event-activation-api-iframe-cross-origin.sub.tentative.html [ Timeout Pass ]
