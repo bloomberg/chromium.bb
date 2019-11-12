@@ -31,6 +31,7 @@
 #include "chromeos/services/device_sync/device_sync_impl.h"
 #include "chromeos/services/device_sync/fake_cryptauth_device_manager.h"
 #include "chromeos/services/device_sync/fake_cryptauth_enrollment_manager.h"
+#include "chromeos/services/device_sync/fake_cryptauth_feature_status_setter.h"
 #include "chromeos/services/device_sync/fake_cryptauth_gcm_manager.h"
 #include "chromeos/services/device_sync/fake_cryptauth_scheduler.h"
 #include "chromeos/services/device_sync/fake_cryptauth_v2_device_manager.h"
@@ -128,6 +129,24 @@ class FakeSoftwareFeatureManagerDelegate
   void OnFindEligibleDevicesCalled() override {
     on_delegate_call_closure_.Run();
   }
+
+ private:
+  base::Closure on_delegate_call_closure_;
+};
+
+// Delegate which invokes the Closure provided to its constructor when a
+// delegate function is invoked.
+class FakeCryptAuthFeatureStatusSetterDelegate
+    : public FakeCryptAuthFeatureStatusSetter::Delegate {
+ public:
+  explicit FakeCryptAuthFeatureStatusSetterDelegate(
+      base::Closure on_delegate_call_closure)
+      : on_delegate_call_closure_(on_delegate_call_closure) {}
+
+  ~FakeCryptAuthFeatureStatusSetterDelegate() override = default;
+
+  // FakeCryptAuthFeatureStatusSetter::Delegate:
+  void OnSetFeatureStatusCalled() override { on_delegate_call_closure_.Run(); }
 
  private:
   base::Closure on_delegate_call_closure_;
@@ -750,6 +769,11 @@ class DeviceSyncServiceTest
     SoftwareFeatureManagerImpl::Factory::SetInstanceForTesting(
         fake_software_feature_manager_factory_.get());
 
+    fake_feature_status_setter_factory_ =
+        std::make_unique<FakeCryptAuthFeatureStatusSetterFactory>();
+    CryptAuthFeatureStatusSetterImpl::Factory::SetFactoryForTesting(
+        fake_feature_status_setter_factory_.get());
+
     auto mock_timer = std::make_unique<base::MockOneShotTimer>();
     mock_timer_ = mock_timer.get();
 
@@ -962,6 +986,18 @@ class DeviceSyncServiceTest
     return fake_software_feature_manager_factory_->instance();
   }
 
+  FakeCryptAuthFeatureStatusSetter* fake_feature_status_setter() {
+    if (fake_feature_status_setter_factory_->instances().empty())
+      return nullptr;
+
+    EXPECT_EQ(1u, fake_feature_status_setter_factory_->instances().size());
+    return fake_feature_status_setter_factory_->instances()[0];
+  }
+
+  const std::vector<mojom::NetworkRequestResult>& set_feature_status_results() {
+    return set_feature_status_results_;
+  }
+
   std::unique_ptr<mojom::NetworkRequestResult>
   GetLastSetSoftwareFeatureStateResponseAndReset() {
     return std::move(last_set_software_feature_state_response_);
@@ -996,6 +1032,15 @@ class DeviceSyncServiceTest
     auto last_set_response = GetLastSetSoftwareFeatureStateResponseAndReset();
     EXPECT_EQ(mojom::NetworkRequestResult::kServiceNotYetInitialized,
               *last_set_response);
+
+    // SetFeatureStatus() should return a struct with the special
+    // kErrorNotInitialized error code.
+    CallSetFeatureStatus(test_devices()[0].instance_id,
+                         multidevice::SoftwareFeature::kBetterTogetherHost,
+                         FeatureStatusChange::kEnableExclusively);
+    EXPECT_EQ(1u, set_feature_status_results_.size());
+    EXPECT_EQ(mojom::NetworkRequestResult::kServiceNotYetInitialized,
+              set_feature_status_results_[0]);
 
     // Likewise, FindEligibleDevices() should also return a struct with the same
     // error code.
@@ -1120,6 +1165,34 @@ class DeviceSyncServiceTest
     fake_software_feature_manager_factory_->instance()->set_delegate(nullptr);
   }
 
+  void CallSetFeatureStatus(const std::string& device_instance_id,
+                            multidevice::SoftwareFeature software_feature,
+                            FeatureStatusChange status_change) {
+    base::RunLoop run_loop;
+
+    // If the feature setter has not yet been created, the service has not been
+    // initialized. SetFeatureStatus() is expected to respond synchronously with
+    // an error.
+    if (!fake_feature_status_setter()) {
+      device_sync_->SetFeatureStatus(
+          device_instance_id, software_feature, status_change,
+          base::Bind(
+              &DeviceSyncServiceTest::OnSetFeatureStatusCompletedSynchronously,
+              base::Unretained(this), run_loop.QuitClosure()));
+      run_loop.Run();
+      return;
+    }
+
+    FakeCryptAuthFeatureStatusSetterDelegate delegate(run_loop.QuitClosure());
+    fake_feature_status_setter()->set_delegate(&delegate);
+    device_sync_->SetFeatureStatus(
+        device_instance_id, software_feature, status_change,
+        base::Bind(&DeviceSyncServiceTest::OnSetFeatureStatusCompleted,
+                   base::Unretained(this)));
+    run_loop.Run();
+    fake_feature_status_setter()->set_delegate(nullptr);
+  }
+
   void CallFindEligibleDevices(multidevice::SoftwareFeature software_feature) {
     base::RunLoop run_loop;
     FakeSoftwareFeatureManager* manager = fake_software_feature_manager();
@@ -1207,6 +1280,17 @@ class DeviceSyncServiceTest
     std::move(quit_closure).Run();
   }
 
+  void OnSetFeatureStatusCompleted(mojom::NetworkRequestResult result_code) {
+    set_feature_status_results_.push_back(result_code);
+  }
+
+  void OnSetFeatureStatusCompletedSynchronously(
+      base::OnceClosure quit_closure,
+      mojom::NetworkRequestResult result_code) {
+    OnSetFeatureStatusCompleted(result_code);
+    std::move(quit_closure).Run();
+  }
+
   void OnFindEligibleDevicesCompleted(
       mojom::NetworkRequestResult result_code,
       mojom::FindEligibleDevicesResponsePtr response) {
@@ -1266,6 +1350,8 @@ class DeviceSyncServiceTest
       fake_remote_device_provider_factory_;
   std::unique_ptr<FakeSoftwareFeatureManagerFactory>
       fake_software_feature_manager_factory_;
+  std::unique_ptr<FakeCryptAuthFeatureStatusSetterFactory>
+      fake_feature_status_setter_factory_;
 
   std::unique_ptr<signin::IdentityTestEnvironment> identity_test_environment_;
   std::unique_ptr<gcm::FakeGCMDriver> fake_gcm_driver_;
@@ -1282,6 +1368,7 @@ class DeviceSyncServiceTest
                             mojom::FindEligibleDevicesResponsePtr>>
       last_find_eligible_devices_response_;
   base::Optional<mojom::DebugInfo> last_debug_info_result_;
+  std::vector<mojom::NetworkRequestResult> set_feature_status_results_;
 
   std::unique_ptr<FakeDeviceSyncObserver> fake_device_sync_observer_;
   std::unique_ptr<DeviceSyncBase> device_sync_;
@@ -1597,6 +1684,172 @@ TEST_P(DeviceSyncServiceTest, SetSoftwareFeatureState_Error) {
       1);
   histogram_tester().ExpectBucketCount<bool>(
       "MultiDevice.DeviceSyncService.SetSoftwareFeatureState.Result", true, 0);
+}
+
+TEST_P(DeviceSyncServiceTest, SetFeatureStatus_Success) {
+  InitializeServiceSuccessfully();
+
+  EXPECT_EQ(0u, fake_feature_status_setter()->requests().size());
+
+  multidevice::RemoteDevice device_for_test = test_devices()[0];
+
+  // Exclusively enable kBetterTogetherHost for the device.
+  CallSetFeatureStatus(device_for_test.instance_id,
+                       multidevice::SoftwareFeature::kBetterTogetherHost,
+                       FeatureStatusChange::kEnableExclusively);
+  EXPECT_EQ(1u, fake_feature_status_setter()->requests().size());
+  EXPECT_EQ(multidevice::SoftwareFeature::kBetterTogetherHost,
+            fake_feature_status_setter()->requests()[0].feature);
+  EXPECT_EQ(FeatureStatusChange::kEnableExclusively,
+            fake_feature_status_setter()->requests()[0].status_change);
+  EXPECT_TRUE(fake_feature_status_setter()->requests()[0].success_callback);
+  EXPECT_TRUE(fake_feature_status_setter()->requests()[0].error_callback);
+
+  // The DeviceSyncImpl::SetFeatureStatus() callback has not yet been invoked.
+  EXPECT_TRUE(set_feature_status_results().empty());
+
+  // Now, invoke the CryptAuthFeatureStatusSetter success callback.
+  std::move(fake_feature_status_setter()->requests()[0].success_callback).Run();
+
+  // The DeviceSyncImpl::SetFeatureStatus() callback still has not yet been
+  // invoked since a device sync has not confirmed the feature state change yet.
+  EXPECT_TRUE(set_feature_status_results().empty());
+
+  // Simulate a sync which includes the device with the correct "enabled" state.
+  device_for_test
+      .software_features[multidevice::SoftwareFeature::kBetterTogetherHost] =
+      multidevice::SoftwareFeatureState::kEnabled;
+  SimulateSync(true /* success */, {device_for_test});
+  base::RunLoop().RunUntilIdle();
+
+  ASSERT_EQ(1u, set_feature_status_results().size());
+  EXPECT_EQ(mojom::NetworkRequestResult::kSuccess,
+            set_feature_status_results()[0]);
+}
+
+TEST_P(DeviceSyncServiceTest,
+       SetFeatureStatus_RequestSucceedsButDoesNotTakeEffect) {
+  InitializeServiceSuccessfully();
+
+  // Expected device feature states after SetFeatureStatus() calls:
+  // * Device 0 has kSmartLockHost disabled.
+  // * Device 1 has kSmartLockHost disabled.
+  // * Device 2 has kBetterTogetherHost enabled exclusively.
+  // * Device 3 has kInstantTetheringHost enabled.
+  // * Device 4 has kMessagesForWebHost disabled.
+  multidevice::RemoteDeviceList expected_remote_devices =
+      multidevice::CreateRemoteDeviceListForTest(5u);
+  expected_remote_devices[0]
+      .software_features[multidevice::SoftwareFeature::kSmartLockHost] =
+      multidevice::SoftwareFeatureState::kSupported;
+  expected_remote_devices[1]
+      .software_features[multidevice::SoftwareFeature::kSmartLockHost] =
+      multidevice::SoftwareFeatureState::kSupported;
+  expected_remote_devices[2]
+      .software_features[multidevice::SoftwareFeature::kBetterTogetherHost] =
+      multidevice::SoftwareFeatureState::kEnabled;
+  expected_remote_devices[3]
+      .software_features[multidevice::SoftwareFeature::kInstantTetheringHost] =
+      multidevice::SoftwareFeatureState::kEnabled;
+  expected_remote_devices[4]
+      .software_features[multidevice::SoftwareFeature::kMessagesForWebHost] =
+      multidevice::SoftwareFeatureState::kSupported;
+
+  CallSetFeatureStatus(expected_remote_devices[0].instance_id,
+                       multidevice::SoftwareFeature::kSmartLockHost,
+                       FeatureStatusChange::kDisable);
+  CallSetFeatureStatus(expected_remote_devices[1].instance_id,
+                       multidevice::SoftwareFeature::kSmartLockHost,
+                       FeatureStatusChange::kDisable);
+  CallSetFeatureStatus(expected_remote_devices[2].instance_id,
+                       multidevice::SoftwareFeature::kBetterTogetherHost,
+                       FeatureStatusChange::kEnableExclusively);
+  CallSetFeatureStatus(expected_remote_devices[3].instance_id,
+                       multidevice::SoftwareFeature::kInstantTetheringHost,
+                       FeatureStatusChange::kEnableNonExclusively);
+  CallSetFeatureStatus(expected_remote_devices[4].instance_id,
+                       multidevice::SoftwareFeature::kMessagesForWebHost,
+                       FeatureStatusChange::kDisable);
+  EXPECT_EQ(5u, fake_feature_status_setter()->requests().size());
+
+  // The DeviceSyncImpl::SetFeatureStatus() callbacks have not yet been invoked.
+  EXPECT_TRUE(set_feature_status_results().empty());
+
+  // Now, invoke the CryptAuthFeatureStatusSetter success callbacks.
+  std::move(fake_feature_status_setter()->requests()[0].success_callback).Run();
+  std::move(fake_feature_status_setter()->requests()[1].success_callback).Run();
+  std::move(fake_feature_status_setter()->requests()[2].success_callback).Run();
+  std::move(fake_feature_status_setter()->requests()[3].success_callback).Run();
+  std::move(fake_feature_status_setter()->requests()[4].success_callback).Run();
+
+  // The DeviceSyncImpl::SetFeatureStatus() callbacks still have not been
+  // invoked since a DeviceSync has not confirmed any of the requested feature
+  // state changes yet.
+  EXPECT_TRUE(set_feature_status_results().empty());
+
+  // Simulate a DeviceSync which returns unexpected device feature states:
+  // * Device 0 not in list of devices.
+  // * Device 1 missing kSmartLockHost entry in the feature list.
+  // * Device 2 has kBetterTogetherHost enabled but not exclusively since device
+  //   1 also has it enabled.
+  // * Device 3 does not have kInstantTetheringHost enabled.
+  // * Device 4 does not have kMessagesForWebHost disabled.
+  multidevice::RemoteDeviceList remote_devices_from_first_sync =
+      multidevice::CreateRemoteDeviceListForTest(5u);
+  remote_devices_from_first_sync[1]
+      .software_features[multidevice::SoftwareFeature::kBetterTogetherHost] =
+      multidevice::SoftwareFeatureState::kEnabled;
+  remote_devices_from_first_sync[2]
+      .software_features[multidevice::SoftwareFeature::kBetterTogetherHost] =
+      multidevice::SoftwareFeatureState::kEnabled;
+  remote_devices_from_first_sync[3]
+      .software_features[multidevice::SoftwareFeature::kInstantTetheringHost] =
+      multidevice::SoftwareFeatureState::kSupported;
+  remote_devices_from_first_sync[4]
+      .software_features[multidevice::SoftwareFeature::kMessagesForWebHost] =
+      multidevice::SoftwareFeatureState::kEnabled;
+  remote_devices_from_first_sync.erase(remote_devices_from_first_sync.begin());
+
+  SimulateSync(true /* success */, remote_devices_from_first_sync);
+  base::RunLoop().RunUntilIdle();
+
+  // The DeviceSyncImpl::SetFeatureStatus() callbacks still have not yet been
+  // invoked since the latest DeviceSync did not reflect the requested feature
+  // state changes.
+  EXPECT_EQ(0u, set_feature_status_results().size());
+
+  // Simulate a DeviceSync which returns the expected device feature states:
+  EXPECT_TRUE(CallForceSyncNow());
+  SimulateSync(true /* success */, expected_remote_devices);
+  base::RunLoop().RunUntilIdle();
+
+  ASSERT_EQ(5u, set_feature_status_results().size());
+  for (mojom::NetworkRequestResult result : set_feature_status_results())
+    EXPECT_EQ(mojom::NetworkRequestResult::kSuccess, result);
+}
+
+TEST_P(DeviceSyncServiceTest, SetFeatureStatus_Error) {
+  InitializeServiceSuccessfully();
+
+  multidevice::RemoteDevice device_for_test = test_devices()[0];
+
+  // Attempt to exclusively enable kBetterTogetherHost for the device.
+  CallSetFeatureStatus(device_for_test.instance_id,
+                       multidevice::SoftwareFeature::kBetterTogetherHost,
+                       FeatureStatusChange::kEnableExclusively);
+
+  // The DeviceSyncImpl::SetFeatureStatus() callback has not yet been invoked.
+  EXPECT_TRUE(set_feature_status_results().empty());
+
+  // Now, invoke the CryptAuthFeatureStatusSetter error callback.
+  std::move(fake_feature_status_setter()->requests()[0].error_callback)
+      .Run(NetworkRequestError::kBadRequest);
+
+  // The DeviceSyncImpl::SetFeatureStatus() callback is invoked with the same
+  // error code.
+  ASSERT_EQ(1u, set_feature_status_results().size());
+  EXPECT_EQ(mojom::NetworkRequestResult::kBadRequest,
+            set_feature_status_results()[0]);
 }
 
 TEST_P(DeviceSyncServiceTest, FindEligibleDevices) {
