@@ -479,8 +479,15 @@ void NetworkContext::CreateURLLoaderFactory(
 }
 
 void NetworkContext::ActivateDohProbes() {
-  DCHECK(IsPrimaryNetworkContext());
   DCHECK(url_request_context_->host_resolver());
+
+  // DoH probes are global rather than per-context, so they should be run just
+  // for the primary context.
+  //
+  // TODO(crbug.com/1022059): Trigger per-context DoH probes for all
+  // NetworkContext.
+  if (!IsPrimaryNetworkContext())
+    return;
 
   doh_probes_request_.reset();
   doh_probes_request_ =

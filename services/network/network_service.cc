@@ -194,6 +194,57 @@ void HandleBadMessage(const std::string& error) {
 
 }  // namespace
 
+// static
+const base::TimeDelta NetworkService::kInitialDohProbeTimeout =
+    base::TimeDelta::FromSeconds(5);
+
+// Handler of delaying calls to NetworkContext::ActivateDohProbes() until after
+// an initial service startup delay.
+class NetworkService::DelayedDohProbeActivator {
+ public:
+  explicit DelayedDohProbeActivator(NetworkService* network_service)
+      : network_service_(network_service) {
+    DCHECK(network_service_);
+
+    // Delay initial DoH probes to prevent interference with startup tasks.
+    doh_probes_timer_.Start(
+        FROM_HERE, NetworkService::kInitialDohProbeTimeout,
+        base::BindOnce(&DelayedDohProbeActivator::ActivateAllDohProbes,
+                       base::Unretained(this)));
+  }
+
+  DelayedDohProbeActivator(const DelayedDohProbeActivator&) = delete;
+  DelayedDohProbeActivator& operator=(const DelayedDohProbeActivator&) = delete;
+
+  // Activates DoH probes for |network_context| iff the initial startup delay
+  // has expired. Intended to be called on registration of contexts to activate
+  // probes for contexts created and registered after the initial delay has
+  // expired.
+  void MaybeActivateDohProbes(NetworkContext* network_context) {
+    // If timer is still running, probes will be started on completion.
+    if (doh_probes_timer_.IsRunning())
+      return;
+
+    network_context->ActivateDohProbes();
+  }
+
+  // Attempts to activate DoH probes for all contexts registered with the
+  // service. Intended to be called on expiration of |doh_probes_timer_| to
+  // activate probes for contexts registered during the initial delay.
+  void ActivateAllDohProbes() {
+    for (auto* network_context : network_service_->network_contexts_) {
+      MaybeActivateDohProbes(network_context);
+    }
+  }
+
+ private:
+  NetworkService* const network_service_;
+
+  // If running, DoH probes will be started on completion. If not running, DoH
+  // probes may be started at any time.
+  base::OneShotTimer doh_probes_timer_;
+};
+
 NetworkService::NetworkService(
     std::unique_ptr<service_manager::BinderRegistry> registry,
     mojo::PendingReceiver<mojom::NetworkService> receiver,
@@ -284,10 +335,15 @@ void NetworkService::Initialize(mojom::NetworkServiceParamsPtr params,
   http_auth_cache_copier_ = std::make_unique<HttpAuthCacheCopier>();
 
   crl_set_distributor_ = std::make_unique<CRLSetDistributor>();
+
+  doh_probe_activator_ = std::make_unique<DelayedDohProbeActivator>(this);
 }
 
 NetworkService::~NetworkService() {
   DCHECK_EQ(this, g_network_service);
+
+  doh_probe_activator_.reset();
+
   g_network_service = nullptr;
   // Destroy owned network contexts.
   DestroyNetworkContexts();
@@ -338,6 +394,9 @@ void NetworkService::RegisterNetworkContext(NetworkContext* network_context) {
     network_context->OnHttpAuthDynamicParamsChanged(
         http_auth_dynamic_network_service_params_.get());
   }
+
+  if (doh_probe_activator_)
+    doh_probe_activator_->MaybeActivateDohProbes(network_context);
 }
 
 void NetworkService::DeregisterNetworkContext(NetworkContext* network_context) {
@@ -427,12 +486,6 @@ void NetworkService::ConfigureStubHostResolver(
   // that implements the stub resolver.
   host_resolver_manager_->SetInsecureDnsClientEnabled(
       insecure_dns_client_enabled);
-
-  for (auto* network_context : network_contexts_) {
-    if (!network_context->IsPrimaryNetworkContext())
-      continue;
-    network_context->ActivateDohProbes();
-  }
 
   // Configure DNS over HTTPS.
   net::DnsConfigOverrides overrides;

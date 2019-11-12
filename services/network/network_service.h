@@ -60,6 +60,8 @@ class NetworkUsageAccumulator;
 class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
     : public mojom::NetworkService {
  public:
+  static const base::TimeDelta kInitialDohProbeTimeout;
+
   NetworkService(std::unique_ptr<service_manager::BinderRegistry> registry,
                  mojo::PendingReceiver<mojom::NetworkService> receiver =
                      mojo::NullReceiver(),
@@ -222,6 +224,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   static NetworkService* GetNetworkServiceForTesting();
 
  private:
+  class DelayedDohProbeActivator;
+
   void DestroyNetworkContexts();
 
   // Called by a NetworkContext when its mojo pipe is closed. Deletes the
@@ -323,6 +327,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   // Whether new NetworkContexts will be configured to partition their
   // HttpAuthCaches by NetworkIsolationKey.
   bool split_auth_cache_by_network_isolation_key_ = false;
+
+  std::unique_ptr<DelayedDohProbeActivator> doh_probe_activator_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkService);
 };
