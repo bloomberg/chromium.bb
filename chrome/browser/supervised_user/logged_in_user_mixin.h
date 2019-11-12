@@ -12,7 +12,6 @@
 #include "chrome/browser/chromeos/login/test/local_policy_test_server_mixin.h"
 #include "chrome/browser/chromeos/login/test/login_manager_mixin.h"
 #include "chrome/browser/chromeos/login/test/user_policy_mixin.h"
-#include "chrome/browser/chromeos/policy/user_policy_test_helper.h"
 
 class AccountId;
 
@@ -100,14 +99,10 @@ class LoggedInUserMixin {
   LoginManagerMixin* GetLoginManagerMixin() { return &login_manager_; }
 
   LocalPolicyTestServerMixin* GetLocalPolicyTestServerMixin() {
-    return &local_policy_server_;
+    return &policy_server_;
   }
 
   UserPolicyMixin* GetUserPolicyMixin() { return &user_policy_; }
-
-  policy::UserPolicyTestHelper* GetUserPolicyTestHelper() {
-    return &user_policy_helper_;
-  }
 
   const AccountId& GetAccountId() { return user_.account_id; }
 
@@ -115,9 +110,8 @@ class LoggedInUserMixin {
   LoginManagerMixin::TestUserInfo user_;
   LoginManagerMixin login_manager_;
 
-  LocalPolicyTestServerMixin local_policy_server_;
+  LocalPolicyTestServerMixin policy_server_;
   UserPolicyMixin user_policy_;
-  policy::UserPolicyTestHelper user_policy_helper_;
 
   EmbeddedTestServerSetupMixin embedded_test_server_setup_;
   FakeGaiaMixin fake_gaia_;

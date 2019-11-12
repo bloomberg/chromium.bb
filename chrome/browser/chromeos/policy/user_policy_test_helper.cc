@@ -75,10 +75,7 @@ void UserPolicyTestHelper::SetPolicyAndWait(
     const base::Value& recommended_policy,
     Profile* profile) {
   SetPolicy(mandatory_policy, recommended_policy);
-  RefreshPolicyAndWait(profile);
-}
 
-void UserPolicyTestHelper::RefreshPolicyAndWait(Profile* profile) {
   policy::ProfilePolicyConnector* const profile_connector =
       profile->GetProfilePolicyConnector();
   policy::PolicyService* const policy_service =

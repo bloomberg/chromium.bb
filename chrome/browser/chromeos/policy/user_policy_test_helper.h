@@ -39,14 +39,11 @@ class UserPolicyTestHelper {
   // unnecessary to call this function.
   void WaitForInitialPolicy(Profile* profile);
 
-  // Updates the policy test server with the given policy. Then calls
-  // RefreshPolicyAndWait().
+  // Update the policy test server with the given policy. Then refresh and wait
+  // for the new policy being applied to |profile|.
   void SetPolicyAndWait(const base::Value& mandatory_policy,
                         const base::Value& recommended_policy,
                         Profile* profile);
-
-  // Refreshes and waits for the new policy being applied to |profile|.
-  void RefreshPolicyAndWait(Profile* profile);
 
  private:
   const std::string account_id_;
