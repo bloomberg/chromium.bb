@@ -78,7 +78,7 @@ v8::Local<v8::Object> DOMArrayBuffer::Wrap(
   v8::Local<v8::Object> wrapper;
   {
     v8::Context::Scope context_scope(creation_context->CreationContext());
-    wrapper = v8::ArrayBuffer::New(isolate, Data(), ByteLength());
+    wrapper = v8::ArrayBuffer::New(isolate, Data(), ByteLengthAsSizeT());
   }
 
   return AssociateWithWrapper(isolate, wrapper_type_info, wrapper);
