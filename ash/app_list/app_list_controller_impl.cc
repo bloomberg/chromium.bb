@@ -635,7 +635,7 @@ void AppListControllerImpl::OnOverviewModeEnding(OverviewSession* session) {
     return;
   const int64_t display_id = last_visible_display_id_;
   bool target_visibility = GetTargetVisibility();
-  if (home_launcher_animation_state_ == HomeLauncherAnimationState::kFinished)
+  if (home_launcher_transition_state_ == HomeLauncherTransitionState::kFinished)
     target_visibility &= !HasVisibleWindows();
   OnHomeLauncherTargetPositionChanged(target_visibility, display_id);
   OnVisibilityWillChange(target_visibility, display_id);
@@ -789,7 +789,7 @@ void AppListControllerImpl::OnUiVisibilityChanged(
 void AppListControllerImpl::OnHomeLauncherAnimationComplete(
     bool shown,
     int64_t display_id) {
-  home_launcher_animation_state_ = HomeLauncherAnimationState::kFinished;
+  home_launcher_transition_state_ = HomeLauncherTransitionState::kFinished;
   CloseAssistantUi(shown ? AssistantExitPoint::kLauncherOpen
                          : AssistantExitPoint::kLauncherClose);
   // Animations can be reversed (e.g. in a drag). Let's ensure the target
@@ -804,9 +804,11 @@ void AppListControllerImpl::OnHomeLauncherAnimationComplete(
 void AppListControllerImpl::OnHomeLauncherTargetPositionChanged(
     bool showing,
     int64_t display_id) {
-  home_launcher_animation_state_ = showing
-                                       ? HomeLauncherAnimationState::kShowing
-                                       : HomeLauncherAnimationState::kHiding;
+  // TODO(manucornet): Make these depend on how far into the animation or drag
+  // we are.
+  home_launcher_transition_state_ =
+      showing ? HomeLauncherTransitionState::kMostlyShown
+              : HomeLauncherTransitionState::kMostlyHidden;
   OnVisibilityWillChange(showing, display_id);
 }
 
@@ -1339,8 +1341,8 @@ void AppListControllerImpl::OnVisibilityChanged(bool visible,
   // HomeLauncher is only visible when no other app windows are visible,
   // unless we are in the process of animating to (or dragging) the home
   // launcher.
-  if (IsTabletMode() &&
-      home_launcher_animation_state_ == HomeLauncherAnimationState::kFinished) {
+  if (IsTabletMode() && home_launcher_transition_state_ ==
+                            HomeLauncherTransitionState::kFinished) {
     real_visibility &= !HasVisibleWindows();
   }
 
@@ -1380,8 +1382,8 @@ void AppListControllerImpl::OnVisibilityWillChange(bool visible,
   // HomeLauncher is only visible when no other app windows are visible,
   // unless we are in the process of animating to (or dragging) the home
   // launcher.
-  if (IsTabletMode() &&
-      home_launcher_animation_state_ == HomeLauncherAnimationState::kFinished) {
+  if (IsTabletMode() && home_launcher_transition_state_ ==
+                            HomeLauncherTransitionState::kFinished) {
     real_target_visibility &= !HasVisibleWindows();
   }
 
