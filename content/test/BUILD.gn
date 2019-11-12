@@ -1937,6 +1937,7 @@ test("content_unittests") {
     ":run_all_unittests",
     ":test_interfaces",
     ":test_support",
+    "//base",
     "//base/allocator:buildflags",
     "//base/test:test_support",
     "//base/third_party/dynamic_annotations",
