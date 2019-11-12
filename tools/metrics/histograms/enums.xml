@@ -4858,9 +4858,12 @@ Unknown properties are collapsed to zero. -->
   <int value="-684843031" label="SafeBrowsingTriggeredPopupBlocker"/>
   <int value="-438850149" label="PermissionRequestManager"/>
   <int value="72716222" label="WebBluetooth"/>
+  <int value="88001126" label="MixedContentSettingsTabHelper"/>
   <int value="671363579" label="banners::AppBannerManager"/>
   <int value="990438262" label="MediaWebContentsObserver::OnMediaPlaying"/>
   <int value="1683256665" label="NativeFileSystem"/>
+  <int value="1774599341" label="WebAuthenticationAPI"/>
+  <int value="1985234179" label="PermissionServiceContext"/>
   <int value="2013040510" label="RenderFrameDevToolsAgentHost"/>
   <int value="2024383223"
       label="ChromePasswordManagerClient::BindCredentialManager"/>
