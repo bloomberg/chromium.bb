@@ -320,6 +320,7 @@ struct bo *drv_bo_create_with_modifiers(struct driver *drv, uint32_t width, uint
 
 void drv_bo_destroy(struct bo *bo)
 {
+	int ret;
 	size_t plane;
 	uintptr_t total = 0;
 	struct driver *drv = bo->drv;
@@ -335,7 +336,8 @@ void drv_bo_destroy(struct bo *bo)
 	pthread_mutex_unlock(&drv->driver_lock);
 
 	if (total == 0) {
-		assert(drv_mapping_destroy(bo) == 0);
+		ret = drv_mapping_destroy(bo);
+		assert(ret == 0);
 		bo->drv->backend->bo_destroy(bo);
 	}
 
