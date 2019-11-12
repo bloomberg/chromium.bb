@@ -441,6 +441,7 @@ void SearchIPCRouter::ConfirmThemeChanges() {
 
 void SearchIPCRouter::QueryAutocomplete(
     const base::string16& input,
+    bool prevent_inline_autocomplete,
     chrome::mojom::EmbeddedSearch::QueryAutocompleteCallback callback) {
   if (!policy_->ShouldProcessQueryAutocomplete(is_active_tab_)) {
     std::move(callback).Run(chrome::mojom::AutocompleteResult::New(
@@ -449,7 +450,8 @@ void SearchIPCRouter::QueryAutocomplete(
     return;
   }
 
-  delegate_->QueryAutocomplete(input, std::move(callback));
+  delegate_->QueryAutocomplete(input, prevent_inline_autocomplete,
+                               std::move(callback));
 }
 
 void SearchIPCRouter::StopAutocomplete(bool clear_result) {

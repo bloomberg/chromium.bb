@@ -438,10 +438,12 @@ void SearchBox::ConfirmThemeChanges() {
   embedded_search_service_->ConfirmThemeChanges();
 }
 
-void SearchBox::QueryAutocomplete(const base::string16& input) {
+void SearchBox::QueryAutocomplete(const base::string16& input,
+                                  bool prevent_inline_autocomplete) {
   embedded_search_service_->QueryAutocomplete(
-      input, base::BindOnce(&SearchBox::QueryAutocompleteResult,
-                            weak_ptr_factory_.GetWeakPtr()));
+      input, prevent_inline_autocomplete,
+      base::BindOnce(&SearchBox::QueryAutocompleteResult,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void SearchBox::DeleteAutocompleteMatch(uint8_t line) {

@@ -268,7 +268,10 @@ let delayedHideNotification = null;
  */
 let isDarkModeEnabled = false;
 
-/** Used to prevent inline autocompleting recently deleted output. */
+/**
+ * Used to prevent the default match from requiring inline autocompletion when
+ * the user is deleting text in the input.
+ */
 let isDeletingInput = false;
 
 /**
@@ -1167,13 +1170,9 @@ function onQueryAutocompleteDone(result) {
     selectMatchEl(assert($(IDS.REALBOX_MATCHES).firstElementChild));
   }
 
-  // If the user is deleting content, don't quickly re-suggest the same
-  // output.
-  if (!isDeletingInput) {
-    const first = result.matches[0];
-    if (first.allowedToBeDefaultMatch && first.inlineAutocompletion) {
-      updateRealboxOutput({inline: first.inlineAutocompletion});
-    }
+  const first = result.matches[0];
+  if (first.allowedToBeDefaultMatch && first.inlineAutocompletion) {
+    updateRealboxOutput({inline: first.inlineAutocompletion});
   }
 }
 
@@ -1542,7 +1541,8 @@ function populateAutocompleteMatches(matches) {
  */
 function queryAutocomplete(input) {
   lastInput = input;
-  window.chrome.embeddedSearch.searchBox.queryAutocomplete(input);
+  window.chrome.embeddedSearch.searchBox.queryAutocomplete(
+      input, isDeletingInput);
 }
 
 /**

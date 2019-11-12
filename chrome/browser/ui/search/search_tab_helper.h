@@ -140,6 +140,7 @@ class SearchTabHelper : public content::WebContentsObserver,
   void OnConfirmThemeChanges() override;
   void QueryAutocomplete(
       const base::string16& input,
+      bool prevent_inline_autocomplete,
       chrome::mojom::EmbeddedSearch::QueryAutocompleteCallback callback)
       override;
   void DeleteAutocompleteMatch(

@@ -390,7 +390,10 @@ window.chrome.embeddedSearch.searchBox.paste;
 window.chrome.embeddedSearch.searchBox.rtl;
 window.chrome.embeddedSearch.searchBox.startCapturingKeyStrokes;
 window.chrome.embeddedSearch.searchBox.stopCapturingKeyStrokes;
-/** @param {string} input */
+/**
+ * @param {string} input
+ * @param {boolean} preventInlineAutocomplete
+ */
 window.chrome.embeddedSearch.searchBox.queryAutocomplete;
 /** @param {boolean} clearResult */
 window.chrome.embeddedSearch.searchBox.stopAutocomplete;

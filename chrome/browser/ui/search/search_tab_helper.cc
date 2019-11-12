@@ -585,6 +585,7 @@ void SearchTabHelper::OnConfirmThemeChanges() {
 
 void SearchTabHelper::QueryAutocomplete(
     const base::string16& input,
+    bool prevent_inline_autocomplete,
     chrome::mojom::EmbeddedSearch::QueryAutocompleteCallback callback) {
   if (!search::DefaultSearchProviderIsGoogle(profile())) {
     std::move(callback).Run(chrome::mojom::AutocompleteResult::New(
@@ -619,6 +620,8 @@ void SearchTabHelper::QueryAutocomplete(
       input, metrics::OmniboxEventProto::NTP_REALBOX,
       ChromeAutocompleteSchemeClassifier(profile()));
   autocomplete_input.set_from_omnibox_focus(input.empty());
+  autocomplete_input.set_prevent_inline_autocomplete(
+      prevent_inline_autocomplete);
   autocomplete_controller_->Start(autocomplete_input);
 }
 

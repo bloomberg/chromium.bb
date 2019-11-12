@@ -190,8 +190,11 @@ class SearchBox : public content::RenderFrameObserver,
   void ConfirmThemeChanges();
 
   // Queries the autocomplete backend for realbox results for |input| as a
-  // search term. Handled by |QueryAutocompleteResult|.
-  void QueryAutocomplete(const base::string16& input);
+  // search term. |prevent_inline_autocomplete| is true if the result set should
+  // not require inline autocomplete for the default match. Handled by
+  // |QueryAutocompleteResult|.
+  void QueryAutocomplete(const base::string16& input,
+                         bool prevent_inline_autocomplete);
 
   // Deletes |AutocompleteMatch| by index of the result.
   void DeleteAutocompleteMatch(uint8_t line);

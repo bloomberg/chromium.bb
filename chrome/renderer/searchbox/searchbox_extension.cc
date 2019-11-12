@@ -593,7 +593,8 @@ class SearchBoxBindings : public gin::Wrappable<SearchBoxBindings> {
   // Handlers for JS functions.
   static void DeleteAutocompleteMatch(int line);
   static void Paste(const std::string& text);
-  static void QueryAutocomplete(const base::string16& input);
+  static void QueryAutocomplete(const base::string16& input,
+                                bool prevent_inline_autocomplete);
   static void StopAutocomplete(bool clear_result);
   static void StartCapturingKeyStrokes();
   static void StopCapturingKeyStrokes();
@@ -660,11 +661,12 @@ void SearchBoxBindings::Paste(const std::string& text) {
 }
 
 // static
-void SearchBoxBindings::QueryAutocomplete(const base::string16& input) {
+void SearchBoxBindings::QueryAutocomplete(const base::string16& input,
+                                          bool prevent_inline_autocomplete) {
   SearchBox* search_box = GetSearchBoxForCurrentContext();
   if (!search_box)
     return;
-  search_box->QueryAutocomplete(input);
+  search_box->QueryAutocomplete(input, prevent_inline_autocomplete);
 }
 
 // static

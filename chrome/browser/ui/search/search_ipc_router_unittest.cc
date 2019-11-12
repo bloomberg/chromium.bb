@@ -108,9 +108,10 @@ class MockSearchIPCRouterDelegate : public SearchIPCRouter::Delegate {
       void(uint8_t line,
            chrome::mojom::EmbeddedSearch::DeleteAutocompleteMatchCallback
                callback));
-  MOCK_METHOD2(
+  MOCK_METHOD3(
       QueryAutocomplete,
       void(const base::string16& input,
+           bool prevent_inline_autocomplete,
            chrome::mojom::EmbeddedSearch::QueryAutocompleteCallback callback));
   MOCK_METHOD1(StopAutocomplete, void(bool));
   MOCK_METHOD1(BlocklistPromo, void(const std::string& promo_id));
@@ -1079,13 +1080,13 @@ TEST_F(SearchIPCRouterTest, IgnoreQueryAutocomplete) {
   NavigateAndCommitActiveTab(GURL("chrome-search://foo/bar"));
   SetupMockDelegateAndPolicy();
   MockSearchIPCRouterPolicy* policy = GetSearchIPCRouterPolicy();
-  EXPECT_CALL(*mock_delegate(), QueryAutocomplete(_, _)).Times(0);
+  EXPECT_CALL(*mock_delegate(), QueryAutocomplete(_, _, _)).Times(0);
   EXPECT_CALL(*policy, ShouldProcessQueryAutocomplete(_))
       .Times(1)
       .WillOnce(Return(false));
 
   GetSearchIPCRouter().QueryAutocomplete(
-      base::string16(),
+      base::string16(), false,
       base::Bind([](chrome::mojom::AutocompleteResultPtr result) {}));
 }
 

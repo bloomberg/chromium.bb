@@ -158,6 +158,7 @@ class SearchIPCRouter : public content::WebContentsObserver,
 
     virtual void QueryAutocomplete(
         const base::string16& input,
+        bool prevent_inline_autocomplete,
         chrome::mojom::EmbeddedSearch::QueryAutocompleteCallback callback) = 0;
 
     virtual void StopAutocomplete(bool clear_result) = 0;
@@ -317,6 +318,7 @@ class SearchIPCRouter : public content::WebContentsObserver,
   void ConfirmThemeChanges() override;
   void QueryAutocomplete(
       const base::string16& input,
+      bool prevent_inline_autocomplete,
       chrome::mojom::EmbeddedSearch::QueryAutocompleteCallback callback)
       override;
   void StopAutocomplete(bool clear_result) override;

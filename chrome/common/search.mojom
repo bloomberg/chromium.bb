@@ -181,8 +181,8 @@ interface EmbeddedSearch {
   ConfirmThemeChanges();
 
   // Gets autocomplete matches from the browser.
-  QueryAutocomplete(mojo_base.mojom.String16 input) =>
-        (AutocompleteResult result);
+  QueryAutocomplete(mojo_base.mojom.String16 input,
+    bool prevent_inline_autocomplete) => (AutocompleteResult result);
 
   // Deletes the AutocompleteMatch in the current results by |line| number if
   // it is deletable. When a match is deleted, |matches| is populated with the
