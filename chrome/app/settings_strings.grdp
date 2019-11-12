@@ -5313,16 +5313,19 @@
   <message name="IDS_SETTINGS_SECURITY_KEYS_BIO_ENROLLMENT_DIALOG_TITLE" desc="The title of a dialog that lets users view, add, rename, and delete fingerprints on their security key (an authentication hardware device).">
     Manage fingerprints
   </message>
+  <message name="IDS_SETTINGS_SECURITY_KEYS_BIO_ENROLLMENT_ADD_TITLE" desc="The title of a dialog instructing a user to touch their security key (an authentication hardware device) to enroll a fingerprint on it.">
+    Add fingerprint
+  </message>
   <message name="IDS_SETTINGS_SECURITY_KEYS_BIO_CHOOSE_NAME" desc="A label instructing the user to provide a descriptive name for a fingerprint enrolled to a security key.">
     Choose a name for this fingerprint
   </message>
   <message name="IDS_SETTINGS_SECURITY_KEYS_BIO_NAME_LABEL" desc="A label for a text input field containing a descriptive name for a fingerprint enrolled to a security key.">
     Name
   </message>
-  <message name="IDS_SETTINGS_SECURITY_KEYS_BIO_ENROLLMENT_NO_ENROLLMENTS" desc="A label informing the user that there are no fingerprints stored on their security key (authentication hardware device).">
-    Your security key has no fingerprints stored.
+  <message name="IDS_SETTINGS_SECURITY_KEYS_BIO_ENROLLMENT_NO_ENROLLMENTS_LABEL" desc="A label informing the user that there are no fingerprints stored on their security key (authentication hardware device).">
+    Your security key has no fingerprints stored
   </message>
-  <message name="IDS_SETTINGS_SECURITY_KEYS_BIO_ENROLLMENT_LABEL" desc="A label describing a list of fingerprints enrolled with a security key (authentication hardware device).">
+  <message name="IDS_SETTINGS_SECURITY_KEYS_BIO_ENROLLMENT_ENROLLMENTS_LABEL" desc="A label describing a list of fingerprints enrolled with a security key (authentication hardware device).">
     Fingerprints on this security key
   </message>
   <message name="IDS_SETTINGS_SECURITY_KEYS_BIO_ENROLLMENT_ENROLLING_LABEL" desc="A label instructing the user to repeatedly touch the fingerprint sensor on their security key (authentication hardware device) to take samples for a new fingerprint.">
