@@ -368,15 +368,6 @@ bool DiscardableSharedMemory::Purge(Time current_time) {
     return false;
   }
 
-  // If |shared_memory_region_| handle is invalid then the memory will be
-  // released by the manager Unmap()ping |this| in response to Purge() returning
-  // true, so there is no point spending time calling discard APIs.
-  // This is the case for in-process instances.
-  if (!shared_memory_region_.IsValid()) {
-    last_known_usage_ = Time();
-    return true;
-  }
-
 // The next section will release as much resource as can be done
 // from the purging process, until the client process notices the
 // purge and releases its own references.
