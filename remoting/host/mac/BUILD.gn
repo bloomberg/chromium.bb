@@ -20,23 +20,6 @@ source_set("constants") {
   ]
 }
 
-source_set("permission_checking") {
-  sources = [
-    "permission_checker.cc",
-    "permission_checker.h",
-    "permission_process_utils.cc",
-    "permission_process_utils.h",
-    "permission_utils.h",
-    "permission_utils.mm",
-    "permission_wizard.h",
-    "permission_wizard.mm",
-  ]
-
-  deps = [
-    ":constants",
-  ]
-}
-
 executable("remoting_me2me_host_service") {
   sources = [
     "host_service_main.cc",
@@ -112,8 +95,14 @@ target("mac_app_bundle", "remoting_me2me_host") {
   #   defines = [ "REMOTING_ENABLE_BREAKPAD" ]
   # }
 
+  sources = [
+    "permission_utils.h",
+    "permission_utils.mm",
+    "permission_wizard.h",
+    "permission_wizard.mm",
+  ]
+
   deps = [
-    ":permission_checking",
     "//remoting/base:breakpad",
     "//remoting/host:main",
     "//remoting/host:remoting_me2me_host_static",
