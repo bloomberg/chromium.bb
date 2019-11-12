@@ -2180,7 +2180,7 @@
   {
     "name": "explore-sites",
     "owners": [ "chili", "dewittj" ],
-    "expiry_milestone": 83
+    "expiry_milestone": 85
   },
   {
     "name": "extension-apis",
