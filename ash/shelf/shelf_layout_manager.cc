@@ -1079,6 +1079,10 @@ HotseatState ShelfLayoutManager::CalculateHotseatState(
     return HotseatState::kShown;
 
   auto* app_list_controller = Shell::Get()->app_list_controller();
+  // If the app list controller is null, we are probably in the middle of
+  // a shutdown, let's not change the hotseat state.
+  if (!app_list_controller)
+    return hotseat_state();
   const auto* overview_controller = Shell::Get()->overview_controller();
   const bool in_overview =
       ((overview_controller && overview_controller->InOverviewSession()) ||
