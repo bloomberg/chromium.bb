@@ -103,23 +103,6 @@ void AddPartial1(const int8x8_t a, int16x8_t* b, int16x8_t* c) {
   }
 }
 
-// Sum the lane and add it to the ith element.
-// TODO(johannkoenig): Consider storing this to an array instead of a vector.
-// Used to calculate |partial[2][i]|.
-template <int lane>
-void AddPartial2(const int8x8_t a, int16x8_t* b) {
-#if defined(__aarch64__)
-  // vaddv_s8() returns an int8_t value which makes it thoroughly useless.
-  const int16_t sum = vaddvq_s16(vmovl_s8(a));
-#else
-  const int16x4_t c = vpaddl_s8(a);
-  const int32x2_t d = vpaddl_s16(c);
-  const int64x1_t e = vpaddl_s32(d);
-  const int16_t sum = static_cast<int16_t>(vget_lane_s64(e, 0));
-#endif  // defined(__aarch64__)
-  *b = vsetq_lane_s16(sum, *b, lane);
-}
-
 // Simple add starting at [3] and stepping back every other row.
 // Used to calculate |partial[5][3 - i / 2 + j]|.
 template <int shift>
@@ -163,10 +146,11 @@ void AddPartial7(const int8x8_t a, int16x8_t* b, int16x8_t* c) {
 }
 
 template <int value>
-void AddPartial(int8x8_t source, int16x8_t dest_lo[8], int16x8_t dest_hi[8]) {
+void AddPartial(int8x8_t source, int16x8_t dest_lo[8], int16x8_t dest_hi[8],
+                int16_t dest_2[8]) {
   AddPartial0<value>(source, &dest_lo[0], &dest_hi[0]);
   AddPartial1<value>(source, &dest_lo[1], &dest_hi[1]);
-  AddPartial2<value>(source, &dest_lo[2]);
+  dest_2[value] = SumVector(source);
   AddPartial1<value, /*is_partial3=*/true>(source, &dest_lo[3], &dest_hi[3]);
   AddPartial0<value, /*is_partial4=*/true>(source, &dest_lo[4], &dest_hi[4]);
   AddPartial5<value>(source, &dest_lo[5], &dest_hi[5]);
@@ -227,6 +211,7 @@ void CdefDirection_NEON(const void* const source, ptrdiff_t stride,
   const auto* src = static_cast<const uint8_t*>(source);
   int32_t cost[8];
   int16x8_t partial_lo[8], partial_hi[8];
+  int16_t partial_2[8];
   const uint8x8_t c128 = vdup_n_u8(128);
 
   for (int i = 0; i < 8; ++i) {
@@ -235,27 +220,29 @@ void CdefDirection_NEON(const void* const source, ptrdiff_t stride,
 
   const int8x8_t src_row0 = vreinterpret_s8_u8(vsub_u8(vld1_u8(src), c128));
   src += stride;
-  AddPartial<0>(src_row0, partial_lo, partial_hi);
+  AddPartial<0>(src_row0, partial_lo, partial_hi, partial_2);
   const int8x8_t src_row1 = vreinterpret_s8_u8(vsub_u8(vld1_u8(src), c128));
   src += stride;
-  AddPartial<1>(src_row1, partial_lo, partial_hi);
+  AddPartial<1>(src_row1, partial_lo, partial_hi, partial_2);
   const int8x8_t src_row2 = vreinterpret_s8_u8(vsub_u8(vld1_u8(src), c128));
   src += stride;
-  AddPartial<2>(src_row2, partial_lo, partial_hi);
+  AddPartial<2>(src_row2, partial_lo, partial_hi, partial_2);
   const int8x8_t src_row3 = vreinterpret_s8_u8(vsub_u8(vld1_u8(src), c128));
   src += stride;
-  AddPartial<3>(src_row3, partial_lo, partial_hi);
+  AddPartial<3>(src_row3, partial_lo, partial_hi, partial_2);
   const int8x8_t src_row4 = vreinterpret_s8_u8(vsub_u8(vld1_u8(src), c128));
   src += stride;
-  AddPartial<4>(src_row4, partial_lo, partial_hi);
+  AddPartial<4>(src_row4, partial_lo, partial_hi, partial_2);
   const int8x8_t src_row5 = vreinterpret_s8_u8(vsub_u8(vld1_u8(src), c128));
   src += stride;
-  AddPartial<5>(src_row5, partial_lo, partial_hi);
+  AddPartial<5>(src_row5, partial_lo, partial_hi, partial_2);
   const int8x8_t src_row6 = vreinterpret_s8_u8(vsub_u8(vld1_u8(src), c128));
   src += stride;
-  AddPartial<6>(src_row6, partial_lo, partial_hi);
+  AddPartial<6>(src_row6, partial_lo, partial_hi, partial_2);
   const int8x8_t src_row7 = vreinterpret_s8_u8(vsub_u8(vld1_u8(src), c128));
-  AddPartial<7>(src_row7, partial_lo, partial_hi);
+  AddPartial<7>(src_row7, partial_lo, partial_hi, partial_2);
+
+  partial_lo[2] = vld1q_s16(partial_2);
 
   // TODO(johannkoenig): Try to figure out when these need to move up to
   // int32_t. May be able to put it off for a bit.

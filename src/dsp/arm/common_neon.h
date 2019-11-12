@@ -363,6 +363,18 @@ inline int8x8_t InterleaveHigh32(const int8x8_t a, const int8x8_t b) {
 //------------------------------------------------------------------------------
 // Sum.
 
+inline int16_t SumVector(const int8x8_t a) {
+#if defined(__aarch64__)
+  // vaddv_s8() returns an int8_t value so we must expand to int16_t first.
+  return vaddv_s16(vpaddl_s8(a));
+#else
+  const int16x4_t c = vpaddl_s8(a);
+  const int32x2_t d = vpaddl_s16(c);
+  const int64x1_t e = vpaddl_s32(d);
+  return static_cast<int16_t>(vget_lane_s64(e, 0));
+#endif  // defined(__aarch64__)
+}
+
 inline int32_t SumVector(const int32x4_t a) {
 #if defined(__aarch64__)
   return vaddvq_s32(a);
