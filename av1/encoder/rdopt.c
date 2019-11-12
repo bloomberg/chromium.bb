@@ -4887,122 +4887,6 @@ static int64_t rd_pick_intra_angle_sby(const AV1_COMP *const cpi, MACROBLOCK *x,
   return best_rd;
 }
 
-// Indices are sign, integer, and fractional part of the gradient value
-static const uint8_t gradient_to_angle_bin[2][7][16] = {
-  {
-      { 6, 6, 6, 6, 7, 7, 7, 7, 7, 7, 7, 7, 0, 0, 0, 0 },
-      { 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1 },
-      { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 },
-      { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 },
-      { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 },
-      { 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2 },
-      { 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2 },
-  },
-  {
-      { 6, 6, 6, 6, 5, 5, 5, 5, 5, 5, 5, 5, 4, 4, 4, 4 },
-      { 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 3, 3, 3, 3, 3, 3 },
-      { 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3 },
-      { 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3 },
-      { 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3 },
-      { 3, 3, 3, 3, 3, 3, 3, 2, 2, 2, 2, 2, 2, 2, 2, 2 },
-      { 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2 },
-  },
-};
-
-/* clang-format off */
-static const uint8_t mode_to_angle_bin[INTRA_MODES] = {
-  0, 2, 6, 0, 4, 3, 5, 7, 1, 0,
-  0,
-};
-/* clang-format on */
-
-static AOM_INLINE void get_gradient_hist(const uint8_t *src, int src_stride,
-                                         int rows, int cols, uint64_t *hist) {
-  src += src_stride;
-  for (int r = 1; r < rows; ++r) {
-    for (int c = 1; c < cols; ++c) {
-      int dx = src[c] - src[c - 1];
-      int dy = src[c] - src[c - src_stride];
-      int index;
-      const int temp = dx * dx + dy * dy;
-      if (dy == 0) {
-        index = 2;
-      } else {
-        const int sn = (dx > 0) ^ (dy > 0);
-        dx = abs(dx);
-        dy = abs(dy);
-        const int remd = (dx % dy) * 16 / dy;
-        const int quot = dx / dy;
-        index = gradient_to_angle_bin[sn][AOMMIN(quot, 6)][AOMMIN(remd, 15)];
-      }
-      hist[index] += temp;
-    }
-    src += src_stride;
-  }
-}
-
-static AOM_INLINE void get_highbd_gradient_hist(const uint8_t *src8,
-                                                int src_stride, int rows,
-                                                int cols, uint64_t *hist) {
-  uint16_t *src = CONVERT_TO_SHORTPTR(src8);
-  src += src_stride;
-  for (int r = 1; r < rows; ++r) {
-    for (int c = 1; c < cols; ++c) {
-      int dx = src[c] - src[c - 1];
-      int dy = src[c] - src[c - src_stride];
-      int index;
-      const int temp = dx * dx + dy * dy;
-      if (dy == 0) {
-        index = 2;
-      } else {
-        const int sn = (dx > 0) ^ (dy > 0);
-        dx = abs(dx);
-        dy = abs(dy);
-        const int remd = (dx % dy) * 16 / dy;
-        const int quot = dx / dy;
-        index = gradient_to_angle_bin[sn][AOMMIN(quot, 6)][AOMMIN(remd, 15)];
-      }
-      hist[index] += temp;
-    }
-    src += src_stride;
-  }
-}
-
-static AOM_INLINE void angle_estimation(const uint8_t *src, int src_stride,
-                                        int rows, int cols, BLOCK_SIZE bsize,
-                                        int is_hbd,
-                                        uint8_t *directional_mode_skip_mask) {
-  // Check if angle_delta is used
-  if (!av1_use_angle_delta(bsize)) return;
-
-  uint64_t hist[DIRECTIONAL_MODES] = { 0 };
-  if (is_hbd)
-    get_highbd_gradient_hist(src, src_stride, rows, cols, hist);
-  else
-    get_gradient_hist(src, src_stride, rows, cols, hist);
-
-  int i;
-  uint64_t hist_sum = 0;
-  for (i = 0; i < DIRECTIONAL_MODES; ++i) hist_sum += hist[i];
-  for (i = 0; i < INTRA_MODES; ++i) {
-    if (av1_is_directional_mode(i)) {
-      const uint8_t angle_bin = mode_to_angle_bin[i];
-      uint64_t score = 2 * hist[angle_bin];
-      int weight = 2;
-      if (angle_bin > 0) {
-        score += hist[angle_bin - 1];
-        ++weight;
-      }
-      if (angle_bin < DIRECTIONAL_MODES - 1) {
-        score += hist[angle_bin + 1];
-        ++weight;
-      }
-      const int thresh = 10;
-      if (score * thresh < hist_sum * weight) directional_mode_skip_mask[i] = 1;
-    }
-  }
-}
-
 // Given selected prediction mode, search for the best tx type and size.
 static AOM_INLINE int intra_block_yrd(const AV1_COMP *const cpi, MACROBLOCK *x,
                                       BLOCK_SIZE bsize, const int *bmode_costs,
@@ -5043,6 +4927,168 @@ static AOM_INLINE int intra_block_yrd(const AV1_COMP *const cpi, MACROBLOCK *x,
   return 0;
 }
 
+#define BINS 32
+static const float intra_hog_model_bias[DIRECTIONAL_MODES] = {
+  0.450578f,  0.695518f,  -0.717944f, -0.639894f,
+  -0.602019f, -0.453454f, 0.055857f,  -0.465480f,
+};
+
+static const float intra_hog_model_weights[BINS * DIRECTIONAL_MODES] = {
+  -3.076402f, -3.757063f, -3.275266f, -3.180665f, -3.452105f, -3.216593f,
+  -2.871212f, -3.134296f, -1.822324f, -2.401411f, -1.541016f, -1.195322f,
+  -0.434156f, 0.322868f,  2.260546f,  3.368715f,  3.989290f,  3.308487f,
+  2.277893f,  0.923793f,  0.026412f,  -0.385174f, -0.718622f, -1.408867f,
+  -1.050558f, -2.323941f, -2.225827f, -2.585453f, -3.054283f, -2.875087f,
+  -2.985709f, -3.447155f, 3.758139f,  3.204353f,  2.170998f,  0.826587f,
+  -0.269665f, -0.702068f, -1.085776f, -2.175249f, -1.623180f, -2.975142f,
+  -2.779629f, -3.190799f, -3.521900f, -3.375480f, -3.319355f, -3.897389f,
+  -3.172334f, -3.594528f, -2.879132f, -2.547777f, -2.921023f, -2.281844f,
+  -1.818988f, -2.041771f, -0.618268f, -1.396458f, -0.567153f, -0.285868f,
+  -0.088058f, 0.753494f,  2.092413f,  3.215266f,  -3.300277f, -2.748658f,
+  -2.315784f, -2.423671f, -2.257283f, -2.269583f, -2.196660f, -2.301076f,
+  -2.646516f, -2.271319f, -2.254366f, -2.300102f, -2.217960f, -2.473300f,
+  -2.116866f, -2.528246f, -3.314712f, -1.701010f, -0.589040f, -0.088077f,
+  0.813112f,  1.702213f,  2.653045f,  3.351749f,  3.243554f,  3.199409f,
+  2.437856f,  1.468854f,  0.533039f,  -0.099065f, -0.622643f, -2.200732f,
+  -4.228861f, -2.875263f, -1.273956f, -0.433280f, 0.803771f,  1.975043f,
+  3.179528f,  3.939064f,  3.454379f,  3.689386f,  3.116411f,  1.970991f,
+  0.798406f,  -0.628514f, -1.252546f, -2.825176f, -4.090178f, -3.777448f,
+  -3.227314f, -3.479403f, -3.320569f, -3.159372f, -2.729202f, -2.722341f,
+  -3.054913f, -2.742923f, -2.612703f, -2.662632f, -2.907314f, -3.117794f,
+  -3.102660f, -3.970972f, -4.891357f, -3.935582f, -3.347758f, -2.721924f,
+  -2.219011f, -1.702391f, -0.866529f, -0.153743f, 0.107733f,  1.416882f,
+  2.572884f,  3.607755f,  3.974820f,  3.997783f,  2.970459f,  0.791687f,
+  -1.478921f, -1.228154f, -1.216955f, -1.765932f, -1.951003f, -1.985301f,
+  -1.975881f, -1.985593f, -2.422371f, -2.419978f, -2.531288f, -2.951853f,
+  -3.071380f, -3.277027f, -3.373539f, -4.462010f, -0.967888f, 0.805524f,
+  2.794130f,  3.685984f,  3.745195f,  3.252444f,  2.316108f,  1.399146f,
+  -0.136519f, -0.162811f, -1.004357f, -1.667911f, -1.964662f, -2.937579f,
+  -3.019533f, -3.942766f, -5.102767f, -3.882073f, -3.532027f, -3.451956f,
+  -2.944015f, -2.643064f, -2.529872f, -2.077290f, -2.809965f, -1.803734f,
+  -1.783593f, -1.662585f, -1.415484f, -1.392673f, -0.788794f, -1.204819f,
+  -1.998864f, -1.182102f, -0.892110f, -1.317415f, -1.359112f, -1.522867f,
+  -1.468552f, -1.779072f, -2.332959f, -2.160346f, -2.329387f, -2.631259f,
+  -2.744936f, -3.052494f, -2.787363f, -3.442548f, -4.245075f, -3.032172f,
+  -2.061609f, -1.768116f, -1.286072f, -0.706587f, -0.192413f, 0.386938f,
+  0.716997f,  1.481393f,  2.216702f,  2.737986f,  3.109809f,  3.226084f,
+  2.490098f,  -0.095827f, -3.864816f, -3.507248f, -3.128925f, -2.908251f,
+  -2.883836f, -2.881411f, -2.524377f, -2.624478f, -2.399573f, -2.367718f,
+  -1.918255f, -1.926277f, -1.694584f, -1.723790f, -0.966491f, -1.183115f,
+  -1.430687f, 0.872896f,  2.766550f,  3.610080f,  3.578041f,  3.334928f,
+  2.586680f,  1.895721f,  1.122195f,  0.488519f,  -0.140689f, -0.799076f,
+  -1.222860f, -1.502437f, -1.900969f, -3.206816f,
+};
+
+static void generate_hog(const uint8_t *src, int stride, int rows, int cols,
+                         float *hist) {
+  const float step = (float)PI / BINS;
+  float total = 0.1f;
+  src += stride;
+  for (int r = 1; r < rows - 1; ++r) {
+    for (int c = 1; c < cols - 1; ++c) {
+      const uint8_t *above = &src[c - stride];
+      const uint8_t *below = &src[c + stride];
+      const uint8_t *left = &src[c - 1];
+      const uint8_t *right = &src[c + 1];
+      // Calculate gradient using Sobel fitlers.
+      const int dx = (right[-stride] + 2 * right[0] + right[stride]) -
+                     (left[-stride] + 2 * left[0] + left[stride]);
+      const int dy = (below[-1] + 2 * below[0] + below[1]) -
+                     (above[-1] + 2 * above[0] + above[1]);
+      if (dx == 0 && dy == 0) continue;
+      const int temp = abs(dx) + abs(dy);
+      if (!temp) continue;
+      total += temp;
+      if (dx == 0) {
+        hist[0] += temp / 2;
+        hist[BINS - 1] += temp / 2;
+      } else {
+        const float angle = atanf(dy * 1.0f / dx);
+        int idx = (int)roundf(angle / step) + BINS / 2;
+        idx = AOMMIN(idx, BINS - 1);
+        idx = AOMMAX(idx, 0);
+        hist[idx] += temp;
+      }
+    }
+    src += stride;
+  }
+
+  for (int i = 0; i < BINS; ++i) hist[i] /= total;
+}
+
+static void generate_hog_hbd(const uint8_t *src8, int stride, int rows,
+                             int cols, float *hist) {
+  const float step = (float)PI / BINS;
+  float total = 0.1f;
+  uint16_t *src = CONVERT_TO_SHORTPTR(src8);
+  src += stride;
+  for (int r = 1; r < rows - 1; ++r) {
+    for (int c = 1; c < cols - 1; ++c) {
+      const uint16_t *above = &src[c - stride];
+      const uint16_t *below = &src[c + stride];
+      const uint16_t *left = &src[c - 1];
+      const uint16_t *right = &src[c + 1];
+      // Calculate gradient using Sobel fitlers.
+      const int dx = (right[-stride] + 2 * right[0] + right[stride]) -
+                     (left[-stride] + 2 * left[0] + left[stride]);
+      const int dy = (below[-1] + 2 * below[0] + below[1]) -
+                     (above[-1] + 2 * above[0] + above[1]);
+      if (dx == 0 && dy == 0) continue;
+      const int temp = abs(dx) + abs(dy);
+      if (!temp) continue;
+      total += temp;
+      if (dx == 0) {
+        hist[0] += temp / 2;
+        hist[BINS - 1] += temp / 2;
+      } else {
+        const float angle = atanf(dy * 1.0f / dx);
+        int idx = (int)roundf(angle / step) + BINS / 2;
+        idx = AOMMIN(idx, BINS - 1);
+        idx = AOMMAX(idx, 0);
+        hist[idx] += temp;
+      }
+    }
+    src += stride;
+  }
+
+  for (int i = 0; i < BINS; ++i) hist[i] /= total;
+}
+
+static void prune_intra_mode_with_hog(const MACROBLOCK *x, BLOCK_SIZE bsize,
+                                      float th,
+                                      uint8_t *directional_mode_skip_mask) {
+  aom_clear_system_state();
+
+  const int bh = block_size_high[bsize];
+  const int bw = block_size_wide[bsize];
+  const MACROBLOCKD *xd = &x->e_mbd;
+  const int rows =
+      (xd->mb_to_bottom_edge >= 0) ? bh : (xd->mb_to_bottom_edge >> 3) + bh;
+  const int cols =
+      (xd->mb_to_right_edge >= 0) ? bw : (xd->mb_to_right_edge >> 3) + bw;
+  const int src_stride = x->plane[0].src.stride;
+  const uint8_t *src = x->plane[0].src.buf;
+  float hist[BINS] = { 0.0f };
+  if (is_cur_buf_hbd(xd)) {
+    generate_hog_hbd(src, src_stride, rows, cols, hist);
+  } else {
+    generate_hog(src, src_stride, rows, cols, hist);
+  }
+
+  for (int i = 0; i < DIRECTIONAL_MODES; ++i) {
+    float this_score = intra_hog_model_bias[i];
+    const float *weights = &intra_hog_model_weights[i * BINS];
+    for (int j = 0; j < BINS; ++j) {
+      this_score += weights[j] * hist[j];
+    }
+    if (this_score < th) directional_mode_skip_mask[i + 1] = 1;
+  }
+
+  aom_clear_system_state();
+}
+
+#undef BINS
+
 // This function is used only for intra_only frames
 static int64_t rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
                                       int *rate, int *rate_tokenonly,
@@ -5053,8 +5099,6 @@ static int64_t rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
   MB_MODE_INFO *const mbmi = xd->mi[0];
   assert(!is_inter_block(mbmi));
   int64_t best_model_rd = INT64_MAX;
-  const int rows = block_size_high[bsize];
-  const int cols = block_size_wide[bsize];
   int is_directional_mode;
   uint8_t directional_mode_skip_mask[INTRA_MODES] = { 0 };
   // Flag to check rd of any intra mode is better than best_rd passed to this
@@ -5076,11 +5120,9 @@ static int64_t rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
   bmode_costs = x->y_mode_costs[above_ctx][left_ctx];
 
   mbmi->angle_delta[PLANE_TYPE_Y] = 0;
-  if (cpi->sf.intra_angle_estimation) {
-    const int src_stride = x->plane[0].src.stride;
-    const uint8_t *src = x->plane[0].src.buf;
-    angle_estimation(src, src_stride, rows, cols, bsize, is_cur_buf_hbd(xd),
-                     directional_mode_skip_mask);
+  if (cpi->sf.intra_pruning_with_hog) {
+    prune_intra_mode_with_hog(x, bsize, cpi->sf.intra_pruning_with_hog_thresh,
+                              directional_mode_skip_mask);
   }
   mbmi->filter_intra_mode_info.use_filter_intra = 0;
   pmi->palette_size[0] = 0;
@@ -12326,13 +12368,9 @@ static int64_t handle_intra_mode(InterModeSearchState *search_state,
   const int is_directional_mode = av1_is_directional_mode(mode);
   if (is_directional_mode && av1_use_angle_delta(bsize) &&
       cpi->oxcf.enable_angle_delta) {
-    if (sf->intra_angle_estimation && !search_state->angle_stats_ready) {
-      const int src_stride = x->plane[0].src.stride;
-      const uint8_t *src = x->plane[0].src.buf;
-      const int rows = block_size_high[bsize];
-      const int cols = block_size_wide[bsize];
-      angle_estimation(src, src_stride, rows, cols, bsize, is_cur_buf_hbd(xd),
-                       search_state->directional_mode_skip_mask);
+    if (sf->intra_pruning_with_hog && !search_state->angle_stats_ready) {
+      prune_intra_mode_with_hog(x, bsize, cpi->sf.intra_pruning_with_hog_thresh,
+                                search_state->directional_mode_skip_mask);
       search_state->angle_stats_ready = 1;
     }
     if (search_state->directional_mode_skip_mask[mode]) return INT64_MAX;

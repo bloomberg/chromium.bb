@@ -282,7 +282,8 @@ static void set_good_speed_features_framesize_independent(
   sf->gm_disable_recode = 1;
   sf->use_fast_interpolation_filter_search = 1;
   sf->intra_tx_size_search_init_depth_sqr = 1;
-  sf->intra_angle_estimation = 1;
+  sf->intra_pruning_with_hog = 1;
+  sf->intra_pruning_with_hog_thresh = -1.2f;
   sf->tx_type_search.use_reduced_intra_txset = 1;
   sf->selective_ref_frame = 1;
   sf->prune_wedge_pred_diff_based = 1;
@@ -496,7 +497,8 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
   sf->gm_disable_recode = 1;
   sf->use_fast_interpolation_filter_search = 1;
   sf->intra_tx_size_search_init_depth_sqr = 1;
-  sf->intra_angle_estimation = 1;
+  sf->intra_pruning_with_hog = 1;
+  sf->intra_pruning_with_hog_thresh = -1.2f;
   sf->tx_type_search.use_reduced_intra_txset = 1;
   sf->selective_ref_frame = 1;
   sf->prune_wedge_pred_diff_based = 1;
@@ -833,7 +835,7 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
   sf->optimize_b_precheck = 0;
   sf->use_dist_wtd_comp_flag = DIST_WTD_COMP_ENABLED;
   sf->reuse_inter_intra_mode = 0;
-  sf->intra_angle_estimation = 0;
+  sf->intra_pruning_with_hog = 0;
   sf->skip_obmc_in_uniform_mv_field = 0;
   sf->skip_wm_in_uniform_mv_field = 0;
   sf->adaptive_interp_filter_search = 0;

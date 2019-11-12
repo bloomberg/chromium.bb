@@ -608,8 +608,10 @@ typedef struct SPEED_FEATURES {
   // flag to skip NEWMV mode in drl if the motion search result is the same
   int skip_repeated_newmv;
 
-  // Prune intra mode candidates based on source block gradient stats.
-  int intra_angle_estimation;
+  // Prune intra mode candidates based on source block histogram of gradient.
+  int intra_pruning_with_hog;
+  // TODO(anyone): tune intra_pruning_with_hog_thresh for various speeds.
+  float intra_pruning_with_hog_thresh;
 
   // Skip obmc or warped motion mode when neighborhood motion field is
   // identical
