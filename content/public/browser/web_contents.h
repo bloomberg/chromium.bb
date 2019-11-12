@@ -573,11 +573,14 @@ class WebContents : public PageNavigator,
   // Returns the visibility of the WebContents' view.
   virtual Visibility GetVisibility() = 0;
 
-  // Returns true if the before unload and unload listeners need to be
-  // fired. The value of this changes over time. For example, if true and the
-  // before unload listener is executed and allows the user to exit, then this
+  // This function checks *all* frames in this WebContents (not just the main
+  // frame) and returns true if at least one frame has either a beforeunload or
+  // an unload handler.
+  //
+  // The value of this may change over time. For example, if true and the
+  // beforeunload listener is executed and allows the user to exit, then this
   // returns false.
-  virtual bool NeedToFireBeforeUnload() = 0;
+  virtual bool NeedToFireBeforeUnloadOrUnload() = 0;
 
   // Runs the beforeunload handler for the main frame and all its subframes.
   // See also ClosePage in RenderViewHostImpl, which runs the unload handler.

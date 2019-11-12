@@ -1726,8 +1726,7 @@ Visibility WebContentsImpl::GetVisibility() {
   return visibility_;
 }
 
-// TODO(alexmos): rename to NeedToFireBeforeUnloadOrUnload().
-bool WebContentsImpl::NeedToFireBeforeUnload() {
+bool WebContentsImpl::NeedToFireBeforeUnloadOrUnload() {
   // TODO(creis): Should we fire even for interstitial pages?
   if (ShowingInterstitialPage())
     return false;

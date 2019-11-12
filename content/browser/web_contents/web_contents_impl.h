@@ -377,7 +377,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void WasHidden() override;
   void WasOccluded() override;
   Visibility GetVisibility() override;
-  bool NeedToFireBeforeUnload() override;
+  bool NeedToFireBeforeUnloadOrUnload() override;
   void DispatchBeforeUnload(bool auto_cancel) override;
   void AttachInnerWebContents(std::unique_ptr<WebContents> inner_web_contents,
                               RenderFrameHost* render_frame_host,

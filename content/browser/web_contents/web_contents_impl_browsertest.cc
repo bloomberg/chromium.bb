@@ -2319,7 +2319,7 @@ void NavigateToDataURLAndCheckForTerminationDisabler(
   RenderFrameHostImpl* rfh =
       static_cast<RenderFrameHostImpl*>(shell->web_contents()->GetMainFrame());
   EXPECT_EQ(expect_onunload || expect_onbeforeunload,
-            shell->web_contents()->NeedToFireBeforeUnload());
+            shell->web_contents()->NeedToFireBeforeUnloadOrUnload());
   EXPECT_EQ(expect_onunload,
             rfh->GetSuddenTerminationDisablerState(blink::kUnloadHandler));
   EXPECT_EQ(expect_onbeforeunload, rfh->GetSuddenTerminationDisablerState(
