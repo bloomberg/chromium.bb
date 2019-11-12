@@ -40883,6 +40883,7 @@ Called by update_use_counter_css.py.-->
   <int value="1" label="Overflow Menu"/>
   <int value="2" label="Contextual Menu"/>
   <int value="3" label="Page"/>
+  <int value="4" label="App Menu"/>
 </enum>
 
 <enum name="MediaRouterDialParseMessageResult">
