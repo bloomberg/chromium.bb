@@ -158,7 +158,7 @@ class FilmGrain {
   // luma sample high stripe of the image. The first dimension is called
   // luma_num. The second dimension is the size of one noise stripe.
   //
-  // Each row of the Array2D noise_stripes_[plane] is a conceptually
+  // Each row of the Array2DView noise_stripes_[plane] is a conceptually
   // two-dimensional array of |GrainType|s. The two-dimensional array of
   // |GrainType|s is flattened into a one-dimensional buffer in this
   // implementation.
@@ -170,7 +170,9 @@ class FilmGrain {
   // is an array that has (34 >> subsampling_y_) rows and
   // RightShiftWithRounding(width_, subsampling_x_) columns and contains noise
   // for the chroma components.
-  Array2D<GrainType> noise_stripes_[kMaxPlanes];
+  Array2DView<GrainType> noise_stripes_[kMaxPlanes];
+  // Owns the memory that the elements of noise_stripes_ point to.
+  std::unique_ptr<GrainType[]> noise_buffer_;
 
   Array2D<GrainType> noise_image_[kMaxPlanes];
 };

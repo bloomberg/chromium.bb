@@ -635,7 +635,7 @@ using ChromaAutoRegressionFuncs =
 // |grain_seed| from the grain template produced by autoregression, and the same
 // is done for chroma grains, subject to subsampling.
 // |width| and |height| are the dimensions of the overall image.
-// |noise_stripes_buffer| points to an Array2D with one row for each stripe.
+// |noise_stripes_buffer| points to an Array2DView with one row for each stripe.
 // Because this function treats all planes identically and independently, it is
 // simplified to take one grain buffer at a time. This means duplicating some
 // random number generations, but that work can be reduced in other ways.
@@ -650,7 +650,7 @@ using ConstructNoiseStripesFuncs =
 // Fill a whole plane with film grain by copying out the noise stripes.
 // Section 7.18.3.5, second code block.
 // |width| and |height| are the dimensions of the overall image.
-// |noise_stripes_buffer| points to an Array2D with one row for each stripe.
+// |noise_stripes_buffer| points to an Array2DView with one row for each stripe.
 // |noise_image_buffer| points to an Array2D containing the allocated plane for
 // this frame.
 // Because this function treats all planes identically and independently, it is

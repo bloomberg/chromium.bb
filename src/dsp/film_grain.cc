@@ -601,27 +601,36 @@ bool FilmGrain<bitdepth>::AllocateNoiseStripes() {
   // ceil(half_height / 16.0)
   const int max_luma_num = DivideBy16(half_height + 15);
   constexpr int kNoiseStripeHeight = 34;
+  size_t noise_buffer_size = 0;
   if (params_.num_y_points > 0) {
-    if (!noise_stripes_[kPlaneY].Reset(max_luma_num,
-                                       kNoiseStripeHeight * width_, false)) {
-      return false;
-    }
+    noise_buffer_size += max_luma_num * kNoiseStripeHeight * width_;
   }
   if (!is_monochrome_) {
-    if (!noise_stripes_[kPlaneU].Reset(
-            max_luma_num,
-            (kNoiseStripeHeight >> subsampling_y_) *
-                RightShiftWithRounding(width_, subsampling_x_),
-            false)) {
-      return false;
-    }
-    if (!noise_stripes_[kPlaneV].Reset(
-            max_luma_num,
-            (kNoiseStripeHeight >> subsampling_y_) *
-                RightShiftWithRounding(width_, subsampling_x_),
-            false)) {
-      return false;
-    }
+    noise_buffer_size += 2 * max_luma_num *
+                         (kNoiseStripeHeight >> subsampling_y_) *
+                         RightShiftWithRounding(width_, subsampling_x_);
+  }
+  noise_buffer_.reset(new (std::nothrow) GrainType[noise_buffer_size]);
+  if (noise_buffer_ == nullptr) return false;
+  GrainType* noise_buffer = noise_buffer_.get();
+  if (params_.num_y_points > 0) {
+    noise_stripes_[kPlaneY].Reset(max_luma_num, kNoiseStripeHeight * width_,
+                                  noise_buffer);
+    noise_buffer += max_luma_num * kNoiseStripeHeight * width_;
+  }
+  if (!is_monochrome_) {
+    noise_stripes_[kPlaneU].Reset(
+        max_luma_num,
+        (kNoiseStripeHeight >> subsampling_y_) *
+            RightShiftWithRounding(width_, subsampling_x_),
+        noise_buffer);
+    noise_buffer += max_luma_num * (kNoiseStripeHeight >> subsampling_y_) *
+                    RightShiftWithRounding(width_, subsampling_x_);
+    noise_stripes_[kPlaneV].Reset(
+        max_luma_num,
+        (kNoiseStripeHeight >> subsampling_y_) *
+            RightShiftWithRounding(width_, subsampling_x_),
+        noise_buffer);
   }
   return true;
 }
@@ -631,7 +640,8 @@ template <int bitdepth, typename GrainType>
 void ConstructNoiseStripes_C(const void* grain_buffer, int grain_seed,
                              int width, int height, int subsampling_x,
                              int subsampling_y, void* noise_stripes_buffer) {
-  auto* noise_stripes = static_cast<Array2D<GrainType>*>(noise_stripes_buffer);
+  auto* noise_stripes =
+      static_cast<Array2DView<GrainType>*>(noise_stripes_buffer);
   const auto* grain = static_cast<const GrainType*>(grain_buffer);
   const int half_width = DivideBy2(width + 1);
   const int half_height = DivideBy2(height + 1);
@@ -695,7 +705,8 @@ void ConstructNoiseStripesWithOverlap_C(const void* grain_buffer,
                                         int grain_seed, int width, int height,
                                         int subsampling_x, int subsampling_y,
                                         void* noise_stripes_buffer) {
-  auto* noise_stripes = static_cast<Array2D<GrainType>*>(noise_stripes_buffer);
+  auto* noise_stripes =
+      static_cast<Array2DView<GrainType>*>(noise_stripes_buffer);
   const auto* grain = static_cast<const GrainType*>(grain_buffer);
   const int half_width = DivideBy2(width + 1);
   const int half_height = DivideBy2(height + 1);
@@ -839,7 +850,7 @@ void ConstructNoiseImage_C(const void* noise_stripes_buffer, int width,
                            int height, int subsampling_x, int subsampling_y,
                            void* noise_image_buffer) {
   const auto* noise_stripes =
-      static_cast<const Array2D<GrainType>*>(noise_stripes_buffer);
+      static_cast<const Array2DView<GrainType>*>(noise_stripes_buffer);
   auto* noise_image = static_cast<Array2D<GrainType>*>(noise_image_buffer);
   const int plane_width = (width + subsampling_x) >> subsampling_x;
   const int plane_height = (height + subsampling_y) >> subsampling_y;
@@ -858,7 +869,7 @@ void ConstructNoiseImageWithOverlap_C(const void* noise_stripes_buffer,
                                       int subsampling_y,
                                       void* noise_image_buffer) {
   const auto* noise_stripes =
-      static_cast<const Array2D<GrainType>*>(noise_stripes_buffer);
+      static_cast<const Array2DView<GrainType>*>(noise_stripes_buffer);
   auto* noise_image = static_cast<Array2D<GrainType>*>(noise_image_buffer);
   const int plane_width = (width + subsampling_x) >> subsampling_x;
   const int plane_height = (height + subsampling_y) >> subsampling_y;
