@@ -6716,6 +6716,27 @@
             ]
         }
     ],
+    "UnidoOnSignIn": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "SharingDeriveVapidKey",
+                        "SharingUseDeviceInfo",
+                        "SyncDeviceInfoInTransportMode"
+                    ]
+                }
+            ]
+        }
+    ],
     "UnifiedAutoplay": [
         {
             "platforms": [
