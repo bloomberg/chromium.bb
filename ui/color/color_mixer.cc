@@ -4,6 +4,8 @@
 
 #include "ui/color/color_mixer.h"
 
+#include "base/containers/adapters.h"
+#include "base/stl_util.h"
 #include "ui/color/color_recipe.h"
 #include "ui/gfx/color_palette.h"
 
@@ -18,14 +20,15 @@ ColorMixer& ColorMixer::operator=(ColorMixer&&) noexcept = default;
 
 ColorMixer::~ColorMixer() = default;
 
-ColorRecipe& ColorMixer::operator[](ColorId id) {
-  DCHECK_COLOR_ID_VALID(id);
-  return recipes_[id];
-}
-
 void ColorMixer::AddSet(ColorSet&& set) {
   DCHECK(FindSetWithId(set.id) == sets_.cend());
   sets_.push_front(std::move(set));
+}
+
+ColorRecipe& ColorMixer::AddRecipe(ColorId id) {
+  DCHECK_COLOR_ID_VALID(id);
+  DCHECK(!base::Contains(recipes_, id));
+  return recipes_[id];
 }
 
 SkColor ColorMixer::GetInputColor(ColorId id) const {
