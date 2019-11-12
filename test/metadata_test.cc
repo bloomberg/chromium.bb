@@ -13,8 +13,7 @@
 
 namespace {
 const size_t kExampleDataSize = 10;
-// TODO(daniel.vt@samsung.com): Make this const when the metadata API allows it.
-uint8_t kExampleData[kExampleDataSize] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+const uint8_t kExampleData[kExampleDataSize] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
 
 #if CONFIG_AV1_ENCODER
 
