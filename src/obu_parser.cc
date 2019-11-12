@@ -72,6 +72,18 @@ bool InSpatialLayer(int operating_point_idc, int spatial_id) {
   return ((operating_point_idc >> (spatial_id + 8)) & 1) != 0;
 }
 
+// Returns the index of the last nonzero byte in the |data| buffer of |size|
+// bytes. If there is no nonzero byte in the |data| buffer, returns -1.
+int GetLastNonzeroByteIndex(const uint8_t* data, size_t size) {
+  // Scan backward for a nonzero byte.
+  if (size > INT_MAX) return -1;
+  int i = static_cast<int>(size) - 1;
+  while (i >= 0 && data[i] == 0) {
+    --i;
+  }
+  return i;
+}
+
 }  // namespace
 
 // Macros to avoid repeated error checks in the parser code.
@@ -2079,12 +2091,24 @@ bool ObuParser::ParseFrameHeader() {
   return true;
 }
 
-bool ObuParser::ParseMetadata(size_t size) {
+bool ObuParser::ParseMetadata(const uint8_t* data, size_t size) {
+  const size_t start_offset = bit_reader_->byte_offset();
+  size_t metadata_type;
+  if (!bit_reader_->ReadUnsignedLeb128(&metadata_type)) {
+    LIBGAV1_DLOG(ERROR, "Could not read metadata_type.");
+    return false;
+  }
+  const size_t metadata_type_size = bit_reader_->byte_offset() - start_offset;
+  if (size < metadata_type_size) {
+    LIBGAV1_DLOG(
+        ERROR, "metadata_type is longer than metadata OBU payload %zu vs %zu.",
+        metadata_type_size, size);
+    return false;
+  }
+  data += metadata_type_size;
+  size -= metadata_type_size;
   int64_t scratch;
-  OBU_READ_LITERAL_OR_FAIL(16);
-  size -= 2;
-  const auto type = static_cast<MetadataType>(scratch);
-  switch (type) {
+  switch (metadata_type) {
     case kMetadataTypeHdrContentLightLevel:
       OBU_READ_LITERAL_OR_FAIL(16);
       metadata_.max_cll = scratch;
@@ -2107,9 +2131,69 @@ bool ObuParser::ParseMetadata(size_t size) {
       OBU_READ_LITERAL_OR_FAIL(32);
       metadata_.luminance_min = static_cast<uint32_t>(scratch);
       break;
-    default:
-      LIBGAV1_DLOG(ERROR, "Unknown metadata type: %u", type);
-      return false;
+    case kMetadataTypeItutT35: {
+      OBU_READ_LITERAL_OR_FAIL(8);
+      metadata_.itu_t_t35_country_code = static_cast<uint8_t>(scratch);
+      ++data;
+      --size;
+      if (metadata_.itu_t_t35_country_code == 0xFF) {
+        OBU_READ_LITERAL_OR_FAIL(8);
+        metadata_.itu_t_t35_country_code_extension_byte =
+            static_cast<uint8_t>(scratch);
+        ++data;
+        --size;
+      }
+      // Read itu_t_t35_payload_bytes. Section 6.7.2 of the spec says:
+      //   itu_t_t35_payload_bytes shall be bytes containing data registered as
+      //   specified in Recommendation ITU-T T.35.
+      // Therefore itu_t_t35_payload_bytes is byte aligned and the first
+      // trailing byte should be 0x80. Since the exact syntax of
+      // itu_t_t35_payload_bytes is not defined in the AV1 spec, identify the
+      // end of itu_t_t35_payload_bytes by searching for the trailing bit.
+      const int i = GetLastNonzeroByteIndex(data, size);
+      if (i < 0) {
+        LIBGAV1_DLOG(ERROR, "Trailing bit is missing.");
+        return false;
+      }
+      if (data[i] != 0x80) {
+        LIBGAV1_DLOG(
+            ERROR,
+            "itu_t_t35_payload_bytes is not byte aligned. The last nonzero "
+            "byte of the payload data is 0x%x, should be 0x80.",
+            data[i]);
+        return false;
+      }
+      if (i != 0) {
+        // data[0]..data[i - 1] are itu_t_t35_payload_bytes.
+        metadata_.itu_t_t35_payload_bytes.reset(new (std::nothrow) uint8_t[i]);
+        if (metadata_.itu_t_t35_payload_bytes == nullptr) {
+          LIBGAV1_DLOG(ERROR, "Allocation of itu_t_t35_payload_bytes failed.");
+          return false;
+        }
+        memcpy(metadata_.itu_t_t35_payload_bytes.get(), data, i);
+        metadata_.itu_t_t35_payload_size = i;
+      }
+      // Skip all bits before the trailing bit.
+      bit_reader_->SkipBytes(i);
+      break;
+    }
+    case kMetadataTypeScalability:
+      // TODO(b/120903866)
+    case kMetadataTypeTimecode:
+      // TODO(b/120903866)
+    default: {
+      // The Note in Section 5.8.1 says "Decoders should ignore the entire OBU
+      // if they do not understand the metadata_type." Find the trailing bit
+      // and skip all bits before the trailing bit.
+      const int i = GetLastNonzeroByteIndex(data, size);
+      if (i >= 0) {
+        // The last 1 bit in the last nonzero byte is the trailing bit. Skip
+        // all bits before the trailing bit.
+        const int n = CountTrailingZeros(data[i]);
+        bit_reader_->SkipBits(i * 8 + 7 - n);
+      }
+      break;
+    }
   }
   return true;
 }
@@ -2253,9 +2337,9 @@ StatusCode ObuParser::ParseOneFrame() {
   // Clear everything except the sequence header.
   obu_headers_.clear();
   frame_header_ = {};
+  metadata_ = {};
   tile_groups_.clear();
   next_tile_group_start_ = 0;
-  // TODO(b/120903866): |metadata_| must be reset here.
 
   bool parsed_one_full_frame = false;
   bool seen_frame_header = false;
@@ -2307,6 +2391,10 @@ StatusCode ObuParser::ParseOneFrame() {
     }
 
     const size_t obu_start_position = bit_reader_->bit_offset();
+    // The bit_reader_ is byte aligned after reading obu_header and obu_size.
+    // Therefore the byte offset can be computed as obu_start_position >> 3
+    // below.
+    assert((obu_start_position & 7) == 0);
     bool obu_skipped = false;
     switch (obu_type) {
       case kObuTemporalDelimiter:
@@ -2409,11 +2497,14 @@ StatusCode ObuParser::ParseOneFrame() {
         LIBGAV1_DLOG(ERROR, "Decoding of tile list OBUs is not supported.");
         return kLibgav1StatusUnimplemented;
       case kObuPadding:
-      // TODO(b/120903866): Fix ParseMetadata() and then invoke that for the
-      // kObuMetadata case.
-      case kObuMetadata:
         bit_reader_->SkipBytes(obu_size);
         obu_skipped = true;
+        break;
+      case kObuMetadata:
+        if (!ParseMetadata(&data[obu_start_position >> 3], obu_size)) {
+          LIBGAV1_DLOG(ERROR, "Failed to parse Metadata OBU.");
+          return kLibgav1StatusBitstreamError;
+        }
         break;
       default:
         // Skip reserved OBUs. Section 6.2.2: Reserved units are for future use

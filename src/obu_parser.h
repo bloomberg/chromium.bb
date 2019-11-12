@@ -354,7 +354,12 @@ struct ObuFrameHeader {
 enum MetadataType : uint8_t {
   // 0 is reserved for AOM use.
   kMetadataTypeHdrContentLightLevel = 1,
-  kMetadataTypeHdrMasteringDisplayColorVolume
+  kMetadataTypeHdrMasteringDisplayColorVolume = 2,
+  kMetadataTypeScalability = 3,
+  kMetadataTypeItutT35 = 4,
+  kMetadataTypeTimecode = 5,
+  // 6-31 are unregistered user private.
+  // 32 and greater are reserved for AOM use.
 };
 
 struct ObuMetadata {
@@ -368,6 +373,13 @@ struct ObuMetadata {
   uint16_t white_point_chromaticity_y;
   uint32_t luminance_max;
   uint32_t luminance_min;
+  // ITU-T T.35.
+  uint8_t itu_t_t35_country_code;
+  uint8_t itu_t_t35_country_code_extension_byte;  // Valid if
+                                                  // itu_t_t35_country_code is
+                                                  // 0xFF.
+  std::unique_ptr<uint8_t[]> itu_t_t35_payload_bytes;
+  size_t itu_t_t35_payload_size;
 };
 
 struct ObuTileGroup {
@@ -479,7 +491,12 @@ class ObuParser : public Allocable {
   bool ParseFilmGrainParameters();     // 5.9.30.
   bool ParseTileInfoSyntax();          // 5.9.15.
   bool ParseFrameHeader();             // 5.9.
-  bool ParseMetadata(size_t size);     // 5.8.
+  // |data| and |size| specify the payload data of the metadata OBU.
+  // NOTE: Although the payload data is available in the bit_reader_ member,
+  // it is also passed to ParseMetadata() as function parameters so that
+  // ParseMetadata() can find the trailing bit of the OBU and either extract
+  // or skip over the payload data as an opaque chunk of data.
+  bool ParseMetadata(const uint8_t* data, size_t size);  // 5.8.
   // Validates the |start| and |end| fields of the current tile group. If
   // valid, updates next_tile_group_start_ and returns true. Otherwise,
   // returns false.
