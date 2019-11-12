@@ -3725,6 +3725,48 @@ TEST_P(HotseatShelfLayoutManagerTest, ExitingOvervieHidesHotseat) {
   EXPECT_EQ(HotseatState::kHidden, GetShelfLayoutManager()->hotseat_state());
 }
 
+// Tests that after dragging window from top of the home screen down, and back
+// up again, the hotseat is shown on the home screen.
+TEST_P(HotseatShelfLayoutManagerTest,
+       HomeToInAppAndBackHomeDragWithNoBackdrop) {
+  GetPrimaryShelf()->SetAutoHideBehavior(GetParam());
+  TabletModeControllerTestApi().EnterTabletMode();
+
+  // Create a test window, and press home button to go home.
+  std::unique_ptr<aura::Window> window =
+      AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
+  wm::ActivateWindow(window.get());
+
+  PressHomeButton();
+
+  GetAppListTestHelper()->CheckVisibility(true);
+  EXPECT_EQ(HotseatState::kShown, GetShelfLayoutManager()->hotseat_state());
+
+  // Start downward drag from the top of the display.
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  const gfx::Rect display_bounds =
+      display::Screen::GetScreen()->GetPrimaryDisplay().bounds();
+  generator->MoveTouch(display_bounds.top_center());
+  generator->PressTouch();
+
+  // Move touch to the display center - verify that the active window was
+  // transformed.
+  EXPECT_TRUE(window->layer()->transform().IsIdentity());
+  generator->MoveTouchBy(0, 50);
+  EXPECT_TRUE(window->IsVisible());
+  EXPECT_FALSE(window->layer()->transform().IsIdentity());
+
+  // Move touch back to the top of display, and release touch.
+  generator->MoveTouch(display_bounds.top_center());
+  generator->ReleaseTouch();
+
+  // Verify that both home screen and hotseat are shown.
+  GetAppListTestHelper()->CheckVisibility(true);
+  EXPECT_EQ(HotseatState::kShown, GetShelfLayoutManager()->hotseat_state());
+  EXPECT_FALSE(window->IsVisible());
+  EXPECT_TRUE(window->layer()->transform().IsIdentity());
+}
+
 // Tests that swiping downward, towards the bezel, from a variety of points
 // results in hiding the hotseat.
 TEST_F(HotseatShelfLayoutManagerTest, HotseatHidesWhenSwipedToBezel) {
