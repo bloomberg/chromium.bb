@@ -4774,18 +4774,12 @@ const FeatureEntry kFeatureEntries[] = {
     // AboutFlagsHistogramTest unit test to verify this process).
 };
 
-class FlagsStateSingleton {
+class FlagsStateSingleton : public flags_ui::FlagsState::Delegate {
  public:
   FlagsStateSingleton()
-      : flags_state_(std::make_unique<flags_ui::FlagsState>(
-            kFeatureEntries,
-            base::size(kFeatureEntries),
-            base::Bind(&FlagsStateSingleton::IsFlagExpired))) {}
-  ~FlagsStateSingleton() {}
-
-  static bool IsFlagExpired(const flags_ui::FeatureEntry& entry) {
-    return flags::IsFlagExpired(entry.internal_name);
-  }
+      : flags_state_(
+            std::make_unique<flags_ui::FlagsState>(kFeatureEntries, this)) {}
+  ~FlagsStateSingleton() override = default;
 
   static FlagsStateSingleton* GetInstance() {
     return base::Singleton<FlagsStateSingleton>::get();
@@ -4796,12 +4790,15 @@ class FlagsStateSingleton {
   }
 
   void RebuildState(const std::vector<flags_ui::FeatureEntry>& entries) {
-    flags_state_ = std::make_unique<flags_ui::FlagsState>(
-        entries.data(), entries.size(),
-        base::Bind(&FlagsStateSingleton::IsFlagExpired));
+    flags_state_ = std::make_unique<flags_ui::FlagsState>(entries, this);
   }
 
  private:
+  // flags_ui::FlagsState::Delegate:
+  bool ShouldExcludeFlag(const FeatureEntry& entry) override {
+    return flags::IsFlagExpired(entry.internal_name);
+  }
+
   std::unique_ptr<flags_ui::FlagsState> flags_state_;
 
   DISALLOW_COPY_AND_ASSIGN(FlagsStateSingleton);
