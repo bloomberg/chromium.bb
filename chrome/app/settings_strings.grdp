@@ -4885,14 +4885,14 @@
     <message name="IDS_SETTINGS_POWER_IDLE_OTHER" desc="In Device Settings > Power, menu item for custom idle behavior.">
       Other
     </message>
-    <message name="IDS_SETTINGS_POWER_LID_CLOSED_SLEEP_LABEL" desc="In Device Settings > Power, label for suspending when lid is closed.">
-      Sleep when lid is closed
+    <message name="IDS_SETTINGS_POWER_LID_CLOSED_SLEEP_LABEL" desc="In Device Settings > Power, label for suspending when cover is closed.">
+      Sleep when cover is closed
     </message>
-    <message name="IDS_SETTINGS_POWER_LID_CLOSED_SIGN_OUT_LABEL" desc="In Device Settings > Power, label for signing out when lid is closed.">
-      Sign out when lid is closed
+    <message name="IDS_SETTINGS_POWER_LID_CLOSED_SIGN_OUT_LABEL" desc="In Device Settings > Power, label for signing out when cover is closed.">
+      Sign out when cover is closed
     </message>
-    <message name="IDS_SETTINGS_POWER_LID_CLOSED_SHUT_DOWN_LABEL" desc="In Device Settings > Power, label for shutting down when lid is closed.">
-      Shut down when lid is closed
+    <message name="IDS_SETTINGS_POWER_LID_CLOSED_SHUT_DOWN_LABEL" desc="In Device Settings > Power, label for shutting down when cover is closed.">
+      Shut down when cover is closed
     </message>
     <message name="IDS_SETTINGS_BATTERY_STATUS" desc="In Device Settings > Power, the battery status while the battery is discharging, showing the battery power as a percentage and the time left until the battery is empty.">
       <ph name="percentage">$1<ex>56</ex></ph>% - <ph name="time">$2<ex>2 hours and 20 minutes</ex></ph> left
