@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/home_screen/window_transform_to_home_screen_animation.h"
+#include "ash/home_screen/window_scale_animation.h"
 
 #include "ash/home_screen/home_screen_controller.h"
 #include "ash/home_screen/home_screen_delegate.h"
@@ -38,13 +38,15 @@ constexpr float kWindowScaleDownFactor = 0.001f;
 
 }  // namespace
 
-WindowTransformToHomeScreenAnimation::WindowTransformToHomeScreenAnimation(
+WindowScaleAnimation::WindowScaleAnimation(
     aura::Window* window,
+    WindowScaleType scale_type,
     base::Optional<BackdropWindowMode> original_backdrop_mode,
     base::OnceClosure opt_callback)
     : window_(window),
       original_backdrop_mode_(original_backdrop_mode),
-      opt_callback_(std::move(opt_callback)) {
+      opt_callback_(std::move(opt_callback)),
+      scale_type_(scale_type) {
   window_observer_.Add(window);
 
   ui::ScopedLayerAnimationSettings settings(window_->layer()->GetAnimator());
@@ -53,39 +55,43 @@ WindowTransformToHomeScreenAnimation::WindowTransformToHomeScreenAnimation(
       ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
   settings.SetTweenType(gfx::Tween::FAST_OUT_SLOW_IN);
   settings.AddObserver(this);
-  window_->layer()->GetAnimator()->SchedulePauseForProperties(
-      kWindowFadeOutDelay, ui::LayerAnimationElement::OPACITY);
-  window_->layer()->SetTransform(GetWindowTransformToHomeScreen());
-  window_->layer()->SetOpacity(0.f);
+  if (scale_type_ == WindowScaleType::kScaleDownToHomeScreen) {
+    window_->layer()->GetAnimator()->SchedulePauseForProperties(
+        kWindowFadeOutDelay, ui::LayerAnimationElement::OPACITY);
+    window_->layer()->SetTransform(GetWindowTransformToHomeScreen());
+    window_->layer()->SetOpacity(0.f);
+  } else {
+    window_->layer()->SetTransform(gfx::Transform());
+  }
 }
 
-WindowTransformToHomeScreenAnimation::~WindowTransformToHomeScreenAnimation() {
+WindowScaleAnimation::~WindowScaleAnimation() {
   if (!opt_callback_.is_null())
     std::move(opt_callback_).Run();
 }
 
-void WindowTransformToHomeScreenAnimation::OnImplicitAnimationsCompleted() {
-  // Minimize the dragged window after transform animation is completed.
-  window_util::HideAndMaybeMinimizeWithoutAnimation({window_},
-                                                    /*minimize=*/true);
+void WindowScaleAnimation::OnImplicitAnimationsCompleted() {
+  if (scale_type_ == WindowScaleType::kScaleDownToHomeScreen) {
+    // Minimize the dragged window after transform animation is completed.
+    window_util::HideAndMaybeMinimizeWithoutAnimation({window_},
+                                                      /*minimize=*/true);
 
-  // Reset its transform to identity transform and its original backdrop mode.
-  window_->layer()->SetTransform(gfx::Transform());
-  window_->layer()->SetOpacity(1.f);
+    // Reset its transform to identity transform and its original backdrop mode.
+    window_->layer()->SetTransform(gfx::Transform());
+    window_->layer()->SetOpacity(1.f);
+  }
   if (original_backdrop_mode_.has_value())
     window_->SetProperty(kBackdropWindowMode, *original_backdrop_mode_);
 
   delete this;
 }
 
-void WindowTransformToHomeScreenAnimation::OnWindowDestroying(
-    aura::Window* window) {
+void WindowScaleAnimation::OnWindowDestroying(aura::Window* window) {
   window_ = nullptr;
   delete this;
 }
 
-gfx::Transform
-WindowTransformToHomeScreenAnimation::GetWindowTransformToHomeScreen() {
+gfx::Transform WindowScaleAnimation::GetWindowTransformToHomeScreen() {
   gfx::Transform transform;
   HomeScreenDelegate* home_screen_delegate =
       Shell::Get()->home_screen_controller()->delegate();

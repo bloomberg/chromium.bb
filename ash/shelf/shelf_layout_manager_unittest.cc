@@ -4244,6 +4244,10 @@ class ShelfLayoutManagerWindowDraggingTest : public ShelfLayoutManagerTestBase {
     base::RunLoop().RunUntilIdle();
   }
 
+  bool IsWindowDragInProgress() {
+    return GetShelfLayoutManager()->IsWindowDragInProgress();
+  }
+
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
   DISALLOW_COPY_AND_ASSIGN(ShelfLayoutManagerWindowDraggingTest);
@@ -4274,17 +4278,17 @@ TEST_F(ShelfLayoutManagerWindowDraggingTest, DraggedMRUWindow) {
   UpdateScroll(-shelf_size - hotseat_size - hotseat_padding_size);
   DragWindowFromShelfController* window_drag_controller =
       GetShelfLayoutManager()->window_drag_controller_for_testing();
-  EXPECT_TRUE(window_drag_controller);
+  EXPECT_TRUE(IsWindowDragInProgress());
   EXPECT_EQ(window_drag_controller->dragged_window(), window.get());
   UpdateScroll(-shelf_widget_bounds.height() - hotseat_size);
   EndScroll(/*is_fling=*/false, 0.f);
-  EXPECT_FALSE(GetShelfLayoutManager()->window_drag_controller_for_testing());
+  EXPECT_FALSE(IsWindowDragInProgress());
 
   // The window needs to be visible to drag up.
   window->Hide();
   StartScroll(start);
   UpdateScroll(-shelf_size - hotseat_size - hotseat_padding_size);
-  EXPECT_FALSE(GetShelfLayoutManager()->window_drag_controller_for_testing());
+  EXPECT_FALSE(IsWindowDragInProgress());
   EndScroll(/*is_fling=*/false, 0.f);
 
   // In splitview, depends on the drag position, the active dragged window might
@@ -4299,20 +4303,20 @@ TEST_F(ShelfLayoutManagerWindowDraggingTest, DraggedMRUWindow) {
   UpdateScroll(-shelf_size - hotseat_size - hotseat_padding_size);
   window_drag_controller =
       GetShelfLayoutManager()->window_drag_controller_for_testing();
-  EXPECT_TRUE(window_drag_controller);
+  EXPECT_TRUE(IsWindowDragInProgress());
   EXPECT_EQ(window_drag_controller->dragged_window(), window.get());
   EndScroll(/*is_fling=*/false, 0.f);
-  EXPECT_FALSE(GetShelfLayoutManager()->window_drag_controller_for_testing());
+  EXPECT_FALSE(IsWindowDragInProgress());
 
   StartScroll(shelf_widget_bounds.bottom_right());
   UpdateScroll(-shelf_size - hotseat_size - hotseat_padding_size);
   window_drag_controller =
       GetShelfLayoutManager()->window_drag_controller_for_testing();
-  EXPECT_TRUE(window_drag_controller);
+  EXPECT_TRUE(IsWindowDragInProgress());
   EXPECT_EQ(window_drag_controller->dragged_window(), window2.get());
   EndScroll(/*is_fling=*/false, 0.f);
   split_view_controller->EndSplitView();
-  EXPECT_FALSE(GetShelfLayoutManager()->window_drag_controller_for_testing());
+  EXPECT_FALSE(IsWindowDragInProgress());
 }
 
 // Test that drag from shelf when overview is active is a no-op.
@@ -4334,7 +4338,7 @@ TEST_F(ShelfLayoutManagerWindowDraggingTest, NoOpInOverview) {
   gfx::Point start = shelf_widget_bounds.bottom_center();
   StartScroll(start);
   UpdateScroll(-shelf_size - hotseat_size - hotseat_padding_size);
-  EXPECT_FALSE(GetShelfLayoutManager()->window_drag_controller_for_testing());
+  EXPECT_FALSE(IsWindowDragInProgress());
   EndScroll(/*is_fling=*/false, 0.f);
 
   // In splitview + overview case, drag from shelf in the overview side of the
@@ -4348,7 +4352,7 @@ TEST_F(ShelfLayoutManagerWindowDraggingTest, NoOpInOverview) {
   EXPECT_TRUE(overview_controller->InOverviewSession());
   StartScroll(shelf_widget_bounds.bottom_right());
   UpdateScroll(-shelf_size - hotseat_size - hotseat_padding_size);
-  EXPECT_FALSE(GetShelfLayoutManager()->window_drag_controller_for_testing());
+  EXPECT_FALSE(IsWindowDragInProgress());
   EndScroll(/*is_fling=*/false, 0.f);
 }
 
@@ -4369,7 +4373,7 @@ TEST_F(ShelfLayoutManagerWindowDraggingTest, NoOpForHiddenShelf) {
   EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
   StartScroll(shelf_widget_bounds.bottom_center());
   UpdateScroll(-shelf_size - hotseat_size - hotseat_padding_size);
-  EXPECT_TRUE(GetShelfLayoutManager()->window_drag_controller_for_testing());
+  EXPECT_TRUE(IsWindowDragInProgress());
   EndScroll(/*is_fling=*/false, 0.f);
 
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
@@ -4383,7 +4387,7 @@ TEST_F(ShelfLayoutManagerWindowDraggingTest, NoOpForHiddenShelf) {
       display::Screen::GetScreen()->GetPrimaryDisplay().bounds();
   StartScroll(display_bounds.bottom_center());
   UpdateScroll(-shelf_size - hotseat_size - hotseat_padding_size);
-  EXPECT_FALSE(GetShelfLayoutManager()->window_drag_controller_for_testing());
+  EXPECT_FALSE(IsWindowDragInProgress());
   EndScroll(/*is_fling=*/false, 0.f);
 
   // The window can be dragged on an auto-hidden shown shelf.
@@ -4391,7 +4395,7 @@ TEST_F(ShelfLayoutManagerWindowDraggingTest, NoOpForHiddenShelf) {
   EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
   StartScroll(display_bounds.bottom_center());
   UpdateScroll(-shelf_size - hotseat_size - hotseat_padding_size);
-  EXPECT_TRUE(GetShelfLayoutManager()->window_drag_controller_for_testing());
+  EXPECT_TRUE(IsWindowDragInProgress());
   EndScroll(/*is_fling=*/false, 0.f);
 
   // The window can't be dragged on a hidden shelf.
@@ -4399,7 +4403,7 @@ TEST_F(ShelfLayoutManagerWindowDraggingTest, NoOpForHiddenShelf) {
   EXPECT_EQ(SHELF_HIDDEN, shelf->GetVisibilityState());
   StartScroll(display_bounds.bottom_center());
   UpdateScroll(-shelf_size - hotseat_size - hotseat_padding_size);
-  EXPECT_FALSE(GetShelfLayoutManager()->window_drag_controller_for_testing());
+  EXPECT_FALSE(IsWindowDragInProgress());
   EndScroll(/*is_fling=*/false, 0.f);
 }
 
@@ -4417,7 +4421,7 @@ TEST_F(ShelfLayoutManagerWindowDraggingTest, NoOpIfDragStartsAboveShelf) {
   gfx::Rect hotseat_bounds =
       GetShelfWidget()->hotseat_widget()->GetWindowBoundsInScreen();
   StartScroll(hotseat_bounds.CenterPoint());
-  EXPECT_FALSE(GetShelfLayoutManager()->window_drag_controller_for_testing());
+  EXPECT_FALSE(IsWindowDragInProgress());
   EndScroll(/*is_fling=*/false, 0.f);
 }
 
@@ -4437,14 +4441,14 @@ TEST_F(ShelfLayoutManagerWindowDraggingTest, StartsDragAfterHotseatIsUp) {
   // Starts the drag from the center of the shelf's bottom.
   gfx::Point start = shelf_widget_bounds.bottom_center();
   StartScroll(start);
-  EXPECT_FALSE(GetShelfLayoutManager()->window_drag_controller_for_testing());
+  EXPECT_FALSE(IsWindowDragInProgress());
   // Continues the drag until the hotseat should have been fully dragged up.
   UpdateScroll(-shelf_size);
-  EXPECT_FALSE(GetShelfLayoutManager()->window_drag_controller_for_testing());
+  EXPECT_FALSE(IsWindowDragInProgress());
   UpdateScroll(-hotseat_padding_size);
-  EXPECT_FALSE(GetShelfLayoutManager()->window_drag_controller_for_testing());
+  EXPECT_FALSE(IsWindowDragInProgress());
   UpdateScroll(-hotseat_size);
-  EXPECT_TRUE(GetShelfLayoutManager()->window_drag_controller_for_testing());
+  EXPECT_TRUE(IsWindowDragInProgress());
   EndScroll(/*is_fling=*/false, 0.f);
 }
 

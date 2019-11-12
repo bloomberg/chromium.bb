@@ -2469,6 +2469,12 @@ bool ShelfLayoutManager::MaybeStartDragWindowFromShelf(
       return false;
   }
 
+  // Do not allow window drag if the previous dragged window is still animating.
+  if (window_drag_controller_ &&
+      window_drag_controller_->IsDraggedWindowAnimating()) {
+    return false;
+  }
+
   aura::Window* window =
       GetWindowForDragToHomeOrOverview(event_in_screen.location());
   if (!window)
@@ -2483,7 +2489,7 @@ void ShelfLayoutManager::MaybeUpdateWindowDrag(
     const ui::LocatedEvent& event_in_screen,
     float scroll_x,
     float scroll_y) {
-  if (!window_drag_controller_ &&
+  if (!IsWindowDragInProgress() &&
       !MaybeStartDragWindowFromShelf(event_in_screen)) {
     return;
   }
@@ -2494,7 +2500,7 @@ void ShelfLayoutManager::MaybeUpdateWindowDrag(
 
 void ShelfLayoutManager::MaybeEndWindowDrag(
     const ui::LocatedEvent& event_in_screen) {
-  if (!window_drag_controller_)
+  if (!IsWindowDragInProgress())
     return;
 
   DCHECK_EQ(drag_status_, kDragInProgress);
@@ -2504,16 +2510,18 @@ void ShelfLayoutManager::MaybeEndWindowDrag(
         event_in_screen.AsGestureEvent()->details().velocity_y());
   }
   window_drag_controller_->EndDrag(event_in_screen.location(), velocity_y);
-  window_drag_controller_.reset();
 }
 
 void ShelfLayoutManager::MaybeCancelWindowDrag() {
-  if (!window_drag_controller_)
+  if (!IsWindowDragInProgress())
     return;
 
   DCHECK_EQ(drag_status_, kDragInProgress);
   window_drag_controller_->CancelDrag();
-  window_drag_controller_.reset();
+}
+
+bool ShelfLayoutManager::IsWindowDragInProgress() {
+  return window_drag_controller_ && window_drag_controller_->drag_started();
 }
 
 }  // namespace ash

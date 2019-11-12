@@ -271,6 +271,7 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
   class UpdateShelfObserver;
   friend class PanelLayoutManagerTest;
   friend class ShelfLayoutManagerTestBase;
+  friend class ShelfLayoutManagerWindowDraggingTest;
   friend class NotificationTrayTest;
   friend class Shelf;
 
@@ -518,6 +519,7 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
                              float scroll_y);
   void MaybeEndWindowDrag(const ui::LocatedEvent& event_in_screen);
   void MaybeCancelWindowDrag();
+  bool IsWindowDragInProgress();
 
   // True when inside UpdateBoundsAndOpacity() method. Used to prevent calling
   // UpdateBoundsAndOpacity() again from SetChildBounds().
