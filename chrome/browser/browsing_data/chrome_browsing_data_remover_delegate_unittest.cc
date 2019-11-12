@@ -86,6 +86,7 @@
 #include "components/password_manager/core/browser/mock_password_store.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/safe_browsing/verdict_cache_manager.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -2006,11 +2007,14 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest,
 }
 
 TEST_F(ChromeBrowsingDataRemoverDelegateTest,
-       RemoveLeakedCredentialsByTimeOnly) {
+       RemoveCompromisedCredentialsByTimeOnly) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(password_manager::features::kLeakHistory);
+
   RemovePasswordsTester tester(GetProfile());
   base::Callback<bool(const GURL&)> empty_filter;
 
-  EXPECT_CALL(*tester.store(), RemoveLeakedCredentialsByUrlAndTimeImpl(
+  EXPECT_CALL(*tester.store(), RemoveCompromisedCredentialsByUrlAndTimeImpl(
                                    ProbablySameFilter(empty_filter),
                                    base::Time(), base::Time::Max()));
   BlockUntilBrowsingDataRemoved(
@@ -2021,7 +2025,7 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest,
 // TODO(crbug.com/589586): Disabled, since history is not yet marked as
 // a filterable datatype.
 TEST_F(ChromeBrowsingDataRemoverDelegateTest,
-       DISABLED_RemoveLeakedCredentialsByUrlAndTime) {
+       DISABLED_RemoveCompromisedCredentialsByUrlAndTime) {
   RemovePasswordsTester tester(GetProfile());
   auto builder =
       BrowsingDataFilterBuilder::Create(BrowsingDataFilterBuilder::WHITELIST);
@@ -2030,7 +2034,7 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest,
       builder->BuildGeneralFilter();
 
   EXPECT_CALL(*tester.store(),
-              RemoveLeakedCredentialsByUrlAndTimeImpl(
+              RemoveCompromisedCredentialsByUrlAndTimeImpl(
                   ProbablySameFilter(filter), base::Time(), base::Time::Max()));
   BlockUntilOriginDataRemoved(
       base::Time(), base::Time::Max(),

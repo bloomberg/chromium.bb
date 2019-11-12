@@ -7916,8 +7916,13 @@ histogram as enum -->
   <int value="29" label="kHostCache"/>
   <int value="30" label="kTpmAttestationKeys"/>
   <int value="31" label="kStrikes"/>
-  <int value="32" label="kLeakedCredentials"/>
+  <int value="32" label="kLeakedCredentials (Obsolete)">
+    <obsolete>
+      Use kCompromisedCredentials instead. This expired 2019-11.
+    </obsolete>
+  </int>
   <int value="33" label="kFieldInfo"/>
+  <int value="34" label="kCompromisedCredentials"/>
 </enum>
 
 <enum name="ChromeChannelForHistogram">
@@ -38934,7 +38939,7 @@ from previous Chrome versions.
   <int value="6" label="Stats table failed initialization"/>
   <int value="7" label="Migration error"/>
   <int value="8" label="Commit transaction error"/>
-  <int value="9" label="Init leaked table error"/>
+  <int value="9" label="Initialization of compromised credentials error"/>
   <int value="10" label="Init field info table error"/>
 </enum>
 
