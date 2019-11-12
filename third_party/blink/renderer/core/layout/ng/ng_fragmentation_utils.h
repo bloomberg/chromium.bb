@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_NG_FRAGMENTATION_UTILS_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_NG_FRAGMENTATION_UTILS_H_
 
+#include "third_party/blink/renderer/core/layout/ng/geometry/ng_box_strut.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_box_fragment_builder.h"
@@ -70,6 +71,18 @@ NGBreakAppeal CalculateBreakAppealInside(const NGConstraintSpace& space,
 inline LayoutUnit FragmentainerSpaceAtBfcStart(const NGConstraintSpace& space) {
   DCHECK(space.HasKnownFragmentainerBlockSize());
   return space.FragmentainerBlockSize() - space.FragmentainerOffsetAtBfc();
+}
+
+// Adjust the border+scrollbar+padding strut for fragmentation. Leading
+// border+scrollbar+padding should only take up space in the first fragment
+// generated from a node.
+inline void AdjustForFragmentation(const NGBlockBreakToken* break_token,
+                                   NGBoxStrut* border_scrollbar_padding) {
+  if (LIKELY(!break_token))
+    return;
+  if (break_token->IsBreakBefore())
+    return;
+  border_scrollbar_padding->block_start = LayoutUnit();
 }
 
 // Set up a child's constraint space builder for block fragmentation. The child

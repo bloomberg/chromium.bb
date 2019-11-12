@@ -337,7 +337,12 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   // Returns kIndefiniteSize in all other cases.
   LayoutUnit CalculateMinimumBlockSize(const NGMarginStrut& end_margin_strut);
 
+  // Border + padding sum, resolved from the node's computed style.
   const NGBoxStrut border_padding_;
+
+  // Border + scrollbar + padding sum for the fragment to be generated (most
+  // importantly, for non-first fragments, leading block border + scrollbar +
+  // padding is zero).
   NGBoxStrut border_scrollbar_padding_;
 
   LogicalSize child_available_size_;
