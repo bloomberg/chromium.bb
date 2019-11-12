@@ -977,6 +977,13 @@ void Layer::UpdateScrollOffset(const gfx::ScrollOffset& scroll_offset) {
   property_trees.transform_tree.set_needs_update(true);
 }
 
+void Layer::SetDidScrollCallback(
+    base::RepeatingCallback<void(const gfx::ScrollOffset&, const ElementId&)>
+        callback) {
+  DCHECK(!layer_tree_host_ || !layer_tree_host_->IsUsingLayerLists());
+  inputs_.did_scroll_callback = std::move(callback);
+}
+
 void Layer::SetScrollable(const gfx::Size& bounds) {
   DCHECK(IsPropertyChangeAllowed());
   if (inputs_.scrollable && inputs_.scroll_container_bounds == bounds)
@@ -1448,11 +1455,6 @@ void Layer::SetMayContainVideo(bool yes) {
     return;
   may_contain_video_ = yes;
   SetNeedsPushProperties();
-}
-
-void Layer::SetScrollbarsHiddenFromImplSide(bool hidden) {
-  if (inputs_.client)
-    inputs_.client->DidChangeScrollbarsHiddenIfOverlay(hidden);
 }
 
 // On<Property>Animated is called due to an ongoing accelerated animation.
