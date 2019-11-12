@@ -12,15 +12,18 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.BaseJUnit4ClassRunner;
+import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
+import org.chromium.weblayer.Tab;
 import org.chromium.weblayer.TabCallback;
 import org.chromium.weblayer.shell.InstrumentationActivity;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.TimeoutException;
 
 /**
  * Tests that TabCallback methods are invoked as expected.
@@ -71,14 +74,33 @@ public class TabCallbackTest {
         String startupUrl = "about:blank";
         InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl(startupUrl);
 
-        Callback calllback = new Callback();
+        Callback callback = new Callback();
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> { activity.getTab().registerTabCallback(calllback); });
+                () -> { activity.getTab().registerTabCallback(callback); });
 
         String url = "data:text,foo";
         mActivityTestRule.navigateAndWait(url);
 
         /* Verify that the visible URL changes to the target. */
-        calllback.visibleUrlChangedCallback.waitUntilValueObserved(url);
+        callback.visibleUrlChangedCallback.waitUntilValueObserved(url);
+    }
+
+    @Test
+    @SmallTest
+    public void testOnRenderProcessGone() throws TimeoutException {
+        InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl("about:blank");
+        CallbackHelper callbackHelper = new CallbackHelper();
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            Tab tab = activity.getTab();
+            TabCallback callback = new TabCallback() {
+                @Override
+                public void onRenderProcessGone() {
+                    callbackHelper.notifyCalled();
+                }
+            };
+            tab.registerTabCallback(callback);
+            tab.getNavigationController().navigate(Uri.parse("chrome://crash"));
+        });
+        callbackHelper.waitForFirst();
     }
 }
