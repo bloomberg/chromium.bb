@@ -23,16 +23,16 @@
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="62dp"
+            android:paddingStart="8dp"
             android:orientation="horizontal">
 
             <org.chromium.ui.widget.ChromeImageView
                 android:id="@+id/favicon"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
-                android:layout_marginStart="8dp"
-                android:layout_marginEnd="8dp"
                 android:layout_marginTop="12dp"
                 android:padding="12dp"
+                android:layout_alignParentStart="true"
                 android:scaleType="fitCenter"
                 tools:ignore="ContentDescription" />
 
@@ -62,6 +62,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
+                android:layout_marginStart="8dp"
                 android:layout_toStartOf="@id/open_in_new_tab"
                 android:layout_toEndOf="@id/favicon"
                 android:textAlignment="viewStart"
@@ -73,6 +74,7 @@
                 android:id="@+id/security_icon"
                 android:layout_width="16dp"
                 android:layout_height="16dp"
+                android:layout_marginStart="8dp"
                 android:layout_below="@id/ephemeral_tab_text"
                 android:layout_toEndOf="@id/favicon"
                 android:layout_marginTop="4dp"
