@@ -2104,6 +2104,21 @@
             ]
         }
     ],
+    "DownloadWithServicificationM77": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "ServiceManagerForDownload"
+                    ]
+                }
+            ]
+        }
+    ],
     "DownloadsAutoResumptionNative": [
         {
             "platforms": [
