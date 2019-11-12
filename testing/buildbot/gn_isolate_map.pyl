@@ -3081,7 +3081,7 @@
     "type": "console_test_launcher",
   },
   "weblayer_instrumentation_test_apk": {
-    "label": "//weblayer/shell/android:weblayer_instrumentation_test_apk",
+    "label": "//weblayer/browser/android/javatests:weblayer_instrumentation_test_apk",
     "type": "console_test_launcher",
   },
   "weblayer_shell": {
