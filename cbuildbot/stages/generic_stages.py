@@ -1156,6 +1156,7 @@ class ArchivingStageMixin(object):
       filename: The filename of the file we want to upload.
       builder_run: builder_run object from which to get the board, base upload
                    url, and bot_id. If none, this stage's values.
+      prefix: When not None, add an additional directory prefix by this value.
     """
     board = None
     urls = [self.upload_url]

@@ -220,7 +220,7 @@ class DocStringChecker(pylint.checkers.BaseChecker):
       self._indent_string = cfg.option_value('indent-string')
     self._indent_len = len(self._indent_string)
 
-  def visit_function(self, node):
+  def visit_functiondef(self, node):
     """Verify function docstrings"""
     if node.doc:
       lines = node.doc.split('\n')
@@ -243,7 +243,7 @@ class DocStringChecker(pylint.checkers.BaseChecker):
         return
       self.add_message('C9001', node=node)
 
-  def visit_class(self, node):
+  def visit_classdef(self, node):
     """Verify class docstrings"""
     if node.doc:
       lines = node.doc.split('\n')

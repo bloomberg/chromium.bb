@@ -40,13 +40,13 @@ def _MergeDictWithPathParts(path_parts, source, destination):
 def CreateFilteredDict(field_mask, source):
   """Returns a copy of source filtered by field_mask.
 
-    Similar to the FieldMask.MergeMessage method, but for general Python dicts,
-    e.g. parsed from JSON.
+  Similar to the FieldMask.MergeMessage method, but for general Python dicts,
+  e.g. parsed from JSON.
 
-    Args:
-        field_mask (FieldMask): The FieldMask to apply.
-        source (dict): The source dict.
-    """
+  Args:
+    field_mask (FieldMask): The FieldMask to apply.
+    source (dict): The source dict.
+  """
   destination = {}
   for path in field_mask.paths:
     _MergeDictWithPathParts(path.split('.'), source, destination)

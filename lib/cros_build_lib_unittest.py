@@ -292,8 +292,9 @@ class TestRunCommand(cros_test_lib.MockTestCase):
     os.environ.update(self._old_envs)
 
   def _Communicate(self, stdin):
-    """Used by mocked _Popen for communicate method to capture what
-    was passed on input.
+    """Used by mocked _Popen for communicate method.
+
+    This allows us to capture what was passed on input.
     """
     self.stdin = stdin
     return self.output, self.error
@@ -676,8 +677,7 @@ class TestRunCommand(cros_test_lib.MockTestCase):
     self.assertEqual(self.stdin, unicode_input.encode('utf-8'))
 
   def testInputStringNoEncoding(self):
-    """Test that we encode UTF-8 strings passed on input without
-    passing encoding parameter."""
+    """Verify we encode UTF-8 strings passed on input w/out passing encoding."""
     cmd_list = ['foo', 'bar', 'roger']
     unicode_input = u'💩'
     self.proc_mock.returncode = 0

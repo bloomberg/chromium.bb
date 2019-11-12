@@ -220,6 +220,9 @@ class DocStringCheckerTest(CheckerTestCase):
 
       Multiline tickles differently.
       """,
+      """First line is OK, but too much trailing whitespace
+
+      """,
       """Should be no trailing blank lines
 
       Returns:
@@ -406,20 +409,20 @@ class DocStringCheckerTest(CheckerTestCase):
 
   CHECKER = lint.DocStringChecker
 
-  def testGood_visit_function(self):
+  def testGood_visit_functiondef(self):
     """Allow known good docstrings"""
     for dc in self.GOOD_FUNC_DOCSTRINGS:
       self.results = []
       node = TestNode(doc=dc, display_type=None, col_offset=4)
-      self.checker.visit_function(node)
+      self.checker.visit_functiondef(node)
       self.assertLintPassed(msg='docstring was not accepted:\n"""%s"""' % dc)
 
-  def testBad_visit_function(self):
+  def testBad_visit_functiondef(self):
     """Reject known bad docstrings"""
     for dc in self.BAD_FUNC_DOCSTRINGS:
       self.results = []
       node = TestNode(doc=dc, display_type=None, col_offset=4)
-      self.checker.visit_function(node)
+      self.checker.visit_functiondef(node)
       self.assertLintFailed(msg='docstring was not rejected:\n"""%s"""' % dc)
 
   def testSmoke_visit_module(self):
@@ -429,25 +432,25 @@ class DocStringCheckerTest(CheckerTestCase):
     self.checker.visit_module(TestNode(doc='', path='/foo/__init__.py'))
     self.assertLintPassed()
 
-  def testGood_visit_class(self):
+  def testGood_visit_classdef(self):
     """Allow known good docstrings"""
     for dc in self.GOOD_CLASS_DOCSTRINGS:
       self.results = []
       node = TestNode(doc=dc, display_type=None, col_offset=4)
-      self.checker.visit_class(node)
+      self.checker.visit_classdef(node)
       self.assertLintPassed(msg='docstring was not accepted:\n"""%s"""' % dc)
 
-  def testBad_visit_class(self):
+  def testBad_visit_classdef(self):
     """Reject known bad docstrings"""
     for dc in self.BAD_CLASS_DOCSTRINGS:
       self.results = []
       node = TestNode(doc=dc, display_type=None, col_offset=4)
-      self.checker.visit_class(node)
+      self.checker.visit_classdef(node)
       self.assertLintFailed(msg='docstring was not rejected:\n"""%s"""' % dc)
 
-  def testSmoke_visit_class(self):
+  def testSmoke_visit_classdef(self):
     """Smoke test for classes"""
-    self.checker.visit_class(TestNode(doc='bar'))
+    self.checker.visit_classdef(TestNode(doc='bar'))
 
   def testGood_check_first_line(self):
     """Verify _check_first_line accepts good inputs"""

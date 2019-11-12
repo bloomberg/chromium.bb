@@ -37,9 +37,7 @@ class RunTest(cros_test_lib.TempDirTestCase):
     osutils.WriteFile(self.audio_path, '[Speaker A Settings]')
 
   def testRun(self):
-    """Basic test of the 'run' command.
-
-    """
+    """Basic test of the 'run' command."""
     audio_dst_path = os.path.join(self.tempdir, 'dst', 'audio_file')
 
     replication_config = ReplicationConfig(file_replication_rules=[

@@ -216,7 +216,7 @@ class TestMount(DeployTest):
 
 
 class TestMountTarget(DeployTest):
-  """ Testing mount and umount command handling. """
+  """Testing mount and umount command handling."""
 
   def testMountTargetUmountFailure(self):
     """Test error being thrown if umount fails.

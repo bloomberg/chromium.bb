@@ -1112,7 +1112,7 @@ def ExecuteReproduceCommand(options):
 
 
 def InstallBaseDependencies(options):
-  """ Installs the base packages needed to chroot in board sysroot.
+  """Installs the base packages needed to chroot in board sysroot.
 
   Args:
     options: The parsed arguments passed to this program.

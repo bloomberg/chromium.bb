@@ -26,7 +26,7 @@ def _ValidateFileReplicationRule(rule):
   are specified.
 
   Args:
-    file_replication_rule [FileReplicationRule]: The rule to validate.
+    rule: (FileReplicationRule) The rule to validate.
   """
   if rule.file_type == replication_config_pb2.FILE_TYPE_JSON:
     if rule.replication_type != replication_config_pb2.REPLICATION_TYPE_FILTER:
@@ -59,7 +59,7 @@ def Replicate(replication_config):
   """Run the replication described in replication_config.
 
   Args:
-    replication_config [ReplicationConfig]: Describes the replication to run.
+    replication_config: (ReplicationConfig) Describes the replication to run.
   """
   # Validate all rules before any of them are run, to decrease chance of ending
   # with a partial replication.

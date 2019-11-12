@@ -25,7 +25,7 @@ POST_METHOD = 'POST'
 class Enum(tuple):
   """Helper class to build enumerations.
 
-  Args:
+  Attributes:
     tuple: enumeration values.
   """
   __getattr__ = tuple.index

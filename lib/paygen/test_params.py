@@ -81,7 +81,7 @@ class TestConfig(object):
   def get_control_file_name(self):
     """Returns the name of the name of the control file to store this in.
 
-    Return:
+    Returns:
       The control file name that should be generated for this test.
       A unique name suffix is used to keep from collisions per target
       release/board.
