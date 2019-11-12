@@ -22,6 +22,9 @@ import java.lang.ref.Reference;
 import java.lang.ref.ReferenceQueue;
 import java.util.concurrent.CountDownLatch;
 
+/**
+ * Basic tests to make sure WebLayer works as expected.
+ */
 @RunWith(BaseJUnit4ClassRunner.class)
 public class SmokeTest {
     @Rule

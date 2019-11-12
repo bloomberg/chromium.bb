@@ -17,6 +17,9 @@ import org.chromium.weblayer.shell.InstrumentationActivity;
 
 import java.util.concurrent.CountDownLatch;
 
+/**
+ * Tests that embedding support works as expected.
+ */
 @RunWith(BaseJUnit4ClassRunner.class)
 public class RenderingTest {
     @Rule

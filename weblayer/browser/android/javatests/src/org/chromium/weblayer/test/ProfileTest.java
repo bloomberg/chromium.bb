@@ -20,6 +20,9 @@ import org.chromium.weblayer.shell.InstrumentationActivity;
 import java.io.File;
 import java.util.Collection;
 
+/**
+ * Tests that Profile works as expected.
+ */
 @RunWith(BaseJUnit4ClassRunner.class)
 public class ProfileTest {
     @Rule

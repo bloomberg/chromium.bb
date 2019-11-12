@@ -24,6 +24,9 @@ import org.chromium.weblayer.shell.InstrumentationActivity;
 
 import java.util.concurrent.CountDownLatch;
 
+/**
+ * Tests that fragment lifecycle works as expected.
+ */
 @RunWith(BaseJUnit4ClassRunner.class)
 public class BrowserFragmentLifecycleTest {
     @Rule
