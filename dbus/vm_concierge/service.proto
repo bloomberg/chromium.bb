@@ -172,6 +172,9 @@ message StartArcVmRequest {
   // The number of CPUs to give to the VM.  Cannot be larger than the number of
   // CPUs on the device and cannot be 0.
   uint32 cpus = 7;
+
+  // Whether the guest kernel root file system is writable.
+  bool rootfs_writable = 8;
 }
 
 enum VmStatus {
