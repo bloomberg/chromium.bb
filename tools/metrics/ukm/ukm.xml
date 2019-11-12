@@ -5332,6 +5332,19 @@ be describing additional metrics about the same event.
       applied on the page load.
     </summary>
   </metric>
+  <metric name="PainfulPageLoadModelPredictionScore">
+    <summary>
+      The score output after evaluating the painful page load model. If
+      populated, this is 100x the fractional value output by the model
+      evaluation. This will be a value between 0 and 100.
+    </summary>
+  </metric>
+  <metric name="PainfulPageLoadModelVersion">
+    <summary>
+      The server-generated version of the painful page load model that was
+      evaluated for the page load.
+    </summary>
+  </metric>
 </event>
 
 <event name="PageDomainInfo">
