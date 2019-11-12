@@ -408,8 +408,8 @@ grit("generate_components_strings") {
 
 shared_library("libwebviewchromium") {
   deps = [
+    "//android_webview/apk",
     "//android_webview/lib:webview_entry_point",
-    "//components/about_ui:about_ui_android",
   ]
   configs -= [ "//build/config/android:hide_all_but_jni_onload" ]
   configs += [ "//build/config/android:hide_all_but_jni" ]
@@ -441,6 +441,7 @@ template("webview_library") {
   chrome_common_shared_library(target_name) {
     forward_variables_from(invoker, "*")
     deps = [
+      "//android_webview/apk",
       "//android_webview/lib:webview_entry_point",
     ]
     is_webview = true
