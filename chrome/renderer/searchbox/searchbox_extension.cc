@@ -483,25 +483,14 @@ static const char kDispatchUpdateCustomLinkResult[] =
     "  true;"
     "}";
 
-static const char kDispatchQueryAutocompleteResult[] =
+static const char kDispatchAutocompleteResultChanged[] =
     "if (window.chrome &&"
     "    window.chrome.embeddedSearch &&"
     "    window.chrome.embeddedSearch.searchBox &&"
-    "    window.chrome.embeddedSearch.searchBox.onqueryautocompletedone &&"
+    "    window.chrome.embeddedSearch.searchBox.autocompleteresultchanged &&"
     "    typeof window.chrome.embeddedSearch.searchBox"
-    "        .onqueryautocompletedone === 'function') {"
-    "  window.chrome.embeddedSearch.searchBox.onqueryautocompletedone(%s);"
-    "  true;"
-    "}";
-
-static const char kDispatchDeleteAutocompleteMatchResult[] =
-    "if (window.chrome &&"
-    "    window.chrome.embeddedSearch &&"
-    "    window.chrome.embeddedSearch.searchBox &&"
-    "    window.chrome.embeddedSearch.searchBox.ondeleteautocompletematch &&"
-    "    typeof window.chrome.embeddedSearch.searchBox"
-    "        .ondeleteautocompletematch === 'function') {"
-    "  window.chrome.embeddedSearch.searchBox.ondeleteautocompletematch(%s);"
+    "        .autocompleteresultchanged === 'function') {"
+    "  window.chrome.embeddedSearch.searchBox.autocompleteresultchanged(%s);"
     "  true;"
     "}";
 
@@ -1424,31 +1413,17 @@ void SearchBoxExtension::DispatchDeleteCustomLinkResult(
   Dispatch(frame, script);
 }
 
-void SearchBoxExtension::DispatchQueryAutocompleteResult(
+void SearchBoxExtension::DispatchAutocompleteResultChanged(
     blink::WebLocalFrame* frame,
     chrome::mojom::AutocompleteResultPtr result) {
   base::Value dict(base::Value::Type::DICTIONARY);
   dict.SetStringKey("input", result->input);
-  dict.SetDoubleKey("status", static_cast<double>(result->status));
   dict.SetKey("matches", CreateAutocompleteMatches(result->matches));
 
   std::string json;
   base::JSONWriter::Write(dict, &json);
   Dispatch(frame, blink::WebString::FromUTF8(base::StringPrintf(
-                      kDispatchQueryAutocompleteResult, json.c_str())));
-}
-
-void SearchBoxExtension::DispatchDeleteAutocompleteMatchResult(
-    blink::WebLocalFrame* frame,
-    chrome::mojom::DeleteAutocompleteMatchResultPtr result) {
-  base::Value dict(base::Value::Type::DICTIONARY);
-  dict.SetBoolKey("success", result->success);
-  dict.SetKey("matches", CreateAutocompleteMatches(result->matches));
-
-  std::string json;
-  base::JSONWriter::Write(dict, &json);
-  Dispatch(frame, blink::WebString::FromUTF8(base::StringPrintf(
-                      kDispatchDeleteAutocompleteMatchResult, json.c_str())));
+                      kDispatchAutocompleteResultChanged, json.c_str())));
 }
 
 // static

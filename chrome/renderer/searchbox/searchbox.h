@@ -217,6 +217,8 @@ class SearchBox : public content::RenderFrameObserver,
   void OnDestruct() override;
 
   // Overridden from chrome::mojom::EmbeddedSearchClient:
+  void AutocompleteResultChanged(
+      chrome::mojom::AutocompleteResultPtr result) override;
   void SetPageSequenceNumber(int page_seq_no) override;
   void FocusChanged(OmniboxFocusState new_focus_state,
                     OmniboxFocusChangeReason reason) override;
@@ -232,14 +234,6 @@ class SearchBox : public content::RenderFrameObserver,
 
   // Returns the URL of the Most Visited item specified by the |item_id|.
   GURL GetURLForMostVisitedItem(InstantRestrictedID item_id) const;
-
-  // Asynchronous callback for autocomplete query results. Sends to renderer.
-  void QueryAutocompleteResult(chrome::mojom::AutocompleteResultPtr result);
-
-  // Asynchronous callback for results of attempting to delete an autocomplete
-  // result.
-  void OnDeleteAutocompleteMatch(
-      chrome::mojom::DeleteAutocompleteMatchResultPtr result);
 
   // The connection to the EmbeddedSearch service in the browser process.
   chrome::mojom::EmbeddedSearchAssociatedPtr embedded_search_service_;

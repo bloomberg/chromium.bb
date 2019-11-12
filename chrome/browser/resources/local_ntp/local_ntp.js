@@ -41,12 +41,6 @@ const ACMatchClassificationStyle = {
   DIM: 1 << 2,
 };
 
-/** @enum {number} */
-const AutocompleteResultStatus = {
-  SUCCESS: 0,
-  SKIPPED: 1,
-};
-
 /** @type {string} */
 let lastInput;
 
@@ -763,8 +757,7 @@ function init() {
       setRealboxWrapperListenForFocusIn(true);
       setRealboxWrapperListenForFocusOut(true);
 
-      searchboxApiHandle.onqueryautocompletedone = onQueryAutocompleteDone;
-      searchboxApiHandle.ondeleteautocompletematch = onDeleteAutocompleteMatch;
+      searchboxApiHandle.autocompleteresultchanged = autocompleteResultChanged;
 
       if (!iframesAndVoiceSearchDisabledForTesting) {
         speech.init(
@@ -1072,43 +1065,6 @@ function onAddCustomLinkDone(success) {
   ntpApiHandle.logEvent(LOG_TYPE.NTP_CUSTOMIZE_SHORTCUT_DONE);
 }
 
-/** @param {!DeleteAutocompleteMatchResult} result */
-function onDeleteAutocompleteMatch(result) {
-  if (!result.success) {
-    return;
-  }
-
-  $(IDS.REALBOX).focus();
-
-  populateAutocompleteMatches(result.matches);
-
-  if (result.matches.length === 0) {
-    updateRealboxOutput({inline: '', text: ''});
-    return;
-  }
-
-  const firstMatch = autocompleteMatches[0];
-  if (firstMatch.allowedToBeDefaultMatch) {
-    const matchEls = Array.from($(IDS.REALBOX_MATCHES).children);
-    selectMatchEl(matchEls[0]);
-
-    const fill = firstMatch.fillIntoEdit;
-    const inline = firstMatch.inlineAutocompletion;
-    const textEnd = fill.length - inline.length;
-    updateRealboxOutput({
-      moveCursorToEnd: true,
-      inline: inline,
-      text: assert(fill.substr(0, textEnd)),
-    });
-  } else {
-    updateRealboxOutput({
-      moveCursorToEnd: true,
-      inline: '',
-      text: lastInput,
-    });
-  }
-}
-
 /**
  * Callback for embeddedSearch.newTabPage.ondeletecustomlinkdone. Called when
  * the custom link was successfully deleted. Shows the "Shortcut deleted"
@@ -1153,25 +1109,23 @@ function onMostVisitedChange() {
 }
 
 /** @param {!AutocompleteResult} result */
-function onQueryAutocompleteDone(result) {
-  const realboxEl = $(IDS.REALBOX);
-  if (result.status === AutocompleteResultStatus.SKIPPED ||
-      result.input !== realboxEl.value) {
-    return;  // Stale or skipped result; ignore.
+function autocompleteResultChanged(result) {
+  if (result.input !== lastInput) {
+    return;  // Stale result; ignore.
   }
 
   populateAutocompleteMatches(result.matches);
 
-  if (result.matches.length === 0) {
-    return;
-  }
+  $(IDS.REALBOX).focus();
 
-  if (result.matches[0].allowedToBeDefaultMatch) {
-    selectMatchEl(assert($(IDS.REALBOX_MATCHES).firstElementChild));
-  }
+  updateRealboxOutput({
+    inline: '',
+    text: lastInput || '',
+  });
 
   const first = result.matches[0];
-  if (first.allowedToBeDefaultMatch && first.inlineAutocompletion) {
+  if (first && first.allowedToBeDefaultMatch) {
+    selectMatchEl(assert($(IDS.REALBOX_MATCHES).firstElementChild));
     updateRealboxOutput({inline: first.inlineAutocompletion});
   }
 }
@@ -1211,7 +1165,7 @@ function onRealboxInput() {
   } else {
     setRealboxMatchesVisible(false);
     setRealboxWrapperListenForKeydown(false);
-    setAutocompleteMatches([]);
+    clearAutocompleteMatches();
   }
 }
 
@@ -1243,15 +1197,14 @@ function onRealboxWrapperFocusOut(e) {
   const relatedTarget = /** @type {Element} */ (e.relatedTarget);
   const realboxWrapper = $(IDS.REALBOX_INPUT_WRAPPER);
   if (!realboxWrapper.contains(relatedTarget)) {
-    setRealboxMatchesVisible(false);
-    // Note: intentionally leaving keydown listening (see
-    // onRealboxWrapperKeydown) intact.
-    setAutocompleteMatches([]);
-
     // Clear the input if it was empty when displaying the matches.
     if (lastInput === '') {
       updateRealboxOutput({inline: '', text: ''});
     }
+    setRealboxMatchesVisible(false);
+    // Note: intentionally leaving keydown listening (see
+    // onRealboxWrapperKeydown) intact.
+    clearAutocompleteMatches();
   }
 }
 
@@ -1338,7 +1291,7 @@ function onRealboxWrapperKeydown(e) {
     updateRealboxOutput({inline: '', text: ''});
     setRealboxMatchesVisible(false);
     setRealboxWrapperListenForKeydown(false);
-    setAutocompleteMatches([]);
+    clearAutocompleteMatches();
     e.preventDefault();
     return;
   }
@@ -1533,7 +1486,7 @@ function populateAutocompleteMatches(matches) {
   const hasMatches = matches.length > 0;
   setRealboxMatchesVisible(hasMatches);
   setRealboxWrapperListenForKeydown(hasMatches);
-  setAutocompleteMatches(matches);
+  autocompleteMatches = matches;
 }
 
 /**
@@ -1840,13 +1793,14 @@ function setAttributionVisibility(show) {
   $(IDS.ATTRIBUTION).style.display = show ? '' : 'none';
 }
 
-/** @param {!Array<!AutocompleteMatch>} matches */
-function setAutocompleteMatches(matches) {
-  autocompleteMatches = matches;
-  if (matches.length === 0) {
-    window.chrome.embeddedSearch.searchBox.stopAutocomplete(
-        /*clearResult=*/ true);
-  }
+/** @suppress {checkTypes} */
+function clearAutocompleteMatches() {
+  autocompleteMatches = [];
+  window.chrome.embeddedSearch.searchBox.stopAutocomplete(
+      /*clearResult=*/ true);
+  // Autocomplete sends updates once it is stopped. Invalidate those results
+  // by setting the last queried input to its uninitialized value.
+  lastInput = undefined;
 }
 
 /**

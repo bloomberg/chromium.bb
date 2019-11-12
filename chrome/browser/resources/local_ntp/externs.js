@@ -432,31 +432,16 @@ let ACMatchClassification;
  */
 let AutocompleteMatch;
 
-/** @enum {number} */
-const AutocompleteResultStatus = {};
-
 /**
  * @typedef {{
  *   input: string,
  *   matches: !Array<!AutocompleteMatch>,
- *   status: !AutocompleteResultStatus,
  * }}
  */
 let AutocompleteResult;
 
 /** @type {function(!AutocompleteResult):void} */
-window.chrome.embeddedSearch.searchBox.onqueryautocompletedone;
-
-/**
- * @typedef {{
- *   success: boolean,
- *   matches: !Array<!AutocompleteMatch>,
- * }}
- */
-let DeleteAutocompleteMatchResult;
-
-/** @type {function(!DeleteAutocompleteMatchResult):void} */
-window.chrome.embeddedSearch.searchBox.ondeleteautocompletematch;
+window.chrome.embeddedSearch.searchBox.autocompleteresultchanged;
 
 /**************************** Translated Strings *****************************/
 
