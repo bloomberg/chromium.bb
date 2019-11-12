@@ -329,6 +329,15 @@ void NetworkService::RegisterNetworkContext(NetworkContext* network_context) {
   network_contexts_.insert(network_context);
   if (quic_disabled_)
     network_context->DisableQuic();
+
+  // The params may already be present, so we propagate it
+  // to this new network_context. When params gets changed
+  // via ConfigureHttpAuthPrefs method, we propagate the change
+  // to all NetworkContexts in |network_contexts_|
+  if (http_auth_dynamic_network_service_params_) {
+    network_context->OnHttpAuthDynamicParamsChanged(
+        http_auth_dynamic_network_service_params_.get());
+  }
 }
 
 void NetworkService::DeregisterNetworkContext(NetworkContext* network_context) {
@@ -453,37 +462,24 @@ void NetworkService::DisableQuic() {
 
 void NetworkService::SetUpHttpAuth(
     mojom::HttpAuthStaticParamsPtr http_auth_static_params) {
-  DCHECK(!http_auth_static_params_);
-  http_auth_static_params_ = std::move(http_auth_static_params);
+  DCHECK(!http_auth_static_network_service_params_);
+  DCHECK(network_contexts_.empty());
+  http_auth_static_network_service_params_ = std::move(http_auth_static_params);
 }
 
 void NetworkService::ConfigureHttpAuthPrefs(
     mojom::HttpAuthDynamicParamsPtr http_auth_dynamic_params) {
-  http_auth_preferences_.SetServerAllowlist(
-      http_auth_dynamic_params->server_allowlist);
-  http_auth_preferences_.SetDelegateAllowlist(
-      http_auth_dynamic_params->delegate_allowlist);
-  http_auth_preferences_.set_delegate_by_kdc_policy(
-      http_auth_dynamic_params->delegate_by_kdc_policy);
-  http_auth_preferences_.set_negotiate_disable_cname_lookup(
-      http_auth_dynamic_params->negotiate_disable_cname_lookup);
-  http_auth_preferences_.set_negotiate_enable_port(
-      http_auth_dynamic_params->enable_negotiate_port);
+  // We need to store it as a member variable because the method
+  // NetworkService::RegisterNetworkContext(NetworkContext *network_context)
+  // uses it to populate the HttpAuthPreferences of the incoming network_context
+  // with the latest dynamic params of the NetworkService.
+  http_auth_dynamic_network_service_params_ =
+      std::move(http_auth_dynamic_params);
 
-#if defined(OS_POSIX) || defined(OS_FUCHSIA)
-  http_auth_preferences_.set_ntlm_v2_enabled(
-      http_auth_dynamic_params->ntlm_v2_enabled);
-#endif
-
-#if defined(OS_ANDROID)
-  http_auth_preferences_.set_auth_android_negotiate_account_type(
-      http_auth_dynamic_params->android_negotiate_account_type);
-#endif
-
-#if defined(OS_CHROMEOS)
-  http_auth_preferences_.set_allow_gssapi_library_load(
-      http_auth_dynamic_params->allow_gssapi_library_load);
-#endif
+  for (NetworkContext* network_context : network_contexts_) {
+    network_context->OnHttpAuthDynamicParamsChanged(
+        http_auth_dynamic_network_service_params_.get());
+  }
 }
 
 void NetworkService::SetRawHeadersAccess(
@@ -662,21 +658,22 @@ void NetworkService::BindTestInterface(
 
 std::unique_ptr<net::HttpAuthHandlerFactory>
 NetworkService::CreateHttpAuthHandlerFactory(NetworkContext* network_context) {
-  if (!http_auth_static_params_) {
+  if (!http_auth_static_network_service_params_) {
     return net::HttpAuthHandlerFactory::CreateDefault(
-        &http_auth_preferences_
+        network_context->GetHttpAuthPreferences()
 #if defined(OS_ANDROID) && BUILDFLAG(USE_KERBEROS)
-        ,
+            ,
         base::BindRepeating(&CreateAuthSystem, network_context)
 #endif
     );
   }
 
   return net::HttpAuthHandlerRegistryFactory::Create(
-      &http_auth_preferences_, http_auth_static_params_->supported_schemes
+      network_context->GetHttpAuthPreferences(),
+      http_auth_static_network_service_params_->supported_schemes
 #if BUILDFLAG(USE_EXTERNAL_GSSAPI)
       ,
-      http_auth_static_params_->gssapi_library_name
+      http_auth_static_network_service_params_->gssapi_library_name
 #endif
 #if defined(OS_ANDROID) && BUILDFLAG(USE_KERBEROS)
       ,
