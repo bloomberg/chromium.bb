@@ -320,7 +320,6 @@ class PaygenStageTest(generic_stages_unittest.AbstractStageTestCase,
     """Test that PaygenStage works when signing works."""
     stage = self.ConstructStage()
     stage.board_runattrs.SetParallel('signed_images_ready', ['stable', 'beta'])
-    stage.board_runattrs.SetParallel('release_artifacts_generated', True)
 
     self.assertEqual(stage.WaitUntilReady(), True)
     self.assertEqual(stage.channels, ['stable', 'beta'])
@@ -329,7 +328,6 @@ class PaygenStageTest(generic_stages_unittest.AbstractStageTestCase,
     """Test that PaygenStage works when signing works."""
     stage = self.ConstructStage()
     stage.board_runattrs.SetParallel('signed_images_ready', None)
-    stage.board_runattrs.SetParallel('release_artifacts_generated', True)
 
     self.assertEqual(stage.WaitUntilReady(), False)
 
@@ -337,7 +335,6 @@ class PaygenStageTest(generic_stages_unittest.AbstractStageTestCase,
     """Test that PaygenStage works when signing works."""
     stage = self.ConstructStage()
     stage.board_runattrs.SetParallel('signed_images_ready', [])
-    stage.board_runattrs.SetParallel('release_artifacts_generated', True)
 
     self.assertEqual(stage.WaitUntilReady(), True)
     self.assertEqual(stage.channels, [])

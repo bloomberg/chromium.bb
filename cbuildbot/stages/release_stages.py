@@ -349,19 +349,12 @@ class PaygenStage(generic_stages.BoardSpecificBuilderStage):
     return super(PaygenStage, self)._HandleStageException(exc_info)
 
   def WaitUntilReady(self):
-    """Block until signed images are ready, and ArchiveStage is out of the way.
+    """Block until signed images are ready.
 
     Returns:
       Boolean that tells if we can run this stage.
     """
-    # Thread concurrency issues mean that we need to wait for ArchiveStage to
-    # complete.  See crbug.com/1016555.  release_artifacts_generated is set at
-    # the end of ArchiveStage.ArchiveReleaseArtifacts, after we have built all
-    # of the images, including firmware, but before they are pushed.  At that
-    # point, we're done with portage calls.
-    self.board_runattrs.GetParallel('release_artifacts_generated', timeout=None)
-
-    # If we did git an explicit channel list, there is no other need to wait.
+    # If we did got an explicit channel list, there is no need to wait.
     if self.channels is None:
       # Wait for channels from signing stage.
       self.channels = self.board_runattrs.GetParallel(
