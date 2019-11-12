@@ -141,11 +141,10 @@ int aom_free_frame_buffer(YV12_BUFFER_CONFIG *ybf);
  *
  * Frees metadata in frame buffer.
  * Frame buffer metadata pointer will be set to NULL.
- * Returns the number of deleted metadata structs.
  *
  * \param[in]    ybf       Frame buffer struct pointer
  */
-size_t aom_remove_metadata_from_frame_buffer(YV12_BUFFER_CONFIG *ybf);
+void aom_remove_metadata_from_frame_buffer(YV12_BUFFER_CONFIG *ybf);
 
 /*!\brief Copy metadata to YUV_BUFFER_CONFIG struct.
  *

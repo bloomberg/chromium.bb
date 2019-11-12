@@ -13,6 +13,7 @@
 
 #include "config/aom_config.h"
 
+#include "aom_scale/yv12config.h"
 #include "av1/common/common.h"
 #include "av1/encoder/encoder.h"
 #include "av1/encoder/extend.h"

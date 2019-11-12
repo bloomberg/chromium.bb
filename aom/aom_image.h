@@ -355,11 +355,10 @@ int aom_img_add_metadata(aom_image_t *img, uint32_t type, const uint8_t *data,
  *
  * Removes all metadata in image metadata list and sets metadata list pointer
  * to NULL.
- * Returns the number of deleted metadata structs.
  *
  * \param[in]    img       Image descriptor
  */
-size_t aom_img_remove_metadata(aom_image_t *img);
+void aom_img_remove_metadata(aom_image_t *img);
 
 /*!\brief Allocate memory for aom_metadata struct.
  *
@@ -383,7 +382,7 @@ aom_metadata_t *aom_img_metadata_alloc(uint32_t type, const uint8_t *data,
  *
  * \param[in]    metadata       Metadata struct pointer
  */
-int aom_img_metadata_free(aom_metadata_t *metadata);
+void aom_img_metadata_free(aom_metadata_t *metadata);
 
 #ifdef __cplusplus
 }  // extern "C"

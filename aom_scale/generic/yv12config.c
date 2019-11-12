@@ -11,6 +11,7 @@
 
 #include <assert.h>
 
+#include "aom/internal/aom_image_internal.h"
 #include "aom_mem/aom_mem.h"
 #include "aom_ports/mem.h"
 #include "aom_scale/yv12config.h"
@@ -288,13 +289,11 @@ int aom_alloc_frame_buffer(YV12_BUFFER_CONFIG *ybf, int width, int height,
   return AOM_CODEC_MEM_ERROR;
 }
 
-size_t aom_remove_metadata_from_frame_buffer(YV12_BUFFER_CONFIG *ybf) {
+void aom_remove_metadata_from_frame_buffer(YV12_BUFFER_CONFIG *ybf) {
   if (ybf && ybf->metadata) {
-    size_t sz = aom_img_metadata_array_free(ybf->metadata);
+    aom_img_metadata_array_free(ybf->metadata);
     ybf->metadata = NULL;
-    return sz;
   }
-  return 0;
 }
 
 int aom_copy_metadata_to_frame_buffer(YV12_BUFFER_CONFIG *ybf,

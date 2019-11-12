@@ -43,11 +43,10 @@ aom_metadata_array_t *aom_img_metadata_array_alloc(size_t sz);
 /*!\brief Free metadata array struct.
  *
  * Free metadata array struct and all metadata structs inside.
- * Returns the number of deleted metadata structs.
  *
  * \param[in]    arr       Metadata array struct pointer
  */
-size_t aom_img_metadata_array_free(aom_metadata_array_t *arr);
+void aom_img_metadata_array_free(aom_metadata_array_t *arr);
 
 typedef void *(*aom_alloc_img_data_cb_fn_t)(void *priv, size_t size);
 
