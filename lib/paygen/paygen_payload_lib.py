@@ -759,7 +759,14 @@ class PaygenPayload(object):
     Args:
       log: The delta logs as a single string.
     """
-    osutils.WriteFile(self.log_file, log, mode='a')
+    try:
+      osutils.WriteFile(self.log_file, log, mode='a')
+    except TypeError as e:
+      logging.error('crbug.com/1023497 osutils.WriteFile failed: %s', e)
+      logging.error('log (type %s): %r', type(log), log)
+      flat = cros_build_lib.iflatten_instance(log)
+      logging.error('flattened: %r', flat)
+      logging.error('expanded: %r', list(flat))
 
   def _SignPayload(self):
     """Wrap all the steps for signing an existing payload.
