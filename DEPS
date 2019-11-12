@@ -791,7 +791,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/bazel',
-              'version': 'tQPvsIj1Gtw5iXssKy7OREE-S02u7zItrw42l3DHUroC',
+              'version': 'VjMsf48QUWw8n7XtJP2AuSjIGmbQeYdWdwyxVvIRLmAC',
           },
       ],
       'condition': 'checkout_android',
