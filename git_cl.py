@@ -811,13 +811,9 @@ def print_stats(args):
   if 'GIT_EXTERNAL_DIFF' in env:
     del env['GIT_EXTERNAL_DIFF']
 
-  try:
-    stdout = sys.stdout.fileno()
-  except AttributeError:
-    stdout = None
   return subprocess2.call(
       ['git', 'diff', '--no-ext-diff', '--stat', '-l100000', '-C50'] + args,
-      stdout=stdout, env=env)
+      env=env)
 
 
 class BuildbucketResponseException(Exception):

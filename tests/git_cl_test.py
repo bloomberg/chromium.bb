@@ -1,9 +1,12 @@
-#!/usr/bin/env python
+#!/usr/bin/env vpython3
+# coding=utf-8
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
 """Unit tests for git_cl.py."""
+
+from __future__ import unicode_literals
 
 import datetime
 import json
@@ -35,7 +38,7 @@ else:
   from io import StringIO
 
 
-def callError(code=1, cmd='', cwd='', stdout='', stderr=''):
+def callError(code=1, cmd='', cwd='', stdout=b'', stderr=b''):
   return subprocess2.CalledProcessError(code, cmd, cwd, stdout, stderr)
 
 
@@ -48,11 +51,11 @@ def _constantFn(return_value):
 CERR1 = callError(1)
 
 
-def MakeNamedTemporaryFileMock(expected_content):
+def MakeNamedTemporaryFileMock(test, expected_content):
   class NamedTemporaryFileMock(object):
     def __init__(self, *args, **kwargs):
       self.name = '/tmp/named'
-      self.expected_content = expected_content
+      self.expected_content = expected_content.encode('utf-8', 'replace')
 
     def __enter__(self):
       return self
@@ -62,7 +65,7 @@ def MakeNamedTemporaryFileMock(expected_content):
 
     def write(self, content):
       if self.expected_content:
-        assert content == self.expected_content
+        test.assertEqual(self.expected_content, content)
 
     def close(self):
       pass
@@ -706,6 +709,10 @@ class TestGitCl(TestCase):
     self._calls_done.append(top)
     if isinstance(result, Exception):
       raise result
+    # stdout from git commands is supposed to be a bytestream. Convert it here
+    # instead of converting all test output in this file to bytes.
+    if args[0][0] == 'git' and not isinstance(result, bytes):
+      result = result.encode('utf-8')
     return result
 
   def test_ask_for_explicit_yes_true(self):
@@ -1286,7 +1293,7 @@ class TestGitCl(TestCase):
         change_id=change_id)
     if fetched_status != 'ABANDONED':
       self.mock(tempfile, 'NamedTemporaryFile', MakeNamedTemporaryFileMock(
-          expected_content=description))
+          self, expected_content=description))
       self.mock(os, 'remove', lambda _: True)
       self.calls += self._gerrit_upload_calls(
           description, reviewers, squash,
@@ -1310,36 +1317,36 @@ class TestGitCl(TestCase):
   def test_gerrit_upload_traces_no_gitcookies(self):
     self._run_gerrit_upload_test(
         ['--no-squash'],
-        'desc\n\nBUG=\n',
+        'desc ✔\n\nBUG=\n',
         [],
         squash=False,
-        post_amend_description='desc\n\nBUG=\n\nChange-Id: Ixxx',
+        post_amend_description='desc ✔\n\nBUG=\n\nChange-Id: Ixxx',
         change_id='Ixxx',
         gitcookies_exists=False)
 
   def test_gerrit_upload_without_change_id(self):
     self._run_gerrit_upload_test(
         ['--no-squash'],
-        'desc\n\nBUG=\n',
+        'desc ✔\n\nBUG=\n',
         [],
         squash=False,
-        post_amend_description='desc\n\nBUG=\n\nChange-Id: Ixxx',
+        post_amend_description='desc ✔\n\nBUG=\n\nChange-Id: Ixxx',
         change_id='Ixxx')
 
   def test_gerrit_upload_without_change_id_override_nosquash(self):
     self._run_gerrit_upload_test(
         [],
-        'desc\n\nBUG=\n',
+        'desc ✔\n\nBUG=\n',
         [],
         squash=False,
         squash_mode='override_nosquash',
-        post_amend_description='desc\n\nBUG=\n\nChange-Id: Ixxx',
+        post_amend_description='desc ✔\n\nBUG=\n\nChange-Id: Ixxx',
         change_id='Ixxx')
 
   def test_gerrit_no_reviewer(self):
     self._run_gerrit_upload_test(
         [],
-        'desc\n\nBUG=\n\nChange-Id: I123456789\n',
+        'desc ✔\n\nBUG=\n\nChange-Id: I123456789\n',
         [],
         squash=False,
         squash_mode='override_nosquash',
@@ -1349,7 +1356,7 @@ class TestGitCl(TestCase):
     # TODO(crbug/877717): remove this test case.
     self._run_gerrit_upload_test(
         [],
-        'desc\n\nBUG=\n\nChange-Id: I123456789\n',
+        'desc ✔\n\nBUG=\n\nChange-Id: I123456789\n',
         [],
         squash=False,
         squash_mode='override_nosquash',
@@ -1360,7 +1367,7 @@ class TestGitCl(TestCase):
     self.mock(git_cl.sys, 'stdout', StringIO())
     self._run_gerrit_upload_test(
         ['-f', '-t', 'We\'ll escape ^_ ^ special chars...@{u}'],
-        'desc\n\nBUG=\n\nChange-Id: I123456789',
+        'desc ✔\n\nBUG=\n\nChange-Id: I123456789',
         squash=False,
         squash_mode='override_nosquash',
         title='We%27ll_escape_%5E%5F_%5E_special_chars%2E%2E%2E%40%7Bu%7D',
@@ -1370,14 +1377,14 @@ class TestGitCl(TestCase):
   def test_gerrit_reviewers_cmd_line(self):
     self._run_gerrit_upload_test(
         ['-r', 'foo@example.com', '--send-mail'],
-        'desc\n\nBUG=\n\nChange-Id: I123456789',
+        'desc ✔\n\nBUG=\n\nChange-Id: I123456789',
         ['foo@example.com'],
         squash=False,
         squash_mode='override_nosquash',
         notify=True,
         change_id='I123456789',
         final_description=(
-            'desc\n\nBUG=\nR=foo@example.com\n\nChange-Id: I123456789'))
+            'desc ✔\n\nBUG=\nR=foo@example.com\n\nChange-Id: I123456789'))
 
   def test_gerrit_upload_force_sets_bug(self):
     self._run_gerrit_upload_test(
@@ -1419,7 +1426,7 @@ class TestGitCl(TestCase):
               lambda *a: self._mocked_call('GetCodeReviewTbrScore', *a))
     self._run_gerrit_upload_test(
         [],
-        'desc\nTBR=reviewer@example.com\nBUG=\nR=another@example.com\n'
+        'desc ✔\nTBR=reviewer@example.com\nBUG=\nR=another@example.com\n'
         'CC=more@example.com,people@example.com\n\n'
         'Change-Id: 123456789',
         ['reviewer@example.com', 'another@example.com'],
@@ -1433,7 +1440,7 @@ class TestGitCl(TestCase):
   def test_gerrit_upload_squash_first_is_default(self):
     self._run_gerrit_upload_test(
         [],
-        'desc\nBUG=\n\nChange-Id: 123456789',
+        'desc ✔\nBUG=\n\nChange-Id: 123456789',
         [],
         expected_upstream_ref='origin/master',
         change_id='123456789',
@@ -1442,7 +1449,7 @@ class TestGitCl(TestCase):
   def test_gerrit_upload_squash_first(self):
     self._run_gerrit_upload_test(
         ['--squash'],
-        'desc\nBUG=\n\nChange-Id: 123456789',
+        'desc ✔\nBUG=\n\nChange-Id: 123456789',
         [],
         squash=True,
         expected_upstream_ref='origin/master',
@@ -1452,7 +1459,7 @@ class TestGitCl(TestCase):
   def test_gerrit_upload_squash_first_with_labels(self):
     self._run_gerrit_upload_test(
         ['--squash', '--cq-dry-run', '--enable-auto-submit'],
-        'desc\nBUG=\n\nChange-Id: 123456789',
+        'desc ✔\nBUG=\n\nChange-Id: 123456789',
         [],
         squash=True,
         expected_upstream_ref='origin/master',
@@ -1464,7 +1471,7 @@ class TestGitCl(TestCase):
     custom_cl_base = 'custom_cl_base_rev_or_branch'
     self._run_gerrit_upload_test(
         ['--squash', custom_cl_base],
-        'desc\nBUG=\n\nChange-Id: 123456789',
+        'desc ✔\nBUG=\n\nChange-Id: 123456789',
         [],
         squash=True,
         expected_upstream_ref='origin/master',
@@ -1476,7 +1483,7 @@ class TestGitCl(TestCase):
         sys.stdout.getvalue())
 
   def test_gerrit_upload_squash_reupload(self):
-    description = 'desc\nBUG=\n\nChange-Id: 123456789'
+    description = 'desc ✔\nBUG=\n\nChange-Id: 123456789'
     self._run_gerrit_upload_test(
         ['--squash'],
         description,
@@ -1490,7 +1497,7 @@ class TestGitCl(TestCase):
   def test_gerrit_upload_squash_reupload_to_abandoned(self):
     self.mock(git_cl, 'DieWithError',
               lambda msg, change=None: self._mocked_call('DieWithError', msg))
-    description = 'desc\nBUG=\n\nChange-Id: 123456789'
+    description = 'desc ✔\nBUG=\n\nChange-Id: 123456789'
     with self.assertRaises(SystemExitMock):
       self._run_gerrit_upload_test(
           ['--squash'],
@@ -1505,7 +1512,7 @@ class TestGitCl(TestCase):
   def test_gerrit_upload_squash_reupload_to_not_owned(self):
     self.mock(git_cl.gerrit_util, 'GetAccountDetails',
               lambda *_, **__: {'email': 'yet-another@example.com'})
-    description = 'desc\nBUG=\n\nChange-Id: 123456789'
+    description = 'desc ✔\nBUG=\n\nChange-Id: 123456789'
     self._run_gerrit_upload_test(
           ['--squash'],
           description,
@@ -3393,7 +3400,7 @@ class CMDFormatTestCase(TestCase):
       yapfignore.write('\n'.join(contents))
 
   def _make_files(self, file_dict):
-    for directory, files in file_dict.iteritems():
+    for directory, files in file_dict.items():
       subdir = os.path.join(self._top_dir, directory)
       if not os.path.exists(subdir):
         os.makedirs(subdir)

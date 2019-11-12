@@ -917,7 +917,7 @@ def ValidAccounts(host, accounts, max_threads=10):
   Invalid accounts, either not existing or without unique match,
   are not present as returned dictionary keys.
   """
-  assert not isinstance(accounts, basestring), type(accounts)
+  assert not isinstance(accounts, str), type(accounts)
   accounts = list(set(accounts))
   if not accounts:
     return {}
