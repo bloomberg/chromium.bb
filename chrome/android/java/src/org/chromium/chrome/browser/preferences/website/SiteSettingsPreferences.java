@@ -99,8 +99,6 @@ public class SiteSettingsPreferences
     }
 
     private void updatePreferenceStates() {
-        PrefServiceBridge prefServiceBridge = PrefServiceBridge.getInstance();
-
         // Preferences that navigate to Website Settings.
         List<Integer> websitePrefs = new ArrayList<Integer>();
         if (mMediaSubMenu) {
@@ -138,7 +136,7 @@ public class SiteSettingsPreferences
             Preference p = findPreference(prefCategory);
             int contentType = SiteSettingsCategory.contentSettingsType(prefCategory);
             boolean requiresTriStateSetting =
-                    prefServiceBridge.requiresTriStateContentSetting(contentType);
+                    WebsitePreferenceBridge.requiresTriStateContentSetting(contentType);
 
             boolean checked = false;
             @ContentSettingValues
@@ -147,9 +145,9 @@ public class SiteSettingsPreferences
             if (prefCategory == Type.DEVICE_LOCATION) {
                 checked = LocationSettings.getInstance().areAllLocationSettingsEnabled();
             } else if (requiresTriStateSetting) {
-                setting = prefServiceBridge.getContentSetting(contentType);
+                setting = WebsitePreferenceBridge.getContentSetting(contentType);
             } else {
-                checked = prefServiceBridge.isCategoryEnabled(contentType);
+                checked = WebsitePreferenceBridge.isCategoryEnabled(contentType);
             }
 
             p.setTitle(ContentSettingsResources.getTitle(contentType));
@@ -162,10 +160,10 @@ public class SiteSettingsPreferences
                 // Show 'disabled' message when permission is not granted in Android.
                 p.setSummary(ContentSettingsResources.getCategorySummary(contentType, false));
             } else if (Type.COOKIES == prefCategory && checked
-                    && prefServiceBridge.getBoolean(Pref.BLOCK_THIRD_PARTY_COOKIES)) {
+                    && PrefServiceBridge.getInstance().getBoolean(Pref.BLOCK_THIRD_PARTY_COOKIES)) {
                 p.setSummary(ContentSettingsResources.getCookieAllowedExceptThirdPartySummary());
             } else if (Type.DEVICE_LOCATION == prefCategory && checked
-                    && prefServiceBridge.isLocationAllowedByPolicy()) {
+                    && WebsitePreferenceBridge.isLocationAllowedByPolicy()) {
                 p.setSummary(ContentSettingsResources.getGeolocationAllowedSummary());
             } else if (Type.CLIPBOARD == prefCategory && !checked) {
                 p.setSummary(ContentSettingsResources.getClipboardBlockedListSummary());

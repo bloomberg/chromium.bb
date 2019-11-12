@@ -27,7 +27,6 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ContentSettingsType;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.ui.text.SpanApplier;
 import org.chromium.ui.text.SpanApplier.SpanInfo;
 
@@ -274,23 +273,22 @@ public class SiteSettingsCategory {
      * custodian of a supervised account.
      */
     public boolean isManaged() {
-        PrefServiceBridge prefs = PrefServiceBridge.getInstance();
         if (showSites(Type.AUTOMATIC_DOWNLOADS)) {
-            return prefs.isAutomaticDownloadsManaged();
+            return WebsitePreferenceBridge.isAutomaticDownloadsManaged();
         } else if (showSites(Type.BACKGROUND_SYNC)) {
-            return prefs.isBackgroundSyncManaged();
+            return WebsitePreferenceBridge.isBackgroundSyncManaged();
         } else if (showSites(Type.COOKIES)) {
-            return !prefs.isAcceptCookiesUserModifiable();
+            return !WebsitePreferenceBridge.isAcceptCookiesUserModifiable();
         } else if (showSites(Type.DEVICE_LOCATION)) {
-            return !prefs.isAllowLocationUserModifiable();
+            return !WebsitePreferenceBridge.isAllowLocationUserModifiable();
         } else if (showSites(Type.JAVASCRIPT)) {
-            return prefs.javaScriptManaged();
+            return WebsitePreferenceBridge.javaScriptManaged();
         } else if (showSites(Type.CAMERA)) {
-            return !prefs.isCameraUserModifiable();
+            return !WebsitePreferenceBridge.isCameraUserModifiable();
         } else if (showSites(Type.MICROPHONE)) {
-            return !prefs.isMicUserModifiable();
+            return !WebsitePreferenceBridge.isMicUserModifiable();
         } else if (showSites(Type.POPUPS)) {
-            return prefs.isPopupsManaged();
+            return WebsitePreferenceBridge.isPopupsManaged();
         }
         return false;
     }
@@ -300,15 +298,14 @@ public class SiteSettingsCategory {
      * enterprise admin) of the account if the account is supervised.
      */
     public boolean isManagedByCustodian() {
-        PrefServiceBridge prefs = PrefServiceBridge.getInstance();
         if (showSites(Type.COOKIES)) {
-            return prefs.isAcceptCookiesManagedByCustodian();
+            return WebsitePreferenceBridge.isAcceptCookiesManagedByCustodian();
         } else if (showSites(Type.DEVICE_LOCATION)) {
-            return prefs.isAllowLocationManagedByCustodian();
+            return WebsitePreferenceBridge.isAllowLocationManagedByCustodian();
         } else if (showSites(Type.CAMERA)) {
-            return prefs.isCameraManagedByCustodian();
+            return WebsitePreferenceBridge.isCameraManagedByCustodian();
         } else if (showSites(Type.MICROPHONE)) {
-            return prefs.isMicManagedByCustodian();
+            return WebsitePreferenceBridge.isMicManagedByCustodian();
         }
         return false;
     }

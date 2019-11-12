@@ -169,8 +169,7 @@ public class SiteSettingsPreferencesTest {
             }
 
             private boolean doesAcceptCookies() {
-                return PrefServiceBridge.getInstance().isCategoryEnabled(
-                        ContentSettingsType.COOKIES);
+                return WebsitePreferenceBridge.isCategoryEnabled(ContentSettingsType.COOKIES);
             }
         });
     }
@@ -212,7 +211,7 @@ public class SiteSettingsPreferencesTest {
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             Assert.assertEquals("Popups should be " + (enabled ? "allowed" : "blocked"), enabled,
-                    PrefServiceBridge.getInstance().isCategoryEnabled(ContentSettingsType.POPUPS));
+                    WebsitePreferenceBridge.isCategoryEnabled(ContentSettingsType.POPUPS));
         });
     }
 
@@ -221,7 +220,7 @@ public class SiteSettingsPreferencesTest {
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             Assert.assertEquals("Camera should be " + (enabled ? "allowed" : "blocked"), enabled,
-                    PrefServiceBridge.getInstance().isCategoryEnabled(
+                    WebsitePreferenceBridge.isCategoryEnabled(
                             ContentSettingsType.MEDIASTREAM_CAMERA));
         });
     }
@@ -586,8 +585,7 @@ public class SiteSettingsPreferencesTest {
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             Assert.assertFalse("Mic should be blocked",
-                    PrefServiceBridge.getInstance().isCategoryEnabled(
-                            ContentSettingsType.MEDIASTREAM_MIC));
+                    WebsitePreferenceBridge.isCategoryEnabled(ContentSettingsType.MEDIASTREAM_MIC));
         });
 
         // Test that the microphone permission doesn't get requested.
@@ -659,8 +657,7 @@ public class SiteSettingsPreferencesTest {
         setGlobalToggleForCategory(SiteSettingsCategory.Type.BACKGROUND_SYNC, enabled);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             Assert.assertEquals("Background Sync should be " + (enabled ? "enabled" : "disabled"),
-                    PrefServiceBridge.getInstance().isCategoryEnabled(
-                            ContentSettingsType.BACKGROUND_SYNC),
+                    WebsitePreferenceBridge.isCategoryEnabled(ContentSettingsType.BACKGROUND_SYNC),
                     enabled);
         });
     }
@@ -687,8 +684,7 @@ public class SiteSettingsPreferencesTest {
         setGlobalToggleForCategory(SiteSettingsCategory.Type.USB, enabled);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             Assert.assertEquals("USB should be " + (enabled ? "enabled" : "disabled"),
-                    PrefServiceBridge.getInstance().isCategoryEnabled(
-                            ContentSettingsType.USB_GUARD),
+                    WebsitePreferenceBridge.isCategoryEnabled(ContentSettingsType.USB_GUARD),
                     enabled);
         });
     }
@@ -717,7 +713,7 @@ public class SiteSettingsPreferencesTest {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             Assert.assertEquals(
                     "Automatic Downloads should be " + (enabled ? "enabled" : "disabled"),
-                    PrefServiceBridge.getInstance().isCategoryEnabled(
+                    WebsitePreferenceBridge.isCategoryEnabled(
                             ContentSettingsType.AUTOMATIC_DOWNLOADS),
                     enabled);
         });
@@ -747,7 +743,7 @@ public class SiteSettingsPreferencesTest {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             Assert.assertEquals(
                     "Bluetooth scanning should be " + (enabled ? "enabled" : "disabled"),
-                    PrefServiceBridge.getInstance().isCategoryEnabled(
+                    WebsitePreferenceBridge.isCategoryEnabled(
                             ContentSettingsType.BLUETOOTH_SCANNING),
                     enabled);
         });
@@ -776,8 +772,7 @@ public class SiteSettingsPreferencesTest {
         setGlobalToggleForCategory(SiteSettingsCategory.Type.NFC, enabled);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             Assert.assertEquals("NFC should be " + (enabled ? "enabled" : "disabled"),
-                    PrefServiceBridge.getInstance().isCategoryEnabled(ContentSettingsType.NFC),
-                    enabled);
+                    WebsitePreferenceBridge.isCategoryEnabled(ContentSettingsType.NFC), enabled);
         });
     }
 

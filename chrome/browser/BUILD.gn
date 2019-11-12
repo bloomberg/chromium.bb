@@ -2554,6 +2554,7 @@ jumbo_static_library("browser") {
       "android/preferences/preferences_launcher.h",
       "android/preferences/prefs.h",
       "android/preferences/website_preference_bridge.cc",
+      "android/preferences/website_preference_bridge.h",
       "android/profile_key_startup_accessor.cc",
       "android/profile_key_startup_accessor.h",
       "android/profile_key_util.cc",
