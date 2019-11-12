@@ -15,6 +15,7 @@ import os
 from chromite.api import controller
 from chromite.api import faux
 from chromite.api import validate
+from chromite.api.metrics import deserialize_metrics_log
 from chromite.api.controller import controller_util
 from chromite.api.gen.chromite.api import test_pb2
 from chromite.cbuildbot import goma_util
@@ -27,6 +28,7 @@ from chromite.lib import sysroot_lib
 from chromite.scripts import cros_set_lsb_release
 from chromite.service import test
 from chromite.utils import key_value_store
+from chromite.utils import metrics
 
 
 @faux.all_empty
@@ -60,6 +62,7 @@ def DebugInfoTest(input_proto, _output_proto, config):
 @validate.require('build_target.name', 'result_path')
 @validate.exists('result_path')
 @validate.validation_complete
+@metrics.collect_metrics
 def BuildTargetUnitTest(input_proto, output_proto, _config):
   """Run a build target's ebuild unit tests."""
   # Required args.
@@ -98,6 +101,7 @@ def BuildTargetUnitTest(input_proto, output_proto, _config):
   tarball = test.BuildTargetUnitTestTarball(chroot, sysroot, result_path)
   if tarball:
     output_proto.tarball_path = tarball
+  deserialize_metrics_log(output_proto.events, prefix=build_target.name)
 
 
 @faux.all_empty
