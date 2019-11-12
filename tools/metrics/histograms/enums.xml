@@ -40313,6 +40313,7 @@ Called by update_use_counter_css.py.-->
   <int value="650" label="intrinsic-inline-size"/>
   <int value="651" label="intrinsic-size"/>
   <int value="652" label="intrinsic-width"/>
+  <int value="653" label="render-subtree"/>
 </enum>
 
 <enum name="MappedEditingCommands">

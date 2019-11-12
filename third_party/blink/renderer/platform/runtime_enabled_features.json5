@@ -489,6 +489,10 @@
       status: "experimental",
     },
     {
+      name: "CSSRenderSubtree",
+      status: "test",
+    },
+    {
       name: "CSSSnapSize",
       status: "experimental",
     },
