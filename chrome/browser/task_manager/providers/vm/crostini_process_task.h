@@ -2,39 +2,34 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_TASK_MANAGER_PROVIDERS_CROSTINI_CROSTINI_PROCESS_TASK_H_
-#define CHROME_BROWSER_TASK_MANAGER_PROVIDERS_CROSTINI_CROSTINI_PROCESS_TASK_H_
+#ifndef CHROME_BROWSER_TASK_MANAGER_PROVIDERS_VM_CROSTINI_PROCESS_TASK_H_
+#define CHROME_BROWSER_TASK_MANAGER_PROVIDERS_VM_CROSTINI_PROCESS_TASK_H_
 
 #include <string>
 
 #include "base/macros.h"
-#include "chrome/browser/task_manager/providers/task.h"
+#include "chrome/browser/task_manager/providers/vm/vm_process_task.h"
 
 namespace task_manager {
 
 // Defines the task that represents a VM process for Crostini.
-class CrostiniProcessTask : public Task {
+class CrostiniProcessTask : public VmProcessTask {
  public:
   CrostiniProcessTask(base::ProcessId pid,
                       const std::string& owner_id,
                       const std::string& vm_name);
-  ~CrostiniProcessTask() override;
+  ~CrostiniProcessTask() override = default;
 
   // task_manager::Task:
-  bool IsKillable() override;
   void Kill() override;
   Type GetType() const override;
-  int GetChildProcessUniqueID() const override;
 
  private:
   static gfx::ImageSkia* s_icon_;
-
-  std::string owner_id_;
-  std::string vm_name_;
 
   DISALLOW_COPY_AND_ASSIGN(CrostiniProcessTask);
 };
 
 }  // namespace task_manager
 
-#endif  // CHROME_BROWSER_TASK_MANAGER_PROVIDERS_CROSTINI_CROSTINI_PROCESS_TASK_H_
+#endif  // CHROME_BROWSER_TASK_MANAGER_PROVIDERS_VM_CROSTINI_PROCESS_TASK_H_

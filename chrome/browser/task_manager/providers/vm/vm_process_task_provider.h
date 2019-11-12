@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_TASK_MANAGER_PROVIDERS_CROSTINI_CROSTINI_PROCESS_TASK_PROVIDER_H_
-#define CHROME_BROWSER_TASK_MANAGER_PROVIDERS_CROSTINI_CROSTINI_PROCESS_TASK_PROVIDER_H_
+#ifndef CHROME_BROWSER_TASK_MANAGER_PROVIDERS_VM_VM_PROCESS_TASK_PROVIDER_H_
+#define CHROME_BROWSER_TASK_MANAGER_PROVIDERS_VM_VM_PROCESS_TASK_PROVIDER_H_
 
 #include <vector>
 
@@ -12,20 +12,20 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "base/timer/timer.h"
-#include "chrome/browser/task_manager/providers/crostini/crostini_process_task.h"
 #include "chrome/browser/task_manager/providers/task_provider.h"
+#include "chrome/browser/task_manager/providers/vm/vm_process_task.h"
 
 namespace task_manager {
 
 struct VmProcessData;
 
-// This provides the task list for Crostini VMs. Currently this will only
+// This provides the task list for VMs. Currently this will only
 // display tasks for the VMs themselves, later that will be expanded to also
 // include the processes inside of the VM as part of the TaskGroup.
-class CrostiniProcessTaskProvider : public TaskProvider {
+class VmProcessTaskProvider : public TaskProvider {
  public:
-  CrostiniProcessTaskProvider();
-  ~CrostiniProcessTaskProvider() override;
+  VmProcessTaskProvider();
+  ~VmProcessTaskProvider() override;
 
   // task_manager::TaskProvider:
   Task* GetTaskOfUrlRequest(int child_id, int route_id) override;
@@ -39,8 +39,7 @@ class CrostiniProcessTaskProvider : public TaskProvider {
   void OnUpdateVmProcessList(const std::vector<VmProcessData>& vm_process_list);
 
   // Map of PIDs to the corresponding Task object for a running VM.
-  base::flat_map<base::ProcessId, std::unique_ptr<CrostiniProcessTask>>
-      task_map_;
+  base::flat_map<base::ProcessId, std::unique_ptr<VmProcessTask>> task_map_;
 
   // There are some expensive tasks such as traverse whole process tree that
   // we can't do it on the UI thread.
@@ -51,11 +50,11 @@ class CrostiniProcessTaskProvider : public TaskProvider {
 
   // Always keep this the last member of this class to make sure it's the
   // first thing to be destructed.
-  base::WeakPtrFactory<CrostiniProcessTaskProvider> weak_ptr_factory_{this};
+  base::WeakPtrFactory<VmProcessTaskProvider> weak_ptr_factory_{this};
 
-  DISALLOW_COPY_AND_ASSIGN(CrostiniProcessTaskProvider);
+  DISALLOW_COPY_AND_ASSIGN(VmProcessTaskProvider);
 };
 
 }  // namespace task_manager
 
-#endif  // CHROME_BROWSER_TASK_MANAGER_PROVIDERS_CROSTINI_CROSTINI_PROCESS_TASK_PROVIDER_H_
+#endif  // CHROME_BROWSER_TASK_MANAGER_PROVIDERS_VM_VM_PROCESS_TASK_PROVIDER_H_
