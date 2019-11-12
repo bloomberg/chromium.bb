@@ -100,12 +100,18 @@ function update_git_repo {
   fi
 
   git fetch -q origin &> /dev/null
-  local REBASE_TXT STATUS
+  local CHECKOUT_TXT STATUS
   CHECKOUT_TXT=$(git checkout -q origin/master 2>&1)
   STATUS=$?
   if [[ $STATUS -ne 0 ]]; then
     echo "depot_tools update failed. Conflict in $base_dir" >&2
     echo "$CHECKOUT_TXT" >&2
+  fi
+  # Having python3 on depot_tools causes problems if users put depot_tools in
+  # PATH before system's python3, so remove it if present.
+  # See crbug.com/1017812.
+  if [[ -e python3 ]]; then
+    rm python3
   fi
   return $STATUS
 }

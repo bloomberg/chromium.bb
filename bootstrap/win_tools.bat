@@ -23,7 +23,6 @@ if not exist "%BOOTSTRAP_ROOT_DIR%\.bleeding_edge" (
   set CIPD_MANIFEST=manifest.txt
 ) else (
   set CIPD_MANIFEST=manifest_bleeding_edge.txt
-  set BOOTSTRAP_EXTRA_ARGS=%BOOTSTRAP_EXTRA_ARGS% --bleeding-edge
 )
 
 :: Parse our CIPD manifest and identify the "cpython" version. We do this by
@@ -59,7 +58,7 @@ if "%PYTHON3_VERSION%" == "" (
 :: Python is upgraded.
 set BOOTSTRAP_NAME=bootstrap-%PYTHON3_VERSION:.=_%_bin
 set BOOTSTRAP_PATH=%BOOTSTRAP_ROOT_DIR%\%BOOTSTRAP_NAME%
-set BOOTSTRAP_EXTRA_ARGS=%BOOTSTRAP_EXTRA_ARGS% --bootstrap-name "%BOOTSTRAP_NAME%"
+set BOOTSTRAP_EXTRA_ARGS=--bootstrap-name "%BOOTSTRAP_NAME%"
 
 :: Install our CIPD packages. The CIPD client self-bootstraps.
 :: See "//cipd.bat" and "//cipd.ps1" for more information.

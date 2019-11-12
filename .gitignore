@@ -16,7 +16,6 @@
 /.pylint.d/
 /python
 /python.bat
-/python3
 /python3.bat
 /ssh.bat
 /ssh-keygen.bat
