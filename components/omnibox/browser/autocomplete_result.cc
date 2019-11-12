@@ -201,6 +201,8 @@ void AutocompleteResult::SortAndCull(
   for (auto i(matches_.begin()); i != matches_.end(); ++i)
     i->ComputeStrippedDestinationURL(input, template_url_service);
 
+  CompareWithDemoteByType<AutocompleteMatch> comparing_object(
+      input.current_page_classification());
 #if !(defined(OS_ANDROID) || defined(OS_IOS))
   // Do not cull the tail suggestions for zero prefix query suggetions of
   // chromeOS launcher or NTP, since there won't be any default match in this
@@ -210,7 +212,7 @@ void AutocompleteResult::SortAndCull(
              metrics::OmniboxEventProto::CHROMEOS_APP_LIST ||
          BaseSearchProvider::IsNTPPage(input.current_page_classification())))) {
     // Wipe tail suggestions if not exclusive (minus default match).
-    MaybeCullTailSuggestions(&matches_);
+    MaybeCullTailSuggestions(&matches_, comparing_object);
   }
 #endif
   DemoteOnDeviceSearchSuggestions();
@@ -218,8 +220,6 @@ void AutocompleteResult::SortAndCull(
   DeduplicateMatches(input.current_page_classification(), &matches_);
 
   // Sort and trim to the most relevant GetMaxMatches() matches.
-  CompareWithDemoteByType<AutocompleteMatch> comparing_object(
-      input.current_page_classification());
   std::sort(matches_.begin(), matches_.end(), comparing_object);
 
   // Find the best match and rotate it to the front to become the default match.
@@ -530,7 +530,7 @@ ACMatches::iterator AutocompleteResult::FindTopMatch(
   // the highest-relevance, allowed-to-be-default match while ignoring type
   // demotion, as we do when IsPreserveDefaultMatchScoreEnabled is true, we need
   // to explicitly find the highest relevance match rather than just accepting
-  // the first allowed-to-be--default match in the list.
+  // the first allowed-to-be-default match in the list.
   // The goal of this behavior is to ensure that in situations where the user
   // expects to see a commonly visited URL as the default match, the URL is not
   // suppressed by type demotion.
@@ -554,7 +554,7 @@ ACMatches::iterator AutocompleteResult::FindTopMatch(
     return best;
   } else {
     return std::find_if(matches->begin(), matches->end(), [](const auto& m) {
-      return m.allowed_to_be_default_match;
+      return m.allowed_to_be_default_match && !m.IsSubMatch();
     });
   }
 }
@@ -797,19 +797,39 @@ bool AutocompleteResult::HasMatchByDestination(const AutocompleteMatch& match,
 }
 
 // static
-void AutocompleteResult::MaybeCullTailSuggestions(ACMatches* matches) {
+void AutocompleteResult::MaybeCullTailSuggestions(
+    ACMatches* matches,
+    const CompareWithDemoteByType<AutocompleteMatch>& comparing_object) {
+  // This function implements the following logic:
+  // ('E' == 'There exists', '!E' == 'There does not exist')
+  // 1) !E default non-tail and E tail default? remove non-tails
+  // 2) !E any tails at all? do nothing
+  // 3) E default non-tail and other non-tails? remove tails
+  // 4) E default non-tail and no other non-tails? mark tails as non-default
+  // 5) E non-default non-tails? remove non-tails
   std::function<bool(const AutocompleteMatch&)> is_tail =
       [](const AutocompleteMatch& match) {
         return match.type == ACMatchType::SEARCH_SUGGEST_TAIL;
       };
-  auto non_tail_default = std::find_if(
-      matches->begin(), matches->end(), [&](const AutocompleteMatch& match) {
-        return match.allowed_to_be_default_match && !is_tail(match);
-      });
-  bool tail_default_exists = std::any_of(
-      matches->begin(), matches->end(), [&](const AutocompleteMatch& match) {
-        return match.allowed_to_be_default_match && is_tail(match);
-      });
+  auto default_non_tail = matches->end();
+  auto default_tail = matches->end();
+  bool other_non_tails = false, any_tails = false;
+  for (auto i = matches->begin(); i != matches->end(); ++i) {
+    if (comparing_object.GetDemotedRelevance(*i) == 0)
+      continue;
+    if (!is_tail(*i)) {
+      // We allow one default non-tail match. For non-default matches,
+      // don't consider if we'd remove them later.
+      if (default_non_tail == matches->end() && i->allowed_to_be_default_match)
+        default_non_tail = i;
+      else
+        other_non_tails = true;
+    } else {
+      any_tails = true;
+      if (default_tail == matches->end() && i->allowed_to_be_default_match)
+        default_tail = i;
+    }
+  }
   // If the only default matches are tail suggestions, let them remain and
   // instead remove the non-tail suggestions.  This is necessary because we do
   // not want to display tail suggestions mixed with other suggestions in the
@@ -818,39 +838,35 @@ void AutocompleteResult::MaybeCullTailSuggestions(ACMatches* matches) {
   // default match--the non-tail ones much go.  This situation though is
   // unlikely, as we normally would expect the search-what-you-typed suggestion
   // as a default match (and that's a non-tail suggestion).
-  if (tail_default_exists && non_tail_default == matches->end()) {
-    base::EraseIf(*matches, [&is_tail](const AutocompleteMatch& match) {
-      return !is_tail(match);
-    });
+  // 1) above.
+  if (default_tail != matches->end() && default_non_tail == matches->end()) {
+    base::EraseIf(*matches, std::not1(is_tail));
     return;
   }
-  // Determine if there are both tail and non-tail matches, excluding the
-  // non-tail default match.
-  bool any_tail = false, any_non_tail = false;
-  for (auto i = matches->begin();
-       i != matches->end() && !(any_tail && any_non_tail); ++i) {
-    // We allow one default non-tail match.
-    if (i != non_tail_default) {
-      if (is_tail(*i))
-        any_tail = true;
-      else
-        any_non_tail = true;
-    }
-  }
+  // 2) above.
+  if (!any_tails)
+    return;
   // If both tail and non-tail matches, remove tail. Note that this can
   // remove the highest rated suggestions.
-  if (any_tail) {
-    if (any_non_tail) {
+  if (default_non_tail != matches->end()) {
+    // 3) above.
+    if (other_non_tails) {
       base::EraseIf(*matches, is_tail);
     } else {
-      // We want the non-tail default match to be first. Mark tail suggestions
-      // as not a legal default match, so that the default match will be moved
-      // up explicitly.
+      // 4) above.
+      // We want the non-tail default match to be placed first. Mark tail
+      // suggestions as not a legal default match, so that the default match
+      // will be moved up explicitly.
       for (auto& match : *matches) {
         if (is_tail(match))
           match.allowed_to_be_default_match = false;
       }
     }
+  } else if (other_non_tails && default_tail == matches->end()) {
+    // 5) above.
+    // If there are no defaults at all, but non-tail suggestions exist, remove
+    // the tail suggestions.
+    base::EraseIf(*matches, is_tail);
   }
 }
 
