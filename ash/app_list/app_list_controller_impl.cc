@@ -616,7 +616,7 @@ void AppListControllerImpl::OnShellDestroying() {
 void AppListControllerImpl::OnOverviewModeStarting() {
   if (IsTabletMode()) {
     const int64_t display_id = last_visible_display_id_;
-    OnHomeLauncherTargetPositionChanged(false /* showing */, display_id);
+    OnHomeLauncherPositionChanged(false /* showing */, display_id);
     OnVisibilityWillChange(false /* visible */, display_id);
   } else {
     DismissAppList();
@@ -637,7 +637,7 @@ void AppListControllerImpl::OnOverviewModeEnding(OverviewSession* session) {
   bool target_visibility = GetTargetVisibility();
   if (home_launcher_transition_state_ == HomeLauncherTransitionState::kFinished)
     target_visibility &= !HasVisibleWindows();
-  OnHomeLauncherTargetPositionChanged(target_visibility, display_id);
+  OnHomeLauncherPositionChanged(target_visibility, display_id);
   OnVisibilityWillChange(target_visibility, display_id);
 }
 
@@ -801,9 +801,8 @@ void AppListControllerImpl::OnHomeLauncherAnimationComplete(
     home_launcher_animation_callback_.Run(shown);
 }
 
-void AppListControllerImpl::OnHomeLauncherTargetPositionChanged(
-    bool showing,
-    int64_t display_id) {
+void AppListControllerImpl::OnHomeLauncherPositionChanged(bool showing,
+                                                          int64_t display_id) {
   // TODO(manucornet): Make these depend on how far into the animation or drag
   // we are.
   home_launcher_transition_state_ =

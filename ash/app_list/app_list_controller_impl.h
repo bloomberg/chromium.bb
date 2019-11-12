@@ -285,8 +285,7 @@ class ASH_EXPORT AppListControllerImpl
       UpdateAnimationSettingsCallback callback) override;
   base::Optional<base::TimeDelta> GetOptionalAnimationDuration() override;
   void OnHomeLauncherAnimationComplete(bool shown, int64_t display_id) override;
-  void OnHomeLauncherTargetPositionChanged(bool showing,
-                                           int64_t display_id) override;
+  void OnHomeLauncherPositionChanged(bool showing, int64_t display_id) override;
   bool IsHomeScreenVisible() override;
   gfx::Rect GetInitialAppListItemScreenBoundsForWindow(
       aura::Window* window) override;
