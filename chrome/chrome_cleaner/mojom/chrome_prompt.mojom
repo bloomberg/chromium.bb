@@ -4,14 +4,22 @@
 
 module chrome_cleaner.mojom;
 
-// IMPORTANT NOTE: Avoid adding dependencies to typemapped .mojom files.
-// Enabling typemaps currently (as of July 2017) requires indirectly depending
-// on all existing typemap definitions. The Chrome Cleaner is built
-// independently from Chromium and would like to avoid these dependencies.
+// This interface was used to communicate between Chrome and the Chrome Cleanup
+// until M80, when it was replaced by
+// components/chrome_cleaner/public/proto/chrome_prompt.proto. It must be
+// supported until we drop support for Chrome M79 and earlier.
+
+// IMPORTANT NOTE: Avoid adding dependencies to typemapped .mojom files outside
+// the chrome/chrome_cleaner directory.  Enabling typemaps currently (as of
+// July 2017) requires indirectly depending on all existing typemap
+// definitions. The Chrome Cleaner is built independently from Chromium and
+// would like to avoid these dependencies.
 
 // Once it's possible to specify a limited subset of typemaps to use, be
 // careful not to add dependencies to [Native] mojo structures. The wire format
 // for [Native] structs is not guaranteed to be consistent between versions.
+
+import "chrome/chrome_cleaner/mojom/footprints.mojom";
 
 [Extensible]
 enum PromptAcceptance {
@@ -25,21 +33,6 @@ enum PromptAcceptance {
   // The user explicitly denied the Chrome prompt.
   DENIED = 3,
   NUM_VALUES,
-};
-
-struct FilePath {
-  array<uint16> value;
-};
-
-struct RegistryKey {
-  // A string formatted for display to the user.
-  // Example: HKCU:32\software\unwanted_software
-  array<uint16> value;
-};
-
-struct ExtensionId {
-  // A 32-character extension ID.
-  array<uint16> value;
 };
 
 // Service provided by Chrome to prompt the user to start a cleanup if the
