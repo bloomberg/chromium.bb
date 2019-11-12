@@ -113,7 +113,7 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
       const NGInflowChildData& child_data,
       const LogicalSize child_available_size,
       bool is_new_fc,
-      const base::Optional<LayoutUnit> forced_bfc_block_offset = base::nullopt,
+      const base::Optional<LayoutUnit> bfc_block_offset = base::nullopt,
       bool has_clearance_past_adjoining_floats = false);
 
   // @return Estimated BFC block offset for the "to be layout" child.
