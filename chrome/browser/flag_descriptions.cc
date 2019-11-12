@@ -2908,6 +2908,12 @@ const char kNtpRealboxDescription[] =
     "directly (i.e. not be a \"fake\" box). Search results will show below the "
     "non-fake input (\"realbox\").";
 
+const char kNtpRealboxMatchOmniboxThemeName[] =
+    "Make the New Tab page real search box match the omnibox's theme colors";
+const char kNtpRealboxMatchOmniboxThemeDescription[] =
+    "Themes the real search box in the middle of the NTP to match the omnibox. "
+    "Only has an an effect if #ntp-realbox is enabled.";
+
 const char kImprovedCookieControlsName[] =
     "Enable improved cookie controls UI in incognito mode";
 const char kImprovedCookieControlsDescription[] =

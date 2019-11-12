@@ -206,6 +206,9 @@ struct InstantMostVisitedInfo;
 [Native]
 struct NtpTheme;
 
+[Native]
+struct SearchBoxTheme;
+
 // Renderer interface used by the browser to push updates to the client. For
 // example, the browser will tell the frame if the omnibox got focus.
 interface EmbeddedSearchClient {

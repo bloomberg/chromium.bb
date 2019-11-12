@@ -1628,38 +1628,38 @@ function renderOneGoogleBarTheme() {
 
 /** Updates the NTP based on the current theme. */
 function renderTheme() {
-  const info = getNtpTheme();
-  if (!info) {
+  const theme = getNtpTheme();
+  if (!theme) {
     return;
   }
 
   // Update dark mode styling.
   isDarkModeEnabled = window.matchMedia('(prefers-color-scheme: dark)').matches;
-  document.body.classList.toggle('light-chip', !getUseDarkChips(info));
+  document.body.classList.toggle('light-chip', !getUseDarkChips(theme));
 
   // Dark mode uses a white Google logo.
   const useWhiteLogo =
-      info.alternateLogo || (info.usingDefaultTheme && isDarkModeEnabled);
+      theme.alternateLogo || (theme.usingDefaultTheme && isDarkModeEnabled);
   document.body.classList.toggle(CLASSES.ALTERNATE_LOGO, useWhiteLogo);
 
-  if (info.logoColor) {
+  if (theme.logoColor) {
     document.body.style.setProperty(
-        '--logo-color', convertToRGBAColor(info.logoColor));
+        '--logo-color', convertToRGBAColor(theme.logoColor));
   }
 
   // The doodle notifier should be shown for non-default backgrounds. This
   // includes non-white backgrounds, excluding dark mode gray if dark mode is
   // enabled.
-  const isDefaultBackground = info.usingDefaultTheme && !info.imageUrl;
+  const isDefaultBackground = theme.usingDefaultTheme && !theme.imageUrl;
   document.body.classList.toggle(CLASSES.USE_NOTIFIER, !isDefaultBackground);
 
   // If a custom background has been selected the image will be applied to the
   // custom-background element instead of the body.
-  if (!info.customBackgroundConfigured) {
+  if (!theme.customBackgroundConfigured) {
     document.body.style.background = [
-      convertToRGBAColor(info.backgroundColorRgba), info.imageUrl,
-      info.imageTiling, info.imageHorizontalAlignment,
-      info.imageVerticalAlignment
+      convertToRGBAColor(theme.backgroundColorRgba), theme.imageUrl,
+      theme.imageTiling, theme.imageHorizontalAlignment,
+      theme.imageVerticalAlignment
     ].join(' ').trim();
 
     $(IDS.CUSTOM_BG).style.opacity = '0';
@@ -1667,7 +1667,7 @@ function renderTheme() {
     customize.clearAttribution();
   } else {
     // Do anything only if the custom background changed.
-    const imageUrl = assert(info.imageUrl);
+    const imageUrl = assert(theme.imageUrl);
     if (!$(IDS.CUSTOM_BG).style.backgroundImage.includes(imageUrl)) {
       const imageWithOverlay = [
         customize.CUSTOM_BACKGROUND_OVERLAY, 'url(' + imageUrl + ')'
@@ -1692,26 +1692,59 @@ function renderTheme() {
 
       customize.clearAttribution();
       customize.setAttribution(
-          '' + info.attribution1, '' + info.attribution2,
-          '' + info.attributionActionUrl);
+          '' + theme.attribution1, '' + theme.attribution2,
+          '' + theme.attributionActionUrl);
     }
   }
 
-  updateThemeAttribution(info.attributionUrl, info.imageHorizontalAlignment);
-  setCustomThemeStyle(info);
+  updateThemeAttribution(theme.attributionUrl, theme.imageHorizontalAlignment);
+  setCustomThemeStyle(theme);
 
   $(customize.IDS.RESTORE_DEFAULT)
       .classList.toggle(
-          customize.CLASSES.OPTION_DISABLED, !info.customBackgroundConfigured);
+          customize.CLASSES.OPTION_DISABLED, !theme.customBackgroundConfigured);
   $(customize.IDS.RESTORE_DEFAULT).tabIndex =
-      (info.customBackgroundConfigured ? 0 : -1);
+      (theme.customBackgroundConfigured ? 0 : -1);
 
   $(customize.IDS.EDIT_BG)
       .classList.toggle(
-          CLASSES.ENTRY_POINT_ENHANCED, !info.customBackgroundConfigured);
+          CLASSES.ENTRY_POINT_ENHANCED, !theme.customBackgroundConfigured);
 
   if (configData.isGooglePage) {
     customize.onThemeChange();
+  }
+
+  if (configData.realboxMatchOmniboxTheme) {
+    // TODO(dbeam): actually get these from theme service.
+    const removeMatchHovered = assert(theme.searchBox.icon).slice();
+    removeMatchHovered[3] = .08 * 255;
+
+    const removeMatchFocused = theme.searchBox.icon.slice();
+    removeMatchFocused[3] = .16 * 255;
+
+    /**
+     * @param {string} varName
+     * @param {!Array<number>|undefined} colors
+     */
+    const setCssVar = (varName, colors) => {
+      const rgba = convertToRGBAColor(assert(colors));
+      document.body.style.setProperty(`--${varName}`, rgba);
+    };
+
+    setCssVar('search-box-bg', theme.searchBox.bg);
+    setCssVar('search-box-icon', theme.searchBox.icon);
+    setCssVar('search-box-placeholder', theme.searchBox.placeholder);
+    setCssVar('search-box-results-bg', theme.searchBox.resultsBg);
+    setCssVar(
+        'search-box-results-bg-hovered', theme.searchBox.resultsBgHovered);
+    setCssVar(
+        'search-box-results-bg-selected', theme.searchBox.resultsBgSelected);
+    setCssVar('search-box-results-dim', theme.searchBox.resultsDim);
+    setCssVar('search-box-results-text', theme.searchBox.resultsText);
+    setCssVar('search-box-results-url', theme.searchBox.resultsUrl);
+    setCssVar('search-box-text', theme.searchBox.text);
+    setCssVar('remove-match-hovered', removeMatchHovered);
+    setCssVar('remove-match-focused', removeMatchFocused);
   }
 }
 
