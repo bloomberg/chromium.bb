@@ -38,23 +38,34 @@ namespace {
 // In a production environment, these should ABSOLUTELY NOT be fixed! Instead a
 // sender↔receiver OFFER/ANSWER exchange should establish them.
 
-// The UDP socket port receiving packets from the Sender.
-constexpr int kCastStreamingPort = 2344;
+const cast::streaming::SessionConfig kSampleAudioAnswerConfig{
+    /* .sender_ssrc = */ 1,
+    /* .receiver_ssrc = */ 2,
 
-// The SSRC's should be randomly generated using either
-// openscreen::cast_streaming::GenerateSsrc(), or a similar heuristic.
-constexpr Ssrc kDemoAudioSenderSsrc = 1;
-constexpr Ssrc kDemoAudioReceiverSsrc = 2;
-constexpr Ssrc kDemoVideoSenderSsrc = 50001;
-constexpr Ssrc kDemoVideoReceiverSsrc = 50002;
+    // In a production environment, this would be set to the sampling rate of
+    // the audio capture.
+    /* .rtp_timebase = */ 48000,
+    /* .channels = */ 2,
+    /* .aes_secret_key = */
+    std::array<uint8_t, 16>{0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
+                            0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f},
+    /* .aes_iv_mask = */
+    std::array<uint8_t, 16>{0xf0, 0xe0, 0xd0, 0xc0, 0xb0, 0xa0, 0x90, 0x80,
+                            0x70, 0x60, 0x50, 0x40, 0x30, 0x20, 0x10, 0x00},
+};
 
-// In a production environment, this would be set to the sampling rate of the
-// audio capture.
-constexpr int kDemoAudioRtpTimebase = 48000;
-
-// Per the Cast Streaming spec, this is always 90 kHz. See kVideoTimebase in
-// constants.h.
-constexpr int kDemoVideoRtpTimebase = static_cast<int>(kVideoTimebase::den);
+const cast::streaming::SessionConfig kSampleVideoAnswerConfig{
+    /* .sender_ssrc = */ 50001,
+    /* .receiver_ssrc = */ 50002,
+    /* .rtp_timebase = */ static_cast<int>(kVideoTimebase::den),
+    /* .channels = */ 1,
+    /* .aes_secret_key = */
+    std::array<uint8_t, 16>{0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17,
+                            0x18, 0x19, 0x1a, 0x1b, 0x1c, 0x1d, 0x1e, 0x1f},
+    /* .aes_iv_mask = */
+    std::array<uint8_t, 16>{0xf1, 0xe1, 0xd1, 0xc1, 0xb1, 0xa1, 0x91, 0x81,
+                            0x71, 0x61, 0x51, 0x41, 0x31, 0x21, 0x11, 0x01},
+};
 
 // In a production environment, this would start-out at some initial value
 // appropriate to the networking environment, and then be adjusted by the
@@ -63,20 +74,8 @@ constexpr int kDemoVideoRtpTimebase = static_cast<int>(kVideoTimebase::den);
 // environment reliability changes.
 constexpr std::chrono::milliseconds kDemoTargetPlayoutDelay{400};
 
-// In a production environment, these should be generated from a
-// cryptographically-secure RNG source.
-constexpr std::array<uint8_t, 16> kDemoAudioAesKey{
-    0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
-    0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f};
-constexpr std::array<uint8_t, 16> kDemoAudioCastIvMask{
-    0xf0, 0xe0, 0xd0, 0xc0, 0xb0, 0xa0, 0x90, 0x80,
-    0x70, 0x60, 0x50, 0x40, 0x30, 0x20, 0x10, 0x00};
-constexpr std::array<uint8_t, 16> kDemoVideoAesKey{
-    0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17,
-    0x18, 0x19, 0x1a, 0x1b, 0x1c, 0x1d, 0x1e, 0x1f};
-constexpr std::array<uint8_t, 16> kDemoVideoCastIvMask{
-    0xf1, 0xe1, 0xd1, 0xc1, 0xb1, 0xa1, 0x91, 0x81,
-    0x71, 0x61, 0x51, 0x41, 0x31, 0x21, 0x11, 0x01};
+// The UDP socket port receiving packets from the Sender.
+constexpr int kCastStreamingPort = 2344;
 
 // End of Receiver Configuration.
 ////////////////////////////////////////////////////////////////////////////////
@@ -94,14 +93,10 @@ void DemoMain(platform::TaskRunnerImpl* task_runner) {
   ReceiverPacketRouter packet_router(&env);
 
   // Create the two Receivers.
-  Receiver audio_receiver(&env, &packet_router, kDemoAudioSenderSsrc,
-                          kDemoAudioReceiverSsrc, kDemoAudioRtpTimebase,
-                          kDemoTargetPlayoutDelay, kDemoAudioAesKey,
-                          kDemoAudioCastIvMask);
-  Receiver video_receiver(&env, &packet_router, kDemoVideoSenderSsrc,
-                          kDemoVideoReceiverSsrc, kDemoVideoRtpTimebase,
-                          kDemoTargetPlayoutDelay, kDemoVideoAesKey,
-                          kDemoVideoCastIvMask);
+  Receiver audio_receiver(&env, &packet_router, kSampleAudioAnswerConfig,
+                          kDemoTargetPlayoutDelay);
+  Receiver video_receiver(&env, &packet_router, kSampleVideoAnswerConfig,
+                          kDemoTargetPlayoutDelay);
 
   OSP_LOG_INFO << "Awaiting first Cast Streaming packet at "
                << env.GetBoundLocalEndpoint() << "...";

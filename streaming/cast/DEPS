@@ -4,5 +4,8 @@
 
 include_rules = [
     # BoringSSL includes
-    '+openssl'
+    '+openssl',
+
+    # TODO(jophba): remove this DEPS config after streaming namespace merge.
+    '+cast/streaming',
 ]

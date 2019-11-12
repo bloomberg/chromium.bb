@@ -54,6 +54,7 @@ source_set("common") {
   ]
 
   deps = [
+    "../../cast/streaming:streaming_configs",
     "../../platform",
     "../../util",
   ]

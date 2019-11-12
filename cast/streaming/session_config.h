@@ -10,28 +10,32 @@
 #include <cstdint>
 #include <string>
 
-#include "streaming/cast/rtp_defines.h"
-#include "streaming/cast/rtp_time.h"
 #include "streaming/cast/ssrc.h"
 
 namespace cast {
 namespace streaming {
 
-// The general, parent config type for Cast Streaming senders and receivers that
-// deal with frames (audio, video). Several configuration values must be shared
-// between the sender and receiver to ensure compatibility during the session.
+// Common streaming configuration, established from the OFFER/ANSWER exchange,
+// that the Sender and Receiver are both assuming.
 // TODO(jophba): add config validation.
-struct SessionConfig {
+struct SessionConfig final {
+  SessionConfig(openscreen::cast_streaming::Ssrc sender_ssrc,
+                openscreen::cast_streaming::Ssrc receiver_ssrc,
+                int rtp_timebase,
+                int channels,
+                std::array<uint8_t, 16> aes_secret_key,
+                std::array<uint8_t, 16> aes_iv_mask);
+  SessionConfig(const SessionConfig&) = default;
+  SessionConfig(SessionConfig&&) noexcept = default;
+  SessionConfig& operator=(const SessionConfig&) = default;
+  SessionConfig& operator=(SessionConfig&&) noexcept = default;
+  ~SessionConfig() = default;
+
   // The sender and receiver's SSRC identifiers. Note: SSRC identifiers
   // are defined as unsigned 32 bit integers here:
   // https://tools.ietf.org/html/rfc5576#page-5
   openscreen::cast_streaming::Ssrc sender_ssrc = 0;
   openscreen::cast_streaming::Ssrc receiver_ssrc = 0;
-
-  // The type/encoding of frame data.
-  // TODO(jophba): change type after Yuri's refactor patches land.
-  openscreen::cast_streaming::RtpPayloadType payload_type =
-      openscreen::cast_streaming::RtpPayloadType::kNull;
 
   // RTP timebase: The number of RTP units advanced per second. For audio,
   // this is the sampling rate. For video, this is 90 kHz by convention.

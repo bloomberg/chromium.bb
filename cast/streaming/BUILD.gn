@@ -2,15 +2,25 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+# TODO(jophba): merge with streaming source set after streaming/cast merge.
+source_set("streaming_configs") {
+  sources = [
+    "session_config.cc",
+    "session_config.h",
+  ]
+
+  public_configs = [ "../../build:openscreen_include_dirs" ]
+}
+
 source_set("streaming") {
   sources = [
-    "reciever_config.h",
-    "sender_config.h",
-    "session_config.h",
-    "video_codec_params.h",
+    "receiver_session.cc",
+    "receiver_session.h",
   ]
 
   public_deps = [
+    ":streaming_configs",
     "../../streaming/cast:common",
+    "../../streaming/cast:receiver",
   ]
 }

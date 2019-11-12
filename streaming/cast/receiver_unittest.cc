@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "absl/types/span.h"
+#include "cast/streaming/session_config.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "platform/api/logging.h"
@@ -57,11 +58,11 @@ namespace cast_streaming {
 namespace {
 
 // Receiver configuration.
+
 constexpr Ssrc kSenderSsrc = 1;
 constexpr Ssrc kReceiverSsrc = 2;
 constexpr int kRtpTimebase = 48000;
 constexpr milliseconds kTargetPlayoutDelay{100};
-constexpr milliseconds kTargetPlayoutDelayChange{800};
 constexpr auto kAesKey =
     std::array<uint8_t, 16>{{0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
                              0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f}};
@@ -69,6 +70,7 @@ constexpr auto kCastIvMask =
     std::array<uint8_t, 16>{{0xf0, 0xe0, 0xd0, 0xc0, 0xb0, 0xa0, 0x90, 0x80,
                              0x70, 0x60, 0x50, 0x40, 0x30, 0x20, 0x10, 0x00}};
 
+constexpr milliseconds kTargetPlayoutDelayChange{800};
 // Additional configuration for the Sender.
 constexpr RtpPayloadType kRtpPayloadType = RtpPayloadType::kVideoVp8;
 constexpr int kMaxRtpPacketSize = 64;
@@ -284,12 +286,13 @@ class ReceiverTest : public testing::Test {
         packet_router_(&env_),
         receiver_(&env_,
                   &packet_router_,
-                  kSenderSsrc,
-                  kReceiverSsrc,
-                  kRtpTimebase,
-                  kTargetPlayoutDelay,
-                  kAesKey,
-                  kCastIvMask),
+                  {/* .sender_ssrc = */ kSenderSsrc,
+                   /* .receiver_ssrc = */ kReceiverSsrc,
+                   /* .rtp_timebase = */ kRtpTimebase,
+                   /* .channels = */ 2,
+                   /* .aes_secret_key = */ kAesKey,
+                   /* .aes_iv_mask = */ kCastIvMask},
+                  kTargetPlayoutDelay),
         sender_(&task_runner_, &env_) {
     env_.set_socket_error_handler(
         [](Error error) { ASSERT_TRUE(error.ok()) << error; });
