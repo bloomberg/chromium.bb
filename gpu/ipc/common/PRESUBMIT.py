@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Enforces Vulkan function pointer autogen matches script output.
+"""Enforces Vulkan types autogen matches script output.
 
 See http://dev.chromium.org/developers/how-tos/depottools/presubmit-scripts
 for more details on the presubmit API built into depot_tools.
@@ -14,10 +14,12 @@ import os.path
 def CommonChecks(input_api, output_api):
   generating_files = input_api.AffectedFiles(
       file_filter=lambda x: os.path.basename(x.LocalPath()) in [
-          'generate_bindings.py'])
+          'generate_vulkan_types.py'])
   generated_files = input_api.AffectedFiles(
       file_filter=lambda x: os.path.basename(x.LocalPath()) in [
-          'vulkan_function_pointers.cc', 'vulkan_function_pointers.h'])
+          'vulkan_types.mojom', 'vulkan_types_mojom_traits.h',
+          'vulkan_types_mojom_traits.cc', 'vulkan_types.typemap'
+      ])
 
 
   messages = []
@@ -28,15 +30,15 @@ def CommonChecks(input_api, output_api):
       long_text += file.LocalPath() + '\n'
       long_text += '\n'
       messages.append(output_api.PresubmitError(
-          'Vulkan function pointer generated files changed but the generator '
+          'Vulkan types generated files changed but the generator '
           'did not.', long_text=long_text))
 
   with input_api.temporary_directory() as temp_dir:
     commands = []
     if generating_files:
-      commands.append(input_api.Command(name='generate_bindings',
+      commands.append(input_api.Command(name='generate_vulkan_types',
                                         cmd=[input_api.python_executable,
-                                             'generate_bindings.py',
+                                             'generate_vulkan_types.py',
                                              '--check',
                                              '--output-dir=' + temp_dir],
                                         kwargs={},
