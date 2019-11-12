@@ -41,8 +41,8 @@ bool DOMArrayBuffer::Transfer(v8::Isolate* isolate,
                               ArrayBufferContents& result) {
   DOMArrayBuffer* to_transfer = this;
   if (!IsDetachable(isolate)) {
-    to_transfer = DOMArrayBuffer::Create(Buffer()->Data(),
-                                         Buffer()->ByteLengthAsUnsigned());
+    to_transfer =
+        DOMArrayBuffer::Create(Buffer()->Data(), Buffer()->ByteLengthAsSizeT());
   }
 
   if (!to_transfer->Buffer()->Transfer(result))
@@ -59,8 +59,8 @@ bool DOMArrayBuffer::Transfer(v8::Isolate* isolate,
 }
 
 DOMArrayBuffer* DOMArrayBuffer::CreateUninitializedOrNull(
-    unsigned num_elements,
-    unsigned element_byte_size) {
+    size_t num_elements,
+    size_t element_byte_size) {
   scoped_refptr<ArrayBuffer> buffer =
       ArrayBuffer::CreateUninitializedOrNull(num_elements, element_byte_size);
   if (!buffer)

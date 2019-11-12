@@ -186,7 +186,7 @@ ScriptPromise Body::arrayBuffer(ScriptState* script_state,
       return ScriptPromise();
     }
   } else {
-    resolver->Resolve(DOMArrayBuffer::Create(0u, 1));
+    resolver->Resolve(DOMArrayBuffer::Create(size_t{0}, size_t{0}));
   }
   return promise;
 }

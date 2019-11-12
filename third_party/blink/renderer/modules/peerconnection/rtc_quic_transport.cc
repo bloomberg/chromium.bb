@@ -184,8 +184,7 @@ String RTCQuicTransport::state() const {
 }
 
 DOMArrayBuffer* RTCQuicTransport::getKey() const {
-  return DOMArrayBuffer::Create(key_->Data(),
-                                key_->DeprecatedByteLengthAsUnsigned());
+  return DOMArrayBuffer::Create(key_->Data(), key_->ByteLengthAsSizeT());
 }
 
 void RTCQuicTransport::connect(ExceptionState& exception_state) {
