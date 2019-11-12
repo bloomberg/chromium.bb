@@ -100,7 +100,7 @@ class SyncConsentTest : public OobeBaseTest {
 
   void SetUpOnMainThread() override {
     OobeBaseTest::SetUpOnMainThread();
-    official_build_override_ = WizardController::ForceOfficialBuildForTesting();
+    branded_build_override_ = WizardController::ForceBrandedBuildForTesting();
   }
 
   void TearDownOnMainThread() override {
@@ -197,7 +197,7 @@ class SyncConsentTest : public OobeBaseTest {
       IDS_LOGIN_SYNC_CONSENT_SCREEN_ACCEPT_AND_CONTINUE,
   };
 
-  std::unique_ptr<base::AutoReset<bool>> official_build_override_;
+  std::unique_ptr<base::AutoReset<bool>> branded_build_override_;
   FakeGaiaMixin fake_gaia_{&mixin_host_, embedded_test_server()};
 
  private:
