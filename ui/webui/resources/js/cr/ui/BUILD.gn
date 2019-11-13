@@ -25,6 +25,7 @@ js_type_check("ui_resources") {
     ":focus_row",
     ":focus_row_behavior",
     ":focus_without_ink",
+    ":keyboard_shortcut_list",
     ":list",
     ":list_item",
     ":list_selection_controller",
@@ -64,6 +65,7 @@ js_library("bubble") {
 
 js_library("command") {
   deps = [
+    ":keyboard_shortcut_list",
     "..:ui",
     "../..:cr",
   ]
@@ -139,6 +141,12 @@ js_library("focus_without_ink") {
 js_library("grid") {
   deps = [
     ":list",
+  ]
+}
+
+js_library("keyboard_shortcut_list") {
+  deps = [
+    "../..:cr",
   ]
 }
 
