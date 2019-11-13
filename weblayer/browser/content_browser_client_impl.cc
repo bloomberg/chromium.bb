@@ -44,6 +44,7 @@
 #include "components/crash/content/browser/crash_handler_host_linux.h"
 #include "ui/base/resource/resource_bundle_android.h"
 #include "weblayer/browser/android_descriptors.h"
+#include "weblayer/browser/devtools_manager_delegate_android.h"
 #include "weblayer/browser/safe_browsing/safe_browsing_service.h"
 #endif
 
@@ -105,9 +106,14 @@ ContentBrowserClientImpl::GetWebContentsViewDelegate(
     content::WebContents* web_contents) {
   return nullptr;
 }
+
 content::DevToolsManagerDelegate*
 ContentBrowserClientImpl::GetDevToolsManagerDelegate() {
+#if defined(OS_ANDROID)
+  return new DevToolsManagerDelegateAndroid();
+#else
   return new content::DevToolsManagerDelegate();
+#endif
 }
 
 base::Optional<service_manager::Manifest>
@@ -117,8 +123,12 @@ ContentBrowserClientImpl::GetServiceManifestOverlay(base::StringPiece name) {
   return base::nullopt;
 }
 
+std::string ContentBrowserClientImpl::GetProduct() {
+  return version_info::GetProductNameAndVersionForUserAgent();
+}
+
 std::string ContentBrowserClientImpl::GetUserAgent() {
-  std::string product = version_info::GetProductNameAndVersionForUserAgent();
+  std::string product = GetProduct();
 
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
