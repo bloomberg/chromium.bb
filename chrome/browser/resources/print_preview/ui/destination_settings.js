@@ -49,8 +49,6 @@ import '../strings.m.js';
     ],
 
     properties: {
-      appKioskMode: Boolean,
-
       /** @type {CloudPrintInterface} */
       cloudPrintInterface: {
         type: Object,
@@ -265,7 +263,7 @@ import '../strings.m.js';
     init: function(
         defaultPrinter, pdfPrinterDisabled,
         serializedDefaultDestinationRulesStr, userAccounts, syncAvailable) {
-      this.pdfPrinterDisabled_ = this.appKioskMode || pdfPrinterDisabled;
+      this.pdfPrinterDisabled_ = pdfPrinterDisabled;
       this.$.userManager.initUserAccounts(userAccounts, syncAvailable);
       this.destinationStore_.init(
           this.pdfPrinterDisabled_, defaultPrinter,

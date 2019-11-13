@@ -145,8 +145,9 @@ Polymer({
       appKioskMode, defaultPrinter, serializedDestinationSelectionRulesStr,
       userAccounts, syncAvailable, pdfPrinterDisabled) {
     this.isInAppKioskMode_ = appKioskMode;
+    const saveAsPdfDisabled = this.isInAppKioskMode_ || pdfPrinterDisabled;
     this.$.destinationSettings.init(
-        defaultPrinter, pdfPrinterDisabled,
+        defaultPrinter, saveAsPdfDisabled,
         serializedDestinationSelectionRulesStr, userAccounts, syncAvailable);
   },
 
