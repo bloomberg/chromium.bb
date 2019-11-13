@@ -735,10 +735,13 @@ android_library("common_crash_java") {
 android_library("common_java") {
   java_files = [
     "java/src/org/chromium/android_webview/common/AwResource.java",
+    "java/src/org/chromium/android_webview/common/Flag.java",
+    "java/src/org/chromium/android_webview/common/ProductionSupportedFlagList.java",
     "java/src/org/chromium/android_webview/common/services/ServiceNames.java",
   ]
   deps = [
     "//base:base_java",
+    "//third_party/android_deps:androidx_annotation_annotation_java",
   ]
 }
 
