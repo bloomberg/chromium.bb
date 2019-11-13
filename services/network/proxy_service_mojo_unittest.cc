@@ -15,7 +15,6 @@
 #include "base/test/task_environment.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "content/test/test_mojo_proxy_resolver_factory.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/network_delegate_impl.h"
 #include "net/base/test_completion_callback.h"
@@ -31,6 +30,7 @@
 #include "net/test/event_waiter.h"
 #include "net/test/gtest_util.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
+#include "services/network/test_mojo_proxy_resolver_factory.h"
 #include "services/proxy_resolver/public/mojom/proxy_resolver.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -38,7 +38,7 @@
 
 using net::test::IsOk;
 
-namespace content {
+namespace network {
 
 namespace {
 
@@ -116,21 +116,20 @@ class ProxyServiceMojoTest : public testing::Test {
     mock_host_resolver_.rules()->AddRule("example.com", "1.2.3.4");
 
     fetcher_ = new net::MockPacFileFetcher;
-    proxy_resolution_service_ =
-        network::CreateProxyResolutionServiceUsingMojoFactory(
-            proxy_resolver::mojom::ProxyResolverFactoryPtr(
-                test_mojo_proxy_resolver_factory_.CreateFactoryRemote()),
-            std::make_unique<net::ProxyConfigServiceFixed>(
-                net::ProxyConfigWithAnnotation(
-                    net::ProxyConfig::CreateFromCustomPacURL(GURL(kPacUrl)),
-                    TRAFFIC_ANNOTATION_FOR_TESTS)),
-            base::WrapUnique(fetcher_),
-            std::make_unique<net::DoNothingDhcpPacFileFetcher>(),
-            &mock_host_resolver_, &net_log_, &network_delegate_);
+    proxy_resolution_service_ = CreateProxyResolutionServiceUsingMojoFactory(
+        proxy_resolver::mojom::ProxyResolverFactoryPtr(
+            test_mojo_proxy_resolver_factory_.CreateFactoryRemote()),
+        std::make_unique<net::ProxyConfigServiceFixed>(
+            net::ProxyConfigWithAnnotation(
+                net::ProxyConfig::CreateFromCustomPacURL(GURL(kPacUrl)),
+                TRAFFIC_ANNOTATION_FOR_TESTS)),
+        base::WrapUnique(fetcher_),
+        std::make_unique<net::DoNothingDhcpPacFileFetcher>(),
+        &mock_host_resolver_, &net_log_, &network_delegate_);
   }
 
   base::test::TaskEnvironment task_environment_;
-  content::TestMojoProxyResolverFactory test_mojo_proxy_resolver_factory_;
+  TestMojoProxyResolverFactory test_mojo_proxy_resolver_factory_;
   TestNetworkDelegate network_delegate_;
   net::MockHostResolver mock_host_resolver_;
   // Owned by |proxy_resolution_service_|.
@@ -234,4 +233,4 @@ TEST_F(ProxyServiceMojoTest, ErrorOnInitialization) {
   CheckCapturedNetLogEntries(net_log_.GetEntries());
 }
 
-}  // namespace content
+}  // namespace network

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_TEST_TEST_MOJO_PROXY_RESOLVER_FACTORY_H_
-#define CONTENT_TEST_TEST_MOJO_PROXY_RESOLVER_FACTORY_H_
+#ifndef SERVICES_NETWORK_TEST_MOJO_PROXY_RESOLVER_FACTORY_H_
+#define SERVICES_NETWORK_TEST_MOJO_PROXY_RESOLVER_FACTORY_H_
 
 #include <memory>
 #include <string>
@@ -14,7 +14,7 @@
 #include "services/proxy_resolver/proxy_resolver_factory_impl.h"
 #include "services/proxy_resolver/public/mojom/proxy_resolver.mojom.h"
 
-namespace content {
+namespace network {
 
 // MojoProxyResolverFactory that runs PAC scripts in-process, for tests.
 class TestMojoProxyResolverFactory
@@ -48,6 +48,6 @@ class TestMojoProxyResolverFactory
   DISALLOW_COPY_AND_ASSIGN(TestMojoProxyResolverFactory);
 };
 
-}  // namespace content
+}  // namespace network
 
-#endif  // CONTENT_TEST_TEST_MOJO_PROXY_RESOLVER_FACTORY_H_
+#endif  // SERVICES_NETWORK_TEST_MOJO_PROXY_RESOLVER_FACTORY_H_

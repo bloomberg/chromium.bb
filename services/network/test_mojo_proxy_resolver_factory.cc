@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/test/test_mojo_proxy_resolver_factory.h"
+#include "services/network/test_mojo_proxy_resolver_factory.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 
-namespace content {
+namespace network {
 
 TestMojoProxyResolverFactory::TestMojoProxyResolverFactory()
     : proxy_resolver_factory_impl_(factory_.BindNewPipeAndPassReceiver()) {}
@@ -30,4 +30,4 @@ TestMojoProxyResolverFactory::CreateFactoryRemote() {
   return receiver_.BindNewPipeAndPassRemote();
 }
 
-}  // namespace content
+}  // namespace network

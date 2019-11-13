@@ -8,7 +8,6 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/task_environment.h"
-#include "content/test/test_mojo_proxy_resolver_factory.h"
 #include "net/base/host_port_pair.h"
 #include "net/proxy_resolution/proxy_config.h"
 #include "net/proxy_resolution/proxy_config_service_fixed.h"
@@ -20,6 +19,7 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_test_util.h"
+#include "services/network/test_mojo_proxy_resolver_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 #include "url/gurl.h"
@@ -28,7 +28,7 @@
 #include "services/network/mock_mojo_dhcp_wpad_url_client.h"
 #endif  // defined(OS_CHROMEOS)
 
-namespace content {
+namespace network {
 
 namespace {
 
@@ -61,7 +61,7 @@ class URLRequestContextBuilderMojoTest : public PlatformTest {
   base::test::TaskEnvironment task_environment_;
   TestMojoProxyResolverFactory test_mojo_proxy_resolver_factory_;
   net::EmbeddedTestServer test_server_;
-  network::URLRequestContextBuilderMojo builder_;
+  URLRequestContextBuilderMojo builder_;
 };
 
 TEST_F(URLRequestContextBuilderMojoTest, MojoProxyResolver) {
@@ -78,9 +78,8 @@ TEST_F(URLRequestContextBuilderMojoTest, MojoProxyResolver) {
           test_mojo_proxy_resolver_factory_.CreateFactoryRemote()));
 
 #if defined(OS_CHROMEOS)
-  builder_.SetDhcpWpadUrlClient(network::mojom::DhcpWpadUrlClientPtr(
-      network::MockMojoDhcpWpadUrlClient::CreateWithSelfOwnedReceiver(
-          std::string())));
+  builder_.SetDhcpWpadUrlClient(mojom::DhcpWpadUrlClientPtr(
+      MockMojoDhcpWpadUrlClient::CreateWithSelfOwnedReceiver(std::string())));
 #endif  // defined(OS_CHROMEOS)
 
   std::unique_ptr<net::URLRequestContext> context(builder_.Build());
@@ -116,9 +115,8 @@ TEST_F(URLRequestContextBuilderMojoTest, ShutdownWithHungRequest) {
           test_mojo_proxy_resolver_factory_.CreateFactoryRemote()));
 
 #if defined(OS_CHROMEOS)
-  builder_.SetDhcpWpadUrlClient(network::mojom::DhcpWpadUrlClientPtr(
-      network::MockMojoDhcpWpadUrlClient::CreateWithSelfOwnedReceiver(
-          std::string())));
+  builder_.SetDhcpWpadUrlClient(mojom::DhcpWpadUrlClientPtr(
+      MockMojoDhcpWpadUrlClient::CreateWithSelfOwnedReceiver(std::string())));
 #endif  // defined(OS_CHROMEOS)
 
   std::unique_ptr<net::URLRequestContext> context(builder_.Build());
@@ -141,4 +139,4 @@ TEST_F(URLRequestContextBuilderMojoTest, ShutdownWithHungRequest) {
 
 }  // namespace
 
-}  // namespace content
+}  // namespace network
