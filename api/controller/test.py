@@ -203,9 +203,11 @@ def MoblabVmTest(input_proto, _output_proto, _config):
 
   # Now we can run the tests.
   with chroot.tempdir() as workspace_dir, chroot.tempdir() as results_dir:
+    # Convert the results directory to an absolute chroot directory.
+    chroot_results_dir = '/%s' % os.path.relpath(results_dir, chroot.path)
     vms = test.CreateMoblabVm(workspace_dir, chroot.path, image_payload_dir)
     cache_dir = test.PrepareMoblabVmImageCache(vms, builder, cache_payload_dirs)
-    test.RunMoblabVmTest(chroot, vms, builder, cache_dir, results_dir)
+    test.RunMoblabVmTest(chroot, vms, builder, cache_dir, chroot_results_dir)
     test.ValidateMoblabVmTest(results_dir)
 
 
