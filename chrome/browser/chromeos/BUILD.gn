@@ -2337,6 +2337,8 @@ source_set("chromeos") {
       "printing/cups_proxy_service_manager_factory.h",
       "printing/cups_wrapper.cc",
       "printing/cups_wrapper.h",
+      "printing/printer_error_codes.cc",
+      "printing/printer_error_codes.h",
       "printing/printer_info_cups.cc",
     ]
   } else {
