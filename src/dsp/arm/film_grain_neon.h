@@ -30,8 +30,6 @@ void FilmGrainInit_NEON();
 }  // namespace libgav1
 
 #if LIBGAV1_ENABLE_NEON
-#define LIBGAV1_Dsp8bpp_FilmGrainSynthesis LIBGAV1_DSP_NEON
-#define LIBGAV1_Dsp10bpp_FilmGrainSynthesis LIBGAV1_DSP_NEON
 #define LIBGAV1_Dsp8bpp_FilmGrainAutoregressionLuma LIBGAV1_DSP_NEON
 #define LIBGAV1_Dsp10bpp_FilmGrainAutoregressionLuma LIBGAV1_DSP_NEON
 #define LIBGAV1_Dsp8bpp_FilmGrainAutoregressionChroma LIBGAV1_DSP_NEON
