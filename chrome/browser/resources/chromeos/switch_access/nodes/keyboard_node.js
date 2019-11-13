@@ -15,12 +15,32 @@ class KeyboardNode extends NodeWrapper {
     super(node, parent);
   }
 
+  // ================= Getters and setters =================
+
   /** @override */
   get actions() {
     if (this.isGroup()) {
       return [];
     }
     return [SAConstants.MenuAction.SELECT];
+  }
+
+  // ================= General methods =================
+
+  /** @override */
+  asRootNode() {
+    if (!this.isGroup()) {
+      return null;
+    }
+
+    const node = this.automationNode;
+    if (!node) {
+      throw new TypeError('Keyboard nodes must have an automation node.');
+    }
+
+    const root = new RootNodeWrapper(node);
+    KeyboardNode.findAndSetChildren(root);
+    return root;
   }
 
   /** @override */
@@ -45,21 +65,7 @@ class KeyboardNode extends NodeWrapper {
     return true;
   }
 
-  /** @override */
-  asRootNode() {
-    if (!this.isGroup()) {
-      return null;
-    }
-
-    const node = this.automationNode;
-    if (!node) {
-      throw new TypeError('Keyboard nodes must have an automation node.');
-    }
-
-    const root = new RootNodeWrapper(node);
-    KeyboardNode.findAndSetChildren(root);
-    return root;
-  }
+  // ================= Static methods =================
 
   /**
    * Helper function to connect tree elements, given the root node.
@@ -93,10 +99,14 @@ class KeyboardRootNode extends RootNodeWrapper {
     super(keyboard);
   }
 
+  // ================= General methods =================
+
   /** @override */
   onExit() {
     chrome.accessibilityPrivate.setVirtualKeyboardVisible(false);
   }
+
+  // ================= Private methods =================
 
   /**
    * Custom logic when entering the node.
@@ -104,6 +114,8 @@ class KeyboardRootNode extends RootNodeWrapper {
   onEnter_() {
     chrome.accessibilityPrivate.setVirtualKeyboardVisible(true);
   }
+
+  // ================= Static methods =================
 
   /**
    * Creates the tree structure for the system menu.
