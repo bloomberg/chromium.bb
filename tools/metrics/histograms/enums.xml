@@ -15887,6 +15887,11 @@ Called by update_net_error_codes.py.-->
   <int value="386" label="webm"/>
   <int value="387" label="xbm"/>
   <int value="388" label="accdb"/>
+  <int value="389" label="accde"/>
+  <int value="390" label="accdr"/>
+  <int value="391" label="accda"/>
+  <int value="392" label="cer"/>
+  <int value="393" label="der"/>
 </enum>
 
 <enum name="DownloadItem.DangerType">
@@ -55426,6 +55431,11 @@ Called by update_net_trust_anchors.py.-->
   <int value="386" label="WEBM"/>
   <int value="387" label="XBM"/>
   <int value="388" label="ACCDB"/>
+  <int value="389" label="ACCDE"/>
+  <int value="390" label="ACCDR"/>
+  <int value="391" label="ACCDA"/>
+  <int value="392" label="CER"/>
+  <int value="393" label="DER"/>
 </enum>
 
 <enum name="SBClientDownloadIsSignedBinary">
