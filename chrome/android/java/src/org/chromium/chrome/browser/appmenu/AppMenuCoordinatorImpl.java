@@ -8,7 +8,8 @@ import android.content.Context;
 import android.view.View;
 import android.view.ViewConfiguration;
 
-import org.chromium.base.VisibleForTesting;
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 
 /** A UI coordinator the app menu. */
