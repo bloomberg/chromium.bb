@@ -1718,6 +1718,7 @@ crbug.com/891427 virtual/android/rootscroller/rootscroller-during-fullscreen.htm
 # Next 2 here: https://ci.chromium.org/buildbot/tryserver.blink/win7-blink-rel/1183
 crbug.com/891427 external/wpt/resource-timing/resource_timing_buffer_full_eventually.html [ Pass Failure Timeout Crash ]
 crbug.com/891427 fast/canvas/canvas-drawImage-live-video.html [ Pass Failure Timeout Crash ]
+crbug.com/816914 virtual/gpu/fast/canvas/canvas-drawImage-live-video.html [ Pass Failure Timeout Crash ]
 # Next 1 here: https://ci.chromium.org/buildbot/tryserver.blink/win7-blink-rel/1180
 # Next 2 here: https://ci.chromium.org/p/chromium/builders/luci.chromium.try/linux-blink-rel/1541
 crbug.com/891427 virtual/android/rootscroller/gesture-scroll-document-not-root-scroller.html [ Pass Failure Timeout Crash ]
