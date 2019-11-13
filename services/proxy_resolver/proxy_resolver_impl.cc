@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/net_errors.h"
+#include "net/base/network_isolation_key.h"
 #include "net/proxy_resolution/pac_file_data.h"
 #include "net/proxy_resolution/proxy_info.h"
 #include "net/proxy_resolution/proxy_resolver_v8_tracing.h"
@@ -78,8 +79,9 @@ ProxyResolverImpl::Job::Job(
 ProxyResolverImpl::Job::~Job() = default;
 
 void ProxyResolverImpl::Job::Start() {
+  // TODO(mmenke): Pass in NetworkIsolationKey.
   resolver_->resolver_->GetProxyForURL(
-      url_, &result_,
+      url_, net::NetworkIsolationKey(), &result_,
       base::BindOnce(&Job::GetProxyDone, base::Unretained(this)), &request_,
       std::make_unique<MojoProxyResolverV8TracingBindings<
           mojom::ProxyResolverRequestClient>>(client_.get()));

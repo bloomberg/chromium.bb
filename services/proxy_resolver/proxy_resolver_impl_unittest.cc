@@ -156,6 +156,7 @@ class MockProxyResolverV8Tracing : public net::ProxyResolverV8Tracing {
 
   // ProxyResolverV8Tracing overrides.
   void GetProxyForURL(const GURL& url,
+                      const net::NetworkIsolationKey& network_isolation_key,
                       net::ProxyInfo* results,
                       net::CompletionOnceCallback callback,
                       std::unique_ptr<net::ProxyResolver::Request>* request,
@@ -174,6 +175,7 @@ class MockProxyResolverV8Tracing : public net::ProxyResolverV8Tracing {
 
 void MockProxyResolverV8Tracing::GetProxyForURL(
     const GURL& url,
+    const net::NetworkIsolationKey& network_isolation_key,
     net::ProxyInfo* results,
     net::CompletionOnceCallback callback,
     std::unique_ptr<net::ProxyResolver::Request>* request,
