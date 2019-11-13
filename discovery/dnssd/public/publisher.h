@@ -22,9 +22,9 @@ class DnsSdPublisher {
 
   // Unpublishes any PTR, SRV, TXT, A, and AAAA records associated with this
   // (service, domain) pair. If no such records are published, this operation
-  // will be a no-op.
-  virtual void DeregisterAll(const absl::string_view& service,
-                             const absl::string_view& domain) = 0;
+  // will be a no-op. Returns the number of records which were removed.
+  virtual size_t DeregisterAll(absl::string_view service,
+                               absl::string_view domain) = 0;
 };
 
 }  // namespace discovery

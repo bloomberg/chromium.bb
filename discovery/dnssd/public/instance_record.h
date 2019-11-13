@@ -56,6 +56,12 @@ class DnsSdInstanceRecord {
   // Returns the port associated with this instance record.
   uint16_t port() const;
 
+  bool operator==(const DnsSdInstanceRecord& other) const;
+
+  inline bool operator!=(const DnsSdInstanceRecord& other) const {
+    return !(*this == other);
+  }
+
  private:
   DnsSdInstanceRecord(std::string instance_id,
                       std::string service_id,

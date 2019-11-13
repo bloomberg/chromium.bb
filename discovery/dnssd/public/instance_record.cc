@@ -94,6 +94,13 @@ DnsSdInstanceRecord::DnsSdInstanceRecord(std::string instance_id,
   OSP_DCHECK(IsDomainValid(domain_id_));
 }
 
+bool DnsSdInstanceRecord::operator==(const DnsSdInstanceRecord& other) const {
+  return instance_id_ == other.instance_id_ &&
+         service_id_ == other.service_id_ && domain_id_ == other.domain_id_ &&
+         address_v4_ == other.address_v4_ && address_v6_ == other.address_v6_ &&
+         txt_ == other.txt_;
+}
+
 uint16_t DnsSdInstanceRecord::port() const {
   if (address_v4_.has_value()) {
     return address_v4_.value().port;

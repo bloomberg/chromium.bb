@@ -47,7 +47,7 @@ class DnsSdTxtRecord {
   Error ClearValue(const std::string& key);
   Error ClearFlag(const std::string& key);
 
-  bool IsEmpty() const {
+  inline bool IsEmpty() const {
     return key_value_txt_.empty() && boolean_txt_.empty();
   }
 
@@ -57,6 +57,15 @@ class DnsSdTxtRecord {
   // value pair (key, value) in key_value_txt_ of the form 'key=value' (without
   // quotes).
   std::vector<std::vector<uint8_t>> GetData() const;
+
+  inline bool operator==(const DnsSdTxtRecord& other) const {
+    return key_value_txt_ == other.key_value_txt_ &&
+           boolean_txt_ == other.boolean_txt_;
+  }
+
+  inline bool operator!=(const DnsSdTxtRecord& other) const {
+    return !(*this == other);
+  }
 
  private:
   struct CaseInsensitiveComparison {
