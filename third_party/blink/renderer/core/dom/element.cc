@@ -1836,6 +1836,14 @@ IntRect Element::VisibleBoundsInVisualViewport() const {
   GetDocument().View()->GetLayoutView()->MapToVisualRectInAncestorSpace(
       nullptr, rect, kTraverseDocumentBoundaries, kDefaultVisualRectFlags);
 
+  // TODO(layout-dev): Callers of this method don't expect the offset of the
+  // local frame root from a remote top-level frame to be applied here. They
+  // expect the result to be in the coordinate system of the local root frame.
+  // Either the method should be renamed to something which communicates that,
+  // or callers should be updated to expect actual top-level frame coordinates.
+  rect.Move(-PhysicalOffset(
+      GetDocument().GetFrame()->LocalFrameRoot().RemoteViewportOffset()));
+
   IntRect visible_rect = PixelSnappedIntRect(rect);
   // If the rect is in the coordinates of the main frame, then it should
   // also be clipped to the viewport to account for page scale. For OOPIFs,
