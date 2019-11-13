@@ -355,7 +355,7 @@ cca.views.ResolutionSettings.prototype.photoOptTextTempl_ = function(
   const /** number */ d = gcd(r.width, r.height);
   if (resolutions.some(
           (findR) => !findR.equals(r) && r.aspectRatioEquals(findR) &&
-              toMegapixel(r) == toMegapixel(findR))) {
+              toMegapixel(r) === toMegapixel(findR))) {
     return chrome.i18n.getMessage(
         'label_detail_photo_resolution',
         [r.width / d, r.height / d, r.width, r.height, toMegapixel(r)]);
