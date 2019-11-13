@@ -232,7 +232,9 @@ void ContextProviderImpl::Create(
     launch_command.AppendSwitchNative(
         switches::kRemoteDebuggingPort,
         base::NumberToString(params.remote_debugging_port()));
-  } else if (devtools_listeners_.size() != 0) {
+  }
+
+  if (devtools_listeners_.size() != 0) {
     // Connect DevTools listeners to the new Context process.
     std::vector<std::string> handles_ids;
     for (auto& devtools_listener : devtools_listeners_.ptrs()) {
