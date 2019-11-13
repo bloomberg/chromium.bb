@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/indexed_db/leveldb/transactional_leveldb_transaction.h"
+#include "components/services/storage/indexed_db/transactional_leveldb/transactional_leveldb_transaction.h"
 
 #include <utility>
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/trace_event/trace_event.h"
 #include "components/services/storage/indexed_db/scopes/leveldb_scope.h"
 #include "components/services/storage/indexed_db/scopes/leveldb_scopes.h"
-#include "content/browser/indexed_db/indexed_db_tracing.h"
-#include "content/browser/indexed_db/leveldb/leveldb_write_batch.h"
-#include "content/browser/indexed_db/leveldb/transactional_leveldb_database.h"
-#include "content/browser/indexed_db/leveldb/transactional_leveldb_iterator.h"
+#include "components/services/storage/indexed_db/transactional_leveldb/leveldb_write_batch.h"
+#include "components/services/storage/indexed_db/transactional_leveldb/transactional_leveldb_database.h"
+#include "components/services/storage/indexed_db/transactional_leveldb/transactional_leveldb_iterator.h"
 #include "third_party/leveldatabase/env_chromium.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 #include "third_party/leveldatabase/src/include/leveldb/iterator.h"
@@ -83,7 +83,7 @@ leveldb::Status TransactionalLevelDBTransaction::Get(const StringPiece& key,
 
 leveldb::Status TransactionalLevelDBTransaction::Commit(bool sync_on_commit) {
   DCHECK(!finished_);
-  IDB_TRACE("LevelDBTransaction::Commit");
+  TRACE_EVENT0("leveldb", "LevelDBTransaction::Commit");
 
   finished_ = true;
   return db_->scopes()->Commit(std::move(scope_), sync_on_commit,
@@ -187,7 +187,7 @@ void LevelDBDirectTransaction::Remove(const StringPiece& key) {
 
 leveldb::Status LevelDBDirectTransaction::Commit() {
   DCHECK(!IsFinished());
-  IDB_TRACE("LevelDBDirectTransaction::Commit");
+  TRACE_EVENT0("leveldb", "LevelDBDirectTransaction::Commit");
 
   leveldb::Status s = db_->Write(write_batch_.get());
   if (s.ok())

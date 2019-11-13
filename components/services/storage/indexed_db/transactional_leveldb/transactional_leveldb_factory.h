@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_INDEXED_DB_LEVELDB_TRANSACTIONAL_LEVELDB_FACTORY_H_
-#define CONTENT_BROWSER_INDEXED_DB_LEVELDB_TRANSACTIONAL_LEVELDB_FACTORY_H_
+#ifndef COMPONENTS_SERVICES_STORAGE_INDEXED_DB_TRANSACTIONAL_LEVELDB_TRANSACTIONAL_LEVELDB_FACTORY_H_
+#define COMPONENTS_SERVICES_STORAGE_INDEXED_DB_TRANSACTIONAL_LEVELDB_TRANSACTIONAL_LEVELDB_FACTORY_H_
 
 #include <stddef.h>
 #include <memory>
@@ -11,7 +11,6 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "components/services/storage/indexed_db/leveldb/leveldb_state.h"
-#include "content/common/content_export.h"
 
 namespace leveldb {
 class Iterator;
@@ -26,7 +25,7 @@ class LevelDBSnapshot;
 class LevelDBDirectTransaction;
 class TransactionalLevelDBTransaction;
 
-class CONTENT_EXPORT TransactionalLevelDBFactory {
+class TransactionalLevelDBFactory {
  public:
   virtual ~TransactionalLevelDBFactory() = default;
 
@@ -54,8 +53,7 @@ class CONTENT_EXPORT TransactionalLevelDBFactory {
       std::unique_ptr<LevelDBSnapshot> snapshot) = 0;
 };
 
-class CONTENT_EXPORT DefaultTransactionalLevelDBFactory
-    : public TransactionalLevelDBFactory {
+class DefaultTransactionalLevelDBFactory : public TransactionalLevelDBFactory {
  public:
   DefaultTransactionalLevelDBFactory() = default;
   ~DefaultTransactionalLevelDBFactory() override = default;
@@ -79,4 +77,4 @@ class CONTENT_EXPORT DefaultTransactionalLevelDBFactory
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_INDEXED_DB_LEVELDB_TRANSACTIONAL_LEVELDB_FACTORY_H_
+#endif  // COMPONENTS_SERVICES_STORAGE_INDEXED_DB_TRANSACTIONAL_LEVELDB_TRANSACTIONAL_LEVELDB_FACTORY_H_

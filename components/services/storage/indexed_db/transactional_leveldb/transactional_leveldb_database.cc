@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/indexed_db/leveldb/transactional_leveldb_database.h"
+#include "components/services/storage/indexed_db/transactional_leveldb/transactional_leveldb_database.h"
 
 #include <inttypes.h>
 #include <stdint.h>
@@ -27,15 +27,13 @@
 #include "base/time/default_clock.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/process_memory_dump.h"
+#include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "components/services/storage/indexed_db/scopes/leveldb_scopes.h"
-#include "content/browser/indexed_db/indexed_db_class_factory.h"
-#include "content/browser/indexed_db/indexed_db_reporting.h"
-#include "content/browser/indexed_db/indexed_db_tracing.h"
-#include "content/browser/indexed_db/leveldb/leveldb_write_batch.h"
-#include "content/browser/indexed_db/leveldb/transactional_leveldb_factory.h"
-#include "content/browser/indexed_db/leveldb/transactional_leveldb_iterator.h"
-#include "content/browser/indexed_db/leveldb/transactional_leveldb_transaction.h"
+#include "components/services/storage/indexed_db/transactional_leveldb/leveldb_write_batch.h"
+#include "components/services/storage/indexed_db/transactional_leveldb/transactional_leveldb_factory.h"
+#include "components/services/storage/indexed_db/transactional_leveldb/transactional_leveldb_iterator.h"
+#include "components/services/storage/indexed_db/transactional_leveldb/transactional_leveldb_transaction.h"
 #include "third_party/leveldatabase/env_chromium.h"
 #include "third_party/leveldatabase/leveldb_chrome.h"
 #include "third_party/leveldatabase/src/include/leveldb/comparator.h"
@@ -209,10 +207,10 @@ TransactionalLevelDBDatabase::CreateIterator(
 
 void TransactionalLevelDBDatabase::Compact(const base::StringPiece& start,
                                            const base::StringPiece& stop) {
-  IDB_TRACE("LevelDBDatabase::Compact");
+  TRACE_EVENT0("leveldb", "LevelDBDatabase::Compact");
   const leveldb::Slice start_slice = leveldb_env::MakeSlice(start);
   const leveldb::Slice stop_slice = leveldb_env::MakeSlice(stop);
-  // NULL batch means just wait for earlier writes to be done
+  // nullptr batch means just wait for earlier writes to be done
   db()->Write(leveldb::WriteOptions(), nullptr);
   db()->CompactRange(&start_slice, &stop_slice);
 }

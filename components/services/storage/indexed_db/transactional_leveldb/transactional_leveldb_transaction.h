@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_INDEXED_DB_LEVELDB_TRANSACTIONAL_LEVELDB_TRANSACTION_H_
-#define CONTENT_BROWSER_INDEXED_DB_LEVELDB_TRANSACTIONAL_LEVELDB_TRANSACTION_H_
+#ifndef COMPONENTS_SERVICES_STORAGE_INDEXED_DB_TRANSACTIONAL_LEVELDB_TRANSACTIONAL_LEVELDB_TRANSACTION_H_
+#define COMPONENTS_SERVICES_STORAGE_INDEXED_DB_TRANSACTIONAL_LEVELDB_TRANSACTIONAL_LEVELDB_TRANSACTION_H_
 
 #include <memory>
 #include <set>
@@ -18,7 +18,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_piece.h"
 #include "components/services/storage/indexed_db/scopes/leveldb_scope_deletion_mode.h"
-#include "content/common/content_export.h"
 #include "third_party/leveldatabase/src/include/leveldb/status.h"
 
 namespace content {
@@ -43,7 +42,7 @@ class LevelDBWriteBatch;
 //   On destruction, if the transaction is not committed, it will be rolled
 //   back. In a single-sequence scopes setup, this can actually tear down the
 //   whole IndexedDBOriginState! So be careful when destroying this object.
-class CONTENT_EXPORT TransactionalLevelDBTransaction
+class TransactionalLevelDBTransaction
     : public base::RefCounted<TransactionalLevelDBTransaction> {
  public:
   leveldb::Status Put(const base::StringPiece& key,
@@ -144,7 +143,7 @@ class CONTENT_EXPORT TransactionalLevelDBTransaction
 // |Commit()|.
 // TODO(dmurph): Remove this and have users just use the database and a
 // WriteBatch.
-class CONTENT_EXPORT LevelDBDirectTransaction {
+class LevelDBDirectTransaction {
  public:
   virtual ~LevelDBDirectTransaction();
 
@@ -172,4 +171,4 @@ class CONTENT_EXPORT LevelDBDirectTransaction {
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_INDEXED_DB_LEVELDB_TRANSACTIONAL_LEVELDB_TRANSACTION_H_
+#endif  // COMPONENTS_SERVICES_STORAGE_INDEXED_DB_TRANSACTIONAL_LEVELDB_TRANSACTIONAL_LEVELDB_TRANSACTION_H_

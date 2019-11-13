@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_INDEXED_DB_LEVELDB_TRANSACTIONAL_LEVELDB_DATABASE_H_
-#define CONTENT_BROWSER_INDEXED_DB_LEVELDB_TRANSACTIONAL_LEVELDB_DATABASE_H_
+#ifndef COMPONENTS_SERVICES_STORAGE_INDEXED_DB_TRANSACTIONAL_LEVELDB_TRANSACTIONAL_LEVELDB_DATABASE_H_
+#define COMPONENTS_SERVICES_STORAGE_INDEXED_DB_TRANSACTIONAL_LEVELDB_TRANSACTIONAL_LEVELDB_DATABASE_H_
 
 #include <memory>
 #include <string>
@@ -19,7 +19,6 @@
 #include "base/time/clock.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "components/services/storage/indexed_db/leveldb/leveldb_state.h"
-#include "content/common/content_export.h"
 #include "third_party/leveldatabase/src/include/leveldb/options.h"
 #include "third_party/leveldatabase/src/include/leveldb/status.h"
 
@@ -38,7 +37,7 @@ class LevelDBScopes;
 class LevelDBWriteBatch;
 
 // This class manages the acquisition and release of a leveldb snapshot.
-class CONTENT_EXPORT LevelDBSnapshot {
+class LevelDBSnapshot {
  public:
   explicit LevelDBSnapshot(TransactionalLevelDBDatabase* db);
   ~LevelDBSnapshot();
@@ -52,7 +51,7 @@ class CONTENT_EXPORT LevelDBSnapshot {
   DISALLOW_COPY_AND_ASSIGN(LevelDBSnapshot);
 };
 
-class CONTENT_EXPORT TransactionalLevelDBDatabase
+class TransactionalLevelDBDatabase
     : public base::trace_event::MemoryDumpProvider {
  public:
   // Necessary because every iterator hangs onto leveldb blocks which can be
@@ -179,4 +178,4 @@ class CONTENT_EXPORT TransactionalLevelDBDatabase
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_INDEXED_DB_LEVELDB_TRANSACTIONAL_LEVELDB_DATABASE_H_
+#endif  // COMPONENTS_SERVICES_STORAGE_INDEXED_DB_TRANSACTIONAL_LEVELDB_TRANSACTIONAL_LEVELDB_DATABASE_H_

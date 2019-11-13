@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_INDEXED_DB_LEVELDB_TRANSACTIONAL_LEVELDB_ITERATOR_H_
-#define CONTENT_BROWSER_INDEXED_DB_LEVELDB_TRANSACTIONAL_LEVELDB_ITERATOR_H_
+#ifndef COMPONENTS_SERVICES_STORAGE_INDEXED_DB_TRANSACTIONAL_LEVELDB_TRANSACTIONAL_LEVELDB_ITERATOR_H_
+#define COMPONENTS_SERVICES_STORAGE_INDEXED_DB_TRANSACTIONAL_LEVELDB_TRANSACTIONAL_LEVELDB_ITERATOR_H_
 
 #include <memory>
 #include <tuple>
@@ -11,7 +11,6 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_piece.h"
-#include "content/common/content_export.h"
 #include "third_party/leveldatabase/src/include/leveldb/status.h"
 
 namespace leveldb {
@@ -33,7 +32,7 @@ class LevelDBSnapshot;
 // Note: the returned base::StringPiece from Key or Value can become
 // invalidated when EvictLevelDBIterator, OnDatabaseKeyModified, or
 // OnDatabaseRangeModified are called.
-class CONTENT_EXPORT TransactionalLevelDBIterator {
+class TransactionalLevelDBIterator {
  public:
   virtual ~TransactionalLevelDBIterator();
 
@@ -108,4 +107,4 @@ class CONTENT_EXPORT TransactionalLevelDBIterator {
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_INDEXED_DB_LEVELDB_TRANSACTIONAL_LEVELDB_ITERATOR_H_
+#endif  // COMPONENTS_SERVICES_STORAGE_INDEXED_DB_TRANSACTIONAL_LEVELDB_TRANSACTIONAL_LEVELDB_ITERATOR_H_

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/indexed_db/leveldb/leveldb_write_batch.h"
+#include "components/services/storage/indexed_db/transactional_leveldb/leveldb_write_batch.h"
 
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_piece.h"
@@ -30,6 +30,8 @@ void LevelDBWriteBatch::Remove(const base::StringPiece& key) {
   write_batch_->Delete(leveldb_env::MakeSlice(key));
 }
 
-void LevelDBWriteBatch::Clear() { write_batch_->Clear(); }
+void LevelDBWriteBatch::Clear() {
+  write_batch_->Clear();
+}
 
 }  // namespace content
