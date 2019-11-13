@@ -211,8 +211,6 @@ crbug.com/730267 virtual/gpu-rasterization-disable-yuv/images/yuv-decode-eligibl
 
 crbug.com/1022460 [ Win ] storage/indexeddb/key-type-array.html [ Pass Crash ]
 
-crbug.com/1024248 [ Win ] virtual/disable-deferred-rendering/fast/canvas/canvas-drawImage-live-video.html [ Failure Pass ]
-
 # Flaky virtual/threaded/fast/scrolling tests
 crbug.com/841567 virtual/threaded-prefer-compositing/fast/scrolling/absolute-position-behind-scrollbar.html [ Failure Pass ]
 crbug.com/841567 virtual/threaded-prefer-compositing/fast/scrolling/fixed-position-behind-scrollbar.html [ Failure Pass ]
@@ -1723,6 +1721,7 @@ crbug.com/891427 virtual/android/rootscroller/rootscroller-during-fullscreen.htm
 crbug.com/891427 external/wpt/resource-timing/resource_timing_buffer_full_eventually.html [ Pass Failure Timeout Crash ]
 crbug.com/891427 fast/canvas/canvas-drawImage-live-video.html [ Pass Failure Timeout Crash ]
 crbug.com/816914 virtual/gpu/fast/canvas/canvas-drawImage-live-video.html [ Pass Failure Timeout Crash ]
+crbug.com/816914 virtual/disable-deferred-rendering/fast/canvas/canvas-drawImage-live-video.html [ Pass Failure Timeout Crash ]
 # Next 1 here: https://ci.chromium.org/buildbot/tryserver.blink/win7-blink-rel/1180
 # Next 2 here: https://ci.chromium.org/p/chromium/builders/luci.chromium.try/linux-blink-rel/1541
 crbug.com/891427 virtual/android/rootscroller/gesture-scroll-document-not-root-scroller.html [ Pass Failure Timeout Crash ]
