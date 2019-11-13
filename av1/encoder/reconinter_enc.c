@@ -177,6 +177,7 @@ static INLINE void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
     InterPredParams inter_pred_params;
     inter_pred_params.conv_params = get_conv_params_no_round(
         0, plane, xd->tmp_conv_dst, MAX_SB_SIZE, is_compound, xd->bd);
+
     av1_dist_wtd_comp_weight_assign(
         cm, mi, 0, &inter_pred_params.conv_params.fwd_offset,
         &inter_pred_params.conv_params.bck_offset,
@@ -205,17 +206,22 @@ static INLINE void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
                             pd->subsampling_y, xd->bd, is_cur_buf_hbd(xd),
                             mi->use_intrabc, sf, pre_buf, mi->interp_filters);
 
+      inter_pred_params.conv_params.do_average = ref;
+
       av1_init_warp_params(&inter_pred_params, &pd->pre[ref], &warp_types, ref,
                            xd, mi);
+
+      av1_init_mask_comp(&inter_pred_params, mi->sb_type, &mi->interinter_comp);
+      // Assigne physical buffer
+      inter_pred_params.mask_comp.seg_mask = xd->seg_mask;
 
       if (ref && is_masked_compound_type(mi->interinter_comp.type)) {
         // masked compound type has its own average mechanism
         inter_pred_params.conv_params.do_average = 0;
         av1_make_masked_inter_predictor(pre, pre_buf->stride, dst,
                                         dst_buf->stride, &inter_pred_params,
-                                        &subpel_params, bw, bh, plane, xd);
+                                        &subpel_params);
       } else {
-        inter_pred_params.conv_params.do_average = ref;
         av1_make_inter_predictor(pre, pre_buf->stride, dst, dst_buf->stride,
                                  &inter_pred_params, &subpel_params);
       }

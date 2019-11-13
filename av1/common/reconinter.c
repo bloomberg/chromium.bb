@@ -106,6 +106,15 @@ void av1_init_warp_params(InterPredParams *inter_pred_params,
   inter_pred_params->ref_frame_buf = *ref_buf;
 }
 
+void av1_init_mask_comp(InterPredParams *inter_pred_params, BLOCK_SIZE bsize,
+                        const INTERINTER_COMPOUND_DATA *mask_comp) {
+  inter_pred_params->sb_type = bsize;
+  if (inter_pred_params->conv_params.do_average &&
+      is_masked_compound_type(mask_comp->type)) {
+    inter_pred_params->mask_comp = *mask_comp;
+  }
+}
+
 void av1_make_inter_predictor(const uint8_t *src, int src_stride, uint8_t *dst,
                               int dst_stride,
                               InterPredParams *inter_pred_params,
@@ -553,44 +562,42 @@ static AOM_INLINE void build_masked_compound_no_round(
     uint8_t *dst, int dst_stride, const CONV_BUF_TYPE *src0, int src0_stride,
     const CONV_BUF_TYPE *src1, int src1_stride,
     const INTERINTER_COMPOUND_DATA *const comp_data, BLOCK_SIZE sb_type, int h,
-    int w, ConvolveParams *conv_params, MACROBLOCKD *xd) {
-  // Derive subsampling from h and w passed in. May be refactored to
-  // pass in subsampling factors directly.
-  const int subh = (2 << mi_size_high_log2[sb_type]) == h;
-  const int subw = (2 << mi_size_wide_log2[sb_type]) == w;
+    int w, InterPredParams *inter_pred_params) {
+  const int ssy = inter_pred_params->subsampling_y;
+  const int ssx = inter_pred_params->subsampling_x;
   const uint8_t *mask = av1_get_compound_type_mask(comp_data, sb_type);
+  const int mask_stride = block_size_wide[sb_type];
 #if CONFIG_AV1_HIGHBITDEPTH
-  if (is_cur_buf_hbd(xd)) {
+  if (inter_pred_params->use_hbd_buf) {
     aom_highbd_blend_a64_d16_mask(dst, dst_stride, src0, src0_stride, src1,
-                                  src1_stride, mask, block_size_wide[sb_type],
-                                  w, h, subw, subh, conv_params, xd->bd);
+                                  src1_stride, mask, mask_stride, w, h, ssx,
+                                  ssy, &inter_pred_params->conv_params,
+                                  inter_pred_params->bit_depth);
   } else {
     aom_lowbd_blend_a64_d16_mask(dst, dst_stride, src0, src0_stride, src1,
-                                 src1_stride, mask, block_size_wide[sb_type], w,
-                                 h, subw, subh, conv_params);
+                                 src1_stride, mask, mask_stride, w, h, ssx, ssy,
+                                 &inter_pred_params->conv_params);
   }
 #else
-  (void)xd;
   aom_lowbd_blend_a64_d16_mask(dst, dst_stride, src0, src0_stride, src1,
-                               src1_stride, mask, block_size_wide[sb_type], w,
-                               h, subw, subh, conv_params);
+                               src1_stride, mask, mask_stride, w, h, ssx, ssy,
+                               &inter_pred_params->conv_params);
 #endif
 }
 
 void av1_make_masked_inter_predictor(const uint8_t *pre, int pre_stride,
                                      uint8_t *dst, int dst_stride,
                                      InterPredParams *inter_pred_params,
-                                     const SubpelParams *subpel_params, int w,
-                                     int h, int plane, MACROBLOCKD *xd) {
-  MB_MODE_INFO *mi = xd->mi[0];
-  mi->interinter_comp.seg_mask = xd->seg_mask;
-  const INTERINTER_COMPOUND_DATA *comp_data = &mi->interinter_comp;
+                                     const SubpelParams *subpel_params) {
+  const INTERINTER_COMPOUND_DATA *comp_data = &inter_pred_params->mask_comp;
+  BLOCK_SIZE sb_type = inter_pred_params->sb_type;
 
   // We're going to call av1_make_inter_predictor to generate a prediction into
   // a temporary buffer, then will blend that temporary buffer with that from
   // the other reference.
   DECLARE_ALIGNED(32, uint8_t, tmp_buf[2 * MAX_SB_SQUARE]);
-  uint8_t *tmp_dst = get_buf_by_bd(xd, tmp_buf);
+  uint8_t *tmp_dst =
+      inter_pred_params->use_hbd_buf ? CONVERT_TO_BYTEPTR(tmp_buf) : tmp_buf;
 
   const int tmp_buf_stride = MAX_SB_SIZE;
   CONV_BUF_TYPE *org_dst = inter_pred_params->conv_params.dst;
@@ -604,15 +611,18 @@ void av1_make_masked_inter_predictor(const uint8_t *pre, int pre_stride,
   av1_make_inter_predictor(pre, pre_stride, tmp_dst, MAX_SB_SIZE,
                            inter_pred_params, subpel_params);
 
-  if (!plane && comp_data->type == COMPOUND_DIFFWTD) {
+  if (!inter_pred_params->conv_params.plane &&
+      comp_data->type == COMPOUND_DIFFWTD) {
     av1_build_compound_diffwtd_mask_d16(
         comp_data->seg_mask, comp_data->mask_type, org_dst, org_dst_stride,
-        tmp_buf16, tmp_buf_stride, h, w, &inter_pred_params->conv_params,
-        xd->bd);
+        tmp_buf16, tmp_buf_stride, inter_pred_params->block_height,
+        inter_pred_params->block_width, &inter_pred_params->conv_params,
+        inter_pred_params->bit_depth);
   }
   build_masked_compound_no_round(
       dst, dst_stride, org_dst, org_dst_stride, tmp_buf16, tmp_buf_stride,
-      comp_data, mi->sb_type, h, w, &inter_pred_params->conv_params, xd);
+      comp_data, sb_type, inter_pred_params->block_height,
+      inter_pred_params->block_width, inter_pred_params);
 }
 
 void av1_dist_wtd_comp_weight_assign(const AV1_COMMON *cm,

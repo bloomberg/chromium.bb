@@ -112,6 +112,8 @@ typedef struct InterPredParams {
   const struct scale_factors *scale_factors;
   int bit_depth;
   int use_hbd_buf;
+  INTERINTER_COMPOUND_DATA mask_comp;
+  BLOCK_SIZE sb_type;
   int is_intrabc;
 } InterPredParams;
 
@@ -127,6 +129,9 @@ void av1_init_warp_params(InterPredParams *inter_pred_params,
                           const struct buf_2d *ref_buf,
                           const WarpTypesAllowed *warp_types, int ref,
                           const MACROBLOCKD *xd, const MB_MODE_INFO *mi);
+
+void av1_init_mask_comp(InterPredParams *inter_pred_params, BLOCK_SIZE bsize,
+                        const INTERINTER_COMPOUND_DATA *mask_comp);
 
 static INLINE int has_scale(int xs, int ys) {
   return xs != SCALE_SUBPEL_SHIFTS || ys != SCALE_SUBPEL_SHIFTS;
@@ -242,8 +247,7 @@ void av1_make_inter_predictor(const uint8_t *src, int src_stride, uint8_t *dst,
 void av1_make_masked_inter_predictor(const uint8_t *pre, int pre_stride,
                                      uint8_t *dst, int dst_stride,
                                      InterPredParams *inter_pred_params,
-                                     const SubpelParams *subpel_params, int w,
-                                     int h, int plane, MACROBLOCKD *xd);
+                                     const SubpelParams *subpel_params);
 
 // TODO(jkoleszar): yet another mv clamping function :-(
 static INLINE MV clamp_mv_to_umv_border_sb(const MACROBLOCKD *xd,

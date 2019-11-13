@@ -820,10 +820,6 @@ static INLINE void dec_build_inter_predictors(const AV1_COMMON *cm,
       warp_types.global_warp_allowed = is_global[ref];
       warp_types.local_warp_allowed = mi->motion_mode == WARPED_CAUSAL;
       inter_pred_params.conv_params.do_average = ref;
-      if (is_masked_compound_type(mi->interinter_comp.type)) {
-        // masked compound type has its own average mechanism
-        inter_pred_params.conv_params.do_average = 0;
-      }
 
       av1_init_inter_params(&inter_pred_params, bw, bh,
                             mi_y >> pd->subsampling_y,
@@ -835,14 +831,21 @@ static INLINE void dec_build_inter_predictors(const AV1_COMMON *cm,
         av1_init_warp_params(&inter_pred_params, &pd->pre[ref], &warp_types,
                              ref, xd, mi);
 
-      if (ref && is_masked_compound_type(mi->interinter_comp.type))
+      av1_init_mask_comp(&inter_pred_params, mi->sb_type, &mi->interinter_comp);
+      inter_pred_params.mask_comp.seg_mask = xd->seg_mask;
+
+      if (ref && is_masked_compound_type(mi->interinter_comp.type)) {
+        // masked compound type has its own average mechanism
+        inter_pred_params.conv_params.do_average = 0;
+
         av1_make_masked_inter_predictor(pre[ref], src_stride[ref], dst,
                                         dst_buf->stride, &inter_pred_params,
-                                        &subpel_params[ref], bw, bh, plane, xd);
-      else
+                                        &subpel_params[ref]);
+      } else {
         av1_make_inter_predictor(pre[ref], src_stride[ref], dst,
                                  dst_buf->stride, &inter_pred_params,
                                  &subpel_params[ref]);
+      }
     }
   }
 }
