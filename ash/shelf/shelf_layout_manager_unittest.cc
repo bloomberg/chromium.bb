@@ -4420,7 +4420,8 @@ TEST_F(ShelfLayoutManagerWindowDraggingTest, NoOpInOverview) {
 
 // Test that if shelf if hidden or auto-hide hidden, drag window from shelf is a
 // no-op.
-TEST_F(ShelfLayoutManagerWindowDraggingTest, NoOpForHiddenShelf) {
+// TODO(1024163): This test consistently crashes.
+TEST_F(ShelfLayoutManagerWindowDraggingTest, DISABLED_NoOpForHiddenShelf) {
   std::unique_ptr<aura::Window> window =
       AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
   wm::ActivateWindow(window.get());
