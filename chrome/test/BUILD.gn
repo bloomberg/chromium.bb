@@ -672,7 +672,6 @@ if (!is_android) {
       "//chrome/browser/devtools:test_support",
       "//chrome/browser/notifications/scheduler/test:test_support",
       "//chrome/browser/profiling_host:profiling_browsertests",
-      "//chrome/browser/resources:browser_tests",
       "//chrome/browser/web_applications:browser_tests",
       "//chrome/browser/web_applications/extensions:browser_tests",
       "//chrome/renderer",
@@ -1466,6 +1465,7 @@ if (!is_android) {
 
     if (include_js_tests) {
       deps += [
+        "//chrome/browser/resources:browser_tests_js",
         "//chrome/test/data/webui:browser_tests_js_mojo_lite_webui",
         "//chrome/test/data/webui:browser_tests_js_webui",
       ]
