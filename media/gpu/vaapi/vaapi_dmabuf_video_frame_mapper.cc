@@ -32,6 +32,7 @@ scoped_refptr<VideoFrame> CreateMappedVideoFrame(
     const gfx::Rect& visible_rect,
     const base::TimeDelta timestamp,
     std::unique_ptr<ScopedVAImage> va_image) {
+  DCHECK(va_image);
   // ScopedVAImage manages the resource of mapped data. That is, ScopedVAImage's
   // dtor releases the mapped resource.
   const size_t num_planes = VideoFrame::NumPlanes(format);
@@ -118,6 +119,11 @@ VaapiDmaBufVideoFrameMapper::~VaapiDmaBufVideoFrameMapper() {}
 scoped_refptr<VideoFrame> VaapiDmaBufVideoFrameMapper::Map(
     scoped_refptr<const VideoFrame> video_frame) const {
   DCHECK(vaapi_wrapper_);
+  if (!video_frame) {
+    LOG(ERROR) << "Video frame is nullptr";
+    return nullptr;
+  }
+
   if (!video_frame->HasDmaBufs()) {
     return nullptr;
   }
