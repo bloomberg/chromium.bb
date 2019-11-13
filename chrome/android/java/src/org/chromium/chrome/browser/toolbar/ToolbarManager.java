@@ -40,12 +40,6 @@ import org.chromium.chrome.browser.TabLoadStatus;
 import org.chromium.chrome.browser.ThemeColorProvider;
 import org.chromium.chrome.browser.ThemeColorProvider.ThemeColorObserver;
 import org.chromium.chrome.browser.WindowDelegate;
-import org.chromium.chrome.browser.appmenu.AppMenuButtonHelper;
-import org.chromium.chrome.browser.appmenu.AppMenuCoordinator;
-import org.chromium.chrome.browser.appmenu.AppMenuHandler;
-import org.chromium.chrome.browser.appmenu.AppMenuObserver;
-import org.chromium.chrome.browser.appmenu.AppMenuPropertiesDelegate;
-import org.chromium.chrome.browser.appmenu.MenuButtonDelegate;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge;
 import org.chromium.chrome.browser.compositor.Invalidator;
 import org.chromium.chrome.browser.compositor.layouts.EmptyOverviewModeObserver;
@@ -106,6 +100,12 @@ import org.chromium.chrome.browser.toolbar.top.tab_switcher_action_menu.TabSwitc
 import org.chromium.chrome.browser.translate.TranslateBridge;
 import org.chromium.chrome.browser.translate.TranslateUtils;
 import org.chromium.chrome.browser.ui.ImmersiveModeManager;
+import org.chromium.chrome.browser.ui.appmenu.AppMenuButtonHelper;
+import org.chromium.chrome.browser.ui.appmenu.AppMenuCoordinator;
+import org.chromium.chrome.browser.ui.appmenu.AppMenuHandler;
+import org.chromium.chrome.browser.ui.appmenu.AppMenuObserver;
+import org.chromium.chrome.browser.ui.appmenu.AppMenuPropertiesDelegate;
+import org.chromium.chrome.browser.ui.appmenu.MenuButtonDelegate;
 import org.chromium.chrome.browser.ui.styles.ChromeColors;
 import org.chromium.chrome.browser.ui.widget.highlight.ViewHighlighter;
 import org.chromium.chrome.browser.ui.widget.textbubble.TextBubble;
@@ -714,8 +714,7 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
 
     /**
      * Called when the app menu and related properties delegate are available.
-     * @param appMenuHandler The handler for interacting with the menu.
-     * @param propertiesDelegate Delegate for interactions with the app level menu.
+     * @param appMenuCoordinator The coordinator for interacting with the menu.
      */
     public void onAppMenuInitialized(AppMenuCoordinator appMenuCoordinator) {
         AppMenuHandler appMenuHandler = appMenuCoordinator.getAppMenuHandler();

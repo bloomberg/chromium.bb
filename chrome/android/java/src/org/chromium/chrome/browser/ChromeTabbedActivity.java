@@ -52,7 +52,6 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.IntentHandler.IntentHandlerDelegate;
 import org.chromium.chrome.browser.IntentHandler.TabOpenType;
 import org.chromium.chrome.browser.accessibility_tab_switcher.OverviewListLayout;
-import org.chromium.chrome.browser.appmenu.AppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.bookmarks.BookmarkUtils;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 import org.chromium.chrome.browser.compositor.layouts.EmptyOverviewModeObserver;
@@ -143,6 +142,7 @@ import org.chromium.chrome.browser.tasks.tab_management.TabManagementModuleProvi
 import org.chromium.chrome.browser.toolbar.ToolbarButtonInProductHelpController;
 import org.chromium.chrome.browser.toolbar.top.ToolbarControlContainer;
 import org.chromium.chrome.browser.ui.RootUiCoordinator;
+import org.chromium.chrome.browser.ui.appmenu.AppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.usage_stats.UsageStatsService;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.chrome.browser.util.IntentUtils;
