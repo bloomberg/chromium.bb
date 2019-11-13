@@ -109,7 +109,8 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::Clone(
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_TEXTRANGE_CLONE);
   UIA_VALIDATE_TEXTRANGEPROVIDER_CALL_1_OUT(clone);
 
-  *clone = CreateTextRangeProvider(owner_, start_->Clone(), end_->Clone());
+  *clone =
+      CreateTextRangeProvider(owner_.Get(), start_->Clone(), end_->Clone());
   return S_OK;
 }
 
@@ -119,8 +120,8 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::Compare(
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_TEXTRANGE_COMPARE);
   UIA_VALIDATE_TEXTRANGEPROVIDER_CALL_1_IN_1_OUT(other, result);
 
-  CComPtr<AXPlatformNodeTextRangeProviderWin> other_provider;
-  if (other->QueryInterface(&other_provider) != S_OK)
+  Microsoft::WRL::ComPtr<AXPlatformNodeTextRangeProviderWin> other_provider;
+  if (other->QueryInterface(IID_PPV_ARGS(&other_provider)) != S_OK)
     return UIA_E_INVALIDOPERATION;
 
   if (*start_ == *(other_provider->start_) &&
@@ -138,8 +139,8 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::CompareEndpoints(
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_TEXTRANGE_COMPAREENDPOINTS);
   UIA_VALIDATE_TEXTRANGEPROVIDER_CALL_1_IN_1_OUT(other, result);
 
-  CComPtr<AXPlatformNodeTextRangeProviderWin> other_provider;
-  if (other->QueryInterface(&other_provider) != S_OK)
+  Microsoft::WRL::ComPtr<AXPlatformNodeTextRangeProviderWin> other_provider;
+  if (other->QueryInterface(IID_PPV_ARGS(&other_provider)) != S_OK)
     return UIA_E_INVALIDOPERATION;
 
   const AXPositionInstance& this_provider_endpoint =
@@ -405,7 +406,7 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::FindText(
                                &find_length, !ignore_case, !backwards)) {
     const AXPlatformNodeDelegate* delegate = owner()->GetDelegate();
     *result = CreateTextRangeProvider(
-        owner_, delegate->CreateTextPositionAt(find_start),
+        owner_.Get(), delegate->CreateTextPositionAt(find_start),
         delegate->CreateTextPositionAt(find_start + find_length));
   }
   return S_OK;
@@ -695,8 +696,8 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::MoveEndpointByRange(
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_TEXTRANGE_MOVEENPOINTBYRANGE);
   UIA_VALIDATE_TEXTRANGEPROVIDER_CALL_1_IN(other);
 
-  CComPtr<AXPlatformNodeTextRangeProviderWin> other_provider;
-  if (other->QueryInterface(&other_provider) != S_OK)
+  Microsoft::WRL::ComPtr<AXPlatformNodeTextRangeProviderWin> other_provider;
+  if (other->QueryInterface(IID_PPV_ARGS(&other_provider)) != S_OK)
     return UIA_E_INVALIDOPERATION;
 
   const AXPositionInstance& other_provider_endpoint =
@@ -893,7 +894,7 @@ base::string16 AXPlatformNodeTextRangeProviderWin::GetString(int max_count) {
 }
 
 AXPlatformNodeWin* AXPlatformNodeTextRangeProviderWin::owner() const {
-  return owner_;
+  return owner_.Get();
 }
 
 AXPlatformNodeDelegate* AXPlatformNodeTextRangeProviderWin::GetDelegate(
