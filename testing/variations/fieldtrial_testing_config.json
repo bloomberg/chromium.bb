@@ -7581,7 +7581,10 @@
             ],
             "experiments": [
                 {
-                    "name": "ZippedSystemLogsUpload"
+                    "name": "ZippedSystemLogsUpload",
+                    "enable_features": [
+                        "UploadZippedSystemLogs"
+                    ]
                 }
             ]
         }
