@@ -4270,25 +4270,6 @@ TEST_F(HotseatShelfLayoutManagerTest,
   EXPECT_EQ(0, counter.count());
 }
 
-// Tests that the shelf opaque background is properly updated after a tablet
-// mode transition with no apps.
-TEST_F(HotseatShelfLayoutManagerTest,
-       ShelfBackgroundNotVisibleInTabletModeNoApps) {
-  TabletModeControllerTestApi().EnterTabletMode();
-
-  EXPECT_FALSE(GetShelfWidget()->GetOpaqueBackgroundForTest()->visible());
-}
-
-// Tests that the shelf opaque background is properly updated after a tablet
-// mode transition with no apps with dense shelf.
-TEST_F(HotseatShelfLayoutManagerTest,
-       DenseShelfBackgroundNotVisibleInTabletModeNoApps) {
-  UpdateDisplay("300x1000");
-  TabletModeControllerTestApi().EnterTabletMode();
-
-  EXPECT_FALSE(GetShelfWidget()->GetOpaqueBackgroundForTest()->visible());
-}
-
 class ShelfLayoutManagerWindowDraggingTest : public ShelfLayoutManagerTestBase {
  public:
   ShelfLayoutManagerWindowDraggingTest() = default;
