@@ -371,6 +371,30 @@ bool PreferredApps::DeletePreferredApp(
   return true;
 }
 
+// static
+void PreferredApps::DeleteAppId(const std::string& app_id,
+                                base::Value* preferred_apps) {
+  if (!preferred_apps) {
+    return;
+  }
+  std::vector<std::string> keys_to_remove;
+  for (const auto& key_value : preferred_apps->DictItems()) {
+    if (key_value.first == kAppId) {
+      if (key_value.second.GetString() == app_id) {
+        keys_to_remove.push_back(kAppId);
+      }
+    } else {
+      DeleteAppId(app_id, &key_value.second);
+      if (key_value.second.DictEmpty()) {
+        keys_to_remove.push_back(key_value.first);
+      }
+    }
+  }
+  for (const auto& key_to_remove : keys_to_remove) {
+    preferred_apps->RemoveKey(key_to_remove);
+  }
+}
+
 void PreferredApps::Init(std::unique_ptr<base::Value> preferred_apps) {
   if (preferred_apps && VerifyPreferredApps(preferred_apps.get())) {
     preferred_apps_ = std::move(preferred_apps);
@@ -396,6 +420,13 @@ bool PreferredApps::DeletePreferredApp(
     return false;
   }
   return DeletePreferredApp(app_id, intent_filter, preferred_apps_.get());
+}
+
+void PreferredApps::DeleteAppId(const std::string& app_id) {
+  if (!preferred_apps_) {
+    return;
+  }
+  DeleteAppId(app_id, preferred_apps_.get());
 }
 
 base::Optional<std::string> PreferredApps::FindPreferredAppForIntent(
