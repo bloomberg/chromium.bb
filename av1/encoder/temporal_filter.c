@@ -169,7 +169,7 @@ static void temporal_filter_predictors_mb_c(
             xd->plane[1].subsampling_y, xd->bd, is_cur_buf_hbd(xd), 0, scale,
             &ref_buf_uv, interp_filters);
 
-        inter_pred_params.conv_params = get_conv_params(0, 1, xd->bd);
+        inter_pred_params.conv_params = get_conv_params(0, 2, xd->bd);
         av1_build_inter_predictor(
             v_mb_ptr + uv_offset, uv_stride, &pred[(BLK_PELS << 1) + p_offset],
             uv_block_width, &mv, x, y, &inter_pred_params);

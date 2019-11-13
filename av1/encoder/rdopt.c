@@ -7551,7 +7551,7 @@ static AOM_INLINE void build_second_inter_pred(const AV1_COMP *cpi,
                         pd->subsampling_x, pd->subsampling_y, xd->bd,
                         is_cur_buf_hbd(xd), 0, &sf, &ref_yv12,
                         mbmi->interp_filters);
-  inter_pred_params.conv_params = get_conv_params(0, 0, xd->bd);
+  inter_pred_params.conv_params = get_conv_params(0, plane, xd->bd);
 
   // Get the prediction block from the 'other' reference frame.
   av1_build_inter_predictor(ref_yv12.buf, ref_yv12.stride, second_pred, pw,

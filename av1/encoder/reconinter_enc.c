@@ -341,7 +341,7 @@ static INLINE void build_obmc_prediction(MACROBLOCKD *xd, int rel_mi_row,
                           pd->subsampling_y, xd->bd, is_cur_buf_hbd(xd), 0,
                           xd->block_ref_scale_factors[0], pre_buf,
                           above_mbmi->interp_filters);
-    inter_pred_params.conv_params = get_conv_params(0, 0, xd->bd);
+    inter_pred_params.conv_params = get_conv_params(0, j, xd->bd);
 
     av1_build_inter_predictor(pre_buf->buf, pre_buf->stride, pd->dst.buf,
                               pd->dst.stride, &mv, mi_x, mi_y,
