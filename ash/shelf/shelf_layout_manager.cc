@@ -2194,7 +2194,7 @@ bool ShelfLayoutManager::StartShelfDrag(
     drag_amount_ = 0.f;
   }
 
-  MaybeStartDragWindowFromShelf(event_in_screen);
+  MaybeStartDragWindowFromShelf(event_in_screen, /*scroll_y=*/base::nullopt);
 
   return true;
 }
@@ -2433,7 +2433,8 @@ void ShelfLayoutManager::SendA11yAlertForFullscreenWorkspaceState(
 }
 
 bool ShelfLayoutManager::MaybeStartDragWindowFromShelf(
-    const ui::LocatedEvent& event_in_screen) {
+    const ui::LocatedEvent& event_in_screen,
+    base::Optional<float> scroll_y) {
   if (!features::IsDragFromShelfToHomeOrOverviewEnabled())
     return false;
   if (!IsTabletModeEnabled())
@@ -2467,6 +2468,9 @@ bool ShelfLayoutManager::MaybeStartDragWindowFromShelf(
     const gfx::Rect shelf_bounds = GetVisibleShelfBounds();
     if (event_in_screen.location().y() < shelf_bounds.y())
       return false;
+    // Do not start drag if it's a downward update event.
+    if (scroll_y.has_value() && *scroll_y > 0)
+      return false;
   }
 
   // Do not allow window drag if the previous dragged window is still animating.
@@ -2490,7 +2494,8 @@ void ShelfLayoutManager::MaybeUpdateWindowDrag(
     float scroll_x,
     float scroll_y) {
   if (!IsWindowDragInProgress() &&
-      !MaybeStartDragWindowFromShelf(event_in_screen)) {
+      !MaybeStartDragWindowFromShelf(event_in_screen,
+                                     base::make_optional(scroll_y))) {
     return;
   }
 
