@@ -19,6 +19,52 @@ from chromite.lib import osutils
 from chromite.service import binhost as binhost_service
 
 
+class GetBinhostsTest(cros_test_lib.MockTestCase, api_config.ApiConfigMixin):
+  """Unittests for GetBinhosts."""
+
+  def setUp(self):
+    self.response = binhost_pb2.BinhostGetResponse()
+
+  def testValidateOnly(self):
+    """Sanity check that a validate only call does not execute any logic."""
+    patch = self.PatchObject(binhost_service, 'GetBinhosts')
+
+    request = binhost_pb2.PrepareBinhostUploadsRequest()
+    request.build_target.name = 'target'
+    binhost.GetBinhosts(request, self.response, self.validate_only_config)
+    patch.assert_not_called()
+
+  def testMockCall(self):
+    """Test that a mock call does not execute logic, returns mocked value."""
+    patch = self.PatchObject(binhost_service, 'GetBinhosts')
+
+    input_proto = binhost_pb2.BinhostGetRequest()
+    input_proto.build_target.name = 'target'
+
+    binhost.GetBinhosts(input_proto, self.response, self.mock_call_config)
+
+    self.assertEqual(len(self.response.binhosts), 1)
+    self.assertEqual(self.response.binhosts[0].package_index, 'Packages')
+    patch.assert_not_called()
+
+  def testGetBinhosts(self):
+    """GetBinhosts calls service with correct args."""
+    binhost_list = [
+        'gs://cr-prebuilt/board/amd64-generic/paladin-R66-17.0.0-rc2/packages/',
+        'gs://cr-prebuilt/board/eve/paladin-R66-17.0.0-rc2/packages/']
+    get_binhost = self.PatchObject(binhost_service, 'GetBinhosts',
+                                   return_value=binhost_list)
+
+    input_proto = binhost_pb2.BinhostGetRequest()
+    input_proto.build_target.name = 'target'
+
+    binhost.GetBinhosts(input_proto, self.response, self.api_config)
+
+    self.assertEqual(len(self.response.binhosts), 2)
+    self.assertEqual(self.response.binhosts[0].package_index, 'Packages')
+    get_binhost.assert_called_once_with(mock.ANY)
+
+
 class PrepareBinhostUploadsTest(cros_test_lib.MockTestCase,
                                 api_config.ApiConfigMixin):
   """Unittests for PrepareBinhostUploads."""
