@@ -19822,6 +19822,7 @@ Called by update_net_error_codes.py.-->
   <int value="443" label="AUTOTESTPRIVATE_ON_CLIPBOARD_DATA_CHANGED"/>
   <int value="444" label="AUTOFILL_PRIVATE_ON_PERSONAL_DATA_CHANGED"/>
   <int value="445" label="PRINTING_ON_JOB_STATUS_CHANGED"/>
+  <int value="446" label="DECLARATIVE_NET_REQUEST_ON_RULE_MATCHED_DEBUG"/>
 </enum>
 
 <enum name="ExtensionFileWriteResult">
