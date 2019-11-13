@@ -4289,6 +4289,27 @@
             ]
         }
     ],
+    "ParallelDownloadWithQUICAndHTTP2": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "EnableHTTP2",
+                    "enable_features": [
+                        "UseParallelRequestsForHTTP2"
+                    ]
+                },
+                {
+                    "name": "EnableQuic",
+                    "enable_features": [
+                        "UseParallelRequestsForQUIC"
+                    ]
+                }
+            ]
+        }
+    ],
     "ParallelDownloading": [
         {
             "platforms": [
