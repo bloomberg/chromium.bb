@@ -293,8 +293,7 @@ void AppServiceProxy::PauseApps(
     // TODO(crbug.com/1011235): Add the app running checking. If the app is not
     // running, don't create the pause dialog, pause the app directly.
     if (app_type != apps::mojom::AppType::kArc) {
-      // TODO(crbug.com/1011235): Add AppService interface to apply icon
-      // effects.
+      app_service_->PauseApp(app_type, data.first);
       continue;
     }
 
@@ -313,15 +312,13 @@ void AppServiceProxy::UnpauseApps(const std::set<std::string>& app_ids) {
     constexpr bool kPaused = false;
     UpdatePausedStatus(app_type, app_id, kPaused);
 
-    // TODO(crbug.com/1011235): Add AppService interface to recover icon
-    // effects.
+    app_service_->UnpauseApps(app_type, app_id);
   }
 }
 
 void AppServiceProxy::OnPauseDialogClosed(apps::mojom::AppType app_type,
                                           const std::string& app_id) {
-  // TODO(crbug.com/1011235): Add AppService interface to apply the icon effect
-  // and stop the running app.
+  app_service_->PauseApp(app_type, app_id);
 }
 
 void AppServiceProxy::OpenNativeSettings(const std::string& app_id) {
