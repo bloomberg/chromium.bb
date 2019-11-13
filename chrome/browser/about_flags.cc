@@ -825,26 +825,18 @@ const FeatureEntry::FeatureVariation kOmniboxDocumentProviderVariations[] = {
      base::size(kOmniboxDocumentProviderServerAndClientScoring), nullptr}};
 #endif  // defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
 
-#ifdef OS_ANDROID
+const FeatureEntry::FeatureParam kOmniboxOnFocusSuggestionsParamSERP[] = {
+    {"ZeroSuggestVariant:6:*", "RemoteSendUrl"}};
+#if defined(OS_ANDROID)
 const FeatureEntry::FeatureParam kOmniboxNTPZPSLocal[] = {
     {"ZeroSuggestVariant:1:*", "Local"},
     {"ZeroSuggestVariant:7:*", "Local"},
     {"ZeroSuggestVariant:8:*", "Local"}};
-
 const FeatureEntry::FeatureParam kOmniboxNTPZPSRemote[] = {
     {"ZeroSuggestVariant:1:*", "RemoteNoUrl"},
     {"ZeroSuggestVariant:7:*", "RemoteNoUrl"},
     {"ZeroSuggestVariant:8:*", "RemoteNoUrl"}};
-
-const FeatureEntry::FeatureVariation kOmniboxOnFocusSuggestionsVariations[] = {
-    {"ZPS on NTP: Local History", kOmniboxNTPZPSLocal,
-     base::size(kOmniboxNTPZPSLocal), nullptr},
-    {"ZPS on NTP: Remote History", kOmniboxNTPZPSRemote,
-     base::size(kOmniboxNTPZPSRemote), "t3314248"},
-};
-#else
-const FeatureEntry::FeatureParam kOmniboxOnFocusSuggestionsParamSERP[] = {
-    {"ZeroSuggestVariant:6:*", "RemoteSendUrl"}};
+#else   // !defined(OS_ANDROID)
 const FeatureEntry::FeatureParam
     kOmniboxOnFocusSuggestionsParamNTPOmniboxRemoteLocal[] = {
         {"ZeroSuggestVariant:7:*", "RemoteNoUrl,Local"}};
@@ -855,10 +847,18 @@ const FeatureEntry::FeatureParam
     kOmniboxOnFocusSuggestionsParamNTPOmniboxRealboxRemoteLocal[] = {
         *kOmniboxOnFocusSuggestionsParamNTPOmniboxRemoteLocal,
         *kOmniboxOnFocusSuggestionsParamNTPRealboxRemoteLocal};
+#endif  // defined(OS_ANDROID)
+
 const FeatureEntry::FeatureVariation kOmniboxOnFocusSuggestionsVariations[] = {
     {"SERP - RemoteSendURL", kOmniboxOnFocusSuggestionsParamSERP,
      base::size(kOmniboxOnFocusSuggestionsParamSERP),
      "t3315869" /* variation_id */},
+#if defined(OS_ANDROID)
+    {"ZPS on NTP: Local History", kOmniboxNTPZPSLocal,
+     base::size(kOmniboxNTPZPSLocal), nullptr},
+    {"ZPS on NTP: Remote History", kOmniboxNTPZPSRemote,
+     base::size(kOmniboxNTPZPSRemote), "t3314248"},
+#else   // !defined(OS_ANDROID)
     {"NTP Omnibox - Remote,Local",
      kOmniboxOnFocusSuggestionsParamNTPOmniboxRemoteLocal,
      base::size(kOmniboxOnFocusSuggestionsParamNTPOmniboxRemoteLocal),
@@ -871,8 +871,8 @@ const FeatureEntry::FeatureVariation kOmniboxOnFocusSuggestionsVariations[] = {
      kOmniboxOnFocusSuggestionsParamNTPOmniboxRealboxRemoteLocal,
      base::size(kOmniboxOnFocusSuggestionsParamNTPOmniboxRealboxRemoteLocal),
      "t3316133" /* variation_id */},
+#endif  // defined(OS_ANDROID)
 };
-#endif
 
 const FeatureEntry::FeatureParam kOmniboxUIMaxAutocompleteMatches3[] = {
     {OmniboxFieldTrial::kUIMaxAutocompleteMatchesParam, "3"}};
@@ -2982,7 +2982,7 @@ const FeatureEntry kFeatureEntries[] = {
 
     {"omnibox-zero-suggestions-on-serp",
      flag_descriptions::kOmniboxZeroSuggestionsOnSERPName,
-     flag_descriptions::kOmniboxZeroSuggestionsOnSERPDescription, kOsDesktop,
+     flag_descriptions::kOmniboxZeroSuggestionsOnSERPDescription, kOsAll,
      FEATURE_VALUE_TYPE(omnibox::kZeroSuggestionsOnSERP)},
 
     {"omnibox-material-design-weather-icons",
