@@ -266,8 +266,8 @@ static AOM_INLINE void mode_estimation(
                               ref_frame_ptr->y_width, ref_frame_ptr->y_height,
                               ref_frame_ptr->y_stride };
     InterPredParams inter_pred_params;
-    av1_init_inter_params(&inter_pred_params, bw, bh, mi_col * MI_SIZE,
-                          mi_row * MI_SIZE, 0, 0, xd->bd, is_cur_buf_hbd(xd), 0,
+    av1_init_inter_params(&inter_pred_params, bw, bh, mi_row * MI_SIZE,
+                          mi_col * MI_SIZE, 0, 0, xd->bd, is_cur_buf_hbd(xd), 0,
                           sf, &ref_buf, kernel);
     inter_pred_params.conv_params = get_conv_params(0, 0, xd->bd);
 
@@ -322,8 +322,8 @@ static AOM_INLINE void mode_estimation(
     struct buf_2d ref_buf = { NULL, ref_frame_ptr->y_buffer,
                               ref_frame_ptr->y_width, ref_frame_ptr->y_height,
                               ref_frame_ptr->y_stride };
-    av1_init_inter_params(&inter_pred_params, bw, bh, mi_col * MI_SIZE,
-                          mi_row * MI_SIZE, 0, 0, xd->bd, is_cur_buf_hbd(xd), 0,
+    av1_init_inter_params(&inter_pred_params, bw, bh, mi_row * MI_SIZE,
+                          mi_col * MI_SIZE, 0, 0, xd->bd, is_cur_buf_hbd(xd), 0,
                           sf, &ref_buf, kernel);
     inter_pred_params.conv_params = get_conv_params(0, 0, xd->bd);
 
@@ -1087,8 +1087,8 @@ static AOM_INLINE void get_tpl_forward_stats(AV1_COMP *cpi, MACROBLOCK *x,
       struct buf_2d ref_buf = { NULL, ref->y_buffer, ref->y_width,
                                 ref->y_height, ref->y_stride };
       InterPredParams inter_pred_params;
-      av1_init_inter_params(&inter_pred_params, bw, bh, mi_col * MI_SIZE,
-                            mi_row * MI_SIZE, 0, 0, xd->bd, is_cur_buf_hbd(xd),
+      av1_init_inter_params(&inter_pred_params, bw, bh, mi_row * MI_SIZE,
+                            mi_col * MI_SIZE, 0, 0, xd->bd, is_cur_buf_hbd(xd),
                             0, &sf, &ref_buf, kernel);
       inter_pred_params.conv_params = get_conv_params(0, 0, xd->bd);
 

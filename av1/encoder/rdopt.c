@@ -6998,8 +6998,8 @@ static AOM_INLINE void joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
     ref_yv12[0] = xd->plane[plane].pre[0];
     ref_yv12[1] = xd->plane[plane].pre[1];
 
-    av1_init_inter_params(&inter_pred_params, pw, ph, mi_col * MI_SIZE,
-                          mi_row * MI_SIZE, 0, 0, xd->bd, is_cur_buf_hbd(xd), 0,
+    av1_init_inter_params(&inter_pred_params, pw, ph, mi_row * MI_SIZE,
+                          mi_col * MI_SIZE, 0, 0, xd->bd, is_cur_buf_hbd(xd), 0,
                           &cm->sf_identity, &ref_yv12[!id], interp_filters);
     inter_pred_params.conv_params = get_conv_params(0, 0, xd->bd);
 
@@ -7546,7 +7546,7 @@ static AOM_INLINE void build_second_inter_pred(const AV1_COMP *cpi,
 
   InterPredParams inter_pred_params;
 
-  av1_init_inter_params(&inter_pred_params, pw, ph, p_col, p_row,
+  av1_init_inter_params(&inter_pred_params, pw, ph, p_row, p_col,
                         pd->subsampling_x, pd->subsampling_y, xd->bd,
                         is_cur_buf_hbd(xd), 0, &sf, &ref_yv12,
                         mbmi->interp_filters);

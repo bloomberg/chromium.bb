@@ -74,7 +74,7 @@ static void temporal_filter_predictors_mb_c(
   struct buf_2d ref_buf_y = { NULL, ref_frame->y_buffer, ref_frame->y_width,
                               ref_frame->y_height, ref_frame->y_stride };
 
-  av1_init_inter_params(&inter_pred_params, BW, BH, x, y, 0, 0, xd->bd,
+  av1_init_inter_params(&inter_pred_params, BW, BH, y, x, 0, 0, xd->bd,
                         is_cur_buf_hbd(xd), 0, scale, &ref_buf_y,
                         interp_filters);
   inter_pred_params.conv_params = get_conv_params(0, 0, xd->bd);
@@ -93,7 +93,8 @@ static void temporal_filter_predictors_mb_c(
                                    ref_frame->uv_stride };
 
       av1_init_inter_params(
-          &inter_pred_params, uv_block_width, uv_block_height, x, y,
+          &inter_pred_params, uv_block_width, uv_block_height,
+          y >> xd->plane[1].subsampling_y, x >> xd->plane[1].subsampling_x,
           xd->plane[1].subsampling_x, xd->plane[1].subsampling_y, xd->bd,
           is_cur_buf_hbd(xd), 0, scale, &ref_buf_uv, interp_filters);
       inter_pred_params.conv_params = get_conv_params(0, 1, xd->bd);
@@ -102,7 +103,8 @@ static void temporal_filter_predictors_mb_c(
 
       ref_buf_uv.buf0 = ref_frame->v_buffer;
       av1_init_inter_params(
-          &inter_pred_params, uv_block_width, uv_block_height, x, y,
+          &inter_pred_params, uv_block_width, uv_block_height,
+          y >> xd->plane[1].subsampling_y, x >> xd->plane[1].subsampling_x,
           xd->plane[1].subsampling_x, xd->plane[1].subsampling_y, xd->bd,
           is_cur_buf_hbd(xd), 0, scale, &ref_buf_uv, interp_filters);
       inter_pred_params.conv_params = get_conv_params(0, 2, xd->bd);
@@ -117,15 +119,16 @@ static void temporal_filter_predictors_mb_c(
   // predictors.
   int i, j, k = 0, ys = (BH >> 1), xs = (BW >> 1);
   // Y predictor
-  av1_init_inter_params(&inter_pred_params, xs, ys, x, y, 0, 0, xd->bd,
-                        is_cur_buf_hbd(xd), 0, scale, &ref_buf_y,
-                        interp_filters);
-  inter_pred_params.conv_params = get_conv_params(0, 0, xd->bd);
   for (i = 0; i < BH; i += ys) {
     for (j = 0; j < BW; j += xs) {
       const MV mv = blk_mvs[k];
       const int y_offset = i * stride + j;
       const int p_offset = i * BW + j;
+
+      av1_init_inter_params(&inter_pred_params, xs, ys, y + i, x + j, 0, 0,
+                            xd->bd, is_cur_buf_hbd(xd), 0, scale, &ref_buf_y,
+                            interp_filters);
+      inter_pred_params.conv_params = get_conv_params(0, 0, xd->bd);
 
       av1_build_inter_predictor(y_mb_ptr + y_offset, stride, &pred[p_offset],
                                 BW, &mv, x, y, &inter_pred_params);
@@ -150,7 +153,8 @@ static void temporal_filter_predictors_mb_c(
                                      ref_frame->uv_stride };
 
         av1_init_inter_params(
-            &inter_pred_params, xs, ys, x, y, xd->plane[1].subsampling_x,
+            &inter_pred_params, xs, ys, (y >> xd->plane[1].subsampling_y) + i,
+            (x >> xd->plane[1].subsampling_x) + j, xd->plane[1].subsampling_x,
             xd->plane[1].subsampling_y, xd->bd, is_cur_buf_hbd(xd), 0, scale,
             &ref_buf_uv, interp_filters);
         inter_pred_params.conv_params = get_conv_params(0, 1, xd->bd);
@@ -160,7 +164,8 @@ static void temporal_filter_predictors_mb_c(
 
         ref_buf_uv.buf0 = ref_frame->v_buffer;
         av1_init_inter_params(
-            &inter_pred_params, xs, ys, x, y, xd->plane[1].subsampling_x,
+            &inter_pred_params, xs, ys, (y >> xd->plane[1].subsampling_y) + i,
+            (x >> xd->plane[1].subsampling_x) + j, xd->plane[1].subsampling_x,
             xd->plane[1].subsampling_y, xd->bd, is_cur_buf_hbd(xd), 0, scale,
             &ref_buf_uv, interp_filters);
 
