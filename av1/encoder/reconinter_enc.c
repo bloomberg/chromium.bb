@@ -373,14 +373,6 @@ void av1_build_prediction_by_above_preds(const AV1_COMMON *cm, MACROBLOCKD *xd,
                                          int tmp_height[MAX_MB_PLANE],
                                          int tmp_stride[MAX_MB_PLANE]) {
   if (!xd->up_available) return;
-
-  // Adjust mb_to_bottom_edge to have the correct value for the OBMC
-  // prediction block. This is half the height of the original block,
-  // except for 128-wide blocks, where we only use a height of 32.
-  int this_height = xd->n4_h * MI_SIZE;
-  int pred_height = AOMMIN(this_height / 2, 32);
-  xd->mb_to_bottom_edge += (this_height - pred_height) * 8;
-
   struct build_prediction_ctxt ctxt = { cm,         tmp_buf,
                                         tmp_width,  tmp_height,
                                         tmp_stride, xd->mb_to_right_edge };
@@ -388,10 +380,6 @@ void av1_build_prediction_by_above_preds(const AV1_COMMON *cm, MACROBLOCKD *xd,
   foreach_overlappable_nb_above(cm, xd,
                                 max_neighbor_obmc[mi_size_wide_log2[bsize]],
                                 build_obmc_prediction, &ctxt);
-
-  xd->mb_to_left_edge = -((xd->mi_col * MI_SIZE) * 8);
-  xd->mb_to_right_edge = ctxt.mb_to_far_edge;
-  xd->mb_to_bottom_edge -= (this_height - pred_height) * 8;
 }
 
 void av1_build_prediction_by_left_preds(const AV1_COMMON *cm, MACROBLOCKD *xd,
@@ -400,14 +388,6 @@ void av1_build_prediction_by_left_preds(const AV1_COMMON *cm, MACROBLOCKD *xd,
                                         int tmp_height[MAX_MB_PLANE],
                                         int tmp_stride[MAX_MB_PLANE]) {
   if (!xd->left_available) return;
-
-  // Adjust mb_to_right_edge to have the correct value for the OBMC
-  // prediction block. This is half the width of the original block,
-  // except for 128-wide blocks, where we only use a width of 32.
-  int this_width = xd->n4_w * MI_SIZE;
-  int pred_width = AOMMIN(this_width / 2, 32);
-  xd->mb_to_right_edge += (this_width - pred_width) * 8;
-
   struct build_prediction_ctxt ctxt = { cm,         tmp_buf,
                                         tmp_width,  tmp_height,
                                         tmp_stride, xd->mb_to_bottom_edge };
@@ -415,10 +395,6 @@ void av1_build_prediction_by_left_preds(const AV1_COMMON *cm, MACROBLOCKD *xd,
   foreach_overlappable_nb_left(cm, xd,
                                max_neighbor_obmc[mi_size_high_log2[bsize]],
                                build_obmc_prediction, &ctxt);
-
-  xd->mb_to_top_edge = -((xd->mi_row * MI_SIZE) * 8);
-  xd->mb_to_right_edge -= (this_width - pred_width) * 8;
-  xd->mb_to_bottom_edge = ctxt.mb_to_far_edge;
 }
 
 void av1_build_obmc_inter_predictors_sb(const AV1_COMMON *cm, MACROBLOCKD *xd) {
