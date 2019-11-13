@@ -943,7 +943,7 @@ TEST_P(PaintAndRasterInvalidationTest, PaintPropertyChange) {
   GetDocument().View()->SetTracksPaintInvalidations(true);
   target->setAttribute(html_names::kStyleAttr, "transform: scale(3)");
   GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
-  EXPECT_FALSE(layer->NeedsRepaint());
+  EXPECT_FALSE(layer->SelfNeedsRepaint());
   const auto* transform =
       object->FirstFragment().PaintProperties()->Transform();
   EXPECT_TRUE(transform->Changed(
@@ -1125,15 +1125,17 @@ TEST_F(PaintInvalidatorCustomClientTest,
 
   target->setAttribute(html_names::kStyleAttr, "opacity: 0.98");
   GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
-  EXPECT_TRUE(GetDocument().View()->GetLayoutView()->Layer()->NeedsRepaint());
+  EXPECT_TRUE(
+      GetDocument().View()->GetLayoutView()->Layer()->DescendantNeedsRepaint());
   EXPECT_TRUE(InvalidationRecorded());
 
   ResetInvalidationRecorded();
   // Let PrePaintTreeWalk do something instead of no-op.
   GetDocument().View()->SetNeedsPaintPropertyUpdate();
   GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
-  // The layer NeedsRepaint flag is only cleared after paint.
-  EXPECT_TRUE(GetDocument().View()->GetLayoutView()->Layer()->NeedsRepaint());
+  // The layer DescendantNeedsRepaint flag is only cleared after paint.
+  EXPECT_TRUE(
+      GetDocument().View()->GetLayoutView()->Layer()->DescendantNeedsRepaint());
   EXPECT_FALSE(InvalidationRecorded());
 }
 

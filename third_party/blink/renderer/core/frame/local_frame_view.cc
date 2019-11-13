@@ -1363,7 +1363,7 @@ bool LocalFrameView::InvalidateViewportConstrainedObjects() {
     // layer->SubtreeIsInvisible() here.
     layout_object->SetSubtreeShouldCheckForPaintInvalidation();
     if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
-        !layer->NeedsRepaint()) {
+        !layer->SelfOrDescendantNeedsRepaint()) {
       // Paint properties of the layer relative to its containing graphics
       // layer may change if the paint properties escape the graphics layer's
       // property state. Need to check raster invalidation for relative paint
@@ -2671,7 +2671,8 @@ void LocalFrameView::PaintTree() {
     auto* web_local_frame_impl = WebLocalFrameImpl::FromFrame(frame_);
     bool has_dev_tools_overlays =
         web_local_frame_impl && web_local_frame_impl->HasDevToolsOverlays();
-    if (!GetLayoutView()->Layer()->NeedsRepaint() && !has_dev_tools_overlays) {
+    if (!GetLayoutView()->Layer()->SelfOrDescendantNeedsRepaint() &&
+        !has_dev_tools_overlays) {
       paint_controller_->UpdateUMACountsOnFullyCached();
     } else {
       GraphicsContext graphics_context(*paint_controller_);
