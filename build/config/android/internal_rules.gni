@@ -2841,23 +2841,18 @@ if (enable_java_templates) {
         args += [ "--jar-info-exclude-globs=${invoker.jar_excluded_patterns}" ]
       }
 
-      # Use errorprone with checks disabled when !enable_errorprone so that
-      # compile results are the same across machines.
-      # TODO(crbug.com/693079): Add javac to DEPS and use it for the
-      #     !enable_errorprone case.
-      deps += [ "//third_party/errorprone:errorprone($default_toolchain)" ]
-      args += [
-        "--errorprone-path",
-        "bin/errorprone",
-      ]
-
       if (invoker.enable_errorprone) {
-        deps += [ "//tools/android/errorprone_plugin:errorprone_plugin_java($default_toolchain)" ]
-        _rebased_errorprone_processorpath = [
-          "lib.java/tools/android/errorprone_plugin/errorprone_plugin_java.jar",
-        ]
+        # Our custom plugin pulls in the main errorprone dep transitively.
+        _errorprone_dep =
+            "//tools/android/errorprone_plugin:errorprone_plugin_java"
+        deps += [ _errorprone_dep ]
+        _dep_gen_dir = get_label_info(_errorprone_dep, "target_gen_dir")
+        _dep_name = get_label_info(_errorprone_dep, "name")
+        _rebased_errorprone_buildconfig =
+            rebase_path("$_dep_gen_dir/$_dep_name.build_config", root_build_dir)
         args += [
-          "--processorpath=$_rebased_errorprone_processorpath",
+          "--processorpath=@FileArg($_rebased_errorprone_buildconfig:deps_info:jar_path)",
+          "--processorpath=@FileArg($_rebased_errorprone_buildconfig:deps_info:javac_full_classpath)",
           "--enable-errorprone",
         ]
       }
