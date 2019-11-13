@@ -964,9 +964,9 @@ void SkiaOutputSurfaceImplOnGpu::RemoveRenderPassResource(
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!image_contexts.empty());
   for (auto& image_context : image_contexts) {
-    auto it = offscreen_surfaces_.find(image_context->render_pass_id());
-    DCHECK(it != offscreen_surfaces_.end());
-    offscreen_surfaces_.erase(it);
+    // It's possible that |offscreen_surfaces_| won't contain an entry for the
+    // render pass if draw failed early.
+    offscreen_surfaces_.erase(image_context->render_pass_id());
   }
 }
 
