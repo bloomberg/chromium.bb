@@ -321,6 +321,8 @@ crbug.com/887000 virtual/prefer_compositing_to_lcd_text/scrollbars/hidden-scroll
 crbug.com/882975 virtual/threaded/fast/events/pinch/gesture-pinch-zoom-prevent-in-handler.html [ Failure Pass ]
 crbug.com/882975 virtual/threaded/fast/events/pinch/scroll-visual-viewport-send-boundary-events.html [ Failure Pass ]
 
+crbug.com/1024151 http/tests/devtools/tracing/timeline-style/timeline-style-recalc-all-invalidator-types.js [ Failure Pass ]
+
 # Subpixel rounding differences that are incorrect.
 crbug.com/836886 virtual/prefer_compositing_to_lcd_text/compositing/overflow/scaled-overflow.html [ Failure ]
 crbug.com/836886 compositing/overflow/scaled-overflow.html [ Failure ]
