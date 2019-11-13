@@ -25,7 +25,7 @@ class ProxyResolverImpl::Job {
       const GURL& url);
   ~Job();
 
-  void Start();
+  void Start(const net::NetworkIsolationKey& network_isolation_key);
 
  private:
   // Mojo error handler. This is invoked in response to the client
@@ -53,13 +53,14 @@ ProxyResolverImpl::~ProxyResolverImpl() = default;
 
 void ProxyResolverImpl::GetProxyForUrl(
     const GURL& url,
+    const net::NetworkIsolationKey& network_isolation_key,
     mojo::PendingRemote<mojom::ProxyResolverRequestClient> client) {
   DVLOG(1) << "GetProxyForUrl(" << url << ")";
   std::unique_ptr<Job> job =
       std::make_unique<Job>(std::move(client), this, url);
   Job* job_ptr = job.get();
   resolve_jobs_[job_ptr] = std::move(job);
-  job_ptr->Start();
+  job_ptr->Start(network_isolation_key);
 }
 
 void ProxyResolverImpl::DeleteJob(Job* job) {
@@ -78,10 +79,10 @@ ProxyResolverImpl::Job::Job(
 
 ProxyResolverImpl::Job::~Job() = default;
 
-void ProxyResolverImpl::Job::Start() {
-  // TODO(mmenke): Pass in NetworkIsolationKey.
+void ProxyResolverImpl::Job::Start(
+    const net::NetworkIsolationKey& network_isolation_key) {
   resolver_->resolver_->GetProxyForURL(
-      url_, net::NetworkIsolationKey(), &result_,
+      url_, network_isolation_key, &result_,
       base::BindOnce(&Job::GetProxyDone, base::Unretained(this)), &request_,
       std::make_unique<MojoProxyResolverV8TracingBindings<
           mojom::ProxyResolverRequestClient>>(client_.get()));

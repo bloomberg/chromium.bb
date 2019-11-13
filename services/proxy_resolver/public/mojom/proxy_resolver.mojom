@@ -53,7 +53,11 @@ struct ProxyInfo {
 interface ProxyResolver {
   // Use a ProxyResolverRequestClient instead of returning a result so we can
   // cancel in-flight requests by destroying the client.
+  //
+  // |network_isolation_key| is the NetworkIsolationKey used by the DNS cache
+  // to separate requests made in different contexts.
   GetProxyForUrl(url.mojom.Url url,
+                 network.mojom.NetworkIsolationKey network_isolation_key,
                  pending_remote<ProxyResolverRequestClient> client);
 };
 

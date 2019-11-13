@@ -190,6 +190,7 @@ class ProxyResolverMojo : public net::ProxyResolver {
 
   // ProxyResolver implementation:
   int GetProxyForURL(const GURL& url,
+                     const net::NetworkIsolationKey& network_isolation_key,
                      net::ProxyInfo* results,
                      net::CompletionOnceCallback callback,
                      std::unique_ptr<Request>* request,
@@ -222,6 +223,7 @@ class ProxyResolverMojo::Job
  public:
   Job(ProxyResolverMojo* resolver,
       const GURL& url,
+      const net::NetworkIsolationKey& network_isolation_key,
       net::ProxyInfo* results,
       net::CompletionOnceCallback callback,
       const net::NetLogWithSource& net_log);
@@ -250,11 +252,13 @@ class ProxyResolverMojo::Job
   DISALLOW_COPY_AND_ASSIGN(Job);
 };
 
-ProxyResolverMojo::Job::Job(ProxyResolverMojo* resolver,
-                            const GURL& url,
-                            net::ProxyInfo* results,
-                            net::CompletionOnceCallback callback,
-                            const net::NetLogWithSource& net_log)
+ProxyResolverMojo::Job::Job(
+    ProxyResolverMojo* resolver,
+    const GURL& url,
+    const net::NetworkIsolationKey& network_isolation_key,
+    net::ProxyInfo* results,
+    net::CompletionOnceCallback callback,
+    const net::NetLogWithSource& net_log)
     : ClientMixin<proxy_resolver::mojom::ProxyResolverRequestClient>(
           resolver->host_resolver_,
           resolver->error_observer_.get(),
@@ -266,8 +270,8 @@ ProxyResolverMojo::Job::Job(ProxyResolverMojo* resolver,
       binding_(this) {
   mojo::PendingRemote<proxy_resolver::mojom::ProxyResolverRequestClient> client;
   binding_.Bind(client.InitWithNewPipeAndPassReceiver());
-  resolver->mojo_proxy_resolver_remote_->GetProxyForUrl(url_,
-                                                        std::move(client));
+  resolver->mojo_proxy_resolver_remote_->GetProxyForUrl(
+      url_, network_isolation_key, std::move(client));
   binding_.set_connection_error_handler(base::Bind(
       &ProxyResolverMojo::Job::OnConnectionError, base::Unretained(this)));
 }
@@ -330,18 +334,20 @@ void ProxyResolverMojo::OnMojoDisconnect() {
   mojo_proxy_resolver_remote_.reset();
 }
 
-int ProxyResolverMojo::GetProxyForURL(const GURL& url,
-                                      net::ProxyInfo* results,
-                                      net::CompletionOnceCallback callback,
-                                      std::unique_ptr<Request>* request,
-                                      const net::NetLogWithSource& net_log) {
+int ProxyResolverMojo::GetProxyForURL(
+    const GURL& url,
+    const net::NetworkIsolationKey& network_isolation_key,
+    net::ProxyInfo* results,
+    net::CompletionOnceCallback callback,
+    std::unique_ptr<Request>* request,
+    const net::NetLogWithSource& net_log) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!mojo_proxy_resolver_remote_)
     return net::ERR_PAC_SCRIPT_TERMINATED;
 
-  *request =
-      std::make_unique<Job>(this, url, results, std::move(callback), net_log);
+  *request = std::make_unique<Job>(this, url, network_isolation_key, results,
+                                   std::move(callback), net_log);
 
   return net::ERR_IO_PENDING;
 }
