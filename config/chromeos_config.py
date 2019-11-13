@@ -3248,6 +3248,7 @@ def FirmwareBuilders(site_config, _boards_dict, _ge_build_config):
       (ACTIVE, 'firmware-sarien-12200.B', ['sarien'], {}),
       (ACTIVE, 'firmware-mistral-12422.B', ['mistral'], {}),
       (ACTIVE, 'firmware-kukui-12573.B', ['kukui'], {}),
+      (ACTIVE, 'firmware-hatch-12672.B', ['hatch'], {}),
   ]
 
   for interval, branch, boards, kwargs in firmware_branch_builders:

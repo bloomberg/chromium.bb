@@ -150,6 +150,7 @@
   firmware-gru-8785.B-firmwarebranch
   firmware-grunt-11031.B-firmwarebranch
   firmware-guado-6301.108.B-firmwarebranch
+  firmware-hatch-12672.B-firmwarebranch
   firmware-heli-5216.392.B-firmwarebranch
   firmware-kalista-11343.B-firmwarebranch
   firmware-kip-5216.227.B-firmwarebranch
@@ -1418,6 +1419,7 @@
   firmware-gru-8785.B-firmwarebranch-tryjob
   firmware-grunt-11031.B-firmwarebranch-tryjob
   firmware-guado-6301.108.B-firmwarebranch-tryjob
+  firmware-hatch-12672.B-firmwarebranch-tryjob
   firmware-heli-5216.392.B-firmwarebranch-tryjob
   firmware-kalista-11343.B-firmwarebranch-tryjob
   firmware-kip-5216.227.B-firmwarebranch-tryjob
