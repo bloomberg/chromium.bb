@@ -57,15 +57,15 @@ class KeyboardNode extends NodeWrapper {
     }
 
     const root = new RootNodeWrapper(node);
-    KeyboardNode.buildHelper(root);
+    KeyboardNode.findAndSetChildren(root);
     return root;
   }
 
   /**
-   * Builds a tree of KeyboardNodes.
+   * Helper function to connect tree elements, given the root node.
    * @param {!RootNodeWrapper} root
    */
-  static buildHelper(root) {
+  static findAndSetChildren(root) {
     const childConstructor = (node) => new KeyboardNode(node, root);
 
     /** @type {!Array<!chrome.automation.AutomationNode>} */
@@ -75,11 +75,8 @@ class KeyboardNode extends NodeWrapper {
       children = GroupNode.separateByRow(children);
     }
 
-    const backButton = new BackButtonNode(root);
-    children.push(backButton);
-
-    SARootNode.connectChildren(children);
-    root.setChildren(children);
+    children.push(new BackButtonNode(root));
+    root.children = children;
   }
 }
 
@@ -126,7 +123,7 @@ class KeyboardRootNode extends RootNodeWrapper {
 
     const root = new KeyboardRootNode(keyboard);
     root.onEnter_();
-    KeyboardNode.buildHelper(root);
+    KeyboardNode.findAndSetChildren(root);
     return root;
   }
 }

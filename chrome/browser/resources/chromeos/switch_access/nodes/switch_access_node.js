@@ -21,20 +21,14 @@ class SAChildNode {
     this.next_ = null;
   }
 
-  /**
-   * @param {!SAChildNode} previous
-   * @protected
-   */
-  setPrevious_(previous) {
-    this.previous_ = previous;
+  /** @param {!SAChildNode} newVal */
+  set previous(newVal) {
+    this.previous_ = newVal;
   }
 
-  /**
-   * @param {!SAChildNode} next
-   * @protected
-   */
-  setNext_(next) {
-    this.next_ = next;
+  /** @param {!SAChildNode} newVal */
+  set next(newVal) {
+    this.next_ = newVal;
   }
 
   /**
@@ -136,12 +130,12 @@ class SAChildNode {
   asRootNode() {}
 
   /**
-   * Called when a node becomes the primary highlighted node.
+   * Called when this node becomes the primary highlighted node.
    */
   onFocus() {}
 
   /**
-   * Called when a node stops being the primary highlighted node.
+   * Called when this node stops being the primary highlighted node.
    */
   onUnfocus() {}
 
@@ -187,9 +181,10 @@ class SARootNode {
     this.children_ = [];
   }
 
-  /** @param {!Array<!SAChildNode>} children */
-  setChildren(children) {
-    this.children_ = children;
+  /** @param {!Array<!SAChildNode>} newVal */
+  set children(newVal) {
+    this.children_ = newVal;
+    this.connectChildren_();
   }
 
   /**
@@ -302,21 +297,21 @@ class SARootNode {
 
   /**
    * Helper function to connect children.
-   * @param {!Array<!SAChildNode>} children
+   * @private
    */
-  static connectChildren(children) {
-    if (children.length < 1) {
+  connectChildren_() {
+    if (this.children_.length < 1) {
       throw SwitchAccess.error(
           SAConstants.ErrorType.NO_CHILDREN,
           'Root node must have at least 1 interesting child.');
     }
 
-    let previous = children[children.length - 1];
+    let previous = this.children_[this.children_.length - 1];
 
-    for (let i = 0; i < children.length; i++) {
-      let current = children[i];
-      previous.setNext_(current);
-      current.setPrevious_(previous);
+    for (let i = 0; i < this.children_.length; i++) {
+      let current = this.children_[i];
+      previous.next = current;
+      current.previous = previous;
 
       previous = current;
     }

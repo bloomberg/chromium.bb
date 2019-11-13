@@ -208,18 +208,18 @@ class RootNodeWrapper extends SARootNode {
     const root = new RootNodeWrapper(rootNode);
     const childConstructor = (node) => new NodeWrapper(node, root);
 
-    RootNodeWrapper.buildHelper(root, childConstructor);
+    RootNodeWrapper.findAndSetChildren(root, childConstructor);
     return root;
   }
 
   /**
-   * Helper function to connect tree elements, given constructors for the root
-   * and child types.
+   * Helper function to connect tree elements, given the root node and a
+   * constructor for the child type.
    * @param {!RootNodeWrapper} root
    * @param {function(!AutomationNode): !SAChildNode} childConstructor
    *     Constructs a child node from an automation node.
    */
-  static buildHelper(root, childConstructor) {
+  static findAndSetChildren(root, childConstructor) {
     const interestingChildren = RootNodeWrapper.getInterestingChildren(root);
 
     if (interestingChildren.length < 1) {
@@ -228,12 +228,8 @@ class RootNodeWrapper extends SARootNode {
           'Root node must have at least 1 interesting child.');
     }
     let children = interestingChildren.map(childConstructor);
-
-    const backButton = new BackButtonNode(root);
-    children.push(backButton);
-
-    SARootNode.connectChildren(children);
-    root.setChildren(children);
+    children.push(new BackButtonNode(root));
+    root.children = children;
   }
 
   /**
@@ -252,9 +248,7 @@ class RootNodeWrapper extends SARootNode {
 
     const childConstructor = (autoNode) => new NodeWrapper(autoNode, root);
     let children = interestingChildren.map(childConstructor);
-
-    SARootNode.connectChildren(children);
-    root.setChildren(children);
+    root.children = children;
 
     return root;
   }

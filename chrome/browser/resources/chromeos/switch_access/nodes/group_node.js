@@ -84,11 +84,8 @@ class GroupNode extends SAChildNode {
       children.push(child);
     }
 
-    const backButton = new BackButtonNode(root);
-    children.push(backButton);
-
-    SARootNode.connectChildren(children);
-    root.setChildren(children);
+    children.push(new BackButtonNode(root));
+    root.children = children;
 
     return root;
   }
