@@ -37290,6 +37290,7 @@ from previous Chrome versions.
       label="OmniboxUIExperimentHideSuggestionUrlScheme:enabled"/>
   <int value="-9599490" label="KernelnextVMs:disabled"/>
   <int value="-9322265" label="ShowBluetoothDebugLogToggle:enabled"/>
+  <int value="-5492723" label="CCTIncognito:enabled"/>
   <int value="-5052940" label="enable-simplified-fullscreen"/>
   <int value="-3093629" label="DcheckIsFatal:disabled"/>
   <int value="-2953333" label="AndroidHistoryManager:disabled"/>
@@ -38057,6 +38058,7 @@ from previous Chrome versions.
   <int value="1033412163" label="OmniboxDisplayTitleForCurrentUrl:enabled"/>
   <int value="1033597574" label="disable-layer-squashing"/>
   <int value="1036068554" label="enable-android-pay-integration-v2"/>
+  <int value="1037961753" label="CCTIncognito:disabled"/>
   <int value="1038234679" label="PrefetchPrivacyChanges:disabled"/>
   <int value="1042202617" label="RemoteCopyReceiver:enabled"/>
   <int value="1043291220" label="OverviewSwipeToClose:disabled"/>
