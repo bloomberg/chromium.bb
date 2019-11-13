@@ -89,10 +89,8 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
                                        0.04f);
       case NativeTheme::kColorId_HighlightedMenuItemBackgroundColor:
         return SkColorSetRGB(0x32, 0x36, 0x39);
-      case NativeTheme::kColorId_MenuItemAlertBackgroundColorMax:
-        return SkColorSetA(gfx::kGoogleGrey100, 0x1A);
-      case NativeTheme::kColorId_MenuItemAlertBackgroundColorMin:
-        return SkColorSetA(gfx::kGoogleGrey100, 0x4D);
+      case NativeTheme::kColorId_MenuItemAlertBackgroundColor:
+        return gfx::kGoogleGrey100;
 
       // Label
       case NativeTheme::kColorId_LabelEnabledColor:
@@ -231,10 +229,8 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
       return gfx::kGoogleGrey050;
     case NativeTheme::kColorId_HighlightedMenuItemForegroundColor:
       return kPrimaryTextColor;
-    case NativeTheme::kColorId_MenuItemAlertBackgroundColorMax:
-      return SkColorSetA(gfx::kGoogleBlue600, 0x1A);
-    case NativeTheme::kColorId_MenuItemAlertBackgroundColorMin:
-      return SkColorSetA(gfx::kGoogleBlue600, 0x4D);
+    case NativeTheme::kColorId_MenuItemAlertBackgroundColor:
+      return gfx::kGoogleBlue600;
 
     // Label
     case NativeTheme::kColorId_LabelEnabledColor:
