@@ -13,6 +13,7 @@ import android.os.Build;
 import android.os.Environment;
 import android.support.v4.app.NotificationManagerCompat;
 import android.text.TextUtils;
+import android.util.Pair;
 
 import org.chromium.base.Callback;
 import org.chromium.base.ContentUriUtils;
@@ -99,7 +100,7 @@ public class DownloadManagerBridge {
                 NotificationManagerCompat.from(getContext());
         boolean useSystemNotification = !notificationManager.areNotificationsEnabled();
         long downloadId = getDownloadIdForDownloadGuid(downloadGuid);
-        if (downloadId != DownloadConstants.INVALID_DOWNLOAD_ID) return downloadId;
+        if (downloadId != DownloadItem.INVALID_DOWNLOAD_ID) return downloadId;
 
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.M) {
             Class<?> c = manager.getClass();
@@ -108,7 +109,7 @@ public class DownloadManagerBridge {
                         String.class, long.class, boolean.class, Uri.class, Uri.class};
                 Method method = c.getMethod("addCompletedDownload", args);
                 // OriginalUri has to be null or non-empty http(s) scheme.
-                Uri originalUri = UriUtils.parseOriginalUrl(originalUrl);
+                Uri originalUri = DownloadUtils.parseOriginalUrl(originalUrl);
                 Uri refererUri = TextUtils.isEmpty(referer) ? null : Uri.parse(referer);
                 downloadId = (Long) method.invoke(manager, fileName, description, true, mimeType,
                         filePath, fileSizeBytes, useSystemNotification, originalUri, refererUri);
@@ -188,10 +189,10 @@ public class DownloadManagerBridge {
                 (DownloadManager) getContext().getSystemService(Context.DOWNLOAD_SERVICE);
         Cursor c = manager.query(new DownloadManager.Query().setFilterById(downloadId));
         if (c == null) {
-            result.downloadStatus = DownloadStatus.CANCELLED;
+            result.downloadStatus = DownloadManagerService.DownloadStatus.CANCELLED;
             return result;
         }
-        result.downloadStatus = DownloadStatus.IN_PROGRESS;
+        result.downloadStatus = DownloadManagerService.DownloadStatus.IN_PROGRESS;
         if (c.moveToNext()) {
             int status = c.getInt(c.getColumnIndex(DownloadManager.COLUMN_STATUS));
             result.downloadStatus = getDownloadStatus(status);
@@ -204,7 +205,7 @@ public class DownloadManagerBridge {
             result.bytesTotal =
                     c.getLong(c.getColumnIndex(DownloadManager.COLUMN_TOTAL_SIZE_BYTES));
         } else {
-            result.downloadStatus = DownloadStatus.CANCELLED;
+            result.downloadStatus = DownloadManagerService.DownloadStatus.CANCELLED;
         }
         c.close();
 
@@ -276,7 +277,8 @@ public class DownloadManagerBridge {
 
     /**
      * This function is meant to be called as the last step of a download. It will add the download
-     * to the android's DownloadManager if the download is not a content URI.
+     * to the android's DownloadManager and determine if the download can be resolved to any
+     * activity so that it can be auto-opened.
      */
     @CalledByNative
     private static void addCompletedDownload(String fileName, String description,
@@ -284,19 +286,25 @@ public class DownloadManagerBridge {
             String referrer, String downloadGuid, long callbackId) {
         final String mimeType =
                 MimeUtils.remapGenericMimeType(originalMimeType, originalUrl, fileName);
-        AsyncTask<Long> task = new AsyncTask<Long>() {
+        AsyncTask<Pair<Long, Boolean>> task = new AsyncTask<Pair<Long, Boolean>>() {
             @Override
-            protected Long doInBackground() {
+            protected Pair<Long, Boolean> doInBackground() {
                 long downloadId = ContentUriUtils.isContentUri(filePath)
-                        ? DownloadConstants.INVALID_DOWNLOAD_ID
+                        ? DownloadItem.INVALID_DOWNLOAD_ID
                         : addCompletedDownload(fileName, description, mimeType, filePath,
                                 fileSizeBytes, originalUrl, referrer, downloadGuid);
-                return downloadId;
+                boolean success = ContentUriUtils.isContentUri(filePath)
+                        || downloadId != DownloadItem.INVALID_DOWNLOAD_ID;
+                boolean canResolve = success
+                        && DownloadManagerService.canResolveDownload(
+                                filePath, mimeType, downloadId);
+                return Pair.create(downloadId, canResolve);
             }
 
             @Override
-            protected void onPostExecute(Long downloadId) {
-                DownloadManagerBridgeJni.get().onAddCompletedDownloadDone(callbackId, downloadId);
+            protected void onPostExecute(Pair<Long, Boolean> result) {
+                DownloadManagerBridgeJni.get().onAddCompletedDownloadDone(
+                        callbackId, result.first, result.second);
             }
         };
         try {
@@ -305,18 +313,18 @@ public class DownloadManagerBridge {
             // Reaching thread limit, update will be reschduled for the next run.
             Log.e(TAG, "Thread limit reached, reschedule notification update later.");
             DownloadManagerBridgeJni.get().onAddCompletedDownloadDone(
-                    callbackId, DownloadConstants.INVALID_DOWNLOAD_ID);
+                    callbackId, DownloadItem.INVALID_DOWNLOAD_ID, false);
         }
     }
 
     private static int getDownloadStatus(int downloadManagerStatus) {
         switch (downloadManagerStatus) {
             case DownloadManager.STATUS_SUCCESSFUL:
-                return DownloadStatus.COMPLETE;
+                return DownloadManagerService.DownloadStatus.COMPLETE;
             case DownloadManager.STATUS_FAILED:
-                return DownloadStatus.FAILED;
+                return DownloadManagerService.DownloadStatus.FAILED;
             default:
-                return DownloadStatus.IN_PROGRESS;
+                return DownloadManagerService.DownloadStatus.IN_PROGRESS;
         }
     }
 
@@ -451,6 +459,6 @@ public class DownloadManagerBridge {
 
     @NativeMethods
     interface Natives {
-        void onAddCompletedDownloadDone(long callbackId, long downloadId);
+        void onAddCompletedDownloadDone(long callbackId, long downloadId, boolean canResolve);
     }
 }

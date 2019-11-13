@@ -19,6 +19,7 @@ import android.provider.MediaStore.MediaColumns;
 import android.text.TextUtils;
 import android.util.Pair;
 
+import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
@@ -67,6 +68,8 @@ import org.chromium.net.RegistrationPolicyAlwaysRegister;
 import org.chromium.ui.widget.Toast;
 
 import java.io.File;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -86,6 +89,18 @@ import java.util.concurrent.RejectedExecutionException;
 public class DownloadManagerService implements DownloadController.DownloadNotificationService,
                                                NetworkChangeNotifierAutoDetect.Observer,
                                                DownloadServiceDelegate, ProfileManager.Observer {
+    // Download status.
+    @IntDef({DownloadStatus.IN_PROGRESS, DownloadStatus.COMPLETE, DownloadStatus.FAILED,
+            DownloadStatus.CANCELLED, DownloadStatus.INTERRUPTED})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface DownloadStatus {
+        int IN_PROGRESS = 0;
+        int COMPLETE = 1;
+        int FAILED = 2;
+        int CANCELLED = 3;
+        int INTERRUPTED = 4;
+    }
+
     private static final String TAG = "DownloadService";
     private static final String DOWNLOAD_DIRECTORY = "Download";
     private static final String DOWNLOAD_UMA_ENTRY = "DownloadUmaEntry";
@@ -586,7 +601,7 @@ public class DownloadManagerService implements DownloadController.DownloadNotifi
                             info.getFileName(), info.getDescription(), info.getMimeType(),
                             info.getFilePath(), info.getBytesReceived(), info.getOriginalUrl(),
                             info.getReferrer(), info.getDownloadGuid());
-                    success = systemDownloadId != DownloadConstants.INVALID_DOWNLOAD_ID;
+                    success = systemDownloadId != DownloadItem.INVALID_DOWNLOAD_ID;
                     if (success) item.setSystemDownloadId(systemDownloadId);
                 }
                 boolean canResolve = success
@@ -808,7 +823,8 @@ public class DownloadManagerService implements DownloadController.DownloadNotifi
         downloadItem.setSystemDownloadId(response.downloadId);
         if (!response.result) {
             onDownloadFailed(downloadItem, response.failureReason);
-            recordDownloadCompletionStats(true, DownloadStatus.FAILED, 0, 0, 0, 0);
+            recordDownloadCompletionStats(
+                    true, DownloadManagerService.DownloadStatus.FAILED, 0, 0, 0, 0);
             return;
         }
 
@@ -822,7 +838,7 @@ public class DownloadManagerService implements DownloadController.DownloadNotifi
             boolean isSupportedMimeType, String originalUrl, String referrer,
             @Nullable String mimeType) {
         assert !ThreadUtils.runningOnUiThread();
-        if (downloadId == DownloadConstants.INVALID_DOWNLOAD_ID) {
+        if (downloadId == DownloadItem.INVALID_DOWNLOAD_ID) {
             if (!ContentUriUtils.isContentUri(filePath)) return null;
             return getLaunchIntentFromDownloadUri(
                     filePath, isSupportedMimeType, originalUrl, referrer, mimeType);
@@ -1233,8 +1249,9 @@ public class DownloadManagerService implements DownloadController.DownloadNotifi
     public void onSuccessNotificationShown(
             DownloadInfo info, boolean canResolve, int notificationId, long systemDownloadId) {
         if (!ChromeFeatureList.isEnabled(ChromeFeatureList.DOWNLOAD_OFFLINE_CONTENT_PROVIDER)) {
-            if (canResolve && MimeUtils.canAutoOpenMimeType(info.getMimeType())
-                    && info.hasUserGesture()) {
+            if (canResolve
+                    && DownloadUtils.shouldAutoOpenDownload(
+                            info.getMimeType(), info.hasUserGesture())) {
                 DownloadItem item = new DownloadItem(false, info);
                 item.setSystemDownloadId(systemDownloadId);
                 handleAutoOpenAfterDownload(item);
@@ -1372,8 +1389,9 @@ public class DownloadManagerService implements DownloadController.DownloadNotifi
 
                         @Override
                         protected void onPostExecute(Boolean canResolve) {
-                            if (MimeUtils.canAutoOpenMimeType(result.mimeType)
-                                    && item.getDownloadInfo().hasUserGesture() && canResolve) {
+                            if (DownloadUtils.shouldAutoOpenDownload(
+                                        result.mimeType, item.getDownloadInfo().hasUserGesture())
+                                    && canResolve) {
                                 handleAutoOpenAfterDownload(item);
                             } else {
                                 getInfoBarController(item.getDownloadInfo().isOffTheRecord())
@@ -1803,8 +1821,9 @@ public class DownloadManagerService implements DownloadController.DownloadNotifi
                 boolean isSupportedMimeType = isSupportedMimeType(info.getMimeType());
                 boolean canResolve = MimeUtils.isOMADownloadDescription(info.getMimeType())
                         || canResolveDownloadItem(downloadItem, isSupportedMimeType);
-                return canResolve && MimeUtils.canAutoOpenMimeType(info.getMimeType())
-                        && info.hasUserGesture();
+                return canResolve
+                        && DownloadUtils.shouldAutoOpenDownload(
+                                info.getMimeType(), info.hasUserGesture());
             }
             @Override
             protected void onPostExecute(Boolean result) {

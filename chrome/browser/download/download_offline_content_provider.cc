@@ -492,15 +492,18 @@ void DownloadOfflineContentProvider::AddCompletedDownload(DownloadItem* item) {
   DownloadManagerBridge::AddCompletedDownload(
       item,
       base::BindOnce(&DownloadOfflineContentProvider::AddCompletedDownloadDone,
-                     weak_ptr_factory_.GetWeakPtr(), item->GetGuid()));
+                     weak_ptr_factory_.GetWeakPtr(), item));
 #endif
 }
 
 void DownloadOfflineContentProvider::AddCompletedDownloadDone(
-    const std::string& download_guid,
-    int64_t system_download_id) {
+    DownloadItem* item,
+    int64_t system_download_id,
+    bool can_resolve) {
 #if defined(OS_ANDROID)
-  DownloadItem* item = GetDownload(download_guid);
+  if (!can_resolve)
+    return;
+
   if (DownloadUtils::IsOmaDownloadDescription(item->GetMimeType())) {
     DownloadManagerService::GetInstance()->HandleOMADownload(
         item, system_download_id);
