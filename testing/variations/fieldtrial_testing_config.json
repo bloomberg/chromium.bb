@@ -164,6 +164,36 @@
             ]
         }
     ],
+    "AndroidClipboardSuggestionsRemoval": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "OmniboxRemoveSuggestionsFromClipboard"
+                    ]
+                }
+            ]
+        }
+    ],
+    "AndroidClipboardTextSuggestions": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "OmniboxEnableClipboardProviderTextSuggestions"
+                    ]
+                }
+            ]
+        }
+    ],
     "AndroidGooglePasswordManager": [
         {
             "platforms": [
