@@ -42,6 +42,7 @@ js2gtest("interactive_ui_tests_js_webui") {
     "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_input_test.m.js",
     "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_tabs_test.m.js",
     "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_toggle_test.m.js",
+    "$root_gen_dir/chrome/test/data/webui/cr_elements/iron_list_focus_test.m.js",
     "$root_gen_dir/chrome/test/data/webui/test_browser_proxy.m.js",
     "$root_gen_dir/chrome/test/data/webui/mock_controller.m.js",
     "$root_gen_dir/chrome/test/data/webui/test_util.m.js",
