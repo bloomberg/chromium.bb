@@ -14,6 +14,7 @@ class ScopedMethodSwizzler {
   // Constructs a new ScopedMethodSwizzler object and replaces the
   // implementation of |selector_to_replace| on the |target| class with the
   // given |replacing_selector|. ScopedMethodSwizzler swizzles instance methods.
+  // |selector_to_replace| has to be implemented on the class.
   ScopedMethodSwizzler(Class target,
                        SEL selector_to_replace,
                        SEL replacing_selector);
