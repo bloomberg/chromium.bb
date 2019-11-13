@@ -3614,32 +3614,6 @@
             ]
         }
     ],
-    "NTPRicherPickerAndColors": [
-        {
-            "platforms": [
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "EnableRicherPicker",
-                    "enable_features": [
-                        "NtpCustomizationMenuV2"
-                    ]
-                },
-                {
-                    "name": "EnableRicherPickerWithColors",
-                    "enable_features": [
-                        "ChromeColors",
-                        "ChromeColorsCustomColorPicker",
-                        "NtpCustomizationMenuV2"
-                    ]
-                }
-            ]
-        }
-    ],
     "NativeGellerizationRollout": [
         {
             "platforms": [
