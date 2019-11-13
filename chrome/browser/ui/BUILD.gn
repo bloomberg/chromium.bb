@@ -2443,6 +2443,7 @@ jumbo_static_library("ui") {
       "//ui/base/ime",
       "//ui/events:dom_keycode_converter",
     ]
+    libs += [ "crypt32.lib" ]
 
     if (is_chrome_branded) {
       sources += [
