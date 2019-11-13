@@ -391,7 +391,7 @@ public class DownloadInfoBarController implements OfflineContentProvider.Observe
             return false;
         }
 
-        if (DownloadUtils.shouldAutoOpenDownload(offlineItem.mimeType, true)) {
+        if (MimeUtils.canAutoOpenMimeType(offlineItem.mimeType)) {
             return false;
         }
 
