@@ -247,15 +247,6 @@ var PrintPreviewModelSettingsAvailabilityTest = class extends PrintPreviewTest {
   get browsePreload() {
     return 'chrome://print/test_loader.html?module=print_preview/model_settings_availability_test.js';
   }
-
-  /** @override */
-  get extraLibraries() {
-    return super.extraLibraries.concat([
-      '../test_util.js',
-      'print_preview_test_utils.js',
-      'model_settings_availability_test.js',
-    ]);
-  }
 };
 
 TEST_F('PrintPreviewModelSettingsAvailabilityTest', 'All', function() {
