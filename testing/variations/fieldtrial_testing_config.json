@@ -1716,9 +1716,11 @@
             ],
             "experiments": [
                 {
-                    "name": "V1Enabled",
+                    "name": "V2EnabledWithCopyingAndLimited",
                     "enable_features": [
-                        "D3D11VideoDecoder"
+                        "D3D11VideoDecoder",
+                        "D3D11VideoDecoderCopyPictures",
+                        "D3D11VideoDecoderLimitTo11_0"
                     ]
                 }
             ]
