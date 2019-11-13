@@ -259,6 +259,8 @@ void AddDetailsLocalizedStrings(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_INTERNET_NETWORK_NAMESERVERS_CUSTOM},
       {"networkNameserversGoogle",
        IDS_SETTINGS_INTERNET_NETWORK_NAMESERVERS_GOOGLE},
+      {"networkNameserversCustomInputA11yLabel",
+       IDS_SETTINGS_INTERNET_NETWORK_NAMESERVERS_INPUT_ACCESSIBILITY_LABEL},
       {"networkProxyWpad", IDS_SETTINGS_INTERNET_NETWORK_PROXY_WPAD},
       {"networkProxyWpadNone", IDS_SETTINGS_INTERNET_NETWORK_PROXY_WPAD_NONE},
       {"remove", IDS_REMOVE},
