@@ -66,10 +66,10 @@ class MojoProxyResolverV8TracingBindings
   void ResolveDns(
       const std::string& hostname,
       net::ProxyResolveDnsOperation operation,
+      const net::NetworkIsolationKey& network_isolation_key,
       mojo::PendingRemote<mojom::HostResolverRequestClient> client) override {
     DCHECK(thread_checker_.CalledOnValidThread());
-    // TODO(mmenke): Pass in a NetworkIsolationKey.
-    client_->ResolveDns(hostname, operation, net::NetworkIsolationKey(),
+    client_->ResolveDns(hostname, operation, network_isolation_key,
                         std::move(client));
   }
 

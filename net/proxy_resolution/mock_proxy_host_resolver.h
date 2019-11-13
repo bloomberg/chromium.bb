@@ -30,7 +30,8 @@ class MockProxyHostResolver : public ProxyHostResolver {
 
   std::unique_ptr<Request> CreateRequest(
       const std::string& hostname,
-      ProxyResolveDnsOperation operation) override;
+      ProxyResolveDnsOperation operation,
+      const net::NetworkIsolationKey& network_isolation_key) override;
 
   void SetError(const std::string& hostname,
                 ProxyResolveDnsOperation operation);
@@ -65,7 +66,8 @@ class HangingProxyHostResolver : public ProxyHostResolver {
 
   std::unique_ptr<Request> CreateRequest(
       const std::string& hostname,
-      ProxyResolveDnsOperation operation) override;
+      ProxyResolveDnsOperation operation,
+      const net::NetworkIsolationKey& network_isolation_key) override;
 
   int num_cancelled_requests() const { return num_cancelled_requests_; }
 

@@ -61,8 +61,10 @@ MockProxyHostResolver::MockProxyHostResolver(bool synchronous_mode)
 MockProxyHostResolver::~MockProxyHostResolver() = default;
 
 std::unique_ptr<ProxyHostResolver::Request>
-MockProxyHostResolver::CreateRequest(const std::string& hostname,
-                                     ProxyResolveDnsOperation operation) {
+MockProxyHostResolver::CreateRequest(
+    const std::string& hostname,
+    ProxyResolveDnsOperation operation,
+    const net::NetworkIsolationKey& network_isolation_key) {
   ++num_resolve_;
 
   if (fail_all_)
@@ -123,8 +125,10 @@ HangingProxyHostResolver::HangingProxyHostResolver(
 HangingProxyHostResolver::~HangingProxyHostResolver() = default;
 
 std::unique_ptr<ProxyHostResolver::Request>
-HangingProxyHostResolver::CreateRequest(const std::string& hostname,
-                                        ProxyResolveDnsOperation operation) {
+HangingProxyHostResolver::CreateRequest(
+    const std::string& hostname,
+    ProxyResolveDnsOperation operation,
+    const net::NetworkIsolationKey& network_isolation_key) {
   return std::make_unique<RequestImpl>(this);
 }
 

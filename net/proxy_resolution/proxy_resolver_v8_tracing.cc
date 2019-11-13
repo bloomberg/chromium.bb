@@ -24,6 +24,7 @@
 #include "net/base/ip_address.h"
 #include "net/base/net_errors.h"
 #include "net/base/network_interfaces.h"
+#include "net/base/network_isolation_key.h"
 #include "net/base/trace_constants.h"
 #include "net/log/net_log_with_source.h"
 #include "net/proxy_resolution/proxy_host_resolver.h"
@@ -732,8 +733,10 @@ void Job::DoDnsOperation() {
   bool is_myip_request =
       pending_dns_op_ == ProxyResolveDnsOperation::MY_IP_ADDRESS ||
       pending_dns_op_ == ProxyResolveDnsOperation::MY_IP_ADDRESS_EX;
+  // TODO(mmenke): Pass in a NetworkIsolationKey.
   pending_dns_ = host_resolver()->CreateRequest(
-      is_myip_request ? GetHostName() : pending_dns_host_, pending_dns_op_);
+      is_myip_request ? GetHostName() : pending_dns_host_, pending_dns_op_,
+      NetworkIsolationKey());
   int result =
       pending_dns_->Start(base::BindOnce(&Job::OnDnsOperationComplete, this));
 
