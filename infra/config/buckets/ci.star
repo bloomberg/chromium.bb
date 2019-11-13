@@ -420,11 +420,13 @@ chromium_builder(
     name = 'linux-archive-dbg',
     # Bump to 32 if needed.
     cores = 8,
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 chromium_builder(
     name = 'linux-archive-rel',
     cores = 32,
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 chromium_builder(
@@ -1148,6 +1150,7 @@ fyi_builder(
 
 fyi_builder(
     name = 'linux-bfcache-debug',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 fyi_builder(
@@ -1176,10 +1179,12 @@ fyi_builder(
 
 fyi_builder(
     name = 'linux-fieldtrial-rel',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 fyi_builder(
     name = 'linux-oor-cors-rel',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 fyi_builder(
@@ -2001,6 +2006,7 @@ linux_builder(
 
 linux_builder(
     name = 'fuchsia-x64-dbg',
+    goma_backend = goma.backend.RBE_PROD,
     notifies = ['cr-fuchsia'],
 )
 
