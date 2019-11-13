@@ -18,6 +18,7 @@
 #include "chrome/browser/chromeos/arc/session/arc_service_launcher.h"
 #include "chrome/browser/chromeos/boot_times_recorder.h"
 #include "chrome/browser/chromeos/child_accounts/child_status_reporting_service_factory.h"
+#include "chrome/browser/chromeos/child_accounts/child_user_service_factory.h"
 #include "chrome/browser/chromeos/child_accounts/screen_time_controller_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/lock_screen_apps/state_controller.h"
@@ -169,6 +170,7 @@ void StartUserSession(Profile* user_profile, const std::string& login_user_id) {
 
     if (user->GetType() == user_manager::USER_TYPE_CHILD) {
       ChildStatusReportingServiceFactory::GetForBrowserContext(user_profile);
+      ChildUserServiceFactory::GetForBrowserContext(user_profile);
       ScreenTimeControllerFactory::GetForBrowserContext(user_profile);
     }
 
