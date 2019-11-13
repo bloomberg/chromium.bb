@@ -274,6 +274,11 @@ inline void Store2(uint16_t* const buf, const uint16x4_t val) {
 
 // vshXX_n_XX() requires an immediate.
 template <int shift>
+inline int8x8_t LeftShift(const int8x8_t vector) {
+  return vreinterpret_s8_u64(vshl_n_u64(vreinterpret_u64_s8(vector), shift));
+}
+
+template <int shift>
 inline uint8x8_t RightShift(const uint8x8_t vector) {
   return vreinterpret_u8_u64(vshr_n_u64(vreinterpret_u64_u8(vector), shift));
 }

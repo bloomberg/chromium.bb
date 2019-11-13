@@ -49,17 +49,14 @@ constexpr int32_t kDivisionTableOdd[] = {420, 210, 140, 0, 140, 210, 420, 0};
 // is |src[j]| and it is being added to |partial[]| based on the above indices.
 template <int shift, bool is_partial4 = false>
 void AddPartial0(int8x8_t a, int16x8_t* b, int16x8_t* c) {
-  // Allow vextq_s8() to compile when |shift| is out of range.
+  // Allow Left/RightShift() to compile when |shift| is out of range.
   constexpr int safe_shift = (shift > 0) ? shift : 1;
   if (is_partial4) a = vrev64_s8(a);
   if (shift == 0) {
     *b = vaddw_s8(*b, a);
   } else {
-    const int8x16_t zero = vdupq_n_s8(0);
-    const int8x16_t src = vcombine_s8(a, vdup_n_s8(0));
-    const int8x16_t row = vextq_s8(zero, src, 16 - safe_shift);
-    *b = vaddw_s8(*b, vget_low_s8(row));
-    *c = vaddw_s8(*c, vget_high_s8(row));
+    *b = vaddw_s8(*b, LeftShift<safe_shift * 8>(a));
+    *c = vaddw_s8(*c, RightShift<(8 - safe_shift) * 8>(a));
   }
 }
 
