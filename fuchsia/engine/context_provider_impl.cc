@@ -392,6 +392,18 @@ void ContextProviderImpl::Create(
     return;
   }
 
+  if (params.has_unsafely_treat_insecure_origins_as_secure()) {
+    const std::vector<std::string>& insecure_origins =
+        params.unsafely_treat_insecure_origins_as_secure();
+    if (std::find(insecure_origins.begin(), insecure_origins.end(),
+                  switches::kAllowRunningInsecureContent) !=
+        insecure_origins.end()) {
+      launch_command.AppendSwitch(switches::kAllowRunningInsecureContent);
+    }
+    // TODO(crbug.com/1023510): Pass the rest of the list to the Context
+    // process.
+  }
+
   if (launch_for_test_)
     launch_for_test_.Run(launch_command, launch_options);
   else
