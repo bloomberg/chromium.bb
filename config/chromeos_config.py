@@ -2482,7 +2482,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       binhost_test=True,
       push_overlays=constants.BOTH_OVERLAYS,
       description='Commit Queue master (all others are slaves)',
-      schedule='with 2m interval',
   )
 
   ### Other paladins (CQ builders).
