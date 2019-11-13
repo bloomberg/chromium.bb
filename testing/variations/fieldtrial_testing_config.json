@@ -6763,6 +6763,9 @@
                     "name": "UMA_Enabled",
                     "enable_features": [
                         "DemographicMetricsReporting"
+                    ],
+                    "disable_features": [
+                        "UkmReportNoisedUserBirthYearAndGender"
                     ]
                 }
             ]
