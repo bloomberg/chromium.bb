@@ -84,8 +84,10 @@ def Manager():
   # Use a short directory in /tmp. Do not use /tmp directly to keep these
   # temperary files together and because certain environments do not like too
   # many top-level paths in /tmp (see crbug.com/945523).
-  tmp_dir = '/tmp/chromite.parallel'
-  osutils.SafeMakedirs(tmp_dir)
+  # Make it mode 1777 to mirror /tmp, so that we don't have failures when root
+  # calls parallel first, and some other user calls it later.
+  tmp_dir = '/tmp/chromite.parallel.%d' % os.geteuid()
+  osutils.SafeMakedirs(tmp_dir, mode=0o1777)
   old_tempdir_value, old_tempdir_env = osutils.SetGlobalTempDir(tmp_dir)
   try:
     m = HackTimeoutSyncManager()
@@ -382,8 +384,8 @@ class _BackgroundTask(multiprocessing.Process):
 
     sys.stdout.flush()
     sys.stderr.flush()
-    tmp_dir = '/tmp/chromite.parallel'
-    osutils.SafeMakedirs(tmp_dir)
+    tmp_dir = '/tmp/chromite.parallel.%d' % os.geteuid()
+    osutils.SafeMakedirs(tmp_dir, mode=0o1777)
     self._output = cros_build_lib.UnbufferedNamedTemporaryFile(
         delete=False, dir=tmp_dir, prefix='chromite-parallel-')
     self._parent_pid = os.getpid()

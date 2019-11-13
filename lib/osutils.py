@@ -19,6 +19,7 @@ import os
 import pwd
 import re
 import shutil
+import stat
 import tempfile
 
 import six
@@ -330,15 +331,30 @@ def SafeMakedirs(path, mode=0o775, sudo=False, user='root'):
     cros_build_lib.sudo_run(
         ['mkdir', '-p', '--mode', '%o' % mode, path], user=user,
         print_cmd=False, redirect_stderr=True, redirect_stdout=True)
+    cros_build_lib.sudo_run(
+        ['chmod', '%o' % mode, path],
+        print_cmd=False, redirect_stderr=True, redirect_stdout=True)
     return True
 
   try:
     os.makedirs(path, mode)
+    # If we made the directory, force the mode.
+    os.chmod(path, mode)
     return True
   except EnvironmentError as e:
     if e.errno != errno.EEXIST or not os.path.isdir(path):
       raise
 
+  # If the mode on the directory does not match the request, log it.
+  # It is the callers responsibility to coordinate mode values if there is a
+  # need for that.
+  if stat.S_IMODE(os.stat(path).st_mode) != mode:
+    try:
+      os.chmod(path, mode)
+    except EnvironmentError:
+      # Just make sure it's a directory.
+      if not os.path.isdir(path):
+        raise
   return False
 
 
@@ -1114,12 +1130,12 @@ def StatFilesInDirectory(path, recursive=False, to_string=False):
     returns a string of metadata of the files.
   """
   path = ExpandPath(path)
-  def ToFileInfo(path, stat):
+  def ToFileInfo(path, stat_val):
     return FileInfo(path,
-                    pwd.getpwuid(stat.st_uid)[0],
-                    stat.st_size,
-                    datetime.datetime.fromtimestamp(stat.st_atime),
-                    datetime.datetime.fromtimestamp(stat.st_mtime))
+                    pwd.getpwuid(stat_val.st_uid)[0],
+                    stat_val.st_size,
+                    datetime.datetime.fromtimestamp(stat_val.st_atime),
+                    datetime.datetime.fromtimestamp(stat_val.st_mtime))
 
   file_infos = []
   for root, dirs, files in os.walk(path, topdown=True):

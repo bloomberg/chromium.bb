@@ -13,6 +13,7 @@ import glob
 import grp
 import os
 import pwd
+import stat
 import sys
 
 import mock
@@ -144,6 +145,18 @@ class TestOsutils(cros_test_lib.TempDirTestCase):
     self.assertExists(path)
     self.assertFalse(osutils.SafeMakedirs(path))
     self.assertExists(path)
+
+  def testSafeMakedirsMode(self):
+    """Test that mode is honored."""
+    path = os.path.join(self.tempdir, 'a', 'b', 'c', 'd', 'e')
+    self.assertTrue(osutils.SafeMakedirs(path, mode=0o775))
+    self.assertEqual(0o775, stat.S_IMODE(os.stat(path).st_mode))
+    self.assertFalse(osutils.SafeMakedirs(path, mode=0o777))
+    self.assertEqual(0o777, stat.S_IMODE(os.stat(path).st_mode))
+    cros_build_lib.sudo_run(['chown', 'root:root', path], print_cmd=False)
+    # Tries, but fails to change the mode.
+    self.assertFalse(osutils.SafeMakedirs(path, 0o755))
+    self.assertEqual(0o777, stat.S_IMODE(os.stat(path).st_mode))
 
   def testSafeMakedirs_error(self):
     """Check error paths."""
