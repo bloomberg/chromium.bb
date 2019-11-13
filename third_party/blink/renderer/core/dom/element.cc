@@ -4028,9 +4028,9 @@ bool Element::DelegatesFocus() const {
   return AuthorShadowRoot() && AuthorShadowRoot()->delegatesFocus();
 }
 
-// Step 1 of https://html.spec.whatwg.org/C/#focusing-steps in a case
-// where |new focus target| is an element.
-Element* Element::FindActualFocusTarget() const {
+// https://html.spec.whatwg.org/C/#get-the-focusable-area
+Element* Element::GetFocusableArea() const {
+  DCHECK(!IsFocusable());
   // TODO(crbug.com/1018619): Support AREA -> IMG delegation.
   if (!DelegatesFocus())
     return nullptr;
@@ -4084,7 +4084,7 @@ void Element::focus(const FocusParams& params) {
   //
   // 1. If new focus target is not a focusable area, ...
   if (!IsFocusable()) {
-    if (Element* new_focus_target = FindActualFocusTarget()) {
+    if (Element* new_focus_target = GetFocusableArea()) {
       // Unlike the specification, we re-run focus() for new_focus_target
       // because we can't change |this| in a member function.
       new_focus_target->focus(FocusParams(SelectionBehaviorOnFocus::kReset,
