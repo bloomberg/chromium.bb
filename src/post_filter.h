@@ -126,11 +126,11 @@ class PostFilter {
   // * Cdef: allocates cdef_filtered_buffer_.
   //         Sets cdef_buffer_ to cdef_filtered_buffer_.
   //         Input is source_buffer_. Output is cdef_buffer_.
-  // * SuperRes: allocates super_res_buffer_.
+  // * SuperRes: allocates a line buffer.
   //             Inputs are source_buffer_ and cdef_buffer_.
   //             FrameSuperRes takes one input and applies super resolution.
-  //             When FrameSuperRes is called, super_res_buffer_ is the
-  //             intermediate buffer to hold a copy of the input.
+  //             When FrameSuperRes is called, a line buffer is the
+  //             intermediate buffer to hold a line of the input.
   //             Super resolution process is applied and result
   //             is written to the input buffer.
   //             Therefore, contents of inputs are changed, but their meanings
@@ -385,7 +385,7 @@ class PostFilter {
   void GetDeblockFilterParams(uint8_t level, int* outer_thresh,
                               int* inner_thresh, int* hev_thresh) const;
   // Applies super resolution and writes result to input_buffer.
-  void FrameSuperRes(YuvBuffer* input_buffer);  // Section 7.16.
+  bool FrameSuperRes(YuvBuffer* input_buffer);  // Section 7.16.
 
   const ObuFrameHeader& frame_header_;
   const LoopRestoration& loop_restoration_;
@@ -426,9 +426,6 @@ class PostFilter {
   const BlockParametersHolder& block_parameters_;
   // Frame buffer to hold cdef filtered frame.
   YuvBuffer cdef_filtered_buffer_;
-  // Frame buffer to hold the copy of the buffer to be upscaled,
-  // allocated only when super res is required.
-  YuvBuffer super_res_buffer_;
   // Input frame buffer. During ApplyFiltering(), it holds the (upscaled)
   // deblocked frame.
   // When ApplyFiltering() is done, it holds the final output of PostFilter.

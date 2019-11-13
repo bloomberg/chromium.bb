@@ -33,6 +33,9 @@
 namespace libgav1 {
 namespace {
 
+constexpr int kLeftLineBorder = 4;
+constexpr int kRightLineBorder = 4;
+
 constexpr uint8_t kCdefUvDirection[2][2][8] = {
     {{0, 1, 2, 3, 4, 5, 6, 7}, {1, 2, 2, 2, 3, 4, 6, 0}},
     {{7, 0, 2, 4, 5, 6, 6, 6}, {0, 1, 2, 3, 4, 5, 6, 7}}};
@@ -121,6 +124,17 @@ void ExtendFrame(uint8_t* const frame_start, const int width, const int height,
 }
 
 template <typename Pixel>
+void ExtendLine(uint8_t* const line_start, const int width, const int left,
+                const int right) {
+  auto* const start = reinterpret_cast<Pixel*>(line_start);
+  const Pixel* src = start;
+  Pixel* dst = start - left;
+  // Copy to left and right borders.
+  Memset(dst, src[0], left);
+  Memset(dst + (left + width), src[width - 1], right);
+}
+
+template <typename Pixel>
 void CopyPlane(const uint8_t* source, int source_stride, const int width,
                const int height, uint8_t* dest, int dest_stride) {
   auto* dst = reinterpret_cast<Pixel*>(dest);
@@ -135,31 +149,24 @@ void CopyPlane(const uint8_t* source, int source_stride, const int width,
 }
 
 template <int bitdepth, typename Pixel>
-void ComputeSuperRes(const uint8_t* source, uint32_t source_stride,
-                     const int upscaled_width, const int height,
+void ComputeSuperRes(const uint8_t* source, const int upscaled_width,
                      const int initial_subpixel_x, const int step,
-                     uint8_t* dest, uint32_t dest_stride) {
+                     uint8_t* const dest) {
   const auto* src = reinterpret_cast<const Pixel*>(source);
   auto* dst = reinterpret_cast<Pixel*>(dest);
-  source_stride /= sizeof(Pixel);
-  dest_stride /= sizeof(Pixel);
   src -= DivideBy2(kSuperResFilterTaps);
-  for (int y = 0; y < height; ++y) {
-    int subpixel_x = initial_subpixel_x;
-    for (int x = 0; x < upscaled_width; ++x) {
-      int sum = 0;
-      const Pixel* const src_x = &src[subpixel_x >> kSuperResScaleBits];
-      const int src_x_subpixel =
-          (subpixel_x & kSuperResScaleMask) >> kSuperResExtraBits;
-      for (int i = 0; i < kSuperResFilterTaps; ++i) {
-        sum += src_x[i] * kUpscaleFilter[src_x_subpixel][i];
-      }
-      dst[x] = Clip3(RightShiftWithRounding(sum, kFilterBits), 0,
-                     (1 << bitdepth) - 1);
-      subpixel_x += step;
+  int subpixel_x = initial_subpixel_x;
+  for (int x = 0; x < upscaled_width; ++x) {
+    int sum = 0;
+    const Pixel* const src_x = &src[subpixel_x >> kSuperResScaleBits];
+    const int src_x_subpixel =
+        (subpixel_x & kSuperResScaleMask) >> kSuperResExtraBits;
+    for (int i = 0; i < kSuperResFilterTaps; ++i) {
+      sum += src_x[i] * kUpscaleFilter[src_x_subpixel][i];
     }
-    src += source_stride;
-    dst += dest_stride;
+    dst[x] =
+        Clip3(RightShiftWithRounding(sum, kFilterBits), 0, (1 << bitdepth) - 1);
+    subpixel_x += step;
   }
 }
 
@@ -716,49 +723,25 @@ bool PostFilter::ApplyCdef() {
   return true;
 }
 
-void PostFilter::FrameSuperRes(YuvBuffer* const input_buffer) {
-  // Copy input_buffer to super_res_buffer_.
+bool PostFilter::FrameSuperRes(YuvBuffer* const input_buffer) {
+  const int line_buffer_size = MultiplyBy4(frame_header_.columns4x4) +
+                               kLeftLineBorder + kRightLineBorder;
+  auto* const line_buffer =
+      static_cast<uint8_t*>(AlignedAlloc(16, line_buffer_size * pixel_size_));
+  if (line_buffer == nullptr) return false;
+
+  uint8_t* const line_buffer_start =
+      line_buffer + kLeftLineBorder * pixel_size_;
   for (int plane = kPlaneY; plane < planes_; ++plane) {
     const int8_t subsampling_x = (plane == kPlaneY) ? 0 : subsampling_x_;
     const int8_t subsampling_y = (plane == kPlaneY) ? 0 : subsampling_y_;
-    const int border_height = kBorderPixels >> subsampling_y;
-    const int border_width = kBorderPixels >> subsampling_x;
     const int plane_width =
         MultiplyBy4(frame_header_.columns4x4) >> subsampling_x;
     const int plane_height =
         MultiplyBy4(frame_header_.rows4x4) >> subsampling_y;
-#if LIBGAV1_MAX_BITDEPTH >= 10
-    if (bitdepth_ >= 10) {
-      CopyPlane<uint16_t>(input_buffer->data(plane),
-                          input_buffer->stride(plane), plane_width,
-                          plane_height, super_res_buffer_.data(plane),
-                          super_res_buffer_.stride(plane));
-      ExtendFrame<uint16_t>(super_res_buffer_.data(plane), plane_width,
-                            plane_height, super_res_buffer_.stride(plane),
-                            border_width, border_width, border_height,
-                            border_height);
-    } else
-#endif  // LIBGAV1_MAX_BITDEPTH >= 10
-    {
-      CopyPlane<uint8_t>(input_buffer->data(plane), input_buffer->stride(plane),
-                         plane_width, plane_height,
-                         super_res_buffer_.data(plane),
-                         super_res_buffer_.stride(plane));
-      ExtendFrame<uint8_t>(super_res_buffer_.data(plane), plane_width,
-                           plane_height, super_res_buffer_.stride(plane),
-                           border_width, border_width, border_height,
-                           border_height);
-    }
-  }
-
-  // Upscale filter and write to frame.
-  for (int plane = kPlaneY; plane < planes_; ++plane) {
-    const int8_t subsampling_x = (plane == kPlaneY) ? 0 : subsampling_x_;
-    const int8_t subsampling_y = (plane == kPlaneY) ? 0 : subsampling_y_;
     const int downscaled_width = RightShiftWithRounding(width_, subsampling_x);
     const int upscaled_width =
         RightShiftWithRounding(upscaled_width_, subsampling_x);
-    const int plane_height = RightShiftWithRounding(height_, subsampling_y);
     const int superres_width = downscaled_width << kSuperResScaleBits;
     const int step = (superres_width + upscaled_width / 2) / upscaled_width;
     const int error = step * upscaled_width - superres_width;
@@ -768,51 +751,49 @@ void PostFilter::FrameSuperRes(YuvBuffer* const input_buffer) {
             upscaled_width +
         (1 << (kSuperResExtraBits - 1)) - error / 2;
     initial_subpixel_x &= kSuperResScaleMask;
-    if (bitdepth_ == 8) {
-      ComputeSuperRes<8, uint8_t>(
-          super_res_buffer_.data(plane), super_res_buffer_.stride(plane),
-          upscaled_width, plane_height, initial_subpixel_x, step,
-          input_buffer->data(plane), input_buffer->stride(plane));
-    } else {
-      ComputeSuperRes<10, uint16_t>(
-          super_res_buffer_.data(plane), super_res_buffer_.stride(plane),
-          upscaled_width, plane_height, initial_subpixel_x, step,
-          input_buffer->data(plane), input_buffer->stride(plane));
+    uint8_t* input = input_buffer->data(plane);
+    const uint32_t input_stride = input_buffer->stride(plane);
+    for (int y = 0; y < plane_height; ++y, input += input_stride) {
+#if LIBGAV1_MAX_BITDEPTH >= 10
+      if (bitdepth_ >= 10) {
+        CopyPlane<uint16_t>(input, input_stride, plane_width, 1,
+                            line_buffer_start, line_buffer_size);
+        ExtendLine<uint16_t>(line_buffer_start, plane_width, kLeftLineBorder,
+                             kRightLineBorder);
+        ComputeSuperRes<10, uint16_t>(line_buffer_start, upscaled_width,
+                                      initial_subpixel_x, step, input);
+        continue;
+      }
+#endif  // LIBGAV1_MAX_BITDEPTH >= 10
+      CopyPlane<uint8_t>(input, input_stride, plane_width, 1, line_buffer_start,
+                         line_buffer_size);
+      ExtendLine<uint8_t>(line_buffer_start, plane_width, kLeftLineBorder,
+                          kRightLineBorder);
+      ComputeSuperRes<8, uint8_t>(line_buffer_start, upscaled_width,
+                                  initial_subpixel_x, step, input);
     }
-  }
-  // Extend original frame, copy to borders.
-  for (int plane = kPlaneY; plane < planes_; ++plane) {
-    const int8_t subsampling_x = (plane == kPlaneY) ? 0 : subsampling_x_;
-    uint8_t* const frame_start = input_buffer->data(plane);
-    const int plane_width =
-        RightShiftWithRounding(upscaled_width_, subsampling_x);
+    // Extend original frame, copy to borders.
     ExtendFrameBoundary(
-        frame_start, plane_width, input_buffer->displayed_height(plane),
-        input_buffer->stride(plane), input_buffer->left_border(plane),
-        input_buffer->right_border(plane), input_buffer->top_border(plane),
-        input_buffer->bottom_border(plane));
+        input_buffer->data(plane), upscaled_width,
+        input_buffer->displayed_height(plane), input_buffer->stride(plane),
+        input_buffer->left_border(plane), input_buffer->right_border(plane),
+        input_buffer->top_border(plane), input_buffer->bottom_border(plane));
   }
+  AlignedFree(line_buffer);
+  return true;
 }
 
 bool PostFilter::ApplySuperRes() {
-  if (!super_res_buffer_.Realloc(bitdepth_, planes_ == kMaxPlanesMonochrome,
-                                 MultiplyBy4(frame_header_.columns4x4),
-                                 MultiplyBy4(frame_header_.rows4x4),
-                                 subsampling_x_, subsampling_y_, kBorderPixels,
-                                 /*byte_alignment=*/0, nullptr, nullptr,
-                                 nullptr)) {
-    return false;
-  }
   // cdef_buffer_ points to the buffer after cdef process (regardless whether
   // cdef filtering is actually applied).
   // source_buffer_ points to the deblocked buffer.
   if (DoCdef()) {
     // If loop restoration is present, it requires both deblocked buffer and
     // cdef filtered buffer. Otherwise, only cdef filtered buffer is required.
-    FrameSuperRes(cdef_buffer_);
-    if (DoRestoration()) FrameSuperRes(source_buffer_);
+    if (!FrameSuperRes(cdef_buffer_)) return false;
+    if (DoRestoration()) return FrameSuperRes(source_buffer_);
   } else {
-    FrameSuperRes(source_buffer_);
+    return FrameSuperRes(source_buffer_);
   }
   return true;
 }
