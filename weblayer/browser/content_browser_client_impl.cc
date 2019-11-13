@@ -14,10 +14,12 @@
 #include "build/build_config.h"
 #include "components/security_interstitials/content/ssl_cert_reporter.h"
 #include "components/security_interstitials/content/ssl_error_navigation_throttle.h"
+#include "components/version_info/version_info.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/devtools_manager_delegate.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/network_service_instance.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/common/user_agent.h"
 #include "content/public/common/web_preferences.h"
@@ -116,18 +118,24 @@ ContentBrowserClientImpl::GetServiceManifestOverlay(base::StringPiece name) {
 }
 
 std::string ContentBrowserClientImpl::GetUserAgent() {
-  std::string product = "Chrome/";
-  product += params_->full_version;
+  std::string product = version_info::GetProductNameAndVersionForUserAgent();
+
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
+
+  if (command_line.HasSwitch(switches::kUseMobileUserAgent))
+    product += " Mobile";
   return content::BuildUserAgentFromProduct(product);
 }
 
 blink::UserAgentMetadata ContentBrowserClientImpl::GetUserAgentMetadata() {
   blink::UserAgentMetadata metadata;
 
-  metadata.brand = params_->brand;
-  metadata.full_version = params_->full_version;
-  metadata.major_version = params_->major_version;
-  metadata.platform = content::BuildOSCpuInfo(false);
+  metadata.brand = version_info::GetProductName();
+  metadata.full_version = version_info::GetVersionNumber();
+  metadata.major_version = version_info::GetMajorVersionNumber();
+  metadata.platform = version_info::GetOSType();
+
   metadata.architecture = "";
   metadata.model = "";
 

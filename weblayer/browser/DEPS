@@ -4,6 +4,7 @@ include_rules = [
   "+components/embedder_support",
   "+components/safe_browsing",
   "+components/security_interstitials",
+  "+components/version_info",
   "+components/web_cache/browser",
   "+content/public",
   "+mojo/public",
