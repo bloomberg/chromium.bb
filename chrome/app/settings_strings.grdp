@@ -4850,6 +4850,9 @@
     <message name="IDS_SETTINGS_STORAGE_EXTERNAL_STORAGE_LIST_HEADER" desc="Header of the list of external storage devices for the subpage for setting preferences for external storage. This is shown when the list is not empty.">
       Available devices
     </message>
+    <message name="IDS_SETTINGS_STORAGE_OVERVIEW_ARIA_LABEL" desc="The label to be read aloud by ChromeVox to describe the storage usage progress bar on the Storage page">
+      Storage Usage Overview
+    </message>
 
     <!-- Power -->
     <message name="IDS_SETTINGS_POWER_TITLE" desc="In Device Settings, the title for power management.">
