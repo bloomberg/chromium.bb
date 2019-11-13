@@ -21306,6 +21306,7 @@ Called by update_net_error_codes.py.-->
   <int value="1409" label="AUTOTESTPRIVATE_MOUSEPRESS"/>
   <int value="1410" label="AUTOTESTPRIVATE_MOUSERELEASE"/>
   <int value="1411" label="AUTOTESTPRIVATE_MOUSEMOVE"/>
+  <int value="1412" label="WEBSTOREPRIVATE_GETEXTENSIONSTATUS"/>
 </enum>
 
 <enum name="ExtensionIconState">
