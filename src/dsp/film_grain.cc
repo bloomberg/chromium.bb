@@ -257,6 +257,46 @@ bool FilmGrainSynthesis_C(const void* source_plane_y, ptrdiff_t source_stride_y,
                              dest_stride_u, dest_plane_v, dest_stride_v);
 }
 
+constexpr int kScalingLookupTableSize = 256;
+void InitializeScalingLookupTable_C(
+    int num_points, const uint8_t point_value[], const uint8_t point_scaling[],
+    uint8_t scaling_lut[kScalingLookupTableSize]) {
+  if (num_points == 0) {
+    memset(scaling_lut, 0, sizeof(scaling_lut[0]) * kScalingLookupTableSize);
+    return;
+  }
+  static_assert(sizeof(scaling_lut[0]) == 1, "");
+  memset(scaling_lut, point_scaling[0], point_value[0]);
+  for (int i = 0; i < num_points - 1; ++i) {
+    const int delta_y = point_scaling[i + 1] - point_scaling[i];
+    const int delta_x = point_value[i + 1] - point_value[i];
+    const int delta = delta_y * ((65536 + (delta_x >> 1)) / delta_x);
+    for (int x = 0; x < delta_x; ++x) {
+      const int v = point_scaling[i] + ((x * delta + 32768) >> 16);
+      assert(v >= 0 && v <= UINT8_MAX);
+      scaling_lut[point_value[i] + x] = v;
+    }
+  }
+  const uint8_t last_point_value = point_value[num_points - 1];
+  memset(&scaling_lut[last_point_value], point_scaling[num_points - 1],
+         256 - last_point_value);
+}
+
+// Section 7.18.3.5.
+// Performs a piecewise linear interpolation into the scaling table.
+template <int bitdepth>
+int ScaleLut(const uint8_t scaling_lut[kScalingLookupTableSize], int index) {
+  const int shift = bitdepth - 8;
+  const int quotient = index >> shift;
+  const int remainder = index - (quotient << shift);
+  if (bitdepth == 8 || quotient == 255) {
+    return scaling_lut[quotient];
+  }
+  const int start = scaling_lut[quotient];
+  const int end = scaling_lut[quotient + 1];
+  return start + RightShiftWithRounding((end - start) * remainder, shift);
+}
+
 }  // namespace
 
 template <int bitdepth>
@@ -317,8 +357,9 @@ bool FilmGrain<bitdepth>::Init() {
   // Note: Although it does not seem to make sense, there are test vectors
   // with chroma_scaling_from_luma=true and params_.num_y_points=0.
   if (use_luma || params_.chroma_scaling_from_luma) {
-    InitializeScalingLookupTable(params_.num_y_points, params_.point_y_value,
-                                 params_.point_y_scaling, scaling_lut_y_);
+    dsp->film_grain.initialize_scaling_lut(
+        params_.num_y_points, params_.point_y_value, params_.point_y_scaling,
+        scaling_lut_y_);
   } else {
     ASAN_POISON_MEMORY_REGION(scaling_lut_y_, sizeof(scaling_lut_y_));
   }
@@ -326,15 +367,27 @@ bool FilmGrain<bitdepth>::Init() {
     if (params_.chroma_scaling_from_luma) {
       scaling_lut_u_ = scaling_lut_y_;
       scaling_lut_v_ = scaling_lut_y_;
-    } else {
-      scaling_lut_chroma_buffer_.reset(new (std::nothrow) uint8_t[256 * 2]);
+    } else if (params_.num_u_points > 0 || params_.num_v_points > 0) {
+      const size_t buffer_size =
+          kScalingLookupTableSize *
+          ((params_.num_u_points > 0) + (params_.num_v_points > 0));
+      scaling_lut_chroma_buffer_.reset(new (std::nothrow) uint8_t[buffer_size]);
       if (scaling_lut_chroma_buffer_ == nullptr) return false;
-      scaling_lut_u_ = &scaling_lut_chroma_buffer_[0];
-      scaling_lut_v_ = &scaling_lut_chroma_buffer_[256];
-      InitializeScalingLookupTable(params_.num_u_points, params_.point_u_value,
-                                   params_.point_u_scaling, scaling_lut_u_);
-      InitializeScalingLookupTable(params_.num_v_points, params_.point_v_value,
-                                   params_.point_v_scaling, scaling_lut_v_);
+
+      uint8_t* buffer = scaling_lut_chroma_buffer_.get();
+      if (params_.num_u_points > 0) {
+        scaling_lut_u_ = buffer;
+        dsp->film_grain.initialize_scaling_lut(
+            params_.num_u_points, params_.point_u_value,
+            params_.point_u_scaling, scaling_lut_u_);
+        buffer += kScalingLookupTableSize;
+      }
+      if (params_.num_v_points > 0) {
+        scaling_lut_v_ = buffer;
+        dsp->film_grain.initialize_scaling_lut(
+            params_.num_v_points, params_.point_v_value,
+            params_.point_v_scaling, scaling_lut_v_);
+      }
     }
   }
   return true;
@@ -552,46 +605,6 @@ void ApplyAutoRegressiveFilterToChromaGrains_C(const FilmGrainParams& params,
           grain_min, grain_max);
     }
   }
-}
-
-template <int bitdepth>
-void FilmGrain<bitdepth>::InitializeScalingLookupTable(
-    int num_points, const uint8_t point_value[], const uint8_t point_scaling[],
-    uint8_t scaling_lut[256]) {
-  if (num_points == 0) {
-    memset(scaling_lut, 0, sizeof(scaling_lut[0]) * 256);
-    return;
-  }
-  static_assert(sizeof(scaling_lut[0]) == 1, "");
-  memset(scaling_lut, point_scaling[0], point_value[0]);
-  for (int i = 0; i < num_points - 1; ++i) {
-    const int delta_y = point_scaling[i + 1] - point_scaling[i];
-    const int delta_x = point_value[i + 1] - point_value[i];
-    const int delta = delta_y * ((65536 + (delta_x >> 1)) / delta_x);
-    for (int x = 0; x < delta_x; ++x) {
-      const int v = point_scaling[i] + ((x * delta + 32768) >> 16);
-      assert(v >= 0 && v <= UINT8_MAX);
-      scaling_lut[point_value[i] + x] = v;
-    }
-  }
-  const uint8_t last_point_value = point_value[num_points - 1];
-  memset(&scaling_lut[last_point_value], point_scaling[num_points - 1],
-         256 - last_point_value);
-}
-
-// Section 7.18.3.5.
-// Performs a piecewise linear interpolation into the scaling table.
-template <int bitdepth>
-int ScaleLut(const uint8_t scaling_lut[256], int index) {
-  const int shift = bitdepth - 8;
-  const int quotient = index >> shift;
-  const int remainder = index - (quotient << shift);
-  if (bitdepth == 8 || quotient == 255) {
-    return scaling_lut[quotient];
-  }
-  const int start = scaling_lut[quotient];
-  const int end = scaling_lut[quotient + 1];
-  return start + RightShiftWithRounding((end - start) * remainder, shift);
 }
 
 template <int bitdepth>
@@ -1160,6 +1173,9 @@ void Init8bpp() {
   dsp->film_grain.construct_noise_image[0] = ConstructNoiseImage_C<8, int8_t>;
   dsp->film_grain.construct_noise_image[1] =
       ConstructNoiseImageWithOverlap_C<8, int8_t>;
+
+  // InitializeScalingLutFunc
+  dsp->film_grain.initialize_scaling_lut = InitializeScalingLookupTable_C;
 #else  // !LIBGAV1_ENABLE_ALL_DSP_FUNCTIONS
   static_cast<void>(dsp);
 #ifndef LIBGAV1_Dsp8bpp_FilmGrainSynthesis
@@ -1204,6 +1220,9 @@ void Init8bpp() {
   dsp->film_grain.construct_noise_image[0] = ConstructNoiseImage_C<8, int8_t>;
   dsp->film_grain.construct_noise_image[1] =
       ConstructNoiseImageWithOverlap_C<8, int8_t>;
+#endif
+#ifndef LIBGAV1_Dsp8bpp_FilmGrainInitializeScalingLutFunc
+  dsp->film_grain.initialize_scaling_lut = InitializeScalingLookupTable_C;
 #endif
 #endif  // LIBGAV1_ENABLE_ALL_DSP_FUNCTIONS
 }
@@ -1254,6 +1273,9 @@ void Init10bpp() {
   dsp->film_grain.construct_noise_image[0] = ConstructNoiseImage_C<10, int16_t>;
   dsp->film_grain.construct_noise_image[1] =
       ConstructNoiseImageWithOverlap_C<10, int16_t>;
+
+  // InitializeScalingLutFunc
+  dsp->film_grain.initialize_scaling_lut = InitializeScalingLookupTable_C;
 #else  // !LIBGAV1_ENABLE_ALL_DSP_FUNCTIONS
   static_cast<void>(dsp);
 #ifndef LIBGAV1_Dsp10bpp_FilmGrainSynthesis
@@ -1298,6 +1320,9 @@ void Init10bpp() {
   dsp->film_grain.construct_noise_image[0] = ConstructNoiseImage_C<10, int16_t>;
   dsp->film_grain.construct_noise_image[1] =
       ConstructNoiseImageWithOverlap_C<10, int16_t>;
+#endif
+#ifndef LIBGAV1_Dsp10bpp_FilmGrainInitializeScalingLutFunc
+  dsp->film_grain.initialize_scaling_lut = InitializeScalingLookupTable_C;
 #endif
 #endif  // LIBGAV1_ENABLE_ALL_DSP_FUNCTIONS
 }

@@ -661,12 +661,24 @@ using ConstructNoiseImageFunc = void (*)(const void* noise_stripes_buffer,
                                          void* noise_image_buffer);
 using ConstructNoiseImageFuncs = ConstructNoiseImageFunc[/*overlap_flag*/ 2];
 
+// Populate a scaling lookup table with interpolated values of a piecewise
+// linear function where values in |point_value| are mapped to the values in
+// |point_scaling|.
+// |num_points| can be between 0 and 15. When 0, the lookup table is set to
+// zero.
+// |point_value| and |point_scaling| have |num_points| valid elements.
+using InitializeScalingLutFunc = void (*)(int num_points,
+                                          const uint8_t point_value[],
+                                          const uint8_t point_scaling[],
+                                          uint8_t scaling_lut[256]);
+
 struct FilmGrainFuncs {
   FilmGrainSynthesisFunc synthesis;
   LumaAutoRegressionFuncs luma_auto_regression;
   ChromaAutoRegressionFuncs chroma_auto_regression;
   ConstructNoiseStripesFuncs construct_noise_stripes;
   ConstructNoiseImageFuncs construct_noise_image;
+  InitializeScalingLutFunc initialize_scaling_lut;
 };
 //------------------------------------------------------------------------------
 
