@@ -532,7 +532,7 @@ public class VrShell extends GvrLayout
         // Reparent all existing tabs.
         for (TabModel model : mActivity.getTabModelSelector().getModels()) {
             for (int i = 0; i < model.getCount(); ++i) {
-                model.getTabAt(i).updateWindowAndroid(window);
+                model.getTabAt(i).updateAttachment(window, null);
             }
         }
     }
