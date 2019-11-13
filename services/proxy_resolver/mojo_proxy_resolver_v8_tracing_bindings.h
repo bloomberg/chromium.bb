@@ -14,6 +14,7 @@
 #include "base/threading/thread_checker.h"
 #include "net/base/address_family.h"
 #include "net/base/host_port_pair.h"
+#include "net/base/network_isolation_key.h"
 #include "net/dns/host_resolver.h"
 #include "net/log/net_log_with_source.h"
 #include "net/proxy_resolution/proxy_host_resolver.h"
@@ -67,7 +68,9 @@ class MojoProxyResolverV8TracingBindings
       net::ProxyResolveDnsOperation operation,
       mojo::PendingRemote<mojom::HostResolverRequestClient> client) override {
     DCHECK(thread_checker_.CalledOnValidThread());
-    client_->ResolveDns(hostname, operation, std::move(client));
+    // TODO(mmenke): Pass in a NetworkIsolationKey.
+    client_->ResolveDns(hostname, operation, net::NetworkIsolationKey(),
+                        std::move(client));
   }
 
   base::ThreadChecker thread_checker_;

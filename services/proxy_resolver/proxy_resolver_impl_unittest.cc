@@ -56,6 +56,7 @@ class TestRequestClient : public mojom::ProxyResolverRequestClient {
   void ResolveDns(
       const std::string& hostname,
       net::ProxyResolveDnsOperation operation,
+      const net::NetworkIsolationKey& network_isolation_key,
       mojo::PendingRemote<mojom::HostResolverRequestClient> client) override;
 
   void OnDisconnect();
@@ -101,6 +102,7 @@ void TestRequestClient::OnError(int32_t line_number,
 void TestRequestClient::ResolveDns(
     const std::string& hostname,
     net::ProxyResolveDnsOperation operation,
+    const net::NetworkIsolationKey& network_isolation_key,
     mojo::PendingRemote<mojom::HostResolverRequestClient> client) {}
 
 void TestRequestClient::OnDisconnect() {

@@ -286,7 +286,7 @@ void MockMojoProxyResolver::GetProxyForUrl(
       ignore_result(dns_client.InitWithNewPipeAndPassReceiver());
       client->ResolveDns(url.host(),
                          net::ProxyResolveDnsOperation::DNS_RESOLVE_EX,
-                         std::move(dns_client));
+                         net::NetworkIsolationKey(), std::move(dns_client));
       blocked_clients_.push_back(std::move(client));
       break;
     }
@@ -466,7 +466,7 @@ void MockMojoProxyResolverFactory::CreateResolver(
       ignore_result(dns_client.InitWithNewPipeAndPassReceiver());
       client->ResolveDns(pac_script,
                          net::ProxyResolveDnsOperation::DNS_RESOLVE_EX,
-                         std::move(dns_client));
+                         net::NetworkIsolationKey(), std::move(dns_client));
       blocked_clients_.push_back(std::move(client));
       break;
     }

@@ -39,6 +39,10 @@
 #include "services/network/mojo_host_resolver_impl.h"
 #include "services/proxy_resolver/public/mojom/proxy_resolver.mojom.h"
 
+namespace net {
+class NetworkIsolationKey;
+}
+
 namespace network {
 
 namespace {
@@ -119,6 +123,7 @@ class ClientMixin : public ClientInterface {
   void ResolveDns(
       const std::string& hostname,
       net::ProxyResolveDnsOperation operation,
+      const net::NetworkIsolationKey& network_isolation_key,
       mojo::PendingRemote<proxy_resolver::mojom::HostResolverRequestClient>
           client) override {
     bool is_ex = operation == net::ProxyResolveDnsOperation::DNS_RESOLVE_EX ||
@@ -131,8 +136,7 @@ class ClientMixin : public ClientInterface {
           base::BindOnce(&DoMyIpAddressOnWorker, is_ex, std::move(client)));
     } else {
       // Request was for dnsResolve() or dnsResolveEx().
-      // TODO(mmenke): Pass in a NetworkIsolationKey().
-      host_resolver_.Resolve(hostname, net::NetworkIsolationKey(), is_ex,
+      host_resolver_.Resolve(hostname, network_isolation_key, is_ex,
                              std::move(client));
     }
   }
