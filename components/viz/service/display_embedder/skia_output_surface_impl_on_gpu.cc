@@ -1535,11 +1535,21 @@ void SkiaOutputSurfaceImplOnGpu::SendOverlayPromotionNotification(
   for (auto& denied : promotion_denied) {
     auto shared_image_overlay =
         shared_image_representation_factory_->ProduceOverlay(denied);
+    // When display is re-opened, the first few frames might not have video
+    // resource ready. Possible investigation crbug.com/1023971.
+    if (!shared_image_overlay)
+      continue;
+
     shared_image_overlay->NotifyOverlayPromotion(false, gfx::Rect());
   }
   for (auto& possible : possible_promotions) {
     auto shared_image_overlay =
         shared_image_representation_factory_->ProduceOverlay(possible.first);
+    // When display is re-opened, the first few frames might not have video
+    // resource ready. Possible investigation crbug.com/1023971.
+    if (!shared_image_overlay)
+      continue;
+
     shared_image_overlay->NotifyOverlayPromotion(true, possible.second);
   }
 #endif
@@ -1552,6 +1562,11 @@ void SkiaOutputSurfaceImplOnGpu::RenderToOverlay(
   auto shared_image_overlay =
       shared_image_representation_factory_->ProduceOverlay(
           overlay_candidate_mailbox);
+  // When display is re-opened, the first few frames might not have video
+  // resource ready. Possible investigation crbug.com/1023971.
+  if (!shared_image_overlay)
+    return;
+
   // In current implementation, the BeginReadAccess will ends up calling
   // CodecImage::RenderToOverlay. Currently this code path is only used for
   // Android Classic video overlay, where update of the overlay plane is within
