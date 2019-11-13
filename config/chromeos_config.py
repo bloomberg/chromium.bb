@@ -3904,6 +3904,10 @@ def ApplyCustomOverrides(site_config):
           'sign_types': ['recovery', 'factory'],
       },
 
+      'drallion-release': {
+          'sign_types': ['recovery', 'factory'],
+      },
+
       # --- end from here ---
   }
 
