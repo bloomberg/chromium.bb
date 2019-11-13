@@ -9,7 +9,13 @@ from __future__ import print_function
 
 import re
 
-import cherrypy  # pylint: disable=import-error
+# cherrypy may not be available outside the chroot.
+try:
+  import cherrypy  # pylint: disable=import-error
+except ImportError:
+  cherrypy = None
+
+from chromite.lib import cros_logging as logging
 
 
 class Loggable(object):
@@ -17,7 +23,7 @@ class Loggable(object):
   _CAMELCASE_RE = re.compile('(?<=.)([A-Z])')
 
   def _Log(self, message, *args):
-    return LogWithTag(
+    LogWithTag(
         self._CAMELCASE_RE.sub(r'_\1', self.__class__.__name__).upper(),
         message, *args)
 
@@ -25,4 +31,17 @@ class Loggable(object):
 def LogWithTag(tag, message, *args):
   # CherryPy log doesn't seem to take any optional args, so we just handle
   # args by formatting them into message.
-  return cherrypy.log(message % args, context=tag)
+  if cherrypy:
+    cherrypy.log(message % args, context=tag)
+  else:
+    logging.info(message, *args)
+
+
+def UpdateConfig(configs):
+  """Updates the cherrypy config.
+
+  Args:
+    configs: A dictionary with all cherrypy configs.
+  """
+  if cherrypy:
+    cherrypy.config.update(configs)

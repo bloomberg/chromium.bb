@@ -17,8 +17,6 @@ import shutil
 import tempfile
 import threading
 
-import cherrypy  # pylint: disable=import-error
-
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import osutils
@@ -35,19 +33,6 @@ _HASH_BLOCK_SIZE = 8192
 
 class CommonUtilError(Exception):
   """Exception classes used by this module."""
-
-
-class DevServerHTTPError(cherrypy.HTTPError):
-  """Exception class to log the HTTPResponse before routing it to cherrypy."""
-  def __init__(self, status, message):
-    """CherryPy error with logging.
-
-    Args:
-      status: HTTPResponse status.
-      message: Message associated with the response.
-    """
-    cherrypy.HTTPError.__init__(self, status, message)
-    _Log('HTTPError status: %s message: %s', status, message)
 
 
 def MkDirP(directory):

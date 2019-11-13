@@ -17,7 +17,11 @@ import random
 import sys
 import time
 
-import cherrypy  # pylint: disable=import-error
+from chromite.lib.xbuddy import cherrypy_log_util
+
+# Module-local log function.
+def _Log(message, *args):
+  return cherrypy_log_util.LogWithTag('RETRY', message, *args)
 
 
 def retry(ExceptionToCheck, timeout_min=1.0, delay_sec=3, blacklist=None):
@@ -45,7 +49,7 @@ def retry(ExceptionToCheck, timeout_min=1.0, delay_sec=3, blacklist=None):
     def delay():
       """'Jitter' the delay, up to 50% in either direction."""
       random_delay = random.uniform(.5 * delay_sec, 1.5 * delay_sec)
-      cherrypy.log('Retrying in %f seconds...' % random_delay)
+      _Log('Retrying in %f seconds...', random_delay)
       time.sleep(random_delay)
 
     def func_retry(*args, **kwargs):
@@ -68,7 +72,7 @@ def retry(ExceptionToCheck, timeout_min=1.0, delay_sec=3, blacklist=None):
         except exception_tuple:
           raise
         except ExceptionToCheck as e:
-          cherrypy.log('%s(%s)' % (e.__class__, e))
+          _Log('%s(%s)', e.__class__, e)
           # Cache the exception to be raised later.
           exc_info = sys.exc_info()
 

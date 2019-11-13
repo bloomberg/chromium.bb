@@ -18,8 +18,6 @@ import threading
 
 from six.moves import configparser
 
-import cherrypy  # pylint: disable=import-error
-
 from chromite.lib import gs
 from chromite.lib.xbuddy import artifact_info
 from chromite.lib.xbuddy import build_artifact
@@ -197,7 +195,7 @@ class XBuddy(build_util.BuildObject):
     super(XBuddy, self).__init__(**kwargs)
 
     if not log_screen:
-      cherrypy.config.update({'log.screen': False})
+      cherrypy_log_util.UpdateConfig({'log.screen': False})
 
     self.config = self._ReadConfig()
     self._manage_builds = manage_builds or self._ManageBuilds()
