@@ -1369,7 +1369,8 @@ const FeatureEntry::FeatureVariation kQuietNotificationPromptsVariations[] = {
 // cache is implemented.
 const FeatureEntry::FeatureParam kBackForwardCache_ExtendedSupport[] = {
     {"service_worker_supported", "true"},
-    {"geolocation_supported", "true"}};
+    {"geolocation_supported", "true"},
+    {"should_ignore_blocklists", "true"}};
 
 const FeatureEntry::FeatureVariation kBackForwardCacheVariations[] = {
     {"experimental extended supported feature set",
