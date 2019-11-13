@@ -44,6 +44,7 @@
 #include "fuchsia/engine/switches.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "media/base/key_system_names.h"
+#include "media/base/media_switches.h"
 #include "net/http/http_util.h"
 #include "services/service_manager/sandbox/fuchsia/sandbox_policy_fuchsia.h"
 #include "third_party/widevine/cdm/widevine_cdm_common.h"
@@ -314,6 +315,13 @@ void ContextProviderImpl::Create(
 
   if (enable_protected_graphics) {
     launch_command.AppendSwitch(switches::kEnforceVulkanProtectedMemory);
+    launch_command.AppendSwitch(switches::kEnableProtectedVideoBuffers);
+    bool force_protected_video_buffers =
+        web_engine_config.FindBoolPath("force-protected-video-buffers")
+            .value_or(false);
+    if (force_protected_video_buffers) {
+      launch_command.AppendSwitch(switches::kForceProtectedVideoOutputBuffers);
+    }
   }
 
   if (enable_widevine) {
