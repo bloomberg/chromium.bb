@@ -1063,6 +1063,9 @@ void ArcSessionManager::StartArc() {
       cryptohome::Identification(user_manager->GetPrimaryUser()->GetAccountId())
           .id();
 
+  params.is_account_managed =
+      profile_->GetProfilePolicyConnector()->IsManaged();
+
   arc_session_runner_->RequestUpgrade(std::move(params));
 }
 
