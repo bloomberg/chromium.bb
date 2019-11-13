@@ -21302,6 +21302,10 @@ Called by update_net_error_codes.py.-->
   <int value="1405" label="AUTOTESTPRIVATE_ENABLEASSISTANTANDWAITFORREADY"/>
   <int value="1406" label="INPUTMETHODPRIVATE_FINISHCOMPOSINGTEXT"/>
   <int value="1407" label="DECLARATIVENETREQUEST_UPDATEDYNAMICRULES"/>
+  <int value="1408" label="AUTOTESTPRIVATE_MOUSECLICK"/>
+  <int value="1409" label="AUTOTESTPRIVATE_MOUSEPRESS"/>
+  <int value="1410" label="AUTOTESTPRIVATE_MOUSERELEASE"/>
+  <int value="1411" label="AUTOTESTPRIVATE_MOUSEMOVE"/>
 </enum>
 
 <enum name="ExtensionIconState">
