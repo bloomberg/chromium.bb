@@ -62153,6 +62153,10 @@ Full version information for the fingerprint enum values:
   <int value="4" label="Unsupported language"/>
   <int value="5" label="Identical language"/>
   <int value="6" label="Translation error"/>
+  <int value="7" label="Translation timeout"/>
+  <int value="8" label="Unexpected script error"/>
+  <int value="9" label="Bad origin"/>
+  <int value="10" label="Script load error"/>
 </enum>
 
 <enum name="TranslateExplicitAskPromptEventType">
