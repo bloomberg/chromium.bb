@@ -12079,8 +12079,7 @@ static AOM_INLINE void search_palette_mode(
   int rate2 = 0;
   int64_t distortion2 = 0, best_rd_palette = search_state->best_rd, this_rd,
           best_model_rd_palette = INT64_MAX;
-  int skippable = 0, rate_overhead_palette = 0;
-  RD_STATS rd_stats_y;
+  int skippable = 0;
   TX_SIZE uv_tx = TX_4X4;
   uint8_t *const best_palette_color_map =
       x->palette_buffer->best_palette_color_map;
@@ -12096,24 +12095,24 @@ static AOM_INLINE void search_palette_mode(
   mbmi->uv_mode = UV_DC_PRED;
   mbmi->ref_frame[0] = INTRA_FRAME;
   mbmi->ref_frame[1] = NONE_FRAME;
-  rate_overhead_palette = rd_pick_palette_intra_sby(
+  RD_STATS rd_stats_y;
+  av1_invalid_rd_stats(&rd_stats_y);
+  rd_pick_palette_intra_sby(
       cpi, x, bsize, intra_mode_cost[DC_PRED], &best_mbmi_palette,
-      best_palette_color_map, &best_rd_palette, &best_model_rd_palette, NULL,
-      NULL, NULL, NULL, NULL, ctx, best_blk_skip, best_tx_type_map);
-  if (pmi->palette_size[0] == 0) return;
+      best_palette_color_map, &best_rd_palette, &best_model_rd_palette,
+      &rd_stats_y.rate, NULL, &rd_stats_y.dist, &rd_stats_y.skip, NULL, ctx,
+      best_blk_skip, best_tx_type_map);
+  if (rd_stats_y.rate == INT_MAX || pmi->palette_size[0] == 0) return;
 
   memcpy(x->blk_skip, best_blk_skip,
          sizeof(best_blk_skip[0]) * bsize_to_num_blk(bsize));
   av1_copy_array(xd->tx_type_map, best_tx_type_map, ctx->num_4x4_blk);
   memcpy(color_map, best_palette_color_map,
          rows * cols * sizeof(best_palette_color_map[0]));
-  super_block_yrd(cpi, x, &rd_stats_y, bsize, search_state->best_rd);
-  if (rd_stats_y.rate == INT_MAX) return;
 
   skippable = rd_stats_y.skip;
   distortion2 = rd_stats_y.dist;
-  rate2 = rd_stats_y.rate + rate_overhead_palette;
-  rate2 += ref_costs_single[INTRA_FRAME];
+  rate2 = rd_stats_y.rate + ref_costs_single[INTRA_FRAME];
   if (num_planes > 1) {
     uv_tx = av1_get_tx_size(AOM_PLANE_U, xd);
     if (search_state->rate_uv_intra == INT_MAX) {
