@@ -40820,6 +40820,7 @@ Called by update_use_counter_css.py.-->
   <int value="7" label="NoSupportedProvider"/>
   <int value="8" label="Cancelled"/>
   <int value="9" label="RouteAlreadyExists"/>
+  <int value="10" label="DesktopPickerFailed"/>
 </enum>
 
 <enum name="MediaRouteProviderVersion">
