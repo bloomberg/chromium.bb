@@ -49,6 +49,12 @@ public interface WebContentsAccessibility {
     void setAccessibilityEnabledForTesting();
 
     /**
+     *  Add a spelling error.
+     */
+    @VisibleForTesting
+    void addSpellingErrorForTesting(int virtualViewId, int startOffset, int endOffset);
+
+    /**
      * Attempts to perform an accessibility action on the web content.  If the accessibility action
      * cannot be processed, it returns {@code null}, allowing the caller to know to call the
      * super {@link View#performAccessibilityAction(int, Bundle)} method and use that return value.
