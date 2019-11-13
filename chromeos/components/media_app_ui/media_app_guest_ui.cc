@@ -39,6 +39,9 @@ content::WebUIDataSource* MediaAppGuestUI::CreateDataSource() {
   }
 
   source->DisableDenyXFrameOptions();
+  std::string csp =
+      std::string("worker-src ") + kChromeUIMediaAppGuestURL + ";";
+  source->OverrideContentSecurityPolicyChildSrc(csp);
   return source;
 }
 
