@@ -428,6 +428,13 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::GetAttributeValue(
   for (auto it = start_->AsLeafTextPosition();
        it->anchor_id() != end->anchor_id() || it->tree_id() != end->tree_id();
        it = it->CreateNextAnchorPosition()) {
+    // If the iterator creates a null position, then it has likely overrun the
+    // range, return failure. This is unexpected but may happen if the range
+    // became inverted.
+    DCHECK(!it->IsNullPosition());
+    if (it->IsNullPosition())
+      return E_FAIL;
+
     AXPlatformNodeDelegate* delegate = GetDelegate(it.get());
     DCHECK(it && delegate);
 
@@ -1064,9 +1071,45 @@ AXPlatformNodeTextRangeProviderWin::MoveEndpointByUnitHelper(
   return current_endpoint;
 }
 
+void AXPlatformNodeTextRangeProviderWin::NormalizeAsUnignoredTextRange() {
+  if (!start_->IsValid() || !end_->IsValid())
+    return;
+
+  if (!start_->IsIgnored() && !end_->IsIgnored())
+    return;
+
+  if (start_->IsIgnored()) {
+    AXPositionInstance normalized_start = start_->AsUnignoredTextPosition(
+        AXNodePosition::AdjustmentBehavior::kMoveRight);
+    if (normalized_start->IsNullPosition()) {
+      normalized_start = start_->AsUnignoredTextPosition(
+          AXNodePosition::AdjustmentBehavior::kMoveLeft);
+    }
+    if (!normalized_start->IsNullPosition())
+      start_ = std::move(normalized_start);
+  }
+
+  if (end_->IsIgnored()) {
+    AXPositionInstance normalized_end = end_->AsUnignoredTextPosition(
+        AXNodePosition::AdjustmentBehavior::kMoveRight);
+    if (normalized_end->IsNullPosition()) {
+      normalized_end = end_->AsUnignoredTextPosition(
+          AXNodePosition::AdjustmentBehavior::kMoveLeft);
+    }
+    if (!normalized_end->IsNullPosition())
+      end_ = std::move(normalized_end);
+  }
+
+  DCHECK_LE(*start_, *end_);
+}
+
 void AXPlatformNodeTextRangeProviderWin::NormalizeTextRange() {
   if (!start_->IsValid() || !end_->IsValid())
     return;
+
+  // If either endpoint is anchored to an ignored node,
+  // first snap them both to be unignored positions.
+  NormalizeAsUnignoredTextRange();
 
   // Only normalize non-degenerate ranges.
   if (*start_ != *end_) {
@@ -1083,6 +1126,8 @@ void AXPlatformNodeTextRangeProviderWin::NormalizeTextRange() {
       DCHECK_EQ(*end_, *normalized_end);
       end_ = std::move(normalized_end);
     }
+
+    DCHECK_LE(*start_, *end_);
   }
 }
 
