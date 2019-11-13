@@ -54628,6 +54628,12 @@ Called by update_net_trust_anchors.py.-->
   <int value="2" label="Safety Tip for bad reputation"/>
   <int value="3" label="Safety Tip for lookalike URL"/>
   <int value="4" label="Safety Tip for a URL with a suspicious keyword"/>
+  <int value="5"
+      label="Safety Tip for bad reputation, but the user has explicitly
+             dismissed the Safety Tip on a previous navigation"/>
+  <int value="6"
+      label="Safety Tip for a lookalike URL, but the user has explicitly
+             dismissed the Safety Tip on a previous navigation"/>
 </enum>
 
 <enum name="SameSiteCookieContext">
