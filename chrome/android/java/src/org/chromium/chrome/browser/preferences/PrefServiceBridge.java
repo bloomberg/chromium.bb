@@ -10,7 +10,6 @@ import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.NativeMethods;
-import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 
 /**
  * PrefServiceBridge is a singleton which provides access to some native preferences. Ideally
@@ -34,11 +33,6 @@ public class PrefServiceBridge {
         ThreadUtils.assertOnUiThread();
         if (sInstance == null) {
             sInstance = new PrefServiceBridge();
-
-            // TODO(wnwen): Check while refactoring TemplateUrlService whether this belongs here.
-            // This is necessary as far as ensuring that TemplateUrlService is loaded at some point.
-            // Put initialization here to make instantiation in unit tests easier.
-            TemplateUrlServiceFactory.get().load();
         }
         return sInstance;
     }
