@@ -1133,7 +1133,6 @@ crbug.com/954171 virtual/layout_ng_block_frag/fast/multicol/float-with-margin-mo
 crbug.com/954171 virtual/layout_ng_block_frag/fast/multicol/float-with-margin-moved-by-child-line-and-unbreakable.html [ Failure Crash ]
 crbug.com/954171 virtual/layout_ng_block_frag/fast/multicol/float-with-margin-moved-by-child-line.html [ Failure Crash ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/float-with-margin-moved-unbreakable.html [ Failure ]
-crbug.com/829028 virtual/layout_ng_block_frag/fast/multicol/focus-outline.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/forced-break-after-block-with-spanner.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/forced-break-after-empty-block-after-spanner.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/forced-break-after-last-block-before-spanner.html [ Failure ]
