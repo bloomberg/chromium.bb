@@ -33,8 +33,10 @@ namespace {
 class StackingBarLabelButton : public views::LabelButton {
  public:
   StackingBarLabelButton(views::ButtonListener* listener,
-                         const base::string16& text)
-      : views::LabelButton(listener, text) {
+                         const base::string16& text,
+                         UnifiedMessageCenterView* message_center_view)
+      : views::LabelButton(listener, text),
+        message_center_view_(message_center_view) {
     SetEnabledTextColors(kUnifiedMenuButtonColorActive);
     SetHorizontalAlignment(gfx::ALIGN_CENTER);
     SetBorder(views::CreateEmptyBorder(gfx::Insets()));
@@ -51,6 +53,11 @@ class StackingBarLabelButton : public views::LabelButton {
   ~StackingBarLabelButton() override = default;
 
   // views::LabelButton:
+  void AboutToRequestFocusFromTabTraversal(bool reverse) override {
+    if (message_center_view_->collapsed() && HasFocus())
+      message_center_view_->FocusOut(reverse);
+  }
+
   gfx::Size CalculatePreferredSize() const override {
     return gfx::Size(label()->GetPreferredSize().width() +
                          kStackingNotificationClearAllButtonPadding.width(),
@@ -58,9 +65,7 @@ class StackingBarLabelButton : public views::LabelButton {
                          kStackingNotificationClearAllButtonPadding.height());
   }
 
-  const char* GetClassName() const override {
-    return "StackingBarClearAllButton";
-  }
+  const char* GetClassName() const override { return "StackingBarLabelButton"; }
 
   int GetHeightForWidth(int width) const override {
     return label()->GetPreferredSize().height() +
@@ -108,7 +113,7 @@ class StackingBarLabelButton : public views::LabelButton {
 
  private:
   SkColor background_color_ = gfx::kPlaceholderColor;
-
+  UnifiedMessageCenterView* message_center_view_;
   DISALLOW_COPY_AND_ASSIGN(StackingBarLabelButton);
 };
 
@@ -132,11 +137,13 @@ StackedNotificationBar::StackedNotificationBar(
       clear_all_button_(new StackingBarLabelButton(
           this,
           l10n_util::GetStringUTF16(
-              IDS_ASH_MESSAGE_CENTER_CLEAR_ALL_BUTTON_LABEL))),
+              IDS_ASH_MESSAGE_CENTER_CLEAR_ALL_BUTTON_LABEL),
+          message_center_view)),
       expand_all_button_(new StackingBarLabelButton(
           this,
           l10n_util::GetStringUTF16(
-              IDS_ASH_MESSAGE_CENTER_EXPAND_ALL_NOTIFICATIONS_BUTTON_LABEL))) {
+              IDS_ASH_MESSAGE_CENTER_EXPAND_ALL_NOTIFICATIONS_BUTTON_LABEL),
+          message_center_view)) {
   SetVisible(false);
   message_center::MessageCenter::Get()->AddObserver(this);
   int left_padding = features::IsUnifiedMessageCenterRefactorEnabled()
