@@ -13,8 +13,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "chrome/browser/sharing/ack_message_handler.h"
-#include "chrome/browser/sharing/ping_message_handler.h"
 #include "chrome/browser/sharing/sharing_device_registration.h"
 #include "chrome/browser/sharing/sharing_message_sender.h"
 #include "chrome/browser/sharing/sharing_send_message_result.h"
@@ -26,30 +24,16 @@
 #include "net/base/backoff_entry.h"
 
 #if defined(OS_ANDROID)
-#include "chrome/browser/sharing/click_to_call/click_to_call_message_handler_android.h"
 #include "chrome/browser/sharing/sharing_service_proxy_android.h"
 #endif  // defined(OS_ANDROID)
-
-namespace content {
-class SmsFetcher;
-}
-
-namespace gcm {
-class GCMDriver;
-}  // namespace gcm
 
 namespace syncer {
 class DeviceInfo;
 class SyncService;
 }  // namespace syncer
 
-class Profile;
-class RemoteCopyMessageHandler;
-class SharedClipboardMessageHandler;
 class SharingFCMHandler;
-class SharingFCMSender;
 class SharingSyncPreference;
-class SmsFetchRequestHandler;
 class VapidKeyManager;
 class SharingDeviceSource;
 enum class SharingDeviceRegistrationResult;
@@ -72,17 +56,13 @@ class SharingService : public KeyedService, syncer::SyncServiceObserver {
   };
 
   SharingService(
-      Profile* profile,
       std::unique_ptr<SharingSyncPreference> sync_prefs,
       std::unique_ptr<VapidKeyManager> vapid_key_manager,
       std::unique_ptr<SharingDeviceRegistration> sharing_device_registration,
-      std::unique_ptr<SharingFCMSender> fcm_sender,
-      std::unique_ptr<SharingFCMHandler> fcm_handler,
       std::unique_ptr<SharingMessageSender> message_sender,
       std::unique_ptr<SharingDeviceSource> device_source,
-      gcm::GCMDriver* gcm_driver,
-      syncer::SyncService* sync_service,
-      content::SmsFetcher* sms_fetcher);
+      std::unique_ptr<SharingFCMHandler> fcm_handler,
+      syncer::SyncService* sync_service);
   ~SharingService() override;
 
   // Returns the device matching |guid|, or nullptr if no match was found.
@@ -146,10 +126,9 @@ class SharingService : public KeyedService, syncer::SyncServiceObserver {
   std::unique_ptr<SharingSyncPreference> sync_prefs_;
   std::unique_ptr<VapidKeyManager> vapid_key_manager_;
   std::unique_ptr<SharingDeviceRegistration> sharing_device_registration_;
-  std::unique_ptr<SharingFCMSender> fcm_sender_;
-  std::unique_ptr<SharingFCMHandler> fcm_handler_;
   std::unique_ptr<SharingMessageSender> message_sender_;
   std::unique_ptr<SharingDeviceSource> device_source_;
+  std::unique_ptr<SharingFCMHandler> fcm_handler_;
 
   syncer::SyncService* sync_service_;
 
@@ -159,22 +138,6 @@ class SharingService : public KeyedService, syncer::SyncServiceObserver {
 #if defined(OS_ANDROID)
   SharingServiceProxyAndroid sharing_service_proxy_android_{this};
 #endif  // defined(OS_ANDROID)
-
-  PingMessageHandler ping_message_handler_;
-  std::unique_ptr<AckMessageHandler> ack_message_handler_;
-
-#if defined(OS_ANDROID)
-  ClickToCallMessageHandler click_to_call_message_handler_;
-  std::unique_ptr<SmsFetchRequestHandler> sms_fetch_request_handler_;
-#endif  // defined(OS_ANDROID)
-
-  std::unique_ptr<SharedClipboardMessageHandler>
-      shared_clipboard_message_handler_;
-
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) || \
-    defined(OS_CHROMEOS)
-  std::unique_ptr<RemoteCopyMessageHandler> remote_copy_message_handler_;
-#endif
 
   base::WeakPtrFactory<SharingService> weak_ptr_factory_{this};
 

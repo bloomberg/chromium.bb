@@ -18,121 +18,34 @@
 #include "chrome/browser/sharing/sharing_device_registration_result.h"
 #include "chrome/browser/sharing/sharing_device_source.h"
 #include "chrome/browser/sharing/sharing_fcm_handler.h"
-#include "chrome/browser/sharing/sharing_fcm_sender.h"
 #include "chrome/browser/sharing/sharing_message_handler.h"
 #include "chrome/browser/sharing/sharing_metrics.h"
 #include "chrome/browser/sharing/sharing_service_factory.h"
 #include "chrome/browser/sharing/sharing_sync_preference.h"
 #include "chrome/browser/sharing/sharing_utils.h"
-#include "chrome/browser/sharing/sms/sms_fetch_request_handler.h"
 #include "chrome/browser/sharing/vapid_key_manager.h"
-#include "components/gcm_driver/crypto/gcm_encryption_provider.h"
-#include "components/gcm_driver/gcm_driver.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync_device_info/device_info.h"
 #include "components/sync_device_info/local_device_info_util.h"
 #include "content/public/browser/browser_task_traits.h"
 
-#if defined(OS_ANDROID)
-#include "chrome/browser/sharing/shared_clipboard/shared_clipboard_message_handler_android.h"
-#else
-#include "chrome/browser/sharing/shared_clipboard/shared_clipboard_message_handler_desktop.h"
-#endif  // defined(OS_ANDROID)
-
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) || \
-    defined(OS_CHROMEOS)
-#include "chrome/browser/sharing/shared_clipboard/remote_copy_message_handler.h"
-#endif
-
 SharingService::SharingService(
-    Profile* profile,
     std::unique_ptr<SharingSyncPreference> sync_prefs,
     std::unique_ptr<VapidKeyManager> vapid_key_manager,
     std::unique_ptr<SharingDeviceRegistration> sharing_device_registration,
-    std::unique_ptr<SharingFCMSender> fcm_sender,
-    std::unique_ptr<SharingFCMHandler> fcm_handler,
     std::unique_ptr<SharingMessageSender> message_sender,
     std::unique_ptr<SharingDeviceSource> device_source,
-    gcm::GCMDriver* gcm_driver,
-    syncer::SyncService* sync_service,
-    content::SmsFetcher* sms_fetcher)
+    std::unique_ptr<SharingFCMHandler> fcm_handler,
+    syncer::SyncService* sync_service)
     : sync_prefs_(std::move(sync_prefs)),
       vapid_key_manager_(std::move(vapid_key_manager)),
       sharing_device_registration_(std::move(sharing_device_registration)),
-      fcm_sender_(std::move(fcm_sender)),
-      fcm_handler_(std::move(fcm_handler)),
       message_sender_(std::move(message_sender)),
       device_source_(std::move(device_source)),
+      fcm_handler_(std::move(fcm_handler)),
       sync_service_(sync_service),
       backoff_entry_(&kRetryBackoffPolicy),
       state_(State::DISABLED) {
-  // Remove old encryption info with empty authorized_entity to avoid DCHECK.
-  // See http://crbug/987591
-  if (gcm_driver) {
-    gcm::GCMEncryptionProvider* encryption_provider =
-        gcm_driver->GetEncryptionProviderInternal();
-    if (encryption_provider) {
-      encryption_provider->RemoveEncryptionInfo(
-          kSharingFCMAppID, /*authorized_entity=*/std::string(),
-          base::DoNothing());
-    }
-  }
-
-  // Initialize sharing handlers.
-  fcm_handler_->AddSharingHandler(
-      chrome_browser_sharing::SharingMessage::kPingMessage,
-      &ping_message_handler_);
-
-  ack_message_handler_ =
-      std::make_unique<AckMessageHandler>(message_sender_.get());
-  fcm_handler_->AddSharingHandler(
-      chrome_browser_sharing::SharingMessage::kAckMessage,
-      ack_message_handler_.get());
-
-#if defined(OS_ANDROID)
-  // Note: IsClickToCallSupported() is not used as it requires JNI call.
-  if (base::FeatureList::IsEnabled(kClickToCallReceiver)) {
-    fcm_handler_->AddSharingHandler(
-        chrome_browser_sharing::SharingMessage::kClickToCallMessage,
-        &click_to_call_message_handler_);
-  }
-
-  if (sharing_device_registration_->IsSmsFetcherSupported()) {
-    sms_fetch_request_handler_ =
-        std::make_unique<SmsFetchRequestHandler>(sms_fetcher);
-    fcm_handler_->AddSharingHandler(
-        chrome_browser_sharing::SharingMessage::kSmsFetchRequest,
-        sms_fetch_request_handler_.get());
-  }
-#endif  // defined(OS_ANDROID)
-
-  if (sharing_device_registration_->IsSharedClipboardSupported()) {
-#if defined(OS_ANDROID)
-    shared_clipboard_message_handler_ =
-        std::make_unique<SharedClipboardMessageHandlerAndroid>(
-            device_source_.get());
-#else
-    shared_clipboard_message_handler_ =
-        std::make_unique<SharedClipboardMessageHandlerDesktop>(
-            device_source_.get(), profile);
-#endif  // defined(OS_ANDROID)
-    fcm_handler_->AddSharingHandler(
-        chrome_browser_sharing::SharingMessage::kSharedClipboardMessage,
-        shared_clipboard_message_handler_.get());
-  }
-
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) || \
-    defined(OS_CHROMEOS)
-  if (sharing_device_registration_->IsRemoteCopySupported()) {
-    remote_copy_message_handler_ =
-        std::make_unique<RemoteCopyMessageHandler>(profile);
-    fcm_handler_->AddSharingHandler(
-        chrome_browser_sharing::SharingMessage::kRemoteCopyMessage,
-        remote_copy_message_handler_.get());
-  }
-#endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) ||
-        // defined(OS_CHROMEOS)
-
   // If device has already registered before, start listening to FCM right away
   // to avoid missing messages.
   if (sync_prefs_ && sync_prefs_->GetFCMRegistration())
