@@ -25456,6 +25456,7 @@ Called by update_net_error_codes.py.-->
   <int value="3085" label="ModuleDedicatedWorker"/>
   <int value="3086" label="FetchBodyStreamInServiceWorker"/>
   <int value="3087" label="FetchBodyStreamOutsideServiceWorker"/>
+  <int value="3088" label="GetComputedStyleOutsideFlatTree"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
