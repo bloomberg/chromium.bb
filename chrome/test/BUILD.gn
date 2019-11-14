@@ -736,7 +736,7 @@ if (!is_android) {
       "//third_party/cacheinvalidation",
       "//third_party/icu",
       "//third_party/leveldatabase",
-      "//third_party/webrtc_overrides",
+      "//third_party/webrtc_overrides:webrtc_component",
       "//third_party/widevine/cdm:buildflags",
       "//third_party/widevine/cdm:headers",
       "//ui/accessibility:test_support",
@@ -3562,8 +3562,7 @@ test("unit_tests") {
     "//third_party/libaddressinput",
     "//third_party/libphonenumber",
     "//third_party/metrics_proto",
-    "//third_party/webrtc/modules/desktop_capture",
-    "//third_party/webrtc_overrides",
+    "//third_party/webrtc_overrides:webrtc_component",
     "//third_party/zlib/google:compression_utils",
     "//ui/base:test_support",
     "//ui/display:test_support",
@@ -5724,7 +5723,7 @@ if (!is_android) {
         "//chrome/install_static:install_static_util",
         "//chrome/installer/util:strings",
         "//third_party/isimpledom",
-        "//third_party/webrtc/modules/desktop_capture",
+        "//third_party/webrtc_overrides:webrtc_component",
         "//third_party/wtl",
         "//ui/resources",
       ]
@@ -6338,7 +6337,7 @@ if (!is_android && !is_fuchsia) {
       deps += [
         "//chrome:other_version",
         "//chrome/installer/util:strings",
-        "//third_party/webrtc/modules/desktop_capture",
+        "//third_party/webrtc_overrides:webrtc_component",
         "//third_party/wtl",
         "//ui/resources",
       ]
