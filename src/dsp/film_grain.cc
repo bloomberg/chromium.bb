@@ -257,10 +257,17 @@ bool FilmGrainSynthesis_C(const void* source_plane_y, ptrdiff_t source_stride_y,
                              dest_stride_u, dest_plane_v, dest_stride_v);
 }
 
-constexpr int kScalingLookupTableSize = 256;
+// Making this a template function prevents it from adding to code size when it
+// is not placed in the DSP table. Most functions in the dsp directory change
+// behavior by bitdepth, but because this one doesn't, it receives a dummy
+// parameter with one enforced value, ensuring only one copy is made.
+template <int singleton>
 void InitializeScalingLookupTable_C(
     int num_points, const uint8_t point_value[], const uint8_t point_scaling[],
     uint8_t scaling_lut[kScalingLookupTableSize]) {
+  static_assert(singleton == 0,
+                "Improper instantiation of InitializeScalingLookupTable_C. "
+                "There should be only one copy of this function.");
   if (num_points == 0) {
     memset(scaling_lut, 0, sizeof(scaling_lut[0]) * kScalingLookupTableSize);
     return;
@@ -279,7 +286,7 @@ void InitializeScalingLookupTable_C(
   }
   const uint8_t last_point_value = point_value[num_points - 1];
   memset(&scaling_lut[last_point_value], point_scaling[num_points - 1],
-         256 - last_point_value);
+         kScalingLookupTableSize - last_point_value);
 }
 
 // Section 7.18.3.5.
@@ -369,7 +376,7 @@ bool FilmGrain<bitdepth>::Init() {
       scaling_lut_v_ = scaling_lut_y_;
     } else if (params_.num_u_points > 0 || params_.num_v_points > 0) {
       const size_t buffer_size =
-          kScalingLookupTableSize *
+          (kScalingLookupTableSize + kScalingLookupTablePadding) *
           ((params_.num_u_points > 0) + (params_.num_v_points > 0));
       scaling_lut_chroma_buffer_.reset(new (std::nothrow) uint8_t[buffer_size]);
       if (scaling_lut_chroma_buffer_ == nullptr) return false;
@@ -380,7 +387,7 @@ bool FilmGrain<bitdepth>::Init() {
         dsp->film_grain.initialize_scaling_lut(
             params_.num_u_points, params_.point_u_value,
             params_.point_u_scaling, scaling_lut_u_);
-        buffer += kScalingLookupTableSize;
+        buffer += kScalingLookupTableSize + kScalingLookupTablePadding;
       }
       if (params_.num_v_points > 0) {
         scaling_lut_v_ = buffer;
@@ -1175,7 +1182,7 @@ void Init8bpp() {
       ConstructNoiseImageWithOverlap_C<8, int8_t>;
 
   // InitializeScalingLutFunc
-  dsp->film_grain.initialize_scaling_lut = InitializeScalingLookupTable_C;
+  dsp->film_grain.initialize_scaling_lut = InitializeScalingLookupTable_C<0>;
 #else  // !LIBGAV1_ENABLE_ALL_DSP_FUNCTIONS
   static_cast<void>(dsp);
 #ifndef LIBGAV1_Dsp8bpp_FilmGrainSynthesis
@@ -1222,7 +1229,7 @@ void Init8bpp() {
       ConstructNoiseImageWithOverlap_C<8, int8_t>;
 #endif
 #ifndef LIBGAV1_Dsp8bpp_FilmGrainInitializeScalingLutFunc
-  dsp->film_grain.initialize_scaling_lut = InitializeScalingLookupTable_C;
+  dsp->film_grain.initialize_scaling_lut = InitializeScalingLookupTable_C<0>;
 #endif
 #endif  // LIBGAV1_ENABLE_ALL_DSP_FUNCTIONS
 }
@@ -1275,7 +1282,7 @@ void Init10bpp() {
       ConstructNoiseImageWithOverlap_C<10, int16_t>;
 
   // InitializeScalingLutFunc
-  dsp->film_grain.initialize_scaling_lut = InitializeScalingLookupTable_C;
+  dsp->film_grain.initialize_scaling_lut = InitializeScalingLookupTable_C<0>;
 #else  // !LIBGAV1_ENABLE_ALL_DSP_FUNCTIONS
   static_cast<void>(dsp);
 #ifndef LIBGAV1_Dsp10bpp_FilmGrainSynthesis
@@ -1322,7 +1329,7 @@ void Init10bpp() {
       ConstructNoiseImageWithOverlap_C<10, int16_t>;
 #endif
 #ifndef LIBGAV1_Dsp10bpp_FilmGrainInitializeScalingLutFunc
-  dsp->film_grain.initialize_scaling_lut = InitializeScalingLookupTable_C;
+  dsp->film_grain.initialize_scaling_lut = InitializeScalingLookupTable_C<0>;
 #endif
 #endif  // LIBGAV1_ENABLE_ALL_DSP_FUNCTIONS
 }

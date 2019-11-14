@@ -518,6 +518,51 @@ void ApplyAutoRegressiveFilterToLumaGrain_NEON(const FilmGrainParams& params,
 #undef ACCUMULATE_WEIGHTED_GRAIN
 }
 
+void InitializeScalingLookupTable_NEON(
+    int num_points, const uint8_t point_value[], const uint8_t point_scaling[],
+    uint8_t scaling_lut[kScalingLookupTableSize]) {
+  if (num_points == 0) {
+    memset(scaling_lut, 0, sizeof(scaling_lut[0]) * kScalingLookupTableSize);
+    return;
+  }
+  static_assert(sizeof(scaling_lut[0]) == 1, "");
+  memset(scaling_lut, point_scaling[0], point_value[0]);
+  const uint32x4_t steps = vmovl_u16(vcreate_u16(0x0003000200010000));
+  const uint32x4_t offset = vdupq_n_u32(32768);
+  for (int i = 0; i < num_points - 1; ++i) {
+    const int delta_y = point_scaling[i + 1] - point_scaling[i];
+    const int delta_x = point_value[i + 1] - point_value[i];
+    const int delta = delta_y * ((65536 + (delta_x >> 1)) / delta_x);
+    const int delta4 = delta << 2;
+    const uint8x8_t base_point = vdup_n_u8(point_scaling[i]);
+    uint32x4_t upscaled_points0 = vmlaq_n_u32(offset, steps, delta);
+    const uint32x4_t line_increment4 = vdupq_n_u32(delta4);
+    // Get the second set of 4 points by adding 4 steps to the first set.
+    uint32x4_t upscaled_points1 = vaddq_u32(upscaled_points0, line_increment4);
+    // We obtain the next set of 8 points by adding 8 steps to each of the
+    // current 8 points.
+    const uint32x4_t line_increment8 = vshlq_n_u32(line_increment4, 1);
+    int x = 0;
+    do {
+      const uint16x4_t interp_points0 = vshrn_n_u32(upscaled_points0, 16);
+      const uint16x4_t interp_points1 = vshrn_n_u32(upscaled_points1, 16);
+      const uint8x8_t interp_points =
+          vmovn_u16(vcombine_u16(interp_points0, interp_points1));
+      // The spec guarantees that the max value of |point_value[i]| + x is 255.
+      // Writing 8 bytes starting at the final table byte, leaves 7 bytes of
+      // required padding.
+      vst1_u8(&scaling_lut[point_value[i] + x],
+              vadd_u8(interp_points, base_point));
+      upscaled_points0 = vaddq_u32(upscaled_points0, line_increment8);
+      upscaled_points1 = vaddq_u32(upscaled_points1, line_increment8);
+      x += 8;
+    } while (x < delta_x);
+  }
+  const uint8_t last_point_value = point_value[num_points - 1];
+  memset(&scaling_lut[last_point_value], point_scaling[num_points - 1],
+         kScalingLookupTableSize - last_point_value);
+}
+
 void Init8bpp() {
   Dsp* const dsp = dsp_internal::GetWritableDspTable(8);
   assert(dsp != nullptr);
@@ -550,6 +595,8 @@ void Init8bpp() {
       ApplyAutoRegressiveFilterToChromaGrains_NEON<8, int8_t, 2, true>;
   dsp->film_grain.chroma_auto_regression[1][3] =
       ApplyAutoRegressiveFilterToChromaGrains_NEON<8, int8_t, 3, true>;
+
+  dsp->film_grain.initialize_scaling_lut = InitializeScalingLookupTable_NEON;
 }
 
 #if LIBGAV1_MAX_BITDEPTH >= 10
@@ -585,6 +632,8 @@ void Init10bpp() {
       ApplyAutoRegressiveFilterToChromaGrains_NEON<10, int16_t, 2, true>;
   dsp->film_grain.chroma_auto_regression[1][3] =
       ApplyAutoRegressiveFilterToChromaGrains_NEON<10, int16_t, 3, true>;
+
+  dsp->film_grain.initialize_scaling_lut = InitializeScalingLookupTable_NEON;
 }
 #endif  // LIBGAV1_MAX_BITDEPTH >= 10
 

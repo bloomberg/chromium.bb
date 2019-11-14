@@ -67,6 +67,11 @@ enum {
   // The two possible heights of the chroma noise array.
   kMinChromaHeight = 38,
   kMaxChromaHeight = 73,
+  // The scaling lookup table maps bytes to bytes, so only uses 256 elements.
+  kScalingLookupTableSize = 256,
+  // Padding is added to the scaling lookup table to permit overwrites by
+  // InitializeScalingLookupTable_NEON.
+  kScalingLookupTablePadding = 7,
 };  // anonymous enum
 
 // Section 7.18.3.5. Add noise synthesis process.
@@ -146,7 +151,7 @@ class FilmGrain {
   GrainType u_grain_[kMaxChromaHeight * kMaxChromaWidth];
   GrainType v_grain_[kMaxChromaHeight * kMaxChromaWidth];
   // Scaling lookup tables.
-  uint8_t scaling_lut_y_[256];
+  uint8_t scaling_lut_y_[kScalingLookupTableSize + kScalingLookupTablePadding];
   uint8_t* scaling_lut_u_ = nullptr;
   uint8_t* scaling_lut_v_ = nullptr;
   // If allocated, this buffer is 256 * 2 bytes long and scaling_lut_u_ and
