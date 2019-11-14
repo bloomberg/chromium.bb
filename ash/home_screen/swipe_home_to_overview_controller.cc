@@ -7,9 +7,11 @@
 #include "ash/home_screen/home_screen_controller.h"
 #include "ash/home_screen/home_screen_delegate.h"
 #include "ash/public/cpp/shelf_config.h"
+#include "ash/shelf/shelf_metrics.h"
 #include "ash/shell.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_session.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/numerics/ranges.h"
 #include "base/optional.h"
 #include "base/time/default_tick_clock.h"
@@ -158,6 +160,8 @@ void SwipeHomeToOverviewController::CancelDrag() {
   overview_transition_threshold_y_ = 0;
   state_ = State::kFinished;
 
+  UMA_HISTOGRAM_ENUMERATION(kEnterOverviewHistogramName,
+                            EnterOverviewFromHomeLauncher::kCanceled);
   Shell::Get()
       ->home_screen_controller()
       ->delegate()
@@ -179,6 +183,8 @@ void SwipeHomeToOverviewController::FinalizeDragAndShowOverview() {
   state_ = State::kFinished;
   overview_transition_threshold_y_ = 0;
 
+  UMA_HISTOGRAM_ENUMERATION(kEnterOverviewHistogramName,
+                            EnterOverviewFromHomeLauncher::kSuccess);
   Shell::Get()->overview_controller()->StartOverview();
 }
 

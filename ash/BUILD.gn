@@ -627,6 +627,7 @@ component("ash") {
     "shelf/shelf_locking_manager.h",
     "shelf/shelf_menu_model_adapter.cc",
     "shelf/shelf_menu_model_adapter.h",
+    "shelf/shelf_metrics.h",
     "shelf/shelf_navigation_widget.cc",
     "shelf/shelf_navigation_widget.h",
     "shelf/shelf_observer.h",
