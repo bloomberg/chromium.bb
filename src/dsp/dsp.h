@@ -557,11 +557,13 @@ using ObmcBlendFuncs = ObmcBlendFunc[kNumObmcDirections];
 // |dest| is the output buffer. It is a predictor, whose type is int16_t.
 // |dest_stride| is the stride, in units of int16_t.
 //
-// NOTE: WarpFunc assumes the source frame has left and right borders that
-// extend the frame boundary pixels. The left and right borders must be at
-// least 13 pixels wide. In addition, Warp_NEON() may read up to 14 bytes after
-// a row in the |source| buffer. Therefore, there must be at least one extra
-// padding byte after the right border of the last row in the source buffer.
+// NOTE: WarpFunc assumes the source frame has left, right, top, and bottom
+// borders that extend the frame boundary pixels.
+// * The left and right borders must be at least 13 pixels wide. In addition,
+//   Warp_NEON() may read up to 14 bytes after a row in the |source| buffer.
+//   Therefore, there must be at least one extra padding byte after the right
+//   border of the last row in the source buffer.
+// * The top and bottom borders must be at least 13 pixels high.
 using WarpFunc = void (*)(const void* source, ptrdiff_t source_stride,
                           int source_width, int source_height,
                           const int* warp_params, int subsampling_x,

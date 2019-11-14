@@ -68,16 +68,20 @@ enum {
   kMinPaletteSize = 2,
   kMaxPaletteSquare = 64,
   kBorderPixels = 64,
-  // Although the left and right borders of a frame start with kBorderPixels,
-  // they may change if YuvBuffer::ShiftBuffer() is called. These constants
-  // are the minimum left and right border sizes in pixels as an extension of
-  // the frame boundary. The minimum border sizes are derived from the
-  // following requirements:
+  // Although the left, right, top, and bottom border sizes of a frame are
+  // kBorderPixels initially, they may change if YuvBuffer::ShiftBuffer() is
+  // called. These constants are the minimum left, right, top, and bottom
+  // border sizes in pixels as an extension of the frame boundary. The minimum
+  // border sizes are derived from the following requirements:
   // - Warp_C() may read up to 13 pixels before or after a row.
   // - Warp_NEON() may read up to 13 pixels before a row. It may read up to 14
   //   pixels after a row, but the value of the last read pixel is not used.
+  // - Warp_C() and Warp_NEON() may read up to 13 pixels above the top row and
+  //   13 pixels below the bottom row.
   kMinLeftBorderPixels = 13,
   kMinRightBorderPixels = 13,
+  kMinTopBorderPixels = 13,
+  kMinBottomBorderPixels = 13,
   kWarpedModelPrecisionBits = 16,
   kMaxRefMvStackSize = 8,
   kExtraWeightForNearestMvs = 640,

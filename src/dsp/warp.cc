@@ -53,8 +53,8 @@ void Warp_C(const void* const source, ptrdiff_t source_stride,
     // same, store one sample per row in a column vector.
     uint16_t intermediate_result_column[15];
   };
-  const int horizontal_offset = 1 << (bitdepth + kFilterBits - 1);
-  const int vertical_offset =
+  constexpr int horizontal_offset = 1 << (bitdepth + kFilterBits - 1);
+  constexpr int vertical_offset =
       1 << (bitdepth + 2 * kFilterBits - kRoundBitsHorizontal);
   const auto* const src = static_cast<const Pixel*>(source);
   source_stride /= sizeof(Pixel);
@@ -78,6 +78,38 @@ void Warp_C(const void* const source, ptrdiff_t source_stride,
       const int ix4 = x4 >> kWarpedModelPrecisionBits;
       const int iy4 = y4 >> kWarpedModelPrecisionBits;
 
+      // A prediction block may fall outside the frame's boundaries. If a
+      // prediction block is calculated using only samples outside the frame's
+      // boundary, the filtering can be simplified. We can divide the plane
+      // into several regions and handle them differently.
+      //
+      //                |           |
+      //            1   |     3     |   1
+      //                |           |
+      //         -------+-----------+-------
+      //                |***********|
+      //            2   |*****4*****|   2
+      //                |***********|
+      //         -------+-----------+-------
+      //                |           |
+      //            1   |     3     |   1
+      //                |           |
+      //
+      // At the center, region 4 represents the frame and is the general case.
+      //
+      // In regions 1 and 2, the prediction block is outside the frame's
+      // boundary horizontally. Therefore the horizontal filtering can be
+      // simplified. Furthermore, in the region 1 (at the four corners), the
+      // prediction is outside the frame's boundary both horizontally and
+      // vertically, so we get a constant prediction block.
+      //
+      // In region 3, the prediction block is outside the frame's boundary
+      // vertically. Unfortunately because we apply the horizontal filters
+      // first, by the time we apply the vertical filters, they no longer see
+      // simple inputs. So the only simplification is that all the rows are
+      // the same, but we still need to apply all the horizontal and vertical
+      // filters.
+
       // Check for two simple special cases, where the horizontal filter can
       // be significantly simplified.
       //
@@ -99,19 +131,50 @@ void Warp_C(const void* const source, ptrdiff_t source_stride,
       // the inner for loop of the horizontal filter is reduced to multiplying
       // the border pixel by the sum of the filter coefficients.
       if (ix4 - 7 >= source_width - 1 || ix4 + 7 <= 0) {
+        // Regions 1 and 2.
         // Points to the left or right border of the first row of |src|.
         const Pixel* first_row_border =
             (ix4 + 7 <= 0) ? src : src + source_width - 1;
+        // In general, for y in [-7, 8), the row number iy4 + y is clipped:
+        //   const int row = Clip3(iy4 + y, 0, source_height - 1);
+        // In two special cases, iy4 + y is clipped to either 0 or
+        // source_height - 1 for all y. In the rest of the cases, iy4 + y is
+        // bounded and we can avoid clipping iy4 + y by relying on a reference
+        // frame's boundary extension on the top and bottom.
+        if (iy4 - 7 >= source_height - 1 || iy4 + 7 <= 0) {
+          // Region 1.
+          // Every sample used to calculate the prediction block has the same
+          // value. So the whole prediction block has the same value.
+          const int row = (iy4 + 7 <= 0) ? 0 : source_height - 1;
+          const Pixel row_border_pixel = first_row_border[row * source_stride];
+          int sum = vertical_offset +
+                    (horizontal_offset << (7 - kRoundBitsHorizontal)) +
+                    (row_border_pixel << (14 - kRoundBitsHorizontal));
+          sum >>= inter_round_bits_vertical;
+          uint16_t* dst_row = dest + start_x - block_start_x;
+          Memset(dst_row, sum, 8);
+          const uint16_t* const first_dst_row = dst_row;
+          dst_row += dest_stride;
+          for (int y = 1; y < 8; ++y) {
+            memcpy(dst_row, first_dst_row, 8 * sizeof(*dst_row));
+            dst_row += dest_stride;
+          }
+          continue;
+        }
+
+        // Region 2.
         // Horizontal filter.
         for (int y = -7; y < 8; ++y) {
-          const int row = Clip3(iy4 + y, 0, source_height - 1);
+          // We may over-read up to 13 pixels above the top source row, or up
+          // to 13 pixels below the bottom source row. This is proved below.
+          const int row = iy4 + y;
           const Pixel row_border_pixel = first_row_border[row * source_stride];
           // Every sample is equal to |row_border_pixel|. Since the sum of the
           // warped filter coefficients is 128 (= 2^7), the filtering is
           // equivalent to multiplying |row_border_pixel| by 128.
           intermediate_result_column[y + 7] =
-              (horizontal_offset >> kInterRoundBitsHorizontal) +
-              (row_border_pixel << (7 - kInterRoundBitsHorizontal));
+              (horizontal_offset >> kRoundBitsHorizontal) +
+              (row_border_pixel << (7 - kRoundBitsHorizontal));
         }
         // Vertical filter.
         uint16_t* dst_row = dest + start_x - block_start_x;
@@ -141,58 +204,122 @@ void Warp_C(const void* const source, ptrdiff_t source_stride,
         continue;
       }
 
+      // Regions 3 and 4.
       // At this point, we know ix4 - 7 < source_width - 1 and ix4 + 7 > 0.
       // It follows that -6 <= ix4 <= source_width + 5. This inequality is
       // used below.
 
-      // Horizontal filter.
-      int sx4 = (x4 & ((1 << kWarpedModelPrecisionBits) - 1)) - beta * 7;
-      for (int y = -7; y < 8; ++y) {
-        // TODO(chengchen):
-        // Because of warping, the index could be out of frame boundary. Thus
-        // clip is needed. However, can we remove or reduce usage of clip?
-        // Besides, special cases exist, for example,
-        // if iy4 - 7 >= source_height or iy4 + 7 < 0, there's no need to do the
-        // filtering.
-        const int row = Clip3(iy4 + y, 0, source_height - 1);
+      // In general, for y in [-7, 8), the row number iy4 + y is clipped:
+      //   const int row = Clip3(iy4 + y, 0, source_height - 1);
+      // In two special cases, iy4 + y is clipped to either 0 or
+      // source_height - 1 for all y. In the rest of the cases, iy4 + y is
+      // bounded and we can avoid clipping iy4 + y by relying on a reference
+      // frame's boundary extension on the top and bottom.
+      if (iy4 - 7 >= source_height - 1 || iy4 + 7 <= 0) {
+        // Region 3.
+        // Horizontal filter.
+        const int row = (iy4 + 7 <= 0) ? 0 : source_height - 1;
         const Pixel* const src_row = src + row * source_stride;
-        int sx = sx4 - MultiplyBy4(alpha);
-        for (int x = -4; x < 4; ++x) {
-          const int offset =
-              RightShiftWithRounding(sx, kWarpedDiffPrecisionBits) +
-              kWarpedPixelPrecisionShifts;
-          // Since alpha and beta have been validated by SetupShear(), one can
-          // prove that 0 <= offset <= 3 * 2^6.
-          assert(offset >= 0);
-          assert(offset < 3 * kWarpedPixelPrecisionShifts + 1);
-          // For SIMD optimization:
-          // For 8 bit, the range of sum is within uint16_t, if we add an
-          // horizontal offset:
-          int sum = horizontal_offset;
-          // Horizontal_offset guarantees sum is non negative.
-          // If horizontal_offset is used, intermediate_result needs to be
-          // uint16_t.
-          // For 10/12 bit, the range of sum is within 32 bits.
-          for (int k = 0; k < 8; ++k) {
-            // We assume the source frame has left and right borders of at
-            // least 13 pixels that extend the frame boundary pixels.
-            //
-            // Since -4 <= x <= 3 and 0 <= k <= 7, using the inequality on ix4
-            // above, we have -13 <= ix4 + x + k - 3 <= source_width + 12, or
-            // -13 <= column <= (source_width - 1) + 13. Therefore we may
-            // over-read up to 13 pixels before the source row, or up to 13
-            // pixels after the source row.
-            const int column = ix4 + x + k - 3;
-            sum += kWarpedFilters[offset][k] * src_row[column];
+        int sx4 = (x4 & ((1 << kWarpedModelPrecisionBits) - 1)) - beta * 7;
+        for (int y = -7; y < 8; ++y) {
+          int sx = sx4 - MultiplyBy4(alpha);
+          for (int x = -4; x < 4; ++x) {
+            const int offset =
+                RightShiftWithRounding(sx, kWarpedDiffPrecisionBits) +
+                kWarpedPixelPrecisionShifts;
+            // Since alpha and beta have been validated by SetupShear(), one
+            // can prove that 0 <= offset <= 3 * 2^6.
+            assert(offset >= 0);
+            assert(offset < 3 * kWarpedPixelPrecisionShifts + 1);
+            // For SIMD optimization:
+            // For 8 bit, the range of sum is within uint16_t, if we add an
+            // horizontal offset:
+            int sum = horizontal_offset;
+            // Horizontal_offset guarantees sum is non negative.
+            // If horizontal_offset is used, intermediate_result needs to be
+            // uint16_t.
+            // For 10/12 bit, the range of sum is within 32 bits.
+            for (int k = 0; k < 8; ++k) {
+              // We assume the source frame has left and right borders of at
+              // least 13 pixels that extend the frame boundary pixels.
+              //
+              // Since -4 <= x <= 3 and 0 <= k <= 7, using the inequality on
+              // ix4 above, we have
+              //   -13 <= ix4 + x + k - 3 <= source_width + 12,
+              // or
+              //   -13 <= column <= (source_width - 1) + 13.
+              // Therefore we may over-read up to 13 pixels before the source
+              // row, or up to 13 pixels after the source row.
+              const int column = ix4 + x + k - 3;
+              sum += kWarpedFilters[offset][k] * src_row[column];
+            }
+            assert(sum >= 0 && sum < (horizontal_offset << 2));
+            intermediate_result[y + 7][x + 4] = static_cast<uint16_t>(
+                RightShiftWithRounding(sum, kRoundBitsHorizontal));
+            sx += alpha;
           }
-          assert(sum >= 0 && sum < (horizontal_offset << 2));
-          intermediate_result[y + 7][x + 4] = static_cast<uint16_t>(
-              RightShiftWithRounding(sum, kRoundBitsHorizontal));
-          sx += alpha;
+          sx4 += beta;
         }
-        sx4 += beta;
+      } else {
+        // Region 4.
+        // Horizontal filter.
+        // At this point, we know iy4 - 7 < source_height - 1 and iy4 + 7 > 0.
+        // It follows that -6 <= iy4 <= source_height + 5. This inequality is
+        // used below.
+        int sx4 = (x4 & ((1 << kWarpedModelPrecisionBits) - 1)) - beta * 7;
+        for (int y = -7; y < 8; ++y) {
+          // We assume the source frame has top and bottom borders of at least
+          // 13 pixels that extend the frame boundary pixels.
+          //
+          // Since -7 <= y <= 7, using the inequality on iy4 above, we have
+          //   -13 <= iy4 + y <= source_height + 12,
+          // or
+          //   -13 <= row <= (source_height - 1) + 13.
+          // Therefore we may over-read up to 13 pixels above the top source
+          // row, or up to 13 pixels below the bottom source row.
+          const int row = iy4 + y;
+          const Pixel* const src_row = src + row * source_stride;
+          int sx = sx4 - MultiplyBy4(alpha);
+          for (int x = -4; x < 4; ++x) {
+            const int offset =
+                RightShiftWithRounding(sx, kWarpedDiffPrecisionBits) +
+                kWarpedPixelPrecisionShifts;
+            // Since alpha and beta have been validated by SetupShear(), one
+            // can prove that 0 <= offset <= 3 * 2^6.
+            assert(offset >= 0);
+            assert(offset < 3 * kWarpedPixelPrecisionShifts + 1);
+            // For SIMD optimization:
+            // For 8 bit, the range of sum is within uint16_t, if we add an
+            // horizontal offset:
+            int sum = horizontal_offset;
+            // Horizontal_offset guarantees sum is non negative.
+            // If horizontal_offset is used, intermediate_result needs to be
+            // uint16_t.
+            // For 10/12 bit, the range of sum is within 32 bits.
+            for (int k = 0; k < 8; ++k) {
+              // We assume the source frame has left and right borders of at
+              // least 13 pixels that extend the frame boundary pixels.
+              //
+              // Since -4 <= x <= 3 and 0 <= k <= 7, using the inequality on
+              // ix4 above, we have
+              //   -13 <= ix4 + x + k - 3 <= source_width + 12,
+              // or
+              //   -13 <= column <= (source_width - 1) + 13.
+              // Therefore we may over-read up to 13 pixels before the source
+              // row, or up to 13 pixels after the source row.
+              const int column = ix4 + x + k - 3;
+              sum += kWarpedFilters[offset][k] * src_row[column];
+            }
+            assert(sum >= 0 && sum < (horizontal_offset << 2));
+            intermediate_result[y + 7][x + 4] = static_cast<uint16_t>(
+                RightShiftWithRounding(sum, kRoundBitsHorizontal));
+            sx += alpha;
+          }
+          sx4 += beta;
+        }
       }
 
+      // Regions 3 and 4.
       // Vertical filter.
       uint16_t* dst_row = dest + start_x - block_start_x;
       int sy4 =

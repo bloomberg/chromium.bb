@@ -190,7 +190,9 @@ bool PostFilter::ApplyFiltering() {
           RightShiftWithRounding(upscaled_width_, subsampling_x);
       const int plane_height = RightShiftWithRounding(height_, subsampling_y);
       assert(source_buffer_->left_border(plane) >= kMinLeftBorderPixels &&
-             source_buffer_->right_border(plane) >= kMinRightBorderPixels);
+             source_buffer_->right_border(plane) >= kMinRightBorderPixels &&
+             source_buffer_->top_border(plane) >= kMinTopBorderPixels &&
+             source_buffer_->bottom_border(plane) >= kMinBottomBorderPixels);
       // plane subsampling_x_ left_border
       //   Y        N/A         64, 48
       //  U,V        0          64, 48
