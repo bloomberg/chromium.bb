@@ -38,12 +38,6 @@ from chromite.lib import retry_util
 from chromite.lib import timeout_util
 
 
-# NOTE: The following test cases are designed to run as part of the release
-# qualification process for the googlesource.com servers:
-#   GerritHelperTest
-# Any new test cases must be manually added to the qualification test suite.
-
-
 class GerritTestCase(cros_test_lib.MockTempDirTestCase):
   """Test class for tests that interact with a Gerrit server.
 
