@@ -2769,7 +2769,7 @@
   {
     "name": "omnibox-drive-suggestions",
     "owners": [ "manukh", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 80
+    "expiry_milestone": 85
   },
   {
     "name": "omnibox-experimental-keyword-mode",
@@ -2789,7 +2789,7 @@
   {
     "name": "omnibox-local-entity-suggestions",
     "owners": [ "manukh", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 80
+    "expiry_milestone": 85
   },
   {
     "name": "omnibox-loose-max-limit-on-dedicated-rows",
@@ -2799,7 +2799,7 @@
   {
     "name": "omnibox-material-design-weather-icons",
     "owners": [ "manukh", "ender", "chromium-omnibox-team" ],
-    "expiry_milestone": 80
+    "expiry_milestone": 85
   },
   {
     "name": "omnibox-max-url-matches",
