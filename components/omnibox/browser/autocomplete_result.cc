@@ -202,18 +202,13 @@ void AutocompleteResult::SortAndCull(
 
   CompareWithDemoteByType<AutocompleteMatch> comparing_object(
       input.current_page_classification());
+
 #if !(defined(OS_ANDROID) || defined(OS_IOS))
-  // Do not cull the tail suggestions for zero prefix query suggetions of
-  // chromeOS launcher or NTP, since there won't be any default match in this
-  // scenario.
-  if (!(input.text().empty() &&
-        (input.current_page_classification() ==
-             metrics::OmniboxEventProto::CHROMEOS_APP_LIST ||
-         BaseSearchProvider::IsNTPPage(input.current_page_classification())))) {
-    // Wipe tail suggestions if not exclusive (minus default match).
-    MaybeCullTailSuggestions(&matches_, comparing_object);
-  }
+  // Because tail suggestions are a "last resort", we cull the tail suggestions
+  // if there any non-default non-tail suggestions.
+  MaybeCullTailSuggestions(&matches_, comparing_object);
 #endif
+
   DemoteOnDeviceSearchSuggestions();
 
   DeduplicateMatches(input.current_page_classification(), &matches_);
