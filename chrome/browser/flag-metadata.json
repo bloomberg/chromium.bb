@@ -3349,7 +3349,7 @@
   {
     "name": "sync-wifi-configurations",
     "owners": ["jonmann", "cros-system-services@google.com"],
-    "expiry_milestone": 80
+    "expiry_milestone": 85
   },
   {
     "name": "system-keyboard-lock",
