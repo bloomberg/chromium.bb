@@ -26,6 +26,7 @@ from six.moves import urllib
 from chromite.lib import constants
 from chromite.lib import cache
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_collections
 from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
 from chromite.lib import path_util
@@ -210,44 +211,9 @@ GSListResult = collections.namedtuple(
     ('url', 'creation_time', 'content_length', 'generation', 'metageneration'))
 
 
-def NamedTupleWithDefaults(name, fields, field_defaults=None):
-  """Returns a subclass of namedtuple which fills in some default fields.
-
-  Args:
-    name: The name of the class to return.
-    fields: The fields of the namedtuple
-    field_defaults: A dict mapping field names to default values.
-  """
-  field_defaults = field_defaults or {}
-  to_wrap = collections.namedtuple(name, fields)
-
-  # pylint: disable=slots-on-old-class,no-init
-  class DefaultWrapped(to_wrap):
-    """A namedtuple with some defaults"""
-    __slots__ = ()
-    def __new__(cls, *args, **kwargs):
-      # fill in the fields that weren't used
-      for k in fields[len(args):]:
-        try:
-          if k not in kwargs:
-            kwargs[k] = field_defaults[k]
-        except KeyError:
-          raise TypeError(
-              'Field %s is not optional when constructiong %s' % (k, name))
-      return to_wrap.__new__(cls, *args, **kwargs)
-
-  DefaultWrapped.__name__ = name
-
-  return DefaultWrapped
-
-
-_ErrorDetails = NamedTupleWithDefaults(
+ErrorDetails = cros_collections.Collection(
     'ErrorDetails',
-    ('type', 'message_pattern', 'retriable', 'exception'),
-    field_defaults={
-        'message_pattern': '',
-        'exception': None,
-    })
+    type=None, message_pattern='', retriable=None, exception=None)
 
 
 class GSCounter(object):
@@ -771,20 +737,21 @@ class GSContext(object):
       e: Exception object to filter.
 
     Returns:
-      An _ErrorDetails instance with details about the message pattern found.
+      An ErrorDetails instance with details about the message pattern found.
     """
     if not retry_util.ShouldRetryCommandCommon(e):
       if not isinstance(e, cros_build_lib.RunCommandError):
         error_type = 'unknown'
       else:
         error_type = 'failed_to_launch'
-      return _ErrorDetails(error_type, retriable=False)
+      return ErrorDetails(type=error_type, retriable=False)
 
     # e is guaranteed by above filter to be a RunCommandError
     if e.result.returncode < 0:
       sig_name = signals.StrSignal(-e.result.returncode)
       logging.info('Child process received signal %d; not retrying.', sig_name)
-      return _ErrorDetails('received_signal', sig_name, False)
+      return ErrorDetails(type='received_signal', message_pattern=sig_name,
+                          retriable=False)
 
     error = e.result.error
     if error:
@@ -792,8 +759,8 @@ class GSContext(object):
       # It may also print "ResumableUploadAbortException: 412 Precondition
       # Failed", so the logic needs to be a little more general.
       if 'PreconditionException' in error or '412 Precondition Failed' in error:
-        return _ErrorDetails('precondition_exception', retriable=False,
-                             exception=GSContextPreconditionFailed(e))
+        return ErrorDetails(type='precondition_exception', retriable=False,
+                            exception=GSContextPreconditionFailed(e))
 
       # If the file does not exist, one of the following errors occurs. The
       # "stat" command leaves off the "CommandException: " prefix, but it also
@@ -802,8 +769,8 @@ class GSContext(object):
       if ('CommandException: No URLs matched' in error or
           'NotFoundException:' in error or
           'One or more URLs matched no objects' in error):
-        return _ErrorDetails('no_such_key', retriable=False,
-                             exception=GSNoSuchKey(e))
+        return ErrorDetails(type='no_such_key', retriable=False,
+                            exception=GSNoSuchKey(e))
 
       logging.warning('GS_ERROR: %s ', error)
 
@@ -829,13 +796,15 @@ class GSContext(object):
               logging.info('The content of the tracker file: %s',
                            osutils.ReadFile(tracker_file_path))
               osutils.SafeUnlink(tracker_file_path)
-        return _ErrorDetails('resumable', resumable_error, retriable=True)
+        return ErrorDetails(type='resumable', message_pattern=resumable_error,
+                            retriable=True)
 
       transient_error = _FirstSubstring(error, self.TRANSIENT_ERROR_MESSAGE)
       if transient_error:
-        return _ErrorDetails('transient', transient_error, retriable=True)
+        return ErrorDetails(type='transient', message_pattern=transient_error,
+                            retriable=True)
 
-    return _ErrorDetails('unknown', retriable=False)
+    return ErrorDetails(type='unknown', retriable=False)
 
   # TODO(mtennant): Make a private method.
   def DoCommand(self, gsutil_cmd, headers=(), retries=None, version=None,
