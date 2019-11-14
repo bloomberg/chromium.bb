@@ -277,7 +277,7 @@ proto_library("system_api-vm_concierge-protos") {
   proto_in_dir = "dbus/vm_concierge"
   proto_out_dir = "include/vm_concierge/proto_bindings"
   sources = [
-    "${proto_in_dir}/service.proto",
+    "${proto_in_dir}/concierge_service.proto",
   ]
   standalone = true
 }
@@ -286,7 +286,7 @@ goproto_library("system_api-vm_concierge-goprotos") {
   proto_in_dir = "dbus/vm_concierge"
   proto_out_dir = "go/src/chromiumos/system_api/vm_concierge_proto"
   sources = [
-    "${proto_in_dir}/service.proto",
+    "${proto_in_dir}/concierge_service.proto",
   ]
 }
 
@@ -418,7 +418,7 @@ proto_library("system_api-anomaly_detector-protos") {
   proto_in_dir = "dbus/anomaly_detector"
   proto_out_dir = "include/anomaly_detector/proto_bindings"
   sources = [
-    "${proto_in_dir}/service.proto",
+    "${proto_in_dir}/anomaly_detector.proto",
   ]
   standalone = true
 }
