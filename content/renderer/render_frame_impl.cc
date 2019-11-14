@@ -4586,6 +4586,9 @@ void RenderFrameImpl::DidCommitProvisionalLoad(
 
   // Check whether we have new encoding name.
   UpdateEncoding(frame_, frame_->View()->PageEncoding().Utf8());
+
+  NotifyObserversOfNavigationCommit(false /* was_within_same_document */,
+                                    transition);
 }
 
 void RenderFrameImpl::DidCreateNewDocument() {
@@ -4835,6 +4838,9 @@ void RenderFrameImpl::DidFinishSameDocumentNavigation(
   // If we end up reusing this WebRequest (for example, due to a #ref click),
   // we don't want the transition type to persist.  Just clear it.
   data->navigation_state()->set_transition_type(ui::PAGE_TRANSITION_LINK);
+
+  NotifyObserversOfNavigationCommit(true /* was_within_same_document */,
+                                    transition);
 }
 
 void RenderFrameImpl::DidUpdateCurrentHistoryItem() {
@@ -5605,7 +5611,7 @@ RenderFrameImpl::MakeDidCommitProvisionalLoadParams(
   return params;
 }
 
-bool RenderFrameImpl::UpdateNavigationHistory(
+void RenderFrameImpl::UpdateNavigationHistory(
     const blink::WebHistoryItem& item,
     blink::WebHistoryCommitType commit_type) {
   NavigationState* navigation_state =
@@ -5640,12 +5646,9 @@ bool RenderFrameImpl::UpdateNavigationHistory(
     render_view_->history_list_offset_ =
         navigation_state->commit_params().pending_history_list_offset;
   }
-
-  return is_new_navigation;
 }
 
 void RenderFrameImpl::NotifyObserversOfNavigationCommit(
-    bool is_new_navigation,
     bool is_same_document,
     ui::PageTransition transition) {
   for (auto& observer : observers_)
@@ -5665,9 +5668,7 @@ void RenderFrameImpl::UpdateStateForCommit(
   // the previous page. Do this before updating the current history item.
   SendUpdateState();
 
-  bool is_new_navigation = UpdateNavigationHistory(item, commit_type);
-  NotifyObserversOfNavigationCommit(
-      is_new_navigation, navigation_state->WasWithinSameDocument(), transition);
+  UpdateNavigationHistory(item, commit_type);
 
   if (internal_data->must_reset_scroll_and_scale_state()) {
     render_view_->webview()->ResetScrollAndScaleState();
@@ -5728,10 +5729,11 @@ void RenderFrameImpl::DidCommitNavigationInternal(
   if (render_view_->renderer_wide_named_frame_lookup())
     GetWebFrame()->SetAllowsCrossBrowsingInstanceFrameLookup();
 
-  // This invocation must precede any calls to allowScripts(), allowImages(), or
-  // allowPlugins() for the new page. This ensures that when these functions
-  // send ViewHostMsg_ContentBlocked messages, those arrive after the browser
-  // process has already been informed of the provisional load committing.
+  // This invocation must precede any calls to allowScripts(), allowImages(),
+  // or allowPlugins() for the new page. This ensures that when these functions
+  // call chrome::ContentSettingsManager::OnContentBlocked, those calls arrive
+  // after the browser process has already been informed of the provisional
+  // load committing.
   auto params = MakeDidCommitProvisionalLoadParams(commit_type, transition);
   if (was_within_same_document) {
     GetFrameHost()->DidCommitSameDocumentNavigation(std::move(params));
