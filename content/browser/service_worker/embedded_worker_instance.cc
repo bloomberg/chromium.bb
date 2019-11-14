@@ -206,9 +206,8 @@ void SetupOnUIThread(
   // Bind |receiver|, which is attached to |EmbeddedWorkerInstance::client_|, to
   // the process. If the process dies, |client_|'s connection error callback
   // will be called on the core thread.
-  if (receiver.is_valid()) {
-    BindInterface(rph, std::move(receiver));
-  }
+  if (receiver.is_valid())
+    rph->BindReceiver(std::move(receiver));
 
   // Register to DevTools and update params accordingly.
   const int routing_id = rph->GetNextRoutingID();

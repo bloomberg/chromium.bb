@@ -43,6 +43,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/renderer_resources.h"
 #include "chrome/renderer/benchmarking_extension.h"
+#include "chrome/renderer/browser_exposed_renderer_interfaces.h"
 #include "chrome/renderer/chrome_render_frame_observer.h"
 #include "chrome/renderer/chrome_render_thread_observer.h"
 #include "chrome/renderer/content_settings_agent_impl.h"
@@ -361,8 +362,8 @@ void ChromeContentRendererClient::RenderThreadStarted() {
   browser_interface_broker_ =
       blink::Platform::Current()->GetBrowserInterfaceBroker();
 
-  chrome_observer_.reset(new ChromeRenderThreadObserver());
-  web_cache_impl_.reset(new web_cache::WebCacheImpl());
+  chrome_observer_ = std::make_unique<ChromeRenderThreadObserver>();
+  web_cache_impl_ = std::make_unique<web_cache::WebCacheImpl>();
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   ChromeExtensionsRendererClient::GetInstance()->RenderThreadStarted();
@@ -445,6 +446,14 @@ void ChromeContentRendererClient::RenderThreadStarted() {
     thread->BindHostReceiver(collector.InitWithNewPipeAndPassReceiver());
     ThreadProfiler::SetCollectorForChildProcess(std::move(collector));
   }
+}
+
+void ChromeContentRendererClient::ExposeInterfacesToBrowser(
+    mojo::BinderMap* binders) {
+  // NOTE: Do not add binders directly within this method. Instead, modify the
+  // definition of |ExposeChromeRendererInterfacesToBrowser()| to ensure
+  // security review coverage.
+  ExposeChromeRendererInterfacesToBrowser(this, binders);
 }
 
 void ChromeContentRendererClient::RenderFrameCreated(
@@ -1315,7 +1324,7 @@ bool ChromeContentRendererClient::IsExtensionOrSharedModuleWhitelisted(
 
 #if BUILDFLAG(ENABLE_SPELLCHECK)
 void ChromeContentRendererClient::InitSpellCheck() {
-  spellcheck_ = std::make_unique<SpellCheck>(&registry_, this);
+  spellcheck_ = std::make_unique<SpellCheck>(this);
 }
 #endif
 
@@ -1323,6 +1332,25 @@ ChromeRenderThreadObserver* ChromeContentRendererClient::GetChromeObserver()
     const {
   return chrome_observer_.get();
 }
+
+web_cache::WebCacheImpl* ChromeContentRendererClient::GetWebCache() {
+  return web_cache_impl_.get();
+}
+
+chrome::WebRtcLoggingAgentImpl*
+ChromeContentRendererClient::GetWebRtcLoggingAgent() {
+  if (!webrtc_logging_agent_impl_) {
+    webrtc_logging_agent_impl_ =
+        std::make_unique<chrome::WebRtcLoggingAgentImpl>();
+  }
+  return webrtc_logging_agent_impl_.get();
+}
+
+#if BUILDFLAG(ENABLE_SPELLCHECK)
+SpellCheck* ChromeContentRendererClient::GetSpellCheck() {
+  return spellcheck_.get();
+}
+#endif  // BUILDFLAG(ENABLE_SPELLCHECK)
 
 std::unique_ptr<content::WebSocketHandshakeThrottleProvider>
 ChromeContentRendererClient::CreateWebSocketHandshakeThrottleProvider() {

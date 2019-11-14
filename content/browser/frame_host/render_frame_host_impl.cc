@@ -5782,7 +5782,7 @@ void RenderFrameHostImpl::SetUpMojoIfNeeded() {
       base::Unretained(this)));
   RegisterMojoInterfaces();
   mojo::PendingRemote<mojom::FrameFactory> frame_factory;
-  BindInterface(GetProcess(), &frame_factory);
+  GetProcess()->BindReceiver(frame_factory.InitWithNewPipeAndPassReceiver());
   mojo::Remote<mojom::FrameFactory>(std::move(frame_factory))
       ->CreateFrame(routing_id_, frame_.BindNewPipeAndPassReceiver());
 

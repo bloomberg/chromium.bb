@@ -2284,10 +2284,7 @@ void RenderFrameImpl::BindAutoplayConfiguration(
       GetTaskRunner(blink::TaskType::kInternalNavigationAssociated));
 }
 
-void RenderFrameImpl::BindFrame(
-    const service_manager::BindSourceInfo& browser_info,
-    mojo::PendingReceiver<mojom::Frame> receiver) {
-  browser_info_ = browser_info;
+void RenderFrameImpl::BindFrame(mojo::PendingReceiver<mojom::Frame> receiver) {
   // It's not unfreezable at the moment because Frame::SetLifecycleState
   // has to run for the frozen frames.
   // TODO(altimin): Move SetLifecycleState to a dedicated scheduling interface.

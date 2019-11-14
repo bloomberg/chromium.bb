@@ -73,7 +73,6 @@
 #include "ppapi/buildflags/buildflags.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom-forward.h"
-#include "services/service_manager/public/cpp/bind_source_info.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom.h"
@@ -843,8 +842,7 @@ class CONTENT_EXPORT RenderFrameImpl
           receiver);
 
   // Binds to the FrameHost in the browser.
-  void BindFrame(const service_manager::BindSourceInfo& browser_info,
-                 mojo::PendingReceiver<mojom::Frame> receiver);
+  void BindFrame(mojo::PendingReceiver<mojom::Frame> receiver);
 
   // Virtual so that a TestRenderFrame can mock out the interface.
   virtual mojom::FrameHost* GetFrameHost();
@@ -1533,9 +1531,6 @@ class CONTENT_EXPORT RenderFrameImpl
 
   blink::BrowserInterfaceBrokerProxy browser_interface_broker_proxy_;
 
-  service_manager::BindSourceInfo local_info_;
-  service_manager::BindSourceInfo remote_info_;
-
   // The current accessibility mode.
   ui::AXMode accessibility_mode_;
 
@@ -1614,8 +1609,6 @@ class CONTENT_EXPORT RenderFrameImpl
   // This boolean indicates whether JS bindings for Mojo should be enabled at
   // the time the next script context is created.
   bool enable_mojo_js_bindings_ = false;
-
-  service_manager::BindSourceInfo browser_info_;
 
   mojo::AssociatedRemote<mojom::FrameHost> frame_host_remote_;
   mojo::BindingSet<service_manager::mojom::InterfaceProvider>
