@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""A database of OWNERS files.
+r"""A database of OWNERS files.
 
 OWNERS files indicate who is allowed to approve changes in a specific directory
 (or who is allowed to make changes without needing approval of another OWNER).
@@ -62,6 +62,12 @@ import fnmatch
 import random
 import re
 
+try:
+  # This fallback applies for all versions of Python before 3.3
+  import collections.abc as collections_abc
+except ImportError:
+  import collections as collections_abc
+
 
 # If this is present by itself on a line, this means that everyone can review.
 EVERYONE = '*'
@@ -80,9 +86,9 @@ def _assert_is_collection(obj):
   assert not isinstance(obj, str)
   # Module 'collections' has no 'Iterable' member
   # pylint: disable=no-member
-  if hasattr(collections, 'Iterable') and hasattr(collections, 'Sized'):
-    assert (isinstance(obj, collections.Iterable) and
-            isinstance(obj, collections.Sized))
+  if hasattr(collections_abc, 'Iterable') and hasattr(collections_abc, 'Sized'):
+    assert (isinstance(obj, collections_abc.Iterable) and
+            isinstance(obj, collections_abc.Sized))
 
 
 class SyntaxErrorInOwnersFile(Exception):

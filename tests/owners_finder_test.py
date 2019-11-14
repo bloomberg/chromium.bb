@@ -153,8 +153,12 @@ class OwnersFinderTests(_BaseTestCase):
   def test_reset(self):
     finder = self.defaultFinder()
     for _ in range(2):
-      self.assertEqual(finder.owners_queue,
-                       [brett, darin, john, peter, ken, ben, tom])
+      expected = [brett, darin, john, peter, ken, ben, tom]
+      # darin and john have equal cost, the others have distinct costs.
+      # If the owners_queue has those two swapped then swap them in expected.
+      if finder.owners_queue[1] != expected[1]:
+        expected[1], expected[2] = expected[2], expected[1]
+      self.assertEqual(finder.owners_queue, expected)
       self.assertEqual(finder.unreviewed_files, {
           'base/vlog.h',
           'chrome/browser/defaults.h',
@@ -202,7 +206,13 @@ class OwnersFinderTests(_BaseTestCase):
 
     finder = self.defaultFinder()
     finder.select_owner(brett)
-    self.assertEqual(finder.owners_queue, [darin, john, peter, ken, tom])
+    expected = [darin, john, peter, ken, tom]
+    # darin and john have equal cost, the others have distinct costs.
+    # If the owners_queue has those two swapped then swap them in expected.
+    if finder.owners_queue[0] == john:
+      expected[0], expected[1] = expected[1], expected[0]
+
+    self.assertEqual(finder.owners_queue, expected)
     self.assertEqual(finder.selected_owners, {brett})
     self.assertEqual(finder.deselected_owners, {ben})
     self.assertEqual(finder.reviewed_by,
