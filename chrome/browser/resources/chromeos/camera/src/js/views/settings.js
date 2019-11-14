@@ -373,7 +373,7 @@ cca.views.ResolutionSettings.prototype.photoOptTextTempl_ = function(
  */
 cca.views.ResolutionSettings.prototype.videoOptTextTempl_ = function(r) {
   return chrome.i18n.getMessage(
-      'label_video_resolution', [r.width, r.height].map(String));
+      'label_video_resolution', [r.height, r.width].map(String));
 };
 
 /**
