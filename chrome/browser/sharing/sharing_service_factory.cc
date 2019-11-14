@@ -11,6 +11,7 @@
 #include "chrome/browser/gcm/instance_id/instance_id_profile_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sharing/sharing_device_registration.h"
+#include "chrome/browser/sharing/sharing_device_source_sync.h"
 #include "chrome/browser/sharing/sharing_fcm_handler.h"
 #include "chrome/browser/sharing/sharing_fcm_sender.h"
 #include "chrome/browser/sharing/sharing_message_sender.h"
@@ -101,12 +102,15 @@ KeyedService* SharingServiceFactory::BuildServiceInstanceFor(
 
   content::SmsFetcher* sms_fetcher = content::SmsFetcher::Get(context);
 
+  std::unique_ptr<SharingDeviceSource> device_source =
+      std::make_unique<SharingDeviceSourceSync>(
+          sync_service, local_device_info_provider, device_info_tracker);
+
   return new SharingService(
       profile, std::move(sync_prefs), std::move(vapid_key_manager),
       std::move(sharing_device_registration), std::move(fcm_sender),
-      std::move(fcm_handler), std::move(sharing_message_sender), gcm_driver,
-      device_info_tracker, local_device_info_provider, sync_service,
-      sms_fetcher);
+      std::move(fcm_handler), std::move(sharing_message_sender),
+      std::move(device_source), gcm_driver, sync_service, sms_fetcher);
 }
 
 content::BrowserContext* SharingServiceFactory::GetBrowserContextToUse(

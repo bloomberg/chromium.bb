@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 #include "chrome/browser/sharing/mock_sharing_service.h"
 
+#include "chrome/browser/sharing/sharing_device_source.h"
 #include "chrome/browser/sharing/sharing_fcm_handler.h"
 #include "chrome/browser/sharing/sharing_fcm_sender.h"
 #include "chrome/browser/sharing/sharing_sync_preference.h"
@@ -24,9 +25,8 @@ MockSharingService::MockSharingService()
                                               /*sharing_fcm_sender=*/nullptr,
                                               /*sync_preference=*/nullptr),
           /*message_sender=*/nullptr,
+          /*device_source=*/nullptr,
           /*gcm_driver=*/nullptr,
-          /*device_info_tracker=*/nullptr,
-          /*local_device_info_provider=*/nullptr,
           /*sync_service*/ nullptr,
           /*sms_fetcher=*/nullptr) {}
 

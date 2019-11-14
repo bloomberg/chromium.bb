@@ -3240,6 +3240,8 @@ test("unit_tests") {
     "../browser/sharing/mock_sharing_service.cc",
     "../browser/sharing/mock_sharing_service.h",
     "../browser/sharing/sharing_device_registration_unittest.cc",
+    "../browser/sharing/sharing_device_source_sync_unittest.cc",
+    "../browser/sharing/sharing_device_source_unittest.cc",
     "../browser/sharing/sharing_fcm_handler_unittest.cc",
     "../browser/sharing/sharing_fcm_sender_unittest.cc",
     "../browser/sharing/sharing_message_sender_unittest.cc",

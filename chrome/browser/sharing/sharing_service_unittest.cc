@@ -16,6 +16,7 @@
 #include "chrome/browser/sharing/sharing_constants.h"
 #include "chrome/browser/sharing/sharing_device_registration.h"
 #include "chrome/browser/sharing/sharing_device_registration_result.h"
+#include "chrome/browser/sharing/sharing_device_source_sync.h"
 #include "chrome/browser/sharing/sharing_fcm_handler.h"
 #include "chrome/browser/sharing/sharing_fcm_sender.h"
 #include "chrome/browser/sharing/sharing_sync_preference.h"
@@ -212,10 +213,12 @@ class SharingServiceTest : public testing::Test {
           base::WrapUnique(vapid_key_manager_),
           base::WrapUnique(sharing_device_registration_), nullptr,
           base::WrapUnique(fcm_handler_),
-          base::WrapUnique(sharing_message_sender_), nullptr,
-          fake_device_info_sync_service.GetDeviceInfoTracker(),
-          fake_device_info_sync_service.GetLocalDeviceInfoProvider(),
-          &test_sync_service_,
+          base::WrapUnique(sharing_message_sender_),
+          std::make_unique<SharingDeviceSourceSync>(
+              &test_sync_service_,
+              fake_device_info_sync_service.GetLocalDeviceInfoProvider(),
+              fake_device_info_sync_service.GetDeviceInfoTracker()),
+          /*gcm_driver=*/nullptr, &test_sync_service_,
           /* sms_fetcher= */ nullptr);
     }
     task_environment_.RunUntilIdle();
@@ -716,7 +719,7 @@ TEST_F(SharingServiceTest, DeviceCandidatesAlreadyReady) {
   fake_device_info_sync_service.GetDeviceInfoTracker()->Add(device_info.get());
   fake_device_info_sync_service.GetLocalDeviceInfoProvider()->SetReady(true);
 
-  GetSharingService()->AddDeviceCandidatesInitializedObserver(
+  GetSharingService()->GetDeviceSource()->AddReadyCallback(
       base::BindOnce(&SharingServiceTest::OnDeviceCandidatesInitialized,
                      base::Unretained(this)));
 
@@ -726,7 +729,7 @@ TEST_F(SharingServiceTest, DeviceCandidatesAlreadyReady) {
 TEST_F(SharingServiceTest, DeviceCandidatesReadyAfterAddObserver) {
   fake_device_info_sync_service.GetLocalDeviceInfoProvider()->SetReady(false);
 
-  GetSharingService()->AddDeviceCandidatesInitializedObserver(
+  GetSharingService()->GetDeviceSource()->AddReadyCallback(
       base::BindOnce(&SharingServiceTest::OnDeviceCandidatesInitialized,
                      base::Unretained(this)));
 
