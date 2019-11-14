@@ -296,6 +296,7 @@ class VIZ_SERVICE_EXPORT GLRenderer : public DirectRenderer {
 
   void ReinitializeGLState();
   void RestoreGLState();
+  void RestoreGLStateAfterSkia();
 
   // TODO(weiliangc): Once the overlay processor could schedule overlays, remove
   // these functions.

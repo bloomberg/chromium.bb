@@ -316,7 +316,7 @@ class GLRenderer::ScopedUseGrContext {
   ~ScopedUseGrContext() {
     // Pass context control back to GLrenderer.
     scoped_gpu_raster_ = nullptr;
-    renderer_->RestoreGLState();
+    renderer_->RestoreGLStateAfterSkia();
   }
 
   GrContext* context() const {
@@ -3339,6 +3339,17 @@ void GLRenderer::ReinitializeGLState() {
   stencil_shadow_ = false;
   blend_shadow_ = true;
   current_program_ = nullptr;
+
+  RestoreGLState();
+}
+
+void GLRenderer::RestoreGLStateAfterSkia() {
+  // After using Skia we need to disable vertex attributes we don't use
+  int attribs_count = output_surface_->context_provider()
+                          ->ContextCapabilities()
+                          .max_vertex_attribs;
+  for (int i = 0; i < attribs_count; i++)
+    gl_->DisableVertexAttribArray(i);
 
   RestoreGLState();
 }
