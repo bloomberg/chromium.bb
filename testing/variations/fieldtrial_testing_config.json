@@ -4018,21 +4018,6 @@
             ]
         }
     ],
-    "OfflinePreviewsFalsePositivePrevention": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "OfflinePreviewsFalsePositivePrevention"
-                    ]
-                }
-            ]
-        }
-    ],
     "OmniboxBundledExperimentV1": [
         {
             "platforms": [
