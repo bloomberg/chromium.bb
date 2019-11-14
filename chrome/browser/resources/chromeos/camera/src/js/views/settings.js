@@ -132,7 +132,7 @@ cca.views.MasterSettings.prototype.openFeedback = function() {
 /**
  * Creates the controller of resolution settings view.
  * @param {!cca.device.DeviceInfoUpdater} infoUpdater
- * @param {!cca.device.PhotoResolPreferrer} photoPreferrer
+ * @param {!cca.device.PhotoConstraintsPreferrer} photoPreferrer
  * @param {!cca.device.VideoConstraintsPreferrer} videoPreferrer
  * @extends {cca.views.BaseSettings}
  * @constructor
@@ -172,7 +172,7 @@ cca.views.ResolutionSettings = function(
   });
 
   /**
-   * @type {!cca.device.PhotoResolPreferrer}
+   * @type {!cca.device.PhotoConstraintsPreferrer}
    * @private
    */
   this.photoPreferrer_ = photoPreferrer;

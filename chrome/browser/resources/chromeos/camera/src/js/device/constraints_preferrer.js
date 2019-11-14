@@ -437,7 +437,8 @@ cca.device.VideoConstraintsPreferrer =
 /**
  * Controller for handling photo resolution preference.
  */
-cca.device.PhotoResolPreferrer = class extends cca.device.ConstraintsPreferrer {
+cca.device.PhotoConstraintsPreferrer =
+    class extends cca.device.ConstraintsPreferrer {
   /**
    * @param {!function()} doReconfigureStream
    * @public
