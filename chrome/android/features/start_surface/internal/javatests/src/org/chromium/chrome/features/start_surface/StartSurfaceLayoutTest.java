@@ -143,13 +143,13 @@ public class StartSurfaceLayoutTest {
     @Test
     @MediumTest
     @Feature({"RenderTest"})
+    // clang-format off
     @CommandLineFlags.Add({BASE_PARAMS})
-    @DisabledTest(message = "crbug.com/1024608 This test is flaky")
+    @DisableIf.Build(message = "crbug.com/1024608", sdk_is_less_than = Build.VERSION_CODES.N)
     public void testRenderGrid_3WebTabs() throws InterruptedException, IOException {
+        // clang-format on
         prepareTabs(3, 0, mUrl);
-        TabUiTestHelper.enterTabSwitcher(mActivityTestRule.getActivity());
-        TabUiTestHelper.clickFirstCardFromTabSwitcher(mActivityTestRule.getActivity());
-
+        ChromeTabUtils.switchTabInCurrentTabModel(mActivityTestRule.getActivity(), 0);
         enterGTSWithThumbnailChecking();
         mRenderTestRule.render(mActivityTestRule.getActivity().findViewById(
                                        org.chromium.chrome.tab_ui.R.id.tab_list_view),
@@ -159,13 +159,13 @@ public class StartSurfaceLayoutTest {
     @Test
     @MediumTest
     @Feature({"RenderTest"})
+    // clang-format off
     @CommandLineFlags.Add({BASE_PARAMS})
-    @DisabledTest(message = "crbug.com/1024608 This test is flaky")
+    @DisableIf.Build(message = "crbug.com/1024608", sdk_is_less_than = Build.VERSION_CODES.N)
     public void testRenderGrid_10WebTabs() throws InterruptedException, IOException {
+        // clang-format on
         prepareTabs(10, 0, mUrl);
-        TabUiTestHelper.enterTabSwitcher(mActivityTestRule.getActivity());
-        TabUiTestHelper.clickFirstCardFromTabSwitcher(mActivityTestRule.getActivity());
-
+        ChromeTabUtils.switchTabInCurrentTabModel(mActivityTestRule.getActivity(), 0);
         enterGTSWithThumbnailChecking();
         mRenderTestRule.render(mActivityTestRule.getActivity().findViewById(
                                        org.chromium.chrome.tab_ui.R.id.tab_list_view),
@@ -175,15 +175,13 @@ public class StartSurfaceLayoutTest {
     @Test
     @MediumTest
     @Feature({"RenderTest"})
+    // clang-format off
     @CommandLineFlags.Add({BASE_PARAMS})
-    @DisabledTest(message = "crbug.com/1024608 This test is flaky")
+    @DisableIf.Build(message = "crbug.com/1024608", sdk_is_less_than = Build.VERSION_CODES.N)
     public void testRenderGrid_10WebTabs_InitialScroll() throws InterruptedException, IOException {
+        // clang-format on
         prepareTabs(10, 0, mUrl);
-        TabUiTestHelper.enterTabSwitcher(mActivityTestRule.getActivity());
-        TabUiTestHelper.clickNthCardFromTabSwitcher(mActivityTestRule.getActivity(),
-                mActivityTestRule.getActivity().getTabModelSelector().getCurrentModel().getCount()
-                        - 1);
-
+        ChromeTabUtils.switchTabInCurrentTabModel(mActivityTestRule.getActivity(), 9);
         enterGTSWithThumbnailChecking();
         // Make sure the grid tab switcher is scrolled down to show the selected tab.
         mRenderTestRule.render(mActivityTestRule.getActivity().findViewById(
@@ -194,15 +192,15 @@ public class StartSurfaceLayoutTest {
     @Test
     @MediumTest
     @Feature({"RenderTest"})
+    // clang-format off
     @CommandLineFlags.Add({BASE_PARAMS})
-    @DisabledTest(message = "crbug.com/1024608 This test is flaky")
+    @DisableIf.Build(message = "crbug.com/1024608", sdk_is_less_than = Build.VERSION_CODES.N)
     public void testRenderGrid_Incognito() throws InterruptedException, IOException {
+        // clang-format on
         // Prepare some incognito tabs and enter tab switcher.
         prepareTabs(1, 3, mUrl);
         assertTrue(mActivityTestRule.getActivity().getCurrentTabModel().isIncognito());
-        TabUiTestHelper.enterTabSwitcher(mActivityTestRule.getActivity());
-        TabUiTestHelper.clickFirstCardFromTabSwitcher(mActivityTestRule.getActivity());
-
+        ChromeTabUtils.switchTabInCurrentTabModel(mActivityTestRule.getActivity(), 0);
         enterGTSWithThumbnailChecking();
         mRenderTestRule.render(mActivityTestRule.getActivity().findViewById(
                                        org.chromium.chrome.tab_ui.R.id.tab_list_view),
