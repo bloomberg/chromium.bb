@@ -174,7 +174,6 @@ class EventLogger(object):
 
   def shutdown(self):
     """Call to clean up any resources that the logger may be using"""
-    pass
 
 
 def getEventFileLogger(file_name, data=None, encoder_func=json.dumps):

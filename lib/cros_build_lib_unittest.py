@@ -1042,11 +1042,9 @@ class SafeRunTest(cros_test_lib.TestCase):
     """Verify we raise the first exception when multiple are encountered."""
     class E1(Exception):
       """Simple exception class."""
-      pass
 
     class E2(Exception):
       """Simple exception class."""
-      pass
 
     f_list = [functools.partial(self._raise_exception, e) for e in [E1, E2]]
     self.assertRaises(E1, cros_build_lib.SafeRun, f_list)

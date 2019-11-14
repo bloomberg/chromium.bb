@@ -715,4 +715,3 @@ class FakeCIDBConnection(object):
     This function is not being tested. A function stub to spare a
     unittest error.
     """
-    pass

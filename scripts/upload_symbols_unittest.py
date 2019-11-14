@@ -135,7 +135,6 @@ class SymbolServerRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
   # pylint: disable=arguments-differ
   def log_message(self, *args, **kwargs):
     """Stub the logger as it writes to stderr"""
-    pass
 
 
 class SymbolServer(socketserver.ThreadingTCPServer, BaseHTTPServer.HTTPServer):

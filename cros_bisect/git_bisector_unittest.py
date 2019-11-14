@@ -574,7 +574,6 @@ class TestGitBisector(cros_test_lib.MockTempDirTestCase):
   @staticmethod
   def _DummyMethod():
     """A dummy method for test to call and mock."""
-    pass
 
   def testBuildDeployEvalNoCheckLastEvaluateSpecifyBuildDeploy(self):
     """Tests BuildDeployEval() with customize_build_deploy specified."""

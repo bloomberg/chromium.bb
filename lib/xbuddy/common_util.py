@@ -35,7 +35,6 @@ _HASH_BLOCK_SIZE = 8192
 
 class CommonUtilError(Exception):
   """Exception classes used by this module."""
-  pass
 
 
 class DevServerHTTPError(cherrypy.HTTPError):

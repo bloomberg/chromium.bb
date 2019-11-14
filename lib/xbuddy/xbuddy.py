@@ -136,7 +136,6 @@ RELEASE = '-release'
 
 class XBuddyException(Exception):
   """Exception classes used by this module."""
-  pass
 
 
 class Timestamp(object):

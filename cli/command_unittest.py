@@ -51,7 +51,6 @@ class TestCommandTest(cros_test_lib.MockTestCase):
       @command.CommandDecorator('bad')
       class BadTestCommand(object):
         """A command that wasn't implemented correctly."""
-        pass
 
     except command.InvalidCommandError:
       pass

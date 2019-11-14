@@ -161,7 +161,6 @@ class CommitInfo(object):
 
 class MissingRequiredOptionsException(Exception):
   """Exception raised for missing required options."""
-  pass
 
 
 class OptionsChecker(object):

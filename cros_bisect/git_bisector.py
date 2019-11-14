@@ -17,7 +17,6 @@ from chromite.lib import git
 
 class GitBisectorException(Exception):
   """Exception raised for GitBisector error."""
-  pass
 
 
 class GitBisector(common.OptionsChecker):

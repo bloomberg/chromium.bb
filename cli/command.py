@@ -84,7 +84,6 @@ def ListCommands():
 
 class InvalidCommandError(Exception):
   """Error that occurs when command class fails sanity checks."""
-  pass
 
 
 def CommandDecorator(command_name):

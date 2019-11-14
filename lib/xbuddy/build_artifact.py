@@ -80,7 +80,6 @@ _build_artifact_locks = common_util.LockDict()
 
 class ArtifactDownloadError(Exception):
   """Error used to signify an issue processing an artifact."""
-  pass
 
 
 class ArtifactMeta(type):
