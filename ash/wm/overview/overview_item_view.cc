@@ -269,8 +269,7 @@ gfx::Rect OverviewItemView::GetHeaderBounds() const {
   // ---------------------------+---------+
   //                                   c
   //                                   |
-  return gfx::Rect(margin, margin,
-                   GetLocalBounds().width() - margin - right_padding,
+  return gfx::Rect(margin, margin, GetLocalBounds().width() - right_padding,
                    kHeaderHeightDp);
 }
 
