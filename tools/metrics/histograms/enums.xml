@@ -50858,9 +50858,6 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="PrintPreviewFailureType">
-<!-- This must be kept current with PrintPreviewErrorBuckets in
-     components/printing/renderer/print_render_frame_helper.h. -->
-
   <int value="0" label="No error"/>
   <int value="1" label="Bad settings from print preview tab"/>
   <int value="2" label="Copy metadata failed"/>
@@ -50869,7 +50866,6 @@ Called by update_net_trust_anchors.py.-->
   <int value="5" label="Mac draft metafile init failed (Deprecated)"/>
   <int value="6" label="PreviewPageRendered with no metafile (Deprecated)"/>
   <int value="7" label="Received bad printer settings"/>
-  <int value="8" label="Capture metadata failed"/>
 </enum>
 
 <enum name="PrintPreviewFontTypeType">
