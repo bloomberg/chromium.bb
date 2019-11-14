@@ -45,7 +45,7 @@ template("system_webview_apk_tmpl") {
     }
 
     if (webview_devui_show_icon) {
-      deps += [ "//android_webview/apk:devui_launcher_icon_resources" ]
+      deps += [ "//android_webview/nonembedded:devui_launcher_icon_resources" ]
     }
 
     _use_trichrome_library =
