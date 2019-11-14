@@ -2218,6 +2218,9 @@
     <message name="IDS_SETTINGS_INTERNET_NETWORK_PROXY_USE_SAME" desc="Settings > Internet > Network details: Label for checkbox indicating that a network proxy uses the same value for all protocols.">
       Use the same proxy for all protocols
     </message>
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_PROXY_EXCEPTION_INPUT_ACCESSIBILITY_LABEL" desc="Settings > Internet > Accessibility only label for input field to add proxy exceptions.">
+      Host or domain to exclude
+    </message>
     <message name="IDS_SETTINGS_INTERNET_NETWORK_PROXY_EXCEPTION_LIST" desc="Settings > Internet > Network details: Label for list of network proxy exceptions.">
       Do not use the proxy settings for these hosts and domains:
     </message>
@@ -2236,6 +2239,9 @@
     <message name="IDS_SETTINGS_INTERNET_NETWORK_PROXY_PROXY" desc="Settings > Internet > Network details: Label for all proxies.">
       Proxy
     </message>
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_PROXY_HOST_INPUT_ACCESSIBILITY_LABEL" desc="Settings > Internet > Network details: Accessibility only label for proxy host input field.">
+      <ph name="INPUT_LABEL">$1<ex>HTTP Proxy</ex></ph> - Host
+    </message>
     <message name="IDS_SETTINGS_INTERNET_NETWORK_PROXY_HTTP_PROXY" desc="Settings > Internet > Network details: Label for HTTP proxy.">
       HTTP Proxy
     </message>
@@ -2250,6 +2256,9 @@
     </message>
     <message name="IDS_SETTINGS_INTERNET_NETWORK_PROXY_PORT" desc="Settings > Internet > Network details: Label for proxy port input.">
       Port
+    </message>
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_PROXY_PORT_INPUT_ACCESSIBILITY_LABEL" desc="Settings > Internet > Network details: Accessibility only label for proxy port number input field.">
+      <ph name="INPUT_LABEL">$1<ex>HTTP Proxy</ex></ph> - Port
     </message>
 
     <!-- Settings > Internet > SIM lock/unlock dialog -->
