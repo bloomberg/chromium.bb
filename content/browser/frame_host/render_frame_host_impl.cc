@@ -5237,26 +5237,14 @@ void RenderFrameHostImpl::CommitNavigation(
 
   bool is_srcdoc = common_params->url.IsAboutSrcdoc();
   if (is_srcdoc) {
-    if (frame_tree_node_->IsMainFrame()) {
-      // Main frame srcdoc navigation are meaningless. They are blocked whenever
-      // a navigation attempt is made.
-      //
-      // TODO(arthursonzogni): Replace DumpWithoutCrashing by a CHECK on M79 if
-      // it is never reached.
-      NOTREACHED();
-      base::debug::DumpWithoutCrashing();
-    } else {
-      // An about:srcdoc document is always same SiteInstance with its parent.
-      // Otherwise, it won't be able to load. The parent's document contains the
-      // iframe and its srcdoc attribute.
-      //
-      // TODO(arthursonzogni): Replace DumpWithoutCrashing by a CHECK on M80 if
-      // it is never reached.
-      if (GetSiteInstance() != parent_->GetSiteInstance()) {
-        NOTREACHED();
-        base::debug::DumpWithoutCrashing();
-      }
-    }
+    // Main frame srcdoc navigation are meaningless. They are blocked whenever a
+    // navigation attempt is made. It shouldn't reach CommitNavigation.
+    CHECK(!frame_tree_node_->IsMainFrame());
+
+    // An about:srcdoc document is always same SiteInstance with its parent.
+    // Otherwise, it won't be able to load. The parent's document contains the
+    // iframe and its srcdoc attribute.
+    CHECK_EQ(GetSiteInstance(), parent_->GetSiteInstance());
   }
 
   // If this is an attempt to commit a URL in an incompatible process, capture a
