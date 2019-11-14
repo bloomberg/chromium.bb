@@ -2050,6 +2050,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'betty-kernelnext',
       'bubs',
       'caroline-arcnext',
+      'dedede',
       'eve-arcvm',  # New board b/116833948
       'eve-arcvm-mesa-virgl-next',  # New board b/141943184
       'grunt-kernelnext',
@@ -3575,6 +3576,10 @@ def ApplyCustomOverrides(site_config):
       # this project should be removed.
       # --- start from here ---
       'cheza-release': {
+          'sign_types': ['recovery', 'factory'],
+      },
+
+      'dedede-release': {
           'sign_types': ['recovery', 'factory'],
       },
 

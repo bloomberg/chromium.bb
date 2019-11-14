@@ -913,7 +913,12 @@
   dedede-llvm-next-toolchain-tryjob
   dedede-llvm-toolchain-tryjob
   dedede-paladin-tryjob
+  dedede-payloads-tryjob
+  dedede-release-afdo-generate-tryjob
+  dedede-release-afdo-tryjob
+  dedede-release-afdo-use-tryjob
   dedede-release-tryjob
+  dedede-tot-chrome-pfq-informational-tryjob
   dedede-tot-chromium-pfq-informational-tryjob
   dedede-unittest-stress
   drallion-full-tryjob
@@ -1824,6 +1829,7 @@
     cobblepot-paladin-tryjob
     coral-paladin-tryjob
     cyan-paladin-tryjob
+    dedede-paladin-tryjob
     drallion-paladin-tryjob
     edgar-paladin-tryjob
     elm-paladin-tryjob
