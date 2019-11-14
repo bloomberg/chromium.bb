@@ -56,7 +56,15 @@ def GetBinhosts(input_proto, output_proto, _config):
     new_binhost.package_index = 'Packages'
 
 
-@faux.all_empty
+def _GetPrivatePrebuiltAclArgsResponse(_input_proto, output_proto, _config):
+  """Add fake acls to a successful response."""
+  new_arg = output_proto.args.add()
+  new_arg.arg = '-g'
+  new_arg.value = 'group1:READ'
+
+
+@faux.success(_GetPrivatePrebuiltAclArgsResponse)
+@faux.empty_error
 @validate.require('build_target.name')
 @validate.validation_complete
 def GetPrivatePrebuiltAclArgs(input_proto, output_proto, _config):
@@ -74,10 +82,17 @@ def GetPrivatePrebuiltAclArgs(input_proto, output_proto, _config):
     new_arg.value = value
 
 
-@faux.all_empty
+def _PrepareBinhostUploadsResponse(_input_proto, output_proto, _config):
+  """Add fake binhost upload targets to a successful response."""
+  output_proto.uploads_dir = '/upload/directory'
+  output_proto.upload_targets.add().path = 'upload_target'
+
+
+@faux.success(_PrepareBinhostUploadsResponse)
+@faux.empty_error
 @validate.require('uri')
 def PrepareBinhostUploads(input_proto, output_proto, config):
-  """Return a list of files to uplooad to the binhost.
+  """Return a list of files to upload to the binhost.
 
   See BinhostService documentation in api/proto/binhost.proto.
 
@@ -128,7 +143,16 @@ def PrepareBinhostUploads(input_proto, output_proto, config):
     output_proto.upload_targets.add().path = upload_target.strip('/')
 
 
-@faux.all_empty
+def _PrepareDevInstallBinhostUploadsResponse(_input_proto, output_proto,
+                                             _config):
+  """Add fake binhost files to a successful response."""
+  output_proto.upload_targets.add().path = 'app-arch/zip-3.0-r3.tbz2'
+  output_proto.upload_targets.add().path = 'virtual/python-enum34-1.tbz2'
+  output_proto.upload_targets.add().path = 'Packages'
+
+
+@faux.success(_PrepareDevInstallBinhostUploadsResponse)
+@faux.empty_error
 @validate.require('uri', 'sysroot.path')
 @validate.exists('uploads_dir')
 def PrepareDevInstallBinhostUploads(input_proto, output_proto, config):
@@ -182,7 +206,13 @@ def PrepareDevInstallBinhostUploads(input_proto, output_proto, config):
   output_proto.upload_targets.add().path = 'Packages'
 
 
-@faux.all_empty
+def _SetBinhostResponse(_input_proto, output_proto, _config):
+  """Add fake binhost file to a successful response."""
+  output_proto.output_file = '/path/to/BINHOST.conf'
+
+
+@faux.success(_SetBinhostResponse)
+@faux.empty_error
 @validate.require('build_target.name', 'key', 'uri')
 @validate.validation_complete
 def SetBinhost(input_proto, output_proto, _config):
@@ -204,7 +234,13 @@ def SetBinhost(input_proto, output_proto, _config):
                                                 private=private)
 
 
-@faux.all_empty
+def _RegenBuildCacheResponse(_input_proto, output_proto, _config):
+  """Add fake binhosts cache path to a successful response."""
+  output_proto.modified_overlays.add().path = '/path/to/BuildCache'
+
+
+@faux.success(_RegenBuildCacheResponse)
+@faux.empty_error
 @validate.require('overlay_type')
 @validate.is_in('overlay_type', _OVERLAY_TYPE_TO_NAME)
 @validate.validation_complete

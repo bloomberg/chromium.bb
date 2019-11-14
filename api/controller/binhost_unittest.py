@@ -29,7 +29,7 @@ class GetBinhostsTest(cros_test_lib.MockTestCase, api_config.ApiConfigMixin):
     """Sanity check that a validate only call does not execute any logic."""
     patch = self.PatchObject(binhost_service, 'GetBinhosts')
 
-    request = binhost_pb2.PrepareBinhostUploadsRequest()
+    request = binhost_pb2.BinhostGetRequest()
     request.build_target.name = 'target'
     binhost.GetBinhosts(request, self.response, self.validate_only_config)
     patch.assert_not_called()
@@ -65,6 +65,56 @@ class GetBinhostsTest(cros_test_lib.MockTestCase, api_config.ApiConfigMixin):
     get_binhost.assert_called_once_with(mock.ANY)
 
 
+class GetPrivatePrebuiltAclArgsTest(cros_test_lib.MockTestCase,
+                                    api_config.ApiConfigMixin):
+  """Unittests for GetPrivatePrebuiltAclArgs."""
+
+  def setUp(self):
+    self.response = binhost_pb2.AclArgsResponse()
+
+  def testValidateOnly(self):
+    """Sanity check that a validate only call does not execute any logic."""
+    patch = self.PatchObject(binhost_service, 'GetPrebuiltAclArgs')
+
+    request = binhost_pb2.AclArgsRequest()
+    request.build_target.name = 'target'
+    binhost.GetPrivatePrebuiltAclArgs(request, self.response,
+                                      self.validate_only_config)
+    patch.assert_not_called()
+
+  def testMockCall(self):
+    """Test that a mock call does not execute logic, returns mocked value."""
+    patch = self.PatchObject(binhost_service, 'GetPrebuiltAclArgs')
+
+    input_proto = binhost_pb2.AclArgsRequest()
+    input_proto.build_target.name = 'target'
+
+    binhost.GetPrivatePrebuiltAclArgs(input_proto, self.response,
+                                      self.mock_call_config)
+
+    self.assertEqual(len(self.response.args), 1)
+    self.assertEqual(self.response.args[0].arg, '-g')
+    self.assertEqual(self.response.args[0].value, 'group1:READ')
+    patch.assert_not_called()
+
+  def testGetPrivatePrebuiltAclArgs(self):
+    """GetPrivatePrebuildAclsArgs calls service with correct args."""
+    argvalue_list = [['-g', 'group1:READ']]
+    get_binhost = self.PatchObject(binhost_service, 'GetPrebuiltAclArgs',
+                                   return_value=argvalue_list)
+
+    input_proto = binhost_pb2.AclArgsRequest()
+    input_proto.build_target.name = 'target'
+
+    binhost.GetPrivatePrebuiltAclArgs(input_proto, self.response,
+                                      self.api_config)
+
+    self.assertEqual(len(self.response.args), 1)
+    self.assertEqual(self.response.args[0].arg, '-g')
+    self.assertEqual(self.response.args[0].value, 'group1:READ')
+    get_binhost.assert_called_once_with(mock.ANY)
+
+
 class PrepareBinhostUploadsTest(cros_test_lib.MockTestCase,
                                 api_config.ApiConfigMixin):
   """Unittests for PrepareBinhostUploads."""
@@ -88,6 +138,20 @@ class PrepareBinhostUploadsTest(cros_test_lib.MockTestCase,
     request.uri = 'gs://chromeos-prebuilt/target'
     rc = binhost.PrepareBinhostUploads(request, self.response,
                                        self.validate_only_config)
+    patch.assert_not_called()
+    self.assertEqual(rc, 0)
+
+  def testMockCall(self):
+    """Test that a mock call does not execute logic, returns mocked value."""
+    patch = self.PatchObject(binhost_service, 'GetPrebuiltsRoot')
+
+    request = binhost_pb2.PrepareBinhostUploadsRequest()
+    request.build_target.name = 'target'
+    request.uri = 'gs://chromeos-prebuilt/target'
+    rc = binhost.PrepareBinhostUploads(request, self.response,
+                                       self.mock_call_config)
+    self.assertEqual(self.response.uploads_dir, '/upload/directory')
+    self.assertEqual(self.response.upload_targets[0].path, 'upload_target')
     patch.assert_not_called()
     self.assertEqual(rc, 0)
 
@@ -119,14 +183,26 @@ class SetBinhostTest(cros_test_lib.MockTestCase, api_config.ApiConfigMixin):
 
   def testValidateOnly(self):
     """Sanity check that a validate only call does not execute any logic."""
-    patch = self.PatchObject(binhost_service, 'GetPrebuiltsRoot')
+    patch = self.PatchObject(binhost_service, 'SetBinhost')
 
-    request = binhost_pb2.PrepareBinhostUploadsRequest()
+    request = binhost_pb2.SetBinhostRequest()
     request.build_target.name = 'target'
+    request.key = binhost_pb2.POSTSUBMIT_BINHOST
     request.uri = 'gs://chromeos-prebuilt/target'
-    binhost.PrepareBinhostUploads(request, self.response,
-                                  self.validate_only_config)
+    binhost.SetBinhost(request, self.response, self.validate_only_config)
     patch.assert_not_called()
+
+  def testMockCall(self):
+    """Test that a mock call does not execute logic, returns mocked value."""
+    patch = self.PatchObject(binhost_service, 'SetBinhost')
+
+    request = binhost_pb2.SetBinhostRequest()
+    request.build_target.name = 'target'
+    request.key = binhost_pb2.POSTSUBMIT_BINHOST
+    request.uri = 'gs://chromeos-prebuilt/target'
+    binhost.SetBinhost(request, self.response, self.mock_call_config)
+    patch.assert_not_called()
+    self.assertEqual(self.response.output_file, '/path/to/BINHOST.conf')
 
   def testSetBinhost(self):
     """SetBinhost calls service with correct args."""
@@ -164,6 +240,19 @@ class RegenBuildCacheTest(cros_test_lib.MockTestCase,
     request.overlay_type = binhost_pb2.OVERLAYTYPE_BOTH
     binhost.RegenBuildCache(request, self.response, self.validate_only_config)
     patch.assert_not_called()
+
+  def testMockCall(self):
+    """Test that a mock call does not execute logic, returns mocked value."""
+    patch = self.PatchObject(binhost_service, 'RegenBuildCache')
+
+    request = binhost_pb2.RegenBuildCacheRequest()
+    request.overlay_type = binhost_pb2.OVERLAYTYPE_BOTH
+    binhost.RegenBuildCache(request, self.response, self.mock_call_config)
+    patch.assert_not_called()
+    self.assertEqual(len(self.response.modified_overlays), 1)
+    self.assertEqual(self.response.modified_overlays[0].path,
+                     '/path/to/BuildCache')
+
 
   def testRegenBuildCache(self):
     """RegenBuildCache calls service with the correct args."""
@@ -248,6 +337,36 @@ CPV: virtual/python-enum34-1
       package_installable_file.write(package + '\n')
     package_installable_file.close()
     self.response = binhost_pb2.PrepareDevInstallBinhostUploadsResponse()
+
+  def testValidateOnly(self):
+    """Sanity check that a validate only call does not execute any logic."""
+    patch = self.PatchObject(binhost_service,
+                             'ReadDevInstallFilesToCreatePackageIndex')
+
+    input_proto = binhost_pb2.PrepareDevInstallBinhostUploadsRequest()
+    input_proto.uri = 'gs://chromeos-prebuilt/target'
+    input_proto.chroot.path = self.chroot_path
+    input_proto.sysroot.path = self.sysroot_path
+    input_proto.uploads_dir = self.uploads_dir
+    binhost.PrepareDevInstallBinhostUploads(input_proto, self.response,
+                                            self.validate_only_config)
+    patch.assert_not_called()
+
+  def testMockCall(self):
+    """Test that a mock call does not execute logic, returns mocked value."""
+    patch = self.PatchObject(binhost_service,
+                             'ReadDevInstallFilesToCreatePackageIndex')
+
+    input_proto = binhost_pb2.PrepareDevInstallBinhostUploadsRequest()
+    input_proto.uri = 'gs://chromeos-prebuilt/target'
+    input_proto.chroot.path = self.chroot_path
+    input_proto.sysroot.path = self.sysroot_path
+    input_proto.uploads_dir = self.uploads_dir
+    binhost.PrepareDevInstallBinhostUploads(input_proto, self.response,
+                                            self.mock_call_config)
+    self.assertEqual(len(self.response.upload_targets), 3)
+    self.assertEqual(self.response.upload_targets[2].path, 'Packages')
+    patch.assert_not_called()
 
   def testDevInstallerUpload(self):
     """Basic sanity test testing uploads of dev installer prebuilts."""
