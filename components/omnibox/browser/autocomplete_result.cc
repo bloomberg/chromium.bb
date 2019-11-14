@@ -200,6 +200,8 @@ void AutocompleteResult::SortAndCull(
   for (auto i(matches_.begin()); i != matches_.end(); ++i)
     i->ComputeStrippedDestinationURL(input, template_url_service);
 
+  DemoteOnDeviceSearchSuggestions();
+
   CompareWithDemoteByType<AutocompleteMatch> comparing_object(
       input.current_page_classification());
 
@@ -208,8 +210,6 @@ void AutocompleteResult::SortAndCull(
   // if there any non-default non-tail suggestions.
   MaybeCullTailSuggestions(&matches_, comparing_object);
 #endif
-
-  DemoteOnDeviceSearchSuggestions();
 
   DeduplicateMatches(input.current_page_classification(), &matches_);
 
