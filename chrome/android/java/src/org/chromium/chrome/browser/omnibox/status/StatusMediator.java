@@ -247,24 +247,18 @@ class StatusMediator {
         mUrlHasFocus = urlHasFocus;
         updateStatusVisibility();
         updateLocationBarIcon();
-
-        // Show the icon when the url focus animation starts.
-        if (urlHasFocus
-                && SearchEngineLogoUtils.shouldShowSearchEngineLogo(
-                        mToolbarCommonPropertiesModel.isIncognito())
-                && SearchEngineLogoUtils.currentlyOnNTP(mToolbarCommonPropertiesModel)) {
-            setStatusIconShown(true);
-        }
     }
 
     void setUrlAnimationFinished(boolean urlHasFocus) {
-        if (!SearchEngineLogoUtils.shouldShowSearchEngineLogo(
-                    mToolbarCommonPropertiesModel.isIncognito())) {
+        if (!mDelegate.shouldShowSearchEngineLogo(mToolbarCommonPropertiesModel.isIncognito())) {
             return;
         }
 
         // Hide the icon when the url unfocus animation finishes.
-        if (!urlHasFocus && SearchEngineLogoUtils.currentlyOnNTP(mToolbarCommonPropertiesModel)) {
+        // Note: When mUrlFocusPercent is non-zero, that means we're still in the focused state from
+        // scrolling on the NTP.
+        if (!urlHasFocus && MathUtils.areFloatsEqual(mUrlFocusPercent, 0f)
+                && SearchEngineLogoUtils.currentlyOnNTP(mToolbarCommonPropertiesModel)) {
             setStatusIconShown(false);
         }
     }
@@ -279,9 +273,14 @@ class StatusMediator {
      */
     void setUrlFocusChangePercent(float percent) {
         mUrlFocusPercent = percent;
-        if (!SearchEngineLogoUtils.shouldShowSearchEngineLogo(
-                    mToolbarCommonPropertiesModel.isIncognito())) {
+        if (!mDelegate.shouldShowSearchEngineLogo(mToolbarCommonPropertiesModel.isIncognito())) {
             return;
+        }
+
+        // Note: This uses mUrlFocusPercent rather than mUrlHasFocus because when the user scrolls
+        // the NTP we want the status icon to show.
+        if (mUrlFocusPercent > 0) {
+            setStatusIconShown(true);
         }
 
         // Only fade the animation on the new tab page.
