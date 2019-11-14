@@ -877,6 +877,7 @@ modules_dictionary_idl_files =
           "websockets/websocket_close_info.idl",
           "websockets/websocket_connection.idl",
           "websockets/websocket_stream_options.idl",
+          "webtransport/web_transport_close_info.idl",
           "webusb/usb_connection_event_init.idl",
           "webusb/usb_control_transfer_parameters.idl",
           "webusb/usb_device_filter.idl",
