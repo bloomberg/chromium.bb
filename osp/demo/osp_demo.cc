@@ -30,12 +30,14 @@
 #include "platform/api/time.h"
 #include "platform/api/trace_logging.h"
 #include "platform/impl/logging.h"
-#include "platform/impl/socket_handle_waiter_thread.h"
+#include "platform/impl/platform_client_posix.h"
 #include "platform/impl/task_runner.h"
-#include "platform/impl/task_runner_thread.h"
 #include "platform/impl/text_trace_logging_platform.h"
 #include "platform/impl/udp_socket_reader_posix.h"
 #include "third_party/tinycbor/src/src/cbor.h"
+
+using Clock = openscreen::platform::Clock;
+using PlatformClientPosix = openscreen::platform::PlatformClientPosix;
 
 namespace openscreen {
 namespace {
@@ -424,21 +426,18 @@ void RunControllerPollLoop(presentation::Controller* controller) {
 void ListenerDemo() {
   SignalThings();
 
-  platform::TaskRunnerThread task_runner_thread(platform::Clock::now);
-  platform::SocketHandleWaiterThread socket_handle_waiter_thread;
-  platform::UdpSocketReaderPosix reader(
-      socket_handle_waiter_thread.socket_handle_waiter());
-
   ListenerObserver listener_observer;
   MdnsServiceListenerConfig listener_config;
   auto mdns_listener = MdnsServiceListenerFactory::Create(
-      listener_config, &listener_observer, task_runner_thread.task_runner());
+      listener_config, &listener_observer,
+      PlatformClientPosix::GetInstance()->GetTaskRunner());
 
   MessageDemuxer demuxer(platform::Clock::now,
                          MessageDemuxer::kDefaultBufferLimit);
   ConnectionClientObserver client_observer;
   auto connection_client = ProtocolConnectionClientFactory::Create(
-      &demuxer, &client_observer, task_runner_thread.task_runner());
+      &demuxer, &client_observer,
+      PlatformClientPosix::GetInstance()->GetTaskRunner());
 
   auto* network_service = NetworkServiceManager::Create(
       std::move(mdns_listener), nullptr, std::move(connection_client), nullptr);
@@ -515,11 +514,6 @@ void PublisherDemo(absl::string_view friendly_name) {
 
   constexpr uint16_t server_port = 6667;
 
-  platform::TaskRunnerThread task_runner_thread(platform::Clock::now);
-  platform::SocketHandleWaiterThread socket_handle_waiter_thread;
-  platform::UdpSocketReaderPosix reader(
-      socket_handle_waiter_thread.socket_handle_waiter());
-
   PublisherObserver publisher_observer;
   // TODO(btolsch): aggregate initialization probably better?
   ServicePublisher::Config publisher_config;
@@ -529,7 +523,8 @@ void PublisherDemo(absl::string_view friendly_name) {
   publisher_config.connection_server_port = server_port;
 
   auto mdns_publisher = MdnsServicePublisherFactory::Create(
-      publisher_config, &publisher_observer, task_runner_thread.task_runner());
+      publisher_config, &publisher_observer,
+      PlatformClientPosix::GetInstance()->GetTaskRunner());
 
   ServerConfig server_config;
   std::vector<platform::InterfaceAddresses> interfaces =
@@ -544,7 +539,7 @@ void PublisherDemo(absl::string_view friendly_name) {
   ConnectionServerObserver server_observer;
   auto connection_server = ProtocolConnectionServerFactory::Create(
       server_config, &demuxer, &server_observer,
-      task_runner_thread.task_runner());
+      PlatformClientPosix::GetInstance()->GetTaskRunner());
 
   auto* network_service =
       NetworkServiceManager::Create(nullptr, std::move(mdns_publisher), nullptr,
@@ -614,11 +609,15 @@ int main(int argc, char** argv) {
   openscreen::platform::TextTraceLoggingPlatform text_logging_platform;
   TRACE_SET_DEFAULT_PLATFORM(&text_logging_platform);
 
+  PlatformClientPosix::Create(Clock::duration{50}, Clock::duration{50});
+
   if (is_receiver_demo) {
     openscreen::PublisherDemo(args.friendly_server_name);
   } else {
     openscreen::ListenerDemo();
   }
+
+  PlatformClientPosix::ShutDown();
 
   return 0;
 }

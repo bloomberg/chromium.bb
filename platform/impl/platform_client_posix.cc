@@ -20,24 +20,45 @@ PlatformClientPosix::PlatformClientPosix(
     : networking_loop_(networking_operations(),
                        networking_operation_timeout,
                        networking_loop_interval),
-      task_runner_(Clock::now),
+      owned_task_runner_(Clock::now),
       networking_loop_thread_(&OperationLoop::RunUntilStopped,
                               &networking_loop_),
-      task_runner_thread_(&TaskRunnerImpl::RunUntilStopped, &task_runner_) {}
+      task_runner_thread_(&TaskRunnerImpl::RunUntilStopped,
+                          &owned_task_runner_.value()) {}
+
+PlatformClientPosix::PlatformClientPosix(
+    Clock::duration networking_operation_timeout,
+    Clock::duration networking_loop_interval,
+    std::unique_ptr<TaskRunner> task_runner)
+    : networking_loop_(networking_operations(),
+                       networking_operation_timeout,
+                       networking_loop_interval),
+      caller_provided_task_runner_(std::move(task_runner)),
+      networking_loop_thread_(&OperationLoop::RunUntilStopped,
+                              &networking_loop_) {}
 
 PlatformClientPosix::~PlatformClientPosix() {
   networking_loop_.RequestStopSoon();
-  task_runner_.RequestStopSoon();
   networking_loop_thread_.join();
-  task_runner_thread_.join();
+  if (owned_task_runner_.has_value()) {
+    owned_task_runner_.value().RequestStopSoon();
+  }
+  if (task_runner_thread_.joinable()) {
+    task_runner_thread_.join();
+  }
 }
 
 // static
 void PlatformClientPosix::Create(Clock::duration networking_operation_timeout,
                                  Clock::duration networking_loop_interval) {
+  SetInstance(new PlatformClientPosix(networking_operation_timeout,
+                                      networking_loop_interval));
+}
+
+// static
+void PlatformClientPosix::SetInstance(PlatformClientPosix* instance) {
   OSP_DCHECK(!instance_);
-  instance_ = new PlatformClientPosix(networking_operation_timeout,
-                                      networking_loop_interval);
+  instance_ = instance;
 }
 
 // static
@@ -45,6 +66,11 @@ void PlatformClientPosix::ShutDown() {
   OSP_DCHECK(instance_);
   delete instance_;
   instance_ = nullptr;
+}
+
+TaskRunner* PlatformClientPosix::GetTaskRunner() {
+  return owned_task_runner_.has_value() ? &owned_task_runner_.value()
+                                        : caller_provided_task_runner_.get();
 }
 
 UdpSocketReaderPosix* PlatformClientPosix::udp_socket_reader() {

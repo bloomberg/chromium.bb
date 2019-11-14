@@ -72,9 +72,6 @@ UdpSocketPosix::UdpSocketPosix(TaskRunner* task_runner,
     if (platform_client_) {
       platform_client_->udp_socket_reader()->OnCreate(this);
     }
-    if (lifetime_observer_) {
-      lifetime_observer_->OnCreate(this);
-    }
   }
 }
 
@@ -317,15 +314,6 @@ void UdpSocketPosix::JoinMulticastGroup(const IPAddress& address,
 
   OSP_NOTREACHED();
 }
-
-// static
-void UdpSocketPosix::SetLifetimeObserver(LifetimeObserver* observer) {
-  OSP_DCHECK_NE(!!lifetime_observer_, !!observer);
-  lifetime_observer_ = observer;
-}
-
-// static
-UdpSocketPosix::LifetimeObserver* UdpSocketPosix::lifetime_observer_{nullptr};
 
 namespace {
 
@@ -615,9 +603,6 @@ void UdpSocketPosix::Close() {
 
   // Notify the UdpSocketReaderPosix that the socket handle is about to be
   // closed.
-  if (lifetime_observer_) {
-    lifetime_observer_->OnDestroy(this);
-  }
   if (platform_client_) {
     platform_client_->udp_socket_reader()->OnDestroy(this);
   }

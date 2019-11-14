@@ -6,6 +6,7 @@
 #define PLATFORM_IMPL_PLATFORM_CLIENT_POSIX_H_
 
 #include <atomic>
+#include <memory>
 #include <mutex>
 #include <thread>
 
@@ -58,15 +59,31 @@ class PlatformClientPosix {
 
   // Returns the TaskRunner associated with this PlatformClient.
   // NOTE: This method is expected to be thread safe.
-  TaskRunner* GetTaskRunner() { return &task_runner_; }
+  TaskRunner* GetTaskRunner();
+
+ protected:
+  // The TaskRunner parameter here is a user-provided TaskRunner to be used
+  // instead of the one normally created within PlatformClientPosix. Ownership
+  // of the TaskRunner is transferred to this class.
+  PlatformClientPosix(Clock::duration networking_operation_timeout,
+                      Clock::duration networking_loop_interval,
+                      std::unique_ptr<TaskRunner> task_runner);
+
+  // This method is expected to be called in order to set the singleton instance
+  // (typically from the Create() method). It should only be called from the
+  // embedder thread. Client should be a new instance create via 'new' and
+  // ownership of this instance will be transferred to this class.
+  // NOTE: This method is NOT thread safe and should only be called from the
+  // embedder thread.
+  static void SetInstance(PlatformClientPosix* client);
+
+  // Called by ShutDown().
+  ~PlatformClientPosix();
 
  private:
   // Called by Create().
   PlatformClientPosix(Clock::duration networking_operation_timeout,
                       Clock::duration networking_loop_interval);
-
-  // Called by ShutDown().
-  ~PlatformClientPosix();
 
   // This method is thread-safe.
   SocketHandleWaiterPosix* socket_handle_waiter();
@@ -80,9 +97,8 @@ class PlatformClientPosix {
   // Instance objects with threads are created at object-creation time.
   // NOTE: Delayed instantiation of networking_loop_ may be useful in future.
   OperationLoop networking_loop_;
-  TaskRunnerImpl task_runner_;
-  std::thread networking_loop_thread_;
-  std::thread task_runner_thread_;
+  absl::optional<TaskRunnerImpl> owned_task_runner_;
+  std::unique_ptr<TaskRunner> caller_provided_task_runner_;
 
   // Track whether the associated instance variable has been created yet.
   std::atomic_bool waiter_created_{false};
@@ -98,6 +114,11 @@ class PlatformClientPosix {
   std::unique_ptr<SocketHandleWaiterPosix> waiter_;
   std::unique_ptr<UdpSocketReaderPosix> udp_socket_reader_;
   std::unique_ptr<TlsDataRouterPosix> tls_data_router_;
+
+  // Threads for running TaskRunner and OperationLoop instances.
+  // NOTE: These must be declared last to avoid nondterministic failures.
+  std::thread networking_loop_thread_;
+  std::thread task_runner_thread_;
 
   static PlatformClientPosix* instance_;
 

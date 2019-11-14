@@ -7,7 +7,8 @@
 #include "platform/base/error.h"
 #include "platform/base/ip_address.h"
 #include "platform/impl/logging.h"
-#include "platform/impl/socket_handle_waiter_thread.h"
+#include "platform/impl/platform_client_posix.h"
+#include "platform/impl/socket_handle_waiter_posix.h"
 #include "platform/impl/task_runner.h"
 #include "platform/impl/udp_socket_reader_posix.h"
 #include "streaming/cast/constants.h"
@@ -70,23 +71,37 @@ constexpr std::array<uint8_t, 16> kDemoVideoCastIvMask{
 // End of Receiver Configuration.
 ////////////////////////////////////////////////////////////////////////////////
 
+class PlatformClientExposingTaskRunner
+    : public openscreen::platform::PlatformClientPosix {
+ public:
+  PlatformClientExposingTaskRunner(
+      std::unique_ptr<openscreen::platform::TaskRunner> task_runner)
+      : openscreen::platform::PlatformClientPosix(
+            openscreen::platform::Clock::duration{50},
+            openscreen::platform::Clock::duration{50},
+            std::move(task_runner)) {}
+
+  using openscreen::platform::PlatformClientPosix::SetInstance;
+};
+
 }  // namespace
 
 int main(int argc, const char* argv[]) {
   // Platform setup for this standalone demo app.
   openscreen::platform::SetLogLevel(openscreen::platform::LogLevel::kInfo);
   const auto now_function = &openscreen::platform::Clock::now;
-  openscreen::platform::TaskRunnerImpl task_runner(now_function);
-  openscreen::platform::SocketHandleWaiterThread socket_handle_waiter_thread;
-  openscreen::platform::UdpSocketReaderPosix udp_socket_reader(
-      socket_handle_waiter_thread.socket_handle_waiter());
+  std::unique_ptr<openscreen::platform::TaskRunnerImpl> task_runner =
+      std::make_unique<openscreen::platform::TaskRunnerImpl>(now_function);
+  openscreen::platform::TaskRunnerImpl* task_runner_ptr = task_runner.get();
+  auto* client = new PlatformClientExposingTaskRunner(std::move(task_runner));
+  PlatformClientExposingTaskRunner::SetInstance(client);
 
   // Create the Environment that holds the required injected dependencies
   // (clock, task runner) used throughout the system, and owns the UDP socket
   // over which all communication occurs with the Sender.
   const openscreen::IPEndpoint receive_endpoint{openscreen::IPAddress(),
                                                 kCastStreamingPort};
-  openscreen::cast_streaming::Environment env(now_function, &task_runner,
+  openscreen::cast_streaming::Environment env(now_function, task_runner_ptr,
                                               receive_endpoint);
 
   // Create the packet router that allows both the Audio Receiver and the Video
@@ -119,6 +134,7 @@ int main(int argc, const char* argv[]) {
   // Run the event loop until an exit is requested (e.g., the video player GUI
   // window is closed, a SIGTERM is intercepted, or whatever other appropriate
   // user indication that shutdown is requested).
-  task_runner.RunUntilStopped();
+  task_runner_ptr->RunUntilStopped();
+  openscreen::platform::PlatformClientPosix::ShutDown();
   return 0;
 }

@@ -20,18 +20,6 @@ class UdpSocketReaderPosix;
 // are also assumed to be called on that thread.
 class UdpSocketPosix : public UdpSocket {
  public:
-  // TODO: Remove this. See comments for SetLifetimeObserver().
-  class LifetimeObserver {
-   public:
-    virtual ~LifetimeObserver() = default;
-
-    // Function to call upon creation of a new UdpSocket.
-    virtual void OnCreate(UdpSocket* socket) = 0;
-
-    // Function to call upon deletion of a UdpSocket.
-    virtual void OnDestroy(UdpSocket* socket) = 0;
-  };
-
   // Creates a new UdpSocketPosix. The provided client and task_runner must
   // exist for the duration of this socket's lifetime.
   UdpSocketPosix(TaskRunner* task_runner,
@@ -66,16 +54,6 @@ class UdpSocketPosix : public UdpSocket {
   // only one in this class possibly being called from another thread.
   void ReceiveMessage();
 
-  // The LifetimeObserver set here must exist during ANY future UdpSocketPosix
-  // creations. SetLifetimeObserver(nullptr) must be called before any future
-  // socket creations on destructions after the observer is destroyed
-  //
-  // TODO: UdpSocketPosix should create/destroy the UdpSocketReaderPosix global
-  // instance automatically; so that it only exists while it is being used; and
-  // so client-side code need not memory-manage parts of UdpSocketPosix's
-  // internal object graph.
-  static void SetLifetimeObserver(LifetimeObserver* observer);
-
  private:
   // Helper to close the socket if |error| is fatal, in addition to dispatching
   // an Error to the |client_|.
@@ -100,9 +78,7 @@ class UdpSocketPosix : public UdpSocket {
   // port is non-zero, it is assumed never to change again.
   mutable IPEndpoint local_endpoint_;
 
-  // TODO: Remove these. See comments for SetLifetimeObserver().
   PlatformClientPosix* platform_client_;
-  static LifetimeObserver* lifetime_observer_;
 };
 
 }  // namespace platform

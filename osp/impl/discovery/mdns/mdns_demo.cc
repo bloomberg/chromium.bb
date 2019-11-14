@@ -15,9 +15,8 @@
 #include "platform/api/time.h"
 #include "platform/base/error.h"
 #include "platform/impl/logging.h"
-#include "platform/impl/socket_handle_waiter_thread.h"
+#include "platform/impl/platform_client_posix.h"
 #include "platform/impl/task_runner.h"
-#include "platform/impl/task_runner_thread.h"
 #include "platform/impl/udp_socket_reader_posix.h"
 
 // This file contains a demo of our mDNSResponder wrapper code.  It can both
@@ -36,6 +35,10 @@
 // There are a few known bugs around the handling of record events, so this
 // shouldn't be expected to be a source of truth, nor should it be expected to
 // be correct after running for a long time.
+
+using Clock = openscreen::platform::Clock;
+using PlatformClientPosix = openscreen::platform::PlatformClientPosix;
+
 namespace openscreen {
 namespace {
 
@@ -358,14 +361,12 @@ int main(int argc, char** argv) {
   openscreen::ServiceMap services;
   openscreen::g_services = &services;
 
-  openscreen::platform::TaskRunnerThread task_runner_thread(
-      openscreen::platform::Clock::now);
-  openscreen::platform::SocketHandleWaiterThread socket_handle_waiter_thread;
-  openscreen::platform::UdpSocketReaderPosix reader(
-      socket_handle_waiter_thread.socket_handle_waiter());
+  PlatformClientPosix::Create(Clock::duration{50}, Clock::duration{50});
 
-  openscreen::BrowseDemo(task_runner_thread.task_runner(), labels[0], labels[1],
-                         service_instance);
+  openscreen::BrowseDemo(PlatformClientPosix::GetInstance()->GetTaskRunner(),
+                         labels[0], labels[1], service_instance);
+
+  PlatformClientPosix::ShutDown();
 
   openscreen::g_services = nullptr;
   return 0;

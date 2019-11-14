@@ -15,13 +15,10 @@ namespace openscreen {
 namespace platform {
 
 UdpSocketReaderPosix::UdpSocketReaderPosix(SocketHandleWaiter* waiter)
-    : waiter_(waiter) {
-  openscreen::platform::UdpSocketPosix::SetLifetimeObserver(this);
-}
+    : waiter_(waiter) {}
 
 UdpSocketReaderPosix::~UdpSocketReaderPosix() {
   waiter_->UnsubscribeAll(this);
-  openscreen::platform::UdpSocketPosix::SetLifetimeObserver(nullptr);
 }
 
 void UdpSocketReaderPosix::ProcessReadyHandle(SocketHandleRef handle) {
