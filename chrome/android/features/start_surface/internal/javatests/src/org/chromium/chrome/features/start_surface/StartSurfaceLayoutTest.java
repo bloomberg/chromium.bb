@@ -258,10 +258,10 @@ public class StartSurfaceLayoutTest {
     @MediumTest
     // clang-format off
     @Features.DisableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION)
-    @CommandLineFlags.Add({BASE_PARAMS + "/soft-cleanup-delay/10000/cleanup-delay/10000"})
+    @CommandLineFlags.Add({BASE_PARAMS + "/soft-cleanup-delay/9000/cleanup-delay/10000"})
     public void testTabToGridFromLiveTabWarm() throws InterruptedException {
         // clang-format on
-        assertEquals(10000, mTabListDelegate.getSoftCleanupDelayForTesting());
+        assertEquals(9000, mTabListDelegate.getSoftCleanupDelayForTesting());
         assertEquals(10000, mTabListDelegate.getCleanupDelayForTesting());
 
         prepareTabs(2, 0, NTP_URL);
@@ -289,6 +289,9 @@ public class StartSurfaceLayoutTest {
     @CommandLineFlags.Add({BASE_PARAMS + "/cleanup-delay/10000"})
     public void testTabToGridFromLiveTabSoft() throws InterruptedException {
         // clang-format on
+        assertEquals(0, mTabListDelegate.getSoftCleanupDelayForTesting());
+        assertEquals(10000, mTabListDelegate.getCleanupDelayForTesting());
+
         prepareTabs(2, 0, NTP_URL);
         testTabToGrid(mUrl);
     }

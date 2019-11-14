@@ -242,7 +242,7 @@ public class TabSwitcherCoordinator implements Destroyable, TabSwitcher,
     @Override
     @VisibleForTesting
     public int getSoftCleanupDelayForTesting() {
-        return mMediator.getCleanupDelayForTesting();
+        return mMediator.getSoftCleanupDelayForTesting();
     }
 
     @Override
