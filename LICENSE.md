@@ -47,7 +47,7 @@ BSD-3-Clause
 
 libgifcodec.gni, SkGifCodec.h, SkLibGifCodec.cpp, SkLibGifCodec.h:
 
-    Copyright (c) 2011 Google Inc. All rights reserved.
+    Copyright 2019 Google LLC. All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions are
@@ -61,7 +61,7 @@ libgifcodec.gni, SkGifCodec.h, SkLibGifCodec.cpp, SkLibGifCodec.h:
         disclaimer in the documentation and/or other materials provided
         with the distribution.
 
-      * Neither the name of Google Inc. nor the names of its
+      * Neither the name of the copyright holder nor the names of its
         contributors may be used to endorse or promote products derived
         from this software without specific prior written permission.
 
