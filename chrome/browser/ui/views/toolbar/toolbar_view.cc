@@ -272,14 +272,6 @@ void ToolbarView::Init() {
   if (avatar)
     avatar_ = AddChildView(std::move(avatar));
 
-#if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
-  if (browser_view_->webui_tab_strip()) {
-    webui_new_tab_button_ =
-        AddChildView(browser_view_->webui_tab_strip()->CreateNewTabButton());
-    AddChildView(browser_view_->webui_tab_strip()->CreateTabCounter());
-  }
-#endif  // BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
-
   app_menu_button_ = AddChildView(std::move(app_menu_button));
 
   LoadImages();
@@ -362,6 +354,19 @@ void ToolbarView::UpdateCustomTabBarVisibility(bool visible, bool animate) {
   } else {
     size_animation_.Hide();
   }
+}
+
+void ToolbarView::UpdateForWebUITabStrip() {
+#if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
+  if (browser_view_->webui_tab_strip() && app_menu_button_) {
+    const int insertion_index = GetIndexOf(app_menu_button_);
+    AddChildViewAt(browser_view_->webui_tab_strip()->CreateTabCounter(),
+                   insertion_index);
+    AddChildViewAt(browser_view_->webui_tab_strip()->CreateNewTabButton(),
+                   insertion_index);
+    LoadImages();
+  }
+#endif  // BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
 }
 
 void ToolbarView::ResetTabState(WebContents* tab) {
@@ -890,11 +895,10 @@ void ToolbarView::LoadImages() {
   if (media_button_)
     media_button_->UpdateIcon();
 
-  if (webui_new_tab_button_) {
-    webui_new_tab_button_->SetImage(
-        views::Button::STATE_NORMAL,
-        gfx::CreateVectorIcon(kAddIcon, normal_color));
-  }
+#if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
+  if (browser_view_->webui_tab_strip())
+    browser_view_->webui_tab_strip()->UpdateButtons();
+#endif  // BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
 
   if (avatar_)
     avatar_->UpdateIcon();
