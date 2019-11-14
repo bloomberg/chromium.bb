@@ -59945,6 +59945,12 @@ Called by update_net_trust_anchors.py.-->
   <int value="11" label="AbortedBecauseSentinelFileWasPresent"/>
 </enum>
 
+<enum name="SuccessTimeoutStarted">
+  <int value="0" label="Success"/>
+  <int value="1" label="Timeout"/>
+  <int value="2" label="Started"/>
+</enum>
+
 <enum name="SuggestAppsDialogCloseReason">
   <int value="0" label="Unknown error"/>
   <int value="1" label="Item installed"/>
