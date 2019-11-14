@@ -3594,11 +3594,6 @@
     "expiry_milestone": 83
   },
   {
-    "name": "user-activation-v2",
-    "owners": [ "mustaq", "input-dev" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "username-first-flow",
     "owners": [ "dvadym" ],
     "expiry_milestone": 80
