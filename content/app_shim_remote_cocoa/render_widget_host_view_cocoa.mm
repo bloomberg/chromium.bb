@@ -2203,7 +2203,9 @@ extern NSString* NSTextInputReplacementRangeAttributeName;
 }
 
 - (NSTouchBar*)makeTouchBar {
-  if (textInputType_ != ui::TEXT_INPUT_TYPE_NONE) {
+  if (textInputType_ != ui::TEXT_INPUT_TYPE_NONE &&
+      !(textInputFlags_ & blink::kWebTextInputFlagAutocorrectOff) &&
+      !(textInputFlags_ & blink::kWebTextInputFlagSpellcheckOff)) {
     candidateListTouchBarItem_.reset([[NSCandidateListTouchBarItem alloc]
         initWithIdentifier:NSTouchBarItemIdentifierCandidateList]);
     auto* candidateListItem = candidateListTouchBarItem_.get();
