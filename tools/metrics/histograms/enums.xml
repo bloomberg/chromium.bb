@@ -2219,6 +2219,12 @@ Unknown properties are collapsed to zero. -->
   <int value="1" label="DOODLE_CLICKED"/>
 </enum>
 
+<enum name="AppListDriveQuickAccessResultPresence">
+  <int value="0" label="Present and shown"/>
+  <int value="1" label="Present and not shown"/>
+  <int value="2" label="Absent"/>
+</enum>
+
 <enum name="AppListEnableSource">
   <obsolete>
     Deprecated 03/2018 with Mash AppList refactoring.
