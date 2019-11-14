@@ -4366,7 +4366,7 @@
       <ph name="USER_NAME">$1<ex>John Smith</ex></ph> (owner)
     </message>
     <message name="IDS_SETTINGS_USERS_REMOVE_USER_TOOLTIP" desc="Tooltip for the button that removes a user from the list of restricted sign in users.">
-      Remove
+      Remove <ph name="USER_NAME">$1<ex>John Smith</ex></ph>
     </message>
     <message name="IDS_SETTINGS_USERS_ADD_USERS" desc="Label the dialog for adding users.">
       Add user
