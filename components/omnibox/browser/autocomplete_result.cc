@@ -191,7 +191,6 @@ void AutocompleteResult::AppendMatches(const AutocompleteInput& input,
     }
   }
   default_match_ = end();
-  alternate_nav_url_ = GURL();
 }
 
 void AutocompleteResult::SortAndCull(
@@ -285,7 +284,6 @@ void AutocompleteResult::SortAndCull(
        (input.current_page_classification() ==
         metrics::OmniboxEventProto::CHROMEOS_APP_LIST))) {
     default_match_ = end();
-    alternate_nav_url_ = GURL();
     return;
   }
 
@@ -294,9 +292,6 @@ void AutocompleteResult::SortAndCull(
   // we can delete |default_match_|, since if matches.begin() has a true
   // |allowed_to_be_default_match|, it will always be the default match.
   default_match_ = matches_.begin();
-
-  // TODO(tommycli): Simplify our state by not pre-computing this.
-  alternate_nav_url_ = ComputeAlternateNavUrl(input, *default_match_);
 
   // Almost all matches are "navigable": they have a valid |destination_url|.
   // One example exception is the user tabbing into keyword search mode,
@@ -620,7 +615,6 @@ void AutocompleteResult::Swap(AutocompleteResult* other) {
   matches_.swap(other->matches_);
   default_match_ = begin() + other_default_match_offset;
   other->default_match_ = other->begin() + default_match_offset;
-  alternate_nav_url_.Swap(&(other->alternate_nav_url_));
 }
 
 void AutocompleteResult::CopyFrom(const AutocompleteResult& rhs) {
@@ -633,8 +627,6 @@ void AutocompleteResult::CopyFrom(const AutocompleteResult& rhs) {
   default_match_ = (rhs.default_match_ == rhs.end())
                        ? end()
                        : (begin() + (rhs.default_match_ - rhs.begin()));
-
-  alternate_nav_url_ = rhs.alternate_nav_url_;
 }
 
 #if DCHECK_IS_ON()
@@ -738,12 +730,7 @@ void AutocompleteResult::InlineTailPrefixes() {
 }
 
 size_t AutocompleteResult::EstimateMemoryUsage() const {
-  size_t res = 0;
-
-  res += base::trace_event::EstimateMemoryUsage(matches_);
-  res += base::trace_event::EstimateMemoryUsage(alternate_nav_url_);
-
-  return res;
+  return base::trace_event::EstimateMemoryUsage(matches_);
 }
 
 std::vector<AutocompleteResult::MatchDedupComparator>
