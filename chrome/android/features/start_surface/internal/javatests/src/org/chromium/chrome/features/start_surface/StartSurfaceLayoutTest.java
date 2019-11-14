@@ -48,6 +48,7 @@ import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.tab.Tab;
@@ -149,7 +150,7 @@ public class StartSurfaceLayoutTest {
         TabUiTestHelper.enterTabSwitcher(mActivityTestRule.getActivity());
         TabUiTestHelper.clickFirstCardFromTabSwitcher(mActivityTestRule.getActivity());
 
-        enterGTS();
+        enterGTSWithThumbnailChecking();
         mRenderTestRule.render(mActivityTestRule.getActivity().findViewById(
                                        org.chromium.chrome.tab_ui.R.id.tab_list_view),
                 "3_web_tabs");
@@ -165,7 +166,7 @@ public class StartSurfaceLayoutTest {
         TabUiTestHelper.enterTabSwitcher(mActivityTestRule.getActivity());
         TabUiTestHelper.clickFirstCardFromTabSwitcher(mActivityTestRule.getActivity());
 
-        enterGTS();
+        enterGTSWithThumbnailChecking();
         mRenderTestRule.render(mActivityTestRule.getActivity().findViewById(
                                        org.chromium.chrome.tab_ui.R.id.tab_list_view),
                 "10_web_tabs");
@@ -183,7 +184,7 @@ public class StartSurfaceLayoutTest {
                 mActivityTestRule.getActivity().getTabModelSelector().getCurrentModel().getCount()
                         - 1);
 
-        enterGTS();
+        enterGTSWithThumbnailChecking();
         // Make sure the grid tab switcher is scrolled down to show the selected tab.
         mRenderTestRule.render(mActivityTestRule.getActivity().findViewById(
                                        org.chromium.chrome.tab_ui.R.id.tab_list_view),
@@ -202,7 +203,7 @@ public class StartSurfaceLayoutTest {
         TabUiTestHelper.enterTabSwitcher(mActivityTestRule.getActivity());
         TabUiTestHelper.clickFirstCardFromTabSwitcher(mActivityTestRule.getActivity());
 
-        enterGTS();
+        enterGTSWithThumbnailChecking();
         mRenderTestRule.render(mActivityTestRule.getActivity().findViewById(
                                        org.chromium.chrome.tab_ui.R.id.tab_list_view),
                 "3_incognito_web_tabs");
@@ -317,7 +318,7 @@ public class StartSurfaceLayoutTest {
         final int initCount = getCaptureCount();
 
         for (int i = 0; i < mRepeat; i++) {
-            enterGTS();
+            enterGTSWithThumbnailChecking();
             leaveGTSAndVerifyThumbnailsAreReleased();
         }
         checkFinalCaptureCount(false, initCount);
@@ -355,6 +356,10 @@ public class StartSurfaceLayoutTest {
                 || "google_sdk".equals(Build.PRODUCT);
     }
 
+    /**
+     * Test that even if there are tabs with stuck pending thumbnail readback, it doesn't block
+     * thumbnail readback for the current tab.
+     */
     @Test
     @MediumTest
     @Features.DisableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION)
@@ -363,38 +368,34 @@ public class StartSurfaceLayoutTest {
         if (!isEmulator()) return;
 
         for (int i = 0; i < 10; i++) {
+            ChromeTabbedActivity cta = mActivityTestRule.getActivity();
             // Quickly create some tabs, navigate to web pages, and don't wait for thumbnail
             // capturing.
             mActivityTestRule.loadUrl(mUrl);
-            ChromeTabUtils.newTabFromMenu(InstrumentationRegistry.getInstrumentation(),
-                    mActivityTestRule.getActivity(), false, false);
+            ChromeTabUtils.newTabFromMenu(
+                    InstrumentationRegistry.getInstrumentation(), cta, false, false);
             mActivityTestRule.loadUrl(mUrl);
             // Hopefully we are in a state where some pending readbacks are stuck because their tab
             // is not attached to the view.
-            if (mActivityTestRule.getActivity()
-                            .getTabContentManager()
-                            .getPendingReadbacksForTesting()
-                    > 0) {
+            if (cta.getTabContentManager().getPendingReadbacksForTesting() > 0) {
                 break;
             }
 
             // Restart Chrome.
             // Although we're destroying the activity, the Application will still live on since its
             // in the same process as this test.
-            TestThreadUtils.runOnUiThreadBlocking(
-                    () -> mActivityTestRule.getActivity().getTabModelSelector().closeAllTabs());
-            ApplicationTestUtils.finishActivity(mActivityTestRule.getActivity());
+            TestThreadUtils.runOnUiThreadBlocking(() -> cta.getTabModelSelector().closeAllTabs());
+            ApplicationTestUtils.finishActivity(cta);
             mActivityTestRule.startMainActivityOnBlankPage();
             assertEquals(1, mActivityTestRule.tabsCount(false));
         }
-
-        assertNotEquals(0,
-                mActivityTestRule.getActivity()
-                        .getTabContentManager()
-                        .getPendingReadbacksForTesting());
+        ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+        assertNotEquals(0, cta.getTabContentManager().getPendingReadbacksForTesting());
+        assertEquals(1, cta.getCurrentTabModel().index());
 
         // The last tab should still get thumbnail even though readbacks for other tabs are stuck.
-        testGridToTab(false, false);
+        TabUiTestHelper.enterTabSwitcher(cta);
+        TabUiTestHelper.checkThumbnailsExist(cta.getTabModelSelector().getCurrentTab());
     }
 
     @Test
@@ -438,7 +439,7 @@ public class StartSurfaceLayoutTest {
         final int initCount = getCaptureCount();
 
         for (int i = 0; i < mRepeat; i++) {
-            enterGTS();
+            enterGTSWithThumbnailChecking();
 
             final int index = mActivityTestRule.getActivity().getCurrentTabModel().index();
             final int targetIndex = switchToAnotherTab ? 1 - index : index;
@@ -573,7 +574,7 @@ public class StartSurfaceLayoutTest {
             + "Was not locally reproducible. Disabling until verified that it's deflaked on bots.")
     public void testIncognitoEnterGts() throws InterruptedException {
         prepareTabs(1, 1, null);
-        enterGTS();
+        enterGTSWithThumbnailChecking();
         onView(withId(org.chromium.chrome.tab_ui.R.id.tab_list_view))
                 .check(TabCountAssertion.havingTabCount(1));
 
@@ -582,7 +583,7 @@ public class StartSurfaceLayoutTest {
         CriteriaHelper.pollInstrumentationThread(
                 () -> !mActivityTestRule.getActivity().getLayoutManager().overviewVisible());
 
-        enterGTS();
+        enterGTSWithThumbnailChecking();
         onView(withId(org.chromium.chrome.tab_ui.R.id.tab_list_view))
                 .check(TabCountAssertion.havingTabCount(1));
     }
@@ -595,7 +596,7 @@ public class StartSurfaceLayoutTest {
 
         // Prepare two incognito tabs and enter tab switcher.
         prepareTabs(1, 2, mUrl);
-        enterGTS();
+        enterGTSWithThumbnailChecking();
         onView(withId(org.chromium.chrome.tab_ui.R.id.tab_list_view))
                 .check(TabCountAssertion.havingTabCount(2));
 
@@ -620,7 +621,7 @@ public class StartSurfaceLayoutTest {
 
         // Prepare two incognito tabs and enter tab switcher.
         prepareTabs(1, 2, mUrl);
-        enterGTS();
+        enterGTSWithThumbnailChecking();
 
         int currentFetchCount = mTabListDelegate.getBitmapFetchCountForTesting();
         assertEquals(2, currentFetchCount - oldFetchCount);
@@ -674,7 +675,10 @@ public class StartSurfaceLayoutTest {
                         == isIncognito);
     }
 
-    private void enterGTS() throws InterruptedException {
+    /**
+     * TODO(wychen): move some of the callers to {@link TabUiTestHelper#enterTabSwitcher}.
+     */
+    private void enterGTSWithThumbnailChecking() throws InterruptedException {
         Tab currentTab = mActivityTestRule.getActivity().getTabModelSelector().getCurrentTab();
         // Native tabs need to be invalidated first to trigger thumbnail taking, so skip them.
         boolean checkThumbnail = !currentTab.isNativePage();
@@ -686,6 +690,8 @@ public class StartSurfaceLayoutTest {
 
         int count = getCaptureCount();
         waitForCaptureRateControl();
+        // TODO(wychen): use TabUiTestHelper.enterTabSwitcher() instead.
+        //  Might increase flakiness though. See crbug.com/1024742.
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> mActivityTestRule.getActivity().getLayoutManager().showOverview(true));
         assertTrue(mActivityTestRule.getActivity().getLayoutManager().overviewVisible());
@@ -707,7 +713,8 @@ public class StartSurfaceLayoutTest {
             }
         }
         checkCaptureCount(delta, count);
-        if (checkThumbnail) TabUiTestHelper.checkThumbnailsExist(currentTab);
+        TabUiTestHelper.verifyAllTabsHaveThumbnail(
+                mActivityTestRule.getActivity().getCurrentTabModel());
     }
 
     /**
