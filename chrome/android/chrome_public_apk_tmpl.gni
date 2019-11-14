@@ -22,7 +22,7 @@ declare_args() {
   multidex_in_release = false
 
   # Experimental only. Causes .dex files to be store in the APK uncompressed.
-  # Only affects monochrome_public_apk and trichrome_chrome_apk.
+  # Only affects monochrome_public_apk.
   use_uncompressed_dex = false
 }
 
