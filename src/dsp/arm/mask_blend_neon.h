@@ -33,9 +33,6 @@ void MaskBlendInit_NEON();
 #define LIBGAV1_Dsp8bpp_MaskBlend444 LIBGAV1_CPU_NEON
 #define LIBGAV1_Dsp8bpp_MaskBlend422 LIBGAV1_CPU_NEON
 #define LIBGAV1_Dsp8bpp_MaskBlend420 LIBGAV1_CPU_NEON
-#define LIBGAV1_Dsp8bpp_MaskBlendInterIntra444 LIBGAV1_CPU_NEON
-#define LIBGAV1_Dsp8bpp_MaskBlendInterIntra422 LIBGAV1_CPU_NEON
-#define LIBGAV1_Dsp8bpp_MaskBlendInterIntra420 LIBGAV1_CPU_NEON
 #define LIBGAV1_Dsp8bpp_InterIntraMaskBlend8bpp444 LIBGAV1_CPU_NEON
 #define LIBGAV1_Dsp8bpp_InterIntraMaskBlend8bpp422 LIBGAV1_CPU_NEON
 #define LIBGAV1_Dsp8bpp_InterIntraMaskBlend8bpp420 LIBGAV1_CPU_NEON

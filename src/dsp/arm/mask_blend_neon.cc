@@ -447,9 +447,8 @@ void Init8bpp() {
   dsp->mask_blend[0][0] = MaskBlend_NEON<false, 0, 0>;
   dsp->mask_blend[1][0] = MaskBlend_NEON<false, 1, 0>;
   dsp->mask_blend[2][0] = MaskBlend_NEON<false, 1, 1>;
-  dsp->mask_blend[0][1] = MaskBlend_NEON<true, 0, 0>;
-  dsp->mask_blend[1][1] = MaskBlend_NEON<true, 1, 0>;
-  dsp->mask_blend[2][1] = MaskBlend_NEON<true, 1, 1>;
+  // The is_inter_intra index of mask_blend[][] is replaced by
+  // inter_intra_mask_blend_8bpp[] in 8-bit.
   dsp->inter_intra_mask_blend_8bpp[0] = InterIntraMaskBlend8bpp_NEON<0, 0>;
   dsp->inter_intra_mask_blend_8bpp[1] = InterIntraMaskBlend8bpp_NEON<1, 0>;
   dsp->inter_intra_mask_blend_8bpp[2] = InterIntraMaskBlend8bpp_NEON<1, 1>;
