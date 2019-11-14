@@ -56,7 +56,7 @@ void StartUtilityProcessOnIOThread(
   host->SetName(base::ASCIIToUTF16("TestProcess"));
   EXPECT_TRUE(host->Start());
 
-  BindInterface(host, std::move(receiver));
+  host->GetChildProcess()->BindReceiver(std::move(receiver));
 }
 
 void BindInterfaceForGpuOnIOThread(
