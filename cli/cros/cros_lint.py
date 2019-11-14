@@ -26,7 +26,7 @@ from chromite.lib import parallel
 
 
 # Extract a script's shebang.
-SHEBANG_RE = re.compile(r'^#!\s*([^\s]+)(\s+([^\s]+))?')
+SHEBANG_RE = re.compile(br'^#!\s*([^\s]+)(\s+([^\s]+))?')
 
 
 def _GetProjectPath(path):
@@ -316,25 +316,25 @@ def _BreakoutDataByLinter(map_to_return, path):
   """Maps a linter method to the content of the |path|."""
   # Detect by content of the file itself.
   try:
-    with open(path) as fp:
+    with open(path, 'rb') as fp:
       # We read 128 bytes because that's the Linux kernel's current limit.
       # Look for BINPRM_BUF_SIZE in fs/binfmt_script.c.
       data = fp.read(128)
 
-      if not data.startswith('#!'):
+      if not data.startswith(b'#!'):
         # If the file doesn't have a shebang, nothing to do.
         return
 
       m = SHEBANG_RE.match(data)
       if m:
         prog = m.group(1)
-        if prog == '/usr/bin/env':
+        if prog == b'/usr/bin/env':
           prog = m.group(3)
         basename = os.path.basename(prog)
-        if basename.startswith('python'):
+        if basename.startswith(b'python'):
           pylint_list = map_to_return.setdefault(_PylintFile, [])
           pylint_list.append(path)
-        elif basename in ('sh', 'dash', 'bash'):
+        elif basename in (b'sh', b'dash', b'bash'):
           shlint_list = map_to_return.setdefault(_ShellLintFile, [])
           shlint_list.append(path)
   except IOError as e:
