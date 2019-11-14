@@ -25457,6 +25457,7 @@ Called by update_net_error_codes.py.-->
   <int value="3086" label="FetchBodyStreamInServiceWorker"/>
   <int value="3087" label="FetchBodyStreamOutsideServiceWorker"/>
   <int value="3088" label="GetComputedStyleOutsideFlatTree"/>
+  <int value="3089" label="ARIADescriptionAttribute"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
