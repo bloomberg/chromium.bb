@@ -932,7 +932,7 @@ bool SkGIFLZWContext::prepareToDecode()
     // bits are reserved for the base values, and the next two entries are
     // reserved for the clear code and termination code. In theory a GIF can
     // set the datasize to 0, meaning we have just two reserved entries, making
-    // the longest sequence (SK_MAX_DICTIONARY_ENTIRES + 1) - 2 values long. Since
+    // the longest sequence (SK_MAX_DICTIONARY_ENTRIES + 1) - 2 values long. Since
     // each value is a byte, this is also the number of bytes in the longest
     // encodable sequence.
     constexpr size_t kMaxSequence = SK_MAX_DICTIONARY_ENTRIES - 1;
