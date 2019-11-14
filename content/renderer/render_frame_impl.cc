@@ -2514,7 +2514,7 @@ void RenderFrameImpl::OnCopyToFindPboard() {
   if (frame_->HasSelection()) {
     if (!clipboard_host_) {
       auto* platform = RenderThreadImpl::current_blink_platform_impl();
-      platform->GetBrowserInterfaceBrokerProxy()->GetInterface(
+      platform->GetBrowserInterfaceBroker()->GetInterface(
           clipboard_host_.BindNewPipeAndPassReceiver());
       clipboard_host_.set_disconnect_handler(base::BindOnce(
           &RenderFrameImpl::OnClipboardHostError, base::Unretained(this)));

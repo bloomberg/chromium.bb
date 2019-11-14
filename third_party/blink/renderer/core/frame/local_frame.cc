@@ -1499,7 +1499,7 @@ const base::UnguessableToken& LocalFrame::GetAgentClusterId() const {
 const mojo::Remote<mojom::blink::ReportingServiceProxy>&
 LocalFrame::GetReportingService() const {
   if (!reporting_service_) {
-    Platform::Current()->GetBrowserInterfaceBrokerProxy()->GetInterface(
+    Platform::Current()->GetBrowserInterfaceBroker()->GetInterface(
         reporting_service_.BindNewPipeAndPassReceiver());
   }
   return reporting_service_;
