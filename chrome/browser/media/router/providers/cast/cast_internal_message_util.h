@@ -9,11 +9,12 @@
 #include "base/macros.h"
 #include "base/values.h"
 #include "third_party/blink/public/mojom/presentation/presentation.mojom.h"
-#include "third_party/openscreen/src/cast/common/channel/proto/cast_channel.pb.h"
+
+namespace cast_channel {
+class CastMessage;
+}
 
 namespace media_router {
-
-using cast::channel::CastMessage;
 
 class MediaSinkInternal;
 
@@ -202,7 +203,7 @@ blink::mojom::PresentationConnectionMessagePtr CreateAppMessageAck(
 blink::mojom::PresentationConnectionMessagePtr CreateAppMessage(
     const std::string& session_id,
     const std::string& client_id,
-    const CastMessage& cast_message);
+    const cast_channel::CastMessage& cast_message);
 blink::mojom::PresentationConnectionMessagePtr CreateV2Message(
     const std::string& client_id,
     const base::Value& payload,

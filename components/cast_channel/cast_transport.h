@@ -16,7 +16,6 @@
 #include "components/cast_channel/logger.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/ip_endpoint.h"
-#include "third_party/openscreen/src/cast/common/channel/proto/cast_channel.pb.h"
 
 namespace net {
 class DrainableIOBuffer;
@@ -27,8 +26,7 @@ class Socket;
 }  // namespace net
 
 namespace cast_channel {
-
-using ::cast::channel::CastMessage;
+class CastMessage;
 class MessageFramer;
 
 class CastTransport {

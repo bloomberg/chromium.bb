@@ -8,13 +8,12 @@
 #include <string>
 
 #include "base/values.h"
-#include "third_party/openscreen/src/cast/common/channel/proto/cast_channel.pb.h"
 
 namespace cast_channel {
 
 class AuthContext;
-using ::cast::channel::CastMessage;
-using ::cast::channel::DeviceAuthMessage;
+class CastMessage;
+class DeviceAuthMessage;
 
 // Reserved message namespaces for internal messages.
 static constexpr char kCastInternalNamespacePrefix[] =

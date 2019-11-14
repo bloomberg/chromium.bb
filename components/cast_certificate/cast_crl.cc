@@ -11,6 +11,7 @@
 
 #include "base/base64.h"
 #include "base/memory/singleton.h"
+#include "components/cast_certificate/proto/revocation.pb.h"
 #include "crypto/sha2.h"
 #include "net/cert/internal/cert_errors.h"
 #include "net/cert/internal/parse_certificate.h"
@@ -27,14 +28,8 @@
 #include "net/der/input.h"
 #include "net/der/parse_values.h"
 #include "net/der/parser.h"
-#include "third_party/openscreen/src/cast/common/certificate/proto/revocation.pb.h"
 
 namespace cast_certificate {
-
-using cast::certificate::Crl;
-using cast::certificate::CrlBundle;
-using cast::certificate::TbsCrl;
-
 namespace {
 
 enum CrlVersion {

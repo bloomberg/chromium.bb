@@ -23,8 +23,11 @@
 #include "chrome/common/media_router/providers/cast/cast_media_source.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
-#include "third_party/openscreen/src/cast/common/channel/proto/cast_channel.pb.h"
 #include "url/origin.h"
+
+namespace cast_channel {
+class CastMessage;
+}
 
 namespace media_router {
 
@@ -110,7 +113,7 @@ class CastActivityManager : public CastActivityManagerBase,
 
   // cast_channel::CastMessageHandler::Observer overrides.
   void OnAppMessage(int channel_id,
-                    const cast::channel::CastMessage& message) override;
+                    const cast_channel::CastMessage& message) override;
   void OnInternalMessage(int channel_id,
                          const cast_channel::InternalMessage& message) override;
 

@@ -29,16 +29,13 @@
 #include "net/log/net_log_source.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/tls_socket.mojom.h"
-#include "third_party/openscreen/src/cast/common/channel/proto/cast_channel.pb.h"
 
 namespace net {
 class X509Certificate;
 }
 
 namespace cast_channel {
-
-using ::cast::channel::CastMessage;
-
+class CastMessage;
 class Logger;
 class MojoDataPump;
 struct LastError;

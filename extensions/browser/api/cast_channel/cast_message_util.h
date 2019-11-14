@@ -7,7 +7,9 @@
 
 #include <string>
 
-#include "third_party/openscreen/src/cast/common/channel/proto/cast_channel.pb.h"
+namespace cast_channel {
+class CastMessage;
+}  // namespace cast_channel
 
 namespace extensions {
 
@@ -20,11 +22,11 @@ struct MessageInfo;
 // Fills |message_proto| from |message| and returns true on success.
 bool MessageInfoToCastMessage(
     const extensions::api::cast_channel::MessageInfo& message,
-    ::cast::channel::CastMessage* message_proto);
+    ::cast_channel::CastMessage* message_proto);
 
 // Fills |message| from |message_proto| and returns true on success.
 bool CastMessageToMessageInfo(
-    const ::cast::channel::CastMessage& message_proto,
+    const ::cast_channel::CastMessage& message_proto,
     extensions::api::cast_channel::MessageInfo* message);
 
 }  // namespace extensions
