@@ -28,6 +28,7 @@ NewTabCallbackProxy::~NewTabCallbackProxy() {
 void NewTabCallbackProxy::OnNewTab(std::unique_ptr<Tab> tab, NewTabType type) {
   JNIEnv* env = AttachCurrentThread();
   // The Java side takes ownership of Tab.
+  TRACE_EVENT0("weblayer", "Java_NewTabCallbackProxy_onNewTab");
   Java_NewTabCallbackProxy_onNewTab(env, java_impl_,
                                     reinterpret_cast<jlong>(tab.release()),
                                     static_cast<int>(type));

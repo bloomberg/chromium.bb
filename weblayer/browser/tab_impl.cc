@@ -31,6 +31,7 @@
 #include "base/android/callback_android.h"
 #include "base/android/jni_string.h"
 #include "base/json/json_writer.h"
+#include "base/trace_event/trace_event.h"
 #include "components/embedder_support/android/delegate/color_chooser_android.h"
 #include "weblayer/browser/java/jni/TabImpl_jni.h"
 #include "weblayer/browser/top_controls_container_view.h"
@@ -291,6 +292,7 @@ int TabImpl::GetTopControlsHeight() {
 bool TabImpl::DoBrowserControlsShrinkRendererSize(
     const content::WebContents* web_contents) {
 #if defined(OS_ANDROID)
+  TRACE_EVENT0("weblayer", "Java_TabImpl_doBrowserControlsShrinkRendererSize");
   return Java_TabImpl_doBrowserControlsShrinkRendererSize(
       base::android::AttachCurrentThread(), java_impl_);
 #else
