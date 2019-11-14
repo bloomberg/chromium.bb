@@ -29,19 +29,20 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 /**
- * Integration test to verify WebView's metrics metadata. This isn't a great spot to verify WebView
- * reports metadata correctly; that should be done with unittests on individual MetricsProviders.
- * This is an opportunity to verify these MetricsProviders are hooked up in WebView's
- * implementation.
+ * Integration test to verify WebView's metrics implementation. This isn't a great spot to verify
+ * WebView reports metadata correctly; that should be done with unittests on individual
+ * MetricsProviders. This is an opportunity to verify these MetricsProviders (or other components
+ * integrating with the MetricsService) are hooked up in WebView's implementation.
  *
  * <p>This configures the initial metrics upload to happen very quickly (so tests don't need to run
- * multiple seconds). This does not touch the upload interval between subsequent uploads, because
- * each test runs in a separate browser process, so we'll never reach subsequent uploads. See
- * https://crbug.com/932582.
+ * multiple seconds). This also configures subsequent uploads to happen very frequently (see
+ * UPLOAD_INTERVAL_MS), although many test cases won't require this (and since each test case runs
+ * in a separate browser process, often we'll never reach subsequent uploads, see
+ * https://crbug.com/932582).
  */
 @RunWith(AwJUnit4ClassRunner.class)
 @CommandLineFlags.Add({MetricsSwitches.FORCE_ENABLE_METRICS_REPORTING}) // Override sampling logic
-public class AwMetricsMetadataTest {
+public class AwMetricsIntegrationTest {
     @Rule
     public AwActivityTestRule mRule = new AwActivityTestRule();
 
@@ -49,6 +50,9 @@ public class AwMetricsMetadataTest {
     private AwContents mAwContents;
     private TestAwContentsClient mContentsClient;
     private TestPlatformServiceBridge mPlatformServiceBridge;
+
+    // Some short interval, arbitrarily chosen.
+    private static final long UPLOAD_INTERVAL_MS = 10;
 
     private static class TestPlatformServiceBridge extends PlatformServiceBridge {
         private final BlockingQueue<byte[]> mQueue;
@@ -80,6 +84,15 @@ public class AwMetricsMetadataTest {
             byte[] data = AwActivityTestRule.waitForNextQueueElement(mQueue);
             return ChromeUserMetricsExtension.parseFrom(data);
         }
+
+        /**
+         * Asserts there are no more metrics logs queued up.
+         */
+        public void assertNoMetricsLogs() throws Exception {
+            // Assert the size is zero (rather than the queue is empty), so if this fails we have
+            // some hint as to how many logs were queued up.
+            Assert.assertEquals("Expected no metrics logs to be in the queue", 0, mQueue.size());
+        }
     }
 
     @Before
@@ -94,8 +107,20 @@ public class AwMetricsMetadataTest {
         PlatformServiceBridge.injectInstance(mPlatformServiceBridge);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             // Need to configure the metrics delay first, because
-            // handleMinidumpsAndSetMetricsConsent() triggers MetricsService initialization.
+            // handleMinidumpsAndSetMetricsConsent() triggers MetricsService initialization. The
+            // first upload for each test case will be triggered with minimal latency, and
+            // subsequent uploads (for tests cases which need them) will be scheduled every
+            // UPLOAD_INTERVAL_MS. We use programmatic hooks (instead of commandline flags) because:
+            //  * We don't want users in the wild to upload reports to Google which are recorded
+            //    immediately after startup: these records would be very unusual in that they don't
+            //    contain (many) histograms.
+            //  * The interval for subsequent uploads is rate-limited to mitigate accidentally
+            //    DOS'ing the metrics server. We want to keep that protection for clients in the
+            //    wild, but don't need the same protection for the test because it doesn't upload
+            //    reports.
             AwMetricsServiceClient.setFastStartupForTesting(true);
+            AwMetricsServiceClient.setUploadIntervalForTesting(UPLOAD_INTERVAL_MS);
+
             AwBrowserProcess.handleMinidumpsAndSetMetricsConsent(true /* updateMetricsConsent */);
         });
     }
@@ -221,5 +246,31 @@ public class AwMetricsMetadataTest {
         Assert.assertFalse(
                 "Should not log hardware.bluetooth", systemProfile.getHardware().hasBluetooth());
         Assert.assertFalse("Should not log hardware.usb", systemProfile.getHardware().hasUsb());
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"AndroidWebView"})
+    public void testPageLoadsEnableMultipleUploads() throws Throwable {
+        mPlatformServiceBridge.waitForNextMetricsLog();
+
+        // At this point, the MetricsService should be asleep, and should not have created any more
+        // metrics logs.
+        mPlatformServiceBridge.assertNoMetricsLogs();
+
+        // The start of a page load should be enough to indicate to the MetricsService that the app
+        // is "in use" and it's OK to upload the next record. No need to wait for onPageFinished,
+        // since this behavior should be gated on NOTIFICATION_LOAD_START.
+        mRule.loadUrlAsync(mAwContents, "about:blank");
+
+        // This may take slightly longer than UPLOAD_INTERVAL_MS, due to the time spent processing
+        // the metrics log, but should be well within the timeout (unless something is broken).
+        mPlatformServiceBridge.waitForNextMetricsLog();
+
+        // If we get here, we got a second metrics log (and the test may pass). If there was no
+        // second metrics log, then the above call will fail with TimeoutException. We should not
+        // assertNoMetricsLogs() however, because it's possible we got a metrics log between
+        // onPageStarted & onPageFinished, in which case onPageFinished would *also* wake up the
+        // metrics service, and we might potentially have a third metrics log in the queue.
     }
 }
