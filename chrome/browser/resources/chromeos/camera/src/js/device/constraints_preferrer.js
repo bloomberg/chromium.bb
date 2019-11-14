@@ -233,7 +233,9 @@ cca.device.VideoConstraintsPreferrer =
       this.setPreferredConstFps_(
           /** @type {string} */ (this.deviceId_), this.resolution_,
           this.toggleFps_.checked ? 60 : 30);
-      this.doReconfigureStream_();
+      cca.state.set('mode-switching', true);
+      this.doReconfigureStream_().finally(
+          () => cca.state.set('mode-switching', false));
     });
   }
 
