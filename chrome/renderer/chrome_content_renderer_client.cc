@@ -100,12 +100,14 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/mime_handler_view_mode.h"
+#include "content/public/common/page_visibility_state.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/renderer/plugin_instance_throttler.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_frame_visitor.h"
 #include "content/public/renderer/render_view.h"
+#include "content/public/renderer/render_view_observer.h"
 #include "extensions/buildflags/buildflags.h"
 #include "ipc/ipc_sync_channel.h"
 #include "media/base/media_switches.h"
@@ -281,22 +283,25 @@ bool IsStandaloneContentExtensionProcess() {
 }
 
 // Defers media player loading in background pages until they're visible.
-class MediaLoadDeferrer : public content::RenderFrameObserver {
+class MediaLoadDeferrer : public content::RenderViewObserver {
  public:
-  MediaLoadDeferrer(content::RenderFrame* render_frame,
+  MediaLoadDeferrer(content::RenderView* render_view,
                     base::OnceClosure continue_loading_cb)
-      : content::RenderFrameObserver(render_frame),
+      : content::RenderViewObserver(render_view),
         continue_loading_cb_(std::move(continue_loading_cb)) {}
   ~MediaLoadDeferrer() override {}
 
- private:
   // content::RenderFrameObserver implementation:
-  void WasShown() override {
+  void OnDestruct() override { delete this; }
+  void OnPageVisibilityChanged(
+      content::PageVisibilityState visibility_state) override {
+    if (visibility_state != content::PageVisibilityState::kVisible)
+      return;
     std::move(continue_loading_cb_).Run();
     delete this;
   }
-  void OnDestruct() override { delete this; }
 
+ private:
   base::OnceClosure continue_loading_cb_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaLoadDeferrer);
@@ -719,7 +724,7 @@ bool ChromeContentRendererClient::DeferMediaLoad(
            blink::PageVisibilityState::kVisible &&
        !has_played_media_before) ||
       prerender::PrerenderHelper::IsPrerendering(render_frame)) {
-    new MediaLoadDeferrer(render_frame, std::move(closure));
+    new MediaLoadDeferrer(render_frame->GetRenderView(), std::move(closure));
     return true;
   }
 
