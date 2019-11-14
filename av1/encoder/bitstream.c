@@ -3308,10 +3308,10 @@ uint32_t av1_write_obu_header(AV1_COMP *const cpi, OBU_TYPE obu_type,
   return size;
 }
 
-int av1_write_uleb_obu_size(uint32_t obu_header_size, uint32_t obu_payload_size,
+int av1_write_uleb_obu_size(size_t obu_header_size, size_t obu_payload_size,
                             uint8_t *dest) {
-  const uint32_t obu_size = obu_payload_size;
-  const uint32_t offset = obu_header_size;
+  const uint32_t obu_size = (uint32_t)obu_payload_size;
+  const size_t offset = obu_header_size;
   size_t coded_obu_size = 0;
 
   if (aom_uleb_encode(obu_size, sizeof(obu_size), dest + offset,
@@ -3322,13 +3322,12 @@ int av1_write_uleb_obu_size(uint32_t obu_header_size, uint32_t obu_payload_size,
   return AOM_CODEC_OK;
 }
 
-static size_t obu_memmove(uint32_t obu_header_size, uint32_t obu_payload_size,
+static size_t obu_memmove(size_t obu_header_size, size_t obu_payload_size,
                           uint8_t *data) {
   const size_t length_field_size = aom_uleb_size_in_bytes(obu_payload_size);
-  const uint32_t move_dst_offset =
-      (uint32_t)length_field_size + obu_header_size;
-  const uint32_t move_src_offset = obu_header_size;
-  const uint32_t move_size = obu_payload_size;
+  const size_t move_dst_offset = length_field_size + obu_header_size;
+  const size_t move_src_offset = obu_header_size;
+  const size_t move_size = obu_payload_size;
   memmove(data + move_dst_offset, data + move_src_offset, move_size);
   return length_field_size;
 }
@@ -3795,8 +3794,8 @@ static uint32_t write_tiles_in_tg_obus(AV1_COMP *const cpi, uint8_t *const dst,
   return total_size;
 }
 
-static uint32_t av1_write_itut_t35_metadata_obu(const aom_metadata_t *metadata,
-                                                uint8_t *const dst) {
+static size_t av1_write_itut_t35_metadata_obu(const aom_metadata_t *metadata,
+                                              uint8_t *const dst) {
   size_t coded_metadata_size = 0;
   const uint64_t metadata_type = (uint64_t)metadata->type;
   if (aom_uleb_encode(metadata_type, sizeof(metadata_type), dst,
@@ -3810,13 +3809,13 @@ static uint32_t av1_write_itut_t35_metadata_obu(const aom_metadata_t *metadata,
 }
 
 // Only ITUT T35 metadata writing is currently implemented.
-static uint32_t av1_write_metadata_array(AV1_COMP *const cpi, uint8_t *dst) {
+static size_t av1_write_metadata_array(AV1_COMP *const cpi, uint8_t *dst) {
   if (!cpi->source) return 0;
   aom_metadata_array_t *arr = cpi->source->metadata;
   if (!arr) return 0;
-  uint32_t obu_header_size = 0;
-  uint32_t obu_payload_size = 0;
-  uint32_t total_bytes_written = 0;
+  size_t obu_header_size = 0;
+  size_t obu_payload_size = 0;
+  size_t total_bytes_written = 0;
   size_t length_field_size = 0;
   for (size_t i = 0; i < arr->sz; i++) {
     aom_metadata_t *current_metadata = arr->metadata_array[i];
@@ -3831,10 +3830,9 @@ static uint32_t av1_write_metadata_array(AV1_COMP *const cpi, uint8_t *dst) {
               obu_memmove(obu_header_size, obu_payload_size, dst);
           if (av1_write_uleb_obu_size(obu_header_size, obu_payload_size, dst) ==
               AOM_CODEC_OK) {
-            dst += (size_t)(obu_header_size + obu_payload_size) +
-                   length_field_size;
-            total_bytes_written +=
-                obu_header_size + obu_payload_size + length_field_size;
+            const size_t obu_size = obu_header_size + obu_payload_size;
+            dst += obu_size + length_field_size;
+            total_bytes_written += obu_size + length_field_size;
           } else {
             aom_internal_error(&cpi->common.error, AOM_CODEC_ERROR,
                                "Error writing metadata OBU size");
