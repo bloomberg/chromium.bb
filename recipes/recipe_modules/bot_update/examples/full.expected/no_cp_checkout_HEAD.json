@@ -18,6 +18,8 @@
       "got_revision@src",
       "--revision",
       "src@HEAD",
+      "--refs",
+      "refs/heads/master",
       "--disable-syntax-validation"
     ],
     "env_suffixes": {
