@@ -165,6 +165,17 @@ class ThreadPool(object):
     elif cmd[0].endswith('.py'):
       cmd = [vpython] + cmd
 
+    # On Windows, scripts on the current directory take precedence over PATH, so
+    # that when testing depot_tools on Windows, calling `vpython.bat` will
+    # execute the copy of vpython of the depot_tools under test instead of the
+    # one in the bot.
+    # As a workaround, we run the tests from the parent directory instead.
+    if (cmd[0] == vpython and
+        'cwd' in test.kwargs and
+        os.path.basename(test.kwargs['cwd']) == 'depot_tools'):
+      test.kwargs['cwd'] = os.path.dirname(test.kwargs['cwd'])
+      cmd[1] = os.path.join('depot_tools', cmd[1])
+
     try:
       start = time.time()
       p = subprocess.Popen(cmd, **test.kwargs)
