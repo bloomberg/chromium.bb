@@ -67,6 +67,10 @@ const base::Feature kCrostiniUsbAllowUnsupported{
 const base::Feature kCrostiniWebUIInstaller{"CrostiniWebUIInstaller",
                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables or disables the new WebUI Crostini upgrader.
+const base::Feature kCrostiniWebUIUpgrader{"CrostiniWebUIUpgrader",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Deprecates the CryptAuth v1 DeviceSync flow. Note: During the first phase
 // of the v2 DeviceSync rollout, v1 and v2 DeviceSync run in parallel. This flag
 // is needed to deprecate the v1 service during the second phase of the rollout.

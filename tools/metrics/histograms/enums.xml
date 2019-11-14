@@ -35856,6 +35856,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1836854634" label="CloseTabSuggestions:enabled"/>
   <int value="-1835975804" label="disable-offline-auto-reload"/>
   <int value="-1835608319" label="EnableHeuristicPalmDetectionFilter:disabled"/>
+  <int value="-1834841895" label="CrostiniWebUIUpgrader:enabled"/>
   <int value="-1834536026" label="AppServiceIntentHandling:enabled"/>
   <int value="-1833149810" label="enable-accessibility-tab-switcher"/>
   <int value="-1832575380" label="show-saved-copy"/>
@@ -36211,6 +36212,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1375111024" label="enable-fixed-position-compositing"/>
   <int value="-1373942769" label="WebAuthenticationCtap2:disabled"/>
   <int value="-1373705581" label="ManualSaving:enabled"/>
+  <int value="-1371984027" label="CrostiniWebUIUpgrader:disabled"/>
   <int value="-1371239786" label="EnablePasswordsAccountStorage:enabled"/>
   <int value="-1370532920" label="AppServiceAsh:enabled"/>
   <int value="-1368499577" label="OnTheFlyMhtmlHashComputation:enabled"/>
