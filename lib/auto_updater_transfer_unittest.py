@@ -94,17 +94,11 @@ class CrOSLocalTransferPrivateMock(partial_mock.PartialCmdMock):
     """Mock auto_updater_transfer.LocalTransfer._EnsureDeviceDirectory."""
 
 
-class CrosLocalTransferTest(cros_test_lib.MockTestCase):
-  """Test whether LocalTransfer's transfer functions are retried."""
-
-  def setUp(self):
-    """Mock remote_access.RemoteDevice's functions for update."""
-    self.PatchObject(remote_access.RemoteDevice, 'work_dir', '')
-    self.PatchObject(remote_access.RemoteDevice, 'CopyToWorkDir')
-    self.PatchObject(remote_access.RemoteDevice, 'CopyToDevice')
+class CrosTransferBaseClassTest(cros_test_lib.MockTestCase):
+  """Test whether Transfer's public transfer functions are retried correctly."""
 
   def testErrorTriggerRetryTransferUpdateUtils(self):
-    """Test LocalTransfer._TransferUpdateUtilsPackage() is retried properly."""
+    """Test if Transfer._TransferUpdateUtilsPackage() is retried properly."""
     with remote_access.ChromiumOSDeviceHandler('1.1.1.1') as device:
       CrOS_LocalTransfer = CreateLocalTransferInstance(device)
       self.PatchObject(auto_updater_transfer, '_DELAY_SEC_FOR_RETRY', 1)
@@ -118,7 +112,7 @@ class CrosLocalTransferTest(cros_test_lib.MockTestCase):
       self.assertEqual(transfer_update_utils.call_count, _MAX_RETRY + 1)
 
   def testErrorTriggerRetryTransferStateful(self):
-    """Test LocalTransfer._TransferStatefulUpdate() is retried properly."""
+    """Test if Transfer._TransferStatefulUpdate() is retried properly."""
     with remote_access.ChromiumOSDeviceHandler('1.1.1.1') as device:
       CrOS_LocalTransfer = CreateLocalTransferInstance(device)
       self.PatchObject(auto_updater_transfer, '_DELAY_SEC_FOR_RETRY', 1)
@@ -132,7 +126,7 @@ class CrosLocalTransferTest(cros_test_lib.MockTestCase):
       self.assertEqual(transfer_stateful.call_count, _MAX_RETRY + 1)
 
   def testErrorTriggerRetryTransferRootfs(self):
-    """Test LocalTransfer._TransferRootfsUpdate() is retried properly."""
+    """Test if Transfer._TransferRootfsUpdate() is retried properly."""
     with remote_access.ChromiumOSDeviceHandler('1.1.1.1') as device:
       CrOS_LocalTransfer = CreateLocalTransferInstance(device)
       self.PatchObject(auto_updater_transfer, '_DELAY_SEC_FOR_RETRY', 1)
@@ -144,6 +138,16 @@ class CrosLocalTransferTest(cros_test_lib.MockTestCase):
       self.assertRaises(cros_build_lib.RunCommandError,
                         CrOS_LocalTransfer.TransferRootfsUpdate)
       self.assertEqual(transfer_rootfs.call_count, _MAX_RETRY + 1)
+
+
+class CrosLocalTransferTest(cros_test_lib.MockTestCase):
+  """Test whether LocalTransfer's transfer functions are retried."""
+
+  def setUp(self):
+    """Mock remote_access.RemoteDevice's functions for update."""
+    self.PatchObject(remote_access.RemoteDevice, 'work_dir', '/test/work/dir')
+    self.PatchObject(remote_access.RemoteDevice, 'CopyToWorkDir')
+    self.PatchObject(remote_access.RemoteDevice, 'CopyToDevice')
 
   def testTransferStatefulUpdateNeedsTransfer(self):
     """Test transfer functions for stateful update.
@@ -196,7 +200,7 @@ class CrosLocalTransferTest(cros_test_lib.MockTestCase):
       self.assertTrue(
           auto_updater_transfer.LocalTransfer._GetStatefulUpdateScript.called)
       self.assertEqual(CrOS_LocalTransfer._stateful_update_bin,
-                       'stateful_update')
+                       os.path.join(device.work_dir, 'stateful_update'))
       self.assertTrue(
           auto_updater_transfer.LocalTransfer._EnsureDeviceDirectory.called)
 
@@ -274,20 +278,6 @@ class CrosLabTransferTest(cros_test_lib.MockTestCase):
     """Mock remote_access.RemoteDevice/ChromiumOSDevice functions for update."""
     self.PatchObject(remote_access.RemoteDevice, 'work_dir', '/test/work/dir')
 
-  def testErrorTriggerRetryTransferUpdateUtils(self):
-    """Test LabTransfer._TransferUpdateUtilsPackage() is retried properly."""
-    with remote_access.ChromiumOSDeviceHandler('1.1.1.1') as device:
-      CrOS_LabTransfer = CreateLabTransferInstance(device)
-      self.PatchObject(auto_updater_transfer, '_DELAY_SEC_FOR_RETRY', 1)
-      _MAX_RETRY = self.PatchObject(auto_updater_transfer, '_MAX_RETRY', 1)
-      transfer_update_utils = self.PatchObject(
-          auto_updater_transfer.LabTransfer,
-          '_TransferUpdateUtilsPackage',
-          side_effect=cros_build_lib.RunCommandError('fail'))
-      self.assertRaises(cros_build_lib.RunCommandError,
-                        CrOS_LabTransfer.TransferUpdateUtilsPackage)
-      self.assertEqual(transfer_update_utils.call_count, _MAX_RETRY + 1)
-
   def testTransferUpdateUtilsCurlCalls(self):
     """Test methods calls of LabTransfer._TransferUpdateUtilsPackage().
 
@@ -358,20 +348,6 @@ class CrosLabTransferTest(cros_test_lib.MockTestCase):
                        side_effect=cros_build_lib.RunCommandError('fail'))
       self.assertRaises(cros_build_lib.RunCommandError,
                         CrOS_LabTransfer._TransferUpdateUtilsPackage)
-
-  def testErrorTriggerRetryTransferStateful(self):
-    """Test LabTransfer._TransferStatefulUpdate() is retried properly."""
-    with remote_access.ChromiumOSDeviceHandler('1.1.1.1') as device:
-      CrOS_LabTransfer = CreateLabTransferInstance(device)
-      self.PatchObject(auto_updater_transfer, '_DELAY_SEC_FOR_RETRY', 1)
-      _MAX_RETRY = self.PatchObject(auto_updater_transfer, '_MAX_RETRY', 2)
-      transfer_stateful = self.PatchObject(
-          auto_updater_transfer.LabTransfer,
-          '_TransferStatefulUpdate',
-          side_effect=cros_build_lib.RunCommandError('fail'))
-      self.assertRaises(cros_build_lib.RunCommandError,
-                        CrOS_LabTransfer.TransferStatefulUpdate)
-      self.assertEqual(transfer_stateful.call_count, _MAX_RETRY + 1)
 
   def testErrorTransferStatefulServerError(self):
     """Test errors thrown by LabTransfer._TransferStatefulUpdate()."""
@@ -543,20 +519,6 @@ class CrosLabTransferTest(cros_test_lib.MockTestCase):
       CrOS_LabTransfer._TransferStatefulUpdate()
       self.assertListEqual(lab_xfer._EnsureDeviceDirectory.call_args_list,
                            [mock.call(x) for x in expected])
-
-  def testErrorTriggerRetryTransferRootfs(self):
-    """Test LabTransfer._TransferRootfsUpdate() is retried properly."""
-    with remote_access.ChromiumOSDeviceHandler('1.1.1.1') as device:
-      CrOS_LabTransfer = CreateLabTransferInstance(device)
-      self.PatchObject(auto_updater_transfer, '_DELAY_SEC_FOR_RETRY', 1)
-      _MAX_RETRY = self.PatchObject(auto_updater_transfer, '_MAX_RETRY', 3)
-      transfer_rootfs = self.PatchObject(
-          auto_updater_transfer.LabTransfer,
-          '_TransferRootfsUpdate',
-          side_effect=cros_build_lib.RunCommandError('fail'))
-      self.assertRaises(cros_build_lib.RunCommandError,
-                        CrOS_LabTransfer.TransferRootfsUpdate)
-      self.assertEqual(transfer_rootfs.call_count, _MAX_RETRY + 1)
 
   def testErrorTransferRootfsServerError(self):
     """Test errors thrown by LabTransfer._TransferRootfsUpdate()."""

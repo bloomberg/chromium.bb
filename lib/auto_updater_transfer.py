@@ -5,6 +5,11 @@
 
 """Library containing functions to transfer files onto a remote device.
 
+Transfer Base class includes:
+
+  ----Tranfer----
+  * @retry functionality for all public transfer functions.
+
 LocalTransfer includes:
 
   ----Precheck---
@@ -14,7 +19,19 @@ LocalTransfer includes:
   * Transfer update-utils (nebraska, et. al.) package at first.
   * Transfer rootfs update files if rootfs update is required.
   * Transfer stateful update files if stateful update is required.
-  * @retry to all transfer functions.
+
+LabTransfer includes:
+
+  ----Precheck---
+  * Pre-check payload's existence on the staging server before auto-update.
+
+  ----Tranfer----
+  * Download the update-utils (nebraska, et. al.) package onto the DUT directly
+    from the staging server at first.
+  * Download rootfs update files onto the DUT directly from the staging server
+    if rootfs update is required.
+  * Download stateful update files onto the DUT directly from the staging server
+    if stateful update is required.
 """
 
 from __future__ import absolute_import
@@ -165,38 +182,23 @@ class LocalTransfer(Transfer):
   LOCAL_CHROOT_STATEFUL_UPDATE_PATH = '/usr/bin/stateful_update'
   REMOTE_STATEFUL_UPDATE_PATH = '/usr/local/bin/stateful_update'
 
-  def __init__(self, device, payload_dir, tempdir, device_restore_dir,
-               payload_name, cmd_kwargs, device_payload_dir, dev_dir='',
-               payload_mode='scp', original_payload_dir=None,
-               transfer_stateful_update=True, transfer_rootfs_update=True):
+  def __init__(self, tempdir, payload_mode='scp', *args, **kwargs):
     """Initialize LocalTransfer to handle transferring files from local to DUT.
 
     Args:
-      device: See Base class.
-      payload_dir: See Base class.
       tempdir: The temp directory in caller, not in the device. For example,
           the tempdir for cros flash is /tmp/cros-flash****/, used to
           temporarily keep files when transferring update-utils package, and
           reserve nebraska and update engine logs.
-      device_restore_dir: See Base class.
-      payload_name: See Base class.
-      cmd_kwargs: See Base class.
-      device_payload_dir: See Base class.
-      dev_dir: See Base class.
       payload_mode: The payload mode - it can be 'parallel' or 'scp'.
-      original_payload_dir: See Base class.
-      transfer_stateful_update: See Base class.
-      transfer_rootfs_update: See Base class.
+      *args: The list of arguments to be passed. See Base class for a complete
+          list of accepted arguments.
+      **kwargs: Any keyword arguments to be passed. See Base class for a
+          complete list of accepted keyword arguments.
     """
-    super(LocalTransfer, self).__init__(
-        device=device, payload_dir=payload_dir,
-        device_restore_dir=device_restore_dir, payload_name=payload_name,
-        cmd_kwargs=cmd_kwargs, device_payload_dir=device_payload_dir,
-        dev_dir=dev_dir, original_payload_dir=original_payload_dir,
-        transfer_stateful_update=transfer_stateful_update,
-        transfer_rootfs_update=transfer_rootfs_update)
     self._tempdir = tempdir
     self._payload_mode = payload_mode
+    super(LocalTransfer, self).__init__(*args, **kwargs)
 
   def CheckPayloads(self):
     """Verify that all required payloads are in |self.payload_dir|."""
@@ -319,33 +321,18 @@ class LocalTransfer(Transfer):
 class LabTransfer(Transfer):
   """Abstracts logic that transfers files from staging server to the DUT."""
 
-  def __init__(self, device, payload_dir, device_restore_dir,
-               payload_name, cmd_kwargs, device_payload_dir, staging_server,
-               dev_dir='', original_payload_dir=None,
-               transfer_stateful_update=True, transfer_rootfs_update=True):
+  def __init__(self, staging_server, *args, **kwargs):
     """Initialize LabTransfer to transfer files from staging server to DUT.
 
     Args:
-      device: See Base class.
-      payload_dir: See Base class.
-      device_restore_dir: See Base class.
-      payload_name: See Base class.
-      cmd_kwargs: See Base class.
-      device_payload_dir: See Base class.
-      staging_server: URL of the server that's staging the payload files.
-      dev_dir: See Base class.
-      original_payload_dir: See Base class.
-      transfer_stateful_update: See Base class.
-      transfer_rootfs_update: See Base class.
+      staging_server: Url of the server that's staging the payload files.
+      *args: The list of arguments to be passed. See Base class for a complete
+          list of accepted arguments.
+      **kwargs: Any keyword arguments to be passed. See Base class for a
+          complete list of accepted keyword arguments.
     """
-    super(LabTransfer, self).__init__(
-        device=device, payload_dir=payload_dir,
-        device_restore_dir=device_restore_dir, payload_name=payload_name,
-        cmd_kwargs=cmd_kwargs, device_payload_dir=device_payload_dir,
-        dev_dir=dev_dir, original_payload_dir=original_payload_dir,
-        transfer_stateful_update=transfer_stateful_update,
-        transfer_rootfs_update=transfer_rootfs_update)
     self._staging_server = staging_server
+    super(LabTransfer, self).__init__(*args, **kwargs)
 
   def CheckPayloads(self):
     """Verify that all required payloads are in |self.payload_dir|."""
