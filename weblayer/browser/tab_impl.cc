@@ -136,6 +136,10 @@ void TabImpl::SetDownloadDelegate(DownloadDelegate* delegate) {
   download_delegate_ = delegate;
 }
 
+void TabImpl::SetErrorPageDelegate(ErrorPageDelegate* delegate) {
+  error_page_delegate_ = delegate;
+}
+
 void TabImpl::SetFullscreenDelegate(FullscreenDelegate* delegate) {
   if (delegate == fullscreen_delegate_)
     return;

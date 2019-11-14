@@ -4,13 +4,11 @@
 
 #include "weblayer/browser/new_tab_callback_proxy.h"
 
-#include "base/android/jni_string.h"
 #include "url/gurl.h"
 #include "weblayer/browser/java/jni/NewTabCallbackProxy_jni.h"
 #include "weblayer/browser/tab_impl.h"
 
 using base::android::AttachCurrentThread;
-using base::android::ConvertUTF8ToJavaString;
 using base::android::ScopedJavaLocalRef;
 
 namespace weblayer {
