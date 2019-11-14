@@ -8,7 +8,6 @@
 #include "base/timer/timer.h"
 #include "ui/gfx/animation/linear_animation.h"
 #include "ui/views/animation/animation_delegate_views.h"
-#include "ui/views/buildflags.h"
 #include "ui/views/test/widget_test.h"
 
 namespace views {
@@ -47,7 +46,7 @@ TEST_F(CompositorAnimationRunnerTest, BasicCoverageTest) {
 
 // No DesktopAura on ChromeOS.
 // Each widget on MACOSX has its own ui::Compositor.
-#if BUILDFLAG(ENABLE_DESKTOP_AURA)
+#if !defined(OS_CHROMEOS) && !(OS_MACOSX)
 using CompositorAnimationRunnerDesktopTest = DesktopWidgetTest;
 
 TEST_F(CompositorAnimationRunnerDesktopTest, SwitchCompositor) {

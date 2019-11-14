@@ -1025,7 +1025,7 @@ class ModalDialogDelegate : public DialogDelegateView {
   DISALLOW_COPY_AND_ASSIGN(ModalDialogDelegate);
 };
 
-#if BUILDFLAG(ENABLE_DESKTOP_AURA) || defined(OS_MACOSX)
+#if !defined(OS_CHROMEOS)
 // Tests whether the focused window is set correctly when a modal window is
 // created and destroyed. When it is destroyed it should focus the owner window.
 TEST_F(DesktopWidgetTestInteractive, WindowModalWindowDestroyedActivationTest) {
@@ -1317,7 +1317,7 @@ TEST_F(WidgetTestInteractive, ShowAfterShowInactive) {
   widget->CloseNow();
 }
 
-#if BUILDFLAG(ENABLE_DESKTOP_AURA) || defined(OS_MACOSX)
+#if !defined(OS_CHROMEOS)
 TEST_F(WidgetTestInteractive, InactiveWidgetDoesNotGrabActivation) {
   Widget* widget = CreateTopLevelPlatformWidget();
   ShowSync(widget);
@@ -1336,7 +1336,7 @@ TEST_F(WidgetTestInteractive, InactiveWidgetDoesNotGrabActivation) {
   widget->CloseNow();
   widget2.CloseNow();
 }
-#endif  // BUILDFLAG(ENABLE_DESKTOP_AURA) || defined(OS_MACOSX)
+#endif  // !defined(OS_CHROMEOS)
 
 // ExitFullscreenRestoreState doesn't use DesktopAura widgets. On Mac, there are
 // currently only Desktop widgets and fullscreen changes have to coordinate with
@@ -1460,7 +1460,7 @@ TEST_F(DesktopWidgetTestInteractive, RestoreAndMinimizeVisibility) {
 }
 #endif  // defined(OS_WIN)
 
-#if BUILDFLAG(ENABLE_DESKTOP_AURA) || defined(OS_MACOSX)
+#if !defined(OS_CHROMEOS)
 // Tests that minimizing a widget causes the gesture_handler
 // to be cleared when the widget is minimized.
 TEST_F(DesktopWidgetTestInteractive, EventHandlersClearedOnWidgetMinimize) {
@@ -1482,7 +1482,7 @@ TEST_F(DesktopWidgetTestInteractive, EventHandlersClearedOnWidgetMinimize) {
 }
 #endif
 
-#if defined(OS_LINUX) && BUILDFLAG(ENABLE_DESKTOP_AURA)
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 // Tests that when a desktop native widget has modal transient child, it should
 // avoid restore focused view itself as the modal transient child window will do
 // that, thus avoids having multiple focused view visually (crbug.com/727641).
@@ -1532,7 +1532,7 @@ TEST_F(DesktopWidgetTestInteractive,
   top_level->CloseNow();
   deactivate_widget->CloseNow();
 }
-#endif  // defined(OS_LINUX) && BUILDFLAG(ENABLE_DESKTOP_AURA)
+#endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
 
 namespace {
 
@@ -1645,7 +1645,7 @@ TEST_F(WidgetCaptureTest, Capture) {
   TestCapture(false);
 }
 
-#if BUILDFLAG(ENABLE_DESKTOP_AURA) || defined(OS_MACOSX)
+#if !defined(OS_CHROMEOS)
 // See description in TestCapture(). Creates DesktopNativeWidget.
 TEST_F(WidgetCaptureTest, CaptureDesktopNativeWidget) {
   TestCapture(true);
@@ -1978,7 +1978,7 @@ TEST_F(WidgetInputMethodInteractiveTest, OneWindow) {
 // Widget::Deactivate() doesn't work for CrOS, because it uses NWA instead of
 // DNWA (which just activates the last active window) and involves the
 // AuraTestHelper which sets the input method as DummyInputMethod.
-#if BUILDFLAG(ENABLE_DESKTOP_AURA) || defined(OS_MACOSX)
+#if !defined(OS_CHROMEOS)
   DeactivateSync(widget);
   EXPECT_EQ(ui::TEXT_INPUT_TYPE_NONE,
             widget->GetInputMethod()->GetTextInputType());
@@ -2027,7 +2027,7 @@ TEST_F(WidgetInputMethodInteractiveTest, TwoWindows) {
 // Widget::Deactivate() doesn't work for CrOS, because it uses NWA instead of
 // DNWA (which just activates the last active window) and involves the
 // AuraTestHelper which sets the input method as DummyInputMethod.
-#if BUILDFLAG(ENABLE_DESKTOP_AURA) || defined(OS_MACOSX)
+#if !defined(OS_CHROMEOS)
   DeactivateSync(parent);
   EXPECT_EQ(ui::TEXT_INPUT_TYPE_NONE,
             parent->GetInputMethod()->GetTextInputType());

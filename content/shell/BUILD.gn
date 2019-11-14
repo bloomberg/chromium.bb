@@ -422,8 +422,7 @@ jumbo_static_library("content_shell_lib") {
     ]
   }
 
-  # TODO(spang): Investigate using shell_views with is_chromecast=true.
-  if (toolkit_views && !is_chromecast) {
+  if (toolkit_views) {
     deps += [ "//ui/views" ]
   }
 
@@ -436,7 +435,7 @@ jumbo_static_library("content_shell_lib") {
       "//ui/wm",
     ]
 
-    if (toolkit_views && !is_chromecast) {
+    if (toolkit_views) {
       sources += [
         "browser/shell_views.cc",
         "browser/shell_web_contents_view_delegate_views.cc",
@@ -571,7 +570,7 @@ repack("pak") {
     "//ui/strings",
   ]
 
-  if (toolkit_views && !is_chromecast) {
+  if (toolkit_views) {
     deps += [ "//ui/views/resources" ]
     sources +=
         [ "$root_gen_dir/ui/views/resources/views_resources_100_percent.pak" ]

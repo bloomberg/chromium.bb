@@ -4,7 +4,6 @@ include_rules = [
   "-ui/views",
   "+ui/views/corewm",
   "+ui/views/views_export.h",
-  "+ui/views/buildflags.h",
 ]
 
 # TODO: temporary, don't add more.
