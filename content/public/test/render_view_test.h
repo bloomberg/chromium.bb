@@ -25,10 +25,6 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/web/web_frame.h"
 
-namespace base {
-class FieldTrialList;
-}
-
 namespace blink {
 namespace scheduler {
 class WebThreadScheduler;
@@ -221,7 +217,6 @@ class RenderViewTest : public testing::Test {
   std::unique_ptr<RendererMainPlatformDelegate> platform_;
   std::unique_ptr<MainFunctionParams> params_;
   std::unique_ptr<base::CommandLine> command_line_;
-  std::unique_ptr<base::FieldTrialList> field_trial_list_;
 
   // For Mojo.
   std::unique_ptr<base::TestIOThread> test_io_thread_;
