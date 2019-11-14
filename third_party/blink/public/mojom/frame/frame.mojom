@@ -84,6 +84,9 @@ interface LocalFrameHost {
 
   // Sent by the renderer when the associated frame becomes focused.
   DidFocusFrame();
+
+  // Elements of |set| are hashes of hosts to upgrade.
+  EnforceInsecureNavigationsSet(array<uint32> set);
 };
 
 // Implemented in Blink, this interface defines frame-specific methods that will

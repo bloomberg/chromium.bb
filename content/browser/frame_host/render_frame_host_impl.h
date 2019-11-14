@@ -1207,6 +1207,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void VisibilityChanged(blink::mojom::FrameVisibility) override;
   void DidChangeThemeColor(const base::Optional<SkColor>& theme_color) override;
   void DidFocusFrame() override;
+  void EnforceInsecureNavigationsSet(const std::vector<uint32_t>& set) override;
 
  protected:
   friend class RenderFrameHostFactory;
@@ -1483,7 +1484,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
                      const std::string& unique_name) override;
   void EnforceInsecureRequestPolicy(
       blink::WebInsecureRequestPolicy policy) override;
-  void EnforceInsecureNavigationsSet(const std::vector<uint32_t>& set) override;
   void DidSetFramePolicyHeaders(
       blink::WebSandboxFlags sandbox_flags,
       const blink::ParsedFeaturePolicy& parsed_header) override;

@@ -8076,7 +8076,7 @@ void Document::DidEnforceInsecureRequestPolicy() {
 void Document::DidEnforceInsecureNavigationsSet() {
   if (!GetFrame())
     return;
-  GetFrame()->Client()->DidEnforceInsecureNavigationsSet(
+  GetFrame()->GetLocalFrameHostRemote().EnforceInsecureNavigationsSet(
       SecurityContext::SerializeInsecureNavigationSet(
           InsecureNavigationsToUpgrade()));
 }

@@ -4312,12 +4312,6 @@ void RenderFrameImpl::DidEnforceInsecureRequestPolicy(
   GetFrameHost()->EnforceInsecureRequestPolicy(policy);
 }
 
-void RenderFrameImpl::DidEnforceInsecureNavigationsSet(
-    const WebVector<uint32_t>& set) {
-  GetFrameHost()->EnforceInsecureNavigationsSet(
-      const_cast<WebVector<uint32_t>&>(set).ReleaseVector());
-}
-
 void RenderFrameImpl::DidChangeFramePolicy(
     blink::WebFrame* child_frame,
     const blink::FramePolicy& frame_policy) {

@@ -203,7 +203,6 @@ class LocalFrameClientImpl final : public LocalFrameClient {
 
   void DidChangeName(const String&) override;
   void DidEnforceInsecureRequestPolicy(WebInsecureRequestPolicy) override;
-  void DidEnforceInsecureNavigationsSet(const WebVector<unsigned>&) override;
   void DidChangeFramePolicy(Frame* child_frame, const FramePolicy&) override;
   void DidSetFramePolicyHeaders(
       WebSandboxFlags,
