@@ -926,13 +926,16 @@ void Tile::DistanceWeightedPrediction(
                                height, dest, dest_stride);
 }
 
+// If the method returns false, the caller only uses the output parameters
+// *ref_block_start_x and *ref_block_start_y. If the method returns true, the
+// caller uses all three output parameters.
 bool Tile::GetReferenceBlockPosition(
     const int reference_frame_index, const bool is_scaled, const int width,
     const int height, const int ref_start_x, const int ref_last_x,
     const int ref_start_y, const int ref_last_y, const int start_x,
     const int start_y, const int step_x, const int step_y,
     const int right_border, const int bottom_border, int* ref_block_start_x,
-    int* ref_block_start_y, int* ref_block_end_x, int* ref_block_end_y) {
+    int* ref_block_start_y, int* ref_block_end_x) {
   *ref_block_start_x = GetPixelPositionFromHighScale(start_x, 0, 0);
   *ref_block_start_y = GetPixelPositionFromHighScale(start_y, 0, 0);
   if (reference_frame_index == -1) {
@@ -942,7 +945,7 @@ bool Tile::GetReferenceBlockPosition(
   *ref_block_start_y -= kConvolveBorderLeftTop;
   *ref_block_end_x = GetPixelPositionFromHighScale(start_x, step_x, width - 1) +
                      kConvolveBorderRight;
-  *ref_block_end_y =
+  int ref_block_end_y =
       GetPixelPositionFromHighScale(start_y, step_y, height - 1) +
       kConvolveBorderBottom;
   if (is_scaled) {
@@ -950,12 +953,12 @@ bool Tile::GetReferenceBlockPosition(
         (((height - 1) * step_y + (1 << kScaleSubPixelBits) - 1) >>
          kScaleSubPixelBits) +
         kSubPixelTaps;
-    *ref_block_end_y = *ref_block_start_y + block_height - 1;
+    ref_block_end_y = *ref_block_start_y + block_height - 1;
   }
   const bool extend_left = *ref_block_start_x < ref_start_x;
   const bool extend_right = *ref_block_end_x > (ref_last_x + right_border);
   const bool extend_top = *ref_block_start_y < ref_start_y;
-  const bool extend_bottom = *ref_block_end_y > (ref_last_y + bottom_border);
+  const bool extend_bottom = ref_block_end_y > (ref_last_y + bottom_border);
   return extend_left || extend_right || extend_top || extend_bottom;
 }
 
@@ -1080,13 +1083,12 @@ void Tile::BlockInterPrediction(
   int ref_block_start_x;
   int ref_block_start_y;
   int ref_block_end_x;
-  int ref_block_end_y;
-  bool extend_block = GetReferenceBlockPosition(
+  const bool extend_block = GetReferenceBlockPosition(
       reference_frame_index, is_scaled, width, height, ref_start_x, ref_last_x,
       ref_start_y, ref_last_y, start_x, start_y, step_x, step_y,
       reference_buffer->right_border(plane),
       reference_buffer->bottom_border(plane), &ref_block_start_x,
-      &ref_block_start_y, &ref_block_end_x, &ref_block_end_y);
+      &ref_block_start_y, &ref_block_end_x);
   const uint8_t* block_start = nullptr;
   ptrdiff_t convolve_buffer_stride;
   if (!extend_block) {

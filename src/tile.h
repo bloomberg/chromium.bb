@@ -378,8 +378,7 @@ class Tile : public Allocable {
                                  int ref_last_y, int start_x, int start_y,
                                  int step_x, int step_y, int right_border,
                                  int bottom_border, int* ref_block_start_x,
-                                 int* ref_block_start_y, int* ref_block_end_x,
-                                 int* ref_block_end_y);
+                                 int* ref_block_start_y, int* ref_block_end_x);
   template <typename Pixel>
   void BuildConvolveBlock(Plane plane, int reference_frame_index,
                           bool is_scaled, int height, int ref_start_x,
