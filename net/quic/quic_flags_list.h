@@ -320,7 +320,7 @@ QUIC_FLAG(int32_t,
 
 // If true, Adjacent stream frames will be combined into one stream frame before
 // the packet is serialized.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_coalesce_stream_frames, false)
+QUIC_FLAG(bool, FLAGS_quic_restart_flag_quic_coalesce_stream_frames_2, false)
 
 // If true, populate nonretransmittable frames in SerializedPacket.
 QUIC_FLAG(bool,
@@ -355,3 +355,9 @@ QUIC_FLAG(bool,
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_bbr_donot_inject_bandwidth,
           false)
+
+// If true, close connection if CreateAndSerializeStreamFrame fails.
+QUIC_FLAG(
+    bool,
+    FLAGS_quic_reloadable_flag_quic_close_connection_on_failed_consume_data_fast_path,
+    false)

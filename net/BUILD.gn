@@ -3433,6 +3433,8 @@ source_set("quic_test_tools") {
     "third_party/quiche/src/quic/test_tools/simple_data_producer.h",
     "third_party/quiche/src/quic/test_tools/simple_quic_framer.cc",
     "third_party/quiche/src/quic/test_tools/simple_quic_framer.h",
+    "third_party/quiche/src/quic/test_tools/simple_session_cache.cc",
+    "third_party/quiche/src/quic/test_tools/simple_session_cache.h",
     "third_party/quiche/src/quic/test_tools/simple_session_notifier.cc",
     "third_party/quiche/src/quic/test_tools/simple_session_notifier.h",
     "third_party/quiche/src/quic/test_tools/simulator/actor.cc",
@@ -5543,7 +5545,8 @@ test("net_unittests") {
     "third_party/quiche/src/quic/core/quic_simple_buffer_allocator_test.cc",
     "third_party/quiche/src/quic/core/quic_socket_address_coder_test.cc",
     "third_party/quiche/src/quic/core/quic_stream_id_manager_test.cc",
-    "third_party/quiche/src/quic/core/quic_stream_send_buffer_test.cc",
+
+    # "third_party/quiche/src/quic/core/quic_stream_send_buffer_test.cc",
     "third_party/quiche/src/quic/core/quic_stream_sequencer_buffer_test.cc",
     "third_party/quiche/src/quic/core/quic_stream_sequencer_test.cc",
     "third_party/quiche/src/quic/core/quic_stream_test.cc",
