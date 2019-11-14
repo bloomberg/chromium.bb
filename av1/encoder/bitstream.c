@@ -3310,9 +3310,10 @@ uint32_t av1_write_obu_header(AV1_COMP *const cpi, OBU_TYPE obu_type,
 
 int av1_write_uleb_obu_size(size_t obu_header_size, size_t obu_payload_size,
                             uint8_t *dest) {
-  const uint32_t obu_size = (uint32_t)obu_payload_size;
   const size_t offset = obu_header_size;
   size_t coded_obu_size = 0;
+  const uint32_t obu_size = (uint32_t)obu_payload_size;
+  assert(obu_size == obu_payload_size);
 
   if (aom_uleb_encode(obu_size, sizeof(obu_size), dest + offset,
                       &coded_obu_size) != 0) {
