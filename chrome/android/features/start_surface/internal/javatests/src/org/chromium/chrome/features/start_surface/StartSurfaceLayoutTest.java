@@ -22,6 +22,7 @@ import android.graphics.Bitmap;
 import android.os.Build;
 import android.support.annotation.Nullable;
 import android.support.test.InstrumentationRegistry;
+import android.support.test.espresso.Espresso;
 import android.support.test.espresso.NoMatchingViewException;
 import android.support.test.espresso.ViewAssertion;
 import android.support.test.espresso.contrib.RecyclerViewActions;
@@ -30,7 +31,6 @@ import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.View;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -60,6 +60,7 @@ import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ApplicationTestUtils;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.MenuUtils;
+import org.chromium.chrome.test.util.OverviewModeBehaviorWatcher;
 import org.chromium.chrome.test.util.RenderTestRule;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.content_public.browser.test.util.Criteria;
@@ -106,7 +107,6 @@ public class StartSurfaceLayoutTest {
     private Callback<Bitmap> mBitmapListener =
             (bitmap) -> mAllBitmaps.add(new WeakReference<>(bitmap));
     private TabSwitcher.TabListDelegate mTabListDelegate;
-    private boolean mSkipAssertThumbnailsAreReleased;
 
     @Before
     public void setUp() {
@@ -137,15 +137,6 @@ public class StartSurfaceLayoutTest {
                         .getCurrentTabModelFilter()::isTabModelRestored));
 
         assertEquals(0, mTabListDelegate.getBitmapFetchCountForTesting());
-        // Only skip thumbnail releasing assertion when "warm" (large soft-cleanup-delay) or in
-        // RenderTest.
-        // TODO(wychen): figure out why thumbnails are not released in RenderTest.
-        mSkipAssertThumbnailsAreReleased = false;
-    }
-
-    @After
-    public void tearDown() {
-        if (!mSkipAssertThumbnailsAreReleased) assertThumbnailsAreReleased();
     }
 
     @Test
@@ -154,8 +145,6 @@ public class StartSurfaceLayoutTest {
     @CommandLineFlags.Add({BASE_PARAMS})
     @DisabledTest(message = "crbug.com/1024608 This test is flaky")
     public void testRenderGrid_3WebTabs() throws InterruptedException, IOException {
-        mSkipAssertThumbnailsAreReleased = true;
-
         prepareTabs(3, 0, mUrl);
         TabUiTestHelper.enterTabSwitcher(mActivityTestRule.getActivity());
         TabUiTestHelper.clickFirstCardFromTabSwitcher(mActivityTestRule.getActivity());
@@ -172,8 +161,6 @@ public class StartSurfaceLayoutTest {
     @CommandLineFlags.Add({BASE_PARAMS})
     @DisabledTest(message = "crbug.com/1024608 This test is flaky")
     public void testRenderGrid_10WebTabs() throws InterruptedException, IOException {
-        mSkipAssertThumbnailsAreReleased = true;
-
         prepareTabs(10, 0, mUrl);
         TabUiTestHelper.enterTabSwitcher(mActivityTestRule.getActivity());
         TabUiTestHelper.clickFirstCardFromTabSwitcher(mActivityTestRule.getActivity());
@@ -190,8 +177,6 @@ public class StartSurfaceLayoutTest {
     @CommandLineFlags.Add({BASE_PARAMS})
     @DisabledTest(message = "crbug.com/1024608 This test is flaky")
     public void testRenderGrid_10WebTabs_InitialScroll() throws InterruptedException, IOException {
-        mSkipAssertThumbnailsAreReleased = true;
-
         prepareTabs(10, 0, mUrl);
         TabUiTestHelper.enterTabSwitcher(mActivityTestRule.getActivity());
         TabUiTestHelper.clickNthCardFromTabSwitcher(mActivityTestRule.getActivity(),
@@ -211,8 +196,6 @@ public class StartSurfaceLayoutTest {
     @CommandLineFlags.Add({BASE_PARAMS})
     @DisabledTest(message = "crbug.com/1024608 This test is flaky")
     public void testRenderGrid_Incognito() throws InterruptedException, IOException {
-        mSkipAssertThumbnailsAreReleased = true;
-
         // Prepare some incognito tabs and enter tab switcher.
         prepareTabs(1, 3, mUrl);
         assertTrue(mActivityTestRule.getActivity().getCurrentTabModel().isIncognito());
@@ -258,28 +241,26 @@ public class StartSurfaceLayoutTest {
     @MediumTest
     // clang-format off
     @Features.DisableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION)
-    @CommandLineFlags.Add({BASE_PARAMS + "/soft-cleanup-delay/9000/cleanup-delay/10000"})
+    @CommandLineFlags.Add({BASE_PARAMS + "/soft-cleanup-delay/2000/cleanup-delay/10000"})
     public void testTabToGridFromLiveTabWarm() throws InterruptedException {
         // clang-format on
-        assertEquals(9000, mTabListDelegate.getSoftCleanupDelayForTesting());
+        assertEquals(2000, mTabListDelegate.getSoftCleanupDelayForTesting());
         assertEquals(10000, mTabListDelegate.getCleanupDelayForTesting());
 
         prepareTabs(2, 0, NTP_URL);
         testTabToGrid(mUrl);
-        mSkipAssertThumbnailsAreReleased = true;
     }
 
     @Test
     @MediumTest
     // clang-format off
     @Features.EnableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study")
-    @CommandLineFlags.Add({BASE_PARAMS + "/soft-cleanup-delay/10000/cleanup-delay/10000"})
+    @CommandLineFlags.Add({BASE_PARAMS + "/soft-cleanup-delay/2000/cleanup-delay/10000"})
     @MinAndroidSdkLevel(Build.VERSION_CODES.M) // TODO(crbug.com/997065#c8): remove SDK restriction.
     public void testTabToGridFromLiveTabWarmAnimation() throws InterruptedException {
         // clang-format on
         prepareTabs(2, 0, NTP_URL);
         testTabToGrid(mUrl);
-        mSkipAssertThumbnailsAreReleased = true;
     }
 
     @Test
@@ -337,7 +318,7 @@ public class StartSurfaceLayoutTest {
 
         for (int i = 0; i < mRepeat; i++) {
             enterGTS();
-            leaveGTS();
+            leaveGTSAndVerifyThumbnailsAreReleased();
         }
         checkFinalCaptureCount(false, initCount);
     }
@@ -538,7 +519,7 @@ public class StartSurfaceLayoutTest {
 
     @Test
     @MediumTest
-    @CommandLineFlags.Add({BASE_PARAMS + "/soft-cleanup-delay/10000/cleanup-delay/10000"})
+    @CommandLineFlags.Add({BASE_PARAMS + "/soft-cleanup-delay/2000/cleanup-delay/10000"})
     public void testInvisibleTabsDontFetchWarm() throws InterruptedException {
         // Get the GTS in the warm state.
         prepareTabs(2, 0, NTP_URL);
@@ -558,7 +539,6 @@ public class StartSurfaceLayoutTest {
 
         // No fetching should happen.
         assertEquals(0, mTabListDelegate.getBitmapFetchCountForTesting() - count);
-        mSkipAssertThumbnailsAreReleased = true;
     }
 
     @Test
@@ -628,7 +608,7 @@ public class StartSurfaceLayoutTest {
             onView(withId(org.chromium.chrome.tab_ui.R.id.tab_list_view))
                     .check(TabCountAssertion.havingTabCount(2));
         }
-        leaveGTS();
+        leaveGTSAndVerifyThumbnailsAreReleased();
     }
 
     @Test
@@ -657,7 +637,7 @@ public class StartSurfaceLayoutTest {
             assertEquals(2, currentFetchCount - oldFetchCount);
             oldFetchCount = currentFetchCount;
         }
-        leaveGTS();
+        leaveGTSAndVerifyThumbnailsAreReleased();
     }
 
     private static class TabCountAssertion implements ViewAssertion {
@@ -730,16 +710,24 @@ public class StartSurfaceLayoutTest {
         if (checkThumbnail) TabUiTestHelper.checkThumbnailsExist(currentTab);
     }
 
-    private void leaveGTS() {
+    /**
+     * TODO(wychen): create a version without thumbnail checking, which uses
+     *  {@link TabUiTestHelper#clickFirstCardFromTabSwitcher} or simply {@link Espresso#pressBack},
+     *  and {@link OverviewModeBehaviorWatcher}.
+     */
+    private void leaveGTSAndVerifyThumbnailsAreReleased() {
         assertTrue(mActivityTestRule.getActivity().getLayoutManager().overviewVisible());
 
         StartSurface startSurface = mStartSurfaceLayout.getStartSurfaceForTesting();
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> { startSurface.getController().onBackPressed(); });
+        // TODO(wychen): using default timeout or even converting to
+        //  OverviewModeBehaviorWatcher shouldn't increase flakiness.
         CriteriaHelper.pollInstrumentationThread(
                 () -> !mActivityTestRule.getActivity().getLayoutManager().overviewVisible(),
                 "Overview not hidden yet", DEFAULT_MAX_TIME_TO_POLL * 10,
                 DEFAULT_POLLING_INTERVAL);
+        assertThumbnailsAreReleased();
     }
 
     private void checkFinalCaptureCount(boolean switchToAnotherTab, int initCount) {
