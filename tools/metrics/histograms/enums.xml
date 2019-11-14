@@ -54195,8 +54195,8 @@ Called by update_net_trust_anchors.py.-->
     |factory_params_.request_initiator_site_lock|.
   </int>
   <int value="5" label="ExcludedScheme">
-    Scheme excluded from request_initiator_site_lock checks (e.g.
-    chrome-extension).
+    Scheme excluded from request_initiator_site_lock checks. Since ~M80 this
+    value can only be recorded during tests.
   </int>
   <int value="6" label="ExcludedUniversalAccessPlugin">
     Requests from a renderer processes that embeds an universal access plugin
