@@ -126,11 +126,11 @@ GIT_PROTOCOL = 'https'
 
 # The GOB conflict errors which could be ignorable.
 GOB_CONFLICT_ERRORS = (
-    r'change is closed',
-    r'Cannot reduce vote on labels for closed change'
+    br'change is closed',
+    br'Cannot reduce vote on labels for closed change',
 )
 
-GOB_CONFLICT_ERRORS_RE = re.compile('|'.join(GOB_CONFLICT_ERRORS),
+GOB_CONFLICT_ERRORS_RE = re.compile(br'|'.join(GOB_CONFLICT_ERRORS),
                                     re.IGNORECASE)
 
 GOB_ERROR_REASON_CLOSED_CHANGE = 'CLOSED CHANGE'
@@ -205,9 +205,9 @@ def CreateHttpConn(host, path, reqtype='GET', headers=None, body=None):
   bare_host = host.partition(':')[0]
   auth = _NetRCAuthenticators(bare_host)
   if auth:
-    headers.setdefault(
-        'Authorization',
-        'Basic %s' % base64.b64encode('%s:%s' % (auth[0], auth[2])))
+    username, _, password = auth
+    basic = base64.b64encode(':'.join((username, password)).encode('utf-8'))
+    headers.setdefault('Authorization', 'Basic %s' % basic.decode('utf-8'))
   elif _InAppengine():
     # TODO(phobbs) how can we choose to only run this on GCE / AppEngine?
     credentials = _GetAppCredentials()
@@ -313,11 +313,6 @@ def FetchUrl(host, path, reqtype='GET', headers=None, body=None,
     # Bad responses.
     logging.debug('response msg:\n%s', response.msg)
     http_version = 'HTTP/%s' % ('1.1' if response.version == 11 else '1.0')
-    ep = ErrorParser()
-    ep.feed(str(response_body))
-    ep.close()
-    parsed_div = ep.ParsedDiv()
-
     msg = ('%s %s %s\n%s %d %s\nResponse body: %r' %
            (reqtype, conn.req_params['url'], http_version,
             http_version, response.status, response.reason,
@@ -349,6 +344,10 @@ def FetchUrl(host, path, reqtype='GET', headers=None, body=None,
 
     # If GOB output contained expected error message, reduce log visibility of
     # raw GOB output reported below.
+    ep = ErrorParser()
+    ep.feed(response_body.decode('utf-8'))
+    ep.close()
+    parsed_div = ep.ParsedDiv()
     if parsed_div:
       logging.warning('GOB Error:\n%s', parsed_div)
       logging_function = logging.debug
