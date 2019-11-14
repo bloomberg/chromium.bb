@@ -79,14 +79,17 @@ void AddPartial0(int8x8_t a, int16x8_t* b, int16x8_t* c) {
 //  1   7   1
 // Used to calculate |partial[1][i + j / 2]| and |partial[3][3 + i - j / 2]|.
 template <int shift, bool is_partial3 = false>
-void AddPartial1(const int8x8_t a, int16x8_t* b, int16x8_t* c) {
+void AddPartial1(int8x8_t a, int16x8_t* b, int16x8_t* c) {
   // Allow vextq_s16() to compile when |shift| is out of range.
   constexpr int safe_shift = (shift > 0) ? shift : 1;
-  int16x4_t paired = vpaddl_s8(a);
-  if (is_partial3) paired = vrev64_s16(paired);
+  if (is_partial3) a = vrev64_s8(a);
+  const int16x4_t paired = vpaddl_s8(a);
   const int16x8_t extended = vcombine_s16(paired, vdup_n_s16(0));
   if (shift == 0) {
     *b = vaddq_s16(*b, extended);
+  } else if (0 /*shift == 4*/) {
+    // TODO(johannkoenig): Figure out why this regresses performance.
+    *b = vaddq_s16(*b, vcombine_s16(vdup_n_s16(0), paired));
   } else {
     const int16x8_t shifted_b =
         vextq_s16(vdupq_n_s16(0), extended, 8 - safe_shift);
@@ -109,13 +112,8 @@ void AddPartial5(const int8x8_t a, int16x8_t* b, int16x8_t* c) {
   if (shift > 5) {
     *b = vaddw_s8(*b, a);
   } else {
-    const int16x8_t extended = vmovl_s8(a);
-    const int16x8_t shifted_b =
-        vextq_s16(vdupq_n_s16(0), extended, 5 + safe_shift / 2);
-    *b = vaddq_s16(*b, shifted_b);
-    const int16x8_t shifted_c =
-        vextq_s16(extended, vdupq_n_s16(0), 5 + safe_shift / 2);
-    *c = vaddq_s16(*c, shifted_c);
+    *b = vaddw_s8(*b, LeftShift<(3 - (safe_shift / 2)) * 8>(a));
+    *c = vaddw_s8(*c, RightShift<(5 + (safe_shift / 2)) * 8>(a));
   }
 }
 
@@ -132,13 +130,8 @@ void AddPartial7(const int8x8_t a, int16x8_t* b, int16x8_t* c) {
   if (shift < 2) {
     *b = vaddw_s8(*b, a);
   } else {
-    const int16x8_t extended = vmovl_s8(a);
-    const int16x8_t shifted_b =
-        vextq_s16(vdupq_n_s16(0), extended, 8 - safe_shift / 2);
-    *b = vaddq_s16(*b, shifted_b);
-    const int16x8_t shifted_c =
-        vextq_s16(extended, vdupq_n_s16(0), 8 - safe_shift / 2);
-    *c = vaddq_s16(*c, shifted_c);
+    *b = vaddw_s8(*b, LeftShift<(safe_shift / 2) * 8>(a));
+    *c = vaddw_s8(*c, RightShift<(8 - (safe_shift / 2)) * 8>(a));
   }
 }
 
