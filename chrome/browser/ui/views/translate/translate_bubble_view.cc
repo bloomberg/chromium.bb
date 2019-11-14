@@ -260,12 +260,6 @@ void TranslateBubbleView::TabSelectedAt(int index) {
   }
 }
 
-void TranslateBubbleView::OnMenuButtonClicked(views::Button* source,
-                                              const gfx::Point& point,
-                                              const ui::Event* event) {
-  ShowOptionsMenuTab(source);
-}
-
 void TranslateBubbleView::Init() {
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical));
