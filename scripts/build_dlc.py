@@ -346,7 +346,7 @@ def CopyAllDlcs(sysroot, install_root_dir):
   output_dir = os.path.join(install_root_dir, 'dlc')
 
   if not os.path.exists(build_dir):
-    logging.info('DLC build directory (%s) does not exists, ignorning.',
+    logging.info('DLC build directory (%s) does not exist, ignoring.',
                  build_dir)
     return
 
