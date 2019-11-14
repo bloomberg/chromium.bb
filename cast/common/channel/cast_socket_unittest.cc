@@ -29,25 +29,28 @@ class MockTlsConnection final : public TlsConnection {
   MockTlsConnection(TaskRunner* task_runner,
                     IPEndpoint local_address,
                     IPEndpoint remote_address)
-      : TlsConnection(task_runner),
-        local_address_(local_address),
-        remote_address_(remote_address) {}
+      : local_address_(local_address), remote_address_(remote_address) {}
 
   ~MockTlsConnection() override = default;
 
+  void SetClient(TlsConnection::Client* client) final { client_ = client; }
+
   MOCK_METHOD(void, Write, (const void* data, size_t len));
 
-  IPEndpoint local_address() const override { return local_address_; }
-  IPEndpoint remote_address() const override { return remote_address_; }
+  IPEndpoint GetLocalEndpoint() const override { return local_address_; }
+  IPEndpoint GetRemoteEndpoint() const override { return remote_address_; }
 
-  void OnWriteBlocked() { TlsConnection::OnWriteBlocked(); }
-  void OnWriteUnblocked() { TlsConnection::OnWriteUnblocked(); }
-  void OnError(Error error) { TlsConnection::OnError(error); }
-  void OnRead(std::vector<uint8_t> block) { TlsConnection::OnRead(block); }
+  void OnWriteBlocked() { client_->OnWriteBlocked(this); }
+  void OnWriteUnblocked() { client_->OnWriteUnblocked(this); }
+  void OnError(Error error) { client_->OnError(this, std::move(error)); }
+  void OnRead(std::vector<uint8_t> block) {
+    client_->OnRead(this, std::move(block));
+  }
 
  private:
   const IPEndpoint local_address_;
   const IPEndpoint remote_address_;
+  TlsConnection::Client* client_ = nullptr;
 };
 
 class MockCastSocketClient final : public CastSocket::Client {
@@ -61,6 +64,7 @@ class MockCastSocketClient final : public CastSocket::Client {
 class CastSocketTest : public ::testing::Test {
  public:
   void SetUp() override {
+    connection_->SetClient(&socket_);
     message_.set_protocol_version(CastMessage::CASTV2_1_0);
     message_.set_source_id("source");
     message_.set_destination_id("destination");
@@ -149,7 +153,6 @@ TEST_F(CastSocketTest, ReadChunkedMessage) {
 
 TEST_F(CastSocketTest, SendMessageWhileBlocked) {
   connection_->OnWriteBlocked();
-  task_runner_.RunTasksUntilIdle();
   EXPECT_CALL(*connection_, Write(_, _)).Times(0);
   ASSERT_TRUE(socket_.SendMessage(message_).ok());
 
@@ -161,18 +164,13 @@ TEST_F(CastSocketTest, SendMessageWhileBlocked) {
                                  reinterpret_cast<const uint8_t*>(data) + len));
       }));
   connection_->OnWriteUnblocked();
-  task_runner_.RunTasksUntilIdle();
 
-  EXPECT_CALL(*connection_, Write(_, _)).Times(0);
   connection_->OnWriteBlocked();
-  task_runner_.RunTasksUntilIdle();
   connection_->OnWriteUnblocked();
-  task_runner_.RunTasksUntilIdle();
 }
 
 TEST_F(CastSocketTest, ErrorWhileEmptyingQueue) {
   connection_->OnWriteBlocked();
-  task_runner_.RunTasksUntilIdle();
   EXPECT_CALL(*connection_, Write(_, _)).Times(0);
   ASSERT_TRUE(socket_.SendMessage(message_).ok());
 
@@ -185,9 +183,7 @@ TEST_F(CastSocketTest, ErrorWhileEmptyingQueue) {
         connection_->OnError(Error::Code::kUnknownError);
       }));
   connection_->OnWriteUnblocked();
-  task_runner_.RunTasksUntilIdle();
 
-  EXPECT_CALL(*connection_, Write(_, _)).Times(0);
   ASSERT_FALSE(socket_.SendMessage(message_).ok());
 }
 

@@ -425,10 +425,11 @@ void UdpSocketPosix::ReceiveMessage() {
   // calling into all the other methods.
 
   if (is_closed()) {
-    task_runner_->PostTask([this] {
-      // TODO(issues/71): |this| may be invalid at this point.
-      if (client_) {
-        client_->OnRead(this, Error::Code::kSocketClosedFailure);
+    task_runner_->PostTask([weak_this = weak_factory_.GetWeakPtr()] {
+      if (auto* self = weak_this.get()) {
+        if (auto* client = self->client_) {
+          client->OnRead(self, Error::Code::kSocketClosedFailure);
+        }
       }
     });
     return;
@@ -437,11 +438,13 @@ void UdpSocketPosix::ReceiveMessage() {
   ssize_t bytes_available = recv(handle_.fd, nullptr, 0, MSG_PEEK | MSG_TRUNC);
   if (bytes_available == -1) {
     task_runner_->PostTask(
-        [this, error = ChooseError(errno,
-                                   Error::Code::kSocketReadFailure)]() mutable {
-          // TODO(issues/71): |this| may be invalid at this point.
-          if (client_) {
-            client_->OnRead(this, std::move(error));
+        [weak_this = weak_factory_.GetWeakPtr(),
+         error =
+             ChooseError(errno, Error::Code::kSocketReadFailure)]() mutable {
+          if (auto* self = weak_this.get()) {
+            if (auto* client = self->client_) {
+              client->OnRead(self, std::move(error));
+            }
           }
         });
     return;
@@ -466,12 +469,14 @@ void UdpSocketPosix::ReceiveMessage() {
   }
 
   task_runner_->PostTask(
-      [this, read_result = result.ok() ? ErrorOr<UdpPacket>(std::move(packet))
-                                       : ErrorOr<UdpPacket>(
-                                             std::move(result))]() mutable {
-        // TODO(issues/71): |this| may be invalid at this point.
-        if (client_) {
-          client_->OnRead(this, std::move(read_result));
+      [weak_this = weak_factory_.GetWeakPtr(),
+       read_result = result.ok()
+                         ? ErrorOr<UdpPacket>(std::move(packet))
+                         : ErrorOr<UdpPacket>(std::move(result))]() mutable {
+        if (auto* self = weak_this.get()) {
+          if (auto* client = self->client_) {
+            client->OnRead(self, std::move(read_result));
+          }
         }
       });
 }

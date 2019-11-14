@@ -6,23 +6,17 @@
 #define PLATFORM_API_TLS_CONNECTION_H_
 
 #include <cstdint>
-#include <memory>
-#include <string>
 #include <vector>
 
-#include "absl/types/optional.h"
-#include "platform/api/network_interface.h"
-#include "platform/api/task_runner.h"
 #include "platform/base/error.h"
 #include "platform/base/ip_address.h"
-#include "platform/base/macros.h"
 
 namespace openscreen {
 namespace platform {
 
 class TlsConnection {
  public:
-  // Client callbacks are ran on the provided TaskRunner.
+  // Client callbacks are run via the TaskRunner used by TlsConnectionFactory.
   class Client {
    public:
     // Called when |connection| writing is blocked and unblocked, respectively.
@@ -43,41 +37,25 @@ class TlsConnection {
     virtual ~Client() = default;
   };
 
+  virtual ~TlsConnection();
+
+  // Sets the Client associated with this instance. This should be called as
+  // soon as the factory provides a new TlsConnection instance via
+  // TlsConnectionFactory::OnAccepted() or OnConnected(). Pass nullptr to unset
+  // the Client.
+  virtual void SetClient(Client* client) = 0;
+
   // Sends a message.
   virtual void Write(const void* data, size_t len) = 0;
 
   // Get the local address.
-  virtual IPEndpoint local_address() const = 0;
+  virtual IPEndpoint GetLocalEndpoint() const = 0;
 
   // Get the connected remote address.
-  virtual IPEndpoint remote_address() const = 0;
-
-  // Sets the client for this instance.
-  void set_client(Client* client) { client_ = client; }
-
-  virtual ~TlsConnection() = default;
+  virtual IPEndpoint GetRemoteEndpoint() const = 0;
 
  protected:
-  explicit TlsConnection(TaskRunner* task_runner) : task_runner_(task_runner) {}
-
-  // Called when |connection| writing is blocked and unblocked, respectively.
-  // This call will be proxied to the Client set for this TlsConnection.
-  void OnWriteBlocked();
-  void OnWriteUnblocked();
-
-  // Called when |connection| experiences an error, such as a read error. This
-  // call will be proxied to the Client set for this TlsConnection.
-  void OnError(Error error);
-
-  // Called when a |packet| arrives on |socket|. This call will be proxied to
-  // the Client set for this TlsConnection.
-  void OnRead(std::vector<uint8_t> message);
-
- private:
-  Client* client_;
-  TaskRunner* const task_runner_;
-
-  OSP_DISALLOW_COPY_AND_ASSIGN(TlsConnection);
+  TlsConnection();
 };
 
 }  // namespace platform

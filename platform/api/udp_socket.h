@@ -14,7 +14,6 @@
 #include "platform/api/network_interface.h"
 #include "platform/base/error.h"
 #include "platform/base/ip_address.h"
-#include "platform/base/macros.h"
 #include "platform/base/udp_packet.h"
 
 namespace openscreen {
@@ -118,9 +117,6 @@ class UdpSocket {
 
  protected:
   UdpSocket();
-
- private:
-  OSP_DISALLOW_COPY_AND_ASSIGN(UdpSocket);
 };
 
 }  // namespace platform

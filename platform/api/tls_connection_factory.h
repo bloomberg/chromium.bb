@@ -8,17 +8,17 @@
 #include <openssl/crypto.h>
 
 #include <memory>
-#include <string>
 
-#include "absl/types/optional.h"
-#include "platform/api/tls_connection.h"
 #include "platform/base/ip_address.h"
-#include "platform/base/tls_connect_options.h"
-#include "platform/base/tls_credentials.h"
-#include "platform/base/tls_listen_options.h"
 
 namespace openscreen {
 namespace platform {
+
+class TaskRunner;
+class TlsConnection;
+struct TlsConnectOptions;
+class TlsCredentials;
+struct TlsListenOptions;
 
 // We expect a single factory to be able to handle an arbitrary number of
 // calls using the same client and task runner.
@@ -49,10 +49,8 @@ class TlsConnectionFactory {
       Client* client,
       TaskRunner* task_runner);
 
-  virtual ~TlsConnectionFactory() = default;
+  virtual ~TlsConnectionFactory();
 
-  // TODO(jophba, rwkeane): Determine how to handle multiple connection attempts
-  // to the same remote_address, and how to distinguish errors.
   // Fires an OnConnected or OnConnectionFailed event.
   virtual void Connect(const IPEndpoint& remote_address,
                        const TlsConnectOptions& options) = 0;
@@ -67,22 +65,7 @@ class TlsConnectionFactory {
                       const TlsListenOptions& options) = 0;
 
  protected:
-  TlsConnectionFactory(Client* client, TaskRunner* task_runner)
-      : client_(client), task_runner_(task_runner) {}
-
-  // The below methods proxy calls to this TlsConnectionFactory's Client.
-  void OnAccepted(X509* peer_cert, std::unique_ptr<TlsConnection> connection);
-
-  void OnConnected(X509* peer_cert, std::unique_ptr<TlsConnection> connection);
-
-  void OnConnectionFailed(const IPEndpoint& remote_address);
-
-  // Called when a non-recoverable error occurs.
-  void OnError(Error error);
-
- private:
-  Client* client_;
-  TaskRunner* task_runner_;
+  TlsConnectionFactory();
 };
 
 }  // namespace platform

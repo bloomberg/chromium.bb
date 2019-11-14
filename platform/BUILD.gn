@@ -68,6 +68,7 @@ source_set("platform") {
       "impl/time.cc",
       "impl/tls_write_buffer.cc",
       "impl/tls_write_buffer.h",
+      "impl/weak_ptr.h",
     ]
 
     if (is_linux) {
@@ -161,6 +162,7 @@ source_set("unittests") {
       "api/socket_integration_unittest.cc",
       "impl/task_runner_unittest.cc",
       "impl/time_unittest.cc",
+      "impl/weak_ptr_unittest.cc",
     ]
 
     if (is_posix) {

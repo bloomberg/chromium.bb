@@ -49,6 +49,10 @@ StreamSocketPosix::~StreamSocketPosix() {
   }
 }
 
+WeakPtr<StreamSocketPosix> StreamSocketPosix::GetWeakPtr() const {
+  return weak_factory_.GetWeakPtr();
+}
+
 ErrorOr<std::unique_ptr<StreamSocket>> StreamSocketPosix::Accept() {
   if (!EnsureInitialized()) {
     return ReportSocketClosedError();

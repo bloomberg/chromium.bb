@@ -5,15 +5,14 @@
 #ifndef PLATFORM_IMPL_TLS_CONNECTION_FACTORY_POSIX_H_
 #define PLATFORM_IMPL_TLS_CONNECTION_FACTORY_POSIX_H_
 
-#include <future>
 #include <memory>
-#include <string>
 
 #include "platform/api/tls_connection.h"
 #include "platform/api/tls_connection_factory.h"
-#include "platform/base/socket_state.h"
+#include "platform/base/error.h"
 #include "platform/impl/platform_client_posix.h"
 #include "platform/impl/tls_data_router_posix.h"
+#include "platform/impl/weak_ptr.h"
 
 namespace openscreen {
 namespace platform {
@@ -29,18 +28,20 @@ class TlsConnectionFactoryPosix : public TlsConnectionFactory,
                                 PlatformClientPosix::GetInstance());
   ~TlsConnectionFactoryPosix() override;
 
-  // TlsConnectionFactory overrides
+  // TlsConnectionFactory overrides.
+  //
+  // TODO(jophba, rwkeane): Determine how to handle multiple connection attempts
+  // to the same remote_address, and how to distinguish errors.
   void Connect(const IPEndpoint& remote_address,
                const TlsConnectOptions& options) override;
-
   void SetListenCredentials(const TlsCredentials& credentials) override;
   void Listen(const IPEndpoint& local_address,
               const TlsListenOptions& options) override;
 
+ private:
   // TlsDataRouterPosix::SocketObserver overrides.
   void OnConnectionPending(StreamSocketPosix* socket) override;
 
- private:
   // Configures a new SSL connection when a StreamSocket connection is accepted.
   void OnSocketAccepted(std::unique_ptr<StreamSocket> socket);
 
@@ -59,6 +60,11 @@ class TlsConnectionFactoryPosix : public TlsConnectionFactory,
   // factory.
   void Initialize();
 
+  // Called on any thread, to post a task to notify the Client that a connection
+  // failure or other error has occurred.
+  void DispatchConnectionFailed(const IPEndpoint& remote_endpoint);
+  void DispatchError(Error error);
+
   // Thread-safe mechanism to ensure Initialize() is only called once.
   std::once_flag init_instance_flag_;
 
@@ -66,13 +72,16 @@ class TlsConnectionFactoryPosix : public TlsConnectionFactory,
   // from the SSL_CTX is non-trivial, so we store a property instead.
   bool listen_credentials_set_ = false;
 
-  // The task runner used for internal operations.
+  Client* const client_;
   TaskRunner* const task_runner_;
+  PlatformClientPosix* const platform_client_;
 
   // SSL context, for creating SSL Connections via BoringSSL.
   bssl::UniquePtr<SSL_CTX> ssl_context_;
 
-  PlatformClientPosix* platform_client_;
+  WeakPtrFactory<TlsConnectionFactoryPosix> weak_factory_{this};
+
+  OSP_DISALLOW_COPY_AND_ASSIGN(TlsConnectionFactoryPosix);
 };
 
 }  // namespace platform

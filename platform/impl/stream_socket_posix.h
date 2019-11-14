@@ -15,6 +15,7 @@
 #include "platform/impl/socket_address_posix.h"
 #include "platform/impl/socket_handle_posix.h"
 #include "platform/impl/stream_socket.h"
+#include "platform/impl/weak_ptr.h"
 
 namespace openscreen {
 namespace platform {
@@ -32,6 +33,8 @@ class StreamSocketPosix : public StreamSocket {
   StreamSocketPosix& operator=(const StreamSocketPosix& other) = delete;
   StreamSocketPosix& operator=(StreamSocketPosix&& other) = default;
   virtual ~StreamSocketPosix();
+
+  WeakPtr<StreamSocketPosix> GetWeakPtr() const;
 
   // StreamSocket overrides.
   ErrorOr<std::unique_ptr<StreamSocket>> Accept() override;
@@ -74,6 +77,8 @@ class StreamSocketPosix : public StreamSocket {
   bool is_bound_ = false;
   bool is_initialized_ = false;
   SocketState state_ = SocketState::kNotConnected;
+
+  WeakPtrFactory<StreamSocketPosix> weak_factory_{this};
 };
 
 }  // namespace platform

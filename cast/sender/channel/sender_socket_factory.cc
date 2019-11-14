@@ -6,6 +6,7 @@
 
 #include "cast/common/channel/cast_socket.h"
 #include "cast/sender/channel/message_util.h"
+#include "platform/base/tls_connect_options.h"
 
 namespace cast {
 namespace channel {
@@ -51,7 +52,7 @@ void SenderSocketFactory::OnConnected(
     TlsConnectionFactory* factory,
     X509* peer_cert,
     std::unique_ptr<TlsConnection> connection) {
-  const IPEndpoint& endpoint = connection->remote_address();
+  const IPEndpoint& endpoint = connection->GetRemoteEndpoint();
   auto it = FindPendingConnection(endpoint);
   if (it == pending_connections_.end()) {
     OSP_DLOG_ERROR << "TLS connection succeeded for unknown endpoint: "
@@ -158,7 +159,7 @@ void SenderSocketFactory::OnMessage(CastSocket* socket, CastMessage message) {
     return;
   }
 
-  pending->socket->set_client(pending->client);
+  pending->socket->SetClient(pending->client);
   client_->OnConnected(this, pending->endpoint, std::move(pending->socket));
 }
 

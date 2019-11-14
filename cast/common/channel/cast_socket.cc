@@ -28,10 +28,12 @@ CastSocket::CastSocket(std::unique_ptr<TlsConnection> connection,
       connection_(std::move(connection)),
       socket_id_(socket_id) {
   OSP_DCHECK(client);
-  connection_->set_client(this);
+  connection_->SetClient(this);
 }
 
-CastSocket::~CastSocket() = default;
+CastSocket::~CastSocket() {
+  connection_->SetClient(nullptr);
+}
 
 Error CastSocket::SendMessage(const CastMessage& message) {
   if (state_ == State::kError) {
@@ -53,6 +55,11 @@ Error CastSocket::SendMessage(const CastMessage& message) {
   return Error::Code::kNone;
 }
 
+void CastSocket::SetClient(Client* client) {
+  OSP_DCHECK(client);
+  client_ = client;
+}
+
 void CastSocket::OnWriteBlocked(TlsConnection* connection) {
   if (state_ == State::kOpen) {
     state_ = State::kBlocked;
@@ -60,14 +67,20 @@ void CastSocket::OnWriteBlocked(TlsConnection* connection) {
 }
 
 void CastSocket::OnWriteUnblocked(TlsConnection* connection) {
-  if (state_ == State::kBlocked) {
-    state_ = State::kOpen;
-    for (const auto& message : message_queue_) {
-      connection_->Write(message.data(), message.size());
-    }
-    OSP_DCHECK(state_ == State::kOpen) << static_cast<int>(state_);
-    message_queue_.clear();
+  if (state_ != State::kBlocked) {
+    return;
   }
+  state_ = State::kOpen;
+
+  // Attempt to write all messages that have been queued-up while the socket was
+  // blocked. Stop if the socket becomes blocked again, or an error occurs.
+  auto it = message_queue_.begin();
+  for (const auto end = message_queue_.end();
+       it != end && state_ == State::kOpen; ++it) {
+    // The following Write() could transition |state_| to kBlocked or kError.
+    connection_->Write(it->data(), it->size());
+  }
+  message_queue_.erase(message_queue_.begin(), it);
 }
 
 void CastSocket::OnError(TlsConnection* connection, Error error) {

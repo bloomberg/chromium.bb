@@ -45,10 +45,8 @@ class CastSocket : public TlsConnection::Client {
   // write-blocked.
   Error SendMessage(const CastMessage& message);
 
-  void set_client(Client* client) {
-    OSP_DCHECK(client);
-    client_ = client;
-  }
+  void SetClient(Client* client);
+
   uint32_t socket_id() const { return socket_id_; }
 
   // TlsConnection::Client overrides.
@@ -64,7 +62,7 @@ class CastSocket : public TlsConnection::Client {
     kError,
   };
 
-  Client* client_;
+  Client* client_;  // May never be null.
   const std::unique_ptr<TlsConnection> connection_;
   std::vector<uint8_t> read_buffer_;
   const uint32_t socket_id_;
