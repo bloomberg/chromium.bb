@@ -334,41 +334,68 @@ class LabTransfer(Transfer):
     self._staging_server = staging_server
     super(LabTransfer, self).__init__(*args, **kwargs)
 
+  def _CheckPayloads(self, payload_name):
+    payload_url = self._GetStagedUrl(staged_filename=payload_name,
+                                     build_id=self._payload_dir)
+    try:
+      retry_util.RunCurl(['-I', payload_url, '--fail'])
+    except retry_util.DownloadError as e:
+      raise ChromiumOSTransferError('Payload %s does not exist at %s: %s' %
+                                    (payload_name, payload_url, e))
+
   def CheckPayloads(self):
-    """Verify that all required payloads are in |self.payload_dir|."""
-    logging.debug('Checking if payloads have been stored in directory %s...',
-                  self._payload_dir)
-    # TODO (sanikak): This function needs to be written taking into
-    # consideration where the payloads reside and how they will be accessed.
+    """Verify that all required payloads are staged on staging server."""
+    logging.debug('Checking if payloads have been staged on server %s...',
+                  self._staging_server)
+
+    if self._transfer_rootfs_update:
+      self._CheckPayloads(self._payload_name)
+      self._CheckPayloads(GetPayloadPropertiesFileName(self._payload_name))
+
+    if self._transfer_stateful_update:
+      self._CheckPayloads(STATEFUL_FILENAME)
+
+  def _GetStagedUrl(self, staged_filename, build_id=None):
+    """Returns a valid url to check availability of staged files.
+
+    Args:
+      staged_filename: Name of the staged file.
+      build_id: This is the path at which the needed file can be found. It
+        is usually of the format <board_name>-release/R79-12345.6.0. By default,
+        the path is set to be None.
+
+    Returns:
+      A URL in the format:
+        http://<ip>:<port>/static/<board>-release/<version>/<staged_filename>
+    """
+    # Formulate the download URL out of components.
+    url = urllib.parse.urljoin(self._staging_server, 'static/')
+    if build_id:
+      # Add slash at the end of image_name if necessary.
+      if not build_id.endswith('/'):
+        build_id = build_id + '/'
+      url = urllib.parse.urljoin(url, build_id)
+    return urllib.parse.urljoin(url, staged_filename)
 
   def _GetCurlCmdForPayloadDownload(self, payload_dir, payload_filename,
-                                    image_name=''):
+                                    build_id=None):
     """Returns a valid curl command to download payloads into device tmp dir.
 
     Args:
       payload_dir: Path to the payload directory on the device.
       payload_filename: Name of the file by which the downloaded payload should
         be saved. This is assumed to be the same as the name of the payload.
-      image_name: This is the path at which the needed payload can be found. It
+      build_id: This is the path at which the needed payload can be found. It
         is usually of the format <board_name>-release/R79-12345.6.0. By default,
-        the path is set to be an empty string.
+        the path is set to None.
 
     Returns:
       A fully formed curl command in the format:
-        curl -o <path where payload should be saved> <payload download URL>
+        ['curl', '-o', '<path where payload should be saved>',
+         '<payload download URL>']
     """
-    download_dir = os.path.join(payload_dir, payload_filename)
-
-    # Formulate the download URL out of components.
-    url = urllib.parse.urljoin(self._staging_server, 'static/')
-    if image_name:
-      # Add slash at the end of image_name if necessary.
-      if not image_name.endswith('/'):
-        image_name = image_name + '/'
-      url = urllib.parse.urljoin(url, image_name)
-    url = urllib.parse.urljoin(url, payload_filename)
-
-    return ['curl', '-o', download_dir, url]
+    return ['curl', '-o', os.path.join(payload_dir, payload_filename),
+            self._GetStagedUrl(payload_filename, build_id)]
 
   def _TransferUpdateUtilsPackage(self):
     """Transfer update-utils package to work directory of the remote device.
@@ -415,12 +442,12 @@ class LabTransfer(Transfer):
       self._EnsureDeviceDirectory(self._device_restore_dir)
       self._device.RunCommand(self._GetCurlCmdForPayloadDownload(
           payload_dir=self._device_restore_dir,
-          image_name=self._original_payload_dir,
+          build_id=self._original_payload_dir,
           payload_filename=STATEFUL_FILENAME))
 
     logging.info('Copying target stateful payload to device...')
     self._device.RunCommand(self._GetCurlCmdForPayloadDownload(
-        payload_dir=self._device.work_dir, image_name=self._payload_dir,
+        payload_dir=self._device.work_dir, build_id=self._payload_dir,
         payload_filename=STATEFUL_FILENAME))
 
   def _TransferRootfsUpdate(self):
@@ -439,10 +466,10 @@ class LabTransfer(Transfer):
     # update engine does not report the error clearly.
 
     self._device.RunCommand(self._GetCurlCmdForPayloadDownload(
-        payload_dir=self._device_payload_dir, image_name=self._payload_dir,
+        payload_dir=self._device_payload_dir, build_id=self._payload_dir,
         payload_filename=self._payload_name))
 
     payload_props_filename = GetPayloadPropertiesFileName(self._payload_name)
     self._device.RunCommand(self._GetCurlCmdForPayloadDownload(
-        payload_dir=self._device_payload_dir, image_name=self._payload_dir,
+        payload_dir=self._device_payload_dir, build_id=self._payload_dir,
         payload_filename=payload_props_filename))

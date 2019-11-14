@@ -24,6 +24,7 @@ from chromite.lib import cros_test_lib
 from chromite.lib import partial_mock
 from chromite.lib import path_util
 from chromite.lib import remote_access
+from chromite.lib import retry_util
 
 
 # pylint: disable=protected-access
@@ -382,7 +383,7 @@ class CrosLabTransferTest(cros_test_lib.MockTestCase):
            'payload_filename': auto_updater_transfer._STATEFUL_UPDATE_FILENAME},
           {'payload_dir': device.work_dir,
            'payload_filename': 'stateful.tgz',
-           'image_name': ''}]
+           'build_id': ''}]
 
       CrOS_LabTransfer._TransferStatefulUpdate()
       self.assertListEqual(
@@ -459,10 +460,10 @@ class CrosLabTransferTest(cros_test_lib.MockTestCase):
            'payload_filename': auto_updater_transfer._STATEFUL_UPDATE_FILENAME},
           {'payload_dir': CrOS_LabTransfer._device_restore_dir,
            'payload_filename': auto_updater_transfer.STATEFUL_FILENAME,
-           'image_name': CrOS_LabTransfer._original_payload_dir},
+           'build_id': CrOS_LabTransfer._original_payload_dir},
           {'payload_dir': device.work_dir,
            'payload_filename': auto_updater_transfer.STATEFUL_FILENAME,
-           'image_name': CrOS_LabTransfer._payload_dir}]
+           'build_id': CrOS_LabTransfer._payload_dir}]
 
       CrOS_LabTransfer._TransferStatefulUpdate()
       self.assertListEqual(
@@ -546,10 +547,10 @@ class CrosLabTransferTest(cros_test_lib.MockTestCase):
       expected = [
           {'payload_dir': CrOS_LabTransfer._device_payload_dir,
            'payload_filename': CrOS_LabTransfer._payload_name,
-           'image_name': CrOS_LabTransfer._payload_dir},
+           'build_id': CrOS_LabTransfer._payload_dir},
           {'payload_dir': CrOS_LabTransfer._device_payload_dir,
            'payload_filename': CrOS_LabTransfer._payload_name + '.json',
-           'image_name': CrOS_LabTransfer._payload_dir}]
+           'build_id': CrOS_LabTransfer._payload_dir}]
 
       self.PatchObject(lab_xfer, '_EnsureDeviceDirectory')
       self.PatchObject(lab_xfer, '_GetCurlCmdForPayloadDownload')
@@ -618,7 +619,7 @@ class CrosLabTransferTest(cros_test_lib.MockTestCase):
       cmd = CrOS_LabTransfer._GetCurlCmdForPayloadDownload(
           payload_dir='/tmp/test_payload_dir',
           payload_filename='payload_filename.ext',
-          image_name='board-release/12345.0.0/')
+          build_id='board-release/12345.0.0/')
       self.assertEqual(cmd, expected_cmd)
 
   def testLabTransferGetCurlCmdNoImageName(self):
@@ -636,3 +637,112 @@ class CrosLabTransferTest(cros_test_lib.MockTestCase):
           payload_dir='/tmp/test_payload_dir',
           payload_filename='payload_filename.ext')
       self.assertEqual(cmd, expected_cmd)
+
+  def testCheckPayloadsAllIn(self):
+    """Test auto_updater_transfer.CheckPayloads.
+
+    Test CheckPayloads() method when transfer_rootfs_update and
+    transfer_stateful_update are both set to True.
+    """
+    with remote_access.ChromiumOSDeviceHandler(remote_access.TEST_IP) as device:
+      CrOS_LabTransfer = CreateLabTransferInstance(
+          device, payload_name='test_update.gz',
+          payload_dir='board-release/12345.6.7')
+      self.PatchObject(auto_updater_transfer, 'STATEFUL_FILENAME',
+                       'test_stateful.tgz')
+      self.PatchObject(retry_util, 'RunCurl')
+
+      expected = [['-I', 'http://0.0.0.0:8000/static/board-release/12345.6.7/'
+                   'test_update.gz', '--fail'],
+                  ['-I', 'http://0.0.0.0:8000/static/board-release/12345.6.7/'
+                   'test_update.gz.json', '--fail'],
+                  ['-I', 'http://0.0.0.0:8000/static/board-release/12345.6.7/'
+                   'test_stateful.tgz', '--fail']]
+
+      CrOS_LabTransfer.CheckPayloads()
+      self.assertListEqual(retry_util.RunCurl.call_args_list,
+                           [mock.call(x) for x in expected])
+
+  def testCheckPayloadsNoStatefulTransfer(self):
+    """Test auto_updater_transfer.CheckPayloads.
+
+    Test CheckPayloads() method when transfer_rootfs_update is True and
+    transfer_stateful_update is set to False.
+    """
+    with remote_access.ChromiumOSDeviceHandler(remote_access.TEST_IP) as device:
+      CrOS_LabTransfer = CreateLabTransferInstance(
+          device, payload_name='test_update.gz',
+          payload_dir='board-release/12345.6.7',
+          transfer_stateful_update=False)
+      self.PatchObject(retry_util, 'RunCurl')
+
+      expected = [['-I', 'http://0.0.0.0:8000/static/board-release/12345.6.7/'
+                   'test_update.gz', '--fail'],
+                  ['-I', 'http://0.0.0.0:8000/static/board-release/12345.6.7/'
+                   'test_update.gz.json', '--fail']]
+
+      CrOS_LabTransfer.CheckPayloads()
+      self.assertListEqual(retry_util.RunCurl.call_args_list,
+                           [mock.call(x) for x in expected])
+
+  def testCheckPayloadsNoRootfsTransfer(self):
+    """Test auto_updater_transfer.CheckPayloads.
+
+    Test CheckPayloads() method when transfer_rootfs_update is False and
+    transfer_stateful_update is set to True.
+    """
+    with remote_access.ChromiumOSDeviceHandler(remote_access.TEST_IP) as device:
+      CrOS_LabTransfer = CreateLabTransferInstance(
+          device, payload_dir='board-release/12345.6.7',
+          transfer_rootfs_update=False)
+      self.PatchObject(auto_updater_transfer, 'STATEFUL_FILENAME',
+                       'test_stateful.tgz')
+      self.PatchObject(retry_util, 'RunCurl')
+
+      expected = [['-I', 'http://0.0.0.0:8000/static/board-release/12345.6.7/'
+                   'test_stateful.tgz', '--fail']]
+
+      CrOS_LabTransfer.CheckPayloads()
+      self.assertListEqual(retry_util.RunCurl.call_args_list,
+                           [mock.call(x) for x in expected])
+
+  def testCheckPayloadsDownloadError(self):
+    """Test auto_updater_transfer.CheckPayloads.
+
+    Test CheckPayloads() for exceptions raised when payloads are not available
+    on the staging server.
+    """
+    with remote_access.ChromiumOSDeviceHandler(remote_access.TEST_IP) as device:
+      CrOS_LabTransfer = CreateLabTransferInstance(device)
+
+      self.PatchObject(retry_util, 'RunCurl',
+                       side_effect=retry_util.DownloadError())
+
+      self.assertRaises(auto_updater_transfer.ChromiumOSTransferError,
+                        CrOS_LabTransfer.CheckPayloads)
+
+  def testLabTransferGetPayloadUrlStandard(self):
+    """Test auto_updater_transfer._GetStagedUrl.
+
+    Tests the typical usage of the _GetStagedUrl() method.
+    """
+    with remote_access.ChromiumOSDeviceHandler(remote_access.TEST_IP) as device:
+      CrOS_LabTransfer = CreateLabTransferInstance(device)
+      expected_url = ('http://0.0.0.0:8000/static/board-release/12345.0.0/'
+                      'payload_filename.ext')
+      url = CrOS_LabTransfer._GetStagedUrl(
+          staged_filename='payload_filename.ext',
+          build_id='board-release/12345.0.0/')
+      self.assertEqual(url, expected_url)
+
+  def testLabTransferGetPayloadUrlNoImageName(self):
+    """Test auto_updater_transfer._GetStagedUrl.
+
+    Tests when the build_id parameter is defaulted to None.
+    """
+    with remote_access.ChromiumOSDeviceHandler(remote_access.TEST_IP) as device:
+      CrOS_LabTransfer = CreateLabTransferInstance(device)
+      expected_url = 'http://0.0.0.0:8000/static/payload_filename.ext'
+      url = CrOS_LabTransfer._GetStagedUrl(
+          staged_filename='payload_filename.ext')
+      self.assertEqual(url, expected_url)
