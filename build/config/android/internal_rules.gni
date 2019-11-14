@@ -2580,8 +2580,6 @@ if (enable_java_templates) {
   #     secondary ABI.
   #   secondary_abi_native_libs_filearg: (optional). @FileArg() of additional
   #     secondary ABI native libs.
-  #   write_asset_list: Adds an extra file to the assets, which contains a list of
-  #     all other asset files.
   #   keystore_path: Path to keystore to use for signing.
   #   keystore_name: Key alias to use.
   #   keystore_password: Keystore password.
@@ -2662,9 +2660,6 @@ if (enable_java_templates) {
         # TODO(mlopatkin) We are relying on the fact that assets_build_config is
         # an APK build_config.
         args += [ "--java-resources=@FileArg($_rebased_build_config:java_resources_jars)" ]
-      }
-      if (defined(invoker.write_asset_list) && invoker.write_asset_list) {
-        args += [ "--write-asset-list" ]
       }
       if (defined(invoker.dex_path)) {
         _rebased_dex_path = rebase_path(invoker.dex_path, root_build_dir)
