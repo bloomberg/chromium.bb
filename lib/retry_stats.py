@@ -128,7 +128,7 @@ def ReportStats(out):
     out: Output stream to write to (e.g. sys.stdout).
     category: A string that defines the 'namespace' for these stats.
   """
-  categories = sorted(set([e.category for e in _STATS_COLLECTION]))
+  categories = sorted(set(e.category for e in _STATS_COLLECTION))
 
   for category in categories:
     ReportCategoryStats(out, category)
