@@ -392,10 +392,6 @@ template("monochrome_public_common_apk_or_module_tmpl") {
       _pak_prefix = "monochrome"
     }
     if (is_trichrome) {
-      if (!trichrome_shared_assets) {
-        _deps += [ "//android_webview:monochrome_webview_assets" ]
-      }
-
       # Include placeholder libraries to make Chrome multiarch in the same way
       # as Monochrome, even though Chrome only runs with one of the two
       # bitnesses. This allows the "32-bit" and "64-bit" versions of Chrome to
