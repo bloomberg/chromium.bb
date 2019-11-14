@@ -1076,13 +1076,13 @@ EmbeddedWorkerInstance::CreateFactoryBundleOnUI(
   // TODO(yhirano): Support COEP.
   if (GetNetworkFactoryCallbackForTest().is_null()) {
     rph->CreateURLLoaderFactory(
-        origin, network::mojom::CrossOriginEmbedderPolicy::kNone,
+        origin, origin, network::mojom::CrossOriginEmbedderPolicy::kNone,
         nullptr /* preferences */, net::NetworkIsolationKey(origin, origin),
         std::move(default_header_client), std::move(default_factory_receiver));
   } else {
     mojo::PendingRemote<network::mojom::URLLoaderFactory> original_factory;
     rph->CreateURLLoaderFactory(
-        origin, network::mojom::CrossOriginEmbedderPolicy::kNone,
+        origin, origin, network::mojom::CrossOriginEmbedderPolicy::kNone,
         nullptr /* preferences */, net::NetworkIsolationKey(origin, origin),
         std::move(default_header_client),
         original_factory.InitWithNewPipeAndPassReceiver());

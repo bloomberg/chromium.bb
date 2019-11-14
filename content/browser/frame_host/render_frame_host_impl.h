@@ -1557,9 +1557,14 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // this returns true, any redirect safety checks should be bypassed in
   // downstream loaders.
   //
-  // |origin| is the origin that the RenderFrame is either committing (in the
-  // case of navigation) or has last committed (when handling network process
-  // crashes).
+  // |origin| is the origin that will use the URLLoaderFactory.
+  //
+  // |main_world_origin| is the origin that the RenderFrame is either committing
+  // (in the case of navigation) or has last committed (when handling network
+  // process crashes).  In most cases |main_world_origin| and |origin| should be
+  // the same, but they may differ if |origin| specifies an origin of an
+  // isolated world (e.g. a content script of a Chrome Extension - see also the
+  // doc comment for extensions::URLLoaderFactoryManager::CreateFactory).
   //
   // |network_isolation_key| is the NetworkIsolationKey for the URLLoaderFactory
   // to be initialized with. A nullopt key means the created URLLoaderFactory
@@ -1567,18 +1572,13 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // so it can consume requests with a TrustedParams::network_isolation_key.
   bool CreateNetworkServiceDefaultFactoryAndObserve(
       const url::Origin& origin,
+      const url::Origin& main_world_origin,
       base::Optional<net::NetworkIsolationKey> network_isolation_key,
       mojo::PendingReceiver<network::mojom::URLLoaderFactory>
           default_factory_receiver);
-
-  // |origin| is the origin that the RenderFrame is either committing (in the
-  // case of navigation) or has last committed (when handling network process
-  // crashes).
-  //
-  // For |network_isolation_key|, see the comment for |network_isolation_key|
-  // above CreateNetworkServiceDefaultFactoryAndObserve().
   bool CreateNetworkServiceDefaultFactoryInternal(
       const url::Origin& origin,
+      const url::Origin& main_world_origin,
       base::Optional<net::NetworkIsolationKey> network_isolation_key,
       mojo::PendingReceiver<network::mojom::URLLoaderFactory>
           default_factory_receiver);
@@ -1824,6 +1824,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Creates URLLoaderFactory objects for |isolated_world_origins|.
   blink::URLLoaderFactoryBundleInfo::OriginMap
   CreateURLLoaderFactoriesForIsolatedWorlds(
+      const url::Origin& main_world_origin,
       const base::flat_set<url::Origin>& isolated_world_origins);
 
   // Based on the termination |status| and |exit_code|, may generate a crash
