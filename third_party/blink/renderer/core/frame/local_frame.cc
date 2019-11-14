@@ -567,6 +567,10 @@ bool LocalFrame::BubbleLogicalScrollFromChildFrame(
                                           owner_element);
 }
 
+void LocalFrame::DidFocus() {
+  GetLocalFrameHostRemote().DidFocusFrame();
+}
+
 void LocalFrame::DidChangeThemeColor() {
   if (Tree().Parent())
     return;

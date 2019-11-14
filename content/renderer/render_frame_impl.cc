@@ -4294,10 +4294,6 @@ void RenderFrameImpl::FrameDetached(DetachType type) {
   // Object is invalid after this point.
 }
 
-void RenderFrameImpl::FrameFocused() {
-  GetFrameHost()->FrameFocused();
-}
-
 void RenderFrameImpl::DidChangeName(const blink::WebString& name) {
   if (current_history_item_.IsNull()) {
     // Once a navigation has committed, the unique name must no longer change to
