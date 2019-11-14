@@ -44,7 +44,9 @@ TEST_SIG_TIMEOUT = 5
 # How long (in seconds) to let tests clean up after CTRL+C is sent.
 SIGINT_TIMEOUT = 5
 # How long (in seconds) to let all children clean up after CTRL+C is sent.
-CTRL_C_TIMEOUT = SIGINT_TIMEOUT + 5
+# This has to be big enough to try and tear down ~72 parallel tests (which is
+# how many cores we commonly have in Googler workstations today).
+CTRL_C_TIMEOUT = SIGINT_TIMEOUT + 15
 
 
 # The cache file holds various timing information.  This is used later on to
