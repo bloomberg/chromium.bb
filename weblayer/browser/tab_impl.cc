@@ -13,8 +13,10 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/browser_controls_state.h"
+#include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
 #include "ui/base/window_open_disposition.h"
 #include "weblayer/browser/file_select_helper.h"
+#include "weblayer/browser/i18n_util.h"
 #include "weblayer/browser/isolated_world_ids.h"
 #include "weblayer/browser/navigation_controller_impl.h"
 #include "weblayer/browser/profile_impl.h"
@@ -107,6 +109,12 @@ TabImpl::TabImpl(ProfileImpl* profile,
         profile_->GetBrowserContext());
     web_contents_ = content::WebContents::Create(create_params);
   }
+
+  // TODO(estade): set more preferences, and set them dynamically rather than
+  // just at startup.
+  web_contents_->GetMutableRendererPrefs()->accept_languages =
+      i18n::GetAcceptLangs();
+
   std::unique_ptr<UserData> user_data = std::make_unique<UserData>();
   user_data->controller = this;
   web_contents_->SetUserData(&kWebContentsUserDataKey, std::move(user_data));
