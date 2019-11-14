@@ -795,6 +795,11 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
+                       AccessibilityEventsButtonRemoveChildren) {
+  RunEventTest(FILE_PATH_LITERAL("button-remove-children.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
                        RangeValueIsReadonlyChanged) {
   RunEventTest(FILE_PATH_LITERAL("range-value-is-readonly-changed.html"));
 }
