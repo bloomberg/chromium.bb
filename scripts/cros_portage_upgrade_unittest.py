@@ -394,6 +394,10 @@ class PInfoTest(cros_test_lib.OutputTestCase):
   def testEqAndNe(self):
     pinfo1 = cpu.PInfo(category='SomeCat', user_arg='SomeArg')
 
+    # We do redundant tests because we implement the comparison methods
+    # ourselves, and we want to make sure they work.  The 2nd option here
+    # here is Python 3 specific, so we have to suppress for Python 2.
+    # pylint: disable=bad-option-value,comparison-with-itself
     self.assertEqual(pinfo1, pinfo1)
     self.assertTrue(pinfo1 == pinfo1)
     self.assertFalse(pinfo1 != pinfo1)
@@ -1839,15 +1843,12 @@ class GiveEmergeResultsTest(CpuTestBase):
     mocked_upgrader._AreEmergeable.return_value = (ok, None, None)
 
     # Verify.
-    result = None
     with self.OutputCapturer():
       if error:
         self.assertRaises(error, cpu.Upgrader._GiveEmergeResults,
                           mocked_upgrader, pinfolist)
       else:
-        result = cpu.Upgrader._GiveEmergeResults(mocked_upgrader, pinfolist)
-
-    return result
+        cpu.Upgrader._GiveEmergeResults(mocked_upgrader, pinfolist)
 
   def testGiveEmergeResultsUnmaskedOK(self):
     pinfolist = [cpu.PInfo(upgraded_cpv='abc/def-4', upgraded_unmasked=True),
@@ -1869,19 +1870,16 @@ class GiveEmergeResultsTest(CpuTestBase):
     mocked_upgrader._AreEmergeable.return_value = emergeable_tuple
 
     # Verify.
-    result = None
     with self.OutputCapturer():
       if error:
         self.assertRaises(error, cpu.Upgrader._GiveEmergeResults,
                           mocked_upgrader, pinfolist)
       else:
-        result = cpu.Upgrader._GiveEmergeResults(mocked_upgrader, pinfolist)
+        cpu.Upgrader._GiveEmergeResults(mocked_upgrader, pinfolist)
 
     if not ok:
       self.assertEqual(sorted(mocked_upgrader._GiveMaskedError.call_args_list),
                        sorted(mock.call(x, 'some-output') for x in masked_cpvs))
-
-    return result
 
   def testGiveEmergeResultsMaskedOK(self):
     pinfolist = [cpu.PInfo(upgraded_cpv='abc/def-4', upgraded_unmasked=False),
