@@ -2226,8 +2226,6 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameMsg_SetFocusedFrame, OnSetFocusedFrame)
     IPC_MESSAGE_HANDLER(FrameMsg_SetTextTrackSettings,
                         OnTextTrackSettingsChanged)
-    IPC_MESSAGE_HANDLER(FrameMsg_ReportContentSecurityPolicyViolation,
-                        OnReportContentSecurityPolicyViolation)
     IPC_MESSAGE_HANDLER(FrameMsg_GetSavableResourceLinks,
                         OnGetSavableResourceLinks)
     IPC_MESSAGE_HANDLER(FrameMsg_GetSerializedHtmlWithLocalLinks,
@@ -2727,6 +2725,12 @@ void RenderFrameImpl::OnPortalActivated(
   frame_->OnPortalActivated(portal_token, portal.PassHandle(),
                             portal_client.PassHandle(), std::move(data),
                             std::move(callback));
+}
+
+void RenderFrameImpl::ReportContentSecurityPolicyViolation(
+    const content::CSPViolationParams& violation_params) {
+  frame_->ReportContentSecurityPolicyViolation(
+      BuildWebContentSecurityPolicyViolation(violation_params));
 }
 
 void RenderFrameImpl::ForwardMessageFromHost(
@@ -5927,12 +5931,6 @@ void RenderFrameImpl::FocusedElementChangedForAccessibility(
     const WebElement& element) {
   if (render_accessibility())
     render_accessibility()->AccessibilityFocusedElementChanged(element);
-}
-
-void RenderFrameImpl::OnReportContentSecurityPolicyViolation(
-    const content::CSPViolationParams& violation_params) {
-  frame_->ReportContentSecurityPolicyViolation(
-      BuildWebContentSecurityPolicyViolation(violation_params));
 }
 
 void RenderFrameImpl::BeginNavigation(

@@ -625,6 +625,8 @@ class CONTENT_EXPORT RenderFrameImpl
       mojo::PendingAssociatedReceiver<blink::mojom::PortalClient> portal_client,
       blink::TransferableMessage data,
       OnPortalActivatedCallback callback) override;
+  void ReportContentSecurityPolicyViolation(
+      const content::CSPViolationParams& violation_params) override;
 
   // mojom::FullscreenVideoElementHandler implementation:
   void RequestFullscreenVideoElement() override;
@@ -1106,8 +1108,6 @@ class CONTENT_EXPORT RenderFrameImpl
   void OnSetFocusedFrame();
   void OnTextTrackSettingsChanged(
       const FrameMsg_TextTrackSettings_Params& params);
-  void OnReportContentSecurityPolicyViolation(
-      const content::CSPViolationParams& violation_params);
   void OnGetSavableResourceLinks();
   void OnGetSerializedHtmlWithLocalLinks(
       const std::map<GURL, base::FilePath>& url_to_local_path,
