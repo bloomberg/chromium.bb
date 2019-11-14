@@ -2431,7 +2431,7 @@ enum WebFeature {
   kPluginElementLoadedImage = 3047,
   kPluginElementLoadedExternal = 3048,
   kRenderSubtreeAttribute = 3049,
-  kARIAAnnotationRoles = 3050,
+  kARIAAnnotations = 3050,
   kIntersectionObserverV2 = 3051,
   kHeavyAdIntervention = 3052,
   kUserTimingL3 = 3053,

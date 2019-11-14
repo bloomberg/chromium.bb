@@ -2292,11 +2292,10 @@ AtkRole AXPlatformNodeAuraLinux::GetAtkRole() const {
       return ATK_ROLE_DIALOG;
     case ax::mojom::Role::kAnchor:
       return ATK_ROLE_LINK;
-    case ax::mojom::Role::kAnnotationAttribution:
-    case ax::mojom::Role::kAnnotationCommentary:
-    case ax::mojom::Role::kAnnotationPresence:
-    case ax::mojom::Role::kAnnotationRevision:
-    case ax::mojom::Role::kAnnotationSuggestion:
+    case ax::mojom::Role::kComment:
+    case ax::mojom::Role::kCommentSection:
+    case ax::mojom::Role::kRevision:
+    case ax::mojom::Role::kSuggestion:
       return ATK_ROLE_SECTION;
     case ax::mojom::Role::kApplication:
       // Only use ATK_ROLE_APPLICATION for elements with no parent, since it
