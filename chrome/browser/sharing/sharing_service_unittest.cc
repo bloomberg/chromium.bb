@@ -39,13 +39,11 @@ namespace {
 
 const char kP256dh[] = "p256dh";
 const char kAuthSecret[] = "auth_secret";
-const char kFcmToken[] = "fcm_token";
+const char kVapidFcmToken[] = "vapid_fcm_token";
+const char kSharingFcmToken[] = "sharing_fcm_token";
 const char kDeviceName[] = "other_name";
 const char kAuthorizedEntity[] = "authorized_entity";
 constexpr base::TimeDelta kTimeout = base::TimeDelta::FromSeconds(15);
-const char kSenderFcmToken[] = "sender_fcm_token";
-const char kSenderP256dh[] = "sender_p256dh";
-const char kSenderAuthSecret[] = "sender_auth_secret";
 
 class MockInstanceIDDriver : public instance_id::InstanceIDDriver {
  public:
@@ -201,15 +199,9 @@ class SharingServiceTest : public testing::Test {
         /*last_updated_timestamp=*/base::Time::Now(),
         /*send_tab_to_self_receiving_enabled=*/false,
         syncer::DeviceInfo::SharingInfo(
-            kFcmToken, kP256dh, kAuthSecret,
+            kVapidFcmToken, kSharingFcmToken, kP256dh, kAuthSecret,
             std::set<sync_pb::SharingSpecificFields::EnabledFeatures>{
                 sync_pb::SharingSpecificFields::CLICK_TO_CALL}));
-  }
-
-  static syncer::DeviceInfo::SharingInfo CreateLocalSharingInfo() {
-    return syncer::DeviceInfo::SharingInfo(
-        kSenderFcmToken, kSenderP256dh, kSenderAuthSecret,
-        std::set<sync_pb::SharingSpecificFields::EnabledFeatures>());
   }
 
   // Lazily initialized so we can test the constructor.

@@ -467,12 +467,8 @@ SharingService::SharingDeviceList SharingService::FilterDeviceCandidates(
       continue;
 
     // Checks whether |device| supports |required_feature|.
-    base::Optional<syncer::DeviceInfo::SharingInfo> sharing_info =
-        sync_prefs_->GetSharingInfo(device.get());
-    if (!sharing_info ||
-        !sharing_info->enabled_features.count(required_feature)) {
+    if (!sync_prefs_->GetEnabledFeatures(device.get()).count(required_feature))
       continue;
-    }
 
     filtered_devices.push_back(std::move(device));
   }
