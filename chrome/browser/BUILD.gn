@@ -2867,6 +2867,7 @@ jumbo_static_library("browser") {
       "prerender/external_prerender_handler_android.h",
       "previews/android/previews_android_bridge.cc",
       "previews/android/previews_android_bridge.h",
+      "profiles/incognito_utils_android.cc",
       "profiles/profile_android.cc",
       "profiles/profile_android.h",
       "profiles/profile_key_android.cc",

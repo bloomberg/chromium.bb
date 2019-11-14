@@ -160,20 +160,6 @@ public class PrefServiceBridge {
     }
 
     /**
-     * @return true if incognito mode is enabled.
-     */
-    public boolean isIncognitoModeEnabled() {
-        return PrefServiceBridgeJni.get().getIncognitoModeEnabled();
-    }
-
-    /**
-     * @return true if incognito mode is managed by policy.
-     */
-    public boolean isIncognitoModeManaged() {
-        return PrefServiceBridgeJni.get().getIncognitoModeManaged();
-    }
-
-    /**
       * @return Whether usage and crash reporting pref is enabled.
       */
     public boolean isMetricsReportingEnabled() {
@@ -209,8 +195,6 @@ public class PrefServiceBridge {
         void setString(int preference, String value);
         boolean isManagedPreference(int preference);
         boolean getFirstRunEulaAccepted();
-        boolean getIncognitoModeEnabled();
-        boolean getIncognitoModeManaged();
         boolean canPrefetchAndPrerender();
         boolean getNetworkPredictionManaged();
         boolean obsoleteNetworkPredictionOptionsHasUserSetting();
