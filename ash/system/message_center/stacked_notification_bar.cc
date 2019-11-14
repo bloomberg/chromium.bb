@@ -15,6 +15,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/canvas.h"
+#include "ui/message_center/message_center.h"
 #include "ui/message_center/public/cpp/message_center_constants.h"
 #include "ui/message_center/vector_icons.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
@@ -113,6 +114,17 @@ class StackingBarLabelButton : public views::LabelButton {
 
 }  // namespace
 
+class StackedNotificationBar::StackedNotificationBarIcon
+    : public views::ImageView {
+ public:
+  StackedNotificationBarIcon(const std::string& id)
+      : views::ImageView(), id_(id) {}
+  const std::string& id() const { return id_; }
+
+ private:
+  std::string id_;
+};
+
 StackedNotificationBar::StackedNotificationBar(
     UnifiedMessageCenterView* message_center_view)
     : message_center_view_(message_center_view),
@@ -126,7 +138,7 @@ StackedNotificationBar::StackedNotificationBar(
           l10n_util::GetStringUTF16(
               IDS_ASH_MESSAGE_CENTER_EXPAND_ALL_NOTIFICATIONS_BUTTON_LABEL))) {
   SetVisible(false);
-
+  message_center::MessageCenter::Get()->AddObserver(this);
   int left_padding = features::IsUnifiedMessageCenterRefactorEnabled()
                          ? 0
                          : kStackingNotificationClearAllButtonPadding.left();
@@ -165,7 +177,12 @@ StackedNotificationBar::StackedNotificationBar(
   AddChildView(expand_all_button_);
 }
 
-StackedNotificationBar::~StackedNotificationBar() = default;
+StackedNotificationBar::~StackedNotificationBar() {
+  // The MessageCenter may be destroyed already during shutdown. See
+  // crbug.com/946153.
+  if (message_center::MessageCenter::Get())
+    message_center::MessageCenter::Get()->RemoveObserver(this);
+}
 
 bool StackedNotificationBar::Update(
     int total_notification_count,
@@ -213,8 +230,8 @@ void StackedNotificationBar::SetExpanded() {
 void StackedNotificationBar::AddNotificationIcon(
     message_center::Notification* notification,
     bool at_front) {
-  views::ImageView* icon_view_ = new views::ImageView();
-
+  views::ImageView* icon_view_ =
+      new StackedNotificationBarIcon(notification->id());
   if (at_front)
     notification_icons_container_->AddChildViewAt(icon_view_, 0);
   else
@@ -231,6 +248,17 @@ void StackedNotificationBar::AddNotificationIcon(
   } else {
     icon_view_->SetImage(masked_small_icon.AsImageSkia());
   }
+}
+
+const StackedNotificationBar::StackedNotificationBarIcon*
+StackedNotificationBar::GetIconFromId(const std::string& id) {
+  for (auto* v : notification_icons_container_->children()) {
+    const StackedNotificationBarIcon* icon =
+        static_cast<const StackedNotificationBarIcon*>(v);
+    if (icon->id() == id)
+      return icon;
+  }
+  return nullptr;
 }
 
 void StackedNotificationBar::ShiftIconsLeft(
@@ -361,5 +389,24 @@ void StackedNotificationBar::ButtonPressed(views::Button* sender,
     message_center_view_->ExpandMessageCenter();
   }
 }
+
+void StackedNotificationBar::OnNotificationAdded(const std::string& id) {
+  // Reset the stacked icons bar if a notification is added since we don't
+  // know the position where it may have been added.
+  notification_icons_container_->RemoveAllChildViews(true);
+  stacked_notification_count_ = 0;
+  UpdateStackedNotifications(message_center_view_->GetStackedNotifications());
+}
+
+void StackedNotificationBar::OnNotificationRemoved(const std::string& id,
+                                                   bool by_user) {
+  const StackedNotificationBarIcon* icon = GetIconFromId(id);
+  if (icon) {
+    delete icon;
+    stacked_notification_count_--;
+  }
+}
+
+void StackedNotificationBar::OnNotificationUpdated(const std::string& id) {}
 
 }  // namespace ash
