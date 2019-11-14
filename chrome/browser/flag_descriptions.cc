@@ -3452,6 +3452,11 @@ const char kEnableAssistantLauncherIntegrationDescription[] =
     "Combine Launcher search with the power of Assistant to provide the most "
     "useful answer for each query. Requires Assistant to be enabled.";
 
+const char kEnableAssistantLauncherUIName[] = "Assistant Launcher UI";
+const char kEnableAssistantLauncherUIDescription[] =
+    "Enables the embedded Assistant UI in the app list. Requires Assistant to "
+    "be enabled.";
+
 const char kEnableAssistantMediaSessionIntegrationName[] =
     "Assistant Media Session integration";
 const char kEnableAssistantMediaSessionIntegrationDescription[] =

@@ -2041,6 +2041,9 @@ extern const char kEnableAssistantAppSupportDescription[];
 extern const char kEnableAssistantLauncherIntegrationName[];
 extern const char kEnableAssistantLauncherIntegrationDescription[];
 
+extern const char kEnableAssistantLauncherUIName[];
+extern const char kEnableAssistantLauncherUIDescription[];
+
 extern const char kEnableAssistantMediaSessionIntegrationName[];
 extern const char kEnableAssistantMediaSessionIntegrationDescription[];
 

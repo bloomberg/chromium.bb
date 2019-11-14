@@ -35597,6 +35597,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-2113705745"
       label="CrossOriginMediaPlaybackRequiresUserGesture:enabled"/>
   <int value="-2112547309" label="ClickToCallReceiver:enabled"/>
+  <int value="-2111196530" label="EnableAssistantLauncherUI:disabled"/>
   <int value="-2108564200" label="AutofillUpstream:disabled"/>
   <int value="-2106960993" label="HarfBuzzPDFSubsetter:disabled"/>
   <int value="-2105133782" label="GesturePropertiesDBusService:enabled"/>
@@ -35996,6 +35997,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
       label="AutofillUpstreamEditableCardholderName:disabled"/>
   <int value="-1624854957" label="enable-es3-apis"/>
   <int value="-1624593106" label="NewTabPageBackgrounds:enabled"/>
+  <int value="-1621963267" label="EnableAssistantLauncherUI:enabled"/>
   <int value="-1620804800" label="NoScriptPreviews:disabled"/>
   <int value="-1620568042" label="FeaturePolicy:disabled"/>
   <int value="-1619757314" label="touch-scrolling-mode"/>

@@ -3752,6 +3752,11 @@ const FeatureEntry kFeatureEntries[] = {
      kOsCrOS,
      FEATURE_VALUE_TYPE(
          chromeos::assistant::features::kEnableMediaSessionIntegration)},
+
+    {"enable-assistant-launcher-ui",
+     flag_descriptions::kEnableAssistantLauncherUIName,
+     flag_descriptions::kEnableAssistantLauncherUIDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(app_list_features::kEnableAssistantLauncherUI)},
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_ANDROID)

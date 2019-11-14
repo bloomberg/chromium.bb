@@ -968,6 +968,11 @@
     "expiry_milestone": 80
   },
   {
+    "name": "enable-assistant-launcher-ui",
+    "owners": [ "croissant-eng" ],
+    "expiry_milestone": 81
+  },
+  {
     "name": "enable-assistant-media-session-integration",
     "owners": [ "croissant-eng" ],
     "expiry_milestone": 78
