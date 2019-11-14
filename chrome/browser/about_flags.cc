@@ -4493,12 +4493,12 @@ const FeatureEntry kFeatureEntries[] = {
 
     // This set of flags is used to temporary reinstate expired flags; see
     // //docs/flag_expiry.md for details.
-    {"temporary-unexpire-flags-m76", flag_descriptions::kUnexpireFlagsM76Name,
-     flag_descriptions::kUnexpireFlagsM76Description, kOsAll,
-     FEATURE_VALUE_TYPE(flags::kUnexpireFlagsM76)},
     {"temporary-unexpire-flags-m78", flag_descriptions::kUnexpireFlagsM78Name,
      flag_descriptions::kUnexpireFlagsM78Description, kOsAll,
      FEATURE_VALUE_TYPE(flags::kUnexpireFlagsM78)},
+    {"temporary-unexpire-flags-m80", flag_descriptions::kUnexpireFlagsM80Name,
+     flag_descriptions::kUnexpireFlagsM80Description, kOsAll,
+     FEATURE_VALUE_TYPE(flags::kUnexpireFlagsM80)},
 
 #if defined(OS_CHROMEOS)
     {"lock-screen-media-controls",
