@@ -120,7 +120,7 @@ void QuicTestPacketMaker::EncoderStreamSenderDelegate::WriteStreamData(
 QuicTestPacketMaker::QuicTestPacketMaker(
     quic::ParsedQuicVersion version,
     quic::QuicConnectionId connection_id,
-    quic::MockClock* clock,
+    const quic::QuicClock* clock,
     const std::string& host,
     quic::Perspective perspective,
     bool client_headers_include_h2_stream_dependency)
