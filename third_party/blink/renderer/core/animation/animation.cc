@@ -408,8 +408,6 @@ double Animation::currentTime(bool& is_null) {
 
 // https://drafts.csswg.org/web-animations/#the-current-time-of-an-animation
 double Animation::currentTime() {
-  PlayStateUpdateScope update_scope(*this, kTimingUpdateOnDemand);
-
   // 1. If the animation’s hold time is resolved,
   //    The current time is the animation’s hold time.
   if (hold_time_.has_value())
@@ -420,8 +418,7 @@ double Animation::currentTime() {
   //    * the associated timeline is inactive, or
   //    * the animation’s start time is unresolved.
   // The current time is an unresolved time value.
-  if (!timeline_ || !timeline_->IsActive() || PlayStateInternal() == kIdle ||
-      !start_time_) {
+  if (!timeline_ || !timeline_->IsActive() || !start_time_) {
     return NullValue();
   }
 
