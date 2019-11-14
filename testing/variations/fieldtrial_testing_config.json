@@ -519,6 +519,21 @@
             ]
         }
     ],
+    "AndroidPictureInPictureAPI": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Disabled",
+                    "disable_features": [
+                        "PictureInPictureAPI"
+                    ]
+                }
+            ]
+        }
+    ],
     "AndroidSpellChecker": [
         {
             "platforms": [
