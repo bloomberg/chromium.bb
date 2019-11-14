@@ -173,11 +173,9 @@ int32_t Cost0Or4(const int16x8_t a, const int16x8_t b,
 
 // |cost[2]| and |cost[6]| square the input and accumulate:
 // cost[2] += Square(partial[2][i])
-int32_t SquareAccumulate(const int16x8_t a, const int16x8_t b) {
+int32_t SquareAccumulate(const int16x8_t a) {
   int32x4_t c = Square(vget_low_s16(a));
   c = SquareAccumulate(c, vget_high_s16(a));
-  c = SquareAccumulate(c, vget_low_s16(b));
-  c = SquareAccumulate(c, vget_high_s16(b));
   c = vmulq_n_s32(c, kDivisionTable[7]);
   return SumVector(c);
 }
@@ -237,8 +235,8 @@ void CdefDirection_NEON(const void* const source, ptrdiff_t stride,
   // TODO(johannkoenig): Try to figure out when these need to move up to
   // int32_t. May be able to put it off for a bit.
 
-  cost[2] = SquareAccumulate(partial_lo[2], partial_hi[2]);
-  cost[6] = SquareAccumulate(partial_lo[6], partial_hi[6]);
+  cost[2] = SquareAccumulate(partial_lo[2]);
+  cost[6] = SquareAccumulate(partial_lo[6]);
 
   const int32x4_t division_table[4] = {
       vld1q_s32(kDivisionTable), vld1q_s32(kDivisionTable + 4),
