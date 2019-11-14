@@ -191,7 +191,7 @@ TEST_P(GcpReauthCredentialEnforceAuthReasonGetStringValueTest, FidDescription) {
   const bool is_stale_login = std::get<2>(GetParam());
 
   ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmUrl, L"https://mdm.com"));
-  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmEscrowServiceServerUrl,
+  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegEscrowServiceServerUrl,
                                           L"https://escrow.com"));
 
   GoogleMdmEnrolledStatusForTesting forced_enrolled_status(enrolled_mdm);
