@@ -74,7 +74,8 @@ void av1_init_inter_params(InterPredParams *inter_pred_params, int block_width,
   inter_pred_params->is_intrabc = is_intrabc;
   inter_pred_params->scale_factors = sf;
   inter_pred_params->ref_frame_buf = *ref_buf;
-  inter_pred_params->mode = UNIFORM_PRED;
+  inter_pred_params->mode = TRANSLATION_PRED;
+  inter_pred_params->comp_mode = UNIFORM_SINGLE;
 
   if (is_intrabc) {
     inter_pred_params->interp_filter_params[0] = &av1_intrabc_filter_params;
@@ -87,6 +88,10 @@ void av1_init_inter_params(InterPredParams *inter_pred_params, int block_width,
         av1_get_interp_filter_params_with_block_size(
             interp_filters.as_filters.y_filter, block_height);
   }
+}
+
+void av1_init_comp_mode(InterPredParams *inter_pred_params) {
+  inter_pred_params->comp_mode = UNIFORM_COMP;
 }
 
 void av1_init_warp_params(InterPredParams *inter_pred_params,
@@ -109,10 +114,8 @@ void av1_init_warp_params(InterPredParams *inter_pred_params,
 void av1_init_mask_comp(InterPredParams *inter_pred_params, BLOCK_SIZE bsize,
                         const INTERINTER_COMPOUND_DATA *mask_comp) {
   inter_pred_params->sb_type = bsize;
-  if (inter_pred_params->conv_params.do_average &&
-      is_masked_compound_type(mask_comp->type)) {
-    inter_pred_params->mask_comp = *mask_comp;
-  }
+  inter_pred_params->mask_comp = *mask_comp;
+  inter_pred_params->comp_mode = MASK_COMP;
 }
 
 void av1_make_inter_predictor(const uint8_t *src, int src_stride, uint8_t *dst,
@@ -134,7 +137,7 @@ void av1_make_inter_predictor(const uint8_t *src, int src_stride, uint8_t *dst,
         inter_pred_params->block_width, inter_pred_params->block_height,
         dst_stride, inter_pred_params->subsampling_x,
         inter_pred_params->subsampling_y, &inter_pred_params->conv_params);
-  } else if (inter_pred_params->mode == UNIFORM_PRED) {
+  } else if (inter_pred_params->mode == TRANSLATION_PRED) {
 #if CONFIG_AV1_HIGHBITDEPTH
     if (inter_pred_params->use_hbd_buf) {
       highbd_inter_predictor(

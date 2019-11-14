@@ -92,13 +92,19 @@ struct build_prediction_ctxt {
 };
 
 typedef enum InterPredMode {
-  UNIFORM_PRED,
+  TRANSLATION_PRED,
   WARP_PRED,
-  MASK_PRED,
 } InterPredMode;
+
+typedef enum InterCompMode {
+  UNIFORM_SINGLE,
+  UNIFORM_COMP,
+  MASK_COMP,
+} InterCompMode;
 
 typedef struct InterPredParams {
   InterPredMode mode;
+  InterCompMode comp_mode;
   WarpedMotionParams warp_params;
   ConvolveParams conv_params;
   const InterpFilterParams *interp_filter_params[2];
@@ -124,6 +130,8 @@ void av1_init_inter_params(InterPredParams *inter_pred_params, int block_width,
                            const struct scale_factors *sf,
                            const struct buf_2d *ref_buf,
                            int_interpfilters interp_filters);
+
+void av1_init_comp_mode(InterPredParams *inter_pred_params);
 
 void av1_init_warp_params(InterPredParams *inter_pred_params,
                           const struct buf_2d *ref_buf,

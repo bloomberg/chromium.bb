@@ -826,13 +826,16 @@ static INLINE void dec_build_inter_predictors(const AV1_COMMON *cm,
                             mi_x >> pd->subsampling_x, pd->subsampling_x,
                             pd->subsampling_y, xd->bd, is_cur_buf_hbd(xd),
                             mi->use_intrabc, sf, pre_buf, mi->interp_filters);
-
+      if (is_compound) av1_init_comp_mode(&inter_pred_params);
       if (!build_for_obmc)
         av1_init_warp_params(&inter_pred_params, &pd->pre[ref], &warp_types,
                              ref, xd, mi);
 
-      av1_init_mask_comp(&inter_pred_params, mi->sb_type, &mi->interinter_comp);
-      inter_pred_params.mask_comp.seg_mask = xd->seg_mask;
+      if (is_masked_compound_type(mi->interinter_comp.type)) {
+        av1_init_mask_comp(&inter_pred_params, mi->sb_type,
+                           &mi->interinter_comp);
+        inter_pred_params.mask_comp.seg_mask = xd->seg_mask;
+      }
 
       if (ref && is_masked_compound_type(mi->interinter_comp.type)) {
         // masked compound type has its own average mechanism
