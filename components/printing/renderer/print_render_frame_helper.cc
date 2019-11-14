@@ -1457,7 +1457,8 @@ PrintRenderFrameHelper::CreatePreviewDocument() {
     print_renderer_->CreatePreviewDocument(
         print_renderer_job_settings_.Clone(),
         base::BindOnce(&PrintRenderFrameHelper::OnPreviewDocumentCreated,
-                       weak_ptr_factory_.GetWeakPtr(), begin_time));
+                       weak_ptr_factory_.GetWeakPtr(),
+                       print_params.document_cookie, begin_time));
     return CREATE_IN_PROGRESS;
   }
 
@@ -1549,8 +1550,17 @@ bool PrintRenderFrameHelper::FinalizePrintReadyDocument() {
 }
 
 void PrintRenderFrameHelper::OnPreviewDocumentCreated(
+    int document_cookie,
     base::TimeTicks begin_time,
     base::ReadOnlySharedMemoryRegion preview_document_region) {
+  // Since the PrintRenderer renders preview documents asynchronously, multiple
+  // preview document requests may be sent before a preview document is
+  // returned. If the received preview document's cookie does not match the
+  // latest document cookie, ignore it and wait for the final preview document.
+  if (document_cookie != print_pages_params_->params.document_cookie) {
+    return;
+  }
+
   bool success =
       ProcessPreviewDocument(begin_time, std::move(preview_document_region));
   DidFinishPrinting(success ? OK : FAIL_PREVIEW);

@@ -267,6 +267,7 @@ class PrintRenderFrameHelper
 
   // Called after a preview document has been created by a PrintRenderer.
   void OnPreviewDocumentCreated(
+      int document_cookie,
       base::TimeTicks begin_time,
       base::ReadOnlySharedMemoryRegion preview_document_region);
 
