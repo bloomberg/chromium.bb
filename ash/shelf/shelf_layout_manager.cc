@@ -874,6 +874,10 @@ void ShelfLayoutManager::OnOverviewModeStarting() {
 
 void ShelfLayoutManager::OnOverviewModeStartingAnimationComplete(
     bool canceled) {
+  // If transition is canceled, keep work area updates suspended, as new
+  // overview transition is about to start.
+  if (canceled)
+    return;
   overview_suspend_work_area_update_.reset();
 }
 
@@ -882,6 +886,10 @@ void ShelfLayoutManager::OnOverviewModeEnding(OverviewSession* session) {
 }
 
 void ShelfLayoutManager::OnOverviewModeEndingAnimationComplete(bool canceled) {
+  // If transition is canceled, keep work area updates suspended, as new
+  // overview transition is about to start.
+  if (canceled)
+    return;
   overview_suspend_work_area_update_.reset();
 }
 

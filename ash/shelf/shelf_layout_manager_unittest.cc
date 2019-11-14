@@ -4135,6 +4135,148 @@ TEST_P(HotseatShelfLayoutManagerTest, InAppToHomeChangesStateOnce) {
   }
 }
 
+// Tests that transitioning from overview to home while a transition from home
+// to overview is still in progress ends up with hotseat in kShown state (and in
+// app shelf not visible).
+TEST_P(HotseatShelfLayoutManagerTest, HomeToOverviewAndBack) {
+  GetPrimaryShelf()->SetAutoHideBehavior(GetParam());
+  TabletModeControllerTestApi().EnterTabletMode();
+
+  std::unique_ptr<aura::Window> window =
+      AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
+  WindowState::Get(window.get())->Minimize();
+
+  // Start going to overview - hotseat should transition to extended state.
+  HotseatStateWatcher watcher(GetShelfLayoutManager());
+  {
+    gfx::Point overview_button_center = GetPrimaryShelf()
+                                            ->shelf_widget()
+                                            ->status_area_widget()
+                                            ->overview_button_tray()
+                                            ->GetBoundsInScreen()
+                                            .CenterPoint();
+    ui::ScopedAnimationDurationScaleMode regular_animations(
+        ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+    GetEventGenerator()->GestureTapAt(overview_button_center);
+    watcher.CheckEqual({HotseatState::kExtended});
+  }
+  OverviewController* overview_controller = Shell::Get()->overview_controller();
+  EXPECT_TRUE(overview_controller->InOverviewSession());
+
+  views::View* home_button = GetPrimaryShelf()->shelf_widget()->GetHomeButton();
+  GetEventGenerator()->GestureTapAt(
+      home_button->GetBoundsInScreen().CenterPoint());
+
+  GetAppListTestHelper()->CheckVisibility(true);
+  EXPECT_FALSE(overview_controller->InOverviewSession());
+  EXPECT_FALSE(ShelfConfig::Get()->is_in_app());
+
+  watcher.CheckEqual({HotseatState::kExtended, HotseatState::kShown});
+}
+
+TEST_P(HotseatShelfLayoutManagerTest, InAppToOverviewAndBack) {
+  GetPrimaryShelf()->SetAutoHideBehavior(GetParam());
+  TabletModeControllerTestApi().EnterTabletMode();
+
+  std::unique_ptr<aura::Window> window =
+      AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
+  wm::ActivateWindow(window.get());
+
+  // Start watching hotseat state before swipping up the shelf, so hotseat
+  // change expectation match for both auto-hidden and always-shown shelf.
+  HotseatStateWatcher watcher(GetShelfLayoutManager());
+
+  // Make sure shelf (and overview button) are visible - this is moves the
+  // hotseat into kExtended state.
+  if (GetParam() == SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS)
+    SwipeUpOnShelf();
+
+  gfx::Point overview_button_center = GetPrimaryShelf()
+                                          ->shelf_widget()
+                                          ->status_area_widget()
+                                          ->overview_button_tray()
+                                          ->GetBoundsInScreen()
+                                          .CenterPoint();
+
+  // Start going to overview - use non zero animation so transition is not
+  // immediate.
+  {
+    ui::ScopedAnimationDurationScaleMode regular_animations(
+        ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+    GetEventGenerator()->GestureTapAt(overview_button_center);
+  }
+
+  OverviewController* overview_controller = Shell::Get()->overview_controller();
+  EXPECT_TRUE(overview_controller->InOverviewSession());
+  GetAppListTestHelper()->CheckVisibility(false);
+
+  // Hotseat should be extended as overview is starting.
+  watcher.CheckEqual({HotseatState::kExtended});
+
+  // Tapping overview button again should go back to the app window.
+  GetEventGenerator()->GestureTapAt(overview_button_center);
+  EXPECT_FALSE(overview_controller->InOverviewSession());
+  GetAppListTestHelper()->CheckVisibility(false);
+  EXPECT_TRUE(ShelfConfig::Get()->is_in_app());
+
+  // The hotseat is expected to be hidden.
+  watcher.CheckEqual({HotseatState::kExtended, HotseatState::kHidden});
+}
+
+// Tests transition to home screen initiated while transition from app window to
+// overview is in progress.
+TEST_P(HotseatShelfLayoutManagerTest, GoHomeDuringInAppToOverviewTransition) {
+  GetPrimaryShelf()->SetAutoHideBehavior(GetParam());
+  TabletModeControllerTestApi().EnterTabletMode();
+
+  std::unique_ptr<aura::Window> window =
+      AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
+  wm::ActivateWindow(window.get());
+
+  // Start watching hotseat state before swipping up the shelf, so hotseat
+  // change expectation match for both auto-hidden and always-shown shelf.
+  HotseatStateWatcher watcher(GetShelfLayoutManager());
+
+  // Make sure shelf (and overview button) are visible - this is moves the
+  // hotseat into kExtended state.
+  if (GetParam() == SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS)
+    SwipeUpOnShelf();
+
+  gfx::Point overview_button_center = GetPrimaryShelf()
+                                          ->shelf_widget()
+                                          ->status_area_widget()
+                                          ->overview_button_tray()
+                                          ->GetBoundsInScreen()
+                                          .CenterPoint();
+
+  // Start going to overview - use non zero animation so transition is not
+  // immediate.
+  {
+    ui::ScopedAnimationDurationScaleMode regular_animations(
+        ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+    GetEventGenerator()->GestureTapAt(overview_button_center);
+  }
+
+  OverviewController* overview_controller = Shell::Get()->overview_controller();
+  EXPECT_TRUE(overview_controller->InOverviewSession());
+  GetAppListTestHelper()->CheckVisibility(false);
+
+  // Hotseat should be extended as overview is starting.
+  watcher.CheckEqual({HotseatState::kExtended});
+
+  // Press home button - expect transition to home (with hotseat in kShown
+  // state, and in app shelf hidden).
+  views::View* home_button = GetPrimaryShelf()->shelf_widget()->GetHomeButton();
+  GetEventGenerator()->GestureTapAt(
+      home_button->GetBoundsInScreen().CenterPoint());
+
+  GetAppListTestHelper()->CheckVisibility(true);
+  EXPECT_FALSE(overview_controller->InOverviewSession());
+  EXPECT_FALSE(ShelfConfig::Get()->is_in_app());
+
+  watcher.CheckEqual({HotseatState::kExtended, HotseatState::kShown});
+}
+
 // Tests that in-app -> overview results in only one state change with an
 // autohidden shelf.
 TEST_F(HotseatShelfLayoutManagerTest,

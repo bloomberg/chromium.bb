@@ -640,7 +640,8 @@ void AppListControllerImpl::OnOverviewModeStartingAnimationComplete(
     bool canceled) {
   if (!IsTabletMode())
     return;
-  OnHomeLauncherAnimationComplete(false /* shown */, last_visible_display_id_);
+  OnHomeLauncherAnimationComplete(canceled && !HasVisibleWindows() /* shown */,
+                                  last_visible_display_id_);
 }
 
 void AppListControllerImpl::OnOverviewModeEnding(OverviewSession* session) {
