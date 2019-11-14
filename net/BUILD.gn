@@ -6684,6 +6684,18 @@ fuzzer_test("net_http_auth_handler_basic_fuzzer") {
   ]
 }
 
+fuzzer_test("net_http_auth_handler_digest_fuzzer") {
+  sources = [
+    "http/http_auth_handler_digest_fuzzer.cc",
+  ]
+  dict = "data/fuzzer_dictionaries/net_http_auth_handler_digest_fuzzer.dict"
+  deps = [
+    ":net_fuzzer_test_support",
+    "//net",
+    "//net/dns:test_support",
+  ]
+}
+
 fuzzer_test("net_http_content_disposition_fuzzer") {
   sources = [
     "http/http_content_disposition_fuzzer.cc",
