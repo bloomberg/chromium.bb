@@ -3349,6 +3349,7 @@ class CMDUploadTestCase(CMDTestCaseBase):
     mock.patch('git_cl.fetch_try_jobs').start()
     mock.patch('git_cl._trigger_try_jobs', return_value={}).start()
     mock.patch('git_cl.Changelist.CMDUpload', return_value=0).start()
+    mock.patch('git_cl.Settings.GetIsGerrit', return_value=True).start()
     self.addCleanup(mock.patch.stopall)
 
   def testUploadRetryFailed(self):
