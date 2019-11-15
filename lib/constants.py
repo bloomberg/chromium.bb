@@ -347,6 +347,7 @@ INTERNAL_GERRIT_URL = 'https://%s' % INTERNAL_GERRIT_HOST
 DEFAULT_CTS_TEST_XML_MAP = {
     'cheets_CTS_': 'test_result.xml',
     'cheets_GTS.': 'test_result.xml',
+    'cheets_GTS_': 'test_result.xml',
 }
 # Google Storage bucket URI to store results in.
 DEFAULT_CTS_RESULTS_GSURI = 'gs://chromeos-cts-results/'
