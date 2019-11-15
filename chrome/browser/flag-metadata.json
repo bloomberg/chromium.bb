@@ -2355,7 +2355,7 @@
   {
     "name": "handwriting-gesture",
     "owners": [ "essential-inputs-team@google.com" ],
-    "expiry_milestone": 80
+    "expiry_milestone": 83
   },
   {
     "name": "happiness-tracking-surveys-for-desktop",
