@@ -18,10 +18,19 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
-#include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/rect_f.h"
 
 namespace ash {
+
+namespace {
+
+gfx::RectF GetShelfBounds() {
+  return gfx::RectF(
+      Shelf::ForWindow(Shell::GetPrimaryRootWindow())->GetIdealBounds());
+}
+
+}  // namespace
 
 class SwipeHomeToOverviewControllerTest : public AshTestBase {
  public:
@@ -53,13 +62,13 @@ class SwipeHomeToOverviewControllerTest : public AshTestBase {
             GetPrimaryDisplay().id(), &tick_clock_);
   }
 
-  void Drag(const gfx::Point& location_in_screen,
+  void Drag(const gfx::PointF& location_in_screen,
             float scroll_x,
             float scroll_y) {
     home_to_overview_controller_->Drag(location_in_screen, scroll_x, scroll_y);
   }
 
-  void EndDrag(const gfx::Point& location_in_screen,
+  void EndDrag(const gfx::PointF& location_in_screen,
                base::Optional<float> velocity_y) {
     home_to_overview_controller_->EndDrag(location_in_screen, velocity_y);
   }
@@ -100,8 +109,7 @@ class SwipeHomeToOverviewControllerTest : public AshTestBase {
 };
 
 TEST_F(SwipeHomeToOverviewControllerTest, BasicFlow) {
-  const gfx::Rect shelf_bounds =
-      Shelf::ForWindow(Shell::GetPrimaryRootWindow())->GetIdealBounds();
+  const gfx::RectF shelf_bounds = GetShelfBounds();
 
   base::HistogramTester histogram_tester;
   histogram_tester.ExpectBucketCount(
@@ -187,8 +195,7 @@ TEST_F(SwipeHomeToOverviewControllerTest, BasicFlow) {
 }
 
 TEST_F(SwipeHomeToOverviewControllerTest, EndDragBeforeTimeout) {
-  const gfx::Rect shelf_bounds =
-      Shelf::ForWindow(Shell::GetPrimaryRootWindow())->GetIdealBounds();
+  const gfx::RectF shelf_bounds = GetShelfBounds();
 
   StartDrag();
 
@@ -229,8 +236,7 @@ TEST_F(SwipeHomeToOverviewControllerTest, EndDragBeforeTimeout) {
 }
 
 TEST_F(SwipeHomeToOverviewControllerTest, CancelDragBeforeTimeout) {
-  const gfx::Rect shelf_bounds =
-      Shelf::ForWindow(Shell::GetPrimaryRootWindow())->GetIdealBounds();
+  const gfx::RectF shelf_bounds = GetShelfBounds();
 
   StartDrag();
 
@@ -269,8 +275,7 @@ TEST_F(SwipeHomeToOverviewControllerTest, CancelDragBeforeTimeout) {
 }
 
 TEST_F(SwipeHomeToOverviewControllerTest, DragMovementRestartsTimeout) {
-  const gfx::Rect shelf_bounds =
-      Shelf::ForWindow(Shell::GetPrimaryRootWindow())->GetIdealBounds();
+  const gfx::RectF shelf_bounds = GetShelfBounds();
 
   StartDrag();
 
@@ -305,8 +310,7 @@ TEST_F(SwipeHomeToOverviewControllerTest, DragMovementRestartsTimeout) {
 
 TEST_F(SwipeHomeToOverviewControllerTest,
        SmallDragMovementDoesNotRestartTimeout) {
-  const gfx::Rect shelf_bounds =
-      Shelf::ForWindow(Shell::GetPrimaryRootWindow())->GetIdealBounds();
+  const gfx::RectF shelf_bounds = GetShelfBounds();
 
   StartDrag();
 
@@ -363,8 +367,7 @@ TEST_F(SwipeHomeToOverviewControllerTest,
 }
 
 TEST_F(SwipeHomeToOverviewControllerTest, DragBellowThresholdStopsTimer) {
-  const gfx::Rect shelf_bounds =
-      Shelf::ForWindow(Shell::GetPrimaryRootWindow())->GetIdealBounds();
+  const gfx::RectF shelf_bounds = GetShelfBounds();
 
   StartDrag();
   Drag(shelf_bounds.CenterPoint(), 0.f, 1.f);
@@ -439,8 +442,7 @@ TEST_F(SwipeHomeToOverviewControllerTest, DragBellowThresholdStopsTimer) {
 }
 
 TEST_F(SwipeHomeToOverviewControllerTest, ScaleChangesDuringDrag) {
-  const gfx::Rect shelf_bounds =
-      Shelf::ForWindow(Shell::GetPrimaryRootWindow())->GetIdealBounds();
+  const gfx::RectF shelf_bounds = GetShelfBounds();
 
   StartDrag();
   Drag(shelf_bounds.CenterPoint(), 0.f, 1.f);

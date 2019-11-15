@@ -2056,7 +2056,7 @@ bool ShelfLayoutManager::StartGestureDrag(
             ? kDragHomeToOverviewInProgress
             : kDragAppListInProgress;
     if (home_launcher_handler->OnPressEvent(target_mode,
-                                            gesture_in_screen.location())) {
+                                            gesture_in_screen.location_f())) {
       return true;
     }
     drag_status_ = previous_drag_status;
@@ -2076,8 +2076,9 @@ void ShelfLayoutManager::UpdateGestureDrag(
   HomeLauncherGestureHandler* home_launcher_handler =
       Shell::Get()->home_screen_controller()->home_launcher_gesture_handler();
   if (home_launcher_handler->IsDragInProgress() &&
-      home_launcher_handler->OnScrollEvent(gesture_in_screen.location(),
-                                           scroll_x, scroll_y)) {
+      home_launcher_handler->OnScrollEvent(
+          gesture_in_screen.details().bounding_box_f().CenterPoint(), scroll_x,
+          scroll_y)) {
     return;
   }
 
@@ -2334,7 +2335,7 @@ void ShelfLayoutManager::CompleteAppListDrag(
     velocity_y = base::make_optional(
         event_in_screen.AsGestureEvent()->details().velocity_y());
   }
-  if (home_launcher_handler->OnReleaseEvent(event_in_screen.location(),
+  if (home_launcher_handler->OnReleaseEvent(event_in_screen.location_f(),
                                             velocity_y)) {
     drag_status_ = kDragNone;
     return;
