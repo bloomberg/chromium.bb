@@ -10,10 +10,8 @@ https://gerrit-review.googlesource.com/Documentation/rest-api.html
 
 from __future__ import print_function
 
-import base64
 import datetime
 import json
-import netrc
 import os
 import re
 import socket
@@ -85,28 +83,6 @@ class ErrorParser(HTMLParser.HTMLParser):
 
   def ParsedDiv(self):
     return self.err_data.strip()
-
-
-@memoize.Memoize
-def _GetNetRC():
-  try:
-    return netrc.netrc(None)
-  except (IOError, netrc.NetrcParseError):
-    try:
-      return netrc.netrc(os.devnull)
-    except IOError:
-      return None
-
-
-def _NetRCAuthenticators(host):
-  """Returns the authenticators, if any, for the given |host|.
-
-  Args:
-    host: A hostname
-  """
-  net_rc = _GetNetRC()
-  if net_rc:
-    return net_rc.authenticators(host)
 
 
 @memoize.Memoize
@@ -202,13 +178,7 @@ def CreateHttpConn(host, path, reqtype='GET', headers=None, body=None):
   """Opens an https connection to a gerrit service, and sends a request."""
   path = '/a/' + path.lstrip('/')
   headers = headers or {}
-  bare_host = host.partition(':')[0]
-  auth = _NetRCAuthenticators(bare_host)
-  if auth:
-    username, _, password = auth
-    basic = base64.b64encode(':'.join((username, password)).encode('utf-8'))
-    headers.setdefault('Authorization', 'Basic %s' % basic.decode('utf-8'))
-  elif _InAppengine():
+  if _InAppengine():
     # TODO(phobbs) how can we choose to only run this on GCE / AppEngine?
     credentials = _GetAppCredentials()
     try:
@@ -221,11 +191,11 @@ def CreateHttpConn(host, path, reqtype='GET', headers=None, body=None):
     except httplib2.ServerNotFoundError as e:
       pass
 
-  if 'Authorization' not in headers:
-    logging.debug('No netrc file or Appengine credentials found.')
   if 'Cookie' not in headers:
     cookies = GetCookies(host, path)
     headers['Cookie'] = '; '.join('%s=%s' % (n, v) for n, v in cookies.items())
+  elif 'Authorization' not in headers:
+    logging.debug('No gitcookies file or Appengine credentials found.')
 
   if 'User-Agent' not in headers:
     # We may not be in a git repository.
@@ -330,13 +300,13 @@ def FetchUrl(host, path, reqtype='GET', headers=None, body=None,
     home = os.environ.get('HOME', '~')
     url = 'https://%s/new-password' % host
     if response.status in (302, 303, 307):
-      err_prefix = ('Redirect found; missing/bad %s/.netrc credentials or '
+      err_prefix = ('Redirect found; missing/bad %s/.gitcookies credentials or '
                     'permissions (0600)?\n See %s' % (home, url))
     elif response.status in (400,):
       err_prefix = 'Permission error; talk to the admins of the GoB instance'
     elif response.status in (401,):
-      err_prefix = ('Authorization error; missing/bad %s/.netrc credentials or '
-                    'permissions (0600)?\n See %s' % (home, url))
+      err_prefix = ('Authorization error; missing/bad %s/.gitcookies '
+                    'credentials or permissions (0600)?\n See %s' % (home, url))
     elif response.status in (422,):
       err_prefix = ('Bad request body?')
 
