@@ -35572,6 +35572,16 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="1" label="ONLY_WHITELISTED_ALLOWED">Whitelisted users only</int>
 </enum>
 
+<!--
+Values in LoginCustomFlags are:  value=(uint32_t)MD5(label).
+
+See "Flag Histograms" in README.md for information about how to update this
+section.
+
+Don't remove entries when removing a flag; they are still used to decode data
+from previous Chrome versions.
+-->
+
 <enum name="LoginCustomFlags">
   <int value="-2146979021" label="OmniboxMaxURLMatches:enabled"/>
   <int value="-2146832142" label="SyncPseudoUSSSearchEngines:enabled"/>
@@ -36470,17 +36480,6 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1096595907" label="disable-new-virtual-keyboard-behavior"/>
   <int value="-1095947169" label="ModalPermissionDialogView:disabled"/>
   <int value="-1093104008" label="PeriodicBackgroundSync:disabled"/>
-  <summary>Chrome flags that lead to Chrome restart on Chrome OS.</summary>
-<!--
-Values in LoginCustomFlags are:  value=(uint32_t)MD5(label).
-
-See "Flag Histograms" in README.md for information about how to update this
-section.
-
-Don't remove entries when removing a flag; they are still used to decode data
-from previous Chrome versions.
--->
-
   <int value="-1086728979" label="kids-management-url-classification:enabled"/>
   <int value="-1085492638" label="FetchKeepaliveTimeoutSetting:enabled"/>
   <int value="-1084055006" label="disable-web-notification-custom-layouts"/>
@@ -37199,6 +37198,7 @@ from previous Chrome versions.
   <int value="-146552997" label="enable-affiliation-based-matching"/>
   <int value="-144134779" label="AndroidPayIntegrationV2:disabled"/>
   <int value="-143819280" label="google-password-manager:disabled"/>
+  <int value="-143394485" label="SplitSettingsSync:enabled"/>
   <int value="-143382681" label="InstantTethering:enabled"/>
   <int value="-141516902" label="UseModernMediaControls:enabled"/>
   <int value="-140168253" label="ProfileMenuRevamp:enabled"/>
@@ -38738,6 +38738,7 @@ from previous Chrome versions.
   <int value="1854226565" label="AutofillNoLocalSaveOnUnmaskSuccess:enabled"/>
   <int value="1855524566" label="allow-insecure-websocket-from-https-origin"/>
   <int value="1858385315" label="ChromeHomeBottomNavLabels:enabled"/>
+  <int value="1858919054" label="SplitSettingsSync:disabled"/>
   <int value="1860597983" label="AndroidSpellChecker:disabled"/>
   <int value="1861251313"
       label="enable-message-center-always-scroll-up-upon-notification-removal"/>

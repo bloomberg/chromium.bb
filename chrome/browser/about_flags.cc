@@ -4781,6 +4781,12 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(chrome::android::kHomepageLocation)},
 #endif  // defined(OS_ANDROID)
 
+#if defined(OS_CHROMEOS)
+    {"split-settings-sync", flag_descriptions::kSplitSettingsSyncName,
+     flag_descriptions::kSplitSettingsSyncDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kSplitSettingsSync)},
+#endif
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the

@@ -3743,6 +3743,12 @@ const char kSplitSettingsName[] = "Split OS and browser settings";
 const char kSplitSettingsDescription[] =
     "Show separate settings for the OS and browser";
 
+const char kSplitSettingsSyncName[] = "Split OS and browser sync";
+const char kSplitSettingsSyncDescription[] =
+    "Allows OS sync to be configured separately from browser sync. Changes the "
+    "OS settings UI to provide controls for OS data types. Requires "
+    "#split-settings to be enabled.";
+
 const char kStreamlinedUsbPrinterSetupName[] =
     "Streamlined USB Printer Setup Flow";
 const char kStreamlinedUsbPrinterSetupDescription[] =
