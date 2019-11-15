@@ -647,6 +647,7 @@ void WebViewProxy::setSecurityToken(v8::Isolate *isolate,
 String WebViewProxy::printToPDF()
 {
     content::RenderView *rv = content::RenderView::FromRoutingID(d_renderViewRoutingId);
+    VALIDATE_RENDER_VIEW(rv);
     return RendererUtil::printToPDF(rv);
 }
 
