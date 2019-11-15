@@ -2063,7 +2063,9 @@ the current line as well!
     self.assertEqual(len(results), 1)
     self.assertEqual(results[0].__class__,
                       presubmit.OutputApi.PresubmitNotifyResult)
-    self.assertEqual('test_module (0.00s) failed\nfoo', results[0]._message)
+    self.assertEqual(
+        'test_module\npyyyyython -m test_module (0.00s) failed\nfoo',
+        results[0]._message)
 
   def testRunPythonUnitTestsFailureCommitting(self):
     input_api = self.MockInputApi(None, True)
@@ -2074,7 +2076,9 @@ the current line as well!
         input_api, presubmit.OutputApi, ['test_module'])
     self.assertEqual(len(results), 1)
     self.assertEqual(results[0].__class__, presubmit.OutputApi.PresubmitError)
-    self.assertEqual('test_module (0.00s) failed\nfoo', results[0]._message)
+    self.assertEqual(
+        'test_module\npyyyyython -m test_module (0.00s) failed\nfoo',
+        results[0]._message)
 
   def testRunPythonUnitTestsSuccess(self):
     input_api = self.MockInputApi(None, False)
@@ -2943,10 +2947,12 @@ class ThreadPoolTest(unittest.TestCase):
 
     self.assertEqual(3, len(messages))
     self.assertIn(
-      '3 exec failure (0.00s)\nTraceback (most recent call last):',
+      '3\n3 exec failure (0.00s)\nTraceback (most recent call last):',
       messages[0])
-    self.assertEqual('4 exec failure (0.00s)\n   OSError', messages[1])
-    self.assertEqual('5 (0.00s) failed\nstdout', messages[2])
+    self.assertIn(
+      '4\n4 exec failure (0.00s)\nTraceback (most recent call last):',
+      messages[1])
+    self.assertEqual('5\n5 (0.00s) failed\nstdout', messages[2])
 
 
 if __name__ == '__main__':
