@@ -1276,11 +1276,11 @@ HotseatState ShelfLayoutManager::CalculateHotseatState(
       return HotseatState::kExtended;
     }
     case kDragAppListInProgress:
-      // While the app list is being dragged or animated, let's show
-      // the hotseat where it would be with the app list visible.
-      if (app_list_controller->IsVisible())
-        return HotseatState::kShown;
-      FALLTHROUGH;
+      return app_list_controller->home_launcher_transition_state() ==
+                     AppListControllerImpl::HomeLauncherTransitionState::
+                         kMostlyHidden
+                 ? HotseatState::kHidden
+                 : HotseatState::kShown;
     default:
       // Do not change the hotseat state until the drag is complete or
       // canceled.

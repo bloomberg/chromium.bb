@@ -185,7 +185,8 @@ bool HomeScreenController::GoHome(int64_t display_id) {
             std::make_unique<ScopedAnimationDisabler>(window));
       }
 
-      delegate_->OnHomeLauncherPositionChanged(true /* showing */, display_id);
+      delegate_->OnHomeLauncherPositionChanged(100 /* percent_shown */,
+                                               display_id);
     }
 
     base::RepeatingClosure window_transforms_callback = base::BarrierClosure(

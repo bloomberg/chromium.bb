@@ -4088,8 +4088,7 @@ TEST_P(HotseatShelfLayoutManagerTest, InAppToHomeChangesStateOnce) {
   wm::ActivateWindow(window.get());
   SwipeUpOnShelf();
 
-  // Press the HomeLauncher button, the hotseat should transition directly to
-  // kShown.
+  // Press the home button, the hotseat should transition directly to kShown.
   {
     HotseatStateWatcher watcher(GetShelfLayoutManager());
     views::View* home_button =
@@ -4103,7 +4102,7 @@ TEST_P(HotseatShelfLayoutManagerTest, InAppToHomeChangesStateOnce) {
   window->Show();
   wm::ActivateWindow(window.get());
 
-  // Extend the hotseat, then Swipe up to go home. the hotseat should transition
+  // Extend the hotseat, then Swipe up to go home, the hotseat should transition
   // directly to kShown.
   SwipeUpOnShelf();
   {
@@ -4123,8 +4122,7 @@ TEST_P(HotseatShelfLayoutManagerTest, InAppToHomeChangesStateOnce) {
   window->Show();
   wm::ActivateWindow(window.get());
 
-  // Press the HomeLauncher button, the hotseat should transition directly to
-  // kShown.
+  // Press the home button, the hotseat should transition directly to kShown.
   {
     HotseatStateWatcher watcher(GetShelfLayoutManager());
     views::View* home_button =
