@@ -255,13 +255,6 @@ PluginProxyTestHarness::PluginDelegateMock::ShareHandleWithRemote(
                                         should_close_source);
 }
 
-base::SharedMemoryHandle
-PluginProxyTestHarness::PluginDelegateMock::ShareSharedMemoryHandleWithRemote(
-    const base::SharedMemoryHandle& handle,
-    base::ProcessId /* remote_pid */) {
-  return base::SharedMemory::DuplicateHandle(handle);
-}
-
 base::UnsafeSharedMemoryRegion PluginProxyTestHarness::PluginDelegateMock::
     ShareUnsafeSharedMemoryRegionWithRemote(
         const base::UnsafeSharedMemoryRegion& region,
@@ -504,13 +497,6 @@ HostProxyTestHarness::DelegateMock::ShareHandleWithRemote(
     bool should_close_source) {
   return IPC::GetPlatformFileForTransit(handle,
                                         should_close_source);
-}
-
-base::SharedMemoryHandle
-HostProxyTestHarness::DelegateMock::ShareSharedMemoryHandleWithRemote(
-    const base::SharedMemoryHandle& handle,
-    base::ProcessId /*remote_pid*/) {
-  return base::SharedMemory::DuplicateHandle(handle);
 }
 
 base::UnsafeSharedMemoryRegion
