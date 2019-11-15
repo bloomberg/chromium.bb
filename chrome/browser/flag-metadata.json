@@ -3578,8 +3578,8 @@
   },
   {
     "name": "use-search-click-for-right-click",
-    "owners": [ "zentaro" ],
-    "expiry_milestone": 80
+    "owners": [ "khorimoto", "zentaro" ],
+    "expiry_milestone": 85
   },
   {
     "name": "use-sync-sandbox",
