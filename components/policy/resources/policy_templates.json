@@ -14574,7 +14574,7 @@
 
       If this policy is set to a non empty string, that string will be used as the device hostname during DHCP request.
 
-      The string can contain variables <ph name="ASSET_ID_PLACEHOLDER">${ASSET_ID}</ph>, <ph name="SERIAL_NUM_PLACEHOLDER">${SERIAL_NUM}</ph>, <ph name="MAC_ADDR_PLACEHOLDER">${MAC_ADDR}</ph>, <ph name="MACHINE_NAME_PLACEHOLDER">${MACHINE_NAME}</ph> that would be replaced with values on the device before using as a hostname. Resulting substitution should be a valid hostname (per RFC 1035, section 3.1).
+      The string can contain variables <ph name="ASSET_ID_PLACEHOLDER">${ASSET_ID}</ph>, <ph name="SERIAL_NUM_PLACEHOLDER">${SERIAL_NUM}</ph>, <ph name="MAC_ADDR_PLACEHOLDER">${MAC_ADDR}</ph>, <ph name="MACHINE_NAME_PLACEHOLDER">${MACHINE_NAME}</ph>, <ph name="LOCATION_PLACEHOLDER">${LOCATION}</ph> that would be replaced with values on the device before using as a hostname. Resulting substitution should be a valid hostname (per RFC 1035, section 3.1).
 
       If this policy is not set, or the value after substitution is not a valid hostname, no hostname will be set in DHCP request. '''
     },
