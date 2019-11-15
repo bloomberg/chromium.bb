@@ -699,8 +699,7 @@ void PipelineImpl::RendererWrapper::OnStatisticsUpdate(
 
   if (!stats.audio_decoder_info.decoder_name.empty() &&
       stats.audio_decoder_info != shared_state_.statistics.audio_decoder_info) {
-    shared_state_.statistics.audio_decoder_info.decoder_name =
-        stats.audio_decoder_info.decoder_name;
+    shared_state_.statistics.audio_decoder_info = stats.audio_decoder_info;
     main_task_runner_->PostTask(
         FROM_HERE, base::BindOnce(&PipelineImpl::OnAudioDecoderChange,
                                   weak_pipeline_, stats.audio_decoder_info));
@@ -708,8 +707,7 @@ void PipelineImpl::RendererWrapper::OnStatisticsUpdate(
 
   if (!stats.video_decoder_info.decoder_name.empty() &&
       stats.video_decoder_info != shared_state_.statistics.video_decoder_info) {
-    shared_state_.statistics.video_decoder_info.decoder_name =
-        stats.video_decoder_info.decoder_name;
+    shared_state_.statistics.video_decoder_info = stats.video_decoder_info;
     main_task_runner_->PostTask(
         FROM_HERE, base::BindOnce(&PipelineImpl::OnVideoDecoderChange,
                                   weak_pipeline_, stats.video_decoder_info));
@@ -1476,7 +1474,7 @@ void PipelineImpl::OnVideoAverageKeyframeDistanceUpdate() {
 }
 
 void PipelineImpl::OnAudioDecoderChange(const PipelineDecoderInfo& info) {
-  DVLOG(2) << __func__;
+  DVLOG(2) << __func__ << ": info=" << info;
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(IsRunning());
 
@@ -1485,7 +1483,7 @@ void PipelineImpl::OnAudioDecoderChange(const PipelineDecoderInfo& info) {
 }
 
 void PipelineImpl::OnVideoDecoderChange(const PipelineDecoderInfo& info) {
-  DVLOG(2) << __func__;
+  DVLOG(2) << __func__ << ": info=" << info;
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(IsRunning());
 
