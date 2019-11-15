@@ -5405,7 +5405,13 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Search by voice
       </message>
       <message name="IDS_TOOLTIP_SAVE_CREDIT_CARD" desc="The tooltip for the icon that shows the save credit card bubble">
-        Save credit card
+        Save card
+      </message>
+      <message name="IDS_TOOLTIP_SAVE_CREDIT_CARD_PENDING" desc="The tooltip for the icon that shows the credit card upload is in progress">
+        Saving card
+      </message>
+      <message name="IDS_TOOLTIP_SAVE_CREDIT_CARD_FAILURE" desc="The tooltip for the icon that shows the credit card is not successfully uploaded">
+        Can't save card right now
       </message>
       <message name="IDS_TOOLTIP_MIGRATE_LOCAL_CARD" desc="Tooltip for the credit card icon that appears in the address bar. Icon is shown when a user has a credit card stored locally in Chrome but not in Google Pay.">
         Save payment method
