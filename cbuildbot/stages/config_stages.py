@@ -15,7 +15,6 @@ import traceback
 
 from chromite.cbuildbot import repository
 from chromite.cbuildbot.stages import generic_stages
-from chromite.cbuildbot.stages import test_stages
 from chromite.lib import constants
 from chromite.lib import cros_logging as logging
 from chromite.lib import cros_build_lib
@@ -323,20 +322,6 @@ class UpdateConfigStage(generic_stages.BuilderStage):
 
     return config_change_patch
 
-  def _RunBinhostTest(self):
-    """Run BinhostTest stage for master branch."""
-    config_change_patch = self._CreateConfigPatch()
-
-    # Apply config patch.
-    git.RunGit(
-        constants.CHROMITE_DIR, ['apply', config_change_patch], print_cmd=True)
-
-    test_stages.BinhostTestStage(
-        self._run, self.buildstore, suffix='_' + self.branch).Run()
-
-    # Clean config patch.
-    git.RunGit(constants.CHROMITE_DIR, ['checkout', '.'], print_cmd=True)
-
   def _PushCommits(self):
     """Commit and push changes to current branch."""
     git.RunGit(self.chromite_dir, ['add'] + self.config_paths, print_cmd=True)
@@ -357,8 +342,6 @@ class UpdateConfigStage(generic_stages.BuilderStage):
       self._DownloadTemplate()
       self._RunUnitTest()
       if self._ContainsConfigUpdates():
-        if self.branch == 'master':
-          self._RunBinhostTest()
         self._PushCommits()
       else:
         logging.info('Nothing changed. No need to update configs for %s',

@@ -430,20 +430,6 @@ class ImageTestStage(generic_stages.BoardSpecificBuilderStage,
           chrome_version=chrome_ver)
 
 
-class BinhostTestStage(generic_stages.BuilderStage):
-  """Stage that verifies Chrome prebuilts."""
-
-  config_name = 'binhost_test'
-  category = constants.CI_INFRA_STAGE
-
-  def PerformStage(self):
-    # Verify our binhosts.
-    # Don't check for incremental compatibility when we uprev chrome.
-    incremental = not (self._run.config.chrome_rev or
-                       self._run.options.chrome_rev)
-    commands.RunBinhostTest(self._build_root, incremental=incremental)
-
-
 class CrosSigningTestStage(generic_stages.BuilderStage):
   """Stage that runs the signer unittests.
 

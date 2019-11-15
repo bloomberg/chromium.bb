@@ -843,7 +843,7 @@ class PreCQLauncherStageTest(MasterCQSyncTestCase):
   def testOverlayVerifications(self):
     change = MockPatch(project='chromiumos/overlays/chromiumos-overlay')
     self.PatchObject(cq_config.CQConfigParser, 'GetOption', return_value=None)
-    configs = constants.PRE_CQ_DEFAULT_CONFIGS + [constants.BINHOST_PRE_CQ]
+    configs = constants.PRE_CQ_DEFAULT_CONFIGS
     self.assertCountEqual(
         self.sync_stage.VerificationsForChange(change), configs)
 

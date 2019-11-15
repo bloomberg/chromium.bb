@@ -764,7 +764,6 @@
   betty-tot-chromium-pfq-informational-tryjob
   betty-unittest-stress
   betty-vmtest-informational-tryjob
-  binhost-pre-cq
   bob-compile-only-pre-cq
   bob-factory-gru-9017.B-factorybranch-tryjob
   bob-full-tryjob

@@ -1342,10 +1342,6 @@ class PreCQLauncherStage(SyncStage):
     """
     configs_to_test = self._ConfiguredVerificationsForChange(change)
 
-    # Add the BINHOST_PRE_CQ to any changes that affect an overlay.
-    if '/overlays/' in change.project:
-      configs_to_test.add(constants.BINHOST_PRE_CQ)
-
     return configs_to_test
 
   def _ParsePreCQsFromOption(self, pre_cq_configs):

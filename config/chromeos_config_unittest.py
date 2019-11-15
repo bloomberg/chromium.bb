@@ -1146,12 +1146,6 @@ class CBuildBotTest(ChromeosConfigTestBase):
           '%s timeout %s is greater than 24h'
           % (build_name, config.build_timeout))
 
-  def testBinhostTest(self):
-    """Builders with the binhost_test setting shouldn't have boards."""
-    for config in self.site_config.values():
-      if config.binhost_test:
-        self.assertEqual(config.boards, [])
-
   def testLuciScheduler(self):
     """LUCI Scheduler entries only work for swarming builds."""
     for config in self.site_config.values():

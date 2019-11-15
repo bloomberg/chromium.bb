@@ -310,9 +310,6 @@ class SimpleBuilder(generic_builders.Builder):
     self._RunStage(android_stages.AndroidMetadataStage)
     if self._run.config.build_type == constants.PALADIN_TYPE:
       self._RunStage(build_stages.RegenPortageCacheStage)
-    if self._run.config.build_type in [constants.ANDROID_PFQ_TYPE,
-                                       constants.CHROME_PFQ_TYPE]:
-      self._RunStage(test_stages.BinhostTestStage)
 
   def RunEarlySyncAndSetupStages(self):
     """Runs through the early sync and board setup stages."""
@@ -327,10 +324,6 @@ class SimpleBuilder(generic_builders.Builder):
     self._RunStage(chrome_stages.SyncChromeStage)
     self._RunStage(android_stages.UprevAndroidStage)
     self._RunStage(android_stages.AndroidMetadataStage)
-
-  def RunBuildTestStages(self):
-    """Runs through the stages to test before building."""
-    self._RunStage(test_stages.BinhostTestStage)
 
   def RunBuildStages(self):
     """Runs through the stages to perform the build and resulting tests."""
@@ -447,7 +440,6 @@ class SimpleBuilder(generic_builders.Builder):
   def _RunDefaultTypeBuild(self):
     """Runs through the stages of a non-special-type build."""
     self.RunEarlySyncAndSetupStages()
-    self.RunBuildTestStages()
     self.RunBuildStages()
 
   def RunStages(self):

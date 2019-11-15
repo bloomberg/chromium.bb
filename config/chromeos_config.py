@@ -1561,14 +1561,6 @@ def PreCqBuilders(site_config, boards_dict, ge_build_config):
       board_configs,
       site_config.templates.compile_only_pre_cq,
   )
-  site_config.Add(
-      constants.BINHOST_PRE_CQ,
-      site_config.templates.pre_cq,
-      site_config.templates.no_vmtest_pre_cq,
-      site_config.templates.internal,
-      boards=[],
-      binhost_test=True,
-  )
 
   # Wifi specific PreCQ.
   site_config.AddTemplate(
@@ -2479,7 +2471,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       site_config.templates.internal_paladin,
       boards=[],
       master=True,
-      binhost_test=True,
       push_overlays=constants.BOTH_OVERLAYS,
       description='Commit Queue master (all others are slaves)',
   )
@@ -4067,7 +4058,6 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
       build_type=constants.GENERIC_TYPE,
       boards=[],
       builder_class_name='config_builders.UpdateConfigBuilder',
-      binhost_test=True,
       schedule='@hourly',
   )
 
@@ -4082,7 +4072,6 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
       build_type=constants.GENERIC_TYPE,
       boards=[],
       builder_class_name='config_builders.LuciSchedulerBuilder',
-      binhost_test=True,
       schedule='triggered',
       triggered_gitiles=[[
           'https://chromium.googlesource.com/chromiumos/chromite',
