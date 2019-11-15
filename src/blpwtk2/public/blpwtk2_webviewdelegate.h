@@ -128,6 +128,8 @@ class BLPWTK2_EXPORT WebViewDelegate {
     // patch section: performance monitor
 
 
+    virtual void validateClientFailed(WebView* source);
+        // Notify the embedder that the source webview failed in validating its client.
 
 };
 
