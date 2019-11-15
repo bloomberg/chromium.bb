@@ -4125,21 +4125,6 @@
             ]
         }
     ],
-    "OptimizationGuideKeyedService": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled_20190904",
-                    "enable_features": [
-                        "OptimizationGuideKeyedService"
-                    ]
-                }
-            ]
-        }
-    ],
     "OutOfBlinkCors": [
         {
             "platforms": [
