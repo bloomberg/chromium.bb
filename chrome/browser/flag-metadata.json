@@ -1684,7 +1684,7 @@
   {
     "name": "enable-query-in-omnibox",
     "owners": [ "tommycli", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 80
+    "expiry_milestone": 85
   },
   {
     "name": "enable-quic",
@@ -2839,7 +2839,7 @@
   {
     "name": "omnibox-rich-entity-suggestions",
     "owners": [ "jdonnelly", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 80
+    "expiry_milestone": 85
   },
   {
     "name": "omnibox-search-engine-logo",
@@ -2859,7 +2859,7 @@
   {
     "name": "omnibox-suggestion-transparency-options",
     "owners": [ "tommycli", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 80
+    "expiry_milestone": 85
   },
   {
     "name": "omnibox-tab-switch-suggestions",
@@ -2894,7 +2894,7 @@
   {
     "name": "omnibox-ui-max-autocomplete-matches",
     "owners": [ "jdonnelly", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 80
+    "expiry_milestone": 85
   },
   {
     "name": "omnibox-ui-one-click-unelide",
