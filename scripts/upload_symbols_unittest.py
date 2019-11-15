@@ -101,7 +101,7 @@ STACK CFI 1234
     with open(fullname, 'w+b') as f:
       f.truncate(size)
       f.seek(0)
-      f.write(content)
+      f.write(content.encode('utf-8'))
 
     result = upload_symbols.SymbolFile(display_path=filename,
                                        file_name=fullname)
@@ -164,6 +164,8 @@ PUBLIC 1471 0 main"""
     if self.httpd_pid == 0:
       self.httpd.serve_forever(poll_interval=0.1)
       sys.exit(0)
+    # The child runs the server, so close the socket in the parent.
+    self.httpd.server_close()
 
   def setUp(self):
     self.httpd_pid = None

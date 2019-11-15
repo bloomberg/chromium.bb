@@ -148,7 +148,9 @@ def GetUnusedPort(ip=LOCALHOST, family=socket.AF_INET,
     s.bind((ip, 0))
     return s.getsockname()[1]
   except (socket.error, OSError):
-    if s:
+    pass
+  finally:
+    if s is not None:
       s.close()
 
 

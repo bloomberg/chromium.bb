@@ -195,7 +195,6 @@ PYTHON2_ONLY_TESTS = {
     'scripts/deploy_chrome_unittest',
     'scripts/loman_unittest',
     'scripts/merge_package_status_unittest',
-    'scripts/upload_symbols_unittest',
     'signing/image_signing/imagefile_unittest',
     'signing/lib/firmware_unittest',
     'signing/lib/keys_unittest',
