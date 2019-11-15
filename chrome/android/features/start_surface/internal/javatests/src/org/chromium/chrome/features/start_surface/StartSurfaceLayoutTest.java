@@ -151,9 +151,8 @@ public class StartSurfaceLayoutTest {
         prepareTabs(3, 0, mUrl);
         ChromeTabUtils.switchTabInCurrentTabModel(mActivityTestRule.getActivity(), 0);
         enterGTSWithThumbnailChecking();
-        mRenderTestRule.render(mActivityTestRule.getActivity().findViewById(
-                                       org.chromium.chrome.tab_ui.R.id.tab_list_view),
-                "3_web_tabs");
+        mRenderTestRule.render(
+                mActivityTestRule.getActivity().findViewById(R.id.tab_list_view), "3_web_tabs");
     }
 
     @Test
@@ -167,9 +166,8 @@ public class StartSurfaceLayoutTest {
         prepareTabs(10, 0, mUrl);
         ChromeTabUtils.switchTabInCurrentTabModel(mActivityTestRule.getActivity(), 0);
         enterGTSWithThumbnailChecking();
-        mRenderTestRule.render(mActivityTestRule.getActivity().findViewById(
-                                       org.chromium.chrome.tab_ui.R.id.tab_list_view),
-                "10_web_tabs");
+        mRenderTestRule.render(
+                mActivityTestRule.getActivity().findViewById(R.id.tab_list_view), "10_web_tabs");
     }
 
     @Test
@@ -184,8 +182,7 @@ public class StartSurfaceLayoutTest {
         ChromeTabUtils.switchTabInCurrentTabModel(mActivityTestRule.getActivity(), 9);
         enterGTSWithThumbnailChecking();
         // Make sure the grid tab switcher is scrolled down to show the selected tab.
-        mRenderTestRule.render(mActivityTestRule.getActivity().findViewById(
-                                       org.chromium.chrome.tab_ui.R.id.tab_list_view),
+        mRenderTestRule.render(mActivityTestRule.getActivity().findViewById(R.id.tab_list_view),
                 "10_web_tabs-select_last");
     }
 
@@ -202,9 +199,27 @@ public class StartSurfaceLayoutTest {
         assertTrue(mActivityTestRule.getActivity().getCurrentTabModel().isIncognito());
         ChromeTabUtils.switchTabInCurrentTabModel(mActivityTestRule.getActivity(), 0);
         enterGTSWithThumbnailChecking();
-        mRenderTestRule.render(mActivityTestRule.getActivity().findViewById(
-                                       org.chromium.chrome.tab_ui.R.id.tab_list_view),
+        mRenderTestRule.render(mActivityTestRule.getActivity().findViewById(R.id.tab_list_view),
                 "3_incognito_web_tabs");
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"RenderTest"})
+    // clang-format off
+    @CommandLineFlags.Add({BASE_PARAMS})
+    @DisableIf.Build(message = "crbug.com/1023299", sdk_is_less_than = Build.VERSION_CODES.N)
+    public void testRenderGrid_3NativeTabs() throws InterruptedException, IOException {
+        // clang-format on
+        // Prepare some incognito native tabs and enter tab switcher.
+        // NTP in incognito mode is chosen for its consistency in look, and we don't have to mock
+        // away the MV tiles, login promo, feed, etc.
+        prepareTabs(1, 3, null);
+        assertTrue(mActivityTestRule.getActivity().getCurrentTabModel().isIncognito());
+        ChromeTabUtils.switchTabInCurrentTabModel(mActivityTestRule.getActivity(), 0);
+        enterGTSWithThumbnailChecking();
+        mRenderTestRule.render(mActivityTestRule.getActivity().findViewById(R.id.tab_list_view),
+                "3_incognito_ntps");
     }
 
     @Test
@@ -451,7 +466,7 @@ public class StartSurfaceLayoutTest {
                 waitForCaptureRateControl();
             }
             int count = getCaptureCount();
-            onView(withId(org.chromium.chrome.tab_ui.R.id.tab_list_view))
+            onView(withId(R.id.tab_list_view))
                     .perform(RecyclerViewActions.actionOnItemAtPosition(targetIndex, click()));
             CriteriaHelper.pollUiThread(() -> {
                 boolean doneHiding =
@@ -573,16 +588,16 @@ public class StartSurfaceLayoutTest {
     public void testIncognitoEnterGts() throws InterruptedException {
         prepareTabs(1, 1, null);
         enterGTSWithThumbnailChecking();
-        onView(withId(org.chromium.chrome.tab_ui.R.id.tab_list_view))
+        onView(withId(R.id.tab_list_view))
                 .check(TabCountAssertion.havingTabCount(1));
 
-        onView(withId(org.chromium.chrome.tab_ui.R.id.tab_list_view))
+        onView(withId(R.id.tab_list_view))
                 .perform(RecyclerViewActions.actionOnItemAtPosition(0, click()));
         CriteriaHelper.pollInstrumentationThread(
                 () -> !mActivityTestRule.getActivity().getLayoutManager().overviewVisible());
 
         enterGTSWithThumbnailChecking();
-        onView(withId(org.chromium.chrome.tab_ui.R.id.tab_list_view))
+        onView(withId(R.id.tab_list_view))
                 .check(TabCountAssertion.havingTabCount(1));
     }
 
@@ -595,16 +610,16 @@ public class StartSurfaceLayoutTest {
         // Prepare two incognito tabs and enter tab switcher.
         prepareTabs(1, 2, mUrl);
         enterGTSWithThumbnailChecking();
-        onView(withId(org.chromium.chrome.tab_ui.R.id.tab_list_view))
+        onView(withId(R.id.tab_list_view))
                 .check(TabCountAssertion.havingTabCount(2));
 
         for (int i = 0; i < mRepeat; i++) {
             switchTabModel(false);
-            onView(withId(org.chromium.chrome.tab_ui.R.id.tab_list_view))
+            onView(withId(R.id.tab_list_view))
                     .check(TabCountAssertion.havingTabCount(1));
 
             switchTabModel(true);
-            onView(withId(org.chromium.chrome.tab_ui.R.id.tab_list_view))
+            onView(withId(R.id.tab_list_view))
                     .check(TabCountAssertion.havingTabCount(2));
         }
         leaveGTSAndVerifyThumbnailsAreReleased();
