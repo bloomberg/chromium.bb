@@ -345,6 +345,9 @@ void WebViewProxy::setRegion(NativeRegion region)
 void WebViewProxy::activateKeyboardLayout(unsigned int hkl)
 {
     DCHECK(Statics::isInApplicationMainThread());
+    if (!validateClient()) {
+        return;
+    }
     d_client->proxy()->activateKeyboardLayout(hkl);
 }
 
