@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_PROXY_RESOLUTION_PROXY_RESOLVER_V8_H_
-#define NET_PROXY_RESOLUTION_PROXY_RESOLVER_V8_H_
+#ifndef SERIVCES_PROXY_RESOLVER_PROXY_RESOLVER_V8_H_
+#define SERIVCES_PROXY_RESOLVER_PROXY_RESOLVER_V8_H_
 
 #include <stddef.h>
 
@@ -13,7 +13,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
-#include "net/base/net_export.h"
 #include "net/proxy_resolution/proxy_resolve_dns_operation.h"
 
 class GURL;
@@ -23,10 +22,10 @@ class ProxyInfo;
 class PacFileData;
 
 // A synchronous ProxyResolver-like that uses V8 to evaluate PAC scripts.
-class NET_EXPORT_PRIVATE ProxyResolverV8 {
+class ProxyResolverV8 {
  public:
   // Interface for the javascript bindings.
-  class NET_EXPORT_PRIVATE JSBindings {
+  class JSBindings {
    public:
     JSBindings() {}
 
@@ -77,4 +76,9 @@ class NET_EXPORT_PRIVATE ProxyResolverV8 {
 
 }  // namespace net
 
-#endif  // NET_PROXY_RESOLUTION_PROXY_RESOLVER_V8_H_
+// TODO(mmenke): Move above class into proxy_resolver namespace and remove this.
+namespace proxy_resolver {
+using ProxyResolverV8 = net::ProxyResolverV8;
+}  // namespace proxy_resolver
+
+#endif  // SERIVCES_PROXY_RESOLVER_PROXY_RESOLVER_V8_H_

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/proxy_resolution/proxy_resolver_v8_tracing.h"
+#include "services/proxy_resolver/proxy_resolver_v8_tracing.h"
 
 #include <string>
 #include <utility>
@@ -23,12 +23,12 @@
 #include "net/base/network_isolation_key.h"
 #include "net/base/test_completion_callback.h"
 #include "net/log/net_log_with_source.h"
-#include "net/proxy_resolution/mock_proxy_host_resolver.h"
 #include "net/proxy_resolution/proxy_info.h"
 #include "net/proxy_resolution/proxy_resolve_dns_operation.h"
 #include "net/test/event_waiter.h"
 #include "net/test/gtest_util.h"
 #include "net/test/test_with_task_environment.h"
+#include "services/proxy_resolver/mock_proxy_host_resolver.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -54,7 +54,9 @@ class ProxyResolverV8TracingTest : public TestWithTaskEnvironment {
 scoped_refptr<PacFileData> LoadScriptData(const char* filename) {
   base::FilePath path;
   base::PathService::Get(base::DIR_SOURCE_ROOT, &path);
-  path = path.AppendASCII("net");
+  path = path.AppendASCII("services");
+  path = path.AppendASCII("proxy_resolver");
+  path = path.AppendASCII("test");
   path = path.AppendASCII("data");
   path = path.AppendASCII("proxy_resolver_v8_tracing_unittest");
   path = path.AppendASCII(filename);
@@ -87,13 +89,9 @@ class MockBindings {
 
   ProxyHostResolver* host_resolver() { return host_resolver_; }
 
-  std::vector<std::string> GetAlerts() {
-    return alerts_;
-  }
+  std::vector<std::string> GetAlerts() { return alerts_; }
 
-  std::vector<std::pair<int, std::string>> GetErrors() {
-    return errors_;
-  }
+  std::vector<std::pair<int, std::string>> GetErrors() { return errors_; }
 
   void RunOnError(const base::Closure& callback) {
     error_callback_ = callback;
@@ -333,20 +331,20 @@ TEST_F(ProxyResolverV8TracingTest, Dns) {
   EXPECT_EQ(7u, host_resolver.num_resolve());
 
   const char* kExpectedResult =
-    "122.133.144.155-"  // myIpAddress()
-    "null-"  // dnsResolve('')
-    "__1_192.168.1.1-"  // dnsResolveEx('host1')
-    "null-"  // dnsResolve('host2')
-    "166.155.144.33-"  // dnsResolve('host3')
-    "122.133.144.155-"  // myIpAddress()
-    "166.155.144.33-"  // dnsResolve('host3')
-    "__1_192.168.1.1-"  // dnsResolveEx('host1')
-    "122.133.144.155-"  // myIpAddress()
-    "null-"  // dnsResolve('host2')
-    "-"  // dnsResolveEx('host6')
-    "133.122.100.200-"  // myIpAddressEx()
-    "166.155.144.44"  // dnsResolve('host1')
-    ":99";
+      "122.133.144.155-"  // myIpAddress()
+      "null-"             // dnsResolve('')
+      "__1_192.168.1.1-"  // dnsResolveEx('host1')
+      "null-"             // dnsResolve('host2')
+      "166.155.144.33-"   // dnsResolve('host3')
+      "122.133.144.155-"  // myIpAddress()
+      "166.155.144.33-"   // dnsResolve('host3')
+      "__1_192.168.1.1-"  // dnsResolveEx('host1')
+      "122.133.144.155-"  // myIpAddress()
+      "null-"             // dnsResolve('host2')
+      "-"                 // dnsResolveEx('host6')
+      "133.122.100.200-"  // myIpAddressEx()
+      "166.155.144.44"    // dnsResolve('host1')
+      ":99";
 
   EXPECT_EQ(kExpectedResult, proxy_info.proxy_server().ToURI());
 
@@ -473,7 +471,8 @@ TEST_F(ProxyResolverV8TracingTest, InfiniteDNSSequence) {
       "166.155.144.11-166.155.144.11-166.155.144.11-166.155.144.11-"
       "166.155.144.11-166.155.144.11-166.155.144.11-166.155.144.11-"
       "166.155.144.11-166.155.144.11-166.155.144.11-166.155.144.11-"
-      "null:21", proxy_info.proxy_server().ToURI());
+      "null:21",
+      proxy_info.proxy_server().ToURI());
 
   // No errors.
   EXPECT_TRUE(mock_bindings.GetErrors().empty());
@@ -930,7 +929,10 @@ TEST_F(ProxyResolverV8TracingTest, MultipleResolvers) {
   // ------------------------
 
   ProxyResolverV8Tracing* resolver[] = {
-      resolver0.get(), resolver1.get(), resolver2.get(), resolver3.get(),
+      resolver0.get(),
+      resolver1.get(),
+      resolver2.get(),
+      resolver3.get(),
   };
 
   const size_t kNumResolvers = base::size(resolver);
@@ -954,20 +956,20 @@ TEST_F(ProxyResolverV8TracingTest, MultipleResolvers) {
   // ------------------------
 
   const char* kExpectedForDnsJs =
-    "122.133.144.155-"  // myIpAddress()
-    "null-"  // dnsResolve('')
-    "__1_192.168.1.1-"  // dnsResolveEx('host1')
-    "null-"  // dnsResolve('host2')
-    "166.155.144.33-"  // dnsResolve('host3')
-    "122.133.144.155-"  // myIpAddress()
-    "166.155.144.33-"  // dnsResolve('host3')
-    "__1_192.168.1.1-"  // dnsResolveEx('host1')
-    "122.133.144.155-"  // myIpAddress()
-    "null-"  // dnsResolve('host2')
-    "-"  // dnsResolveEx('host6')
-    "133.122.100.200-"  // myIpAddressEx()
-    "166.155.144.44"  // dnsResolve('host1')
-    ":99";
+      "122.133.144.155-"  // myIpAddress()
+      "null-"             // dnsResolve('')
+      "__1_192.168.1.1-"  // dnsResolveEx('host1')
+      "null-"             // dnsResolve('host2')
+      "166.155.144.33-"   // dnsResolve('host3')
+      "122.133.144.155-"  // myIpAddress()
+      "166.155.144.33-"   // dnsResolve('host3')
+      "__1_192.168.1.1-"  // dnsResolveEx('host1')
+      "122.133.144.155-"  // myIpAddress()
+      "null-"             // dnsResolve('host2')
+      "-"                 // dnsResolveEx('host6')
+      "133.122.100.200-"  // myIpAddressEx()
+      "166.155.144.44"    // dnsResolve('host1')
+      ":99";
 
   for (size_t i = 0; i < kNumResults; ++i) {
     size_t resolver_i = i % kNumResolvers;

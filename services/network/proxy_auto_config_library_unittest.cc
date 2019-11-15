@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/proxy_resolution/pac_library.h"
+#include "services/network/proxy_auto_config_library.h"
 
 #include "net/base/address_list.h"
 #include "net/base/net_errors.h"
@@ -14,19 +14,19 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace net {
+namespace network {
 namespace {
 
 // Helper for verifying whether the address list returned by myIpAddress() /
 // myIpAddressEx() looks correct.
-void VerifyActualMyIpAddresses(const IPAddressList& test_list) {
+void VerifyActualMyIpAddresses(const net::IPAddressList& test_list) {
   // Enumerate all of the IP addresses for the system (skipping loopback and
   // link-local ones). This is used as a reference implementation to check
   // whether |test_list| (which was obtained using a different strategy) looks
   // correct.
-  std::set<IPAddress> candidates;
-  NetworkInterfaceList networks;
-  GetNetworkList(&networks, EXCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES);
+  std::set<net::IPAddress> candidates;
+  net::NetworkInterfaceList networks;
+  net::GetNetworkList(&networks, net::EXCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES);
   for (const auto& network : networks) {
     if (network.address.IsLinkLocal() || network.address.IsLoopback())
       continue;
@@ -53,122 +53,123 @@ TEST(PacLibraryTest, ActualPacMyIpAddressEx) {
   VerifyActualMyIpAddresses(PacMyIpAddressEx());
 }
 
-IPAddress CreateIPAddress(base::StringPiece literal) {
-  IPAddress result;
+net::IPAddress CreateIPAddress(base::StringPiece literal) {
+  net::IPAddress result;
   if (!result.AssignFromIPLiteral(literal)) {
     ADD_FAILURE() << "Failed parsing IP: " << literal;
-    return IPAddress();
+    return net::IPAddress();
   }
   return result;
 }
 
-AddressList CreateAddressList(
+net::AddressList CreateAddressList(
     const std::vector<base::StringPiece>& ip_literals) {
-  AddressList result;
+  net::AddressList result;
   for (const auto& ip : ip_literals)
-    result.push_back(IPEndPoint(CreateIPAddress(ip), 8080));
+    result.push_back(net::IPEndPoint(CreateIPAddress(ip), 8080));
   return result;
 }
 
-class MockUDPSocket : public DatagramClientSocket {
+class MockUDPSocket : public net::DatagramClientSocket {
  public:
-  MockUDPSocket(const IPAddress& peer_ip,
-                const IPAddress& local_ip,
-                Error connect_error)
+  MockUDPSocket(const net::IPAddress& peer_ip,
+                const net::IPAddress& local_ip,
+                net::Error connect_error)
       : peer_ip_(peer_ip), local_ip_(local_ip), connect_error_(connect_error) {}
 
   ~MockUDPSocket() override = default;
 
   // Socket implementation.
-  int Read(IOBuffer* buf,
+  int Read(net::IOBuffer* buf,
            int buf_len,
-           CompletionOnceCallback callback) override {
+           net::CompletionOnceCallback callback) override {
     ADD_FAILURE() << "Called Read()";
-    return ERR_UNEXPECTED;
+    return net::ERR_UNEXPECTED;
   }
-  int Write(IOBuffer* buf,
-            int buf_len,
-            CompletionOnceCallback callback,
-            const NetworkTrafficAnnotationTag& traffic_annotation) override {
+  int Write(
+      net::IOBuffer* buf,
+      int buf_len,
+      net::CompletionOnceCallback callback,
+      const net::NetworkTrafficAnnotationTag& traffic_annotation) override {
     ADD_FAILURE() << "Called Read()";
-    return ERR_UNEXPECTED;
+    return net::ERR_UNEXPECTED;
   }
   int SetReceiveBufferSize(int32_t size) override {
     ADD_FAILURE() << "Called SetReceiveBufferSize()";
-    return ERR_UNEXPECTED;
+    return net::ERR_UNEXPECTED;
   }
   int SetSendBufferSize(int32_t size) override {
     ADD_FAILURE() << "Called SetSendBufferSize()";
-    return ERR_UNEXPECTED;
+    return net::ERR_UNEXPECTED;
   }
 
-  // DatagramSocket implementation.
+  // net::DatagramSocket implementation.
   void Close() override { ADD_FAILURE() << "Called Close()"; }
-  int GetPeerAddress(IPEndPoint* address) const override {
+  int GetPeerAddress(net::IPEndPoint* address) const override {
     ADD_FAILURE() << "Called GetPeerAddress()";
-    return ERR_UNEXPECTED;
+    return net::ERR_UNEXPECTED;
   }
-  int GetLocalAddress(IPEndPoint* address) const override {
-    if (connect_error_ != OK)
+  int GetLocalAddress(net::IPEndPoint* address) const override {
+    if (connect_error_ != net::OK)
       return connect_error_;
 
-    *address = IPEndPoint(local_ip_, 8080);
-    return OK;
+    *address = net::IPEndPoint(local_ip_, 8080);
+    return net::OK;
   }
   void UseNonBlockingIO() override {
     ADD_FAILURE() << "Called UseNonBlockingIO()";
   }
   int SetDoNotFragment() override {
     ADD_FAILURE() << "Called SetDoNotFragment()";
-    return ERR_UNEXPECTED;
+    return net::ERR_UNEXPECTED;
   }
   void SetMsgConfirm(bool confirm) override {
     ADD_FAILURE() << "Called SetMsgConfirm()";
   }
-  const NetLogWithSource& NetLog() const override {
-    ADD_FAILURE() << "Called NetLog()";
+  const net::NetLogWithSource& NetLog() const override {
+    ADD_FAILURE() << "Called net::NetLog()";
     return net_log_;
   }
 
-  // DatagramClientSocket implementation.
-  int Connect(const IPEndPoint& address) override {
+  // net::DatagramClientSocket implementation.
+  int Connect(const net::IPEndPoint& address) override {
     EXPECT_EQ(peer_ip_.ToString(), address.address().ToString());
     return connect_error_;
   }
-  int ConnectUsingNetwork(NetworkChangeNotifier::NetworkHandle network,
-                          const IPEndPoint& address) override {
+  int ConnectUsingNetwork(net::NetworkChangeNotifier::NetworkHandle network,
+                          const net::IPEndPoint& address) override {
     ADD_FAILURE() << "Called ConnectUsingNetwork()";
-    return ERR_UNEXPECTED;
+    return net::ERR_UNEXPECTED;
   }
-  int ConnectUsingDefaultNetwork(const IPEndPoint& address) override {
+  int ConnectUsingDefaultNetwork(const net::IPEndPoint& address) override {
     ADD_FAILURE() << "Called ConnectUsingDefaultNetwork()";
-    return ERR_UNEXPECTED;
+    return net::ERR_UNEXPECTED;
   }
-  NetworkChangeNotifier::NetworkHandle GetBoundNetwork() const override {
+  net::NetworkChangeNotifier::NetworkHandle GetBoundNetwork() const override {
     ADD_FAILURE() << "Called GetBoundNetwork()";
     return network_;
   }
-  void ApplySocketTag(const SocketTag& tag) override {
+  void ApplySocketTag(const net::SocketTag& tag) override {
     ADD_FAILURE() << "Called ApplySocketTag()";
   }
   int WriteAsync(
-      DatagramBuffers buffers,
-      CompletionOnceCallback callback,
-      const NetworkTrafficAnnotationTag& traffic_annotation) override {
+      net::DatagramBuffers buffers,
+      net::CompletionOnceCallback callback,
+      const net::NetworkTrafficAnnotationTag& traffic_annotation) override {
     ADD_FAILURE() << "Called WriteAsync()";
-    return ERR_UNEXPECTED;
+    return net::ERR_UNEXPECTED;
   }
   int WriteAsync(
       const char* buffer,
       size_t buf_len,
-      CompletionOnceCallback callback,
-      const NetworkTrafficAnnotationTag& traffic_annotation) override {
+      net::CompletionOnceCallback callback,
+      const net::NetworkTrafficAnnotationTag& traffic_annotation) override {
     ADD_FAILURE() << "Called WriteAsync()";
-    return ERR_UNEXPECTED;
+    return net::ERR_UNEXPECTED;
   }
-  DatagramBuffers GetUnwrittenBuffers() override {
+  net::DatagramBuffers GetUnwrittenBuffers() override {
     ADD_FAILURE() << "Called GetUnwrittenBuffers()";
-    return DatagramBuffers();
+    return net::DatagramBuffers();
   }
   void SetWriteAsyncEnabled(bool enabled) override {
     ADD_FAILURE() << "Called SetWriteAsyncEnabled()";
@@ -191,21 +192,21 @@ class MockUDPSocket : public DatagramClientSocket {
   }
   int SetMulticastInterface(uint32_t interface_index) override {
     ADD_FAILURE() << "Called SetMulticastInterface()";
-    return ERR_UNEXPECTED;
+    return net::ERR_UNEXPECTED;
   }
 
  private:
-  NetLogWithSource net_log_;
-  NetworkChangeNotifier::NetworkHandle network_;
+  net::NetLogWithSource net_log_;
+  net::NetworkChangeNotifier::NetworkHandle network_;
 
-  IPAddress peer_ip_;
-  IPAddress local_ip_;
-  Error connect_error_;
+  net::IPAddress peer_ip_;
+  net::IPAddress local_ip_;
+  net::Error connect_error_;
 
   DISALLOW_COPY_AND_ASSIGN(MockUDPSocket);
 };
 
-class MockSocketFactory : public ClientSocketFactory {
+class MockSocketFactory : public net::ClientSocketFactory {
  public:
   MockSocketFactory() = default;
 
@@ -217,13 +218,14 @@ class MockSocketFactory : public ClientSocketFactory {
     // The address family of local and peer IP must match.
     ASSERT_EQ(peer_ip.size(), local_ip.size());
 
-    udp_sockets_.push_back(std::make_unique<MockUDPSocket>(
-        peer_ip, local_ip, OK));
+    udp_sockets_.push_back(
+        std::make_unique<MockUDPSocket>(peer_ip, local_ip, net::OK));
   }
 
   void AddUDPConnectFailure(base::StringPiece peer_ip) {
     udp_sockets_.push_back(std::make_unique<MockUDPSocket>(
-        CreateIPAddress(peer_ip), IPAddress(), ERR_ADDRESS_UNREACHABLE));
+        CreateIPAddress(peer_ip), net::IPAddress(),
+        net::ERR_ADDRESS_UNREACHABLE));
   }
 
   ~MockSocketFactory() override {
@@ -231,11 +233,11 @@ class MockSocketFactory : public ClientSocketFactory {
         << "Not all of the mock sockets were consumed.";
   }
 
-  // ClientSocketFactory
-  std::unique_ptr<DatagramClientSocket> CreateDatagramClientSocket(
-      DatagramSocket::BindType bind_type,
-      NetLog* net_log,
-      const NetLogSource& source) override {
+  // net::ClientSocketFactory
+  std::unique_ptr<net::DatagramClientSocket> CreateDatagramClientSocket(
+      net::DatagramSocket::BindType bind_type,
+      net::NetLog* net_log,
+      const net::NetLogSource& source) override {
     if (udp_sockets_.empty()) {
       ADD_FAILURE() << "Not enough mock UDP sockets";
       return nullptr;
@@ -245,33 +247,33 @@ class MockSocketFactory : public ClientSocketFactory {
     udp_sockets_.erase(udp_sockets_.begin());
     return result;
   }
-  std::unique_ptr<TransportClientSocket> CreateTransportClientSocket(
-      const AddressList& addresses,
-      std::unique_ptr<SocketPerformanceWatcher> socket_performance_watcher,
-      NetLog* net_log,
-      const NetLogSource& source) override {
+  std::unique_ptr<net::TransportClientSocket> CreateTransportClientSocket(
+      const net::AddressList& addresses,
+      std::unique_ptr<net::SocketPerformanceWatcher> socket_performance_watcher,
+      net::NetLog* net_log,
+      const net::NetLogSource& source) override {
     ADD_FAILURE() << "Called CreateTransportClientSocket()";
     return nullptr;
   }
-  std::unique_ptr<SSLClientSocket> CreateSSLClientSocket(
-      SSLClientContext* context,
-      std::unique_ptr<StreamSocket> stream_socket,
-      const HostPortPair& host_and_port,
-      const SSLConfig& ssl_config) override {
+  std::unique_ptr<net::SSLClientSocket> CreateSSLClientSocket(
+      net::SSLClientContext* context,
+      std::unique_ptr<net::StreamSocket> stream_socket,
+      const net::HostPortPair& host_and_port,
+      const net::SSLConfig& ssl_config) override {
     ADD_FAILURE() << "Called CreateSSLClientSocket()";
     return nullptr;
   }
-  std::unique_ptr<ProxyClientSocket> CreateProxyClientSocket(
-      std::unique_ptr<StreamSocket> stream_socket,
+  std::unique_ptr<net::ProxyClientSocket> CreateProxyClientSocket(
+      std::unique_ptr<net::StreamSocket> stream_socket,
       const std::string& user_agent,
-      const HostPortPair& endpoint,
-      const ProxyServer& proxy_server,
-      HttpAuthController* http_auth_controller,
+      const net::HostPortPair& endpoint,
+      const net::ProxyServer& proxy_server,
+      net::HttpAuthController* http_auth_controller,
       bool tunnel,
       bool using_spdy,
-      NextProto negotiated_protocol,
-      ProxyDelegate* proxy_delegate,
-      const NetworkTrafficAnnotationTag& traffic_annotation) override {
+      net::NextProto negotiated_protocol,
+      net::ProxyDelegate* proxy_delegate,
+      const net::NetworkTrafficAnnotationTag& traffic_annotation) override {
     ADD_FAILURE() << "Called CreateProxyClientSocket()";
     return nullptr;
   }
@@ -299,7 +301,7 @@ TEST(PacLibraryTest, PacMyIpAddress2001) {
   factory.AddUDPConnectFailure("8.8.8.8");
   factory.AddUDPConnectSuccess("2001:4860:4860::8888", "2001::beef");
 
-  AddressList dns_result;
+  net::AddressList dns_result;
 
   auto result = PacMyIpAddressForTest(&factory, dns_result);
   ASSERT_EQ(1u, result.size());
@@ -314,9 +316,14 @@ TEST(PacLibraryTest, PacMyIpAddressHostname) {
   factory.AddUDPConnectFailure("8.8.8.8");
   factory.AddUDPConnectFailure("2001:4860:4860::8888");
 
-  AddressList dns_result = CreateAddressList({
-      "169.254.13.16", "127.0.0.1", "::1", "fe89::beef", "2001::f001",
-      "178.1.99.3", "192.168.1.3",
+  net::AddressList dns_result = CreateAddressList({
+      "169.254.13.16",
+      "127.0.0.1",
+      "::1",
+      "fe89::beef",
+      "2001::f001",
+      "178.1.99.3",
+      "192.168.1.3",
   });
 
   auto result = PacMyIpAddressForTest(&factory, dns_result);
@@ -332,7 +339,7 @@ TEST(PacLibraryTest, PacMyIpAddressHostnameAllIPv6) {
   factory.AddUDPConnectFailure("8.8.8.8");
   factory.AddUDPConnectFailure("2001:4860:4860::8888");
 
-  AddressList dns_result =
+  net::AddressList dns_result =
       CreateAddressList({"::1", "2001::f001", "2001::f00d", "169.254.0.6"});
 
   auto result = PacMyIpAddressForTest(&factory, dns_result);
@@ -348,8 +355,11 @@ TEST(PacLibraryTest, PacMyIpAddressPrivateIPv4) {
   factory.AddUDPConnectFailure("8.8.8.8");
   factory.AddUDPConnectFailure("2001:4860:4860::8888");
 
-  AddressList dns_result = CreateAddressList({
-      "169.254.13.16", "127.0.0.1", "::1", "fe89::beef",
+  net::AddressList dns_result = CreateAddressList({
+      "169.254.13.16",
+      "127.0.0.1",
+      "::1",
+      "fe89::beef",
   });
 
   factory.AddUDPConnectSuccess("10.0.0.0", "127.0.0.1");
@@ -369,7 +379,7 @@ TEST(PacLibraryTest, PacMyIpAddressPrivateIPv6) {
   factory.AddUDPConnectFailure("8.8.8.8");
   factory.AddUDPConnectFailure("2001:4860:4860::8888");
 
-  AddressList dns_result;
+  net::AddressList dns_result;
 
   factory.AddUDPConnectSuccess("10.0.0.0", "127.0.0.1");
   factory.AddUDPConnectFailure("172.16.0.0");
@@ -388,7 +398,7 @@ TEST(PacLibraryTest, PacMyIpAddressAllFail) {
   factory.AddUDPConnectFailure("8.8.8.8");
   factory.AddUDPConnectFailure("2001:4860:4860::8888");
 
-  AddressList dns_result;
+  net::AddressList dns_result;
 
   factory.AddUDPConnectFailure("10.0.0.0");
   factory.AddUDPConnectFailure("172.16.0.0");
@@ -406,7 +416,7 @@ TEST(PacLibraryTest, PacMyIpAddressAllFailOrLoopback) {
   factory.AddUDPConnectFailure("8.8.8.8");
   factory.AddUDPConnectFailure("2001:4860:4860::8888");
 
-  AddressList dns_result = CreateAddressList({"127.0.0.1", "::1"});
+  net::AddressList dns_result = CreateAddressList({"127.0.0.1", "::1"});
 
   factory.AddUDPConnectFailure("10.0.0.0");
   factory.AddUDPConnectFailure("172.16.0.0");
@@ -423,7 +433,7 @@ TEST(PacLibraryTest, PacMyIpAddressAllFailHasLinkLocal) {
   factory.AddUDPConnectFailure("8.8.8.8");
   factory.AddUDPConnectFailure("2001:4860:4860::8888");
 
-  AddressList dns_result =
+  net::AddressList dns_result =
       CreateAddressList({"127.0.0.1", "::1", "fe81::8881"});
 
   factory.AddUDPConnectFailure("10.0.0.0");
@@ -443,7 +453,7 @@ TEST(PacLibraryTest, PacMyIpAddressAllFailHasLinkLocalFavorIPv4) {
   factory.AddUDPConnectFailure("8.8.8.8");
   factory.AddUDPConnectFailure("2001:4860:4860::8888");
 
-  AddressList dns_result =
+  net::AddressList dns_result =
       CreateAddressList({"127.0.0.1", "::1", "fe81::8881", "169.254.89.133"});
 
   factory.AddUDPConnectFailure("10.0.0.0");
@@ -475,7 +485,7 @@ TEST(PacLibraryTest, PacMyIpAddressEx2001) {
   factory.AddUDPConnectFailure("8.8.8.8");
   factory.AddUDPConnectSuccess("2001:4860:4860::8888", "2001::3333");
 
-  AddressList dns_result;
+  net::AddressList dns_result;
 
   auto result = PacMyIpAddressExForTest(&factory, dns_result);
   ASSERT_EQ(1u, result.size());
@@ -489,7 +499,7 @@ TEST(PacLibraryTest, PacMyIpAddressEx8888And2001) {
   factory.AddUDPConnectSuccess("8.8.8.8", "192.168.17.8");
   factory.AddUDPConnectSuccess("2001:4860:4860::8888", "2001::8333");
 
-  AddressList dns_result;
+  net::AddressList dns_result;
 
   auto result = PacMyIpAddressExForTest(&factory, dns_result);
   ASSERT_EQ(2u, result.size());
@@ -505,9 +515,14 @@ TEST(PacLibraryTest, PacMyIpAddressExHostname) {
   factory.AddUDPConnectFailure("8.8.8.8");
   factory.AddUDPConnectFailure("2001:4860:4860::8888");
 
-  AddressList dns_result = CreateAddressList({
-      "169.254.13.16", "::1", "fe89::beef", "2001::bebe", "178.1.99.3",
-      "127.0.0.1", "192.168.1.3",
+  net::AddressList dns_result = CreateAddressList({
+      "169.254.13.16",
+      "::1",
+      "fe89::beef",
+      "2001::bebe",
+      "178.1.99.3",
+      "127.0.0.1",
+      "192.168.1.3",
   });
 
   auto result = PacMyIpAddressExForTest(&factory, dns_result);
@@ -523,7 +538,7 @@ TEST(PacLibraryTest, PacMyIpAddressExPrivateDuplicates) {
   factory.AddUDPConnectFailure("8.8.8.8");
   factory.AddUDPConnectFailure("2001:4860:4860::8888");
 
-  AddressList dns_result;
+  net::AddressList dns_result;
 
   factory.AddUDPConnectSuccess("10.0.0.0", "192.168.3.3");
   factory.AddUDPConnectSuccess("172.16.0.0", "192.168.3.4");
@@ -547,7 +562,7 @@ TEST(PacLibraryTest, PacMyIpAddressExAllFail) {
   factory.AddUDPConnectFailure("8.8.8.8");
   factory.AddUDPConnectFailure("2001:4860:4860::8888");
 
-  AddressList dns_result;
+  net::AddressList dns_result;
 
   factory.AddUDPConnectFailure("10.0.0.0");
   factory.AddUDPConnectFailure("172.16.0.0");
@@ -564,7 +579,7 @@ TEST(PacLibraryTest, PacMyIpAddressExAllFailHasLinkLocal) {
   factory.AddUDPConnectFailure("8.8.8.8");
   factory.AddUDPConnectFailure("2001:4860:4860::8888");
 
-  AddressList dns_result =
+  net::AddressList dns_result =
       CreateAddressList({"127.0.0.1", "::1", "fe81::8881", "fe80::8899"});
 
   factory.AddUDPConnectFailure("10.0.0.0");
@@ -586,7 +601,7 @@ TEST(PacLibraryTest, PacMyIpAddressExAllFailHasLinkLocalFavorIPv4) {
   factory.AddUDPConnectFailure("8.8.8.8");
   factory.AddUDPConnectFailure("2001:4860:4860::8888");
 
-  AddressList dns_result =
+  net::AddressList dns_result =
       CreateAddressList({"127.0.0.1", "::1", "fe81::8881", "169.254.89.133"});
 
   factory.AddUDPConnectFailure("10.0.0.0");
@@ -606,7 +621,7 @@ TEST(PacLibraryTest, PacMyIpAddressExAllFailOrLoopback) {
   factory.AddUDPConnectFailure("8.8.8.8");
   factory.AddUDPConnectFailure("2001:4860:4860::8888");
 
-  AddressList dns_result = CreateAddressList({"127.0.0.1", "::1"});
+  net::AddressList dns_result = CreateAddressList({"127.0.0.1", "::1"});
 
   factory.AddUDPConnectFailure("10.0.0.0");
   factory.AddUDPConnectFailure("172.16.0.0");
@@ -618,4 +633,4 @@ TEST(PacLibraryTest, PacMyIpAddressExAllFailOrLoopback) {
 }
 
 }  // namespace
-}  // namespace net
+}  // namespace network

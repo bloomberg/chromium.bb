@@ -2,15 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_PROXY_RESOLUTION_PROXY_RESOLVER_V8_TRACING_H_
-#define NET_PROXY_RESOLUTION_PROXY_RESOLVER_V8_TRACING_H_
+#ifndef SERIVCES_PROXY_PROXY_RESOLVER_V8_TRACING_H_
+#define SERIVCES_PROXY_PROXY_RESOLVER_V8_TRACING_H_
 
 #include <memory>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "net/base/completion_once_callback.h"
-#include "net/base/net_export.h"
 #include "net/proxy_resolution/proxy_resolver.h"
 #include "net/proxy_resolution/proxy_resolver_factory.h"
 
@@ -21,7 +20,7 @@ class NetworkIsolationKey;
 class ProxyHostResolver;
 
 // ProxyResolverV8Tracing is a non-blocking proxy resolver.
-class NET_EXPORT ProxyResolverV8Tracing {
+class ProxyResolverV8Tracing {
  public:
   // Bindings is an interface used by ProxyResolverV8Tracing to delegate
   // per-request functionality. Each instance will be destroyed on the origin
@@ -69,7 +68,7 @@ class NET_EXPORT ProxyResolverV8Tracing {
 // ProxyResolverV8 on a single helper thread, and do some magic to avoid
 // blocking in DNS. For more details see the design document:
 // https://docs.google.com/a/google.com/document/d/16Ij5OcVnR3s0MH4Z5XkhI9VTPoMJdaBn9rKreAmGOdE/edit?pli=1
-class NET_EXPORT ProxyResolverV8TracingFactory {
+class ProxyResolverV8TracingFactory {
  public:
   ProxyResolverV8TracingFactory() {}
   virtual ~ProxyResolverV8TracingFactory() = default;
@@ -89,4 +88,4 @@ class NET_EXPORT ProxyResolverV8TracingFactory {
 
 }  // namespace net
 
-#endif  // NET_PROXY_RESOLUTION_PROXY_RESOLVER_V8_TRACING_H_
+#endif  // SERIVCES_PROXY_PROXY_RESOLVER_V8_TRACING_H_

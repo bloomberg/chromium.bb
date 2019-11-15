@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_PROXY_RESOLUTION_PAC_JS_LIBRARY_H_
-#define NET_PROXY_RESOLUTION_PAC_JS_LIBRARY_H_
+#ifndef SERVICES_PROXY_RESOLVER_PAC_JS_LIBRARY_H_
+#define SERVICES_PROXY_RESOLVER_PAC_JS_LIBRARY_H_
 
 /* ***** BEGIN LICENSE BLOCK *****
  * Version: MPL 1.1/GPL 2.0/LGPL 2.1
@@ -293,4 +293,4 @@
   "    return (ipList != '');\n"           \
   "}\n"
 
-#endif  // NET_PROXY_RESOLUTION_PAC_JS_LIBRARY_H_
+#endif  // SERVICES_PROXY_RESOLVER_PAC_JS_LIBRARY_H_

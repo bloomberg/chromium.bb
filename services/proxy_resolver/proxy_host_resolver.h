@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_PROXY_RESOLUTION_PROXY_HOST_RESOLVER_H_
-#define NET_PROXY_RESOLUTION_PROXY_HOST_RESOLVER_H_
+#ifndef SERVICES_PROXY_RESOLVER_PROXY_HOST_RESOLVER_H_
+#define SERVICES_PROXY_RESOLVER_PROXY_HOST_RESOLVER_H_
 
 #include <memory>
 #include <string>
@@ -19,7 +19,7 @@ class NetworkIsolationKey;
 
 // Interface for a limited (compared to the standard HostResolver) host resolver
 // used just for proxy resolution.
-class NET_EXPORT ProxyHostResolver {
+class ProxyHostResolver {
  public:
   virtual ~ProxyHostResolver() {}
 
@@ -38,4 +38,4 @@ class NET_EXPORT ProxyHostResolver {
 
 }  // namespace net
 
-#endif  // NET_PROXY_RESOLUTION_PROXY_HOST_RESOLVER_H_
+#endif  // SERVICES_PROXY_RESOLVER_PROXY_HOST_RESOLVER_H_

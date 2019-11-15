@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/proxy_resolution/proxy_resolver_v8_tracing.h"
+#include "services/proxy_resolver/proxy_resolver_v8_tracing.h"
 
 #include <map>
 #include <set>
@@ -27,11 +27,11 @@
 #include "net/base/network_isolation_key.h"
 #include "net/base/trace_constants.h"
 #include "net/log/net_log_with_source.h"
-#include "net/proxy_resolution/proxy_host_resolver.h"
 #include "net/proxy_resolution/proxy_info.h"
 #include "net/proxy_resolution/proxy_resolve_dns_operation.h"
 #include "net/proxy_resolution/proxy_resolver_error_observer.h"
-#include "net/proxy_resolution/proxy_resolver_v8.h"
+#include "services/proxy_resolver/proxy_host_resolver.h"
+#include "services/proxy_resolver/proxy_resolver_v8.h"
 
 // The intent of this class is explained in the design document:
 // https://docs.google.com/a/chromium.org/document/d/16Ij5OcVnR3s0MH4Z5XkhI9VTPoMJdaBn9rKreAmGOdE/edit
@@ -200,7 +200,8 @@ class Job : public base::RefCountedThreadSafe<Job>,
   static std::string MakeDnsCacheKey(const std::string& host,
                                      ProxyResolveDnsOperation op);
 
-  void HandleAlertOrError(bool is_alert, int line_number,
+  void HandleAlertOrError(bool is_alert,
+                          int line_number,
                           const base::string16& message);
   void DispatchBufferedAlertsAndErrors();
   void DispatchAlertOrErrorOnOriginThread(bool is_alert,
@@ -619,9 +620,8 @@ bool Job::ResolveDns(const std::string& host,
     return false;
   }
 
-  return blocking_dns_ ?
-      ResolveDnsBlocking(host, op, output) :
-      ResolveDnsNonBlocking(host, op, output, terminate);
+  return blocking_dns_ ? ResolveDnsBlocking(host, op, output)
+                       : ResolveDnsNonBlocking(host, op, output, terminate);
 }
 
 void Job::Alert(const base::string16& message) {
@@ -921,7 +921,8 @@ void Job::DispatchAlertOrErrorOnOriginThread(bool is_alert,
     if (line_number == -1)
       VLOG(1) << "PAC-error: " << message;
     else
-      VLOG(1) << "PAC-error: " << "line: " << line_number << ": " << message;
+      VLOG(1) << "PAC-error: "
+              << "line: " << line_number << ": " << message;
 
     bindings_->OnError(line_number, message);
   }

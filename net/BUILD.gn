@@ -14,7 +14,6 @@ import("//third_party/icu/config.gni")
 import("//third_party/protobuf/proto_library.gni")
 import("//tools/grit/grit_rule.gni")
 import("//url/features.gni")
-import("//v8/gni/v8.gni")
 
 if (is_android) {
   import("//build/config/android/config.gni")
@@ -30,7 +29,6 @@ if (is_android) {
 # So enable it for x86 only for now.
 posix_avoid_mmap = is_android && current_cpu != "x86"
 
-use_v8_in_net = !is_ios
 enable_built_in_dns = !is_ios
 
 # Unix sockets are not supported on iOS or NaCl.
@@ -826,9 +824,6 @@ component("net") {
       "proxy_resolution/pac_file_fetcher.h",
       "proxy_resolution/pac_file_fetcher_impl.cc",
       "proxy_resolution/pac_file_fetcher_impl.h",
-      "proxy_resolution/pac_js_library.h",
-      "proxy_resolution/pac_library.cc",
-      "proxy_resolution/pac_library.h",
       "proxy_resolution/polling_proxy_config_service.cc",
       "proxy_resolution/polling_proxy_config_service.h",
       "proxy_resolution/proxy_bypass_rules.cc",
@@ -2712,8 +2707,6 @@ static_library("test_support") {
     "nqe/network_quality_estimator_test_util.h",
     "proxy_resolution/mock_pac_file_fetcher.cc",
     "proxy_resolution/mock_pac_file_fetcher.h",
-    "proxy_resolution/mock_proxy_host_resolver.cc",
-    "proxy_resolution/mock_proxy_host_resolver.h",
     "proxy_resolution/mock_proxy_resolver.cc",
     "proxy_resolution/mock_proxy_resolver.h",
     "proxy_resolution/proxy_config_service_common_unittest.cc",
@@ -2873,10 +2866,6 @@ static_library("test_support") {
     ]
   }
 
-  if (use_v8_in_net) {
-    public_deps += [ ":net_with_v8" ]
-  }
-
   if (use_nss_certs) {
     sources += [ "test/cert_test_util_nss.cc" ]
   }
@@ -2902,36 +2891,6 @@ static_library("test_support") {
       "reporting/mock_persistent_reporting_store.h",
       "reporting/reporting_test_util.cc",
       "reporting/reporting_test_util.h",
-    ]
-  }
-}
-
-if (use_v8_in_net) {
-  component("net_with_v8") {
-    sources = [
-      "proxy_resolution/proxy_host_resolver.h",
-      "proxy_resolution/proxy_resolver_v8.cc",
-      "proxy_resolution/proxy_resolver_v8.h",
-      "proxy_resolution/proxy_resolver_v8_tracing.cc",
-      "proxy_resolution/proxy_resolver_v8_tracing.h",
-    ]
-
-    defines = [ "NET_IMPLEMENTATION" ]
-
-    configs += [
-      "//build/config/compiler:wexit_time_destructors",
-      "//v8:external_startup_data",
-    ]
-
-    public_deps = [
-      ":constants",
-      ":net",
-    ]
-    deps = [
-      "//base",
-      "//gin",
-      "//url",
-      "//v8",
     ]
   }
 }
@@ -3002,19 +2961,16 @@ if (!is_ios && !is_android) {
     ]
   }
 
-  if (use_v8_in_net) {
-    executable("net_watcher") {
-      testonly = true
-      sources = [
-        "tools/net_watcher/net_watcher.cc",
-      ]
-      deps = [
-        ":net",
-        ":net_with_v8",
-        "//base",
-        "//build/win:default_exe_manifest",
-      ]
-    }
+  executable("net_watcher") {
+    testonly = true
+    sources = [
+      "tools/net_watcher/net_watcher.cc",
+    ]
+    deps = [
+      ":net",
+      "//base",
+      "//build/win:default_exe_manifest",
+    ]
   }
 
   executable("run_testserver") {
@@ -5261,7 +5217,6 @@ test("net_unittests") {
     "proxy_resolution/network_delegate_error_observer_unittest.cc",
     "proxy_resolution/pac_file_decider_unittest.cc",
     "proxy_resolution/pac_file_fetcher_impl_unittest.cc",
-    "proxy_resolution/pac_library_unittest.cc",
     "proxy_resolution/proxy_bypass_rules_unittest.cc",
     "proxy_resolution/proxy_config_unittest.cc",
     "proxy_resolution/proxy_info_unittest.cc",
@@ -5893,10 +5848,6 @@ test("net_unittests") {
     libs = [ "Security.framework" ]
   }
 
-  if (v8_use_external_startup_data) {
-    deps += [ "//gin" ]
-  }
-
   if (!is_win) {
     sources += [
       "http/http_auth_handler_ntlm_portable_unittest.cc",
@@ -6008,14 +5959,6 @@ test("net_unittests") {
     sources += [ "url_request/http_with_dns_over_https_unittest.cc" ]
   }
 
-  if (use_v8_in_net) {
-    deps += [ ":net_with_v8" ]
-    sources += [
-      "proxy_resolution/proxy_resolver_v8_tracing_unittest.cc",
-      "proxy_resolution/proxy_resolver_v8_unittest.cc",
-    ]
-  }
-
   if (is_ios) {
     sources -= [
       # TODO(droger): The following tests are disabled because the
@@ -6057,7 +6000,6 @@ test("net_unittests") {
       "base/filename_util_unittest.cc",
       "base/url_util_unittest.cc",
       "cert/x509_certificate_unittest.cc",
-      "proxy_resolution/proxy_resolver_v8_unittest.cc",
       "url_request/url_request_job_unittest.cc",
     ]
     deps += [ "//url:url_java" ]
@@ -6100,7 +6042,6 @@ test("net_unittests") {
       # TODO(mmenke):  This depends on test_support_base, which depends on
       #                icu.  Figure out a way to remove that dependency.
       "//testing/android/native_test:native_test_native_code",
-      "//v8:v8_external_startup_data_assets",
     ]
     android_manifest = "//net/android/unittest_support/AndroidManifest.xml"
     sources += [

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_PROXY_RESOLUTION_MOCK_PROXY_HOST_RESOLVER_H_
-#define NET_PROXY_RESOLUTION_MOCK_PROXY_HOST_RESOLVER_H_
+#ifndef SERVICES_PROXY_RESOLVER_MOCK_PROXY_HOST_RESOLVER_H_
+#define SERVICES_PROXY_RESOLVER_MOCK_PROXY_HOST_RESOLVER_H_
 
 #include <map>
 #include <memory>
@@ -14,8 +14,8 @@
 
 #include "base/callback_forward.h"
 #include "net/base/ip_address.h"
-#include "net/proxy_resolution/proxy_host_resolver.h"
 #include "net/proxy_resolution/proxy_resolve_dns_operation.h"
+#include "services/proxy_resolver/proxy_host_resolver.h"
 
 namespace net {
 
@@ -90,4 +90,4 @@ class HangingProxyHostResolver : public ProxyHostResolver {
 
 }  // namespace net
 
-#endif  // NET_PROXY_RESOLUTION_MOCK_PROXY_HOST_RESOLVER_H_
+#endif  // SERVICES_PROXY_RESOLVER_MOCK_PROXY_HOST_RESOLVER_H_

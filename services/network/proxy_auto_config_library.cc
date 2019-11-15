@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/proxy_resolution/pac_library.h"
+#include "services/network/proxy_auto_config_library.h"
+
 #include "net/base/address_list.h"
 #include "net/base/ip_address.h"
 #include "net/base/network_interfaces.h"
@@ -10,7 +11,7 @@
 #include "net/socket/client_socket_factory.h"
 #include "net/socket/udp_client_socket.h"
 
-namespace net {
+namespace network {
 
 namespace {
 
@@ -47,16 +48,16 @@ class MyIpAddressImpl {
   MyIpAddressImpl() = default;
 
   // Used for mocking the socket dependency.
-  void SetSocketFactoryForTest(ClientSocketFactory* socket_factory) {
+  void SetSocketFactoryForTest(net::ClientSocketFactory* socket_factory) {
     override_socket_factory_ = socket_factory;
   }
 
   // Used for mocking the DNS dependency.
-  void SetDNSResultForTest(const AddressList& addrs) {
-    override_dns_result_ = std::make_unique<AddressList>(addrs);
+  void SetDNSResultForTest(const net::AddressList& addrs) {
+    override_dns_result_ = std::make_unique<net::AddressList>(addrs);
   }
 
-  IPAddressList Run(Mode mode) {
+  net::IPAddressList Run(Mode mode) {
     DCHECK(candidate_ips_.empty());
     DCHECK(link_local_ips_.empty());
     DCHECK(!done_);
@@ -74,7 +75,7 @@ class MyIpAddressImpl {
 
  private:
   // Adds |address| to the result.
-  void Add(const IPAddress& address) {
+  void Add(const net::IPAddress& address) {
     if (done_)
       return;
 
@@ -102,7 +103,7 @@ class MyIpAddressImpl {
     candidate_ips_.push_back(address);
   }
 
-  IPAddressList GetResultForMyIpAddress() const {
+  net::IPAddressList GetResultForMyIpAddress() const {
     DCHECK_EQ(Mode::kMyIpAddress, mode_);
 
     if (!candidate_ips_.empty())
@@ -114,7 +115,7 @@ class MyIpAddressImpl {
     return {};
   }
 
-  IPAddressList GetResultForMyIpAddressEx() const {
+  net::IPAddressList GetResultForMyIpAddressEx() const {
     DCHECK_EQ(Mode::kMyIpAddressEx, mode_);
 
     if (!candidate_ips_.empty())
@@ -132,11 +133,11 @@ class MyIpAddressImpl {
 
   // Tests what source IP address would be used for sending a UDP packet to the
   // given destination IP. This does not hit the network and should be fast.
-  void TestRoute(const IPAddress& destination_ip) {
+  void TestRoute(const net::IPAddress& destination_ip) {
     if (done_)
       return;
 
-    ClientSocketFactory* socket_factory =
+    net::ClientSocketFactory* socket_factory =
         override_socket_factory_
             ? override_socket_factory_
             : net::ClientSocketFactory::GetDefaultFactory();
@@ -144,13 +145,13 @@ class MyIpAddressImpl {
     auto socket = socket_factory->CreateDatagramClientSocket(
         net::DatagramSocket::DEFAULT_BIND, nullptr, net::NetLogSource());
 
-    IPEndPoint destination(destination_ip, /*port=*/80);
+    net::IPEndPoint destination(destination_ip, /*port=*/80);
 
-    if (socket->Connect(destination) != OK)
+    if (socket->Connect(destination) != net::OK)
       return;
 
-    IPEndPoint source;
-    if (socket->GetLocalAddress(&source) != OK)
+    net::IPEndPoint source;
+    if (socket->GetLocalAddress(&source) != net::OK)
       return;
 
     Add(source.address());
@@ -161,9 +162,9 @@ class MyIpAddressImpl {
       return;
 
     // 8.8.8.8 and 2001:4860:4860::8888 are Google DNS.
-    TestRoute(IPAddress(8, 8, 8, 8));
-    TestRoute(IPAddress(0x20, 0x01, 0x48, 0x60, 0x48, 0x60, 0, 0, 0, 0, 0, 0, 0,
-                        0, 0x88, 0x88));
+    TestRoute(net::IPAddress(8, 8, 8, 8));
+    TestRoute(net::IPAddress(0x20, 0x01, 0x48, 0x60, 0x48, 0x60, 0, 0, 0, 0, 0,
+                             0, 0, 0, 0x88, 0x88));
 
     MarkAsDoneIfHaveCandidates();
   }
@@ -187,12 +188,13 @@ class MyIpAddressImpl {
       return;
 
     // Representative IP from each range in RFC 1918.
-    TestRoute(IPAddress(10, 0, 0, 0));
-    TestRoute(IPAddress(172, 16, 0, 0));
-    TestRoute(IPAddress(192, 168, 0, 0));
+    TestRoute(net::IPAddress(10, 0, 0, 0));
+    TestRoute(net::IPAddress(172, 16, 0, 0));
+    TestRoute(net::IPAddress(192, 168, 0, 0));
 
     // Representative IP for Unique Local Address (FC00::/7).
-    TestRoute(IPAddress(0xfc, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0));
+    TestRoute(
+        net::IPAddress(0xfc, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0));
 
     MarkAsDoneIfHaveCandidates();
   }
@@ -201,21 +203,21 @@ class MyIpAddressImpl {
     if (done_)
       return;
 
-    AddressList addrlist;
+    net::AddressList addrlist;
 
     int resolver_error;
 
     if (override_dns_result_) {
       addrlist = *override_dns_result_;
-      resolver_error = addrlist.empty() ? ERR_NAME_NOT_RESOLVED : OK;
+      resolver_error = addrlist.empty() ? net::ERR_NAME_NOT_RESOLVED : net::OK;
     } else {
       resolver_error = SystemHostResolverCall(
-          GetHostName(), AddressFamily::ADDRESS_FAMILY_UNSPECIFIED, 0,
+          net::GetHostName(), net::AddressFamily::ADDRESS_FAMILY_UNSPECIFIED, 0,
           &addrlist,
           /*os_error=*/nullptr);
     }
 
-    if (resolver_error != OK)
+    if (resolver_error != net::OK)
       return;
 
     for (const auto& e : addrlist.endpoints())
@@ -224,7 +226,8 @@ class MyIpAddressImpl {
     MarkAsDoneIfHaveCandidates();
   }
 
-  static IPAddressList GetSingleResultFavoringIPv4(const IPAddressList& ips) {
+  static net::IPAddressList GetSingleResultFavoringIPv4(
+      const net::IPAddressList& ips) {
     for (const auto& ip : ips) {
       if (ip.IsIPv4())
         return {ip};
@@ -236,13 +239,13 @@ class MyIpAddressImpl {
     return {};
   }
 
-  std::set<IPAddress> seen_ips_;
+  std::set<net::IPAddress> seen_ips_;
 
   // The preferred ordered candidate IPs so far.
-  IPAddressList candidate_ips_;
+  net::IPAddressList candidate_ips_;
 
   // The link-local IP addresses seen so far (not part of |candidate_ips_|).
-  IPAddressList link_local_ips_;
+  net::IPAddressList link_local_ips_;
 
   // The operation being carried out.
   Mode mode_;
@@ -253,38 +256,40 @@ class MyIpAddressImpl {
   // to short-circuit early.
   bool done_ = false;
 
-  ClientSocketFactory* override_socket_factory_ = nullptr;
-  std::unique_ptr<AddressList> override_dns_result_;
+  net::ClientSocketFactory* override_socket_factory_ = nullptr;
+  std::unique_ptr<net::AddressList> override_dns_result_;
 
   DISALLOW_COPY_AND_ASSIGN(MyIpAddressImpl);
 };
 
 }  // namespace
 
-IPAddressList PacMyIpAddress() {
+net::IPAddressList PacMyIpAddress() {
   MyIpAddressImpl impl;
   return impl.Run(Mode::kMyIpAddress);
 }
 
-IPAddressList PacMyIpAddressEx() {
+net::IPAddressList PacMyIpAddressEx() {
   MyIpAddressImpl impl;
   return impl.Run(Mode::kMyIpAddressEx);
 }
 
-IPAddressList PacMyIpAddressForTest(ClientSocketFactory* socket_factory,
-                                    const AddressList& dns_result) {
+net::IPAddressList PacMyIpAddressForTest(
+    net::ClientSocketFactory* socket_factory,
+    const net::AddressList& dns_result) {
   MyIpAddressImpl impl;
   impl.SetSocketFactoryForTest(socket_factory);
   impl.SetDNSResultForTest(dns_result);
   return impl.Run(Mode::kMyIpAddress);
 }
 
-IPAddressList PacMyIpAddressExForTest(ClientSocketFactory* socket_factory,
-                                      const AddressList& dns_result) {
+net::IPAddressList PacMyIpAddressExForTest(
+    net::ClientSocketFactory* socket_factory,
+    const net::AddressList& dns_result) {
   MyIpAddressImpl impl;
   impl.SetSocketFactoryForTest(socket_factory);
   impl.SetDNSResultForTest(dns_result);
   return impl.Run(Mode::kMyIpAddressEx);
 }
 
-}  // namespace net
+}  // namespace network

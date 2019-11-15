@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/proxy_resolution/proxy_resolver_v8.h"
+#include "services/proxy_resolver/proxy_resolver_v8.h"
 
 #include <algorithm>
 #include <cstdio>
@@ -25,8 +25,8 @@
 #include "net/base/ip_address.h"
 #include "net/base/net_errors.h"
 #include "net/proxy_resolution/pac_file_data.h"
-#include "net/proxy_resolution/pac_js_library.h"
 #include "net/proxy_resolution/proxy_info.h"
+#include "services/proxy_resolver/pac_js_library.h"
 #include "url/gurl.h"
 #include "url/url_canon.h"
 #include "v8/include/v8.h"
@@ -164,7 +164,8 @@ v8::Local<v8::String> ASCIIStringToV8String(v8::Isolate* isolate,
                                             const std::string& s) {
   DCHECK(base::IsStringASCII(s));
   return v8::String::NewFromUtf8(isolate, s.data(), v8::NewStringType::kNormal,
-                                 s.size()).ToLocalChecked();
+                                 s.size())
+      .ToLocalChecked();
 }
 
 // Converts a UTF16 base::string16 (wrapped by a PacFileData) to a
@@ -175,10 +176,12 @@ v8::Local<v8::String> ScriptDataToV8String(
   if (s->utf16().size() * 2 <= kMaxStringBytesForCopy) {
     return v8::String::NewFromTwoByte(
                isolate, reinterpret_cast<const uint16_t*>(s->utf16().data()),
-               v8::NewStringType::kNormal, s->utf16().size()).ToLocalChecked();
+               v8::NewStringType::kNormal, s->utf16().size())
+        .ToLocalChecked();
   }
-  return v8::String::NewExternalTwoByte(
-             isolate, new V8ExternalStringFromScriptData(s)).ToLocalChecked();
+  return v8::String::NewExternalTwoByte(isolate,
+                                        new V8ExternalStringFromScriptData(s))
+      .ToLocalChecked();
 }
 
 // Converts an ASCII string literal to a V8 string.
@@ -188,7 +191,8 @@ v8::Local<v8::String> ASCIILiteralToV8String(v8::Isolate* isolate,
   size_t length = strlen(ascii);
   if (length <= kMaxStringBytesForCopy)
     return v8::String::NewFromUtf8(isolate, ascii, v8::NewStringType::kNormal,
-                                   length).ToLocalChecked();
+                                   length)
+        .ToLocalChecked();
   return v8::String::NewExternalOneByte(
              isolate, new V8ExternalASCIILiteral(ascii, length))
       .ToLocalChecked();
@@ -239,8 +243,7 @@ bool GetHostnameArgument(const v8::FunctionCallbackInfo<v8::Value>& args,
   // (We could use UTF16ToASCII() instead, but that requires an extra string
   // copy. Since ASCII is a subset of UTF8 the following is equivalent).
   bool success = base::UTF16ToUTF8(punycode_output.data(),
-                             punycode_output.length(),
-                             hostname);
+                                   punycode_output.length(), hostname);
   DCHECK(success);
   DCHECK(base::IsStringASCII(*hostname));
   return success;
@@ -455,8 +458,8 @@ class ProxyResolverV8::Context {
       return rv;
 
     v8::Local<v8::Value> argv[] = {
-      ASCIIStringToV8String(isolate_, query_url.spec()),
-      ASCIIStringToV8String(isolate_, query_url.HostNoBrackets()),
+        ASCIIStringToV8String(isolate_, query_url.spec()),
+        ASCIIStringToV8String(isolate_, query_url.HostNoBrackets()),
     };
 
     v8::TryCatch try_catch(isolate_);
@@ -484,8 +487,10 @@ class ProxyResolverV8::Context {
       //               converting them to ASCII punycode.
       //               crbug.com/47234
       base::string16 error_message =
-          base::ASCIIToUTF16("FindProxyForURL() returned a non-ASCII string "
-                             "(crbug.com/47234): ") + ret_str;
+          base::ASCIIToUTF16(
+              "FindProxyForURL() returned a non-ASCII string "
+              "(crbug.com/47234): ") +
+          ret_str;
       js_bindings()->OnError(-1, error_message);
       return ERR_PAC_SCRIPT_FAILED;
     }
@@ -547,8 +552,7 @@ class ProxyResolverV8::Context {
                          my_ip_address_ex_template);
 
     v8::Local<v8::FunctionTemplate> sort_ip_address_list_template =
-        v8::FunctionTemplate::New(isolate_,
-                                  &SortIpAddressListCallback,
+        v8::FunctionTemplate::New(isolate_, &SortIpAddressListCallback,
                                   v8_this);
     sort_ip_address_list_template->RemovePrototype();
     global_template->Set(ASCIILiteralToV8String(isolate_, "sortIpAddressList"),
@@ -741,8 +745,8 @@ class ProxyResolverV8::Context {
 
     {
       v8::Unlocker unlocker(args.GetIsolate());
-      success = context->js_bindings()->ResolveDns(
-          hostname, op, &result, &terminate);
+      success =
+          context->js_bindings()->ResolveDns(hostname, op, &result, &terminate);
     }
 
     if (terminate)

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/proxy_resolution/proxy_resolver_v8.h"
+#include "services/proxy_resolver/proxy_resolver_v8.h"
 
 #include "base/compiler_specific.h"
 #include "base/files/file_util.h"
@@ -110,7 +110,9 @@ class ProxyResolverV8Test : public TestWithTaskEnvironment {
   int CreateResolver(const char* filename) {
     base::FilePath path;
     base::PathService::Get(base::DIR_SOURCE_ROOT, &path);
-    path = path.AppendASCII("net");
+    path = path.AppendASCII("services");
+    path = path.AppendASCII("proxy_resolver");
+    path = path.AppendASCII("test");
     path = path.AppendASCII("data");
     path = path.AppendASCII("proxy_resolver_v8_unittest");
     path = path.AppendASCII(filename);
@@ -206,9 +208,7 @@ TEST_F(ProxyResolverV8Test, BadReturnType) {
   // types for FindProxyForURL(). They should all fail with
   // ERR_PAC_SCRIPT_FAILED.
   static const char* const filenames[] = {
-      "return_undefined.js",
-      "return_integer.js",
-      "return_function.js",
+      "return_undefined.js", "return_integer.js", "return_function.js",
       "return_object.js",
       // TODO(eroman): Should 'null' be considered equivalent to "DIRECT" ?
       "return_null.js"};
