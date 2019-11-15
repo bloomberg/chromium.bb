@@ -1722,10 +1722,12 @@ IN_PROC_BROWSER_TEST_P(PreviewsLitePageRedirectServerTimeoutBrowserTest,
   }
 }
 
+// Disabled previously on WIN/MAC/CHROMEOS, flakiness still occurred on various
+// linux bots, so this test is now fully disabled due to that flakiness. See
+// https://crbug.com/1024824.
 IN_PROC_BROWSER_TEST_P(
     PreviewsLitePageRedirectServerTimeoutBrowserTest,
-    DISABLE_ON_WIN_MAC_CHROMEOS(
-        LitePagePreviewsOriginProbe_ExternalFailureReported)) {
+    DISABLED_LitePagePreviewsOriginProbe_ExternalFailureReported) {
   set_origin_probe_success(true);
 
   base::HistogramTester histogram_tester;
