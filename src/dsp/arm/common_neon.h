@@ -274,8 +274,8 @@ inline void Store2(uint16_t* const buf, const uint16x4_t val) {
 
 // vshXX_n_XX() requires an immediate.
 template <int shift>
-inline int8x8_t LeftShift(const int8x8_t vector) {
-  return vreinterpret_s8_u64(vshl_n_u64(vreinterpret_u64_s8(vector), shift));
+inline uint8x8_t LeftShift(const uint8x8_t vector) {
+  return vreinterpret_u8_u64(vshl_n_u64(vreinterpret_u64_u8(vector), shift));
 }
 
 template <int shift>
@@ -368,25 +368,25 @@ inline int8x8_t InterleaveHigh32(const int8x8_t a, const int8x8_t b) {
 //------------------------------------------------------------------------------
 // Sum.
 
-inline int16_t SumVector(const int8x8_t a) {
+inline uint16_t SumVector(const uint8x8_t a) {
 #if defined(__aarch64__)
   // vaddv_s8() returns an int8_t value so we must expand to int16_t first.
-  return vaddv_s16(vpaddl_s8(a));
+  return vaddv_u16(vpaddl_u8(a));
 #else
-  const int16x4_t c = vpaddl_s8(a);
-  const int32x2_t d = vpaddl_s16(c);
-  const int64x1_t e = vpaddl_s32(d);
-  return static_cast<int16_t>(vget_lane_s64(e, 0));
+  const uint16x4_t c = vpaddl_u8(a);
+  const uint32x2_t d = vpaddl_u16(c);
+  const uint64x1_t e = vpaddl_u32(d);
+  return static_cast<uint16_t>(vget_lane_u64(e, 0));
 #endif  // defined(__aarch64__)
 }
 
-inline int32_t SumVector(const int32x4_t a) {
+inline uint32_t SumVector(const uint32x4_t a) {
 #if defined(__aarch64__)
-  return vaddvq_s32(a);
+  return vaddvq_u32(a);
 #else
-  const int64x2_t b = vpaddlq_s32(a);
-  const int64x1_t c = vadd_s64(vget_low_s64(b), vget_high_s64(b));
-  return static_cast<int32_t>(vget_lane_s64(c, 0));
+  const uint64x2_t b = vpaddlq_u32(a);
+  const uint64x1_t c = vadd_u64(vget_low_u64(b), vget_high_u64(b));
+  return static_cast<uint32_t>(vget_lane_u64(c, 0));
 #endif
 }
 
