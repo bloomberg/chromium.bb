@@ -249,6 +249,9 @@ class WebPlugin {
   // it loading later.
   virtual bool IsErrorPlaceholder() { return false; }
 
+  virtual void AttachToLayout() {}
+  virtual void DetachFromLayout() {}
+
  protected:
   virtual ~WebPlugin() = default;
 };
