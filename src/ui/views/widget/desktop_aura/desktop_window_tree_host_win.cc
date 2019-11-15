@@ -881,10 +881,18 @@ void DesktopWindowTreeHostWin::HandleFrameChanged() {
 
 void DesktopWindowTreeHostWin::HandleNativeFocus(HWND last_focused_window) {
   // TODO(beng): inform the native_widget_delegate_.
+
+  // If our HWND has WS_CHILD, treat WM_SETFOCUS like an activation change.
+  if (GetWindowLong(GetHWND(), GWL_STYLE) & WS_CHILD)
+    HandleActivationChanged(true);
 }
 
 void DesktopWindowTreeHostWin::HandleNativeBlur(HWND focused_window) {
   // TODO(beng): inform the native_widget_delegate_.
+
+  // If our HWND has WS_CHILD, treat WM_KILLFOCUS like an activation change.
+  if (GetWindowLong(GetHWND(), GWL_STYLE) & WS_CHILD)
+    HandleActivationChanged(false);
 }
 
 bool DesktopWindowTreeHostWin::HandleMouseEvent(ui::MouseEvent* event) {
