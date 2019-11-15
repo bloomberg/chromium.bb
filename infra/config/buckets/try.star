@@ -93,6 +93,7 @@ def android_builder(*, name, **kwargs):
 android_builder(
     name = 'android-binary-size',
     executable = luci.recipe(name = 'binary_size_trybot'),
+    goma_backend = goma.backend.RBE_PROD,
     goma_jobs = goma.jobs.J150,
     tryjob = tryjob(),
 )
@@ -137,6 +138,7 @@ android_builder(
 android_builder(
     name = 'android-marshmallow-arm64-coverage-rel',
     cores = 16,
+    goma_backend = goma.backend.RBE_PROD,
     goma_jobs = goma.jobs.J300,
     ssd = True,
     use_java_coverage = True,
@@ -185,10 +187,12 @@ android_builder(
 
 android_builder(
     name = 'android-pie-x86-fyi-rel',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 android_builder(
     name = 'android-pie-arm64-rel',
+    goma_backend = goma.backend.RBE_PROD,
     tryjob = tryjob(
         experiment_percentage = 50,
     ),
@@ -212,6 +216,7 @@ android_builder(
 
 android_builder(
     name = 'android-webview-pie-arm64-fyi-rel',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 android_builder(
@@ -227,6 +232,7 @@ android_builder(
 
 android_builder(
     name = 'android_blink_rel',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 android_builder(
@@ -350,18 +356,22 @@ angle_builder(
 
 angle_builder(
     name = 'android_angle_vk32_deqp_rel_ng',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 angle_builder(
     name = 'android_angle_vk32_rel_ng',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 angle_builder(
     name = 'android_angle_vk64_deqp_rel_ng',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 angle_builder(
     name = 'android_angle_vk64_rel_ng',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 angle_builder(
@@ -455,18 +465,22 @@ def blink_mac_builder(*, name, **kwargs):
 
 blink_mac_builder(
     name = 'mac10.10-blink-rel',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 blink_mac_builder(
     name = 'mac10.11-blink-rel',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 blink_mac_builder(
     name = 'mac10.12-blink-rel',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 blink_mac_builder(
     name = 'mac10.13-blink-rel',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 blink_mac_builder(
@@ -898,6 +912,7 @@ gpu_mac_builder(
 
 gpu_mac_builder(
     name = 'gpu-fyi-try-mac-intel-rel',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 gpu_mac_builder(
@@ -929,6 +944,7 @@ gpu_mac_builder(
 
 gpu_mac_builder(
     name = 'mac_optional_gpu_tests_rel',
+    goma_backend = goma.backend.RBE_PROD,
     tryjob = tryjob(
         location_regexp = [
             '.+/[+]/chrome/browser/vr/.+',
