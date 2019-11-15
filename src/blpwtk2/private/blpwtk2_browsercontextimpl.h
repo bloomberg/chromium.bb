@@ -43,6 +43,7 @@ class PrefService;
 namespace blpwtk2 {
 
 class ResourceContextImpl;
+class SpellCheckConfig;
 class URLRequestContextGetterImpl;
 
                         // ========================
@@ -122,6 +123,15 @@ class BrowserContextImpl final : public base::RefCounted<BrowserContextImpl>
 
 
     // patch section: spellcheck
+    void enableSpellCheck(bool enabled) override;
+
+    void setLanguages(const StringRef *languages,
+                      size_t           numLanguages) override;
+
+    void addCustomWords(const StringRef *words,
+                        size_t           numWords) override;
+    void removeCustomWords(const StringRef *words,
+                           size_t           numWords) override;
 
 
     // patch section: printing
