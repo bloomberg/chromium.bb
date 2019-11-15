@@ -2860,6 +2860,14 @@ Unknown properties are collapsed to zero. -->
   <int value="6" label="BAD_RESPONSE_FROM_DOCUMENTS_UI"/>
 </enum>
 
+<enum name="ArcStopReason">
+  <summary>Describes the reason the ARC instance is stopped</summary>
+  <int value="0" label="SHUTDOWN"/>
+  <int value="1" label="GENERIC_BOOT_FAILURE"/>
+  <int value="2" label="LOW_DISK_SPACE"/>
+  <int value="3" label="CRASH"/>
+</enum>
+
 <enum name="ArcSupervisionTransitionResult">
   <summary>
     Defines Arc supervision transition success and failure reasons
