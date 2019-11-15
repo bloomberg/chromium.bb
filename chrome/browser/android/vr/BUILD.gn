@@ -111,7 +111,6 @@ static_library("vr_android") {
     "//components/search_engines:search_engines",
     "//content/public/browser",
     "//content/public/common",
-    "//device/gamepad",
     "//device/vr",
     "//device/vr/buildflags:buildflags",
     "//services/device/public/mojom",
