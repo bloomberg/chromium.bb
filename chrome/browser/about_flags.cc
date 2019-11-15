@@ -1367,14 +1367,13 @@ const FeatureEntry::FeatureVariation kQuietNotificationPromptsVariations[] = {
 
 // TODO(crbug.com/991082,1015377): Remove after proper support for back-forward
 // cache is implemented.
-const FeatureEntry::FeatureParam kBackForwardCache_ExtendedSupport[] = {
-    {"service_worker_supported", "true"},
-    {"geolocation_supported", "true"},
+const FeatureEntry::FeatureParam kBackForwardCache_ForceCaching[] = {
+    {"TimeToLiveInBackForwardCacheInSeconds", "300"},
     {"should_ignore_blocklists", "true"}};
 
 const FeatureEntry::FeatureVariation kBackForwardCacheVariations[] = {
-    {"experimental extended supported feature set",
-     kBackForwardCache_ExtendedSupport, 1, nullptr},
+    {"force caching all pages", kBackForwardCache_ForceCaching,
+     base::size(kBackForwardCache_ForceCaching), nullptr},
 };
 
 #if defined(OS_CHROMEOS)
