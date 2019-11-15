@@ -1020,8 +1020,8 @@ static void newmv_diff_bias(MACROBLOCKD *xd, PREDICTION_MODE this_mode,
     }
     row_diff = al_mv_average_row - mv_row;
     col_diff = al_mv_average_col - mv_col;
-    if (row_diff > 48 || row_diff < -48 || col_diff > 48 || col_diff < -48) {
-      if (bsize > BLOCK_32X32)
+    if (row_diff > 80 || row_diff < -80 || col_diff > 80 || col_diff < -80) {
+      if (bsize >= BLOCK_32X32)
         this_rdc->rdcost = this_rdc->rdcost << 1;
       else
         this_rdc->rdcost = 5 * this_rdc->rdcost >> 2;
@@ -1828,7 +1828,7 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
     this_rdc.rate += ref_costs_single[ref_frame];
 
     this_rdc.rdcost = RDCOST(x->rdmult, this_rdc.rate, this_rdc.dist);
-    if (cpi->oxcf.rc_mode == AOM_CBR && cpi->oxcf.speed >= 8) {
+    if (cpi->oxcf.rc_mode == AOM_CBR) {
       newmv_diff_bias(xd, this_mode, &this_rdc, bsize,
                       frame_mv[this_mode][ref_frame].as_mv.row,
                       frame_mv[this_mode][ref_frame].as_mv.col);
