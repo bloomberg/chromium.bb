@@ -1398,6 +1398,14 @@ util.isFeedbackPanelEnabled = () => {
 };
 
 /**
+ * Returns true when FilesNG is enabled.
+ * @return {boolean}
+ */
+util.isFilesNg = () => {
+  return loadTimeData.getBoolean('FILES_NG_ENABLED');
+};
+
+/**
  * Retrieves all entries inside the given |rootEntry|.
  * @param {!DirectoryEntry} rootEntry
  * @param {function(!Array<!Entry>)} entriesCallback Called when some chunk of
