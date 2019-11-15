@@ -35,6 +35,8 @@
 
 
 // patch section: multi-heap tracer
+#include <blpwtk2_embedderheaptracer.h>
+#include <blpwtk2_embedderheaptracershim.h>
 
 
 
@@ -42,7 +44,9 @@
 #include <sandbox/win/src/sandbox_types.h>
 #include "base/metrics/field_trial.h"
 
+#include <memory>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 namespace base {
@@ -103,6 +107,8 @@ class ToolkitImpl : public Toolkit {
 
 
     // patch section: multi-heap tracer
+    std::unordered_map<int, std::unique_ptr<EmbedderHeapTracerShim>> d_heapTracers;
+        // Registered heap tracers.
 
 
 
@@ -167,6 +173,9 @@ class ToolkitImpl : public Toolkit {
 
 
     // patch section: multi-heap tracer
+    int addV8HeapTracer(EmbedderHeapTracer *tracer) override;
+    void removeV8HeapTracer(int embedder_id) override;
+    void setIsolate(v8::EmbedderHeapTracer *tracer) override;
 
 
 
