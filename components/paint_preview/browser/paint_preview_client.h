@@ -87,7 +87,8 @@ class PaintPreviewClient
     PaintPreviewData();
     ~PaintPreviewData();
 
-    base::UnguessableToken guid;
+    // Root directory to store artifacts to.
+    base::FilePath root_dir;
 
     // Callback that is invoked on completion of data.
     PaintPreviewCallback callback;
@@ -187,7 +188,7 @@ class PaintPreviewClient
       pending_previews_on_subframe_;
 
   // Maps a document GUID to its data.
-  base::flat_map<base::UnguessableToken, PaintPreviewData> document_data_;
+  base::flat_map<base::UnguessableToken, PaintPreviewData> all_document_data_;
 
   base::WeakPtrFactory<PaintPreviewClient> weak_ptr_factory_{this};
 
