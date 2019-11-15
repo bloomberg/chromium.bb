@@ -18,6 +18,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/child_process_host.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 
@@ -40,10 +41,10 @@ class EmbeddedSearchClientFactoryImpl
   // |web_contents| and |binding| must outlive this object.
   EmbeddedSearchClientFactoryImpl(
       content::WebContents* web_contents,
-      mojo::AssociatedBinding<chrome::mojom::EmbeddedSearch>* binding)
-      : client_binding_(binding), factory_bindings_(web_contents, this) {
+      mojo::AssociatedReceiver<chrome::mojom::EmbeddedSearch>* receiver)
+      : client_receiver_(receiver), factory_bindings_(web_contents, this) {
     DCHECK(web_contents);
-    DCHECK(binding);
+    DCHECK(receiver);
     // Before we are connected to a frame we throw away all messages.
     ignore_result(embedded_search_client_
                       .BindNewEndpointAndPassDedicatedReceiverForTesting());
@@ -55,7 +56,7 @@ class EmbeddedSearchClientFactoryImpl
 
  private:
   void Connect(
-      chrome::mojom::EmbeddedSearchAssociatedRequest request,
+      mojo::PendingAssociatedReceiver<chrome::mojom::EmbeddedSearch> receiver,
       mojo::PendingAssociatedRemote<chrome::mojom::EmbeddedSearchClient> client)
       override;
 
@@ -65,9 +66,9 @@ class EmbeddedSearchClientFactoryImpl
   mojo::AssociatedRemote<chrome::mojom::EmbeddedSearchClient>
       embedded_search_client_;
 
-  // Used to bind incoming interface requests to the implementation, which lives
+  // Used to bind incoming pending receivers to the implementation, which lives
   // in SearchIPCRouter.
-  mojo::AssociatedBinding<chrome::mojom::EmbeddedSearch>* client_binding_;
+  mojo::AssociatedReceiver<chrome::mojom::EmbeddedSearch>* client_receiver_;
 
   // Binding used to listen to connection requests.
   content::WebContentsFrameBindingSet<chrome::mojom::EmbeddedSearchConnector>
@@ -77,14 +78,14 @@ class EmbeddedSearchClientFactoryImpl
 };
 
 void EmbeddedSearchClientFactoryImpl::Connect(
-    chrome::mojom::EmbeddedSearchAssociatedRequest request,
+    mojo::PendingAssociatedReceiver<chrome::mojom::EmbeddedSearch> receiver,
     mojo::PendingAssociatedRemote<chrome::mojom::EmbeddedSearchClient> client) {
   content::RenderFrameHost* frame = factory_bindings_.GetCurrentTargetFrame();
   const bool is_main_frame = frame->GetParent() == nullptr;
   if (!IsInInstantProcess(frame) || !is_main_frame) {
     return;
   }
-  client_binding_->Bind(std::move(request));
+  client_receiver_->Bind(std::move(receiver));
   embedded_search_client_.reset();
   embedded_search_client_.Bind(std::move(client));
 }
@@ -99,9 +100,8 @@ SearchIPCRouter::SearchIPCRouter(content::WebContents* web_contents,
       policy_(std::move(policy)),
       commit_counter_(0),
       is_active_tab_(false),
-      binding_(this),
       embedded_search_client_factory_(
-          new EmbeddedSearchClientFactoryImpl(web_contents, &binding_)) {
+          new EmbeddedSearchClientFactoryImpl(web_contents, &receiver_)) {
   DCHECK(web_contents);
   DCHECK(delegate);
   DCHECK(policy_.get());

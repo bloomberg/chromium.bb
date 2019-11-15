@@ -28,7 +28,7 @@ interface EmbeddedSearchConnector {
   // client will use to query the embedded search interface. |client| is the
   // connection used by the embedded search interface implementation to push
   // browser state updates to the client.
-  Connect(associated EmbeddedSearch & embedded_search,
+  Connect(pending_associated_receiver<EmbeddedSearch> embedded_search,
           pending_associated_remote<EmbeddedSearchClient> client);
 };
 

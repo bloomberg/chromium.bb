@@ -21,6 +21,7 @@
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/render_frame_observer_tracker.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "url/gurl.h"
 
 // The renderer-side implementation of the embeddedSearch API (see
@@ -246,7 +247,8 @@ class SearchBox : public content::RenderFrameObserver,
   GURL GetURLForMostVisitedItem(InstantRestrictedID item_id) const;
 
   // The connection to the EmbeddedSearch service in the browser process.
-  chrome::mojom::EmbeddedSearchAssociatedPtr embedded_search_service_;
+  mojo::AssociatedRemote<chrome::mojom::EmbeddedSearch>
+      embedded_search_service_;
   mojo::AssociatedReceiver<chrome::mojom::EmbeddedSearchClient> receiver_{this};
 
   // Whether it's legal to execute JavaScript in |render_frame()|.

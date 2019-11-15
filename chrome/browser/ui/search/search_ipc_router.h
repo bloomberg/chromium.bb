@@ -20,6 +20,7 @@
 #include "components/omnibox/common/omnibox_focus_state.h"
 #include "content/public/browser/web_contents_binding_set.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
 
 #if defined(OS_ANDROID)
 #error "Instant is only used on desktop";
@@ -372,10 +373,10 @@ class SearchIPCRouter : public content::WebContentsObserver,
   // Set to true, when the tab corresponding to |this| instance is active.
   bool is_active_tab_;
 
-  // Binding for the connected main frame. We only allow one frame to connect at
-  // the moment, but this could be extended to a map of connected frames, if
+  // Receiver for the connected main frame. We only allow one frame to connect
+  // at the moment, but this could be extended to a map of connected frames, if
   // desired.
-  mojo::AssociatedBinding<chrome::mojom::EmbeddedSearch> binding_;
+  mojo::AssociatedReceiver<chrome::mojom::EmbeddedSearch> receiver_{this};
 
   std::unique_ptr<EmbeddedSearchClientFactory> embedded_search_client_factory_;
 
