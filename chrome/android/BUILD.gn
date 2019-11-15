@@ -1995,6 +1995,7 @@ chrome_test_apk_tmpl("chrome_public_test_apk") {
     "//chrome/android/webapk/libs/runtime_library:runtime_library_javatests",
     "//chrome/android/webapk/shell_apk:shell_apk_javatests",
     "//chrome/browser/download/android:download_java_tests",
+    "//chrome/browser/preferences:javatests",
     "//chrome/browser/profiling_host:profiling_host_javatests",
     "//chrome/browser/subresource_filter:subresource_filter_javatests",
     "//chrome/browser/touch_to_fill/android:test_java",
