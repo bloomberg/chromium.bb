@@ -54,7 +54,7 @@ interface ProcessHost {
         // initialize the toolkit.  This will allow the toolkit to establish
         // a Mojo connection so the process can issue Mojo requests.
 
-    bindProcess(uint32 pid, bool launchDevToolsServer);
+    bindProcess(uint32 pid, bool launchDevToolsServer) => (ProcessClient& client);
         // Once a child process establishes a Mojo connection given a channel
         // info, it must call bindProcess with its pid to signal the browser
         // to associate the connection of the incoming request with the
@@ -90,7 +90,6 @@ interface ProcessHost {
 
     clearHttpProxies();
         // Clear the registered HTTP proxies.
-    
     clearHttpsProxies();
         // Clear the registered HTTPS proxies.
 
@@ -123,12 +122,20 @@ interface ProcessHost {
 
 
     // patch section: embedder ipc
+    opaqueMessageToBrowserAsync(string msg);
+
+    [Sync]
+    opaqueMessageToBrowserSync(string msg) => (string response);
 
 
     // patch section: renderer ui
 
 
 
+};
+
+interface ProcessClient {
+    opaqueMessageToRendererAsync(string msg);
 };
 
 // vim: ts=4 et
