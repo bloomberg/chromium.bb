@@ -465,28 +465,45 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
       logging.info('Dependency(%s)._OverrideUrl(%s) -> %s', self._name,
                    self.url, parsed_url)
       self.set_url(parsed_url)
+      return
 
-    elif isinstance(self.url, basestring):
-      parsed_url = urlparse.urlparse(self.url)
-      if (not parsed_url[0] and
-          not re.match(r'^\w+\@[\w\.-]+\:[\w\/]+', parsed_url[2])):
-        path = parsed_url[2]
-        if not path.startswith('/'):
-          raise gclient_utils.Error(
-              'relative DEPS entry \'%s\' must begin with a slash' % self.url)
-        # A relative url. Get the parent url, strip from the last '/'
-        # (equivalent to unix basename), and append the relative url.
-        parent_url = self.parent.url
-        parsed_url = parent_url[:parent_url.rfind('/')] + self.url
-        logging.info('Dependency(%s)._OverrideUrl(%s) -> %s', self.name,
-                     self.url, parsed_url)
-        self.set_url(parsed_url)
-
-    elif self.url is None:
+    if self.url is None:
       logging.info('Dependency(%s)._OverrideUrl(None) -> None', self._name)
+      return
 
-    else:
+    if not isinstance(self.url, basestring):
       raise gclient_utils.Error('Unknown url type')
+
+    # self.url is a local path
+    path, at, rev = self.url.partition('@')
+    if os.path.isdir(path):
+      return
+
+    # self.url is a URL
+    parsed_url = urlparse.urlparse(self.url)
+    if parsed_url[0] or re.match(r'^\w+\@[\w\.-]+\:[\w\/]+', parsed_url[2]):
+      return
+
+    # self.url is relative to the parent's URL.
+    if not path.startswith('/'):
+      raise gclient_utils.Error(
+          'relative DEPS entry \'%s\' must begin with a slash' % self.url)
+
+    parent_url = self.parent.url
+    parent_path = self.parent.url.split('@')[0]
+    if os.path.isdir(parent_path):
+      # Parent's URL is a local path. Get parent's URL dirname and append
+      # self.url.
+      parent_path = os.path.dirname(parent_path)
+      parsed_url = parent_path + path.replace('/', os.sep) + at + rev
+    else:
+      # Parent's URL is a URL. Get parent's URL, strip from the last '/'
+      # (equivalent to unix dirname) and append self.url.
+      parsed_url = parent_url[:parent_url.rfind('/')] + self.url
+
+    logging.info('Dependency(%s)._OverrideUrl(%s) -> %s', self.name,
+                 self.url, parsed_url)
+    self.set_url(parsed_url)
 
   def PinToActualRevision(self):
     """Updates self.url to the revision checked out on disk."""
