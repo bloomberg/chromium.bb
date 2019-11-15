@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBLAYER_COMMON_CRASH_REPORTER_CLIENT_H_
-#define WEBLAYER_COMMON_CRASH_REPORTER_CLIENT_H_
+#ifndef WEBLAYER_COMMON_CRASH_REPORTER_CRASH_REPORTER_CLIENT_H_
+#define WEBLAYER_COMMON_CRASH_REPORTER_CRASH_REPORTER_CLIENT_H_
 
 #include <string>
 
@@ -16,4 +16,4 @@ void EnableCrashReporter(const std::string& process_type);
 
 }  // namespace weblayer
 
-#endif  // WEBLAYER_COMMON_CRASH_REPORTER_CLIENT_H_
+#endif  // WEBLAYER_COMMON_CRASH_REPORTER_CRASH_REPORTER_CLIENT_H_
