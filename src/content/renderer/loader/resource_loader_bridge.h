@@ -166,6 +166,7 @@ class CONTENT_EXPORT RequestPeerReceiver : public ResourceReceiver {
 
  private:
   content::RequestPeer* peer_;
+  std::vector<char> received_data_;
   int request_id_;
   scoped_refptr<base::SingleThreadTaskRunner> runner_;
 };
