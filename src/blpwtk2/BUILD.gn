@@ -153,6 +153,8 @@ shared_library("blpwtk2") {
     "private/blpwtk2_inprocessrenderer.h",
     "private/blpwtk2_inprocessresourceloaderbridge.cc",
     "private/blpwtk2_inprocessresourceloaderbridge.h",
+    "private/blpwtk2_logmessagethrottler.cc",
+    "private/blpwtk2_logmessagethrottler.h",
     "private/blpwtk2_mainmessagepump.cc",
     "private/blpwtk2_mainmessagepump.h",
     "private/blpwtk2_nativeviewwidget.cc",
