@@ -577,12 +577,12 @@
   {
     "name": "crostini-gpu-support",
     "owners": [ "nverne", "benwells" ],
-    "expiry_milestone": 78
+    "expiry_milestone": 85
   },
   {
     "name": "crostini-usb-allow-unsupported",
     "owners": [ "nverne", "benwells" ],
-    "expiry_milestone": 77
+    "expiry_milestone": 85
   },
   {
     "name": "crostini-usb-support",
