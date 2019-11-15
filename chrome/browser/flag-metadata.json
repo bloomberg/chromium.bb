@@ -2269,7 +2269,7 @@
   },
   {
     "name": "force-enable-system-aec",
-    "owners": [ "grunell" ],
+    "owners": [ "armax", "guidou" ],
     "expiry_milestone": 80
   },
   {
@@ -2487,7 +2487,7 @@
   },
   {
     "name": "mac-system-media-permissions-info-ui",
-    "owners": [ "grunell", "engedy", "hkamila" ],
+    "owners": [ "guidou", "engedy", "hkamila" ],
     "expiry_milestone": 78
   },
   {
