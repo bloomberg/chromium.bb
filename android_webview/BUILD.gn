@@ -803,9 +803,7 @@ if (public_android_sdk) {
     android_manifest = trichrome_webview_android_manifest
     android_manifest_dep =
         "//android_webview/nonembedded:trichrome_webview_manifest"
-
-    # TODO(torne): make minsdk=Q once we no longer build hacky P version
-    min_sdk_version = android_sdk_version
+    min_sdk_version = 29
 
     deps = upstream_only_webview_deps
     apk_name = "TrichromeWebView"
@@ -821,9 +819,7 @@ if (public_android_sdk) {
     android_manifest_dep =
         "//android_webview/nonembedded:trichrome_webview_64_32_manifest"
     is_64_bit_browser = true
-
-    # TODO(torne): make minsdk=Q once we no longer build hacky P version
-    min_sdk_version = android_sdk_version
+    min_sdk_version = 29
 
     deps = upstream_only_webview_deps
     apk_name = "TrichromeWebView6432"
