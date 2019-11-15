@@ -442,6 +442,21 @@ void BrowserContextImpl::setPacUrl(const StringRef& url)
 
 
 // patch section: embedder ipc
+void BrowserContextImpl::opaqueMessageToBrowserAsync(const StringRef& msg)
+{
+    NOTREACHED();
+}
+
+String BrowserContextImpl::opaqueMessageToBrowserSync(const StringRef& msg)
+{
+    NOTREACHED();
+    return String();
+}
+
+void BrowserContextImpl::setIPCDelegate(ProcessClientDelegate *delegate)
+{
+    NOTREACHED();
+}
 
 
 // patch section: web cache
