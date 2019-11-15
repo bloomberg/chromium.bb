@@ -144,6 +144,8 @@ class BLPWTK2_EXPORT WebViewDelegate {
         // preceded this call.
 
 
+    virtual void validateClientFailed(WebView* source);
+        // Notify the embedder that the source webview failed in validating its client.
 
 };
 

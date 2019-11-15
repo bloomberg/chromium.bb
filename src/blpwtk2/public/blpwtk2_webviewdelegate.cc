@@ -65,6 +65,8 @@ void WebViewDelegate::stopPerformanceTiming() {}
 
 void WebViewDelegate::didParentStatus(WebView *source, int status, NativeView parent) {}
 
+void WebViewDelegate::validateClientFailed(WebView* source) {}
+
 }  // close namespace blpwtk2
 
 // vim: ts=4 et

@@ -118,6 +118,8 @@ class WebViewProxy final : public WebView
                           v8::Local<v8::Value> token) override;
     String printToPDF() override;
 
+    bool validateClient();
+
     DISALLOW_COPY_AND_ASSIGN(WebViewProxy);
 
   public:
