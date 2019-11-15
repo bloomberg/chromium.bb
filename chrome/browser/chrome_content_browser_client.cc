@@ -1582,12 +1582,22 @@ ChromeContentBrowserClient::GetInitiatorSchemeBypassingDocumentBlocking() {
 }
 
 bool ChromeContentBrowserClient::ShouldTreatURLSchemeAsFirstPartyWhenTopLevel(
-    base::StringPiece scheme) {
+    base::StringPiece scheme,
+    bool is_embedded_origin_secure) {
+  if (is_embedded_origin_secure && scheme == content::kChromeUIScheme)
+    return true;
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   return scheme == extensions::kExtensionScheme;
 #else
   return false;
 #endif
+}
+
+bool ChromeContentBrowserClient::
+    ShouldIgnoreSameSiteCookieRestrictionsWhenTopLevel(
+        base::StringPiece scheme,
+        bool is_embedded_origin_secure) {
+  return is_embedded_origin_secure && scheme == content::kChromeUIScheme;
 }
 
 mojo::PendingRemote<network::mojom::URLLoaderFactory>
