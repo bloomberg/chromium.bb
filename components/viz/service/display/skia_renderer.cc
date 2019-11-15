@@ -2096,12 +2096,20 @@ sk_sp<SkColorFilter> SkiaRenderer::GetColorFilter(const gfx::ColorSpace& src,
                                                   const gfx::ColorSpace& dst,
                                                   float resource_offset,
                                                   float resource_multiplier) {
+  gfx::ColorSpace adjusted_src = src;
+  float sdr_white_level = current_frame()->sdr_white_level;
+  if (src.IsValid() && !src.IsHDR() &&
+      sdr_white_level != gfx::ColorSpace::kDefaultSDRWhiteLevel) {
+    adjusted_src = src.GetScaledColorSpace(
+        sdr_white_level / gfx::ColorSpace::kDefaultSDRWhiteLevel);
+  }
+
   std::unique_ptr<SkRuntimeColorFilterFactory>& factory =
-      color_filter_cache_[dst][src];
+      color_filter_cache_[dst][adjusted_src];
   if (!factory) {
     std::unique_ptr<gfx::ColorTransform> transform =
         gfx::ColorTransform::NewColorTransform(
-            src, dst, gfx::ColorTransform::Intent::INTENT_PERCEPTUAL);
+            adjusted_src, dst, gfx::ColorTransform::Intent::INTENT_PERCEPTUAL);
     // TODO(backer): Support lookup table transforms (e.g.
     // COLOR_CONVERSION_MODE_LUT).
     if (!transform->CanGetShaderSource())
