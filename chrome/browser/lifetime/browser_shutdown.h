@@ -52,7 +52,9 @@ enum class ShutdownType {
   kBrowserExit = 2,
   // User logoff or system shutdown.
   kEndSession = 3,
-  kMaxValue = kEndSession
+  // Exit without onbeforeunload or in-progress download prompts.
+  kSilentExit = 4,
+  kMaxValue = kSilentExit
 };
 
 void RegisterPrefs(PrefRegistrySimple* registry);
@@ -64,6 +66,11 @@ void OnShutdownStarting(ShutdownType type);
 // Returns true if OnShutdownStarting has been called to note that shutdown has
 // started.
 bool HasShutdownStarted();
+
+// Returns true if OnShutdownStarting has been called and unload handlers (e.g.,
+// an in-progress download or a page's beforeunload handler) should be ignored.
+// This is true for kEndSession and kSilentExit shutdown types.
+bool ShouldIgnoreUnloadHandlers();
 
 // Get the current shutdown type.
 ShutdownType GetShutdownType();

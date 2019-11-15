@@ -99,6 +99,8 @@ const char* ToShutdownTypeString(ShutdownType type) {
       return "exit";
     case ShutdownType::kEndSession:
       return "end";
+    case ShutdownType::kSilentExit:
+      return "silent_exit";
   }
   return "";
 }
@@ -144,6 +146,11 @@ void OnShutdownStarting(ShutdownType type) {
 
 bool HasShutdownStarted() {
   return g_shutdown_type != ShutdownType::kNotValid;
+}
+
+bool ShouldIgnoreUnloadHandlers() {
+  return g_shutdown_type == ShutdownType::kEndSession ||
+         g_shutdown_type == ShutdownType::kSilentExit;
 }
 
 ShutdownType GetShutdownType() {
@@ -313,6 +320,9 @@ void ReadLastShutdownFile(ShutdownType type,
 
   switch (type) {
     case ShutdownType::kNotValid:
+    case ShutdownType::kSilentExit:
+      // The histograms below have expired, so do not record metrics for silent
+      // exits; see https://crbug.com/975118.
       break;
 
     case ShutdownType::kWindowClose:
