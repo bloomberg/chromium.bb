@@ -40980,6 +40980,11 @@ Called by update_use_counter_css.py.-->
   <int value="3" label="Stop app failed"/>
 </enum>
 
+<enum name="MediaRouterIconState">
+  <int value="0" label="Ephemeral"/>
+  <int value="1" label="Pinned"/>
+</enum>
+
 <enum name="MediaRouterInitialViews">
   <int value="0" label="Route Details"/>
   <int value="1" label="Sink List"/>
