@@ -106,7 +106,7 @@
 #   numbers can be any string that does not contain ':' or '-' characters.
 #
 #   Currently supported product names:
-#       'chrome_frame', 'chrome_os', 'android', 'webview_android',
+#       'chrome_frame', 'chrome_os', 'android', 'webview_android', 'ios',
 #       'chrome.win', 'chrome.win7', 'chrome.linux', 'chrome.mac', 'chrome.*'
 #     For example if 'chrome.*:5-10' is specified for a policy, then it should
 #     be read as:
@@ -115,7 +115,7 @@
 #   The product name also affects in which templates the policy is included:
 #     chrome.*, chrome.win, chrome_frame -> ADM, ADMX, ADML, doc
 #     chrome.*, chrome.linux -> JSON, doc
-#     chrome.*, chrome.mac -> plist, plist_strings, doc
+#     chrome.*, chrome.mac, ios -> plist, plist_strings, doc
 #     everything else -> doc
 #
 #   The default list of policies supported by Chrome is also generated based
@@ -1242,6 +1242,7 @@
         'chrome.*:8-',
         'chrome_os:11-',
         'android:30-',
+        'ios:80-',
       ],
       'features': {
         'can_be_recommended': True,
@@ -4350,6 +4351,7 @@
         'chrome.*:8-',
         'chrome_os:11-',
         'android:30-',
+        'ios:80-',
       ],
       'features': {
         'dynamic_refresh': True,
@@ -4382,6 +4384,7 @@
         'chrome.*:8-',
         'chrome_os:11-',
         'android:30-',
+        'ios:80-',
       ],
       'features': {
         'dynamic_refresh': True,
@@ -4874,6 +4877,7 @@
         'chrome.*:10-',
         'chrome_os:11-',
         'android:33-',
+        'ios:80-',
       ],
       'features': {
         'dynamic_refresh': True,
@@ -6634,6 +6638,7 @@
         'chrome_os:15-',
         'android:30-',
         'webview_android:47-',
+        'ios:80-',
       ],
       'features': {
         'dynamic_refresh': True,
@@ -6669,6 +6674,7 @@
         'chrome_os:15-',
         'android:30-',
         'webview_android:47-',
+        'ios:80-',
       ],
       'features': {
         'dynamic_refresh': True,
