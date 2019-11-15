@@ -44,6 +44,19 @@
 #include <unordered_map>
 #include <unordered_set>
 
+#define RET_VOID
+#define VALIDATE_RENDER_VIEW_IMPL(rv, ret)                                     \
+  if (!rv) {                                                                   \
+    LOG(WARNING)                                                               \
+        << "nullptr is returned from content::RenderView::FromRoutingID with " \
+           "d_renderViewRoutingId = "                                          \
+        << d_renderViewRoutingId;                                              \
+    return ret;                                                                \
+  }
+
+#define VALIDATE_RENDER_VIEW_VOID(rv) VALIDATE_RENDER_VIEW_IMPL(rv, RET_VOID)
+#define VALIDATE_RENDER_VIEW(rv) VALIDATE_RENDER_VIEW_IMPL(rv, {})
+
 #define GetAValue(argb)      (LOBYTE((argb)>>24))
 
 namespace blpwtk2 {
@@ -102,7 +115,7 @@ WebFrame *WebViewProxy::mainFrame()
     if (!d_mainFrame.get()) {
         content::RenderView *rv =
             content::RenderView::FromRoutingID(d_renderViewRoutingId);
-        DCHECK(rv);
+        VALIDATE_RENDER_VIEW(rv);
 
         blink::WebFrame *webFrame = rv->GetWebView()->MainFrame();
         d_mainFrame.reset(new WebFrameImpl(webFrame));
@@ -116,6 +129,9 @@ int WebViewProxy::loadUrl(const StringRef& url)
     DCHECK(Statics::isInApplicationMainThread());
     if (d_pendingLoadStatus) {
         return EBUSY;
+    }
+    if (!validateClient()) {
+        return EFAULT;
     }
 
     d_pendingLoadStatus = true;
@@ -138,6 +154,9 @@ void WebViewProxy::loadInspector(unsigned int pid, int routingId)
 void WebViewProxy::inspectElementAt(const POINT& point)
 {
     DCHECK(Statics::isInApplicationMainThread());
+    if (!validateClient()) {
+        return;
+    }
     d_client->proxy()->inspectElementAt(point.x, point.y);
 }
 
@@ -146,6 +165,9 @@ int WebViewProxy::goBack()
     DCHECK(Statics::isInApplicationMainThread());
     if (d_pendingLoadStatus) {
         return EBUSY;
+    }
+    if (!validateClient()) {
+        return EFAULT;
     }
 
     d_pendingLoadStatus = true;
@@ -161,6 +183,9 @@ int WebViewProxy::goForward()
     if (d_pendingLoadStatus) {
         return EBUSY;
     }
+    if (!validateClient()) {
+        return EFAULT;
+    }
 
     d_pendingLoadStatus = true;
     LOG(INFO) << "routingId=" << d_renderViewRoutingId << ", goForward()";
@@ -175,6 +200,9 @@ int WebViewProxy::reload()
     if (d_pendingLoadStatus) {
         return EBUSY;
     }
+    if (!validateClient()) {
+        return EFAULT;
+    }
 
     d_pendingLoadStatus = true;
     LOG(INFO) << "routingId=" << d_renderViewRoutingId << ", reload()";
@@ -187,6 +215,9 @@ void WebViewProxy::stop()
 {
     DCHECK(Statics::isInApplicationMainThread());
     LOG(INFO) << "routingId=" << d_renderViewRoutingId << ", stop";
+    if (!validateClient()) {
+        return;
+    }
     d_client->proxy()->stop();
 }
 
@@ -194,6 +225,9 @@ void WebViewProxy::show()
 {
     DCHECK(Statics::isInApplicationMainThread());
     LOG(INFO) << "routingId=" << d_renderViewRoutingId << ", show";
+    if (!validateClient()) {
+        return;
+    }
     d_client->proxy()->show();
 }
 
@@ -201,6 +235,9 @@ void WebViewProxy::hide()
 {
     DCHECK(Statics::isInApplicationMainThread());
     LOG(INFO) << "routingId=" << d_renderViewRoutingId << ", hide";
+    if (!validateClient()) {
+        return;
+    }
     d_client->proxy()->hide();
 }
 
@@ -214,60 +251,90 @@ int WebViewProxy::setParent(NativeView parent)
 void WebViewProxy::move(int left, int top, int width, int height)
 {
     DCHECK(Statics::isInApplicationMainThread());
+    if (!validateClient()) {
+        return;
+    }
     d_client->move(gfx::Rect(left, top, width, height));
 }
 
 void WebViewProxy::cutSelection()
 {
     DCHECK(Statics::isInApplicationMainThread());
+    if (!validateClient()) {
+        return;
+    }
     d_client->proxy()->cutSelection();
 }
 
 void WebViewProxy::copySelection()
 {
     DCHECK(Statics::isInApplicationMainThread());
+    if (!validateClient()) {
+        return;
+    }
     d_client->proxy()->copySelection();
 }
 
 void WebViewProxy::paste()
 {
     DCHECK(Statics::isInApplicationMainThread());
+    if (!validateClient()) {
+        return;
+    }
     d_client->proxy()->paste();
 }
 
 void WebViewProxy::deleteSelection()
 {
     DCHECK(Statics::isInApplicationMainThread());
+    if (!validateClient()) {
+        return;
+    }
     d_client->proxy()->deleteSelection();
 }
 
 void WebViewProxy::enableNCHitTest(bool enabled)
 {
     DCHECK(Statics::isInApplicationMainThread());
+    if (!validateClient()) {
+        return;
+    }
     d_client->proxy()->enableNCHitTest(enabled);
 }
 
 void WebViewProxy::onNCHitTestResult(int x, int y, int result)
 {
     DCHECK(Statics::isInApplicationMainThread());
+    if (!validateClient()) {
+        return;
+    }
     d_client->ncHitTestResult(x, y, result);
 }
 
 void WebViewProxy::performCustomContextMenuAction(int actionId)
 {
     DCHECK(Statics::isInApplicationMainThread());
+    if (!validateClient()) {
+        return;
+    }
     d_client->proxy()->performCustomContextMenuAction(actionId);
 }
 
 void WebViewProxy::find(const StringRef& text, bool matchCase, bool forward)
 {
     DCHECK(Statics::isInApplicationMainThread());
+    if (!validateClient()) {
+        return;
+    }
     d_client->find(std::string(text.data(), text.size()), matchCase, forward);
 }
 
 void WebViewProxy::stopFind(bool preserveSelection)
 {
     DCHECK(Statics::isInApplicationMainThread());
+    if (!validateClient()) {
+        return;
+    }
     d_client->stopFind(preserveSelection);
 }
 
@@ -275,18 +342,27 @@ void WebViewProxy::replaceMisspelledRange(const StringRef& text)
 {
     DCHECK(Statics::isInApplicationMainThread());
     std::string stext(text.data(), text.length());
+    if (!validateClient()) {
+        return;
+    }
     d_client->proxy()->replaceMisspelledRange(stext);
 }
 
 void WebViewProxy::rootWindowPositionChanged()
 {
     DCHECK(Statics::isInApplicationMainThread());
+    if (!validateClient()) {
+        return;
+    }
     d_client->proxy()->rootWindowPositionChanged();
 }
 
 void WebViewProxy::rootWindowSettingsChanged()
 {
     DCHECK(Statics::isInApplicationMainThread());
+    if (!validateClient()) {
+        return;
+    }
     d_client->proxy()->rootWindowSettingsChanged();
 }
 
@@ -301,7 +377,7 @@ void WebViewProxy::handleInputEvents(const InputEvent *events, size_t eventsCoun
     content::RenderViewImpl *rw =
         content::RenderViewImpl::FromRoutingID(d_renderViewRoutingId);
     DCHECK(rw);
-
+    VALIDATE_RENDER_VIEW_VOID(rw);
     RendererUtil::handleInputEvents(rw->GetWidget(), events, eventsCount);
 }
 
@@ -328,9 +404,13 @@ void WebViewProxy::setBackgroundColor(NativeColor color)
     DCHECK(d_isMainFrameAccessible) << "You should wait for didFinishLoad";
     DCHECK(d_gotRenderViewInfo);
 
+    if (!validateClient()) {
+        return;
+    }
     d_client->proxy()->setBackgroundColor(red, green, blue);
 
     content::RenderView* rv = content::RenderView::FromRoutingID(d_renderViewRoutingId);
+    VALIDATE_RENDER_VIEW_VOID(rv);
     blink::WebView* web_view = rv->GetWebView();
     web_view->SetBaseBackgroundColor(
         SkColorSetARGB(alpha, red, green, blue));
@@ -339,12 +419,18 @@ void WebViewProxy::setBackgroundColor(NativeColor color)
 void WebViewProxy::setRegion(NativeRegion region)
 {
     DCHECK(Statics::isInApplicationMainThread());
+    if (!validateClient()) {
+        return;
+    }
     d_client->applyRegion(region);
 }
 
 void WebViewProxy::clearTooltip()
 {
     DCHECK(Statics::isInApplicationMainThread());
+    if (!validateClient()) {
+        return;
+    }
     d_client->proxy()->clearTooltip();
 }
 
@@ -361,6 +447,7 @@ v8::MaybeLocal<v8::Value> WebViewProxy::callFunction(
     DCHECK(d_gotRenderViewInfo);
 
     content::RenderView *rv = content::RenderView::FromRoutingID(d_renderViewRoutingId);
+    VALIDATE_RENDER_VIEW(rv);
     blink::WebFrame *webFrame = rv->GetWebView()->MainFrame();
     DCHECK(webFrame->IsWebLocalFrame());
     blink::WebLocalFrame* localWebFrame = webFrame->ToWebLocalFrame();
@@ -496,7 +583,7 @@ void WebViewProxy::onLoadStatus(int status)
         if (!d_securityToken.IsEmpty()) {
             content::RenderView *rv =
                 content::RenderView::FromRoutingID(d_renderViewRoutingId);
-            DCHECK(rv);
+            VALIDATE_RENDER_VIEW_VOID(rv);
 
             blink::WebFrame *webFrame = rv->GetWebView()->MainFrame();
 
@@ -579,6 +666,18 @@ void WebViewProxy::didParentStatus(int status, NativeView parent)
     if (d_delegate) {
         d_delegate->didParentStatus(this, status, parent);
     }
+}
+
+bool WebViewProxy::validateClient()
+{
+    if (!d_client) {
+        LOG(WARNING) << "d_client is nullptr";
+        if (d_delegate) {
+            d_delegate->validateClientFailed(this);
+        }
+        return false;
+    }
+    return true;
 }
 
 }  // close namespace blpwtk2
