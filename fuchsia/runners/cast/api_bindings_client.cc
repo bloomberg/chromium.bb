@@ -61,8 +61,8 @@ void ApiBindingsClient::AttachToFrame(fuchsia::web::Frame* frame,
     std::move(on_error_callback).Run();
   });
 
-  connector_->RegisterDefaultHandler(base::BindRepeating(
-      &ApiBindingsClient::OnPortConnected, base::Unretained(this)));
+  connector_->Register(base::BindRepeating(&ApiBindingsClient::OnPortConnected,
+                                           base::Unretained(this)));
 
   // Enumerate and inject all scripts in |bindings|.
   uint64_t bindings_id = kBindingsIdStart;
@@ -78,7 +78,7 @@ void ApiBindingsClient::AttachToFrame(fuchsia::web::Frame* frame,
 
 ApiBindingsClient::~ApiBindingsClient() {
   if (connector_ && frame_) {
-    connector_->RegisterDefaultHandler({});
+    connector_->Register({});
 
     // Remove all injected scripts using their automatically enumerated IDs.
     for (uint64_t i = 0; i < bindings_->size(); ++i)
