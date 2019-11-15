@@ -12,6 +12,8 @@ import("//ui/base/ui_features.gni")
 import("//ui/ozone/ozone.gni")
 import("//ui/views/features.gni")
 
+assert(toolkit_views)
+
 config("flags") {
   defines = [ "TOOLKIT_VIEWS=1" ]
 }
