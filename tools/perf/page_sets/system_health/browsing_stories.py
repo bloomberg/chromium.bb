@@ -207,6 +207,13 @@ class NytimesDesktopStory2018(_ArticleBrowsingStory):
   SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
   TAGS = [story_tags.YEAR_2018]
 
+class NytimesMobileStory2019(_ArticleBrowsingStory):
+  """The third top website in http://www.alexa.com/topsites/category/News"""
+  NAME = 'browse:news:nytimes:2019'
+  URL = 'http://mobile.nytimes.com'
+  ITEM_SELECTOR = '.css-1yjtett a'
+  SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
+  TAGS = [story_tags.YEAR_2019]
 
 # Desktop qq.com opens a news item in a separate tab, for which the back button
 # does not work.

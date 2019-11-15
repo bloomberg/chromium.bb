@@ -60,6 +60,9 @@
         "browse:news:nytimes": {
             "DEFAULT": "system_health_mobile_017.wprgo"
         },
+        "browse:news:nytimes:2019": {
+            "DEFAULT": "system_health_mobile_c1e2407ace.wprgo"
+        },
         "browse:news:qq": {
             "DEFAULT": "system_health_mobile_018.wprgo"
         },
