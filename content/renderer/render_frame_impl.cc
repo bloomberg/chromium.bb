@@ -4304,11 +4304,6 @@ void RenderFrameImpl::DidChangeName(const blink::WebString& name) {
   GetFrameHost()->DidChangeName(name.Utf8(), unique_name_helper_.value());
 }
 
-void RenderFrameImpl::DidEnforceInsecureRequestPolicy(
-    blink::WebInsecureRequestPolicy policy) {
-  GetFrameHost()->EnforceInsecureRequestPolicy(policy);
-}
-
 void RenderFrameImpl::DidChangeFramePolicy(
     blink::WebFrame* child_frame,
     const blink::FramePolicy& frame_policy) {

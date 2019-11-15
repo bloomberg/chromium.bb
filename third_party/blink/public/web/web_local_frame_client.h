@@ -268,9 +268,6 @@ class BLINK_EXPORT WebLocalFrameClient {
   // This frame's name has changed.
   virtual void DidChangeName(const WebString& name) {}
 
-  // This frame has set an insecure request policy.
-  virtual void DidEnforceInsecureRequestPolicy(WebInsecureRequestPolicy) {}
-
   // The sandbox flags or container policy have changed for a child frame of
   // this frame.
   virtual void DidChangeFramePolicy(WebFrame* child_frame, const FramePolicy&) {

@@ -435,15 +435,6 @@ interface FrameHost {
   // Sent when the frame changes its window.name.
   DidChangeName(string name, string unique_name);
 
-  // Sent when the frame starts enforcing an insecure request policy. Sending
-  // this information in DidCommitProvisionalLoad isn't sufficient; this
-  // message is needed because, for example, a document can dynamically insert
-  // a <meta> tag that causes strict mixed content checking to be enforced.
-  //
-  // Argument |policy_bitmap| represents blink::WebInsecureRequestPolicy uint8
-  // bitfield.
-  EnforceInsecureRequestPolicy(uint8 policy_bitmap);
-
   // Notifies the browser process that HTTP headers which affect the frame
   // polices were delivered with the document being loaded into the frame. This
   // can be either or both of 'Feature-Policy' or 'Content-Security-Policy' (

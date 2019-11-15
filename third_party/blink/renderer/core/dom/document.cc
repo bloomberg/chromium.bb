@@ -8069,7 +8069,7 @@ bool Document::IsSecureContext() const {
 void Document::DidEnforceInsecureRequestPolicy() {
   if (!GetFrame())
     return;
-  GetFrame()->Client()->DidEnforceInsecureRequestPolicy(
+  GetFrame()->GetLocalFrameHostRemote().EnforceInsecureRequestPolicy(
       GetInsecureRequestPolicy());
 }
 
