@@ -217,8 +217,7 @@ class ToolkitCreateParams
 
 
     // patch section: renderer ui
-
-
+    BLPWTK2_EXPORT void setRendererUIEnabled(bool rendererUIEnabled);
 
     // ACCESSORS
     ThreadMode threadMode() const;
@@ -254,7 +253,7 @@ class ToolkitCreateParams
 
 
     // patch section: renderer ui
-
+    bool rendererUIEnabled() const;
 
 
 };

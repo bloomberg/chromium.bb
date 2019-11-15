@@ -268,6 +268,14 @@ bool ContentRendererClient::IsSafeRedirectTarget(const GURL& url) {
 
 void ContentRendererClient::DidSetUserAgent(const std::string& user_agent) {}
 
+bool ContentRendererClient::Dispatch(IPC::Message* msg) {
+  return false;
+}
+
+bool ContentRendererClient::BindFrameSinkProvider(mojom::FrameSinkProviderRequest request) {
+  return false;
+}
+
 bool ContentRendererClient::RequiresHtmlImports(const GURL& url) {
   return false;
 }
