@@ -211,6 +211,7 @@ if (!build_with_chromium) {
   executable("streaming_receiver_demo") {
     sources = [
       "receiver_demo/main.cc",
+      "receiver_demo/memory_util.h",
     ]
     deps = [
       ":receiver",
@@ -222,12 +223,28 @@ if (!build_with_chromium) {
     libs = []
     if (have_sdl_for_demo_apps && have_ffmpeg_for_demo_apps) {
       defines += [ "CAST_STREAMING_HAVE_EXTERNAL_LIBS_FOR_DEMO_APPS" ]
-      include_dirs += [ "/usr/include/SDL2" ]
+      sources += [
+        "receiver_demo/avcodec_glue.h",
+        "receiver_demo/decoder.cc",
+        "receiver_demo/decoder.h",
+        "receiver_demo/sdl_audio_player.cc",
+        "receiver_demo/sdl_audio_player.h",
+        "receiver_demo/sdl_glue.cc",
+        "receiver_demo/sdl_glue.h",
+        "receiver_demo/sdl_player_base.cc",
+        "receiver_demo/sdl_player_base.h",
+        "receiver_demo/sdl_video_player.cc",
+        "receiver_demo/sdl_video_player.h",
+      ]
       libs += [
         "-lSDL2",
         "-lavcodec",
-        "-lavformat",
         "-lavutil",
+      ]
+    } else {
+      sources += [
+        "receiver_demo/dummy_player.cc",
+        "receiver_demo/dummy_player.h",
       ]
     }
   }

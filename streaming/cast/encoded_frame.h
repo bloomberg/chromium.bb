@@ -86,10 +86,8 @@ struct EncodedFrame {
 
   // Pointer to a buffer containing the encoded signal data for the frame. In
   // the sender context, this points to the data to be sent, and nothing will be
-  // mutated. In the receiver context, a sufficiently-large buffer must be
-  // pre-allocated by the client, and the Span here points to it (and indicates
-  // its capacity); and after the buffer is populated, this member will be
-  // adjusted to indicate exactly what portion of the buffer was populated.
+  // mutated. In the receiver context, this is set to the region of a
+  // client-provided buffer that was populated.
   absl::Span<uint8_t> data;
 
   OSP_DISALLOW_COPY_AND_ASSIGN(EncodedFrame);

@@ -51,7 +51,9 @@ Receiver::Receiver(Environment* environment,
       rtcp_buffer_capacity_(environment->GetMaxPacketSize()),
       rtcp_buffer_(new uint8_t[rtcp_buffer_capacity_]),
       rtcp_alarm_(environment->now_function(), environment->task_runner()),
-      smoothed_clock_offset_(ClockDriftSmoother::kDefaultTimeConstant) {
+      smoothed_clock_offset_(ClockDriftSmoother::kDefaultTimeConstant),
+      consumption_alarm_(environment->now_function(),
+                         environment->task_runner()) {
   OSP_DCHECK(packet_router_);
   OSP_DCHECK_EQ(checkpoint_frame(), FrameId::first() - 1);
   OSP_CHECK_GT(rtcp_buffer_capacity_, 0);
@@ -70,6 +72,7 @@ Receiver::~Receiver() {
 
 void Receiver::SetConsumer(Consumer* consumer) {
   consumer_ = consumer;
+  ScheduleFrameReadyCheck();
 }
 
 void Receiver::SetPlayerProcessingTime(Clock::duration needed_time) {
@@ -120,10 +123,13 @@ int Receiver::AdvanceToNextFrame() {
     }
 
     // If this incomplete frame is not yet late for playout, simply wait for the
-    // rest of its packets to come in.
+    // rest of its packets to come in. However, do schedule a check to
+    // re-examine things at the time it would become a late frame, to possibly
+    // skip-over it.
     const auto playout_time =
         *entry.estimated_capture_time + ResolveTargetPlayoutDelay(f);
     if (playout_time > (now_() + player_processing_time_)) {
+      ScheduleFrameReadyCheck(playout_time);
       break;
     }
   }
@@ -133,7 +139,7 @@ int Receiver::AdvanceToNextFrame() {
   return kNoFramesReady;
 }
 
-void Receiver::ConsumeNextFrame(EncodedFrame* frame) {
+EncodedFrame Receiver::ConsumeNextFrame(absl::Span<uint8_t> buffer) {
   // Assumption: The required call to AdvanceToNextFrame() ensures that
   // |last_frame_consumed_| is set to one before the frame to be consumed here.
   const FrameId frame_id = last_frame_consumed_ + 1;
@@ -142,22 +148,31 @@ void Receiver::ConsumeNextFrame(EncodedFrame* frame) {
   // Decrypt the frame, populating the given output |frame|.
   PendingFrame& entry = GetQueueEntry(frame_id);
   OSP_DCHECK(entry.collector.is_complete());
-  crypto_.Decrypt(entry.collector.PeekAtAssembledFrame(), frame);
+  EncodedFrame frame;
+  frame.data = buffer;
+  crypto_.Decrypt(entry.collector.PeekAtAssembledFrame(), &frame);
   OSP_DCHECK(entry.estimated_capture_time);
-  frame->reference_time =
+  frame.reference_time =
       *entry.estimated_capture_time + ResolveTargetPlayoutDelay(frame_id);
 
   RECEIVER_VLOG
-      << "ConsumeNextFrame → " << frame->frame_id << ": " << frame->data.size()
+      << "ConsumeNextFrame → " << frame.frame_id << ": " << frame.data.size()
       << " payload bytes, RTP Timestamp "
-      << frame->rtp_timestamp.ToTimeSinceOrigin<microseconds>(rtp_timebase_)
+      << frame.rtp_timestamp.ToTimeSinceOrigin<microseconds>(rtp_timebase_)
              .count()
       << " µs, to play-out "
-      << duration_cast<microseconds>(frame->reference_time - now_()).count()
+      << duration_cast<microseconds>(frame.reference_time - now_()).count()
       << " µs from now.";
 
   entry.Reset();
   last_frame_consumed_ = frame_id;
+
+  // Ensure the Consumer is notified if there are already more frames ready for
+  // consumption, and it hasn't explicitly called AdvanceToNextFrame() to check
+  // for itself.
+  ScheduleFrameReadyCheck();
+
+  return frame;
 }
 
 void Receiver::OnReceivedRtpPacket(Clock::time_point arrival_time,
@@ -247,6 +262,10 @@ void Receiver::OnReceivedRtpPacket(Clock::time_point arrival_time,
                     << part->frame_id;
       RecordNewTargetPlayoutDelay(part->frame_id, part->new_playout_delay);
     }
+
+    // Now that the estimated capture time is known, other frames may have just
+    // become ready, per the frame-skipping logic in AdvanceToNextFrame().
+    ScheduleFrameReadyCheck();
   }
 
   if (!collector.is_complete()) {
@@ -267,12 +286,9 @@ void Receiver::OnReceivedRtpPacket(Clock::time_point arrival_time,
     AdvanceCheckpoint(part->frame_id);
   }
 
-  if (consumer_) {
-    consumer_->OnFrameComplete(part->frame_id);
-    // WARNING: Nothing should come after this, since the call to
-    // OnFrameComplete() could result in re-entrant calls into this Receiver!
-    return;
-  }
+  // Since a frame has become complete, schedule a check to see whether this or
+  // any other frames have become ready for consumption.
+  ScheduleFrameReadyCheck();
 }
 
 void Receiver::OnReceivedRtcpPacket(Clock::time_point arrival_time,
@@ -439,6 +455,19 @@ void Receiver::DropAllFramesBefore(FrameId first_kept_frame) {
 
   RECEIVER_LOG(INFO) << "Artificially advancing checkpoint after skipping.";
   AdvanceCheckpoint(first_kept_frame);
+}
+
+void Receiver::ScheduleFrameReadyCheck(Clock::time_point when) {
+  consumption_alarm_.Schedule(
+      [this] {
+        if (consumer_) {
+          const int next_frame_buffer_size = AdvanceToNextFrame();
+          if (next_frame_buffer_size != kNoFramesReady) {
+            consumer_->OnFramesReady(next_frame_buffer_size);
+          }
+        }
+      },
+      when);
 }
 
 Receiver::Consumer::~Consumer() = default;

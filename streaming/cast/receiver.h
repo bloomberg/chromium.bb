@@ -68,26 +68,18 @@ class ReceiverPacketRouter;
 //
 //    private:
 //     // Receiver::Consumer implementation.
-//     void OnFrameComplete(FrameId frame_id) override {
+//     void OnFramesReady(int next_frame_buffer_size) override {
 //       std::vector<uint8_t> buffer;
-//       for (;;) {
-//         const int buffer_size_needed = receiver_->AdvanceToNextFrame();
-//         if (buffer_size == Receiver::kNoFramesReady) {
-//           break;  // Consumed all the frames.
-//         }
+//       buffer.resize(next_frame_buffer_size);
+//       openscreen::cast_streaming::EncodedFrame encoded_frame =
+//           receiver_->ConsumeNextFrame(absl::Span<uint8_t>(buffer));
 //
-//         buffer.resize(buffer_size_needed);
-//         openscreen::cast_streaming::EncodedFrame encoded_frame;
-//         encoded_frame.data = absl::Span<uint8_t>(buffer);
-//         receiver_->ConsumeNextFrame(&encoded_frame);
+//       display_.RenderFrame(decoder_.DecodeFrame(encoded_frame.data));
 //
-//         display_.RenderFrame(decoder_.DecodeFrame(encoded_frame.data));
-//       }
+//       // Note: An implementation could call receiver_->AdvanceToNextFrame()
+//       // and receiver_->ConsumeNextFrame() in a loop here, to consume all the
+//       // remaining frames that are ready.
 //     }
-//
-//     // NOTE: An implementation may also want to schedule a timer to poll
-//     // receiver_.AdvanceToNextFrame(), if skipping past late frames is
-//     // desired. This would depend on the application, choice of codec, etc.
 //
 //     Receiver* const receiver_;
 //     MyDecoder decoder_;
@@ -115,10 +107,13 @@ class Receiver {
    public:
     virtual ~Consumer();
 
-    // Called whenever |frame_id| has been completely received. Note that
-    // AdvanceToNextFrame() might indicate no frames are ready (e.g., if frames
-    // are being received out-of-order).
-    virtual void OnFrameComplete(FrameId frame_id) = 0;
+    // Called whenever one or more frames have become ready for consumption. The
+    // |next_frame_buffer_size| argument is identical to the result of calling
+    // AdvanceToNextFrame(), and so the Consumer only needs to prepare a buffer
+    // and call ConsumeNextFrame(). It may then call AdvanceToNextFrame() to
+    // check whether there are any more frames ready, but this is not mandatory.
+    // See usage example in class-level comments.
+    virtual void OnFramesReady(int next_frame_buffer_size) = 0;
   };
 
   // Constructs a Receiver that attaches to the given |environment| and
@@ -167,18 +162,19 @@ class Receiver {
   // relationship with them (e.g., key frames).
   //
   // This method returns kNoFramesReady if there is not currently a frame ready
-  // for consumption. The caller can wait for a Consumer::OnFrameComplete()
-  // notification, or poll this method again later. Otherwise, the number of
-  // bytes of encoded data is returned, and the caller should use this to ensure
-  // the buffer it passes to ConsumeNextFrame() is large enough.
+  // for consumption. The caller should wait for a Consumer::OnFramesReady()
+  // notification before trying again. Otherwise, the number of bytes of encoded
+  // data is returned, and the caller should use this to ensure the buffer it
+  // passes to ConsumeNextFrame() is large enough.
   int AdvanceToNextFrame();
 
-  // Populates the given |frame| with the next frame, both metadata and payload
-  // data. AdvanceToNextFrame() should have been called just before this method,
-  // and |frame->data| must point to a sufficiently-sized buffer that will be
-  // populated with the frame's payload data. Upon return |frame->data| will be
-  // set to the portion of the buffer that was populated.
-  void ConsumeNextFrame(EncodedFrame* frame);
+  // Returns the next frame, both metadata and payload data. The Consumer calls
+  // this method after being notified via OnFramesReady(), and it can also call
+  // this whenever AdvanceToNextFrame() indicates another frame is ready.
+  // |buffer| must point to a sufficiently-sized buffer that will be populated
+  // with the frame's payload data. Upon return |frame->data| will be set to the
+  // portion of the buffer that was populated.
+  EncodedFrame ConsumeNextFrame(absl::Span<uint8_t> buffer);
 
   // The default "player processing time" amount. See SetPlayerProcessingTime().
   static constexpr std::chrono::milliseconds kDefaultPlayerProcessingTime{5};
@@ -258,6 +254,11 @@ class Receiver {
   // frames.
   void DropAllFramesBefore(FrameId first_kept_frame);
 
+  // Sets the |consumption_alarm_| to check whether any frames are ready,
+  // including possibly skipping over late frames in order to make not-yet-late
+  // frames become ready. The default argument value means "without delay."
+  void ScheduleFrameReadyCheck(platform::Clock::time_point when = {});
+
   const platform::ClockNowFunctionPtr now_;
   ReceiverPacketRouter* const packet_router_;
   RtcpSession rtcp_session_;
@@ -334,6 +335,10 @@ class Receiver {
   // consumed from this Receiver.
   platform::Clock::duration player_processing_time_ =
       kDefaultPlayerProcessingTime;
+
+  // Scheduled to check whether there are frames ready and, if there are, to
+  // notify the Consumer via OnFramesReady().
+  Alarm consumption_alarm_;
 
   // The interval between sending ACK/NACK feedback RTCP messages while
   // incomplete frames exist in the queue.
