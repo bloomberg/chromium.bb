@@ -271,21 +271,15 @@ void AutocompleteResult::SortAndCull(
   //  1. There are no matches.
   //  2. The first match doesn't have |allowed_to_be_default_match| as true.
   //     This implies that NONE of the matches were allowed to be the default.
-  //  3. Hardcoded for ChromeOS Launcher empty-textfield on-focus suggestions.
-  //     TODO(tommycli): We should remove the ChromeOS launcher special case.
-  //     Instead, ensure none of the launcher matches are allowed to be default.
-  if (matches_.empty() || !matches_.begin()->allowed_to_be_default_match ||
-      (input.text().empty() &&
-       (input.current_page_classification() ==
-        metrics::OmniboxEventProto::CHROMEOS_APP_LIST))) {
+  if (matches_.empty() || !matches_.begin()->allowed_to_be_default_match) {
     default_match_ = end();
     return;
   }
 
   // Since we didn't early exit, the first match must be the default match.
-  // TODO(tommycli): Once we eliminate the ChromeOS Launcher hardcoding above,
-  // we can delete |default_match_|, since if matches.begin() has a true
-  // |allowed_to_be_default_match|, it will always be the default match.
+  // TODO(tommycli): We can delete |default_match_|, since if matches.begin()
+  // has a true |allowed_to_be_default_match|, it will always be the default
+  // match.
   default_match_ = matches_.begin();
 
   // Almost all matches are "navigable": they have a valid |destination_url|.
