@@ -234,9 +234,9 @@ static const arg_def_t profile =
 static const arg_def_t width = ARG_DEF("w", "width", 1, "Frame width");
 static const arg_def_t height = ARG_DEF("h", "height", 1, "Frame height");
 static const arg_def_t forced_max_frame_width = ARG_DEF(
-    NULL, "forced_max_frame_width", 0, "Maximum frame width value to force");
+    NULL, "forced_max_frame_width", 1, "Maximum frame width value to force");
 static const arg_def_t forced_max_frame_height = ARG_DEF(
-    NULL, "forced_max_frame_height", 0, "Maximum frame height value to force");
+    NULL, "forced_max_frame_height", 1, "Maximum frame height value to force");
 #if CONFIG_WEBM_IO
 static const struct arg_enum_list stereo_mode_enum[] = {
   { "mono", STEREO_FORMAT_MONO },
