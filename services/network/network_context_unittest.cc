@@ -1516,7 +1516,8 @@ TEST_F(NetworkContextTest, ClearHostCache) {
     for (const auto* domain : kDomains) {
       host_cache->Set(
           net::HostCache::Key(domain, net::DnsQueryType::UNSPECIFIED, 0,
-                              net::HostResolverSource::ANY),
+                              net::HostResolverSource::ANY,
+                              net::NetworkIsolationKey()),
           net::HostCache::Entry(net::OK, net::AddressList(),
                                 net::HostCache::Entry::SOURCE_UNKNOWN),
           base::TimeTicks::Now(), base::TimeDelta::FromDays(1));
