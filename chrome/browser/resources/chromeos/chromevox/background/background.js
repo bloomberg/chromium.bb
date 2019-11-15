@@ -336,7 +336,7 @@ Background.prototype = {
    * Open the options page in a new tab.
    */
   showOptionsPage: function() {
-    var optionsPage = {url: 'chromevox/background/options.html'};
+    var optionsPage = {url: 'background/options/options.html'};
     chrome.tabs.create(optionsPage);
   },
 
