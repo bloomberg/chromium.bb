@@ -205,7 +205,7 @@ public final class ChromePreferenceKeys {
      */
     public static final String OFFLINE_INDICATOR_V2_ENABLED_KEY = "offline_indicator_v2_enabled";
 
-    @CheckDiscard("Validation is made in tests and in debug builds.")
+    @CheckDiscard("Validation is performed in tests and in debug builds.")
     static List<String> createUsedKeys() {
         // These values are currently used as SharedPreferences keys.
         // To deprecate a key that is not used anymore:
@@ -258,7 +258,7 @@ public final class ChromePreferenceKeys {
         // clang-format on
     }
 
-    @CheckDiscard("Validation is made in tests and in debug builds.")
+    @CheckDiscard("Validation is performed in tests and in debug builds.")
     static List<String> createDeprecatedKeysForTesting() {
         // These values have been used as SharedPreferences keys in the past and should not be
         // reused. Do not remove values from this list.
@@ -282,6 +282,56 @@ public final class ChromePreferenceKeys {
                 "chrome_home_info_promo_shown",
                 "chrome_home_enabled_date",
                 "PrefMigrationVersion"
+        );
+        // clang-format on
+    }
+
+    @CheckDiscard("Validation is performed in tests and in debug builds.")
+    static List<String> createGrandfatheredFormatKeysForTesting() {
+        // Do not add new constants to this list. Instead, declare new keys in the format
+        // "Chrome.[Feature].[Key]", for example "Chrome.FooBar.FooEnabled".
+
+        // clang-format off
+        return Arrays.asList(
+                CONTEXTUAL_SEARCH_ALL_TIME_TAP_COUNT,
+                CONTEXTUAL_SEARCH_ALL_TIME_OPEN_COUNT,
+                CONTEXTUAL_SEARCH_ALL_TIME_TAP_QUICK_ANSWER_COUNT,
+                CONTEXTUAL_SEARCH_TAP_SINCE_OPEN_COUNT,
+                CONTEXTUAL_SEARCH_TAP_SINCE_OPEN_QUICK_ANSWER_COUNT,
+                CONTEXTUAL_SEARCH_PROMO_OPEN_COUNT,
+                CONTEXTUAL_SEARCH_ENTITY_IMPRESSIONS_COUNT,
+                CONTEXTUAL_SEARCH_ENTITY_OPENS_COUNT,
+                CONTEXTUAL_SEARCH_QUICK_ACTION_IMPRESSIONS_COUNT,
+                CONTEXTUAL_SEARCH_QUICK_ACTIONS_TAKEN_COUNT,
+                CONTEXTUAL_SEARCH_QUICK_ACTIONS_IGNORED_COUNT,
+                CONTEXTUAL_SEARCH_PREVIOUS_INTERACTION_EVENT_ID,
+                CONTEXTUAL_SEARCH_PREVIOUS_INTERACTION_ENCODED_OUTCOMES,
+                CONTEXTUAL_SEARCH_PREVIOUS_INTERACTION_TIMESTAMP,
+                CONTEXTUAL_SEARCH_TAP_TRIGGERED_PROMO_COUNT,
+                CONTEXTUAL_SEARCH_LAST_ANIMATION_TIME,
+                CONTEXTUAL_SEARCH_CURRENT_WEEK_NUMBER,
+                PROMOS_SKIPPED_ON_FIRST_START,
+                SIGNIN_PROMO_LAST_SHOWN_MAJOR_VERSION,
+                SIGNIN_PROMO_LAST_SHOWN_ACCOUNT_NAMES,
+                CHROME_DEFAULT_BROWSER,
+                UI_THEME_SETTING_KEY,
+                DARKEN_WEBSITES_ENABLED_KEY,
+                CONTENT_SUGGESTIONS_SHOWN_KEY,
+                SETTINGS_PERSONALIZED_SIGNIN_PROMO_DISMISSED,
+                NTP_SIGNIN_PROMO_DISMISSED,
+                NTP_SIGNIN_PROMO_SUPPRESSION_PERIOD_START,
+                SUCCESS_UPLOAD_SUFFIX,
+                FAILURE_UPLOAD_SUFFIX,
+                VERIFIED_DIGITAL_ASSET_LINKS,
+                TRUSTED_WEB_ACTIVITY_DISCLOSURE_ACCEPTED_PACKAGES,
+                SHOULD_REGISTER_VR_ASSETS_COMPONENT_ON_STARTUP,
+                ACCESSIBILITY_TAB_SWITCHER,
+                LATEST_UNSUPPORTED_VERSION,
+                TWA_DIALOG_NUMBER_OF_DISMISSALS_ON_UNINSTALL,
+                TWA_DIALOG_NUMBER_OF_DISMISSALS_ON_CLEAR_DATA,
+                WEBAPK_UNINSTALLED_PACKAGES,
+                REACHED_CODE_PROFILER_GROUP_KEY,
+                OFFLINE_INDICATOR_V2_ENABLED_KEY
         );
         // clang-format on
     }
