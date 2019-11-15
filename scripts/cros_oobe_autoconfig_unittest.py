@@ -44,14 +44,22 @@ _STATEFUL_OFFSET = 120 * _SECTOR_SIZE
 class SanitizeDomainTests(cros_test_lib.TestCase):
   """Tests for SanitizeDomain()"""
 
-  def testFullASCII(self):
+  def testASCII(self):
     """Tests that ASCII-only domains are not mangled."""
     self.assertEqual(cros_oobe_autoconfig.SanitizeDomain('FoO.cOm'), 'foo.com')
 
-  def testUnicode(self):
+  def testUnicodeCase(self):
+    """Tests that ASCII-only domains are not mangled."""
+    self.assertEqual(cros_oobe_autoconfig.SanitizeDomain(u'föo.com'),
+                     'xn--fo-fka.com')
+    self.assertEqual(cros_oobe_autoconfig.SanitizeDomain(u'fÖo.com'),
+                     'xn--fo-fka.com')
+
+  def testHomographs(self):
     """Tests that a Unicode domain is punycoded."""
+    # "tеѕt.com" looks like "test.com" but isn't!
     self.assertEqual(cros_oobe_autoconfig.SanitizeDomain(
-        't\xd0\xb5\xd1\x95t.com'), 'xn--tt-nlc2k.com')
+        u't\u0435\u0455t.com'), 'xn--tt-nlc2k.com')
 
 
 class PrepareImageTests(cros_test_lib.MockTempDirTestCase):
@@ -116,7 +124,8 @@ class PrepareImageTests(cros_test_lib.MockTempDirTestCase):
       # TODO(mikenichols): Remove unneeded mount call once context
       # handling is in place, http://crrev/c/1795578
       _ = self.mount_ctx.Mount((constants.CROS_PART_STATEFUL,))[0]
-      data = json.load(open(self.config_path))
+      with open(self.config_path) as fp:
+        data = json.load(fp)
       self.assertEqual(data, _TEST_CONFIG_JSON)
 
   def testDomainContents(self):
@@ -125,8 +134,7 @@ class PrepareImageTests(cros_test_lib.MockTempDirTestCase):
       # TODO(mikenichols): Remove unneeded mount call once context
       # handling is in place, http://crrev/c/1795578
       _ = self.mount_ctx.Mount((constants.CROS_PART_STATEFUL,))[0]
-      domain = open(self.domain_path)
-      self.assertEqual(domain.read(), _TEST_DOMAIN)
+      self.assertEqual(osutils.ReadFile(self.domain_path), _TEST_DOMAIN)
 
 
 class GetConfigContentTests(cros_test_lib.MockTestCase):

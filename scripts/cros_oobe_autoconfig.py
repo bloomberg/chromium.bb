@@ -76,13 +76,17 @@ _DOMAIN_PATH = 'enrollment_domain'
 
 
 def SanitizeDomain(domain):
-  """Returns a sanitized |domain| for use in recovery."""
-  # Domain is a byte string when passed by command-line flag.
-  domain = domain.decode('utf-8')
-  # Lowercase, so we don't need to ship uppercase glyphs in initramfs.
-  domain = domain.lower()
-  # Encode to IDNA to prevent homograph attacks.
-  return domain.encode('idna')
+  """Sanitized |domain| for use in recovery.
+
+  Args:
+    domain: (str) The original string.
+
+  Returns:
+    (str) The sanitized domain name, possibly using punycode to disambiguate.
+  """
+  # Encode using punycode ("idna" here) to prevent homograph attacks.
+  # Once that's been normalized to ASCII, normalize to lowercase.
+  return domain.encode('idna').decode('utf-8').lower()
 
 
 def GetConfigContent(opts):

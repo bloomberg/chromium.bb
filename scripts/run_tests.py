@@ -192,7 +192,6 @@ PYTHON2_ONLY_TESTS = {
     'scripts/create_manifest_snapshot_unittest',
     'scripts/cros_generate_breakpad_symbols_unittest',
     'scripts/cros_mark_chrome_as_stable_unittest',
-    'scripts/cros_oobe_autoconfig_unittest',
     'scripts/cros_portage_upgrade_unittest',
     'scripts/cros_sdk_unittest',
     'scripts/deploy_chrome_unittest',
