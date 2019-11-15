@@ -237,6 +237,12 @@ void WebViewHostImpl::ncDragEnd(WebView *source, const POINT& endPoint)
                        base::Unretained(this)));
 }
 
+void WebViewHostImpl::ncDoubleClick(WebView *source, const POINT& point)
+{
+    DCHECK(source == d_impl);
+    d_clientPtr->ncDoubleClick(point.x, point.y);
+}
+
 void WebViewHostImpl::findState(WebView *source,
                                 int      numberOfMatches,
                                 int      activeMatchOrdinal,
