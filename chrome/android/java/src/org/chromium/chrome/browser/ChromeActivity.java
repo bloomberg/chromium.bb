@@ -161,7 +161,6 @@ import org.chromium.chrome.browser.vr.ArDelegateProvider;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.chrome.browser.webapps.addtohomescreen.AddToHomescreenManager;
 import org.chromium.chrome.browser.widget.ScrimView;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContent;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.chrome.browser.widget.bottomsheet.EmptyBottomSheetObserver;
@@ -1427,16 +1426,15 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     }
 
     /**
-     * Initializes the {@link BottomSheetController}. The {@link BottomSheet} is only initialized
-     * after content is requested for the first time.
+     * Initializes the {@link BottomSheetController}. The bottom sheet is only initialized after
+     * content is requested for the first time.
      */
     protected void initializeBottomSheetController() {
-        Supplier<BottomSheet> sheetSupplier = () -> {
+        Supplier<View> sheetViewSupplier = () -> {
             ViewGroup coordinator = findViewById(R.id.coordinator);
             getLayoutInflater().inflate(R.layout.bottom_sheet, coordinator);
-            BottomSheet sheet = coordinator.findViewById(R.id.bottom_sheet);
-            sheet.init(coordinator, getActivityTabProvider(), getWindow(),
-                    getWindowAndroid().getKeyboardDelegate());
+
+            View sheet = coordinator.findViewById(R.id.bottom_sheet);
 
             mBottomSheetSnackbarManager = new SnackbarManager(
                     this, sheet.findViewById(R.id.bottom_sheet_snackbar_container));
@@ -1446,9 +1444,10 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
 
         Supplier<OverlayPanelManager> panelManagerSupplier =
                 () -> getCompositorViewHolder().getLayoutManager().getOverlayPanelManager();
-        mBottomSheetController =
-                new BottomSheetController(getLifecycleDispatcher(), mActivityTabProvider,
-                        mScrimView, sheetSupplier, panelManagerSupplier, getFullscreenManager());
+
+        mBottomSheetController = new BottomSheetController(getLifecycleDispatcher(),
+                mActivityTabProvider, mScrimView, sheetViewSupplier, panelManagerSupplier,
+                getFullscreenManager(), getWindow(), getWindowAndroid().getKeyboardDelegate());
 
         ((BottomContainer) findViewById(R.id.bottom_container))
                 .setBottomSheetController(mBottomSheetController);

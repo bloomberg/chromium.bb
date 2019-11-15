@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.test;
+package org.chromium.chrome.browser.widget.bottomsheet;
 
 import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 import static org.chromium.chrome.browser.ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE;
@@ -12,11 +12,8 @@ import android.support.test.uiautomator.UiDevice;
 
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContent;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController.StateChangeReason;
-import org.chromium.chrome.browser.widget.bottomsheet.EmptyBottomSheetObserver;
+import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 /**
@@ -138,7 +135,7 @@ public class BottomSheetTestRule extends ChromeTabbedActivityTestRule {
      */
     public void setSheetOffsetFromBottom(float offset) {
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> getBottomSheet().setSheetOffsetFromBottomForTesting(offset));
+                () -> mSheetController.setSheetOffsetFromBottomForTesting(offset));
     }
 
     public BottomSheetContent getBottomSheetContent() {
