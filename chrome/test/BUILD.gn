@@ -2022,6 +2022,7 @@ if (!is_android) {
 
     if (is_chromeos) {
       sources += [
+        "../browser/apps/app_service/instance_registry_browsertest.cc",
         "../browser/apps/platform_apps/app_window_interactive_uitest_base.cc",
         "../browser/apps/platform_apps/app_window_interactive_uitest_base.h",
         "../browser/chromeos/accessibility/accessibility_manager_browsertest.cc",
