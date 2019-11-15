@@ -11,9 +11,9 @@ import collections
 import getpass
 import io
 import json
-import netrc
 import os
 import re
+import shutil
 import stat
 
 import mock
@@ -47,7 +47,7 @@ class GerritTestCase(cros_test_lib.MockTempDirTestCase):
     CROS_TEST_GERRIT_HOST: host name for Gerrit operations; defaults to
                            t3st-chr0me-review.googlesource.com.
     CROS_TEST_COOKIES_PATH: path to a cookies.txt file to use for git/Gerrit
-                            requests; defaults to none.
+                            requests; defaults to ~/.gitcookies.
     CROS_TEST_COOKIE_NAMES: comma-separated list of cookie names from
                             CROS_TEST_COOKIES_PATH to set on requests; defaults
                             to none. The current implementation only sends
@@ -67,7 +67,6 @@ class GerritTestCase(cros_test_lib.MockTempDirTestCase):
       'gerrit_url',
       'git_host',
       'git_url',
-      'netrc_file',
       'project_prefix',
   ])
 
@@ -78,85 +77,49 @@ class GerritTestCase(cros_test_lib.MockTempDirTestCase):
     gerrit_host = os.environ.get('CROS_TEST_GERRIT_HOST',
                                  '%s-review.googlesource.com' % default_host)
     project_prefix = 'test-%s/' % (cros_build_lib.GetRandomString(),)
-    cookies_path = os.environ.get('CROS_TEST_COOKIES_PATH')
-    cookie_names_str = os.environ.get('CROS_TEST_COOKIE_NAMES', '')
-    cookie_names = [c for c in cookie_names_str.split(',') if c]
+    cookies_path = os.environ.get('CROS_TEST_COOKIES_PATH',
+                                  constants.GITCOOKIES_PATH)
+    # "o" is the cookie name that GoB uses in its instructions.
+    cookie_names_str = os.environ.get('CROS_TEST_COOKIE_NAMES', 'o')
+    cookie_names = {c for c in cookie_names_str.split(',') if c}
+
+    tmpcookies_path = os.path.join(tmp_dir, '.gitcookies')
+    if os.path.exists(cookies_path):
+      shutil.copy(cookies_path, tmpcookies_path)
+    else:
+      osutils.Touch(tmpcookies_path)
 
     return self.GerritInstance(
         cookie_names=cookie_names,
-        cookies_path=cookies_path,
+        cookies_path=tmpcookies_path,
         gerrit_host=gerrit_host,
         gerrit_url='https://%s/' % gerrit_host,
         git_host=git_host,
         git_url='https://%s/' % git_host,
-        # TODO(dborowitz): Ensure this is populated when using role account.
-        netrc_file=os.path.join(tmp_dir, '.netrc'),
         project_prefix=project_prefix,)
-
-  def _populate_netrc(self, src):
-    """Sets up a test .netrc file using the given source as a base."""
-    # Heuristic: prefer passwords for @google.com accounts, since test host
-    # permissions tend to refer to those accounts.
-    preferred_account_domains = ['.google.com']
-    needed = [self.gerrit_instance.git_host, self.gerrit_instance.gerrit_host]
-    candidates = collections.defaultdict(list)
-    src_netrc = netrc.netrc(src)
-    for host, v in src_netrc.hosts.items():
-      dot = host.find('.')
-      if dot < 0:
-        continue
-      for n in needed:
-        if n.endswith(host[dot:]):
-          login, _, password = v
-          i = 1
-          for pd in preferred_account_domains:
-            if login.endswith(pd):
-              i = 0
-              break
-          candidates[n].append((i, login, password))
-
-    with open(self.gerrit_instance.netrc_file, 'w') as out:
-      for n in needed:
-        cs = candidates[n]
-        self.assertGreater(len(cs), 0,
-                           msg='missing password in ~/.netrc for %s' % n)
-        cs.sort()
-        _, login, password = cs[0]
-        out.write('machine %s login %s password %s\n' % (n, login, password))
 
   def setUp(self):
     """Sets up the gerrit instances in a class-specific temp dir."""
     self.saved_params = {}
-    old_home = os.environ['HOME']
     os.environ['HOME'] = self.tempdir
 
     # Create gerrit instance.
     gi = self.gerrit_instance = self._create_gerrit_instance(self.tempdir)
 
-    netrc_path = os.path.join(old_home, '.netrc')
-    if os.path.exists(netrc_path):
-      self._populate_netrc(netrc_path)
-      # Set netrc file for http authentication.
-      self.PatchObject(gob_util, '_GetNetRC',
-                       return_value=netrc.netrc(gi.netrc_file))
+    # This --global will use our tempdir $HOME we set above, not the real ~/.
+    cros_build_lib.run(
+        ['git', 'config', '--global', 'http.cookiefile', self.cookies_path],
+        quiet=True)
 
-    if gi.cookies_path:
-      cros_build_lib.run(
-          ['git', 'config', '--global', 'http.cookiefile', gi.cookies_path],
-          quiet=True)
+    jar = cookielib.MozillaCookieJar(self.cookies_path)
+    jar.load(ignore_expires=True)
 
-    # Set cookie file for http authentication
-    if gi.cookies_path:
-      jar = cookielib.MozillaCookieJar(gi.cookies_path)
-      jar.load(ignore_expires=True)
+    def GetCookies(host, _path):
+      return dict(
+          (c.name, urllib.parse.unquote(c.value)) for c in jar
+          if c.domain == host and c.path == '/' and c.name in gi.cookie_names)
 
-      def GetCookies(host, _path):
-        ret = dict(
-            (c.name, urllib.parse.unquote(c.value)) for c in jar
-            if c.domain == host and c.path == '/' and c.name in gi.cookie_names)
-        return ret
-
-      self.PatchObject(gob_util, 'GetCookies', GetCookies)
+    self.PatchObject(gob_util, 'GetCookies', GetCookies)
 
     site_params = config_lib.GetSiteParams()
 
@@ -230,9 +193,8 @@ class GerritTestCase(cros_test_lib.MockTempDirTestCase):
     git.RunGit(root, ['clone', url, path])
     # Install commit-msg hook.
     hook_path = os.path.join(path, '.git', 'hooks', 'commit-msg')
-    hook_cmd = ['curl', '-n', '-o', hook_path]
-    if self.gerrit_instance.cookies_path:
-      hook_cmd.extend(['-b', self.gerrit_instance.cookies_path])
+    hook_cmd = ['curl', '-n', '-o', hook_path,
+                '-b', self.gerrit_instance.cookies_path]
     hook_cmd.append('https://%s/a/tools/hooks/commit-msg'
                     % self.gerrit_instance.gerrit_host)
     cros_build_lib.run(hook_cmd, quiet=True)
