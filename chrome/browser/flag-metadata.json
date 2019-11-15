@@ -660,7 +660,7 @@
   {
     "name": "decode-webp-images-to-yuv",
     "owners": [ "andrescj", "chromeos-gfx@google.com" ],
-    "expiry_milestone": 80
+    "expiry_milestone": 88
   },
   {
     "name": "delegate-overscroll-swipes",
