@@ -3001,7 +3001,7 @@
   {
     "name": "password-leak-detection",
     "owners": [ "jdoerrie", "vasilii" ],
-    "expiry_milestone": 80
+    "expiry_milestone": 81
   },
   {
     "name": "password-manager-onboarding-android",
@@ -3011,7 +3011,7 @@
   {
     "name": "PasswordImport",
     "owners": [ "vasilii" ],
-    "expiry_milestone": 76
+    "expiry_milestone": 88
   },
   {
     "name": "passwords-account-storage",
@@ -3606,7 +3606,7 @@
   {
     "name": "username-first-flow",
     "owners": [ "dvadym" ],
-    "expiry_milestone": 80
+    "expiry_milestone": 84
   },
   {
     "name": "wake-on-wifi-packet",
