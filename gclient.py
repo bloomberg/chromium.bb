@@ -1687,9 +1687,16 @@ it or fix the checkout.
                   should_recurse=False,
                   relative=None,
                   condition=None))
-          print('\nWARNING: \'%s\' is no longer part of this client.\n'
-                'It is recommended that you manually remove it or use '
-                '\'gclient sync -D\' next time.' % entry_fixed)
+          if modified_files and self._options.delete_unversioned_trees:
+            print('\nWARNING: \'%s\' is no longer part of this client.\n'
+                  'Despite running \'gclient sync -D\' no action was taken '
+                  'as there are modifications.\nIt is recommended you revert '
+                  'all changes or run \'gclient sync -D --force\' next '
+                  'time.' % entry_fixed)
+          else:
+            print('\nWARNING: \'%s\' is no longer part of this client.\n'
+                  'It is recommended that you manually remove it or use '
+                  '\'gclient sync -D\' next time.' % entry_fixed)
         else:
           # Delete the entry
           print('\n________ deleting \'%s\' in \'%s\'' % (

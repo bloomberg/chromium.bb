@@ -307,8 +307,9 @@ class ManagedGitWrapperTestCase(BaseGitWrapperTestCase):
     file_path = join(self.base_path, 'a')
     with open(file_path, 'a') as f:
       f.writelines('touched\n')
-    scm = gclient_scm.GitWrapper(self.url, self.root_dir,
-                                 self.relpath)
+    scm = gclient_scm.GitWrapper(
+        self.url + '@069c602044c5388d2d15c3f875b057c852003458', self.root_dir,
+        self.relpath)
     file_list = []
     scm.status(options, self.args, file_list)
     self.assertEqual(file_list, [file_path])
@@ -316,6 +317,22 @@ class ManagedGitWrapperTestCase(BaseGitWrapperTestCase):
         ('\n________ running \'git -c core.quotePath=false diff --name-status '
          '069c602044c5388d2d15c3f875b057c852003458\' in \'%s\'\n\nM\ta\n') %
             join(self.root_dir, '.'))
+
+
+  def testStatusNewNoBaseRev(self):
+    if not self.enabled:
+      return
+    options = self.Options()
+    file_path = join(self.base_path, 'a')
+    with open(file_path, 'a') as f:
+      f.writelines('touched\n')
+    scm = gclient_scm.GitWrapper(self.url, self.root_dir, self.relpath)
+    file_list = []
+    scm.status(options, self.args, file_list)
+    self.assertEqual(file_list, [file_path])
+    self.checkstdout(
+        ('\n________ running \'git -c core.quotePath=false diff --name-status'
+         '\' in \'%s\'\n\nM\ta\n') % join(self.root_dir, '.'))
 
   def testStatus2New(self):
     if not self.enabled:
@@ -327,8 +344,9 @@ class ManagedGitWrapperTestCase(BaseGitWrapperTestCase):
       with open(file_path, 'a') as f:
         f.writelines('touched\n')
       expected_file_list.extend([file_path])
-    scm = gclient_scm.GitWrapper(self.url, self.root_dir,
-                                 self.relpath)
+    scm = gclient_scm.GitWrapper(
+        self.url + '@069c602044c5388d2d15c3f875b057c852003458', self.root_dir,
+        self.relpath)
     file_list = []
     scm.status(options, self.args, file_list)
     expected_file_list = [join(self.base_path, x) for x in ['a', 'b']]

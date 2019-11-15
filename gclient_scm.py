@@ -912,10 +912,11 @@ class GitWrapper(SCMWrapper):
       self.Print('________ couldn\'t run status in %s:\n'
                  'The directory does not exist.' % self.checkout_path)
     else:
-      try:
-        merge_base = [self._Capture(['merge-base', 'HEAD', self.remote])]
-      except subprocess2.CalledProcessError:
-        merge_base = []
+      merge_base = []
+      if self.url:
+        _, base_rev = gclient_utils.SplitUrlRevision(self.url)
+        if base_rev:
+          merge_base = [base_rev]
       self._Run(
           ['-c', 'core.quotePath=false', 'diff', '--name-status'] + merge_base,
           options, always_show_header=options.verbose)
