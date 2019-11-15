@@ -3005,8 +3005,8 @@
   },
   {
     "name": "password-manager-onboarding-android",
-    "owners": ["achulkov", "ioanap"],
-    "expiry_milestone": 80
+    "owners": ["ioanap"],
+    "expiry_milestone": 82
   },
   {
     "name": "PasswordImport",
