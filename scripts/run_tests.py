@@ -188,7 +188,6 @@ PYTHON2_ONLY_TESTS = {
     'lib/toolchain_util_unittest',
     'scripts/cbuildbot_launch_unittest',
     'scripts/create_manifest_snapshot_unittest',
-    'scripts/cros_generate_breakpad_symbols_unittest',
     'scripts/cros_mark_chrome_as_stable_unittest',
     'scripts/cros_portage_upgrade_unittest',
     'scripts/cros_sdk_unittest',
