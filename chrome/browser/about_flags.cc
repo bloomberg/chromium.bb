@@ -3845,6 +3845,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSharingPeerConnectionSenderDescription, kOsAll,
      FEATURE_VALUE_TYPE(kSharingPeerConnectionSender)},
 
+    {"sharing-rename-devices", flag_descriptions::kSharingRenameDevicesName,
+     flag_descriptions::kSharingRenameDevicesDescription, kOsAll,
+     FEATURE_VALUE_TYPE(kSharingRenameDevices)},
+
 #if defined(OS_CHROMEOS)
     {"discover-app", flag_descriptions::kEnableDiscoverAppName,
      flag_descriptions::kEnableDiscoverAppDescription, kOsCrOS,
