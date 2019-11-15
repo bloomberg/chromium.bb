@@ -1819,6 +1819,26 @@
             ]
         }
     ],
+    "DecodeJpegToYuv": [
+        {
+            "platforms": [
+                "android",
+                "android_webview",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Experiment",
+                    "enable_features": [
+                        "DecodeJpeg420ImagesToYUV"
+                    ]
+                }
+            ]
+        }
+    ],
     "DecodeWebPToYUV": [
         {
             "platforms": [
