@@ -462,6 +462,7 @@ static void set_good_speed_features_framesize_independent(
     // sf->tx_domain_dist_level = 2;
     sf->tx_domain_dist_thres_level = 2;
     sf->simple_motion_search_prune_agg = 2;
+    sf->skip_repeat_interpolation_filter_search = 2;
   }
 }
 
