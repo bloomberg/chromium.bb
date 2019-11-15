@@ -2009,7 +2009,7 @@
   {
     "name": "enable-viz-display-compositor",
     "owners": [ "kylechar", "rjkroege" ],
-    "expiry_milestone": 79
+    "expiry_milestone": 81
   },
   {
     "name": "enable-viz-hit-test-surface-layer",
