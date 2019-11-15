@@ -2438,8 +2438,8 @@
   },
   {
     "name": "interest-feed-content-suggestions",
-    "owners": [ "//chrome/android/feed/OWNERS" ],
-    "expiry_milestone": 80
+    "owners": [ "//chrome/android/feed/OWNERS", "feed@chromium.org" ],
+    "expiry_milestone": 90
   },
   {
     "name": "interest-feed-notifications",
