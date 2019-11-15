@@ -127,3 +127,20 @@ message LUCIExe {
   string cache_dir = 1;
 }
 ```
+
+## `resultdb`
+
+This section describes data passed from resultdb-related services.
+
+```
+message ResultDB {
+  message TestResults {
+    // The port that the test results server will listen on.
+    int64 port = 1;
+    // The secret token to send to the server for the handshake.
+    string auth_token = 2;
+  }
+
+  TestResults test_results = 1;
+}
+```
