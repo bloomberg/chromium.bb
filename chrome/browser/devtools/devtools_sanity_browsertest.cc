@@ -1817,13 +1817,23 @@ class MAYBE_DevToolsReattachAfterCrashTest : public DevToolsSanityTest {
   }
 };
 
+// Crashes on Win. http://crbug.com/1025369
+#if defined(OS_WIN)
+#define MAYBE_TestReattachAfterCrashOnTimeline \
+  DISABLED_TestReattachAfterCrashOnTimeline
+#define MAYBE_TestReattachAfterCrashOnNetwork \
+  DISABLED_TestReattachAfterCrashOnNetwork
+#else
+#define MAYBE_TestReattachAfterCrashOnTimeline TestReattachAfterCrashOnTimeline
+#define MAYBE_TestReattachAfterCrashOnNetwork TestReattachAfterCrashOnNetwork
+#endif
 IN_PROC_BROWSER_TEST_F(MAYBE_DevToolsReattachAfterCrashTest,
-                       TestReattachAfterCrashOnTimeline) {
+                       MAYBE_TestReattachAfterCrashOnTimeline) {
   RunTestWithPanel("timeline");
 }
 
 IN_PROC_BROWSER_TEST_F(MAYBE_DevToolsReattachAfterCrashTest,
-                       TestReattachAfterCrashOnNetwork) {
+                       MAYBE_TestReattachAfterCrashOnNetwork) {
   RunTestWithPanel("network");
 }
 
