@@ -1123,7 +1123,7 @@
   {
     "name": "enable-chrome-duet",
     "owners": [ "mdjones" ],
-    "expiry_milestone": 79
+    "expiry_milestone": 82
   },
   {
     "name": "enable-chrome-duet-labels",
