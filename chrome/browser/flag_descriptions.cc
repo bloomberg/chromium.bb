@@ -3652,6 +3652,10 @@ const char kLockScreenNotificationName[] = "Lock screen notification";
 const char kLockScreenNotificationDescription[] =
     "Enable notifications on the lock screen.";
 
+extern const char kMediaAppName[] = "Media App";
+extern const char kMediaAppDescription[] =
+    "Enables the chrome://media-app System Web App (SWA)";
+
 const char kMediaSessionNotificationsName[] = "Media session notifications";
 const char kMediaSessionNotificationsDescription[] =
     "Shows notifications for media sessions showing the currently playing "

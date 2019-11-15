@@ -2511,6 +2511,11 @@
     "expiry_milestone": 80
   },
   {
+    "name": "media-app",
+    "owners": [ "//chromeos/components/media_app_ui/OWNERS" ],
+    "expiry_milestone": 90
+  },
+  {
     "name": "media-router-cast-allow-all-ips",
     "owners": [ "mfoltz" ],
     // This flag is used by users with unusual network configurations to allow
