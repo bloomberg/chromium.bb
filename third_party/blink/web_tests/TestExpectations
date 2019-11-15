@@ -5807,6 +5807,14 @@ external/wpt/trusted-types/eval-no-csp-no-tt-default-policy.tentative.html [ Fai
 # Temporarily disabled to change the API contract in V8
 crbug.com/1018029 virtual/wasm-site-isolated-code-cache/http/tests/devtools/wasm-isolated-code-cache/wasm-cache-test.js [ Pass Failure ]
 
+# First frame not always painted in time
+crbug.com/1024976 media/controls/paint-controls-webkit-appearance-none.html [ Pass Failure ]
+crbug.com/1024976 media/controls/paint-controls-webkit-appearance-none-custom-bg.html [ Pass Failure ]
+crbug.com/1024976 media/video-no-audio.html [ Pass Failure ]
+crbug.com/1024976 virtual/audio-service/media/controls/paint-controls-webkit-appearance-none.html [ Pass Failure ]
+crbug.com/1024976 virtual/audio-service/media/controls/paint-controls-webkit-appearance-none-custom-bg.html [ Pass Failure ]
+crbug.com/1024976 virtual/audio-service/media/video-no-audio.html [ Pass Failure ]
+
 # Sheriff 2019-10-31
 crbug.com/1020036 [ Debug ] external/wpt/lifecycle/freeze.html [ Failure Pass ]
 
