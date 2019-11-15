@@ -51,7 +51,8 @@ BrowserCloseManager::~BrowserCloseManager() {
 void BrowserCloseManager::StartClosingBrowsers() {
   // If the session is ending, skip straight to closing the browsers. There's no
   // time to wait for beforeunload dialogs.
-  if (browser_shutdown::GetShutdownType() == browser_shutdown::END_SESSION) {
+  if (browser_shutdown::GetShutdownType() ==
+      browser_shutdown::ShutdownType::kEndSession) {
     // Tell everyone that we are shutting down.
     browser_shutdown::SetTryingToQuit(true);
     CloseBrowsers();
@@ -162,8 +163,8 @@ void BrowserCloseManager::CloseBrowsers() {
             BrowserList::GetInstance()->end(),
             std::back_inserter(browser_list_copy));
 
-  bool session_ending =
-      browser_shutdown::GetShutdownType() == browser_shutdown::END_SESSION;
+  bool session_ending = browser_shutdown::GetShutdownType() ==
+                        browser_shutdown::ShutdownType::kEndSession;
 
   for (auto* browser : browser_list_copy) {
     browser->window()->Close();
