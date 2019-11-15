@@ -131,6 +131,9 @@ class BrowserContextImpl final : public base::RefCounted<BrowserContextImpl>
 
 
     // patch section: embedder ipc
+    void opaqueMessageToBrowserAsync(const StringRef& msg) override;
+    String opaqueMessageToBrowserSync(const StringRef& msg) override;
+    void setIPCDelegate(ProcessClientDelegate *delegate) override;
 
 
     // patch section: web cache
