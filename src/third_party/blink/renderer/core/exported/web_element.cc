@@ -148,6 +148,12 @@ WebRect WebElement::BoundsInViewport() const {
   return ConstUnwrap<Element>()->BoundsInViewport();
 }
 
+void WebElement::requestSpellCheck() {
+#ifdef BB_HAS_ELEMENT_EXTENSIONS
+  Unwrap<Element>()->bbRequestSpellCheck();
+#endif
+}
+
 SkBitmap WebElement::ImageContents() {
   if (IsNull())
     return {};
