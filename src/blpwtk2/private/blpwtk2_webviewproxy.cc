@@ -262,6 +262,7 @@ void WebViewProxy::drawContentsToBlob(Blob *blob, const DrawParams& params)
     DCHECK(blob);
 
     content::RenderView* rv = content::RenderView::FromRoutingID(d_renderViewRoutingId);
+    VALIDATE_RENDER_VIEW_VOID(rv);
     RendererUtil::drawContentsToBlob(rv, blob, params);
 }
 
