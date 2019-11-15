@@ -281,6 +281,17 @@ void GpuHostImpl::EstablishGpuChannel(int client_id,
       base::BindOnce(&GpuHostImpl::OnChannelEstablished,
                      weak_ptr_factory_.GetWeakPtr(), client_id));
 
+  auto onTimeout = [](Delegate* const delegate, int client_id,
+                      uint64_t client_tracing_id, bool is_gpu_host) {
+    delegate->OnEstablishGpuChannelTimeout(client_id, client_tracing_id,
+                                           is_gpu_host);
+  };
+  establish_channel_timeout_.Start(
+      FROM_HERE,
+      base::TimeDelta::FromMilliseconds(params_.establish_channel_time_out_ms),
+      base::BindOnce(std::move(onTimeout), delegate_, client_id,
+                     client_tracing_id, is_gpu_host));
+
   if (!params_.disable_gpu_shader_disk_cache)
     CreateChannelCache(client_id);
 }
@@ -420,6 +431,7 @@ void GpuHostImpl::OnChannelEstablished(
     mojo::ScopedMessagePipeHandle channel_handle) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   TRACE_EVENT0("gpu", "GpuHostImpl::OnChannelEstablished");
+  establish_channel_timeout_.Stop();
 
   DCHECK(!channel_requests_.empty());
   auto callback = std::move(channel_requests_.front());
