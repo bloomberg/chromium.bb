@@ -301,8 +301,12 @@ DeltaSizeInfo& DeltaSizeInfo::operator=(const DeltaSizeInfo&) = default;
 
 void TreeNode::WriteIntoJson(Json::Value* out, int depth) {
   if (symbol) {
-    (*out)["idPath"] = std::string(symbol->IsDex() ? symbol->FullName()
-                                                   : symbol->TemplateName());
+    if (symbol->IsDex()) {
+      (*out)["idPath"] = std::string(symbol->FullName());
+    } else {
+      (*out)["idPath"] = std::string(symbol->TemplateName());
+      (*out)["fullName"] = std::string(symbol->FullName());
+    }
   } else {
     (*out)["idPath"] = std::string(this->id_path);
   }
