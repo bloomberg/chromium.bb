@@ -371,12 +371,12 @@ void PluginProxyMultiThreadTest::RunTest() {
 
     // The destruction requires a valid PpapiGlobals instance, so we should
     // explicitly release it.
-    secondary_thread_message_loop_ = NULL;
+    secondary_thread_message_loop_.reset();
   }
 
   secondary_thread_.reset(NULL);
   nested_main_thread_message_loop_.reset(NULL);
-  main_thread_task_runner_ = NULL;
+  main_thread_task_runner_.reset();
 }
 
 void PluginProxyMultiThreadTest::CheckOnThread(ThreadType thread_type) {
