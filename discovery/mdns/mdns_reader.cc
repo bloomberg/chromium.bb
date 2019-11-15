@@ -4,22 +4,26 @@
 
 #include "discovery/mdns/mdns_reader.h"
 
+#include <algorithm>
+#include <utility>
+
 #include "platform/api/logging.h"
 
 namespace openscreen {
 namespace discovery {
 
-bool MdnsReader::Read(absl::string_view* out) {
+bool MdnsReader::Read(TxtRecordRdata::Entry* out) {
   Cursor cursor(this);
-  uint8_t string_length;
-  if (!Read(&string_length)) {
+  uint8_t entry_length;
+  if (!Read(&entry_length)) {
     return false;
   }
-  const char* string_begin = reinterpret_cast<const char*>(current());
-  if (!Skip(string_length)) {
+  const uint8_t* entry_begin = current();
+  if (!Skip(entry_length)) {
     return false;
   }
-  *out = absl::string_view(string_begin, string_length);
+  out->reserve(entry_length);
+  out->insert(out->end(), entry_begin, entry_begin + entry_length);
   cursor.Commit();
   return true;
 }
@@ -171,21 +175,21 @@ bool MdnsReader::Read(TxtRecordRdata* out) {
   if (!Read(&record_length)) {
     return false;
   }
-  std::vector<absl::string_view> texts;
+  std::vector<TxtRecordRdata::Entry> texts;
   while (cursor.delta() < sizeof(record_length) + record_length) {
-    absl::string_view entry;
+    TxtRecordRdata::Entry entry;
     if (!Read(&entry)) {
       return false;
     }
-    OSP_DCHECK(entry.length() <= kTXTMaxEntrySize);
+    OSP_DCHECK(entry.size() <= kTXTMaxEntrySize);
     if (!entry.empty()) {
-      texts.push_back(entry);
+      texts.emplace_back(entry);
     }
   }
   if (cursor.delta() != sizeof(record_length) + record_length) {
     return false;
   }
-  *out = TxtRecordRdata(texts);
+  *out = TxtRecordRdata(std::move(texts));
   cursor.Commit();
   return true;
 }

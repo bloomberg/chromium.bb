@@ -5,6 +5,8 @@
 #ifndef DISCOVERY_MDNS_MDNS_READER_H_
 #define DISCOVERY_MDNS_MDNS_READER_H_
 
+#include <vector>
+
 #include "discovery/mdns/mdns_records.h"
 #include "util/big_endian.h"
 
@@ -20,7 +22,7 @@ class MdnsReader : public BigEndianReader {
   // read the value to |out| and advances current() to point right past the read
   // data. Returns false if the method failed to read the value to |out|,
   // current() remains unchanged.
-  bool Read(absl::string_view* out);
+  bool Read(TxtRecordRdata::Entry* out);
   bool Read(DomainName* out);
   bool Read(RawRecordRdata* out);
   bool Read(SrvRecordRdata* out);

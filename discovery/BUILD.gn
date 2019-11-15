@@ -59,8 +59,22 @@ source_set("dnssd") {
     "dnssd/public/txt_record.h",
   ]
 
-  deps = [
+  public_deps = [
     ":mdns",
+  ]
+}
+
+source_set("testing") {
+  testonly = true
+
+  sources = [
+    "mdns/testing/mdns_test_util.cc",
+    "mdns/testing/mdns_test_util.h",
+  ]
+
+  public_deps = [
+    ":mdns",
+    "../third_party/abseil",
   ]
 }
 
@@ -87,6 +101,7 @@ source_set("unittests") {
   deps = [
     ":dnssd",
     ":mdns",
+    ":testing",
     "../third_party/googletest:gmock",
     "../third_party/googletest:gtest",
     "../util",

@@ -204,14 +204,20 @@ size_t PtrRecordRdata::MaxWireSize() const {
 
 TxtRecordRdata::TxtRecordRdata() = default;
 
-TxtRecordRdata::TxtRecordRdata(std::vector<std::vector<uint8_t>> texts)
-    : TxtRecordRdata(texts.begin(), texts.end()) {}
-
-TxtRecordRdata::TxtRecordRdata(const std::vector<absl::string_view>& texts)
-    : TxtRecordRdata(texts.begin(), texts.end()) {}
-
-TxtRecordRdata::TxtRecordRdata(std::initializer_list<absl::string_view> texts)
-    : TxtRecordRdata(texts.begin(), texts.end()) {}
+TxtRecordRdata::TxtRecordRdata(std::vector<Entry> texts) {
+  if (texts.size() > 0) {
+    texts_.reserve(texts.size());
+    // max_wire_size includes uint16_t record length field.
+    max_wire_size_ = sizeof(uint16_t);
+    for (const auto& text : texts) {
+      OSP_DCHECK(!text.empty());
+      texts_.push_back(
+          std::string(reinterpret_cast<const char*>(text.data()), text.size()));
+      // Include the length byte in the size calculation.
+      max_wire_size_ += text.size() + 1;
+    }
+  }
+}
 
 TxtRecordRdata::TxtRecordRdata(const TxtRecordRdata& other) = default;
 

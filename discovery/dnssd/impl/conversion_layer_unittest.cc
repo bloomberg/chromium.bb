@@ -6,7 +6,9 @@
 
 #include <algorithm>
 #include <chrono>
+#include <vector>
 
+#include "discovery/mdns/testing/mdns_test_util.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
@@ -43,7 +45,7 @@ MdnsRecord CreateFullyPopulatedRecord(uint16_t port = port_num) {
 
 // TXT Conversions.
 TEST(DnsSdConversionLayerTest, TestCreateTxtEmpty) {
-  TxtRecordRdata txt{};
+  TxtRecordRdata txt = MakeTxtRecord({});
   ErrorOr<DnsSdTxtRecord> record = CreateFromDnsTxt(txt);
   EXPECT_TRUE(record.is_value());
   EXPECT_TRUE(record.value().IsEmpty());
@@ -57,7 +59,7 @@ TEST(DnsSdConversionLayerTest, TestCreateTxtOnlyEmptyString) {
 }
 
 TEST(DnsSdConversionLayerTest, TestCreateTxtValidKeyValue) {
-  TxtRecordRdata txt{"name=value"};
+  TxtRecordRdata txt = MakeTxtRecord({"name=value"});
   ErrorOr<DnsSdTxtRecord> record = CreateFromDnsTxt(txt);
   ASSERT_TRUE(record.is_value());
   ASSERT_TRUE(record.value().GetValue("name").is_value());
@@ -71,13 +73,13 @@ TEST(DnsSdConversionLayerTest, TestCreateTxtValidKeyValue) {
 }
 
 TEST(DnsSdConversionLayerTest, TestCreateTxtInvalidKeyValue) {
-  TxtRecordRdata txt{"=value"};
+  TxtRecordRdata txt = MakeTxtRecord({"=value"});
   ErrorOr<DnsSdTxtRecord> record = CreateFromDnsTxt(txt);
   EXPECT_TRUE(record.is_error());
 }
 
 TEST(DnsSdConversionLayerTest, TestCreateTxtValidBool) {
-  TxtRecordRdata txt{"name"};
+  TxtRecordRdata txt = MakeTxtRecord({"name"});
   ErrorOr<DnsSdTxtRecord> record = CreateFromDnsTxt(txt);
   ASSERT_TRUE(record.is_value());
   ASSERT_TRUE(record.value().GetFlag("name").is_value());

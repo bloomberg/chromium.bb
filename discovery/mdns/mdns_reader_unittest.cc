@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "discovery/mdns/testing/mdns_test_util.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
@@ -303,7 +304,7 @@ TEST(MdnsReaderTest, ReadTxtRecordRdata) {
   };
   // clang-format on
   TestReadEntrySucceeds(kTxtRecordRdata, sizeof(kTxtRecordRdata),
-                        TxtRecordRdata{"foo=1", "bar=2"});
+                        MakeTxtRecord({"foo=1", "bar=2"}));
 }
 
 TEST(MdnsReaderTest, ReadTxtRecordRdata_Empty) {
@@ -325,7 +326,7 @@ TEST(MdnsReaderTest, ReadTxtRecordRdata_WithNullInTheMiddle) {
   // clang-format on
   TestReadEntrySucceeds(
       kTxtRecordRdata, sizeof(kTxtRecordRdata),
-      TxtRecordRdata{absl::string_view("with\0NULL", 9), "other"});
+      MakeTxtRecord({absl::string_view("with\0NULL", 9), "other"}));
 }
 
 TEST(MdnsReaderTest, ReadTxtRecordRdata_EmptyEntries) {
@@ -340,7 +341,7 @@ TEST(MdnsReaderTest, ReadTxtRecordRdata_EmptyEntries) {
   };
   // clang-format on
   TestReadEntrySucceeds(kTxtRecordRdata, sizeof(kTxtRecordRdata),
-                        TxtRecordRdata{"foo=1", "bar=2"});
+                        MakeTxtRecord({"foo=1", "bar=2"}));
 }
 
 TEST(MdnsReaderTest, ReadTxtRecordRdata_TooShort) {

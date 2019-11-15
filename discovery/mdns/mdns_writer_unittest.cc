@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "discovery/mdns/testing/mdns_test_util.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
@@ -280,7 +281,7 @@ TEST(MdnsWriterTest, WriteTxtRecordRdata) {
       0x05, 'b', 'a', 'r', '=', '2',
   };
   // clang-format on
-  TestWriteEntrySucceeds(TxtRecordRdata{"foo=1", "bar=2"}, kExpectedRdata,
+  TestWriteEntrySucceeds(MakeTxtRecord({"foo=1", "bar=2"}), kExpectedRdata,
                          sizeof(kExpectedRdata));
 }
 
@@ -294,7 +295,7 @@ TEST(MdnsWriterTest, WriteTxtRecordRdata_Empty) {
 }
 
 TEST(MdnsWriterTest, WriteTxtRecordRdata_InsufficientBuffer) {
-  TestWriteEntryInsufficientBuffer(TxtRecordRdata{"foo=1", "bar=2"});
+  TestWriteEntryInsufficientBuffer(MakeTxtRecord({"foo=1", "bar=2"}));
 }
 
 TEST(MdnsWriterTest, WriteMdnsRecord_ARecordRdata) {
@@ -396,7 +397,7 @@ TEST(MdnsWriterTest, WriteMdnsMessage) {
 
   MdnsRecord auth_record(DomainName{"auth"}, DnsType::kTXT, DnsClass::kIN,
                          RecordType::kShared, kTtl,
-                         TxtRecordRdata{"foo=1", "bar=2"});
+                         MakeTxtRecord({"foo=1", "bar=2"}));
 
   MdnsMessage message(1, MessageType::Query);
   message.AddQuestion(question);
@@ -415,7 +416,7 @@ TEST(MdnsWriterTest, WriteMdnsMessage_InsufficientBuffer) {
 
   MdnsRecord auth_record(DomainName{"auth"}, DnsType::kTXT, DnsClass::kIN,
                          RecordType::kShared, kTtl,
-                         TxtRecordRdata{"foo=1", "bar=2"});
+                         MakeTxtRecord({"foo=1", "bar=2"}));
 
   MdnsMessage message(1, MessageType::Query);
   message.AddQuestion(question);

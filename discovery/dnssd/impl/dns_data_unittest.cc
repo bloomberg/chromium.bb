@@ -6,6 +6,7 @@
 
 #include <chrono>
 
+#include "discovery/mdns/testing/mdns_test_util.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
@@ -80,7 +81,7 @@ DnsDataTesting CreateFullyPopulatedData() {
   DnsDataTesting data(instance);
   DomainName target{instance_name, "_srv-name", "_udp", domain_name};
   SrvRecordRdata srv(0, 0, port_num, target);
-  TxtRecordRdata txt{"name=value", "boolValue"};
+  TxtRecordRdata txt = MakeTxtRecord({"name=value", "boolValue"});
   ARecordRdata a(v4_address);
   AAAARecordRdata aaaa(v6_address);
 
@@ -175,7 +176,7 @@ TEST(DnsSdDnsDataTests, TestConvertDnsDataOneAddress) {
 
 TEST(DnsSdDnsDataTests, TestConvertDnsDataBadTxt) {
   DnsDataTesting data = CreateFullyPopulatedData();
-  data.set_txt(TxtRecordRdata{"=bad_text"});
+  data.set_txt(MakeTxtRecord({"=bad_text"}));
   ErrorOr<DnsSdInstanceRecord> result = data.CreateRecord();
   EXPECT_TRUE(result.is_error());
 }

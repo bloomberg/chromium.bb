@@ -6,6 +6,7 @@
 
 #include "discovery/mdns/mdns_reader.h"
 #include "discovery/mdns/mdns_writer.h"
+#include "discovery/mdns/testing/mdns_test_util.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "platform/api/network_interface.h"
@@ -259,22 +260,16 @@ TEST(MdnsTxtRecordRdataTest, Construct) {
   EXPECT_EQ(rdata1.MaxWireSize(), UINT64_C(3));
   EXPECT_EQ(rdata1.texts(), std::vector<std::string>());
 
-  TxtRecordRdata rdata2{"foo=1", "bar=2"};
+  TxtRecordRdata rdata2 = MakeTxtRecord({"foo=1", "bar=2"});
   EXPECT_EQ(rdata2.MaxWireSize(), UINT64_C(14));
   EXPECT_EQ(rdata2.texts(), (std::vector<std::string>{"foo=1", "bar=2"}));
-
-  std::vector<absl::string_view> texts{"E=mc^2", "F=ma", "P=IV"};
-  TxtRecordRdata rdata3(texts);
-  EXPECT_EQ(rdata3.MaxWireSize(), UINT64_C(19));
-  EXPECT_EQ(rdata3.texts(),
-            (std::vector<std::string>{"E=mc^2", "F=ma", "P=IV"}));
 }
 
 TEST(MdnsTxtRecordRdataTest, Compare) {
-  TxtRecordRdata rdata1{"foo=1", "bar=2"};
-  TxtRecordRdata rdata2{"foo=1", "bar=2"};
-  TxtRecordRdata rdata3{"foo=1"};
-  TxtRecordRdata rdata4{"E=mc^2", "F=ma"};
+  TxtRecordRdata rdata1 = MakeTxtRecord({"foo=1", "bar=2"});
+  TxtRecordRdata rdata2 = MakeTxtRecord({"foo=1", "bar=2"});
+  TxtRecordRdata rdata3 = MakeTxtRecord({"foo=1"});
+  TxtRecordRdata rdata4 = MakeTxtRecord({"E=mc^2", "F=ma"});
 
   EXPECT_EQ(rdata1, rdata2);
   EXPECT_NE(rdata1, rdata3);
@@ -282,7 +277,7 @@ TEST(MdnsTxtRecordRdataTest, Compare) {
 }
 
 TEST(MdnsTxtRecordRdataTest, CopyAndMove) {
-  TestCopyAndMove(TxtRecordRdata{"foo=1", "bar=2"});
+  TestCopyAndMove(MakeTxtRecord({"foo=1", "bar=2"}));
 }
 
 TEST(MdnsRecordTest, Construct) {
@@ -406,7 +401,7 @@ TEST(MdnsMessageTest, Construct) {
                      ARecordRdata(IPAddress{172, 0, 0, 1}));
   MdnsRecord record2(DomainName{"record2"}, DnsType::kTXT, DnsClass::kIN,
                      RecordType::kShared, kTtl,
-                     TxtRecordRdata{"foo=1", "bar=2"});
+                     MakeTxtRecord({"foo=1", "bar=2"}));
   MdnsRecord record3(DomainName{"record3"}, DnsType::kPTR, DnsClass::kIN,
                      RecordType::kShared, kTtl,
                      PtrRecordRdata(DomainName{"device", "local"}));
@@ -461,7 +456,7 @@ TEST(MdnsMessageTest, Compare) {
                      ARecordRdata(IPAddress{172, 0, 0, 1}));
   MdnsRecord record2(DomainName{"record2"}, DnsType::kTXT, DnsClass::kIN,
                      RecordType::kShared, kTtl,
-                     TxtRecordRdata{"foo=1", "bar=2"});
+                     MakeTxtRecord({"foo=1", "bar=2"}));
   MdnsRecord record3(DomainName{"record3"}, DnsType::kPTR, DnsClass::kIN,
                      RecordType::kShared, kTtl,
                      PtrRecordRdata(DomainName{"device", "local"}));
@@ -516,7 +511,7 @@ TEST(MdnsMessageTest, CopyAndMove) {
                      ARecordRdata(IPAddress{172, 0, 0, 1}));
   MdnsRecord record2(DomainName{"record2"}, DnsType::kTXT, DnsClass::kIN,
                      RecordType::kShared, kTtl,
-                     TxtRecordRdata{"foo=1", "bar=2"});
+                     MakeTxtRecord({"foo=1", "bar=2"}));
   MdnsRecord record3(DomainName{"record3"}, DnsType::kPTR, DnsClass::kIN,
                      RecordType::kShared, kTtl,
                      PtrRecordRdata(DomainName{"device", "local"}));
