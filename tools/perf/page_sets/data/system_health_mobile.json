@@ -54,6 +54,9 @@
         "browse:news:globo": {
             "DEFAULT": "system_health_mobile_055.wprgo"
         },
+        "browse:news:globo:2019": {
+            "DEFAULT": "system_health_mobile_4095b46c88.wprgo"
+        },
         "browse:news:hackernews": {
             "DEFAULT": "system_health_mobile_016.wprgo"
         },

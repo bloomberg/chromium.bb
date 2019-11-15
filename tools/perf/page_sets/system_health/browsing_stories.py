@@ -957,6 +957,14 @@ class BrowseGloboMobileStory(_ArticleBrowsingStory):
   ITEM_SELECTOR = '.hui-premium__title'
   COMPLETE_STATE_WAIT_TIMEOUT = 150
 
+class BrowseGloboMobileStory2019(_ArticleBrowsingStory):
+  NAME = 'browse:news:globo:2019'
+  URL = 'http://www.globo.com'
+  SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
+  TAGS = [story_tags.EMERGING_MARKET, story_tags.YEAR_2019]
+  ITEMS_TO_VISIT = 2  # 4 links causes renderer OOM crbug.com/714650.
+  ITEM_SELECTOR = '.hui-premium__link'
+  COMPLETE_STATE_WAIT_TIMEOUT = 150
 
 class BrowseCricBuzzMobileStory(_ArticleBrowsingStory):
   NAME = 'browse:news:cricbuzz'
