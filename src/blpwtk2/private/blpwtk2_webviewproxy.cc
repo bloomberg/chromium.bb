@@ -268,6 +268,9 @@ void WebViewProxy::find(const StringRef& text, bool matchCase, bool forward)
 void WebViewProxy::enableAltDragRubberbanding(bool enabled)
 {
     DCHECK(Statics::isInApplicationMainThread());
+    if (!validateClient()) {
+        return;
+    }
     d_client->proxy()->enableAltDragRubberbanding(enabled);
 }
 
@@ -276,6 +279,7 @@ bool WebViewProxy::forceStartRubberbanding(int x, int y)
     DCHECK(Statics::isRendererMainThreadMode());
     DCHECK(Statics::isInApplicationMainThread());
     content::RenderView* rv = content::RenderView::FromRoutingID(d_renderViewRoutingId);
+    VALIDATE_RENDER_VIEW(rv);
     blink::WebView* webView = rv->GetWebView();
     return webView->ForceStartRubberbanding(x, y);
 }
@@ -285,6 +289,7 @@ bool WebViewProxy::isRubberbanding() const
     DCHECK(Statics::isRendererMainThreadMode());
     DCHECK(Statics::isInApplicationMainThread());
     content::RenderView* rv = content::RenderView::FromRoutingID(d_renderViewRoutingId);
+    VALIDATE_RENDER_VIEW(rv);
     blink::WebView* webView = rv->GetWebView();
     return webView->IsRubberbanding();
 }
@@ -294,6 +299,7 @@ void WebViewProxy::abortRubberbanding()
     DCHECK(Statics::isRendererMainThreadMode());
     DCHECK(Statics::isInApplicationMainThread());
     content::RenderView* rv = content::RenderView::FromRoutingID(d_renderViewRoutingId);
+    VALIDATE_RENDER_VIEW_VOID(rv);
     blink::WebView* webView = rv->GetWebView();
     webView->AbortRubberbanding();
 }
@@ -303,6 +309,7 @@ String WebViewProxy::getTextInRubberband(const NativeRect& rect)
     DCHECK(Statics::isRendererMainThreadMode());
     DCHECK(Statics::isInApplicationMainThread());
     content::RenderView* rv = content::RenderView::FromRoutingID(d_renderViewRoutingId);
+    VALIDATE_RENDER_VIEW(rv);
     blink::WebView* webView = rv->GetWebView();
     blink::WebRect webRect(rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top);
     std::string str = webView->GetTextInRubberband(webRect).Utf8();
