@@ -115,7 +115,7 @@ class PackageScannerFake(object):
     self.pkgs = packages
     self.cpvs = packages_cpvs or packages
     self.listed = []
-    self.num_updates = None
+    self.num_updates = 0
     self.pkgs_attrs = pkgs_attrs
 
   def Run(self, _device, _root, _packages, _update, _deep, _deep_rev):
