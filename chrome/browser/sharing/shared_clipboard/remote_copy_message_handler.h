@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/image_decoder.h"
+#include "chrome/browser/sharing/shared_clipboard/remote_copy_handle_message_result.h"
 #include "chrome/browser/sharing/sharing_message_handler.h"
 #include "url/gurl.h"
 
@@ -41,7 +42,7 @@ class RemoteCopyMessageHandler : public SharingMessageHandler,
   void HandleImage(const std::string& image_url);
   void OnURLLoadComplete(std::unique_ptr<std::string> content);
   void ShowNotification();
-  void Finish();
+  void Finish(RemoteCopyHandleMessageResult result);
 
   Profile* profile_ = nullptr;
   std::unique_ptr<network::SimpleURLLoader> url_loader_;

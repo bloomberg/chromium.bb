@@ -15,6 +15,7 @@
 #include "chrome/browser/notifications/notification_display_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sharing/shared_clipboard/feature_flags.h"
+#include "chrome/browser/sharing/sharing_metrics.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/sync/protocol/sharing_message.pb.h"
 #include "components/sync/protocol/sharing_remote_copy_message.pb.h"
@@ -90,26 +91,29 @@ void RemoteCopyMessageHandler::OnMessage(
 }
 
 void RemoteCopyMessageHandler::HandleText(const std::string& text) {
-  if (!text.empty()) {
-    {
-      ui::ScopedClipboardWriter(ui::ClipboardBuffer::kCopyPaste)
-          .WriteText(base::UTF8ToUTF16(text));
-    }
-    ShowNotification();
+  if (text.empty()) {
+    Finish(RemoteCopyHandleMessageResult::kFailureEmptyText);
+    return;
   }
-  Finish();
+
+  {
+    ui::ScopedClipboardWriter(ui::ClipboardBuffer::kCopyPaste)
+        .WriteText(base::UTF8ToUTF16(text));
+  }
+  ShowNotification();
+  Finish(RemoteCopyHandleMessageResult::kSuccessHandledText);
 }
 
 void RemoteCopyMessageHandler::HandleImage(const std::string& image_url) {
   GURL url(image_url);
 
   if (!network::IsUrlPotentiallyTrustworthy(url)) {
-    Finish();
+    Finish(RemoteCopyHandleMessageResult::kFailureImageUrlNotTrustworthy);
     return;
   }
 
   if (!IsOriginAllowed(url)) {
-    Finish();
+    Finish(RemoteCopyHandleMessageResult::kFailureImageOriginNotAllowed);
     return;
   }
 
@@ -148,7 +152,7 @@ void RemoteCopyMessageHandler::OnURLLoadComplete(
     std::unique_ptr<std::string> content) {
   url_loader_.reset();
   if (!content || content->empty()) {
-    Finish();
+    Finish(RemoteCopyHandleMessageResult::kFailureNoImageContentLoaded);
     return;
   }
 
@@ -156,18 +160,21 @@ void RemoteCopyMessageHandler::OnURLLoadComplete(
 }
 
 void RemoteCopyMessageHandler::OnImageDecoded(const SkBitmap& decoded_image) {
-  if (!decoded_image.drawsNothing()) {
-    {
-      ui::ScopedClipboardWriter(ui::ClipboardBuffer::kCopyPaste)
-          .WriteImage(decoded_image);
-    }
-    ShowNotification();
+  if (decoded_image.drawsNothing()) {
+    Finish(RemoteCopyHandleMessageResult::kFailureDecodedImageDrawsNothing);
+    return;
   }
-  Finish();
+
+  {
+    ui::ScopedClipboardWriter(ui::ClipboardBuffer::kCopyPaste)
+        .WriteImage(decoded_image);
+  }
+  ShowNotification();
+  Finish(RemoteCopyHandleMessageResult::kSuccessHandledImage);
 }
 
 void RemoteCopyMessageHandler::OnDecodeImageFailed() {
-  Finish();
+  Finish(RemoteCopyHandleMessageResult::kFailureDecodeImageFailed);
 }
 
 void RemoteCopyMessageHandler::ShowNotification() {
@@ -197,7 +204,7 @@ void RemoteCopyMessageHandler::ShowNotification() {
       NotificationHandler::Type::SHARING, notification, /*metadata=*/nullptr);
 }
 
-void RemoteCopyMessageHandler::Finish() {
-  // TODO(mvanouwerkerk): UMA logging.
+void RemoteCopyMessageHandler::Finish(RemoteCopyHandleMessageResult result) {
+  LogRemoteCopyHandleMessageResult(result);
   device_name_.clear();
 }

@@ -56869,6 +56869,17 @@ Called by update_net_trust_anchors.py.-->
   <int value="8" label="IceCandidateMessage"/>
 </enum>
 
+<enum name="SharingRemoteCopyHandleMessageResult">
+  <int value="0" label="Success: handled text"/>
+  <int value="1" label="Success: handled image"/>
+  <int value="2" label="Failure: empty text"/>
+  <int value="3" label="Failure: image url not trustworthy"/>
+  <int value="4" label="Failure: image origin not allowed"/>
+  <int value="5" label="Failure: no image content loaded"/>
+  <int value="6" label="Failure: decode image failed"/>
+  <int value="7" label="Failure: decoded image draws nothing"/>
+</enum>
+
 <enum name="SharingSendMessageResult">
   <int value="0" label="Successful"/>
   <int value="1" label="Device is not found"/>
