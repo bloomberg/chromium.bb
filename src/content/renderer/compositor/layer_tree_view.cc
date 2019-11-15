@@ -71,7 +71,8 @@ LayerTreeView::~LayerTreeView() = default;
 
 void LayerTreeView::Initialize(
     const cc::LayerTreeSettings& settings,
-    std::unique_ptr<cc::UkmRecorderFactory> ukm_recorder_factory) {
+    std::unique_ptr<cc::UkmRecorderFactory> ukm_recorder_factory,
+    int routing_id) {
   const bool is_threaded = !!compositor_thread_;
 
   cc::LayerTreeHost::InitParams params;
@@ -81,6 +82,7 @@ void LayerTreeView::Initialize(
   params.main_task_runner = main_thread_;
   params.mutator_host = animation_host_.get();
   params.ukm_recorder_factory = std::move(ukm_recorder_factory);
+  params.routing_id = routing_id;
   if (base::ThreadPoolInstance::Get()) {
     // The image worker thread needs to allow waiting since it makes discardable
     // shared memory allocations which need to make synchronous calls to the
