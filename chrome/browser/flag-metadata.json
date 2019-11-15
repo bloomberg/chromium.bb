@@ -3087,7 +3087,7 @@
   {
     "name": "quiet-notification-prompts",
     "owners": [ "engedy", "mkwst", "andypaicu", "hkamila" ],
-    "expiry_milestone": 80
+    "expiry_milestone": 83
   },
   {
     "name": "reader-mode-heuristics",
