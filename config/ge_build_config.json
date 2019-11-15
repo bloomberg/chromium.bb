@@ -1409,18 +1409,6 @@
       ]
     },
     {
-      "name": "volteer",
-      "configs": [
-        {
-          "builder": "RELEASE",
-          "experimental": true,
-          "leader_board": true,
-          "board_group": "",
-          "arch": "X86_INTERNAL"
-        }
-      ]
-    },
-    {
       "name": "whirlwind",
       "configs": [
         {
@@ -3608,6 +3596,23 @@
           "cq_test_enabled": false,
           "release_builder_test_pool": "bvt",
           "board_id": 311,
+          "is_active": true
+        }
+      ]
+    },
+    {
+      "name": "volteer",
+      "reference_board_name": "volteer",
+      "arch": "X86_INTERNAL",
+      "builder": "RELEASE",
+      "experimental": true,
+      "models": [
+        {
+          "board_name": "volteer",
+          "name": "unprovisioned_volteer",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt",
+          "board_id": 405,
           "is_active": true
         }
       ]
