@@ -292,8 +292,8 @@ class PipelineImplTest : public ::testing::Test {
     ResetRenderer();
   }
 
-  void CreateRenderer(RendererCreatedCB renderer_created_cb) {
-    std::move(renderer_created_cb).Run(std::move(scoped_renderer_));
+  std::unique_ptr<Renderer> CreateRenderer() {
+    return std::move(scoped_renderer_);
   }
 
   void ResetRenderer() {
