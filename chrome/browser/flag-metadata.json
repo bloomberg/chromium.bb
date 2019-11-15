@@ -1322,7 +1322,7 @@
   {
     "name": "enable-experimental-fling-animation",
     "owners": [ "sarsha@microsoft.com" ],
-    "expiry_milestone": 80
+    "expiry_milestone": 81
   },
   {
     "name": "enable-experimental-kernel-vm-support",
