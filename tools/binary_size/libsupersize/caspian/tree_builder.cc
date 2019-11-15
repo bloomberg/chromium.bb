@@ -54,8 +54,10 @@ TreeBuilder::~TreeBuilder() = default;
 
 void TreeBuilder::Build(
     bool group_by_component,
+    bool method_count_mode,
     std::vector<std::function<bool(const BaseSymbol&)>> filters) {
   group_by_component_ = group_by_component;
+  method_count_mode_ = method_count_mode;
   filters_ = filters;
   sep_ = group_by_component ? kComponentSep : kPathSep;
 
@@ -81,14 +83,37 @@ void TreeBuilder::Build(
   }
 }
 
+namespace {
+bool CompareAbsSize(const TreeNode* const& l, const TreeNode* const& r) {
+  float l_size = abs(l->size);
+  float r_size = abs(r->size);
+  if (l_size == r_size) {
+    return l->id_path < r->id_path;
+  }
+  return abs(l->size) > abs(r->size);
+}
+
+bool CompareCount(const TreeNode* const& l, const TreeNode* const& r) {
+  int32_t l_count = l->node_stats.SumCount();
+  int32_t r_count = r->node_stats.SumCount();
+  if (l_count == r_count) {
+    return l->id_path < r->id_path;
+  }
+  return l_count > r_count;
+}
+}  // namespace
+
 Json::Value TreeBuilder::Open(const char* path) {
   // Returns a string that can be parsed to a JS object.
   static std::string result;
   const auto node = _parents.find(path);
 
+  TreeNode::CompareFunc node_sort_func =
+      method_count_mode_ ? &CompareCount : &CompareAbsSize;
+
   if (node != _parents.end()) {
     Json::Value v;
-    node->second->WriteIntoJson(&v, 1);
+    node->second->WriteIntoJson(&v, 1, node_sort_func);
     return v;
   } else {
     std::cerr << "Tried to open nonexistent node with path: " << path

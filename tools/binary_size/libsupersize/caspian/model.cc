@@ -299,7 +299,11 @@ DeltaSizeInfo::~DeltaSizeInfo() = default;
 DeltaSizeInfo::DeltaSizeInfo(const DeltaSizeInfo&) = default;
 DeltaSizeInfo& DeltaSizeInfo::operator=(const DeltaSizeInfo&) = default;
 
-void TreeNode::WriteIntoJson(Json::Value* out, int depth) {
+void TreeNode::WriteIntoJson(
+    Json::Value* out,
+    int depth,
+    std::function<bool(const TreeNode* const& l, const TreeNode* const& r)>
+        compare_func) {
   if (symbol) {
     if (symbol->IsDex()) {
       (*out)["idPath"] = std::string(symbol->FullName());
@@ -328,13 +332,10 @@ void TreeNode::WriteIntoJson(Json::Value* out, int depth) {
     (*out)["children"] = Json::Value(Json::arrayValue);
     // Reorder children for output.
     // TODO: Support additional compare functions.
-    auto compare_func = [](const TreeNode* const& l,
-                           const TreeNode* const& r) -> bool {
-      return abs(l->size) > abs(r->size);
-    };
     std::sort(this->children.begin(), this->children.end(), compare_func);
     for (unsigned int i = 0; i < this->children.size(); i++) {
-      this->children[i]->WriteIntoJson(&(*out)["children"][i], depth - 1);
+      this->children[i]->WriteIntoJson(&(*out)["children"][i], depth - 1,
+                                       compare_func);
     }
   }
 }
@@ -378,4 +379,11 @@ SectionId NodeStats::ComputeBiggestSection() const {
   return ret;
 }
 
+int32_t NodeStats::SumCount() const {
+  int32_t count = 0;
+  for (auto& pair : child_stats) {
+    count += pair.second.count;
+  }
+  return count;
+}
 }  // namespace caspian

@@ -10,6 +10,7 @@
 
 #include <array>
 #include <deque>
+#include <functional>
 #include <map>
 #include <string>
 #include <string_view>
@@ -292,6 +293,7 @@ struct NodeStats {
   void WriteIntoJson(Json::Value* out) const;
   NodeStats& operator+=(const NodeStats& other);
   SectionId ComputeBiggestSection() const;
+  int32_t SumCount() const;
 
   std::map<SectionId, Stat> child_stats;
 };
@@ -299,7 +301,11 @@ struct NodeStats {
 struct TreeNode {
   TreeNode();
   ~TreeNode();
-  void WriteIntoJson(Json::Value* out, int depth);
+
+  using CompareFunc =
+      std::function<bool(const TreeNode* const& l, const TreeNode* const& r)>;
+
+  void WriteIntoJson(Json::Value* out, int depth, CompareFunc compare_func);
 
   std::string_view id_path;
   const char* src_path = nullptr;
