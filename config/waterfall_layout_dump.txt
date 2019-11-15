@@ -289,6 +289,7 @@
     coral-release
     cyan-kernelnext-release
     cyan-release
+    dedede-release
     drallion-release
     edgar-release
     elm-release
@@ -1050,6 +1051,16 @@
   cyan-tot-chromium-pfq-informational-tryjob
   cyan-unittest-stress
   cyan-wificell-pre-cq
+  dedede-compile-only-pre-cq
+  dedede-full-tryjob
+  dedede-llvm-next-toolchain-tryjob
+  dedede-llvm-toolchain-tryjob
+  dedede-no-vmtest-pre-cq
+  dedede-paladin-tryjob
+  dedede-pre-cq
+  dedede-release-tryjob
+  dedede-tot-chromium-pfq-informational-tryjob
+  dedede-unittest-stress
   drallion-compile-only-pre-cq
   drallion-full-tryjob
   drallion-llvm-next-toolchain-tryjob
@@ -2297,6 +2308,7 @@
     coral-release-tryjob
     cyan-kernelnext-release-tryjob
     cyan-release-tryjob
+    dedede-release-tryjob
     drallion-release-tryjob
     edgar-release-tryjob
     elm-release-tryjob
