@@ -2774,7 +2774,7 @@
   {
     "name": "omnibox-experimental-keyword-mode",
     "owners": [ "krb", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 80
+    "expiry_milestone": 82
   },
   {
     "name": "omnibox-experimental-suggest-scoring",
@@ -2784,7 +2784,7 @@
   {
     "name": "omnibox-group-suggestions-by-search-vs-url",
     "owners": [ "krb", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 78
+    "expiry_milestone": 82
   },
   {
     "name": "omnibox-local-entity-suggestions",
@@ -2804,7 +2804,7 @@
   {
     "name": "omnibox-max-url-matches",
     "owners": [ "krb", "chromium-omnibox-team" ],
-    "expiry_milestone": 80
+    "expiry_milestone": 82
   },
   {
     "name": "omnibox-on-device-head-suggestions",
@@ -2849,7 +2849,7 @@
   {
     "name": "omnibox-short-bookmark-suggestions",
     "owners": [ "krb", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 78
+    "expiry_milestone": 82
   },
   {
     "name": "omnibox-spare-renderer",
