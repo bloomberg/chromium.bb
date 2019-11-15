@@ -39,6 +39,84 @@ namespace {
 // Number of extra bits of precision in warped filtering.
 constexpr int kWarpedDiffPrecisionBits = 10;
 
+// Applies the horizontal filter to one source row and stores the result in
+// |intermediate_result_row|. |intermediate_result_row| is a row in the 15x8
+// |intermediate_result| two-dimensional array.
+void HorizontalFilter(const int sx4, const int16_t alpha,
+                      const int horizontal_offset,
+                      const int16x8_t src_row_low_s16,
+                      const int16x8_t src_row_high_s16,
+                      int16_t intermediate_result_row[8]) {
+  int sx = sx4 - MultiplyBy4(alpha);
+  int16x8_t filter[8];
+  for (int x = 0; x < 8; ++x) {
+    const int offset = RightShiftWithRounding(sx, kWarpedDiffPrecisionBits) +
+                       kWarpedPixelPrecisionShifts;
+    // TODO(wtc): kWarpedFilters fit in int8.
+    filter[x] = vld1q_s16(kWarpedFilters[offset]);
+    sx += alpha;
+  }
+  Transpose8x8(&filter[0], &filter[1], &filter[2], &filter[3], &filter[4],
+               &filter[5], &filter[6], &filter[7]);
+  // For 8 bit, the range of sum is within uint16_t, if we add a horizontal
+  // offset. horizontal_offset guarantees sum is nonnegative.
+  //
+  // Proof:
+  // Given that the minimum (most negative) sum of the negative filter
+  // coefficients is -47 and the maximum sum of the positive filter
+  // coefficients is 175, the range of the horizontal filter output is
+  //   -47 * 255 <= output <= 175 * 255
+  // Since -2^14 < -47 * 255, adding -2^14 (= horizontal_offset) to the
+  // horizontal filter output produces a positive value:
+  //   0 < output + 2^14 <= 175 * 255 + 2^14
+  // The final rounding right shift by 3 (= kInterRoundBitsHorizontal) bits
+  // adds 2^2 to the sum:
+  //   0 < output + 2^14 + 2^2 <= 175 * 255 + 2^14 + 2^2 = 61013
+  // Since 61013 < 2^16, the final sum (right before the right shift by 3
+  // bits) will not overflow uint16_t. In addition, the value after the right
+  // shift by 3 bits is in the following range:
+  //   0 <= intermediate_result[y][x] < 2^13
+  // This property is used in determining the range of the vertical filtering
+  // output. [End of proof.]
+  //
+  // We can do signed int16_t arithmetic and just treat the final result as
+  // uint16_t when we shift it right.
+  int16x8_t sum = vdupq_n_s16(horizontal_offset);
+  // Unrolled k = 0..7 loop. We need to manually unroll the loop because the
+  // third argument (an index value) to vextq_s16() must be a constant
+  // (immediate).
+  // k = 0.
+  int16x8_t src_row_v_s16 = src_row_low_s16;
+  // TODO(wtc): use vmlal_s8 here.
+  sum = vmlaq_s16(sum, filter[0], src_row_v_s16);
+  // k = 1.
+  src_row_v_s16 = vextq_s16(src_row_low_s16, src_row_high_s16, 1);
+  sum = vmlaq_s16(sum, filter[1], src_row_v_s16);
+  // k = 2.
+  src_row_v_s16 = vextq_s16(src_row_low_s16, src_row_high_s16, 2);
+  sum = vmlaq_s16(sum, filter[2], src_row_v_s16);
+  // k = 3.
+  src_row_v_s16 = vextq_s16(src_row_low_s16, src_row_high_s16, 3);
+  sum = vmlaq_s16(sum, filter[3], src_row_v_s16);
+  // k = 4.
+  src_row_v_s16 = vextq_s16(src_row_low_s16, src_row_high_s16, 4);
+  sum = vmlaq_s16(sum, filter[4], src_row_v_s16);
+  // k = 5.
+  src_row_v_s16 = vextq_s16(src_row_low_s16, src_row_high_s16, 5);
+  sum = vmlaq_s16(sum, filter[5], src_row_v_s16);
+  // k = 6.
+  src_row_v_s16 = vextq_s16(src_row_low_s16, src_row_high_s16, 6);
+  sum = vmlaq_s16(sum, filter[6], src_row_v_s16);
+  // k = 7.
+  src_row_v_s16 = vextq_s16(src_row_low_s16, src_row_high_s16, 7);
+  sum = vmlaq_s16(sum, filter[7], src_row_v_s16);
+  // End of unrolled k = 0..7 loop.
+  // Treat sum as unsigned for the right shift.
+  sum = vreinterpretq_s16_u16(
+      vrshrq_n_u16(vreinterpretq_u16_s16(sum), kInterRoundBitsHorizontal));
+  vst1q_s16(intermediate_result_row, sum);
+}
+
 void Warp_NEON(const void* const source, const ptrdiff_t source_stride,
                const int source_width, const int source_height,
                const int* const warp_params, const int subsampling_x,
@@ -166,7 +244,7 @@ void Warp_NEON(const void* const source, const ptrdiff_t source_stride,
             vst1q_u16(dst_row, sum_vec);
             dst_row += dest_stride;
           }
-          // End of region 1. Continue the start_x do-while loop.
+          // End of region 1. Continue the |start_x| do-while loop.
           start_x += 8;
           continue;
         }
@@ -248,7 +326,7 @@ void Warp_NEON(const void* const source, const ptrdiff_t source_stride,
           dst_row += dest_stride;
           sy4 += delta;
         }
-        // End of region 2. Continue the start_x do-while loop.
+        // End of region 2. Continue the |start_x| do-while loop.
         start_x += 8;
         continue;
       }
@@ -284,58 +362,8 @@ void Warp_NEON(const void* const source, const ptrdiff_t source_stride,
             vreinterpretq_s16_u16(vmovl_u8(vget_high_u8(src_row_u8)));
         int sx4 = (x4 & ((1 << kWarpedModelPrecisionBits) - 1)) - beta * 7;
         for (int y = -7; y < 8; ++y) {
-          int sx = sx4 - MultiplyBy4(alpha);
-          int16x8_t filter[8];
-          for (int x = 0; x < 8; ++x) {
-            const int offset =
-                RightShiftWithRounding(sx, kWarpedDiffPrecisionBits) +
-                kWarpedPixelPrecisionShifts;
-            // TODO(wtc): kWarpedFilters fit in int8.
-            filter[x] = vld1q_s16(kWarpedFilters[offset]);
-            sx += alpha;
-          }
-          Transpose8x8(&filter[0], &filter[1], &filter[2], &filter[3],
-                       &filter[4], &filter[5], &filter[6], &filter[7]);
-          // For 8 bit, the range of sum is within uint16_t, if we add a
-          // horizontal offset. horizontal_offset guarantees sum is
-          // nonnegative.
-          //
-          // We can do signed int16_t arithmetic and just treat the final
-          // result as uint16_t when we shift it right.
-          int16x8_t sum = vdupq_n_s16(horizontal_offset);
-          // Unrolled k = 0..7 loop. We need to manually unroll the loop
-          // because the third argument (an index value) to vextq_s16() must
-          // be a constant (immediate).
-          // k = 0.
-          int16x8_t src_row_v_s16 = src_row_low_s16;
-          // TODO(wtc): use vmlal_s8 here.
-          sum = vmlaq_s16(sum, filter[0], src_row_v_s16);
-          // k = 1.
-          src_row_v_s16 = vextq_s16(src_row_low_s16, src_row_high_s16, 1);
-          sum = vmlaq_s16(sum, filter[1], src_row_v_s16);
-          // k = 2.
-          src_row_v_s16 = vextq_s16(src_row_low_s16, src_row_high_s16, 2);
-          sum = vmlaq_s16(sum, filter[2], src_row_v_s16);
-          // k = 3.
-          src_row_v_s16 = vextq_s16(src_row_low_s16, src_row_high_s16, 3);
-          sum = vmlaq_s16(sum, filter[3], src_row_v_s16);
-          // k = 4.
-          src_row_v_s16 = vextq_s16(src_row_low_s16, src_row_high_s16, 4);
-          sum = vmlaq_s16(sum, filter[4], src_row_v_s16);
-          // k = 5.
-          src_row_v_s16 = vextq_s16(src_row_low_s16, src_row_high_s16, 5);
-          sum = vmlaq_s16(sum, filter[5], src_row_v_s16);
-          // k = 6.
-          src_row_v_s16 = vextq_s16(src_row_low_s16, src_row_high_s16, 6);
-          sum = vmlaq_s16(sum, filter[6], src_row_v_s16);
-          // k = 7.
-          src_row_v_s16 = vextq_s16(src_row_low_s16, src_row_high_s16, 7);
-          sum = vmlaq_s16(sum, filter[7], src_row_v_s16);
-          // End of unrolled k = 0..7 loop.
-          // Treat sum as unsigned for the right shift.
-          sum = vreinterpretq_s16_u16(vrshrq_n_u16(vreinterpretq_u16_s16(sum),
-                                                   kInterRoundBitsHorizontal));
-          vst1q_s16(intermediate_result[y + 7], sum);
+          HorizontalFilter(sx4, alpha, horizontal_offset, src_row_low_s16,
+                           src_row_high_s16, intermediate_result[y + 7]);
           sx4 += beta;
         }
       } else {
@@ -356,79 +384,15 @@ void Warp_NEON(const void* const source, const ptrdiff_t source_stride,
           // has left and right borders of at least 13 bytes that extend the
           // frame boundary pixels. We also assume there is at least one extra
           // padding byte after the right border of the last source row.
+          //
+          // TODO(wtc): Convert src_row_u8 to int8 (subtract 128).
           const uint8x16_t src_row_u8 = vld1q_u8(&src_row[ix4 - 7]);
           const int16x8_t src_row_low_s16 =
               vreinterpretq_s16_u16(vmovl_u8(vget_low_u8(src_row_u8)));
           const int16x8_t src_row_high_s16 =
               vreinterpretq_s16_u16(vmovl_u8(vget_high_u8(src_row_u8)));
-          int sx = sx4 - MultiplyBy4(alpha);
-          int16x8_t filter[8];
-          for (int x = 0; x < 8; ++x) {
-            const int offset =
-                RightShiftWithRounding(sx, kWarpedDiffPrecisionBits) +
-                kWarpedPixelPrecisionShifts;
-            filter[x] = vld1q_s16(kWarpedFilters[offset]);
-            sx += alpha;
-          }
-          Transpose8x8(&filter[0], &filter[1], &filter[2], &filter[3],
-                       &filter[4], &filter[5], &filter[6], &filter[7]);
-          // For 8 bit, the range of sum is within uint16_t, if we add a
-          // horizontal offset. horizontal_offset guarantees sum is
-          // nonnegative.
-          //
-          // Proof:
-          // Given that the minimum (most negative) sum of the negative filter
-          // coefficients is -47 and the maximum sum of the positive filter
-          // coefficients is 175, the range of the horizontal filter output is
-          //   -47 * 255 <= output <= 175 * 255
-          // Since -2^14 < -47 * 255, adding -2^14 (= horizontal_offset) to
-          // the horizontal filter output produces a positive value:
-          //   0 < output + 2^14 <= 175 * 255 + 2^14
-          // The final rounding right shift by 3 (= kInterRoundBitsHorizontal)
-          // bits adds 2^2 to the sum:
-          //   0 < output + 2^14 + 2^2 <= 175 * 255 + 2^14 + 2^2 = 61013
-          // Since 61013 < 2^16, the final sum (right before the right shift
-          // by 3 bits) will not overflow uint16_t. In addition, the value
-          // after the right shift by 3 bits is in the following range:
-          //   0 <= intermediate_result[y][x] < 2^13
-          // This property is used in determining the range of the vertical
-          // filtering output. [End of proof.]
-          //
-          // We can do signed int16_t arithmetic and just treat the final
-          // result as uint16_t when we shift it right.
-          int16x8_t sum = vdupq_n_s16(horizontal_offset);
-          // Unrolled k = 0..7 loop. We need to manually unroll the loop
-          // because the third argument (an index value) to vextq_s16() must
-          // be a constant (immediate).
-          // k = 0.
-          int16x8_t src_row_v_s16 = src_row_low_s16;
-          sum = vmlaq_s16(sum, filter[0], src_row_v_s16);
-          // k = 1.
-          src_row_v_s16 = vextq_s16(src_row_low_s16, src_row_high_s16, 1);
-          sum = vmlaq_s16(sum, filter[1], src_row_v_s16);
-          // k = 2.
-          src_row_v_s16 = vextq_s16(src_row_low_s16, src_row_high_s16, 2);
-          sum = vmlaq_s16(sum, filter[2], src_row_v_s16);
-          // k = 3.
-          src_row_v_s16 = vextq_s16(src_row_low_s16, src_row_high_s16, 3);
-          sum = vmlaq_s16(sum, filter[3], src_row_v_s16);
-          // k = 4.
-          src_row_v_s16 = vextq_s16(src_row_low_s16, src_row_high_s16, 4);
-          sum = vmlaq_s16(sum, filter[4], src_row_v_s16);
-          // k = 5.
-          src_row_v_s16 = vextq_s16(src_row_low_s16, src_row_high_s16, 5);
-          sum = vmlaq_s16(sum, filter[5], src_row_v_s16);
-          // k = 6.
-          src_row_v_s16 = vextq_s16(src_row_low_s16, src_row_high_s16, 6);
-          sum = vmlaq_s16(sum, filter[6], src_row_v_s16);
-          // k = 7.
-          src_row_v_s16 = vextq_s16(src_row_low_s16, src_row_high_s16, 7);
-          sum = vmlaq_s16(sum, filter[7], src_row_v_s16);
-          // End of unrolled k = 0..7 loop.
-          // Treat sum as unsigned for the right shift.
-          sum = vreinterpretq_s16_u16(vrshrq_n_u16(vreinterpretq_u16_s16(sum),
-                                                   kInterRoundBitsHorizontal));
-          vst1q_s16(intermediate_result[y + 7], sum);
+          HorizontalFilter(sx4, alpha, horizontal_offset, src_row_low_s16,
+                           src_row_high_s16, intermediate_result[y + 7]);
           sx4 += beta;
         }
       }
