@@ -657,6 +657,10 @@ class CBuildBotTest(ChromeosConfigTestBase):
         'gale-release',
         'mistral-release',
         'whirlwind-release',
+        # See crbug.com/1011171.
+        'expresso-release',
+        'jacuzzi-release',
+        'zork-release',
     ))
     missing_tests = set()
     running_tests = set()
@@ -701,6 +705,11 @@ class CBuildBotTest(ChromeosConfigTestBase):
         continue
 
       if build_name.startswith('amd64-generic'):
+        continue
+
+      # crbug.com/1011171: expresso, jacuzzi, and zork do not run hwtests in the
+      # release builder.
+      if build_name.startswith(('expresso', 'jacuzzi', 'zork')):
         continue
 
       # Jetstream boards currently do not run hwtests in the release builder,
