@@ -71,8 +71,8 @@ ErrorOr<DnsSdInstanceRecord> DnsData::CreateRecord() {
 
   if (a_.has_value() && aaaa_.has_value()) {
     return DnsSdInstanceRecord(
-        instance_id_.instance_id, instance_id_.service_id,
-        instance_id_.domain_id,
+        instance_id_.instance_id(), instance_id_.service_id(),
+        instance_id_.domain_id(),
         {a_.value().ipv4_address(), srv_.value().port()},
         {aaaa_.value().ipv6_address(), srv_.value().port()},
         std::move(txt_or_error.value()));
@@ -81,9 +81,10 @@ ErrorOr<DnsSdInstanceRecord> DnsData::CreateRecord() {
         a_.has_value()
             ? IPEndpoint{a_.value().ipv4_address(), srv_.value().port()}
             : IPEndpoint{aaaa_.value().ipv6_address(), srv_.value().port()};
-    return DnsSdInstanceRecord(instance_id_.instance_id,
-                               instance_id_.service_id, instance_id_.domain_id,
-                               std::move(ep), std::move(txt_or_error.value()));
+    return DnsSdInstanceRecord(instance_id_.instance_id(),
+                               instance_id_.service_id(),
+                               instance_id_.domain_id(), std::move(ep),
+                               std::move(txt_or_error.value()));
   }
 }
 

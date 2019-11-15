@@ -8,6 +8,8 @@
 #include <chrono>
 #include <vector>
 
+#include "discovery/dnssd/impl/instance_key.h"
+#include "discovery/dnssd/impl/service_key.h"
 #include "discovery/mdns/testing/mdns_test_util.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -29,17 +31,6 @@ static const std::string protocol_part = "_udp";
 static const std::string service_name = "_srv-name._udp";
 static const std::string domain_name = "local";
 static const InstanceKey key = {instance_name, service_name, domain_name};
-static constexpr uint16_t port_num = uint16_t{80};
-
-MdnsRecord CreateFullyPopulatedRecord(uint16_t port = port_num) {
-  DomainName target{instance_name, "_srv-name", "_udp", domain_name};
-  auto type = DnsType::kSRV;
-  auto clazz = DnsClass::kIN;
-  auto record_type = RecordType::kShared;
-  auto ttl = std::chrono::seconds(0);
-  SrvRecordRdata srv(0, 0, port, target);
-  return MdnsRecord(target, type, clazz, record_type, ttl, srv);
-}
 
 }  // namespace
 
@@ -84,30 +75,6 @@ TEST(DnsSdConversionLayerTest, TestCreateTxtValidBool) {
   ASSERT_TRUE(record.is_value());
   ASSERT_TRUE(record.value().GetFlag("name").is_value());
   EXPECT_TRUE(record.value().GetFlag("name").value());
-}
-
-// Get*Key functions.
-TEST(DnsSdConversionLayerTest, GetSrvKeyFromRecordTest) {
-  MdnsRecord record = CreateFullyPopulatedRecord();
-  ErrorOr<InstanceKey> key = GetInstanceKey(record);
-  ASSERT_TRUE(key.is_value());
-  EXPECT_EQ(key.value().instance_id, instance_name);
-  EXPECT_EQ(key.value().service_id, service_name);
-  EXPECT_EQ(key.value().domain_id, domain_name);
-}
-
-TEST(DnsSdConversionLayerTest, GetPtrKeyFromRecordTest) {
-  MdnsRecord record = CreateFullyPopulatedRecord();
-  ErrorOr<ServiceKey> key = GetServiceKey(record);
-  ASSERT_TRUE(key.is_value());
-  EXPECT_EQ(key.value().service_id, service_name);
-  EXPECT_EQ(key.value().domain_id, domain_name);
-}
-
-TEST(DnsSdConversionLayerTest, GetPtrKeyFromStringsTest) {
-  ServiceKey key = GetServiceKey(service_name, domain_name);
-  EXPECT_EQ(key.service_id, service_name);
-  EXPECT_EQ(key.domain_id, domain_name);
 }
 
 // Get*QueryInfo methods.

@@ -42,15 +42,18 @@ source_set("dnssd") {
 
   sources = [
     "dnssd/dns_sd_temp.cc",
-    "dnssd/impl/constants.h",
     "dnssd/impl/conversion_layer.cc",
     "dnssd/impl/conversion_layer.h",
     "dnssd/impl/dns_data.cc",
     "dnssd/impl/dns_data.h",
+    "dnssd/impl/instance_key.cc",
+    "dnssd/impl/instance_key.h",
     "dnssd/impl/publisher_impl.cc",
     "dnssd/impl/publisher_impl.h",
     "dnssd/impl/querier_impl.cc",
     "dnssd/impl/querier_impl.h",
+    "dnssd/impl/service_key.cc",
+    "dnssd/impl/service_key.h",
     "dnssd/public/instance_record.cc",
     "dnssd/public/instance_record.h",
     "dnssd/public/publisher.h",
@@ -68,6 +71,7 @@ source_set("testing") {
   testonly = true
 
   sources = [
+    "dnssd/testing/fake_dns_record_factory.cc",
     "mdns/testing/mdns_test_util.cc",
     "mdns/testing/mdns_test_util.h",
   ]
@@ -75,6 +79,7 @@ source_set("testing") {
   public_deps = [
     ":mdns",
     "../third_party/abseil",
+    "../third_party/googletest:gmock",
   ]
 }
 
@@ -82,10 +87,11 @@ source_set("unittests") {
   testonly = true
 
   sources = [
-    "dnssd/impl/constants_unittest.cc",
     "dnssd/impl/conversion_layer_unittest.cc",
     "dnssd/impl/dns_data_unittest.cc",
+    "dnssd/impl/instance_key_unittest.cc",
     "dnssd/impl/publisher_impl_unittest.cc",
+    "dnssd/impl/service_key_unittest.cc",
     "dnssd/public/instance_record_unittest.cc",
     "dnssd/public/txt_record_unittest.cc",
     "mdns/mdns_querier_unittest.cc",

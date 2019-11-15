@@ -11,6 +11,8 @@
 #include "absl/strings/string_view.h"
 #include "discovery/dnssd/impl/constants.h"
 #include "discovery/dnssd/impl/dns_data.h"
+#include "discovery/dnssd/impl/instance_key.h"
+#include "discovery/dnssd/impl/service_key.h"
 #include "discovery/dnssd/public/instance_record.h"
 #include "discovery/dnssd/public/querier.h"
 #include "discovery/mdns/mdns_record_changed_callback.h"

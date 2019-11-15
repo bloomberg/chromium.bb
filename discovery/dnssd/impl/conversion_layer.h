@@ -18,19 +18,8 @@
 namespace openscreen {
 namespace discovery {
 
-// *** Key Generation functions ***
-
-// Helper functions to get the Key associated with a given DNS Record.
-ErrorOr<InstanceKey> GetInstanceKey(const MdnsRecord& record);
-ErrorOr<ServiceKey> GetServiceKey(const MdnsRecord& record);
-
-// Creates the ServiceKey associated with the provided service and dotted fully
-// qualified domain names. NOTE: The provided parameters must be valid service
-// and domain ids.
-ServiceKey GetServiceKey(absl::string_view service, absl::string_view domain);
-
-// Gets the ServiceKey of the service with which this InstanceKey is associated.
-ServiceKey GetServiceKey(const InstanceKey& key);
+class InstanceKey;
+class ServiceKey;
 
 // *** Conversions from DNS entities to DNS-SD Entities ***
 
@@ -40,6 +29,10 @@ ServiceKey GetServiceKey(const InstanceKey& key);
 ErrorOr<DnsSdTxtRecord> CreateFromDnsTxt(const TxtRecordRdata& txt);
 
 bool IsPtrRecord(const MdnsRecord& record);
+
+// Checks that the instance, service, and domain ids in this MdnsRecord are
+// valid.
+bool HasValidDnsRecordAddress(const MdnsRecord& record);
 
 //*** Conversions to DNS entities from DNS-SD Entities ***
 
