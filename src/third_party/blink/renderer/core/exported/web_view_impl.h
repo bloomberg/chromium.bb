@@ -95,6 +95,21 @@ class WebWidgetClient;
 
 using PaintHoldingCommitTrigger = cc::PaintHoldingCommitTrigger;
 
+class RubberbandContext;
+class RubberbandStateImpl;
+class RubberbandState {
+
+    // Not implemented.
+    RubberbandState(const RubberbandState&);
+    RubberbandState& operator=(const RubberbandState&);
+
+  public:
+    RubberbandState();
+    ~RubberbandState();
+
+    std::unique_ptr<RubberbandStateImpl> impl_;
+};
+
 class CORE_EXPORT WebViewImpl final : public WebView,
                                       private WebWidget,
                                       public RefCounted<WebViewImpl>,
@@ -221,6 +236,18 @@ class CORE_EXPORT WebViewImpl final : public WebView,
     return background_color_override_enabled_;
   }
   SkColor BackgroundColorOverride() const { return background_color_override_; }
+
+  // Rubberbanding
+  bool IsAltDragRubberbandingEnabled() const override;
+  void EnableAltDragRubberbanding(bool) override;
+  bool IsRubberbanding() const override;
+  bool PreStartRubberbanding() override;
+  void StartRubberbanding() override;
+  WebRect ExpandRubberbandRect(const WebRect&) override;
+  WebString FinishRubberbanding(const WebRect&) override;
+  void AbortRubberbanding() override;
+  WebString GetTextInRubberband(const WebRect&) override;
+  bool ForceStartRubberbanding(int x, int y) override;
 
   Frame* FocusedCoreFrame() const;
 
@@ -573,6 +600,13 @@ class CORE_EXPORT WebViewImpl final : public WebView,
     // Can be null (e.g. unittests, shared workers, etc).
     WebWidgetClient* client = nullptr;
   } as_widget_;
+  // Rubberbanding
+  void RubberbandWalkFrame(const RubberbandContext&, const LocalFrame*, const LayoutPoint&);
+  void RubberbandWalkLayoutObject(const RubberbandContext&, const LayoutObject*);
+  WTF::String GetTextInRubberbandImpl(const LayoutRect&);
+  bool HandleAltDragRubberbandEvent(const WebInputEvent&);
+  LayoutRect ExpandRubberbandRectImpl(const WebRect& rcOrig);
+  WebString FinishRubberbandingImpl(const LayoutRect&);
 
   Persistent<ChromeClient> chrome_client_;
 
@@ -642,6 +676,13 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   scoped_refptr<WebPagePopupImpl> last_hidden_page_popup_;
 
   Persistent<DevToolsEmulator> dev_tools_emulator_;
+
+  std::unique_ptr<RubberbandState> rubberbandState_;
+
+  // Whether Alt+Mousedrag rubberbanding is enabled or not.
+  bool isAltDragRubberbandingEnabled_;
+  // Whether rubberbanding has been forced on
+  bool rubberbandingForcedOn_;
 
   // Whether the user can press tab to focus links.
   bool tabs_to_links_ = false;

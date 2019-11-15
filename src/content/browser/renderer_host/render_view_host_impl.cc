@@ -1024,6 +1024,10 @@ void RenderViewHostImpl::NotifyMoveOrResizeStarted() {
   Send(new ViewMsg_MoveOrResizeStarted(GetRoutingID()));
 }
 
+void RenderViewHostImpl::EnableAltDragRubberbanding(bool enable) {
+  Send(new ViewMsg_EnableAltDragRubberbanding(GetRoutingID(), enable));
+}
+
 void RenderViewHostImpl::PostRenderViewReady() {
   GetProcess()->PostTaskWhenProcessIsReady(base::BindOnce(
       &RenderViewHostImpl::RenderViewReady, weak_factory_.GetWeakPtr()));
