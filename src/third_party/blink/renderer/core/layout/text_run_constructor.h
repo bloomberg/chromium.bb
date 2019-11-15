@@ -36,6 +36,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_TEXT_RUN_CONSTRUCTOR_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_TEXT_RUN_CONSTRUCTOR_H_
 
+#include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/text/text_direction.h"
 #include "third_party/blink/renderer/platform/text/text_run.h"
 #include "third_party/blink/renderer/platform/wtf/text/unicode.h"
@@ -84,6 +85,7 @@ TextRun ConstructTextRun(const Font&,
                          int length,
                          const ComputedStyle&,
                          TextDirection);
+CORE_EXPORT
 TextRun ConstructTextRun(const Font&,
                          const UChar*,
                          int length,
