@@ -159,6 +159,7 @@ void Warp_C(const void* const source, ptrdiff_t source_stride,
             memcpy(dst_row, first_dst_row, 8 * sizeof(*dst_row));
             dst_row += dest_stride;
           }
+          // End of region 1. Continue the |start_x| for loop.
           continue;
         }
 
@@ -201,6 +202,7 @@ void Warp_C(const void* const source, ptrdiff_t source_stride,
           dst_row += dest_stride;
           sy4 += delta;
         }
+        // End of region 2. Continue the |start_x| for loop.
         continue;
       }
 
