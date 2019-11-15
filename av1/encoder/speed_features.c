@@ -641,7 +641,6 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
 
   if (speed >= 6) {
     sf->optimize_coefficients = NO_TRELLIS_OPT;
-    sf->mv.search_method = HEX;
     for (int i = 0; i < TX_SIZES; ++i) {
       sf->intra_y_mode_mask[i] = INTRA_DC;
       sf->intra_uv_mode_mask[i] = UV_INTRA_DC_CFL;
@@ -668,6 +667,7 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->max_intra_bsize = BLOCK_16X16;
     sf->use_inter_txb_hash = 0;
     sf->skip_interp_filter_search = 1;
+    sf->adaptive_mode_search = 2;
 #if 0
     // Turning this off until we agree that tradeoff qualuty vs speed is good.
     sf->force_tx_search_off = 1;
