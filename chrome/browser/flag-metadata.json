@@ -250,7 +250,7 @@
   {
     "name": "auto-screen-brightness",
     "owners": [ "jiameng", "napper" ],
-    "expiry_milestone": 79
+    "expiry_milestone": 90
   },
   {
     "name": "autofill-always-return-cloud-tokenized-card",
