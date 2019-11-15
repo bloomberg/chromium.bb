@@ -7,6 +7,8 @@
 #include "base/bind_helpers.h"
 #include "base/guid.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
+#include "chrome/browser/sharing/shared_clipboard/feature_flags.h"
 #include "chrome/browser/sharing/shared_clipboard/shared_clipboard_test_base.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/testing_profile.h"
@@ -42,6 +44,14 @@ class RemoteCopyMessageHandlerTest : public SharedClipboardTestBase {
     return message;
   }
 
+  bool IsOriginAllowed(const std::string& image_url,
+                       const std::string& param_value) {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndEnableFeatureWithParameters(
+        kRemoteCopyReceiver, {{kRemoteCopyAllowedOrigins.name, param_value}});
+    return message_handler_->IsOriginAllowed(GURL(image_url));
+  }
+
  protected:
   std::unique_ptr<RemoteCopyMessageHandler> message_handler_;
 
@@ -70,4 +80,17 @@ TEST_F(RemoteCopyMessageHandlerTest, NotificationWithDeviceName) {
                 IDS_CONTENT_CONTEXT_SHARING_SHARED_CLIPBOARD_NOTIFICATION_TITLE,
                 base::ASCIIToUTF16(kDeviceNameInMessage)),
             GetNotification().title());
+}
+
+TEST_F(RemoteCopyMessageHandlerTest, IsOriginAllowed) {
+  std::string image_url = "https://foo.com/image.png";
+  std::string image_url_with_subdomain = "https://www.foo.com/image.png";
+  std::string image_origin = "https://foo.com";
+  EXPECT_TRUE(IsOriginAllowed(image_url, image_origin));
+  EXPECT_FALSE(IsOriginAllowed(image_url_with_subdomain, image_origin));
+  EXPECT_FALSE(IsOriginAllowed(image_url, ""));
+  EXPECT_FALSE(IsOriginAllowed(image_url, "foo][#';/.,"));
+  EXPECT_FALSE(IsOriginAllowed(image_url, "https://bar.com"));
+  EXPECT_TRUE(IsOriginAllowed(image_url, image_origin + ",https://bar.com"));
+  EXPECT_TRUE(IsOriginAllowed(image_url, "https://bar.com," + image_origin));
 }

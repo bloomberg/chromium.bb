@@ -66,14 +66,6 @@ class RemoteCopyBrowserTestBase : public InProcessBrowserTest {
     ui::Clipboard::DestroyClipboardForCurrentThread();
   }
 
-  GURL StartServerAndGetURL(const std::string& relative_url) {
-    server_ = std::make_unique<net::EmbeddedTestServer>(
-        net::EmbeddedTestServer::TYPE_HTTP);
-    server_->ServeFilesFromSourceDirectory(GetChromeTestDataDir());
-    EXPECT_TRUE(server_->Start());
-    return server_->GetURL(relative_url);
-  }
-
   gcm::IncomingMessage CreateMessage(const std::string& device_name,
                                      base::Optional<std::string> text,
                                      base::Optional<GURL> image_url) {
@@ -174,7 +166,15 @@ IN_PROC_BROWSER_TEST_F(RemoteCopyDisabledBrowserTest, FeatureDisabled) {
 class RemoteCopyBrowserTest : public RemoteCopyBrowserTestBase {
  public:
   RemoteCopyBrowserTest() {
-    feature_list_.InitAndEnableFeature(kRemoteCopyReceiver);
+    server_ = std::make_unique<net::EmbeddedTestServer>(
+        net::EmbeddedTestServer::TYPE_HTTP);
+    server_->ServeFilesFromSourceDirectory(GetChromeTestDataDir());
+    EXPECT_TRUE(server_->Start());
+
+    url::Origin allowlist_origin = url::Origin::Create(server_->base_url());
+    feature_list_.InitAndEnableFeatureWithParameters(
+        kRemoteCopyReceiver,
+        {{kRemoteCopyAllowedOrigins.name, allowlist_origin.Serialize()}});
   }
 };
 
@@ -201,8 +201,7 @@ IN_PROC_BROWSER_TEST_F(RemoteCopyBrowserTest, ImageUrl) {
   ASSERT_TRUE(GetAvailableClipboardTypes().empty());
 
   // Send a message with an image url.
-  SendImageMessage(kDeviceName,
-                   StartServerAndGetURL("/image_decoding/droids.jpg"));
+  SendImageMessage(kDeviceName, server_->GetURL("/image_decoding/droids.jpg"));
 
   // The image is in the clipboard and a notification is shown.
   std::vector<base::string16> types = GetAvailableClipboardTypes();
@@ -232,8 +231,7 @@ IN_PROC_BROWSER_TEST_F(RemoteCopyBrowserTest, TextThenImageUrl) {
   ASSERT_EQ(kText, ReadClipboardText());
 
   // Send a message with an image url.
-  SendImageMessage(kDeviceName,
-                   StartServerAndGetURL("/image_decoding/droids.jpg"));
+  SendImageMessage(kDeviceName, server_->GetURL("/image_decoding/droids.jpg"));
 
   // The image is in the clipboard and the text has been cleared.
   types = GetAvailableClipboardTypes();

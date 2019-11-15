@@ -4,15 +4,17 @@
 
 #include "chrome/browser/sharing/shared_clipboard/remote_copy_message_handler.h"
 
-#include <memory>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/guid.h"
 #include "base/strings/string16.h"
+#include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/notifications/notification_display_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sharing/shared_clipboard/feature_flags.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/sync/protocol/sharing_message.pb.h"
 #include "components/sync/protocol/sharing_remote_copy_message.pb.h"
@@ -29,7 +31,7 @@
 #include "ui/message_center/public/cpp/notification.h"
 #include "ui/message_center/public/cpp/notification_types.h"
 #include "ui/message_center/public/cpp/notifier_id.h"
-#include "url/gurl.h"
+#include "url/origin.h"
 
 namespace {
 const net::NetworkTrafficAnnotationTag kTrafficAnnotation =
@@ -100,8 +102,13 @@ void RemoteCopyMessageHandler::HandleText(const std::string& text) {
 
 void RemoteCopyMessageHandler::HandleImage(const std::string& image_url) {
   GURL url(image_url);
-  // TODO(mvanouwerkerk): Whitelist check.
+
   if (!network::IsUrlPotentiallyTrustworthy(url)) {
+    Finish();
+    return;
+  }
+
+  if (!IsOriginAllowed(url)) {
     Finish();
     return;
   }
@@ -122,6 +129,19 @@ void RemoteCopyMessageHandler::HandleImage(const std::string& image_url) {
       base::BindOnce(&RemoteCopyMessageHandler::OnURLLoadComplete,
                      base::Unretained(this)),
       network::SimpleURLLoader::kMaxBoundedStringDownloadSize);
+}
+
+bool RemoteCopyMessageHandler::IsOriginAllowed(const GURL& image_url) {
+  url::Origin image_origin = url::Origin::Create(image_url);
+  std::vector<std::string> parts =
+      base::SplitString(kRemoteCopyAllowedOrigins.Get(), ",",
+                        base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+  for (const auto& part : parts) {
+    url::Origin allowed_origin = url::Origin::Create(GURL(part));
+    if (image_origin.IsSameOriginWith(allowed_origin))
+      return true;
+  }
+  return false;
 }
 
 void RemoteCopyMessageHandler::OnURLLoadComplete(

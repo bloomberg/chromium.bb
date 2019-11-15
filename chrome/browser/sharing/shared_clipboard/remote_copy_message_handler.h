@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "chrome/browser/image_decoder.h"
 #include "chrome/browser/sharing/sharing_message_handler.h"
+#include "url/gurl.h"
 
 class Profile;
 
@@ -32,6 +33,8 @@ class RemoteCopyMessageHandler : public SharingMessageHandler,
   // ImageDecoder::ImageRequest implementation:
   void OnImageDecoded(const SkBitmap& decoded_image) override;
   void OnDecodeImageFailed() override;
+
+  bool IsOriginAllowed(const GURL& image_url);
 
  private:
   void HandleText(const std::string& text);
