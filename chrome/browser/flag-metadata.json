@@ -2154,7 +2154,7 @@
   {
     "name": "enable-winrt-sensor-implementation",
     "owners": [ "wensh@microsoft.com" ],
-    "expiry_milestone": 80
+    "expiry_milestone": 84
   },
  {
     "name": "enable-zero-copy",
