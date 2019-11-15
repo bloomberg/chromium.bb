@@ -8899,6 +8899,8 @@
       'tags': [],
       'desc': '''Controls whether the built-in DNS client is used in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
 
+      This does not affect which DNS servers are used; just the software stack which is used to communicate with them. For example if the operating system is configured to use an enterprise DNS server, that same server would be used by the built-in DNS client. It is however possible that the built-in DNS client will address servers in different ways by using more modern DNS-related protocols such as DNS-over-TLS.
+
       If this policy is set to true, the built-in DNS client will be used, if available.
 
       If this policy is set to false, the built-in DNS client will never be used.
@@ -12563,7 +12565,9 @@
       'name': 'SuppressUnsupportedOSWarning',
       'owners': ['grt@chromium.org'],
       'caption': '''Suppress the unsupported OS warning''',
-      'desc': '''Suppresses the warning that appears when <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> is running on a computer or operating system that is no longer supported.''',
+      'desc': '''Suppresses the warning that appears when <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> is running on a computer or operating system that is no longer supported.
+
+      If this policy is false or unset, the warnings will appear on such unsupported computers or operating systems.''',
       'type': 'main',
       'schema': { 'type': 'boolean' },
       'supported_on': ['chrome.*:49-','chrome_os:49-'],
