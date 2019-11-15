@@ -260,8 +260,10 @@ void SpellcheckService::LoadHunspellDictionaries() {
 
   for (const auto& dictionary : dictionaries) {
     hunspell_dictionaries_.push_back(
-        std::make_unique<SpellcheckHunspellDictionary>(dictionary, context_,
-                                                       this));
+        std::make_unique<SpellcheckHunspellDictionary>(
+            dictionary,
+            context_->AllowDictionaryDownloads()? context_ : nullptr,
+            this));
     hunspell_dictionaries_.back()->AddObserver(this);
     hunspell_dictionaries_.back()->Load();
   }
