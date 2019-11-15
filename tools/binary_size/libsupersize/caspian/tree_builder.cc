@@ -30,13 +30,9 @@ size_t LastSeparatorIndex(std::string_view str, char sep, char othersep) {
 }
 
 std::string_view DirName(std::string_view path, char sep, char othersep) {
-  auto end = LastSeparatorIndex(path, sep, othersep);
-  if (end != std::string_view::npos) {
-    std::string_view ret = path;
-    ret.remove_suffix(path.size() - end);
-    return ret;
-  }
-  return "";
+  size_t sep_idx = LastSeparatorIndex(path, sep, othersep);
+  return sep_idx != std::string_view::npos ? path.substr(0, sep_idx)
+                                           : std::string_view();
 }
 }  // namespace
 
@@ -61,6 +57,7 @@ void TreeBuilder::Build(
     std::vector<std::function<bool(const BaseSymbol&)>> filters) {
   group_by_component_ = group_by_component;
   filters_ = filters;
+  sep_ = group_by_component ? kComponentSep : kPathSep;
 
   // Initialize tree root.
   root_.container_type = ContainerType::kDirectory;

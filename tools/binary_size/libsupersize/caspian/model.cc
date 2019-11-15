@@ -39,7 +39,7 @@ void Symbol::DeriveNames() const {
     name_ = full_name_;
   } else if (IsDex()) {
     std::tuple<std::string_view, std::string_view, std::string_view>
-        parsed_names = ParseJava(full_name_, &size_info->owned_strings);
+        parsed_names = ParseJava(full_name_, &size_info_->owned_strings);
     template_name_ = std::get<1>(parsed_names);
     name_ = std::get<2>(parsed_names);
   } else if (IsStringLiteral()) {
@@ -47,7 +47,7 @@ void Symbol::DeriveNames() const {
     name_ = full_name_;
   } else if (IsNative()) {
     std::tuple<std::string_view, std::string_view, std::string_view>
-        parsed_names = ParseCpp(full_name_, &size_info->owned_strings);
+        parsed_names = ParseCpp(full_name_, &size_info_->owned_strings);
     template_name_ = std::get<1>(parsed_names);
     name_ = std::get<2>(parsed_names);
   } else {
