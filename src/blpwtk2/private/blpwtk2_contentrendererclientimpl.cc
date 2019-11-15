@@ -38,6 +38,8 @@
 
 #include <base/strings/utf_string_conversions.h>
 #include <chrome/common/constants.mojom.h>
+#include <components/spellcheck/renderer/spellcheck.h>
+#include <components/spellcheck/renderer/spellcheck_provider.h>
 #include <content/child/font_warmup_win.h>
 #include <content/public/renderer/render_thread.h>
 #include <net/base/net_errors.h>
@@ -68,6 +70,13 @@ ContentRendererClientImpl::~ContentRendererClientImpl()
 {
 }
 
+void ContentRendererClientImpl::RenderThreadStarted()
+{
+    if (!d_spellcheck) {
+        d_spellcheck.reset(new SpellCheck(&d_registry, this));
+    }
+}
+
 void ContentRendererClientImpl::RenderViewCreated(
     content::RenderView* render_view)
 {
@@ -85,6 +94,9 @@ void ContentRendererClientImpl::RenderFrameCreated(
 
 
     // patch section: spellcheck
+
+    // Create an instance of SpellCheckProvider.
+    new SpellCheckProvider(render_frame, d_spellcheck.get(), this);
 
 
     // patch section: printing
