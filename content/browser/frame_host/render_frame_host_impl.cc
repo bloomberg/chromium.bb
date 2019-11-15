@@ -6434,40 +6434,19 @@ void RenderFrameHostImpl::CreateAudioInputStreamFactory(
     mojo::PendingReceiver<mojom::RendererAudioInputStreamFactory> receiver) {
   BrowserMainLoop* browser_main_loop = BrowserMainLoop::GetInstance();
   DCHECK(browser_main_loop);
-  if (base::FeatureList::IsEnabled(features::kAudioServiceAudioStreams)) {
-    MediaStreamManager* msm = browser_main_loop->media_stream_manager();
-    audio_service_audio_input_stream_factory_.emplace(std::move(receiver), msm,
-                                                      this);
-  } else {
-    in_content_audio_input_stream_factory_ =
-        RenderFrameAudioInputStreamFactoryHandle::CreateFactory(
-            base::BindRepeating(&AudioInputDelegateImpl::Create,
-                                browser_main_loop->audio_manager(),
-                                AudioMirroringManager::GetInstance(),
-                                browser_main_loop->user_input_monitor(),
-                                GetProcess()->GetID(), GetRoutingID()),
-            browser_main_loop->media_stream_manager(), GetProcess()->GetID(),
-            GetRoutingID(), std::move(receiver));
-  }
+  MediaStreamManager* msm = browser_main_loop->media_stream_manager();
+  audio_service_audio_input_stream_factory_.emplace(std::move(receiver), msm,
+                                                    this);
 }
 
 void RenderFrameHostImpl::CreateAudioOutputStreamFactory(
     mojo::PendingReceiver<mojom::RendererAudioOutputStreamFactory> receiver) {
-  if (base::FeatureList::IsEnabled(features::kAudioServiceAudioStreams)) {
-    media::AudioSystem* audio_system =
-        BrowserMainLoop::GetInstance()->audio_system();
-    MediaStreamManager* media_stream_manager =
-        BrowserMainLoop::GetInstance()->media_stream_manager();
-    audio_service_audio_output_stream_factory_.emplace(
-        this, audio_system, media_stream_manager, std::move(receiver));
-  } else {
-    RendererAudioOutputStreamFactoryContext* factory_context =
-        GetProcess()->GetRendererAudioOutputStreamFactoryContext();
-    DCHECK(factory_context);
-    in_content_audio_output_stream_factory_ =
-        RenderFrameAudioOutputStreamFactoryHandle::CreateFactory(
-            factory_context, GetRoutingID(), std::move(receiver));
-  }
+  media::AudioSystem* audio_system =
+      BrowserMainLoop::GetInstance()->audio_system();
+  MediaStreamManager* media_stream_manager =
+      BrowserMainLoop::GetInstance()->media_stream_manager();
+  audio_service_audio_output_stream_factory_.emplace(
+      this, audio_system, media_stream_manager, std::move(receiver));
 }
 
 void RenderFrameHostImpl::BindMediaInterfaceFactoryRequest(
