@@ -91,9 +91,9 @@ TEST(DnsSdInstanceKeyTest, InstanceKeyInMap) {
 TEST(DnsSdInstanceKeyTest, CreateFromRecordTest) {
   MdnsRecord record = FakeDnsRecordFactory::CreateFullyPopulatedSrvRecord();
   InstanceKey key(record);
-  EXPECT_EQ(key.instance_id(), FakeDnsRecordFactory::instance_name);
-  EXPECT_EQ(key.service_id(), FakeDnsRecordFactory::service_name);
-  EXPECT_EQ(key.domain_id(), FakeDnsRecordFactory::domain_name);
+  EXPECT_EQ(key.instance_id(), FakeDnsRecordFactory::kInstanceName);
+  EXPECT_EQ(key.service_id(), FakeDnsRecordFactory::kServiceName);
+  EXPECT_EQ(key.domain_id(), FakeDnsRecordFactory::kDomainName);
 }
 
 }  // namespace discovery

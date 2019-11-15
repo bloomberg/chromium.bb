@@ -10,29 +10,13 @@
 
 #include "discovery/dnssd/impl/instance_key.h"
 #include "discovery/dnssd/impl/service_key.h"
+#include "discovery/dnssd/testing/fake_dns_record_factory.h"
 #include "discovery/mdns/testing/mdns_test_util.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
 namespace openscreen {
 namespace discovery {
-namespace {
-
-static const IPAddress v4_address =
-    IPAddress(std::array<uint8_t, 4>{{192, 168, 0, 0}});
-constexpr uint16_t port{1234};
-static const IPEndpoint v4_endpoint{v4_address, port};
-static const IPAddress v6_address = IPAddress(std::array<uint8_t, 16>{
-    {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16}});
-static const IPEndpoint v6_endpoint{v6_address, port};
-static const std::string instance_name = "instance";
-static const std::string service_part = "_srv-name";
-static const std::string protocol_part = "_udp";
-static const std::string service_name = "_srv-name._udp";
-static const std::string domain_name = "local";
-static const InstanceKey key = {instance_name, service_name, domain_name};
-
-}  // namespace
 
 // TXT Conversions.
 TEST(DnsSdConversionLayerTest, TestCreateTxtEmpty) {
@@ -110,8 +94,10 @@ TEST(DnsSdConversionLayerTest, GetPtrQueryInfoTest) {
 // GetDnsRecords tests.
 TEST(DnsSdConversionLayerTest, GetDnsRecordsPtr) {
   DnsSdTxtRecord txt;
-  DnsSdInstanceRecord instance_record(instance_name, service_name, domain_name,
-                                      v4_endpoint, v6_endpoint, txt);
+  DnsSdInstanceRecord instance_record(
+      FakeDnsRecordFactory::kInstanceName, FakeDnsRecordFactory::kServiceName,
+      FakeDnsRecordFactory::kDomainName, FakeDnsRecordFactory::kV4Endpoint,
+      FakeDnsRecordFactory::kV6Endpoint, txt);
   std::vector<MdnsRecord> records = GetDnsRecords(instance_record);
   auto it = std::find_if(records.begin(), records.end(),
                          [](const MdnsRecord& record) {
@@ -122,22 +108,29 @@ TEST(DnsSdConversionLayerTest, GetDnsRecordsPtr) {
   EXPECT_EQ(it->dns_class(), DnsClass::kIN);
   EXPECT_EQ(it->record_type(), RecordType::kShared);
   EXPECT_EQ(it->name().labels().size(), size_t{3});
-  EXPECT_EQ(it->name().labels()[0], service_part);
-  EXPECT_EQ(it->name().labels()[1], protocol_part);
-  EXPECT_EQ(it->name().labels()[2], domain_name);
+  EXPECT_EQ(it->name().labels()[0],
+            FakeDnsRecordFactory::kServiceNameServicePart);
+  EXPECT_EQ(it->name().labels()[1],
+            FakeDnsRecordFactory::kServiceNameProtocolPart);
+  EXPECT_EQ(it->name().labels()[2], FakeDnsRecordFactory::kDomainName);
 
   const auto& rdata = absl::get<PtrRecordRdata>(it->rdata());
   EXPECT_EQ(rdata.ptr_domain().labels().size(), size_t{4});
-  EXPECT_EQ(rdata.ptr_domain().labels()[0], instance_name);
-  EXPECT_EQ(rdata.ptr_domain().labels()[1], service_part);
-  EXPECT_EQ(rdata.ptr_domain().labels()[2], protocol_part);
-  EXPECT_EQ(rdata.ptr_domain().labels()[3], domain_name);
+  EXPECT_EQ(rdata.ptr_domain().labels()[0],
+            FakeDnsRecordFactory::kInstanceName);
+  EXPECT_EQ(rdata.ptr_domain().labels()[1],
+            FakeDnsRecordFactory::kServiceNameServicePart);
+  EXPECT_EQ(rdata.ptr_domain().labels()[2],
+            FakeDnsRecordFactory::kServiceNameProtocolPart);
+  EXPECT_EQ(rdata.ptr_domain().labels()[3], FakeDnsRecordFactory::kDomainName);
 }
 
 TEST(DnsSdConversionLayerTest, GetDnsRecordsSrv) {
   DnsSdTxtRecord txt;
-  DnsSdInstanceRecord instance_record(instance_name, service_name, domain_name,
-                                      v4_endpoint, v6_endpoint, txt);
+  DnsSdInstanceRecord instance_record(
+      FakeDnsRecordFactory::kInstanceName, FakeDnsRecordFactory::kServiceName,
+      FakeDnsRecordFactory::kDomainName, FakeDnsRecordFactory::kV4Endpoint,
+      FakeDnsRecordFactory::kV6Endpoint, txt);
   std::vector<MdnsRecord> records = GetDnsRecords(instance_record);
   auto it = std::find_if(records.begin(), records.end(),
                          [](const MdnsRecord& record) {
@@ -148,21 +141,25 @@ TEST(DnsSdConversionLayerTest, GetDnsRecordsSrv) {
   EXPECT_EQ(it->dns_class(), DnsClass::kIN);
   EXPECT_EQ(it->record_type(), RecordType::kUnique);
   EXPECT_EQ(it->name().labels().size(), size_t{4});
-  EXPECT_EQ(it->name().labels()[0], instance_name);
-  EXPECT_EQ(it->name().labels()[1], service_part);
-  EXPECT_EQ(it->name().labels()[2], protocol_part);
-  EXPECT_EQ(it->name().labels()[3], domain_name);
+  EXPECT_EQ(it->name().labels()[0], FakeDnsRecordFactory::kInstanceName);
+  EXPECT_EQ(it->name().labels()[1],
+            FakeDnsRecordFactory::kServiceNameServicePart);
+  EXPECT_EQ(it->name().labels()[2],
+            FakeDnsRecordFactory::kServiceNameProtocolPart);
+  EXPECT_EQ(it->name().labels()[3], FakeDnsRecordFactory::kDomainName);
 
   const auto& rdata = absl::get<SrvRecordRdata>(it->rdata());
   EXPECT_EQ(rdata.priority(), 0);
   EXPECT_EQ(rdata.weight(), 0);
-  EXPECT_EQ(rdata.port(), port);
+  EXPECT_EQ(rdata.port(), FakeDnsRecordFactory::kV4Endpoint.port);
 }
 
 TEST(DnsSdConversionLayerTest, GetDnsRecordsAPresent) {
   DnsSdTxtRecord txt;
-  DnsSdInstanceRecord instance_record(instance_name, service_name, domain_name,
-                                      v4_endpoint, v6_endpoint, txt);
+  DnsSdInstanceRecord instance_record(
+      FakeDnsRecordFactory::kInstanceName, FakeDnsRecordFactory::kServiceName,
+      FakeDnsRecordFactory::kDomainName, FakeDnsRecordFactory::kV4Endpoint,
+      FakeDnsRecordFactory::kV6Endpoint, txt);
   std::vector<MdnsRecord> records = GetDnsRecords(instance_record);
   auto it = std::find_if(records.begin(), records.end(),
                          [](const MdnsRecord& record) {
@@ -173,19 +170,23 @@ TEST(DnsSdConversionLayerTest, GetDnsRecordsAPresent) {
   EXPECT_EQ(it->dns_class(), DnsClass::kIN);
   EXPECT_EQ(it->record_type(), RecordType::kUnique);
   EXPECT_EQ(it->name().labels().size(), size_t{4});
-  EXPECT_EQ(it->name().labels()[0], instance_name);
-  EXPECT_EQ(it->name().labels()[1], service_part);
-  EXPECT_EQ(it->name().labels()[2], protocol_part);
-  EXPECT_EQ(it->name().labels()[3], domain_name);
+  EXPECT_EQ(it->name().labels()[0], FakeDnsRecordFactory::kInstanceName);
+  EXPECT_EQ(it->name().labels()[1],
+            FakeDnsRecordFactory::kServiceNameServicePart);
+  EXPECT_EQ(it->name().labels()[2],
+            FakeDnsRecordFactory::kServiceNameProtocolPart);
+  EXPECT_EQ(it->name().labels()[3], FakeDnsRecordFactory::kDomainName);
 
   const auto& rdata = absl::get<ARecordRdata>(it->rdata());
-  EXPECT_EQ(rdata.ipv4_address(), v4_address);
+  EXPECT_EQ(rdata.ipv4_address(), FakeDnsRecordFactory::kV4Address);
 }
 
 TEST(DnsSdConversionLayerTest, GetDnsRecordsANotPresent) {
   DnsSdTxtRecord txt;
-  DnsSdInstanceRecord instance_record(instance_name, service_name, domain_name,
-                                      v6_endpoint, txt);
+  DnsSdInstanceRecord instance_record(FakeDnsRecordFactory::kInstanceName,
+                                      FakeDnsRecordFactory::kServiceName,
+                                      FakeDnsRecordFactory::kDomainName,
+                                      FakeDnsRecordFactory::kV6Endpoint, txt);
   std::vector<MdnsRecord> records = GetDnsRecords(instance_record);
   auto it = std::find_if(records.begin(), records.end(),
                          [](const MdnsRecord& record) {
@@ -196,8 +197,10 @@ TEST(DnsSdConversionLayerTest, GetDnsRecordsANotPresent) {
 
 TEST(DnsSdConversionLayerTest, GetDnsRecordsAAAAPresent) {
   DnsSdTxtRecord txt;
-  DnsSdInstanceRecord instance_record(instance_name, service_name, domain_name,
-                                      v4_endpoint, v6_endpoint, txt);
+  DnsSdInstanceRecord instance_record(
+      FakeDnsRecordFactory::kInstanceName, FakeDnsRecordFactory::kServiceName,
+      FakeDnsRecordFactory::kDomainName, FakeDnsRecordFactory::kV4Endpoint,
+      FakeDnsRecordFactory::kV6Endpoint, txt);
   std::vector<MdnsRecord> records = GetDnsRecords(instance_record);
   auto it = std::find_if(records.begin(), records.end(),
                          [](const MdnsRecord& record) {
@@ -208,19 +211,23 @@ TEST(DnsSdConversionLayerTest, GetDnsRecordsAAAAPresent) {
   EXPECT_EQ(it->dns_class(), DnsClass::kIN);
   EXPECT_EQ(it->record_type(), RecordType::kUnique);
   EXPECT_EQ(it->name().labels().size(), size_t{4});
-  EXPECT_EQ(it->name().labels()[0], instance_name);
-  EXPECT_EQ(it->name().labels()[1], service_part);
-  EXPECT_EQ(it->name().labels()[2], protocol_part);
-  EXPECT_EQ(it->name().labels()[3], domain_name);
+  EXPECT_EQ(it->name().labels()[0], FakeDnsRecordFactory::kInstanceName);
+  EXPECT_EQ(it->name().labels()[1],
+            FakeDnsRecordFactory::kServiceNameServicePart);
+  EXPECT_EQ(it->name().labels()[2],
+            FakeDnsRecordFactory::kServiceNameProtocolPart);
+  EXPECT_EQ(it->name().labels()[3], FakeDnsRecordFactory::kDomainName);
 
   const auto& rdata = absl::get<AAAARecordRdata>(it->rdata());
-  EXPECT_EQ(rdata.ipv6_address(), v6_address);
+  EXPECT_EQ(rdata.ipv6_address(), FakeDnsRecordFactory::kV6Address);
 }
 
 TEST(DnsSdConversionLayerTest, GetDnsRecordsAAAANotPresent) {
   DnsSdTxtRecord txt;
-  DnsSdInstanceRecord instance_record(instance_name, service_name, domain_name,
-                                      v4_endpoint, txt);
+  DnsSdInstanceRecord instance_record(FakeDnsRecordFactory::kInstanceName,
+                                      FakeDnsRecordFactory::kServiceName,
+                                      FakeDnsRecordFactory::kDomainName,
+                                      FakeDnsRecordFactory::kV4Endpoint, txt);
   std::vector<MdnsRecord> records = GetDnsRecords(instance_record);
   auto it = std::find_if(records.begin(), records.end(),
                          [](const MdnsRecord& record) {
@@ -235,8 +242,10 @@ TEST(DnsSdConversionLayerTest, GetDnsRecordsTxt) {
       absl::Span<const uint8_t>(reinterpret_cast<const uint8_t*>("value"), 5);
   txt.SetValue("name", value);
   txt.SetFlag("boolean", true);
-  DnsSdInstanceRecord instance_record(instance_name, service_name, domain_name,
-                                      v4_endpoint, v6_endpoint, txt);
+  DnsSdInstanceRecord instance_record(
+      FakeDnsRecordFactory::kInstanceName, FakeDnsRecordFactory::kServiceName,
+      FakeDnsRecordFactory::kDomainName, FakeDnsRecordFactory::kV4Endpoint,
+      FakeDnsRecordFactory::kV6Endpoint, txt);
   std::vector<MdnsRecord> records = GetDnsRecords(instance_record);
   auto it = std::find_if(records.begin(), records.end(),
                          [](const MdnsRecord& record) {
@@ -247,10 +256,12 @@ TEST(DnsSdConversionLayerTest, GetDnsRecordsTxt) {
   EXPECT_EQ(it->dns_class(), DnsClass::kIN);
   EXPECT_EQ(it->record_type(), RecordType::kUnique);
   EXPECT_EQ(it->name().labels().size(), size_t{4});
-  EXPECT_EQ(it->name().labels()[0], instance_name);
-  EXPECT_EQ(it->name().labels()[1], service_part);
-  EXPECT_EQ(it->name().labels()[2], protocol_part);
-  EXPECT_EQ(it->name().labels()[3], domain_name);
+  EXPECT_EQ(it->name().labels()[0], FakeDnsRecordFactory::kInstanceName);
+  EXPECT_EQ(it->name().labels()[1],
+            FakeDnsRecordFactory::kServiceNameServicePart);
+  EXPECT_EQ(it->name().labels()[2],
+            FakeDnsRecordFactory::kServiceNameProtocolPart);
+  EXPECT_EQ(it->name().labels()[3], FakeDnsRecordFactory::kDomainName);
 
   const auto& rdata = absl::get<TxtRecordRdata>(it->rdata());
   EXPECT_EQ(rdata.texts().size(), size_t{2});

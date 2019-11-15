@@ -57,8 +57,8 @@ TEST(DnsSdServiceKeyTest, ServiceKeyInMap) {
 TEST(DnsSdServiceKeyTest, CreateFromRecordTest) {
   MdnsRecord record = FakeDnsRecordFactory::CreateFullyPopulatedSrvRecord();
   ServiceKey key(record);
-  EXPECT_EQ(key.service_id(), FakeDnsRecordFactory::service_name);
-  EXPECT_EQ(key.domain_id(), FakeDnsRecordFactory::domain_name);
+  EXPECT_EQ(key.service_id(), FakeDnsRecordFactory::kServiceName);
+  EXPECT_EQ(key.domain_id(), FakeDnsRecordFactory::kDomainName);
 }
 
 }  // namespace discovery
