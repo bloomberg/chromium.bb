@@ -1,17 +1,14 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ssl/mitm_software_blocking_page.h"
-
-#include <utility>
+#include "chrome/browser/ssl/blocked_interception_blocking_page.h"
 
 #include "chrome/browser/interstitials/chrome_metrics_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_preferences_util.h"
 #include "chrome/browser/ssl/cert_report_helper.h"
 #include "chrome/browser/ssl/ssl_error_controller_client.h"
-#include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "components/security_interstitials/content/ssl_cert_reporter.h"
 #include "components/security_interstitials/core/metrics_helper.h"
 #include "content/public/browser/interstitial_page.h"
@@ -29,16 +26,21 @@ using content::InterstitialPageDelegate;
 using content::NavigationController;
 using content::NavigationEntry;
 
+// static
+const InterstitialPageDelegate::TypeID
+    BlockedInterceptionBlockingPage::kTypeForTesting =
+        &BlockedInterceptionBlockingPage::kTypeForTesting;
+
 namespace {
 
-const char kMitmSoftwareMetricsName[] = "mitm_software";
+const char kBlockedInterceptionMetricsName[] = "blocked_interception";
 
-std::unique_ptr<ChromeMetricsHelper> CreateMitmSoftwareMetricsHelper(
+std::unique_ptr<ChromeMetricsHelper> CreateBlockedInterceptionMetricsHelper(
     content::WebContents* web_contents,
     const GURL& request_url) {
-  // Set up the metrics helper for the MITMSoftwareUI.
+  // Set up the metrics helper for the BlockedInterceptionUI.
   security_interstitials::MetricsHelper::ReportDetails reporting_info;
-  reporting_info.metric_prefix = kMitmSoftwareMetricsName;
+  reporting_info.metric_prefix = kBlockedInterceptionMetricsName;
   std::unique_ptr<ChromeMetricsHelper> metrics_helper =
       std::make_unique<ChromeMetricsHelper>(web_contents, request_url,
                                             reporting_info);
@@ -48,69 +50,63 @@ std::unique_ptr<ChromeMetricsHelper> CreateMitmSoftwareMetricsHelper(
 
 }  // namespace
 
-// static
-const InterstitialPageDelegate::TypeID
-    MITMSoftwareBlockingPage::kTypeForTesting =
-        &MITMSoftwareBlockingPage::kTypeForTesting;
-
 // Note that we always create a navigation entry with SSL errors.
 // No error happening loading a sub-resource triggers an interstitial so far.
 // Creating an interstitial without showing (e.g. from chrome://interstitials)
 // it leaks memory, so don't create it here.
-MITMSoftwareBlockingPage::MITMSoftwareBlockingPage(
+BlockedInterceptionBlockingPage::BlockedInterceptionBlockingPage(
     content::WebContents* web_contents,
     int cert_error,
     const GURL& request_url,
     std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
-    const net::SSLInfo& ssl_info,
-    const std::string& mitm_software_name,
-    bool is_enterprise_managed)
+    const net::SSLInfo& ssl_info)
     : SSLBlockingPageBase(
           web_contents,
           cert_error,
-          CertificateErrorReport::INTERSTITIAL_MITM_SOFTWARE,
+          CertificateErrorReport::INTERSTITIAL_BLOCKED_INTERCEPTION,
           ssl_info,
           request_url,
           std::move(ssl_cert_reporter),
-          false /* overridable */,
+          true /* overridable */,
           base::Time::Now(),
           std::make_unique<SSLErrorControllerClient>(
               web_contents,
               ssl_info,
               cert_error,
               request_url,
-              CreateMitmSoftwareMetricsHelper(web_contents, request_url))),
+              CreateBlockedInterceptionMetricsHelper(web_contents,
+                                                     request_url))),
       ssl_info_(ssl_info),
-      mitm_software_ui_(
-          new security_interstitials::MITMSoftwareUI(request_url,
-                                                     cert_error,
-                                                     ssl_info,
-                                                     mitm_software_name,
-                                                     is_enterprise_managed,
-                                                     controller())) {}
+      blocked_interception_ui_(
+          new security_interstitials::BlockedInterceptionUI(request_url,
+                                                            cert_error,
+                                                            ssl_info,
+                                                            controller())) {}
 
-MITMSoftwareBlockingPage::~MITMSoftwareBlockingPage() = default;
+BlockedInterceptionBlockingPage::~BlockedInterceptionBlockingPage() = default;
 
-bool MITMSoftwareBlockingPage::ShouldCreateNewNavigation() const {
+bool BlockedInterceptionBlockingPage::ShouldCreateNewNavigation() const {
   return true;
 }
 
-InterstitialPageDelegate::TypeID MITMSoftwareBlockingPage::GetTypeForTesting() {
-  return MITMSoftwareBlockingPage::kTypeForTesting;
+InterstitialPageDelegate::TypeID
+BlockedInterceptionBlockingPage::GetTypeForTesting() {
+  return BlockedInterceptionBlockingPage::kTypeForTesting;
 }
 
-void MITMSoftwareBlockingPage::PopulateInterstitialStrings(
+void BlockedInterceptionBlockingPage::PopulateInterstitialStrings(
     base::DictionaryValue* load_time_data) {
-  mitm_software_ui_->PopulateStringsForHTML(load_time_data);
+  blocked_interception_ui_->PopulateStringsForHTML(load_time_data);
   cert_report_helper()->PopulateExtendedReportingOption(load_time_data);
 }
 
-void MITMSoftwareBlockingPage::OverrideEntry(NavigationEntry* entry) {
+void BlockedInterceptionBlockingPage::OverrideEntry(NavigationEntry* entry) {
   entry->GetSSL() = content::SSLStatus(ssl_info_);
 }
 
 // This handles the commands sent from the interstitial JavaScript.
-void MITMSoftwareBlockingPage::CommandReceived(const std::string& command) {
+void BlockedInterceptionBlockingPage::CommandReceived(
+    const std::string& command) {
   if (command == "\"pageLoadComplete\"") {
     // content::WaitForRenderFrameReady sends this message when the page
     // load completes. Ignore it.
@@ -123,15 +119,15 @@ void MITMSoftwareBlockingPage::CommandReceived(const std::string& command) {
 
   // Let the CertReportHelper handle commands first, This allows it to get set
   // up to send reports, so that the report is populated properly if
-  // MITMSoftwareUI's command handling triggers a report to be sent.
+  // BlockedInterceptionUI's command handling triggers a report to be sent.
   cert_report_helper()->HandleReportingCommands(
       static_cast<security_interstitials::SecurityInterstitialCommand>(cmd),
       controller()->GetPrefService());
-  mitm_software_ui_->HandleCommand(
+  blocked_interception_ui_->HandleCommand(
       static_cast<security_interstitials::SecurityInterstitialCommand>(cmd));
 }
 
-void MITMSoftwareBlockingPage::OverrideRendererPrefs(
+void BlockedInterceptionBlockingPage::OverrideRendererPrefs(
     blink::mojom::RendererPreferences* prefs) {
   Profile* profile =
       Profile::FromBrowserContext(web_contents()->GetBrowserContext());
