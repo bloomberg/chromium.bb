@@ -193,6 +193,9 @@ void WebViewProxy::stop()
 void WebViewProxy::takeKeyboardFocus()
 {
     DCHECK(Statics::isInApplicationMainThread());
+    if (!validateClient()) {
+        return;
+    }
     d_client->takeKeyboardFocus();
 }
 
@@ -207,7 +210,7 @@ void WebViewProxy::setLogicalFocus(bool focused)
         // immediately so that handleInputEvents will work as expected.
         content::RenderViewImpl *rv =
             content::RenderViewImpl::FromRoutingID(d_renderViewRoutingId);
-        DCHECK(rv);
+        VALIDATE_RENDER_VIEW_VOID(rv);
         rv->SetFocus(focused);
     }
 
