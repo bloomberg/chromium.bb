@@ -140,9 +140,9 @@ def GetArchForTarget(target):
   Args:
     target: a toolchain.
   """
-  info = cros_build_lib.run(['crossdev', '--show-target-cfg', target],
-                            capture_output=True, quiet=True).output
-  return key_value_store.LoadData(info).get('arch')
+  ret = cros_build_lib.run(['crossdev', '--show-target-cfg', target],
+                           capture_output=True, quiet=True, encoding='utf-8')
+  return key_value_store.LoadData(ret.stdout).get('arch')
 
 
 def InstallToolchain(sysroot, toolchain=None, force=False, configure=True):
