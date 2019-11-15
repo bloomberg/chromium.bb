@@ -68,6 +68,9 @@ struct WebPrintParams {
   // Specifies how many pages per sheet. This parameter is for N-up mode.
   size_t pages_per_sheet = 1;
 
+  // Specifies whether @media selector will be applied
+  bool use_media_selector = true;
+
   WebPrintParams() = default;
 
   WebPrintParams(const WebSize& paper_size)
