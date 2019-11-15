@@ -176,7 +176,6 @@ PYTHON2_ONLY_TESTS = {
     'lib/failure_message_lib_unittest',
     'lib/kernel_cmdline_unittest',
     'lib/repo_manifest_unittest',
-    'lib/toolchain_util_unittest',
     'scripts/cbuildbot_launch_unittest',
     'scripts/create_manifest_snapshot_unittest',
     'scripts/cros_mark_chrome_as_stable_unittest',

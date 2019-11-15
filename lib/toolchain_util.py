@@ -880,12 +880,14 @@ def _FindLatestAFDOArtifact(gs_url, ranking_function):
       raise RuntimeError(
           'No files found on %s for branch %s' % (gs_url, chrome_branch))
 
-  latest = max((ranking_function(x.url), x.url) for x in results)
-  if latest[0] is None:
-    # If latest artifact has key None, meaning the whole list are actually
-    # invalid names, it means we didn't actually find a latest AFDO artifact.
+  ranked_results = [(ranking_function(x.url), x.url) for x in results]
+  filtered_results = [x for x in ranked_results if x[0] is not None]
+  if not filtered_results:
     raise RuntimeError('No valid latest artifact was found on %s'
-                       '(example invalid artifact: %s).' % (gs_url, latest[1]))
+                       '(example invalid artifact: %s).' %
+                       (gs_url, results[0].url))
+
+  latest = max(filtered_results)
   name = os.path.basename(latest[1])
   logging.info('Latest AFDO artifact in %s is %s', gs_url, name)
   return name
