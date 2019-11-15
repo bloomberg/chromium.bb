@@ -960,7 +960,7 @@
   {
     "name": "enable-assistant-dsp",
     "owners": [ "croissant-eng" ],
-    "expiry_milestone": 80
+    "expiry_milestone": 88
   },
   {
     "name": "enable-assistant-key-remapping",
@@ -970,17 +970,17 @@
   {
     "name": "enable-assistant-launcher-integration",
     "owners": [ "croissant-eng" ],
-    "expiry_milestone": 80
+    "expiry_milestone": 88
   },
   {
     "name": "enable-assistant-launcher-ui",
     "owners": [ "croissant-eng" ],
-    "expiry_milestone": 81
+    "expiry_milestone": 82
   },
   {
     "name": "enable-assistant-media-session-integration",
     "owners": [ "croissant-eng" ],
-    "expiry_milestone": 78
+    "expiry_milestone": 88
   },
   {
     "name": "enable-assistant-routines",
@@ -990,7 +990,7 @@
   {
     "name": "enable-assistant-stereo-input",
     "owners": [ "croissant-eng" ],
-    "expiry_milestone": 80
+    "expiry_milestone": 88
   },
   {
     "name": "enable-async-dns",
