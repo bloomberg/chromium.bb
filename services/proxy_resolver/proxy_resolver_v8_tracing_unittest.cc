@@ -13,6 +13,7 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/platform_thread.h"
@@ -447,7 +448,7 @@ TEST_F(ProxyResolverV8TracingTest, InfiniteDNSSequence) {
 
   for (int i = 0; i < 21; ++i) {
     host_resolver.SetResult(
-        "host" + std::to_string(i), ProxyResolveDnsOperation::DNS_RESOLVE,
+        "host" + base::NumberToString(i), ProxyResolveDnsOperation::DNS_RESOLVE,
         NetworkIsolationKey(), {IPAddress(166, 155, 144, 11)});
   }
 
@@ -495,7 +496,7 @@ TEST_F(ProxyResolverV8TracingTest, InfiniteDNSSequence2) {
       NetworkIsolationKey(), {IPAddress(122, 133, 144, 155)});
   for (int i = 0; i < 21; ++i) {
     host_resolver.SetResult(
-        "host" + std::to_string(i), ProxyResolveDnsOperation::DNS_RESOLVE,
+        "host" + base::NumberToString(i), ProxyResolveDnsOperation::DNS_RESOLVE,
         NetworkIsolationKey(), {IPAddress(166, 155, 144, 11)});
   }
 
