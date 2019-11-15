@@ -330,6 +330,9 @@
     'cast_video_specific_chromium_gtests': {
       'cast_graphics_unittests': {},
       'exo_unittests': {},
+      'views_unittests': {
+        'experiment_percentage': 100,
+      },
     },
 
     'check_network_annotations_script': {
