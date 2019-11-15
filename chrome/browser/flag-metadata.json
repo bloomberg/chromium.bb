@@ -1262,7 +1262,7 @@
   {
     "name": "enable-display-locking",
     "owners": [ "//third_party/blink/renderer/core/display_lock/OWNERS" ],
-    "expiry_milestone": 80
+    "expiry_milestone": 82
   },
   {
     "name": "enable-edu-coexistence",
