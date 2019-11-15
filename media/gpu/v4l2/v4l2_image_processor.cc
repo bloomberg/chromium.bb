@@ -9,6 +9,8 @@
 #include <sys/eventfd.h>
 #include <sys/ioctl.h>
 #include <sys/mman.h>
+
+#include <limits>
 #include <tuple>
 #include <utility>
 
@@ -51,7 +53,8 @@
 
 namespace media {
 
-V4L2ImageProcessor::JobRecord::JobRecord() = default;
+V4L2ImageProcessor::JobRecord::JobRecord()
+    : output_buffer_id(std::numeric_limits<size_t>::max()) {}
 
 V4L2ImageProcessor::JobRecord::~JobRecord() = default;
 
@@ -513,11 +516,32 @@ void V4L2ImageProcessor::ProcessJobsTask() {
 }
 
 bool V4L2ImageProcessor::Reset() {
-  VLOGF(2);
+  DVLOGF(3);
   DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
 
   process_task_tracker_.TryCancelAll();
+  base::WaitableEvent event;
+  device_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&V4L2ImageProcessor::ResetTask,
+                                device_weak_this_, base::Unretained(&event)));
+  event.Wait();
+
+  // Then cancel pending tasks on |client_task_runner_| to avoid returning
+  // frames after reset.
+  client_weak_this_factory_.InvalidateWeakPtrs();
+  client_weak_this_ = client_weak_this_factory_.GetWeakPtr();
+
   return true;
+}
+
+void V4L2ImageProcessor::ResetTask(base::WaitableEvent* event) {
+  DVLOGF(3);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(device_sequence_checker_);
+
+  input_job_queue_ = {};
+  running_jobs_ = {};
+
+  event->Signal();
 }
 
 bool V4L2ImageProcessor::CreateInputBuffers() {
@@ -699,7 +723,7 @@ void V4L2ImageProcessor::EnqueueInput(const JobRecord* job_record) {
   }
 }
 
-void V4L2ImageProcessor::EnqueueOutput(const JobRecord* job_record) {
+void V4L2ImageProcessor::EnqueueOutput(JobRecord* job_record) {
   DVLOGF(4);
   DCHECK_CALLED_ON_VALID_SEQUENCE(device_sequence_checker_);
   DCHECK(output_queue_);
@@ -792,7 +816,11 @@ void V4L2ImageProcessor::Dequeue() {
     }
 
     // Jobs are always processed in FIFO order.
-    DCHECK(!running_jobs_.empty());
+    if (running_jobs_.empty() ||
+        running_jobs_.front()->output_buffer_id != buffer->BufferId()) {
+      DVLOGF(3) << "previous Reset() abondoned the job, ignore.";
+      continue;
+    }
     std::unique_ptr<JobRecord> job_record = std::move(running_jobs_.front());
     running_jobs_.pop();
 
@@ -825,17 +853,29 @@ void V4L2ImageProcessor::Dequeue() {
 
     output_frame->set_timestamp(job_record->input_frame->timestamp());
 
+    base::OnceClosure output_cb;
     if (!job_record->legacy_ready_cb.is_null()) {
-      client_task_runner_->PostTask(
-          FROM_HERE,
-          base::BindOnce(std::move(job_record->legacy_ready_cb),
-                         buffer->BufferId(), std::move(output_frame)));
+      output_cb = base::BindOnce(std::move(job_record->legacy_ready_cb),
+                                 buffer->BufferId(), std::move(output_frame));
     } else {
-      client_task_runner_->PostTask(
-          FROM_HERE, base::BindOnce(std::move(job_record->ready_cb),
-                                    std::move(output_frame)));
+      output_cb = base::BindOnce(std::move(job_record->ready_cb),
+                                 std::move(output_frame));
     }
+    // The task might be cancelled when Reset() is called and then
+    // |client_weak_this_| becomes invalid.
+    client_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&V4L2ImageProcessor::OutputFrameOnClientSequence,
+                       client_weak_this_, std::move(output_cb)));
   }
+}
+
+void V4L2ImageProcessor::OutputFrameOnClientSequence(
+    base::OnceClosure output_cb) {
+  DVLOGF(4);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
+
+  std::move(output_cb).Run();
 }
 
 bool V4L2ImageProcessor::EnqueueInputRecord(const JobRecord* job_record) {
@@ -877,13 +917,15 @@ bool V4L2ImageProcessor::EnqueueInputRecord(const JobRecord* job_record) {
   return true;
 }
 
-bool V4L2ImageProcessor::EnqueueOutputRecord(const JobRecord* job_record) {
+bool V4L2ImageProcessor::EnqueueOutputRecord(JobRecord* job_record) {
   DVLOGF(4);
   DCHECK_CALLED_ON_VALID_SEQUENCE(device_sequence_checker_);
   DCHECK_GT(output_queue_->FreeBuffersCount(), 0u);
 
   V4L2WritableBufferRef buffer(output_queue_->GetFreeBuffer());
   DCHECK(buffer.IsValid());
+
+  job_record->output_buffer_id = buffer.BufferId();
 
   switch (buffer.Memory()) {
     case V4L2_MEMORY_MMAP:

@@ -91,6 +91,7 @@ class MEDIA_GPU_EXPORT V4L2ImageProcessor : public ImageProcessor {
     FrameReadyCB ready_cb;
     LegacyFrameReadyCB legacy_ready_cb;
     scoped_refptr<VideoFrame> output_frame;
+    size_t output_buffer_id;
   };
 
   V4L2ImageProcessor(
@@ -106,10 +107,10 @@ class MEDIA_GPU_EXPORT V4L2ImageProcessor : public ImageProcessor {
 
   bool Initialize();
   void EnqueueInput(const JobRecord* job_record);
-  void EnqueueOutput(const JobRecord* job_record);
+  void EnqueueOutput(JobRecord* job_record);
   void Dequeue();
   bool EnqueueInputRecord(const JobRecord* job_record);
-  bool EnqueueOutputRecord(const JobRecord* job_record);
+  bool EnqueueOutputRecord(JobRecord* job_record);
   bool CreateInputBuffers();
   bool CreateOutputBuffers();
 
@@ -135,6 +136,9 @@ class MEDIA_GPU_EXPORT V4L2ImageProcessor : public ImageProcessor {
   void ProcessJobsTask();
   void ServiceDeviceTask();
 
+  // Call |output_cb| on |client_task_runner_|.
+  void OutputFrameOnClientSequence(base::OnceClosure output_cb);
+
   // Allocate/Destroy the input/output V4L2 buffers.
   void AllocateBuffersTask(bool* result, base::WaitableEvent* done);
 
@@ -145,6 +149,10 @@ class MEDIA_GPU_EXPORT V4L2ImageProcessor : public ImageProcessor {
   void DestroyOnDeviceSequence(base::WaitableEvent* event);
   // Stop all processing on |poll_task_runner_|.
   void DestroyOnPollSequence(base::WaitableEvent* event);
+
+  // Clean up pending job on |device_task_runner_|, and signal |event| after
+  // reset is finished.
+  void ResetTask(base::WaitableEvent* event);
 
   const v4l2_memory input_memory_type_;
   const v4l2_memory output_memory_type_;
