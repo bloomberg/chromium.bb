@@ -361,3 +361,8 @@ QUIC_FLAG(
     bool,
     FLAGS_quic_reloadable_flag_quic_close_connection_on_failed_consume_data_fast_path,
     false)
+
+// If true, add a up call when N packet numbers get skipped.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_on_packet_numbers_skipped,
+          false)
