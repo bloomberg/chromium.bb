@@ -2562,9 +2562,9 @@ void RenderFrameHostImpl::DocumentOnLoadCompleted() {
   delegate_->DocumentOnLoadCompleted(this);
 }
 
-void RenderFrameHostImpl::UpdateActiveSchedulerTrackedFeatures(
+void RenderFrameHostImpl::DidChangeActiveSchedulerTrackedFeatures(
     uint64_t features_mask) {
-  TRACE_EVENT0("toplevel", "UpdateActiveSchedulerTrackedFeatures");
+  TRACE_EVENT0("toplevel", "DidChangeActiveSchedulerTrackedFeatures");
   renderer_reported_scheduler_tracked_features_ = features_mask;
 
   MaybeEvictFromBackForwardCache();

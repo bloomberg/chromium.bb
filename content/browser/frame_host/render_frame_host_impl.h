@@ -1210,6 +1210,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void EnforceInsecureRequestPolicy(
       blink::WebInsecureRequestPolicy policy) override;
   void EnforceInsecureNavigationsSet(const std::vector<uint32_t>& set) override;
+  void DidChangeActiveSchedulerTrackedFeatures(uint64_t features_mask) override;
 
  protected:
   friend class RenderFrameHostFactory;
@@ -1491,7 +1492,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void UpdateEncoding(const std::string& encoding) override;
   void FrameSizeChanged(const gfx::Size& frame_size) override;
   void DocumentOnLoadCompleted() override;
-  void UpdateActiveSchedulerTrackedFeatures(uint64_t features_mask) override;
   void DidAddMessageToConsole(blink::mojom::ConsoleMessageLevel log_level,
                               const base::string16& message,
                               int32_t line_no,
