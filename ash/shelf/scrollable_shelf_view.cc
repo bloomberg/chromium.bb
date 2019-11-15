@@ -469,9 +469,13 @@ void ScrollableShelfView::OnFocusRingActivationChanged(bool activated) {
   if (activated) {
     focus_ring_activated_ = true;
     SetPaneFocusAndFocusDefault();
+    if (IsInTabletMode() && chromeos::switches::ShouldShowShelfHotseat())
+      GetShelf()->shelf_widget()->ForceToShowHotseat();
   } else {
     // Shows the gradient shader when the focus ring is disabled.
     focus_ring_activated_ = false;
+    if (IsInTabletMode() && chromeos::switches::ShouldShowShelfHotseat())
+      GetShelf()->shelf_widget()->ForceToHideHotseat();
   }
 
   // Not needs to update the gradient areas. Returns early.
