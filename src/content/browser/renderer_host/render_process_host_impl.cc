@@ -117,6 +117,7 @@
 #include "content/browser/renderer_host/clipboard_host_impl.h"
 #include "content/browser/renderer_host/code_cache_host_impl.h"
 #include "content/browser/renderer_host/embedded_frame_sink_provider_impl.h"
+#include "content/browser/renderer_host/dwrite_font_proxy_impl_win.h"
 #include "content/browser/renderer_host/file_utilities_host_impl.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/browser/renderer_host/media/media_stream_track_metrics_host.h"
@@ -1985,6 +1986,10 @@ void RenderProcessHostImpl::CreateMessageFilters() {
   AddFilter(new BlobDispatcherHost(GetID(), blob_storage_context));
 #if defined(OS_MACOSX)
   AddFilter(new TextInputClientMessageFilter());
+#elif defined(OS_WIN)
+ {
+    DWriteFontProxyImpl::SetFontCollection(browser_context->GetFontCollection());
+  }
 #endif
 
   p2p_socket_dispatcher_host_ =
