@@ -681,6 +681,12 @@ class DirectGerritHelperTest(cros_test_lib.TestCase):
 
   def testGetGerritPatchInfo(self):
     """Test ordering of results in GetGerritPatchInfo"""
-    changes = self.CHANGES
+    # Swizzle from our old syntax to the new syntax.
+    changes = []
+    for change in self.CHANGES:
+      if change.startswith('*'):
+        changes.append('chrome-internal:%s' % (change[1:],))
+      else:
+        changes.append('chromium:%s' % (change,))
     results = list(gerrit.GetGerritPatchInfo(changes))
     self.assertEqual(changes, [x.gerrit_number_str for x in results])
