@@ -56011,6 +56011,17 @@ Called by update_net_trust_anchors.py.-->
   <int value="3" label="Images and videos"/>
 </enum>
 
+<enum name="SendBeginFrameResult">
+  <int value="0" label="Sent for frame timing"/>
+  <int value="1" label="Stopped by client request"/>
+  <int value="2" label="Stopped for unresponsive client"/>
+  <int value="3" label="Throttled for unresponsive client"/>
+  <int value="4" label="Sent for no active surface"/>
+  <int value="5" label="Sent for blocked embedder"/>
+  <int value="6" label="Throttled for too many undrawn frames"/>
+  <int value="7" label="Sent by default"/>
+</enum>
+
 <enum name="SendPasswordFormToBrowserProcess">
   <obsolete>
     Removed from code March 2019.
