@@ -221,7 +221,6 @@ NGPaintFragment::NGPaintFragment(
     : physical_fragment_(std::move(fragment)),
       offset_(offset),
       parent_(parent),
-      is_layout_object_destroyed_(false),
       is_dirty_inline_(false) {
   // TODO(crbug.com/924449): Once we get the caller passes null physical
   // fragment, we'll change to DCHECK().
@@ -250,8 +249,7 @@ NGPaintFragment::~NGPaintFragment() {
 }
 
 void NGPaintFragment::CreateContext::SkipDestroyedPreviousInstances() {
-  while (UNLIKELY(previous_instance &&
-                  previous_instance->is_layout_object_destroyed_)) {
+  while (UNLIKELY(previous_instance && !previous_instance->IsAlive())) {
     previous_instance = std::move(previous_instance->next_sibling_);
     painting_layer_needs_repaint = true;
   }
@@ -349,7 +347,7 @@ scoped_refptr<NGPaintFragment> NGPaintFragment::CreateOrReuse(
       previous_instance->physical_fragment_ = std::move(fragment);
       previous_instance->offset_ = offset;
       previous_instance->next_for_same_layout_object_ = nullptr;
-      CHECK(!previous_instance->is_layout_object_destroyed_);
+      CHECK(previous_instance->IsAlive());
       previous_instance->is_dirty_inline_ = false;
       // Destroy children of previous instances if the new instance doesn't have
       // any children. Otherwise keep them in case these previous children maybe
@@ -599,7 +597,7 @@ NGPaintFragment* NGPaintFragment::LastForSameLayoutObject() {
 void NGPaintFragment::LayoutObjectWillBeDestroyed() {
   for (NGPaintFragment* fragment = this; fragment;
        fragment = fragment->next_for_same_layout_object_) {
-    fragment->is_layout_object_destroyed_ = true;
+    fragment->PhysicalFragment().LayoutObjectWillBeDestroyed();
   }
 }
 
