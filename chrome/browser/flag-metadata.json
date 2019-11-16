@@ -305,7 +305,7 @@
   {
     "name": "autofill-keyboard-accessory-view",
     "owners": [ "fhorschig@chromium.org" ],
-    "expiry_milestone": 79
+    "expiry_milestone": 82
   },
   {
     "name": "autofill-no-local-save-on-unmask-success",
@@ -1058,7 +1058,7 @@
   {
     "name": "enable-autofill-manual-fallback",
     "owners": [ "fhorschig@chromium.org" ],
-    "expiry_milestone": 79
+    "expiry_milestone": 82
   },
   {
     "name": "enable-autofill-refresh-style",
@@ -2238,7 +2238,7 @@
   {
     "name": "fill-on-account-select",
     "owners": [ "jdoerrie" ],
-    "expiry_milestone": 80
+    "expiry_milestone": 82
   },
   {
     "name": "focus-mode",
@@ -3436,7 +3436,7 @@
   {
     "name": "touch-to-fill",
     "owners": [ "jdoerrie" ],
-    "expiry_milestone": 80
+    "expiry_milestone": 82
   },
   {
     "name": "touchpad-overscroll-history-navigation",
