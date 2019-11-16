@@ -2107,7 +2107,8 @@ class UpgradePackageTest(CpuTestBase):
           cmd = ['egencache', '--update', '--repo=portage-stable',
                  pinfo.package]
           run_calls.append(mock.call(cmd, print_cmd=False, redirect_stdout=True,
-                                     combine_stdout_stderr=True))
+                                     combine_stdout_stderr=True,
+                                     encoding='utf-8'))
 
     # Verify.
     with self.OutputCapturer():
@@ -2311,7 +2312,7 @@ class VerifyPackageTest(CpuTestBase):
     run_mock.assert_called_once_with(
         ['equery', '-C', 'which', '--include-masked', cpv], error_code_ok=True,
         extra_env=envvars, print_cmd=False, redirect_stdout=True,
-        combine_stdout_stderr=True)
+        combine_stdout_stderr=True, encoding='utf-8')
 
   def testVerifyEbuildOverlayGood(self):
     cpv = 'foo/bar-2'
@@ -2359,7 +2360,7 @@ class VerifyPackageTest(CpuTestBase):
     run_mock.assert_called_once_with(
         ['equery', '-qCN', 'list', '-F', '$mask|$cpv:$slot', '-op', cpv],
         error_code_ok=True, extra_env='envvars', print_cmd=False,
-        redirect_stdout=True, combine_stdout_stderr=True)
+        redirect_stdout=True, combine_stdout_stderr=True, encoding='utf-8')
 
   def testGetMaskBitsUnmaskedStable(self):
     output = '  |foo/bar-2.7.0:0'
@@ -2537,7 +2538,7 @@ class CommitTest(CpuTestBase):
     # - Body corresponding to upgrade_lines.
     # - BUG= line (with space after '=' to invalidate it).
     # - TEST= line (with space after '=' to invalidate it).
-    body = r'\n'.join([re.sub(r'\s+', r'\s', line) for line in upgrade_lines])
+    body = r'\n'.join(re.sub(r'\s+', r'\\s', line) for line in upgrade_lines)
     regexp = re.compile(r"""^efg:\supgraded\spackage\sto\supstream\n # Summary
                             ^\s*\n                            # Blank line
                             %s\n                              # Body
@@ -2562,7 +2563,7 @@ class CommitTest(CpuTestBase):
     # - Body corresponding to upgrade_lines.
     # - BUG= line (with space after '=' to invalidate it).
     # - TEST= line (with space after '=' to invalidate it).
-    body = r'\n'.join([re.sub(r'\s+', r'\s', line) for line in upgrade_lines])
+    body = r'\n'.join(re.sub(r'\s+', r'\\s', line) for line in upgrade_lines)
     regexp = re.compile(r"""^efg,\spqr,\suvw:\supgraded\spackages.*\n # Summary
                             ^\s*\n                            # Blank line
                             %s\n                              # Body
@@ -2593,7 +2594,7 @@ class CommitTest(CpuTestBase):
     # - Body corresponding to upgrade_lines.
     # - BUG= line (with space after '=' to invalidate it).
     # - TEST= line (with space after '=' to invalidate it).
-    body = r'\n'.join([re.sub(r'\s+', r'\s', line) for line in upgrade_lines])
+    body = r'\n'.join(re.sub(r'\s+', r'\\s', line) for line in upgrade_lines)
     regexp = re.compile(r"""^Upgraded\s.*10.*\spackages\n     # Summary
                             ^\s*\n                            # Blank line
                             %s\n                              # Body

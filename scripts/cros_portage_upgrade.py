@@ -391,7 +391,8 @@ class Upgrader(object):
     return cros_build_lib.run(
         cmdline, cwd=cwd, extra_env=extra_env, print_cmd=self._verbose,
         redirect_stdout=redirect_stdout,
-        combine_stdout_stderr=combine_stdout_stderr)
+        combine_stdout_stderr=combine_stdout_stderr,
+        encoding='utf-8')
 
   def _SplitEBuildPath(self, ebuild_path):
     """Split a full ebuild path into (overlay, cat, pn, pv)."""
@@ -453,7 +454,8 @@ class Upgrader(object):
     equery = ['equery', 'which', pkg]
     cmd_result = cros_build_lib.run(
         equery, extra_env=envvars, print_cmd=self._verbose,
-        error_code_ok=True, redirect_stdout=True, combine_stdout_stderr=True)
+        check=False, redirect_stdout=True, combine_stdout_stderr=True,
+        encoding='utf-8')
 
     if cmd_result.returncode == 0:
       ebuild_path = cmd_result.output.strip()
@@ -487,7 +489,7 @@ class Upgrader(object):
     cmd = [emerge, '-p'] + ['=' + cpv for cpv in cpvlist]
     result = cros_build_lib.run(
         cmd, error_code_ok=True, extra_env=envvars, print_cmd=False,
-        redirect_stdout=True, combine_stdout_stderr=True)
+        redirect_stdout=True, combine_stdout_stderr=True, encoding='utf-8')
 
     return (result.returncode == 0, ' '.join(cmd), result.output)
 
@@ -499,7 +501,7 @@ class Upgrader(object):
     cmd = [equery, '-C', 'which', pkg]
     cmd_result = cros_build_lib.run(
         cmd, error_code_ok=True, extra_env=envvars, print_cmd=False,
-        redirect_stdout=True, combine_stdout_stderr=True)
+        redirect_stdout=True, combine_stdout_stderr=True, encoding='utf-8')
 
     if cmd_result.returncode == 0:
       ebuild_path = cmd_result.output.strip()
@@ -517,7 +519,7 @@ class Upgrader(object):
     cmd = [equery, '-qCN', 'list', '-F', '$mask|$cpv:$slot', '-op', cpv]
     result = cros_build_lib.run(
         cmd, error_code_ok=True, extra_env=envvars, print_cmd=False,
-        redirect_stdout=True, combine_stdout_stderr=True)
+        redirect_stdout=True, combine_stdout_stderr=True, encoding='utf-8')
 
     output = result.output
     if result.returncode:
@@ -559,7 +561,7 @@ class Upgrader(object):
     cmd = [equery, '-C', 'which', '--include-masked', cpv]
     result = cros_build_lib.run(
         cmd, error_code_ok=True, extra_env=envvars, print_cmd=False,
-        redirect_stdout=True, combine_stdout_stderr=True)
+        redirect_stdout=True, combine_stdout_stderr=True, encoding='utf-8')
 
     ebuild_path = result.output.strip()
     (overlay, _cat, _pn, _pv) = self._SplitEBuildPath(ebuild_path)
@@ -603,7 +605,7 @@ class Upgrader(object):
     cmd = [equery, '-C', '--no-pipe', 'which', cpv]
     result = cros_build_lib.run(
         cmd, error_code_ok=True, extra_env=envvars, print_cmd=False,
-        redirect_stdout=True, combine_stdout_stderr=True)
+        redirect_stdout=True, combine_stdout_stderr=True, encoding='utf-8')
 
     if result.returncode != 0:
       output = result.output.strip()
@@ -826,7 +828,7 @@ class Upgrader(object):
     manifest_cmd = ['ebuild', os.path.join(pkgdir, ebuild), 'manifest']
     manifest_result = cros_build_lib.run(
         manifest_cmd, error_code_ok=True, print_cmd=False,
-        redirect_stdout=True, combine_stdout_stderr=True)
+        redirect_stdout=True, combine_stdout_stderr=True, encoding='utf-8')
 
     if manifest_result.returncode != 0:
       raise RuntimeError('Failed "ebuild manifest" for upgraded package.\n'
@@ -1056,7 +1058,8 @@ class Upgrader(object):
       cmd = ['egencache', '--update', '--repo=portage-stable', pinfo.package]
       egen_result = cros_build_lib.run(cmd, print_cmd=False,
                                        redirect_stdout=True,
-                                       combine_stdout_stderr=True)
+                                       combine_stdout_stderr=True,
+                                       encoding='utf-8')
       if egen_result.returncode != 0:
         raise RuntimeError('Failed to regenerate md5-cache for %r.\n'
                            'Output of %r:\n%s' %

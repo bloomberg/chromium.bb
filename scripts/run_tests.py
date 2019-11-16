@@ -184,7 +184,6 @@ PYTHON2_ONLY_TESTS = {
     'scripts/cbuildbot_launch_unittest',
     'scripts/create_manifest_snapshot_unittest',
     'scripts/cros_mark_chrome_as_stable_unittest',
-    'scripts/cros_portage_upgrade_unittest',
     'scripts/cros_sdk_unittest',
     'scripts/deploy_chrome_unittest',
     'scripts/loman_unittest',
