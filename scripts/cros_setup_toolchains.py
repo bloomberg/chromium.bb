@@ -155,7 +155,8 @@ class Crossdev(object):
     script = os.path.abspath(__file__)
     if script.endswith('.pyc'):
       script = script[:-1]
-    setup_toolchains_hash = hashlib.md5(osutils.ReadFile(script)).hexdigest()
+    setup_toolchains_hash = hashlib.md5(
+        osutils.ReadFile(script, mode='rb')).hexdigest()
 
     cls._CACHE = {
         'crossdev_version': crossdev_version,
@@ -227,7 +228,8 @@ class Crossdev(object):
         cmd.extend(['-t', target])
         # Catch output of crossdev.
         out = cros_build_lib.run(
-            cmd, print_cmd=False, redirect_stdout=True).output.splitlines()
+            cmd, print_cmd=False, redirect_stdout=True,
+            encoding='utf-8').stdout.splitlines()
         # List of tuples split at the first '=', converted into dict.
         conf = dict((k, cros_build_lib.ShellUnquote(v))
                     for k, v in (x.split('=', 1) for x in out))
@@ -641,7 +643,8 @@ def SelectActiveToolchains(targets, suffixes, root='/'):
         extra_env['ROOT'] = root
       cmd = ['%s-config' % package, '-c', target]
       result = cros_build_lib.run(
-          cmd, print_cmd=False, redirect_stdout=True, extra_env=extra_env)
+          cmd, print_cmd=False, redirect_stdout=True, encoding='utf-8',
+          extra_env=extra_env)
       current = result.output.splitlines()[0]
 
       # Do not reconfig when the current is live or nothing needs to be done.
