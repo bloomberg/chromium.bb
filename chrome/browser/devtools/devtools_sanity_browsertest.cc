@@ -1793,7 +1793,9 @@ IN_PROC_BROWSER_TEST_F(DevToolsAutoOpenerTest, TestAutoOpenForTabs) {
 }
 
 // Flaky timeouts on Win7 Tests (dbg)(1); see https://crbug.com/985255.
-#if defined(OS_WIN) && !defined(NDEBUG)
+// Flaky timeouts and failures on Win7 (32) Tests; see
+// https://crbug.com/1025411.
+#if defined(OS_WIN)
 #define MAYBE_DevToolsReattachAfterCrashTest \
   DISABLED_DevToolsReattachAfterCrashTest
 #else
