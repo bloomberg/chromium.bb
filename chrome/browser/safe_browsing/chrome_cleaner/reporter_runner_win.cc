@@ -32,8 +32,6 @@
 #include "base/task/task_traits.h"
 #include "base/task_runner_util.h"
 #include "base/win/registry.h"
-#include "base/win/scoped_handle.h"
-#include "base/win/windows_version.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/profiles/profile.h"
@@ -1006,26 +1004,6 @@ int LaunchAndWaitForExit(const SwReporterInvocation& invocation) {
   base::LaunchOptions launch_options;
   launch_options.current_directory = tmpdir;
 
-  // Assign the reporter process to a job. If the browser exits before the
-  // reporter, the OS will close the job handle and the reporter process.
-  //
-  // Windows 7 does not allow nested job objects, and the process may already
-  // be in a job (for example when running under a debugger or in Terminal
-  // Server) so only enable this on Windows 8+. The reporter will finish its
-  // scan and upload reports if the user has opted in, but not be able to
-  // prompt for cleanup if UwS is found.
-  base::win::ScopedHandle job;
-  if (base::win::GetVersion() >= base::win::Version::WIN8) {
-    job.Set(::CreateJobObject(nullptr, nullptr));
-  }
-  if (job.IsValid()) {
-    base::SetJobObjectLimitFlags(job.Get(), JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE);
-    launch_options.job_handle = job.Get();
-  } else {
-    PLOG(WARNING) << "The Chrome Cleanup Tool's reporter process is not "
-                     "attached to a job and may outlive the browser.";
-  }
-
   base::Process reporter_process =
       g_testing_delegate_
           ? g_testing_delegate_->LaunchReporterProcess(invocation,
@@ -1045,9 +1023,6 @@ int LaunchAndWaitForExit(const SwReporterInvocation& invocation) {
     bool success = reporter_process.WaitForExit(&exit_code);
     DCHECK(success);
   }
-
-  // After the reporter process has exited the job object is no longer needed.
-  // It will be closed when it goes out of scope here.
   return exit_code;
 }
 
