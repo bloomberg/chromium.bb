@@ -8,6 +8,7 @@
 from __future__ import print_function
 
 import os
+import unittest
 
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
@@ -17,6 +18,11 @@ from chromite.lib import osutils
 from chromite.lib import sudo
 
 
+# This long decorator triggers a false positive in the docstring test.
+# https://github.com/PyCQA/pylint/issues/3077
+# pylint: disable=bad-docstring-quotes
+@unittest.skipIf(cros_build_lib.IsInsideChroot(),
+                 'Tests only make sense outside the chroot')
 class CrosSdkPrerequisitesTest(cros_test_lib.TempDirTestCase):
   """Tests for required packages on the host machine.
 
@@ -47,8 +53,11 @@ class CrosSdkPrerequisitesTest(cros_test_lib.TempDirTestCase):
       self.assertEqual(result.returncode, 0)
 
 
-# TODO(bmgordon): Figure out how to mock out --create and --enter and then
-# add tests that combine those with snapshots.
+@unittest.skipIf(cros_build_lib.IsInsideChroot(),
+                 'Tests only make sense outside the chroot')
+@unittest.skip(
+    'These are triggering hangs inside lvm when run through run_tests. '
+    'https://crbug.com/764335')
 class CrosSdkSnapshotTest(cros_test_lib.TempDirTestCase):
   """Tests for the snapshot functionality in cros_sdk."""
 

@@ -115,12 +115,6 @@ SPECIAL_TESTS = {
     # Tests that need to run outside the chroot.
     'lib/cgroups_unittest': OUTSIDE,
 
-    # Running cros_sdk_unittest through run_tests is triggering
-    # a hang inside lvm.
-    # TODO(crbug.com/764335): Change this back to OUTSIDE once
-    # the lvm hang is resolved.
-    'scripts/cros_sdk_unittest': SKIP,
-
     # The proto compile unittest requires network access to install protoc
     # with CIPD. Since ebuilds have no network access and our tests are run
     # through the chromite ebuild on builders, this is a problem. The test
@@ -173,7 +167,6 @@ PYTHON2_ONLY_TESTS = {
     'lib/repo_manifest_unittest',
     'scripts/cbuildbot_launch_unittest',
     'scripts/create_manifest_snapshot_unittest',
-    'scripts/cros_sdk_unittest',
     'scripts/deploy_chrome_unittest',
     'scripts/loman_unittest',
     'signing/image_signing/imagefile_unittest',
