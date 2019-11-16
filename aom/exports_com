@@ -15,10 +15,12 @@ text aom_img_alloc
 text aom_img_alloc_with_border
 text aom_img_flip
 text aom_img_free
+text aom_img_get_metadata
 text aom_img_metadata_array_free
 text aom_img_metadata_array_alloc
 text aom_img_metadata_free
 text aom_img_metadata_alloc
+text aom_img_num_metadata
 text aom_img_plane_height
 text aom_img_plane_width
 text aom_img_remove_metadata
