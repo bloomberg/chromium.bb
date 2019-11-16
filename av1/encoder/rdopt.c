@@ -10163,7 +10163,12 @@ static INLINE int build_cur_mv(int_mv *cur_mv, PREDICTION_MODE this_mode,
     const PREDICTION_MODE single_mode =
         get_single_mode(this_mode, i, is_comp_pred);
     if (single_mode == NEWMV) {
-      cur_mv[i] = this_mv;
+      const uint8_t ref_frame_type = av1_ref_frame_type(mbmi->ref_frame);
+      cur_mv[i] =
+          (i == 0) ? x->mbmi_ext->ref_mv_stack[ref_frame_type][mbmi->ref_mv_idx]
+                         .this_mv
+                   : x->mbmi_ext->ref_mv_stack[ref_frame_type][mbmi->ref_mv_idx]
+                         .comp_mv;
     } else {
       ret &= clamp_and_check_mv(cur_mv + i, this_mv, cm, x);
     }
