@@ -2904,7 +2904,7 @@
   {
     "name": "omnibox-ui-show-suggestion-favicons",
     "owners": [ "ender", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 79
+    "expiry_milestone": 85
   },
   {
     "name": "omnibox-ui-swap-title-and-url",
