@@ -8,6 +8,7 @@
 from __future__ import print_function
 
 import os
+import sys
 import tempfile
 
 from chromite.lib import cros_test_lib
@@ -250,7 +251,13 @@ class MainTest(cros_test_lib.MockOutputTestCase):
 
     # Verify that output ends in error.
     stderr = output.GetStderr()
-    self.assertIn('error: argument --out is required', stderr)
+    # Python changed argparse output style.
+    # TODO(vapier): Drop this once we require Python 3 everywhere.
+    if sys.version_info.major < 3:
+      self.assertIn('error: argument --out is required', stderr)
+    else:
+      self.assertIn('error: the following arguments are required: --out',
+                    stderr)
 
   def testMissingPackage(self):
     """Test that running without a package argument exits with an error."""
@@ -263,7 +270,12 @@ class MainTest(cros_test_lib.MockOutputTestCase):
 
     # Verify that output ends in error.
     stderr = output.GetStderr()
-    self.assertIn('error: too few arguments', stderr)
+    # Python changed argparse output style.
+    # TODO(vapier): Drop this once we require Python 3 everywhere.
+    if sys.version_info.major < 3:
+      self.assertIn('error: too few arguments', stderr)
+    else:
+      self.assertIn('error: the following arguments are required', stderr)
 
   def testMain(self):
     """Verify that running main method runs expected functons.

@@ -186,7 +186,6 @@ PYTHON2_ONLY_TESTS = {
     'scripts/cros_sdk_unittest',
     'scripts/deploy_chrome_unittest',
     'scripts/loman_unittest',
-    'scripts/merge_package_status_unittest',
     'signing/image_signing/imagefile_unittest',
     'signing/lib/firmware_unittest',
     'signing/lib/keys_unittest',
