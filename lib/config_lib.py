@@ -1902,7 +1902,10 @@ def GetNonUniBuildLabBoardName(board):
   # Those special string represent special configuration used in the image,
   # and should run on DUT without those string.
   # We strip those string from the board so that lab can handle it correctly.
-  SPECIAL_SUFFIX = ['-arcnext$', '-arcvm$', '-kernelnext$', '-kvm$']
+  SPECIAL_SUFFIX = [
+      '-arcnext$', '-arcvm$', '-kernelnext$', '-kvm$', '-ndktranslation$',
+      '-cfm%', '-campfire$'
+  ]
   for suffix in SPECIAL_SUFFIX:
     board = re.sub(suffix, '', board)
   return board
