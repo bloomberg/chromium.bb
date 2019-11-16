@@ -5376,6 +5376,9 @@
   <message name="IDS_SETTINGS_SECURITY_KEYS_NO_BIOMETRIC_ENROLLMENT" desc="An error message shown when a user attempts to use the fingerprint sensor on their security key (an authentication hardware device) but the security key is not capable of storing fingerprints, or does not have a fingerprint sensor.">
     Your security key can't store fingerprints
   </message>
+  <message name="IDS_SETTINGS_SECURITY_KEYS_BIO_ENROLLMENT_DELETE" desc="The label for a button that when clicked deletes a fingerprint from a security key (an authentication hardware device) with a built-in fingerprint reader.">
+    Delete this fingerprint
+  </message>
   <message name="IDS_SETTINGS_SECURITY_KEYS_TOUCH_TO_CONTINUE" desc="A label instructing the user to physically touch the activation button on their security key (an authentication hardware device).">
     To continue, insert and touch your security key
   </message>

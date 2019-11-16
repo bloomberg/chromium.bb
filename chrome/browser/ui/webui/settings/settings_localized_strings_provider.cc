@@ -3294,6 +3294,8 @@ void AddSecurityKeysStrings(content::WebUIDataSource* html_source) {
   static constexpr LocalizedString kSecurityKeysStrings[] = {
       {"securityKeysBioEnrollmentAddTitle",
        IDS_SETTINGS_SECURITY_KEYS_BIO_ENROLLMENT_ADD_TITLE},
+      {"securityKeysBioEnrollmentDelete",
+       IDS_SETTINGS_SECURITY_KEYS_BIO_ENROLLMENT_DELETE},
       {"securityKeysBioEnrollmentDialogTitle",
        IDS_SETTINGS_SECURITY_KEYS_BIO_ENROLLMENT_DIALOG_TITLE},
       {"securityKeysBioEnrollmentEnrollingCompleteLabel",
