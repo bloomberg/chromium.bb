@@ -541,7 +541,7 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
   def testSignHashes(self):
     """Test _SignHashes."""
     hashes = (b'foo', b'bar')
-    signatures = (('0' * 256,), ('1' * 256,))
+    signatures = ((b'0' * 256,), (b'1' * 256,))
 
     gen = self._GetStdGenerator(work_dir='/work')
 
@@ -562,20 +562,20 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
   def testWriteSignaturesToFile(self):
     """Test writing signatures into files."""
     gen = self._GetStdGenerator(payload=self.delta_payload)
-    signatures = ('0' * 256, '1' * 256)
+    signatures = (b'0' * 256, b'1' * 256)
 
     file_paths = gen._WriteSignaturesToFile(signatures)
     self.assertEqual(len(file_paths), len(signatures))
     self.assertExists(file_paths[0])
     self.assertExists(file_paths[1])
-    self.assertEqual(osutils.ReadFile(file_paths[0]), signatures[0])
-    self.assertEqual(osutils.ReadFile(file_paths[1]), signatures[1])
+    self.assertEqual(osutils.ReadFile(file_paths[0], mode='rb'), signatures[0])
+    self.assertEqual(osutils.ReadFile(file_paths[1], mode='rb'), signatures[1])
 
   def testInsertSignaturesIntoPayload(self):
     """Test inserting payload and metadata signatures."""
     gen = self._GetStdGenerator(payload=self.delta_payload)
-    payload_signatures = ('0' * 256,)
-    metadata_signatures = ('0' * 256,)
+    payload_signatures = (b'0' * 256,)
+    metadata_signatures = (b'0' * 256,)
 
     # Stub out the required functions.
     run_mock = self.PatchObject(paygen_payload_lib.PaygenPayload,
@@ -680,10 +680,10 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
 
   def testSignPayload(self):
     """Test the overall payload signature process."""
-    payload_hash = 'payload_hash'
-    metadata_hash = 'metadata_hash'
-    payload_sigs = ('payload_sig',)
-    metadata_sigs = ('metadata_sig',)
+    payload_hash = b'payload_hash'
+    metadata_hash = b'metadata_hash'
+    payload_sigs = [b'payload_sig']
+    metadata_sigs = [b'metadata_sig']
 
     gen = self._GetStdGenerator(payload=self.delta_payload, work_dir='/work')
 
@@ -693,7 +693,7 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
                                 return_value=(payload_hash, metadata_hash))
     sign_mock = self.PatchObject(paygen_payload_lib.PaygenPayload,
                                  '_SignHashes',
-                                 return_value=(payload_sigs, metadata_sigs))
+                                 return_value=[payload_sigs, metadata_sigs])
 
     ins_mock = self.PatchObject(paygen_payload_lib.PaygenPayload,
                                 '_InsertSignaturesIntoPayload')

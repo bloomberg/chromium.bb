@@ -10,7 +10,6 @@ from __future__ import print_function
 import base64
 import os
 import shutil
-import socket
 import tempfile
 
 import mock
@@ -245,7 +244,7 @@ class SignerPayloadsClientGoogleStorageTest(gs_unittest.AbstractGSContextTest,
     client = self.createStandardClient()
 
     tmp_dir = None
-    hashes = ['Hash 1', 'Hash 2', 'Hash 3']
+    hashes = [b'Hash 1', b'Hash 2', b'Hash 3']
 
     try:
       with tempfile.NamedTemporaryFile() as archive_file:
@@ -268,7 +267,7 @@ class SignerPayloadsClientGoogleStorageTest(gs_unittest.AbstractGSContextTest,
 
         # Make sure each file has the expected contents
         for h, hash_name in zip(hashes, self.hash_names):
-          with open(os.path.join(tmp_dir, hash_name), 'r') as f:
+          with open(os.path.join(tmp_dir, hash_name), 'rb') as f:
             self.assertEqual([h], f.readlines())
 
     finally:
@@ -369,12 +368,12 @@ class SignerPayloadsClientIntegrationTest(cros_test_lib.MockTempDirTestCase):
     """Test that we can correctly download a list of URIs."""
     def fake_copy(uri, sig):
       """Just write the uri address to the content of the file."""
-      osutils.WriteFile(sig, uri)
+      osutils.WriteFile(sig, uri, mode='wb')
 
     self.PatchObject(self.client._ctx, 'Copy', side_effect=fake_copy)
 
-    uris = ['gs://chromeos-releases-test/sigining-test/foo',
-            'gs://chromeos-releases-test/sigining-test/bar']
+    uris = [b'gs://chromeos-releases-test/sigining-test/foo',
+            b'gs://chromeos-releases-test/sigining-test/bar']
     downloads = self.client._DownloadSignatures(uris)
     self.assertEqual(downloads, uris)
 
@@ -383,18 +382,17 @@ class SignerPayloadsClientIntegrationTest(cros_test_lib.MockTempDirTestCase):
     """Integration test that talks to the real signer with test hashes."""
     ctx = gs.GSContext()
 
-    unique_id = '%s.%d' % (socket.gethostname(), os.getpid())
-    clean_uri = ('gs://chromeos-releases/test-channel/%s/'
-                 'crostools-client/**') % unique_id
+    clean_uri = ('gs://chromeos-releases/test-channel/%s/crostools-client/**' %
+                 (cros_build_lib.GetRandomString(),))
 
     # Cleanup before we start
     ctx.Remove(clean_uri, ignore_missing=True)
 
     try:
-      hashes = ['0' * 32,
-                '1' * 32,
-                ('29834370e415b3124a926c903906f18b'
-                 '3d52e955147f9e6accd67e9512185a63')]
+      hashes = [b'0' * 32,
+                b'1' * 32,
+                (b'29834370e415b3124a926c903906f18b'
+                 b'3d52e955147f9e6accd67e9512185a63')]
 
       keysets = ['update_signer']
 
@@ -458,11 +456,11 @@ class UnofficialPayloadSignerTest(cros_test_lib.TestCase):
     """Tests the correct command is run to extract the public key."""
     with tempfile.NamedTemporaryFile() as public_key:
       self._client.ExtractPublicKey(public_key.name)
-      self.assertIn('BEGIN PUBLIC KEY', public_key.read())
+      self.assertIn(b'BEGIN PUBLIC KEY', public_key.read())
 
   def testGetHashSignatures(self):
     """Tests we correclty sign given hashes."""
-    hashes = ('0' * 32, '1' * 32)
+    hashes = (b'0' * 32, b'1' * 32)
     keyset = 'foo-keys'
     expected_sigs_hex = (
         '4732bf3c12b5795d5f4dd015cf8a65d8294186710f71e1530aa3b10d364ed15dc71ce'

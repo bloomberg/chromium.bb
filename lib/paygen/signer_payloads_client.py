@@ -295,7 +295,7 @@ versionrev = %(version)s
       signature_uris: List of URIs to download.
 
     Returns:
-      List of signatures in strings.
+      List of signatures in bytes.
     """
 
     results = []
@@ -317,20 +317,20 @@ versionrev = %(version)s
     """Take an arbitrary list of hash files, and get them signed.
 
     Args:
-      hashes: A list of hash values to be signed by the signer in string
-              format. They are all expected to be 32 bytes in length.
+      hashes: A list of hash values to be signed by the signer as bytes.
+              They are all expected to be 32 bytes in length.
       keysets: list of keysets to have the hashes signed with. The default
                is almost certainly what you want. These names must match
                valid keysets on the signer.
 
     Returns:
-      A dictionary keyed by hash with a list of signatures in string format.
+      A list of lists of signatures as bytes in the order of the |hashes|.
       The list of signatures will correspond to the list of keysets passed
       in.
 
       hashes, keysets=['update_signer', 'update_signer-v2'] ->
-
-      { hashes[0] : [sig_update_signer, sig_update_signer-v2], ... }
+        hashes[0]                                  hashes[1] ...
+      [ [sig_update_signer, sig_update_signer-v2], [...],    ... ]
 
       Returns None if the process failed.
 
@@ -416,15 +416,12 @@ class UnofficialSignerPayloadsClient(SignerPayloadsClientGoogleStorage):
                                                          work_dir)
 
   def ExtractPublicKey(self, public_key):
-    """Extracts the public key from the given private key.
+    """Extracts the public key from the private key.
 
     This is useful for verifying the payload signed by an unofficial key.
 
     Args:
-      public_key: The path to the public key which needs to be fullfiled.
-
-    Returns:
-      The path to the public key generated inside the work_dir.
+      public_key: The path to write the public key to.
     """
     cmd = ['openssl', 'rsa', '-in', self._private_key, '-pubout', '-out',
            public_key]

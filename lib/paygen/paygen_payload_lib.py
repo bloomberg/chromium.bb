@@ -520,7 +520,7 @@ class PaygenPayload(object):
     Works from an unsigned update payload.
 
     Returns:
-      payload_hash as a string, metadata_hash as a string.
+      Tuple of (payload_hash, metadata_hash) as bytes.
     """
     logging.info('Calculating hashes on %s.', self.payload_file)
 
@@ -553,10 +553,10 @@ class PaygenPayload(object):
     required.
 
     Args:
-      hashes: List of hashes to be signed.
+      hashes: List of hashes (as bytes) to be signed.
 
     Returns:
-      List of lists which contain each signed hash.
+      List of lists which contain each signed hash (as bytes).
       [[hash_1_sig_1, hash_1_sig_2], [hash_2_sig_1, hash_2_sig_2]]
     """
     logging.info('Signing payload hashes with %s.',
@@ -599,7 +599,7 @@ class PaygenPayload(object):
     """Write each signature into a temp file in the chroot.
 
     Args:
-      signatures: A list of signaturs to write into file.
+      signatures: A list of signatures as bytes to write into file.
 
     Returns:
       The list of files in the chroot with the same order as signatures.
@@ -607,7 +607,7 @@ class PaygenPayload(object):
     file_paths = []
     for signature in signatures:
       path = tempfile.NamedTemporaryFile(dir=self.work_dir, delete=False).name
-      osutils.WriteFile(path, signature)
+      osutils.WriteFile(path, signature, mode='wb')
       file_paths.append(path_util.ToChrootPath(path))
 
     return file_paths
@@ -617,8 +617,8 @@ class PaygenPayload(object):
     """Put payload and metadta signatures into the payload we sign.
 
     Args:
-      payload_signatures: List of signatures for the payload.
-      metadata_signatures: List of signatures for the metadata.
+      payload_signatures: List of signatures as bytes for the payload.
+      metadata_signatures: List of signatures as bytes for the metadata.
     """
     logging.info('Inserting payload and metadata signatures into %s.',
                  self.signed_payload_file)
