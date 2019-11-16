@@ -13,8 +13,6 @@ import multiprocessing
 
 from collections import namedtuple
 
-# this import exists, linter apparently has an issue.
-import psutil  # pylint: disable=import-error
 
 AcquireResult = namedtuple('AcquireResult', ['result', 'reason'])
 
@@ -177,7 +175,16 @@ class MemoryConsumptionSemaphore(object):
 
   def _get_system_available(self):
     """Get the system's available memory (memory free before swapping)."""
-    return psutil.virtual_memory().available
+    with open('/proc/meminfo') as fp:
+      for line in fp:
+        fields = line.split()
+        if fields[0] == 'MemAvailable:':
+          size = int(fields[1])
+          if len(fields) > 2:
+            assert fields[2] == 'kB', line
+            size *= 1024
+          return size
+    return 0
 
   def _timer_blocked(self):
     """Check the timer, if we're past it return true, otherwise false."""

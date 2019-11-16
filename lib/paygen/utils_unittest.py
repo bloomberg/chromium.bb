@@ -49,7 +49,7 @@ class TestUtils(cros_test_lib.TempDirTestCase):
       self._now += n
 
   def mock_get_system_available(self, how_much):
-    """Mock the system's available memory, used to override psutil."""
+    """Mock the system's available memory, used to override /proc."""
     return lambda: how_much
 
   def testListdirFullpath(self):
