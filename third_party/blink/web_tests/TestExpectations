@@ -5856,3 +5856,4 @@ crbug.com/1025123 external/wpt/longtask-timing/longtask-in-sibling-iframe-crosso
 crbug.com/1025321 [ Win ] http/tests/devtools/tracing/console-timeline.js [ Pass Failure ]
 crbug.com/1025321 [ Win ] virtual/threaded/http/tests/devtools/tracing/console-timeline.js [ Pass Failure ]
 crbug.com/1025291 [ Linux ] virtual/android/fullscreen/video-scrolled-iframe.html [ Pass Failure ]
+crbug.com/1025437 virtual/not-site-per-process/http/tests/devtools/debugger/fetch-breakpoints.js [ Timeout Pass ]
