@@ -6877,6 +6877,21 @@
             ]
         }
     ],
+    "UseInProgressDownloadManagerForDownloadService": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "UseInProgressDownloadManagerForDownloadService"
+                    ]
+                }
+            ]
+        }
+    ],
     "UseSkiaRenderer": [
         {
             "platforms": [
