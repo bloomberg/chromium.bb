@@ -169,7 +169,6 @@ PYTHON2_ONLY_TESTS = {
     'cli/cros/cros_chrome_sdk_unittest',
     'cli/deploy_unittest',
     'cli/flash_unittest',
-    'cros_bisect/autotest_evaluator_unittest',
     'lib/auto_updater_unittest',
     'lib/buildbucket_v2_unittest',
     'lib/builder_status_lib_unittest',

@@ -163,7 +163,7 @@ class AutotestEvaluator(evaluator.Evaluator):
     try:
       command_result = cros_build_lib.run(
           ['find', '.', '-name', self.RESULT_FILENAME],
-          cwd=results_dir, capture_output=True)
+          cwd=results_dir, capture_output=True, encoding='utf-8')
     except cros_build_lib.RunCommandError as e:
       logging.error('Failed to look up %s under %s: %s', self.RESULT_FILENAME,
                     results_dir, e)
