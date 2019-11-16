@@ -16583,8 +16583,8 @@ Called by update_net_error_codes.py.-->
   <int value="5" label="SCRIPT_LOADED"/>
   <int value="6" label="SCRIPT_EVALUATED (obsolete)"/>
   <int value="7" label="THREAD_STARTED"/>
-  <int value="8" label="SCRIPT_READ_STARTED"/>
-  <int value="9" label="SCRIPT_READ_FINISHED"/>
+  <int value="8" label="SCRIPT_READ_STARTED (obsolete)"/>
+  <int value="9" label="SCRIPT_READ_FINISHED (obsolete)"/>
   <int value="10" label="SCRIPT_STREAMING"/>
   <int value="11" label="SCRIPT_EVALUATION"/>
 </enum>
