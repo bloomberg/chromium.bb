@@ -54,7 +54,7 @@ def request(method, url, **kwargs):
 
 
 def get(url, params=None, **kwargs):
-    """Sends a GET request.
+    r"""Sends a GET request.
 
     :param url: URL for the new :class:`Request` object.
     :param params: (optional) Dictionary or bytes to be sent in the query string for the :class:`Request`.
@@ -68,7 +68,7 @@ def get(url, params=None, **kwargs):
 
 
 def options(url, **kwargs):
-    """Sends a OPTIONS request.
+    r"""Sends a OPTIONS request.
 
     :param url: URL for the new :class:`Request` object.
     :param \*\*kwargs: Optional arguments that ``request`` takes.
@@ -81,7 +81,7 @@ def options(url, **kwargs):
 
 
 def head(url, **kwargs):
-    """Sends a HEAD request.
+    r"""Sends a HEAD request.
 
     :param url: URL for the new :class:`Request` object.
     :param \*\*kwargs: Optional arguments that ``request`` takes.
@@ -94,7 +94,7 @@ def head(url, **kwargs):
 
 
 def post(url, data=None, json=None, **kwargs):
-    """Sends a POST request.
+    r"""Sends a POST request.
 
     :param url: URL for the new :class:`Request` object.
     :param data: (optional) Dictionary, bytes, or file-like object to send in the body of the :class:`Request`.
@@ -108,7 +108,7 @@ def post(url, data=None, json=None, **kwargs):
 
 
 def put(url, data=None, **kwargs):
-    """Sends a PUT request.
+    r"""Sends a PUT request.
 
     :param url: URL for the new :class:`Request` object.
     :param data: (optional) Dictionary, bytes, or file-like object to send in the body of the :class:`Request`.
@@ -121,7 +121,7 @@ def put(url, data=None, **kwargs):
 
 
 def patch(url, data=None, **kwargs):
-    """Sends a PATCH request.
+    r"""Sends a PATCH request.
 
     :param url: URL for the new :class:`Request` object.
     :param data: (optional) Dictionary, bytes, or file-like object to send in the body of the :class:`Request`.
@@ -134,7 +134,7 @@ def patch(url, data=None, **kwargs):
 
 
 def delete(url, **kwargs):
-    """Sends a DELETE request.
+    r"""Sends a DELETE request.
 
     :param url: URL for the new :class:`Request` object.
     :param \*\*kwargs: Optional arguments that ``request`` takes.

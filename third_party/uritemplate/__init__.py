@@ -33,7 +33,7 @@ __version__ = "0.6"
 RESERVED = ":/?#[]@!$&'()*+,;="
 OPERATOR = "+#./;?&|!@"
 MODIFIER = ":^"
-TEMPLATE = re.compile("{([^\}]+)}")
+TEMPLATE = re.compile(r"{([^\}]+)}")
 
 
 def variables(template):
