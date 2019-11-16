@@ -130,7 +130,7 @@ class CrosMarkChromeAsStable(cros_test_lib.MockTempDirTestCase):
         A=8
         B=0
         C=256
-        D=0""")
+        D=0""").encode('utf-8')
     result = base64.b64encode(TEST_VERSION_CONTENTS)
     self.PatchObject(gob_util, 'FetchUrl', return_value=result)
     # pylint: disable=protected-access
@@ -157,10 +157,10 @@ class CrosMarkChromeAsStable(cros_test_lib.MockTempDirTestCase):
     TEST_REFS_JSON = dict((tag, None) for tag in TEST_TAGS)
     TEST_BAD_DEPS_CONTENT = dedent("""\
         buildspec_platforms: 'TRS-80,',
-        """)
+        """).encode('utf-8')
     TEST_GOOD_DEPS_CONTENT = dedent("""\
         buildspec_platforms: 'chromeos,',
-        """)
+        """).encode('utf-8')
 
     self.PatchObject(gob_util, 'FetchUrl', side_effect=(
         base64.b64encode(TEST_BAD_DEPS_CONTENT),
@@ -178,7 +178,7 @@ class CrosMarkChromeAsStable(cros_test_lib.MockTempDirTestCase):
     TEST_REFS_JSON = dict((tag, None) for tag in TEST_TAGS)
     TEST_DEPS_CONTENT = dedent("""\
         buildspec_platforms: 'chromeos,',
-        """)
+        """).encode('utf-8')
 
     self.PatchObject(gob_util, 'FetchUrl', side_effect=(
         base64.b64encode(TEST_DEPS_CONTENT),
