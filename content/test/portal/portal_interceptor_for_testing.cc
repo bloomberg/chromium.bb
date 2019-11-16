@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/portal/portal_interceptor_for_testing.h"
+#include "content/test/portal/portal_interceptor_for_testing.h"
 
 #include <utility>
 #include "base/logging.h"
@@ -61,12 +61,16 @@ PortalInterceptorForTesting* PortalInterceptorForTesting::From(
 
 PortalInterceptorForTesting::PortalInterceptorForTesting(
     RenderFrameHostImpl* render_frame_host_impl)
-    : portal_(content::Portal::CreateForTesting(render_frame_host_impl)) {}
+    : PortalInterceptorForTesting(
+          render_frame_host_impl,
+          content::Portal::CreateForTesting(render_frame_host_impl)) {}
 
 PortalInterceptorForTesting::PortalInterceptorForTesting(
     RenderFrameHostImpl* render_frame_host_impl,
     std::unique_ptr<content::Portal> portal)
-    : portal_(std::move(portal)) {}
+    : observers_(base::MakeRefCounted<
+                 base::RefCountedData<base::ObserverList<Observer>>>()),
+      portal_(std::move(portal)) {}
 
 PortalInterceptorForTesting::~PortalInterceptorForTesting() = default;
 
@@ -77,6 +81,8 @@ blink::mojom::Portal* PortalInterceptorForTesting::GetForwardingInterface() {
 void PortalInterceptorForTesting::Activate(blink::TransferableMessage data,
                                            ActivateCallback callback) {
   portal_activated_ = true;
+  for (Observer& observer : observers_->data)
+    observer.OnPortalActivate();
 
   if (run_loop_) {
     run_loop_->Quit();
@@ -84,7 +90,18 @@ void PortalInterceptorForTesting::Activate(blink::TransferableMessage data,
   }
 
   // |this| can be destroyed after Activate() is called.
-  portal_->Activate(std::move(data), std::move(callback));
+  portal_->Activate(
+      std::move(data),
+      base::BindOnce(
+          [](const scoped_refptr<
+                 base::RefCountedData<base::ObserverList<Observer>>>& observers,
+             ActivateCallback callback,
+             blink::mojom::PortalActivateResult result) {
+            for (Observer& observer : observers->data)
+              observer.OnPortalActivateResult(result);
+            std::move(callback).Run(result);
+          },
+          observers_, std::move(callback)));
 }
 
 void PortalInterceptorForTesting::Navigate(

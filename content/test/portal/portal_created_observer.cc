@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/portal/portal_created_observer.h"
+#include "content/test/portal/portal_created_observer.h"
 
 #include <utility>
 #include "base/run_loop.h"
@@ -10,7 +10,7 @@
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/frame_host/render_frame_proxy_host.h"
 #include "content/browser/portal/portal.h"
-#include "content/browser/portal/portal_interceptor_for_testing.h"
+#include "content/test/portal/portal_interceptor_for_testing.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 
 namespace content {

@@ -2,12 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_PORTAL_PORTAL_INTERCEPTOR_FOR_TESTING_H_
-#define CONTENT_BROWSER_PORTAL_PORTAL_INTERCEPTOR_FOR_TESTING_H_
+#ifndef CONTENT_TEST_PORTAL_PORTAL_INTERCEPTOR_FOR_TESTING_H_
+#define CONTENT_TEST_PORTAL_PORTAL_INTERCEPTOR_FOR_TESTING_H_
 
 #include <memory>
 
 #include "base/callback.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_refptr.h"
+#include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
+#include "base/observer_list_types.h"
 #include "content/browser/portal/portal.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
@@ -26,6 +31,13 @@ class RenderFrameHostImpl;
 class PortalInterceptorForTesting final
     : public blink::mojom::PortalInterceptorForTesting {
  public:
+  class Observer : public base::CheckedObserver {
+   public:
+    virtual void OnPortalActivate() {}
+    virtual void OnPortalActivateResult(
+        blink::mojom::PortalActivateResult result) {}
+  };
+
   static PortalInterceptorForTesting* Create(
       RenderFrameHostImpl* render_frame_host_impl,
       mojo::PendingAssociatedReceiver<blink::mojom::Portal> receiver,
@@ -54,11 +66,24 @@ class PortalInterceptorForTesting final
     navigate_callback_ = std::move(callback);
   }
 
+  // TODO(jbroman): Migrate callers to the more flexible
+  // PortalActivatedObserver.
   void WaitForActivate();
 
   // Test getters.
   content::Portal* GetPortal() { return portal_.get(); }
   WebContentsImpl* GetPortalContents() { return portal_->GetPortalContents(); }
+
+  // Useful in observing the intercepted activity.
+  base::WeakPtr<PortalInterceptorForTesting> GetWeakPtr() {
+    return weak_ptr_factory_.GetWeakPtr();
+  }
+  void AddObserver(Observer* observer) {
+    observers_->data.AddObserver(observer);
+  }
+  void RemoveObserver(Observer* observer) {
+    observers_->data.RemoveObserver(observer);
+  }
 
  private:
   explicit PortalInterceptorForTesting(
@@ -66,12 +91,15 @@ class PortalInterceptorForTesting final
   PortalInterceptorForTesting(RenderFrameHostImpl* render_frame_host_impl,
                               std::unique_ptr<content::Portal> portal);
 
+  const scoped_refptr<base::RefCountedData<base::ObserverList<Observer>>>
+      observers_;
   std::unique_ptr<content::Portal> portal_;
   NavigateCallback navigate_callback_;
   bool portal_activated_ = false;
   base::RunLoop* run_loop_ = nullptr;
+  base::WeakPtrFactory<PortalInterceptorForTesting> weak_ptr_factory_{this};
 };
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_PORTAL_PORTAL_INTERCEPTOR_FOR_TESTING_H_
+#endif  // CONTENT_TEST_PORTAL_PORTAL_INTERCEPTOR_FOR_TESTING_H_

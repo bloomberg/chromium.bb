@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_PORTAL_PORTAL_CREATED_OBSERVER_H_
-#define CONTENT_BROWSER_PORTAL_PORTAL_CREATED_OBSERVER_H_
+#ifndef CONTENT_TEST_PORTAL_PORTAL_CREATED_OBSERVER_H_
+#define CONTENT_TEST_PORTAL_PORTAL_CREATED_OBSERVER_H_
 
 #include "content/common/frame.mojom-test-utils.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
@@ -48,4 +48,4 @@ class PortalCreatedObserver : public mojom::FrameHostInterceptorForTesting {
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_PORTAL_PORTAL_CREATED_OBSERVER_H_
+#endif  // CONTENT_TEST_PORTAL_PORTAL_CREATED_OBSERVER_H_
