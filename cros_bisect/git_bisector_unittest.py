@@ -145,11 +145,11 @@ class TestGitBisector(cros_test_lib.MockTempDirTestCase):
     options = cros_test_lib.EasyAttr()
     with self.assertRaises(common.MissingRequiredOptionsException) as cm:
       git_bisector.GitBisector(options, self.builder, self.evaluator)
-    exception_message = cm.exception.message
-    self.assertTrue('Missing command line' in exception_message)
-    self.assertTrue('GitBisector' in exception_message)
+    exception_message = str(cm.exception)
+    self.assertIn('Missing command line', exception_message)
+    self.assertIn('GitBisector', exception_message)
     for arg in git_bisector.GitBisector.REQUIRED_ARGS:
-      self.assertTrue(arg in exception_message)
+      self.assertIn(arg, exception_message)
 
   def testCheckCommitFormat(self):
     """Tests CheckCommitFormat()."""

@@ -83,11 +83,11 @@ class TestSimpleChromeBuilder(cros_test_lib.MockTempDirTestCase):
     options = cros_test_lib.EasyAttr()
     with self.assertRaises(Exception) as cm:
       simple_chrome_builder.SimpleChromeBuilder(options)
-    exception_message = cm.exception.message
-    self.assertTrue('Missing command line' in exception_message)
-    self.assertTrue('SimpleChromeBuilder' in exception_message)
+    exception_message = str(cm.exception)
+    self.assertIn('Missing command line', exception_message)
+    self.assertIn('SimpleChromeBuilder', exception_message)
     for arg in simple_chrome_builder.SimpleChromeBuilder.REQUIRED_ARGS:
-      self.assertTrue(arg in exception_message)
+      self.assertIn(arg, exception_message)
 
   def testInitCustomizedDir(self):
     base_dir = self.tempdir
