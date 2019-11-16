@@ -1736,6 +1736,7 @@
         },
         'mixins': [
           'arm64',
+          'docker',
           'linux-xenial',
         ],
       },

@@ -167,6 +167,13 @@
   'code-coverage': {
     'isolate_coverage_data': True,
   },
+  'docker': {
+    'swarming': {
+      'dimensions': {
+        'inside_docker': '1',
+      },
+    },
+  },
   'flounder': {
     # Nexus 9
     'swarming': {
