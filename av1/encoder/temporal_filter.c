@@ -1572,14 +1572,24 @@ int av1_temporal_filter(AV1_COMP *cpi, int distance,
     return 0;
   }
 
-  if (distance == -1) {
-    // Apply temporal filtering on key frame.
-    strength = estimate_strength(cpi, distance, rc->gfu_boost, &sigma);
-    // Number of frames for temporal filtering, could be tuned.
+  if (distance < 0) {
     frames_to_blur = NUM_KEY_FRAME_DENOISING;
-    frames_to_blur_backward = 0;
-    frames_to_blur_forward = frames_to_blur - 1;
-    start_frame = distance + frames_to_blur_forward;
+    if (distance == -1) {
+      // Apply temporal filtering on key frame.
+      strength = estimate_strength(cpi, distance, rc->gfu_boost, &sigma);
+      // Number of frames for temporal filtering, could be tuned.
+      frames_to_blur_backward = 0;
+      frames_to_blur_forward = frames_to_blur - 1;
+      start_frame = distance + frames_to_blur_forward;
+    } else {
+      // Apply temporal filtering on forward key frame. This requires filtering
+      // backwards rather than forwards.
+      strength = estimate_strength(cpi, -1 * distance, rc->gfu_boost, &sigma);
+      // Number of frames for temporal filtering, could be tuned.
+      frames_to_blur_backward = frames_to_blur - 1;
+      frames_to_blur_forward = 0;
+      start_frame = -1 * distance;
+    }
   } else {
     adjust_arnr_filter(cpi, distance, rc->gfu_boost, &frames_to_blur, &strength,
                        &sigma, &frames_to_blur_backward,
@@ -1613,9 +1623,9 @@ int av1_temporal_filter(AV1_COMP *cpi, int distance,
 
   FRAME_DIFF diff = temporal_filter_iterate_c(cpi, frames, frames_to_blur,
                                               frames_to_blur_backward, strength,
-                                              sigma, distance == -1, &sf);
+                                              sigma, distance < 0, &sf);
 
-  if (distance == -1) return 1;
+  if (distance < 0) return 1;
 
   if (show_existing_alt_ref != NULL && cpi->sf.adaptive_overlay_encoding) {
     AV1_COMMON *const cm = &cpi->common;

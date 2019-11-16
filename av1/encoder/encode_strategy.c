@@ -933,7 +933,7 @@ static int denoise_and_encode(AV1_COMP *const cpi, uint8_t *const dest,
   }
   const int apply_filtering =
       oxcf->pass == 2 && frame_params->frame_type == KEY_FRAME &&
-      frame_params->show_frame &&
+      !frame_params->show_existing_frame &&
       cpi->rc.frames_to_key > NUM_KEY_FRAME_DENOISING && noise_level > 0 &&
       !is_lossless_requested(oxcf) && oxcf->arnr_max_frames > 0;
   // Save the pointer to the original source image.
@@ -958,7 +958,12 @@ static int denoise_and_encode(AV1_COMP *const cpi, uint8_t *const dest,
     av1_frame_init_quantizer(cpi);
     av1_setup_past_independence(cm);
 
-    av1_temporal_filter(cpi, -1, NULL);
+    if (!frame_params->show_frame) {
+      int arf_src_index = get_arf_src_index(&cpi->gf_group, cpi->oxcf.pass);
+      av1_temporal_filter(cpi, -1 * arf_src_index, NULL);
+    } else {
+      av1_temporal_filter(cpi, -1, NULL);
+    }
     aom_extend_frame_borders(&cpi->alt_ref_buffer, num_planes);
     // Use the filtered frame for encoding.
     frame_input->source = &cpi->alt_ref_buffer;
