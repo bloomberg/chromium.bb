@@ -112,6 +112,21 @@ def linux_builder(*, name, **kwargs):
   )
 
 linux_builder(
+    name = 'chromium_presubmit',
+    executable = luci.recipe(name = 'presubmit'),
+    properties = {
+        '$depot_tools/presubmit': {
+            'runhooks': True,
+            'timeout_s': 480,
+        },
+        'repo_name': 'chromium',
+    },
+    tryjob = tryjob(
+        disable_reuse = True,
+    ),
+)
+
+linux_builder(
     name = 'linux-rel',
     goma_backend = goma.backend.RBE_PROD,
     goma_jobs = goma.jobs.J150,

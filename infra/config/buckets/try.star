@@ -1092,21 +1092,6 @@ linux_builder(
 )
 
 linux_builder(
-    name = 'chromium_presubmit',
-    executable = luci.recipe(name = 'presubmit'),
-    properties = {
-        '$depot_tools/presubmit': {
-            'runhooks': True,
-            'timeout_s': 480,
-        },
-        'repo_name': 'chromium',
-    },
-    tryjob = tryjob(
-        disable_reuse = True,
-    ),
-)
-
-linux_builder(
     name = 'closure_compilation',
     executable = luci.recipe(name = 'closure_compilation'),
     tryjob = tryjob(
