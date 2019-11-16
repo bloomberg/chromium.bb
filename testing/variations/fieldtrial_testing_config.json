@@ -848,16 +848,9 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled_Full",
+                    "name": "Enabled_Full_20191119",
                     "enable_features": [
-                        "AutofillKeyboardAccessoryView",
-                        "AutofillManualFallbackAndroid"
-                    ]
-                },
-                {
-                    "name": "Disabled",
-                    "disable_features": [
-                        "AutofillKeyboardAccessoryView",
+                        "AutofillKeyboardAccessory",
                         "AutofillManualFallbackAndroid"
                     ]
                 }
