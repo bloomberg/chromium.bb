@@ -454,7 +454,7 @@ def RunTests(tests, jobs=1, chroot_available=True, network=False,
   failed_tests = []
   for test, interp, cmd, tmpfile in testsets:
     tmpfile.seek(0)
-    output = tmpfile.read()
+    output = tmpfile.read().decode('utf-8', 'replace')
     desc = '[%s] %s' % (interp, test)
     if output:
       failed_tests.append(desc)
