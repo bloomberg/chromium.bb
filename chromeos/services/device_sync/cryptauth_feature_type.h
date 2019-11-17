@@ -77,6 +77,17 @@ const char* CryptAuthFeatureTypeToString(CryptAuthFeatureType feature_type);
 base::Optional<CryptAuthFeatureType> CryptAuthFeatureTypeFromString(
     const std::string& feature_type_string);
 
+// Provides a unique mapping between a CryptAuthFeatureType and its
+// corresponding encoded hash value that CryptAuth sends in GCM messages.
+// CryptAuth sends a base64url-encoded, SHA-256 8-byte hash of the
+// CryptAuthFeatureType string. CryptAuth chooses this hashing scheme to
+// accommodate the limited bandwidth of GCM messages.
+// CryptAuthFeatureTypeFromGcmHash returns null if |feature_type_hash| cannot be
+// mapped to a CryptAuthFeatureType.
+std::string CryptAuthFeatureTypeToGcmHash(CryptAuthFeatureType feature_type);
+base::Optional<CryptAuthFeatureType> CryptAuthFeatureTypeFromGcmHash(
+    const std::string& feature_type_hash);
+
 // Provides a mapping between CryptAuthFeatureTypes and SoftwareFeatures.
 //
 // The "enabled" and "supported" feature types are mapped to the same

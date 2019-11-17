@@ -3,7 +3,12 @@
 // found in the LICENSE file.
 
 #include "chromeos/services/device_sync/cryptauth_feature_type.h"
+
+#include "base/base64url.h"
+#include "base/containers/flat_map.h"
 #include "base/no_destructor.h"
+#include "base/stl_util.h"
+#include "crypto/sha2.h"
 
 namespace chromeos {
 
@@ -170,6 +175,45 @@ base::Optional<CryptAuthFeatureType> CryptAuthFeatureTypeFromString(
     return CryptAuthFeatureType::kSmsConnectClientEnabled;
 
   return base::nullopt;
+}
+
+// Computes the base64url-encoded, SHA-256 8-byte hash of the
+// CryptAuthFeatureType string.
+std::string CryptAuthFeatureTypeToGcmHash(CryptAuthFeatureType feature_type) {
+  std::string hash_8_bytes(8, 0);
+  crypto::SHA256HashString(CryptAuthFeatureTypeToString(feature_type),
+                           base::data(hash_8_bytes), 8u);
+
+  std::string hash_base64url;
+  base::Base64UrlEncode(hash_8_bytes, base::Base64UrlEncodePolicy::OMIT_PADDING,
+                        &hash_base64url);
+
+  return hash_base64url;
+}
+
+base::Optional<CryptAuthFeatureType> CryptAuthFeatureTypeFromGcmHash(
+    const std::string& feature_type_hash) {
+  // The map from the feature type hash value that CryptAuth sends in GCM
+  // messages to the CryptAuthFeatureType enum.
+  static const base::NoDestructor<
+      base::flat_map<std::string, CryptAuthFeatureType>>
+      hash_to_feature_map([] {
+        base::flat_map<std::string, CryptAuthFeatureType> hash_to_feature_map;
+        for (const CryptAuthFeatureType& feature_type :
+             GetAllCryptAuthFeatureTypes()) {
+          hash_to_feature_map.insert_or_assign(
+              CryptAuthFeatureTypeToGcmHash(feature_type), feature_type);
+        }
+
+        return hash_to_feature_map;
+      }());
+
+  auto it = hash_to_feature_map->find(feature_type_hash);
+
+  if (it == hash_to_feature_map->end())
+    return base::nullopt;
+
+  return it->second;
 }
 
 multidevice::SoftwareFeature CryptAuthFeatureTypeToSoftwareFeature(
