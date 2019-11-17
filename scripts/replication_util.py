@@ -41,5 +41,6 @@ def Run(options):
 def main(argv):
   parser = GetParser()
   options = parser.parse_args(argv)
+  options.Freeze()
 
   options.func(options)
