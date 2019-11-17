@@ -21,6 +21,8 @@ import re
 import shutil
 import tempfile
 
+import six
+
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import retry_util
@@ -851,7 +853,12 @@ MS_NOUSER = 1 << 31
 def Mount(source, target, fstype, flags, data=''):
   """Call the mount(2) func; see the man page for details."""
   libc = ctypes.CDLL(ctypes.util.find_library('c'), use_errno=True)
-  if libc.mount(source, target, fstype, ctypes.c_int(flags), data) != 0:
+  # These fields might be a string or 0 (for NULL).  Convert to bytes.
+  def _MaybeEncode(s):
+    return s.encode('utf-8') if isinstance(s, six.string_types) else s
+  if libc.mount(_MaybeEncode(source), _MaybeEncode(target),
+                _MaybeEncode(fstype), ctypes.c_int(flags),
+                _MaybeEncode(data)) != 0:
     e = ctypes.get_errno()
     raise OSError(e, os.strerror(e))
 
