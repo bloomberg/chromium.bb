@@ -111,7 +111,7 @@ class PRPCClientTestCase(test_case.TestCase):
     request.side_effect = net.NotFoundError(
         msg='not found',
         status_code=404,
-        response='not found',
+        response=b'not found',
         headers={
             'X-Prpc-Grpc-Code': str(codes.StatusCode.NOT_FOUND[0]),
         },

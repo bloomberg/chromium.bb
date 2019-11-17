@@ -175,7 +175,6 @@ PYTHON2_ONLY_TESTS = {
     'lib/cidb_unittest',
     'lib/failure_message_lib_unittest',
     'lib/kernel_cmdline_unittest',
-    'lib/luci/prpc/client_unittest',
     'lib/paygen/signer_payloads_client_unittest',
     'lib/repo_manifest_unittest',
     'lib/toolchain_util_unittest',
