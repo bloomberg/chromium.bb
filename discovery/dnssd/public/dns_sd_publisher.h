@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DISCOVERY_DNSSD_PUBLIC_PUBLISHER_H_
-#define DISCOVERY_DNSSD_PUBLIC_PUBLISHER_H_
+#ifndef DISCOVERY_DNSSD_PUBLIC_DNS_SD_PUBLISHER_H_
+#define DISCOVERY_DNSSD_PUBLIC_DNS_SD_PUBLISHER_H_
 
 #include "absl/strings/string_view.h"
-#include "discovery/dnssd/public/instance_record.h"
+#include "discovery/dnssd/public/dns_sd_instance_record.h"
 #include "platform/base/error.h"
 
 namespace openscreen {
@@ -33,4 +33,4 @@ class DnsSdPublisher {
 }  // namespace discovery
 }  // namespace openscreen
 
-#endif  // DISCOVERY_DNSSD_PUBLIC_PUBLISHER_H_
+#endif  // DISCOVERY_DNSSD_PUBLIC_DNS_SD_PUBLISHER_H_

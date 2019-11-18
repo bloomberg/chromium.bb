@@ -7,8 +7,8 @@
 
 #include "absl/strings/string_view.h"
 #include "discovery/dnssd/impl/conversion_layer.h"
-#include "discovery/dnssd/public/instance_record.h"
-#include "discovery/dnssd/public/publisher.h"
+#include "discovery/dnssd/public/dns_sd_instance_record.h"
+#include "discovery/dnssd/public/dns_sd_publisher.h"
 #include "discovery/mdns/public/mdns_service.h"
 
 namespace openscreen {

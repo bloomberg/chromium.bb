@@ -9,7 +9,7 @@
 #include "discovery/dnssd/impl/constants.h"
 #include "discovery/dnssd/impl/instance_key.h"
 #include "discovery/dnssd/impl/service_key.h"
-#include "discovery/dnssd/public/instance_record.h"
+#include "discovery/dnssd/public/dns_sd_instance_record.h"
 #include "discovery/mdns/mdns_records.h"
 
 namespace openscreen {

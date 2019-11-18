@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "discovery/dnssd/public/txt_record.h"
+#include "discovery/dnssd/public/dns_sd_txt_record.h"
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"

@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DISCOVERY_DNSSD_PUBLIC_INSTANCE_RECORD_H_
-#define DISCOVERY_DNSSD_PUBLIC_INSTANCE_RECORD_H_
+#ifndef DISCOVERY_DNSSD_PUBLIC_DNS_SD_INSTANCE_RECORD_H_
+#define DISCOVERY_DNSSD_PUBLIC_DNS_SD_INSTANCE_RECORD_H_
 
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
-#include "discovery/dnssd/public/txt_record.h"
+#include "discovery/dnssd/public/dns_sd_txt_record.h"
 #include "platform/base/ip_address.h"
 
 namespace openscreen {
@@ -79,4 +79,4 @@ class DnsSdInstanceRecord {
 }  // namespace discovery
 }  // namespace openscreen
 
-#endif  // DISCOVERY_DNSSD_PUBLIC_INSTANCE_RECORD_H_
+#endif  // DISCOVERY_DNSSD_PUBLIC_DNS_SD_INSTANCE_RECORD_H_

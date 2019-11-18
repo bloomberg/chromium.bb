@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DISCOVERY_DNSSD_PUBLIC_TXT_RECORD_H_
-#define DISCOVERY_DNSSD_PUBLIC_TXT_RECORD_H_
+#ifndef DISCOVERY_DNSSD_PUBLIC_DNS_SD_TXT_RECORD_H_
+#define DISCOVERY_DNSSD_PUBLIC_DNS_SD_TXT_RECORD_H_
 
 #include <map>
 #include <set>
@@ -31,7 +31,7 @@ class DnsSdTxtRecord {
   Error SetFlag(const std::string& key, bool value);
 
   // Reads the value associated with the provided key, or an error if the key
-  // is mapped to the opposite type or the query is othewise invalid. Keys are
+  // is mapped to the opposite type or the query is otherwise invalid. Keys are
   // case-insensitive.
   // NOTE: If GetValue is called on a key assigned to a flag, an ItemNotFound
   // error will be returned. If GetFlag is called on a key assigned to a value,
@@ -93,4 +93,4 @@ class DnsSdTxtRecord {
 }  // namespace discovery
 }  // namespace openscreen
 
-#endif  // DISCOVERY_DNSSD_PUBLIC_TXT_RECORD_H_
+#endif  // DISCOVERY_DNSSD_PUBLIC_DNS_SD_TXT_RECORD_H_
