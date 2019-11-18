@@ -87,8 +87,6 @@ typedef struct CharsString {
 static int errorCount;
 static int warningCount;
 
-static DisplayTableHeader *currentDisplayTable;
-
 typedef struct TranslationTableChainEntry {
 	struct TranslationTableChainEntry *next;
 	TranslationTableHeader *table;
@@ -554,7 +552,7 @@ addCharOrDots(FileInfo *nested, widechar c, int m, TranslationTableHeader **tabl
 }
 
 static CharOrDots *
-getCharOrDots(widechar c, int m, DisplayTableHeader *table) {
+getCharOrDots(widechar c, int m, const DisplayTableHeader *table) {
 	CharOrDots *cdPtr;
 	TranslationTableOffset bucket;
 	unsigned long int makeHash = _lou_charHash(c);
@@ -571,15 +569,15 @@ getCharOrDots(widechar c, int m, DisplayTableHeader *table) {
 }
 
 widechar EXPORT_CALL
-_lou_getDotsForChar(widechar c) {
-	CharOrDots *cdPtr = getCharOrDots(c, 0, currentDisplayTable);
+_lou_getDotsForChar(widechar c, const DisplayTableHeader *table) {
+	CharOrDots *cdPtr = getCharOrDots(c, 0, table);
 	if (cdPtr) return cdPtr->found;
 	return LOU_DOTS;
 }
 
 widechar EXPORT_CALL
-_lou_getCharFromDots(widechar d) {
-	CharOrDots *cdPtr = getCharOrDots(d, 1, currentDisplayTable);
+_lou_getCharFromDots(widechar d, const DisplayTableHeader *table) {
+	CharOrDots *cdPtr = getCharOrDots(d, 1, table);
 	if (cdPtr) return cdPtr->found;
 	return ' ';
 }
@@ -2579,11 +2577,40 @@ doOpcode:
 	if (nested->lineNumber == 1 &&
 			(eqasc2uni((unsigned char *)"ISO", token.chars, 3) ||
 					eqasc2uni((unsigned char *)"UTF-8", token.chars, 5))) {
-		if (table) compileHyphenation(nested, &token, &lastToken, table);
+		if (table)
+			compileHyphenation(nested, &token, &lastToken, table);
+		else
+			/* ignore the whole file */
+			while (_lou_getALine(nested))
+				;
 		return 1;
 	}
 	opcode = getOpcode(nested, &token);
-	switch (opcode) { /* Carry out operations */
+	switch (opcode) {
+	case CTO_IncludeFile: {
+		CharsString includedFile;
+		if (getToken(nested, &token, "include file name", &lastToken))
+			if (parseChars(nested, &includedFile, &token))
+				if (!includeFile(nested, &includedFile, table, displayTable)) ok = 0;
+		break;
+	}
+	case CTO_NoBack:
+		if (nofor) {
+			compileError(nested, "%s already specified.", _lou_findOpcodeName(CTO_NoFor));
+			ok = 0;
+			break;
+		}
+		noback = 1;
+		goto doOpcode;
+	case CTO_NoFor:
+		if (noback) {
+			compileError(
+					nested, "%s already specified.", _lou_findOpcodeName(CTO_NoBack));
+			ok = 0;
+			break;
+		}
+		nofor = 1;
+		goto doOpcode;
 	case CTO_Space:
 		compileCharDef(nested, opcode, CTC_Space, &lastToken, newRuleOffset, newRule,
 				noback, nofor, table, displayTable);
@@ -2629,6 +2656,7 @@ doOpcode:
 				table, displayTable);
 		break;
 	case CTO_Display:
+		if (!displayTable) break;
 		if (getRuleCharsText(nested, &ruleChars, &lastToken))
 			if (getRuleDotsPattern(nested, &ruleDots, &lastToken)) {
 				if (ruleChars.length != 1 || ruleDots.length != 1) {
@@ -2640,18 +2668,12 @@ doOpcode:
 						nested, ruleChars.chars[0], ruleDots.chars[0], displayTable);
 			}
 		break;
+	/* now only opcodes follow that don't modify the display table */
 	default:
 		if (!table) break;
 		switch (opcode) {
 		case CTO_None:
 			break;
-		case CTO_IncludeFile: {
-			CharsString includedFile;
-			if (getToken(nested, &token, "include file name", &lastToken))
-				if (parseChars(nested, &includedFile, &token))
-					if (!includeFile(nested, &includedFile, table, displayTable)) ok = 0;
-			break;
-		}
 		case CTO_Locale:
 			compileWarning(nested,
 					"The locale opcode is not implemented. Use the locale meta data "
@@ -3697,25 +3719,6 @@ doOpcode:
 				break;
 			}
 
-		case CTO_NoBack:
-			if (nofor) {
-				compileError(
-						nested, "%s already specified.", _lou_findOpcodeName(CTO_NoFor));
-				ok = 0;
-				break;
-			}
-			noback = 1;
-			goto doOpcode;
-		case CTO_NoFor:
-			if (noback) {
-				compileError(
-						nested, "%s already specified.", _lou_findOpcodeName(CTO_NoBack));
-				ok = 0;
-				break;
-			}
-			nofor = 1;
-			goto doOpcode;
-
 		case CTO_EmpMatchBefore:
 			before |= CTC_EmpMatch;
 			goto doOpcode;
@@ -4139,14 +4142,16 @@ includeFile(FileInfo *nested, CharsString *includedFile, TranslationTableHeader 
  *
  */
 static int
-compileTable(const char *tableList, TranslationTableHeader **translationTable,
-		DisplayTableHeader **displayTable) {
-	if (translationTable) *translationTable = NULL;
-	if (displayTable) *displayTable = NULL;
+compileTable(const char *tableList, const char *displayTableList,
+		TranslationTableHeader **translationTable, DisplayTableHeader **displayTable) {
 	char **tableFiles;
 	char **subTable;
+	if (translationTable && !tableList) return 0;
+	if (displayTable && !displayTableList) return 0;
+	if (!translationTable && !displayTable) return 0;
+	if (translationTable) *translationTable = NULL;
+	if (displayTable) *displayTable = NULL;
 	errorCount = warningCount = fileCount = 0;
-	if (tableList == NULL) return 0;
 	if (!opcodeLengths[0]) {
 		TranslationTableOpcode opcode;
 		for (opcode = 0; opcode < CTO_None; opcode++)
@@ -4169,13 +4174,38 @@ compileTable(const char *tableList, TranslationTableHeader **translationTable,
 	compileString("space \\xffff 123456789abcdef LOU_ENDSEGMENT", translationTable,
 			displayTable);
 
-	/* Compile all subtables in the list */
-	if (!(tableFiles = _lou_resolveTable(tableList, NULL))) {
-		errorCount++;
-		goto cleanup;
+	if (displayTable && translationTable && strcmp(tableList, displayTableList) == 0) {
+		/* Compile the display and translation tables in one go */
+
+		/* Compile all subtables in the list */
+		if (!(tableFiles = _lou_resolveTable(tableList, NULL))) {
+			errorCount++;
+			goto cleanup;
+		}
+		for (subTable = tableFiles; *subTable; subTable++)
+			if (!compileFile(*subTable, translationTable, displayTable)) goto cleanup;
+	} else {
+		/* Compile the display and translation tables separately */
+
+		if (displayTable) {
+			if (!(tableFiles = _lou_resolveTable(displayTableList, NULL))) {
+				errorCount++;
+				goto cleanup;
+			}
+			for (subTable = tableFiles; *subTable; subTable++)
+				if (!compileFile(*subTable, NULL, displayTable)) goto cleanup;
+			free_tablefiles(tableFiles);
+			tableFiles = NULL;
+		}
+		if (translationTable) {
+			if (!(tableFiles = _lou_resolveTable(tableList, NULL))) {
+				errorCount++;
+				goto cleanup;
+			}
+			for (subTable = tableFiles; *subTable; subTable++)
+				if (!compileFile(*subTable, translationTable, NULL)) goto cleanup;
+		}
 	}
-	for (subTable = tableFiles; *subTable; subTable++)
-		if (!compileFile(*subTable, translationTable, displayTable)) goto cleanup;
 
 /* Clean up after compiling files */
 cleanup:
@@ -4203,7 +4233,7 @@ char const **EXPORT_CALL
 lou_getEmphClasses(const char *tableList) {
 	const char *names[MAX_EMPH_CLASSES + 1];
 	unsigned int count = 0;
-	const TranslationTableHeader *table = lou_getTable(tableList);
+	const TranslationTableHeader *table = _lou_getTranslationTable(tableList);
 	if (!table) return NULL;
 
 	while (count < MAX_EMPH_CLASSES) {
@@ -4224,94 +4254,138 @@ lou_getEmphClasses(const char *tableList) {
 	}
 }
 
+void
+getTable(const char *tableList, const char *displayTableList,
+		TranslationTableHeader **translationTable, DisplayTableHeader **displayTable);
+
+void EXPORT_CALL
+_lou_getTable(const char *tableList, const char *displayTableList,
+		const TranslationTableHeader **translationTable,
+		const DisplayTableHeader **displayTable) {
+	TranslationTableHeader *newTable;
+	DisplayTableHeader *newDisplayTable;
+	getTable(tableList, displayTableList, &newTable, &newDisplayTable);
+	*translationTable = newTable;
+	*displayTable = newDisplayTable;
+}
+
 /* Checks and loads tableList. */
-void *EXPORT_CALL
+const void *EXPORT_CALL
 lou_getTable(const char *tableList) {
+	const TranslationTableHeader *table;
+	const DisplayTableHeader *displayTable;
+	_lou_getTable(tableList, tableList, &table, &displayTable);
+	if (!table || !displayTable) return NULL;
+	return table;
+}
+
+const TranslationTableHeader *EXPORT_CALL
+_lou_getTranslationTable(const char *tableList) {
+	TranslationTableHeader *table;
+	getTable(tableList, NULL, &table, NULL);
+	return table;
+}
+
+const DisplayTableHeader *EXPORT_CALL
+_lou_getDisplayTable(const char *tableList) {
+	DisplayTableHeader *table;
+	getTable(NULL, tableList, NULL, &table);
+	return table;
+}
+
+void
+getTable(const char *translationTableList, const char *displayTableList,
+		TranslationTableHeader **translationTable, DisplayTableHeader **displayTable) {
 	/* Keep track of which tables have already been compiled */
-	int tableListLen;
-	TranslationTableHeader *translationTable = NULL;
-	DisplayTableHeader *displayTable = NULL;
-	if (tableList == NULL || *tableList == 0) return NULL;
-	errorCount = fileCount = 0;
-	tableListLen = (int)strlen(tableList);
-	/* See if Table has already been compiled */
-	{
+	int translationTableListLen, displayTableListLen = 0;
+	if (translationTableList == NULL || *translationTableList == 0)
+		translationTable = NULL;
+	if (displayTableList == NULL || *displayTableList == 0) displayTable = NULL;
+	/* See if translation table has already been compiled */
+	if (translationTable) {
+		translationTableListLen = (int)strlen(translationTableList);
+		*translationTable = NULL;
 		TranslationTableChainEntry *currentEntry = translationTableChain;
 		TranslationTableChainEntry *prevEntry = NULL;
 		while (currentEntry != NULL) {
-			if (tableListLen == currentEntry->tableListLength &&
-					(memcmp(&currentEntry->tableList[0], tableList, tableListLen)) == 0) {
+			if (translationTableListLen == currentEntry->tableListLength &&
+					(memcmp(&currentEntry->tableList[0], translationTableList,
+							translationTableListLen)) == 0) {
 				/* Move the table to the top of the table chain. */
 				if (prevEntry != NULL) {
 					prevEntry->next = currentEntry->next;
 					currentEntry->next = translationTableChain;
 					translationTableChain = currentEntry;
 				}
-				translationTable = currentEntry->table;
+				*translationTable = currentEntry->table;
 				break;
 			}
 			prevEntry = currentEntry;
 			currentEntry = currentEntry->next;
 		}
 	}
-	{
+	/* See if display table has already been compiled */
+	if (displayTable) {
+		displayTableListLen = (int)strlen(displayTableList);
+		*displayTable = NULL;
 		DisplayTableChainEntry *currentEntry = displayTableChain;
 		DisplayTableChainEntry *prevEntry = NULL;
 		while (currentEntry != NULL) {
-			if (tableListLen == currentEntry->tableListLength &&
-					(memcmp(&currentEntry->tableList[0], tableList, tableListLen)) == 0) {
+			if (displayTableListLen == currentEntry->tableListLength &&
+					(memcmp(&currentEntry->tableList[0], displayTableList,
+							displayTableListLen)) == 0) {
 				/* Move the table to the top of the table chain. */
 				if (prevEntry != NULL) {
 					prevEntry->next = currentEntry->next;
 					currentEntry->next = displayTableChain;
 					displayTableChain = currentEntry;
 				}
-				displayTable = currentEntry->table;
+				*displayTable = currentEntry->table;
 				break;
 			}
 			prevEntry = currentEntry;
 			currentEntry = currentEntry->next;
 		}
 	}
-	if (translationTable == NULL || displayTable == NULL) {
-		TranslationTableHeader **newTranslationTable = NULL;
-		DisplayTableHeader **newDisplayTable = NULL;
-		if (translationTable == NULL) newTranslationTable = &translationTable;
-		if (displayTable == NULL) newDisplayTable = &displayTable;
-		if (compileTable(tableList, newTranslationTable, newDisplayTable)) {
+	if ((translationTable && *translationTable == NULL) ||
+			(displayTable && *displayTable == NULL)) {
+		TranslationTableHeader *newTranslationTable = NULL;
+		DisplayTableHeader *newDisplayTable = NULL;
+		if (compileTable(translationTableList, displayTableList,
+					(translationTable && *translationTable == NULL) ? &newTranslationTable
+																	: NULL,
+					(displayTable && *displayTable == NULL) ? &newDisplayTable : NULL)) {
 			/* Add a new entry to the top of the table chain. */
 			if (newTranslationTable != NULL) {
-				int entrySize = sizeof(TranslationTableChainEntry) + tableListLen;
+				int entrySize =
+						sizeof(TranslationTableChainEntry) + translationTableListLen;
 				TranslationTableChainEntry *newEntry = malloc(entrySize);
 				if (!newEntry) _lou_outOfMemory();
 				newEntry->next = translationTableChain;
-				newEntry->table = *newTranslationTable;
-				newEntry->tableListLength = tableListLen;
-				memcpy(&newEntry->tableList[0], tableList, tableListLen);
+				newEntry->table = newTranslationTable;
+				newEntry->tableListLength = translationTableListLen;
+				memcpy(&newEntry->tableList[0], translationTableList,
+						translationTableListLen);
 				translationTableChain = newEntry;
+				*translationTable = newTranslationTable;
 			}
 			if (newDisplayTable != NULL) {
-				int entrySize = sizeof(DisplayTableChainEntry) + tableListLen;
+				int entrySize = sizeof(DisplayTableChainEntry) + displayTableListLen;
 				DisplayTableChainEntry *newEntry = malloc(entrySize);
 				if (!newEntry) _lou_outOfMemory();
 				newEntry->next = displayTableChain;
-				newEntry->table = *newDisplayTable;
-				newEntry->tableListLength = tableListLen;
-				memcpy(&newEntry->tableList[0], tableList, tableListLen);
+				newEntry->table = newDisplayTable;
+				newEntry->tableListLength = displayTableListLen;
+				memcpy(&newEntry->tableList[0], displayTableList, displayTableListLen);
 				displayTableChain = newEntry;
+				*displayTable = newDisplayTable;
 			}
 		} else {
-			_lou_logMessage(LOU_LOG_ERROR, "%s could not be compiled", tableList);
-			return NULL;
+			_lou_logMessage(
+					LOU_LOG_ERROR, "%s could not be compiled", translationTableList);
+			return;
 		}
 	}
-	currentDisplayTable = displayTable;
-	return translationTable;
-}
-
-DisplayTableHeader *EXPORT_CALL
-_lou_getCurrentDisplayTable() {
-	return currentDisplayTable;
 }
 
 int EXPORT_CALL
@@ -4323,7 +4397,7 @@ lou_checkTable(const char *tableList) {
 formtype EXPORT_CALL
 lou_getTypeformForEmphClass(const char *tableList, const char *emphClass) {
 	int i;
-	TranslationTableHeader *table = lou_getTable(tableList);
+	const TranslationTableHeader *table = _lou_getTranslationTable(tableList);
 	if (!table) return 0;
 	for (i = 0; table->emphClasses[i]; i++)
 		if (strcmp(emphClass, table->emphClasses[i]) == 0) return italic << i;
@@ -4503,11 +4577,26 @@ lou_charSize(void) {
 
 int EXPORT_CALL
 lou_compileString(const char *tableList, const char *inString) {
-	int r;
-	TranslationTableHeader *table = lou_getTable(tableList);
+	TranslationTableHeader *table;
+	DisplayTableHeader *displayTable;
+	getTable(tableList, tableList, &table, &displayTable);
 	if (!table) return 0;
-	r = compileString(inString, &table, &currentDisplayTable);
-	return r;
+	if (!compileString(inString, &table, &displayTable)) return 0;
+	return 1;
+}
+
+int EXPORT_CALL
+_lou_compileTranslationRule(const char *tableList, const char *inString) {
+	TranslationTableHeader *table;
+	getTable(tableList, NULL, &table, NULL);
+	return compileString(inString, &table, NULL);
+}
+
+int EXPORT_CALL
+_lou_compileDisplayRule(const char *tableList, const char *inString) {
+	DisplayTableHeader *table;
+	getTable(NULL, tableList, NULL, &table);
+	return compileString(inString, NULL, &table);
 }
 
 /**
