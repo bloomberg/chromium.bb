@@ -907,6 +907,8 @@ source_set("chromeos") {
     "display/quirks_manager_delegate_impl.h",
     "drive/drive_integration_service.cc",
     "drive/drive_integration_service.h",
+    "drive/drivefs_native_message_host.cc",
+    "drive/drivefs_native_message_host.h",
     "drive/file_system_util.cc",
     "drive/file_system_util.h",
     "drive/fileapi/drivefs_async_file_util.cc",
