@@ -172,13 +172,6 @@ bool PasswordProtectionService::ShouldShowModalWarning(
     return false;
   }
 
-  if (password_type.account_type() ==
-          ReusedPasswordAccountType::SAVED_PASSWORD &&
-      base::FeatureList::IsEnabled(
-          safe_browsing::kPasswordProtectionForSavedPasswords)) {
-    return verdict_type == LoginReputationClientResponse::PHISHING;
-  }
-
   return (verdict_type == LoginReputationClientResponse::PHISHING ||
           verdict_type == LoginReputationClientResponse::LOW_REPUTATION) &&
          IsWarningEnabled(password_type);
