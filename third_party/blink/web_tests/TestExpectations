@@ -175,11 +175,6 @@ crbug.com/309675 compositing/gestures/gesture-tapHighlight-simple-longPress.html
 
 crbug.com/845267 [ Mac ] http/tests/inspector-protocol/page/page-lifecycleEvents.js [ Failure Pass ]
 
-# SwiftShader Failures
-crbug.com/726075 [ Win ] compositing/3d-cube.html [ Failure ]
-crbug.com/726075 [ Linux ] compositing/3d-cube.html [ Failure ]
-crbug.com/726075 [ Mac ] compositing/3d-cube.html [ Failure ]
-
 # Looks like a failure to get a paint on time. Test could be changed to use runAfterLayoutAndPaint
 # instead of a timeout, which may fix things.
 crbug.com/713049 images/color-profile-reflection.html [ Failure Pass ]
@@ -740,9 +735,7 @@ crbug.com/591099 virtual/text-antialias/font-format-support-color-cff2-vertical.
 crbug.com/591099 virtual/text-antialias/whitespace/018.html [ Failure ]
 crbug.com/591099 fast/writing-mode/auto-sizing-orthogonal-flows.html [ Failure ]
 crbug.com/591099 fast/writing-mode/percentage-height-orthogonal-writing-modes.html [ Failure ]
-crbug.com/591099 paint/invalidation/flexbox/scrollbars-changed.html [ Failure ]
 crbug.com/835484 paint/invalidation/outline/inline-focus.html [ Failure ]
-crbug.com/591099 paint/invalidation/overflow/opacity-change-on-overflow-float.html [ Failure ]
 crbug.com/591099 paint/invalidation/scroll/fixed-under-composited-fixed-scrolled.html [ Failure ]
 crbug.com/591099 virtual/mouseevent_fractional/fast/events/touch/compositor-touch-hit-rects-continuation.html [ Failure ]
 crbug.com/591099 virtual/mouseevent_fractional/fast/events/touch/compositor-touch-hit-rects-list-translate.html [ Failure ]
@@ -780,10 +773,6 @@ crbug.com/591099 fast/selectors/shadow-host-div-with-span.html [ Failure ]
 crbug.com/591099 fast/selectors/shadow-host-div-with-text.html [ Failure ]
 crbug.com/591099 virtual/text-antialias/selection/inline-block-in-selection-root.html [ Failure ]
 crbug.com/591099 paint/invalidation/media-audio-no-spurious-repaints.html [ Failure Timeout ]
-crbug.com/591099 paint/invalidation/compositing/composited-float-under-composited-inline-individual.html [ Failure ]
-crbug.com/591099 paint/invalidation/compositing/composited-float-under-composited-inline.html [ Failure ]
-crbug.com/591099 paint/invalidation/compositing/float-under-composited-inline.html [ Failure ]
-crbug.com/591099 paint/invalidation/compositing/stacked-float-under-composited-inline.html [ Failure ]
 crbug.com/591099 virtual/composite-after-paint/paint/background/scrolling-background-with-negative-z-child.html [ Failure Crash ]
 crbug.com/591099 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-span-all-list-item-002.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/border-radius-clipped-layer.html [ Failure ]
