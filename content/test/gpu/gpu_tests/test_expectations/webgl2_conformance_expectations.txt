@@ -50,12 +50,6 @@ crbug.com/945970 [ android ] WebglExtension_EXT_float_blend [ Skip ]
 crbug.com/891861 [ no-passthrough ] WebglExtension_WEBGL_draw_instanced_base_vertex_base_instance [ Skip ]
 crbug.com/891861 [ no-passthrough ] WebglExtension_WEBGL_multi_draw_instanced_base_vertex_base_instance [ Skip ]
 
-# TODO(crbug.com/1025719): Determine why the expected extension is missing. Confirm if this is
-# caused by https://crbug.com/1025719
-crbug.com/1025719 [ mac no-passthrough ] conformance/extensions/get-extension.html [ Skip ]
-crbug.com/1025719 [ mac no-passthrough ] conformance2/extensions/webgl-multi-draw-instanced-base-vertex-base-instance.html [ Skip ]
-crbug.com/1025719 [ mac no-passthrough ] deqp/functional/gles3/stringquery.html [ Skip ]
-
 # ========================
 # Conformance expectations
 # ========================
