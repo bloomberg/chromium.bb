@@ -263,6 +263,7 @@ def ParseArgs(args):
 def Main(args):
   cca_root = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
   assert os.path.basename(cca_root) == 'camera'
+  os.chdir(cca_root)
 
   args = ParseArgs(args)
 
