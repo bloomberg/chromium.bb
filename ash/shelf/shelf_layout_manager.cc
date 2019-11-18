@@ -1209,6 +1209,11 @@ HotseatState ShelfLayoutManager::CalculateHotseatState(
           // detect the case where the last window is being minimized.
           if (app_list_visible)
             return HotseatState::kShown;
+
+          // Show the hotseat if the shelf view's context menu is showing.
+          if (shelf_widget_->hotseat_widget()->IsShowingShelfMenu())
+            return HotseatState::kExtended;
+
           if (in_split_view)
             return HotseatState::kHidden;
           if (in_overview)

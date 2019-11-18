@@ -37,6 +37,7 @@
 #include "ash/session/session_controller_impl.h"
 #include "ash/shelf/home_button.h"
 #include "ash/shelf/shelf.h"
+#include "ash/shelf/shelf_app_button.h"
 #include "ash/shelf/shelf_controller.h"
 #include "ash/shelf/shelf_focus_cycler.h"
 #include "ash/shelf/shelf_layout_manager_observer.h"
@@ -3464,6 +3465,52 @@ TEST_F(HotseatShelfLayoutManagerTest, SwipeUpInAppShelfShowsHotseat) {
                                      InAppShelfGestures::kSwipeDownToHide, 2);
   histogram_tester.ExpectBucketCount(kHotseatGestureHistogramName,
                                      InAppShelfGestures::kSwipeUpToShow, 3);
+}
+
+// The in-app Hotseat should not be hidden automatically when the shelf context
+// menu shows (https://crbug.com/1020388).
+TEST_P(HotseatShelfLayoutManagerTest, InAppShelfShowingContextMenu) {
+  GetPrimaryShelf()->SetAutoHideBehavior(GetParam());
+  TabletModeControllerTestApi().EnterTabletMode();
+  std::unique_ptr<aura::Window> window =
+      AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
+  wm::ActivateWindow(window.get());
+  EXPECT_FALSE(Shell::Get()->app_list_controller()->IsVisible());
+
+  ShelfTestUtil::AddAppShortcut("app_id", TYPE_PINNED_APP);
+
+  // Swipe up on the shelf to show the hotseat.
+  SwipeUpOnShelf();
+  EXPECT_EQ(HotseatState::kExtended, GetShelfLayoutManager()->hotseat_state());
+
+  ShelfViewTestAPI shelf_view_test_api(
+      GetPrimaryShelf()->shelf_widget()->shelf_view_for_testing());
+  ShelfAppButton* app_icon = shelf_view_test_api.GetButton(0);
+
+  // Accelerate the generation of the long press event.
+  ui::GestureConfiguration::GetInstance()->set_show_press_delay_in_ms(1);
+  ui::GestureConfiguration::GetInstance()->set_long_press_time_in_ms(1);
+
+  // Press the icon enough long time to generate the long press event.
+  GetEventGenerator()->MoveTouch(app_icon->GetBoundsInScreen().CenterPoint());
+  GetEventGenerator()->PressTouch();
+  ui::GestureConfiguration* gesture_config =
+      ui::GestureConfiguration::GetInstance();
+  const int long_press_delay_ms = gesture_config->long_press_time_in_ms() +
+                                  gesture_config->show_press_delay_in_ms();
+  base::RunLoop run_loop;
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, run_loop.QuitClosure(),
+      base::TimeDelta::FromMilliseconds(long_press_delay_ms));
+  run_loop.Run();
+  GetEventGenerator()->ReleaseTouch();
+
+  // Expects that the hotseat's state is kExntended.
+  EXPECT_EQ(HotseatState::kExtended, GetShelfLayoutManager()->hotseat_state());
+
+  // Ensures that the ink drop state is InkDropState::ACTIVATED before closing
+  // the menu.
+  app_icon->FireRippleActivationTimerForTest();
 }
 
 // Tests that swiping up on the hotseat does nothing.
