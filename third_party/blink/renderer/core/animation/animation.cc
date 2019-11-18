@@ -1591,8 +1591,10 @@ bool Animation::Update(TimingUpdateReason reason) {
   bool idle = PlayStateInternal() == kIdle;
 
   if (content_) {
-    double inherited_time =
-        idle || !timeline_->CurrentTime() ? NullValue() : CurrentTimeInternal();
+    base::Optional<double> inherited_time =
+        idle || !timeline_->CurrentTime()
+            ? base::nullopt
+            : OptionalFromDoubleWithNull(CurrentTimeInternal());
 
     // Special case for end-exclusivity when playing backwards.
     if (inherited_time == 0 && playback_rate_ < 0)
