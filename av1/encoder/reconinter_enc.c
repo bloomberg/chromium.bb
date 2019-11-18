@@ -78,8 +78,6 @@ static INLINE void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
     const int b8_h = block_size_high[plane_bsize] >> ss_y;
     assert(!is_compound);
 
-    const struct buf_2d orig_pred_buf[2] = { pd->pre[0], pd->pre[1] };
-
     int row = row_start;
     for (int y = 0; y < b8_h; y += b4_h) {
       int col = col_start;
@@ -95,22 +93,24 @@ static INLINE void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
         const struct scale_factors *ref_scale_factors =
             get_ref_scale_factors_const(cm, this_mbmi->ref_frame[ref]);
 
-        pd->pre[ref].buf0 =
-            (plane == 1) ? ref_buf->buf.u_buffer : ref_buf->buf.v_buffer;
-        pd->pre[ref].width = ref_buf->buf.uv_crop_width;
-        pd->pre[ref].height = ref_buf->buf.uv_crop_height;
-        pd->pre[ref].stride = ref_buf->buf.uv_stride;
-
         const struct scale_factors *const sf =
             is_intrabc ? &cm->sf_identity : ref_scale_factors;
-        struct buf_2d *const pre_buf = is_intrabc ? dst_buf : &pd->pre[ref];
+        struct buf_2d pre_buf = {
+          NULL,
+          (plane == 1) ? ref_buf->buf.u_buffer : ref_buf->buf.v_buffer,
+          ref_buf->buf.uv_crop_width,
+          ref_buf->buf.uv_crop_height,
+          ref_buf->buf.uv_stride,
+        };
+
+        if (is_intrabc) pre_buf = *dst_buf;
 
         const MV mv = this_mbmi->mv[ref].as_mv;
         InterPredParams inter_pred_params;
         av1_init_inter_params(&inter_pred_params, b4_w, b4_h, pre_y + y,
                               pre_x + x, pd->subsampling_x, pd->subsampling_y,
                               xd->bd, is_cur_buf_hbd(xd), mi->use_intrabc, sf,
-                              pre_buf, this_mbmi->interp_filters);
+                              &pre_buf, this_mbmi->interp_filters);
 
         inter_pred_params.conv_params = get_conv_params_no_round(
             ref, plane, xd->tmp_conv_dst, tmp_dst_stride, 0, xd->bd);
@@ -123,7 +123,6 @@ static INLINE void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
       ++row;
     }
 
-    for (ref = 0; ref < 2; ++ref) pd->pre[ref] = orig_pred_buf[ref];
     return;
   }
 
