@@ -245,7 +245,6 @@ android_builder(
     name = 'android_clang_dbg_recipe',
     goma_backend = goma.backend.RBE_PROD,
     goma_jobs = goma.jobs.J300,
-    tryjob = tryjob(),
 )
 
 android_builder(
