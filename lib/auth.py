@@ -105,7 +105,8 @@ def Token(service_account_json=None):
       print_cmd=False,
       mute_output=True,
       capture_output=True,
-      error_code_ok=True)
+      check=False,
+      encoding='utf-8')
 
   if result.returncode:
     raise AccessTokenError('Failed at getting the access token, may retry.')

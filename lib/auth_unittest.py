@@ -13,38 +13,33 @@ import mock
 
 from chromite.lib import auth
 from chromite.lib import cros_test_lib
-from chromite.lib import cros_build_lib
 
 
-class AuthTest(cros_test_lib.MockTestCase):
+class AuthTest(cros_test_lib.RunCommandTestCase):
   """Test cases for methods in auth."""
 
   def setUp(self):
     self.PatchObject(time, 'sleep')
     self.PatchObject(auth, 'GetLuciAuth', return_value='luci-auth')
 
-  def testLogin(self):
-    """Test Login."""
-    failure_result = cros_build_lib.CommandResult(
-        error='error', output=None, returncode=1)
-    self.PatchObject(cros_build_lib, 'run', return_value=failure_result)
+  def testLoginFailed(self):
+    """Test Login failing."""
+    self.rc.AddCmdResult(['luci-auth', 'login'], stderr='', returncode=1)
     self.assertRaises(auth.AccessTokenError, auth.Login)
 
-    success_result = cros_build_lib.CommandResult(
-        output=None, returncode=0)
-    self.PatchObject(cros_build_lib, 'run', return_value=success_result)
+  def testLoginPassed(self):
+    """Test Login working."""
+    self.rc.AddCmdResult(['luci-auth', 'login'], stdout=None)
     self.assertIsNone(auth.Login())
 
-  def testToken(self):
-    """Test Token."""
-    failure_result = cros_build_lib.CommandResult(
-        error='error', output=None, returncode=1)
-    self.PatchObject(cros_build_lib, 'run', return_value=failure_result)
+  def testTokenFailed(self):
+    """Test Token failing."""
+    self.rc.AddCmdResult(['luci-auth', 'token'], stderr='', returncode=1)
     self.assertRaises(auth.AccessTokenError, auth.Token)
 
-    success_result = cros_build_lib.CommandResult(
-        output='token', returncode=0)
-    self.PatchObject(cros_build_lib, 'run', return_value=success_result)
+  def testTokenPassed(self):
+    """Test Token working."""
+    self.rc.AddCmdResult(['luci-auth', 'token'], stdout='token')
     self.assertEqual(auth.Token(), 'token')
 
   def testTokenAndLoginIfNeed(self):
