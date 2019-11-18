@@ -214,6 +214,9 @@ class ExtensionApps : public apps::mojom::Publisher,
 
   ArcAppListPrefs* arc_prefs_ = nullptr;
 
+  // app_service_ is owned by the object that owns this object.
+  apps::mojom::AppService* app_service_;
+
   base::WeakPtrFactory<ExtensionApps> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionApps);

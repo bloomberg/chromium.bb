@@ -225,7 +225,8 @@ ExtensionApps::ExtensionApps(
     apps::InstanceRegistry* instance_registry)
     : profile_(profile),
       app_type_(app_type),
-      instance_registry_(instance_registry) {
+      instance_registry_(instance_registry),
+      app_service_(nullptr) {
   Initialize(app_service);
 }
 
@@ -280,6 +281,7 @@ void ExtensionApps::Initialize(
   app_window_registry_.Add(extensions::AppWindowRegistry::Get(profile_));
   content_settings_observer_.Add(
       HostContentSettingsMapFactory::GetForProfile(profile_));
+  app_service_ = app_service.get();
 }
 
 bool ExtensionApps::Accepts(const extensions::Extension* extension) {
@@ -770,6 +772,11 @@ void ExtensionApps::OnExtensionUninstalled(
 
   SetShowInFields(app, extension, profile_);
   Publish(std::move(app));
+
+  if (!app_service_) {
+    return;
+  }
+  app_service_->RemovePreferredApp(app_type_, extension->id());
 }
 
 void ExtensionApps::Publish(apps::mojom::AppPtr app) {
