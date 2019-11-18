@@ -174,7 +174,6 @@ PYTHON2_ONLY_TESTS = {
     'lib/buildbucket_v2_unittest',
     'lib/builder_status_lib_unittest',
     'lib/cidb_unittest',
-    'lib/cros_test_unittest',
     'lib/failure_message_lib_unittest',
     'lib/kernel_cmdline_unittest',
     'lib/luci/prpc/client_unittest',

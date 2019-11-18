@@ -486,7 +486,7 @@ def GetChromeRuntimeDeps(build_dir, build_target):
   if not runtime_deps:
     result = cros_build_lib.run(['gn', 'desc', build_dir, gn_label,
                                  'runtime_deps'],
-                                capture_output=True)
+                                capture_output=True, encoding='utf-8')
     if result.returncode != 0:
       raise GetRuntimeDepsError('Failed to get runtime deps for: %s' %
                                 build_target)
