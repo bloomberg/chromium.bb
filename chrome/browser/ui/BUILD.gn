@@ -3589,8 +3589,6 @@ jumbo_static_library("ui") {
       "app_list/internal_app/internal_app_item.h",
       "app_list/internal_app/internal_app_metadata.cc",
       "app_list/internal_app/internal_app_metadata.h",
-      "app_list/internal_app/internal_app_model_builder.cc",
-      "app_list/internal_app/internal_app_model_builder.h",
       "app_list/md_icon_normalizer.cc",
       "app_list/md_icon_normalizer.h",
       "app_list/page_break_app_item.cc",
