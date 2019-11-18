@@ -1246,7 +1246,7 @@ TEST_F(PrerenderTest, OmniboxAllowedWhenNotDisabled_LowMemory_FeatureDisabled) {
 // Test that when prerender fails and the
 // kPrerenderFallbackToPreconnect experiment is enabled, a
 // prerender initiated by omnibox actually results in preconnect.
-TEST_F(PrerenderTest, OmniboxAllowedWhenNotDisabled_LowMemory_FeatureEnabled) {
+TEST_F(PrerenderTest, Omnibox_AllowedWhenNotDisabled_LowMemory_FeatureEnabled) {
   const GURL kURL(GURL("http://www.example.com"));
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(
@@ -1264,6 +1264,37 @@ TEST_F(PrerenderTest, OmniboxAllowedWhenNotDisabled_LowMemory_FeatureEnabled) {
   prerender_manager()->SetIsLowEndDevice(true);
   EXPECT_FALSE(
       prerender_manager()->AddPrerenderFromOmnibox(kURL, nullptr, gfx::Size()));
+
+  // Verify that the prerender request falls back to a preconnect request.
+  EXPECT_EQ(1u, loading_predictor->GetActiveHintsSizeForTesting());
+
+  auto& active_hints = loading_predictor->active_hints_for_testing();
+  auto it = active_hints.find(kURL);
+  EXPECT_NE(it, active_hints.end());
+}
+
+// Test that when prerender fails and the
+// kPrerenderFallbackToPreconnect experiment is enabled, a
+// prerender initiated by an external request actually results in preconnect.
+TEST_F(PrerenderTest,
+       ExternalRequest_AllowedWhenNotDisabled_LowMemory_FeatureEnabled) {
+  const GURL kURL(GURL("http://www.example.com"));
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      features::kPrerenderFallbackToPreconnect);
+
+  predictors::LoadingPredictorConfig config;
+  PopulateTestConfig(&config);
+
+  auto* loading_predictor = predictors::LoadingPredictorFactory::GetForProfile(
+      Profile::FromBrowserContext(profile()));
+  loading_predictor->StartInitialization();
+  content::RunAllTasksUntilIdle();
+
+  // Prerender should be disabled on low memory devices.
+  prerender_manager()->SetIsLowEndDevice(true);
+  EXPECT_FALSE(prerender_manager()->AddPrerenderFromExternalRequest(
+      kURL, content::Referrer(), nullptr, gfx::Rect(kSize)));
 
   // Verify that the prerender request falls back to a preconnect request.
   EXPECT_EQ(1u, loading_predictor->GetActiveHintsSizeForTesting());
