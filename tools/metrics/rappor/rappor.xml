@@ -369,20 +369,6 @@ components/rappor/rappor_parameters.h.
   </summary>
 </rappor-metric>
 
-<rappor-metric name="WebComponents.EventPath" type="ETLD_PLUS_ONE">
-  <owner>kojii@chromium.org</owner>
-  <summary>
-    The host of a URL that used Event::Path().
-  </summary>
-</rappor-metric>
-
-<rappor-metric name="WebComponents.EventPath.Extensions" type="ETLD_PLUS_ONE">
-  <owner>kojii@chromium.org</owner>
-  <summary>
-    The name of an extension that used Event::Path().
-  </summary>
-</rappor-metric>
-
 </rappor-metrics>
 
 </rappor-configuration>
