@@ -180,9 +180,6 @@ public class SyncAndServicesPreferences extends PreferenceFragmentCompat
 
         PreferenceUtils.addPreferencesFromResource(this, R.xml.sync_and_services_preferences);
 
-        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.IDENTITY_DISC)) {
-            getPreferenceScreen().removePreference(findPreference(PREF_USER_CATEGORY));
-        }
         mSigninPreference = (SignInPreference) findPreference(PREF_SIGNIN);
         mSigninPreference.setPersonalizedPromoEnabled(false);
         mManageYourGoogleAccount = findPreference(PREF_MANAGE_YOUR_GOOGLE_ACCOUNT);

@@ -1525,9 +1525,6 @@ extern const char kHomepageLocationDescription[];
 extern const char kInterestFeedNotificationsName[];
 extern const char kInterestFeedNotificationsDescription[];
 
-extern const char kIdentityDiscName[];
-extern const char kIdentityDiscDescription[];
-
 extern const char kInterestFeedContentSuggestionsName[];
 extern const char kInterestFeedContentSuggestionsDescription[];
 

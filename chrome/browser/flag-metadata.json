@@ -2391,11 +2391,6 @@
     "expiry_milestone": 77
   },
   {
-    "name": "identity-disc",
-    "owners": ["//chrome/android/java/src/org/chromium/chrome/browser/toolbar/OWNERS"],
-    "expiry_milestone": 78
-  },
-  {
     "name": "ignore-gpu-blacklist",
     "owners": [ "kbr", "zmo" ],
     // A debugging flag intended for end-users where there may not be any other
