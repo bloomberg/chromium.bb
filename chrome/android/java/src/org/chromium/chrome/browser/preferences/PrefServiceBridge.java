@@ -38,13 +38,6 @@ public class PrefServiceBridge {
     }
 
     /**
-     * @return Whether the preferences have been initialized.
-     */
-    public static boolean isInitialized() {
-        return sInstance != null;
-    }
-
-    /**
      * @param preference The name of the preference.
      * @return Whether the specified preference is enabled.
      */

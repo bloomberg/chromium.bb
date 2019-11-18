@@ -14,12 +14,14 @@ import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
+import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.survey.SurveyController;
 import org.chromium.components.minidump_uploader.util.CrashReportingPermissionManager;
 import org.chromium.components.minidump_uploader.util.NetworkPermissionUtil;
+import org.chromium.content_public.browser.BrowserStartupController;
 
 /**
  * Reads, writes, and migrates preferences related to network usage and privacy.
@@ -258,10 +260,13 @@ public class PrivacyPreferencesManager implements CrashReportingPermissionManage
      * out of sync.
      */
     public void syncUsageAndCrashReportingPrefs() {
-        if (PrefServiceBridge.isInitialized()) {
-            PrefServiceBridge.getInstance().setMetricsReportingEnabled(
-                    isUsageAndCrashReportingPermittedByUser());
+        // Skip if native browser process is not yet fully initialized.
+        if (!BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER).isNativeStarted()) {
+            return;
         }
+
+        PrefServiceBridge.getInstance().setMetricsReportingEnabled(
+                isUsageAndCrashReportingPermittedByUser());
     }
 
     /**
