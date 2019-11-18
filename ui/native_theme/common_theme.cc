@@ -27,7 +27,6 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
   if (base_theme->UsesHighContrastColors()) {
     switch (color_id) {
       case NativeTheme::kColorId_ButtonEnabledColor:
-      case NativeTheme::kColorId_ButtonHoverColor:
       case NativeTheme::kColorId_MenuBorderColor:
       case NativeTheme::kColorId_MenuSeparatorColor:
       case NativeTheme::kColorId_SeparatorColor:
@@ -53,6 +52,8 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
       case NativeTheme::kColorId_BubbleBackground:
         return color_utils::AlphaBlend(SK_ColorWHITE, gfx::kGoogleGrey900,
                                        0.04f);
+      case NativeTheme::kColorId_DialogForeground:
+        return gfx::kGoogleGrey500;
       case NativeTheme::kColorId_BubbleFooterBackground:
         return SkColorSetRGB(0x32, 0x36, 0x39);
 
@@ -62,8 +63,6 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
 
       // Button
       case NativeTheme::kColorId_ButtonEnabledColor:
-      case NativeTheme::kColorId_ButtonHoverColor:
-        return gfx::kGoogleGrey200;
       case NativeTheme::kColorId_ProminentButtonColor:
         return gfx::kGoogleBlue300;
       case NativeTheme::kColorId_ProminentButtonDisabledColor:
@@ -165,8 +164,6 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
   constexpr SkColor kPrimaryTextColor = gfx::kGoogleGrey900;
   constexpr SkColor kDisabledTextColor = gfx::kGoogleGrey600;
 
-  // Buttons:
-  constexpr SkColor kButtonEnabledColor = gfx::kChromeIconGrey;
   // Text selection colors:
   constexpr SkColor kTextSelectionBackgroundFocused =
       SkColorSetARGB(0x54, 0x60, 0xA8, 0xEB);
@@ -179,13 +176,14 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
     case NativeTheme::kColorId_DialogBackground:
     case NativeTheme::kColorId_BubbleBackground:
       return SK_ColorWHITE;
+    case NativeTheme::kColorId_DialogForeground:
+      return gfx::kGoogleGrey700;
     case NativeTheme::kColorId_BubbleFooterBackground:
       return gfx::kGoogleGrey050;
 
     // Buttons
     case NativeTheme::kColorId_ButtonEnabledColor:
-    case NativeTheme::kColorId_ButtonHoverColor:
-      return kButtonEnabledColor;
+      return gfx::kGoogleBlue600;
     case NativeTheme::kColorId_ProminentButtonFocusedColor:
       return gfx::kGoogleBlue400;
     case NativeTheme::kColorId_ProminentButtonColor:

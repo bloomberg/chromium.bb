@@ -20,6 +20,7 @@ void AddUiColorMixers(ColorProvider* provider) {
   mixer[kColorButtonBackground] = {kColorPrimaryBackground};
   mixer[kColorButtonBorder] = {kColorSecondaryBackground};
   mixer[kColorButtonDisabledForeground] = {kColorDisabledForeground};
+  mixer[kColorButtonForeground] = {kColorAccent};
   mixer[kColorButtonProminentBackground] = {kColorAccent};
   mixer[kColorButtonProminentDisabledBackground] =
       AlphaBlend(kColorSecondaryBackground, kColorButtonBackground,
@@ -29,8 +30,10 @@ void AddUiColorMixers(ColorProvider* provider) {
   mixer[kColorButtonProminentForeground] =
       GetColorWithMaxContrast(kColorButtonProminentBackground);
   mixer[kColorDialogBackground] = {kColorPrimaryBackground};
+  mixer[kColorDialogForeground] = {kColorBodyForeground};
   mixer[kColorFocusableBorderFocused] = SetAlpha(kColorAccent, 0x4D);
   mixer[kColorFocusableBorderUnfocused] = {kColorSecondaryBackground};
+  mixer[kColorIcon] = {kColorBodyForeground};
   mixer[kColorLabelDisabledForeground] =
       SetAlpha(kColorLabelForeground, gfx::kDisabledControlAlpha);
   mixer[kColorLabelForeground] = {kColorPrimaryForeground};
