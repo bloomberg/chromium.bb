@@ -7,6 +7,11 @@
 namespace openscreen {
 namespace discovery {
 
+// static
+std::unique_ptr<MdnsService> MdnsService::Create(TaskRunner* task_runner) {
+  return std::make_unique<MdnsServiceImpl>();
+}
+
 void MdnsServiceImpl::StartQuery(const DomainName& name,
                                  DnsType dns_type,
                                  DnsClass dns_class,
