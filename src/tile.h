@@ -376,7 +376,8 @@ class Tile : public Allocable {
                                  int width, int height, int ref_start_x,
                                  int ref_last_x, int ref_start_y,
                                  int ref_last_y, int start_x, int start_y,
-                                 int step_x, int step_y, int right_border,
+                                 int step_x, int step_y, int left_border,
+                                 int right_border, int top_border,
                                  int bottom_border, int* ref_block_start_x,
                                  int* ref_block_start_y, int* ref_block_end_x);
   template <typename Pixel>

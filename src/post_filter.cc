@@ -199,11 +199,12 @@ bool PostFilter::ApplyFiltering() {
       //  U,V        1          32, 16
       assert(source_buffer_->left_border(plane) >= 16);
       // The |left| argument to ExtendFrameBoundary() must be at least
-      // kMinLeftBorderPixels (13). Use 16 to help Memset performance.
+      // kMinLeftBorderPixels (13) for warp.
       static_assert(16 >= kMinLeftBorderPixels, "");
       ExtendFrameBoundary(source_buffer_->data(plane), plane_width,
                           plane_height, source_buffer_->stride(plane),
-                          /*left=*/16, source_buffer_->right_border(plane),
+                          source_buffer_->left_border(plane),
+                          source_buffer_->right_border(plane),
                           source_buffer_->top_border(plane),
                           source_buffer_->bottom_border(plane));
     }
