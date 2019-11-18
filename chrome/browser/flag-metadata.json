@@ -475,6 +475,11 @@
     "expiry_milestone": 82
   },
   {
+    "name": "click-to-call-detection-v2",
+    "owners": [ "//chrome/browser/sharing/OWNERS" ],
+    "expiry_milestone": 83
+  },
+  {
     "name": "click-to-call-open-dialer-directly",
     "owners": [ "//chrome/browser/sharing/OWNERS" ],
     "expiry_milestone": 82

@@ -3778,6 +3778,11 @@ const FeatureEntry kFeatureEntries[] = {
     {"click-to-call-ui", flag_descriptions::kClickToCallUIName,
      flag_descriptions::kClickToCallUIDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(kClickToCallUI)},
+
+    {"click-to-call-detection-v2",
+     flag_descriptions::kClickToCallDetectionV2Name,
+     flag_descriptions::kClickToCallDetectionV2Description, kOsDesktop,
+     FEATURE_VALUE_TYPE(kClickToCallDetectionV2)},
 #endif  // BUILDFLAG(ENABLE_CLICK_TO_CALL)
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) || \

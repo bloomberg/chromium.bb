@@ -2335,6 +2335,9 @@ extern const char kClickToCallContextMenuForSelectedTextDescription[];
 extern const char kClickToCallUIName[];
 extern const char kClickToCallUIDescription[];
 
+extern const char kClickToCallDetectionV2Name[];
+extern const char kClickToCallDetectionV2Description[];
+
 #endif  // BUILDFLAG(ENABLE_CLICK_TO_CALL)
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) || \
