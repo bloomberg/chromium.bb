@@ -387,7 +387,7 @@
   {
     "name": "bypass-app-banner-engagement-checks",
     "owners": [ "dominickn" ],
-    "expiry_milestone": 78
+    "expiry_milestone": 84
   },
   {
     "name": "calculate-native-win-occlusion",
