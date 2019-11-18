@@ -218,17 +218,9 @@ static INLINE void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
         inter_pred_params.mask_comp.seg_mask = xd->seg_mask;
       }
 
-      if (ref && is_masked_compound_type(mi->interinter_comp.type)) {
-        // masked compound type has its own average mechanism
-        inter_pred_params.conv_params.do_average = 0;
-        av1_make_masked_inter_predictor(pre, pre_buf.stride, dst,
-                                        dst_buf->stride, &inter_pred_params,
-                                        &subpel_params);
-      } else {
-        av1_build_inter_predictor(pre_buf.buf, pre_buf.stride, dst,
-                                  dst_buf->stride, &mv, mi_x, mi_y,
-                                  &inter_pred_params);
-      }
+      av1_build_inter_predictor(pre_buf.buf, pre_buf.stride, dst,
+                                dst_buf->stride, &mv, mi_x, mi_y,
+                                &inter_pred_params);
     }
   }
 }
@@ -305,8 +297,13 @@ void av1_build_inter_predictor(const uint8_t *src, int src_stride, uint8_t *dst,
   subpel_params.xs = sf->x_step_q4;
   subpel_params.ys = sf->y_step_q4;
 
-  av1_make_inter_predictor(src, src_stride, dst, dst_stride, inter_pred_params,
-                           &subpel_params);
+  if (inter_pred_params->comp_mode == UNIFORM_SINGLE ||
+      inter_pred_params->comp_mode == UNIFORM_COMP)
+    av1_make_inter_predictor(src, src_stride, dst, dst_stride,
+                             inter_pred_params, &subpel_params);
+  else
+    av1_make_masked_inter_predictor(src, src_stride, dst, dst_stride,
+                                    inter_pred_params, &subpel_params);
 }
 
 static INLINE void build_obmc_prediction(MACROBLOCKD *xd, int rel_mi_row,
