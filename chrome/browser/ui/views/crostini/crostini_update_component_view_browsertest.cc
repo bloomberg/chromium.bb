@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/crostini/crostini_upgrade_view.h"
+#include "chrome/browser/ui/views/crostini/crostini_update_component_view.h"
 
 #include "base/metrics/histogram_base.h"
 #include "base/run_loop.h"
@@ -20,19 +20,20 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/views/window/dialog_client_view.h"
 
-class CrostiniUpgradeViewBrowserTest : public CrostiniDialogBrowserTest {
+class CrostiniUpdateComponentViewBrowserTest
+    : public CrostiniDialogBrowserTest {
  public:
-  CrostiniUpgradeViewBrowserTest()
+  CrostiniUpdateComponentViewBrowserTest()
       : CrostiniDialogBrowserTest(true /*register_termina*/) {}
 
   // DialogBrowserTest:
   void ShowUi(const std::string& name) override {
-    ShowCrostiniUpgradeView(browser()->profile(),
-                            crostini::CrostiniUISurface::kAppList);
+    ShowCrostiniUpdateComponentView(browser()->profile(),
+                                    crostini::CrostiniUISurface::kAppList);
   }
 
-  CrostiniUpgradeView* ActiveView() {
-    return CrostiniUpgradeView::GetActiveViewForTesting();
+  CrostiniUpdateComponentView* ActiveView() {
+    return CrostiniUpdateComponentView::GetActiveViewForTesting();
   }
 
   bool HasAcceptButton() {
@@ -63,15 +64,16 @@ class CrostiniUpgradeViewBrowserTest : public CrostiniDialogBrowserTest {
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(CrostiniUpgradeViewBrowserTest);
+  DISALLOW_COPY_AND_ASSIGN(CrostiniUpdateComponentViewBrowserTest);
 };
 
 // Test the dialog is actually launched.
-IN_PROC_BROWSER_TEST_F(CrostiniUpgradeViewBrowserTest, InvokeUi_default) {
+IN_PROC_BROWSER_TEST_F(CrostiniUpdateComponentViewBrowserTest,
+                       InvokeUi_default) {
   ShowAndVerifyUi();
 }
 
-IN_PROC_BROWSER_TEST_F(CrostiniUpgradeViewBrowserTest, HitOK) {
+IN_PROC_BROWSER_TEST_F(CrostiniUpdateComponentViewBrowserTest, HitOK) {
   base::HistogramTester histogram_tester;
 
   ShowUi("default");
@@ -93,7 +95,7 @@ IN_PROC_BROWSER_TEST_F(CrostiniUpgradeViewBrowserTest, HitOK) {
       1);
 }
 
-IN_PROC_BROWSER_TEST_F(CrostiniUpgradeViewBrowserTest,
+IN_PROC_BROWSER_TEST_F(CrostiniUpdateComponentViewBrowserTest,
                        LaunchAppOnline_UpgradeNeeded) {
   base::HistogramTester histogram_tester;
   crostini::CrostiniManager::GetForProfile(browser()->profile())
@@ -107,7 +109,7 @@ IN_PROC_BROWSER_TEST_F(CrostiniUpgradeViewBrowserTest,
   ExpectNoView();
 }
 
-IN_PROC_BROWSER_TEST_F(CrostiniUpgradeViewBrowserTest,
+IN_PROC_BROWSER_TEST_F(CrostiniUpdateComponentViewBrowserTest,
                        LaunchAppOffline_UpgradeNeeded) {
   base::HistogramTester histogram_tester;
   SetConnectionType(network::mojom::ConnectionType::CONNECTION_NONE);

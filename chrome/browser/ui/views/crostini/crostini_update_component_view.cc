@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/crostini/crostini_upgrade_view.h"
+#include "chrome/browser/ui/views/crostini/crostini_update_component_view.h"
 
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -23,41 +23,42 @@
 
 namespace {
 
-CrostiniUpgradeView* g_crostini_upgrade_view = nullptr;
+CrostiniUpdateComponentView* g_crostini_upgrade_view = nullptr;
 
 constexpr char kCrostiniUpgradeSourceHistogram[] = "Crostini.UpgradeSource";
 
 }  // namespace
 
-void crostini::ShowCrostiniUpgradeView(Profile* profile,
-                                       crostini::CrostiniUISurface ui_surface) {
+void crostini::ShowCrostiniUpdateComponentView(
+    Profile* profile,
+    crostini::CrostiniUISurface ui_surface) {
   base::UmaHistogramEnumeration(kCrostiniUpgradeSourceHistogram, ui_surface,
                                 crostini::CrostiniUISurface::kCount);
-  return CrostiniUpgradeView::Show(profile);
+  return CrostiniUpdateComponentView::Show(profile);
 }
 
-void CrostiniUpgradeView::Show(Profile* profile) {
+void CrostiniUpdateComponentView::Show(Profile* profile) {
   DCHECK(crostini::CrostiniFeatures::Get()->IsUIAllowed(profile));
   if (!g_crostini_upgrade_view) {
-    g_crostini_upgrade_view = new CrostiniUpgradeView;
+    g_crostini_upgrade_view = new CrostiniUpdateComponentView;
     CreateDialogWidget(g_crostini_upgrade_view, nullptr, nullptr);
   }
   g_crostini_upgrade_view->GetWidget()->Show();
 }
 
-int CrostiniUpgradeView::GetDialogButtons() const {
+int CrostiniUpdateComponentView::GetDialogButtons() const {
   return ui::DIALOG_BUTTON_OK;
 }
 
-base::string16 CrostiniUpgradeView::GetWindowTitle() const {
+base::string16 CrostiniUpdateComponentView::GetWindowTitle() const {
   return l10n_util::GetStringUTF16(IDS_CROSTINI_TERMINA_UPDATE_REQUIRED);
 }
 
-bool CrostiniUpgradeView::ShouldShowCloseButton() const {
+bool CrostiniUpdateComponentView::ShouldShowCloseButton() const {
   return false;
 }
 
-gfx::Size CrostiniUpgradeView::CalculatePreferredSize() const {
+gfx::Size CrostiniUpdateComponentView::CalculatePreferredSize() const {
   const int dialog_width = ChromeLayoutProvider::Get()->GetDistanceMetric(
                                DISTANCE_STANDALONE_BUBBLE_PREFERRED_WIDTH) -
                            margins().width();
@@ -65,11 +66,12 @@ gfx::Size CrostiniUpgradeView::CalculatePreferredSize() const {
 }
 
 // static
-CrostiniUpgradeView* CrostiniUpgradeView::GetActiveViewForTesting() {
+CrostiniUpdateComponentView*
+CrostiniUpdateComponentView::GetActiveViewForTesting() {
   return g_crostini_upgrade_view;
 }
 
-CrostiniUpgradeView::CrostiniUpgradeView() {
+CrostiniUpdateComponentView::CrostiniUpdateComponentView() {
   views::LayoutProvider* provider = views::LayoutProvider::Get();
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical,
@@ -86,6 +88,6 @@ CrostiniUpgradeView::CrostiniUpgradeView() {
   chrome::RecordDialogCreation(chrome::DialogIdentifier::CROSTINI_UPGRADE);
 }
 
-CrostiniUpgradeView::~CrostiniUpgradeView() {
+CrostiniUpdateComponentView::~CrostiniUpdateComponentView() {
   g_crostini_upgrade_view = nullptr;
 }

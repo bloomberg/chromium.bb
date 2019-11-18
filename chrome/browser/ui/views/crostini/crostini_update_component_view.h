@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_CROSTINI_CROSTINI_UPGRADE_VIEW_H_
-#define CHROME_BROWSER_UI_VIEWS_CROSTINI_CROSTINI_UPGRADE_VIEW_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_CROSTINI_CROSTINI_UPDATE_COMPONENT_VIEW_H_
+#define CHROME_BROWSER_UI_VIEWS_CROSTINI_CROSTINI_UPDATE_COMPONENT_VIEW_H_
 
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 
@@ -15,7 +15,7 @@ class Profile;
 
 // Provides a warning to the user that an upgrade is required and and internet
 // connection is needed.
-class CrostiniUpgradeView : public views::BubbleDialogDelegateView {
+class CrostiniUpdateComponentView : public views::BubbleDialogDelegateView {
  public:
   static void Show(Profile* profile);
 
@@ -25,11 +25,11 @@ class CrostiniUpgradeView : public views::BubbleDialogDelegateView {
   bool ShouldShowCloseButton() const override;
   gfx::Size CalculatePreferredSize() const override;
 
-  static CrostiniUpgradeView* GetActiveViewForTesting();
+  static CrostiniUpdateComponentView* GetActiveViewForTesting();
 
  private:
-  CrostiniUpgradeView();
-  ~CrostiniUpgradeView() override;
+  CrostiniUpdateComponentView();
+  ~CrostiniUpdateComponentView() override;
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_CROSTINI_CROSTINI_UPGRADE_VIEW_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_CROSTINI_CROSTINI_UPDATE_COMPONENT_VIEW_H_
