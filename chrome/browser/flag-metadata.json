@@ -2019,7 +2019,7 @@
   {
     "name": "enable-viz-hit-test-surface-layer",
     "owners": [ "yigu", "rjkroege", "kylechar" ],
-    "expiry_milestone": 79
+    "expiry_milestone": 81
   },
   {
     "name": "enable-vulkan",
