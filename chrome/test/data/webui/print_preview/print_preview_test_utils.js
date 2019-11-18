@@ -25,7 +25,9 @@ export function getDefaultInitialSettings() {
     isHeaderFooterManaged: false,
     printerName: 'FooDevice',
     serializedAppStateStr: null,
-    serializedDefaultDestinationSelectionRulesStr: null
+    serializedDefaultDestinationSelectionRulesStr: null,
+    pdfPrinterDisabled: false,
+    destinationsManaged: false,
   };
 }
 
