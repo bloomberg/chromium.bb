@@ -313,7 +313,6 @@ void PasswordProtectionService::RequestFinished(
 
   request->HandleDeferredNavigations();
 
-#if defined(SYNC_PASSWORD_REUSE_WARNING_ENABLED)
   // If the request is canceled, the PasswordProtectionService is already
   // partially destroyed, and we won't be able to log accurate metrics.
   if (outcome != RequestOutcome::CANCELED) {
@@ -321,11 +320,20 @@ void PasswordProtectionService::RequestFinished(
         response ? response->verdict_type()
                  : LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED;
     auto is_phishing_url = verdict == LoginReputationClientResponse::PHISHING;
+
+#if defined(SYNC_PASSWORD_REUSE_WARNING_ENABLED)
     MaybeReportPasswordReuseDetected(request->web_contents(),
                                      request->username(),
                                      request->password_type(), is_phishing_url);
-  }
 #endif
+
+    // Persist a bit in CompromisedCredentials table when saved password is
+    // reused on a phishing site.
+    if (is_phishing_url) {
+      PersistPhishedSavedPasswordCredential(request->username(),
+                                            request->matching_domains());
+    }
+  }
 
   // Remove request from |pending_requests_| list. If it triggers warning, add
   // it into the !warning_reqeusts_| list.
