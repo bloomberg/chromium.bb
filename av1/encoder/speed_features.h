@@ -811,6 +811,9 @@ typedef struct SPEED_FEATURES {
 
   // For nonrd: Reduces golden mode search/testing in nonrd pickmode.
   int nonrd_reduce_golden_mode_search;
+
+  // Disable loop restoration filter
+  int disable_lr_filter;
 } SPEED_FEATURES;
 
 struct AV1_COMP;
