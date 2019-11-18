@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_RTC_RTP_SENDER_H_
-#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_RTC_RTP_SENDER_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_PEERCONNECTION_RTC_RTP_SENDER_PLATFORM_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_PEERCONNECTION_RTC_RTP_SENDER_PLATFORM_H_
 
 #include <memory>
 
-#include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_rtc_stats.h"
 #include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/webrtc/api/dtls_transport_interface.h"
 #include "third_party/webrtc/api/rtp_parameters.h"
 #include "third_party/webrtc/api/stats/rtc_stats.h"
@@ -21,16 +21,16 @@ class WebMediaStreamTrack;
 class RtcDtmfSenderHandler;
 
 // Implementations of this interface keep the corresponding WebRTC-layer sender
-// alive through reference counting. Multiple |WebRTCRtpSender|s could reference
-// the same sender; check for equality with |id|.
+// alive through reference counting. Multiple |RTCRtpSenderPlatform|s could
+// reference the same sender; check for equality with |id|.
 // https://w3c.github.io/webrtc-pc/#rtcrtpsender-interface
-class BLINK_PLATFORM_EXPORT WebRTCRtpSender {
+class PLATFORM_EXPORT RTCRtpSenderPlatform {
  public:
-  virtual ~WebRTCRtpSender();
-  virtual std::unique_ptr<WebRTCRtpSender> ShallowCopy() const = 0;
+  virtual ~RTCRtpSenderPlatform();
+  virtual std::unique_ptr<RTCRtpSenderPlatform> ShallowCopy() const = 0;
 
-  // Two |WebRTCRtpSender|s referencing the same WebRTC-layer sender have the
-  // same |id|. IDs are guaranteed to be unique amongst senders but they are
+  // Two |RTCRtpSenderPlatform|s referencing the same WebRTC-layer sender have
+  // the same |id|. IDs are guaranteed to be unique amongst senders but they are
   // allowed to be reused after a sender is destroyed.
   virtual uintptr_t Id() const = 0;
   virtual rtc::scoped_refptr<webrtc::DtlsTransportInterface>
@@ -56,4 +56,4 @@ class BLINK_PLATFORM_EXPORT WebRTCRtpSender {
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_RTC_RTP_SENDER_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_PEERCONNECTION_RTC_RTP_SENDER_PLATFORM_H_
