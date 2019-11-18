@@ -93,8 +93,6 @@ class YuvBuffer {
   // alignment boundary and also the |byte_alignment| boundary, if
   // |byte_alignment| is nonzero.
   //
-  // TODO(wtc): We don't need to allocate the U and V plane buffers if
-  // |monochrome| is true.
   // TODO(wtc): Add a check for width and height limits to defend against
   // invalid bitstreams.
   bool Realloc(int bitdepth, bool is_monochrome, int width, int height,
