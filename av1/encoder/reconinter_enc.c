@@ -161,8 +161,7 @@ static INLINE void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
             ref, plane, xd->tmp_conv_dst, tmp_dst_stride, 0, xd->bd);
         inter_pred_params.conv_params.use_dist_wtd_comp_avg = 0;
 
-        av1_build_inter_predictor(pre_buf->buf, pre_buf->stride, dst,
-                                  dst_buf->stride, &mv, mi_x, mi_y,
+        av1_build_inter_predictor(dst, dst_buf->stride, &mv,
                                   &inter_pred_params);
         ++col;
       }
@@ -217,9 +216,7 @@ static INLINE void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
         inter_pred_params.mask_comp.seg_mask = xd->seg_mask;
       }
 
-      av1_build_inter_predictor(pre_buf.buf, pre_buf.stride, dst,
-                                dst_buf->stride, &mv, mi_x, mi_y,
-                                &inter_pred_params);
+      av1_build_inter_predictor(dst, dst_buf->stride, &mv, &inter_pred_params);
     }
   }
 }
@@ -261,14 +258,10 @@ void av1_enc_build_inter_predictor(const AV1_COMMON *cm, MACROBLOCKD *xd,
   }
 }
 
-void av1_build_inter_predictor(const uint8_t *src, int src_stride, uint8_t *dst,
-                               int dst_stride, const MV *src_mv, int pix_col,
-                               int pix_row,
+void av1_build_inter_predictor(uint8_t *dst, int dst_stride, const MV *src_mv,
                                InterPredParams *inter_pred_params) {
   SubpelParams subpel_params;
   const struct scale_factors *sf = inter_pred_params->scale_factors;
-  (void)pix_row;
-  (void)pix_col;
 
   struct buf_2d *pre_buf = &inter_pred_params->ref_frame_buf;
   int ssx = inter_pred_params->subsampling_x;
@@ -289,8 +282,9 @@ void av1_build_inter_predictor(const uint8_t *src, int src_stride, uint8_t *dst,
   pos_y = clamp(pos_y, top, bottom);
   pos_x = clamp(pos_x, left, right);
 
-  src = pre_buf->buf0 + (pos_y >> SCALE_SUBPEL_BITS) * pre_buf->stride +
-        (pos_x >> SCALE_SUBPEL_BITS);
+  uint8_t *src = pre_buf->buf0 +
+                 (pos_y >> SCALE_SUBPEL_BITS) * pre_buf->stride +
+                 (pos_x >> SCALE_SUBPEL_BITS);
   subpel_params.subpel_x = pos_x & SCALE_SUBPEL_MASK;
   subpel_params.subpel_y = pos_y & SCALE_SUBPEL_MASK;
   subpel_params.xs = sf->x_step_q4;
@@ -298,10 +292,10 @@ void av1_build_inter_predictor(const uint8_t *src, int src_stride, uint8_t *dst,
 
   if (inter_pred_params->comp_mode == UNIFORM_SINGLE ||
       inter_pred_params->comp_mode == UNIFORM_COMP)
-    av1_make_inter_predictor(src, src_stride, dst, dst_stride,
+    av1_make_inter_predictor(src, pre_buf->stride, dst, dst_stride,
                              inter_pred_params, &subpel_params);
   else
-    av1_make_masked_inter_predictor(src, src_stride, dst, dst_stride,
+    av1_make_masked_inter_predictor(src, pre_buf->stride, dst, dst_stride,
                                     inter_pred_params, &subpel_params);
 }
 
@@ -348,8 +342,7 @@ static INLINE void build_obmc_prediction(MACROBLOCKD *xd, int rel_mi_row,
                           above_mbmi->interp_filters);
     inter_pred_params.conv_params = get_conv_params(0, j, xd->bd);
 
-    av1_build_inter_predictor(pre_buf->buf, pre_buf->stride, pd->dst.buf,
-                              pd->dst.stride, &mv, mi_x, mi_y,
+    av1_build_inter_predictor(pd->dst.buf, pd->dst.stride, &mv,
                               &inter_pred_params);
   }
 }
@@ -458,12 +451,10 @@ void av1_build_inter_predictors_for_planes_single_buf(
     inter_pred_params.conv_params = get_conv_params(0, plane, xd->bd);
     av1_init_warp_params(&inter_pred_params, &warp_types, ref, xd, mi);
 
-    const struct buf_2d *const pre_buf = &pd->pre[ref];
     uint8_t *const dst = get_buf_by_bd(xd, ext_dst[plane]);
     const MV mv = mi->mv[ref].as_mv;
 
-    av1_build_inter_predictor(pre_buf->buf, pre_buf->stride, dst,
-                              ext_dst_stride[plane], &mv, mi_x, mi_y,
+    av1_build_inter_predictor(dst, ext_dst_stride[plane], &mv,
                               &inter_pred_params);
   }
 }

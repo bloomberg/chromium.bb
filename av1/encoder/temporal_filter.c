@@ -51,24 +51,17 @@ static int64_t highbd_index_mult[14] = { 0U,          0U,          0U,
                                          1431655766U, 1288490189U, 1171354718U,
                                          0U,          991146300U };
 
-static void temporal_filter_predictors_mb_c(
-    YV12_BUFFER_CONFIG *ref_frame, MACROBLOCKD *xd, uint8_t *y_mb_ptr,
-    uint8_t *u_mb_ptr, uint8_t *v_mb_ptr, int stride, int uv_block_width,
-    int uv_block_height, int mv_row, int mv_col, uint8_t *pred,
-    struct scale_factors *scale, int x, int y, int num_planes, MV *blk_mvs,
-    int use_32x32) {
-  int uv_stride;
+static void temporal_filter_predictors_mb_c(YV12_BUFFER_CONFIG *ref_frame,
+                                            MACROBLOCKD *xd, int uv_block_width,
+                                            int uv_block_height, int mv_row,
+                                            int mv_col, uint8_t *pred,
+                                            struct scale_factors *scale, int x,
+                                            int y, int num_planes, MV *blk_mvs,
+                                            int use_32x32) {
   const int_interpfilters interp_filters =
       av1_broadcast_interp_filter(MULTITAP_SHARP);
   WarpTypesAllowed warp_types;
   memset(&warp_types, 0, sizeof(WarpTypesAllowed));
-
-  const int ssx = (uv_block_width == (BW >> 1)) ? 1 : 0;
-  if (ssx) {
-    uv_stride = (stride + 1) >> 1;
-  } else {
-    uv_stride = stride;
-  }
 
   InterPredParams inter_pred_params;
   struct buf_2d ref_buf_y = { NULL, ref_frame->y_buffer, ref_frame->y_width,
@@ -84,8 +77,7 @@ static void temporal_filter_predictors_mb_c(
            mv_col <= INT16_MAX);
     const MV mv = { (int16_t)mv_row, (int16_t)mv_col };
 
-    av1_build_inter_predictor(y_mb_ptr, stride, &pred[0], BW, &mv, x, y,
-                              &inter_pred_params);
+    av1_build_inter_predictor(&pred[0], BW, &mv, &inter_pred_params);
 
     if (num_planes > 1) {
       struct buf_2d ref_buf_uv = { NULL, ref_frame->u_buffer,
@@ -98,8 +90,8 @@ static void temporal_filter_predictors_mb_c(
           xd->plane[1].subsampling_x, xd->plane[1].subsampling_y, xd->bd,
           is_cur_buf_hbd(xd), 0, scale, &ref_buf_uv, interp_filters);
       inter_pred_params.conv_params = get_conv_params(0, 1, xd->bd);
-      av1_build_inter_predictor(u_mb_ptr, uv_stride, &pred[BLK_PELS],
-                                uv_block_width, &mv, x, y, &inter_pred_params);
+      av1_build_inter_predictor(&pred[BLK_PELS], uv_block_width, &mv,
+                                &inter_pred_params);
 
       ref_buf_uv.buf0 = ref_frame->v_buffer;
       av1_init_inter_params(
@@ -108,8 +100,8 @@ static void temporal_filter_predictors_mb_c(
           xd->plane[1].subsampling_x, xd->plane[1].subsampling_y, xd->bd,
           is_cur_buf_hbd(xd), 0, scale, &ref_buf_uv, interp_filters);
       inter_pred_params.conv_params = get_conv_params(0, 2, xd->bd);
-      av1_build_inter_predictor(v_mb_ptr, uv_stride, &pred[(BLK_PELS << 1)],
-                                uv_block_width, &mv, x, y, &inter_pred_params);
+      av1_build_inter_predictor(&pred[(BLK_PELS << 1)], uv_block_width, &mv,
+                                &inter_pred_params);
     }
 
     return;
@@ -122,7 +114,6 @@ static void temporal_filter_predictors_mb_c(
   for (i = 0; i < BH; i += ys) {
     for (j = 0; j < BW; j += xs) {
       const MV mv = blk_mvs[k];
-      const int y_offset = i * stride + j;
       const int p_offset = i * BW + j;
 
       av1_init_inter_params(&inter_pred_params, xs, ys, y + i, x + j, 0, 0,
@@ -130,8 +121,7 @@ static void temporal_filter_predictors_mb_c(
                             interp_filters);
       inter_pred_params.conv_params = get_conv_params(0, 0, xd->bd);
 
-      av1_build_inter_predictor(y_mb_ptr + y_offset, stride, &pred[p_offset],
-                                BW, &mv, x, y, &inter_pred_params);
+      av1_build_inter_predictor(&pred[p_offset], BW, &mv, &inter_pred_params);
       k++;
     }
   }
@@ -145,7 +135,6 @@ static void temporal_filter_predictors_mb_c(
     for (i = 0; i < uv_block_height; i += ys) {
       for (j = 0; j < uv_block_width; j += xs) {
         const MV mv = blk_mvs[k];
-        const int uv_offset = i * uv_stride + j;
         const int p_offset = i * uv_block_width + j;
 
         struct buf_2d ref_buf_uv = { NULL, ref_frame->u_buffer,
@@ -158,9 +147,8 @@ static void temporal_filter_predictors_mb_c(
             xd->plane[1].subsampling_y, xd->bd, is_cur_buf_hbd(xd), 0, scale,
             &ref_buf_uv, interp_filters);
         inter_pred_params.conv_params = get_conv_params(0, 1, xd->bd);
-        av1_build_inter_predictor(u_mb_ptr + uv_offset, uv_stride,
-                                  &pred[BLK_PELS + p_offset], uv_block_width,
-                                  &mv, x, y, &inter_pred_params);
+        av1_build_inter_predictor(&pred[BLK_PELS + p_offset], uv_block_width,
+                                  &mv, &inter_pred_params);
 
         ref_buf_uv.buf0 = ref_frame->v_buffer;
         av1_init_inter_params(
@@ -170,9 +158,8 @@ static void temporal_filter_predictors_mb_c(
             &ref_buf_uv, interp_filters);
 
         inter_pred_params.conv_params = get_conv_params(0, 2, xd->bd);
-        av1_build_inter_predictor(
-            v_mb_ptr + uv_offset, uv_stride, &pred[(BLK_PELS << 1) + p_offset],
-            uv_block_width, &mv, x, y, &inter_pred_params);
+        av1_build_inter_predictor(&pred[(BLK_PELS << 1) + p_offset],
+                                  uv_block_width, &mv, &inter_pred_params);
         k++;
       }
     }
@@ -1186,10 +1173,7 @@ static FRAME_DIFF temporal_filter_iterate_c(
         if (blk_fw[0] || blk_fw[1] || blk_fw[2] || blk_fw[3]) {
           // Construct the predictors
           temporal_filter_predictors_mb_c(
-              frames[frame], mbd, frames[frame]->y_buffer + mb_y_src_offset,
-              frames[frame]->u_buffer + mb_uv_src_offset,
-              frames[frame]->v_buffer + mb_uv_src_offset,
-              frames[frame]->y_stride, mb_uv_width, mb_uv_height,
+              frames[frame], mbd, mb_uv_width, mb_uv_height,
               mbd->mi[0]->mv[0].as_mv.row, mbd->mi[0]->mv[0].as_mv.col,
               predictor, ref_scale_factors, mb_col * BW, mb_row * BH,
               num_planes, blk_mvs, use_32x32);

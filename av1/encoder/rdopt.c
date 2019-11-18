@@ -7049,9 +7049,7 @@ static AOM_INLINE void joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
 
     // Since we have scaled the reference frames to match the size of the
     // current frame we must use a unit scaling factor during mode selection.
-    av1_build_inter_predictor(ref_yv12[!id].buf, ref_yv12[!id].stride,
-                              second_pred, pw, &cur_mv[!id].as_mv,
-                              mi_col * MI_SIZE, mi_row * MI_SIZE,
+    av1_build_inter_predictor(second_pred, pw, &cur_mv[!id].as_mv,
                               &inter_pred_params);
 
     const int order_idx = id != 0;
@@ -7596,9 +7594,7 @@ static AOM_INLINE void build_second_inter_pred(const AV1_COMP *cpi,
   inter_pred_params.conv_params = get_conv_params(0, plane, xd->bd);
 
   // Get the prediction block from the 'other' reference frame.
-  av1_build_inter_predictor(ref_yv12.buf, ref_yv12.stride, second_pred, pw,
-                            other_mv, mi_col * MI_SIZE, mi_row * MI_SIZE,
-                            &inter_pred_params);
+  av1_build_inter_predictor(second_pred, pw, other_mv, &inter_pred_params);
 
   av1_dist_wtd_comp_weight_assign(cm, mbmi, 0, &xd->jcp_param.fwd_offset,
                                   &xd->jcp_param.bck_offset,

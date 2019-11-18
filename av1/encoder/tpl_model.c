@@ -271,9 +271,8 @@ static AOM_INLINE void mode_estimation(
                           sf, &ref_buf, kernel);
     inter_pred_params.conv_params = get_conv_params(0, 0, xd->bd);
 
-    av1_build_inter_predictor(ref_mb, ref_stride, predictor, bw,
-                              &x->best_mv.as_mv, mi_col * MI_SIZE,
-                              mi_row * MI_SIZE, &inter_pred_params);
+    av1_build_inter_predictor(predictor, bw, &x->best_mv.as_mv,
+                              &inter_pred_params);
 
 #if CONFIG_AV1_HIGHBITDEPTH
     if (is_cur_buf_hbd(xd)) {
@@ -327,14 +326,8 @@ static AOM_INLINE void mode_estimation(
                           sf, &ref_buf, kernel);
     inter_pred_params.conv_params = get_conv_params(0, 0, xd->bd);
 
-    const int ref_mb_offset =
-        mi_row * MI_SIZE * ref_frame_ptr->y_stride + mi_col * MI_SIZE;
-    uint8_t *ref_mb = ref_frame_ptr->y_buffer + ref_mb_offset;
-    int ref_stride = ref_frame_ptr->y_stride;
-
-    av1_build_inter_predictor(ref_mb, ref_stride, dst_buffer, dst_buffer_stride,
-                              &best_mv.as_mv, mi_col * MI_SIZE,
-                              mi_row * MI_SIZE, &inter_pred_params);
+    av1_build_inter_predictor(dst_buffer, dst_buffer_stride, &best_mv.as_mv,
+                              &inter_pred_params);
   } else {
     av1_predict_intra_block(cm, xd, block_size_wide[bsize],
                             block_size_high[bsize], tx_size, best_mode, 0, 0,
@@ -1092,9 +1085,7 @@ static AOM_INLINE void get_tpl_forward_stats(AV1_COMP *cpi, MACROBLOCK *x,
                             0, &sf, &ref_buf, kernel);
       inter_pred_params.conv_params = get_conv_params(0, 0, xd->bd);
 
-      av1_build_inter_predictor(ref->y_buffer + mb_y_offset_ref, ref->y_stride,
-                                predictor, bw, &x->best_mv.as_mv,
-                                mi_col * MI_SIZE, mi_row * MI_SIZE,
+      av1_build_inter_predictor(predictor, bw, &x->best_mv.as_mv,
                                 &inter_pred_params);
       if (use_satd) {
 #if CONFIG_AV1_HIGHBITDEPTH
