@@ -3392,10 +3392,6 @@ void AddSecurityKeysStrings(content::WebUIDataSource* html_source) {
   html_source->AddBoolean("enableSecurityKeysSubpage",
                           !win_native_api_available);
   html_source->AddBoolean(
-      "enableSecurityKeysCredentialManagement",
-      base::FeatureList::IsEnabled(device::kWebAuthCredentialManagement) &&
-          !win_native_api_available);
-  html_source->AddBoolean(
       "enableSecurityKeysBioEnrollment",
       base::FeatureList::IsEnabled(device::kWebAuthBiometricEnrollment) &&
           !win_native_api_available);
