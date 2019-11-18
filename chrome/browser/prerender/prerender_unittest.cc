@@ -13,7 +13,6 @@
 #include "base/command_line.h"
 #include "base/format_macros.h"
 #include "base/macros.h"
-#include "base/metrics/field_trial.h"
 #include "base/metrics/field_trial_param_associator.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/strings/stringprintf.h"
@@ -326,8 +325,7 @@ class PrerenderTest : public testing::Test {
       : prerender_manager_(new UnitTestPrerenderManager(&profile_)),
         prerender_link_manager_(
             new PrerenderLinkManager(prerender_manager_.get())),
-        last_prerender_id_(0),
-        field_trial_list_(nullptr) {
+        last_prerender_id_(0) {
     prerender::PrerenderManager::SetMode(
         prerender::PrerenderManager::PRERENDER_MODE_NOSTATE_PREFETCH);
     prerender_manager()->SetIsLowEndDevice(false);
@@ -436,10 +434,6 @@ class PrerenderTest : public testing::Test {
   std::unique_ptr<PrerenderLinkManager> prerender_link_manager_;
   int last_prerender_id_;
   base::HistogramTester histogram_tester_;
-
-  // An instance of base::FieldTrialList is necessary in order to initialize
-  // global state.
-  base::FieldTrialList field_trial_list_;
 
   // Restore prerender mode after this test finishes running.
   test_utils::RestorePrerenderMode restore_prerender_mode_;
