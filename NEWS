@@ -14,7 +14,8 @@ issues]].
 - Make sure the log callback uses the same calling convention as all
   the other exported functions. Thanks to Leonard de Ruijter.
 - Fix a problem with Non-ASCII characters in file paths in the Python
-  bindings, thanks to André-Abush Clause
+  bindings, thanks to André-Abush Clause.
+- Eliminate some of the globals variables thanks to Bert Frees.
 ** Deprecation notice
 None
 
