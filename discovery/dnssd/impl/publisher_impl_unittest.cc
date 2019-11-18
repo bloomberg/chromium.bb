@@ -88,7 +88,7 @@ TEST(DnsSdPublisherImplTests, TestRegisterAndDeregister) {
           }
         };
       });
-  publisher.DeregisterAll("_service._udp", "domain");
+  publisher.DeregisterAll("_service._udp");
   EXPECT_EQ(seen, 2);
 }
 

@@ -11,6 +11,11 @@
 
 namespace openscreen {
 namespace discovery {
+namespace {
+
+static constexpr char kLocalDomain[] = "local";
+
+}  // namespace
 
 QuerierImpl::QuerierImpl(MdnsService* mdns_querier)
     : mdns_querier_(mdns_querier) {
@@ -19,12 +24,10 @@ QuerierImpl::QuerierImpl(MdnsService* mdns_querier)
 
 QuerierImpl::~QuerierImpl() = default;
 
-void QuerierImpl::StartQuery(absl::string_view service,
-                             absl::string_view domain,
-                             Callback* callback) {
+void QuerierImpl::StartQuery(absl::string_view service, Callback* callback) {
   OSP_DCHECK(callback);
 
-  ServiceKey key(service, domain);
+  ServiceKey key(service, kLocalDomain);
   DnsQueryInfo query = GetPtrQueryInfo(key);
   if (!IsQueryRunning(key)) {
     callback_map_[key] = {};
@@ -46,12 +49,14 @@ void QuerierImpl::StartQuery(absl::string_view service,
   callback_map_[key].push_back(callback);
 }
 
-void QuerierImpl::StopQuery(absl::string_view service,
-                            absl::string_view domain,
-                            Callback* callback) {
+bool QuerierImpl::IsQueryRunning(absl::string_view service) const {
+  return IsQueryRunning(ServiceKey(service, kLocalDomain));
+}
+
+void QuerierImpl::StopQuery(absl::string_view service, Callback* callback) {
   OSP_DCHECK(callback);
 
-  ServiceKey key(service, domain);
+  ServiceKey key(service, kLocalDomain);
   DnsQueryInfo query = GetPtrQueryInfo(key);
   auto callback_it = callback_map_.find(key);
   if (callback_it == callback_map_.end()) {

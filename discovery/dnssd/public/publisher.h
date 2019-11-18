@@ -7,6 +7,7 @@
 
 #include "absl/strings/string_view.h"
 #include "discovery/dnssd/public/instance_record.h"
+#include "platform/base/error.h"
 
 namespace openscreen {
 namespace discovery {
@@ -16,15 +17,17 @@ class DnsSdPublisher {
   virtual ~DnsSdPublisher() = default;
 
   // Publishes the PTR, SRV, TXT, A, and AAAA records provided in the
-  // DnsSdInstanceRecord.
-  // TODO(rwkeane): Document behavior if the record already exists.
-  virtual void Register(const DnsSdInstanceRecord& record) = 0;
+  // DnsSdInstanceRecord. If the record already exists, an error with code
+  // kItemAlreadyExists is returned. On success, Error::None is returned.
+  // NOTE: Some embedders may return errors on other conditions (for instance,
+  // android will return an error if the resulting TXT record has values not
+  // encodable with UTF8).
+  virtual Error Register(const DnsSdInstanceRecord& record) = 0;
 
   // Unpublishes any PTR, SRV, TXT, A, and AAAA records associated with this
-  // (service, domain) pair. If no such records are published, this operation
-  // will be a no-op. Returns the number of records which were removed.
-  virtual size_t DeregisterAll(absl::string_view service,
-                               absl::string_view domain) = 0;
+  // service id. If no such records are published, this operation will be a
+  // no-op. Returns the number of records which were removed.
+  virtual size_t DeregisterAll(absl::string_view service) = 0;
 };
 
 }  // namespace discovery

@@ -4,6 +4,8 @@
 
 #include "discovery/dnssd/impl/publisher_impl.h"
 
+#include "platform/base/error.h"
+
 namespace openscreen {
 namespace discovery {
 
@@ -12,23 +14,23 @@ PublisherImpl::PublisherImpl(MdnsService* publisher)
 
 PublisherImpl::~PublisherImpl() = default;
 
-void PublisherImpl::Register(const DnsSdInstanceRecord& record) {
+Error PublisherImpl::Register(const DnsSdInstanceRecord& record) {
   if (std::find(published_records_.begin(), published_records_.end(), record) !=
       published_records_.end()) {
-    return;
+    return Error::Code::kItemAlreadyExists;
   }
 
   published_records_.push_back(record);
   for (const auto& mdns_record : GetDnsRecords(record)) {
     mdns_publisher_->RegisterRecord(mdns_record);
   }
+  return Error::None();
 }
 
-size_t PublisherImpl::DeregisterAll(absl::string_view service,
-                                    absl::string_view domain) {
+size_t PublisherImpl::DeregisterAll(absl::string_view service) {
   size_t removed_count = 0;
   for (auto it = published_records_.begin(); it != published_records_.end();) {
-    if (it->service_id() == service && it->domain_id() == domain) {
+    if (it->service_id() == service) {
       for (const auto& mdns_record : GetDnsRecords(*it)) {
         mdns_publisher_->DeregisterRecord(mdns_record);
       }

@@ -20,9 +20,8 @@ class PublisherImpl : public DnsSdPublisher {
   ~PublisherImpl() override;
 
   // DnsSdPublisher overrides.
-  void Register(const DnsSdInstanceRecord& record) override;
-  size_t DeregisterAll(absl::string_view service,
-                       absl::string_view domain) override;
+  Error Register(const DnsSdInstanceRecord& record) override;
+  size_t DeregisterAll(absl::string_view service) override;
 
  private:
   std::vector<DnsSdInstanceRecord> published_records_;

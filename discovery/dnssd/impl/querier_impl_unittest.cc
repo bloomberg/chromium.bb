@@ -146,18 +146,18 @@ class QuerierImplTesting : public QuerierImpl {
 class DnsSdQuerierImplTest : public testing::Test {
  public:
   DnsSdQuerierImplTest() {
-    EXPECT_FALSE(querier.IsQueryRunning(service, domain));
+    EXPECT_FALSE(querier.IsQueryRunning(service));
 
     EXPECT_CALL(*querier.service(),
                 StartQuery(_, DnsType::kPTR, DnsClass::kANY, _))
         .Times(1);
-    querier.StartQuery(service, domain, &callback);
-    EXPECT_TRUE(querier.IsQueryRunning(service, domain));
+    querier.StartQuery(service, &callback);
+    EXPECT_TRUE(querier.IsQueryRunning(service));
 
     EXPECT_CALL(*querier.service(),
                 StartQuery(_, DnsType::kPTR, DnsClass::kANY, _))
         .Times(0);
-    EXPECT_TRUE(querier.IsQueryRunning(service, domain));
+    EXPECT_TRUE(querier.IsQueryRunning(service));
   }
 
  protected:
@@ -171,15 +171,15 @@ class DnsSdQuerierImplTest : public testing::Test {
 TEST_F(DnsSdQuerierImplTest, TestStartStopQueryCallsMdnsQueries) {
   StrictMock<MockCallback> callback2;
 
-  querier.StartQuery(service, domain, &callback2);
-  querier.StopQuery(service, domain, &callback);
-  EXPECT_TRUE(querier.IsQueryRunning(service, domain));
+  querier.StartQuery(service, &callback2);
+  querier.StopQuery(service, &callback);
+  EXPECT_TRUE(querier.IsQueryRunning(service));
 
   EXPECT_CALL(*querier.service(),
               StopQuery(_, DnsType::kPTR, DnsClass::kANY, _))
       .Times(1);
-  querier.StopQuery(service, domain, &callback2);
-  EXPECT_FALSE(querier.IsQueryRunning(service, domain));
+  querier.StopQuery(service, &callback2);
+  EXPECT_FALSE(querier.IsQueryRunning(service));
 }
 
 TEST_F(DnsSdQuerierImplTest, TestStartDuplicateQueryFiresCallbacksWhenAble) {
@@ -192,7 +192,7 @@ TEST_F(DnsSdQuerierImplTest, TestStartDuplicateQueryFiresCallbacksWhenAble) {
   dns_data.set_aaaa(CreateAAAARecord());
 
   EXPECT_CALL(callback2, OnInstanceCreated(_)).Times(1);
-  querier.StartQuery(service, domain, &callback2);
+  querier.StartQuery(service, &callback2);
 }
 
 TEST_F(DnsSdQuerierImplTest, TestStopQueryClearsRecords) {
@@ -201,7 +201,7 @@ TEST_F(DnsSdQuerierImplTest, TestStopQueryClearsRecords) {
   EXPECT_CALL(*querier.service(),
               StopQuery(_, DnsType::kPTR, DnsClass::kANY, _))
       .Times(1);
-  querier.StopQuery(service, domain, &callback);
+  querier.StopQuery(service, &callback);
   EXPECT_FALSE(querier.GetDnsData(instance, service, domain).has_value());
 }
 
@@ -209,7 +209,7 @@ TEST_F(DnsSdQuerierImplTest, TestStopNonexistantQueryHasNoEffect) {
   StrictMock<MockCallback> callback2;
   querier.CreateDnsData(instance, service, domain);
 
-  querier.StopQuery(service, domain, &callback2);
+  querier.StopQuery(service, &callback2);
   EXPECT_TRUE(querier.GetDnsData(instance, service, domain).has_value());
 }
 
@@ -260,7 +260,6 @@ TEST_F(DnsSdQuerierImplTest, NeitherNewNorOldValidRecords) {
   MdnsRecord srv_record(std::move(kDomainName), DnsType::kSRV, DnsClass::kIN,
                         RecordType::kUnique, std::chrono::seconds(0),
                         srv_rdata);
-
   querier.OnRecordChanged(srv_record, RecordChangedEvent::kCreated);
 }
 

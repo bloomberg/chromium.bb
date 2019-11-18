@@ -36,18 +36,15 @@ class DnsSdQuerier {
   // information about the provided (service, domain) pair becomes available.
   // The Callback provided is expected to persist until the StopQuery method is
   // called or this instance is destroyed.
-  // NOTE: The provided service and domain values are expected to be valid, as
-  // defined by the IsServiceValid() and IsDomainValid() methods.
-  virtual void StartQuery(absl::string_view service,
-                          absl::string_view domain,
-                          Callback* cb) = 0;
+  // NOTE: The provided service value is expected to be valid, as defined by the
+  // IsServiceValid() method.
+  // NOTE: The callback must be called on the TaskRunner thread.
+  virtual void StartQuery(absl::string_view service, Callback* cb) = 0;
 
   // Stops an already running query.
-  // NOTE: The provided service and domain values are expected to be valid, as
-  // defined by the IsServiceValid() and IsDomainValid() methods.
-  virtual void StopQuery(absl::string_view service,
-                         absl::string_view domain,
-                         Callback* cb) = 0;
+  // NOTE: The provided service value is expected to be valid, as defined by the
+  // IsServiceValid() method.
+  virtual void StopQuery(absl::string_view service, Callback* cb) = 0;
 };
 
 }  // namespace discovery
