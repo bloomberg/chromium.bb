@@ -355,7 +355,7 @@ class PackageInfo(object):
         cros_build_lib.GetSysroot(self.board), 'ebuild')
     return cros_build_lib.run(
         [ebuild_cmd, ebuild_path] + phases, print_cmd=debug,
-        redirect_stdout=True)
+        redirect_stdout=True, encoding='utf-8')
 
   def _GetOverrideLicense(self):
     """Look in COPYRIGHT_ATTRIBUTION_DIR for license with copyright attribution.
@@ -461,10 +461,10 @@ class PackageInfo(object):
     # to find the MIT license:
     # dev-libs/libatomic_ops-7.2d/work/gc-7.2/libatomic_ops/doc/LICENSING.txt
     args = ['find', src_dir, '-type', 'f']
-    result = cros_build_lib.run(args, print_cmd=debug,
-                                redirect_stdout=True).output.splitlines()
+    result = cros_build_lib.run(args, print_cmd=debug, redirect_stdout=True,
+                                encoding='utf-8')
     # Truncate results to look like this: swig-2.0.4/COPYRIGHT
-    files = [x[len(src_dir):].lstrip('/') for x in result]
+    files = [x[len(src_dir):].lstrip('/') for x in result.stdout.splitlines()]
     license_files = []
     for name in files:
       # When we scan a source tree managed by git, this can contain license
@@ -568,7 +568,7 @@ being scraped currently).""",
         cros_build_lib.GetSysroot(self.board), 'equery')
     args = [equery_cmd, '-q', '-C', 'which', self.fullnamerev]
     try:
-      path = cros_build_lib.run(args, print_cmd=True,
+      path = cros_build_lib.run(args, print_cmd=True, encoding='utf-8',
                                 redirect_stdout=True).output.strip()
     except cros_build_lib.RunCommandError:
       path = None
@@ -1271,7 +1271,7 @@ def ListInstalledPackages(board, all_packages=False):
     equery_cmd = cros_build_lib.GetSysrootToolPath(
         cros_build_lib.GetSysroot(board), 'equery')
     args = [equery_cmd, 'list', '*']
-    packages = cros_build_lib.run(args, print_cmd=debug,
+    packages = cros_build_lib.run(args, print_cmd=debug, encoding='utf-8',
                                   redirect_stdout=True).output.splitlines()
   else:
     # The following returns all packages that were part of the build tree
@@ -1282,7 +1282,7 @@ def ListInstalledPackages(board, all_packages=False):
         cros_build_lib.GetSysroot(board), 'emerge')
     args = [emerge_cmd, '--with-bdeps=y', '--usepkgonly',
             '--emptytree', '--pretend', '--color=n', 'virtual/target-os']
-    emerge = cros_build_lib.run(args, print_cmd=debug,
+    emerge = cros_build_lib.run(args, print_cmd=debug, encoding='utf-8',
                                 redirect_stdout=True).output.splitlines()
     # Another option which we've decided not to use, is bdeps=n.  This outputs
     # just the packages we ship, but does not packages that were used to build
