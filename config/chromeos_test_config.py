@@ -279,36 +279,6 @@ class HWTestList(object):
     default_dict.update(kwargs)
     return config_lib.HWTestConfig(constants.HWTEST_AFDO_SUITE, **default_dict)
 
-  def WiFiCellPoolPreCQ(self, **kwargs):
-    """Return a list of HWTestConfigs which run wifi tests.
-
-    This should be used by the ChromeOS WiFi team to ensure changes pass the
-    wifi tests as a pre-cq sanity check.
-    """
-    default_dict = dict(pool=constants.HWTEST_WIFICELL_PRE_CQ_POOL,
-                        file_bugs=False,
-                        priority=constants.HWTEST_DEFAULT_PRIORITY,
-                        retry=False, max_retries=None, minimum_duts=1)
-    default_dict.update(kwargs)
-    suite_list = [config_lib.HWTestConfig(constants.WIFICELL_PRE_CQ,
-                                          **default_dict)]
-    return suite_list
-
-  def BluestreakPoolPreCQ(self, **kwargs):
-    """Return a list of HWTestConfigs which run bluestreak tests.
-
-    This should be used by the ChromeOS MRHW team to ensure changes pass the
-    CFM tests as a pre-cq sanity check.
-    """
-    default_dict = dict(pool=constants.HWTEST_BLUESTREAK_PRE_CQ_POOL,
-                        file_bugs=False,
-                        priority=constants.HWTEST_DEFAULT_PRIORITY,
-                        retry=False, max_retries=None, minimum_duts=1)
-    default_dict.update(kwargs)
-    suite_list = [config_lib.HWTestConfig(constants.BLUESTREAK_PRE_CQ,
-                                          **default_dict)]
-    return suite_list
-
   def ToolchainTestFull(self, machine_pool, **kwargs):
     """Return full set of HWTESTConfigs to run toolchain correctness tests."""
     default_dict = dict(pool=machine_pool,
@@ -463,21 +433,6 @@ def ApplyCustomOverrides(site_config):
   """
 
   overwritten_configs = {
-      'lakitu-pre-cq':
-          site_config.templates.lakitu_test_customizations,
-
-      'lakitu-gpu-pre-cq':
-          site_config.templates.lakitu_test_customizations,
-
-      'lakitu-nc-pre-cq':
-          site_config.templates.lakitu_nc_customizations,
-
-      'lakitu-st-pre-cq':
-          site_config.templates.lakitu_test_customizations,
-
-      'lakitu_next-pre-cq':
-          site_config.templates.lakitu_test_customizations,
-
       'lakitu-release': config_lib.BuildConfig().apply(
           site_config.templates.lakitu_test_customizations,
       ),
@@ -526,17 +481,11 @@ def ApplyCustomOverrides(site_config):
           site_config.templates.moblab_vm_tests,
           site_config.templates.tast_vm_paladin_tests,
       ),
-      # Disabled due to https://crbug.com/968271
-      # 'moblab-generic-vm-pre-cq': config_lib.BuildConfig().apply(
-      #    site_config.templates.moblab_vm_tests,
-      #    site_config.templates.tast_vm_paladin_tests,
-      # ),
 
       'amd64-generic-paladin': site_config.templates.tast_vm_paladin_tests,
       'betty-arc64-paladin': site_config.templates.tast_vm_paladin_tests,
       'betty-paladin': site_config.templates.tast_vm_paladin_tests,
       'betty-pi-arc-paladin': site_config.templates.tast_vm_paladin_tests,
-      'betty-pre-cq': site_config.templates.tast_vm_paladin_tests,
 
       'amd64-generic-tot-chromium-pfq-informational':
           site_config.templates.tast_vm_chrome_pfq_tests,
@@ -555,11 +504,6 @@ def ApplyCustomOverrides(site_config):
       'betty-arc64-release': site_config.templates.tast_vm_canary_tests,
       'betty-pi-arc-release': site_config.templates.tast_vm_canary_tests,
       'betty-release': site_config.templates.tast_vm_canary_tests,
-
-      'kumo-pre-cq': {
-          'vm_tests': [config_lib.VMTestConfig(constants.VM_SUITE_TEST_TYPE,
-                                               test_suite='smoke')],
-      }
   }
 
   for config_name, overrides in overwritten_configs.items():

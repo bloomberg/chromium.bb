@@ -130,11 +130,6 @@ class SimpleBuilderTest(cros_test_lib.MockTempDirTestCase):
       exception_types = [e.type for e in f.exc_infos]
     return exception_types
 
-  def testRunStagesPreCQ(self):
-    """Verify RunStages for PRE_CQ_LAUNCHER_TYPE builders"""
-    builder_run = self._initConfig('pre-cq-launcher')
-    simple_builders.SimpleBuilder(builder_run, self.buildstore).RunStages()
-
   def testRunStagesChrootBuilder(self):
     """Verify RunStages for CHROOT_BUILDER_TYPE builders"""
     builder_run = self._initConfig('chromiumos-sdk')

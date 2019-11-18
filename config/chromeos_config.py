@@ -1396,289 +1396,6 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
   )
 
 
-def PreCqBuilders(site_config, boards_dict, ge_build_config):
-  """Create all build configs associated with the PreCQ.
-
-  Args:
-    site_config: config_lib.SiteConfig to be modified by adding templates
-                 and configs.
-    boards_dict: A dict mapping board types to board name collections.
-    ge_build_config: Dictionary containing the decoded GE configuration file.
-  """
-  board_configs = CreateInternalBoardConfigs(
-      site_config, boards_dict, ge_build_config)
-  hw_test_list = HWTestList(ge_build_config)
-
-  # The PreCQ Launcher doesn't limit eternal PreCQ builds to external
-  # CLs.  as a hack, use internal checkouts for external builds so
-  # they can apply (and ignore) internal CLs. crbug.com/882965
-  for b in (chromeos_boards.arm_external_boards
-            | chromeos_boards.x86_external_boards):
-    board_configs[b].apply(site_config.templates.internal)
-
-  site_config.AddTemplate(
-      'pre_cq',
-      site_config.templates.paladin,
-      display_label=config_lib.DISPLAY_LABEL_PRECQ,
-      luci_builder=config_lib.LUCI_BUILDER_PRECQ,
-      build_type=constants.PRE_CQ_TYPE,
-      build_timeout=5 * 60 * 60,  # TODO(crbug/1005401) chrome prebuilt race.
-      pre_cq=True,
-      archive=False,
-      chrome_sdk=False,
-      sync_chrome=True,
-      chroot_replace=True,
-      debug_symbols=False,
-      prebuilts=False,
-      cpe_export=False,
-      vm_tests=[config_lib.VMTestConfig(constants.VM_SUITE_TEST_TYPE,
-                                        test_suite='smoke',
-                                        use_ctest=False)],
-      vm_tests_override=None,
-      description='Verifies compilation, building an image, and vm/unit tests '
-                  'if supported.',
-      doc='https://dev.chromium.org/chromium-os/build/builder-overview#'
-          'TOC-Pre-CQ',
-      sanity_check_threshold=3,
-  )
-
-  # Pre-CQ targets that only check compilation and unit tests.
-  site_config.AddTemplate(
-      'unittest_only_pre_cq',
-      site_config.templates.pre_cq,
-      site_config.templates.no_vmtest_builder,
-      description='Verifies compilation and unit tests only',
-      compilecheck=True,
-  )
-
-  # Pre-CQ targets that don't run VMTests.
-  site_config.AddTemplate(
-      'no_vmtest_pre_cq',
-      site_config.templates.pre_cq,
-      site_config.templates.no_vmtest_builder,
-      description='Verifies compilation, building an image, and unit tests '
-                  'if supported.',
-  )
-
-  # Pre-CQ targets that only check compilation.
-  site_config.AddTemplate(
-      'compile_only_pre_cq',
-      site_config.templates.unittest_only_pre_cq,
-      description='Verifies compilation only',
-      unittests=False,
-  )
-
-  site_config.AddWithoutTemplate(
-      'pre-cq-launcher',
-      site_config.templates.paladin,
-      site_config.templates.internal_paladin,
-      site_config.templates.no_vmtest_builder,
-      site_config.templates.no_hwtest_builder,
-      boards=[],
-      build_timeout=5 * 60 * 60,
-      display_label=config_lib.DISPLAY_LABEL_PRECQ,
-      build_type=constants.PRE_CQ_LAUNCHER_TYPE,
-      luci_builder=config_lib.LUCI_BUILDER_PRECQ_LAUNCHER,
-      description='Launcher for Pre-CQ builders',
-      manifest_version=False,
-      doc='https://dev.chromium.org/chromium-os/build/builder-overview#'
-          'TOC-Pre-CQ',
-      schedule='with 3m interval',
-  )
-
-  # Add a pre-cq config for every board.
-  site_config.AddForBoards(
-      'pre-cq',
-      boards_dict['all_boards'],
-      board_configs,
-      site_config.templates.pre_cq,
-  )
-  # Add special pre-cq for generic build tests with non-default kernel version
-  site_config.AddForBoards(
-      'linux-v4_4-pre-cq',
-      boards_dict['generic_kernel_boards'],
-      board_configs,
-      site_config.templates.pre_cq,
-      useflags=config_lib.append_useflags(['kernel-4_4', '-kernel-4_14',
-                                           '-kernel-4_19']),
-  )
-  site_config.AddForBoards(
-      'linux-v4_4-buildtest-compile-only-pre-cq',
-      boards_dict['generic_kernel_boards'],
-      board_configs,
-      site_config.templates.compile_only_pre_cq,
-      useflags=config_lib.append_useflags(['kernel-4_4', '-kernel-4_14',
-                                           '-kernel-4_19',
-                                           '-clang', 'buildtest',
-                                           '-chrome_internal']),
-      packages=['sys-kernel/chromeos-kernel-4_4'],
-  )
-  site_config.AddForBoards(
-      'linux-v4_14-pre-cq',
-      boards_dict['generic_kernel_boards'],
-      board_configs,
-      site_config.templates.pre_cq,
-      useflags=config_lib.append_useflags(['-kernel-4_4', 'kernel-4_14',
-                                           '-kernel-4_19']),
-  )
-  site_config.AddForBoards(
-      'linux-v4_14-buildtest-compile-only-pre-cq',
-      boards_dict['generic_kernel_boards'],
-      board_configs,
-      site_config.templates.compile_only_pre_cq,
-      useflags=config_lib.append_useflags(['-kernel-4_4', 'kernel-4_14',
-                                           '-kernel-4_19',
-                                           '-clang', 'buildtest']),
-      packages=['sys-kernel/chromeos-kernel-4_14'],
-  )
-  site_config.AddForBoards(
-      'linux-v4_19-pre-cq',
-      boards_dict['generic_kernel_boards'],
-      board_configs,
-      site_config.templates.pre_cq,
-      useflags=config_lib.append_useflags(['-kernel-4_4', '-kernel-4_14',
-                                           'kernel-4_19']),
-  )
-  site_config.AddForBoards(
-      'linux-v4_19-buildtest-compile-only-pre-cq',
-      boards_dict['generic_kernel_boards'],
-      board_configs,
-      site_config.templates.compile_only_pre_cq,
-      useflags=config_lib.append_useflags(['-kernel-4_4', '-kernel-4_14',
-                                           'kernel-4_19',
-                                           '-clang', 'buildtest']),
-      packages=['sys-kernel/chromeos-kernel-4_19'],
-  )
-  site_config.AddForBoards(
-      'no-vmtest-pre-cq',
-      boards_dict['all_boards'],
-      board_configs,
-      site_config.templates.no_vmtest_pre_cq,
-  )
-  site_config.AddForBoards(
-      'compile-only-pre-cq',
-      boards_dict['all_boards'],
-      board_configs,
-      site_config.templates.compile_only_pre_cq,
-  )
-
-  # Wifi specific PreCQ.
-  site_config.AddTemplate(
-      'wificell_pre_cq',
-      site_config.templates.pre_cq,
-      unittests=False,
-      hw_tests=hw_test_list.WiFiCellPoolPreCQ(),
-      hw_tests_override=hw_test_list.WiFiCellPoolPreCQ(),
-      archive=True,
-      image_test=False,
-      description='WiFi tests acting as pre-cq for WiFi related changes',
-  )
-
-  _wifi_boards = frozenset([
-      'winky',
-      'veyron_speedy',
-      'veyron_jerry',
-      'lulu',
-      'cyan',
-      'elm',
-  ])
-
-  site_config.AddForBoards(
-      'wificell-pre-cq',
-      _wifi_boards,
-      board_configs,
-      site_config.templates.wificell_pre_cq,
-  )
-
-  site_config.Add(
-      'signer-pre-cq',
-      site_config.templates.pre_cq,
-      site_config.templates.internal,
-      site_config.templates.no_hwtest_builder,
-      site_config.templates.no_vmtest_builder,
-      boards=[],
-      builder_class_name='test_builders.SignerTestsBuilder',
-      description='Run the signer unittests.',
-  )
-
-  site_config.Add(
-      'chromite-pre-cq',
-      site_config.templates.pre_cq,
-      site_config.templates.internal,
-      site_config.templates.no_hwtest_builder,
-      site_config.templates.no_vmtest_builder,
-      boards=[],
-      builder_class_name='test_builders.ChromiteTestsBuilder',
-      description='Run the chromite unittests.',
-  )
-
-
-  site_config.Add(
-      'cbuildbot-launch-pre-cq',
-      site_config.templates.pre_cq,
-      site_config.templates.internal,
-      site_config.templates.no_hwtest_builder,
-      site_config.templates.no_vmtest_builder,
-      boards=[],
-      builder_class_name='test_builders.CbuildbotLaunchTestBuilder',
-      description='Run cbuildbot_launch test builds.',
-  )
-
-  # Pre-cq for lakitu's public overlay.
-  site_config.Add(
-      'lakitu-external-pre-cq',
-      site_config.templates.pre_cq,
-      board_configs['lakitu'],
-      site_config.templates.lakitu,
-      site_config.templates.external,
-      useflags=config_lib.append_useflags(['-chrome_internal']),
-  )
-
-  site_config.AddWithoutTemplate(
-      'chromeos-infra-puppet-pre-cq',
-      site_config.templates.pre_cq,
-      site_config.templates.internal,
-      site_config.templates.no_hwtest_builder,
-      site_config.templates.no_unittest_builder,
-      site_config.templates.no_vmtest_builder,
-      boards=[],
-      builder_class_name='infra_builders.PuppetPreCqBuilder',
-      use_sdk=True,
-      build_timeout=60 * 60,
-      description='Test Puppet specs',
-      doc='https://chrome-internal.googlesource.com/'
-          'chromeos/chromeos-admin/+/HEAD/puppet/README.md',
-  )
-
-  site_config.AddWithoutTemplate(
-      'chromeos-infra-go-pre-cq',
-      site_config.templates.pre_cq,
-      site_config.templates.no_hwtest_builder,
-      site_config.templates.no_unittest_builder,
-      site_config.templates.no_vmtest_builder,
-      boards=[],
-      builder_class_name='infra_builders.InfraGoPreCqBuilder',
-      use_sdk=True,
-      build_timeout=60 * 60,
-      description='Test building Chromium OS infra Go binaries',
-      doc='https://goto.google.com/cros-infra-go-packaging',
-  )
-
-  site_config.AddWithoutTemplate(
-      'chromeos-infra-unittests-pre-cq',
-      site_config.templates.pre_cq,
-      site_config.templates.internal,
-      site_config.templates.no_hwtest_builder,
-      site_config.templates.no_unittest_builder,
-      site_config.templates.no_vmtest_builder,
-      boards=[],
-      builder_class_name='infra_builders.InfraUnittestsPreCqBuilder',
-      use_sdk=True,
-      build_timeout=60 * 60,
-      description='Run unittests for infra repositories',
-  )
-
-
 def AndroidTemplates(site_config):
   """Apply Android specific config to site_config
 
@@ -3838,16 +3555,6 @@ def ApplyCustomOverrides(site_config):
           'useflags': config_lib.append_useflags(['-chrome_internal']),
       },
 
-      # For crbug.com/961920.
-      'scarlet-compile-only-pre-cq': {
-          'useflags': config_lib.append_useflags(['-chrome_internal']),
-      },
-
-      # For crbug.com/961920.
-      'scarlet-pre-cq': {
-          'useflags': config_lib.append_useflags(['-chrome_internal']),
-      },
-
       # Run TestSimpleChromeWorkflow only on kevin64-release instead of
       # arm64-generic/kevin64-full.
       'arm64-generic-full': {
@@ -4214,9 +3921,6 @@ def TryjobMirrors(site_config):
     site_config: config_lib.SiteConfig to be modified by adding templates
                  and configs.
   """
-  # Tryjobs which are unsafe to talk to Prod CIDB.
-  cidb_unsafe = frozenset(['pre-cq-launcher'])
-
   tryjob_configs = {}
 
   for build_name, config in site_config.items():
@@ -4264,7 +3968,7 @@ def TryjobMirrors(site_config):
       tryjob_config.apply(vm_tests=tryjob_config.vm_tests_override,
                           vm_tests_override=None)
 
-    if build_name in cidb_unsafe or tryjob_config.master:
+    if tryjob_config.master:
       tryjob_config.apply(debug_cidb=True)
 
     if tryjob_config.build_type != constants.PAYLOADS_TYPE:
@@ -4440,8 +4144,6 @@ def GetConfig():
   PayloadBuilders(site_config, boards_dict)
 
   SpecialtyBuilders(site_config, boards_dict, ge_build_config)
-
-  PreCqBuilders(site_config, boards_dict, ge_build_config)
 
   CqBuilders(site_config, boards_dict, ge_build_config)
 
