@@ -365,6 +365,10 @@
 #include "components/ntp_tiles/custom_links_manager_impl.h"
 #endif
 
+#if defined(OS_ANDROID) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+#include "components/games/core/games_prefs.h"
+#endif
+
 namespace {
 
 // Deprecated 8/2018.
@@ -905,6 +909,10 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   explore_sites::HistoryStatisticsReporter::RegisterPrefs(registry);
   ntp_snippets::ClickBasedCategoryRanker::RegisterProfilePrefs(registry);
   OomInterventionDecider::RegisterProfilePrefs(registry);
+
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  games::prefs::RegisterProfilePrefs(registry);
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 #endif  // defined(OS_ANDROID)
 
 #if !defined(OS_ANDROID)
