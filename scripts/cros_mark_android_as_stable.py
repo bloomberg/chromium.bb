@@ -431,7 +431,7 @@ def MakeAclDict(package_dir):
   )
 
 
-def MakeBuildTargetDict(build_branch):
+def MakeBuildTargetDict(package_name, build_branch):
   """Creates a dictionary of build targets.
 
   Not all targets are common between branches, for example
@@ -440,6 +440,7 @@ def MakeBuildTargetDict(build_branch):
   specific branch.
 
   Args:
+    package_name: package name of chromeos arc package.
     build_branch: branch of Android builds.
 
   Returns:
@@ -448,18 +449,23 @@ def MakeBuildTargetDict(build_branch):
   Raises:
     ValueError: if the Android build branch is invalid.
   """
-  if build_branch == constants.ANDROID_MST_BUILD_BRANCH:
-    return constants.ANDROID_MST_BUILD_TARGETS
-  elif build_branch == constants.ANDROID_NYC_BUILD_BRANCH:
-    return constants.ANDROID_NYC_BUILD_TARGETS
-  elif build_branch == constants.ANDROID_PI_BUILD_BRANCH:
-    return constants.ANDROID_PI_BUILD_TARGETS
-  elif build_branch == constants.ANDROID_QT_BUILD_BRANCH:
-    return constants.ANDROID_QT_BUILD_TARGETS
-  elif build_branch == constants.ANDROID_VMPI_BUILD_BRANCH:
-    return constants.ANDROID_VMPI_BUILD_TARGETS
-  else:
+  if constants.ANDROID_CONTAINER_PACKAGE_KEYWORD in package_name:
+    if build_branch == constants.ANDROID_MST_BUILD_BRANCH:
+      return constants.ANDROID_MST_BUILD_TARGETS
+    elif build_branch == constants.ANDROID_NYC_BUILD_BRANCH:
+      return constants.ANDROID_NYC_BUILD_TARGETS
+    elif build_branch == constants.ANDROID_PI_BUILD_BRANCH:
+      return constants.ANDROID_PI_BUILD_TARGETS
+    elif build_branch == constants.ANDROID_QT_BUILD_BRANCH:
+      return constants.ANDROID_QT_BUILD_TARGETS
     raise ValueError('Unknown branch: %s' % build_branch)
+  elif constants.ANDROID_VM_PACKAGE_KEYWORD in package_name:
+    if build_branch == constants.ANDROID_VMPI_BUILD_BRANCH:
+      return constants.ANDROID_VMPI_BUILD_TARGETS
+    elif build_branch == constants.ANDROID_VMMST_BUILD_BRANCH:
+      return constants.ANDROID_VMMST_BUILD_TARGETS
+    raise ValueError('Unknown branch: %s' % build_branch)
+  raise ValueError('Unknown package: %s' % package_name)
 
 
 def GetAndroidRevisionListLink(build_branch, old_android, new_android):
@@ -608,7 +614,8 @@ def main(argv):
 
   (unstable_ebuild, stable_ebuilds) = FindAndroidCandidates(android_package_dir)
   acls = MakeAclDict(android_package_dir)
-  build_targets = MakeBuildTargetDict(options.android_build_branch)
+  build_targets = MakeBuildTargetDict(options.android_package,
+                                      options.android_build_branch)
   # Mirror artifacts, i.e., images and some sdk tools (e.g., adb, aapt).
   version_to_uprev = MirrorArtifacts(options.android_bucket_url,
                                      options.android_build_branch,
