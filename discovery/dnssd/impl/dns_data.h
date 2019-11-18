@@ -42,7 +42,11 @@ class DnsData {
 
   InstanceKey instance_id_;
 
+  // Used in dns_data_unittest.cc.
   friend class DnsDataTesting;
+
+  // Used in querier_impl_unittest.cc.
+  friend class DnsDataAccessor;
 };
 
 }  // namespace discovery

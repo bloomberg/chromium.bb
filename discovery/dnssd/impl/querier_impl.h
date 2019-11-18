@@ -5,11 +5,14 @@
 #ifndef DISCOVERY_DNSSD_IMPL_QUERIER_IMPL_H_
 #define DISCOVERY_DNSSD_IMPL_QUERIER_IMPL_H_
 
+#include <map>
 #include <unordered_map>
+#include <vector>
 
 #include "absl/hash/hash.h"
 #include "absl/strings/string_view.h"
 #include "discovery/dnssd/impl/constants.h"
+#include "discovery/dnssd/impl/conversion_layer.h"
 #include "discovery/dnssd/impl/dns_data.h"
 #include "discovery/dnssd/impl/instance_key.h"
 #include "discovery/dnssd/impl/service_key.h"
@@ -26,17 +29,19 @@ class QuerierImpl : public DnsSdQuerier, public MdnsRecordChangedCallback {
  public:
   // |querier| must outlive the QuerierImpl instance constructed.
   explicit QuerierImpl(MdnsService* querier);
-  virtual ~QuerierImpl() override = default;
+  ~QuerierImpl() override;
 
-  inline bool IsQueryRunning(const absl::string_view& service,
-                             const absl::string_view& domain) const;
+  inline bool IsQueryRunning(absl::string_view service,
+                             absl::string_view domain) const {
+    return IsQueryRunning(ServiceKey(service, domain));
+  }
 
   // DnsSdQuerier overrides.
-  void StartQuery(const absl::string_view& service,
-                  const absl::string_view& domain,
+  void StartQuery(absl::string_view service,
+                  absl::string_view domain,
                   Callback* callback) override;
-  void StopQuery(const absl::string_view& service,
-                 const absl::string_view& domain,
+  void StopQuery(absl::string_view service,
+                 absl::string_view domain,
                  Callback* callback) override;
 
   // MdnsRecordChangedCallback overrides.
@@ -44,16 +49,49 @@ class QuerierImpl : public DnsSdQuerier, public MdnsRecordChangedCallback {
                        RecordChangedEvent event) override;
 
  private:
-  // Map from {instance, service, domain} to the data received so far for this
-  // service instance.
+  // Process an OnRecordChanged event for a PTR record.
+  Error HandlePtrRecordChange(const MdnsRecord& record,
+                              RecordChangedEvent event);
+
+  // Process an OnRecordChanged event for non-PTR records (SRV, TXT, A, and AAAA
+  // records).
+  Error HandleNonPtrRecordChange(const MdnsRecord& record,
+                                 RecordChangedEvent event);
+
+  inline bool IsQueryRunning(const ServiceKey& key) const {
+    return callback_map_.find(key) != callback_map_.end();
+  }
+
+  // Initiates or terminates queries on the mdns_querier_ object.
+  void StartDnsQuery(const DnsQueryInfo& query);
+  void StopDnsQuery(const DnsQueryInfo& query);
+
+  // Erases all instance records describing services matching the provided key
+  // and informs all callbacks associated with the given key of their deletion.
+  void EraseInstancesOf(const ServiceKey& service);
+
+  // Calls the appropriate callback method based on the provided Instance Record
+  // values.
+  void NotifyCallbacks(const std::vector<Callback*>& callbacks,
+                       const ErrorOr<DnsSdInstanceRecord>& old_record,
+                       const ErrorOr<DnsSdInstanceRecord>& new_record);
+
+  // Returns all InstanceKeys received so far which represent instances of
+  // the service described by the provided ServiceKey.
+  std::vector<InstanceKey> GetMatchingInstances(const ServiceKey& key);
+
+  // Map from a specific service instance to the data received so far about
+  // that instance.
   std::unordered_map<InstanceKey, DnsData, absl::Hash<InstanceKey>>
       received_records_;
 
-  // Stores the association between {service, domain} and Callback to call for
-  // records with this ServiceKey.
+  // Map from the (service, domain) pairs currently being queried for to the
+  // callbacks to call when new InstanceRecords are available.
   std::map<ServiceKey, std::vector<Callback*>> callback_map_;
 
   MdnsService* const mdns_querier_;
+
+  friend class QuerierImplTesting;
 };
 
 }  // namespace discovery

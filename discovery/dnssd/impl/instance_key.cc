@@ -35,7 +35,7 @@ InstanceKey::InstanceKey(InstanceKey&& other) = default;
 InstanceKey& InstanceKey::operator=(const InstanceKey& rhs) = default;
 InstanceKey& InstanceKey::operator=(InstanceKey&& rhs) = default;
 
-bool InstanceKey::IsInstanceOf(const ServiceKey& service_key) {
+bool InstanceKey::IsInstanceOf(const ServiceKey& service_key) const {
   return service_id_ == service_key.service_id() &&
          domain_id_ == service_key.domain_id();
 }

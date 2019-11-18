@@ -41,7 +41,7 @@ class InstanceKey {
   const std::string& domain_id() const { return domain_id_; }
 
   // Represents whether this InstanceKey is an instance of the service provided.
-  bool IsInstanceOf(const ServiceKey& service_key);
+  bool IsInstanceOf(const ServiceKey& service_key) const;
 
  private:
   static ErrorOr<InstanceKey> CreateFromRecord(const MdnsRecord& record);
