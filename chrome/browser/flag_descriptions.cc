@@ -1769,13 +1769,6 @@ const char kPrefetchMainResourceNetworkIsolationKeyDescription[] =
     "Prefetch requests for cross-origin main resources can be reused by next "
     "top-level navigations when HTTP cache is double-keyed.";
 
-const char kSafeBrowsingUseAPDownloadVerdictsName[] =
-    "Request Advanced Protection verdicts when inspecting downloads";
-const char kSafeBrowsingUseAPDownloadVerdictsDescription[] =
-    "If enabled, download protection will request Advanced Protection "
-    "verdicts from Safe Browsing. These will provide stronger protections "
-    "from files Safe Browsing is unsure about.";
-
 const char kSafetyTipName[] =
     "Show Safety Tip UI when visiting low-reputation websites";
 const char kSafetyTipDescription[] =

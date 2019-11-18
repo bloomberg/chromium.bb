@@ -41,9 +41,6 @@ const base::Feature kCommittedSBInterstitials{
 const base::Feature kDeepScanningOfDownloads{
     "SafeBrowsingDeepScanningOfDownloads", base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kForceUseAPDownloadProtection{
-    "ForceUseAPDownloadProtection", base::FEATURE_DISABLED_BY_DEFAULT};
-
 const base::Feature kPasswordProtectionForSavedPasswords{
     "SafeBrowsingPasswordProtectionForSavedPasswords",
     base::FEATURE_DISABLED_BY_DEFAULT};
@@ -114,7 +111,6 @@ constexpr struct {
     {&kCaptureInlineJavascriptForGoogleAds, true},
     {&kCaptureSafetyNetId, true},
     {&kCommittedSBInterstitials, true},
-    {&kForceUseAPDownloadProtection, false},
     {&kPasswordProtectionForSavedPasswords, true},
     {&kPasswordProtectionForSignedInUsers, true},
     {&kRealTimeUrlLookupEnabled, true},
