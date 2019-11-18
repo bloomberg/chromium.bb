@@ -471,6 +471,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void DidEndColorChooser() override;
   int DownloadImage(const GURL& url,
                     bool is_favicon,
+                    uint32_t preferred_size,
                     uint32_t max_bitmap_size,
                     bool bypass_cache,
                     ImageDownloadCallback callback) override;

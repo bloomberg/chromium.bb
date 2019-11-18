@@ -510,7 +510,6 @@ jumbo_component("platform") {
     "exported/web_http_body.cc",
     "exported/web_http_load_info.cc",
     "exported/web_icon_sizes_parser.cc",
-    "exported/web_image.cc",
     "exported/web_image_generator.cc",
     "exported/web_input_event.cc",
     "exported/web_media_constraints.cc",
@@ -2222,7 +2221,6 @@ jumbo_source_set("unit_tests") {
     "graphics/test/stub_image.h",
 
     # Tests migrated from the web/tests directory.
-    "exported/web_image_test.cc",
     "exported/web_resource_timing_info_test.cc",
     "exported/web_url_request_test.cc",
     "exported/web_url_response_test.cc",

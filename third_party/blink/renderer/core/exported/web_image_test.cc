@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "third_party/blink/public/platform/web_image.h"
+#include "third_party/blink/public/web/web_image.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/web_data.h"
@@ -83,6 +83,60 @@ TEST(WebImageTest, BadImage) {
   ASSERT_EQ(0u, images.size());
 
   SkBitmap image = WebImage::FromData(WebData(kBadImage), WebSize());
+  EXPECT_TRUE(image.empty());
+  EXPECT_TRUE(image.isNull());
+}
+
+TEST(WebImageTest, DecodeSVGDesiredSize) {
+  const char kImage[] =
+      "<svg xmlns='http://www.w3.org/2000/svg' width='32'"
+      " height='32'></svg>";
+  SkBitmap image = WebImage::DecodeSVG(WebData(kImage), WebSize(16, 16));
+  EXPECT_FALSE(image.empty());
+  EXPECT_FALSE(image.isNull());
+  EXPECT_EQ(image.width(), 16);
+  EXPECT_EQ(image.height(), 16);
+}
+
+TEST(WebImageTest, DecodeSVGDesiredSizeAspectRatioOnly) {
+  const char kImageAspectRatioOne[] =
+      "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'></svg>";
+  SkBitmap image =
+      WebImage::DecodeSVG(WebData(kImageAspectRatioOne), WebSize(16, 16));
+  EXPECT_FALSE(image.empty());
+  EXPECT_FALSE(image.isNull());
+  EXPECT_EQ(image.width(), 16);
+  EXPECT_EQ(image.height(), 16);
+
+  const char kImageAspectRatioNotOne[] =
+      "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 3'></svg>";
+  image =
+      WebImage::DecodeSVG(WebData(kImageAspectRatioNotOne), WebSize(16, 16));
+  EXPECT_FALSE(image.empty());
+  EXPECT_FALSE(image.isNull());
+  EXPECT_EQ(image.width(), 16);
+  EXPECT_EQ(image.height(), 16);
+}
+
+TEST(WebImageTest, DecodeSVGDesiredSizeEmpty) {
+  const char kImage[] =
+      "<svg xmlns='http://www.w3.org/2000/svg' width='32'"
+      " height='32'></svg>";
+  SkBitmap image = WebImage::DecodeSVG(WebData(kImage), WebSize());
+  EXPECT_FALSE(image.empty());
+  EXPECT_FALSE(image.isNull());
+  EXPECT_EQ(image.width(), 32);
+  EXPECT_EQ(image.height(), 32);
+}
+
+TEST(WebImageTest, DecodeSVGInvalidImage) {
+  const char kBogusImage[] = "bogus";
+  SkBitmap image = WebImage::DecodeSVG(WebData(kBogusImage), WebSize(16, 16));
+  EXPECT_TRUE(image.empty());
+  EXPECT_TRUE(image.isNull());
+
+  const char kWellformedXMLBadImage[] = "<foo xmlns='some:namespace'></foo>";
+  image = WebImage::DecodeSVG(WebData(kWellformedXMLBadImage), WebSize(16, 16));
   EXPECT_TRUE(image.empty());
   EXPECT_TRUE(image.isNull());
 }

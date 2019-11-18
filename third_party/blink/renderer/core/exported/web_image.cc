@@ -28,13 +28,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "third_party/blink/public/platform/web_image.h"
+#include "third_party/blink/public/web/web_image.h"
 
 #include <algorithm>
 #include <memory>
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/public/platform/web_data.h"
 #include "third_party/blink/public/platform/web_size.h"
+#include "third_party/blink/renderer/core/svg/graphics/svg_image.h"
+#include "third_party/blink/renderer/core/svg/graphics/svg_image_for_container.h"
 #include "third_party/blink/renderer/platform/graphics/image.h"
 #include "third_party/blink/renderer/platform/image-decoders/image_decoder.h"
 #include "third_party/blink/renderer/platform/wtf/shared_buffer.h"
@@ -78,6 +80,30 @@ SkBitmap WebImage::FromData(const WebData& data, const WebSize& desired_size) {
   if (!frame || decoder->Failed())
     return {};
   return frame->Bitmap();
+}
+
+SkBitmap WebImage::DecodeSVG(const WebData& data, const WebSize& desired_size) {
+  scoped_refptr<SVGImage> svg_image = SVGImage::Create(nullptr);
+  const bool data_complete = true;
+  Image::SizeAvailability size_available =
+      svg_image->SetData(data, data_complete);
+  // If we're not able to determine a size after feeding all the data, we don't
+  // have a valid SVG image, and return an empty SkBitmap.
+  SkBitmap bitmap;
+  if (size_available == Image::kSizeUnavailable)
+    return bitmap;
+  // If the desired size is non-empty, use it directly as the container
+  // size. This is likely what most (all?) users of this function will
+  // expect/want. If the desired size is empty, then use the intrinsic size of
+  // image.
+  FloatSize container_size(desired_size);
+  if (container_size.IsEmpty())
+    container_size = svg_image->ConcreteObjectSize(FloatSize());
+  scoped_refptr<Image> svg_container =
+      SVGImageForContainer::Create(svg_image.get(), container_size, 1, KURL());
+  if (PaintImage image = svg_container->PaintImageForCurrentFrame())
+    image.GetSkImage()->asLegacyBitmap(&bitmap, SkImage::kRO_LegacyBitmapMode);
+  return bitmap;
 }
 
 WebVector<SkBitmap> WebImage::FramesFromData(const WebData& data) {
