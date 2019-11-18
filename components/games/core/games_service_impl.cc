@@ -18,10 +18,10 @@ GamesServiceImpl::GamesServiceImpl(PrefService* prefs) : prefs_(prefs) {}
 GamesServiceImpl::~GamesServiceImpl() = default;
 
 void GamesServiceImpl::GetHighlightedGame(HighlightedGameCallback callback) {
-  // If we don't have the highlighted games data file downloaded, we cannot
-  // provide the surface with a highlighted game.
+  // If we don't have the install dir pref, then the Games component wasn't
+  // downloaded and we cannot provide the surface with a highlighted game.
   base::FilePath data_file_path;
-  if (!prefs::TryGetHighlightedGamesPath(prefs_, &data_file_path)) {
+  if (!prefs::TryGetInstallDirPath(prefs_, &data_file_path)) {
     // TODO crbug.com/1018201: Add callback error handling.
     return;
   }

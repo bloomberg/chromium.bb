@@ -12,18 +12,12 @@
 namespace games {
 namespace prefs {
 
-// Registers Games prefs.
+// Registers Games pref.
 void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
-void SetGamesCatalogPath(PrefService* prefs, const base::FilePath& file_path);
+void SetInstallDirPath(PrefService* prefs, const base::FilePath& file_path);
 
-void SetHighlightedGamesPath(PrefService* prefs,
-                             const base::FilePath& file_path);
-
-bool TryGetGamesCatalogPath(PrefService* prefs, base::FilePath* out_file_path);
-
-bool TryGetHighlightedGamesPath(PrefService* prefs,
-                                base::FilePath* out_file_path);
+bool TryGetInstallDirPath(PrefService* prefs, base::FilePath* out_file_path);
 
 }  // namespace prefs
 }  // namespace games

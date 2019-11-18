@@ -34,8 +34,8 @@ class GamesServiceImplTest : public testing::Test {
 };
 
 TEST_F(GamesServiceImplTest, GetHighlightedGame_SameTitle) {
-  prefs::SetHighlightedGamesPath(
-      test_pref_service_.get(), base::FilePath(FILE_PATH_LITERAL("some/path")));
+  prefs::SetInstallDirPath(test_pref_service_.get(),
+                           base::FilePath(FILE_PATH_LITERAL("some/path")));
 
   std::string expected_title = "Some Game!";
   std::string result_title = "not the same";

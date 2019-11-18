@@ -23,33 +23,18 @@ class GamesPrefsTest : public testing::Test {
   std::unique_ptr<TestingPrefServiceSimple> test_pref_service_;
 };
 
-TEST_F(GamesPrefsTest, GetGamesCatalogPath_Empty) {
+TEST_F(GamesPrefsTest, GetInstallDirPath_Empty) {
   base::FilePath path;
-  ASSERT_FALSE(TryGetGamesCatalogPath(test_pref_service_.get(), &path));
+  ASSERT_FALSE(TryGetInstallDirPath(test_pref_service_.get(), &path));
   ASSERT_TRUE(path.empty());
 }
 
-TEST_F(GamesPrefsTest, SetGetGamesCatalogPath_Valid) {
+TEST_F(GamesPrefsTest, SetGetInstallDirPath_Valid) {
   base::FilePath expected_path(FILE_PATH_LITERAL("some/long/path"));
-  SetGamesCatalogPath(test_pref_service_.get(), expected_path);
+  SetInstallDirPath(test_pref_service_.get(), expected_path);
 
   base::FilePath path;
-  ASSERT_TRUE(TryGetGamesCatalogPath(test_pref_service_.get(), &path));
-  ASSERT_EQ(expected_path, path);
-}
-
-TEST_F(GamesPrefsTest, GetHighlightedGamesPath_Empty) {
-  base::FilePath path;
-  ASSERT_FALSE(TryGetHighlightedGamesPath(test_pref_service_.get(), &path));
-  ASSERT_TRUE(path.empty());
-}
-
-TEST_F(GamesPrefsTest, SetGetHighlightedGamesPath_Valid) {
-  base::FilePath expected_path(FILE_PATH_LITERAL("some/long/path"));
-  SetHighlightedGamesPath(test_pref_service_.get(), expected_path);
-
-  base::FilePath path;
-  ASSERT_TRUE(TryGetHighlightedGamesPath(test_pref_service_.get(), &path));
+  ASSERT_TRUE(TryGetInstallDirPath(test_pref_service_.get(), &path));
   ASSERT_EQ(expected_path, path);
 }
 
