@@ -106,12 +106,12 @@ void IconHelper::DidStartNavigationToPendingEntry(
 }
 
 void IconHelper::MarkUnableToDownloadFavicon(const GURL& icon_url) {
-  MissingFaviconURLHash url_hash = base::Hash(icon_url.spec());
+  MissingFaviconURLHash url_hash = base::FastHash(icon_url.spec());
   missing_favicon_urls_.insert(url_hash);
 }
 
 bool IconHelper::WasUnableToDownloadFavicon(const GURL& icon_url) const {
-  MissingFaviconURLHash url_hash = base::Hash(icon_url.spec());
+  MissingFaviconURLHash url_hash = base::FastHash(icon_url.spec());
   return missing_favicon_urls_.find(url_hash) != missing_favicon_urls_.end();
 }
 
