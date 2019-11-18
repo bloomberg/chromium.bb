@@ -2170,7 +2170,7 @@
   {
     "name": "enterprise-reporting-in-browser",
     "owners": [ "pastarmovj", "zmin" ],
-    "expiry_milestone": 79
+    "expiry_milestone": 81
   },
   {
     "name": "ev-details-in-page-info",
