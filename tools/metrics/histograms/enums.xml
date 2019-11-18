@@ -1057,6 +1057,11 @@ Unknown properties are collapsed to zero. -->
   <int value="2" label="IPv6"/>
 </enum>
 
+<enum name="AddressHasDerivedField">
+  <int value="0" label="No derived field"/>
+  <int value="1" label="Has derived field"/>
+</enum>
+
 <enum name="AddSearchProvider">
   <int value="0" label="window.external.AddSearchProvider was called"/>
   <int value="1" label="A confirmation dialog was shown"/>
