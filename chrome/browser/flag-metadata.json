@@ -2478,7 +2478,7 @@
   {
     "name": "mac-syscall-sandbox",
     "owners": [ "kerrnel@google.com" ],
-    "expiry_milestone": 80
+    "expiry_milestone": 88
   },
   {
     "name": "mac-system-media-permissions-info-ui",
@@ -2488,7 +2488,7 @@
   {
     "name": "mac-v2-gpu-sandbox",
     "owners": [ "kerrnel@google.com" ],
-    "expiry_milestone": 78
+    "expiry_milestone": 88
   },
   {
     "name": "mac-views-task-manager",
@@ -3141,7 +3141,7 @@
   {
     "name": "scheduler-configuration",
     "owners": [ "kerrnel", "mnissler" ],
-    "expiry_milestone": 77
+    "expiry_milestone": 88
   },
   {
     "name": "scrollable-tabstrip",
