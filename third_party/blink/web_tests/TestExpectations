@@ -5177,7 +5177,7 @@ crbug.com/927769 fast/webgl/OffscreenCanvas-webgl-preserveDrawingBuffer.html [ S
 
 # Sheriff 2019-02-12
 crbug.com/931349 [ Mac ] media/video-played-ranges-1.html [ Failure Timeout Pass ]
-crbug.com/931349 [ Mac ] virtual/audio-service/media/video-played-ranges-1.html [ Failure Timeout Pass ]
+crbug.com/931533 [ Debug ] virtual/audio-service/media/video-played-ranges-1.html [ Failure Timeout Pass ]
 
 # Sheriff 2019-02-13
 crbug.com/931646 [ Win7 ] http/tests/preload/meta-viewport-link-headers-imagesrcset.html [ Failure Pass ]
