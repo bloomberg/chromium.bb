@@ -10,6 +10,7 @@ import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.NativeMethods;
+import org.chromium.chrome.browser.preferences.privacy.PrivacyPreferencesManager;
 
 /**
  * PrefServiceBridge is a singleton which provides access to some native preferences. Ideally
@@ -95,62 +96,21 @@ public class PrefServiceBridge {
     }
 
     /**
-     * @return Whether there is a user set value for kNetworkPredictionOptions.  This should only be
-     * used for preference migration. See http://crbug.com/334602
-     */
-    public boolean obsoleteNetworkPredictionOptionsHasUserSetting() {
-        return PrefServiceBridgeJni.get().obsoleteNetworkPredictionOptionsHasUserSetting();
-    }
-
-    /**
      * @return Network predictions preference.
+     *
+     * TODO(crbug.com/1016957): Remove after inlined downstream.
      */
     public boolean getNetworkPredictionEnabled() {
-        return PrefServiceBridgeJni.get().getNetworkPredictionEnabled();
+        return PrivacyPreferencesManager.getInstance().getNetworkPredictionEnabled();
     }
 
     /**
      * Sets network predictions preference.
+     *
+     * TODO(crbug.com/1016957): Remove after inlined downstream.
      */
     public void setNetworkPredictionEnabled(boolean enabled) {
-        PrefServiceBridgeJni.get().setNetworkPredictionEnabled(enabled);
-    }
-
-    /**
-     * @return Whether Network Predictions is configured by policy.
-     */
-    public boolean isNetworkPredictionManaged() {
-        return PrefServiceBridgeJni.get().getNetworkPredictionManaged();
-    }
-
-    /**
-     * Checks whether network predictions are allowed given preferences and current network
-     * connection type.
-     * @return Whether network predictions are allowed.
-     */
-    public boolean canPrefetchAndPrerender() {
-        return PrefServiceBridgeJni.get().canPrefetchAndPrerender();
-    }
-
-    /**
-      * @return Whether usage and crash reporting pref is enabled.
-      */
-    public boolean isMetricsReportingEnabled() {
-        return PrefServiceBridgeJni.get().isMetricsReportingEnabled();
-    }
-
-    /**
-     * Sets whether the usage and crash reporting pref should be enabled.
-     */
-    public void setMetricsReportingEnabled(boolean enabled) {
-        PrefServiceBridgeJni.get().setMetricsReportingEnabled(enabled);
-    }
-
-    /**
-     * @return Whether usage and crash report pref is managed.
-     */
-    public boolean isMetricsReportingManaged() {
-        return PrefServiceBridgeJni.get().isMetricsReportingManaged();
+        PrivacyPreferencesManager.getInstance().setNetworkPredictionEnabled(enabled);
     }
 
     @VisibleForTesting
@@ -167,13 +127,5 @@ public class PrefServiceBridge {
         String getString(int preference);
         void setString(int preference, String value);
         boolean isManagedPreference(int preference);
-        boolean canPrefetchAndPrerender();
-        boolean getNetworkPredictionManaged();
-        boolean obsoleteNetworkPredictionOptionsHasUserSetting();
-        boolean getNetworkPredictionEnabled();
-        void setNetworkPredictionEnabled(boolean enabled);
-        boolean isMetricsReportingEnabled();
-        void setMetricsReportingEnabled(boolean enabled);
-        boolean isMetricsReportingManaged();
     }
 }

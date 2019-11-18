@@ -2686,6 +2686,7 @@ generate_jni("chrome_jni_headers") {
     "java/src/org/chromium/chrome/browser/preferences/password/PasswordUIView.java",
     "java/src/org/chromium/chrome/browser/preferences/privacy/BrowsingDataBridge.java",
     "java/src/org/chromium/chrome/browser/preferences/privacy/BrowsingDataCounterBridge.java",
+    "java/src/org/chromium/chrome/browser/preferences/privacy/PrivacyPreferencesManager.java",
     "java/src/org/chromium/chrome/browser/preferences/website/WebsitePreferenceBridge.java",
     "java/src/org/chromium/chrome/browser/prerender/ExternalPrerenderHandler.java",
     "java/src/org/chromium/chrome/browser/previews/PreviewsAndroidBridge.java",

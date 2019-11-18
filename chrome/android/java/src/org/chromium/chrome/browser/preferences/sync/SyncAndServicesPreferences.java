@@ -629,7 +629,7 @@ public class SyncAndServicesPreferences extends PreferenceFragmentCompat
                 return mPrefServiceBridge.isManagedPreference(Pref.SAFE_BROWSING_ENABLED);
             }
             if (PREF_USAGE_AND_CRASH_REPORTING.equals(key)) {
-                return mPrefServiceBridge.isMetricsReportingManaged();
+                return PrivacyPreferencesManager.getInstance().isMetricsReportingManaged();
             }
             if (PREF_URL_KEYED_ANONYMIZED_DATA.equals(key)) {
                 return UnifiedConsentServiceBridge.isUrlKeyedAnonymizedDataCollectionManaged();
