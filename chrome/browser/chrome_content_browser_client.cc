@@ -340,13 +340,6 @@
 #include "url/gurl.h"
 #include "url/origin.h"
 
-#if BUILDFLAG(ENABLE_NACL)
-#include "components/nacl/loader/nacl_loader_manifest.h"
-#if defined(OS_WIN) && defined(ARCH_CPU_X86)
-#include "components/nacl/broker/nacl_broker_manifest.h"
-#endif
-#endif
-
 #if defined(OS_WIN)
 #include "base/strings/string_tokenizer.h"
 #include "chrome/browser/chrome_browser_main_win.h"
@@ -3729,16 +3722,7 @@ ChromeContentBrowserClient::GetServiceManifestOverlay(base::StringPiece name) {
 
 std::vector<service_manager::Manifest>
 ChromeContentBrowserClient::GetExtraServiceManifests() {
-  auto manifests = GetChromeBuiltinServiceManifests();
-
-#if BUILDFLAG(ENABLE_NACL)
-  manifests.push_back(GetNaClLoaderManifest());
-#if defined(OS_WIN) && defined(ARCH_CPU_X86)
-  manifests.push_back(GetNaClBrokerManifest());
-#endif  // defined(OS_WIN)
-#endif  // BUILDFLAG(ENABLE_NACL)
-
-  return manifests;
+  return GetChromeBuiltinServiceManifests();
 }
 
 void ChromeContentBrowserClient::OpenURL(
