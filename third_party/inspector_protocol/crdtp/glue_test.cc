@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "bindings.h"
+#include "glue.h"
 
 #include <string>
 #include <vector>
 
-#include "bindings_test_helper.h"
+#include "test_platform.h"
 
 namespace crdtp {
 namespace glue {

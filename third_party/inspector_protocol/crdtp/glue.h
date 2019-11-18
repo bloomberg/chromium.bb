@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CRDTP_BINDINGS_H_
-#define CRDTP_BINDINGS_H_
+#ifndef CRDTP_GLUE_H_
+#define CRDTP_GLUE_H_
 
 #include <cassert>
 #include <memory>
@@ -77,4 +77,4 @@ class ValueMaybe {
   ClassName(const ClassName&) = delete;   \
   ClassName& operator=(const ClassName&) = delete
 
-#endif  // CRDTP_BINDINGS_H_
+#endif  // CRDTP_GLUE_H_
