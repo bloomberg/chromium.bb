@@ -137,7 +137,7 @@ public class EphemeralTabCoordinator implements View.OnLayoutChangeListener {
         if (state == SheetState.PEEK) {
             mBottomSheetController.expandSheet();
         } else if (state == SheetState.FULL) {
-            mBottomSheetController.peekSheet(true);
+            mBottomSheetController.collapseSheet(true);
         }
     }
 
