@@ -998,6 +998,10 @@ void LoginDisplayHostWebUI::UpdateAddUserButtonStatus() {
   NOTREACHED();
 }
 
+void LoginDisplayHostWebUI::RequestSystemInfoUpdate() {
+  NOTREACHED();
+}
+
 void LoginDisplayHostWebUI::PlayStartupSoundIfPossible() {
   if (!need_to_play_startup_sound_ || oobe_startup_sound_played_)
     return;
