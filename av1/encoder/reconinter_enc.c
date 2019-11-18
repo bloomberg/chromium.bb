@@ -28,51 +28,6 @@
 #include "av1/common/obmc.h"
 #include "av1/encoder/reconinter_enc.h"
 
-static INLINE void calc_subpel_params(
-    MACROBLOCKD *xd, const struct scale_factors *const sf, const MV mv,
-    int plane, const int pre_x, const int pre_y, int x, int y,
-    struct buf_2d *const pre_buf, uint8_t **pre, SubpelParams *subpel_params,
-    int bw, int bh) {
-  struct macroblockd_plane *const pd = &xd->plane[plane];
-  const int is_scaled = av1_is_scaled(sf);
-  if (is_scaled) {
-    int ssx = pd->subsampling_x;
-    int ssy = pd->subsampling_y;
-    int orig_pos_y = (pre_y + y) << SUBPEL_BITS;
-    orig_pos_y += mv.row * (1 << (1 - ssy));
-    int orig_pos_x = (pre_x + x) << SUBPEL_BITS;
-    orig_pos_x += mv.col * (1 << (1 - ssx));
-    int pos_y = sf->scale_value_y(orig_pos_y, sf);
-    int pos_x = sf->scale_value_x(orig_pos_x, sf);
-    pos_x += SCALE_EXTRA_OFF;
-    pos_y += SCALE_EXTRA_OFF;
-
-    const int top = -AOM_LEFT_TOP_MARGIN_SCALED(ssy);
-    const int left = -AOM_LEFT_TOP_MARGIN_SCALED(ssx);
-    const int bottom = (pre_buf->height + AOM_INTERP_EXTEND)
-                       << SCALE_SUBPEL_BITS;
-    const int right = (pre_buf->width + AOM_INTERP_EXTEND) << SCALE_SUBPEL_BITS;
-    pos_y = clamp(pos_y, top, bottom);
-    pos_x = clamp(pos_x, left, right);
-
-    *pre = pre_buf->buf0 + (pos_y >> SCALE_SUBPEL_BITS) * pre_buf->stride +
-           (pos_x >> SCALE_SUBPEL_BITS);
-    subpel_params->subpel_x = pos_x & SCALE_SUBPEL_MASK;
-    subpel_params->subpel_y = pos_y & SCALE_SUBPEL_MASK;
-    subpel_params->xs = sf->x_step_q4;
-    subpel_params->ys = sf->y_step_q4;
-  } else {
-    const MV mv_q4 = clamp_mv_to_umv_border_sb(
-        xd, &mv, bw, bh, pd->subsampling_x, pd->subsampling_y);
-    subpel_params->xs = subpel_params->ys = SCALE_SUBPEL_SHIFTS;
-    subpel_params->subpel_x = (mv_q4.col & SUBPEL_MASK) << SCALE_EXTRA_BITS;
-    subpel_params->subpel_y = (mv_q4.row & SUBPEL_MASK) << SCALE_EXTRA_BITS;
-    *pre = pre_buf->buf0 +
-           (pre_y + y + (mv_q4.row >> SUBPEL_BITS)) * pre_buf->stride +
-           (pre_x + x + (mv_q4.col >> SUBPEL_BITS));
-  }
-}
-
 static INLINE void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
                                           int plane, const MB_MODE_INFO *mi,
                                           int bw, int bh, int mi_x, int mi_y) {
@@ -182,11 +137,6 @@ static INLINE void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
           is_intrabc ? &cm->sf_identity : xd->block_ref_scale_factors[ref];
       struct buf_2d pre_buf = is_intrabc ? *dst_buf : pd->pre[ref];
       const MV mv = mi->mv[ref].as_mv;
-
-      uint8_t *pre;
-      SubpelParams subpel_params;
-      calc_subpel_params(xd, sf, mv, plane, pre_x, pre_y, 0, 0, &pre_buf, &pre,
-                         &subpel_params, bw, bh);
 
       WarpTypesAllowed warp_types;
       warp_types.global_warp_allowed = is_global[ref];
