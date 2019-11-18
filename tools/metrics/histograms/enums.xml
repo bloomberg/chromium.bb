@@ -62283,6 +62283,8 @@ Full version information for the fingerprint enum values:
   <int value="19" label="Aborted by CLD and HTML/content language conflict"/>
   <int value="20" label="Disabled because network unavailable"/>
   <int value="21" label="Page state doesn't require translation"/>
+  <int value="22"
+      label="Identical language translation, use source language Unknown"/>
 </enum>
 
 <enum name="TranslateLanguage">
