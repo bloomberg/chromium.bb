@@ -31,8 +31,7 @@ namespace {
 #if LIBGAV1_ENABLE_ALL_DSP_FUNCTIONS ||        \
     !defined(LIBGAV1_Dsp8bpp_CdefDirection) || \
     (LIBGAV1_MAX_BITDEPTH >= 10 && !defined(LIBGAV1_Dsp10bpp_CdefDirection))
-constexpr int16_t kDivisionTable[] = {0,   840, 420, 280, 210,
-                                      168, 140, 120, 105};
+constexpr int16_t kDivisionTable[] = {840, 420, 280, 210, 168, 140, 120, 105};
 
 int32_t Square(int32_t x) { return x * x; }
 
@@ -65,24 +64,24 @@ void CdefDirection_C(const void* const source, ptrdiff_t stride,
     cost[2] += Square(partial[2][i]);
     cost[6] += Square(partial[6][i]);
   }
-  cost[2] *= kDivisionTable[8];
-  cost[6] *= kDivisionTable[8];
+  cost[2] *= kDivisionTable[7];
+  cost[6] *= kDivisionTable[7];
   for (int i = 0; i < 7; ++i) {
     cost[0] += (Square(partial[0][i]) + Square(partial[0][14 - i])) *
-               kDivisionTable[i + 1];
+               kDivisionTable[i];
     cost[4] += (Square(partial[4][i]) + Square(partial[4][14 - i])) *
-               kDivisionTable[i + 1];
+               kDivisionTable[i];
   }
-  cost[0] += Square(partial[0][7]) * kDivisionTable[8];
-  cost[4] += Square(partial[4][7]) * kDivisionTable[8];
+  cost[0] += Square(partial[0][7]) * kDivisionTable[7];
+  cost[4] += Square(partial[4][7]) * kDivisionTable[7];
   for (int i = 1; i < 8; i += 2) {
     for (int j = 0; j < 5; ++j) {
       cost[i] += Square(partial[i][3 + j]);
     }
-    cost[i] *= kDivisionTable[8];
+    cost[i] *= kDivisionTable[7];
     for (int j = 0; j < 3; ++j) {
       cost[i] += (Square(partial[i][j]) + Square(partial[i][10 - j])) *
-                 kDivisionTable[2 * j + 2];
+                 kDivisionTable[2 * j + 1];
     }
   }
   int32_t best_cost = 0;
