@@ -639,15 +639,5 @@
     "prefix": "not-split-http-cache",
     "bases": ["external/wpt/fetch/http-cache"],
     "args": ["--disable-features=SplitCacheByNetworkIsolationKey"]
-  },
-  {
-    "prefix": "legacy-client-hints",
-    "bases": ["external/wpt/client-hints", "wpt_internal/client-hints"],
-    "args": ["--enable-features=AllowClientHintsToThirdParty"]
-  },
-  {
-    "prefix": "legacy-client-hints-no-fp-delegation",
-    "bases": ["external/wpt/client-hints"],
-    "args": ["--enable-features=AllowClientHintsToThirdParty", "--disable-blink-features=FeaturePolicyForClientHints"]
   }
 ]
