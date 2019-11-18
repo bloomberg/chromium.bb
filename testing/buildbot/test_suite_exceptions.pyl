@@ -119,6 +119,12 @@
           'shards': 30,
         },
       },
+      # chromium.chromiumos
+      'linux-chromeos-rel': {
+        'swarming': {
+          'shards': 20,
+        },
+      },
       # chromium.clang
       'ToTMac': {
         # A subset of tests seem to cause WindowServer deaths on VMs.
@@ -1737,6 +1743,11 @@
         },
       },
       'linux-chromeos-dbg': {
+        'swarming': {
+          'shards': 2,
+        },
+      },
+      'linux-chromeos-rel': {
         'swarming': {
           'shards': 2,
         },

@@ -4877,12 +4877,13 @@
 
     'viz_chromeos_gtests': {
       # TODO(kylechar): Remove once VizDisplayCompositor is lauched on CrOS.
+      # https://crbug.com/732805
       'non_viz_browser_tests': {
         'args': [
           '--disable-features=VizDisplayCompositor',
         ],
         'swarming': {
-          'shards': 10,
+          'shards': 20,
         },
         'test': 'browser_tests',
       },
