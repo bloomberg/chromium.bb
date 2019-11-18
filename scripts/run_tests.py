@@ -174,7 +174,6 @@ PYTHON2_ONLY_TESTS = {
     'lib/builder_status_lib_unittest',
     'lib/cidb_unittest',
     'lib/failure_message_lib_unittest',
-    'lib/kernel_cmdline_unittest',
     'lib/repo_manifest_unittest',
     'scripts/cbuildbot_launch_unittest',
     'scripts/create_manifest_snapshot_unittest',

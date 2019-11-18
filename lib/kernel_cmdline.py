@@ -50,6 +50,9 @@ class KernelArg(object):
   def __str__(self):
     return self.Format()
 
+  def __hash__(self):
+    return hash(str(self))
+
   def Format(self):
     """Return the arg(=value) as a string.
 
