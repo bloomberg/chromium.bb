@@ -35,10 +35,10 @@
 #include "av1/encoder/rd.h"
 #include "av1/encoder/rdopt.h"
 
-static void subtract_block(const MACROBLOCKD *xd, int rows, int cols,
-                           int16_t *diff, ptrdiff_t diff_stride,
-                           const uint8_t *src8, ptrdiff_t src_stride,
-                           const uint8_t *pred8, ptrdiff_t pred_stride) {
+void av1_subtract_block(const MACROBLOCKD *xd, int rows, int cols,
+                        int16_t *diff, ptrdiff_t diff_stride,
+                        const uint8_t *src8, ptrdiff_t src_stride,
+                        const uint8_t *pred8, ptrdiff_t pred_stride) {
   assert(rows >= 4 && cols >= 4);
 #if CONFIG_AV1_HIGHBITDEPTH
   if (is_cur_buf_hbd(xd)) {
@@ -68,8 +68,8 @@ void av1_subtract_txb(MACROBLOCK *x, int plane, BLOCK_SIZE plane_bsize,
       &p->src.buf[(blk_row * src_stride + blk_col) << tx_size_wide_log2[0]];
   int16_t *src_diff =
       &p->src_diff[(blk_row * diff_stride + blk_col) << tx_size_wide_log2[0]];
-  subtract_block(xd, tx1d_height, tx1d_width, src_diff, diff_stride, src,
-                 src_stride, dst, dst_stride);
+  av1_subtract_block(xd, tx1d_height, tx1d_width, src_diff, diff_stride, src,
+                     src_stride, dst, dst_stride);
 }
 
 void av1_subtract_plane(MACROBLOCK *x, BLOCK_SIZE bsize, int plane) {
@@ -82,8 +82,8 @@ void av1_subtract_plane(MACROBLOCK *x, BLOCK_SIZE bsize, int plane) {
   const int bh = block_size_high[plane_bsize];
   const MACROBLOCKD *xd = &x->e_mbd;
 
-  subtract_block(xd, bh, bw, p->src_diff, bw, p->src.buf, p->src.stride,
-                 pd->dst.buf, pd->dst.stride);
+  av1_subtract_block(xd, bh, bw, p->src_diff, bw, p->src.buf, p->src.stride,
+                     pd->dst.buf, pd->dst.stride);
 }
 
 int av1_optimize_b(const struct AV1_COMP *cpi, MACROBLOCK *mb, int plane,

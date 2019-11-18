@@ -81,6 +81,28 @@ static int rate_estimator(tran_low_t *qcoeff, int eob, TX_SIZE tx_size) {
   return (rate_cost << AV1_PROB_COST_SHIFT);
 }
 
+static void txfm_quant_rdcost(MACROBLOCK *x, int16_t *src_diff, int diff_stride,
+                              uint8_t *src, int src_stride, uint8_t *dst,
+                              int dst_stride, tran_low_t *coeff,
+                              tran_low_t *qcoeff, tran_low_t *dqcoeff, int bw,
+                              int bh, TX_SIZE tx_size, int *rate_cost,
+                              int64_t *recon_error, int64_t *sse) {
+  const MACROBLOCKD *xd = &x->e_mbd;
+  uint16_t eob;
+  av1_subtract_block(xd, bh, bw, src_diff, diff_stride, src, src_stride, dst,
+                     dst_stride);
+  wht_fwd_txfm(src_diff, diff_stride, coeff, tx_size, xd->bd,
+               is_cur_buf_hbd(xd));
+
+  get_quantize_error(x, 0, coeff, qcoeff, dqcoeff, tx_size, &eob, recon_error,
+                     sse);
+
+  *rate_cost = rate_estimator(qcoeff, eob, tx_size);
+
+  av1_inverse_transform_block(xd, dqcoeff, 0, DCT_DCT, tx_size, dst, dst_stride,
+                              eob, 0);
+}
+
 static uint32_t motion_estimation(AV1_COMP *cpi, MACROBLOCK *x,
                                   uint8_t *cur_frame_buf,
                                   uint8_t *ref_frame_buf, int stride,
@@ -218,17 +240,8 @@ static AOM_INLINE void mode_estimation(
                             FILTER_INTRA_MODES, dst_buffer, dst_buffer_stride,
                             dst, dst_stride, 0, 0, 0);
 
-#if CONFIG_AV1_HIGHBITDEPTH
-    if (is_cur_buf_hbd(xd)) {
-      aom_highbd_subtract_block(bh, bw, src_diff, bw, src, src_stride, dst,
-                                dst_stride, xd->bd);
-    } else {
-      aom_subtract_block(bh, bw, src_diff, bw, src, src_stride, dst,
-                         dst_stride);
-    }
-#else
-    aom_subtract_block(bh, bw, src_diff, bw, src, src_stride, dst, dst_stride);
-#endif
+    av1_subtract_block(xd, bh, bw, src_diff, bw, src, src_stride, dst,
+                       dst_stride);
     wht_fwd_txfm(src_diff, bw, coeff, tx_size, xd->bd, is_cur_buf_hbd(xd));
     intra_cost = aom_satd(coeff, pix_num);
 
@@ -253,6 +266,8 @@ static AOM_INLINE void mode_estimation(
     if (ref_frame[rf_idx] == NULL) continue;
     if (src_ref_frame[rf_idx] == NULL) continue;
 
+    int rate_cost;
+    int64_t distortion, tsse;
     const YV12_BUFFER_CONFIG *ref_frame_ptr = src_ref_frame[rf_idx];
     int ref_mb_offset =
         mi_row * MI_SIZE * ref_frame_ptr->y_stride + mi_col * MI_SIZE;
@@ -274,32 +289,19 @@ static AOM_INLINE void mode_estimation(
     av1_build_inter_predictor(predictor, bw, &x->best_mv.as_mv,
                               &inter_pred_params);
 
-#if CONFIG_AV1_HIGHBITDEPTH
-    if (is_cur_buf_hbd(xd)) {
-      aom_highbd_subtract_block(bh, bw, src_diff, bw, src_mb_buffer, src_stride,
-                                predictor, bw, xd->bd);
-    } else {
-      aom_subtract_block(bh, bw, src_diff, bw, src_mb_buffer, src_stride,
-                         predictor, bw);
-    }
-#else
-    aom_subtract_block(bh, bw, src_diff, bw, src_mb_buffer, src_stride,
-                       predictor, bw);
-#endif
+    txfm_quant_rdcost(x, src_diff, bw, src_mb_buffer, src_stride, predictor, bw,
+                      coeff, qcoeff, dqcoeff, bw, bh, tx_size, &rate_cost,
+                      &distortion, &tsse);
 
-    wht_fwd_txfm(src_diff, bw, coeff, tx_size, xd->bd, is_cur_buf_hbd(xd));
     inter_cost = aom_satd(coeff, pix_num);
 
     if (inter_cost < best_inter_cost) {
-      uint16_t eob;
       best_rf_idx = rf_idx;
       best_inter_cost = inter_cost;
       best_mv.as_int = x->best_mv.as_int;
-      get_quantize_error(x, 0, coeff, qcoeff, dqcoeff, tx_size, &eob,
-                         recon_error, sse);
-      int rate_cost = rate_estimator(qcoeff, eob, tx_size);
       tpl_stats->srcrf_rate = rate_cost << TPL_DEP_COST_SCALE_LOG2;
-
+      *recon_error = distortion;
+      *sse = tsse;
       if (best_inter_cost < best_intra_cost) best_mode = NEWMV;
     }
   }
@@ -335,29 +337,10 @@ static AOM_INLINE void mode_estimation(
                             dst_buffer, dst_buffer_stride, 0, 0, 0);
   }
 
-#if CONFIG_AV1_HIGHBITDEPTH
-  if (is_cur_buf_hbd(xd)) {
-    aom_highbd_subtract_block(bh, bw, src_diff, bw, src_mb_buffer, src_stride,
-                              dst_buffer, dst_buffer_stride, xd->bd);
-  } else {
-    aom_subtract_block(bh, bw, src_diff, bw, src_mb_buffer, src_stride,
-                       dst_buffer, dst_buffer_stride);
-  }
-#else
-  aom_subtract_block(bh, bw, src_diff, bw, src_mb_buffer, src_stride,
-                     dst_buffer, dst_buffer_stride);
-#endif
-  wht_fwd_txfm(src_diff, bw, coeff, tx_size, xd->bd, is_cur_buf_hbd(xd));
-
-  uint16_t eob;
-
-  get_quantize_error(x, 0, coeff, qcoeff, dqcoeff, tx_size, &eob, recon_error,
-                     sse);
-
-  int rate_cost = rate_estimator(qcoeff, eob, tx_size);
-
-  av1_inverse_transform_block(xd, dqcoeff, 0, DCT_DCT, tx_size, dst_buffer,
-                              dst_buffer_stride, eob, 0);
+  int rate_cost;
+  txfm_quant_rdcost(x, src_diff, bw, src_mb_buffer, src_stride, dst_buffer,
+                    dst_buffer_stride, coeff, qcoeff, dqcoeff, bw, bh, tx_size,
+                    &rate_cost, recon_error, sse);
 
   tpl_stats->recrf_dist = *recon_error << (TPL_DEP_COST_SCALE_LOG2);
   tpl_stats->recrf_rate = rate_cost << TPL_DEP_COST_SCALE_LOG2;
