@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/modules/p2p/port_allocator.h"
+#include "third_party/blink/renderer/platform/p2p/port_allocator.h"
 
 #include <stdint.h>
 
