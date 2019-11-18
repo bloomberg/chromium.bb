@@ -7,8 +7,14 @@ issues]].
 
 ** New features
 ** Bug fixes
+- Fix a memory leak when several tables are specified and some of them
+  that can't be resolved. Thanks to André-Abush Clause.
 ** Braille table improvements
 ** Other changes
+- Make sure the log callback uses the same calling convention as all
+  the other exported functions. Thanks to Leonard de Ruijter.
+- Fix a problem with Non-ASCII characters in file paths in the Python
+  bindings, thanks to André-Abush Clause
 ** Deprecation notice
 None
 
