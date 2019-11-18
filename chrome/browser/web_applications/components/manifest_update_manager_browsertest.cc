@@ -154,6 +154,7 @@ class ManifestUpdateManagerBrowserTest : public InProcessBrowserTest {
     AppId app_id;
     base::RunLoop run_loop;
     InstallManager::InstallParams params;
+    params.fallback_start_url = http_server_.GetURL("/fallback-url");
     params.add_to_applications_menu = false;
     params.add_to_desktop = false;
     params.add_to_quick_launch_bar = false;
@@ -467,13 +468,14 @@ IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTest,
         auto http_response =
             std::make_unique<net::test_server::BasicHttpResponse>();
         http_response->set_code(net::HTTP_TEMPORARY_REDIRECT);
-        http_response->AddCustomHeader("Location", "/defaultresponse");
+        http_response->AddCustomHeader(
+            "Location", "http://other-origin.com/defaultresponse");
         http_response->set_content("redirect page");
         return std::move(http_response);
       });
 
-  // Install via PendingAppManager, the redirect should cause it to install a
-  // placeholder app.
+  // Install via PendingAppManager, the redirect to a different origin should
+  // cause it to install a placeholder app.
   AppId app_id = InstallPolicyApp();
   EXPECT_TRUE(GetProvider().registrar().IsPlaceholderApp(app_id));
 
