@@ -163,7 +163,7 @@ def GetInstanceID(cipd_path, package, version, service_account_json=None):
 
   result = cros_build_lib.run(
       [cipd_path, 'resolve', package, '-version', version] +
-      service_account_flag, capture_output=True)
+      service_account_flag, capture_output=True, encoding='utf-8')
   # An example output of resolve is like:
   #   Packages:\n package:instance_id
   return result.output.splitlines()[-1].split(':')[-1]
@@ -191,7 +191,7 @@ def InstallPackage(cipd_path, package, instance_id, destination,
     service_account_flag = ['-service-account-json', service_account_json]
 
   with tempfile.NamedTemporaryFile() as f:
-    f.write('%s %s' % (package, instance_id))
+    f.write(('%s %s' % (package, instance_id)).encode('utf-8'))
     f.flush()
 
     cros_build_lib.run(
