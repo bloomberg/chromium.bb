@@ -54,6 +54,7 @@ source_set("dnssd") {
     "dnssd/impl/querier_impl.h",
     "dnssd/impl/service_key.cc",
     "dnssd/impl/service_key.h",
+    "dnssd/public/dns_sd_service.h",
     "dnssd/public/instance_record.cc",
     "dnssd/public/instance_record.h",
     "dnssd/public/publisher.h",

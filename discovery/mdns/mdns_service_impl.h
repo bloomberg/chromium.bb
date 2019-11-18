@@ -10,7 +10,7 @@
 namespace openscreen {
 namespace discovery {
 
-class MdnsServiceImpl : MdnsService {
+class MdnsServiceImpl : public MdnsService {
  public:
   void StartQuery(const DomainName& name,
                   DnsType dns_type,
