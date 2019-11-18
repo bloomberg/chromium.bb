@@ -4372,29 +4372,26 @@ class DisplayWorkAreaChangeCounter : public display::DisplayObserver {
   DISALLOW_COPY_AND_ASSIGN(DisplayWorkAreaChangeCounter);
 };
 
-// TODO(https:/crbug.com/1019531): Re-enable this test after the work-area
-// exhibits the desired behavior.
-// Tests that the work area does not update after going to/from tablet mode with
-// no windows open.
+// Tests that the work area updates once each when going to/from tablet mode
+// with no windows open.
 TEST_F(HotseatShelfLayoutManagerTest,
-       DISABLED_WorkAreaDoesNotUpdateClamshellToFromHomeLauncherNoWindows) {
+       WorkAreaUpdatesClamshellToFromHomeLauncherNoWindows) {
   DisplayWorkAreaChangeCounter counter;
   TabletModeControllerTestApi().EnterTabletMode();
 
-  EXPECT_EQ(0, counter.count());
+  EXPECT_EQ(1, counter.count());
 
   TabletModeControllerTestApi().LeaveTabletMode();
 
-  EXPECT_EQ(0, counter.count());
+  EXPECT_EQ(2, counter.count());
 }
 
-// TODO(https:/crbug.com/1019531): Re-enable this test after the work-area
-// exhibits the desired behavior.
-// Tests that opening a window in tablet mode changes the work area.
-TEST_F(HotseatShelfLayoutManagerTest,
-       DISABLED_OpenWindowInTabletModeChangesWorkArea) {
+// Tests that the work area changes just once when opening a window in tablet
+// mode.
+TEST_F(HotseatShelfLayoutManagerTest, OpenWindowInTabletModeChangesWorkArea) {
   DisplayWorkAreaChangeCounter counter;
   TabletModeControllerTestApi().EnterTabletMode();
+  ASSERT_EQ(1, counter.count());
 
   std::unique_ptr<aura::Window> window =
       AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
@@ -4403,12 +4400,10 @@ TEST_F(HotseatShelfLayoutManagerTest,
   EXPECT_EQ(1, counter.count());
 }
 
-// TODO(https:/crbug.com/1019531): Re-enable this test after the work-area
-// exhibits the desired behavior.
 // Tests that going to and from tablet mode with an open window results in a
 // work area change.
 TEST_F(HotseatShelfLayoutManagerTest,
-       DISABLED_ToFromTabletModeWithWindowChangesWorkArea) {
+       ToFromTabletModeWithWindowChangesWorkArea) {
   DisplayWorkAreaChangeCounter counter;
   std::unique_ptr<aura::Window> window =
       AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
@@ -4421,14 +4416,13 @@ TEST_F(HotseatShelfLayoutManagerTest,
   EXPECT_EQ(2, counter.count());
 }
 
-// TODO(https:/crbug.com/1019531): Re-enable this test after the work-area
-// exhibits the desired behavior.
 // Tests that going between Applist and overview in tablet mode with no windows
 // results in no work area change.
 TEST_F(HotseatShelfLayoutManagerTest,
-       DISABLED_WorkAreaDoesNotUpdateAppListToFromOverviewWithNoWindow) {
-  DisplayWorkAreaChangeCounter counter;
+       WorkAreaDoesNotUpdateAppListToFromOverviewWithNoWindow) {
   TabletModeControllerTestApi().EnterTabletMode();
+  DisplayWorkAreaChangeCounter counter;
+
   {
     OverviewAnimationWaiter waiter;
     Shell::Get()->overview_controller()->StartOverview();
@@ -4446,12 +4440,10 @@ TEST_F(HotseatShelfLayoutManagerTest,
   EXPECT_EQ(0, counter.count());
 }
 
-// TODO(https:/crbug.com/1019531): Re-enable this test after the work-area
-// exhibits the desired behavior.
 // Tests that switching between AppList and overview with a window results in no
 // work area change.
 TEST_F(HotseatShelfLayoutManagerTest,
-       DISABLED_WorkAreaDoesNotUpdateAppListToFromOverviewWithWindow) {
+       WorkAreaDoesNotUpdateAppListToFromOverviewWithWindow) {
   DisplayWorkAreaChangeCounter counter;
   TabletModeControllerTestApi().EnterTabletMode();
   std::unique_ptr<aura::Window> window =
@@ -4492,12 +4484,10 @@ TEST_F(HotseatShelfLayoutManagerTest,
   EXPECT_EQ(1, counter.count());
 }
 
-// TODO(https:/crbug.com/1019531): Re-enable this test after the work-area
-// exhibits the desired behavior.
 // Tests that switching between AppList and an active window does not update the
 // work area.
 TEST_F(HotseatShelfLayoutManagerTest,
-       DISABLED_WorkAreaDoesNotUpdateOpenWindowToFromAppList) {
+       WorkAreaDoesNotUpdateOpenWindowToFromAppList) {
   TabletModeControllerTestApi().EnterTabletMode();
   std::unique_ptr<aura::Window> window =
       AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
@@ -4520,12 +4510,10 @@ TEST_F(HotseatShelfLayoutManagerTest,
   EXPECT_EQ(0, counter.count());
 }
 
-// TODO(https:/crbug.com/1019531): Re-enable this test after the work-area
-// exhibits the desired behavior.
 // Tests that switching between overview and an active window does not update
 // the work area.
 TEST_F(HotseatShelfLayoutManagerTest,
-       DISABLED_WorkAreaDoesNotUpdateOpenWindowToFromOverview) {
+       WorkAreaDoesNotUpdateOpenWindowToFromOverview) {
   TabletModeControllerTestApi().EnterTabletMode();
   std::unique_ptr<aura::Window> window =
       AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
