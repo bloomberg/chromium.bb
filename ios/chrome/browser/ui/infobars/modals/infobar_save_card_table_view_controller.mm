@@ -19,6 +19,7 @@
 #import "ios/chrome/common/colors/semantic_color_names.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -37,13 +38,18 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeCardSave,
 };
 
-@interface InfobarSaveCardTableViewController () <UITextFieldDelegate>
+@interface InfobarSaveCardTableViewController () <TableViewTextLinkCellDelegate,
+                                                  UITextFieldDelegate>
 
 // InfobarSaveCardModalDelegate for this ViewController.
 @property(nonatomic, strong) id<InfobarSaveCardModalDelegate>
     saveCardModalDelegate;
 // Used to build and record metrics.
 @property(nonatomic, strong) InfobarMetricsRecorder* metricsRecorder;
+// Starting index in the SectionIdentifierContent for the legalMessages. Used to
+// query the corresponding SaveCardMessageWithLinks from legalMessages when
+// configuring the cell.
+@property(nonatomic, assign) int legalMessagesStartingIndex;
 
 @end
 
@@ -148,6 +154,11 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [model addItem:expireYearItem
       toSectionWithIdentifier:SectionIdentifierContent];
 
+  // Set legalMessagesStartingIndex right before adding any
+  // SaveCardMessageWithLinks TableViewTextLinkItems to the model.
+  self.legalMessagesStartingIndex =
+      [model numberOfItemsInSection:
+                 [model sectionForSectionIdentifier:SectionIdentifierContent]];
   for (SaveCardMessageWithLinks* message in self.legalMessages) {
     TableViewTextLinkItem* legalMessageItem =
         [[TableViewTextLinkItem alloc] initWithType:ItemTypeCardLegalMessage];
@@ -221,11 +232,21 @@ typedef NS_ENUM(NSInteger, ItemType) {
       break;
     }
     case ItemTypeCardLegalMessage: {
+      NSUInteger legalMessageIndex =
+          indexPath.row - self.legalMessagesStartingIndex;
+      DCHECK(legalMessageIndex >= 0);
+      DCHECK(legalMessageIndex < self.legalMessages.count);
       TableViewTextLinkCell* linkCell =
           base::mac::ObjCCast<TableViewTextLinkCell>(cell);
+      SaveCardMessageWithLinks* message = self.legalMessages[legalMessageIndex];
+      [message.linkRanges enumerateObjectsUsingBlock:^(
+                              NSValue* rangeValue, NSUInteger i, BOOL* stop) {
+        [linkCell setLinkURL:message.linkURLs[i]
+                    forRange:rangeValue.rangeValue];
+      }];
+      linkCell.delegate = self;
       linkCell.separatorInset =
           UIEdgeInsetsMake(0, self.tableView.bounds.size.width, 0, 0);
-      // TODO(crbug.com/1014652): Configure the Links.
       break;
     }
     case ItemTypeCardSave: {
@@ -254,6 +275,13 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (BOOL)textFieldShouldReturn:(UITextField*)textField {
   [textField resignFirstResponder];
   return YES;
+}
+
+#pragma mark - TableViewTextLinkCellDelegate
+
+- (void)tableViewTextLinkCell:(TableViewTextLinkCell*)cell
+            didRequestOpenURL:(const GURL&)URL {
+  // TODO(crbug.com/1014652): Handle tapped URLs.
 }
 
 #pragma mark - Private Methods
