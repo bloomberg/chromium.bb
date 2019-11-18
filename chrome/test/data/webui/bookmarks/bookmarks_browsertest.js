@@ -23,6 +23,7 @@ const BookmarksBrowserTest = class extends PolymerTest {
   get extraLibraries() {
     return [
       ...super.extraLibraries,
+      '//ui/webui/resources/js/cr/ui/store.js',
       '../test_store.js',
       'test_command_manager.js',
       'test_store.js',

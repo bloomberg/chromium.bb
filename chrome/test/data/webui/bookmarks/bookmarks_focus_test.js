@@ -19,6 +19,7 @@ const BookmarksFocusTest = class extends PolymerInteractiveUITest {
   get extraLibraries() {
     return super.extraLibraries.concat([
       '//ui/webui/resources/js/util.js',
+      '//ui/webui/resources/js/cr/ui/store.js',
       '../test_util.js',
       '../test_store.js',
       'test_command_manager.js',
