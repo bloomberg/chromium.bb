@@ -4606,6 +4606,34 @@ TEST_F(HotseatShelfLayoutManagerTest, ExtendHotseatIfFocusedWithKeyboard) {
   EXPECT_EQ(HotseatState::kExtended, GetShelfLayoutManager()->hotseat_state());
 }
 
+// Tests that if the hotseat was hidden while being focused, doing a trasversal
+// focus on the next element brings it up again.
+TEST_F(HotseatShelfLayoutManagerTest, SwipeDownOnFocusedHotseat) {
+  TabletModeControllerTestApi().EnterTabletMode();
+  std::unique_ptr<aura::Window> window =
+      AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
+  wm::ActivateWindow(window.get());
+  ShelfTestUtil::AddAppShortcut("app_id_1", TYPE_APP);
+  ShelfTestUtil::AddAppShortcut("app_id_2", TYPE_APP);
+  ASSERT_EQ(HotseatState::kHidden, GetShelfLayoutManager()->hotseat_state());
+
+  // Focus the shelf, then swipe down on the shelf to hide it. Hotseat should be
+  // hidden.
+  GetPrimaryShelf()->shelf_focus_cycler()->FocusShelf(false /* last_element */);
+  gfx::Rect hotseat_bounds =
+      GetShelfWidget()->hotseat_widget()->GetWindowBoundsInScreen();
+  gfx::Point start = hotseat_bounds.top_center();
+  gfx::Point end = start + gfx::Vector2d(0, 80);
+  GetEventGenerator()->GestureScrollSequence(
+      start, end, base::TimeDelta::FromMilliseconds(100), 4 /*scroll_steps*/);
+  EXPECT_EQ(HotseatState::kHidden, GetShelfLayoutManager()->hotseat_state());
+
+  // Focus to the next element in the hotseat. The hotseat should show again.
+  GetEventGenerator()->PressKey(ui::VKEY_TAB, 0);
+  GetEventGenerator()->ReleaseKey(ui::VKEY_TAB, 0);
+  EXPECT_EQ(HotseatState::kExtended, GetShelfLayoutManager()->hotseat_state());
+}
+
 class ShelfLayoutManagerWindowDraggingTest : public ShelfLayoutManagerTestBase {
  public:
   ShelfLayoutManagerWindowDraggingTest() = default;

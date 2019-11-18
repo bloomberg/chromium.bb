@@ -1169,7 +1169,8 @@ HotseatState ShelfLayoutManager::CalculateHotseatState(
       app_list_controller->GetTargetVisibility() ||
       (!in_overview && app_list_controller->ShouldHomeLauncherBeVisible());
 
-  if (shelf_widget_->is_hotseat_forced_to_show())
+  // Only force to show if there is not a pending drag operation.
+  if (shelf_widget_->is_hotseat_forced_to_show() && drag_status_ == kDragNone)
     return app_list_visible ? HotseatState::kShown : HotseatState::kExtended;
 
   bool in_split_view = false;
