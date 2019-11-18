@@ -7,16 +7,10 @@
       "backgroundColor": "#FFFFFF"
     },
     {
-      "name": "LayoutIFrame (positioned) IFRAME",
-      "bounds": [104, 104],
-      "contentsOpaque": true,
-      "backgroundColor": "#ADD8E6"
-    },
-    {
-      "name": "LayoutNGBlockFlow (positioned) DIV",
-      "bounds": [200, 200],
-      "contentsOpaque": true,
-      "backgroundColor": "#D3D3D3",
+      "name": "LayoutButton INPUT id='control' class='composited'",
+      "position": [-5, -4],
+      "bounds": [127, 28],
+      "backgroundColor": "#FFFFFF",
       "transform": 1
     }
   ],
@@ -27,7 +21,7 @@
         [1, 0, 0, 0],
         [0, 1, 0, 0],
         [0, 0, 1, 0],
-        [50, 50, 0, 1]
+        [8, 8, 0, 1]
       ]
     }
   ]

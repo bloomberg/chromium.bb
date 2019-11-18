@@ -1,11 +1,11 @@
 <!DOCTYPE HTML>
-<script src="../../resources/run-after-layout-and-paint.js"></script>
 <style>
 #scroller {
     overflow: scroll;
     height: 300px;
     width: 300px;
     background-color: red;
+    border-radius: 5px;
 }
 
 #scrolled {
@@ -27,13 +27,3 @@
     <div id="scrolled"></div>
     <div id="fixed"></div>
 </div>
-<script>
-if (window.internals)
-    internals.settings.setPreferCompositingToLCDTextEnabled(true);
-
-onload = function() {
-    runAfterLayoutAndPaint(function() {
-        scroller.style.borderRadius = '5px';
-    }, true);
-};
-</script>
