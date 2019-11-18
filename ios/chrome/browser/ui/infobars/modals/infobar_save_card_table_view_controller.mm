@@ -8,11 +8,13 @@
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "ios/chrome/browser/infobars/infobar_metrics_recorder.h"
+#import "ios/chrome/browser/ui/autofill/save_card_message_with_links.h"
 #import "ios/chrome/browser/ui/infobars/modals/infobar_modal_constants.h"
 #import "ios/chrome/browser/ui/infobars/modals/infobar_save_card_modal_delegate.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_button_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_edit_item.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_text_link_item.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
 #import "ios/chrome/common/colors/semantic_color_names.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -31,6 +33,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeCardHolderName,
   ItemTypeCardExpireMonth,
   ItemTypeCardExpireYear,
+  ItemTypeCardLegalMessage,
   ItemTypeCardSave,
 };
 
@@ -145,12 +148,17 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [model addItem:expireYearItem
       toSectionWithIdentifier:SectionIdentifierContent];
 
+  for (SaveCardMessageWithLinks* message in self.legalMessages) {
+    TableViewTextLinkItem* legalMessageItem =
+        [[TableViewTextLinkItem alloc] initWithType:ItemTypeCardLegalMessage];
+    legalMessageItem.text = message.messageText;
+    [model addItem:legalMessageItem
+        toSectionWithIdentifier:SectionIdentifierContent];
+  }
+
   TableViewTextButtonItem* saveCardButtonItem =
       [[TableViewTextButtonItem alloc] initWithType:ItemTypeCardSave];
   saveCardButtonItem.textAlignment = NSTextAlignmentNatural;
-  // TODO(crbug.com/1014652): Implement TOS with Links. This might require a
-  // separate item.
-  saveCardButtonItem.text = @"TOS Agreement";
   saveCardButtonItem.buttonText =
       l10n_util::GetNSString(IDS_IOS_AUTOFILL_SAVE_CARD);
   saveCardButtonItem.enabled = self.currentCardSaved;
@@ -210,6 +218,14 @@ typedef NS_ENUM(NSInteger, ItemType) {
                    forControlEvents:UIControlEventEditingChanged];
       editCell.selectionStyle = UITableViewCellSelectionStyleNone;
       editCell.textField.delegate = self;
+      break;
+    }
+    case ItemTypeCardLegalMessage: {
+      TableViewTextLinkCell* linkCell =
+          base::mac::ObjCCast<TableViewTextLinkCell>(cell);
+      linkCell.separatorInset =
+          UIEdgeInsetsMake(0, self.tableView.bounds.size.width, 0, 0);
+      // TODO(crbug.com/1014652): Configure the Links.
       break;
     }
     case ItemTypeCardSave: {
