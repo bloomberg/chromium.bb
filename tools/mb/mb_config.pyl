@@ -2017,6 +2017,7 @@
 
     'release_bot_x86_minimal_symbols_no_clang_cxx11': [
       'release_bot', 'x86', 'minimal_symbols', 'no_clang', 'use_cxx11',
+      'no_goma',
     ],
 
     'tsan_disable_nacl_debug_bot': [
@@ -2390,6 +2391,10 @@
 
     'no_com_init_hooks': {
       'gn_args': 'com_init_check_hook_disabled=true',
+    },
+
+    'no_goma': {
+      'gn_args': 'use_goma=false',
     },
 
     'no_gnome_keyring': {
