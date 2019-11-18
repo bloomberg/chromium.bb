@@ -829,8 +829,7 @@ static INLINE void dec_build_inter_predictors(const AV1_COMMON *cm,
           &inter_pred_params.conv_params.use_dist_wtd_comp_avg, is_compound);
 
       if (!build_for_obmc)
-        av1_init_warp_params(&inter_pred_params, &pd->pre[ref], &warp_types,
-                             ref, xd, mi);
+        av1_init_warp_params(&inter_pred_params, &warp_types, ref, xd, mi);
 
       if (is_masked_compound_type(mi->interinter_comp.type)) {
         av1_init_mask_comp(&inter_pred_params, mi->sb_type,

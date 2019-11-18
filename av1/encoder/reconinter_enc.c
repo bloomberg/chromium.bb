@@ -208,8 +208,7 @@ static INLINE void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
           &inter_pred_params.conv_params.bck_offset,
           &inter_pred_params.conv_params.use_dist_wtd_comp_avg, is_compound);
 
-      av1_init_warp_params(&inter_pred_params, &pre_buf, &warp_types, ref, xd,
-                           mi);
+      av1_init_warp_params(&inter_pred_params, &warp_types, ref, xd, mi);
 
       if (is_masked_compound_type(mi->interinter_comp.type)) {
         av1_init_mask_comp(&inter_pred_params, mi->sb_type,
@@ -457,8 +456,7 @@ void av1_build_inter_predictors_for_planes_single_buf(
                           xd->block_ref_scale_factors[ref], &pd->pre[ref],
                           mi->interp_filters);
     inter_pred_params.conv_params = get_conv_params(0, plane, xd->bd);
-    av1_init_warp_params(&inter_pred_params, &pd->pre[ref], &warp_types, ref,
-                         xd, mi);
+    av1_init_warp_params(&inter_pred_params, &warp_types, ref, xd, mi);
 
     const struct buf_2d *const pre_buf = &pd->pre[ref];
     uint8_t *const dst = get_buf_by_bd(xd, ext_dst[plane]);

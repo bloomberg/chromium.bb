@@ -95,7 +95,6 @@ void av1_init_comp_mode(InterPredParams *inter_pred_params) {
 }
 
 void av1_init_warp_params(InterPredParams *inter_pred_params,
-                          const struct buf_2d *ref_buf,
                           const WarpTypesAllowed *warp_types, int ref,
                           const MACROBLOCKD *xd, const MB_MODE_INFO *mi) {
   if (inter_pred_params->block_height < 8 || inter_pred_params->block_width < 8)
@@ -107,8 +106,6 @@ void av1_init_warp_params(InterPredParams *inter_pred_params,
                      inter_pred_params->scale_factors,
                      &inter_pred_params->warp_params))
     inter_pred_params->mode = WARP_PRED;
-
-  inter_pred_params->ref_frame_buf = *ref_buf;
 }
 
 void av1_init_mask_comp(InterPredParams *inter_pred_params, BLOCK_SIZE bsize,
