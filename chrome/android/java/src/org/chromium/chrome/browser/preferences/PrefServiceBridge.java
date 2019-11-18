@@ -102,20 +102,6 @@ public class PrefServiceBridge {
     }
 
     /**
-     * @return Whether EULA has been accepted by the user.
-     */
-    public boolean isFirstRunEulaAccepted() {
-        return PrefServiceBridgeJni.get().getFirstRunEulaAccepted();
-    }
-
-    /**
-     * Sets the preference that signals when the user has accepted the EULA.
-     */
-    public void setEulaAccepted() {
-        PrefServiceBridgeJni.get().setEulaAccepted();
-    }
-
-    /**
      * @return Whether there is a user set value for kNetworkPredictionOptions.  This should only be
      * used for preference migration. See http://crbug.com/334602
      */
@@ -188,13 +174,11 @@ public class PrefServiceBridge {
         String getString(int preference);
         void setString(int preference, String value);
         boolean isManagedPreference(int preference);
-        boolean getFirstRunEulaAccepted();
         boolean canPrefetchAndPrerender();
         boolean getNetworkPredictionManaged();
         boolean obsoleteNetworkPredictionOptionsHasUserSetting();
         boolean getNetworkPredictionEnabled();
         void setNetworkPredictionEnabled(boolean enabled);
-        void setEulaAccepted();
         boolean isMetricsReportingEnabled();
         void setMetricsReportingEnabled(boolean enabled);
         boolean isMetricsReportingManaged();

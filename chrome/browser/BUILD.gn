@@ -2763,6 +2763,7 @@ jumbo_static_library("browser") {
       "download/android/service/download_task_scheduler.h",
       "engagement/site_engagement_service_android.cc",
       "engagement/site_engagement_service_android.h",
+      "first_run/android/first_run_utils.cc",
       "history/android/android_history_provider_service.cc",
       "history/android/android_history_provider_service.h",
       "history/android/android_provider_backend.cc",

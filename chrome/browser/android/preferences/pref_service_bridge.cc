@@ -34,7 +34,6 @@
 #include "components/metrics/metrics_pref_names.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_service.h"
-#include "components/web_resource/web_resource_pref_names.h"
 #include "content/public/browser/browser_thread.h"
 
 using base::android::ConvertJavaStringToUTF8;
@@ -154,14 +153,6 @@ JNI_PrefServiceBridge_ObsoleteNetworkPredictionOptionsHasUserSetting(
     JNIEnv* env) {
   return GetPrefService()->GetUserPrefValue(
       prefs::kNetworkPredictionOptions) != NULL;
-}
-
-static jboolean JNI_PrefServiceBridge_GetFirstRunEulaAccepted(JNIEnv* env) {
-  return g_browser_process->local_state()->GetBoolean(prefs::kEulaAccepted);
-}
-
-static void JNI_PrefServiceBridge_SetEulaAccepted(JNIEnv* env) {
-  g_browser_process->local_state()->SetBoolean(prefs::kEulaAccepted, true);
 }
 
 const char* PrefServiceBridge::GetPrefNameExposedToJava(int pref_index) {
