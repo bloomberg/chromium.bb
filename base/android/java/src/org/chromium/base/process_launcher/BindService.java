@@ -14,6 +14,7 @@ import android.os.Handler;
 import android.os.Process;
 import android.os.UserHandle;
 
+import org.chromium.base.BuildConfig;
 import org.chromium.base.BuildInfo;
 import org.chromium.base.StrictModeContext;
 
@@ -30,7 +31,7 @@ final class BindService {
         Method bindMethod = null;
         Method updateServiceGroupMethod = null;
         try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
-            if (BuildInfo.isAtLeastQ()) {
+            if (BuildInfo.isAtLeastQ() && !BuildConfig.IS_INCREMENTAL_INSTALL) {
                 Class<?> clazz =
                         Class.forName("org.chromium.base.process_launcher.BindServiceInternal");
                 bindMethod = clazz.getDeclaredMethod("doBindServiceQ", Context.class, Intent.class,
