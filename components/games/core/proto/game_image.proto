@@ -6,19 +6,17 @@ syntax = "proto3";
 
 package games;
 
-import "game_image.proto";
-
 option optimize_for = LITE_RUNTIME;
 
-message Game {
-  // URL at which the Web game can be played.
-  string url = 1;
+enum GameImageType {
+  GAME_IMAGE_TYPE_UNSPECIFIED = 0;
+  GAME_IMAGE_TYPE_CARD = 1;
+  GAME_IMAGE_TYPE_THUMBNAIL = 2;
+}
 
-  string title = 2;
+message GameImage {
+  GameImageType type = 1;
 
-  reserved 5;
-
-  int32 id = 3;
-
-  repeated GameImage images = 4;
+  // Publicly accessible URL of the image.
+  string url = 2;
 }
