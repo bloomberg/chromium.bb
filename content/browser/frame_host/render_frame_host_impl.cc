@@ -445,7 +445,8 @@ base::Histogram::Sample HashInterfaceNameToHistogramSample(
 void LogRendererKillCrashKeys(const GURL& site_url) {
   static auto* site_url_key = base::debug::AllocateCrashKeyString(
       "current_site_url", base::debug::CrashKeySize::Size64);
-  base::debug::SetCrashKeyString(site_url_key, site_url.spec());
+  base::debug::SetCrashKeyString(site_url_key,
+                                 site_url.possibly_invalid_spec());
 }
 
 url::Origin GetOriginForURLLoaderFactoryUnchecked(
@@ -5274,7 +5275,7 @@ void RenderFrameHostImpl::CommitNavigation(
     base::debug::SetCrashKeyString(
         base::debug::AllocateCrashKeyString("lock_url",
                                             base::debug::CrashKeySize::Size64),
-        lock_url.spec());
+        lock_url.possibly_invalid_spec());
     base::debug::SetCrashKeyString(
         base::debug::AllocateCrashKeyString("commit_origin",
                                             base::debug::CrashKeySize::Size64),
@@ -7236,7 +7237,7 @@ RenderFrameHostImpl::CommitAsTracedValue(
   value->SetInteger("site id", site_instance_->GetId());
   value->SetString("process lock", ChildProcessSecurityPolicyImpl::GetInstance()
                                        ->GetOriginLock(process_->GetID())
-                                       .spec());
+                                       .possibly_invalid_spec());
   value->SetString("origin", validated_params->origin.Serialize());
   value->SetInteger("transition", validated_params->transition);
 
@@ -7735,7 +7736,7 @@ void RenderFrameHostImpl::LogCannotCommitUrlCrashKeys(
   base::debug::SetCrashKeyString(
       base::debug::AllocateCrashKeyString("site_lock",
                                           base::debug::CrashKeySize::Size256),
-      GetSiteInstance()->lock_url().spec());
+      GetSiteInstance()->lock_url().possibly_invalid_spec());
 
   if (!GetSiteInstance()->IsDefaultSiteInstance()) {
     base::debug::SetCrashKeyString(
@@ -7800,7 +7801,9 @@ void RenderFrameHostImpl::LogCannotCommitUrlCrashKeys(
     base::debug::SetCrashKeyString(
         base::debug::AllocateCrashKeyString("starting_site_instance",
                                             base::debug::CrashKeySize::Size64),
-        navigation_request->GetStartingSiteInstance()->GetSiteURL().spec());
+        navigation_request->GetStartingSiteInstance()
+            ->GetSiteURL()
+            .possibly_invalid_spec());
 
     // Recompute the target SiteInstance to see if it matches the current
     // one at commit time.
@@ -7896,7 +7899,9 @@ void RenderFrameHostImpl::LogCannotCommitOriginCrashKeys(
     base::debug::SetCrashKeyString(
         base::debug::AllocateCrashKeyString("starting_site_instance",
                                             base::debug::CrashKeySize::Size64),
-        navigation_request->GetStartingSiteInstance()->GetSiteURL().spec());
+        navigation_request->GetStartingSiteInstance()
+            ->GetSiteURL()
+            .possibly_invalid_spec());
   }
 }
 

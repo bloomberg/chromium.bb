@@ -1445,9 +1445,10 @@ bool ChildProcessSecurityPolicyImpl::CanAccessDataForOrigin(int child_id,
 
   // Returning false here will result in a renderer kill.  Set some crash
   // keys that will help understand the circumstances of that kill.
-  LogCanAccessDataForOriginCrashKeys(expected_process_lock.spec(),
-                                     GetKilledProcessOriginLock(security_state),
-                                     url.GetOrigin().spec(), failure_reason);
+  LogCanAccessDataForOriginCrashKeys(
+      expected_process_lock.possibly_invalid_spec(),
+      GetKilledProcessOriginLock(security_state), url.GetOrigin().spec(),
+      failure_reason);
   return false;
 }
 
@@ -1861,7 +1862,7 @@ std::string ChildProcessSecurityPolicyImpl::GetKilledProcessOriginLock(
   if (security_state->origin_lock().is_empty())
     return "(none)";
 
-  return security_state->origin_lock().spec();
+  return security_state->origin_lock().possibly_invalid_spec();
 }
 
 void ChildProcessSecurityPolicyImpl::LogKilledProcessOriginLock(int child_id) {
