@@ -111,6 +111,8 @@ _OS_SPECIFIC_FILTER['mac'] = [
     'ChromeDriverTest.testWindowFullScreen',
     # https://bugs.chromium.org/p/chromium/issues/detail?id=1025967
     'ChromeDriverTestWithCustomCapability.testEagerMode',
+    # https://bugs.chromium.org/p/chromium/issues/detail?id=1025981
+    'ChromeDriverSiteIsolation.testCanClickOOPIF',
 ]
 
 _DESKTOP_NEGATIVE_FILTER = [
