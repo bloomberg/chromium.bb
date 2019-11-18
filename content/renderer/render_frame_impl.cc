@@ -3448,11 +3448,10 @@ void RenderFrameImpl::CommitNavigationWithParams(
     return;
   }
 
-  // TODO(yoichio): This is temporary switch to have chrome WebUI
-  // use the old web APIs.
-  // After completion of the migration, we should remove this.
-  // See crbug.com/924871 for detail.
-  if (GetContentClient()->renderer()->RequiresHtmlImports(common_params->url)) {
+  // TODO(738611): This is temporary switch to have chrome WebUI use the old web
+  // APIs. After completion of the migration, we should remove this.
+  if (GetContentClient()->renderer()->RequiresWebComponentsV0(
+          common_params->url)) {
     blink::WebRuntimeFeatures::EnableShadowDOMV0(true);
     blink::WebRuntimeFeatures::EnableCustomElementsV0(true);
     blink::WebRuntimeFeatures::EnableHTMLImports(true);
