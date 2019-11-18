@@ -310,6 +310,12 @@ void MediaNotificationService::OnContainerDraggedOut(const std::string& id,
     observer.OnNotificationListChanged();
 }
 
+void MediaNotificationService::Shutdown() {
+  // |cast_notification_provider_| depends on MediaRouter, which is another
+  // keyed service.
+  cast_notification_provider_.reset();
+}
+
 void MediaNotificationService::OnOverlayNotificationClosed(
     const std::string& id) {
   // If the session has been destroyed, no action is needed.

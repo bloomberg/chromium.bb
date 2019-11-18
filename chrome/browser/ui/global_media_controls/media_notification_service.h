@@ -74,6 +74,9 @@ class MediaNotificationService
   void OnContainerDestroyed(const std::string& id) override;
   void OnContainerDraggedOut(const std::string& id, gfx::Rect bounds) override;
 
+  // KeyedService implementation.
+  void Shutdown() override;
+
   // Called by the |overlay_media_notifications_manager_| when an overlay
   // notification is closed.
   void OnOverlayNotificationClosed(const std::string& id);
