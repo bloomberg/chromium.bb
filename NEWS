@@ -16,6 +16,16 @@ issues]].
 - Fix a problem with Non-ASCII characters in file paths in the Python
   bindings, thanks to André-Abush Clause.
 - Eliminate some of the globals variables thanks to Bert Frees.
+- The display and the translation are now separated at least
+  internally, thanks to Bert Frees. As a reminder, there are two
+  phases to a braille conversion:
+  - translation :: liblouis uses the rules in the translation table to
+                   convert characters to dots
+  - display :: display the dots as characters. Usually liblouis uses
+               the characters defined in display rules (in display
+               tables) but as a fallback it uses mappings defined in
+               the translation table, e.g. letter rules.
+
 ** Deprecation notice
 None
 
