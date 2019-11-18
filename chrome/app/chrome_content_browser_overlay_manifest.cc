@@ -122,22 +122,7 @@ const service_manager::Manifest& GetChromeContentBrowserOverlayManifest() {
         .RequireCapability("xr_device_service", "xr_device_provider")
         .RequireCapability("xr_device_service", "xr_device_test_hook")
 #if defined(OS_CHROMEOS)
-        .ExposeInterfaceFilterCapability_Deprecated(
-            "navigation:frame",
-            chromeos::network_config::mojom::kNetworkConfigCapability,
-            service_manager::Manifest::InterfaceList<
-                chromeos::network_config::mojom::CrosNetworkConfig>())
-        .ExposeInterfaceFilterCapability_Deprecated(
-            "navigation:frame", "cellular_setup",
-            service_manager::Manifest::InterfaceList<
-                chromeos::cellular_setup::mojom::CellularSetup>())
         .RequireCapability("multidevice_setup", "multidevice_setup")
-        .ExposeInterfaceFilterCapability_Deprecated(
-            "navigation:frame", "multidevice_setup",
-            service_manager::Manifest::InterfaceList<
-                chromeos::multidevice_setup::mojom::MultiDeviceSetup,
-                chromeos::multidevice_setup::mojom::
-                    PrivilegedHostDeviceSetter>())
 #endif
         .ExposeInterfaceFilterCapability_Deprecated(
             "navigation:frame", "renderer",
@@ -147,10 +132,14 @@ const service_manager::Manifest& GetChromeContentBrowserOverlayManifest() {
                 chrome::mojom::OfflinePageAutoFetcher,
 #if defined(OS_CHROMEOS)
                 chromeos_camera::mojom::CameraAppHelper,
+                chromeos::cellular_setup::mojom::CellularSetup,
                 chromeos::crostini_installer::mojom::PageHandlerFactory,
                 chromeos::ime::mojom::InputEngineManager,
                 chromeos::machine_learning::mojom::PageHandler,
                 chromeos::media_perception::mojom::MediaPerception,
+                chromeos::multidevice_setup::mojom::MultiDeviceSetup,
+                chromeos::multidevice_setup::mojom::PrivilegedHostDeviceSetter,
+                chromeos::network_config::mojom::CrosNetworkConfig,
                 cros::mojom::CameraAppDeviceProvider,
 #endif
                 contextual_search::mojom::ContextualSearchJsApiService,
