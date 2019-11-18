@@ -8170,12 +8170,9 @@ BrowserInterfaceBrokerProxy& Document::GetBrowserInterfaceBroker() {
 }
 
 DocumentResourceCoordinator* Document::GetResourceCoordinator() {
-  if (!resource_coordinator_) {
-    auto* interface_provider = GetInterfaceProvider();
-    if (interface_provider) {
-      resource_coordinator_ =
-          DocumentResourceCoordinator::MaybeCreate(interface_provider);
-    }
+  if (!resource_coordinator_ && GetFrame()) {
+    resource_coordinator_ =
+        DocumentResourceCoordinator::MaybeCreate(GetBrowserInterfaceBroker());
   }
   return resource_coordinator_.get();
 }
