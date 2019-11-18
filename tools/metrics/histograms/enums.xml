@@ -35583,6 +35583,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="0" label="Success"/>
   <int value="1" label="No response"/>
   <int value="2" label="Failed to lock"/>
+  <int value="3" label="Unexpected lock state"/>
 </enum>
 
 <enum name="LoginConsumerWhitelist">
