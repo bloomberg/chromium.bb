@@ -19,7 +19,6 @@ from chromite.cbuildbot import manifest_version
 from chromite.lib import results_lib
 from chromite.cbuildbot import trybot_patch_pool
 from chromite.cbuildbot.stages import build_stages
-from chromite.cbuildbot.stages import completion_stages
 from chromite.cbuildbot.stages import report_stages
 from chromite.cbuildbot.stages import sync_stages
 from chromite.lib import commandline
@@ -369,50 +368,4 @@ class ManifestVersionedBuilder(Builder):
 
   def RunStages(self):
     """Subclasses must override this method."""
-    raise NotImplementedError()
-
-
-class PreCqBuilder(Builder):
-  """Builder that runs PreCQ tests.
-
-  PreCq builders that need to run custom stages (build or test) should derive
-  from this class. Traditional builders whose behavior is driven by
-  config_lib.CONFIG_TYPE_PRECQ should derive from SimpleBuilder. The preference
-  for PreCQ builders is to use this.
-
-  Note: Override RunTestStages, NOT RunStages like a normal Builder.
-  """
-
-  def __init__(self, *args, **kwargs):
-    """Initializes a buildbot builder."""
-    super(PreCqBuilder, self).__init__(*args, **kwargs)
-    self.sync_stage = None
-    self.completion_instance = None
-
-  def GetSyncInstance(self):
-    """Returns an instance of a SyncStage that should be run."""
-    self.sync_stage = self._GetStageInstance(sync_stages.PreCQSyncStage,
-                                             self.patch_pool.gerrit_patches)
-    self.patch_pool.gerrit_patches = []
-
-    return self.sync_stage
-
-  def RunStages(self):
-    """Run something after sync/reexec."""
-    try:
-      self.RunTestStages()
-    finally:
-      build_identifier, _ = self._run.GetCIDBHandle()
-      buildbucket_id = build_identifier.buildbucket_id
-      was_build_successful = results_lib.Results.BuildSucceededSoFar(
-          self.buildstore, buildbucket_id)
-
-      self.completion_instance = self._GetStageInstance(
-          completion_stages.PreCQCompletionStage, self.sync_stage,
-          was_build_successful)
-
-      self.completion_instance.Run()
-
-  def RunTestStages(self):
-    """Subclasses must override this method. Runs the build/test stages."""
     raise NotImplementedError()

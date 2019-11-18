@@ -692,30 +692,6 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
         timeout=timeout)
 
 
-class PreCQCompletionStage(generic_stages.BuilderStage):
-  """Reports the status of a trybot run to Google Storage and Gerrit."""
-
-  category = constants.CI_INFRA_STAGE
-
-  def __init__(self, builder_run, buildstore, sync_stage, success, **kwargs):
-    super(PreCQCompletionStage, self).__init__(builder_run, buildstore,
-                                               **kwargs)
-    self.sync_stage = sync_stage
-    self.success = success
-
-  def PerformStage(self):
-    # Update Gerrit and Google Storage with the Pre-CQ status.
-    if not self.sync_stage.pool:
-      logging.warning('No validation pool available. Skipping PreCQCompletion.')
-      return
-
-    if self.success:
-      self.sync_stage.pool.HandlePreCQPerConfigSuccess()
-    else:
-      message = self.GetBuildFailureMessage()
-      self.sync_stage.pool.HandleValidationFailure([message])
-
-
 class UpdateChromeosLKGMStage(generic_stages.BuilderStage):
   """Update the CHROMEOS_LKGM file in the chromium repository."""
 

@@ -72,33 +72,6 @@ class UnittestStressBuilder(generic_builders.ManifestVersionedBuilder):
       self._RunStage(test_stages.UnitTestStage, board, suffix=' - %d' % i)
 
 
-class SignerTestsBuilder(generic_builders.PreCqBuilder):
-  """Builder that runs the cros-signing tests, and nothing else."""
-  def RunTestStages(self):
-    """Run the signer tests."""
-    self._RunStage(build_stages.InitSDKStage)
-    self._RunStage(test_stages.CrosSigningTestStage)
-
-
-class ChromiteTestsBuilder(generic_builders.PreCqBuilder):
-  """Builder that runs chromite unit tests."""
-  def RunTestStages(self):
-    """Run something after sync/reexec."""
-    self._RunStage(build_stages.InitSDKStage)
-    self._RunStage(build_stages.UpdateSDKStage)
-    self._RunStage(test_stages.ChromiteTestStage)
-    # This test is a little flaky, so retry it if needed.
-    # self._RunStage(generic_stages.RetryStage, 2,
-    #                test_stages.CidbIntegrationTestStage)
-
-
-class CbuildbotLaunchTestBuilder(generic_builders.PreCqBuilder):
-  """Builder that runs cbuildbot_launch tests."""
-  def RunTestStages(self):
-    """Run something after sync/reexec."""
-    self._RunStage(test_stages.CbuildbotLaunchTestStage)
-
-
 class VMInformationalBuilder(simple_builders.SimpleBuilder):
   """Builder that runs vm test for informational purpose."""
   def _RunDebugSymbolStages(self, builder_run, board):

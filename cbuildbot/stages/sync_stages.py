@@ -1134,53 +1134,6 @@ class CommitQueueSyncStage(MasterSlaveLKGMSyncStage):
     self.WriteChangesToMetadata(self.pool.applied)
 
 
-class PreCQSyncStage(SyncStage):
-  """Sync and apply patches to test if they compile."""
-
-  category = constants.CI_INFRA_STAGE
-
-  def __init__(self, builder_run, buildstore, patches, **kwargs):
-    super(PreCQSyncStage, self).__init__(builder_run, buildstore, **kwargs)
-
-    # As a workaround for crbug.com/432706, we scan patches to see if they
-    # are already being merged. If they are, we don't test them in the PreCQ.
-    self.patches = [p for p in patches if not p.IsBeingMerged()]
-
-    if patches and not self.patches:
-      cros_build_lib.Die('No patches that still need testing.')
-
-    # The ValidationPool of patches to test. Initialized in PerformStage, and
-    # refreshed after bootstrapping by HandleSkip.
-    self.pool = None
-
-  def HandleSkip(self):
-    """Handles skip and loads validation pool from disk."""
-    super(PreCQSyncStage, self).HandleSkip()
-    filename = self._run.options.validation_pool
-    if filename:
-      self.pool = validation_pool.ValidationPool.Load(
-          filename, builder_run=self._run)
-
-  def PerformStage(self):
-    super(PreCQSyncStage, self).PerformStage()
-    self.pool = validation_pool.ValidationPool.AcquirePreCQPool(
-        overlays=self._run.config.overlays,
-        build_root=self._build_root,
-        build_number=self._run.buildnumber,
-        builder_name=self._run.config.name,
-        buildbucket_id=self._run.options.buildbucket_id,
-        dryrun=self._run.options.debug_forced,
-        candidates=self.patches,
-        builder_run=self._run)
-    self.pool.ApplyPoolIntoRepo()
-
-    if not self.pool.applied and self.patches:
-      cros_build_lib.Die('No changes have been applied.')
-
-    changes = self.pool.applied or self.patches
-    self.WriteChangesToMetadata(changes)
-
-
 class PreCQLauncherStage(SyncStage):
   """Scans for CLs and automatically launches Pre-CQ jobs to test them."""
 
