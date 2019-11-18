@@ -12,9 +12,17 @@ group("closure_compile") {
 
 js_type_check("compile_resources") {
   deps = [
+    ":layout",
     ":modes",
     ":recordtime",
     ":review_result",
+  ]
+}
+
+js_library("layout") {
+  deps = [
+    "../..:type",
+    "//ui/webui/resources/js:assert",
   ]
 }
 
