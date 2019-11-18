@@ -19863,6 +19863,7 @@ Called by update_net_error_codes.py.-->
   <int value="444" label="AUTOFILL_PRIVATE_ON_PERSONAL_DATA_CHANGED"/>
   <int value="445" label="PRINTING_ON_JOB_STATUS_CHANGED"/>
   <int value="446" label="DECLARATIVE_NET_REQUEST_ON_RULE_MATCHED_DEBUG"/>
+  <int value="447" label="TERMINAL_PRIVATE_ON_SETTINGS_CHANGED"/>
 </enum>
 
 <enum name="ExtensionFileWriteResult">
@@ -21344,6 +21345,8 @@ Called by update_net_error_codes.py.-->
   <int value="1412" label="WEBSTOREPRIVATE_GETEXTENSIONSTATUS"/>
   <int value="1413" label="INPUTMETHODPRIVATE_SETSELECTIONRANGE"/>
   <int value="1414" label="VIRTUALKEYBOARDPRIVATE_SETAREATOREMAINONSCREEN"/>
+  <int value="1415" label="TERMINALPRIVATE_GETSETTINGS"/>
+  <int value="1416" label="TERMINALPRIVATE_SETSETTINGS"/>
 </enum>
 
 <enum name="ExtensionIconState">
