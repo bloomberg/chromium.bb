@@ -2084,7 +2084,7 @@
   {
     "name": "enable-webnfc",
     "owners": [ "rijubrata.bhaumik@intel.com","reillyg" ],
-    "expiry_milestone": 79
+    "expiry_milestone": 82
   },
   {
     "name": "enable-webrtc-hide-local-ips-with-mdns",
