@@ -553,22 +553,22 @@ void ExtensionApps::Uninstall(const std::string& app_id,
 }
 
 void ExtensionApps::PauseApp(const std::string& app_id) {
-  if (paused_apps.find(app_id) != paused_apps.end()) {
+  if (paused_apps_.find(app_id) != paused_apps_.end()) {
     return;
   }
 
-  paused_apps.insert(app_id);
+  paused_apps_.insert(app_id);
   SetIconEffect(app_id);
 
   // TODO(crbug.com/1011235): If the app is running, Stop the app.
 }
 
 void ExtensionApps::UnpauseApps(const std::string& app_id) {
-  if (paused_apps.find(app_id) == paused_apps.end()) {
+  if (paused_apps_.find(app_id) == paused_apps_.end()) {
     return;
   }
 
-  paused_apps.erase(app_id);
+  paused_apps_.erase(app_id);
   SetIconEffect(app_id);
 }
 
@@ -761,7 +761,7 @@ void ExtensionApps::OnExtensionUninstalled(
   }
 
   enable_flow_map_.erase(extension->id());
-  paused_apps.erase(extension->id());
+  paused_apps_.erase(extension->id());
 
   // Construct an App with only the information required to identify an
   // uninstallation.
@@ -1067,7 +1067,7 @@ IconEffects ExtensionApps::GetIconEffects(
     icon_effects =
         static_cast<IconEffects>(icon_effects | IconEffects::kRoundCorners);
   }
-  if (paused_apps.find(extension->id()) != paused_apps.end()) {
+  if (paused_apps_.find(extension->id()) != paused_apps_.end()) {
     icon_effects =
         static_cast<IconEffects>(icon_effects | IconEffects::kPaused);
   }

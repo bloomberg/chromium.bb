@@ -210,7 +210,7 @@ class ExtensionApps : public apps::mojom::Publisher,
   using EnableFlowPtr = std::unique_ptr<ExtensionAppsEnableFlow>;
   std::map<std::string, EnableFlowPtr> enable_flow_map_;
 
-  std::set<std::string> paused_apps;
+  std::set<std::string> paused_apps_;
 
   ArcAppListPrefs* arc_prefs_ = nullptr;
 
