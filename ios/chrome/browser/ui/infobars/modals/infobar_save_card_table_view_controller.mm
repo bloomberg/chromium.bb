@@ -281,7 +281,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 - (void)tableViewTextLinkCell:(TableViewTextLinkCell*)cell
             didRequestOpenURL:(const GURL&)URL {
-  // TODO(crbug.com/1014652): Handle tapped URLs.
+  [self.saveCardModalDelegate dismissModalAndOpenURL:URL];
 }
 
 #pragma mark - Private Methods

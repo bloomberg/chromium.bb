@@ -202,6 +202,17 @@
   [self modalInfobarButtonWasAccepted:self];
 }
 
+- (void)dismissModalAndOpenURL:(const GURL&)linkURL {
+  // Before passing the URL to the block, make sure the block has a copy of
+  // the URL and not just a reference.
+  const GURL URL(linkURL);
+  [self dismissInfobarModal:self
+                   animated:YES
+                 completion:^{
+                   self.saveCardInfoBarDelegate->OnLegalMessageLinkClicked(URL);
+                 }];
+}
+
 #pragma mark - Private
 
 // TODO(crbug.com/1014652): Move to a future Mediator since this doesn't belong
