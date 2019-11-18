@@ -55,17 +55,22 @@
   # Leave lots of space for generated_resources since it has most of our
   # strings.
   "chrome/app/generated_resources.grd": {
-    "META": {"join": 2},
+    # Big alignment since strings (previous item) are frequently added.
+    "META": {"join": 2, "align": 200},
     "messages": [800],
   },
 
   "chrome/app/resources/locale_settings.grd": {
+    # Big alignment since strings (previous item) are frequently added.
+    "META": {"align": 1000},
     "messages": [10000],
   },
 
   # These each start with the same resource id because we only use one
   # file for each build (chromiumos, google_chromeos, linux, mac, or win).
   "chrome/app/resources/locale_settings_chromiumos.grd": {
+    # Big alignment since strings (previous item) are frequently added.
+    "META": {"align": 100},
     "messages": [10100],
   },
   "chrome/app/resources/locale_settings_google_chromeos.grd": {
@@ -94,6 +99,8 @@
 
   # START chrome/browser section.
   "chrome/browser/browser_resources.grd": {
+    # Big alignment at start of section.
+    "META": {"align": 100},
     "includes": [11000],
     "structures": [11800],
   },
@@ -186,6 +193,8 @@
 
   # START chrome/ WebUI resources section
   "chrome/browser/resources/bluetooth_internals/resources.grd": {
+    # Big alignment at start of section.
+    "META": {"align": 100},
     "includes": [13970],
   },
   "chrome/browser/resources/omnibox/resources.grd": {
@@ -201,6 +210,8 @@
 
   # START chrome/ miscellaneous section.
   "chrome/android/features/test_dummy/internal/resources/resources.grd": {
+    # Big alignment at start of section.
+    "META": {"align": 100},
     "includes": [14090],
   },
   "chrome/common/common_resources.grd": {
@@ -221,6 +232,8 @@
 
   # START chromeos/ section.
   "chromeos/chromeos_strings.grd": {
+    # Big alignment at start of section.
+    "META": {"align": 100},
     "messages": [14530],
   },
   "chromeos/components/help_app_ui/resources/help_app_resources.grd": {
@@ -251,6 +264,8 @@
   # We only use one file depending on whether we're building Chromium or
   # Google Chrome.
   "components/components_chromium_strings.grd": {
+    # Big alignment at start of section.
+    "META": {"align": 100},
     "messages": [15060],
   },
   "components/components_google_chrome_strings.grd": {
@@ -258,6 +273,7 @@
   },
 
   "components/components_locale_settings.grd": {
+    "META": {"join": 2},
     "includes": [15080],
     "messages": [15090],
   },
@@ -329,13 +345,15 @@
   "ios/chrome/content_widget_extension/strings/ios_content_widget_extension_google_chrome_strings.grd": {
     "messages": [3080],
   },
+
   # END ios/ section.
 
   # START content/ section.
   # content/ and ios/web/ must start at the same id.
   # App only use one file depending on whether it is iOS or other platform.
   "content/app/resources/content_resources.grd": {
-    "META": {"join": 3},
+    # Big alignment at start of section.
+    "META": {"join": 3, "align": 100},
     "structures": [20000],
   },
   "content/browser/webrtc/resources/resources.grd": {
@@ -369,6 +387,8 @@
   # START "everything else" section.
   # Everything but chrome/, components/, content/, and ios/
   "android_webview/ui/aw_resources.grd": {
+    # Big alignment at start of section.
+    "META": {"join": 2, "align": 100},
     "includes": [23100],
   },
   "android_webview/ui/aw_strings.grd": {
