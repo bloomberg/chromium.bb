@@ -116,6 +116,8 @@ void av1_init_mask_comp(InterPredParams *inter_pred_params, BLOCK_SIZE bsize,
   inter_pred_params->sb_type = bsize;
   inter_pred_params->mask_comp = *mask_comp;
   inter_pred_params->comp_mode = MASK_COMP;
+
+  inter_pred_params->conv_params.do_average = 0;
 }
 
 void av1_make_inter_predictor(const uint8_t *src, int src_stride, uint8_t *dst,

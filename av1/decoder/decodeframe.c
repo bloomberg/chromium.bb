@@ -695,6 +695,7 @@ static INLINE void dec_build_inter_predictors(const AV1_COMMON *cm,
 
     int row = row_start;
     int src_stride;
+    ref = 0;
     for (int y = 0; y < b8_h; y += b4_h) {
       int col = col_start;
       for (int x = 0; x < b8_w; x += b4_w) {
@@ -704,12 +705,10 @@ static INLINE void dec_build_inter_predictors(const AV1_COMMON *cm,
         InterPredParams inter_pred_params;
         assert(bw < 8 || bh < 8);
         inter_pred_params.conv_params = get_conv_params_no_round(
-            0, plane, xd->tmp_conv_dst, tmp_dst_stride, is_compound, xd->bd);
+            ref, plane, xd->tmp_conv_dst, tmp_dst_stride, is_compound, xd->bd);
         inter_pred_params.conv_params.use_dist_wtd_comp_avg = 0;
         struct buf_2d *const dst_buf = &pd->dst;
         uint8_t *dst = dst_buf->buf + dst_buf->stride * y + x;
-
-        ref = 0;
         const RefCntBuffer *ref_buf =
             get_ref_frame_buf(cm, this_mbmi->ref_frame[ref]);
         const struct scale_factors *ref_scale_factors =
@@ -805,13 +804,6 @@ static INLINE void dec_build_inter_predictors(const AV1_COMMON *cm,
                        &src_stride[ref]);
     }
 
-    inter_pred_params.conv_params = get_conv_params_no_round(
-        0, plane, xd->tmp_conv_dst, MAX_SB_SIZE, is_compound, xd->bd);
-    av1_dist_wtd_comp_weight_assign(
-        cm, mi, 0, &inter_pred_params.conv_params.fwd_offset,
-        &inter_pred_params.conv_params.bck_offset,
-        &inter_pred_params.conv_params.use_dist_wtd_comp_avg, is_compound);
-
     for (ref = 0; ref < 1 + is_compound; ++ref) {
       struct buf_2d *const pre_buf = is_intrabc ? dst_buf : &pd->pre[ref];
       const struct scale_factors *const sf =
@@ -827,6 +819,15 @@ static INLINE void dec_build_inter_predictors(const AV1_COMMON *cm,
                             pd->subsampling_y, xd->bd, is_cur_buf_hbd(xd),
                             mi->use_intrabc, sf, pre_buf, mi->interp_filters);
       if (is_compound) av1_init_comp_mode(&inter_pred_params);
+
+      inter_pred_params.conv_params = get_conv_params_no_round(
+          ref, plane, xd->tmp_conv_dst, MAX_SB_SIZE, is_compound, xd->bd);
+
+      av1_dist_wtd_comp_weight_assign(
+          cm, mi, 0, &inter_pred_params.conv_params.fwd_offset,
+          &inter_pred_params.conv_params.bck_offset,
+          &inter_pred_params.conv_params.use_dist_wtd_comp_avg, is_compound);
+
       if (!build_for_obmc)
         av1_init_warp_params(&inter_pred_params, &pd->pre[ref], &warp_types,
                              ref, xd, mi);

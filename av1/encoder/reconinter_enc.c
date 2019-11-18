@@ -158,7 +158,7 @@ static INLINE void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
                               pre_buf, this_mbmi->interp_filters);
 
         inter_pred_params.conv_params = get_conv_params_no_round(
-            0, plane, xd->tmp_conv_dst, tmp_dst_stride, 0, xd->bd);
+            ref, plane, xd->tmp_conv_dst, tmp_dst_stride, 0, xd->bd);
         inter_pred_params.conv_params.use_dist_wtd_comp_avg = 0;
 
         av1_build_inter_predictor(pre_buf->buf, pre_buf->stride, dst,
@@ -201,14 +201,12 @@ static INLINE void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
       if (is_compound) av1_init_comp_mode(&inter_pred_params);
 
       inter_pred_params.conv_params = get_conv_params_no_round(
-          0, plane, xd->tmp_conv_dst, MAX_SB_SIZE, is_compound, xd->bd);
+          ref, plane, xd->tmp_conv_dst, MAX_SB_SIZE, is_compound, xd->bd);
 
       av1_dist_wtd_comp_weight_assign(
           cm, mi, 0, &inter_pred_params.conv_params.fwd_offset,
           &inter_pred_params.conv_params.bck_offset,
           &inter_pred_params.conv_params.use_dist_wtd_comp_avg, is_compound);
-
-      inter_pred_params.conv_params.do_average = ref;
 
       av1_init_warp_params(&inter_pred_params, &pre_buf, &warp_types, ref, xd,
                            mi);
