@@ -24,7 +24,7 @@ g.test('b2b', async t => {
 
   const encoder = t.device.createCommandEncoder();
   encoder.copyBufferToBuffer(src, 0, dst, 0, 4);
-  t.device.getQueue().submit([encoder.finish()]);
+  t.device.defaultQueue.submit([encoder.finish()]);
 
   t.expectContents(dst, data);
 });
@@ -61,7 +61,7 @@ g.test('b2t2b', async t => {
     { buffer: dst, rowPitch: 256, imageHeight: 1 },
     { width: 1, height: 1, depth: 1 }
   );
-  t.device.getQueue().submit([encoder.finish()]);
+  t.device.defaultQueue.submit([encoder.finish()]);
 
   t.expectContents(dst, data);
 });
@@ -105,7 +105,7 @@ g.test('b2t2t2b', async t => {
     { buffer: dst, rowPitch: 256, imageHeight: 1 },
     { width: 1, height: 1, depth: 1 }
   );
-  t.device.getQueue().submit([encoder.finish()]);
+  t.device.defaultQueue.submit([encoder.finish()]);
 
   t.expectContents(dst, data);
 });

@@ -36,7 +36,7 @@ g.test('clear', async t => {
     { buffer: dst, rowPitch: 256, imageHeight: 1 },
     { width: 1, height: 1, depth: 1 }
   );
-  t.device.getQueue().submit([encoder.finish()]);
+  t.device.defaultQueue.submit([encoder.finish()]);
 
   t.expectContents(dst, new Uint8Array([0x00, 0xff, 0x00, 0xff]));
 });

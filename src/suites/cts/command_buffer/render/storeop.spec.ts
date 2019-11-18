@@ -71,7 +71,7 @@ g.test('storeOp controls whether 1x1 drawn quad is stored', async t => {
     { buffer: dstBuffer, rowPitch: 256, imageHeight: 1 },
     { width: 1, height: 1, depth: 1 }
   );
-  t.device.getQueue().submit([encoder.finish()]);
+  t.device.defaultQueue.submit([encoder.finish()]);
 
   // expect the buffer to be clear
   const expectedContent = new Uint32Array([t.params._expected]);

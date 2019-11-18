@@ -21,7 +21,7 @@ class F extends Fixture {
       usage: 0xffff, // Invalid GPUBufferUsage
     });
     // TODO: Remove when chrome does it automatically.
-    this.device.getQueue().submit([]);
+    this.device.defaultQueue.submit([]);
   }
 
   // Expect an uncapturederror event to occur. Note: this MUST be awaited, because

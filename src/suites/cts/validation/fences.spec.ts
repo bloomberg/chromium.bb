@@ -59,7 +59,7 @@ g.test('signal a fence on a different device than it was created on is invalid',
   const fence = t.queue.createFence();
 
   const anotherDevice = await t.device.adapter.requestDevice();
-  const anotherQueue = anotherDevice.getQueue();
+  const anotherQueue = anotherDevice.defaultQueue;
 
   t.expectValidationError(() => {
     anotherQueue.signal(fence, 2);
@@ -70,7 +70,7 @@ g.test('signal a fence on a different device does not update fence signaled valu
   const fence = t.queue.createFence({ initialValue: 1 });
 
   const anotherDevice = await t.device.adapter.requestDevice();
-  const anotherQueue = anotherDevice.getQueue();
+  const anotherQueue = anotherDevice.defaultQueue;
 
   t.expectValidationError(() => {
     anotherQueue.signal(fence, 2);
