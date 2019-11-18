@@ -290,14 +290,15 @@ StatusCode DecoderImpl::DequeueFrame(const DecoderBuffer** out_ptr) {
   return kLibgav1StatusOk;
 }
 
-bool DecoderImpl::AllocateCurrentFrame(const ObuFrameHeader& frame_header) {
+bool DecoderImpl::AllocateCurrentFrame(const ObuFrameHeader& frame_header,
+                                       int border) {
   const ColorConfig& color_config = state_.sequence_header.color_config;
   state_.current_frame->set_chroma_sample_position(
       color_config.chroma_sample_position);
   return state_.current_frame->Realloc(
       color_config.bitdepth, color_config.is_monochrome,
       frame_header.upscaled_width, frame_header.height,
-      color_config.subsampling_x, color_config.subsampling_y, kBorderPixels,
+      color_config.subsampling_x, color_config.subsampling_y, border,
       /*byte_alignment=*/0);
 }
 
@@ -380,7 +381,18 @@ StatusCode DecoderImpl::DecodeTiles(const ObuParser* obu) {
                  "Failed to allocate memory for loop restoration info units.");
     return kLibgav1StatusOutOfMemory;
   }
-  if (!AllocateCurrentFrame(obu->frame_header())) {
+  const bool do_cdef =
+      PostFilter::DoCdef(obu->frame_header(), settings_.post_filter_mask);
+  const int num_planes = obu->sequence_header().color_config.is_monochrome
+                             ? kMaxPlanesMonochrome
+                             : kMaxPlanes;
+  const bool do_restoration =
+      PostFilter::DoRestoration(obu->frame_header().loop_restoration,
+                                settings_.post_filter_mask, num_planes);
+  if (!AllocateCurrentFrame(obu->frame_header(),
+                            (do_cdef && do_restoration)
+                                ? kBorderPixelsCdefAndLoopRestoration
+                                : kBorderPixels)) {
     LIBGAV1_DLOG(ERROR, "Failed to allocate memory for the decoder buffer.");
     return kLibgav1StatusOutOfMemory;
   }
@@ -479,14 +491,6 @@ StatusCode DecoderImpl::DecodeTiles(const ObuParser* obu) {
     }
   }
 
-  const bool do_cdef =
-      PostFilter::DoCdef(obu->frame_header(), settings_.post_filter_mask);
-  const int num_planes = obu->sequence_header().color_config.is_monochrome
-                             ? kMaxPlanesMonochrome
-                             : kMaxPlanes;
-  const bool do_restoration =
-      PostFilter::DoRestoration(obu->frame_header().loop_restoration,
-                                settings_.post_filter_mask, num_planes);
   if (threading_strategy_.post_filter_thread_pool() != nullptr &&
       (do_cdef || do_restoration)) {
     const int window_buffer_width = PostFilter::GetWindowBufferWidth(
@@ -498,7 +502,7 @@ StatusCode DecoderImpl::DecodeTiles(const ObuParser* obu) {
             obu->frame_header()) *
         (obu->sequence_header().color_config.bitdepth == 8 ? sizeof(uint8_t)
                                                            : sizeof(uint16_t));
-    if (do_cdef && !do_restoration) {
+    if (do_cdef) {
       // TODO(chengchen): for cdef U, V planes, if there's subsampling, we can
       // use smaller buffer.
       threaded_window_buffer_size *= num_planes;

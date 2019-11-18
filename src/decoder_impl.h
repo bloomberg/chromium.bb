@@ -120,7 +120,7 @@ class DecoderImpl : public Allocable {
  private:
   explicit DecoderImpl(const DecoderSettings* settings);
   StatusCode Init();
-  bool AllocateCurrentFrame(const ObuFrameHeader& frame_header);
+  bool AllocateCurrentFrame(const ObuFrameHeader& frame_header, int border);
   void ReleaseOutputFrame();
   // Populates buffer_ with values from |frame|. Adds a reference to |frame|
   // in output_frame_.

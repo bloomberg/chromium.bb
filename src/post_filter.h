@@ -107,38 +107,43 @@ class PostFilter {
   // The overall function that applies all post processing filtering.
   // * The filtering order is:
   //   deblock --> CDEF --> super resolution--> loop restoration.
-  // * The output of each filter is the input for the following filter.
-  //   A special case is that loop restoration needs both the deblocked frame
-  //   and the cdef filtered frame:
+  // * The output of each filter is the input for the following filter. A
+  //   special case is that loop restoration needs a few rows of the deblocked
+  //   frame and the entire cdef filtered frame:
   //   deblock --> CDEF --> super resolution --> loop restoration.
   //              |                                 ^
   //              |                                 |
   //              -----------> super resolution -----
   // * Any of these filters could be present or absent.
-  // Two pointers are used in this class: source_buffer_ and cdef_buffer_.
-  // * source_buffer_ always points to the input frame buffer, which holds the
-  //   (upscaled) deblocked frame buffer during the ApplyFiltering() method.
-  // * cdef_buffer_ points to the (upscaled) cdef filtered frame buffer,
-  //   however, if cdef is not present, cdef_buffer_ is the same as
-  //   source_buffer_.
-  // Each filter:
-  // * Deblock: in-place filtering. Input and output are both source_buffer_.
-  // * Cdef: allocates cdef_filtered_buffer_.
-  //         Sets cdef_buffer_ to cdef_filtered_buffer_.
-  //         Input is source_buffer_. Output is cdef_buffer_.
-  // * SuperRes: allocates a line buffer.
-  //             Inputs are source_buffer_ and cdef_buffer_.
-  //             FrameSuperRes takes one input and applies super resolution.
-  //             When FrameSuperRes is called, a line buffer is the
-  //             intermediate buffer to hold a line of the input.
-  //             Super resolution process is applied and result
-  //             is written to the input buffer.
-  //             Therefore, contents of inputs are changed, but their meanings
-  //             remain.
-  // * Restoration: near in-place filtering. Allocates a local block for loop
-  //                restoration units, which is 64x64.
-  //                Inputs are source_buffer_ and cdef_buffer_.
-  //                Output is source_buffer_.
+  // * |source_buffer_| points to the decoded frame buffer. When
+  //   ApplyFiltering() is called, |source_buffer_| is modified by each of the
+  //   filters as described below.
+  // Filter behavior (single-threaded):
+  // * Deblock: In-place filtering. The output is written to |source_buffer_|.
+  //            If cdef and loop restoration are both on, then 4 rows (as
+  //            specified by |kDeblockedRowsForLoopRestoration|) in every 64x64
+  //            block is copied into |deblock_buffer_|.
+  // * Cdef: In-place filtering. The output is written to |source_buffer_| with
+  //         a shift on the top left.
+  // * SuperRes: Near in-place filtering (with an additional line buffer for
+  //             each row). The output is written to |source_buffer_|.
+  // * Restoration: Near in-place filtering. Uses a local block of size 64x64.
+  //                Uses the |source_buffer_| and |deblock_buffer_| as the input
+  //                and the output is written into |source_buffer_| with a shift
+  //                on the top left.
+  // Filter behavior (multi-threaded):
+  // * Deblock: In-place filtering. The output is written to |source_buffer_|.
+  //            If cdef and loop restoration are both on, then 4 rows (as
+  //            specified by |kDeblockedRowsForLoopRestoration|) in every 64x64
+  //            block is copied into |deblock_buffer_|.
+  // * Cdef: Filtering output is written into |threaded_window_buffer_| and then
+  //         copied into the |source_buffer_| with a shift on the top left.
+  // * SuperRes: Near in-place filtering (with an additional line buffer for
+  //             each row). The output is written to |source_buffer_|.
+  // * Restoration: Uses the |source_buffer_| and |deblock_buffer_| as the input
+  //                and the output is written into the
+  //                |threaded_window_buffer_|. It is then copied to the
+  //                |source_buffer_| with a shift on the top left.
   bool ApplyFiltering();
   bool DoCdef() const { return DoCdef(frame_header_, do_post_filter_mask_); }
   static bool DoCdef(const ObuFrameHeader& frame_header,
@@ -271,6 +276,8 @@ class PostFilter {
   };
 
   bool ApplyDeblockFilter();
+  // Copies the deblocked pixels needed for loop restoration.
+  void CopyDeblockedPixels(Plane plane, int row4x4, int row_unit);
   void DeblockFilterWorker(const DeblockFilterJob* jobs, int num_jobs,
                            std::atomic<int>* job_counter,
                            DeblockFilter deblock_filter);
@@ -291,7 +298,6 @@ class PostFilter {
   bool ApplyCdefThreaded();
   bool ApplyCdef();  // Sections 7.15 and 7.15.1.
 
-  bool ApplySuperRes();
   // Note for ApplyLoopRestoration():
   // First, we must differentiate loop restoration processing unit from loop
   // restoration unit.
@@ -328,15 +334,13 @@ class PostFilter {
   bool ApplyLoopRestorationThreaded();
   template <typename Pixel>
   void ApplyLoopRestorationForOneRowInWindow(
-      uint8_t* cdef_buffer, ptrdiff_t cdef_buffer_stride,
-      uint8_t* deblock_buffer, ptrdiff_t deblock_buffer_stride, Plane plane,
+      uint8_t* cdef_buffer, ptrdiff_t cdef_buffer_stride, Plane plane,
       int plane_height, int plane_width, int x, int y, int row, int unit_row,
       int current_process_unit_height, int process_unit_width, int window_width,
       int plane_unit_size, int num_horizontal_units);
   template <typename Pixel>
   void ApplyLoopRestorationForOneUnit(
-      uint8_t* cdef_buffer, ptrdiff_t cdef_buffer_stride,
-      uint8_t* deblock_buffer, ptrdiff_t deblock_buffer_stride, Plane plane,
+      uint8_t* cdef_buffer, ptrdiff_t cdef_buffer_stride, Plane plane,
       int plane_height, int unit_id, LoopRestorationType type, int x, int y,
       int row, int column, int current_process_unit_width,
       int current_process_unit_height, int plane_process_unit_width,
@@ -385,7 +389,8 @@ class PostFilter {
   void GetDeblockFilterParams(uint8_t level, int* outer_thresh,
                               int* inner_thresh, int* hev_thresh) const;
   // Applies super resolution and writes result to input_buffer.
-  bool FrameSuperRes(YuvBuffer* input_buffer);  // Section 7.16.
+  bool FrameSuperRes(YuvBuffer* input_buffer, int rows4x4,
+                     int8_t chroma_subsampling_y);  // Section 7.16.
 
   const ObuFrameHeader& frame_header_;
   const LoopRestoration& loop_restoration_;
@@ -430,10 +435,14 @@ class PostFilter {
   // deblocked frame.
   // When ApplyFiltering() is done, it holds the final output of PostFilter.
   YuvBuffer* const source_buffer_;
-  // Frame buffer pointer. It always points to (upscaled) cdef filtered frame.
-  // Set in ApplyCdef(). If cdef is not present, in ApplyLoopRestoration(),
-  // cdef_buffer_ is the same as source_buffer_.
-  YuvBuffer* cdef_buffer_ = nullptr;
+  // Buffer used to store the deblocked pixels that are necessary for loop
+  // restoration. This buffer will store 4 rows for every 64x64 block (4 rows
+  // for every 32x32 for chroma with subsampling). The indices of the rows that
+  // are stored are specified in |kDeblockedRowsForLoopRestoration|. First 4
+  // rows of this buffer are never populated and never used.
+  // TODO(vigneshv): The first 4 unused rows can probably be removed by
+  // adjusting the offsets.
+  YuvBuffer deblock_buffer_;
   const uint8_t do_post_filter_mask_;
 
   ThreadPool* const thread_pool_;
@@ -475,7 +484,7 @@ class PostFilter {
 // top_row[1]. The bottom_row[2] is a copy of the bottom_row[1]. If cdef is
 // not applied for this frame, cdef_buffer is the same as deblock_buffer.
 template <typename Pixel>
-void PrepareLoopRestorationBlock(const uint8_t* cdef_buffer,
+void PrepareLoopRestorationBlock(const bool do_cdef, const uint8_t* cdef_buffer,
                                  ptrdiff_t cdef_stride,
                                  const uint8_t* deblock_buffer,
                                  ptrdiff_t deblock_stride, uint8_t* dest,
@@ -490,17 +499,17 @@ void PrepareLoopRestorationBlock(const uint8_t* cdef_buffer,
   dest_stride /= sizeof(Pixel);
   // Top 3 rows.
   cdef_ptr -= (kRestorationBorder - 1) * cdef_stride + kRestorationBorder;
-  deblock_ptr -= (kRestorationBorder - 1) * deblock_stride + kRestorationBorder;
+  if (deblock_ptr != nullptr) deblock_ptr -= kRestorationBorder;
   for (int i = 0; i < kRestorationBorder; ++i) {
-    if (frame_top_border) {
+    if (frame_top_border || !do_cdef) {
       memcpy(dst, cdef_ptr, sizeof(Pixel) * (width + 2 * kRestorationBorder));
     } else {
       memcpy(dst, deblock_ptr,
              sizeof(Pixel) * (width + 2 * kRestorationBorder));
     }
     if (i > 0) {
+      if (deblock_ptr != nullptr) deblock_ptr += deblock_stride;
       cdef_ptr += cdef_stride;
-      deblock_ptr += deblock_stride;
     }
     dst += dest_stride;
   }
@@ -511,17 +520,17 @@ void PrepareLoopRestorationBlock(const uint8_t* cdef_buffer,
     dst += dest_stride;
   }
   // Bottom 3 rows.
-  deblock_ptr += height * deblock_stride;
+  if (deblock_ptr != nullptr) deblock_ptr += deblock_stride * 4;
   for (int i = 0; i < kRestorationBorder; ++i) {
-    if (frame_bottom_border) {
+    if (frame_bottom_border || !do_cdef) {
       memcpy(dst, cdef_ptr, sizeof(Pixel) * (width + 2 * kRestorationBorder));
     } else {
       memcpy(dst, deblock_ptr,
              sizeof(Pixel) * (width + 2 * kRestorationBorder));
     }
     if (i < kRestorationBorder - 2) {
+      if (deblock_ptr != nullptr) deblock_ptr += deblock_stride;
       cdef_ptr += cdef_stride;
-      deblock_ptr += deblock_stride;
     }
     dst += dest_stride;
   }
