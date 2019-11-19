@@ -525,7 +525,7 @@ Output.RULES = {
     },
     paragraph: {speak: `$nameOrDescendants`},
     popUpButton: {
-      speak: `$if($value, $value, $descendants) $name $role @aria_has_popup
+      speak: `$name $if($value, $value, $descendants) $role @aria_has_popup
           $if($expanded, @@list_with_items($setSize)) $state $restriction
           $description`
     },
