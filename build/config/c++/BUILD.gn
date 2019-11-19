@@ -1,5 +1,6 @@
 import("//build/config/c++/c++.gni")
 import("//build/config/chrome_build.gni")
+import("//build/config/dcheck_always_on.gni")
 import("//buildtools/deps_revisions.gni")
 
 assert(use_custom_libcxx, "should only be used if use_custom_libcxx is set")
@@ -58,6 +59,19 @@ config("runtime_library") {
   }
 
   defines += [ "_LIBCPP_ENABLE_NODISCARD" ]
+
+  # The Windows component build fails to link with libc++'s debug mode. See
+  # https://crbug.com/923166#c33.
+  if (!is_win || !is_component_build) {
+    # libc++ has two levels of debug mode. Setting _LIBCPP_DEBUG to zero
+    # enables most assertions. Setting it to one additionally enables iterator
+    # debugging. See https://libcxx.llvm.org/docs/DesignDocs/DebugMode.html
+    if (enable_iterator_debugging && is_debug) {
+      defines += [ "_LIBCPP_DEBUG=1" ]
+    } else if (is_debug || dcheck_always_on) {
+      defines += [ "_LIBCPP_DEBUG=0" ]
+    }
+  }
 
   if (is_win) {
     # Intentionally not using libc++abi on Windows because libc++abi only
