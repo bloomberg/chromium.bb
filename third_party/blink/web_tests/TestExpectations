@@ -367,9 +367,6 @@ crbug.com/1018273 [ Mac ] paint/invalidation/compositing/should-not-repaint-scro
 crbug.com/1018273 [ Mac ] paint/invalidation/compositing/stop-painting-onto-scrolling-contents.html [ Failure ]
 crbug.com/1018273 [ Mac ] paint/overflow/composited-scroll-vertical-rl.html [ Failure ]
 
-crbug.com/1025019 compositing/overflow/scroller-with-border-radius.html [ Crash ]
-crbug.com/1025019 virtual/prefer_compositing_to_lcd_text/compositing/overflow/scroller-with-border-radius.html [ Crash ]
-
 # ====== Paint team owned tests to here ======
 
 crbug.com/922249 virtual/android/fullscreen/compositor-touch-hit-rects-fullscreen-video-controls.html [ Failure Pass ]

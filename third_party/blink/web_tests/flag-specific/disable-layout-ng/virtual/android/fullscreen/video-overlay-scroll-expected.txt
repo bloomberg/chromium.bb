@@ -13,7 +13,7 @@ END OF TEST
       "backgroundColor": "#333333"
     },
     {
-      "name": "LayoutNGBlockFlow (positioned) DIV",
+      "name": "LayoutBlockFlow (positioned) DIV",
       "bounds": [800, 600],
       "drawsContent": false
     },

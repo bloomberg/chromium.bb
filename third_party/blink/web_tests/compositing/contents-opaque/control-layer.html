@@ -11,7 +11,9 @@
 
             function doTest() {
                 if (window.testRunner && window.internals) {
-                    testRunner.setCustomTextOutput(internals.layerTreeAsText(document));
+                    var layerTree = internals.elementLayerTreeAsText(document.getElementById('control'));
+                    document.getElementById('result').innerText =
+                        layerTree.indexOf('contentsOpaque 1') == -1 ? 'PASS' : 'FAIL:\n' + layerTree;
                 }
             }
             window.addEventListener('load', doTest, false);
