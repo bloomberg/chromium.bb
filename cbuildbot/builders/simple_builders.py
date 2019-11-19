@@ -503,6 +503,7 @@ class DistributedBuilder(SimpleBuilder):
                                           constants.FULL_TYPE,
                                           constants.INCREMENTAL_TYPE,
                                           constants.POSTSUBMIT_TYPE)):
+      assert False, 'Chrome PFQ no longer supported'
       sync_stage = self._GetStageInstance(sync_stages.MasterSlaveLKGMSyncStage)
       self.completion_stage_class = (
           completion_stages.MasterSlaveSyncCompletionStage)
