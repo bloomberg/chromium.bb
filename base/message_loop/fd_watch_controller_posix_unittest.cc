@@ -18,6 +18,7 @@
 #include "base/posix/eintr_wrapper.h"
 #include "base/run_loop.h"
 #include "base/test/gtest_util.h"
+#include "base/test/task_environment.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -27,9 +28,9 @@ namespace base {
 
 namespace {
 
-class MessageLoopForIoPosixTest : public testing::Test {
+class FdWatchControllerPosixTest : public testing::Test {
  public:
-  MessageLoopForIoPosixTest() = default;
+  FdWatchControllerPosixTest() = default;
 
   // testing::Test interface.
   void SetUp() override {
@@ -53,7 +54,7 @@ class MessageLoopForIoPosixTest : public testing::Test {
   ScopedFD read_fd_;
   ScopedFD write_fd_;
 
-  DISALLOW_COPY_AND_ASSIGN(MessageLoopForIoPosixTest);
+  DISALLOW_COPY_AND_ASSIGN(FdWatchControllerPosixTest);
 };
 
 class TestHandler : public MessagePumpForIO::FdWatcher {
@@ -127,7 +128,7 @@ class CallClosureHandler : public MessagePumpForIO::FdWatcher {
   OnceClosure write_closure_;
 };
 
-TEST_F(MessageLoopForIoPosixTest, FileDescriptorWatcherOutlivesMessageLoop) {
+TEST_F(FdWatchControllerPosixTest, FileDescriptorWatcherOutlivesMessageLoop) {
   // Simulate a MessageLoop that dies before an FileDescriptorWatcher.
   // This could happen when people use the Singleton pattern or atexit.
 
@@ -135,7 +136,7 @@ TEST_F(MessageLoopForIoPosixTest, FileDescriptorWatcherOutlivesMessageLoop) {
   MessagePumpForIO::FdWatchController watcher(FROM_HERE);
   TestHandler handler;
   {
-    MessageLoopForIO message_loop;
+    test::TaskEnvironment env(test::TaskEnvironment::MainThreadType::IO);
 
     MessageLoopCurrentForIO::Get()->WatchFileDescriptor(
         write_fd_.get(), true, MessagePumpForIO::WATCH_WRITE, &watcher,
@@ -147,11 +148,11 @@ TEST_F(MessageLoopForIoPosixTest, FileDescriptorWatcherOutlivesMessageLoop) {
   ASSERT_FALSE(handler.is_writable_);
 }
 
-TEST_F(MessageLoopForIoPosixTest, FileDescriptorWatcherDoubleStop) {
+TEST_F(FdWatchControllerPosixTest, FileDescriptorWatcherDoubleStop) {
   // Verify that it's ok to call StopWatchingFileDescriptor().
 
   // Arrange for message loop to live longer than watcher.
-  MessageLoopForIO message_loop;
+  test::TaskEnvironment env(test::TaskEnvironment::MainThreadType::IO);
   {
     MessagePumpForIO::FdWatchController watcher(FROM_HERE);
 
@@ -164,10 +165,10 @@ TEST_F(MessageLoopForIoPosixTest, FileDescriptorWatcherDoubleStop) {
   }
 }
 
-TEST_F(MessageLoopForIoPosixTest, FileDescriptorWatcherDeleteInCallback) {
+TEST_F(FdWatchControllerPosixTest, FileDescriptorWatcherDeleteInCallback) {
   // Verify that it is OK to delete the FileDescriptorWatcher from within a
   // callback.
-  MessageLoopForIO message_loop;
+  test::TaskEnvironment env(test::TaskEnvironment::MainThreadType::IO);
 
   TestHandler handler;
   handler.watcher_to_delete_ =
@@ -265,7 +266,7 @@ INSTANTIATE_TEST_SUITE_P(StopWatchingOrDelete,
 // Test deleting or stopping watch after a read event for a watcher that is
 // registered for both read and write.
 TEST_P(MessageLoopForIoPosixReadAndWriteTest, AfterRead) {
-  MessageLoopForIO message_loop;
+  test::TaskEnvironment env(test::TaskEnvironment::MainThreadType::IO);
   ScopedFD one, two;
   ASSERT_TRUE(CreateSocketPair(&one, &two));
 
@@ -294,7 +295,7 @@ TEST_P(MessageLoopForIoPosixReadAndWriteTest, AfterRead) {
 // Test deleting or stopping watch after a write event for a watcher that is
 // registered for both read and write.
 TEST_P(MessageLoopForIoPosixReadAndWriteTest, AfterWrite) {
-  MessageLoopForIO message_loop;
+  test::TaskEnvironment env(test::TaskEnvironment::MainThreadType::IO);
   ScopedFD one, two;
   ASSERT_TRUE(CreateSocketPair(&one, &two));
 
@@ -325,8 +326,8 @@ TEST_P(MessageLoopForIoPosixReadAndWriteTest, AfterWrite) {
 }
 
 // Verify that basic readable notification works.
-TEST_F(MessageLoopForIoPosixTest, WatchReadable) {
-  MessageLoopForIO message_loop;
+TEST_F(FdWatchControllerPosixTest, WatchReadable) {
+  test::TaskEnvironment env(test::TaskEnvironment::MainThreadType::IO);
   MessagePumpForIO::FdWatchController watcher(FROM_HERE);
   TestHandler handler;
 
@@ -351,8 +352,8 @@ TEST_F(MessageLoopForIoPosixTest, WatchReadable) {
 }
 
 // Verify that watching a file descriptor for writability succeeds.
-TEST_F(MessageLoopForIoPosixTest, WatchWritable) {
-  MessageLoopForIO message_loop;
+TEST_F(FdWatchControllerPosixTest, WatchWritable) {
+  test::TaskEnvironment env(test::TaskEnvironment::MainThreadType::IO);
   MessagePumpForIO::FdWatchController watcher(FROM_HERE);
   TestHandler handler;
 
@@ -374,8 +375,8 @@ TEST_F(MessageLoopForIoPosixTest, WatchWritable) {
 }
 
 // Verify that RunUntilIdle() receives IO notifications.
-TEST_F(MessageLoopForIoPosixTest, RunUntilIdle) {
-  MessageLoopForIO message_loop;
+TEST_F(FdWatchControllerPosixTest, RunUntilIdle) {
+  test::TaskEnvironment env(test::TaskEnvironment::MainThreadType::IO);
   MessagePumpForIO::FdWatchController watcher(FROM_HERE);
   TestHandler handler;
 
@@ -401,8 +402,8 @@ void StopWatching(MessagePumpForIO::FdWatchController* controller,
 }
 
 // Verify that StopWatchingFileDescriptor() works from an event handler.
-TEST_F(MessageLoopForIoPosixTest, StopFromHandler) {
-  MessageLoopForIO message_loop;
+TEST_F(FdWatchControllerPosixTest, StopFromHandler) {
+  test::TaskEnvironment env(test::TaskEnvironment::MainThreadType::IO);
   RunLoop run_loop;
   MessagePumpForIO::FdWatchController watcher(FROM_HERE);
   CallClosureHandler handler(BindOnce(&StopWatching, &watcher, &run_loop),
@@ -422,8 +423,8 @@ TEST_F(MessageLoopForIoPosixTest, StopFromHandler) {
 }
 
 // Verify that non-persistent watcher is called only once.
-TEST_F(MessageLoopForIoPosixTest, NonPersistentWatcher) {
-  MessageLoopForIO message_loop;
+TEST_F(FdWatchControllerPosixTest, NonPersistentWatcher) {
+  test::TaskEnvironment env(test::TaskEnvironment::MainThreadType::IO);
   MessagePumpForIO::FdWatchController watcher(FROM_HERE);
 
   RunLoop run_loop;
@@ -443,8 +444,8 @@ TEST_F(MessageLoopForIoPosixTest, NonPersistentWatcher) {
 }
 
 // Verify that persistent watcher is called every time the event is triggered.
-TEST_F(MessageLoopForIoPosixTest, PersistentWatcher) {
-  MessageLoopForIO message_loop;
+TEST_F(FdWatchControllerPosixTest, PersistentWatcher) {
+  test::TaskEnvironment env(test::TaskEnvironment::MainThreadType::IO);
   MessagePumpForIO::FdWatchController watcher(FROM_HERE);
 
   RunLoop run_loop1;
@@ -481,8 +482,8 @@ void StopWatchingAndWatchAgain(MessagePumpForIO::FdWatchController* controller,
 }
 
 // Verify that a watcher can be stopped and reused from an event handler.
-TEST_F(MessageLoopForIoPosixTest, StopAndRestartFromHandler) {
-  MessageLoopForIO message_loop;
+TEST_F(FdWatchControllerPosixTest, StopAndRestartFromHandler) {
+  test::TaskEnvironment env(test::TaskEnvironment::MainThreadType::IO);
   MessagePumpForIO::FdWatchController watcher(FROM_HERE);
 
   RunLoop run_loop1;
@@ -507,12 +508,12 @@ TEST_F(MessageLoopForIoPosixTest, StopAndRestartFromHandler) {
 }
 
 // Verify that the pump properly handles a delayed task after an IO event.
-TEST_F(MessageLoopForIoPosixTest, IoEventThenTimer) {
-  MessageLoopForIO message_loop;
+TEST_F(FdWatchControllerPosixTest, IoEventThenTimer) {
+  test::TaskEnvironment env(test::TaskEnvironment::MainThreadType::IO);
   MessagePumpForIO::FdWatchController watcher(FROM_HERE);
 
   RunLoop timer_run_loop;
-  message_loop.task_runner()->PostDelayedTask(
+  env.GetMainThreadTaskRunner()->PostDelayedTask(
       FROM_HERE, timer_run_loop.QuitClosure(),
       base::TimeDelta::FromMilliseconds(10));
 
@@ -537,14 +538,14 @@ TEST_F(MessageLoopForIoPosixTest, IoEventThenTimer) {
 }
 
 // Verify that the pipe can handle an IO event after a delayed task.
-TEST_F(MessageLoopForIoPosixTest, TimerThenIoEvent) {
-  MessageLoopForIO message_loop;
+TEST_F(FdWatchControllerPosixTest, TimerThenIoEvent) {
+  test::TaskEnvironment env(test::TaskEnvironment::MainThreadType::IO);
   MessagePumpForIO::FdWatchController watcher(FROM_HERE);
 
   // Trigger read event from a delayed task.
-  message_loop.task_runner()->PostDelayedTask(
+  env.GetMainThreadTaskRunner()->PostDelayedTask(
       FROM_HERE,
-      BindOnce(&MessageLoopForIoPosixTest::TriggerReadEvent, Unretained(this)),
+      BindOnce(&FdWatchControllerPosixTest::TriggerReadEvent, Unretained(this)),
       TimeDelta::FromMilliseconds(1));
 
   RunLoop run_loop;
