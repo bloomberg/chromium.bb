@@ -29,7 +29,6 @@ class AppListModelUpdater;
 class AppServiceAppModelBuilder;
 class ArcAppModelBuilder;
 class ChromeAppListItem;
-class CrostiniAppModelBuilder;
 class ExtensionAppModelBuilder;
 class Profile;
 
@@ -324,7 +323,6 @@ class AppListSyncableService : public syncer::SyncableService,
   // folding them into the App Service.
   std::unique_ptr<ExtensionAppModelBuilder> ext_apps_builder_;
   std::unique_ptr<ArcAppModelBuilder> arc_apps_builder_;
-  std::unique_ptr<CrostiniAppModelBuilder> crostini_apps_builder_;
   std::unique_ptr<syncer::SyncChangeProcessor> sync_processor_;
   std::unique_ptr<syncer::SyncErrorFactory> sync_error_handler_;
   SyncItemMap sync_items_;
