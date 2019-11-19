@@ -174,7 +174,7 @@ Status StubWebView::WaitForPendingNavigations(const std::string& frame_id,
 
 Status StubWebView::IsPendingNavigation(const std::string& frame_id,
                                         const Timeout* timeout,
-                                        bool* is_pending) const {
+                                        bool* is_pending) {
   return Status(kOk);
 }
 
@@ -235,7 +235,7 @@ Status StubWebView::SynthesizeScrollGesture(int x,
   return Status(kOk);
 }
 
-bool StubWebView::IsNonBlocking() const {
+bool StubWebView::IsNonBlocking() {
   return false;
 }
 
@@ -254,5 +254,3 @@ std::unique_ptr<base::Value> StubWebView::GetCastSinks() {
 std::unique_ptr<base::Value> StubWebView::GetCastIssueMessage() {
   return std::make_unique<base::Value>();
 }
-
-void StubWebView::ClearNavigationState(const std::string& new_frame_id) {}

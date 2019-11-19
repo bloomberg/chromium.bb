@@ -16,9 +16,6 @@ Status NonBlockingNavigationTracker::IsPendingNavigation(
 
 void NonBlockingNavigationTracker::set_timed_out(bool timed_out) {}
 
-void NonBlockingNavigationTracker::ClearState(const std::string& new_frame_id) {
-}
-
 bool NonBlockingNavigationTracker::IsNonBlocking() const {
   return true;
 }
