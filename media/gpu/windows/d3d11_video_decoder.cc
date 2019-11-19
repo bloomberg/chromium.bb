@@ -744,6 +744,7 @@ void D3D11VideoDecoder::NotifyError(const char* reason) {
 
   if (current_decode_cb_)
     std::move(current_decode_cb_).Run(DecodeStatus::DECODE_ERROR);
+  current_buffer_ = nullptr;
 
   for (auto& queue_pair : input_buffer_queue_)
     std::move(queue_pair.second).Run(DecodeStatus::DECODE_ERROR);
