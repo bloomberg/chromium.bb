@@ -144,12 +144,6 @@ source_set("audio") {
     "scoped_task_runner_observer.h",
     "simple_sources.cc",
     "simple_sources.h",
-    "virtual_audio_input_stream.cc",
-    "virtual_audio_input_stream.h",
-    "virtual_audio_output_stream.cc",
-    "virtual_audio_output_stream.h",
-    "virtual_audio_sink.cc",
-    "virtual_audio_sink.h",
     "wav_audio_handler.cc",
     "wav_audio_handler.h",
   ]
@@ -390,8 +384,6 @@ source_set("unit_tests") {
     "audio_thread_hang_monitor_unittest.cc",
     "power_observer_helper_unittest.cc",
     "simple_sources_unittest.cc",
-    "virtual_audio_input_stream_unittest.cc",
-    "virtual_audio_output_stream_unittest.cc",
   ]
 
   deps = [
