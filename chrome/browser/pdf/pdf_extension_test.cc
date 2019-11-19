@@ -2690,12 +2690,13 @@ class PDFExtensionAccessibilityTreeDumpTest
     // Find the embedded PDF and dump the accessibility tree.
     content::FindAccessibilityNodeCriteria find_criteria;
     find_criteria.role = ax::mojom::Role::kEmbeddedObject;
-    content::BrowserAccessibility* pdf_root =
+    ui::AXPlatformNodeDelegate* pdf_root =
         content::FindAccessibilityNode(guest_contents, find_criteria);
     CHECK(pdf_root);
 
     base::string16 actual_contents_utf16;
-    formatter->FormatAccessibilityTree(pdf_root, &actual_contents_utf16);
+    formatter->FormatAccessibilityTreeForTesting(pdf_root,
+                                                 &actual_contents_utf16);
     std::string actual_contents = base::UTF16ToUTF8(actual_contents_utf16);
 
     std::vector<std::string> actual_lines =
