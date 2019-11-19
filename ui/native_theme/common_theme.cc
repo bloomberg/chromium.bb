@@ -89,16 +89,10 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
 
       // Label
       case NativeTheme::kColorId_LabelEnabledColor:
-        return gfx::kGoogleGrey200;
       case NativeTheme::kColorId_LabelTextSelectionColor:
-        return color_utils::AlphaBlend(
-            SK_ColorWHITE,
-            GetAuraColor(
-                NativeTheme::kColorId_LabelTextSelectionBackgroundFocused,
-                base_theme, color_scheme),
-            SkAlpha{0xDD});
+        return gfx::kGoogleGrey200;
       case NativeTheme::kColorId_LabelTextSelectionBackgroundFocused:
-        return SkColorSetA(gfx::kGoogleBlue700, 0xCC);
+        return gfx::kGoogleBlue800;
 
       // Link
       case NativeTheme::kColorId_LinkEnabled:
@@ -167,11 +161,6 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
 
   constexpr SkColor kPrimaryTextColor = gfx::kGoogleGrey900;
 
-  // Text selection colors:
-  constexpr SkColor kTextSelectionBackgroundFocused =
-      SkColorSetARGB(0x54, 0x60, 0xA8, 0xEB);
-  static const SkColor kTextSelectionColor = color_utils::AlphaBlend(
-      SK_ColorBLACK, kTextSelectionBackgroundFocused, SkAlpha{0xDD});
 
   switch (color_id) {
     // Dialogs
@@ -240,22 +229,28 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
 
     // Label
     case NativeTheme::kColorId_LabelEnabledColor:
-      return kPrimaryTextColor;
-    case NativeTheme::kColorId_LabelDisabledColor:
-      return SkColorSetA(
-          base_theme->GetSystemColor(NativeTheme::kColorId_LabelEnabledColor,
-                                     color_scheme),
-          gfx::kDisabledControlAlpha);
     case NativeTheme::kColorId_LabelTextSelectionColor:
-      return kTextSelectionColor;
+      return kPrimaryTextColor;
+    case NativeTheme::kColorId_LabelDisabledColor: {
+      const SkColor bg = base_theme->GetSystemColor(
+          NativeTheme::kColorId_DialogBackground, color_scheme);
+      const SkColor fg = base_theme->GetSystemColor(
+          NativeTheme::kColorId_LabelEnabledColor, color_scheme);
+      return color_utils::BlendForMinContrast(gfx::kGoogleGrey600, bg, fg)
+          .color;
+    }
     case NativeTheme::kColorId_LabelTextSelectionBackgroundFocused:
-      return kTextSelectionBackgroundFocused;
+      return gfx::kGoogleBlue200;
 
     // Link
-    // TODO(estade): where, if anywhere, do we use disabled links in Chrome?
-    case NativeTheme::kColorId_LinkDisabled:
-      return SK_ColorBLACK;
-
+    case NativeTheme::kColorId_LinkDisabled: {
+      const SkColor bg = base_theme->GetSystemColor(
+          NativeTheme::kColorId_DialogBackground, color_scheme);
+      const SkColor fg = base_theme->GetSystemColor(
+          NativeTheme::kColorId_LabelEnabledColor, color_scheme);
+      return color_utils::BlendForMinContrast(gfx::kGoogleGrey600, bg, fg)
+          .color;
+    }
     case NativeTheme::kColorId_LinkEnabled:
     case NativeTheme::kColorId_LinkPressed:
       return gfx::kGoogleBlue700;
@@ -296,10 +291,14 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
               NativeTheme::kColorId_TextfieldDefaultColor, color_scheme),
           gfx::kDisabledControlAlpha);
 
-    case NativeTheme::kColorId_TextfieldSelectionColor:
-      return kTextSelectionColor;
+    case NativeTheme::kColorId_TextfieldSelectionColor: {
+      const SkColor bg = base_theme->GetSystemColor(
+          NativeTheme::kColorId_TextfieldSelectionBackgroundFocused,
+          color_scheme);
+      return color_utils::AlphaBlend(SK_ColorBLACK, bg, SkAlpha{0xDD});
+    }
     case NativeTheme::kColorId_TextfieldSelectionBackgroundFocused:
-      return kTextSelectionBackgroundFocused;
+      return SkColorSetARGB(0x54, 0x60, 0xA8, 0xEB);
 
     // Tooltip
     case NativeTheme::kColorId_TooltipBackground: {

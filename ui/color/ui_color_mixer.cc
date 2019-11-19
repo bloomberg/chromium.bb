@@ -34,12 +34,11 @@ void AddUiColorMixers(ColorProvider* provider) {
   mixer[kColorFocusableBorderFocused] = SetAlpha(kColorAccent, 0x4D);
   mixer[kColorFocusableBorderUnfocused] = {kColorSecondaryBackground};
   mixer[kColorIcon] = {kColorBodyForeground};
-  mixer[kColorLabelDisabledForeground] =
-      SetAlpha(kColorLabelForeground, gfx::kDisabledControlAlpha);
+  mixer[kColorLabelDisabledForeground] = {kColorSecondaryForeground};
   mixer[kColorLabelForeground] = {kColorPrimaryForeground};
   mixer[kColorLabelSelectionBackground] = {kColorTextSelectionBackground};
   mixer[kColorLabelSelectionForeground] = {kColorLabelForeground};
-  mixer[kColorLinkDisabledForeground] = {kColorPrimaryForeground};
+  mixer[kColorLinkDisabledForeground] = {kColorSecondaryForeground};
   mixer[kColorLinkPressedForeground] = {kColorLinkForeground};
   mixer[kColorMenuBackground] = {kColorPrimaryBackground};
   mixer[kColorMenuBorder] = {kColorSecondaryBackground};
