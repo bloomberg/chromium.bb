@@ -68,6 +68,11 @@
       },
     },
   },
+  'blink_unittests': {
+    'remove_from': [
+      'android-code-coverage-native', # crbug/1018431
+    ],
+  },
   'breakpad_unittests': {
     'modifications': {
       'android-asan': {
@@ -429,6 +434,8 @@
     'remove_from': [
       # chromium.clang
       'CrWinAsan(dll)', # https://crbug.com/935598
+      # chromium.fyi
+      'android-code-coverage-native', # crbug/1018434
     ],
     'modifications': {
       # chromium.android
@@ -515,6 +522,10 @@
     },
   },
   'content_unittests': {
+    'remove_from': [
+      # chromium.fyi
+      'android-code-coverage-native', # crbug/1018434
+    ],
     'modifications': {
       # chromium.memory
       'Linux ASan LSan Tests (1)': {
@@ -1178,6 +1189,8 @@
       'KitKat Tablet Tester',
       'Lollipop Tablet Tester',
       'Marshmallow Tablet Tester',
+      # chromium.fyi
+      'android-code-coverage-native', # crbug/1018434
     ],
   },
   'network_service_out_of_process_content_browsertests': {
@@ -1193,6 +1206,8 @@
       'KitKat Tablet Tester',
       'Lollipop Tablet Tester',
       'Marshmallow Tablet Tester',
+      # chromium.fyi
+      'android-code-coverage-native', # crbug/1018434
     ],
     'modifications': {
       'android-pie-x86-fyi-rel': {
@@ -1215,6 +1230,8 @@
       'KitKat Tablet Tester',
       'Lollipop Tablet Tester',
       'Marshmallow Tablet Tester',
+      # chromium.fyi
+      'android-code-coverage-native', # crbug/1018434
     ],
   },
   'network_service_webview_instrumentation_test_apk': {
