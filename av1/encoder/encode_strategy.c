@@ -1302,6 +1302,8 @@ int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
 #endif
   }
 
+  // Save unfiltered source.
+  cpi->unfiltered_source = frame_input.source;
 #if CONFIG_REALTIME_ONLY
   if (av1_encode(cpi, dest, &frame_input, &frame_params, &frame_results) !=
       AOM_CODEC_OK) {

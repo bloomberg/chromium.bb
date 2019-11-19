@@ -3828,12 +3828,12 @@ static void set_screen_content_options(AV1_COMP *cpi) {
 
   // Estimate if the source frame is screen content, based on the portion of
   // blocks that have few luma colors.
-  const uint8_t *src = cpi->source->y_buffer;
+  const uint8_t *src = cpi->unfiltered_source->y_buffer;
   assert(src != NULL);
-  const int use_hbd = cpi->source->flags & YV12_FLAG_HIGHBITDEPTH;
-  const int stride = cpi->source->y_stride;
-  const int width = cpi->source->y_width;
-  const int height = cpi->source->y_height;
+  const int use_hbd = cpi->unfiltered_source->flags & YV12_FLAG_HIGHBITDEPTH;
+  const int stride = cpi->unfiltered_source->y_stride;
+  const int width = cpi->unfiltered_source->y_width;
+  const int height = cpi->unfiltered_source->y_height;
   const int bd = cm->seq_params.bit_depth;
   const int blk_w = 16;
   const int blk_h = 16;
