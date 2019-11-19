@@ -25493,6 +25493,7 @@ Called by update_net_error_codes.py.-->
   <int value="3088" label="GetComputedStyleOutsideFlatTree"/>
   <int value="3089" label="ARIADescriptionAttribute"/>
   <int value="3090" label="StrictMimeTypeChecksWouldBlockWorker"/>
+  <int value="3091" label="ResourceTimingTaintedOriginFlagFail"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
