@@ -19,7 +19,7 @@ void AddUiColorMixers(ColorProvider* provider) {
   mixer[kColorBubbleFooterBackground] = {kColorSecondaryBackgroundSubtle};
   mixer[kColorButtonBackground] = {kColorPrimaryBackground};
   mixer[kColorButtonBorder] = {kColorSecondaryBackground};
-  mixer[kColorButtonDisabledForeground] = {kColorDisabledForeground};
+  mixer[kColorButtonDisabledForeground] = {kColorSecondaryForeground};
   mixer[kColorButtonForeground] = {kColorAccent};
   mixer[kColorButtonProminentBackground] = {kColorAccent};
   mixer[kColorButtonProminentDisabledBackground] =
@@ -44,7 +44,7 @@ void AddUiColorMixers(ColorProvider* provider) {
   mixer[kColorMenuBackground] = {kColorPrimaryBackground};
   mixer[kColorMenuBorder] = {kColorSecondaryBackground};
   mixer[kColorMenuItemAlertedBackground] = {kColorAccent};
-  mixer[kColorMenuItemDisabledForeground] = {kColorDisabledForeground};
+  mixer[kColorMenuItemDisabledForeground] = {kColorSecondaryForeground};
   mixer[kColorMenuItemForeground] = {kColorPrimaryForeground};
   mixer[kColorMenuItemHighlightedBackground] = {
       kColorSecondaryBackgroundSubtle};

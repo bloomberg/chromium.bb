@@ -162,7 +162,6 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
   }
 
   constexpr SkColor kPrimaryTextColor = gfx::kGoogleGrey900;
-  constexpr SkColor kDisabledTextColor = gfx::kGoogleGrey600;
 
   // Text selection colors:
   constexpr SkColor kTextSelectionBackgroundFocused =
@@ -192,8 +191,14 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
       return SK_ColorWHITE;
     case NativeTheme::kColorId_ButtonPressedShade:
       return SK_ColorTRANSPARENT;
-    case NativeTheme::kColorId_ButtonDisabledColor:
-      return kDisabledTextColor;
+    case NativeTheme::kColorId_ButtonDisabledColor: {
+      const SkColor bg = base_theme->GetSystemColor(
+          NativeTheme::kColorId_DialogBackground, color_scheme);
+      const SkColor fg = base_theme->GetSystemColor(
+          NativeTheme::kColorId_LabelEnabledColor, color_scheme);
+      return color_utils::BlendForMinContrast(gfx::kGoogleGrey600, bg, fg)
+          .color;
+    }
     case NativeTheme::kColorId_ProminentButtonDisabledColor:
       return gfx::kGoogleGrey100;
     case NativeTheme::kColorId_ButtonBorderColor:
@@ -216,13 +221,13 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
     case NativeTheme::kColorId_MenuBackgroundColor:
       return SK_ColorWHITE;
     case NativeTheme::kColorId_DisabledMenuItemForegroundColor:
-      return kDisabledTextColor;
     case NativeTheme::kColorId_MenuItemMinorTextColor: {
       const SkColor bg = base_theme->GetSystemColor(
           NativeTheme::kColorId_MenuBackgroundColor, color_scheme);
       const SkColor fg = base_theme->GetSystemColor(
           NativeTheme::kColorId_EnabledMenuItemForegroundColor, color_scheme);
-      return color_utils::BlendForMinContrast(kDisabledTextColor, bg, fg).color;
+      return color_utils::BlendForMinContrast(gfx::kGoogleGrey600, bg, fg)
+          .color;
     }
     case NativeTheme::kColorId_HighlightedMenuItemBackgroundColor:
       return gfx::kGoogleGrey050;
