@@ -87,17 +87,26 @@ class CreateFilteredDictTest(cros_test_lib.TestCase):
 
     field_mask = field_mask_pb2.FieldMask(paths=[''])
 
-    with self.assertRaises(KeyError):
+    with self.assertRaisesRegex(ValueError, 'Field cannot be empty string'):
       field_mask_util.CreateFilteredDict(field_mask, original_dict)
 
   def testCreateFilteredDictWithInvalidPath(self):
     """Tests a FieldMask with an invalid path."""
-    original_dict = {'a': 1}
+    original_dict = {'a': 1, 'c': 2}
 
-    field_mask = field_mask_pb2.FieldMask(paths=['b'])
+    # Note that 'b' is not a path in the dict.
+    field_mask = field_mask_pb2.FieldMask(paths=['a', 'b'])
 
-    with self.assertRaises(KeyError):
-      field_mask_util.CreateFilteredDict(field_mask, original_dict)
+    expected_dict = {'a': 1}
+
+    with cros_test_lib.LoggingCapturer() as logging_capturer:
+      merged_dict = field_mask_util.CreateFilteredDict(field_mask,
+                                                       original_dict)
+
+    # The merged dict should contain only field 'a' ('b' does not exist, 'c'
+    # is not in the field mask). A warning about 'b' was logged.
+    self.assertTrue(logging_capturer.LogsContain('Field b not found.'))
+    self.assertDictEqual(expected_dict, merged_dict)
 
   def testCreateFilteredDictWithLists(self):
     """Tests selecting fields that are lists."""

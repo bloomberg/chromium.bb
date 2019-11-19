@@ -7,6 +7,7 @@
 
 from __future__ import print_function
 
+from chromite.lib import cros_logging as logging
 
 def _MergeDictWithPathParts(path_parts, source, destination):
   """Merges source into destination based on path_parts.
@@ -19,6 +20,31 @@ def _MergeDictWithPathParts(path_parts, source, destination):
   """
   assert path_parts
   cur_part = path_parts[0]
+
+  if not cur_part:
+    raise ValueError('Field cannot be empty string')
+
+  if cur_part not in source:
+    # There are cases when a field is specified that is not part of the JSON
+    # source. For example, ChromeOS Config payloads are filtered by specifying
+    # a field mask that will be applied to each device config, and a field might
+    # only be set in some device configs. I.e. there could be a payload
+    #
+    # {
+    #   "chromeos": {
+    #     "configs": [
+    #       {"bluetooth": {...}, "modem": {...}},
+    #       {"bluetooth": {...}}
+    #     ]
+    #   }
+    # }
+    #
+    # and a field mask "bluetooth,modem".
+    #
+    # In this case, log a warning (as this might be caused by a mistake in the
+    # config) and move on.
+    logging.warning('Field %s not found.', cur_part)
+    return
 
   if len(path_parts) == 1:
     # If there is only one part of the path left, set it in the destination.
