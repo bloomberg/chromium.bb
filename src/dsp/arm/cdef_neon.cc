@@ -82,22 +82,22 @@ template <int shift, bool is_partial3 = false>
 void AddPartial1(uint8x8_t a, uint16x8_t* b, uint16x8_t* c) {
   // Allow vextq_u16() to compile when |shift| is out of range.
   constexpr int safe_shift = (shift > 0) ? shift : 1;
+  const uint16x4_t zero4 = vdup_n_u16(0);
+  const uint16x8_t zero8 = vdupq_n_u16(0);
   if (is_partial3) a = vrev64_u8(a);
   const uint16x4_t paired = vpaddl_u8(a);
-  const uint16x8_t extended = vcombine_u16(paired, vdup_n_u16(0));
+  const uint16x8_t extended = vcombine_u16(paired, zero4);
   if (shift == 0) {
     *b = vaddq_u16(*b, extended);
   } else if (0 /*shift == 4*/) {
     // TODO(johannkoenig): Figure out why this regresses performance.
-    *b = vaddq_u16(*b, vcombine_u16(vdup_n_u16(0), paired));
+    *b = vaddq_u16(*b, vcombine_u16(zero4, paired));
   } else {
-    const uint16x8_t shifted_b =
-        vextq_u16(vdupq_n_u16(0), extended, 8 - safe_shift);
+    const uint16x8_t shifted_b = vextq_u16(zero8, extended, 8 - safe_shift);
     *b = vaddq_u16(*b, shifted_b);
     if (shift > 4) {
       // Split |paired| between |b| and |c|.
-      const uint16x8_t shifted_c =
-          vextq_u16(extended, vdupq_n_u16(0), 8 - safe_shift);
+      const uint16x8_t shifted_c = vextq_u16(extended, zero8, 8 - safe_shift);
       *c = vaddq_u16(*c, shifted_c);
     }
   }
@@ -107,7 +107,7 @@ void AddPartial1(uint8x8_t a, uint16x8_t* b, uint16x8_t* c) {
 // Used to calculate |partial[5][3 - i / 2 + j]|.
 template <int shift>
 void AddPartial5(const uint8x8_t a, uint16x8_t* b, uint16x8_t* c) {
-  // Allow vextq_u16() to compile when |shift| is out of range.
+  // Allow Left/RightShift() to compile when |shift| is out of range.
   constexpr int safe_shift = (shift < 6) ? shift : 1;
   if (shift > 5) {
     *b = vaddw_u8(*b, a);
@@ -125,7 +125,7 @@ void AddPartial6(const uint8x8_t a, uint16x8_t* b) { *b = vaddw_u8(*b, a); }
 // Used to calculate |partial[7][i / 2 + j]|.
 template <int shift>
 void AddPartial7(const uint8x8_t a, uint16x8_t* b, uint16x8_t* c) {
-  // Allow vextq_s16() to compile when |shift| is out of range.
+  // Allow Left/RightShift() to compile when |shift| is out of range.
   constexpr int safe_shift = (shift > 1) ? shift : 2;
   if (shift < 2) {
     *b = vaddw_u8(*b, a);
@@ -222,9 +222,6 @@ void CdefDirection_NEON(const void* const source, ptrdiff_t stride,
   AddPartial<7>(vld1_u8(src), partial_lo, partial_hi, partial_2);
 
   partial_lo[2] = vld1q_u16(partial_2);
-
-  // TODO(johannkoenig): Try to figure out when these need to move up to
-  // int32_t. May be able to put it off for a bit.
 
   cost[2] = SquareAccumulate(partial_lo[2]);
   cost[6] = SquareAccumulate(partial_lo[6]);
