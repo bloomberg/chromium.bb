@@ -2459,6 +2459,30 @@
             ]
         }
     ],
+    "EnableSafetyTipUI": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "UIEnabled",
+                    "params": {
+                        "editdistance": "false",
+                        "editdistance_siteengagement": "true",
+                        "topsites": "true"
+                    },
+                    "enable_features": [
+                        "SafetyTip"
+                    ]
+                }
+            ]
+        }
+    ],
     "EphemeralTab": [
         {
             "platforms": [
