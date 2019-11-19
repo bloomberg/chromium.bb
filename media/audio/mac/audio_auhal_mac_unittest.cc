@@ -52,7 +52,8 @@ class AUHALStreamTest : public testing::Test {
   AudioOutputStream* Create() {
     return manager_->MakeAudioOutputStream(
         manager_device_info_.GetDefaultOutputStreamParameters(), "",
-        base::Bind(&AUHALStreamTest::OnLogMessage, base::Unretained(this)));
+        base::BindRepeating(&AUHALStreamTest::OnLogMessage,
+                            base::Unretained(this)));
   }
 
   bool OutputDevicesAvailable() {
