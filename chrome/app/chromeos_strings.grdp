@@ -171,6 +171,10 @@
   <message name="IDS_MULTIDEVICE_SETUP_START_SETUP_PAGE_MULTIPLE_DEVICE_HEADER" desc="Label appearing over a list of Android phones which this Chromebook can connect to.">
     Select a device
   </message>
+  <message name="IDS_MULTIDEVICE_SETUP_START_SETUP_PAGE_OFFLINE_DEVICE_OPTION" desc="Device name appearing in the list of Android phones indicating
+  the device is offline.">
+    <ph name="DEVICE_NAME">$1<ex>Pixel 2</ex></ph> (offline)
+  </message>
   <message name="IDS_MULTIDEVICE_SETUP_START_SETUP_PAGE_FEATURE_LIST_HEADER" desc="Header to introduce a list of the features that the user is agreeing to in the multi-device setup.">
     When you connect your devices, you agree that your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> can:
   </message>
