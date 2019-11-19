@@ -167,7 +167,7 @@ void TreeBuilder::AddFileEntry(const std::string_view source_path,
     symbol_node->container_type = ContainerType::kSymbol;
     symbol_node->id_path = sym->FullName();
     symbol_node->size = sym->Pss();
-    symbol_node->node_stats = NodeStats(sym->Section(), 1, symbol_node->size);
+    symbol_node->node_stats = NodeStats(*sym);
     symbol_node->symbol = sym;
     AttachToParent(symbol_node, file_node);
   }
