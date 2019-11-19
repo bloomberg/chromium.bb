@@ -60,10 +60,9 @@ class InstallFinalizer {
   virtual void UninstallExternalWebApp(const GURL& app_url,
                                        UninstallWebAppCallback) = 0;
 
-  // Removes the web app with |app_id| from disk, registrar and all sync'd
-  // devices.
-  virtual void UninstallWebApp(const AppId& app_id,
-                               UninstallWebAppCallback) = 0;
+  virtual bool CanUserUninstallFromSync(const AppId& app_id) const = 0;
+  virtual void UninstallWebAppFromSyncByUser(const AppId& app_id,
+                                             UninstallWebAppCallback) = 0;
 
   // |virtual| for testing.
   virtual bool CanAddAppToQuickLaunchBar() const;
@@ -77,8 +76,6 @@ class InstallFinalizer {
 
   virtual bool CanRevealAppShim() const = 0;
   virtual void RevealAppShim(const AppId& app_id) = 0;
-
-  virtual bool CanUserUninstallFromSync(const AppId& app_id) const = 0;
 
   void SetSubsystems(AppRegistrar* registrar, WebAppUiManager* ui_manager);
 

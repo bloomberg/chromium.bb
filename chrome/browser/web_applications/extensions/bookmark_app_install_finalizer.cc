@@ -159,10 +159,27 @@ void BookmarkAppInstallFinalizer::UninstallExternalWebApp(
     return;
   }
 
-  UninstallWebApp(*app_id, std::move(callback));
+  UninstallExtension(*app_id, std::move(callback));
 }
 
-void BookmarkAppInstallFinalizer::UninstallWebApp(
+bool BookmarkAppInstallFinalizer::CanUserUninstallFromSync(
+    const web_app::AppId& app_id) const {
+  const Extension* app = GetEnabledExtension(app_id);
+  DCHECK(app);
+  return extensions::ExtensionSystem::Get(profile_)
+      ->management_policy()
+      ->UserMayModifySettings(app, nullptr);
+}
+
+void BookmarkAppInstallFinalizer::UninstallWebAppFromSyncByUser(
+    const web_app::AppId& app_id,
+    UninstallWebAppCallback callback) {
+  // Bookmark apps don't support app installation from different sources.
+  // Uninstall extension completely:
+  UninstallExtension(app_id, std::move(callback));
+}
+
+void BookmarkAppInstallFinalizer::UninstallExtension(
     const web_app::AppId& app_id,
     UninstallWebAppCallback callback) {
   if (!GetEnabledExtension(app_id)) {
@@ -203,15 +220,6 @@ void BookmarkAppInstallFinalizer::RevealAppShim(const web_app::AppId& app_id) {
     web_app::RevealAppShimInFinderForApp(profile_, app);
   }
 #endif  // defined(OS_MACOSX)
-}
-
-bool BookmarkAppInstallFinalizer::CanUserUninstallFromSync(
-    const web_app::AppId& app_id) const {
-  const Extension* app = GetEnabledExtension(app_id);
-  DCHECK(app);
-  return extensions::ExtensionSystem::Get(profile_)
-      ->management_policy()
-      ->UserMayModifySettings(app, nullptr);
 }
 
 void BookmarkAppInstallFinalizer::SetCrxInstallerFactoryForTesting(

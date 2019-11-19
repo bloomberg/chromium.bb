@@ -232,19 +232,26 @@ void WebAppInstallFinalizer::UninstallExternalWebApp(
   NOTIMPLEMENTED();
 }
 
+bool WebAppInstallFinalizer::CanUserUninstallFromSync(
+    const AppId& app_id) const {
+  // TODO(crbug.com/901226): Implement it.
+  return false;
+}
+
+void WebAppInstallFinalizer::UninstallWebAppFromSyncByUser(
+    const AppId& app_id,
+    UninstallWebAppCallback) {
+  // TODO(loyso): Implement The Unified Uninstall API. Expose Source as an
+  // argument for UninstallWebApp method. Do app->RemoveSource from the app and
+  // uninstall the app if no more sources interested.
+  NOTIMPLEMENTED();
+}
+
 void WebAppInstallFinalizer::FinalizeUpdate(
     const WebApplicationInfo& web_app_info,
     InstallFinalizedCallback callback) {
   // TODO(crbug.com/926083): Implement update logic, this requires updating
   // WebAppIconManager to clean out the existing icons and write new ones.
-  NOTIMPLEMENTED();
-}
-
-void WebAppInstallFinalizer::UninstallWebApp(const AppId& app_id,
-                                             UninstallWebAppCallback) {
-  // TODO(loyso): Implement The Unified Uninstall API. Expose Source as an
-  // argument for UninstallWebApp method. Do app->RemoveSource from the app and
-  // uninstall the app if no more sources interested.
   NOTIMPLEMENTED();
 }
 
@@ -313,12 +320,6 @@ bool WebAppInstallFinalizer::CanRevealAppShim() const {
 void WebAppInstallFinalizer::RevealAppShim(const AppId& app_id) {
   // TODO(loyso): Implement it.
   NOTIMPLEMENTED();
-}
-
-bool WebAppInstallFinalizer::CanUserUninstallFromSync(
-    const AppId& app_id) const {
-  // TODO(crbug.com/901226): Implement it.
-  return false;
 }
 
 }  // namespace web_app

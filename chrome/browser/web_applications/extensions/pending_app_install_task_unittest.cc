@@ -13,6 +13,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
@@ -197,8 +198,16 @@ class TestPendingAppInstallFinalizer : public InstallFinalizer {
             }));
   }
 
-  void UninstallWebApp(const AppId& app_dd,
-                       UninstallWebAppCallback callback) override {}
+  bool CanUserUninstallFromSync(const AppId& app_id) const override {
+    NOTIMPLEMENTED();
+    return false;
+  }
+
+  void UninstallWebAppFromSyncByUser(
+      const AppId& app_dd,
+      UninstallWebAppCallback callback) override {
+    NOTIMPLEMENTED();
+  }
 
   bool CanAddAppToQuickLaunchBar() const override { return true; }
 
@@ -221,11 +230,6 @@ class TestPendingAppInstallFinalizer : public InstallFinalizer {
 
   void RevealAppShim(const AppId& app_id) override {
     ++num_reveal_appshim_calls_;
-  }
-
-  bool CanUserUninstallFromSync(const AppId& app_id) const override {
-    NOTIMPLEMENTED();
-    return false;
   }
 
  private:

@@ -21,7 +21,7 @@ AppId TestInstallFinalizer::GetAppIdForUrl(const GURL& url) {
   return GenerateAppIdFromURL(url);
 }
 
-TestInstallFinalizer::TestInstallFinalizer() {}
+TestInstallFinalizer::TestInstallFinalizer() = default;
 
 TestInstallFinalizer::~TestInstallFinalizer() = default;
 
@@ -69,8 +69,16 @@ void TestInstallFinalizer::UninstallExternalWebApp(
                      }));
 }
 
-void TestInstallFinalizer::UninstallWebApp(const AppId& app_url,
-                                           UninstallWebAppCallback callback) {}
+bool TestInstallFinalizer::CanUserUninstallFromSync(const AppId& app_id) const {
+  NOTIMPLEMENTED();
+  return false;
+}
+
+void TestInstallFinalizer::UninstallWebAppFromSyncByUser(
+    const AppId& app_url,
+    UninstallWebAppCallback callback) {
+  NOTIMPLEMENTED();
+}
 
 bool TestInstallFinalizer::CanAddAppToQuickLaunchBar() const {
   return true;
@@ -97,11 +105,6 @@ bool TestInstallFinalizer::CanRevealAppShim() const {
 
 void TestInstallFinalizer::RevealAppShim(const AppId& app_id) {
   ++num_reveal_appshim_calls_;
-}
-
-bool TestInstallFinalizer::CanUserUninstallFromSync(const AppId& app_id) const {
-  NOTIMPLEMENTED();
-  return false;
 }
 
 void TestInstallFinalizer::SetNextFinalizeInstallResult(
