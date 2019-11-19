@@ -2,16 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('bookmarks', function() {
-  class TestStore extends cr.ui.TestStore {
+import {TestStore as CrUiTestStore} from 'chrome://test/test_store.m.js';
+import {Store, createEmptyState, reduceAction} from 'chrome://bookmarks/bookmarks.js';
+
+  export class TestStore extends CrUiTestStore {
     constructor(data) {
-      super(
-          data, bookmarks.Store, bookmarks.util.createEmptyState(),
-          bookmarks.reduceAction);
+      super(data, Store, createEmptyState(), reduceAction);
     }
   }
-
-  return {
-    TestStore: TestStore,
-  };
-});

@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// #import {PromiseResolver} from 'chrome://resources/js/promise_resolver.m.js';
+// #import {Store} from 'chrome://resources/js/cr/ui/store.m.js';
+
 cr.define('cr.ui', function() {
   /**
    * This is a generic test store, designed to replace a real Store instance
@@ -9,7 +12,7 @@ cr.define('cr.ui', function() {
    * implementation class that the test store is replacing, as in
    * chrome/test/data/webui/bookmarks/test_store.js.
    */
-  class TestStore extends cr.ui.Store {
+  /* #export */ class TestStore extends cr.ui.Store {
     constructor(
         initialData, storeImplClass, storeImplEmptyState, storeImplReducer) {
       super(storeImplEmptyState, storeImplReducer);
@@ -116,6 +119,7 @@ cr.define('cr.ui', function() {
     }
   }
 
+  // #cr_define_end
   return {
     TestStore: TestStore,
   };

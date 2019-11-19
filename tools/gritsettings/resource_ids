@@ -105,27 +105,28 @@
     "structures": [11800],
   },
   "chrome/browser/resources/bookmarks/bookmarks_resources.grd": {
-    "structures": [11830],
+    "includes": [11830],
+    "structures": [11850],
   },
   "chrome/browser/resources/bookmarks/bookmarks_resources_vulcanized.grd": {
-    "structures": [11880],
+    "structures": [11870],
   },
   "chrome/browser/resources/chromeos/camera/camera_resources.grd": {
-    "includes": [11890],
-    "structures": [11950],
+    "includes": [11880],
+    "structures": [11940],
   },
   "chrome/browser/resources/chromeos/camera/src/strings/camera_strings.grd": {
-    "messages": [12000],
+    "messages": [11990],
   },
   "chrome/browser/resources/chromeos/cellular_setup/cellular_setup_resources.grd": {
-    "structures": [12080],
+    "structures": [12070],
   },
   "chrome/browser/resources/chromeos/multidevice_setup/multidevice_setup_resources.grd": {
-    "structures": [12090],
+    "structures": [12080],
   },
   "chrome/browser/resources/component_extension_resources.grd": {
-    "includes": [12100],
-    "structures": [12230],
+    "includes": [12090],
+    "structures": [12220],
   },
   "chrome/browser/resources/downloads/downloads_resources_vulcanized.grd": {
     "includes": [12240],

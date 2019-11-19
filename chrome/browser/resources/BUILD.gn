@@ -109,21 +109,25 @@ grit("webapks_ui_resources") {
 
 if (!is_android) {
   grit("bookmarks_resources") {
+    # The .grd contains references to generated files.
+    source_is_generated = true
+    grit_flags = [
+      "-E",
+      "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
+    ]
+
     if (optimize_webui) {
       source = "bookmarks/bookmarks_resources_vulcanized.grd"
-
-      # The .grd contains references to generated files.
-      source_is_generated = true
 
       deps = [
         "//chrome/browser/resources/bookmarks:build",
       ]
-      grit_flags = [
-        "-E",
-        "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
-      ]
     } else {
       source = "bookmarks/bookmarks_resources.grd"
+
+      deps = [
+        "//chrome/browser/resources/bookmarks:polymer3_elements",
+      ]
     }
 
     defines = chrome_grit_defines
