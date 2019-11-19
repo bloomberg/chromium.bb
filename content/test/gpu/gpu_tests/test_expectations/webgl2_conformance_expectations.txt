@@ -49,6 +49,9 @@ crbug.com/945970 [ android ] WebglExtension_EXT_float_blend [ Skip ]
 # or when angle is used everywhere.
 crbug.com/891861 [ mac no-passthrough ] WebglExtension_WEBGL_draw_instanced_base_vertex_base_instance [ Skip ]
 crbug.com/891861 [ mac no-passthrough ] WebglExtension_WEBGL_multi_draw_instanced_base_vertex_base_instance [ Skip ]
+crbug.com/891861 [ android no-passthrough ] WebglExtension_WEBGL_draw_instanced_base_vertex_base_instance [ Skip ]
+crbug.com/891861 [ android no-passthrough ] WebglExtension_WEBGL_multi_draw_instanced_base_vertex_base_instance [ Skip ]
+
 
 # ========================
 # Conformance expectations
