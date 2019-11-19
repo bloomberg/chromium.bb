@@ -244,6 +244,7 @@ if (!is_android) {
       source = "downloads/downloads_resources.grd"
 
       deps = [
+        "//chrome/browser/resources/downloads:polymer3_elements",
         "//chrome/browser/ui/webui/downloads:mojo_bindings_js",
       ]
     }
