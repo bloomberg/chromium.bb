@@ -111,8 +111,6 @@ _OS_SPECIFIC_FILTER['mac'] = [
     'MobileEmulationCapabilityTest.testTapElement',
     # https://bugs.chromium.org/p/chromium/issues/detail?id=946023
     'ChromeDriverTest.testWindowFullScreen',
-    # https://bugs.chromium.org/p/chromium/issues/detail?id=1025967
-    'ChromeDriverTestWithCustomCapability.testEagerMode',
     # https://bugs.chromium.org/p/chromium/issues/detail?id=1025981
     'ChromeDriverSiteIsolation.testCanClickOOPIF',
     # https://bugs.chromium.org/p/chromium/issues/detail?id=1026018
