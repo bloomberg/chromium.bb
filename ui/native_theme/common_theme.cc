@@ -302,10 +302,16 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
       return kTextSelectionBackgroundFocused;
 
     // Tooltip
-    case NativeTheme::kColorId_TooltipBackground:
-      return SkColorSetA(SK_ColorBLACK, 0xCC);
-    case NativeTheme::kColorId_TooltipText:
-      return SkColorSetA(SK_ColorWHITE, 0xDE);
+    case NativeTheme::kColorId_TooltipBackground: {
+      const SkColor bg = base_theme->GetSystemColor(
+          NativeTheme::kColorId_WindowBackground, color_scheme);
+      return SkColorSetA(color_utils::GetColorWithMaxContrast(bg), 0xE9);
+    }
+    case NativeTheme::kColorId_TooltipText: {
+      const SkColor bg = base_theme->GetSystemColor(
+          NativeTheme::kColorId_TooltipBackground, color_scheme);
+      return SkColorSetA(color_utils::GetColorWithMaxContrast(bg), 0xDE);
+    }
 
     // Tree
     case NativeTheme::kColorId_TreeBackground:
