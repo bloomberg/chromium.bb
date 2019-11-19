@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 /**
- * @fileoverview Polymer element wrapping cr-network-list including the
+ * @fileoverview Polymer element wrapping network-list including the
  * networkConfig mojo API calls to populate it.
  */
 
@@ -12,9 +12,9 @@
 const mojom = chromeos.networkConfig.mojom;
 
 Polymer({
-  is: 'cr-network-select',
+  is: 'network-select',
 
-  behaviors: [CrNetworkListenerBehavior],
+  behaviors: [NetworkListenerBehavior],
 
   properties: {
     /**
@@ -28,8 +28,8 @@ Polymer({
 
     /**
      * The list of custom items to display after the list of networks.
-     * See CrNetworkList for details.
-     * @type {!Array<CrNetworkList.CustomItemState>}
+     * See NetworkList for details.
+     * @type {!Array<NetworkList.CustomItemState>}
      */
     customItems: {
       type: Array,
@@ -249,7 +249,7 @@ Polymer({
 
     // Note: the default connectionState is kNotConnected.
     // TODO(khorimoto): Maybe set an 'initializing' CellularState property if
-    // the device state is initializing, see TODO in cr_network_list_item.js.
+    // the device state is initializing, see TODO in network_list_item.js.
 
     // Insert the Cellular network after the Ethernet network if it exists.
     const idx = (networkStates.length > 0 &&
@@ -260,7 +260,7 @@ Polymer({
   },
 
   /**
-   * Event triggered when a cr-network-list-item is selected.
+   * Event triggered when a network-list-item is selected.
    * @param {!{target: HTMLElement, detail: !OncMojo.NetworkStateProperties}} e
    * @private
    */

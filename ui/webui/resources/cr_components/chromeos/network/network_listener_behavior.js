@@ -8,7 +8,7 @@
  */
 
 /** @polymerBehavior */
-const CrNetworkListenerBehavior = {
+const NetworkListenerBehavior = {
   /** @private {?chromeos.networkConfig.mojom.CrosNetworkConfigObserver} */
   observer_: null,
 

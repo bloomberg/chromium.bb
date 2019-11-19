@@ -7,10 +7,10 @@
  */
 
 /**
- * Polymer class definition for 'cr-network-list'.
+ * Polymer class definition for 'network-list'.
  */
 Polymer({
-  is: 'cr-network-list',
+  is: 'network-list',
 
   properties: {
     /**
@@ -26,7 +26,7 @@ Polymer({
 
     /**
      * The list of custom items to display after the list of networks.
-     * @type {!Array<!CrNetworkList.CustomItemState>}
+     * @type {!Array<!NetworkList.CustomItemState>}
      */
     customItems: {
       type: Array,
@@ -47,7 +47,7 @@ Polymer({
 
     /**
      * Reflects the iron-list selecteditem property.
-     * @type {!CrNetworkList.CrNetworkListItemType}
+     * @type {!NetworkList.NetworkListItemType}
      */
     selectedItem: {
       type: Object,
@@ -59,7 +59,7 @@ Polymer({
 
     /**
      * Contains |networks| + |customItems|.
-     * @private {!Array<!CrNetworkList.CrNetworkListItemType>}
+     * @private {!Array<!NetworkList.NetworkListItemType>}
      */
     listItems_: {
       type: Array,
@@ -102,8 +102,8 @@ Polymer({
 
   /** @private */
   focusFirstItem_: function() {
-    // Select the first cr-network-list-item if there is one.
-    const item = this.$$('cr-network-list-item');
+    // Select the first network-list-item if there is one.
+    const item = this.$$('network-list-item');
     if (!item) {
       return;
     }
@@ -123,7 +123,7 @@ Polymer({
   },
 
   /**
-   * @param {!CrNetworkList.CrNetworkListItemType} item
+   * @param {!NetworkList.NetworkListItemType} item
    * @private
    */
   onItemAction_: function(item) {

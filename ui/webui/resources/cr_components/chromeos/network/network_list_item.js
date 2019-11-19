@@ -8,14 +8,14 @@
  */
 
 Polymer({
-  is: 'cr-network-list-item',
+  is: 'network-list-item',
 
   behaviors: [
     CrPolicyNetworkBehaviorMojo,
   ],
 
   properties: {
-    /** @type {!CrNetworkList.CrNetworkListItemType|undefined} */
+    /** @type {!NetworkList.NetworkListItemType|undefined} */
     item: {
       type: Object,
       observer: 'itemChanged_',
@@ -49,7 +49,7 @@ Polymer({
 
     /**
      * Expose the itemName so it can be used as a label for a11y.  It will be
-     * added as an attribute on this top-level cr-network-list-item, and can
+     * added as an attribute on this top-level network-list-item, and can
      * be used by any sub-element which applies it.
      */
     ariaLabel: {
@@ -129,7 +129,7 @@ Polymer({
    */
   getItemName_: function() {
     if (this.item.hasOwnProperty('customItemName')) {
-      const item = /** @type {!CrNetworkList.CustomItemState} */ (this.item);
+      const item = /** @type {!NetworkList.CustomItemState} */ (this.item);
       let name = item.customItemName || '';
       if (CrOncStrings.hasOwnProperty(item.customItemName)) {
         name = CrOncStrings[item.customItemName];

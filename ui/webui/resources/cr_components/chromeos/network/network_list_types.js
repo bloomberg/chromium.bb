@@ -4,11 +4,11 @@
 
 /**
  * @fileoverview
- * This file contains typedefs properties for CrNetworkList, shared by
- * CrNetworkListItem.
+ * This file contains typedefs properties for NetworkList, shared by
+ * NetworkListItem.
  */
 
-const CrNetworkList = {};
+const NetworkList = {};
 
 /**
  * Custom data for implementation specific network list items.
@@ -19,7 +19,7 @@ const CrNetworkList = {};
  *   showBeforeNetworksList: boolean,
  * }}
  */
-CrNetworkList.CustomItemState;
+NetworkList.CustomItemState;
 
-/** @typedef {OncMojo.NetworkStateProperties|CrNetworkList.CustomItemState} */
-CrNetworkList.CrNetworkListItemType;
+/** @typedef {OncMojo.NetworkStateProperties|NetworkList.CustomItemState} */
+NetworkList.NetworkListItemType;

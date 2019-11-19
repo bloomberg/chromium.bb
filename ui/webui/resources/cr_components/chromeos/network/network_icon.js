@@ -8,7 +8,7 @@
  */
 
 Polymer({
-  is: 'cr-network-icon',
+  is: 'network-icon',
 
   properties: {
     /**
