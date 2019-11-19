@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/platform/scheduler/main_thread/frame_interference_recorder.h"
+#include "third_party/blink/renderer/platform/scheduler/main_thread/agent_interference_recorder.h"
 
 #include "base/task/sequence_manager/task_queue.h"
 #include "base/test/task_environment.h"
@@ -13,19 +13,19 @@
 
 namespace blink {
 namespace scheduler {
-namespace frame_interference_recorder_test {
+namespace agent_interference_recorder_test {
 
 using base::sequence_manager::LazyNow;
 using base::sequence_manager::Task;
 
 constexpr base::TimeDelta kDelay = base::TimeDelta::FromSeconds(10);
 
-class FrameInterferenceRecorderTest : public testing::Test {
+class AgentInterferenceRecorderTest : public testing::Test {
  public:
-  class MockFrameInterferenceRecorder : public FrameInterferenceRecorder {
+  class MockAgentInterferenceRecorder : public AgentInterferenceRecorder {
    public:
-    MockFrameInterferenceRecorder(FrameInterferenceRecorderTest* outer)
-        : FrameInterferenceRecorder(/* sampling_rate */ 1), outer_(outer) {}
+    MockAgentInterferenceRecorder(AgentInterferenceRecorderTest* outer)
+        : AgentInterferenceRecorder(/* sampling_rate */ 1), outer_(outer) {}
 
     void RecordHistogram(const MainThreadTaskQueue* queue,
                          base::TimeDelta sample) override {
@@ -62,12 +62,12 @@ class FrameInterferenceRecorderTest : public testing::Test {
                  void(const MainThreadTaskQueue*, base::TimeDelta));
 
    private:
-    FrameInterferenceRecorderTest* const outer_;
+    AgentInterferenceRecorderTest* const outer_;
   };
 
   class ScopedExpectSample {
    public:
-    ScopedExpectSample(FrameInterferenceRecorderTest* test,
+    ScopedExpectSample(AgentInterferenceRecorderTest* test,
                        MainThreadTaskQueue* queue,
                        base::TimeDelta expected)
         : test_(test) {
@@ -76,10 +76,10 @@ class FrameInterferenceRecorderTest : public testing::Test {
     ~ScopedExpectSample() { testing::Mock::VerifyAndClear(&test_->recorder_); }
 
    private:
-    FrameInterferenceRecorderTest* const test_;
+    AgentInterferenceRecorderTest* const test_;
   };
 
-  FrameInterferenceRecorderTest() = default;
+  AgentInterferenceRecorderTest() = default;
 
   static base::sequence_manager::EnqueueOrder EnqueueOrder(int enqueue_order) {
     return base::sequence_manager::EnqueueOrder::FromIntForTesting(
@@ -102,7 +102,7 @@ class FrameInterferenceRecorderTest : public testing::Test {
     return task_environment_.GetMockTickClock();
   }
 
-  testing::StrictMock<MockFrameInterferenceRecorder> recorder_{this};
+  testing::StrictMock<MockAgentInterferenceRecorder> recorder_{this};
 
   base::UnguessableToken agent_a_ = base::UnguessableToken::Create();
   base::UnguessableToken agent_b_ = base::UnguessableToken::Create();
@@ -144,7 +144,7 @@ class FrameInterferenceRecorderTest : public testing::Test {
 
 // Verify that zero interference is recorded if no task runs between when a
 // frame task is posted and when it runs.
-TEST_F(FrameInterferenceRecorderTest, NoInterferenceSingleTask) {
+TEST_F(AgentInterferenceRecorderTest, NoInterferenceSingleTask) {
   SCOPED_TRACE(NowTicks());
 
   OnTaskReady(frame_agent_a_.get(), EnqueueOrder(1));
@@ -165,7 +165,7 @@ TEST_F(FrameInterferenceRecorderTest, NoInterferenceSingleTask) {
 }
 
 // Verify that zero interference is recorded when tasks from the same queue run.
-TEST_F(FrameInterferenceRecorderTest, NoInterferenceMultipleTasksSameQueue) {
+TEST_F(AgentInterferenceRecorderTest, NoInterferenceMultipleTasksSameQueue) {
   SCOPED_TRACE(NowTicks());
 
   OnTaskReady(frame_agent_a_.get(), EnqueueOrder(1));
@@ -202,7 +202,7 @@ TEST_F(FrameInterferenceRecorderTest, NoInterferenceMultipleTasksSameQueue) {
 
 // Verify that zero interference is recorded when tasks from different queues
 // associated with the same frame run.
-TEST_F(FrameInterferenceRecorderTest, NoInterferenceMultipleQueuesSameAgent) {
+TEST_F(AgentInterferenceRecorderTest, NoInterferenceMultipleQueuesSameAgent) {
   SCOPED_TRACE(NowTicks());
 
   OnTaskReady(frame_agent_a_.get(), EnqueueOrder(1));
@@ -239,7 +239,7 @@ TEST_F(FrameInterferenceRecorderTest, NoInterferenceMultipleQueuesSameAgent) {
 
 // Verify that zero interference is recorded when tasks from different frame
 // associated with the same agent run.
-TEST_F(FrameInterferenceRecorderTest, NoInterferenceMultipleFramesSameAgent) {
+TEST_F(AgentInterferenceRecorderTest, NoInterferenceMultipleFramesSameAgent) {
   SCOPED_TRACE(NowTicks());
 
   OnTaskReady(frame_agent_c_.get(), EnqueueOrder(1));
@@ -276,7 +276,7 @@ TEST_F(FrameInterferenceRecorderTest, NoInterferenceMultipleFramesSameAgent) {
 
 // Verify that zero interference is recorded when a non-frame task runs between
 // when a frame task is ready and when it runs.
-TEST_F(FrameInterferenceRecorderTest, NoInterferenceNoAgentQueue) {
+TEST_F(AgentInterferenceRecorderTest, NoInterferenceNoAgentQueue) {
   SCOPED_TRACE(NowTicks());
 
   OnTaskReady(nullptr, EnqueueOrder(1));
@@ -308,7 +308,7 @@ TEST_F(FrameInterferenceRecorderTest, NoInterferenceNoAgentQueue) {
 
 // Verify that interference is recorded when a task from another agent runs
 // between when a agent task becomes ready and when it runs.
-TEST_F(FrameInterferenceRecorderTest, InterferenceFromOneOtherAgent) {
+TEST_F(AgentInterferenceRecorderTest, InterferenceFromOneOtherAgent) {
   SCOPED_TRACE(NowTicks());
 
   OnTaskReady(frame_agent_a_.get(), EnqueueOrder(1));
@@ -345,7 +345,7 @@ TEST_F(FrameInterferenceRecorderTest, InterferenceFromOneOtherAgent) {
 
 // Verify that interference is recorded correctly when tasks from multiple
 // agents run.
-TEST_F(FrameInterferenceRecorderTest, InterferenceFromManyOtherFrames) {
+TEST_F(AgentInterferenceRecorderTest, InterferenceFromManyOtherFrames) {
   SCOPED_TRACE(NowTicks());
 
   OnTaskReady(frame_agent_a_.get(), EnqueueOrder(1));
@@ -416,7 +416,7 @@ TEST_F(FrameInterferenceRecorderTest, InterferenceFromManyOtherFrames) {
 }
 
 // Verify that interference is recorded correctly when there are nested tasks.
-TEST_F(FrameInterferenceRecorderTest, Nesting) {
+TEST_F(AgentInterferenceRecorderTest, Nesting) {
   SCOPED_TRACE(NowTicks());
 
   OnTaskReady(frame_agent_a_.get(), EnqueueOrder(1));
@@ -482,7 +482,7 @@ TEST_F(FrameInterferenceRecorderTest, Nesting) {
 
 // Verify that interference is recorded correctly when a task becomes ready
 // while another task is running.
-TEST_F(FrameInterferenceRecorderTest, ReadyDuringRun) {
+TEST_F(AgentInterferenceRecorderTest, ReadyDuringRun) {
   SCOPED_TRACE(NowTicks());
 
   OnTaskReady(frame_agent_a_.get(), EnqueueOrder(1));
@@ -522,7 +522,7 @@ TEST_F(FrameInterferenceRecorderTest, ReadyDuringRun) {
 
 // Verify that OnFrameSchedulerDestroyed doesn't clear data associated to an
 // agent that is referred to by other frames.
-TEST_F(FrameInterferenceRecorderTest, OnFrameSchedulerDestroyed) {
+TEST_F(AgentInterferenceRecorderTest, OnFrameSchedulerDestroyed) {
   SCOPED_TRACE(NowTicks());
 
   OnTaskReady(frame_agent_c_.get(), EnqueueOrder(1));
@@ -560,6 +560,6 @@ TEST_F(FrameInterferenceRecorderTest, OnFrameSchedulerDestroyed) {
   }
 }
 
-}  // namespace frame_interference_recorder_test
+}  // namespace agent_interference_recorder_test
 }  // namespace scheduler
 }  // namespace blink

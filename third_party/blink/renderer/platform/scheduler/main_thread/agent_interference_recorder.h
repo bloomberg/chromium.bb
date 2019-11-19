@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_MAIN_THREAD_FRAME_INTERFERENCE_RECORDER_H_
-#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_MAIN_THREAD_FRAME_INTERFERENCE_RECORDER_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_MAIN_THREAD_AGENT_INTERFERENCE_RECORDER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_MAIN_THREAD_AGENT_INTERFERENCE_RECORDER_H_
 
 #include <atomic>
 #include <map>
@@ -78,12 +78,11 @@ class MainThreadTaskQueue;
 // nested loop is equivalent to resuming the task that was finished when the
 // nested loop was entered (no histogram is recorded when resuming an existing
 // task).
-// TODO(crbug.com/1019856): Rename to AgentInterferenceRecorder.
-class PLATFORM_EXPORT FrameInterferenceRecorder {
+class PLATFORM_EXPORT AgentInterferenceRecorder {
  public:
   // The histogram is recorded for 1 out of |sampling_rate| tasks.
-  explicit FrameInterferenceRecorder(int sampling_rate = 1000);
-  ~FrameInterferenceRecorder();
+  explicit AgentInterferenceRecorder(int sampling_rate = 1000);
+  ~AgentInterferenceRecorder();
 
   // Invoked when a task becomes ready. For a non-delayed task, this is at post
   // time. For a delayed task, this is when the task's delay expires.
@@ -218,10 +217,10 @@ class PLATFORM_EXPORT FrameInterferenceRecorder {
   base::flat_map<base::sequence_manager::EnqueueOrder, ReadyTask> ready_tasks_
       GUARDED_BY(lock_);
 
-  DISALLOW_COPY_AND_ASSIGN(FrameInterferenceRecorder);
+  DISALLOW_COPY_AND_ASSIGN(AgentInterferenceRecorder);
 };
 
 }  // namespace scheduler
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_MAIN_THREAD_FRAME_INTERFERENCE_RECORDER_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_MAIN_THREAD_AGENT_INTERFERENCE_RECORDER_H_

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/platform/scheduler/main_thread/frame_interference_recorder.h"
+#include "third_party/blink/renderer/platform/scheduler/main_thread/agent_interference_recorder.h"
 
 #include <algorithm>
 
@@ -27,13 +27,13 @@ uint32_t GetNextRandomNumber(uint32_t previous_value) {
 
 }  // namespace
 
-FrameInterferenceRecorder::FrameInterferenceRecorder(int sampling_rate)
+AgentInterferenceRecorder::AgentInterferenceRecorder(int sampling_rate)
     : sampling_rate_(sampling_rate),
       random_value_(static_cast<uint32_t>(base::RandUint64())) {}
 
-FrameInterferenceRecorder::~FrameInterferenceRecorder() = default;
+AgentInterferenceRecorder::~AgentInterferenceRecorder() = default;
 
-void FrameInterferenceRecorder::OnTaskReady(
+void AgentInterferenceRecorder::OnTaskReady(
     const void* frame_scheduler,
     base::sequence_manager::EnqueueOrder enqueue_order,
     base::sequence_manager::LazyNow* lazy_now) {
@@ -72,7 +72,7 @@ void FrameInterferenceRecorder::OnTaskReady(
   }
 }
 
-void FrameInterferenceRecorder::OnTaskStarted(
+void AgentInterferenceRecorder::OnTaskStarted(
     MainThreadTaskQueue* queue,
     base::sequence_manager::EnqueueOrder enqueue_order,
     base::TimeTicks start_time) {
@@ -125,7 +125,7 @@ void FrameInterferenceRecorder::OnTaskStarted(
     ++agent_data_.at(agent_cluster_id).frame_count;
 }
 
-void FrameInterferenceRecorder::OnTaskCompleted(MainThreadTaskQueue* queue,
+void AgentInterferenceRecorder::OnTaskCompleted(MainThreadTaskQueue* queue,
                                                 base::TimeTicks end_time) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   base::AutoLock auto_lock(lock_);
@@ -137,7 +137,7 @@ void FrameInterferenceRecorder::OnTaskCompleted(MainThreadTaskQueue* queue,
   agent_cluster_id_for_current_task_ = base::UnguessableToken();
 }
 
-void FrameInterferenceRecorder::OnFrameSchedulerDestroyed(
+void AgentInterferenceRecorder::OnFrameSchedulerDestroyed(
     const FrameScheduler* frame_scheduler) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   base::AutoLock auto_lock(lock_);
@@ -149,7 +149,7 @@ void FrameInterferenceRecorder::OnFrameSchedulerDestroyed(
   frame_to_agent_cluster_id_.erase(frame_to_agent_it);
 }
 
-void FrameInterferenceRecorder::AccumulateCurrentTaskRunningTime(
+void AgentInterferenceRecorder::AccumulateCurrentTaskRunningTime(
     base::sequence_manager::LazyNow* lazy_now) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!current_task_start_time_.is_null());
@@ -172,14 +172,14 @@ void FrameInterferenceRecorder::AccumulateCurrentTaskRunningTime(
   }
 }
 
-base::TimeDelta FrameInterferenceRecorder::GetCurrentAgentTaskRunningTime(
+base::TimeDelta AgentInterferenceRecorder::GetCurrentAgentTaskRunningTime(
     base::sequence_manager::LazyNow* lazy_now) const {
   DCHECK(agent_cluster_id_for_current_task_);
   DCHECK(!current_task_start_time_.is_null());
   return lazy_now->Now() - current_task_start_time_;
 }
 
-uint32_t FrameInterferenceRecorder::ShouldSampleNextReadyTask() {
+uint32_t AgentInterferenceRecorder::ShouldSampleNextReadyTask() {
   uint32_t previous_random_value =
       random_value_.load(std::memory_order_relaxed);
   uint32_t next_random_value;
@@ -190,7 +190,7 @@ uint32_t FrameInterferenceRecorder::ShouldSampleNextReadyTask() {
   return next_random_value % sampling_rate_ == 0;
 }
 
-void FrameInterferenceRecorder::RecordHistogramForReadyTask(
+void AgentInterferenceRecorder::RecordHistogramForReadyTask(
     const ReadyTask& ready_task,
     const MainThreadTaskQueue* queue,
     const FrameScheduler* frame_scheduler,
@@ -265,7 +265,7 @@ void FrameInterferenceRecorder::RecordHistogramForReadyTask(
   RecordHistogram(queue, time_for_other_agents_since_ready);
 }
 
-void FrameInterferenceRecorder::DecrementNumFramesForAgent(
+void AgentInterferenceRecorder::DecrementNumFramesForAgent(
     const base::UnguessableToken& agent_cluster_id) {
   if (!agent_cluster_id)
     return;
@@ -278,7 +278,7 @@ void FrameInterferenceRecorder::DecrementNumFramesForAgent(
     agent_data_.erase(agent_data_it);
 }
 
-void FrameInterferenceRecorder::RecordHistogram(
+void AgentInterferenceRecorder::RecordHistogram(
     const MainThreadTaskQueue* queue,
     base::TimeDelta sample) {
   // Histogram should only be recorded for queue types that can be associated
@@ -302,13 +302,13 @@ void FrameInterferenceRecorder::RecordHistogram(
       100);
 }
 
-const FrameScheduler* FrameInterferenceRecorder::GetFrameSchedulerForQueue(
+const FrameScheduler* AgentInterferenceRecorder::GetFrameSchedulerForQueue(
     const MainThreadTaskQueue* queue) {
   return queue->GetFrameScheduler();
 }
 
 const base::UnguessableToken&
-FrameInterferenceRecorder::GetAgentClusterIdForQueue(
+AgentInterferenceRecorder::GetAgentClusterIdForQueue(
     const MainThreadTaskQueue* queue) {
   const FrameSchedulerImpl* frame_scheduler = queue->GetFrameScheduler();
   return frame_scheduler ? frame_scheduler->GetAgentClusterId()
