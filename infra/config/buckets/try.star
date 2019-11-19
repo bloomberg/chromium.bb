@@ -892,6 +892,7 @@ gpu_mac_builder(
 
 gpu_mac_builder(
     name = 'gpu-fyi-try-mac-amd-pro-rel',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 gpu_mac_builder(
@@ -901,10 +902,12 @@ gpu_mac_builder(
 
 gpu_mac_builder(
     name = 'gpu-fyi-try-mac-amd-retina-exp',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 gpu_mac_builder(
     name = 'gpu-fyi-try-mac-amd-retina-rel',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 gpu_mac_builder(
@@ -924,6 +927,7 @@ gpu_mac_builder(
 
 gpu_mac_builder(
     name = 'gpu-fyi-try-mac-intel-exp',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 gpu_mac_builder(
@@ -942,10 +946,12 @@ gpu_mac_builder(
     # If it gets more, the modified execution_timeout should be removed.
     # See crbug.com/853307 for more context.
     execution_timeout = 12 * time.hour,
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 gpu_mac_builder(
     name = 'gpu-fyi-try-mac-nvidia-retina-rel',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 gpu_mac_builder(
@@ -1448,6 +1454,7 @@ def mac_builder(*, name, cores=None, os=os.MAC_ANY, **kwargs):
 mac_builder(
     name = 'mac-osxbeta-rel',
     builderless = True,
+    goma_backend = goma.backend.RBE_PROD,
     os = os.MAC_DEFAULT,
     ssd = True,
 )
@@ -1484,6 +1491,7 @@ mac_builder(
 
 mac_builder(
     name = 'mac_chromium_archive_rel_ng',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 mac_builder(
@@ -1522,6 +1530,7 @@ mac_builder(
     ],
     executable = luci.recipe(name = 'chromium_upload_clang'),
     execution_timeout = 6 * time.hour,
+    goma_backend = None,  # Does not use Goma.
     properties = {
         '$depot_tools/osx_sdk': {
             'sdk_version': '9a235',
