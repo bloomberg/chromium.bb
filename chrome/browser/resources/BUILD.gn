@@ -28,6 +28,7 @@ if (closure_compile) {
         "local_state:closure_compile",
         "management:closure_compile",
         "media_router:closure_compile",
+        "new_tab_page:closure_compile",
         "ntp4:closure_compile",
         "omnibox:closure_compile",
         "pdf:closure_compile",
@@ -174,6 +175,32 @@ if (!is_android) {
     outputs = [
       "grit/local_ntp_resources.h",
       "local_ntp_resources.pak",
+    ]
+    output_dir = "$root_gen_dir/chrome"
+  }
+
+  grit("new_tab_page_resources") {
+    source = "new_tab_page/new_tab_page_resources.grd"
+
+    deps = [
+      "//chrome/browser/resources/new_tab_page:polymer3_elements",
+      "//chrome/browser/ui/webui/new_tab_page:mojo_bindings_js",
+    ]
+
+    # The .grd contains references to generated files.
+    source_is_generated = true
+
+    grit_flags = [
+      "-E",
+      "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
+    ]
+
+    defines = chrome_grit_defines
+    outputs = [
+      "grit/new_tab_page_resources.h",
+      "grit/new_tab_page_resources_map.cc",
+      "grit/new_tab_page_resources_map.h",
+      "new_tab_page_resources.pak",
     ]
     output_dir = "$root_gen_dir/chrome"
   }

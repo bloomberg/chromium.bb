@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/webui/downloads/downloads.mojom.h"
 #include "chrome/browser/ui/webui/feed_internals/feed_internals.mojom.h"
 #include "chrome/browser/ui/webui/interventions_internals/interventions_internals.mojom.h"
+#include "chrome/browser/ui/webui/new_tab_page/new_tab_page.mojom.h"
 #include "chrome/browser/ui/webui/omnibox/omnibox.mojom.h"
 #include "chrome/browser/ui/webui/reset_password/reset_password.mojom.h"
 #include "chrome/browser/ui/webui/snippets_internals/snippets_internals.mojom.h"
@@ -156,6 +157,7 @@ const service_manager::Manifest& GetChromeContentBrowserOverlayManifest() {
                 // for for now.
                 downloads::mojom::PageHandlerFactory,
                 feed_internals::mojom::PageHandler,
+                new_tab_page::mojom::PageHandlerFactory,
 #if defined(OS_ANDROID)
                 explore_sites_internals::mojom::PageHandler,
 #else
