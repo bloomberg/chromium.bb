@@ -209,6 +209,17 @@ public final class ChromePreferenceKeys {
      */
     public static final String OFFLINE_INDICATOR_V2_ENABLED_KEY = "offline_indicator_v2_enabled";
 
+    /**
+     * Personalized signin promo preference.
+     */
+    public static final String PREF_PERSONALIZED_SIGNIN_PROMO_DECLINED =
+            "signin_promo_bookmarks_declined";
+    /**
+     * Generic signin and sync promo preferences.
+     */
+    public static final String PREF_SIGNIN_AND_SYNC_PROMO_SHOW_COUNT =
+            "enhanced_bookmark_signin_promo_show_count";
+
     ////////////////////////////////////////////////////////////////////////////////////////////////
     // Keys representing cached feature flags                                                     //
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -388,6 +399,8 @@ public final class ChromePreferenceKeys {
                 WEBAPK_UNINSTALLED_PACKAGES,
                 REACHED_CODE_PROFILER_GROUP_KEY,
                 OFFLINE_INDICATOR_V2_ENABLED_KEY,
+                PREF_PERSONALIZED_SIGNIN_PROMO_DECLINED,
+                PREF_SIGNIN_AND_SYNC_PROMO_SHOW_COUNT,
 
                 // Cached feature flags
                 SERVICE_MANAGER_FOR_DOWNLOAD_RESUMPTION_KEY,
@@ -490,6 +503,8 @@ public final class ChromePreferenceKeys {
                 WEBAPK_UNINSTALLED_PACKAGES,
                 REACHED_CODE_PROFILER_GROUP_KEY,
                 OFFLINE_INDICATOR_V2_ENABLED_KEY,
+                PREF_PERSONALIZED_SIGNIN_PROMO_DECLINED,
+                PREF_SIGNIN_AND_SYNC_PROMO_SHOW_COUNT,
 
                 // Cached feature flags
                 SERVICE_MANAGER_FOR_DOWNLOAD_RESUMPTION_KEY,
