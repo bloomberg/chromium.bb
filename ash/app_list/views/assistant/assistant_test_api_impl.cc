@@ -73,6 +73,10 @@ views::View* AssistantTestApiImpl::mic_view() {
   return page_view()->GetViewByID(AssistantViewID::kMicView);
 }
 
+views::View* AssistantTestApiImpl::greeting_label() {
+  return page_view()->GetViewByID(AssistantViewID::kGreetingLabel);
+}
+
 aura::Window* AssistantTestApiImpl::window() {
   return main_view()->GetWidget()->GetNativeWindow();
 }
