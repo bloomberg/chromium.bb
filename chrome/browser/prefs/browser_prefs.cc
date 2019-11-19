@@ -942,7 +942,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   certificate_manager::CertificatesHandler::RegisterProfilePrefs(registry);
   chromeos::AccountManager::RegisterPrefs(registry);
   chromeos::ApkWebAppService::RegisterProfilePrefs(registry);
-  chromeos::assistant::prefs::RegisterProfilePrefsForBrowser(registry);
+  chromeos::assistant::prefs::RegisterProfilePrefs(registry);
   chromeos::bluetooth::DebugLogsManager::RegisterPrefs(registry);
   chromeos::CupsPrintersManager::RegisterProfilePrefs(registry);
   chromeos::device_sync::DeviceSyncImpl::RegisterProfilePrefs(registry);
