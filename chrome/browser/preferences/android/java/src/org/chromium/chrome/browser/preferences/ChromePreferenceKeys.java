@@ -111,6 +111,10 @@ public final class ChromePreferenceKeys {
             "signin_promo_last_shown_chrome_version";
     public static final String SIGNIN_PROMO_LAST_SHOWN_ACCOUNT_NAMES =
             "signin_promo_last_shown_account_names";
+    public static final String SIGNIN_PROMO_IMPRESSIONS_COUNT_BOOKMARKS =
+            "signin_promo_impressions_count_bookmarks";
+    public static final String SIGNIN_PROMO_IMPRESSIONS_COUNT_SETTINGS =
+            "signin_promo_impressions_count_settings";
 
     /**
      * Whether Chrome is set as the default browser.
@@ -235,6 +239,8 @@ public final class ChromePreferenceKeys {
                 PROMOS_SKIPPED_ON_FIRST_START,
                 SIGNIN_PROMO_LAST_SHOWN_MAJOR_VERSION,
                 SIGNIN_PROMO_LAST_SHOWN_ACCOUNT_NAMES,
+                SIGNIN_PROMO_IMPRESSIONS_COUNT_BOOKMARKS,
+                SIGNIN_PROMO_IMPRESSIONS_COUNT_SETTINGS,
                 CHROME_DEFAULT_BROWSER,
                 UI_THEME_SETTING_KEY,
                 DARKEN_WEBSITES_ENABLED_KEY,
@@ -313,6 +319,8 @@ public final class ChromePreferenceKeys {
                 PROMOS_SKIPPED_ON_FIRST_START,
                 SIGNIN_PROMO_LAST_SHOWN_MAJOR_VERSION,
                 SIGNIN_PROMO_LAST_SHOWN_ACCOUNT_NAMES,
+                SIGNIN_PROMO_IMPRESSIONS_COUNT_BOOKMARKS,
+                SIGNIN_PROMO_IMPRESSIONS_COUNT_SETTINGS,
                 CHROME_DEFAULT_BROWSER,
                 UI_THEME_SETTING_KEY,
                 DARKEN_WEBSITES_ENABLED_KEY,
