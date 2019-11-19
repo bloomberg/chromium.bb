@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/previews/content/previews_optimization_guide_decider.h"
+#include "components/previews/content/previews_optimization_guide.h"
 
 #include <utility>
 
@@ -82,7 +82,7 @@ std::vector<std::string> GetResourcePatternsToBlock(
 
 }  // namespace
 
-PreviewsOptimizationGuideDecider::PreviewsOptimizationGuideDecider(
+PreviewsOptimizationGuide::PreviewsOptimizationGuide(
     optimization_guide::OptimizationGuideDecider* optimization_guide_decider)
     : optimization_guide_decider_(optimization_guide_decider),
       resource_loading_hints_cache_(kDefaultMaxResourceLoadingHintsCacheSize),
@@ -96,9 +96,9 @@ PreviewsOptimizationGuideDecider::PreviewsOptimizationGuideDecider(
       {optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD});
 }
 
-PreviewsOptimizationGuideDecider::~PreviewsOptimizationGuideDecider() = default;
+PreviewsOptimizationGuide::~PreviewsOptimizationGuide() = default;
 
-bool PreviewsOptimizationGuideDecider::CanApplyPreview(
+bool PreviewsOptimizationGuide::CanApplyPreview(
     PreviewsUserData* previews_data,
     content::NavigationHandle* navigation_handle,
     PreviewsType type) {
@@ -146,9 +146,8 @@ bool PreviewsOptimizationGuideDecider::CanApplyPreview(
   return true;
 }
 
-bool PreviewsOptimizationGuideDecider::MaybeLoadOptimizationHints(
-    content::NavigationHandle* navigation_handle,
-    base::OnceClosure callback) {
+bool PreviewsOptimizationGuide::AreCommitTimePreviewsAvailable(
+    content::NavigationHandle* navigation_handle) {
   // We use this method as a way of enforcing some sort of preview ordering.
   // Thus, we check if we can potentially apply any of the client-side previews,
   // and if any of them potentially can be applied, then we return true.
@@ -167,20 +166,17 @@ bool PreviewsOptimizationGuideDecider::MaybeLoadOptimizationHints(
     }
 
     if (optimization_guide_decider_->CanApplyOptimization(
-            navigation_handle,
-            optimization_type,
+            navigation_handle, optimization_type,
             /*optimization_metadata=*/nullptr) !=
         optimization_guide::OptimizationGuideDecision::kFalse) {
       might_have_hint = true;
       break;
     }
   }
-
-  std::move(callback).Run();
   return might_have_hint;
 }
 
-bool PreviewsOptimizationGuideDecider::GetResourceLoadingHints(
+bool PreviewsOptimizationGuide::GetResourceLoadingHints(
     const GURL& url,
     std::vector<std::string>* out_resource_patterns_to_block) {
   auto rlh_it = resource_loading_hints_cache_.Get(url);

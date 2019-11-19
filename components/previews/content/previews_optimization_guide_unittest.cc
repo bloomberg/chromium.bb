@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/previews/content/previews_optimization_guide_decider.h"
+#include "components/previews/content/previews_optimization_guide.h"
 
 #include <map>
 #include <memory>
@@ -129,7 +129,7 @@ class TestOptimizationGuideDecider
   DISALLOW_COPY_AND_ASSIGN(TestOptimizationGuideDecider);
 };
 
-class PreviewsOptimizationGuideDeciderTest : public testing::Test {
+class PreviewsOptimizationGuideTest : public testing::Test {
  public:
   void SetUp() override {
     optimization_guide_decider_.reset(new TestOptimizationGuideDecider);
@@ -197,7 +197,7 @@ class PreviewsOptimizationGuideDeciderTest : public testing::Test {
   std::unique_ptr<TestOptimizationGuideDecider> optimization_guide_decider_;
 };
 
-TEST_F(PreviewsOptimizationGuideDeciderTest,
+TEST_F(PreviewsOptimizationGuideTest,
        InitializationRegistersCorrectOptimizationTypesAndTargets) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
@@ -207,7 +207,7 @@ TEST_F(PreviewsOptimizationGuideDeciderTest,
        previews::features::kResourceLoadingHints},
       {});
 
-  PreviewsOptimizationGuideDecider decider(optimization_guide_decider());
+  PreviewsOptimizationGuide guide(optimization_guide_decider());
 
   base::flat_set<optimization_guide::proto::OptimizationType>
       registered_optimization_types =
@@ -240,8 +240,7 @@ TEST_F(PreviewsOptimizationGuideDeciderTest,
       registered_optimization_targets.end());
 }
 
-TEST_F(PreviewsOptimizationGuideDeciderTest,
-       InitializationRegistersOnlyEnabledTypes) {
+TEST_F(PreviewsOptimizationGuideTest, InitializationRegistersOnlyEnabledTypes) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
       {previews::features::kLitePageServerPreviews},
@@ -249,7 +248,7 @@ TEST_F(PreviewsOptimizationGuideDeciderTest,
        previews::features::kNoScriptPreviews,
        previews::features::kResourceLoadingHints});
 
-  PreviewsOptimizationGuideDecider decider(optimization_guide_decider());
+  PreviewsOptimizationGuide guide(optimization_guide_decider());
 
   base::flat_set<optimization_guide::proto::OptimizationType>
       registered_optimization_types =
@@ -282,89 +281,90 @@ TEST_F(PreviewsOptimizationGuideDeciderTest,
       registered_optimization_targets.end());
 }
 
-TEST_F(PreviewsOptimizationGuideDeciderTest,
+TEST_F(PreviewsOptimizationGuideTest,
        PreviewsTypeWithoutCorrespondingOptimizationTypeReturnsFalse) {
-  PreviewsOptimizationGuideDecider decider(optimization_guide_decider());
+  PreviewsOptimizationGuide guide(optimization_guide_decider());
   SeedOptimizationGuideDeciderWithDefaultResponses();
 
   content::MockNavigationHandle navigation_handle;
   navigation_handle.set_url(GURL("https://whatever.com/"));
 
-  EXPECT_FALSE(decider.CanApplyPreview(
+  EXPECT_FALSE(guide.CanApplyPreview(
       /*previews_data=*/nullptr, &navigation_handle,
       PreviewsType::DEPRECATED_LOFI));
 }
 
-TEST_F(PreviewsOptimizationGuideDeciderTest,
+TEST_F(PreviewsOptimizationGuideTest,
        LitePageRedirectConvertsToOptimizationTypeCorrectly) {
-  PreviewsOptimizationGuideDecider decider(optimization_guide_decider());
+  PreviewsOptimizationGuide guide(optimization_guide_decider());
   SeedOptimizationGuideDeciderWithDefaultResponses();
 
   content::MockNavigationHandle navigation_handle;
   navigation_handle.set_url(blacklisted_lpr_url());
 
-  EXPECT_FALSE(decider.CanApplyPreview(
+  EXPECT_FALSE(guide.CanApplyPreview(
       /*previews_data=*/nullptr, &navigation_handle,
       PreviewsType::LITE_PAGE_REDIRECT));
 }
 
-TEST_F(PreviewsOptimizationGuideDeciderTest,
+TEST_F(PreviewsOptimizationGuideTest,
        LitePageRedirectSwitchOverridesDecisionForCanApplyPreview) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kIgnoreLitePageRedirectOptimizationBlacklist);
 
-  PreviewsOptimizationGuideDecider decider(optimization_guide_decider());
+  PreviewsOptimizationGuide guide(optimization_guide_decider());
   SeedOptimizationGuideDeciderWithDefaultResponses();
 
   content::MockNavigationHandle navigation_handle;
   navigation_handle.set_url(blacklisted_lpr_url());
 
-  EXPECT_TRUE(decider.CanApplyPreview(
+  EXPECT_TRUE(guide.CanApplyPreview(
       /*previews_data=*/nullptr, &navigation_handle,
       PreviewsType::LITE_PAGE_REDIRECT));
 }
 
-TEST_F(PreviewsOptimizationGuideDeciderTest,
+TEST_F(PreviewsOptimizationGuideTest,
        CanApplyPreviewPopulatesResourceLoadingHintsCache) {
-  PreviewsOptimizationGuideDecider decider(optimization_guide_decider());
+  PreviewsOptimizationGuide guide(optimization_guide_decider());
   SeedOptimizationGuideDeciderWithDefaultResponses();
 
   // Make sure resource loading hints not cached.
   std::vector<std::string> resource_loading_hints;
-  EXPECT_FALSE(decider.GetResourceLoadingHints(resource_loading_hints_url(),
-                                               &resource_loading_hints));
+  EXPECT_FALSE(guide.GetResourceLoadingHints(resource_loading_hints_url(),
+                                             &resource_loading_hints));
   EXPECT_TRUE(resource_loading_hints.empty());
 
   // Check if we can apply it and metadata is properly applied.
   PreviewsUserData data(/*page_id=*/1);
   content::MockNavigationHandle navigation_handle;
   navigation_handle.set_url(resource_loading_hints_url());
-  EXPECT_TRUE(decider.CanApplyPreview(&data, &navigation_handle,
-                                      PreviewsType::RESOURCE_LOADING_HINTS));
+  EXPECT_TRUE(guide.CanApplyPreview(&data, &navigation_handle,
+                                    PreviewsType::RESOURCE_LOADING_HINTS));
   EXPECT_EQ(123, data.data_savings_inflation_percent());
 
   // Make sure resource loading hints are validated and cached.
-  EXPECT_TRUE(decider.GetResourceLoadingHints(resource_loading_hints_url(),
-                                              &resource_loading_hints));
+  EXPECT_TRUE(guide.GetResourceLoadingHints(resource_loading_hints_url(),
+                                            &resource_loading_hints));
   EXPECT_EQ(2u, resource_loading_hints.size());
   EXPECT_EQ("resource1", resource_loading_hints[0]);
   EXPECT_EQ("resource2", resource_loading_hints[1]);
 }
 
-TEST_F(PreviewsOptimizationGuideDeciderTest,
+TEST_F(PreviewsOptimizationGuideTest,
        CanApplyPreviewWithUnknownDecisionReturnsFalse) {
-  PreviewsOptimizationGuideDecider decider(optimization_guide_decider());
+  PreviewsOptimizationGuide guide(optimization_guide_decider());
   SeedOptimizationGuideDeciderWithDefaultResponses();
 
   content::MockNavigationHandle navigation_handle;
   navigation_handle.set_url(hint_not_loaded_url());
 
-  EXPECT_FALSE(decider.CanApplyPreview(
+  EXPECT_FALSE(guide.CanApplyPreview(
       /*previews_data=*/nullptr, &navigation_handle, PreviewsType::NOSCRIPT));
 }
 
-TEST_F(PreviewsOptimizationGuideDeciderTest,
-       MaybeLoadOptimizationHintsWithAtLeastOneNonFalseDecisionReturnsTrue) {
+TEST_F(
+    PreviewsOptimizationGuideTest,
+    AreCommitTimePreviewsAvailableWithAtLeastOneNonFalseDecisionReturnsTrue) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
       {previews::features::kLitePageServerPreviews,
@@ -373,18 +373,18 @@ TEST_F(PreviewsOptimizationGuideDeciderTest,
        previews::features::kResourceLoadingHints},
       {});
 
-  PreviewsOptimizationGuideDecider decider(optimization_guide_decider());
+  PreviewsOptimizationGuide guide(optimization_guide_decider());
   SeedOptimizationGuideDeciderWithDefaultResponses();
 
   content::MockNavigationHandle navigation_handle;
   navigation_handle.set_url(hint_not_loaded_url());
 
-  EXPECT_TRUE(decider.MaybeLoadOptimizationHints(&navigation_handle,
-                                                 base::DoNothing()));
+  EXPECT_TRUE(guide.AreCommitTimePreviewsAvailable(&navigation_handle));
 }
 
-TEST_F(PreviewsOptimizationGuideDeciderTest,
-       MaybeLoadOptimizationHintsReturnsFalseIfNoClientSidePreviewsEnabled) {
+TEST_F(
+    PreviewsOptimizationGuideTest,
+    AreCommitTimePreviewsAvailableReturnsFalseIfNoClientSidePreviewsEnabled) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
       {previews::features::kLitePageServerPreviews},
@@ -392,26 +392,24 @@ TEST_F(PreviewsOptimizationGuideDeciderTest,
        previews::features::kNoScriptPreviews,
        previews::features::kResourceLoadingHints});
 
-  PreviewsOptimizationGuideDecider decider(optimization_guide_decider());
+  PreviewsOptimizationGuide guide(optimization_guide_decider());
   SeedOptimizationGuideDeciderWithDefaultResponses();
 
   content::MockNavigationHandle navigation_handle;
   navigation_handle.set_url(hint_not_loaded_url());
 
-  EXPECT_FALSE(decider.MaybeLoadOptimizationHints(&navigation_handle,
-                                                  base::DoNothing()));
+  EXPECT_FALSE(guide.AreCommitTimePreviewsAvailable(&navigation_handle));
 }
 
-TEST_F(PreviewsOptimizationGuideDeciderTest,
-       MaybeLoadOptimizationHintsWithAllFalseDecisionsReturnsFalse) {
-  PreviewsOptimizationGuideDecider decider(optimization_guide_decider());
+TEST_F(PreviewsOptimizationGuideTest,
+       AreCommitTimePreviewsAvailableWithAllFalseDecisionsReturnsFalse) {
+  PreviewsOptimizationGuide guide(optimization_guide_decider());
   SeedOptimizationGuideDeciderWithDefaultResponses();
 
   content::MockNavigationHandle navigation_handle;
   navigation_handle.set_url(GURL("https://nohints.com"));
 
-  EXPECT_FALSE(decider.MaybeLoadOptimizationHints(&navigation_handle,
-                                                  base::DoNothing()));
+  EXPECT_FALSE(guide.AreCommitTimePreviewsAvailable(&navigation_handle));
 }
 
 }  // namespace previews
