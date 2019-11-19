@@ -229,7 +229,7 @@ class span : public internal::ExtentStorage<Extent> {
  public:
   using element_type = T;
   using value_type = std::remove_cv_t<T>;
-  using index_type = size_t;
+  using size_type = size_t;
   using difference_type = ptrdiff_t;
   using pointer = T*;
   using reference = T&;
@@ -237,7 +237,7 @@ class span : public internal::ExtentStorage<Extent> {
   using const_iterator = CheckedContiguousConstIterator<T>;
   using reverse_iterator = std::reverse_iterator<iterator>;
   using const_reverse_iterator = std::reverse_iterator<const_iterator>;
-  static constexpr index_type extent = Extent;
+  static constexpr size_t extent = Extent;
 
   // [span.cons], span constructors, copy, assignment, and destructor
   constexpr span() noexcept : ExtentStorage(0), data_(nullptr) {
