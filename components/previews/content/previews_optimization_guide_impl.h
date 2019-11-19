@@ -19,6 +19,7 @@
 #include "base/time/clock.h"
 #include "base/timer/timer.h"
 #include "components/optimization_guide/hint_cache.h"
+#include "components/optimization_guide/hints_fetcher.h"
 #include "components/optimization_guide/optimization_guide_service_observer.h"
 #include "components/previews/content/previews_optimization_guide.h"
 #include "components/previews/core/previews_experiments.h"
@@ -38,7 +39,6 @@ class SharedURLLoaderFactory;
 }  // namespace network
 namespace optimization_guide {
 struct HintsComponentInfo;
-class HintsFetcher;
 class OptimizationGuideService;
 class TopHostProvider;
 namespace proto {
@@ -126,6 +126,7 @@ class PreviewsOptimizationGuideImpl
   // testing.
   virtual void OnHintsFetched(
       optimization_guide::proto::RequestContext request_context,
+      optimization_guide::HintsFetcherRequestStatus fetch_status,
       base::Optional<
           std::unique_ptr<optimization_guide::proto::GetHintsResponse>>
           get_hints_response);

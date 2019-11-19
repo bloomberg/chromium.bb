@@ -18,7 +18,6 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "components/optimization_guide/hints_component_info.h"
 #include "components/optimization_guide/hints_component_util.h"
-#include "components/optimization_guide/hints_fetcher.h"
 #include "components/optimization_guide/optimization_guide_constants.h"
 #include "components/optimization_guide/optimization_guide_features.h"
 #include "components/optimization_guide/optimization_guide_prefs.h"
@@ -288,6 +287,7 @@ void PreviewsOptimizationGuideImpl::FetchHints() {
 
 void PreviewsOptimizationGuideImpl::OnHintsFetched(
     optimization_guide::proto::RequestContext request_context,
+    optimization_guide::HintsFetcherRequestStatus fetch_status,
     base::Optional<std::unique_ptr<optimization_guide::proto::GetHintsResponse>>
         get_hints_response) {
   // TODO(mcrouse): this will be dropped into a backgroundtask as it will likely

@@ -141,17 +141,24 @@ class TestHintsFetcher : public optimization_guide::HintsFetcher {
       override {
     switch (fetch_state_) {
       case HintsFetcherEndState::kFetchFailed:
-        std::move(hints_fetched_callback).Run(request_context, base::nullopt);
+        std::move(hints_fetched_callback)
+            .Run(request_context,
+                 optimization_guide::HintsFetcherRequestStatus::kResponseError,
+                 base::nullopt);
         return false;
       case HintsFetcherEndState::kFetchSuccessWithHints:
         hints_fetched_ = true;
         std::move(hints_fetched_callback)
-            .Run(request_context, BuildHintsResponse({"host.com"}));
+            .Run(request_context,
+                 optimization_guide::HintsFetcherRequestStatus::kSuccess,
+                 BuildHintsResponse({"host.com"}));
         return true;
       case HintsFetcherEndState::kFetchSuccessWithNoHints:
         hints_fetched_ = true;
         std::move(hints_fetched_callback)
-            .Run(request_context, BuildHintsResponse({}));
+            .Run(request_context,
+                 optimization_guide::HintsFetcherRequestStatus::kSuccess,
+                 BuildHintsResponse({}));
         return true;
     }
     return true;
@@ -194,12 +201,13 @@ class TestPreviewsOptimizationGuide : public PreviewsOptimizationGuideImpl {
  private:
   void OnHintsFetched(
       optimization_guide::proto::RequestContext request_context,
+      optimization_guide::HintsFetcherRequestStatus fetch_status,
       base::Optional<
           std::unique_ptr<optimization_guide::proto::GetHintsResponse>>
           get_hints_response) override {
     fetched_hints_stored_ = false;
     PreviewsOptimizationGuideImpl::OnHintsFetched(
-        optimization_guide::proto::CONTEXT_BATCH_UPDATE,
+        optimization_guide::proto::CONTEXT_BATCH_UPDATE, fetch_status,
         std::move(get_hints_response));
   }
 
