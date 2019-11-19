@@ -65,12 +65,8 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
       case NativeTheme::kColorId_ButtonEnabledColor:
       case NativeTheme::kColorId_ProminentButtonColor:
         return gfx::kGoogleBlue300;
-      case NativeTheme::kColorId_ProminentButtonDisabledColor:
-        return gfx::kGoogleGrey800;
       case NativeTheme::kColorId_TextOnProminentButtonColor:
         return gfx::kGoogleGrey900;
-      case NativeTheme::kColorId_ButtonBorderColor:
-        return gfx::kGoogleGrey700;
 
       // MenuItem
       case NativeTheme::kColorId_EnabledMenuItemForegroundColor:
@@ -176,10 +172,14 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
     // Buttons
     case NativeTheme::kColorId_ButtonEnabledColor:
       return gfx::kGoogleBlue600;
-    case NativeTheme::kColorId_ProminentButtonFocusedColor:
-      return gfx::kGoogleBlue400;
+    case NativeTheme::kColorId_ProminentButtonFocusedColor: {
+      const SkColor bg = base_theme->GetSystemColor(
+          NativeTheme::kColorId_ProminentButtonColor, color_scheme);
+      return color_utils::BlendForMinContrast(bg, bg, base::nullopt, 1.3f)
+          .color;
+    }
     case NativeTheme::kColorId_ProminentButtonColor:
-      return gfx::kGoogleBlue500;
+      return gfx::kGoogleBlue600;
     case NativeTheme::kColorId_TextOnProminentButtonColor:
       return SK_ColorWHITE;
     case NativeTheme::kColorId_ButtonPressedShade:
@@ -192,10 +192,19 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
       return color_utils::BlendForMinContrast(gfx::kGoogleGrey600, bg, fg)
           .color;
     }
-    case NativeTheme::kColorId_ProminentButtonDisabledColor:
-      return gfx::kGoogleGrey100;
-    case NativeTheme::kColorId_ButtonBorderColor:
-      return gfx::kGoogleGrey300;
+    case NativeTheme::kColorId_ProminentButtonDisabledColor: {
+      const SkColor fg = base_theme->GetSystemColor(
+          NativeTheme::kColorId_ButtonBorderColor, color_scheme);
+      const SkColor bg = base_theme->GetSystemColor(
+          NativeTheme::kColorId_DialogBackground, color_scheme);
+      return color_utils::AlphaBlend(fg, bg, gfx::kDisabledControlAlpha);
+    }
+    case NativeTheme::kColorId_ButtonBorderColor: {
+      const SkColor bg = base_theme->GetSystemColor(
+          NativeTheme::kColorId_DialogBackground, color_scheme);
+      return color_utils::BlendForMinContrast(bg, bg, base::nullopt, 1.67f)
+          .color;
+    }
 
     // MenuItem
     case NativeTheme::kColorId_EnabledMenuItemForegroundColor:

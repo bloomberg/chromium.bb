@@ -21,6 +21,7 @@ void AddUiColorMixers(ColorProvider* provider) {
   mixer[kColorButtonBorder] = {kColorSecondaryBackground};
   mixer[kColorButtonDisabledForeground] = {kColorSecondaryForeground};
   mixer[kColorButtonForeground] = {kColorAccent};
+  mixer[kColorButtonPressedBackground] = {kColorButtonBackground};
   mixer[kColorButtonProminentBackground] = {kColorAccent};
   mixer[kColorButtonProminentDisabledBackground] =
       AlphaBlend(kColorSecondaryBackground, kColorButtonBackground,
