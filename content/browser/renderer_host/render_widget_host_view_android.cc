@@ -219,6 +219,7 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
                         this),
       stylus_text_selector_(this),
       using_browser_compositor_(CompositorImpl::IsInitialized()),
+      using_viz_for_webview_(features::IsUsingVizForWebView()),
       synchronous_compositor_client_(nullptr),
       observing_root_window_(false),
       fallback_cursor_mode_enabled_(
@@ -241,7 +242,7 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
   if (is_showing_)
     local_surface_id_allocator_.GenerateId();
 
-  if (using_browser_compositor_) {
+  if (using_browser_compositor_ || using_viz_for_webview_) {
     delegated_frame_host_client_ =
         std::make_unique<DelegatedFrameHostClientAndroid>(this);
     delegated_frame_host_ = std::make_unique<ui::DelegatedFrameHostAndroid>(
@@ -1525,7 +1526,7 @@ void RenderWidgetHostViewAndroid::StartObservingRootWindow() {
   SendBeginFramePaused();
   view_.GetWindowAndroid()->AddObserver(this);
   // When using browser compositor, DelegatedFrameHostAndroid provides the BFS.
-  if (!using_browser_compositor_)
+  if (!using_browser_compositor_ && !using_viz_for_webview_)
     SetBeginFrameSource(view_.GetWindowAndroid()->GetBeginFrameSource());
 
   ui::WindowAndroidCompositor* compositor =
@@ -2227,7 +2228,7 @@ bool RenderWidgetHostViewAndroid::WantsAnimateOnlyBeginFrames() const {
 void RenderWidgetHostViewAndroid::SendBeginFramePaused() {
   bool paused = begin_frame_paused_ || !observing_root_window_;
 
-  if (!using_browser_compositor_) {
+  if (!using_browser_compositor_ && !using_viz_for_webview_) {
     if (sync_compositor_)
       sync_compositor_->SetBeginFramePaused(paused);
   } else if (renderer_compositor_frame_sink_) {
