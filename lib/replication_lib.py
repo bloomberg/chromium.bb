@@ -99,7 +99,12 @@ def Replicate(replication_config):
 
       logging.info('Writing filtered JSON source to %s', dst)
       with open(dst, 'w') as f:
-        json.dump(destination_json, f)
+        json.dump(
+            destination_json,
+            f,
+            sort_keys=True,
+            indent=2,
+            separators=(',', ': '))
     else:
       assert rule.file_type == replication_config_pb2.FILE_TYPE_OTHER
       assert (
