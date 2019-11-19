@@ -89,8 +89,7 @@ void AddPartial1(uint8x8_t a, uint16x8_t* b, uint16x8_t* c) {
   const uint16x8_t extended = vcombine_u16(paired, zero4);
   if (shift == 0) {
     *b = vaddq_u16(*b, extended);
-  } else if (0 /*shift == 4*/) {
-    // TODO(johannkoenig): Figure out why this regresses performance.
+  } else if (shift == 4) {
     *b = vaddq_u16(*b, vcombine_u16(zero4, paired));
   } else {
     const uint16x8_t shifted_b = vextq_u16(zero8, extended, 8 - safe_shift);
