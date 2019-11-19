@@ -5508,6 +5508,24 @@
             ]
         }
     ],
+    "SafeBrowsingPasswordProtectionShowDomainsForSavedPasswords": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "SafeBrowsingPasswordProtectionShowDomainsForSavedPasswords"
+                    ]
+                }
+            ]
+        }
+    ],
     "SafeBrowsingRealTimeUrlLookupEnabled": [
         {
             "platforms": [

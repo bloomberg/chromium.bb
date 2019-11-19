@@ -45,6 +45,10 @@ const base::Feature kPasswordProtectionForSavedPasswords{
     "SafeBrowsingPasswordProtectionForSavedPasswords",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kPasswordProtectionShowDomainsForSavedPasswords{
+    "SafeBrowsingPasswordProtectionShowDomainsForSavedPasswords",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kPasswordProtectionForSignedInUsers{
     "SafeBrowsingPasswordProtectionForSignedInUsers",
     base::FEATURE_DISABLED_BY_DEFAULT};
@@ -71,10 +75,6 @@ const base::Feature kSendPasswordReusePing {
       base::FEATURE_DISABLED_BY_DEFAULT
 };
 #endif
-
-constexpr base::FeatureParam<bool> kShouldShowDomainsForSavedPassword{
-    &kPasswordProtectionForSavedPasswords, "ShouldShowDomainsForSavedPassword",
-    false};
 
 const base::Feature kSendSampledPingsForAllowlistDomains{
     "SafeBrowsingSendSampledPingsForAllowlistDomain",
@@ -112,6 +112,7 @@ constexpr struct {
     {&kCaptureSafetyNetId, true},
     {&kCommittedSBInterstitials, true},
     {&kPasswordProtectionForSavedPasswords, true},
+    {&kPasswordProtectionShowDomainsForSavedPasswords, true},
     {&kPasswordProtectionForSignedInUsers, true},
     {&kRealTimeUrlLookupEnabled, true},
     {&kSendOnFocusPing, true},
@@ -148,10 +149,6 @@ base::ListValue GetFeatureStatusList() {
 
 bool GetShouldFillOldPhishGuardProto() {
   return kShouldFillOldPhishGuardProto.Get();
-}
-
-bool ShouldShowDomainsForSavedPassword() {
-  return kShouldShowDomainsForSavedPassword.Get();
 }
 
 }  // namespace safe_browsing
