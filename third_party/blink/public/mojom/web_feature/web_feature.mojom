@@ -2389,8 +2389,6 @@ enum WebFeature {
   kThirdPartyServiceWorker = 3007,
   kJSSelfProfiling = 3008,
   kHTMLFrameSetElement = 3009,
-  kMediaCapabilitiesFramerateRatio = 3010,
-  kMediaCapabilitiesFramerateNumber = 3011,
   kFetchRedirectError = 3012,
   kFetchRedirectManual = 3013,
   kFetchCacheReload = 3014,
