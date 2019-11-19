@@ -1,12 +1,4 @@
 <!DOCTYPE html>
-<script src="../../resources/run-after-layout-and-paint.js"></script>
-<script>
-onload = function() {
-    runAfterLayoutAndPaint(function() {
-        scroller.style.background = "green local content-box";
-    }, true);
-};
-</script>
 <style>
 #scroller {
     background: transparent local content-box;
@@ -21,5 +13,5 @@ onload = function() {
 }
 </style>
 <div id="scroller"><div class="spacer"></div></div>
-<p>Scroller background should be green</p>
+<p>Scroller background should be white</p>
 
