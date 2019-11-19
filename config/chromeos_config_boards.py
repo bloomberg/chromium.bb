@@ -100,6 +100,7 @@ x86_internal_release_boards = frozenset([
     'dedede',
     'drallion',
     'edgar',
+    'endeavour',
     'enguarde',
     'eve',
     'eve-arcnext',

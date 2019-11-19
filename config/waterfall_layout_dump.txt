@@ -959,6 +959,18 @@
   elm-tot-chrome-pfq-informational-tryjob
   elm-tot-chromium-pfq-informational-tryjob
   elm-unittest-stress
+  endeavour-full-tryjob
+  endeavour-llvm-next-toolchain-tryjob
+  endeavour-llvm-toolchain-tryjob
+  endeavour-paladin-tryjob
+  endeavour-payloads-tryjob
+  endeavour-release-afdo-generate-tryjob
+  endeavour-release-afdo-tryjob
+  endeavour-release-afdo-use-tryjob
+  endeavour-release-tryjob
+  endeavour-tot-chrome-pfq-informational-tryjob
+  endeavour-tot-chromium-pfq-informational-tryjob
+  endeavour-unittest-stress
   enguarde-factory-rambi-5517.B-factorybranch-tryjob
   enguarde-factory-rambi-6420.B-factorybranch-tryjob
   enguarde-full-tryjob
