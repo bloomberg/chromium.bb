@@ -684,6 +684,11 @@ TtsBackground.prototype.pronouncePhonetically_ = function(text, properties) {
     return;
   }
 
+  // Only pronounce phonetic hints when explicitly requested.
+  if (!properties.phoneticCharacters) {
+    return;
+  }
+
   text = text.toLowerCase();
   // If undefined language, use the UI language of the browser as a best guess.
   if (!properties['lang']) {
