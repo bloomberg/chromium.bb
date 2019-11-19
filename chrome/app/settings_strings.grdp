@@ -4797,6 +4797,12 @@
     <message name="IDS_SETTINGS_DISPLAY_ORIENTATION_STANDARD" desc="In Device Settings > Displays, the label for standard orientation (0 rotation).">
       0&#x00B0; (Default)
     </message>
+    <message name="IDS_SETTINGS_DISPLAY_AMBIENT_COLOR_TITLE" desc="In Device Settings > Displays, the label for toggling ambient color.">
+      Ambient colors
+    </message>
+    <message name="IDS_SETTINGS_DISPLAY_AMBIENT_COLOR_SUBTITLE" desc="In Device Settings > Displays, descriptive sublabel for ambient color.">
+      Adjusts the screen color to match the environment
+    </message>
     <message name="IDS_SETTINGS_DISPLAY_OVERSCAN_TEXT" desc="Text explaining that this setting is used to adjust the boundaries of the selected display.">
       Adjust the boundaries of your desktop within the display
     </message>

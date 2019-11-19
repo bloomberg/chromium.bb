@@ -36355,6 +36355,7 @@ from previous Chrome versions.
   <int value="-1274502866" label="AllowDisableMouseAcceleration:enabled"/>
   <int value="-1272593346" label="NewTabLoadingAnimation:disabled"/>
   <int value="-1271563519" label="enable-appcontainer"/>
+  <int value="-1271441871" label="AmbientColor:enabled"/>
   <int value="-1269962982" label="SyncUSSPasswords:disabled"/>
   <int value="-1269093329" label="AndroidOmniboxPreviewsBadge:disabled"/>
   <int value="-1269084216" label="ash-md"/>
@@ -37626,6 +37627,7 @@ from previous Chrome versions.
   <int value="360391863" label="NTPOfflineBadge:enabled"/>
   <int value="360599302" label="enable-gpu-rasterization"/>
   <int value="362644448" label="memlog-in-process"/>
+  <int value="362853088" label="AmbientColor:disabled"/>
   <int value="365068212" label="PiexWasm:disabled"/>
   <int value="365467768" label="prefetch-search-results"/>
   <int value="367063319" label="PasswordImport:disabled"/>
