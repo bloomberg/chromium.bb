@@ -274,6 +274,7 @@ class ASH_EXPORT OverviewItem : public views::ButtonListener,
  private:
   friend class OverviewSessionRoundedCornerTest;
   friend class OverviewSessionTest;
+  FRIEND_TEST_ALL_PREFIXES(SplitViewOverviewSessionTest, Clipping);
   FRIEND_TEST_ALL_PREFIXES(SplitViewOverviewSessionTest,
                            OverviewUnsnappableIndicatorVisibility);
 
