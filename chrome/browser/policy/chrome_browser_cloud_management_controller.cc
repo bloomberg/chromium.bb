@@ -350,7 +350,7 @@ void ChromeBrowserCloudManagementController::CreateReportScheduler() {
   if (!base::FeatureList::IsEnabled(features::kEnterpriseReportingInBrowser))
     return;
 
-  auto policy_client = std::make_unique<CloudPolicyClient>(
+  cloud_policy_client_ = std::make_unique<policy::CloudPolicyClient>(
       std::string() /* machine_id */, std::string() /* machine_model */,
       std::string() /* brand_code */, std::string() /* ethernet_mac_address */,
       std::string() /* dock_mac_address */,
@@ -363,7 +363,7 @@ void ChromeBrowserCloudManagementController::CreateReportScheduler() {
   auto timer = std::make_unique<enterprise_reporting::RequestTimer>();
   auto generator = std::make_unique<enterprise_reporting::ReportGenerator>();
   report_scheduler_ = std::make_unique<enterprise_reporting::ReportScheduler>(
-      std::move(policy_client), std::move(timer), std::move(generator));
+      cloud_policy_client_.get(), std::move(timer), std::move(generator));
 }
 
 }  // namespace policy
