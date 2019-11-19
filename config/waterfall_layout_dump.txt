@@ -624,14 +624,11 @@
   betty-arcnext-release-tryjob
   betty-arcnext-tot-chromium-pfq-informational-tryjob
   betty-arcnext-unittest-stress
-  betty-arcvm-pi-compile-only-pre-cq
   betty-arcvm-pi-full-tryjob
   betty-arcvm-pi-llvm-next-toolchain-tryjob
   betty-arcvm-pi-llvm-toolchain-tryjob
-  betty-arcvm-pi-no-vmtest-pre-cq
   betty-arcvm-pi-paladin-tryjob
   betty-arcvm-pi-payloads-tryjob
-  betty-arcvm-pi-pre-cq
   betty-arcvm-pi-release-afdo-generate-tryjob
   betty-arcvm-pi-release-afdo-tryjob
   betty-arcvm-pi-release-afdo-use-tryjob
