@@ -16,6 +16,8 @@ const char kArcStartupMethod[] = "ArcStartup";
 const char kArcShutdownMethod[] = "ArcShutdown";
 const char kArcVmStartupMethod[] = "ArcVmStartup";
 const char kArcVmShutdownMethod[] = "ArcVmShutdown";
+const char kTerminaVmStartupMethod[] = "TerminaVmStartup";
+const char kTerminaVmShutdownMethod[] = "TerminaVmShutdown";
 
 }  // namespace patchpanel
 

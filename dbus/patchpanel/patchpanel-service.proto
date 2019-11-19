@@ -44,6 +44,15 @@ message ArcVmStartupRequest {
   int32 cid = 1;
 }
 
+// Represents an IPv4 subnet given a base address and prefix length.
+message IPv4Subnet {
+  // The base address in network order.
+  uint32 base_addr = 1;
+
+  // The prefix length of the subnet.
+  uint32 prefix_len = 2;
+}
+
 // Represents a network device (physical or virtual) managed by the networking
 // daemon.
 message Device {
@@ -52,6 +61,9 @@ message Device {
 
   // The assigned IPv4 address in network order.
   uint32 ipv4_addr = 2;
+
+  // The subnet allocated for this device
+  IPv4Subnet ipv4_subnet = 3;
 }
 
 // Information required by Concierge to continue the ARC VM startup process.
@@ -73,3 +85,34 @@ message ArcVmShutdownRequest {
 // Intentionally empty response.
 message ArcVmShutdownResponse {
 }
+
+// Notification that a Termina VM is starting up.
+message TerminaVmStartupRequest {
+  // The content ID of the VM.
+  int32 cid = 1;
+}
+
+// Information required by Concierge to continue the Termina VM startup.
+message TerminaVmStartupResponse {
+  // The TAP device to be used for the VM.
+  Device device = 1;
+
+  // The container subnet to be used for the lxd bridge.
+  IPv4Subnet container_subnet = 2;
+};
+
+// Notification that the Termina VM is shutting down.
+// This message must also be sent if the startup process fails so any
+// allocated resources, including the subnets, are properly freed.
+message TerminaVmShutdownRequest {
+  // The CID of the Termina VM; must match the PID that was sent at
+  // startup.
+  // Required.
+  int32 cid = 1;
+}
+
+// Intentionally empty response.
+message TerminaVmShutdownResponse {
+}
+
+
