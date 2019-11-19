@@ -21,16 +21,10 @@ source_set("certificate") {
   ]
 
   deps = [
-    ":certificate_proto",
     "../../platform",
     "../../third_party/abseil",
     "../../util",
-  ]
-}
-
-proto_library("certificate_proto") {
-  sources = [
-    "certificate/proto/revocation.proto",
+    "certificate/proto:certificate_proto",
   ]
 }
 
@@ -44,21 +38,14 @@ source_set("channel") {
   ]
 
   deps = [
-    ":certificate_proto",
-    ":channel_proto",
     "../../util",
+    "certificate/proto:certificate_proto",
+    "channel/proto:channel_proto",
   ]
 
   public_deps = [
     "../../platform",
     "../../third_party/abseil",
-  ]
-}
-
-proto_library("channel_proto") {
-  sources = [
-    "channel/proto/authority_keys.proto",
-    "channel/proto/cast_channel.proto",
   ]
 }
 
@@ -75,19 +62,12 @@ source_set("unittests") {
 
   deps = [
     ":certificate",
-    ":certificate_unittest_proto",
     ":channel",
     "../../platform",
     "../../third_party/boringssl",
     "../../third_party/googletest:gmock",
     "../../third_party/googletest:gtest",
     "../../util",
-  ]
-}
-
-proto_library("certificate_unittest_proto") {
-  testonly = true
-  sources = [
-    "certificate/proto/test_suite.proto",
+    "certificate/proto:certificate_unittest_proto",
   ]
 }

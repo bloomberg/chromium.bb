@@ -13,8 +13,8 @@ source_set("channel") {
   ]
 
   deps = [
-    "../common:certificate_proto",
-    "../common:channel_proto",
+    "../common/certificate/proto:certificate_proto",
+    "../common/channel/proto:channel_proto",
   ]
 
   public_deps = [
@@ -32,7 +32,7 @@ source_set("unittests") {
     ":channel",
     "../../platform",
     "../../third_party/googletest:gtest",
-    "../common:certificate_proto",
-    "../common:certificate_unittest_proto",
+    "../common/certificate/proto:certificate_proto",
+    "../common/certificate/proto:certificate_unittest_proto",
   ]
 }
