@@ -73,14 +73,8 @@ class DedicatedWorkerHost final
   }
   const url::Origin& GetOrigin() { return origin_; }
 
-  void BindFileSystemManager(
-      mojo::PendingReceiver<blink::mojom::FileSystemManager> receiver);
-  void BindVideoDecodePerfHistory(
-      mojo::PendingReceiver<media::mojom::VideoDecodePerfHistory> receiver);
   void CreateIdleManager(
       mojo::PendingReceiver<blink::mojom::IdleManager> receiver);
-  void CreatePaymentManager(
-      mojo::PendingReceiver<payments::mojom::PaymentManager> receiver);
   void CreateIDBFactory(
       mojo::PendingReceiver<blink::mojom::IDBFactory> receiver);
   void BindSmsReceiverReceiver(
