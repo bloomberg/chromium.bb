@@ -4872,6 +4872,64 @@ TEST_F(ShelfLayoutManagerWindowDraggingTest, DISABLED_NoOpForHiddenShelf) {
   EndScroll(/*is_fling=*/false, 0.f);
 }
 
+// Tests that dragging below the hotseat after dragging the MRU up results in
+// the hotseat not moving from its extended position.
+TEST_F(ShelfLayoutManagerWindowDraggingTest,
+       DragBelowHotseatDoesNotMoveHotseat) {
+  // Go to in-app shelf, then drag the hotseat up until it is extended, this
+  // will start a window drag.
+  std::unique_ptr<aura::Window> window =
+      AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
+  wm::ActivateWindow(window.get());
+  const gfx::Rect shelf_widget_bounds =
+      GetShelfWidget()->GetWindowBoundsInScreen();
+  gfx::Point start = shelf_widget_bounds.bottom_center();
+  StartScroll(start);
+  const int shelf_size = ShelfConfig::Get()->shelf_size();
+  const int hotseat_size = ShelfConfig::Get()->hotseat_size();
+  const int hotseat_padding_size = ShelfConfig::Get()->hotseat_bottom_padding();
+  UpdateScroll(-shelf_size - hotseat_size - hotseat_padding_size);
+  const int hotseat_y =
+      GetShelfWidget()->hotseat_widget()->GetWindowBoundsInScreen().y();
+
+  // Drag down, the hotseat should not move because it was extended when the
+  // window drag began.
+  UpdateScroll(10);
+
+  EXPECT_EQ(hotseat_y,
+            GetShelfWidget()->hotseat_widget()->GetWindowBoundsInScreen().y());
+  EndScroll(/*is_fling=*/false, 0.f);
+}
+
+// Tests that dragging below the hotseat after dragging the MRU up results in
+// the hotseat not moving from its extended position with an autohidden shelf.
+TEST_F(ShelfLayoutManagerWindowDraggingTest,
+       DragBelowHotseatDoesNotMoveHotseatAutoHiddenShelf) {
+  // Extend the hotseat, then start dragging the window.
+  std::unique_ptr<aura::Window> window =
+      AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
+  wm::ActivateWindow(window.get());
+  SwipeUpOnShelf();
+  const gfx::Rect shelf_widget_bounds =
+      GetShelfWidget()->GetWindowBoundsInScreen();
+  const gfx::Point start = shelf_widget_bounds.bottom_center();
+  StartScroll(start);
+  const int shelf_size = ShelfConfig::Get()->shelf_size();
+  const int hotseat_size = ShelfConfig::Get()->hotseat_size();
+  const int hotseat_padding_size = ShelfConfig::Get()->hotseat_bottom_padding();
+  UpdateScroll(-shelf_size - hotseat_size - hotseat_padding_size);
+  const int hotseat_y =
+      GetShelfWidget()->hotseat_widget()->GetWindowBoundsInScreen().y();
+
+  // Drag down, the hotseat should not move because it was extended when the
+  // window drag began.
+  UpdateScroll(10);
+
+  EXPECT_EQ(hotseat_y,
+            GetShelfWidget()->hotseat_widget()->GetWindowBoundsInScreen().y());
+  EndScroll(/*is_fling=*/false, 0.f);
+}
+
 TEST_F(ShelfLayoutManagerWindowDraggingTest, NoOpIfDragStartsAboveShelf) {
   std::unique_ptr<aura::Window> window =
       AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));

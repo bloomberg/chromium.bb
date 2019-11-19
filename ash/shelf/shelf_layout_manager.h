@@ -527,7 +527,7 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
   base::Optional<DragWindowFromShelfController::ShelfWindowDragResult>
   MaybeEndWindowDrag(const ui::LocatedEvent& event_in_screen);
   void MaybeCancelWindowDrag();
-  bool IsWindowDragInProgress();
+  bool IsWindowDragInProgress() const;
 
   // True when inside UpdateBoundsAndOpacity() method. Used to prevent calling
   // UpdateBoundsAndOpacity() again from SetChildBounds().

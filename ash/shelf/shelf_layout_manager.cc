@@ -1748,8 +1748,13 @@ void ShelfLayoutManager::UpdateTargetBoundsForGesture(
     if (move_shelf_with_hotseat) {
       // Do not allow the shelf to be dragged more than |shelf_size| from the
       // bottom of the display.
-      const int shelf_y = std::max(available_bounds.bottom() - shelf_size,
-                                   static_cast<int>(baseline + translate));
+      int shelf_y = std::max(available_bounds.bottom() - shelf_size,
+                             static_cast<int>(baseline + translate));
+      // Window drags only happen after the hotseat has been dragged up to its
+      // full height. After the drag moves a window, do not allow the drag to
+      // move the hotseat down.
+      if (IsWindowDragInProgress())
+        shelf_y = available_bounds.bottom() - shelf_size;
       target_bounds_.shelf_bounds.set_y(shelf_y);
     }
 
@@ -1769,6 +1774,11 @@ void ShelfLayoutManager::UpdateTargetBoundsForGesture(
         -hotseat_extended_y,
         static_cast<int>((use_hotseat_baseline ? hotseat_baseline : 0) +
                          translate));
+    // Window drags only happen after the hotseat has been dragged up to its
+    // full height. After the drag moves a window, do not allow the drag to move
+    // the hotseat down.
+    if (IsWindowDragInProgress())
+      hotseat_y = -hotseat_extended_y;
     target_bounds_.hotseat_bounds_in_shelf.set_y(hotseat_y);
     return;
   }
@@ -2630,7 +2640,7 @@ void ShelfLayoutManager::MaybeCancelWindowDrag() {
   window_drag_controller_->CancelDrag();
 }
 
-bool ShelfLayoutManager::IsWindowDragInProgress() {
+bool ShelfLayoutManager::IsWindowDragInProgress() const {
   return window_drag_controller_ && window_drag_controller_->drag_started();
 }
 
