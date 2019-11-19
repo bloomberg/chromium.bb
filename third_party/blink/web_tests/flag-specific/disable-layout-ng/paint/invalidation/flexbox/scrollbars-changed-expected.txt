@@ -7,14 +7,14 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow HTML",
-          "rect": [8, 8, 100, 100],
-          "reason": "chunk disappeared"
+          "object": "InlineTextBox 'a'",
+          "rect": [0, 5, 15, 15],
+          "reason": "disappeared"
         },
         {
-          "object": "LayoutSVGRoot svg",
-          "rect": [8, 8, 100, 100],
-          "reason": "chunk appeared"
+          "object": "InlineTextBox 'z'",
+          "rect": [0, 5, 15, 15],
+          "reason": "appeared"
         }
       ]
     }

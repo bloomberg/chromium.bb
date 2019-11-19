@@ -7,18 +7,15 @@
       "backgroundColor": "#FFFFFF"
     },
     {
-      "name": "HorizontalScrollbar",
+      "name": "LayoutNGBlockFlow (relative positioned) (floating) DIV id='float'",
       "bounds": [100, 100],
+      "contentsOpaque": true,
+      "backgroundColor": "#008000",
       "paintInvalidations": [
         {
-          "object": "LayoutNGBlockFlow DIV id='target'",
+          "object": "LayoutNGBlockFlow (relative positioned) (floating) DIV id='float'",
           "rect": [0, 0, 100, 100],
-          "reason": "style change"
-        },
-        {
-          "object": "LayoutNGBlockFlow DIV id='target'",
-          "rect": [0, 0, 100, 100],
-          "reason": "chunk appeared"
+          "reason": "background"
         }
       ],
       "transform": 1
@@ -31,7 +28,7 @@
         [1, 0, 0, 0],
         [0, 1, 0, 0],
         [0, 0, 1, 0],
-        [8, 8, 0, 1]
+        [158, 158, 0, 1]
       ]
     }
   ]

@@ -1,35 +1,35 @@
 {
   "layers": [
     {
-      "name": "Scrolling Contents Layer",
+      "name": "Scrolling background of LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutNGBlockFlow (relative positioned) DIV",
-          "rect": [108, 8, 100, 100],
+          "object": "LayoutNGBlockFlow HTML",
+          "rect": [8, 8, 784, 59],
           "reason": "chunk appeared"
         },
         {
           "object": "LayoutNGBlockFlow HTML",
-          "rect": [108, 8, 100, 100],
+          "rect": [8, 8, 784, 59],
           "reason": "chunk disappeared"
         },
         {
-          "object": "LayoutNGBlockFlow DIV",
-          "rect": [8, 8, 100, 100],
+          "object": "LayoutNGBlockFlow (floating) DIV class='green'",
+          "rect": [8, 84, 100, 100],
           "reason": "chunk disappeared"
         },
         {
-          "object": "LayoutNGBlockFlow HTML",
-          "rect": [8, 8, 100, 100],
+          "object": "LayoutNGBlockFlow (floating) DIV class='red'",
+          "rect": [8, 84, 100, 100],
           "reason": "chunk appeared"
         },
         {
           "object": "LayoutNGBlockFlow HTML",
-          "rect": [8, 8, 4, 18],
-          "reason": "chunk appeared"
+          "rect": [8, 84, 100, 100],
+          "reason": "chunk disappeared"
         }
       ]
     }
