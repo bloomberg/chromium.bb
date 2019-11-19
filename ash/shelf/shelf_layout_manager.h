@@ -254,6 +254,10 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
     return window_drag_controller_.get();
   }
 
+  bool IsDraggingApplist() const {
+    return drag_status_ == kDragAppListInProgress;
+  }
+
   // TODO(harrym|oshima): These templates will be moved to a new Shelf class.
   // A helper function for choosing values specific to a shelf alignment.
   template <typename T>
