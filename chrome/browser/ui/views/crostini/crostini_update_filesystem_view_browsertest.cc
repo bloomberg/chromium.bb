@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/crostini/crostini_upgrade_container_view.h"
+#include "chrome/browser/ui/views/crostini/crostini_update_filesystem_view.h"
 
 #include "base/bind_helpers.h"
 #include "base/metrics/histogram_base.h"
@@ -30,21 +30,21 @@ chromeos::FakeCiceroneClient* GetFakeCiceroneClient() {
       chromeos::DBusThreadManager::Get()->GetCiceroneClient());
 }
 
-class CrostiniUpgradeContainerViewBrowserTest
+class CrostiniUpdateFilesystemViewBrowserTest
     : public CrostiniDialogBrowserTest {
  public:
-  CrostiniUpgradeContainerViewBrowserTest()
+  CrostiniUpdateFilesystemViewBrowserTest()
       : CrostiniDialogBrowserTest(true /*register_termina*/) {}
 
   // DialogBrowserTest:
   void ShowUi(const std::string& name) override {
-    PrepareShowCrostiniUpgradeContainerView(
+    PrepareShowCrostiniUpdateFilesystemView(
         browser()->profile(), crostini::CrostiniUISurface::kAppList);
     base::RunLoop().RunUntilIdle();
   }
 
-  CrostiniUpgradeContainerView* ActiveView() {
-    return CrostiniUpgradeContainerView::GetActiveViewForTesting();
+  CrostiniUpdateFilesystemView* ActiveView() {
+    return CrostiniUpdateFilesystemView::GetActiveViewForTesting();
   }
 
   bool HasAcceptButton() {
@@ -72,19 +72,19 @@ class CrostiniUpgradeContainerViewBrowserTest
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(CrostiniUpgradeContainerViewBrowserTest);
+  DISALLOW_COPY_AND_ASSIGN(CrostiniUpdateFilesystemViewBrowserTest);
 };
 
 // Test the dialog is actually launched.
-IN_PROC_BROWSER_TEST_F(CrostiniUpgradeContainerViewBrowserTest,
+IN_PROC_BROWSER_TEST_F(CrostiniUpdateFilesystemViewBrowserTest,
                        InvokeUi_default) {
-  crostini::SetCrostiniUpgradeSkipDelayForTesting(true);
+  crostini::SetCrostiniUpdateFilesystemSkipDelayForTesting(true);
   ShowAndVerifyUi();
 }
 
-IN_PROC_BROWSER_TEST_F(CrostiniUpgradeContainerViewBrowserTest, HitOK) {
+IN_PROC_BROWSER_TEST_F(CrostiniUpdateFilesystemViewBrowserTest, HitOK) {
   base::HistogramTester histogram_tester;
-  crostini::SetCrostiniUpgradeSkipDelayForTesting(true);
+  crostini::SetCrostiniUpdateFilesystemSkipDelayForTesting(true);
 
   ShowUi("default");
   ExpectView();
@@ -104,10 +104,10 @@ IN_PROC_BROWSER_TEST_F(CrostiniUpgradeContainerViewBrowserTest, HitOK) {
       1);
 }
 
-IN_PROC_BROWSER_TEST_F(CrostiniUpgradeContainerViewBrowserTest,
+IN_PROC_BROWSER_TEST_F(CrostiniUpdateFilesystemViewBrowserTest,
                        StartLxdContainerNoUpgradeNeeded) {
   base::HistogramTester histogram_tester;
-  crostini::SetCrostiniUpgradeSkipDelayForTesting(true);
+  crostini::SetCrostiniUpdateFilesystemSkipDelayForTesting(true);
 
   vm_tools::cicerone::StartLxdContainerResponse reply;
   reply.set_status(vm_tools::cicerone::StartLxdContainerResponse::STARTING);
@@ -118,10 +118,10 @@ IN_PROC_BROWSER_TEST_F(CrostiniUpgradeContainerViewBrowserTest,
   ExpectNoView();
 }
 
-IN_PROC_BROWSER_TEST_F(CrostiniUpgradeContainerViewBrowserTest,
+IN_PROC_BROWSER_TEST_F(CrostiniUpdateFilesystemViewBrowserTest,
                        StartLxdContainerUpgradeNeeded) {
   base::HistogramTester histogram_tester;
-  crostini::SetCrostiniUpgradeSkipDelayForTesting(true);
+  crostini::SetCrostiniUpdateFilesystemSkipDelayForTesting(true);
 
   vm_tools::cicerone::StartLxdContainerResponse reply;
   reply.set_status(vm_tools::cicerone::StartLxdContainerResponse::REMAPPING);

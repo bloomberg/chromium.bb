@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_CROSTINI_CROSTINI_UPGRADE_CONTAINER_VIEW_H_
-#define CHROME_BROWSER_UI_VIEWS_CROSTINI_CROSTINI_UPGRADE_CONTAINER_VIEW_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_CROSTINI_CROSTINI_UPDATE_FILESYSTEM_VIEW_H_
+#define CHROME_BROWSER_UI_VIEWS_CROSTINI_CROSTINI_UPDATE_FILESYSTEM_VIEW_H_
 
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 
 class Profile;
 
 namespace crostini {
-void SetCrostiniUpgradeSkipDelayForTesting(bool should_skip);
+void SetCrostiniUpdateFilesystemSkipDelayForTesting(bool should_skip);
 }  // namespace crostini
 
 // Provides a warning to the user that an upgrade is occurring and Crostini
 // start will take longer than usual.
-class CrostiniUpgradeContainerView : public views::BubbleDialogDelegateView {
+class CrostiniUpdateFilesystemView : public views::BubbleDialogDelegateView {
  public:
   static void Show(Profile* profile);
 
@@ -25,11 +25,11 @@ class CrostiniUpgradeContainerView : public views::BubbleDialogDelegateView {
   bool ShouldShowCloseButton() const override;
   gfx::Size CalculatePreferredSize() const override;
 
-  static CrostiniUpgradeContainerView* GetActiveViewForTesting();
+  static CrostiniUpdateFilesystemView* GetActiveViewForTesting();
 
  private:
-  CrostiniUpgradeContainerView();
-  ~CrostiniUpgradeContainerView() override;
+  CrostiniUpdateFilesystemView();
+  ~CrostiniUpdateFilesystemView() override;
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_CROSTINI_CROSTINI_UPGRADE_CONTAINER_VIEW_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_CROSTINI_CROSTINI_UPDATE_FILESYSTEM_VIEW_H_
