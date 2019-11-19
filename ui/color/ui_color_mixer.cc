@@ -68,10 +68,10 @@ void AddUiColorMixers(ColorProvider* provider) {
       kColorTableSelectedFocusedBackground};
   mixer[kColorTableSelectedUnfocusedForeground] = {
       kColorTableSelectedFocusedForeground};
-  mixer[kColorTextfieldBackground] = {kColorPrimaryBackground};
-  mixer[kColorTextfieldDisabledBackground] = {kColorTextfieldBackground};
-  mixer[kColorTextfieldDisabledForeground] =
-      SetAlpha(kColorTextfieldForeground, gfx::kDisabledControlAlpha);
+  mixer[kColorTextfieldBackground] =
+      GetColorWithMaxContrast(kColorTextfieldForeground);
+  mixer[kColorTextfieldDisabledBackground] = {kColorPrimaryBackground};
+  mixer[kColorTextfieldDisabledForeground] = {kColorSecondaryForeground};
   mixer[kColorTextfieldForeground] = {kColorPrimaryForeground};
   mixer[kColorTextfieldSelectionBackground] = {kColorTextSelectionBackground};
   mixer[kColorTextfieldSelectionForeground] = {kColorTextfieldForeground};

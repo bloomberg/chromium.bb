@@ -114,18 +114,14 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
 
       // Textfield
       case NativeTheme::kColorId_TextfieldDefaultColor:
-        return gfx::kGoogleGrey200;
-      case NativeTheme::kColorId_TextfieldDefaultBackground:
-        return SkColorSetA(SK_ColorBLACK, 0x4D);
       case NativeTheme::kColorId_TextfieldSelectionColor:
-        return color_utils::AlphaBlend(
-            SK_ColorWHITE,
-            GetAuraColor(
-                NativeTheme::kColorId_LabelTextSelectionBackgroundFocused,
-                base_theme, color_scheme),
-            SkAlpha{0xDD});
+        return gfx::kGoogleGrey200;
+      case NativeTheme::kColorId_TextfieldReadOnlyBackground: {
+        return color_utils::AlphaBlend(SK_ColorWHITE, gfx::kGoogleGrey900,
+                                       0.04f);
+      }
       case NativeTheme::kColorId_TextfieldSelectionBackgroundFocused:
-        return SkColorSetA(gfx::kGoogleBlue700, 0xCC);
+        return gfx::kGoogleBlue800;
 
       // Tree
       case NativeTheme::kColorId_TreeBackground:
@@ -288,26 +284,22 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
 
     // Textfield
     case NativeTheme::kColorId_TextfieldDefaultColor:
+    case NativeTheme::kColorId_TextfieldSelectionColor:
       return kPrimaryTextColor;
-    case NativeTheme::kColorId_TextfieldDefaultBackground:
-      return base_theme->GetSystemColor(NativeTheme::kColorId_DialogBackground,
-                                        color_scheme);
+    case NativeTheme::kColorId_TextfieldDefaultBackground: {
+      const SkColor fg = base_theme->GetSystemColor(
+          NativeTheme::kColorId_TextfieldDefaultColor, color_scheme);
+      return color_utils::GetColorWithMaxContrast(fg);
+    }
     case NativeTheme::kColorId_TextfieldReadOnlyBackground:
       return SK_ColorWHITE;
-    case NativeTheme::kColorId_TextfieldReadOnlyColor:
-      return SkColorSetA(
-          base_theme->GetSystemColor(
-              NativeTheme::kColorId_TextfieldDefaultColor, color_scheme),
-          gfx::kDisabledControlAlpha);
-
-    case NativeTheme::kColorId_TextfieldSelectionColor: {
+    case NativeTheme::kColorId_TextfieldReadOnlyColor: {
       const SkColor bg = base_theme->GetSystemColor(
-          NativeTheme::kColorId_TextfieldSelectionBackgroundFocused,
-          color_scheme);
-      return color_utils::AlphaBlend(SK_ColorBLACK, bg, SkAlpha{0xDD});
+          NativeTheme::kColorId_TextfieldReadOnlyBackground, color_scheme);
+      return color_utils::BlendForMinContrast(gfx::kGoogleGrey600, bg).color;
     }
     case NativeTheme::kColorId_TextfieldSelectionBackgroundFocused:
-      return SkColorSetARGB(0x54, 0x60, 0xA8, 0xEB);
+      return gfx::kGoogleBlue200;
 
     // Tooltip
     case NativeTheme::kColorId_TooltipBackground: {
