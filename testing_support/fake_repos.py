@@ -29,13 +29,6 @@ import scm
 import subprocess2
 
 
-# Attempt |MAX_TRY| times to find a free port. Each time select one port at
-# random from the range [|PORT_START|, |PORT_END|].
-MAX_TRY = 10
-PORT_START = 20000
-PORT_END = 65535
-
-
 def write(path, content):
   f = open(path, 'wb')
   f.write(content.encode())
@@ -82,63 +75,6 @@ def commit_git(repo):
   return rev
 
 
-def port_is_free(host, port):
-  s = socket.socket()
-  try:
-    return s.connect_ex((host, port)) != 0
-  finally:
-    s.close()
-
-
-def find_free_port(host):
-  """Finds a listening port free to listen to."""
-  for _ in range(MAX_TRY):
-    base_port = random.randint(PORT_START, PORT_END)
-    if port_is_free(host, base_port):
-      return base_port
-  assert False, 'Having issues finding an available port'
-
-
-def wait_for_port_to_bind(host, port, process):
-  try:
-    start = datetime.datetime.utcnow()
-    maxdelay = datetime.timedelta(seconds=30)
-    while (datetime.datetime.utcnow() - start) < maxdelay:
-      sock = socket.socket()
-      try:
-        sock.connect((host, port))
-        logging.debug('%d is now bound' % port)
-        return
-      except (socket.error, EnvironmentError):
-        # Sleep a little bit to avoid spinning too much.
-        time.sleep(0.2)
-      logging.debug('%d is still not bound' % port)
-  finally:
-    sock.close()
-  # The process failed to bind. Kill it and dump its ouput.
-  process.kill()
-  stdout, stderr = process.communicate()
-  logging.debug('%s' % stdout)
-  logging.error('%s' % stderr)
-  assert False, '%d is still not bound' % port
-
-
-def wait_for_port_to_free(host, port):
-  start = datetime.datetime.utcnow()
-  maxdelay = datetime.timedelta(seconds=30)
-  while (datetime.datetime.utcnow() - start) < maxdelay:
-    try:
-      sock = socket.socket()
-      sock.connect((host, port))
-      logging.debug('%d was bound, waiting to free' % port)
-    except (socket.error, EnvironmentError):
-      logging.debug('%d now free' % port)
-      return
-    finally:
-      sock.close()
-  assert False, '%d is still bound' % port
-
-
 class FakeReposBase(object):
   """Generate git repositories to test gclient functionality.
 
@@ -164,12 +100,9 @@ class FakeReposBase(object):
     # self.git_hashes[repo][rev][1] for it's tree snapshot.
     # It is 1-based too.
     self.git_hashes = {}
-    self.gitdaemon = None
     self.git_pid_file_name = None
-    self.git_root = None
-    self.git_dirty = False
-    self.git_port = None
     self.git_base = None
+    self.initialized = False
 
   @property
   def root_dir(self):
@@ -177,21 +110,14 @@ class FakeReposBase(object):
 
   def set_up(self):
     """All late initialization comes here."""
-    self.cleanup_dirt()
     if not self.root_dir:
       try:
         # self.root_dir is not set before this call.
         self.trial.set_up()
-        self.git_root = join(self.root_dir, 'git')
+        self.git_base = join(self.root_dir, 'git') + os.sep
       finally:
         # Registers cleanup.
         atexit.register(self.tear_down)
-
-  def cleanup_dirt(self):
-    """For each dirty repository, destroy it."""
-    if self.git_dirty:
-      if not self.tear_down_git():
-        logging.error('Using both leaking checkout and git dirty checkout')
 
   def tear_down(self):
     """Kills the servers and delete the directories."""
@@ -201,28 +127,10 @@ class FakeReposBase(object):
     self.trial = None
 
   def tear_down_git(self):
-    if self.gitdaemon:
-      logging.debug('Killing git-daemon pid %s' % self.gitdaemon.pid)
-      self.gitdaemon.kill()
-      self.gitdaemon = None
-      if self.git_pid_file_name:
-        pid = int(open(self.git_pid_file_name).read())
-        logging.debug('Killing git daemon pid %s' % pid)
-        try:
-          subprocess2.kill_pid(pid)
-        except OSError as e:
-          if e.errno != errno.ESRCH:  # no such process
-            raise
-        os.remove(self.git_pid_file_name)
-        self.git_pid_file_name = None
-      wait_for_port_to_free(self.host, self.git_port)
-      self.git_port = None
-      self.git_base = None
-      if not self.trial.SHOULD_LEAK:
-        logging.debug('Removing %s' % self.git_root)
-        gclient_utils.rmtree(self.git_root)
-      else:
-        return False
+    if self.trial.SHOULD_LEAK:
+      return False
+    logging.debug('Removing %s' % self.git_base)
+    gclient_utils.rmtree(self.git_base)
     return True
 
   @staticmethod
@@ -245,41 +153,17 @@ class FakeReposBase(object):
   def set_up_git(self):
     """Creates git repositories and start the servers."""
     self.set_up()
-    if self.gitdaemon:
+    if self.initialized:
       return True
-    assert self.git_pid_file_name == None, self.git_pid_file_name
     try:
       subprocess2.check_output(['git', '--version'])
     except (OSError, subprocess2.CalledProcessError):
       return False
     for repo in ['repo_%d' % r for r in range(1, self.NB_GIT_REPOS + 1)]:
-      subprocess2.check_call(['git', 'init', '-q', join(self.git_root, repo)])
+      subprocess2.check_call(['git', 'init', '-q', join(self.git_base, repo)])
       self.git_hashes[repo] = [(None, None)]
-    git_pid_file = tempfile.NamedTemporaryFile(delete=False)
-    self.git_pid_file_name = git_pid_file.name
-    git_pid_file.close()
-    self.git_port = find_free_port(self.host)
-    self.git_base = 'git://%s:%d/git/' % (self.host, self.git_port)
-    cmd = ['git', 'daemon',
-        '--export-all',
-        '--reuseaddr',
-        '--base-path=' + self.root_dir,
-        '--pid-file=' + self.git_pid_file_name,
-        '--port=%d' % self.git_port]
-    if self.host == '127.0.0.1':
-      cmd.append('--listen=' + self.host)
-    # Verify that the port is free.
-    if not port_is_free(self.host, self.git_port):
-      return False
-    # Start the daemon.
-    self.gitdaemon = subprocess2.Popen(
-        cmd,
-        cwd=self.root_dir,
-        stdout=subprocess2.PIPE,
-        stderr=subprocess2.PIPE)
-    wait_for_port_to_bind(self.host, self.git_port, self.gitdaemon)
     self.populateGit()
-    self.git_dirty = False
+    self.initialized = True
     return True
 
   def _git_rev_parse(self, path):
@@ -287,7 +171,7 @@ class FakeReposBase(object):
         ['git', 'rev-parse', 'HEAD'], cwd=path).strip()
 
   def _commit_git(self, repo, tree, base=None):
-    repo_root = join(self.git_root, repo)
+    repo_root = join(self.git_base, repo)
     if base:
       base_commit = self.git_hashes[repo][base][0]
       subprocess2.check_call(
@@ -303,13 +187,13 @@ class FakeReposBase(object):
     self.git_hashes[repo].append((commit_hash, new_tree))
 
   def _create_ref(self, repo, ref, revision):
-    repo_root = join(self.git_root, repo)
+    repo_root = join(self.git_base, repo)
     subprocess2.check_call(
         ['git', 'update-ref', ref, self.git_hashes[repo][revision][0]],
         cwd=repo_root)
 
   def _fast_import_git(self, repo, data):
-    repo_root = join(self.git_root, repo)
+    repo_root = join(self.git_base, repo)
     logging.debug('%s: fast-import %s', repo, data)
     subprocess2.check_call(
         ['git', 'fast-import', '--quiet'], cwd=repo_root, stdin=data.encode())
@@ -952,12 +836,8 @@ class FakeReposTestBase(trial_dir.TestCase):
     if not tree_root:
       tree_root = self.root_dir
     actual = read_tree(tree_root)
-    diff = dict_diff(tree, actual)
-    if diff:
-      logging.error('Actual %s\n%s' % (tree_root, pprint.pformat(actual)))
-      logging.error('Expected\n%s' % pprint.pformat(tree))
-      logging.error('Diff\n%s' % pprint.pformat(diff))
-    self.assertEqual(diff, {})
+    self.assertEqual(sorted(tree.keys()), sorted(actual.keys()))
+    self.assertEqual(tree, actual)
 
   def mangle_git_tree(self, *args):
     """Creates a 'virtual directory snapshot' to compare with the actual result
@@ -967,7 +847,8 @@ class FakeReposTestBase(trial_dir.TestCase):
       repo, rev = item.split('@', 1)
       tree = self.gittree(repo, rev)
       for k, v in tree.items():
-        result[join(new_root, k)] = v
+        path = join(new_root, k).replace(os.sep, '/')
+        result[path] = v
     return result
 
   def githash(self, repo, rev):

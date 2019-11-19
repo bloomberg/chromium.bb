@@ -80,7 +80,7 @@ class RealGitTest(fake_repos.FakeReposTestBase):
     super(RealGitTest, self).setUp()
     self.enabled = self.FAKE_REPOS.set_up_git()
     if self.enabled:
-      self.clone_dir = scm.os.path.join(self.FAKE_REPOS.git_root, 'repo_1')
+      self.clone_dir = scm.os.path.join(self.FAKE_REPOS.git_base, 'repo_1')
 
   def testIsValidRevision(self):
     if not self.enabled:
