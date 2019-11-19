@@ -507,7 +507,7 @@
   {
     "name": "compositor-threaded-scrollbar-scrolling",
     "owners": [ "arakeri@microsoft.com" ],
-    "expiry_milestone": 80
+    "expiry_milestone": 90
   },
   {
     "name": "context-menu-search-with-google-lens",
