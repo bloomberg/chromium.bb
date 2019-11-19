@@ -55,6 +55,7 @@ void TestInstallFinalizer::FinalizeUninstallAfterSync(
 
 void TestInstallFinalizer::UninstallExternalWebApp(
     const GURL& app_url,
+    ExternalInstallSource external_install_source,
     UninstallWebAppCallback callback) {
   DCHECK(base::Contains(next_uninstall_external_web_app_results_, app_url));
   uninstall_external_web_app_urls_.push_back(app_url);

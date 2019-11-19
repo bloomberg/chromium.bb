@@ -228,6 +228,7 @@ void WebAppInstallFinalizer::OnIconsDataDeleted(
 
 void WebAppInstallFinalizer::UninstallExternalWebApp(
     const GURL& app_url,
+    ExternalInstallSource external_install_source,
     UninstallWebAppCallback callback) {
   NOTIMPLEMENTED();
 }

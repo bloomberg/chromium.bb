@@ -19,6 +19,7 @@ class WebContents;
 
 namespace web_app {
 
+enum class ExternalInstallSource;
 enum class InstallResultCode;
 class AppRegistrar;
 class WebAppUiManager;
@@ -57,8 +58,10 @@ class InstallFinalizer {
 
   // Removes the external app for |app_url| from disk and registrar. Fails if
   // there is no installed external app for |app_url|.
-  virtual void UninstallExternalWebApp(const GURL& app_url,
-                                       UninstallWebAppCallback) = 0;
+  virtual void UninstallExternalWebApp(
+      const GURL& app_url,
+      ExternalInstallSource external_install_source,
+      UninstallWebAppCallback) = 0;
 
   virtual bool CanUserUninstallFromSync(const AppId& app_id) const = 0;
   virtual void UninstallWebAppFromSyncByUser(const AppId& app_id,
