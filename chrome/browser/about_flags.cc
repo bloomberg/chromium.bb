@@ -2497,6 +2497,13 @@ const FeatureEntry kFeatureEntries[] = {
      kOsAll,
      SINGLE_VALUE_TYPE(
          ::switches::kEnableExperimentalAccessibilityLanguageDetection)},
+    {"enable-experimental-accessibility-language-detection-dynamic",
+     flag_descriptions::kExperimentalAccessibilityLanguageDetectionDynamicName,
+     flag_descriptions::
+         kExperimentalAccessibilityLanguageDetectionDynamicDescription,
+     kOsAll,
+     SINGLE_VALUE_TYPE(
+         ::switches::kEnableExperimentalAccessibilityLanguageDetectionDynamic)},
 #if defined(OS_CHROMEOS)
     {"enable-encryption-migration",
      flag_descriptions::kEnableEncryptionMigrationName,

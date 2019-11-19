@@ -229,6 +229,10 @@ extern const char kExperimentalAccessibilityAutoclickDescription[];
 extern const char kExperimentalAccessibilityLanguageDetectionName[];
 extern const char kExperimentalAccessibilityLanguageDetectionDescription[];
 
+extern const char kExperimentalAccessibilityLanguageDetectionDynamicName[];
+extern const char
+    kExperimentalAccessibilityLanguageDetectionDynamicDescription[];
+
 extern const char kFontSrcLocalMatchingName[];
 extern const char kFontSrcLocalMatchingDescription[];
 

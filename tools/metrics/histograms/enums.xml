@@ -36451,6 +36451,8 @@ from previous Chrome versions.
   <int value="-1173361620" label="CCTModulePostMessage:disabled"/>
   <int value="-1172572865" label="NTPShowGoogleGInOmnibox:enabled"/>
   <int value="-1172204005" label="enable-offline-auto-reload-visible-only"/>
+  <int value="-1168910727"
+      label="enable-experimental-accessibility-language-detection-dynamic"/>
   <int value="-1167992523" label="DesktopPWAsCustomTabUI:disabled"/>
   <int value="-1166745977"
       label="BluetoothAggressiveAppearanceFilter:disabled"/>
