@@ -49,7 +49,13 @@ def AugmentDepGraphProtoFromJsonMap(json_map, graph):
       source_path.path = path
 
 
-@faux.all_empty
+def _GetBuildDependencyGraphResponse(_input_proto, output_proto, _config):
+  """Add fake dep_graph data to a successful response."""
+  output_proto.dep_graph.build_target.name = 'target_board'
+
+
+@faux.success(_GetBuildDependencyGraphResponse)
+@faux.empty_error
 @validate.require('build_target.name')
 @validate.validation_complete
 def GetBuildDependencyGraph(input_proto, output_proto, _config):
