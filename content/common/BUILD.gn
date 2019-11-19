@@ -515,7 +515,7 @@ mojom("mojo_bindings") {
     "//services/video_capture/public/mojom",
     "//services/viz/public/mojom",
     "//skia/public/mojom",
-    "//third_party/blink/public/mojom:mojom_core",
+    "//third_party/blink/public/mojom:mojom_modules",
     "//third_party/blink/public/mojom:web_feature_mojo_bindings",
     "//ui/base/ime/mojom",
     "//ui/base/mojom",
@@ -538,7 +538,7 @@ mojom("mojo_bindings") {
     public_deps += [ "//ui/display/mojom" ]
   }
 
-  overridden_deps = [ "//third_party/blink/public/mojom:mojom_core" ]
+  overridden_deps = [ "//third_party/blink/public/mojom:mojom_modules" ]
   component_deps = [ "//third_party/blink/public/common" ]
 
   component_output_prefix = "content_common_mojo_bindings"
