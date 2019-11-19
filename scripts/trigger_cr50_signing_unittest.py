@@ -61,7 +61,7 @@ class TestMain(cros_test_lib.RunCommandTempDirTestCase):
             'build_target': {'name': 'unknown'},
             'channel': common_pb2.CHANNEL_UNSPECIFIED,
             'cr50_instructions': {
-                'target': sign_image_pb2.Cr50Instructions.UNSPECIFIED},
+                'target': sign_image_pb2.Cr50Instructions.PREPVT},
             'image_type': common_pb2.CR50_FIRMWARE,
             'keyset': 'test-keyset',
             'signer_type': sign_image_pb2.SIGNER_PRODUCTION})
@@ -103,7 +103,7 @@ class TestMain(cros_test_lib.RunCommandTempDirTestCase):
             'build_target': {'name': 'unknown'},
             'channel': common_pb2.CHANNEL_UNSPECIFIED,
             'cr50_instructions': {
-                'target': sign_image_pb2.Cr50Instructions.UNSPECIFIED},
+                'target': sign_image_pb2.Cr50Instructions.PREPVT},
             'image_type': common_pb2.CR50_FIRMWARE,
             'keyset': 'test-keyset',
             'signer_type': sign_image_pb2.SIGNER_PRODUCTION})
@@ -120,7 +120,7 @@ class TestMain(cros_test_lib.RunCommandTempDirTestCase):
             'build_target': {'name': 'unknown'},
             'channel': common_pb2.CHANNEL_UNSPECIFIED,
             'cr50_instructions': {
-                'target': sign_image_pb2.Cr50Instructions.UNSPECIFIED},
+                'target': sign_image_pb2.Cr50Instructions.PREPVT},
             'image_type': common_pb2.CR50_FIRMWARE,
             'keyset': 'test-keyset',
             'signer_type': sign_image_pb2.SIGNER_PRODUCTION})
