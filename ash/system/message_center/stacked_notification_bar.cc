@@ -46,7 +46,7 @@ class StackingBarLabelButton : public views::LabelButton {
     TrayPopupUtils::ConfigureTrayPopupButton(this);
 
     background_color_ = AshColorProvider::Get()->DeprecatedGetBaseLayerColor(
-        AshColorProvider::BaseLayerType::kTransparentWithoutBlur,
+        AshColorProvider::BaseLayerType::kTransparent90,
         kNotificationBackgroundColor);
   }
 
@@ -342,7 +342,7 @@ void StackedNotificationBar::UpdateStackedNotifications(
 void StackedNotificationBar::OnPaint(gfx::Canvas* canvas) {
   cc::PaintFlags flags;
   flags.setColor(AshColorProvider::Get()->DeprecatedGetBaseLayerColor(
-      AshColorProvider::BaseLayerType::kTransparentWithoutBlur,
+      AshColorProvider::BaseLayerType::kTransparent90,
       kNotificationBackgroundColor));
   flags.setStyle(cc::PaintFlags::kFill_Style);
   flags.setAntiAlias(true);
