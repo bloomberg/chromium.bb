@@ -9846,8 +9846,8 @@ static int64_t motion_mode_rd(const AV1_COMP *const cpi, TileDataEnc *tile_data,
     const FRAME_UPDATE_TYPE update_type = get_frame_update_type(&cpi->gf_group);
     const int prune_obmc =
         cpi->obmc_probs[update_type][bsize] < cpi->sf.prune_obmc_prob_thresh;
-    if ((cpi->oxcf.enable_obmc == 0 || cpi->sf.use_nonrd_pick_mode ||
-         prune_obmc) &&
+    if ((cpi->oxcf.enable_obmc == 0 || cpi->sf.disable_obmc ||
+         cpi->sf.use_nonrd_pick_mode || prune_obmc) &&
         mbmi->motion_mode == OBMC_CAUSAL)
       continue;
 
@@ -12011,7 +12011,7 @@ static AOM_INLINE void set_params_rd_pick_inter_mode(
   const FRAME_UPDATE_TYPE update_type = get_frame_update_type(&cpi->gf_group);
   const int prune_obmc =
       cpi->obmc_probs[update_type][bsize] < cpi->sf.prune_obmc_prob_thresh;
-  if (cpi->oxcf.enable_obmc && !prune_obmc) {
+  if (cpi->oxcf.enable_obmc && !cpi->sf.disable_obmc && !prune_obmc) {
     if (check_num_overlappable_neighbors(mbmi) &&
         is_motion_variation_allowed_bsize(bsize)) {
       int dst_width1[MAX_MB_PLANE] = { MAX_SB_SIZE, MAX_SB_SIZE, MAX_SB_SIZE };

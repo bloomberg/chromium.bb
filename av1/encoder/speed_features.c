@@ -467,6 +467,7 @@ static void set_good_speed_features_framesize_independent(
 
   if (speed >= 5) {
     sf->disable_lr_filter = 1;
+    sf->disable_obmc = 1;
   }
 }
 
@@ -926,6 +927,7 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
   sf->disable_smooth_intra = 0;
   sf->perform_best_rd_based_gating_for_chroma = 0;
   sf->prune_obmc_prob_thresh = 0;
+  sf->disable_obmc = 0;
   sf->nonrd_merge_partition = 0;
 
   if (oxcf->mode == GOOD)

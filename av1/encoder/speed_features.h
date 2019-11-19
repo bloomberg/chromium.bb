@@ -792,6 +792,9 @@ typedef struct SPEED_FEATURES {
   // Prune obmc search using previous frame stats.
   int prune_obmc_prob_thresh;
 
+  // Disable obmc.
+  int disable_obmc;
+
   // Use ALTREF frame in non-RD mode decision.
   int use_nonrd_altref_frame;
 
