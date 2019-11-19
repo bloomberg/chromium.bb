@@ -330,14 +330,12 @@ export function triggerInputEvent(inputElement, input, parentElement) {
 }
 
 export function setupTestListenerElement() {
-  const domModule = document.createElement('dom-module');
-  domModule.setAttribute('id', 'test-listener-element');
-  domModule.appendChild(document.createElement('template'));
-  document.body.appendChild(domModule);
   Polymer({
     is: 'test-listener-element',
     behaviors: [WebUIListenerBehavior],
   });
+  const testElement = document.createElement('test-listener-element');
+  document.body.appendChild(testElement);
 }
 
 /** @return {!DestinationStore} */
