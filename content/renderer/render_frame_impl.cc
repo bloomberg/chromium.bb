@@ -4604,7 +4604,7 @@ void RenderFrameImpl::DidClearWindowObject() {
       *base::CommandLine::ForCurrentProcess();
 
   if (command_line.HasSwitch(cc::switches::kEnableGpuBenchmarking))
-    GpuBenchmarking::Install(this);
+    GpuBenchmarking::Install(weak_factory_.GetWeakPtr());
 
   if (command_line.HasSwitch(switches::kEnableSkiaBenchmarking))
     SkiaBenchmarking::Install(frame_);
