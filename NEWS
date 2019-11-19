@@ -10,6 +10,8 @@ issues]].
 - Fix a memory leak when several tables are specified and some of them
   that can't be resolved. Thanks to André-Abush Clause.
 ** Braille table improvements
+- Punctuation corrections in Ethiopic Braille thanks to Dr. Tamru E.
+  Belay.
 ** Other changes
 - Make sure the log callback uses the same calling convention as all
   the other exported functions. Thanks to Leonard de Ruijter.
