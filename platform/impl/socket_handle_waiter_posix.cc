@@ -12,6 +12,7 @@
 #include "platform/api/logging.h"
 #include "platform/base/error.h"
 #include "platform/impl/socket_handle_posix.h"
+#include "platform/impl/timeval_posix.h"
 #include "platform/impl/udp_socket_posix.h"
 
 namespace openscreen {
@@ -57,25 +58,6 @@ SocketHandleWaiterPosix::AwaitSocketsReadable(
   }
 
   return changed_handles;
-}
-
-// static
-std::unique_ptr<SocketHandleWaiter> SocketHandleWaiter::Create() {
-  return std::unique_ptr<SocketHandleWaiter>(new SocketHandleWaiterPosix());
-}
-
-// static
-struct timeval SocketHandleWaiterPosix::ToTimeval(
-    const Clock::duration& timeout) {
-  struct timeval tv;
-  const auto whole_seconds =
-      std::chrono::duration_cast<std::chrono::seconds>(timeout);
-  tv.tv_sec = whole_seconds.count();
-  tv.tv_usec = std::chrono::duration_cast<std::chrono::microseconds>(
-                   timeout - whole_seconds)
-                   .count();
-
-  return tv;
 }
 
 void SocketHandleWaiterPosix::RunUntilStopped() {

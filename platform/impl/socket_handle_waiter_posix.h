@@ -5,7 +5,6 @@
 #ifndef PLATFORM_IMPL_SOCKET_HANDLE_WAITER_POSIX_H_
 #define PLATFORM_IMPL_SOCKET_HANDLE_WAITER_POSIX_H_
 
-#include <sys/select.h>
 #include <unistd.h>
 
 #include <atomic>
@@ -22,9 +21,6 @@ class SocketHandleWaiterPosix : public SocketHandleWaiter {
 
   SocketHandleWaiterPosix();
   ~SocketHandleWaiterPosix() override;
-
-  // TODO(rwkeane): Move this to a platform-specific util library.
-  static struct timeval ToTimeval(const Clock::duration& timeout);
 
   // Runs the Wait function in a loop until the below RequestStopSoon function
   // is called.

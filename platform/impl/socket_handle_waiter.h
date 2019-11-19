@@ -36,9 +36,6 @@ class SocketHandleWaiter {
     virtual void ProcessReadyHandle(SocketHandleRef handle) = 0;
   };
 
-  // Creates a new SocketHandleWaiter instance.
-  static std::unique_ptr<SocketHandleWaiter> Create();
-
   SocketHandleWaiter() = default;
   virtual ~SocketHandleWaiter() = default;
 
