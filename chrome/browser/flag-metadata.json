@@ -918,11 +918,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "enable-android-web-contents-dark-mode",
-    "owners": [ "tedchoc" ],
-    "expiry_milestone": 80
-  },
-  {
     "name": "enable-app-data-search",
     "owners": [ "jennyz", "kaznacheev" ],
     "expiry_milestone": 86
