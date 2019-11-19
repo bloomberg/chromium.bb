@@ -817,6 +817,9 @@ typedef struct SPEED_FEATURES {
 
   // Disable loop restoration filter
   int disable_lr_filter;
+
+  // Disable interinter_wedge
+  int disable_interinter_wedge;
 } SPEED_FEATURES;
 
 struct AV1_COMP;

@@ -9459,7 +9459,8 @@ static INLINE bool enable_wedge_search(MACROBLOCK *const x,
 
 static INLINE bool enable_wedge_interinter_search(MACROBLOCK *const x,
                                                   const AV1_COMP *const cpi) {
-  return enable_wedge_search(x, cpi) && cpi->oxcf.enable_interinter_wedge;
+  return enable_wedge_search(x, cpi) && cpi->oxcf.enable_interinter_wedge &&
+         !cpi->sf.disable_interinter_wedge;
 }
 
 static INLINE bool enable_wedge_interintra_search(MACROBLOCK *const x,
