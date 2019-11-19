@@ -82,8 +82,20 @@ def Replicate(replication_config):
       with open(src, 'r') as f:
         source_json = json.load(f)
 
-      destination_json = field_mask_util.CreateFilteredDict(
-          rule.destination_fields, source_json)
+      try:
+        source_device_configs = source_json['chromeos']['configs']
+      except KeyError:
+        raise NotImplementedError(
+            ('Currently only ChromeOS Configs are supported (expected file %s '
+             'to have a list at "$.chromeos.configs")') % src)
+
+      destination_device_configs = []
+      for source_device_config in source_device_configs:
+        destination_device_configs.append(
+            field_mask_util.CreateFilteredDict(rule.destination_fields,
+                                               source_device_config))
+
+      destination_json = {'chromeos': {'configs': destination_device_configs}}
 
       logging.info('Writing filtered JSON source to %s', dst)
       with open(dst, 'w') as f:

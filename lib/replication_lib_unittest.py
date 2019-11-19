@@ -37,9 +37,20 @@ class ReplicateTest(cros_test_lib.TempDirTestCase):
     self.firmware_path = os.path.join(self.tempdir, 'src', 'firmware.bin')
 
     build_config = {
-        'name': 'A',
-        'field1': 1,
-        'field2': 2,
+        'chromeos': {
+            'configs': [
+                {
+                    'name': 'A',
+                    'field1': 1,
+                    'field2': 2,
+                },
+                {
+                    'name': 'B',
+                    'field1': 3,
+                    'field2': 4,
+                },
+            ]
+        }
     }
 
     osutils.WriteFile(self.build_config_path, json.dumps(build_config))
@@ -81,7 +92,21 @@ class ReplicateTest(cros_test_lib.TempDirTestCase):
     cros_test_lib.VerifyOnDiskHierarchy(self.tempdir, expected_file_layout)
 
     build_config_dst = json.loads(osutils.ReadFile(build_config_dst_path))
-    self.assertDictEqual({'name': 'A', 'field2': 2}, build_config_dst)
+    expected_build_config_dst = {
+        'chromeos': {
+            'configs': [
+                {
+                    'name': 'A',
+                    'field2': 2,
+                },
+                {
+                    'name': 'B',
+                    'field2': 4,
+                },
+            ]
+        }
+    }
+    self.assertDictEqual(expected_build_config_dst, build_config_dst)
 
     self.assertFileContents(audio_dst_path, '[Speaker A Settings]')
 
@@ -187,3 +212,23 @@ class ReplicateTest(cros_test_lib.TempDirTestCase):
     replication_lib.Replicate(replication_config)
 
     self.assertEqual(stat.S_IMODE(os.stat(audio_dst_path).st_mode), 0o777)
+
+  def testReplicateNonChromeOSConfig(self):
+    """Tests replicating a JSON file that is not a ChromeOS Config payload."""
+    src_path = os.path.join(self.tempdir, 'src', 'other.json')
+    dst_path = os.path.join(self.tempdir, 'dst', 'other.json')
+    osutils.WriteFile(src_path, json.dumps({'a': 1, 'b': 2}))
+
+    replication_config = ReplicationConfig(file_replication_rules=[
+        FileReplicationRule(
+            source_path=src_path,
+            destination_path=dst_path,
+            file_type=FILE_TYPE_JSON,
+            replication_type=REPLICATION_TYPE_FILTER,
+            destination_fields=FieldMask(paths=['a'])),
+    ])
+
+
+    with self.assertRaisesRegex(
+        NotImplementedError, 'Currently only ChromeOS Configs are supported'):
+      replication_lib.Replicate(replication_config)
