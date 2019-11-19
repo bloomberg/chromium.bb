@@ -17,6 +17,8 @@
 #include "content/browser/keyboard_lock/keyboard_lock_service_impl.h"
 #include "content/browser/media/session/media_session_service_impl.h"
 #include "content/browser/picture_in_picture/picture_in_picture_service_impl.h"
+#include "content/browser/process_internals/process_internals.mojom.h"
+#include "content/browser/process_internals/process_internals_ui.h"
 #include "content/browser/renderer_host/media/media_devices_dispatcher_host.h"
 #include "content/browser/renderer_host/media/media_stream_dispatcher_host.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
@@ -34,6 +36,7 @@
 #include "content/public/browser/webvr_service_provider.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
+#include "content/public/common/url_constants.h"
 #include "device/gamepad/gamepad_monitor.h"
 #include "device/gamepad/public/mojom/gamepad.mojom.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
@@ -156,6 +159,24 @@ void BindColorChooserFactoryForFrame(
   auto* web_contents =
       static_cast<WebContentsImpl*>(WebContents::FromRenderFrameHost(host));
   web_contents->OnColorChooserFactoryReceiver(std::move(receiver));
+}
+
+void BindProcessInternalsHandler(
+    content::RenderFrameHost* host,
+    mojo::PendingReceiver<::mojom::ProcessInternalsHandler> receiver) {
+  // This should not be requested by subframes, so terminate the renderer if
+  // it issues such a request.
+  if (host->GetParent()) {
+    host->GetProcess()->ShutdownForBadMessage(
+        content::RenderProcessHost::CrashReportMode::GENERATE_CRASH_DUMP);
+    return;
+  }
+
+  auto* contents = WebContents::FromRenderFrameHost(host);
+  DCHECK_EQ(contents->GetLastCommittedURL().host_piece(),
+            kChromeUIProcessInternalsHost);
+  static_cast<ProcessInternalsUI*>(contents->GetWebUI()->GetController())
+      ->BindProcessInternalsHandler(std::move(receiver), host);
 }
 
 #if defined(OS_ANDROID)
@@ -476,6 +497,8 @@ void PopulateBinderMapWithContext(
       base::BindRepeating(&WakeLockServiceImpl::Create));
   map->Add<device::mojom::VRService>(
       base::BindRepeating(&WebvrServiceProvider::BindWebvrService));
+  map->Add<::mojom::ProcessInternalsHandler>(
+      base::BindRepeating(&BindProcessInternalsHandler));
 #if defined(OS_ANDROID)
   map->Add<blink::mojom::DateTimeChooser>(
       base::BindRepeating(&BindDateTimeChooserForFrame));
