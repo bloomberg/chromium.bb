@@ -162,6 +162,7 @@ void AddCommonStrings(content::WebUIDataSource* html_source, Profile* profile) {
     {"confirm", IDS_CONFIRM},
     {"continue", IDS_SETTINGS_CONTINUE},
     {"controlledByExtension", IDS_SETTINGS_CONTROLLED_BY_EXTENSION},
+    {"delete", IDS_SETTINGS_DELETE},
 #if defined(OS_CHROMEOS)
     {"deviceOff", IDS_SETTINGS_DEVICE_OFF},
     {"deviceOn", IDS_SETTINGS_DEVICE_ON},
@@ -3319,7 +3320,6 @@ void AddSecurityKeysStrings(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_SECURITY_KEYS_CREDENTIAL_WEBSITE},
       {"securityKeysNoCredentialManagement",
        IDS_SETTINGS_SECURITY_KEYS_NO_CREDENTIAL_MANAGEMENT},
-      {"securityKeysCredentialManagementErase", IDS_REMOVE},
       {"securityKeysCredentialManagementRemoved",
        IDS_SETTINGS_SECURITY_KEYS_CREDENTIAL_MANAGEMENT_REMOVED},
       {"securityKeysCredentialManagementDesc",
