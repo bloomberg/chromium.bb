@@ -73,6 +73,10 @@ static bool format_compatible(const struct combination *combo, uint32_t format)
 		return combo->format == DRM_FORMAT_RGBA8888;
 	case DRM_FORMAT_BGRX8888:
 		return combo->format == DRM_FORMAT_BGRA8888;
+	case DRM_FORMAT_XRGB2101010:
+		return combo->format == DRM_FORMAT_ARGB2101010;
+	case DRM_FORMAT_XBGR2101010:
+		return combo->format == DRM_FORMAT_ABGR2101010;
 	default:
 		return false;
 	}
