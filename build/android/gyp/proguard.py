@@ -157,9 +157,9 @@ def _ParseOptions():
       action='store_true',
       help='Disable the outlining optimization provided by R8.')
   parser.add_argument(
-      '--disable-checkdiscard',
+      '--is-test-only',
       action='store_true',
-      help='Disable -checkdiscard directives')
+      help='Disables some optimizations that don\'t make sense for tests.')
 
   options = parser.parse_args(args)
 
@@ -435,7 +435,7 @@ def main():
   _VerifyNoEmbeddedConfigs(options.input_paths + libraries)
 
   proguard_configs = options.proguard_configs
-  if options.disable_checkdiscard:
+  if options.is_test_only:
     proguard_configs = _ValidateAndFilterCheckDiscards(proguard_configs)
 
   # ProGuard configs that are derived from flags.
