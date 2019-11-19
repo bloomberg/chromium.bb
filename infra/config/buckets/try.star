@@ -158,14 +158,17 @@ android_builder(
 
 android_builder(
     name = 'android-marshmallow-x86-fyi-rel',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 android_builder(
     name = 'android-opus-kitkat-arm-rel',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 android_builder(
     name = 'android-oreo-arm64-cts-networkservice-dbg',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 android_builder(
@@ -200,18 +203,22 @@ android_builder(
 
 android_builder(
     name = 'android-webview-marshmallow-arm64-dbg',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 android_builder(
     name = 'android-webview-nougat-arm64-dbg',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 android_builder(
     name = 'android-webview-oreo-arm64-dbg',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 android_builder(
     name = 'android-webview-pie-arm64-dbg',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 android_builder(
@@ -221,6 +228,7 @@ android_builder(
 
 android_builder(
     name = 'android_archive_rel_ng',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 android_builder(
@@ -255,6 +263,7 @@ android_builder(
 
 android_builder(
     name = 'android_compile_rel',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 android_builder(
