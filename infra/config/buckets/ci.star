@@ -2026,6 +2026,7 @@ linux_builder(
 
 linux_builder(
     name = 'linux-gcc-rel',
+    goma_backend = None,
 )
 
 linux_builder(

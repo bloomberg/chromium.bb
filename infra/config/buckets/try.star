@@ -788,10 +788,12 @@ def gpu_linux_builder(*, name, **kwargs):
 
 gpu_linux_builder(
     name = 'gpu-fyi-try-linux-intel-dqp',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 gpu_linux_builder(
     name = 'gpu-fyi-try-linux-intel-exp',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 gpu_linux_builder(
@@ -801,26 +803,32 @@ gpu_linux_builder(
 
 gpu_linux_builder(
     name = 'gpu-fyi-try-linux-intel-skv',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 gpu_linux_builder(
     name = 'gpu-fyi-try-linux-nvidia-dbg',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 gpu_linux_builder(
     name = 'gpu-fyi-try-linux-nvidia-dqp',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 gpu_linux_builder(
     name = 'gpu-fyi-try-linux-nvidia-exp',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 gpu_linux_builder(
     name = 'gpu-fyi-try-linux-nvidia-rel',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 gpu_linux_builder(
     name = 'gpu-fyi-try-linux-nvidia-skv',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 gpu_linux_builder(
@@ -830,6 +838,7 @@ gpu_linux_builder(
 
 gpu_linux_builder(
     name = 'gpu-try-linux-nvidia-dbg',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 gpu_linux_builder(
@@ -1092,6 +1101,7 @@ linux_builder(
 linux_builder(
     name = 'closure_compilation',
     executable = luci.recipe(name = 'closure_compilation'),
+    goma_backend = goma.backend.RBE_PROD,
     tryjob = tryjob(
         location_regexp = [
             '.+/[+]/third_party/closure_compiler/.+',
@@ -1182,12 +1192,14 @@ linux_builder(
 linux_builder(
     name = 'linux-clang-tidy-dbg',
     executable = luci.recipe(name = 'tricium_clang_tidy_wrapper'),
+    goma_backend = goma.backend.RBE_PROD,
     goma_jobs = goma.jobs.J150,
 )
 
 linux_builder(
     name = 'linux-clang-tidy-rel',
     executable = luci.recipe(name = 'tricium_clang_tidy_wrapper'),
+    goma_backend = goma.backend.RBE_PROD,
     goma_jobs = goma.jobs.J150,
 )
 
@@ -1198,6 +1210,7 @@ linux_builder(
 
 linux_builder(
     name = 'linux-gcc-rel',
+    goma_backend = None,
 )
 
 linux_builder(
@@ -1222,6 +1235,7 @@ linux_builder(
 
 linux_builder(
     name = 'linux-viz-rel',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 linux_builder(
@@ -1231,17 +1245,18 @@ linux_builder(
 
 linux_builder(
     name = 'linux_arm',
-    # TODO(crbug.com/986191): re-enable RBE+ATS when the issue is fixed.
-    # goma_backend = goma.backend.RBE_PROD,
-    # goma_enable_ats = True,
+    goma_backend = goma.backend.RBE_PROD,
+    goma_enable_ats = True,
 )
 
 linux_builder(
     name = 'linux_chromium_analysis',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 linux_builder(
     name = 'linux_chromium_archive_rel_ng',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 linux_builder(
@@ -1272,14 +1287,17 @@ linux_builder(
     name = 'linux_chromium_clobber_deterministic',
     executable = luci.recipe(name = 'swarming/deterministic_build'),
     execution_timeout = 6 * time.hour,
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 linux_builder(
     name = 'linux_chromium_clobber_rel_ng',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 linux_builder(
     name = 'linux_chromium_compile_dbg_32_ng',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 linux_builder(
@@ -1366,10 +1384,12 @@ linux_builder(
 
 linux_builder(
     name = 'linux-layout-tests-fragment-item',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 linux_builder(
     name = 'linux-layout-tests-fragment-paint',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 linux_builder(
@@ -1386,6 +1406,7 @@ linux_builder(
     builderless = False,
     cores = 32,
     executable = luci.recipe(name = 'chromium_upload_clang'),
+    goma_backend = None,
     os = os.LINUX_TRUSTY,
 )
 
@@ -1402,6 +1423,7 @@ linux_builder(
 linux_builder(
     name = 'tricium-metrics-analysis',
     executable = luci.recipe(name = 'tricium_metrics'),
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 
