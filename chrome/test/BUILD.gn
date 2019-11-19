@@ -1087,6 +1087,8 @@ if (!is_android) {
       "../browser/previews/previews_browsertest.cc",
       "../browser/previews/previews_lite_page_redirect_browsertest.cc",
       "../browser/previews/previews_service_browser_test.cc",
+      "../browser/previews/previews_test_util.cc",
+      "../browser/previews/previews_test_util.h",
       "../browser/previews/resource_loading_hints/resource_loading_hints_browsertest.cc",
       "../browser/process_singleton_browsertest.cc",
       "../browser/profile_resetter/profile_resetter_browsertest.cc",

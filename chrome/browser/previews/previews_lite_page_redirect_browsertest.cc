@@ -21,7 +21,6 @@
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
@@ -41,6 +40,7 @@
 #include "chrome/browser/previews/previews_lite_page_redirect_url_loader_interceptor.h"
 #include "chrome/browser/previews/previews_service.h"
 #include "chrome/browser/previews/previews_service_factory.h"
+#include "chrome/browser/previews/previews_test_util.h"
 #include "chrome/browser/previews/previews_ui_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -107,29 +107,6 @@ const char kPreviewsHost[] = "litepages.googlezip.net";
 // A host that is blacklisted for Lite Page Redirect previews and won't trigger
 // on it.
 const char kBlacklistedHost[] = "blacklisted.com";
-
-// Retries fetching |histogram_name| until it contains at least |count| samples.
-void RetryForHistogramUntilCountReached(base::HistogramTester* histogram_tester,
-                                        const std::string& histogram_name,
-                                        size_t count) {
-  while (true) {
-    base::ThreadPoolInstance::Get()->FlushForTesting();
-    base::RunLoop().RunUntilIdle();
-
-    content::FetchHistogramsFromChildProcesses();
-    SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
-
-    const std::vector<base::Bucket> buckets =
-        histogram_tester->GetAllSamples(histogram_name);
-    size_t total_count = 0;
-    for (const auto& bucket : buckets) {
-      total_count += bucket.count;
-    }
-    if (total_count >= count) {
-      break;
-    }
-  }
-}
 
 }  // namespace
 
@@ -947,15 +924,6 @@ INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
     PreviewsLitePageRedirectServerBrowserTest,
     ::testing::Bool());
-
-// Previews InfoBar (which these tests trigger) does not work on Mac.
-// See https://crbug.com/782322 for detail.
-// Also occasional flakes on win7 (https://crbug.com/789542).
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
-#define DISABLE_ON_WIN_MAC_CHROMEOS(x) DISABLED_##x
-#else
-#define DISABLE_ON_WIN_MAC_CHROMEOS(x) x
-#endif
 
 IN_PROC_BROWSER_TEST_P(
     PreviewsLitePageRedirectServerBrowserTest,
