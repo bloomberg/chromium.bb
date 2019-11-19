@@ -443,12 +443,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // https://html.spec.whatwg.org/multipage/webappapis.html#concept-environment-execution-ready-flag
   bool is_execution_ready() const;
 
-  // For service worker execution contexts. Forwards |receiver| to the process
-  // host on the UI thread.
-  void CreateLockManager(
-      mojo::PendingReceiver<blink::mojom::LockManager> receiver);
-  void CreateIDBFactory(
-      mojo::PendingReceiver<blink::mojom::IDBFactory> receiver);
+  // For service worker execution contexts.
   void CreateQuicTransportConnector(
       mojo::PendingReceiver<blink::mojom::QuicTransportConnector> receiver);
 

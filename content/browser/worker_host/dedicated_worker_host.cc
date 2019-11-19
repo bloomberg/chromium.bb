@@ -433,16 +433,6 @@ void DedicatedWorkerHost::CreateIdleManager(
       ->CreateService(std::move(receiver));
 }
 
-void DedicatedWorkerHost::CreateIDBFactory(
-    mojo::PendingReceiver<blink::mojom::IDBFactory> receiver) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  RenderProcessHost* worker_process_host = GetProcessHost();
-  if (!worker_process_host)
-    return;
-  worker_process_host->BindIndexedDB(MSG_ROUTING_NONE, GetOrigin(),
-                                     std::move(receiver));
-}
-
 void DedicatedWorkerHost::BindSmsReceiverReceiver(
     mojo::PendingReceiver<blink::mojom::SmsReceiver> receiver) {
   RenderFrameHostImpl* ancestor_render_frame_host =

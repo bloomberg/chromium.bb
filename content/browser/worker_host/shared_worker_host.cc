@@ -355,17 +355,6 @@ void SharedWorkerHost::CreateAppCacheBackend(
       worker_process_host->GetID(), MSG_ROUTING_NONE, std::move(receiver));
 }
 
-void SharedWorkerHost::CreateIDBFactory(
-    mojo::PendingReceiver<blink::mojom::IDBFactory> receiver) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  RenderProcessHost* worker_process_host = GetProcessHost();
-  if (!worker_process_host)
-    return;
-  worker_process_host->BindIndexedDB(MSG_ROUTING_NONE,
-                                     url::Origin::Create(instance().url()),
-                                     std::move(receiver));
-}
-
 void SharedWorkerHost::CreateQuicTransportConnector(
     mojo::PendingReceiver<blink::mojom::QuicTransportConnector> receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
