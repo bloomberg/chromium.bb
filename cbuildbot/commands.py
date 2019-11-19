@@ -546,29 +546,6 @@ def RunLocalTryjob(buildroot, build_config, args=None, target_buildroot=None):
     RunBuildScript(buildroot, cmd, chromite_cmd=True)
 
 
-def RunCrosSigningTests(buildroot, branches=None, network=False):
-  """Run the signer unittests.
-
-  These tests don't have a matching ebuild, and don't need to be run during
-  most builds, so we have a special helper to run them.
-
-  Args:
-    buildroot: The buildroot of the current build.
-    branches: Iterable with branches to test. Default: ['master']
-    network: Whether to run network based tests.
-  """
-  if not branches:
-    branches = ['master']
-  for branch in branches:
-    test_runner = path_util.ToChrootPath(
-        os.path.join(buildroot, 'src', 'platform', 'signing',
-                     'signer-%s' % branch, 'signer', 'run_tests.py'))
-    cmd = [test_runner]
-    if network:
-      cmd.append('--network')
-    cros_build_lib.run(cmd, enter_chroot=True)
-
-
 def UpdateBinhostJson(buildroot):
   """Test prebuilts for all boards, making sure everybody gets Chrome prebuilts.
 

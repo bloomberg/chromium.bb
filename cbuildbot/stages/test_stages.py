@@ -14,7 +14,6 @@ import os
 from chromite.cbuildbot import afdo
 from chromite.cbuildbot import cbuildbot_run
 from chromite.cbuildbot import commands
-from chromite.cbuildbot import validation_pool
 from chromite.cbuildbot.stages import generic_stages
 from chromite.lib import config_lib
 from chromite.lib import constants
@@ -25,13 +24,10 @@ from chromite.lib import gs
 from chromite.lib import hwtest_results
 from chromite.lib import image_test_lib
 from chromite.lib import osutils
-from chromite.lib import path_util
 from chromite.lib import parallel
 from chromite.lib import perf_uploader
 from chromite.lib import portage_util
 from chromite.lib import timeout_util
-
-PRE_CQ = validation_pool.PRE_CQ
 
 
 class UnitTestStage(generic_stages.BoardSpecificBuilderStage,
@@ -430,29 +426,6 @@ class ImageTestStage(generic_stages.BoardSpecificBuilderStage,
           chrome_version=chrome_ver)
 
 
-class CrosSigningTestStage(generic_stages.BuilderStage):
-  """Stage that runs the signer unittests.
-
-  This requires an internal source code checkout.
-  """
-
-  category = constants.CI_INFRA_STAGE
-
-  def PerformStage(self):
-    """Run the cros-signing unittests on each distinct branch.
-
-    This runs the cros-signing unittests for each distinct branch in set of
-    changes.
-    """
-    # The branch for the changes is buried in the metadata for the build.
-    changes = self._run.attrs.metadata.GetDict().get('changes', [])
-    branches = set()
-    for change in changes:
-      if change['project'] == 'chromeos/cros-signing':
-        branches.add(change['branch'])
-    commands.RunCrosSigningTests(self._build_root, branches=branches)
-
-
 class UnexpectedTryjobResult(Exception):
   """Thrown if a nested tryjob passes or fails unexpectedly."""
 
@@ -562,43 +535,6 @@ class CbuildbotLaunchTestStage(generic_stages.BuilderStage):
           'release-R68-10718.B',
           'success-build',
           expect_success=True)
-
-
-class ChromiteTestStage(generic_stages.BuilderStage):
-  """Stage that runs Chromite tests, excluding network tests."""
-
-  category = constants.CI_INFRA_STAGE
-
-  def PerformStage(self):
-    """Run the chromite unittests."""
-    buildroot_chromite = path_util.ToChrootPath(
-        os.path.join(self._build_root, 'chromite'))
-
-    cmd = [
-        os.path.join(buildroot_chromite, 'run_tests'),
-        # TODO(crbug.com/682381): When tests can pass, add '--network',
-    ]
-    # TODO: Remove enter_chroot=True when we have virtualenv support.
-    # Until then, we skip all chromite tests outside the chroot.
-    cros_build_lib.run(cmd, enter_chroot=True)
-
-
-class CidbIntegrationTestStage(generic_stages.BuilderStage):
-  """Stage that runs the CIDB integration tests."""
-
-  category = constants.CI_INFRA_STAGE
-
-  def PerformStage(self):
-    """Run the CIDB integration tests."""
-    buildroot_chromite = path_util.ToChrootPath(
-        os.path.join(self._build_root, 'chromite'))
-
-    cmd = [
-        os.path.join(buildroot_chromite, 'lib', 'cidb_integration_test'),
-        '-v',
-        # '--network'  Doesn't work in a build, yet.
-    ]
-    cros_build_lib.run(cmd, enter_chroot=True)
 
 
 class DebugInfoTestStage(generic_stages.BoardSpecificBuilderStage,
