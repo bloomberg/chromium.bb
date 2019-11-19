@@ -20,7 +20,6 @@ from chromite.cbuildbot.stages import build_stages
 from chromite.cbuildbot.stages import chrome_stages
 from chromite.cbuildbot.stages import completion_stages
 from chromite.cbuildbot.stages import generic_stages
-from chromite.cbuildbot.stages import handle_changes_stages
 from chromite.cbuildbot.stages import release_stages
 from chromite.cbuildbot.stages import report_stages
 from chromite.cbuildbot.stages import scheduler_stages
@@ -446,7 +445,7 @@ class SimpleBuilder(generic_builders.Builder):
     """Runs through build process."""
     # TODO(sosa): Split these out into classes.
     if self._run.config.build_type == constants.PRE_CQ_LAUNCHER_TYPE:
-      self._RunStage(sync_stages.PreCQLauncherStage)
+      assert False, 'Pre-CQ no longer supported'
     elif ((self._run.config.build_type == constants.PALADIN_TYPE or
            self._run.config.build_type == constants.CHROME_PFQ_TYPE or
            self._run.config.build_type == constants.ANDROID_PFQ_TYPE) and
@@ -490,8 +489,6 @@ class DistributedBuilder(SimpleBuilder):
       if self._run.config.do_not_apply_cq_patches:
         sync_stage = self._GetStageInstance(
             sync_stages.MasterSlaveLKGMSyncStage)
-      else:
-        sync_stage = self._GetStageInstance(sync_stages.CommitQueueSyncStage)
       self.completion_stage_class = completion_stages.CommitQueueCompletionStage
     elif config_lib.IsCanaryType(self._run.config.build_type):
       sync_stage = self._GetStageInstance(
@@ -537,23 +534,11 @@ class DistributedBuilder(SimpleBuilder):
     completion_successful = False
     try:
       self._completion_stage.Run()
-      self._HandleChanges()
       completion_successful = True
-    except failures_lib.StepFailure as e:
-      if isinstance(e, completion_stages.ImportantBuilderFailedException):
-        # When ImportantBuilderFailedException is the only exception, the master
-        # build can still submit partial changes (CLs).
-        self._HandleChanges()
-
+    except failures_lib.StepFailure:
       raise
     finally:
       self._Publish(was_build_successful, build_finished, completion_successful)
-
-  def _HandleChanges(self):
-    """Handle changes picked up by the validation_pool in the sync stage."""
-    if config_lib.IsMasterCQ(self._run.config):
-      self._RunStage(handle_changes_stages.CommitQueueHandleChangesStage,
-                     self.sync_stage, self._completion_stage)
 
   def _Publish(self, was_build_successful, build_finished,
                completion_successful):

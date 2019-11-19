@@ -9,14 +9,10 @@ from __future__ import print_function
 import copy
 import os
 
-import mock
-
 from chromite.cbuildbot import cbuildbot_run
 from chromite.cbuildbot.builders import generic_builders
 from chromite.cbuildbot.builders import simple_builders
-from chromite.cbuildbot.stages import completion_stages
 from chromite.cbuildbot.stages import generic_stages
-from chromite.cbuildbot.stages import handle_changes_stages
 from chromite.cbuildbot.stages import tast_test_stages
 from chromite.cbuildbot.stages import vm_test_stages
 from chromite.lib import config_lib
@@ -223,62 +219,3 @@ class SimpleBuilderTest(cros_test_lib.MockTempDirTestCase):
     }
     self.assertEqual([failures_lib.TestFailure], self._RunVMTests())
     self.assertEqual(self.all_vm_test_stages, self.called_stages)
-
-
-class DistributedBuilderTests(SimpleBuilderTest):
-  """Tests for DistributedBuilder."""
-
-  def testRunStagesCommitQueueMaster(self):
-    """Verify RunStages for master-paladin builder."""
-    builder_run = self._initConfig('master-paladin', master=True)
-    builder = simple_builders.DistributedBuilder(builder_run, self.buildstore)
-    builder.sync_stage = mock.Mock()
-    builder.completion_stage_class = mock.Mock()
-    builder.RunStages()
-    self.assertTrue(handle_changes_stages.CommitQueueHandleChangesStage
-                    in self.called_stages)
-
-  def testRunStagesCommitQueueMasterWithImportantBuilderFailedException(self):
-    """Verify RunStages for CQ-master with ImportantBuilderFailedException."""
-    builder_run = self._initConfig('master-paladin', master=True)
-    builder = simple_builders.DistributedBuilder(builder_run, self.buildstore)
-    builder.sync_stage = mock.Mock()
-    builder.completion_stage_class = (
-        completion_stages.CommitQueueCompletionStage)
-    self.PatchObject(
-        completion_stages.CommitQueueCompletionStage, '__init__',
-        return_value=None)
-    self.PatchObject(
-        completion_stages.CommitQueueCompletionStage, 'Run',
-        side_effect=completion_stages.ImportantBuilderFailedException)
-    self.assertRaises(completion_stages.ImportantBuilderFailedException,
-                      builder.RunStages)
-    self.assertTrue(handle_changes_stages.CommitQueueHandleChangesStage
-                    in self.called_stages)
-
-  def testRunStagesCommitQueueMasterWithStepFailure(self):
-    """Verify RunStages for CQ-master with StepFailure."""
-    builder_run = self._initConfig('master-paladin', master=True)
-    builder = simple_builders.DistributedBuilder(builder_run, self.buildstore)
-    builder.sync_stage = mock.Mock()
-    builder.completion_stage_class = (
-        completion_stages.CommitQueueCompletionStage)
-    self.PatchObject(
-        completion_stages.CommitQueueCompletionStage, '__init__',
-        return_value=None)
-    self.PatchObject(
-        completion_stages.CommitQueueCompletionStage, 'Run',
-        side_effect=failures_lib.StepFailure)
-    self.assertRaises(failures_lib.StepFailure, builder.RunStages)
-    self.assertFalse(handle_changes_stages.CommitQueueHandleChangesStage
-                     in self.called_stages)
-
-  def testRunStagesReleaseMaster(self):
-    """Verify RunStages for master-release builder."""
-    builder_run = self._initConfig('master-release', master=True)
-    builder = simple_builders.DistributedBuilder(builder_run, self.buildstore)
-    builder.sync_stage = mock.Mock()
-    builder.completion_stage_class = mock.Mock()
-    builder.RunStages()
-    self.assertFalse(handle_changes_stages.CommitQueueHandleChangesStage
-                     in self.called_stages)
