@@ -134,8 +134,9 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
   PerformanceEntryVector getBufferedEntriesByType(
       const AtomicString& entry_type);
   PerformanceEntryVector getEntriesByType(const AtomicString& entry_type);
-  PerformanceEntryVector getEntriesByName(const AtomicString& name,
-                                          const AtomicString& entry_type);
+  PerformanceEntryVector getEntriesByName(
+      const AtomicString& name,
+      const AtomicString& entry_type = g_null_atom);
 
   void clearResourceTimings();
   void setResourceTimingBufferSize(unsigned);
