@@ -316,9 +316,6 @@ class ASH_EXPORT OverviewItem : public views::ButtonListener,
   // using |animation_type|.
   void AnimateOpacity(float opacity, OverviewAnimationType animation_type);
 
-  // Allows a test to directly set animation state.
-  gfx::SlideAnimation* GetBackgroundViewAnimation();
-
   // Called before dragging. Scales up the window a little bit to indicate its
   // selection and stacks the window at the top of the Z order in order to keep
   // it visible while dragging around.
