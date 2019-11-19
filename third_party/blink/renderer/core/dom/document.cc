@@ -5401,11 +5401,9 @@ void Document::ClearFocusedElement() {
 
 void Document::NotifyFocusedElementChanged(Element* old_focused_element,
                                            Element* new_focused_element) {
-  if (new_focused_element) {
-    if (AXObjectCache* cache = ExistingAXObjectCache()) {
-      cache->HandleFocusedUIElementChanged(old_focused_element,
-                                           new_focused_element);
-    }
+  if (AXObjectCache* cache = ExistingAXObjectCache()) {
+    cache->HandleFocusedUIElementChanged(old_focused_element,
+                                         new_focused_element);
   }
 
   if (GetPage()) {
