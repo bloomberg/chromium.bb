@@ -469,6 +469,7 @@ static void set_good_speed_features_framesize_independent(
     sf->disable_lr_filter = 1;
     sf->disable_obmc = 1;
     sf->disable_interinter_wedge = 1;
+    sf->disable_smooth_interintra = 1;
   }
 }
 
