@@ -53,6 +53,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_impl.h"
 #include "chrome/browser/browser_process_platform_part.h"
+#include "chrome/browser/buildflags.h"
 #include "chrome/browser/chrome_browser_field_trials.h"
 #include "chrome/browser/chrome_browser_main_extra_parts.h"
 #include "chrome/browser/component_updater/crl_set_component_installer.h"
@@ -282,6 +283,10 @@
 #include "extensions/common/features/feature_provider.h"
 #include "extensions/components/javascript_dialog_extensions_client/javascript_dialog_extension_client_impl.h"
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
+
+#if BUILDFLAG(ENABLE_KALEIDOSCOPE)
+#include "chrome/browser/media/kaleidoscope/internal/kaleidoscope_web_ui_controller_factory.h"
+#endif  // BUILDFLAG(ENABLE_KALEIDOSCOPE)
 
 #if BUILDFLAG(ENABLE_NACL)
 #include "chrome/browser/component_updater/pnacl_component_installer.h"
@@ -1547,6 +1552,11 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   // called inside PostProfileInit.
   content::WebUIControllerFactory::RegisterFactory(
       ChromeWebUIControllerFactory::GetInstance());
+
+#if BUILDFLAG(ENABLE_KALEIDOSCOPE)
+  content::WebUIControllerFactory::RegisterFactory(
+      KaleidoscopeWebUIControllerFactory::GetInstance());
+#endif  // BUILDFLAG(ENABLE_KALEIDOSCOPE)
 
 #if BUILDFLAG(ENABLE_NACL)
   // NaClBrowserDelegateImpl is accessed inside PostProfileInit().
