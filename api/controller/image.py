@@ -55,7 +55,13 @@ _VM_IMAGE_MAPPING = {
 }
 
 
-@faux.all_empty
+def _CreateResponse(_input_proto, output_proto, _config):
+  """Set output_proto success field on a successful Create response."""
+  output_proto.success = True
+
+
+@faux.success(_CreateResponse)
+@faux.empty_error
 @validate.require('build_target.name')
 @validate.validation_complete
 @metrics.collect_metrics
@@ -182,7 +188,14 @@ def _PopulateBuiltImages(board, image_types, output_proto):
     new_image.build_target.name = board
 
 
-@faux.all_empty
+def _SignerTestResponse(_input_proto, output_proto, _config):
+  """Set output_proto success field on a successful SignerTest response."""
+  output_proto.success = True
+  return controller.RETURN_CODE_SUCCESS
+
+
+@faux.success(_SignerTestResponse)
+@faux.empty_error
 @validate.exists('image.path')
 @validate.validation_complete
 def SignerTest(input_proto, output_proto, _config):
@@ -203,7 +216,14 @@ def SignerTest(input_proto, output_proto, _config):
     return controller.RETURN_CODE_COMPLETED_UNSUCCESSFULLY
 
 
-@faux.all_empty
+def _TestResponse(_input_proto, output_proto, _config):
+  """Set output_proto success field on a successful Test response."""
+  output_proto.success = True
+  return controller.RETURN_CODE_SUCCESS
+
+
+@faux.success(_TestResponse)
+@faux.empty_error
 @validate.require('build_target.name', 'result.directory')
 @validate.exists('image.path')
 def Test(input_proto, output_proto, config):

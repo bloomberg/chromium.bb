@@ -49,6 +49,15 @@ class CreateTest(cros_test_lib.MockTempDirTestCase, api_config.ApiConfigMixin):
     image_controller.Create(request, self.response, self.validate_only_config)
     patch.assert_not_called()
 
+  def testMockCall(self):
+    """Test that mock call does not execute any logic, returns mocked value."""
+    patch = self.PatchObject(image_service, 'Build')
+
+    request = self._GetRequest(board='board')
+    image_controller.Create(request, self.response, self.mock_call_config)
+    patch.assert_not_called()
+    self.assertEqual(self.response.success, True)
+
   def testNoBoard(self):
     """Test no board given fails."""
     request = self._GetRequest()
@@ -149,6 +158,19 @@ class ImageSignerTestTest(cros_test_lib.MockTempDirTestCase,
 
     patch.assert_not_called()
 
+  def testMockCall(self):
+    """Test that mock call does not execute any logic, returns mocked value."""
+    patch = self.PatchObject(image_lib, 'SecurityTest', return_value=True)
+    input_proto = image_pb2.TestImageRequest()
+    input_proto.image.path = self.image_path
+    output_proto = image_pb2.TestImageResult()
+
+    image_controller.SignerTest(input_proto, output_proto,
+                                self.mock_call_config)
+
+    patch.assert_not_called()
+    self.assertEqual(output_proto.success, True)
+
   def testSignerTestNoImage(self):
     """Test function argument validation."""
     input_proto = image_pb2.TestImageRequest()
@@ -202,6 +224,20 @@ class ImageTestTest(cros_test_lib.MockTempDirTestCase,
 
     image_controller.Test(input_proto, output_proto, self.validate_only_config)
     patch.assert_not_called()
+
+  def testMockCall(self):
+    """Test that mock call does not execute any logic, returns mocked value."""
+    patch = self.PatchObject(image_service, 'Test')
+
+    input_proto = image_pb2.TestImageRequest()
+    input_proto.image.path = self.image_path
+    input_proto.build_target.name = self.board
+    input_proto.result.directory = self.result_directory
+    output_proto = image_pb2.TestImageResult()
+
+    image_controller.Test(input_proto, output_proto, self.mock_call_config)
+    patch.assert_not_called()
+    self.assertEqual(output_proto.success, True)
 
   def testTestArgumentValidation(self):
     """Test function argument validation tests."""
