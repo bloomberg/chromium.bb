@@ -3517,6 +3517,15 @@
         ],
         'test': 'dawn_end2end_tests',
       },
+      'dawn_end2end_skip_validation_tests': {
+        'desktop_args': [
+          '--use-gpu-in-tests',
+          # Dawn test retries deliberately disabled to prevent flakiness.
+          '--test-launcher-retry-limit=0',
+          '--skip-validation',
+        ],
+        'test': 'dawn_end2end_tests',
+      },
     },
 
     # GPU gtests that test Dawn and integration with Chromium
@@ -3544,6 +3553,15 @@
           # Dawn test retries deliberately disabled to prevent flakiness.
           '--test-launcher-retry-limit=0',
           '--use-wire',
+        ],
+        'test': 'dawn_end2end_tests',
+      },
+      'dawn_end2end_skip_validation_tests': {
+        'desktop_args': [
+          '--use-gpu-in-tests',
+          # Dawn test retries deliberately disabled to prevent flakiness.
+          '--test-launcher-retry-limit=0',
+          '--skip-validation',
         ],
         'test': 'dawn_end2end_tests',
       },
