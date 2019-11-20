@@ -26,7 +26,6 @@ import("//extensions/buildflags/buildflags.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//net/features.gni")
 import("//ppapi/buildflags/buildflags.gni")
-import("//remoting/remoting_enable.gni")
 import("//rlz/buildflags/buildflags.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 import("//testing/test.gni")
@@ -760,8 +759,6 @@ if (!is_android) {
       "//ppapi:copy_test_files2",
       "//ppapi:ppapi_tests",
       "//ppapi:power_saver_test_plugin",
-      "//remoting/webapp:browser_test_resources",
-      "//remoting/webapp:unit_tests",
       "//testing/buildbot/filters:browser_tests_filters",
       "//third_party/mesa_headers",
       "//third_party/widevine/cdm:widevine_test_license_server",
@@ -2655,34 +2652,6 @@ if (!is_android) {
         "../renderer/safe_browsing/phishing_classifier_browsertest.cc",
         "../renderer/safe_browsing/phishing_classifier_delegate_browsertest.cc",
       ]
-    }
-    if (enable_remoting) {
-      sources += [
-        "remoting/auth_browsertest.cc",
-        "remoting/fullscreen_browsertest.cc",
-        "remoting/it2me_browsertest.cc",
-        "remoting/key_code_conv.cc",
-        "remoting/key_code_conv.h",
-        "remoting/key_code_map.h",
-        "remoting/key_code_test_map.h",
-        "remoting/launch_browsertest.cc",
-        "remoting/me2me_browsertest.cc",
-        "remoting/page_load_notification_observer.cc",
-        "remoting/page_load_notification_observer.h",
-        "remoting/pin_browsertest.cc",
-        "remoting/qunit_browser_test_runner.cc",
-        "remoting/qunit_browser_test_runner.h",
-        "remoting/remote_desktop_browsertest.cc",
-        "remoting/remote_desktop_browsertest.h",
-        "remoting/remote_test_helper.cc",
-        "remoting/remote_test_helper.h",
-        "remoting/scrollbar_browsertest.cc",
-        "remoting/unauthenticated_browsertest.cc",
-        "remoting/waiter.cc",
-        "remoting/waiter.h",
-        "remoting/webapp_javascript_browsertest.cc",
-      ]
-      data_deps += [ "//remoting/webapp" ]
     }
 
     if (use_aura) {
