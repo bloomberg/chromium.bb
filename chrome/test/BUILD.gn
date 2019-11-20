@@ -2443,6 +2443,9 @@ if (!is_android) {
             [ "../browser/ui/views/ime/input_ime_apitest_nonchromeos.cc" ]
       }
     }
+    if (enable_kaleidoscope) {
+      deps += [ "../browser/media/kaleidoscope/internal:browser_tests" ]
+    }
     if (enable_legacy_desktop_in_product_help) {
       sources += [
         "../browser/feature_engagement/incognito_window/incognito_window_tracker_browsertest.cc",
