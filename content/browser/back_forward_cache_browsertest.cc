@@ -2559,7 +2559,6 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   // 2) Navigate away.
   shell()->LoadURL(https_server.GetURL("b.com", "/title1.html"));
 
-  EXPECT_FALSE(rfh_a->is_in_back_forward_cache());
   // The page is controlled by a service worker, so it shouldn't have been
   // cached.
   deleted.WaitUntilDeleted();
@@ -3080,7 +3079,6 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, TimedEviction) {
   task_runner->FastForwardBy(delta);
 
   // 6) Confirm A is evicted.
-  EXPECT_TRUE(rfh_a->is_evicted_from_back_forward_cache());
   delete_observer_rfh_a.WaitUntilDeleted();
   EXPECT_EQ(current_frame_host(), rfh_b);
 
@@ -3206,7 +3204,6 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   BackForwardCache::DisableForRenderFrameHost(
       rfh_a, "DisabledByBackForwardCacheBrowserTest");
 
-  EXPECT_TRUE(rfh_a->is_evicted_from_back_forward_cache());
   delete_observer_rfh_a.WaitUntilDeleted();
 
   // 3) Go back to A.
