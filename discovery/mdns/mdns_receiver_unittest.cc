@@ -46,9 +46,10 @@ TEST(MdnsReceiverTest, ReceiveQuery) {
       FakeUdpSocket::CreateDefault(IPAddress::Version::kV4);
   MockMdnsReceiverDelegate delegate;
   MdnsReceiver receiver(socket_info.get());
-  receiver.SetQueryCallback([&delegate](const MdnsMessage& message) {
-    delegate.OnMessageReceived(message);
-  });
+  receiver.SetQueryCallback(
+      [&delegate](const MdnsMessage& message, const IPEndpoint& endpoint) {
+        delegate.OnMessageReceived(message);
+      });
   receiver.Start();
 
   MdnsQuestion question(DomainName{"testing", "local"}, DnsType::kA,

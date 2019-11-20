@@ -29,7 +29,8 @@ class MdnsReceiver : openscreen::platform::UdpSocket::Client {
   MdnsReceiver& operator=(MdnsReceiver&& other) noexcept = delete;
   ~MdnsReceiver() override;
 
-  void SetQueryCallback(std::function<void(const MdnsMessage&)> callback);
+  void SetQueryCallback(
+      std::function<void(const MdnsMessage&, const IPEndpoint& src)> callback);
   void SetResponseCallback(std::function<void(const MdnsMessage&)> callback);
 
   // The receiver can be started and stopped multiple times.
@@ -51,7 +52,8 @@ class MdnsReceiver : openscreen::platform::UdpSocket::Client {
   };
 
   UdpSocket* const socket_;
-  std::function<void(const MdnsMessage&)> query_callback_;
+  std::function<void(const MdnsMessage&, const IPEndpoint& src)>
+      query_callback_;
   std::function<void(const MdnsMessage&)> response_callback_;
   State state_ = State::kStopped;
 };

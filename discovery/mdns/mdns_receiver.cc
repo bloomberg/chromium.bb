@@ -23,7 +23,7 @@ MdnsReceiver::~MdnsReceiver() {
 }
 
 void MdnsReceiver::SetQueryCallback(
-    std::function<void(const MdnsMessage&)> callback) {
+    std::function<void(const MdnsMessage&, const IPEndpoint&)> callback) {
   // This check verifies that either new or stored callback has a target. It
   // will fail in case multiple objects try to set or clear the callback.
   OSP_DCHECK(static_cast<bool>(query_callback_) != static_cast<bool>(callback));
@@ -62,12 +62,14 @@ void MdnsReceiver::OnRead(UdpSocket* socket,
     return;
   }
 
-  std::function<void(const MdnsMessage&)> callback =
-      (message.type() == MessageType::Response) ? response_callback_
-                                                : query_callback_;
-
-  if (callback) {
-    callback(message);
+  if (message.type() == MessageType::Response) {
+    if (response_callback_) {
+      response_callback_(message);
+    }
+  } else {
+    if (query_callback_) {
+      query_callback_(message, packet.source());
+    }
   }
 }
 
