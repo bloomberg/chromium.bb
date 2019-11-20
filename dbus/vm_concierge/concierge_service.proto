@@ -379,7 +379,8 @@ message CreateDiskImageRequest {
   string disk_path = 2;
 
   // The logical size of the new disk image, in bytes.
-  // If unspecified or 0, a size will be chosen automatically.
+  // If non-zero, the disk will be preallocated and fixed to the given size.
+  // If unspecified or 0, a size will be chosen automatically and the image will be sparse.
   uint64 disk_size = 3;
 
   // The type of disk image to be created.
