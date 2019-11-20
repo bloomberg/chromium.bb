@@ -5738,6 +5738,11 @@ if (!is_android) {
     if (is_mac) {
       sources += [ "../browser/ui/find_bar/find_bar_platform_helper_mac_interactive_uitest.mm" ]
 
+      sources -= [
+        # TODO(crbug.com/1026820): Re-enable this test when history backend failures are addressed.
+        "../browser/ui/omnibox/omnibox_view_browsertest.cc",
+      ]
+
       data_deps += [
         "//chrome",
         "//chrome:chrome_framework",
