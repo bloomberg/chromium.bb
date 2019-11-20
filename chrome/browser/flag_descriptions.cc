@@ -2243,6 +2243,12 @@ const char kWebPaymentsExperimentalFeaturesName[] =
 const char kWebPaymentsExperimentalFeaturesDescription[] =
     "Enable experimental Web Payments API features";
 
+const char kWebrtcCaptureMultiChannelApmName[] =
+    "WebRTC multi-channel capture audio processing.";
+const char kWebrtcCaptureMultiChannelApmDescription[] =
+    "Support in WebRTC for processing capture audio in multi channel without "
+    "downmixing when running APM in the render process.";
+
 const char kWebrtcHideLocalIpsWithMdnsName[] =
     "Anonymize local IPs exposed by WebRTC.";
 const char kWebrtcHideLocalIpsWithMdnsDecription[] =
@@ -2259,12 +2265,6 @@ const char kWebrtcHwDecodingDescription[] =
 const char kWebrtcHwEncodingName[] = "WebRTC hardware video encoding";
 const char kWebrtcHwEncodingDescription[] =
     "Support in WebRTC for encoding video streams using platform hardware.";
-
-const char kWebrtcMultiChannelApmName[] =
-    "WebRTC multi-channel audio processing.";
-const char kWebrtcMultiChannelApmDescription[] =
-    "Support in WebRTC for processing playout and capture audio in multi "
-    "channel without downmixing.";
 
 const char kWebrtcNewEncodeCpuLoadEstimatorName[] =
     "WebRTC new encode cpu load estimator";

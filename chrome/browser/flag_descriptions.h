@@ -1313,6 +1313,9 @@ extern const char kWebMidiDescription[];
 extern const char kWebPaymentsExperimentalFeaturesName[];
 extern const char kWebPaymentsExperimentalFeaturesDescription[];
 
+extern const char kWebrtcCaptureMultiChannelApmName[];
+extern const char kWebrtcCaptureMultiChannelApmDescription[];
+
 extern const char kWebrtcHideLocalIpsWithMdnsName[];
 extern const char kWebrtcHideLocalIpsWithMdnsDecription[];
 
@@ -1324,9 +1327,6 @@ extern const char kWebrtcHwDecodingDescription[];
 
 extern const char kWebrtcHwEncodingName[];
 extern const char kWebrtcHwEncodingDescription[];
-
-extern const char kWebrtcMultiChannelApmName[];
-extern const char kWebrtcMultiChannelApmDescription[];
 
 extern const char kWebrtcNewEncodeCpuLoadEstimatorName[];
 extern const char kWebrtcNewEncodeCpuLoadEstimatorDescription[];

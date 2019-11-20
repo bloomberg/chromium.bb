@@ -2087,6 +2087,11 @@
     "expiry_milestone": 82
   },
   {
+    "name": "enable-webrtc-capture-multi-channel-audio-processing",
+    "owners": [ "saza" ],
+    "expiry_milestone": 85
+  },
+  {
     "name": "enable-webrtc-hide-local-ips-with-mdns",
     "owners": [ "qingsi" ],
     "expiry_milestone": 81
@@ -2110,11 +2115,6 @@
     "name": "enable-webrtc-hybrid-agc",
     "owners": [ "aleloi" ],
     "expiry_milestone": 83
-  },
-  {
-    "name": "enable-webrtc-multi-channel-audio-processing",
-    "owners": [ "saza" ],
-    "expiry_milestone": 85
   },
   {
     "name": "enable-webrtc-new-encode-cpu-load-estimator",

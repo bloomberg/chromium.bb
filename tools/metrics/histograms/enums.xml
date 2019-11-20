@@ -36986,7 +36986,6 @@ from previous Chrome versions.
   <int value="-496119023" label="WebXR:enabled"/>
   <int value="-495585885" label="enable-spdy-proxy-dev-auth-origin"/>
   <int value="-494722408" label="ContentSuggestionsLargeThumbnail:enabled"/>
-  <int value="-493716471" label="WebRtcEnableMultiChannelApm:enabled"/>
   <int value="-493551777" label="StaleWhileRevalidate2:disabled"/>
   <int value="-492864618" label="NTPForeignSessionsSuggestions:disabled"/>
   <int value="-491131428" label="OmniboxNewAnswerLayout:disabled"/>
@@ -37156,6 +37155,7 @@ from previous Chrome versions.
   <int value="-271790049" label="ArcUsbHost:enabled"/>
   <int value="-271084069" label="ClickToCallUI:enabled"/>
   <int value="-270626757" label="log-net-log"/>
+  <int value="-270261701" label="WebRtcEnableCaptureMultiChannelApm:disabled"/>
   <int value="-268549184"
       label="AutofillSaveCreditCardUsesStrikeSystemV2:enabled"/>
   <int value="-268357961" label="enable-feature-policy"/>
@@ -37804,7 +37804,6 @@ from previous Chrome versions.
   <int value="595168244" label="NotificationExpansionAnimation:enabled"/>
   <int value="595371145" label="OmniboxRichEntitySuggestions:disabled"/>
   <int value="596106994" label="CustomFeedbackUi:enabled"/>
-  <int value="596108787" label="WebRtcEnableMultiChannelApm:disabled"/>
   <int value="598827460" label="enable-roboto-font-ui"/>
   <int value="598926697" label="VrLaunchIntent:disabled"/>
   <int value="600037637" label="AndroidSigninPromos:enabled"/>
@@ -38482,6 +38481,7 @@ from previous Chrome versions.
   <int value="1458475849" label="D3D11VideoDecoder:disabled"/>
   <int value="1458583431" label="arc-use-auth-endpoint"/>
   <int value="1459529277" label="disable-text-input-focus-manager"/>
+  <int value="1459803015" label="WebRtcEnableCaptureMultiChannelApm:enabled"/>
   <int value="1460747747" label="GdiTextPrinting:enabled"/>
   <int value="1460958818" label="NTPForeignSessionsSuggestions:enabled"/>
   <int value="1465624446" label="disable-zero-copy"/>
