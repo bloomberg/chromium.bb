@@ -1112,6 +1112,8 @@ jumbo_static_library("browser") {
     "performance_manager/observers/isolation_context_metrics.h",
     "performance_manager/observers/metrics_collector.cc",
     "performance_manager/observers/metrics_collector.h",
+    "performance_manager/performance_manager_features.cc",
+    "performance_manager/performance_manager_features.h",
     "performance_manager/persistence/site_data/exponential_moving_average.cc",
     "performance_manager/persistence/site_data/exponential_moving_average.h",
     "performance_manager/persistence/site_data/feature_usage.h",
