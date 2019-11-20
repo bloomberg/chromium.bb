@@ -2133,7 +2133,7 @@
           'Release_x64',
         ],
         'swarming': {
-          "shards": 24
+          "shards": 28
         },
       },
       'Win10 Tests x64 (dbg)': {
