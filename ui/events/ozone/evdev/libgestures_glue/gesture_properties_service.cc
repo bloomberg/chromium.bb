@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/events/ozone/chromeos/gesture_properties_service.h"
+#include "ui/events/ozone/evdev/libgestures_glue/gesture_properties_service.h"
 
 #include <utility>
 

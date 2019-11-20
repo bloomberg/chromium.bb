@@ -161,8 +161,6 @@ if (use_ozone) {
 
       if (use_evdev_gestures) {
         sources += [
-          "chromeos/gesture_properties_service.cc",
-          "chromeos/gesture_properties_service.h",
           "evdev/libgestures_glue/event_reader_libevdev_cros.cc",
           "evdev/libgestures_glue/event_reader_libevdev_cros.h",
           "evdev/libgestures_glue/gesture_feedback.cc",
@@ -171,6 +169,8 @@ if (use_ozone) {
           "evdev/libgestures_glue/gesture_interpreter_libevdev_cros.h",
           "evdev/libgestures_glue/gesture_logging.cc",
           "evdev/libgestures_glue/gesture_logging.h",
+          "evdev/libgestures_glue/gesture_properties_service.cc",
+          "evdev/libgestures_glue/gesture_properties_service.h",
           "evdev/libgestures_glue/gesture_property_provider.cc",
           "evdev/libgestures_glue/gesture_property_provider.h",
           "evdev/libgestures_glue/gesture_timer_provider.cc",
