@@ -4,11 +4,14 @@
 
 package org.chromium.chrome.browser.webapps.addtohomescreen;
 
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Build;
 import android.support.test.filters.SmallTest;
 import android.text.TextUtils;
+
+import androidx.annotation.StringRes;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -39,8 +42,8 @@ import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.common.ContentSwitches;
 import org.chromium.net.test.EmbeddedTestServerRule;
-import org.chromium.ui.modelutil.PropertyModel;
-import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
+import org.chromium.ui.base.WindowAndroid;
+import org.chromium.ui.modaldialog.ModalDialogManager;
 
 import java.util.concurrent.Callable;
 
@@ -51,7 +54,7 @@ import java.util.concurrent.Callable;
 @RunWith(ChromeJUnit4ClassRunner.class)
 @RetryOnFailure
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
-public class AddToHomescreenManagerTest {
+public class AddToHomescreenTest {
     @Rule
     public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
             new ChromeActivityTestRule<>(ChromeActivity.class);
@@ -140,41 +143,35 @@ public class AddToHomescreenManagerTest {
     }
 
     /**
-     * Test AddToHomescreenManager subclass which mocks showing the add-to-homescreen view and
-     * adds the shortcut to the home screen once it is ready.
+     * Test TestAddToHomescreenCoordinator subclass which mocks showing the add-to-homescreen view
+     * and adds the shortcut to the home screen once it is ready.
      */
-    private static class TestAddToHomescreenManager extends AddToHomescreenManager {
+    private static class TestAddToHomescreenCoordinator extends AddToHomescreenCoordinator {
         private String mTitle;
 
-        /**
-         * Creates an instance of {@link TestAddToHomescreenManager}.
-         *
-         * @param title The title that the user entered into the add-to-homescreen dialog.
-         */
-        public TestAddToHomescreenManager(ChromeActivity activity, Tab tab, String title) {
-            super(activity, tab);
+        TestAddToHomescreenCoordinator(Context context, WindowAndroid windowAndroid,
+                ModalDialogManager modalDialogManager, String title) {
+            super(context, windowAndroid, modalDialogManager);
             mTitle = title;
         }
 
         @Override
-        public void showDialog() {
-            mViewModel = new PropertyModel.Builder(AddToHomescreenProperties.ALL_KEYS).build();
-            PropertyModelChangeProcessor.create(mViewModel,
-                    new AddToHomescreenDialogView(mActivity, mActivity.getModalDialogManager(),
-                            R.string.menu_add_to_homescreen, this) {
-                        @Override
-                        void setTitle(String title) {
-                            if (TextUtils.isEmpty(mTitle)) {
-                                mTitle = title;
-                            }
-                        }
+        protected AddToHomescreenDialogView initView(
+                @StringRes int titleText, AddToHomescreenViewDelegate delegate) {
+            return new AddToHomescreenDialogView(
+                    mActivityContext, mModalDialogManager, titleText, delegate) {
+                @Override
+                void setTitle(String title) {
+                    if (TextUtils.isEmpty(mTitle)) {
+                        mTitle = title;
+                    }
+                }
 
-                        @Override
-                        void setIcon(Bitmap icon, boolean isAdaptive) {
-                            TestAddToHomescreenManager.this.onAddToHomescreen(mTitle);
-                        }
-                    },
-                    AddToHomescreenViewBinder::bind);
+                @Override
+                void setCanSubmit(boolean canSubmit) {
+                    mDelegate.onAddToHomescreen(mTitle);
+                }
+            };
         }
     }
 
@@ -350,8 +347,12 @@ public class AddToHomescreenManagerTest {
 
     private void addShortcutToTab(Tab tab, String title, boolean expectAdded) {
         // Add the shortcut.
-        TestAddToHomescreenManager manager = new TestAddToHomescreenManager(mActivity, tab, title);
-        startManagerOnUiThread(manager);
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            boolean started = new TestAddToHomescreenCoordinator(mActivity,
+                    mActivity.getWindowAndroid(), mActivity.getModalDialogManager(), title)
+                                      .showForAppMenu(tab.getWebContents());
+            Assert.assertEquals(expectAdded, started);
+        });
 
         // Make sure that the shortcut was added.
         if (expectAdded) {
@@ -362,15 +363,6 @@ public class AddToHomescreenManagerTest {
                 }
             });
         }
-        destroyManagerOnUiThread(manager);
-    }
-
-    private void startManagerOnUiThread(final AddToHomescreenManager manager) {
-        TestThreadUtils.runOnUiThreadBlocking(() -> { manager.start(); });
-    }
-
-    private void destroyManagerOnUiThread(final AddToHomescreenManager manager) {
-        TestThreadUtils.runOnUiThreadBlocking(() -> { manager.destroy(); });
     }
 
     /**
