@@ -75,7 +75,7 @@ class VideoTrackRecorderTest
     blink_track_.Initialize(blink_source_);
 
     track_ = new MediaStreamVideoTrack(
-        mock_source_, WebPlatformMediaStreamSource::ConstraintsCallback(),
+        mock_source_, WebPlatformMediaStreamSource::ConstraintsOnceCallback(),
         true /* enabled */);
     blink_track_.SetPlatformTrack(base::WrapUnique(track_));
 

@@ -502,8 +502,8 @@ void CanvasCaptureHandler::AddVideoCapturerSourceToVideoTrack(
 
   web_track->Initialize(webkit_source);
   web_track->SetPlatformTrack(std::make_unique<blink::MediaStreamVideoTrack>(
-      media_stream_source, blink::MediaStreamVideoSource::ConstraintsCallback(),
-      true));
+      media_stream_source,
+      blink::MediaStreamVideoSource::ConstraintsOnceCallback(), true));
 }
 
 }  // namespace blink
