@@ -300,7 +300,7 @@ static void set_good_speed_features_framesize_independent(
     sf->prune_ref_frame_for_gm_search = boosted ? 0 : 1;
     sf->intra_tx_size_search_init_depth_rect = 1;
 
-    sf->skip_repeat_interpolation_filter_search = 1;
+    sf->use_interp_filter = 1;
     sf->tx_type_search.skip_tx_search = 1;
     sf->tx_type_search.ml_tx_split_thresh = 4000;
     sf->adaptive_txb_search_level = 2;
@@ -463,7 +463,7 @@ static void set_good_speed_features_framesize_independent(
     // sf->tx_domain_dist_level = 2;
     sf->tx_domain_dist_thres_level = 2;
     sf->simple_motion_search_prune_agg = 2;
-    sf->skip_repeat_interpolation_filter_search = 2;
+    sf->use_interp_filter = 2;
     sf->prune_ref_mv_idx_search = 1;
   }
 
@@ -533,7 +533,7 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->intra_tx_size_search_init_depth_rect = 1;
     sf->tx_size_search_lgr_block = 1;
     sf->prune_ext_partition_types_search_level = 2;
-    sf->skip_repeat_interpolation_filter_search = 1;
+    sf->use_interp_filter = 1;
     sf->tx_type_search.skip_tx_search = 1;
     sf->tx_type_search.ml_tx_split_thresh = 4000;
     sf->adaptive_txb_search_level = 2;
@@ -898,7 +898,7 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
   sf->prune_ref_frame_for_gm_search = 0;
   sf->use_fast_interpolation_filter_search = 0;
   sf->disable_dual_filter = 0;
-  sf->skip_repeat_interpolation_filter_search = 0;
+  sf->use_interp_filter = 0;
   sf->use_hash_based_trellis = 0;
   sf->prune_comp_search_by_single_result = 0;
   sf->skip_repeated_newmv = 0;

@@ -539,9 +539,9 @@ typedef struct SPEED_FEATURES {
   int disable_dual_filter;
 
   // Save results of interpolation_filter_search for a block
-  // Check mv and ref_frames before search, if they are same with previous
-  // saved results, it can be skipped.
-  int skip_repeat_interpolation_filter_search;
+  // Check mv and ref_frames before search, if they are very close with previous
+  // saved results, filter search can be skipped.
+  int use_interp_filter;
 
   // Use a hash table to store previously computed optimized qcoeffs from
   // expensive calls to optimize_txb.

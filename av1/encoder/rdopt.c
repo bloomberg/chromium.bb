@@ -8940,38 +8940,27 @@ static INLINE void find_best_non_dual_interp_filter(
   }
 }
 
-// check if there is saved result match with this search
-static INLINE int is_interp_filter_exact_match(
-    const INTERPOLATION_FILTER_STATS *st, MB_MODE_INFO *const mi) {
-  for (int i = 0; i < 2; ++i) {
-    if ((st->ref_frames[i] != mi->ref_frame[i]) ||
-        (st->mv[i].as_int != mi->mv[i].as_int)) {
-      return 0;
-    }
-  }
-  if (has_second_ref(mi) && st->comp_type != mi->interinter_comp.type) return 0;
-  if (has_second_ref(mi) && st->compound_idx != mi->compound_idx) return 0;
-  return 1;
-}
-
 // return mv_diff
 static INLINE int is_interp_filter_good_match(
-    const INTERPOLATION_FILTER_STATS *st, MB_MODE_INFO *const mi) {
+    const INTERPOLATION_FILTER_STATS *st, MB_MODE_INFO *const mi,
+    int skip_level) {
   const int is_comp = has_second_ref(mi);
   int i;
 
   for (i = 0; i < 1 + is_comp; ++i) {
-    if (st->ref_frames[i] != mi->ref_frame[i]) return -1;
+    if (st->ref_frames[i] != mi->ref_frame[i]) return INT_MAX;
   }
 
-  const int thr = is_comp ? 7 : 3;
+  if (skip_level == 1 && is_comp) {
+    if (st->comp_type != mi->interinter_comp.type) return INT_MAX;
+    if (st->compound_idx != mi->compound_idx) return INT_MAX;
+  }
+
   int mv_diff = 0;
   for (i = 0; i < 1 + is_comp; ++i) {
     mv_diff += abs(st->mv[i].as_mv.row - mi->mv[i].as_mv.row) +
                abs(st->mv[i].as_mv.col - mi->mv[i].as_mv.col);
   }
-  if (mv_diff > thr) return -1;
-
   return mv_diff;
 }
 
@@ -9024,35 +9013,31 @@ static INLINE int is_comp_rd_match(const AV1_COMP *const cpi,
 static INLINE int find_interp_filter_in_stats(
     MB_MODE_INFO *const mbmi, INTERPOLATION_FILTER_STATS *interp_filter_stats,
     int interp_filter_stats_idx, int skip_level) {
-  if (skip_level < 2) {
-    // Find exact match.
-    // TODO(yunqing): Use a small threshold instead. Combine this with finding
-    // good enough match.
-    for (int j = 0; j < interp_filter_stats_idx; ++j) {
-      const INTERPOLATION_FILTER_STATS *st = &interp_filter_stats[j];
-      if (is_interp_filter_exact_match(st, mbmi)) {
-        mbmi->interp_filters = st->filters;
-        return j;
-      }
+  // [skip_levels][single or comp]
+  const int thr[2][2] = { { 0, 0 }, { 3, 7 } };
+  const int is_comp = has_second_ref(mbmi);
+
+  // Find good enough match.
+  // TODO(yunqing): Separate single-ref mode and comp mode stats for fast
+  // search.
+  int best = INT_MAX;
+  int match = -1;
+  for (int j = 0; j < interp_filter_stats_idx; ++j) {
+    const INTERPOLATION_FILTER_STATS *st = &interp_filter_stats[j];
+    const int mv_diff = is_interp_filter_good_match(st, mbmi, skip_level);
+    // Exact match is found.
+    if (mv_diff == 0) {
+      match = j;
+      break;
+    } else if (mv_diff < best && mv_diff <= thr[skip_level - 1][is_comp]) {
+      best = mv_diff;
+      match = j;
     }
-  } else {
-    // Find good enough match.
-    // TODO(yunqing): Separate single-ref mode and comp mode stats for fast
-    // search.
-    int best = INT_MAX;
-    int match = -1;
-    for (int j = 0; j < interp_filter_stats_idx; ++j) {
-      const INTERPOLATION_FILTER_STATS *st = &interp_filter_stats[j];
-      const int mv_diff = is_interp_filter_good_match(st, mbmi);
-      if (mv_diff != -1 && mv_diff < best) {
-        best = mv_diff;
-        match = j;
-      }
-    }
-    if (match != -1) {
-      mbmi->interp_filters = interp_filter_stats[match].filters;
-      return match;
-    }
+  }
+
+  if (match != -1) {
+    mbmi->interp_filters = interp_filter_stats[match].filters;
+    return match;
   }
   return -1;  // no match result found
 }
@@ -9125,10 +9110,10 @@ static INLINE int find_interp_filter_match(
     INTERPOLATION_FILTER_STATS *interp_filter_stats,
     int interp_filter_stats_idx) {
   int match_found_idx = -1;
-  if (cpi->sf.skip_repeat_interpolation_filter_search && need_search)
-    match_found_idx = find_interp_filter_in_stats(
-        mbmi, interp_filter_stats, interp_filter_stats_idx,
-        cpi->sf.skip_repeat_interpolation_filter_search);
+  if (cpi->sf.use_interp_filter && need_search)
+    match_found_idx = find_interp_filter_in_stats(mbmi, interp_filter_stats,
+                                                  interp_filter_stats_idx,
+                                                  cpi->sf.use_interp_filter);
 
   if (!need_search || match_found_idx == -1)
     set_default_interp_filters(mbmi, assign_filter);
@@ -9325,7 +9310,7 @@ static int64_t interpolation_filter_search(
   x->pred_sse[ref_frame] = (unsigned int)(rd_stats_luma.sse >> 4);
 
   // save search results
-  if (cpi->sf.skip_repeat_interpolation_filter_search) {
+  if (cpi->sf.use_interp_filter) {
     assert(match_found_idx == -1);
     args->interp_filter_stats_idx = save_interp_filter_search_stat(
         mbmi, *rd, x->pred_sse[ref_frame], args->interp_filter_stats,
