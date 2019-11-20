@@ -33,7 +33,8 @@ class TypedFlexibleArrayBufferView final : public FlexibleArrayBufferView {
   DISALLOW_COPY_AND_ASSIGN(TypedFlexibleArrayBufferView);
 };
 
-using FlexibleFloat32ArrayView = TypedFlexibleArrayBufferView<Float32Array>;
+using FlexibleFloat32ArrayView =
+    TypedFlexibleArrayBufferView<IntegralTypedArrayBase<float>>;
 using FlexibleInt32ArrayView =
     TypedFlexibleArrayBufferView<IntegralTypedArrayBase<int32_t>>;
 using FlexibleUint32ArrayView =

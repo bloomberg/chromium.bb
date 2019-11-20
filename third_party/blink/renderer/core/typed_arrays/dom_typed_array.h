@@ -6,10 +6,6 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_TYPED_ARRAYS_DOM_TYPED_ARRAY_H_
 
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/typed_arrays/array_buffer/bigint64_array.h"
-#include "third_party/blink/renderer/core/typed_arrays/array_buffer/biguint64_array.h"
-#include "third_party/blink/renderer/core/typed_arrays/array_buffer/float32_array.h"
-#include "third_party/blink/renderer/core/typed_arrays/array_buffer/float64_array.h"
 #include "third_party/blink/renderer/core/typed_arrays/array_buffer/integral_typed_array_base.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer_view.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_shared_array_buffer.h"
@@ -100,13 +96,13 @@ extern template class CORE_EXTERN_TEMPLATE_EXPORT
 extern template class CORE_EXTERN_TEMPLATE_EXPORT
     DOMTypedArray<IntegralTypedArrayBase<uint32_t>, v8::Uint32Array>;
 extern template class CORE_EXTERN_TEMPLATE_EXPORT
-    DOMTypedArray<BigInt64Array, v8::BigInt64Array>;
+    DOMTypedArray<IntegralTypedArrayBase<int64_t>, v8::BigInt64Array>;
 extern template class CORE_EXTERN_TEMPLATE_EXPORT
-    DOMTypedArray<BigUint64Array, v8::BigUint64Array>;
+    DOMTypedArray<IntegralTypedArrayBase<uint64_t>, v8::BigUint64Array>;
 extern template class CORE_EXTERN_TEMPLATE_EXPORT
-    DOMTypedArray<Float32Array, v8::Float32Array>;
+    DOMTypedArray<IntegralTypedArrayBase<float>, v8::Float32Array>;
 extern template class CORE_EXTERN_TEMPLATE_EXPORT
-    DOMTypedArray<Float64Array, v8::Float64Array>;
+    DOMTypedArray<IntegralTypedArrayBase<double>, v8::Float64Array>;
 
 typedef DOMTypedArray<IntegralTypedArrayBase<int8_t>, v8::Int8Array>
     DOMInt8Array;
@@ -123,10 +119,14 @@ typedef DOMTypedArray<IntegralTypedArrayBase<uint16_t>, v8::Uint16Array>
     DOMUint16Array;
 typedef DOMTypedArray<IntegralTypedArrayBase<uint32_t>, v8::Uint32Array>
     DOMUint32Array;
-typedef DOMTypedArray<BigInt64Array, v8::BigInt64Array> DOMBigInt64Array;
-typedef DOMTypedArray<BigUint64Array, v8::BigUint64Array> DOMBigUint64Array;
-typedef DOMTypedArray<Float32Array, v8::Float32Array> DOMFloat32Array;
-typedef DOMTypedArray<Float64Array, v8::Float64Array> DOMFloat64Array;
+typedef DOMTypedArray<IntegralTypedArrayBase<int64_t>, v8::BigInt64Array>
+    DOMBigInt64Array;
+typedef DOMTypedArray<IntegralTypedArrayBase<uint64_t>, v8::BigUint64Array>
+    DOMBigUint64Array;
+typedef DOMTypedArray<IntegralTypedArrayBase<float>, v8::Float32Array>
+    DOMFloat32Array;
+typedef DOMTypedArray<IntegralTypedArrayBase<double>, v8::Float64Array>
+    DOMFloat64Array;
 
 }  // namespace blink
 

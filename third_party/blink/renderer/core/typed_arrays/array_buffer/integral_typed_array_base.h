@@ -48,6 +48,8 @@ class IntegralTypedArrayBase : public TypedArrayBase<T> {
 
   inline void Set(unsigned index, double value);
 
+  inline void Set(unsigned index, uint64_t value);
+
   ArrayBufferView::ViewType GetType() const override;
 
   IntegralTypedArrayBase(scoped_refptr<ArrayBuffer> buffer,
@@ -107,6 +109,44 @@ inline void IntegralTypedArrayBase<uint8_t, true>::Set(unsigned index,
   Data()[index] = static_cast<unsigned char>(lrint(value));
 }
 
+template <>
+inline void IntegralTypedArrayBase<float, false>::Set(unsigned index,
+                                                      double value) {
+  if (index >= TypedArrayBase<float>::length_)
+    return;
+  TypedArrayBase<float>::Data()[index] = static_cast<float>(value);
+}
+
+template <>
+inline void IntegralTypedArrayBase<double, false>::Set(unsigned index,
+                                                       double value) {
+  if (index >= TypedArrayBase<double>::length_)
+    return;
+  TypedArrayBase<double>::Data()[index] = value;
+}
+
+template <typename T, bool clamped>
+inline void IntegralTypedArrayBase<T, clamped>::Set(unsigned index,
+                                                    uint64_t value) {
+  NOTREACHED();
+}
+
+template <>
+inline void IntegralTypedArrayBase<int64_t, false>::Set(unsigned index,
+                                                        uint64_t value) {
+  if (index >= TypedArrayBase<int64_t>::length_)
+    return;
+  TypedArrayBase<int64_t>::Data()[index] = static_cast<int64_t>(value);
+}
+
+template <>
+inline void IntegralTypedArrayBase<uint64_t, false>::Set(unsigned index,
+                                                         uint64_t value) {
+  if (index >= TypedArrayBase<uint64_t>::length_)
+    return;
+  TypedArrayBase<uint64_t>::Data()[index] = value;
+}
+
 template <typename T, bool clamped>
 inline ArrayBufferView::ViewType IntegralTypedArrayBase<T, clamped>::GetType()
     const {
@@ -120,7 +160,11 @@ inline ArrayBufferView::ViewType IntegralTypedArrayBase<T, clamped>::GetType()
   V(int32_t, kTypeInt32)     \
   V(uint8_t, kTypeUint8)     \
   V(uint16_t, kTypeUint16)   \
-  V(uint32_t, kTypeUint32)
+  V(uint32_t, kTypeUint32)   \
+  V(float, kTypeFloat32)     \
+  V(double, kTypeFloat64)    \
+  V(int64_t, kTypeBigInt64)  \
+  V(uint64_t, kTypeBigUint64)
 
 #define GET_TYPE(c_type, view_type)                        \
   template <>                                              \

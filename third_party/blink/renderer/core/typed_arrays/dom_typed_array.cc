@@ -91,12 +91,12 @@ template class CORE_TEMPLATE_EXPORT
 template class CORE_TEMPLATE_EXPORT
     DOMTypedArray<IntegralTypedArrayBase<uint32_t>, v8::Uint32Array>;
 template class CORE_TEMPLATE_EXPORT
-    DOMTypedArray<BigInt64Array, v8::BigInt64Array>;
+    DOMTypedArray<IntegralTypedArrayBase<int64_t>, v8::BigInt64Array>;
 template class CORE_TEMPLATE_EXPORT
-    DOMTypedArray<BigUint64Array, v8::BigUint64Array>;
+    DOMTypedArray<IntegralTypedArrayBase<uint64_t>, v8::BigUint64Array>;
 template class CORE_TEMPLATE_EXPORT
-    DOMTypedArray<Float32Array, v8::Float32Array>;
+    DOMTypedArray<IntegralTypedArrayBase<float>, v8::Float32Array>;
 template class CORE_TEMPLATE_EXPORT
-    DOMTypedArray<Float64Array, v8::Float64Array>;
+    DOMTypedArray<IntegralTypedArrayBase<double>, v8::Float64Array>;
 
 }  // namespace blink
