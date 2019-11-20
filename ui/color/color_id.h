@@ -23,7 +23,7 @@ enum ColorIds : ColorId {
   kColorAlertHighSeverity,
   kColorAlertLowSeverity,
   kColorAlertMediumSeverity,
-  kColorBodyForeground,
+  kColorDisabledForeground,
   kColorLinkForeground,
   kColorPrimaryBackground,
   kColorPrimaryForeground,

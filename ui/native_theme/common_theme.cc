@@ -85,6 +85,8 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
         return SkColorSetRGB(0x32, 0x36, 0x39);
       case NativeTheme::kColorId_MenuItemAlertBackgroundColor:
         return gfx::kGoogleBlue300;
+      case NativeTheme::kColorId_MenuItemMinorTextColor:
+        return gfx::kGoogleGrey500;
 
       // Label
       case NativeTheme::kColorId_LabelEnabledColor:
@@ -105,6 +107,8 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
       // TabbedPane
       case NativeTheme::kColorId_TabTitleColorActive:
         return gfx::kGoogleBlue300;
+      case NativeTheme::kColorId_TabTitleColorInactive:
+        return gfx::kGoogleGrey500;
 
       // Table
       case NativeTheme::kColorId_TableBackground:
@@ -223,8 +227,7 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
       return gfx::kGoogleGrey300;
     case NativeTheme::kColorId_MenuBackgroundColor:
       return SK_ColorWHITE;
-    case NativeTheme::kColorId_DisabledMenuItemForegroundColor:
-    case NativeTheme::kColorId_MenuItemMinorTextColor: {
+    case NativeTheme::kColorId_DisabledMenuItemForegroundColor: {
       const SkColor bg = base_theme->GetSystemColor(
           NativeTheme::kColorId_MenuBackgroundColor, color_scheme);
       const SkColor fg = base_theme->GetSystemColor(
@@ -232,6 +235,8 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
       return color_utils::BlendForMinContrast(gfx::kGoogleGrey600, bg, fg)
           .color;
     }
+    case NativeTheme::kColorId_MenuItemMinorTextColor:
+      return gfx::kGoogleGrey700;
     case NativeTheme::kColorId_HighlightedMenuItemBackgroundColor:
       return gfx::kGoogleGrey050;
     case NativeTheme::kColorId_MenuItemAlertBackgroundColor:
@@ -272,14 +277,8 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
     // TabbedPane
     case NativeTheme::kColorId_TabTitleColorActive:
       return gfx::kGoogleBlue600;
-    case NativeTheme::kColorId_TabTitleColorInactive: {
-      const SkColor bg = base_theme->GetSystemColor(
-          NativeTheme::kColorId_DialogBackground, color_scheme);
-      const SkColor fg = base_theme->GetSystemColor(
-          NativeTheme::kColorId_LabelEnabledColor, color_scheme);
-      return color_utils::BlendForMinContrast(gfx::kGoogleGrey600, bg, fg)
-          .color;
-    }
+    case NativeTheme::kColorId_TabTitleColorInactive:
+      return gfx::kGoogleGrey700;
     case NativeTheme::kColorId_TabBottomBorder: {
       const SkColor bg = base_theme->GetSystemColor(
           NativeTheme::kColorId_DialogBackground, color_scheme);
