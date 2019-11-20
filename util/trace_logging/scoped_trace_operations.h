@@ -2,64 +2,50 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PLATFORM_API_INTERNAL_TRACE_LOGGING_INTERNAL_H_
-#define PLATFORM_API_INTERNAL_TRACE_LOGGING_INTERNAL_H_
+#ifndef UTIL_TRACE_LOGGING_SCOPED_TRACE_OPERATIONS_H_
+#define UTIL_TRACE_LOGGING_SCOPED_TRACE_OPERATIONS_H_
 
 #include <atomic>
 #include <cstring>
 #include <stack>
 #include <vector>
 
-#include "platform/api/logging.h"
+#include "build/config/features.h"
 #include "platform/api/time.h"
-#include "platform/api/trace_logging_platform.h"
-#include "platform/api/trace_logging_types.h"
 #include "platform/base/error.h"
+#include "platform/base/trace_logging_types.h"
+
+#if defined(ENABLE_TRACE_LOGGING)
 
 namespace openscreen {
-namespace platform {
 namespace internal {
-
-// Base class needed for macro calls. It has been intentionally left with
-// no instance variables so that construction is simple and fast.
-class TraceBase {
- public:
-  TraceBase() = default;
-  virtual ~TraceBase() = default;
-
-  // Traces the end of an asynchronous call.
-  // NOTE: This returns a bool rather than a void because it keeps the syntax of
-  // the ternary operator in the macros simpler.
-  static bool TraceAsyncEnd(const uint32_t line,
-                            const char* file,
-                            TraceId id,
-                            Error::Code e);
-};
 
 // A base class for all trace logging objects which will create new entries in
 // the Trace Hierarchy.
 // 1) The sharing of all static and thread_local variables across template
 // specializations.
 // 2) Including all children in the same traces vector.
-class ScopedTraceOperation : public TraceBase {
+class ScopedTraceOperation {
  public:
   // Define the destructor to remove this item from the stack when it's
   // destroyed.
-  ~ScopedTraceOperation() override;
+  virtual ~ScopedTraceOperation();
 
   // Getters the current Trace Hierarchy. If the traces_ stack hasn't been
   // created yet, return as if the empty root node is there.
-  static TraceId current_id() {
-    return traces_ == nullptr ? kEmptyTraceId : traces_->top()->trace_id_;
+  static platform::TraceId current_id() {
+    return traces_ == nullptr ? platform::kEmptyTraceId
+                              : traces_->top()->trace_id_;
   }
 
-  static TraceId root_id() {
-    return traces_ == nullptr ? kEmptyTraceId : traces_->top()->root_id_;
+  static platform::TraceId root_id() {
+    return traces_ == nullptr ? platform::kEmptyTraceId
+                              : traces_->top()->root_id_;
   }
 
-  static TraceIdHierarchy hierarchy() {
+  static platform::TraceIdHierarchy hierarchy() {
     if (traces_ == nullptr) {
-      return TraceIdHierarchy::Empty();
+      return platform::TraceIdHierarchy::Empty();
     }
 
     return traces_->top()->to_hierarchy();
@@ -74,6 +60,14 @@ class ScopedTraceOperation : public TraceBase {
     traces_->top()->SetTraceResult(error);
   }
 
+  // Traces the end of an asynchronous call.
+  // NOTE: This returns a bool rather than a void because it keeps the syntax of
+  // the ternary operator in the macros simpler.
+  static bool TraceAsyncEnd(const uint32_t line,
+                            const char* file,
+                            platform::TraceId id,
+                            Error::Code e);
+
  protected:
   // Sets the result of this trace log.
   // NOTE: this must be define in this class rather than TraceLogger so that it
@@ -82,16 +76,18 @@ class ScopedTraceOperation : public TraceBase {
   virtual void SetTraceResult(Error::Code error) = 0;
 
   // Constructor to set all trace id information.
-  ScopedTraceOperation(TraceId current_id = kUnsetTraceId,
-                       TraceId parent_id = kUnsetTraceId,
-                       TraceId root_id = kUnsetTraceId);
+  ScopedTraceOperation(platform::TraceId current_id = platform::kUnsetTraceId,
+                       platform::TraceId parent_id = platform::kUnsetTraceId,
+                       platform::TraceId root_id = platform::kUnsetTraceId);
 
   // Current TraceId information.
-  TraceId trace_id_;
-  TraceId parent_id_;
-  TraceId root_id_;
+  platform::TraceId trace_id_;
+  platform::TraceId parent_id_;
+  platform::TraceId root_id_;
 
-  TraceIdHierarchy to_hierarchy() { return {trace_id_, parent_id_, root_id_}; }
+  platform::TraceIdHierarchy to_hierarchy() {
+    return {trace_id_, parent_id_, root_id_};
+  }
 
  private:
   // NOTE: A std::vector is used for backing the stack because it provides the
@@ -116,26 +112,26 @@ class ScopedTraceOperation : public TraceBase {
 // The class which does actual trace logging.
 class TraceLoggerBase : public ScopedTraceOperation {
  public:
-  TraceLoggerBase(TraceCategory::Value category,
+  TraceLoggerBase(platform::TraceCategory::Value category,
                   const char* name,
                   const char* file,
                   uint32_t line,
-                  TraceId current = kUnsetTraceId,
-                  TraceId parent = kUnsetTraceId,
-                  TraceId root = kUnsetTraceId);
+                  platform::TraceId current = platform::kUnsetTraceId,
+                  platform::TraceId parent = platform::kUnsetTraceId,
+                  platform::TraceId root = platform::kUnsetTraceId);
 
-  TraceLoggerBase(TraceCategory::Value category,
+  TraceLoggerBase(platform::TraceCategory::Value category,
                   const char* name,
                   const char* file,
                   uint32_t line,
-                  TraceIdHierarchy ids);
+                  platform::TraceIdHierarchy ids);
 
  protected:
   // Set the result.
   void SetTraceResult(Error::Code error) override { result_ = error; }
 
   // Timestamp for when the object was created.
-  Clock::time_point start_time_;
+  platform::Clock::time_point start_time_;
 
   // Result of this operation.
   Error::Code result_;
@@ -150,7 +146,7 @@ class TraceLoggerBase : public ScopedTraceOperation {
   uint32_t line_number_;
 
   // Category of this trace log.
-  TraceCategory::Value category_;
+  platform::TraceCategory::Value category_;
 
  private:
   OSP_DISALLOW_COPY_AND_ASSIGN(TraceLoggerBase);
@@ -160,7 +156,7 @@ class SynchronousTraceLogger : public TraceLoggerBase {
  public:
   using TraceLoggerBase::TraceLoggerBase;
 
-  virtual ~SynchronousTraceLogger() override;
+  ~SynchronousTraceLogger() override;
 
  private:
   OSP_DISALLOW_COPY_AND_ASSIGN(SynchronousTraceLogger);
@@ -170,7 +166,7 @@ class AsynchronousTraceLogger : public TraceLoggerBase {
  public:
   using TraceLoggerBase::TraceLoggerBase;
 
-  virtual ~AsynchronousTraceLogger() override;
+  ~AsynchronousTraceLogger() override;
 
  private:
   OSP_DISALLOW_COPY_AND_ASSIGN(AsynchronousTraceLogger);
@@ -180,7 +176,7 @@ class AsynchronousTraceLogger : public TraceLoggerBase {
 // the current TraceId Hierarchy manually.
 class TraceIdSetter : public ScopedTraceOperation {
  public:
-  explicit TraceIdSetter(TraceIdHierarchy ids)
+  explicit TraceIdSetter(platform::TraceIdHierarchy ids)
       : ScopedTraceOperation(ids.current, ids.parent, ids.root) {}
   ~TraceIdSetter() final;
 
@@ -200,12 +196,12 @@ class TraceIdSetter : public ScopedTraceOperation {
 template <class T>
 class TraceInstanceHelper {
  private:
-  class TraceBaseStackDeleter {
+  class TraceOperationOnStackDeleter {
    public:
     void operator()(T* ptr) { ptr->~T(); }
   };
 
-  using TraceInstanceWrapper = std::unique_ptr<T, TraceBaseStackDeleter>;
+  using TraceInstanceWrapper = std::unique_ptr<T, TraceOperationOnStackDeleter>;
 
  public:
   template <typename... Args>
@@ -217,7 +213,8 @@ class TraceInstanceHelper {
 };
 
 }  // namespace internal
-}  // namespace platform
 }  // namespace openscreen
 
-#endif  // PLATFORM_API_INTERNAL_TRACE_LOGGING_INTERNAL_H_
+#endif  // defined(ENABLE_TRACE_LOGGING)
+
+#endif  // UTIL_TRACE_LOGGING_SCOPED_TRACE_OPERATIONS_H_

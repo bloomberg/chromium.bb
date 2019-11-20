@@ -11,18 +11,22 @@
 namespace openscreen {
 namespace platform {
 
-bool IsTraceLoggingEnabled(TraceCategory::Value category) {
-#ifndef NDEBUG
+bool TextTraceLoggingPlatform::IsTraceLoggingEnabled(
+    TraceCategory::Value category) {
   constexpr uint64_t kAllLogCategoriesMask =
       std::numeric_limits<uint64_t>::max();
   return (kAllLogCategoriesMask & category) != 0;
-#else
-  return false;
-#endif
 }
 
-TextTraceLoggingPlatform::TextTraceLoggingPlatform() = default;
-TextTraceLoggingPlatform::~TextTraceLoggingPlatform() = default;
+TextTraceLoggingPlatform::TextTraceLoggingPlatform() {
+  OSP_DCHECK(!GetTracingDestination());
+  StartTracing(this);
+}
+
+TextTraceLoggingPlatform::~TextTraceLoggingPlatform() {
+  OSP_DCHECK_EQ(GetTracingDestination(), this);
+  StopTracing();
+}
 
 void TextTraceLoggingPlatform::LogTrace(const char* name,
                                         const uint32_t line,

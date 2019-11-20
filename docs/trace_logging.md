@@ -15,7 +15,7 @@ when calling `gn gen` as part of building this library.
 ## Imports
 
 To use TraceLogging, import the following header file:
-  * *platform/api/trace_logging.h*
+  * *util/trace_logging.h*
 This file will import all other Trace Logging dependencies.
 
 ## Trace IDs
@@ -207,42 +207,31 @@ associated with the trace.
 
 ## File Division
 The code for Trace Logging is divided up as follows:
-  * *platform/api/trace_logging.h*: the macros external callers are expected to
-      use.
-  * *platform/api/trace_logging_types.h*: the types/enums used by all trace
-      logging classes that external callers are expected to use. This file must
-      be separate from trace_logging.h to prevent circular dependency issues.
-  * *platform/api/trace_logging_internal.h/.cc*: the internal infrastructure
-      backing the externally-facing macros.
-  * *platform/api/trace_logging_platform.h*: the platform layer we expect
-      implemented to pass the actual call along.
-  * *platform/base/trace_logging_platform.cc*: implementation of
-      trace_logging_platform.h
+  * *util/trace_logging.h*: the macros Open Screen library code is expected to
+      use to log trace events.
+  * *platform/base/trace_logging_types.h*: the types/enums used in the platform
+      API as well as internal library code.
+  * *util/trace_logging/*: the internal infrastructure backing the macros in
+      *trace_logging.h*, and connecting it to the platform API.
+  * *platform/api/trace_logging_platform.h*: the platform implementation that is
+      used as the trace logging destination while tracing is active.
 This information is intended to be only eplanatory for embedders - only the one
 file mentioned above in Imports must be imported.
 
 ## Embedder-Specific Tracing Implementations
 
-For an embedder to create a custom TraceLogging implementation, there are 3
-steps:
+For an embedder to create a custom TraceLogging implementation:
 
 1. *Create a TraceLoggingPlatform*
   In platform/api/trace_logging_platform.h, the interface TraceLoggingPlatform
-  is defined. An embedder must define a class implementing this interface.
+  is defined. An embedder must define a class implementing this interface. The
+  methods should be as performance-optimal as possible, since they might be
+  called frequently (especially `IsLoggingEnabled(TraceCategory)`) and are often
+  in the critical execution path of the library's code.
 
-2. *Define method `IsTraceLoggingEnabled(...)`*
-  In platform/api/trace_logging_platform.h, the following function is defined:
-    `bool IsLoggingEnabled(TraceCategory category);`
-  A TraceLogging implementation must define this method. Note that the
-  implementation of this method should be as performance-optimal as possible, as
-  this will be called frequently even when logging is disabled, so any
-  performance issues present in this method's implementation have the potential
-  to have a noticible effect on this entire library's performance.
-
-3. *Define method `TraceLoggingPlatform::GetDefaultTracingPlatform()`*
-  `GetDefaultTracingPlatform()` is used to create a static TraceLoggingPlatform
-  singleton instance, then return this instance wherever the TraceLogging
-  internals require it.
+2. *Call `openscreen::platform::StartTracing()` and `StopTracing()`*
+  These activate/deactivate tracing by providing the TraceLoggingPlatform
+  instance and later clearing references to it.
 
 **The default implementation of this layer can be seen in
-platform/base/trace_logging_platform.cc.**
+platform/impl/trace_logging_platform.cc.**

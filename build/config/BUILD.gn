@@ -11,9 +11,6 @@ declare_args() {
 
   # Enable thread sanitizer.
   is_tsan = false
-
-  # Enable trace logging.
-  enable_trace_logging = false
 }
 
 config("compiler_defaults") {
@@ -121,9 +118,6 @@ config("openscreen_code") {
   defines = []
   if (dcheck_always_on) {
     defines += [ "DCHECK_ALWAYS_ON" ]
-  }
-  if (enable_trace_logging) {
-    defines += [ "ENABLE_TRACE_LOGGING" ]
   }
 }
 

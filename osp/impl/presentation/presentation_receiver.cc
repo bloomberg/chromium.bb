@@ -14,7 +14,9 @@
 #include "osp/public/protocol_connection_server.h"
 #include "platform/api/logging.h"
 #include "platform/api/time.h"
-#include "platform/api/trace_logging.h"
+#include "util/trace_logging.h"
+
+using openscreen::platform::TraceCategory;
 
 namespace openscreen {
 namespace presentation {

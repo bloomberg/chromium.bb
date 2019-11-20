@@ -28,13 +28,13 @@
 #include "osp/public/service_publisher.h"
 #include "platform/api/network_interface.h"
 #include "platform/api/time.h"
-#include "platform/api/trace_logging.h"
 #include "platform/impl/logging.h"
 #include "platform/impl/platform_client_posix.h"
 #include "platform/impl/task_runner.h"
 #include "platform/impl/text_trace_logging_platform.h"
 #include "platform/impl/udp_socket_reader_posix.h"
 #include "third_party/tinycbor/src/src/cbor.h"
+#include "util/trace_logging.h"
 
 using Clock = openscreen::platform::Clock;
 using PlatformClientPosix = openscreen::platform::PlatformClientPosix;
@@ -607,7 +607,6 @@ int main(int argc, char** argv) {
   LogLevel level = args.is_verbose ? LogLevel::kVerbose : LogLevel::kInfo;
   openscreen::platform::SetLogLevel(level);
   openscreen::platform::TextTraceLoggingPlatform text_logging_platform;
-  TRACE_SET_DEFAULT_PLATFORM(&text_logging_platform);
 
   PlatformClientPosix::Create(Clock::duration{50}, Clock::duration{50});
 

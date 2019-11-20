@@ -12,8 +12,8 @@
 #include <iostream>
 #include <sstream>
 
-#include "platform/api/trace_logging.h"
 #include "platform/impl/logging.h"
+#include "util/trace_logging.h"
 
 namespace openscreen {
 namespace platform {

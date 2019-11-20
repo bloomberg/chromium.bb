@@ -9,9 +9,6 @@ source_set("platform") {
 
   sources = [
     "api/internal/logging_macros.h",
-    "api/internal/trace_logging_internal.cc",
-    "api/internal/trace_logging_internal.h",
-    "api/internal/trace_logging_macros_internal.h",
     "api/logging.h",
     "api/network_interface.cc",
     "api/network_interface.h",
@@ -24,10 +21,8 @@ source_set("platform") {
     "api/tls_connection.h",
     "api/tls_connection_factory.cc",
     "api/tls_connection_factory.h",
-    "api/trace_logging.h",
     "api/trace_logging_platform.cc",
     "api/trace_logging_platform.h",
-    "api/trace_logging_types.h",
     "api/udp_read_callback.h",
     "api/udp_socket.cc",
     "api/udp_socket.h",
@@ -43,6 +38,9 @@ source_set("platform") {
     "base/tls_credentials.cc",
     "base/tls_credentials.h",
     "base/tls_listen_options.h",
+    "base/trace_logging_activation.cc",
+    "base/trace_logging_activation.h",
+    "base/trace_logging_types.h",
     "base/udp_packet.cc",
     "base/udp_packet.h",
   ]
@@ -145,9 +143,7 @@ source_set("unittests") {
   testonly = true
 
   sources = [
-    "api/internal/trace_logging_internal_unittest.cc",
     "api/time_unittest.cc",
-    "api/trace_logging_unittest.cc",
     "base/error_unittest.cc",
     "base/ip_address_unittest.cc",
     "base/location_unittest.cc",

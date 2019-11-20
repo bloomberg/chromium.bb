@@ -3,28 +3,30 @@
 // found in the LICENSE file.
 
 #include <chrono>
-#include <iostream>
 #include <thread>
 
-#include "absl/types/optional.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "platform/api/trace_logging.h"
 #include "platform/test/trace_logging_helpers.h"
+#include "util/trace_logging.h"
+
+#if defined(ENABLE_TRACE_LOGGING)
 
 // TODO(crbug.com/openscreen/52): Remove duplicate code from trace
 // logging+internal unit tests
 namespace openscreen {
-namespace platform {
 namespace internal {
 
 using ::testing::_;
 using ::testing::DoAll;
 using ::testing::Invoke;
 
+using platform::kEmptyTraceId;
+using platform::MockLoggingPlatform;
+
 // These tests validate that parameters are passed correctly by using the Trace
 // Internals.
-constexpr TraceCategory::Value category = TraceCategory::mDNS;
+constexpr auto category = platform::TraceCategory::mDNS;
 constexpr uint32_t line = 10;
 
 TEST(TraceLoggingInternalTest, CreatingNoTraceObjectValid) {
@@ -34,11 +36,11 @@ TEST(TraceLoggingInternalTest, CreatingNoTraceObjectValid) {
 TEST(TraceLoggingInternalTest, TestMacroStyleInitializationTrue) {
   constexpr uint32_t delay_in_ms = 50;
   MockLoggingPlatform platform;
-  TRACE_SET_DEFAULT_PLATFORM(&platform);
   EXPECT_CALL(platform, LogTrace(_, _, _, _, _, _, _))
       .Times(1)
-      .WillOnce(DoAll(Invoke(ValidateTraceTimestampDiff<delay_in_ms>),
-                      Invoke(ValidateTraceErrorCode<Error::Code::kNone>)));
+      .WillOnce(
+          DoAll(Invoke(platform::ValidateTraceTimestampDiff<delay_in_ms>),
+                Invoke(platform::ValidateTraceErrorCode<Error::Code::kNone>)));
 
   {
     uint8_t temp[sizeof(SynchronousTraceLogger)];
@@ -57,7 +59,6 @@ TEST(TraceLoggingInternalTest, TestMacroStyleInitializationTrue) {
 
 TEST(TraceLoggingInternalTest, TestMacroStyleInitializationFalse) {
   MockLoggingPlatform platform;
-  TRACE_SET_DEFAULT_PLATFORM(&platform);
   EXPECT_CALL(platform, LogTrace(_, _, _, _, _, _, _)).Times(0);
 
   {
@@ -78,21 +79,15 @@ TEST(TraceLoggingInternalTest, TestMacroStyleInitializationFalse) {
 
 TEST(TraceLoggingInternalTest, ExpectParametersPassedToResult) {
   MockLoggingPlatform platform;
-  TRACE_SET_DEFAULT_PLATFORM(&platform);
   EXPECT_CALL(platform, LogTrace(testing::StrEq("Name"), line,
                                  testing::StrEq(__FILE__), _, _, _, _))
-      .WillOnce(Invoke(ValidateTraceErrorCode<Error::Code::kNone>));
+      .WillOnce(Invoke(platform::ValidateTraceErrorCode<Error::Code::kNone>));
 
-  {
-    TRACE_INTERNAL_IGNORE_UNUSED_VAR const TraceBase&
-        TRACE_INTERNAL_UNIQUE_VAR_NAME(trace_ref) =
-            SynchronousTraceLogger{category, "Name", __FILE__, line};
-  }
+  { SynchronousTraceLogger{category, "Name", __FILE__, line}; }
 }
 
 TEST(TraceLoggingInternalTest, CheckTraceAsyncStartLogsCorrectly) {
   MockLoggingPlatform platform;
-  TRACE_SET_DEFAULT_PLATFORM(&platform);
   EXPECT_CALL(platform, LogAsyncStart(testing::StrEq("Name"), line,
                                       testing::StrEq(__FILE__), _, _))
       .Times(1);
@@ -118,5 +113,6 @@ TEST(TraceLoggingInternalTest, ValidateSetResultDoesntSegfaultOnEmptyStack) {
 }
 
 }  // namespace internal
-}  // namespace platform
 }  // namespace openscreen
+
+#endif  // defined(ENABLE_TRACE_LOGGING)

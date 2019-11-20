@@ -19,13 +19,13 @@
 #include "platform/api/logging.h"
 #include "platform/api/task_runner.h"
 #include "platform/api/tls_connection_factory.h"
-#include "platform/api/trace_logging.h"
 #include "platform/base/tls_connect_options.h"
 #include "platform/base/tls_credentials.h"
 #include "platform/base/tls_listen_options.h"
 #include "platform/impl/stream_socket.h"
 #include "platform/impl/tls_connection_posix.h"
 #include "util/crypto/openssl_util.h"
+#include "util/trace_logging.h"
 
 namespace openscreen {
 namespace platform {
@@ -60,7 +60,7 @@ void TlsConnectionFactoryPosix::Connect(const IPEndpoint& remote_address,
       new TlsConnectionPosix(version, task_runner_, platform_client_));
   Error connect_error = connection->socket_->Connect(remote_address);
   if (!connect_error.ok()) {
-    TRACE_SET_RESULT(connect_error.error());
+    TRACE_SET_RESULT(connect_error);
     DispatchConnectionFailed(remote_address);
     return;
   }
@@ -166,7 +166,7 @@ void TlsConnectionFactoryPosix::OnSocketAccepted(
   const int connection_status = SSL_accept(connection->ssl_.get());
   if (connection_status != 1) {
     DispatchConnectionFailed(connection->GetRemoteEndpoint());
-    TRACE_SET_RESULT(GetSSLError(ssl.get(), connection_status));
+    TRACE_SET_RESULT(GetSSLError(connection->ssl_.get(), connection_status));
     return;
   }
 

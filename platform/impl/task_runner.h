@@ -15,10 +15,11 @@
 
 #include "absl/base/thread_annotations.h"
 #include "absl/types/optional.h"
+#include "build/config/features.h"
 #include "platform/api/task_runner.h"
 #include "platform/api/time.h"
-#include "platform/api/trace_logging.h"
 #include "platform/base/error.h"
+#include "util/trace_logging.h"
 
 namespace openscreen {
 namespace platform {
@@ -72,7 +73,7 @@ class TaskRunnerImpl final : public TaskRunner {
   void RequestStopSoon();
 
  private:
-#ifndef TRACE_FORCE_DISABLE
+#if defined(ENABLE_TRACE_LOGGING)
   // Wrapper around a Task used to store the TraceId Metadata along with the
   // task itself, and to set the current TraceIdHierarchy before executing the
   // task.
@@ -93,9 +94,9 @@ class TaskRunnerImpl final : public TaskRunner {
     Task task_;
     TraceIdHierarchy trace_ids_;
   };
-#else   // TRACE_FORCE_DISABLE defined
+#else   // !defined(ENABLE_TRACE_LOGGING)
   using TaskWithMetadata = Task;
-#endif  // TRACE_FORCE_DISABLE
+#endif  // defined(ENABLE_TRACE_LOGGING)
 
   // Helper that runs all tasks in |running_tasks_| and then clears it.
   void RunRunnableTasks();

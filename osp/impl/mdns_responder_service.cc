@@ -10,8 +10,10 @@
 
 #include "osp/impl/internal_services.h"
 #include "platform/api/logging.h"
-#include "platform/api/trace_logging.h"
 #include "platform/base/error.h"
+#include "util/trace_logging.h"
+
+using openscreen::platform::TraceCategory;
 
 namespace openscreen {
 namespace {

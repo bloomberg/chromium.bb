@@ -2,22 +2,31 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/api/internal/trace_logging_internal.h"
+#include "util/trace_logging/scoped_trace_operations.h"
 
 #include "absl/types/optional.h"
+#include "build/config/features.h"
 #include "platform/api/logging.h"
+#include "platform/api/trace_logging_platform.h"
+#include "platform/base/trace_logging_activation.h"
+
+#if defined(ENABLE_TRACE_LOGGING)
+
+using openscreen::platform::kUnsetTraceId;
+using openscreen::platform::TraceCategory;
+using openscreen::platform::TraceId;
+using openscreen::platform::TraceIdHierarchy;
 
 namespace openscreen {
-namespace platform {
 namespace internal {
 
 // static
-bool TraceBase::TraceAsyncEnd(const uint32_t line,
-                              const char* file,
-                              TraceId id,
-                              Error::Code e) {
-  auto end_time = Clock::now();
-  auto current_platform = TraceLoggingPlatform::GetDefaultTracingPlatform();
+bool ScopedTraceOperation::TraceAsyncEnd(const uint32_t line,
+                                         const char* file,
+                                         TraceId id,
+                                         Error::Code e) {
+  auto end_time = platform::Clock::now();
+  auto* const current_platform = platform::GetTracingDestination();
   if (current_platform == nullptr) {
     return false;
   }
@@ -86,7 +95,7 @@ TraceLoggerBase::TraceLoggerBase(TraceCategory::Value category,
                                  TraceId parent,
                                  TraceId root)
     : ScopedTraceOperation(current, parent, root),
-      start_time_(Clock::now()),
+      start_time_(platform::Clock::now()),
       result_(Error::Code::kNone),
       name_(name),
       file_name_(file),
@@ -107,18 +116,18 @@ TraceLoggerBase::TraceLoggerBase(TraceCategory::Value category,
                       ids.root) {}
 
 SynchronousTraceLogger::~SynchronousTraceLogger() {
-  auto* current_platform = TraceLoggingPlatform::GetDefaultTracingPlatform();
+  auto* const current_platform = platform::GetTracingDestination();
   if (current_platform == nullptr) {
     return;
   }
-  auto end_time = Clock::now();
+  auto end_time = platform::Clock::now();
   current_platform->LogTrace(this->name_, this->line_number_, this->file_name_,
                              this->start_time_, end_time, this->to_hierarchy(),
                              this->result_);
 }
 
 AsynchronousTraceLogger::~AsynchronousTraceLogger() {
-  auto* current_platform = TraceLoggingPlatform::GetDefaultTracingPlatform();
+  auto* const current_platform = platform::GetTracingDestination();
   if (current_platform == nullptr) {
     return;
   }
@@ -130,5 +139,6 @@ AsynchronousTraceLogger::~AsynchronousTraceLogger() {
 TraceIdSetter::~TraceIdSetter() = default;
 
 }  // namespace internal
-}  // namespace platform
 }  // namespace openscreen
+
+#endif  // defined(ENABLE_TRACE_LOGGING)
