@@ -3770,6 +3770,12 @@ If you're done with the tutorial, use ChromeVox to navigate to the Close button 
       <message desc="Spoken if the user attempts to jump to the previous paragraph when none exists." name="IDS_CHROMEVOX_NO_PREVIOUS_PARAGRAPH">
         No previous paragraph.
       </message>
+      <message desc="Spoken when the user resets text to speech settings back to their default values" name="IDS_CHROMEVOX_ANNOUNCE_TTS_DEFAULT_SETTINGS">
+        Reset text to speech settings to default values.
+      </message>
+      <message desc="The description of the resetTextToSpeechSettings key. Displayed in the Options page." name="IDS_CHROMEVOX_RESET_TTS_SETTINGS">
+        Reset text to speech settings
+      </message>
     </messages>
   </release>
 </grit>
