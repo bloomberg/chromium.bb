@@ -4557,9 +4557,9 @@ static AOM_INLINE void palette_rd_y(
     BLOCK_SIZE bsize, int dc_mode_cost, const int *data, int *centroids, int n,
     uint16_t *color_cache, int n_cache, MB_MODE_INFO *best_mbmi,
     uint8_t *best_palette_color_map, int64_t *best_rd, int64_t *best_model_rd,
-    int *rate, int *rate_tokenonly, int *rate_overhead, int64_t *distortion,
-    int *skippable, int *beat_best_rd, PICK_MODE_CONTEXT *ctx,
-    uint8_t *blk_skip, uint8_t *tx_type_map) {
+    int *rate, int *rate_tokenonly, int64_t *distortion, int *skippable,
+    int *beat_best_rd, PICK_MODE_CONTEXT *ctx, uint8_t *blk_skip,
+    uint8_t *tx_type_map) {
   optimize_palette_colors(color_cache, n_cache, n, 1, centroids);
   int k = av1_remove_duplicates(centroids, n);
   if (k < PALETTE_MIN_SIZE) {
@@ -4612,7 +4612,6 @@ static AOM_INLINE void palette_rd_y(
     *best_mbmi = *mbmi;
     memcpy(blk_skip, x->blk_skip, sizeof(x->blk_skip[0]) * ctx->num_4x4_blk);
     av1_copy_array(tx_type_map, xd->tx_type_map, ctx->num_4x4_blk);
-    *rate_overhead = this_rate - tokenonly_rd_stats.rate;
     if (rate) *rate = this_rate;
     if (rate_tokenonly) *rate_tokenonly = tokenonly_rd_stats.rate;
     if (distortion) *distortion = tokenonly_rd_stats.dist;
@@ -4620,7 +4619,7 @@ static AOM_INLINE void palette_rd_y(
   }
 }
 
-static int rd_pick_palette_intra_sby(
+static void rd_pick_palette_intra_sby(
     const AV1_COMP *const cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
     int dc_mode_cost, MB_MODE_INFO *best_mbmi, uint8_t *best_palette_color_map,
     int64_t *best_rd, int64_t *best_model_rd, int *rate, int *rate_tokenonly,
@@ -4648,7 +4647,6 @@ static int rd_pick_palette_intra_sby(
     colors = av1_count_colors(src, src_stride, rows, cols, count_buf);
   }
 
-  int rate_overhead = 0;
   uint8_t *const color_map = xd->plane[0].color_index_map;
   if (colors > 1 && colors <= 64) {
     int *const data = x->palette_buffer->kmeans_data_buf;
@@ -4713,9 +4711,8 @@ static int rd_pick_palette_intra_sby(
       for (int i = 0; i < n; ++i) centroids[i] = top_colors[i];
       palette_rd_y(cpi, x, mbmi, bsize, dc_mode_cost, data, centroids, n,
                    color_cache, n_cache, best_mbmi, best_palette_color_map,
-                   best_rd, best_model_rd, rate, rate_tokenonly, &rate_overhead,
-                   distortion, skippable, beat_best_rd, ctx, best_blk_skip,
-                   tx_type_map);
+                   best_rd, best_model_rd, rate, rate_tokenonly, distortion,
+                   skippable, beat_best_rd, ctx, best_blk_skip, tx_type_map);
     }
 
     // K-means clustering.
@@ -4735,9 +4732,8 @@ static int rd_pick_palette_intra_sby(
       }
       palette_rd_y(cpi, x, mbmi, bsize, dc_mode_cost, data, centroids, n,
                    color_cache, n_cache, best_mbmi, best_palette_color_map,
-                   best_rd, best_model_rd, rate, rate_tokenonly, &rate_overhead,
-                   distortion, skippable, beat_best_rd, ctx, best_blk_skip,
-                   tx_type_map);
+                   best_rd, best_model_rd, rate, rate_tokenonly, distortion,
+                   skippable, beat_best_rd, ctx, best_blk_skip, tx_type_map);
     }
   }
 
@@ -4746,7 +4742,6 @@ static int rd_pick_palette_intra_sby(
            block_width * block_height * sizeof(best_palette_color_map[0]));
   }
   *mbmi = *best_mbmi;
-  return rate_overhead;
 }
 
 // Return 1 if an filter intra mode is selected; return 0 otherwise.
