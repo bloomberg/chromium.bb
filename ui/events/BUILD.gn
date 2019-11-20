@@ -650,7 +650,7 @@ if (!is_ios) {
 
       deps += [
         "//ui/events/ozone",
-        "//ui/events/ozone:events_ozone_evdev",
+        "//ui/events/ozone/evdev",
         "//ui/events/ozone/layout",
       ]
     }

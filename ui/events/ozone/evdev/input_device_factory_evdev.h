@@ -35,7 +35,7 @@ class CursorDelegateEvdev;
 class DeviceEventDispatcherEvdev;
 
 #if !defined(USE_EVDEV)
-#error Missing dependency on ui/events/ozone:events_ozone_evdev
+#error Missing dependency on ui/events/ozone/evdev
 #endif
 
 #if defined(USE_EVDEV_GESTURES)
