@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.signin;
+package org.chromium.components.signin.identitymanager;
 
 import android.accounts.Account;
 import android.support.test.InstrumentationRegistry;
@@ -15,20 +15,19 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.Feature;
-import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.components.signin.AccountManagerFacade;
-import org.chromium.components.signin.OAuth2TokenService;
 import org.chromium.components.signin.test.util.AccountHolder;
 import org.chromium.components.signin.test.util.AccountManagerTestRule;
-import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.Arrays;
 import java.util.concurrent.CountDownLatch;
 
 /** Tests for OAuth2TokenService. */
-@RunWith(ChromeJUnit4ClassRunner.class)
+@RunWith(BaseJUnit4ClassRunner.class)
 public class OAuth2TokenServiceTest {
     private AdvancedMockContext mContext;
 
@@ -157,8 +156,10 @@ public class OAuth2TokenServiceTest {
                                               .build();
         mAccountManagerTestRule.addAccount(accountHolder);
         GetAccessTokenCallbackForTest callback = new GetAccessTokenCallbackForTest();
-        TestThreadUtils.runOnUiThreadBlocking(
+
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> { mOAuth2TokenService.getAccessToken(account, scope, callback); });
+
         Assert.assertEquals(expectedToken, callback.getToken());
     }
 }

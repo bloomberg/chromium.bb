@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.components.signin;
+package org.chromium.components.signin.identitymanager;
 
 import android.accounts.Account;
 import android.text.TextUtils;
@@ -18,6 +18,9 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.task.AsyncTask;
+import org.chromium.components.signin.AccountManagerFacade;
+import org.chromium.components.signin.AccountTrackerService;
+import org.chromium.components.signin.AuthException;
 import org.chromium.net.NetworkChangeNotifier;
 
 import java.util.Arrays;
@@ -34,17 +37,17 @@ import java.util.concurrent.atomic.AtomicInteger;
  * AccountManagerFacade and forwards callbacks to native code.
  * <p/>
  */
+@VisibleForTesting(otherwise = VisibleForTesting.PACKAGE_PRIVATE)
 public final class OAuth2TokenService
         implements AccountTrackerService.OnSystemAccountsSeededListener {
     private static final String TAG = "OAuth2TokenService";
 
-    @VisibleForTesting
     public static final String STORED_ACCOUNTS_KEY = "google.services.stored_accounts";
 
     /**
      * A simple callback for getAccessToken.
      */
-    public interface GetAccessTokenCallback {
+    interface GetAccessTokenCallback {
         /**
          * Invoked on the UI thread if a token is provided by the AccountManager.
          *
@@ -112,9 +115,9 @@ public final class OAuth2TokenService
     /**
      * Called by native to list the active account names in the OS.
      */
-    @VisibleForTesting
     @CalledByNative
-    public String[] getSystemAccountNames() {
+    @VisibleForTesting
+    String[] getSystemAccountNames() {
         // TODO(https://crbug.com/768366): Remove this after adding cache to account manager facade.
         // This function is called by native code on UI thread.
         try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
@@ -129,9 +132,9 @@ public final class OAuth2TokenService
      * from the OS. updateAccountList should be called to keep these two
      * in sync.
      */
-    @VisibleForTesting
     @CalledByNative
-    public static String[] getAccounts() {
+    @VisibleForTesting
+    static String[] getAccounts() {
         return getStoredAccounts();
     }
 
@@ -175,7 +178,7 @@ public final class OAuth2TokenService
      * @param callback called on successful and unsuccessful fetching of auth token.
      */
     @MainThread
-    public void getAccessToken(Account account, String scope, GetAccessTokenCallback callback) {
+    void getAccessToken(Account account, String scope, GetAccessTokenCallback callback) {
         getAccessTokenWithFacade(mAccountManagerFacade, account, scope, callback);
     }
 
@@ -193,8 +196,8 @@ public final class OAuth2TokenService
      */
     @MainThread
     @Deprecated
-    public static void getAccessTokenWithFacade(AccountManagerFacade accountManagerFacade,
-            Account account, String scope, GetAccessTokenCallback callback) {
+    static void getAccessTokenWithFacade(AccountManagerFacade accountManagerFacade, Account account,
+            String scope, GetAccessTokenCallback callback) {
         ConnectionRetry.runAuthTask(new AuthTask<String>() {
             @Override
             public String run() throws AuthException {
@@ -217,7 +220,7 @@ public final class OAuth2TokenService
      */
     @MainThread
     @CalledByNative
-    public void invalidateAccessToken(String accessToken) {
+    void invalidateAccessToken(String accessToken) {
         if (TextUtils.isEmpty(accessToken)) {
             return;
         }
@@ -248,7 +251,7 @@ public final class OAuth2TokenService
      * @param callback called on successful and unsuccessful fetching of auth token.
      */
     @Deprecated
-    public static void getNewAccessTokenWithFacade(AccountManagerFacade accountManagerFacade,
+    static void getNewAccessTokenWithFacade(AccountManagerFacade accountManagerFacade,
             Account account, @Nullable String oldToken, String scope,
             GetAccessTokenCallback callback) {
         ConnectionRetry.runAuthTask(new AuthTask<String>() {
@@ -418,8 +421,7 @@ public final class OAuth2TokenService
 
     @NativeMethods
     interface Natives {
-        void onOAuth2TokenFetched(
-                String authToken, boolean isTransientError, long nativeCallback);
+        void onOAuth2TokenFetched(String authToken, boolean isTransientError, long nativeCallback);
         void reloadAllAccountsWithPrimaryAccountAfterSeeding(
                 long nativeOAuth2TokenServiceDelegateAndroid, @Nullable String accountId);
     }
