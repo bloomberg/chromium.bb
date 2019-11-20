@@ -79,6 +79,35 @@ base::ThreadLocalStorage::Slot& DangerousPatternTLS() {
   return *dangerous_pattern_tls;
 }
 
+// Allow middle dot (U+00B7) only on Catalan domains when between two 'l's, to
+// permit the Catalan character ela geminada to be expressed.
+// See https://tools.ietf.org/html/rfc5892#appendix-A.3 for details.
+bool HasUnsafeMiddleDot(const icu::UnicodeString& label_string,
+                        base::StringPiece top_level_domain) {
+  int last_index = 0;
+  while (true) {
+    int index = label_string.indexOf("·", last_index);
+    if (index < 0) {
+      break;
+    }
+    DCHECK_LT(index, label_string.length());
+    if (top_level_domain != "cat") {
+      // Non-Catalan domains cannot contain middle dot.
+      return true;
+    }
+    // Middle dot at the beginning or end.
+    if (index == 0 || index == label_string.length() - 1) {
+      return true;
+    }
+    // Middle dot not surrounded by an 'l'.
+    if (label_string[index - 1] != 'l' || label_string[index + 1] != 'l') {
+      return true;
+    }
+    last_index = index + 1;
+  }
+  return false;
+}
+
 #include "components/url_formatter/spoof_checks/top_domains/domains-trie-inc.cc"
 
 // All the domains in the above file have 4 or fewer labels.
@@ -302,6 +331,11 @@ bool IDNSpoofChecker::SafeToDisplayAsUnicode(
   if (label_string.length() > 1 && top_level_domain != "az" &&
       label_string.indexOf("ə") != -1)
     return false;
+
+  // Disallow middle dot (U+00B7) when unsafe.
+  if (HasUnsafeMiddleDot(label_string, top_level_domain)) {
+    return false;
+  }
 
   // If there's no script mixing, the input is regarded as safe without any
   // extra check unless it falls into one of three categories:
