@@ -134,8 +134,16 @@ gfx::RectF GetSelectionRect(const ui::TouchSelectionController& controller) {
   // When the touch handles are on the same line, the rect may become simply a
   // one-dimensional rect, and still need to union the handle rect to avoid the
   // context menu covering the touch handle. See detailed comments in
-  // TouchSelectionController::GetRectBetweenBounds().
+  // TouchSelectionController::GetRectBetweenBounds(). Ensure that the |rect| is
+  // not empty by adding a pixel width or height to avoid the wrong menu
+  // position.
   gfx::RectF rect = controller.GetVisibleRectBetweenBounds();
+  if (rect.IsEmpty()) {
+    gfx::SizeF size = rect.size();
+    size.SetToMax(gfx::SizeF(1.0f, 1.0f));
+    rect.set_size(size);
+  }
+
   rect.Union(controller.GetStartHandleRect());
   rect.Union(controller.GetEndHandleRect());
   return rect;
