@@ -442,6 +442,7 @@ def chromiumos_builder(*, name, **kwargs):
   return builder(
       name = name,
       mastername = 'chromium.chromiumos',
+      **kwargs
   )
 
 chromiumos_builder(
