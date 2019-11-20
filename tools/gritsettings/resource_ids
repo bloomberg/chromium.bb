@@ -197,6 +197,9 @@
   # END chrome/browser section.
 
   # START chrome/ WebUI resources section
+  "chrome/browser/media/kaleidoscope/internal/kaleidoscope_resources.grd": {
+    "includes": [13960],
+  },
   "chrome/browser/resources/bluetooth_internals/resources.grd": {
     # Big alignment at start of section.
     "META": {"align": 100},
