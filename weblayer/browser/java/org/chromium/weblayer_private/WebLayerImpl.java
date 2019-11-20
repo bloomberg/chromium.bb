@@ -92,8 +92,7 @@ public final class WebLayerImpl extends IWebLayer.Stub {
     }
 
     @Override
-    public void loadAsync(
-            IObjectWrapper appContextWrapper, IObjectWrapper loadedCallbackWrapper) {
+    public void loadAsync(IObjectWrapper appContextWrapper, IObjectWrapper loadedCallbackWrapper) {
         StrictModeWorkaround.apply();
         init(appContextWrapper);
 
