@@ -25510,6 +25510,8 @@ Called by update_net_error_codes.py.-->
   <int value="3089" label="ARIADescriptionAttribute"/>
   <int value="3090" label="StrictMimeTypeChecksWouldBlockWorker"/>
   <int value="3091" label="ResourceTimingTaintedOriginFlagFail"/>
+  <int value="3092" label="RegisterProtocolHandlerSameOriginAsTop"/>
+  <int value="3093" label="RegisterProtocolHandlerCrossOriginSubframe"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
