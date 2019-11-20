@@ -1339,6 +1339,7 @@ def fyi_mac_builder(
   return fyi_builder(
       name = name,
       cores = cores,
+      goma_backend = goma.backend.RBE_PROD,
       os = os,
       **kwargs
   )
@@ -1347,7 +1348,6 @@ fyi_mac_builder(
     name = 'Mac Builder Next',
     cores = None,
     os = os.MAC_10_14,
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 fyi_mac_builder(
@@ -1361,7 +1361,6 @@ fyi_mac_builder(
     cores = None,
     executable = luci.recipe(name = 'swarming/deterministic_build'),
     execution_timeout = 6 * time.hour,
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 fyi_mac_builder(
@@ -1369,18 +1368,15 @@ fyi_mac_builder(
     cores = None,
     executable = luci.recipe(name = 'swarming/deterministic_build'),
     execution_timeout = 6 * time.hour,
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 fyi_mac_builder(
     name = 'mac-hermetic-upgrade-rel',
     cores = 8,
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 fyi_mac_builder(
     name = 'mac-mojo-rel',
-    goma_backend = goma.backend.RBE_PROD,
     os = os.MAC_ANY,
 )
 
@@ -1752,28 +1748,25 @@ def gpu_fyi_mac_builder(*, name, **kwargs):
       name = name,
       cores = 4,
       execution_timeout = 6 * time.hour,
+      goma_backend = goma.backend.RBE_PROD,
       os = os.MAC_ANY,
       **kwargs
   )
 
 gpu_fyi_mac_builder(
     name = 'Mac FYI GPU ASAN Release',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 gpu_fyi_mac_builder(
     name = 'GPU FYI Mac Builder',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 gpu_fyi_mac_builder(
     name = 'GPU FYI Mac Builder (dbg)',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 gpu_fyi_mac_builder(
     name = 'GPU FYI Mac dEQP Builder',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 
@@ -2021,10 +2014,17 @@ linux_builder(
 )
 
 
-def mac_builder(*, name, cores=None, os=os.MAC_DEFAULT, **kwargs):
+def mac_builder(
+    *,
+    name,
+    cores=None,
+    goma_backend = goma.backend.RBE_PROD,
+    os=os.MAC_DEFAULT,
+    **kwargs):
   return builder(
       name = name,
       cores = cores,
+      goma_backend = goma_backend,
       mastername = 'chromium.mac',
       os = os,
       **kwargs
@@ -2032,12 +2032,10 @@ def mac_builder(*, name, cores=None, os=os.MAC_DEFAULT, **kwargs):
 
 mac_builder(
     name = 'Mac Builder',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 mac_builder(
     name = 'Mac Builder (dbg)',
-    goma_backend = goma.backend.RBE_PROD,
     os = os.MAC_ANY,
 )
 
@@ -2068,7 +2066,6 @@ mac_builder(
 
 mac_builder(
     name = 'WebKit Mac10.13 (retina)',
-    goma_backend = goma.backend.RBE_PROD,
     os = os.MAC_10_13,
 )
 
@@ -2077,6 +2074,7 @@ def mac_ios_builder(*, name, **kwargs):
       name = name,
       caches = [XCODE_IOS_11_CACHE],
       executable = luci.recipe(name = 'ios/unified_builder_tester'),
+      goma_backend = None,
       os = os.MAC_ANY,
       **kwargs
   )
