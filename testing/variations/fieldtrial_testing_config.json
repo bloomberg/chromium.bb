@@ -7711,6 +7711,24 @@
             ]
         }
     ],
+    "WebRTC-Video-MinVideoBitrate": [
+        {
+            "platforms": [
+                "android",
+                "android_webview",
+                "chromeos",
+                "ios",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled,vp8_br:10kbps,vp9_br:29kbps"
+                }
+            ]
+        }
+    ],
     "WebRTC-VideoRateControl": [
         {
             "platforms": [
