@@ -6995,20 +6995,9 @@ static AOM_INLINE void joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
   int_mv ref_mv[2];
   int ite, ref;
 
-  WarpTypesAllowed warp_types[2];
-  for (ref = 0; ref < 2; ++ref) {
-    const WarpedMotionParams *const wm =
-        &xd->global_motion[xd->mi[0]->ref_frame[ref]];
-    const int is_global = is_global_mv_block(xd->mi[0], wm->wmtype);
-    warp_types[ref].global_warp_allowed = is_global;
-    warp_types[ref].local_warp_allowed = mbmi->motion_mode == WARPED_CAUSAL;
-  }
-
   // Get the prediction block from the 'other' reference frame.
   const int_interpfilters interp_filters =
       av1_broadcast_interp_filter(EIGHTTAP_REGULAR);
-
-  (void)warp_types;
 
   InterPredParams inter_pred_params;
   const int mi_row = xd->mi_row;
