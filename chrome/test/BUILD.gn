@@ -2954,6 +2954,7 @@ test("unit_tests") {
     "../browser/complex_tasks/endpoint_fetcher/endpoint_fetcher_unittest.cc",
     "../browser/complex_tasks/task_tab_helper_unittest.cc",
     "../browser/component_updater/chrome_component_updater_configurator_unittest.cc",
+    "../browser/component_updater/games_component_installer_unittest.cc",
     "../browser/component_updater/optimization_hints_component_installer_unittest.cc",
     "../browser/component_updater/origin_trials_component_installer_unittest.cc",
     "../browser/component_updater/subresource_filter_component_installer_unittest.cc",

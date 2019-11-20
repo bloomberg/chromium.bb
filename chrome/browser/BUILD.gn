@@ -314,6 +314,8 @@ jumbo_static_library("browser") {
     "component_updater/crl_set_component_installer.h",
     "component_updater/file_type_policies_component_installer.cc",
     "component_updater/file_type_policies_component_installer.h",
+    "component_updater/games_component_installer.cc",
+    "component_updater/games_component_installer.h",
     "component_updater/mei_preload_component_installer.cc",
     "component_updater/mei_preload_component_installer.h",
     "component_updater/optimization_hints_component_installer.cc",
