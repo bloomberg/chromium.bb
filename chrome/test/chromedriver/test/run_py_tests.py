@@ -89,6 +89,8 @@ _OS_SPECIFIC_FILTER['win'] = [
     'ChromeLogPathCapabilityTest.testChromeLogPath',
     # https://bugs.chromium.org/p/chromium/issues/detail?id=946704
     'ChromeDownloadDirTest.testFileDownloadWithClick',
+    # https://bugs.chromium.org/p/chromium/issues/detail?id=1025981
+    'ChromeDriverSiteIsolation.testCanClickOOPIF',
     'ChromeDriverTest.testBackNavigationAfterClickElement',
     'ChromeDriverTest.testCanClickInIframes',
     'ChromeDriverTest.testClickElementAfterNavigation',
