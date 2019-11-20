@@ -1966,7 +1966,7 @@ TEST_P(DeviceSyncServiceTest, GetDebugInfo) {
 
 // Runs tests four times with all possible combinations of v2 Enrollment and v2
 // DeviceSync flags.
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          DeviceSyncServiceTest,
                          ::testing::Combine(::testing::Bool(),
                                             ::testing::Bool()));
