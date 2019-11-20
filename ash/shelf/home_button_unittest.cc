@@ -87,7 +87,7 @@ class HomeButtonTest : public AshTestBase,
 };
 
 // The parameter indicates whether the kShelfHotseat feature is enabled.
-INSTANTIATE_TEST_SUITE_P(, HomeButtonTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All, HomeButtonTest, testing::Bool());
 
 TEST_P(HomeButtonTest, SwipeUpToOpenFullscreenAppList) {
   Shelf* shelf = GetPrimaryShelf();
