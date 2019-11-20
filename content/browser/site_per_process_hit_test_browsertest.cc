@@ -485,14 +485,8 @@ void HitTestWatermark(
   // Set 'pointer-events: none' on the div.
   EXPECT_TRUE(ExecuteScript(web_contents, "W.style.pointerEvents = 'none';"));
 
-  // TODO(sunxd): Re-enable this test when surface layer hit test is able to
-  // handle pointer-events none. See https://crbug.com/841358.
-  // Dispatch another event at the same location. It should reach the oopif this
-  // time.
-  if (!features::IsVizHitTestingSurfaceLayerEnabled()) {
-    DispatchMouseEventAndWaitUntilDispatch(
-        web_contents, rwhv_child, child_location, rwhv_child, child_location);
-  }
+  DispatchMouseEventAndWaitUntilDispatch(
+      web_contents, rwhv_child, child_location, rwhv_child, child_location);
 }
 
 #if defined(USE_AURA)
