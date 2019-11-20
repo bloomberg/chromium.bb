@@ -734,6 +734,8 @@ void AddParentalControlStrings(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_PARENTAL_CONTROLS_PAGE_CONNECT_TO_INTERNET_LABEL},
       {"parentalControlsSetUpButtonLabel",
        IDS_SETTINGS_PARENTAL_CONTROLS_SET_UP_BUTTON_LABEL},
+      {"parentalControlsSetUpButtonRole",
+       IDS_SETTINGS_PARENTAL_CONTROLS_SET_UP_BUTTON_ROLE},
   };
   AddLocalizedStringsBulk(html_source, kLocalizedStrings,
                           base::size(kLocalizedStrings));
