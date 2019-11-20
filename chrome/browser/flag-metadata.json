@@ -484,7 +484,7 @@
     "owners": [ "//chrome/browser/sharing/OWNERS" ],
     "expiry_milestone": 82
   },
-	{
+  {
     "name": "click-to-call-receiver",
     "owners": [ "//chrome/browser/sharing/OWNERS" ],
     "expiry_milestone": 82
@@ -2584,7 +2584,7 @@
   {
     "name": "native-file-system-api",
     "owners": [ "mek", "pwnall" ],
-    "expiry_milestone":  80
+    "expiry_milestone":  84
   },
   {
     "name": "network-service-in-process",
