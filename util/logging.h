@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PLATFORM_API_INTERNAL_LOGGING_MACROS_H_
-#define PLATFORM_API_INTERNAL_LOGGING_MACROS_H_
+#ifndef UTIL_LOGGING_H_
+#define UTIL_LOGGING_H_
 
 #include <sstream>
+
+#include "platform/api/logging.h"
 
 namespace openscreen {
 namespace platform {
@@ -139,4 +141,4 @@ class Voidify {
 
 #define OSP_NOTREACHED() OSP_LOG_FATAL << __func__ << ": NOTREACHED() hit."
 
-#endif  // PLATFORM_API_INTERNAL_LOGGING_MACROS_H_
+#endif  // UTIL_LOGGING_H_

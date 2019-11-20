@@ -9,8 +9,8 @@
 #include <utility>
 
 #include "osp/impl/internal_services.h"
-#include "platform/api/logging.h"
 #include "platform/base/error.h"
+#include "util/logging.h"
 #include "util/trace_logging.h"
 
 using openscreen::platform::TraceCategory;

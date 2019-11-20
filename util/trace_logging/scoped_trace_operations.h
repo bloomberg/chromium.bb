@@ -14,6 +14,7 @@
 #include "platform/api/time.h"
 #include "platform/base/error.h"
 #include "platform/base/trace_logging_types.h"
+#include "util/logging.h"
 
 #if defined(ENABLE_TRACE_LOGGING)
 

@@ -8,10 +8,10 @@
 #include <iterator>
 #include <limits>
 
-#include "platform/api/logging.h"
 #include "streaming/cast/packet_util.h"
 #include "streaming/cast/rtcp_session.h"
 #include "util/integer_division.h"
+#include "util/logging.h"
 #include "util/std_util.h"
 
 namespace openscreen {

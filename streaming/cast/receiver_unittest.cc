@@ -14,7 +14,6 @@
 #include "cast/streaming/session_config.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "platform/api/logging.h"
 #include "platform/api/time.h"
 #include "platform/api/udp_socket.h"
 #include "platform/base/error.h"
@@ -34,6 +33,7 @@
 #include "streaming/cast/rtp_time.h"
 #include "streaming/cast/sender_report_builder.h"
 #include "streaming/cast/ssrc.h"
+#include "util/logging.h"
 
 using openscreen::platform::Clock;
 using openscreen::platform::FakeClock;

@@ -7,7 +7,7 @@
 #include <atomic>
 
 #include "cast/common/channel/message_framer.h"
-#include "platform/api/logging.h"
+#include "util/logging.h"
 
 namespace cast {
 namespace channel {

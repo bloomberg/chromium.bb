@@ -6,8 +6,8 @@
 
 #include <CoreFoundation/CoreFoundation.h>
 
-#include "platform/api/logging.h"
 #include "platform/api/task_runner.h"
+#include "util/logging.h"
 
 namespace openscreen {
 namespace platform {

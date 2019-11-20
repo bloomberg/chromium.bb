@@ -12,9 +12,9 @@
 #include "absl/strings/string_view.h"
 #include "cast/common/certificate/cast_cert_validator_internal.h"
 #include "cast/common/certificate/proto/revocation.pb.h"
-#include "platform/api/logging.h"
 #include "platform/base/macros.h"
 #include "util/crypto/sha2.h"
+#include "util/logging.h"
 
 namespace cast {
 namespace certificate {

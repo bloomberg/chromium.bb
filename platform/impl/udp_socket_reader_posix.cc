@@ -7,9 +7,9 @@
 #include <chrono>
 #include <functional>
 
-#include "platform/api/logging.h"
 #include "platform/impl/socket_handle_posix.h"
 #include "platform/impl/udp_socket_posix.h"
+#include "util/logging.h"
 
 namespace openscreen {
 namespace platform {

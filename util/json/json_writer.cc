@@ -10,8 +10,8 @@
 #include <utility>
 
 #include "json/value.h"
-#include "platform/api/logging.h"
 #include "platform/base/error.h"
+#include "util/logging.h"
 
 namespace openscreen {
 JsonWriter::JsonWriter() {

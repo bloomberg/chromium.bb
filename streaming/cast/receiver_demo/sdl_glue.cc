@@ -4,9 +4,9 @@
 
 #include "streaming/cast/receiver_demo/sdl_glue.h"
 
-#include "platform/api/logging.h"
 #include "platform/api/task_runner.h"
 #include "platform/api/time.h"
+#include "util/logging.h"
 
 using openscreen::platform::Clock;
 using openscreen::platform::TaskRunner;

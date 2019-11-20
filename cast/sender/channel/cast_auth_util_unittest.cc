@@ -12,8 +12,8 @@
 #include "cast/common/certificate/test_helpers.h"
 #include "cast/common/channel/proto/cast_channel.pb.h"
 #include "gtest/gtest.h"
-#include "platform/api/logging.h"
 #include "platform/api/time.h"
+#include "util/logging.h"
 
 namespace cast {
 namespace channel {

@@ -8,7 +8,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "platform/api/logging.h"
+#include "util/logging.h"
 
 namespace cast {
 namespace certificate {

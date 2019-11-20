@@ -5,7 +5,7 @@
 #ifndef PLATFORM_IMPL_LOGGING_H_
 #define PLATFORM_IMPL_LOGGING_H_
 
-#include "platform/api/logging.h"
+#include "util/logging.h"
 
 namespace openscreen {
 namespace platform {

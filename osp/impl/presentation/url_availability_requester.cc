@@ -10,7 +10,7 @@
 
 #include "osp/impl/presentation/presentation_common.h"
 #include "osp/public/network_service_manager.h"
-#include "platform/api/logging.h"
+#include "util/logging.h"
 
 using openscreen::platform::Clock;
 using std::chrono::seconds;

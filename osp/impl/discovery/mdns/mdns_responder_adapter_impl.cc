@@ -10,7 +10,7 @@
 #include <iostream>
 #include <memory>
 
-#include "platform/api/logging.h"
+#include "util/logging.h"
 #include "util/trace_logging.h"
 
 using openscreen::platform::TraceCategory;

@@ -2,7 +2,7 @@
 
 #include <sstream>
 
-#include "platform/api/logging.h"
+#include "util/logging.h"
 
 namespace openscreen {
 namespace cast_streaming {

@@ -6,8 +6,8 @@
 
 #include <sstream>
 
-#include "platform/api/logging.h"
 #include "streaming/cast/receiver_demo/avcodec_glue.h"
+#include "util/logging.h"
 
 using openscreen::platform::Clock;
 using openscreen::platform::ClockNowFunctionPtr;

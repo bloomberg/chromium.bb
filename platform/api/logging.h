@@ -58,12 +58,4 @@ void Break();
 }  // namespace platform
 }  // namespace openscreen
 
-// Convenience macros and inline code that Open Screen code uses to invoke the
-// above embedder-implemented functions.
-//
-// TODO(crbug.com/openscreen/77): Remove this, move logging_macros.h to
-// util/logging.h, and search-and-replace all #includes throughout the code
-// base.
-#include "platform/api/internal/logging_macros.h"  // NOLINT
-
 #endif  // PLATFORM_API_LOGGING_H_

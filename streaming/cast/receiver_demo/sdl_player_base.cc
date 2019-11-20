@@ -8,10 +8,10 @@
 #include <sstream>
 
 #include "absl/types/span.h"
-#include "platform/api/logging.h"
 #include "streaming/cast/encoded_frame.h"
 #include "streaming/cast/receiver_demo/avcodec_glue.h"
 #include "util/big_endian.h"
+#include "util/logging.h"
 
 using std::chrono::duration_cast;
 using std::chrono::milliseconds;

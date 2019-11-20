@@ -11,9 +11,9 @@
 #include "cast/common/certificate/cast_cert_validator.h"
 #include "cast/common/certificate/cast_cert_validator_internal.h"
 #include "cast/common/certificate/cast_crl.h"
-#include "platform/api/logging.h"
 #include "platform/api/time.h"
 #include "platform/base/error.h"
+#include "util/logging.h"
 
 namespace cast {
 namespace channel {

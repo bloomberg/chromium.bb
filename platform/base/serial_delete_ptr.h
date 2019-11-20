@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "platform/api/task_runner.h"
+#include "util/logging.h"
 
 namespace openscreen {
 

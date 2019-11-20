@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "osp/impl/quic/quic_connection_impl.h"
-#include "platform/api/logging.h"
 #include "platform/api/task_runner.h"
 #include "platform/api/time.h"
 #include "platform/base/error.h"
@@ -16,6 +15,7 @@
 #include "third_party/chromium_quic/src/base/task_runner.h"
 #include "third_party/chromium_quic/src/net/third_party/quic/core/quic_constants.h"
 #include "third_party/chromium_quic/src/net/third_party/quic/platform/impl/quic_chromium_clock.h"
+#include "util/logging.h"
 #include "util/trace_logging.h"
 
 using openscreen::platform::TraceCategory;

@@ -4,8 +4,8 @@
 
 #include "platform/test/fake_clock.h"
 
-#include "platform/api/logging.h"
 #include "platform/test/fake_task_runner.h"
+#include "util/logging.h"
 
 namespace openscreen {
 namespace platform {

@@ -20,10 +20,10 @@
 #include <type_traits>
 
 #include "absl/types/optional.h"
-#include "platform/api/logging.h"
 #include "platform/api/task_runner.h"
 #include "platform/base/error.h"
 #include "platform/impl/udp_socket_reader_posix.h"
+#include "util/logging.h"
 
 namespace openscreen {
 namespace platform {

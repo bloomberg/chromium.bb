@@ -8,7 +8,7 @@
 #include <iomanip>
 
 #include "absl/types/optional.h"
-#include "platform/api/logging.h"
+#include "util/logging.h"
 
 namespace openscreen {
 

@@ -13,7 +13,7 @@
 #include "openssl/crypto.h"
 #include "openssl/err.h"
 #include "openssl/ssl.h"
-#include "platform/api/logging.h"
+#include "util/logging.h"
 
 namespace openscreen {
 

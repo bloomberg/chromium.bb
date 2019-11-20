@@ -8,9 +8,9 @@
 #include <memory>
 
 #include "absl/types/optional.h"
-#include "platform/api/logging.h"
 #include "platform/api/task_runner.h"
 #include "platform/api/time.h"
+#include "util/logging.h"
 
 namespace openscreen {
 

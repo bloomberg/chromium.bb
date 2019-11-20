@@ -4,9 +4,9 @@
 
 #include "streaming/cast/environment.h"
 
-#include "platform/api/logging.h"
 #include "platform/api/task_runner.h"
 #include "streaming/cast/rtp_defines.h"
+#include "util/logging.h"
 
 namespace openscreen {
 

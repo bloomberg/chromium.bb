@@ -4,7 +4,7 @@
 
 #include "platform/base/udp_packet.h"
 
-#include "platform/api/logging.h"
+#include "util/logging.h"
 
 namespace openscreen {
 namespace platform {

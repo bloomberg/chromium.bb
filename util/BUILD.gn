@@ -23,6 +23,7 @@ source_set("util") {
     "json/json_reader.h",
     "json/json_writer.cc",
     "json/json_writer.h",
+    "logging.h",
     "operation_loop.cc",
     "operation_loop.h",
     "saturate_cast.h",

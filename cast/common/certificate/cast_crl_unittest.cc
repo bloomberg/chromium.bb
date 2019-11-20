@@ -9,7 +9,7 @@
 #include "cast/common/certificate/proto/test_suite.pb.h"
 #include "cast/common/certificate/test_helpers.h"
 #include "gtest/gtest.h"
-#include "platform/api/logging.h"
+#include "util/logging.h"
 
 namespace cast {
 namespace certificate {

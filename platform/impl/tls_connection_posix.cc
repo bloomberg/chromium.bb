@@ -20,11 +20,11 @@
 
 #include "absl/types/optional.h"
 #include "absl/types/span.h"
-#include "platform/api/logging.h"
 #include "platform/api/task_runner.h"
 #include "platform/base/error.h"
 #include "platform/impl/stream_socket.h"
 #include "util/crypto/openssl_util.h"
+#include "util/logging.h"
 
 namespace openscreen {
 namespace platform {

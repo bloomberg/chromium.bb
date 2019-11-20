@@ -16,7 +16,6 @@
 
 #include <cstring>
 
-#include "platform/api/logging.h"
 #include "platform/api/task_runner.h"
 #include "platform/api/tls_connection_factory.h"
 #include "platform/base/tls_connect_options.h"
@@ -25,6 +24,7 @@
 #include "platform/impl/stream_socket.h"
 #include "platform/impl/tls_connection_posix.h"
 #include "util/crypto/openssl_util.h"
+#include "util/logging.h"
 #include "util/trace_logging.h"
 
 namespace openscreen {

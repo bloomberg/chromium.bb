@@ -7,8 +7,8 @@
 #include <chrono>
 
 #include "absl/types/span.h"
-#include "platform/api/logging.h"
 #include "streaming/cast/encoded_frame.h"
+#include "util/logging.h"
 
 using std::chrono::microseconds;
 

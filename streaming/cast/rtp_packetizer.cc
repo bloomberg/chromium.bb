@@ -8,11 +8,11 @@
 #include <limits>
 #include <random>
 
-#include "platform/api/logging.h"
 #include "platform/api/time.h"
 #include "streaming/cast/packet_util.h"
 #include "util/big_endian.h"
 #include "util/integer_division.h"
+#include "util/logging.h"
 
 namespace openscreen {
 namespace cast_streaming {

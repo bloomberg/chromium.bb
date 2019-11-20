@@ -4,7 +4,7 @@
 
 #include "streaming/cast/ntp_time.h"
 
-#include "platform/api/logging.h"
+#include "util/logging.h"
 
 using openscreen::platform::Clock;
 using std::chrono::duration_cast;

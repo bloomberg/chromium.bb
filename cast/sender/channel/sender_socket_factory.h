@@ -11,9 +11,9 @@
 
 #include "cast/common/channel/cast_socket.h"
 #include "cast/sender/channel/cast_auth_util.h"
-#include "platform/api/logging.h"
 #include "platform/api/tls_connection_factory.h"
 #include "platform/base/ip_address.h"
+#include "util/logging.h"
 
 namespace cast {
 namespace channel {

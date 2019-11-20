@@ -4,7 +4,7 @@
 
 #include "osp/impl/with_destruction_callback.h"
 
-#include "platform/api/logging.h"
+#include "util/logging.h"
 
 namespace openscreen {
 

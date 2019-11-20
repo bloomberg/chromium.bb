@@ -4,7 +4,7 @@
 
 #include "cast/common/certificate/types.h"
 
-#include "platform/api/logging.h"
+#include "util/logging.h"
 
 namespace cast {
 namespace certificate {

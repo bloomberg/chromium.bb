@@ -13,7 +13,7 @@
 #include "discovery/mdns/testing/mdns_test_util.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "platform/api/logging.h"
+#include "util/logging.h"
 
 namespace openscreen {
 namespace discovery {

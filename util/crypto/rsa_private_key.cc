@@ -15,8 +15,8 @@
 #include "openssl/evp.h"
 #include "openssl/mem.h"
 #include "openssl/rsa.h"
-#include "platform/api/logging.h"
 #include "util/crypto/openssl_util.h"
+#include "util/logging.h"
 
 namespace openscreen {
 RSAPrivateKey::~RSAPrivateKey() = default;

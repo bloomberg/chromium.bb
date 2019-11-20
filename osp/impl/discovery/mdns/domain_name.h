@@ -11,8 +11,8 @@
 #include <vector>
 
 #include "absl/strings/string_view.h"
-#include "platform/api/logging.h"
 #include "platform/base/error.h"
+#include "util/logging.h"
 
 namespace openscreen {
 namespace mdns {

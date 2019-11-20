@@ -13,8 +13,8 @@
 #include "absl/strings/string_view.h"
 #include "absl/types/variant.h"
 #include "discovery/mdns/public/mdns_constants.h"
-#include "platform/api/logging.h"
 #include "platform/base/ip_address.h"
+#include "util/logging.h"
 
 namespace openscreen {
 namespace discovery {

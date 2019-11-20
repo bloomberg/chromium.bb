@@ -14,11 +14,11 @@
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
 #include "osp/public/message_demuxer.h"
-#include "platform/api/logging.h"
 #include "platform/api/time.h"
 #include "platform/base/error.h"
 #include "platform/base/ip_address.h"
 #include "platform/base/macros.h"
+#include "util/logging.h"
 
 namespace openscreen {
 

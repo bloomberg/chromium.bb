@@ -8,9 +8,9 @@
 #include <limits>
 #include <numeric>
 
-#include "platform/api/logging.h"
 #include "streaming/cast/frame_id.h"
 #include "streaming/cast/rtp_defines.h"
+#include "util/logging.h"
 
 namespace openscreen {
 namespace cast_streaming {

@@ -17,10 +17,10 @@
 #include <string>
 #include <vector>
 
-#include "platform/api/logging.h"
 #include "platform/api/network_interface.h"
 #include "platform/base/ip_address.h"
 #include "platform/impl/scoped_pipe.h"
+#include "util/logging.h"
 
 namespace openscreen {
 namespace platform {

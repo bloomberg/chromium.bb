@@ -8,9 +8,9 @@
 #include <functional>
 
 #include "absl/types/span.h"
-#include "platform/api/logging.h"
 #include "streaming/cast/constants.h"
 #include "streaming/cast/receiver_packet_router.h"
+#include "util/logging.h"
 #include "util/std_util.h"
 
 using openscreen::platform::Clock;

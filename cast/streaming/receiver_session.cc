@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "platform/api/logging.h"
+#include "util/logging.h"
 
 namespace cast {
 namespace streaming {

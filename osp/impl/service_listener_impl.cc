@@ -4,8 +4,8 @@
 
 #include "osp/impl/service_listener_impl.h"
 
-#include "platform/api/logging.h"
 #include "platform/base/error.h"
+#include "util/logging.h"
 
 namespace openscreen {
 namespace {

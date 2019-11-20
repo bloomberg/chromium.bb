@@ -7,8 +7,8 @@
 #include <algorithm>
 #include <utility>
 
-#include "platform/api/logging.h"
 #include "streaming/cast/packet_util.h"
+#include "util/logging.h"
 
 namespace openscreen {
 namespace cast_streaming {

@@ -9,9 +9,9 @@
 #include <vector>
 
 #include "absl/base/thread_annotations.h"
-#include "platform/api/logging.h"
 #include "platform/api/time.h"
 #include "platform/impl/socket_handle_waiter.h"
+#include "util/logging.h"
 
 namespace openscreen {
 namespace platform {

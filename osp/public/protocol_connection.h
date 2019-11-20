@@ -10,8 +10,8 @@
 #include <type_traits>
 
 #include "osp/msgs/osp_messages.h"
-#include "platform/api/logging.h"
 #include "platform/base/error.h"
+#include "util/logging.h"
 
 namespace openscreen {
 

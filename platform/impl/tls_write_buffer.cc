@@ -7,8 +7,8 @@
 #include <algorithm>
 #include <cstring>
 
-#include "platform/api/logging.h"
 #include "platform/api/tls_connection.h"
+#include "util/logging.h"
 
 namespace openscreen {
 namespace platform {

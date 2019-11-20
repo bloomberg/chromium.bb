@@ -8,7 +8,6 @@
 #include <future>
 
 #include "absl/types/optional.h"
-#include "platform/api/logging.h"
 #include "platform/api/time.h"
 
 namespace openscreen {

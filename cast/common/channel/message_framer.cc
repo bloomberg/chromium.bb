@@ -10,8 +10,8 @@
 #include <limits>
 
 #include "cast/common/channel/proto/cast_channel.pb.h"
-#include "platform/api/logging.h"
 #include "util/big_endian.h"
+#include "util/logging.h"
 
 namespace cast {
 namespace channel {

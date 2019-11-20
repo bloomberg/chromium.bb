@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "platform/api/logging.h"
+#include "util/logging.h"
 
 namespace openscreen {
 

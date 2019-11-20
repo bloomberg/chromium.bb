@@ -8,7 +8,6 @@ source_set("platform") {
   defines = []
 
   sources = [
-    "api/internal/logging_macros.h",
     "api/logging.h",
     "api/network_interface.cc",
     "api/network_interface.h",

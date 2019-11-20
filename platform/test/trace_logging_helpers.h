@@ -8,8 +8,8 @@
 #define PLATFORM_TEST_TRACE_LOGGING_HELPERS_H_
 
 #include "gmock/gmock.h"
-#include "platform/api/logging.h"
 #include "platform/base/trace_logging_activation.h"
+#include "util/logging.h"
 
 namespace openscreen {
 namespace platform {
