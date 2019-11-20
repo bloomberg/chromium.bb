@@ -21,8 +21,6 @@
 #include "chrome/browser/metrics/subprocess_metrics_provider.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service_factory.h"
-#include "chrome/browser/previews/previews_service.h"
-#include "chrome/browser/previews/previews_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -41,7 +39,6 @@
 #include "components/optimization_guide/test_hints_component_creator.h"
 #include "components/optimization_guide/top_host_provider.h"
 #include "components/prefs/pref_service.h"
-#include "components/previews/core/previews_features.h"
 #include "components/previews/core/previews_switches.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -133,6 +130,32 @@ GURL GetURLWithGoogleHost(net::EmbeddedTestServer* server,
 
 }  // namespace
 
+// A WebContentsObserver that asks whether an optimization type can be applied.
+class OptimizationGuideConsumerWebContentsObserver
+    : public content::WebContentsObserver {
+ public:
+  OptimizationGuideConsumerWebContentsObserver(
+      content::WebContents* web_contents)
+      : content::WebContentsObserver(web_contents) {
+    OptimizationGuideKeyedServiceFactory::GetForProfile(
+        Profile::FromBrowserContext(web_contents->GetBrowserContext()))
+        ->RegisterOptimizationTypesAndTargets(
+            {optimization_guide::proto::NOSCRIPT}, {});
+  }
+  ~OptimizationGuideConsumerWebContentsObserver() override = default;
+
+  // contents::WebContentsObserver implementation:
+  void DidFinishNavigation(
+      content::NavigationHandle* navigation_handle) override {
+    OptimizationGuideKeyedService* service =
+        OptimizationGuideKeyedServiceFactory::GetForProfile(
+            Profile::FromBrowserContext(web_contents()->GetBrowserContext()));
+    service->CanApplyOptimization(navigation_handle,
+                                  optimization_guide::proto::NOSCRIPT,
+                                  /*optimization_metadata=*/nullptr);
+  }
+};
+
 // This test class sets up everything but does not enable any
 // HintsFetcher-related features. The parameter selects whether the
 // OptimizationGuideKeyedService is enabled (tests should pass in the same way
@@ -206,8 +229,8 @@ class HintsFetcherDisabledBrowserTest : public InProcessBrowserTest {
     cmd->AppendSwitch(optimization_guide::switches::kFetchHintsOverrideTimer);
   }
 
-  // Creates hint data for the |hint_setup_url|'s so that OnHintsUpdated in
-  // Previews Optimization Guide is called and HintsFetch can be tested.
+  // Creates hint data for the |hint_setup_url|'s so that the fetching of the
+  // hints is triggered.
   void SetUpComponentUpdateHints(const GURL& hint_setup_url) {
     const optimization_guide::HintsComponentInfo& component_info =
         test_hints_component_creator_.CreateHintsComponentInfoWithPageHints(
@@ -501,18 +524,24 @@ class HintsFetcherBrowserTest : public HintsFetcherDisabledBrowserTest {
   void SetUp() override {
     // Enable OptimizationHintsFetching with |kOptimizationHintsFetching|.
     scoped_feature_list_.InitWithFeatures(
-        {previews::features::kPreviews, previews::features::kNoScriptPreviews,
-         optimization_guide::features::kOptimizationHints,
-         previews::features::kResourceLoadingHints,
-         optimization_guide::features::kOptimizationHintsFetching,
-         data_reduction_proxy::features::
-             kDataReductionProxyEnabledWithNetworkService},
+        {optimization_guide::features::kOptimizationHints,
+         optimization_guide::features::kOptimizationHintsFetching},
         {});
     // Call to inherited class to match same set up with feature flags added.
     HintsFetcherDisabledBrowserTest::SetUp();
   }
 
+  void SetUpOnMainThread() override {
+    // Set up an OptimizationGuideKeyedService consumer.
+    consumer_.reset(new OptimizationGuideConsumerWebContentsObserver(
+        browser()->tab_strip_model()->GetActiveWebContents()));
+
+    HintsFetcherDisabledBrowserTest::SetUpOnMainThread();
+  }
+
  private:
+  std::unique_ptr<OptimizationGuideConsumerWebContentsObserver> consumer_;
+
   DISALLOW_COPY_AND_ASSIGN(HintsFetcherBrowserTest);
 };
 
@@ -525,8 +554,8 @@ class HintsFetcherBrowserTest : public HintsFetcherDisabledBrowserTest {
 #endif
 
 // This test creates new browser with no profile and loads a random page with
-// the feature flags enables the PreviewsOnePlatformHints. We confirm that the
-// top_host_provider_impl executes and does not crash by checking UMA
+// the feature flags for OptimizationHintsFetching. We confirm that the
+// TopHostProvider is called and does not crash by checking UMA
 // histograms for the total number of TopEngagementSites and
 // the total number of sites returned controlled by the experiments flag
 // |max_oneplatform_update_hosts|.
@@ -568,14 +597,12 @@ IN_PROC_BROWSER_TEST_F(HintsFetcherDisabledBrowserTest, HintsFetcherDisabled) {
 }
 
 // This test creates a new browser and seeds the Site Engagement Service with
-// both HTTP and HTTPS sites. The test confirms that PreviewsTopHostProviderImpl
-// used by PreviewsOptimizationGuide to provide a list of hosts to HintsFetcher
-// only returns HTTPS-schemed hosts. We verify this with the UMA histogram
-// logged when the GetHintsRequest is made to the remote Optimization Guide
-// Service.
-IN_PROC_BROWSER_TEST_F(
-    HintsFetcherBrowserTest,
-    DISABLE_ON_WIN_MAC_CHROMEOS(PreviewsTopHostProviderHTTPSOnly)) {
+// both HTTP and HTTPS sites. The test confirms that top host provider
+// is called to provide a list of hosts to HintsFetcher only returns hosts with
+// a HTTPS scheme. We verify this with the UMA histogram logged when the
+// GetHintsRequest is made to the remote Optimization Guide Service.
+IN_PROC_BROWSER_TEST_F(HintsFetcherBrowserTest,
+                       DISABLE_ON_WIN_MAC_CHROMEOS(TopHostProviderHTTPSOnly)) {
   const base::HistogramTester* histogram_tester = GetHistogramTester();
 
   // Adds two HTTP and two HTTPS sites into the Site Engagement Service.
@@ -1161,32 +1188,31 @@ IN_PROC_BROWSER_TEST_F(
         histogram_tester,
         "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch", 4);
 
-      // Hints should be available this time for the navigation.
-      histogram_tester->ExpectBucketCount(
-          "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch", false,
-          3);
-      histogram_tester->ExpectBucketCount(
-          "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch", true,
-          1);
+    // Hints should be available this time for the navigation.
+    histogram_tester->ExpectBucketCount(
+        "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch", false,
+        3);
+    histogram_tester->ExpectBucketCount(
+        "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch", true, 1);
     // Hints should not be fetched for the same host again.
-      EXPECT_EQ(3u, count_hints_requests_received());
-      RetryForHistogramUntilCountReached(
-          histogram_tester, optimization_guide::kLoadedHintLocalHistogramString,
-          4);
+    EXPECT_EQ(3u, count_hints_requests_received());
+    RetryForHistogramUntilCountReached(
+        histogram_tester, optimization_guide::kLoadedHintLocalHistogramString,
+        4);
 
-      RetryForHistogramUntilCountReached(
-          histogram_tester,
-          "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch."
-          "AtCommit",
-          4);
-      histogram_tester->ExpectBucketCount(
-          "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch."
-          "AtCommit",
-          true, 3);
-      histogram_tester->ExpectBucketCount(
-          "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch."
-          "AtCommit",
-          false, 1);
+    RetryForHistogramUntilCountReached(
+        histogram_tester,
+        "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch."
+        "AtCommit",
+        4);
+    histogram_tester->ExpectBucketCount(
+        "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch."
+        "AtCommit",
+        true, 3);
+    histogram_tester->ExpectBucketCount(
+        "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch."
+        "AtCommit",
+        false, 1);
   }
 }
 
@@ -1238,20 +1264,14 @@ class HintsFetcherChangeDefaultBlacklistSizeBrowserTest
     optimization_hints_fetching_params["top_host_blacklist_size_multiplier"] =
         "5";
 
-      scoped_feature_list_.InitWithFeaturesAndParameters(
-          {
-              /* vector of enabled features along with params */
-              {optimization_guide::features::kOptimizationHintsFetching,
-               {optimization_hints_fetching_params}},
-              {optimization_guide::features::kOptimizationHints, {}},
-              {previews::features::kPreviews, {}},
-              {previews::features::kNoScriptPreviews, {}},
-              {previews::features::kResourceLoadingHints, {}},
-              {data_reduction_proxy::features::
-                   kDataReductionProxyEnabledWithNetworkService,
-               {}},
-          },
-          {/* disabled_features */});
+    scoped_feature_list_.InitWithFeaturesAndParameters(
+        {
+            /* vector of enabled features along with params */
+            {optimization_guide::features::kOptimizationHintsFetching,
+             {optimization_hints_fetching_params}},
+            {optimization_guide::features::kOptimizationHints, {}},
+        },
+        {/* disabled_features */});
 
     // Call to inherited class to match same set up with feature flags added.
     HintsFetcherDisabledBrowserTest::SetUp();
@@ -1260,10 +1280,6 @@ class HintsFetcherChangeDefaultBlacklistSizeBrowserTest
   void SetUpCommandLine(base::CommandLine* cmd) override {
     cmd->AppendSwitch("enable-spdy-proxy-auth");
 
-    // Due to race conditions, it's possible that blacklist data is not loaded
-    // at the time of first navigation. That may prevent Preview from
-    // triggering, and causing the test to flake.
-    cmd->AppendSwitch(previews::switches::kIgnorePreviewsBlacklist);
     cmd->AppendSwitch("purge_hint_cache_store");
 
     // Set up OptimizationGuideServiceURL, this does not enable HintsFetching,
@@ -1294,26 +1310,25 @@ IN_PROC_BROWSER_TEST_F(HintsFetcherChangeDefaultBlacklistSizeBrowserTest,
       engaged_hosts,
       optimization_guide::features::MaxHintsFetcherTopHostBlacklistSize());
 
-    SetTopHostBlacklistState(
-        optimization_guide::prefs::HintsFetcherTopHostBlacklistState::
-            kNotInitialized);
+  SetTopHostBlacklistState(
+      optimization_guide::prefs::HintsFetcherTopHostBlacklistState::
+          kNotInitialized);
 
-    OptimizationGuideKeyedService* keyed_service =
-        OptimizationGuideKeyedServiceFactory::GetForProfile(
-            browser()->profile());
-    optimization_guide::TopHostProvider* top_host_provider =
-        keyed_service->GetTopHostProvider();
-    ASSERT_TRUE(top_host_provider);
+  OptimizationGuideKeyedService* keyed_service =
+      OptimizationGuideKeyedServiceFactory::GetForProfile(browser()->profile());
+  optimization_guide::TopHostProvider* top_host_provider =
+      keyed_service->GetTopHostProvider();
+  ASSERT_TRUE(top_host_provider);
 
-    std::vector<std::string> top_hosts = top_host_provider->GetTopHosts();
-    EXPECT_EQ(0u, top_hosts.size());
+  std::vector<std::string> top_hosts = top_host_provider->GetTopHosts();
+  EXPECT_EQ(0u, top_hosts.size());
 
-    top_hosts = top_host_provider->GetTopHosts();
-    EXPECT_EQ(0u, top_hosts.size());
+  top_hosts = top_host_provider->GetTopHosts();
+  EXPECT_EQ(0u, top_hosts.size());
 
-    // Everything HTTPS origin within the site engagement service should now be
-    // in the blacklist.
-    EXPECT_EQ(engaged_hosts, GetTopHostBlacklistSize());
+  // Everything HTTPS origin within the site engagement service should now be
+  // in the blacklist.
+  EXPECT_EQ(engaged_hosts, GetTopHostBlacklistSize());
 }
 
 class HintsFetcherSearchPageBrowserTest : public HintsFetcherBrowserTest {
