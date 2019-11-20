@@ -4868,6 +4868,20 @@ Unknown properties are collapsed to zero. -->
   <int value="5" label="Overlay Insecure Non-player-element Fullscreen"/>
 </enum>
 
+<enum name="BackForwardCacheBrowsingInstanceNotSwappedReason">
+  <int value="0" label="Swapped"/>
+  <int value="1" label="Proactive swap disabled"/>
+  <int value="2" label="Not a main frame"/>
+  <int value="3" label="Has related active contents"/>
+  <int value="4" label="Does not have a site"/>
+  <int value="5" label="Source URL scheme is not HTTP(S)"/>
+  <int value="6" label="Destination URL scheme is not HTTP(S)"/>
+  <int value="7" label="Same site navigation"/>
+  <int value="8" label="Error page"/>
+  <int value="9" label="Already has matching browsing instance"/>
+  <int value="10" label="Renderer debug URL"/>
+</enum>
+
 <enum name="BackForwardCacheDisabledForRenderFrameHostReason">
   <int value="-1859200986" label="WebUSB"/>
   <int value="-1521338555" label="OfflinePage"/>
