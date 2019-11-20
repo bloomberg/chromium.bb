@@ -362,6 +362,10 @@ class CORE_EXPORT DisplayLockContext final
   // register/unregister is required.
   void UpdateActivationObservationIfNeeded();
 
+  // This function is called from within a task to fire the activation event.
+  // Scheduled by CommitForActivationWithSignal.
+  void FireActivationEvent(Element* activated_element);
+
   std::unique_ptr<DisplayLockBudget> update_budget_;
 
   Member<ScriptPromiseResolver> update_resolver_;
@@ -408,6 +412,8 @@ class CORE_EXPORT DisplayLockContext final
 
   DisplayLockContextCreateMethod method_ =
       DisplayLockContextCreateMethod::kUnknown;
+
+  base::WeakPtrFactory<DisplayLockContext> weak_factory_{this};
 };
 
 }  // namespace blink

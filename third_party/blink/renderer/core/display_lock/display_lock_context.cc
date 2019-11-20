@@ -149,6 +149,10 @@ void DisplayLockContext::StartAcquire() {
   update_budget_.reset();
   state_ = kLocked;
 
+  // We're no longer activated, so if the signal didn't run yet, we should
+  // cancel it.
+  weak_factory_.InvalidateWeakPtrs();
+
   // If we're already connected then we need to ensure that we update our style
   // to check for containment later, layout size based on the options, and
   // also clear the painted output.
@@ -391,20 +395,23 @@ bool DisplayLockContext::IsActivatable(
   return !IsLocked() || (activatable_mask_ & static_cast<uint16_t>(reason));
 }
 
+void DisplayLockContext::FireActivationEvent(Element* activated_element) {
+  element_->DispatchEvent(
+      *MakeGarbageCollected<BeforeActivateEvent>(*activated_element));
+}
+
 void DisplayLockContext::CommitForActivationWithSignal(
     Element* activated_element) {
   DCHECK(activated_element);
-  element_->DispatchEvent(
-      *MakeGarbageCollected<BeforeActivateEvent>(*activated_element));
-
-  // The beforeactivate signal may have committed this lock already, in which
-  // case we have nothing to do.
-  if (!IsLocked())
-    return;
-
   DCHECK(element_);
   DCHECK(ConnectedToView());
+  DCHECK(IsLocked());
   DCHECK(ShouldCommitForActivation(DisplayLockActivationReason::kAny));
+
+  document_->EnqueueDisplayLockActivationTask(
+      WTF::Bind(&DisplayLockContext::FireActivationEvent,
+                weak_factory_.GetWeakPtr(), WrapPersistent(activated_element)));
+
   StartCommit();
   is_activated_ = true;
 
