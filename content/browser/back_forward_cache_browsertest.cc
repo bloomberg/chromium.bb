@@ -2414,7 +2414,8 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, MAYBE_WebSocketNotCached) {
   // 2) Navigate to B.
   ASSERT_TRUE(NavigateToURL(shell(), url_b));
 
-  EXPECT_TRUE(delete_observer_rfh_a.deleted());
+  // Confirm A is evicted.
+  delete_observer_rfh_a.WaitUntilDeleted();
 }
 
 // Only HTTP/HTTPS main document can enter the BackForwardCache.
