@@ -21,6 +21,7 @@ per-file new_or_sad_tab_strings.grdp=file://chrome/browser/resources/ntp4/OWNERS
 per-file ntp_snippets_strings.grdp=file://components/ntp_snippets/OWNERS
 per-file omnibox_strings.grdp=file://components/omnibox/OWNERS
 per-file page_info_strings.grdp=file://chrome/browser/ui/page_info/OWNERS
+per-file paint_preview_strings.grdp=file://components/paint_preview/OWNERS
 per-file password_manager_strings.grdp=file://components/password_manager/OWNERS
 per-file payments_strings.grdp=file://components/payments/OWNERS
 per-file pdf_strings.grdp=file://pdf/OWNERS
