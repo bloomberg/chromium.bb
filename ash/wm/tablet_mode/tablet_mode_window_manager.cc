@@ -255,8 +255,10 @@ bool TabletModeWindowManager::ShouldMinimizeTopWindowOnBack() {
   }
 
   WindowState* window_state = WindowState::Get(window);
-  if (!window_state || !window_state->CanMinimize())
+  if (!window_state || !window_state->CanMinimize() ||
+      window_state->IsMinimized()) {
     return false;
+  }
 
   // Minimize the window if it is at the bottom page.
   return !shell->shell_delegate()->CanGoBack(window);
