@@ -100,7 +100,7 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
 
       // Separator
       case NativeTheme::kColorId_SeparatorColor:
-        return SkColorSetA(gfx::kGoogleGrey800, 0xCC);
+        return gfx::kGoogleGrey800;
 
       // TabbedPane
       case NativeTheme::kColorId_TabTitleColorActive:
@@ -267,7 +267,7 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
 
     // Separator
     case NativeTheme::kColorId_SeparatorColor:
-      return SkColorSetRGB(0xE9, 0xE9, 0xE9);
+      return gfx::kGoogleGrey300;
 
     // TabbedPane
     case NativeTheme::kColorId_TabTitleColorActive:
