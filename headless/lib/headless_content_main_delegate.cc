@@ -34,6 +34,7 @@
 #include "headless/lib/utility/headless_content_utility_client.h"
 #include "services/service_manager/embedder/switches.h"
 #include "services/service_manager/sandbox/switches.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/gfx/switches.h"
@@ -88,10 +89,9 @@ base::LazyInstance<HeadlessCrashReporterClient>::Leaky g_headless_crash_client =
 const char kLogFileName[] = "CHROME_LOG_FILE";
 const char kHeadlessCrashKey[] = "headless";
 
-void InitializeResourceBundle() {
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+void InitializeResourceBundle(const base::CommandLine& command_line) {
   const std::string locale =
-      command_line->GetSwitchValueASCII(::switches::kLang);
+      command_line.GetSwitchValueASCII(::switches::kLang);
   ui::ResourceBundle::InitSharedInstanceWithLocale(
       locale, nullptr, ui::ResourceBundle::DO_NOT_LOAD_COMMON_RESOURCES);
 
@@ -147,6 +147,11 @@ void InitializeResourceBundle() {
   ui::ResourceBundle::GetSharedInstance().AddDataPackFromPath(
       chrome_200_pak, ui::SCALE_FACTOR_200P);
 #endif
+}
+
+void InitApplicationLocale(const base::CommandLine& command_line) {
+  l10n_util::GetApplicationLocale(
+      command_line.GetSwitchValueASCII(::switches::kLang));
 }
 
 }  // namespace
@@ -359,7 +364,12 @@ void HeadlessContentMainDelegate::PreSandboxStartup() {
 #endif  // defined(OS_WIN)
 
   InitCrashReporter(command_line);
-  InitializeResourceBundle();
+  InitializeResourceBundle(command_line);
+
+  // Even though InitializeResourceBundle() has indirectly done the locale
+  // initialization, do it again explicitly to avoid depending on the resource
+  // bundle, which may go away in the future in Headless code.
+  InitApplicationLocale(command_line);
 }
 
 #if !defined(CHROME_MULTIPLE_DLL_CHILD)
