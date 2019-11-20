@@ -298,13 +298,13 @@ void PlatformVerificationFlow::OnCertificateReady(
   }
   bool is_expiring_soon = (expiry_status == EXPIRY_STATUS_EXPIRING_SOON);
   cryptohome::AsyncMethodCaller::DataCallback cryptohome_callback =
-      base::Bind(&PlatformVerificationFlow::OnChallengeReady, this, context,
-                 account_id, certificate_chain, is_expiring_soon);
+      base::BindOnce(&PlatformVerificationFlow::OnChallengeReady, this, context,
+                     account_id, certificate_chain, is_expiring_soon);
   std::string key_name = kContentProtectionKeyPrefix;
   key_name += context.service_id;
   async_caller_->TpmAttestationSignSimpleChallenge(
       KEY_USER, cryptohome::Identification(account_id), key_name,
-      context.challenge, cryptohome_callback);
+      context.challenge, std::move(cryptohome_callback));
 }
 
 void PlatformVerificationFlow::OnCertificateTimeout(
