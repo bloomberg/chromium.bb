@@ -211,8 +211,9 @@ class CORE_EXPORT Animation : public EventTargetWithInlineData,
   void CancelIncompatibleAnimationsOnCompositor();
   bool HasActiveAnimationsOnCompositor();
   void SetCompositorPending(bool effect_changed = false);
-  void NotifyCompositorStartTime(double timeline_time);
-  void NotifyStartTime(double timeline_time);
+  void NotifyReady(double ready_time);
+  void CommitPendingPlay(double ready_time);
+  void CommitPendingPause(double ready_time);
   // CompositorAnimationClient implementation.
   CompositorAnimation* GetCompositorAnimation() const override {
     return compositor_animation_ ? compositor_animation_->GetAnimation()
@@ -244,7 +245,6 @@ class CORE_EXPORT Animation : public EventTargetWithInlineData,
   void Trace(blink::Visitor*) override;
 
   bool CompositorPendingForTesting() const { return compositor_pending_; }
-  void CommitAllUpdatesForTesting(double ready_time);
 
  protected:
   DispatchEventResult DispatchEventInternal(Event&) override;
