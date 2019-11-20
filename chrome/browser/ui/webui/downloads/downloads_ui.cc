@@ -146,10 +146,10 @@ content::WebUIDataSource* CreateDownloadsUIHTMLSource(Profile* profile) {
   // NOTE: the undo shortcut is also defined in downloads/downloads.html
   // TODO(crbug/893033): de-duplicate shortcut by moving all shortcut
   // definitions from JS to C++.
-  ui::Accelerator undoAccelerator(ui::VKEY_Z, ui::EF_PLATFORM_ACCELERATOR);
+  ui::Accelerator undo_accelerator(ui::VKEY_Z, ui::EF_PLATFORM_ACCELERATOR);
   source->AddString("undoDescription", l10n_util::GetStringFUTF16(
                                            IDS_UNDO_DESCRIPTION,
-                                           undoAccelerator.GetShortcutText()));
+                                           undo_accelerator.GetShortcutText()));
 
   PrefService* prefs = profile->GetPrefs();
   source->AddBoolean("allowDeletingHistory",

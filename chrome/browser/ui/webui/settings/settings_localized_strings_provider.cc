@@ -1930,11 +1930,11 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
       "passwordsLeakDetectionEnabled",
       base::FeatureList::IsEnabled(password_manager::features::kLeakDetection));
 
-  ui::Accelerator undoAccelerator(ui::VKEY_Z, ui::EF_PLATFORM_ACCELERATOR);
+  ui::Accelerator undo_accelerator(ui::VKEY_Z, ui::EF_PLATFORM_ACCELERATOR);
   html_source->AddString(
       "undoDescription",
       l10n_util::GetStringFUTF16(IDS_UNDO_DESCRIPTION,
-                                 undoAccelerator.GetShortcutText()));
+                                 undo_accelerator.GetShortcutText()));
 
   AddLocalizedStringsBulk(html_source, kLocalizedStrings,
                           base::size(kLocalizedStrings));
