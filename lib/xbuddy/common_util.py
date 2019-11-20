@@ -45,8 +45,11 @@ def MkDirP(directory):
   if os.path.isdir(directory):
     # Fix permissions and ownership of the directory and its subfiles by
     # calling chown recursively with current user and group.
-    osutils.Chown(directory, user=os.getuid(), group=os.getgid(),
-                  recursive=True)
+    try:
+      osutils.Chown(directory, user=os.getuid(), group=os.getgid(),
+                    recursive=True)
+    except cros_build_lib.RunCommandError as e:
+      _Log('Could not chown: %s', e)
   else:
     osutils.SafeMakedirs(directory)
 
