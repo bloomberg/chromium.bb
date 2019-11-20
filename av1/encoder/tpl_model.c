@@ -351,11 +351,8 @@ static AOM_INLINE void mode_estimation(
   tpl_stats->recrf_dist = AOMMAX(tpl_stats->srcrf_dist, tpl_stats->recrf_dist);
   tpl_stats->recrf_rate = AOMMAX(tpl_stats->srcrf_rate, tpl_stats->recrf_rate);
 
-  if (frame_idx && best_rf_idx != -1) {
-    tpl_stats->mv.as_int = best_mv.as_int;
-    tpl_stats->ref_frame_index =
-        cpi->tpl_frame[frame_idx].ref_map_index[best_rf_idx];
-  }
+  tpl_stats->mv.as_int = best_mv.as_int;
+  tpl_stats->ref_frame_index = best_rf_idx;
 }
 
 static int round_floor(int ref_pos, int bsize_pix) {
@@ -435,8 +432,12 @@ static int64_t delta_rate_cost(int64_t delta_rate, int64_t recrf_dist,
 static AOM_INLINE void tpl_model_update_b(AV1_COMP *cpi, TplDepFrame *tpl_frame,
                                           TplDepStats *tpl_stats_ptr,
                                           int mi_row, int mi_col,
-                                          const BLOCK_SIZE bsize) {
-  TplDepFrame *ref_tpl_frame = &tpl_frame[tpl_stats_ptr->ref_frame_index];
+                                          const BLOCK_SIZE bsize,
+                                          int frame_idx) {
+  if (tpl_stats_ptr->ref_frame_index < 0) return;
+  TplDepFrame *ref_tpl_frame =
+      &tpl_frame[tpl_frame[frame_idx]
+                     .ref_map_index[tpl_stats_ptr->ref_frame_index]];
   TplDepStats *ref_stats_ptr = ref_tpl_frame->tpl_stats_ptr;
 
   const int ref_pos_row = mi_row * MI_SIZE + (tpl_stats_ptr->mv.as_mv.row >> 3);
@@ -493,7 +494,8 @@ static AOM_INLINE void tpl_model_update_b(AV1_COMP *cpi, TplDepFrame *tpl_frame,
 
 static AOM_INLINE void tpl_model_update(AV1_COMP *cpi, TplDepFrame *tpl_frame,
                                         TplDepStats *tpl_stats_ptr, int mi_row,
-                                        int mi_col, const BLOCK_SIZE bsize) {
+                                        int mi_col, const BLOCK_SIZE bsize,
+                                        int frame_idx) {
   const int mi_height = mi_size_high[bsize];
   const int mi_width = mi_size_wide[bsize];
   const int step = 1 << cpi->tpl_stats_block_mis_log2;
@@ -505,7 +507,7 @@ static AOM_INLINE void tpl_model_update(AV1_COMP *cpi, TplDepFrame *tpl_frame,
       TplDepStats *tpl_ptr = &tpl_stats_ptr[av1_tpl_ptr_pos(
           cpi, mi_row + idy, mi_col + idx, tpl_frame->stride)];
       tpl_model_update_b(cpi, tpl_frame, tpl_ptr, mi_row + idy, mi_col + idx,
-                         tpl_block_size);
+                         tpl_block_size, frame_idx);
     }
   }
 }
@@ -711,7 +713,7 @@ static void mc_flow_synthesizer(AV1_COMP *cpi, int frame_idx) {
     for (int mi_col = 0; mi_col < cm->mi_cols; mi_col += mi_width) {
       if (frame_idx) {
         tpl_model_update(cpi, cpi->tpl_frame, tpl_frame->tpl_stats_ptr, mi_row,
-                         mi_col, bsize);
+                         mi_col, bsize, frame_idx);
       }
     }
   }
