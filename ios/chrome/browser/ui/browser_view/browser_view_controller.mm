@@ -788,11 +788,14 @@ NSString* const kBrowserViewControllerSnackbarCategory =
         [[ToolbarCoordinatorAdaptor alloc] initWithDispatcher:self.dispatcher];
     self.toolbarInterface = _toolbarCoordinatorAdaptor;
 
-    _downloadManagerCoordinator = [[DownloadManagerCoordinator alloc]
-        initWithBaseViewController:_browserContainerViewController];
-    _downloadManagerCoordinator.presenter =
-        [[VerticalAnimationContainer alloc] init];
-
+    // TODO(crbug.com/1024288): Remove these lines along the legacy code
+    // removal.
+    if (!IsDownloadInfobarMessagesUIEnabled()) {
+      _downloadManagerCoordinator = [[DownloadManagerCoordinator alloc]
+          initWithBaseViewController:_browserContainerViewController];
+      _downloadManagerCoordinator.presenter =
+          [[VerticalAnimationContainer alloc] init];
+    }
     if (!base::FeatureList::IsEnabled(dialogs::kNonModalDialogs)) {
       _dialogPresenter = [[DialogPresenter alloc] initWithDelegate:self
                                           presentingViewController:self];
@@ -2200,12 +2203,15 @@ NSString* const kBrowserViewControllerSnackbarCategory =
       [self.primaryToolbarCoordinator activityServicePositioner];
   _activityServiceCoordinator.presentationProvider = self;
 
-  // DownloadManagerCoordinator is already created.
-  DCHECK(_downloadManagerCoordinator);
-  _downloadManagerCoordinator.webStateList = self.tabModel.webStateList;
-  _downloadManagerCoordinator.bottomMarginHeightAnchor =
-      [NamedGuide guideWithName:kSecondaryToolbarGuide view:self.contentArea]
-          .heightAnchor;
+  // TODO(crbug.com/1024288): Remove these lines along the legacy code removal.
+  if (!IsDownloadInfobarMessagesUIEnabled()) {
+    // DownloadManagerCoordinator is already created.
+    DCHECK(_downloadManagerCoordinator);
+    _downloadManagerCoordinator.webStateList = self.tabModel.webStateList;
+    _downloadManagerCoordinator.bottomMarginHeightAnchor =
+        [NamedGuide guideWithName:kSecondaryToolbarGuide view:self.contentArea]
+            .heightAnchor;
+  }
 
   self.popupMenuCoordinator =
       [[PopupMenuCoordinator alloc] initWithBaseViewController:self
@@ -2722,10 +2728,14 @@ NSString* const kBrowserViewControllerSnackbarCategory =
         ReadingListModelFactory::GetForBrowserState(self.browserState));
   }
 
-  // DownloadManagerTabHelper cannot function without delegate.
-  DCHECK(_downloadManagerCoordinator);
-  DownloadManagerTabHelper::CreateForWebState(webState,
-                                              _downloadManagerCoordinator);
+  // TODO(crbug.com/1024288): Remove these lines along the legacy code removal.
+  if (!IsDownloadInfobarMessagesUIEnabled()) {
+    // DownloadManagerTabHelper cannot function without delegate.
+    DCHECK(_downloadManagerCoordinator);
+    DownloadManagerTabHelper::CreateForWebState(webState,
+                                                _downloadManagerCoordinator);
+  }
+
   NewTabPageTabHelper::CreateForWebState(webState, self);
 
   // The language detection helper accepts a callback from the translate
