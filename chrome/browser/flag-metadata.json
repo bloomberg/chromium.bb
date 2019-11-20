@@ -376,8 +376,8 @@
   },
   {
     "name": "bluetooth-aggressive-appearance-filter",
-    "owners": [ "hansberry" ],
-    "expiry_milestone": 80
+    "owners": [ "hansberry", "cros-system-services@google.com" ],
+    "expiry_milestone": 85
   },
   {
     "name": "BundledConnectionHelp",
@@ -2428,8 +2428,13 @@
   },
   {
     "name": "instant-tethering",
-    "owners": [ "khorimoto" ],
-    "expiry_milestone": 80
+    "owners": [ "hansberry", "khorimoto", "vecore", "cros-system-services@google.com" ],
+    // Though Instant Tethering is now a launched feature, it is only marked enabled on select,
+    // approved boards which have passed hardware verification and received server config seeds
+    // marking it as enabled. This means it is actually disabled-by-default, and since test machines
+    // don't receive server config seeds, we depend on this flag to flip the feature to enabled on
+    // test machines for debug purposes.
+    "expiry_milestone": -1
   },
   {
     "name": "interest-feed-content-suggestions",
@@ -3247,8 +3252,8 @@
   },
   {
     "name": "show-bluetooth-device-battery",
-    "owners": [ "hansberry" ],
-    "expiry_milestone": 80
+    "owners": [ "hansberry", "cros-system-services@google.com" ],
+    "expiry_milestone": 85
   },
   {
     "name": "show-legacy-tls-warnings",
@@ -3538,8 +3543,8 @@
   },
   {
     "name": "updated_cellular_activation_ui",
-    "owners": [ "azeemarshad", "khorimoto" ],
-    "expiry_milestone": 80
+    "owners": [ "azeemarshad", "khorimoto", "vecore", "cros-system-services@google.com" ],
+    "expiry_milestone": 85
   },
   {
     "name": "usage-stats",
