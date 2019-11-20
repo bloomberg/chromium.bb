@@ -21364,6 +21364,7 @@ Called by update_net_error_codes.py.-->
   <int value="1414" label="VIRTUALKEYBOARDPRIVATE_SETAREATOREMAINONSCREEN"/>
   <int value="1415" label="TERMINALPRIVATE_GETSETTINGS"/>
   <int value="1416" label="TERMINALPRIVATE_SETSETTINGS"/>
+  <int value="1417" label="WEBSTOREPRIVATE_REQUESTEXTENSION"/>
 </enum>
 
 <enum name="ExtensionIconState">
