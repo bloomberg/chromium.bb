@@ -31,18 +31,16 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_PEERCONNECTION_RTC_ICE_CANDIDATE_PLATFORM_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_PEERCONNECTION_RTC_ICE_CANDIDATE_PLATFORM_H_
 
-#include "base/memory/ref_counted.h"
 #include "base/optional.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
 
 namespace blink {
 
 class PLATFORM_EXPORT RTCIceCandidatePlatform final
-    : public base::RefCountedThreadSafe<RTCIceCandidatePlatform> {
+    : public WTF::ThreadSafeRefCounted<RTCIceCandidatePlatform> {
  public:
-  REQUIRE_ADOPTION_FOR_REFCOUNTED_TYPE();
-
   // Creates a new RTCIceCandidatePlatform using |candidate|, |sdp_mid| and
   // |sdp_m_line_index|. If |sdp_m_line_index| is negative, it is
   // considered as having no value.
@@ -76,7 +74,7 @@ class PLATFORM_EXPORT RTCIceCandidatePlatform final
   const String& UsernameFragment() const { return username_fragment_; }
 
  private:
-  friend class base::RefCountedThreadSafe<RTCIceCandidatePlatform>;
+  friend class WTF::ThreadSafeRefCounted<RTCIceCandidatePlatform>;
 
   RTCIceCandidatePlatform(String candidate,
                           String sdp_mid,
