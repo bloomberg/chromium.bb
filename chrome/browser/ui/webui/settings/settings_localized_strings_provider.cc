@@ -249,6 +249,8 @@ void AddA11yStrings(content::WebUIDataSource* html_source) {
     {"captionsColorCyan", IDS_SETTINGS_CAPTIONS_COLOR_CYAN},
     {"captionsColorMagenta", IDS_SETTINGS_CAPTIONS_COLOR_MAGENTA},
     {"captionsDefaultSetting", IDS_SETTINGS_CAPTIONS_DEFAULT_SETTING},
+    {"settingsSliderRoleDescription",
+      IDS_SETTINGS_SLIDER_MIN_MAX_ARIA_ROLE_DESCRIPTION},
 #if defined(OS_CHROMEOS)
     {"optionsInMenuLabel", IDS_SETTINGS_OPTIONS_IN_MENU_LABEL},
     {"largeMouseCursorLabel", IDS_SETTINGS_LARGE_MOUSE_CURSOR_LABEL},
