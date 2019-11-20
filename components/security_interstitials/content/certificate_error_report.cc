@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ssl/certificate_error_report.h"
+#include "components/security_interstitials/content/certificate_error_report.h"
 
 #include <vector>
 

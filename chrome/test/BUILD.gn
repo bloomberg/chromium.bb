@@ -3289,7 +3289,6 @@ test("unit_tests") {
     "../browser/signin/test_signin_client_builder.cc",
     "../browser/signin/test_signin_client_builder.h",
     "../browser/site_isolation/site_isolation_policy_unittest.cc",
-    "../browser/ssl/certificate_error_report_unittest.cc",
     "../browser/ssl/certificate_error_reporter_unittest.cc",
     "../browser/ssl/certificate_reporting_test_utils.cc",
     "../browser/ssl/certificate_reporting_test_utils.h",

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SSL_CERTIFICATE_ERROR_REPORT_H_
-#define CHROME_BROWSER_SSL_CERTIFICATE_ERROR_REPORT_H_
+#ifndef COMPONENTS_SECURITY_INTERSTITIALS_CONTENT_CERTIFICATE_ERROR_REPORT_H_
+#define COMPONENTS_SECURITY_INTERSTITIALS_CONTENT_CERTIFICATE_ERROR_REPORT_H_
 
 #include <memory>
 #include <string>
 
-#include "chrome/browser/ssl/cert_logger.pb.h"
+#include "components/security_interstitials/content/cert_logger.pb.h"
 #include "components/version_info/version_info.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/cert/cert_verifier.h"
@@ -131,4 +131,4 @@ class CertificateErrorReport {
   std::unique_ptr<chrome_browser_ssl::CertLoggerRequest> cert_report_;
 };
 
-#endif  // CHROME_BROWSER_SSL_CERTIFICATE_ERROR_REPORT_H_
+#endif  // COMPONENTS_SECURITY_INTERSTITIALS_CONTENT_CERTIFICATE_ERROR_REPORT_H_

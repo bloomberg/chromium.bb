@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SSL_CERT_REPORT_HELPER_H_
-#define CHROME_BROWSER_SSL_CERT_REPORT_HELPER_H_
+#ifndef COMPONENTS_SECURITY_INTERSTITIALS_CONTENT_CERT_REPORT_HELPER_H_
+#define COMPONENTS_SECURITY_INTERSTITIALS_CONTENT_CERT_REPORT_HELPER_H_
 
 #include <string>
 
 #include "base/macros.h"
-#include "chrome/browser/ssl/certificate_error_report.h"
+#include "components/security_interstitials/content/certificate_error_report.h"
 #include "components/security_interstitials/core/controller_client.h"
 #include "net/ssl/ssl_info.h"
 #include "url/gurl.h"
@@ -123,4 +123,4 @@ class CertReportHelper {
   DISALLOW_COPY_AND_ASSIGN(CertReportHelper);
 };
 
-#endif  // CHROME_BROWSER_SSL_CERT_REPORT_HELPER_H_
+#endif  // COMPONENTS_SECURITY_INTERSTITIALS_CONTENT_CERT_REPORT_HELPER_H_

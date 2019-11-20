@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ssl/certificate_error_report.h"
+#include "components/security_interstitials/content/certificate_error_report.h"
 
 #include <set>
 #include <string>
@@ -17,9 +17,9 @@
 #include "base/time/default_clock.h"
 #include "base/time/default_tick_clock.h"
 #include "build/build_config.h"
-#include "chrome/browser/ssl/cert_logger.pb.h"
 #include "components/network_time/network_time_test_utils.h"
 #include "components/prefs/testing_pref_service.h"
+#include "components/security_interstitials/content/cert_logger.pb.h"
 #include "components/version_info/version_info.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/ssl/ssl_info.h"
