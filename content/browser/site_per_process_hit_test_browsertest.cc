@@ -6798,8 +6798,6 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestDataGenerationBrowserTest,
   DCHECK(hit_test_data.size() >= 3);
   // The iframe element in main page is transformed and also clips the content
   // of the subframe, so we expect to do slow path hit testing in this case.
-  // TODO(sunxd): We should do fast path hit testing in this case. See
-  // https://crbug.com/851507.
   EXPECT_TRUE(ApproximatelyEqual(
       TransformRectToQuadF(gfx::Rect(100, 100), expected_transform),
       TransformRectToQuadF(hit_test_data[2])));
