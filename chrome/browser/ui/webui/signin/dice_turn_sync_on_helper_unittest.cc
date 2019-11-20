@@ -157,8 +157,8 @@ class FakeUserPolicySigninService : public policy::UserPolicySigninService {
       const std::string& dm_token,
       const std::string& client_id,
       scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory,
-      const PolicyFetchCallback& callback) override {
-    callback.Run(true);
+      PolicyFetchCallback callback) override {
+    std::move(callback).Run(true);
   }
 
  private:

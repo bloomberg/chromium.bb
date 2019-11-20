@@ -340,8 +340,8 @@ void DiceTurnSyncOnHelper::LoadPolicyWithCachedCredentials() {
       AccountIdFromAccountInfo(account_info_), dm_token_, client_id_,
       content::BrowserContext::GetDefaultStoragePartition(profile_)
           ->GetURLLoaderFactoryForBrowserProcess(),
-      base::Bind(&DiceTurnSyncOnHelper::OnPolicyFetchComplete,
-                 weak_pointer_factory_.GetWeakPtr()));
+      base::BindOnce(&DiceTurnSyncOnHelper::OnPolicyFetchComplete,
+                     weak_pointer_factory_.GetWeakPtr()));
 }
 
 void DiceTurnSyncOnHelper::OnPolicyFetchComplete(bool success) {
