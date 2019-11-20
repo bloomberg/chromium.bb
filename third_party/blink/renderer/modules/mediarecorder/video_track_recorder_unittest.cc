@@ -413,7 +413,7 @@ TEST_F(VideoTrackRecorderTest, ReleasesFrame) {
   Mock::VerifyAndClearExpectations(this);
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          VideoTrackRecorderTest,
                          ::testing::Combine(ValuesIn(kTrackRecorderTestCodec),
                                             ValuesIn(kTrackRecorderTestSize),
