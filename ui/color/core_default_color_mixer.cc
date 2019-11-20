@@ -28,12 +28,11 @@ ColorMixer& AddMixerForDarkMode(ColorProvider* provider) {
            {kColorAlertHighSeverity, gfx::kGoogleRed300},
            {kColorAlertLowSeverity, gfx::kGoogleGreen300},
            {kColorAlertMediumSeverity, gfx::kGoogleYellow300},
-           {kColorSecondaryForeground, gfx::kGoogleGrey500},
-           {kColorLinkForeground, gfx::kGoogleBlue300},
+           {kColorBorderAndSeparatorForeground, gfx::kGoogleGrey800},
            {kColorPrimaryBackground, SkColorSetRGB(0x29, 0x2A, 0x2D)},
            {kColorPrimaryForeground, gfx::kGoogleGrey200},
-           {kColorSecondaryBackgroundSubtle, SkColorSetRGB(0x32, 0x36, 0x39)},
-           {kColorSeparatorForeground, gfx::kGoogleGrey800},
+           {kColorSecondaryForeground, gfx::kGoogleGrey500},
+           {kColorSubtleEmphasisBackground, SkColorSetRGB(0x32, 0x36, 0x39)},
            {kColorTextSelectionBackground, gfx::kGoogleBlue800},
        }});
   return mixer;
@@ -47,12 +46,11 @@ ColorMixer& AddMixerForLightMode(ColorProvider* provider) {
                     {kColorAlertHighSeverity, gfx::kGoogleRed600},
                     {kColorAlertLowSeverity, gfx::kGoogleGreen700},
                     {kColorAlertMediumSeverity, gfx::kGoogleYellow700},
-                    {kColorSecondaryForeground, gfx::kGoogleGrey700},
-                    {kColorLinkForeground, gfx::kGoogleBlue700},
+                    {kColorBorderAndSeparatorForeground, gfx::kGoogleGrey300},
                     {kColorPrimaryBackground, SK_ColorWHITE},
                     {kColorPrimaryForeground, gfx::kGoogleGrey900},
-                    {kColorSecondaryBackgroundSubtle, gfx::kGoogleGrey050},
-                    {kColorSeparatorForeground, gfx::kGoogleGrey300},
+                    {kColorSecondaryForeground, gfx::kGoogleGrey700},
+                    {kColorSubtleEmphasisBackground, gfx::kGoogleGrey050},
                     {kColorTextSelectionBackground, gfx::kGoogleBlue200},
                 }});
   return mixer;
@@ -65,7 +63,7 @@ void AddCoreDefaultColorMixers(ColorProvider* provider, bool dark_window) {
                                   : AddMixerForLightMode(provider);
   mixer[kColorDisabledForeground] = BlendForMinContrast(
       gfx::kGoogleGrey600, kColorPrimaryBackground, kColorPrimaryForeground);
-  mixer[kColorSecondaryBackground] =
+  mixer[kColorItemSelectionBackground] =
       BlendForMinContrastWithSelf(kColorPrimaryBackground, 1.67f);
   // TODO(pkasting): High contrast?
 }

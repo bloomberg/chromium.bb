@@ -61,6 +61,8 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
       // FocusableBorder
       case NativeTheme::kColorId_FocusedBorderColor:
         return SkColorSetA(gfx::kGoogleBlue300, 0x4D);
+      case NativeTheme::kColorId_UnfocusedBorderColor:
+        return gfx::kGoogleGrey800;
 
       // Button
       case NativeTheme::kColorId_ButtonEnabledColor:
@@ -70,12 +72,15 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
         return gfx::kGoogleGrey500;
       case NativeTheme::kColorId_TextOnProminentButtonColor:
         return gfx::kGoogleGrey900;
+      case NativeTheme::kColorId_ButtonBorderColor:
+        return gfx::kGoogleGrey800;
 
       // MenuItem
       case NativeTheme::kColorId_EnabledMenuItemForegroundColor:
       case NativeTheme::kColorId_SelectedMenuItemForegroundColor:
       case NativeTheme::kColorId_HighlightedMenuItemForegroundColor:
         return gfx::kGoogleGrey200;
+      case NativeTheme::kColorId_MenuBorderColor:
       case NativeTheme::kColorId_MenuSeparatorColor:
         return gfx::kGoogleGrey800;
       case NativeTheme::kColorId_MenuBackgroundColor:
@@ -109,6 +114,8 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
         return gfx::kGoogleBlue300;
       case NativeTheme::kColorId_TabTitleColorInactive:
         return gfx::kGoogleGrey500;
+      case NativeTheme::kColorId_TabBottomBorder:
+        return gfx::kGoogleGrey800;
 
       // Table
       case NativeTheme::kColorId_TableBackground:
@@ -198,31 +205,26 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
           .color;
     }
     case NativeTheme::kColorId_ProminentButtonDisabledColor: {
-      const SkColor fg = base_theme->GetSystemColor(
-          NativeTheme::kColorId_ButtonBorderColor, color_scheme);
       const SkColor bg = base_theme->GetSystemColor(
           NativeTheme::kColorId_DialogBackground, color_scheme);
-      return color_utils::AlphaBlend(fg, bg, gfx::kDisabledControlAlpha);
-    }
-    case NativeTheme::kColorId_ButtonBorderColor: {
-      const SkColor bg = base_theme->GetSystemColor(
-          NativeTheme::kColorId_DialogBackground, color_scheme);
-      return color_utils::BlendForMinContrast(bg, bg, base::nullopt, 1.67f)
+      return color_utils::BlendForMinContrast(bg, bg, base::nullopt, 1.2f)
           .color;
     }
+    case NativeTheme::kColorId_ButtonBorderColor:
+      return gfx::kGoogleGrey300;
 
     // MenuItem
     case NativeTheme::kColorId_EnabledMenuItemForegroundColor:
     case NativeTheme::kColorId_SelectedMenuItemForegroundColor:
     case NativeTheme::kColorId_HighlightedMenuItemForegroundColor:
       return kPrimaryTextColor;
-    case NativeTheme::kColorId_FocusedMenuItemBackgroundColor:
-    case NativeTheme::kColorId_MenuBorderColor: {
+    case NativeTheme::kColorId_FocusedMenuItemBackgroundColor: {
       const SkColor bg = base_theme->GetSystemColor(
           NativeTheme::kColorId_MenuBackgroundColor, color_scheme);
       return color_utils::BlendForMinContrast(bg, bg, base::nullopt, 1.67f)
           .color;
     }
+    case NativeTheme::kColorId_MenuBorderColor:
     case NativeTheme::kColorId_MenuSeparatorColor:
       return gfx::kGoogleGrey300;
     case NativeTheme::kColorId_MenuBackgroundColor:
@@ -268,7 +270,7 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
     }
     case NativeTheme::kColorId_LinkEnabled:
     case NativeTheme::kColorId_LinkPressed:
-      return gfx::kGoogleBlue700;
+      return gfx::kGoogleBlue600;
 
     // Separator
     case NativeTheme::kColorId_SeparatorColor:
@@ -279,12 +281,8 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
       return gfx::kGoogleBlue600;
     case NativeTheme::kColorId_TabTitleColorInactive:
       return gfx::kGoogleGrey700;
-    case NativeTheme::kColorId_TabBottomBorder: {
-      const SkColor bg = base_theme->GetSystemColor(
-          NativeTheme::kColorId_DialogBackground, color_scheme);
-      return color_utils::BlendForMinContrast(bg, bg, base::nullopt, 1.67f)
-          .color;
-    }
+    case NativeTheme::kColorId_TabBottomBorder:
+      return gfx::kGoogleGrey300;
 
     // Textfield
     case NativeTheme::kColorId_TextfieldDefaultColor:
@@ -362,12 +360,8 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
     // FocusableBorder
     case NativeTheme::kColorId_FocusedBorderColor:
       return SkColorSetA(gfx::kGoogleBlue600, 0x4D);
-    case NativeTheme::kColorId_UnfocusedBorderColor: {
-      const SkColor bg = base_theme->GetSystemColor(
-          NativeTheme::kColorId_WindowBackground, color_scheme);
-      return color_utils::BlendForMinContrast(bg, bg, base::nullopt, 1.67f)
-          .color;
-    }
+    case NativeTheme::kColorId_UnfocusedBorderColor:
+      return gfx::kGoogleGrey300;
 
     // Material spinner/throbber
     case NativeTheme::kColorId_ThrobberSpinningColor:
