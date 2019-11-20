@@ -78,6 +78,12 @@ static_library("dom_keyboard_layout") {
     "keycodes/dom/dom_keyboard_layout_map_base.h",
   ]
 
+  deps = [
+    ":dom_keycode_converter",
+    ":events_base",
+    "//base",
+  ]
+
   # Make sure we don't compile two versions of dom_keyboard_layout_map*
   if (is_mac) {
     sources += [ "keycodes/dom/dom_keyboard_layout_map_mac.mm" ]
@@ -85,14 +91,8 @@ static_library("dom_keyboard_layout") {
     sources += [ "keycodes/dom/dom_keyboard_layout_map_win.cc" ]
   } else {
     sources += [ "keycodes/dom/dom_keyboard_layout_map_ozone.cc" ]
+    deps += [ "//ui/events/ozone/layout" ]
   }
-
-  deps = [
-    ":dom_keycode_converter",
-    ":events_base",
-    "//base",
-    "//ui/events/ozone/layout",
-  ]
 
   if (!is_ios) {
     deps += [ "//ipc:param_traits" ]
