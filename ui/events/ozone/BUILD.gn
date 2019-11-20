@@ -25,6 +25,11 @@ if (use_ozone) {
       "device/udev/device_manager_udev.cc",
       "device/udev/device_manager_udev.h",
       "events_ozone_export.h",
+      "gamepad/gamepad_event.cc",
+      "gamepad/gamepad_event.h",
+      "gamepad/gamepad_observer.h",
+      "gamepad/gamepad_provider_ozone.cc",
+      "gamepad/gamepad_provider_ozone.h",
       "keyboard/event_auto_repeat_handler.cc",
       "keyboard/event_auto_repeat_handler.h",
     ]
@@ -34,7 +39,7 @@ if (use_ozone) {
       "//base/third_party/dynamic_annotations",
       "//ui/display",
       "//ui/events",
-      "//ui/events:events_base",
+      "//ui/events/devices",
       "//ui/gfx",
     ]
 
@@ -134,11 +139,6 @@ if (use_ozone) {
         "evdev/touch_filter/single_position_touch_noise_filter.cc",
         "evdev/touch_filter/single_position_touch_noise_filter.h",
         "evdev/touch_filter/touch_filter.h",
-        "gamepad/gamepad_event.cc",
-        "gamepad/gamepad_event.h",
-        "gamepad/gamepad_observer.h",
-        "gamepad/gamepad_provider_ozone.cc",
-        "gamepad/gamepad_provider_ozone.h",
       ]
 
       defines = [ "EVENTS_OZONE_EVDEV_IMPLEMENTATION" ]
