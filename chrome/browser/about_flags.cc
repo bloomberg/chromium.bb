@@ -3864,7 +3864,7 @@ const FeatureEntry kFeatureEntries[] = {
 
     {"sharing-rename-devices", flag_descriptions::kSharingRenameDevicesName,
      flag_descriptions::kSharingRenameDevicesDescription, kOsAll,
-     FEATURE_VALUE_TYPE(kSharingRenameDevices)},
+     FEATURE_VALUE_TYPE(send_tab_to_self::kSharingRenameDevices)},
 
 #if defined(OS_CHROMEOS)
     {"discover-app", flag_descriptions::kEnableDiscoverAppName,

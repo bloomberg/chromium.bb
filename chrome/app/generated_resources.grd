@@ -6763,20 +6763,6 @@ the Bookmarks menu.">
         Download
       </message>
 
-    <!-- Different device types using in Sharing. -->
-      <message name="IDS_BROWSER_SHARING_DEVICE_TYPE_COMPUTER" desc = "The label for a device of type computer.">
-        Computer
-      </message>
-      <message name="IDS_BROWSER_SHARING_DEVICE_TYPE_DEVICE" desc = "The label for a generic device.">
-        Device
-      </message>
-      <message name="IDS_BROWSER_SHARING_DEVICE_TYPE_PHONE" desc = "The label for a device of type phone.">
-        Phone
-      </message>
-      <message name="IDS_BROWSER_SHARING_DEVICE_TYPE_TABLET" desc = "The label for a device of type tablet.">
-        Tablet
-      </message>
-
       <!-- Sharing features. -->
       <message name="IDS_SHARING_REMOTE_COPY_NOTIFICATION_TITLE_TEXT_CONTENT_UNKNOWN_DEVICE" desc="Title text displayed in a Remote Copy (for text content) notification when the source device name is unknown.">
         Text shared from other device
