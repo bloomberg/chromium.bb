@@ -848,11 +848,7 @@ Animation::AnimationPlayState Animation::CalculateAnimationPlayState() const {
   //    * both the start time of animation is unresolved and it does not have a
   //      pending play task,
   //    then paused.
-  // TODO(crbug.com/958433): Presently using a paused_ flag that tracks an
-  // animation being in a paused state (including a pending pause). The above
-  // rules do not yet work verbatim due to subtle timing discrepancies on when
-  // start_time gets resolved.
-  if (paused_)
+  if (pending_pause_ || (!start_time_ && !pending_play_))
     return kPaused;
 
   // 3.  For animation, current time is resolved and either of the following
