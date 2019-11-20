@@ -449,7 +449,7 @@ class CertVerifyProcInternalTest
   scoped_refptr<CertVerifyProc> verify_proc_;
 };
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          CertVerifyProcInternalTest,
                          testing::ValuesIn(kAllCertVerifiers),
                          VerifyProcTypeToName);
@@ -2654,7 +2654,7 @@ class CertVerifyProcNameNormalizationTest : public CertVerifyProcInternalTest {
   base::HistogramTester histograms_;
 };
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          CertVerifyProcNameNormalizationTest,
                          testing::ValuesIn(kAllCertVerifiers),
                          VerifyProcTypeToName);
@@ -2949,7 +2949,7 @@ class CertVerifyProcInternalWithNetFetchingTest
       request_handlers_;
 };
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          CertVerifyProcInternalWithNetFetchingTest,
                          testing::ValuesIn(kAllCertVerifiers),
                          VerifyProcTypeToName);

@@ -1151,7 +1151,7 @@ TEST_P(X509CertificateParseTest, CanParseFormat) {
   }
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          X509CertificateParseTest,
                          testing::ValuesIn(kFormatTestData));
 
@@ -1365,7 +1365,7 @@ TEST_P(X509CertificateNameVerifyTest, VerifyHostname) {
                                             ip_addressses));
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          X509CertificateNameVerifyTest,
                          testing::ValuesIn(kNameVerifyTestData));
 
@@ -1405,7 +1405,7 @@ TEST_P(X509CertificatePublicKeyInfoTest, GetPublicKeyInfo) {
   EXPECT_EQ(data.expected_type, actual_type);
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          X509CertificatePublicKeyInfoTest,
                          testing::ValuesIn(kPublicKeyInfoTestData));
 
