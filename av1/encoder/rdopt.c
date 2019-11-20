@@ -10912,6 +10912,9 @@ static int64_t handle_inter_mode(AV1_COMP *const cpi, TileDataEnc *tile_data,
   // First, perform a simple translation search for each of the indices. If
   // an index performs well, it will be fully searched here.
   const int ref_set = get_drl_refmv_count(x, mbmi->ref_frame, this_mode);
+  // Save MV results from first 2 ref_mv_idx.
+  int_mv save_mv[MAX_REF_MV_SEARCH - 1][2] = { { { 0 } } };
+  int best_ref_mv_idx = -1;
   int idx_mask = ref_mv_idx_to_search(cpi, x, rd_stats, args, ref_best_rd,
                                       mode_info, bsize, ref_set);
   for (int ref_mv_idx = 0; ref_mv_idx < ref_set; ++ref_mv_idx) {
@@ -11042,6 +11045,34 @@ static int64_t handle_inter_mode(AV1_COMP *const cpi, TileDataEnc *tile_data,
       continue;
     }
 
+    if (cpi->sf.prune_ref_mv_idx_search && is_comp_pred) {
+      // TODO(yunqing): Move this part to a separate function when it is done.
+      // Store MV result.
+      if (ref_mv_idx < MAX_REF_MV_SEARCH - 1) {
+        for (i = 0; i < is_comp_pred + 1; ++i)
+          save_mv[ref_mv_idx][i].as_int = mbmi->mv[i].as_int;
+      }
+      // Skip the evaluation if an MV match is found.
+      if (ref_mv_idx > 0) {
+        int match = 0;
+        for (int idx = 0; idx < ref_mv_idx; ++idx) {
+          int mv_diff = 0;
+          for (i = 0; i < 1 + is_comp_pred; ++i) {
+            mv_diff += abs(save_mv[idx][i].as_mv.row - mbmi->mv[i].as_mv.row) +
+                       abs(save_mv[idx][i].as_mv.col - mbmi->mv[i].as_mv.col);
+          }
+
+          // If this mode is not the best one, and current MV is similar to
+          // previous stored MV, terminate this ref_mv_idx evaluation.
+          if (best_ref_mv_idx == -1 && mv_diff < 1) {
+            match = 1;
+            break;
+          }
+        }
+        if (match == 1) continue;
+      }
+    }
+
 #if CONFIG_COLLECT_COMPONENT_TIMING
     start_timing(cpi, compound_type_rd_time);
 #endif
@@ -11163,6 +11194,7 @@ static int64_t handle_inter_mode(AV1_COMP *const cpi, TileDataEnc *tile_data,
 
       if (tmp_rd < ref_best_rd) {
         ref_best_rd = tmp_rd;
+        best_ref_mv_idx = ref_mv_idx;
       }
     }
     restore_dst_buf(xd, orig_dst, num_planes);

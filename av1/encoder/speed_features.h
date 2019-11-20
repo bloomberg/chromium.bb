@@ -809,6 +809,9 @@ typedef struct SPEED_FEATURES {
   // If set forces interpolation filter to EIGHTTAP_REGULAR
   int skip_interp_filter_search;
 
+  // Based on previous ref_mv_idx search result, prune the following search.
+  int prune_ref_mv_idx_search;
+
   // For nonrd: use block_yrd for rd cost in interpolation filter search.
   int nonrd_use_blockyrd_interp_filter;
 
