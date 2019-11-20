@@ -3,19 +3,11 @@
 # found in the LICENSE file.
 
 import("//build/config/features.gni")
-import("//build/config/linux/pkg_config.gni")
 import("//build/config/ui.gni")
-import("//ui/base/ui_features.gni")
 
 declare_args() {
   # Support ChromeOS touchpad gestures with ozone.
   use_evdev_gestures = false
-}
-
-if (use_xkbcommon) {
-  pkg_config("xkbcommon") {
-    packages = [ "xkbcommon" ]
-  }
 }
 
 if (use_ozone) {
@@ -153,13 +145,13 @@ if (use_ozone) {
 
       deps = [
         ":events_ozone",
-        ":events_ozone_layout",
         "//base",
         "//ui/display",
         "//ui/events",
         "//ui/events:dom_keycode_converter",
         "//ui/events:events_base",
         "//ui/events/devices",
+        "//ui/events/ozone/layout",
         "//ui/events/platform",
         "//ui/gfx",
         "//ui/ozone:ozone_base",
@@ -194,40 +186,5 @@ if (use_ozone) {
         public_configs += [ ":evdev_gestures" ]
       }
     }
-  }
-}
-
-component("events_ozone_layout") {
-  sources = [
-    "layout/events_ozone_layout_export.h",
-    "layout/keyboard_layout_engine.h",
-    "layout/keyboard_layout_engine_manager.cc",
-    "layout/keyboard_layout_engine_manager.h",
-    "layout/no/no_keyboard_layout_engine.cc",
-    "layout/no/no_keyboard_layout_engine.h",
-    "layout/stub/stub_keyboard_layout_engine.cc",
-    "layout/stub/stub_keyboard_layout_engine.h",
-  ]
-
-  defines = [ "EVENTS_OZONE_LAYOUT_IMPLEMENTATION" ]
-
-  deps = [
-    "//base",
-    "//ui/events:dom_keycode_converter",
-    "//ui/events:events_base",
-  ]
-
-  if (use_xkbcommon) {
-    configs += [ ":xkbcommon" ]
-
-    sources += [
-      "layout/xkb/xkb_evdev_codes.cc",
-      "layout/xkb/xkb_evdev_codes.h",
-      "layout/xkb/xkb_key_code_converter.h",
-      "layout/xkb/xkb_keyboard_layout_engine.cc",
-      "layout/xkb/xkb_keyboard_layout_engine.h",
-    ]
-
-    deps += [ "//ui/events/keycodes:xkb" ]
   }
 }

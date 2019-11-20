@@ -1,0 +1,49 @@
+# Copyright 2019 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//build/config/linux/pkg_config.gni")
+import("//ui/base/ui_features.gni")
+
+if (use_xkbcommon) {
+  pkg_config("xkbcommon") {
+    packages = [ "xkbcommon" ]
+  }
+}
+
+component("layout") {
+  output_name = "events_ozone_layout"
+
+  sources = [
+    "events_ozone_layout_export.h",
+    "keyboard_layout_engine.h",
+    "keyboard_layout_engine_manager.cc",
+    "keyboard_layout_engine_manager.h",
+    "no/no_keyboard_layout_engine.cc",
+    "no/no_keyboard_layout_engine.h",
+    "stub/stub_keyboard_layout_engine.cc",
+    "stub/stub_keyboard_layout_engine.h",
+  ]
+
+  defines = [ "EVENTS_OZONE_LAYOUT_IMPLEMENTATION" ]
+
+  deps = [
+    "//base",
+    "//ui/events:dom_keycode_converter",
+    "//ui/events:events_base",
+  ]
+
+  if (use_xkbcommon) {
+    configs += [ ":xkbcommon" ]
+
+    sources += [
+      "xkb/xkb_evdev_codes.cc",
+      "xkb/xkb_evdev_codes.h",
+      "xkb/xkb_key_code_converter.h",
+      "xkb/xkb_keyboard_layout_engine.cc",
+      "xkb/xkb_keyboard_layout_engine.h",
+    ]
+
+    deps += [ "//ui/events/keycodes:xkb" ]
+  }
+}

@@ -46,7 +46,7 @@ source_set("cast") {
     "//ui/base/ime",
     "//ui/events/ozone:events_ozone",
     "//ui/events/ozone:events_ozone_evdev",
-    "//ui/events/ozone:events_ozone_layout",
+    "//ui/events/ozone/layout",
     "//ui/gfx",
     "//ui/gfx/geometry",
     "//ui/ozone:ozone_base",

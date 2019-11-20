@@ -580,7 +580,7 @@ jumbo_component("base") {
     ]
 
     deps += [
-      "//ui/events/ozone:events_ozone_layout",
+      "//ui/events/ozone/layout",
       "//ui/ozone:ozone_base",
     ]
 
