@@ -27,16 +27,12 @@ import org.chromium.base.ObserverList;
 import org.chromium.base.Supplier;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
-import org.chromium.chrome.browser.TabLoadStatus;
-import org.chromium.chrome.browser.gesturenav.HistoryNavigationDelegate;
-import org.chromium.chrome.browser.native_page.NativePageHost;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContent.HeightMode;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController.SheetState;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController.StateChangeReason;
-import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.SelectionPopupController;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.KeyboardVisibilityDelegate;
@@ -51,8 +47,8 @@ import org.chromium.ui.KeyboardVisibilityDelegate;
  * All the computation in this file is based off of the bottom of the screen instead of the top
  * for simplicity. This means that the bottom of the screen is 0 on the Y axis.
  */
-class BottomSheet extends FrameLayout implements BottomSheetSwipeDetector.SwipeableBottomSheet,
-                                                 NativePageHost, View.OnLayoutChangeListener {
+class BottomSheet extends FrameLayout
+        implements BottomSheetSwipeDetector.SwipeableBottomSheet, View.OnLayoutChangeListener {
     /**
      * The fraction of the way to the next state the sheet must be swiped to animate there when
      * released. This is the value used when there are 3 active states. A smaller value here means
@@ -385,44 +381,6 @@ class BottomSheet extends FrameLayout implements BottomSheetSwipeDetector.Swipea
     }
 
     @Override
-    public int loadUrl(LoadUrlParams params, boolean incognito) {
-        for (BottomSheetObserver o : mObservers) o.onLoadUrl(params.getUrl());
-
-        int tabLoadStatus = TabLoadStatus.DEFAULT_PAGE_LOAD;
-
-        if (getActiveTab() != null) tabLoadStatus = getActiveTab().loadUrl(params);
-
-        return tabLoadStatus;
-    }
-
-    @Override
-    public boolean isIncognito() {
-        if (getActiveTab() == null) return false;
-        return getActiveTab().isIncognito();
-    }
-
-    @Override
-    public int getParentId() {
-        return Tab.INVALID_TAB_ID;
-    }
-
-    @Override
-    public Tab getActiveTab() {
-        return mTabSupplier != null ? mTabSupplier.get() : null;
-    }
-
-    @Override
-    public boolean isVisible() {
-        return mCurrentState != SheetState.PEEK;
-    }
-
-    @Override
-    public HistoryNavigationDelegate createHistoryNavigationDelegate() {
-        assert false : "BottomSheet does not need HistoryNavigationDelegate";
-        return null;
-    }
-
-    @Override
     public boolean isContentScrolledToTop() {
         return mSheetContent == null || mSheetContent.getVerticalScrollOffset() <= 0;
     }
@@ -687,7 +645,7 @@ class BottomSheet extends FrameLayout implements BottomSheetSwipeDetector.Swipea
      * Deselects any text in the active tab's web contents and dismisses the text controls.
      */
     private void dismissSelectedText() {
-        Tab activeTab = getActiveTab();
+        Tab activeTab = mTabSupplier != null ? mTabSupplier.get() : null;
         if (activeTab == null) return;
 
         WebContents webContents = activeTab.getWebContents();
