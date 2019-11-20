@@ -55,6 +55,27 @@ def _ValidateFileReplicationRule(rule):
         rule.replication_type)
 
 
+def _ApplyStringReplacementRules(destination_path, rules):
+  """Read the file at destination path, apply rules, and write a new file.
+
+  Args:
+    destination_path: (str) Path to the destination file to read. The new file
+      will also be written at this path.
+    rules: (list[StringReplacementRule]) Rules to apply. Must not be empty.
+  """
+  assert rules
+
+  with open(destination_path, 'r') as f:
+    dst_data = f.read()
+
+  for string_replacement_rule in rules:
+    dst_data = dst_data.replace(string_replacement_rule.before,
+                                string_replacement_rule.after)
+
+  with open(destination_path, 'w') as f:
+    f.write(dst_data)
+
+
 def Replicate(replication_config):
   """Run the replication described in replication_config.
 
@@ -113,3 +134,6 @@ def Replicate(replication_config):
 
       logging.info('Copying full file from %s to %s', src, dst)
       shutil.copy2(src, dst)
+
+    if rule.string_replacement_rules:
+      _ApplyStringReplacementRules(dst, rule.string_replacement_rules)

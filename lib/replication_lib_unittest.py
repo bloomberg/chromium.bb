@@ -13,8 +13,9 @@ import stat
 
 from google.protobuf.field_mask_pb2 import FieldMask
 from chromite.api.gen.config.replication_config_pb2 import (
-    ReplicationConfig, FileReplicationRule, FILE_TYPE_JSON, FILE_TYPE_OTHER,
-    REPLICATION_TYPE_COPY, REPLICATION_TYPE_FILTER)
+    ReplicationConfig, FileReplicationRule, StringReplacementRule,
+    FILE_TYPE_JSON, FILE_TYPE_OTHER, REPLICATION_TYPE_COPY,
+    REPLICATION_TYPE_FILTER)
 
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
@@ -232,3 +233,23 @@ class ReplicateTest(cros_test_lib.TempDirTestCase):
     with self.assertRaisesRegex(
         NotImplementedError, 'Currently only ChromeOS Configs are supported'):
       replication_lib.Replicate(replication_config)
+
+  def testReplicateStringReplicationRules(self):
+    audio_dst_path = os.path.join(self.tempdir, 'dst', 'audio_file')
+
+    replication_config = ReplicationConfig(file_replication_rules=[
+        FileReplicationRule(
+            source_path=self.audio_path,
+            destination_path=audio_dst_path,
+            file_type=FILE_TYPE_OTHER,
+            replication_type=REPLICATION_TYPE_COPY,
+            string_replacement_rules=[
+                StringReplacementRule(before='A', after='B'),
+                StringReplacementRule(
+                    before='Settings', after='Settings (Updated)'),
+            ]),
+    ])
+
+    replication_lib.Replicate(replication_config)
+
+    self.assertFileContents(audio_dst_path, '[Speaker B Settings (Updated)]')
