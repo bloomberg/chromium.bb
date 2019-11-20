@@ -292,8 +292,8 @@ void DiceTurnSyncOnHelper::TurnSyncOnWithProfileMode(ProfileMode profile_mode) {
           policy::UserPolicySigninServiceFactory::GetForProfile(profile_);
       policy_service->RegisterForPolicyWithAccountId(
           account_info_.email, account_info_.account_id,
-          base::Bind(&DiceTurnSyncOnHelper::OnRegisteredForPolicy,
-                     weak_pointer_factory_.GetWeakPtr()));
+          base::BindOnce(&DiceTurnSyncOnHelper::OnRegisteredForPolicy,
+                         weak_pointer_factory_.GetWeakPtr()));
       break;
     }
     case ProfileMode::NEW_PROFILE:

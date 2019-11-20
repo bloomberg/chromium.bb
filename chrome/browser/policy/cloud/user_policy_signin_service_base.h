@@ -54,8 +54,8 @@ class UserPolicySigninServiceBase : public KeyedService,
   // The callback invoked once policy registration is complete. Passed
   // |dm_token| and |client_id| parameters are empty if policy registration
   // failed.
-  typedef base::Callback<void(const std::string& dm_token,
-                              const std::string& client_id)>
+  typedef base::OnceCallback<void(const std::string& dm_token,
+                                  const std::string& client_id)>
       PolicyRegistrationCallback;
 
   // The callback invoked once policy fetch is complete. Passed boolean
