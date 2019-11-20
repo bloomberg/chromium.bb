@@ -1173,6 +1173,9 @@ extern const char kSiteSettingsDescription[];
 extern const char kSmoothScrollingName[];
 extern const char kSmoothScrollingDescription[];
 
+extern const char kSmsReceiverCrossDeviceName[];
+extern const char kSmsReceiverCrossDeviceDescription[];
+
 extern const char kSpeculativeServiceWorkerStartOnQueryInputName[];
 extern const char kSpeculativeServiceWorkerStartOnQueryInputDescription[];
 

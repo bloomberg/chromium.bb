@@ -3317,6 +3317,11 @@
     "expiry_milestone": 85
   },
   {
+    "name": "sms-receiver-cross-device",
+    "owners": [ "goto", "fugu-dev" ],
+    "expiry_milestone": 85
+  },
+  {
     "name": "split-settings",
     "owners": [ "jamescook", "cros-system-services@google.com" ],
     "expiry_milestone": 80

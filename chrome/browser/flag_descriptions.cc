@@ -1990,6 +1990,10 @@ const char kSmoothScrollingName[] = "Smooth Scrolling";
 const char kSmoothScrollingDescription[] =
     "Animate smoothly when scrolling page content.";
 
+const char kSmsReceiverCrossDeviceName[] = "SMS Receiver Cross Device";
+const char kSmsReceiverCrossDeviceDescription[] =
+    "Enable the SMS Receiver API to work across devices";
+
 const char kSpeculativeServiceWorkerStartOnQueryInputName[] =
     "Enable speculative start of a service worker when a search is predicted.";
 const char kSpeculativeServiceWorkerStartOnQueryInputDescription[] =

@@ -36192,6 +36192,7 @@ from previous Chrome versions.
   <int value="-1482730792" label="stop-in-background:enabled"/>
   <int value="-1482685863" label="enable-request-tablet-site"/>
   <int value="-1481990501" label="Windows10CustomTitlebar:disabled"/>
+  <int value="-1481918315" label="SmsReceiverCrossDevice:enabled"/>
   <int value="-1480926949" label="MaterialDesignBookmarks:enabled"/>
   <int value="-1480866718" label="ash-disable-login-dim-and-blur"/>
   <int value="-1478876902" label="disable-permission-action-reporting"/>
@@ -37519,6 +37520,7 @@ from previous Chrome versions.
   <int value="161694478" label="OmniboxNewAnswerLayout:enabled"/>
   <int value="168627257" label="AppServiceIntentHandling:disabled"/>
   <int value="173288154" label="PrintPdfAsImage:enabled"/>
+  <int value="173339199" label="SmsReceiverCrossDevice:disabled"/>
   <int value="174759256" label="LockScreenMediaControls:enabled"/>
   <int value="178337215" label="enable-md-history"/>
   <int value="178693406" label="LockScreenMediaControls:disabled"/>
