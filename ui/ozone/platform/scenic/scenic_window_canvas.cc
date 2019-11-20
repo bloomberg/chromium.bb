@@ -155,7 +155,7 @@ void ScenicWindowCanvas::PresentCanvas(const gfx::Rect& damage) {
     ZX_CHECK(status == ZX_OK, status);
   }
 
-  // Add release-fence for the Present2() call below. The fence is used in
+  // Add release-fence for the Present() call below. The fence is used in
   // GetCanvas() to ensure that we reuse the buffer only after it's released
   // from scenic.
   zx::event release_fence_dup;
@@ -164,9 +164,8 @@ void ScenicWindowCanvas::PresentCanvas(const gfx::Rect& damage) {
   ZX_CHECK(status == ZX_OK, status);
   scenic_surface_->scenic_session()->EnqueueReleaseFence(
       std::move(release_fence_dup));
-  scenic_surface_->scenic_session()->Present2(/*requested_presentation_time=*/0,
-                                              /*requested_prediction_span=*/0,
-                                              [](auto) {});
+  scenic_surface_->scenic_session()->Present(
+      /*presentation_time=*/0, [](fuchsia::images::PresentationInfo info) {});
 
   // Move to the next buffer.
   current_frame_ = (current_frame_ + 1) % kNumBuffers;
@@ -174,7 +173,7 @@ void ScenicWindowCanvas::PresentCanvas(const gfx::Rect& damage) {
 
 std::unique_ptr<gfx::VSyncProvider> ScenicWindowCanvas::CreateVSyncProvider() {
   // TODO(crbug.com/829980): Implement VSyncProvider. It can be implemented by
-  // observing PresentationInfo returned from scenic::Session::Present2().
+  // observing PresentationInfo returned from scenic::Session::Present().
   return nullptr;
 }
 

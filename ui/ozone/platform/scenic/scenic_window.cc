@@ -78,8 +78,8 @@ void ScenicWindow::AttachSurfaceView(
   render_node_.DetachChildren();
   render_node_.AddChild(*surface_view_holder_);
 
-  scenic_session_.Present2(/*requested_presentation_time=*/0,
-                           /*requested_prediction_span=*/0, [](auto) {});
+  scenic_session_.Present(
+      /*presentation_time=*/0, [](fuchsia::images::PresentationInfo info) {});
 }
 
 gfx::Rect ScenicWindow::GetBounds() {
@@ -98,10 +98,10 @@ void ScenicWindow::SetTitle(const base::string16& title) {
 void ScenicWindow::Show(bool inactive) {
   view_.AddChild(node_);
 
-  // Call Present2() to ensure that the scenic session commands are processed,
+  // Call Present() to ensure that the scenic session commands are processed,
   // which is necessary to receive metrics event from Scenic.
-  scenic_session_.Present2(/*requested_presentation_time=*/0,
-                           /*requested_prediction_span=*/0, [](auto) {});
+  scenic_session_.Present(
+      /*presentation_time=*/0, [](fuchsia::images::PresentationInfo info) {});
 }
 
 void ScenicWindow::Hide() {
@@ -224,8 +224,8 @@ void ScenicWindow::UpdateSize() {
 
   // This is necessary when using vulkan because ImagePipes are presented
   // separately and we need to make sure our sizes change is committed.
-  scenic_session_.Present2(/*requested_presentation_time=*/0,
-                           /*requested_prediction_span=*/0, [](auto) {});
+  scenic_session_.Present(
+      /*presentation_time=*/0, [](fuchsia::images::PresentationInfo info) {});
 
   delegate_->OnBoundsChanged(size_rect);
 }

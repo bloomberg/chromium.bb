@@ -42,8 +42,8 @@ void ScenicSurface::SetTextureToNewImagePipe1(
       image_pipe_id, std::move(image_pipe_request)));
   material_.SetTexture(image_pipe_id);
   scenic_session_.ReleaseResource(image_pipe_id);
-  scenic_session_.Present2(/*requested_presentation_time=*/0,
-                           /*requested_prediction_span=*/0, [](auto) {});
+  scenic_session_.Present(
+      /*presentation_time=*/0, [](fuchsia::images::PresentationInfo info) {});
 }
 
 void ScenicSurface::SetTextureToNewImagePipe(
@@ -54,8 +54,8 @@ void ScenicSurface::SetTextureToNewImagePipe(
       image_pipe_id, std::move(image_pipe_request)));
   material_.SetTexture(image_pipe_id);
   scenic_session_.ReleaseResource(image_pipe_id);
-  scenic_session_.Present2(/*requested_presentation_time=*/0,
-                           /*requested_prediction_span=*/0, [](auto) {});
+  scenic_session_.Present(
+      /*presentation_time=*/0, [](fuchsia::images::PresentationInfo info) {});
 }
 
 void ScenicSurface::SetTextureToImage(const scenic::Image& image) {
@@ -74,8 +74,8 @@ mojo::ScopedHandle ScenicSurface::CreateView() {
       &scenic_session_, std::move(tokens.view_token), "chromium surface");
   parent_->AddChild(shape_);
 
-  scenic_session_.Present2(/*requested_presentation_time=*/0,
-                           /*requested_prediction_span=*/0, [](auto) {});
+  scenic_session_.Present(
+      /*presentation_time=*/0, [](fuchsia::images::PresentationInfo info) {});
   return mojo::WrapPlatformHandle(
       mojo::PlatformHandle(std::move(tokens.view_holder_token.value)));
 }
