@@ -522,7 +522,7 @@ void FrameSequenceTracker::UpdateTrackedFrameData(TrackedFrameData* frame_data,
                                                   uint64_t sequence_number) {
   if (frame_data->previous_sequence &&
       frame_data->previous_source == source_id) {
-    uint8_t current_latency = sequence_number - frame_data->previous_sequence;
+    uint32_t current_latency = sequence_number - frame_data->previous_sequence;
     frame_data->previous_sequence_delta = current_latency;
   } else {
     frame_data->previous_sequence_delta = 1;
