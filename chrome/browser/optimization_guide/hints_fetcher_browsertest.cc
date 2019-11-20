@@ -285,9 +285,9 @@ class HintsFetcherDisabledBrowserTest : public InProcessBrowserTest {
                                     ->GetActiveWebContents()
                                     ->GetBrowserContext())
         ->GetPrefs()
-        ->SetInteger(optimization_guide::prefs::
-                         kHintsFetcherDataSaverTopHostBlacklistState,
-                     static_cast<int>(blacklist_state));
+        ->SetInteger(
+            optimization_guide::prefs::kHintsFetcherTopHostBlacklistState,
+            static_cast<int>(blacklist_state));
   }
 
   void LoadHintsForUrl(const GURL& url) {
@@ -309,7 +309,7 @@ class HintsFetcherDisabledBrowserTest : public InProcessBrowserTest {
     PrefService* pref_service = browser()->profile()->GetPrefs();
     const base::DictionaryValue* top_host_blacklist =
         pref_service->GetDictionary(
-            optimization_guide::prefs::kHintsFetcherDataSaverTopHostBlacklist);
+            optimization_guide::prefs::kHintsFetcherTopHostBlacklist);
     return top_host_blacklist->size();
   }
 
