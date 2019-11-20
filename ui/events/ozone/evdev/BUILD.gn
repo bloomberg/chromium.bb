@@ -139,3 +139,41 @@ component("evdev") {
     public_configs += [ ":evdev_gestures_config" ]
   }
 }
+
+source_set("unittests") {
+  testonly = true
+
+  sources = [
+    "event_converter_evdev_impl_unittest.cc",
+    "event_converter_test_util.cc",
+    "event_converter_test_util.h",
+    "event_device_info_unittest.cc",
+    "event_device_test_util.cc",
+    "event_device_test_util.h",
+    "gamepad_event_converter_evdev_unittest.cc",
+    "input_injector_evdev_unittest.cc",
+    "tablet_event_converter_evdev_unittest.cc",
+    "testing/fake_cursor_delegate_evdev.h",
+    "touch_event_converter_evdev_unittest.cc",
+    "touch_filter/false_touch_finder_unittest.cc",
+    "touch_filter/heuristic_stylus_palm_detection_filter_unittest.cc",
+    "touch_filter/neural_stylus_palm_detection_filter_unittest.cc",
+    "touch_filter/neural_stylus_palm_detection_filter_util_unittest.cc",
+    "touch_filter/open_palm_detection_filter_unittest.cc",
+    "touch_filter/palm_detection_filter_factory_unittest.cc",
+  ]
+
+  deps = [
+    ":evdev",
+    "//base",
+    "//base/test:test_support",
+    "//testing/gmock",
+    "//testing/gtest",
+    "//ui/events",
+    "//ui/events:dom_keycode_converter",
+    "//ui/events/devices",
+    "//ui/events/ozone",
+    "//ui/events/ozone/layout",
+    "//ui/gfx/geometry",
+  ]
+}

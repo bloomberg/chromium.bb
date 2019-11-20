@@ -47,3 +47,23 @@ component("layout") {
     deps += [ "//ui/events/keycodes:xkb" ]
   }
 }
+
+source_set("unittests") {
+  testonly = true
+
+  sources = []
+  if (use_xkbcommon) {
+    sources += [
+      "keyboard_layout_engine_unittest.cc",
+      "xkb/xkb_keyboard_layout_engine_unittest.cc",
+    ]
+  }
+
+  deps = [
+    ":layout",
+    "//base",
+    "//testing/gtest",
+    "//ui/events",
+    "//ui/events:dom_keycode_converter",
+  ]
+}

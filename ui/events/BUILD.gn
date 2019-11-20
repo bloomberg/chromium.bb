@@ -619,40 +619,8 @@ if (!is_ios) {
       sources += [ "devices/device_data_manager_unittest.cc" ]
     }
 
-    if (use_ozone && (is_linux || is_chromeos)) {
-      sources += [
-        "ozone/chromeos/cursor_controller_unittest.cc",
-        "ozone/evdev/event_converter_evdev_impl_unittest.cc",
-        "ozone/evdev/event_converter_test_util.cc",
-        "ozone/evdev/event_converter_test_util.h",
-        "ozone/evdev/event_device_info_unittest.cc",
-        "ozone/evdev/event_device_test_util.cc",
-        "ozone/evdev/event_device_test_util.h",
-        "ozone/evdev/gamepad_event_converter_evdev_unittest.cc",
-        "ozone/evdev/input_injector_evdev_unittest.cc",
-        "ozone/evdev/tablet_event_converter_evdev_unittest.cc",
-        "ozone/evdev/testing/fake_cursor_delegate_evdev.h",
-        "ozone/evdev/touch_event_converter_evdev_unittest.cc",
-        "ozone/evdev/touch_filter/false_touch_finder_unittest.cc",
-        "ozone/evdev/touch_filter/heuristic_stylus_palm_detection_filter_unittest.cc",
-        "ozone/evdev/touch_filter/neural_stylus_palm_detection_filter_unittest.cc",
-        "ozone/evdev/touch_filter/neural_stylus_palm_detection_filter_util_unittest.cc",
-        "ozone/evdev/touch_filter/open_palm_detection_filter_unittest.cc",
-        "ozone/evdev/touch_filter/palm_detection_filter_factory_unittest.cc",
-      ]
-
-      if (use_xkbcommon) {
-        sources += [
-          "ozone/layout/keyboard_layout_engine_unittest.cc",
-          "ozone/layout/xkb/xkb_keyboard_layout_engine_unittest.cc",
-        ]
-      }
-
-      deps += [
-        "//ui/events/ozone",
-        "//ui/events/ozone/evdev",
-        "//ui/events/ozone/layout",
-      ]
+    if (use_ozone) {
+      deps += [ "//ui/events/ozone:unittests" ]
     }
 
     if (use_aura) {

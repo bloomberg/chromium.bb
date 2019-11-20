@@ -53,4 +53,28 @@ if (use_ozone) {
       deps += [ "//device/udev_linux" ]
     }
   }
+
+  source_set("unittests") {
+    testonly = true
+
+    sources = []
+
+    deps = [
+      ":ozone",
+      "//base",
+      "//testing/gtest",
+      "//ui/events",
+      "//ui/events/ozone/layout:unittests",
+      "//ui/gfx:native_widget_types",
+      "//ui/gfx/geometry",
+    ]
+
+    if (is_chromeos) {
+      sources += [ "chromeos/cursor_controller_unittest.cc" ]
+    }
+
+    if (is_linux) {
+      deps += [ "//ui/events/ozone/evdev:unittests" ]
+    }
+  }
 }
