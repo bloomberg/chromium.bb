@@ -29451,6 +29451,13 @@ Called by update_net_error_codes.py.-->
   <int value="9" label="kGLImplementationEGLANGLE"/>
 </enum>
 
+<enum name="GlobalMediaControlsDismissReason">
+  <int value="0" label="User dismissed notification"/>
+  <int value="1" label="Inactive timeout"/>
+  <int value="2" label="Tab closed"/>
+  <int value="3" label="Media session stopped"/>
+</enum>
+
 <enum name="GoogleCaptchaEvent">
   <int value="0" label="Google CAPTCHA shown"/>
   <int value="1" label="Google CAPTCHA solved"/>
