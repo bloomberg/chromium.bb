@@ -378,6 +378,11 @@ bool ShouldDowngradeNeutralStyling(
   if (security_level == security_state::NONE && scheme_is_cryptographic)
     return true;
 
+  // data: URLs should continue to have danger warnings even though data: is
+  // considered a secure origin.
+  if (url.SchemeIs(url::kDataScheme))
+    return true;
+
   // The info icon should be used on non-HTTPS secure origins, but other
   // WARNING states should use they grey danger triangle.
   if (security_level == security_state::WARNING && !origin_is_secure)
