@@ -55,9 +55,6 @@ crbug.com/1008501 compositing/culling/filter-occlusion-blur-large.html [ Failure
 crbug.com/1008501 compositing/culling/filter-occlusion-blur.html [ Failure ]
 crbug.com/1008501 compositing/reflections/deeply-nested-reflections.html [ Failure ]
 
-# Missing compositing reasons.
-Bug(none) compositing/animation/hidden-composited.html [ Failure ]
-
 # Wrong contentsOpaque or background color.
 Bug(none) compositing/contents-opaque/control-layer.html [ Failure ]
 Bug(none) compositing/contents-opaque/layer-opacity.html [ Failure ]
