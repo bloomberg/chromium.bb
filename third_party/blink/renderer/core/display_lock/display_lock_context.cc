@@ -9,6 +9,7 @@
 #include "base/memory/ptr_util.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
+#include "third_party/blink/renderer/core/css/style_recalc.h"
 #include "third_party/blink/renderer/core/display_lock/before_activate_event.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
 #include "third_party/blink/renderer/core/display_lock/strict_yielding_display_lock_budget.h"
@@ -154,9 +155,21 @@ void DisplayLockContext::StartAcquire() {
   if (!ConnectedToView())
     return;
 
-  element_->SetNeedsStyleRecalc(
-      kLocalStyleChange,
-      StyleChangeReasonForTracing::Create(style_change_reason::kDisplayLock));
+  // There are several ways we can call StartAcquire. Most of them require us to
+  // dirty style so that we can add proper containment onto the element.
+  // However, if we're doing a StartAcquire from within style recalc, then we
+  // don't need to do anything as we should have already added containment.
+  // Moreover, dirtying self style from within style recalc is not allowed,
+  // since either it has no effect and is cleaned before any work is done, or it
+  // causes DHCECKs in AssertLayoutTreeUpdated().
+  if (!document_->InStyleRecalc()) {
+    element_->SetNeedsStyleRecalc(
+        kLocalStyleChange,
+        StyleChangeReasonForTracing::Create(style_change_reason::kDisplayLock));
+  }
+
+  // In either case, we schedule an animation. If we're already inside a
+  // lifecycle update, this will be a no-op.
   ScheduleAnimation();
 
   // We need to notify the AX cache (if it exists) to update the  childrens
@@ -393,10 +406,20 @@ void DisplayLockContext::CommitForActivationWithSignal(
   DCHECK(ConnectedToView());
   DCHECK(ShouldCommitForActivation(DisplayLockActivationReason::kAny));
   StartCommit();
+  is_activated_ = true;
+
   // Since setting the attribute might trigger a commit if we are still locked,
   // we set it after we start the commit.
   if (element_->FastHasAttribute(html_names::kRendersubtreeAttr))
     element_->setAttribute(html_names::kRendersubtreeAttr, "");
+}
+
+bool DisplayLockContext::IsActivated() const {
+  return is_activated_;
+}
+
+void DisplayLockContext::ClearActivated() {
+  is_activated_ = false;
 }
 
 bool DisplayLockContext::ShouldCommitForActivation(
@@ -450,8 +473,12 @@ void DisplayLockContext::StartCommit() {
 
   update_budget_.reset();
 
-  // We're committing without a budget, so ensure we can reach style.
-  MarkForStyleRecalcIfNeeded();
+  // We skip updating the style dirtiness if we're within style recalc. This is
+  // instead handled by a call to AdjustStyleRecalcChangeForChildren().
+  if (!document_->InStyleRecalc()) {
+    // We're committing without a budget, so ensure we can reach style.
+    MarkForStyleRecalcIfNeeded();
+  }
 
   // We also need to notify the AX cache (if it exists) to update the childrens
   // of |element_| in the AX cache.
@@ -519,6 +546,28 @@ void DisplayLockContext::MarkElementsForWhitespaceReattachment() {
       first_child->MarkAncestorsWithChildNeedsReattachLayoutTree();
   }
   whitespace_reattach_set_.clear();
+}
+
+StyleRecalcChange DisplayLockContext::AdjustStyleRecalcChangeForChildren(
+    StyleRecalcChange change) {
+  // This code is similar to MarkForStyleRecalcIfNeeded, except that it acts on
+  // |change| and not on |element_|. This is only called during style recalc.
+  // Note that since we're already in self style recalc, this code is shorter
+  // since it doesn't have to deal with dirtying self-style.
+  DCHECK(document_->InStyleRecalc());
+  DCHECK(!IsAttributeVersion(this));
+
+  if (reattach_layout_tree_was_blocked_) {
+    change = change.ForceReattachLayoutTree();
+    reattach_layout_tree_was_blocked_ = false;
+  }
+
+  if (blocked_style_traversal_type_ == kStyleUpdateDescendants)
+    change = change.ForceRecalcDescendants();
+  else if (blocked_style_traversal_type_ == kStyleUpdateChildren)
+    change = change.EnsureAtLeast(StyleRecalcChange::kRecalcChildren);
+  blocked_style_traversal_type_ = kStyleUpdateNotRequired;
+  return change;
 }
 
 bool DisplayLockContext::MarkForStyleRecalcIfNeeded() {
