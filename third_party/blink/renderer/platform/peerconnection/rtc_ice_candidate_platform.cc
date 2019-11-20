@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/public/platform/web_rtc_ice_candidate.h"
+#include "third_party/blink/renderer/platform/peerconnection/rtc_ice_candidate_platform.h"
 
 #include "third_party/webrtc/api/candidate.h"
 #include "third_party/webrtc/p2p/base/p2p_constants.h"
@@ -40,27 +40,27 @@ blink::WebString CandidateTypeToWebString(const std::string& type) {
 }  // namespace
 
 // static
-scoped_refptr<WebRTCICECandidate> WebRTCICECandidate::Create(
+scoped_refptr<RTCIceCandidatePlatform> RTCIceCandidatePlatform::Create(
     WebString candidate,
     WebString sdp_mid,
     base::Optional<uint16_t> sdp_m_line_index,
     WebString username_fragment) {
-  return base::AdoptRef(new WebRTCICECandidate(
+  return base::AdoptRef(new RTCIceCandidatePlatform(
       std::move(candidate), std::move(sdp_mid), std::move(sdp_m_line_index),
       std::move(username_fragment)));
 }
 
-scoped_refptr<WebRTCICECandidate> WebRTCICECandidate::Create(
+scoped_refptr<RTCIceCandidatePlatform> RTCIceCandidatePlatform::Create(
     WebString candidate,
     WebString sdp_mid,
     int sdp_m_line_index) {
-  return base::AdoptRef(new WebRTCICECandidate(
+  return base::AdoptRef(new RTCIceCandidatePlatform(
       std::move(candidate), std::move(sdp_mid),
       sdp_m_line_index < 0 ? base::Optional<uint16_t>()
                            : base::Optional<uint16_t>(sdp_m_line_index)));
 }
 
-WebRTCICECandidate::WebRTCICECandidate(
+RTCIceCandidatePlatform::RTCIceCandidatePlatform(
     WebString candidate,
     WebString sdp_mid,
     base::Optional<uint16_t> sdp_m_line_index,
@@ -72,7 +72,7 @@ WebRTCICECandidate::WebRTCICECandidate(
   PopulateFields(false);
 }
 
-WebRTCICECandidate::WebRTCICECandidate(
+RTCIceCandidatePlatform::RTCIceCandidatePlatform(
     WebString candidate,
     WebString sdp_mid,
     base::Optional<uint16_t> sdp_m_line_index)
@@ -82,7 +82,7 @@ WebRTCICECandidate::WebRTCICECandidate(
   PopulateFields(true);
 }
 
-void WebRTCICECandidate::PopulateFields(bool use_username_from_candidate) {
+void RTCIceCandidatePlatform::PopulateFields(bool use_username_from_candidate) {
   cricket::Candidate c;
   if (!webrtc::ParseCandidate(candidate_.Utf8(), &c, nullptr, true))
     return;

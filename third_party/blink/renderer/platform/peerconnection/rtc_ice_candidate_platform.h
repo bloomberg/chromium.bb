@@ -28,31 +28,32 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_RTC_ICE_CANDIDATE_H_
-#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_RTC_ICE_CANDIDATE_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_PEERCONNECTION_RTC_ICE_CANDIDATE_PLATFORM_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_PEERCONNECTION_RTC_ICE_CANDIDATE_PLATFORM_H_
 
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
-#include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
 
 namespace blink {
 
-class BLINK_PLATFORM_EXPORT WebRTCICECandidate final
-    : public base::RefCountedThreadSafe<WebRTCICECandidate> {
+// TODO(crbug.com/787254): Switch away from using WebString.
+class PLATFORM_EXPORT RTCIceCandidatePlatform final
+    : public base::RefCountedThreadSafe<RTCIceCandidatePlatform> {
  public:
   REQUIRE_ADOPTION_FOR_REFCOUNTED_TYPE();
 
-  // Creates a new WebRTCICECandidate using |candidate|, |sdp_mid| and
+  // Creates a new RTCIceCandidatePlatform using |candidate|, |sdp_mid| and
   // |sdp_m_line_index|. If |sdp_m_line_index| is negative, it is
   // considered as having no value.
-  static scoped_refptr<WebRTCICECandidate> Create(WebString candidate,
-                                                  WebString sdp_mid,
-                                                  int sdp_m_line_index);
+  static scoped_refptr<RTCIceCandidatePlatform> Create(WebString candidate,
+                                                       WebString sdp_mid,
+                                                       int sdp_m_line_index);
 
-  // Creates a new WebRTCICECandidate using |candidate|, |sdp_mid|,
+  // Creates a new RTCIceCandidatePlatform using |candidate|, |sdp_mid|,
   // |sdp_m_line_index|, and |username_fragment|.
-  static scoped_refptr<WebRTCICECandidate> Create(
+  static scoped_refptr<RTCIceCandidatePlatform> Create(
       WebString candidate,
       WebString sdp_mid,
       base::Optional<uint16_t> sdp_m_line_index,
@@ -76,20 +77,20 @@ class BLINK_PLATFORM_EXPORT WebRTCICECandidate final
   const WebString& UsernameFragment() const { return username_fragment_; }
 
  private:
-  friend class base::RefCountedThreadSafe<WebRTCICECandidate>;
+  friend class base::RefCountedThreadSafe<RTCIceCandidatePlatform>;
 
-  WebRTCICECandidate(WebString candidate,
-                     WebString sdp_mid,
-                     base::Optional<uint16_t> sdp_m_line_index);
+  RTCIceCandidatePlatform(WebString candidate,
+                          WebString sdp_mid,
+                          base::Optional<uint16_t> sdp_m_line_index);
 
-  WebRTCICECandidate(WebString candidate,
-                     WebString sdp_mid,
-                     base::Optional<uint16_t> sdp_m_line_index,
-                     WebString username_fragment);
+  RTCIceCandidatePlatform(WebString candidate,
+                          WebString sdp_mid,
+                          base::Optional<uint16_t> sdp_m_line_index,
+                          WebString username_fragment);
 
   void PopulateFields(bool use_username_from_candidate);
 
-  ~WebRTCICECandidate() = default;
+  ~RTCIceCandidatePlatform() = default;
 
   WebString candidate_;
   WebString sdp_mid_;
@@ -106,9 +107,9 @@ class BLINK_PLATFORM_EXPORT WebRTCICECandidate final
   base::Optional<uint16_t> related_port_;
   WebString username_fragment_;
 
-  DISALLOW_COPY_AND_ASSIGN(WebRTCICECandidate);
+  DISALLOW_COPY_AND_ASSIGN(RTCIceCandidatePlatform);
 };
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_RTC_ICE_CANDIDATE_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_PEERCONNECTION_RTC_ICE_CANDIDATE_PLATFORM_H_
