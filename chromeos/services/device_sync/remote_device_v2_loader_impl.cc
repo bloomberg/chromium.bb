@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/services/device_sync/remote_device_v2_loader.h"
+#include "chromeos/services/device_sync/remote_device_v2_loader_impl.h"
 
 #include <utility>
 
@@ -20,38 +20,38 @@ namespace chromeos {
 namespace device_sync {
 
 // static
-RemoteDeviceV2Loader::Factory* RemoteDeviceV2Loader::Factory::test_factory_ =
-    nullptr;
+RemoteDeviceV2LoaderImpl::Factory*
+    RemoteDeviceV2LoaderImpl::Factory::test_factory_ = nullptr;
 
 // static
-RemoteDeviceV2Loader::Factory* RemoteDeviceV2Loader::Factory::Get() {
+RemoteDeviceV2LoaderImpl::Factory* RemoteDeviceV2LoaderImpl::Factory::Get() {
   if (test_factory_)
     return test_factory_;
 
-  static base::NoDestructor<RemoteDeviceV2Loader::Factory> factory;
+  static base::NoDestructor<RemoteDeviceV2LoaderImpl::Factory> factory;
   return factory.get();
 }
 
 // static
-void RemoteDeviceV2Loader::Factory::SetFactoryForTesting(
+void RemoteDeviceV2LoaderImpl::Factory::SetFactoryForTesting(
     Factory* test_factory) {
   test_factory_ = test_factory;
 }
 
-RemoteDeviceV2Loader::Factory::~Factory() = default;
+RemoteDeviceV2LoaderImpl::Factory::~Factory() = default;
 
 std::unique_ptr<RemoteDeviceV2Loader>
-RemoteDeviceV2Loader::Factory::BuildInstance() {
-  return base::WrapUnique(new RemoteDeviceV2Loader());
+RemoteDeviceV2LoaderImpl::Factory::BuildInstance() {
+  return base::WrapUnique(new RemoteDeviceV2LoaderImpl());
 }
 
-RemoteDeviceV2Loader::RemoteDeviceV2Loader()
+RemoteDeviceV2LoaderImpl::RemoteDeviceV2LoaderImpl()
     : secure_message_delegate_(
           multidevice::SecureMessageDelegateImpl::Factory::NewInstance()) {}
 
-RemoteDeviceV2Loader::~RemoteDeviceV2Loader() = default;
+RemoteDeviceV2LoaderImpl::~RemoteDeviceV2LoaderImpl() = default;
 
-void RemoteDeviceV2Loader::Load(
+void RemoteDeviceV2LoaderImpl::Load(
     const CryptAuthDeviceRegistry::InstanceIdToDeviceMap& id_to_device_map,
     const std::string& user_id,
     const std::string& user_private_key,
@@ -86,23 +86,23 @@ void RemoteDeviceV2Loader::Load(
     secure_message_delegate_->DeriveKey(
         user_private_key,
         id_device_pair.second.better_together_device_metadata->public_key(),
-        base::Bind(&RemoteDeviceV2Loader::OnPskDerived, base::Unretained(this),
-                   id_device_pair.second, user_id));
+        base::Bind(&RemoteDeviceV2LoaderImpl::OnPskDerived,
+                   base::Unretained(this), id_device_pair.second, user_id));
   }
 }
 
-void RemoteDeviceV2Loader::OnPskDerived(const CryptAuthDevice& device,
-                                        const std::string& user_id,
-                                        const std::string& psk) {
+void RemoteDeviceV2LoaderImpl::OnPskDerived(const CryptAuthDevice& device,
+                                            const std::string& user_id,
+                                            const std::string& psk) {
   if (psk.empty())
     PA_LOG(WARNING) << "Derived persistent symmetric key is empty.";
 
   AddRemoteDevice(device, user_id, psk);
 }
 
-void RemoteDeviceV2Loader::AddRemoteDevice(const CryptAuthDevice& device,
-                                           const std::string& user_id,
-                                           const std::string& psk) {
+void RemoteDeviceV2LoaderImpl::AddRemoteDevice(const CryptAuthDevice& device,
+                                               const std::string& user_id,
+                                               const std::string& psk) {
   const base::Optional<cryptauthv2::BetterTogetherDeviceMetadata>&
       beto_metadata = device.better_together_device_metadata;
   remote_devices_.emplace_back(

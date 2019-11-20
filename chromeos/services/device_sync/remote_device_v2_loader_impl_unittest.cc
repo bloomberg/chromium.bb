@@ -13,7 +13,7 @@
 #include "chromeos/services/device_sync/cryptauth_device.h"
 #include "chromeos/services/device_sync/proto/cryptauth_devicesync.pb.h"
 #include "chromeos/services/device_sync/proto/cryptauth_v2_test_util.h"
-#include "chromeos/services/device_sync/remote_device_v2_loader.h"
+#include "chromeos/services/device_sync/remote_device_v2_loader_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -109,15 +109,15 @@ multidevice::RemoteDevice CreateRemoteDevice(const std::string& suffix,
 
 }  // namespace
 
-class DeviceSyncRemoteDeviceV2LoaderTest : public testing::Test {
+class DeviceSyncRemoteDeviceV2LoaderImplTest : public testing::Test {
  public:
-  DeviceSyncRemoteDeviceV2LoaderTest()
+  DeviceSyncRemoteDeviceV2LoaderImplTest()
       : fake_secure_message_delegate_factory_(
             std::make_unique<multidevice::FakeSecureMessageDelegateFactory>()),
         user_private_key_(fake_secure_message_delegate_factory_->instance()
                               ->GetPrivateKeyForPublicKey(kUserPublicKey)) {}
 
-  ~DeviceSyncRemoteDeviceV2LoaderTest() override = default;
+  ~DeviceSyncRemoteDeviceV2LoaderImplTest() override = default;
 
   // testing::Test:
   void SetUp() override {
@@ -136,10 +136,10 @@ class DeviceSyncRemoteDeviceV2LoaderTest : public testing::Test {
     for (const auto& device : device_list)
       id_to_device_map.insert_or_assign(device.instance_id(), device);
 
-    loader_ = RemoteDeviceV2Loader::Factory::Get()->BuildInstance();
+    loader_ = RemoteDeviceV2LoaderImpl::Factory::Get()->BuildInstance();
     loader_->Load(
         id_to_device_map, kUserId, user_private_key_,
-        base::BindOnce(&DeviceSyncRemoteDeviceV2LoaderTest::OnLoadFinished,
+        base::BindOnce(&DeviceSyncRemoteDeviceV2LoaderImplTest::OnLoadFinished,
                        base::Unretained(this)));
   }
 
@@ -188,12 +188,12 @@ class DeviceSyncRemoteDeviceV2LoaderTest : public testing::Test {
   std::unique_ptr<RemoteDeviceV2Loader> loader_;
 };
 
-TEST_F(DeviceSyncRemoteDeviceV2LoaderTest, NoDevices) {
+TEST_F(DeviceSyncRemoteDeviceV2LoaderImplTest, NoDevices) {
   CallLoad({} /* device_list */);
   VerifyLoad({} /* expected_remote_devices */);
 }
 
-TEST_F(DeviceSyncRemoteDeviceV2LoaderTest, Success) {
+TEST_F(DeviceSyncRemoteDeviceV2LoaderImplTest, Success) {
   CallLoad({CreateCryptAuthDevice("device1", true /* has_beto_metadata */,
                                   true /* has_public_key */),
             CreateCryptAuthDevice("device2", true /* has_beto_metadata */,
