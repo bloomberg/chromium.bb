@@ -115,6 +115,10 @@ constexpr perfetto::protos::pbzero::ClockSnapshot::Clock::BuiltinClocks
     kTraceClockId = perfetto::protos::pbzero::ClockSnapshot::Clock::BOOTTIME;
 #endif
 
+static_assert(
+    sizeof(TraceEventDataSource::SessionFlags) <= sizeof(uint64_t),
+    "SessionFlags should remain small to ensure lock-free atomic operations");
+
 }  // namespace
 
 using perfetto::protos::pbzero::ChromeEventBundle;
@@ -438,6 +442,9 @@ TraceEventDataSource::TraceEventDataSource()
     : DataSourceBase(mojom::kTraceEventDataSourceName),
       disable_interning_(base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kPerfettoDisableInterning)) {
+  DCHECK(session_flags_.is_lock_free())
+      << "SessionFlags are not atomic! We rely on efficient lock-free look-up "
+         "of the session flags when emitting a trace event.";
   g_trace_event_data_source_for_testing = this;
   DETACH_FROM_SEQUENCE(perfetto_sequence_checker_);
 }
