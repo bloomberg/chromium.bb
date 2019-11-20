@@ -14,6 +14,7 @@
 #include "base/location.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -66,6 +67,7 @@ class PipelineImpl::RendererWrapper : public DemuxerHost,
   void Resume(std::unique_ptr<Renderer> default_renderer, base::TimeDelta time);
   void SetPlaybackRate(double playback_rate);
   void SetVolume(float volume);
+  void SetLatencyHint(base::Optional<base::TimeDelta> latency_hint);
   base::TimeDelta GetMediaTime() const;
   Ranges<base::TimeDelta> GetBufferedTimeRanges() const;
   bool DidLoadingProgress();
@@ -180,6 +182,7 @@ class PipelineImpl::RendererWrapper : public DemuxerHost,
 
   double playback_rate_;
   float volume_;
+  base::Optional<base::TimeDelta> latency_hint_;
   CdmContext* cdm_context_;
 
   // Lock used to serialize |shared_state_|.
@@ -457,6 +460,18 @@ void PipelineImpl::RendererWrapper::SetVolume(float volume) {
   volume_ = volume;
   if (state_ == kPlaying)
     shared_state_.renderer->SetVolume(volume_);
+}
+
+void PipelineImpl::RendererWrapper::SetLatencyHint(
+    base::Optional<base::TimeDelta> latency_hint) {
+  DCHECK(media_task_runner_->BelongsToCurrentThread());
+
+  if (latency_hint_ == latency_hint)
+    return;
+
+  latency_hint_ = latency_hint;
+  if (shared_state_.renderer)
+    shared_state_.renderer->SetLatencyHint(latency_hint_);
 }
 
 base::TimeDelta PipelineImpl::RendererWrapper::GetMediaTime() const {
@@ -979,6 +994,10 @@ void PipelineImpl::RendererWrapper::InitializeRenderer(
                                    base::BindOnce(&IgnoreCdmAttached));
   }
 
+  if (latency_hint_) {
+    shared_state_.renderer->SetLatencyHint(latency_hint_);
+  }
+
   shared_state_.renderer->Initialize(demuxer_, this, std::move(done_cb));
 }
 
@@ -1260,6 +1279,23 @@ void PipelineImpl::SetVolume(float volume) {
       FROM_HERE,
       base::BindOnce(&RendererWrapper::SetVolume,
                      base::Unretained(renderer_wrapper_.get()), volume_));
+}
+
+void PipelineImpl::SetLatencyHint(
+    base::Optional<base::TimeDelta> latency_hint) {
+  DVLOG(1) << __func__ << "("
+           << (latency_hint
+                   ? base::NumberToString(latency_hint->InMilliseconds()) + "ms"
+                   : "null_opt")
+           << ")";
+  DCHECK(!latency_hint || (*latency_hint >= base::TimeDelta()));
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  // Not checking IsRunning() so we can set the latency hint before Start().
+  media_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&RendererWrapper::SetLatencyHint,
+                     base::Unretained(renderer_wrapper_.get()), latency_hint));
 }
 
 base::TimeDelta PipelineImpl::GetMediaTime() const {
