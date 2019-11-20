@@ -552,15 +552,18 @@ chromiumos_builder(
 
 chromiumos_builder(
     name = 'linux-chromeos-compile-dbg',
+    goma_backend = goma.backend.RBE_PROD,
     tryjob = tryjob(),
 )
 
 chromiumos_builder(
     name = 'linux-chromeos-dbg',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 chromiumos_builder(
     name = 'linux-chromeos-rel',
+    goma_backend = goma.backend.RBE_PROD,
     goma_jobs = goma.jobs.J150,
     tryjob = tryjob(),
     use_clang_coverage = True,

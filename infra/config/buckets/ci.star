@@ -510,10 +510,12 @@ chromiumos_builder(
 
 chromiumos_builder(
     name = 'linux-chromeos-dbg',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 chromiumos_builder(
     name = 'linux-chromeos-rel',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 
@@ -1283,6 +1285,7 @@ fyi_coverage_builder(
 
 fyi_coverage_builder(
     name = 'linux-chromeos-code-coverage',
+    goma_backend = goma.backend.RBE_PROD,
     ssd = True,
     use_clang_coverage = True,
 )
