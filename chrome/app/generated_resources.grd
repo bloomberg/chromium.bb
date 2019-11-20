@@ -9291,6 +9291,9 @@ Please help our engineers fix this problem. Tell us what happened right before y
       <message name="IDS_TOOLTIP_TAB_ALERT_STATE_USB_CONNECTED" desc="Extra tool tip text, when tab is connected to a USB device.">
         This tab is connected to a USB device.
       </message>
+      <message name="IDS_TOOLTIP_TAB_ALERT_STATE_HID_CONNECTED" desc="Extra tool tip text, when tab is connected to a HID device.">
+        This tab is connected to a HID device.
+      </message>
       <message name="IDS_TOOLTIP_TAB_ALERT_STATE_SERIAL_CONNECTED" desc="Extra tool tip text, when tab is connected to a serial port.">
         This tab is connected to a serial port.
       </message>
@@ -9325,6 +9328,9 @@ Please help our engineers fix this problem. Tell us what happened right before y
       </message>
       <message name="IDS_TAB_AX_LABEL_USB_CONNECTED_FORMAT" desc="Accessibility label text, when a tab is connected to a USB device. Example: 'Google Photos - USB device connected'">
         <ph name="WINDOW_TITLE">$1<ex>Google Photos</ex></ph> - USB device connected
+      </message>
+      <message name="IDS_TAB_AX_LABEL_HID_CONNECTED_FORMAT" desc="Accessibility label text, when a tab is connected to a HID device. Example: 'Google Photos - HID device connected'">
+        <ph name="WINDOW_TITLE">$1<ex>Google Photos</ex></ph> - HID device connected
       </message>
       <message name="IDS_TAB_AX_LABEL_SERIAL_CONNECTED_FORMAT" desc="Accessibility label text, when a tab is connected to a serial port. Example: 'Google Photos - Serial port connected'">
         <ph name="WINDOW_TITLE">$1<ex>Google Photos</ex></ph> - Serial port connected
