@@ -673,7 +673,7 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->use_comp_ref_nonrd = 0;
     sf->inter_mode_rd_model_estimation = 2;
     sf->cdef_pick_method = CDEF_PICK_FROM_Q;
-    sf->max_intra_bsize = BLOCK_16X16;
+    sf->max_intra_bsize = BLOCK_32X32;
     sf->use_inter_txb_hash = 0;
     sf->skip_interp_filter_search = 1;
     sf->adaptive_mode_search = 2;
@@ -697,7 +697,6 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->use_comp_ref_nonrd = 0;
     sf->inter_mode_rd_model_estimation = 2;
     sf->cdef_pick_method = CDEF_PICK_FROM_Q;
-    sf->max_intra_bsize = BLOCK_32X32;
     sf->skip_interp_filter_search = 0;
     sf->short_circuit_low_temp_var = 0;
     sf->reuse_inter_pred_nonrd = 0;
