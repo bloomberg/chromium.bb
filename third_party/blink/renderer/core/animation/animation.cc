@@ -962,23 +962,12 @@ void Animation::pause(ExceptionState& exception_state) {
 // Play methods.
 // ----------------------------------------------
 
+// Refer to the unpause operation in the following spec:
+// https://drafts.csswg.org/css-animations-1/#animation-play-state
 void Animation::Unpause() {
-  if (!paused_)
+  if (CalculateAnimationPlayState() != kPaused)
     return;
-
-  PlayStateUpdateScope update_scope(*this, kTimingUpdateOnDemand);
-
-  current_time_pending_ = true;
-  UnpauseInternal();
-}
-
-void Animation::UnpauseInternal() {
-  if (!paused_)
-    return;
-  paused_ = false;
-  pending_pause_ = false;
-  pending_play_ = true;
-  SetCurrentTimeInternal(CurrentTimeInternal(), kTimingUpdateOnDemand);
+  PlayInternal(AutoRewind::kDisabled, ASSERT_NO_EXCEPTION);
 }
 
 // https://drafts.csswg.org/web-animations/#programming-interface.
