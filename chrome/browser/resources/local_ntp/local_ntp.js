@@ -275,6 +275,9 @@ let isDeletingInput = false;
  */
 let lastBlacklistedTile = null;
 
+/** @type {?number} */
+let lastRealboxFocusTime = null;
+
 /**
  * Last text/inline autocompletion shown in the realbox (either by user input or
  * outputting autocomplete matches).
@@ -771,7 +774,8 @@ function init() {
       realboxEl.addEventListener('cut', onRealboxCutCopy);
       realboxEl.addEventListener('input', onRealboxInput);
 
-      setRealboxWrapperListenForFocusIn(true);
+      const realboxWrapper = $(IDS.REALBOX_INPUT_WRAPPER);
+      realboxWrapper.addEventListener('focusin', onRealboxWrapperFocusIn);
       setRealboxWrapperListenForFocusOut(true);
 
       searchboxApiHandle.autocompleteresultchanged = autocompleteResultChanged;
@@ -1074,14 +1078,11 @@ function listen() {
 function navigateToMatch(match, e) {
   const line = autocompleteMatches.indexOf(match);
   assert(line >= 0);
-  if (match.canDisplay) {
-    const matchEl = $(IDS.REALBOX_MATCHES).children[line];
-    matchEl.dispatchEvent(new MouseEvent('click', e));
-  } else {
-    window.chrome.embeddedSearch.searchBox.openAutocompleteMatch(
-        line, match.destinationUrl, e.button || 0, e.altKey, e.ctrlKey,
-        e.metaKey, e.shiftKey);
-  }
+  assert(lastRealboxFocusTime);
+  window.chrome.embeddedSearch.searchBox.openAutocompleteMatch(
+      line, match.destinationUrl, areRealboxMatchesVisible(),
+      Date.now() - lastRealboxFocusTime, e.button || 0, e.altKey, e.ctrlKey,
+      e.metaKey, e.shiftKey);
   e.preventDefault();
 }
 
@@ -1206,8 +1207,11 @@ function onRealboxInput() {
 
 /** @param {Event} e */
 function onRealboxWrapperFocusIn(e) {
-  if (e.target.matches(`#${IDS.REALBOX}`) && !$(IDS.REALBOX).value) {
-    queryAutocomplete('');
+  if (e.target.matches(`#${IDS.REALBOX}`)) {
+    if (!$(IDS.REALBOX).value) {
+      queryAutocomplete('');
+    }
+    lastRealboxFocusTime = Date.now();
   } else if (e.target.matches(`#${IDS.REALBOX_MATCHES} *`)) {
     const target = /** @type {Element} */ (e.target);
     const link = findAncestor(target, el => el.nodeName === 'A');
@@ -1899,16 +1903,6 @@ function setFakeboxVisibility(show) {
 /** @param {boolean} visible */
 function setRealboxMatchesVisible(visible) {
   $(IDS.REALBOX_INPUT_WRAPPER).classList.toggle(CLASSES.SHOW_MATCHES, visible);
-}
-
-/** @param {boolean} listen */
-function setRealboxWrapperListenForFocusIn(listen) {
-  const realboxWrapper = $(IDS.REALBOX_INPUT_WRAPPER);
-  if (listen) {
-    realboxWrapper.addEventListener('focusin', onRealboxWrapperFocusIn);
-  } else {
-    realboxWrapper.removeEventListener('focusin', onRealboxWrapperFocusIn);
-  }
 }
 
 /** @param {boolean} listen */

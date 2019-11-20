@@ -743,6 +743,7 @@ test.realbox2.testRemoveIcon = function() {
 };
 
 test.realbox2.testPressEnterOnSelectedMatch = function() {
+  test.realbox.realboxEl.dispatchEvent(new Event('focusin', {bubbles: true}));
   test.realbox.realboxEl.value = 'hello world';
   test.realbox.realboxEl.dispatchEvent(new CustomEvent('input'));
 
@@ -769,8 +770,8 @@ test.realbox2.testPressEnterOnSelectedMatch = function() {
   test.realbox.realboxEl.dispatchEvent(shiftEnter);
   assertTrue(shiftEnter.defaultPrevented);
 
-  assertTrue(clicked);
-  assertEquals(0, test.realbox.opens.length);
+  assertFalse(clicked);
+  assertEquals(1, test.realbox.opens.length);
 };
 
 test.realbox2.testPressEnterNoSelectedMatch = function() {
@@ -902,8 +903,8 @@ test.realbox2.testPressEnterAfterFocusout = function() {
   test.realbox.realboxEl.dispatchEvent(enter);
   assertTrue(enter.defaultPrevented);
 
-  assertTrue(clicked);
-  assertEquals(0, test.realbox.opens.length);
+  assertFalse(clicked);
+  assertEquals(1, test.realbox.opens.length);
 };
 
 test.realbox2.testInputAfterFocusoutPrefixMatches = function() {
@@ -1028,6 +1029,7 @@ test.realbox2.testArrowUpDownShowsMatchesWhenHidden = function() {
 
 // Test that trying to open e.g. chrome:// links goes through the mojo API.
 test.realbox2.testPrivilegedDestinationUrls = function() {
+  test.realbox.realboxEl.dispatchEvent(new Event('focusin', {bubbles: true}));
   test.realbox.realboxEl.value = 'about';
   test.realbox.realboxEl.dispatchEvent(new CustomEvent('input'));
 
