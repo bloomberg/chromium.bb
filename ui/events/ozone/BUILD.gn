@@ -11,7 +11,9 @@ declare_args() {
 }
 
 if (use_ozone) {
-  component("events_ozone") {
+  component("ozone") {
+    output_name = "events_ozone"
+
     sources = [
       "chromeos/cursor_controller.cc",
       "chromeos/cursor_controller.h",
@@ -144,7 +146,7 @@ if (use_ozone) {
       defines = [ "EVENTS_OZONE_EVDEV_IMPLEMENTATION" ]
 
       deps = [
-        ":events_ozone",
+        ":ozone",
         "//base",
         "//ui/display",
         "//ui/events",
