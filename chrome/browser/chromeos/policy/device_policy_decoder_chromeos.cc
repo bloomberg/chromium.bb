@@ -904,6 +904,24 @@ void DecodeAccessibilityPolicies(const em::ChromeDeviceSettingsProto& policy,
       }
     }
 
+    if (container.has_login_screen_show_options_in_system_tray_menu_enabled()) {
+      PolicyLevel level;
+      if (GetPolicyLevel(
+              container
+                  .has_login_screen_show_options_in_system_tray_menu_enabled_options(),
+              container
+                  .login_screen_show_options_in_system_tray_menu_enabled_options(),
+              &level)) {
+        policies->Set(
+            key::kDeviceLoginScreenShowOptionsInSystemTrayMenu, level,
+            POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
+            std::make_unique<base::Value>(
+                container
+                    .login_screen_show_options_in_system_tray_menu_enabled()),
+            nullptr);
+      }
+    }
+
     if (container.has_login_screen_default_spoken_feedback_enabled()) {
       policies->Set(
           key::kDeviceLoginScreenDefaultSpokenFeedbackEnabled,
