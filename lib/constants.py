@@ -353,6 +353,9 @@ DEFAULT_CTS_TEST_XML_MAP = {
 DEFAULT_CTS_RESULTS_GSURI = 'gs://chromeos-cts-results/'
 DEFAULT_CTS_APFE_GSURI = 'gs://chromeos-cts-apfe/'
 
+ANDROID_CONTAINER_PACKAGE_KEYWORD = 'android-container'
+ANDROID_VM_PACKAGE_KEYWORD = 'android-vm'
+
 ANDROID_INTERNAL_PATTERN = r'\.zip.internal$'
 ANDROID_BUCKET_URL = 'gs://android-build-chromeos/builds'
 ANDROID_MST_BUILD_BRANCH = 'git_master-arc-dev'
@@ -360,6 +363,9 @@ ANDROID_NYC_BUILD_BRANCH = 'git_nyc-mr1-arc'
 ANDROID_PI_BUILD_BRANCH = 'git_pi-arc'
 ANDROID_QT_BUILD_BRANCH = 'git_qt-arc-dev'
 ANDROID_VMPI_BUILD_BRANCH = 'git_pi-arcvm-dev'
+ANDROID_VMMST_BUILD_BRANCH = 'git_master-arc-dev'
+assert ANDROID_VMMST_BUILD_BRANCH == ANDROID_MST_BUILD_BRANCH
+
 ANDROID_GTS_BUILD_TARGETS = {
     # "gts_arm64" is the build maintained by GMS team.
     'XTS': ('linux-gts_arm64', r'\.zip$'),
@@ -425,6 +431,10 @@ ANDROID_VMPI_BUILD_TARGETS = {
                       r'(\.zip|/XkbToKcmConverter)$'),
     'X86_USERDEBUG': ('linux-bertha_x86-userdebug',
                       r'(\.zip|/XkbToKcmConverter)$'),
+    'X86_64_USERDEBUG': ('linux-bertha_x86_64-userdebug', r'\.zip$'),
+}
+ANDROID_VMMST_BUILD_TARGETS = {
+    'X86_USERDEBUG': ('linux-bertha_x86-userdebug', r'\.zip$'),
     'X86_64_USERDEBUG': ('linux-bertha_x86_64-userdebug', r'\.zip$'),
 }
 

@@ -46,7 +46,7 @@ class CrosMarkAndroidAsStable(cros_test_lib.MockTempDirTestCase):
 
   def setUp(self):
     """Setup vars and create mock dir."""
-    self.android_package = 'test_package'
+    self.android_package = constants.ANDROID_CONTAINER_PACKAGE_KEYWORD
 
     self.tmp_overlay = os.path.join(self.tempdir, 'chromiumos-overlay')
     self.mock_android_dir = os.path.join(
@@ -110,7 +110,7 @@ class CrosMarkAndroidAsStable(cros_test_lib.MockTempDirTestCase):
     self.gs_mock = self.StartPatcher(gs_unittest.GSContextMock())
     self.arc_bucket_url = 'gs://a'
     self.targets = cros_mark_android_as_stable.MakeBuildTargetDict(
-        self.build_branch).copy()
+        self.android_package, self.build_branch).copy()
     # Internal targets share path with main targets.
     # Redefine them for decoupled testing.
     self.targets['X86_INTERNAL'] = (
@@ -498,24 +498,34 @@ class CrosMarkAndroidAsStable(cros_test_lib.MockTempDirTestCase):
                                   'googlestorage_acl_internal.txt'))
     # Test that all MST targets have their ACLs set.
     for t in cros_mark_android_as_stable.MakeBuildTargetDict(
+        constants.ANDROID_CONTAINER_PACKAGE_KEYWORD,
         constants.ANDROID_MST_BUILD_BRANCH).keys():
-      self.assertTrue(t in acls)
+      self.assertIn(t, acls)
     # Test that all NYC targets have their ACLS set.
     for t in cros_mark_android_as_stable.MakeBuildTargetDict(
+        constants.ANDROID_CONTAINER_PACKAGE_KEYWORD,
         constants.ANDROID_NYC_BUILD_BRANCH).keys():
-      self.assertTrue(t in acls)
+      self.assertIn(t, acls)
     # Test that all PI targets have their ACLS set.
     for t in cros_mark_android_as_stable.MakeBuildTargetDict(
+        constants.ANDROID_CONTAINER_PACKAGE_KEYWORD,
         constants.ANDROID_PI_BUILD_BRANCH).keys():
-      self.assertTrue(t in acls)
+      self.assertIn(t, acls)
     # Test that all QT targets have their ACLS set.
     for t in cros_mark_android_as_stable.MakeBuildTargetDict(
+        constants.ANDROID_CONTAINER_PACKAGE_KEYWORD,
         constants.ANDROID_QT_BUILD_BRANCH).keys():
-      self.assertTrue(t in acls)
+      self.assertIn(t, acls)
     # Test that all VMPI targets have their ACLS set.
     for t in cros_mark_android_as_stable.MakeBuildTargetDict(
+        constants.ANDROID_VM_PACKAGE_KEYWORD,
         constants.ANDROID_VMPI_BUILD_BRANCH).keys():
-      self.assertTrue(t in acls)
+      self.assertIn(t, acls)
+    # Test that all VMMST targets have their ACLS set.
+    for t in cros_mark_android_as_stable.MakeBuildTargetDict(
+        constants.ANDROID_VM_PACKAGE_KEYWORD,
+        constants.ANDROID_VMMST_BUILD_BRANCH).keys():
+      self.assertIn(t, acls)
 
   def testMakeBuildTargetDictMST(self):
     """Test generation of MST build target dictionary.
@@ -524,6 +534,7 @@ class CrosMarkAndroidAsStable(cros_test_lib.MockTempDirTestCase):
     present, then the dictionary is correct.
     """
     targets = cros_mark_android_as_stable.MakeBuildTargetDict(
+        'android-container-master-arc-dev',
         constants.ANDROID_MST_BUILD_BRANCH)
     # Test the number of targets.
     self.assertEqual(len(targets),
@@ -540,6 +551,7 @@ class CrosMarkAndroidAsStable(cros_test_lib.MockTempDirTestCase):
     then the dictionary is correct.
     """
     targets = cros_mark_android_as_stable.MakeBuildTargetDict(
+        'android-container-nyc',
         constants.ANDROID_NYC_BUILD_BRANCH)
     # Test the number of targets.
     self.assertEqual(len(targets),
@@ -556,6 +568,7 @@ class CrosMarkAndroidAsStable(cros_test_lib.MockTempDirTestCase):
     present, then the dictionary is correct.
     """
     targets = cros_mark_android_as_stable.MakeBuildTargetDict(
+        'android-container-pi',
         constants.ANDROID_PI_BUILD_BRANCH)
     # Test the number of targets.
     self.assertEqual(len(targets),
@@ -572,6 +585,7 @@ class CrosMarkAndroidAsStable(cros_test_lib.MockTempDirTestCase):
     present, then the dictionary is correct.
     """
     targets = cros_mark_android_as_stable.MakeBuildTargetDict(
+        'android-container-qt',
         constants.ANDROID_QT_BUILD_BRANCH)
     # Test the number of targets.
     self.assertEqual(len(targets),
@@ -588,6 +602,7 @@ class CrosMarkAndroidAsStable(cros_test_lib.MockTempDirTestCase):
     present, then the dictionary is correct.
     """
     targets = cros_mark_android_as_stable.MakeBuildTargetDict(
+        'android-vm-pi',
         constants.ANDROID_VMPI_BUILD_BRANCH)
     # Test the number of targets.
     self.assertEqual(len(targets),
@@ -597,11 +612,33 @@ class CrosMarkAndroidAsStable(cros_test_lib.MockTempDirTestCase):
       self.assertEqual(targets[target],
                        constants.ANDROID_VMPI_BUILD_TARGETS[target])
 
+  def testMakeBuildTargetDictVMMst(self):
+    """Test generation of VMMst build target dictionary.
+
+    If the number of targets is correct and VMMst-specific targets are
+    present, then the dictionary is correct.
+    """
+    targets = cros_mark_android_as_stable.MakeBuildTargetDict(
+        'android-vm-master',
+        constants.ANDROID_VMMST_BUILD_BRANCH)
+    # Test the number of targets.
+    self.assertEqual(len(targets),
+                     len(constants.ANDROID_VMMST_BUILD_TARGETS))
+    # Test that all VMMst-specific targets are in the dictionary.
+    for target in constants.ANDROID_VMMST_BUILD_TARGETS:
+      self.assertEqual(targets[target],
+                       constants.ANDROID_VMMST_BUILD_TARGETS[target])
+
   def testMakeBuildTargetDictException(self):
     """Test that passing invalid branch names throws ValueError exception."""
     self.assertRaises(ValueError,
                       cros_mark_android_as_stable.MakeBuildTargetDict,
+                      constants.ANDROID_CONTAINER_PACKAGE_KEYWORD,
                       'INVALID_BRANCH_NAME')
+    self.assertRaises(ValueError,
+                      cros_mark_android_as_stable.MakeBuildTargetDict,
+                      'invalid-package',
+                      constants.ANDROID_VMPI_BUILD_BRANCH)
 
   def testGetAndroidRevisionListLink(self):
     """Test generation of revision diff list."""

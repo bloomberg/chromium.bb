@@ -895,6 +895,7 @@ class MasterSlaveLKGMSyncStage(ManifestVersionedSyncStage):
     return cros_mark_android_as_stable.GetLatestBuild(
         constants.ANDROID_BUCKET_URL, self._run.config.android_import_branch,
         cros_mark_android_as_stable.MakeBuildTargetDict(
+            self._run.config.android_package,
             self._run.config.android_import_branch))[0]
 
   def GetLatestChromeVersion(self):
