@@ -1212,6 +1212,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/payments/handler/toolbar/PaymentHandlerToolbarViewBinder.java",
   "java/src/org/chromium/chrome/browser/payments/handler/toolbar/PaymentHandlerToolbarView.java",
   "java/src/org/chromium/chrome/browser/payments/JourneyLogger.java",
+  "java/src/org/chromium/chrome/browser/payments/PayerData.java",
   "java/src/org/chromium/chrome/browser/payments/PackageManagerDelegate.java",
   "java/src/org/chromium/chrome/browser/payments/PaymentApp.java",
   "java/src/org/chromium/chrome/browser/payments/PaymentAppFactory.java",
