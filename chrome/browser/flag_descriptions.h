@@ -972,6 +972,9 @@ extern const char kPassiveDocumentEventListenersDescription[];
 extern const char kPassiveDocumentWheelEventListenersName[];
 extern const char kPassiveDocumentWheelEventListenersDescription[];
 
+extern const char kPassiveMixedContentWarningName[];
+extern const char kPassiveMixedContentWarningDescription[];
+
 extern const char kPasswordImportName[];
 extern const char kPasswordImportDescription[];
 

@@ -2984,6 +2984,11 @@
     "expiry_milestone": 78
   },
   {
+    "name": "passive-mixed-content-warning",
+    "owners": [ "carlosil", "estark" ],
+    "expiry_milestone": 83
+  },
+  {
     "name": "password-editing-android",
     "owners": [ "izuzic", "fhorschig" ],
     "expiry_milestone": 80

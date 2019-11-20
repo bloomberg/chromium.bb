@@ -54,6 +54,12 @@ SecurityLevel GetSecurityLevelForNonSecureFieldTrial(
   return input_events.insecure_field_edited ? DANGEROUS : WARNING;
 }
 
+SecurityLevel GetSecurityLevelForDisplayedMixedContent() {
+  if (base::FeatureList::IsEnabled(features::kPassiveMixedContentWarning))
+    return kDisplayedInsecureContentWarningLevel;
+  return kDisplayedInsecureContentLevel;
+}
+
 std::string GetHistogramSuffixForSecurityLevel(
     security_state::SecurityLevel level) {
   switch (level) {
@@ -214,8 +220,11 @@ SecurityLevel GetSecurityLevel(
   DCHECK(!visible_security_state.ran_mixed_content);
   DCHECK(!visible_security_state.ran_content_with_cert_errors);
 
+  if (visible_security_state.displayed_mixed_content) {
+    return GetSecurityLevelForDisplayedMixedContent();
+  }
+
   if (visible_security_state.contained_mixed_form ||
-      visible_security_state.displayed_mixed_content ||
       visible_security_state.displayed_content_with_cert_errors) {
     return kDisplayedInsecureContentLevel;
   }

@@ -4804,6 +4804,11 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(chromeos::features::kMediaApp)},
 #endif  // defined(OS_CHROMEOS)
 
+    {"passive-mixed-content-warning",
+     flag_descriptions::kPassiveMixedContentWarningName,
+     flag_descriptions::kPassiveMixedContentWarningDescription, kOsAll,
+     FEATURE_VALUE_TYPE(security_state::features::kPassiveMixedContentWarning)},
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the
