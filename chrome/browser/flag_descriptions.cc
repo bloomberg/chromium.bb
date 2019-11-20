@@ -3941,10 +3941,6 @@ const char kProfileMenuRevampName[] = "Profile menu revamp";
 const char kProfileMenuRevampDescription[] =
     "Enables the new version of the profile menu (aka user menu).";
 
-const char kSyncClipboardServiceName[] = "Sync Clipboard Service";
-const char kSyncClipboardServiceDescription[] =
-    "Enables clipboard syncing via Chrome Sync.";
-
 #endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
 
 #if defined(OS_MACOSX) || defined(OS_CHROMEOS)

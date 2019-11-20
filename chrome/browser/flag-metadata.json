@@ -3342,11 +3342,6 @@
     "expiry_milestone": 77
   },
   {
-    "name": "sync-clipboard-service",
-    "owners": [ "joaodasilva" ],
-    "expiry_milestone": 80
-  },
-  {
     "name": "sync-wifi-configurations",
     "owners": ["jonmann", "cros-system-services@google.com"],
     "expiry_milestone": 85

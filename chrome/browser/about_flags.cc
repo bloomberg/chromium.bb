@@ -4646,12 +4646,6 @@ const FeatureEntry kFeatureEntries[] = {
          content_settings::kImprovedCookieControlsForThirdPartyCookieBlocking)},
 #endif  // !defined(OS_ANDROID)
 
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
-    {"sync-clipboard-service", flag_descriptions::kSyncClipboardServiceName,
-     flag_descriptions::kSyncClipboardServiceDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(features::kSyncClipboardServiceFeature)},
-#endif  // OS_WIN || OS_MACOSX || OS_LINUX
-
 #if !defined(OS_ANDROID)
     {"accessibility-internals-page-improvements",
      flag_descriptions::kAccessibilityInternalsPageImprovementsName,
