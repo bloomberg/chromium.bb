@@ -2018,7 +2018,9 @@ int av1_refining_search_8p_c(MACROBLOCK *x, int error_per_bit, int search_range,
                              const aom_variance_fn_ptr_t *fn_ptr,
                              const uint8_t *mask, int mask_stride,
                              int invert_mask, const MV *center_mv,
-                             const uint8_t *second_pred) {
+                             const uint8_t *second_pred,
+                             const struct buf_2d *src,
+                             const struct buf_2d *pre) {
   static const search_neighbors neighbors[8] = {
     { { -1, 0 }, -1 * SEARCH_GRID_STRIDE_8P + 0 },
     { { 0, -1 }, 0 * SEARCH_GRID_STRIDE_8P - 1 },
@@ -2029,9 +2031,8 @@ int av1_refining_search_8p_c(MACROBLOCK *x, int error_per_bit, int search_range,
     { { -1, 1 }, -1 * SEARCH_GRID_STRIDE_8P + 1 },
     { { 1, 1 }, 1 * SEARCH_GRID_STRIDE_8P + 1 }
   };
-  const MACROBLOCKD *const xd = &x->e_mbd;
-  const struct buf_2d *const what = &x->plane[0].src;
-  const struct buf_2d *const in_what = &xd->plane[0].pre[0];
+  const struct buf_2d *const what = src;
+  const struct buf_2d *const in_what = pre;
   const MV fcenter_mv = { center_mv->row >> 3, center_mv->col >> 3 };
   MV *best_mv = &x->best_mv.as_mv;
   unsigned int best_sad = INT_MAX;

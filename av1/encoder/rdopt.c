@@ -7087,9 +7087,9 @@ static AOM_INLINE void joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
     best_mv->row >>= 3;
 
     // Small-range full-pixel motion search.
-    bestsme = av1_refining_search_8p_c(x, sadpb, search_range,
-                                       &cpi->fn_ptr[bsize], mask, mask_stride,
-                                       id, &ref_mv[id].as_mv, second_pred);
+    bestsme = av1_refining_search_8p_c(
+        x, sadpb, search_range, &cpi->fn_ptr[bsize], mask, mask_stride, id,
+        &ref_mv[id].as_mv, second_pred, &x->plane[0].src, &ref_yv12[id]);
     if (bestsme < INT_MAX) {
       if (mask)
         bestsme = av1_get_mvpred_mask_var(x, best_mv, &ref_mv[id].as_mv,
@@ -7645,6 +7645,7 @@ static AOM_INLINE void compound_single_motion_search(
 
   // Store the first prediction buffer.
   struct buf_2d orig_yv12;
+  struct buf_2d ref_yv12 = pd->pre[ref_idx];
   if (ref_idx) {
     orig_yv12 = pd->pre[0];
     pd->pre[0] = pd->pre[ref_idx];
@@ -7681,9 +7682,9 @@ static AOM_INLINE void compound_single_motion_search(
   best_mv->row >>= 3;
 
   // Small-range full-pixel motion search.
-  bestsme = av1_refining_search_8p_c(x, sadpb, search_range,
-                                     &cpi->fn_ptr[bsize], mask, mask_stride,
-                                     ref_idx, &ref_mv.as_mv, second_pred);
+  bestsme = av1_refining_search_8p_c(
+      x, sadpb, search_range, &cpi->fn_ptr[bsize], mask, mask_stride, ref_idx,
+      &ref_mv.as_mv, second_pred, &x->plane[0].src, &ref_yv12);
   if (bestsme < INT_MAX) {
     if (mask)
       bestsme =

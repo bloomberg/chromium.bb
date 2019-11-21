@@ -133,7 +133,9 @@ int av1_refining_search_8p_c(MACROBLOCK *x, int error_per_bit, int search_range,
                              const aom_variance_fn_ptr_t *fn_ptr,
                              const uint8_t *mask, int mask_stride,
                              int invert_mask, const MV *center_mv,
-                             const uint8_t *second_pred);
+                             const uint8_t *second_pred,
+                             const struct buf_2d *src,
+                             const struct buf_2d *pre);
 
 int av1_full_pixel_search(const struct AV1_COMP *cpi, MACROBLOCK *x,
                           BLOCK_SIZE bsize, MV *mvp_full, int step_param,
