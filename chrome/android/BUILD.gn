@@ -2680,7 +2680,6 @@ generate_jni("chrome_jni_headers") {
     "java/src/org/chromium/chrome/browser/photo_picker/DecoderService.java",
     "java/src/org/chromium/chrome/browser/policy/PolicyAuditor.java",
     "java/src/org/chromium/chrome/browser/preferences/LocationSettings.java",
-    "java/src/org/chromium/chrome/browser/preferences/PrefChangeRegistrar.java",
     "java/src/org/chromium/chrome/browser/preferences/PreferencesLauncher.java",
     "java/src/org/chromium/chrome/browser/preferences/about/AboutSettingsBridge.java",
     "java/src/org/chromium/chrome/browser/preferences/autofill/AutofillProfileBridge.java",
