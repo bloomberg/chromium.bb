@@ -472,6 +472,7 @@ def chromiumos_builder(*, name, **kwargs):
 
 chromiumos_builder(
     name = 'chromeos-amd64-generic-dbg',
+    goma_backend = goma.backend.RBE_PROD,
     tryjob = tryjob(
         location_regexp = [
             '.+/[+]/content/gpu/.+',
@@ -482,24 +483,29 @@ chromiumos_builder(
 
 chromiumos_builder(
     name = 'chromeos-amd64-generic-cfi-thin-lto-rel',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 chromiumos_builder(
     name = 'chromeos-amd64-generic-rel',
+    goma_backend = goma.backend.RBE_PROD,
     tryjob = tryjob(),
 )
 
 chromiumos_builder(
     name = 'chromeos-arm-generic-dbg',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 chromiumos_builder(
     name = 'chromeos-arm-generic-rel',
+    goma_backend = goma.backend.RBE_PROD,
     tryjob = tryjob(),
 )
 
 chromiumos_builder(
     name = 'chromeos-kevin-compile-rel',
+    goma_backend = goma.backend.RBE_PROD,
     tryjob = tryjob(
         location_regexp = [
             '.+/[+]/chromeos/CHROMEOS_LKGM',
@@ -509,6 +515,7 @@ chromiumos_builder(
 
 chromiumos_builder(
     name = 'chromeos-kevin-rel',
+    goma_backend = goma.backend.RBE_PROD,
     tryjob = tryjob(
         location_regexp = [
             '.+/[+]/build/chromeos/.+',
@@ -1245,11 +1252,13 @@ linux_builder(
 
 linux_builder(
     name = 'linux_chromium_chromeos_asan_rel_ng',
+    goma_backend = goma.backend.RBE_PROD,
     goma_jobs = goma.jobs.J150,
 )
 
 linux_builder(
     name = 'linux_chromium_chromeos_msan_rel_ng',
+    goma_backend = goma.backend.RBE_PROD,
     goma_jobs = goma.jobs.J150,
 )
 
@@ -1369,6 +1378,7 @@ linux_builder(
 
 linux_builder(
     name = 'linux_mojo_chromeos',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 linux_builder(
