@@ -129,6 +129,13 @@ const IDNTestCase kIdnCases[] = {
     {"xn---123-kbjl2j0bl2k.in", L"\x0939\x093f\x0928\x094d\x0926\x0940-123.in",
      true},
 
+    // Block mixed numeric + numeric lookalike (12.com, using U+0577).
+    {"xn--1-9dd.com", L"1\x0577.com", false},
+    // Block mixed numeric lookalike + numeric (੨0.com, uses U+0A68).
+    {"xn--0-6ee.com", L"\x0a680.com", false},
+    // Block fully numeric lookalikes (৪੨.com using U+09EA and U+0A68).
+    {"xn--47b6w.com", L"\x09ea\x0a68.com", false},
+
     // URL test with mostly numbers and one confusable character
     // Georgian 'd' 4000.com
     {"xn--4000-pfr.com",
