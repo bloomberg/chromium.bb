@@ -526,7 +526,7 @@ deps_os ={
 vars = {
   'str_var': 'xyz',
 }
-gclient_gn_args_file = 'src/repo2/gclient.args'
+gclient_gn_args_file = 'src/repo8/gclient.args'
 gclient_gn_args = [
   'str_var',
 ]
