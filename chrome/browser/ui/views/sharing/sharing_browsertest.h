@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SHARING_SHARING_BROWSERTEST_H_
-#define CHROME_BROWSER_SHARING_SHARING_BROWSERTEST_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_SHARING_SHARING_BROWSERTEST_H_
+#define CHROME_BROWSER_UI_VIEWS_SHARING_SHARING_BROWSERTEST_H_
 
 #include <memory>
 #include <string>
@@ -68,4 +68,4 @@ class SharingBrowserTest : public SyncTest {
   DISALLOW_COPY_AND_ASSIGN(SharingBrowserTest);
 };
 
-#endif  // CHROME_BROWSER_SHARING_SHARING_BROWSERTEST_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_SHARING_SHARING_BROWSERTEST_H_

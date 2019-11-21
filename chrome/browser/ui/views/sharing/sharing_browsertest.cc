@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sharing/sharing_browsertest.h"
+#include "chrome/browser/ui/views/sharing/sharing_browsertest.h"
 
 #include "base/bind.h"
 #include "base/run_loop.h"
