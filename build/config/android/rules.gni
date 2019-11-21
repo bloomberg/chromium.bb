@@ -3647,6 +3647,7 @@ if (enable_java_templates) {
                                "modules",
                                "proguard_enabled",
                                "public_deps",
+                               "use_webview_provider",
                              ])
       test_name = invoker.target_name
       test_type = "instrumentation"
@@ -3732,6 +3733,9 @@ if (enable_java_templates) {
       if (defined(additional_apks)) {
         data_deps += additional_apks
       }
+      if (defined(use_webview_provider)) {
+        data_deps += [ use_webview_provider ]
+      }
       if (defined(invoker.apk_under_test)) {
         # Prevent a build_hooks_android_impl exising in both the test apks as
         # well as the apk_under_test.
@@ -3791,6 +3795,7 @@ if (enable_java_templates) {
                                "never_incremental",
                                "proguard_enabled",
                                "public_deps",
+                               "use_webview_provider",
                              ])
       android_test_apk = ":${_apk_target_name}"
       android_test_apk_name = invoker.apk_name

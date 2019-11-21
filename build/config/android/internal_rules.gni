@@ -721,6 +721,18 @@ template("test_runner_script") {
           _apk_under_test,
         ]
       }
+      if (defined(invoker.use_webview_provider)) {
+        deps += [ "${invoker.use_webview_provider}$build_config_target_suffix" ]
+        _build_config =
+            get_label_info(invoker.use_webview_provider, "target_gen_dir") +
+            "/" + get_label_info(invoker.use_webview_provider, "name") +
+            ".build_config"
+        _rebased_build_config = rebase_path(_build_config, root_build_dir)
+        executable_args += [
+          "--use-webview-provider",
+          "@WrappedPath(@FileArg($_rebased_build_config:deps_info:apk_path))",
+        ]
+      }
       if (defined(invoker.proguard_enabled) && invoker.proguard_enabled) {
         executable_args += [ "--enable-java-deobfuscation" ]
       }
