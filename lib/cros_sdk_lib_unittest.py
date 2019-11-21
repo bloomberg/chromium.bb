@@ -96,6 +96,28 @@ class TestEarliestChrootVersion(VersionHookTestCase):
                      cros_sdk_lib.EarliestChrootVersion(self.hooks_dir))
 
 
+class TestIsChrootReady(cros_test_lib.MockTestCase):
+  """Tests IsChrootReady functionality."""
+
+  def setUp(self):
+    self.version_mock = self.PatchObject(cros_sdk_lib, 'GetChrootVersion')
+
+  def testMissing(self):
+    """Check behavior w/out a chroot."""
+    self.version_mock.return_value = None
+    self.assertFalse(cros_sdk_lib.IsChrootReady('/'))
+
+  def testNotSetup(self):
+    """Check behavior w/an existing uninitialized chroot."""
+    self.version_mock.return_value = 0
+    self.assertFalse(cros_sdk_lib.IsChrootReady('/'))
+
+  def testUpToDate(self):
+    """Check behavior w/a valid chroot."""
+    self.version_mock.return_value = 123
+    self.assertTrue(cros_sdk_lib.IsChrootReady('/'))
+
+
 class TestFindVolumeGroupForDevice(cros_test_lib.MockTempDirTestCase):
   """Tests the FindVolumeGroupForDevice function."""
 

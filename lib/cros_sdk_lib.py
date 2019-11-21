@@ -159,7 +159,8 @@ def IsChrootReady(chroot):
   Returns:
     True iff the chroot contains a valid version.
   """
-  return GetChrootVersion(chroot) > 0
+  version = GetChrootVersion(chroot)
+  return version is not None and version > 0
 
 
 def FindVolumeGroupForDevice(chroot_path, chroot_dev):
