@@ -39,7 +39,6 @@
 #include "components/optimization_guide/test_hints_component_creator.h"
 #include "components/optimization_guide/top_host_provider.h"
 #include "components/prefs/pref_service.h"
-#include "components/previews/core/previews_switches.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/test/browser_test_base.h"
@@ -213,9 +212,10 @@ class HintsFetcherDisabledBrowserTest : public InProcessBrowserTest {
   void SetUpCommandLine(base::CommandLine* cmd) override {
     cmd->AppendSwitch("ignore-certificate-errors");
 
-    cmd->AppendSwitch("enable-spdy-proxy-auth");
-
     cmd->AppendSwitch("purge_hint_cache_store");
+
+    cmd->AppendSwitch(optimization_guide::switches::
+                          kDisableCheckingUserPermissionsForTesting);
 
     // Set up OptimizationGuideServiceURL, this does not enable HintsFetching,
     // only provides the URL.
@@ -224,7 +224,6 @@ class HintsFetcherDisabledBrowserTest : public InProcessBrowserTest {
         hints_server_->base_url().spec());
     cmd->AppendSwitchASCII(optimization_guide::switches::kFetchHintsOverride,
                            "example1.com, example2.com");
-    cmd->AppendSwitch(previews::switches::kDoNotRequireLitePageRedirectInfoBar);
 
     cmd->AppendSwitch(optimization_guide::switches::kFetchHintsOverrideTimer);
   }
@@ -1288,7 +1287,8 @@ class HintsFetcherChangeDefaultBlacklistSizeBrowserTest
         optimization_guide::switches::kOptimizationGuideServiceGetHintsURL,
         hints_server_->base_url().spec());
 
-    cmd->AppendSwitch(previews::switches::kDoNotRequireLitePageRedirectInfoBar);
+    cmd->AppendSwitch(optimization_guide::switches::
+                          kDisableCheckingUserPermissionsForTesting);
   }
 
  private:
