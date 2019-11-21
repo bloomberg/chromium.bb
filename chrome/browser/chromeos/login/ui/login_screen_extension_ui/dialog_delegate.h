@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_UI_LOGIN_SCREEN_EXTENSION_UI_LOGIN_SCREEN_EXTENSION_UI_DIALOG_DELEGATE_H_
-#define CHROME_BROWSER_CHROMEOS_LOGIN_UI_LOGIN_SCREEN_EXTENSION_UI_LOGIN_SCREEN_EXTENSION_UI_DIALOG_DELEGATE_H_
+#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_UI_LOGIN_SCREEN_EXTENSION_UI_DIALOG_DELEGATE_H_
+#define CHROME_BROWSER_CHROMEOS_LOGIN_UI_LOGIN_SCREEN_EXTENSION_UI_DIALOG_DELEGATE_H_
 
 #include <string>
 #include <vector>
@@ -26,15 +26,16 @@ class Size;
 
 namespace chromeos {
 
-struct LoginScreenExtensionUiCreateOptions;
+namespace login_screen_extension_ui {
+
+struct CreateOptions;
 
 // This class is used to provide data from a chrome.loginScreenUi API call to
 // the WebDialog.
-class LoginScreenExtensionUiDialogDelegate : public ui::WebDialogDelegate {
+class DialogDelegate : public ui::WebDialogDelegate {
  public:
-  explicit LoginScreenExtensionUiDialogDelegate(
-      LoginScreenExtensionUiCreateOptions* create_options);
-  ~LoginScreenExtensionUiDialogDelegate() override;
+  explicit DialogDelegate(CreateOptions* create_options);
+  ~DialogDelegate() override;
 
   void set_can_close(bool can_close) { can_close_ = can_close; }
   void set_native_window(gfx::NativeWindow native_window) {
@@ -67,9 +68,11 @@ class LoginScreenExtensionUiDialogDelegate : public ui::WebDialogDelegate {
 
   gfx::NativeWindow native_window_ = nullptr;
 
-  DISALLOW_COPY_AND_ASSIGN(LoginScreenExtensionUiDialogDelegate);
+  DISALLOW_COPY_AND_ASSIGN(DialogDelegate);
 };
+
+}  // namespace login_screen_extension_ui
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_UI_LOGIN_SCREEN_EXTENSION_UI_LOGIN_SCREEN_EXTENSION_UI_DIALOG_DELEGATE_H_
+#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_UI_LOGIN_SCREEN_EXTENSION_UI_DIALOG_DELEGATE_H_

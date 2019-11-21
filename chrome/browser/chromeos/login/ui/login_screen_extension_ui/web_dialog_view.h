@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_UI_LOGIN_SCREEN_EXTENSION_UI_LOGIN_SCREEN_EXTENSION_UI_WEB_DIALOG_VIEW_H_
-#define CHROME_BROWSER_CHROMEOS_LOGIN_UI_LOGIN_SCREEN_EXTENSION_UI_LOGIN_SCREEN_EXTENSION_UI_WEB_DIALOG_VIEW_H_
+#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_UI_LOGIN_SCREEN_EXTENSION_UI_WEB_DIALOG_VIEW_H_
+#define CHROME_BROWSER_CHROMEOS_LOGIN_UI_LOGIN_SCREEN_EXTENSION_UI_WEB_DIALOG_VIEW_H_
 
 #include <memory>
 #include <string>
@@ -20,20 +20,21 @@ class WebContents;
 
 namespace chromeos {
 
-class LoginScreenExtensionUiDialogDelegate;
+namespace login_screen_extension_ui {
+
+class DialogDelegate;
 
 // A WebDialogView used by chrome.loginScreenUi API calls. It hides the close
-// button if |LoginScreenExtensionUiDialogDelegate::CanCloseDialog()| is false.
-class LoginScreenExtensionUiWebDialogView
-    : public views::WebDialogView,
-      public ash::SystemTrayFocusObserver {
+// button if |DialogDelegate::CanCloseDialog()| is false.
+class WebDialogView : public views::WebDialogView,
+                      public ash::SystemTrayFocusObserver {
  public:
-  explicit LoginScreenExtensionUiWebDialogView(
+  explicit WebDialogView(
       content::BrowserContext* context,
-      LoginScreenExtensionUiDialogDelegate* delegate,
+      DialogDelegate* delegate,
       std::unique_ptr<ui::WebDialogWebContentsDelegate::WebContentsHandler>
           handler);
-  ~LoginScreenExtensionUiWebDialogView() override;
+  ~WebDialogView() override;
 
   // views::WebDialogView
   bool ShouldShowCloseButton() const override;
@@ -44,11 +45,13 @@ class LoginScreenExtensionUiWebDialogView
   void OnFocusLeavingSystemTray(bool reverse) override;
 
  private:
-  LoginScreenExtensionUiDialogDelegate* delegate_ = nullptr;
+  DialogDelegate* delegate_ = nullptr;
 
-  DISALLOW_COPY_AND_ASSIGN(LoginScreenExtensionUiWebDialogView);
+  DISALLOW_COPY_AND_ASSIGN(WebDialogView);
 };
+
+}  // namespace login_screen_extension_ui
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_UI_LOGIN_SCREEN_EXTENSION_UI_LOGIN_SCREEN_EXTENSION_UI_WEB_DIALOG_VIEW_H_
+#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_UI_LOGIN_SCREEN_EXTENSION_UI_WEB_DIALOG_VIEW_H_

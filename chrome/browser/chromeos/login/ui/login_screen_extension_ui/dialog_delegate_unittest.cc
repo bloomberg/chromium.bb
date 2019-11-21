@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/login/ui/login_screen_extension_ui/login_screen_extension_ui_dialog_delegate.h"
+#include "chrome/browser/chromeos/login/ui/login_screen_extension_ui/dialog_delegate.h"
 
 #include <memory>
 
 #include "base/run_loop.h"
 #include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/chromeos/extensions/login_screen/login_screen_ui/login_screen_extension_ui_handler.h"
-#include "chrome/browser/chromeos/login/ui/login_screen_extension_ui/login_screen_extension_ui_create_options.h"
+#include "chrome/browser/chromeos/extensions/login_screen/login_screen_ui/ui_handler.h"
+#include "chrome/browser/chromeos/login/ui/login_screen_extension_ui/create_options.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/chrome_ash_test_base.h"
 #include "content/public/test/browser_task_environment.h"
@@ -31,9 +31,11 @@ const char kResourcePath[] = "path/to/file.html";
 
 namespace chromeos {
 
-using LoginScreenExtensionUiDialogDelegateUnittest = testing::Test;
+namespace login_screen_extension_ui {
 
-TEST_F(LoginScreenExtensionUiDialogDelegateUnittest, Test) {
+using DialogDelegateUnittest = testing::Test;
+
+TEST_F(DialogDelegateUnittest, Test) {
   content::BrowserTaskEnvironment task_environment_;
 
   scoped_refptr<const extensions::Extension> extension =
@@ -41,14 +43,13 @@ TEST_F(LoginScreenExtensionUiDialogDelegateUnittest, Test) {
 
   base::RunLoop close_callback_wait;
 
-  LoginScreenExtensionUiCreateOptions create_options(
+  CreateOptions create_options(
       extension->short_name(), extension->GetResourceURL(kResourcePath),
       false /*can_be_closed_by_user*/, close_callback_wait.QuitClosure());
 
   // |delegate| will delete itself when calling |OnDialogClosed()| at the end of
   // the test.
-  LoginScreenExtensionUiDialogDelegate* delegate =
-      new LoginScreenExtensionUiDialogDelegate(&create_options);
+  DialogDelegate* delegate = new DialogDelegate(&create_options);
 
   EXPECT_EQ(ui::MODAL_TYPE_WINDOW, delegate->GetDialogModalType());
   EXPECT_EQ(l10n_util::GetStringFUTF16(IDS_LOGIN_EXTENSION_UI_DIALOG_TITLE,
@@ -69,5 +70,7 @@ TEST_F(LoginScreenExtensionUiDialogDelegateUnittest, Test) {
   delegate->OnDialogClosed(std::string());
   close_callback_wait.Run();
 }
+
+}  // namespace login_screen_extension_ui
 
 }  // namespace chromeos

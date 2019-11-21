@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/extensions/login_screen/login_screen_ui/login_screen_extension_ui_handler.h"
+#include "chrome/browser/chromeos/extensions/login_screen/login_screen_ui/ui_handler.h"
 
 #include "ash/public/cpp/login_screen.h"
 #include "ash/public/cpp/login_screen_model.h"
 #include "ash/public/cpp/login_types.h"
 #include "base/macros.h"
-#include "chrome/browser/chromeos/login/ui/login_screen_extension_ui/login_screen_extension_ui_create_options.h"
-#include "chrome/browser/chromeos/login/ui/login_screen_extension_ui/login_screen_extension_ui_window.h"
+#include "chrome/browser/chromeos/login/ui/login_screen_extension_ui/create_options.h"
+#include "chrome/browser/chromeos/login/ui/login_screen_extension_ui/window.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/ui/ash/login_screen_client.h"
 #include "chromeos/tpm/install_attributes.h"
@@ -28,8 +28,6 @@ const char kErrorWindowAlreadyExists[] =
 const char kErrorNoExistingWindow[] = "No open window to close.";
 const char kErrorNotOnLoginOrLockScreen[] =
     "Windows can only be created on the login and lock screen.";
-
-LoginScreenExtensionUiHandler* g_instance = nullptr;
 
 struct HardcodedExtensionNameMapping {
   const char* extension_id;
@@ -64,35 +62,37 @@ bool CanUseLoginScreenUiApi(const extensions::Extension* extension) {
          InstallAttributes::Get()->IsEnterpriseManaged();
 }
 
+login_screen_extension_ui::UiHandler* g_instance = nullptr;
+
 }  // namespace
+
+namespace login_screen_extension_ui {
 
 ExtensionIdToWindowMapping::ExtensionIdToWindowMapping(
     const std::string& extension_id,
-    std::unique_ptr<LoginScreenExtensionUiWindow> window)
+    std::unique_ptr<Window> window)
     : extension_id(extension_id), window(std::move(window)) {}
 
 ExtensionIdToWindowMapping::~ExtensionIdToWindowMapping() = default;
 
 // static
-LoginScreenExtensionUiHandler* LoginScreenExtensionUiHandler::Get(
-    bool can_create) {
+UiHandler* UiHandler::Get(bool can_create) {
   if (!g_instance && can_create) {
-    std::unique_ptr<LoginScreenExtensionUiWindowFactory> window_factory =
-        std::make_unique<LoginScreenExtensionUiWindowFactory>();
-    g_instance = new LoginScreenExtensionUiHandler(std::move(window_factory));
+    std::unique_ptr<WindowFactory> window_factory =
+        std::make_unique<WindowFactory>();
+    g_instance = new UiHandler(std::move(window_factory));
   }
   return g_instance;
 }
 
 // static
-void LoginScreenExtensionUiHandler::Shutdown() {
+void UiHandler::Shutdown() {
   DCHECK(g_instance);
   delete g_instance;
   g_instance = nullptr;
 }
 
-LoginScreenExtensionUiHandler::LoginScreenExtensionUiHandler(
-    std::unique_ptr<LoginScreenExtensionUiWindowFactory> window_factory)
+UiHandler::UiHandler(std::unique_ptr<WindowFactory> window_factory)
     : window_factory_(std::move(window_factory)) {
   UpdateSessionState();
   session_manager_observer_.Add(session_manager::SessionManager::Get());
@@ -100,12 +100,12 @@ LoginScreenExtensionUiHandler::LoginScreenExtensionUiHandler(
       extensions::ExtensionRegistry::Get(ProfileHelper::GetSigninProfile()));
 }
 
-LoginScreenExtensionUiHandler::~LoginScreenExtensionUiHandler() = default;
+UiHandler::~UiHandler() = default;
 
-bool LoginScreenExtensionUiHandler::Show(const extensions::Extension* extension,
-                                         const std::string& resource_path,
-                                         bool can_be_closed_by_user,
-                                         std::string* error) {
+bool UiHandler::Show(const extensions::Extension* extension,
+                     const std::string& resource_path,
+                     bool can_be_closed_by_user,
+                     std::string* error) {
   CHECK(CanUseLoginScreenUiApi(extension));
   if (!login_or_lock_screen_active_) {
     *error = kErrorNotOnLoginOrLockScreen;
@@ -119,13 +119,11 @@ bool LoginScreenExtensionUiHandler::Show(const extensions::Extension* extension,
   ash::LoginScreen::Get()->GetModel()->NotifyOobeDialogState(
       ash::OobeDialogState::EXTENSION_LOGIN);
 
-  LoginScreenExtensionUiCreateOptions create_options(
+  CreateOptions create_options(
       GetHardcodedExtensionName(extension),
       extension->GetResourceURL(resource_path), can_be_closed_by_user,
-      base::BindOnce(
-          base::IgnoreResult(
-              &LoginScreenExtensionUiHandler::RemoveWindowForExtension),
-          weak_ptr_factory_.GetWeakPtr(), extension->id()));
+      base::BindOnce(base::IgnoreResult(&UiHandler::RemoveWindowForExtension),
+                     weak_ptr_factory_.GetWeakPtr(), extension->id()));
 
   current_window_ = std::make_unique<ExtensionIdToWindowMapping>(
       extension->id(), window_factory_->Create(&create_options));
@@ -133,9 +131,8 @@ bool LoginScreenExtensionUiHandler::Show(const extensions::Extension* extension,
   return true;
 }
 
-bool LoginScreenExtensionUiHandler::Close(
-    const extensions::Extension* extension,
-    std::string* error) {
+bool UiHandler::Close(const extensions::Extension* extension,
+                      std::string* error) {
   CHECK(CanUseLoginScreenUiApi(extension));
   if (!RemoveWindowForExtension(extension->id())) {
     *error = kErrorNoExistingWindow;
@@ -144,8 +141,7 @@ bool LoginScreenExtensionUiHandler::Close(
   return true;
 }
 
-bool LoginScreenExtensionUiHandler::RemoveWindowForExtension(
-    const std::string& extension_id) {
+bool UiHandler::RemoveWindowForExtension(const std::string& extension_id) {
   if (!HasOpenWindow(extension_id))
     return false;
 
@@ -157,12 +153,11 @@ bool LoginScreenExtensionUiHandler::RemoveWindowForExtension(
   return true;
 }
 
-bool LoginScreenExtensionUiHandler::HasOpenWindow(
-    const std::string& extension_id) const {
+bool UiHandler::HasOpenWindow(const std::string& extension_id) const {
   return current_window_ && current_window_->extension_id == extension_id;
 }
 
-void LoginScreenExtensionUiHandler::UpdateSessionState() {
+void UiHandler::UpdateSessionState() {
   session_manager::SessionState state =
       session_manager::SessionManager::Get()->session_state();
   bool new_login_or_lock_screen_active =
@@ -178,24 +173,23 @@ void LoginScreenExtensionUiHandler::UpdateSessionState() {
     current_window_.reset(nullptr);
 }
 
-void LoginScreenExtensionUiHandler::OnSessionStateChanged() {
+void UiHandler::OnSessionStateChanged() {
   UpdateSessionState();
 }
 
-void LoginScreenExtensionUiHandler::OnExtensionUninstalled(
-    content::BrowserContext* browser_context,
-    const extensions::Extension* extension,
-    extensions::UninstallReason reason) {
+void UiHandler::OnExtensionUninstalled(content::BrowserContext* browser_context,
+                                       const extensions::Extension* extension,
+                                       extensions::UninstallReason reason) {
   RemoveWindowForExtension(extension->id());
 }
 
-LoginScreenExtensionUiWindow*
-LoginScreenExtensionUiHandler::GetWindowForTesting(
-    const std::string& extension_id) {
+Window* UiHandler::GetWindowForTesting(const std::string& extension_id) {
   if (!HasOpenWindow(extension_id))
     return nullptr;
 
   return current_window_->window.get();
 }
+
+}  // namespace login_screen_extension_ui
 
 }  // namespace chromeos

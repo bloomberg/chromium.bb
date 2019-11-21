@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/extensions/login_screen/login_screen_ui/login_screen_extension_ui_handler.h"
+#include "chrome/browser/chromeos/extensions/login_screen/login_screen_ui/ui_handler.h"
 
 #include <memory>
 
 #include "base/test/gtest_util.h"
-#include "chrome/browser/chromeos/login/ui/login_screen_extension_ui/login_screen_extension_ui_create_options.h"
-#include "chrome/browser/chromeos/login/ui/login_screen_extension_ui/login_screen_extension_ui_window.h"
+#include "chrome/browser/chromeos/login/ui/login_screen_extension_ui/create_options.h"
+#include "chrome/browser/chromeos/login/ui/login_screen_extension_ui/window.h"
 #include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
 #include "chrome/browser/ui/ash/test_login_screen.h"
 #include "chrome/common/chrome_constants.h"
@@ -46,20 +46,20 @@ const char kPermissionName[] = "loginScreenUi";
 
 namespace chromeos {
 
-class FakeLoginScreenExtensionUiWindowFactory
-    : public LoginScreenExtensionUiWindowFactory {
- public:
-  FakeLoginScreenExtensionUiWindowFactory() = default;
-  ~FakeLoginScreenExtensionUiWindowFactory() override = default;
+namespace login_screen_extension_ui {
 
-  std::unique_ptr<LoginScreenExtensionUiWindow> Create(
-      LoginScreenExtensionUiCreateOptions* create_options) override {
+class FakeWindowFactory : public WindowFactory {
+ public:
+  FakeWindowFactory() = default;
+  ~FakeWindowFactory() override = default;
+
+  std::unique_ptr<Window> Create(CreateOptions* create_options) override {
     create_was_called_ = true;
     last_extension_name_ = create_options->extension_name;
     last_content_url_ = create_options->content_url;
     last_can_be_closed_by_user_ = create_options->can_be_closed_by_user;
     last_close_callback_ = std::move(create_options->close_callback);
-    return std::unique_ptr<LoginScreenExtensionUiWindow>();
+    return std::unique_ptr<Window>();
   }
 
   bool create_was_called() const { return create_was_called_; }
@@ -88,7 +88,7 @@ class FakeLoginScreenExtensionUiWindowFactory
   base::OnceClosure last_close_callback_;
   bool create_was_called_ = false;
 
-  DISALLOW_COPY_AND_ASSIGN(FakeLoginScreenExtensionUiWindowFactory);
+  DISALLOW_COPY_AND_ASSIGN(FakeWindowFactory);
 };
 
 class LoginScreenExtensionUiHandlerUnittest : public testing::Test {
@@ -113,13 +113,11 @@ class LoginScreenExtensionUiHandlerUnittest : public testing::Test {
     extension_registry_ = extensions::ExtensionRegistry::Get(test_profile);
     ASSERT_TRUE(extension_registry_);
 
-    std::unique_ptr<FakeLoginScreenExtensionUiWindowFactory>
-        fake_window_factory =
-            std::make_unique<FakeLoginScreenExtensionUiWindowFactory>();
+    std::unique_ptr<FakeWindowFactory> fake_window_factory =
+        std::make_unique<FakeWindowFactory>();
     fake_window_factory_ = fake_window_factory.get();
 
-    ui_handler_ = std::make_unique<LoginScreenExtensionUiHandler>(
-        std::move(fake_window_factory));
+    ui_handler_ = std::make_unique<UiHandler>(std::move(fake_window_factory));
 
     session_manager_.SetSessionState(
         session_manager::SessionState::LOGIN_PRIMARY);
@@ -140,7 +138,7 @@ class LoginScreenExtensionUiHandlerUnittest : public testing::Test {
   void CheckCanOpenWindow(const extensions::Extension* extension,
                           const std::string& resource_path = kUrl,
                           bool can_be_closed_by_user = kCanBeClosedByUser) {
-    std::unique_ptr<LoginScreenExtensionUiWindow> ptr;
+    std::unique_ptr<Window> ptr;
 
     EXPECT_FALSE(fake_window_factory_->create_was_called());
     std::string error;
@@ -201,9 +199,9 @@ class LoginScreenExtensionUiHandlerUnittest : public testing::Test {
 
   TestLoginScreen test_login_screen_;
 
-  FakeLoginScreenExtensionUiWindowFactory* fake_window_factory_ = nullptr;
+  FakeWindowFactory* fake_window_factory_ = nullptr;
 
-  std::unique_ptr<LoginScreenExtensionUiHandler> ui_handler_;
+  std::unique_ptr<UiHandler> ui_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginScreenExtensionUiHandlerUnittest);
 };
@@ -212,14 +210,13 @@ using LoginScreenExtensionUiHandlerDeathUnittest =
     LoginScreenExtensionUiHandlerUnittest;
 
 TEST_F(LoginScreenExtensionUiHandlerUnittest, GlobalInstance) {
-  EXPECT_FALSE(LoginScreenExtensionUiHandler::Get(false /*can_create*/));
-  LoginScreenExtensionUiHandler* instance =
-      LoginScreenExtensionUiHandler::Get(true /*can_create*/);
+  EXPECT_FALSE(UiHandler::Get(false /*can_create*/));
+  UiHandler* instance = UiHandler::Get(true /*can_create*/);
   EXPECT_TRUE(instance);
-  EXPECT_EQ(instance, LoginScreenExtensionUiHandler::Get(true /*can_create*/));
-  EXPECT_EQ(instance, LoginScreenExtensionUiHandler::Get(false /*can_create*/));
-  LoginScreenExtensionUiHandler::Shutdown();
-  EXPECT_FALSE(LoginScreenExtensionUiHandler::Get(false /*can_create*/));
+  EXPECT_EQ(instance, UiHandler::Get(true /*can_create*/));
+  EXPECT_EQ(instance, UiHandler::Get(false /*can_create*/));
+  UiHandler::Shutdown();
+  EXPECT_FALSE(UiHandler::Get(false /*can_create*/));
 }
 
 TEST_F(LoginScreenExtensionUiHandlerUnittest,
@@ -379,5 +376,7 @@ TEST_F(LoginScreenExtensionUiHandlerDeathUnittest, NotAllowed) {
   stub_install_attributes_->SetConsumerOwned();
   CheckCannotUseAPI(extension_.get());
 }
+
+}  // namespace login_screen_extension_ui
 
 }  // namespace chromeos

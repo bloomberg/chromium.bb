@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_EXTENSIONS_LOGIN_SCREEN_LOGIN_SCREEN_UI_LOGIN_SCREEN_EXTENSION_UI_HANDLER_H_
-#define CHROME_BROWSER_CHROMEOS_EXTENSIONS_LOGIN_SCREEN_LOGIN_SCREEN_UI_LOGIN_SCREEN_EXTENSION_UI_HANDLER_H_
+#ifndef CHROME_BROWSER_CHROMEOS_EXTENSIONS_LOGIN_SCREEN_LOGIN_SCREEN_UI_UI_HANDLER_H_
+#define CHROME_BROWSER_CHROMEOS_EXTENSIONS_LOGIN_SCREEN_LOGIN_SCREEN_UI_UI_HANDLER_H_
 
 #include <memory>
 #include <string>
@@ -21,17 +21,18 @@ class Extension;
 
 namespace chromeos {
 
-class LoginScreenExtensionUiWindow;
-class LoginScreenExtensionUiWindowFactory;
+namespace login_screen_extension_ui {
+
+class Window;
+class WindowFactory;
 
 struct ExtensionIdToWindowMapping {
-  ExtensionIdToWindowMapping(
-      const std::string& extension_id,
-      std::unique_ptr<LoginScreenExtensionUiWindow> window);
+  ExtensionIdToWindowMapping(const std::string& extension_id,
+                             std::unique_ptr<Window> window);
   ~ExtensionIdToWindowMapping();
 
   const std::string extension_id;
-  std::unique_ptr<LoginScreenExtensionUiWindow> window;
+  std::unique_ptr<Window> window;
 };
 
 // This class receives calls from the chrome.loginScreenUi API and manages the
@@ -40,16 +41,14 @@ struct ExtensionIdToWindowMapping {
 // logging in or unlocking a user session.
 // TODO(hendrich): handle interference with other ChromeOS UI that pops up
 // during login (e.g. arc ToS).
-class LoginScreenExtensionUiHandler
-    : public session_manager::SessionManagerObserver,
-      public extensions::ExtensionRegistryObserver {
+class UiHandler : public session_manager::SessionManagerObserver,
+                  public extensions::ExtensionRegistryObserver {
  public:
-  static LoginScreenExtensionUiHandler* Get(bool can_create);
+  static UiHandler* Get(bool can_create);
   static void Shutdown();
 
-  explicit LoginScreenExtensionUiHandler(
-      std::unique_ptr<LoginScreenExtensionUiWindowFactory> window_factory);
-  ~LoginScreenExtensionUiHandler() override;
+  explicit UiHandler(std::unique_ptr<WindowFactory> window_factory);
+  ~UiHandler() override;
 
   // Endpoint for calls to the chrome.loginScreenUi.show() API. If an error
   // occurs, |error| will contain the error description.
@@ -73,8 +72,7 @@ class LoginScreenExtensionUiHandler
   // session_manager::SessionManagerObserver
   void OnSessionStateChanged() override;
 
-  LoginScreenExtensionUiWindow* GetWindowForTesting(
-      const std::string& extension_id);
+  Window* GetWindowForTesting(const std::string& extension_id);
 
  private:
   void UpdateSessionState();
@@ -84,7 +82,7 @@ class LoginScreenExtensionUiHandler
                               const extensions::Extension* extension,
                               extensions::UninstallReason reason) override;
 
-  std::unique_ptr<LoginScreenExtensionUiWindowFactory> window_factory_;
+  std::unique_ptr<WindowFactory> window_factory_;
 
   bool login_or_lock_screen_active_ = false;
 
@@ -97,10 +95,13 @@ class LoginScreenExtensionUiHandler
                  extensions::ExtensionRegistryObserver>
       extension_registry_observer_{this};
 
-  base::WeakPtrFactory<LoginScreenExtensionUiHandler> weak_ptr_factory_{this};
+  base::WeakPtrFactory<UiHandler> weak_ptr_factory_{this};
 
-  DISALLOW_COPY_AND_ASSIGN(LoginScreenExtensionUiHandler);
+  DISALLOW_COPY_AND_ASSIGN(UiHandler);
 };
+
+}  // namespace login_screen_extension_ui
+
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_LOGIN_SCREEN_LOGIN_SCREEN_UI_LOGIN_SCREEN_EXTENSION_UI_HANDLER_H_
+#endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_LOGIN_SCREEN_LOGIN_SCREEN_UI_UI_HANDLER_H_
