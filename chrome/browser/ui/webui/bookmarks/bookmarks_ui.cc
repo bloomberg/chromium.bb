@@ -56,7 +56,7 @@ content::WebUIDataSource* CreateBookmarksUIHTMLSource(Profile* profile) {
 #if BUILDFLAG(OPTIMIZE_WEBUI)
   webui::SetupBundledWebUIDataSource(source, "bookmarks.js",
                                      IDR_BOOKMARKS_BOOKMARKS_ROLLUP_JS,
-                                     IDR_BOOKMARKS_VULCANIZED_HTML);
+                                     IDR_BOOKMARKS_BOOKMARKS_HTML);
 #else
   webui::SetupWebUIDataSource(
       source, base::make_span(kBookmarksResources, kBookmarksResourcesSize),

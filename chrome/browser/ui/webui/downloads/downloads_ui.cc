@@ -64,7 +64,7 @@ content::WebUIDataSource* CreateDownloadsUIHTMLSource(Profile* profile) {
 #if BUILDFLAG(OPTIMIZE_WEBUI)
   webui::SetupBundledWebUIDataSource(source, "downloads.js",
                                      IDR_DOWNLOADS_DOWNLOADS_ROLLUP_JS,
-                                     IDR_DOWNLOADS_VULCANIZED_HTML);
+                                     IDR_DOWNLOADS_DOWNLOADS_HTML);
 #else
   webui::SetupWebUIDataSource(
       source, base::make_span(kDownloadsResources, kDownloadsResourcesSize),
