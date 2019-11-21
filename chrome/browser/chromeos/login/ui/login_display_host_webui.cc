@@ -29,6 +29,7 @@
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
+#include "chrome/browser/chromeos/app_mode/web_app/web_kiosk_app_manager.h"
 #include "chrome/browser/chromeos/base/locale_util.h"
 #include "chrome/browser/chromeos/boot_times_recorder.h"
 #include "chrome/browser/chromeos/first_run/drive_first_run_controller.h"
@@ -1075,8 +1076,13 @@ void ShowLoginWizard(OobeScreenId first_screen) {
     const bool auto_launch = true;
     // Manages its own lifetime. See ShutdownDisplayHost().
     auto* display_host = new LoginDisplayHostWebUI();
-    display_host->StartAppLaunch(auto_launch_app_id, diagnostic_mode,
-                                 auto_launch);
+    if (!auto_launch_app_id.empty()) {
+      display_host->StartAppLaunch(auto_launch_app_id, diagnostic_mode,
+                                   auto_launch);
+    } else {
+      display_host->StartWebKiosk(
+          WebKioskAppManager::Get()->GetAutoLaunchAccountId());
+    }
     return;
   }
 
