@@ -263,6 +263,7 @@
     betty-arc64-release
     betty-arcmaster-release
     betty-arcnext-release
+    betty-arcvm-pi-release
     betty-kernelnext-release
     betty-pi-arc-release
     betty-qt-arc-release
@@ -1972,6 +1973,7 @@
     betty-arc64-release-tryjob
     betty-arcmaster-release-tryjob
     betty-arcnext-release-tryjob
+    betty-arcvm-pi-release-tryjob
     betty-kernelnext-release-tryjob
     betty-pi-arc-release-tryjob
     betty-qt-arc-release-tryjob
