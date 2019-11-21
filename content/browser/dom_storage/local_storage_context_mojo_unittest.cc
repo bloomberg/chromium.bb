@@ -47,9 +47,10 @@ std::string Uint8VectorToStdString(const std::vector<uint8_t>& v) {
   return std::string(v.begin(), v.end());
 }
 
-void GetStorageUsageCallback(const base::RepeatingClosure& callback,
-                             std::vector<StorageUsageInfo>* out_result,
-                             std::vector<StorageUsageInfo> result) {
+void GetStorageUsageCallback(
+    const base::RepeatingClosure& callback,
+    std::vector<storage::mojom::LocalStorageUsageInfoPtr>* out_result,
+    std::vector<storage::mojom::LocalStorageUsageInfoPtr> result) {
   *out_result = std::move(result);
   callback.Run();
 }
@@ -128,7 +129,7 @@ class LocalStorageContextMojoTest : public testing::Test {
     if (!context_) {
       context_ = new LocalStorageContextMojo(
           storage_path(), base::ThreadTaskRunnerHandle::Get(), task_runner_,
-          special_storage_policy());
+          special_storage_policy(), /*receiver=*/mojo::NullReceiver());
     }
 
     return context_;
@@ -203,11 +204,11 @@ class LocalStorageContextMojoTest : public testing::Test {
     return contents;
   }
 
-  std::vector<StorageUsageInfo> GetStorageUsageSync() {
+  std::vector<storage::mojom::LocalStorageUsageInfoPtr> GetStorageUsageSync() {
     base::RunLoop run_loop;
-    std::vector<StorageUsageInfo> result;
-    context()->GetStorageUsage(base::BindOnce(&GetStorageUsageCallback,
-                                              run_loop.QuitClosure(), &result));
+    std::vector<storage::mojom::LocalStorageUsageInfoPtr> result;
+    context()->GetUsage(base::BindOnce(&GetStorageUsageCallback,
+                                       run_loop.QuitClosure(), &result));
     run_loop.Run();
     return result;
   }
@@ -218,9 +219,9 @@ class LocalStorageContextMojoTest : public testing::Test {
     mojo::Remote<blink::mojom::StorageArea> area;
     mojo::Remote<blink::mojom::StorageArea>
         dummy_area;  // To make sure values are cached.
-    context()->OpenLocalStorage(kOrigin, area.BindNewPipeAndPassReceiver());
-    context()->OpenLocalStorage(kOrigin,
-                                dummy_area.BindNewPipeAndPassReceiver());
+    context()->BindStorageArea(kOrigin, area.BindNewPipeAndPassReceiver());
+    context()->BindStorageArea(kOrigin,
+                               dummy_area.BindNewPipeAndPassReceiver());
     std::vector<uint8_t> result;
     bool success = test::GetSync(area.get(), key, &result);
     return success ? base::Optional<std::vector<uint8_t>>(result)
@@ -237,8 +238,8 @@ class LocalStorageContextMojoTest : public testing::Test {
     mojo::Remote<blink::mojom::StorageArea> area;
     bool success = false;
     base::RunLoop run_loop;
-    context->OpenLocalStorage(url::Origin::Create(GURL("http://foobar.com")),
-                              area.BindNewPipeAndPassReceiver());
+    context->BindStorageArea(url::Origin::Create(GURL("http://foobar.com")),
+                             area.BindNewPipeAndPassReceiver());
     area->Put(key, value, base::nullopt, "source",
               test::MakeSuccessCallback(run_loop.QuitClosure(), &success));
     run_loop.Run();
@@ -251,8 +252,8 @@ class LocalStorageContextMojoTest : public testing::Test {
                  const std::vector<uint8_t>& key,
                  std::vector<uint8_t>* result) {
     mojo::Remote<blink::mojom::StorageArea> area;
-    context->OpenLocalStorage(url::Origin::Create(GURL("http://foobar.com")),
-                              area.BindNewPipeAndPassReceiver());
+    context->BindStorageArea(url::Origin::Create(GURL("http://foobar.com")),
+                             area.BindNewPipeAndPassReceiver());
 
     base::RunLoop run_loop;
     std::vector<blink::mojom::KeyValuePtr> data;
@@ -310,8 +311,8 @@ TEST_F(LocalStorageContextMojoTest, Basic) {
   auto value = StdStringToUint8Vector("value");
 
   mojo::Remote<blink::mojom::StorageArea> area;
-  context()->OpenLocalStorage(url::Origin::Create(GURL("http://foobar.com")),
-                              area.BindNewPipeAndPassReceiver());
+  context()->BindStorageArea(url::Origin::Create(GURL("http://foobar.com")),
+                             area.BindNewPipeAndPassReceiver());
 
   area->Put(key, value, base::nullopt, "source", base::DoNothing());
   area.reset();
@@ -331,12 +332,12 @@ TEST_F(LocalStorageContextMojoTest, OriginsAreIndependent) {
   auto value = StdStringToUint8Vector("value");
 
   mojo::Remote<blink::mojom::StorageArea> area;
-  context()->OpenLocalStorage(origin1, area.BindNewPipeAndPassReceiver());
+  context()->BindStorageArea(origin1, area.BindNewPipeAndPassReceiver());
 
   area->Put(key1, value, base::nullopt, "source", base::DoNothing());
   area.reset();
 
-  context()->OpenLocalStorage(origin2, area.BindNewPipeAndPassReceiver());
+  context()->BindStorageArea(origin2, area.BindNewPipeAndPassReceiver());
   area->Put(key2, value, base::nullopt, "source", base::DoNothing());
   area.reset();
 
@@ -353,8 +354,8 @@ TEST_F(LocalStorageContextMojoTest, WrapperOutlivesMojoConnection) {
   mojo::Remote<blink::mojom::StorageArea>
       dummy_area;  // To make sure values are cached.
   const url::Origin kOrigin(url::Origin::Create(GURL("http://foobar.com")));
-  context()->OpenLocalStorage(kOrigin, area.BindNewPipeAndPassReceiver());
-  context()->OpenLocalStorage(kOrigin, dummy_area.BindNewPipeAndPassReceiver());
+  context()->BindStorageArea(kOrigin, area.BindNewPipeAndPassReceiver());
+  context()->BindStorageArea(kOrigin, dummy_area.BindNewPipeAndPassReceiver());
   area->Put(key, value, base::nullopt, "source", base::DoNothing());
 
   area.reset();
@@ -382,8 +383,8 @@ TEST_F(LocalStorageContextMojoTest, OpeningWrappersPurgesInactiveWrappers) {
 
   // Write some data to the DB.
   mojo::Remote<blink::mojom::StorageArea> area;
-  context()->OpenLocalStorage(url::Origin::Create(GURL("http://foobar.com")),
-                              area.BindNewPipeAndPassReceiver());
+  context()->BindStorageArea(url::Origin::Create(GURL("http://foobar.com")),
+                             area.BindNewPipeAndPassReceiver());
   area->Put(key, value, base::nullopt, "source", base::DoNothing());
 
   area.reset();
@@ -395,9 +396,9 @@ TEST_F(LocalStorageContextMojoTest, OpeningWrappersPurgesInactiveWrappers) {
 
   // Now open many new areas (for different origins) to trigger clean up.
   for (int i = 1; i <= 100; ++i) {
-    context()->OpenLocalStorage(url::Origin::Create(GURL(base::StringPrintf(
-                                    "http://example.com:%d", i))),
-                                area.BindNewPipeAndPassReceiver());
+    context()->BindStorageArea(url::Origin::Create(GURL(base::StringPrintf(
+                                   "http://example.com:%d", i))),
+                               area.BindNewPipeAndPassReceiver());
     area.reset();
   }
 
@@ -435,7 +436,8 @@ TEST_F(LocalStorageContextMojoTest, VersionOnlyWrittenOnCommit) {
 }
 
 TEST_F(LocalStorageContextMojoTest, GetStorageUsage_NoData) {
-  std::vector<StorageUsageInfo> info = GetStorageUsageSync();
+  std::vector<storage::mojom::LocalStorageUsageInfoPtr> info =
+      GetStorageUsageSync();
   EXPECT_EQ(0u, info.size());
 }
 
@@ -449,13 +451,13 @@ TEST_F(LocalStorageContextMojoTest, GetStorageUsage_Data) {
   base::Time before_write = base::Time::Now();
 
   mojo::Remote<blink::mojom::StorageArea> area;
-  context()->OpenLocalStorage(origin1, area.BindNewPipeAndPassReceiver());
+  context()->BindStorageArea(origin1, area.BindNewPipeAndPassReceiver());
 
   area->Put(key1, value, base::nullopt, "source", base::DoNothing());
   area->Put(key2, value, base::nullopt, "source", base::DoNothing());
   area.reset();
 
-  context()->OpenLocalStorage(origin2, area.BindNewPipeAndPassReceiver());
+  context()->BindStorageArea(origin2, area.BindNewPipeAndPassReceiver());
   area->Put(key2, value, base::nullopt, "source", base::DoNothing());
   area.reset();
 
@@ -464,17 +466,18 @@ TEST_F(LocalStorageContextMojoTest, GetStorageUsage_Data) {
 
   base::Time after_write = base::Time::Now();
 
-  std::vector<StorageUsageInfo> info = GetStorageUsageSync();
+  std::vector<storage::mojom::LocalStorageUsageInfoPtr> info =
+      GetStorageUsageSync();
   ASSERT_EQ(2u, info.size());
-  if (info[0].origin == origin2)
+  if (info[0]->origin == origin2)
     std::swap(info[0], info[1]);
-  EXPECT_EQ(origin1, info[0].origin);
-  EXPECT_EQ(origin2, info[1].origin);
-  EXPECT_LE(before_write, info[0].last_modified);
-  EXPECT_LE(before_write, info[1].last_modified);
-  EXPECT_GE(after_write, info[0].last_modified);
-  EXPECT_GE(after_write, info[1].last_modified);
-  EXPECT_GT(info[0].total_size_bytes, info[1].total_size_bytes);
+  EXPECT_EQ(origin1, info[0]->origin);
+  EXPECT_EQ(origin2, info[1]->origin);
+  EXPECT_LE(before_write, info[0]->last_modified_time);
+  EXPECT_LE(before_write, info[1]->last_modified_time);
+  EXPECT_GE(after_write, info[0]->last_modified_time);
+  EXPECT_GE(after_write, info[1]->last_modified_time);
+  EXPECT_GT(info[0]->size_in_bytes, info[1]->size_in_bytes);
 }
 
 TEST_F(LocalStorageContextMojoTest, MetaDataClearedOnDelete) {
@@ -484,14 +487,14 @@ TEST_F(LocalStorageContextMojoTest, MetaDataClearedOnDelete) {
   auto value = StdStringToUint8Vector("value");
 
   mojo::Remote<blink::mojom::StorageArea> area;
-  context()->OpenLocalStorage(origin1, area.BindNewPipeAndPassReceiver());
+  context()->BindStorageArea(origin1, area.BindNewPipeAndPassReceiver());
 
   area->Put(key, value, base::nullopt, "source", base::DoNothing());
   area.reset();
-  context()->OpenLocalStorage(origin2, area.BindNewPipeAndPassReceiver());
+  context()->BindStorageArea(origin2, area.BindNewPipeAndPassReceiver());
   area->Put(key, value, base::nullopt, "source", base::DoNothing());
   area.reset();
-  context()->OpenLocalStorage(origin1, area.BindNewPipeAndPassReceiver());
+  context()->BindStorageArea(origin1, area.BindNewPipeAndPassReceiver());
   area->Delete(key, value, "source", base::DoNothing());
   area.reset();
 
@@ -517,15 +520,15 @@ TEST_F(LocalStorageContextMojoTest, MetaDataClearedOnDeleteAll) {
   auto value = StdStringToUint8Vector("value");
 
   mojo::Remote<blink::mojom::StorageArea> area;
-  context()->OpenLocalStorage(origin1, area.BindNewPipeAndPassReceiver());
+  context()->BindStorageArea(origin1, area.BindNewPipeAndPassReceiver());
 
   area->Put(key, value, base::nullopt, "source", base::DoNothing());
   area.reset();
-  context()->OpenLocalStorage(origin2, area.BindNewPipeAndPassReceiver());
+  context()->BindStorageArea(origin2, area.BindNewPipeAndPassReceiver());
   area->Put(key, value, base::nullopt, "source", base::DoNothing());
   area.reset();
 
-  context()->OpenLocalStorage(origin1, area.BindNewPipeAndPassReceiver());
+  context()->BindStorageArea(origin1, area.BindNewPipeAndPassReceiver());
   area->DeleteAll("source", base::DoNothing());
   area.reset();
 
@@ -563,12 +566,12 @@ TEST_F(LocalStorageContextMojoTest, DeleteStorageWithoutConnection) {
   auto value = StdStringToUint8Vector("value");
 
   mojo::Remote<blink::mojom::StorageArea> area;
-  context()->OpenLocalStorage(origin1, area.BindNewPipeAndPassReceiver());
+  context()->BindStorageArea(origin1, area.BindNewPipeAndPassReceiver());
 
   area->Put(key, value, base::nullopt, "source", base::DoNothing());
   area.reset();
 
-  context()->OpenLocalStorage(origin2, area.BindNewPipeAndPassReceiver());
+  context()->BindStorageArea(origin2, area.BindNewPipeAndPassReceiver());
   area->Put(key, value, base::nullopt, "source", base::DoNothing());
   area.reset();
 
@@ -598,12 +601,12 @@ TEST_F(LocalStorageContextMojoTest, DeleteStorageNotifiesWrapper) {
   auto value = StdStringToUint8Vector("value");
 
   mojo::Remote<blink::mojom::StorageArea> area;
-  context()->OpenLocalStorage(origin1, area.BindNewPipeAndPassReceiver());
+  context()->BindStorageArea(origin1, area.BindNewPipeAndPassReceiver());
 
   area->Put(key, value, base::nullopt, "source", base::DoNothing());
   area.reset();
 
-  context()->OpenLocalStorage(origin2, area.BindNewPipeAndPassReceiver());
+  context()->BindStorageArea(origin2, area.BindNewPipeAndPassReceiver());
   area->Put(key, value, base::nullopt, "source", base::DoNothing());
   area.reset();
 
@@ -612,7 +615,7 @@ TEST_F(LocalStorageContextMojoTest, DeleteStorageNotifiesWrapper) {
   EXPECT_FALSE(GetDatabaseContents().empty());
 
   TestLevelDBObserver observer;
-  context()->OpenLocalStorage(origin1, area.BindNewPipeAndPassReceiver());
+  context()->BindStorageArea(origin1, area.BindNewPipeAndPassReceiver());
   area->AddObserver(observer.Bind());
   RunUntilIdle();
 
@@ -642,12 +645,12 @@ TEST_F(LocalStorageContextMojoTest, DeleteStorageWithPendingWrites) {
   auto value = StdStringToUint8Vector("value");
 
   mojo::Remote<blink::mojom::StorageArea> area;
-  context()->OpenLocalStorage(origin1, area.BindNewPipeAndPassReceiver());
+  context()->BindStorageArea(origin1, area.BindNewPipeAndPassReceiver());
 
   area->Put(key, value, base::nullopt, "source", base::DoNothing());
   area.reset();
 
-  context()->OpenLocalStorage(origin2, area.BindNewPipeAndPassReceiver());
+  context()->BindStorageArea(origin2, area.BindNewPipeAndPassReceiver());
   area->Put(key, value, base::nullopt, "source", base::DoNothing());
   area.reset();
 
@@ -656,7 +659,7 @@ TEST_F(LocalStorageContextMojoTest, DeleteStorageWithPendingWrites) {
   EXPECT_FALSE(GetDatabaseContents().empty());
 
   TestLevelDBObserver observer;
-  context()->OpenLocalStorage(origin1, area.BindNewPipeAndPassReceiver());
+  context()->BindStorageArea(origin1, area.BindNewPipeAndPassReceiver());
   area->AddObserver(observer.Bind());
   area->Put(StdStringToUint8Vector("key2"), value, base::nullopt, "source",
             base::DoNothing());
@@ -711,11 +714,11 @@ TEST_F(LocalStorageContextMojoTest, Migration) {
 
   // Opening origin2 and accessing its data should not migrate anything.
   mojo::Remote<blink::mojom::StorageArea> area;
-  context()->OpenLocalStorage(origin2, area.BindNewPipeAndPassReceiver());
+  context()->BindStorageArea(origin2, area.BindNewPipeAndPassReceiver());
 
   // To make sure values are cached.
   mojo::Remote<blink::mojom::StorageArea> dummy_area;
-  context()->OpenLocalStorage(origin2, dummy_area.BindNewPipeAndPassReceiver());
+  context()->BindStorageArea(origin2, dummy_area.BindNewPipeAndPassReceiver());
 
   area->Get(std::vector<uint8_t>(), base::DoNothing());
   area.reset();
@@ -725,8 +728,8 @@ TEST_F(LocalStorageContextMojoTest, Migration) {
   EXPECT_TRUE(GetDatabaseContents().empty());
 
   // Opening origin1 and accessing its data should migrate its storage.
-  context()->OpenLocalStorage(origin1, area.BindNewPipeAndPassReceiver());
-  context()->OpenLocalStorage(origin1, dummy_area.BindNewPipeAndPassReceiver());
+  context()->BindStorageArea(origin1, area.BindNewPipeAndPassReceiver());
+  context()->BindStorageArea(origin1, dummy_area.BindNewPipeAndPassReceiver());
 
   base::RunLoop loop;
   area->Get(std::vector<uint8_t>(),
@@ -786,10 +789,10 @@ TEST_F(LocalStorageContextMojoTest, FixUp) {
   mojo::Remote<blink::mojom::StorageArea> area;
   mojo::Remote<blink::mojom::StorageArea>
       dummy_area;  // To make sure values are cached.
-  context()->OpenLocalStorage(url::Origin::Create(GURL("http://foobar.com")),
-                              area.BindNewPipeAndPassReceiver());
-  context()->OpenLocalStorage(url::Origin::Create(GURL("http://foobar.com")),
-                              dummy_area.BindNewPipeAndPassReceiver());
+  context()->BindStorageArea(url::Origin::Create(GURL("http://foobar.com")),
+                             area.BindNewPipeAndPassReceiver());
+  context()->BindStorageArea(url::Origin::Create(GURL("http://foobar.com")),
+                             dummy_area.BindNewPipeAndPassReceiver());
 
   {
     std::vector<uint8_t> result;
@@ -824,13 +827,13 @@ TEST_F(LocalStorageContextMojoTest, ShutdownClearsData) {
   auto value = StdStringToUint8Vector("value");
 
   mojo::Remote<blink::mojom::StorageArea> area;
-  context()->OpenLocalStorage(origin1, area.BindNewPipeAndPassReceiver());
+  context()->BindStorageArea(origin1, area.BindNewPipeAndPassReceiver());
 
   area->Put(key1, value, base::nullopt, "source", base::DoNothing());
   area->Put(key2, value, base::nullopt, "source", base::DoNothing());
   area.reset();
 
-  context()->OpenLocalStorage(origin2, area.BindNewPipeAndPassReceiver());
+  context()->BindStorageArea(origin2, area.BindNewPipeAndPassReceiver());
   area->Put(key2, value, base::nullopt, "source", base::DoNothing());
   area.reset();
 
@@ -854,13 +857,14 @@ TEST_F(LocalStorageContextMojoTest, ShutdownClearsData) {
 
 TEST_F(LocalStorageContextMojoTest, InMemory) {
   auto* context = new LocalStorageContextMojo(
-      base::FilePath(), base::ThreadTaskRunnerHandle::Get(), nullptr, nullptr);
+      base::FilePath(), base::ThreadTaskRunnerHandle::Get(), nullptr, nullptr,
+      /*receiver=*/mojo::NullReceiver());
   auto key = StdStringToUint8Vector("key");
   auto value = StdStringToUint8Vector("value");
 
   mojo::Remote<blink::mojom::StorageArea> area;
-  context->OpenLocalStorage(url::Origin::Create(GURL("http://foobar.com")),
-                            area.BindNewPipeAndPassReceiver());
+  context->BindStorageArea(url::Origin::Create(GURL("http://foobar.com")),
+                           area.BindNewPipeAndPassReceiver());
   DoTestPut(context, key, value);
   std::vector<uint8_t> result;
   EXPECT_TRUE(DoTestGet(context, key, &result));
@@ -875,7 +879,8 @@ TEST_F(LocalStorageContextMojoTest, InMemory) {
 
   // Re-opening should get fresh data.
   context = new LocalStorageContextMojo(
-      base::FilePath(), base::ThreadTaskRunnerHandle::Get(), nullptr, nullptr);
+      base::FilePath(), base::ThreadTaskRunnerHandle::Get(), nullptr, nullptr,
+      /*receiver=*/mojo::NullReceiver());
   EXPECT_FALSE(DoTestGet(context, key, &result));
   context->ShutdownAndDelete();
 }
@@ -883,13 +888,14 @@ TEST_F(LocalStorageContextMojoTest, InMemory) {
 TEST_F(LocalStorageContextMojoTest, InMemoryInvalidPath) {
   auto* context = new LocalStorageContextMojo(
       base::FilePath(FILE_PATH_LITERAL("../../")),
-      base::ThreadTaskRunnerHandle::Get(), nullptr, nullptr);
+      base::ThreadTaskRunnerHandle::Get(), nullptr, nullptr,
+      /*receiver=*/mojo::NullReceiver());
   auto key = StdStringToUint8Vector("key");
   auto value = StdStringToUint8Vector("value");
 
   mojo::Remote<blink::mojom::StorageArea> area;
-  context->OpenLocalStorage(url::Origin::Create(GURL("http://foobar.com")),
-                            area.BindNewPipeAndPassReceiver());
+  context->BindStorageArea(url::Origin::Create(GURL("http://foobar.com")),
+                           area.BindNewPipeAndPassReceiver());
 
   DoTestPut(context, key, value);
   std::vector<uint8_t> result;
@@ -906,7 +912,8 @@ TEST_F(LocalStorageContextMojoTest, InMemoryInvalidPath) {
 
 TEST_F(LocalStorageContextMojoTest, OnDisk) {
   auto* context = new LocalStorageContextMojo(
-      storage_path(), base::ThreadTaskRunnerHandle::Get(), nullptr, nullptr);
+      storage_path(), base::ThreadTaskRunnerHandle::Get(), nullptr, nullptr,
+      /*receiver=*/mojo::NullReceiver());
   auto key = StdStringToUint8Vector("key");
   auto value = StdStringToUint8Vector("value");
 
@@ -925,7 +932,8 @@ TEST_F(LocalStorageContextMojoTest, OnDisk) {
 
   // Should be able to re-open.
   context = new LocalStorageContextMojo(
-      storage_path(), base::ThreadTaskRunnerHandle::Get(), nullptr, nullptr);
+      storage_path(), base::ThreadTaskRunnerHandle::Get(), nullptr, nullptr,
+      /*receiver=*/mojo::NullReceiver());
   EXPECT_TRUE(DoTestGet(context, key, &result));
   EXPECT_EQ(value, result);
   context->ShutdownAndDelete();
@@ -934,7 +942,8 @@ TEST_F(LocalStorageContextMojoTest, OnDisk) {
 TEST_F(LocalStorageContextMojoTest, InvalidVersionOnDisk) {
   // Create context and add some data to it.
   auto* context = new LocalStorageContextMojo(
-      storage_path(), base::ThreadTaskRunnerHandle::Get(), nullptr, nullptr);
+      storage_path(), base::ThreadTaskRunnerHandle::Get(), nullptr, nullptr,
+      /*receiver=*/mojo::NullReceiver());
   auto key = StdStringToUint8Vector("key");
   auto value = StdStringToUint8Vector("value");
 
@@ -963,7 +972,8 @@ TEST_F(LocalStorageContextMojoTest, InvalidVersionOnDisk) {
 
   // Make sure data is gone.
   context = new LocalStorageContextMojo(
-      storage_path(), base::ThreadTaskRunnerHandle::Get(), nullptr, nullptr);
+      storage_path(), base::ThreadTaskRunnerHandle::Get(), nullptr, nullptr,
+      /*receiver=*/mojo::NullReceiver());
   EXPECT_FALSE(DoTestGet(context, key, &result));
 
   // Write data again.
@@ -975,7 +985,8 @@ TEST_F(LocalStorageContextMojoTest, InvalidVersionOnDisk) {
 
   // Data should have been preserved now.
   context = new LocalStorageContextMojo(
-      storage_path(), base::ThreadTaskRunnerHandle::Get(), nullptr, nullptr);
+      storage_path(), base::ThreadTaskRunnerHandle::Get(), nullptr, nullptr,
+      /*receiver=*/mojo::NullReceiver());
   EXPECT_TRUE(DoTestGet(context, key, &result));
   EXPECT_EQ(value, result);
   context->ShutdownAndDelete();
@@ -984,7 +995,8 @@ TEST_F(LocalStorageContextMojoTest, InvalidVersionOnDisk) {
 TEST_F(LocalStorageContextMojoTest, CorruptionOnDisk) {
   // Create context and add some data to it.
   auto* context = new LocalStorageContextMojo(
-      storage_path(), base::ThreadTaskRunnerHandle::Get(), nullptr, nullptr);
+      storage_path(), base::ThreadTaskRunnerHandle::Get(), nullptr, nullptr,
+      /*receiver=*/mojo::NullReceiver());
   auto key = StdStringToUint8Vector("key");
   auto value = StdStringToUint8Vector("value");
 
@@ -1010,7 +1022,8 @@ TEST_F(LocalStorageContextMojoTest, CorruptionOnDisk) {
 
   // Make sure data is gone.
   context = new LocalStorageContextMojo(
-      storage_path(), base::ThreadTaskRunnerHandle::Get(), nullptr, nullptr);
+      storage_path(), base::ThreadTaskRunnerHandle::Get(), nullptr, nullptr,
+      /*receiver=*/mojo::NullReceiver());
   EXPECT_FALSE(DoTestGet(context, key, &result));
 
   // Write data again.
@@ -1022,7 +1035,8 @@ TEST_F(LocalStorageContextMojoTest, CorruptionOnDisk) {
 
   // Data should have been preserved now.
   context = new LocalStorageContextMojo(
-      storage_path(), base::ThreadTaskRunnerHandle::Get(), nullptr, nullptr);
+      storage_path(), base::ThreadTaskRunnerHandle::Get(), nullptr, nullptr,
+      /*receiver=*/mojo::NullReceiver());
   EXPECT_TRUE(DoTestGet(context, key, &result));
   EXPECT_EQ(value, result);
   context->ShutdownAndDelete();
@@ -1030,7 +1044,8 @@ TEST_F(LocalStorageContextMojoTest, CorruptionOnDisk) {
 
 TEST_F(LocalStorageContextMojoTest, RecreateOnCommitFailure) {
   auto* context = new LocalStorageContextMojo(
-      storage_path(), base::ThreadTaskRunnerHandle::Get(), nullptr, nullptr);
+      storage_path(), base::ThreadTaskRunnerHandle::Get(), nullptr, nullptr,
+      /*receiver=*/mojo::NullReceiver());
 
   base::Optional<base::RunLoop> open_loop;
   base::Optional<base::RunLoop> destruction_loop;
@@ -1051,12 +1066,12 @@ TEST_F(LocalStorageContextMojoTest, RecreateOnCommitFailure) {
   mojo::Remote<blink::mojom::StorageArea> area2;
   mojo::Remote<blink::mojom::StorageArea> area3;
 
-  context->OpenLocalStorage(url::Origin::Create(GURL("http://foobar.com")),
-                            area1.BindNewPipeAndPassReceiver());
-  context->OpenLocalStorage(url::Origin::Create(GURL("http://foobar.com")),
-                            area2.BindNewPipeAndPassReceiver());
-  context->OpenLocalStorage(url::Origin::Create(GURL("http://example.com")),
-                            area3.BindNewPipeAndPassReceiver());
+  context->BindStorageArea(url::Origin::Create(GURL("http://foobar.com")),
+                           area1.BindNewPipeAndPassReceiver());
+  context->BindStorageArea(url::Origin::Create(GURL("http://foobar.com")),
+                           area2.BindNewPipeAndPassReceiver());
+  context->BindStorageArea(url::Origin::Create(GURL("http://example.com")),
+                           area3.BindNewPipeAndPassReceiver());
   open_loop->Run();
 
   // Add observers to the first two connections.
@@ -1127,8 +1142,8 @@ TEST_F(LocalStorageContextMojoTest, RecreateOnCommitFailure) {
   EXPECT_FALSE(area2.is_connected());
 
   // Reconnect |area1| to the database, and try to read a value.
-  context->OpenLocalStorage(url::Origin::Create(GURL("http://foobar.com")),
-                            area1.BindNewPipeAndPassReceiver());
+  context->BindStorageArea(url::Origin::Create(GURL("http://foobar.com")),
+                           area1.BindNewPipeAndPassReceiver());
   base::RunLoop delete_loop;
   bool success = true;
   TestLevelDBObserver observer3;
@@ -1172,7 +1187,8 @@ TEST_F(LocalStorageContextMojoTest, RecreateOnCommitFailure) {
 
 TEST_F(LocalStorageContextMojoTest, DontRecreateOnRepeatedCommitFailure) {
   auto* context = new LocalStorageContextMojo(
-      storage_path(), base::ThreadTaskRunnerHandle::Get(), nullptr, nullptr);
+      storage_path(), base::ThreadTaskRunnerHandle::Get(), nullptr, nullptr,
+      /*receiver=*/mojo::NullReceiver());
 
   // Ensure that the opened database always fails on write.
   base::Optional<base::RunLoop> open_loop;
@@ -1189,8 +1205,8 @@ TEST_F(LocalStorageContextMojoTest, DontRecreateOnRepeatedCommitFailure) {
 
   // Open a connection to the database.
   mojo::Remote<blink::mojom::StorageArea> area;
-  context->OpenLocalStorage(url::Origin::Create(GURL("http://foobar.com")),
-                            area.BindNewPipeAndPassReceiver());
+  context->BindStorageArea(url::Origin::Create(GURL("http://foobar.com")),
+                           area.BindNewPipeAndPassReceiver());
   open_loop->Run();
 
   // Ensure that all commits fail on the database, and that we observe its
@@ -1248,8 +1264,8 @@ TEST_F(LocalStorageContextMojoTest, DontRecreateOnRepeatedCommitFailure) {
   // Reconnect a area to the database, and repeatedly write data to it again.
   // This time all should just keep getting written, and commit errors are
   // getting ignored.
-  context->OpenLocalStorage(url::Origin::Create(GURL("http://foobar.com")),
-                            area.BindNewPipeAndPassReceiver());
+  context->BindStorageArea(url::Origin::Create(GURL("http://foobar.com")),
+                           area.BindNewPipeAndPassReceiver());
   old_value = base::nullopt;
   for (int i = 0; i < 64; ++i) {
     // Every write needs to be different to make sure there actually is a
