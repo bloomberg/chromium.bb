@@ -12,6 +12,7 @@
 
 #include <stdint.h>
 
+#include "base/memory/shared_memory.h"
 #include "base/process/process.h"
 #include "content/common/content_param_traits_macros.h"
 #include "content/common/navigation_params.h"

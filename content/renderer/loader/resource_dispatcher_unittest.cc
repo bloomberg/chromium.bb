@@ -15,6 +15,7 @@
 
 #include "base/feature_list.h"
 #include "base/macros.h"
+#include "base/memory/shared_memory.h"
 #include "base/process/process_handle.h"
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"

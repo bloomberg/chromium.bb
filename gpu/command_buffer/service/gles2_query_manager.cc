@@ -10,6 +10,7 @@
 #include "base/atomicops.h"
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/memory/shared_memory.h"
 #include "base/time/time.h"
 #include "gpu/command_buffer/service/error_state.h"
 #include "gpu/command_buffer/service/feature_info.h"

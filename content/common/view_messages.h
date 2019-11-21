@@ -14,6 +14,7 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/shared_memory.h"
 #include "base/optional.h"
 #include "base/process/process.h"
 #include "base/strings/string16.h"

@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/shared_memory.h"
 #include "base/memory/singleton.h"
 #include "base/optional.h"
 #include "base/process/process.h"

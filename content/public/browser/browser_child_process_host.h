@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "base/environment.h"
+#include "base/memory/shared_memory.h"
 #include "base/process/kill.h"
 #include "base/process/process.h"
 #include "base/strings/string16.h"

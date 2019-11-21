@@ -13,6 +13,7 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/shared_memory.h"
 #include "base/optional.h"
 #include "base/unguessable_token.h"
 #include "build/build_config.h"
