@@ -1,15 +1,16 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_QUIC_PLATFORM_IMPL_QUIC_ENDIAN_IMPL_H_
-#define NET_QUIC_PLATFORM_IMPL_QUIC_ENDIAN_IMPL_H_
+#ifndef NET_QUICHE_COMMON_PLATFORM_IMPL_QUICHE_ENDIAN_IMPL_H_
+#define NET_QUICHE_COMMON_PLATFORM_IMPL_QUICHE_ENDIAN_IMPL_H_
 
 #include "base/sys_byteorder.h"
+#include "build/build_config.h"
 
-namespace quic {
+namespace quiche {
 
-class QuicEndianImpl {
+class QuicheEndianImpl {
  public:
   // Convert |x| from host order (can be either little or big endian depending
   // on the platform) to network order (big endian).
@@ -33,6 +34,6 @@ class QuicEndianImpl {
   }
 };
 
-}  // namespace quic
+}  // namespace quiche
 
-#endif  // NET_QUIC_PLATFORM_IMPL_QUIC_ENDIAN_IMPL_H_
+#endif  // NET_QUICHE_COMMON_PLATFORM_IMPL_QUICHE_ENDIAN_IMPL_H_
