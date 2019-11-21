@@ -733,8 +733,8 @@ def CMDupdate_bootstrap(parser, args):
     print('Skipped populate step.')
 
   # Get the repo directory.
-  options, args = parser.parse_args(args)
-  url = args[0]
+  _, args2 = parser.parse_args(args)
+  url = args2[0]
   mirror = Mirror(url)
   mirror.update_bootstrap(options.prune, options.gc_aggressive)
   return 0
