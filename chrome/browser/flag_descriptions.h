@@ -1102,9 +1102,6 @@ extern const char kSharedClipboardReceiverDescription[];
 extern const char kSharedClipboardUIName[];
 extern const char kSharedClipboardUIDescription[];
 
-extern const char kSharingDeviceRegistrationName[];
-extern const char kSharingDeviceRegistrationDescription[];
-
 extern const char kSharingPeerConnectionReceiverName[];
 extern const char kSharingPeerConnectionReceiverDescription[];
 
@@ -1457,14 +1454,8 @@ extern const char kChromeSharingHubDescription[];
 extern const char kClearOldBrowsingDataName[];
 extern const char kClearOldBrowsingDataDescription[];
 
-extern const char kClickToCallOpenDialerDirectlyName[];
-extern const char kClickToCallOpenDialerDirectlyDescription[];
-
 extern const char kCloseTabSuggestionsName[];
 extern const char kCloseTabSuggestionsDescription[];
-
-extern const char kClickToCallReceiverName[];
-extern const char kClickToCallReceiverDescription[];
 
 extern const char kContextualSearchDefinitionsName[];
 extern const char kContextualSearchDefinitionsDescription[];
@@ -2338,9 +2329,6 @@ extern const char kWebGL2ComputeContextDescription[];
 #endif  // defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS)
 
 #if BUILDFLAG(ENABLE_CLICK_TO_CALL)
-
-extern const char kClickToCallContextMenuForSelectedTextName[];
-extern const char kClickToCallContextMenuForSelectedTextDescription[];
 
 extern const char kClickToCallUIName[];
 extern const char kClickToCallUIDescription[];

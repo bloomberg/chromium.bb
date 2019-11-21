@@ -3773,23 +3773,7 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(app_list_features::kEnableAssistantLauncherUI)},
 #endif  // defined(OS_CHROMEOS)
 
-#if defined(OS_ANDROID)
-    {"click-to-call-open-dialer-directly",
-     flag_descriptions::kClickToCallOpenDialerDirectlyName,
-     flag_descriptions::kClickToCallOpenDialerDirectlyDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kClickToCallOpenDialerDirectly)},
-
-    {"click-to-call-receiver", flag_descriptions::kClickToCallReceiverName,
-     flag_descriptions::kClickToCallReceiverDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(kClickToCallReceiver)},
-#endif  // defined(OS_ANDROID)
-
 #if BUILDFLAG(ENABLE_CLICK_TO_CALL)
-    {"click-to-call-context-menu-selected-text",
-     flag_descriptions::kClickToCallContextMenuForSelectedTextName,
-     flag_descriptions::kClickToCallContextMenuForSelectedTextDescription,
-     kOsDesktop, FEATURE_VALUE_TYPE(kClickToCallContextMenuForSelectedText)},
-
     {"click-to-call-ui", flag_descriptions::kClickToCallUIName,
      flag_descriptions::kClickToCallUIDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(kClickToCallUI)},
@@ -3840,11 +3824,6 @@ const FeatureEntry kFeatureEntries[] = {
      kOsAll,
      FEATURE_VALUE_TYPE(data_reduction_proxy::features::
                             kDataReductionProxyEnabledWithNetworkService)},
-
-    {"enable-sharing-device-registration",
-     flag_descriptions::kSharingDeviceRegistrationName,
-     flag_descriptions::kSharingDeviceRegistrationDescription, kOsAll,
-     FEATURE_VALUE_TYPE(kSharingDeviceRegistration)},
 
     {"sharing-derive-vapid-key", flag_descriptions::kSharingDeriveVapidKeyName,
      flag_descriptions::kSharingDeriveVapidKeyDescription, kOsAll,

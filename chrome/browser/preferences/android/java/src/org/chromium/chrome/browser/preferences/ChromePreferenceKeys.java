@@ -347,13 +347,6 @@ public final class ChromePreferenceKeys {
     public static final String SWAP_PIXEL_FORMAT_TO_FIX_CONVERT_FROM_TRANSLUCENT =
             "swap_pixel_format_to_fix_convert_from_translucent";
 
-    /**
-     * Whether or not we should directly open the dialer when a click to call notification is
-     * received. Default value is false.
-     */
-    public static final String CLICK_TO_CALL_OPEN_DIALER_DIRECTLY_KEY =
-            "click_to_call_open_dialer_directly";
-
     @CheckDiscard("Validation is performed in tests and in debug builds.")
     static List<String> createUsedKeys() {
         // These values are currently used as SharedPreferences keys.
@@ -433,8 +426,7 @@ public final class ChromePreferenceKeys {
                 PRIORITIZE_BOOTSTRAP_TASKS_KEY,
                 NETWORK_SERVICE_WARM_UP_ENABLED_KEY,
                 IMMERSIVE_UI_MODE_ENABLED,
-                SWAP_PIXEL_FORMAT_TO_FIX_CONVERT_FROM_TRANSLUCENT,
-                CLICK_TO_CALL_OPEN_DIALER_DIRECTLY_KEY
+                SWAP_PIXEL_FORMAT_TO_FIX_CONVERT_FROM_TRANSLUCENT
         );
         // clang-format on
     }
@@ -462,7 +454,8 @@ public final class ChromePreferenceKeys {
                 "chrome_home_opt_out_snackbar_shown",
                 "chrome_home_info_promo_shown",
                 "chrome_home_enabled_date",
-                "PrefMigrationVersion"
+                "PrefMigrationVersion",
+                "click_to_call_open_dialer_directly"
         );
         // clang-format on
     }
@@ -543,8 +536,7 @@ public final class ChromePreferenceKeys {
                 PRIORITIZE_BOOTSTRAP_TASKS_KEY,
                 NETWORK_SERVICE_WARM_UP_ENABLED_KEY,
                 IMMERSIVE_UI_MODE_ENABLED,
-                SWAP_PIXEL_FORMAT_TO_FIX_CONVERT_FROM_TRANSLUCENT,
-                CLICK_TO_CALL_OPEN_DIALER_DIRECTLY_KEY
+                SWAP_PIXEL_FORMAT_TO_FIX_CONVERT_FROM_TRANSLUCENT
         );
         // clang-format on
     }

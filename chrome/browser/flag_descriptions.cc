@@ -1876,12 +1876,6 @@ const char kSharedClipboardUIDescription[] =
     "Enables shared clipboard feature signals to be handled by showing "
     "a list of user's available devices to share the clipboard.";
 
-const char kSharingDeviceRegistrationName[] =
-    "Enable device registration for Sharing features";
-const char kSharingDeviceRegistrationDescription[] =
-    "Enables device registration with Sharing infrastructure. Required to use "
-    "cross-device Sharing features.";
-
 const char kSharingPeerConnectionReceiverName[] =
     "Enable receiver device to handle peer connection requests.";
 const char kSharingPeerConnectionReceiverDescription[] =
@@ -2466,22 +2460,11 @@ const char kClearOldBrowsingDataDescription[] =
     "Enables clearing of browsing data which is older than a given time "
     "period.";
 
-const char kClickToCallOpenDialerDirectlyName[] =
-    "Open the dialer directly for Click to Call";
-const char kClickToCallOpenDialerDirectlyDescription[] =
-    "Enables opening the dialer directly instead of displaying a notification. "
-    "Only available on Android P- and when the screen is on and unlocked.";
 const char kCloseTabSuggestionsName[] = "Suggest to close Tabs";
 const char kCloseTabSuggestionsDescription[] =
     "Suggests to the user to close Tabs that haven't been used beyond a "
     "configurable threshold or where duplicates of Tabs exist. "
     "The threshold is configurable.";
-
-const char kClickToCallReceiverName[] =
-    "Enable receiver device to handle click to call feature";
-const char kClickToCallReceiverDescription[] =
-    "Enables receiver device to handle click to call feature by showing a "
-    "notification to call the phone number clicked on the desktop.";
 
 const char kContextualSearchDefinitionsName[] = "Contextual Search definitions";
 const char kContextualSearchDefinitionsDescription[] =
@@ -3913,12 +3896,6 @@ const char kWebGL2ComputeContextDescription[] =
 #endif  // defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS)
 
 #if BUILDFLAG(ENABLE_CLICK_TO_CALL)
-
-const char kClickToCallContextMenuForSelectedTextName[] =
-    "Enable click to call feature on desktop when a phone number is selected";
-const char kClickToCallContextMenuForSelectedTextDescription[] =
-    "Enables click to call feature to be shown in context menu when the user "
-    "right clicks after selecting a phone number.";
 
 const char kClickToCallUIName[] =
     "Enable click to call feature signals to be handled on desktop";

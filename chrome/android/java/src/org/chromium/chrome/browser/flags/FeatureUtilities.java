@@ -121,7 +121,6 @@ public class FeatureUtilities {
         cacheSwapPixelFormatToFixConvertFromTranslucentEnabled();
         cacheReachedCodeProfilerTrialGroup();
         cacheStartSurfaceEnabled();
-        cacheClickToCallOpenDialerDirectlyEnabled();
         cacheMarkHttpAsDangerWarningEnabled();
 
         if (isHighEndPhone()) cacheGridTabSwitcherEnabled();
@@ -555,32 +554,6 @@ public class FeatureUtilities {
     public static void cacheSwapPixelFormatToFixConvertFromTranslucentEnabled() {
         cacheFlag(ChromePreferenceKeys.SWAP_PIXEL_FORMAT_TO_FIX_CONVERT_FROM_TRANSLUCENT,
                 ChromeFeatureList.SWAP_PIXEL_FORMAT_TO_FIX_CONVERT_FROM_TRANSLUCENT);
-    }
-
-    /**
-     * Cache the value of the flag whether or not to directly open the dialer for click to call.
-     */
-    public static void cacheClickToCallOpenDialerDirectlyEnabled() {
-        cacheFlag(ChromePreferenceKeys.CLICK_TO_CALL_OPEN_DIALER_DIRECTLY_KEY,
-                ChromeFeatureList.CLICK_TO_CALL_OPEN_DIALER_DIRECTLY);
-    }
-
-    /**
-     * @return Whether or not we should directly open dialer for click to call (based on the cached
-     *         value in SharedPrefs).
-     */
-    public static boolean isClickToCallOpenDialerDirectlyEnabled() {
-        return isFlagEnabled(ChromePreferenceKeys.CLICK_TO_CALL_OPEN_DIALER_DIRECTLY_KEY, false);
-    }
-
-    /**
-     * Toggles whether experiment for opening dialer directly in click to call is enabled for
-     * testing. Should be reset back to null after the test has finished.
-     */
-    @VisibleForTesting
-    public static void setIsClickToCallOpenDialerDirectlyEnabledForTesting(
-            @Nullable Boolean isEnabled) {
-        sFlags.put(ChromePreferenceKeys.CLICK_TO_CALL_OPEN_DIALER_DIRECTLY_KEY, isEnabled);
     }
 
     /**

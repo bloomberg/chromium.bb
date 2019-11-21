@@ -51,11 +51,13 @@ enum class ClickToCallPolicy {
 }  // namespace
 
 // Browser tests for the Click To Call feature.
-class ClickToCallBrowserTestBase : public SharingBrowserTest {
+class ClickToCallBrowserTest : public SharingBrowserTest {
  public:
-  ClickToCallBrowserTestBase() {}
+  ClickToCallBrowserTest() {
+    feature_list_.InitAndEnableFeature(kClickToCallUI);
+  }
 
-  ~ClickToCallBrowserTestBase() override {}
+  ~ClickToCallBrowserTest() override {}
 
   std::string GetTestPageURL() const override {
     return std::string(kTestPageURL);
@@ -78,16 +80,7 @@ class ClickToCallBrowserTestBase : public SharingBrowserTest {
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(ClickToCallBrowserTestBase);
-};
-
-class ClickToCallBrowserTest : public ClickToCallBrowserTestBase {
- public:
-  ClickToCallBrowserTest() {
-    feature_list_.InitWithFeatures({kSharingDeviceRegistration, kClickToCallUI,
-                                    kClickToCallContextMenuForSelectedText},
-                                   {});
-  }
+  DISALLOW_COPY_AND_ASSIGN(ClickToCallBrowserTest);
 };
 
 // TODO(himanshujaju): Add UI checks.
@@ -325,33 +318,6 @@ IN_PROC_BROWSER_TEST_F(ClickToCallBrowserTest,
       /*sample=*/9, /*count=*/1);
 }
 
-class ClickToCallBrowserTestWithContextMenuDisabled
-    : public ClickToCallBrowserTestBase {
- public:
-  ClickToCallBrowserTestWithContextMenuDisabled() {
-    feature_list_.InitWithFeatures({kSharingDeviceRegistration, kClickToCallUI},
-                                   {kClickToCallContextMenuForSelectedText});
-  }
-};
-
-IN_PROC_BROWSER_TEST_F(
-    ClickToCallBrowserTestWithContextMenuDisabled,
-    ContextMenu_HighlightedText_DevicesAvailable_FeatureFlagOff) {
-  Init(sync_pb::SharingSpecificFields::CLICK_TO_CALL,
-       sync_pb::SharingSpecificFields::CLICK_TO_CALL);
-  auto devices = sharing_service()->GetDeviceCandidates(
-      sync_pb::SharingSpecificFields::CLICK_TO_CALL);
-  ASSERT_EQ(2u, devices.size());
-
-  std::unique_ptr<TestRenderViewContextMenu> menu =
-      InitContextMenu(GURL(kNonTelUrl), kLinkText, kTextWithPhoneNumber);
-
-  EXPECT_FALSE(menu->IsItemPresent(
-      IDC_CONTENT_CONTEXT_SHARING_CLICK_TO_CALL_SINGLE_DEVICE));
-  EXPECT_FALSE(menu->IsItemPresent(
-      IDC_CONTENT_CONTEXT_SHARING_CLICK_TO_CALL_MULTIPLE_DEVICES));
-}
-
 IN_PROC_BROWSER_TEST_F(ClickToCallBrowserTest, ContextMenu_UKM) {
   Init(sync_pb::SharingSpecificFields::CLICK_TO_CALL,
        sync_pb::SharingSpecificFields::UNKNOWN);
@@ -404,15 +370,6 @@ IN_PROC_BROWSER_TEST_F(ClickToCallBrowserTest, ContextMenu_UKM) {
   // TODO(knollr): mock apps and verify |has_apps| here too.
 }
 
-class ClickToCallBrowserTestWithContextMenuFeatureDefault
-    : public ClickToCallBrowserTestBase {
- public:
-  ClickToCallBrowserTestWithContextMenuFeatureDefault() {
-    feature_list_.InitWithFeatures({kSharingDeviceRegistration, kClickToCallUI},
-                                   {});
-  }
-};
-
 IN_PROC_BROWSER_TEST_F(ClickToCallBrowserTest, CloseTabWithBubble) {
   Init(sync_pb::SharingSpecificFields::CLICK_TO_CALL,
        sync_pb::SharingSpecificFields::UNKNOWN);
@@ -441,8 +398,7 @@ class ClickToCallPolicyTest
       public testing::WithParamInterface<ClickToCallPolicy> {
  public:
   ClickToCallPolicyTest() {
-    scoped_feature_list_.InitWithFeatures(
-        {kClickToCallUI, kClickToCallContextMenuForSelectedText}, {});
+    scoped_feature_list_.InitAndEnableFeature(kClickToCallUI);
   }
   ~ClickToCallPolicyTest() override = default;
 

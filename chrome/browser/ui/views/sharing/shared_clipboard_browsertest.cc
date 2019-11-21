@@ -55,7 +55,7 @@ class SharedClipboardBrowserTestBase : public SharingBrowserTest {
 class SharedClipboardBrowserTest : public SharedClipboardBrowserTestBase {
  public:
   SharedClipboardBrowserTest() {
-    feature_list_.InitWithFeatures({kSharedClipboardUI}, {});
+    feature_list_.InitAndEnableFeature(kSharedClipboardUI);
   }
 };
 
@@ -158,7 +158,7 @@ class SharedClipboardUIFeatureDisabledBrowserTest
     : public SharedClipboardBrowserTestBase {
  public:
   SharedClipboardUIFeatureDisabledBrowserTest() {
-    feature_list_.InitWithFeatures({}, {kSharedClipboardUI});
+    feature_list_.InitAndDisableFeature(kSharedClipboardUI);
   }
 };
 
