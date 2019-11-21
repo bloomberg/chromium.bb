@@ -1712,6 +1712,7 @@ void Animation::UpdateIfNecessary() {
 
 void Animation::EffectInvalidated() {
   SetOutdated();
+  UpdateFinishedState(UpdateType::kContinuous, NotificationType::kAsync);
   // FIXME: Needs to consider groups when added.
   SetCompositorPending(true);
 }
