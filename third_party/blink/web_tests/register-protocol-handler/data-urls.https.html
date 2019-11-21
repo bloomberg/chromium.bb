@@ -28,8 +28,7 @@ Test page
 
 window.addEventListener('message', (msg) => {
   assert_equals(msg.data,
-                'rph failed: Failed to execute \'registerProtocolHandler\' on \'Navigator\': The scheme of the url provided must be the \'http\' or \'https\'.',
-                'registerProtocolHandler should have failed');
+  'rph failed: navigator.registerProtocolHandler is not a function');
   done();
 });
 
