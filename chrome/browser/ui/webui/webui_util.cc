@@ -51,4 +51,10 @@ void SetupBundledWebUIDataSource(content::WebUIDataSource* source,
 }
 #endif
 
+void AddResourcePathsBulk(content::WebUIDataSource* source,
+                          base::span<const ResourcePath> paths) {
+  for (const auto& path : paths)
+    source->AddResourcePath(path.path, path.id);
+}
+
 }  // namespace webui

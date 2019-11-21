@@ -19,6 +19,11 @@ struct GritResourceMap;
 
 namespace webui {
 
+struct ResourcePath {
+  const char* path;
+  int id;
+};
+
 // Performs common setup steps for |source|, assuming it is using Polymer 3,
 // by adding all resources, setting the default resource, setting up i18n,
 // and ensuring that tests work correctly by updating the CSP and adding the
@@ -36,6 +41,11 @@ void SetupBundledWebUIDataSource(content::WebUIDataSource* source,
                                  int bundle,
                                  int default_resource);
 #endif
+
+// Calls content::WebUIDataSource::AddResourcePath() in a for-loop for |paths|.
+// Reduces code size vs. reimplementing the same for-loop.
+void AddResourcePathsBulk(content::WebUIDataSource* source,
+                          base::span<const ResourcePath> paths);
 
 }  // namespace webui
 
