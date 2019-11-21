@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-var HIDDEN_CLASS = 'hidden';
+const HIDDEN_CLASS = 'hidden';
 
 function setupEvents() {
   $('details-certerror-button').addEventListener('click', function(event) {
@@ -34,7 +34,7 @@ function setupEvents() {
 }
 
 function toggleHidden(className, buttonName) {
-  var hiddenDetails = $(className).classList.toggle(HIDDEN_CLASS);
+  const hiddenDetails = $(className).classList.toggle(HIDDEN_CLASS);
   $(buttonName).innerText = hiddenDetails ?
       loadTimeData.getString('connectionHelpShowMore') :
       loadTimeData.getString('connectionHelpShowLess');
