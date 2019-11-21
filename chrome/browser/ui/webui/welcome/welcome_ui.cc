@@ -52,7 +52,7 @@ bool ShouldHandleRequestCallback(base::WeakPtr<WelcomeUI> weak_ptr,
     return false;
   }
 
-  return !weak_ptr ? false : true;
+  return !!weak_ptr;
 }
 
 void HandleRequestCallback(
@@ -109,8 +109,7 @@ void AddStrings(content::WebUIDataSource* html_source) {
       {"landingNewUser", IDS_WELCOME_LANDING_NEW_USER},
       {"landingExistingUser", IDS_WELCOME_LANDING_EXISTING_USER},
   };
-  AddLocalizedStringsBulk(html_source, kLocalizedStrings,
-                          base::size(kLocalizedStrings));
+  AddLocalizedStringsBulk(html_source, kLocalizedStrings);
 }
 
 }  // namespace

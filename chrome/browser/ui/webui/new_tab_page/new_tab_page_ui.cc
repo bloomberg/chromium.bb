@@ -27,7 +27,7 @@ content::WebUIDataSource* CreateNewTabPageUiHtmlSource() {
   static constexpr LocalizedString kStrings[] = {
       {"title", IDS_NEW_TAB_TITLE},
   };
-  AddLocalizedStringsBulk(source, kStrings, base::size(kStrings));
+  AddLocalizedStringsBulk(source, kStrings);
 
   source->AddResourcePath("new_tab_page.mojom-lite.js",
                           IDR_NEW_TAB_PAGE_MOJO_LITE_JS);

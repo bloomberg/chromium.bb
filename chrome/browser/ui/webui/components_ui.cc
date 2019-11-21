@@ -56,7 +56,7 @@ content::WebUIDataSource* CreateComponentsUIHTMLSource(Profile* profile) {
       {"statusLabel", IDS_COMPONENTS_STATUS_LABEL},
       {"checkingLabel", IDS_COMPONENTS_CHECKING_LABEL},
   };
-  AddLocalizedStringsBulk(source, kStrings, base::size(kStrings));
+  AddLocalizedStringsBulk(source, kStrings);
 
   source->AddBoolean(
       "isGuest",

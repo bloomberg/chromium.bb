@@ -126,8 +126,7 @@ ConfirmPasswordChangeUI::ConfirmPasswordChangeUI(content::WebUI* web_ui)
       {"matchError", IDS_PASSWORD_CHANGE_PASSWORDS_DONT_MATCH},
       {"save", IDS_PASSWORD_CHANGE_CONFIRM_SAVE_BUTTON}};
 
-  AddLocalizedStringsBulk(source, kLocalizedStrings,
-                          base::size(kLocalizedStrings));
+  AddLocalizedStringsBulk(source, kLocalizedStrings);
 
   AddSize(source, "", ConfirmPasswordChangeDialog::GetSize(false, false));
   AddSize(source, "Old", ConfirmPasswordChangeDialog::GetSize(true, false));
@@ -169,8 +168,7 @@ UrgentPasswordExpiryNotificationUI::UrgentPasswordExpiryNotificationUI(
   static constexpr LocalizedString kLocalizedStrings[] = {
       {"body", IDS_PASSWORD_EXPIRY_CALL_TO_ACTION_CRITICAL},
       {"button", IDS_OK}};
-  AddLocalizedStringsBulk(source, kLocalizedStrings,
-                          base::size(kLocalizedStrings));
+  AddLocalizedStringsBulk(source, kLocalizedStrings);
 
   source->UseStringsJs();
   source->SetDefaultResource(IDR_URGENT_PASSWORD_EXPIRY_NOTIFICATION_HTML);

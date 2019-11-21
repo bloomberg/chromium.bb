@@ -73,7 +73,7 @@ content::WebUIDataSource* CreateWebRtcLogsUIHTMLSource() {
       {"noTextLogsMessage", IDS_WEBRTC_LOGS_NO_TEXT_LOGS_MESSAGE},
       {"noEventLogsMessage", IDS_WEBRTC_LOGS_NO_EVENT_LOGS_MESSAGE},
   };
-  AddLocalizedStringsBulk(source, kStrings, base::size(kStrings));
+  AddLocalizedStringsBulk(source, kStrings);
 
   source->UseStringsJs();
   source->AddResourcePath("webrtc_logs.js", IDR_WEBRTC_LOGS_JS);

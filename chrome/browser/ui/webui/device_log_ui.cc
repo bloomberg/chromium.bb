@@ -89,7 +89,7 @@ DeviceLogUI::DeviceLogUI(content::WebUI* web_ui)
       {"logTypeFidoText", IDS_DEVICE_LOG_TYPE_FIDO},
       {"logEntryFormat", IDS_DEVICE_LOG_ENTRY},
   };
-  AddLocalizedStringsBulk(html, kStrings, base::size(kStrings));
+  AddLocalizedStringsBulk(html, kStrings);
 
   html->UseStringsJs();
   html->AddResourcePath("device_log_ui.css", IDR_DEVICE_LOG_UI_CSS);

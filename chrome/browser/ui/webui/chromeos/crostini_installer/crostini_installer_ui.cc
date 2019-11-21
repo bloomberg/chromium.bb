@@ -63,7 +63,7 @@ void AddStringResources(content::WebUIDataSource* source) {
       {"mountContainerMessage", IDS_CROSTINI_INSTALLER_MOUNT_CONTAINER_MESSAGE},
       {"cancelingMessage", IDS_CROSTINI_INSTALLER_CANCELING},
   };
-  AddLocalizedStringsBulk(source, kStrings, base::size(kStrings));
+  AddLocalizedStringsBulk(source, kStrings);
 
   base::string16 device_name = ui::GetChromeOSDeviceName();
 

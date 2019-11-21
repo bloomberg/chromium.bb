@@ -79,7 +79,7 @@ content::WebUIDataSource* CreateLocalDiscoveryHTMLSource() {
     {"titleConnector", IDS_LOCAL_DISCOVERY_CONNECTOR_SECTION},
 #endif
   };
-  AddLocalizedStringsBulk(source, kStrings, base::size(kStrings));
+  AddLocalizedStringsBulk(source, kStrings);
 
   source->UseStringsJs();
 

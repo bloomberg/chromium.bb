@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/webui/policy_indicator_localized_strings_provider.h"
 
-#include "base/stl_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/webui/localized_string.h"
 #include "chrome/grit/generated_resources.h"
@@ -39,8 +38,7 @@ void AddLocalizedStrings(content::WebUIDataSource* html_source) {
      IDS_CONTROLLED_SETTING_CHILD_RESTRICTION},
 #endif
   };
-  AddLocalizedStringsBulk(html_source, localized_strings,
-                          base::size(localized_strings));
+  AddLocalizedStringsBulk(html_source, localized_strings);
 }
 
 }  // namespace policy_indicator

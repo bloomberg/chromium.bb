@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/webui/chromeos/bluetooth_dialog_localized_strings_provider.h"
 
-#include "base/stl_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/webui/localized_string.h"
 #include "chrome/grit/generated_resources.h"
@@ -63,8 +62,7 @@ void AddLocalizedStrings(content::WebUIDataSource* html_source) {
       {"bluetooth_connect_writeNotPermitted",
        IDS_SETTINGS_BLUETOOTH_CONNECT_WRITE_NOT_PERMITTED},
   };
-  AddLocalizedStringsBulk(html_source, kLocalizedStrings,
-                          base::size(kLocalizedStrings));
+  AddLocalizedStringsBulk(html_source, kLocalizedStrings);
 }
 
 }  // namespace bluetooth_dialog

@@ -491,7 +491,7 @@ TabStripUI::TabStripUI(content::WebUI* web_ui)
       {"desktopCapturing", IDS_TAB_AX_LABEL_DESKTOP_CAPTURING_FORMAT},
       {"vrPresenting", IDS_TAB_AX_LABEL_VR_PRESENTING},
   };
-  AddLocalizedStringsBulk(html_source, kStrings, base::size(kStrings));
+  AddLocalizedStringsBulk(html_source, kStrings);
   html_source->UseStringsJs();
 
   content::WebUIDataSource::Add(profile, html_source);

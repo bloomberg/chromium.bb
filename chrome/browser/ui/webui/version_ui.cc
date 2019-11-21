@@ -79,7 +79,7 @@ WebUIDataSource* CreateVersionUIDataSource() {
     {version_ui::kGmsName, IDS_VERSION_UI_GMS},
 #endif  // OS_ANDROID
   };
-  AddLocalizedStringsBulk(html_source, kStrings, base::size(kStrings));
+  AddLocalizedStringsBulk(html_source, kStrings);
 
   VersionUI::AddVersionDetailStrings(html_source);
 
@@ -184,5 +184,6 @@ void VersionUI::AddVersionDetailStrings(content::WebUIDataSource* html_source) {
                          version_utils::win::GetCohortVersionInfo());
 #endif  // defined(OS_WIN)
 
-  html_source->AddString(version_ui::kSanitizer, version_info::GetSanitizerList());
+  html_source->AddString(version_ui::kSanitizer,
+                         version_info::GetSanitizerList());
 }

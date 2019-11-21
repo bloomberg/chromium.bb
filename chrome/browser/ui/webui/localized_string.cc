@@ -11,9 +11,3 @@ void AddLocalizedStringsBulk(content::WebUIDataSource* html_source,
   for (const auto& str : strings)
     html_source->AddLocalizedString(str.name, str.id);
 }
-
-void AddLocalizedStringsBulk(content::WebUIDataSource* html_source,
-                             const LocalizedString* strings,
-                             size_t num_strings) {
-  AddLocalizedStringsBulk(html_source, base::make_span(strings, num_strings));
-}

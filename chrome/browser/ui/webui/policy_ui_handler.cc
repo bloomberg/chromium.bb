@@ -211,8 +211,10 @@ void GetUserAffiliationStatus(base::DictionaryValue* dict, Profile* profile) {
 void GetOffHoursStatus(base::DictionaryValue* dict) {
   policy::off_hours::DeviceOffHoursController* off_hours_controller =
       chromeos::DeviceSettingsService::Get()->device_off_hours_controller();
-  if (off_hours_controller)
-    dict->SetBoolean("isOffHoursActive", off_hours_controller->is_off_hours_mode());
+  if (off_hours_controller) {
+    dict->SetBoolean("isOffHoursActive",
+                     off_hours_controller->is_off_hours_mode());
+  }
 }
 #endif  // defined(OS_CHROMEOS)
 
@@ -712,8 +714,7 @@ PolicyUIHandler::~PolicyUIHandler() {
 
 void PolicyUIHandler::AddCommonLocalizedStringsToSource(
     content::WebUIDataSource* source) {
-  AddLocalizedStringsBulk(source, policy::kPolicySources,
-                          policy::POLICY_SOURCE_COUNT);
+  AddLocalizedStringsBulk(source, policy::kPolicySources);
 
   static constexpr LocalizedString kStrings[] = {
       {"conflict", IDS_POLICY_LABEL_CONFLICT},
@@ -737,7 +738,7 @@ void PolicyUIHandler::AddCommonLocalizedStringsToSource(
       {"unset", IDS_POLICY_UNSET},
       {"value", IDS_POLICY_LABEL_VALUE},
   };
-  AddLocalizedStringsBulk(source, kStrings, base::size(kStrings));
+  AddLocalizedStringsBulk(source, kStrings);
 
   source->UseStringsJs();
 }

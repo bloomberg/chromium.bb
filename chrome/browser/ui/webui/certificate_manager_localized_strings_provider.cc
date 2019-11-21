@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/webui/certificate_manager_localized_strings_provider.h"
 
-#include "base/stl_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/webui/localized_string.h"
 #include "chrome/grit/generated_resources.h"
@@ -84,8 +83,7 @@ void AddLocalizedStrings(content::WebUIDataSource* html_source) {
       // For A11y.
       {"menu", IDS_MENU},
   };
-  AddLocalizedStringsBulk(html_source, kLocalizedStrings,
-                          base::size(kLocalizedStrings));
+  AddLocalizedStringsBulk(html_source, kLocalizedStrings);
 }
 
 }  // namespace certificate_manager

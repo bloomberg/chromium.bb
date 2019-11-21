@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/webui/chromeos/multidevice_setup/multidevice_setup_localized_strings_provider.h"
 
 #include "base/no_destructor.h"
-#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
 #include "chrome/browser/profiles/profile.h"
@@ -122,8 +121,7 @@ GetLocalizedStringsWithPlaceholders() {
 }  //  namespace
 
 void AddLocalizedStrings(content::WebUIDataSource* html_source) {
-  AddLocalizedStringsBulk(html_source, kLocalizedStringsWithoutPlaceholders,
-                          base::size(kLocalizedStringsWithoutPlaceholders));
+  AddLocalizedStringsBulk(html_source, kLocalizedStringsWithoutPlaceholders);
 
   for (const auto& entry : GetLocalizedStringsWithPlaceholders())
     html_source->AddString(entry.name, entry.localized_string);
