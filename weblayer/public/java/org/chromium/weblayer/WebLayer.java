@@ -10,6 +10,7 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.os.Process;
 import android.os.RemoteException;
 import android.support.v4.app.Fragment;
 import android.util.AndroidRuntimeException;
@@ -247,6 +248,30 @@ public final class WebLayer {
         } catch (RemoteException e) {
             throw new APICallException(e);
         }
+    }
+
+    @SuppressWarnings("NewApi")
+    static ClassLoader getOrCreateRemoteClassLoaderForChildProcess(Context appContext)
+            throws PackageManager.NameNotFoundException, ReflectiveOperationException {
+        if (sRemoteClassLoader != null) {
+            return sRemoteClassLoader;
+        }
+        if (getImplPackageName(appContext) == null && Process.isIsolated()
+                && Build.VERSION.SDK_INT <= Build.VERSION_CODES.M) {
+            // In <= M, the WebView update service is not available in isolated processes. This
+            // causes a crash when trying to initialize WebView through the normal machinery, so we
+            // need to directly make the remote context here.
+            String packageName = (String) Class.forName("android.webkit.WebViewFactory")
+                                         .getMethod("getWebViewPackageName")
+                                         .invoke(null);
+            sRemoteClassLoader =
+                    appContext
+                            .createPackageContext(packageName,
+                                    Context.CONTEXT_IGNORE_SECURITY | Context.CONTEXT_INCLUDE_CODE)
+                            .getClassLoader();
+            return sRemoteClassLoader;
+        }
+        return getOrCreateRemoteClassLoader(appContext);
     }
 
     /**
