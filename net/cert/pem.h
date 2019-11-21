@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_CERT_PEM_TOKENIZER_H_
-#define NET_CERT_PEM_TOKENIZER_H_
+#ifndef NET_CERT_PEM_H_
+#define NET_CERT_PEM_H_
 
 #include <stddef.h>
 
@@ -75,6 +75,11 @@ class NET_EXPORT_PRIVATE PEMTokenizer {
   DISALLOW_COPY_AND_ASSIGN(PEMTokenizer);
 };
 
+// Encodes |data| in the encapsulated message format described in RFC 1421,
+// with |type| as the PEM block type (eg: CERTIFICATE).
+NET_EXPORT_PRIVATE std::string PEMEncode(base::StringPiece data,
+                                         const std::string& type);
+
 }  // namespace net
 
-#endif  // NET_CERT_PEM_TOKENIZER_H_
+#endif  // NET_CERT_PEM_H_

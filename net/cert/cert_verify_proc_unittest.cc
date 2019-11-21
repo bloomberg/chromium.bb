@@ -34,7 +34,7 @@
 #include "net/cert/ev_root_ca_metadata.h"
 #include "net/cert/internal/parse_certificate.h"
 #include "net/cert/internal/signature_algorithm.h"
-#include "net/cert/pem_tokenizer.h"
+#include "net/cert/pem.h"
 #include "net/cert/test_root_certs.h"
 #include "net/cert/x509_certificate.h"
 #include "net/cert/x509_util.h"

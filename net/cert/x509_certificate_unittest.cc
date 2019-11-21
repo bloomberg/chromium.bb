@@ -19,7 +19,7 @@
 #include "crypto/rsa_private_key.h"
 #include "net/base/net_errors.h"
 #include "net/cert/asn1_util.h"
-#include "net/cert/pem_tokenizer.h"
+#include "net/cert/pem.h"
 #include "net/cert/x509_util.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/test_certificate_data.h"

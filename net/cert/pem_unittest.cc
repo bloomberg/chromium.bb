@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/cert/pem_tokenizer.h"
+#include "net/cert/pem.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -164,6 +164,42 @@ TEST(PEMTokenizerTest, BlockWithHeader) {
   EXPECT_EQ("EncodedDataTwo", tokenizer.data());
 
   EXPECT_FALSE(tokenizer.GetNext());
+}
+
+TEST(PEMEncodeTest, Basic) {
+  EXPECT_EQ(
+      "-----BEGIN BLOCK-ONE-----\n"
+      "RW5jb2RlZERhdGFPbmU=\n"
+      "-----END BLOCK-ONE-----\n",
+      PEMEncode("EncodedDataOne", "BLOCK-ONE"));
+  EXPECT_EQ(
+      "-----BEGIN BLOCK-TWO-----\n"
+      "RW5jb2RlZERhdGFUd28=\n"
+      "-----END BLOCK-TWO-----\n",
+      PEMEncode("EncodedDataTwo", "BLOCK-TWO"));
+}
+
+TEST(PEMEncodeTest, Empty) {
+  EXPECT_EQ(
+      "-----BEGIN EMPTY-----\n"
+      "-----END EMPTY-----\n",
+      PEMEncode("", "EMPTY"));
+}
+
+TEST(PEMEncodeTest, Wrapping) {
+  EXPECT_EQ(
+      "-----BEGIN SINGLE LINE-----\n"
+      "MTIzNDU2Nzg5MGFiY2RlZmdoaWprbG1ub3BxcnN0dXZ3eHl6QUJDREVGR0hJSktM\n"
+      "-----END SINGLE LINE-----\n",
+      PEMEncode("1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKL",
+                "SINGLE LINE"));
+
+  EXPECT_EQ(
+      "-----BEGIN WRAPPED LINE-----\n"
+      "MTIzNDU2Nzg5MGFiY2RlZmdoaWprbG1ub3BxcnN0dXZ3eHl6QUJDREVGR0hJSktM\nTQ==\n"
+      "-----END WRAPPED LINE-----\n",
+      PEMEncode("1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLM",
+                "WRAPPED LINE"));
 }
 
 }  // namespace net

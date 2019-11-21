@@ -36,7 +36,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
-#include "net/cert/pem_tokenizer.h"
+#include "net/cert/pem.h"
 #include "net/cert/x509_certificate.h"
 #include "third_party/blink/public/mojom/permissions/permission_status.mojom.h"
 
