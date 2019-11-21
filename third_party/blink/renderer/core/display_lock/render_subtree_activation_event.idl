@@ -4,6 +4,6 @@
 
 [
     RuntimeEnabled=DisplayLocking
-] interface BeforeActivateEvent : Event {
+] interface RenderSubtreeActivationEvent : Event {
     readonly attribute Element activatedElement;
 };

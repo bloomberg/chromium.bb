@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/core/display_lock/before_activate_event.h"
+#include "third_party/blink/renderer/core/display_lock/render_subtree_activation_event.h"
 
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/events/event_dispatcher.h"
@@ -10,18 +10,19 @@
 
 namespace blink {
 
-const AtomicString& BeforeActivateEvent::InterfaceName() const {
-  return event_interface_names::kBeforeActivateEvent;
+const AtomicString& RenderSubtreeActivationEvent::InterfaceName() const {
+  return event_interface_names::kRenderSubtreeActivationEvent;
 }
 
-BeforeActivateEvent::BeforeActivateEvent(Element& activated_element)
-    : Event(event_type_names::kBeforeactivate,
+RenderSubtreeActivationEvent::RenderSubtreeActivationEvent(
+    Element& activated_element)
+    : Event(event_type_names::kRendersubtreeactivation,
             Bubbles::kYes,
             Cancelable::kYes,
             ComposedMode::kScoped),
       activated_element_(activated_element) {}
 
-void BeforeActivateEvent::Trace(Visitor* visitor) {
+void RenderSubtreeActivationEvent::Trace(Visitor* visitor) {
   visitor->Trace(activated_element_);
   Event::Trace(visitor);
 }

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DISPLAY_LOCK_BEFORE_ACTIVATE_EVENT_H_
-#define THIRD_PARTY_BLINK_RENDERER_CORE_DISPLAY_LOCK_BEFORE_ACTIVATE_EVENT_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DISPLAY_LOCK_RENDER_SUBTREE_ACTIVATION_EVENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DISPLAY_LOCK_RENDER_SUBTREE_ACTIVATION_EVENT_H_
 
 #include "third_party/blink/renderer/core/dom/events/event.h"
 
@@ -11,11 +11,11 @@ namespace blink {
 
 class Element;
 
-class BeforeActivateEvent : public Event {
+class RenderSubtreeActivationEvent : public Event {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  explicit BeforeActivateEvent(Element& activated_element);
+  explicit RenderSubtreeActivationEvent(Element& activated_element);
 
   Element& activatedElement() const { return *activated_element_.Get(); }
 
@@ -29,4 +29,4 @@ class BeforeActivateEvent : public Event {
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DISPLAY_LOCK_BEFORE_ACTIVATE_EVENT_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DISPLAY_LOCK_RENDER_SUBTREE_ACTIVATION_EVENT_H_
