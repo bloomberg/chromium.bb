@@ -1465,6 +1465,8 @@ if (!is_android) {
         "//ui/events/devices:test_support",
         "//url",
       ]
+
+      sources += [ "../browser/policy/accessibility_policy_browsertest.cc" ]
     }
 
     if (include_js_tests) {
