@@ -755,12 +755,14 @@ TEST_F('ChromeVoxOutputE2ETest', 'ComplexDiv', function() {
 
 TEST_F('ChromeVoxOutputE2ETest', 'ContainerFocus', function() {
   this.runWithLoadedTree(function() {/*!
-      <div role="row" tabindex=0 aria-label="start"></div>
-      <div role="row" tabindex=0 aria-label="end"></div>
+      <div role="grid">
+        <div role="row" tabindex=0 aria-label="start"></div>
+        <div role="row" tabindex=0 aria-label="end"></div>
+      </div>
     */},
     function(root) {
-      var r1 = cursors.Range.fromNode(root.firstChild);
-      var r2 = cursors.Range.fromNode(root.lastChild);
+      var r1 = cursors.Range.fromNode(root.firstChild.firstChild);
+      var r2 = cursors.Range.fromNode(root.firstChild.lastChild);
       assertEquals('start|Row',
           new Output().withSpeech(r1, r2).speechOutputForTest.string_);
   });
