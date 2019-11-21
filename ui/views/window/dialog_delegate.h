@@ -171,13 +171,13 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
 
   // Helpers for accessing parts of the DialogClientView without needing to know
   // about DialogClientView. Do not call these before OnDialogInitialized.
-  views::LabelButton* GetOkButton();
-  views::LabelButton* GetCancelButton();
-  views::View* GetExtraView();
+  views::LabelButton* GetOkButton() const;
+  views::LabelButton* GetCancelButton() const;
+  views::View* GetExtraView() const;
 
   // Helper for accessing the footnote view. Unlike the three methods just
   // above, this *is* safe to call before OnDialogInitialized.
-  views::View* GetFootnoteViewForTesting();
+  views::View* GetFootnoteViewForTesting() const;
 
   // Add or remove an observer notified by calls to DialogModelChanged().
   void AddObserver(DialogObserver* observer);

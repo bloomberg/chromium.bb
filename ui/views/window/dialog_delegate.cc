@@ -244,25 +244,25 @@ BubbleFrameView* DialogDelegate::GetBubbleFrameView() const {
   return view ? static_cast<BubbleFrameView*>(view->frame_view()) : nullptr;
 }
 
-views::LabelButton* DialogDelegate::GetOkButton() {
+views::LabelButton* DialogDelegate::GetOkButton() const {
   DCHECK(GetWidget()) << "Don't call this before OnDialogInitialized";
   auto* client = GetDialogClientView();
   return client ? client->ok_button() : nullptr;
 }
 
-views::LabelButton* DialogDelegate::GetCancelButton() {
+views::LabelButton* DialogDelegate::GetCancelButton() const {
   DCHECK(GetWidget()) << "Don't call this before OnDialogInitialized";
   auto* client = GetDialogClientView();
   return client ? client->cancel_button() : nullptr;
 }
 
-views::View* DialogDelegate::GetExtraView() {
+views::View* DialogDelegate::GetExtraView() const {
   DCHECK(GetWidget()) << "Don't call this before OnDialogInitialized";
   auto* client = GetDialogClientView();
   return client ? client->extra_view() : nullptr;
 }
 
-views::View* DialogDelegate::GetFootnoteViewForTesting() {
+views::View* DialogDelegate::GetFootnoteViewForTesting() const {
   if (!GetWidget())
     return footnote_view_.get();
 

@@ -38,7 +38,6 @@
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_provider.h"
 #include "ui/views/view.h"
-#include "ui/views/window/dialog_client_view.h"
 
 #if defined(PASSWORD_STORE_SELECT_ENABLED)
 #include "base/feature_list.h"
@@ -365,7 +364,9 @@ void PasswordPendingView::OnContentChanged(
       is_ok_button_enabled_before !=
           IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK)) {
     DialogModelChanged();
-    GetDialogClientView()->Layout();
+    // TODO(ellyjones): This should not be necessary; DialogModelChanged()
+    // implies a re-layout of the dialog.
+    GetWidget()->GetRootView()->Layout();
   }
 }
 
