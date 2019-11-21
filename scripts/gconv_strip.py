@@ -271,7 +271,8 @@ def GconvStrip(opts):
   symbols = ','.join(GCONV_SYMBOLS)
   cmd = ['scanelf', '--mount', '--quiet', '--recursive', '--format', '#s%F',
          '--symbol', symbols, opts.root]
-  result = cros_build_lib.run(cmd, redirect_stdout=True, print_cmd=False)
+  result = cros_build_lib.run(cmd, stdout=True, print_cmd=False,
+                              encoding='utf-8')
   files = set(result.output.splitlines())
   logging.debug('Symbols %s found on %d files.', symbols, len(files))
 
@@ -282,7 +283,7 @@ def GconvStrip(opts):
   # string, for example a binary with the string "DON'T DO IT\0" will match the
   # 'IT' charset. Empirical test on ChromeOS images suggests that only 4
   # charsets could fall in category.
-  strings = [s + '\0' for s in charsets]
+  strings = [s.encode('utf-8') + b'x\00' for s in charsets]
   logging.info('Will search for %d strings in %d files', len(strings),
                len(files))
 

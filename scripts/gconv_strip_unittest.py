@@ -20,8 +20,8 @@ class GconvStriptTest(cros_test_lib.MockTempDirTestCase):
   def testMultipleStringMatch(self):
     self.assertEqual(
         gconv_strip.MultipleStringMatch(
-            ['hell', 'a', 'z', 'k', 'spec'],
-            'hello_from a very special place'),
+            [b'hell', b'a', b'z', b'k', b'spec'],
+            b'hello_from a very special place'),
         [True, True, False, False, True])
 
   def testModuleRewrite(self):
@@ -42,7 +42,9 @@ module charset_foo   charset_A     USED_MODULE
     osutils.WriteFile(tmp_gconv_module, data)
 
     gmods = gconv_strip.GconvModules(tmp_gconv_module)
-    gmods.Load()
+    self.assertEqual(gmods.Load(), [
+        'BAR', 'CHAR_A', 'EUROPE', 'FOO', 'charset_A', 'charset_B',
+        'charset_bar', 'charset_foo'])
     self.PatchObject(gconv_strip.lddtree, 'ParseELF', return_value={})
     class _StubStat(object):
       st_size = 0
