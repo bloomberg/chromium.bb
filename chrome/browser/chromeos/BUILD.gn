@@ -2056,8 +2056,6 @@ source_set("chromeos") {
     "printing/zeroconf_printer_detector.h",
     "profiles/profile_helper.cc",
     "profiles/profile_helper.h",
-    "profiles/profile_util.cc",
-    "profiles/profile_util.h",
     "release_notes/release_notes_notification.cc",
     "release_notes/release_notes_notification.h",
     "release_notes/release_notes_storage.cc",
