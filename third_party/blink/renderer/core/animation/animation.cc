@@ -84,13 +84,6 @@ bool AreEqualOrNull(double a, double b) {
   return a == b;
 }
 
-base::Optional<double> ValueOrUnresolved(double a) {
-  base::Optional<double> value;
-  if (!IsNull(a))
-    value = a;
-  return value;
-}
-
 double Max(base::Optional<double> a, double b) {
   if (a.has_value())
     return std::max(a.value(), b);
@@ -1666,7 +1659,7 @@ bool Animation::Update(TimingUpdateReason reason) {
     base::Optional<double> inherited_time =
         idle || !timeline_->CurrentTime()
             ? base::nullopt
-            : OptionalFromDoubleWithNull(CurrentTimeInternal());
+            : ValueOrUnresolved(CurrentTimeInternal());
 
     // Special case for end-exclusivity when playing backwards.
     if (inherited_time == 0 && EffectivePlaybackRate() < 0)
