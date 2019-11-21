@@ -163,9 +163,8 @@ static void twopass_update_bpm_factor(TWO_PASS *twopass) {
 // Similar to find_qindex_by_rate() function in ratectrl.c, but includes
 // calculation of a correction_factor.
 static int find_qindex_by_rate_with_correction(
-    int desired_bits_per_mb, aom_bit_depth_t bit_depth, FRAME_TYPE frame_type,
-    double error_per_mb, double group_weight_factor, int best_qindex,
-    int worst_qindex) {
+    int desired_bits_per_mb, aom_bit_depth_t bit_depth, double error_per_mb,
+    double group_weight_factor, int best_qindex, int worst_qindex) {
   assert(best_qindex <= worst_qindex);
   int low = best_qindex;
   int high = worst_qindex;
@@ -173,8 +172,11 @@ static int find_qindex_by_rate_with_correction(
   while (low < high) {
     const int mid = (low + high) >> 1;
     const double mid_factor = calc_correction_factor(error_per_mb, mid);
-    const int mid_bits_per_mb = av1_rc_bits_per_mb(
-        frame_type, mid, mid_factor * group_weight_factor, bit_depth);
+    const double q = av1_convert_qindex_to_q(mid, bit_depth);
+    const int enumerator = 1600000 + ((int)(1600000 * q) >> 12);
+    const int mid_bits_per_mb =
+        (int)((enumerator * mid_factor * group_weight_factor) / q);
+
     if (mid_bits_per_mb > desired_bits_per_mb) {
       low = mid + 1;
     } else {
@@ -209,7 +211,7 @@ static int get_twopass_worst_quality(AV1_COMP *cpi, const double section_err,
     // Try and pick a max Q that will be high enough to encode the
     // content at the given rate.
     int q = find_qindex_by_rate_with_correction(
-        target_norm_bits_per_mb, cpi->common.seq_params.bit_depth, INTER_FRAME,
+        target_norm_bits_per_mb, cpi->common.seq_params.bit_depth,
         av_err_per_mb, group_weight_factor, rc->best_quality,
         rc->worst_quality);
 
@@ -1206,7 +1208,7 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
     }
     tmp_q = get_twopass_worst_quality(
         cpi, group_av_err, (group_av_skip_pct + group_av_inactive_zone),
-        vbr_group_bits_per_frame, twopass->kfgroup_inter_fraction * rc_factor);
+        vbr_group_bits_per_frame, rc_factor);
     rc->active_worst_quality = AOMMAX(tmp_q, rc->active_worst_quality >> 1);
   }
 #endif
@@ -1611,16 +1613,6 @@ static void find_next_key_frame(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
   kf_bits = adjust_boost_bits_for_target_level(cpi, kf_bits,
                                                twopass->kf_group_bits, 0);
 
-  // Work out the fraction of the kf group bits reserved for the inter frames
-  // within the group after discounting the bits for the kf itself.
-  if (twopass->kf_group_bits) {
-    twopass->kfgroup_inter_fraction =
-        (double)(twopass->kf_group_bits - kf_bits) /
-        (double)twopass->kf_group_bits;
-  } else {
-    twopass->kfgroup_inter_fraction = 1.0;
-  }
-
   twopass->kf_group_bits -= kf_bits;
 
   // Save the bits to spend on the key frame.
@@ -1961,18 +1953,20 @@ void av1_twopass_postencode_update(AV1_COMP *cpi) {
     AV1_COMMON *cm = &cpi->common;
     FILE *fpfile;
     fpfile = fopen("details.stt", "a");
-    fprintf(fpfile, "%10d %10d %10d %10"PRId64" %10"PRId64" %10d %10d %10d %10.4lf %10.4lf %10.4lf %10.4lf\n",
-            cm->current_frame.frame_number,
-            rc->base_frame_target, rc->projected_frame_size,
-            rc->total_actual_bits, rc->vbr_bits_off_target,
-            rc->rate_error_estimate,
+    fprintf(fpfile,
+            "%10d %10d %10d %10" PRId64 " %10" PRId64
+            " %10d %10d %10d %10.4lf %10.4lf %10.4lf %10.4lf\n",
+            cm->current_frame.frame_number, rc->base_frame_target,
+            rc->projected_frame_size, rc->total_actual_bits,
+            rc->vbr_bits_off_target, rc->rate_error_estimate,
             twopass->rolling_arf_group_target_bits,
             twopass->rolling_arf_group_actual_bits,
             (double)twopass->rolling_arf_group_actual_bits /
                 (double)twopass->rolling_arf_group_target_bits,
             twopass->bpm_factor,
             av1_convert_qindex_to_q(cm->base_qindex, cm->seq_params.bit_depth),
-            av1_convert_qindex_to_q(rc->active_worst_quality, cm->seq_params.bit_depth));
+            av1_convert_qindex_to_q(rc->active_worst_quality,
+                                    cm->seq_params.bit_depth));
     fclose(fpfile);
   }
 #endif

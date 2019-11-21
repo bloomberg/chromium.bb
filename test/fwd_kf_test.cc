@@ -23,8 +23,8 @@ typedef struct {
 } FwdKfTestParam;
 
 const FwdKfTestParam kTestParams[] = {
-  { 4, 36.6 },  { 6, 35.7 },  { 8, 35.0 },
-  { 12, 33.6 }, { 16, 33.5 }, { 18, 33.1 }
+  { 4, 34.1 },  { 6, 33.4 },  { 8, 33.0 },
+  { 12, 32.4 }, { 16, 32.3 }, { 18, 32.1 }
 };
 
 class ForwardKeyTest
