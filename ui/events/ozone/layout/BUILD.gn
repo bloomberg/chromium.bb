@@ -6,9 +6,7 @@ import("//build/config/linux/pkg_config.gni")
 import("//ui/base/ui_features.gni")
 
 # Chromedriver uses this in X11 builds for StubKeyboardLayoutEngine.
-# TODO(spang): Android & iOS reference this component but this is probably not
-# intended; see if we can fix it.
-assert(use_ozone || use_x11 || is_ios || is_android)
+assert(use_ozone || use_x11)
 
 if (use_xkbcommon) {
   pkg_config("xkbcommon") {

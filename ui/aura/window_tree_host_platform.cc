@@ -23,7 +23,6 @@
 #include "ui/events/event.h"
 #include "ui/events/keyboard_hook.h"
 #include "ui/events/keycodes/dom/dom_code.h"
-#include "ui/events/keycodes/dom/dom_keyboard_layout_map.h"
 #include "ui/platform_window/platform_window_base.h"
 #include "ui/platform_window/platform_window_init_properties.h"
 
@@ -38,6 +37,8 @@
 
 #if defined(USE_X11)
 #include "ui/platform_window/x11/x11_window.h"  // nogncheck
+#else
+#include "ui/events/keycodes/dom/dom_keyboard_layout_map.h"
 #endif
 
 namespace aura {
@@ -162,7 +163,7 @@ bool WindowTreeHostPlatform::IsKeyLocked(ui::DomCode dom_code) {
 
 base::flat_map<std::string, std::string>
 WindowTreeHostPlatform::GetKeyboardLayoutMap() {
-#if !defined(X11)
+#if !defined(USE_X11)
   return ui::GenerateDomKeyboardLayoutMap();
 #else
   NOTIMPLEMENTED();

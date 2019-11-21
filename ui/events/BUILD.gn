@@ -68,14 +68,11 @@ static_library("dom_keyboard_layout") {
   public = [
     "keycodes/dom/dom_keyboard_layout.h",
     "keycodes/dom/dom_keyboard_layout_manager.h",
-    "keycodes/dom/dom_keyboard_layout_map.h",
   ]
 
   sources = [
     "keycodes/dom/dom_keyboard_layout.cc",
     "keycodes/dom/dom_keyboard_layout_manager.cc",
-    "keycodes/dom/dom_keyboard_layout_map_base.cc",
-    "keycodes/dom/dom_keyboard_layout_map_base.h",
   ]
 
   deps = [
@@ -84,12 +81,21 @@ static_library("dom_keyboard_layout") {
     "//base",
   ]
 
+  if (is_win || is_mac || use_ozone) {
+    public += [ "keycodes/dom/dom_keyboard_layout_map.h" ]
+
+    sources += [
+      "keycodes/dom/dom_keyboard_layout_map_base.cc",
+      "keycodes/dom/dom_keyboard_layout_map_base.h",
+    ]
+  }
+
   # Make sure we don't compile two versions of dom_keyboard_layout_map*
   if (is_mac) {
     sources += [ "keycodes/dom/dom_keyboard_layout_map_mac.mm" ]
   } else if (is_win) {
     sources += [ "keycodes/dom/dom_keyboard_layout_map_win.cc" ]
-  } else {
+  } else if (use_ozone) {
     sources += [ "keycodes/dom/dom_keyboard_layout_map_ozone.cc" ]
     deps += [ "//ui/events/ozone/layout" ]
   }
@@ -541,7 +547,6 @@ if (!is_ios) {
       "gesture_detection/velocity_tracker_unittest.cc",
       "gestures/blink/web_gesture_curve_impl_unittest.cc",
       "gestures/fling_curve_unittest.cc",
-      "keycodes/dom/dom_keyboard_layout_map_unittest.cc",
       "keycodes/dom/keycode_converter_unittest.cc",
       "keycodes/keyboard_code_conversion_unittest.cc",
       "keycodes/platform_key_map_win_unittest.cc",
@@ -641,6 +646,11 @@ if (!is_ios) {
     if (is_fuchsia) {
       sources += [ "fuchsia/input_event_dispatcher_unittest.cc" ]
       deps += [ "//third_party/fuchsia-sdk/sdk:ui_input" ]
+    }
+
+    if (is_win || is_mac || use_ozone) {
+      sources += [ "keycodes/dom/dom_keyboard_layout_map_unittest.cc" ]
+      deps += [ ":dom_keyboard_layout" ]
     }
   }
 }
