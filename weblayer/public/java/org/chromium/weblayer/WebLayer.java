@@ -45,6 +45,9 @@ public final class WebLayer {
     private static final String PACKAGE_MANIFEST_KEY = "org.chromium.weblayer.WebLayerPackage";
 
     @Nullable
+    private static ClassLoader sRemoteClassLoader;
+
+    @Nullable
     private static WebLayerLoader sLoader;
 
     @NonNull
@@ -56,11 +59,9 @@ public final class WebLayer {
      */
     private static IWebLayer connectToWebLayerImplementation(@NonNull Context appContext)
             throws UnsupportedVersionException {
-        // Just in case the app passed an Activity context.
-        appContext = appContext.getApplicationContext();
         ClassLoader remoteClassLoader;
         try {
-            remoteClassLoader = createRemoteClassLoader(appContext);
+            remoteClassLoader = getOrCreateRemoteClassLoader(appContext);
         } catch (Exception e) {
             throw new AndroidRuntimeException(e);
         }
@@ -94,7 +95,7 @@ public final class WebLayer {
             throws UnsupportedVersionException {
         ThreadCheck.ensureOnUiThread();
         if (sLoader == null) sLoader = new WebLayerLoader();
-        sLoader.loadAsync(appContext, callback);
+        sLoader.loadAsync(appContext.getApplicationContext(), callback);
     }
 
     /**
@@ -111,7 +112,7 @@ public final class WebLayer {
             throws UnsupportedVersionException {
         ThreadCheck.ensureOnUiThread();
         if (sLoader == null) sLoader = new WebLayerLoader();
-        return sLoader.loadSync(appContext);
+        return sLoader.loadSync(appContext.getApplicationContext());
     }
 
     /**
@@ -253,14 +254,18 @@ public final class WebLayer {
     /**
      * Creates a ClassLoader for the remote (weblayer implementation) side.
      */
-    static ClassLoader createRemoteClassLoader(Context appContext)
+    static ClassLoader getOrCreateRemoteClassLoader(Context appContext)
             throws PackageManager.NameNotFoundException, ReflectiveOperationException {
+        if (sRemoteClassLoader != null) {
+            return sRemoteClassLoader;
+        }
         String implPackageName = getImplPackageName(appContext);
         if (implPackageName == null) {
-            return createRemoteClassLoaderFromWebViewFactory(appContext);
+            sRemoteClassLoader = createRemoteClassLoaderFromWebViewFactory(appContext);
         } else {
-            return createRemoteClassLoaderFromPackage(appContext, implPackageName);
+            sRemoteClassLoader = createRemoteClassLoaderFromPackage(appContext, implPackageName);
         }
+        return sRemoteClassLoader;
     }
 
     /**
