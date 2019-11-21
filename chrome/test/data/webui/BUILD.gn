@@ -155,10 +155,6 @@ js2gtest("browser_tests_js_webui") {
     ]
   }
 
-  if (!is_chrome_branded) {
-    # crbug.com/230471
-    sources += [ "accessibility_audit_browsertest.js" ]
-  }
   if (enable_extensions) {
     sources += [
       "extensions/a11y/extensions_a11y_test.js",
