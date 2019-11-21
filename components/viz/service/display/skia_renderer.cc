@@ -581,8 +581,11 @@ SkiaRenderer::ScopedSkImageBuilder::ScopedSkImageBuilder(
     lock_.emplace(resource_provider, resource_id, alpha_type, origin);
     sk_image_ = lock_->sk_image();
   } else {
+    float sdr_scale_factor = skia_renderer->current_frame()->sdr_white_level /
+                             gfx::ColorSpace::kDefaultSDRWhiteLevel;
     auto* image_context =
-        skia_renderer->lock_set_for_external_use_->LockResource(resource_id);
+        skia_renderer->lock_set_for_external_use_->LockResource(
+            resource_id, /*video_plane=*/false, sdr_scale_factor);
     // |ImageContext::image| provides thread safety: (a) this ImageContext is
     // only accessed by GPU thread after |image| is set and (b) the fields of
     // ImageContext that are accessed by both compositor and GPU thread are no
