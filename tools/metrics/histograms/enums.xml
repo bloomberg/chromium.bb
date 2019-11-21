@@ -57123,6 +57123,9 @@ Called by update_net_trust_anchors.py.-->
   <int value="1" label="Window close">The last browser window was closed.</int>
   <int value="2" label="Browser exit">User clicked on the Exit menu item.</int>
   <int value="3" label="End session">OS is logging off or shutting down.</int>
+  <int value="4" label="Silent exit relaunch">
+    Exit without onbeforeunload or in-progress download prompts.
+  </int>
 </enum>
 
 <enum name="SideloadUIEvents">
