@@ -1808,6 +1808,9 @@ extern const char kUseAngleD3D11on12[];
 extern const char kUseWinrtMidiApiName[];
 extern const char kUseWinrtMidiApiDescription[];
 
+extern const char kUseXpsForPrintingName[];
+extern const char kUseXpsForPrintingDescription[];
+
 #if BUILDFLAG(ENABLE_SPELLCHECK)
 extern const char kWinUseBrowserSpellCheckerName[];
 extern const char kWinUseBrowserSpellCheckerDescription[];

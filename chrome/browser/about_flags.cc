@@ -3297,7 +3297,13 @@ const FeatureEntry kFeatureEntries[] = {
     {"harfbuzz-pdf-subsetter", flag_descriptions::kHarfBuzzPDFSubsetterName,
      flag_descriptions::kHarfBuzzPDFSubsetterDescription, kOsAll,
      FEATURE_VALUE_TYPE(printing::features::kHarfBuzzPDFSubsetter)},
-#endif
+
+#if defined(OS_WIN)
+    {"use-xps-for-printing", flag_descriptions::kUseXpsForPrintingName,
+     flag_descriptions::kUseXpsForPrintingDescription, kOsWin,
+     FEATURE_VALUE_TYPE(printing::features::kUseXpsForPrinting)},
+#endif // defined(OS_WIN)
+#endif // BUILDFLAG(ENABLE_PRINTING)
 
     {"autofill-profile-client-validation",
      flag_descriptions::kAutofillProfileClientValidationName,

@@ -36915,6 +36915,7 @@ from previous Chrome versions.
   <int value="-682580680" label="DisableOfficeEditingComponentApp:disabled"/>
   <int value="-680787130" label="ExperimentalVRFeatures:disabled"/>
   <int value="-680589442" label="MacRTL:disabled"/>
+  <int value="-679500267" label="UseXpsForPrinting:disabled"/>
   <int value="-674804217" label="SoleIntegration:enabled"/>
   <int value="-673804828" label="EnablePlayStoreAppSearch:disabled"/>
   <int value="-671992446" label="TranslateRankerEnforcement:disabled"/>
@@ -37696,6 +37697,7 @@ from previous Chrome versions.
   <int value="360599302" label="enable-gpu-rasterization"/>
   <int value="362644448" label="memlog-in-process"/>
   <int value="362853088" label="AmbientColor:disabled"/>
+  <int value="363997248" label="UseXpsForPrinting:enabled"/>
   <int value="365068212" label="PiexWasm:disabled"/>
   <int value="365467768" label="prefetch-search-results"/>
   <int value="367063319" label="PasswordImport:disabled"/>

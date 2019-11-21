@@ -3092,6 +3092,10 @@ const char kUseWinrtMidiApiDescription[] =
     "Use Windows Runtime MIDI API for WebMIDI (effective only on Windows 10 or "
     "later).";
 
+const char kUseXpsForPrintingName[] = "Use XPS for printing";
+const char kUseXpsForPrintingDescription[] =
+    "When enabled, use XPS printing API instead of the GDI print API.";
+
 #if BUILDFLAG(ENABLE_SPELLCHECK)
 const char kWinUseBrowserSpellCheckerName[] = "Use the Windows OS spellchecker";
 const char kWinUseBrowserSpellCheckerDescription[] =
