@@ -214,7 +214,7 @@ ContentBrowserClientImpl::CreateURLLoaderThrottles(
       // Note: Initialize() needs to happen on UI thread.
       safe_browsing_service_ =
           std::make_unique<SafeBrowsingService>(GetUserAgent());
-      safe_browsing_service_->Initialize();
+      safe_browsing_service_->Initialize(browser_context);
     }
 
     result.push_back(safe_browsing_service_->CreateURLLoaderThrottle(
