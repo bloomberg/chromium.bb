@@ -816,7 +816,7 @@ class Licensing(object):
 
   @property
   def sorted_licenses(self):
-    return sorted(self.licenses, key=lambda x: x.lower)
+    return sorted(self.licenses, key=lambda x: x.lower())
 
   def _LoadLicenseDump(self, pkg):
     save_file = pkg.license_dump_path
@@ -1249,7 +1249,8 @@ after fixing the license.""" % (license_name, '\n'.join(set(stock + custom))))
         'licenses': '\n'.join(licenses_txt),
     }
     osutils.WriteFile(output_file,
-                      self.EvaluateTemplate(file_template, env).encode('UTF-8'))
+                      self.EvaluateTemplate(file_template, env).encode('utf-8'),
+                      mode='wb')
 
 
 def ListInstalledPackages(board, all_packages=False):
