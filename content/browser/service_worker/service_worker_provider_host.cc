@@ -323,7 +323,7 @@ bool ServiceWorkerProviderHost::IsContextSecureForServiceWorker() const {
   if (!OriginCanAccessServiceWorkers(url_))
     return false;
 
-  if (is_parent_frame_secure())
+  if (is_parent_frame_secure_)
     return true;
 
   std::set<std::string> schemes;

@@ -184,8 +184,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   }
   int frame_tree_node_id() const { return frame_tree_node_id_; }
 
-  bool is_parent_frame_secure() const { return is_parent_frame_secure_; }
-
   // Returns whether this provider host is secure enough to have a service
   // worker controller.
   // Analogous to Blink's Document::IsSecureContext. Because of how service
