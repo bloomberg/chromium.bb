@@ -24,6 +24,7 @@ function setupEvents() {
     case '#' + loadTimeData.getInteger('certCommonNameInvalid'):
     case '#' + loadTimeData.getInteger('certAuthorityInvalid'):
     case '#' + loadTimeData.getInteger('certWeakSignatureAlgorithm'):
+    case '#' + loadTimeData.getInteger('certKnownInterceptionBlocked'):
       toggleHidden('details-certerror', 'details-certerror-button');
       break;
     case '#' + loadTimeData.getInteger('certExpired'):
