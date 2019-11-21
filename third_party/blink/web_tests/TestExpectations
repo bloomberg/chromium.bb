@@ -875,7 +875,14 @@ crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/flowthread-with-floa
 crbug.com/797591 virtual/layout_ng_block_frag/fast/multicol/regular-block-becomes-multicol.html [ Failure ]
 crbug.com/797591 virtual/layout_ng_block_frag/fast/multicol/newmulticol/regular-block-becomes-multicol.html [ Failure ]
 
-### Missing refs, these are also skipped for existing layout.
+### With LayoutNGBlockFragmentation enabled:
+crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-break/block-end-aligned-abspos-with-overflow.html [ Failure ]
+crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-break/floats-and-text-narrow-and-short-dynamic.html [ Failure ]
+crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-break/line-after-unbreakable-float-after-padding.html [ Failure ]
+crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-break/widows-orphans-001.html [ Failure ]
+crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-break/widows-orphans-002.html [ Failure ]
+crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-break/widows-orphans-003.html [ Failure ]
+crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-break/widows-orphans-004.html [ Failure ]
 crbug.com/967329 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/columnfill-auto-max-height-002.html [ Failure ]
 crbug.com/967329 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/columnfill-auto-max-height-001.html [ Failure ]
 crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/float-and-block.html [ Failure ]
