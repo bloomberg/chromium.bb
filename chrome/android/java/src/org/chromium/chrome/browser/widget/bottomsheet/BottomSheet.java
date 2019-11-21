@@ -601,7 +601,7 @@ class BottomSheet extends FrameLayout
         // to have a peek state.
         @SheetState
         int minSwipableState = getMinSwipableSheetState();
-        if (isPeekStateEnabled() && !isSheetOpen() && mCurrentState != mTargetState) {
+        if (isPeekStateEnabled() && (!isSheetOpen() || mTargetState == SheetState.PEEK)) {
             minSwipableState = SheetState.PEEK;
         }
 
