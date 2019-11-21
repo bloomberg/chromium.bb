@@ -16,6 +16,7 @@
 #include "third_party/blink/renderer/modules/nfc/ndef_scan_options.h"
 #include "third_party/blink/renderer/modules/nfc/nfc_proxy.h"
 #include "third_party/blink/renderer/modules/nfc/nfc_utils.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 
 namespace blink {
@@ -116,6 +117,8 @@ ScriptPromise NDEFReader::scan(ScriptState* script_state,
                                               WrapPersistent(this),
                                               WrapPersistent(resolver_.Get())));
   }
+
+  UseCounter::Count(GetExecutionContext(), WebFeature::kWebNfcNdefReaderScan);
 
   GetNfcProxy()->StartReading(
       this, options,

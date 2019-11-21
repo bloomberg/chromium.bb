@@ -25513,6 +25513,8 @@ Called by update_net_error_codes.py.-->
   <int value="3091" label="ResourceTimingTaintedOriginFlagFail"/>
   <int value="3092" label="RegisterProtocolHandlerSameOriginAsTop"/>
   <int value="3093" label="RegisterProtocolHandlerCrossOriginSubframe"/>
+  <int value="3094" label="WebNfcNdefReaderScan"/>
+  <int value="3095" label="WebNfcNdefWriterPush"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
