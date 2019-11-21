@@ -161,26 +161,6 @@ void GetDistanceWeights(const int distance[2], int weight[2]) {
   }
 }
 
-template <int bitdepth, typename Pixel>
-void ClipPrediction(const uint16_t* prediction,
-                    const ptrdiff_t prediction_stride, const int width,
-                    const int height, uint8_t* clipped_prediction,
-                    ptrdiff_t clipped_prediction_stride) {
-  // An offset to cancel offsets used in compound predictor generation that
-  // make intermediate computations non negative.
-  const int single_round_offset = (1 << bitdepth) + (1 << (bitdepth - 1));
-  auto* clipped_pred = reinterpret_cast<Pixel*>(clipped_prediction);
-  clipped_prediction_stride /= sizeof(Pixel);
-  for (int y = 0; y < height; ++y) {
-    for (int x = 0; x < width; ++x) {
-      clipped_pred[x] = static_cast<Pixel>(
-          Clip3(prediction[x] - single_round_offset, 0, (1 << bitdepth) - 1));
-    }
-    prediction += prediction_stride;
-    clipped_pred += clipped_prediction_stride;
-  }
-}
-
 dsp::IntraPredictor GetIntraPredictor(PredictionMode mode, bool has_left,
                                       bool has_top) {
   if (mode == kPredictionModeDc) {
@@ -1187,22 +1167,18 @@ void Tile::BlockWarpProcess(const Block& block, const Plane plane,
       reference_frames_[reference_frame_index]->buffer()->displayed_height(
           plane);
   uint16_t* const prediction = block.scratch_buffer->prediction_buffer[index];
-  dsp_.warp(source, source_stride, source_width, source_height,
-            warp_params->params, subsampling_x_[plane], subsampling_y_[plane],
-            round_bits, block_start_x, block_start_y, width, height,
-            warp_params->alpha, warp_params->beta, warp_params->gamma,
-            warp_params->delta, prediction, prediction_stride);
-  if (!is_compound && !is_inter_intra) {
-    const int bitdepth = sequence_header_.color_config.bitdepth;
-    if (bitdepth == 8) {
-      ClipPrediction<8, uint8_t>(prediction, prediction_stride, width, height,
-                                 dest, dest_stride);
-#if LIBGAV1_MAX_BITDEPTH >= 10
-    } else {
-      ClipPrediction<10, uint16_t>(prediction, prediction_stride, width, height,
-                                   dest, dest_stride);
-#endif
-    }
+  if (is_compound || is_inter_intra) {
+    dsp_.warp(source, source_stride, source_width, source_height,
+              warp_params->params, subsampling_x_[plane], subsampling_y_[plane],
+              round_bits, block_start_x, block_start_y, width, height,
+              warp_params->alpha, warp_params->beta, warp_params->gamma,
+              warp_params->delta, prediction, prediction_stride);
+  } else {
+    dsp_.warp_clip(
+        source, source_stride, source_width, source_height, warp_params->params,
+        subsampling_x_[plane], subsampling_y_[plane], round_bits, block_start_x,
+        block_start_y, width, height, warp_params->alpha, warp_params->beta,
+        warp_params->gamma, warp_params->delta, dest, dest_stride);
   }
 }
 

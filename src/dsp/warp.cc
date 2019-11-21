@@ -19,6 +19,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <cstdlib>
+#include <type_traits>
 
 #include "src/dsp/constants.h"
 #include "src/dsp/dsp.h"
@@ -33,7 +34,7 @@ namespace {
 // Number of extra bits of precision in warped filtering.
 constexpr int kWarpedDiffPrecisionBits = 10;
 
-template <int bitdepth, typename Pixel>
+template <bool clip, int bitdepth, typename Pixel>
 void Warp_C(const void* const source, ptrdiff_t source_stride,
             const int source_width, const int source_height,
             const int* const warp_params, const int subsampling_x,
@@ -41,10 +42,12 @@ void Warp_C(const void* const source, ptrdiff_t source_stride,
             const int block_start_x, const int block_start_y,
             const int block_width, const int block_height, const int16_t alpha,
             const int16_t beta, const int16_t gamma, const int16_t delta,
-            uint16_t* dest, const ptrdiff_t dest_stride) {
+            void* dest, ptrdiff_t dest_stride) {
   constexpr int kRoundBitsHorizontal = (bitdepth == 12)
                                            ? kInterRoundBitsHorizontal12bpp
                                            : kInterRoundBitsHorizontal;
+  constexpr int kSingleRoundOffset = (1 << bitdepth) + (1 << (bitdepth - 1));
+  constexpr int kMaxPixel = (1 << bitdepth) - 1;
   union {
     // Intermediate_result is the output of the horizontal filtering and
     // rounding. The range is within 16 bits (unsigned).
@@ -58,6 +61,9 @@ void Warp_C(const void* const source, ptrdiff_t source_stride,
       1 << (bitdepth + 2 * kFilterBits - kRoundBitsHorizontal);
   const auto* const src = static_cast<const Pixel*>(source);
   source_stride /= sizeof(Pixel);
+  using DestType = typename std::conditional<clip, Pixel, uint16_t>::type;
+  auto* dst = static_cast<DestType*>(dest);
+  if (clip) dest_stride /= sizeof(dst[0]);
 
   assert(block_width >= 8);
   assert(block_height >= 8);
@@ -151,9 +157,13 @@ void Warp_C(const void* const source, ptrdiff_t source_stride,
                     (horizontal_offset << (7 - kRoundBitsHorizontal)) +
                     (row_border_pixel << (14 - kRoundBitsHorizontal));
           sum >>= inter_round_bits_vertical;
-          uint16_t* dst_row = dest + start_x - block_start_x;
-          Memset(dst_row, sum, 8);
-          const uint16_t* const first_dst_row = dst_row;
+          DestType* dst_row = dst + start_x - block_start_x;
+          if (clip) {
+            Memset(dst_row, Clip3(sum - kSingleRoundOffset, 0, kMaxPixel), 8);
+          } else {
+            Memset(dst_row, sum, 8);
+          }
+          const DestType* const first_dst_row = dst_row;
           dst_row += dest_stride;
           for (int y = 1; y < 8; ++y) {
             memcpy(dst_row, first_dst_row, 8 * sizeof(*dst_row));
@@ -178,7 +188,7 @@ void Warp_C(const void* const source, ptrdiff_t source_stride,
               (row_border_pixel << (7 - kRoundBitsHorizontal));
         }
         // Vertical filter.
-        uint16_t* dst_row = dest + start_x - block_start_x;
+        DestType* dst_row = dst + start_x - block_start_x;
         int sy4 =
             (y4 & ((1 << kWarpedModelPrecisionBits) - 1)) - MultiplyBy4(delta);
         for (int y = 0; y < 8; ++y) {
@@ -196,7 +206,12 @@ void Warp_C(const void* const source, ptrdiff_t source_stride,
             }
             assert(sum >= 0 && sum < (vertical_offset << 2));
             sum = RightShiftWithRounding(sum, inter_round_bits_vertical);
-            dst_row[x] = static_cast<uint16_t>(sum);
+            if (clip) {
+              dst_row[x] = static_cast<DestType>(
+                  Clip3(sum - kSingleRoundOffset, 0, kMaxPixel));
+            } else {
+              dst_row[x] = static_cast<DestType>(sum);
+            }
             sy += gamma;
           }
           dst_row += dest_stride;
@@ -323,7 +338,7 @@ void Warp_C(const void* const source, ptrdiff_t source_stride,
 
       // Regions 3 and 4.
       // Vertical filter.
-      uint16_t* dst_row = dest + start_x - block_start_x;
+      DestType* dst_row = dst + start_x - block_start_x;
       int sy4 =
           (y4 & ((1 << kWarpedModelPrecisionBits) - 1)) - MultiplyBy4(delta);
       // The spec says we should use the following loop condition:
@@ -369,17 +384,21 @@ void Warp_C(const void* const source, ptrdiff_t source_stride,
           }
           assert(sum >= 0 && sum < (vertical_offset << 2));
           sum = RightShiftWithRounding(sum, inter_round_bits_vertical);
-          // Warp output is a predictor, whose type is uint16_t.
-          // Do not clip it here. The clipping is applied at the stage of
-          // final pixel value output.
-          dst_row[x] = static_cast<uint16_t>(sum);
+          if (clip) {
+            dst_row[x] = static_cast<DestType>(
+                Clip3(sum - kSingleRoundOffset, 0, kMaxPixel));
+          } else {
+            // Warp output is a predictor, whose type is uint16_t.
+            // Clipping is applied at the stage of final pixel value output.
+            dst_row[x] = static_cast<DestType>(sum);
+          }
           sy += gamma;
         }
         dst_row += dest_stride;
         sy4 += delta;
       }
     }
-    dest += 8 * dest_stride;
+    dst += 8 * dest_stride;
   }
 }
 
@@ -387,11 +406,15 @@ void Init8bpp() {
   Dsp* const dsp = dsp_internal::GetWritableDspTable(8);
   assert(dsp != nullptr);
 #if LIBGAV1_ENABLE_ALL_DSP_FUNCTIONS
-  dsp->warp = Warp_C<8, uint8_t>;
+  dsp->warp = Warp_C<false, 8, uint8_t>;
+  dsp->warp_clip = Warp_C<true, 8, uint8_t>;
 #else  // !LIBGAV1_ENABLE_ALL_DSP_FUNCTIONS
   static_cast<void>(dsp);
 #ifndef LIBGAV1_Dsp8bpp_Warp
-  dsp->warp = Warp_C<8, uint8_t>;
+  dsp->warp = Warp_C<false, 8, uint8_t>;
+#endif
+#ifndef LIBGAV1_Dsp8bpp_WarpClip
+  dsp->warp_clip = Warp_C<true, 8, uint8_t>;
 #endif
 #endif  // LIBGAV1_ENABLE_ALL_DSP_FUNCTIONS
 }
@@ -401,11 +424,15 @@ void Init10bpp() {
   Dsp* const dsp = dsp_internal::GetWritableDspTable(10);
   assert(dsp != nullptr);
 #if LIBGAV1_ENABLE_ALL_DSP_FUNCTIONS
-  dsp->warp = Warp_C<10, uint16_t>;
+  dsp->warp = Warp_C<false, 10, uint16_t>;
+  dsp->warp_clip = Warp_C<true, 10, uint16_t>;
 #else  // !LIBGAV1_ENABLE_ALL_DSP_FUNCTIONS
   static_cast<void>(dsp);
 #ifndef LIBGAV1_Dsp10bpp_Warp
-  dsp->warp = Warp_C<10, uint16_t>;
+  dsp->warp = Warp_C<false, 10, uint16_t>;
+#endif
+#ifndef LIBGAV1_Dsp10bpp_WarpClip
+  dsp->warp_clip = Warp_C<true, 10, uint16_t>;
 #endif
 #endif  // LIBGAV1_ENABLE_ALL_DSP_FUNCTIONS
 }
