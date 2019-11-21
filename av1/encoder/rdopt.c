@@ -7092,12 +7092,13 @@ static AOM_INLINE void joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
         &ref_mv[id].as_mv, second_pred, &x->plane[0].src, &ref_yv12[id]);
     if (bestsme < INT_MAX) {
       if (mask)
-        bestsme = av1_get_mvpred_mask_var(x, best_mv, &ref_mv[id].as_mv,
-                                          second_pred, mask, mask_stride, id,
-                                          &cpi->fn_ptr[bsize], 1);
+        bestsme = av1_get_mvpred_mask_var(
+            x, best_mv, &ref_mv[id].as_mv, second_pred, mask, mask_stride, id,
+            &cpi->fn_ptr[bsize], &x->plane[0].src, &ref_yv12[id], 1);
       else
         bestsme = av1_get_mvpred_av_var(x, best_mv, &ref_mv[id].as_mv,
-                                        second_pred, &cpi->fn_ptr[bsize], 1);
+                                        second_pred, &cpi->fn_ptr[bsize],
+                                        &x->plane[0].src, &ref_yv12[id], 1);
     }
 
     x->mv_limits = tmp_mv_limits;
@@ -7687,12 +7688,13 @@ static AOM_INLINE void compound_single_motion_search(
       &ref_mv.as_mv, second_pred, &x->plane[0].src, &ref_yv12);
   if (bestsme < INT_MAX) {
     if (mask)
-      bestsme =
-          av1_get_mvpred_mask_var(x, best_mv, &ref_mv.as_mv, second_pred, mask,
-                                  mask_stride, ref_idx, &cpi->fn_ptr[bsize], 1);
+      bestsme = av1_get_mvpred_mask_var(
+          x, best_mv, &ref_mv.as_mv, second_pred, mask, mask_stride, ref_idx,
+          &cpi->fn_ptr[bsize], &x->plane[0].src, &ref_yv12, 1);
     else
       bestsme = av1_get_mvpred_av_var(x, best_mv, &ref_mv.as_mv, second_pred,
-                                      &cpi->fn_ptr[bsize], 1);
+                                      &cpi->fn_ptr[bsize], &x->plane[0].src,
+                                      &ref_yv12, 1);
   }
 
   x->mv_limits = tmp_mv_limits;

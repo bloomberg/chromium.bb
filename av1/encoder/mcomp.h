@@ -69,11 +69,14 @@ int av1_get_mvpred_var(const MACROBLOCK *x, const MV *best_mv,
                        int use_mvcost);
 int av1_get_mvpred_av_var(const MACROBLOCK *x, const MV *best_mv,
                           const MV *center_mv, const uint8_t *second_pred,
-                          const aom_variance_fn_ptr_t *vfp, int use_mvcost);
+                          const aom_variance_fn_ptr_t *vfp,
+                          const struct buf_2d *src, const struct buf_2d *pre,
+                          int use_mvcost);
 int av1_get_mvpred_mask_var(const MACROBLOCK *x, const MV *best_mv,
                             const MV *center_mv, const uint8_t *second_pred,
                             const uint8_t *mask, int mask_stride,
                             int invert_mask, const aom_variance_fn_ptr_t *vfp,
+                            const struct buf_2d *src, const struct buf_2d *pre,
                             int use_mvcost);
 
 struct AV1_COMP;

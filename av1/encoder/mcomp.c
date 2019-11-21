@@ -1408,10 +1408,11 @@ int av1_get_mvpred_var(const MACROBLOCK *x, const MV *best_mv,
 
 int av1_get_mvpred_av_var(const MACROBLOCK *x, const MV *best_mv,
                           const MV *center_mv, const uint8_t *second_pred,
-                          const aom_variance_fn_ptr_t *vfp, int use_mvcost) {
-  const MACROBLOCKD *const xd = &x->e_mbd;
-  const struct buf_2d *const what = &x->plane[0].src;
-  const struct buf_2d *const in_what = &xd->plane[0].pre[0];
+                          const aom_variance_fn_ptr_t *vfp,
+                          const struct buf_2d *src, const struct buf_2d *pre,
+                          int use_mvcost) {
+  const struct buf_2d *const what = src;
+  const struct buf_2d *const in_what = pre;
   const MV mv = { best_mv->row * 8, best_mv->col * 8 };
   unsigned int unused;
 
@@ -1426,10 +1427,10 @@ int av1_get_mvpred_mask_var(const MACROBLOCK *x, const MV *best_mv,
                             const MV *center_mv, const uint8_t *second_pred,
                             const uint8_t *mask, int mask_stride,
                             int invert_mask, const aom_variance_fn_ptr_t *vfp,
+                            const struct buf_2d *src, const struct buf_2d *pre,
                             int use_mvcost) {
-  const MACROBLOCKD *const xd = &x->e_mbd;
-  const struct buf_2d *const what = &x->plane[0].src;
-  const struct buf_2d *const in_what = &xd->plane[0].pre[0];
+  const struct buf_2d *const what = src;
+  const struct buf_2d *const in_what = pre;
   const MV mv = { best_mv->row * 8, best_mv->col * 8 };
   unsigned int unused;
 
