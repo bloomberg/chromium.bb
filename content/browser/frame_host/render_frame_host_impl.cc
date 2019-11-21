@@ -1248,8 +1248,8 @@ void RenderFrameHostImpl::StartBackForwardCacheEvictionTimer() {
                      BackForwardCacheMetrics::NotRestoredReason::kTimeout));
 }
 
-void RenderFrameHostImpl::DisableBackForwardCache() {
-  is_back_forward_cache_disabled_ = true;
+void RenderFrameHostImpl::DisableBackForwardCache(base::StringPiece reason) {
+  back_forward_cache_disabled_reasons_.insert(reason.as_string());
   MaybeEvictFromBackForwardCache();
 }
 
@@ -7929,6 +7929,10 @@ BackForwardCacheMetrics* RenderFrameHostImpl::GetBackForwardCacheMetrics() {
   if (!navigation_entry)
     return nullptr;
   return navigation_entry->back_forward_cache_metrics();
+}
+
+bool RenderFrameHostImpl::IsBackForwardCacheDisabled() const {
+  return back_forward_cache_disabled_reasons_.size();
 }
 
 }  // namespace content
