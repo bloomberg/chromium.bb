@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/media_message_center/media_notification_view.h"
+#include "components/media_message_center/media_notification_view_impl.h"
 
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
@@ -51,8 +51,8 @@ constexpr gfx::Insets kIconMediaNotificationHeaderInsets =
 constexpr gfx::Size kMediaNotificationButtonRowSize =
     gfx::Size(124, kMediaButtonSize.height());
 
-void RecordMetadataHistogram(MediaNotificationView::Metadata metadata) {
-  UMA_HISTOGRAM_ENUMERATION(MediaNotificationView::kMetadataHistogramName,
+void RecordMetadataHistogram(MediaNotificationViewImpl::Metadata metadata) {
+  UMA_HISTOGRAM_ENUMERATION(MediaNotificationViewImpl::kMetadataHistogramName,
                             metadata);
 }
 
@@ -89,14 +89,14 @@ size_t GetMaxNumActions(bool expanded) {
 }  // namespace
 
 // static
-const char MediaNotificationView::kArtworkHistogramName[] =
+const char MediaNotificationViewImpl::kArtworkHistogramName[] =
     "Media.Notification.ArtworkPresent";
 
 // static
-const char MediaNotificationView::kMetadataHistogramName[] =
+const char MediaNotificationViewImpl::kMetadataHistogramName[] =
     "Media.Notification.MetadataPresent";
 
-MediaNotificationView::MediaNotificationView(
+MediaNotificationViewImpl::MediaNotificationViewImpl(
     MediaNotificationContainer* container,
     base::WeakPtr<MediaNotificationItem> item,
     std::unique_ptr<views::View> header_row_controls_view,
@@ -220,12 +220,12 @@ MediaNotificationView::MediaNotificationView(
     item_->SetView(this);
 }
 
-MediaNotificationView::~MediaNotificationView() {
+MediaNotificationViewImpl::~MediaNotificationViewImpl() {
   if (item_)
     item_->SetView(nullptr);
 }
 
-void MediaNotificationView::SetExpanded(bool expanded) {
+void MediaNotificationViewImpl::SetExpanded(bool expanded) {
   if (expanded_ == expanded)
     return;
 
@@ -238,15 +238,15 @@ void MediaNotificationView::SetExpanded(bool expanded) {
   SchedulePaint();
 }
 
-void MediaNotificationView::UpdateCornerRadius(int top_radius,
-                                               int bottom_radius) {
+void MediaNotificationViewImpl::UpdateCornerRadius(int top_radius,
+                                                   int bottom_radius) {
   if (GetMediaNotificationBackground()->UpdateCornerRadius(top_radius,
                                                            bottom_radius)) {
     SchedulePaint();
   }
 }
 
-void MediaNotificationView::SetForcedExpandedState(
+void MediaNotificationViewImpl::SetForcedExpandedState(
     bool* forced_expanded_state) {
   if (forced_expanded_state) {
     if (forced_expanded_state_ == *forced_expanded_state)
@@ -262,7 +262,8 @@ void MediaNotificationView::SetForcedExpandedState(
   UpdateViewForExpandedState();
 }
 
-void MediaNotificationView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+void MediaNotificationViewImpl::GetAccessibleNodeData(
+    ui::AXNodeData* node_data) {
   node_data->role = ax::mojom::Role::kListItem;
   node_data->AddStringAttribute(
       ax::mojom::StringAttribute::kRoleDescription,
@@ -273,8 +274,8 @@ void MediaNotificationView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
     node_data->SetName(accessible_name_);
 }
 
-void MediaNotificationView::ButtonPressed(views::Button* sender,
-                                          const ui::Event& event) {
+void MediaNotificationViewImpl::ButtonPressed(views::Button* sender,
+                                              const ui::Event& event) {
   if (sender == header_row_) {
     SetExpanded(!expanded_);
     container_->OnHeaderClicked();
@@ -291,7 +292,7 @@ void MediaNotificationView::ButtonPressed(views::Button* sender,
   NOTREACHED();
 }
 
-void MediaNotificationView::UpdateWithMediaSessionInfo(
+void MediaNotificationViewImpl::UpdateWithMediaSessionInfo(
     const media_session::mojom::MediaSessionInfoPtr& session_info) {
   bool playing =
       session_info && session_info->playback_state ==
@@ -311,7 +312,7 @@ void MediaNotificationView::UpdateWithMediaSessionInfo(
   SchedulePaint();
 }
 
-void MediaNotificationView::UpdateWithMediaMetadata(
+void MediaNotificationViewImpl::UpdateWithMediaMetadata(
     const media_session::MediaMetadata& metadata) {
   header_row_->SetAppName(metadata.source_title.empty()
                               ? default_app_name_
@@ -352,7 +353,7 @@ void MediaNotificationView::UpdateWithMediaMetadata(
   SchedulePaint();
 }
 
-void MediaNotificationView::UpdateWithMediaActions(
+void MediaNotificationViewImpl::UpdateWithMediaActions(
     const base::flat_set<media_session::mojom::MediaSessionAction>& actions) {
   enabled_actions_ = actions;
 
@@ -364,7 +365,7 @@ void MediaNotificationView::UpdateWithMediaActions(
   SchedulePaint();
 }
 
-void MediaNotificationView::UpdateWithMediaArtwork(
+void MediaNotificationViewImpl::UpdateWithMediaArtwork(
     const gfx::ImageSkia& image) {
   GetMediaNotificationBackground()->UpdateArtwork(image);
 
@@ -382,11 +383,11 @@ void MediaNotificationView::UpdateWithMediaArtwork(
   SchedulePaint();
 }
 
-views::Button* MediaNotificationView::GetHeaderRowForTesting() const {
+views::Button* MediaNotificationViewImpl::GetHeaderRowForTesting() const {
   return header_row_;
 }
 
-void MediaNotificationView::UpdateActionButtonsVisibility() {
+void MediaNotificationViewImpl::UpdateActionButtonsVisibility() {
   base::flat_set<MediaSessionAction> ignored_actions = {
       GetPlayPauseIgnoredAction(GetActionFromButtonTag(*play_pause_button_))};
 
@@ -413,7 +414,7 @@ void MediaNotificationView::UpdateActionButtonsVisibility() {
       enabled_actions_, ignored_actions, GetMaxNumActions(true)));
 }
 
-void MediaNotificationView::UpdateViewForExpandedState() {
+void MediaNotificationViewImpl::UpdateViewForExpandedState() {
   bool expanded = IsActuallyExpanded();
 
   // Adjust the layout of the |main_row_| based on the expanded state. If the
@@ -461,7 +462,7 @@ void MediaNotificationView::UpdateViewForExpandedState() {
   UpdateActionButtonsVisibility();
 }
 
-void MediaNotificationView::CreateMediaButton(
+void MediaNotificationViewImpl::CreateMediaButton(
     MediaSessionAction action,
     const base::string16& accessible_name) {
   auto button = views::CreateVectorImageButton(this);
@@ -473,11 +474,11 @@ void MediaNotificationView::CreateMediaButton(
 }
 
 MediaNotificationBackground*
-MediaNotificationView::GetMediaNotificationBackground() {
+MediaNotificationViewImpl::GetMediaNotificationBackground() {
   return static_cast<MediaNotificationBackground*>(background());
 }
 
-bool MediaNotificationView::IsExpandable() const {
+bool MediaNotificationViewImpl::IsExpandable() const {
   if (forced_expanded_state_.has_value())
     return false;
 
@@ -491,13 +492,13 @@ bool MediaNotificationView::IsExpandable() const {
              .size() > kMediaNotificationActionsCount;
 }
 
-bool MediaNotificationView::IsActuallyExpanded() const {
+bool MediaNotificationViewImpl::IsActuallyExpanded() const {
   if (forced_expanded_state_.has_value())
     return forced_expanded_state_.value();
   return expanded_ && IsExpandable();
 }
 
-void MediaNotificationView::UpdateForegroundColor() {
+void MediaNotificationViewImpl::UpdateForegroundColor() {
   const SkColor background =
       GetMediaNotificationBackground()->GetBackgroundColor(*this);
   const SkColor foreground =

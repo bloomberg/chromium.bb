@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/media_message_center/media_notification_view.h"
+#include "components/media_message_center/media_notification_view_impl.h"
 
 #include <memory>
 
@@ -101,36 +101,36 @@ class MockMediaNotificationContainer : public MediaNotificationContainer {
   MOCK_METHOD2(OnColorsChanged, void(SkColor foreground, SkColor background));
   MOCK_METHOD0(OnHeaderClicked, void());
 
-  MediaNotificationView* view() const { return view_.get(); }
-  void SetView(std::unique_ptr<MediaNotificationView> view) {
+  MediaNotificationViewImpl* view() const { return view_.get(); }
+  void SetView(std::unique_ptr<MediaNotificationViewImpl> view) {
     view_ = std::move(view);
   }
 
  private:
-  std::unique_ptr<MediaNotificationView> view_;
+  std::unique_ptr<MediaNotificationViewImpl> view_;
 
   DISALLOW_COPY_AND_ASSIGN(MockMediaNotificationContainer);
 };
 
 }  // namespace
 
-class MediaNotificationViewTest : public views::ViewsTestBase {
+class MediaNotificationViewImplTest : public views::ViewsTestBase {
  public:
-  MediaNotificationViewTest()
+  MediaNotificationViewImplTest()
       : views::ViewsTestBase(
             base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
-  ~MediaNotificationViewTest() override = default;
+  ~MediaNotificationViewImplTest() override = default;
 
   void SetUp() override {
     views::ViewsTestBase::SetUp();
 
     request_id_ = base::UnguessableToken::Create();
 
-    // Create a new MediaNotificationView whenever the
+    // Create a new MediaNotificationViewImpl whenever the
     // MediaSessionNotificationItem says to show the notification.
     EXPECT_CALL(controller_, ShowNotification(request_id_.ToString()))
-        .WillRepeatedly(
-            InvokeWithoutArgs(this, &MediaNotificationViewTest::CreateView));
+        .WillRepeatedly(InvokeWithoutArgs(
+            this, &MediaNotificationViewImplTest::CreateView));
 
     // Create a widget to show on the screen for testing screen coordinates and
     // focus.
@@ -200,14 +200,14 @@ class MediaNotificationViewTest : public views::ViewsTestBase {
 
   MockMediaNotificationController& controller() { return controller_; }
 
-  MediaNotificationView* view() const { return container_.view(); }
+  MediaNotificationViewImpl* view() const { return container_.view(); }
 
   TestMediaController* media_controller() const {
     return media_controller_.get();
   }
 
   message_center::NotificationHeaderView* GetHeaderRow(
-      MediaNotificationView* view) const {
+      MediaNotificationViewImpl* view) const {
     return view->header_row_;
   }
 
@@ -285,14 +285,15 @@ class MediaNotificationViewTest : public views::ViewsTestBase {
 
   void ExpectHistogramArtworkRecorded(bool present, int count) {
     histogram_tester_.ExpectBucketCount(
-        MediaNotificationView::kArtworkHistogramName,
+        MediaNotificationViewImpl::kArtworkHistogramName,
         static_cast<base::HistogramBase::Sample>(present), count);
   }
 
-  void ExpectHistogramMetadataRecorded(MediaNotificationView::Metadata metadata,
-                                       int count) {
+  void ExpectHistogramMetadataRecorded(
+      MediaNotificationViewImpl::Metadata metadata,
+      int count) {
     histogram_tester_.ExpectBucketCount(
-        MediaNotificationView::kMetadataHistogramName,
+        MediaNotificationViewImpl::kMetadataHistogramName,
         static_cast<base::HistogramBase::Sample>(metadata), count);
   }
 
@@ -309,8 +310,8 @@ class MediaNotificationViewTest : public views::ViewsTestBase {
   }
 
   void CreateView() {
-    // Create a MediaNotificationView.
-    auto view = std::make_unique<MediaNotificationView>(
+    // Create a MediaNotificationViewImpl.
+    auto view = std::make_unique<MediaNotificationViewImpl>(
         &container_, item_->GetWeakPtr(),
         nullptr /* header_row_controls_view */,
         base::ASCIIToUTF16(kTestDefaultAppName), kViewWidth,
@@ -337,18 +338,20 @@ class MediaNotificationViewTest : public views::ViewsTestBase {
   std::unique_ptr<MediaSessionNotificationItem> item_;
   std::unique_ptr<views::Widget> widget_;
 
-  DISALLOW_COPY_AND_ASSIGN(MediaNotificationViewTest);
+  DISALLOW_COPY_AND_ASSIGN(MediaNotificationViewImplTest);
 };
 
 // TODO(crbug.com/1009287): many of these tests are failing on TSan builds.
 #if defined(THREAD_SANITIZER)
-#define MAYBE_MediaNotificationViewTest DISABLED_MediaNotificationViewTest
-class DISABLED_MediaNotificationViewTest : public MediaNotificationViewTest {};
+#define MAYBE_MediaNotificationViewImplTest \
+  DISABLED_MediaNotificationViewImplTest
+class DISABLED_MediaNotificationViewImplTest
+    : public MediaNotificationViewImplTest {};
 #else
-#define MAYBE_MediaNotificationViewTest MediaNotificationViewTest
+#define MAYBE_MediaNotificationViewImplTest MediaNotificationViewImplTest
 #endif
 
-TEST_F(MAYBE_MediaNotificationViewTest, ButtonsSanityCheck) {
+TEST_F(MAYBE_MediaNotificationViewImplTest, ButtonsSanityCheck) {
   view()->SetExpanded(true);
 
   EnableAllActions();
@@ -383,7 +386,7 @@ TEST_F(MAYBE_MediaNotificationViewTest, ButtonsSanityCheck) {
 #else
 #define MAYBE_ButtonsFocusCheck ButtonsFocusCheck
 #endif
-TEST_F(MAYBE_MediaNotificationViewTest, MAYBE_ButtonsFocusCheck) {
+TEST_F(MAYBE_MediaNotificationViewImplTest, MAYBE_ButtonsFocusCheck) {
   // Expand and enable all actions to show all buttons.
   view()->SetExpanded(true);
   EnableAllActions();
@@ -414,7 +417,7 @@ TEST_F(MAYBE_MediaNotificationViewTest, MAYBE_ButtonsFocusCheck) {
             focus_manager->GetFocusedView());
 }
 
-TEST_F(MAYBE_MediaNotificationViewTest, PlayPauseButtonTooltipCheck) {
+TEST_F(MAYBE_MediaNotificationViewImplTest, PlayPauseButtonTooltipCheck) {
   EnableAction(MediaSessionAction::kPlay);
   EnableAction(MediaSessionAction::kPause);
 
@@ -436,7 +439,7 @@ TEST_F(MAYBE_MediaNotificationViewTest, PlayPauseButtonTooltipCheck) {
   EXPECT_NE(tooltip, new_tooltip);
 }
 
-TEST_F(MAYBE_MediaNotificationViewTest, NextTrackButtonClick) {
+TEST_F(MAYBE_MediaNotificationViewImplTest, NextTrackButtonClick) {
   EXPECT_CALL(controller(), LogMediaSessionActionButtonPressed(_));
   EnableAction(MediaSessionAction::kNextTrack);
 
@@ -449,7 +452,7 @@ TEST_F(MAYBE_MediaNotificationViewTest, NextTrackButtonClick) {
   ExpectHistogramActionRecorded(MediaSessionAction::kNextTrack);
 }
 
-TEST_F(MAYBE_MediaNotificationViewTest, PlayButtonClick) {
+TEST_F(MAYBE_MediaNotificationViewImplTest, PlayButtonClick) {
   EXPECT_CALL(controller(), LogMediaSessionActionButtonPressed(_));
   EnableAction(MediaSessionAction::kPlay);
 
@@ -462,7 +465,7 @@ TEST_F(MAYBE_MediaNotificationViewTest, PlayButtonClick) {
   ExpectHistogramActionRecorded(MediaSessionAction::kPlay);
 }
 
-TEST_F(MAYBE_MediaNotificationViewTest, PauseButtonClick) {
+TEST_F(MAYBE_MediaNotificationViewImplTest, PauseButtonClick) {
   EXPECT_CALL(controller(), LogMediaSessionActionButtonPressed(_));
   EnableAction(MediaSessionAction::kPause);
   EXPECT_CALL(container(), OnMediaSessionInfoChanged(_));
@@ -483,7 +486,7 @@ TEST_F(MAYBE_MediaNotificationViewTest, PauseButtonClick) {
   ExpectHistogramActionRecorded(MediaSessionAction::kPause);
 }
 
-TEST_F(MAYBE_MediaNotificationViewTest, PreviousTrackButtonClick) {
+TEST_F(MAYBE_MediaNotificationViewImplTest, PreviousTrackButtonClick) {
   EXPECT_CALL(controller(), LogMediaSessionActionButtonPressed(_));
   EnableAction(MediaSessionAction::kPreviousTrack);
 
@@ -496,7 +499,7 @@ TEST_F(MAYBE_MediaNotificationViewTest, PreviousTrackButtonClick) {
   ExpectHistogramActionRecorded(MediaSessionAction::kPreviousTrack);
 }
 
-TEST_F(MAYBE_MediaNotificationViewTest, SeekBackwardButtonClick) {
+TEST_F(MAYBE_MediaNotificationViewImplTest, SeekBackwardButtonClick) {
   EXPECT_CALL(controller(), LogMediaSessionActionButtonPressed(_));
   EnableAction(MediaSessionAction::kSeekBackward);
 
@@ -509,7 +512,7 @@ TEST_F(MAYBE_MediaNotificationViewTest, SeekBackwardButtonClick) {
   ExpectHistogramActionRecorded(MediaSessionAction::kSeekBackward);
 }
 
-TEST_F(MAYBE_MediaNotificationViewTest, SeekForwardButtonClick) {
+TEST_F(MAYBE_MediaNotificationViewImplTest, SeekForwardButtonClick) {
   EXPECT_CALL(controller(), LogMediaSessionActionButtonPressed(_));
   EnableAction(MediaSessionAction::kSeekForward);
 
@@ -522,7 +525,7 @@ TEST_F(MAYBE_MediaNotificationViewTest, SeekForwardButtonClick) {
   ExpectHistogramActionRecorded(MediaSessionAction::kSeekForward);
 }
 
-TEST_F(MAYBE_MediaNotificationViewTest, PlayToggle_FromObserver_Empty) {
+TEST_F(MAYBE_MediaNotificationViewImplTest, PlayToggle_FromObserver_Empty) {
   EnableAction(MediaSessionAction::kPlay);
 
   {
@@ -543,7 +546,8 @@ TEST_F(MAYBE_MediaNotificationViewTest, PlayToggle_FromObserver_Empty) {
   }
 }
 
-TEST_F(MAYBE_MediaNotificationViewTest, PlayToggle_FromObserver_PlaybackState) {
+TEST_F(MAYBE_MediaNotificationViewImplTest,
+       PlayToggle_FromObserver_PlaybackState) {
   EnableAction(MediaSessionAction::kPlay);
   EnableAction(MediaSessionAction::kPause);
 
@@ -580,7 +584,7 @@ TEST_F(MAYBE_MediaNotificationViewTest, PlayToggle_FromObserver_PlaybackState) {
   }
 }
 
-TEST_F(MAYBE_MediaNotificationViewTest, MetadataIsDisplayed) {
+TEST_F(MAYBE_MediaNotificationViewImplTest, MetadataIsDisplayed) {
   view()->SetExpanded(true);
 
   EnableAllActions();
@@ -595,13 +599,17 @@ TEST_F(MAYBE_MediaNotificationViewTest, MetadataIsDisplayed) {
   EXPECT_EQ(kMediaTitleArtistRowExpectedHeight, title_artist_row()->height());
 }
 
-TEST_F(MAYBE_MediaNotificationViewTest, UpdateMetadata_FromObserver) {
+TEST_F(MAYBE_MediaNotificationViewImplTest, UpdateMetadata_FromObserver) {
   EnableAllActions();
 
-  ExpectHistogramMetadataRecorded(MediaNotificationView::Metadata::kTitle, 1);
-  ExpectHistogramMetadataRecorded(MediaNotificationView::Metadata::kArtist, 1);
-  ExpectHistogramMetadataRecorded(MediaNotificationView::Metadata::kAlbum, 0);
-  ExpectHistogramMetadataRecorded(MediaNotificationView::Metadata::kCount, 1);
+  ExpectHistogramMetadataRecorded(MediaNotificationViewImpl::Metadata::kTitle,
+                                  1);
+  ExpectHistogramMetadataRecorded(MediaNotificationViewImpl::Metadata::kArtist,
+                                  1);
+  ExpectHistogramMetadataRecorded(MediaNotificationViewImpl::Metadata::kAlbum,
+                                  0);
+  ExpectHistogramMetadataRecorded(MediaNotificationViewImpl::Metadata::kCount,
+                                  1);
 
   EXPECT_FALSE(header_row()->summary_text_for_testing()->GetVisible());
 
@@ -628,13 +636,17 @@ TEST_F(MAYBE_MediaNotificationViewTest, UpdateMetadata_FromObserver) {
 
   EXPECT_EQ(base::ASCIIToUTF16("title2 - artist2 - album"), accessible_name());
 
-  ExpectHistogramMetadataRecorded(MediaNotificationView::Metadata::kTitle, 2);
-  ExpectHistogramMetadataRecorded(MediaNotificationView::Metadata::kArtist, 2);
-  ExpectHistogramMetadataRecorded(MediaNotificationView::Metadata::kAlbum, 1);
-  ExpectHistogramMetadataRecorded(MediaNotificationView::Metadata::kCount, 2);
+  ExpectHistogramMetadataRecorded(MediaNotificationViewImpl::Metadata::kTitle,
+                                  2);
+  ExpectHistogramMetadataRecorded(MediaNotificationViewImpl::Metadata::kArtist,
+                                  2);
+  ExpectHistogramMetadataRecorded(MediaNotificationViewImpl::Metadata::kAlbum,
+                                  1);
+  ExpectHistogramMetadataRecorded(MediaNotificationViewImpl::Metadata::kCount,
+                                  2);
 }
 
-TEST_F(MAYBE_MediaNotificationViewTest, UpdateMetadata_AppName) {
+TEST_F(MAYBE_MediaNotificationViewImplTest, UpdateMetadata_AppName) {
   EXPECT_EQ(base::ASCIIToUTF16(kTestDefaultAppName),
             header_row()->app_name_for_testing());
 
@@ -660,7 +672,7 @@ TEST_F(MAYBE_MediaNotificationViewTest, UpdateMetadata_AppName) {
             header_row()->app_name_for_testing());
 }
 
-TEST_F(MAYBE_MediaNotificationViewTest, Buttons_WhenCollapsed) {
+TEST_F(MAYBE_MediaNotificationViewImplTest, Buttons_WhenCollapsed) {
   EXPECT_CALL(
       container(),
       OnVisibleActionsChanged(base::flat_set<MediaSessionAction>(
@@ -719,7 +731,7 @@ TEST_F(MAYBE_MediaNotificationViewTest, Buttons_WhenCollapsed) {
   EXPECT_FALSE(IsActionButtonVisible(MediaSessionAction::kSeekForward));
 }
 
-TEST_F(MAYBE_MediaNotificationViewTest, Buttons_WhenExpanded) {
+TEST_F(MAYBE_MediaNotificationViewImplTest, Buttons_WhenExpanded) {
   EXPECT_CALL(
       container(),
       OnVisibleActionsChanged(base::flat_set<MediaSessionAction>(
@@ -747,7 +759,7 @@ TEST_F(MAYBE_MediaNotificationViewTest, Buttons_WhenExpanded) {
   EXPECT_TRUE(IsActionButtonVisible(MediaSessionAction::kSeekForward));
 }
 
-TEST_F(MAYBE_MediaNotificationViewTest, ClickHeader_ToggleExpand) {
+TEST_F(MAYBE_MediaNotificationViewImplTest, ClickHeader_ToggleExpand) {
   view()->SetExpanded(true);
   EnableAllActions();
 
@@ -762,7 +774,7 @@ TEST_F(MAYBE_MediaNotificationViewTest, ClickHeader_ToggleExpand) {
   EXPECT_TRUE(IsActuallyExpanded());
 }
 
-TEST_F(MAYBE_MediaNotificationViewTest, ActionButtonsHiddenByDefault) {
+TEST_F(MAYBE_MediaNotificationViewImplTest, ActionButtonsHiddenByDefault) {
   EXPECT_FALSE(IsActionButtonVisible(MediaSessionAction::kPlay));
   EXPECT_FALSE(IsActionButtonVisible(MediaSessionAction::kNextTrack));
   EXPECT_FALSE(IsActionButtonVisible(MediaSessionAction::kPreviousTrack));
@@ -770,7 +782,7 @@ TEST_F(MAYBE_MediaNotificationViewTest, ActionButtonsHiddenByDefault) {
   EXPECT_FALSE(IsActionButtonVisible(MediaSessionAction::kSeekBackward));
 }
 
-TEST_F(MAYBE_MediaNotificationViewTest, ActionButtonsToggleVisibility) {
+TEST_F(MAYBE_MediaNotificationViewImplTest, ActionButtonsToggleVisibility) {
   EXPECT_FALSE(IsActionButtonVisible(MediaSessionAction::kNextTrack));
 
   EnableAction(MediaSessionAction::kNextTrack);
@@ -782,7 +794,7 @@ TEST_F(MAYBE_MediaNotificationViewTest, ActionButtonsToggleVisibility) {
   EXPECT_FALSE(IsActionButtonVisible(MediaSessionAction::kNextTrack));
 }
 
-TEST_F(MAYBE_MediaNotificationViewTest, UpdateArtworkFromItem) {
+TEST_F(MAYBE_MediaNotificationViewImplTest, UpdateArtworkFromItem) {
   int title_artist_width = title_artist_row()->width();
   const SkColor accent = header_row()->accent_color_for_testing();
   gfx::Size size = view()->size();
@@ -830,12 +842,13 @@ TEST_F(MAYBE_MediaNotificationViewTest, UpdateArtworkFromItem) {
   EXPECT_EQ(accent, header_row()->accent_color_for_testing());
 }
 
-TEST_F(MAYBE_MediaNotificationViewTest, ExpandableDefaultState) {
+TEST_F(MAYBE_MediaNotificationViewImplTest, ExpandableDefaultState) {
   EXPECT_FALSE(IsActuallyExpanded());
   EXPECT_FALSE(expand_button_enabled());
 }
 
-TEST_F(MAYBE_MediaNotificationViewTest, ExpandablePlayPauseActionCountsOnce) {
+TEST_F(MAYBE_MediaNotificationViewImplTest,
+       ExpandablePlayPauseActionCountsOnce) {
   view()->SetExpanded(true);
 
   EXPECT_FALSE(IsActuallyExpanded());
@@ -864,7 +877,8 @@ TEST_F(MAYBE_MediaNotificationViewTest, ExpandablePlayPauseActionCountsOnce) {
   EXPECT_TRUE(expand_button_enabled());
 }
 
-TEST_F(MAYBE_MediaNotificationViewTest, BecomeExpandableAndWasNotExpandable) {
+TEST_F(MAYBE_MediaNotificationViewImplTest,
+       BecomeExpandableAndWasNotExpandable) {
   view()->SetExpanded(true);
 
   EXPECT_FALSE(IsActuallyExpanded());
@@ -876,7 +890,7 @@ TEST_F(MAYBE_MediaNotificationViewTest, BecomeExpandableAndWasNotExpandable) {
   EXPECT_TRUE(expand_button_enabled());
 }
 
-TEST_F(MAYBE_MediaNotificationViewTest,
+TEST_F(MAYBE_MediaNotificationViewImplTest,
        BecomeExpandableButWasAlreadyExpandable) {
   view()->SetExpanded(true);
 
@@ -894,7 +908,8 @@ TEST_F(MAYBE_MediaNotificationViewTest,
   EXPECT_TRUE(expand_button_enabled());
 }
 
-TEST_F(MAYBE_MediaNotificationViewTest, BecomeNotExpandableAndWasExpandable) {
+TEST_F(MAYBE_MediaNotificationViewImplTest,
+       BecomeNotExpandableAndWasExpandable) {
   view()->SetExpanded(true);
 
   EXPECT_FALSE(IsActuallyExpanded());
@@ -914,7 +929,7 @@ TEST_F(MAYBE_MediaNotificationViewTest, BecomeNotExpandableAndWasExpandable) {
   EXPECT_FALSE(expand_button_enabled());
 }
 
-TEST_F(MAYBE_MediaNotificationViewTest,
+TEST_F(MAYBE_MediaNotificationViewImplTest,
        BecomeNotExpandableButWasAlreadyNotExpandable) {
   view()->SetExpanded(true);
 
@@ -927,7 +942,7 @@ TEST_F(MAYBE_MediaNotificationViewTest,
   EXPECT_FALSE(expand_button_enabled());
 }
 
-TEST_F(MAYBE_MediaNotificationViewTest, ActionButtonRowSizeAndAlignment) {
+TEST_F(MAYBE_MediaNotificationViewImplTest, ActionButtonRowSizeAndAlignment) {
   EnableAction(MediaSessionAction::kPlay);
 
   views::Button* button = GetButtonForAction(MediaSessionAction::kPlay);
@@ -947,7 +962,7 @@ TEST_F(MAYBE_MediaNotificationViewTest, ActionButtonRowSizeAndAlignment) {
   EXPECT_GT(button_x, button->GetBoundsInScreen().x());
 }
 
-TEST_F(MAYBE_MediaNotificationViewTest, NotifysContainerOfExpandedState) {
+TEST_F(MAYBE_MediaNotificationViewImplTest, NotifysContainerOfExpandedState) {
   // Track the expanded state given to |container_|.
   bool expanded = false;
   EXPECT_CALL(container(), OnExpanded(_))
@@ -974,7 +989,7 @@ TEST_F(MAYBE_MediaNotificationViewTest, NotifysContainerOfExpandedState) {
   EXPECT_FALSE(expanded);
 }
 
-TEST_F(MAYBE_MediaNotificationViewTest, AccessibleNodeData) {
+TEST_F(MAYBE_MediaNotificationViewImplTest, AccessibleNodeData) {
   ui::AXNodeData data;
   view()->GetAccessibleNodeData(&data);
 
@@ -983,7 +998,7 @@ TEST_F(MAYBE_MediaNotificationViewTest, AccessibleNodeData) {
   EXPECT_EQ(base::ASCIIToUTF16("title - artist"), accessible_name());
 }
 
-TEST_F(MAYBE_MediaNotificationViewTest, Freezing_DoNotUpdateMetadata) {
+TEST_F(MAYBE_MediaNotificationViewImplTest, Freezing_DoNotUpdateMetadata) {
   media_session::MediaMetadata metadata;
   metadata.title = base::ASCIIToUTF16("title2");
   metadata.artist = base::ASCIIToUTF16("artist2");
@@ -997,7 +1012,7 @@ TEST_F(MAYBE_MediaNotificationViewTest, Freezing_DoNotUpdateMetadata) {
   EXPECT_EQ(base::ASCIIToUTF16("artist"), artist_label()->GetText());
 }
 
-TEST_F(MAYBE_MediaNotificationViewTest, Freezing_DoNotUpdateImage) {
+TEST_F(MAYBE_MediaNotificationViewImplTest, Freezing_DoNotUpdateImage) {
   SkBitmap image;
   image.allocN32Pixels(10, 10);
   image.eraseColor(SK_ColorMAGENTA);
@@ -1011,7 +1026,7 @@ TEST_F(MAYBE_MediaNotificationViewTest, Freezing_DoNotUpdateImage) {
   EXPECT_TRUE(GetArtworkImage().isNull());
 }
 
-TEST_F(MAYBE_MediaNotificationViewTest, Freezing_DoNotUpdatePlaybackState) {
+TEST_F(MAYBE_MediaNotificationViewImplTest, Freezing_DoNotUpdatePlaybackState) {
   EnableAction(MediaSessionAction::kPlay);
   EnableAction(MediaSessionAction::kPause);
 
@@ -1032,7 +1047,7 @@ TEST_F(MAYBE_MediaNotificationViewTest, Freezing_DoNotUpdatePlaybackState) {
   EXPECT_FALSE(GetButtonForAction(MediaSessionAction::kPause));
 }
 
-TEST_F(MAYBE_MediaNotificationViewTest, Freezing_DoNotUpdateActions) {
+TEST_F(MAYBE_MediaNotificationViewImplTest, Freezing_DoNotUpdateActions) {
   EXPECT_FALSE(
       GetButtonForAction(MediaSessionAction::kSeekForward)->GetVisible());
 
@@ -1043,7 +1058,7 @@ TEST_F(MAYBE_MediaNotificationViewTest, Freezing_DoNotUpdateActions) {
       GetButtonForAction(MediaSessionAction::kSeekForward)->GetVisible());
 }
 
-TEST_F(MAYBE_MediaNotificationViewTest, Freezing_DisableInteraction) {
+TEST_F(MAYBE_MediaNotificationViewImplTest, Freezing_DisableInteraction) {
   EnableAllActions();
 
   EXPECT_EQ(0, media_controller()->next_track_count());
@@ -1056,7 +1071,7 @@ TEST_F(MAYBE_MediaNotificationViewTest, Freezing_DisableInteraction) {
   EXPECT_EQ(0, media_controller()->next_track_count());
 }
 
-TEST_F(MAYBE_MediaNotificationViewTest, UnfreezingDoesntMissUpdates) {
+TEST_F(MAYBE_MediaNotificationViewImplTest, UnfreezingDoesntMissUpdates) {
   EnableAction(MediaSessionAction::kPlay);
   EnableAction(MediaSessionAction::kPause);
 
@@ -1106,7 +1121,7 @@ TEST_F(MAYBE_MediaNotificationViewTest, UnfreezingDoesntMissUpdates) {
   EXPECT_EQ(base::ASCIIToUTF16("artist2"), artist_label()->GetText());
 }
 
-TEST_F(MAYBE_MediaNotificationViewTest, UnfreezingWaitsForArtwork_Timeout) {
+TEST_F(MAYBE_MediaNotificationViewImplTest, UnfreezingWaitsForArtwork_Timeout) {
   EnableAction(MediaSessionAction::kPlay);
   EnableAction(MediaSessionAction::kPause);
 
@@ -1180,7 +1195,7 @@ TEST_F(MAYBE_MediaNotificationViewTest, UnfreezingWaitsForArtwork_Timeout) {
   EXPECT_TRUE(GetArtworkImage().isNull());
 }
 
-TEST_F(MAYBE_MediaNotificationViewTest,
+TEST_F(MAYBE_MediaNotificationViewImplTest,
        UnfreezingWaitsForArtwork_ReceiveArtwork) {
   EnableAction(MediaSessionAction::kPlay);
   EnableAction(MediaSessionAction::kPause);
@@ -1258,7 +1273,7 @@ TEST_F(MAYBE_MediaNotificationViewTest,
   EXPECT_FALSE(GetArtworkImage().isNull());
 }
 
-TEST_F(MAYBE_MediaNotificationViewTest, ForcedExpandedState) {
+TEST_F(MAYBE_MediaNotificationViewImplTest, ForcedExpandedState) {
   // Make the view expandable.
   EnableAllActions();
 
@@ -1291,13 +1306,13 @@ TEST_F(MAYBE_MediaNotificationViewTest, ForcedExpandedState) {
   EXPECT_TRUE(IsActuallyExpanded());
 }
 
-TEST_F(MAYBE_MediaNotificationViewTest, AllowsHidingOfAppIcon) {
-  MediaNotificationView shows_icon(&container(), nullptr, nullptr,
-                                   base::string16(), kViewWidth,
-                                   /*should_show_icon=*/true);
-  MediaNotificationView hides_icon(&container(), nullptr, nullptr,
-                                   base::string16(), kViewWidth,
-                                   /*should_show_icon=*/false);
+TEST_F(MAYBE_MediaNotificationViewImplTest, AllowsHidingOfAppIcon) {
+  MediaNotificationViewImpl shows_icon(&container(), nullptr, nullptr,
+                                       base::string16(), kViewWidth,
+                                       /*should_show_icon=*/true);
+  MediaNotificationViewImpl hides_icon(&container(), nullptr, nullptr,
+                                       base::string16(), kViewWidth,
+                                       /*should_show_icon=*/false);
 
   EXPECT_TRUE(
       GetHeaderRow(&shows_icon)->app_icon_view_for_testing()->GetVisible());
@@ -1305,7 +1320,7 @@ TEST_F(MAYBE_MediaNotificationViewTest, AllowsHidingOfAppIcon) {
       GetHeaderRow(&hides_icon)->app_icon_view_for_testing()->GetVisible());
 }
 
-TEST_F(MAYBE_MediaNotificationViewTest, ClickHeader_NotifyContainer) {
+TEST_F(MAYBE_MediaNotificationViewImplTest, ClickHeader_NotifyContainer) {
   EXPECT_CALL(container(), OnHeaderClicked());
   SimulateHeaderClick();
 }
