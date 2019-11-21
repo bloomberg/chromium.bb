@@ -270,13 +270,13 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   //
   // The URL may also change on redirects during loading. Once
   // is_response_committed() is true, the URL should no longer change.
-  const GURL& url() const;
+  const GURL& url() const { return url_; }
 
   // The URL representing the site_for_cookies for this context. See
   // |URLRequest::site_for_cookies()| for details.
   // For service worker execution contexts, site_for_cookies() always
   // returns the service worker script URL.
-  const GURL& site_for_cookies() const;
+  const GURL& site_for_cookies() const { return site_for_cookies_; }
 
   // The URL representing the first-party site for this context.
   // For service worker execution contexts, top_frame_origin() always
@@ -284,7 +284,9 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // For shared worker it is the origin of the document that created the worker.
   // For dedicated worker it is the top-frame origin of the document that owns
   // the worker.
-  base::Optional<url::Origin> top_frame_origin() const;
+  base::Optional<url::Origin> top_frame_origin() const {
+    return top_frame_origin_;
+  }
 
   // TODO(https://crbug.com/931087): Remove these functions in favor of the
   // equivalent functions on ServiceWorkerContainerHost.
@@ -450,6 +452,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
           host_receiver,
       mojo::PendingAssociatedRemote<blink::mojom::ServiceWorkerContainer>
           client_remote,
+      scoped_refptr<ServiceWorkerVersion> running_hosted_version,
       base::WeakPtr<ServiceWorkerContextCore> context);
 
   // ServiceWorkerRegistration::Listener overrides.
@@ -620,7 +623,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // tab where the navigation occurs. Otherwise, a null callback.
   const WebContentsGetter web_contents_getter_;
 
-  // For service worker clients. See comments for the getter functions.
+  // See comments for the getter functions.
   GURL url_;
   GURL site_for_cookies_;
   base::Optional<url::Origin> top_frame_origin_;
@@ -655,7 +658,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
 
   // For service worker execution contexts. The ServiceWorkerVersion of the
   // service worker this is a provider for.
-  scoped_refptr<ServiceWorkerVersion> running_hosted_version_;
+  const scoped_refptr<ServiceWorkerVersion> running_hosted_version_;
 
   // |context_| owns |this| but if the context is destroyed and a new one is
   // created, the provider host becomes owned by the new context, while this
