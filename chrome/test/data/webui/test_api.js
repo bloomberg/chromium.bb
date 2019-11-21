@@ -180,7 +180,7 @@ Test.prototype = {
    * Whether to run the accessibility checks.
    * @type {boolean}
    */
-  runAccessibilityChecks: true,
+  runAccessibilityChecks: false,
 
   /**
    * Configuration for the accessibility audit.
