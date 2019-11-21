@@ -198,8 +198,6 @@ source_set("common") {
     "pepper_renderer_instance_data.cc",
     "pepper_renderer_instance_data.h",
     "process_type.cc",
-    "render_widget_surface_properties.cc",
-    "render_widget_surface_properties.h",
     "resource_messages.h",
     "resource_timing_info.cc",
     "resource_timing_info.h",
