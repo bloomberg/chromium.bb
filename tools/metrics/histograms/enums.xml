@@ -25601,6 +25601,7 @@ Called by update_net_error_codes.py.-->
   <int value="64" label="ClientHintWidth"/>
   <int value="65" label="DocumentAccess"/>
   <int value="66" label="WebXr"/>
+  <int value="67" label="PublicKeyCredentials"/>
 </enum>
 
 <enum name="FeaturePolicyImageCompressionFormat">
