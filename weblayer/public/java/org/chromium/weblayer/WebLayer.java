@@ -7,7 +7,6 @@ package org.chromium.weblayer;
 import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.content.res.AssetManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -28,7 +27,6 @@ import org.chromium.weblayer_private.interfaces.IWebLayer;
 import org.chromium.weblayer_private.interfaces.ObjectWrapper;
 import org.chromium.weblayer_private.interfaces.WebLayerVersion;
 
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -290,24 +288,6 @@ public final class WebLayer {
         Field sPackageInfo = webViewFactory.getDeclaredField("sPackageInfo");
         sPackageInfo.setAccessible(true);
         sPackageInfo.set(null, implPackageInfo);
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
-            // Load assets using the WebViewDelegate.
-            Class<?> webViewDelegateClass = Class.forName("android.webkit.WebViewDelegate");
-            Constructor constructor = webViewDelegateClass.getDeclaredConstructor();
-            constructor.setAccessible(true);
-            Method addWebViewAssetPath =
-                    webViewDelegateClass.getDeclaredMethod("addWebViewAssetPath", Context.class);
-            Object delegate = constructor.newInstance();
-            addWebViewAssetPath.invoke(delegate, appContext);
-        } else {
-            // In L WebViewDelegate did not yet exist, so we have to poke AssetManager directly.
-            // Note: like the implementation in WebView's Api21CompatibilityDelegate this does
-            // not support split APKs.
-            Method addAssetPath = AssetManager.class.getMethod("addAssetPath", String.class);
-            addAssetPath.invoke(appContext.getResources().getAssets(),
-                    implPackageInfo.applicationInfo.sourceDir);
-        }
 
         return remoteContext.getClassLoader();
     }

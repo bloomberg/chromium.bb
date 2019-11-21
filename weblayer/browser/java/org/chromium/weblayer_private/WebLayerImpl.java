@@ -133,6 +133,11 @@ public final class WebLayerImpl extends IWebLayer.Stub {
         Context appContext = ClassLoaderContextWrapperFactory.get(
                 ObjectWrapper.unwrap(appContextWrapper, Context.class));
         PackageInfo packageInfo = WebViewFactory.getLoadedPackageInfo();
+
+        // TODO: This can break some functionality of apps that are doing interesting things with
+        // Contexts, ideally we would find a better way to do this.
+        addWebViewAssetPath(appContext, packageInfo);
+
         ContextUtils.initApplicationContext(appContext);
         BuildInfo.setBrowserPackageInfo(packageInfo);
         int resourcesPackageId = getPackageId(appContext, packageInfo.packageName);
@@ -192,6 +197,26 @@ public final class WebLayerImpl extends IWebLayer.Stub {
     @Override
     public boolean isRemoteDebuggingEnabled() {
         return WebLayerImplJni.get().isRemoteDebuggingEnabled();
+    }
+
+    private static void addWebViewAssetPath(Context appContext, PackageInfo packageInfo) {
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
+                Constructor constructor = WebViewDelegate.class.getDeclaredConstructor();
+                constructor.setAccessible(true);
+                WebViewDelegate delegate = (WebViewDelegate) constructor.newInstance();
+                delegate.addWebViewAssetPath(appContext);
+            } else {
+                // In L WebViewDelegate did not yet exist, so we have to poke AssetManager directly.
+                // Note: like the implementation in WebView's Api21CompatibilityDelegate this does
+                // not support split APKs.
+                Method addAssetPath = AssetManager.class.getMethod("addAssetPath", String.class);
+                addAssetPath.invoke(appContext.getResources().getAssets(),
+                        packageInfo.applicationInfo.sourceDir);
+            }
+        } catch (ReflectiveOperationException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
