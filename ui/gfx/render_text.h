@@ -593,9 +593,12 @@ class GFX_EXPORT RenderText {
   Range GetLineRange(const base::string16& text,
                      const internal::Line& line) const;
 
+  // Returns the text used for layout (e.g. after rewriting, eliding and
+  // obscuring characters).
+  const base::string16& GetLayoutText();
+
   // NOTE: The value of these accessors may be stale. Please make sure
   // that these fields are up to date before accessing them.
-  const base::string16& layout_text() const { return layout_text_; }
   const base::string16& display_text() const { return display_text_; }
   bool text_elided() const { return text_elided_; }
 
@@ -784,8 +787,11 @@ class GFX_EXPORT RenderText {
  private:
   friend class test::RenderTextTestApi;
 
-  // Updates |layout_text_| and |display_text_| as needed (or marks them dirty).
+  // Resets |layout_text_| and |display_text_| and marks them dirty.
   void OnTextAttributeChanged();
+
+  // Computes the |layout_text_| by rewriting it from |text_|, if needed.
+  void EnsureLayoutTextUpdated();
 
   // Elides |text| as needed to fit in the |available_width| using |behavior|.
   // |text_width| is the pre-calculated width of the text shaped by this render
@@ -981,6 +987,9 @@ class GFX_EXPORT RenderText {
 
   // The cursor position in view space, used to traverse lines of varied widths.
   base::Optional<int> cached_cursor_x_;
+
+  // Tell whether or not the |layout_text_| needs an update or is up to date.
+  bool layout_text_up_to_date_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(RenderText);
 };

@@ -1396,7 +1396,58 @@ void RenderText::SetSelectionModel(const SelectionModel& model) {
 void RenderText::OnTextColorChanged() {
 }
 
+void RenderText::EnsureLayoutTextUpdated() {
+  if (layout_text_up_to_date_)
+    return;
+
+  layout_text_ = text_;
+
+  // Obscure the layout text by replacing hidden characters by bullets.
+  if (obscured_)
+    ObscuredText(multiline_, obscured_reveal_index_, &layout_text_);
+
+  // Handle unicode control characters ISO 6429 (block C0). Range from 0 to 0x1F
+  // and 0x7F.
+  ReplaceControlCharactersWithSymbols(multiline_, &layout_text_);
+
+  const base::string16& text = layout_text_;
+  if (truncate_length_ > 0 && truncate_length_ < text.length()) {
+    // Truncate the text at a valid character break and append an ellipsis.
+    icu::StringCharacterIterator iter(text.c_str());
+    // Respect ELIDE_HEAD and ELIDE_MIDDLE preferences during truncation.
+    if (elide_behavior_ == ELIDE_HEAD) {
+      iter.setIndex32(
+          static_cast<int32_t>(text.length() - truncate_length_ + 1));
+      layout_text_.assign(kEllipsisUTF16 + text.substr(iter.getIndex()));
+    } else if (elide_behavior_ == ELIDE_MIDDLE) {
+      iter.setIndex32(static_cast<int32_t>(truncate_length_ / 2));
+      const size_t ellipsis_start = iter.getIndex();
+      iter.setIndex32(
+          static_cast<int32_t>(text.length() - (truncate_length_ / 2)));
+      const size_t ellipsis_end = iter.getIndex();
+      DCHECK_LE(ellipsis_start, ellipsis_end);
+      layout_text_.assign(text.substr(0, ellipsis_start) + kEllipsisUTF16 +
+                          text.substr(ellipsis_end));
+    } else {
+      iter.setIndex32(static_cast<int32_t>(truncate_length_ - 1));
+      layout_text_.assign(text.substr(0, iter.getIndex()) + kEllipsisUTF16);
+    }
+  }
+
+  // Wait to reset |layout_text_up_to_date_| until the end, to ensure this
+  // function's implementation doesn't indirectly rely on it being up to date
+  // anywhere.
+  layout_text_up_to_date_ = true;
+}
+
+const base::string16& RenderText::GetLayoutText() {
+  EnsureLayoutTextUpdated();
+  return layout_text_;
+}
+
 void RenderText::UpdateDisplayText(float text_width) {
+  EnsureLayoutTextUpdated();
+
   // TODO(krb): Consider other elision modes for multiline.
   if ((multiline_ && (!max_lines_ || elide_behavior() != ELIDE_TAIL)) ||
       elide_behavior() == NO_ELIDE || elide_behavior() == FADE_TAIL ||
@@ -1706,14 +1757,16 @@ base::i18n::TextDirection RenderText::GetTextDirection(
 
 size_t RenderText::TextIndexToGivenTextIndex(const base::string16& given_text,
                                              size_t index) const {
-  DCHECK(given_text == layout_text() || given_text == display_text());
+  DCHECK(layout_text_up_to_date_);
+  DCHECK(given_text == layout_text_ || given_text == display_text());
   DCHECK_LE(index, text().length());
   return GetTextIndexForOtherText(text(), index, given_text);
 }
 
 size_t RenderText::GivenTextIndexToTextIndex(const base::string16& given_text,
                                              size_t index) const {
-  DCHECK(given_text == layout_text() || given_text == display_text());
+  DCHECK(layout_text_up_to_date_);
+  DCHECK(given_text == layout_text_ || given_text == display_text());
   DCHECK_LE(index, text().length());
   return GetTextIndexForOtherText(given_text, index, text());
 }
@@ -1807,39 +1860,7 @@ void RenderText::OnTextAttributeChanged() {
   text_elided_ = false;
   line_breaks_.SetMax(0);
 
-  layout_text_ = text_;
-
-  // Obscure the layout text by replacing hidden characters by bullets.
-  if (obscured_)
-    ObscuredText(multiline_, obscured_reveal_index_, &layout_text_);
-
-  // Handle unicode control characters ISO 6429 (block C0). Range from 0 to 0x1F
-  // and 0x7F.
-  ReplaceControlCharactersWithSymbols(multiline_, &layout_text_);
-
-  const base::string16& text = layout_text_;
-  if (truncate_length_ > 0 && truncate_length_ < text.length()) {
-    // Truncate the text at a valid character break and append an ellipsis.
-    icu::StringCharacterIterator iter(text.c_str());
-    // Respect ELIDE_HEAD and ELIDE_MIDDLE preferences during truncation.
-    if (elide_behavior_ == ELIDE_HEAD) {
-      iter.setIndex32(
-          static_cast<int32_t>(text.length() - truncate_length_ + 1));
-      layout_text_.assign(kEllipsisUTF16 + text.substr(iter.getIndex()));
-    } else if (elide_behavior_ == ELIDE_MIDDLE) {
-      iter.setIndex32(static_cast<int32_t>(truncate_length_ / 2));
-      const size_t ellipsis_start = iter.getIndex();
-      iter.setIndex32(
-          static_cast<int32_t>(text.length() - (truncate_length_ / 2)));
-      const size_t ellipsis_end = iter.getIndex();
-      DCHECK_LE(ellipsis_start, ellipsis_end);
-      layout_text_.assign(text.substr(0, ellipsis_start) + kEllipsisUTF16 +
-                          text.substr(ellipsis_end));
-    } else {
-      iter.setIndex32(static_cast<int32_t>(truncate_length_ - 1));
-      layout_text_.assign(text.substr(0, iter.getIndex()) + kEllipsisUTF16);
-    }
-  }
+  layout_text_up_to_date_ = false;
 
   OnLayoutTextAttributeChanged(true);
 }

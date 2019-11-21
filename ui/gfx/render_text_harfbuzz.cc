@@ -1397,12 +1397,12 @@ const base::string16& RenderTextHarfBuzz::GetDisplayText() {
     UpdateDisplayText(0);
     update_display_text_ = false;
     display_run_list_.reset();
-    return layout_text();
+    return GetLayoutText();
   }
 
   EnsureLayoutRunList();
   DCHECK(!update_display_text_);
-  return text_elided() ? display_text() : layout_text();
+  return text_elided() ? display_text() : GetLayoutText();
 }
 
 Size RenderTextHarfBuzz::GetStringSize() {
@@ -2324,7 +2324,7 @@ void RenderTextHarfBuzz::EnsureLayoutRunList() {
   if (update_layout_run_list_) {
     layout_run_list_.Reset();
 
-    const base::string16& text = layout_text();
+    const base::string16& text = GetLayoutText();
     if (!text.empty())
       ItemizeAndShapeText(text, &layout_run_list_);
 
