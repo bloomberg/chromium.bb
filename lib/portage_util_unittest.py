@@ -243,6 +243,44 @@ inherit cros-workon superpower
     self.assertFalse(
         AlmostSameEBuilds(self._EBUILD_BASE, self._EBUILD_DIFFERENT_CONTENT))
 
+  def testClassifySimple(self):
+    """Test Classify on a simple ebuild."""
+    ebuild_path = os.path.join(self.tempdir, 'foo-1.ebuild')
+    osutils.WriteFile(ebuild_path, '')
+    attrs = portage_util.EBuild.Classify(ebuild_path)
+    self.assertFalse(attrs.is_workon)
+    self.assertFalse(attrs.is_stable)
+    self.assertFalse(attrs.is_blacklisted)
+    self.assertFalse(attrs.has_test)
+
+  def testClassifyUnstable(self):
+    """Test Classify handling of non-stable KEYWORDS."""
+    ebuild_path = os.path.join(self.tempdir, 'foo-1.ebuild')
+    TESTS = (
+        'KEYWORDS=',
+        'KEYWORDS= # Yep.',
+        'KEYWORDS="-*"',
+        'KEYWORDS="-* ~arm"',
+        'KEYWORDS="~*"',
+    )
+    for keywords in TESTS:
+      osutils.WriteFile(ebuild_path, keywords)
+      attrs = portage_util.EBuild.Classify(ebuild_path)
+      self.assertFalse(attrs.is_stable, msg='Failing: %s' % (keywords,))
+
+  def testClassifyStable(self):
+    """Test Classify handling of stable KEYWORDS."""
+    ebuild_path = os.path.join(self.tempdir, 'foo-1.ebuild')
+    TESTS = (
+        'KEYWORDS="*"',
+        'KEYWORDS="*" # Yep.',
+        'KEYWORDS="-* arm"',
+    )
+    for keywords in TESTS:
+      osutils.WriteFile(ebuild_path, keywords)
+      attrs = portage_util.EBuild.Classify(ebuild_path)
+      self.assertTrue(attrs.is_stable, msg='Failing: %s' % (keywords,))
+
 
 class ProjectAndPathTest(cros_test_lib.MockTempDirTestCase):
   """Project and Path related tests."""

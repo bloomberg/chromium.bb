@@ -201,11 +201,11 @@ def GenerateSourcePathMapping(packages, board):
   buildroot = os.path.join(constants.CHROOT_SOURCE_ROOT, 'src')
   manifest = git.ManifestCheckout.Cached(buildroot)
   for package, ebuild_path in packages_to_ebuild_paths.items():
-    is_workon, _, is_blacklisted, _ = portage_util.EBuild.Classify(ebuild_path)
-    if (not is_workon or
+    attrs = portage_util.EBuild.Classify(ebuild_path)
+    if (not attrs.is_workon or
         # Blacklisted ebuild is pinned to a specific git sha1, so change in
         # that repo matter to the ebuild.
-        is_blacklisted):
+        attrs.is_blacklisted):
       continue
     ebuild = portage_util.EBuild(ebuild_path)
     workon_subtrees = ebuild.GetSourceInfo(buildroot, manifest).subtrees

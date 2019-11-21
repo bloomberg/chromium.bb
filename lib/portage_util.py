@@ -352,6 +352,11 @@ class EbuildFormatIncorrectError(Error):
     super(EbuildFormatIncorrectError, self).__init__(message)
 
 
+# Container for Classify return values.
+EBuildClassifyAttributes = collections.namedtuple('EBuildClassifyAttributes', (
+    'is_workon', 'is_stable', 'is_blacklisted', 'has_test'))
+
+
 class EBuild(object):
   """Wrapper class for information about an ebuild."""
 
@@ -540,7 +545,10 @@ class EBuild(object):
         if EBuild._ECLASS_IMPLIES_TEST & eclasses:
           has_test = True
       elif line.startswith('KEYWORDS='):
-        for keyword in line.split('=', 1)[1].strip('"\'').split():
+        # Strip off the comments, then extract the value of the variable, then
+        # strip off any quotes.
+        line = line.split('#', 1)[0].split('=', 1)[1].strip('"\'')
+        for keyword in line.split():
           if not keyword.startswith('~') and keyword != '-*':
             is_stable = True
       elif line.startswith('CROS_WORKON_BLACKLIST='):
@@ -549,7 +557,8 @@ class EBuild(object):
             line.startswith('platform_pkg_test()')):
         has_test = True
     fileinput.close()
-    return is_workon, is_stable, is_blacklisted, has_test
+    return EBuildClassifyAttributes(
+        is_workon, is_stable, is_blacklisted, has_test)
 
   def _ReadEBuild(self, path):
     """Determine the settings of `is_workon`, `is_stable` and is_blacklisted
