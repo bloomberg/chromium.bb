@@ -1784,9 +1784,10 @@ static AOM_INLINE void set_partial_sb_partition(
   for (r = 0; r < cm->seq_params.mib_size; r += bh) {
     int bw = bw_in;
     for (c = 0; c < cm->seq_params.mib_size; c += bw) {
-      const int index = r * cm->mi_stride + c;
-      mib[index] = mi + index;
-      mib[index]->sb_type = find_partition_size(
+      const int grid_index = get_mi_grid_idx(cm, r, c);
+      const int mi_index = get_alloc_mi_idx(cm, r, c);
+      mib[grid_index] = mi + mi_index;
+      mib[grid_index]->sb_type = find_partition_size(
           bsize, mi_rows_remaining - r, mi_cols_remaining - c, &bh, &bw);
     }
   }
