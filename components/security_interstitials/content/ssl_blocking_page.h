@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SSL_SSL_BLOCKING_PAGE_H_
-#define CHROME_BROWSER_SSL_SSL_BLOCKING_PAGE_H_
+#ifndef COMPONENTS_SECURITY_INTERSTITIALS_CONTENT_SSL_BLOCKING_PAGE_H_
+#define COMPONENTS_SECURITY_INTERSTITIALS_CONTENT_SSL_BLOCKING_PAGE_H_
 
 #include <string>
 #include <vector>
@@ -12,8 +12,8 @@
 #include "base/strings/string16.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/time/time.h"
-#include "chrome/browser/ssl/ssl_blocking_page_base.h"
 #include "components/security_interstitials/content/security_interstitial_page.h"
+#include "components/security_interstitials/content/ssl_blocking_page_base.h"
 #include "components/security_interstitials/content/ssl_cert_reporter.h"
 #include "content/public/browser/certificate_request_result_type.h"
 #include "net/ssl/ssl_info.h"
@@ -106,4 +106,4 @@ class SSLBlockingPage : public SSLBlockingPageBase {
   DISALLOW_COPY_AND_ASSIGN(SSLBlockingPage);
 };
 
-#endif  // CHROME_BROWSER_SSL_SSL_BLOCKING_PAGE_H_
+#endif  // COMPONENTS_SECURITY_INTERSTITIALS_CONTENT_SSL_BLOCKING_PAGE_H_

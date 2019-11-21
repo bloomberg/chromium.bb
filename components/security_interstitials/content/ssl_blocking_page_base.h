@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SSL_SSL_BLOCKING_PAGE_BASE_H_
-#define CHROME_BROWSER_SSL_SSL_BLOCKING_PAGE_BASE_H_
+#ifndef COMPONENTS_SECURITY_INTERSTITIALS_CONTENT_SSL_BLOCKING_PAGE_BASE_H_
+#define COMPONENTS_SECURITY_INTERSTITIALS_CONTENT_SSL_BLOCKING_PAGE_BASE_H_
 
 #include "base/callback_forward.h"
 #include "components/security_interstitials/content/cert_report_helper.h"
@@ -61,4 +61,4 @@ class SSLBlockingPageBase
   DISALLOW_COPY_AND_ASSIGN(SSLBlockingPageBase);
 };
 
-#endif  // CHROME_BROWSER_SSL_SSL_BLOCKING_PAGE_BASE_H_
+#endif  // COMPONENTS_SECURITY_INTERSTITIALS_CONTENT_SSL_BLOCKING_PAGE_BASE_H_
