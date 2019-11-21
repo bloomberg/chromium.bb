@@ -191,6 +191,20 @@ void RestoreBreakList(RenderText* render_text, BreakList<T>* break_list) {
   }
 }
 
+// Move the iterator |iter| forward until |position| is included in the range.
+template <typename T>
+typename BreakList<T>::const_iterator IncrementBreakListIteratorToPosition(
+    const BreakList<T>& break_list,
+    typename BreakList<T>::const_iterator iter,
+    size_t position) {
+  for (; iter != break_list.breaks().end(); ++iter) {
+    const gfx::Range range = break_list.GetRange(iter);
+    if (position >= range.start() && position < range.end())
+      break;
+  }
+  return iter;
+}
+
 // Determines the equivalent codepoint (same rank) at |text[index]| in
 // |other_text|. The size of each codepoint may no longer match due to elision,
 // truncation or revision but their ordering is still the same. The following
@@ -450,43 +464,52 @@ void SkiaTextRenderer::DrawStrike(int x,
   canvas_skia_->drawRect(r, flags_);
 }
 
-StyleIterator::StyleIterator(const BreakList<SkColor>& colors,
-                             const BreakList<BaselineStyle>& baselines,
-                             const BreakList<int>& font_size_overrides,
-                             const BreakList<Font::Weight>& weights,
-                             const std::vector<BreakList<bool>>& styles)
+StyleIterator::StyleIterator(const BreakList<SkColor>* colors,
+                             const BreakList<BaselineStyle>* baselines,
+                             const BreakList<int>* font_size_overrides,
+                             const BreakList<Font::Weight>* weights,
+                             const std::vector<BreakList<bool>>* styles)
     : colors_(colors),
       baselines_(baselines),
       font_size_overrides_(font_size_overrides),
       weights_(weights),
       styles_(styles) {
-  color_ = colors_.breaks().begin();
-  baseline_ = baselines_.breaks().begin();
-  font_size_override_ = font_size_overrides_.breaks().begin();
-  weight_ = weights_.breaks().begin();
-  for (size_t i = 0; i < styles_.size(); ++i)
-    style_.push_back(styles_[i].breaks().begin());
+  color_ = colors_->breaks().begin();
+  baseline_ = baselines_->breaks().begin();
+  font_size_override_ = font_size_overrides_->breaks().begin();
+  weight_ = weights_->breaks().begin();
+  for (size_t i = 0; i < styles_->size(); ++i)
+    style_.push_back((*styles_)[i].breaks().begin());
 }
 
-StyleIterator::~StyleIterator() {}
+StyleIterator::StyleIterator(const StyleIterator& style) = default;
+StyleIterator::~StyleIterator() = default;
+StyleIterator& StyleIterator::operator=(const StyleIterator& style) = default;
 
 Range StyleIterator::GetRange() const {
-  Range range(colors_.GetRange(color_));
-  range = range.Intersect(baselines_.GetRange(baseline_));
-  range = range.Intersect(font_size_overrides_.GetRange(font_size_override_));
-  range = range.Intersect(weights_.GetRange(weight_));
+  return GetTextBreakingRange().Intersect(colors_->GetRange(color_));
+}
+
+Range StyleIterator::GetTextBreakingRange() const {
+  Range range = baselines_->GetRange(baseline_);
+  range = range.Intersect(font_size_overrides_->GetRange(font_size_override_));
+  range = range.Intersect(weights_->GetRange(weight_));
   for (size_t i = 0; i < TEXT_STYLE_COUNT; ++i)
-    range = range.Intersect(styles_[i].GetRange(style_[i]));
+    range = range.Intersect((*styles_)[i].GetRange(style_[i]));
   return range;
 }
 
-void StyleIterator::UpdatePosition(size_t position) {
-  color_ = colors_.GetBreak(position);
-  baseline_ = baselines_.GetBreak(position);
-  font_size_override_ = font_size_overrides_.GetBreak(position);
-  weight_ = weights_.GetBreak(position);
-  for (size_t i = 0; i < TEXT_STYLE_COUNT; ++i)
-    style_[i] = styles_[i].GetBreak(position);
+void StyleIterator::IncrementToPosition(size_t position) {
+  color_ = IncrementBreakListIteratorToPosition(*colors_, color_, position);
+  baseline_ =
+      IncrementBreakListIteratorToPosition(*baselines_, baseline_, position);
+  font_size_override_ = IncrementBreakListIteratorToPosition(
+      *font_size_overrides_, font_size_override_, position);
+  weight_ = IncrementBreakListIteratorToPosition(*weights_, weight_, position);
+  for (size_t i = 0; i < TEXT_STYLE_COUNT; ++i) {
+    style_[i] = IncrementBreakListIteratorToPosition((*styles_)[i], style_[i],
+                                                     position);
+  }
 }
 
 LineSegment::LineSegment() : run(0) {}
@@ -1294,6 +1317,11 @@ RenderText::RenderText()
       baseline_(kInvalidBaseline),
       cached_bounds_and_offset_valid_(false),
       strike_thickness_factor_(kLineThicknessFactor) {}
+
+internal::StyleIterator RenderText::GetTextStyleIterator() const {
+  return internal::StyleIterator(&colors_, &baselines_, &font_size_overrides_,
+                                 &weights_, &styles_);
+}
 
 bool RenderText::IsHomogeneous() const {
   if (colors().breaks().size() > 1 || baselines().breaks().size() > 1 ||
