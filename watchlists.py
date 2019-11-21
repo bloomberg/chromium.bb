@@ -121,8 +121,9 @@ class Watchlists(object):
         if name not in self._watchlists:
           continue
         if rule.search(path):
-          map(watchers.add, self._watchlists[name])
-    return list(watchers)
+          for watchlist in self._watchlists[name]:
+            watchers.add(watchlist)
+    return sorted(watchers)
 
 
 def main(argv):
