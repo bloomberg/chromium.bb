@@ -40,10 +40,13 @@ source_set("util") {
     "yet_another_bit_vector.h",
   ]
 
+  public_deps = [
+    "../third_party/jsoncpp",
+  ]
+
   deps = [
     "../third_party/abseil",
     "../third_party/boringssl",
-    "../third_party/jsoncpp",
   ]
 
   public_configs = [ "../build:openscreen_include_dirs" ]

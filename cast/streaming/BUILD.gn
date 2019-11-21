@@ -55,6 +55,8 @@ source_set("receiver") {
     "compound_rtcp_builder.h",
     "frame_collector.cc",
     "frame_collector.h",
+    "offer_messages.cc",
+    "offer_messages.h",
     "packet_receive_stats_tracker.cc",
     "packet_receive_stats_tracker.h",
     "receiver.cc",
@@ -71,6 +73,10 @@ source_set("receiver") {
 
   public_deps = [
     ":common",
+  ]
+
+  deps = [
+    "../../util",
   ]
 }
 
@@ -100,8 +106,10 @@ source_set("unittests") {
     "frame_crypto_unittest.cc",
     "mock_compound_rtcp_parser_client.h",
     "ntp_time_unittest.cc",
+    "offer_messages_unittest.cc",
     "packet_receive_stats_tracker_unittest.cc",
     "packet_util_unittest.cc",
+    "receiver_session_unittest.cc",
     "receiver_unittest.cc",
     "rtcp_common_unittest.cc",
     "rtp_packet_parser_unittest.cc",
@@ -116,6 +124,7 @@ source_set("unittests") {
     ":sender",
     "../../third_party/googletest:gmock",
     "../../third_party/googletest:gtest",
+    "../../util",
   ]
 }
 
