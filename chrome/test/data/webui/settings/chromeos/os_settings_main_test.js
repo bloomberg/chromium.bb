@@ -48,6 +48,9 @@ cr.define('settings_main_page', function() {
   let settingsPrefs = null;
 
   suiteSetup(function() {
+    // Init CrOncStrings because os_settings_ui.js isn't loaded in this test.
+    CrOncStrings = {};
+
     settingsPrefs = document.createElement('settings-prefs');
     return CrSettingsPrefs.initialized;
   });

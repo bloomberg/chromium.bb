@@ -478,6 +478,7 @@ var OSSettingsInternetDetailPageTest = class extends OSSettingsBrowserTest {
       '//ui/webui/resources/js/util.js',
       BROWSER_SETTINGS_PATH + '../fake_chrome_event.js',
       BROWSER_SETTINGS_PATH + '../chromeos/fake_network_config_mojom.js',
+      BROWSER_SETTINGS_PATH + '../chromeos/cr_onc_strings.js',
       'internet_detail_page_tests.js',
     ]);
   }
@@ -503,6 +504,7 @@ var OSSettingsInternetPageTest = class extends OSSettingsBrowserTest {
       '//ui/webui/resources/js/util.js',
       BROWSER_SETTINGS_PATH + '../fake_chrome_event.js',
       BROWSER_SETTINGS_PATH + '../chromeos/fake_network_config_mojom.js',
+      BROWSER_SETTINGS_PATH + '../chromeos/cr_onc_strings.js',
       'internet_page_tests.js',
     ]);
   }
@@ -528,6 +530,7 @@ var OSSettingsInternetSubpageTest = class extends OSSettingsBrowserTest {
       '//ui/webui/resources/js/util.js',
       BROWSER_SETTINGS_PATH + '../fake_chrome_event.js',
       BROWSER_SETTINGS_PATH + '../chromeos/fake_network_config_mojom.js',
+      BROWSER_SETTINGS_PATH + '../chromeos/cr_onc_strings.js',
       'internet_subpage_tests.js',
     ]);
   }
