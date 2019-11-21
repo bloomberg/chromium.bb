@@ -1513,6 +1513,18 @@
   hana-tot-chrome-pfq-informational-tryjob
   hana-tot-chromium-pfq-informational-tryjob
   hana-unittest-stress
+  hatch-diskswap-full-tryjob
+  hatch-diskswap-llvm-next-toolchain-tryjob
+  hatch-diskswap-llvm-toolchain-tryjob
+  hatch-diskswap-paladin-tryjob
+  hatch-diskswap-payloads-tryjob
+  hatch-diskswap-release-afdo-generate-tryjob
+  hatch-diskswap-release-afdo-tryjob
+  hatch-diskswap-release-afdo-use-tryjob
+  hatch-diskswap-release-tryjob
+  hatch-diskswap-tot-chrome-pfq-informational-tryjob
+  hatch-diskswap-tot-chromium-pfq-informational-tryjob
+  hatch-diskswap-unittest-stress
   hatch-factory-hatch-12692.B-factorybranch-tryjob
   hatch-full-tryjob
   hatch-llvm-next-toolchain-tryjob

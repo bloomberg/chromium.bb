@@ -121,6 +121,7 @@ x86_internal_release_boards = frozenset([
     'guado-accelerator',
     'guado_labstation',
     'hatch',
+    'hatch-diskswap',
     'heli',
     'jecht',
     'kalista',
