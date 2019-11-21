@@ -319,6 +319,11 @@ class StartSurfaceMediator
         return mController.onBackPressed();
     }
 
+    @Override
+    public void enableRecordingFirstMeaningfulPaint(long activityCreateTimeMs) {
+        mController.enableRecordingFirstMeaningfulPaint(activityCreateTimeMs);
+    }
+
     // Implements TabSwitcher.OverviewModeObserver.
     @Override
     public void startedShowing() {
