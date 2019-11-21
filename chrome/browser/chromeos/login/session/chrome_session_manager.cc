@@ -269,21 +269,6 @@ void ChromeSessionManager::Initialize(
     oobe_configuration_->CheckConfiguration();
   }
 
-  if (login_account_id == user_manager::StubAccountId()) {
-    // Start a user session with stub user. This also happens on a dev machine
-    // when running Chrome w/o login flow. See PreEarlyInitialization().
-    // In these contexts, emulate as if sync has been initialized.
-    VLOG(1) << "Starting Chrome with stub login.";
-
-    std::string login_user_id = login_account_id.GetUserEmail();
-    IdentityManagerFactory::GetForProfile(profile)
-        ->GetPrimaryAccountMutator()
-        ->DeprecatedSetPrimaryAccountAndUpdateAccountInfo(login_user_id,
-                                                          login_user_id);
-    StartUserSession(profile, login_user_id);
-    return;
-  }
-
   VLOG(1) << "Starting Chrome with a user session.";
   StartUserSession(profile, login_account_id.GetUserEmail());
 }
