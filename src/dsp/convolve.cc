@@ -497,7 +497,7 @@ void ConvolveCompoundCopy_C(const void* const reference,
                             const ptrdiff_t reference_stride,
                             const int /*horizontal_filter_index*/,
                             const int /*vertical_filter_index*/,
-                            const int /*inter_round_bits_vertical*/,
+                            const int inter_round_bits_vertical,
                             const int /*subpixel_x*/, const int /*subpixel_y*/,
                             const int /*step_x*/, const int /*step_y*/,
                             const int width, const int height, void* prediction,
@@ -505,15 +505,14 @@ void ConvolveCompoundCopy_C(const void* const reference,
   const auto* src = static_cast<const Pixel*>(reference);
   const ptrdiff_t src_stride = reference_stride / sizeof(Pixel);
   auto* dest = static_cast<uint16_t*>(prediction);
-  const int compound_round_offset =
-      (1 << (bitdepth + 4)) + (1 << (bitdepth + 3));
   int y = 0;
   do {
     int x = 0;
     do {
-      dest[x] = (src[x] << 4) + compound_round_offset;
+      int sum = (1 << bitdepth) + (1 << (bitdepth - 1));
+      sum += src[x];
+      dest[x] = static_cast<uint16_t>(sum << (11 - inter_round_bits_vertical));
     } while (++x < width);
-
     src += src_stride;
     dest += pred_stride;
   } while (++y < height);
@@ -540,9 +539,10 @@ void ConvolveCompoundHorizontal_C(
   const ptrdiff_t src_stride = reference_stride / sizeof(Pixel);
   auto* dest = static_cast<uint16_t*>(prediction);
   const int filter_id = (subpixel_x >> 6) & kSubPixelMask;
-  const int bits_shift = kFilterBits - inter_round_bits_vertical;
   const int compound_round_offset =
       (1 << (bitdepth + 4)) + (1 << (bitdepth + 3));
+  const int inter_round_vertical_shift =
+      inter_round_bits_vertical - kFilterBits;
   int y = 0;
   do {
     int x = 0;
@@ -551,8 +551,9 @@ void ConvolveCompoundHorizontal_C(
       for (int k = 0; k < kSubPixelTaps; ++k) {
         sum += kSubPixelFilters[filter_index][filter_id][k] * src[x + k];
       }
-      sum = RightShiftWithRounding(sum, kRoundBitsHorizontal) << bits_shift;
-      dest[x] = sum + compound_round_offset;
+      sum = RightShiftWithRounding(sum, kRoundBitsHorizontal);
+      sum = RightShiftWithRounding(sum, inter_round_vertical_shift);
+      dest[x] = sum + (compound_round_offset >> inter_round_vertical_shift);
     } while (++x < width);
 
     src += src_stride;
@@ -586,7 +587,8 @@ void ConvolveCompoundVertical_C(const void* const reference,
   const int filter_id = (subpixel_y >> 6) & kSubPixelMask;
   const int bits_shift = kFilterBits - kRoundBitsHorizontal;
   const int compound_round_offset =
-      (1 << (bitdepth + 4)) + (1 << (bitdepth + 3));
+      ((1 << (bitdepth + 4)) + (1 << (bitdepth + 3))) >>
+      (inter_round_bits_vertical - kFilterBits);
   int y = 0;
   do {
     int x = 0;
@@ -596,11 +598,9 @@ void ConvolveCompoundVertical_C(const void* const reference,
         sum += kSubPixelFilters[filter_index][filter_id][k] *
                src[k * src_stride + x];
       }
-      dest[x] = RightShiftWithRounding(LeftShift(sum, bits_shift),
-                                       inter_round_bits_vertical) +
-                compound_round_offset;
+      sum = RightShiftWithRounding(sum, inter_round_bits_vertical - bits_shift);
+      dest[x] = sum + compound_round_offset;
     } while (++x < width);
-
     src += src_stride;
     dest += pred_stride;
   } while (++y < height);
