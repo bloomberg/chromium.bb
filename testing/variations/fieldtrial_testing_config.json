@@ -6628,6 +6628,7 @@
     "TranslateDesktopRefresh": [
         {
             "platforms": [
+                "chromeos",
                 "linux",
                 "mac",
                 "windows"
