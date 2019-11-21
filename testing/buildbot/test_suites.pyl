@@ -3970,6 +3970,8 @@
           '${got_revision}',
           '--test-machine-name',
           '${buildername}',
+          # On dual-GPU devices we want the high-performance GPU to be active
+          '--extra-browser-args=--force_high_performance_gpu',
         ],
         'precommit_args': [
           # Gerrit issue ID
