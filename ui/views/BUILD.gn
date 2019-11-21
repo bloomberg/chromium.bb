@@ -687,6 +687,7 @@ jumbo_component("views") {
       "//ui/aura",
       "//ui/events",
       "//ui/platform_window",
+      "//ui/platform_window/extensions",
       "//ui/platform_window/platform_window_handler",
       "//ui/touch_selection",
       "//ui/wm",
