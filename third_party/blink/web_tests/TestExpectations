@@ -3847,6 +3847,7 @@ crbug.com/982116 http/tests/devtools/elements/styles-4/styles-new-API.js [ Pass 
 crbug.com/951795 external/wpt/wasm/jsapi/memory/grow.any.html [ Pass Failure ]
 crbug.com/951795 external/wpt/wasm/jsapi/memory/grow.any.worker.html [ Pass Failure ]
 
+crbug.com/829028 external/wpt/css/css-break/avoid-border-break.html [ Failure ]
 crbug.com/967329 external/wpt/css/css-multicol/columnfill-auto-max-height-001.html [ Failure ]
 crbug.com/967329 external/wpt/css/css-multicol/columnfill-auto-max-height-002.html [ Failure ]
 crbug.com/990240 external/wpt/css/css-multicol/multicol-breaking-000.html [ Failure ]
