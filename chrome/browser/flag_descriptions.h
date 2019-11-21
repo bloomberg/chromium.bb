@@ -2123,6 +2123,9 @@ extern const char kTrimOnMemoryPressureDescription[];
 extern const char kEnableZeroStateSuggestionsName[];
 extern const char kEnableZeroStateSuggestionsDescription[];
 
+extern const char kEnterpriseReportingInChromeOSName[];
+extern const char kEnterpriseReportingInChromeOSDescription[];
+
 extern const char kExoPointerLockName[];
 extern const char kExoPointerLockDescription[];
 

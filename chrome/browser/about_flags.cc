@@ -4257,6 +4257,13 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kEnterpriseReportingInBrowser)},
 #endif  // !defined(OS_ANDROID)
 
+#if defined(OS_CHROMEOS)
+    {"enterprise-reporting-in-chromeos",
+     flag_descriptions::kEnterpriseReportingInChromeOSName,
+     flag_descriptions::kEnterpriseReportingInChromeOSDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(features::kEnterpriseReportingInChromeOS)},
+#endif  // !defined(OS_CHROMEOS)
+
     {"enable-autofill-do-not-migrate-unsupported-local-cards",
      flag_descriptions::kEnableAutofillDoNotMigrateUnsupportedLocalCardsName,
      flag_descriptions::

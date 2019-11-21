@@ -37393,6 +37393,7 @@ from previous Chrome versions.
   <int value="-2953333" label="AndroidHistoryManager:disabled"/>
   <int value="-2512468" label="OmniboxMaterialDesignWeatherIcons:disabled"/>
   <int value="-2371418" label="disable-display-list-2d-canvas"/>
+  <int value="-1164379" label="EnterpriseReportingInChromeOS:disabled"/>
   <int value="0" label="BAD_FLAG_FORMAT">
     Command-line flag doesn't start with two dashes.
   </int>
@@ -38095,6 +38096,7 @@ from previous Chrome versions.
   <int value="946688335" label="OmniboxSpareRenderer:disabled"/>
   <int value="952558794" label="enable-remote-assistance"/>
   <int value="955340765" label="ChromeHomeOptOutSnackbar:enabled"/>
+  <int value="955425932" label="EnterpriseReportingInChromeOS:enabled"/>
   <int value="963457392" label="ChromeHomeModernLayout:disabled"/>
   <int value="963671232" label="DrawOcclusion:disabled"/>
   <int value="964613807" label="ContextualSearchTranslationModel:disabled"/>

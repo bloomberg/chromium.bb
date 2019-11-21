@@ -2960,7 +2960,7 @@ const char kEnterpriseReportingInBrowserName[] =
     "Enterprise cloud reporting in browser";
 const char kEnterpriseReportingInBrowserDescription[] =
     "Enable the enterprise cloud reporting in browser without installing the "
-    "reporting companion extension. This feautre requires device level cloud "
+    "reporting companion extension. This feature requires device level cloud "
     "mangement.";
 
 const char kHappinessTrackingSurveysForDesktopName[] =
@@ -3572,6 +3572,12 @@ const char kEnableZeroStateSuggestionsName[] = "Enable Zero State Suggetions";
 const char kEnableZeroStateSuggestionsDescription[] =
     "Enable Zero State Suggestions feature in Launcher, which will show "
     "suggestions when launcher search box is active with an empty query";
+
+const char kEnterpriseReportingInChromeOSName[] =
+    "Enterprise cloud reporting in Chrome OS";
+const char kEnterpriseReportingInChromeOSDescription[] =
+    "Enable the enterprise cloud reporting in Chrome OS. This feature requires "
+    "user level cloud management.";
 
 const char kExoPointerLockName[] = "Pointer lock for Linux applications";
 const char kExoPointerLockDescription[] =
