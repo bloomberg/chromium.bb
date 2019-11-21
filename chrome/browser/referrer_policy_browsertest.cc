@@ -34,6 +34,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/mojom/referrer_policy.mojom-shared.h"
 #include "third_party/blink/public/platform/web_input_event.h"
 #include "third_party/blink/public/platform/web_mouse_event.h"
 #include "ui/base/page_transition_types.h"
@@ -736,11 +737,9 @@ struct ReferrerOverrideParams {
     {.feature_to_enable = features::kNoReferrers,
      .baseline_policy = network::mojom::ReferrerPolicy::kAlways,
      // The renderer's "have we completely disabled referrers?"
-     // implementation resets requests' referrer policies to the default when
+     // implementation resets requests' referrer policies to kNever when
      // it excises their referrers.
-     .expected_policy =
-         content::Referrer::NetReferrerPolicyToBlinkReferrerPolicy(
-             content::Referrer::GetDefaultReferrerPolicy()),
+     .expected_policy = network::mojom::ReferrerPolicy::kNever,
      .same_origin_nav = ReferrerPolicyTest::EXPECT_EMPTY_REFERRER,
      .cross_origin_nav = ReferrerPolicyTest::EXPECT_EMPTY_REFERRER,
      .cross_origin_downgrade_nav = ReferrerPolicyTest::EXPECT_EMPTY_REFERRER,
@@ -901,7 +900,7 @@ IN_PROC_BROWSER_TEST_P(ReferrerOverrideTest, CrossOriginNavigation) {
 }
 
 IN_PROC_BROWSER_TEST_P(ReferrerOverrideTest,
-                       DISABLED_CrossOriginNavigationBrowserInitiated) {
+                       CrossOriginNavigationBrowserInitiated) {
   RunReferrerTest(GetParam().baseline_policy, START_ON_HTTP, REGULAR_LINK,
                   HTTPS_NO_REDIRECT, WindowOpenDisposition::CURRENT_TAB,
                   blink::WebMouseEvent::Button::kLeft,
@@ -997,8 +996,7 @@ IN_PROC_BROWSER_TEST_F(ReferrerPolicyCapReferrerToOriginOnCrossOriginTest,
                   REGULAR_LINK, NO_REDIRECT, WindowOpenDisposition::CURRENT_TAB,
                   blink::WebMouseEvent::Button::kLeft, EXPECT_EMPTY_REFERRER,
                   // when the pref is set, the renderer sets the referrer policy
-                  // to the default on outgoing requests at the same time
+                  // to the kNever on outgoing requests at the same time
                   // it removes referrers
-                  content::Referrer::NetReferrerPolicyToBlinkReferrerPolicy(
-                      content::Referrer::GetDefaultReferrerPolicy()));
+                  network::mojom::ReferrerPolicy::kNever);
 }

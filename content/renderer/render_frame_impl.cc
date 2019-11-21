@@ -5099,7 +5099,7 @@ void RenderFrameImpl::WillSendRequestInternal(
 
   if (!render_view_->renderer_preferences_.enable_referrers)
     request.SetHttpReferrer(WebString(),
-                            network::mojom::ReferrerPolicy::kDefault);
+                            network::mojom::ReferrerPolicy::kNever);
 }
 
 void RenderFrameImpl::DidLoadResourceFromMemoryCache(

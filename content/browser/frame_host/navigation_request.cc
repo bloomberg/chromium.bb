@@ -256,7 +256,7 @@ void AddAdditionalRequestHeaders(net::HttpRequestHeaders* headers,
                                  const std::string user_agent_override,
                                  bool has_user_gesture,
                                  base::Optional<url::Origin> initiator_origin,
-                                 network::mojom::ReferrerPolicy referrer_policy,
+                                 blink::mojom::Referrer* referrer,
                                  FrameTreeNode* frame_tree_node) {
   if (!url.SchemeIsHTTPOrHTTPS())
     return;
@@ -329,11 +329,16 @@ void AddAdditionalRequestHeaders(net::HttpRequestHeaders* headers,
     // `network::SetFetchMetadataHeaders` function.
   }
 
+  if (!render_prefs.enable_referrers) {
+    *referrer =
+        blink::mojom::Referrer(GURL(), network::mojom::ReferrerPolicy::kNever);
+  }
+
   // Next, set the HTTP Origin if needed.
   if (NeedsHTTPOrigin(headers, method)) {
     url::Origin origin_header_value = initiator_origin.value_or(url::Origin());
     origin_header_value = Referrer::SanitizeOriginForRequest(
-        url, origin_header_value, referrer_policy);
+        url, origin_header_value, referrer->policy);
     headers->SetHeader(net::HttpRequestHeaders::kOrigin,
                        origin_header_value.Serialize());
   }
@@ -1038,7 +1043,7 @@ NavigationRequest::NavigationRequest(
         common_params_->transition, controller->GetBrowserContext(),
         common_params_->method, user_agent_override,
         common_params_->has_user_gesture, common_params_->initiator_origin,
-        common_params_->referrer->policy, frame_tree_node);
+        common_params_->referrer.get(), frame_tree_node);
 
     if (begin_params_->is_form_submission) {
       if (browser_initiated_ && !commit_params_->post_content_type.empty()) {
