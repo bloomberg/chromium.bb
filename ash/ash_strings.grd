@@ -1068,6 +1068,9 @@ This file contains the strings for ash.
       <message name="IDS_ASH_STATUS_TRAY_NETWORK_SETTINGS_TOOLTIP" desc="The tooltip text for the button that shows network list.">
         Show network list. <ph name="STATE_TEXT">$1<ex>Connected to public wifi</ex></ph>
       </message>
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK_PROGRESS_ACCESSIBLE_NAME" desc="The accessible name for the progress bar shown in the network settings.">
+        Scanning
+      </message>
 
       <!-- Status Tray Bluetooth strings -->
       <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_DISPLAY_PINCODE" desc="Bluetooth pairing message typically shown on a request from a 2.0 device that has a keyboard.">
