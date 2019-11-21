@@ -7821,9 +7821,14 @@ void RenderFrameHostImpl::MaybeEvictFromBackForwardCache() {
   if (!is_in_back_forward_cache_)
     return;
 
+  RenderFrameHostImpl* top_document = this;
+  while (RenderFrameHostImpl* parent = top_document->GetParent())
+    top_document = parent;
+
   NavigationControllerImpl* controller = static_cast<NavigationControllerImpl*>(
       frame_tree_node_->navigator()->GetController());
-  auto can_store = controller->GetBackForwardCache().CanStoreDocument(this);
+  auto can_store =
+      controller->GetBackForwardCache().CanStoreDocument(top_document);
   TRACE_EVENT1("navigation",
                "RenderFrameHostImpl::MaybeEvictFromBackForwardCache",
                "can_store", can_store.ToString());

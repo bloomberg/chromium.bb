@@ -3921,4 +3921,39 @@ IN_PROC_BROWSER_TEST_F(SensorBackForwardCacheBrowserTest,
       FROM_HERE);
 }
 
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
+                       AllowedFeaturesForSubframesDoNotEvict) {
+  // The main purpose of this test is to check that when a state of a subframe
+  // is updated, CanStoreDocument is still called for the main frame - otherwise
+  // we would always evict the document, even when the feature is allowed as
+  // CanStoreDocument always returns false for non-main frames.
+
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url_a(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b)"));
+  GURL url_c(embedded_test_server()->GetURL("c.com", "/title1.html"));
+
+  // 1) Navigate to A.
+  ASSERT_TRUE(NavigateToURL(shell(), url_a));
+  RenderFrameHostImpl* rfh_a = current_frame_host();
+  RenderFrameHostImpl* rfh_b = rfh_a->child_at(0)->current_frame_host();
+  RenderFrameDeletedObserver delete_observer_rfh_b(rfh_b);
+
+  // 2) Navigate to C.
+  ASSERT_TRUE(NavigateToURL(shell(), url_c));
+
+  // 3) No-op feature update on a subframe while in cache, should be no-op.
+  ASSERT_FALSE(delete_observer_rfh_b.deleted());
+  static_cast<blink::mojom::LocalFrameHost*>(rfh_b)
+      ->DidChangeActiveSchedulerTrackedFeatures(0);
+
+  // 4) Go back.
+  web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  EXPECT_EQ(current_frame_host(), rfh_a);
+
+  ExpectOutcome(BackForwardCacheMetrics::HistoryNavigationOutcome::kRestored,
+                FROM_HERE);
+}
+
 }  // namespace content
