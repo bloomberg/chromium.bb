@@ -96,7 +96,7 @@ content::WebUIDataSource* CreateHistoryUIHTMLSource(Profile* profile) {
       {"signInPromoDesc", IDS_HISTORY_SIGN_IN_PROMO_DESC},
       {"title", IDS_HISTORY_TITLE},
   };
-  AddLocalizedStringsBulk(source, kStrings, base::size(kStrings));
+  AddLocalizedStringsBulk(source, kStrings);
 
   source->AddString(
       "sidebarFooter",
