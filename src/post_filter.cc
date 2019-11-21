@@ -25,6 +25,7 @@
 #include "src/dsp/constants.h"
 #include "src/utils/array_2d.h"
 #include "src/utils/blocking_counter.h"
+#include "src/utils/compiler_attributes.h"
 #include "src/utils/constants.h"
 #include "src/utils/logging.h"
 #include "src/utils/memory.h"
@@ -206,6 +207,18 @@ bool PostFilter::ApplyFiltering() {
       return false;
     }
     for (int plane = 0; plane < planes_; ++plane) {
+#if LIBGAV1_MSAN
+      // The first four rows of |deblock_buffer_| are never used. However, we
+      // apply SuperRes for the entire buffer for simplicity. Zero-out those
+      // rows so that MSAN does not complain about uninitialized access.
+      if (DoSuperRes()) {
+        for (int i = 0; i < 4; ++i) {
+          memset(
+              deblock_buffer_.data(plane) + deblock_buffer_.stride(plane) * i,
+              0, deblock_buffer_.stride(plane));
+        }
+      }
+#endif
       for (int row4x4 = 0, row_unit = 0; row4x4 < frame_header_.rows4x4;
            row4x4 += kNum4x4InLoopFilterMaskUnit, ++row_unit) {
         CopyDeblockedPixels(static_cast<Plane>(plane), row4x4, row_unit);
@@ -398,7 +411,16 @@ void PostFilter::CopyDeblockedPixels(Plane plane, int row4x4, int row_unit) {
     if (absolute_row >= plane_height) {
       if (last_valid_row == -1) {
         // We have run out of rows and there no valid row to copy. This will not
-        // be used by loop restoration, so we can simply break here.
+        // be used by loop restoration, so we can simply break here. However,
+        // MSAN does not know that this is never used (since we sometimes apply
+        // superres to this row as well). So zero it out in case of MSAN.
+#if LIBGAV1_MSAN
+        if (DoSuperRes()) {
+          memset(dst, 0, num_pixels * pixel_size_);
+          dst += dst_stride;
+          continue;
+        }
+#endif
         break;
       }
       // If we run out of rows, copy the last valid row (mimics the bottom
