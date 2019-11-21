@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/dom_storage/storage_area_impl.h"
+#include "components/services/storage/dom_storage/storage_area_impl.h"
 
 #include "base/atomic_ref_count.h"
 #include "base/bind.h"
@@ -20,14 +20,16 @@
 #include "base/threading/thread.h"
 #include "components/services/storage/dom_storage/async_dom_storage_database.h"
 #include "components/services/storage/dom_storage/dom_storage_database.h"
-#include "content/browser/dom_storage/test/storage_area_test_util.h"
+#include "components/services/storage/dom_storage/storage_area_test_util.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace content {
+namespace storage {
+
 namespace {
+
 using test::GetAllCallback;
 using test::MakeGetAllCallback;
 using test::MakeSuccessCallback;
@@ -149,7 +151,7 @@ class StorageAreaImplTest : public testing::Test,
 
   StorageAreaImplTest() {
     base::RunLoop loop;
-    db_ = storage::AsyncDomStorageDatabase::OpenInMemory(
+    db_ = AsyncDomStorageDatabase::OpenInMemory(
         base::nullopt, "StorageAreaImplTest",
         base::CreateSequencedTaskRunner({base::MayBlock(), base::ThreadPool()}),
         base::BindLambdaForTesting(
@@ -177,7 +179,7 @@ class StorageAreaImplTest : public testing::Test,
     base::RunLoop loop;
     db_->database().PostTaskWithThisObject(
         FROM_HERE,
-        base::BindLambdaForTesting([&](const storage::DomStorageDatabase& db) {
+        base::BindLambdaForTesting([&](const DomStorageDatabase& db) {
           ASSERT_TRUE(db.Put(key, value).ok());
           loop.Quit();
         }));
@@ -193,7 +195,7 @@ class StorageAreaImplTest : public testing::Test,
     base::RunLoop loop;
     db_->database().PostTaskWithThisObject(
         FROM_HERE,
-        base::BindLambdaForTesting([&](const storage::DomStorageDatabase& db) {
+        base::BindLambdaForTesting([&](const DomStorageDatabase& db) {
           ASSERT_TRUE(db.Get(ToBytes(key), &value).ok());
           loop.Quit();
         }));
@@ -206,7 +208,7 @@ class StorageAreaImplTest : public testing::Test,
     leveldb::Status status;
     db_->database().PostTaskWithThisObject(
         FROM_HERE,
-        base::BindLambdaForTesting([&](const storage::DomStorageDatabase& db) {
+        base::BindLambdaForTesting([&](const DomStorageDatabase& db) {
           std::vector<uint8_t> value;
           status = db.Get(ToBytes(key), &value);
           loop.Quit();
@@ -219,7 +221,7 @@ class StorageAreaImplTest : public testing::Test,
     base::RunLoop loop;
     db_->database().PostTaskWithThisObject(
         FROM_HERE,
-        base::BindLambdaForTesting([&](const storage::DomStorageDatabase& db) {
+        base::BindLambdaForTesting([&](const DomStorageDatabase& db) {
           leveldb::WriteBatch batch;
           ASSERT_TRUE(db.DeletePrefixed({}, &batch).ok());
           ASSERT_TRUE(db.Commit(&batch).ok());
@@ -305,7 +307,7 @@ class StorageAreaImplTest : public testing::Test,
   const std::vector<Observation>& observations() { return observations_; }
 
   MockDelegate* delegate() { return &delegate_; }
-  storage::AsyncDomStorageDatabase* database() { return db_.get(); }
+  AsyncDomStorageDatabase* database() { return db_.get(); }
 
   void should_record_send_old_value_observations(bool value) {
     should_record_send_old_value_observations_ = value;
@@ -361,7 +363,7 @@ class StorageAreaImplTest : public testing::Test,
   }
 
   base::test::TaskEnvironment task_environment_;
-  std::unique_ptr<storage::AsyncDomStorageDatabase> db_;
+  std::unique_ptr<AsyncDomStorageDatabase> db_;
   MockDelegate delegate_;
   std::unique_ptr<StorageAreaImpl> storage_area_;
   mojo::Remote<blink::mojom::StorageArea> storage_area_remote_;
@@ -1401,4 +1403,4 @@ TEST_P(StorageAreaImplParamTest, ForkFromEmptyMap) {
   EXPECT_EQ("", GetSyncStrUsingGetAll(fork.get(), test_key1_));
 }
 
-}  // namespace content
+}  // namespace storage

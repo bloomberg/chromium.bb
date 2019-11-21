@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_DOM_STORAGE_STORAGE_AREA_IMPL_H_
-#define CONTENT_BROWSER_DOM_STORAGE_STORAGE_AREA_IMPL_H_
+#ifndef COMPONENTS_SERVICES_STORAGE_DOM_STORAGE_STORAGE_AREA_IMPL_H_
+#define COMPONENTS_SERVICES_STORAGE_DOM_STORAGE_STORAGE_AREA_IMPL_H_
 
 #include <map>
 #include <memory>
@@ -16,7 +16,6 @@
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "components/services/storage/dom_storage/dom_storage_database.h"
-#include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
@@ -31,14 +30,12 @@ class ProcessMemoryDump;
 
 namespace storage {
 class AsyncDomStorageDatabase;
-}
 
-namespace content {
-
-// This is a wrapper around a storage::AsyncDomStorageDatabase. Multiple
-// interface endpoints can be bound to the same object. The wrapper adds a
-// couple of features not found directly in leveldb: 1) Adds the given prefix,
-// if any, to all keys. This allows the sharing of one
+// This is a wrapper around a AsyncDomStorageDatabase. Multiple interface
+// endpoints can be bound to the same object. The wrapper adds a couple of
+// features not found directly in leveldb:
+//
+// 1) Adds the given prefix, if any, to all keys. This allows the sharing of one
 //    database across many, possibly untrusted, consumers and ensuring that they
 //    can't access each other's values.
 // 2) Enforces a max_size constraint.
@@ -46,7 +43,7 @@ namespace content {
 // 4) Throttles requests to avoid overwhelming the disk.
 //
 // The wrapper supports two different caching modes.
-class CONTENT_EXPORT StorageAreaImpl : public blink::mojom::StorageArea {
+class StorageAreaImpl : public blink::mojom::StorageArea {
  public:
   using ValueMap = std::map<std::vector<uint8_t>, std::vector<uint8_t>>;
   using ValueMapCallback = base::OnceCallback<void(std::unique_ptr<ValueMap>)>;
@@ -54,14 +51,13 @@ class CONTENT_EXPORT StorageAreaImpl : public blink::mojom::StorageArea {
       std::pair<std::vector<uint8_t>, base::Optional<std::vector<uint8_t>>>;
   using KeysOnlyMap = std::map<std::vector<uint8_t>, size_t>;
 
-  class CONTENT_EXPORT Delegate {
+  class Delegate {
    public:
     virtual ~Delegate();
     virtual void OnNoBindings() = 0;
     virtual void PrepareToCommit(
-        std::vector<storage::DomStorageDatabase::KeyValuePair>*
-            extra_entries_to_add,
-        std::vector<storage::DomStorageDatabase::Key>* extra_keys_to_delete);
+        std::vector<DomStorageDatabase::KeyValuePair>* extra_entries_to_add,
+        std::vector<DomStorageDatabase::Key>* extra_keys_to_delete);
     virtual void DidCommit(leveldb::Status error) = 0;
     // Called during loading if no data was found. Needs to call |callback|.
     virtual void MigrateData(ValueMapCallback callback);
@@ -97,11 +93,11 @@ class CONTENT_EXPORT StorageAreaImpl : public blink::mojom::StorageArea {
 
   // |Delegate::OnNoBindings| will be called when this object has no more
   // bindings and all pending modifications have been processed.
-  StorageAreaImpl(storage::AsyncDomStorageDatabase* database,
+  StorageAreaImpl(AsyncDomStorageDatabase* database,
                   const std::string& prefix,
                   Delegate* delegate,
                   const Options& options);
-  StorageAreaImpl(storage::AsyncDomStorageDatabase* database,
+  StorageAreaImpl(AsyncDomStorageDatabase* database,
                   std::vector<uint8_t> prefix,
                   Delegate* delegate,
                   const Options& options);
@@ -158,7 +154,7 @@ class CONTENT_EXPORT StorageAreaImpl : public blink::mojom::StorageArea {
 
   const std::vector<uint8_t>& prefix() { return prefix_; }
 
-  storage::AsyncDomStorageDatabase* database() { return database_; }
+  AsyncDomStorageDatabase* database() { return database_; }
 
   // Commence aggressive flushing. This should be called early during startup,
   // before any localStorage writing. Currently scheduled writes will not be
@@ -243,16 +239,16 @@ class CONTENT_EXPORT StorageAreaImpl : public blink::mojom::StorageArea {
 
   // There can be only one fork operation per commit batch.
   struct CommitBatch {
-    bool clear_all_first;
+    CommitBatch();
+    ~CommitBatch();
+
+    bool clear_all_first = false;
     // Prefix copying is performed before applying changes.
     base::Optional<std::vector<uint8_t>> copy_to_prefix;
     // Used if the map_type_ is LOADED_KEYS_ONLY.
     std::map<std::vector<uint8_t>, std::vector<uint8_t>> changed_values;
     // Used if the map_type_ is LOADED_KEYS_AND_VALUES.
     std::set<std::vector<uint8_t>> changed_keys;
-
-    CommitBatch();
-    ~CommitBatch();
   };
 
   enum class MapState {
@@ -288,7 +284,7 @@ class CONTENT_EXPORT StorageAreaImpl : public blink::mojom::StorageArea {
   // |keys_only_map_| and sets the |map_state_| to LOADED_KEYS_ONLY
   void LoadMap(base::OnceClosure completion_callback);
   void OnMapLoaded(leveldb::Status status,
-                   std::vector<storage::DomStorageDatabase::KeyValuePair> data);
+                   std::vector<DomStorageDatabase::KeyValuePair> data);
   void OnGotMigrationData(std::unique_ptr<ValueMap> data);
   void CalculateStorageAndMemoryUsed();
   void OnLoadComplete();
@@ -328,7 +324,7 @@ class CONTENT_EXPORT StorageAreaImpl : public blink::mojom::StorageArea {
   mojo::ReceiverSet<blink::mojom::StorageArea> receivers_;
   mojo::AssociatedRemoteSet<blink::mojom::StorageAreaObserver> observers_;
   Delegate* delegate_;
-  storage::AsyncDomStorageDatabase* database_;
+  AsyncDomStorageDatabase* database_;
 
   // For commits to work correctly the map loaded state (keys vs keys & values)
   // must stay consistent for a given commit batch.
@@ -359,6 +355,6 @@ class CONTENT_EXPORT StorageAreaImpl : public blink::mojom::StorageArea {
   DISALLOW_COPY_AND_ASSIGN(StorageAreaImpl);
 };
 
-}  // namespace content
+}  // namespace storage
 
-#endif  // CONTENT_BROWSER_DOM_STORAGE_STORAGE_AREA_IMPL_H_
+#endif  // COMPONENTS_SERVICES_STORAGE_DOM_STORAGE_STORAGE_AREA_IMPL_H_

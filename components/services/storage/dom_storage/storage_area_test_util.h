@@ -1,8 +1,9 @@
 // Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-#ifndef CONTENT_BROWSER_DOM_STORAGE_TEST_STORAGE_AREA_TEST_UTIL_H_
-#define CONTENT_BROWSER_DOM_STORAGE_TEST_STORAGE_AREA_TEST_UTIL_H_
+
+#ifndef COMPONENTS_SERVICES_STORAGE_DOM_STORAGE_STORAGE_AREA_TEST_UTIL_H_
+#define COMPONENTS_SERVICES_STORAGE_DOM_STORAGE_STORAGE_AREA_TEST_UTIL_H_
 
 #include <stdint.h>
 #include <vector>
@@ -17,7 +18,7 @@
 
 // Utility functions and classes for testing StorageArea implementations.
 
-namespace content {
+namespace storage {
 namespace test {
 
 // Creates a callback that sets the given |success_out| to the boolean argument,
@@ -115,6 +116,6 @@ class MockLevelDBObserver : public blink::mojom::StorageAreaObserver {
 };
 
 }  // namespace test
-}  // namespace content
+}  // namespace storage
 
-#endif  // CONTENT_BROWSER_DOM_STORAGE_TEST_STORAGE_AREA_TEST_UTIL_H_
+#endif  // COMPONENTS_SERVICES_STORAGE_DOM_STORAGE_STORAGE_AREA_TEST_UTIL_H_

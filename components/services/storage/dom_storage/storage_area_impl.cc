@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/dom_storage/storage_area_impl.h"
+#include "components/services/storage/dom_storage/storage_area_impl.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -15,14 +15,13 @@
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "third_party/leveldatabase/env_chromium.h"
 
-namespace content {
+namespace storage {
 
-StorageAreaImpl::Delegate::~Delegate() {}
+StorageAreaImpl::Delegate::~Delegate() = default;
 
 void StorageAreaImpl::Delegate::PrepareToCommit(
-    std::vector<storage::DomStorageDatabase::KeyValuePair>*
-        extra_entries_to_add,
-    std::vector<storage::DomStorageDatabase::Key>* extra_keys_to_delete) {}
+    std::vector<DomStorageDatabase::KeyValuePair>* extra_entries_to_add,
+    std::vector<DomStorageDatabase::Key>* extra_keys_to_delete) {}
 
 void StorageAreaImpl::Delegate::MigrateData(
     base::OnceCallback<void(std::unique_ptr<ValueMap>)> callback) {
@@ -56,10 +55,11 @@ base::TimeDelta StorageAreaImpl::RateLimiter::ComputeDelayNeeded(
   return base::TimeDelta();
 }
 
-StorageAreaImpl::CommitBatch::CommitBatch() : clear_all_first(false) {}
-StorageAreaImpl::CommitBatch::~CommitBatch() {}
+StorageAreaImpl::CommitBatch::CommitBatch() = default;
 
-StorageAreaImpl::StorageAreaImpl(storage::AsyncDomStorageDatabase* database,
+StorageAreaImpl::CommitBatch::~CommitBatch() = default;
+
+StorageAreaImpl::StorageAreaImpl(AsyncDomStorageDatabase* database,
                                  const std::string& prefix,
                                  Delegate* delegate,
                                  const Options& options)
@@ -68,7 +68,7 @@ StorageAreaImpl::StorageAreaImpl(storage::AsyncDomStorageDatabase* database,
                       delegate,
                       options) {}
 
-StorageAreaImpl::StorageAreaImpl(storage::AsyncDomStorageDatabase* database,
+StorageAreaImpl::StorageAreaImpl(AsyncDomStorageDatabase* database,
                                  std::vector<uint8_t> prefix,
                                  Delegate* delegate,
                                  const Options& options)
@@ -576,9 +576,9 @@ void StorageAreaImpl::LoadMap(base::OnceClosure completion_callback) {
 
   database_->RunDatabaseTask(
       base::BindOnce(
-          [](const storage::DomStorageDatabase::Key& prefix,
-             const storage::DomStorageDatabase& db) {
-            std::vector<storage::DomStorageDatabase::KeyValuePair> data;
+          [](const DomStorageDatabase::Key& prefix,
+             const DomStorageDatabase& db) {
+            std::vector<DomStorageDatabase::KeyValuePair> data;
             leveldb::Status status = db.GetPrefixed(prefix, &data);
             return std::make_tuple(status, std::move(data));
           },
@@ -589,7 +589,7 @@ void StorageAreaImpl::LoadMap(base::OnceClosure completion_callback) {
 
 void StorageAreaImpl::OnMapLoaded(
     leveldb::Status status,
-    std::vector<storage::DomStorageDatabase::KeyValuePair> data) {
+    std::vector<DomStorageDatabase::KeyValuePair> data) {
   DCHECK(keys_values_map_.empty());
   DCHECK_EQ(map_state_, MapState::LOADING_FROM_DATABASE);
 
@@ -605,8 +605,8 @@ void StorageAreaImpl::OnMapLoaded(
   keys_values_map_.clear();
   for (auto& entry : data) {
     DCHECK_GE(entry.key.size(), prefix_.size());
-    keys_values_map_[storage::DomStorageDatabase::Key(
-        entry.key.begin() + prefix_.size(), entry.key.end())] =
+    keys_values_map_[DomStorageDatabase::Key(entry.key.begin() + prefix_.size(),
+                                             entry.key.end())] =
         std::move(entry.value);
   }
   CalculateStorageAndMemoryUsed();
@@ -764,11 +764,11 @@ void StorageAreaImpl::CommitChanges() {
 
   // Commit all our changes in a single batch.
   struct Commit {
-    storage::DomStorageDatabase::Key prefix;
+    DomStorageDatabase::Key prefix;
     bool clear_all_first;
-    std::vector<storage::DomStorageDatabase::KeyValuePair> entries_to_add;
-    std::vector<storage::DomStorageDatabase::Key> keys_to_delete;
-    base::Optional<storage::DomStorageDatabase::Key> copy_to_prefix;
+    std::vector<DomStorageDatabase::KeyValuePair> entries_to_add;
+    std::vector<DomStorageDatabase::Key> keys_to_delete;
+    base::Optional<DomStorageDatabase::Key> copy_to_prefix;
   };
 
   Commit commit;
@@ -786,7 +786,7 @@ void StorageAreaImpl::CommitChanges() {
         << "Map state and commit state out of sync.";
     for (const auto& key : commit_batch_->changed_keys) {
       data_size += key.size();
-      storage::DomStorageDatabase::Key prefixed_key;
+      DomStorageDatabase::Key prefixed_key;
       prefixed_key.reserve(prefix_.size() + key.size());
       prefixed_key.insert(prefixed_key.end(), prefix_.begin(), prefix_.end());
       prefixed_key.insert(prefixed_key.end(), key.begin(), key.end());
@@ -805,7 +805,7 @@ void StorageAreaImpl::CommitChanges() {
     for (auto& entry : commit_batch_->changed_values) {
       const auto& key = entry.first;
       data_size += key.size();
-      storage::DomStorageDatabase::Key prefixed_key;
+      DomStorageDatabase::Key prefixed_key;
       prefixed_key.reserve(prefix_.size() + key.size());
       prefixed_key.insert(prefixed_key.end(), prefix_.begin(), prefix_.end());
       prefixed_key.insert(prefixed_key.end(), key.begin(), key.end());
@@ -834,7 +834,7 @@ void StorageAreaImpl::CommitChanges() {
 
   database_->RunDatabaseTask(
       base::BindOnce(
-          [](Commit commit, const storage::DomStorageDatabase& db) {
+          [](Commit commit, const DomStorageDatabase& db) {
             leveldb::WriteBatch batch;
             if (commit.clear_all_first)
               db.DeletePrefixed(commit.prefix, &batch);
@@ -949,4 +949,4 @@ void StorageAreaImpl::OnForkStateLoaded(bool database_enabled,
   OnLoadComplete();
 }
 
-}  // namespace content
+}  // namespace storage

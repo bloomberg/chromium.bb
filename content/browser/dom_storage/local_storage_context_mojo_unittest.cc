@@ -16,10 +16,10 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
 #include "build/build_config.h"
+#include "components/services/storage/dom_storage/storage_area_test_util.h"
 #include "components/services/storage/public/cpp/constants.h"
 #include "content/browser/dom_storage/dom_storage_database.h"
 #include "content/browser/dom_storage/dom_storage_types.h"
-#include "content/browser/dom_storage/test/storage_area_test_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_usage_info.h"
 #include "content/public/test/browser_task_environment.h"
@@ -223,7 +223,7 @@ class LocalStorageContextMojoTest : public testing::Test {
     context()->BindStorageArea(kOrigin,
                                dummy_area.BindNewPipeAndPassReceiver());
     std::vector<uint8_t> result;
-    bool success = test::GetSync(area.get(), key, &result);
+    bool success = storage::test::GetSync(area.get(), key, &result);
     return success ? base::Optional<std::vector<uint8_t>>(result)
                    : base::nullopt;
   }
@@ -240,8 +240,9 @@ class LocalStorageContextMojoTest : public testing::Test {
     base::RunLoop run_loop;
     context->BindStorageArea(url::Origin::Create(GURL("http://foobar.com")),
                              area.BindNewPipeAndPassReceiver());
-    area->Put(key, value, base::nullopt, "source",
-              test::MakeSuccessCallback(run_loop.QuitClosure(), &success));
+    area->Put(
+        key, value, base::nullopt, "source",
+        storage::test::MakeSuccessCallback(run_loop.QuitClosure(), &success));
     run_loop.Run();
     EXPECT_TRUE(success);
     area.reset();
@@ -259,9 +260,9 @@ class LocalStorageContextMojoTest : public testing::Test {
     std::vector<blink::mojom::KeyValuePtr> data;
     bool success = false;
     bool done = false;
-    area->GetAll(
-        test::GetAllCallback::CreateAndBind(&done, run_loop.QuitClosure()),
-        test::MakeGetAllCallback(&success, &data));
+    area->GetAll(storage::test::GetAllCallback::CreateAndBind(
+                     &done, run_loop.QuitClosure()),
+                 storage::test::MakeGetAllCallback(&success, &data));
     run_loop.Run();
     EXPECT_TRUE(done);
     EXPECT_TRUE(success);
@@ -741,7 +742,7 @@ TEST_F(LocalStorageContextMojoTest, Migration) {
 
   {
     std::vector<uint8_t> result;
-    bool success = test::GetSync(
+    bool success = storage::test::GetSync(
         area.get(), LocalStorageContextMojo::MigrateString(key), &result);
     EXPECT_TRUE(success);
     EXPECT_EQ(LocalStorageContextMojo::MigrateString(value), result);
@@ -749,7 +750,7 @@ TEST_F(LocalStorageContextMojoTest, Migration) {
 
   {
     std::vector<uint8_t> result;
-    bool success = test::GetSync(
+    bool success = storage::test::GetSync(
         area.get(), LocalStorageContextMojo::MigrateString(key2), &result);
     EXPECT_TRUE(success);
     EXPECT_EQ(LocalStorageContextMojo::MigrateString(value), result);
@@ -796,17 +797,17 @@ TEST_F(LocalStorageContextMojoTest, FixUp) {
 
   {
     std::vector<uint8_t> result;
-    bool success =
-        test::GetSync(area.get(), StdStringToUint8Vector("\x01key"), &result);
+    bool success = storage::test::GetSync(
+        area.get(), StdStringToUint8Vector("\x01key"), &result);
     EXPECT_TRUE(success);
     EXPECT_EQ(StdStringToUint8Vector("value1"), result);
   }
   {
     std::vector<uint8_t> result;
-    bool success = test::GetSync(area.get(),
-                                 StdStringToUint8Vector("\x01"
-                                                        "foo"),
-                                 &result);
+    bool success = storage::test::GetSync(area.get(),
+                                          StdStringToUint8Vector("\x01"
+                                                                 "foo"),
+                                          &result);
     EXPECT_TRUE(success);
     EXPECT_EQ(StdStringToUint8Vector("value3"), result);
   }

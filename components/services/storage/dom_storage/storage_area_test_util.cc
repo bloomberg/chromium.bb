@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/dom_storage/test/storage_area_test_util.h"
+#include "components/services/storage/dom_storage/storage_area_test_util.h"
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
@@ -11,15 +11,18 @@
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/self_owned_associated_receiver.h"
 
-namespace content {
+namespace storage {
 namespace test {
+
 namespace {
+
 void SuccessCallback(base::OnceClosure callback,
                      bool* success_out,
                      bool success) {
   *success_out = success;
   std::move(callback).Run();
 }
+
 }  // namespace
 
 base::OnceCallback<void(bool)> MakeSuccessCallback(base::OnceClosure callback,
@@ -177,4 +180,4 @@ MockLevelDBObserver::Bind() {
 }
 
 }  // namespace test
-}  // namespace content
+}  // namespace storage

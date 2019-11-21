@@ -31,11 +31,11 @@
 #include "build/build_config.h"
 #include "components/services/storage/dom_storage/async_dom_storage_database.h"
 #include "components/services/storage/dom_storage/dom_storage_database.h"
+#include "components/services/storage/dom_storage/storage_area_impl.h"
 #include "components/services/storage/public/cpp/constants.h"
 #include "content/browser/dom_storage/dom_storage_database.h"
 #include "content/browser/dom_storage/dom_storage_types.h"
 #include "content/browser/dom_storage/local_storage_database.pb.h"
-#include "content/browser/dom_storage/storage_area_impl.h"
 #include "content/public/browser/storage_usage_info.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "sql/database.h"
@@ -60,6 +60,9 @@ namespace content {
 //   value: <script controlled value>
 
 namespace {
+
+// Temporary alias as this code moves incrementally into the storage namespace.
+using StorageAreaImpl = storage::StorageAreaImpl;
 
 constexpr base::StringPiece kVersionKey = "VERSION";
 const uint8_t kMetaPrefix[] = {'M', 'E', 'T', 'A', ':'};
