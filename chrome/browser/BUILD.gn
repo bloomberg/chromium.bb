@@ -3772,6 +3772,7 @@ jumbo_static_library("browser") {
       "//chromeos/strings",
       "//components/services/font:lib",
       "//components/services/font/public/mojom",
+      "//ui/events/ozone",
       "//ui/ozone",
     ]
     allow_circular_includes_from += [ "//chrome/browser/chromeos" ]

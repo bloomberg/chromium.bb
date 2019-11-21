@@ -189,7 +189,7 @@
 #include "components/arc/arc_features.h"
 #include "printing/printing_features_chromeos.h"
 #include "third_party/cros_system_api/switches/chrome_switches.h"
-#include "ui/events/ozone/evdev/touch_filter/palm_detection_filter_factory.h"
+#include "ui/events/ozone/features.h"
 #endif  // OS_CHROMEOS
 
 #if defined(OS_MACOSX)
