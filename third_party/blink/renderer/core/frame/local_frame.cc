@@ -824,7 +824,7 @@ String LocalFrame::GetLayerTreeAsTextForTesting(unsigned flags) const {
   } else {
     if (const auto* root_layer =
             ContentLayoutObject()->Compositor()->RootGraphicsLayer()) {
-      if (flags & kLayerTreeIncludesRootLayer && IsMainFrame()) {
+      if (flags & kLayerTreeIncludesAllLayers && IsMainFrame()) {
         while (root_layer->Parent())
           root_layer = root_layer->Parent();
       }
