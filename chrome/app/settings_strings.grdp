@@ -4119,6 +4119,9 @@
     <message name="IDS_SETTINGS_CHANGE_PICTURE_OLD_PHOTO" desc="The text on the existing photo, which was either taken by the webcam or read from a file.">
       Existing photo from camera or file
     </message>
+    <message name="IDS_SETTINGS_CHANGE_PICTURE_OLD_VIDEO" desc="The text on the existing video, which was either taken by the webcam or read from a file.">
+      Existing video from camera or file
+    </message>
   </if>
 
   <if expr="not chromeos">
