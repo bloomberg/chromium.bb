@@ -221,12 +221,12 @@ AutomationEditableText.prototype = {
       lineText += ' ' +
           Msgs.getMsg(this.multiline ? 'tag_textarea_brl' : 'role_textbox_brl');
     }
+    var startIndex = this.start - lineStart;
+    var endIndex = this.end - lineStart;
+    var spannable = new Spannable(lineText, new Output.NodeSpan(this.node_));
 
-    ChromeVox.braille.write(new NavBraille({
-      text: lineText,
-      startIndex: this.start - lineStart,
-      endIndex: this.end - lineStart
-    }));
+    ChromeVox.braille.write(new NavBraille(
+        {text: spannable, startIndex: startIndex, endIndex: endIndex}));
   },
 
   /**

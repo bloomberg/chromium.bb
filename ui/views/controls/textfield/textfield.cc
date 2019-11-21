@@ -1069,9 +1069,7 @@ void Textfield::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 
 bool Textfield::HandleAccessibleAction(const ui::AXActionData& action_data) {
   if (action_data.action == ax::mojom::Action::kSetSelection) {
-    if (action_data.anchor_node_id != action_data.focus_node_id)
-      return false;
-    // TODO(nektar): Check that the focus_node_id matches the ID of this node.
+    DCHECK_EQ(action_data.anchor_node_id, action_data.focus_node_id);
     const gfx::Range range(action_data.anchor_offset, action_data.focus_offset);
     return SetEditableSelectionRange(range);
   }
