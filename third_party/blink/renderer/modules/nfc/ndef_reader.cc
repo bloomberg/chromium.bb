@@ -88,8 +88,8 @@ ScriptPromise NDEFReader::scan(ScriptState* script_state,
   // TODO(https://crbug.com/520391): Instead of NDEFScanOptions#url, introduce
   // and use NDEFScanOptions#id to do the filtering after we add support for
   // writing NDEFRecord#id.
-  if (options->hasURL() && !options->url().IsEmpty()) {
-    KURL pattern_url(options->url());
+  if (options->hasId() && !options->id().IsEmpty()) {
+    KURL pattern_url(options->id());
     if (!pattern_url.IsValid() || pattern_url.Protocol() != "https") {
       exception_state.ThrowDOMException(DOMExceptionCode::kSyntaxError,
                                         "Invalid URL pattern was provided.");
