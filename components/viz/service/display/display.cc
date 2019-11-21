@@ -760,10 +760,6 @@ void Display::DidReceivePresentationFeedback(
   pending_presentation_group_timings_.pop_front();
 }
 
-void Display::DidFinishLatencyInfo(
-    const std::vector<ui::LatencyInfo>& latency_info) {
-}
-
 void Display::SetNeedsRedrawRect(const gfx::Rect& damage_rect) {
   aggregator_->SetFullDamageForSurface(current_surface_id_);
   if (scheduler_) {
