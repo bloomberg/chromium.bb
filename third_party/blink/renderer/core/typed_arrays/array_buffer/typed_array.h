@@ -34,8 +34,6 @@
 
 namespace blink {
 
-// Base class for all WebGL<T>Array types holding integral
-// (non-floating-point) values.
 template <typename T, bool clamped = false>
 class TypedArray : public ArrayBufferView {
  public:
@@ -153,11 +151,6 @@ inline void TypedArray<double, false>::Set(unsigned index, double value) {
   Data()[index] = value;
 }
 
-template <typename T, bool clamped>
-inline void TypedArray<T, clamped>::Set(unsigned index, uint64_t value) {
-  NOTREACHED();
-}
-
 template <>
 inline void TypedArray<int64_t, false>::Set(unsigned index, uint64_t value) {
   if (index >= length_)
@@ -172,10 +165,25 @@ inline void TypedArray<uint64_t, false>::Set(unsigned index, uint64_t value) {
   Data()[index] = value;
 }
 
-template <typename T, bool clamped>
-inline ArrayBufferView::ViewType TypedArray<T, clamped>::GetType() const {
+template <>
+inline void TypedArray<int64_t, false>::Set(unsigned index, double value) {
+  // This version of {Set} is not supposed to be used for a TypedArray of type
+  // int64_t.
   NOTREACHED();
-  return ArrayBufferView::kTypeInt16;
+}
+
+template <>
+inline void TypedArray<uint64_t, false>::Set(unsigned index, double value) {
+  // This version of {Set} is not supposed to be used for a TypedArray of type
+  // uint64_t.
+  NOTREACHED();
+}
+
+template <typename T, bool clamped>
+inline void TypedArray<T, clamped>::Set(unsigned index, uint64_t value) {
+  // This version of {Set} is only supposed to be used for a TypedArrays of type
+  // int64_t or uint64_t.
+  NOTREACHED();
 }
 
 #define FOREACH_VIEW_TYPE(V) \
