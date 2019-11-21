@@ -48,6 +48,8 @@
     gru-factory-gru-9017.B-factorybranch
   factory-grunt-11164.B-buildspec
     grunt-factory-grunt-11164.B-factorybranch
+  factory-hatch-12692.B-buildspec
+    hatch-factory-hatch-12692.B-factorybranch
   factory-kukui-12587.B-buildspec
     kukui-factory-kukui-12587.B-factorybranch
   factory-mistral-12361.B-buildspec
@@ -1141,6 +1143,8 @@
     gru-factory-gru-9017.B-factorybranch-tryjob
   factory-grunt-11164.B-buildspec-tryjob
     grunt-factory-grunt-11164.B-factorybranch-tryjob
+  factory-hatch-12692.B-buildspec-tryjob
+    hatch-factory-hatch-12692.B-factorybranch-tryjob
   factory-kukui-12587.B-buildspec-tryjob
     kukui-factory-kukui-12587.B-factorybranch-tryjob
   factory-mistral-12361.B-buildspec-tryjob
@@ -1509,6 +1513,7 @@
   hana-tot-chrome-pfq-informational-tryjob
   hana-tot-chromium-pfq-informational-tryjob
   hana-unittest-stress
+  hatch-factory-hatch-12692.B-factorybranch-tryjob
   hatch-full-tryjob
   hatch-llvm-next-toolchain-tryjob
   hatch-llvm-toolchain-tryjob

@@ -3031,6 +3031,7 @@ def FactoryBuilders(site_config, _boards_dict, _ge_build_config):
       (ACTIVE, 'factory-sarien-12033.B', ['sarien']),
       (ACTIVE, 'factory-mistral-12361.B', ['mistral']),
       (ACTIVE, 'factory-kukui-12587.B', ['kukui']),
+      (ACTIVE, 'factory-hatch-12692.B', ['hatch']),
       # This is intended to create master branch tryjobs, NOT for production
       # builds. Update the associated list of boards as needed.
       (None, 'master', ['atlas', 'octopus', 'rammus', 'coral', 'eve',
