@@ -114,6 +114,10 @@ async function testDisplayPanelChangingPanelTypes(done) {
   assertEquals(
       signal, 'cancel', 'Expected signal name "cancel". Got ' + signal);
 
+  // Check the progress panel text container has correct aria role.
+  const textHost = panelItem.shadowRoot.querySelector('.xf-panel-text');
+  assertEquals('alert', textHost.getAttribute('role'));
+
   // Change the panel item to an error panel.
   panelItem.panelType = panelItem.panelTypeError;
 
@@ -163,6 +167,9 @@ async function testDisplayPanelChangingPanelTypes(done) {
   signal = 'none';
   expand.click();
   assertEquals(signal, 'none', 'Expected no signal. Got ' + signal);
+
+  // Check the summary panel text container has no aria role.
+  assertEquals('', textHost.getAttribute('role'));
 
   done();
 }
