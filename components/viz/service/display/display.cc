@@ -626,7 +626,9 @@ bool Display::DrawAndSwap() {
                                                  "Display::DrawAndSwap");
 
     cc::benchmark_instrumentation::IssueDisplayRenderingStatsEvent();
-    renderer_->SwapBuffers(std::move(frame.metadata.latency_info));
+    DirectRenderer::SwapFrameData swap_frame_data;
+    swap_frame_data.latency_info = std::move(frame.metadata.latency_info);
+    renderer_->SwapBuffers(std::move(swap_frame_data));
     if (scheduler_)
       scheduler_->DidSwapBuffers();
   } else {

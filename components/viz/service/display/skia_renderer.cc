@@ -812,11 +812,11 @@ void SkiaRenderer::FinishDrawingFrame() {
 #endif
 }
 
-void SkiaRenderer::SwapBuffers(std::vector<ui::LatencyInfo> latency_info) {
+void SkiaRenderer::SwapBuffers(SwapFrameData swap_frame_data) {
   DCHECK(visible_);
   TRACE_EVENT0("viz,benchmark", "SkiaRenderer::SwapBuffers");
   OutputSurfaceFrame output_frame;
-  output_frame.latency_info = std::move(latency_info);
+  output_frame.latency_info = std::move(swap_frame_data.latency_info);
   output_frame.size = surface_size_for_swap_buffers();
   if (use_swap_with_bounds_) {
     output_frame.content_bounds = std::move(swap_content_bounds_);
