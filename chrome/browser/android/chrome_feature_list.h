@@ -83,7 +83,6 @@ extern const base::Feature kJellyBeanSupported;
 extern const base::Feature kLanguagesPreference;
 extern const base::Feature kNewPhotoPicker;
 extern const base::Feature kNotificationSuspender;
-extern const base::Feature kNoCreditCardAbort;
 extern const base::Feature kNTPLaunchAfterInactivity;
 extern const base::Feature kOfflineHome;
 extern const base::Feature kOfflineIndicatorV2;

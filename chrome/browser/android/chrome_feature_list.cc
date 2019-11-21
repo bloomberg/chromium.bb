@@ -150,7 +150,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kJellyBeanSupported,
     &kNewPhotoPicker,
     &kNotificationSuspender,
-    &kNoCreditCardAbort,
     &kNTPLaunchAfterInactivity,
     &kOfflineHome,
     &kOfflineIndicatorV2,
@@ -461,9 +460,6 @@ const base::Feature kNewPhotoPicker{"NewPhotoPicker",
 // okay about leaving it on.
 const base::Feature kNotificationSuspender{"NotificationSuspender",
                                            base::FEATURE_ENABLED_BY_DEFAULT};
-
-const base::Feature kNoCreditCardAbort{"NoCreditCardAbort",
-                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kNTPLaunchAfterInactivity{
     "NTPLaunchAfterInactivity", base::FEATURE_DISABLED_BY_DEFAULT};

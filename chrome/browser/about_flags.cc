@@ -2620,11 +2620,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kUseSurfaceLayerForVideoName,
      flag_descriptions::kUseSurfaceLayerForVideoDescription, kOsAll,
      FEATURE_VALUE_TYPE(media::kUseSurfaceLayerForVideo)},
-#if defined(OS_ANDROID)
-    {"no-credit-card-abort", flag_descriptions::kNoCreditCardAbort,
-     flag_descriptions::kNoCreditCardAbortDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kNoCreditCardAbort)},
-#endif  // OS_ANDROID
 #if defined(OS_CHROMEOS)
     {"arc-boot-completed-broadcast", flag_descriptions::kArcBootCompleted,
      flag_descriptions::kArcBootCompletedDescription, kOsCrOS,

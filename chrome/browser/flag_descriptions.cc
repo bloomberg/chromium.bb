@@ -2598,10 +2598,6 @@ const char kManualPasswordGenerationAndroidDescription[] =
     "Whether Chrome should offer users the option to manually request to "
     "generate passwords on Android.";
 
-const char kNoCreditCardAbort[] = "No Credit Card Abort";
-const char kNoCreditCardAbortDescription[] =
-    "Whether or not the No Credit Card Abort is enabled.";
-
 const char kOfflineIndicatorAlwaysHttpProbeName[] = "Always http probe";
 const char kOfflineIndicatorAlwaysHttpProbeDescription[] =
     "Always do http probe to detect network connectivity for offline indicator "

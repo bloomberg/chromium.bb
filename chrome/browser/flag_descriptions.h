@@ -1535,9 +1535,6 @@ extern const char kInterestFeedContentSuggestionsDescription[];
 extern const char kManualPasswordGenerationAndroidName[];
 extern const char kManualPasswordGenerationAndroidDescription[];
 
-extern const char kNoCreditCardAbort[];
-extern const char kNoCreditCardAbortDescription[];
-
 extern const char kOfflineIndicatorAlwaysHttpProbeName[];
 extern const char kOfflineIndicatorAlwaysHttpProbeDescription[];
 
