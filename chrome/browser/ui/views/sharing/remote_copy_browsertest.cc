@@ -23,6 +23,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "net/http/http_status_code.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/clipboard_constants.h"
 #include "ui/base/clipboard/clipboard_monitor.h"
@@ -34,7 +35,15 @@
 namespace {
 const char kDeviceName[] = "test device name";
 const char kText[] = "test text";
-const char kHistogramName[] = "Sharing.RemoteCopyHandleMessageResult";
+const char kResultHistogram[] = "Sharing.RemoteCopyHandleMessageResult";
+const char kTextSizeHistogram[] = "Sharing.RemoteCopyReceivedTextSize";
+const char kImageSizeBeforeDecodeHistogram[] =
+    "Sharing.RemoteCopyReceivedImageSizeBeforeDecode";
+const char kImageSizeAfterDecodeHistogram[] =
+    "Sharing.RemoteCopyReceivedImageSizeAfterDecode";
+const char kStatusCodeHistogram[] = "Sharing.RemoteCopyLoadImageStatusCode";
+const char kLoadTimeHistogram[] = "Sharing.RemoteCopyLoadImageTime";
+const char kDecodeTimeHistogram[] = "Sharing.RemoteCopyDecodeImageTime";
 
 class ClipboardObserver : public ui::ClipboardObserver {
  public:
@@ -166,7 +175,7 @@ IN_PROC_BROWSER_TEST_F(RemoteCopyDisabledBrowserTest, FeatureDisabled) {
   // The clipboard is still empty because the feature is disabled and the
   // handler is not installed.
   ASSERT_TRUE(GetAvailableClipboardTypes().empty());
-  histograms_.ExpectTotalCount(kHistogramName, 0);
+  histograms_.ExpectTotalCount(kResultHistogram, 0);
 }
 
 class RemoteCopyBrowserTest : public RemoteCopyBrowserTestBase {
@@ -201,7 +210,9 @@ IN_PROC_BROWSER_TEST_F(RemoteCopyBrowserTest, Text) {
                 base::ASCIIToUTF16(kDeviceName)),
             GetNotification().title());
   histograms_.ExpectUniqueSample(
-      kHistogramName, RemoteCopyHandleMessageResult::kSuccessHandledText, 1);
+      kResultHistogram, RemoteCopyHandleMessageResult::kSuccessHandledText, 1);
+  histograms_.ExpectUniqueSample(kTextSizeHistogram, std::string(kText).size(),
+                                 1);
 }
 
 IN_PROC_BROWSER_TEST_F(RemoteCopyBrowserTest, ImageUrl) {
@@ -223,14 +234,19 @@ IN_PROC_BROWSER_TEST_F(RemoteCopyBrowserTest, ImageUrl) {
                 IDS_SHARING_REMOTE_COPY_NOTIFICATION_TITLE_IMAGE_CONTENT,
                 base::ASCIIToUTF16(kDeviceName)),
             GetNotification().title());
+  histograms_.ExpectUniqueSample(kStatusCodeHistogram, net::HTTP_OK, 1);
+  histograms_.ExpectTotalCount(kLoadTimeHistogram, 1);
+  histograms_.ExpectUniqueSample(kImageSizeBeforeDecodeHistogram, 810490, 1);
+  histograms_.ExpectTotalCount(kDecodeTimeHistogram, 1);
+  histograms_.ExpectUniqueSample(kImageSizeAfterDecodeHistogram, 19660800, 1);
   histograms_.ExpectUniqueSample(
-      kHistogramName, RemoteCopyHandleMessageResult::kSuccessHandledImage, 1);
+      kResultHistogram, RemoteCopyHandleMessageResult::kSuccessHandledImage, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(RemoteCopyBrowserTest, TextThenImageUrl) {
   // The clipboard is empty.
   ASSERT_TRUE(GetAvailableClipboardTypes().empty());
-  histograms_.ExpectTotalCount(kHistogramName, 0);
+  histograms_.ExpectTotalCount(kResultHistogram, 0);
 
   // Send a message with text.
   SendTextMessage(kDeviceName, kText);
@@ -240,9 +256,9 @@ IN_PROC_BROWSER_TEST_F(RemoteCopyBrowserTest, TextThenImageUrl) {
   ASSERT_EQ(1u, types.size());
   ASSERT_EQ(ui::kMimeTypeText, base::UTF16ToASCII(types[0]));
   ASSERT_EQ(kText, ReadClipboardText());
-  histograms_.ExpectTotalCount(kHistogramName, 1);
+  histograms_.ExpectTotalCount(kResultHistogram, 1);
   histograms_.ExpectUniqueSample(
-      kHistogramName, RemoteCopyHandleMessageResult::kSuccessHandledText, 1);
+      kResultHistogram, RemoteCopyHandleMessageResult::kSuccessHandledText, 1);
 
   // Send a message with an image url.
   SendImageMessage(kDeviceName, server_->GetURL("/image_decoding/droids.jpg"));
@@ -252,7 +268,7 @@ IN_PROC_BROWSER_TEST_F(RemoteCopyBrowserTest, TextThenImageUrl) {
   ASSERT_EQ(1u, types.size());
   ASSERT_EQ(ui::kMimeTypePNG, base::UTF16ToASCII(types[0]));
   ASSERT_EQ(std::string(), ReadClipboardText());
-  histograms_.ExpectTotalCount(kHistogramName, 2);
+  histograms_.ExpectTotalCount(kResultHistogram, 2);
   histograms_.ExpectBucketCount(
-      kHistogramName, RemoteCopyHandleMessageResult::kSuccessHandledImage, 1);
+      kResultHistogram, RemoteCopyHandleMessageResult::kSuccessHandledImage, 1);
 }
