@@ -785,6 +785,9 @@ need to be translated for each locale.-->
       <message name="IDS_MESSAGE_NOTIFICATION_SETTINGS_BUTTON_ACCESSIBLE_NAME" desc="The spoken feedback text for the settings button in a notification. Usually 'button' is suffixed to this text automatically.">
         Notification settings
       </message>
+      <message name="IDS_MESSAGE_NOTIFICATION_ACCESSIBLE_NAME" desc="The spoken feedback text when focusing a notification using ChromeVox.">
+        Notification
+      </message>
       <message name="IDS_MESSAGE_NOTIFICATION_SEND_TAB_TO_SELF_DEVICE_INFO" desc="The message text for the notification when the user receive a shared tab from another device. It shows the name of the device which shared the tab.">
         Shared from <ph name="DEVICE_NAME">$1<ex>Ted's Pixel 2</ex></ph>
       </message>
