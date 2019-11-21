@@ -8,7 +8,9 @@
 
 from __future__ import print_function
 
+import base64
 import os
+import shutil
 import multiprocessing
 
 from six.moves import urllib
@@ -16,15 +18,18 @@ from six.moves import urllib
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
+from chromite.lib import gob_util
+from chromite.lib import osutils
+from chromite.lib import path_util
 from chromite.lib import remote_access
 from chromite.lib import timeout_util
 
 
-NEBRASKA_SOURCE_FILE = os.path.join(constants.SOURCE_ROOT, 'src', 'platform',
-                                    'dev', 'nebraska', 'nebraska.py')
+NEBRASKA_FILENAME = 'nebraska.py'
 
 # Error msg in loading shared libraries when running python command.
 ERROR_MSG_IN_LOADING_LIB = 'error while loading shared libraries'
+
 
 class Error(Exception):
   """Base exception class of nebraska errors."""
@@ -54,7 +59,7 @@ class RemoteNebraskaWrapper(multiprocessing.Process):
   LOG_FILE_PATH = '/tmp/nebraska.log'
   REQUEST_LOG_FILE_PATH = '/tmp/nebraska_request_log.json'
 
-  NEBRASKA_PATH = '/usr/local/bin/nebraska.py'
+  NEBRASKA_PATH = os.path.join('/usr/local/bin', NEBRASKA_FILENAME)
 
   def __init__(self, remote_device, nebraska_bin=None,
                update_payloads_address=None, update_metadata_dir=None,
@@ -322,3 +327,33 @@ class RemoteNebraskaWrapper(multiprocessing.Process):
           raise NebraskaStartupError(e.result.error)
 
       raise NebraskaStartupError(str(e))
+
+  @staticmethod
+  def GetNebraskaSrcFile(source_dir):
+    """Returns path to nebraska source file.
+
+    nebraska is copied to source_dir, either from a local file or by
+    downloading from googlesource.com.
+    """
+    assert os.path.isdir(source_dir), ('%s must be a valid directory.'
+                                       % source_dir)
+
+    nebraska_path = os.path.join(source_dir, NEBRASKA_FILENAME)
+    checkout = path_util.DetermineCheckout()
+    if checkout.type == path_util.CHECKOUT_TYPE_GCLIENT:
+      # Chrome checkout. Download from googlesource.
+      nebraska_url_path = '%s/+/%s/%s?format=text' % (
+          'chromiumos/platform/dev-util', 'refs/heads/master',
+          'nebraska/nebraska.py')
+      contents_b64 = gob_util.FetchUrl(constants.EXTERNAL_GOB_HOST,
+                                       nebraska_url_path)
+      osutils.WriteFile(nebraska_path,
+                        base64.b64decode(contents_b64).decode('utf-8'))
+    else:
+      # ChromeOS checkout. Copy existing file to destination.
+      local_src = os.path.join(constants.SOURCE_ROOT, 'src', 'platform',
+                               'dev', 'nebraska', NEBRASKA_FILENAME)
+      assert os.path.isfile(local_src), "%s doesn't exist" % local_src
+      shutil.copy2(local_src, source_dir)
+
+    return nebraska_path

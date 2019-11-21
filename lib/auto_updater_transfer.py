@@ -42,7 +42,6 @@ import abc
 import glob
 import os
 import re
-import shutil
 
 import six
 from six.moves import urllib
@@ -239,14 +238,12 @@ class LocalTransfer(Transfer):
 
   def _TransferUpdateUtilsPackage(self):
     """Transfer update-utils package to work directory of the remote device."""
-    files_to_copy = (nebraska_wrapper.NEBRASKA_SOURCE_FILE,)
-    logging.info('Copying these files to device: %s', files_to_copy)
+    logging.info('Copying nebraska to device.')
     source_dir = os.path.join(self._tempdir, 'src')
     osutils.SafeMakedirs(source_dir)
-    for f in files_to_copy:
-      shutil.copy2(f, source_dir)
+    nebraska_wrapper.RemoteNebraskaWrapper.GetNebraskaSrcFile(source_dir)
 
-    # Make sure the device.work_dir exist after any installation and reboot.
+    # Make sure the device.work_dir exists after any installation and reboot.
     self._EnsureDeviceDirectory(self._device.work_dir)
     # Python packages are plain text files so we chose rsync --compress.
     self._device.CopyToWorkDir(source_dir, mode='rsync', log_output=True,
@@ -458,15 +455,13 @@ class LabTransfer(Transfer):
     The update-utils package will be transferred to the device from the
     staging server via curl.
     """
-    files_to_copy = (os.path.basename(nebraska_wrapper.NEBRASKA_SOURCE_FILE),)
-    logging.info('Copying these files to device: %s', files_to_copy)
-
+    logging.info('Copying nebraska to device.')
     source_dir = os.path.join(self._device.work_dir, 'src')
     self._EnsureDeviceDirectory(source_dir)
 
-    for f in files_to_copy:
-      self._device.RunCommand(self._GetCurlCmdForPayloadDownload(
-          payload_dir=source_dir, payload_filename=f))
+    self._device.RunCommand(self._GetCurlCmdForPayloadDownload(
+        payload_dir=source_dir,
+        payload_filename=nebraska_wrapper.NEBRASKA_FILENAME))
 
     # Make sure the device.work_dir exists after any installation and reboot.
     self._EnsureDeviceDirectory(self._device.work_dir)
