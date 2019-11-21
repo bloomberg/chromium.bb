@@ -596,6 +596,7 @@ source_set("unit_tests") {
   deps = [
     ":affiliation",
     ":affiliation_unittests",
+    ":csv",
     ":csv_unittests",
     ":hash_password_manager",
     ":password_generator",
