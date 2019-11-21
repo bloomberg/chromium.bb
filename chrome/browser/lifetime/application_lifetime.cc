@@ -23,7 +23,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/buildflags.h"
-#include "chrome/common/chrome_constants.h"
 #include "chrome/common/pref_names.h"
 #include "components/keep_alive_registry/keep_alive_registry.h"
 #include "components/language/core/browser/pref_names.h"
@@ -60,6 +59,7 @@
 #endif
 
 namespace chrome {
+
 namespace {
 
 #if !defined(OS_ANDROID)
@@ -285,10 +285,9 @@ void ExitIgnoreUnloadHandlers() {
   // In this case, AreAllBrowsersCloseable()
   // can be false in following cases. a) power-off b) signout from
   // screen locker.
-  if (!AreAllBrowsersCloseable())
-    browser_shutdown::OnShutdownStarting(browser_shutdown::END_SESSION);
-  else
-    browser_shutdown::OnShutdownStarting(browser_shutdown::BROWSER_EXIT);
+  browser_shutdown::OnShutdownStarting(
+      AreAllBrowsersCloseable() ? browser_shutdown::ShutdownType::kBrowserExit
+                                : browser_shutdown::ShutdownType::kEndSession);
 #endif
   AttemptExitInternal(true);
 }
@@ -324,7 +323,8 @@ void SessionEnding() {
   ShutdownWatcherHelper shutdown_watcher;
   shutdown_watcher.Arm(base::TimeDelta::FromSeconds(90));
 
-  browser_shutdown::OnShutdownStarting(browser_shutdown::END_SESSION);
+  browser_shutdown::OnShutdownStarting(
+      browser_shutdown::ShutdownType::kEndSession);
 
   // In a clean shutdown, browser_shutdown::OnShutdownStarting sets
   // g_shutdown_type, and browser_shutdown::ShutdownPreThreadsStop calls
@@ -344,6 +344,7 @@ void SessionEnding() {
 #if defined(OS_WIN)
   base::win::SetShouldCrashOnProcessDetach(false);
 #endif
+
   // On Windows 7 and later, the system will consider the process ripe for
   // termination as soon as it hides or destroys its windows. Since any
   // execution past that point will be non-deterministically cut short, we
