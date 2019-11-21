@@ -203,13 +203,56 @@ def CmdToStr(cmd):
                      (type(cmd), repr(cmd)))
 
 
-class CommandResult(object):
+class CompletedProcess(getattr(subprocess, 'CompletedProcess', object)):
   """An object to store various attributes of a child process.
 
   This is akin to subprocess.CompletedProcess.
   """
 
-  # TODO(crbug.com/1006587): Drop redundant arguments & backwards compat APIs.
+  # The linter is confused by the getattr usage above.
+  # TODO(vapier): Drop this once we're Python 3-only and we drop getattr.
+  # pylint: disable=super-on-old-class
+  def __init__(self, args=None, returncode=None, stdout=None, stderr=None):
+    if sys.version_info.major < 3:
+      self.args = args
+      self.stdout = stdout
+      self.stderr = stderr
+      self.returncode = returncode
+    else:
+      super(CompletedProcess, self).__init__(
+          args=args, returncode=returncode, stdout=stdout, stderr=stderr)
+
+  @property
+  def cmd(self):
+    """Alias to self.args to better match other subprocess APIs."""
+    return self.args
+
+  @property
+  def cmdstr(self):
+    """Return self.cmd as a well shell-quoted string useful for log messages."""
+    if self.args is None:
+      return ''
+    else:
+      return CmdToStr(self.args)
+
+  def check_returncode(self):
+    """Raise CalledProcessError if the exit code is non-zero."""
+    if self.returncode:
+      raise CalledProcessError(
+          returncode=self.returncode, cmd=self.args, stdout=self.stdout,
+          stderr=self.stderr, msg='check_returncode failed')
+
+
+# TODO(crbug.com/1006587): Migrate users to CompletedProcess and drop this.
+class CommandResult(CompletedProcess):
+  """An object to store various attributes of a child process.
+
+  This is akin to subprocess.CompletedProcess.
+  """
+
+  # The linter is confused by the getattr usage above.
+  # TODO(vapier): Drop this once we're Python 3-only and we drop getattr.
+  # pylint: disable=super-on-old-class
   def __init__(self, cmd=None, error=None, output=None, returncode=None,
                args=None, stdout=None, stderr=None):
     if args is None:
@@ -225,15 +268,8 @@ class CommandResult(object):
     elif error is not None:
       raise TypeError('Only specify |stderr|, not |error|')
 
-    self.args = args
-    self.stdout = stdout
-    self.stderr = stderr
-    self.returncode = returncode
-
-  @property
-  def cmd(self):
-    """Backwards compat API."""
-    return self.args
+    super(CommandResult, self).__init__(args=args, stdout=stdout, stderr=stderr,
+                                        returncode=returncode)
 
   @property
   def output(self):
@@ -244,19 +280,6 @@ class CommandResult(object):
   def error(self):
     """Backwards compat API."""
     return self.stderr
-
-  @property
-  def cmdstr(self):
-    """Return self.cmd as a space-separated string, useful for log messages."""
-    if self.args is None:
-      return ''
-    else:
-      return CmdToStr(self.args)
-
-  def check_returncode(self):
-    """Raise RunCommandError if the exit code is non-zero."""
-    if self.returncode:
-      raise RunCommandError('check_returncode failed', result=self)
 
 
 class CalledProcessError(subprocess.CalledProcessError):
