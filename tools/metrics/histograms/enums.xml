@@ -35598,6 +35598,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="0" label="Session changed"/>
   <int value="1" label="Dismissed by user"/>
   <int value="2" label="Device unlocked"/>
+  <int value="3" label="Device sleep"/>
 </enum>
 
 <enum name="LockScreenMediaControlsShown">
