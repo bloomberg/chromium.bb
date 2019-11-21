@@ -9,15 +9,16 @@ import com.google.search.now.ui.action.FeedActionProto.UndoAction;
 
 /** Interface that handles dismissing a card with an undo option. */
 public interface PendingDismissHandler {
-
-  /**
-   * Triggers the temporary removal of the content with snackbar. Content will either come back or
-   * be fully removed based on the interactions with the snackbar.
-   *
-   * @param contentId - The content that should be temporary hidden until the dismiss is committed.
-   * @param undoAction - Information for the rendering of the snackbar.
-   * @param pendingDismissCallback - Callbacks to call once content has been committed or reversed.
-   */
-  void triggerPendingDismiss(
-      String contentId, UndoAction undoAction, PendingDismissCallback pendingDismissCallback);
+    /**
+     * Triggers the temporary removal of the content with snackbar. Content will either come back or
+     * be fully removed based on the interactions with the snackbar.
+     *
+     * @param contentId - The content that should be temporary hidden until the dismiss is
+     *         committed.
+     * @param undoAction - Information for the rendering of the snackbar.
+     * @param pendingDismissCallback - Callbacks to call once content has been committed or
+     *         reversed.
+     */
+    void triggerPendingDismiss(
+            String contentId, UndoAction undoAction, PendingDismissCallback pendingDismissCallback);
 }

@@ -14,22 +14,21 @@ import org.robolectric.RobolectricTestRunner;
 /** Tests for {@link ViewLoggingUpdater}. */
 @RunWith(RobolectricTestRunner.class)
 public class ViewLoggingUpdaterTest {
+    @Test
+    public void testResetViewTracking_resetsListeners() {
+        ResettableOneShotVisibilityLoggingListener listerner1 =
+                mock(ResettableOneShotVisibilityLoggingListener.class);
+        ResettableOneShotVisibilityLoggingListener listerner2 =
+                mock(ResettableOneShotVisibilityLoggingListener.class);
 
-  @Test
-  public void testResetViewTracking_resetsListeners() {
-    ResettableOneShotVisibilityLoggingListener listerner1 =
-        mock(ResettableOneShotVisibilityLoggingListener.class);
-    ResettableOneShotVisibilityLoggingListener listerner2 =
-        mock(ResettableOneShotVisibilityLoggingListener.class);
+        ViewLoggingUpdater viewLoggingUpdater = new ViewLoggingUpdater();
 
-    ViewLoggingUpdater viewLoggingUpdater = new ViewLoggingUpdater();
+        viewLoggingUpdater.registerObserver(listerner1);
+        viewLoggingUpdater.registerObserver(listerner2);
 
-    viewLoggingUpdater.registerObserver(listerner1);
-    viewLoggingUpdater.registerObserver(listerner2);
+        viewLoggingUpdater.resetViewTracking();
 
-    viewLoggingUpdater.resetViewTracking();
-
-    verify(listerner1).reset();
-    verify(listerner2).reset();
-  }
+        verify(listerner1).reset();
+        verify(listerner2).reset();
+    }
 }

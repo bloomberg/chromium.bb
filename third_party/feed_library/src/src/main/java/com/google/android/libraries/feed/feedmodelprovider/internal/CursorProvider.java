@@ -8,10 +8,9 @@ import com.google.android.libraries.feed.api.internal.modelprovider.ModelCursor;
 
 /** Interface which provides a {@link ModelCursor} */
 public interface CursorProvider {
-
-  /**
-   * Create a {@link ModelCursor} for the parent, this will iterate against all the children
-   * currently contained by the parent container.
-   */
-  ModelCursor getCursor(String parentId);
+    /**
+     * Create a {@link ModelCursor} for the parent, this will iterate against all the children
+     * currently contained by the parent container.
+     */
+    ModelCursor getCursor(String parentId);
 }

@@ -10,6 +10,7 @@ import com.google.android.libraries.feed.api.host.storage.JournalStorage;
 import com.google.android.libraries.feed.api.host.storage.JournalStorageDirect;
 import com.google.android.libraries.feed.common.Result;
 import com.google.android.libraries.feed.common.functional.Consumer;
+
 import java.util.List;
 
 /**
@@ -17,59 +18,59 @@ import java.util.List;
  * interfaces.
  */
 public class DelegatingJournalStorage implements JournalStorage, JournalStorageDirect {
-  private final JournalStorageDirect delegate;
+    private final JournalStorageDirect delegate;
 
-  public DelegatingJournalStorage(JournalStorageDirect delegate) {
-    this.delegate = delegate;
-  }
+    public DelegatingJournalStorage(JournalStorageDirect delegate) {
+        this.delegate = delegate;
+    }
 
-  @Override
-  public void read(String journalName, Consumer<Result<List<byte[]>>> consumer) {
-    consumer.accept(delegate.read(journalName));
-  }
+    @Override
+    public void read(String journalName, Consumer<Result<List<byte[]>>> consumer) {
+        consumer.accept(delegate.read(journalName));
+    }
 
-  @Override
-  public Result<List<byte[]>> read(String journalName) {
-    return delegate.read(journalName);
-  }
+    @Override
+    public Result<List<byte[]>> read(String journalName) {
+        return delegate.read(journalName);
+    }
 
-  @Override
-  public void commit(JournalMutation mutation, Consumer<CommitResult> consumer) {
-    consumer.accept(delegate.commit(mutation));
-  }
+    @Override
+    public void commit(JournalMutation mutation, Consumer<CommitResult> consumer) {
+        consumer.accept(delegate.commit(mutation));
+    }
 
-  @Override
-  public CommitResult commit(JournalMutation mutation) {
-    return delegate.commit(mutation);
-  }
+    @Override
+    public CommitResult commit(JournalMutation mutation) {
+        return delegate.commit(mutation);
+    }
 
-  @Override
-  public void exists(String journalName, Consumer<Result<Boolean>> consumer) {
-    consumer.accept(delegate.exists(journalName));
-  }
+    @Override
+    public void exists(String journalName, Consumer<Result<Boolean>> consumer) {
+        consumer.accept(delegate.exists(journalName));
+    }
 
-  @Override
-  public Result<Boolean> exists(String journalName) {
-    return delegate.exists(journalName);
-  }
+    @Override
+    public Result<Boolean> exists(String journalName) {
+        return delegate.exists(journalName);
+    }
 
-  @Override
-  public void getAllJournals(Consumer<Result<List<String>>> consumer) {
-    consumer.accept(delegate.getAllJournals());
-  }
+    @Override
+    public void getAllJournals(Consumer<Result<List<String>>> consumer) {
+        consumer.accept(delegate.getAllJournals());
+    }
 
-  @Override
-  public Result<List<String>> getAllJournals() {
-    return delegate.getAllJournals();
-  }
+    @Override
+    public Result<List<String>> getAllJournals() {
+        return delegate.getAllJournals();
+    }
 
-  @Override
-  public void deleteAll(Consumer<CommitResult> consumer) {
-    consumer.accept(delegate.deleteAll());
-  }
+    @Override
+    public void deleteAll(Consumer<CommitResult> consumer) {
+        consumer.accept(delegate.deleteAll());
+    }
 
-  @Override
-  public CommitResult deleteAll() {
-    return delegate.deleteAll();
-  }
+    @Override
+    public CommitResult deleteAll() {
+        return delegate.deleteAll();
+    }
 }

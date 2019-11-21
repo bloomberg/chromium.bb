@@ -9,13 +9,12 @@ import com.google.search.now.feed.client.StreamDataProto.StreamUploadableAction;
 
 /** Mutation for adding and updating uploadable actions in the Feed Store. */
 public interface UploadableActionMutation {
+    /** Upsert a new Mutation to the Store */
+    UploadableActionMutation upsert(StreamUploadableAction action, String contentId);
 
-  /** Upsert a new Mutation to the Store */
-  UploadableActionMutation upsert(StreamUploadableAction action, String contentId);
+    /** Remove Mutation from the Store */
+    UploadableActionMutation remove(StreamUploadableAction action, String contentId);
 
-  /** Remove Mutation from the Store */
-  UploadableActionMutation remove(StreamUploadableAction action, String contentId);
-
-  /** Commit the mutations to the backing store */
-  CommitResult commit();
+    /** Commit the mutations to the backing store */
+    CommitResult commit();
 }

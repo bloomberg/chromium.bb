@@ -6,9 +6,8 @@ package com.google.android.libraries.feed.piet.host;
 
 /** {@link StringFormatter} that returns empty string, for hosts that do not use this capability. */
 public class EmptyStringFormatter implements StringFormatter {
-
-  @Override
-  public String getRelativeElapsedString(long elapsedTimeMillis) {
-    return "";
-  }
+    @Override
+    public String getRelativeElapsedString(long elapsedTimeMillis) {
+        return "";
+    }
 }

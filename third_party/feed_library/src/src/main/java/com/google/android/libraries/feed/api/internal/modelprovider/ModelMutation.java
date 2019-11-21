@@ -13,27 +13,27 @@ import com.google.search.now.feed.client.StreamDataProto.StreamToken;
  * Order is important, things will be stored in the order they are added to a parent feature.
  */
 public interface ModelMutation {
-  /** Add the structural information to the model as a child */
-  ModelMutation addChild(StreamStructure streamStructure);
+    /** Add the structural information to the model as a child */
+    ModelMutation addChild(StreamStructure streamStructure);
 
-  /** Remove the model child defined by the structural information */
-  ModelMutation removeChild(StreamStructure streamStructure);
+    /** Remove the model child defined by the structural information */
+    ModelMutation removeChild(StreamStructure streamStructure);
 
-  /** Content for a child was updated. */
-  ModelMutation updateChild(StreamStructure streamStructure);
+    /** Content for a child was updated. */
+    ModelMutation updateChild(StreamStructure streamStructure);
 
-  /**
-   * Set the MutationContext used to create the ModelMutation. This may contain the {@link
-   * StreamToken} which represents the source of the response.
-   */
-  ModelMutation setMutationContext(MutationContext mutationContext);
+    /**
+     * Set the MutationContext used to create the ModelMutation. This may contain the {@link
+     * StreamToken} which represents the source of the response.
+     */
+    ModelMutation setMutationContext(MutationContext mutationContext);
 
-  /** Set the session id of the session backing this ModelProvider. */
-  ModelMutation setSessionId(String sessionId);
+    /** Set the session id of the session backing this ModelProvider. */
+    ModelMutation setSessionId(String sessionId);
 
-  /** Indicates that the SessionManager has cached the payload bindings. */
-  ModelMutation hasCachedBindings(boolean cachedBindings);
+    /** Indicates that the SessionManager has cached the payload bindings. */
+    ModelMutation hasCachedBindings(boolean cachedBindings);
 
-  /** Commits the pending changes to the store. */
-  void commit();
+    /** Commits the pending changes to the store. */
+    void commit();
 }

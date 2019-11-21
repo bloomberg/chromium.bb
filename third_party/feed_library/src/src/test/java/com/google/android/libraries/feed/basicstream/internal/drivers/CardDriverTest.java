@@ -5,6 +5,7 @@
 package com.google.android.libraries.feed.basicstream.internal.drivers;
 
 import static com.google.common.truth.Truth.assertThat;
+
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
@@ -39,6 +40,7 @@ import com.google.search.now.ui.action.FeedActionProto.FeedActionMetadata;
 import com.google.search.now.ui.stream.StreamStructureProto.Card;
 import com.google.search.now.ui.stream.StreamStructureProto.Content;
 import com.google.search.now.ui.stream.StreamSwipeExtensionProto.SwipeActionExtension;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -48,187 +50,163 @@ import org.robolectric.RobolectricTestRunner;
 /** Tests for {@link CardDriver}. */
 @RunWith(RobolectricTestRunner.class)
 public class CardDriverTest {
+    private static final StreamFeature STREAM_FEATURE =
+            StreamFeature.newBuilder().setContent(Content.getDefaultInstance()).build();
 
-  private static final StreamFeature STREAM_FEATURE =
-      StreamFeature.newBuilder().setContent(Content.getDefaultInstance()).build();
+    private static final FeedActionPayload SWIPE_ACTION =
+            FeedActionPayload.newBuilder()
+                    .setExtension(FeedAction.feedActionExtension,
+                            FeedAction.newBuilder()
+                                    .setMetadata(FeedActionMetadata.newBuilder().setDismissData(
+                                            DismissData.getDefaultInstance()))
+                                    .build())
+                    .build();
 
-  private static final FeedActionPayload SWIPE_ACTION =
-      FeedActionPayload.newBuilder()
-          .setExtension(
-              FeedAction.feedActionExtension,
-              FeedAction.newBuilder()
-                  .setMetadata(
-                      FeedActionMetadata.newBuilder()
-                          .setDismissData(DismissData.getDefaultInstance()))
-                  .build())
-          .build();
+    private static final Card CARD_WITH_SWIPE_ACTION =
+            Card.newBuilder()
+                    .setExtension(SwipeActionExtension.swipeActionExtension,
+                            SwipeActionExtension.newBuilder().setSwipeAction(SWIPE_ACTION).build())
+                    .build();
 
-  private static final Card CARD_WITH_SWIPE_ACTION =
-      Card.newBuilder()
-          .setExtension(
-              SwipeActionExtension.swipeActionExtension,
-              SwipeActionExtension.newBuilder().setSwipeAction(SWIPE_ACTION).build())
-          .build();
+    private static final int POSITION = 0;
 
-  private static final int POSITION = 0;
+    @Mock
+    private ContentDriver contentDriverChild;
+    @Mock
+    private ModelFeature cardModelFeature;
+    @Mock
+    private LeafFeatureDriver leafFeatureDriver;
+    @Mock
+    private ContentChangedListener contentChangedListener;
+    @Mock
+    private ClusterPendingDismissHelper clusterPendingDismissHelper;
+    @Mock
+    private BasicLoggingApi basicLoggingApi;
+    @Mock
+    private TooltipApi tooltipApi;
 
-  @Mock private ContentDriver contentDriverChild;
-  @Mock private ModelFeature cardModelFeature;
-  @Mock private LeafFeatureDriver leafFeatureDriver;
-  @Mock private ContentChangedListener contentChangedListener;
-  @Mock private ClusterPendingDismissHelper clusterPendingDismissHelper;
-  @Mock private BasicLoggingApi basicLoggingApi;
-  @Mock private TooltipApi tooltipApi;
+    private final Configuration configuration = new Configuration.Builder().build();
+    private final FakeMainThreadRunner mainThreadRunner = FakeMainThreadRunner.queueAllTasks();
+    private CardDriverForTest cardDriver;
+    private FakeModelCursor cardCursor;
 
-  private final Configuration configuration = new Configuration.Builder().build();
-  private final FakeMainThreadRunner mainThreadRunner = FakeMainThreadRunner.queueAllTasks();
-  private CardDriverForTest cardDriver;
-  private FakeModelCursor cardCursor;
+    @Before
+    public void setup() {
+        initMocks(this);
 
-  @Before
-  public void setup() {
-    initMocks(this);
+        // Represents payload of the child of the card.
+        ModelFeature childModelFeature = mock(ModelFeature.class);
+        when(childModelFeature.getStreamFeature()).thenReturn(STREAM_FEATURE);
 
-    // Represents payload of the child of the card.
-    ModelFeature childModelFeature = mock(ModelFeature.class);
-    when(childModelFeature.getStreamFeature()).thenReturn(STREAM_FEATURE);
+        // ModelChild containing content.
+        ModelChild pietModelChild = mock(ModelChild.class);
+        when(pietModelChild.getModelFeature()).thenReturn(childModelFeature);
+        when(pietModelChild.getType()).thenReturn(Type.FEATURE);
 
-    // ModelChild containing content.
-    ModelChild pietModelChild = mock(ModelChild.class);
-    when(pietModelChild.getModelFeature()).thenReturn(childModelFeature);
-    when(pietModelChild.getType()).thenReturn(Type.FEATURE);
+        // Cursor to transverse the content of a card.
+        cardCursor = new FakeModelCursor(Lists.newArrayList(pietModelChild));
 
-    // Cursor to transverse the content of a card.
-    cardCursor = new FakeModelCursor(Lists.newArrayList(pietModelChild));
+        // A ModelFeature representing a card.
+        when(cardModelFeature.getCursor()).thenReturn(cardCursor);
+        when(cardModelFeature.getStreamFeature())
+                .thenReturn(StreamFeature.newBuilder().setCard(Card.getDefaultInstance()).build());
+        when(contentDriverChild.getLeafFeatureDriver()).thenReturn(leafFeatureDriver);
 
-    // A ModelFeature representing a card.
-    when(cardModelFeature.getCursor()).thenReturn(cardCursor);
-    when(cardModelFeature.getStreamFeature())
-        .thenReturn(StreamFeature.newBuilder().setCard(Card.getDefaultInstance()).build());
-    when(contentDriverChild.getLeafFeatureDriver()).thenReturn(leafFeatureDriver);
-
-    cardDriver =
-        new CardDriverForTest(
-            mock(ActionApi.class),
-            mock(ActionManager.class),
-            mock(ActionParserFactory.class),
-            basicLoggingApi,
-            cardModelFeature,
-            mock(ModelProvider.class),
-            POSITION,
-            contentDriverChild,
-            mock(StreamOfflineMonitor.class),
-            mock(ContextMenuManager.class),
-            mock(ViewLoggingUpdater.class));
-  }
-
-  @Test
-  public void testGetLeafFeatureDriver() {
-    assertThat((cardDriver.getLeafFeatureDriver())).isEqualTo(leafFeatureDriver);
-  }
-
-  @Test
-  public void testGetLeafFeatureDriver_reusesPreviousLeafFeatureDriver() {
-    cardDriver.getLeafFeatureDriver();
-
-    verify(cardModelFeature).getCursor();
-
-    reset(cardModelFeature);
-
-    cardDriver.getLeafFeatureDriver();
-
-    verify(cardModelFeature, never()).getCursor();
-  }
-
-  @Test
-  public void testGetLeafFeatureDriver_notSwipeable() {
-    when(cardModelFeature.getStreamFeature())
-        .thenReturn(StreamFeature.newBuilder().setCard(Card.getDefaultInstance()).build());
-
-    cardDriver.getLeafFeatureDriver();
-
-    assertThat(cardDriver.swipeActionArg).isEqualTo(FeedActionPayload.getDefaultInstance());
-  }
-
-  @Test
-  public void testGetLeafFeatureDriver_swipeable() {
-    when(cardModelFeature.getStreamFeature())
-        .thenReturn(StreamFeature.newBuilder().setCard(CARD_WITH_SWIPE_ACTION).build());
-
-    cardDriver.getLeafFeatureDriver();
-
-    assertThat(cardDriver.swipeActionArg).isEqualTo(SWIPE_ACTION);
-  }
-
-  @Test
-  public void testOnDestroy() {
-    cardDriver.getLeafFeatureDriver();
-    cardDriver.onDestroy();
-
-    verify(contentDriverChild).onDestroy();
-  }
-
-  @Test
-  public void testUnboundChild() {
-    ModelChild pietModelChild = mock(ModelChild.class);
-    when(pietModelChild.getType()).thenReturn(Type.UNBOUND);
-
-    // Override setup with an unbound child in the cursor
-    cardCursor.setModelChildren(Lists.newArrayList(pietModelChild));
-
-    assertThat(cardDriver.getLeafFeatureDriver()).isNull();
-  }
-
-  @Test
-  public void getLeafFeatureDrivers_childNotAFeature_logsInternalError() {
-    cardCursor = FakeModelCursor.newBuilder().addUnboundChild().build();
-    when(cardModelFeature.getCursor()).thenReturn(cardCursor);
-
-    cardDriver.getLeafFeatureDriver();
-
-    verify(basicLoggingApi).onInternalError(InternalFeedError.CARD_CHILD_MISSING_FEATURE);
-  }
-
-  public class CardDriverForTest extends CardDriver {
-
-    private final ContentDriver child;
-    private FeedActionPayload swipeActionArg;
-
-    CardDriverForTest(
-        ActionApi actionApi,
-        ActionManager actionManager,
-        ActionParserFactory actionParserFactory,
-        BasicLoggingApi basicLoggingApi,
-        ModelFeature cardModel,
-        ModelProvider modelProvider,
-        int position,
-        ContentDriver childContentDriver,
-        StreamOfflineMonitor streamOfflineMonitor,
-        ContextMenuManager contextMenuManager,
-        ViewLoggingUpdater viewLoggingUpdater) {
-      super(
-          actionApi,
-          actionManager,
-          actionParserFactory,
-          basicLoggingApi,
-          cardModel,
-          modelProvider,
-          position,
-          clusterPendingDismissHelper,
-          streamOfflineMonitor,
-          contentChangedListener,
-          contextMenuManager,
-          mainThreadRunner,
-          configuration,
-          viewLoggingUpdater,
-          tooltipApi);
-      this.child = childContentDriver;
+        cardDriver = new CardDriverForTest(mock(ActionApi.class), mock(ActionManager.class),
+                mock(ActionParserFactory.class), basicLoggingApi, cardModelFeature,
+                mock(ModelProvider.class), POSITION, contentDriverChild,
+                mock(StreamOfflineMonitor.class), mock(ContextMenuManager.class),
+                mock(ViewLoggingUpdater.class));
     }
 
-    @Override
-    ContentDriver createContentDriver(ModelFeature contentModel, FeedActionPayload swipeAction) {
-      this.swipeActionArg = swipeAction;
-      return child;
+    @Test
+    public void testGetLeafFeatureDriver() {
+        assertThat((cardDriver.getLeafFeatureDriver())).isEqualTo(leafFeatureDriver);
     }
-  }
+
+    @Test
+    public void testGetLeafFeatureDriver_reusesPreviousLeafFeatureDriver() {
+        cardDriver.getLeafFeatureDriver();
+
+        verify(cardModelFeature).getCursor();
+
+        reset(cardModelFeature);
+
+        cardDriver.getLeafFeatureDriver();
+
+        verify(cardModelFeature, never()).getCursor();
+    }
+
+    @Test
+    public void testGetLeafFeatureDriver_notSwipeable() {
+        when(cardModelFeature.getStreamFeature())
+                .thenReturn(StreamFeature.newBuilder().setCard(Card.getDefaultInstance()).build());
+
+        cardDriver.getLeafFeatureDriver();
+
+        assertThat(cardDriver.swipeActionArg).isEqualTo(FeedActionPayload.getDefaultInstance());
+    }
+
+    @Test
+    public void testGetLeafFeatureDriver_swipeable() {
+        when(cardModelFeature.getStreamFeature())
+                .thenReturn(StreamFeature.newBuilder().setCard(CARD_WITH_SWIPE_ACTION).build());
+
+        cardDriver.getLeafFeatureDriver();
+
+        assertThat(cardDriver.swipeActionArg).isEqualTo(SWIPE_ACTION);
+    }
+
+    @Test
+    public void testOnDestroy() {
+        cardDriver.getLeafFeatureDriver();
+        cardDriver.onDestroy();
+
+        verify(contentDriverChild).onDestroy();
+    }
+
+    @Test
+    public void testUnboundChild() {
+        ModelChild pietModelChild = mock(ModelChild.class);
+        when(pietModelChild.getType()).thenReturn(Type.UNBOUND);
+
+        // Override setup with an unbound child in the cursor
+        cardCursor.setModelChildren(Lists.newArrayList(pietModelChild));
+
+        assertThat(cardDriver.getLeafFeatureDriver()).isNull();
+    }
+
+    @Test
+    public void getLeafFeatureDrivers_childNotAFeature_logsInternalError() {
+        cardCursor = FakeModelCursor.newBuilder().addUnboundChild().build();
+        when(cardModelFeature.getCursor()).thenReturn(cardCursor);
+
+        cardDriver.getLeafFeatureDriver();
+
+        verify(basicLoggingApi).onInternalError(InternalFeedError.CARD_CHILD_MISSING_FEATURE);
+    }
+
+    public class CardDriverForTest extends CardDriver {
+        private final ContentDriver child;
+        private FeedActionPayload swipeActionArg;
+
+        CardDriverForTest(ActionApi actionApi, ActionManager actionManager,
+                ActionParserFactory actionParserFactory, BasicLoggingApi basicLoggingApi,
+                ModelFeature cardModel, ModelProvider modelProvider, int position,
+                ContentDriver childContentDriver, StreamOfflineMonitor streamOfflineMonitor,
+                ContextMenuManager contextMenuManager, ViewLoggingUpdater viewLoggingUpdater) {
+            super(actionApi, actionManager, actionParserFactory, basicLoggingApi, cardModel,
+                    modelProvider, position, clusterPendingDismissHelper, streamOfflineMonitor,
+                    contentChangedListener, contextMenuManager, mainThreadRunner, configuration,
+                    viewLoggingUpdater, tooltipApi);
+            this.child = childContentDriver;
+        }
+
+        @Override
+        ContentDriver createContentDriver(
+                ModelFeature contentModel, FeedActionPayload swipeAction) {
+            this.swipeActionArg = swipeAction;
+            return child;
+        }
+    }
 }

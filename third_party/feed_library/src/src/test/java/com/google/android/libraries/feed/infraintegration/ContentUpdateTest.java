@@ -5,6 +5,7 @@
 package com.google.android.libraries.feed.infraintegration;
 
 import static com.google.common.truth.Truth.assertThat;
+
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
@@ -28,94 +29,94 @@ import com.google.search.now.feed.client.StreamDataProto.StreamToken;
 import com.google.search.now.feed.client.StreamDataProto.UiContext;
 import com.google.search.now.wire.feed.ConsistencyTokenProto.ConsistencyToken;
 import com.google.search.now.wire.feed.ContentIdProto.ContentId;
-import java.util.ArrayList;
-import java.util.List;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.robolectric.RobolectricTestRunner;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /** Tests which update content within an existing model. */
 @RunWith(RobolectricTestRunner.class)
 public class ContentUpdateTest {
-  private final InfraIntegrationScope scope = new InfraIntegrationScope.Builder().build();
-  private final FakeFeedRequestManager fakeFeedRequestManager = scope.getFakeFeedRequestManager();
-  private final FakeThreadUtils fakeThreadUtils = scope.getFakeThreadUtils();
-  private final ModelProviderFactory modelProviderFactory = scope.getModelProviderFactory();
-  private final ModelProviderValidator modelValidator =
-      new ModelProviderValidator(scope.getProtocolAdapter());
-  private final ProtocolAdapter protocolAdapter = scope.getProtocolAdapter();
-  private final FeedSessionManager feedSessionManager = scope.getFeedSessionManager();
-  private final RequestManager requestManager = scope.getRequestManager();
+    private final InfraIntegrationScope scope = new InfraIntegrationScope.Builder().build();
+    private final FakeFeedRequestManager fakeFeedRequestManager = scope.getFakeFeedRequestManager();
+    private final FakeThreadUtils fakeThreadUtils = scope.getFakeThreadUtils();
+    private final ModelProviderFactory modelProviderFactory = scope.getModelProviderFactory();
+    private final ModelProviderValidator modelValidator =
+            new ModelProviderValidator(scope.getProtocolAdapter());
+    private final ProtocolAdapter protocolAdapter = scope.getProtocolAdapter();
+    private final FeedSessionManager feedSessionManager = scope.getFeedSessionManager();
+    private final RequestManager requestManager = scope.getRequestManager();
 
-  @Test
-  public void updateContent_observers() {
-    // Create a simple stream with a root and two features
-    ContentId[] cards =
-        new ContentId[] {
-          ResponseBuilder.createFeatureContentId(1), ResponseBuilder.createFeatureContentId(2)
-        };
-    fakeFeedRequestManager.queueResponse(ResponseBuilder.forClearAllWithCards(cards).build());
-    requestManager.triggerScheduledRefresh();
-    ModelProvider modelProvider =
-        modelProviderFactory.createNew(null, UiContext.getDefaultInstance());
+    @Test
+    public void updateContent_observers() {
+        // Create a simple stream with a root and two features
+        ContentId[] cards = new ContentId[] {ResponseBuilder.createFeatureContentId(1),
+                ResponseBuilder.createFeatureContentId(2)};
+        fakeFeedRequestManager.queueResponse(ResponseBuilder.forClearAllWithCards(cards).build());
+        requestManager.triggerScheduledRefresh();
+        ModelProvider modelProvider =
+                modelProviderFactory.createNew(null, UiContext.getDefaultInstance());
 
-    ModelFeature root = modelProvider.getRootFeature();
-    assertThat(root).isNotNull();
-    ModelCursor cursor = root.getCursor();
-    List<FeatureChangeObserver> observers = new ArrayList<>();
-    List<FeatureChangeObserver> contentObservers = new ArrayList<>();
-    for (ContentId contentId : cards) {
-      ModelChild child = cursor.getNextItem();
-      assertThat(child).isNotNull();
-      modelValidator.assertStreamContentId(
-          child.getContentId(), protocolAdapter.getStreamContentId(contentId));
-      modelValidator.assertCardStructure(child);
-      // register observer on the card
-      ModelFeature feature = child.getModelFeature();
-      FeatureChangeObserver observer = mock(FeatureChangeObserver.class);
-      observers.add(observer);
-      feature.registerObserver(observer);
+        ModelFeature root = modelProvider.getRootFeature();
+        assertThat(root).isNotNull();
+        ModelCursor cursor = root.getCursor();
+        List<FeatureChangeObserver> observers = new ArrayList<>();
+        List<FeatureChangeObserver> contentObservers = new ArrayList<>();
+        for (ContentId contentId : cards) {
+            ModelChild child = cursor.getNextItem();
+            assertThat(child).isNotNull();
+            modelValidator.assertStreamContentId(
+                    child.getContentId(), protocolAdapter.getStreamContentId(contentId));
+            modelValidator.assertCardStructure(child);
+            // register observer on the card
+            ModelFeature feature = child.getModelFeature();
+            FeatureChangeObserver observer = mock(FeatureChangeObserver.class);
+            observers.add(observer);
+            feature.registerObserver(observer);
 
-      // register observer on the content of the card
-      FeatureChangeObserver contentObserver = mock(FeatureChangeObserver.class);
-      contentObservers.add(contentObserver);
-      ModelCursor cardCursor = feature.getCursor();
-      ModelChild cardCursorNextItem = cardCursor.getNextItem();
-      assertThat(cardCursorNextItem).isNotNull();
-      cardCursorNextItem.getModelFeature().registerObserver(contentObserver);
+            // register observer on the content of the card
+            FeatureChangeObserver contentObserver = mock(FeatureChangeObserver.class);
+            contentObservers.add(contentObserver);
+            ModelCursor cardCursor = feature.getCursor();
+            ModelChild cardCursorNextItem = cardCursor.getNextItem();
+            assertThat(cardCursorNextItem).isNotNull();
+            cardCursorNextItem.getModelFeature().registerObserver(contentObserver);
+        }
+        assertThat(cursor.isAtEnd()).isTrue();
+
+        // Create an update response for the two content items
+        fakeFeedRequestManager.queueResponse(
+                ResponseBuilder.builder().addCardsToRoot(cards).build());
+        // TODO: sessions reject updates without a CLEAR_ALL or paging with a different token.
+        fakeThreadUtils.enforceMainThread(false);
+        fakeFeedRequestManager.loadMore(StreamToken.getDefaultInstance(),
+                ConsistencyToken.getDefaultInstance(),
+                feedSessionManager.getUpdateConsumer(MutationContext.EMPTY_CONTEXT));
+
+        int id = 0;
+        for (FeatureChangeObserver observer : observers) {
+            ArgumentCaptor<FeatureChange> capture = ArgumentCaptor.forClass(FeatureChange.class);
+            verify(observer).onChange(capture.capture());
+            List<FeatureChange> featureChanges = capture.getAllValues();
+            assertThat(featureChanges).hasSize(1);
+            FeatureChange change = featureChanges.get(0);
+            modelValidator.assertStreamContentId(
+                    change.getContentId(), protocolAdapter.getStreamContentId(cards[id]));
+            assertThat(change.isFeatureChanged()).isTrue();
+            assertThat(change.getChildChanges().getAppendedChildren()).isEmpty();
+            id++;
+        }
+        for (FeatureChangeObserver observer : contentObservers) {
+            ArgumentCaptor<FeatureChange> capture = ArgumentCaptor.forClass(FeatureChange.class);
+            verify(observer).onChange(capture.capture());
+            List<FeatureChange> featureChanges = capture.getAllValues();
+            assertThat(featureChanges).hasSize(1);
+            FeatureChange change = featureChanges.get(0);
+            assertThat(change.isFeatureChanged()).isTrue();
+        }
     }
-    assertThat(cursor.isAtEnd()).isTrue();
-
-    // Create an update response for the two content items
-    fakeFeedRequestManager.queueResponse(ResponseBuilder.builder().addCardsToRoot(cards).build());
-    // TODO: sessions reject updates without a CLEAR_ALL or paging with a different token.
-    fakeThreadUtils.enforceMainThread(false);
-    fakeFeedRequestManager.loadMore(
-        StreamToken.getDefaultInstance(),
-        ConsistencyToken.getDefaultInstance(),
-        feedSessionManager.getUpdateConsumer(MutationContext.EMPTY_CONTEXT));
-
-    int id = 0;
-    for (FeatureChangeObserver observer : observers) {
-      ArgumentCaptor<FeatureChange> capture = ArgumentCaptor.forClass(FeatureChange.class);
-      verify(observer).onChange(capture.capture());
-      List<FeatureChange> featureChanges = capture.getAllValues();
-      assertThat(featureChanges).hasSize(1);
-      FeatureChange change = featureChanges.get(0);
-      modelValidator.assertStreamContentId(
-          change.getContentId(), protocolAdapter.getStreamContentId(cards[id]));
-      assertThat(change.isFeatureChanged()).isTrue();
-      assertThat(change.getChildChanges().getAppendedChildren()).isEmpty();
-      id++;
-    }
-    for (FeatureChangeObserver observer : contentObservers) {
-      ArgumentCaptor<FeatureChange> capture = ArgumentCaptor.forClass(FeatureChange.class);
-      verify(observer).onChange(capture.capture());
-      List<FeatureChange> featureChanges = capture.getAllValues();
-      assertThat(featureChanges).hasSize(1);
-      FeatureChange change = featureChanges.get(0);
-      assertThat(change.isFeatureChanged()).isTrue();
-    }
-  }
 }

@@ -7,27 +7,27 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 /** A thread safe runnable that can be canceled. */
 public class CancelableRunnableTask implements CancelableTask, Runnable {
-  private final AtomicBoolean canceled = new AtomicBoolean(false);
-  private final Runnable runnable;
+    private final AtomicBoolean canceled = new AtomicBoolean(false);
+    private final Runnable runnable;
 
-  public CancelableRunnableTask(Runnable runnable) {
-    this.runnable = runnable;
-  }
-
-  @Override
-  public void run() {
-    if (!canceled.get()) {
-      runnable.run();
+    public CancelableRunnableTask(Runnable runnable) {
+        this.runnable = runnable;
     }
-  }
 
-  @Override
-  public boolean canceled() {
-    return canceled.get();
-  }
+    @Override
+    public void run() {
+        if (!canceled.get()) {
+            runnable.run();
+        }
+    }
 
-  @Override
-  public void cancel() {
-    canceled.set(true);
-  }
+    @Override
+    public boolean canceled() {
+        return canceled.get();
+    }
+
+    @Override
+    public void cancel() {
+        canceled.set(true);
+    }
 }

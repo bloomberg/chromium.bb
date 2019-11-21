@@ -14,20 +14,20 @@ import com.google.android.libraries.feed.feedactionparser.internal.PietFeedActio
 
 /** Default factory for the default {@link ActionParser} implementation. */
 public final class FeedActionParserFactory implements ActionParserFactory {
+    private final ProtocolAdapter protocolAdapter;
+    private final PietFeedActionPayloadRetriever pietFeedActionPayloadRetriever;
+    private final BasicLoggingApi basicLoggingApi;
 
-  private final ProtocolAdapter protocolAdapter;
-  private final PietFeedActionPayloadRetriever pietFeedActionPayloadRetriever;
-  private final BasicLoggingApi basicLoggingApi;
+    public FeedActionParserFactory(
+            ProtocolAdapter protocolAdapter, BasicLoggingApi basicLoggingApi) {
+        this.protocolAdapter = protocolAdapter;
+        this.pietFeedActionPayloadRetriever = new PietFeedActionPayloadRetriever();
+        this.basicLoggingApi = basicLoggingApi;
+    }
 
-  public FeedActionParserFactory(ProtocolAdapter protocolAdapter, BasicLoggingApi basicLoggingApi) {
-    this.protocolAdapter = protocolAdapter;
-    this.pietFeedActionPayloadRetriever = new PietFeedActionPayloadRetriever();
-    this.basicLoggingApi = basicLoggingApi;
-  }
-
-  @Override
-  public ActionParser build(Supplier</*@Nullable*/ ContentMetadata> contentMetadataSupplier) {
-    return new FeedActionParser(
-        protocolAdapter, pietFeedActionPayloadRetriever, contentMetadataSupplier, basicLoggingApi);
-  }
+    @Override
+    public ActionParser build(Supplier</*@Nullable*/ ContentMetadata> contentMetadataSupplier) {
+        return new FeedActionParser(protocolAdapter, pietFeedActionPayloadRetriever,
+                contentMetadataSupplier, basicLoggingApi);
+    }
 }

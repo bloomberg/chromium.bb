@@ -6,6 +6,7 @@ package com.google.android.libraries.feed.api.host.storage;
 
 import com.google.android.libraries.feed.common.Result;
 import com.google.android.libraries.feed.common.functional.Consumer;
+
 import java.util.List;
 
 /**
@@ -16,30 +17,29 @@ import java.util.List;
  * <p>[INTERNAL LINK]
  */
 public interface JournalStorage {
+    /**
+     * Reads the journal and asynchronously returns the contents.
+     *
+     * <p>Reads on journals that do not exist will fulfill with an empty list.
+     */
+    void read(String journalName, Consumer<Result<List<byte[]>>> consumer);
 
-  /**
-   * Reads the journal and asynchronously returns the contents.
-   *
-   * <p>Reads on journals that do not exist will fulfill with an empty list.
-   */
-  void read(String journalName, Consumer<Result<List<byte[]>>> consumer);
+    /**
+     * Commits the operations in {@link JournalMutation} in order and asynchronously reports the
+     * {@link CommitResult}. If all the operations succeed, {@code callback} is called with a
+     * success result. If any operation fails, {@code callback} is called with a failure result and
+     * the remaining operations are not processed.
+     *
+     * <p>This operation is not guaranteed to be atomic.
+     */
+    void commit(JournalMutation mutation, Consumer<CommitResult> consumer);
 
-  /**
-   * Commits the operations in {@link JournalMutation} in order and asynchronously reports the
-   * {@link CommitResult}. If all the operations succeed, {@code callback} is called with a success
-   * result. If any operation fails, {@code callback} is called with a failure result and the
-   * remaining operations are not processed.
-   *
-   * <p>This operation is not guaranteed to be atomic.
-   */
-  void commit(JournalMutation mutation, Consumer<CommitResult> consumer);
+    /** Determines whether a journal exists and asynchronously responds. */
+    void exists(String journalName, Consumer<Result<Boolean>> consumer);
 
-  /** Determines whether a journal exists and asynchronously responds. */
-  void exists(String journalName, Consumer<Result<Boolean>> consumer);
+    /** Asynchronously retrieve a list of all current journals */
+    void getAllJournals(Consumer<Result<List<String>>> consumer);
 
-  /** Asynchronously retrieve a list of all current journals */
-  void getAllJournals(Consumer<Result<List<String>>> consumer);
-
-  /** Delete all journals. Reports success or failure with the {@code consumer}. */
-  void deleteAll(Consumer<CommitResult> consumer);
+    /** Delete all journals. Reports success or failure with the {@code consumer}. */
+    void deleteAll(Consumer<CommitResult> consumer);
 }

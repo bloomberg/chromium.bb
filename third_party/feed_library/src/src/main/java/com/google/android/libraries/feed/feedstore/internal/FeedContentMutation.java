@@ -9,27 +9,27 @@ import com.google.android.libraries.feed.api.internal.common.PayloadWithId;
 import com.google.android.libraries.feed.api.internal.store.ContentMutation;
 import com.google.android.libraries.feed.common.functional.Committer;
 import com.google.search.now.feed.client.StreamDataProto.StreamPayload;
+
 import java.util.ArrayList;
 import java.util.List;
 
 /** This class will mutate the Content stored in the FeedStore. */
 public final class FeedContentMutation implements ContentMutation {
+    private final List<PayloadWithId> mutations = new ArrayList<>();
+    private final Committer<CommitResult, List<PayloadWithId>> committer;
 
-  private final List<PayloadWithId> mutations = new ArrayList<>();
-  private final Committer<CommitResult, List<PayloadWithId>> committer;
+    FeedContentMutation(Committer<CommitResult, List<PayloadWithId>> committer) {
+        this.committer = committer;
+    }
 
-  FeedContentMutation(Committer<CommitResult, List<PayloadWithId>> committer) {
-    this.committer = committer;
-  }
+    @Override
+    public ContentMutation add(String contentId, StreamPayload payload) {
+        mutations.add(new PayloadWithId(contentId, payload));
+        return this;
+    }
 
-  @Override
-  public ContentMutation add(String contentId, StreamPayload payload) {
-    mutations.add(new PayloadWithId(contentId, payload));
-    return this;
-  }
-
-  @Override
-  public CommitResult commit() {
-    return committer.commit(mutations);
-  }
+    @Override
+    public CommitResult commit() {
+        return committer.commit(mutations);
+    }
 }

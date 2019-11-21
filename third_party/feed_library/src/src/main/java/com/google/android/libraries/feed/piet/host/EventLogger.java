@@ -5,14 +5,14 @@
 package com.google.android.libraries.feed.piet.host;
 
 import com.google.search.now.ui.piet.ErrorsProto.ErrorCode;
+
 import java.util.List;
 
 /** Allows Piet to report events to the host. */
 public interface EventLogger {
-
-  /**
-   * Tells the host each {@link ErrorCode} that was raised during the binding of a Frame. This list
-   * can contain duplicates.
-   */
-  void logEvents(List<ErrorCode> errorCodes);
+    /**
+     * Tells the host each {@link ErrorCode} that was raised during the binding of a Frame. This
+     * list can contain duplicates.
+     */
+    void logEvents(List<ErrorCode> errorCodes);
 }

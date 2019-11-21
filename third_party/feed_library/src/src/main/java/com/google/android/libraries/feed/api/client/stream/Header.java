@@ -8,13 +8,12 @@ import android.view.View;
 
 /** Interface users can implement to define a header to display above Stream content. */
 public interface Header {
+    /** Returns the view representing the header. */
+    View getView();
 
-  /** Returns the view representing the header. */
-  View getView();
+    /** Returns true if the header can be dismissed. */
+    boolean isDismissible();
 
-  /** Returns true if the header can be dismissed. */
-  boolean isDismissible();
-
-  /** Called when the header has been dismissed. */
-  void onDismissed();
+    /** Called when the header has been dismissed. */
+    void onDismissed();
 }

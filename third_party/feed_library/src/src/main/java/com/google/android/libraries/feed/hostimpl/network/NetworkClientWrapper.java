@@ -13,33 +13,31 @@ import com.google.android.libraries.feed.common.functional.Consumer;
 
 /** A {@link NetworkClient} which wraps a NetworkClient to make calls on the Main thread. */
 public final class NetworkClientWrapper implements NetworkClient {
-  private static final String TAG = "NetworkClientWrapper";
+    private static final String TAG = "NetworkClientWrapper";
 
-  private final NetworkClient directNetworkClient;
-  private final ThreadUtils threadUtils;
-  private final MainThreadRunner mainThreadRunner;
+    private final NetworkClient directNetworkClient;
+    private final ThreadUtils threadUtils;
+    private final MainThreadRunner mainThreadRunner;
 
-  public NetworkClientWrapper(
-      NetworkClient directNetworkClient,
-      ThreadUtils threadUtils,
-      MainThreadRunner mainThreadRunner) {
-    this.directNetworkClient = directNetworkClient;
-    this.threadUtils = threadUtils;
-    this.mainThreadRunner = mainThreadRunner;
-  }
-
-  @Override
-  public void send(HttpRequest request, Consumer<HttpResponse> responseConsumer) {
-    if (threadUtils.isMainThread()) {
-      directNetworkClient.send(request, responseConsumer);
-      return;
+    public NetworkClientWrapper(NetworkClient directNetworkClient, ThreadUtils threadUtils,
+            MainThreadRunner mainThreadRunner) {
+        this.directNetworkClient = directNetworkClient;
+        this.threadUtils = threadUtils;
+        this.mainThreadRunner = mainThreadRunner;
     }
-    mainThreadRunner.execute(
-        TAG + " send", () -> directNetworkClient.send(request, responseConsumer));
-  }
 
-  @Override
-  public void close() throws Exception {
-    directNetworkClient.close();
-  }
+    @Override
+    public void send(HttpRequest request, Consumer<HttpResponse> responseConsumer) {
+        if (threadUtils.isMainThread()) {
+            directNetworkClient.send(request, responseConsumer);
+            return;
+        }
+        mainThreadRunner.execute(
+                TAG + " send", () -> directNetworkClient.send(request, responseConsumer));
+    }
+
+    @Override
+    public void close() throws Exception {
+        directNetworkClient.close();
+    }
 }

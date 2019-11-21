@@ -13,26 +13,20 @@ import com.google.search.now.feed.client.StreamDataProto.StreamStructure;
  * there is a great potential to reuse there, many content IDs are identical.
  */
 public class StreamStructureInterner extends ProtoStringInternerBase<StreamStructure> {
+    StreamStructureInterner(Interner<String> interner) {
+        super(interner);
+    }
 
-  StreamStructureInterner(Interner<String> interner) {
-    super(interner);
-  }
+    @Override
+    public StreamStructure intern(StreamStructure input) {
+        StreamStructure.Builder builder = null;
+        builder = internSingleStringField(input, builder, StreamStructure::getContentId,
+                StreamStructure.Builder::setContentId);
+        builder = internSingleStringField(input, builder, StreamStructure::getParentContentId,
+                StreamStructure.Builder::setParentContentId);
 
-  @Override
-  public StreamStructure intern(StreamStructure input) {
-    StreamStructure.Builder builder = null;
-    builder =
-        internSingleStringField(
-            input, builder, StreamStructure::getContentId, StreamStructure.Builder::setContentId);
-    builder =
-        internSingleStringField(
-            input,
-            builder,
-            StreamStructure::getParentContentId,
-            StreamStructure.Builder::setParentContentId);
-
-    // If builder is not null we memoized something and  we need to replace the proto with the
-    // modified proto.
-    return (builder != null) ? builder.build() : input;
-  }
+        // If builder is not null we memoized something and  we need to replace the proto with the
+        // modified proto.
+        return (builder != null) ? builder.build() : input;
+    }
 }

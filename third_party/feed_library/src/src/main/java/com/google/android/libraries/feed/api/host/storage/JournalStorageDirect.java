@@ -5,33 +5,33 @@
 package com.google.android.libraries.feed.api.host.storage;
 
 import com.google.android.libraries.feed.common.Result;
+
 import java.util.List;
 
 /** Define a version of the {@link JournalStorage} which runs synchronously. */
 public interface JournalStorageDirect {
+    /**
+     * Reads the journal and a returns the contents.
+     *
+     * <p>Reads on journals that do not exist will fulfill with an empty list.
+     */
+    Result<List<byte[]>> read(String journalName);
 
-  /**
-   * Reads the journal and a returns the contents.
-   *
-   * <p>Reads on journals that do not exist will fulfill with an empty list.
-   */
-  Result<List<byte[]>> read(String journalName);
+    /**
+     * Commits the operations in {@link JournalMutation} in order and reports the {@link
+     * CommitResult}. If all the operations succeed returns a success result, otherwise reports a
+     * failure.
+     *
+     * <p>This operation is not guaranteed to be atomic.
+     */
+    CommitResult commit(JournalMutation mutation);
 
-  /**
-   * Commits the operations in {@link JournalMutation} in order and reports the {@link
-   * CommitResult}. If all the operations succeed returns a success result, otherwise reports a
-   * failure.
-   *
-   * <p>This operation is not guaranteed to be atomic.
-   */
-  CommitResult commit(JournalMutation mutation);
+    /** Determines whether a journal exists. */
+    Result<Boolean> exists(String journalName);
 
-  /** Determines whether a journal exists. */
-  Result<Boolean> exists(String journalName);
+    /** Retrieve a list of all current journals */
+    Result<List<String>> getAllJournals();
 
-  /** Retrieve a list of all current journals */
-  Result<List<String>> getAllJournals();
-
-  /** Delete all journals. */
-  CommitResult deleteAll();
+    /** Delete all journals. */
+    CommitResult deleteAll();
 }

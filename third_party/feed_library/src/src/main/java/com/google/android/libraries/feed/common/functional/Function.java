@@ -6,6 +6,6 @@ package com.google.android.libraries.feed.common.functional;
 
 /** Function definition used by the Feed. This is a subset of the Java 8 defined Function. */
 public interface Function<T, R> {
-  /** Applies this function to the given argument. */
-  R apply(T t);
+    /** Applies this function to the given argument. */
+    R apply(T t);
 }

@@ -5,7 +5,4 @@
 package com.google.android.libraries.feed.basicstream.internal.viewholders;
 
 /** Interface used to notify users of swipe events. */
-public interface SwipeNotifier {
-
-  void onSwiped();
-}
+public interface SwipeNotifier { void onSwiped(); }

@@ -8,10 +8,9 @@ import com.google.search.now.feed.client.StreamDataProto.StreamStructure;
 
 /** A structural mutation against a session. */
 public interface SessionMutation {
+    /** Add or update a structure in the store. */
+    SessionMutation add(StreamStructure streamStructure);
 
-  /** Add or update a structure in the store. */
-  SessionMutation add(StreamStructure streamStructure);
-
-  /** Commit the mutations to the backing store */
-  Boolean commit();
+    /** Commit the mutations to the backing store */
+    Boolean commit();
 }

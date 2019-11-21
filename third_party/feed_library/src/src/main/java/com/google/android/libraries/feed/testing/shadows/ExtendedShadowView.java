@@ -5,6 +5,7 @@
 package com.google.android.libraries.feed.testing.shadows;
 
 import android.view.View;
+
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.shadows.ShadowView;
@@ -16,59 +17,59 @@ import org.robolectric.shadows.ShadowView;
  */
 @Implements(View.class)
 public class ExtendedShadowView extends ShadowView {
-  private int xLocation = 0;
-  private int yLocation = 0;
-  private int height = 0;
-  private int width = 0;
-  private boolean attached = false;
+    private int xLocation = 0;
+    private int yLocation = 0;
+    private int height = 0;
+    private int width = 0;
+    private boolean attached = false;
 
-  @Implementation
-  public void getLocationOnScreen(int[] pos) {
-    pos[0] = xLocation;
-    pos[1] = yLocation;
-  }
+    @Implementation
+    public void getLocationOnScreen(int[] pos) {
+        pos[0] = xLocation;
+        pos[1] = yLocation;
+    }
 
-  public void setLocationOnScreen(int x, int y) {
-    xLocation = x;
-    yLocation = y;
-  }
+    public void setLocationOnScreen(int x, int y) {
+        xLocation = x;
+        yLocation = y;
+    }
 
-  @Implementation
-  public void getLocationInWindow(int[] pos) {
-    pos[0] = xLocation;
-    pos[1] = yLocation;
-  }
+    @Implementation
+    public void getLocationInWindow(int[] pos) {
+        pos[0] = xLocation;
+        pos[1] = yLocation;
+    }
 
-  public void setLocationInWindow(int x, int y) {
-    xLocation = x;
-    yLocation = y;
-  }
+    public void setLocationInWindow(int x, int y) {
+        xLocation = x;
+        yLocation = y;
+    }
 
-  @Override
-  @Implementation
-  public boolean isAttachedToWindow() {
-    return attached;
-  }
+    @Override
+    @Implementation
+    public boolean isAttachedToWindow() {
+        return attached;
+    }
 
-  public void setAttachedToWindow(boolean attached) {
-    this.attached = attached;
-  }
+    public void setAttachedToWindow(boolean attached) {
+        this.attached = attached;
+    }
 
-  @Implementation
-  public int getHeight() {
-    return height;
-  }
+    @Implementation
+    public int getHeight() {
+        return height;
+    }
 
-  public void setHeight(int height) {
-    this.height = height;
-  }
+    public void setHeight(int height) {
+        this.height = height;
+    }
 
-  @Implementation
-  public int getWidth() {
-    return width;
-  }
+    @Implementation
+    public int getWidth() {
+        return width;
+    }
 
-  public void setWidth(int width) {
-    this.width = width;
-  }
+    public void setWidth(int width) {
+        this.width = width;
+    }
 }

@@ -9,6 +9,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import com.google.android.libraries.feed.api.client.stream.Stream.ContentChangedListener;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -20,32 +21,33 @@ import org.robolectric.RobolectricTestRunner;
  */
 @RunWith(RobolectricTestRunner.class)
 public class StreamContentChangedListenerTest {
-  @Mock ContentChangedListener contentChangedListener;
+    @Mock
+    ContentChangedListener contentChangedListener;
 
-  StreamContentChangedListener streamContentChangedListener;
+    StreamContentChangedListener streamContentChangedListener;
 
-  @Before
-  public void setup() {
-    initMocks(this);
-    streamContentChangedListener = new StreamContentChangedListener();
-  }
+    @Before
+    public void setup() {
+        initMocks(this);
+        streamContentChangedListener = new StreamContentChangedListener();
+    }
 
-  @Test
-  public void testOnContentChanged() {
-    streamContentChangedListener.addContentChangedListener(contentChangedListener);
+    @Test
+    public void testOnContentChanged() {
+        streamContentChangedListener.addContentChangedListener(contentChangedListener);
 
-    streamContentChangedListener.onContentChanged();
+        streamContentChangedListener.onContentChanged();
 
-    verify(contentChangedListener).onContentChanged();
-  }
+        verify(contentChangedListener).onContentChanged();
+    }
 
-  @Test
-  public void testRemoveContentChangedListener() {
-    streamContentChangedListener.addContentChangedListener(contentChangedListener);
-    streamContentChangedListener.removeContentChangedListener(contentChangedListener);
+    @Test
+    public void testRemoveContentChangedListener() {
+        streamContentChangedListener.addContentChangedListener(contentChangedListener);
+        streamContentChangedListener.removeContentChangedListener(contentChangedListener);
 
-    streamContentChangedListener.onContentChanged();
+        streamContentChangedListener.onContentChanged();
 
-    verify(contentChangedListener, never()).onContentChanged();
-  }
+        verify(contentChangedListener, never()).onContentChanged();
+    }
 }

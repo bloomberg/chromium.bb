@@ -12,19 +12,19 @@ package com.google.android.libraries.feed.api.host.config;
  */
 // TODO: This can't be final because we mock it
 public class DebugBehavior {
-  /** Convenience constant for configuration that enables all debug behavior. */
-  public static final DebugBehavior VERBOSE = new DebugBehavior(true);
+    /** Convenience constant for configuration that enables all debug behavior. */
+    public static final DebugBehavior VERBOSE = new DebugBehavior(true);
 
-  /** Convenience constant for configuration that disables all debug behavior. */
-  public static final DebugBehavior SILENT = new DebugBehavior(false);
+    /** Convenience constant for configuration that disables all debug behavior. */
+    public static final DebugBehavior SILENT = new DebugBehavior(false);
 
-  private final boolean showDebugViews;
+    private final boolean showDebugViews;
 
-  private DebugBehavior(boolean showDebugViews) {
-    this.showDebugViews = showDebugViews;
-  }
+    private DebugBehavior(boolean showDebugViews) {
+        this.showDebugViews = showDebugViews;
+    }
 
-  public boolean getShowDebugViews() {
-    return showDebugViews;
-  }
+    public boolean getShowDebugViews() {
+        return showDebugViews;
+    }
 }

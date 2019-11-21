@@ -11,6 +11,6 @@ package com.google.android.libraries.feed.common.functional;
  * <p>This interface should be used in a similar way to Java 8's Consumer interface.
  */
 public interface Consumer<T> {
-  /** Perform an operation using {@code input}. */
-  void accept(T input);
+    /** Perform an operation using {@code input}. */
+    void accept(T input);
 }

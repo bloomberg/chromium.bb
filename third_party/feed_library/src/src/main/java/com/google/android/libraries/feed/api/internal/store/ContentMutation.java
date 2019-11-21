@@ -12,10 +12,9 @@ import com.google.search.now.feed.client.StreamDataProto.StreamPayload;
  * which garbage collects the content that is not longer defined in any sessions.
  */
 public interface ContentMutation {
+    /** Add a new Mutation to the Store */
+    ContentMutation add(String contentId, StreamPayload payload);
 
-  /** Add a new Mutation to the Store */
-  ContentMutation add(String contentId, StreamPayload payload);
-
-  /** Commit the mutations to the backing store */
-  CommitResult commit();
+    /** Commit the mutations to the backing store */
+    CommitResult commit();
 }

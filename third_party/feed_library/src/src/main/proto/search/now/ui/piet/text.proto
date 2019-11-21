@@ -11,7 +11,7 @@ import "src/main/proto/search/now/ui/piet/styles.proto";
 
 package search.now.ui.piet;
 
-option optimize_for=LITE_RUNTIME;
+option optimize_for = LITE_RUNTIME;
 
 option java_package = "com.google.search.now.ui.piet";
 option java_outer_classname = "TextProto";

@@ -14,13 +14,11 @@ import com.google.search.now.wire.feed.FeedResponseProto.FeedResponseMetadata;
  * transformations.
  */
 public interface DataOperationTransformer {
-
-  /**
-   * Transforms a {@link DataOperation} into a {@link StreamDataOperation.Builder}. {@link
-   * StreamDataOperation.Builder} is returned to allow for multiple transformations.
-   */
-  StreamDataOperation.Builder transform(
-      DataOperation dataOperation,
-      StreamDataOperation.Builder streamDataOperation,
-      FeedResponseMetadata feedResponseMetadata);
+    /**
+     * Transforms a {@link DataOperation} into a {@link StreamDataOperation.Builder}. {@link
+     * StreamDataOperation.Builder} is returned to allow for multiple transformations.
+     */
+    StreamDataOperation.Builder transform(DataOperation dataOperation,
+            StreamDataOperation.Builder streamDataOperation,
+            FeedResponseMetadata feedResponseMetadata);
 }

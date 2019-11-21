@@ -9,29 +9,30 @@ import com.google.android.libraries.feed.api.internal.common.ThreadUtils;
 
 /** Fake implementation of {@link SchedulerApi}. */
 public final class FakeSchedulerApi implements SchedulerApi {
-  private final ThreadUtils threadUtils;
-  @RequestBehavior private int requestBehavior = RequestBehavior.NO_REQUEST_WITH_CONTENT;
+    private final ThreadUtils threadUtils;
+    @RequestBehavior
+    private int requestBehavior = RequestBehavior.NO_REQUEST_WITH_CONTENT;
 
-  public FakeSchedulerApi(ThreadUtils threadUtils) {
-    this.threadUtils = threadUtils;
-  }
+    public FakeSchedulerApi(ThreadUtils threadUtils) {
+        this.threadUtils = threadUtils;
+    }
 
-  @Override
-  public void onReceiveNewContent(long contentCreationDateTimeMs) {}
+    @Override
+    public void onReceiveNewContent(long contentCreationDateTimeMs) {}
 
-  @Override
-  public void onRequestError(int networkResponseCode) {}
+    @Override
+    public void onRequestError(int networkResponseCode) {}
 
-  @Override
-  @RequestBehavior
-  public int shouldSessionRequestData(SessionState sessionState) {
-    threadUtils.checkMainThread();
-    return requestBehavior;
-  }
+    @Override
+    @RequestBehavior
+    public int shouldSessionRequestData(SessionState sessionState) {
+        threadUtils.checkMainThread();
+        return requestBehavior;
+    }
 
-  /** Sets the result returned from {@link shouldSessionRequestData( SessionState )}. */
-  public FakeSchedulerApi setRequestBehavior(@RequestBehavior int requestBehavior) {
-    this.requestBehavior = requestBehavior;
-    return this;
-  }
+    /** Sets the result returned from {@link shouldSessionRequestData( SessionState )}. */
+    public FakeSchedulerApi setRequestBehavior(@RequestBehavior int requestBehavior) {
+        this.requestBehavior = requestBehavior;
+        return this;
+    }
 }

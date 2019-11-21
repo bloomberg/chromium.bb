@@ -6,17 +6,17 @@ package com.google.android.libraries.feed.api.internal.modelprovider;
 
 /** Defines completion of a continuation token initiated request. */
 public final class TokenCompleted {
-  private final ModelCursor modelCursor;
+    private final ModelCursor modelCursor;
 
-  public TokenCompleted(ModelCursor modelCursor) {
-    this.modelCursor = modelCursor;
-  }
+    public TokenCompleted(ModelCursor modelCursor) {
+        this.modelCursor = modelCursor;
+    }
 
-  /**
-   * Returns a cursor representing the continuation from the point in the stream the continuation
-   * token was found.
-   */
-  public ModelCursor getCursor() {
-    return modelCursor;
-  }
+    /**
+     * Returns a cursor representing the continuation from the point in the stream the continuation
+     * token was found.
+     */
+    public ModelCursor getCursor() {
+        return modelCursor;
+    }
 }

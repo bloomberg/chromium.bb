@@ -6,7 +6,6 @@ package com.google.android.libraries.feed.piet.host;
 
 /** Lets Piet ask the host to format strings. */
 public interface StringFormatter {
-
-  /** Return a relative elapsed time string such as "8 minutes ago" or "1 day ago". */
-  String getRelativeElapsedString(long elapsedTimeMillis);
+    /** Return a relative elapsed time string such as "8 minutes ago" or "1 day ago". */
+    String getRelativeElapsedString(long elapsedTimeMillis);
 }

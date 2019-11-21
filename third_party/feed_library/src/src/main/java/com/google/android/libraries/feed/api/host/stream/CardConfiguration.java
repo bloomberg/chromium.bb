@@ -9,17 +9,16 @@ import android.graphics.drawable.Drawable;
 /** Class which is able to provide host configuration for default card look and feel. */
 // TODO: Look into allowing server configuration of this.
 public interface CardConfiguration {
+    int getDefaultCornerRadius();
 
-  int getDefaultCornerRadius();
+    Drawable getCardBackground();
 
-  Drawable getCardBackground();
+    /** Returns the amount of margin (in px) at the end of a card in the Stream */
+    int getCardBottomMargin();
 
-  /** Returns the amount of margin (in px) at the end of a card in the Stream */
-  int getCardBottomMargin();
+    /** Returns the amount of margin (in px) to the left (in LTR locales) of cards. */
+    int getCardStartMargin();
 
-  /** Returns the amount of margin (in px) to the left (in LTR locales) of cards. */
-  int getCardStartMargin();
-
-  /** Returns the amount of margin (in px) to the right (in LTR locales) of cards. */
-  int getCardEndMargin();
+    /** Returns the amount of margin (in px) to the right (in LTR locales) of cards. */
+    int getCardEndMargin();
 }

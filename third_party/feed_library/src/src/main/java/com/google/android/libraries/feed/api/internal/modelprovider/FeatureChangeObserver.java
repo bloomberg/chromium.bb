@@ -9,6 +9,6 @@ package com.google.android.libraries.feed.api.internal.modelprovider;
  * #onChange(FeatureChange)} is called when a feature changes.
  */
 public interface FeatureChangeObserver {
-  /** Called when children of the feature or the underlying payload proto instance change. */
-  void onChange(FeatureChange change);
+    /** Called when children of the feature or the underlying payload proto instance change. */
+    void onChange(FeatureChange change);
 }

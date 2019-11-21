@@ -6,13 +6,12 @@ package com.google.android.libraries.feed.sharedstream.publicapi.scroll;
 
 /** Interface to register for scroll events. */
 public interface ScrollObservable {
+    /** Adds an observer for listening to future scroll events. */
+    void addScrollObserver(ScrollObserver observer);
 
-  /** Adds an observer for listening to future scroll events. */
-  void addScrollObserver(ScrollObserver observer);
+    /** Removes the specified observer from listening to scroll events. */
+    void removeScrollObserver(ScrollObserver observer);
 
-  /** Removes the specified observer from listening to scroll events. */
-  void removeScrollObserver(ScrollObserver observer);
-
-  /** Provides the current scroll state of the monitor. */
-  int getCurrentScrollState();
+    /** Provides the current scroll state of the monitor. */
+    int getCurrentScrollState();
 }

@@ -9,9 +9,9 @@ import com.google.protobuf.ByteString;
 
 /** Used to commit mutations to semantic properties data within the {@link Store} */
 public interface SemanticPropertiesMutation {
-  /** Add a new semantic properties mutation */
-  SemanticPropertiesMutation add(String contentId, ByteString semanticData);
+    /** Add a new semantic properties mutation */
+    SemanticPropertiesMutation add(String contentId, ByteString semanticData);
 
-  /** Commit the current mutations */
-  CommitResult commit();
+    /** Commit the current mutations */
+    CommitResult commit();
 }

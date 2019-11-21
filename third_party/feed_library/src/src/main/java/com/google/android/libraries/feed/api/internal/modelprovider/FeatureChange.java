@@ -17,28 +17,27 @@ import java.util.List;
  * </ol>
  */
 public interface FeatureChange {
+    /** Returns the contentId of the ModelFeature which was changed. */
+    String getContentId();
 
-  /** Returns the contentId of the ModelFeature which was changed. */
-  String getContentId();
+    /** Returns {@code true} if the ModelFeature changed. */
+    boolean isFeatureChanged();
 
-  /** Returns {@code true} if the ModelFeature changed. */
-  boolean isFeatureChanged();
+    /** Returns the ModelFeature that was changed. */
+    ModelFeature getModelFeature();
 
-  /** Returns the ModelFeature that was changed. */
-  ModelFeature getModelFeature();
+    /** Returns the structural changes to the ModelFeature. */
+    ChildChanges getChildChanges();
 
-  /** Returns the structural changes to the ModelFeature. */
-  ChildChanges getChildChanges();
+    /** Class describing changes to the children. */
+    interface ChildChanges {
+        /**
+         * Returns a List of the children added to this ModelFeature. These children are in the same
+         * order they would be displayed in the stream.
+         */
+        List<ModelChild> getAppendedChildren();
 
-  /** Class describing changes to the children. */
-  interface ChildChanges {
-    /**
-     * Returns a List of the children added to this ModelFeature. These children are in the same
-     * order they would be displayed in the stream.
-     */
-    List<ModelChild> getAppendedChildren();
-
-    /** Returns a List of the children removed from this ModelFeature. */
-    List<ModelChild> getRemovedChildren();
-  }
+        /** Returns a List of the children removed from this ModelFeature. */
+        List<ModelChild> getRemovedChildren();
+    }
 }

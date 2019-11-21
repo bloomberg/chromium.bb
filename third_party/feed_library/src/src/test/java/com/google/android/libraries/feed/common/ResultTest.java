@@ -14,27 +14,26 @@ import org.robolectric.RobolectricTestRunner;
 /** Test class for {@link Result} */
 @RunWith(RobolectricTestRunner.class)
 public class ResultTest {
+    private static final String HELLO_WORLD = "Hello World";
 
-  private static final String HELLO_WORLD = "Hello World";
+    @Test
+    public void success() throws Exception {
+        Result<String> result = Result.success(HELLO_WORLD);
+        assertThat(result.isSuccessful()).isTrue();
+        assertThat(result.getValue()).isEqualTo(HELLO_WORLD);
+    }
 
-  @Test
-  public void success() throws Exception {
-    Result<String> result = Result.success(HELLO_WORLD);
-    assertThat(result.isSuccessful()).isTrue();
-    assertThat(result.getValue()).isEqualTo(HELLO_WORLD);
-  }
+    @Test
+    public void success_nullValue() throws Exception {
+        Result<String> result = Result.success(null);
+        assertThat(result.isSuccessful()).isTrue();
+        assertThatRunnable(result::getValue).throwsAnExceptionOfType(NullPointerException.class);
+    }
 
-  @Test
-  public void success_nullValue() throws Exception {
-    Result<String> result = Result.success(null);
-    assertThat(result.isSuccessful()).isTrue();
-    assertThatRunnable(result::getValue).throwsAnExceptionOfType(NullPointerException.class);
-  }
-
-  @Test
-  public void error() throws Exception {
-    Result<String> result = Result.failure();
-    assertThat(result.isSuccessful()).isFalse();
-    assertThatRunnable(result::getValue).throwsAnExceptionOfType(IllegalStateException.class);
-  }
+    @Test
+    public void error() throws Exception {
+        Result<String> result = Result.failure();
+        assertThat(result.isSuccessful()).isFalse();
+        assertThatRunnable(result::getValue).throwsAnExceptionOfType(IllegalStateException.class);
+    }
 }

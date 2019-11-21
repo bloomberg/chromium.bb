@@ -6,7 +6,7 @@ syntax = "proto2";
 
 package search.now.ui.stream;
 
-option optimize_for=LITE_RUNTIME;
+option optimize_for = LITE_RUNTIME;
 
 import "src/main/proto/search/now/ui/piet/piet.proto";
 import "src/main/proto/search/now/wire/feed/content_id.proto";
@@ -118,9 +118,7 @@ message Content {
 // Content which is able to show a Piet frame. This includes any data which may
 // be needed to show a Piet frame.
 message PietContent {
-  extend Content {
-    optional PietContent piet_content_extension = 185431440;
-  }
+  extend Content { optional PietContent piet_content_extension = 185431440; }
 
   // Content Ids of Piet Shared States which should be provided to Piet in order
   // to show its content.

@@ -15,42 +15,40 @@ import com.google.search.now.wire.feed.FeedResponseProto.FeedResponseMetadata;
 
 /** {@link DataOperationTransformer} to populate {@link StreamFeature}. */
 public final class FeatureDataOperationTransformer implements DataOperationTransformer {
+    private static final String TAG = "FeatureDataOperationTra";
 
-  private static final String TAG = "FeatureDataOperationTra";
-
-  @Override
-  public StreamDataOperation.Builder transform(
-      DataOperation dataOperation,
-      StreamDataOperation.Builder dataOperationBuilder,
-      FeedResponseMetadata feedResponseMetadata) {
-
-    StreamFeature.Builder streamFeature =
-        dataOperationBuilder.getStreamPayload().getStreamFeature().toBuilder();
-    switch (dataOperation.getFeature().getRenderableUnit()) {
-      case STREAM:
-        streamFeature.setStream(dataOperation.getFeature().getExtension(Stream.streamExtension));
-        break;
-      case CARD:
-        streamFeature.setCard(dataOperation.getFeature().getExtension(Card.cardExtension));
-        break;
-      case CLUSTER:
-        streamFeature.setCluster(dataOperation.getFeature().getExtension(Cluster.clusterExtension));
-        break;
-      case CONTENT:
-        // Content is handled in ContentDataOperationTransformer
-        break;
-      case TOKEN:
-        // Tokens are handled in FeedProtocolAdapter
-        break;
-      default:
-        Logger.e(
-            TAG,
-            "Unknown Feature payload %s, ignored",
-            dataOperation.getFeature().getRenderableUnit());
+    @Override
+    public StreamDataOperation.Builder transform(DataOperation dataOperation,
+            StreamDataOperation.Builder dataOperationBuilder,
+            FeedResponseMetadata feedResponseMetadata) {
+        StreamFeature.Builder streamFeature =
+                dataOperationBuilder.getStreamPayload().getStreamFeature().toBuilder();
+        switch (dataOperation.getFeature().getRenderableUnit()) {
+            case STREAM:
+                streamFeature.setStream(
+                        dataOperation.getFeature().getExtension(Stream.streamExtension));
+                break;
+            case CARD:
+                streamFeature.setCard(dataOperation.getFeature().getExtension(Card.cardExtension));
+                break;
+            case CLUSTER:
+                streamFeature.setCluster(
+                        dataOperation.getFeature().getExtension(Cluster.clusterExtension));
+                break;
+            case CONTENT:
+                // Content is handled in ContentDataOperationTransformer
+                break;
+            case TOKEN:
+                // Tokens are handled in FeedProtocolAdapter
+                break;
+            default:
+                Logger.e(TAG, "Unknown Feature payload %s, ignored",
+                        dataOperation.getFeature().getRenderableUnit());
+                return dataOperationBuilder;
+        }
+        dataOperationBuilder.setStreamPayload(
+                dataOperationBuilder.getStreamPayload().toBuilder().setStreamFeature(
+                        streamFeature));
         return dataOperationBuilder;
     }
-    dataOperationBuilder.setStreamPayload(
-        dataOperationBuilder.getStreamPayload().toBuilder().setStreamFeature(streamFeature));
-    return dataOperationBuilder;
-  }
 }

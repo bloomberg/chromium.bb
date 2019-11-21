@@ -9,10 +9,9 @@ import com.google.android.libraries.feed.api.internal.modelprovider.ModelProvide
 
 /** Allows interacting with the Feed library on a per-stream level */
 public interface StreamScope {
+    /** Returns the current {@link Stream}. */
+    Stream getStream();
 
-  /** Returns the current {@link Stream}. */
-  Stream getStream();
-
-  /** Returns the current {@link ModelProviderFactory}. */
-  ModelProviderFactory getModelProviderFactory();
+    /** Returns the current {@link ModelProviderFactory}. */
+    ModelProviderFactory getModelProviderFactory();
 }

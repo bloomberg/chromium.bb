@@ -6,7 +6,7 @@ syntax = "proto2";
 
 package search.now.ui.piet;
 
-option optimize_for=LITE_RUNTIME;
+option optimize_for = LITE_RUNTIME;
 
 import "src/main/proto/search/now/ui/piet/accessibility.proto";
 import "src/main/proto/search/now/ui/piet/actions.proto";

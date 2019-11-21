@@ -13,23 +13,22 @@ import android.view.ViewGroup;
  * decides which rounding strategy to use and sets the appropriate delegate.
  */
 class OutlineProviderRoundedCornerDelegate extends RoundedCornerDelegate {
+    /**
+     * Sets clipToOutline to true.
+     *
+     * <p>Setting it in an initializer rather than a constructor means a new instance of this
+     * delegate doesn't need to be created every time an outline provider is needed.
+     */
+    @Override
+    public void initializeForView(ViewGroup view) {
+        view.setClipToOutline(true);
+        view.setClipChildren(true);
+    }
 
-  /**
-   * Sets clipToOutline to true.
-   *
-   * <p>Setting it in an initializer rather than a constructor means a new instance of this delegate
-   * doesn't need to be created every time an outline provider is needed.
-   */
-  @Override
-  public void initializeForView(ViewGroup view) {
-    view.setClipToOutline(true);
-    view.setClipChildren(true);
-  }
-
-  /** Reset clipToOutline to false (the default) when this strategy stops being used. */
-  @Override
-  public void destroy(ViewGroup view) {
-    view.setClipToOutline(false);
-    view.setClipChildren(false);
-  }
+    /** Reset clipToOutline to false (the default) when this strategy stops being used. */
+    @Override
+    public void destroy(ViewGroup view) {
+        view.setClipToOutline(false);
+        view.setClipChildren(false);
+    }
 }

@@ -13,40 +13,40 @@ import com.google.android.libraries.feed.api.internal.modelprovider.RemoveTracki
 
 /** {@link RemoveTrackingFactory} to notify host of removed content. */
 public class StreamRemoveTrackingFactory implements RemoveTrackingFactory<ContentRemoval> {
+    private final ModelProvider modelProvider;
+    private final FeedKnownContent feedKnownContent;
 
-  private final ModelProvider modelProvider;
-  private final FeedKnownContent feedKnownContent;
-
-  public StreamRemoveTrackingFactory(
-      ModelProvider modelProvider, FeedKnownContent feedKnownContent) {
-    this.modelProvider = modelProvider;
-    this.feedKnownContent = feedKnownContent;
-  }
-
-  /*@Nullable*/
-  @Override
-  public RemoveTracking<ContentRemoval> create(MutationContext mutationContext) {
-    String requestingSessionId = mutationContext.getRequestingSessionId();
-    if (requestingSessionId == null) {
-      return null;
+    public StreamRemoveTrackingFactory(
+            ModelProvider modelProvider, FeedKnownContent feedKnownContent) {
+        this.modelProvider = modelProvider;
+        this.feedKnownContent = feedKnownContent;
     }
 
-    // Only notify host on the StreamScope that requested the dismiss.
-    if (!requestingSessionId.equals(modelProvider.getSessionId())) {
-      return null;
-    }
-
-    return new RemoveTracking<>(
-        streamFeature -> {
-          if (!streamFeature.getContent().getRepresentationData().hasUri()) {
+    /*@Nullable*/
+    @Override
+    public RemoveTracking<ContentRemoval> create(MutationContext mutationContext) {
+        String requestingSessionId = mutationContext.getRequestingSessionId();
+        if (requestingSessionId == null) {
             return null;
-          }
+        }
 
-          return new ContentRemoval(
-              streamFeature.getContent().getRepresentationData().getUri(),
-              mutationContext.isUserInitiated());
-        },
-        removedContent ->
-            feedKnownContent.getKnownContentHostNotifier().onContentRemoved(removedContent));
-  }
+        // Only notify host on the StreamScope that requested the dismiss.
+        if (!requestingSessionId.equals(modelProvider.getSessionId())) {
+            return null;
+        }
+
+        return new RemoveTracking<>(
+                streamFeature
+                -> {
+                    if (!streamFeature.getContent().getRepresentationData().hasUri()) {
+                        return null;
+                    }
+
+                    return new ContentRemoval(
+                            streamFeature.getContent().getRepresentationData().getUri(),
+                            mutationContext.isUserInitiated());
+                },
+                removedContent
+                -> feedKnownContent.getKnownContentHostNotifier().onContentRemoved(removedContent));
+    }
 }

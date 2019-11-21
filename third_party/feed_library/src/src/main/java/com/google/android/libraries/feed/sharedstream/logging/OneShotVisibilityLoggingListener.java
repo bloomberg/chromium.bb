@@ -6,36 +6,35 @@ package com.google.android.libraries.feed.sharedstream.logging;
 
 /** Implementation of a {@link LoggingListener} that only notifies a listener of the first view. */
 public class OneShotVisibilityLoggingListener implements LoggingListener {
+    private final LoggingListener loggingListener;
+    protected boolean viewLogged;
 
-  private final LoggingListener loggingListener;
-  protected boolean viewLogged;
-
-  public OneShotVisibilityLoggingListener(LoggingListener loggingListener) {
-    this.loggingListener = loggingListener;
-  }
-
-  @Override
-  public void onViewVisible() {
-    if (viewLogged) {
-      return;
+    public OneShotVisibilityLoggingListener(LoggingListener loggingListener) {
+        this.loggingListener = loggingListener;
     }
 
-    loggingListener.onViewVisible();
-    viewLogged = true;
-  }
+    @Override
+    public void onViewVisible() {
+        if (viewLogged) {
+            return;
+        }
 
-  @Override
-  public void onContentClicked() {
-    loggingListener.onContentClicked();
-  }
+        loggingListener.onViewVisible();
+        viewLogged = true;
+    }
 
-  @Override
-  public void onContentSwiped() {
-    loggingListener.onContentSwiped();
-  }
+    @Override
+    public void onContentClicked() {
+        loggingListener.onContentClicked();
+    }
 
-  @Override
-  public void onScrollStateChanged(int newScrollState) {
-    loggingListener.onScrollStateChanged(newScrollState);
-  }
+    @Override
+    public void onContentSwiped() {
+        loggingListener.onContentSwiped();
+    }
+
+    @Override
+    public void onScrollStateChanged(int newScrollState) {
+        loggingListener.onScrollStateChanged(newScrollState);
+    }
 }

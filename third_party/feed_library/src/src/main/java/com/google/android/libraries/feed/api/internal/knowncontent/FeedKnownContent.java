@@ -5,18 +5,18 @@
 package com.google.android.libraries.feed.api.internal.knowncontent;
 
 import com.google.android.libraries.feed.api.client.knowncontent.KnownContent;
+
 import java.util.List;
 
 /** Allows the feed libraries to request and subscribe to information about the Feed's content. */
 public interface FeedKnownContent extends KnownContent {
-
-  /**
-   * Gets listener that notifies all added listeners of {@link
-   * KnownContent.Listener#onContentRemoved(List)} or {@link
-   * KnownContent.Listener#onNewContentReceived(boolean, long)}.
-   *
-   * <p>Note: This method is internal to the Feed. It provides a {@link Listener} that, when
-   * notified, will propagate the notification to the host.
-   */
-  KnownContent.Listener getKnownContentHostNotifier();
+    /**
+     * Gets listener that notifies all added listeners of {@link
+     * KnownContent.Listener#onContentRemoved(List)} or {@link
+     * KnownContent.Listener#onNewContentReceived(boolean, long)}.
+     *
+     * <p>Note: This method is internal to the Feed. It provides a {@link Listener} that, when
+     * notified, will propagate the notification to the host.
+     */
+    KnownContent.Listener getKnownContentHostNotifier();
 }

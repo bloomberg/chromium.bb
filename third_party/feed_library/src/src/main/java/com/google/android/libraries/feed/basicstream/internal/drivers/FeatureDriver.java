@@ -4,15 +4,13 @@
 
 package com.google.android.libraries.feed.basicstream.internal.drivers;
 
-
 /**
  * A FeatureDriver is an object which can generate a {@link LeafFeatureDriver} from a {@link
  * com.google.android.libraries.feed.api.internal.modelprovider.ModelFeature}.
  */
 public interface FeatureDriver {
+    void onDestroy();
 
-  void onDestroy();
-
-  /*@Nullable*/
-  LeafFeatureDriver getLeafFeatureDriver();
+    /*@Nullable*/
+    LeafFeatureDriver getLeafFeatureDriver();
 }

@@ -6,7 +6,7 @@ syntax = "proto2";
 
 package search.now.wire.feed;
 
-option optimize_for=LITE_RUNTIME;
+option optimize_for = LITE_RUNTIME;
 
 import "src/main/proto/search/now/wire/feed/action_payload.proto";
 import "src/main/proto/search/now/wire/feed/content_id.proto";

@@ -5,15 +5,15 @@ package com.google.android.libraries.feed.basicstream.internal.actions;
 
 /** Interface used for communicating view and hide events */
 public interface ViewElementActionHandler {
-  /**
-   * Called when a hide action has been performed on a {@link
-   * com.google.search.now.ui.action.FeedActionProto.FeedActionMetadata.ElementType} value.
-   */
-  void onElementHide(int elementType);
+    /**
+     * Called when a hide action has been performed on a {@link
+     * com.google.search.now.ui.action.FeedActionProto.FeedActionMetadata.ElementType} value.
+     */
+    void onElementHide(int elementType);
 
-  /**
-   * Called when a view action has been performed on a {@link
-   * com.google.search.now.ui.action.FeedActionProto.FeedActionMetadata.ElementType} value.
-   */
-  void onElementView(int elementType);
+    /**
+     * Called when a view action has been performed on a {@link
+     * com.google.search.now.ui.action.FeedActionProto.FeedActionMetadata.ElementType} value.
+     */
+    void onElementView(int elementType);
 }

@@ -11,14 +11,14 @@ import java.util.List;
  * methods in {@link ContentMutation.Builder}.
  */
 final class ContentOperationListSimplifier {
-  /**
-   * Returns a new {@link List<ContentOperation>}, which is a simplification of {@code
-   * contentOperations}.
-   *
-   * <p>The returned list will have a length at most equal to {@code contentOperations}.
-   */
-  List<ContentOperation> simplify(List<ContentOperation> contentOperations) {
-    // TODO: implement
-    return contentOperations;
-  }
+    /**
+     * Returns a new {@link List<ContentOperation>}, which is a simplification of {@code
+     * contentOperations}.
+     *
+     * <p>The returned list will have a length at most equal to {@code contentOperations}.
+     */
+    List<ContentOperation> simplify(List<ContentOperation> contentOperations) {
+        // TODO: implement
+        return contentOperations;
+    }
 }

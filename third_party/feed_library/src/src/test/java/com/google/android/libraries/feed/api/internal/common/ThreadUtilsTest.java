@@ -17,24 +17,23 @@ import org.robolectric.RobolectricTestRunner;
  */
 @RunWith(RobolectricTestRunner.class)
 public class ThreadUtilsTest {
+    @Test
+    public void testOnMainThread() {
+        ThreadUtils threadUtils = new ThreadUtils();
+        assertThat(threadUtils.isMainThread()).isTrue();
+    }
 
-  @Test
-  public void testOnMainThread() {
-    ThreadUtils threadUtils = new ThreadUtils();
-    assertThat(threadUtils.isMainThread()).isTrue();
-  }
+    @Test
+    public void testCheckMainThread() {
+        ThreadUtils threadUtils = new ThreadUtils();
+        // expect no exception
+        threadUtils.checkMainThread();
+    }
 
-  @Test
-  public void testCheckMainThread() {
-    ThreadUtils threadUtils = new ThreadUtils();
-    // expect no exception
-    threadUtils.checkMainThread();
-  }
-
-  @Test()
-  public void testCheckNotMainThread() {
-    final ThreadUtils threadUtils = new ThreadUtils();
-    assertThatRunnable(threadUtils::checkNotMainThread)
-        .throwsAnExceptionOfType(IllegalStateException.class);
-  }
+    @Test()
+    public void testCheckNotMainThread() {
+        final ThreadUtils threadUtils = new ThreadUtils();
+        assertThatRunnable(threadUtils::checkNotMainThread)
+                .throwsAnExceptionOfType(IllegalStateException.class);
+    }
 }

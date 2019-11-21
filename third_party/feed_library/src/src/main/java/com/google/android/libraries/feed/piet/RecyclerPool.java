@@ -4,23 +4,21 @@
 
 package com.google.android.libraries.feed.piet;
 
-
 /**
  * Interface defining a simple Pool of Adapters.
  *
  * @param <A> The adapter being managed by the {@link RecyclerPool}
  */
 interface RecyclerPool<A extends ElementAdapter<?, ?>> {
+    /**
+     * Return an {@link ElementAdapter} matching the {@link RecyclerKey} or null if one isn't found.
+     */
+    /*@Nullable*/
+    A get(RecyclerKey key);
 
-  /**
-   * Return an {@link ElementAdapter} matching the {@link RecyclerKey} or null if one isn't found.
-   */
-  /*@Nullable*/
-  A get(RecyclerKey key);
+    /** Put a {@link ElementAdapter} with a {@link RecyclerKey} into the pool. */
+    void put(RecyclerKey key, A adapter);
 
-  /** Put a {@link ElementAdapter} with a {@link RecyclerKey} into the pool. */
-  void put(RecyclerKey key, A adapter);
-
-  /** Clear everything out of the recycler pool. */
-  void clear();
+    /** Clear everything out of the recycler pool. */
+    void clear();
 }

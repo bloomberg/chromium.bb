@@ -9,10 +9,9 @@ import android.view.View;
 
 /** {@link android.support.v7.widget.RecyclerView.ViewHolder} for the Feed. */
 public abstract class FeedViewHolder extends ViewHolder {
+    public FeedViewHolder(View view) {
+        super(view);
+    }
 
-  public FeedViewHolder(View view) {
-    super(view);
-  }
-
-  public abstract void unbind();
+    public abstract void unbind();
 }

@@ -8,11 +8,10 @@ import com.google.android.libraries.feed.common.feedobservable.FeedObservable;
 
 /** {@link FeedObservable} to reset whether views have been logged as visible. */
 public class ViewLoggingUpdater extends FeedObservable<ResettableOneShotVisibilityLoggingListener> {
-
-  /** Resets views logging state to allow them to be re-logged as visible. */
-  public void resetViewTracking() {
-    for (ResettableOneShotVisibilityLoggingListener loggingListener : observers) {
-      loggingListener.reset();
+    /** Resets views logging state to allow them to be re-logged as visible. */
+    public void resetViewTracking() {
+        for (ResettableOneShotVisibilityLoggingListener loggingListener : observers) {
+            loggingListener.reset();
+        }
     }
-  }
 }

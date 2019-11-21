@@ -7,6 +7,7 @@ package com.google.android.libraries.feed.basicstream.internal;
 import android.support.annotation.VisibleForTesting;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.RecyclerView;
+
 import com.google.android.libraries.feed.api.client.stream.Stream.ContentChangedListener;
 
 /**
@@ -14,37 +15,36 @@ import com.google.android.libraries.feed.api.client.stream.Stream.ContentChanged
  * after animations occur.
  */
 public class StreamItemAnimator extends DefaultItemAnimator {
+    private final ContentChangedListener contentChangedListener;
+    private boolean isStreamContentVisible;
 
-  private final ContentChangedListener contentChangedListener;
-  private boolean isStreamContentVisible;
-
-  public StreamItemAnimator(ContentChangedListener contentChangedListener) {
-    this.contentChangedListener = contentChangedListener;
-  }
-
-  @Override
-  public void onAnimationFinished(RecyclerView.ViewHolder viewHolder) {
-    super.onAnimationFinished(viewHolder);
-    contentChangedListener.onContentChanged();
-  }
-
-  public void setStreamVisibility(boolean isStreamContentVisible) {
-    if (this.isStreamContentVisible == isStreamContentVisible) {
-      return;
+    public StreamItemAnimator(ContentChangedListener contentChangedListener) {
+        this.contentChangedListener = contentChangedListener;
     }
 
-    if (isStreamContentVisible) {
-      // Ending animations so that if any content is animating out the RecyclerView will be able to
-      // remove those views. This can occur if a user quickly presses hide and then show on the
-      // stream.
-      endAnimations();
+    @Override
+    public void onAnimationFinished(RecyclerView.ViewHolder viewHolder) {
+        super.onAnimationFinished(viewHolder);
+        contentChangedListener.onContentChanged();
     }
 
-    this.isStreamContentVisible = isStreamContentVisible;
-  }
+    public void setStreamVisibility(boolean isStreamContentVisible) {
+        if (this.isStreamContentVisible == isStreamContentVisible) {
+            return;
+        }
 
-  @VisibleForTesting
-  public boolean getStreamContentVisibility() {
-    return isStreamContentVisible;
-  }
+        if (isStreamContentVisible) {
+            // Ending animations so that if any content is animating out the RecyclerView will be
+            // able to remove those views. This can occur if a user quickly presses hide and then
+            // show on the stream.
+            endAnimations();
+        }
+
+        this.isStreamContentVisible = isStreamContentVisible;
+    }
+
+    @VisibleForTesting
+    public boolean getStreamContentVisibility() {
+        return isStreamContentVisible;
+    }
 }

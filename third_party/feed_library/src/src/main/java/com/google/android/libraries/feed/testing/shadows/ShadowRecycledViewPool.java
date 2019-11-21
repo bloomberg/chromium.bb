@@ -6,6 +6,7 @@ package com.google.android.libraries.feed.testing.shadows;
 
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.ViewHolder;
+
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
@@ -19,15 +20,14 @@ import org.robolectric.annotation.Implements;
  */
 @Implements(RecyclerView.RecycledViewPool.class)
 public class ShadowRecycledViewPool {
+    private int clearCount;
 
-  private int clearCount;
+    @Implementation
+    public void clear() {
+        clearCount++;
+    }
 
-  @Implementation
-  public void clear() {
-    clearCount++;
-  }
-
-  public int getClearCallCount() {
-    return clearCount;
-  }
+    public int getClearCallCount() {
+        return clearCount;
+    }
 }

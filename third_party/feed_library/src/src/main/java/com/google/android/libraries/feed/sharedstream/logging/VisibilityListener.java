@@ -5,7 +5,4 @@
 package com.google.android.libraries.feed.sharedstream.logging;
 
 /** Interface that can be implemented to listen to view visibility events. */
-public interface VisibilityListener {
-
-  void onViewVisible();
-}
+public interface VisibilityListener { void onViewVisible(); }

@@ -8,21 +8,20 @@ import com.google.android.libraries.feed.common.functional.Consumer;
 
 /** Test helper class that ensures that the asynchronous consumer is called. */
 public class RequiredConsumer<T> implements Consumer<T> {
+    private final Consumer<T> consumer;
+    private boolean isCalled = false;
 
-  private final Consumer<T> consumer;
-  private boolean isCalled = false;
+    public RequiredConsumer(Consumer<T> consumer) {
+        this.consumer = consumer;
+    }
 
-  public RequiredConsumer(Consumer<T> consumer) {
-    this.consumer = consumer;
-  }
+    @Override
+    public void accept(T input) {
+        isCalled = true;
+        consumer.accept(input);
+    }
 
-  @Override
-  public void accept(T input) {
-    isCalled = true;
-    consumer.accept(input);
-  }
-
-  public boolean isCalled() {
-    return isCalled;
-  }
+    public boolean isCalled() {
+        return isCalled;
+    }
 }

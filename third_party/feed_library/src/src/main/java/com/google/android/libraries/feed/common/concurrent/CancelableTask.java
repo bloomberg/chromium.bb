@@ -5,10 +5,9 @@ package com.google.android.libraries.feed.common.concurrent;
 
 /** Interface for a task that can be canceled. */
 public interface CancelableTask {
+    /** Returns if the task has been canceled. */
+    boolean canceled();
 
-  /** Returns if the task has been canceled. */
-  boolean canceled();
-
-  /** Cancels the task to prevent it from running. */
-  void cancel();
+    /** Cancels the task to prevent it from running. */
+    void cancel();
 }

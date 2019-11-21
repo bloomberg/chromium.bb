@@ -10,48 +10,47 @@ import com.google.android.libraries.feed.common.concurrent.testing.FakeThreadUti
 import com.google.android.libraries.feed.common.functional.Consumer;
 import com.google.search.now.feed.client.StreamDataProto.StreamUploadableAction;
 import com.google.search.now.wire.feed.ConsistencyTokenProto.ConsistencyToken;
+
 import java.util.HashSet;
 import java.util.Set;
 
 /** Fake implements of {@link ActionUploadRequestManager}. */
 public final class FakeActionUploadRequestManager implements ActionUploadRequestManager {
-  private final FakeThreadUtils fakeThreadUtils;
-  private Result<ConsistencyToken> result = Result.success(ConsistencyToken.getDefaultInstance());
-  /*@Nullable*/ private Set<StreamUploadableAction> actions = null;
+    private final FakeThreadUtils fakeThreadUtils;
+    private Result<ConsistencyToken> result = Result.success(ConsistencyToken.getDefaultInstance());
+    /*@Nullable*/ private Set<StreamUploadableAction> actions = null;
 
-  public FakeActionUploadRequestManager(FakeThreadUtils fakeThreadUtils) {
-    this.fakeThreadUtils = fakeThreadUtils;
-  }
-
-  @Override
-  public void triggerUploadActions(
-      Set<StreamUploadableAction> actions,
-      ConsistencyToken token,
-      Consumer<Result<ConsistencyToken>> consumer) {
-    this.actions = actions;
-    boolean policy = fakeThreadUtils.enforceMainThread(false);
-    try {
-      consumer.accept(result);
-    } finally {
-      fakeThreadUtils.enforceMainThread(policy);
-    }
-  }
-
-  /**
-   * Sets the result to return from triggerUploadActions. If unset will use {@code
-   * Result.success(ConsistencyToken.getDefaultInstance())}.
-   */
-  public FakeActionUploadRequestManager setResult(Result<ConsistencyToken> result) {
-    this.result = result;
-    return this;
-  }
-
-  /** Returns the last set of actions sent to triggerUploadActions. */
-  public Set<StreamUploadableAction> getLatestActions() {
-    if (actions == null) {
-      return new HashSet<>();
+    public FakeActionUploadRequestManager(FakeThreadUtils fakeThreadUtils) {
+        this.fakeThreadUtils = fakeThreadUtils;
     }
 
-    return actions;
-  }
+    @Override
+    public void triggerUploadActions(Set<StreamUploadableAction> actions, ConsistencyToken token,
+            Consumer<Result<ConsistencyToken>> consumer) {
+        this.actions = actions;
+        boolean policy = fakeThreadUtils.enforceMainThread(false);
+        try {
+            consumer.accept(result);
+        } finally {
+            fakeThreadUtils.enforceMainThread(policy);
+        }
+    }
+
+    /**
+     * Sets the result to return from triggerUploadActions. If unset will use {@code
+     * Result.success(ConsistencyToken.getDefaultInstance())}.
+     */
+    public FakeActionUploadRequestManager setResult(Result<ConsistencyToken> result) {
+        this.result = result;
+        return this;
+    }
+
+    /** Returns the last set of actions sent to triggerUploadActions. */
+    public Set<StreamUploadableAction> getLatestActions() {
+        if (actions == null) {
+            return new HashSet<>();
+        }
+
+        return actions;
+    }
 }

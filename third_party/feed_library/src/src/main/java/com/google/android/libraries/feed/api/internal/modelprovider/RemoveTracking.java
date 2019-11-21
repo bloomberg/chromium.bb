@@ -7,6 +7,7 @@ package com.google.android.libraries.feed.api.internal.modelprovider;
 import com.google.android.libraries.feed.common.functional.Consumer;
 import com.google.android.libraries.feed.common.functional.Function;
 import com.google.search.now.feed.client.StreamDataProto.StreamFeature;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,32 +23,35 @@ import java.util.List;
  * addition, the {@code Consumer} is called before the change operation.
  */
 public final class RemoveTracking<T> {
-  private final Function<StreamFeature, /*@Nullable*/ T> filterPredicate;
-  private final Consumer<List<T>> consumer;
-  private final List<T> matchingItems = new ArrayList<>();
+    private final Function<StreamFeature, /*@Nullable*/ T> filterPredicate;
+    private final Consumer<List<T>> consumer;
+    private final List<T> matchingItems = new ArrayList<>();
 
-  /**
-   * Create the state necessary to call transform and filter the removed subtree before calling the
-   * {@link Consumer}.
-   */
-  public RemoveTracking(
-      Function<StreamFeature, /*@Nullable*/ T> filterPredicate, Consumer<List<T>> consumer) {
-    this.filterPredicate = filterPredicate;
-    this.consumer = consumer;
-  }
-
-  /**
-   * Called to transform and filter a {@link StreamFeature} found within a subtree being removed.
-   */
-  public void filterStreamFeature(StreamFeature streamFeature) {
-    T value = filterPredicate.apply(streamFeature);
-    if (value != null) {
-      matchingItems.add(value);
+    /**
+     * Create the state necessary to call transform and filter the removed subtree before calling
+     * the
+     * {@link Consumer}.
+     */
+    public RemoveTracking(
+            Function<StreamFeature, /*@Nullable*/ T> filterPredicate, Consumer<List<T>> consumer) {
+        this.filterPredicate = filterPredicate;
+        this.consumer = consumer;
     }
-  }
 
-  /** Called on the main thread call the {@link Consumer} after all removes have been processed. */
-  public void triggerConsumerUpdate() {
-    consumer.accept(matchingItems);
-  }
+    /**
+     * Called to transform and filter a {@link StreamFeature} found within a subtree being removed.
+     */
+    public void filterStreamFeature(StreamFeature streamFeature) {
+        T value = filterPredicate.apply(streamFeature);
+        if (value != null) {
+            matchingItems.add(value);
+        }
+    }
+
+    /**
+     * Called on the main thread call the {@link Consumer} after all removes have been processed.
+     */
+    public void triggerConsumerUpdate() {
+        consumer.accept(matchingItems);
+    }
 }

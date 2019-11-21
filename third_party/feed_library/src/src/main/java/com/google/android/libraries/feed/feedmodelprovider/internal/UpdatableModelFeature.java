@@ -9,44 +9,44 @@ import com.google.android.libraries.feed.api.internal.modelprovider.ModelCursor;
 import com.google.android.libraries.feed.api.internal.modelprovider.ModelFeature;
 import com.google.android.libraries.feed.common.feedobservable.FeedObservable;
 import com.google.search.now.feed.client.StreamDataProto.StreamFeature;
+
 import java.util.ArrayList;
 import java.util.List;
 
 /** Implementation of the {@link ModelFeature} */
-public final class UpdatableModelFeature extends FeedObservable<FeatureChangeObserver>
-    implements ModelFeature {
+public final class UpdatableModelFeature
+        extends FeedObservable<FeatureChangeObserver> implements ModelFeature {
+    private StreamFeature streamFeature;
+    private final CursorProvider cursorProvider;
 
-  private StreamFeature streamFeature;
-  private final CursorProvider cursorProvider;
-
-  UpdatableModelFeature(StreamFeature streamFeature, CursorProvider cursorProvider) {
-    this.streamFeature = streamFeature;
-    this.cursorProvider = cursorProvider;
-  }
-
-  @Override
-  public StreamFeature getStreamFeature() {
-    return streamFeature;
-  }
-
-  @Override
-  public ModelCursor getCursor() {
-    return cursorProvider.getCursor(streamFeature.getContentId());
-  }
-
-  @Override
-  /*@Nullable*/
-  public ModelCursor getDirectionalCursor(boolean forward, /*@Nullable*/ String startingChild) {
-    return null;
-  }
-
-  public List<FeatureChangeObserver> getObserversToNotify() {
-    synchronized (observers) {
-      return new ArrayList<>(observers);
+    UpdatableModelFeature(StreamFeature streamFeature, CursorProvider cursorProvider) {
+        this.streamFeature = streamFeature;
+        this.cursorProvider = cursorProvider;
     }
-  }
 
-  void setFeatureValue(StreamFeature streamFeature) {
-    this.streamFeature = streamFeature;
-  }
+    @Override
+    public StreamFeature getStreamFeature() {
+        return streamFeature;
+    }
+
+    @Override
+    public ModelCursor getCursor() {
+        return cursorProvider.getCursor(streamFeature.getContentId());
+    }
+
+    @Override
+    /*@Nullable*/
+    public ModelCursor getDirectionalCursor(boolean forward, /*@Nullable*/ String startingChild) {
+        return null;
+    }
+
+    public List<FeatureChangeObserver> getObserversToNotify() {
+        synchronized (observers) {
+            return new ArrayList<>(observers);
+        }
+    }
+
+    void setFeatureValue(StreamFeature streamFeature) {
+        this.streamFeature = streamFeature;
+    }
 }

@@ -16,46 +16,44 @@ import com.google.search.now.feed.client.StreamDataProto.UiContext;
  * needed.
  */
 public class FakeModelProviderFactory implements ModelProviderFactory {
+    private FakeModelProvider modelProvider;
+    private String createSessionId;
+    /*@Nullable*/ private ViewDepthProvider viewDepthProvider;
 
-  private FakeModelProvider modelProvider;
-  private String createSessionId;
-  /*@Nullable*/ private ViewDepthProvider viewDepthProvider;
+    @Override
+    public ModelProvider create(String sessionId, UiContext uiContext) {
+        this.modelProvider = new FakeModelProvider();
+        this.createSessionId = sessionId;
+        return modelProvider;
+    }
 
-  @Override
-  public ModelProvider create(String sessionId, UiContext uiContext) {
-    this.modelProvider = new FakeModelProvider();
-    this.createSessionId = sessionId;
-    return modelProvider;
-  }
+    @Override
+    public ModelProvider createNew(
+            /*@Nullable*/ ViewDepthProvider viewDepthProvider, UiContext uiContext) {
+        this.viewDepthProvider = viewDepthProvider;
+        this.modelProvider = new FakeModelProvider();
+        return modelProvider;
+    }
 
-  @Override
-  public ModelProvider createNew(
-      /*@Nullable*/ ViewDepthProvider viewDepthProvider, UiContext uiContext) {
-    this.viewDepthProvider = viewDepthProvider;
-    this.modelProvider = new FakeModelProvider();
-    return modelProvider;
-  }
+    @Override
+    public ModelProvider createNew(
+            /*@Nullable*/ ViewDepthProvider viewDepthProvider,
+            /*@Nullable*/ Predicate<StreamStructure> filterPredicate, UiContext uiContext) {
+        this.viewDepthProvider = viewDepthProvider;
+        this.modelProvider = new FakeModelProvider();
+        return modelProvider;
+    }
 
-  @Override
-  public ModelProvider createNew(
-      /*@Nullable*/ ViewDepthProvider viewDepthProvider,
-      /*@Nullable*/ Predicate<StreamStructure> filterPredicate,
-      UiContext uiContext) {
-    this.viewDepthProvider = viewDepthProvider;
-    this.modelProvider = new FakeModelProvider();
-    return modelProvider;
-  }
+    public FakeModelProvider getLatestModelProvider() {
+        return modelProvider;
+    }
 
-  public FakeModelProvider getLatestModelProvider() {
-    return modelProvider;
-  }
+    public String getLatestCreateSessionId() {
+        return createSessionId;
+    }
 
-  public String getLatestCreateSessionId() {
-    return createSessionId;
-  }
-
-  /*@Nullable*/
-  public ViewDepthProvider getViewDepthProvider() {
-    return viewDepthProvider;
-  }
+    /*@Nullable*/
+    public ViewDepthProvider getViewDepthProvider() {
+        return viewDepthProvider;
+    }
 }

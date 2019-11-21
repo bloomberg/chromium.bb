@@ -11,27 +11,26 @@ import com.google.android.libraries.feed.common.functional.Consumer;
  * immediately triggers observers when they are registered.
  */
 public final class ImmediatelyNotifyingObservableNotifier<ObserverT>
-    extends FeedObservable<ObserverT> {
+        extends FeedObservable<ObserverT> {
+    private Consumer<ObserverT> currentConsumer;
 
-  private Consumer<ObserverT> currentConsumer;
-
-  public ImmediatelyNotifyingObservableNotifier(Consumer<ObserverT> listenerMethod) {
-    currentConsumer = listenerMethod;
-  }
-
-  @Override
-  public void registerObserver(ObserverT observerT) {
-    super.registerObserver(observerT);
-    currentConsumer.accept(observerT);
-  }
-
-  /** Calls all the registered listeners using the given listener method. */
-  public void notifyListeners(Consumer<ObserverT> listenerMethod) {
-    currentConsumer = listenerMethod;
-    synchronized (observers) {
-      for (ObserverT listener : observers) {
-        listenerMethod.accept(listener);
-      }
+    public ImmediatelyNotifyingObservableNotifier(Consumer<ObserverT> listenerMethod) {
+        currentConsumer = listenerMethod;
     }
-  }
+
+    @Override
+    public void registerObserver(ObserverT observerT) {
+        super.registerObserver(observerT);
+        currentConsumer.accept(observerT);
+    }
+
+    /** Calls all the registered listeners using the given listener method. */
+    public void notifyListeners(Consumer<ObserverT> listenerMethod) {
+        currentConsumer = listenerMethod;
+        synchronized (observers) {
+            for (ObserverT listener : observers) {
+                listenerMethod.accept(listener);
+            }
+        }
+    }
 }

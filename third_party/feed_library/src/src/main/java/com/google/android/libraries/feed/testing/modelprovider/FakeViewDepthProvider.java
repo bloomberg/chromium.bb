@@ -8,18 +8,18 @@ import com.google.android.libraries.feed.api.internal.modelprovider.ModelProvide
 
 /** Fake implementation of {@link ViewDepthProvider}. */
 public final class FakeViewDepthProvider implements ViewDepthProvider {
-  /*@Nullable*/ private String childViewDepth = null;
+    /*@Nullable*/ private String childViewDepth = null;
 
-  public FakeViewDepthProvider() {}
+    public FakeViewDepthProvider() {}
 
-  @Override
-  /*@Nullable*/
-  public String getChildViewDepth() {
-    return childViewDepth;
-  }
+    @Override
+    /*@Nullable*/
+    public String getChildViewDepth() {
+        return childViewDepth;
+    }
 
-  public FakeViewDepthProvider setChildViewDepth(String childViewDepth) {
-    this.childViewDepth = childViewDepth;
-    return this;
-  }
+    public FakeViewDepthProvider setChildViewDepth(String childViewDepth) {
+        this.childViewDepth = childViewDepth;
+        return this;
+    }
 }

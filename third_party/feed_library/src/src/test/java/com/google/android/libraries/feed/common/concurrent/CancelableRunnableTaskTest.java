@@ -14,30 +14,26 @@ import org.robolectric.RobolectricTestRunner;
 /** Tests of the {@link TaskQueue} class. */
 @RunWith(RobolectricTestRunner.class)
 public class CancelableRunnableTaskTest {
-  private boolean wasRun;
-  private CancelableRunnableTask cancelable;
+    private boolean wasRun;
+    private CancelableRunnableTask cancelable;
 
-  @Before
-  public void setUp() {
-    cancelable =
-        new CancelableRunnableTask(
-            () -> {
-              wasRun = true;
-            });
-  }
+    @Before
+    public void setUp() {
+        cancelable = new CancelableRunnableTask(() -> { wasRun = true; });
+    }
 
-  @Test
-  public void testRunnableCanceled_notCanceled() {
-    cancelable.run();
+    @Test
+    public void testRunnableCanceled_notCanceled() {
+        cancelable.run();
 
-    assertThat(wasRun).isTrue();
-  }
+        assertThat(wasRun).isTrue();
+    }
 
-  @Test
-  public void testRunnableCanceled_canceled() {
-    cancelable.cancel();
-    cancelable.run();
+    @Test
+    public void testRunnableCanceled_canceled() {
+        cancelable.cancel();
+        cancelable.run();
 
-    assertThat(wasRun).isFalse();
-  }
+        assertThat(wasRun).isFalse();
+    }
 }

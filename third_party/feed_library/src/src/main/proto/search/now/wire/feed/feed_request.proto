@@ -13,16 +13,14 @@ import "src/main/proto/search/now/wire/feed/request.proto";
 
 package search.now.wire.feed;
 
-option optimize_for=LITE_RUNTIME;
+option optimize_for = LITE_RUNTIME;
 
 option java_package = "com.google.search.now.wire.feed";
 option java_outer_classname = "FeedRequestProto";
 
 // Request to fetch new data for the feed
 message FeedRequest {
-  extend Request {
-    optional FeedRequest feed_request = 1000;
-  }
+  extend Request { optional FeedRequest feed_request = 1000; }
   // Information about the client making the request.
   optional ClientInfo client_info = 1;
 

@@ -10,20 +10,19 @@ import com.google.android.libraries.feed.api.internal.modelprovider.ModelProvide
 
 /** Per-stream instance of the feed library. */
 public final class FeedStreamScope implements StreamScope {
+    private final Stream stream;
+    private final ModelProviderFactory modelProviderFactory;
 
-  private final Stream stream;
-  private final ModelProviderFactory modelProviderFactory;
+    public FeedStreamScope(Stream stream, ModelProviderFactory modelProviderFactory) {
+        this.stream = stream;
+        this.modelProviderFactory = modelProviderFactory;
+    }
 
-  public FeedStreamScope(Stream stream, ModelProviderFactory modelProviderFactory) {
-    this.stream = stream;
-    this.modelProviderFactory = modelProviderFactory;
-  }
+    public Stream getStream() {
+        return stream;
+    }
 
-  public Stream getStream() {
-    return stream;
-  }
-
-  public ModelProviderFactory getModelProviderFactory() {
-    return modelProviderFactory;
-  }
+    public ModelProviderFactory getModelProviderFactory() {
+        return modelProviderFactory;
+    }
 }

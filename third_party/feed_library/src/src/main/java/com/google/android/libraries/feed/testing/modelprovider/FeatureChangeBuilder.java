@@ -7,6 +7,7 @@ package com.google.android.libraries.feed.testing.modelprovider;
 import com.google.android.libraries.feed.api.internal.modelprovider.FeatureChange;
 import com.google.android.libraries.feed.api.internal.modelprovider.ModelChild;
 import com.google.android.libraries.feed.api.internal.modelprovider.ModelFeature;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,51 +16,50 @@ import java.util.List;
  * instances.
  */
 public class FeatureChangeBuilder {
+    private final List<ModelChild> removedChildren = new ArrayList<>();
+    private final List<ModelChild> appendedChildren = new ArrayList<>();
 
-  private final List<ModelChild> removedChildren = new ArrayList<>();
-  private final List<ModelChild> appendedChildren = new ArrayList<>();
+    public FeatureChangeBuilder addChildForRemoval(ModelChild modelChild) {
+        removedChildren.add(modelChild);
+        return this;
+    }
 
-  public FeatureChangeBuilder addChildForRemoval(ModelChild modelChild) {
-    removedChildren.add(modelChild);
-    return this;
-  }
+    public FeatureChangeBuilder addChildForAppending(ModelChild modelChild) {
+        appendedChildren.add(modelChild);
+        return this;
+    }
 
-  public FeatureChangeBuilder addChildForAppending(ModelChild modelChild) {
-    appendedChildren.add(modelChild);
-    return this;
-  }
+    public FeatureChange build() {
+        return new FeatureChange() {
+            @Override
+            public String getContentId() {
+                return "";
+            }
 
-  public FeatureChange build() {
-    return new FeatureChange() {
-      @Override
-      public String getContentId() {
-        return "";
-      }
+            @Override
+            public boolean isFeatureChanged() {
+                return false;
+            }
 
-      @Override
-      public boolean isFeatureChanged() {
-        return false;
-      }
+            @Override
+            public ModelFeature getModelFeature() {
+                return FakeModelFeature.newBuilder().build();
+            }
 
-      @Override
-      public ModelFeature getModelFeature() {
-        return FakeModelFeature.newBuilder().build();
-      }
+            @Override
+            public ChildChanges getChildChanges() {
+                return new ChildChanges() {
+                    @Override
+                    public List<ModelChild> getAppendedChildren() {
+                        return appendedChildren;
+                    }
 
-      @Override
-      public ChildChanges getChildChanges() {
-        return new ChildChanges() {
-          @Override
-          public List<ModelChild> getAppendedChildren() {
-            return appendedChildren;
-          }
-
-          @Override
-          public List<ModelChild> getRemovedChildren() {
-            return removedChildren;
-          }
+                    @Override
+                    public List<ModelChild> getRemovedChildren() {
+                        return removedChildren;
+                    }
+                };
+            }
         };
-      }
-    };
-  }
+    }
 }

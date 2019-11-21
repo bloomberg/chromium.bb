@@ -6,7 +6,7 @@ syntax = "proto2";
 
 package com.google.android.libraries.feed.sharedstream.proto;
 
-option optimize_for=LITE_RUNTIME;
+option optimize_for = LITE_RUNTIME;
 
 option java_package = "com.google.android.libraries.feed.sharedstream.proto";
 option java_outer_classname = "ScrollStateProto";

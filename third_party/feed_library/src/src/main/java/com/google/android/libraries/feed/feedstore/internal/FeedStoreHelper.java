@@ -10,8 +10,8 @@ import java.util.UUID;
 
 /** Helper class for shared FeedStore methods */
 public final class FeedStoreHelper {
-  /** Get a new, unique stream session id. */
-  String getNewStreamSessionId() {
-    return SESSION_NAME_PREFIX + UUID.randomUUID();
-  }
+    /** Get a new, unique stream session id. */
+    String getNewStreamSessionId() {
+        return SESSION_NAME_PREFIX + UUID.randomUUID();
+    }
 }

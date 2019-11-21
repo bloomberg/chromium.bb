@@ -12,21 +12,20 @@ import com.google.android.libraries.feed.api.internal.sessionmanager.FeedSession
 
 /** Implementation of Client-visible RequestManagerApi. */
 public final class RequestManagerImpl implements RequestManager {
-  private static final String TAG = "RequestManagerImpl";
+    private static final String TAG = "RequestManagerImpl";
 
-  private final FeedRequestManager feedRequestManager;
-  private final FeedSessionManager feedSessionManager;
+    private final FeedRequestManager feedRequestManager;
+    private final FeedSessionManager feedSessionManager;
 
-  public RequestManagerImpl(
-      FeedRequestManager feedRequestManager, FeedSessionManager feedSessionManager) {
-    this.feedRequestManager = feedRequestManager;
-    this.feedSessionManager = feedSessionManager;
-  }
+    public RequestManagerImpl(
+            FeedRequestManager feedRequestManager, FeedSessionManager feedSessionManager) {
+        this.feedRequestManager = feedRequestManager;
+        this.feedSessionManager = feedSessionManager;
+    }
 
-  @Override
-  public void triggerScheduledRefresh() {
-    feedRequestManager.triggerRefresh(
-        RequestReason.HOST_REQUESTED,
-        feedSessionManager.getUpdateConsumer(MutationContext.EMPTY_CONTEXT));
-  }
+    @Override
+    public void triggerScheduledRefresh() {
+        feedRequestManager.triggerRefresh(RequestReason.HOST_REQUESTED,
+                feedSessionManager.getUpdateConsumer(MutationContext.EMPTY_CONTEXT));
+    }
 }

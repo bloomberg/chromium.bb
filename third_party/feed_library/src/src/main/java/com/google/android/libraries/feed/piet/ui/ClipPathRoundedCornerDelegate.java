@@ -18,35 +18,34 @@ import android.view.ViewGroup;
  * delegate.
  */
 class ClipPathRoundedCornerDelegate extends RoundedCornerDelegate {
+    private final Path clipPath = new Path();
 
-  private final Path clipPath = new Path();
-
-  /**
-   * Turns off clipping to the outline.
-   *
-   * <p>This rounding strategy should not be doing outline clipping. This defensively makes sure
-   * it's turned off, although that should be the default.
-   */
-  @Override
-  public void initializeForView(ViewGroup view) {
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-      view.setClipToOutline(false);
-      view.setClipChildren(false);
+    /**
+     * Turns off clipping to the outline.
+     *
+     * <p>This rounding strategy should not be doing outline clipping. This defensively makes sure
+     * it's turned off, although that should be the default.
+     */
+    @Override
+    public void initializeForView(ViewGroup view) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            view.setClipToOutline(false);
+            view.setClipChildren(false);
+        }
     }
-  }
 
-  /** Updates the path every time the size changes. */
-  @Override
-  public void onSizeChanged(int radius, int width, int height, int bitmask, boolean isRtL) {
-    float[] radii = RoundedCornerViewHelper.createRoundedCornerBitMask(radius, bitmask, isRtL);
-    clipPath.addRoundRect(new RectF(0, 0, width, height), radii, Path.Direction.CW);
-  }
-
-  /** Clips the path that was created in onSizeChanged(). */
-  @Override
-  public void dispatchDraw(Canvas canvas) {
-    if (clipPath != null) {
-      canvas.clipPath(clipPath);
+    /** Updates the path every time the size changes. */
+    @Override
+    public void onSizeChanged(int radius, int width, int height, int bitmask, boolean isRtL) {
+        float[] radii = RoundedCornerViewHelper.createRoundedCornerBitMask(radius, bitmask, isRtL);
+        clipPath.addRoundRect(new RectF(0, 0, width, height), radii, Path.Direction.CW);
     }
-  }
+
+    /** Clips the path that was created in onSizeChanged(). */
+    @Override
+    public void dispatchDraw(Canvas canvas) {
+        if (clipPath != null) {
+            canvas.clipPath(clipPath);
+        }
+    }
 }

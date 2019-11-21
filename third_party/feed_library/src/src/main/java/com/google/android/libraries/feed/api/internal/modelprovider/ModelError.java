@@ -5,6 +5,7 @@
 package com.google.android.libraries.feed.api.internal.modelprovider;
 
 import android.support.annotation.IntDef;
+
 import com.google.protobuf.ByteString;
 
 /**
@@ -13,38 +14,37 @@ import com.google.protobuf.ByteString;
  * infrastructure.
  */
 public final class ModelError {
+    /** Defines errors are exposed through the ModelProvider to the Stream. */
+    @IntDef({ErrorType.UNKNOWN, ErrorType.NO_CARDS_ERROR, ErrorType.PAGINATION_ERROR})
+    public @interface ErrorType {
+        // An unknown error, this is not expected to ever be used.
+        int UNKNOWN = 0;
+        // No cards are available due to an error such as, no network available or a request failed,
+        // etc.
+        int NO_CARDS_ERROR = 1;
+        // Pagination failed due to some type of error such as no network available or a request
+        // failed, etc.
+        int PAGINATION_ERROR = 2;
+        // Pagination failed due to a synthetic token error.
+        int SYNTHETIC_TOKEN_ERROR = 3;
+    }
 
-  /** Defines errors are exposed through the ModelProvider to the Stream. */
-  @IntDef({ErrorType.UNKNOWN, ErrorType.NO_CARDS_ERROR, ErrorType.PAGINATION_ERROR})
-  public @interface ErrorType {
-    // An unknown error, this is not expected to ever be used.
-    int UNKNOWN = 0;
-    // No cards are available due to an error such as, no network available or a request failed,
-    // etc.
-    int NO_CARDS_ERROR = 1;
-    // Pagination failed due to some type of error such as no network available or a request failed,
-    // etc.
-    int PAGINATION_ERROR = 2;
-    // Pagination failed due to a synthetic token error.
-    int SYNTHETIC_TOKEN_ERROR = 3;
-  }
+    private final @ErrorType int errorType;
+    /*@Nullable*/ private final ByteString continuationToken;
 
-  private final @ErrorType int errorType;
-  /*@Nullable*/ private final ByteString continuationToken;
+    public ModelError(@ErrorType int errorType, /*@Nullable*/ ByteString continuationToken) {
+        this.errorType = errorType;
+        this.continuationToken = continuationToken;
+    }
 
-  public ModelError(@ErrorType int errorType, /*@Nullable*/ ByteString continuationToken) {
-    this.errorType = errorType;
-    this.continuationToken = continuationToken;
-  }
+    /** Returns the ErrorType assocated with the error. */
+    public @ErrorType int getErrorType() {
+        return errorType;
+    }
 
-  /** Returns the ErrorType assocated with the error. */
-  public @ErrorType int getErrorType() {
-    return errorType;
-  }
-
-  /** This should be non-null if the ErrorType is PAGINATION_ERROR. */
-  /*@Nullable*/
-  public ByteString getContinuationToken() {
-    return continuationToken;
-  }
+    /** This should be non-null if the ErrorType is PAGINATION_ERROR. */
+    /*@Nullable*/
+    public ByteString getContinuationToken() {
+        return continuationToken;
+    }
 }

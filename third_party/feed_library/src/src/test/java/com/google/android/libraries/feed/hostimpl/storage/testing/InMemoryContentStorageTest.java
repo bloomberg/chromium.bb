@@ -6,6 +6,7 @@ package com.google.android.libraries.feed.hostimpl.storage.testing;
 
 import com.google.android.libraries.feed.feedstore.testing.DelegatingContentStorage;
 import com.google.android.libraries.feed.testing.conformance.storage.ContentStorageConformanceTest;
+
 import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
@@ -13,9 +14,8 @@ import org.robolectric.RobolectricTestRunner;
 /** Tests for {@link InMemoryContentStorage}. */
 @RunWith(RobolectricTestRunner.class)
 public class InMemoryContentStorageTest extends ContentStorageConformanceTest {
-
-  @Before
-  public void setUp() {
-    storage = new DelegatingContentStorage(new InMemoryContentStorage());
-  }
+    @Before
+    public void setUp() {
+        storage = new DelegatingContentStorage(new InMemoryContentStorage());
+    }
 }

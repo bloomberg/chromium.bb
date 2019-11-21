@@ -5,6 +5,7 @@
 package com.google.android.libraries.feed.api.internal.modelprovider;
 
 import static com.google.common.truth.Truth.assertThat;
+
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import org.junit.Before;
@@ -16,16 +17,17 @@ import org.robolectric.RobolectricTestRunner;
 /** Tests of the {@link TokenCompleted} class. */
 @RunWith(RobolectricTestRunner.class)
 public class TokenCompletedTest {
-  @Mock private ModelCursor modelCursor;
+    @Mock
+    private ModelCursor modelCursor;
 
-  @Before
-  public void setUp() {
-    initMocks(this);
-  }
+    @Before
+    public void setUp() {
+        initMocks(this);
+    }
 
-  @Test
-  public void testTokenChange() {
-    TokenCompleted tokenCompleted = new TokenCompleted(modelCursor);
-    assertThat(tokenCompleted.getCursor()).isEqualTo(modelCursor);
-  }
+    @Test
+    public void testTokenChange() {
+        TokenCompleted tokenCompleted = new TokenCompleted(modelCursor);
+        assertThat(tokenCompleted.getCursor()).isEqualTo(modelCursor);
+    }
 }

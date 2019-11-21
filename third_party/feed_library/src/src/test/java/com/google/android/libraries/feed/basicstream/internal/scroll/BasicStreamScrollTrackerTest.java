@@ -14,6 +14,7 @@ import com.google.android.libraries.feed.common.time.testing.FakeClock;
 import com.google.android.libraries.feed.sharedstream.publicapi.scroll.ScrollObservable;
 import com.google.android.libraries.feed.sharedstream.publicapi.scroll.ScrollObserver;
 import com.google.android.libraries.feed.sharedstream.scroll.ScrollLogger;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -23,32 +24,34 @@ import org.robolectric.RobolectricTestRunner;
 /** Tests for {@link BasicStreamScrollTracker}. */
 @RunWith(RobolectricTestRunner.class)
 public class BasicStreamScrollTrackerTest {
+    @Mock
+    private ScrollLogger logger;
+    @Mock
+    private ScrollObservable scrollObservable;
+    private final FakeClock clock = new FakeClock();
 
-  @Mock private ScrollLogger logger;
-  @Mock private ScrollObservable scrollObservable;
-  private final FakeClock clock = new FakeClock();
+    private final FakeMainThreadRunner mainThreadRunner = FakeMainThreadRunner.queueAllTasks();
+    private BasicStreamScrollTracker scrollTracker;
 
-  private final FakeMainThreadRunner mainThreadRunner = FakeMainThreadRunner.queueAllTasks();
-  private BasicStreamScrollTracker scrollTracker;
+    @Before
+    public void setUp() {
+        initMocks(this);
+        scrollTracker =
+                new BasicStreamScrollTracker(mainThreadRunner, logger, clock, scrollObservable);
+        verify(scrollObservable).addScrollObserver(any(ScrollObserver.class));
+    }
 
-  @Before
-  public void setUp() {
-    initMocks(this);
-    scrollTracker = new BasicStreamScrollTracker(mainThreadRunner, logger, clock, scrollObservable);
-    verify(scrollObservable).addScrollObserver(any(ScrollObserver.class));
-  }
+    @Test
+    public void onUnbind_removedScrollListener() {
+        scrollTracker.onUnbind();
+        verify(scrollObservable).removeScrollObserver(any(ScrollObserver.class));
+    }
 
-  @Test
-  public void onUnbind_removedScrollListener() {
-    scrollTracker.onUnbind();
-    verify(scrollObservable).removeScrollObserver(any(ScrollObserver.class));
-  }
-
-  @Test
-  public void onScrollEvent() {
-    int scrollAmount = 10;
-    long timestamp = 10L;
-    scrollTracker.onScrollEvent(scrollAmount, timestamp);
-    verify(logger).handleScroll(ScrollType.STREAM_SCROLL, scrollAmount);
-  }
+    @Test
+    public void onScrollEvent() {
+        int scrollAmount = 10;
+        long timestamp = 10L;
+        scrollTracker.onScrollEvent(scrollAmount, timestamp);
+        verify(logger).handleScroll(ScrollType.STREAM_SCROLL, scrollAmount);
+    }
 }

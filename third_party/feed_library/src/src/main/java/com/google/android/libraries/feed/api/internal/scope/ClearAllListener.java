@@ -23,73 +23,70 @@ import com.google.search.now.feed.client.StreamDataProto.UiContext;
  * single background thread.
  */
 public final class ClearAllListener implements FeedLifecycleListener, Dumpable {
-  private static final String TAG = "ClearAllListener";
+    private static final String TAG = "ClearAllListener";
 
-  private final TaskQueue taskQueue;
-  private final FeedSessionManager feedSessionManager;
-  private final /*@Nullable*/ Resettable store;
-  private final ThreadUtils threadUtils;
-  private int clearCount = 0;
-  private int refreshCount = 0;
+    private final TaskQueue taskQueue;
+    private final FeedSessionManager feedSessionManager;
+    private final /*@Nullable*/ Resettable store;
+    private final ThreadUtils threadUtils;
+    private int clearCount = 0;
+    private int refreshCount = 0;
 
-  @SuppressWarnings("argument.type.incompatible") // ok call to registerObserver
-  public ClearAllListener(
-      TaskQueue taskQueue,
-      FeedSessionManager feedSessionManager,
-      /*@Nullable*/ Resettable store,
-      ThreadUtils threadUtils,
-      FeedObservable<FeedLifecycleListener> lifecycleListenerObservable) {
-    this.taskQueue = taskQueue;
-    this.feedSessionManager = feedSessionManager;
-    this.store = store;
-    this.threadUtils = threadUtils;
+    @SuppressWarnings("argument.type.incompatible") // ok call to registerObserver
+    public ClearAllListener(TaskQueue taskQueue, FeedSessionManager feedSessionManager,
+            /*@Nullable*/ Resettable store, ThreadUtils threadUtils,
+            FeedObservable<FeedLifecycleListener> lifecycleListenerObservable) {
+        this.taskQueue = taskQueue;
+        this.feedSessionManager = feedSessionManager;
+        this.store = store;
+        this.threadUtils = threadUtils;
 
-    lifecycleListenerObservable.registerObserver(this);
-  }
-
-  @Override
-  public void onLifecycleEvent(String event) {
-    switch (event) {
-      case LifecycleEvent.CLEAR_ALL:
-        taskQueue.execute(Task.CLEAR_ALL, TaskType.IMMEDIATE, this::clearAll);
-        break;
-      case LifecycleEvent.CLEAR_ALL_WITH_REFRESH:
-        taskQueue.execute(
-            Task.CLEAR_ALL_WITH_REFRESH, TaskType.IMMEDIATE, this::clearAllWithRefresh);
-        break;
-      default:
-        // Do nothing
+        lifecycleListenerObservable.registerObserver(this);
     }
-  }
 
-  private void clearAll() {
-    threadUtils.checkNotMainThread();
-    clearCount++;
-
-    Logger.i(TAG, "starting clearAll");
-    // Clear the task queue first, preventing any tasks from running until initialization
-    taskQueue.reset();
-    // reset the session state
-    feedSessionManager.reset();
-    if (store != null) {
-      store.reset();
+    @Override
+    public void onLifecycleEvent(String event) {
+        switch (event) {
+            case LifecycleEvent.CLEAR_ALL:
+                taskQueue.execute(Task.CLEAR_ALL, TaskType.IMMEDIATE, this::clearAll);
+                break;
+            case LifecycleEvent.CLEAR_ALL_WITH_REFRESH:
+                taskQueue.execute(
+                        Task.CLEAR_ALL_WITH_REFRESH, TaskType.IMMEDIATE, this::clearAllWithRefresh);
+                break;
+            default:
+                // Do nothing
+        }
     }
-    // Initialize the TaskQueue so new tasks will start running
-    taskQueue.completeReset();
-  }
 
-  private void clearAllWithRefresh() {
-    threadUtils.checkNotMainThread();
-    clearAll();
-    feedSessionManager.triggerRefresh(
-        null, RequestReason.CLEAR_ALL, UiContext.getDefaultInstance());
-    refreshCount++;
-  }
+    private void clearAll() {
+        threadUtils.checkNotMainThread();
+        clearCount++;
 
-  @Override
-  public void dump(Dumper dumper) {
-    dumper.title(TAG);
-    dumper.forKey("clearCount").value(clearCount);
-    dumper.forKey("clearWithRefreshCount").value(refreshCount);
-  }
+        Logger.i(TAG, "starting clearAll");
+        // Clear the task queue first, preventing any tasks from running until initialization
+        taskQueue.reset();
+        // reset the session state
+        feedSessionManager.reset();
+        if (store != null) {
+            store.reset();
+        }
+        // Initialize the TaskQueue so new tasks will start running
+        taskQueue.completeReset();
+    }
+
+    private void clearAllWithRefresh() {
+        threadUtils.checkNotMainThread();
+        clearAll();
+        feedSessionManager.triggerRefresh(
+                null, RequestReason.CLEAR_ALL, UiContext.getDefaultInstance());
+        refreshCount++;
+    }
+
+    @Override
+    public void dump(Dumper dumper) {
+        dumper.title(TAG);
+        dumper.forKey("clearCount").value(clearCount);
+        dumper.forKey("clearWithRefreshCount").value(refreshCount);
+    }
 }

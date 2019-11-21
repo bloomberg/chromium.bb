@@ -7,28 +7,22 @@ package com.google.android.libraries.feed.api.internal.actionparser;
 import android.support.annotation.IntDef;
 
 /** Possible action types. */
-@IntDef({
-  ActionSource.UNKNOWN,
-  ActionSource.VIEW,
-  ActionSource.CLICK,
-  ActionSource.LONG_CLICK,
-  ActionSource.SWIPE,
-  ActionSource.CONTEXT_MENU
-})
+@IntDef({ActionSource.UNKNOWN, ActionSource.VIEW, ActionSource.CLICK, ActionSource.LONG_CLICK,
+        ActionSource.SWIPE, ActionSource.CONTEXT_MENU})
 public @interface ActionSource {
-  int UNKNOWN = 0;
-  /** View action */
-  int VIEW = 1;
+    int UNKNOWN = 0;
+    /** View action */
+    int VIEW = 1;
 
-  /** Click action */
-  int CLICK = 2;
+    /** Click action */
+    int CLICK = 2;
 
-  /** Long click action */
-  int LONG_CLICK = 3;
+    /** Long click action */
+    int LONG_CLICK = 3;
 
-  /* Swipe action */
-  int SWIPE = 4;
+    /* Swipe action */
+    int SWIPE = 4;
 
-  /* Action performed from context menu*/
-  int CONTEXT_MENU = 5;
+    /* Action performed from context menu*/
+    int CONTEXT_MENU = 5;
 }

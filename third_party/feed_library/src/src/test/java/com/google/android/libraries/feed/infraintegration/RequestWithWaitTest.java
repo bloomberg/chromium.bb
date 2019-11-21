@@ -11,6 +11,7 @@ import com.google.android.libraries.feed.api.internal.modelprovider.ModelProvide
 import com.google.android.libraries.feed.api.internal.modelprovider.ModelProvider.State;
 import com.google.android.libraries.feed.common.testing.InfraIntegrationScope;
 import com.google.android.libraries.feed.common.testing.SessionTestUtils;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -20,115 +21,115 @@ import org.robolectric.RobolectricTestRunner;
 /** Tests the REQUEST_WITH_WAIT behavior for creating a new session. */
 @RunWith(RobolectricTestRunner.class)
 public final class RequestWithWaitTest {
-  private final SessionTestUtils utils = new SessionTestUtils(RequestBehavior.REQUEST_WITH_WAIT);
-  private final InfraIntegrationScope scope = utils.getScope();
+    private final SessionTestUtils utils = new SessionTestUtils(RequestBehavior.REQUEST_WITH_WAIT);
+    private final InfraIntegrationScope scope = utils.getScope();
 
-  @Before
-  public void setUp() {
-    utils.populateHead();
-  }
+    @Before
+    public void setUp() {
+        utils.populateHead();
+    }
 
-  @After
-  public void tearDown() {
-    utils.assertWorkComplete();
-  }
+    @After
+    public void tearDown() {
+        utils.assertWorkComplete();
+    }
 
-  @Test
-  public void test_hasContentWithRequest_spinnerThenShowContent() {
-    long delayMs = utils.startOutstandingRequest();
+    @Test
+    public void test_hasContentWithRequest_spinnerThenShowContent() {
+        long delayMs = utils.startOutstandingRequest();
 
-    ModelProvider modelProvider = utils.createNewSession();
-    assertThat(modelProvider.getCurrentState()).isEqualTo(State.INITIALIZING);
+        ModelProvider modelProvider = utils.createNewSession();
+        assertThat(modelProvider.getCurrentState()).isEqualTo(State.INITIALIZING);
 
-    scope.getFakeClock().advance(delayMs);
-    assertThat(modelProvider.getCurrentState()).isEqualTo(State.READY);
-    utils.assertNewContent(modelProvider.getAllRootChildren());
-  }
+        scope.getFakeClock().advance(delayMs);
+        assertThat(modelProvider.getCurrentState()).isEqualTo(State.READY);
+        utils.assertNewContent(modelProvider.getAllRootChildren());
+    }
 
-  @Test
-  public void test_hasContentWithRequest_spinnerThenShowContentOnFailure() {
-    long delayMs = utils.startOutstandingRequestWithError();
+    @Test
+    public void test_hasContentWithRequest_spinnerThenShowContentOnFailure() {
+        long delayMs = utils.startOutstandingRequestWithError();
 
-    ModelProvider modelProvider = utils.createNewSession();
-    assertThat(modelProvider.getCurrentState()).isEqualTo(State.INITIALIZING);
+        ModelProvider modelProvider = utils.createNewSession();
+        assertThat(modelProvider.getCurrentState()).isEqualTo(State.INITIALIZING);
 
-    scope.getFakeClock().advance(delayMs);
-    assertThat(modelProvider.getCurrentState()).isEqualTo(State.READY);
-    utils.assertHeadContent(modelProvider.getAllRootChildren());
-  }
+        scope.getFakeClock().advance(delayMs);
+        assertThat(modelProvider.getCurrentState()).isEqualTo(State.READY);
+        utils.assertHeadContent(modelProvider.getAllRootChildren());
+    }
 
-  @Test
-  public void test_noContentWithRequest_spinnerThenShowContent() {
-    scope.getAppLifecycleListener().onClearAll();
-    long delayMs = utils.startOutstandingRequest();
+    @Test
+    public void test_noContentWithRequest_spinnerThenShowContent() {
+        scope.getAppLifecycleListener().onClearAll();
+        long delayMs = utils.startOutstandingRequest();
 
-    ModelProvider modelProvider = utils.createNewSession();
-    assertThat(modelProvider.getCurrentState()).isEqualTo(State.INITIALIZING);
+        ModelProvider modelProvider = utils.createNewSession();
+        assertThat(modelProvider.getCurrentState()).isEqualTo(State.INITIALIZING);
 
-    scope.getFakeClock().advance(delayMs);
-    assertThat(modelProvider.getCurrentState()).isEqualTo(State.READY);
-    utils.assertNewContent(modelProvider.getAllRootChildren());
-  }
+        scope.getFakeClock().advance(delayMs);
+        assertThat(modelProvider.getCurrentState()).isEqualTo(State.READY);
+        utils.assertNewContent(modelProvider.getAllRootChildren());
+    }
 
-  @Test
-  public void test_noContentWithRequest_spinnerThenZeroStateOnFailure() {
-    scope.getAppLifecycleListener().onClearAll();
-    long delayMs = utils.startOutstandingRequestWithError();
+    @Test
+    public void test_noContentWithRequest_spinnerThenZeroStateOnFailure() {
+        scope.getAppLifecycleListener().onClearAll();
+        long delayMs = utils.startOutstandingRequestWithError();
 
-    ModelProvider modelProvider = utils.createNewSession();
-    assertThat(modelProvider.getCurrentState()).isEqualTo(State.INITIALIZING);
+        ModelProvider modelProvider = utils.createNewSession();
+        assertThat(modelProvider.getCurrentState()).isEqualTo(State.INITIALIZING);
 
-    scope.getFakeClock().advance(delayMs);
-    assertThat(modelProvider.getCurrentState()).isEqualTo(State.READY);
-    assertThat(modelProvider.getAllRootChildren()).isEmpty();
-  }
+        scope.getFakeClock().advance(delayMs);
+        assertThat(modelProvider.getCurrentState()).isEqualTo(State.READY);
+        assertThat(modelProvider.getAllRootChildren()).isEmpty();
+    }
 
-  @Test
-  public void test_noContentNoRequest_spinnerThenShowContent() {
-    scope.getAppLifecycleListener().onClearAll();
-    long delayMs = utils.queueRequest();
+    @Test
+    public void test_noContentNoRequest_spinnerThenShowContent() {
+        scope.getAppLifecycleListener().onClearAll();
+        long delayMs = utils.queueRequest();
 
-    ModelProvider modelProvider = utils.createNewSession();
-    assertThat(modelProvider.getCurrentState()).isEqualTo(State.INITIALIZING);
+        ModelProvider modelProvider = utils.createNewSession();
+        assertThat(modelProvider.getCurrentState()).isEqualTo(State.INITIALIZING);
 
-    scope.getFakeClock().advance(delayMs);
-    assertThat(modelProvider.getCurrentState()).isEqualTo(State.READY);
-    utils.assertNewContent(modelProvider.getAllRootChildren());
-  }
+        scope.getFakeClock().advance(delayMs);
+        assertThat(modelProvider.getCurrentState()).isEqualTo(State.READY);
+        utils.assertNewContent(modelProvider.getAllRootChildren());
+    }
 
-  @Test
-  public void test_noContentNoRequest_spinnerThenZeroStateOnFailure() {
-    scope.getAppLifecycleListener().onClearAll();
-    long delayMs = utils.queueError();
+    @Test
+    public void test_noContentNoRequest_spinnerThenZeroStateOnFailure() {
+        scope.getAppLifecycleListener().onClearAll();
+        long delayMs = utils.queueError();
 
-    ModelProvider modelProvider = utils.createNewSession();
-    assertThat(modelProvider.getCurrentState()).isEqualTo(State.INITIALIZING);
+        ModelProvider modelProvider = utils.createNewSession();
+        assertThat(modelProvider.getCurrentState()).isEqualTo(State.INITIALIZING);
 
-    scope.getFakeClock().advance(delayMs);
-    assertThat(modelProvider.getAllRootChildren()).isEmpty();
-  }
+        scope.getFakeClock().advance(delayMs);
+        assertThat(modelProvider.getAllRootChildren()).isEmpty();
+    }
 
-  @Test
-  public void test_hasContentNoRequest_spinnerThenShowContent() {
-    long delayMs = utils.queueRequest();
+    @Test
+    public void test_hasContentNoRequest_spinnerThenShowContent() {
+        long delayMs = utils.queueRequest();
 
-    ModelProvider modelProvider = utils.createNewSession();
-    assertThat(modelProvider.getCurrentState()).isEqualTo(State.INITIALIZING);
+        ModelProvider modelProvider = utils.createNewSession();
+        assertThat(modelProvider.getCurrentState()).isEqualTo(State.INITIALIZING);
 
-    scope.getFakeClock().advance(delayMs);
-    assertThat(modelProvider.getCurrentState()).isEqualTo(State.READY);
-    utils.assertNewContent(modelProvider.getAllRootChildren());
-  }
+        scope.getFakeClock().advance(delayMs);
+        assertThat(modelProvider.getCurrentState()).isEqualTo(State.READY);
+        utils.assertNewContent(modelProvider.getAllRootChildren());
+    }
 
-  @Test
-  public void test_hasContentNoRequest_spinnerThenShowContentOnFailure() {
-    long delayMs = utils.queueError();
+    @Test
+    public void test_hasContentNoRequest_spinnerThenShowContentOnFailure() {
+        long delayMs = utils.queueError();
 
-    ModelProvider modelProvider = utils.createNewSession();
-    assertThat(modelProvider.getCurrentState()).isEqualTo(State.INITIALIZING);
+        ModelProvider modelProvider = utils.createNewSession();
+        assertThat(modelProvider.getCurrentState()).isEqualTo(State.INITIALIZING);
 
-    scope.getFakeClock().advance(delayMs);
-    assertThat(modelProvider.getCurrentState()).isEqualTo(State.READY);
-    utils.assertHeadContent(modelProvider.getAllRootChildren());
-  }
+        scope.getFakeClock().advance(delayMs);
+        assertThat(modelProvider.getCurrentState()).isEqualTo(State.READY);
+        utils.assertHeadContent(modelProvider.getAllRootChildren());
+    }
 }

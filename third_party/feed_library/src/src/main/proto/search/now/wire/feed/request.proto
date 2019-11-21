@@ -4,10 +4,9 @@
 
 syntax = "proto2";
 
-
 package search.now.wire.feed;
 
-option optimize_for=LITE_RUNTIME;
+option optimize_for = LITE_RUNTIME;
 
 option java_package = "com.google.search.now.wire.feed";
 option java_outer_classname = "RequestProto";

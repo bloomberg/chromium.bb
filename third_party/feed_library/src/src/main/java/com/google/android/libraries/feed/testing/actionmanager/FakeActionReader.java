@@ -7,24 +7,25 @@ package com.google.android.libraries.feed.testing.actionmanager;
 import com.google.android.libraries.feed.api.internal.actionmanager.ActionReader;
 import com.google.android.libraries.feed.api.internal.common.DismissActionWithSemanticProperties;
 import com.google.android.libraries.feed.common.Result;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 /** Fake implementation of {@link ActionReader}. */
 public final class FakeActionReader implements ActionReader {
-  private final ArrayList<DismissActionWithSemanticProperties> dismissActions = new ArrayList<>();
+    private final ArrayList<DismissActionWithSemanticProperties> dismissActions = new ArrayList<>();
 
-  @Override
-  public Result<List<DismissActionWithSemanticProperties>>
-      getDismissActionsWithSemanticProperties() {
-    return Result.success(dismissActions);
-  }
+    @Override
+    public Result<List<DismissActionWithSemanticProperties>>
+    getDismissActionsWithSemanticProperties() {
+        return Result.success(dismissActions);
+    }
 
-  /** Adds a dismiss action with semantic properties. */
-  public FakeActionReader addDismissActionsWithSemanticProperties(
-      DismissActionWithSemanticProperties... dismissActionsToAdd) {
-    Collections.addAll(dismissActions, dismissActionsToAdd);
-    return this;
-  }
+    /** Adds a dismiss action with semantic properties. */
+    public FakeActionReader addDismissActionsWithSemanticProperties(
+            DismissActionWithSemanticProperties... dismissActionsToAdd) {
+        Collections.addAll(dismissActions, dismissActionsToAdd);
+        return this;
+    }
 }

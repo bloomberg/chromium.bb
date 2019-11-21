@@ -15,6 +15,7 @@ import com.google.android.libraries.feed.api.internal.requestmanager.FeedRequest
 import com.google.android.libraries.feed.api.internal.sessionmanager.FeedSessionManager;
 import com.google.android.libraries.feed.common.Result;
 import com.google.android.libraries.feed.common.functional.Consumer;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -24,25 +25,27 @@ import org.robolectric.RobolectricTestRunner;
 /** Test of the {@link RequestManagerImpl} class. */
 @RunWith(RobolectricTestRunner.class)
 public final class RequestManagerImplTest {
+    @Mock
+    private FeedRequestManager feedRequestManager;
+    @Mock
+    private FeedSessionManager feedSessionManager;
+    @Mock
+    private Consumer<Result<Model>> updateConsumer;
 
-  @Mock private FeedRequestManager feedRequestManager;
-  @Mock private FeedSessionManager feedSessionManager;
-  @Mock private Consumer<Result<Model>> updateConsumer;
+    private RequestManagerImpl requestManager;
 
-  private RequestManagerImpl requestManager;
+    @Before
+    public void createRequestManager() {
+        initMocks(this);
+        requestManager = new RequestManagerImpl(feedRequestManager, feedSessionManager);
+        when(feedSessionManager.getUpdateConsumer(MutationContext.EMPTY_CONTEXT))
+                .thenReturn(updateConsumer);
+    }
 
-  @Before
-  public void createRequestManager() {
-    initMocks(this);
-    requestManager = new RequestManagerImpl(feedRequestManager, feedSessionManager);
-    when(feedSessionManager.getUpdateConsumer(MutationContext.EMPTY_CONTEXT))
-        .thenReturn(updateConsumer);
-  }
+    @Test
+    public void testTriggerScheduledRefresh() {
+        requestManager.triggerScheduledRefresh();
 
-  @Test
-  public void testTriggerScheduledRefresh() {
-    requestManager.triggerScheduledRefresh();
-
-    verify(feedRequestManager).triggerRefresh(RequestReason.HOST_REQUESTED, updateConsumer);
-  }
+        verify(feedRequestManager).triggerRefresh(RequestReason.HOST_REQUESTED, updateConsumer);
+    }
 }

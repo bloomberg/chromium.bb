@@ -9,15 +9,14 @@ package com.google.android.libraries.feed.sharedstream.logging;
  * events.
  */
 public interface LoggingListener extends VisibilityListener {
+    void onContentClicked();
 
-  void onContentClicked();
+    void onContentSwiped();
 
-  void onContentSwiped();
-
-  /**
-   * Called when the scroll state changes.
-   *
-   * @param newScrollState: the new {@link ScrollState} that is occurring (e.g. dragging, idle).
-   */
-  void onScrollStateChanged(int newScrollState);
+    /**
+     * Called when the scroll state changes.
+     *
+     * @param newScrollState: the new {@link ScrollState} that is occurring (e.g. dragging, idle).
+     */
+    void onScrollStateChanged(int newScrollState);
 }

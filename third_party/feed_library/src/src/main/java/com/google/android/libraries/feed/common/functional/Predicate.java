@@ -6,6 +6,6 @@ package com.google.android.libraries.feed.common.functional;
 
 /** Predicate support for the Feed. This is a copy of the Java 8 defined Predicate. */
 public interface Predicate<T> {
-  /** Evaluates this predicate on the argument. */
-  boolean test(T t);
+    /** Evaluates this predicate on the argument. */
+    boolean test(T t);
 }

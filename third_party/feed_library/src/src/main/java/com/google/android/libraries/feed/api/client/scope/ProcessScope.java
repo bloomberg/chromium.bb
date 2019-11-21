@@ -5,6 +5,7 @@
 package com.google.android.libraries.feed.api.client.scope;
 
 import android.content.Context;
+
 import com.google.android.libraries.feed.api.client.knowncontent.KnownContent;
 import com.google.android.libraries.feed.api.client.lifecycle.AppLifecycleListener;
 import com.google.android.libraries.feed.api.client.requestmanager.RequestManager;
@@ -20,31 +21,24 @@ import com.google.android.libraries.feed.common.logging.Dumpable;
 
 /** Allows interaction with the Feed library at the process leve. */
 public interface ProcessScope extends Dumpable {
+    /** Returns the Feed library request manager. */
+    RequestManager getRequestManager();
 
-  /** Returns the Feed library request manager. */
-  RequestManager getRequestManager();
+    /** Returns the Feed library task queue. */
+    TaskQueue getTaskQueue();
 
-  /** Returns the Feed library task queue. */
-  TaskQueue getTaskQueue();
+    /** Returns the Feed library lifecycle listener. */
+    AppLifecycleListener getAppLifecycleListener();
 
-  /** Returns the Feed library lifecycle listener. */
-  AppLifecycleListener getAppLifecycleListener();
+    /** Returns the Feed library known content. */
+    KnownContent getKnownContent();
 
-  /** Returns the Feed library known content. */
-  KnownContent getKnownContent();
+    /** Returns a {@link StreamScopeBuilder.Builder}. */
+    StreamScopeBuilder createStreamScopeBuilder(Context context, ImageLoaderApi imageLoaderApi,
+            ActionApi actionApi, StreamConfiguration streamConfiguration,
+            CardConfiguration cardConfiguration, SnackbarApi snackbarApi,
+            OfflineIndicatorApi offlineIndicatorApi, TooltipApi tooltipApi);
 
-  /** Returns a {@link StreamScopeBuilder.Builder}. */
-  StreamScopeBuilder createStreamScopeBuilder(
-      Context context,
-      ImageLoaderApi imageLoaderApi,
-      ActionApi actionApi,
-      StreamConfiguration streamConfiguration,
-      CardConfiguration cardConfiguration,
-      SnackbarApi snackbarApi,
-      OfflineIndicatorApi offlineIndicatorApi,
-      TooltipApi tooltipApi);
-
-  /** Called to destroy the scope object. */
-  void onDestroy();
+    /** Called to destroy the scope object. */
+    void onDestroy();
 }
-

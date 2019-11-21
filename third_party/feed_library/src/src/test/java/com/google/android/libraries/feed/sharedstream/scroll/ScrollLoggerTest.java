@@ -10,6 +10,7 @@ import static org.mockito.MockitoAnnotations.initMocks;
 
 import com.google.android.libraries.feed.api.host.logging.BasicLoggingApi;
 import com.google.android.libraries.feed.api.host.logging.ScrollType;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -19,27 +20,27 @@ import org.robolectric.RobolectricTestRunner;
 /** Tests for {@link ScrollLogger}. */
 @RunWith(RobolectricTestRunner.class)
 public final class ScrollLoggerTest {
+    @Mock
+    private BasicLoggingApi basicLoggingApi;
+    private ScrollLogger scrollLogger;
 
-  @Mock private BasicLoggingApi basicLoggingApi;
-  private ScrollLogger scrollLogger;
+    @Before
+    public void setUp() {
+        initMocks(this);
+        scrollLogger = new ScrollLogger(basicLoggingApi);
+    }
 
-  @Before
-  public void setUp() {
-    initMocks(this);
-    scrollLogger = new ScrollLogger(basicLoggingApi);
-  }
+    @Test
+    public void testLogsScroll() {
+        int scrollAmount = 100;
+        scrollLogger.handleScroll(ScrollType.STREAM_SCROLL, scrollAmount);
+        verify(basicLoggingApi).onScroll(ScrollType.STREAM_SCROLL, scrollAmount);
+    }
 
-  @Test
-  public void testLogsScroll() {
-    int scrollAmount = 100;
-    scrollLogger.handleScroll(ScrollType.STREAM_SCROLL, scrollAmount);
-    verify(basicLoggingApi).onScroll(ScrollType.STREAM_SCROLL, scrollAmount);
-  }
-
-  @Test
-  public void testLogsNoScroll_tooSmall() {
-    int scrollAmount = 1;
-    scrollLogger.handleScroll(ScrollType.STREAM_SCROLL, scrollAmount);
-    verify(basicLoggingApi, never()).onScroll(ScrollType.STREAM_SCROLL, scrollAmount);
-  }
+    @Test
+    public void testLogsNoScroll_tooSmall() {
+        int scrollAmount = 1;
+        scrollLogger.handleScroll(ScrollType.STREAM_SCROLL, scrollAmount);
+        verify(basicLoggingApi, never()).onScroll(ScrollType.STREAM_SCROLL, scrollAmount);
+    }
 }

@@ -6,10 +6,9 @@ package com.google.android.libraries.feed.common.feedobservable;
 
 /** Allows for registering and unregistering observers */
 public interface Observable<ObserverT> {
+    /** Register a new observer. If already registered, will have no effect. */
+    void registerObserver(ObserverT observer);
 
-  /** Register a new observer. If already registered, will have no effect. */
-  void registerObserver(ObserverT observer);
-
-  /** Unregister an observer. If not registered, will have no effect. */
-  void unregisterObserver(ObserverT observer);
+    /** Unregister an observer. If not registered, will have no effect. */
+    void unregisterObserver(ObserverT observer);
 }

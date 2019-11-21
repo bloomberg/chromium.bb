@@ -6,36 +6,36 @@ package com.google.android.libraries.feed.testing.conformance.scheduler;
 
 import com.google.android.libraries.feed.api.host.scheduler.SchedulerApi;
 import com.google.android.libraries.feed.api.host.scheduler.SchedulerApi.SessionState;
+
 import org.junit.Test;
 
 public abstract class SchedulerConformanceTest {
+    private static final int NOT_FOUND = 404;
+    private static final int SERVER_ERROR = 500;
 
-  private static final int NOT_FOUND = 404;
-  private static final int SERVER_ERROR = 500;
+    protected SchedulerApi scheduler;
 
-  protected SchedulerApi scheduler;
+    @Test
+    public void shouldSessionRequestData() {
+        // Should not throw error
+        scheduler.shouldSessionRequestData(new SessionState(false, 0, false));
+    }
 
-  @Test
-  public void shouldSessionRequestData() {
-    // Should not throw error
-    scheduler.shouldSessionRequestData(new SessionState(false, 0, false));
-  }
+    @Test
+    public void onReceiveNewContent() {
+        // Should not throw error
+        scheduler.onReceiveNewContent(System.currentTimeMillis());
+    }
 
-  @Test
-  public void onReceiveNewContent() {
-    // Should not throw error
-    scheduler.onReceiveNewContent(System.currentTimeMillis());
-  }
+    @Test
+    public void onRequestError_notFound() {
+        // Should not throw error
+        scheduler.onRequestError(NOT_FOUND);
+    }
 
-  @Test
-  public void onRequestError_notFound() {
-    // Should not throw error
-    scheduler.onRequestError(NOT_FOUND);
-  }
-
-  @Test
-  public void onRequestError_serverError() {
-    // Should not throw error
-    scheduler.onRequestError(SERVER_ERROR);
-  }
+    @Test
+    public void onRequestError_serverError() {
+        // Should not throw error
+        scheduler.onRequestError(SERVER_ERROR);
+    }
 }

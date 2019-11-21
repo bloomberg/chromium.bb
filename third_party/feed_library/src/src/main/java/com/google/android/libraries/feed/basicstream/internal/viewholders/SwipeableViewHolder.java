@@ -6,10 +6,9 @@ package com.google.android.libraries.feed.basicstream.internal.viewholders;
 
 /** Interface that {@link ViewHolder} instances can implement to enable swipe functionality. */
 public interface SwipeableViewHolder {
+    /** Determines whether this {@link ViewHolder} can have a swipe performed on it. */
+    boolean canSwipe();
 
-  /** Determines whether this {@link ViewHolder} can have a swipe performed on it. */
-  boolean canSwipe();
-
-  /** Called when this {@link ViewHolder} is swiped. */
-  void onSwiped();
+    /** Called when this {@link ViewHolder} is swiped. */
+    void onSwiped();
 }

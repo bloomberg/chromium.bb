@@ -17,6 +17,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.search.now.feed.client.StreamDataProto.StreamSharedState;
 import com.google.search.now.feed.client.StreamDataProto.UiContext;
 import com.google.search.now.wire.feed.ContentIdProto.ContentId;
+
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -26,178 +27,178 @@ import java.util.Set;
  * needed.
  */
 public class FakeModelProvider implements ModelProvider {
+    private final Set<ModelProviderObserver> observers = new HashSet<>();
+    private ModelFeature rootFeature;
+    private boolean wasRefreshTriggered;
+    private boolean tokensEnabled = true;
+    /*@Nullable*/ private String sessionId = null;
+    @RequestReason
+    private int lastRequestReason = RequestReason.UNKNOWN;
+    /*@Nullable*/ private ModelFeature immediateSessionStartModel;
+    /*@Nullable*/ private UiContext unusedTriggerRefreshUiContext;
+    private FakeModelMutation latestModelMutation = new FakeModelMutation();
+    private boolean isInvalidated = false;
 
-  private final Set<ModelProviderObserver> observers = new HashSet<>();
-  private ModelFeature rootFeature;
-  private boolean wasRefreshTriggered;
-  private boolean tokensEnabled = true;
-  /*@Nullable*/ private String sessionId = null;
-  @RequestReason private int lastRequestReason = RequestReason.UNKNOWN;
-  /*@Nullable*/ private ModelFeature immediateSessionStartModel;
-  /*@Nullable*/ private UiContext unusedTriggerRefreshUiContext;
-  private FakeModelMutation latestModelMutation = new FakeModelMutation();
-  private boolean isInvalidated = false;
-
-  @Override
-  public ModelMutation edit() {
-    latestModelMutation = new FakeModelMutation();
-    return latestModelMutation;
-  }
-
-  @Override
-  public void invalidate() {
-    isInvalidated = true;
-  }
-
-  @Override
-  public void invalidate(UiContext uiContext) {
-    isInvalidated = true;
-  }
-
-  @Override
-  public void detachModelProvider() {}
-
-  @Override
-  public void raiseError(ModelError error) {}
-
-  @Override
-  /*@Nullable*/
-  public ModelFeature getRootFeature() {
-    return rootFeature;
-  }
-
-  @Override
-  /*@Nullable*/
-  public ModelChild getModelChild(String contentId) {
-    return null;
-  }
-
-  @Override
-  /*@Nullable*/
-  public StreamSharedState getSharedState(ContentId contentId) {
-    return null;
-  }
-
-  @Override
-  public boolean handleToken(ModelToken modelToken) {
-    return tokensEnabled;
-  }
-
-  @Override
-  public void triggerRefresh(@RequestReason int requestReason) {
-    triggerRefresh(requestReason, UiContext.getDefaultInstance());
-  }
-
-  @Override
-  public void triggerRefresh(@RequestReason int requestReason, UiContext uiContext) {
-    wasRefreshTriggered = true;
-    lastRequestReason = requestReason;
-    unusedTriggerRefreshUiContext = uiContext;
-  }
-
-  @Override
-  public int getCurrentState() {
-    return State.INITIALIZING;
-  }
-
-  @Override
-  /*@Nullable*/
-  public String getSessionId() {
-    return sessionId;
-  }
-
-  @Override
-  public List<ModelChild> getAllRootChildren() {
-    ImmutableList.Builder<ModelChild> listBuilder = ImmutableList.builder();
-    if (rootFeature == null) {
-      return listBuilder.build();
+    @Override
+    public ModelMutation edit() {
+        latestModelMutation = new FakeModelMutation();
+        return latestModelMutation;
     }
 
-    ModelCursor cursor = rootFeature.getCursor();
-    ModelChild child;
-    while ((child = cursor.getNextItem()) != null) {
-      listBuilder.add(child);
-    }
-    return listBuilder.build();
-  }
-
-  @Override
-  public void enableRemoveTracking(RemoveTrackingFactory<?> removeTrackingFactory) {}
-
-  @Override
-  public void registerObserver(ModelProviderObserver observer) {
-    if (immediateSessionStartModel != null) {
-      this.rootFeature = immediateSessionStartModel;
-      observer.onSessionStart(UiContext.getDefaultInstance());
+    @Override
+    public void invalidate() {
+        isInvalidated = true;
     }
 
-    observers.add(observer);
-  }
-
-  @Override
-  public void unregisterObserver(ModelProviderObserver observer) {
-    observers.remove(observer);
-  }
-
-  public void triggerOnSessionStart(ModelFeature rootFeature) {
-    triggerOnSessionStart(rootFeature, UiContext.getDefaultInstance());
-  }
-
-  public void triggerOnSessionStart(ModelFeature rootFeature, UiContext uiContext) {
-    this.rootFeature = rootFeature;
-    for (ModelProviderObserver observer : observers) {
-      observer.onSessionStart(uiContext);
+    @Override
+    public void invalidate(UiContext uiContext) {
+        isInvalidated = true;
     }
-  }
 
-  public void triggerOnSessionFinished() {
-    triggerOnSessionFinished(UiContext.getDefaultInstance());
-  }
+    @Override
+    public void detachModelProvider() {}
 
-  public void triggerOnSessionFinished(UiContext uiContext) {
-    for (ModelProviderObserver observer : observers) {
-      observer.onSessionFinished(uiContext);
+    @Override
+    public void raiseError(ModelError error) {}
+
+    @Override
+    /*@Nullable*/
+    public ModelFeature getRootFeature() {
+        return rootFeature;
     }
-  }
 
-  public void triggerOnError(ModelError modelError) {
-    for (ModelProviderObserver observer : observers) {
-      observer.onError(modelError);
+    @Override
+    /*@Nullable*/
+    public ModelChild getModelChild(String contentId) {
+        return null;
     }
-  }
 
-  public boolean wasRefreshTriggered() {
-    return wasRefreshTriggered;
-  }
+    @Override
+    /*@Nullable*/
+    public StreamSharedState getSharedState(ContentId contentId) {
+        return null;
+    }
 
-  public Set<ModelProviderObserver> getObservers() {
-    return observers;
-  }
+    @Override
+    public boolean handleToken(ModelToken modelToken) {
+        return tokensEnabled;
+    }
 
-  public void setSessionId(String sessionId) {
-    this.sessionId = sessionId;
-  }
+    @Override
+    public void triggerRefresh(@RequestReason int requestReason) {
+        triggerRefresh(requestReason, UiContext.getDefaultInstance());
+    }
 
-  @RequestReason
-  public int getLastRequestReason() {
-    return lastRequestReason;
-  }
+    @Override
+    public void triggerRefresh(@RequestReason int requestReason, UiContext uiContext) {
+        wasRefreshTriggered = true;
+        lastRequestReason = requestReason;
+        unusedTriggerRefreshUiContext = uiContext;
+    }
 
-  public void triggerOnSessionStartImmediately(ModelFeature modelFeature) {
-    immediateSessionStartModel = modelFeature;
-  }
+    @Override
+    public int getCurrentState() {
+        return State.INITIALIZING;
+    }
 
-  public void setTokensEnabled(boolean value) {
-    tokensEnabled = value;
-  }
+    @Override
+    /*@Nullable*/
+    public String getSessionId() {
+        return sessionId;
+    }
 
-  /** Returns the last {@link FakeModelMutation} returned from the {@link edit()} method. */
-  public FakeModelMutation getLatestModelMutation() {
-    return latestModelMutation;
-  }
+    @Override
+    public List<ModelChild> getAllRootChildren() {
+        ImmutableList.Builder<ModelChild> listBuilder = ImmutableList.builder();
+        if (rootFeature == null) {
+            return listBuilder.build();
+        }
 
-  /** Returns whether this {@link ModelProvider} has been invalidated. */
-  public boolean isInvalidated() {
-    return isInvalidated;
-  }
+        ModelCursor cursor = rootFeature.getCursor();
+        ModelChild child;
+        while ((child = cursor.getNextItem()) != null) {
+            listBuilder.add(child);
+        }
+        return listBuilder.build();
+    }
+
+    @Override
+    public void enableRemoveTracking(RemoveTrackingFactory<?> removeTrackingFactory) {}
+
+    @Override
+    public void registerObserver(ModelProviderObserver observer) {
+        if (immediateSessionStartModel != null) {
+            this.rootFeature = immediateSessionStartModel;
+            observer.onSessionStart(UiContext.getDefaultInstance());
+        }
+
+        observers.add(observer);
+    }
+
+    @Override
+    public void unregisterObserver(ModelProviderObserver observer) {
+        observers.remove(observer);
+    }
+
+    public void triggerOnSessionStart(ModelFeature rootFeature) {
+        triggerOnSessionStart(rootFeature, UiContext.getDefaultInstance());
+    }
+
+    public void triggerOnSessionStart(ModelFeature rootFeature, UiContext uiContext) {
+        this.rootFeature = rootFeature;
+        for (ModelProviderObserver observer : observers) {
+            observer.onSessionStart(uiContext);
+        }
+    }
+
+    public void triggerOnSessionFinished() {
+        triggerOnSessionFinished(UiContext.getDefaultInstance());
+    }
+
+    public void triggerOnSessionFinished(UiContext uiContext) {
+        for (ModelProviderObserver observer : observers) {
+            observer.onSessionFinished(uiContext);
+        }
+    }
+
+    public void triggerOnError(ModelError modelError) {
+        for (ModelProviderObserver observer : observers) {
+            observer.onError(modelError);
+        }
+    }
+
+    public boolean wasRefreshTriggered() {
+        return wasRefreshTriggered;
+    }
+
+    public Set<ModelProviderObserver> getObservers() {
+        return observers;
+    }
+
+    public void setSessionId(String sessionId) {
+        this.sessionId = sessionId;
+    }
+
+    @RequestReason
+    public int getLastRequestReason() {
+        return lastRequestReason;
+    }
+
+    public void triggerOnSessionStartImmediately(ModelFeature modelFeature) {
+        immediateSessionStartModel = modelFeature;
+    }
+
+    public void setTokensEnabled(boolean value) {
+        tokensEnabled = value;
+    }
+
+    /** Returns the last {@link FakeModelMutation} returned from the {@link edit()} method. */
+    public FakeModelMutation getLatestModelMutation() {
+        return latestModelMutation;
+    }
+
+    /** Returns whether this {@link ModelProvider} has been invalidated. */
+    public boolean isInvalidated() {
+        return isInvalidated;
+    }
 }

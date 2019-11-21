@@ -11,21 +11,17 @@ import android.support.annotation.StringDef;
  * which is used by consuming hosts to communicate app lifecycle events to the Feed Library.
  */
 public interface FeedLifecycleListener {
-  /** The types of lifecycle events. */
-  @StringDef({
-    LifecycleEvent.ENTER_FOREGROUND,
-    LifecycleEvent.ENTER_BACKGROUND,
-    LifecycleEvent.CLEAR_ALL,
-    LifecycleEvent.CLEAR_ALL_WITH_REFRESH,
-    LifecycleEvent.INITIALIZE
-  })
-  @interface LifecycleEvent {
-    String ENTER_FOREGROUND = "foreground";
-    String ENTER_BACKGROUND = "background";
-    String CLEAR_ALL = "clearAll";
-    String CLEAR_ALL_WITH_REFRESH = "clearAllWithRefresh";
-    String INITIALIZE = "initialize";
-  }
+    /** The types of lifecycle events. */
+    @StringDef({LifecycleEvent.ENTER_FOREGROUND, LifecycleEvent.ENTER_BACKGROUND,
+            LifecycleEvent.CLEAR_ALL, LifecycleEvent.CLEAR_ALL_WITH_REFRESH,
+            LifecycleEvent.INITIALIZE})
+    @interface LifecycleEvent {
+        String ENTER_FOREGROUND = "foreground";
+        String ENTER_BACKGROUND = "background";
+        String CLEAR_ALL = "clearAll";
+        String CLEAR_ALL_WITH_REFRESH = "clearAllWithRefresh";
+        String INITIALIZE = "initialize";
+    }
 
-  void onLifecycleEvent(@LifecycleEvent String event);
+    void onLifecycleEvent(@LifecycleEvent String event);
 }

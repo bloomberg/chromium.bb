@@ -6,6 +6,6 @@ package com.google.android.libraries.feed.api.internal.lifecycle;
 
 /** Interface for objects which support reset to an initial state. */
 public interface Resettable {
-  /* Reset the object. */
-  void reset();
+    /* Reset the object. */
+    void reset();
 }

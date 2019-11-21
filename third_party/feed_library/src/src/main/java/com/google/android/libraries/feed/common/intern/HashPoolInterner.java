@@ -5,7 +5,9 @@
 package com.google.android.libraries.feed.common.intern;
 
 import android.support.v4.util.SparseArrayCompat;
+
 import java.lang.ref.WeakReference;
+
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -16,37 +18,35 @@ import javax.annotation.concurrent.ThreadSafe;
  */
 @ThreadSafe
 public class HashPoolInterner<T> extends PoolInternerBase<T> {
-
-  public HashPoolInterner() {
-    super(new HashPool<>());
-  }
-
-  private static final class HashPool<T> implements Pool<T> {
-
-    private final SparseArrayCompat<WeakReference<T>> pool = new SparseArrayCompat<>();
-
-    @Override
-    /*@Nullable*/
-    public T get(T input) {
-      WeakReference<T> weakRef = (input != null) ? pool.get(input.hashCode()) : null;
-      return weakRef != null ? weakRef.get() : null;
+    public HashPoolInterner() {
+        super(new HashPool<>());
     }
 
-    @Override
-    public void put(T input) {
-      if (input != null) {
-        pool.put(input.hashCode(), new WeakReference<>(input));
-      }
-    }
+    private static final class HashPool<T> implements Pool<T> {
+        private final SparseArrayCompat<WeakReference<T>> pool = new SparseArrayCompat<>();
 
-    @Override
-    public void clear() {
-      pool.clear();
-    }
+        @Override
+        /*@Nullable*/
+        public T get(T input) {
+            WeakReference<T> weakRef = (input != null) ? pool.get(input.hashCode()) : null;
+            return weakRef != null ? weakRef.get() : null;
+        }
 
-    @Override
-    public int size() {
-      return pool.size();
+        @Override
+        public void put(T input) {
+            if (input != null) {
+                pool.put(input.hashCode(), new WeakReference<>(input));
+            }
+        }
+
+        @Override
+        public void clear() {
+            pool.clear();
+        }
+
+        @Override
+        public int size() {
+            return pool.size();
+        }
     }
-  }
 }

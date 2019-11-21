@@ -11,17 +11,16 @@ import com.google.search.now.feed.client.StreamDataProto.UiContext;
 
 /** Factory method for creating {@link ModelProvider} instances. */
 public interface ModelProviderFactory {
-  /**
-   * Returns a new instance of a {@link ModelProvider} from an existing session. This session may
-   * become INVALIDATED if the session was garbage collected by the Session Manager.
-   */
-  ModelProvider create(String sessionId, UiContext uiContext);
+    /**
+     * Returns a new instance of a {@link ModelProvider} from an existing session. This session may
+     * become INVALIDATED if the session was garbage collected by the Session Manager.
+     */
+    ModelProvider create(String sessionId, UiContext uiContext);
 
-  /** Returns a new instance of a {@link ModelProvider} from $HEAD. */
-  ModelProvider createNew(/*@Nullable*/ ViewDepthProvider viewDepthProvider, UiContext uiContext);
+    /** Returns a new instance of a {@link ModelProvider} from $HEAD. */
+    ModelProvider createNew(/*@Nullable*/ ViewDepthProvider viewDepthProvider, UiContext uiContext);
 
-  ModelProvider createNew(
-      /*@Nullable*/ ViewDepthProvider viewDepthProvider,
-      /*@Nullable*/ Predicate<StreamStructure> filterPredicate,
-      UiContext uiContext);
+    ModelProvider createNew(
+            /*@Nullable*/ ViewDepthProvider viewDepthProvider,
+            /*@Nullable*/ Predicate<StreamStructure> filterPredicate, UiContext uiContext);
 }

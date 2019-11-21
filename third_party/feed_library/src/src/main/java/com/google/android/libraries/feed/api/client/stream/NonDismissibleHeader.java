@@ -10,23 +10,22 @@ import android.view.View;
  * Class providing a default implementation for {@link Header} instances that are not dismissible.
  */
 public class NonDismissibleHeader implements Header {
+    private final View view;
 
-  private final View view;
+    public NonDismissibleHeader(View view) {
+        this.view = view;
+    }
 
-  public NonDismissibleHeader(View view) {
-    this.view = view;
-  }
+    @Override
+    public View getView() {
+        return view;
+    }
 
-  @Override
-  public View getView() {
-    return view;
-  }
+    @Override
+    public boolean isDismissible() {
+        return false;
+    }
 
-  @Override
-  public boolean isDismissible() {
-    return false;
-  }
-
-  @Override
-  public void onDismissed() {}
+    @Override
+    public void onDismissed() {}
 }

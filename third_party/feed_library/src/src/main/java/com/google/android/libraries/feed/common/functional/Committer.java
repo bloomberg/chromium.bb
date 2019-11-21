@@ -13,6 +13,6 @@ package com.google.android.libraries.feed.common.functional;
  * @param <C> A class containing the changes which will be committed.
  */
 public interface Committer<R, C> {
-  /** Commit the change T, and optionally return a value R */
-  R commit(C change);
+    /** Commit the change T, and optionally return a value R */
+    R commit(C change);
 }

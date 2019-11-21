@@ -11,11 +11,11 @@ import com.google.search.now.feed.client.StreamDataProto.StreamPayload;
  * immutable and provides access to the fields directly.
  */
 public final class PayloadWithId {
-  public final String contentId;
-  public final StreamPayload payload;
+    public final String contentId;
+    public final StreamPayload payload;
 
-  public PayloadWithId(String contentId, StreamPayload payload) {
-    this.contentId = contentId;
-    this.payload = payload;
-  }
+    public PayloadWithId(String contentId, StreamPayload payload) {
+        this.contentId = contentId;
+        this.payload = payload;
+    }
 }

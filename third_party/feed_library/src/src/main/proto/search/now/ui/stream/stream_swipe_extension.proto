@@ -8,7 +8,7 @@ import "src/main/proto/search/now/ui/action/feed_action_payload.proto";
 import "src/main/proto/search/now/ui/stream/stream_structure.proto";
 package search.now.ui.stream;
 
-option optimize_for=LITE_RUNTIME;
+option optimize_for = LITE_RUNTIME;
 
 option java_package = "com.google.search.now.ui.stream";
 option java_outer_classname = "StreamSwipeExtensionProto";

@@ -11,36 +11,35 @@ import java.util.Arrays;
  * contentId. The class is immutable and provides access to the fields directly.
  */
 public final class SemanticPropertiesWithId {
+    public final String contentId;
+    public final byte[] semanticData;
 
-  public final String contentId;
-  public final byte[] semanticData;
-
-  public SemanticPropertiesWithId(String contentId, byte[] semanticData) {
-    this.contentId = contentId;
-    this.semanticData = semanticData;
-  }
-
-  @Override
-  public boolean equals(/*@Nullable*/ Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
+    public SemanticPropertiesWithId(String contentId, byte[] semanticData) {
+        this.contentId = contentId;
+        this.semanticData = semanticData;
     }
 
-    SemanticPropertiesWithId that = (SemanticPropertiesWithId) o;
+    @Override
+    public boolean equals(/*@Nullable*/ Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
 
-    if (!contentId.equals(that.contentId)) {
-      return false;
+        SemanticPropertiesWithId that = (SemanticPropertiesWithId) o;
+
+        if (!contentId.equals(that.contentId)) {
+            return false;
+        }
+        return Arrays.equals(semanticData, that.semanticData);
     }
-    return Arrays.equals(semanticData, that.semanticData);
-  }
 
-  @Override
-  public int hashCode() {
-    int result = contentId.hashCode();
-    result = 31 * result + Arrays.hashCode(semanticData);
-    return result;
-  }
+    @Override
+    public int hashCode() {
+        int result = contentId.hashCode();
+        result = 31 * result + Arrays.hashCode(semanticData);
+        return result;
+    }
 }

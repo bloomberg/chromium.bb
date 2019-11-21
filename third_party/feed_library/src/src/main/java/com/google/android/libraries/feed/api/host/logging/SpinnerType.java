@@ -14,24 +14,24 @@ import android.support.annotation.IntDef;
  * those values should not be reused.
  */
 @IntDef({
-  SpinnerType.INITIAL_LOAD,
-  SpinnerType.ZERO_STATE_REFRESH,
-  SpinnerType.MORE_BUTTON,
-  SpinnerType.SYNTHETIC_TOKEN,
-  SpinnerType.INFINITE_FEED,
-  SpinnerType.NEXT_VALUE,
+        SpinnerType.INITIAL_LOAD,
+        SpinnerType.ZERO_STATE_REFRESH,
+        SpinnerType.MORE_BUTTON,
+        SpinnerType.SYNTHETIC_TOKEN,
+        SpinnerType.INFINITE_FEED,
+        SpinnerType.NEXT_VALUE,
 })
 public @interface SpinnerType {
-  // Spinner shown on initial load of the Feed.
-  int INITIAL_LOAD = 1;
-  // Spinner shown when Feed is refreshed.
-  int ZERO_STATE_REFRESH = 2;
-  // Spinner shown when more button is clicked.
-  int MORE_BUTTON = 3;
-  // Spinner shown when a synthetic token is consumed.
-  int SYNTHETIC_TOKEN = 4;
-  // Spinner shown when a spinner is shown for loading the infinite feed.
-  int INFINITE_FEED = 5;
-  // The next value that should be used when adding additional values to the IntDef.
-  int NEXT_VALUE = 6;
+    // Spinner shown on initial load of the Feed.
+    int INITIAL_LOAD = 1;
+    // Spinner shown when Feed is refreshed.
+    int ZERO_STATE_REFRESH = 2;
+    // Spinner shown when more button is clicked.
+    int MORE_BUTTON = 3;
+    // Spinner shown when a synthetic token is consumed.
+    int SYNTHETIC_TOKEN = 4;
+    // Spinner shown when a spinner is shown for loading the infinite feed.
+    int INFINITE_FEED = 5;
+    // The next value that should be used when adding additional values to the IntDef.
+    int NEXT_VALUE = 6;
 }

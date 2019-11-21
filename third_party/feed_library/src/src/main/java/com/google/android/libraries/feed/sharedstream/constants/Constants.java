@@ -5,6 +5,7 @@ package com.google.android.libraries.feed.sharedstream.constants;
 
 /** A set of constants to be used in sharedStream */
 public final class Constants {
-  // Default minimum time for a view to be onscreen and not scrolling before it is counted as a view
-  public static final long VIEW_MIN_TIME_MS_DEFAULT = 500L;
+    // Default minimum time for a view to be onscreen and not scrolling before it is counted as a
+    // view
+    public static final long VIEW_MIN_TIME_MS_DEFAULT = 500L;
 }

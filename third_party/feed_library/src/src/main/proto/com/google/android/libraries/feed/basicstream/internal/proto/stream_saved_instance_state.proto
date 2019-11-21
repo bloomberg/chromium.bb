@@ -6,7 +6,7 @@ syntax = "proto2";
 
 package com.google.android.libraries.feed.basicstream.internal;
 
-option optimize_for=LITE_RUNTIME;
+option optimize_for = LITE_RUNTIME;
 
 import "src/main/proto/com/google/android/libraries/feed/sharedstream/proto/scroll_state.proto";
 

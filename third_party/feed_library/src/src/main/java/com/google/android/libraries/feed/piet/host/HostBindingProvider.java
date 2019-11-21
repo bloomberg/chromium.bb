@@ -36,96 +36,95 @@ import com.google.search.now.ui.piet.ElementsProto.HostBindingData;
  * <p>See [INTERNAL LINK].
  */
 public class HostBindingProvider {
+    /**
+     * Called by Piet during the binding process for a {@link CustomBindingRef} if the server has
+     * specified a BindingValue which includes {@link HostBindingData} set.
+     */
+    public BindingValue getCustomElementDataBindingForValue(BindingValue bindingValue) {
+        return clearHostBindingData(bindingValue);
+    }
 
-  /**
-   * Called by Piet during the binding process for a {@link CustomBindingRef} if the server has
-   * specified a BindingValue which includes {@link HostBindingData} set.
-   */
-  public BindingValue getCustomElementDataBindingForValue(BindingValue bindingValue) {
-    return clearHostBindingData(bindingValue);
-  }
+    /**
+     * Called by Piet during the binding process for a {@link ParameterizedTextBindingRef} if the
+     * server has specified a BindingValue which includes {@link HostBindingData} set.
+     */
+    public BindingValue getParameterizedTextBindingForValue(BindingValue bindingValue) {
+        return clearHostBindingData(bindingValue);
+    }
 
-  /**
-   * Called by Piet during the binding process for a {@link ParameterizedTextBindingRef} if the
-   * server has specified a BindingValue which includes {@link HostBindingData} set.
-   */
-  public BindingValue getParameterizedTextBindingForValue(BindingValue bindingValue) {
-    return clearHostBindingData(bindingValue);
-  }
+    /**
+     * Called by Piet during the binding process for a {@link ChunkedTextBindingRef} if the server
+     * has specified a BindingValue which includes {@link HostBindingData} set.
+     */
+    public BindingValue getChunkedTextBindingForValue(BindingValue bindingValue) {
+        return clearHostBindingData(bindingValue);
+    }
 
-  /**
-   * Called by Piet during the binding process for a {@link ChunkedTextBindingRef} if the server has
-   * specified a BindingValue which includes {@link HostBindingData} set.
-   */
-  public BindingValue getChunkedTextBindingForValue(BindingValue bindingValue) {
-    return clearHostBindingData(bindingValue);
-  }
+    /**
+     * Called by Piet during the binding process for a {@link ImageBindingRef} if the server has
+     * specified a BindingValue which includes {@link HostBindingData} set.
+     */
+    public BindingValue getImageBindingForValue(BindingValue bindingValue) {
+        return clearHostBindingData(bindingValue);
+    }
 
-  /**
-   * Called by Piet during the binding process for a {@link ImageBindingRef} if the server has
-   * specified a BindingValue which includes {@link HostBindingData} set.
-   */
-  public BindingValue getImageBindingForValue(BindingValue bindingValue) {
-    return clearHostBindingData(bindingValue);
-  }
+    /**
+     * Called by Piet during the binding process for a {@link ActionsBindingRef} if the server has
+     * specified a BindingValue which includes {@link HostBindingData} set.
+     */
+    public BindingValue getActionsBindingForValue(BindingValue bindingValue) {
+        return clearHostBindingData(bindingValue);
+    }
 
-  /**
-   * Called by Piet during the binding process for a {@link ActionsBindingRef} if the server has
-   * specified a BindingValue which includes {@link HostBindingData} set.
-   */
-  public BindingValue getActionsBindingForValue(BindingValue bindingValue) {
-    return clearHostBindingData(bindingValue);
-  }
+    /**
+     * Called by Piet during the binding process for a {@link GridCellWidthBindingRef} if the server
+     * has specified a BindingValue which includes {@link HostBindingData} set.
+     */
+    public BindingValue getGridCellWidthBindingForValue(BindingValue bindingValue) {
+        return clearHostBindingData(bindingValue);
+    }
 
-  /**
-   * Called by Piet during the binding process for a {@link GridCellWidthBindingRef} if the server
-   * has specified a BindingValue which includes {@link HostBindingData} set.
-   */
-  public BindingValue getGridCellWidthBindingForValue(BindingValue bindingValue) {
-    return clearHostBindingData(bindingValue);
-  }
+    /**
+     * Called by Piet during the binding process for a {@link ElementBindingRef} if the server has
+     * specified a BindingValue which includes {@link HostBindingData} set.
+     */
+    public BindingValue getElementBindingForValue(BindingValue bindingValue) {
+        return clearHostBindingData(bindingValue);
+    }
 
-  /**
-   * Called by Piet during the binding process for a {@link ElementBindingRef} if the server has
-   * specified a BindingValue which includes {@link HostBindingData} set.
-   */
-  public BindingValue getElementBindingForValue(BindingValue bindingValue) {
-    return clearHostBindingData(bindingValue);
-  }
+    /**
+     * Called by Piet during the binding process for a {@link LogDataBindingRef} if the server has
+     * specified a BindingValue which includes {@link HostBindingData} set.
+     */
+    public BindingValue getLogDataBindingForValue(BindingValue bindingValue) {
+        return clearHostBindingData(bindingValue);
+    }
 
-  /**
-   * Called by Piet during the binding process for a {@link LogDataBindingRef} if the server has
-   * specified a BindingValue which includes {@link HostBindingData} set.
-   */
-  public BindingValue getLogDataBindingForValue(BindingValue bindingValue) {
-    return clearHostBindingData(bindingValue);
-  }
+    /**
+     * Called by Piet during the binding process for a {@link TemplateBindingRef} if the server has
+     * specified a BindingValue which includes {@link HostBindingData} set.
+     */
+    public BindingValue getTemplateBindingForValue(BindingValue bindingValue) {
+        return clearHostBindingData(bindingValue);
+    }
 
-  /**
-   * Called by Piet during the binding process for a {@link TemplateBindingRef} if the server has
-   * specified a BindingValue which includes {@link HostBindingData} set.
-   */
-  public BindingValue getTemplateBindingForValue(BindingValue bindingValue) {
-    return clearHostBindingData(bindingValue);
-  }
+    /**
+     * Called by Piet during the binding process for a {@link StyleBindingRef} if the server has
+     * specified a BindingValue which includes {@link HostBindingData} set.
+     */
+    public BindingValue getStyleBindingForValue(BindingValue bindingValue) {
+        return clearHostBindingData(bindingValue);
+    }
 
-  /**
-   * Called by Piet during the binding process for a {@link StyleBindingRef} if the server has
-   * specified a BindingValue which includes {@link HostBindingData} set.
-   */
-  public BindingValue getStyleBindingForValue(BindingValue bindingValue) {
-    return clearHostBindingData(bindingValue);
-  }
+    /**
+     * Called by Piet during the binding process for a {@link VisibilityBindingRef} if the server
+     * has specified a BindingValue which includes {@link HostBindingData} set.
+     */
+    public BindingValue getVisibilityBindingForValue(BindingValue bindingValue) {
+        return clearHostBindingData(bindingValue);
+    }
 
-  /**
-   * Called by Piet during the binding process for a {@link VisibilityBindingRef} if the server has
-   * specified a BindingValue which includes {@link HostBindingData} set.
-   */
-  public BindingValue getVisibilityBindingForValue(BindingValue bindingValue) {
-    return clearHostBindingData(bindingValue);
-  }
-
-  private BindingValue clearHostBindingData(BindingValue bindingValue) {
-    return bindingValue.toBuilder().clearHostBindingData().build();
-  }
+    private BindingValue clearHostBindingData(BindingValue bindingValue) {
+        return bindingValue.toBuilder().clearHostBindingData().build();
+    }
 }

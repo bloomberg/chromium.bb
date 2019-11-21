@@ -10,59 +10,55 @@ import com.google.android.libraries.feed.api.host.storage.JournalStorageDirect;
 import com.google.android.libraries.feed.common.time.TimingUtils;
 import com.google.android.libraries.feed.common.time.TimingUtils.ElapsedTimeTracker;
 import com.google.search.now.feed.client.StreamDataProto.StreamLocalAction;
+
 import java.util.ArrayList;
 import java.util.List;
 
 /** Garbage collector for {@link StreamLocalAction}s stored in a journal */
 public final class LocalActionGc {
+    private static final String TAG = "LocalActionGc";
 
-  private static final String TAG = "LocalActionGc";
+    private final List<StreamLocalAction> actions;
+    private final List<String> validContentIds;
+    private final JournalStorageDirect journalStorageDirect;
+    private final TimingUtils timingUtils;
+    private final String journalName;
 
-  private final List<StreamLocalAction> actions;
-  private final List<String> validContentIds;
-  private final JournalStorageDirect journalStorageDirect;
-  private final TimingUtils timingUtils;
-  private final String journalName;
-
-  LocalActionGc(
-      List<StreamLocalAction> actions,
-      List<String> validContentIds,
-      JournalStorageDirect journalStorageDirect,
-      TimingUtils timingUtils,
-      String journalName) {
-
-    this.actions = actions;
-    this.validContentIds = validContentIds;
-    this.journalStorageDirect = journalStorageDirect;
-    this.timingUtils = timingUtils;
-    this.journalName = journalName;
-  }
-
-  /**
-   * Cleans up the store based on {@link #actions} and {@link #validContentIds}. Any valid actions
-   * will be copied over to a new copy of the action journal.
-   */
-  void gc() {
-    ElapsedTimeTracker tracker = timingUtils.getElapsedTimeTracker(TAG);
-    List<StreamLocalAction> validActions = new ArrayList<>(validContentIds.size());
-
-    for (StreamLocalAction action : actions) {
-      if (validContentIds.contains(action.getFeatureContentId())) {
-        validActions.add(action);
-      }
+    LocalActionGc(List<StreamLocalAction> actions, List<String> validContentIds,
+            JournalStorageDirect journalStorageDirect, TimingUtils timingUtils,
+            String journalName) {
+        this.actions = actions;
+        this.validContentIds = validContentIds;
+        this.journalStorageDirect = journalStorageDirect;
+        this.timingUtils = timingUtils;
+        this.journalName = journalName;
     }
 
-    Builder mutationBuilder = new Builder(journalName);
-    mutationBuilder.delete();
+    /**
+     * Cleans up the store based on {@link #actions} and {@link #validContentIds}. Any valid actions
+     * will be copied over to a new copy of the action journal.
+     */
+    void gc() {
+        ElapsedTimeTracker tracker = timingUtils.getElapsedTimeTracker(TAG);
+        List<StreamLocalAction> validActions = new ArrayList<>(validContentIds.size());
 
-    for (StreamLocalAction action : validActions) {
-      mutationBuilder.append(action.toByteArray());
+        for (StreamLocalAction action : actions) {
+            if (validContentIds.contains(action.getFeatureContentId())) {
+                validActions.add(action);
+            }
+        }
+
+        Builder mutationBuilder = new Builder(journalName);
+        mutationBuilder.delete();
+
+        for (StreamLocalAction action : validActions) {
+            mutationBuilder.append(action.toByteArray());
+        }
+        CommitResult result = journalStorageDirect.commit(mutationBuilder.build());
+        if (result == CommitResult.SUCCESS) {
+            tracker.stop("gcMutation", actions.size() - validActions.size());
+        } else {
+            tracker.stop("gcMutation failed");
+        }
     }
-    CommitResult result = journalStorageDirect.commit(mutationBuilder.build());
-    if (result == CommitResult.SUCCESS) {
-      tracker.stop("gcMutation", actions.size() - validActions.size());
-    } else {
-      tracker.stop("gcMutation failed");
-    }
-  }
 }

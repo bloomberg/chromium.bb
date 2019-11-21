@@ -12,79 +12,79 @@ import com.google.android.libraries.feed.common.time.Clock;
  * events.
  */
 public abstract class ScrollTracker {
-  private static final String TAG = "ScrollTracker";
-  // onScroll events are very noisy, so we collate them together to avoid over-reporting scrolls.
-  private static final long SCROLL_EVENT_COLLATE_MILLIS = 200L;
+    private static final String TAG = "ScrollTracker";
+    // onScroll events are very noisy, so we collate them together to avoid over-reporting scrolls.
+    private static final long SCROLL_EVENT_COLLATE_MILLIS = 200L;
 
-  private final MainThreadRunner mainThreadRunner;
-  private final Clock clock;
+    private final MainThreadRunner mainThreadRunner;
+    private final Clock clock;
 
-  /*@Nullable*/ protected ScrollNotifier scrollNotifier;
-  /*@Nullable*/ protected CancelableTask task;
+    /*@Nullable*/ protected ScrollNotifier scrollNotifier;
+    /*@Nullable*/ protected CancelableTask task;
 
-  public ScrollTracker(MainThreadRunner mainThreadRunner, Clock clock) {
-    this.mainThreadRunner = mainThreadRunner;
-    this.clock = clock;
-  }
-
-  public void onUnbind() {
-    ScrollTracker.ScrollNotifier localScrollNotifier = scrollNotifier;
-    if (localScrollNotifier != null) {
-      if (task != null) {
-        task.cancel();
-      }
-      localScrollNotifier.run();
+    public ScrollTracker(MainThreadRunner mainThreadRunner, Clock clock) {
+        this.mainThreadRunner = mainThreadRunner;
+        this.clock = clock;
     }
-  }
 
-  protected void trackScroll(int dx, int dy) {
-    boolean positiveScroll;
-    int amount;
-    if (dy == 0) {
-      return;
-    }
-    positiveScroll = dy > 0;
-    amount = dy;
-
-    int previousTotalScroll = 0;
-    ScrollNotifier previousScrollNotifier = scrollNotifier;
-    if (previousScrollNotifier != null && !(task != null && task.canceled())) {
-      if (previousScrollNotifier.positiveScroll == positiveScroll) {
-        // Same direction, so merge the existing scroll with the new one.
-        previousTotalScroll = previousScrollNotifier.scrollAmount;
-        if (task != null) {
-          task.cancel();
+    public void onUnbind() {
+        ScrollTracker.ScrollNotifier localScrollNotifier = scrollNotifier;
+        if (localScrollNotifier != null) {
+            if (task != null) {
+                task.cancel();
+            }
+            localScrollNotifier.run();
         }
-      }
     }
 
-    amount += previousTotalScroll;
-    scrollNotifier = new ScrollNotifier(positiveScroll, amount, clock.currentTimeMillis());
-    task = mainThreadRunner.executeWithDelay(TAG, scrollNotifier, SCROLL_EVENT_COLLATE_MILLIS);
-  }
-
-  protected abstract void onScrollEvent(int scrollAmount, long timestamp);
-
-  private class ScrollNotifier implements Runnable {
-    final boolean positiveScroll;
-    final int scrollAmount;
-    final long timestamp;
-
-    public ScrollNotifier(boolean positiveScroll, int scrollAmount, long timestamp) {
-      this.positiveScroll = positiveScroll;
-      this.scrollAmount = scrollAmount;
-      this.timestamp = timestamp;
-    }
-
-    @Override
-    public void run() {
-      onScrollEvent(scrollAmount, timestamp);
-      if (scrollNotifier == this) {
-        scrollNotifier = null;
-        if (task != null) {
-          task.cancel();
+    protected void trackScroll(int dx, int dy) {
+        boolean positiveScroll;
+        int amount;
+        if (dy == 0) {
+            return;
         }
-      }
+        positiveScroll = dy > 0;
+        amount = dy;
+
+        int previousTotalScroll = 0;
+        ScrollNotifier previousScrollNotifier = scrollNotifier;
+        if (previousScrollNotifier != null && !(task != null && task.canceled())) {
+            if (previousScrollNotifier.positiveScroll == positiveScroll) {
+                // Same direction, so merge the existing scroll with the new one.
+                previousTotalScroll = previousScrollNotifier.scrollAmount;
+                if (task != null) {
+                    task.cancel();
+                }
+            }
+        }
+
+        amount += previousTotalScroll;
+        scrollNotifier = new ScrollNotifier(positiveScroll, amount, clock.currentTimeMillis());
+        task = mainThreadRunner.executeWithDelay(TAG, scrollNotifier, SCROLL_EVENT_COLLATE_MILLIS);
     }
-  }
+
+    protected abstract void onScrollEvent(int scrollAmount, long timestamp);
+
+    private class ScrollNotifier implements Runnable {
+        final boolean positiveScroll;
+        final int scrollAmount;
+        final long timestamp;
+
+        public ScrollNotifier(boolean positiveScroll, int scrollAmount, long timestamp) {
+            this.positiveScroll = positiveScroll;
+            this.scrollAmount = scrollAmount;
+            this.timestamp = timestamp;
+        }
+
+        @Override
+        public void run() {
+            onScrollEvent(scrollAmount, timestamp);
+            if (scrollNotifier == this) {
+                scrollNotifier = null;
+                if (task != null) {
+                    task.cancel();
+                }
+            }
+        }
+    }
 }

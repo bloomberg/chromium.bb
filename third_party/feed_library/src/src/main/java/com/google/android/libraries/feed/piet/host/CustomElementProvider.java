@@ -5,6 +5,7 @@
 package com.google.android.libraries.feed.piet.host;
 
 import android.view.View;
+
 import com.google.search.now.ui.piet.ElementsProto.CustomElementData;
 
 /**
@@ -12,10 +13,9 @@ import com.google.search.now.ui.piet.ElementsProto.CustomElementData;
  * returning a view.
  */
 public interface CustomElementProvider {
+    /** Requests that the host create a view based on an extension on CustomElementData. */
+    View createCustomElement(CustomElementData customElementData);
 
-  /** Requests that the host create a view based on an extension on CustomElementData. */
-  View createCustomElement(CustomElementData customElementData);
-
-  /** Notify the host that Piet is done with and will no longer use this custom element View. */
-  void releaseCustomView(View customElementView, CustomElementData customElementData);
+    /** Notify the host that Piet is done with and will no longer use this custom element View. */
+    void releaseCustomView(View customElementView, CustomElementData customElementData);
 }

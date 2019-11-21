@@ -9,9 +9,9 @@ import android.support.annotation.IntDef;
 /** IntDef representing the different types of scrolls. */
 @IntDef({ScrollType.UNKNOWN, ScrollType.STREAM_SCROLL, ScrollType.NEXT_VALUE})
 public @interface ScrollType {
-  // Type of scroll that occurs
-  int UNKNOWN = 0;
-  // Scroll the stream of cards
-  int STREAM_SCROLL = 1;
-  int NEXT_VALUE = 2;
+    // Type of scroll that occurs
+    int UNKNOWN = 0;
+    // Scroll the stream of cards
+    int STREAM_SCROLL = 1;
+    int NEXT_VALUE = 2;
 }

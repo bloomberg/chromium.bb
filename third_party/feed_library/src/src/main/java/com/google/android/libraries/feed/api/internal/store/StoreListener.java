@@ -6,9 +6,9 @@ package com.google.android.libraries.feed.api.internal.store;
 
 /** Allows classes to listen to changes to {@link Store} */
 public interface StoreListener {
-  /**
-   * Called when {@link Store} switches to ephemeral mode. This will be called on a background
-   * thread.
-   */
-  void onSwitchToEphemeralMode();
+    /**
+     * Called when {@link Store} switches to ephemeral mode. This will be called on a background
+     * thread.
+     */
+    void onSwitchToEphemeralMode();
 }

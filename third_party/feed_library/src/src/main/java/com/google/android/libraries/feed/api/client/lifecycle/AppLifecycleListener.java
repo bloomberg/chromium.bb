@@ -10,25 +10,25 @@ package com.google.android.libraries.feed.api.client.lifecycle;
  * <p>Note that these are related to app lifecycle, not UI lifecycle
  */
 public interface AppLifecycleListener {
-  /** Called after critical loading has completed but before Feed is rendered. */
-  void onEnterForeground();
+    /** Called after critical loading has completed but before Feed is rendered. */
+    void onEnterForeground();
 
-  /** Called when the app is backgrounded, will perform clean up. */
-  void onEnterBackground();
+    /** Called when the app is backgrounded, will perform clean up. */
+    void onEnterBackground();
 
-  /**
-   * Called when host wants to clear all data. Will delete content without changing opt-in / opt-out
-   * status.
-   */
-  void onClearAll();
+    /**
+     * Called when host wants to clear all data. Will delete content without changing opt-in /
+     * opt-out status.
+     */
+    void onClearAll();
 
-  /** Called to clear all data then initiate a refresh. */
-  void onClearAllWithRefresh();
+    /** Called to clear all data then initiate a refresh. */
+    void onClearAllWithRefresh();
 
-  /**
-   * Called when the host wants the Feed to perform any heavyweight initialization it might need to
-   * do. This is the only trigger for the initialization process; if it’s not called, the host
-   * should not expect the Feed to be able to render cards.
-   */
-  void initialize();
+    /**
+     * Called when the host wants the Feed to perform any heavyweight initialization it might need
+     * to do. This is the only trigger for the initialization process; if it’s not called, the host
+     * should not expect the Feed to be able to render cards.
+     */
+    void initialize();
 }

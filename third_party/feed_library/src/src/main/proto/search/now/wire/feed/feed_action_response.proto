@@ -6,7 +6,7 @@ syntax = "proto2";
 
 package search.now.wire.feed;
 
-option optimize_for=LITE_RUNTIME;
+option optimize_for = LITE_RUNTIME;
 
 import "src/main/proto/search/now/wire/feed/consistency_token.proto";
 import "src/main/proto/search/now/wire/feed/response.proto";
@@ -17,9 +17,7 @@ option java_outer_classname = "FeedActionResponseProto";
 // A feed action response returns when an action has been successfully uploaded
 // to the server.
 message FeedActionResponse {
-  extend Response {
-    optional FeedActionResponse feed_action_response = 1001;
-  }
+  extend Response { optional FeedActionResponse feed_action_response = 1001; }
   // Token used to read or write to the same storage.
   optional ConsistencyToken consistency_token = 1;
 }

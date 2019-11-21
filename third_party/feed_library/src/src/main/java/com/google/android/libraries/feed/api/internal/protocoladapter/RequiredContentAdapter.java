@@ -6,6 +6,7 @@ package com.google.android.libraries.feed.api.internal.protocoladapter;
 
 import com.google.search.now.wire.feed.ContentIdProto.ContentId;
 import com.google.search.now.wire.feed.DataOperationProto.DataOperation;
+
 import java.util.List;
 
 /**
@@ -13,5 +14,5 @@ import java.util.List;
  * dependent on other content.
  */
 public interface RequiredContentAdapter {
-  List<ContentId> determineRequiredContentIds(DataOperation dataOperation);
+    List<ContentId> determineRequiredContentIds(DataOperation dataOperation);
 }

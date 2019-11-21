@@ -6,28 +6,28 @@ package com.google.android.libraries.feed.common.functional;
 
 /** Utility methods for working with the {@link Supplier} class. */
 public class Suppliers {
-  /**
-   * Instead of {@link #of(T)} returning a lambda, use this inner class to avoid making new classes
-   * for each lambda.
-   */
-  private static class InstancesSupplier<T> implements Supplier<T> {
-    private final T instance;
+    /**
+     * Instead of {@link #of(T)} returning a lambda, use this inner class to avoid making new
+     * classes for each lambda.
+     */
+    private static class InstancesSupplier<T> implements Supplier<T> {
+        private final T instance;
 
-    InstancesSupplier(T instance) {
-      this.instance = instance;
+        InstancesSupplier(T instance) {
+            this.instance = instance;
+        }
+
+        @Override
+        public T get() {
+            return instance;
+        }
     }
 
-    @Override
-    public T get() {
-      return instance;
+    /** Return a {@link Supplier} that always returns the provided instance. */
+    public static <T> Supplier<T> of(T instance) {
+        return new InstancesSupplier<>(instance);
     }
-  }
 
-  /** Return a {@link Supplier} that always returns the provided instance. */
-  public static <T> Supplier<T> of(T instance) {
-    return new InstancesSupplier<>(instance);
-  }
-
-  /** Prevent instantiation */
-  private Suppliers() {}
+    /** Prevent instantiation */
+    private Suppliers() {}
 }

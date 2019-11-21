@@ -5,19 +5,19 @@
 package com.google.android.libraries.feed.api.internal.store;
 
 import android.support.annotation.IntDef;
+
 import com.google.android.libraries.feed.api.host.storage.CommitResult;
 
 /** Mutation for adding and updating actions in the Feed Store. */
 public interface LocalActionMutation {
+    @IntDef({ActionType.DISMISS})
+    @interface ActionType {
+        int DISMISS = 1;
+    }
 
-  @IntDef({ActionType.DISMISS})
-  @interface ActionType {
-    int DISMISS = 1;
-  }
+    /** Add a new Mutation to the Store */
+    LocalActionMutation add(@ActionType int action, String contentId);
 
-  /** Add a new Mutation to the Store */
-  LocalActionMutation add(@ActionType int action, String contentId);
-
-  /** Commit the mutations to the backing store */
-  CommitResult commit();
+    /** Commit the mutations to the backing store */
+    CommitResult commit();
 }

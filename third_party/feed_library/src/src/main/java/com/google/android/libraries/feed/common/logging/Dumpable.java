@@ -6,6 +6,6 @@ package com.google.android.libraries.feed.common.logging;
 
 /** Interface for objects that know how to dump details of their state to a {@link Dumper}. */
 public interface Dumpable {
-  /** Called to dump an object into a {@link Dumper}. */
-  void dump(Dumper dumper);
+    /** Called to dump an object into a {@link Dumper}. */
+    void dump(Dumper dumper);
 }

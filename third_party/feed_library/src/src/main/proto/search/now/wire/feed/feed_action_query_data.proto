@@ -9,7 +9,7 @@ import "src/main/proto/search/now/wire/feed/semantic_properties.proto";
 
 package search.now.wire.feed;
 
-option optimize_for=LITE_RUNTIME;
+option optimize_for = LITE_RUNTIME;
 
 option java_package = "com.google.search.now.wire.feed";
 option java_outer_classname = "FeedActionQueryDataProto";

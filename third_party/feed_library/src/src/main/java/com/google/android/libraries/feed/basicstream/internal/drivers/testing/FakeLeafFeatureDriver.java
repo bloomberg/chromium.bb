@@ -10,51 +10,51 @@ import com.google.android.libraries.feed.basicstream.internal.viewholders.ViewHo
 
 /** Fake for {@link LeafFeatureDriver}. */
 public class FakeLeafFeatureDriver extends LeafFeatureDriver {
+    private final int itemViewType;
 
-  private final int itemViewType;
-
-  private FakeLeafFeatureDriver(int itemViewType) {
-    this.itemViewType = itemViewType;
-  }
-
-  @Override
-  public void bind(FeedViewHolder viewHolder) {}
-
-  @Override
-  public void unbind() {}
-
-  @Override
-  public void maybeRebind() {}
-
-  @Override
-  @ViewHolderType
-  public int getItemViewType() {
-    return itemViewType;
-  }
-
-  @Override
-  public long itemId() {
-    return hashCode();
-  }
-
-  @Override
-  public void onDestroy() {}
-
-  @Override
-  public LeafFeatureDriver getLeafFeatureDriver() {
-    return this;
-  }
-
-  public static class Builder {
-    @ViewHolderType private int itemViewType = ViewHolderType.TYPE_CARD;
-
-    public Builder setItemViewType(@ViewHolderType int viewType) {
-      itemViewType = viewType;
-      return this;
+    private FakeLeafFeatureDriver(int itemViewType) {
+        this.itemViewType = itemViewType;
     }
 
-    public LeafFeatureDriver build() {
-      return new FakeLeafFeatureDriver(itemViewType);
+    @Override
+    public void bind(FeedViewHolder viewHolder) {}
+
+    @Override
+    public void unbind() {}
+
+    @Override
+    public void maybeRebind() {}
+
+    @Override
+    @ViewHolderType
+    public int getItemViewType() {
+        return itemViewType;
     }
-  }
+
+    @Override
+    public long itemId() {
+        return hashCode();
+    }
+
+    @Override
+    public void onDestroy() {}
+
+    @Override
+    public LeafFeatureDriver getLeafFeatureDriver() {
+        return this;
+    }
+
+    public static class Builder {
+        @ViewHolderType
+        private int itemViewType = ViewHolderType.TYPE_CARD;
+
+        public Builder setItemViewType(@ViewHolderType int viewType) {
+            itemViewType = viewType;
+            return this;
+        }
+
+        public LeafFeatureDriver build() {
+            return new FakeLeafFeatureDriver(itemViewType);
+        }
+    }
 }

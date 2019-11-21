@@ -14,50 +14,49 @@ import org.robolectric.RobolectricTestRunner;
 /** Tests of the {@link Validators} class. */
 @RunWith(RobolectricTestRunner.class)
 public class ValidatorsTest {
+    @Test
+    public void testCheckNotNull_null() {
+        assertThatRunnable(() -> Validators.checkNotNull(null))
+                .throwsAnExceptionOfType(NullPointerException.class);
+    }
 
-  @Test
-  public void testCheckNotNull_null() {
-    assertThatRunnable(() -> Validators.checkNotNull(null))
-        .throwsAnExceptionOfType(NullPointerException.class);
-  }
+    @Test
+    public void testCheckNotNull_debugString() {
+        String debugString = "Debug-String";
+        assertThatRunnable(() -> Validators.checkNotNull(null, debugString))
+                .throwsAnExceptionOfType(NullPointerException.class)
+                .that()
+                .hasMessageThat()
+                .contains(debugString);
+    }
 
-  @Test
-  public void testCheckNotNull_debugString() {
-    String debugString = "Debug-String";
-    assertThatRunnable(() -> Validators.checkNotNull(null, debugString))
-        .throwsAnExceptionOfType(NullPointerException.class)
-        .that()
-        .hasMessageThat()
-        .contains(debugString);
-  }
+    @Test
+    public void testCheckNotNull_notNull() {
+        String test = "test";
+        assertThat(Validators.checkNotNull(test)).isEqualTo(test);
+    }
 
-  @Test
-  public void testCheckNotNull_notNull() {
-    String test = "test";
-    assertThat(Validators.checkNotNull(test)).isEqualTo(test);
-  }
+    @Test
+    public void testCheckState_trueWithMessagel() {
+        // no exception expected
+        Validators.checkState(true, "format-string");
+    }
 
-  @Test
-  public void testCheckState_trueWithMessagel() {
-    // no exception expected
-    Validators.checkState(true, "format-string");
-  }
+    @Test
+    public void testCheckState_True() {
+        // no exception expected
+        Validators.checkState(true);
+    }
 
-  @Test
-  public void testCheckState_True() {
-    // no exception expected
-    Validators.checkState(true);
-  }
+    @Test
+    public void testCheckState_falseWithMessage() {
+        assertThatRunnable(() -> Validators.checkState(false, "format-string"))
+                .throwsAnExceptionOfType(IllegalStateException.class);
+    }
 
-  @Test
-  public void testCheckState_falseWithMessage() {
-    assertThatRunnable(() -> Validators.checkState(false, "format-string"))
-        .throwsAnExceptionOfType(IllegalStateException.class);
-  }
-
-  @Test
-  public void testCheckState_false() {
-    assertThatRunnable(() -> Validators.checkState(false))
-        .throwsAnExceptionOfType(IllegalStateException.class);
-  }
+    @Test
+    public void testCheckState_false() {
+        assertThatRunnable(() -> Validators.checkState(false))
+                .throwsAnExceptionOfType(IllegalStateException.class);
+    }
 }

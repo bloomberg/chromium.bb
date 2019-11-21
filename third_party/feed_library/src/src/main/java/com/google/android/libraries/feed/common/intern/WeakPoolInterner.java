@@ -6,6 +6,7 @@ package com.google.android.libraries.feed.common.intern;
 
 import java.lang.ref.WeakReference;
 import java.util.WeakHashMap;
+
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -17,35 +18,33 @@ import javax.annotation.concurrent.ThreadSafe;
  */
 @ThreadSafe
 public class WeakPoolInterner<T> extends PoolInternerBase<T> {
-
-  public WeakPoolInterner() {
-    super(new WeakPool<T>());
-  }
-
-  private static final class WeakPool<T> implements Pool<T> {
-
-    private final WeakHashMap<T, WeakReference<T>> pool = new WeakHashMap<>();
-
-    @Override
-    /*@Nullable*/
-    public T get(T input) {
-      WeakReference<T> weakRef = pool.get(input);
-      return weakRef != null ? weakRef.get() : null;
+    public WeakPoolInterner() {
+        super(new WeakPool<T>());
     }
 
-    @Override
-    public void put(T input) {
-      pool.put(input, new WeakReference<>(input));
-    }
+    private static final class WeakPool<T> implements Pool<T> {
+        private final WeakHashMap<T, WeakReference<T>> pool = new WeakHashMap<>();
 
-    @Override
-    public void clear() {
-      pool.clear();
-    }
+        @Override
+        /*@Nullable*/
+        public T get(T input) {
+            WeakReference<T> weakRef = pool.get(input);
+            return weakRef != null ? weakRef.get() : null;
+        }
 
-    @Override
-    public int size() {
-      return pool.size();
+        @Override
+        public void put(T input) {
+            pool.put(input, new WeakReference<>(input));
+        }
+
+        @Override
+        public void clear() {
+            pool.clear();
+        }
+
+        @Override
+        public int size() {
+            return pool.size();
+        }
     }
-  }
 }

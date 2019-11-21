@@ -9,9 +9,9 @@ import com.google.search.now.feed.client.StreamDataProto.StreamToken;
 
 /** Defines the behavior of a Continuation Token. */
 public interface ModelToken extends Observable<TokenCompletedObserver> {
-  /** Returns the {@link StreamToken} proto instance. */
-  StreamToken getStreamToken();
+    /** Returns the {@link StreamToken} proto instance. */
+    StreamToken getStreamToken();
 
-  /** Returns {@code true} if token was generated on-device and can complete quickly. */
-  boolean isSynthetic();
+    /** Returns {@code true} if token was generated on-device and can complete quickly. */
+    boolean isSynthetic();
 }

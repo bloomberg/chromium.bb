@@ -9,7 +9,7 @@ import "src/main/proto/search/now/ui/action/feed_action_payload.proto";
 
 package search.now.ui.action;
 
-option optimize_for=LITE_RUNTIME;
+option optimize_for = LITE_RUNTIME;
 
 option java_package = "com.google.search.now.ui.action";
 option java_outer_classname = "PietExtensionsProto";

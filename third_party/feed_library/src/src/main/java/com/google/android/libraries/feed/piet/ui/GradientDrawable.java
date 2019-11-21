@@ -6,29 +6,25 @@ package com.google.android.libraries.feed.piet.ui;
 
 import android.graphics.drawable.ShapeDrawable;
 import android.graphics.drawable.shapes.RectShape;
+
 import com.google.android.libraries.feed.common.functional.Supplier;
 import com.google.search.now.ui.piet.GradientsProto.LinearGradient;
 
 /** Class to display gradients according to the Piet spec (angle + color stops at %ages) */
 public class GradientDrawable extends ShapeDrawable {
+    // Doesn't like the call to setShape and setShaderFactory
+    @SuppressWarnings("initialization")
+    public GradientDrawable(LinearGradient gradient, Supplier<Boolean> rtlSupplier) {
+        super();
 
-  // Doesn't like the call to setShape and setShaderFactory
-  @SuppressWarnings("initialization")
-  public GradientDrawable(LinearGradient gradient, Supplier<Boolean> rtlSupplier) {
-    super();
-
-    int[] colors = new int[gradient.getStopsCount()];
-    float[] stops = new float[gradient.getStopsCount()];
-    for (int i = 0; i < gradient.getStopsCount(); i++) {
-      colors[i] = gradient.getStops(i).getColor();
-      stops[i] = gradient.getStops(i).getPositionPercent() / 100.0f;
+        int[] colors = new int[gradient.getStopsCount()];
+        float[] stops = new float[gradient.getStopsCount()];
+        for (int i = 0; i < gradient.getStopsCount(); i++) {
+            colors[i] = gradient.getStops(i).getColor();
+            stops[i] = gradient.getStops(i).getPositionPercent() / 100.0f;
+        }
+        setShape(new RectShape());
+        setShaderFactory(new GradientShader(colors, stops, gradient.getDirectionDeg(),
+                gradient.getReverseForRtl() ? rtlSupplier : null));
     }
-    setShape(new RectShape());
-    setShaderFactory(
-        new GradientShader(
-            colors,
-            stops,
-            gradient.getDirectionDeg(),
-            gradient.getReverseForRtl() ? rtlSupplier : null));
-  }
 }

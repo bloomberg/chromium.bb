@@ -9,16 +9,15 @@ import com.google.android.libraries.feed.sharedstream.logging.OneShotVisibilityL
 
 /** Extension of {@link OneShotVisibilityLoggingListener} that allows for re-logging visibility. */
 public class ResettableOneShotVisibilityLoggingListener extends OneShotVisibilityLoggingListener {
+    public ResettableOneShotVisibilityLoggingListener(LoggingListener loggingListener) {
+        super(loggingListener);
+    }
 
-  public ResettableOneShotVisibilityLoggingListener(LoggingListener loggingListener) {
-    super(loggingListener);
-  }
-
-  /**
-   * Resets whether this view has been logged as visible. This will result in the view being
-   * re-logged as visible once it is visible.
-   */
-  public void reset() {
-    viewLogged = false;
-  }
+    /**
+     * Resets whether this view has been logged as visible. This will result in the view being
+     * re-logged as visible once it is visible.
+     */
+    public void reset() {
+        viewLogged = false;
+    }
 }

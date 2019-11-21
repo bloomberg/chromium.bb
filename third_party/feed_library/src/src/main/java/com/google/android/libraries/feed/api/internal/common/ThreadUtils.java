@@ -10,24 +10,24 @@ import android.os.Looper;
 // TODO: Need to make this class file for Tiktok compliance.  This is mocked in a bunch
 // of tests which run on the main thread.
 public class ThreadUtils {
-  public ThreadUtils() {}
+    public ThreadUtils() {}
 
-  /** Returns {@code true} if this method is being called from the main/UI thread. */
-  public boolean isMainThread() {
-    return Looper.getMainLooper() == Looper.myLooper();
-  }
-
-  public void checkNotMainThread() {
-    check(!isMainThread(), "checkNotMainThread failed");
-  }
-
-  public void checkMainThread() {
-    check(isMainThread(), "checkMainThread failed");
-  }
-
-  protected void check(boolean condition, String message) {
-    if (!condition) {
-      throw new IllegalStateException(message);
+    /** Returns {@code true} if this method is being called from the main/UI thread. */
+    public boolean isMainThread() {
+        return Looper.getMainLooper() == Looper.myLooper();
     }
-  }
+
+    public void checkNotMainThread() {
+        check(!isMainThread(), "checkNotMainThread failed");
+    }
+
+    public void checkMainThread() {
+        check(isMainThread(), "checkMainThread failed");
+    }
+
+    protected void check(boolean condition, String message) {
+        if (!condition) {
+            throw new IllegalStateException(message);
+        }
+    }
 }

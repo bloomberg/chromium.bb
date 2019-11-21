@@ -16,78 +16,76 @@ import com.google.search.now.wire.feed.ContentIdProto.ContentId;
 import com.google.search.now.wire.feed.FeedActionProto.FeedAction;
 import com.google.search.now.wire.feed.FeedActionRequestProto.FeedActionRequest;
 import com.google.search.now.wire.feed.SemanticPropertiesProto.SemanticProperties;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 
 // A class that creates an ActionsRequest for uploading actions
 final class UploadableActionsRequestBuilder {
-  private Set<StreamUploadableAction> uploadableActions;
-  private ConsistencyToken token;
-  private final ProtocolAdapter protocolAdapter;
-  private final HashMap<String, byte[]> semanticPropertiesMap = new HashMap<>();
+    private Set<StreamUploadableAction> uploadableActions;
+    private ConsistencyToken token;
+    private final ProtocolAdapter protocolAdapter;
+    private final HashMap<String, byte[]> semanticPropertiesMap = new HashMap<>();
 
-  UploadableActionsRequestBuilder(ProtocolAdapter protocolAdapter) {
-    this.protocolAdapter = protocolAdapter;
-  }
-
-  UploadableActionsRequestBuilder setConsistencyToken(ConsistencyToken token) {
-    this.token = token;
-    return this;
-  }
-
-  boolean hasConsistencyToken() {
-    return token != null;
-  }
-
-  UploadableActionsRequestBuilder setActions(Set<StreamUploadableAction> uploadableActions) {
-    this.uploadableActions = uploadableActions;
-    return this;
-  }
-
-  UploadableActionsRequestBuilder setSemanticProperties(
-      List<SemanticPropertiesWithId> semanticPropertiesList) {
-    for (SemanticPropertiesWithId semanticProperties : semanticPropertiesList) {
-      semanticPropertiesMap.put(semanticProperties.contentId, semanticProperties.semanticData);
+    UploadableActionsRequestBuilder(ProtocolAdapter protocolAdapter) {
+        this.protocolAdapter = protocolAdapter;
     }
-    return this;
-  }
 
-  public ActionRequest build() {
-    ActionRequest.Builder requestBuilder =
-        ActionRequest.newBuilder()
-            .setRequestVersion(ActionRequest.RequestVersion.FEED_UPLOAD_ACTION);
-    FeedActionRequest.Builder feedActionRequestBuilder = FeedActionRequest.newBuilder();
-    if (uploadableActions != null) {
-      for (StreamUploadableAction action : uploadableActions) {
-        String contentId = action.getFeatureContentId();
-        ActionPayload payload = action.getPayload();
-        FeedAction.Builder feedAction =
-            FeedAction.newBuilder()
-                .setActionPayload(payload)
-                .setClientData(
-                    FeedAction.ClientData.newBuilder()
-                        .setTimestampSeconds(action.getTimestampSeconds())
-                        .build());
-        if (semanticPropertiesMap.containsKey(contentId)) {
-          feedAction.setSemanticProperties(
-              SemanticProperties.newBuilder()
-                  .setSemanticPropertiesData(
-                      ByteString.copyFrom(semanticPropertiesMap.get(contentId))));
+    UploadableActionsRequestBuilder setConsistencyToken(ConsistencyToken token) {
+        this.token = token;
+        return this;
+    }
+
+    boolean hasConsistencyToken() {
+        return token != null;
+    }
+
+    UploadableActionsRequestBuilder setActions(Set<StreamUploadableAction> uploadableActions) {
+        this.uploadableActions = uploadableActions;
+        return this;
+    }
+
+    UploadableActionsRequestBuilder setSemanticProperties(
+            List<SemanticPropertiesWithId> semanticPropertiesList) {
+        for (SemanticPropertiesWithId semanticProperties : semanticPropertiesList) {
+            semanticPropertiesMap.put(
+                    semanticProperties.contentId, semanticProperties.semanticData);
         }
-        Result<ContentId> contentIdResult = protocolAdapter.getWireContentId(contentId);
-        if (contentIdResult.isSuccessful()) {
-          feedAction.setContentId(contentIdResult.getValue());
-        }
-        feedActionRequestBuilder.addFeedAction(feedAction);
-      }
+        return this;
     }
-    if (hasConsistencyToken()) {
-      feedActionRequestBuilder.setConsistencyToken(token);
-    }
-    requestBuilder.setExtension(
-        FeedActionRequest.feedActionRequest, feedActionRequestBuilder.build());
 
-    return requestBuilder.build();
-  }
+    public ActionRequest build() {
+        ActionRequest.Builder requestBuilder = ActionRequest.newBuilder().setRequestVersion(
+                ActionRequest.RequestVersion.FEED_UPLOAD_ACTION);
+        FeedActionRequest.Builder feedActionRequestBuilder = FeedActionRequest.newBuilder();
+        if (uploadableActions != null) {
+            for (StreamUploadableAction action : uploadableActions) {
+                String contentId = action.getFeatureContentId();
+                ActionPayload payload = action.getPayload();
+                FeedAction.Builder feedAction =
+                        FeedAction.newBuilder().setActionPayload(payload).setClientData(
+                                FeedAction.ClientData.newBuilder()
+                                        .setTimestampSeconds(action.getTimestampSeconds())
+                                        .build());
+                if (semanticPropertiesMap.containsKey(contentId)) {
+                    feedAction.setSemanticProperties(
+                            SemanticProperties.newBuilder().setSemanticPropertiesData(
+                                    ByteString.copyFrom(semanticPropertiesMap.get(contentId))));
+                }
+                Result<ContentId> contentIdResult = protocolAdapter.getWireContentId(contentId);
+                if (contentIdResult.isSuccessful()) {
+                    feedAction.setContentId(contentIdResult.getValue());
+                }
+                feedActionRequestBuilder.addFeedAction(feedAction);
+            }
+        }
+        if (hasConsistencyToken()) {
+            feedActionRequestBuilder.setConsistencyToken(token);
+        }
+        requestBuilder.setExtension(
+                FeedActionRequest.feedActionRequest, feedActionRequestBuilder.build());
+
+        return requestBuilder.build();
+    }
 }

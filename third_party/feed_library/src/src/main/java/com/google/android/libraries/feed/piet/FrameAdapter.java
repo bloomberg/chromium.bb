@@ -6,9 +6,11 @@ package com.google.android.libraries.feed.piet;
 
 import android.view.View;
 import android.widget.LinearLayout;
+
 import com.google.search.now.ui.piet.PietAndroidSupport.ShardingControl;
 import com.google.search.now.ui.piet.PietProto.Frame;
 import com.google.search.now.ui.piet.PietProto.PietSharedState;
+
 import java.util.List;
 
 /**
@@ -19,34 +21,30 @@ import java.util.List;
  * and is managed by the host.
  */
 public interface FrameAdapter {
+    /**
+     * This version of bind will support the {@link ShardingControl}. Sharding allows only part of
+     * the frame to be rendered. When sharding is used, a frame is one or more LinearLayout
+     * containing a subset of the full set of slices defined for the frame.
+     */
+    void bindModel(Frame frame, int frameWidthPx,
+            /*@Nullable*/ ShardingControl shardingControl, List<PietSharedState> pietSharedStates);
 
-  /**
-   * This version of bind will support the {@link ShardingControl}. Sharding allows only part of the
-   * frame to be rendered. When sharding is used, a frame is one or more LinearLayout containing a
-   * subset of the full set of slices defined for the frame.
-   */
-  void bindModel(
-      Frame frame,
-      int frameWidthPx,
-      /*@Nullable*/ ShardingControl shardingControl,
-      List<PietSharedState> pietSharedStates);
+    void unbindModel();
 
-  void unbindModel();
+    /**
+     * Return the LinearLayout managed by this FrameAdapter. This method can be used to gain access
+     * to this view before {@code bindModel} is called.
+     */
+    LinearLayout getFrameContainer();
 
-  /**
-   * Return the LinearLayout managed by this FrameAdapter. This method can be used to gain access to
-   * this view before {@code bindModel} is called.
-   */
-  LinearLayout getFrameContainer();
+    /**
+     * Trigger any actions that occur on the view being hidden. This is also called by unbind(); it
+     * only needs to be called independently in cases where the view goes offscreen but stays bound.
+     * Piet hide/show action handling is idempotent, so calling this multiple times in a row will
+     * only trigger each action once.
+     */
+    void triggerHideActions();
 
-  /**
-   * Trigger any actions that occur on the view being hidden. This is also called by unbind(); it
-   * only needs to be called independently in cases where the view goes offscreen but stays bound.
-   * Piet hide/show action handling is idempotent, so calling this multiple times in a row will only
-   * trigger each action once.
-   */
-  void triggerHideActions();
-
-  /** Trigger all visibility-related actions, filtered on the actual visibility of the view. */
-  void triggerViewActions(View viewport);
+    /** Trigger all visibility-related actions, filtered on the actual visibility of the view. */
+    void triggerViewActions(View viewport);
 }

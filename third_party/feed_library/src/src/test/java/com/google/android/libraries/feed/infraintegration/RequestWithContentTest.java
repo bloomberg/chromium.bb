@@ -11,6 +11,7 @@ import com.google.android.libraries.feed.api.internal.modelprovider.ModelProvide
 import com.google.android.libraries.feed.api.internal.modelprovider.ModelProvider.State;
 import com.google.android.libraries.feed.common.testing.InfraIntegrationScope;
 import com.google.android.libraries.feed.common.testing.SessionTestUtils;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -20,70 +21,71 @@ import org.robolectric.RobolectricTestRunner;
 /** Tests the REQUEST_WITH_CONTENT behavior for creating a new session. */
 @RunWith(RobolectricTestRunner.class)
 public final class RequestWithContentTest {
-  private final SessionTestUtils utils = new SessionTestUtils(RequestBehavior.REQUEST_WITH_CONTENT);
-  private final InfraIntegrationScope scope = utils.getScope();
+    private final SessionTestUtils utils =
+            new SessionTestUtils(RequestBehavior.REQUEST_WITH_CONTENT);
+    private final InfraIntegrationScope scope = utils.getScope();
 
-  @Before
-  public void setUp() {
-    utils.populateHead();
-  }
+    @Before
+    public void setUp() {
+        utils.populateHead();
+    }
 
-  @After
-  public void tearDown() {
-    utils.assertWorkComplete();
-  }
+    @After
+    public void tearDown() {
+        utils.assertWorkComplete();
+    }
 
-  @Test
-  public void test_hasContentWithRequest_shouldShowContentImmediatelyAndAppend() {
-    long delayMs = utils.startOutstandingRequest();
+    @Test
+    public void test_hasContentWithRequest_shouldShowContentImmediatelyAndAppend() {
+        long delayMs = utils.startOutstandingRequest();
 
-    ModelProvider modelProvider = utils.createNewSession();
-    assertThat(modelProvider.getCurrentState()).isEqualTo(State.READY);
-    utils.assertHeadContent(modelProvider.getAllRootChildren());
+        ModelProvider modelProvider = utils.createNewSession();
+        assertThat(modelProvider.getCurrentState()).isEqualTo(State.READY);
+        utils.assertHeadContent(modelProvider.getAllRootChildren());
 
-    // REQUEST_2 items should be appended.
-    scope.getFakeClock().advance(delayMs);
-    utils.assertAppendedContent(modelProvider.getAllRootChildren());
-  }
+        // REQUEST_2 items should be appended.
+        scope.getFakeClock().advance(delayMs);
+        utils.assertAppendedContent(modelProvider.getAllRootChildren());
+    }
 
-  @Test
-  public void test_noContentWithRequest_shouldShowZeroState() {
-    scope.getAppLifecycleListener().onClearAll();
-    long delayMs = utils.startOutstandingRequest();
+    @Test
+    public void test_noContentWithRequest_shouldShowZeroState() {
+        scope.getAppLifecycleListener().onClearAll();
+        long delayMs = utils.startOutstandingRequest();
 
-    ModelProvider modelProvider = utils.createNewSession();
-    assertThat(modelProvider.getCurrentState()).isEqualTo(State.READY);
-    assertThat(modelProvider.getAllRootChildren()).isEmpty();
+        ModelProvider modelProvider = utils.createNewSession();
+        assertThat(modelProvider.getCurrentState()).isEqualTo(State.READY);
+        assertThat(modelProvider.getAllRootChildren()).isEmpty();
 
-    // REQUEST_2 items should not be appended.
-    scope.getFakeClock().advance(delayMs);
-    assertThat(modelProvider.getAllRootChildren()).isEmpty();
-  }
+        // REQUEST_2 items should not be appended.
+        scope.getFakeClock().advance(delayMs);
+        assertThat(modelProvider.getAllRootChildren()).isEmpty();
+    }
 
-  @Test
-  public void test_noContentNoRequest_shouldShowZeroState() {
-    scope.getAppLifecycleListener().onClearAll();
-    long delayMs = utils.queueRequest();
+    @Test
+    public void test_noContentNoRequest_shouldShowZeroState() {
+        scope.getAppLifecycleListener().onClearAll();
+        long delayMs = utils.queueRequest();
 
-    ModelProvider modelProvider = utils.createNewSession();
-    assertThat(modelProvider.getCurrentState()).isEqualTo(State.READY);
-    assertThat(modelProvider.getAllRootChildren()).isEmpty();
+        ModelProvider modelProvider = utils.createNewSession();
+        assertThat(modelProvider.getCurrentState()).isEqualTo(State.READY);
+        assertThat(modelProvider.getAllRootChildren()).isEmpty();
 
-    // REQUEST_2 items should not be appended.
-    scope.getFakeClock().advance(delayMs);
-    assertThat(modelProvider.getAllRootChildren()).isEmpty();
-  }
+        // REQUEST_2 items should not be appended.
+        scope.getFakeClock().advance(delayMs);
+        assertThat(modelProvider.getAllRootChildren()).isEmpty();
+    }
 
-  @Test
-  public void test_hasContentNoRequest_shouldShowContentImmediatelyAndAppend() {
-    long delayMs = utils.queueRequest();
+    @Test
+    public void test_hasContentNoRequest_shouldShowContentImmediatelyAndAppend() {
+        long delayMs = utils.queueRequest();
 
-    ModelProvider modelProvider = utils.createNewSession();
-    assertThat(modelProvider.getCurrentState()).isEqualTo(State.READY);
-    utils.assertHeadContent(modelProvider.getAllRootChildren());
+        ModelProvider modelProvider = utils.createNewSession();
+        assertThat(modelProvider.getCurrentState()).isEqualTo(State.READY);
+        utils.assertHeadContent(modelProvider.getAllRootChildren());
 
-    // REQUEST_2 items should be appended.
-    scope.getFakeClock().advance(delayMs);
-    utils.assertAppendedContent(modelProvider.getAllRootChildren());
-  }
+        // REQUEST_2 items should be appended.
+        scope.getFakeClock().advance(delayMs);
+        utils.assertAppendedContent(modelProvider.getAllRootChildren());
+    }
 }

@@ -10,21 +10,21 @@ import com.google.search.now.ui.stream.StreamStructureProto.PietContent;
 import com.google.search.now.wire.feed.ContentIdProto.ContentId;
 import com.google.search.now.wire.feed.DataOperationProto.DataOperation;
 import com.google.search.now.wire.feed.DataOperationProto.DataOperation.Operation;
+
 import java.util.Collections;
 import java.util.List;
 
 /** Implementation of {@link RequiredContentAdapter} that identifies dependent PietSharedStates. */
 public final class PietRequiredContentAdapter implements RequiredContentAdapter {
-  @Override
-  public List<ContentId> determineRequiredContentIds(DataOperation dataOperation) {
-    if (dataOperation.getOperation() != Operation.UPDATE_OR_APPEND) {
-      return Collections.emptyList();
-    }
+    @Override
+    public List<ContentId> determineRequiredContentIds(DataOperation dataOperation) {
+        if (dataOperation.getOperation() != Operation.UPDATE_OR_APPEND) {
+            return Collections.emptyList();
+        }
 
-    return dataOperation
-        .getFeature()
-        .getExtension(Content.contentExtension)
-        .getExtension(PietContent.pietContentExtension)
-        .getPietSharedStatesList();
-  }
+        return dataOperation.getFeature()
+                .getExtension(Content.contentExtension)
+                .getExtension(PietContent.pietContentExtension)
+                .getPietSharedStatesList();
+    }
 }

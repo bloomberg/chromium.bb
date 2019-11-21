@@ -14,31 +14,31 @@ import android.os.SystemClock;
  * prefer to simply inject a {@link Clock}.
  */
 public class SystemClockImpl implements Clock {
-  @Override
-  public long currentTimeMillis() {
-    return System.currentTimeMillis();
-  }
-
-  @Override
-  public long elapsedRealtime() {
-    return SystemClock.elapsedRealtime();
-  }
-
-  @Override
-  public long elapsedRealtimeNanos() {
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-      try {
-        return SystemClock.elapsedRealtimeNanos();
-      } catch (NoSuchMethodError ignoredError) {
-        // Some vendors have a SystemClock that doesn't contain the method even though the SDK
-        // should contain it. Fall through to the alternate version.
-      }
+    @Override
+    public long currentTimeMillis() {
+        return System.currentTimeMillis();
     }
-    return SystemClock.elapsedRealtime() * NS_IN_MS;
-  }
 
-  @Override
-  public long uptimeMillis() {
-    return SystemClock.uptimeMillis();
-  }
+    @Override
+    public long elapsedRealtime() {
+        return SystemClock.elapsedRealtime();
+    }
+
+    @Override
+    public long elapsedRealtimeNanos() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            try {
+                return SystemClock.elapsedRealtimeNanos();
+            } catch (NoSuchMethodError ignoredError) {
+                // Some vendors have a SystemClock that doesn't contain the method even though the
+                // SDK should contain it. Fall through to the alternate version.
+            }
+        }
+        return SystemClock.elapsedRealtime() * NS_IN_MS;
+    }
+
+    @Override
+    public long uptimeMillis() {
+        return SystemClock.uptimeMillis();
+    }
 }

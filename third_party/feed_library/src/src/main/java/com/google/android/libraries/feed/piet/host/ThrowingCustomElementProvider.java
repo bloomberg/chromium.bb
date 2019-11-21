@@ -5,6 +5,7 @@
 package com.google.android.libraries.feed.piet.host;
 
 import android.view.View;
+
 import com.google.search.now.ui.piet.ElementsProto.CustomElement;
 import com.google.search.now.ui.piet.ElementsProto.CustomElementData;
 
@@ -12,17 +13,17 @@ import com.google.search.now.ui.piet.ElementsProto.CustomElementData;
  * {@link CustomElementProvider} for implementations of Piet that do not use {@link CustomElement}.
  */
 public class ThrowingCustomElementProvider implements CustomElementProvider {
-  public ThrowingCustomElementProvider() {}
+    public ThrowingCustomElementProvider() {}
 
-  @Override
-  public View createCustomElement(CustomElementData customElementData) {
-    throw new UnsupportedOperationException(
-        "CustomElements are not supported by this implementation!");
-  }
+    @Override
+    public View createCustomElement(CustomElementData customElementData) {
+        throw new UnsupportedOperationException(
+                "CustomElements are not supported by this implementation!");
+    }
 
-  @Override
-  public void releaseCustomView(View customElementView, CustomElementData customElementData) {
-    throw new UnsupportedOperationException(
-        "CustomElements are not supported by this implementation!");
-  }
+    @Override
+    public void releaseCustomView(View customElementView, CustomElementData customElementData) {
+        throw new UnsupportedOperationException(
+                "CustomElements are not supported by this implementation!");
+    }
 }

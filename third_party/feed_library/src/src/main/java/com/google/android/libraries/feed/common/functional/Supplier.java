@@ -10,6 +10,6 @@ package com.google.android.libraries.feed.common.functional;
  * <p>This interface should be used in a similar way to Java 8's Supplier interface.
  */
 public interface Supplier<T> {
-  /** Gets a result. */
-  T get();
+    /** Gets a result. */
+    T get();
 }

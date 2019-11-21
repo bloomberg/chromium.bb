@@ -11,36 +11,34 @@ import com.google.android.libraries.feed.piet.host.LogDataCallback;
 
 /** Wrapper class to hold all host-related objects. */
 public class HostProviders {
-  private final AssetProvider assetProvider;
-  private final CustomElementProvider customElementProvider;
-  private final HostBindingProvider hostBindingProvider;
-  /*@Nullable*/ private final LogDataCallback logDataCallback;
+    private final AssetProvider assetProvider;
+    private final CustomElementProvider customElementProvider;
+    private final HostBindingProvider hostBindingProvider;
+    /*@Nullable*/ private final LogDataCallback logDataCallback;
 
-  public HostProviders(
-      AssetProvider assetProvider,
-      CustomElementProvider customElementProvider,
-      HostBindingProvider hostBindingProvider,
-      /*@Nullable*/ LogDataCallback logDataCallback) {
-    this.assetProvider = assetProvider;
-    this.customElementProvider = customElementProvider;
-    this.hostBindingProvider = hostBindingProvider;
-    this.logDataCallback = logDataCallback;
-  }
+    public HostProviders(AssetProvider assetProvider, CustomElementProvider customElementProvider,
+            HostBindingProvider hostBindingProvider,
+            /*@Nullable*/ LogDataCallback logDataCallback) {
+        this.assetProvider = assetProvider;
+        this.customElementProvider = customElementProvider;
+        this.hostBindingProvider = hostBindingProvider;
+        this.logDataCallback = logDataCallback;
+    }
 
-  public AssetProvider getAssetProvider() {
-    return assetProvider;
-  }
+    public AssetProvider getAssetProvider() {
+        return assetProvider;
+    }
 
-  public CustomElementProvider getCustomElementProvider() {
-    return customElementProvider;
-  }
+    public CustomElementProvider getCustomElementProvider() {
+        return customElementProvider;
+    }
 
-  public HostBindingProvider getHostBindingProvider() {
-    return hostBindingProvider;
-  }
+    public HostBindingProvider getHostBindingProvider() {
+        return hostBindingProvider;
+    }
 
-  /*@Nullable*/
-  public LogDataCallback getLogDataCallback() {
-    return logDataCallback;
-  }
+    /*@Nullable*/
+    public LogDataCallback getLogDataCallback() {
+        return logDataCallback;
+    }
 }

@@ -16,26 +16,25 @@ import com.google.android.libraries.feed.api.client.knowncontent.ContentMetadata
  * </ol>
  */
 public interface ActionPeformerApi {
+    /** Opens the given URL. */
+    void openUrl(String url);
 
-  /** Opens the given URL. */
-  void openUrl(String url);
+    /** Opens the given URL in incognito mode. */
+    void openUrlInIncognitoMode(String url);
 
-  /** Opens the given URL in incognito mode. */
-  void openUrlInIncognitoMode(String url);
+    /** Opens the given URL in a new tab. */
+    void openUrlInNewTab(String url);
 
-  /** Opens the given URL in a new tab. */
-  void openUrlInNewTab(String url);
+    /** Opens the given URL in a new window. */
+    void openUrlInNewWindow(String url);
 
-  /** Opens the given URL in a new window. */
-  void openUrlInNewWindow(String url);
+    /**
+     * Downloads the given url.
+     *
+     * @param contentMetadata The {@link ContentMetadata} defining the content to be downloaded.
+     */
+    void downloadUrl(ContentMetadata contentMetadata);
 
-  /**
-   * Downloads the given url.
-   *
-   * @param contentMetadata The {@link ContentMetadata} defining the content to be downloaded.
-   */
-  void downloadUrl(ContentMetadata contentMetadata);
-
-  /** Opens the Google Product Help page for the Feed. */
-  void learnMore();
+    /** Opens the Google Product Help page for the Feed. */
+    void learnMore();
 }

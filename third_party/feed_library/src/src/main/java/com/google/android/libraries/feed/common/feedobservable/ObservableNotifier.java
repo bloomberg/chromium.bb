@@ -8,13 +8,12 @@ import com.google.android.libraries.feed.common.functional.Consumer;
 
 /** A FeedObservable implementation that allows calling a notify method on all observers. */
 public class ObservableNotifier<ObserverT> extends FeedObservable<ObserverT> {
-
-  /** Calls all the registered listeners using the given listener method. */
-  public void notifyListeners(Consumer<ObserverT> listenerMethod) {
-    synchronized (observers) {
-      for (ObserverT listener : observers) {
-        listenerMethod.accept(listener);
-      }
+    /** Calls all the registered listeners using the given listener method. */
+    public void notifyListeners(Consumer<ObserverT> listenerMethod) {
+        synchronized (observers) {
+            for (ObserverT listener : observers) {
+                listenerMethod.accept(listener);
+            }
+        }
     }
-  }
 }

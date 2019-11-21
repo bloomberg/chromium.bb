@@ -18,38 +18,38 @@ import org.robolectric.RobolectricTestRunner;
 /** Tests for {@link OneShotVisibilityLoggingListener}. */
 @RunWith(RobolectricTestRunner.class)
 public class OneShotVisibilityLoggingListenerTest {
+    @Mock
+    private LoggingListener loggingListener;
 
-  @Mock private LoggingListener loggingListener;
+    private OneShotVisibilityLoggingListener oneShotVisibilityLoggingListener;
 
-  private OneShotVisibilityLoggingListener oneShotVisibilityLoggingListener;
+    @Before
+    public void setUp() {
+        initMocks(this);
+        oneShotVisibilityLoggingListener = new OneShotVisibilityLoggingListener(loggingListener);
+    }
 
-  @Before
-  public void setUp() {
-    initMocks(this);
-    oneShotVisibilityLoggingListener = new OneShotVisibilityLoggingListener(loggingListener);
-  }
+    @Test
+    public void testOnViewVisible() {
+        oneShotVisibilityLoggingListener.onViewVisible();
 
-  @Test
-  public void testOnViewVisible() {
-    oneShotVisibilityLoggingListener.onViewVisible();
+        verify(loggingListener).onViewVisible();
+    }
 
-    verify(loggingListener).onViewVisible();
-  }
+    @Test
+    public void testOnViewVisible_onlyNotifiesListenerOnce() {
+        oneShotVisibilityLoggingListener.onViewVisible();
+        reset(loggingListener);
 
-  @Test
-  public void testOnViewVisible_onlyNotifiesListenerOnce() {
-    oneShotVisibilityLoggingListener.onViewVisible();
-    reset(loggingListener);
+        oneShotVisibilityLoggingListener.onViewVisible();
 
-    oneShotVisibilityLoggingListener.onViewVisible();
+        verify(loggingListener, never()).onViewVisible();
+    }
 
-    verify(loggingListener, never()).onViewVisible();
-  }
+    @Test
+    public void testOnContentClicked() {
+        oneShotVisibilityLoggingListener.onContentClicked();
 
-  @Test
-  public void testOnContentClicked() {
-    oneShotVisibilityLoggingListener.onContentClicked();
-
-    verify(loggingListener).onContentClicked();
-  }
+        verify(loggingListener).onContentClicked();
+    }
 }

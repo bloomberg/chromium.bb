@@ -9,51 +9,54 @@ import com.google.android.libraries.feed.testing.host.offlineindicator.FakeOffli
 
 /** Fake used for tests using the {@link StreamOfflineMonitor}. */
 public class FakeStreamOfflineMonitor extends StreamOfflineMonitor {
+    private final FakeOfflineIndicatorApi fakeIndicatorApi;
+    private boolean offlineStatusRequested = false;
 
-  private final FakeOfflineIndicatorApi fakeIndicatorApi;
-  private boolean offlineStatusRequested = false;
+    /**
+     * Creates a {@link FakeStreamOfflineMonitor} with the given {@link FakeOfflineIndicatorApi}.
+     */
+    public static FakeStreamOfflineMonitor createWithOfflineIndicatorApi(
+            FakeOfflineIndicatorApi offlineIndicatorApi) {
+        return new FakeStreamOfflineMonitor(offlineIndicatorApi);
+    }
 
-  /** Creates a {@link FakeStreamOfflineMonitor} with the given {@link FakeOfflineIndicatorApi}. */
-  public static FakeStreamOfflineMonitor createWithOfflineIndicatorApi(
-      FakeOfflineIndicatorApi offlineIndicatorApi) {
-    return new FakeStreamOfflineMonitor(offlineIndicatorApi);
-  }
+    /**
+     * Creates a {@link FakeStreamOfflineMonitor} with a default {@link FakeOfflineIndicatorApi}.
+     */
+    public static FakeStreamOfflineMonitor create() {
+        return new FakeStreamOfflineMonitor(FakeOfflineIndicatorApi.createWithNoOfflineUrls());
+    }
 
-  /** Creates a {@link FakeStreamOfflineMonitor} with a default {@link FakeOfflineIndicatorApi}. */
-  public static FakeStreamOfflineMonitor create() {
-    return new FakeStreamOfflineMonitor(FakeOfflineIndicatorApi.createWithNoOfflineUrls());
-  }
+    private FakeStreamOfflineMonitor(FakeOfflineIndicatorApi offlineIndicatorApi) {
+        super(offlineIndicatorApi);
+        this.fakeIndicatorApi = offlineIndicatorApi;
+    }
 
-  private FakeStreamOfflineMonitor(FakeOfflineIndicatorApi offlineIndicatorApi) {
-    super(offlineIndicatorApi);
-    this.fakeIndicatorApi = offlineIndicatorApi;
-  }
+    /** Sets the offline status for the given {@code url}. */
+    public void setOfflineStatus(String url, boolean isAvailable) {
+        // Check if the url is available to marks the url as something to request from the
+        // OfflineIndicatorApi.
+        isAvailableOffline(url);
 
-  /** Sets the offline status for the given {@code url}. */
-  public void setOfflineStatus(String url, boolean isAvailable) {
-    // Check if the url is available to marks the url as something to request from the
-    // OfflineIndicatorApi.
-    isAvailableOffline(url);
+        // Sets the status of the url with the api, which is the source of truth.
+        fakeIndicatorApi.setOfflineStatus(url, isAvailable);
 
-    // Sets the status of the url with the api, which is the source of truth.
-    fakeIndicatorApi.setOfflineStatus(url, isAvailable);
+        // Triggers notification to any current listeners, namely the superclass of this fake.
+        requestOfflineStatusForNewContent();
+    }
 
-    // Triggers notification to any current listeners, namely the superclass of this fake.
-    requestOfflineStatusForNewContent();
-  }
+    /** Returns the count of how many observers there are for offline status. */
+    public int getOfflineStatusConsumerCount() {
+        return offlineStatusConsumersMap.size();
+    }
 
-  /** Returns the count of how many observers there are for offline status. */
-  public int getOfflineStatusConsumerCount() {
-    return offlineStatusConsumersMap.size();
-  }
+    @Override
+    public void requestOfflineStatusForNewContent() {
+        offlineStatusRequested = true;
+        super.requestOfflineStatusForNewContent();
+    }
 
-  @Override
-  public void requestOfflineStatusForNewContent() {
-    offlineStatusRequested = true;
-    super.requestOfflineStatusForNewContent();
-  }
-
-  public boolean isOfflineStatusRequested() {
-    return offlineStatusRequested;
-  }
+    public boolean isOfflineStatusRequested() {
+        return offlineStatusRequested;
+    }
 }

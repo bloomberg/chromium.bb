@@ -5,9 +5,9 @@ package com.google.android.libraries.feed.sharedstream.scroll;
 
 /** Events for scrolling. */
 public interface ScrollEvents {
-  /**
-   * Notifies of the delta change of the scroll action and the ms timestamp of when the action
-   * finished.
-   */
-  void onScrollEvent(int scrollAmount, long scrollEndTimestampMs);
+    /**
+     * Notifies of the delta change of the scroll action and the ms timestamp of when the action
+     * finished.
+     */
+    void onScrollEvent(int scrollAmount, long scrollEndTimestampMs);
 }

@@ -6,10 +6,9 @@ package com.google.android.libraries.feed.api.host.stream;
 
 /** The SnackbarCallbackApi is a Callback class for Snackbar events. */
 public interface SnackbarCallbackApi {
+    /** Called when the user clicks the action button on the snackbar. */
+    void onDismissedWithAction();
 
-  /** Called when the user clicks the action button on the snackbar. */
-  void onDismissedWithAction();
-
-  /** Called when the snackbar is dismissed by timeout or UI environment change. */
-  void onDismissNoAction();
+    /** Called when the snackbar is dismissed by timeout or UI environment change. */
+    void onDismissNoAction();
 }

@@ -16,6 +16,7 @@ import com.google.search.now.wire.feed.DataOperationProto.DataOperation;
 import com.google.search.now.wire.feed.FeatureProto.Feature;
 import com.google.search.now.wire.feed.FeatureProto.Feature.RenderableUnit;
 import com.google.search.now.wire.feed.FeedResponseProto.FeedResponseMetadata;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -24,74 +25,73 @@ import org.robolectric.RobolectricTestRunner;
 /** Tests for {@link FeatureDataOperationTransformer}. */
 @RunWith(RobolectricTestRunner.class)
 public class FeatureDataOperationTransformerTest {
+    private static final String CONTENT_ID = "123";
+    private DataOperation.Builder dataOperation;
+    private StreamDataOperation.Builder dataOperationBuilder;
+    private StreamFeature streamFeature;
+    private FeatureDataOperationTransformer featureDataOperationTransformer;
 
-  private static final String CONTENT_ID = "123";
-  private DataOperation.Builder dataOperation;
-  private StreamDataOperation.Builder dataOperationBuilder;
-  private StreamFeature streamFeature;
-  private FeatureDataOperationTransformer featureDataOperationTransformer;
+    @Before
+    public void setUp() {
+        featureDataOperationTransformer = new FeatureDataOperationTransformer();
+        dataOperation = DataOperation.newBuilder();
+        streamFeature = StreamFeature.newBuilder().setContentId(CONTENT_ID).build();
+        dataOperationBuilder = StreamDataOperation.newBuilder().setStreamPayload(
+                StreamPayload.newBuilder().setStreamFeature(streamFeature));
+    }
 
-  @Before
-  public void setUp() {
-    featureDataOperationTransformer = new FeatureDataOperationTransformer();
-    dataOperation = DataOperation.newBuilder();
-    streamFeature = StreamFeature.newBuilder().setContentId(CONTENT_ID).build();
-    dataOperationBuilder =
-        StreamDataOperation.newBuilder()
-            .setStreamPayload(StreamPayload.newBuilder().setStreamFeature(streamFeature));
-  }
+    @Test
+    public void testTransformSetStream() {
+        Feature feature = Feature.newBuilder()
+                                  .setRenderableUnit(RenderableUnit.STREAM)
+                                  .setExtension(Stream.streamExtension, Stream.getDefaultInstance())
+                                  .build();
+        dataOperation.setFeature(feature);
+        StreamFeature expectedStreamFeature =
+                streamFeature.toBuilder().setStream(Stream.getDefaultInstance()).build();
 
-  @Test
-  public void testTransformSetStream() {
-    Feature feature =
-        Feature.newBuilder()
-            .setRenderableUnit(RenderableUnit.STREAM)
-            .setExtension(Stream.streamExtension, Stream.getDefaultInstance())
-            .build();
-    dataOperation.setFeature(feature);
-    StreamFeature expectedStreamFeature =
-        streamFeature.toBuilder().setStream(Stream.getDefaultInstance()).build();
+        StreamDataOperation.Builder operation =
+                featureDataOperationTransformer.transform(dataOperation.build(),
+                        dataOperationBuilder, FeedResponseMetadata.getDefaultInstance());
 
-    StreamDataOperation.Builder operation =
-        featureDataOperationTransformer.transform(
-            dataOperation.build(), dataOperationBuilder, FeedResponseMetadata.getDefaultInstance());
+        assertThat(operation.getStreamPayload().getStreamFeature())
+                .isEqualTo(expectedStreamFeature);
+    }
 
-    assertThat(operation.getStreamPayload().getStreamFeature()).isEqualTo(expectedStreamFeature);
-  }
+    @Test
+    public void testTransformSetCard() {
+        Feature feature = Feature.newBuilder()
+                                  .setRenderableUnit(RenderableUnit.CARD)
+                                  .setExtension(Card.cardExtension, Card.getDefaultInstance())
+                                  .build();
+        dataOperation.setFeature(feature);
+        StreamFeature expectedStreamFeature =
+                streamFeature.toBuilder().setCard(Card.getDefaultInstance()).build();
 
-  @Test
-  public void testTransformSetCard() {
-    Feature feature =
-        Feature.newBuilder()
-            .setRenderableUnit(RenderableUnit.CARD)
-            .setExtension(Card.cardExtension, Card.getDefaultInstance())
-            .build();
-    dataOperation.setFeature(feature);
-    StreamFeature expectedStreamFeature =
-        streamFeature.toBuilder().setCard(Card.getDefaultInstance()).build();
+        StreamDataOperation.Builder operation =
+                featureDataOperationTransformer.transform(dataOperation.build(),
+                        dataOperationBuilder, FeedResponseMetadata.getDefaultInstance());
 
-    StreamDataOperation.Builder operation =
-        featureDataOperationTransformer.transform(
-            dataOperation.build(), dataOperationBuilder, FeedResponseMetadata.getDefaultInstance());
+        assertThat(operation.getStreamPayload().getStreamFeature())
+                .isEqualTo(expectedStreamFeature);
+    }
 
-    assertThat(operation.getStreamPayload().getStreamFeature()).isEqualTo(expectedStreamFeature);
-  }
+    @Test
+    public void testTransformSetCluster() {
+        Feature feature =
+                Feature.newBuilder()
+                        .setRenderableUnit(RenderableUnit.CLUSTER)
+                        .setExtension(Cluster.clusterExtension, Cluster.getDefaultInstance())
+                        .build();
+        dataOperation.setFeature(feature);
+        StreamFeature expectedStreamFeature =
+                streamFeature.toBuilder().setCluster(Cluster.getDefaultInstance()).build();
 
-  @Test
-  public void testTransformSetCluster() {
-    Feature feature =
-        Feature.newBuilder()
-            .setRenderableUnit(RenderableUnit.CLUSTER)
-            .setExtension(Cluster.clusterExtension, Cluster.getDefaultInstance())
-            .build();
-    dataOperation.setFeature(feature);
-    StreamFeature expectedStreamFeature =
-        streamFeature.toBuilder().setCluster(Cluster.getDefaultInstance()).build();
+        StreamDataOperation.Builder operation =
+                featureDataOperationTransformer.transform(dataOperation.build(),
+                        dataOperationBuilder, FeedResponseMetadata.getDefaultInstance());
 
-    StreamDataOperation.Builder operation =
-        featureDataOperationTransformer.transform(
-            dataOperation.build(), dataOperationBuilder, FeedResponseMetadata.getDefaultInstance());
-
-    assertThat(operation.getStreamPayload().getStreamFeature()).isEqualTo(expectedStreamFeature);
-  }
+        assertThat(operation.getStreamPayload().getStreamFeature())
+                .isEqualTo(expectedStreamFeature);
+    }
 }

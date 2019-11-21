@@ -16,37 +16,34 @@ import com.google.android.libraries.feed.common.time.TimingUtils;
  * com.google.android.libraries.feed.api.internal.sessionmanager.FeedSessionManager}.
  */
 public final class SessionFactory {
-  private final Store store;
-  private final TaskQueue taskQueue;
-  private final TimingUtils timingUtils;
-  private final ThreadUtils threadUtils;
-  private final boolean useTimeScheduler;
-  private final boolean limitPagingUpdates;
-  private final boolean limitPagingUpdatesInHead;
+    private final Store store;
+    private final TaskQueue taskQueue;
+    private final TimingUtils timingUtils;
+    private final ThreadUtils threadUtils;
+    private final boolean useTimeScheduler;
+    private final boolean limitPagingUpdates;
+    private final boolean limitPagingUpdatesInHead;
 
-  public SessionFactory(
-      Store store,
-      TaskQueue taskQueue,
-      TimingUtils timingUtils,
-      ThreadUtils threadUtils,
-      Configuration config) {
-    this.store = store;
-    this.taskQueue = taskQueue;
-    this.timingUtils = timingUtils;
-    this.threadUtils = threadUtils;
-    useTimeScheduler = config.getValueOrDefault(ConfigKey.USE_TIMEOUT_SCHEDULER, false);
-    limitPagingUpdates = config.getValueOrDefault(ConfigKey.LIMIT_PAGE_UPDATES, true);
-    limitPagingUpdatesInHead =
-        config.getValueOrDefault(ConfigKey.LIMIT_PAGE_UPDATES_IN_HEAD, false);
-  }
+    public SessionFactory(Store store, TaskQueue taskQueue, TimingUtils timingUtils,
+            ThreadUtils threadUtils, Configuration config) {
+        this.store = store;
+        this.taskQueue = taskQueue;
+        this.timingUtils = timingUtils;
+        this.threadUtils = threadUtils;
+        useTimeScheduler = config.getValueOrDefault(ConfigKey.USE_TIMEOUT_SCHEDULER, false);
+        limitPagingUpdates = config.getValueOrDefault(ConfigKey.LIMIT_PAGE_UPDATES, true);
+        limitPagingUpdatesInHead =
+                config.getValueOrDefault(ConfigKey.LIMIT_PAGE_UPDATES_IN_HEAD, false);
+    }
 
-  public InitializableSession getSession() {
-    return useTimeScheduler
-        ? new TimeoutSessionImpl(store, limitPagingUpdates, taskQueue, timingUtils, threadUtils)
-        : new SessionImpl(store, limitPagingUpdates, taskQueue, timingUtils, threadUtils);
-  }
+    public InitializableSession getSession() {
+        return useTimeScheduler
+                ? new TimeoutSessionImpl(
+                        store, limitPagingUpdates, taskQueue, timingUtils, threadUtils)
+                : new SessionImpl(store, limitPagingUpdates, taskQueue, timingUtils, threadUtils);
+    }
 
-  public HeadSessionImpl getHeadSession() {
-    return new HeadSessionImpl(store, timingUtils, limitPagingUpdatesInHead);
-  }
+    public HeadSessionImpl getHeadSession() {
+        return new HeadSessionImpl(store, timingUtils, limitPagingUpdatesInHead);
+    }
 }

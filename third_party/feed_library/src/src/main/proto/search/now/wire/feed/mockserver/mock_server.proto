@@ -6,8 +6,7 @@ syntax = "proto2";
 
 package search.now.wire.feed.mockserver;
 
-option optimize_for=LITE_RUNTIME;
-
+option optimize_for = LITE_RUNTIME;
 
 import "src/main/proto/search/now/wire/feed/response.proto";
 option java_package = "com.google.search.now.wire.feed.mockserver";

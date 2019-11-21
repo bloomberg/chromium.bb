@@ -10,7 +10,7 @@ import "src/main/proto/search/now/wire/feed/response.proto";
 
 package search.now.wire.feed;
 
-option optimize_for=LITE_RUNTIME;
+option optimize_for = LITE_RUNTIME;
 
 option java_package = "com.google.search.now.wire.feed";
 option java_outer_classname = "FeedResponseProto";
@@ -19,9 +19,7 @@ option java_outer_classname = "FeedResponseProto";
 // similar to database commands.  Individual data operations contain all the
 // necessary information to manipulate the client state.
 message FeedResponse {
-  extend Response {
-    optional FeedResponse feed_response = 1000;
-  }
+  extend Response { optional FeedResponse feed_response = 1000; }
   // DataOperations are applied on the client in order in which they are
   // received.
   repeated DataOperation data_operation = 1;

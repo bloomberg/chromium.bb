@@ -11,40 +11,38 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewGroup.MarginLayoutParams;
 import android.widget.FrameLayout;
+
 import com.google.android.libraries.feed.api.host.stream.CardConfiguration;
 import com.google.android.libraries.feed.common.ui.LayoutUtils;
 
 /** {@link android.support.v7.widget.RecyclerView.ViewHolder} for no content card. */
 public class NoContentViewHolder extends FeedViewHolder {
-  private final CardConfiguration cardConfiguration;
-  private final View view;
+    private final CardConfiguration cardConfiguration;
+    private final View view;
 
-  public NoContentViewHolder(
-      CardConfiguration cardConfiguration, Context context, FrameLayout frameLayout) {
-    super(frameLayout);
-    this.cardConfiguration = cardConfiguration;
-    view = LayoutInflater.from(context).inflate(R.layout.no_content, frameLayout);
-  }
-
-  public void bind() {
-    ViewGroup.LayoutParams layoutParams = itemView.getLayoutParams();
-    if (layoutParams == null) {
-      layoutParams = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
-      itemView.setLayoutParams(layoutParams);
-    } else if (!(layoutParams instanceof MarginLayoutParams)) {
-      layoutParams = new LayoutParams(layoutParams);
-      itemView.setLayoutParams(layoutParams);
+    public NoContentViewHolder(
+            CardConfiguration cardConfiguration, Context context, FrameLayout frameLayout) {
+        super(frameLayout);
+        this.cardConfiguration = cardConfiguration;
+        view = LayoutInflater.from(context).inflate(R.layout.no_content, frameLayout);
     }
-    LayoutUtils.setMarginsRelative(
-        (MarginLayoutParams) layoutParams,
-        cardConfiguration.getCardStartMargin(),
-        0,
-        cardConfiguration.getCardEndMargin(),
-        cardConfiguration.getCardBottomMargin());
 
-    view.setBackground(cardConfiguration.getCardBackground());
-  }
+    public void bind() {
+        ViewGroup.LayoutParams layoutParams = itemView.getLayoutParams();
+        if (layoutParams == null) {
+            layoutParams = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
+            itemView.setLayoutParams(layoutParams);
+        } else if (!(layoutParams instanceof MarginLayoutParams)) {
+            layoutParams = new LayoutParams(layoutParams);
+            itemView.setLayoutParams(layoutParams);
+        }
+        LayoutUtils.setMarginsRelative((MarginLayoutParams) layoutParams,
+                cardConfiguration.getCardStartMargin(), 0, cardConfiguration.getCardEndMargin(),
+                cardConfiguration.getCardBottomMargin());
 
-  @Override
-  public void unbind() {}
+        view.setBackground(cardConfiguration.getCardBackground());
+    }
+
+    @Override
+    public void unbind() {}
 }

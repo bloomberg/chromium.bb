@@ -6,7 +6,6 @@ package com.google.android.libraries.feed.api.client.requestmanager;
 
 /** Creates and issues requests to the server. */
 public interface RequestManager {
-
-  /** Issues a request to refresh the entire feed. */
-  void triggerScheduledRefresh();
+    /** Issues a request to refresh the entire feed. */
+    void triggerScheduledRefresh();
 }

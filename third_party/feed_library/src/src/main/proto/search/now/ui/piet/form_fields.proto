@@ -8,7 +8,7 @@ import "src/main/proto/search/now/ui/piet/elements.proto";
 
 package search.now.ui.piet;
 
-option optimize_for=LITE_RUNTIME;
+option optimize_for = LITE_RUNTIME;
 
 option java_package = "com.google.search.now.ui.piet";
 option java_outer_classname = "FormFieldsProto";
@@ -20,9 +20,7 @@ option cc_enable_arenas = true;
 message FormField {
   // FormFields are implemented in secondary Piet Modules, and thus extend
   // ModuleElement.
-  extend ModuleElement {
-    optional FormField form_field = 193737014;
-  }
+  extend ModuleElement { optional FormField form_field = 193737014; }
 
   // A unique ID for the Form in which this field appears.
   optional string form_id = 1;

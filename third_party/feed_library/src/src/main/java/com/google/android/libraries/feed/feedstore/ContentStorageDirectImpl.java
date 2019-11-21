@@ -11,6 +11,7 @@ import com.google.android.libraries.feed.api.host.storage.ContentStorageDirect;
 import com.google.android.libraries.feed.common.Result;
 import com.google.android.libraries.feed.common.concurrent.MainThreadCaller;
 import com.google.android.libraries.feed.common.concurrent.MainThreadRunner;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -21,45 +22,42 @@ import java.util.Map;
  * consumer calling on the main thread and waiting on a Future to complete to return the consumer
  * results.
  */
-public final class ContentStorageDirectImpl extends MainThreadCaller
-    implements ContentStorageDirect {
-  private static final String LOCATION = "ContentStorage.";
-  private final ContentStorage contentStorage;
+public final class ContentStorageDirectImpl
+        extends MainThreadCaller implements ContentStorageDirect {
+    private static final String LOCATION = "ContentStorage.";
+    private final ContentStorage contentStorage;
 
-  public ContentStorageDirectImpl(
-      ContentStorage contentStorage, MainThreadRunner mainThreadRunner) {
-    super(mainThreadRunner);
-    this.contentStorage = contentStorage;
-  }
-
-  @Override
-  public Result<Map<String, byte[]>> get(List<String> keys) {
-    if (keys.isEmpty()) {
-      return Result.success(Collections.emptyMap());
+    public ContentStorageDirectImpl(
+            ContentStorage contentStorage, MainThreadRunner mainThreadRunner) {
+        super(mainThreadRunner);
+        this.contentStorage = contentStorage;
     }
 
-    return mainThreadCaller(
-        LOCATION + "get", (consumer) -> contentStorage.get(keys, consumer), Result.failure());
-  }
+    @Override
+    public Result<Map<String, byte[]>> get(List<String> keys) {
+        if (keys.isEmpty()) {
+            return Result.success(Collections.emptyMap());
+        }
 
-  @Override
-  public Result<Map<String, byte[]>> getAll(String prefix) {
-    return mainThreadCaller(
-        LOCATION + "getAll",
-        (consumer) -> contentStorage.getAll(prefix, consumer),
-        Result.failure());
-  }
+        return mainThreadCaller(LOCATION + "get",
+                (consumer) -> contentStorage.get(keys, consumer), Result.failure());
+    }
 
-  @Override
-  public CommitResult commit(ContentMutation mutation) {
-    return mainThreadCaller(
-        LOCATION + "commit",
-        (consumer) -> contentStorage.commit(mutation, consumer),
-        CommitResult.FAILURE);
-  }
+    @Override
+    public Result<Map<String, byte[]>> getAll(String prefix) {
+        return mainThreadCaller(LOCATION + "getAll",
+                (consumer) -> contentStorage.getAll(prefix, consumer), Result.failure());
+    }
 
-  @Override
-  public Result<List<String>> getAllKeys() {
-    return mainThreadCaller(LOCATION + "getAllKeys", contentStorage::getAllKeys, Result.failure());
-  }
+    @Override
+    public CommitResult commit(ContentMutation mutation) {
+        return mainThreadCaller(LOCATION + "commit",
+                (consumer) -> contentStorage.commit(mutation, consumer), CommitResult.FAILURE);
+    }
+
+    @Override
+    public Result<List<String>> getAllKeys() {
+        return mainThreadCaller(
+                LOCATION + "getAllKeys", contentStorage::getAllKeys, Result.failure());
+    }
 }
