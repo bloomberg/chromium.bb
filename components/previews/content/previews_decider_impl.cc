@@ -301,8 +301,13 @@ PreviewsEligibilityReason PreviewsDeciderImpl::DeterminePreviewEligibility(
   }
   passed_reasons->push_back(PreviewsEligibilityReason::RELOAD_DISALLOWED);
 
+  bool skip_hint_check =
+      (type == PreviewsType::DEFER_ALL_SCRIPT &&
+       base::CommandLine::ForCurrentProcess()->HasSwitch(
+           switches::kEnableDeferAllScriptWithoutOptimizationHints));
+
   // Check optimization hints, if provided.
-  if (ShouldCheckOptimizationHints(type)) {
+  if (ShouldCheckOptimizationHints(type) && !skip_hint_check) {
     if (previews_opt_guide_) {
       // Optimization hints are configured, so determine if those hints
       // allow the optimization type (as of start-of-navigation time anyway).
