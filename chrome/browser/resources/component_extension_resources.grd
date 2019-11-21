@@ -26,8 +26,8 @@
       <include name="IDR_NETWORK_SPEECH_SYNTHESIS_JS" file="network_speech_synthesis/tts_extension.js" type="BINDATA" />
 
       <if expr="chromeos">
-        <include name="IDR_BRAILLE_IME_JS" file="chromeos/braille_ime/braille_ime.js" type="BINDATA" />
-        <include name="IDR_BRAILLE_IME_MAIN_JS" file="chromeos/braille_ime/main.js" type="BINDATA" />
+        <include name="IDR_BRAILLE_IME_JS" file="chromeos/accessibility/braille_ime/braille_ime.js" type="BINDATA" />
+        <include name="IDR_BRAILLE_IME_MAIN_JS" file="chromeos/accessibility/braille_ime/main.js" type="BINDATA" />
       </if>
 
       <!-- Bookmarks -->
