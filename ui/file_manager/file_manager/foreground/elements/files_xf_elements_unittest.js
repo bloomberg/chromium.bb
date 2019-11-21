@@ -145,10 +145,9 @@ function testFilesDisplayPanelErrorText() {
   /** @type {!HTMLElement} */
   const text = assert(panelItem.shadowRoot.querySelector('.xf-panel-text'));
 
-  // To work with screen readers, the text element containing
-  // parent element should have aria role 'alert'.
-  const textParent = text.parentElement;
-  assertEquals('alert', textParent.getAttribute('role'));
+  // To work with screen readers, the text element should have aria role
+  // 'alert'.
+  assertEquals('alert', text.getAttribute('role'));
 
   // Change the primary and secondary text on the panel item.
   panelItem.primaryText = 'foo';
