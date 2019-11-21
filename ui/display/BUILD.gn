@@ -28,6 +28,8 @@ jumbo_component("display") {
     "display_observer.h",
     "display_switches.cc",
     "display_switches.h",
+    "display_transform.cc",
+    "display_transform.h",
     "ios/screen_ios.mm",
     "mac/display_link_mac.cc",
     "mac/display_link_mac.h",
