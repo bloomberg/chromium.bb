@@ -198,21 +198,21 @@
 
   # START chrome/ WebUI resources section
   "chrome/browser/media/kaleidoscope/internal/kaleidoscope_resources.grd": {
-    "includes": [13960],
-  },
-  "chrome/browser/resources/bluetooth_internals/resources.grd": {
     # Big alignment at start of section.
     "META": {"align": 100},
     "includes": [10700],
   },
-  "chrome/browser/resources/omnibox/resources.grd": {
-    "includes": [10730],
+  "chrome/browser/resources/bluetooth_internals/resources.grd": {
+    "includes": [10710],
   },
-  "chrome/browser/resources/usb_internals/resources.grd": {
+  "chrome/browser/resources/omnibox/resources.grd": {
     "includes": [10740],
   },
-  "components/sync/driver/resources.grd": {
+  "chrome/browser/resources/usb_internals/resources.grd": {
     "includes": [10750],
+  },
+  "components/sync/driver/resources.grd": {
+    "includes": [10760],
   },
   # END chrome/ WebUI resources section
 
