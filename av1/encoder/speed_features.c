@@ -708,7 +708,6 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
   }
   if (speed >= 8) {
     sf->nonrd_merge_partition = 0;
-    sf->mv.subpel_search_method = SUBPEL_TREE_PRUNED_MORE;
     sf->estimate_motion_for_var_based_partition = 0;
     sf->short_circuit_low_temp_var = 1;
     sf->reuse_inter_pred_nonrd = 1;
