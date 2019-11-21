@@ -4238,13 +4238,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kEnterpriseReportingInChromeOS)},
 #endif  // !defined(OS_CHROMEOS)
 
-    {"enable-autofill-do-not-migrate-unsupported-local-cards",
-     flag_descriptions::kEnableAutofillDoNotMigrateUnsupportedLocalCardsName,
-     flag_descriptions::
-         kEnableAutofillDoNotMigrateUnsupportedLocalCardsDescription,
-     kOsDesktop,
-     FEATURE_VALUE_TYPE(
-         autofill::features::kAutofillDoNotMigrateUnsupportedLocalCards)},
     {"enable-unsafe-webgpu", flag_descriptions::kUnsafeWebGPUName,
      flag_descriptions::kUnsafeWebGPUDescription, kOsMac | kOsWin,
      SINGLE_VALUE_TYPE(switches::kEnableUnsafeWebGPU)},

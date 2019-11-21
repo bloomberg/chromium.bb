@@ -564,12 +564,6 @@ const char kEnableAutofillCreditCardUploadFeedbackDescription[] =
     "show a highlight, otherwise the icon will be updated and if it is "
     "clicked, the save card failure bubble will be shown.";
 
-const char kEnableAutofillDoNotMigrateUnsupportedLocalCardsName[] =
-    "Prevents local card migration on local cards from unsupported networks";
-const char kEnableAutofillDoNotMigrateUnsupportedLocalCardsDescription[] =
-    "If enabled, local cards from unsupported networks will not be offered "
-    "local card migration.";
-
 const char kEnableAutofillNativeDropdownViewsName[] =
     "Display Autofill Dropdown Using Views";
 const char kEnableAutofillNativeDropdownViewsDescription[] =
