@@ -28,7 +28,13 @@ def _GetMethodForUpdatingArtifacts(artifact_type):
   }[artifact_type]
 
 
-@faux.all_empty
+def _UpdateEbuildWithAFDOArtifactsResponse(_input_proto, output_proto, _config):
+  """Add successful status to the faux response."""
+  output_proto.status = True
+
+
+@faux.success(_UpdateEbuildWithAFDOArtifactsResponse)
+@faux.empty_error
 @validate.require('build_target.name')
 @validate.is_in('artifact_type', _NAMES_FOR_ARTIFACTS)
 @validate.validation_complete
@@ -40,13 +46,18 @@ def UpdateEbuildWithAFDOArtifacts(input_proto, output_proto, _config):
     output_proto (VerifyAFDOArtifactsResponse): The output proto
     _config (api_config.ApiConfig): The API call config.
   """
-
   board = input_proto.build_target.name
   update_method = _GetMethodForUpdatingArtifacts(input_proto.artifact_type)
   output_proto.status = update_method(board)
 
 
-@faux.all_empty
+def _UploadVettedAFDOArtifactsResponse(_input_proto, output_proto, _config):
+  """Add successful status to the faux response."""
+  output_proto.status = True
+
+
+@faux.success(_UploadVettedAFDOArtifactsResponse)
+@faux.empty_error
 @validate.require('build_target.name')
 @validate.is_in('artifact_type', _NAMES_FOR_ARTIFACTS)
 @validate.validation_complete

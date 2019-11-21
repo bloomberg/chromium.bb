@@ -51,6 +51,16 @@ class UpdateEbuildWithAFDOArtifactsTest(cros_test_lib.MockTestCase,
                                             self.validate_only_config)
     patch.assert_not_called()
 
+  def testMockCall(self):
+    """Test that a mock call does not execute logic, returns mock value."""
+    patch = self.PatchObject(toolchain_util, 'OrderfileUpdateChromeEbuild')
+    request = self._GetRequest(
+        build_target=self.board, artifact_type=toolchain_pb2.ORDERFILE)
+    toolchain.UpdateEbuildWithAFDOArtifacts(request, self.response,
+                                            self.mock_call_config)
+    patch.assert_not_called()
+    self.assertEqual(self.response.status, True)
+
   def testWrongArtifactType(self):
     """Test passing wrong artifact type."""
     request = self._GetRequest(
@@ -113,17 +123,26 @@ class UploadVettedFDOArtifactsTest(UpdateEbuildWithAFDOArtifactsTest):
     """Sanity check that a validate only call does not execute any logic."""
     request = self._GetRequest(
         build_target=self.board, artifact_type=toolchain_pb2.ORDERFILE)
-    toolchain.UpdateEbuildWithAFDOArtifacts(request, self.response,
-                                            self.validate_only_config)
+    toolchain.UploadVettedAFDOArtifacts(request, self.response,
+                                        self.validate_only_config)
     self.command.assert_not_called()
+
+  def testMockCall(self):
+    """Test that a mock call does not execute logic, returns mock value."""
+    request = self._GetRequest(
+        build_target=self.board, artifact_type=toolchain_pb2.ORDERFILE)
+    toolchain.UploadVettedAFDOArtifacts(request, self.response,
+                                        self.mock_call_config)
+    self.command.assert_not_called()
+    self.assertEqual(self.response.status, True)
 
   def testWrongArtifactType(self):
     """Test passing wrong artifact type."""
     request = self._GetRequest(
         build_target=self.board, artifact_type=self.invalid_artifact_type)
     with self.assertRaises(cros_build_lib.DieSystemExit) as context:
-      toolchain.UpdateEbuildWithAFDOArtifacts(request, self.response,
-                                              self.api_config)
+      toolchain.UploadVettedAFDOArtifacts(request, self.response,
+                                          self.api_config)
     self.assertIn('artifact_type (%d) must be in' % self.invalid_artifact_type,
                   str(context.exception))
 
