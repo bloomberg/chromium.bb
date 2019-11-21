@@ -58,12 +58,7 @@ TEST(AccountConsistencyModeManagerTest, DefaultValue) {
   EXPECT_TRUE(
       AccountConsistencyModeManager::IsDiceEnabledForProfile(profile.get()));
 #else
-  EXPECT_EQ(signin::AccountConsistencyMethod::kDisabled,
-            AccountConsistencyModeManager::GetMethodForProfile(profile.get()));
-  EXPECT_FALSE(
-      AccountConsistencyModeManager::IsMirrorEnabledForProfile(profile.get()));
-  EXPECT_FALSE(
-      AccountConsistencyModeManager::IsDiceEnabledForProfile(profile.get()));
+#error Either Dice or Mirror should be enabled
 #endif
 }
 
