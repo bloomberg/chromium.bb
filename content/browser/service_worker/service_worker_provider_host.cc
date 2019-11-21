@@ -246,7 +246,6 @@ ServiceWorkerProviderHost::ServiceWorkerProviderHost(
         client_remote,
     base::WeakPtr<ServiceWorkerContextCore> context)
     : provider_id_(NextProviderId()),
-      type_(type),
       client_uuid_(base::GenerateGUID()),
       create_time_(base::TimeTicks::Now()),
       render_process_id_(ChildProcessHost::kInvalidUniqueID),
@@ -261,15 +260,15 @@ ServiceWorkerProviderHost::ServiceWorkerProviderHost(
       context_(context),
       interface_provider_binding_(this),
       is_in_back_forward_cache_(false) {
-  DCHECK_NE(blink::mojom::ServiceWorkerProviderType::kUnknown, type_);
+  DCHECK_NE(blink::mojom::ServiceWorkerProviderType::kUnknown, type);
 
-  if (type_ == blink::mojom::ServiceWorkerProviderType::kForServiceWorker) {
+  if (type == blink::mojom::ServiceWorkerProviderType::kForServiceWorker) {
     DCHECK(!client_remote);
   } else {
     DCHECK(client_remote.is_valid());
   }
-  container_host_ =
-      std::make_unique<content::ServiceWorkerContainerHost>(this, context_);
+  container_host_ = std::make_unique<content::ServiceWorkerContainerHost>(
+      type, this, context_);
 
   context_->RegisterProviderHostByClientID(client_uuid_, this);
 
@@ -408,6 +407,13 @@ void ServiceWorkerProviderHost::OnSkippedWaiting(
   UpdateController(true /* notify_controllerchange */);
 }
 
+ServiceWorkerVersion* ServiceWorkerProviderHost::running_hosted_version()
+    const {
+  DCHECK(!running_hosted_version_ ||
+         container_host_->IsContainerForServiceWorker());
+  return running_hosted_version_.get();
+}
+
 mojo::Remote<blink::mojom::ControllerServiceWorker>
 ServiceWorkerProviderHost::GetRemoteControllerServiceWorker() {
   DCHECK(controller_);
@@ -450,7 +456,8 @@ void ServiceWorkerProviderHost::UpdateUrls(
     // Revoke the token on URL change since any service worker holding the token
     // may no longer be the potential controller of this frame and shouldn't
     // have the power to display SSL dialogs for it.
-    if (type_ == blink::mojom::ServiceWorkerProviderType::kForWindow) {
+    if (provider_type() ==
+        blink::mojom::ServiceWorkerProviderType::kForWindow) {
       auto* registry = FrameTreeNodeIdRegistry::GetInstance();
       registry->Remove(fetch_request_window_id_);
       fetch_request_window_id_ = base::UnguessableToken::Create();
@@ -506,6 +513,11 @@ base::Optional<url::Origin> ServiceWorkerProviderHost::top_frame_origin()
   return url::Origin::Create(running_hosted_version_->script_url());
 }
 
+blink::mojom::ServiceWorkerProviderType
+ServiceWorkerProviderHost::provider_type() const {
+  return container_host_->type();
+}
+
 void ServiceWorkerProviderHost::UpdateController(bool notify_controllerchange) {
   ServiceWorkerVersion* version =
       controller_registration_ ? controller_registration_->active_version()
@@ -532,39 +544,16 @@ void ServiceWorkerProviderHost::UpdateController(bool notify_controllerchange) {
 }
 
 bool ServiceWorkerProviderHost::IsProviderForServiceWorker() const {
-  return type_ == blink::mojom::ServiceWorkerProviderType::kForServiceWorker;
+  return container_host_->IsContainerForServiceWorker();
 }
 
 bool ServiceWorkerProviderHost::IsProviderForClient() const {
-  switch (type_) {
-    case blink::mojom::ServiceWorkerProviderType::kForWindow:
-    case blink::mojom::ServiceWorkerProviderType::kForDedicatedWorker:
-    case blink::mojom::ServiceWorkerProviderType::kForSharedWorker:
-      return true;
-    case blink::mojom::ServiceWorkerProviderType::kForServiceWorker:
-      return false;
-    case blink::mojom::ServiceWorkerProviderType::kUnknown:
-      break;
-  }
-  NOTREACHED() << type_;
-  return false;
+  return container_host_->IsContainerForClient();
 }
 
 blink::mojom::ServiceWorkerClientType ServiceWorkerProviderHost::client_type()
     const {
-  switch (type_) {
-    case blink::mojom::ServiceWorkerProviderType::kForWindow:
-      return blink::mojom::ServiceWorkerClientType::kWindow;
-    case blink::mojom::ServiceWorkerProviderType::kForDedicatedWorker:
-      return blink::mojom::ServiceWorkerClientType::kDedicatedWorker;
-    case blink::mojom::ServiceWorkerProviderType::kForSharedWorker:
-      return blink::mojom::ServiceWorkerClientType::kSharedWorker;
-    case blink::mojom::ServiceWorkerProviderType::kForServiceWorker:
-    case blink::mojom::ServiceWorkerProviderType::kUnknown:
-      break;
-  }
-  NOTREACHED() << type_;
-  return blink::mojom::ServiceWorkerClientType::kWindow;
+  return container_host_->client_type();
 }
 
 void ServiceWorkerProviderHost::SetControllerRegistration(
@@ -699,7 +688,8 @@ void ServiceWorkerProviderHost::OnBeginNavigationCommit(
     int render_frame_id,
     network::mojom::CrossOriginEmbedderPolicy cross_origin_embedder_policy) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
-  DCHECK_EQ(blink::mojom::ServiceWorkerProviderType::kForWindow, type_);
+  DCHECK_EQ(blink::mojom::ServiceWorkerProviderType::kForWindow,
+            provider_type());
 
   DCHECK_EQ(ChildProcessHost::kInvalidUniqueID, render_process_id_);
   DCHECK_NE(ChildProcessHost::kInvalidUniqueID, render_process_id);
@@ -1443,7 +1433,8 @@ bool ServiceWorkerProviderHost::IsInBackForwardCache() const {
 void ServiceWorkerProviderHost::EvictFromBackForwardCache() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(IsBackForwardCacheEnabled());
-  DCHECK_EQ(type_, blink::mojom::ServiceWorkerProviderType::kForWindow);
+  DCHECK_EQ(provider_type(),
+            blink::mojom::ServiceWorkerProviderType::kForWindow);
   is_in_back_forward_cache_ = false;
   auto* rfh = RenderFrameHostImpl::FromID(render_process_id_, frame_id_);
   // |rfh| could be evicted before this function is called.
@@ -1457,7 +1448,8 @@ void ServiceWorkerProviderHost::EvictFromBackForwardCache() {
 void ServiceWorkerProviderHost::OnEnterBackForwardCache() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(IsBackForwardCacheEnabled());
-  DCHECK_EQ(type_, blink::mojom::ServiceWorkerProviderType::kForWindow);
+  DCHECK_EQ(provider_type(),
+            blink::mojom::ServiceWorkerProviderType::kForWindow);
   if (controller_)
     controller_->MoveControlleeToBackForwardCacheMap(client_uuid_);
   is_in_back_forward_cache_ = true;
@@ -1466,7 +1458,8 @@ void ServiceWorkerProviderHost::OnEnterBackForwardCache() {
 void ServiceWorkerProviderHost::OnRestoreFromBackForwardCache() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(IsBackForwardCacheEnabled());
-  DCHECK_EQ(type_, blink::mojom::ServiceWorkerProviderType::kForWindow);
+  DCHECK_EQ(provider_type(),
+            blink::mojom::ServiceWorkerProviderType::kForWindow);
   if (controller_)
     controller_->RestoreControlleeFromBackForwardCacheMap(client_uuid_);
   is_in_back_forward_cache_ = false;

@@ -214,11 +214,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // For service worker execution contexts. The version of the service worker.
   // This is nullptr when the worker is still starting up (until
   // CompleteStartWorkerPreparation() is called).
-  ServiceWorkerVersion* running_hosted_version() const {
-    DCHECK(!running_hosted_version_ ||
-           type_ == blink::mojom::ServiceWorkerProviderType::kForServiceWorker);
-    return running_hosted_version_.get();
-  }
+  ServiceWorkerVersion* running_hosted_version() const;
 
   // For service worker clients. Similar to EnsureControllerServiceWorker, but
   // this returns a bound Mojo ptr which is supposed to be sent to clients. The
@@ -292,9 +288,9 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // the worker.
   base::Optional<url::Origin> top_frame_origin() const;
 
-  blink::mojom::ServiceWorkerProviderType provider_type() const {
-    return type_;
-  }
+  // TODO(https://crbug.com/931087): Remove these functions in favor of the
+  // equivalent functions on ServiceWorkerContainerHost.
+  blink::mojom::ServiceWorkerProviderType provider_type() const;
   bool IsProviderForServiceWorker() const;
   bool IsProviderForClient() const;
   // Can only be called when IsProviderForClient() is true.
@@ -589,8 +585,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
 
   // Unique among all provider hosts.
   const int provider_id_;
-
-  const blink::mojom::ServiceWorkerProviderType type_;
 
   // A GUID that is web-exposed as FetchEvent.clientId.
   std::string client_uuid_;
