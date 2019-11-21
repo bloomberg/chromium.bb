@@ -291,6 +291,12 @@ let lastOutput = {text: '', inline: ''};
  */
 let ntpApiHandle;
 
+/**
+ * True if user just pasted into the realbox.
+ * @type {boolean}
+ */
+let pastedInRealbox = false;
+
 // Helper methods.
 
 /** @return {boolean} */
@@ -773,6 +779,7 @@ function init() {
       realboxEl.addEventListener('copy', onRealboxCutCopy);
       realboxEl.addEventListener('cut', onRealboxCutCopy);
       realboxEl.addEventListener('input', onRealboxInput);
+      realboxEl.addEventListener('paste', onRealboxPaste);
 
       const realboxWrapper = $(IDS.REALBOX_INPUT_WRAPPER);
       realboxWrapper.addEventListener('focusin', onRealboxWrapperFocusIn);
@@ -1203,6 +1210,12 @@ function onRealboxInput() {
     setRealboxWrapperListenForKeydown(false);
     clearAutocompleteMatches();
   }
+
+  pastedInRealbox = false;
+}
+
+function onRealboxPaste() {
+  pastedInRealbox = true;
 }
 
 /** @param {Event} e */
@@ -1552,8 +1565,10 @@ function populateAutocompleteMatches(matches) {
  */
 function queryAutocomplete(input) {
   lastInput = input;
+  const preventInlineAutocomplete = isDeletingInput || pastedInRealbox ||
+      $(IDS.REALBOX).selectionStart !== input.length;  // Caret not at the end.
   window.chrome.embeddedSearch.searchBox.queryAutocomplete(
-      input, isDeletingInput);
+      input, preventInlineAutocomplete);
 }
 
 /**
