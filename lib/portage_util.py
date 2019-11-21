@@ -537,26 +537,35 @@ class EBuild(object):
     is_stable = False
     is_blacklisted = False
     has_test = False
-    for line in fileinput.input(ebuild_path):
-      if line.startswith('inherit '):
-        eclasses = set(line.split())
-        if 'cros-workon' in eclasses:
-          is_workon = True
-        if EBuild._ECLASS_IMPLIES_TEST & eclasses:
+    with open(ebuild_path, mode='rb') as fp:
+      for i, line in enumerate(fp):
+        # If the file has bad encodings, produce a helpful diagnostic for the
+        # user.  The default encoding exception lacks direct file context.
+        try:
+          line = line.decode('utf-8')
+        except UnicodeDecodeError:
+          logging.exception('%s: line %i: invalid UTF-8: %s',
+                            ebuild_path, i, line)
+          raise
+
+        if line.startswith('inherit '):
+          eclasses = set(line.split())
+          if 'cros-workon' in eclasses:
+            is_workon = True
+          if EBuild._ECLASS_IMPLIES_TEST & eclasses:
+            has_test = True
+        elif line.startswith('KEYWORDS='):
+          # Strip off the comments, then extract the value of the variable, then
+          # strip off any quotes.
+          line = line.split('#', 1)[0].split('=', 1)[1].strip('"\'')
+          for keyword in line.split():
+            if not keyword.startswith('~') and keyword != '-*':
+              is_stable = True
+        elif line.startswith('CROS_WORKON_BLACKLIST='):
+          is_blacklisted = True
+        elif (line.startswith('src_test()') or
+              line.startswith('platform_pkg_test()')):
           has_test = True
-      elif line.startswith('KEYWORDS='):
-        # Strip off the comments, then extract the value of the variable, then
-        # strip off any quotes.
-        line = line.split('#', 1)[0].split('=', 1)[1].strip('"\'')
-        for keyword in line.split():
-          if not keyword.startswith('~') and keyword != '-*':
-            is_stable = True
-      elif line.startswith('CROS_WORKON_BLACKLIST='):
-        is_blacklisted = True
-      elif (line.startswith('src_test()') or
-            line.startswith('platform_pkg_test()')):
-        has_test = True
-    fileinput.close()
     return EBuildClassifyAttributes(
         is_workon, is_stable, is_blacklisted, has_test)
 

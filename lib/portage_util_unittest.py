@@ -281,6 +281,30 @@ inherit cros-workon superpower
       attrs = portage_util.EBuild.Classify(ebuild_path)
       self.assertTrue(attrs.is_stable, msg='Failing: %s' % (keywords,))
 
+  def testClassifyEncodingASCII(self):
+    """Test Classify with ASCII file encodings."""
+    ebuild_path = os.path.join(self.tempdir, 'foo-1.ebuild')
+    # Generate a valid shell script with all possible ASCII values.
+    osutils.WriteFile(
+        ebuild_path,
+        'cat <<\\EOF\n%s\nEOF\n' % (''.join(chr(x) for x in range(0, 128)),))
+    # Just check that we don't throw an exception.
+    portage_util.EBuild.Classify(ebuild_path)
+
+  def testClassifyEncodingUTF8(self):
+    """Test Classify with UTF-8 file encodings."""
+    ebuild_path = os.path.join(self.tempdir, 'foo-1.ebuild')
+    osutils.WriteFile(ebuild_path, '# FöÖßbäłł')
+    # Just check that we don't throw an exception.
+    portage_util.EBuild.Classify(ebuild_path)
+
+  def testClassifyEncodingLatin1(self):
+    """Test Classify with ISO 8859-1 file encodings."""
+    ebuild_path = os.path.join(self.tempdir, 'foo-1.ebuild')
+    osutils.WriteFile(ebuild_path, b'# This is \xa0 bad UTF-8', mode='wb')
+    with self.assertRaises(UnicodeDecodeError):
+      portage_util.EBuild.Classify(ebuild_path)
+
 
 class ProjectAndPathTest(cros_test_lib.MockTempDirTestCase):
   """Project and Path related tests."""
