@@ -865,10 +865,10 @@ need to be translated for each locale.-->
         Expand to all apps
       </message>
       <message name="IDS_APP_LIST_ALL_APPS_ACCESSIBILITY_ANNOUNCEMENT" desc="The accessibility announcement that notifies users that all of their apps are showing, as opposed to showing only suggested apps">
-      Launcher, all apps
+        Launcher, all apps
       </message>
       <message name="IDS_APP_LIST_SUGGESTED_APPS_ACCESSIBILITY_ANNOUNCEMENT" desc="The accessibility announcement that notifies users that the UI is showing a small version of the app list">
-      Launcher, partial view
+        Launcher, partial view
       </message>
       <message name="IDS_APP_LIST_CLEAR_SEARCHBOX" desc="Tooltip for the button that clears all text from the search box in the app list.">
         Clear searchbox text
@@ -890,6 +890,15 @@ need to be translated for each locale.-->
       </message>
       <message name="IDS_SHELF_STATE_AUTO_HIDE" desc="Accessibility announcement notifying users that the shelf will now hide itself automatically">
         Shelf auto hidden
+      </message>
+      <message name="IDS_SHELF_ITEM_GENERIC_NAME" desc="The generic name of a shelf item, in situations where it does not have an explicit title">
+        Shelf item
+      </message>
+      <message name="IDS_SHELF_ITEM_WAS_PINNED" desc="Accessibility announcement notifying users that an item was pinned to the shelf">
+        <ph name="ITEM_TITLE">$1<ex>Files</ex></ph> was pinned
+      </message>
+      <message name="IDS_SHELF_ITEM_WAS_UNPINNED" desc="Accessibility announcement notifying users that an item was un-pinned from the shelf">
+        <ph name="ITEM_TITLE">$1<ex>Files</ex></ph> was un-pinned
       </message>
       <message name="IDS_SHELF_NEXT" desc="Tooltip for the shelf arrow button that scrolls the shelf forward">
         Next
