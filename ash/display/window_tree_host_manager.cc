@@ -25,6 +25,7 @@
 #include "ash/shell_state.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/unified/unified_system_tray.h"
+#include "ash/utility/transformer_util.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram.h"
@@ -47,7 +48,6 @@
 #include "ui/compositor/compositor_switches.h"
 #include "ui/display/display.h"
 #include "ui/display/display_layout.h"
-#include "ui/display/display_transform.h"
 #include "ui/display/manager/display_configurator.h"
 #include "ui/display/manager/display_layout_store.h"
 #include "ui/display/manager/display_manager.h"
@@ -86,7 +86,7 @@ void SetDisplayPropertiesOnHost(AshWindowTreeHost* ash_host,
   ash_host->SetRootWindowTransformer(std::move(transformer));
 
   host->SetDisplayTransformHint(
-      display::DisplayRotationToOverlayTransform(effective_rotation));
+      DisplayRotationToOverlayTransform(effective_rotation));
 
   // Just moving the display requires the full redraw.
   // chrome-os-partner:33558.
