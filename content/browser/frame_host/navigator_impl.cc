@@ -22,8 +22,8 @@
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/site_instance_impl.h"
-#include "content/browser/web_package/bundled_exchanges_handle_tracker.h"
 #include "content/browser/web_package/prefetched_signed_exchange_cache.h"
+#include "content/browser/web_package/web_bundle_handle_tracker.h"
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
 #include "content/browser/webui/web_ui_impl.h"
 #include "content/common/frame_messages.h"
@@ -525,8 +525,7 @@ void NavigatorImpl::OnBeginNavigation(
     mojo::PendingRemote<blink::mojom::NavigationInitiator> navigation_initiator,
     scoped_refptr<PrefetchedSignedExchangeCache>
         prefetched_signed_exchange_cache,
-    std::unique_ptr<BundledExchangesHandleTracker>
-        bundled_exchanges_handle_tracker) {
+    std::unique_ptr<WebBundleHandleTracker> web_bundle_handle_tracker) {
   // TODO(clamy): the url sent by the renderer should be validated with
   // FilterURL.
   // This is a renderer-initiated navigation.
@@ -581,7 +580,7 @@ void NavigatorImpl::OnBeginNavigation(
           std::move(blob_url_loader_factory), std::move(navigation_client),
           std::move(navigation_initiator),
           std::move(prefetched_signed_exchange_cache),
-          std::move(bundled_exchanges_handle_tracker)));
+          std::move(web_bundle_handle_tracker)));
   NavigationRequest* navigation_request = frame_tree_node->navigation_request();
 
   // This frame has already run beforeunload before it sent this IPC.  See if
