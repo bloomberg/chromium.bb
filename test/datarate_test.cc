@@ -137,6 +137,27 @@ class DatarateTestLarge
         << " The datarate for the file missed the target!"
         << cfg_.rc_target_bitrate << " " << effective_datarate_;
   }
+};
+
+// Params: test mode, speed, aq mode.
+class DatarateTestFrameDropLarge
+    : public ::libaom_test::CodecTestWith3Params<libaom_test::TestMode, int,
+                                                 unsigned int>,
+      public DatarateTest {
+ public:
+  DatarateTestFrameDropLarge() : DatarateTest(GET_PARAM(0)) {
+    set_cpu_used_ = GET_PARAM(2);
+    aq_mode_ = GET_PARAM(3);
+  }
+
+ protected:
+  virtual ~DatarateTestFrameDropLarge() {}
+
+  virtual void SetUp() {
+    InitializeConfig();
+    SetMode(GET_PARAM(1));
+    ResetModel();
+  }
 
   virtual void ChangingDropFrameThreshTest() {
     cfg_.rc_buf_initial_sz = 500;
@@ -204,7 +225,7 @@ TEST_P(DatarateTestLarge, BasicRateTargeting444CBR) {
 // as the drop frame threshold is increased, and (2) that the total number of
 // frame drops does not decrease as we increase frame drop threshold.
 // Use a lower qp-max to force some frame drops.
-TEST_P(DatarateTestLarge, ChangingDropFrameThresh) {
+TEST_P(DatarateTestFrameDropLarge, ChangingDropFrameThresh) {
   ChangingDropFrameThreshTest();
 }
 
@@ -213,6 +234,8 @@ TEST_P(DatarateTestLarge, BasicRateTargetingAQModeOnOffCBR) {
 }
 
 class DatarateTestRealtime : public DatarateTestLarge {};
+
+class DatarateTestFrameDropRealtime : public DatarateTestFrameDropLarge {};
 
 // Check basic rate targeting for VBR mode.
 TEST_P(DatarateTestRealtime, BasicRateTargetingVBR) {
@@ -233,7 +256,7 @@ TEST_P(DatarateTestRealtime, BasicRateTargeting444CBR) {
 // as the drop frame threshold is increased, and (2) that the total number of
 // frame drops does not decrease as we increase frame drop threshold.
 // Use a lower qp-max to force some frame drops.
-TEST_P(DatarateTestRealtime, ChangingDropFrameThresh) {
+TEST_P(DatarateTestFrameDropRealtime, ChangingDropFrameThresh) {
   ChangingDropFrameThreshTest();
 }
 
@@ -242,10 +265,18 @@ AV1_INSTANTIATE_TEST_CASE(DatarateTestLarge,
                           ::testing::Range(5, 7), ::testing::Values(0, 3),
                           ::testing::Values(0, 1));
 
+AV1_INSTANTIATE_TEST_CASE(DatarateTestFrameDropLarge,
+                          ::testing::Values(::libaom_test::kRealTime),
+                          ::testing::Range(5, 7), ::testing::Values(0, 3));
+
 AV1_INSTANTIATE_TEST_CASE(DatarateTestRealtime,
                           ::testing::Values(::libaom_test::kRealTime),
                           ::testing::Range(7, 9), ::testing::Values(0, 3),
                           ::testing::Values(0, 1));
+
+AV1_INSTANTIATE_TEST_CASE(DatarateTestFrameDropRealtime,
+                          ::testing::Values(::libaom_test::kRealTime),
+                          ::testing::Range(7, 9), ::testing::Values(0, 3));
 
 }  // namespace
 }  // namespace datarate_test
