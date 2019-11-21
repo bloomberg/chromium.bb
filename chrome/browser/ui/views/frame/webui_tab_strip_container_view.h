@@ -63,6 +63,7 @@ class WebUITabStripContainerView : public TabStripUI::Embedder,
   bool EventShouldPropagate(const ui::Event& event);
 
   // TabStripUI::Embedder:
+  const ui::AcceleratorProvider* GetAcceleratorProvider() const override;
   void CloseContainer() override;
   void ShowContextMenuAtPoint(
       gfx::Point point,

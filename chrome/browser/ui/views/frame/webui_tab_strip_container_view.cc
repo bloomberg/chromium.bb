@@ -197,6 +197,11 @@ void WebUITabStripContainerView::UpdateButtons() {
   }
 }
 
+const ui::AcceleratorProvider*
+WebUITabStripContainerView::GetAcceleratorProvider() const {
+  return BrowserView::GetBrowserViewForBrowser(browser_);
+}
+
 void WebUITabStripContainerView::CloseContainer() {
   SetContainerTargetVisibility(false);
 }
