@@ -402,7 +402,7 @@ This file contains the strings for ash.
         Toggle Volume. <ph name="STATE_TEXT">$1<ex>Volume is muted</ex></ph>
       </message>
       <message name="IDS_ASH_STATUS_TRAY_VOLUME_STATE_ON" desc="The accessible text used when the volume button is in the on state.">
-        Volume is on.
+        Volume is on, toggling will mute audio.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_VOLUME_STATE_MUTED" desc="The accessible text used when the volume button is in the muted state.">
         Volume is muted.
