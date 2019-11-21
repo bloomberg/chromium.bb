@@ -15,6 +15,8 @@ from chromite.api import controller
 from chromite.api import router as router_lib
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_logging as logging
+from chromite.lib import tee
 from chromite.utils import matching
 
 
@@ -38,6 +40,10 @@ def GetParser():
       '--output-json',
       type='path',
       help='The path to which the result protobuf message should be written.')
+  call_group.add_argument(
+      '--tee-log',
+      type='path',
+      help='The path to which stdout and stderr should be teed to.')
 
   ux_group = parser.add_argument_group('Developer Options',
                                        'Options to help developers.')
@@ -152,20 +158,25 @@ def _ParseArgs(argv, router):
 
 
 def main(argv):
-  router = router_lib.GetRouter()
+  with cros_build_lib.ContextManagerStack() as stack:
 
-  opts = _ParseArgs(argv, router)
+    router = router_lib.GetRouter()
+    opts = _ParseArgs(argv, router)
 
-  if opts.mock_invalid:
-    # --mock-invalid handling. We print error messages, but no output is ever
-    # set for validation errors, so we can handle it by just giving back the
-    # correct return code here.
-    return controller.RETURN_CODE_INVALID_INPUT
+    if opts.tee_log:
+      stack.Add(tee.Tee, opts.tee_log)
+      logging.info('Teeing stdout and stderr to %s', opts.tee_log)
 
-  try:
-    return router.Route(opts.service, opts.method, opts.input_json,
-                        opts.output_json, opts.config)
-  except router_lib.Error as e:
-    # Handle router_lib.Error derivatives nicely, but let anything else bubble
-    # up.
-    cros_build_lib.Die(e)
+    if opts.mock_invalid:
+      # --mock-invalid handling. We print error messages, but no output is ever
+      # set for validation errors, so we can handle it by just giving back the
+      # correct return code here.
+      return controller.RETURN_CODE_INVALID_INPUT
+
+    try:
+      return router.Route(opts.service, opts.method, opts.input_json,
+                          opts.output_json, opts.config)
+    except router_lib.Error as e:
+      # Handle router_lib.Error derivatives nicely, but let anything else bubble
+      # up.
+      cros_build_lib.Die(e)

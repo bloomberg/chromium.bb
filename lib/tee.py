@@ -13,7 +13,6 @@ import os
 import multiprocessing
 import select
 import signal
-import subprocess
 import sys
 import traceback
 
@@ -106,16 +105,25 @@ class _TeeProcess(multiprocessing.Process):
     self._complain = complain
     # Dupe the fd on the offchance it's stdout/stderr,
     # which we screw with.
-    self._error_handle = os.fdopen(os.dup(error_fd), 'w', 0)
+    # Not passing 3 argument (0) for unbuffered output because this is not
+    # supported in Python 3 and there are issues in Python 2 -- see
+    # https://bugs.python.org/issue17404.
+    self._error_handle = os.fdopen(os.dup(error_fd), 'w')
     self.master_pid = master_pid
     multiprocessing.Process.__init__(self)
 
   def _CloseUnnecessaryFds(self):
+    # For python2 we were relying on subprocess.MAXFD but that does not exist
+    # in python3. However, the calculation below is how it was being computed.
+    try:
+      max_fd_value = os.sysconf('SC_OPEN_MAX')
+    except ValueError:
+      max_fd_value = 256
     preserve = set([1, 2, self._error_handle.fileno(), self._reader_pipe,
-                    subprocess.MAXFD])
+                    max_fd_value])
     preserve = iter(sorted(preserve))
     fd = 0
-    while fd < subprocess.MAXFD:
+    while fd < max_fd_value:
       current_low = next(preserve)
       if fd != current_low:
         os.closerange(fd, current_low)
@@ -125,6 +133,7 @@ class _TeeProcess(multiprocessing.Process):
   def run(self):
     """Main function for tee subprocess."""
     failed = True
+    input_fd = None
     try:
       signal.signal(signal.SIGINT, _TeeProcessSignalHandler)
       signal.signal(signal.SIGTERM, _TeeProcessSignalHandler)
@@ -136,9 +145,12 @@ class _TeeProcess(multiprocessing.Process):
       input_fd = self._reader_pipe
 
       # Create list of files to write to.
-      output_files = [os.fdopen(sys.stdout.fileno(), 'w', 0)]
+      # Not passing 3 argument (0) for unbuffered output because this is not
+      # supported in Python 3 and there are issues in Python 2 -- see
+      # https://bugs.python.org/issue17404.
+      output_files = [os.fdopen(sys.stdout.fileno(), 'w')]
       for filename in self._output_filenames:
-        output_files.append(open(filename, 'w', 0))
+        output_files.append(open(filename, 'w'))
 
       # Send all data from the one input to all the outputs.
       _tee(input_fd, output_files, self._complain)
@@ -155,7 +167,8 @@ class _TeeProcess(multiprocessing.Process):
 
     finally:
       # Close input.
-      os.close(input_fd)
+      if input_fd:
+        os.close(input_fd)
 
       if failed:
         try:
@@ -196,8 +209,11 @@ class Tee(cros_build_lib.MasterPidContextManager):
     self._old_stderr = sys.stderr
 
     # Replace std[out|err] with unbuffered file objects
-    sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
-    sys.stderr = os.fdopen(sys.stderr.fileno(), 'w', 0)
+    # Not passing 3 argument (0) for unbuffered output because this is not
+    # supported in Python 3 and there are issues in Python 2 -- see
+    # https://bugs.python.org/issue17404.
+    sys.stdout = os.fdopen(sys.stdout.fileno(), 'w')
+    sys.stderr = os.fdopen(sys.stderr.fileno(), 'w')
 
     # Create a tee subprocess.
     self._tee = _TeeProcess([self._file], True, self._old_stderr_fd,

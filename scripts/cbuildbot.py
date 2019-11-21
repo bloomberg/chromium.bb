@@ -22,7 +22,6 @@ import sys
 from chromite.cbuildbot import builders
 from chromite.cbuildbot import cbuildbot_run
 from chromite.cbuildbot import repository
-from chromite.cbuildbot import tee
 from chromite.cbuildbot import topology
 from chromite.cbuildbot.stages import completion_stages
 from chromite.lib import builder_status_lib
@@ -41,6 +40,7 @@ from chromite.lib import osutils
 from chromite.lib import parallel
 from chromite.lib import retry_stats
 from chromite.lib import sudo
+from chromite.lib import tee
 from chromite.lib import timeout_util
 from chromite.lib import ts_mon_config
 from chromite.lib.buildstore import BuildStore
