@@ -5868,3 +5868,6 @@ crbug.com/977033 http/tests/priorities/resource-load-priorities-media-preload.ht
 crbug.com/963183 http/tests/devtools/sources/debugger-pause/debugger-change-variable.js [ Pass Failure ]
 crbug.com/963183 http/tests/devtools/sources/debugger-pause/debugger-eval-on-call-frame-inside-iframe.js [ Pass Failure ]
 crbug.com/963183 http/tests/devtools/sources/debugger-pause/debugger-eval-while-paused.js [ Pass Failure ]
+
+# Sheriff 2019-11-20
+crbug.com/1026151 virtual/omt-worker-fetch/external/wpt/fetch/api/idlharness.any.sharedworker.html [ Timeout ]
