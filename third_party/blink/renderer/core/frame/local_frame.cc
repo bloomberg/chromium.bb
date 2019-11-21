@@ -1850,6 +1850,11 @@ void LocalFrame::AddMessageToConsole(mojom::blink::ConsoleMessageLevel level,
       discard_duplicates);
 }
 
+void LocalFrame::Collapse(bool collapsed) {
+  FrameOwner* owner = Owner();
+  To<HTMLFrameOwnerElement>(owner)->SetCollapsed(collapsed);
+}
+
 void LocalFrame::BindToReceiver(
     blink::LocalFrame* frame,
     mojo::PendingAssociatedReceiver<mojom::blink::LocalFrame> receiver) {
