@@ -13,8 +13,6 @@ import time
 import mock
 
 from chromite.cbuildbot import build_status
-from chromite.cbuildbot import relevant_changes
-from chromite.cbuildbot import validation_pool_unittest
 from chromite.lib import buildbucket_lib
 from chromite.lib import builder_status_lib
 from chromite.lib import build_requests
@@ -204,7 +202,7 @@ class SlaveStatusTest(cros_test_lib.MockTestCase):
   def _GetSlaveStatus(self, start_time=None, builders_array=None,
                       master_build_identifier=None, db=None, config=None,
                       metadata=None, buildbucket_client=None, version=None,
-                      pool=None, dry_run=True):
+                      dry_run=True):
     if start_time is None:
       start_time = self.time_now
     if builders_array is None:
@@ -224,7 +222,6 @@ class SlaveStatusTest(cros_test_lib.MockTestCase):
         metadata=metadata,
         buildbucket_client=buildbucket_client,
         version=version,
-        pool=pool,
         dry_run=dry_run)
 
   def _Mock_GetSlaveStatusesFromCIDB(self, cidb_status=None):
@@ -288,31 +285,6 @@ class SlaveStatusTest(cros_test_lib.MockTestCase):
     return set(['completed_success',
                 'completed_failure',
                 'completed_canceled'])
-
-  def testGetSlaveStatusWithValidationPool(self):
-    """Test build SlaveStatus with ValidationPool."""
-    patch_mock = self.StartPatcher(
-        validation_pool_unittest.MockPatchSeries())
-    p = self._patch_factory.GetPatches(how_many=3)
-    pool = validation_pool_unittest.MakePool(applied=p)
-
-    patch_mock.SetGerritDependencies(p[0], [])
-    patch_mock.SetGerritDependencies(p[1], [])
-    patch_mock.SetGerritDependencies(p[2], [])
-
-    patch_mock.SetCQDependencies(p[1], [p[0]])
-    patch_mock.SetCQDependencies(p[2], [p[0]])
-
-    slave_status = self._GetSlaveStatus(
-        builders_array=self._GetFullBuildConfigs(),
-        config=self.master_cq_config,
-        pool=pool)
-
-    expected_map = {
-        p[0]: {p[1], p[2]},
-    }
-
-    self.assertDictEqual(expected_map, slave_status.dependency_map)
 
   def testGetExpectedBuilders(self):
     """Tests _GetExpectedBuilders does not return experimental builders."""
@@ -1184,69 +1156,6 @@ class SlaveStatusTest(cros_test_lib.MockTestCase):
                      return_value=set(['slave2']))
     slave_status.ShouldWait()
     self.assertEqual(slave_status.builds_to_retry, set([]))
-
-  def testShouldWaitWithTriageRelevantChangesShouldWaitFalse(self):
-    """Test ShouldWait with TriageRelevantChanges.ShouldWait is False."""
-    self._Mock_GetSlaveStatusesFromCIDB(CIDBStatusInfos.GetFullCIDBStatusInfo())
-    self._MockGetAllSlaveCIDBStatusInfo(CIDBStatusInfos.GetFullCIDBStatusInfo())
-    self._Mock_GetSlaveStatusesFromBuildbucket(
-        BuildbucketInfos.GetFullBuildbucketInfoDict())
-
-    relevant_changes.TriageRelevantChanges.__init__ = mock.Mock(
-        return_value=None)
-    self.PatchObject(relevant_changes.TriageRelevantChanges,
-                     'ShouldSelfDestruct', return_value=(True, False))
-    self.PatchObject(build_status.SlaveStatus,
-                     '_Completed', return_value=False)
-    self.PatchObject(build_status.SlaveStatus,
-                     '_ShouldFailForBuilderStartTimeout', return_value=False)
-    self.PatchObject(build_status.SlaveStatus, '_RetryBuilds')
-    pool = validation_pool_unittest.MakePool(applied=[])
-    slave_status = self._GetSlaveStatus(
-        builders_array=self._GetFullBuildConfigs(),
-        config=self.master_cq_config,
-        version='9289.0.0-rc2',
-        pool=pool)
-
-    self.assertFalse(slave_status.ShouldWait())
-    self.assertTrue(slave_status.metadata.GetValueWithDefault(
-        constants.SELF_DESTRUCTED_BUILD, False))
-    self.assertFalse(slave_status.metadata.GetValueWithDefault(
-        constants.SELF_DESTRUCTED_WITH_SUCCESS_BUILD, False))
-
-    build_messages = self.db.GetBuildMessages(self.master_build_id)
-    self.assertEqual(len(build_messages), 3)
-    for m in build_messages:
-      self.assertEqual(m['message_type'],
-                       constants.MESSAGE_TYPE_IGNORED_REASON)
-      self.assertEqual(m['message_subtype'],
-                       constants.MESSAGE_SUBTYPE_SELF_DESTRUCTION)
-      self.assertTrue(m['message_value'] in ('1', '3', '4'))
-
-  def testShouldWaitWithTriageRelevantChangesShouldWaitTrue(self):
-    """Test ShouldWait with TriageRelevantChanges.ShouldWait is True."""
-    relevant_changes.TriageRelevantChanges.__init__ = mock.Mock(
-        return_value=None)
-    self.PatchObject(relevant_changes.TriageRelevantChanges,
-                     'ShouldSelfDestruct', return_value=(False, False))
-    self.PatchObject(build_status.SlaveStatus,
-                     '_Completed',
-                     return_value=False)
-    self.PatchObject(build_status.SlaveStatus,
-                     '_ShouldFailForBuilderStartTimeout',
-                     return_value=False)
-    pool = validation_pool_unittest.MakePool(applied=[])
-    slave_status = self._GetSlaveStatus(
-        builders_array=['slave1', 'slave2'],
-        config=self.master_cq_config,
-        version='9289.0.0-rc2',
-        pool=pool)
-
-    self.assertTrue(slave_status.ShouldWait())
-    self.assertFalse(slave_status.metadata.GetValueWithDefault(
-        constants.SELF_DESTRUCTED_BUILD, False))
-    self.assertFalse(slave_status.metadata.GetValueWithDefault(
-        constants.SELF_DESTRUCTED_WITH_SUCCESS_BUILD, False))
 
   def testRetryBuilds(self):
     """Test RetryBuilds."""

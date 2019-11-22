@@ -869,7 +869,7 @@ class BuildSpecsManager(object):
             self._latest_build['status'] == constants.BUILDER_STATUS_FAILED)
 
   def WaitForSlavesToComplete(self, master_build_identifier, builders_array,
-                              pool=None, timeout=3 * 60,
+                              timeout=3 * 60,
                               ignore_timeout_exception=True):
     """Wait for all slaves to complete or timeout.
 
@@ -881,8 +881,6 @@ class BuildSpecsManager(object):
     Args:
       master_build_identifier: Master build identifier to check.
       builders_array: The name list of the build configs to check.
-      pool: An instance of ValidationPool.validation_pool used by sync stage
-            to apply changes.
       timeout: Number of seconds to wait for the results.
       ignore_timeout_exception: Whether to ignore when the timeout exception is
         raised in waiting. Default to True.
@@ -907,7 +905,6 @@ class BuildSpecsManager(object):
         metadata=self.metadata,
         buildbucket_client=self.buildbucket_client,
         version=self.current_version,
-        pool=pool,
         dry_run=self.dry_run)
 
     try:
