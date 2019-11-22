@@ -68,6 +68,7 @@
 #include "third_party/blink/public/mojom/mediastream/media_devices.mojom.h"
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom.h"
 #include "third_party/blink/public/mojom/native_file_system/native_file_system_manager.mojom.h"
+#include "third_party/blink/public/mojom/notifications/notification_service.mojom.h"
 #include "third_party/blink/public/mojom/payments/payment_app.mojom.h"
 #include "third_party/blink/public/mojom/permissions/permission.mojom.h"
 #include "third_party/blink/public/mojom/picture_in_picture/picture_in_picture.mojom.h"
@@ -443,6 +444,9 @@ void PopulateFrameBinders(RenderFrameHostImpl* host,
                             base::Unretained(host)));
   }
 
+  map->Add<blink::mojom::NotificationService>(base::BindRepeating(
+      &RenderFrameHostImpl::CreateNotificationService, base::Unretained(host)));
+
   map->Add<blink::mojom::PermissionService>(base::BindRepeating(
       &RenderFrameHostImpl::CreatePermissionService, base::Unretained(host)));
 
@@ -668,6 +672,9 @@ void PopulateBinderMapWithContext(
         BindDedicatedWorkerReceiverForOrigin(
             &RenderProcessHost::BindNativeFileSystemManager, host));
   }
+  map->Add<blink::mojom::NotificationService>(
+      BindDedicatedWorkerReceiverForOrigin(
+          &RenderProcessHost::CreateNotificationService, host));
 
   // render process host binders taking a frame id and an origin
   map->Add<blink::mojom::IDBFactory>(
@@ -728,6 +735,8 @@ void PopulateBinderMapWithContext(
         BindSharedWorkerReceiverForOrigin(
             &RenderProcessHost::BindNativeFileSystemManager, host));
   }
+  map->Add<blink::mojom::NotificationService>(BindSharedWorkerReceiverForOrigin(
+      &RenderProcessHost::CreateNotificationService, host));
 
   // render process host binders taking a frame id and an origin
   map->Add<blink::mojom::LockManager>(
@@ -812,6 +821,9 @@ void PopulateBinderMapWithContext(
         BindServiceWorkerReceiverForOrigin(
             &RenderProcessHost::BindNativeFileSystemManager, host));
   }
+  map->Add<blink::mojom::NotificationService>(
+      BindServiceWorkerReceiverForOrigin(
+          &RenderProcessHost::CreateNotificationService, host));
 
   // render process host binders taking a frame id and an origin
   map->Add<blink::mojom::IDBFactory>(

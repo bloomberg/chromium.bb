@@ -6463,6 +6463,12 @@ void RenderFrameHostImpl::CreateQuicTransportConnector(
                               std::move(receiver));
 }
 
+void RenderFrameHostImpl::CreateNotificationService(
+    mojo::PendingReceiver<blink::mojom::NotificationService> receiver) {
+  GetProcess()->CreateNotificationService(GetLastCommittedOrigin(),
+                                          std::move(receiver));
+}
+
 void RenderFrameHostImpl::CreateDedicatedWorkerHostFactory(
     mojo::PendingReceiver<blink::mojom::DedicatedWorkerHostFactory> receiver) {
   content::CreateDedicatedWorkerHostFactory(

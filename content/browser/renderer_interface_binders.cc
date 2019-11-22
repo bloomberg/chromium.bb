@@ -12,7 +12,6 @@
 #include "base/no_destructor.h"
 #include "base/task/post_task.h"
 #include "content/browser/child_process_security_policy_impl.h"
-#include "content/browser/notifications/platform_notification_context_impl.h"
 #include "content/browser/permissions/permission_service_context.h"
 #include "content/browser/quota_dispatcher_host.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
@@ -33,7 +32,6 @@
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom.h"
-#include "third_party/blink/public/mojom/notifications/notification_service.mojom.h"
 #include "url/origin.h"
 
 namespace content {
@@ -107,13 +105,6 @@ void RendererInterfaceBinders::InitializeParameterizedBinderRegistry() {
             std::move(receiver), origin);
       }));
 
-  parameterized_binder_registry_.AddInterface(base::BindRepeating(
-      [](blink::mojom::NotificationServiceRequest request,
-         RenderProcessHost* host, const url::Origin& origin) {
-        static_cast<StoragePartitionImpl*>(host->GetStoragePartition())
-            ->GetPlatformNotificationContext()
-            ->CreateService(origin, std::move(request));
-      }));
   parameterized_binder_registry_.AddInterface(
       base::BindRepeating(&QuotaDispatcherHost::CreateForWorker));
 }
