@@ -12,11 +12,13 @@
 #include <deque>
 #include <functional>
 #include <map>
+#include <ostream>
 #include <string>
 #include <string_view>
 #include <vector>
 
 #include "third_party/jsoncpp/source/include/json/json.h"
+#include "tools/binary_size/libsupersize/caspian/grouped_path.h"
 
 // Copied from representation in tools/binary_size/libsupersize/models.py
 
@@ -90,7 +92,11 @@ class BaseSymbol {
     return aliases ? aliases->size() : 1;
   }
 
-  bool IsTemplate() const { return Name().size() != TemplateName().size(); }
+  bool IsTemplate() const {
+    // Because of the way these are derived from |FullName|, they have the
+    // same contents if and only if they have the same length.
+    return Name().size() != TemplateName().size();
+  }
 
   bool IsOverhead() const { return FullName().substr(0, 10) == "Overhead: "; }
 
@@ -290,7 +296,7 @@ struct Stat {
 struct NodeStats {
   NodeStats();
   ~NodeStats();
-  NodeStats(const BaseSymbol& symbol);
+  explicit NodeStats(const BaseSymbol& symbol);
   void WriteIntoJson(Json::Value* out) const;
   NodeStats& operator+=(const NodeStats& other);
   SectionId ComputeBiggestSection() const;
@@ -305,10 +311,9 @@ struct TreeNode {
 
   using CompareFunc =
       std::function<bool(const TreeNode* const& l, const TreeNode* const& r)>;
+  void WriteIntoJson(int depth, CompareFunc compare_func, Json::Value* out);
 
-  void WriteIntoJson(Json::Value* out, int depth, CompareFunc compare_func);
-
-  std::string_view id_path;
+  GroupedPath id_path;
   const char* src_path = nullptr;
   const char* component = nullptr;
   float size = 0.0f;
