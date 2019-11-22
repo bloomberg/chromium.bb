@@ -111,9 +111,9 @@ class RemoteDeviceUpdaterTest(cros_test_lib.MockTempDirTestCase):
       # Call to download full_payload and stateful. No other calls.
       mock_xbuddy.assert_has_calls(
           [mock.call('/path/to/image/full_payload', mock.ANY,
-                     static_dir=flash.DEVSERVER_STATIC_DIR),
+                     static_dir=flash.DEVSERVER_STATIC_DIR, silent=True),
            mock.call('/path/to/image/stateful', mock.ANY,
-                     static_dir=flash.DEVSERVER_STATIC_DIR)])
+                     static_dir=flash.DEVSERVER_STATIC_DIR, silent=True)])
       self.assertEqual(mock_xbuddy.call_count, 2)
 
   def testTestImage(self):
@@ -130,7 +130,7 @@ class RemoteDeviceUpdaterTest(cros_test_lib.MockTempDirTestCase):
       # Call to download full_payload and image. No other calls.
       mock_xbuddy.assert_has_calls(
           [mock.call('/path/to/image/full_payload', mock.ANY,
-                     static_dir=flash.DEVSERVER_STATIC_DIR),
+                     static_dir=flash.DEVSERVER_STATIC_DIR, silent=True),
            mock.call('/path/to/image', mock.ANY,
                      static_dir=flash.DEVSERVER_STATIC_DIR)])
       self.assertEqual(mock_xbuddy.call_count, 2)

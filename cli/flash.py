@@ -443,13 +443,13 @@ class RemoteDeviceUpdater(object):
       try:
         translated_path, _ = ds_wrapper.GetImagePathWithXbuddy(
             os.path.join(self.image, 'full_payload'), self.board,
-            static_dir=DEVSERVER_STATIC_DIR)
+            static_dir=DEVSERVER_STATIC_DIR, silent=True)
         payload_dir = os.path.dirname(
             ds_wrapper.TranslatedPathToLocalPath(translated_path,
                                                  DEVSERVER_STATIC_DIR))
         ds_wrapper.GetImagePathWithXbuddy(
             os.path.join(self.image, 'stateful'), self.board,
-            static_dir=DEVSERVER_STATIC_DIR)
+            static_dir=DEVSERVER_STATIC_DIR, silent=True)
         fetch_image = False
       except (ds_wrapper.ImagePathError, ds_wrapper.ArtifactDownloadError):
         logging.info('Could not find full_payload or stateful for "%s"',

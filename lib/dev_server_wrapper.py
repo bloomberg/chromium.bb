@@ -107,7 +107,8 @@ def GetXbuddyPath(path):
 
 
 def GetImagePathWithXbuddy(path, board, version=None,
-                           static_dir=DEFAULT_STATIC_DIR, lookup_only=False):
+                           static_dir=DEFAULT_STATIC_DIR,
+                           lookup_only=False, silent=False):
   """Gets image path and resolved XBuddy path using xbuddy.
 
   Ask xbuddy to translate |path|, and if necessary, download and stage the
@@ -122,6 +123,7 @@ def GetImagePathWithXbuddy(path, board, version=None,
     static_dir: Static directory to stage the image in.
     lookup_only: Caller only wants to translate the path not download the
       artifact.
+    silent: Suppress error messages.
 
   Returns:
     A tuple consisting of a translated path to the image
@@ -155,11 +157,13 @@ def GetImagePathWithXbuddy(path, board, version=None,
     resolved_path, _ = xb.LookupAlias(os.path.sep.join(path_list))
     return os.path.join(build_id, file_name), resolved_path
   except xbuddy.XBuddyException as e:
-    logging.error('Locating image "%s" failed. The path might not be valid or '
-                  'the image might not exist.', path)
+    if not silent:
+      logging.error('Locating image "%s" failed. The path might not be valid '
+                    'or the image might not exist.', path)
     raise ImagePathError('Cannot locate image %s: %s' % (path, e))
   except build_artifact.ArtifactDownloadError as e:
-    logging.error('Downloading image "%s" failed.', path)
+    if not silent:
+      logging.error('Downloading image "%s" failed.', path)
     raise ArtifactDownloadError('Cannot download image %s: %s' % (path, e))
 
 
