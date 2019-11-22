@@ -31,35 +31,38 @@
   <p id="version"></p>
 
   <div class="option">
-    <label class="i18n" msgid="options_verbosity_verbose">
-      <input id="useVerboseMode" type="checkbox" class="checkbox pref"
-             name="useVerboseMode">
+    <label id="verboseDescriptionsLabel" class="i18n"
+          msgid="options_verbosity_verbose">
       Enable verbose descriptions.
     </label>
+      <input id="useVerboseMode" type="checkbox" class="checkbox pref"
+             name="useVerboseMode" aria-labelledby="verboseDescriptionsLabel">
   </div>
 
   <div class="option">
-    <label class="i18n" msgid="options_auto_read">
-      <input id="autoRead" type="checkbox" class="checkbox pref"
-             name="autoRead">
+    <label id="readPageLabel" class="i18n" msgid="options_auto_read">
       Automatically read a page after it finishes loading.
     </label>
+    <input id="autoRead" type="checkbox" class="checkbox pref"
+             name="autoRead" aria-labelledby="readPageLabel">
   </div>
 
   <div class="option">
-    <label class="i18n" msgid="options_speak_mouse">
-      <input id="speakTextUnderMouse" type="checkbox" class="checkbox pref"
-             name="speakTextUnderMouse">
+    <label id="speakMouseTextLabel" class="i18n" msgid="options_speak_mouse">
       Speak text under the mouse.
     </label>
+    <input id="speakTextUnderMouse" type="checkbox" class="checkbox pref"
+             name="speakTextUnderMouse" aria-labelledby="speakMouseTextLabel">
   </div>
 
   <div class="option">
-    <label class="i18n" msgid="options_announce_download">
-      <input id="announceDownloadNotifications" type="checkbox"
-             class="checkbox pref" name="announceDownloadNotifications">
+    <label id="announceDownloadsLabel" class="i18n"
+          msgid="options_announce_download">
       Announce download notifications.
     </label>
+    <input id="announceDownloadNotifications" type="checkbox"
+             class="checkbox pref" name="announceDownloadNotifications"
+             aria-labelledby="announceDownloadsLabel">
   </div>
 
   <h2 class="i18n description" msgid="options_audio_description"
@@ -91,21 +94,25 @@
   </div>
 
   <div class="option" id="languageSwitchingOption">
-    <label class="i18n" msgid="options_lang_switching_checkbox_label">
-      <input id="languageSwitching" type="checkbox"
-             class="checkbox pref" name="languageSwitching">
+    <label id="voiceSwitchingLabel" class="i18n"
+          msgid="options_lang_switching_checkbox_label">
       Automatically switch ChromeVox voice based on language
     </label>
+    <input id="languageSwitching" type="checkbox"
+             class="checkbox pref" name="languageSwitching"
+             aria-labelledby="voiceSwitchingLabel">
   </div>
 
   <div id="richTextIndicationOption">
     <h2 class="i18n" msgid="options_rich_text_header">Formatting</h2>
     <div class="option">
-      <label class="i18n" msgid="options_rich_text_checkbox_label">
-      <input id="announceRichTextAttributes" type="checkbox"
-             class="checkbox pref" name="announceRichTextAttributes">
+      <label id="textStylingLabel" class="i18n"
+            msgid="options_rich_text_checkbox_label">
         Announce text styling
       </label>
+      <input id="announceRichTextAttributes" type="checkbox"
+             class="checkbox pref" name="announceRichTextAttributes"
+             aria-labelledby="textStylingLabel">
     </div>
   </div>
 
