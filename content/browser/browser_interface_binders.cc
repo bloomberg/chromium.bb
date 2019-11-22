@@ -51,6 +51,7 @@
 #include "services/shape_detection/public/mojom/facedetection_provider.mojom.h"
 #include "services/shape_detection/public/mojom/shape_detection_service.mojom.h"
 #include "services/shape_detection/public/mojom/textdetection.mojom.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
 #include "third_party/blink/public/mojom/background_fetch/background_fetch.mojom.h"
 #include "third_party/blink/public/mojom/bluetooth/web_bluetooth.mojom.h"
@@ -66,6 +67,7 @@
 #include "third_party/blink/public/mojom/mediasession/media_session.mojom.h"
 #include "third_party/blink/public/mojom/mediastream/media_devices.mojom.h"
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom.h"
+#include "third_party/blink/public/mojom/native_file_system/native_file_system_manager.mojom.h"
 #include "third_party/blink/public/mojom/payments/payment_app.mojom.h"
 #include "third_party/blink/public/mojom/permissions/permission.mojom.h"
 #include "third_party/blink/public/mojom/picture_in_picture/picture_in_picture.mojom.h"
@@ -435,6 +437,12 @@ void PopulateFrameBinders(RenderFrameHostImpl* host,
   map->Add<blink::mojom::IdleManager>(base::BindRepeating(
       &RenderFrameHostImpl::GetIdleManager, base::Unretained(host)));
 
+  if (base::FeatureList::IsEnabled(blink::features::kNativeFileSystemAPI)) {
+    map->Add<blink::mojom::NativeFileSystemManager>(
+        base::BindRepeating(&RenderFrameHostImpl::GetNativeFileSystemManager,
+                            base::Unretained(host)));
+  }
+
   map->Add<blink::mojom::PermissionService>(base::BindRepeating(
       &RenderFrameHostImpl::CreatePermissionService, base::Unretained(host)));
 
@@ -655,6 +663,11 @@ void PopulateBinderMapWithContext(
   map->Add<blink::mojom::FileSystemManager>(
       BindDedicatedWorkerReceiverForOrigin(
           &RenderProcessHost::BindFileSystemManager, host));
+  if (base::FeatureList::IsEnabled(blink::features::kNativeFileSystemAPI)) {
+    map->Add<blink::mojom::NativeFileSystemManager>(
+        BindDedicatedWorkerReceiverForOrigin(
+            &RenderProcessHost::BindNativeFileSystemManager, host));
+  }
 
   // render process host binders taking a frame id and an origin
   map->Add<blink::mojom::IDBFactory>(
@@ -710,6 +723,11 @@ void PopulateBinderMapWithContext(
       &RenderProcessHost::CreatePaymentManagerForOrigin, host));
   map->Add<blink::mojom::PermissionService>(BindSharedWorkerReceiverForOrigin(
       &RenderProcessHost::CreatePermissionService, host));
+  if (base::FeatureList::IsEnabled(blink::features::kNativeFileSystemAPI)) {
+    map->Add<blink::mojom::NativeFileSystemManager>(
+        BindSharedWorkerReceiverForOrigin(
+            &RenderProcessHost::BindNativeFileSystemManager, host));
+  }
 
   // render process host binders taking a frame id and an origin
   map->Add<blink::mojom::LockManager>(
@@ -789,6 +807,11 @@ void PopulateBinderMapWithContext(
       &RenderProcessHost::CreatePaymentManagerForOrigin, host));
   map->Add<blink::mojom::PermissionService>(BindServiceWorkerReceiverForOrigin(
       &RenderProcessHost::CreatePermissionService, host));
+  if (base::FeatureList::IsEnabled(blink::features::kNativeFileSystemAPI)) {
+    map->Add<blink::mojom::NativeFileSystemManager>(
+        BindServiceWorkerReceiverForOrigin(
+            &RenderProcessHost::BindNativeFileSystemManager, host));
+  }
 
   // render process host binders taking a frame id and an origin
   map->Add<blink::mojom::IDBFactory>(

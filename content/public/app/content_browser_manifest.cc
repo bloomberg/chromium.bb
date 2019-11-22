@@ -168,7 +168,6 @@ const service_manager::Manifest& GetContentBrowserManifest() {
               "navigation:shared_worker", "renderer",
               std::set<const char*>{
                   "blink.mojom.CacheStorage",
-                  "blink.mojom.NativeFileSystemManager",
                   "blink.mojom.NotificationService",
                   "blink.mojom.QuotaDispatcherHost",
                   "blink.mojom.WebSocketConnector"})
@@ -177,7 +176,6 @@ const service_manager::Manifest& GetContentBrowserManifest() {
               std::set<const char*>{
                   "blink.mojom.CacheStorage",
                   "blink.mojom.DedicatedWorkerHostFactory",
-                  "blink.mojom.NativeFileSystemManager",
                   "blink.mojom.NotificationService",
                   "blink.mojom.QuotaDispatcherHost",
                   "blink.mojom.WebSocketConnector"})
@@ -185,7 +183,6 @@ const service_manager::Manifest& GetContentBrowserManifest() {
               "navigation:service_worker", "renderer",
               std::set<const char*>{
                   "blink.mojom.CacheStorage",
-                  "blink.mojom.NativeFileSystemManager",
                   "blink.mojom.NotificationService",
                   "blink.mojom.QuotaDispatcherHost",
                   "network.mojom.RestrictedCookieManager",
@@ -199,7 +196,6 @@ const service_manager::Manifest& GetContentBrowserManifest() {
                   "blink.mojom.DisplayCutoutHost",
                   "blink.mojom.DedicatedWorkerHostFactory",
                   "blink.mojom.GeolocationService",
-                  "blink.mojom.NativeFileSystemManager",
                   "blink.mojom.NotificationService",
                   "blink.mojom.Portal",
                   "blink.mojom.PrefetchURLLoaderService",

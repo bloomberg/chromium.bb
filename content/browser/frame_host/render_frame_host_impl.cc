@@ -4712,23 +4712,6 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
       GetProcess()->GetStoragePartition()->GetFileSystemContext(),
       ChromeBlobStorageContext::GetFor(GetProcess()->GetBrowserContext())));
 
-  if (base::FeatureList::IsEnabled(blink::features::kNativeFileSystemAPI)) {
-    registry_->AddInterface(base::BindRepeating(
-        [](RenderFrameHostImpl* frame,
-           mojo::PendingReceiver<blink::mojom::NativeFileSystemManager>
-               receiver) {
-          auto* storage_partition = static_cast<StoragePartitionImpl*>(
-              frame->GetProcess()->GetStoragePartition());
-          auto* manager = storage_partition->GetNativeFileSystemManager();
-          manager->BindReceiver(
-              NativeFileSystemManagerImpl::BindingContext(
-                  frame->GetLastCommittedOrigin(), frame->GetLastCommittedURL(),
-                  frame->GetProcess()->GetID(), frame->GetRoutingID()),
-              std::move(receiver));
-        },
-        base::Unretained(this)));
-  }
-
   registry_->AddInterface(base::BindRepeating(
       &GetRestrictedCookieManager, base::Unretained(this),
       GetProcess()->GetID(), routing_id_, GetProcess()->GetStoragePartition()));
@@ -6641,6 +6624,18 @@ void RenderFrameHostImpl::GetFileSystemManager(
                  base::BindOnce(&FileSystemManagerImpl::BindReceiver,
                                 base::Unretained(file_system_manager_.get()),
                                 std::move(receiver)));
+}
+
+void RenderFrameHostImpl::GetNativeFileSystemManager(
+    mojo::PendingReceiver<blink::mojom::NativeFileSystemManager> receiver) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  auto* storage_partition =
+      static_cast<StoragePartitionImpl*>(GetProcess()->GetStoragePartition());
+  auto* manager = storage_partition->GetNativeFileSystemManager();
+  manager->BindReceiver(NativeFileSystemManagerImpl::BindingContext(
+                            GetLastCommittedOrigin(), GetLastCommittedURL(),
+                            GetProcess()->GetID(), routing_id_),
+                        std::move(receiver));
 }
 
 void RenderFrameHostImpl::CreateLockManager(
