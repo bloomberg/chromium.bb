@@ -22,6 +22,7 @@ import org.junit.runner.RunWith;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisableIf;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeFeatureList;
@@ -198,6 +199,7 @@ public class ReturnToChromeTest {
     @SmallTest
     @Feature({"ReturnToChrome"})
     @CommandLineFlags.Add({BASE_PARAMS + "/" + TAB_SWITCHER_ON_RETURN_MS + "/0"})
+    @DisabledTest(message = "http://crbug.com/1027315")
     public void testTabSwitcherModeTriggeredBeyondThreshold_NoTabs() throws Exception {
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> mActivityTestRule.getActivity().getTabModelSelector().closeAllTabs());
