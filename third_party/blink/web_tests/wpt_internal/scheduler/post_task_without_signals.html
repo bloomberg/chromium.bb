@@ -17,14 +17,10 @@ async_test(t => {
       yield priorities[i];
   }
 
-  function testTaskQueue(priority) {
-    let tq = scheduler.getTaskQueue(priority);
-    assert_equals(tq.priority, priority);
-
-    let task = tq.postTask(t.step_func(() => {
+  function testPriority(priority) {
+    let task = scheduler.postTask(t.step_func(() => {
       nextTaskQueue();
-    }));
-    assert_equals(task.priority, priority);
+    }), { priority: priority });
   }
 
   let nextPriority = priorityGenerator();
@@ -35,13 +31,13 @@ async_test(t => {
       t.done();
       return;
     }
-    testTaskQueue(next.value);
+    testPriority(next.value);
   }
 
   // Schedule a task to kick things off.
   scheduler.postTask(t.step_func(() => {
     nextTaskQueue();
   }));
-}, 'Basic functionality for the global TaskQueues returned by scheduler.taskQueue');
+}, 'Basic functionality for scheduler.postTask() without using a task signal');
 
 </script>
