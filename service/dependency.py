@@ -291,6 +291,11 @@ def GetBuildDependency(board, packages=None):
   results['package_deps'] = {}
   results['source_path_mapping'] = {}
 
+  sdk_results = {}
+  sdk_results['target_board'] = 'sdk'
+  sdk_results['package_deps'] = {}
+  sdk_results['source_path_mapping'] = {}
+
   board_specific_packages = []
   if packages:
     board_specific_packages.extend([cpv.cp for cpv in packages])
@@ -330,4 +335,13 @@ def GetBuildDependency(board, packages=None):
   results['source_path_mapping'].update(
       GenerateSourcePathMapping(list(board_specific_deps), board))
 
-  return results
+  sdk_results['package_deps'].update(board_bdeps)
+  sdk_results['package_deps'].update(non_board_specific_deps)
+
+  sdk_results['source_path_mapping'].update(
+      GenerateSourcePathMapping(list(non_board_specific_deps), None))
+
+  sdk_results['source_path_mapping'].update(
+      GenerateSourcePathMapping(list(board_bdeps), None))
+
+  return results, sdk_results

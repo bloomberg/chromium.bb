@@ -68,5 +68,6 @@ def GetBuildDependencyGraph(input_proto, output_proto, _config):
   """
   board = input_proto.build_target.name
 
-  json_map = dependency.GetBuildDependency(board)
+  json_map, sdk_json_map = dependency.GetBuildDependency(board)
   AugmentDepGraphProtoFromJsonMap(json_map, output_proto.dep_graph)
+  AugmentDepGraphProtoFromJsonMap(sdk_json_map, output_proto.sdk_dep_graph)

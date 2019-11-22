@@ -80,9 +80,10 @@ class BoardBuilDependencyTest(cros_test_lib.MockTestCase,
 
   def testGetBuildDependencyGraph(self):
     """GetBuildDependencyGraph calls helper method with correct args."""
-    patch = self.PatchObject(dependency_service,
-                             'GetBuildDependency',
-                             return_value=self.json_deps)
+    patch = self.PatchObject(
+        dependency_service,
+        'GetBuildDependency',
+        return_value=(self.json_deps, self.json_deps))
     input_proto = depgraph_pb2.GetBuildDependencyGraphRequest()
     input_proto.build_target.name = 'target'
     dependency.GetBuildDependencyGraph(input_proto, self.response,
