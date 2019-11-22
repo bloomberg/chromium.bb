@@ -746,7 +746,8 @@ TEST_F(PdfAccessibilityTreeTest, TestActionDataConversion) {
   EXPECT_EQ(ui::AXActionTarget::Type::kPdf, pdf_action_target->GetType());
   EXPECT_TRUE(pdf_action_target->ScrollToMakeVisibleWithSubFocus(
       gfx::Rect(0, 0, 50, 50), ax::mojom::ScrollAlignment::kScrollAlignmentLeft,
-      ax::mojom::ScrollAlignment::kScrollAlignmentTop));
+      ax::mojom::ScrollAlignment::kScrollAlignmentTop,
+      ax::mojom::ScrollBehavior::kDoNotScrollIfVisible));
   PP_PdfAccessibilityActionData action_data =
       fake_pepper_instance.GetReceivedActionData();
   EXPECT_EQ(PP_PdfAccessibilityAction::PP_PDF_SCROLL_TO_MAKE_VISIBLE,
@@ -759,7 +760,8 @@ TEST_F(PdfAccessibilityTreeTest, TestActionDataConversion) {
   EXPECT_TRUE(pdf_action_target->ScrollToMakeVisibleWithSubFocus(
       gfx::Rect(0, 0, 50, 50),
       ax::mojom::ScrollAlignment::kScrollAlignmentRight,
-      ax::mojom::ScrollAlignment::kScrollAlignmentTop));
+      ax::mojom::ScrollAlignment::kScrollAlignmentTop,
+      ax::mojom::ScrollBehavior::kDoNotScrollIfVisible));
   action_data = fake_pepper_instance.GetReceivedActionData();
   EXPECT_EQ(PP_PdfAccessibilityScrollAlignment::PP_PDF_SCROLL_ALIGNMENT_RIGHT,
             action_data.horizontal_scroll_alignment);
@@ -767,7 +769,8 @@ TEST_F(PdfAccessibilityTreeTest, TestActionDataConversion) {
   EXPECT_TRUE(pdf_action_target->ScrollToMakeVisibleWithSubFocus(
       gfx::Rect(0, 0, 50, 50),
       ax::mojom::ScrollAlignment::kScrollAlignmentBottom,
-      ax::mojom::ScrollAlignment::kScrollAlignmentBottom));
+      ax::mojom::ScrollAlignment::kScrollAlignmentBottom,
+      ax::mojom::ScrollBehavior::kDoNotScrollIfVisible));
   action_data = fake_pepper_instance.GetReceivedActionData();
   EXPECT_EQ(PP_PdfAccessibilityScrollAlignment::PP_PDF_SCROLL_ALIGNMENT_BOTTOM,
             action_data.horizontal_scroll_alignment);
@@ -775,7 +778,8 @@ TEST_F(PdfAccessibilityTreeTest, TestActionDataConversion) {
   EXPECT_TRUE(pdf_action_target->ScrollToMakeVisibleWithSubFocus(
       gfx::Rect(0, 0, 50, 50),
       ax::mojom::ScrollAlignment::kScrollAlignmentCenter,
-      ax::mojom::ScrollAlignment::kScrollAlignmentClosestEdge));
+      ax::mojom::ScrollAlignment::kScrollAlignmentClosestEdge,
+      ax::mojom::ScrollBehavior::kDoNotScrollIfVisible));
   action_data = fake_pepper_instance.GetReceivedActionData();
   EXPECT_EQ(PP_PdfAccessibilityScrollAlignment::PP_PDF_SCROLL_ALIGNMENT_CENTER,
             action_data.horizontal_scroll_alignment);
