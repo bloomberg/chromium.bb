@@ -489,7 +489,6 @@ class DistributedBuilder(SimpleBuilder):
       if self._run.config.do_not_apply_cq_patches:
         sync_stage = self._GetStageInstance(
             sync_stages.MasterSlaveLKGMSyncStage)
-      self.completion_stage_class = completion_stages.CommitQueueCompletionStage
     elif config_lib.IsCanaryType(self._run.config.build_type):
       sync_stage = self._GetStageInstance(
           sync_stages.ManifestVersionedSyncStage)
