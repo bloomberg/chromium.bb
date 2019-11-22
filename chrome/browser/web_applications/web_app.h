@@ -114,7 +114,7 @@ class WebApp {
   AppId app_id_;
 
   // This set always contains at least one source.
-  using Sources = std::bitset<Source::kMaxValue>;
+  using Sources = std::bitset<Source::kMaxValue + 1>;
   Sources sources_;
 
   std::string name_;

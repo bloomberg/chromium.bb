@@ -684,7 +684,7 @@ TEST_F(WebAppRegistrarTest, CountUserInstalledApps) {
 
   const std::string base_url{"https://example.com/path"};
 
-  for (int i = Source::kMinValue + 1; i < Source::kMaxValue; ++i) {
+  for (int i = Source::kMinValue + 1; i <= Source::kMaxValue; ++i) {
     auto source = static_cast<Source::Type>(i);
     auto web_app =
         CreateWebAppWithSource(base_url + base::NumberToString(i), source);
