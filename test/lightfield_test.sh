@@ -96,4 +96,4 @@ lightfield_test() {
 
 lightfield_test_tests="lightfield_test"
 
-run_tests lightfield_test_verify_environment "${lightfield_test_tests}"
+# run_tests lightfield_test_verify_environment "${lightfield_test_tests}"

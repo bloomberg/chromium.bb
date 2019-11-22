@@ -130,29 +130,44 @@ void av1_init_dsmotion_compensation(search_site_config *cfg, int stride) {
 }
 
 void av1_init3smotion_compensation(search_site_config *cfg, int stride) {
-  int len, ss_count = 1;
+  int ss_count = 1;
   int stage_index = MAX_MVSEARCH_STEPS - 1;
 
   cfg->ss[stage_index][0].mv.col = cfg->ss[stage_index][0].mv.row = 0;
   cfg->ss[stage_index][0].offset = 0;
   cfg->stride = stride;
 
-  for (len = MAX_FIRST_STEP; len > 0; len /= 2) {
+  for (int radius = MAX_FIRST_STEP; radius > 0; radius /= 2) {
     // Generate offsets for 8 search sites per step.
-    const MV ss_mvs[9] = { { 0, 0 },      { -len, 0 },   { len, 0 },
-                           { 0, -len },   { 0, len },    { -len, -len },
-                           { -len, len }, { len, -len }, { len, len } };
+    int tan_radius = AOMMAX((int)(0.41 * radius), 1);
+    int num_search_pts = 12;
+    if (radius == 1) num_search_pts = 8;
+
+    const MV ss_mvs[13] = {
+      { 0, 0 },
+      { -radius, 0 },
+      { radius, 0 },
+      { 0, -radius },
+      { 0, radius },
+      { -radius, -tan_radius },
+      { radius, tan_radius },
+      { -tan_radius, radius },
+      { tan_radius, -radius },
+      { -radius, tan_radius },
+      { radius, -tan_radius },
+      { tan_radius, radius },
+      { -tan_radius, -radius },
+    };
 
     int i;
-    for (i = 0; i < 9; ++i) {
+    for (i = 0; i <= num_search_pts; ++i) {
       search_site *const ss = &cfg->ss[stage_index][i];
       ss->mv = ss_mvs[i];
       ss->offset = ss->mv.row * stride + ss->mv.col;
     }
-    cfg->searches_per_step[stage_index] = 8;
+    cfg->searches_per_step[stage_index] = num_search_pts;
     --stage_index;
   }
-
   cfg->ss_count = ss_count;
 }
 
@@ -1684,8 +1699,6 @@ int av1_diamond_search_sad_c(MACROBLOCK *x, const search_site_config *cfg,
                              int sad_per_bit, int *num00,
                              const aom_variance_fn_ptr_t *fn_ptr,
                              const MV *center_mv) {
-  int step;
-
   const MACROBLOCKD *const xd = &x->e_mbd;
   uint8_t *what = x->plane[0].src.buf;
   const int what_stride = x->plane[0].src.stride;
@@ -1721,14 +1734,11 @@ int av1_diamond_search_sad_c(MACROBLOCK *x, const search_site_config *cfg,
   bestsad = fn_ptr->sdf(what, what_stride, in_what, in_what_stride) +
             mvsad_err_cost(x, best_mv, &fcenter_mv, sad_per_bit);
 
-  for (step = tot_steps; step >= 0; --step) {
+  for (int step = tot_steps; step >= 0; --step) {
     const search_site *ss = cfg->ss[step];
     best_site = 0;
-    // If all the pixels are within the bounds we don't check whether the
-    // search point is valid in this loop,  otherwise we check each point
-    // for validity.
-    // TODO(jingning): Bring back sdx4df optimization for speed later.
 
+    // TODO(jingning): Bring back sdx4df optimization for speed later.
     for (int idx = 1; idx <= cfg->searches_per_step[step]; ++idx) {
       // Trap illegal vectors
       const MV this_mv = { best_mv->row + ss[idx].mv.row,
@@ -1757,7 +1767,7 @@ int av1_diamond_search_sad_c(MACROBLOCK *x, const search_site_config *cfg,
       is_off_center = 1;
     }
 
-    if (is_off_center == 0 && best_address == in_what) (*num00)++;
+    if (is_off_center == 0) (*num00)++;
   }
 
   return bestsad;
