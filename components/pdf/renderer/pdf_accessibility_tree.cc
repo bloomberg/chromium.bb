@@ -284,6 +284,22 @@ bool PdfAccessibilityTree::IsDataFromPluginValid(
       return false;
   }
 
+  const std::vector<ppapi::PdfAccessibilityHighlightInfo>& highlights =
+      page_objects.highlights;
+  if (!std::is_sorted(highlights.begin(), highlights.end(),
+                      CompareTextRuns<ppapi::PdfAccessibilityHighlightInfo>)) {
+    return false;
+  }
+
+  // Since highlights also span across text runs similar to links, the
+  // validation method is the same.
+  for (const auto& highlight : highlights) {
+    base::CheckedNumeric<uint32_t> index = highlight.text_run_index;
+    index += highlight.text_run_count;
+    if (!index.IsValid() || index.ValueOrDie() > text_runs.size())
+      return false;
+  }
+
   return true;
 }
 

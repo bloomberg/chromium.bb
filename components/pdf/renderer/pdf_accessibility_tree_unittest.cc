@@ -153,4 +153,55 @@ TEST(PdfAccessibilityTreeUnitTest, OutOfBoundImage) {
                                                            page_objects));
 }
 
+TEST(PdfAccessibilityTreeUnitTest, UnsortedHighlightVector) {
+  std::vector<ppapi::PdfAccessibilityTextRunInfo> text_runs;
+  text_runs.emplace_back(kFirstTextRun);
+  text_runs.emplace_back(kSecondTextRun);
+
+  std::vector<PP_PrivateAccessibilityCharInfo> chars(
+      std::begin(kDummyCharsData), std::end(kDummyCharsData));
+
+  ppapi::PdfAccessibilityPageObjects page_objects;
+
+  {
+    // Add first highlight in the vector.
+    ppapi::PdfAccessibilityHighlightInfo highlight;
+    highlight.text_run_index = 2;
+    highlight.text_run_count = 0;
+    page_objects.highlights.push_back(std::move(highlight));
+  }
+
+  {
+    // Add second highlight in the vector.
+    ppapi::PdfAccessibilityHighlightInfo highlight;
+    highlight.text_run_index = 0;
+    highlight.text_run_count = 1;
+    page_objects.highlights.push_back(std::move(highlight));
+  }
+
+  EXPECT_FALSE(PdfAccessibilityTree::IsDataFromPluginValid(text_runs, chars,
+                                                           page_objects));
+}
+
+TEST(PdfAccessibilityTreeUnitTest, OutOfBoundHighlight) {
+  std::vector<ppapi::PdfAccessibilityTextRunInfo> text_runs;
+  text_runs.emplace_back(kFirstTextRun);
+  text_runs.emplace_back(kSecondTextRun);
+
+  std::vector<PP_PrivateAccessibilityCharInfo> chars(
+      std::begin(kDummyCharsData), std::end(kDummyCharsData));
+
+  ppapi::PdfAccessibilityPageObjects page_objects;
+
+  {
+    ppapi::PdfAccessibilityHighlightInfo highlight;
+    highlight.text_run_index = 3;
+    highlight.text_run_count = 0;
+    page_objects.highlights.push_back(std::move(highlight));
+  }
+
+  EXPECT_FALSE(PdfAccessibilityTree::IsDataFromPluginValid(text_runs, chars,
+                                                           page_objects));
+}
+
 }  // namespace pdf
