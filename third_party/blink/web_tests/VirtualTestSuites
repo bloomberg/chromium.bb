@@ -601,6 +601,11 @@
     "args": ["--enable-features=OutOfBlinkFrameAncestors"]
   },
   {
+    "prefix": "import-maps-disabled",
+    "bases": ["external/wpt/import-maps/core/not-as-classic-script.html"],
+    "args": ["--disable-blink-features=ExperimentalProductivityFeatures"]
+  },
+  {
     "prefix": "import-maps-without-builtin-modules",
     "bases": ["external/wpt/import-maps"],
     "args": ["--enable-blink-features=ImportMaps",
