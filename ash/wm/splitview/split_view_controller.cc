@@ -816,7 +816,7 @@ void SplitViewController::OnWindowBoundsChanged(
                                window_state->drag_details()->bounds_change ==
                                    WindowResizer::kBoundsChange_Repositions;
   if (is_window_moved) {
-    EndSplitView();
+    // Ending overview will also end clamshell split view.
     Shell::Get()->overview_controller()->EndOverview();
     return;
   }
@@ -856,6 +856,7 @@ void SplitViewController::OnResizeLoopStarted(aura::Window* window) {
   // we'll just end splitview and overview mode.
   if (WindowState::Get(window)->drag_details()->window_component !=
       GetWindowComponentForResize(window)) {
+    // Ending overview will also end clamshell split view.
     Shell::Get()->overview_controller()->EndOverview();
   }
 }
@@ -866,7 +867,7 @@ void SplitViewController::OnResizeLoopEnded(aura::Window* window) {
 
   if (divider_position_ < GetDividerEndPosition() * kOneThirdPositionRatio ||
       divider_position_ > GetDividerEndPosition() * kTwoThirdPositionRatio) {
-    EndSplitView();
+    // Ending overview will also end clamshell split view.
     Shell::Get()->overview_controller()->EndOverview();
     WindowState::Get(window)->Maximize();
   }
