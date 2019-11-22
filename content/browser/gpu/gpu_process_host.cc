@@ -1116,8 +1116,8 @@ bool GpuProcessHost::LaunchGpuProcess() {
   // AppendExtraCommandLineSwitches will be called again in process_->Launch(),
   // Call LaunchWithoutExtraCommandLineSwitches() so the command line switches
   // will not be appended twice.
-  process_->LaunchWithoutExtraCommandLineSwitches(
-      std::move(delegate), std::move(cmd_line), /*files_to_preload=*/{}, true);
+  process_->LaunchWithoutExtraCommandLineSwitches(std::move(delegate),
+                                                  std::move(cmd_line), true);
   process_launched_ = true;
 
   if (kind_ == GPU_PROCESS_KIND_SANDBOXED) {

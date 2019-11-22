@@ -5,6 +5,7 @@
 #include "content/public/app/content_utility_manifest.h"
 
 #include "base/no_destructor.h"
+#include "content/public/app/v8_snapshot_overlay_manifest.h"
 #include "content/public/common/service_names.mojom.h"
 #include "services/service_manager/public/cpp/manifest_builder.h"
 
@@ -34,7 +35,8 @@ const service_manager::Manifest& GetContentUtilityManifest() {
           .RequireCapability(mojom::kSystemServiceName, "sandbox_support")
           .RequireCapability("*", "app")
           .RequireCapability("font_service", "font_service")
-          .Build()};
+          .Build()
+          .Amend(GetV8SnapshotOverlayManifest())};
   return *manifest;
 }
 
