@@ -1,5 +1,12 @@
 <!DOCTYPE html>
 <meta charset="UTF-8">
+<link rel="help" href="https://drafts.csswg.org/css-backgrounds-3/#background-image">
+<meta name="test" content="background-image supports animation">
+
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<script src="/css/support/interpolation-testcommon.js"></script>
+
 <style>
 .parent {
   background-image: url(../resources/blue-100.png);
@@ -18,28 +25,28 @@
   margin-right: 2px;
 }
 </style>
+
 <body>
-<script src="resources/interpolation-test.js"></script>
 <script>
 // Neutral to image
 var from = 'url(../resources/blue-100.png)';
 var to = 'url(../resources/green-100.png)';
-assertInterpolation({
+test_interpolation({
   property: 'background-image',
   from: neutralKeyframe,
   to: to,
 }, [
-  {at: -0.3, is: from},
-  {at: 0, is: from},
-  {at: 0.3, is: '-webkit-cross-fade(' + from + ', ' + to + ', 0.3)'},
-  {at: 0.6, is: '-webkit-cross-fade(' + from + ', ' + to + ', 0.6)'},
-  {at: 1, is: to},
-  {at: 1.5, is: to},
+  {at: -0.3, expect: from},
+  {at: 0, expect: from},
+  {at: 0.3, expect: 'cross-fade(' + from + ', ' + to + ', 0.3)'},
+  {at: 0.6, expect: 'cross-fade(' + from + ', ' + to + ', 0.6)'},
+  {at: 1, expect: to},
+  {at: 1.5, expect: to},
 ]);
 
 // initial to image
 to = 'url(../resources/green-100.png)';
-assertNoInterpolation({
+test_no_interpolation({
   property: 'background-image',
   from: 'initial',
   to: to,
@@ -48,21 +55,21 @@ assertNoInterpolation({
 // inherit to image
 from = 'url(../resources/blue-100.png)';
 to = 'url(../resources/green-100.png)';
-assertInterpolation({
+test_interpolation({
   property: 'background-image',
   from: 'inherit',
   to: to,
 }, [
-  {at: -0.3, is: from},
-  {at: 0, is: from},
-  {at: 0.3, is: '-webkit-cross-fade(' + from + ', ' + to + ', 0.3)'},
-  {at: 0.6, is: '-webkit-cross-fade(' + from + ', ' + to + ', 0.6)'},
-  {at: 1, is: to},
-  {at: 1.5, is: to},
+  {at: -0.3, expect: from},
+  {at: 0, expect: from},
+  {at: 0.3, expect: 'cross-fade(' + from + ', ' + to + ', 0.3)'},
+  {at: 0.6, expect: 'cross-fade(' + from + ', ' + to + ', 0.6)'},
+  {at: 1, expect: to},
+  {at: 1.5, expect: to},
 ]);
 
 // unset to image
-assertNoInterpolation({
+test_no_interpolation({
   property: 'background-image',
   from: 'unset',
   to: to,
@@ -71,23 +78,23 @@ assertNoInterpolation({
 // Image to image
 from = 'url(../resources/blue-100.png)';
 to = 'url(../resources/green-100.png)';
-assertInterpolation({
+test_interpolation({
   property: 'background-image',
   from: from,
   to: to,
 }, [
-  {at: -0.3, is: from},
-  {at: 0, is: from},
-  {at: 0.3, is: '-webkit-cross-fade(' + from + ', ' + to + ', 0.3)'},
-  {at: 0.6, is: '-webkit-cross-fade(' + from + ', ' + to + ', 0.6)'},
-  {at: 1, is: to},
-  {at: 1.5, is: to},
+  {at: -0.3, expect: from},
+  {at: 0, expect: from},
+  {at: 0.3, expect: 'cross-fade(' + from + ', ' + to + ', 0.3)'},
+  {at: 0.6, expect: 'cross-fade(' + from + ', ' + to + ', 0.6)'},
+  {at: 1, expect: to},
+  {at: 1.5, expect: to},
 ]);
 
 // Image to gradient
 from = 'url(../resources/blue-100.png)';
 to = 'linear-gradient(45deg, blue, orange)';
-assertNoInterpolation({
+test_no_interpolation({
   property: 'background-image',
   from: from,
   to: to,
@@ -95,8 +102,8 @@ assertNoInterpolation({
 
 // Image to crossfade
 from = 'url(../resources/blue-100.png)';
-to = '-webkit-cross-fade(url(../resources/green-100.png), url(../resources/stripes-100.png), 0.5)';
-assertNoInterpolation({
+to = 'cross-fade(url(../resources/green-100.png), url(../resources/stripes-100.png), 0.5)';
+test_no_interpolation({
   property: 'background-image',
   from: from,
   to: to,
@@ -105,7 +112,7 @@ assertNoInterpolation({
 // Gradient to gradient
 from = 'linear-gradient(-45deg, red, yellow)';
 to = 'linear-gradient(45deg, blue, orange)';
-assertNoInterpolation({
+test_no_interpolation({
   property: 'background-image',
   from: from,
   to: to,
@@ -114,7 +121,7 @@ assertNoInterpolation({
 // Keyword to image
 from = 'none';
 to = 'url(../resources/green-100.png)';
-assertNoInterpolation({
+test_no_interpolation({
   property: 'background-image',
   from: from,
   to: to,
@@ -127,17 +134,17 @@ var toA = 'url(../resources/blue-100.png)';
 var toB = 'url(../resources/stripes-100.png)';
 from = fromA + ', ' + fromB;
 to = toA + ', ' + toB;
-assertInterpolation({
+test_interpolation({
   property: 'background-image',
   from: from,
   to: to,
 }, [
-  {at: -0.3, is: from},
-  {at: 0, is: from},
-  {at: 0.3, is: '-webkit-cross-fade(' + fromA + ', ' + toA + ', 0.3), -webkit-cross-fade(' + fromB + ', ' + toB + ', 0.3)'},
-  {at: 0.6, is: '-webkit-cross-fade(' + fromA + ', ' + toA + ', 0.6), -webkit-cross-fade(' + fromB + ', ' + toB + ', 0.6)'},
-  {at: 1, is: to},
-  {at: 1.5, is: to},
+  {at: -0.3, expect: from},
+  {at: 0, expect: from},
+  {at: 0.3, expect: 'cross-fade(' + fromA + ', ' + toA + ', 0.3), cross-fade(' + fromB + ', ' + toB + ', 0.3)'},
+  {at: 0.6, expect: 'cross-fade(' + fromA + ', ' + toA + ', 0.6), cross-fade(' + fromB + ', ' + toB + ', 0.6)'},
+  {at: 1, expect: to},
+  {at: 1.5, expect: to},
 ]);
 
 // Single to multiple
@@ -145,7 +152,7 @@ from = 'url(../resources/blue-100.png)';
 var toA = 'url(../resources/stripes-100.png)';
 var toB = 'url(../resources/green-100.png)';
 to = toA + ', ' + toB;
-assertInterpolation({
+test_interpolation({
   property: 'background-image',
   from: from,
   to: to,
@@ -154,18 +161,18 @@ assertInterpolation({
   // Animating background-image is not specified to be possible however we do it for backwards compatibility.
   // With this in mind we kept the implementation simple at the expense of this corner case because there is
   // no official specification to support.
-  {at: -0.3, is: from + ', ' + from},
-  {at: 0, is: from},
-  {at: 0.3, is: '-webkit-cross-fade(' + from + ', ' + toA + ', 0.3), -webkit-cross-fade(' + from + ', ' + toB + ', 0.3)'},
-  {at: 0.6, is: '-webkit-cross-fade(' + from + ', ' + toA + ', 0.6), -webkit-cross-fade(' + from + ', ' + toB + ', 0.6)'},
-  {at: 1, is: to},
-  {at: 1.5, is: to},
+  {at: -0.3, expect: from + ', ' + from},
+  {at: 0, expect: from},
+  {at: 0.3, expect: 'cross-fade(' + from + ', ' + toA + ', 0.3), cross-fade(' + from + ', ' + toB + ', 0.3)'},
+  {at: 0.6, expect: 'cross-fade(' + from + ', ' + toA + ', 0.6), cross-fade(' + from + ', ' + toB + ', 0.6)'},
+  {at: 1, expect: to},
+  {at: 1.5, expect: to},
 ]);
 
 // Multiple mismatched types
 from = 'url(../resources/blue-100.png), none';
 to = 'url(../resources/stripes-100.png), url(../resources/green-100.png)';
-assertNoInterpolation({
+test_no_interpolation({
   property: 'background-image',
   from: from,
   to: to,
