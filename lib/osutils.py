@@ -106,32 +106,70 @@ def AllocateFile(path, size, makedirs=False):
     out.truncate(size)
 
 
-def WriteFile(path, content, mode='w', atomic=False, makedirs=False,
-              sudo=False):
+# All the modes that we allow people to pass to WriteFile.  This allows us to
+# make assumptions about the input so we can update it if needed.
+_VALID_WRITE_MODES = {
+    # Read & write, but no truncation, and file offset is 0.
+    'r+', 'r+b',
+    # Writing (and maybe reading) with truncation.
+    'w', 'wb', 'w+', 'w+b',
+    # Writing (and maybe reading), but no truncation, and file offset is at end.
+    'a', 'ab', 'a+', 'a+b',
+}
+
+
+def WriteFile(path, content, mode='w', encoding=None, errors=None, atomic=False,
+              makedirs=False, sudo=False):
   """Write the given content to disk.
 
   Args:
     path: Pathway to write the content to.
     content: Content to write.  May be either an iterable, or a string.
-    mode: Optional; if binary mode is necessary, pass 'wb'.  If appending is
-          desired, 'w+', etc.
+    mode: The mode to use when opening the file.  'w' is for text files (see the
+      following settings) and 'wb' is for binary files.  If appending, pass
+      'w+', etc...
+    encoding: The encoding of the file content.  Text files default to 'utf-8'.
+    errors: How to handle encoding errors.  Text files default to 'strict'.
     atomic: If the updating of the file should be done atomically.  Note this
             option is incompatible w/ append mode.
     makedirs: If True, create missing leading directories in the path.
     sudo: If True, write the file as root.
   """
+  if mode not in _VALID_WRITE_MODES:
+    raise ValueError('mode must be one of {"%s"}, not %r' %
+                     ('", "'.join(sorted(_VALID_WRITE_MODES)), mode))
+
   if sudo and ('a' in mode or '+' in mode):
     raise ValueError('append mode does not work in sudo mode')
 
+  if 'b' in mode:
+    if encoding is not None or errors is not None:
+      raise ValueError('binary mode does not use encoding/errors')
+  else:
+    if encoding is None:
+      encoding = 'utf-8'
+    if errors is None:
+      errors = 'strict'
+
   if makedirs:
     SafeMakedirs(os.path.dirname(path), sudo=sudo)
+
+  # TODO(vapier): We can merge encoding/errors into the open call once we are
+  # Python 3 only.  Until then, we have to handle it ourselves.
+  if 'b' in mode:
+    write_wrapper = lambda x: x
+  else:
+    mode += 'b'
+    def write_wrapper(iterable):
+      for item in iterable:
+        yield item.encode(encoding, errors)
 
   # If the file needs to be written as root and we are not root, write to a temp
   # file, move it and change the permission.
   if sudo and os.getuid() != 0:
     with tempfile.NamedTemporaryFile(mode=mode, delete=False) as temp:
       write_path = temp.name
-      temp.writelines(cros_build_lib.iflatten_instance(content))
+      temp.writelines(write_wrapper(cros_build_lib.iflatten_instance(content)))
     os.chmod(write_path, 0o644)
 
     try:
@@ -154,7 +192,7 @@ def WriteFile(path, content, mode='w', atomic=False, makedirs=False,
     if atomic:
       write_path = path + '.tmp'
     with open(write_path, mode) as f:
-      f.writelines(cros_build_lib.iflatten_instance(content))
+      f.writelines(write_wrapper(cros_build_lib.iflatten_instance(content)))
 
     if not atomic:
       return
@@ -231,7 +269,7 @@ def ReadFile(path, mode='r', encoding=None, errors=None):
     encoding).
   """
   if mode not in ('r', 'rb'):
-    raise ValueError('mode may only be "r" or "rb", not "%s"' % (mode,))
+    raise ValueError('mode may only be "r" or "rb", not %r' % (mode,))
 
   if 'b' in mode:
     if encoding is not None or errors is not None:

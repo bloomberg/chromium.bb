@@ -294,7 +294,7 @@ inherit cros-workon superpower
   def testClassifyEncodingUTF8(self):
     """Test Classify with UTF-8 file encodings."""
     ebuild_path = os.path.join(self.tempdir, 'foo-1.ebuild')
-    osutils.WriteFile(ebuild_path, '# FöÖßbäłł')
+    osutils.WriteFile(ebuild_path, u'# FöÖßbäłł')
     # Just check that we don't throw an exception.
     portage_util.EBuild.Classify(ebuild_path)
 

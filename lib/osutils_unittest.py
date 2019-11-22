@@ -62,6 +62,20 @@ class TestOsutils(cros_test_lib.TempDirTestCase):
     self.assertEqual(osutils.WriteFile(filename, data, mode='wb'), None)
     self.assertEqual(osutils.ReadFile(filename, mode='rb'), data)
 
+  def testWriteFileStringIter(self):
+    """Verify that we can write an iterable of strings."""
+    filename = os.path.join(self.tempdir, 'foo')
+    data = ['a', 'cd', 'ef']
+    self.assertEqual(osutils.WriteFile(filename, data), None)
+    self.assertEqual(osutils.ReadFile(filename), ''.join(data))
+
+  def testWriteFileBytesIter(self):
+    """Verify that we can write an iterable of bytes."""
+    filename = os.path.join(self.tempdir, 'foo')
+    data = [b'ab', b'cd', b'ef']
+    self.assertEqual(osutils.WriteFile(filename, data, mode='wb'), None)
+    self.assertEqual(osutils.ReadFile(filename, mode='rb'), b''.join(data))
+
   def testSudoWrite(self):
     """Verify that we can write a file as sudo."""
     with osutils.TempDir(sudo_rm=True) as tempdir:
