@@ -138,7 +138,7 @@ class PdfAccessibilityTree : public content::PluginAXTreeSource {
       const std::vector<ppapi::PdfAccessibilityTextRunInfo>& text_runs,
       const std::vector<PP_PrivateAccessibilityCharInfo>& chars,
       const gfx::RectF& page_bounds,
-      uint32_t* char_index,
+      const std::vector<uint32_t>& text_run_start_indices,
       ui::AXNodeData* ax_node,
       ui::AXNodeData** previous_on_line_node);
   float GetDeviceScaleFactor() const;
