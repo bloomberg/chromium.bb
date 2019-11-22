@@ -1467,6 +1467,16 @@ def AndroidTemplates(site_config):
       android_import_branch=constants.ANDROID_MST_BUILD_BRANCH,
   )
 
+  # Template for Android VM Master.
+  site_config.AddTemplate(
+      'vmmst_android_pfq',
+      site_config.templates.generic_android_pfq,
+      site_config.templates.internal,
+      display_label=config_lib.DISPLAY_LABEL_VMMST_ANDROID_PFQ,
+      android_package='android-container-vm-master',
+      android_import_branch=constants.ANDROID_VMMST_BUILD_BRANCH,
+  )
+
   # Mixin for masters.
   site_config.AddTemplate(
       'master_android_pfq_mixin',
@@ -1507,6 +1517,14 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
   _mst_vmtest_boards = frozenset([
       'betty-arcmaster',
   ])
+
+  # Android VM MST master
+  vmmst_master_config = site_config.Add(
+      constants.VMMST_ANDROID_PFQ_MASTER,
+      site_config.templates.vmmst_android_pfq,
+      site_config.templates.master_android_pfq_mixin,
+      schedule='with 150m interval'
+  )
 
   # Android QT master.
   qt_master_config = site_config.Add(
@@ -1638,6 +1656,10 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
                                             test_suite='smoke')],
       )
   )
+
+  # Android VMMST slaves.
+  # No board to build for now (just roll). empty slave to pass test.
+  vmmst_master_config.AddSlaves([])
 
   # Android QT slaves.
   qt_master_config.AddSlaves(
