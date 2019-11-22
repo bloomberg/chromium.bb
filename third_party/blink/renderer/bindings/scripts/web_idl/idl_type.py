@@ -51,7 +51,8 @@ class IdlTypeFactory(object):
         attrs_to_be_proxied = (
             set(RefById.get_all_attributes(IdlType)).difference(
                 # attributes not to be proxied
-                set(('debug_info', 'extended_attributes', 'is_optional'))))
+                set(('debug_info', 'extended_attributes', 'is_optional',
+                     'optionality'))))
         self._ref_by_id_factory = RefByIdFactory(
             target_attrs_with_priority=attrs_to_be_proxied)
         # |_is_frozen| is initially False and you can create new instances of
@@ -148,6 +149,12 @@ class IdlType(WithExtendedAttributes, WithDebugInfo):
     Nullable type and typedef are implemented as if they're a container type
     like record type and promise type.
     """
+
+    class Optionality(object):
+        """https://heycam.github.io/webidl/#dfn-optionality-value"""
+        REQUIRED = 0
+        OPTIONAL = 1
+        VARIADIC = 2
 
     def __init__(self,
                  is_optional=False,
@@ -397,6 +404,15 @@ class IdlType(WithExtendedAttributes, WithDebugInfo):
         |element_type|.
         """
         return False
+
+    @property
+    def optionality(self):
+        """Returns the optionality value."""
+        if self.is_variadic:
+            return IdlType.Optionality.VARIADIC
+        if self.is_optional:
+            return IdlType.Optionality.OPTIONAL
+        return IdlType.Optionality.REQUIRED
 
     @property
     def original_type(self):
