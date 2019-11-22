@@ -65,6 +65,7 @@ class TestResolveHostClient : public mojom::ResolveHostClient {
   void CloseReceiver() { receiver_.reset(); }
 
   void OnComplete(int error,
+                  const net::ResolveErrorInfo& resolve_error_info,
                   const base::Optional<net::AddressList>& addresses) override {
     DCHECK(!complete_);
 

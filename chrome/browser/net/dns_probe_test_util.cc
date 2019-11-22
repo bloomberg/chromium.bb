@@ -9,6 +9,7 @@
 
 #include "chrome/browser/net/dns_probe_runner.h"
 #include "net/base/ip_address.h"
+#include "net/dns/public/resolve_error_info.h"
 
 namespace chrome_browser_net {
 
@@ -58,7 +59,7 @@ void FakeHostResolver::ResolveHost(
     next_result_++;
   mojo::Remote<network::mojom::ResolveHostClient> response_client(
       std::move(pending_response_client));
-  response_client->OnComplete(cur_result.result,
+  response_client->OnComplete(cur_result.result, net::ResolveErrorInfo(),
                               AddressListForResponse(cur_result.response));
 }
 

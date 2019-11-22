@@ -15,6 +15,9 @@ struct NET_EXPORT ResolveErrorInfo {
   ResolveErrorInfo();
   ResolveErrorInfo(int resolve_error);
 
+  bool operator==(const ResolveErrorInfo& other) const;
+  bool operator!=(const ResolveErrorInfo& other) const;
+
   int error = net::OK;
 };
 

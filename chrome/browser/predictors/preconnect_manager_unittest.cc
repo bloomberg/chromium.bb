@@ -22,6 +22,7 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/load_flags.h"
 #include "net/base/network_isolation_key.h"
+#include "net/dns/public/resolve_error_info.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "services/network/test/test_network_context.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -102,7 +103,7 @@ class MockNetworkContext : public network::TestNetworkContext {
       ADD_FAILURE() << host << " wasn't found";
       return;
     }
-    it->second->OnComplete(result, base::nullopt);
+    it->second->OnComplete(result, net::ResolveErrorInfo(), base::nullopt);
     resolve_host_clients_.erase(it);
     // Wait for OnComplete() to be executed on the UI thread.
     base::RunLoop().RunUntilIdle();

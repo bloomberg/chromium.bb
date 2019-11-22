@@ -30,6 +30,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/network_interfaces.h"
 #include "net/base/url_util.h"
+#include "net/dns/public/resolve_error_info.h"
 #include "net/log/net_log_with_source.h"
 
 namespace extensions {
@@ -200,9 +201,9 @@ void SocketExtensionWithDnsLookupFunction::StartDnsLookup(
   host_resolver_.Bind(std::move(pending_host_resolver_));
   host_resolver_->ResolveHost(host_port_pair, nullptr,
                               receiver_.BindNewPipeAndPassRemote());
-  receiver_.set_disconnect_handler(
-      base::BindOnce(&SocketExtensionWithDnsLookupFunction::OnComplete,
-                     base::Unretained(this), net::ERR_FAILED, base::nullopt));
+  receiver_.set_disconnect_handler(base::BindOnce(
+      &SocketExtensionWithDnsLookupFunction::OnComplete, base::Unretained(this),
+      net::ERR_FAILED, net::ResolveErrorInfo(), base::nullopt));
 
   // Balanced in OnComplete().
   AddRef();
@@ -210,6 +211,7 @@ void SocketExtensionWithDnsLookupFunction::StartDnsLookup(
 
 void SocketExtensionWithDnsLookupFunction::OnComplete(
     int result,
+    const net::ResolveErrorInfo& resolve_error_info,
     const base::Optional<net::AddressList>& resolved_addresses) {
   host_resolver_.reset();
   receiver_.reset();
