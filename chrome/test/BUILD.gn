@@ -1469,7 +1469,10 @@ if (!is_android) {
         "//url",
       ]
 
-      sources += [ "../browser/policy/accessibility_policy_browsertest.cc" ]
+      sources += [
+        "../browser/policy/accessibility_policy_browsertest.cc",
+        "../browser/policy/arc_policy_browsertest.cc",
+      ]
     }
 
     if (include_js_tests) {
