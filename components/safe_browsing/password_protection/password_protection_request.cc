@@ -270,7 +270,11 @@ void PasswordProtectionRequest::FillRequestProto(bool is_sampled_ping) {
             password_protection_service_->GetSyncAccountType());
         LogSyncAccountType(reuse_event->sync_account_type());
       }
-      if (password_protection_service_->IsExtendedReporting() &&
+
+      bool saved_password_experiment_on = base::FeatureList::IsEnabled(
+          safe_browsing::kPasswordProtectionForSavedPasswords);
+      if ((password_protection_service_->IsExtendedReporting() ||
+           saved_password_experiment_on) &&
           !password_protection_service_->IsIncognito()) {
         for (const auto& domain : matching_domains_) {
           reuse_event->add_domains_matching_password(domain);
