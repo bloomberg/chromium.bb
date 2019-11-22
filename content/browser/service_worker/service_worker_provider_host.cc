@@ -43,7 +43,6 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/child_process_host.h"
-#include "content/public/common/content_client.h"
 #include "content/public/common/origin_util.h"
 #include "media/mojo/services/video_decode_perf_history.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
@@ -250,7 +249,6 @@ ServiceWorkerProviderHost::ServiceWorkerProviderHost(
       create_time_(base::TimeTicks::Now()),
       render_process_id_(ChildProcessHost::kInvalidUniqueID),
       frame_id_(MSG_ROUTING_NONE),
-      is_parent_frame_secure_(is_parent_frame_secure),
       frame_tree_node_id_(frame_tree_node_id),
       web_contents_getter_(
           frame_tree_node_id == FrameTreeNode::kFrameTreeNodeInvalidId
@@ -261,10 +259,11 @@ ServiceWorkerProviderHost::ServiceWorkerProviderHost(
       context_(context),
       interface_provider_binding_(this),
       is_in_back_forward_cache_(false),
-      container_host_(
-          std::make_unique<content::ServiceWorkerContainerHost>(type,
-                                                                this,
-                                                                context)) {
+      container_host_(std::make_unique<content::ServiceWorkerContainerHost>(
+          type,
+          is_parent_frame_secure,
+          this,
+          context)) {
   DCHECK_NE(blink::mojom::ServiceWorkerProviderType::kUnknown, type);
 
   if (type == blink::mojom::ServiceWorkerProviderType::kForServiceWorker) {
@@ -322,23 +321,6 @@ ServiceWorkerProviderHost::~ServiceWorkerProviderHost() {
 
   // Ensure callbacks awaiting execution ready are notified.
   RunExecutionReadyCallbacks();
-}
-
-bool ServiceWorkerProviderHost::IsContextSecureForServiceWorker() const {
-  DCHECK(IsProviderForClient());
-
-  if (!container_host_->url().is_valid())
-    return false;
-  if (!OriginCanAccessServiceWorkers(container_host_->url()))
-    return false;
-
-  if (is_parent_frame_secure_)
-    return true;
-
-  std::set<std::string> schemes;
-  GetContentClient()->browser()->GetSchemesBypassingSecureContextCheckWhitelist(
-      &schemes);
-  return schemes.find(container_host_->url().scheme()) != schemes.end();
 }
 
 ServiceWorkerVersion* ServiceWorkerProviderHost::controller() const {
@@ -510,7 +492,7 @@ void ServiceWorkerProviderHost::UpdateController(bool notify_controllerchange) {
   ServiceWorkerVersion* version =
       controller_registration_ ? controller_registration_->active_version()
                                : nullptr;
-  CHECK(!version || IsContextSecureForServiceWorker());
+  CHECK(!version || container_host_->IsContextSecureForServiceWorker());
   if (version == controller_.get())
     return;
 
@@ -550,7 +532,7 @@ void ServiceWorkerProviderHost::SetControllerRegistration(
   DCHECK(IsProviderForClient());
 
   if (controller_registration) {
-    CHECK(IsContextSecureForServiceWorker());
+    CHECK(container_host_->IsContextSecureForServiceWorker());
     DCHECK(controller_registration->active_version());
 #if DCHECK_IS_ON()
     DCHECK(IsMatchingRegistration(controller_registration.get()));
@@ -565,7 +547,7 @@ void ServiceWorkerProviderHost::AddMatchingRegistration(
     ServiceWorkerRegistration* registration) {
   DCHECK(ServiceWorkerUtils::ScopeMatches(registration->scope(),
                                           container_host_->url()));
-  if (!IsContextSecureForServiceWorker())
+  if (!container_host_->IsContextSecureForServiceWorker())
     return;
   size_t key = registration->scope().spec().size();
   if (base::Contains(matching_registrations_, key))

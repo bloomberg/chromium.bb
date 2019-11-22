@@ -54,6 +54,7 @@ class CONTENT_EXPORT ServiceWorkerContainerHost {
   // TODO(https://crbug.com/931087): Rename ServiceWorkerProviderType to
   // ServiceWorkerContainerType.
   ServiceWorkerContainerHost(blink::mojom::ServiceWorkerProviderType type,
+                             bool is_parent_frame_secure,
                              ServiceWorkerProviderHost* provider_host,
                              base::WeakPtr<ServiceWorkerContextCore> context);
   ~ServiceWorkerContainerHost();
@@ -155,6 +156,16 @@ class CONTENT_EXPORT ServiceWorkerContainerHost {
                           int render_process_id,
                           int frame_id);
 
+  // Returns whether this provider host is secure enough to have a service
+  // worker controller.
+  // Analogous to Blink's Document::IsSecureContext. Because of how service
+  // worker intercepts main resource requests, this check must be done
+  // browser-side once the URL is known (see comments in
+  // ServiceWorkerNetworkProviderForFrame::Create). This function uses
+  // |url_| and |is_parent_frame_secure_| to determine context security, so they
+  // must be set properly before calling this function.
+  bool IsContextSecureForServiceWorker() const;
+
   // TODO(https://crbug.com/931087): Remove this getter and |provider_host_|.
   ServiceWorkerProviderHost* provider_host() { return provider_host_; }
 
@@ -173,6 +184,15 @@ class CONTENT_EXPORT ServiceWorkerContainerHost {
   GURL url_;
   GURL site_for_cookies_;
   base::Optional<url::Origin> top_frame_origin_;
+
+  // |is_parent_frame_secure_| is false if the container host is created for a
+  // document whose parent frame is not secure. This doesn't mean the document
+  // is necessarily an insecure context, because the document may have a URL
+  // whose scheme is granted an exception that allows bypassing the ancestor
+  // secure context check. If the container is not created for a document, or
+  // the document does not have a parent frame, is_parent_frame_secure_| is
+  // true.
+  const bool is_parent_frame_secure_;
 
   // Contains all ServiceWorkerRegistrationObjectHost instances corresponding to
   // the service worker registration JavaScript objects for the hosted execution

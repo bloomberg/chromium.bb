@@ -184,16 +184,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   }
   int frame_tree_node_id() const { return frame_tree_node_id_; }
 
-  // Returns whether this provider host is secure enough to have a service
-  // worker controller.
-  // Analogous to Blink's Document::IsSecureContext. Because of how service
-  // worker intercepts main resource requests, this check must be done
-  // browser-side once the URL is known (see comments in
-  // ServiceWorkerNetworkProviderForFrame::Create). This function uses
-  // |url_| and |is_parent_frame_secure_| to determine context security, so they
-  // must be set properly before calling this function.
-  bool IsContextSecureForServiceWorker() const;
-
   // For service worker clients. Describes whether the client has a controller
   // and if it has a fetch event handler.
   blink::mojom::ControllerServiceWorkerMode GetControllerMode() const;
@@ -577,14 +567,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // The window's RenderFrame id, if this is a service worker window client.
   // Otherwise, |MSG_ROUTING_NONE|.
   int frame_id_;
-
-  // |is_parent_frame_secure_| is false if the provider host is created for a
-  // document whose parent frame is not secure. This doesn't mean the document
-  // is necessarily an insecure context, because the document may have a URL
-  // whose scheme is granted an exception that allows bypassing the ancestor
-  // secure context check. If the provider is not created for a document, or the
-  // document does not have a parent frame, is_parent_frame_secure_| is true.
-  const bool is_parent_frame_secure_;
 
   // FrameTreeNode id if this is a service worker window client.
   // Otherwise, |FrameTreeNode::kFrameTreeNodeInvalidId|.

@@ -395,20 +395,22 @@ TEST_F(ServiceWorkerProviderHostTest, ContextSecurity) {
   provider_host_secure_parent->UpdateUrls(
       GURL("http://host"), GURL("http://host"),
       url::Origin::Create(GURL("http://host")));
-  EXPECT_FALSE(provider_host_secure_parent->IsContextSecureForServiceWorker());
+  EXPECT_FALSE(provider_host_secure_parent->container_host()
+                   ->IsContextSecureForServiceWorker());
 
   // Insecure parent frame.
   provider_host_insecure_parent->UpdateUrls(
       GURL("https://host"), GURL("https://host"),
       url::Origin::Create(GURL("https://host")));
-  EXPECT_FALSE(
-      provider_host_insecure_parent->IsContextSecureForServiceWorker());
+  EXPECT_FALSE(provider_host_insecure_parent->container_host()
+                   ->IsContextSecureForServiceWorker());
 
   // Secure URL and parent frame.
   provider_host_secure_parent->UpdateUrls(
       GURL("https://host"), GURL("https://host"),
       url::Origin::Create(GURL("https://host")));
-  EXPECT_TRUE(provider_host_secure_parent->IsContextSecureForServiceWorker());
+  EXPECT_TRUE(provider_host_secure_parent->container_host()
+                  ->IsContextSecureForServiceWorker());
 
   // Exceptional service worker scheme.
   GURL url(std::string(kServiceWorkerScheme) + "://host");
@@ -417,12 +419,13 @@ TEST_F(ServiceWorkerProviderHostTest, ContextSecurity) {
   EXPECT_FALSE(IsOriginSecure(url));
   EXPECT_TRUE(OriginCanAccessServiceWorkers(url));
   provider_host_secure_parent->UpdateUrls(url, url, origin);
-  EXPECT_TRUE(provider_host_secure_parent->IsContextSecureForServiceWorker());
+  EXPECT_TRUE(provider_host_secure_parent->container_host()
+                  ->IsContextSecureForServiceWorker());
 
   // Exceptional service worker scheme with insecure parent frame.
   provider_host_insecure_parent->UpdateUrls(url, url, origin);
-  EXPECT_FALSE(
-      provider_host_insecure_parent->IsContextSecureForServiceWorker());
+  EXPECT_FALSE(provider_host_insecure_parent->container_host()
+                   ->IsContextSecureForServiceWorker());
 }
 
 TEST_F(ServiceWorkerProviderHostTest, UpdateUrls_SameOriginRedirect) {

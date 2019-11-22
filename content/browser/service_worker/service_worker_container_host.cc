@@ -11,14 +11,19 @@
 #include "content/browser/service_worker/service_worker_registration_object_host.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/origin_util.h"
 
 namespace content {
 
 ServiceWorkerContainerHost::ServiceWorkerContainerHost(
     blink::mojom::ServiceWorkerProviderType type,
+    bool is_parent_frame_secure,
     ServiceWorkerProviderHost* provider_host,
     base::WeakPtr<ServiceWorkerContextCore> context)
-    : type_(type), provider_host_(provider_host), context_(std::move(context)) {
+    : type_(type),
+      is_parent_frame_secure_(is_parent_frame_secure),
+      provider_host_(provider_host),
+      context_(std::move(context)) {
   DCHECK(provider_host_);
   DCHECK(context_);
 }
@@ -148,6 +153,23 @@ bool ServiceWorkerContainerHost::AllowServiceWorker(const GURL& scope,
         base::BindRepeating(&WebContentsImpl::FromRenderFrameHostID,
                             render_process_id, frame_id));
   }
+}
+
+bool ServiceWorkerContainerHost::IsContextSecureForServiceWorker() const {
+  DCHECK(IsContainerForClient());
+
+  if (!url_.is_valid())
+    return false;
+  if (!OriginCanAccessServiceWorkers(url_))
+    return false;
+
+  if (is_parent_frame_secure_)
+    return true;
+
+  std::set<std::string> schemes;
+  GetContentClient()->browser()->GetSchemesBypassingSecureContextCheckWhitelist(
+      &schemes);
+  return schemes.find(url_.scheme()) != schemes.end();
 }
 
 }  // namespace content
