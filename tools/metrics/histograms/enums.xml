@@ -65236,6 +65236,12 @@ Full version information for the fingerprint enum values:
   <int value="3" label="Accepted only by NSS (rejected by iOS)."/>
 </enum>
 
+<enum name="WebContentsAudioState">
+  <int value="0" label="Never played audio"/>
+  <int value="1" label="Currently playing audio"/>
+  <int value="2" label="Previously played audio"/>
+</enum>
+
 <enum name="WebContentsState">
   <int value="0" label="No WebContents"/>
   <int value="1" label="Prerendered WebContents"/>
