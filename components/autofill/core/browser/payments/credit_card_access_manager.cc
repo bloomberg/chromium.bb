@@ -533,9 +533,12 @@ void CreditCardAccessManager::ShowVerifyPendingDialog() {
 }
 
 void CreditCardAccessManager::OnDidCancelCardVerification() {
+  // TODO(crbug.com/949269): Add tests and logging for canceling verify pending
+  // dialog.
   GetOrCreateFIDOAuthenticator()->CancelVerification();
   unmask_details_request_in_progress_ = false;
   is_authentication_in_progress_ = false;
+  SignalCanFetchUnmaskDetails();
 }
 #endif
 
