@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/payments/content/service_worker_payment_app_factory.h"
+#include "components/payments/content/service_worker_payment_app_finder.h"
 
 #include <algorithm>
 #include <utility>
@@ -38,10 +38,10 @@ static const char kDefaultScope[] = "/app1/";
 
 }  // namespace
 
-// Tests for the service worker payment app factory.
-class ServiceWorkerPaymentAppFactoryBrowserTest : public InProcessBrowserTest {
+// Tests for the service worker payment app finder.
+class ServiceWorkerPaymentAppFinderBrowserTest : public InProcessBrowserTest {
  public:
-  ServiceWorkerPaymentAppFactoryBrowserTest()
+  ServiceWorkerPaymentAppFinderBrowserTest()
       : alicepay_(net::EmbeddedTestServer::TYPE_HTTPS),
         bobpay_(net::EmbeddedTestServer::TYPE_HTTPS),
         frankpay_(net::EmbeddedTestServer::TYPE_HTTPS),
@@ -63,7 +63,7 @@ class ServiceWorkerPaymentAppFactoryBrowserTest : public InProcessBrowserTest {
         {});
   }
 
-  ~ServiceWorkerPaymentAppFactoryBrowserTest() override {}
+  ~ServiceWorkerPaymentAppFinderBrowserTest() override {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     // HTTPS server only serves a valid cert for localhost, so this is needed to
@@ -127,7 +127,7 @@ class ServiceWorkerPaymentAppFactoryBrowserTest : public InProcessBrowserTest {
   }
 
   // Retrieves all valid payment apps that can handle the methods in
-  // |payment_method_identifiers_set|. Blocks until the factory has finished
+  // |payment_method_identifiers_set|. Blocks until the finder has finished
   // using all resources.
   void GetAllPaymentAppsForMethods(
       const std::vector<std::string>& payment_method_identifiers) {
@@ -173,7 +173,7 @@ class ServiceWorkerPaymentAppFactoryBrowserTest : public InProcessBrowserTest {
     downloader->AddTestServerURL(
         "https://larry.example.com/",
         larry_example_.GetURL("larry.example.com", "/"));
-    ServiceWorkerPaymentAppFactory::GetInstance()
+    ServiceWorkerPaymentAppFinder::GetInstance()
         ->SetDownloaderAndIgnorePortInOriginComparisonForTesting(
             std::move(downloader));
 
@@ -184,7 +184,7 @@ class ServiceWorkerPaymentAppFactoryBrowserTest : public InProcessBrowserTest {
     }
 
     base::RunLoop run_loop;
-    ServiceWorkerPaymentAppFactory::GetInstance()->GetAllPaymentApps(
+    ServiceWorkerPaymentAppFinder::GetInstance()->GetAllPaymentApps(
         web_contents,
         WebDataServiceFactory::GetPaymentManifestWebDataForProfile(
             Profile::FromBrowserContext(context),
@@ -192,7 +192,7 @@ class ServiceWorkerPaymentAppFactoryBrowserTest : public InProcessBrowserTest {
         method_data,
         /*may_crawl_for_installable_payment_apps=*/true,
         base::BindOnce(
-            &ServiceWorkerPaymentAppFactoryBrowserTest::OnGotAllPaymentApps,
+            &ServiceWorkerPaymentAppFinderBrowserTest::OnGotAllPaymentApps,
             base::Unretained(this)),
         run_loop.QuitClosure());
     run_loop.Run();
@@ -204,7 +204,7 @@ class ServiceWorkerPaymentAppFactoryBrowserTest : public InProcessBrowserTest {
 
   // Returns the installable apps that have been found in
   // GetAllPaymentAppsForMethods().
-  const ServiceWorkerPaymentAppFactory::InstallablePaymentApps&
+  const ServiceWorkerPaymentAppFinder::InstallablePaymentApps&
   installable_apps() const {
     return installable_apps_;
   }
@@ -261,7 +261,7 @@ class ServiceWorkerPaymentAppFactoryBrowserTest : public InProcessBrowserTest {
   // valid payment methods.
   void OnGotAllPaymentApps(
       content::PaymentAppProvider::PaymentApps apps,
-      ServiceWorkerPaymentAppFactory::InstallablePaymentApps installable_apps,
+      ServiceWorkerPaymentAppFinder::InstallablePaymentApps installable_apps,
       const std::string& error_message) {
     apps_ = std::move(apps);
     installable_apps_ = std::move(installable_apps);
@@ -344,18 +344,18 @@ class ServiceWorkerPaymentAppFactoryBrowserTest : public InProcessBrowserTest {
 
   // The installable apps that have been found by the factory in
   // GetAllPaymentAppsForMethods() method.
-  ServiceWorkerPaymentAppFactory::InstallablePaymentApps installable_apps_;
+  ServiceWorkerPaymentAppFinder::InstallablePaymentApps installable_apps_;
 
   // The error message returned by the service worker factory.
   std::string error_message_;
 
   base::test::ScopedFeatureList scoped_feature_list_;
 
-  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerPaymentAppFactoryBrowserTest);
+  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerPaymentAppFinderBrowserTest);
 };
 
 // A payment app has to be installed first.
-IN_PROC_BROWSER_TEST_F(ServiceWorkerPaymentAppFactoryBrowserTest, NoApps) {
+IN_PROC_BROWSER_TEST_F(ServiceWorkerPaymentAppFinderBrowserTest, NoApps) {
   {
     GetAllPaymentAppsForMethods({"basic-card", "https://alicepay.com/webpay",
                                  "https://bobpay.com/webpay"});
@@ -377,7 +377,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerPaymentAppFactoryBrowserTest, NoApps) {
 }
 
 // Unknown payment method names are not permitted.
-IN_PROC_BROWSER_TEST_F(ServiceWorkerPaymentAppFactoryBrowserTest,
+IN_PROC_BROWSER_TEST_F(ServiceWorkerPaymentAppFinderBrowserTest,
                        UnknownMethod) {
   InstallPaymentAppForMethod("unknown-payment-method");
 
@@ -404,7 +404,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerPaymentAppFactoryBrowserTest,
 }
 
 // A payment app can use "basic-card" payment method.
-IN_PROC_BROWSER_TEST_F(ServiceWorkerPaymentAppFactoryBrowserTest, BasicCard) {
+IN_PROC_BROWSER_TEST_F(ServiceWorkerPaymentAppFinderBrowserTest, BasicCard) {
   InstallPaymentAppForMethod("basic-card");
 
   {
@@ -430,7 +430,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerPaymentAppFactoryBrowserTest, BasicCard) {
 }
 
 // A payment app can use any payment method name from its own origin.
-IN_PROC_BROWSER_TEST_F(ServiceWorkerPaymentAppFactoryBrowserTest, OwnOrigin) {
+IN_PROC_BROWSER_TEST_F(ServiceWorkerPaymentAppFinderBrowserTest, OwnOrigin) {
   InstallPaymentAppForMethod("https://alicepay.com/webpay");
 
   {
@@ -458,7 +458,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerPaymentAppFactoryBrowserTest, OwnOrigin) {
 // A payment app from https://alicepay.com cannot use the payment method
 // https://bobpay.com/webpay, because https://bobpay.com/payment-method.json
 // does not have an entry for "supported_origins".
-IN_PROC_BROWSER_TEST_F(ServiceWorkerPaymentAppFactoryBrowserTest,
+IN_PROC_BROWSER_TEST_F(ServiceWorkerPaymentAppFinderBrowserTest,
                        NotSupportedOrigin) {
   InstallPaymentAppForMethod("https://bobpay.com/webpay");
 
@@ -485,7 +485,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerPaymentAppFactoryBrowserTest,
 // A payment app from https://alicepay.com can use the payment method
 // https://frankpay.com/webpay, because https://frankpay.com/payment-method.json
 // specifies "supported_origins": "*" (all origins supported).
-IN_PROC_BROWSER_TEST_F(ServiceWorkerPaymentAppFactoryBrowserTest,
+IN_PROC_BROWSER_TEST_F(ServiceWorkerPaymentAppFinderBrowserTest,
                        AllOringsSupported) {
   InstallPaymentAppForMethod("https://frankpay.com/webpay");
 
@@ -513,7 +513,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerPaymentAppFactoryBrowserTest,
 // https://georgepay.com/webpay, because
 // https://georgepay.com/payment-method.json explicitly includes
 // "https://alicepay.com" as one of the "supported_origins".
-IN_PROC_BROWSER_TEST_F(ServiceWorkerPaymentAppFactoryBrowserTest,
+IN_PROC_BROWSER_TEST_F(ServiceWorkerPaymentAppFinderBrowserTest,
                        SupportedOrigin) {
   InstallPaymentAppForMethod("https://georgepay.com/webpay");
 
@@ -541,7 +541,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerPaymentAppFactoryBrowserTest,
 // https://georgepay.com/webpay at the same time, because
 // https://georgepay.com/payment-method.json explicitly includes
 // "https://alicepay.com" as on of the "supported_origins".
-IN_PROC_BROWSER_TEST_F(ServiceWorkerPaymentAppFactoryBrowserTest,
+IN_PROC_BROWSER_TEST_F(ServiceWorkerPaymentAppFinderBrowserTest,
                        TwoAppsSameMethod) {
   InstallPaymentAppInScopeForMethod("/app1/", "https://georgepay.com/webpay");
   InstallPaymentAppInScopeForMethod("/app2/", "https://georgepay.com/webpay");
@@ -578,7 +578,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerPaymentAppFactoryBrowserTest,
 // "supported_origins": "*" (all origins supported) and
 // https://georgepay.com/payment-method.json explicitly includes
 // "https://alicepay.com" as on of the "supported_origins".
-IN_PROC_BROWSER_TEST_F(ServiceWorkerPaymentAppFactoryBrowserTest,
+IN_PROC_BROWSER_TEST_F(ServiceWorkerPaymentAppFinderBrowserTest,
                        TwoAppsDifferentMethods) {
   InstallPaymentAppInScopeForMethod("/app1/", "https://georgepay.com/webpay");
   InstallPaymentAppInScopeForMethod("/app2/", "https://frankpay.com/webpay");
@@ -615,7 +615,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerPaymentAppFactoryBrowserTest,
 // installation, because the webapp manifest https://kylepay.com/app.json
 // includes enough information for just in time installation of the service
 // worker https://kylepay.com/app.js with scope https://kylepay.com/webpay.
-IN_PROC_BROWSER_TEST_F(ServiceWorkerPaymentAppFactoryBrowserTest,
+IN_PROC_BROWSER_TEST_F(ServiceWorkerPaymentAppFinderBrowserTest,
                        InstallablePaymentApp) {
   {
     GetAllPaymentAppsForMethods({"https://kylepay.com/webpay"});
@@ -639,7 +639,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerPaymentAppFactoryBrowserTest,
 
 // The payment method https://larrypay.com/webpay is not valid, because it
 // redirects to a different site (https://kylepay.com/webpay).
-IN_PROC_BROWSER_TEST_F(ServiceWorkerPaymentAppFactoryBrowserTest,
+IN_PROC_BROWSER_TEST_F(ServiceWorkerPaymentAppFinderBrowserTest,
                        InvalidDifferentSiteRedirect) {
   std::string expected_pattern =
       "Cross-site redirect from \"https://larrypay.com:\\d+/webpay\" to "
@@ -669,7 +669,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerPaymentAppFactoryBrowserTest,
 
 // The payment method https://charlie.example.com/webpay is not valid, because
 // it redirects 4 times (charlie -> david -> frank -> george -> harry).
-IN_PROC_BROWSER_TEST_F(ServiceWorkerPaymentAppFactoryBrowserTest,
+IN_PROC_BROWSER_TEST_F(ServiceWorkerPaymentAppFinderBrowserTest,
                        FourRedirectsIsNotValid) {
   std::string expected_error_message =
       "Unable to download the payment manifest because reached the maximum "
@@ -694,7 +694,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerPaymentAppFactoryBrowserTest,
 
 // The payment method https://david.example.com/webpay is valid, because it
 // redirects 3 times (david -> frank -> george -> harry).
-IN_PROC_BROWSER_TEST_F(ServiceWorkerPaymentAppFactoryBrowserTest,
+IN_PROC_BROWSER_TEST_F(ServiceWorkerPaymentAppFinderBrowserTest,
                        ThreeRedirectsIsValid) {
   {
     GetAllPaymentAppsForMethods({"https://david.example.com/webpay"});
@@ -718,7 +718,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerPaymentAppFactoryBrowserTest,
 
 // The payment method https://george.example.com/webpay is valid, because it
 // redirects once (george -> harry).
-IN_PROC_BROWSER_TEST_F(ServiceWorkerPaymentAppFactoryBrowserTest,
+IN_PROC_BROWSER_TEST_F(ServiceWorkerPaymentAppFinderBrowserTest,
                        OneRedirectIsValid) {
   {
     GetAllPaymentAppsForMethods({"https://george.example.com/webpay"});
@@ -743,7 +743,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerPaymentAppFactoryBrowserTest,
 // The payment method https://ike.example.com/webpay is not valid, because of
 // its cross-origin HTTP Link to
 // https://harry.example.com/payment-manifest.json.
-IN_PROC_BROWSER_TEST_F(ServiceWorkerPaymentAppFactoryBrowserTest,
+IN_PROC_BROWSER_TEST_F(ServiceWorkerPaymentAppFinderBrowserTest,
                        CrossOriginHttpLinkHeaderIsInvalid) {
   std::string expected_pattern =
       "Cross-origin payment method manifest "
@@ -773,7 +773,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerPaymentAppFactoryBrowserTest,
 
 // The payment method https://john.example.com/webpay is not valid, because of
 // its cross-origin default application https://harry.example.com/app.json.
-IN_PROC_BROWSER_TEST_F(ServiceWorkerPaymentAppFactoryBrowserTest,
+IN_PROC_BROWSER_TEST_F(ServiceWorkerPaymentAppFinderBrowserTest,
                        CrossOriginDefaultApplicationIsInvalid) {
   std::string expected_pattern =
       "Cross-origin default application https://harry.example.com/app.json not "
@@ -803,7 +803,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerPaymentAppFactoryBrowserTest,
 
 // The payment method https://kyle.example.com/webpay is not valid, because of
 // its cross-origin service worker location https://harry.example.com/app.js.
-IN_PROC_BROWSER_TEST_F(ServiceWorkerPaymentAppFactoryBrowserTest,
+IN_PROC_BROWSER_TEST_F(ServiceWorkerPaymentAppFinderBrowserTest,
                        CrossOriginServiceWorkerIsInvalid) {
   std::string expected_error_message =
       "Cross-origin \"serviceworker\".\"src\" https://harry.example.com/app.js "
@@ -828,7 +828,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerPaymentAppFactoryBrowserTest,
 
 // The payment method https://larry.example.com/webpay is not valid, because of
 // its cross-origin service worker scope https://harry.example.com/webpay/".
-IN_PROC_BROWSER_TEST_F(ServiceWorkerPaymentAppFactoryBrowserTest,
+IN_PROC_BROWSER_TEST_F(ServiceWorkerPaymentAppFinderBrowserTest,
                        CrossOriginServiceWorkerScopeIsInvalid) {
   std::string expected_error_message =
       "Cross-origin \"serviceworker\".\"scope\" "

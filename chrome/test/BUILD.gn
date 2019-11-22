@@ -1876,7 +1876,7 @@ if (!is_android) {
         "../browser/payments/payment_request_can_make_payment_browsertest.cc",
         "../browser/payments/personal_data_manager_test_util.cc",
         "../browser/payments/personal_data_manager_test_util.h",
-        "../browser/payments/service_worker_payment_app_factory_browsertest.cc",
+        "../browser/payments/service_worker_payment_app_finder_browsertest.cc",
         "../browser/payments/site_per_process_payments_browsertest.cc",
         "../browser/ui/global_error/global_error_browsertest.cc",
         "../browser/ui/global_error/global_error_service_browsertest.cc",

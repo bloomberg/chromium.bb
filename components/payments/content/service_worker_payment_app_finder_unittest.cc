@@ -2,24 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/payments/content/service_worker_payment_app_factory.h"
+#include "components/payments/content/service_worker_payment_app_finder.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/payments/payment_request.mojom.h"
 
 namespace payments {
 
-class ServiceWorkerPaymentAppFactoryTest : public testing::Test {
+class ServiceWorkerPaymentAppFinderTest : public testing::Test {
  protected:
   void RemoveAppsWithoutMatchingMethodData(
       const std::vector<mojom::PaymentMethodDataPtr>& requested_method_data,
       content::PaymentAppProvider::PaymentApps* apps) {
-    ServiceWorkerPaymentAppFactory::GetInstance()
-        ->RemoveAppsWithoutMatchingMethodData(requested_method_data, apps);
+    ServiceWorkerPaymentAppFinder::RemoveAppsWithoutMatchingMethodData(
+        requested_method_data, apps);
   }
 };
 
-TEST_F(ServiceWorkerPaymentAppFactoryTest,
+TEST_F(ServiceWorkerPaymentAppFinderTest,
        RemoveAppsWithoutMatchingMethodData_NoApps) {
   std::vector<mojom::PaymentMethodDataPtr> requested_methods;
   requested_methods.emplace_back(mojom::PaymentMethodData::New());
@@ -31,7 +31,7 @@ TEST_F(ServiceWorkerPaymentAppFactoryTest,
   EXPECT_TRUE(no_apps.empty());
 }
 
-TEST_F(ServiceWorkerPaymentAppFactoryTest,
+TEST_F(ServiceWorkerPaymentAppFinderTest,
        RemoveAppsWithoutMatchingMethodData_NoMethods) {
   std::vector<mojom::PaymentMethodDataPtr> no_requested_methods;
   content::PaymentAppProvider::PaymentApps apps;
@@ -43,7 +43,7 @@ TEST_F(ServiceWorkerPaymentAppFactoryTest,
   EXPECT_TRUE(apps.empty());
 }
 
-TEST_F(ServiceWorkerPaymentAppFactoryTest,
+TEST_F(ServiceWorkerPaymentAppFinderTest,
        RemoveAppsWithoutMatchingMethodData_IntersectionOfMethods) {
   std::vector<mojom::PaymentMethodDataPtr> requested_methods;
   requested_methods.emplace_back(mojom::PaymentMethodData::New());
@@ -71,7 +71,7 @@ TEST_F(ServiceWorkerPaymentAppFactoryTest,
             apps.find(1)->second->enabled_methods);
 }
 
-TEST_F(ServiceWorkerPaymentAppFactoryTest,
+TEST_F(ServiceWorkerPaymentAppFinderTest,
        RemoveAppsWithoutMatchingMethodData_NoCapabilitiesNetworksOrTypes) {
   std::vector<mojom::PaymentMethodDataPtr> requested_methods;
   requested_methods.emplace_back(mojom::PaymentMethodData::New());
@@ -88,7 +88,7 @@ TEST_F(ServiceWorkerPaymentAppFactoryTest,
             apps.find(0)->second->enabled_methods);
 }
 
-TEST_F(ServiceWorkerPaymentAppFactoryTest,
+TEST_F(ServiceWorkerPaymentAppFinderTest,
        RemoveAppsWithoutMatchingMethodData_NoNetworkCapabilities) {
   std::vector<mojom::PaymentMethodDataPtr> requested_methods;
   requested_methods.emplace_back(mojom::PaymentMethodData::New());
@@ -104,7 +104,7 @@ TEST_F(ServiceWorkerPaymentAppFactoryTest,
   EXPECT_TRUE(apps.empty());
 }
 
-TEST_F(ServiceWorkerPaymentAppFactoryTest,
+TEST_F(ServiceWorkerPaymentAppFinderTest,
        RemoveAppsWithoutMatchingMethodData_NoTypeCapabilities) {
   std::vector<mojom::PaymentMethodDataPtr> requested_methods;
   requested_methods.emplace_back(mojom::PaymentMethodData::New());
@@ -119,7 +119,7 @@ TEST_F(ServiceWorkerPaymentAppFactoryTest,
   EXPECT_TRUE(apps.empty());
 }
 
-TEST_F(ServiceWorkerPaymentAppFactoryTest,
+TEST_F(ServiceWorkerPaymentAppFinderTest,
        RemoveAppsWithoutMatchingMethodData_NoMatchingNetworkCapabilities) {
   std::vector<mojom::PaymentMethodDataPtr> requested_methods;
   requested_methods.emplace_back(mojom::PaymentMethodData::New());
@@ -138,7 +138,7 @@ TEST_F(ServiceWorkerPaymentAppFactoryTest,
   EXPECT_TRUE(apps.empty());
 }
 
-TEST_F(ServiceWorkerPaymentAppFactoryTest,
+TEST_F(ServiceWorkerPaymentAppFinderTest,
        RemoveAppsWithoutMatchingMethodData_NoMatchingTypeCapabilities) {
   std::vector<mojom::PaymentMethodDataPtr> requested_methods;
   requested_methods.emplace_back(mojom::PaymentMethodData::New());
@@ -156,7 +156,7 @@ TEST_F(ServiceWorkerPaymentAppFactoryTest,
   EXPECT_TRUE(apps.empty());
 }
 
-TEST_F(ServiceWorkerPaymentAppFactoryTest,
+TEST_F(ServiceWorkerPaymentAppFinderTest,
        RemoveAppsWithoutMatchingMethodData_NoRequestedNetworkOrType) {
   std::vector<mojom::PaymentMethodDataPtr> requested_methods;
   requested_methods.emplace_back(mojom::PaymentMethodData::New());
@@ -186,7 +186,7 @@ TEST_F(ServiceWorkerPaymentAppFactoryTest,
             capability.supported_card_networks[0]);
 }
 
-TEST_F(ServiceWorkerPaymentAppFactoryTest,
+TEST_F(ServiceWorkerPaymentAppFinderTest,
        RemoveAppsWithoutMatchingMethodData_IntersectionOfNetworksAndTypes) {
   std::vector<mojom::PaymentMethodDataPtr> requested_methods;
   requested_methods.emplace_back(mojom::PaymentMethodData::New());
@@ -224,7 +224,7 @@ TEST_F(ServiceWorkerPaymentAppFactoryTest,
             capability.supported_card_networks);
 }
 
-TEST_F(ServiceWorkerPaymentAppFactoryTest,
+TEST_F(ServiceWorkerPaymentAppFinderTest,
        RemoveAppsWithoutMatchingMethodData_NonBasicCardIgnoresCapabilities) {
   std::vector<mojom::PaymentMethodDataPtr> requested_methods;
   requested_methods.emplace_back(mojom::PaymentMethodData::New());
