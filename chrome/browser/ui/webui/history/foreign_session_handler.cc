@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/foreign_session_handler.h"
+#include "chrome/browser/ui/webui/history/foreign_session_handler.h"
 
 #include <stddef.h>
 
@@ -80,10 +80,8 @@ std::unique_ptr<base::DictionaryValue> SessionTabToValue(
   const ::sessions::SerializedNavigationEntry& current_navigation =
       tab.navigations.at(selected_index);
   GURL tab_url = current_navigation.virtual_url();
-  if (!tab_url.is_valid() ||
-      tab_url.spec() == chrome::kChromeUINewTabURL) {
+  if (!tab_url.is_valid() || tab_url.spec() == chrome::kChromeUINewTabURL)
     return nullptr;
-  }
 
   std::unique_ptr<base::DictionaryValue> dictionary(
       new base::DictionaryValue());
@@ -129,8 +127,7 @@ std::unique_ptr<base::DictionaryValue> SessionWindowToValue(
     std::unique_ptr<base::DictionaryValue> tab_value(
         SessionTabToValue(*tab.get()));
     if (tab_value.get()) {
-      modification_time = std::max(modification_time,
-                                   tab->timestamp);
+      modification_time = std::max(modification_time, tab->timestamp);
       tab_values->Append(std::move(tab_value));
     }
   }
@@ -178,8 +175,8 @@ void ForeignSessionHandler::OpenForeignSessionTab(
     LOG(ERROR) << "Foreign tab no longer has valid navigations.";
     return;
   }
-  SessionRestore::RestoreForeignSessionTab(
-      web_ui->GetWebContents(), *tab, disposition);
+  SessionRestore::RestoreForeignSessionTab(web_ui->GetWebContents(), *tab,
+                                           disposition);
 }
 
 // static
@@ -195,7 +192,7 @@ void ForeignSessionHandler::OpenForeignSessionWindows(
   // Note: we don't own the ForeignSessions themselves.
   if (!open_tabs->GetForeignSession(session_string_value, &windows)) {
     LOG(ERROR) << "ForeignSessionHandler failed to get session data from"
-        "OpenTabsUIDelegate.";
+                  "OpenTabsUIDelegate.";
     return;
   }
   std::vector<const ::sessions::SessionWindow*>::const_iterator iter_begin =
@@ -275,9 +272,9 @@ base::string16 ForeignSessionHandler::FormatSessionTime(
   // Return a time like "1 hour ago", "2 days ago", etc.
   base::Time now = base::Time::Now();
   // TimeFormat does not support negative TimeDelta values, so then we use 0.
-  return ui::TimeFormat::Simple(
-      ui::TimeFormat::FORMAT_ELAPSED, ui::TimeFormat::LENGTH_SHORT,
-      now < time ? base::TimeDelta() : now - time);
+  return ui::TimeFormat::Simple(ui::TimeFormat::FORMAT_ELAPSED,
+                                ui::TimeFormat::LENGTH_SHORT,
+                                now < time ? base::TimeDelta() : now - time);
 }
 
 void ForeignSessionHandler::HandleGetForeignSessions(
@@ -369,7 +366,7 @@ void ForeignSessionHandler::HandleOpenForeignSession(
   std::string window_num_str;
   int window_num = -1;
   if (num_args >= 2 && (!args->GetString(1, &window_num_str) ||
-      !base::StringToInt(window_num_str, &window_num))) {
+                        !base::StringToInt(window_num_str, &window_num))) {
     LOG(ERROR) << "Failed to extract window number.";
     return;
   }
@@ -386,8 +383,8 @@ void ForeignSessionHandler::HandleOpenForeignSession(
   SessionID tab_id = SessionID::FromSerializedValue(tab_id_value);
   if (tab_id.is_valid()) {
     WindowOpenDisposition disposition = webui::GetDispositionFromClick(args, 3);
-    OpenForeignSessionTab(
-        web_ui(), session_string_value, window_num, tab_id, disposition);
+    OpenForeignSessionTab(web_ui(), session_string_value, window_num, tab_id,
+                          disposition);
   } else {
     OpenForeignSessionWindows(web_ui(), session_string_value, window_num);
   }
@@ -440,7 +437,7 @@ void ForeignSessionHandler::HandleSetForeignSessionCollapsed(
   if (is_collapsed)
     update.Get()->SetBoolean(session_tag, true);
   else
-    update.Get()->Remove(session_tag, NULL);
+    update.Get()->Remove(session_tag, nullptr);
 }
 
 }  // namespace browser_sync

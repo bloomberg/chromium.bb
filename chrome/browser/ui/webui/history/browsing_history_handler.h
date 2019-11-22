@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_WEBUI_BROWSING_HISTORY_HANDLER_H_
-#define CHROME_BROWSER_UI_WEBUI_BROWSING_HISTORY_HANDLER_H_
+#ifndef CHROME_BROWSER_UI_WEBUI_HISTORY_BROWSING_HISTORY_HANDLER_H_
+#define CHROME_BROWSER_UI_WEBUI_HISTORY_BROWSING_HISTORY_HANDLER_H_
 
 #include <stdint.h>
 
@@ -53,8 +53,8 @@ class BrowsingHistoryHandler : public content::WebUIMessageHandler,
   void OnRemoveVisitsComplete() override;
   void OnRemoveVisitsFailed() override;
   void HistoryDeleted() override;
-  void HasOtherFormsOfBrowsingHistory(
-      bool has_other_forms, bool has_synced_results) override;
+  void HasOtherFormsOfBrowsingHistory(bool has_other_forms,
+                                      bool has_synced_results) override;
 
   // ProfileBasedBrowsingHistoryDriver implementation.
   Profile* GetProfile() override;
@@ -78,4 +78,4 @@ class BrowsingHistoryHandler : public content::WebUIMessageHandler,
   DISALLOW_COPY_AND_ASSIGN(BrowsingHistoryHandler);
 };
 
-#endif  // CHROME_BROWSER_UI_WEBUI_BROWSING_HISTORY_HANDLER_H_
+#endif  // CHROME_BROWSER_UI_WEBUI_HISTORY_BROWSING_HISTORY_HANDLER_H_

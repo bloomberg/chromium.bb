@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/history_ui.h"
+#include "chrome/browser/ui/webui/history/history_ui.h"
 
 #include <memory>
 #include <string>
@@ -16,9 +16,9 @@
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "chrome/browser/ui/webui/browsing_history_handler.h"
-#include "chrome/browser/ui/webui/foreign_session_handler.h"
-#include "chrome/browser/ui/webui/history_login_handler.h"
+#include "chrome/browser/ui/webui/history/browsing_history_handler.h"
+#include "chrome/browser/ui/webui/history/foreign_session_handler.h"
+#include "chrome/browser/ui/webui/history/history_login_handler.h"
 #include "chrome/browser/ui/webui/managed_ui_handler.h"
 #include "chrome/browser/ui/webui/metrics_handler.h"
 #include "chrome/browser/ui/webui/navigation_handler.h"

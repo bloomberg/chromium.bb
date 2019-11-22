@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/browsing_history_handler.h"
+#include "chrome/browser/ui/webui/history/browsing_history_handler.h"
 
 #include <stddef.h>
 
@@ -326,9 +326,9 @@ void BrowsingHistoryHandler::HandleRemoveVisits(const base::ListValue* args) {
   std::vector<BrowsingHistoryService::HistoryEntry> items_to_remove;
   items_to_remove.reserve(args->GetSize());
   for (auto it = args->begin(); it != args->end(); ++it) {
-    const base::DictionaryValue* deletion = NULL;
+    const base::DictionaryValue* deletion = nullptr;
     base::string16 url;
-    const base::ListValue* timestamps = NULL;
+    const base::ListValue* timestamps = nullptr;
 
     // Each argument is a dictionary with properties "url" and "timestamps".
     if (!(it->GetAsDictionary(&deletion) && deletion->GetString("url", &url) &&
@@ -362,8 +362,8 @@ void BrowsingHistoryHandler::HandleClearBrowsingData(
     const base::ListValue* args) {
   // TODO(beng): This is an improper direct dependency on Browser. Route this
   // through some sort of delegate.
-  Browser* browser = chrome::FindBrowserWithWebContents(
-      web_ui()->GetWebContents());
+  Browser* browser =
+      chrome::FindBrowserWithWebContents(web_ui()->GetWebContents());
   chrome::ShowClearBrowsingDataDialog(browser);
 }
 

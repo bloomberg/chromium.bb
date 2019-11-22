@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_WEBUI_FOREIGN_SESSION_HANDLER_H_
-#define CHROME_BROWSER_UI_WEBUI_FOREIGN_SESSION_HANDLER_H_
+#ifndef CHROME_BROWSER_UI_WEBUI_HISTORY_FOREIGN_SESSION_HANDLER_H_
+#define CHROME_BROWSER_UI_WEBUI_HISTORY_FOREIGN_SESSION_HANDLER_H_
 
 #include <memory>
 #include <string>
@@ -62,7 +62,7 @@ class ForeignSessionHandler : public content::WebUIMessageHandler {
                                         const std::string& session_string_value,
                                         int window_num);
 
-  // Returns a pointer to the current session model associator or NULL.
+  // Returns a pointer to the current session model associator or nullptr.
   static sync_sessions::OpenTabsUIDelegate* GetOpenTabsUIDelegate(
       content::WebUI* web_ui);
 
@@ -102,4 +102,4 @@ class ForeignSessionHandler : public content::WebUIMessageHandler {
 
 }  // namespace browser_sync
 
-#endif  // CHROME_BROWSER_UI_WEBUI_FOREIGN_SESSION_HANDLER_H_
+#endif  // CHROME_BROWSER_UI_WEBUI_HISTORY_FOREIGN_SESSION_HANDLER_H_
