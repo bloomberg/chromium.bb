@@ -754,6 +754,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/historyreport/HistoryReportJniBridge.java",
   "java/src/org/chromium/chrome/browser/historyreport/SearchJniBridge.java",
   "java/src/org/chromium/chrome/browser/historyreport/UsageReport.java",
+  "java/src/org/chromium/chrome/browser/homepage/HomepagePolicyManager.java",
   "java/src/org/chromium/chrome/browser/identity/SettingsSecureBasedIdentificationGenerator.java",
   "java/src/org/chromium/chrome/browser/identity/UniqueIdentificationGenerator.java",
   "java/src/org/chromium/chrome/browser/identity/UniqueIdentificationGeneratorFactory.java",
