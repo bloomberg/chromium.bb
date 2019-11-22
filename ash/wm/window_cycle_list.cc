@@ -571,7 +571,7 @@ void WindowCycleList::InitWindowCycleView() {
   views::Widget::InitParams params;
   params.delegate = cycle_view_;
   params.type = views::Widget::InitParams::TYPE_WINDOW_FRAMELESS;
-  params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
+  params.opacity = views::Widget::InitParams::WindowOpacity::kTranslucent;
   // Don't let the alt-tab cycler be activatable. This lets the currently
   // activated window continue to be in the foreground. This may affect
   // things such as video automatically pausing/playing.

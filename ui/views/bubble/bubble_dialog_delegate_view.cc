@@ -88,8 +88,8 @@ Widget* CreateBubbleWidget(BubbleDialogDelegateView* bubble) {
   Widget::InitParams bubble_params(Widget::InitParams::TYPE_BUBBLE);
   bubble_params.delegate = bubble;
   bubble_params.opacity = CustomShadowsSupported()
-                              ? Widget::InitParams::TRANSLUCENT_WINDOW
-                              : Widget::InitParams::OPAQUE_WINDOW;
+                              ? Widget::InitParams::WindowOpacity::kTranslucent
+                              : Widget::InitParams::WindowOpacity::kOpaque;
   bubble_params.accept_events = bubble->accept_events();
   bubble_params.remove_standard_frame = true;
   // Use a window default shadow if the bubble doesn't provides its own.

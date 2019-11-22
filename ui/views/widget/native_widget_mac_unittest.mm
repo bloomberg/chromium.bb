@@ -1869,7 +1869,7 @@ TEST_F(NativeWidgetMacTest, InvalidateShadow) {
   EXPECT_EQ(0, [window invalidateShadowCount]);
   widget->CloseNow();
 
-  init_params.opacity = Widget::InitParams::TRANSLUCENT_WINDOW;
+  init_params.opacity = Widget::InitParams::WindowOpacity::kTranslucent;
   widget = CreateWidgetWithTestWindow(std::move(init_params), &window);
   BridgedNativeWidgetTestApi test_api(window);
 
@@ -1911,20 +1911,20 @@ TEST_F(NativeWidgetMacTest, ContentOpacity) {
   Widget::InitParams init_params =
       CreateParams(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
 
-  EXPECT_EQ(init_params.opacity, Widget::InitParams::INFER_OPACITY);
+  EXPECT_EQ(init_params.opacity, Widget::InitParams::WindowOpacity::kInferred);
   Widget* widget = CreateWidgetWithTestWindow(std::move(init_params), &window);
 
   // Infer should default to opaque on Mac.
   EXPECT_TRUE([[window contentView] isOpaque]);
   widget->CloseNow();
 
-  init_params.opacity = Widget::InitParams::TRANSLUCENT_WINDOW;
+  init_params.opacity = Widget::InitParams::WindowOpacity::kTranslucent;
   widget = CreateWidgetWithTestWindow(std::move(init_params), &window);
   EXPECT_FALSE([[window contentView] isOpaque]);
   widget->CloseNow();
 
   // Test opaque explicitly.
-  init_params.opacity = Widget::InitParams::OPAQUE_WINDOW;
+  init_params.opacity = Widget::InitParams::WindowOpacity::kOpaque;
   widget = CreateWidgetWithTestWindow(std::move(init_params), &window);
   EXPECT_TRUE([[window contentView] isOpaque]);
   widget->CloseNow();

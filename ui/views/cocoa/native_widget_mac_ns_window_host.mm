@@ -392,7 +392,7 @@ void NativeWidgetMacNSWindowHost::InitWindow(const Widget::InitParams& params) {
     auto window_params = NativeWidgetNSWindowInitParams::New();
     window_params->modal_type = widget->widget_delegate()->GetModalType();
     window_params->is_translucent =
-        params.opacity == Widget::InitParams::TRANSLUCENT_WINDOW;
+        params.opacity == Widget::InitParams::WindowOpacity::kTranslucent;
     window_params->widget_is_top_level = widget->is_top_level();
     window_params->position_window_in_screen_coords =
         PositionWindowInScreenCoordinates(widget, widget_type_);
@@ -505,8 +505,9 @@ void NativeWidgetMacNSWindowHost::CreateCompositor(
   DCHECK(ViewsDelegate::GetInstance());
 
   // "Infer" must be handled by ViewsDelegate::OnBeforeWidgetInit().
-  DCHECK_NE(Widget::InitParams::INFER_OPACITY, params.opacity);
-  bool translucent = params.opacity == Widget::InitParams::TRANSLUCENT_WINDOW;
+  DCHECK_NE(Widget::InitParams::WindowOpacity::kInferred, params.opacity);
+  bool translucent =
+      params.opacity == Widget::InitParams::WindowOpacity::kTranslucent;
 
   // Create the layer.
   SetLayer(std::make_unique<ui::Layer>(params.layer_type));

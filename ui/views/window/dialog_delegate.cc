@@ -85,7 +85,7 @@ Widget::InitParams DialogDelegate::GetDialogWidgetInitParams(
     dialog->params_.custom_frame &= CanSupportCustomFrame(parent);
 
   if (!dialog || dialog->use_custom_frame()) {
-    params.opacity = Widget::InitParams::TRANSLUCENT_WINDOW;
+    params.opacity = Widget::InitParams::WindowOpacity::kTranslucent;
     params.remove_standard_frame = true;
 #if !defined(OS_MACOSX)
     // Except on Mac, the bubble frame includes its own shadow; remove any

@@ -874,7 +874,7 @@ void LoginDisplayHostWebUI::InitLoginWindowAndView() {
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   params.bounds = CalculateScreenBounds(gfx::Size());
   params.show_state = ui::SHOW_STATE_FULLSCREEN;
-  params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
+  params.opacity = views::Widget::InitParams::WindowOpacity::kTranslucent;
 
   ash_util::SetupWidgetInitParamsForContainer(
       &params, ash::kShellWindowId_LockScreenContainer);
