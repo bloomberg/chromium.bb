@@ -16,6 +16,7 @@
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
+#include "pdf/pdf_features.h"
 #include "third_party/blink/public/strings/grit/blink_strings.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/null_ax_action_target.h"
@@ -500,7 +501,9 @@ void PdfAccessibilityTree::AddPageContent(
       --text_run_index;
       continue;
     } else if (IsObjectInTextRun(highlights, current_highlight_index,
-                                 text_run_index)) {
+                                 text_run_index) &&
+               base::FeatureList::IsEnabled(
+                   chrome_pdf::features::kAccessiblePDFHighlight)) {
       FinishStaticNode(&static_text_node, &static_text);
 
       const ppapi::PdfAccessibilityHighlightInfo& highlight =
