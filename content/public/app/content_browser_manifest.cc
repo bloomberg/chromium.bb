@@ -202,7 +202,6 @@ const service_manager::Manifest& GetContentBrowserManifest() {
                   "content.mojom.RendererAudioOutputStreamFactory",
                   "device.mojom.Geolocation",
                   "discardable_memory.mojom.DiscardableSharedMemoryManager",
-                  "media.mojom.FuchsiaCdmProvider",
                   "media.mojom.InterfaceFactory",
                   "media.mojom.MediaMetricsProvider",
                   "media.mojom.RemoterFactory",
