@@ -114,14 +114,15 @@ public final class NdefMessageUtils {
             case RECORD_TYPE_ABSOLUTE_URL:
                 return createPlatformUrlRecord(record.data, true /* isAbsUrl */);
             case RECORD_TYPE_TEXT:
-                byte[] payload = createPayloadForTextRecord(record);
-                return new android.nfc.NdefRecord(android.nfc.NdefRecord.TNF_WELL_KNOWN,
-                        android.nfc.NdefRecord.RTD_TEXT, null, payload);
+                return createPlatformTextRecord(
+                        record.id, record.lang, record.encoding, record.data);
             case RECORD_TYPE_MIME:
                 return createPlatformMimeRecord(record.mediaType, record.id, record.data);
             case RECORD_TYPE_UNKNOWN:
-                return new android.nfc.NdefRecord(
-                        android.nfc.NdefRecord.TNF_UNKNOWN, null, null, record.data);
+                return new android.nfc.NdefRecord(android.nfc.NdefRecord.TNF_UNKNOWN,
+                        null /* type */,
+                        record.id == null ? null : ApiCompatibilityUtils.getBytesUtf8(record.id),
+                        record.data);
             case RECORD_TYPE_EMPTY:
                 return new android.nfc.NdefRecord(
                         android.nfc.NdefRecord.TNF_EMPTY, null, null, null);
@@ -301,6 +302,39 @@ public final class NdefMessageUtils {
     }
 
     /**
+     * Creates a TNF_WELL_KNOWN + RTD_TEXT android.nfc.NdefRecord.
+     */
+    public static android.nfc.NdefRecord createPlatformTextRecord(String id, String lang,
+            String encoding, byte[] text) throws UnsupportedEncodingException {
+        // Blink always send us valid |lang| and |encoding|, we check them here against compromised
+        // data.
+        if (lang == null || lang.isEmpty()) throw new IllegalArgumentException("lang is invalid");
+        if (encoding == null || encoding.isEmpty()) {
+            throw new IllegalArgumentException("encoding is invalid");
+        }
+
+        byte[] languageCodeBytes = lang.getBytes(StandardCharsets.US_ASCII);
+        // We only have 6 bits in the status byte (the first byte of the payload) to indicate length
+        // of ISO/IANA language code. Blink already guarantees the length is less than 63, we check
+        // here against compromised data.
+        if (languageCodeBytes.length >= 64) {
+            throw new IllegalArgumentException("language code is too long, must be <64 bytes.");
+        }
+        byte status = (byte) languageCodeBytes.length;
+        if (!encoding.equals(ENCODING_UTF8)) {
+            status |= (byte) (1 << 7);
+        }
+
+        ByteBuffer buffer = ByteBuffer.allocate(1 + languageCodeBytes.length + text.length);
+        buffer.put(status);
+        buffer.put(languageCodeBytes);
+        buffer.put(text);
+        return new android.nfc.NdefRecord(android.nfc.NdefRecord.TNF_WELL_KNOWN,
+                android.nfc.NdefRecord.RTD_TEXT,
+                id == null ? null : ApiCompatibilityUtils.getBytesUtf8(id), buffer.array());
+    }
+
+    /**
      * Creates a TNF_MIME_MEDIA android.nfc.NdefRecord.
      */
     public static android.nfc.NdefRecord createPlatformMimeRecord(
@@ -368,21 +402,6 @@ public final class NdefMessageUtils {
         if (!type.matches("[a-zA-Z0-9()+,\\-:=@;$_!*'.]+")) return null;
 
         return new PairOfDomainAndType(domain, type);
-    }
-
-    private static byte[] createPayloadForTextRecord(NdefRecord record)
-            throws UnsupportedEncodingException {
-        byte[] languageCodeBytes = record.lang.getBytes(StandardCharsets.US_ASCII);
-        ByteBuffer buffer = ByteBuffer.allocate(1 + languageCodeBytes.length + record.data.length);
-        // Lang length is always less than 64 as it is guaranteed by Blink.
-        byte status = (byte) languageCodeBytes.length;
-        if (!record.encoding.equals(ENCODING_UTF8)) {
-            status |= (byte) (1 << 7);
-        }
-        buffer.put(status);
-        buffer.put(languageCodeBytes);
-        buffer.put(record.data);
-        return buffer.array();
     }
 
     /**
