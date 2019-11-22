@@ -499,7 +499,7 @@ INSTANTIATE_TEST_SUITE_P(All,
                          EnableDisableSingleClientTest,
                          ::testing::Values(false, true));
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          EnableDisableSingleClientSelfNotifyTest,
                          ::testing::Values(false, true));
 
