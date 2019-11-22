@@ -21,12 +21,49 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='test_platform.steps',
   syntax='proto3',
   serialized_options=_b('Z=go.chromium.org/chromiumos/infra/proto/go/test_platform/steps'),
-  serialized_pb=_b('\n%test_platform/steps/enumeration.proto\x12\x13test_platform.steps\x1a chromite/api/test_metadata.proto\x1a\x1btest_platform/request.proto\"P\n\x13\x45numerationRequests\x12\x39\n\x08requests\x18\x01 \x03(\x0b\x32\'.test_platform.steps.EnumerationRequest\"S\n\x14\x45numerationResponses\x12;\n\tresponses\x18\x01 \x03(\x0b\x32(.test_platform.steps.EnumerationResponse\"\x82\x01\n\x12\x45numerationRequest\x12\x38\n\x08metadata\x18\x01 \x01(\x0b\x32&.test_platform.Request.Params.Metadata\x12\x32\n\ttest_plan\x18\x04 \x01(\x0b\x32\x1f.test_platform.Request.TestPlan\"\xf8\x02\n\x13\x45numerationResponse\x12Y\n\x14\x61utotest_invocations\x18\x02 \x03(\x0b\x32;.test_platform.steps.EnumerationResponse.AutotestInvocation\x1a\x85\x02\n\x12\x41utotestInvocation\x12(\n\x04test\x18\x01 \x01(\x0b\x32\x1a.chromite.api.AutotestTest\x12\x11\n\ttest_args\x18\x02 \x01(\t\x12\x14\n\x0c\x64isplay_name\x18\x03 \x01(\t\x12\x66\n\x0eresult_keyvals\x18\x04 \x03(\x0b\x32N.test_platform.steps.EnumerationResponse.AutotestInvocation.ResultKeyvalsEntry\x1a\x34\n\x12ResultKeyvalsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\x42?Z=go.chromium.org/chromiumos/infra/proto/go/test_platform/stepsb\x06proto3')
+  serialized_pb=_b('\n%test_platform/steps/enumeration.proto\x12\x13test_platform.steps\x1a chromite/api/test_metadata.proto\x1a\x1btest_platform/request.proto\"\x87\x02\n\x13\x45numerationRequests\x12\x39\n\x08requests\x18\x01 \x03(\x0b\x32\'.test_platform.steps.EnumerationRequest\x12U\n\x0ftagged_requests\x18\x02 \x03(\x0b\x32<.test_platform.steps.EnumerationRequests.TaggedRequestsEntry\x1a^\n\x13TaggedRequestsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x36\n\x05value\x18\x02 \x01(\x0b\x32\'.test_platform.steps.EnumerationRequest:\x02\x38\x01\"\x8f\x02\n\x14\x45numerationResponses\x12;\n\tresponses\x18\x01 \x03(\x0b\x32(.test_platform.steps.EnumerationResponse\x12X\n\x10tagged_responses\x18\x02 \x03(\x0b\x32>.test_platform.steps.EnumerationResponses.TaggedResponsesEntry\x1a`\n\x14TaggedResponsesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x37\n\x05value\x18\x02 \x01(\x0b\x32(.test_platform.steps.EnumerationResponse:\x02\x38\x01\"\x82\x01\n\x12\x45numerationRequest\x12\x38\n\x08metadata\x18\x01 \x01(\x0b\x32&.test_platform.Request.Params.Metadata\x12\x32\n\ttest_plan\x18\x04 \x01(\x0b\x32\x1f.test_platform.Request.TestPlan\"\xf8\x02\n\x13\x45numerationResponse\x12Y\n\x14\x61utotest_invocations\x18\x02 \x03(\x0b\x32;.test_platform.steps.EnumerationResponse.AutotestInvocation\x1a\x85\x02\n\x12\x41utotestInvocation\x12(\n\x04test\x18\x01 \x01(\x0b\x32\x1a.chromite.api.AutotestTest\x12\x11\n\ttest_args\x18\x02 \x01(\t\x12\x14\n\x0c\x64isplay_name\x18\x03 \x01(\t\x12\x66\n\x0eresult_keyvals\x18\x04 \x03(\x0b\x32N.test_platform.steps.EnumerationResponse.AutotestInvocation.ResultKeyvalsEntry\x1a\x34\n\x12ResultKeyvalsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\x42?Z=go.chromium.org/chromiumos/infra/proto/go/test_platform/stepsb\x06proto3')
   ,
   dependencies=[chromite_dot_api_dot_test__metadata__pb2.DESCRIPTOR,test__platform_dot_request__pb2.DESCRIPTOR,])
 
 
 
+
+_ENUMERATIONREQUESTS_TAGGEDREQUESTSENTRY = _descriptor.Descriptor(
+  name='TaggedRequestsEntry',
+  full_name='test_platform.steps.EnumerationRequests.TaggedRequestsEntry',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='key', full_name='test_platform.steps.EnumerationRequests.TaggedRequestsEntry.key', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='value', full_name='test_platform.steps.EnumerationRequests.TaggedRequestsEntry.value', index=1,
+      number=2, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=_b('8\001'),
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=295,
+  serialized_end=389,
+)
 
 _ENUMERATIONREQUESTS = _descriptor.Descriptor(
   name='EnumerationRequests',
@@ -42,10 +79,17 @@ _ENUMERATIONREQUESTS = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='tagged_requests', full_name='test_platform.steps.EnumerationRequests.tagged_requests', index=1,
+      number=2, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
-  nested_types=[],
+  nested_types=[_ENUMERATIONREQUESTS_TAGGEDREQUESTSENTRY, ],
   enum_types=[
   ],
   serialized_options=None,
@@ -54,10 +98,47 @@ _ENUMERATIONREQUESTS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=125,
-  serialized_end=205,
+  serialized_start=126,
+  serialized_end=389,
 )
 
+
+_ENUMERATIONRESPONSES_TAGGEDRESPONSESENTRY = _descriptor.Descriptor(
+  name='TaggedResponsesEntry',
+  full_name='test_platform.steps.EnumerationResponses.TaggedResponsesEntry',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='key', full_name='test_platform.steps.EnumerationResponses.TaggedResponsesEntry.key', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='value', full_name='test_platform.steps.EnumerationResponses.TaggedResponsesEntry.value', index=1,
+      number=2, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=_b('8\001'),
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=567,
+  serialized_end=663,
+)
 
 _ENUMERATIONRESPONSES = _descriptor.Descriptor(
   name='EnumerationResponses',
@@ -73,10 +154,17 @@ _ENUMERATIONRESPONSES = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='tagged_responses', full_name='test_platform.steps.EnumerationResponses.tagged_responses', index=1,
+      number=2, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
-  nested_types=[],
+  nested_types=[_ENUMERATIONRESPONSES_TAGGEDRESPONSESENTRY, ],
   enum_types=[
   ],
   serialized_options=None,
@@ -85,8 +173,8 @@ _ENUMERATIONRESPONSES = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=207,
-  serialized_end=290,
+  serialized_start=392,
+  serialized_end=663,
 )
 
 
@@ -123,8 +211,8 @@ _ENUMERATIONREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=293,
-  serialized_end=423,
+  serialized_start=666,
+  serialized_end=796,
 )
 
 
@@ -161,8 +249,8 @@ _ENUMERATIONRESPONSE_AUTOTESTINVOCATION_RESULTKEYVALSENTRY = _descriptor.Descrip
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=750,
-  serialized_end=802,
+  serialized_start=1123,
+  serialized_end=1175,
 )
 
 _ENUMERATIONRESPONSE_AUTOTESTINVOCATION = _descriptor.Descriptor(
@@ -212,8 +300,8 @@ _ENUMERATIONRESPONSE_AUTOTESTINVOCATION = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=541,
-  serialized_end=802,
+  serialized_start=914,
+  serialized_end=1175,
 )
 
 _ENUMERATIONRESPONSE = _descriptor.Descriptor(
@@ -242,12 +330,18 @@ _ENUMERATIONRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=426,
-  serialized_end=802,
+  serialized_start=799,
+  serialized_end=1175,
 )
 
+_ENUMERATIONREQUESTS_TAGGEDREQUESTSENTRY.fields_by_name['value'].message_type = _ENUMERATIONREQUEST
+_ENUMERATIONREQUESTS_TAGGEDREQUESTSENTRY.containing_type = _ENUMERATIONREQUESTS
 _ENUMERATIONREQUESTS.fields_by_name['requests'].message_type = _ENUMERATIONREQUEST
+_ENUMERATIONREQUESTS.fields_by_name['tagged_requests'].message_type = _ENUMERATIONREQUESTS_TAGGEDREQUESTSENTRY
+_ENUMERATIONRESPONSES_TAGGEDRESPONSESENTRY.fields_by_name['value'].message_type = _ENUMERATIONRESPONSE
+_ENUMERATIONRESPONSES_TAGGEDRESPONSESENTRY.containing_type = _ENUMERATIONRESPONSES
 _ENUMERATIONRESPONSES.fields_by_name['responses'].message_type = _ENUMERATIONRESPONSE
+_ENUMERATIONRESPONSES.fields_by_name['tagged_responses'].message_type = _ENUMERATIONRESPONSES_TAGGEDRESPONSESENTRY
 _ENUMERATIONREQUEST.fields_by_name['metadata'].message_type = test__platform_dot_request__pb2._REQUEST_PARAMS_METADATA
 _ENUMERATIONREQUEST.fields_by_name['test_plan'].message_type = test__platform_dot_request__pb2._REQUEST_TESTPLAN
 _ENUMERATIONRESPONSE_AUTOTESTINVOCATION_RESULTKEYVALSENTRY.containing_type = _ENUMERATIONRESPONSE_AUTOTESTINVOCATION
@@ -262,18 +356,34 @@ DESCRIPTOR.message_types_by_name['EnumerationResponse'] = _ENUMERATIONRESPONSE
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
 EnumerationRequests = _reflection.GeneratedProtocolMessageType('EnumerationRequests', (_message.Message,), dict(
+
+  TaggedRequestsEntry = _reflection.GeneratedProtocolMessageType('TaggedRequestsEntry', (_message.Message,), dict(
+    DESCRIPTOR = _ENUMERATIONREQUESTS_TAGGEDREQUESTSENTRY,
+    __module__ = 'test_platform.steps.enumeration_pb2'
+    # @@protoc_insertion_point(class_scope:test_platform.steps.EnumerationRequests.TaggedRequestsEntry)
+    ))
+  ,
   DESCRIPTOR = _ENUMERATIONREQUESTS,
   __module__ = 'test_platform.steps.enumeration_pb2'
   # @@protoc_insertion_point(class_scope:test_platform.steps.EnumerationRequests)
   ))
 _sym_db.RegisterMessage(EnumerationRequests)
+_sym_db.RegisterMessage(EnumerationRequests.TaggedRequestsEntry)
 
 EnumerationResponses = _reflection.GeneratedProtocolMessageType('EnumerationResponses', (_message.Message,), dict(
+
+  TaggedResponsesEntry = _reflection.GeneratedProtocolMessageType('TaggedResponsesEntry', (_message.Message,), dict(
+    DESCRIPTOR = _ENUMERATIONRESPONSES_TAGGEDRESPONSESENTRY,
+    __module__ = 'test_platform.steps.enumeration_pb2'
+    # @@protoc_insertion_point(class_scope:test_platform.steps.EnumerationResponses.TaggedResponsesEntry)
+    ))
+  ,
   DESCRIPTOR = _ENUMERATIONRESPONSES,
   __module__ = 'test_platform.steps.enumeration_pb2'
   # @@protoc_insertion_point(class_scope:test_platform.steps.EnumerationResponses)
   ))
 _sym_db.RegisterMessage(EnumerationResponses)
+_sym_db.RegisterMessage(EnumerationResponses.TaggedResponsesEntry)
 
 EnumerationRequest = _reflection.GeneratedProtocolMessageType('EnumerationRequest', (_message.Message,), dict(
   DESCRIPTOR = _ENUMERATIONREQUEST,
@@ -307,5 +417,7 @@ _sym_db.RegisterMessage(EnumerationResponse.AutotestInvocation.ResultKeyvalsEntr
 
 
 DESCRIPTOR._options = None
+_ENUMERATIONREQUESTS_TAGGEDREQUESTSENTRY._options = None
+_ENUMERATIONRESPONSES_TAGGEDRESPONSESENTRY._options = None
 _ENUMERATIONRESPONSE_AUTOTESTINVOCATION_RESULTKEYVALSENTRY._options = None
 # @@protoc_insertion_point(module_scope)

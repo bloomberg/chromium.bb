@@ -13,6 +13,7 @@ from google.protobuf import symbol_database as _symbol_database
 _sym_db = _symbol_database.Default()
 
 
+from chromite.api.gen.chromite.api import artifacts_pb2 as chromite_dot_api_dot_artifacts__pb2
 from chromite.api.gen.chromite.api import build_api_pb2 as chromite_dot_api_dot_build__api__pb2
 from chromite.api.gen.chromiumos import common_pb2 as chromiumos_dot_common__pb2
 
@@ -22,9 +23,9 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='chromite.api',
   syntax='proto3',
   serialized_options=_b('Z6go.chromium.org/chromiumos/infra/proto/go/chromite/api'),
-  serialized_pb=_b('\n\x1c\x63hromite/api/toolchain.proto\x12\x0c\x63hromite.api\x1a\x1c\x63hromite/api/build_api.proto\x1a\x17\x63hromiumos/common.proto\"\x80\x01\n\x1aVerifyAFDOArtifactsRequest\x12-\n\x0c\x62uild_target\x18\x01 \x01(\x0b\x32\x17.chromiumos.BuildTarget\x12\x33\n\rartifact_type\x18\x02 \x01(\x0e\x32\x1c.chromiumos.AFDOArtifactType\"-\n\x1bVerifyAFDOArtifactsResponse\x12\x0e\n\x06status\x18\x01 \x01(\x08*f\n\x10\x41\x46\x44OArtifactType\x12\r\n\tNONE_TYPE\x10\x00\x12\r\n\tORDERFILE\x10\x01\x12\x12\n\x0e\x42\x45NCHMARK_AFDO\x10\x02\x12\x0f\n\x0bKERNEL_AFDO\x10\x03\x12\x0f\n\x0b\x43HROME_AFDO\x10\x04\x32\x8d\x02\n\x10ToolchainService\x12t\n\x1dUpdateEbuildWithAFDOArtifacts\x12(.chromite.api.VerifyAFDOArtifactsRequest\x1a).chromite.api.VerifyAFDOArtifactsResponse\x12p\n\x19UploadVettedAFDOArtifacts\x12(.chromite.api.VerifyAFDOArtifactsRequest\x1a).chromite.api.VerifyAFDOArtifactsResponse\x1a\x11\xc2\xed\x1a\r\n\ttoolchain\x10\x01\x42\x38Z6go.chromium.org/chromiumos/infra/proto/go/chromite/apib\x06proto3')
+  serialized_pb=_b('\n\x1c\x63hromite/api/toolchain.proto\x12\x0c\x63hromite.api\x1a\x1c\x63hromite/api/artifacts.proto\x1a\x1c\x63hromite/api/build_api.proto\x1a\x17\x63hromiumos/common.proto\"!\n\x1fPrepareForToolchainBuildRequest\"\xc5\x01\n PrepareForToolchainBuildResponse\x12V\n\x0f\x62uild_relevance\x18\x01 \x01(\x0e\x32=.chromite.api.PrepareForToolchainBuildResponse.BuildRelevance\"I\n\x0e\x42uildRelevance\x12\x0f\n\x0bUNSPECIFIED\x10\x00\x12\n\n\x06NEEDED\x10\x01\x12\x0b\n\x07UNKNOWN\x10\x02\x12\r\n\tPOINTLESS\x10\x03\"\x80\x01\n\x1aVerifyAFDOArtifactsRequest\x12-\n\x0c\x62uild_target\x18\x01 \x01(\x0b\x32\x17.chromiumos.BuildTarget\x12\x33\n\rartifact_type\x18\x02 \x01(\x0e\x32\x1c.chromiumos.AFDOArtifactType\"-\n\x1bVerifyAFDOArtifactsResponse\x12\x0e\n\x06status\x18\x01 \x01(\x08*f\n\x10\x41\x46\x44OArtifactType\x12\r\n\tNONE_TYPE\x10\x00\x12\r\n\tORDERFILE\x10\x01\x12\x12\n\x0e\x42\x45NCHMARK_AFDO\x10\x02\x12\x0f\n\x0bKERNEL_AFDO\x10\x03\x12\x0f\n\x0b\x43HROME_AFDO\x10\x04\x32\xd9\x0e\n\x10ToolchainService\x12|\n\x1dUpdateEbuildWithAFDOArtifacts\x12(.chromite.api.VerifyAFDOArtifactsRequest\x1a).chromite.api.VerifyAFDOArtifactsResponse\"\x06\xc2\xed\x1a\x02\x10\x01\x12x\n\x19UploadVettedAFDOArtifacts\x12(.chromite.api.VerifyAFDOArtifactsRequest\x1a).chromite.api.VerifyAFDOArtifactsResponse\"\x06\xc2\xed\x1a\x02\x10\x01\x12\x88\x01\n\'PrepareForBuildUnverifiedChromeAFDOFile\x12-.chromite.api.PrepareForToolchainBuildRequest\x1a..chromite.api.PrepareForToolchainBuildResponse\x12\x86\x01\n%PrepareForBuildVerifiedChromeAFDOFile\x12-.chromite.api.PrepareForToolchainBuildRequest\x1a..chromite.api.PrepareForToolchainBuildResponse\x12\x86\x01\n%PrepareForBuildVerifiedKernelAFDOFile\x12-.chromite.api.PrepareForToolchainBuildRequest\x1a..chromite.api.PrepareForToolchainBuildResponse\x12\x87\x01\n&PrepareForBuildChromeClangWarningsFile\x12-.chromite.api.PrepareForToolchainBuildRequest\x1a..chromite.api.PrepareForToolchainBuildResponse\x12\x85\x01\n$PrepareForBuildUnverifiedLLVMPgoFile\x12-.chromite.api.PrepareForToolchainBuildRequest\x1a..chromite.api.PrepareForToolchainBuildResponse\x12\x86\x01\n%PrepareForBuildUnverifiedOrderingFile\x12-.chromite.api.PrepareForToolchainBuildRequest\x1a..chromite.api.PrepareForToolchainBuildResponse\x12\x84\x01\n#PrepareForBuildVerifiedOrderingFile\x12-.chromite.api.PrepareForToolchainBuildRequest\x1a..chromite.api.PrepareForToolchainBuildResponse\x12[\n\x1e\x42undleUnverifiedChromeAFDOFile\x12\x1b.chromite.api.BundleRequest\x1a\x1c.chromite.api.BundleResponse\x12Y\n\x1c\x42undleVerifiedChromeAFDOFile\x12\x1b.chromite.api.BundleRequest\x1a\x1c.chromite.api.BundleResponse\x12Y\n\x1c\x42undleVerifiedKernelAFDOFile\x12\x1b.chromite.api.BundleRequest\x1a\x1c.chromite.api.BundleResponse\x12Z\n\x1d\x42undleChromeClangWarningsFile\x12\x1b.chromite.api.BundleRequest\x1a\x1c.chromite.api.BundleResponse\x12X\n\x1b\x42undleUnverifiedLLVMPgoFile\x12\x1b.chromite.api.BundleRequest\x1a\x1c.chromite.api.BundleResponse\x12Y\n\x1c\x42undleUnverifiedOrderingFile\x12\x1b.chromite.api.BundleRequest\x1a\x1c.chromite.api.BundleResponse\x12W\n\x1a\x42undleVerifiedOrderingFile\x12\x1b.chromite.api.BundleRequest\x1a\x1c.chromite.api.BundleResponse\x1a\x11\xc2\xed\x1a\r\n\ttoolchain\x10\x02\x42\x38Z6go.chromium.org/chromiumos/infra/proto/go/chromite/apib\x06proto3')
   ,
-  dependencies=[chromite_dot_api_dot_build__api__pb2.DESCRIPTOR,chromiumos_dot_common__pb2.DESCRIPTOR,])
+  dependencies=[chromite_dot_api_dot_artifacts__pb2.DESCRIPTOR,chromite_dot_api_dot_build__api__pb2.DESCRIPTOR,chromiumos_dot_common__pb2.DESCRIPTOR,])
 
 _AFDOARTIFACTTYPE = _descriptor.EnumDescriptor(
   name='AFDOArtifactType',
@@ -55,8 +56,8 @@ _AFDOARTIFACTTYPE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=279,
-  serialized_end=381,
+  serialized_start=544,
+  serialized_end=646,
 )
 _sym_db.RegisterEnumDescriptor(_AFDOARTIFACTTYPE)
 
@@ -67,6 +68,92 @@ BENCHMARK_AFDO = 2
 KERNEL_AFDO = 3
 CHROME_AFDO = 4
 
+
+_PREPAREFORTOOLCHAINBUILDRESPONSE_BUILDRELEVANCE = _descriptor.EnumDescriptor(
+  name='BuildRelevance',
+  full_name='chromite.api.PrepareForToolchainBuildResponse.BuildRelevance',
+  filename=None,
+  file=DESCRIPTOR,
+  values=[
+    _descriptor.EnumValueDescriptor(
+      name='UNSPECIFIED', index=0, number=0,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='NEEDED', index=1, number=1,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='UNKNOWN', index=2, number=2,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='POINTLESS', index=3, number=3,
+      serialized_options=None,
+      type=None),
+  ],
+  containing_type=None,
+  serialized_options=None,
+  serialized_start=291,
+  serialized_end=364,
+)
+_sym_db.RegisterEnumDescriptor(_PREPAREFORTOOLCHAINBUILDRESPONSE_BUILDRELEVANCE)
+
+
+_PREPAREFORTOOLCHAINBUILDREQUEST = _descriptor.Descriptor(
+  name='PrepareForToolchainBuildRequest',
+  full_name='chromite.api.PrepareForToolchainBuildRequest',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=131,
+  serialized_end=164,
+)
+
+
+_PREPAREFORTOOLCHAINBUILDRESPONSE = _descriptor.Descriptor(
+  name='PrepareForToolchainBuildResponse',
+  full_name='chromite.api.PrepareForToolchainBuildResponse',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='build_relevance', full_name='chromite.api.PrepareForToolchainBuildResponse.build_relevance', index=0,
+      number=1, type=14, cpp_type=8, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+    _PREPAREFORTOOLCHAINBUILDRESPONSE_BUILDRELEVANCE,
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=167,
+  serialized_end=364,
+)
 
 
 _VERIFYAFDOARTIFACTSREQUEST = _descriptor.Descriptor(
@@ -102,8 +189,8 @@ _VERIFYAFDOARTIFACTSREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=102,
-  serialized_end=230,
+  serialized_start=367,
+  serialized_end=495,
 )
 
 
@@ -133,16 +220,34 @@ _VERIFYAFDOARTIFACTSRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=232,
-  serialized_end=277,
+  serialized_start=497,
+  serialized_end=542,
 )
 
+_PREPAREFORTOOLCHAINBUILDRESPONSE.fields_by_name['build_relevance'].enum_type = _PREPAREFORTOOLCHAINBUILDRESPONSE_BUILDRELEVANCE
+_PREPAREFORTOOLCHAINBUILDRESPONSE_BUILDRELEVANCE.containing_type = _PREPAREFORTOOLCHAINBUILDRESPONSE
 _VERIFYAFDOARTIFACTSREQUEST.fields_by_name['build_target'].message_type = chromiumos_dot_common__pb2._BUILDTARGET
 _VERIFYAFDOARTIFACTSREQUEST.fields_by_name['artifact_type'].enum_type = chromiumos_dot_common__pb2._AFDOARTIFACTTYPE
+DESCRIPTOR.message_types_by_name['PrepareForToolchainBuildRequest'] = _PREPAREFORTOOLCHAINBUILDREQUEST
+DESCRIPTOR.message_types_by_name['PrepareForToolchainBuildResponse'] = _PREPAREFORTOOLCHAINBUILDRESPONSE
 DESCRIPTOR.message_types_by_name['VerifyAFDOArtifactsRequest'] = _VERIFYAFDOARTIFACTSREQUEST
 DESCRIPTOR.message_types_by_name['VerifyAFDOArtifactsResponse'] = _VERIFYAFDOARTIFACTSRESPONSE
 DESCRIPTOR.enum_types_by_name['AFDOArtifactType'] = _AFDOARTIFACTTYPE
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
+
+PrepareForToolchainBuildRequest = _reflection.GeneratedProtocolMessageType('PrepareForToolchainBuildRequest', (_message.Message,), dict(
+  DESCRIPTOR = _PREPAREFORTOOLCHAINBUILDREQUEST,
+  __module__ = 'chromite.api.toolchain_pb2'
+  # @@protoc_insertion_point(class_scope:chromite.api.PrepareForToolchainBuildRequest)
+  ))
+_sym_db.RegisterMessage(PrepareForToolchainBuildRequest)
+
+PrepareForToolchainBuildResponse = _reflection.GeneratedProtocolMessageType('PrepareForToolchainBuildResponse', (_message.Message,), dict(
+  DESCRIPTOR = _PREPAREFORTOOLCHAINBUILDRESPONSE,
+  __module__ = 'chromite.api.toolchain_pb2'
+  # @@protoc_insertion_point(class_scope:chromite.api.PrepareForToolchainBuildResponse)
+  ))
+_sym_db.RegisterMessage(PrepareForToolchainBuildResponse)
 
 VerifyAFDOArtifactsRequest = _reflection.GeneratedProtocolMessageType('VerifyAFDOArtifactsRequest', (_message.Message,), dict(
   DESCRIPTOR = _VERIFYAFDOARTIFACTSREQUEST,
@@ -166,9 +271,9 @@ _TOOLCHAINSERVICE = _descriptor.ServiceDescriptor(
   full_name='chromite.api.ToolchainService',
   file=DESCRIPTOR,
   index=0,
-  serialized_options=_b('\302\355\032\r\n\ttoolchain\020\001'),
-  serialized_start=384,
-  serialized_end=653,
+  serialized_options=_b('\302\355\032\r\n\ttoolchain\020\002'),
+  serialized_start=649,
+  serialized_end=2530,
   methods=[
   _descriptor.MethodDescriptor(
     name='UpdateEbuildWithAFDOArtifacts',
@@ -177,7 +282,7 @@ _TOOLCHAINSERVICE = _descriptor.ServiceDescriptor(
     containing_service=None,
     input_type=_VERIFYAFDOARTIFACTSREQUEST,
     output_type=_VERIFYAFDOARTIFACTSRESPONSE,
-    serialized_options=None,
+    serialized_options=_b('\302\355\032\002\020\001'),
   ),
   _descriptor.MethodDescriptor(
     name='UploadVettedAFDOArtifacts',
@@ -186,6 +291,132 @@ _TOOLCHAINSERVICE = _descriptor.ServiceDescriptor(
     containing_service=None,
     input_type=_VERIFYAFDOARTIFACTSREQUEST,
     output_type=_VERIFYAFDOARTIFACTSRESPONSE,
+    serialized_options=_b('\302\355\032\002\020\001'),
+  ),
+  _descriptor.MethodDescriptor(
+    name='PrepareForBuildUnverifiedChromeAFDOFile',
+    full_name='chromite.api.ToolchainService.PrepareForBuildUnverifiedChromeAFDOFile',
+    index=2,
+    containing_service=None,
+    input_type=_PREPAREFORTOOLCHAINBUILDREQUEST,
+    output_type=_PREPAREFORTOOLCHAINBUILDRESPONSE,
+    serialized_options=None,
+  ),
+  _descriptor.MethodDescriptor(
+    name='PrepareForBuildVerifiedChromeAFDOFile',
+    full_name='chromite.api.ToolchainService.PrepareForBuildVerifiedChromeAFDOFile',
+    index=3,
+    containing_service=None,
+    input_type=_PREPAREFORTOOLCHAINBUILDREQUEST,
+    output_type=_PREPAREFORTOOLCHAINBUILDRESPONSE,
+    serialized_options=None,
+  ),
+  _descriptor.MethodDescriptor(
+    name='PrepareForBuildVerifiedKernelAFDOFile',
+    full_name='chromite.api.ToolchainService.PrepareForBuildVerifiedKernelAFDOFile',
+    index=4,
+    containing_service=None,
+    input_type=_PREPAREFORTOOLCHAINBUILDREQUEST,
+    output_type=_PREPAREFORTOOLCHAINBUILDRESPONSE,
+    serialized_options=None,
+  ),
+  _descriptor.MethodDescriptor(
+    name='PrepareForBuildChromeClangWarningsFile',
+    full_name='chromite.api.ToolchainService.PrepareForBuildChromeClangWarningsFile',
+    index=5,
+    containing_service=None,
+    input_type=_PREPAREFORTOOLCHAINBUILDREQUEST,
+    output_type=_PREPAREFORTOOLCHAINBUILDRESPONSE,
+    serialized_options=None,
+  ),
+  _descriptor.MethodDescriptor(
+    name='PrepareForBuildUnverifiedLLVMPgoFile',
+    full_name='chromite.api.ToolchainService.PrepareForBuildUnverifiedLLVMPgoFile',
+    index=6,
+    containing_service=None,
+    input_type=_PREPAREFORTOOLCHAINBUILDREQUEST,
+    output_type=_PREPAREFORTOOLCHAINBUILDRESPONSE,
+    serialized_options=None,
+  ),
+  _descriptor.MethodDescriptor(
+    name='PrepareForBuildUnverifiedOrderingFile',
+    full_name='chromite.api.ToolchainService.PrepareForBuildUnverifiedOrderingFile',
+    index=7,
+    containing_service=None,
+    input_type=_PREPAREFORTOOLCHAINBUILDREQUEST,
+    output_type=_PREPAREFORTOOLCHAINBUILDRESPONSE,
+    serialized_options=None,
+  ),
+  _descriptor.MethodDescriptor(
+    name='PrepareForBuildVerifiedOrderingFile',
+    full_name='chromite.api.ToolchainService.PrepareForBuildVerifiedOrderingFile',
+    index=8,
+    containing_service=None,
+    input_type=_PREPAREFORTOOLCHAINBUILDREQUEST,
+    output_type=_PREPAREFORTOOLCHAINBUILDRESPONSE,
+    serialized_options=None,
+  ),
+  _descriptor.MethodDescriptor(
+    name='BundleUnverifiedChromeAFDOFile',
+    full_name='chromite.api.ToolchainService.BundleUnverifiedChromeAFDOFile',
+    index=9,
+    containing_service=None,
+    input_type=chromite_dot_api_dot_artifacts__pb2._BUNDLEREQUEST,
+    output_type=chromite_dot_api_dot_artifacts__pb2._BUNDLERESPONSE,
+    serialized_options=None,
+  ),
+  _descriptor.MethodDescriptor(
+    name='BundleVerifiedChromeAFDOFile',
+    full_name='chromite.api.ToolchainService.BundleVerifiedChromeAFDOFile',
+    index=10,
+    containing_service=None,
+    input_type=chromite_dot_api_dot_artifacts__pb2._BUNDLEREQUEST,
+    output_type=chromite_dot_api_dot_artifacts__pb2._BUNDLERESPONSE,
+    serialized_options=None,
+  ),
+  _descriptor.MethodDescriptor(
+    name='BundleVerifiedKernelAFDOFile',
+    full_name='chromite.api.ToolchainService.BundleVerifiedKernelAFDOFile',
+    index=11,
+    containing_service=None,
+    input_type=chromite_dot_api_dot_artifacts__pb2._BUNDLEREQUEST,
+    output_type=chromite_dot_api_dot_artifacts__pb2._BUNDLERESPONSE,
+    serialized_options=None,
+  ),
+  _descriptor.MethodDescriptor(
+    name='BundleChromeClangWarningsFile',
+    full_name='chromite.api.ToolchainService.BundleChromeClangWarningsFile',
+    index=12,
+    containing_service=None,
+    input_type=chromite_dot_api_dot_artifacts__pb2._BUNDLEREQUEST,
+    output_type=chromite_dot_api_dot_artifacts__pb2._BUNDLERESPONSE,
+    serialized_options=None,
+  ),
+  _descriptor.MethodDescriptor(
+    name='BundleUnverifiedLLVMPgoFile',
+    full_name='chromite.api.ToolchainService.BundleUnverifiedLLVMPgoFile',
+    index=13,
+    containing_service=None,
+    input_type=chromite_dot_api_dot_artifacts__pb2._BUNDLEREQUEST,
+    output_type=chromite_dot_api_dot_artifacts__pb2._BUNDLERESPONSE,
+    serialized_options=None,
+  ),
+  _descriptor.MethodDescriptor(
+    name='BundleUnverifiedOrderingFile',
+    full_name='chromite.api.ToolchainService.BundleUnverifiedOrderingFile',
+    index=14,
+    containing_service=None,
+    input_type=chromite_dot_api_dot_artifacts__pb2._BUNDLEREQUEST,
+    output_type=chromite_dot_api_dot_artifacts__pb2._BUNDLERESPONSE,
+    serialized_options=None,
+  ),
+  _descriptor.MethodDescriptor(
+    name='BundleVerifiedOrderingFile',
+    full_name='chromite.api.ToolchainService.BundleVerifiedOrderingFile',
+    index=15,
+    containing_service=None,
+    input_type=chromite_dot_api_dot_artifacts__pb2._BUNDLEREQUEST,
+    output_type=chromite_dot_api_dot_artifacts__pb2._BUNDLERESPONSE,
     serialized_options=None,
   ),
 ])
