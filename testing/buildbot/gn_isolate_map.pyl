@@ -2278,7 +2278,7 @@
       "--ui-test-action-timeout=60000",
       "--ui-test-action-max-timeout=60000",
       "--test-launcher-timeout=60000",
-      "--gtest_filter=TabCapturePerformanceTest.*:CastV2PerformanceTest.*",
+      "--gtest_filter=*/TabCapturePerformanceTest.*:*/CastV2PerformanceTest.*",
     ],
     "label": "//chrome/test:performance_browser_tests",
     "script": "//testing/scripts/run_performance_tests.py",
