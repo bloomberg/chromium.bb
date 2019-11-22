@@ -91,6 +91,7 @@ class WebApp {
   bool HasOnlySource(Source::Type source) const;
 
   bool IsSynced() const;
+  bool WasInstalledByUser() const;
 
   void SetName(const std::string& name);
   void SetDescription(const std::string& description);

@@ -62,4 +62,38 @@ TEST(WebAppTest, HasOnlySource) {
   EXPECT_FALSE(app.HasAnySources());
 }
 
+TEST(WebAppTest, WasInstalledByUser) {
+  WebApp app{GenerateAppIdFromURL(GURL("https://example.com"))};
+
+  app.AddSource(Source::kSync);
+  EXPECT_TRUE(app.WasInstalledByUser());
+
+  app.AddSource(Source::kWebAppStore);
+  EXPECT_TRUE(app.WasInstalledByUser());
+
+  app.RemoveSource(Source::kSync);
+  EXPECT_TRUE(app.WasInstalledByUser());
+
+  app.RemoveSource(Source::kWebAppStore);
+  EXPECT_FALSE(app.WasInstalledByUser());
+
+  app.AddSource(Source::kDefault);
+  EXPECT_FALSE(app.WasInstalledByUser());
+
+  app.AddSource(Source::kSystem);
+  EXPECT_FALSE(app.WasInstalledByUser());
+
+  app.AddSource(Source::kPolicy);
+  EXPECT_FALSE(app.WasInstalledByUser());
+
+  app.RemoveSource(Source::kDefault);
+  EXPECT_FALSE(app.WasInstalledByUser());
+
+  app.RemoveSource(Source::kSystem);
+  EXPECT_FALSE(app.WasInstalledByUser());
+
+  app.RemoveSource(Source::kPolicy);
+  EXPECT_FALSE(app.WasInstalledByUser());
+}
+
 }  // namespace web_app
