@@ -330,7 +330,7 @@ public final class NdefMessageUtils {
      * Parses the input custom type to get its domain and type.
      * e.g. returns a pair ('w3.org', 'xyz') for the input 'w3.org:xyz'.
      * Returns null for invalid input.
-     * https://w3c.github.io/web-nfc/#the-ndefrecordtype-string
+     * https://w3c.github.io/web-nfc/#ndef-record-types
      *
      * TODO(https://crbug.com/520391): Refine the validation algorithm here accordingly once there
      * is a conclusion on some case-sensitive things at https://github.com/w3c/web-nfc/issues/331.
