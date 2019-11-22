@@ -442,9 +442,9 @@ void PdfAccessibilityTree::AddPageContent(
       // Make the text runs contained by the link children of the link node.
       uint32_t link_end_text_run_index =
           std::min(text_run_index + link.text_run_count, text_runs.size()) - 1;
-      AddTextToLinkNode(text_run_index, link_end_text_run_index, text_runs,
-                        chars, page_bounds, &char_index, link_node,
-                        &previous_on_line_node);
+      AddTextToAXNode(text_run_index, link_end_text_run_index, text_runs, chars,
+                      page_bounds, &char_index, link_node,
+                      &previous_on_line_node);
 
       para_node->relative_bounds.bounds.Union(
           link_node->relative_bounds.bounds);
@@ -808,19 +808,19 @@ ui::AXNodeData* PdfAccessibilityTree::CreateImageNode(
   return image_node;
 }
 
-void PdfAccessibilityTree::AddTextToLinkNode(
+void PdfAccessibilityTree::AddTextToAXNode(
     uint32_t start_text_run_index,
     uint32_t end_text_run_index,
     const std::vector<ppapi::PdfAccessibilityTextRunInfo>& text_runs,
     const std::vector<PP_PrivateAccessibilityCharInfo>& chars,
     const gfx::RectF& page_bounds,
     uint32_t* char_index,
-    ui::AXNodeData* link_node,
+    ui::AXNodeData* ax_node,
     ui::AXNodeData** previous_on_line_node) {
-  ui::AXNodeData* link_static_text_node = CreateStaticTextNode(*char_index);
-  link_node->child_ids.push_back(link_static_text_node->id);
-  // Accumulate the text of the link.
-  std::string link_name;
+  ui::AXNodeData* ax_static_text_node = CreateStaticTextNode(*char_index);
+  ax_node->child_ids.push_back(ax_static_text_node->id);
+  // Accumulate the text of the node.
+  std::string ax_name;
   LineHelper line_helper(text_runs);
 
   for (size_t text_run_index = start_text_run_index;
@@ -830,11 +830,11 @@ void PdfAccessibilityTree::AddTextToLinkNode(
     // Add this text run to the current static text node.
     ui::AXNodeData* inline_text_box_node =
         CreateInlineTextBoxNode(text_run, chars, *char_index, page_bounds);
-    link_static_text_node->child_ids.push_back(inline_text_box_node->id);
+    ax_static_text_node->child_ids.push_back(inline_text_box_node->id);
 
-    link_static_text_node->relative_bounds.bounds.Union(
+    ax_static_text_node->relative_bounds.bounds.Union(
         inline_text_box_node->relative_bounds.bounds);
-    link_name += inline_text_box_node->GetStringAttribute(
+    ax_name += inline_text_box_node->GetStringAttribute(
         ax::mojom::StringAttribute::kName);
 
     *char_index += text_run.len;
@@ -858,9 +858,9 @@ void PdfAccessibilityTree::AddTextToLinkNode(
     }
   }
 
-  link_node->AddStringAttribute(ax::mojom::StringAttribute::kName, link_name);
-  link_static_text_node->AddStringAttribute(ax::mojom::StringAttribute::kName,
-                                            link_name);
+  ax_node->AddStringAttribute(ax::mojom::StringAttribute::kName, ax_name);
+  ax_static_text_node->AddStringAttribute(ax::mojom::StringAttribute::kName,
+                                          ax_name);
 }
 
 float PdfAccessibilityTree::GetDeviceScaleFactor() const {
