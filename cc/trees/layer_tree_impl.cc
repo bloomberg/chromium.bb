@@ -619,12 +619,12 @@ void LayerTreeImpl::PushPropertiesTo(LayerTreeImpl* target_tree) {
 }
 
 void LayerTreeImpl::HandleTickmarksVisibilityChange() {
-  if (!host_impl_->ViewportMainScrollNode())
+  if (!host_impl_->OuterViewportScrollNode())
     return;
 
   ScrollbarAnimationController* controller =
       host_impl_->ScrollbarAnimationControllerForElementId(
-          host_impl_->ViewportMainScrollNode()->element_id);
+          host_impl_->OuterViewportScrollNode()->element_id);
 
   if (!controller)
     return;
@@ -1123,7 +1123,7 @@ void LayerTreeImpl::DidUpdatePageScale() {
       host_impl_->FlashAllScrollbars(true);
       return;
     }
-    if (auto* scroll_node = host_impl_->ViewportMainScrollNode()) {
+    if (auto* scroll_node = host_impl_->OuterViewportScrollNode()) {
       if (ScrollbarAnimationController* controller =
               host_impl_->ScrollbarAnimationControllerForElementId(
                   scroll_node->element_id))
