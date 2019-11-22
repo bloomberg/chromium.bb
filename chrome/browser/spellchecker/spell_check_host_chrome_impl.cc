@@ -17,7 +17,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 
-#if BUILDFLAG(USE_BROWSER_SPELLCHECKER) && BUILDFLAG(ENABLE_SPELLING_SERVICE)
+#if BUILDFLAG(USE_BROWSER_SPELLCHECKER)
 #include "chrome/browser/spellchecker/spelling_request.h"
 #endif
 
@@ -150,7 +150,8 @@ std::vector<SpellCheckResult> SpellCheckHostChromeImpl::FilterCustomWordResults(
 }
 #endif  // BUILDFLAG(USE_RENDERER_SPELLCHECKER)
 
-#if BUILDFLAG(USE_BROWSER_SPELLCHECKER) && BUILDFLAG(ENABLE_SPELLING_SERVICE)
+#if defined(OS_MACOSX) || defined(OS_WIN)
+
 void SpellCheckHostChromeImpl::CheckSpelling(const base::string16& word,
                                              int route_id,
                                              CheckSpellingCallback callback) {
@@ -198,8 +199,7 @@ void SpellCheckHostChromeImpl::CombineResultsForTesting(
     const std::vector<SpellCheckResult>& local_results) {
   SpellingRequest::CombineResults(remote_results, local_results);
 }
-#endif  //  BUILDFLAG(USE_BROWSER_SPELLCHECKER) &&
-        //  BUILDFLAG(ENABLE_SPELLING_SERVICE)
+#endif  // defined(OS_MACOSX) || defined(OS_WIN)
 
 #if defined(OS_MACOSX)
 int SpellCheckHostChromeImpl::ToDocumentTag(int route_id) {

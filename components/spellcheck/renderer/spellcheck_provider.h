@@ -13,6 +13,7 @@
 #include "components/spellcheck/common/spellcheck.mojom.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
 #include "content/public/renderer/render_frame_observer.h"
+#include "content/public/renderer/render_frame_observer_tracker.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/web/web_text_check_client.h"
@@ -31,8 +32,10 @@ class LocalInterfaceProvider;
 
 // This class deals with asynchronously invoking text spelling and grammar
 // checking services provided by the browser process (host).
-class SpellCheckProvider : public content::RenderFrameObserver,
-                           public blink::WebTextCheckClient {
+class SpellCheckProvider
+    : public content::RenderFrameObserver,
+      public content::RenderFrameObserverTracker<SpellCheckProvider>,
+      public blink::WebTextCheckClient {
  public:
   using WebTextCheckCompletions =
       base::IDMap<std::unique_ptr<blink::WebTextCheckingCompletion>>;

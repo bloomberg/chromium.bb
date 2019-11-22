@@ -30,6 +30,9 @@ class SpellCheckHostImpl : public spellcheck::mojom::SpellCheckHost {
   SpellCheckHostImpl();
   ~SpellCheckHostImpl() override;
 
+  static void Create(
+      mojo::PendingReceiver<spellcheck::mojom::SpellCheckHost> receiver);
+
  protected:
   // spellcheck::mojom::SpellCheckHost:
   void RequestDictionary() override;
@@ -40,7 +43,7 @@ class SpellCheckHostImpl : public spellcheck::mojom::SpellCheckHost {
                            CallSpellingServiceCallback callback) override;
 #endif  // BUILDFLAG(USE_RENDERER_SPELLCHECKER)
 
-#if BUILDFLAG(USE_BROWSER_SPELLCHECKER) && !BUILDFLAG(ENABLE_SPELLING_SERVICE)
+#if BUILDFLAG(USE_BROWSER_SPELLCHECKER)
   void RequestTextCheck(const base::string16& text,
                         int route_id,
                         RequestTextCheckCallback callback) override;
