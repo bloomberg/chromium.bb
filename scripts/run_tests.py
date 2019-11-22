@@ -146,8 +146,6 @@ SLOW_TESTS = {
 # should be added to this list as they'll need to be ported at some point.
 PYTHON2_ONLY_TESTS = {
     'cbuildbot/lkgm_manager_unittest',
-    'cbuildbot/stages/completion_stages_unittest',
-    'cbuildbot/validation_pool_unittest',
     'cli/cros/cros_chrome_sdk_unittest',
     'cli/deploy_unittest',
     'scripts/deploy_chrome_unittest',

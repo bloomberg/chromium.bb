@@ -24,7 +24,6 @@ from six.moves import urllib
 
 from chromite.lib import config_lib
 from chromite.lib import constants
-from chromite.cbuildbot import validation_pool
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import gerrit
@@ -32,7 +31,6 @@ from chromite.lib import git
 from chromite.lib import gob_util
 from chromite.lib import osutils
 from chromite.lib import retry_util
-from chromite.lib import timeout_util
 
 
 class GerritTestCase(cros_test_lib.MockTempDirTestCase):
@@ -576,54 +574,6 @@ class GerritHelperTest(GerritTestCase):
     # Try submitting the up-to-date change.
     helper.SubmitChange(gpatch2)
     helper.IsChangeCommitted(gpatch2.gerrit_number)
-
-  def test010SubmitBatchUsingGit(self):
-    project = self.createProject('test012')
-
-    helper = self._GetHelper()
-    repo = self.cloneProject(project, 'p1')
-    initial_patch = self.createPatch(repo, project, msg='Init')
-    helper.SetReview(initial_patch.gerrit_number, labels={'Code-Review':'+2'})
-    helper.SubmitChange(initial_patch)
-    # GoB does not guarantee that the change will be in "merged" state
-    # atomically after the /Submit endpoint is called.
-    timeout_util.WaitForReturnTrue(
-        lambda: helper.IsChangeCommitted(initial_patch.gerrit_number),
-        timeout=60)
-
-    patchA = self.createPatch(repo, project,
-                              msg='Change A',
-                              filename='a.txt')
-
-    osutils.WriteFile(os.path.join(repo, 'aoeu.txt'), 'asdf')
-    git.RunGit(repo, ['add', 'aoeu.txt'])
-    git.RunGit(repo, ['commit', '--amend', '--reuse-message=HEAD'])
-    sha1 = git.RunGit(repo,
-                      ['rev-list', '-n1', 'HEAD']).output.strip()
-
-    patchA.sha1 = sha1
-    patchA.revision = sha1
-
-    patchB = self.createPatch(repo, project,
-                              msg='Change B',
-                              filename='b.txt')
-
-    pool = validation_pool.ValidationPool(
-        overlays=constants.PUBLIC,
-        build_root='',
-        build_number=0,
-        builder_name='',
-        is_master=False,
-        dryrun=False)
-
-    reason = 'Testing submitting changes in batch via Git.'
-    by_repo = {repo: {patchA: reason, patchB: reason}}
-    pool.SubmitLocalChanges(by_repo)
-
-    self.assertTrue(helper.IsChangeCommitted(patchB.gerrit_number))
-    self.assertTrue(helper.IsChangeCommitted(patchA.gerrit_number))
-    for patch in [patchA, patchB]:
-      self.assertTrue(helper.IsChangeCommitted(patch.gerrit_number))
 
   def test011ResetReviewLabels(self):
     """Tests that we can remove a code review label."""
