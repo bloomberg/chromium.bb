@@ -1,11 +1,11 @@
 // Copyright 2019 The Chromium Authors. All rights reserved.
 
+#include <fuzzer/FuzzedDataProvider.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <vector>
 #include "third_party/icu/fuzzers/fuzzer_utils.h"
 #include "third_party/icu/source/common/unicode/appendable.h"
-#include "third_party/libFuzzer/src/utils/FuzzedDataProvider.h"
 
 static IcuEnvironment* env = new IcuEnvironment;
 
