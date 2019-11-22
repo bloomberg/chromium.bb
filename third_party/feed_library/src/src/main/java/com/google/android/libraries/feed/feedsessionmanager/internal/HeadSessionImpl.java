@@ -33,11 +33,11 @@ public class HeadSessionImpl implements Session, Dumpable {
             new SessionContentTracker(/* supportsClearAll= */ true);
     private final boolean limitPageUpdatesInHead;
 
-    private int schemaVersion = 0;
+    private int schemaVersion;
 
     // operation counts for the dumper
-    private int updateCount = 0;
-    private int storeMutationFailures = 0;
+    private int updateCount;
+    private int storeMutationFailures;
 
     HeadSessionImpl(Store store, TimingUtils timingUtils, boolean limitPageUpdatesInHead) {
         this.store = store;

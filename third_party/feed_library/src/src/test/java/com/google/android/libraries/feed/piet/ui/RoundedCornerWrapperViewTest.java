@@ -577,7 +577,7 @@ public class RoundedCornerWrapperViewTest {
         }
 
         static class Builder {
-            private boolean hardwareAccelerated = false;
+            private boolean hardwareAccelerated;
 
             RoundedCorners roundedCorners = RoundedCorners.getDefaultInstance();
             int radiusOverride = 0;

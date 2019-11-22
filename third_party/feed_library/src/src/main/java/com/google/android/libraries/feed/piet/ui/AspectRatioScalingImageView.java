@@ -11,7 +11,7 @@ import android.widget.ImageView;
 /** {@link ImageView} which always aspect-ratio scales the image to fit its container. */
 public class AspectRatioScalingImageView extends ImageView {
     /** Default aspect ratio for the view when the drawable is not set. Set to zero to ignore. */
-    private float defaultAspectRatio = 0.0f;
+    private float defaultAspectRatio;
 
     public AspectRatioScalingImageView(Context context) {
         super(context);

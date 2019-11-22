@@ -77,7 +77,7 @@ public class FeedStore
     private final TimingUtils timingUtils;
     private final ThreadUtils threadUtils;
 
-    private boolean isEphemeralMode = false;
+    private boolean isEphemeralMode;
 
     protected final ContentStorageDirect contentStorage;
     protected final JournalStorageDirect journalStorage;

@@ -21,7 +21,7 @@ import java.util.List;
 /** A fake {@link ModelCursor} for testing. */
 public class FakeModelCursor implements ModelCursor {
     private List<ModelChild> modelChildren;
-    private int currentIndex = 0;
+    private int currentIndex;
 
     public FakeModelCursor(List<ModelChild> modelChildren) {
         currentIndex = 0;

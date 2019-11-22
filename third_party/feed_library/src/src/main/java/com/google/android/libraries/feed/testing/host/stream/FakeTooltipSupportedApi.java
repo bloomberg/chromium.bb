@@ -15,7 +15,7 @@ import java.util.ArrayList;
 public final class FakeTooltipSupportedApi implements TooltipSupportedApi {
     private final ArrayList<String> unsupportedFeatures = new ArrayList<>();
     private final ThreadUtils threadUtils;
-    /*@Nullable*/ private String lastFeatureName = null;
+    /*@Nullable*/ private String lastFeatureName;
 
     public FakeTooltipSupportedApi(ThreadUtils threadUtils) {
         this.threadUtils = threadUtils;

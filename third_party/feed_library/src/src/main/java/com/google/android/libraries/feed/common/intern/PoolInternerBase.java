@@ -21,24 +21,30 @@ public abstract class PoolInternerBase<T> implements Interner<T> {
     }
 
     @Override
-    public synchronized T intern(T input) {
-        T output = pool.get(input);
-        if (output != null) {
-            return output;
+    public T intern(T input) {
+        synchronized (pool) {
+            T output = pool.get(input);
+            if (output != null) {
+                return output;
+            }
+
+            pool.put(input);
+            return input;
         }
-
-        pool.put(input);
-        return input;
     }
 
     @Override
-    public synchronized void clear() {
-        pool.clear();
+    public void clear() {
+        synchronized (pool) {
+            pool.clear();
+        }
     }
 
     @Override
-    public synchronized int size() {
-        return pool.size();
+    public int size() {
+        synchronized (pool) {
+            return pool.size();
+        }
     }
 
     /** Interface for a pool used by the PoolInternerBase. */

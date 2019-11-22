@@ -26,10 +26,10 @@ public final class ContentCache implements Dumpable {
 
     private final Map<String, StreamPayload> mutationCache;
 
-    private int lookupCount = 0;
-    private int hitCount = 0;
-    private int maxMutationCacheSize = 0;
-    private int mutationsCount = 0;
+    private int lookupCount;
+    private int hitCount;
+    private int maxMutationCacheSize;
+    private int mutationsCount;
 
     public ContentCache() {
         mutationCache = new ConcurrentHashMap<>();

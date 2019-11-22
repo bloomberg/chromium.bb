@@ -60,7 +60,7 @@ public class TimingUtils implements Dumpable {
         private final String source;
 
         private final long startTime;
-        private long endTime = 0;
+        private long endTime;
 
         private ElapsedTimeTracker(ThreadStack threadStack, String source) {
             this.threadStack = threadStack;

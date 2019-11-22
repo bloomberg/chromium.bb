@@ -18,10 +18,12 @@ public final class FeedStreamScope implements StreamScope {
         this.modelProviderFactory = modelProviderFactory;
     }
 
+    @Override
     public Stream getStream() {
         return stream;
     }
 
+    @Override
     public ModelProviderFactory getModelProviderFactory() {
         return modelProviderFactory;
     }

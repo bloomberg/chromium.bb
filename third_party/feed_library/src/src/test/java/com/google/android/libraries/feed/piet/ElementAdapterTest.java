@@ -68,8 +68,8 @@ import org.robolectric.shadow.api.Shadow;
 public class ElementAdapterTest {
     private static final int WIDTH = 123;
     private static final int HEIGHT = 456;
-    private static final boolean LEGACY_CORNERS_FLAG = false;
-    private static final boolean OUTLINE_CORNERS_FLAG = false;
+    private static final boolean LEGACY_CORNERS_FLAG;
+    private static final boolean OUTLINE_CORNERS_FLAG;
 
     private final LogData logDataTest = LogData.newBuilder().build();
 

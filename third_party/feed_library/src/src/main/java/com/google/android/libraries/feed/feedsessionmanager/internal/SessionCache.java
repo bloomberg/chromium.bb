@@ -78,17 +78,17 @@ public final class SessionCache implements Dumpable {
     private final ThreadUtils threadUtils;
     private final Clock clock;
 
-    private boolean initialized = false;
+    private boolean initialized;
 
     // operation counts for the dumper
-    private int getCount = 0;
-    private int getAttachedCount = 0;
-    private int getAllCount = 0;
-    private int putCount = 0;
-    private int removeCount = 0;
-    private int unboundSessionCount = 0;
-    private int detachedSessionCount = 0;
-    private int expiredSessionsCleared = 0;
+    private int getCount;
+    private int getAttachedCount;
+    private int getAllCount;
+    private int putCount;
+    private int removeCount;
+    private int unboundSessionCount;
+    private int detachedSessionCount;
+    private int expiredSessionsCleared;
 
     public SessionCache(Store store, TaskQueue taskQueue, SessionFactory sessionFactory,
             long lifetimeMs, TimingUtils timingUtils, ThreadUtils threadUtil, Clock clock) {

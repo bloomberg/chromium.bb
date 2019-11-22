@@ -26,7 +26,7 @@ import org.robolectric.RobolectricTestRunner;
 @RunWith(RobolectricTestRunner.class)
 public class GradientShaderTest {
     private static final boolean RTL = true;
-    private static final boolean LTR = false;
+    private static final boolean LTR;
 
     @Test
     public void testGradientLine_leftToRight() {

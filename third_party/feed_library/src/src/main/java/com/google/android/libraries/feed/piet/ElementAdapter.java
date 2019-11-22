@@ -52,22 +52,22 @@ abstract class ElementAdapter<V extends View, M> {
     private Element baseElement = Element.getDefaultInstance();
     /*@Nullable*/ private RecyclerKey key;
     private StyleProvider elementStyle;
-    /*@Nullable*/ private LogData logData = null;
+    /*@Nullable*/ private LogData logData;
 
     /**
      * Set to {@code true} when {@link #createAdapter} has completed successfully; unset at the end
      * of
      * {@link #releaseAdapter}.
      */
-    private boolean created = false;
+    private boolean created;
 
     /**
      * We only check the bound visibility when we're in the process of binding, not in {@link
      * #createAdapter}.
      */
-    private boolean checkBoundVisibility = false;
+    private boolean checkBoundVisibility;
 
-    /*@Nullable*/ private FrameLayout wrapperView = null;
+    /*@Nullable*/ private FrameLayout wrapperView;
 
     Actions actions = Actions.getDefaultInstance();
     /** Set of actions that are currently active / triggered so they only get called once. */

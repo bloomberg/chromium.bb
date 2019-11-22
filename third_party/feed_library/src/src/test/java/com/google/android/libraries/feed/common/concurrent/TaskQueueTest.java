@@ -36,8 +36,8 @@ public class TaskQueueTest {
     private final TaskQueue taskQueue = new TaskQueue(
             fakeBasicLoggingApi, MoreExecutors.directExecutor(), fakeMainThreadRunner, fakeClock);
 
-    private boolean delayedTaskHasRun = false;
-    private boolean delayedTaskHasTimedOut = false;
+    private boolean delayedTaskHasRun;
+    private boolean delayedTaskHasTimedOut;
 
     @Before
     public void setUp() {

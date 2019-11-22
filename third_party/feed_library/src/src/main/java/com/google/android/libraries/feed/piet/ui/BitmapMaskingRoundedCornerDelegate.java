@@ -32,10 +32,10 @@ class BitmapMaskingRoundedCornerDelegate extends RoundedCornerDelegate {
     private final Canvas offscreenCanvas;
 
     // Masks for each of the corners of the view; null if that corner is not rounded.
-    /*@Nullable*/ private Bitmap cornerTL = null;
-    /*@Nullable*/ private Bitmap cornerTR = null;
-    /*@Nullable*/ private Bitmap cornerBL = null;
-    /*@Nullable*/ private Bitmap cornerBR = null;
+    /*@Nullable*/ private Bitmap cornerTL;
+    /*@Nullable*/ private Bitmap cornerTR;
+    /*@Nullable*/ private Bitmap cornerBL;
+    /*@Nullable*/ private Bitmap cornerBR;
 
     // Keep track of current mask configuration so we can use cached values if nothing has changed.
     private int lastRadius = -1;

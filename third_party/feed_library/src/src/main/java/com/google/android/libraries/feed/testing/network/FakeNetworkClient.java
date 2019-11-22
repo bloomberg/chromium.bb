@@ -16,8 +16,8 @@ import java.util.ArrayList;
 public final class FakeNetworkClient implements NetworkClient {
     private final FakeThreadUtils fakeThreadUtils;
     private final ArrayList<HttpResponse> responses = new ArrayList<>();
-    /*@Nullable*/ private HttpRequest request = null;
-    /*@Nullable*/ private HttpResponse defaultResponse = null;
+    /*@Nullable*/ private HttpRequest request;
+    /*@Nullable*/ private HttpResponse defaultResponse;
 
     public FakeNetworkClient(FakeThreadUtils fakeThreadUtils) {
         this.fakeThreadUtils = fakeThreadUtils;

@@ -75,8 +75,8 @@ public class ImageElementAdapterTest {
             Image.newBuilder().addSources(ImageSource.newBuilder().setUrl("icanhas.chz")).build();
     private static final Element DEFAULT_MODEL =
             asElement(ImageElement.newBuilder().setImage(DEFAULT_IMAGE).build());
-    private static final boolean LEGACY_CORNERS_FLAG = false;
-    private static final boolean OUTLINE_CORNERS_FLAG = false;
+    private static final boolean LEGACY_CORNERS_FLAG;
+    private static final boolean OUTLINE_CORNERS_FLAG;
 
     @Mock
     private ElementAdapterFactory adapterFactory;

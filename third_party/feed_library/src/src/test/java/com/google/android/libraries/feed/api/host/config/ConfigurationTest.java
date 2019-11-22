@@ -20,7 +20,7 @@ public class ConfigurationTest {
     @ConfigKey
     private static final String CONFIG_KEY_WITH_DEFAULT = "config-test";
 
-    private static final boolean CONFIG_KEY_WITH_DEFAULT_VALUE = false;
+    private static final boolean CONFIG_KEY_WITH_DEFAULT_VALUE;
 
     @Test
     public void defaultConfig_hasDefaultValues() {

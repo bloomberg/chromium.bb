@@ -22,7 +22,7 @@ public final class FakeProtocolAdapter implements ProtocolAdapter {
     private static final String UNMAPPED_CONTENT_ID = "unmapped_content_id";
 
     private final Map<String, ContentId> contentIds = new HashMap<>();
-    /*@Nullable*/ private Response lastResponse = null;
+    /*@Nullable*/ private Response lastResponse;
 
     @Override
     public Result<Model> createModel(Response response) {

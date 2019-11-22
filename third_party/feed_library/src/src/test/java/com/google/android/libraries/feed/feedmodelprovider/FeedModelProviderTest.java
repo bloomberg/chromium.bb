@@ -89,7 +89,7 @@ public class FeedModelProviderTest {
     @Mock
     private Configuration config;
 
-    private ModelChild continuationToken = null;
+    private ModelChild continuationToken;
     private TimingUtils timingUtils = new TimingUtils();
     private FakeMainThreadRunner fakeMainThreadRunner;
 

@@ -43,7 +43,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @RunWith(RobolectricTestRunner.class)
 public class TimeoutSessionBaseTest {
     // This flag will should be flipped to debug the test.  It will disable TimeoutExceptions.
-    private static final boolean DEBUG = false;
+    private static final boolean DEBUG;
 
     private final FakeSchedulerApi fakeSchedulerApi =
             new FakeSchedulerApi(FakeThreadUtils.withoutThreadChecks());

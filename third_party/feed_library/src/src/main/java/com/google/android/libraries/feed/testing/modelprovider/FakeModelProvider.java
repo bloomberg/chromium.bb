@@ -31,13 +31,13 @@ public class FakeModelProvider implements ModelProvider {
     private ModelFeature rootFeature;
     private boolean wasRefreshTriggered;
     private boolean tokensEnabled = true;
-    /*@Nullable*/ private String sessionId = null;
+    /*@Nullable*/ private String sessionId;
     @RequestReason
     private int lastRequestReason = RequestReason.UNKNOWN;
     /*@Nullable*/ private ModelFeature immediateSessionStartModel;
     /*@Nullable*/ private UiContext unusedTriggerRefreshUiContext;
     private FakeModelMutation latestModelMutation = new FakeModelMutation();
-    private boolean isInvalidated = false;
+    private boolean isInvalidated;
 
     @Override
     public ModelMutation edit() {

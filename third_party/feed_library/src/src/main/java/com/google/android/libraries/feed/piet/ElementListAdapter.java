@@ -28,8 +28,8 @@ class ElementListAdapter extends ElementContainerAdapter<LinearLayout, ElementLi
     private static final String TAG = "ElementListAdapter";
 
     // Only needed for reporting errors during updateChildLayoutParams.
-    /*@Nullable*/ private FrameContext frameContextForDebugLogsFromCreate = null;
-    /*@Nullable*/ private FrameContext frameContextForDebugLogsFromBind = null;
+    /*@Nullable*/ private FrameContext frameContextForDebugLogsFromCreate;
+    /*@Nullable*/ private FrameContext frameContextForDebugLogsFromBind;
 
     private ElementListAdapter(Context context, AdapterParameters parameters) {
         super(context, parameters, createView(context), KeySupplier.SINGLETON_KEY);

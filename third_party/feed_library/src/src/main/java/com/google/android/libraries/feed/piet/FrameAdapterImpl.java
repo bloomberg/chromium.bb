@@ -58,8 +58,8 @@ public class FrameAdapterImpl implements FrameAdapter {
     private final EventLogger eventLogger;
     private final DebugBehavior debugBehavior;
     private final Set<VisibilityAction> activeActions = new HashSet<>();
-    /*@Nullable*/ private LinearLayout view = null;
-    /*@Nullable*/ private FrameContext frameContext = null;
+    /*@Nullable*/ private LinearLayout view;
+    /*@Nullable*/ private FrameContext frameContext;
 
     FrameAdapterImpl(Context context, AdapterParameters parameters, ActionHandler actionHandler,
             EventLogger eventLogger, DebugBehavior debugBehavior) {

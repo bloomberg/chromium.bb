@@ -141,9 +141,9 @@ public final class FeedSessionManagerImpl
     final Set<SessionMutationTracker> outstandingMutations = new HashSet<>();
 
     // operation counts for the dumper
-    private int newSessionCount = 0;
-    private int existingSessionCount = 0;
-    private int handleTokenCount = 0;
+    private int newSessionCount;
+    private int existingSessionCount;
+    private int handleTokenCount;
     private Listener knownContentListener;
 
     @SuppressWarnings("argument.type.incompatible") // ok call to registerObserver

@@ -41,7 +41,7 @@ public final class ContentGc {
     private final boolean keepSharedStates;
     private final long maxAllowedGcAttempts;
 
-    private int contentGcAttempts = 0;
+    private int contentGcAttempts;
 
     ContentGc(Configuration configuration, Supplier<Set<String>> accessibleContentSupplier,
             Set<String> reservedContentIds, Supplier<Set<StreamLocalAction>> actionsSupplier,

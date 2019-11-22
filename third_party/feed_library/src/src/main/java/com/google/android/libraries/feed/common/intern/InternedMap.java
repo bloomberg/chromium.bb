@@ -21,8 +21,10 @@ public class InternedMap<K, V> implements Map<K, V> {
     }
 
     @Override
-    public synchronized int size() {
-        return delegate.size();
+    public int size() {
+        synchronized (delegate) {
+            return delegate.size();
+        }
     }
 
     @Override
@@ -42,14 +44,18 @@ public class InternedMap<K, V> implements Map<K, V> {
 
     @Override
     /*@Nullable*/
-    public synchronized V get(/*@Nullable*/ Object key) {
-        return delegate.get(key);
+    public V get(/*@Nullable*/ Object key) {
+        synchronized (delegate) {
+            return delegate.get(key);
+        }
     }
 
     @Override
     /*@Nullable*/
-    public synchronized V put(K key, V value) {
-        return delegate.put(key, interner.intern(value));
+    public V put(K key, V value) {
+        synchronized (delegate) {
+            return delegate.put(key, interner.intern(value));
+        }
     }
 
     @Override
@@ -68,9 +74,11 @@ public class InternedMap<K, V> implements Map<K, V> {
     }
 
     @Override
-    public synchronized void clear() {
-        delegate.clear();
-        interner.clear();
+    public void clear() {
+        synchronized (delegate) {
+            delegate.clear();
+            interner.clear();
+        }
     }
 
     @Override

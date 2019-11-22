@@ -64,6 +64,7 @@ public class ContextMenuManagerImpl implements ContextMenuManager {
      * @param handler The {@link ContextMenuClickHandler} that handles the user clicking on an
      *         option.
      */
+    @Override
     public boolean openContextMenu(
             View anchorView, List<String> items, ContextMenuClickHandler handler) {
         if (menuShowing()) {

@@ -29,8 +29,8 @@ public final class ClearAllListener implements FeedLifecycleListener, Dumpable {
     private final FeedSessionManager feedSessionManager;
     private final /*@Nullable*/ Resettable store;
     private final ThreadUtils threadUtils;
-    private int clearCount = 0;
-    private int refreshCount = 0;
+    private int clearCount;
+    private int refreshCount;
 
     @SuppressWarnings("argument.type.incompatible") // ok call to registerObserver
     public ClearAllListener(TaskQueue taskQueue, FeedSessionManager feedSessionManager,

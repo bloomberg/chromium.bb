@@ -31,10 +31,10 @@ public final class InMemoryJournalStorage implements JournalStorageDirect, Dumpa
     private static final String TAG = "InMemoryJournalStorage";
 
     private final Map<String, List<byte[]>> journals;
-    private int readCount = 0;
-    private int appendCount = 0;
-    private int copyCount = 0;
-    private int deleteCount = 0;
+    private int readCount;
+    private int appendCount;
+    private int copyCount;
+    private int deleteCount;
 
     public InMemoryJournalStorage() {
         journals = new HashMap<>();

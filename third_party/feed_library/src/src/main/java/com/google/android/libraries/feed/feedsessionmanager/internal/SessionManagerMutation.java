@@ -67,11 +67,11 @@ public final class SessionManagerMutation implements Dumpable {
     private final BasicLoggingApi basicLoggingApi;
 
     // operation counts for the dumper
-    private int createCount = 0;
-    private int commitCount = 0;
-    private int errorCount = 0;
-    private int contentCommitErrorCount = 0;
-    private int semanticPropertiesCommitErrorCount = 0;
+    private int createCount;
+    private int commitCount;
+    private int errorCount;
+    private int contentCommitErrorCount;
+    private int semanticPropertiesCommitErrorCount;
 
     /** Listens for errors which need to be reported to a ModelProvider. */
     public interface ModelErrorObserver {

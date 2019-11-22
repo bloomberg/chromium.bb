@@ -17,11 +17,11 @@ import org.robolectric.shadows.ShadowView;
  */
 @Implements(View.class)
 public class ExtendedShadowView extends ShadowView {
-    private int xLocation = 0;
-    private int yLocation = 0;
-    private int height = 0;
-    private int width = 0;
-    private boolean attached = false;
+    private int xLocation;
+    private int yLocation;
+    private int height;
+    private int width;
+    private boolean attached;
 
     @Implementation
     public void getLocationOnScreen(int[] pos) {

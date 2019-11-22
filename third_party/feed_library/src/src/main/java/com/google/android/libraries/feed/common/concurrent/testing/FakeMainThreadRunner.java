@@ -33,7 +33,7 @@ public final class FakeMainThreadRunner extends MainThreadRunner {
     private final PriorityQueue<TimedRunnable> delayedTasks =
             new PriorityQueue<>(Comparator.comparingLong(TimedRunnable::getExecutionTime));
 
-    private int completedTaskCount = 0;
+    private int completedTaskCount;
 
     public static FakeMainThreadRunner create(FakeClock fakeClock) {
         return new FakeMainThreadRunner(

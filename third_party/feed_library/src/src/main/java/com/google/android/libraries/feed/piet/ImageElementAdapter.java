@@ -26,7 +26,7 @@ import com.google.search.now.ui.piet.ImagesProto.ImageSource;
 class ImageElementAdapter extends ElementAdapter<AspectRatioScalingImageView, ImageElement> {
     private static final String TAG = "ImageElementAdapter";
 
-    /*@Nullable*/ private LoadImageCallback currentlyLoadingImage = null;
+    /*@Nullable*/ private LoadImageCallback currentlyLoadingImage;
 
     @VisibleForTesting
     ImageElementAdapter(Context context, AdapterParameters parameters) {

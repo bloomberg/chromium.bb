@@ -144,6 +144,7 @@ public class PietViewHolder extends FeedViewHolder implements SwipeableViewHolde
         bound = false;
     }
 
+    @Override
     public boolean canSwipe() {
         return swipeAction != null && !swipeAction.equals(FeedActionPayload.getDefaultInstance());
     }

@@ -40,9 +40,9 @@ public final class ModelCursorImpl implements ModelCursor, Dumpable {
     private CursorIterator iterator;
 
     // #dump() operation counts
-    private int updatesAtEnd = 0;
-    private int appendCount = 0;
-    private int removeCount = 0;
+    private int updatesAtEnd;
+    private int appendCount;
+    private int removeCount;
 
     /**
      * Create a new ModelCursorImpl. The {@code childList} needs to be a copy of the original list
@@ -161,7 +161,7 @@ public final class ModelCursorImpl implements ModelCursor, Dumpable {
 
     @VisibleForTesting
     final class CursorIterator implements Iterator<UpdatableModelChild> {
-        private int cursor = 0;
+        private int cursor;
 
         @Override
         public boolean hasNext() {

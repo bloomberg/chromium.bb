@@ -134,6 +134,7 @@ public final class FeedProcessScope implements ProcessScope {
         return protocolAdapter;
     }
 
+    @Override
     public RequestManager getRequestManager() {
         return requestManager;
     }
@@ -143,10 +144,12 @@ public final class FeedProcessScope implements ProcessScope {
         return timingUtils;
     }
 
+    @Override
     public TaskQueue getTaskQueue() {
         return taskQueue;
     }
 
+    @Override
     public AppLifecycleListener getAppLifecycleListener() {
         return appLifecycleListener;
     }

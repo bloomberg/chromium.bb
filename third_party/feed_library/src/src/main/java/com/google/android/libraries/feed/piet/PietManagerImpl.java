@@ -28,7 +28,7 @@ class PietManagerImpl implements PietManager {
     private final Clock clock;
     private final boolean allowLegacyRoundedCornerImpl;
     private final boolean allowOutlineRoundedCornerImpl;
-    @VisibleForTesting /*@Nullable*/ AdapterParameters adapterParameters = null;
+    @VisibleForTesting /*@Nullable*/ AdapterParameters adapterParameters;
 
     PietManagerImpl(DebugBehavior debugBehavior, AssetProvider assetProvider,
             CustomElementProvider customElementProvider, HostBindingProvider hostBindingProvider,

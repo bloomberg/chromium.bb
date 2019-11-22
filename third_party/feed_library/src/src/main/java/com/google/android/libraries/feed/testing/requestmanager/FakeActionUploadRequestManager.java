@@ -18,7 +18,7 @@ import java.util.Set;
 public final class FakeActionUploadRequestManager implements ActionUploadRequestManager {
     private final FakeThreadUtils fakeThreadUtils;
     private Result<ConsistencyToken> result = Result.success(ConsistencyToken.getDefaultInstance());
-    /*@Nullable*/ private Set<StreamUploadableAction> actions = null;
+    /*@Nullable*/ private Set<StreamUploadableAction> actions;
 
     public FakeActionUploadRequestManager(FakeThreadUtils fakeThreadUtils) {
         this.fakeThreadUtils = fakeThreadUtils;

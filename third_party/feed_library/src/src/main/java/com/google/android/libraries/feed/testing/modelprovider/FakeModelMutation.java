@@ -17,7 +17,7 @@ public final class FakeModelMutation implements ModelMutation {
     public final List<StreamStructure> removedChildren = new ArrayList<>();
     public final List<StreamStructure> updateChildren = new ArrayList<>();
     public MutationContext mutationContext;
-    boolean commitCalled = false;
+    boolean commitCalled;
 
     @Override
     public ModelMutation addChild(StreamStructure streamStructure) {

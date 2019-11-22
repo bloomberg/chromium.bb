@@ -33,7 +33,7 @@ public class FakeFeedRequestManager implements FeedRequestManager {
     private final ProtocolAdapter protocolAdapter;
     private final Queue<ResponseWithDelay> responses = new ArrayDeque<>();
     private final TaskQueue taskQueue;
-    /*@Nullable*/ private StreamToken latestStreamToken = null;
+    /*@Nullable*/ private StreamToken latestStreamToken;
     @RequestReason
     private int latestRequestReason = RequestReason.UNKNOWN;
 

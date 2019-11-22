@@ -40,7 +40,7 @@ public final class FakeStore extends FeedStore {
     private boolean allowGetPayloads = true;
     private boolean allowGetStreamStructures = true;
     private boolean allowGetSharedStates = true;
-    private boolean clearHeadCalled = false;
+    private boolean clearHeadCalled;
 
     public FakeStore(Configuration configuration, FakeThreadUtils fakeThreadUtils,
             TaskQueue taskQueue, Clock clock) {

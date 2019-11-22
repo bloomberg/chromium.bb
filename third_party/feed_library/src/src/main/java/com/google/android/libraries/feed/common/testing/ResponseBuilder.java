@@ -51,8 +51,8 @@ public class ResponseBuilder {
     private final FeedResponse.Builder feedResponseBuilder = FeedResponse.newBuilder();
     private final List<ContentId> pietSharedStateContentIds = new ArrayList<>();
 
-    private int tokenId = 0;
-    /*@Nullable*/ private ByteString token = null;
+    private int tokenId;
+    /*@Nullable*/ private ByteString token;
 
     /** Add a CLEAR_ALL data operation to the response */
     public ResponseBuilder addClearOperation() {
@@ -244,8 +244,8 @@ public class ResponseBuilder {
     /** Captures information about the wire protocol that was created. */
     public static class WireProtocolInfo {
         public final List<ContentId> featuresAdded = new ArrayList<>();
-        public boolean hasClearOperation = false;
-        public boolean hasToken = false;
+        public boolean hasClearOperation;
+        public boolean hasToken;
     }
 
     private ContentId createNewContentId(ContentId contentId, int idIncrement) {

@@ -103,10 +103,10 @@ class AdapterFactory<A extends ElementAdapter<?, M>, M> {
      */
     static class Statistics {
         final String factoryName;
-        int adapterCreation = 0;
-        int poolHit = 0;
-        int releaseCalls = 0;
-        int getCalls = 0;
+        int adapterCreation;
+        int poolHit;
+        int releaseCalls;
+        int getCalls;
 
         public Statistics(String factoryName) {
             this.factoryName = factoryName;

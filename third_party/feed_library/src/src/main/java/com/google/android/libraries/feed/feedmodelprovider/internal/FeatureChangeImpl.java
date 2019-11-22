@@ -26,7 +26,7 @@ import java.util.List;
 public final class FeatureChangeImpl implements FeatureChange {
     private final ModelFeature modelFeature;
     private final ChildChangesImpl childChanges;
-    private boolean featureChanged = false;
+    private boolean featureChanged;
 
     public FeatureChangeImpl(ModelFeature modelFeature) {
         this.modelFeature = modelFeature;

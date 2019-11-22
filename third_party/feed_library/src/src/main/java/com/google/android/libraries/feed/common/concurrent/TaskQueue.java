@@ -101,10 +101,10 @@ public class TaskQueue implements Dumpable {
     private final Queue<TaskWrapper> backgroundTasks = new ArrayDeque<>();
 
     @GuardedBy("lock")
-    private boolean waitingForHeadReset = false;
+    private boolean waitingForHeadReset;
 
     @GuardedBy("lock")
-    private boolean initialized = false;
+    private boolean initialized;
 
     /**
      * CancelableTask that tracks the current starvation runnable. {@liternal null} means that
@@ -112,7 +112,7 @@ public class TaskQueue implements Dumpable {
      */
     @GuardedBy("lock")
     /*@Nullable*/
-    private CancelableTask starvationCheckTask = null;
+    private CancelableTask starvationCheckTask;
 
     // Tracks the current task running on the executor
     /*@Nullable*/ private TaskWrapper currentTask;
@@ -126,17 +126,17 @@ public class TaskQueue implements Dumpable {
     private final MainThreadRunner mainThreadRunner;
 
     // counters used for dump
-    protected int taskCount = 0;
-    protected int immediateRunCount = 0;
-    protected int delayedRunCount = 0;
-    protected int immediateTaskCount = 0;
-    protected int headInvalidateTaskCount = 0;
-    protected int headResetTaskCount = 0;
-    protected int userFacingTaskCount = 0;
-    protected int backgroundTaskCount = 0;
-    protected int maxImmediateTasks = 0;
-    protected int maxUserFacingTasks = 0;
-    protected int maxBackgroundTasks = 0;
+    protected int taskCount;
+    protected int immediateRunCount;
+    protected int delayedRunCount;
+    protected int immediateTaskCount;
+    protected int headInvalidateTaskCount;
+    protected int headResetTaskCount;
+    protected int userFacingTaskCount;
+    protected int backgroundTaskCount;
+    protected int maxImmediateTasks;
+    protected int maxUserFacingTasks;
+    protected int maxBackgroundTasks;
 
     public TaskQueue(BasicLoggingApi basicLoggingApi, Executor executor,
             MainThreadRunner mainThreadRunner, Clock clock) {
@@ -528,7 +528,7 @@ public class TaskQueue implements Dumpable {
     private final class TimeoutTaskWrapper extends TaskWrapper {
         private final AtomicBoolean started = new AtomicBoolean(false);
         private final Runnable timeoutRunnable;
-        /*@Nullable*/ private CancelableTask timeoutTask = null;
+        /*@Nullable*/ private CancelableTask timeoutTask;
 
         TimeoutTaskWrapper(@Task int task, @TaskType int taskType, Runnable taskRunnable,
                 Runnable timeoutRunnable) {

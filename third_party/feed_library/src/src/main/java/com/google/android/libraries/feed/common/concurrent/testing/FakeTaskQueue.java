@@ -10,8 +10,8 @@ import com.google.android.libraries.feed.testing.host.logging.FakeBasicLoggingAp
 
 /** A fake {@link TaskQueue} implementation. */
 public final class FakeTaskQueue extends TaskQueue {
-    private boolean resetWasCalled = false;
-    private boolean completeResetWasCalled = false;
+    private boolean resetWasCalled;
+    private boolean completeResetWasCalled;
 
     public FakeTaskQueue(FakeClock fakeClock, FakeThreadUtils fakeThreadUtils) {
         this(fakeClock, FakeDirectExecutor.runTasksImmediately(fakeThreadUtils));

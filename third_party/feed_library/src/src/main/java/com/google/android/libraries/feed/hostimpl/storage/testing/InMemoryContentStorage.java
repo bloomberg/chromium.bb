@@ -34,10 +34,10 @@ public final class InMemoryContentStorage implements ContentStorageDirect, Dumpa
 
     private final Map<String, byte[]> store = new HashMap<>();
 
-    private int getCount = 0;
-    private int getAllCount = 0;
-    private int insertCount = 0;
-    private int updateCount = 0;
+    private int getCount;
+    private int getAllCount;
+    private int insertCount;
+    private int updateCount;
 
     @Override
     public Result<Map<String, byte[]>> get(List<String> keys) {

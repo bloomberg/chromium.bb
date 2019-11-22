@@ -21,7 +21,7 @@ import org.robolectric.RobolectricTestRunner;
 /** Tests for {@link MenuMeasurer}. */
 @RunWith(RobolectricTestRunner.class)
 public class MenuMeasurerTest {
-    private static final int NO_PADDING = 0;
+    private static final int NO_PADDING;
 
     private MenuMeasurer menuMeasurer;
     private int widthUnit;

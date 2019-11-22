@@ -29,7 +29,7 @@ import org.robolectric.RobolectricTestRunner;
 /** Tests for {@link StreamItemTouchCallbacks}. */
 @RunWith(RobolectricTestRunner.class)
 public final class StreamItemTouchCallbacksTest {
-    private final int NO_MOVEMENT_FLAG = 0;
+    private final int NO_MOVEMENT_FLAG;
 
     private DismissibleViewHolder dismissibleViewHolder;
 

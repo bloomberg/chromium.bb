@@ -25,7 +25,7 @@ import org.robolectric.RobolectricTestRunner;
 @RunWith(RobolectricTestRunner.class)
 public class BorderDrawableTest {
     private static final float[] ZERO_RADII = new float[] {0, 0, 0, 0, 0, 0, 0, 0};
-    private static final boolean LEFT_TO_RIGHT = false;
+    private static final boolean LEFT_TO_RIGHT;
     private static final boolean RIGHT_TO_LEFT = true;
 
     private static final int COLOR = 0xFFFF0000;

@@ -61,11 +61,11 @@ public interface PietManager {
         private Supplier<Boolean> isRtLSupplier = LayoutUtils::isDefaultLocaleRtl;
 
         private DebugBehavior debugBehavior = DebugBehavior.SILENT;
-        /*@MonotonicNonNull*/ private CustomElementProvider customElementProvider = null;
-        /*@MonotonicNonNull*/ private HostBindingProvider hostBindingProvider = null;
-        /*@MonotonicNonNull*/ private Clock clock = null;
-        private boolean allowLegacyRoundedCornerImpl = false;
-        private boolean allowOutlineRoundedCornerImpl = false;
+        /*@MonotonicNonNull*/ private CustomElementProvider customElementProvider;
+        /*@MonotonicNonNull*/ private HostBindingProvider hostBindingProvider;
+        /*@MonotonicNonNull*/ private Clock clock;
+        private boolean allowLegacyRoundedCornerImpl;
+        private boolean allowOutlineRoundedCornerImpl;
 
         private Builder() {}
 

@@ -18,7 +18,7 @@ public class UiSessionRequestLogger implements ModelProviderObserver {
     private static final String TAG = "UiSessionRequestLogger";
     private final Clock clock;
     private final BasicLoggingApi basicLoggingApi;
-    private int sessionCount = 0;
+    private int sessionCount;
     /*@Nullable*/ private SessionRequestState sessionRequestState;
 
     public UiSessionRequestLogger(Clock clock, BasicLoggingApi basicLoggingApi) {

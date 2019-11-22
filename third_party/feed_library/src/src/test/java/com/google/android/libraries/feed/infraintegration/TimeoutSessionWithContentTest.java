@@ -45,7 +45,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @RunWith(RobolectricTestRunner.class)
 public class TimeoutSessionWithContentTest {
     // This flag will should be flipped to debug the test.  It will disable TimeoutExceptions.
-    private static final boolean DEBUG = false;
+    private static final boolean DEBUG;
     private static final ContentId[] REQUEST_ONE = new ContentId[] {
             ResponseBuilder.createFeatureContentId(1), ResponseBuilder.createFeatureContentId(2),
             ResponseBuilder.createFeatureContentId(3)};

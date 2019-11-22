@@ -51,8 +51,8 @@ public final class FeedProtocolAdapter implements ProtocolAdapter, Dumpable {
     private final TimingUtils timingUtils;
 
     // Operation counts for #dump(Dumpable)
-    private int responseHandlingCount = 0;
-    private int convertContentIdCount = 0;
+    private int responseHandlingCount;
+    private int convertContentIdCount;
 
     public FeedProtocolAdapter(
             List<RequiredContentAdapter> requiredContentAdapters, TimingUtils timingUtils) {

@@ -68,7 +68,7 @@ public class CardDriverTest {
                             SwipeActionExtension.newBuilder().setSwipeAction(SWIPE_ACTION).build())
                     .build();
 
-    private static final int POSITION = 0;
+    private static final int POSITION;
 
     @Mock
     private ContentDriver contentDriverChild;

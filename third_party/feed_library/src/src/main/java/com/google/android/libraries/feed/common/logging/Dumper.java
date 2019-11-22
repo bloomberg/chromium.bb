@@ -152,8 +152,8 @@ public final class Dumper {
         final StringBuilder content;
         @VisibleForTesting
         final int indentLevel;
-        private boolean compactPrevious = false;
-        private boolean sensitive = false;
+        private boolean compactPrevious;
+        private boolean sensitive;
 
         // create a DumpValue with just a name, this is not public, it will is called by Dumper
         DumperValue(int indentLevel, String name) {

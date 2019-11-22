@@ -63,7 +63,7 @@ public final class MutationContext {
         /*@MonotonicNonNull*/ private StreamToken continuationToken;
         /*@MonotonicNonNull*/ private String requestingSessionId;
         private UiContext uiContext = UiContext.getDefaultInstance();
-        private boolean userInitiated = false;
+        private boolean userInitiated;
 
         public Builder() {}
 

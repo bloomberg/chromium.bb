@@ -43,12 +43,12 @@ public class SessionImpl implements InitializableSession, Dumpable {
     // Allow creation of the session without a model provider, this becomes an unbound session
     /*@Nullable*/ protected ModelProvider modelProvider;
     /*@Nullable*/ protected ViewDepthProvider viewDepthProvider;
-    protected boolean legacyHeadContent = false;
+    protected boolean legacyHeadContent;
 
     protected String sessionId;
 
     // operation counts for the dumper
-    int updateCount = 0;
+    int updateCount;
 
     SessionImpl(Store store, boolean limitPagingUpdates, TaskQueue taskQueue,
             TimingUtils timingUtils, ThreadUtils threadUtils) {

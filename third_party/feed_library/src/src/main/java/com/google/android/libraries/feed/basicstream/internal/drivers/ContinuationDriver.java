@@ -60,7 +60,7 @@ public class ContinuationDriver extends LeafFeatureDriver
     private boolean viewLogged;
     private boolean destroyed;
     private boolean tokenHandled;
-    private int failureCount = 0;
+    private int failureCount;
     @SpinnerType
     private int spinnerType = SpinnerType.INFINITE_FEED;
     /*@Nullable*/ private ContinuationViewHolder continuationViewHolder;

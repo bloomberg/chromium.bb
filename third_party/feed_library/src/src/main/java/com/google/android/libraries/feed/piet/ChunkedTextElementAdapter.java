@@ -415,7 +415,7 @@ class ChunkedTextElementAdapter extends TextElementAdapter {
         private final StyleProvider imageStyle;
         /*@Nullable*/ private final Integer overlayColor;
         private final TextView textView;
-        private boolean cancelled = false;
+        private boolean cancelled;
 
         ImageSpanDrawableCallback(LayerDrawable wrapper, StyleProvider imageStyle,
                 /*@Nullable*/ Integer overlayColor, TextView textView) {

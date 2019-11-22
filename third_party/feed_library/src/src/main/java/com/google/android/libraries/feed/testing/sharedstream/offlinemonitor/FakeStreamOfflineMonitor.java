@@ -10,7 +10,7 @@ import com.google.android.libraries.feed.testing.host.offlineindicator.FakeOffli
 /** Fake used for tests using the {@link StreamOfflineMonitor}. */
 public class FakeStreamOfflineMonitor extends StreamOfflineMonitor {
     private final FakeOfflineIndicatorApi fakeIndicatorApi;
-    private boolean offlineStatusRequested = false;
+    private boolean offlineStatusRequested;
 
     /**
      * Creates a {@link FakeStreamOfflineMonitor} with the given {@link FakeOfflineIndicatorApi}.
