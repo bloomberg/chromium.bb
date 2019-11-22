@@ -89,6 +89,8 @@ class CORE_EXPORT ArrayBufferView : public RefCounted<ArrayBufferView> {
  private:
   friend class ArrayBuffer;
   scoped_refptr<ArrayBuffer> buffer_;
+  ArrayBufferView* prev_view_;
+  ArrayBufferView* next_view_;
 };
 
 }  // namespace blink
