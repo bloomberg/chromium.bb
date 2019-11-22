@@ -939,7 +939,6 @@ GERRIT_ON_BORG_LABELS = {
     'Code-Review': 'CRVW',
     'Commit-Queue': 'COMR',
     'Verified': 'VRIF',
-    'Legacy-Commit-Queue': 'LCQ',
 }
 
 # Actions that a CQ run can take on a CL
