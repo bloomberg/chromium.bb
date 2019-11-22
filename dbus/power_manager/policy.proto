@@ -43,6 +43,16 @@ message PowerManagementPolicy {
     // Next value to use: 4
   }
 
+  enum DoubleTapAction {
+    // Does nothing.
+    DISABLED = 0;
+
+    // Wake device up when double tap is triggered.
+    WAKE = 1;
+
+    // Next value to use: 2
+  }
+
   message Delays {
     // Delay after which |idle_action| is performed, in milliseconds.  The
     // inactivity timeout is reset in response to things like user activity
@@ -91,6 +101,9 @@ message PowerManagementPolicy {
 
   // Action to perform when the lid is closed.
   optional Action lid_closed_action = 2;
+
+  // Action to perform when double tap is triggered.
+  optional DoubleTapAction double_tap_action = 25;
 
   // Delays used while the system is on AC power.
   optional Delays ac_delays = 3;
@@ -236,6 +249,8 @@ message PowerManagementPolicy {
   }
   // Ignored unless powerd is configured to honor charging-related prefs.
   optional BatteryChargeMode battery_charge_mode = 24;
+
+  // Next value to use: 26
 }
 
 // Message included in IdleActionImminent signals.
