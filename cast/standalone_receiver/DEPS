@@ -3,8 +3,6 @@
 # found in the LICENSE file.
 
 include_rules = [
-  '+cast/common',
-  '+cast/receiver',
-  '+cast/sender',
-  '+openssl'
+  '+cast',
+  '+platform/impl',
 ]

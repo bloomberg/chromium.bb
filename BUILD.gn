@@ -12,13 +12,13 @@ group("gn_all") {
     "cast/common:certificate",
     "cast/common:channel",
     "cast/sender:channel",
+    "cast/streaming:receiver",
+    "cast/streaming:sender",
     "discovery:dnssd",
     "discovery:mdns",
     "osp",
     "osp/msgs",
     "platform",
-    "streaming/cast:receiver",
-    "streaming/cast:sender",
     "third_party/abseil",
     "third_party/boringssl",
     "third_party/jsoncpp",
@@ -51,6 +51,12 @@ group("gn_all") {
       "third_party/protobuf:protoc",
       "third_party/zlib",
     ]
+
+    # TODO(crbug.com/openscreen/86): Build for Mac too once the mac buildbot
+    # compiler is upgraded.
+    if (!is_mac) {
+      deps += [ "cast/standalone_receiver:cast_receiver" ]
+    }
   }
 }
 
@@ -59,11 +65,11 @@ source_set("openscreen_unittests_all") {
   public_deps = [
     "cast/common:unittests",
     "cast/sender:unittests",
+    "cast/streaming:unittests",
     "discovery:unittests",
     "osp:unittests",
     "osp/msgs:unittests",
     "platform:unittests",
-    "streaming/cast:unittests",
     "third_party/abseil",
     "third_party/googletest:gtest_main",
     "util:unittests",

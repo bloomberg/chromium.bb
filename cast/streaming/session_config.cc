@@ -7,8 +7,8 @@
 namespace cast {
 namespace streaming {
 
-SessionConfig::SessionConfig(openscreen::cast_streaming::Ssrc sender_ssrc,
-                             openscreen::cast_streaming::Ssrc receiver_ssrc,
+SessionConfig::SessionConfig(Ssrc sender_ssrc,
+                             Ssrc receiver_ssrc,
                              int rtp_timebase,
                              int channels,
                              std::array<uint8_t, 16> aes_secret_key,

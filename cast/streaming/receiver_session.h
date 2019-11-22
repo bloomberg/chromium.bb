@@ -8,16 +8,12 @@
 #include <memory>
 #include <vector>
 
+#include "cast/streaming/receiver.h"
+#include "cast/streaming/receiver_packet_router.h"
 #include "cast/streaming/session_config.h"
-#include "streaming/cast/receiver.h"
-#include "streaming/cast/receiver_packet_router.h"
 
 namespace cast {
 namespace streaming {
-
-// TODO(jophba): remove once these namespaces are merged.
-using openscreen::cast_streaming::Receiver;
-using openscreen::cast_streaming::ReceiverPacketRouter;
 
 class ReceiverSession {
  public:

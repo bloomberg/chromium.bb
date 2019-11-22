@@ -6,11 +6,9 @@
 #define CAST_STREAMING_SESSION_CONFIG_H_
 
 #include <array>
-#include <chrono>  // NOLINT
 #include <cstdint>
-#include <string>
 
-#include "streaming/cast/ssrc.h"
+#include "cast/streaming/ssrc.h"
 
 namespace cast {
 namespace streaming {
@@ -19,8 +17,8 @@ namespace streaming {
 // that the Sender and Receiver are both assuming.
 // TODO(jophba): add config validation.
 struct SessionConfig final {
-  SessionConfig(openscreen::cast_streaming::Ssrc sender_ssrc,
-                openscreen::cast_streaming::Ssrc receiver_ssrc,
+  SessionConfig(Ssrc sender_ssrc,
+                Ssrc receiver_ssrc,
                 int rtp_timebase,
                 int channels,
                 std::array<uint8_t, 16> aes_secret_key,
@@ -34,8 +32,8 @@ struct SessionConfig final {
   // The sender and receiver's SSRC identifiers. Note: SSRC identifiers
   // are defined as unsigned 32 bit integers here:
   // https://tools.ietf.org/html/rfc5576#page-5
-  openscreen::cast_streaming::Ssrc sender_ssrc = 0;
-  openscreen::cast_streaming::Ssrc receiver_ssrc = 0;
+  Ssrc sender_ssrc = 0;
+  Ssrc receiver_ssrc = 0;
 
   // RTP timebase: The number of RTP units advanced per second. For audio,
   // this is the sampling rate. For video, this is 90 kHz by convention.
