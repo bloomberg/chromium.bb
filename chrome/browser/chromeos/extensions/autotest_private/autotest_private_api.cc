@@ -366,6 +366,14 @@ std::unique_ptr<bool> ConvertMojomOptionalBool(
 std::string SetWhitelistedPref(Profile* profile,
                                const std::string& pref_name,
                                const base::Value& value) {
+  // Special case for the preference that is stored in the "Local State"
+  // profile.
+  if (pref_name == prefs::kEnableAdbSideloadingRequested) {
+    DCHECK(value.is_bool());
+    g_browser_process->local_state()->Set(pref_name, value);
+    return std::string();
+  }
+
   if (pref_name == chromeos::assistant::prefs::kAssistantEnabled ||
       pref_name == chromeos::assistant::prefs::kAssistantHotwordEnabled) {
     DCHECK(value.is_bool());
