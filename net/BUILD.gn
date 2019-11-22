@@ -538,8 +538,8 @@ component("net") {
       "cert/root_cert_list_generated.h",
       "cert/test_root_certs.cc",
       "cert/test_root_certs.h",
-      "cert_net/cert_net_fetcher_impl.cc",
-      "cert_net/cert_net_fetcher_impl.h",
+      "cert_net/cert_net_fetcher_url_request.cc",
+      "cert_net/cert_net_fetcher_url_request.h",
       "cookies/canonical_cookie.cc",
       "cookies/canonical_cookie.h",
       "cookies/cookie_access_delegate.cc",
@@ -5135,7 +5135,7 @@ test("net_unittests") {
     "cert/x509_cert_types_unittest.cc",
     "cert/x509_certificate_unittest.cc",
     "cert/x509_util_unittest.cc",
-    "cert_net/cert_net_fetcher_impl_unittest.cc",
+    "cert_net/cert_net_fetcher_url_request_unittest.cc",
     "cookies/canonical_cookie_unittest.cc",
     "cookies/cookie_constants_unittest.cc",
     "cookies/cookie_deletion_info_unittest.cc",
@@ -5996,7 +5996,7 @@ test("net_unittests") {
       "spdy/fuzzing/hpack_fuzz_util_test.cc",
 
       # Need TestServer.
-      "cert_net/cert_net_fetcher_impl_unittest.cc",
+      "cert_net/cert_net_fetcher_url_request_unittest.cc",
       "proxy_resolution/pac_file_fetcher_impl_unittest.cc",
       "socket/ssl_client_socket_unittest.cc",
       "url_request/url_fetcher_impl_unittest.cc",

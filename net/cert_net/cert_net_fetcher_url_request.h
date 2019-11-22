@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_CERT_NET_CERT_NET_FETCHER_IMPL_H_
-#define NET_CERT_NET_CERT_NET_FETCHER_IMPL_H_
+#ifndef NET_CERT_NET_CERT_NET_FETCHER_URL_REQUEST_H_
+#define NET_CERT_NET_CERT_NET_FETCHER_URL_REQUEST_H_
 
 #include "base/memory/ref_counted.h"
 #include "net/base/net_export.h"
@@ -22,15 +22,15 @@ class URLRequestContext;
 // CertNetFetcher's Shutdown method is called. The CertNetFetcher is to be
 // created and shutdown on the network thread. Its Fetch methods are to be used
 // on a *different* thread, since it gives a blocking interface to URL fetching.
-class NET_EXPORT CertNetFetcherImpl : public CertNetFetcher {
+class NET_EXPORT CertNetFetcherURLRequest : public CertNetFetcher {
  public:
-  class AsyncCertNetFetcherImpl;
+  class AsyncCertNetFetcherURLRequest;
   class RequestCore;
   struct RequestParams;
 
-  // Creates the CertNetFetcherImpl. SetURLRequestContext must be called before
-  // the fetcher can be used.
-  CertNetFetcherImpl();
+  // Creates the CertNetFetcherURLRequest. SetURLRequestContext must be called
+  // before the fetcher can be used.
+  CertNetFetcherURLRequest();
 
   // Set the URLRequestContext this fetcher should use.
   // |context_| must stay valid until Shutdown() is called.
@@ -53,7 +53,7 @@ class NET_EXPORT CertNetFetcherImpl : public CertNetFetcher {
       int max_response_bytes) override;
 
  private:
-  ~CertNetFetcherImpl() override;
+  ~CertNetFetcherURLRequest() override;
 
   void DoFetchOnNetworkSequence(std::unique_ptr<RequestParams> request_params,
                                 scoped_refptr<RequestCore> request);
@@ -64,9 +64,9 @@ class NET_EXPORT CertNetFetcherImpl : public CertNetFetcher {
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   // Not owned. |context_| must stay valid until Shutdown() is called.
   URLRequestContext* context_ = nullptr;
-  std::unique_ptr<AsyncCertNetFetcherImpl> impl_;
+  std::unique_ptr<AsyncCertNetFetcherURLRequest> impl_;
 };
 
 }  // namespace net
 
-#endif  // NET_CERT_NET_CERT_NET_FETCHER_IMPL_H_
+#endif  // NET_CERT_NET_CERT_NET_FETCHER_URL_REQUEST_H_
