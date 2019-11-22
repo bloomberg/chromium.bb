@@ -6,6 +6,7 @@
 
 #include <atomic>
 
+#include "absl/strings/ascii.h"
 #include "absl/strings/match.h"
 #include "absl/strings/str_join.h"
 
@@ -40,9 +41,49 @@ std::string DomainName::ToString() const {
   return absl::StrJoin(labels_, ".");
 }
 
+bool DomainName::operator>(const DomainName& rhs) const {
+  if (labels_.size() != rhs.labels_.size()) {
+    return labels_.size() > rhs.labels_.size();
+  }
+
+  auto this_it = labels_.begin();
+  auto other_it = rhs.labels_.begin();
+  while (this_it != labels_.end()) {
+    const std::string& this_label = *this_it;
+    const std::string& other_label = *other_it;
+
+    if (this_label.size() != other_label.size()) {
+      return this_label.size() > other_label.size();
+    }
+
+    for (size_t i = 0; i < this_label.size(); i++) {
+      if ((this_label[i] != other_label[i]) &&
+          (std::tolower(this_label[i] != std::tolower(other_label[i])))) {
+        return this_label[i] > other_label[i];
+      }
+    }
+
+    this_it++;
+    other_it++;
+  }
+
+  return false;
+}
+
+bool DomainName::operator<(const DomainName& rhs) const {
+  return rhs > *this;
+}
+
+bool DomainName::operator>=(const DomainName& rhs) const {
+  return !(*this < rhs);
+}
+
+bool DomainName::operator<=(const DomainName& rhs) const {
+  return !(*this > rhs);
+}
+
 bool DomainName::operator==(const DomainName& rhs) const {
-  return std::equal(labels_.begin(), labels_.end(), rhs.labels_.begin(),
-                    rhs.labels_.end(), absl::EqualsIgnoreCase);
+  return (*this <= rhs) && (*this >= rhs);
 }
 
 bool DomainName::operator!=(const DomainName& rhs) const {

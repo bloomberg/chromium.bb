@@ -46,6 +46,10 @@ class DomainName {
 
   DomainName& operator=(const DomainName& rhs);
   DomainName& operator=(DomainName&& rhs);
+  bool operator>(const DomainName& rhs) const;
+  bool operator<(const DomainName& rhs) const;
+  bool operator>=(const DomainName& rhs) const;
+  bool operator<=(const DomainName& rhs) const;
   bool operator==(const DomainName& rhs) const;
   bool operator!=(const DomainName& rhs) const;
 
@@ -70,9 +74,9 @@ class DomainName {
   std::vector<std::string> labels_;
 };
 
-// Parsed represenation of the extra data in a record. Does not include standard
-// DNS record data such as TTL, Name, Type and Class. We use it to distinguish
-// a raw record type that we do not know the identity of.
+// Parsed representation of the extra data in a record. Does not include
+// standard DNS record data such as TTL, Name, Type, and Class. We use it to
+// distinguish a raw record type that we do not know the identity of.
 class RawRecordRdata {
  public:
   RawRecordRdata();
