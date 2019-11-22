@@ -2741,6 +2741,12 @@ Unknown properties are collapsed to zero. -->
   <int value="6" label="Web app"/>
 </enum>
 
+<enum name="ArcMojoConnectionType">
+  <summary>Types of mojo connections to the ARC container.</summary>
+  <int value="0" label="AppLauncher"/>
+  <int value="1" label="IntentHelper"/>
+</enum>
+
 <enum name="ArcNativeBridgeType">
   <int value="0" label="Unknown"/>
   <int value="1" label="None"/>
