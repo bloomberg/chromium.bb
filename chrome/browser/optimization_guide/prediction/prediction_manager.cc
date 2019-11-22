@@ -30,6 +30,29 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 
+namespace {
+
+// Returns true if |optimization_target_decision| reflects that the model had
+// already been evaluated.
+bool ShouldUseCurrentOptimizationTargetDecision(
+    optimization_guide::OptimizationTargetDecision
+        optimization_target_decision) {
+  switch (optimization_target_decision) {
+    case optimization_guide::OptimizationTargetDecision::kPageLoadMatches:
+    case optimization_guide::OptimizationTargetDecision::kPageLoadDoesNotMatch:
+    case optimization_guide::OptimizationTargetDecision::
+        kModelPredictionHoldback:
+      return true;
+    case optimization_guide::OptimizationTargetDecision::
+        kModelNotAvailableOnClient:
+    case optimization_guide::OptimizationTargetDecision::kUnknown:
+    case optimization_guide::OptimizationTargetDecision::kDeciderNotInitialized:
+      return false;
+  }
+}
+
+}  // namespace
+
 namespace optimization_guide {
 
 PredictionManager::PredictionManager(
@@ -226,6 +249,21 @@ OptimizationTargetDecision PredictionManager::ShouldTargetNavigation(
   SEQUENCE_CHECKER(sequence_checker_);
   DCHECK(navigation_handle->GetURL().SchemeIsHTTPOrHTTPS());
 
+  OptimizationGuideNavigationData* navigation_data =
+      OptimizationGuideNavigationData::GetFromNavigationHandle(
+          navigation_handle);
+  if (navigation_data) {
+    base::Optional<optimization_guide::OptimizationTargetDecision>
+        optimization_target_decision =
+            navigation_data->GetDecisionForOptimizationTarget(
+                optimization_target);
+    if (optimization_target_decision.has_value() &&
+        ShouldUseCurrentOptimizationTargetDecision(
+            *optimization_target_decision)) {
+      return *optimization_target_decision;
+    }
+  }
+
   // TODO(crbug/1001194): Add histogram to record that the optimization target
   // was not registered but was requested.
   if (!registered_optimization_targets_.contains(optimization_target))
@@ -247,9 +285,6 @@ OptimizationTargetDecision PredictionManager::ShouldTargetNavigation(
   optimization_guide::OptimizationTargetDecision target_decision =
       prediction_model->Predict(feature_map, &prediction_score);
 
-  OptimizationGuideNavigationData* navigation_data =
-      OptimizationGuideNavigationData::GetFromNavigationHandle(
-          navigation_handle);
   if (navigation_data) {
     navigation_data->SetModelVersionForOptimizationTarget(
         optimization_target, prediction_model->GetVersion());

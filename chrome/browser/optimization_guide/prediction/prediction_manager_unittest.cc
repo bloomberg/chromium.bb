@@ -553,6 +553,126 @@ TEST_F(PredictionManagerTest, UpdateModelWithSameVersion) {
   EXPECT_EQ(3, stored_prediction_model->GetVersion());
 }
 
+TEST_F(PredictionManagerTest,
+       EvaluatePredictionModelUsesDecisionFromPostiveEvalIfModelWasEvaluated) {
+  std::unique_ptr<content::MockNavigationHandle> navigation_handle =
+      CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
+          GURL("https://foo.com"));
+
+  CreatePredictionManager({});
+  prediction_manager()->SetPredictionModelFetcherForTesting(
+      BuildTestPredictionModelFetcher(
+          PredictionModelFetcherEndState::
+              kFetchSuccessWithModelsAndHostsModelFeatures));
+
+  prediction_manager()->RegisterOptimizationTargets(
+      {proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD});
+
+  SetStoreInitialized();
+  EXPECT_TRUE(prediction_model_fetcher()->models_fetched());
+
+  OptimizationGuideNavigationData* nav_data =
+      OptimizationGuideNavigationData::GetFromNavigationHandle(
+          navigation_handle.get());
+  nav_data->SetDecisionForOptimizationTarget(
+      proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD,
+      OptimizationTargetDecision::kPageLoadMatches);
+
+  TestPredictionModel* test_prediction_model =
+      static_cast<TestPredictionModel*>(
+          prediction_manager()->GetPredictionModelForTesting(
+              proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD));
+  EXPECT_TRUE(test_prediction_model);
+
+  // Make sure the cached decision is returned and that the model was not
+  // evaluated.
+  EXPECT_EQ(OptimizationTargetDecision::kPageLoadMatches,
+            prediction_manager()->ShouldTargetNavigation(
+                navigation_handle.get(),
+                proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD));
+  EXPECT_FALSE(test_prediction_model->WasModelEvaluated());
+}
+
+TEST_F(PredictionManagerTest,
+       EvaluatePredictionModelUsesDecisionFromNegativeEvalIfModelWasEvaluated) {
+  std::unique_ptr<content::MockNavigationHandle> navigation_handle =
+      CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
+          GURL("https://foo.com"));
+
+  CreatePredictionManager({});
+  prediction_manager()->SetPredictionModelFetcherForTesting(
+      BuildTestPredictionModelFetcher(
+          PredictionModelFetcherEndState::
+              kFetchSuccessWithModelsAndHostsModelFeatures));
+
+  prediction_manager()->RegisterOptimizationTargets(
+      {proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD});
+
+  SetStoreInitialized();
+  EXPECT_TRUE(prediction_model_fetcher()->models_fetched());
+
+  OptimizationGuideNavigationData* nav_data =
+      OptimizationGuideNavigationData::GetFromNavigationHandle(
+          navigation_handle.get());
+  nav_data->SetDecisionForOptimizationTarget(
+      proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD,
+      OptimizationTargetDecision::kPageLoadDoesNotMatch);
+
+  TestPredictionModel* test_prediction_model =
+      static_cast<TestPredictionModel*>(
+          prediction_manager()->GetPredictionModelForTesting(
+              proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD));
+  EXPECT_TRUE(test_prediction_model);
+
+  // Make sure the cached decision is returned and that the model was not
+  // evaluated.
+  EXPECT_EQ(OptimizationTargetDecision::kPageLoadDoesNotMatch,
+            prediction_manager()->ShouldTargetNavigation(
+                navigation_handle.get(),
+                proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD));
+  EXPECT_FALSE(test_prediction_model->WasModelEvaluated());
+}
+
+TEST_F(PredictionManagerTest,
+       EvaluatePredictionModelUsesDecisionFromHoldbackEvalIfModelWasEvaluated) {
+  std::unique_ptr<content::MockNavigationHandle> navigation_handle =
+      CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
+          GURL("https://foo.com"));
+
+  CreatePredictionManager({});
+  prediction_manager()->SetPredictionModelFetcherForTesting(
+      BuildTestPredictionModelFetcher(
+          PredictionModelFetcherEndState::
+              kFetchSuccessWithModelsAndHostsModelFeatures));
+
+  prediction_manager()->RegisterOptimizationTargets(
+      {proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD});
+
+  SetStoreInitialized();
+  EXPECT_TRUE(prediction_model_fetcher()->models_fetched());
+
+  OptimizationGuideNavigationData* nav_data =
+      OptimizationGuideNavigationData::GetFromNavigationHandle(
+          navigation_handle.get());
+  nav_data->SetDecisionForOptimizationTarget(
+      proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD,
+      OptimizationTargetDecision::kModelPredictionHoldback);
+
+  TestPredictionModel* test_prediction_model =
+      static_cast<TestPredictionModel*>(
+          prediction_manager()->GetPredictionModelForTesting(
+              proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD));
+  EXPECT_TRUE(test_prediction_model);
+
+  // Make sure the cached decision is returned and that the model was not
+  // evaluated.
+  EXPECT_EQ(OptimizationTargetDecision::kModelPredictionHoldback,
+            prediction_manager()->ShouldTargetNavigation(
+                navigation_handle.get(),
+                proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD));
+  EXPECT_FALSE(test_prediction_model->WasModelEvaluated());
+}
+
 TEST_F(PredictionManagerTest, EvaluatePredictionModelPopulatesNavData) {
   std::unique_ptr<content::MockNavigationHandle> navigation_handle =
       CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
@@ -570,6 +690,15 @@ TEST_F(PredictionManagerTest, EvaluatePredictionModelPopulatesNavData) {
   SetStoreInitialized();
   EXPECT_TRUE(prediction_model_fetcher()->models_fetched());
 
+  OptimizationGuideNavigationData* nav_data =
+      OptimizationGuideNavigationData::GetFromNavigationHandle(
+          navigation_handle.get());
+  nav_data->SetDecisionForOptimizationTarget(
+      proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD,
+      OptimizationTargetDecision::kModelNotAvailableOnClient);
+
+  // Make sure model gets evaluated despite there already being a decision in
+  // the navigation data.
   EXPECT_EQ(OptimizationTargetDecision::kPageLoadMatches,
             prediction_manager()->ShouldTargetNavigation(
                 navigation_handle.get(),
@@ -582,9 +711,6 @@ TEST_F(PredictionManagerTest, EvaluatePredictionModelPopulatesNavData) {
   EXPECT_TRUE(test_prediction_model);
   EXPECT_TRUE(test_prediction_model->WasModelEvaluated());
 
-  OptimizationGuideNavigationData* nav_data =
-      OptimizationGuideNavigationData::GetFromNavigationHandle(
-          navigation_handle.get());
   EXPECT_EQ(2, *nav_data->GetModelVersionForOptimizationTarget(
                    proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD));
   EXPECT_EQ(0.6, *nav_data->GetModelPredictionScoreForOptimizationTarget(
