@@ -1137,6 +1137,7 @@ enum aome_enc_control_id {
    * 0: Update at SB level (default)
    * 1: Update at SB row level in tile
    * 2: Update at tile level
+   * 3: Off
    */
   AV1E_SET_MV_COST_UPD_FREQ,
 
