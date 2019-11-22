@@ -238,7 +238,7 @@ StatusCode DecoderImpl::DequeueFrame(const DecoderBuffer** out_ptr) {
                   displayable_frame->frame_height(),
                   displayable_frame->buffer()->subsampling_x(),
                   displayable_frame->buffer()->subsampling_y(),
-                  /*border=*/0,
+                  /*border=*/kBorderPixelsFilmGrain,
                   /*byte_alignment=*/0)) {
             LIBGAV1_DLOG(ERROR, "film_grain_frame->Realloc() failed.");
             return kLibgav1StatusOutOfMemory;

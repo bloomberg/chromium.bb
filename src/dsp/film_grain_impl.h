@@ -72,6 +72,9 @@ enum {
   // Padding is added to the scaling lookup table to permit overwrites by
   // InitializeScalingLookupTable_NEON.
   kScalingLookupTablePadding = 7,
+  // Padding is added to the noise image to permit overreads by
+  // BlendNoiseWithImageLuma_NEON.
+  kNoiseImagePadding = 7,
 };  // anonymous enum
 
 // Section 7.18.3.5. Add noise synthesis process.

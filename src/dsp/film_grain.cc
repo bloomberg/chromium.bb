@@ -849,20 +849,20 @@ void ConstructNoiseStripesWithOverlap_C(const void* grain_buffer,
 template <int bitdepth>
 bool FilmGrain<bitdepth>::AllocateNoiseImage() {
   if (params_.num_y_points > 0 &&
-      !noise_image_[kPlaneY].Reset(height_, width_,
+      !noise_image_[kPlaneY].Reset(height_, width_ + kNoiseImagePadding,
                                    /*zero_initialize=*/false)) {
     return false;
   }
   if (!is_monochrome_) {
     if (!noise_image_[kPlaneU].Reset(
             (height_ + subsampling_y_) >> subsampling_y_,
-            (width_ + subsampling_x_) >> subsampling_x_,
+            ((width_ + subsampling_x_) >> subsampling_x_) + kNoiseImagePadding,
             /*zero_initialize=*/false)) {
       return false;
     }
     if (!noise_image_[kPlaneV].Reset(
             (height_ + subsampling_y_) >> subsampling_y_,
-            (width_ + subsampling_x_) >> subsampling_x_,
+            ((width_ + subsampling_x_) >> subsampling_x_) + kNoiseImagePadding,
             /*zero_initialize=*/false)) {
       return false;
     }

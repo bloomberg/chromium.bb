@@ -54,10 +54,6 @@ int GetFilterIndex(const int filter_index, const int length) {
   return filter_index;
 }
 
-inline int16x8_t ZeroExtend(const uint8x8_t in) {
-  return vreinterpretq_s16_u16(vmovl_u8(in));
-}
-
 // Multiply every entry in |src[]| by the corresponding entry in |taps[]| and
 // sum. The sum of the filters in |taps[]| is always 128. In some situations
 // negative values are used. This creates a situation where the positive taps

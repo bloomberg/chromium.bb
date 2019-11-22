@@ -68,6 +68,11 @@ enum {
   kMinPaletteSize = 2,
   kMaxPaletteSquare = 64,
   kBorderPixels = 64,
+  // The final blending process for film grain needs room to overwrite and read
+  // with SIMD instructions. The maximum overwrite is 7 pixels, but the border
+  // is required to be a multiple of 32 by YuvBuffer::Realloc, so that
+  // subsampled chroma borders are 16-aligned.
+  kBorderPixelsFilmGrain = 32,
   // If both cdef and loop restoration are being done, then we would need a
   // border of 96 pixels instead of 64 since we would shift the buffer in both
   // cdef and loop restoration.

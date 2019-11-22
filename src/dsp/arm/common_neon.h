@@ -833,6 +833,10 @@ inline void Transpose16x8(const uint8x16_t input[8], uint8x8_t output[16]) {
   output[15] = vget_high_u8(vreinterpretq_u8_u32(d3.val[1]));
 }
 
+inline int16x8_t ZeroExtend(const uint8x8_t in) {
+  return vreinterpretq_s16_u16(vmovl_u8(in));
+}
+
 }  // namespace dsp
 }  // namespace libgav1
 
