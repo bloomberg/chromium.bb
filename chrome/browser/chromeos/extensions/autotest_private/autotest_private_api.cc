@@ -147,7 +147,6 @@
 #include "ui/message_center/public/cpp/notification.h"
 #include "ui/message_center/public/cpp/notification_types.h"
 #include "ui/views/widget/widget.h"
-#include "ui/views/window/dialog_client_view.h"
 #include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/core/cursor_manager.h"
 #include "ui/wm/core/window_util.h"
@@ -1761,9 +1760,7 @@ void AutotestPrivateInstallPluginVMFunction::OnInstallFinished(bool success) {
   }
 
   // Dismiss the dialog and start launching the VM.
-  PluginVmLauncherView::GetActiveViewForTesting()
-      ->GetDialogClientView()
-      ->AcceptWindow();
+  PluginVmLauncherView::GetActiveViewForTesting()->AcceptDialog();
 
   Respond(NoArguments());
 }
