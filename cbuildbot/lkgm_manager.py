@@ -10,18 +10,14 @@ from __future__ import print_function
 import codecs
 import os
 import re
-import tempfile
 from xml.dom import minidom
-from xml.parsers import expat
 
 from chromite.lib import config_lib
 from chromite.lib import constants
 from chromite.cbuildbot import manifest_version
-from chromite.cbuildbot import trybot_patch_pool
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import git
-from chromite.lib import osutils
 
 
 # Paladin constants for manifest names.
@@ -189,32 +185,6 @@ class LKGMManager(manifest_version.BuildSpecsManager):
     with codecs.open(file_path, 'w+', 'utf-8') as f:
       dom_instance.writexml(f)
 
-  def _AddLKGMToManifest(self, manifest):
-    """Write the last known good version string to the manifest.
-
-    Args:
-      manifest: Path to the manifest.
-    """
-    # Get the last known good version string.
-    try:
-      lkgm_filename = os.path.basename(os.readlink(self.lkgm_path))
-      lkgm_version, _ = os.path.splitext(lkgm_filename)
-    except OSError:
-      return
-
-    # Write the last known good version string to the manifest.
-    try:
-      manifest_dom = minidom.parse(manifest)
-    except expat.ExpatError:
-      logging.error('Got parsing error for: %s', manifest)
-      logging.error('Bad XML:\n%s', osutils.ReadFile(manifest))
-      raise
-
-    lkgm_element = manifest_dom.createElement(LKGM_ELEMENT)
-    lkgm_element.setAttribute(LKGM_VERSION_ATTR, lkgm_version)
-    manifest_dom.documentElement.appendChild(lkgm_element)
-    self._WriteXml(manifest_dom, manifest)
-
   def _AddAndroidVersionToManifest(self, manifest, android_version):
     """Adds the Android element with version |android_version| to |manifest|.
 
@@ -248,68 +218,7 @@ class LKGMManager(manifest_version.BuildSpecsManager):
     manifest_dom.documentElement.appendChild(chrome)
     self._WriteXml(manifest_dom, manifest)
 
-  def _AddPatchesToManifest(self, manifest, validation_pool):
-    """Adds list of |patches| to given |manifest|.
-
-    The manifest should have sufficient information for the slave
-    builders to fetch the patches from Gerrit and to print the CL link
-    (see cros_patch.GerritFetchOnlyPatch).
-
-    Args:
-      manifest: Path to the manifest.
-      validation_pool: Validation pool to apply to the manifest.
-    """
-    manifest_dom = minidom.parse(manifest)
-    for patch in validation_pool.applied:
-      pending_commit = manifest_dom.createElement(PALADIN_COMMIT_ELEMENT)
-      attr_dict = patch.GetAttributeDict()
-      for k, v in attr_dict.items():
-        pending_commit.setAttribute(k, v)
-
-      try:
-        # A patch with unicode can be added to manifest,
-        # but not with invalid tokens.
-        pending_commit_xml = pending_commit.toxml(encoding='utf-8')
-        minidom.parseString(pending_commit_xml)
-        manifest_dom.documentElement.appendChild(pending_commit)
-      except expat.ExpatError:
-        logging.error('Got parsing error for: %s', pending_commit_xml)
-        msg = ('Failed to apply your change. Please check if there are '
-               'invalid tokens in your commit messages.')
-        validation_pool.SendNotification(patch, msg)
-        validation_pool.RemoveReady(patch)
-
-    self._WriteXml(manifest_dom, manifest)
-
-  def _AdjustRepoCheckoutToLocalManifest(self, manifest_path):
-    """Re-checkout repository based on patched internal manifest repository.
-
-    This method clones the current state of 'manifest-internal' into a temp
-    location, and then re-sync's the current repository to that manifest. This
-    is intended to allow sync'ing with test manifest CLs included.
-
-    It does NOT clean up afterwards.
-
-    Args:
-      manifest_path: Directory containing the already patched manifest.
-        Normally SOURCE_ROOT/manifest or SOURCE_ROOT/manifest-internal.
-    """
-    tmp_manifest_repo = tempfile.mkdtemp(prefix='patched_manifest')
-
-    logging.info('Cloning manifest repository from %s to %s.',
-                 manifest_path, tmp_manifest_repo)
-
-    git.Clone(tmp_manifest_repo, manifest_path)
-    git.CreateBranch(tmp_manifest_repo, self.cros_source.branch or 'master')
-
-    logging.info('Switching to local patched manifest repository:')
-    logging.info('TMPDIR: %s', tmp_manifest_repo)
-    logging.info('        %s', os.listdir(tmp_manifest_repo))
-
-    self.cros_source.Initialize(manifest_repo_url=tmp_manifest_repo)
-    self.cros_source.Sync(detach=True)
-
-  def CreateNewCandidate(self, validation_pool=None,
+  def CreateNewCandidate(self,
                          android_version=None,
                          chrome_version=None,
                          retries=manifest_version.NUM_RETRIES,
@@ -317,8 +226,6 @@ class LKGMManager(manifest_version.BuildSpecsManager):
     """Creates, syncs to, and returns the next candidate manifest.
 
     Args:
-      validation_pool: Validation pool to apply to the manifest before
-        publishing.
       android_version: The Android version to write in the manifest. Defaults
         to None, in which case no version is written.
       chrome_version: The Chrome version to write in the manifest. Defaults
@@ -339,28 +246,6 @@ class LKGMManager(manifest_version.BuildSpecsManager):
     self.RefreshManifestCheckout()
     self.InitializeManifestVariables(version_info)
 
-    has_chump_cls = self.GenerateBlameListSinceLKGM()
-
-    # Throw away CLs that might not be used this run.
-    if validation_pool:
-      validation_pool.has_chump_cls = has_chump_cls
-
-      # Apply any manifest CLs (internal or exteral).
-      validation_pool.ApplyPoolIntoRepo(
-          filter_fn=trybot_patch_pool.ManifestFilter)
-
-      manifest_dir = os.path.join(
-          validation_pool.build_root, 'manifest-internal')
-
-      if not os.path.exists(manifest_dir):
-        # Fall back to external manifest directory.
-        manifest_dir = os.path.join(
-            validation_pool.build_root, 'manifest')
-
-      # This is only needed if there were internal manifest changes, but we
-      # always run it to make sure this logic works.
-      self._AdjustRepoCheckoutToLocalManifest(manifest_dir)
-
     new_manifest = self.CreateManifest()
 
     # For Android PFQ, add the version of Android to use.
@@ -370,22 +255,6 @@ class LKGMManager(manifest_version.BuildSpecsManager):
     # For Chrome PFQ, add the version of Chrome to use.
     if chrome_version:
       self._AddChromeVersionToManifest(new_manifest, chrome_version)
-
-    # For the Commit Queue, apply the validation pool as part of checkout.
-    if validation_pool:
-      # If we have nothing that could apply from the validation pool and
-      # we're not also a pfq type, we got nothing to do.
-      assert self.cros_source.directory == validation_pool.build_root
-      if (not validation_pool.ApplyPoolIntoRepo() and
-          not config_lib.IsPFQType(self.build_type)):
-        return None
-
-      self._AddPatchesToManifest(new_manifest, validation_pool)
-
-      # Add info about the last known good version to the manifest. This will
-      # be used by slaves to calculate what artifacts from old builds are safe
-      # to use.
-      self._AddLKGMToManifest(new_manifest)
 
     last_error = None
     for attempt in range(0, retries + 1):
@@ -399,8 +268,7 @@ class LKGMManager(manifest_version.BuildSpecsManager):
 
         # If we don't have any valid changes to test, make sure the checkout
         # is at least different.
-        if ((not validation_pool or not validation_pool.applied) and
-            not self.force and self.HasCheckoutBeenBuilt()):
+        if not self.force and self.HasCheckoutBeenBuilt():
           return None
 
         # Check whether the latest spec available in manifest-versions is
