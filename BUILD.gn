@@ -23,9 +23,12 @@ group("gn_all") {
     "third_party/boringssl",
     "third_party/jsoncpp",
     "third_party/tinycbor",
-    "tools/cddl",
     "util",
   ]
+
+  if (current_toolchain == host_toolchain) {
+    deps += [ "tools/cddl" ]
+  }
 
   if (use_mdns_responder) {
     deps += [ "osp/impl/discovery/mdns:mdns_demo" ]
