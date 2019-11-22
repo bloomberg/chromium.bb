@@ -273,6 +273,20 @@ void PDFiumPage::CalculatePageObjectTextRunBreaks() {
       }
     }
   }
+
+  PopulateHighlights();
+  for (const auto& highlight : highlights_) {
+    if (highlight.start_char_index >= 0 &&
+        highlight.start_char_index < chars_count) {
+      page_object_text_run_breaks_.insert(highlight.start_char_index);
+      int next_text_run_break_index =
+          highlight.start_char_index + highlight.char_count;
+      // Don't insert a break if the highlight is at the end of the page text.
+      if (next_text_run_break_index < chars_count) {
+        page_object_text_run_breaks_.insert(next_text_run_break_index);
+      }
+    }
+  }
 }
 
 void PDFiumPage::CalculateTextRunStyleInfo(
