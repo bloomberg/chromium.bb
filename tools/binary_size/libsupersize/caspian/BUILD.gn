@@ -21,6 +21,8 @@ source_set("caspian-lib") {
     "function_signature.h",
     "grouped_path.cc",
     "grouped_path.h",
+    "lens.cc",
+    "lens.h",
     "model.cc",
     "model.h",
     "tree_builder.cc",
@@ -43,6 +45,7 @@ test("caspian_unittests") {
     "diff_test.cc",
     "function_signature_test.cc",
     "grouped_path_test.cc",
+    "lens_test.cc",
     "tree_builder_test.cc",
   ]
   deps = [

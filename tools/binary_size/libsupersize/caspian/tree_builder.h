@@ -13,30 +13,10 @@
 #include <unordered_map>
 #include <vector>
 
+#include "tools/binary_size/libsupersize/caspian/lens.h"
 #include "tools/binary_size/libsupersize/caspian/model.h"
 
 namespace caspian {
-class BaseLens {
- public:
-  virtual ~BaseLens() = default;
-  virtual std::string_view ParentName(const BaseSymbol& symbol) = 0;
-};
-
-class IdPathLens : public BaseLens {
- public:
-  std::string_view ParentName(const BaseSymbol& symbol) override;
-};
-
-class ComponentLens : public BaseLens {
- public:
-  std::string_view ParentName(const BaseSymbol& symbol) override;
-};
-
-class TemplateLens : public BaseLens {
- public:
-  std::string_view ParentName(const BaseSymbol& symbol) override;
-};
-
 class TreeBuilder {
  public:
   explicit TreeBuilder(SizeInfo* size_info);

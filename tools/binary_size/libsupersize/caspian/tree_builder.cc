@@ -16,24 +16,7 @@ namespace {
 constexpr const char kComponentSep = '>';
 constexpr const char kPathSep = '/';
 constexpr const char* kNoName = "(No path)";
-constexpr const char* kNoComponent = "(No component)";
 }  // namespace
-
-std::string_view IdPathLens::ParentName(const BaseSymbol& symbol) {
-  return "";
-}
-
-std::string_view ComponentLens::ParentName(const BaseSymbol& symbol) {
-  std::string component;
-  if (symbol.Component() && *symbol.Component()) {
-    return symbol.Component();
-  }
-  return kNoComponent;
-}
-
-std::string_view TemplateLens::ParentName(const BaseSymbol& symbol) {
-  return symbol.Name();
-}
 
 TreeBuilder::TreeBuilder(SizeInfo* size_info) {
   symbols_.reserve(size_info->raw_symbols.size());

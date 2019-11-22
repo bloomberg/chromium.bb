@@ -54,6 +54,20 @@ enum class DiffStatus : uint8_t {
   kRemoved = 3,
 };
 
+class SymbolFlag {
+ public:
+  static const int32_t kAnonymous = 1;
+  static const int32_t kStartup = 2;
+  static const int32_t kUnlikely = 4;
+  static const int32_t kRel = 8;
+  static const int32_t kRelLocal = 16;
+  static const int32_t kGeneratedSource = 32;
+  static const int32_t kClone = 64;
+  static const int32_t kHot = 128;
+  static const int32_t kCovered = 256;
+  static const int32_t kUncompressed = 512;
+};
+
 class Symbol;
 
 class BaseSymbol {
@@ -125,6 +139,10 @@ class BaseSymbol {
   bool IsStringLiteral() const {
     std::string_view full_name = FullName();
     return !full_name.empty() && full_name[0] == '"';
+  }
+
+  bool IsGeneratedSource() const {
+    return Flags() & SymbolFlag::kGeneratedSource;
   }
 
   bool IsNameUnique() const {

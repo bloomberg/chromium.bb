@@ -17,7 +17,10 @@
 #include "tools/binary_size/libsupersize/caspian/model.h"
 
 namespace caspian {
+
 namespace {
+
+using FilterList = std::vector<std::function<bool(const BaseSymbol&)>>;
 
 void MakeSymbol(SizeInfo* info,
                 SectionId section_id,
@@ -44,6 +47,7 @@ void MakeSymbol(SizeInfo* info,
   sym.size_info_ = info;
   info->raw_symbols.push_back(sym);
 }
+}  // namespace
 
 std::unique_ptr<SizeInfo> CreateSizeInfo() {
   std::unique_ptr<SizeInfo> info = std::make_unique<SizeInfo>();
@@ -67,7 +71,7 @@ TEST(TreeBuilderTest, TestIdPathLens) {
   std::unique_ptr<SizeInfo> size_info = CreateSizeInfo();
 
   TreeBuilder builder(size_info.get());
-  std::vector<std::function<bool(const BaseSymbol&)>> filters;
+  FilterList filters;
   builder.Build(std::make_unique<IdPathLens>(), '/', false, filters);
   CheckAllTreeNodesFindable(builder, builder.Open(""));
   EXPECT_EQ("Dt", builder.Open("")["type"].asString());
@@ -77,7 +81,7 @@ TEST(TreeBuilderTest, TestComponentLens) {
   std::unique_ptr<SizeInfo> size_info = CreateSizeInfo();
 
   TreeBuilder builder(size_info.get());
-  std::vector<std::function<bool(const BaseSymbol&)>> filters;
+  FilterList filters;
   builder.Build(std::make_unique<ComponentLens>(), '>', false, filters);
   CheckAllTreeNodesFindable(builder, builder.Open(""));
   EXPECT_EQ("Ct", builder.Open("A")["type"].asString());
@@ -100,7 +104,7 @@ TEST(TreeBuilderTest, TestTemplateLens) {
              "void ()>::RunOnce(base::internal::BindStateBase*)");
 
   TreeBuilder builder(size_info.get());
-  std::vector<std::function<bool(const BaseSymbol&)>> filters;
+  FilterList filters;
   builder.Build(std::make_unique<TemplateLens>(), '/', false, filters);
   CheckAllTreeNodesFindable(builder, builder.Open(""));
   EXPECT_EQ(
@@ -115,7 +119,7 @@ TEST(TreeBuilderTest, TestNoNameUnderGroup) {
   MakeSymbol(size_info.get(), SectionId::kText, 20, "", "A>B>C", "SymbolName");
 
   TreeBuilder builder(size_info.get());
-  std::vector<std::function<bool(const BaseSymbol&)>> filters;
+  FilterList filters;
   builder.Build(std::make_unique<ComponentLens>(), '>', false, filters);
   CheckAllTreeNodesFindable(builder, builder.Open(""));
   EXPECT_EQ("A>B>C/(No path)",
@@ -138,7 +142,7 @@ TEST(TreeBuilderTest, TestJoinDexMethodClasses) {
              "OverviewModeObserver <init>(android.graphics.Bitmap)");
 
   TreeBuilder builder(size_info.get());
-  std::vector<std::function<bool(const BaseSymbol&)>> filters;
+  FilterList filters;
   builder.Build(std::make_unique<ComponentLens>(), '>', false, filters);
   CheckAllTreeNodesFindable(builder, builder.Open(""));
 
@@ -160,6 +164,4 @@ TEST(TreeBuilderTest, TestJoinDexMethodClasses) {
   const int short_name_index = dex_symbol["shortNameIndex"].asInt();
   EXPECT_EQ("android.graphics.Bitmap a()", id_path.substr(short_name_index));
 }
-
-}  // namespace
 }  // namespace caspian
