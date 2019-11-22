@@ -93,7 +93,8 @@ LOCAL_SRC_FILES := \
     src/common/linux/safe_readlink.cc
 
 LOCAL_C_INCLUDES        := $(LOCAL_PATH)/src/common/android/include \
-                           $(LOCAL_PATH)/src
+                           $(LOCAL_PATH)/src \
+                           $(LSS_PATH)
 
 LOCAL_EXPORT_C_INCLUDES := $(LOCAL_C_INCLUDES)
 LOCAL_EXPORT_LDLIBS     := -llog
