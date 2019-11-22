@@ -246,8 +246,7 @@ PdfAccessibilityTree::~PdfAccessibilityTree() {
 bool PdfAccessibilityTree::IsDataFromPluginValid(
     const std::vector<ppapi::PdfAccessibilityTextRunInfo>& text_runs,
     const std::vector<PP_PrivateAccessibilityCharInfo>& chars,
-    const std::vector<ppapi::PdfAccessibilityLinkInfo>& links,
-    const std::vector<ppapi::PdfAccessibilityImageInfo>& images) {
+    const ppapi::PdfAccessibilityPageObjects& page_objects) {
   base::CheckedNumeric<uint32_t> char_length = 0;
   for (const ppapi::PdfAccessibilityTextRunInfo& text_run : text_runs)
     char_length += text_run.len;
@@ -255,6 +254,8 @@ bool PdfAccessibilityTree::IsDataFromPluginValid(
   if (!char_length.IsValid() || char_length.ValueOrDie() != chars.size())
     return false;
 
+  const std::vector<ppapi::PdfAccessibilityLinkInfo>& links =
+      page_objects.links;
   if (!std::is_sorted(links.begin(), links.end(),
                       CompareTextRuns<ppapi::PdfAccessibilityLinkInfo>)) {
     return false;
@@ -270,6 +271,8 @@ bool PdfAccessibilityTree::IsDataFromPluginValid(
       return false;
   }
 
+  const std::vector<ppapi::PdfAccessibilityImageInfo>& images =
+      page_objects.images;
   if (!std::is_sorted(images.begin(), images.end(),
                       CompareTextRuns<ppapi::PdfAccessibilityImageInfo>)) {
     return false;
@@ -333,8 +336,7 @@ void PdfAccessibilityTree::SetAccessibilityPageInfo(
     const PP_PrivateAccessibilityPageInfo& page_info,
     const std::vector<ppapi::PdfAccessibilityTextRunInfo>& text_runs,
     const std::vector<PP_PrivateAccessibilityCharInfo>& chars,
-    const std::vector<ppapi::PdfAccessibilityLinkInfo>& links,
-    const std::vector<ppapi::PdfAccessibilityImageInfo>& images) {
+    const ppapi::PdfAccessibilityPageObjects& page_objects) {
   content::RenderAccessibility* render_accessibility = GetRenderAccessibility();
   if (!render_accessibility)
     return;
@@ -343,7 +345,7 @@ void PdfAccessibilityTree::SetAccessibilityPageInfo(
   // stop creation of the accessibility tree.
   if (!invalid_plugin_message_received_) {
     invalid_plugin_message_received_ =
-        !IsDataFromPluginValid(text_runs, chars, links, images);
+        !IsDataFromPluginValid(text_runs, chars, page_objects);
   }
   if (invalid_plugin_message_received_)
     return;
@@ -364,8 +366,8 @@ void PdfAccessibilityTree::SetAccessibilityPageInfo(
   doc_node_->relative_bounds.bounds.Union(page_node->relative_bounds.bounds);
   doc_node_->child_ids.push_back(page_node->id);
 
-  AddPageContent(page_node, page_bounds, page_index, text_runs, chars, links,
-                 images);
+  AddPageContent(page_node, page_bounds, page_index, text_runs, chars,
+                 page_objects);
 
   if (page_index == doc_info_.page_count - 1)
     Finish();
@@ -377,8 +379,7 @@ void PdfAccessibilityTree::AddPageContent(
     uint32_t page_index,
     const std::vector<ppapi::PdfAccessibilityTextRunInfo>& text_runs,
     const std::vector<PP_PrivateAccessibilityCharInfo>& chars,
-    const std::vector<ppapi::PdfAccessibilityLinkInfo>& links,
-    const std::vector<ppapi::PdfAccessibilityImageInfo>& images) {
+    const ppapi::PdfAccessibilityPageObjects& page_objects) {
   DCHECK(page_node);
   double heading_font_size_threshold = 0;
   double paragraph_spacing_threshold = 0;
@@ -393,6 +394,10 @@ void PdfAccessibilityTree::AddPageContent(
   uint32_t current_link_index = 0;
   uint32_t current_image_index = 0;
   LineHelper line_helper(text_runs);
+  const std::vector<ppapi::PdfAccessibilityLinkInfo>& links =
+      page_objects.links;
+  const std::vector<ppapi::PdfAccessibilityImageInfo>& images =
+      page_objects.images;
 
   for (size_t text_run_index = 0; text_run_index < text_runs.size();
        ++text_run_index) {

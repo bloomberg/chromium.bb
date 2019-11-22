@@ -32,11 +32,10 @@ TEST(PdfAccessibilityTreeUnitTest, TextRunsAndCharsMismatch) {
   std::vector<PP_PrivateAccessibilityCharInfo> chars(
       std::begin(kDummyCharsData), std::end(kDummyCharsData));
 
-  std::vector<ppapi::PdfAccessibilityLinkInfo> links;
-  std::vector<ppapi::PdfAccessibilityImageInfo> images;
+  ppapi::PdfAccessibilityPageObjects page_objects;
 
   ASSERT_FALSE(PdfAccessibilityTree::IsDataFromPluginValid(text_runs, chars,
-                                                           links, images));
+                                                           page_objects));
 }
 
 TEST(PdfAccessibilityTreeUnitTest, TextRunsAndCharsMatch) {
@@ -49,11 +48,10 @@ TEST(PdfAccessibilityTreeUnitTest, TextRunsAndCharsMatch) {
   std::vector<PP_PrivateAccessibilityCharInfo> chars(
       std::begin(kDummyCharsData), std::end(kDummyCharsData));
 
-  std::vector<ppapi::PdfAccessibilityLinkInfo> links;
-  std::vector<ppapi::PdfAccessibilityImageInfo> images;
+  ppapi::PdfAccessibilityPageObjects page_objects;
 
   ASSERT_TRUE(PdfAccessibilityTree::IsDataFromPluginValid(text_runs, chars,
-                                                          links, images));
+                                                          page_objects));
 }
 
 TEST(PdfAccessibilityTreeUnitTest, UnsortedLinkVector) {
@@ -64,15 +62,14 @@ TEST(PdfAccessibilityTreeUnitTest, UnsortedLinkVector) {
   std::vector<PP_PrivateAccessibilityCharInfo> chars(
       std::begin(kDummyCharsData), std::end(kDummyCharsData));
 
-  std::vector<ppapi::PdfAccessibilityLinkInfo> links;
-  std::vector<ppapi::PdfAccessibilityImageInfo> images;
+  ppapi::PdfAccessibilityPageObjects page_objects;
 
   {
     // Add first link in the vector.
     ppapi::PdfAccessibilityLinkInfo link;
     link.text_run_index = 2;
     link.text_run_count = 0;
-    links.push_back(std::move(link));
+    page_objects.links.push_back(std::move(link));
   }
 
   {
@@ -80,11 +77,11 @@ TEST(PdfAccessibilityTreeUnitTest, UnsortedLinkVector) {
     ppapi::PdfAccessibilityLinkInfo link;
     link.text_run_index = 0;
     link.text_run_count = 1;
-    links.push_back(std::move(link));
+    page_objects.links.push_back(std::move(link));
   }
 
   ASSERT_FALSE(PdfAccessibilityTree::IsDataFromPluginValid(text_runs, chars,
-                                                           links, images));
+                                                           page_objects));
 }
 
 TEST(PdfAccessibilityTreeUnitTest, OutOfBoundLink) {
@@ -95,18 +92,17 @@ TEST(PdfAccessibilityTreeUnitTest, OutOfBoundLink) {
   std::vector<PP_PrivateAccessibilityCharInfo> chars(
       std::begin(kDummyCharsData), std::end(kDummyCharsData));
 
-  std::vector<ppapi::PdfAccessibilityLinkInfo> links;
-  std::vector<ppapi::PdfAccessibilityImageInfo> images;
+  ppapi::PdfAccessibilityPageObjects page_objects;
 
   {
     ppapi::PdfAccessibilityLinkInfo link;
     link.text_run_index = 3;
     link.text_run_count = 0;
-    links.push_back(std::move(link));
+    page_objects.links.push_back(std::move(link));
   }
 
   ASSERT_FALSE(PdfAccessibilityTree::IsDataFromPluginValid(text_runs, chars,
-                                                           links, images));
+                                                           page_objects));
 }
 
 TEST(PdfAccessibilityTreeUnitTest, UnsortedImageVector) {
@@ -117,25 +113,24 @@ TEST(PdfAccessibilityTreeUnitTest, UnsortedImageVector) {
   std::vector<PP_PrivateAccessibilityCharInfo> chars(
       std::begin(kDummyCharsData), std::end(kDummyCharsData));
 
-  std::vector<ppapi::PdfAccessibilityLinkInfo> links;
-  std::vector<ppapi::PdfAccessibilityImageInfo> images;
+  ppapi::PdfAccessibilityPageObjects page_objects;
 
   {
     // Add first image to the vector.
     ppapi::PdfAccessibilityImageInfo image;
     image.text_run_index = 1;
-    images.push_back(std::move(image));
+    page_objects.images.push_back(std::move(image));
   }
 
   {
     // Add second image to the vector.
     ppapi::PdfAccessibilityImageInfo image;
     image.text_run_index = 0;
-    images.push_back(std::move(image));
+    page_objects.images.push_back(std::move(image));
   }
 
   ASSERT_FALSE(PdfAccessibilityTree::IsDataFromPluginValid(text_runs, chars,
-                                                           links, images));
+                                                           page_objects));
 }
 
 TEST(PdfAccessibilityTreeUnitTest, OutOfBoundImage) {
@@ -146,17 +141,16 @@ TEST(PdfAccessibilityTreeUnitTest, OutOfBoundImage) {
   std::vector<PP_PrivateAccessibilityCharInfo> chars(
       std::begin(kDummyCharsData), std::end(kDummyCharsData));
 
-  std::vector<ppapi::PdfAccessibilityLinkInfo> links;
-  std::vector<ppapi::PdfAccessibilityImageInfo> images;
+  ppapi::PdfAccessibilityPageObjects page_objects;
 
   {
     ppapi::PdfAccessibilityImageInfo image;
     image.text_run_index = 3;
-    images.push_back(std::move(image));
+    page_objects.images.push_back(std::move(image));
   }
 
   ASSERT_FALSE(PdfAccessibilityTree::IsDataFromPluginValid(text_runs, chars,
-                                                           links, images));
+                                                           page_objects));
 }
 
 }  // namespace pdf
