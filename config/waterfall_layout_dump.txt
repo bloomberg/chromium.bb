@@ -1,12 +1,3 @@
-== chrome_informational ==
-  amd64-generic-goma-canary-chromium-pfq-informational
-  amd64-generic-telemetry
-  amd64-generic-tot-chromium-pfq-informational
-  caroline-tot-chrome-pfq-informational
-  eve-tot-chrome-pfq-informational
-  kevin-arcnext-tot-chrome-pfq-informational
-  veyron_minnie-tot-chrome-pfq-informational
-
 == factory ==
   factory-atlas-11907.B-buildspec
     atlas-factory-atlas-11907.B-factorybranch
@@ -215,7 +206,6 @@
   amd64-generic-coverage-fuzzer
   amd64-generic-fuzzer
   amd64-generic-msan-fuzzer
-  amd64-generic-tot-asan-informational
   amd64-generic-ubsan
   amd64-generic-ubsan-fuzzer
   betty-asan
@@ -450,22 +440,16 @@
   amd64-generic-cheets-release-afdo-tryjob
   amd64-generic-cheets-release-afdo-use-tryjob
   amd64-generic-cheets-release-tryjob
-  amd64-generic-cheets-tot-chrome-pfq-informational-tryjob
-  amd64-generic-cheets-tot-chromium-pfq-informational-tryjob
   amd64-generic-cheets-unittest-stress
   amd64-generic-coverage-fuzzer-tryjob
   amd64-generic-full-tryjob
   amd64-generic-fuzzer-tryjob
-  amd64-generic-goma-canary-chromium-pfq-informational-tryjob
   amd64-generic-incremental-tryjob
   amd64-generic-llvm-next-toolchain-tryjob
   amd64-generic-llvm-toolchain-tryjob
   amd64-generic-msan-fuzzer-tryjob
   amd64-generic-nowithdebug-paladin-tryjob
   amd64-generic-paladin-tryjob
-  amd64-generic-telemetry-tryjob
-  amd64-generic-tot-asan-informational-tryjob
-  amd64-generic-tot-chromium-pfq-informational-tryjob
   amd64-generic-ubsan-fuzzer-tryjob
   amd64-generic-ubsan-paladin-tryjob
   amd64-generic-ubsan-tryjob
@@ -483,8 +467,6 @@
   arm-generic-llvm-next-toolchain-tryjob
   arm-generic-llvm-toolchain-tryjob
   arm-generic-paladin-tryjob
-  arm-generic-telemetry-tryjob
-  arm-generic-tot-chromium-pfq-informational-tryjob
   arm-generic-unittest-stress
   arm-llvm-next-toolchain-tryjob
   arm-pgo-generate-llvm-next-toolchain-tryjob
@@ -492,14 +474,12 @@
   arm64-generic-llvm-next-toolchain-tryjob
   arm64-generic-llvm-toolchain-tryjob
   arm64-generic-paladin-tryjob
-  arm64-generic-tot-chromium-pfq-informational-tryjob
   arm64-generic-unittest-stress
   arm64-llvm-next-toolchain-tryjob
   arm64-llvmpipe-full-tryjob
   arm64-llvmpipe-llvm-next-toolchain-tryjob
   arm64-llvmpipe-llvm-toolchain-tryjob
   arm64-llvmpipe-paladin-tryjob
-  arm64-llvmpipe-tot-chromium-pfq-informational-tryjob
   arm64-llvmpipe-unittest-stress
   arm64-pgo-generate-llvm-next-toolchain-tryjob
   asuka-factory-glados-7828.B-factorybranch-tryjob
@@ -512,8 +492,6 @@
   asuka-release-afdo-tryjob
   asuka-release-afdo-use-tryjob
   asuka-release-tryjob
-  asuka-tot-chrome-pfq-informational-tryjob
-  asuka-tot-chromium-pfq-informational-tryjob
   asuka-unittest-stress
   atlas-factory-atlas-11907.B-factorybranch-tryjob
   atlas-full-tryjob
@@ -522,7 +500,6 @@
   atlas-kvm-llvm-toolchain-tryjob
   atlas-kvm-paladin-tryjob
   atlas-kvm-release-tryjob
-  atlas-kvm-tot-chromium-pfq-informational-tryjob
   atlas-kvm-unittest-stress
   atlas-llvm-next-toolchain-tryjob
   atlas-llvm-toolchain-tryjob
@@ -533,8 +510,6 @@
   atlas-release-afdo-tryjob
   atlas-release-afdo-use-tryjob
   atlas-release-tryjob
-  atlas-tot-chrome-pfq-informational-tryjob
-  atlas-tot-chromium-pfq-informational-tryjob
   atlas-unittest-stress
   auron_paine-factory-auron-6459.B-factorybranch-tryjob
   auron_paine-full-tryjob
@@ -546,8 +521,6 @@
   auron_paine-release-afdo-tryjob
   auron_paine-release-afdo-use-tryjob
   auron_paine-release-tryjob
-  auron_paine-tot-chrome-pfq-informational-tryjob
-  auron_paine-tot-chromium-pfq-informational-tryjob
   auron_paine-unittest-stress
   auron_yuna-factory-auron-6459.B-factorybranch-tryjob
   auron_yuna-full-tryjob
@@ -559,8 +532,6 @@
   auron_yuna-release-afdo-tryjob
   auron_yuna-release-afdo-use-tryjob
   auron_yuna-release-tryjob
-  auron_yuna-tot-chrome-pfq-informational-tryjob
-  auron_yuna-tot-chromium-pfq-informational-tryjob
   auron_yuna-unittest-stress
   banjo-factory-rambi-6420.B-factorybranch-tryjob
   banjo-full-tryjob
@@ -572,8 +543,6 @@
   banjo-release-afdo-tryjob
   banjo-release-afdo-use-tryjob
   banjo-release-tryjob
-  banjo-tot-chrome-pfq-informational-tryjob
-  banjo-tot-chromium-pfq-informational-tryjob
   banjo-unittest-stress
   banon-factory-strago-7458.B-factorybranch-tryjob
   banon-full-tryjob
@@ -585,8 +554,6 @@
   banon-release-afdo-tryjob
   banon-release-afdo-use-tryjob
   banon-release-tryjob
-  banon-tot-chrome-pfq-informational-tryjob
-  banon-tot-chromium-pfq-informational-tryjob
   banon-unittest-stress
   beaglebone-full-tryjob
   beaglebone-incremental-tryjob
@@ -612,8 +579,6 @@
   betty-arc64-release-afdo-tryjob
   betty-arc64-release-afdo-use-tryjob
   betty-arc64-release-tryjob
-  betty-arc64-tot-chrome-pfq-informational-tryjob
-  betty-arc64-tot-chromium-pfq-informational-tryjob
   betty-arc64-unittest-stress
   betty-arcmaster-full-tryjob
   betty-arcmaster-llvm-next-toolchain-tryjob
@@ -621,14 +586,12 @@
   betty-arcmaster-mst-android-pfq-tryjob
   betty-arcmaster-paladin-tryjob
   betty-arcmaster-release-tryjob
-  betty-arcmaster-tot-chromium-pfq-informational-tryjob
   betty-arcmaster-unittest-stress
   betty-arcnext-full-tryjob
   betty-arcnext-llvm-next-toolchain-tryjob
   betty-arcnext-llvm-toolchain-tryjob
   betty-arcnext-paladin-tryjob
   betty-arcnext-release-tryjob
-  betty-arcnext-tot-chromium-pfq-informational-tryjob
   betty-arcnext-unittest-stress
   betty-arcvm-pi-full-tryjob
   betty-arcvm-pi-llvm-next-toolchain-tryjob
@@ -639,8 +602,6 @@
   betty-arcvm-pi-release-afdo-tryjob
   betty-arcvm-pi-release-afdo-use-tryjob
   betty-arcvm-pi-release-tryjob
-  betty-arcvm-pi-tot-chrome-pfq-informational-tryjob
-  betty-arcvm-pi-tot-chromium-pfq-informational-tryjob
   betty-arcvm-pi-unittest-stress
   betty-asan-paladin-tryjob
   betty-asan-tryjob
@@ -651,7 +612,6 @@
   betty-kernelnext-llvm-toolchain-tryjob
   betty-kernelnext-paladin-tryjob
   betty-kernelnext-release-tryjob
-  betty-kernelnext-tot-chromium-pfq-informational-tryjob
   betty-kernelnext-unittest-stress
   betty-llvm-next-toolchain-tryjob
   betty-llvm-toolchain-tryjob
@@ -668,9 +628,6 @@
   betty-pi-arc-release-afdo-tryjob
   betty-pi-arc-release-afdo-use-tryjob
   betty-pi-arc-release-tryjob
-  betty-pi-arc-telemetry-tryjob
-  betty-pi-arc-tot-chrome-pfq-informational-tryjob
-  betty-pi-arc-tot-chromium-pfq-informational-tryjob
   betty-pi-arc-unittest-stress
   betty-qt-arc-full-tryjob
   betty-qt-arc-llvm-next-toolchain-tryjob
@@ -682,17 +639,11 @@
   betty-qt-arc-release-afdo-tryjob
   betty-qt-arc-release-afdo-use-tryjob
   betty-qt-arc-release-tryjob
-  betty-qt-arc-tot-chrome-pfq-informational-tryjob
-  betty-qt-arc-tot-chromium-pfq-informational-tryjob
   betty-qt-arc-unittest-stress
   betty-release-afdo-generate-tryjob
   betty-release-afdo-tryjob
   betty-release-afdo-use-tryjob
   betty-release-tryjob
-  betty-telemetry-tryjob
-  betty-tot-asan-informational-tryjob
-  betty-tot-chrome-pfq-informational-tryjob
-  betty-tot-chromium-pfq-informational-tryjob
   betty-unittest-stress
   betty-vmtest-informational-tryjob
   bob-factory-gru-9017.B-factorybranch-tryjob
@@ -705,8 +656,6 @@
   bob-release-afdo-tryjob
   bob-release-afdo-use-tryjob
   bob-release-tryjob
-  bob-tot-chrome-pfq-informational-tryjob
-  bob-tot-chromium-pfq-informational-tryjob
   bob-unittest-stress
   bubs-full-tryjob
   bubs-llvm-next-toolchain-tryjob
@@ -717,15 +666,12 @@
   bubs-release-afdo-tryjob
   bubs-release-afdo-use-tryjob
   bubs-release-tryjob
-  bubs-tot-chrome-pfq-informational-tryjob
-  bubs-tot-chromium-pfq-informational-tryjob
   bubs-unittest-stress
   buddy-cfm-full-tryjob
   buddy-cfm-llvm-next-toolchain-tryjob
   buddy-cfm-llvm-toolchain-tryjob
   buddy-cfm-paladin-tryjob
   buddy-cfm-release-tryjob
-  buddy-cfm-tot-chromium-pfq-informational-tryjob
   buddy-cfm-unittest-stress
   buddy-factory-auron-6459.B-factorybranch-tryjob
   buddy-factory-auron-6772.B-factorybranch-tryjob
@@ -738,8 +684,6 @@
   buddy-release-afdo-tryjob
   buddy-release-afdo-use-tryjob
   buddy-release-tryjob
-  buddy-tot-chrome-pfq-informational-tryjob
-  buddy-tot-chromium-pfq-informational-tryjob
   buddy-unittest-stress
   candy-factory-rambi-6420.B-factorybranch-tryjob
   candy-full-tryjob
@@ -751,8 +695,6 @@
   candy-release-afdo-tryjob
   candy-release-afdo-use-tryjob
   candy-release-tryjob
-  candy-tot-chrome-pfq-informational-tryjob
-  candy-tot-chromium-pfq-informational-tryjob
   candy-unittest-stress
   capri-full-tryjob
   capri-llvm-next-toolchain-tryjob
@@ -771,7 +713,6 @@
   caroline-arc64-llvm-toolchain-tryjob
   caroline-arc64-paladin-tryjob
   caroline-arc64-release-tryjob
-  caroline-arc64-tot-chromium-pfq-informational-tryjob
   caroline-arc64-unittest-stress
   caroline-factory-glados-7828.B-factorybranch-tryjob
   caroline-full-tryjob
@@ -782,7 +723,6 @@
   caroline-ndktranslation-llvm-toolchain-tryjob
   caroline-ndktranslation-paladin-tryjob
   caroline-ndktranslation-release-tryjob
-  caroline-ndktranslation-tot-chromium-pfq-informational-tryjob
   caroline-ndktranslation-unittest-stress
   caroline-paladin-tryjob
   caroline-payloads-tryjob
@@ -791,15 +731,12 @@
   caroline-release-afdo-tryjob
   caroline-release-afdo-use-tryjob
   caroline-release-tryjob
-  caroline-tot-chrome-pfq-informational-tryjob
-  caroline-tot-chromium-pfq-informational-tryjob
   caroline-unittest-stress
   caroline-userdebug-full-tryjob
   caroline-userdebug-llvm-next-toolchain-tryjob
   caroline-userdebug-llvm-toolchain-tryjob
   caroline-userdebug-paladin-tryjob
   caroline-userdebug-release-tryjob
-  caroline-userdebug-tot-chromium-pfq-informational-tryjob
   caroline-userdebug-unittest-stress
   cave-factory-glados-7828.B-factorybranch-tryjob
   cave-full-tryjob
@@ -811,8 +748,6 @@
   cave-release-afdo-tryjob
   cave-release-afdo-use-tryjob
   cave-release-tryjob
-  cave-tot-chrome-pfq-informational-tryjob
-  cave-tot-chromium-pfq-informational-tryjob
   cave-unittest-stress
   celes-factory-strago-7458.B-factorybranch-tryjob
   celes-full-tryjob
@@ -824,8 +759,6 @@
   celes-release-afdo-tryjob
   celes-release-afdo-use-tryjob
   celes-release-tryjob
-  celes-tot-chrome-pfq-informational-tryjob
-  celes-tot-chromium-pfq-informational-tryjob
   celes-unittest-stress
   chell-chrome-pre-flight-branch-tryjob
   chell-factory-glados-7657.B-factorybranch-tryjob
@@ -841,8 +774,6 @@
   chell-release-afdo-tryjob
   chell-release-afdo-use-tryjob
   chell-release-tryjob
-  chell-tot-chrome-pfq-informational-tryjob
-  chell-tot-chromium-pfq-informational-tryjob
   chell-unittest-stress
   cheza-full-tryjob
   cheza-llvm-next-toolchain-tryjob
@@ -853,8 +784,6 @@
   cheza-release-afdo-tryjob
   cheza-release-afdo-use-tryjob
   cheza-release-tryjob
-  cheza-tot-chrome-pfq-informational-tryjob
-  cheza-tot-chromium-pfq-informational-tryjob
   cheza-unittest-stress
   cheza64-full-tryjob
   cheza64-llvm-next-toolchain-tryjob
@@ -865,8 +794,6 @@
   cheza64-release-afdo-tryjob
   cheza64-release-afdo-use-tryjob
   cheza64-release-tryjob
-  cheza64-tot-chrome-pfq-informational-tryjob
-  cheza64-tot-chromium-pfq-informational-tryjob
   cheza64-unittest-stress
   chrome-airmont-release-afdo-verify-tryjob
   chrome-broadwell-release-afdo-verify-tryjob
@@ -892,8 +819,6 @@
   coral-release-afdo-tryjob
   coral-release-afdo-use-tryjob
   coral-release-tryjob
-  coral-tot-chrome-pfq-informational-tryjob
-  coral-tot-chromium-pfq-informational-tryjob
   coral-unittest-stress
   cyan-factory-strago-7458.B-factorybranch-tryjob
   cyan-full-tryjob
@@ -902,7 +827,6 @@
   cyan-kernelnext-llvm-toolchain-tryjob
   cyan-kernelnext-paladin-tryjob
   cyan-kernelnext-release-tryjob
-  cyan-kernelnext-tot-chromium-pfq-informational-tryjob
   cyan-kernelnext-unittest-stress
   cyan-llvm-next-toolchain-tryjob
   cyan-llvm-toolchain-tryjob
@@ -912,8 +836,6 @@
   cyan-release-afdo-tryjob
   cyan-release-afdo-use-tryjob
   cyan-release-tryjob
-  cyan-tot-chrome-pfq-informational-tryjob
-  cyan-tot-chromium-pfq-informational-tryjob
   cyan-unittest-stress
   dedede-full-tryjob
   dedede-llvm-next-toolchain-tryjob
@@ -924,8 +846,6 @@
   dedede-release-afdo-tryjob
   dedede-release-afdo-use-tryjob
   dedede-release-tryjob
-  dedede-tot-chrome-pfq-informational-tryjob
-  dedede-tot-chromium-pfq-informational-tryjob
   dedede-unittest-stress
   drallion-full-tryjob
   drallion-llvm-next-toolchain-tryjob
@@ -936,8 +856,6 @@
   drallion-release-afdo-tryjob
   drallion-release-afdo-use-tryjob
   drallion-release-tryjob
-  drallion-tot-chrome-pfq-informational-tryjob
-  drallion-tot-chromium-pfq-informational-tryjob
   drallion-unittest-stress
   edgar-factory-strago-7458.B-factorybranch-tryjob
   edgar-full-tryjob
@@ -949,8 +867,6 @@
   edgar-release-afdo-tryjob
   edgar-release-afdo-use-tryjob
   edgar-release-tryjob
-  edgar-tot-chrome-pfq-informational-tryjob
-  edgar-tot-chromium-pfq-informational-tryjob
   edgar-unittest-stress
   elm-factory-oak-8182.B-factorybranch-tryjob
   elm-full-tryjob
@@ -962,8 +878,6 @@
   elm-release-afdo-tryjob
   elm-release-afdo-use-tryjob
   elm-release-tryjob
-  elm-tot-chrome-pfq-informational-tryjob
-  elm-tot-chromium-pfq-informational-tryjob
   elm-unittest-stress
   endeavour-full-tryjob
   endeavour-llvm-next-toolchain-tryjob
@@ -974,8 +888,6 @@
   endeavour-release-afdo-tryjob
   endeavour-release-afdo-use-tryjob
   endeavour-release-tryjob
-  endeavour-tot-chrome-pfq-informational-tryjob
-  endeavour-tot-chromium-pfq-informational-tryjob
   endeavour-unittest-stress
   enguarde-factory-rambi-5517.B-factorybranch-tryjob
   enguarde-factory-rambi-6420.B-factorybranch-tryjob
@@ -988,8 +900,6 @@
   enguarde-release-afdo-tryjob
   enguarde-release-afdo-use-tryjob
   enguarde-release-tryjob
-  enguarde-tot-chrome-pfq-informational-tryjob
-  enguarde-tot-chromium-pfq-informational-tryjob
   enguarde-unittest-stress
   eve-arcnext-full-tryjob
   eve-arcnext-llvm-next-toolchain-tryjob
@@ -1001,8 +911,6 @@
   eve-arcnext-release-afdo-tryjob
   eve-arcnext-release-afdo-use-tryjob
   eve-arcnext-release-tryjob
-  eve-arcnext-tot-chrome-pfq-informational-tryjob
-  eve-arcnext-tot-chromium-pfq-informational-tryjob
   eve-arcnext-unittest-stress
   eve-arcvm-full-tryjob
   eve-arcvm-llvm-next-toolchain-tryjob
@@ -1016,8 +924,6 @@
   eve-arcvm-mesa-virgl-next-release-afdo-tryjob
   eve-arcvm-mesa-virgl-next-release-afdo-use-tryjob
   eve-arcvm-mesa-virgl-next-release-tryjob
-  eve-arcvm-mesa-virgl-next-tot-chrome-pfq-informational-tryjob
-  eve-arcvm-mesa-virgl-next-tot-chromium-pfq-informational-tryjob
   eve-arcvm-mesa-virgl-next-unittest-stress
   eve-arcvm-mesa-virgl-next-vmpi-android-pfq-tryjob
   eve-arcvm-paladin-tryjob
@@ -1026,8 +932,6 @@
   eve-arcvm-release-afdo-tryjob
   eve-arcvm-release-afdo-use-tryjob
   eve-arcvm-release-tryjob
-  eve-arcvm-tot-chrome-pfq-informational-tryjob
-  eve-arcvm-tot-chromium-pfq-informational-tryjob
   eve-arcvm-unittest-stress
   eve-arcvm-vmpi-android-pfq-tryjob
   eve-arm64-full-tryjob
@@ -1035,14 +939,12 @@
   eve-arm64-llvm-toolchain-tryjob
   eve-arm64-paladin-tryjob
   eve-arm64-release-tryjob
-  eve-arm64-tot-chromium-pfq-informational-tryjob
   eve-arm64-unittest-stress
   eve-campfire-full-tryjob
   eve-campfire-llvm-next-toolchain-tryjob
   eve-campfire-llvm-toolchain-tryjob
   eve-campfire-paladin-tryjob
   eve-campfire-release-tryjob
-  eve-campfire-tot-chromium-pfq-informational-tryjob
   eve-campfire-unittest-stress
   eve-factory-eve-9667.B-factorybranch-tryjob
   eve-full-tryjob
@@ -1051,7 +953,6 @@
   eve-kvm-llvm-toolchain-tryjob
   eve-kvm-paladin-tryjob
   eve-kvm-release-tryjob
-  eve-kvm-tot-chromium-pfq-informational-tryjob
   eve-kvm-unittest-stress
   eve-llvm-next-toolchain-tryjob
   eve-llvm-toolchain-tryjob
@@ -1069,17 +970,13 @@
   eve-swap-llvm-toolchain-tryjob
   eve-swap-paladin-tryjob
   eve-swap-release-tryjob
-  eve-swap-tot-chromium-pfq-informational-tryjob
   eve-swap-unittest-stress
-  eve-tot-chrome-pfq-informational-tryjob
-  eve-tot-chromium-pfq-informational-tryjob
   eve-unittest-stress
   eve-userdebug-full-tryjob
   eve-userdebug-llvm-next-toolchain-tryjob
   eve-userdebug-llvm-toolchain-tryjob
   eve-userdebug-paladin-tryjob
   eve-userdebug-release-tryjob
-  eve-userdebug-tot-chromium-pfq-informational-tryjob
   eve-userdebug-unittest-stress
   excelsior-full-tryjob
   excelsior-llvm-next-toolchain-tryjob
@@ -1090,8 +987,6 @@
   excelsior-release-afdo-tryjob
   excelsior-release-afdo-use-tryjob
   excelsior-release-tryjob
-  excelsior-tot-chrome-pfq-informational-tryjob
-  excelsior-tot-chromium-pfq-informational-tryjob
   excelsior-unittest-stress
   expresso-factory-rambi-5517.B-factorybranch-tryjob
   expresso-full-tryjob
@@ -1103,8 +998,6 @@
   expresso-release-afdo-tryjob
   expresso-release-afdo-use-tryjob
   expresso-release-tryjob
-  expresso-tot-chrome-pfq-informational-tryjob
-  expresso-tot-chromium-pfq-informational-tryjob
   expresso-unittest-stress
   factory-atlas-11907.B-buildspec-tryjob
     atlas-factory-atlas-11907.B-factorybranch-tryjob
@@ -1235,8 +1128,6 @@
   falco_li-release-afdo-tryjob
   falco_li-release-afdo-use-tryjob
   falco_li-release-tryjob
-  falco_li-tot-chrome-pfq-informational-tryjob
-  falco_li-tot-chromium-pfq-informational-tryjob
   falco_li-unittest-stress
   firmware-atlas-11827.B-firmwarebranch-tryjob
   firmware-banjo-5216.334.B-firmwarebranch-tryjob
@@ -1315,7 +1206,6 @@
   fizz-cfm-llvm-toolchain-tryjob
   fizz-cfm-paladin-tryjob
   fizz-cfm-release-tryjob
-  fizz-cfm-tot-chromium-pfq-informational-tryjob
   fizz-cfm-unittest-stress
   fizz-factory-fizz-10167.B-factorybranch-tryjob
   fizz-full-tryjob
@@ -1328,8 +1218,6 @@
   fizz-labstation-release-afdo-tryjob
   fizz-labstation-release-afdo-use-tryjob
   fizz-labstation-release-tryjob
-  fizz-labstation-tot-chrome-pfq-informational-tryjob
-  fizz-labstation-tot-chromium-pfq-informational-tryjob
   fizz-labstation-unittest-stress
   fizz-llvm-next-toolchain-tryjob
   fizz-llvm-toolchain-tryjob
@@ -1342,8 +1230,6 @@
   fizz-moblab-release-afdo-tryjob
   fizz-moblab-release-afdo-use-tryjob
   fizz-moblab-release-tryjob
-  fizz-moblab-tot-chrome-pfq-informational-tryjob
-  fizz-moblab-tot-chromium-pfq-informational-tryjob
   fizz-moblab-unittest-stress
   fizz-paladin-tryjob
   fizz-payloads-tryjob
@@ -1351,8 +1237,6 @@
   fizz-release-afdo-tryjob
   fizz-release-afdo-use-tryjob
   fizz-release-tryjob
-  fizz-tot-chrome-pfq-informational-tryjob
-  fizz-tot-chromium-pfq-informational-tryjob
   fizz-unittest-stress
   flapjack-full-tryjob
   flapjack-llvm-next-toolchain-tryjob
@@ -1363,8 +1247,6 @@
   flapjack-release-afdo-tryjob
   flapjack-release-afdo-use-tryjob
   flapjack-release-tryjob
-  flapjack-tot-chrome-pfq-informational-tryjob
-  flapjack-tot-chromium-pfq-informational-tryjob
   flapjack-unittest-stress
   gale-factory-gale-8743.19.B-factorybranch-tryjob
   gale-full-tryjob
@@ -1387,8 +1269,6 @@
   gandof-release-afdo-tryjob
   gandof-release-afdo-use-tryjob
   gandof-release-tryjob
-  gandof-tot-chrome-pfq-informational-tryjob
-  gandof-tot-chromium-pfq-informational-tryjob
   gandof-unittest-stress
   glados-factory-glados-7657.B-factorybranch-tryjob
   glados-factory-glados-7828.B-factorybranch-tryjob
@@ -1401,8 +1281,6 @@
   glados-release-afdo-tryjob
   glados-release-afdo-use-tryjob
   glados-release-tryjob
-  glados-tot-chrome-pfq-informational-tryjob
-  glados-tot-chromium-pfq-informational-tryjob
   glados-unittest-stress
   gnawty-factory-rambi-6420.B-factorybranch-tryjob
   gnawty-full-tryjob
@@ -1414,8 +1292,6 @@
   gnawty-release-afdo-tryjob
   gnawty-release-afdo-use-tryjob
   gnawty-release-tryjob
-  gnawty-tot-chrome-pfq-informational-tryjob
-  gnawty-tot-chromium-pfq-informational-tryjob
   gnawty-unittest-stress
   gonzo-full-tryjob
   gonzo-llvm-next-toolchain-tryjob
@@ -1432,7 +1308,6 @@
   grunt-kernelnext-llvm-toolchain-tryjob
   grunt-kernelnext-paladin-tryjob
   grunt-kernelnext-release-tryjob
-  grunt-kernelnext-tot-chromium-pfq-informational-tryjob
   grunt-kernelnext-unittest-stress
   grunt-llvm-next-toolchain-tryjob
   grunt-llvm-toolchain-tryjob
@@ -1443,8 +1318,6 @@
   grunt-release-afdo-tryjob
   grunt-release-afdo-use-tryjob
   grunt-release-tryjob
-  grunt-tot-chrome-pfq-informational-tryjob
-  grunt-tot-chromium-pfq-informational-tryjob
   grunt-unittest-only-paladin-tryjob
   grunt-unittest-stress
   guado-accelerator-full-tryjob
@@ -1462,7 +1335,6 @@
   guado-cfm-llvm-toolchain-tryjob
   guado-cfm-paladin-tryjob
   guado-cfm-release-tryjob
-  guado-cfm-tot-chromium-pfq-informational-tryjob
   guado-cfm-unittest-stress
   guado-factory-auron-6772.B-factorybranch-tryjob
   guado-full-tryjob
@@ -1471,7 +1343,6 @@
   guado-kernelnext-llvm-toolchain-tryjob
   guado-kernelnext-paladin-tryjob
   guado-kernelnext-release-tryjob
-  guado-kernelnext-tot-chromium-pfq-informational-tryjob
   guado-kernelnext-unittest-stress
   guado-llvm-next-toolchain-tryjob
   guado-llvm-toolchain-tryjob
@@ -1480,7 +1351,6 @@
   guado-macrophage-llvm-toolchain-tryjob
   guado-macrophage-paladin-tryjob
   guado-macrophage-release-tryjob
-  guado-macrophage-tot-chromium-pfq-informational-tryjob
   guado-macrophage-unittest-stress
   guado-paladin-tryjob
   guado-payloads-tryjob
@@ -1488,8 +1358,6 @@
   guado-release-afdo-tryjob
   guado-release-afdo-use-tryjob
   guado-release-tryjob
-  guado-tot-chrome-pfq-informational-tryjob
-  guado-tot-chromium-pfq-informational-tryjob
   guado-unittest-stress
   guado_labstation-full-tryjob
   guado_labstation-llvm-next-toolchain-tryjob
@@ -1500,8 +1368,6 @@
   guado_labstation-release-afdo-tryjob
   guado_labstation-release-afdo-use-tryjob
   guado_labstation-release-tryjob
-  guado_labstation-tot-chrome-pfq-informational-tryjob
-  guado_labstation-tot-chromium-pfq-informational-tryjob
   guado_labstation-unittest-stress
   hana-factory-oak-8182.B-factorybranch-tryjob
   hana-full-tryjob
@@ -1513,8 +1379,6 @@
   hana-release-afdo-tryjob
   hana-release-afdo-use-tryjob
   hana-release-tryjob
-  hana-tot-chrome-pfq-informational-tryjob
-  hana-tot-chromium-pfq-informational-tryjob
   hana-unittest-stress
   hatch-diskswap-full-tryjob
   hatch-diskswap-llvm-next-toolchain-tryjob
@@ -1525,8 +1389,6 @@
   hatch-diskswap-release-afdo-tryjob
   hatch-diskswap-release-afdo-use-tryjob
   hatch-diskswap-release-tryjob
-  hatch-diskswap-tot-chrome-pfq-informational-tryjob
-  hatch-diskswap-tot-chromium-pfq-informational-tryjob
   hatch-diskswap-unittest-stress
   hatch-factory-hatch-12692.B-factorybranch-tryjob
   hatch-full-tryjob
@@ -1538,8 +1400,6 @@
   hatch-release-afdo-tryjob
   hatch-release-afdo-use-tryjob
   hatch-release-tryjob
-  hatch-tot-chrome-pfq-informational-tryjob
-  hatch-tot-chromium-pfq-informational-tryjob
   hatch-unittest-stress
   heli-factory-rambi-6420.B-factorybranch-tryjob
   heli-full-tryjob
@@ -1551,8 +1411,6 @@
   heli-release-afdo-tryjob
   heli-release-afdo-use-tryjob
   heli-release-tryjob
-  heli-tot-chrome-pfq-informational-tryjob
-  heli-tot-chromium-pfq-informational-tryjob
   heli-unittest-stress
   jacuzzi-full-tryjob
   jacuzzi-llvm-next-toolchain-tryjob
@@ -1563,8 +1421,6 @@
   jacuzzi-release-afdo-tryjob
   jacuzzi-release-afdo-use-tryjob
   jacuzzi-release-tryjob
-  jacuzzi-tot-chrome-pfq-informational-tryjob
-  jacuzzi-tot-chromium-pfq-informational-tryjob
   jacuzzi-unittest-stress
   jecht-full-tryjob
   jecht-llvm-next-toolchain-tryjob
@@ -1575,15 +1431,12 @@
   jecht-release-afdo-tryjob
   jecht-release-afdo-use-tryjob
   jecht-release-tryjob
-  jecht-tot-chrome-pfq-informational-tryjob
-  jecht-tot-chromium-pfq-informational-tryjob
   jecht-unittest-stress
   kalista-cfm-full-tryjob
   kalista-cfm-llvm-next-toolchain-tryjob
   kalista-cfm-llvm-toolchain-tryjob
   kalista-cfm-paladin-tryjob
   kalista-cfm-release-tryjob
-  kalista-cfm-tot-chromium-pfq-informational-tryjob
   kalista-cfm-unittest-stress
   kalista-factory-nami-10715.B-factorybranch-tryjob
   kalista-full-tryjob
@@ -1595,8 +1448,6 @@
   kalista-release-afdo-tryjob
   kalista-release-afdo-use-tryjob
   kalista-release-tryjob
-  kalista-tot-chrome-pfq-informational-tryjob
-  kalista-tot-chromium-pfq-informational-tryjob
   kalista-unittest-stress
   kefka-factory-strago-7458.B-factorybranch-tryjob
   kefka-full-tryjob
@@ -1609,8 +1460,6 @@
   kefka-kernelnext-release-afdo-tryjob
   kefka-kernelnext-release-afdo-use-tryjob
   kefka-kernelnext-release-tryjob
-  kefka-kernelnext-tot-chrome-pfq-informational-tryjob
-  kefka-kernelnext-tot-chromium-pfq-informational-tryjob
   kefka-kernelnext-unittest-stress
   kefka-llvm-next-toolchain-tryjob
   kefka-llvm-toolchain-tryjob
@@ -1620,8 +1469,6 @@
   kefka-release-afdo-tryjob
   kefka-release-afdo-use-tryjob
   kefka-release-tryjob
-  kefka-tot-chrome-pfq-informational-tryjob
-  kefka-tot-chromium-pfq-informational-tryjob
   kefka-unittest-stress
   kernel-3_14-release-afdo-verify-tryjob
   kernel-3_18-release-afdo-verify-tryjob
@@ -1635,8 +1482,6 @@
   kevin-arc64-release-afdo-tryjob
   kevin-arc64-release-afdo-use-tryjob
   kevin-arc64-release-tryjob
-  kevin-arc64-tot-chrome-pfq-informational-tryjob
-  kevin-arc64-tot-chromium-pfq-informational-tryjob
   kevin-arc64-unittest-stress
   kevin-arcnext-full-tryjob
   kevin-arcnext-llvm-next-toolchain-tryjob
@@ -1647,8 +1492,6 @@
   kevin-arcnext-release-afdo-tryjob
   kevin-arcnext-release-afdo-use-tryjob
   kevin-arcnext-release-tryjob
-  kevin-arcnext-tot-chrome-pfq-informational-tryjob
-  kevin-arcnext-tot-chromium-pfq-informational-tryjob
   kevin-arcnext-unittest-stress
   kevin-factory-gru-8652.B-factorybranch-tryjob
   kevin-full-tryjob
@@ -1662,8 +1505,6 @@
   kevin-release-afdo-tryjob
   kevin-release-afdo-use-tryjob
   kevin-release-tryjob
-  kevin-tot-chrome-pfq-informational-tryjob
-  kevin-tot-chromium-pfq-informational-tryjob
   kevin-unittest-stress
   kevin64-full-tryjob
   kevin64-llvm-next-toolchain-tryjob
@@ -1674,8 +1515,6 @@
   kevin64-release-afdo-tryjob
   kevin64-release-afdo-use-tryjob
   kevin64-release-tryjob
-  kevin64-tot-chrome-pfq-informational-tryjob
-  kevin64-tot-chromium-pfq-informational-tryjob
   kevin64-unittest-stress
   kip-factory-rambi-5517.B-factorybranch-tryjob
   kip-factory-strago-7458.B-factorybranch-tryjob
@@ -1688,8 +1527,6 @@
   kip-release-afdo-tryjob
   kip-release-afdo-use-tryjob
   kip-release-tryjob
-  kip-tot-chrome-pfq-informational-tryjob
-  kip-tot-chromium-pfq-informational-tryjob
   kip-unittest-stress
   kukui-factory-kukui-12587.B-factorybranch-tryjob
   kukui-full-tryjob
@@ -1701,8 +1538,6 @@
   kukui-release-afdo-tryjob
   kukui-release-afdo-use-tryjob
   kukui-release-tryjob
-  kukui-tot-chrome-pfq-informational-tryjob
-  kukui-tot-chromium-pfq-informational-tryjob
   kukui-unittest-stress
   kumo-full-tryjob
   kumo-incremental-tryjob
@@ -1761,8 +1596,6 @@
   lars-release-afdo-tryjob
   lars-release-afdo-use-tryjob
   lars-release-tryjob
-  lars-tot-chrome-pfq-informational-tryjob
-  lars-tot-chromium-pfq-informational-tryjob
   lars-unittest-stress
   lasilla-ground-full-tryjob
   lasilla-ground-llvm-next-toolchain-tryjob
@@ -1788,15 +1621,12 @@
   lulu-release-afdo-tryjob
   lulu-release-afdo-use-tryjob
   lulu-release-tryjob
-  lulu-tot-chrome-pfq-informational-tryjob
-  lulu-tot-chromium-pfq-informational-tryjob
   lulu-unittest-stress
   macchiato-ground-full-tryjob
   macchiato-ground-llvm-next-toolchain-tryjob
   macchiato-ground-llvm-toolchain-tryjob
   macchiato-ground-paladin-tryjob
   macchiato-ground-release-tryjob
-  macchiato-ground-tot-chromium-pfq-informational-tryjob
   macchiato-ground-unittest-stress
   master-buildspec-tryjob
     atlas-master-factorybranch-tryjob
@@ -2153,7 +1983,6 @@
   moblab-generic-vm-llvm-next-toolchain-tryjob
   moblab-generic-vm-llvm-toolchain-tryjob
   moblab-generic-vm-paladin-tryjob
-  moblab-generic-vm-tot-chromium-pfq-informational-tryjob
   moblab-generic-vm-unittest-stress
   monroe-full-tryjob
   monroe-llvm-next-toolchain-tryjob
@@ -2164,8 +1993,6 @@
   monroe-release-afdo-tryjob
   monroe-release-afdo-use-tryjob
   monroe-release-tryjob
-  monroe-tot-chrome-pfq-informational-tryjob
-  monroe-tot-chromium-pfq-informational-tryjob
   monroe-unittest-stress
   nami-factory-nami-10715.B-factorybranch-tryjob
   nami-full-tryjob
@@ -2174,7 +2001,6 @@
   nami-kvm-llvm-toolchain-tryjob
   nami-kvm-paladin-tryjob
   nami-kvm-release-tryjob
-  nami-kvm-tot-chromium-pfq-informational-tryjob
   nami-kvm-unittest-stress
   nami-llvm-next-toolchain-tryjob
   nami-llvm-toolchain-tryjob
@@ -2184,8 +2010,6 @@
   nami-release-afdo-tryjob
   nami-release-afdo-use-tryjob
   nami-release-tryjob
-  nami-tot-chrome-pfq-informational-tryjob
-  nami-tot-chromium-pfq-informational-tryjob
   nami-unittest-stress
   nautilus-factory-poppy-10504.B-factorybranch-tryjob
   nautilus-full-tryjob
@@ -2197,8 +2021,6 @@
   nautilus-release-afdo-tryjob
   nautilus-release-afdo-use-tryjob
   nautilus-release-tryjob
-  nautilus-tot-chrome-pfq-informational-tryjob
-  nautilus-tot-chromium-pfq-informational-tryjob
   nautilus-unittest-stress
   ninja-factory-rambi-6420.B-factorybranch-tryjob
   ninja-full-tryjob
@@ -2210,8 +2032,6 @@
   ninja-release-afdo-tryjob
   ninja-release-afdo-use-tryjob
   ninja-release-tryjob
-  ninja-tot-chrome-pfq-informational-tryjob
-  ninja-tot-chromium-pfq-informational-tryjob
   ninja-unittest-stress
   nocturne-factory-nocturne-11066.B-factorybranch-tryjob
   nocturne-full-tryjob
@@ -2223,8 +2043,6 @@
   nocturne-release-afdo-tryjob
   nocturne-release-afdo-use-tryjob
   nocturne-release-tryjob
-  nocturne-tot-chrome-pfq-informational-tryjob
-  nocturne-tot-chromium-pfq-informational-tryjob
   nocturne-unittest-stress
   novato-arc64-full-tryjob
   novato-arc64-llvm-next-toolchain-tryjob
@@ -2235,8 +2053,6 @@
   novato-arc64-release-afdo-tryjob
   novato-arc64-release-afdo-use-tryjob
   novato-arc64-release-tryjob
-  novato-arc64-tot-chrome-pfq-informational-tryjob
-  novato-arc64-tot-chromium-pfq-informational-tryjob
   novato-arc64-unittest-stress
   novato-full-tryjob
   novato-llvm-next-toolchain-tryjob
@@ -2247,8 +2063,6 @@
   novato-release-afdo-tryjob
   novato-release-afdo-use-tryjob
   novato-release-tryjob
-  novato-tot-chrome-pfq-informational-tryjob
-  novato-tot-chromium-pfq-informational-tryjob
   novato-unittest-stress
   nyan_big-factory-nyan-5772.B-factorybranch-tryjob
   nyan_big-full-tryjob
@@ -2260,8 +2074,6 @@
   nyan_big-release-afdo-tryjob
   nyan_big-release-afdo-use-tryjob
   nyan_big-release-tryjob
-  nyan_big-tot-chrome-pfq-informational-tryjob
-  nyan_big-tot-chromium-pfq-informational-tryjob
   nyan_big-unittest-stress
   nyan_blaze-factory-nyan-5772.B-factorybranch-tryjob
   nyan_blaze-full-tryjob
@@ -2273,8 +2085,6 @@
   nyan_blaze-release-afdo-tryjob
   nyan_blaze-release-afdo-use-tryjob
   nyan_blaze-release-tryjob
-  nyan_blaze-tot-chrome-pfq-informational-tryjob
-  nyan_blaze-tot-chromium-pfq-informational-tryjob
   nyan_blaze-unittest-stress
   nyan_kitty-factory-nyan-5772.B-factorybranch-tryjob
   nyan_kitty-full-compile-paladin-tryjob
@@ -2287,8 +2097,6 @@
   nyan_kitty-release-afdo-tryjob
   nyan_kitty-release-afdo-use-tryjob
   nyan_kitty-release-tryjob
-  nyan_kitty-tot-chrome-pfq-informational-tryjob
-  nyan_kitty-tot-chromium-pfq-informational-tryjob
   nyan_kitty-unittest-stress
   oak-full-tryjob
   oak-llvm-next-toolchain-tryjob
@@ -2299,8 +2107,6 @@
   oak-release-afdo-tryjob
   oak-release-afdo-use-tryjob
   oak-release-tryjob
-  oak-tot-chrome-pfq-informational-tryjob
-  oak-tot-chromium-pfq-informational-tryjob
   oak-unittest-stress
   octavius-full-tryjob
   octavius-llvm-next-toolchain-tryjob
@@ -2319,8 +2125,6 @@
   octopus-release-afdo-tryjob
   octopus-release-afdo-use-tryjob
   octopus-release-tryjob
-  octopus-tot-chrome-pfq-informational-tryjob
-  octopus-tot-chromium-pfq-informational-tryjob
   octopus-unittest-stress
   orco-factory-rambi-6420.B-factorybranch-tryjob
   orco-full-tryjob
@@ -2332,8 +2136,6 @@
   orco-release-afdo-tryjob
   orco-release-afdo-use-tryjob
   orco-release-tryjob
-  orco-tot-chrome-pfq-informational-tryjob
-  orco-tot-chromium-pfq-informational-tryjob
   orco-unittest-stress
   orderfile-generate-toolchain-tryjob
   orderfile-verify-toolchain-tryjob
@@ -2346,8 +2148,6 @@
   poppy-release-afdo-tryjob
   poppy-release-afdo-use-tryjob
   poppy-release-tryjob
-  poppy-tot-chrome-pfq-informational-tryjob
-  poppy-tot-chromium-pfq-informational-tryjob
   poppy-unittest-stress
   puff-full-tryjob
   puff-llvm-next-toolchain-tryjob
@@ -2358,8 +2158,6 @@
   puff-release-afdo-tryjob
   puff-release-afdo-use-tryjob
   puff-release-tryjob
-  puff-tot-chrome-pfq-informational-tryjob
-  puff-tot-chromium-pfq-informational-tryjob
   puff-unittest-stress
   pyro-factory-reef-8811.B-factorybranch-tryjob
   pyro-full-tryjob
@@ -2371,8 +2169,6 @@
   pyro-release-afdo-tryjob
   pyro-release-afdo-use-tryjob
   pyro-release-tryjob
-  pyro-tot-chrome-pfq-informational-tryjob
-  pyro-tot-chromium-pfq-informational-tryjob
   pyro-unittest-stress
   rammus-factory-rammus-11289.B-factorybranch-tryjob
   rammus-full-tryjob
@@ -2385,10 +2181,7 @@
   rammus-release-afdo-tryjob
   rammus-release-afdo-use-tryjob
   rammus-release-tryjob
-  rammus-tot-chrome-pfq-informational-tryjob
-  rammus-tot-chromium-pfq-informational-tryjob
   rammus-unittest-stress
-  reef-chrome-perf-tryjob
   reef-factory-reef-8811.B-factorybranch-tryjob
   reef-full-tryjob
   reef-llvm-next-toolchain-tryjob
@@ -2400,8 +2193,6 @@
   reef-release-afdo-tryjob
   reef-release-afdo-use-tryjob
   reef-release-tryjob
-  reef-tot-chrome-pfq-informational-tryjob
-  reef-tot-chromium-pfq-informational-tryjob
   reef-unittest-stress
   reks-factory-strago-7458.B-factorybranch-tryjob
   reks-full-tryjob
@@ -2413,8 +2204,6 @@
   reks-release-afdo-tryjob
   reks-release-afdo-use-tryjob
   reks-release-tryjob
-  reks-tot-chrome-pfq-informational-tryjob
-  reks-tot-chromium-pfq-informational-tryjob
   reks-unittest-stress
   release-afdo-profile-generate-tryjob
   relm-factory-strago-7458.B-factorybranch-tryjob
@@ -2427,15 +2216,12 @@
   relm-release-afdo-tryjob
   relm-release-afdo-use-tryjob
   relm-release-tryjob
-  relm-tot-chrome-pfq-informational-tryjob
-  relm-tot-chromium-pfq-informational-tryjob
   relm-unittest-stress
   rikku-cfm-full-tryjob
   rikku-cfm-llvm-next-toolchain-tryjob
   rikku-cfm-llvm-toolchain-tryjob
   rikku-cfm-paladin-tryjob
   rikku-cfm-release-tryjob
-  rikku-cfm-tot-chromium-pfq-informational-tryjob
   rikku-cfm-unittest-stress
   rikku-factory-auron-6772.B-factorybranch-tryjob
   rikku-full-tryjob
@@ -2447,8 +2233,6 @@
   rikku-release-afdo-tryjob
   rikku-release-afdo-use-tryjob
   rikku-release-tryjob
-  rikku-tot-chrome-pfq-informational-tryjob
-  rikku-tot-chromium-pfq-informational-tryjob
   rikku-unittest-stress
   romer-full-tryjob
   romer-llvm-next-toolchain-tryjob
@@ -2467,8 +2251,6 @@
   samus-kernelnext-release-afdo-tryjob
   samus-kernelnext-release-afdo-use-tryjob
   samus-kernelnext-release-tryjob
-  samus-kernelnext-tot-chrome-pfq-informational-tryjob
-  samus-kernelnext-tot-chromium-pfq-informational-tryjob
   samus-kernelnext-unittest-stress
   samus-llvm-next-toolchain-tryjob
   samus-llvm-toolchain-tryjob
@@ -2478,8 +2260,6 @@
   samus-release-afdo-tryjob
   samus-release-afdo-use-tryjob
   samus-release-tryjob
-  samus-tot-chrome-pfq-informational-tryjob
-  samus-tot-chromium-pfq-informational-tryjob
   samus-unittest-stress
   sand-factory-reef-8811.B-factorybranch-tryjob
   sand-full-tryjob
@@ -2491,8 +2271,6 @@
   sand-release-afdo-tryjob
   sand-release-afdo-use-tryjob
   sand-release-tryjob
-  sand-tot-chrome-pfq-informational-tryjob
-  sand-tot-chromium-pfq-informational-tryjob
   sand-unittest-stress
   sarien-factory-sarien-12033.B-factorybranch-tryjob
   sarien-full-tryjob
@@ -2501,7 +2279,6 @@
   sarien-kvm-llvm-toolchain-tryjob
   sarien-kvm-paladin-tryjob
   sarien-kvm-release-tryjob
-  sarien-kvm-tot-chromium-pfq-informational-tryjob
   sarien-kvm-unittest-stress
   sarien-llvm-next-toolchain-tryjob
   sarien-llvm-toolchain-tryjob
@@ -2512,15 +2289,12 @@
   sarien-release-afdo-tryjob
   sarien-release-afdo-use-tryjob
   sarien-release-tryjob
-  sarien-tot-chrome-pfq-informational-tryjob
-  sarien-tot-chromium-pfq-informational-tryjob
   sarien-unittest-stress
   scarlet-arcnext-full-tryjob
   scarlet-arcnext-llvm-next-toolchain-tryjob
   scarlet-arcnext-llvm-toolchain-tryjob
   scarlet-arcnext-paladin-tryjob
   scarlet-arcnext-release-tryjob
-  scarlet-arcnext-tot-chromium-pfq-informational-tryjob
   scarlet-arcnext-unittest-stress
   scarlet-factory-scarlet-10211.B-factorybranch-tryjob
   scarlet-full-tryjob
@@ -2532,8 +2306,6 @@
   scarlet-release-afdo-tryjob
   scarlet-release-afdo-use-tryjob
   scarlet-release-tryjob
-  scarlet-tot-chrome-pfq-informational-tryjob
-  scarlet-tot-chromium-pfq-informational-tryjob
   scarlet-unittest-stress
   sentry-factory-glados-7828.B-factorybranch-tryjob
   sentry-full-tryjob
@@ -2545,8 +2317,6 @@
   sentry-release-afdo-tryjob
   sentry-release-afdo-use-tryjob
   sentry-release-tryjob
-  sentry-tot-chrome-pfq-informational-tryjob
-  sentry-tot-chromium-pfq-informational-tryjob
   sentry-unittest-stress
   setzer-factory-strago-7458.B-factorybranch-tryjob
   setzer-full-tryjob
@@ -2558,8 +2328,6 @@
   setzer-release-afdo-tryjob
   setzer-release-afdo-use-tryjob
   setzer-release-tryjob
-  setzer-tot-chrome-pfq-informational-tryjob
-  setzer-tot-chromium-pfq-informational-tryjob
   setzer-unittest-stress
   sludge-full-tryjob
   sludge-llvm-next-toolchain-tryjob
@@ -2577,8 +2345,6 @@
   snappy-release-afdo-tryjob
   snappy-release-afdo-use-tryjob
   snappy-release-tryjob
-  snappy-tot-chrome-pfq-informational-tryjob
-  snappy-tot-chromium-pfq-informational-tryjob
   snappy-unittest-stress
   soraka-factory-soraka-10323.39.B-factorybranch-tryjob
   soraka-full-tryjob
@@ -2590,8 +2356,6 @@
   soraka-release-afdo-tryjob
   soraka-release-afdo-use-tryjob
   soraka-release-tryjob
-  soraka-tot-chrome-pfq-informational-tryjob
-  soraka-tot-chromium-pfq-informational-tryjob
   soraka-unittest-stress
   success-build
   sumo-factory-rambi-6420.B-factorybranch-tryjob
@@ -2604,8 +2368,6 @@
   sumo-release-afdo-tryjob
   sumo-release-afdo-use-tryjob
   sumo-release-tryjob
-  sumo-tot-chrome-pfq-informational-tryjob
-  sumo-tot-chromium-pfq-informational-tryjob
   sumo-unittest-stress
   swanky-factory-rambi-5517.B-factorybranch-tryjob
   swanky-full-tryjob
@@ -2617,8 +2379,6 @@
   swanky-release-afdo-tryjob
   swanky-release-afdo-use-tryjob
   swanky-release-tryjob
-  swanky-tot-chrome-pfq-informational-tryjob
-  swanky-tot-chromium-pfq-informational-tryjob
   swanky-unittest-stress
   sync-test-cbuildbot-tryjob
   tael-full-tryjob
@@ -2641,8 +2401,6 @@
   terra-release-afdo-tryjob
   terra-release-afdo-use-tryjob
   terra-release-tryjob
-  terra-tot-chrome-pfq-informational-tryjob
-  terra-tot-chromium-pfq-informational-tryjob
   terra-unittest-stress
   test-ap-group-tryjob
   tidus-factory-auron-6772.B-factorybranch-tryjob
@@ -2655,8 +2413,6 @@
   tidus-release-afdo-tryjob
   tidus-release-afdo-use-tryjob
   tidus-release-tryjob
-  tidus-tot-chrome-pfq-informational-tryjob
-  tidus-tot-chromium-pfq-informational-tryjob
   tidus-unittest-stress
   trogdor-full-tryjob
   trogdor-llvm-next-toolchain-tryjob
@@ -2667,8 +2423,6 @@
   trogdor-release-afdo-tryjob
   trogdor-release-afdo-use-tryjob
   trogdor-release-tryjob
-  trogdor-tot-chrome-pfq-informational-tryjob
-  trogdor-tot-chromium-pfq-informational-tryjob
   trogdor-unittest-stress
   ultima-factory-strago-7458.B-factorybranch-tryjob
   ultima-full-tryjob
@@ -2680,8 +2434,6 @@
   ultima-release-afdo-tryjob
   ultima-release-afdo-use-tryjob
   ultima-release-tryjob
-  ultima-tot-chrome-pfq-informational-tryjob
-  ultima-tot-chromium-pfq-informational-tryjob
   ultima-unittest-stress
   veyron_fievel-factory-veyron-7505.B-factorybranch-tryjob
   veyron_fievel-full-tryjob
@@ -2693,8 +2445,6 @@
   veyron_fievel-release-afdo-tryjob
   veyron_fievel-release-afdo-use-tryjob
   veyron_fievel-release-tryjob
-  veyron_fievel-tot-chrome-pfq-informational-tryjob
-  veyron_fievel-tot-chromium-pfq-informational-tryjob
   veyron_fievel-unittest-stress
   veyron_jaq-factory-veyron-6591.B-factorybranch-tryjob
   veyron_jaq-full-tryjob
@@ -2706,8 +2456,6 @@
   veyron_jaq-release-afdo-tryjob
   veyron_jaq-release-afdo-use-tryjob
   veyron_jaq-release-tryjob
-  veyron_jaq-tot-chrome-pfq-informational-tryjob
-  veyron_jaq-tot-chromium-pfq-informational-tryjob
   veyron_jaq-unittest-stress
   veyron_jerry-factory-veyron-6591.B-factorybranch-tryjob
   veyron_jerry-full-tryjob
@@ -2716,7 +2464,6 @@
   veyron_jerry-kernelnext-llvm-toolchain-tryjob
   veyron_jerry-kernelnext-paladin-tryjob
   veyron_jerry-kernelnext-release-tryjob
-  veyron_jerry-kernelnext-tot-chromium-pfq-informational-tryjob
   veyron_jerry-kernelnext-unittest-stress
   veyron_jerry-llvm-next-toolchain-tryjob
   veyron_jerry-llvm-toolchain-tryjob
@@ -2726,8 +2473,6 @@
   veyron_jerry-release-afdo-tryjob
   veyron_jerry-release-afdo-use-tryjob
   veyron_jerry-release-tryjob
-  veyron_jerry-tot-chrome-pfq-informational-tryjob
-  veyron_jerry-tot-chromium-pfq-informational-tryjob
   veyron_jerry-unittest-stress
   veyron_mickey-factory-veyron-6591.B-factorybranch-tryjob
   veyron_mickey-factory-veyron-7505.B-factorybranch-tryjob
@@ -2740,8 +2485,6 @@
   veyron_mickey-release-afdo-tryjob
   veyron_mickey-release-afdo-use-tryjob
   veyron_mickey-release-tryjob
-  veyron_mickey-tot-chrome-pfq-informational-tryjob
-  veyron_mickey-tot-chromium-pfq-informational-tryjob
   veyron_mickey-unittest-stress
   veyron_mighty-factory-veyron-6591.B-factorybranch-tryjob
   veyron_mighty-full-tryjob
@@ -2754,8 +2497,6 @@
   veyron_mighty-release-afdo-tryjob
   veyron_mighty-release-afdo-use-tryjob
   veyron_mighty-release-tryjob
-  veyron_mighty-tot-chrome-pfq-informational-tryjob
-  veyron_mighty-tot-chromium-pfq-informational-tryjob
   veyron_mighty-unittest-stress
   veyron_minnie-factory-veyron-6591.B-factorybranch-tryjob
   veyron_minnie-full-tryjob
@@ -2764,7 +2505,6 @@
   veyron_minnie-kernelnext-llvm-toolchain-tryjob
   veyron_minnie-kernelnext-paladin-tryjob
   veyron_minnie-kernelnext-release-tryjob
-  veyron_minnie-kernelnext-tot-chromium-pfq-informational-tryjob
   veyron_minnie-kernelnext-unittest-stress
   veyron_minnie-llvm-next-toolchain-tryjob
   veyron_minnie-llvm-toolchain-tryjob
@@ -2774,8 +2514,6 @@
   veyron_minnie-release-afdo-tryjob
   veyron_minnie-release-afdo-use-tryjob
   veyron_minnie-release-tryjob
-  veyron_minnie-tot-chrome-pfq-informational-tryjob
-  veyron_minnie-tot-chromium-pfq-informational-tryjob
   veyron_minnie-unittest-stress
   veyron_rialto-factory-veyron-7505.B-factorybranch-tryjob
   veyron_rialto-full-tryjob
@@ -2787,8 +2525,6 @@
   veyron_rialto-release-afdo-tryjob
   veyron_rialto-release-afdo-use-tryjob
   veyron_rialto-release-tryjob
-  veyron_rialto-tot-chrome-pfq-informational-tryjob
-  veyron_rialto-tot-chromium-pfq-informational-tryjob
   veyron_rialto-unittest-stress
   veyron_speedy-factory-veyron-6591.B-factorybranch-tryjob
   veyron_speedy-full-tryjob
@@ -2800,8 +2536,6 @@
   veyron_speedy-release-afdo-tryjob
   veyron_speedy-release-afdo-use-tryjob
   veyron_speedy-release-tryjob
-  veyron_speedy-tot-chrome-pfq-informational-tryjob
-  veyron_speedy-tot-chromium-pfq-informational-tryjob
   veyron_speedy-unittest-stress
   veyron_tiger-factory-veyron-7505.B-factorybranch-tryjob
   veyron_tiger-full-tryjob
@@ -2814,8 +2548,6 @@
   veyron_tiger-release-afdo-tryjob
   veyron_tiger-release-afdo-use-tryjob
   veyron_tiger-release-tryjob
-  veyron_tiger-tot-chrome-pfq-informational-tryjob
-  veyron_tiger-tot-chromium-pfq-informational-tryjob
   veyron_tiger-unittest-stress
   viking-full-tryjob
   viking-llvm-next-toolchain-tryjob
@@ -2838,8 +2570,6 @@
   volteer-release-afdo-tryjob
   volteer-release-afdo-use-tryjob
   volteer-release-tryjob
-  volteer-tot-chrome-pfq-informational-tryjob
-  volteer-tot-chromium-pfq-informational-tryjob
   volteer-unittest-stress
   whirlwind-factory-whirlwind-6509.B-factorybranch-tryjob
   whirlwind-factory-whirlwind-6812.41.B-factorybranch-tryjob
@@ -2861,8 +2591,6 @@
   winky-release-afdo-tryjob
   winky-release-afdo-use-tryjob
   winky-release-tryjob
-  winky-tot-chrome-pfq-informational-tryjob
-  winky-tot-chromium-pfq-informational-tryjob
   winky-unittest-stress
   wizpig-factory-strago-7458.B-factorybranch-tryjob
   wizpig-full-tryjob
@@ -2874,8 +2602,6 @@
   wizpig-release-afdo-tryjob
   wizpig-release-afdo-use-tryjob
   wizpig-release-tryjob
-  wizpig-tot-chrome-pfq-informational-tryjob
-  wizpig-tot-chromium-pfq-informational-tryjob
   wizpig-unittest-stress
   wooten-full-tryjob
   wooten-llvm-next-toolchain-tryjob
@@ -2894,7 +2620,6 @@
   x32-generic-llvm-next-toolchain-tryjob
   x32-generic-llvm-toolchain-tryjob
   x32-generic-paladin-tryjob
-  x32-generic-tot-chromium-pfq-informational-tryjob
   x32-generic-unittest-stress
   zork-full-tryjob
   zork-llvm-next-toolchain-tryjob
@@ -2905,7 +2630,5 @@
   zork-release-afdo-tryjob
   zork-release-afdo-use-tryjob
   zork-release-tryjob
-  zork-tot-chrome-pfq-informational-tryjob
-  zork-tot-chromium-pfq-informational-tryjob
   zork-unittest-stress
 

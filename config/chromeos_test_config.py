@@ -487,9 +487,6 @@ def ApplyCustomOverrides(site_config):
       'betty-paladin': site_config.templates.tast_vm_paladin_tests,
       'betty-pi-arc-paladin': site_config.templates.tast_vm_paladin_tests,
 
-      'amd64-generic-tot-chromium-pfq-informational':
-          site_config.templates.tast_vm_chrome_pfq_tests,
-
       'betty-arc64-nyc-android-pfq':
           site_config.templates.tast_vm_android_pfq_tests,
       'betty-nyc-android-pfq':
@@ -632,10 +629,6 @@ def GeneralTemplates(site_config, ge_build_config):
   site_config.templates.asan.apply(
       site_config.templates.default_hw_tests_override,
   )
-
-  site_config.templates.tot_asan_informational.apply(
-      site_config.templates.default_hw_tests_override,
-  )
   # END asan
 
   # BEGIN Incremental
@@ -668,33 +661,6 @@ def GeneralTemplates(site_config, ge_build_config):
       hw_tests_override=paladin_hw_tests_override,
   )
   # END Paladin
-
-  site_config.templates.telemetry.apply(
-      site_config.templates.default_hw_tests_override,
-  )
-
-  # BEGIN Chrome PFQ
-  site_config.templates.chrome_pfq_cheets_informational.apply(
-      site_config.templates.default_hw_tests_override,
-      hw_tests=hw_test_list.SharedPoolPFQ(),
-      hw_tests_override=hw_test_list.SharedPoolPFQ(),
-  )
-
-  site_config.templates.chrome_pfq_informational.apply(
-      site_config.templates.default_hw_tests_override,
-  )
-
-  site_config.templates.chrome_perf.apply(
-      site_config.templates.default_hw_tests_override,
-      site_config.templates.no_vmtest_builder,
-  )
-  # END Chrome PFQ
-
-  # BEGIN Chromium PFQ
-  site_config.templates.chromium_pfq_informational.apply(
-      site_config.templates.default_hw_tests_override,
-  )
-  # END Chromium PFQ
 
   # BEGIN Factory
   site_config.templates.factory.apply(
@@ -811,10 +777,6 @@ def GeneralTemplates(site_config, ge_build_config):
   # END Unittest Stress
 
   # BEGIN Ubsan
-  site_config.templates.tot_ubsan_informational.apply(
-      site_config.templates.default_hw_tests_override,
-  )
-
   site_config.templates.ubsan.apply(
       site_config.templates.default_hw_tests_override,
   )
