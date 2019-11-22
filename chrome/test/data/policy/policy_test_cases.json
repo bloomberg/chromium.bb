@@ -326,6 +326,14 @@
     ]
   },
 
+  "PrinterTypeDenyList": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "test_policy": { "PrinterTypeDenyList": ["privet", "extension"] },
+    "pref_mappings": [
+      { "pref": "printing.printer_type_deny_list" }
+    ]
+  },
+
   "CloudPrintProxyEnabled": {
     "os": [],
     "test_policy": { "CloudPrintProxyEnabled": true },

@@ -18815,6 +18815,7 @@ Called by update_net_error_codes.py.-->
   <int value="645" label="ClickToCallEnabled"/>
   <int value="646"
       label="DeviceLoginScreenShowAccessibilityOptionsInSystemTrayMenu"/>
+  <int value="647" label="PrinterTypeDenyList"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
