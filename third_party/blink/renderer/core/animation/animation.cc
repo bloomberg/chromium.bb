@@ -1385,7 +1385,11 @@ ScriptPromise Animation::finished(ScriptState* script_state) {
     finished_promise_ = MakeGarbageCollected<AnimationPromise>(
         ExecutionContext::From(script_state), this,
         AnimationPromise::kFinished);
-    if (PlayStateInternal() == kFinished)
+    // Defer resolving the finished promise if the finish notification task is
+    // pending. The finished state could change before the next microtask
+    // checkpoint.
+    if (CalculateAnimationPlayState() == kFinished &&
+        !pending_finish_notification_)
       finished_promise_->Resolve(this);
   }
   return finished_promise_->Promise(script_state->World());
