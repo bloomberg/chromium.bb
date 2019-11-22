@@ -50755,9 +50755,11 @@ Called by update_net_trust_anchors.py.-->
       label="The page was being reloaded and the preview type can not be
              shown on a reload."/>
   <int value="9"
-      label="Host blacklisted by server rules provided to the client."/>
+      label="Host blacklisted by server rules provided to the client
+             (obsolete)."/>
   <int value="10"
-      label="Host not whitelisted by server rules provided to the client."/>
+      label="Host not whitelisted by server rules provided to the client
+             (obsolete)."/>
   <int value="11"
       label="Preview Allowed without server rule check (obsolete)."/>
   <int value="12" label="Committed Preview."/>
@@ -50765,7 +50767,8 @@ Called by update_net_trust_anchors.py.-->
     Response header had Cache-Control:no-transform directive (developer
     opt-out).
   </int>
-  <int value="14" label="Network is not slow per session threshold."/>
+  <int value="14"
+      label="Network is not slow per session threshold (obsolete)."/>
   <int value="15" label="Device was reported as offline."/>
   <int value="16"
       label="URL contained Basic Authentication, i.e.: a username or
@@ -50776,6 +50779,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="20" label="Coin flip holdback encountered."/>
   <int value="21" label="Redirect loop detected."/>
   <int value="22" label="URL matched deny list."/>
+  <int value="23" label="Page load not predicted to be painful."/>
 </enum>
 
 <enum name="PreviewsHintCacheLevelDBStoreLoadMetadataResult">
