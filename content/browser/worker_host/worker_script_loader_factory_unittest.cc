@@ -7,6 +7,7 @@
 #include "base/bind_helpers.h"
 #include "base/run_loop.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
+#include "content/browser/service_worker/service_worker_container_host.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_navigation_handle.h"
@@ -111,7 +112,7 @@ TEST_F(WorkerScriptLoaderFactoryTest, ServiceWorkerProviderHost) {
       service_worker_handle_->core()->provider_host();
   EXPECT_TRUE(host->is_response_committed());
   EXPECT_TRUE(host->is_execution_ready());
-  EXPECT_EQ(url, host->url());
+  EXPECT_EQ(url, host->container_host()->url());
 }
 
 // Test a null service worker handle. This typically only happens during

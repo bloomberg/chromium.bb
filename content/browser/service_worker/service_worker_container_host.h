@@ -109,6 +109,52 @@ class CONTENT_EXPORT ServiceWorkerContainerHost {
   // Can only be called when IsContainerForClient() is true.
   blink::mojom::ServiceWorkerClientType client_type() const;
 
+  // For service worker clients. Sets |url_|, |site_for_cookies_| and
+  // |top_frame_origin_|.
+  void UpdateUrls(const GURL& url,
+                  const GURL& site_for_cookies,
+                  const base::Optional<url::Origin>& top_frame_origin);
+
+  // The URL of this context. For service worker clients, this is the document
+  // URL (for documents) or script URL (for workers). For service worker
+  // execution contexts, this is the script URL.
+  //
+  // For clients, url() may be empty if loading has not started, or our custom
+  // loading handler didn't see the load (because e.g. another handler did
+  // first, or the initial request URL was such that
+  // OriginCanAccessServiceWorkers returned false).
+  //
+  // The URL may also change on redirects during loading. Once
+  // ServiceWorkerProviderHost::is_response_committed() is true, the URL should
+  // no longer change.
+  const GURL& url() const { return url_; }
+
+  // The URL representing the site_for_cookies for this context. See
+  // |URLRequest::site_for_cookies()| for details.
+  // For service worker execution contexts, site_for_cookies() always
+  // returns the service worker script URL.
+  const GURL& site_for_cookies() const { return site_for_cookies_; }
+
+  // The URL representing the first-party site for this context.
+  // For service worker execution contexts, top_frame_origin() always
+  // returns the origin of the service worker script URL.
+  // For shared worker it is the origin of the document that created the worker.
+  // For dedicated worker it is the top-frame origin of the document that owns
+  // the worker.
+  base::Optional<url::Origin> top_frame_origin() const {
+    return top_frame_origin_;
+  }
+
+  // Calls ContentBrowserClient::AllowServiceWorker(). Returns true if content
+  // settings allows service workers to run at |scope|. If this container is for
+  // a window client, the check involves the topmost frame url as well as
+  // |scope|, and may display tab-level UI.
+  // If non-empty, |script_url| is the script the service worker will run.
+  bool AllowServiceWorker(const GURL& scope,
+                          const GURL& script_url,
+                          int render_process_id,
+                          int frame_id);
+
   // TODO(https://crbug.com/931087): Remove this getter and |provider_host_|.
   ServiceWorkerProviderHost* provider_host() { return provider_host_; }
 
@@ -122,6 +168,11 @@ class CONTENT_EXPORT ServiceWorkerContainerHost {
                            RegisterWithoutLiveSWRegistration);
 
   const blink::mojom::ServiceWorkerProviderType type_;
+
+  // See comments for the getter functions.
+  GURL url_;
+  GURL site_for_cookies_;
+  base::Optional<url::Origin> top_frame_origin_;
 
   // Contains all ServiceWorkerRegistrationObjectHost instances corresponding to
   // the service worker registration JavaScript objects for the hosted execution

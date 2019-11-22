@@ -259,35 +259,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
                   const GURL& site_for_cookies,
                   const base::Optional<url::Origin>& top_frame_origin);
 
-  // The URL of this context. For service worker clients, this is the document
-  // URL (for documents) or script URL (for workers). For service worker
-  // execution contexts, this is the script URL.
-  //
-  // For clients, url() may be empty if loading has not started, or our custom
-  // loading handler didn't see the load (because e.g. another handler did
-  // first, or the initial request URL was such that
-  // OriginCanAccessServiceWorkers returned false).
-  //
-  // The URL may also change on redirects during loading. Once
-  // is_response_committed() is true, the URL should no longer change.
-  const GURL& url() const { return url_; }
-
-  // The URL representing the site_for_cookies for this context. See
-  // |URLRequest::site_for_cookies()| for details.
-  // For service worker execution contexts, site_for_cookies() always
-  // returns the service worker script URL.
-  const GURL& site_for_cookies() const { return site_for_cookies_; }
-
-  // The URL representing the first-party site for this context.
-  // For service worker execution contexts, top_frame_origin() always
-  // returns the origin of the service worker script URL.
-  // For shared worker it is the origin of the document that created the worker.
-  // For dedicated worker it is the top-frame origin of the document that owns
-  // the worker.
-  base::Optional<url::Origin> top_frame_origin() const {
-    return top_frame_origin_;
-  }
-
   // TODO(https://crbug.com/931087): Remove these functions in favor of the
   // equivalent functions on ServiceWorkerContainerHost.
   blink::mojom::ServiceWorkerProviderType provider_type() const;
@@ -622,11 +593,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // Only set when this object is pre-created for a navigation. It indicates the
   // tab where the navigation occurs. Otherwise, a null callback.
   const WebContentsGetter web_contents_getter_;
-
-  // See comments for the getter functions.
-  GURL url_;
-  GURL site_for_cookies_;
-  base::Optional<url::Origin> top_frame_origin_;
 
   // Keyed by registration scope URL length.
   using ServiceWorkerRegistrationMap =

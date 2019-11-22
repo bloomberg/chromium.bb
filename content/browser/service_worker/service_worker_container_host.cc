@@ -5,9 +5,12 @@
 #include "content/browser/service_worker/service_worker_container_host.h"
 
 #include "content/browser/service_worker/service_worker_context_core.h"
+#include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_object_host.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_registration_object_host.h"
+#include "content/browser/web_contents/web_contents_impl.h"
+#include "content/public/common/content_client.h"
 
 namespace content {
 
@@ -115,6 +118,36 @@ blink::mojom::ServiceWorkerClientType ServiceWorkerContainerHost::client_type()
   }
   NOTREACHED() << type_;
   return blink::mojom::ServiceWorkerClientType::kWindow;
+}
+
+void ServiceWorkerContainerHost::UpdateUrls(
+    const GURL& url,
+    const GURL& site_for_cookies,
+    const base::Optional<url::Origin>& top_frame_origin) {
+  DCHECK(!url.has_ref());
+  url_ = url;
+  site_for_cookies_ = site_for_cookies;
+  top_frame_origin_ = top_frame_origin;
+}
+
+bool ServiceWorkerContainerHost::AllowServiceWorker(const GURL& scope,
+                                                    const GURL& script_url,
+                                                    int render_process_id,
+                                                    int frame_id) {
+  DCHECK(context_);
+  if (ServiceWorkerContext::IsServiceWorkerOnUIEnabled()) {
+    return GetContentClient()->browser()->AllowServiceWorkerOnUI(
+        scope, site_for_cookies(), top_frame_origin(), script_url,
+        context_->wrapper()->browser_context(),
+        base::BindRepeating(&WebContentsImpl::FromRenderFrameHostID,
+                            render_process_id, frame_id));
+  } else {
+    return GetContentClient()->browser()->AllowServiceWorkerOnIO(
+        scope, site_for_cookies(), top_frame_origin(), script_url,
+        context_->wrapper()->resource_context(),
+        base::BindRepeating(&WebContentsImpl::FromRenderFrameHostID,
+                            render_process_id, frame_id));
+  }
 }
 
 }  // namespace content

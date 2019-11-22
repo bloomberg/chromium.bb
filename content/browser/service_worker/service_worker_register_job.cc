@@ -18,6 +18,7 @@
 #include "content/browser/service_worker/embedded_worker_instance.h"
 #include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/browser/service_worker/service_worker_consts.h"
+#include "content/browser/service_worker/service_worker_container_host.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_job_coordinator.h"
@@ -799,7 +800,8 @@ void ServiceWorkerRegisterJob::AddRegistrationToMatchingProviderHosts(
                true /* include_reserved_clients */);
        !it->IsAtEnd(); it->Advance()) {
     ServiceWorkerProviderHost* host = it->GetProviderHost();
-    if (!ServiceWorkerUtils::ScopeMatches(registration->scope(), host->url())) {
+    if (!ServiceWorkerUtils::ScopeMatches(registration->scope(),
+                                          host->container_host()->url())) {
       continue;
     }
     host->AddMatchingRegistration(registration);

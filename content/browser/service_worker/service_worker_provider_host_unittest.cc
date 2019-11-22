@@ -16,6 +16,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
+#include "content/browser/service_worker/service_worker_container_host.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_register_job.h"
 #include "content/browser/service_worker/service_worker_registration.h"
@@ -99,6 +100,8 @@ class ServiceWorkerTestContentBrowserClient : public TestContentBrowserClient {
 
 }  // namespace
 
+// TODO(https://crbug.com/931087): Rename ServiceWorkerProviderHostTest to
+// ServiceWorkerContainerHostTest.
 class ServiceWorkerProviderHostTest : public testing::Test {
  protected:
   ServiceWorkerProviderHostTest()
@@ -268,7 +271,8 @@ class ServiceWorkerProviderHostTest : public testing::Test {
   bool CanFindClientProviderHost(ServiceWorkerProviderHost* host) {
     for (std::unique_ptr<ServiceWorkerContextCore::ProviderHostIterator> it =
              context_->GetClientProviderHostIterator(
-                 host->url().GetOrigin(), false /* include_reserved_clients */);
+                 host->container_host()->url().GetOrigin(),
+                 false /* include_reserved_clients */);
          !it->IsAtEnd(); it->Advance()) {
       if (host == it->GetProviderHost())
         return true;
@@ -426,13 +430,14 @@ TEST_F(ServiceWorkerProviderHostTest, UpdateUrls_SameOriginRedirect) {
   const GURL url2("https://origin1.example.com/page2.html");
 
   ServiceWorkerProviderHost* host = CreateProviderHost(url1);
+  ServiceWorkerContainerHost* container_host = host->container_host();
   const std::string uuid1 = host->client_uuid();
-  EXPECT_EQ(url1, host->url());
-  EXPECT_EQ(url1, host->site_for_cookies());
+  EXPECT_EQ(url1, container_host->url());
+  EXPECT_EQ(url1, container_host->site_for_cookies());
 
   host->UpdateUrls(url2, url2, url::Origin::Create(url2));
-  EXPECT_EQ(url2, host->url());
-  EXPECT_EQ(url2, host->site_for_cookies());
+  EXPECT_EQ(url2, container_host->url());
+  EXPECT_EQ(url2, container_host->site_for_cookies());
   EXPECT_EQ(uuid1, host->client_uuid());
 
   EXPECT_EQ(host, context_->GetProviderHostByClientID(host->client_uuid()));
@@ -443,13 +448,14 @@ TEST_F(ServiceWorkerProviderHostTest, UpdateUrls_CrossOriginRedirect) {
   const GURL url2("https://origin2.example.com/page2.html");
 
   ServiceWorkerProviderHost* host = CreateProviderHost(url1);
+  ServiceWorkerContainerHost* container_host = host->container_host();
   const std::string uuid1 = host->client_uuid();
-  EXPECT_EQ(url1, host->url());
-  EXPECT_EQ(url1, host->site_for_cookies());
+  EXPECT_EQ(url1, container_host->url());
+  EXPECT_EQ(url1, container_host->site_for_cookies());
 
   host->UpdateUrls(url2, url2, url::Origin::Create(url2));
-  EXPECT_EQ(url2, host->url());
-  EXPECT_EQ(url2, host->site_for_cookies());
+  EXPECT_EQ(url2, container_host->url());
+  EXPECT_EQ(url2, container_host->site_for_cookies());
   EXPECT_NE(uuid1, host->client_uuid());
 
   EXPECT_FALSE(context_->GetProviderHostByClientID(uuid1));
