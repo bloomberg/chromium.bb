@@ -117,7 +117,7 @@ void DnsProbeRunner::OnComplete(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!callback_.is_null());
 
-  result_ = EvaluateResponse(result, resolved_addresses);
+  result_ = EvaluateResponse(resolve_error_info.error, resolved_addresses);
   receiver_.reset();
 
   // ResolveHost will call OnComplete asynchronously, so callback_ can be
@@ -135,7 +135,8 @@ void DnsProbeRunner::CreateHostResolver() {
 void DnsProbeRunner::OnMojoConnectionError() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   CreateHostResolver();
-  OnComplete(net::ERR_FAILED, net::ResolveErrorInfo(), base::nullopt);
+  OnComplete(net::ERR_NAME_NOT_RESOLVED, net::ResolveErrorInfo(net::ERR_FAILED),
+             base::nullopt);
 }
 
 }  // namespace chrome_browser_net

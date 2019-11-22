@@ -201,9 +201,10 @@ void SocketExtensionWithDnsLookupFunction::StartDnsLookup(
   host_resolver_.Bind(std::move(pending_host_resolver_));
   host_resolver_->ResolveHost(host_port_pair, nullptr,
                               receiver_.BindNewPipeAndPassRemote());
-  receiver_.set_disconnect_handler(base::BindOnce(
-      &SocketExtensionWithDnsLookupFunction::OnComplete, base::Unretained(this),
-      net::ERR_FAILED, net::ResolveErrorInfo(), base::nullopt));
+  receiver_.set_disconnect_handler(
+      base::BindOnce(&SocketExtensionWithDnsLookupFunction::OnComplete,
+                     base::Unretained(this), net::ERR_NAME_NOT_RESOLVED,
+                     net::ResolveErrorInfo(net::ERR_FAILED), base::nullopt));
 
   // Balanced in OnComplete().
   AddRef();

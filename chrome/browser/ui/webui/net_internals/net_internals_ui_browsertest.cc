@@ -75,9 +75,10 @@ class DnsLookupClient : public network::mojom::ResolveHostClient {
       mojo::PendingReceiver<network::mojom::ResolveHostClient> receiver,
       Callback callback)
       : receiver_(this, std::move(receiver)), callback_(std::move(callback)) {
-    receiver_.set_disconnect_handler(base::BindOnce(
-        &DnsLookupClient::OnComplete, base::Unretained(this), net::ERR_FAILED,
-        net::ResolveErrorInfo(), base::nullopt));
+    receiver_.set_disconnect_handler(
+        base::BindOnce(&DnsLookupClient::OnComplete, base::Unretained(this),
+                       net::ERR_NAME_NOT_RESOLVED,
+                       net::ResolveErrorInfo(net::ERR_FAILED), base::nullopt));
   }
   ~DnsLookupClient() override {}
 
@@ -91,7 +92,7 @@ class DnsLookupClient : public network::mojom::ResolveHostClient {
       CHECK(resolved_addresses->size() == 1);
       result = resolved_addresses.value()[0].ToStringWithoutPort();
     } else {
-      result = net::ErrorToString(error);
+      result = net::ErrorToString(resolve_error_info.error);
     }
     base::Value value(result);
     std::move(callback_).Run(&value);

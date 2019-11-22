@@ -152,9 +152,10 @@ int32_t PepperHostResolverMessageFilter::OnMsgResolve(
   storage_partition->GetNetworkContext()->ResolveHost(
       net::HostPortPair(host_port.host, host_port.port), std::move(parameters),
       receiver_.BindNewPipeAndPassRemote());
-  receiver_.set_disconnect_handler(base::BindOnce(
-      &PepperHostResolverMessageFilter::OnComplete, base::Unretained(this),
-      net::ERR_FAILED, net::ResolveErrorInfo(), base::nullopt));
+  receiver_.set_disconnect_handler(
+      base::BindOnce(&PepperHostResolverMessageFilter::OnComplete,
+                     base::Unretained(this), net::ERR_NAME_NOT_RESOLVED,
+                     net::ResolveErrorInfo(net::ERR_FAILED), base::nullopt));
   host_resolve_context_ = context->MakeReplyMessageContext();
 
   return PP_OK_COMPLETIONPENDING;
@@ -170,7 +171,7 @@ void PepperHostResolverMessageFilter::OnComplete(
   base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&PepperHostResolverMessageFilter::OnLookupFinished, this,
-                     result, std::move(resolved_addresses),
+                     resolve_error_info.error, std::move(resolved_addresses),
                      host_resolve_context_));
   host_resolve_context_ = ppapi::host::ReplyMessageContext();
 

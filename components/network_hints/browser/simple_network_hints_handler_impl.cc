@@ -48,7 +48,8 @@ class DnsLookupRequest : public network::ResolveHostClientBase {
     content::RenderProcessHost* render_process_host =
         content::RenderProcessHost::FromID(render_process_id_);
     if (!render_process_host) {
-      OnComplete(net::ERR_FAILED, net::ResolveErrorInfo(), base::nullopt);
+      OnComplete(net::ERR_NAME_NOT_RESOLVED,
+                 net::ResolveErrorInfo(net::ERR_FAILED), base::nullopt);
       return;
     }
 
@@ -65,9 +66,10 @@ class DnsLookupRequest : public network::ResolveHostClientBase {
         ->GetNetworkContext()
         ->ResolveHost(host_port_pair, std::move(resolve_host_parameters),
                       receiver_.BindNewPipeAndPassRemote());
-    receiver_.set_disconnect_handler(base::BindOnce(
-        &DnsLookupRequest::OnComplete, base::Unretained(this), net::ERR_FAILED,
-        net::ResolveErrorInfo(), base::nullopt));
+    receiver_.set_disconnect_handler(
+        base::BindOnce(&DnsLookupRequest::OnComplete, base::Unretained(this),
+                       net::ERR_NAME_NOT_RESOLVED,
+                       net::ResolveErrorInfo(net::ERR_FAILED), base::nullopt));
   }
 
  private:
@@ -76,7 +78,8 @@ class DnsLookupRequest : public network::ResolveHostClientBase {
       int result,
       const net::ResolveErrorInfo& resolve_error_info,
       const base::Optional<net::AddressList>& resolved_addresses) override {
-    VLOG(2) << __FUNCTION__ << ": " << hostname_ << ", result=" << result;
+    VLOG(2) << __FUNCTION__ << ": " << hostname_
+            << ", result=" << resolve_error_info.error;
     request_.reset();
   }
 

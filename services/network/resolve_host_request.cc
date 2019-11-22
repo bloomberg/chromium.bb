@@ -11,7 +11,6 @@
 #include "base/no_destructor.h"
 #include "base/optional.h"
 #include "net/base/net_errors.h"
-#include "net/dns/public/resolve_error_info.h"
 #include "net/log/net_log.h"
 #include "net/log/net_log_with_source.h"
 
@@ -35,7 +34,8 @@ ResolveHostRequest::~ResolveHostRequest() {
   control_handle_receiver_.reset();
 
   if (response_client_.is_bound()) {
-    response_client_->OnComplete(net::ERR_FAILED, net::ResolveErrorInfo(),
+    response_client_->OnComplete(net::ERR_NAME_NOT_RESOLVED,
+                                 net::ResolveErrorInfo(net::ERR_FAILED),
                                  base::nullopt);
     response_client_.reset();
   }
@@ -57,8 +57,7 @@ int ResolveHostRequest::Start(
   mojo::Remote<mojom::ResolveHostClient> response_client(
       std::move(pending_response_client));
   if (rv != net::ERR_IO_PENDING) {
-    response_client->OnComplete(rv, net::ResolveErrorInfo(),
-                                GetAddressResults());
+    response_client->OnComplete(rv, GetResolveErrorInfo(), GetAddressResults());
     return rv;
   }
 
@@ -84,6 +83,7 @@ void ResolveHostRequest::Cancel(int error) {
 
   internal_request_ = nullptr;
   cancelled_ = true;
+  resolve_error_info_ = net::ResolveErrorInfo(error);
   OnComplete(error);
 }
 
@@ -93,12 +93,21 @@ void ResolveHostRequest::OnComplete(int error) {
 
   control_handle_receiver_.reset();
   SignalNonAddressResults();
-  response_client_->OnComplete(error, net::ResolveErrorInfo(),
+  response_client_->OnComplete(error, GetResolveErrorInfo(),
                                GetAddressResults());
   response_client_.reset();
 
   // Invoke completion callback last as it may delete |this|.
-  std::move(callback_).Run(error);
+  std::move(callback_).Run(GetResolveErrorInfo().error);
+}
+
+net::ResolveErrorInfo ResolveHostRequest::GetResolveErrorInfo() const {
+  if (cancelled_) {
+    return resolve_error_info_;
+  }
+
+  DCHECK(internal_request_);
+  return internal_request_->GetResolveErrorInfo();
 }
 
 const base::Optional<net::AddressList>& ResolveHostRequest::GetAddressResults()

@@ -264,7 +264,7 @@ void PepperTCPSocketMessageFilter::OnComplete(
   }
 
   if (result != net::OK) {
-    SendConnectError(context, NetErrorToPepperError(result));
+    SendConnectError(context, NetErrorToPepperError(resolve_error_info.error));
     state_.CompletePendingTransition(false);
     return;
   }
@@ -406,9 +406,10 @@ int32_t PepperTCPSocketMessageFilter::OnMsgConnect(
 
   network_context->ResolveHost(net::HostPortPair(host, port), nullptr,
                                receiver_.BindNewPipeAndPassRemote());
-  receiver_.set_disconnect_handler(base::BindOnce(
-      &PepperTCPSocketMessageFilter::OnComplete, base::Unretained(this),
-      net::ERR_FAILED, net::ResolveErrorInfo(), base::nullopt));
+  receiver_.set_disconnect_handler(
+      base::BindOnce(&PepperTCPSocketMessageFilter::OnComplete,
+                     base::Unretained(this), net::ERR_NAME_NOT_RESOLVED,
+                     net::ResolveErrorInfo(net::ERR_FAILED), base::nullopt));
 
   state_.SetPendingTransition(TCPSocketState::CONNECT);
   host_resolve_context_ = context->MakeReplyMessageContext();

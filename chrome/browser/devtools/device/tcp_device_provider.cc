@@ -49,9 +49,10 @@ class ResolveHostAndOpenSocket final : public network::ResolveHostClientBase {
       : callback_(callback) {
     (*host_resolver)
         ->ResolveHost(address, nullptr, receiver_.BindNewPipeAndPassRemote());
-    receiver_.set_disconnect_handler(base::BindOnce(
-        &ResolveHostAndOpenSocket::OnComplete, base::Unretained(this),
-        net::ERR_FAILED, net::ResolveErrorInfo(), base::nullopt));
+    receiver_.set_disconnect_handler(
+        base::BindOnce(&ResolveHostAndOpenSocket::OnComplete,
+                       base::Unretained(this), net::ERR_NAME_NOT_RESOLVED,
+                       net::ResolveErrorInfo(net::ERR_FAILED), base::nullopt));
   }
 
  private:
@@ -61,7 +62,7 @@ class ResolveHostAndOpenSocket final : public network::ResolveHostClientBase {
       const net::ResolveErrorInfo& resolve_error_info,
       const base::Optional<net::AddressList>& resolved_addresses) override {
     if (result != net::OK) {
-      RunSocketCallback(callback_, nullptr, result);
+      RunSocketCallback(callback_, nullptr, resolve_error_info.error);
       delete this;
       return;
     }

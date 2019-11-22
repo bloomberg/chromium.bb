@@ -98,12 +98,14 @@ class MockNetworkContext : public network::TestNetworkContext {
   }
 
   void CompleteHostLookup(const std::string& host, int result) {
+    DCHECK(result == net::OK || result == net::ERR_NAME_NOT_RESOLVED);
     auto it = resolve_host_clients_.find(host);
     if (it == resolve_host_clients_.end()) {
       ADD_FAILURE() << host << " wasn't found";
       return;
     }
-    it->second->OnComplete(result, net::ResolveErrorInfo(), base::nullopt);
+    it->second->OnComplete(result, net::ResolveErrorInfo(result),
+                           base::nullopt);
     resolve_host_clients_.erase(it);
     // Wait for OnComplete() to be executed on the UI thread.
     base::RunLoop().RunUntilIdle();
@@ -855,7 +857,7 @@ TEST_F(PreconnectManagerTest, TestBothProxyAndHostLookupFailed) {
 
   EXPECT_CALL(*mock_delegate_, PreconnectFinishedProxy(main_frame_url));
   mock_network_context_->CompleteHostLookup(origin_to_preconnect.host(),
-                                            net::ERR_FAILED);
+                                            net::ERR_NAME_NOT_RESOLVED);
 }
 
 }  // namespace predictors

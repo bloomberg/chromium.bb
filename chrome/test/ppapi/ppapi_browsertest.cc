@@ -825,7 +825,7 @@ class MockNetworkContext : public network::TestNetworkContext {
                        pending_response_client) override {
     mojo::Remote<network::mojom::ResolveHostClient> response_client(
         std::move(pending_response_client));
-    response_client->OnComplete(net::OK, net::ResolveErrorInfo(),
+    response_client->OnComplete(net::OK, net::ResolveErrorInfo(net::OK),
                                 net::AddressList(LocalAddress()));
   }
 
