@@ -78,8 +78,6 @@ class CORE_EXPORT ArrayBufferView : public RefCounted<ArrayBufferView> {
  protected:
   ArrayBufferView(scoped_refptr<ArrayBuffer>, unsigned byte_offset);
 
-  inline bool SetImpl(ArrayBufferView*, unsigned byte_offset);
-
   // Helper to verify that a given sub-range of an ArrayBuffer is
   // within range.
   template <typename T>
@@ -111,19 +109,6 @@ class CORE_EXPORT ArrayBufferView : public RefCounted<ArrayBufferView> {
   friend class ArrayBuffer;
   scoped_refptr<ArrayBuffer> buffer_;
 };
-
-bool ArrayBufferView::SetImpl(ArrayBufferView* array, unsigned byte_offset) {
-  if (byte_offset > ByteLength() ||
-      byte_offset + array->ByteLength() > ByteLength() ||
-      byte_offset + array->ByteLength() < byte_offset) {
-    // Out of range offset or overflow
-    return false;
-  }
-
-  char* base = static_cast<char*>(BaseAddress());
-  memmove(base + byte_offset, array->BaseAddress(), array->ByteLength());
-  return true;
-}
 
 }  // namespace blink
 
