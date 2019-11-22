@@ -328,6 +328,12 @@ void TreeNode::WriteIntoJson(
       (*out)["idPath"] = std::string(symbol->TemplateName());
       (*out)["fullName"] = std::string(symbol->FullName());
     }
+    if (symbol->SourcePath()) {
+      (*out)["srcPath"] = symbol->SourcePath();
+    }
+    if (symbol->Component()) {
+      (*out)["component"] = symbol->Component();
+    }
   } else {
     (*out)["idPath"] = std::string(this->id_path);
   }
