@@ -937,12 +937,6 @@ static aom_codec_err_t set_encoder_config(AV1EncoderConfig *oxcf,
   oxcf->enable_chroma_deltaq = extra_cfg->enable_chroma_deltaq;
   oxcf->aq_mode = extra_cfg->aq_mode;
   oxcf->deltaq_mode = extra_cfg->deltaq_mode;
-  // Turn on tpl model for deltaq_mode == DELTA_Q_OBJECTIVE and no
-  // superres. If superres is being used on the other hand, turn
-  // delta_q off.
-  if (oxcf->deltaq_mode == DELTA_Q_OBJECTIVE && !oxcf->enable_tpl_model) {
-    oxcf->enable_tpl_model = 1;
-  }
 
   oxcf->deltalf_mode =
       (oxcf->deltaq_mode != NO_DELTA_Q) && extra_cfg->deltalf_mode;

@@ -416,7 +416,8 @@ static const arg_def_t tile_rows =
 static const arg_def_t enable_tpl_model =
     ARG_DEF(NULL, "enable-tpl-model", 1,
             "RDO based on frame temporal dependency "
-            "(0: off, 1: backward source based, 2: forward 2-pass");
+            "(0: off, 1: backward source based, 2: forward 2-pass). "
+            "This is required for deltaq mode.");
 static const arg_def_t enable_keyframe_filtering =
     ARG_DEF(NULL, "enable-keyframe-filtering", 1,
             "Apply temporal filtering on key frame "
@@ -449,7 +450,7 @@ static const arg_def_t enable_1to4_partitions =
 static const arg_def_t min_partition_size =
     ARG_DEF(NULL, "min-partition-size", 4,
             "Set min partition size "
-            "(4:4x4, 8:8x8, 16:16x16, 32:32x32, 64:64x64, 128:128x128)."
+            "(4:4x4, 8:8x8, 16:16x16, 32:32x32, 64:64x64, 128:128x128). "
             "On frame with 4k+ resolutions or higher speed settings, the min "
             "partition size will have a minimum of 8.");
 static const arg_def_t max_partition_size =
@@ -646,8 +647,9 @@ static const arg_def_t aq_mode = ARG_DEF(
     "3: cyclic refresh)");
 static const arg_def_t deltaq_mode =
     ARG_DEF(NULL, "deltaq-mode", 1,
-            "Delta qindex mode (0: off, 1: deltaq pred efficiency (default), "
-            "2: deltaq perceptual)");
+            "Delta qindex mode (0: off, 1: deltaq objective (default), "
+            "2: deltaq perceptual). "
+            "Currently this requires enable-tpl-model as a prerequisite.");
 static const arg_def_t deltalf_mode = ARG_DEF(
     NULL, "delta-lf-mode", 1, "Enable delta-lf-mode (0: off (default), 1: on)");
 static const arg_def_t frame_periodic_boost =

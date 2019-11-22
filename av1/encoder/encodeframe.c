@@ -3898,15 +3898,21 @@ static AOM_INLINE void setup_delta_q(AV1_COMP *const cpi, ThreadData *td,
       current_qindex =
           av1_compute_q_from_energy_level_deltaq_mode(cpi, block_var_level);
     }
-  } else if (cpi->oxcf.deltaq_mode == DELTA_Q_OBJECTIVE) {
-    assert(cpi->oxcf.enable_tpl_model);
+  } else if (cpi->oxcf.deltaq_mode == DELTA_Q_OBJECTIVE &&
+             cpi->oxcf.enable_tpl_model) {
     // Setup deltaq based on tpl stats
     current_qindex = get_q_for_deltaq_objective(cpi, sb_size, mi_row, mi_col);
   }
 
   const int delta_q_res = delta_q_info->delta_q_res;
-  current_qindex =
-      clamp(current_qindex, delta_q_res, 256 - delta_q_info->delta_q_res);
+  // Right now aq only works with tpl model. So if tpl is disabled, we set the
+  // current_qindex to base_qindex.
+  if (cpi->oxcf.enable_tpl_model && cpi->oxcf.deltaq_mode != NO_DELTA_Q) {
+    current_qindex =
+        clamp(current_qindex, delta_q_res, 256 - delta_q_info->delta_q_res);
+  } else {
+    current_qindex = cm->base_qindex;
+  }
 
   MACROBLOCKD *const xd = &x->e_mbd;
   const int sign_deltaq_index =
