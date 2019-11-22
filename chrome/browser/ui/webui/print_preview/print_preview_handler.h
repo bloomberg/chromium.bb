@@ -5,11 +5,11 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_PRINT_PREVIEW_PRINT_PREVIEW_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_PRINT_PREVIEW_PRINT_PREVIEW_HANDLER_H_
 
-#include <map>
 #include <memory>
-#include <set>
 #include <string>
 
+#include "base/containers/flat_map.h"
+#include "base/containers/flat_set.h"
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
@@ -353,13 +353,13 @@ class PrintPreviewHandler : public content::WebUIMessageHandler,
   std::unique_ptr<PrinterHandler> local_printer_handler_;
 
   // Maps preview request ids to callbacks.
-  std::map<int, std::string> preview_callbacks_;
+  base::flat_map<int, std::string> preview_callbacks_;
 
   // Set of preview request ids for failed previews.
-  std::set<int> preview_failures_;
+  base::flat_set<int> preview_failures_;
 
   // Set of printer types on the deny list.
-  std::set<PrinterType> printer_type_deny_list_;
+  base::flat_set<PrinterType> printer_type_deny_list_;
 
   base::WeakPtrFactory<PrintPreviewHandler> weak_factory_{this};
 
