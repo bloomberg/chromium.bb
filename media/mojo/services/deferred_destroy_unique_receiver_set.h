@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_MOJO_SERVICES_DEFERRED_DESTROY_STRONG_BINDING_SET_H_
-#define MEDIA_MOJO_SERVICES_DEFERRED_DESTROY_STRONG_BINDING_SET_H_
+#ifndef MEDIA_MOJO_SERVICES_DEFERRED_DESTROY_UNIQUE_RECEIVER_SET_H_
+#define MEDIA_MOJO_SERVICES_DEFERRED_DESTROY_UNIQUE_RECEIVER_SET_H_
 
 #include <stdint.h>
 
@@ -15,12 +15,12 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "media/base/bind_to_current_loop.h"
-#include "mojo/public/cpp/bindings/strong_binding_set.h"
+#include "mojo/public/cpp/bindings/unique_receiver_set.h"
 
 namespace media {
 
 // A class that can be deferred destroyed by its owner. For example, when used
-// in DeferredDestroyStrongBindingSet.
+// in DeferredDestroyUniqueReceiverSet.
 template <typename Interface>
 class DeferredDestroy : public Interface {
  public:
@@ -30,16 +30,16 @@ class DeferredDestroy : public Interface {
   virtual void OnDestroyPending(base::OnceClosure destroy_cb) = 0;
 };
 
-// Similar to mojo::StrongBindingSet, but provide a way to defer the destruction
-// of the interface implementation:
-// - When connection error happended on a binding, the binding is immediately
+// Similar to mojo::UniqueReceiverSet, but provide a way to defer the
+// destruction of the interface implementation:
+// - When disconnection happened on a receiver, the receiver is immediately
 // destroyed and removed from the set. The interface implementation will be
 // destroyed when the DestroyCallback is called.
-// - When the DeferredDestroyStrongBindingSet is destructed, all outstanding
-// bindings and interface implementations in the set are destroyed immediately
+// - When the DeferredDestroyUniqueReceiverSet is destructed, all outstanding
+// receivers and interface implementations in the set are destroyed immediately
 // without any deferral.
 template <typename Interface>
-class DeferredDestroyStrongBindingSet {
+class DeferredDestroyUniqueReceiverSet {
  public:
   // Converts a delete callback to a deleter. If the callback is null or has
   // been cancelled, callback bound with invalidated weak pointer, the pointer
@@ -57,7 +57,7 @@ class DeferredDestroyStrongBindingSet {
       // Immediately wrap |p| into a unique_ptr to avoid any potential leak.
       auto ptr = base::WrapUnique<Interface>(p);
 
-      // Can be cancelled during DeferredDestroyStrongBindingSet destruction.
+      // Can be cancelled during DeferredDestroyUniqueReceiverSet destruction.
       if (delete_cb_ && !delete_cb_.IsCancelled())
         delete_cb_.Run(std::move(ptr));
       else
@@ -68,41 +68,41 @@ class DeferredDestroyStrongBindingSet {
     DeleteCallback delete_cb_;
   };
 
-  DeferredDestroyStrongBindingSet() {}
+  DeferredDestroyUniqueReceiverSet() {}
 
-  void AddBinding(std::unique_ptr<DeferredDestroy<Interface>> impl,
-                  mojo::InterfaceRequest<Interface> request) {
+  void AddReceiver(std::unique_ptr<DeferredDestroy<Interface>> impl,
+                   mojo::PendingReceiver<Interface> receiver) {
     // Wrap the pointer into a unique_ptr with a deleter.
-    Deleter deleter(
-        base::BindRepeating(&DeferredDestroyStrongBindingSet::OnBindingRemoved,
-                            weak_factory_.GetWeakPtr()));
+    Deleter deleter(base::BindRepeating(
+        &DeferredDestroyUniqueReceiverSet::OnReceiverRemoved,
+        weak_factory_.GetWeakPtr()));
     std::unique_ptr<Interface, Deleter> impl_with_deleter(impl.release(),
                                                           deleter);
 
-    bindings_.AddBinding(std::move(impl_with_deleter), std::move(request));
+    receivers_.Add(std::move(impl_with_deleter), std::move(receiver));
   }
 
-  // TODO(xhwang): Add RemoveBinding() if needed.
+  // TODO(xhwang): Add RemoveReceiver() if needed.
 
-  void CloseAllBindings() {
+  void CloseAllReceivers() {
     weak_factory_.InvalidateWeakPtrs();
-    bindings_.CloseAllBindings();
+    receivers_.Clear();
     unbound_impls_.clear();
   }
 
-  bool empty() const { return bindings_.empty(); }
+  bool empty() const { return receivers_.empty(); }
 
-  size_t size() const { return bindings_.size(); }
+  size_t size() const { return receivers_.size(); }
 
   size_t unbound_size() const { return unbound_impls_.size(); }
 
  private:
-  void OnBindingRemoved(std::unique_ptr<Interface> ptr) {
+  void OnReceiverRemoved(std::unique_ptr<Interface> ptr) {
     DVLOG(1) << __func__;
 
     id_++;
 
-    // The cast is safe since AddBinding() takes DeferredDestroy<Interface>.
+    // The cast is safe since AddReceiver() takes DeferredDestroy<Interface>.
     auto* impl_ptr = static_cast<DeferredDestroy<Interface>*>(ptr.get());
 
     // Put the |ptr| in the map before calling OnDestroyPending() because the
@@ -113,7 +113,7 @@ class DeferredDestroyStrongBindingSet {
     // needed because the callback may be called directly in the same stack
     // where the implemenation is being destroyed.
     impl_ptr->OnDestroyPending(BindToCurrentLoop(
-        base::BindOnce(&DeferredDestroyStrongBindingSet::OnDestroyable,
+        base::BindOnce(&DeferredDestroyUniqueReceiverSet::OnDestroyable,
                        weak_factory_.GetWeakPtr(), id_)));
   }
 
@@ -124,15 +124,15 @@ class DeferredDestroyStrongBindingSet {
 
   uint32_t id_ = 0;
   std::map<uint32_t, std::unique_ptr<Interface>> unbound_impls_;
-  mojo::StrongBindingSet<Interface, void, Deleter> bindings_;
+  mojo::UniqueReceiverSet<Interface, void, Deleter> receivers_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
-  base::WeakPtrFactory<DeferredDestroyStrongBindingSet> weak_factory_{this};
+  base::WeakPtrFactory<DeferredDestroyUniqueReceiverSet> weak_factory_{this};
 
-  DISALLOW_COPY_AND_ASSIGN(DeferredDestroyStrongBindingSet);
+  DISALLOW_COPY_AND_ASSIGN(DeferredDestroyUniqueReceiverSet);
 };
 
 }  // namespace media
 
-#endif  // MEDIA_MOJO_SERVICES_DEFERRED_DESTROY_STRONG_BINDING_SET_H_
+#endif  // MEDIA_MOJO_SERVICES_DEFERRED_DESTROY_UNIQUE_RECEIVER_SET_H_

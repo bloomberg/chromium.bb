@@ -7,7 +7,7 @@
 
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
-#include "media/mojo/services/deferred_destroy_strong_binding_set.h"
+#include "media/mojo/services/deferred_destroy_unique_receiver_set.h"
 #include "mojo/public/interfaces/bindings/tests/ping_service.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -43,48 +43,49 @@ class DeferredDestroyPingImpl : public DeferredDestroy<PingService> {
 };
 int DeferredDestroyPingImpl::instance_count = 0;
 
-DeferredDestroyPingImpl* AddDeferredDestroyBinding(
-    DeferredDestroyStrongBindingSet<PingService>* bindings,
+DeferredDestroyPingImpl* AddDeferredDestroyReceiver(
+    DeferredDestroyUniqueReceiverSet<PingService>* receivers,
     mojo::PendingRemote<PingService>* ptr) {
   auto impl = std::make_unique<DeferredDestroyPingImpl>();
   DeferredDestroyPingImpl* impl_ptr = impl.get();
-  bindings->AddBinding(std::move(impl), ptr->InitWithNewPipeAndPassReceiver());
+  receivers->AddReceiver(std::move(impl),
+                         ptr->InitWithNewPipeAndPassReceiver());
   return impl_ptr;
 }
 
-class DeferredDestroyStrongBindingSetTest : public testing::Test {
+class DeferredDestroyUniqueReceiverSetTest : public testing::Test {
  public:
-  DeferredDestroyStrongBindingSetTest() = default;
-  ~DeferredDestroyStrongBindingSetTest() override = default;
+  DeferredDestroyUniqueReceiverSetTest() = default;
+  ~DeferredDestroyUniqueReceiverSetTest() override = default;
 
  protected:
   base::test::TaskEnvironment task_environment_;
 };
 
-TEST_F(DeferredDestroyStrongBindingSetTest, Destructor) {
+TEST_F(DeferredDestroyUniqueReceiverSetTest, Destructor) {
   mojo::PendingRemote<PingService> ping[2];
-  auto bindings =
-      std::make_unique<DeferredDestroyStrongBindingSet<PingService>>();
+  auto receivers =
+      std::make_unique<DeferredDestroyUniqueReceiverSet<PingService>>();
 
   for (int i = 0; i < 2; ++i)
-    AddDeferredDestroyBinding(bindings.get(), ping + i);
+    AddDeferredDestroyReceiver(receivers.get(), ping + i);
   EXPECT_EQ(2, DeferredDestroyPingImpl::instance_count);
 
-  bindings.reset();
+  receivers.reset();
   EXPECT_EQ(0, DeferredDestroyPingImpl::instance_count);
 }
 
-TEST_F(DeferredDestroyStrongBindingSetTest, ConnectionError) {
+TEST_F(DeferredDestroyUniqueReceiverSetTest, ConnectionError) {
   mojo::PendingRemote<PingService> ping[4];
   DeferredDestroyPingImpl* impl[4];
-  auto bindings =
-      std::make_unique<DeferredDestroyStrongBindingSet<PingService>>();
+  auto receivers =
+      std::make_unique<DeferredDestroyUniqueReceiverSet<PingService>>();
 
   for (int i = 0; i < 4; ++i)
-    impl[i] = AddDeferredDestroyBinding(bindings.get(), ping + i);
+    impl[i] = AddDeferredDestroyReceiver(receivers.get(), ping + i);
   EXPECT_EQ(4, DeferredDestroyPingImpl::instance_count);
 
-  // Destroy deferred after connection error until set_can_destroy()..
+  // Destroy deferred after disconnection until set_can_destroy()..
   ping[0].reset();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(4, DeferredDestroyPingImpl::instance_count);
@@ -92,40 +93,41 @@ TEST_F(DeferredDestroyStrongBindingSetTest, ConnectionError) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(3, DeferredDestroyPingImpl::instance_count);
 
-  // Destroyed immediately after connection error if set_can_destroy() in
+  // Destroyed immediately after disconnection if set_can_destroy() in
   // advance.
   impl[1]->set_can_destroy();
   ping[1].reset();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(2, DeferredDestroyPingImpl::instance_count);
 
-  // Deferred after connection until binding set destruction.
+  // Deferred after connection until receiver set destruction.
   ping[2].reset();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(2, DeferredDestroyPingImpl::instance_count);
 
-  // Destructing the binding set will destruct all impls, including deferred
+  // Destructing the receiver set will destruct all impls, including deferred
   // destroy impls.
-  bindings.reset();
+  receivers.reset();
   EXPECT_EQ(0, DeferredDestroyPingImpl::instance_count);
 }
 
-TEST_F(DeferredDestroyStrongBindingSetTest, CloseAllBindings) {
+TEST_F(DeferredDestroyUniqueReceiverSetTest, CloseAllReceivers) {
   mojo::PendingRemote<PingService> ping[3];
   DeferredDestroyPingImpl* impl[3];
-  DeferredDestroyStrongBindingSet<PingService> bindings;
+  DeferredDestroyUniqueReceiverSet<PingService> receivers;
 
   for (int i = 0; i < 2; ++i)
-    impl[i] = AddDeferredDestroyBinding(&bindings, ping + i);
+    impl[i] = AddDeferredDestroyReceiver(&receivers, ping + i);
   EXPECT_EQ(2, DeferredDestroyPingImpl::instance_count);
-  EXPECT_FALSE(bindings.empty());
+  EXPECT_FALSE(receivers.empty());
 
-  bindings.CloseAllBindings();
+  receivers.CloseAllReceivers();
   EXPECT_EQ(0, DeferredDestroyPingImpl::instance_count);
-  EXPECT_TRUE(bindings.empty());
+  EXPECT_TRUE(receivers.empty());
 
-  // After CloseAllBindings, new added bindings can still be deferred destroyed.
-  impl[2] = AddDeferredDestroyBinding(&bindings, ping + 2);
+  // After CloseAllReceivers, new added receivers can still be deferred
+  // destroyed.
+  impl[2] = AddDeferredDestroyReceiver(&receivers, ping + 2);
   EXPECT_EQ(1, DeferredDestroyPingImpl::instance_count);
 
   ping[2].reset();
