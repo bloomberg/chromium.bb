@@ -3802,6 +3802,9 @@ If you're done with the tutorial, use ChromeVox to navigate to the Close button 
       <message desc="The description of the resetTextToSpeechSettings key. Displayed in the Options page." name="IDS_CHROMEVOX_RESET_TTS_SETTINGS">
         Reset text to speech settings
       </message>
+      <message desc="The description of the openKeyboardShortcutsMenu key. Displayed in the ChromeVox menu" name="IDS_CHROMEVOX_OPEN_KEYBOARD_SHORTCUTS_MENU">
+        Open keyboard shortcuts menu
+      </message>
     </messages>
   </release>
 </grit>

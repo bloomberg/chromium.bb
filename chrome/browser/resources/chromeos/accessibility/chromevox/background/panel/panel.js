@@ -8,6 +8,7 @@
 
 goog.provide('Panel');
 
+goog.require('BackgroundKeyboardHandler');
 goog.require('BrailleCommandData');
 goog.require('EventSourceType');
 goog.require('GestureCommandData');
@@ -299,6 +300,15 @@ Panel.onOpenMenus = function(opt_event, opt_activateMenuTitle) {
   var tabsMenu = Panel.addMenu('panel_menu_tabs');
   var chromevoxMenu = Panel.addMenu('panel_menu_chromevox');
   var actionsMenu = Panel.addMenu('panel_menu_actions');
+
+  // Add a menu item that opens the full list of ChromeBook keyboard shortcuts.
+  // We want this to be at the top of the ChromeVox menu.
+  chromevoxMenu.addMenuItem(
+      Msgs.getMsg('open_keyboard_shortcuts_menu'), 'Ctrl+Alt+/', '', '',
+      function() {
+        BackgroundKeyboardHandler.sendKeyPress(
+            191, {'ctrl': true, 'alt': true});
+      });
 
   // Create a mapping between categories from CommandStore, and our
   // top-level menus. Some categories aren't mapped to any menu.
