@@ -936,7 +936,8 @@
     },
     {
       name: "MediaCapabilitiesEncryptedMedia",
-      status: "stable",
+      origin_trial_feature_name: "MediaCapabilitiesEncryptedMedia",
+      status: "experimental",
     },
     {
       name: "MediaCapture",
