@@ -232,13 +232,14 @@ public class NFCTest {
         // Test url record conversion.
         android.nfc.NdefMessage urlNdefMessage =
                 new android.nfc.NdefMessage(NdefMessageUtils.createPlatformUrlRecord(
-                        ApiCompatibilityUtils.getBytesUtf8(TEST_URL), false /* isAbsUrl */));
+                        ApiCompatibilityUtils.getBytesUtf8(TEST_URL), DUMMY_RECORD_ID,
+                        false /* isAbsUrl */));
         NdefMessage urlMojoNdefMessage = NdefMessageUtils.toNdefMessage(urlNdefMessage);
         assertNull(urlMojoNdefMessage.url);
         assertEquals(1, urlMojoNdefMessage.data.length);
         assertEquals(NdefMessageUtils.RECORD_TYPE_URL, urlMojoNdefMessage.data[0].recordType);
         assertEquals(null, urlMojoNdefMessage.data[0].mediaType);
-        assertEquals(true, urlMojoNdefMessage.data[0].id.isEmpty());
+        assertEquals(DUMMY_RECORD_ID, urlMojoNdefMessage.data[0].id);
         assertNull(urlMojoNdefMessage.data[0].encoding);
         assertNull(urlMojoNdefMessage.data[0].lang);
         assertEquals(TEST_URL, new String(urlMojoNdefMessage.data[0].data));
@@ -246,14 +247,15 @@ public class NFCTest {
         // Test absolute-url record conversion.
         android.nfc.NdefMessage absUrlNdefMessage =
                 new android.nfc.NdefMessage(NdefMessageUtils.createPlatformUrlRecord(
-                        ApiCompatibilityUtils.getBytesUtf8(TEST_URL), true /* isAbsUrl */));
+                        ApiCompatibilityUtils.getBytesUtf8(TEST_URL), DUMMY_RECORD_ID,
+                        true /* isAbsUrl */));
         NdefMessage absUrlMojoNdefMessage = NdefMessageUtils.toNdefMessage(absUrlNdefMessage);
         assertNull(absUrlMojoNdefMessage.url);
         assertEquals(1, absUrlMojoNdefMessage.data.length);
         assertEquals(NdefMessageUtils.RECORD_TYPE_ABSOLUTE_URL,
                 absUrlMojoNdefMessage.data[0].recordType);
         assertEquals(null, absUrlMojoNdefMessage.data[0].mediaType);
-        assertEquals(true, absUrlMojoNdefMessage.data[0].id.isEmpty());
+        assertEquals(DUMMY_RECORD_ID, absUrlMojoNdefMessage.data[0].id);
         assertEquals(TEST_URL, new String(absUrlMojoNdefMessage.data[0].data));
 
         // Test text record conversion for UTF-8 content.
@@ -396,6 +398,7 @@ public class NFCTest {
         // Test url record conversion.
         NdefRecord urlMojoNdefRecord = new NdefRecord();
         urlMojoNdefRecord.recordType = NdefMessageUtils.RECORD_TYPE_URL;
+        urlMojoNdefRecord.id = DUMMY_RECORD_ID;
         urlMojoNdefRecord.data = ApiCompatibilityUtils.getBytesUtf8(TEST_URL);
         NdefMessage urlMojoNdefMessage = createMojoNdefMessage(TEST_URL, urlMojoNdefRecord);
         android.nfc.NdefMessage urlNdefMessage = NdefMessageUtils.toNdefMessage(urlMojoNdefMessage);
@@ -404,6 +407,7 @@ public class NFCTest {
                 android.nfc.NdefRecord.TNF_WELL_KNOWN, urlNdefMessage.getRecords()[0].getTnf());
         assertEquals(new String(android.nfc.NdefRecord.RTD_URI),
                 new String(urlNdefMessage.getRecords()[0].getType()));
+        assertEquals(DUMMY_RECORD_ID, new String(urlNdefMessage.getRecords()[0].getId()));
         assertEquals(TEST_URL, urlNdefMessage.getRecords()[0].toUri().toString());
         assertEquals(
                 android.nfc.NdefRecord.TNF_EXTERNAL_TYPE, urlNdefMessage.getRecords()[1].getTnf());
@@ -414,6 +418,7 @@ public class NFCTest {
         // Test absolute-url record conversion.
         NdefRecord absUrlMojoNdefRecord = new NdefRecord();
         absUrlMojoNdefRecord.recordType = NdefMessageUtils.RECORD_TYPE_ABSOLUTE_URL;
+        absUrlMojoNdefRecord.id = DUMMY_RECORD_ID;
         absUrlMojoNdefRecord.data = ApiCompatibilityUtils.getBytesUtf8(TEST_URL);
         NdefMessage absUrlMojoNdefMessage = createMojoNdefMessage(TEST_URL, absUrlMojoNdefRecord);
         android.nfc.NdefMessage absUrlNdefMessage =
@@ -421,6 +426,7 @@ public class NFCTest {
         assertEquals(2, absUrlNdefMessage.getRecords().length);
         assertEquals(android.nfc.NdefRecord.TNF_ABSOLUTE_URI,
                 absUrlNdefMessage.getRecords()[0].getTnf());
+        assertEquals(DUMMY_RECORD_ID, new String(absUrlNdefMessage.getRecords()[0].getId()));
         assertEquals(TEST_URL, absUrlNdefMessage.getRecords()[0].toUri().toString());
         assertEquals(android.nfc.NdefRecord.TNF_EXTERNAL_TYPE,
                 absUrlNdefMessage.getRecords()[1].getTnf());
