@@ -68,6 +68,9 @@ static unsigned int tx_domain_dist_types[3][MODE_EVAL_TYPES] = { { 0, 2, 0 },
                                                                  { 1, 2, 0 },
                                                                  { 2, 2, 0 } };
 
+// Indicates number of winner simple translation modes to be used
+static unsigned int num_winner_motion_modes[3] = { 0, 10, 3 };
+
 // Threshold values to be used for disabling coeff RD-optimization
 // based on block MSE
 // TODO(any): Experiment the threshold logic based on variance metric
@@ -407,6 +410,11 @@ static void set_good_speed_features_framesize_independent(
     sf->mv.subpel_search_method = SUBPEL_TREE_PRUNED;
     sf->simple_motion_search_prune_agg = 1;
     sf->disable_sb_level_mv_cost_upd = 1;
+    sf->motion_mode_for_winner_cand =
+        boosted
+            ? 0
+            : gf_group->update_type[gf_group->index] == INTNL_ARF_UPDATE ? 1
+                                                                         : 2;
     sf->tx_type_search.use_skip_flag_prediction =
         cm->allow_screen_content_tools ? 1 : 2;
   }
@@ -857,6 +865,7 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
   sf->adaptive_overlay_encoding = 1;
   sf->skip_interp_filter_search = 0;
   sf->force_tx_search_off = 0;
+  sf->motion_mode_for_winner_cand = 0;
   sf->num_inter_modes_for_tx_search = INT_MAX;
 
   for (i = 0; i < TX_SIZES; i++) {
@@ -1027,6 +1036,11 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
   memcpy(cpi->use_transform_domain_distortion,
          tx_domain_dist_types[cpi->sf.tx_domain_dist_level],
          sizeof(cpi->use_transform_domain_distortion));
+
+  // Update the number of winner motion modes to be used appropriately
+  cpi->num_winner_motion_modes =
+      num_winner_motion_modes[cpi->sf.motion_mode_for_winner_cand];
+  assert(cpi->num_winner_motion_modes <= MAX_WINNER_MOTION_MODES);
 
   // assert ensures that coeff_opt_dist_thresholds is accessed correctly
   assert(cpi->sf.perform_coeff_opt >= 0 && cpi->sf.perform_coeff_opt < 5);

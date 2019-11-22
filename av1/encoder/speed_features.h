@@ -831,6 +831,11 @@ typedef struct SPEED_FEATURES {
 
   // Disable interinter_wedge
   int disable_interinter_wedge;
+
+  // Motion mode for winner candidates:
+  // 0: speed feature OFF
+  // 1 / 2 : Use configured number of winner candidates
+  int motion_mode_for_winner_cand;
 } SPEED_FEATURES;
 
 struct AV1_COMP;

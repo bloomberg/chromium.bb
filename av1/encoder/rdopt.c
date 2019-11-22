@@ -9788,17 +9788,34 @@ static int check_identical_obmc_mv_field(const AV1_COMMON *cm,
   return mv_field_check_ctxt.mv_field_check_result;
 }
 
+static INLINE void update_mode_start_end_index(const AV1_COMP *const cpi,
+                                               int *mode_index_start,
+                                               int *mode_index_end,
+                                               int last_motion_mode_allowed,
+                                               int interintra_allowed,
+                                               int eval_motion_mode) {
+  *mode_index_start = (int)SIMPLE_TRANSLATION;
+  *mode_index_end = (int)last_motion_mode_allowed + interintra_allowed;
+  if (cpi->sf.motion_mode_for_winner_cand) {
+    if (!eval_motion_mode) {
+      *mode_index_end = (int)SIMPLE_TRANSLATION;
+    } else {
+      // Set the start index appropriately to process motion modes other than
+      // simple translation
+      *mode_index_start = 1;
+    }
+  }
+}
+
 // TODO(afergs): Refactor the MBMI references in here - there's four
 // TODO(afergs): Refactor optional args - add them to a struct or remove
-static int64_t motion_mode_rd(const AV1_COMP *const cpi, TileDataEnc *tile_data,
-                              MACROBLOCK *const x, BLOCK_SIZE bsize,
-                              RD_STATS *rd_stats, RD_STATS *rd_stats_y,
-                              RD_STATS *rd_stats_uv, int *disable_skip,
-                              HandleInterModeArgs *const args,
-                              int64_t ref_best_rd, const int *refs,
-                              int *rate_mv, const BUFFER_SET *orig_dst,
-                              int64_t *best_est_rd, int do_tx_search,
-                              InterModesInfo *inter_modes_info) {
+static int64_t motion_mode_rd(
+    const AV1_COMP *const cpi, TileDataEnc *tile_data, MACROBLOCK *const x,
+    BLOCK_SIZE bsize, RD_STATS *rd_stats, RD_STATS *rd_stats_y,
+    RD_STATS *rd_stats_uv, int *disable_skip, HandleInterModeArgs *const args,
+    int64_t ref_best_rd, const int *refs, int *rate_mv,
+    const BUFFER_SET *orig_dst, int64_t *best_est_rd, int do_tx_search,
+    InterModesInfo *inter_modes_info, int eval_motion_mode) {
   const AV1_COMMON *const cm = &cpi->common;
   const int num_planes = av1_num_planes(cm);
   MACROBLOCKD *xd = &x->e_mbd;
@@ -9850,8 +9867,11 @@ static int64_t motion_mode_rd(const AV1_COMP *const cpi, TileDataEnc *tile_data,
           : 0;
   const int mi_row = xd->mi_row;
   const int mi_col = xd->mi_col;
-  for (int mode_index = (int)SIMPLE_TRANSLATION;
-       mode_index <= (int)last_motion_mode_allowed + interintra_allowed;
+  int mode_index_start, mode_index_end;
+  update_mode_start_end_index(cpi, &mode_index_start, &mode_index_end,
+                              last_motion_mode_allowed, interintra_allowed,
+                              eval_motion_mode);
+  for (int mode_index = mode_index_start; mode_index <= mode_index_end;
        mode_index++) {
     if (args->skip_motion_mode && mode_index) continue;
     if (cpi->sf.prune_single_motion_modes_by_simple_trans &&
@@ -9921,7 +9941,7 @@ static int64_t motion_mode_rd(const AV1_COMP *const cpi, TileDataEnc *tile_data,
         mbmi->mv[0].as_int = x->best_mv.as_int;
         tmp_rate2 = rate2_nocoeff - rate_mv0 + tmp_rate_mv;
       }
-      if (mbmi->mv[0].as_int != cur_mv) {
+      if ((mbmi->mv[0].as_int != cur_mv) || eval_motion_mode) {
         av1_enc_build_inter_predictor(cm, xd, mi_row, mi_col, orig_dst, bsize,
                                       0, av1_num_planes(cm) - 1);
       }
@@ -10862,6 +10882,19 @@ static int ref_mv_idx_to_search(AV1_COMP *const cpi, MACROBLOCK *x,
   return result;
 }
 
+typedef struct motion_mode_candidate {
+  MB_MODE_INFO mbmi;
+  int rate_mv;
+  int rate2_nocoeff;
+  int skip_motion_mode;
+  int64_t rd_cost;
+} motion_mode_candidate;
+
+typedef struct motion_mode_best_st_candidate {
+  motion_mode_candidate motion_mode_cand[MAX_WINNER_MOTION_MODES];
+  int num_motion_mode_cand;
+} motion_mode_best_st_candidate;
+
 static int64_t handle_inter_mode(AV1_COMP *const cpi, TileDataEnc *tile_data,
                                  MACROBLOCK *x, BLOCK_SIZE bsize,
                                  RD_STATS *rd_stats, RD_STATS *rd_stats_y,
@@ -10870,7 +10903,8 @@ static int64_t handle_inter_mode(AV1_COMP *const cpi, TileDataEnc *tile_data,
                                  uint8_t *const tmp_buf,
                                  const CompoundTypeRdBuffers *rd_buffers,
                                  int64_t *best_est_rd, const int do_tx_search,
-                                 InterModesInfo *inter_modes_info) {
+                                 InterModesInfo *inter_modes_info,
+                                 motion_mode_candidate *motion_mode_cand) {
   const AV1_COMMON *cm = &cpi->common;
   const int num_planes = av1_num_planes(cm);
   MACROBLOCKD *xd = &x->e_mbd;
@@ -11014,6 +11048,7 @@ static int64_t handle_inter_mode(AV1_COMP *const cpi, TileDataEnc *tile_data,
                   if (best_mbmi.ref_mv_idx == i) {
                     assert(best_rd != INT64_MAX);
                     best_mbmi.ref_mv_idx = ref_mv_idx;
+                    motion_mode_cand->rate_mv = this_rate_mv;
                     best_rd_stats.rate += this_cost - compare_cost;
                     best_rd = RDCOST(x->rdmult, best_rd_stats.rate,
                                      best_rd_stats.dist);
@@ -11172,10 +11207,11 @@ static int64_t handle_inter_mode(AV1_COMP *const cpi, TileDataEnc *tile_data,
 #if CONFIG_COLLECT_COMPONENT_TIMING
     start_timing(cpi, motion_mode_rd_time);
 #endif
+    int rate2_nocoeff = rd_stats->rate;
     ret_val = motion_mode_rd(cpi, tile_data, x, bsize, rd_stats, rd_stats_y,
                              rd_stats_uv, disable_skip, args, ref_best_rd, refs,
                              &rate_mv, &orig_dst, best_est_rd, do_tx_search,
-                             inter_modes_info);
+                             inter_modes_info, 0);
 #if CONFIG_COLLECT_COMPONENT_TIMING
     end_timing(cpi, motion_mode_rd_time);
 #endif
@@ -11196,6 +11232,8 @@ static int64_t handle_inter_mode(AV1_COMP *const cpi, TileDataEnc *tile_data,
         memcpy(best_blk_skip, x->blk_skip,
                sizeof(best_blk_skip[0]) * xd->n4_h * xd->n4_w);
         av1_copy_array(best_tx_type_map, xd->tx_type_map, xd->n4_h * xd->n4_w);
+        motion_mode_cand->rate_mv = rate_mv;
+        motion_mode_cand->rate2_nocoeff = rate2_nocoeff;
       }
 
       if (tmp_rd < ref_best_rd) {
@@ -13012,6 +13050,79 @@ static INLINE bool in_single_ref_cutoff(int64_t ref_frame_rd[REF_FRAMES],
          ref_frame_rd[frame2] <= ref_frame_rd[0];
 }
 
+static AOM_INLINE void evaluate_motion_mode_for_winner_candidates(
+    const AV1_COMP *const cpi, MACROBLOCK *const x, RD_STATS *const rd_cost,
+    HandleInterModeArgs *const args, TileDataEnc *const tile_data,
+    PICK_MODE_CONTEXT *const ctx,
+    struct buf_2d yv12_mb[REF_FRAMES][MAX_MB_PLANE],
+    const motion_mode_best_st_candidate *const best_motion_mode_cands,
+    int do_tx_search, const BLOCK_SIZE bsize, int64_t *const best_est_rd,
+    InterModeSearchState *const search_state) {
+  const AV1_COMMON *const cm = &cpi->common;
+  const int num_planes = av1_num_planes(cm);
+  MACROBLOCKD *const xd = &x->e_mbd;
+  MB_MODE_INFO *const mbmi = xd->mi[0];
+  InterModesInfo *const inter_modes_info = x->inter_modes_info;
+  const int num_best_cand = best_motion_mode_cands->num_motion_mode_cand;
+
+  for (int cand = 0; cand < num_best_cand; cand++) {
+    RD_STATS rd_stats;
+    RD_STATS rd_stats_y;
+    RD_STATS rd_stats_uv;
+    av1_init_rd_stats(&rd_stats);
+    av1_init_rd_stats(&rd_stats_y);
+    av1_init_rd_stats(&rd_stats_uv);
+    int disable_skip = 0, rate_mv;
+
+    rate_mv = best_motion_mode_cands->motion_mode_cand[cand].rate_mv;
+    args->skip_motion_mode =
+        best_motion_mode_cands->motion_mode_cand[cand].skip_motion_mode;
+    *mbmi = best_motion_mode_cands->motion_mode_cand[cand].mbmi;
+    rd_stats.rate =
+        best_motion_mode_cands->motion_mode_cand[cand].rate2_nocoeff;
+
+    // Continue if the best candidate is compound.
+    if (!is_inter_singleref_mode(mbmi->mode)) continue;
+
+    x->skip = 0;
+    const int mode_index = get_prediction_mode_idx(
+        mbmi->mode, mbmi->ref_frame[0], mbmi->ref_frame[1]);
+    int refs[2] = { mbmi->ref_frame[0],
+                    (mbmi->ref_frame[1] < 0 ? 0 : mbmi->ref_frame[1]) };
+    struct macroblockd_plane *p = xd->plane;
+    const BUFFER_SET orig_dst = {
+      { p[0].dst.buf, p[1].dst.buf, p[2].dst.buf },
+      { p[0].dst.stride, p[1].dst.stride, p[2].dst.stride },
+    };
+
+    set_ref_ptrs(cm, xd, mbmi->ref_frame[0], mbmi->ref_frame[1]);
+    args->simple_rd_state = x->simple_rd_state[mode_index];
+    // Initialize motion mode to simple translation
+    // Calculation of switchable rate depends on it.
+    mbmi->motion_mode = 0;
+    const int is_comp_pred = mbmi->ref_frame[1] > INTRA_FRAME;
+    for (int i = 0; i < num_planes; i++) {
+      xd->plane[i].pre[0] = yv12_mb[mbmi->ref_frame[0]][i];
+      if (is_comp_pred) xd->plane[i].pre[1] = yv12_mb[mbmi->ref_frame[1]][i];
+    }
+
+    int64_t ret_value = motion_mode_rd(
+        cpi, tile_data, x, bsize, &rd_stats, &rd_stats_y, &rd_stats_uv,
+        &disable_skip, args, search_state->best_rd, refs, &rate_mv, &orig_dst,
+        best_est_rd, do_tx_search, inter_modes_info, 1);
+
+    if (ret_value != INT64_MAX) {
+      rd_stats.rdcost = RDCOST(x->rdmult, rd_stats.rate, rd_stats.dist);
+      if (rd_stats.rdcost < search_state->best_rd) {
+        const THR_MODES mode_enum = get_prediction_mode_idx(
+            mbmi->mode, mbmi->ref_frame[0], mbmi->ref_frame[1]);
+        update_search_state(search_state, rd_cost, ctx, &rd_stats, &rd_stats_y,
+                            &rd_stats_uv, mode_enum, x, do_tx_search);
+      }
+    }
+  }
+}
+
 void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
                                MACROBLOCK *x, RD_STATS *rd_cost,
                                const BLOCK_SIZE bsize, PICK_MODE_CONTEXT *ctx,
@@ -13049,6 +13160,14 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
                                NULL,
                                { { { 0 }, { { 0 } }, { 0 }, 0, 0, 0, 0 } },
                                0 };
+  const int max_winner_motion_mode_cand = cpi->num_winner_motion_modes;
+  motion_mode_candidate motion_mode_cand;
+  motion_mode_best_st_candidate best_motion_mode_cands;
+  // Initializing the number of motion mode candidates to zero.
+  best_motion_mode_cands.num_motion_mode_cand = 0;
+  for (i = 0; i < MAX_WINNER_MOTION_MODES; ++i)
+    best_motion_mode_cands.motion_mode_cand[i].rd_cost = INT64_MAX;
+
   for (i = 0; i < REF_FRAMES; ++i) x->pred_sse[i] = INT_MAX;
 
   av1_invalid_rd_stats(rd_cost);
@@ -13267,7 +13386,7 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
     int64_t this_rd = handle_inter_mode(
         cpi, tile_data, x, bsize, &rd_stats, &rd_stats_y, &rd_stats_uv,
         &disable_skip, &args, ref_best_rd, tmp_buf, &x->comp_rd_buffer,
-        &best_est_rd, do_tx_search, inter_modes_info);
+        &best_est_rd, do_tx_search, inter_modes_info, &motion_mode_cand);
 
     if (sf->prune_comp_search_by_single_result > 0 &&
         is_inter_singleref_mode(this_mode) && args.single_ref_first_pass) {
@@ -13293,6 +13412,41 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
       search_state.best_pred_sse = x->pred_sse[ref_frame];
       update_search_state(&search_state, rd_cost, ctx, &rd_stats, &rd_stats_y,
                           &rd_stats_uv, mode_enum, x, do_tx_search);
+    }
+    if (cpi->sf.motion_mode_for_winner_cand) {
+      const int num_motion_mode_cand =
+          best_motion_mode_cands.num_motion_mode_cand;
+      int valid_motion_mode_cand_loc =
+          (num_motion_mode_cand > 0) ? INT32_MAX : 0;
+
+      // find the best location to insert new motion mode candidate
+      for (int j = 0; j < num_motion_mode_cand; j++) {
+        if (this_rd < best_motion_mode_cands.motion_mode_cand[j].rd_cost) {
+          valid_motion_mode_cand_loc = j;
+          break;
+        }
+      }
+
+      if (valid_motion_mode_cand_loc < max_winner_motion_mode_cand) {
+        if (num_motion_mode_cand > 0 &&
+            valid_motion_mode_cand_loc < max_winner_motion_mode_cand - 1)
+          memmove(
+              &best_motion_mode_cands
+                   .motion_mode_cand[valid_motion_mode_cand_loc + 1],
+              &best_motion_mode_cands
+                   .motion_mode_cand[valid_motion_mode_cand_loc],
+              (AOMMIN(num_motion_mode_cand, max_winner_motion_mode_cand - 1) -
+               valid_motion_mode_cand_loc) *
+                  sizeof(best_motion_mode_cands.motion_mode_cand[0]));
+        motion_mode_cand.mbmi = *mbmi;
+        motion_mode_cand.rd_cost = this_rd;
+        motion_mode_cand.skip_motion_mode = args.skip_motion_mode;
+        best_motion_mode_cands.motion_mode_cand[valid_motion_mode_cand_loc] =
+            motion_mode_cand;
+        best_motion_mode_cands.num_motion_mode_cand =
+            AOMMIN(max_winner_motion_mode_cand,
+                   best_motion_mode_cands.num_motion_mode_cand + 1);
+      }
     }
 
     /* keep record of best compound/single-only prediction */
@@ -13326,6 +13480,15 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
     }
 
     if (x->skip && !comp_pred) break;
+  }
+
+  if (cpi->sf.motion_mode_for_winner_cand) {
+    // For the single ref winner candidates, evaluate other motion modes (non
+    // simple translation).
+    evaluate_motion_mode_for_winner_candidates(
+        cpi, x, rd_cost, &args, tile_data, ctx, yv12_mb,
+        &best_motion_mode_cands, do_tx_search, bsize, &best_est_rd,
+        &search_state);
   }
 
 #if CONFIG_COLLECT_COMPONENT_TIMING
