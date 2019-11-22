@@ -10,11 +10,14 @@
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/rand_util.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
+#include "base/time/default_clock.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/optimization_guide/optimization_guide_navigation_data.h"
+#include "chrome/browser/optimization_guide/optimization_guide_permissions_util.h"
 #include "chrome/browser/optimization_guide/optimization_guide_session_statistic.h"
 #include "chrome/browser/optimization_guide/prediction/prediction_model.h"
 #include "chrome/browser/optimization_guide/prediction/prediction_model_fetcher.h"
@@ -24,9 +27,11 @@
 #include "components/optimization_guide/optimization_guide_decider.h"
 #include "components/optimization_guide/optimization_guide_enums.h"
 #include "components/optimization_guide/optimization_guide_features.h"
+#include "components/optimization_guide/optimization_guide_prefs.h"
 #include "components/optimization_guide/optimization_guide_store.h"
 #include "components/optimization_guide/optimization_guide_switches.h"
 #include "components/optimization_guide/top_host_provider.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 
@@ -51,6 +56,29 @@ bool ShouldUseCurrentOptimizationTargetDecision(
   }
 }
 
+// Delay between retries on failed fetch and store of prediction models and
+// host model features from the remote Optimization Guide Service.
+constexpr base::TimeDelta kFetchRetryDelay = base::TimeDelta::FromMinutes(16);
+
+// The amount of time to wait after a successful fetch of models and host model
+// features before requesting an update from the remote Optimization Guide
+// Service.
+//
+// TODO(mcrouse): Remove this when the models and features are placed into the
+// store and rely on the store to provide the update time.
+constexpr base::TimeDelta kUpdateModelsAndFeaturesDelay =
+    base::TimeDelta::FromHours(24);
+
+// Provide a random time delta in seconds between |kFetchRandomMinDelay| and
+// |kFetchRandomMaxDelay|.
+base::TimeDelta RandomFetchDelay() {
+  // TODO(crbug/1027526): Add finch support for the random delay ranges.
+  constexpr int kFetchRandomMinDelaySecs = 30;
+  constexpr int kFetchRandomMaxDelaySecs = 180;
+  return base::TimeDelta::FromSeconds(
+      base::RandInt(kFetchRandomMinDelaySecs, kFetchRandomMaxDelaySecs));
+}
+
 }  // namespace
 
 namespace optimization_guide {
@@ -61,30 +89,39 @@ PredictionManager::PredictionManager(
     const base::FilePath& profile_path,
     leveldb_proto::ProtoDatabaseProvider* database_provider,
     TopHostProvider* top_host_provider,
-    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
-    : session_fcp_(),
-      top_host_provider_(top_host_provider),
-      model_and_features_store_(std::make_unique<OptimizationGuideStore>(
-          database_provider,
-          profile_path.AddExtensionASCII(
-              optimization_guide::
-                  kOptimizationGuidePredictionModelAndFeaturesStore),
-          base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
-                                           base::TaskPriority::BEST_EFFORT}))),
-      url_loader_factory_(url_loader_factory) {
-  Initialize(optimization_targets_at_initialization);
-}
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+    PrefService* pref_service,
+    Profile* profile)
+    : PredictionManager(
+          optimization_targets_at_initialization,
+          std::make_unique<OptimizationGuideStore>(
+              database_provider,
+              profile_path.AddExtensionASCII(
+                  optimization_guide::
+                      kOptimizationGuidePredictionModelAndFeaturesStore),
+              base::CreateSequencedTaskRunner(
+                  {base::ThreadPool(), base::MayBlock(),
+                   base::TaskPriority::BEST_EFFORT})),
+          top_host_provider,
+          url_loader_factory,
+          pref_service,
+          profile) {}
 
 PredictionManager::PredictionManager(
     const std::vector<optimization_guide::proto::OptimizationTarget>&
         optimization_targets_at_initialization,
     std::unique_ptr<OptimizationGuideStore> model_and_features_store,
     TopHostProvider* top_host_provider,
-    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+    PrefService* pref_service,
+    Profile* profile)
     : session_fcp_(),
       top_host_provider_(top_host_provider),
       model_and_features_store_(std::move(model_and_features_store)),
-      url_loader_factory_(url_loader_factory) {
+      url_loader_factory_(url_loader_factory),
+      pref_service_(pref_service),
+      profile_(profile),
+      clock_(base::DefaultClock::GetInstance()) {
   Initialize(optimization_targets_at_initialization);
 }
 
@@ -137,10 +174,6 @@ void PredictionManager::RegisterOptimizationTargets(
   // when the store was initialized.
   if (new_optimization_targets.size() == 0)
     return;
-
-  // TODO(crbug/1001194): Create a schedule for fetching updates for models and
-  // for additional/fresh host model features.
-  FetchModelsAndHostModelFeatures();
 
   // Start loading the host model features if they are not already. Models
   // cannot be loaded from the store until the host model features have loaded
@@ -328,7 +361,15 @@ void PredictionManager::SetPredictionModelFetcherForTesting(
 
 void PredictionManager::FetchModelsAndHostModelFeatures() {
   SEQUENCE_CHECKER(sequence_checker_);
-  DCHECK(top_host_provider_);
+  if (!top_host_provider_ ||
+      !IsUserPermittedToFetchFromRemoteOptimizationGuide(profile_)) {
+    return;
+  }
+
+  // TODO(crbug/1027596): Update the prediction model fetcher to run the
+  // callback even in failure so that the fetch can be rescheduled on failure
+  // rather than preemptively.
+  ScheduleModelsAndHostModelFeaturesFetch();
 
   // Models and host model features should not be fetched if there are no
   // optimization targets registered.
@@ -382,6 +423,7 @@ void PredictionManager::OnModelsAndHostFeaturesFetched(
   SEQUENCE_CHECKER(sequence_checker_);
   if (!get_models_response_data)
     return;
+
   // TODO(crbug/1001194): Asynchronously store the models and host model
   // features within the persistent store.
 
@@ -407,6 +449,13 @@ void PredictionManager::OnModelsAndHostFeaturesFetched(
     UpdatePredictionModels((*get_models_response_data)->mutable_models(),
                            host_model_features);
   }
+  // TODO(crbug/1001194): After the models and host model features are stored
+  // asynchronously, the timer will be set based on the update time provided
+  // by the store.
+  fetch_timer_.Stop();
+  fetch_timer_.Start(
+      FROM_HERE, kUpdateModelsAndFeaturesDelay, this,
+      &PredictionManager::ScheduleModelsAndHostModelFeaturesFetch);
 }
 
 void PredictionManager::UpdateHostModelFeatures(
@@ -451,9 +500,7 @@ void PredictionManager::OnStoreInitialized() {
   // optimization targets will be loaded.
   LoadHostModelFeatures();
 
-  // TODO(crbug/1001194): Create a schedule for fetching updates for models and
-  // for additional/fresh host model features.
-  FetchModelsAndHostModelFeatures();
+  MaybeScheduleModelAndHostModelFeaturesFetch();
 }
 
 void PredictionManager::LoadHostModelFeatures() {
@@ -575,6 +622,7 @@ void PredictionManager::ProcessAndStoreHostModelFeatures(
     return;
   if (host_model_features.model_features_size() == 0)
     return;
+
   base::flat_map<std::string, float> model_features_for_host;
   model_features_for_host.reserve(host_model_features.model_features_size());
   for (const auto& model_feature : host_model_features.model_features()) {
@@ -603,8 +651,57 @@ void PredictionManager::ProcessAndStoreHostModelFeatures(
 
   host_model_features_map_[host_model_features.host()] =
       model_features_for_host;
-
   return;
+}
+
+void PredictionManager::MaybeScheduleModelAndHostModelFeaturesFetch() {
+  if (optimization_guide::switches::
+          ShouldOverrideFetchModelsAndFeaturesTimer()) {
+    SetLastModelAndFeaturesFetchAttemptTime(clock_->Now());
+    FetchModelsAndHostModelFeatures();
+  } else {
+    ScheduleModelsAndHostModelFeaturesFetch();
+  }
+}
+
+base::Time PredictionManager::GetLastFetchAttemptTime() const {
+  SEQUENCE_CHECKER(squence_checker_);
+  return base::Time::FromDeltaSinceWindowsEpoch(
+      base::TimeDelta::FromMicroseconds(
+          pref_service_->GetInt64(prefs::kModelAndFeaturesLastFetchAttempt)));
+}
+
+void PredictionManager::ScheduleModelsAndHostModelFeaturesFetch() {
+  DCHECK(!fetch_timer_.IsRunning());
+  DCHECK(store_is_ready_);
+  const base::TimeDelta time_until_update_time =
+      model_and_features_store_->GetHostModelFeaturesUpdateTime() -
+      clock_->Now();
+  const base::TimeDelta time_until_retry =
+      GetLastFetchAttemptTime() + kFetchRetryDelay - clock_->Now();
+  base::TimeDelta fetcher_delay =
+      std::max(time_until_update_time, time_until_retry);
+  if (fetcher_delay <= base::TimeDelta()) {
+    SetLastModelAndFeaturesFetchAttemptTime(clock_->Now());
+    fetch_timer_.Start(FROM_HERE, RandomFetchDelay(), this,
+                       &PredictionManager::FetchModelsAndHostModelFeatures);
+    return;
+  }
+  fetch_timer_.Start(
+      FROM_HERE, fetcher_delay, this,
+      &PredictionManager::ScheduleModelsAndHostModelFeaturesFetch);
+}
+
+void PredictionManager::SetLastModelAndFeaturesFetchAttemptTime(
+    base::Time last_attempt_time) {
+  SEQUENCE_CHECKER(sequence_checker_);
+  pref_service_->SetInt64(
+      prefs::kModelAndFeaturesLastFetchAttempt,
+      last_attempt_time.ToDeltaSinceWindowsEpoch().InMicroseconds());
+}
+
+void PredictionManager::SetClockForTesting(const base::Clock* clock) {
+  clock_ = clock;
 }
 
 }  // namespace optimization_guide

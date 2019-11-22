@@ -148,11 +148,12 @@ void OptimizationGuideKeyedService::Initialize(
       profile_path, profile->GetPrefs(), database_provider,
       top_host_provider_.get(), url_loader_factory);
   if (optimization_guide::features::IsOptimizationTargetPredictionEnabled() &&
-      optimization_guide::features::IsHintsFetchingEnabled()) {
+      optimization_guide::features::IsRemoteFetchingEnabled()) {
     prediction_manager_ =
         std::make_unique<optimization_guide::PredictionManager>(
             pre_initialized_optimization_targets_, profile_path,
-            database_provider, top_host_provider_.get(), url_loader_factory);
+            database_provider, top_host_provider_.get(), url_loader_factory,
+            profile->GetPrefs(), profile);
   }
 }
 

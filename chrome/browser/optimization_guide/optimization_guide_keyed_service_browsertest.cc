@@ -589,7 +589,7 @@ class OptimizationGuideKeyedServiceDataSaverUserWithInfobarShownTest
 
   void SetUp() override {
     scoped_feature_list_.InitAndEnableFeature(
-        optimization_guide::features::kOptimizationHintsFetching);
+        optimization_guide::features::kRemoteOptimizationGuideFetching);
 
     OptimizationGuideKeyedServiceBrowserTest::SetUp();
   }
@@ -708,7 +708,7 @@ class OptimizationGuideKeyedServiceTargetPredictionEnabledBrowserTest
 
   void SetUp() override {
     scoped_feature_list_.InitWithFeatures(
-        {optimization_guide::features::kOptimizationHintsFetching,
+        {optimization_guide::features::kRemoteOptimizationGuideFetching,
          optimization_guide::features::kOptimizationTargetPrediction},
         {});
 
