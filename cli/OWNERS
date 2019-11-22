@@ -2,5 +2,5 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-per-file cros_chrome_sdk*=file:/OWNERS.chrome
-per-file cros_flash*=file:/OWNERS.au
+per-file deploy*=file:/OWNERS.chrome
+per-file flash*=file:/OWNERS.au
