@@ -30,7 +30,6 @@ from chromite.lib import failure_message_lib_unittest
 from chromite.lib import gs_unittest
 from chromite.lib import metrics
 from chromite.lib import osutils
-from chromite.lib import patch_unittest
 from chromite.lib import results_lib
 from chromite.lib import retry_stats
 from chromite.lib import toolchain
@@ -431,53 +430,3 @@ class ReportStageNoSyncTest(AbstractReportStageTestCase):
     """Check that we can run with a RELEASE_TAG of None."""
     self._SetupUpdateStreakCounter()
     self.RunStage()
-
-
-class DetectRelevantChangesStageTest(
-    generic_stages_unittest.AbstractStageTestCase):
-  """Test the DetectRelevantChangesStage."""
-
-  def setUp(self):
-    self._patch_factory = patch_unittest.MockPatchFactory()
-    self.changes = self._patch_factory.GetPatches(how_many=2)
-
-    self._Prepare()
-
-    self.fake_db = fake_cidb.FakeCIDBConnection()
-    self.buildstore = FakeBuildStore(self.fake_db)
-    cidb.CIDBConnectionFactory.SetupMockCidb(self.fake_db)
-    build_id = self.fake_db.InsertBuild(
-        'test-paladin', 1, 'test-paladin', 'bot_hostname')
-    self._run.attrs.metadata.UpdateWithDict({'build_id': build_id})
-
-  def ConstructStage(self):
-    return report_stages.DetectRelevantChangesStage(
-        self._run, self.buildstore, self._current_board, self.changes)
-
-  def testRecordActionForChangesWithIrrelevantAction(self):
-    """Test _RecordActionForChanges with irrelevant action.."""
-    stage = self.ConstructStage()
-    stage._RecordActionForChanges(
-        self.changes, constants.CL_ACTION_IRRELEVANT_TO_SLAVE)
-    action_history = self.fake_db.GetActionHistory()
-    self.assertEqual(len(action_history), 2)
-    for action in action_history:
-      self.assertEqual(action.action, constants.CL_ACTION_IRRELEVANT_TO_SLAVE)
-
-  def testRecordActionForChangesWithEmptySet(self):
-    """Test _RecordActionForChanges with an empty changes set."""
-    stage = self.ConstructStage()
-    stage._RecordActionForChanges(
-        set(), constants.CL_ACTION_IRRELEVANT_TO_SLAVE)
-    action_history = self.fake_db.GetActionHistory()
-    self.assertEqual(len(action_history), 0)
-
-  def testRecordActionForChangesWithRelevantAction(self):
-    """Test _RecordActionForChanges with relevant action."""
-    stage = self.ConstructStage()
-    stage._RecordActionForChanges(
-        self.changes, constants.CL_ACTION_RELEVANT_TO_SLAVE)
-    action_history = self.fake_db.GetActionHistory()
-    self.assertEqual(len(action_history), 2)
-    for action in action_history:
-      self.assertEqual(action.action, constants.CL_ACTION_RELEVANT_TO_SLAVE)

@@ -31,7 +31,6 @@ from chromite.lib import config_lib
 from chromite.lib import constants
 from chromite.lib import cros_logging as logging
 from chromite.lib import failures_lib
-from chromite.lib import patch as cros_patch
 from chromite.lib import parallel
 from chromite.lib import results_lib
 from chromite.lib import toolchain_util
@@ -70,22 +69,6 @@ class SimpleBuilder(generic_builders.Builder):
   def GetVersionInfo(self):
     """Returns the CrOS version info from the chromiumos-overlay."""
     return manifest_version.VersionInfo.from_repo(self._run.buildroot)
-
-  def _GetChangesUnderTest(self):
-    """Returns the list of GerritPatch changes under test."""
-    changes = set()
-
-    changes_json_list = self._run.attrs.metadata.GetDict().get('changes', [])
-    for change_dict in changes_json_list:
-      change = cros_patch.GerritFetchOnlyPatch.FromAttrDict(change_dict)
-      changes.add(change)
-
-    # Also add the changes from PatchChangeStage, the PatchChangeStage doesn't
-    # write changes into metadata.
-    if self._run.ShouldPatchAfterSync():
-      changes.update(set(self.patch_pool.gerrit_patches))
-
-    return list(changes)
 
   def _RunHWTests(self, builder_run, board):
     """Run hwtest-related stages for the specified board.
@@ -186,18 +169,11 @@ class SimpleBuilder(generic_builders.Builder):
     # paygen can't complete without push_image.
     assert not config.paygen or config.push_image
 
-    changes = self._GetChangesUnderTest()
-    if changes:
-      self._RunStage(report_stages.DetectRelevantChangesStage, board,
-                     changes, builder_run=builder_run)
-
     # While this stage list is run in parallel, the order here dictates the
     # order that things will be shown in the log.  So group things together
     # that make sense when read in order.  Also keep in mind that, since we
     # gather output manually, early slow stages will prevent any output from
     # later stages showing up until it finishes.
-    changes = self._GetChangesUnderTest()
-
     early_stage_list = [
         [test_stages.UnitTestStage, board],
     ]

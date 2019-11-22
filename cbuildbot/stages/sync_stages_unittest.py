@@ -25,7 +25,6 @@ from chromite.lib import constants
 from chromite.lib import cros_test_lib
 from chromite.lib import fake_cidb
 from chromite.lib import metadata_lib
-from chromite.lib import patch as cros_patch
 from chromite.lib.buildstore import FakeBuildStore
 
 # It's normal for unittests to access protected members.
@@ -227,50 +226,6 @@ class MockPatch(mock.MagicMock):
 
   def GetDiffStatus(self, _):
     return self.mock_diff_status
-
-
-class SyncStageTest(generic_stages_unittest.AbstractStageTestCase):
-  """Tests the SyncStage."""
-
-  BOT_ID = 'amd64-generic-full'
-
-  def setUp(self):
-    self.PatchObject(
-        buildbucket_lib, 'GetServiceAccount', return_value='server_account')
-    self.PatchObject(auth.AuthorizedHttp, '__init__', return_value=None)
-    self.PatchObject(
-        buildbucket_lib.BuildbucketClient,
-        '_GetHost',
-        return_value=buildbucket_lib.BUILDBUCKET_TEST_HOST)
-    # Create and set up a fake cidb instance.
-    self.fake_db = fake_cidb.FakeCIDBConnection()
-    cidb.CIDBConnectionFactory.SetupMockCidb(self.fake_db)
-
-    self._Prepare()
-    self.buildstore = FakeBuildStore()
-
-  def ConstructStage(self):
-    return sync_stages.SyncStage(self._run, self.buildstore)
-
-  def testWriteChangesToMetadata(self):
-    """Test whether WriteChangesToMetadata can handle duplicates properly."""
-    change_1 = cros_patch.GerritFetchOnlyPatch(
-        'https://host/chromite/tacos', 'chromite/tacos',
-        'refs/changes/11/12345/4', 'master', 'cros-internal',
-        '7181e4b5e182b6f7d68461b04253de095bad74f9',
-        'I47ea30385af60ae4cc2acc5d1a283a46423bc6e1', '12345', '4',
-        'foo@chromium.org', 1, 1, 3)
-    change_2 = cros_patch.GerritFetchOnlyPatch(
-        'https://host/chromite/foo', 'chromite/foo', 'refs/changes/11/12344/3',
-        'master', 'cros-internal', 'cf23df2207d99a74fbe169e3eba035e633b65d94',
-        'Iab9bf08b9b9bd4f72721cfc36e843ed302aca11a', '12344', '3',
-        'foo@chromium.org', 0, 0, 1)
-    stage = self.ConstructStage()
-    stage.WriteChangesToMetadata([change_1, change_1, change_2])
-    # Test whether the sort function works.
-    expected = [change_2.GetAttributeDict(), change_1.GetAttributeDict()]
-    result = self._run.attrs.metadata.GetValue('changes')
-    self.assertEqual(expected, result)
 
 
 class MasterSlaveLKGMSyncTest(generic_stages_unittest.StageTestCase):
