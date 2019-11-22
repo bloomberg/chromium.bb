@@ -26,9 +26,9 @@
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
-#include "chrome/browser/ui/webui/localized_string.h"
 #include "chrome/browser/ui/webui/management_ui.h"
 #include "chrome/browser/ui/webui/policy_indicator_localized_strings_provider.h"
+#include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
@@ -152,7 +152,7 @@ bool IsProfileManaged(Profile* profile) {
 #endif
 
 void AddCommonStrings(content::WebUIDataSource* html_source, Profile* profile) {
-  static constexpr LocalizedString kLocalizedStrings[] = {
+  static constexpr webui::LocalizedString kLocalizedStrings[] = {
     {"add", IDS_ADD},
     {"advancedPageTitle", IDS_SETTINGS_ADVANCED},
     {"back", IDS_ACCNAME_BACK},
@@ -208,7 +208,7 @@ void AddCommonStrings(content::WebUIDataSource* html_source, Profile* profile) {
 }
 
 void AddA11yStrings(content::WebUIDataSource* html_source) {
-  static constexpr LocalizedString kLocalizedStrings[] = {
+  static constexpr webui::LocalizedString kLocalizedStrings[] = {
     {"a11yPageTitle", IDS_SETTINGS_ACCESSIBILITY},
     {"a11yWebStore", IDS_SETTINGS_ACCESSIBILITY_WEB_STORE},
     {"accessibleImageLabelsTitle", IDS_SETTINGS_ACCESSIBLE_IMAGE_LABELS_TITLE},
@@ -248,7 +248,7 @@ void AddA11yStrings(content::WebUIDataSource* html_source) {
     {"captionsColorMagenta", IDS_SETTINGS_CAPTIONS_COLOR_MAGENTA},
     {"captionsDefaultSetting", IDS_SETTINGS_CAPTIONS_DEFAULT_SETTING},
     {"settingsSliderRoleDescription",
-      IDS_SETTINGS_SLIDER_MIN_MAX_ARIA_ROLE_DESCRIPTION},
+     IDS_SETTINGS_SLIDER_MIN_MAX_ARIA_ROLE_DESCRIPTION},
 #if defined(OS_CHROMEOS)
     {"optionsInMenuLabel", IDS_SETTINGS_OPTIONS_IN_MENU_LABEL},
     {"largeMouseCursorLabel", IDS_SETTINGS_LARGE_MOUSE_CURSOR_LABEL},
@@ -436,7 +436,7 @@ void AddA11yStrings(content::WebUIDataSource* html_source) {
 }
 
 void AddAboutStrings(content::WebUIDataSource* html_source) {
-  static constexpr LocalizedString kLocalizedStrings[] = {
+  static constexpr webui::LocalizedString kLocalizedStrings[] = {
     {"aboutProductLogoAlt", IDS_SHORT_PRODUCT_LOGO_ALT_TEXT},
 
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
@@ -547,7 +547,7 @@ void AddAboutStrings(content::WebUIDataSource* html_source) {
 #if defined(OS_CHROMEOS)
 void AddCrostiniStrings(content::WebUIDataSource* html_source,
                         Profile* profile) {
-  static constexpr LocalizedString kLocalizedStrings[] = {
+  static constexpr webui::LocalizedString kLocalizedStrings[] = {
       {"crostiniPageTitle", IDS_SETTINGS_CROSTINI_TITLE},
       {"crostiniPageLabel", IDS_SETTINGS_CROSTINI_LABEL},
       {"crostiniEnable", IDS_SETTINGS_TURN_ON},
@@ -635,7 +635,7 @@ void AddCrostiniStrings(content::WebUIDataSource* html_source,
 
 void AddPluginVmStrings(content::WebUIDataSource* html_source,
                         Profile* profile) {
-  static constexpr LocalizedString kLocalizedStrings[] = {
+  static constexpr webui::LocalizedString kLocalizedStrings[] = {
       {"pluginVmPageTitle", IDS_SETTINGS_PLUGIN_VM_PAGE_TITLE},
       {"pluginVmPageLabel", IDS_SETTINGS_PLUGIN_VM_PAGE_LABEL},
       {"pluginVmPageSubtext", IDS_SETTINGS_PLUGIN_VM_PAGE_SUBTEXT},
@@ -654,7 +654,7 @@ void AddPluginVmStrings(content::WebUIDataSource* html_source,
 }
 
 void AddAndroidAppStrings(content::WebUIDataSource* html_source) {
-  static constexpr LocalizedString kLocalizedStrings[] = {
+  static constexpr webui::LocalizedString kLocalizedStrings[] = {
       {"androidAppsPageLabel", IDS_SETTINGS_ANDROID_APPS_LABEL},
       {"androidAppsEnable", IDS_SETTINGS_TURN_ON},
       {"androidAppsManageApps", IDS_SETTINGS_ANDROID_APPS_MANAGE_APPS},
@@ -681,7 +681,7 @@ void AddAndroidAppStrings(content::WebUIDataSource* html_source) {
 }
 
 void AddAppsStrings(content::WebUIDataSource* html_source) {
-  static constexpr LocalizedString kLocalizedStrings[] = {
+  static constexpr webui::LocalizedString kLocalizedStrings[] = {
       {"appsPageTitle", IDS_SETTINGS_APPS_TITLE},
       {"appManagementTitle", IDS_SETTINGS_APPS_LINK_TEXT},
   };
@@ -690,7 +690,7 @@ void AddAppsStrings(content::WebUIDataSource* html_source) {
 }
 
 void AddAppManagementStrings(content::WebUIDataSource* html_source) {
-  static constexpr LocalizedString kLocalizedStrings[] = {
+  static constexpr webui::LocalizedString kLocalizedStrings[] = {
       {"appManagementAppInstalledByPolicyLabel",
        IDS_APP_MANAGEMENT_POLICY_APP_POLICY_STRING},
       {"appManagementCameraPermissionLabel", IDS_APP_MANAGEMENT_CAMERA},
@@ -716,7 +716,7 @@ void AddAppManagementStrings(content::WebUIDataSource* html_source) {
 void AddParentalControlStrings(content::WebUIDataSource* html_source) {
   html_source->AddBoolean(
       "isChild", user_manager::UserManager::Get()->IsLoggedInAsChildUser());
-  static constexpr LocalizedString kLocalizedStrings[] = {
+  static constexpr webui::LocalizedString kLocalizedStrings[] = {
       {"parentalControlsPageTitle", IDS_SETTINGS_PARENTAL_CONTROLS_PAGE_TITLE},
       {"parentalControlsPageSetUpLabel",
        IDS_SETTINGS_PARENTAL_CONTROLS_PAGE_SET_UP_LABEL},
@@ -735,7 +735,7 @@ void AddParentalControlStrings(content::WebUIDataSource* html_source) {
 
 void AddAppearanceStrings(content::WebUIDataSource* html_source,
                           Profile* profile) {
-  static constexpr LocalizedString kLocalizedStrings[] = {
+  static constexpr webui::LocalizedString kLocalizedStrings[] = {
     {"appearancePageTitle", IDS_SETTINGS_APPEARANCE},
     {"customWebAddress", IDS_SETTINGS_CUSTOM_WEB_ADDRESS},
     {"enterCustomWebAddress", IDS_SETTINGS_ENTER_CUSTOM_WEB_ADDRESS},
@@ -784,7 +784,7 @@ void AddAppearanceStrings(content::WebUIDataSource* html_source,
 
 #if defined(OS_CHROMEOS)
 void AddBluetoothStrings(content::WebUIDataSource* html_source) {
-  static constexpr LocalizedString kLocalizedStrings[] = {
+  static constexpr webui::LocalizedString kLocalizedStrings[] = {
       {"bluetoothConnected", IDS_SETTINGS_BLUETOOTH_CONNECTED},
       {"bluetoothConnectedWithBattery",
        IDS_SETTINGS_BLUETOOTH_CONNECTED_WITH_BATTERY},
@@ -842,7 +842,7 @@ void AddBluetoothStrings(content::WebUIDataSource* html_source) {
 #endif
 
 void AddChangePasswordStrings(content::WebUIDataSource* html_source) {
-  static constexpr LocalizedString kLocalizedStrings[] = {
+  static constexpr webui::LocalizedString kLocalizedStrings[] = {
       {"changePasswordPageTitle", IDS_SETTINGS_CHANGE_PASSWORD_TITLE},
       {"changePasswordPageDetails", IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS},
       {"changePasswordPageButton", IDS_SETTINGS_CHANGE_PASSWORD_BUTTON},
@@ -852,7 +852,7 @@ void AddChangePasswordStrings(content::WebUIDataSource* html_source) {
 
 void AddClearBrowsingDataStrings(content::WebUIDataSource* html_source,
                                  Profile* profile) {
-  static constexpr LocalizedString kLocalizedStrings[] = {
+  static constexpr webui::LocalizedString kLocalizedStrings[] = {
       {"clearTimeRange", IDS_SETTINGS_CLEAR_PERIOD_TITLE},
       {"clearBrowsingDataWithSync", IDS_SETTINGS_CLEAR_BROWSING_DATA_WITH_SYNC},
       {"clearBrowsingDataWithSyncError",
@@ -909,7 +909,7 @@ void AddClearBrowsingDataStrings(content::WebUIDataSource* html_source,
 
 #if !defined(OS_CHROMEOS)
 void AddDefaultBrowserStrings(content::WebUIDataSource* html_source) {
-  static constexpr LocalizedString kLocalizedStrings[] = {
+  static constexpr webui::LocalizedString kLocalizedStrings[] = {
       {"defaultBrowser", IDS_SETTINGS_DEFAULT_BROWSER},
       {"defaultBrowserDefault", IDS_SETTINGS_DEFAULT_BROWSER_DEFAULT},
       {"defaultBrowserMakeDefault", IDS_SETTINGS_DEFAULT_BROWSER_MAKE_DEFAULT},
@@ -924,7 +924,7 @@ void AddDefaultBrowserStrings(content::WebUIDataSource* html_source) {
 
 #if defined(OS_CHROMEOS)
 void AddDeviceStrings(content::WebUIDataSource* html_source) {
-  static constexpr LocalizedString kDeviceStrings[] = {
+  static constexpr webui::LocalizedString kDeviceStrings[] = {
       {"devicePageTitle", IDS_SETTINGS_DEVICE_TITLE},
       {"scrollLabel", IDS_SETTINGS_SCROLL_LABEL},
       {"traditionalScrollLabel", IDS_SETTINGS_TRADITIONAL_SCROLL_LABEL},
@@ -933,7 +933,7 @@ void AddDeviceStrings(content::WebUIDataSource* html_source) {
   };
   AddLocalizedStringsBulk(html_source, kDeviceStrings);
 
-  static constexpr LocalizedString kPointersStrings[] = {
+  static constexpr webui::LocalizedString kPointersStrings[] = {
       {"mouseTitle", IDS_SETTINGS_MOUSE_TITLE},
       {"touchpadTitle", IDS_SETTINGS_TOUCHPAD_TITLE},
       {"mouseAndTouchpadTitle", IDS_SETTINGS_MOUSE_AND_TOUCHPAD_TITLE},
@@ -950,7 +950,7 @@ void AddDeviceStrings(content::WebUIDataSource* html_source) {
   };
   AddLocalizedStringsBulk(html_source, kPointersStrings);
 
-  static constexpr LocalizedString keyboard_strings[] = {
+  static constexpr webui::LocalizedString keyboard_strings[] = {
       {"keyboardTitle", IDS_SETTINGS_KEYBOARD_TITLE},
       {"keyboardKeyCtrl", IDS_SETTINGS_KEYBOARD_KEY_LEFT_CTRL},
       {"keyboardKeyAlt", IDS_SETTINGS_KEYBOARD_KEY_LEFT_ALT},
@@ -989,7 +989,7 @@ void AddDeviceStrings(content::WebUIDataSource* html_source) {
           ? IDS_SETTINGS_KEYBOARD_SEND_FUNCTION_KEYS_LAYOUT2_DESCRIPTION
           : IDS_SETTINGS_KEYBOARD_SEND_FUNCTION_KEYS_DESCRIPTION);
 
-  static constexpr LocalizedString kStylusStrings[] = {
+  static constexpr webui::LocalizedString kStylusStrings[] = {
       {"stylusTitle", IDS_SETTINGS_STYLUS_TITLE},
       {"stylusEnableStylusTools", IDS_SETTINGS_STYLUS_ENABLE_STYLUS_TOOLS},
       {"stylusAutoOpenStylusTools", IDS_SETTINGS_STYLUS_AUTO_OPEN_STYLUS_TOOLS},
@@ -1009,7 +1009,7 @@ void AddDeviceStrings(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_STYLUS_NOTE_TAKING_APP_WAITING_FOR_ANDROID}};
   AddLocalizedStringsBulk(html_source, kStylusStrings);
 
-  static constexpr LocalizedString kDisplayStrings[] = {
+  static constexpr webui::LocalizedString kDisplayStrings[] = {
       {"displayTitle", IDS_SETTINGS_DISPLAY_TITLE},
       {"displayArrangementText", IDS_SETTINGS_DISPLAY_ARRANGEMENT_TEXT},
       {"displayArrangementTitle", IDS_SETTINGS_DISPLAY_ARRANGEMENT_TITLE},
@@ -1105,7 +1105,7 @@ void AddDeviceStrings(content::WebUIDataSource* html_source) {
       "allowDisableMouseAcceleration",
       base::FeatureList::IsEnabled(features::kAllowDisableMouseAcceleration));
 
-  static constexpr LocalizedString kStorageStrings[] = {
+  static constexpr webui::LocalizedString kStorageStrings[] = {
       {"storageTitle", IDS_SETTINGS_STORAGE_TITLE},
       {"storageItemInUse", IDS_SETTINGS_STORAGE_ITEM_IN_USE},
       {"storageItemAvailable", IDS_SETTINGS_STORAGE_ITEM_AVAILABLE},
@@ -1143,7 +1143,7 @@ void AddDeviceStrings(content::WebUIDataSource* html_source) {
           IDS_SETTINGS_STORAGE_ANDROID_APPS_ACCESS_EXTERNAL_DRIVES_NOTE,
           base::ASCIIToUTF16(chrome::kArcExternalStorageLearnMoreURL)));
 
-  static constexpr LocalizedString kPowerStrings[] = {
+  static constexpr webui::LocalizedString kPowerStrings[] = {
       {"powerTitle", IDS_SETTINGS_POWER_TITLE},
       {"powerSourceLabel", IDS_SETTINGS_POWER_SOURCE_LABEL},
       {"powerSourceBattery", IDS_SETTINGS_POWER_SOURCE_BATTERY},
@@ -1167,7 +1167,7 @@ void AddDeviceStrings(content::WebUIDataSource* html_source) {
 }
 
 void AddFilesStrings(content::WebUIDataSource* html_source) {
-  static constexpr LocalizedString kLocalizedStrings[] = {
+  static constexpr webui::LocalizedString kLocalizedStrings[] = {
       {"filesPageTitle", IDS_OS_SETTINGS_FILES},
       {"smbSharesTitle", IDS_SETTINGS_DOWNLOADS_SMB_SHARES},
       {"smbSharesLearnMoreLabel",
@@ -1200,7 +1200,7 @@ void AddFilesStrings(content::WebUIDataSource* html_source) {
 #endif  // defined(OS_CHROMEOS)
 
 void AddDownloadsStrings(content::WebUIDataSource* html_source) {
-  static constexpr LocalizedString kLocalizedStrings[] = {
+  static constexpr webui::LocalizedString kLocalizedStrings[] = {
       {"downloadsPageTitle", IDS_SETTINGS_DOWNLOADS},
       {"downloadLocation", IDS_SETTINGS_DOWNLOAD_LOCATION},
       {"changeDownloadLocation", IDS_SETTINGS_CHANGE_DOWNLOAD_LOCATION},
@@ -1218,7 +1218,7 @@ void AddChromeCleanupStrings(content::WebUIDataSource* html_source) {
       L"https://www.google.ca/chrome/browser/privacy/"
       "whitepaper.html#unwantedsoftware";
 
-  static constexpr LocalizedString kLocalizedStrings[] = {
+  static constexpr webui::LocalizedString kLocalizedStrings[] = {
       {"chromeCleanupPageTitle",
        IDS_SETTINGS_RESET_CLEAN_UP_COMPUTER_PAGE_TITLE},
       {"chromeCleanupDetailsExtensions",
@@ -1308,7 +1308,7 @@ void AddChromeCleanupStrings(content::WebUIDataSource* html_source) {
 }
 
 void AddIncompatibleApplicationsStrings(content::WebUIDataSource* html_source) {
-  static constexpr LocalizedString kLocalizedStrings[] = {
+  static constexpr webui::LocalizedString kLocalizedStrings[] = {
       {"incompatibleApplicationsResetCardTitle",
        IDS_SETTINGS_INCOMPATIBLE_APPLICATIONS_RESET_CARD_TITLE},
       {"incompatibleApplicationsSubpageSubtitle",
@@ -1342,7 +1342,7 @@ void AddIncompatibleApplicationsStrings(content::WebUIDataSource* html_source) {
 #endif  // defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
 void AddResetStrings(content::WebUIDataSource* html_source) {
-  static constexpr LocalizedString kLocalizedStrings[] = {
+  static constexpr webui::LocalizedString kLocalizedStrings[] = {
 #if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
     {"resetPageTitle", IDS_SETTINGS_RESET_AND_CLEANUP},
 #else
@@ -1389,7 +1389,7 @@ void AddResetStrings(content::WebUIDataSource* html_source) {
 
 #if !defined(OS_CHROMEOS)
 void AddImportDataStrings(content::WebUIDataSource* html_source) {
-  static constexpr LocalizedString kLocalizedStrings[] = {
+  static constexpr webui::LocalizedString kLocalizedStrings[] = {
       {"importTitle", IDS_SETTINGS_IMPORT_SETTINGS_TITLE},
       {"importFromLabel", IDS_SETTINGS_IMPORT_FROM_LABEL},
       {"importDescription", IDS_SETTINGS_IMPORT_ITEMS_LABEL},
@@ -1411,7 +1411,7 @@ void AddImportDataStrings(content::WebUIDataSource* html_source) {
 
 #if defined(OS_CHROMEOS)
 void AddDateTimeStrings(content::WebUIDataSource* html_source) {
-  static constexpr LocalizedString kLocalizedStrings[] = {
+  static constexpr webui::LocalizedString kLocalizedStrings[] = {
       {"dateTimePageTitle", IDS_SETTINGS_DATE_TIME},
       {"timeZone", IDS_SETTINGS_TIME_ZONE},
       {"selectTimeZoneResolveMethod",
@@ -1443,7 +1443,7 @@ void AddDateTimeStrings(content::WebUIDataSource* html_source) {
 }
 
 void AddEasyUnlockStrings(content::WebUIDataSource* html_source) {
-  static constexpr LocalizedString kLocalizedStrings[] = {
+  static constexpr webui::LocalizedString kLocalizedStrings[] = {
       {"easyUnlockSectionTitle", IDS_SETTINGS_EASY_UNLOCK_SECTION_TITLE},
       {"easyUnlockUnlockDeviceOnly",
        IDS_SETTINGS_EASY_UNLOCK_UNLOCK_DEVICE_ONLY},
@@ -1483,7 +1483,7 @@ void AddFingerprintStrings(content::WebUIDataSource* html_source) {
 }
 
 void AddInternetStrings(content::WebUIDataSource* html_source) {
-  static constexpr LocalizedString kLocalizedStrings[] = {
+  static constexpr webui::LocalizedString kLocalizedStrings[] = {
       {"internetAddConnection", IDS_SETTINGS_INTERNET_ADD_CONNECTION},
       {"internetAddConnectionExpandA11yLabel",
        IDS_SETTINGS_INTERNET_ADD_CONNECTION_EXPAND_ACCESSIBILITY_LABEL},
@@ -1619,7 +1619,7 @@ void AddInternetStrings(content::WebUIDataSource* html_source) {
 #endif
 
 void AddLanguagesStrings(content::WebUIDataSource* html_source) {
-  static constexpr LocalizedString kLocalizedStrings[] = {
+  static constexpr webui::LocalizedString kLocalizedStrings[] = {
     {"languagesListTitle", IDS_SETTINGS_LANGUAGES_LANGUAGES_LIST_TITLE},
     {"searchLanguages", IDS_SETTINGS_LANGUAGE_SEARCH},
     {"languagesExpandA11yLabel",
@@ -1746,7 +1746,7 @@ void AddChromeOSUserStrings(content::WebUIDataSource* html_source,
 #endif
 
 void AddOnStartupStrings(content::WebUIDataSource* html_source) {
-  static constexpr LocalizedString kLocalizedStrings[] = {
+  static constexpr webui::LocalizedString kLocalizedStrings[] = {
       {"onStartup", IDS_SETTINGS_ON_STARTUP},
       {"onStartupOpenNewTab", IDS_SETTINGS_ON_STARTUP_OPEN_NEW_TAB},
       {"onStartupContinue", IDS_SETTINGS_ON_STARTUP_CONTINUE},
@@ -1797,7 +1797,7 @@ bool IsFidoAuthenticationAvailable(autofill::PersonalDataManager* personal_data,
 void AddAutofillStrings(content::WebUIDataSource* html_source,
                         Profile* profile,
                         content::WebContents* web_contents) {
-  static constexpr LocalizedString kLocalizedStrings[] = {
+  static constexpr webui::LocalizedString kLocalizedStrings[] = {
       {"autofillPageTitle", IDS_SETTINGS_AUTOFILL},
       {"passwords", IDS_SETTINGS_PASSWORDS},
       {"creditCards", IDS_AUTOFILL_PAYMENT_METHODS},
@@ -1942,7 +1942,7 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
 }
 
 void AddPeopleStrings(content::WebUIDataSource* html_source, Profile* profile) {
-  static constexpr LocalizedString kLocalizedStrings[] = {
+  static constexpr webui::LocalizedString kLocalizedStrings[] = {
     {"peoplePageTitle", IDS_SETTINGS_PEOPLE},
     {"manageOtherPeople", IDS_SETTINGS_PEOPLE_MANAGE_OTHER_PEOPLE},
 #if defined(OS_CHROMEOS)
@@ -2299,7 +2299,7 @@ void AddPeopleStrings(content::WebUIDataSource* html_source, Profile* profile) {
 
   // The syncDisconnect text differs depending on Dice-enabledness.
   if (AccountConsistencyModeManager::IsDiceEnabledForProfile(profile)) {
-    static constexpr LocalizedString kSyncDisconnectStrings[] = {
+    static constexpr webui::LocalizedString kSyncDisconnectStrings[] = {
         {"syncDisconnect", IDS_SETTINGS_PEOPLE_SYNC_TURN_OFF},
         {"syncDisconnectTitle",
          IDS_SETTINGS_TURN_OFF_SYNC_AND_SIGN_OUT_DIALOG_TITLE},
@@ -2375,7 +2375,7 @@ void AddPeopleStrings(content::WebUIDataSource* html_source, Profile* profile) {
 }
 
 void AddPrintingStrings(content::WebUIDataSource* html_source) {
-  static constexpr LocalizedString kLocalizedStrings[] = {
+  static constexpr webui::LocalizedString kLocalizedStrings[] = {
     {"printingPageTitle", IDS_SETTINGS_PRINTING},
     {"printingCloudPrintLearnMoreLabel",
      IDS_SETTINGS_PRINTING_CLOUD_PRINT_LEARN_MORE_LABEL},
@@ -2515,7 +2515,7 @@ void AddPrintingStrings(content::WebUIDataSource* html_source) {
 
 void AddPrivacyStrings(content::WebUIDataSource* html_source,
                        Profile* profile) {
-  static constexpr LocalizedString kLocalizedStrings[] = {
+  static constexpr webui::LocalizedString kLocalizedStrings[] = {
       {"privacyPageTitle", IDS_SETTINGS_PRIVACY},
       {"signinAllowedTitle", IDS_SETTINGS_SIGNIN_ALLOWED},
       {"signinAllowedDescription", IDS_SETTINGS_SIGNIN_ALLOWED_DESC},
@@ -2551,7 +2551,7 @@ void AddPrivacyStrings(content::WebUIDataSource* html_source,
   };
   AddLocalizedStringsBulk(html_source, kLocalizedStrings);
 
-  static constexpr LocalizedString kConditionalLocalizedStrings[] = {
+  static constexpr webui::LocalizedString kConditionalLocalizedStrings[] = {
       {"searchSuggestPref", IDS_SETTINGS_SUGGEST_PREF},
       {"searchSuggestPrefDesc", IDS_SETTINGS_SUGGEST_PREF_DESC},
       {"networkPredictionEnabled",
@@ -2584,7 +2584,7 @@ void AddPrivacyStrings(content::WebUIDataSource* html_source,
 }
 
 void AddSearchInSettingsStrings(content::WebUIDataSource* html_source) {
-  static constexpr LocalizedString kLocalizedStrings[] = {
+  static constexpr webui::LocalizedString kLocalizedStrings[] = {
       {"searchPrompt", IDS_SETTINGS_SEARCH_PROMPT},
       {"searchNoResults", IDS_SEARCH_NO_RESULTS},
       {"searchResults", IDS_SEARCH_RESULTS},
@@ -2611,7 +2611,7 @@ void AddSearchStrings(content::WebUIDataSource* html_source, Profile* profile) {
       is_assistant_allowed && !chromeos::features::IsSplitSettingsEnabled();
 #endif
 
-  static constexpr LocalizedString kLocalizedStrings[] = {
+  static constexpr webui::LocalizedString kLocalizedStrings[] = {
     {"searchEnginesManage", IDS_SETTINGS_SEARCH_MANAGE_SEARCH_ENGINES},
 #if defined(OS_CHROMEOS)
     {"osSearchEngineLabel", IDS_OS_SETTINGS_SEARCH_ENGINE_LABEL},
@@ -2649,7 +2649,7 @@ void AddSearchStrings(content::WebUIDataSource* html_source, Profile* profile) {
 }
 
 void AddSearchEnginesStrings(content::WebUIDataSource* html_source) {
-  static constexpr LocalizedString kLocalizedStrings[] = {
+  static constexpr webui::LocalizedString kLocalizedStrings[] = {
       {"searchEnginesPageTitle", IDS_SETTINGS_SEARCH_ENGINES},
       {"searchEnginesAddSearchEngine",
        IDS_SETTINGS_SEARCH_ENGINES_ADD_SEARCH_ENGINE},
@@ -2679,7 +2679,7 @@ void AddSearchEnginesStrings(content::WebUIDataSource* html_source) {
 #if defined(OS_CHROMEOS)
 void AddGoogleAssistantStrings(content::WebUIDataSource* html_source,
                                Profile* profile) {
-  static constexpr LocalizedString kLocalizedStrings[] = {
+  static constexpr webui::LocalizedString kLocalizedStrings[] = {
       {"googleAssistantPageTitle", IDS_SETTINGS_GOOGLE_ASSISTANT},
       {"googleAssistantEnableContext", IDS_ASSISTANT_SCREEN_CONTEXT_TITLE},
       {"googleAssistantEnableContextDescription",
@@ -2724,7 +2724,7 @@ void AddGoogleAssistantStrings(content::WebUIDataSource* html_source,
 
 void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
                             Profile* profile) {
-  static constexpr LocalizedString kLocalizedStrings[] = {
+  static constexpr webui::LocalizedString kLocalizedStrings[] = {
     {"addSite", IDS_SETTINGS_ADD_SITE},
     {"addSiteExceptionPlaceholder",
      IDS_SETTINGS_ADD_SITE_EXCEPTION_PLACEHOLDER},
@@ -3078,7 +3078,7 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
   AddLocalizedStringsBulk(html_source, kLocalizedStrings);
 
   // These ones cannot be constexpr because we need to check base::FeatureList.
-  static LocalizedString kSensorsLocalizedStrings[] = {
+  static webui::LocalizedString kSensorsLocalizedStrings[] = {
       {"siteSettingsSensors",
        base::FeatureList::IsEnabled(features::kGenericSensorExtraClasses)
            ? IDS_SETTINGS_SITE_SETTINGS_SENSORS
@@ -3138,7 +3138,7 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
 
 #if defined(OS_CHROMEOS)
 void AddUsersStrings(content::WebUIDataSource* html_source) {
-  static constexpr LocalizedString kLocalizedStrings[] = {
+  static constexpr webui::LocalizedString kLocalizedStrings[] = {
       {"usersModifiedByOwnerLabel", IDS_SETTINGS_USERS_MODIFIED_BY_OWNER_LABEL},
       {"guestBrowsingLabel", IDS_SETTINGS_USERS_GUEST_BROWSING_LABEL},
       {"settingsManagedLabel", IDS_SETTINGS_USERS_MANAGED_LABEL},
@@ -3156,7 +3156,7 @@ void AddUsersStrings(content::WebUIDataSource* html_source) {
 
 #if !defined(OS_CHROMEOS)
 void AddSystemStrings(content::WebUIDataSource* html_source) {
-  static constexpr LocalizedString kLocalizedStrings[] = {
+  static constexpr webui::LocalizedString kLocalizedStrings[] = {
     {"systemPageTitle", IDS_SETTINGS_SYSTEM},
 #if !defined(OS_MACOSX)
     {"backgroundAppsLabel", IDS_SETTINGS_SYSTEM_BACKGROUND_APPS_LABEL},
@@ -3185,7 +3185,7 @@ void AddSystemStrings(content::WebUIDataSource* html_source) {
 #endif
 
 void AddWebContentStrings(content::WebUIDataSource* html_source) {
-  static constexpr LocalizedString kLocalizedStrings[] = {
+  static constexpr webui::LocalizedString kLocalizedStrings[] = {
       {"webContent", IDS_SETTINGS_WEB_CONTENT},
       {"pageZoom", IDS_SETTINGS_PAGE_ZOOM_LABEL},
       {"fontSize", IDS_SETTINGS_FONT_SIZE_LABEL},
@@ -3216,7 +3216,7 @@ void AddWebContentStrings(content::WebUIDataSource* html_source) {
 
 #if defined(OS_CHROMEOS)
 void AddMultideviceStrings(content::WebUIDataSource* html_source) {
-  static constexpr LocalizedString kLocalizedStrings[] = {
+  static constexpr webui::LocalizedString kLocalizedStrings[] = {
       {"multidevicePageTitle", IDS_SETTINGS_MULTIDEVICE},
       {"multideviceSetupButton", IDS_SETTINGS_MULTIDEVICE_SETUP_BUTTON},
       {"multideviceVerifyButton", IDS_SETTINGS_MULTIDEVICE_VERIFY_BUTTON},
@@ -3294,7 +3294,7 @@ void AddExtensionsStrings(content::WebUIDataSource* html_source) {
 }
 
 void AddSecurityKeysStrings(content::WebUIDataSource* html_source) {
-  static constexpr LocalizedString kSecurityKeysStrings[] = {
+  static constexpr webui::LocalizedString kSecurityKeysStrings[] = {
       {"securityKeysBioEnrollmentAddTitle",
        IDS_SETTINGS_SECURITY_KEYS_BIO_ENROLLMENT_ADD_TITLE},
       {"securityKeysBioEnrollmentDelete",

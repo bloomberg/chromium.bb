@@ -5,9 +5,9 @@
 #include "chrome/browser/ui/webui/new_tab_page/new_tab_page_ui.h"
 
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/webui/localized_string.h"
 #include "chrome/browser/ui/webui/managed_ui_handler.h"
 #include "chrome/browser/ui/webui/new_tab_page/new_tab_page_handler.h"
+#include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/new_tab_page_resources.h"
 #include "chrome/grit/new_tab_page_resources_map.h"
@@ -24,7 +24,7 @@ content::WebUIDataSource* CreateNewTabPageUiHtmlSource() {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUINewTabPageHost);
 
-  static constexpr LocalizedString kStrings[] = {
+  static constexpr webui::LocalizedString kStrings[] = {
       {"title", IDS_NEW_TAB_TITLE},
   };
   AddLocalizedStringsBulk(source, kStrings);

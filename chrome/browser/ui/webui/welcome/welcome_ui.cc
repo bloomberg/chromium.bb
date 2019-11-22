@@ -8,7 +8,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "build/branding_buildflags.h"
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
-#include "chrome/browser/ui/webui/localized_string.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/browser/ui/webui/welcome/bookmark_handler.h"
 #include "chrome/browser/ui/webui/welcome/google_apps_handler.h"
@@ -71,7 +70,7 @@ void HandleRequestCallback(
 }
 
 void AddStrings(content::WebUIDataSource* html_source) {
-  static constexpr LocalizedString kLocalizedStrings[] = {
+  static constexpr webui::LocalizedString kLocalizedStrings[] = {
       // Shared strings.
       {"bookmarkAdded", IDS_WELCOME_BOOKMARK_ADDED},
       {"bookmarksAdded", IDS_WELCOME_BOOKMARKS_ADDED},

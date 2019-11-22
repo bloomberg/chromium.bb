@@ -12,7 +12,7 @@
 #include "chrome/browser/chromeos/crostini/crostini_installer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chromeos/crostini_installer/crostini_installer_page_handler.h"
-#include "chrome/browser/ui/webui/localized_string.h"
+#include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/browser_resources.h"
@@ -31,7 +31,7 @@
 
 namespace {
 void AddStringResources(content::WebUIDataSource* source) {
-  static constexpr LocalizedString kStrings[] = {
+  static constexpr webui::LocalizedString kStrings[] = {
       {"install", IDS_CROSTINI_INSTALLER_INSTALL_BUTTON},
       {"retry", IDS_CROSTINI_INSTALLER_RETRY_BUTTON},
       {"close", IDS_APP_CLOSE},

@@ -19,10 +19,10 @@
 #include "chrome/browser/ui/webui/browsing_history_handler.h"
 #include "chrome/browser/ui/webui/foreign_session_handler.h"
 #include "chrome/browser/ui/webui/history_login_handler.h"
-#include "chrome/browser/ui/webui/localized_string.h"
 #include "chrome/browser/ui/webui/managed_ui_handler.h"
 #include "chrome/browser/ui/webui/metrics_handler.h"
 #include "chrome/browser/ui/webui/navigation_handler.h"
+#include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
@@ -56,7 +56,7 @@ content::WebUIDataSource* CreateHistoryUIHTMLSource(Profile* profile) {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUIHistoryHost);
 
-  static constexpr LocalizedString kStrings[] = {
+  static constexpr webui::LocalizedString kStrings[] = {
       // Localized strings (alphabetical order).
       {"actionMenuDescription", IDS_HISTORY_ACTION_MENU_DESCRIPTION},
       {"ariaRoleDescription", IDS_HISTORY_ARIA_ROLE_DESCRIPTION},

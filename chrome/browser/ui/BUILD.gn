@@ -248,8 +248,6 @@ jumbo_static_library("ui") {
     "webui/invalidations_ui.h",
     "webui/local_state/local_state_ui.cc",
     "webui/local_state/local_state_ui.h",
-    "webui/localized_string.cc",
-    "webui/localized_string.h",
     "webui/log_web_ui_url.cc",
     "webui/log_web_ui_url.h",
     "webui/media/media_engagement_ui.cc",

@@ -19,6 +19,11 @@ struct GritResourceMap;
 
 namespace webui {
 
+struct LocalizedString {
+  const char* name;
+  int id;
+};
+
 struct ResourcePath {
   const char* path;
   int id;
@@ -41,6 +46,11 @@ void SetupBundledWebUIDataSource(content::WebUIDataSource* source,
                                  int bundle,
                                  int default_resource);
 #endif
+
+// Calls content::WebUIDataSource::AddLocalizedString() in a for-loop for
+// |strings|. Reduces code size vs. reimplementing the same for-loop.
+void AddLocalizedStringsBulk(content::WebUIDataSource* html_source,
+                             base::span<const LocalizedString> strings);
 
 // Calls content::WebUIDataSource::AddResourcePath() in a for-loop for |paths|.
 // Reduces code size vs. reimplementing the same for-loop.

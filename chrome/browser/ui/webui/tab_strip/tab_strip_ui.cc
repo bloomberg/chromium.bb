@@ -31,9 +31,9 @@
 #include "chrome/browser/ui/tabs/tab_utils.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
-#include "chrome/browser/ui/webui/localized_string.h"
 #include "chrome/browser/ui/webui/tab_strip/tab_strip_ui_layout.h"
 #include "chrome/browser/ui/webui/theme_handler.h"
+#include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/tab_strip_resources.h"
@@ -532,7 +532,7 @@ TabStripUI::TabStripUI(content::WebUI* web_ui)
       "showDemoOptions",
       base::FeatureList::IsEnabled(features::kWebUITabStripDemoOptions));
 
-  static constexpr LocalizedString kStrings[] = {
+  static constexpr webui::LocalizedString kStrings[] = {
       {"tabListTitle", IDS_ACCNAME_TAB_LIST},
       {"closeTab", IDS_ACCNAME_CLOSE},
       {"defaultTabTitle", IDS_DEFAULT_TAB_TITLE},

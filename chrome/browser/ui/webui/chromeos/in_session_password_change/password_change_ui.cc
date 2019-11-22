@@ -16,7 +16,7 @@
 #include "chrome/browser/ui/webui/chromeos/in_session_password_change/password_change_dialogs.h"
 #include "chrome/browser/ui/webui/chromeos/in_session_password_change/password_change_handler.h"
 #include "chrome/browser/ui/webui/chromeos/in_session_password_change/urgent_password_expiry_notification_handler.h"
-#include "chrome/browser/ui/webui/localized_string.h"
+#include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/browser_resources.h"
@@ -111,7 +111,7 @@ ConfirmPasswordChangeUI::ConfirmPasswordChangeUI(content::WebUI* web_ui)
   content::WebUIDataSource* source = content::WebUIDataSource::Create(
       chrome::kChromeUIConfirmPasswordChangeHost);
 
-  static constexpr LocalizedString kLocalizedStrings[] = {
+  static constexpr webui::LocalizedString kLocalizedStrings[] = {
       {"title", IDS_PASSWORD_CHANGE_CONFIRM_DIALOG_TITLE},
       {"bothPasswordsPrompt",
        IDS_PASSWORD_CHANGE_CONFIRM_DIALOG_BOTH_PASSWORDS_PROMPT},
@@ -165,7 +165,7 @@ UrgentPasswordExpiryNotificationUI::UrgentPasswordExpiryNotificationUI(
                       base::NumberToString(expiration_time.ToJsTime()));
   }
 
-  static constexpr LocalizedString kLocalizedStrings[] = {
+  static constexpr webui::LocalizedString kLocalizedStrings[] = {
       {"body", IDS_PASSWORD_EXPIRY_CALL_TO_ACTION_CRITICAL},
       {"button", IDS_OK}};
   AddLocalizedStringsBulk(source, kLocalizedStrings);

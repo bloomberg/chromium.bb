@@ -6,7 +6,7 @@
 
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/certificate_viewer_webui.h"
-#include "chrome/browser/ui/webui/localized_string.h"
+#include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/generated_resources.h"
@@ -23,7 +23,7 @@ content::WebUIDataSource* GetWebUIDataSource(const std::string& host) {
   content::WebUIDataSource* html_source =
       content::WebUIDataSource::Create(host);
 
-  static constexpr LocalizedString kStrings[] = {
+  static constexpr webui::LocalizedString kStrings[] = {
       {"general", IDS_CERT_INFO_GENERAL_TAB_LABEL},
       {"details", IDS_CERT_INFO_DETAILS_TAB_LABEL},
       {"close", IDS_CLOSE},

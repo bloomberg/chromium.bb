@@ -9,7 +9,7 @@
 #include "base/system/sys_info.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chromeos/multidevice_setup/multidevice_setup_handler.h"
-#include "chrome/browser/ui/webui/localized_string.h"
+#include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/generated_resources.h"
@@ -34,7 +34,7 @@ namespace {
 
 const char kFootnoteMarker[] = "*";
 
-constexpr LocalizedString kLocalizedStringsWithoutPlaceholders[] = {
+constexpr webui::LocalizedString kLocalizedStringsWithoutPlaceholders[] = {
     {"accept", IDS_MULTIDEVICE_SETUP_ACCEPT_LABEL},
     {"back", IDS_MULTIDEVICE_SETUP_BACK_LABEL},
     {"cancel", IDS_CANCEL},

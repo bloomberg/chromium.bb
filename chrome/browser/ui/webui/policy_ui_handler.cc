@@ -33,7 +33,7 @@
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/policy/schema_registry_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/webui/localized_string.h"
+#include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/grit/chromium_strings.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
@@ -716,7 +716,7 @@ void PolicyUIHandler::AddCommonLocalizedStringsToSource(
     content::WebUIDataSource* source) {
   AddLocalizedStringsBulk(source, policy::kPolicySources);
 
-  static constexpr LocalizedString kStrings[] = {
+  static constexpr webui::LocalizedString kStrings[] = {
       {"conflict", IDS_POLICY_LABEL_CONFLICT},
       {"headerLevel", IDS_POLICY_HEADER_LEVEL},
       {"headerName", IDS_POLICY_HEADER_NAME},

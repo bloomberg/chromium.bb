@@ -12,9 +12,9 @@
 #include "build/build_config.h"
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/webui/localized_string.h"
 #include "chrome/browser/ui/webui/version_handler.h"
 #include "chrome/browser/ui/webui/version_util_win.h"
+#include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
@@ -56,7 +56,7 @@ WebUIDataSource* CreateVersionUIDataSource() {
   WebUIDataSource* html_source =
       WebUIDataSource::Create(chrome::kChromeUIVersionHost);
   // These localized strings are used to label version details.
-  static constexpr LocalizedString kStrings[] = {
+  static constexpr webui::LocalizedString kStrings[] = {
     {version_ui::kTitle, IDS_VERSION_UI_TITLE},
     {version_ui::kApplicationLabel, IDS_PRODUCT_NAME},
     {version_ui::kCompany, IDS_ABOUT_VERSION_COMPANY_NAME},

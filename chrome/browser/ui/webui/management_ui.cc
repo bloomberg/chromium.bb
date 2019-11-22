@@ -9,8 +9,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/webui/localized_string.h"
 #include "chrome/browser/ui/webui/management_ui_handler.h"
+#include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/browser_resources.h"
@@ -42,7 +42,7 @@ content::WebUIDataSource* CreateManagementUIHtmlSource(Profile* profile) {
   source->AddString("pageSubtitle",
                     ManagementUI::GetManagementPageSubtitle(profile));
 
-  static constexpr LocalizedString kLocalizedStrings[] = {
+  static constexpr webui::LocalizedString kLocalizedStrings[] = {
 #if defined(OS_CHROMEOS)
     {"learnMore", IDS_LEARN_MORE},
     {"localTrustRoots", IDS_MANAGEMENT_LOCAL_TRUST_ROOTS},

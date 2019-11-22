@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/webui/policy_indicator_localized_strings_provider.h"
 
 #include "build/build_config.h"
-#include "chrome/browser/ui/webui/localized_string.h"
+#include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/web_ui_data_source.h"
 
@@ -21,7 +21,7 @@ void AddLocalizedStrings(content::WebUIDataSource* html_source) {
   if (chromeos::DemoSession::IsDeviceInDemoMode())
     controlled_setting_policy_id = IDS_CONTROLLED_SETTING_DEMO_SESSION;
 #endif
-  LocalizedString localized_strings[] = {
+  webui::LocalizedString localized_strings[] = {
     {"controlledSettingPolicy", controlled_setting_policy_id},
     {"controlledSettingRecommendedMatches", IDS_CONTROLLED_SETTING_RECOMMENDED},
     {"controlledSettingRecommendedDiffers",

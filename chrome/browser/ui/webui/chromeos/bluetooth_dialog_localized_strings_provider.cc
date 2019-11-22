@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/webui/chromeos/bluetooth_dialog_localized_strings_provider.h"
 
 #include "build/build_config.h"
-#include "chrome/browser/ui/webui/localized_string.h"
+#include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/web_ui_data_source.h"
 
@@ -13,7 +13,7 @@ namespace chromeos {
 namespace bluetooth_dialog {
 
 void AddLocalizedStrings(content::WebUIDataSource* html_source) {
-  static constexpr LocalizedString kLocalizedStrings[] = {
+  static constexpr webui::LocalizedString kLocalizedStrings[] = {
       {"bluetoothAccept", IDS_SETTINGS_BLUETOOTH_ACCEPT_PASSKEY},
       {"bluetoothEnterKey", IDS_SETTINGS_BLUETOOTH_ENTER_KEY},
       {"bluetoothPair", IDS_SETTINGS_BLUETOOTH_PAIR},
