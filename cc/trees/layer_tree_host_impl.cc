@@ -2194,14 +2194,11 @@ RenderFrameMetadata LayerTreeHostImpl::MakeRenderFrameMetadata(
   metadata.min_page_scale_factor = active_tree_->min_page_scale_factor();
   metadata.max_page_scale_factor = active_tree_->max_page_scale_factor();
   metadata.root_layer_size = active_tree_->ScrollableSize();
-  if (const auto* outer_viewport_scroll_node = OuterViewportScrollNode()) {
+  if (InnerViewportScrollNode()) {
+    DCHECK(OuterViewportScrollNode());
     metadata.root_overflow_y_hidden =
-        !outer_viewport_scroll_node->user_scrollable_vertical;
-  }
-  const auto* inner_viewport_scroll_node = InnerViewportScrollNode();
-  if (inner_viewport_scroll_node) {
-    metadata.root_overflow_y_hidden |=
-        !inner_viewport_scroll_node->user_scrollable_vertical;
+        !OuterViewportScrollNode()->user_scrollable_vertical ||
+        !InnerViewportScrollNode()->user_scrollable_vertical;
   }
   metadata.has_transparent_background =
       frame->render_passes.back()->has_transparent_background;
@@ -3050,8 +3047,8 @@ void LayerTreeHostImpl::ActivateSyncTree() {
   if (InnerViewportScrollNode()) {
     active_tree_->property_trees()->scroll_tree.ClampScrollToMaxScrollOffset(
         InnerViewportScrollNode(), active_tree_.get());
-  }
-  if (OuterViewportScrollNode()) {
+
+    DCHECK(OuterViewportScrollNode());
     active_tree_->property_trees()->scroll_tree.ClampScrollToMaxScrollOffset(
         OuterViewportScrollNode(), active_tree_.get());
   }
@@ -3993,8 +3990,8 @@ ScrollNode* LayerTreeHostImpl::GetNodeToScroll(ScrollNode* node) const {
          node->scrolls_inner_viewport);
 
   if (node->scrolls_inner_viewport &&
-      !node->prevent_viewport_scrolling_from_inner &&
-      OuterViewportScrollNode()) {
+      !node->prevent_viewport_scrolling_from_inner) {
+    DCHECK(OuterViewportScrollNode());
     return OuterViewportScrollNode();
   }
 
@@ -5065,9 +5062,11 @@ InputHandlerPointerResult LayerTreeHostImpl::MouseMoveAt(
       scroll_element_id = scroll_node->element_id;
 
     // Scrollbars for the viewport are registered with the outer viewport layer.
-    if (InnerViewportScrollNode() && OuterViewportScrollNode() &&
-        scroll_element_id == InnerViewportScrollNode()->element_id)
+    if (InnerViewportScrollNode() &&
+        scroll_element_id == InnerViewportScrollNode()->element_id) {
+      DCHECK(OuterViewportScrollNode());
       scroll_element_id = OuterViewportScrollNode()->element_id;
+    }
   }
 
   ScrollbarAnimationController* new_animation_controller =
@@ -5394,7 +5393,8 @@ LayerTreeHostImpl::ScrollbarAnimationControllerForElementId(
   // The viewport layers have only one set of scrollbars. On Android, these are
   // registered with the inner viewport, otherwise they're registered with the
   // outer viewport. If a controller for one exists, the other shouldn't.
-  if (InnerViewportScrollNode() && OuterViewportScrollNode()) {
+  if (InnerViewportScrollNode()) {
+    DCHECK(OuterViewportScrollNode());
     if (scroll_element_id == InnerViewportScrollNode()->element_id ||
         scroll_element_id == OuterViewportScrollNode()->element_id) {
       auto itr = scrollbar_animation_controllers_.find(
