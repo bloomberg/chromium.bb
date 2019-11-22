@@ -34,7 +34,7 @@ TEST(PdfAccessibilityTreeUnitTest, TextRunsAndCharsMismatch) {
 
   ppapi::PdfAccessibilityPageObjects page_objects;
 
-  ASSERT_FALSE(PdfAccessibilityTree::IsDataFromPluginValid(text_runs, chars,
+  EXPECT_FALSE(PdfAccessibilityTree::IsDataFromPluginValid(text_runs, chars,
                                                            page_objects));
 }
 
@@ -50,7 +50,7 @@ TEST(PdfAccessibilityTreeUnitTest, TextRunsAndCharsMatch) {
 
   ppapi::PdfAccessibilityPageObjects page_objects;
 
-  ASSERT_TRUE(PdfAccessibilityTree::IsDataFromPluginValid(text_runs, chars,
+  EXPECT_TRUE(PdfAccessibilityTree::IsDataFromPluginValid(text_runs, chars,
                                                           page_objects));
 }
 
@@ -80,7 +80,7 @@ TEST(PdfAccessibilityTreeUnitTest, UnsortedLinkVector) {
     page_objects.links.push_back(std::move(link));
   }
 
-  ASSERT_FALSE(PdfAccessibilityTree::IsDataFromPluginValid(text_runs, chars,
+  EXPECT_FALSE(PdfAccessibilityTree::IsDataFromPluginValid(text_runs, chars,
                                                            page_objects));
 }
 
@@ -101,7 +101,7 @@ TEST(PdfAccessibilityTreeUnitTest, OutOfBoundLink) {
     page_objects.links.push_back(std::move(link));
   }
 
-  ASSERT_FALSE(PdfAccessibilityTree::IsDataFromPluginValid(text_runs, chars,
+  EXPECT_FALSE(PdfAccessibilityTree::IsDataFromPluginValid(text_runs, chars,
                                                            page_objects));
 }
 
@@ -129,7 +129,7 @@ TEST(PdfAccessibilityTreeUnitTest, UnsortedImageVector) {
     page_objects.images.push_back(std::move(image));
   }
 
-  ASSERT_FALSE(PdfAccessibilityTree::IsDataFromPluginValid(text_runs, chars,
+  EXPECT_FALSE(PdfAccessibilityTree::IsDataFromPluginValid(text_runs, chars,
                                                            page_objects));
 }
 
@@ -149,7 +149,7 @@ TEST(PdfAccessibilityTreeUnitTest, OutOfBoundImage) {
     page_objects.images.push_back(std::move(image));
   }
 
-  ASSERT_FALSE(PdfAccessibilityTree::IsDataFromPluginValid(text_runs, chars,
+  EXPECT_FALSE(PdfAccessibilityTree::IsDataFromPluginValid(text_runs, chars,
                                                            page_objects));
 }
 
