@@ -64,7 +64,7 @@ class CORE_EXPORT ArrayBufferView : public RefCounted<ArrayBufferView> {
   }
   void* BaseAddressMaybeShared() const { return base_address_; }
 
-  unsigned ByteOffset() const { return byte_offset_; }
+  size_t ByteOffset() const { return byte_offset_; }
 
   virtual unsigned ByteLength() const = 0;
   virtual unsigned TypeSize() const = 0;
@@ -76,7 +76,7 @@ class CORE_EXPORT ArrayBufferView : public RefCounted<ArrayBufferView> {
   virtual ~ArrayBufferView();
 
  protected:
-  ArrayBufferView(scoped_refptr<ArrayBuffer>, unsigned byte_offset);
+  ArrayBufferView(scoped_refptr<ArrayBuffer>, size_t byte_offset);
 
   // Helper to verify that a given sub-range of an ArrayBuffer is
   // within range.
@@ -102,8 +102,8 @@ class CORE_EXPORT ArrayBufferView : public RefCounted<ArrayBufferView> {
   // This is the address of the ArrayBuffer's storage, plus the byte offset.
   void* base_address_;
 
-  unsigned byte_offset_ : 31;
-  unsigned is_detachable_ : 1;
+  size_t byte_offset_;
+  bool is_detachable_;
 
  private:
   friend class ArrayBuffer;

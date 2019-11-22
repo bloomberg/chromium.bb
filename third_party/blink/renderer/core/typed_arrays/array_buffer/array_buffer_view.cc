@@ -30,7 +30,7 @@
 namespace blink {
 
 ArrayBufferView::ArrayBufferView(scoped_refptr<ArrayBuffer> buffer,
-                                 unsigned byte_offset)
+                                 size_t byte_offset)
     : byte_offset_(byte_offset),
       is_detachable_(true),
       buffer_(std::move(buffer)) {
