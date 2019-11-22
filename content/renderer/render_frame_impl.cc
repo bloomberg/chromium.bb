@@ -5034,7 +5034,7 @@ void RenderFrameImpl::WillSendRequestInternal(
           ? base::Optional<url::Origin>()
           : base::Optional<url::Origin>(request.RequestorOrigin());
   GetContentClient()->renderer()->WillSendRequest(
-      frame_, transition_type, request.Url(),
+      frame_, transition_type, request.Url(), request.SiteForCookies(),
       base::OptionalOrNullptr(initiator_origin), &new_url,
       &attach_same_site_cookies);
   if (!new_url.is_empty())
