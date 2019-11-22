@@ -132,8 +132,8 @@ std::unique_ptr<dbus::Response> ServiceProviderTestHelper::CallMethodAndBlock(
   // will be received by |on_signal_callback_|.
   std::unique_ptr<dbus::Response> response;
   method_callback_.Run(method_call,
-                       base::Bind(&ServiceProviderTestHelper::OnResponse,
-                                  base::Unretained(this), &response));
+                       base::BindOnce(&ServiceProviderTestHelper::OnResponse,
+                                      base::Unretained(this), &response));
   // Check for a response.
   if (!response)
     base::RunLoop().Run();

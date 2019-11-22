@@ -186,8 +186,8 @@ class DlcserviceClientImpl : public DlcserviceClient {
     // definition of kOnInstallStatus.
     dlcservice_proxy_->ConnectToSignal(
         dlcservice::kDlcServiceInterface, kOnInstallStatus,
-        base::Bind(&DlcserviceClientImpl::OnInstallStatus,
-                   weak_ptr_factory_.GetWeakPtr()),
+        base::BindRepeating(&DlcserviceClientImpl::OnInstallStatus,
+                            weak_ptr_factory_.GetWeakPtr()),
         base::BindOnce(&DlcserviceClientImpl::OnInstallStatusConnected,
                        weak_ptr_factory_.GetWeakPtr()));
   }
