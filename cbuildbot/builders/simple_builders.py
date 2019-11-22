@@ -495,6 +495,8 @@ class DistributedBuilder(SimpleBuilder):
           sync_stages.ManifestVersionedSyncStage)
       self.completion_stage_class = (
           completion_stages.CanaryCompletionStage)
+    elif self._run.config.build_type == constants.CHROME_PFQ_TYPE:
+      assert False, 'Chrome PFQ no longer supported'
     elif (config_lib.IsPFQType(self._run.config.build_type) or
           self._run.config.build_type in (constants.TOOLCHAIN_TYPE,
                                           constants.FULL_TYPE,
