@@ -296,9 +296,11 @@ int ScaleLut(const uint8_t scaling_lut[kScalingLookupTableSize], int index) {
   const int shift = bitdepth - 8;
   const int quotient = index >> shift;
   const int remainder = index - (quotient << shift);
-  if (bitdepth == 8 || quotient == 255) {
+  if (bitdepth == 8) {
+    assert(quotient < kScalingLookupTableSize);
     return scaling_lut[quotient];
   }
+  assert(quotient + 1 < kScalingLookupTableSize);
   const int start = scaling_lut[quotient];
   const int end = scaling_lut[quotient + 1];
   return start + RightShiftWithRounding((end - start) * remainder, shift);

@@ -580,7 +580,7 @@ void InitializeScalingLookupTable_NEON(
   }
   const uint8_t last_point_value = point_value[num_points - 1];
   memset(&scaling_lut[last_point_value], point_scaling[num_points - 1],
-         kScalingLookupTableSize - last_point_value + 1);
+         kScalingLookupTableSize - last_point_value);
 }
 
 inline int16x8_t Clip3(const int16x8_t value, const int16x8_t low,
@@ -591,8 +591,7 @@ inline int16x8_t Clip3(const int16x8_t value, const int16x8_t low,
 
 template <int bitdepth, typename Pixel>
 inline int16x8_t GetScalingFactors(
-    const uint8_t scaling_lut[kScalingLookupTableSize + 1],
-    const Pixel* source) {
+    const uint8_t scaling_lut[kScalingLookupTableSize], const Pixel* source) {
   int16_t start_vals[8];
   if (bitdepth == 8) {
     start_vals[0] = scaling_lut[source[0]];

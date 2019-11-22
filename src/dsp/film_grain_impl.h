@@ -67,11 +67,12 @@ enum {
   // The two possible heights of the chroma noise array.
   kMinChromaHeight = 38,
   kMaxChromaHeight = 73,
-  // The scaling lookup table maps bytes to bytes, so only uses 256 elements.
-  kScalingLookupTableSize = 256,
+  // The scaling lookup table maps bytes to bytes, so only uses 256 elements,
+  // plus one for overflow in 10bit lookups.
+  kScalingLookupTableSize = 257,
   // Padding is added to the scaling lookup table to permit overwrites by
   // InitializeScalingLookupTable_NEON.
-  kScalingLookupTablePadding = 7,
+  kScalingLookupTablePadding = 6,
   // Padding is added to the noise image to permit overreads by
   // BlendNoiseWithImageLuma_NEON.
   kNoiseImagePadding = 7,
