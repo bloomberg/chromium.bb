@@ -1396,7 +1396,7 @@ if (current_toolchain == default_toolchain) {
       ]
       if (_is_monochrome) {
         deps += [ "//android_webview:locale_pak_assets" ]
-        if (webview_includes_weblayer) {
+        if (webview_includes_weblayer && !_is_bundle_module) {
           deps += [ "//weblayer:locale_pak_assets" ]
         }
       }
@@ -1772,6 +1772,9 @@ template("monochrome_public_apk_or_module_tmpl") {
         # is upstreamed.
         "//android_webview/glue:webview_chromium_for_q_upstream_java",
       ]
+      if (webview_includes_weblayer) {
+        deps += [ "//weblayer/browser/java:gms_bridge_upstream_impl_java" ]
+      }
     }
   }
 }
