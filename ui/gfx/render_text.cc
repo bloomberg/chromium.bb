@@ -1634,8 +1634,7 @@ HorizontalAlignment RenderText::GetCurrentHorizontalAlignment() {
 }
 
 Vector2d RenderText::GetAlignmentOffset(size_t line_number) {
-  // TODO(ckocagil): Enable |lines_| usage on RenderTextMac.
-  if (MultilineSupported() && multiline_)
+  if (multiline_)
     DCHECK_LT(line_number, lines_.size());
   Vector2d offset;
   HorizontalAlignment horizontal_alignment = GetCurrentHorizontalAlignment();

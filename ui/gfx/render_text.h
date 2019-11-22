@@ -275,7 +275,6 @@ class GFX_EXPORT RenderText {
   // cleared when SetText or SetObscured is called.
   void SetObscuredRevealIndex(int index);
 
-  // TODO(ckocagil): Multiline text rendering is not supported on Mac.
   bool multiline() const { return multiline_; }
   void SetMultiline(bool multiline);
 
@@ -290,9 +289,6 @@ class GFX_EXPORT RenderText {
   // TODO(mukai): ELIDE_LONG_WORDS is not supported.
   WordWrapBehavior word_wrap_behavior() const { return word_wrap_behavior_; }
   void SetWordWrapBehavior(WordWrapBehavior behavior);
-
-  // Returns true if this instance supports multiline rendering.
-  virtual bool MultilineSupported() const = 0;
 
   // TODO(ckocagil): Add vertical alignment and line spacing support instead.
   int min_line_height() const { return min_line_height_; }
