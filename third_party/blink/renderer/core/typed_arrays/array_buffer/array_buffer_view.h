@@ -78,25 +78,6 @@ class CORE_EXPORT ArrayBufferView : public RefCounted<ArrayBufferView> {
  protected:
   ArrayBufferView(scoped_refptr<ArrayBuffer>, size_t byte_offset);
 
-  // Helper to verify that a given sub-range of an ArrayBuffer is
-  // within range.
-  template <typename T>
-  static bool VerifySubRange(const ArrayBuffer* buffer,
-                             unsigned byte_offset,
-                             unsigned num_elements) {
-    if (!buffer)
-      return false;
-    if (sizeof(T) > 1 && byte_offset % sizeof(T))
-      return false;
-    if (byte_offset > buffer->ByteLengthAsUnsigned())
-      return false;
-    unsigned remaining_elements = static_cast<unsigned>(
-        (buffer->ByteLengthAsUnsigned() - byte_offset) / sizeof(T));
-    if (num_elements > remaining_elements)
-      return false;
-    return true;
-  }
-
   virtual void Detach();
 
   // This is the address of the ArrayBuffer's storage, plus the byte offset.
