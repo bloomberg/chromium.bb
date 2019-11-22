@@ -147,6 +147,15 @@ class KerberosCredentialsManager : public policy::PolicyService::Observer {
     return GetActivePrincipalName();
   }
 
+  // Getter for the GetKerberosFiles() callback, used on tests to build a mock
+  // KerberosFilesHandler.
+  base::RepeatingClosure GetGetKerberosFilesCallbackForTesting();
+
+  // Used on tests to replace the KerberosFilesHandler created on the
+  // constructor with a mock KerberosFilesHandler.
+  void SetKerberosFilesHandlerForTesting(
+      std::unique_ptr<KerberosFilesHandler> kerberos_files_handler);
+
  private:
   friend class KerberosAddAccountRunner;
   using RepeatedAccountField =
@@ -247,7 +256,7 @@ class KerberosCredentialsManager : public policy::PolicyService::Observer {
   policy::PolicyService* policy_service_ = nullptr;
 
   // Called by OnSignalConnected(), puts Kerberos files where GSSAPI finds them.
-  KerberosFilesHandler kerberos_files_handler_;
+  std::unique_ptr<KerberosFilesHandler> kerberos_files_handler_;
 
   // Observer for Kerberos-related prefs.
   std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;

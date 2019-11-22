@@ -278,9 +278,9 @@ KerberosCredentialsManager::KerberosCredentialsManager(PrefService* local_state,
                                                        Profile* primary_profile)
     : local_state_(local_state),
       primary_profile_(primary_profile),
-      kerberos_files_handler_(
+      kerberos_files_handler_(std::make_unique<KerberosFilesHandler>(
           base::BindRepeating(&KerberosCredentialsManager::GetKerberosFiles,
-                              base::Unretained(this))) {
+                              base::Unretained(this)))) {
   DCHECK(!g_instance);
   g_instance = this;
 
@@ -672,10 +672,10 @@ void KerberosCredentialsManager::OnGetKerberosFiles(
   // ticket. In that case, the files must go.
   if (response.files().has_krb5cc()) {
     DCHECK(response.files().has_krb5conf());
-    kerberos_files_handler_.SetFiles(response.files().krb5cc(),
-                                     response.files().krb5conf());
+    kerberos_files_handler_->SetFiles(response.files().krb5cc(),
+                                      response.files().krb5conf());
   } else {
-    kerberos_files_handler_.DeleteFiles();
+    kerberos_files_handler_->DeleteFiles();
   }
 }
 
@@ -724,7 +724,7 @@ void KerberosCredentialsManager::SetActivePrincipalName(
 
 void KerberosCredentialsManager::ClearActivePrincipalName() {
   primary_profile_->GetPrefs()->ClearPref(prefs::kKerberosActivePrincipalName);
-  kerberos_files_handler_.DeleteFiles();
+  kerberos_files_handler_->DeleteFiles();
 }
 
 void KerberosCredentialsManager::ValidateActivePrincipal(
@@ -897,6 +897,17 @@ void KerberosCredentialsManager::OnTicketExpiryNotificationClick(
 
   // Close last! |principal_name| is owned by the notification.
   kerberos_ticket_expiry_notification::Close(primary_profile_);
+}
+
+base::RepeatingClosure
+KerberosCredentialsManager::GetGetKerberosFilesCallbackForTesting() {
+  return base::BindRepeating(&KerberosCredentialsManager::GetKerberosFiles,
+                             base::Unretained(this));
+}
+
+void KerberosCredentialsManager::SetKerberosFilesHandlerForTesting(
+    std::unique_ptr<KerberosFilesHandler> kerberos_files_handler) {
+  kerberos_files_handler_ = std::move(kerberos_files_handler);
 }
 
 }  // namespace chromeos
