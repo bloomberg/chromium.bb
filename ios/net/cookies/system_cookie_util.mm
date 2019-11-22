@@ -165,6 +165,9 @@ NSHTTPCookie* SystemCookieFromCanonicalCookie(
     [properties setObject:expiry forKey:NSHTTPCookieExpires];
   }
 
+// TODO(crbug.com/1027279): Remove this once Cronet can have
+// iOS 13 symbols.
+#if !BUILDFLAG(CRONET_BUILD)
   if (@available(iOS 13, *)) {
     // In iOS 13 sameSite property in NSHTTPCookie is used to specify the
     // samesite policy.
@@ -185,6 +188,7 @@ NSHTTPCookie* SystemCookieFromCanonicalCookie(
     }
     properties[NSHTTPCookieSameSitePolicy] = same_site;
   }
+#endif
 
   if (cookie.IsSecure())
     [properties setObject:@"Y" forKey:NSHTTPCookieSecure];
