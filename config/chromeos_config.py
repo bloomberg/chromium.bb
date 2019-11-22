@@ -3437,6 +3437,14 @@ def ApplyCustomOverrides(site_config):
           'hw_tests_override': []
       },
 
+      # No tests for ARCVM builders.
+      'betty-arcvm-pi-release': {
+          'hw_tests': [],
+          'hw_tests_override': [],
+          'vm_tests': [],
+          'vm_tests_override': []
+      },
+
       # No hw tests for any betty builders.  See crbug/998427.
       'betty-release': {
           'hw_tests': [],
