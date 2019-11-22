@@ -234,6 +234,10 @@ void WebContentController::ProcessInputEvent(const webview::InputEvent& ev) {
             base::TimeTicks() +
                 base::TimeDelta::FromMicroseconds(ev.timestamp()),
             ev.flags(), mouse.changed_button_flags());
+        if (contents->GetAccessibilityMode().has_mode(
+                ui::AXMode::kWebContents)) {
+          evt.set_flags(evt.flags() | ui::EF_TOUCH_ACCESSIBILITY);
+        }
         handler->OnMouseEvent(&evt);
       } else {
         client_->OnError("mouse() not supplied for mouse event");
