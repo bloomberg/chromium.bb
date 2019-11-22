@@ -25,7 +25,16 @@ ANDROIDPIN_MASK_PATH = os.path.join(constants.SOURCE_ROOT,
                                     'package.mask', 'androidpin')
 
 
-@faux.all_empty
+def _MarkStableResponse(_input_proto, output_proto, _config):
+  """Add fake status to a successful response."""
+  output_proto.android_atom.category = 'category'
+  output_proto.android_atom.package_name = 'android-package-name'
+  output_proto.android_atom.version = '1.2'
+  output_proto.status = android_pb2.MARK_STABLE_STATUS_SUCCESS
+
+
+@faux.success(_MarkStableResponse)
+@faux.empty_error
 @validate.require('tracking_branch', 'package_name', 'android_build_branch')
 @validate.validation_complete
 def MarkStable(input_proto, output_proto, _config):
@@ -76,6 +85,7 @@ def MarkStable(input_proto, output_proto, _config):
     output_proto.status = android_pb2.MARK_STABLE_STATUS_EARLY_EXIT
 
 
+# We don't use @faux.success for UnpinVersion because output_proto is unused.
 @faux.all_empty
 @validate.validation_complete
 def UnpinVersion(_input_proto, _output_proto, _config):
