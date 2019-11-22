@@ -317,6 +317,10 @@ void PdfAccessibilityTree::SetAccessibilityDocInfo(
 
   doc_info_ = doc_info;
   doc_node_ = CreateNode(ax::mojom::Role::kDocument);
+  doc_node_->AddStringAttribute(
+      ax::mojom::StringAttribute::kName,
+      l10n_util::GetPluralStringFUTF8(IDS_PDF_DOCUMENT_PAGE_COUNT,
+                                      doc_info.page_count));
 
   // Because all of the coordinates are expressed relative to the
   // doc's coordinates, the origin of the doc must be (0, 0). Its
