@@ -480,6 +480,7 @@ static void set_good_speed_features_framesize_independent(
     sf->disable_obmc = 1;
     sf->disable_interinter_wedge = 1;
     sf->disable_smooth_interintra = 1;
+    sf->disable_onesided_comp = 1;
   }
 }
 
@@ -919,7 +920,7 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
   sf->disable_lr_filter = 0;
   sf->inter_mode_rd_model_estimation = 0;
   sf->prune_compound_using_single_ref = 0;
-
+  sf->disable_onesided_comp = 0;
   sf->prune_mode_search_simple_translation = 0;
   sf->obmc_full_pixel_search_level = 0;
   sf->skip_sharp_interp_filter_search = 0;

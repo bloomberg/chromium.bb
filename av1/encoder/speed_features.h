@@ -761,6 +761,9 @@ typedef struct SPEED_FEATURES {
   // the single reference modes, it is one of the two best performers.
   int prune_compound_using_single_ref;
 
+  // Disable one sided compound modes.
+  int disable_onesided_comp;
+
   // Use CNN with luma pixels on source frame on each of the 64x64 subblock to
   // perform split/no_split decision on intra-frames.
   int intra_cnn_split;

@@ -11596,7 +11596,8 @@ static AOM_INLINE void rd_pick_skip_mode(
     return;
   }
 
-  if (!cpi->oxcf.enable_onesided_comp && cpi->all_one_sided_refs) {
+  if ((!cpi->oxcf.enable_onesided_comp || cpi->sf.disable_onesided_comp) &&
+      cpi->all_one_sided_refs) {
     return;
   }
 
@@ -12403,7 +12404,8 @@ static int inter_mode_search_order_independent_skip(
   }
 
   const int comp_pred = ref_frame[1] > INTRA_FRAME;
-  if (!cpi->oxcf.enable_onesided_comp && comp_pred && cpi->all_one_sided_refs) {
+  if ((!cpi->oxcf.enable_onesided_comp || cpi->sf.disable_onesided_comp) &&
+      comp_pred && cpi->all_one_sided_refs) {
     return 1;
   }
 
