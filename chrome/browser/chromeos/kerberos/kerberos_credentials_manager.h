@@ -149,6 +149,8 @@ class KerberosCredentialsManager : public policy::PolicyService::Observer {
 
  private:
   friend class KerberosAddAccountRunner;
+  using RepeatedAccountField =
+      google::protobuf::RepeatedPtrField<kerberos::Account>;
 
   // Callback on KerberosAddAccountRunner::Done.
   void OnAddAccountRunnerDone(KerberosAddAccountRunner* runner,
@@ -205,15 +207,11 @@ class KerberosCredentialsManager : public policy::PolicyService::Observer {
   void SetActivePrincipalName(const std::string& principal_name);
   void ClearActivePrincipalName();
 
-  // Gets the current account list and calls DoValidateActivePrincipal().
-  void ValidateActivePrincipal();
-
-  // Checks whether the active principal is contained in the given |response|.
+  // Checks whether the active principal is contained in the given |accounts|.
   // If not, resets it to the first principal or clears it if the list is empty.
-  // It's not expected that this ever triggers, but it provides a fail safe if
-  // the active principal should ever break for whatever reason.
-  void DoValidateActivePrincipal(
-      const kerberos::ListAccountsResponse& response);
+  // It's expected to trigger if the active account is removed by
+  // |RemoveAccount()| or |ClearAccounts()|.
+  void ValidateActivePrincipal(const RepeatedAccountField& accounts);
 
   // Notification shown when the Kerberos ticket is about to expire.
   void ShowTicketExpiryNotification();
