@@ -25,7 +25,6 @@
 #include "ui/base/ime/init/input_method_factory.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/display/display.h"
-#include "ui/display/display_transform.h"
 #include "ui/display/screen.h"
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/platform_window/platform_window_init_properties.h"
@@ -40,8 +39,8 @@ namespace {
 
 gfx::Transform GetPrimaryDisplayRotationTransform() {
   display::Display display = display::Screen::GetScreen()->GetPrimaryDisplay();
-  return display::CreateRotationTransform(display.rotation(),
-                                          gfx::SizeF(display.size()));
+  return display::Display::GetRotationTransform(display.rotation(),
+                                                gfx::SizeF(display.size()));
 }
 
 gfx::Rect GetPrimaryDisplayHostBounds() {
