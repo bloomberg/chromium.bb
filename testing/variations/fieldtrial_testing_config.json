@@ -1961,7 +1961,7 @@
             ],
             "experiments": [
                 {
-                    "name": "ForcedOff_FtpProtocol",
+                    "name": "WithoutFtpSupport",
                     "disable_features": [
                         "FtpProtcol"
                     ]
