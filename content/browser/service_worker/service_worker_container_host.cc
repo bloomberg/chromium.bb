@@ -15,6 +15,17 @@
 
 namespace content {
 
+namespace {
+
+void RunCallbacks(
+    std::vector<ServiceWorkerContainerHost::ExecutionReadyCallback> callbacks) {
+  for (auto& callback : callbacks) {
+    std::move(callback).Run();
+  }
+}
+
+}  // namespace
+
 ServiceWorkerContainerHost::ServiceWorkerContainerHost(
     blink::mojom::ServiceWorkerProviderType type,
     bool is_parent_frame_secure,
@@ -28,7 +39,10 @@ ServiceWorkerContainerHost::ServiceWorkerContainerHost(
   DCHECK(context_);
 }
 
-ServiceWorkerContainerHost::~ServiceWorkerContainerHost() = default;
+ServiceWorkerContainerHost::~ServiceWorkerContainerHost() {
+  // Ensure callbacks awaiting execution ready are notified.
+  RunExecutionReadyCallbacks();
+}
 
 blink::mojom::ServiceWorkerRegistrationObjectInfoPtr
 ServiceWorkerContainerHost::CreateServiceWorkerRegistrationObjectInfo(
@@ -170,6 +184,61 @@ bool ServiceWorkerContainerHost::IsContextSecureForServiceWorker() const {
   GetContentClient()->browser()->GetSchemesBypassingSecureContextCheckWhitelist(
       &schemes);
   return schemes.find(url_.scheme()) != schemes.end();
+}
+
+bool ServiceWorkerContainerHost::is_response_committed() const {
+  DCHECK(IsContainerForClient());
+  switch (client_phase_) {
+    case ClientPhase::kInitial:
+      return false;
+    case ClientPhase::kResponseCommitted:
+    case ClientPhase::kExecutionReady:
+      return true;
+  }
+  NOTREACHED();
+  return false;
+}
+
+void ServiceWorkerContainerHost::AddExecutionReadyCallback(
+    ExecutionReadyCallback callback) {
+  DCHECK(!is_execution_ready());
+  execution_ready_callbacks_.push_back(std::move(callback));
+}
+
+bool ServiceWorkerContainerHost::is_execution_ready() const {
+  DCHECK(IsContainerForClient());
+  return client_phase_ == ClientPhase::kExecutionReady;
+}
+
+void ServiceWorkerContainerHost::SetExecutionReady() {
+  DCHECK(!is_execution_ready());
+  TransitionToClientPhase(ClientPhase::kExecutionReady);
+  RunExecutionReadyCallbacks();
+}
+
+void ServiceWorkerContainerHost::TransitionToClientPhase(
+    ClientPhase new_phase) {
+  if (client_phase_ == new_phase)
+    return;
+  switch (client_phase_) {
+    case ClientPhase::kInitial:
+      DCHECK_EQ(new_phase, ClientPhase::kResponseCommitted);
+      break;
+    case ClientPhase::kResponseCommitted:
+      DCHECK_EQ(new_phase, ClientPhase::kExecutionReady);
+      break;
+    case ClientPhase::kExecutionReady:
+      NOTREACHED();
+      break;
+  }
+  client_phase_ = new_phase;
+}
+
+void ServiceWorkerContainerHost::RunExecutionReadyCallbacks() {
+  std::vector<ExecutionReadyCallback> callbacks;
+  execution_ready_callbacks_.swap(callbacks);
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(&RunCallbacks, std::move(callbacks)));
 }
 
 }  // namespace content

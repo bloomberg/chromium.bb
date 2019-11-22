@@ -107,12 +107,12 @@ TEST_F(WorkerScriptLoaderFactoryTest, ServiceWorkerProviderHost) {
   client.RunUntilComplete();
   EXPECT_EQ(net::OK, client.completion_status().error_code);
 
-  // The provider host should be set up.
-  base::WeakPtr<ServiceWorkerProviderHost> host =
-      service_worker_handle_->core()->provider_host();
-  EXPECT_TRUE(host->is_response_committed());
-  EXPECT_TRUE(host->is_execution_ready());
-  EXPECT_EQ(url, host->container_host()->url());
+  // The container host should be set up.
+  ServiceWorkerContainerHost* container_host =
+      service_worker_handle_->core()->provider_host()->container_host();
+  EXPECT_TRUE(container_host->is_response_committed());
+  EXPECT_TRUE(container_host->is_execution_ready());
+  EXPECT_EQ(url, container_host->url());
 }
 
 // Test a null service worker handle. This typically only happens during

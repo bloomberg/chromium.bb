@@ -119,7 +119,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
       public service_manager::mojom::InterfaceProvider {
  public:
   using WebContentsGetter = base::RepeatingCallback<WebContents*()>;
-  using ExecutionReadyCallback = base::OnceClosure;
 
   // Used to pre-create a ServiceWorkerProviderHost for a navigation. The
   // ServiceWorkerProviderContext will later be created in the renderer, should
@@ -351,21 +350,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // load. All service workers are updated.
   void AddServiceWorkerToUpdate(scoped_refptr<ServiceWorkerVersion> version);
 
-  // For service worker clients. |callback| is called when this client becomes
-  // execution ready or if it is destroyed first.
-  void AddExecutionReadyCallback(ExecutionReadyCallback callback);
-
-  // For service worker clients. True if the response for the main resource load
-  // was committed to the renderer. When this is false, the client's URL may
-  // still change due to redirects.
-  bool is_response_committed() const;
-
-  // For service worker clients. True if the client is execution ready and
-  // therefore can be exposed to JavaScript. Execution ready implies response
-  // committed.
-  // https://html.spec.whatwg.org/multipage/webappapis.html#concept-environment-execution-ready-flag
-  bool is_execution_ready() const;
-
   // For service worker execution contexts.
   void CreateQuicTransportConnector(
       mojo::PendingReceiver<blink::mojom::QuicTransportConnector> receiver);
@@ -386,16 +370,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   }
 
  private:
-  // For service worker clients. The flow is kInitial -> kResponseCommitted ->
-  // kExecutionReady.
-  //
-  // - kInitial: The initial phase.
-  // - kResponseCommitted: The response for the main resource has been
-  //   committed to the renderer. This client's URL should no longer change.
-  // - kExecutionReady: This client can be exposed to JavaScript as a Client
-  //   object.
-  enum class ClientPhase { kInitial, kResponseCommitted, kExecutionReady };
-
   friend class ServiceWorkerProviderHostTest;
   friend class service_worker_object_host_unittest::ServiceWorkerObjectHostTest;
   FRIEND_TEST_ALL_PREFIXES(BackgroundSyncManagerTest,
@@ -533,13 +507,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
                                     const char* error_prefix,
                                     Args... args);
 
-  // Sets |execution_ready_| and runs execution ready callbacks.
-  void SetExecutionReady();
-
-  void RunExecutionReadyCallbacks();
-
-  void TransitionToClientPhase(ClientPhase new_phase);
-
   void SetRenderProcessId(int process_id);
 
   void EnterBackForwardCacheForTesting() { is_in_back_forward_cache_ = true; }
@@ -641,13 +608,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
       broker_{this};
   mojo::Receiver<blink::mojom::BrowserInterfaceBroker> broker_receiver_{
       &broker_};
-
-  // For service worker clients.
-  ClientPhase client_phase_ = ClientPhase::kInitial;
-
-  // For service worker clients. Callbacks to run upon transition to
-  // kExecutionReady.
-  std::vector<ExecutionReadyCallback> execution_ready_callbacks_;
 
   // For service worker clients. The service workers in the chain of redirects
   // during the main resource request for this client. These workers should be

@@ -266,7 +266,7 @@ void ServiceWorkerRegistration::ClaimClients() {
     //     is set, continue."
     // |include_reserved_clients| ensures only execution ready clients are
     // returned.
-    DCHECK(host->is_execution_ready());
+    DCHECK(host->container_host()->is_execution_ready());
 
     // This is part of step 5 but performed here as an optimization. Do nothing
     // if this version is already the controller.

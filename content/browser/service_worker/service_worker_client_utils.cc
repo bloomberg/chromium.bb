@@ -326,7 +326,7 @@ void AddWindowClient(
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   if (host->client_type() != blink::mojom::ServiceWorkerClientType::kWindow)
     return;
-  if (!host->is_execution_ready())
+  if (!host->container_host()->is_execution_ready())
     return;
   client_info->push_back(std::make_tuple(host->process_id(), host->frame_id(),
                                          host->create_time(),
@@ -343,7 +343,7 @@ void AddNonWindowClient(ServiceWorkerProviderHost* host,
   if (client_type != blink::mojom::ServiceWorkerClientType::kAll &&
       client_type != host_client_type)
     return;
-  if (!host->is_execution_ready())
+  if (!host->container_host()->is_execution_ready())
     return;
 
   // TODO(dtapuska): Need to get frozen state for dedicated workers from
@@ -513,7 +513,8 @@ void DidGetExecutionReadyClient(
 
   ServiceWorkerProviderHost* provider_host =
       context->GetProviderHostByClientID(client_uuid);
-  if (!provider_host || !provider_host->is_execution_ready()) {
+  if (!provider_host ||
+      !provider_host->container_host()->is_execution_ready()) {
     // The page was destroyed before it became execution ready.  Tell the
     // renderer the page opened but it doesn't have access to it.
     std::move(callback).Run(blink::ServiceWorkerStatusCode::kOk,
@@ -696,9 +697,11 @@ void DidNavigate(const base::WeakPtr<ServiceWorkerContextCore>& context,
     // DidNavigate must be called with a preparation complete client (the
     // navigation was committed), but the client might not be execution ready
     // yet (Blink hasn't yet created the Document).
-    DCHECK(provider_host->is_response_committed());
-    if (!provider_host->is_execution_ready()) {
-      provider_host->AddExecutionReadyCallback(base::BindOnce(
+    ServiceWorkerContainerHost* container_host =
+        provider_host->container_host();
+    DCHECK(container_host->is_response_committed());
+    if (!container_host->is_execution_ready()) {
+      container_host->AddExecutionReadyCallback(base::BindOnce(
           &DidGetExecutionReadyClient, context, provider_host->client_uuid(),
           origin, std::move(callback)));
       return;

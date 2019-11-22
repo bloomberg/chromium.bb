@@ -51,6 +51,8 @@ class ServiceWorkerVersion;
 // class lives, and add sequence checkers to ensure it.
 class CONTENT_EXPORT ServiceWorkerContainerHost {
  public:
+  using ExecutionReadyCallback = base::OnceClosure;
+
   // TODO(https://crbug.com/931087): Rename ServiceWorkerProviderType to
   // ServiceWorkerContainerType.
   ServiceWorkerContainerHost(blink::mojom::ServiceWorkerProviderType type,
@@ -126,8 +128,7 @@ class CONTENT_EXPORT ServiceWorkerContainerHost {
   // OriginCanAccessServiceWorkers returned false).
   //
   // The URL may also change on redirects during loading. Once
-  // ServiceWorkerProviderHost::is_response_committed() is true, the URL should
-  // no longer change.
+  // is_response_committed() is true, the URL should no longer change.
   const GURL& url() const { return url_; }
 
   // The URL representing the site_for_cookies for this context. See
@@ -166,8 +167,43 @@ class CONTENT_EXPORT ServiceWorkerContainerHost {
   // must be set properly before calling this function.
   bool IsContextSecureForServiceWorker() const;
 
+  // For service worker clients. True if the response for the main resource load
+  // was committed to the renderer. When this is false, the client's URL may
+  // still change due to redirects.
+  bool is_response_committed() const;
+
+  // For service worker clients. |callback| is called when this client becomes
+  // execution ready or if it is destroyed first.
+  void AddExecutionReadyCallback(ExecutionReadyCallback callback);
+
+  // For service worker clients. True if the client is execution ready and
+  // therefore can be exposed to JavaScript. Execution ready implies response
+  // committed.
+  // https://html.spec.whatwg.org/multipage/webappapis.html#concept-environment-execution-ready-flag
+  bool is_execution_ready() const;
+
   // TODO(https://crbug.com/931087): Remove this getter and |provider_host_|.
   ServiceWorkerProviderHost* provider_host() { return provider_host_; }
+
+  // For service worker clients. The flow is kInitial -> kResponseCommitted ->
+  // kExecutionReady.
+  //
+  // - kInitial: The initial phase.
+  // - kResponseCommitted: The response for the main resource has been
+  //   committed to the renderer. This client's URL should no longer change.
+  // - kExecutionReady: This client can be exposed to JavaScript as a Client
+  //   object.
+  // TODO(https://crbug.com/931087): Move this enum into the private section.
+  enum class ClientPhase { kInitial, kResponseCommitted, kExecutionReady };
+
+  // Sets |execution_ready_| and runs execution ready callbacks.
+  // TODO(https://crbug.com/931087): Move this function into the private
+  // section.
+  void SetExecutionReady();
+
+  // TODO(https://crbug.com/931087): Move this function into the private
+  // section.
+  void TransitionToClientPhase(ClientPhase new_phase);
 
  private:
   friend class service_worker_object_host_unittest::ServiceWorkerObjectHostTest;
@@ -177,6 +213,8 @@ class CONTENT_EXPORT ServiceWorkerContainerHost {
                            RegisterWithDifferentUpdateViaCache);
   FRIEND_TEST_ALL_PREFIXES(BackgroundSyncManagerTest,
                            RegisterWithoutLiveSWRegistration);
+
+  void RunExecutionReadyCallbacks();
 
   const blink::mojom::ServiceWorkerProviderType type_;
 
@@ -193,6 +231,13 @@ class CONTENT_EXPORT ServiceWorkerContainerHost {
   // the document does not have a parent frame, is_parent_frame_secure_| is
   // true.
   const bool is_parent_frame_secure_;
+
+  // For service worker clients.
+  ClientPhase client_phase_ = ClientPhase::kInitial;
+
+  // For service worker clients. Callbacks to run upon transition to
+  // kExecutionReady.
+  std::vector<ExecutionReadyCallback> execution_ready_callbacks_;
 
   // Contains all ServiceWorkerRegistrationObjectHost instances corresponding to
   // the service worker registration JavaScript objects for the hosted execution

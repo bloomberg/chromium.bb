@@ -116,13 +116,6 @@ ServiceWorkerMetrics::EventType PurposeToEventType(
   return ServiceWorkerMetrics::EventType::UNKNOWN;
 }
 
-void RunCallbacks(
-    std::vector<ServiceWorkerProviderHost::ExecutionReadyCallback> callbacks) {
-  for (auto& callback : callbacks) {
-    std::move(callback).Run();
-  }
-}
-
 }  // anonymous namespace
 
 // RAII helper class for keeping track of versions waiting for an update hint
@@ -318,9 +311,6 @@ ServiceWorkerProviderHost::~ServiceWorkerProviderHost() {
   // destroyed while in this destructor (|running_hosted_version_|'s
   // |event_dispatcher_|). See https://crbug.com/854993.
   container_host_.reset();
-
-  // Ensure callbacks awaiting execution ready are notified.
-  RunExecutionReadyCallbacks();
 }
 
 ServiceWorkerVersion* ServiceWorkerProviderHost::controller() const {
@@ -414,7 +404,7 @@ ServiceWorkerProviderHost::GetRemoteControllerServiceWorker() {
   }
 
   mojo::Remote<blink::mojom::ControllerServiceWorker> remote_controller;
-  if (!is_response_committed()) {
+  if (!container_host_->is_response_committed()) {
     // The receiver will be connected to the controller in
     // OnBeginNavigationCommit() or CompleteWebWorkerPreparation(). The pair of
     // Mojo endpoints is created on each main resource response including
@@ -632,7 +622,7 @@ void ServiceWorkerProviderHost::CountFeature(blink::mojom::WebFeature feature) {
 void ServiceWorkerProviderHost::ClaimedByRegistration(
     scoped_refptr<ServiceWorkerRegistration> registration) {
   DCHECK(registration->active_version());
-  DCHECK(is_execution_ready());
+  DCHECK(container_host_->is_execution_ready());
 
   // TODO(falken): This should just early return, or DCHECK. claim() should have
   // no effect on a page that's already using the registration.
@@ -678,7 +668,8 @@ void ServiceWorkerProviderHost::OnBeginNavigationCommit(
       rfh->AddServiceWorkerProviderHost(this);
   }
 
-  TransitionToClientPhase(ClientPhase::kResponseCommitted);
+  container_host_->TransitionToClientPhase(
+      content::ServiceWorkerContainerHost::ClientPhase::kResponseCommitted);
 }
 
 void ServiceWorkerProviderHost::CompleteStartWorkerPreparation(
@@ -715,8 +706,9 @@ void ServiceWorkerProviderHost::CompleteWebWorkerPreparation(
                                      cross_origin_embedder_policy_.value());
   }
 
-  TransitionToClientPhase(ClientPhase::kResponseCommitted);
-  SetExecutionReady();
+  container_host_->TransitionToClientPhase(
+      content::ServiceWorkerContainerHost::ClientPhase::kResponseCommitted);
+  container_host_->SetExecutionReady();
 }
 
 void ServiceWorkerProviderHost::SyncMatchingRegistrations() {
@@ -832,7 +824,7 @@ void ServiceWorkerProviderHost::SendSetControllerServiceWorker(
 bool ServiceWorkerProviderHost::IsControllerDecided() const {
   DCHECK(IsProviderForClient());
 
-  if (is_execution_ready())
+  if (container_host_->is_execution_ready())
     return true;
 
   // TODO(falken): This function just becomes |is_execution_ready()|
@@ -1193,7 +1185,7 @@ void ServiceWorkerProviderHost::StartControllerComplete(
     mojo::PendingReceiver<blink::mojom::ControllerServiceWorker> receiver,
     blink::ServiceWorkerStatusCode status) {
   if (status == blink::ServiceWorkerStatusCode::kOk) {
-    DCHECK(is_response_committed());
+    DCHECK(container_host_->is_response_committed());
     controller_->controller()->Clone(std::move(receiver),
                                      cross_origin_embedder_policy_.value());
   }
@@ -1233,7 +1225,7 @@ void ServiceWorkerProviderHost::OnExecutionReady() {
     return;
   }
 
-  if (is_execution_ready()) {
+  if (container_host_->is_execution_ready()) {
     mojo::ReportBadMessage("SWPH_OER_ALREADY_READY");
     return;
   }
@@ -1247,7 +1239,7 @@ void ServiceWorkerProviderHost::OnExecutionReady() {
   // which case we may also need to set |notify_controllerchange| correctly.
   SendSetControllerServiceWorker(false /* notify_controllerchange */);
 
-  SetExecutionReady();
+  container_host_->SetExecutionReady();
 }
 
 bool ServiceWorkerProviderHost::IsValidGetRegistrationMessage(
@@ -1351,30 +1343,6 @@ bool ServiceWorkerProviderHost::CanServeContainerHostMethods(
   return true;
 }
 
-void ServiceWorkerProviderHost::AddExecutionReadyCallback(
-    ExecutionReadyCallback callback) {
-  DCHECK(!is_execution_ready());
-  execution_ready_callbacks_.push_back(std::move(callback));
-}
-
-bool ServiceWorkerProviderHost::is_response_committed() const {
-  DCHECK(IsProviderForClient());
-  switch (client_phase_) {
-    case ClientPhase::kInitial:
-      return false;
-    case ClientPhase::kResponseCommitted:
-    case ClientPhase::kExecutionReady:
-      return true;
-  }
-  NOTREACHED();
-  return false;
-}
-
-bool ServiceWorkerProviderHost::is_execution_ready() const {
-  DCHECK(IsProviderForClient());
-  return client_phase_ == ClientPhase::kExecutionReady;
-}
-
 void ServiceWorkerProviderHost::CreateQuicTransportConnector(
     mojo::PendingReceiver<blink::mojom::QuicTransportConnector> receiver) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
@@ -1425,36 +1393,6 @@ void ServiceWorkerProviderHost::OnRestoreFromBackForwardCache() {
   if (controller_)
     controller_->RestoreControlleeFromBackForwardCacheMap(client_uuid_);
   is_in_back_forward_cache_ = false;
-}
-
-void ServiceWorkerProviderHost::SetExecutionReady() {
-  DCHECK(!is_execution_ready());
-  TransitionToClientPhase(ClientPhase::kExecutionReady);
-  RunExecutionReadyCallbacks();
-}
-
-void ServiceWorkerProviderHost::RunExecutionReadyCallbacks() {
-  std::vector<ExecutionReadyCallback> callbacks;
-  execution_ready_callbacks_.swap(callbacks);
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(&RunCallbacks, std::move(callbacks)));
-}
-
-void ServiceWorkerProviderHost::TransitionToClientPhase(ClientPhase new_phase) {
-  if (client_phase_ == new_phase)
-    return;
-  switch (client_phase_) {
-    case ClientPhase::kInitial:
-      DCHECK_EQ(new_phase, ClientPhase::kResponseCommitted);
-      break;
-    case ClientPhase::kResponseCommitted:
-      DCHECK_EQ(new_phase, ClientPhase::kExecutionReady);
-      break;
-    case ClientPhase::kExecutionReady:
-      NOTREACHED();
-      break;
-  }
-  client_phase_ = new_phase;
 }
 
 void ServiceWorkerProviderHost::SetRenderProcessId(int process_id) {

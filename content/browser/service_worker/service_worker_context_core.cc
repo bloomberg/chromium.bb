@@ -137,7 +137,8 @@ bool IsSameOriginClientProviderHost(const GURL& origin,
   }
   return host->IsProviderForClient() &&
          host->container_host()->url().GetOrigin() == origin &&
-         (allow_reserved_client || host->is_execution_ready());
+         (allow_reserved_client ||
+          host->container_host()->is_execution_ready());
 }
 
 bool IsSameOriginWindowProviderHost(const GURL& origin,
@@ -154,7 +155,7 @@ bool IsSameOriginWindowProviderHost(const GURL& origin,
   return host->provider_type() ==
              blink::mojom::ServiceWorkerProviderType::kForWindow &&
          host->container_host()->url().GetOrigin() == origin &&
-         host->is_execution_ready();
+         host->container_host()->is_execution_ready();
 }
 
 // Returns true if any of the frames specified by |frames| is a top-level frame.

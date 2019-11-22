@@ -191,14 +191,15 @@ class ServiceWorkerProviderHostTest : public testing::Test {
     return host_raw;
   }
 
-  void FinishNavigation(ServiceWorkerProviderHost* host) {
+  void FinishNavigation(ServiceWorkerContainerHost* container_host) {
     // In production code, the loader/request handler does this.
     const GURL url("https://www.example.com/page");
-    host->UpdateUrls(url, url, url::Origin::Create(url));
+    container_host->provider_host()->UpdateUrls(url, url,
+                                                url::Origin::Create(url));
 
     // In production code this is called from NavigationRequest in the browser
     // process right before navigation commit.
-    host->OnBeginNavigationCommit(
+    container_host->provider_host()->OnBeginNavigationCommit(
         helper_->mock_render_process_id(), 1 /* route_id */,
         network::mojom::CrossOriginEmbedderPolicy::kNone);
   }
@@ -554,7 +555,7 @@ TEST_F(ServiceWorkerProviderHostTest, Controller) {
   registration1_->SetActiveVersion(version);
 
   // Finish the navigation.
-  FinishNavigation(host.get());
+  FinishNavigation(host->container_host());
   host->SetControllerRegistration(registration1_,
                                   false /* notify_controllerchange */);
   remote_endpoints_.back().host_remote()->get()->OnExecutionReady();
@@ -587,7 +588,7 @@ TEST_F(ServiceWorkerProviderHostTest, UncontrolledWithMatchingRegistration) {
   registration1_->SetInstallingVersion(version);
 
   // Finish the navigation.
-  FinishNavigation(host.get());
+  FinishNavigation(host->container_host());
   // Promote the worker to active while navigation is still happening.
   registration1_->SetActiveVersion(version);
   base::RunLoop().RunUntilIdle();
@@ -983,11 +984,11 @@ void ServiceWorkerProviderHostTest::TestReservedClientsAreNotExposed(
     ServiceWorkerRemoteProviderEndpoint remote_endpoint;
     remote_endpoint.BindForWindow(std::move(host_and_info->info));
 
-    FinishNavigation(host.get());
+    FinishNavigation(host->container_host());
     EXPECT_FALSE(CanFindClientProviderHost(host.get()));
 
     base::RunLoop run_loop;
-    host->AddExecutionReadyCallback(run_loop.QuitClosure());
+    host->container_host()->AddExecutionReadyCallback(run_loop.QuitClosure());
     remote_endpoint.host_remote()->get()->OnExecutionReady();
     run_loop.Run();
     EXPECT_TRUE(CanFindClientProviderHost(host.get()));
@@ -1017,21 +1018,22 @@ TEST_F(ServiceWorkerProviderHostTest, ClientPhaseForWindow) {
                                          /*are_ancestors_secure=*/true);
   base::WeakPtr<ServiceWorkerProviderHost> host =
       std::move(host_and_info->host);
+  ServiceWorkerContainerHost* container_host = host->container_host();
   ServiceWorkerRemoteProviderEndpoint remote_endpoint;
   remote_endpoint.BindForWindow(std::move(host_and_info->info));
-  EXPECT_FALSE(host->is_response_committed());
-  EXPECT_FALSE(host->is_execution_ready());
+  EXPECT_FALSE(container_host->is_response_committed());
+  EXPECT_FALSE(container_host->is_execution_ready());
 
-  FinishNavigation(host.get());
-  EXPECT_TRUE(host->is_response_committed());
-  EXPECT_FALSE(host->is_execution_ready());
+  FinishNavigation(container_host);
+  EXPECT_TRUE(container_host->is_response_committed());
+  EXPECT_FALSE(container_host->is_execution_ready());
 
   base::RunLoop run_loop;
-  host->AddExecutionReadyCallback(run_loop.QuitClosure());
+  container_host->AddExecutionReadyCallback(run_loop.QuitClosure());
   remote_endpoint.host_remote()->get()->OnExecutionReady();
   run_loop.Run();
-  EXPECT_TRUE(host->is_response_committed());
-  EXPECT_TRUE(host->is_execution_ready());
+  EXPECT_TRUE(container_host->is_response_committed());
+  EXPECT_TRUE(container_host->is_execution_ready());
 }
 
 // Tests the client phase transitions for workers.
@@ -1051,15 +1053,17 @@ void ServiceWorkerProviderHostTest::TestClientPhaseTransition(
       ServiceWorkerProviderHost::CreateForWebWorker(
           helper_->context()->AsWeakPtr(), helper_->mock_render_process_id(),
           provider_type, std::move(host_receiver), std::move(client_remote));
-  EXPECT_FALSE(host->is_response_committed());
-  EXPECT_FALSE(host->is_execution_ready());
+  ServiceWorkerContainerHost* container_host = host->container_host();
+  EXPECT_FALSE(container_host->is_response_committed());
+  EXPECT_FALSE(container_host->is_execution_ready());
 
-  host->UpdateUrls(url, url, url::Origin::Create(url));
-  host->CompleteWebWorkerPreparation(
+  container_host->provider_host()->UpdateUrls(url, url,
+                                              url::Origin::Create(url));
+  container_host->provider_host()->CompleteWebWorkerPreparation(
       network::mojom::CrossOriginEmbedderPolicy::kNone);
 
-  EXPECT_TRUE(host->is_response_committed());
-  EXPECT_TRUE(host->is_execution_ready());
+  EXPECT_TRUE(container_host->is_response_committed());
+  EXPECT_TRUE(container_host->is_execution_ready());
 }
 
 TEST_F(ServiceWorkerProviderHostTestWithPlzDedicatedWorker,
@@ -1129,11 +1133,11 @@ void ServiceWorkerProviderHostTest::TestBackForwardCachedClientsAreNotExposed(
     ServiceWorkerRemoteProviderEndpoint remote_endpoint;
     remote_endpoint.BindForWindow(std::move(host_and_info->info));
 
-    FinishNavigation(host.get());
+    FinishNavigation(host->container_host());
     EXPECT_FALSE(CanFindClientProviderHost(host.get()));
 
     base::RunLoop run_loop;
-    host->AddExecutionReadyCallback(run_loop.QuitClosure());
+    host->container_host()->AddExecutionReadyCallback(run_loop.QuitClosure());
     remote_endpoint.host_remote()->get()->OnExecutionReady();
     run_loop.Run();
     EXPECT_TRUE(CanFindClientProviderHost(host.get()));

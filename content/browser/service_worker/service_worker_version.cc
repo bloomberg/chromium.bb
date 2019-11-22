@@ -1207,8 +1207,8 @@ void ServiceWorkerVersion::GetClient(const std::string& client_uuid,
     std::move(callback).Run(nullptr);
     return;
   }
-  if (!provider_host->is_execution_ready()) {
-    provider_host->AddExecutionReadyCallback(
+  if (!provider_host->container_host()->is_execution_ready()) {
+    provider_host->container_host()->AddExecutionReadyCallback(
         base::BindOnce(&ServiceWorkerVersion::GetClientInternal, this,
                        client_uuid, std::move(callback)));
     return;
@@ -1220,7 +1220,8 @@ void ServiceWorkerVersion::GetClientInternal(const std::string& client_uuid,
                                              GetClientCallback callback) {
   ServiceWorkerProviderHost* provider_host =
       context_->GetProviderHostByClientID(client_uuid);
-  if (!provider_host || !provider_host->is_execution_ready()) {
+  if (!provider_host ||
+      !provider_host->container_host()->is_execution_ready()) {
     std::move(callback).Run(nullptr);
     return;
   }
@@ -1273,14 +1274,14 @@ void ServiceWorkerVersion::PostMessageToClient(
     // The client may already have been closed, just ignore.
     return;
   }
-  if (provider_host->container_host()->url().GetOrigin() !=
-      script_url_.GetOrigin()) {
+  ServiceWorkerContainerHost* container_host = provider_host->container_host();
+  if (container_host->url().GetOrigin() != script_url_.GetOrigin()) {
     mojo::ReportBadMessage(
         "Received Client#postMessage() request for a cross-origin client.");
     receiver_.reset();
     return;
   }
-  if (!provider_host->is_execution_ready()) {
+  if (!container_host->is_execution_ready()) {
     // It's subtle why this ReportBadMessage is correct. Consider the
     // sequence:
     // 1. Page does ServiceWorker.postMessage().
