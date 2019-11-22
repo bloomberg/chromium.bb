@@ -251,7 +251,11 @@ void WebContentController::JavascriptCallback(int64_t id, base::Value result) {
       std::make_unique<webview::WebviewResponse>();
   response->set_id(id);
   response->mutable_evaluate_javascript()->set_json(json);
-  client_->EnqueueSend(std::move(response));
+
+  // Async response may come after Destroy() was called but before the web page
+  // closed.
+  if (client_)
+    client_->EnqueueSend(std::move(response));
 }
 
 void WebContentController::HandleEvaluateJavascript(
@@ -447,6 +451,10 @@ JsChannelCallback WebContentController::GetJsChannelCallback() {
 }
 
 void WebContentController::SendInitialChannelSet(JsClientInstance* instance) {
+  // Calls may come after Destroy() was called but before the web page closed.
+  if (!js_channels_)
+    return;
+
   JsChannelCallback callback = GetJsChannelCallback();
   for (auto& channel : current_javascript_channel_set_)
     instance->AddChannel(channel, callback);
