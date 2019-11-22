@@ -291,4 +291,39 @@ TEST_F(PDFiumPageTextTest, GetTextRunInfo) {
   ASSERT_FALSE(text_run_info_result.has_value());
 }
 
+using PDFiumPageHighlightTest = PDFiumTestBase;
+
+TEST_F(PDFiumPageHighlightTest, TestPopulateHighlights) {
+  struct ExpectedHighlight {
+    int32_t start_char_index;
+    int32_t char_count;
+    pp::Rect bounding_rect;
+  };
+
+  static const ExpectedHighlight kExpectedHighlights[] = {
+      {0, 5, {5, 196, 49, 26}},
+      {12, 7, {110, 196, 77, 26}},
+      {20, 1, {192, 196, 13, 26}}};
+
+  TestClient client;
+  std::unique_ptr<PDFiumEngine> engine =
+      InitializeEngine(&client, FILE_PATH_LITERAL("highlights.pdf"));
+  ASSERT_TRUE(engine);
+  ASSERT_EQ(1, engine->GetNumberOfPages());
+
+  PDFiumPage* page = GetPDFiumPageForTest(engine.get(), 0);
+  ASSERT_TRUE(page);
+  page->PopulateHighlights();
+  ASSERT_EQ(base::size(kExpectedHighlights), page->highlights_.size());
+
+  for (size_t i = 0; i < page->highlights_.size(); ++i) {
+    ASSERT_EQ(kExpectedHighlights[i].start_char_index,
+              page->highlights_[i].start_char_index);
+    ASSERT_EQ(kExpectedHighlights[i].char_count,
+              page->highlights_[i].char_count);
+    CompareRect(kExpectedHighlights[i].bounding_rect,
+                page->highlights_[i].bounding_rect);
+  }
+}
+
 }  // namespace chrome_pdf
