@@ -1410,7 +1410,6 @@ crbug.com/591099 virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/flexbox
 crbug.com/467127 virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/flexbox_justifycontent-center-overflow.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/flexbox_order-box.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/flexbox_order.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/flexbox_quirks_body.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/flexbox_rtl-order.html [ Skip ]
 crbug.com/336604 virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/flexbox_visibility-collapse-line-wrapping.html [ Failure ]
 crbug.com/336604 virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/flexbox_visibility-collapse.html [ Failure ]
