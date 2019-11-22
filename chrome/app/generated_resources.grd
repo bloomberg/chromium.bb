@@ -8937,6 +8937,16 @@ Please help our engineers fix this problem. Tell us what happened right before y
         </message>
       </if>
 
+      <!-- NFC permission -->
+      <if expr="is_android">
+        <message name="IDS_NFC_INFOBAR_TEXT" desc="Text requesting permission for a site to use NFC">
+          <ph name="URL">$1<ex>google.com</ex></ph> wants to send and receive info when you tap your phone on an NFC device
+        </message>
+        <message name="IDS_NFC_PERMISSION_TITLE" desc="Title text for dialog requesting permission for a site to use NFC">
+          NFC
+        </message>
+      </if>
+
       <!-- Sensor messages -->
       <message name="IDS_SENSORS_ALLOWED_TOOLTIP" desc="Location bar icon tooltip text when a page is allowed to use device's sensors.">
         This site is using motion or light sensors.
