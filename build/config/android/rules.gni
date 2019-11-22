@@ -2946,6 +2946,18 @@ if (enable_java_templates) {
       if (defined(invoker.negative_main_dex_globs)) {
         not_needed(invoker, [ "negative_main_dex_globs" ])
       }
+      if (defined(invoker.disable_checkdiscard)) {
+        not_needed(invoker, [ "disable_checkdiscard" ])
+      }
+      if (defined(invoker.disable_r8_outlining)) {
+        not_needed(invoker, [ "disable_r8_outlining" ])
+      }
+      if (defined(invoker.negative_main_dex_globs)) {
+        not_needed(invoker, [ "negative_main_dex_globs" ])
+      }
+      if (defined(invoker.dexlayout_profile)) {
+        not_needed(invoker, [ "dexlayout_profile" ])
+      }
     } else {
       # Dex generation for app bundle modules with proguarding enabled takes
       # place later due to synchronized proguarding. For more details,
