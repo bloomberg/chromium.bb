@@ -369,6 +369,36 @@ int av1_rc_drop_frame(AV1_COMP *cpi) {
   }
 }
 
+static int adjust_q_cbr(const AV1_COMP *cpi, int q) {
+  const RATE_CONTROL *const rc = &cpi->rc;
+  const AV1_COMMON *const cm = &cpi->common;
+  const int max_delta = 16;
+  const int change_avg_frame_bandwidth =
+      abs(rc->avg_frame_bandwidth - rc->prev_avg_frame_bandwidth) >
+      0.1 * (rc->avg_frame_bandwidth);
+  // If resolution changes or avg_frame_bandwidth significantly changed,
+  // then set this flag to indicate change in target bits per macroblock.
+  const int change_target_bits_mb =
+      cm->prev_frame &&
+      (cm->width != cm->prev_frame->width ||
+       cm->height != cm->prev_frame->height || change_avg_frame_bandwidth);
+  // Apply some control/clamp to QP under certain conditions.
+  if (cm->current_frame.frame_type != KEY_FRAME && !cpi->use_svc &&
+      rc->frames_since_key > 1 && !change_target_bits_mb &&
+      (!cpi->oxcf.gf_cbr_boost_pct ||
+       !(cpi->refresh_alt_ref_frame || cpi->refresh_golden_frame))) {
+    // Make sure q is between oscillating Qs to prevent resonance.
+    if (rc->rc_1_frame * rc->rc_2_frame == -1 &&
+        rc->q_1_frame != rc->q_2_frame) {
+      q = clamp(q, AOMMIN(rc->q_1_frame, rc->q_2_frame),
+                AOMMAX(rc->q_1_frame, rc->q_2_frame));
+    }
+    // Limit the decrease in Q from previous frame.
+    if (rc->q_1_frame - q > max_delta) q = rc->q_1_frame - max_delta;
+  }
+  return AOMMAX(AOMMIN(q, cpi->rc.worst_quality), cpi->rc.best_quality);
+}
+
 static const RATE_FACTOR_LEVEL rate_factor_levels[FRAME_UPDATE_TYPES] = {
   KF_STD,        // KF_UPDATE
   INTER_NORMAL,  // LF_UPDATE
@@ -582,14 +612,9 @@ int av1_rc_regulate_q(const AV1_COMP *cpi, int target_bits_per_frame,
       find_closest_qindex_by_rate(target_bits_per_mb, cpi, correction_factor,
                                   active_best_quality, active_worst_quality);
 
-  // In CBR mode, this makes sure q is between oscillating Qs to prevent
-  // resonance.
-  if (cpi->oxcf.rc_mode == AOM_CBR && !cpi->use_svc &&
-      (cpi->rc.rc_1_frame * cpi->rc.rc_2_frame == -1) &&
-      cpi->rc.q_1_frame != cpi->rc.q_2_frame) {
-    q = clamp(q, AOMMIN(cpi->rc.q_1_frame, cpi->rc.q_2_frame),
-              AOMMAX(cpi->rc.q_1_frame, cpi->rc.q_2_frame));
-  }
+  if (cpi->oxcf.rc_mode == AOM_CBR && cpi->oxcf.pass == 0)
+    return adjust_q_cbr(cpi, q);
+
   return q;
 }
 
@@ -756,6 +781,7 @@ static int rc_pick_q_and_bounds_one_pass_cbr(const AV1_COMP *cpi, int width,
           av1_compute_qdelta(rc, q_val, q_val * q_adj_factor, bit_depth);
     }
   } else if (!rc->is_src_frame_alt_ref && !cpi->use_svc &&
+             cpi->oxcf.gf_cbr_boost_pct &&
              (cpi->refresh_golden_frame || cpi->refresh_alt_ref_frame)) {
     // Use the lower of active_worst_quality and recent
     // average Q as basis for GF/ARF best Q limit unless last frame was
@@ -1515,6 +1541,7 @@ void av1_rc_postencode_update(AV1_COMP *cpi, uint64_t bytes_used) {
   if (current_frame->frame_type == KEY_FRAME) rc->last_kf_qindex = qindex;
 
   update_buffer_level(cpi, rc->projected_frame_size);
+  rc->prev_avg_frame_bandwidth = rc->avg_frame_bandwidth;
 
   // Rolling monitors of whether we are over or underspending used to help
   // regulate min and Max Q in two pass.
