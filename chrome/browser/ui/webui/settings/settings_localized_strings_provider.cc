@@ -2136,6 +2136,7 @@ void AddPeopleStrings(content::WebUIDataSource* html_source, Profile* profile) {
     {"photoCaptureAccessibleText", IDS_SETTINGS_PHOTO_CAPTURE_ACCESSIBLE_TEXT},
     {"photoDiscardAccessibleText", IDS_SETTINGS_PHOTO_DISCARD_ACCESSIBLE_TEXT},
     {"photoModeAccessibleText", IDS_SETTINGS_PHOTO_MODE_ACCESSIBLE_TEXT},
+    {"syncOsAppsCheckboxLabel", IDS_OS_SETTINGS_SYNC_OS_APPS_CHECKBOX_LABEL},
     {"syncOsSettingsCheckboxLabel",
      IDS_OS_SETTINGS_SYNC_OS_SETTINGS_CHECKBOX_LABEL},
     {"syncPrintersCheckboxLabel", IDS_OS_SETTINGS_SYNC_PRINTERS_CHECKBOX_LABEL},
