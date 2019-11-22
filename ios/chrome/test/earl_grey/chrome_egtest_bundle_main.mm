@@ -89,13 +89,15 @@ class TestMain {
   DCHECK(!_testMain);
   _testMain = std::make_unique<TestMain>();
 
-  // Ensure that //ios/web and the bulk of //ios/chrome/browser are not compiled
-  // into the test module. This is hard to assert at compile time, due to
-  // transitive dependencies, but at runtime it's easy to check if certain key
-  // classes are present or absent.
+  // Ensure that //ios/web, the bulk of //ios/chrome/browser and
+  // //ios/public/provider/chrome/browser/signin are not compiled into the test
+  // module. This is hard to assert at compile time, due to transitive
+  // dependencies, but at runtime it's easy to check if certain key classes are
+  // present or absent.
   CHECK(NSClassFromString(@"CRWWebController") == nil);
   CHECK(NSClassFromString(@"MainController") == nil);
   CHECK(NSClassFromString(@"BrowserViewController") == nil);
+  CHECK(NSClassFromString(@"ChromeIdentity") == nil);
 }
 
 - (void)testBundleDidFinish:(NSBundle*)testBundle {
