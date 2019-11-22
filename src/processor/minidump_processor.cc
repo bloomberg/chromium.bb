@@ -804,6 +804,9 @@ string MinidumpProcessor::GetCrashReason(Minidump *dump, uint64_t *address) {
             case MD_EXCEPTION_CODE_MAC_MEMORY_ERROR:
               reason.append("KERN_MEMORY_ERROR");
               break;
+            case MD_EXCEPTION_CODE_MAC_CODESIGN_ERROR:
+              reason.append("KERN_CODESIGN_ERROR");
+              break;
             default:
               // arm and ppc overlap
               if (raw_system_info->processor_architecture ==
