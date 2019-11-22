@@ -27074,6 +27074,11 @@ Called by update_net_error_codes.py.-->
   <int value="4" label="optional"/>
 </enum>
 
+<enum name="FontLoadContext">
+  <int value="0" label="Top-level"/>
+  <int value="1" label="Sub-frame"/>
+</enum>
+
 <enum name="FontScanningResult">
   <int value="0" label="Success"/>
   <int value="1" label="FT_New_Face from file failed"/>
