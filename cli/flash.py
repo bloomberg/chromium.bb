@@ -29,6 +29,8 @@ from chromite.lib import remote_access
 from chromite.lib.paygen import paygen_payload_lib
 from chromite.lib.paygen import paygen_stateful_payload_lib
 
+from chromite.lib.xbuddy import artifact_info
+
 
 DEVSERVER_STATIC_DIR = path_util.FromChrootPath(
     os.path.join(constants.CHROOT_SOURCE_ROOT, 'devserver', 'static'))
@@ -443,14 +445,14 @@ class RemoteDeviceUpdater(object):
       # fails, fallback to downloading the image.
       try:
         translated_path, _ = ds_wrapper.GetImagePathWithXbuddy(
-            os.path.join(self.image, 'full_payload'), self.board,
+            os.path.join(self.image, artifact_info.FULL_PAYLOAD), self.board,
             static_dir=DEVSERVER_STATIC_DIR, silent=True)
         payload_dir = os.path.dirname(
             ds_wrapper.TranslatedPathToLocalPath(translated_path,
                                                  DEVSERVER_STATIC_DIR))
         ds_wrapper.GetImagePathWithXbuddy(
-            os.path.join(self.image, 'stateful'), self.board,
-            static_dir=DEVSERVER_STATIC_DIR, silent=True)
+            os.path.join(self.image, artifact_info.STATEFUL_PAYLOAD),
+            self.board, static_dir=DEVSERVER_STATIC_DIR, silent=True)
         fetch_image = False
       except (ds_wrapper.ImagePathError, ds_wrapper.ArtifactDownloadError):
         logging.info('Could not find full_payload or stateful for "%s"',

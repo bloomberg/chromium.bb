@@ -47,6 +47,7 @@ TEST = 'test'
 BASE = 'base'
 DEV = 'dev'
 FULL = 'full_payload'
+DELTA = 'delta_payload'
 SIGNED = 'signed'
 RECOVERY = 'recovery'
 STATEFUL = 'stateful'
@@ -73,6 +74,7 @@ LOCAL_ALIASES = [
     RECOVERY,
     FACTORY_SHIM,
     FULL,
+    DELTA,
     STATEFUL,
     ANY,
 ]
@@ -98,6 +100,7 @@ GS_ALIASES = [
     SIGNED,
     FACTORY_SHIM,
     FULL,
+    DELTA,
     STATEFUL,
     AUTOTEST,
 ]
@@ -120,6 +123,7 @@ ARTIFACTS = [
     artifact_info.SIGNED_IMAGE,
     artifact_info.FACTORY_SHIM_IMAGE,
     artifact_info.FULL_PAYLOAD,
+    artifact_info.DELTA_PAYLOAD,
     artifact_info.STATEFUL_PAYLOAD,
     artifact_info.AUTOTEST,
 ]
