@@ -427,7 +427,7 @@ deps = {
         'version': 'M56jPzDv1620Rnm__jTMYS62Zi8rxHVq7yw0qeBFEgkC',
       }
     ],
-    'condition': 'checkout_mac',
+    'condition': 'checkout_mac or checkout_ios',
     'dep_type': 'cipd',
   },
 
