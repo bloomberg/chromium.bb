@@ -275,6 +275,11 @@ class IdlType(WithExtendedAttributes, WithDebugInfo):
         return False
 
     @property
+    def is_floating_point_numeric(self):
+        """Returns True if this is a floating point numeric type."""
+        return False
+
+    @property
     def is_boolean(self):
         """Returns True if this is a boolean type."""
         return False
@@ -500,8 +505,9 @@ class SimpleType(IdlType):
 
     _INTEGER_TYPES = ('byte', 'octet', 'short', 'unsigned short', 'long',
                       'unsigned long', 'long long', 'unsigned long long')
-    _NUMERIC_TYPES = ('float', 'unrestricted float', 'double',
-                      'unrestricted double') + _INTEGER_TYPES
+    _FLOATING_POINT_NUMERIC_TYPES = ('float', 'unrestricted float', 'double',
+                                     'unrestricted double')
+    _NUMERIC_TYPES = _FLOATING_POINT_NUMERIC_TYPES + _INTEGER_TYPES
     _STRING_TYPES = ('DOMString', 'ByteString', 'USVString')
     _VALID_TYPES = ('any', 'boolean', 'object', 'symbol',
                     'void') + _NUMERIC_TYPES + _STRING_TYPES
@@ -551,6 +557,10 @@ class SimpleType(IdlType):
     @property
     def is_integer(self):
         return self._name in SimpleType._INTEGER_TYPES
+
+    @property
+    def is_floating_point_numeric(self):
+        return self._name in SimpleType._FLOATING_POINT_NUMERIC_TYPES
 
     @property
     def is_boolean(self):
