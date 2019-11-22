@@ -88,6 +88,11 @@ class CONTENT_EXPORT BrowserChildProcessHostImpl
   void Launch(std::unique_ptr<SandboxedProcessLauncherDelegate> delegate,
               std::unique_ptr<base::CommandLine> cmd_line,
               bool terminate_on_shutdown) override;
+  void LaunchWithPreloadedFiles(
+      std::unique_ptr<SandboxedProcessLauncherDelegate> delegate,
+      std::unique_ptr<base::CommandLine> cmd_line,
+      std::map<std::string, base::FilePath> files_to_preload,
+      bool terminate_on_shutdown) override;
   const ChildProcessData& GetData() override;
   ChildProcessHost* GetHost() override;
   ChildProcessTerminationInfo GetTerminationInfo(bool known_dead) override;
@@ -127,6 +132,7 @@ class CONTENT_EXPORT BrowserChildProcessHostImpl
   void LaunchWithoutExtraCommandLineSwitches(
       std::unique_ptr<SandboxedProcessLauncherDelegate> delegate,
       std::unique_ptr<base::CommandLine> cmd_line,
+      std::map<std::string, base::FilePath> files_to_preload,
       bool terminate_on_shutdown);
 
   static void HistogramBadMessageTerminated(ProcessType process_type);
