@@ -30611,6 +30611,15 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="2" label="Watchdog End"/>
 </enum>
 
+<enum name="GpuWatchdogTimeoutEvent">
+  <int value="0" label="Timeout"/>
+  <int value="1" label="Kill"/>
+  <int value="2" label="MoreThreadTime"/>
+  <int value="3" label="ProgressAfterMoreThreadTime"/>
+  <int value="4" label="TimeoutWait"/>
+  <int value="5" label="ProgressAfterWait"/>
+</enum>
+
 <enum name="GPUWebGraphicsContext3D_Init_CanLoseContext">
   <summary>
     Combinations of context loss variables from
