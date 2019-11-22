@@ -121,7 +121,7 @@ def _validate_and_convert_profraws(profraw_files, profdata_tool_path):
       A list of *invalid* profraw files.
       A list of profraw files that have counter overflows.
   """
-  logging.info('Validating and converting .profraw files.')
+  logging.info('Validating and converting .profraw files: %r', profraw_files)
 
   for profraw_file in profraw_files:
     if not profraw_file.endswith('.profraw'):
