@@ -4,7 +4,6 @@
 
 #include "services/device/wake_lock/power_save_blocker/power_save_blocker.h"
 
-#include <X11/extensions/scrnsaver.h>
 #include <stdint.h>
 
 #include <memory>
@@ -25,7 +24,12 @@
 #include "dbus/object_path.h"
 #include "dbus/object_proxy.h"
 #include "ui/gfx/switches.h"
-#include "ui/gfx/x/x11_types.h"
+
+#if defined(USE_X11)
+#include <X11/extensions/scrnsaver.h>
+
+#include "ui/gfx/x/x11_types.h"  // nogncheck
+#endif
 
 namespace device {
 
@@ -127,9 +131,10 @@ void GetDbusStringsForApi(DBusAPI api,
   NOTREACHED();
 }
 
+#if defined(USE_X11)
 // Check whether the X11 Screen Saver Extension can be used to disable the
 // screen saver. Must be called on the UI thread.
-bool XSSAvailable() {
+bool X11ScreenSaverAvailable() {
   // X Screen Saver isn't accessible in headless mode.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kHeadless))
     return false;
@@ -150,13 +155,14 @@ bool XSSAvailable() {
 // Wrapper for XScreenSaverSuspend. Checks whether the X11 Screen Saver
 // Extension is available first. If it isn't, this is a no-op.  Must be called
 // on the UI thread.
-void XSSSuspendSet(bool suspend) {
-  if (!XSSAvailable())
+void X11ScreenSaverSuspendSet(bool suspend) {
+  if (!X11ScreenSaverAvailable())
     return;
 
   XDisplay* display = gfx::GetXDisplay();
   XScreenSaverSuspend(display, suspend);
 }
+#endif
 
 }  // namespace
 
@@ -237,7 +243,10 @@ void PowerSaveBlocker::Delegate::Init() {
         FROM_HERE, base::BindOnce(&Delegate::ApplyBlock, this));
   }
 
-  ui_task_runner_->PostTask(FROM_HERE, base::BindOnce(XSSSuspendSet, true));
+#if defined(USE_X11)
+  ui_task_runner_->PostTask(FROM_HERE,
+                            base::BindOnce(X11ScreenSaverSuspendSet, true));
+#endif
 }
 
 void PowerSaveBlocker::Delegate::CleanUp() {
@@ -246,7 +255,10 @@ void PowerSaveBlocker::Delegate::CleanUp() {
         FROM_HERE, base::BindOnce(&Delegate::RemoveBlock, this));
   }
 
-  ui_task_runner_->PostTask(FROM_HERE, base::BindOnce(XSSSuspendSet, false));
+#if defined(USE_X11)
+  ui_task_runner_->PostTask(FROM_HERE,
+                            base::BindOnce(X11ScreenSaverSuspendSet, false));
+#endif
 }
 
 bool PowerSaveBlocker::Delegate::ShouldBlock() const {

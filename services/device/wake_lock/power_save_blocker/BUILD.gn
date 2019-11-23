@@ -27,7 +27,6 @@ source_set("power_save_blocker") {
     "power_save_blocker_mac.cc",
     "power_save_blocker_stub.cc",
     "power_save_blocker_win.cc",
-    "power_save_blocker_x11.cc",
   ]
 
   public_deps = [
@@ -63,8 +62,8 @@ source_set("power_save_blocker") {
     sources -= [ "power_save_blocker_stub.cc" ]
   }
 
-  if (is_chromeos || !use_x11 || !use_dbus) {
-    sources -= [ "power_save_blocker_x11.cc" ]
+  if (!is_chromeos && use_x11 && use_dbus) {
+    sources += [ "power_save_blocker_linux.cc" ]
   }
 
   if (is_android) {
