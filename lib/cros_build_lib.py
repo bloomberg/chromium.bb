@@ -259,56 +259,65 @@ class CommandResult(object):
       raise RunCommandError('check_returncode failed', result=self)
 
 
-class RunCommandError(Exception):
-  """Error caught in run() method.
+class CalledProcessError(subprocess.CalledProcessError):
+  """Error caught in run() function.
+
+  This is akin to subprocess.CalledProcessError.  We do not support |output|,
+  only |stdout|.
 
   Attributes:
-    args: Tuple of the attributes below.
+    returncode: The exit code of the process.
+    cmd: The command that triggered this exception.
     msg: Short explanation of the error.
-    result: The CommandResult that triggered this error, if available.
     exception: The underlying Exception if available.
   """
 
-  def __init__(self, msg, result=None, exception=None):
+  def __init__(self, returncode, cmd, stdout=None, stderr=None, msg=None,
+               exception=None):
     if exception is not None and not isinstance(exception, Exception):
       raise TypeError('exception must be an exception instance; got %r'
                       % (exception,))
 
-    # This makes mocking tests easier.
-    if result is None:
-      result = CommandResult()
-    elif not isinstance(result, CommandResult):
-      raise TypeError('result must be a CommandResult instance; got %r'
-                      % (result,))
+    super(CalledProcessError, self).__init__(returncode, cmd, stdout)
+    # The parent class will set |output|, so delete it.
+    del self.output
+    # TODO(vapier): When we're Python 3-only, delete this assignment as the
+    # parent handles it for us.
+    self.stdout = stdout
+    # TODO(vapier): When we're Python 3-only, move stderr to the init above.
+    self.stderr = stderr
+    self.msg = msg
+    self.exception = exception
 
-    self.msg, self.result, self.exception = msg, result, exception
-    super(RunCommandError, self).__init__(msg, result, exception)
+  @property
+  def cmdstr(self):
+    """Return self.cmd as a well shell-quoted string useful for log messages."""
+    if self.cmd is None:
+      return ''
+    else:
+      return CmdToStr(self.cmd)
 
-  def Stringify(self, error=True, output=True):
+  def Stringify(self, stdout=True, stderr=True):
     """Custom method for controlling what is included in stringifying this.
 
-    Each individual argument is the literal name of an attribute
-    on the result object; if False, that value is ignored for adding
-    to this string content.  If true, it'll be incorporated.
-
     Args:
-      error: See comment about individual arguments above.
-      output: See comment about individual arguments above.
+      stdout: Whether to include captured stdout in the return value.
+      stderr: Whether to include captured stderr in the return value.
 
     Returns:
       A summary string for this result.
     """
     items = [
         u'return code: %s; command: %s' % (
-            self.result.returncode, self.result.cmdstr),
+            self.returncode, self.cmdstr),
     ]
-    if error and self.result.stderr:
-      stderr = self.result.stderr
+    if stderr and self.stderr:
+      stderr = self.stderr
       if isinstance(stderr, six.binary_type):
         stderr = stderr.decode('utf-8', 'replace')
       items.append(stderr)
-    if output and self.result.stdout:
-      stdout = self.result.stdout
+    if stdout and self.stdout:
+      stdout = self.stdout
       if isinstance(stdout, six.binary_type):
         stdout = stdout.decode('utf-8', 'replace')
       items.append(stdout)
@@ -328,10 +337,41 @@ class RunCommandError(Exception):
 
   def __eq__(self, other):
     return (isinstance(other, type(self)) and
-            self.args == other.args)
+            self.returncode == other.returncode and
+            self.cmd == other.cmd and
+            self.stdout == other.stdout and
+            self.stderr == other.stderr and
+            self.msg == other.msg and
+            self.exception == other.exception)
 
   def __ne__(self, other):
     return not self.__eq__(other)
+
+
+# TODO(crbug.com/1006587): Migrate users to CompletedProcess and drop this.
+class RunCommandError(CalledProcessError):
+  """Error caught in run() method.
+
+  Attributes:
+    args: Tuple of the attributes below.
+    msg: Short explanation of the error.
+    result: The CommandResult that triggered this error, if available.
+    exception: The underlying Exception if available.
+  """
+
+  def __init__(self, msg, result=None, exception=None):
+    # This makes mocking tests easier.
+    if result is None:
+      result = CommandResult()
+    elif not isinstance(result, CommandResult):
+      raise TypeError('result must be a CommandResult instance; got %r'
+                      % (result,))
+
+    self.args = (msg, result, exception)
+    self.result = result
+    super(RunCommandError, self).__init__(
+        returncode=result.returncode, cmd=result.args, stdout=result.stdout,
+        stderr=result.stderr, msg=msg, exception=exception)
 
 
 class TerminateRunCommandError(RunCommandError):
