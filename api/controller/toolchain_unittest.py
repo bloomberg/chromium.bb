@@ -10,6 +10,7 @@ from __future__ import print_function
 from chromite.api import api_config
 from chromite.api.controller import toolchain
 from chromite.api.gen.chromite.api import toolchain_pb2
+from chromite.api.gen.chromiumos.builder_config_pb2 import BuilderConfig
 
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
@@ -166,3 +167,43 @@ class UploadVettedFDOArtifactsTest(UpdateEbuildWithAFDOArtifactsTest):
         build_target=self.board, artifact_type=toolchain_pb2.CHROME_AFDO)
     toolchain.UploadVettedAFDOArtifacts(request, self.response, self.api_config)
     self.command.assert_called_once_with('chrome_afdo', self.board)
+
+
+class PrepareForBuildTest(cros_test_lib.MockTestCase,
+                          api_config.ApiConfigMixin):
+  """Unittests for PrepareForBuild."""
+
+  def setUp(self):
+    self.response = toolchain_pb2.PrepareForToolchainBuildResponse()
+
+  def _GetRequest(self, artifact_types=None):
+    if artifact_types is None:
+      artifact_types = []
+    return toolchain_pb2.PrepareForToolchainBuildRequest(
+        artifact_types=artifact_types,
+    )
+
+  def testReturnsUnknownForUnknown(self):
+    request = self._GetRequest([BuilderConfig.Artifacts.IMAGE_ARCHIVES])
+    toolchain.PrepareForBuild(request, self.response, self.api_config)
+    self.assertEqual(toolchain_pb2.PrepareForToolchainBuildResponse.UNKNOWN,
+                     self.response.build_relevance)
+
+
+class BundleToolchainTest(cros_test_lib.MockTempDirTestCase,
+                          api_config.ApiConfigMixin):
+  """Unittests for BundleToolchain."""
+
+  def setUp(self):
+    self.response = toolchain_pb2.BundleToolchainResponse()
+
+  def _GetRequest(self, artifact_types=None):
+    return toolchain_pb2.BundleToolchainRequest(
+        artifact_types=artifact_types,
+        output_dir=self.tempdir,
+    )
+
+  def testReturnsUnknownForUnknown(self):
+    request = self._GetRequest([BuilderConfig.Artifacts.IMAGE_ARCHIVES])
+    toolchain.BundleArtifacts(request, self.response, self.api_config)
+    self.assertEqual([], list(self.response.artifacts_info))

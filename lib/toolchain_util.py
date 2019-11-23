@@ -25,6 +25,18 @@ from chromite.lib import path_util
 from chromite.lib import portage_util
 from chromite.lib import timeout_util
 
+class PrepareForBuildReturn(object):
+  """Return values for PrepareForBuild call."""
+  UNSPECIFIED = 0
+  # Build is necessary to generate artifacts.
+  NEEDED = 1
+  # Defer to other artifacts.  Used primarily for aggregation of artifact
+  # results.
+  UNKNOWN = 2
+  # Artifacts are already generated.  The build is pointless.
+  POINTLESS = 3
+
+
 # URLs
 # FIXME(tcwang): Remove access to GS buckets from this lib.
 # There are plans in the future to remove all network

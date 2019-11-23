@@ -75,7 +75,7 @@ def exists(*fields):
 
 
 def is_in(field, values):
-  """Validate |field| does not contain |value|.
+  """Validate |field| contains |value|.
 
   Args:
     field (str): The field being checked. May be . separated nested fields.
