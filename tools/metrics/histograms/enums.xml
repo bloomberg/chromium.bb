@@ -51043,6 +51043,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="1" label="Printer was setup from Settings"/>
   <int value="2" label="Printer was setup by automatic USB configurer"/>
   <int value="3" label="Printer was setup by arc print service"/>
+  <int value="4" label="Printer was setup via Extensions API"/>
 </enum>
 
 <enum name="PrintJobResult">
