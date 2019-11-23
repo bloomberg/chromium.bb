@@ -30,6 +30,7 @@ class ChromeCommitter(object):
     self._git_committer_args = ['-c', 'user.email=%s' % args.user_email,
                                 '-c', 'user.name=%s' % args.user_email]
     self._commit_msg = ''
+    self.author = args.user_email
 
     logging.info('user_email=%s', args.user_email)
     logging.info('checkout_dir=%s', args.workdir)

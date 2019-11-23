@@ -15,6 +15,7 @@ from chromite.lib import chrome_committer
 from chromite.lib import commandline
 from chromite.lib import constants
 from chromite.lib import cros_logging as logging
+from chromite.lib import gerrit
 from chromite.lib import osutils
 
 
@@ -61,6 +62,7 @@ class ChromeLKGMCommitter(object):
     logging.info('lkgm=%s', self._lkgm)
 
   def Run(self):
+    self.CloseOldLKGMRolls()
     self._committer.Cleanup()
     self._committer.Checkout(self._NEEDED_FILES)
     self.UpdateLKGM()
@@ -74,6 +76,26 @@ class ChromeLKGMCommitter(object):
   @property
   def lkgm_file(self):
     return self._committer.FullPath(constants.PATH_TO_CHROME_LKGM)
+
+  def CloseOldLKGMRolls(self):
+    """Closes all open LKGM roll CLs that were last modified >24 hours ago.
+
+    Any roll that hasn't passed the CQ in 24 hours is likely broken and can be
+    discarded.
+    """
+    query_params = {
+        'project': constants.CHROMIUM_SRC_PROJECT,
+        'branch': 'master',
+        'author': self._committer.author,
+        'file': constants.PATH_TO_CHROME_LKGM,
+        'age': '1d',
+        'status': 'open',
+    }
+    gerrit_helper = gerrit.GetCrosExternal()
+    for open_issue in gerrit_helper.Query(**query_params):
+      logging.info(
+          'Closing old LKGM roll crrev.com/c/%s', open_issue.gerrit_number)
+      gerrit_helper.AbandonChange(open_issue)
 
   def UpdateLKGM(self):
     """Updates the LKGM file with the new version."""
