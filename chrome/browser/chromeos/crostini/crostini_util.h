@@ -45,11 +45,6 @@ struct ContainerId {
 };
 
 bool operator<(const ContainerId& lhs, const ContainerId& rhs) noexcept;
-bool operator==(const ContainerId& lhs, const ContainerId& rhs) noexcept;
-inline bool operator!=(const ContainerId& lhs,
-                       const ContainerId& rhs) noexcept {
-  return !(lhs == rhs);
-}
 
 std::ostream& operator<<(std::ostream& ostream,
                          const ContainerId& container_id);
