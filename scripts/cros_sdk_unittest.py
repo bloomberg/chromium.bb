@@ -15,7 +15,9 @@ from chromite.lib import cros_logging as logging
 from chromite.lib import cros_sdk_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
+from chromite.lib import retry_util
 from chromite.lib import sudo
+from chromite.scripts import cros_sdk
 
 
 # This long decorator triggers a false positive in the docstring test.
@@ -51,6 +53,38 @@ class CrosSdkPrerequisitesTest(cros_test_lib.TempDirTestCase):
       cmd = ['losetup', '--help']
       result = cros_build_lib.run(cmd, error_code_ok=True)
       self.assertEqual(result.returncode, 0)
+
+
+class CrosSdkUtilsTest(cros_test_lib.MockTempDirTestCase):
+  """Tests for misc util funcs."""
+
+  def testGetArchStageTarballs(self):
+    """Basic test of GetArchStageTarballs."""
+    self.assertCountEqual([
+        'https://storage.googleapis.com/chromiumos-sdk/cros-sdk-123.tar.xz',
+        'https://storage.googleapis.com/chromiumos-sdk/cros-sdk-123.tbz2',
+    ], cros_sdk.GetArchStageTarballs('123'))
+
+  def testFetchRemoteTarballsEmpty(self):
+    """Test FetchRemoteTarballs with no results."""
+    m = self.PatchObject(retry_util, 'RunCurl')
+    with self.assertRaises(ValueError):
+      cros_sdk.FetchRemoteTarballs(self.tempdir, [], 'tarball')
+    m.return_value = cros_build_lib.CommandResult(stdout=b'Foo: bar\n')
+    with self.assertRaises(ValueError):
+      cros_sdk.FetchRemoteTarballs(self.tempdir, ['gs://x.tar'], 'tarball')
+
+  def testFetchRemoteTarballsSuccess(self):
+    """Test FetchRemoteTarballs with a successful download."""
+    curl = cros_build_lib.CommandResult(stdout=(
+        b'HTTP/1.0 200\n'
+        b'Foo: bar\n'
+        b'Content-Length: 100\n'
+    ))
+    self.PatchObject(retry_util, 'RunCurl', return_value=curl)
+    self.assertEqual(
+        os.path.join(self.tempdir, 'tar'),
+        cros_sdk.FetchRemoteTarballs(self.tempdir, ['gs://x/tar'], 'tarball'))
 
 
 @unittest.skipIf(cros_build_lib.IsInsideChroot(),

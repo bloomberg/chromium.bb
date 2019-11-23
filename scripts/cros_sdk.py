@@ -97,27 +97,26 @@ def GetArchStageTarballs(version):
   ]
 
 
-def FetchRemoteTarballs(storage_dir, urls, desc, allow_none=False):
+def FetchRemoteTarballs(storage_dir, urls, desc):
   """Fetches a tarball given by url, and place it in |storage_dir|.
 
   Args:
     storage_dir: Path where to save the tarball.
     urls: List of URLs to try to download. Download will stop on first success.
     desc: A string describing what tarball we're downloading (for logging).
-    allow_none: Don't fail if none of the URLs worked.
 
   Returns:
-    Full path to the downloaded file, or None if |allow_none| and no URL worked.
+    Full path to the downloaded file.
 
   Raises:
-    ValueError: If |allow_none| is False and none of the URLs worked.
+    ValueError: None of the URLs worked.
   """
 
   # Note we track content length ourselves since certain versions of curl
   # fail if asked to resume a complete file.
   # https://sourceforge.net/tracker/?func=detail&atid=100976&aid=3482927&group_id=976
   logging.notice('Downloading %s tarball...', desc)
-  status_re = re.compile(r'^HTTP/[0-9]+(\.[0-9]+)? 200')
+  status_re = re.compile(br'^HTTP/[0-9]+(\.[0-9]+)? 200')
   # pylint: disable=undefined-loop-variable
   for url in urls:
     parsed = urllib.parse.urlparse(url)
@@ -138,15 +137,13 @@ def FetchRemoteTarballs(storage_dir, urls, desc, allow_none=False):
       # a proxy is involved and may have pushed down the actual header.
       if status_re.match(header):
         successful = True
-      elif header.lower().startswith('content-length:'):
-        content_length = int(header.split(':', 1)[-1].strip())
+      elif header.lower().startswith(b'content-length:'):
+        content_length = int(header.split(b':', 1)[-1].strip())
         if successful:
           break
     if successful:
       break
   else:
-    if allow_none:
-      return None
     raise ValueError('No valid URLs found!')
 
   tarball_dest = os.path.join(storage_dir, tarball_name)
