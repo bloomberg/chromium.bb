@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/autofill/payments/webauthn_offer_dialog_view_impl.h"
+#include "chrome/browser/ui/views/autofill/payments/webauthn_dialog_view_impl.h"
 
-#include "chrome/browser/ui/autofill/payments/webauthn_offer_dialog_controller.h"
-#include "chrome/browser/ui/autofill/payments/webauthn_offer_dialog_model.h"
+#include "chrome/browser/ui/autofill/payments/webauthn_dialog_controller.h"
+#include "chrome/browser/ui/autofill/payments/webauthn_dialog_model.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/webauthn/authenticator_request_sheet_view.h"
 #include "chrome/browser/ui/views/webauthn/sheet_view_factory.h"
@@ -18,12 +18,12 @@
 
 namespace autofill {
 
-WebauthnOfferDialogViewImpl::WebauthnOfferDialogViewImpl(
-    WebauthnOfferDialogController* controller)
+WebauthnDialogViewImpl::WebauthnDialogViewImpl(
+    WebauthnDialogController* controller)
     : controller_(controller) {
   SetLayoutManager(std::make_unique<views::FillLayout>());
-  std::unique_ptr<WebauthnOfferDialogModel> model =
-      std::make_unique<WebauthnOfferDialogModel>();
+  std::unique_ptr<WebauthnDialogModel> model =
+      std::make_unique<WebauthnDialogModel>();
   model_ = model.get();
   model_->AddObserver(this);
   sheet_view_ =
@@ -36,7 +36,7 @@ WebauthnOfferDialogViewImpl::WebauthnOfferDialogViewImpl(
                                    model_->GetCancelButtonLabel());
 }
 
-WebauthnOfferDialogViewImpl::~WebauthnOfferDialogViewImpl() {
+WebauthnDialogViewImpl::~WebauthnDialogViewImpl() {
   model_->RemoveObserver(this);
   if (controller_) {
     controller_->OnDialogClosed();
@@ -45,62 +45,59 @@ WebauthnOfferDialogViewImpl::~WebauthnOfferDialogViewImpl() {
 }
 
 // static
-WebauthnOfferDialogView* WebauthnOfferDialogView::CreateAndShow(
-    WebauthnOfferDialogController* controller) {
-  WebauthnOfferDialogViewImpl* dialog =
-      new WebauthnOfferDialogViewImpl(controller);
+WebauthnDialogView* WebauthnDialogView::CreateAndShow(
+    WebauthnDialogController* controller) {
+  WebauthnDialogViewImpl* dialog = new WebauthnDialogViewImpl(controller);
   constrained_window::ShowWebModalDialogViews(dialog,
                                               controller->GetWebContents());
   return dialog;
 }
 
-WebauthnOfferDialogModel* WebauthnOfferDialogViewImpl::GetDialogModel() const {
+WebauthnDialogModel* WebauthnDialogViewImpl::GetDialogModel() const {
   return model_;
 }
 
-void WebauthnOfferDialogViewImpl::OnDialogStateChanged() {
+void WebauthnDialogViewImpl::OnDialogStateChanged() {
   switch (model_->dialog_state()) {
-    case WebauthnOfferDialogModel::DialogState::kInactive:
+    case WebauthnDialogModel::DialogState::kInactive:
       Hide();
       break;
-    case WebauthnOfferDialogModel::DialogState::kPending:
-    case WebauthnOfferDialogModel::DialogState::kError:
+    case WebauthnDialogModel::DialogState::kPending:
+    case WebauthnDialogModel::DialogState::kError:
       RefreshContent();
       break;
-    case WebauthnOfferDialogModel::DialogState::kUnknown:
-    case WebauthnOfferDialogModel::DialogState::kOffer:
+    case WebauthnDialogModel::DialogState::kUnknown:
+    case WebauthnDialogModel::DialogState::kOffer:
       NOTREACHED();
   }
 }
 
-gfx::Size WebauthnOfferDialogViewImpl::CalculatePreferredSize() const {
+gfx::Size WebauthnDialogViewImpl::CalculatePreferredSize() const {
   const int width = ChromeLayoutProvider::Get()->GetDistanceMetric(
       DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH);
   return gfx::Size(width, GetHeightForWidth(width));
 }
 
-bool WebauthnOfferDialogViewImpl::Accept() {
-  DCHECK_EQ(model_->dialog_state(),
-            WebauthnOfferDialogModel::DialogState::kOffer);
+bool WebauthnDialogViewImpl::Accept() {
+  DCHECK_EQ(model_->dialog_state(), WebauthnDialogModel::DialogState::kOffer);
   controller_->OnOkButtonClicked();
   return false;
 }
 
-bool WebauthnOfferDialogViewImpl::Cancel() {
-  if (model_->dialog_state() == WebauthnOfferDialogModel::DialogState::kOffer ||
-      model_->dialog_state() ==
-          WebauthnOfferDialogModel::DialogState::kPending) {
+bool WebauthnDialogViewImpl::Cancel() {
+  if (model_->dialog_state() == WebauthnDialogModel::DialogState::kOffer ||
+      model_->dialog_state() == WebauthnDialogModel::DialogState::kPending) {
     controller_->OnCancelButtonClicked();
   }
 
   return true;
 }
 
-bool WebauthnOfferDialogViewImpl::Close() {
+bool WebauthnDialogViewImpl::Close() {
   return true;
 }
 
-int WebauthnOfferDialogViewImpl::GetDialogButtons() const {
+int WebauthnDialogViewImpl::GetDialogButtons() const {
   // Cancel button is always visible but OK button depends on dialog state.
   DCHECK(model_->IsCancelButtonVisible());
   return model_->IsAcceptButtonVisible()
@@ -108,29 +105,29 @@ int WebauthnOfferDialogViewImpl::GetDialogButtons() const {
              : ui::DIALOG_BUTTON_CANCEL;
 }
 
-bool WebauthnOfferDialogViewImpl::IsDialogButtonEnabled(
+bool WebauthnDialogViewImpl::IsDialogButtonEnabled(
     ui::DialogButton button) const {
   return button == ui::DIALOG_BUTTON_OK ? model_->IsAcceptButtonEnabled()
                                         : true;
 }
 
-ui::ModalType WebauthnOfferDialogViewImpl::GetModalType() const {
+ui::ModalType WebauthnDialogViewImpl::GetModalType() const {
   return ui::MODAL_TYPE_CHILD;
 }
 
-base::string16 WebauthnOfferDialogViewImpl::GetWindowTitle() const {
+base::string16 WebauthnDialogViewImpl::GetWindowTitle() const {
   return model_->GetStepTitle();
 }
 
-bool WebauthnOfferDialogViewImpl::ShouldShowWindowTitle() const {
+bool WebauthnDialogViewImpl::ShouldShowWindowTitle() const {
   return false;
 }
 
-bool WebauthnOfferDialogViewImpl::ShouldShowCloseButton() const {
+bool WebauthnDialogViewImpl::ShouldShowCloseButton() const {
   return false;
 }
 
-void WebauthnOfferDialogViewImpl::Hide() {
+void WebauthnDialogViewImpl::Hide() {
   // Reset controller reference if the controller has been destroyed before the
   // view being destroyed. This happens if browser window is closed when the
   // dialog is visible.
@@ -141,7 +138,7 @@ void WebauthnOfferDialogViewImpl::Hide() {
   GetWidget()->Close();
 }
 
-void WebauthnOfferDialogViewImpl::RefreshContent() {
+void WebauthnDialogViewImpl::RefreshContent() {
   sheet_view_->ReInitChildViews();
   sheet_view_->InvalidateLayout();
   DialogDelegate::set_button_label(ui::DIALOG_BUTTON_OK,

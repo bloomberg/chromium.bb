@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_AUTOFILL_PAYMENTS_WEBAUTHN_OFFER_DIALOG_CONTROLLER_H_
-#define CHROME_BROWSER_UI_AUTOFILL_PAYMENTS_WEBAUTHN_OFFER_DIALOG_CONTROLLER_H_
+#ifndef CHROME_BROWSER_UI_AUTOFILL_PAYMENTS_WEBAUTHN_DIALOG_CONTROLLER_H_
+#define CHROME_BROWSER_UI_AUTOFILL_PAYMENTS_WEBAUTHN_DIALOG_CONTROLLER_H_
 
 #include "base/macros.h"
 
@@ -14,11 +14,10 @@ class WebContents;
 namespace autofill {
 
 // An interface that exposes necessary controller functionality to
-// WebauthnOfferDialogView.
-class WebauthnOfferDialogController {
+// WebauthnDialogView.
+class WebauthnDialogController {
  public:
-  WebauthnOfferDialogController() = default;
-  virtual ~WebauthnOfferDialogController() = default;
+  virtual ~WebauthnDialogController() = default;
 
   virtual void OnOkButtonClicked() = 0;
 
@@ -27,11 +26,8 @@ class WebauthnOfferDialogController {
   virtual void OnDialogClosed() = 0;
 
   virtual content::WebContents* GetWebContents() = 0;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(WebauthnOfferDialogController);
 };
 
 }  // namespace autofill
 
-#endif  // CHROME_BROWSER_UI_AUTOFILL_PAYMENTS_WEBAUTHN_OFFER_DIALOG_CONTROLLER_H_
+#endif  // CHROME_BROWSER_UI_AUTOFILL_PAYMENTS_WEBAUTHN_DIALOG_CONTROLLER_H_

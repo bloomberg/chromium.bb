@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_AUTOFILL_PAYMENTS_WEBAUTHN_OFFER_DIALOG_MODEL_H_
-#define CHROME_BROWSER_UI_AUTOFILL_PAYMENTS_WEBAUTHN_OFFER_DIALOG_MODEL_H_
+#ifndef CHROME_BROWSER_UI_AUTOFILL_PAYMENTS_WEBAUTHN_DIALOG_MODEL_H_
+#define CHROME_BROWSER_UI_AUTOFILL_PAYMENTS_WEBAUTHN_DIALOG_MODEL_H_
 
 #include "base/macros.h"
 #include "base/observer_list.h"
@@ -12,11 +12,11 @@
 
 namespace autofill {
 
-class WebauthnOfferDialogModelObserver;
+class WebauthnDialogModelObserver;
 
-// The model for WebauthnOfferDialogView determining what content is shown.
+// The model for WebauthnDialogView determining what content is shown.
 // Owned by the AuthenticatorRequestSheetView.
-class WebauthnOfferDialogModel : public AuthenticatorRequestSheetModel {
+class WebauthnDialogModel : public AuthenticatorRequestSheetModel {
  public:
   enum DialogState {
     kUnknown,
@@ -31,14 +31,14 @@ class WebauthnOfferDialogModel : public AuthenticatorRequestSheetModel {
     kError,
   };
 
-  WebauthnOfferDialogModel();
-  ~WebauthnOfferDialogModel() override;
+  WebauthnDialogModel();
+  ~WebauthnDialogModel() override;
 
   void SetDialogState(DialogState state);
   DialogState dialog_state() { return state_; }
 
-  void AddObserver(WebauthnOfferDialogModelObserver* observer);
-  void RemoveObserver(WebauthnOfferDialogModelObserver* observer);
+  void AddObserver(WebauthnDialogModelObserver* observer);
+  void RemoveObserver(WebauthnDialogModelObserver* observer);
 
   // AuthenticatorRequestSheetModel:
   bool IsActivityIndicatorVisible() const override;
@@ -62,11 +62,11 @@ class WebauthnOfferDialogModel : public AuthenticatorRequestSheetModel {
  private:
   DialogState state_ = DialogState::kUnknown;
 
-  base::ObserverList<WebauthnOfferDialogModelObserver> observers_;
+  base::ObserverList<WebauthnDialogModelObserver> observers_;
 
-  DISALLOW_COPY_AND_ASSIGN(WebauthnOfferDialogModel);
+  DISALLOW_COPY_AND_ASSIGN(WebauthnDialogModel);
 };
 
 }  // namespace autofill
 
-#endif  // CHROME_BROWSER_UI_AUTOFILL_PAYMENTS_WEBAUTHN_OFFER_DIALOG_MODEL_H_
+#endif  // CHROME_BROWSER_UI_AUTOFILL_PAYMENTS_WEBAUTHN_DIALOG_MODEL_H_

@@ -410,7 +410,7 @@ void CreditCardAccessManager::Authenticate(bool get_unmask_details_returned) {
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
     // Close the verify pending dialog if it enters CVC authentication flow
     // since the card unmask prompt will pop up.
-    client_->CloseVerifyPendingDialog();
+    client_->CloseWebauthnVerifyPendingDialog();
 #endif
     GetOrCreateCVCAuthenticator()->Authenticate(
         card_, weak_ptr_factory_.GetWeakPtr(), personal_data_manager_,
@@ -495,7 +495,7 @@ void CreditCardAccessManager::OnFIDOAuthenticationComplete(
   // Close the verify pending dialog. If FIDO authentication succeeded, card is
   // filled to the form, otherwise fall back to CVC authentication which does
   // not need the verify pending dialog either.
-  client_->CloseVerifyPendingDialog();
+  client_->CloseWebauthnVerifyPendingDialog();
 #endif
 
   if (did_succeed) {
@@ -527,7 +527,7 @@ bool CreditCardAccessManager::AuthenticationRequiresUnmaskDetails() {
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
 void CreditCardAccessManager::ShowVerifyPendingDialog() {
-  client_->ShowVerifyPendingDialog(
+  client_->ShowWebauthnVerifyPendingDialog(
       base::BindOnce(&CreditCardAccessManager::OnDidCancelCardVerification,
                      weak_ptr_factory_.GetWeakPtr()));
 }
