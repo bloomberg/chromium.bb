@@ -706,8 +706,6 @@ crbug.com/591099 external/wpt/css/css-ui/text-overflow-015.html [ Failure ]
 
 crbug.com/1003506 external/wpt/css/css-flexbox/percentage-heights-007.html [ Failure ]
 
-crbug.com/916631 external/wpt/css/cssom-view/scrollIntoView-horizontal-partially-visible.html [ Failure ]
-
 # ====== Layout team owned tests to here ======
 
 # ====== LayoutNG-only failures from here ======
