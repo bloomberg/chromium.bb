@@ -1473,7 +1473,7 @@ def AndroidTemplates(site_config):
       site_config.templates.generic_android_pfq,
       site_config.templates.internal,
       display_label=config_lib.DISPLAY_LABEL_VMMST_ANDROID_PFQ,
-      android_package='android-container-vm-master',
+      android_package='android-vm-master',
       android_import_branch=constants.ANDROID_VMMST_BUILD_BRANCH,
   )
 
