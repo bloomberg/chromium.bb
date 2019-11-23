@@ -20,6 +20,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -31,9 +32,7 @@ import org.chromium.android_webview.common.services.ServiceNames;
 import org.chromium.android_webview.devui.util.NavigationMenuHelper;
 import org.chromium.base.Log;
 
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -42,8 +41,6 @@ import java.util.Map;
 @SuppressLint("SetTextI18n")
 public class FlagsActivity extends Activity {
     private static final String TAG = "WebViewDevTools";
-
-    private final Map<String, Boolean> mOverriddenFlags = new HashMap<>();
 
     private static final String STATE_DEFAULT = "Default";
     private static final String STATE_ENABLED = "Enabled";
@@ -55,6 +52,8 @@ public class FlagsActivity extends Activity {
     };
 
     private WebViewPackageError mDifferentPackageError;
+    private final Map<String, Boolean> mOverriddenFlags = new HashMap<>();
+    private FlagsListAdapter mListAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,8 +67,11 @@ public class FlagsActivity extends Activity {
                 + "lose app data or compromise your security or privacy. Enabled features apply to "
                 + "WebViews across all apps on the device.");
 
-        List<Flag> flagsList = Arrays.asList(ProductionSupportedFlagList.sFlagList);
-        flagsListView.setAdapter(new FlagsListAdapter(flagsList));
+        mListAdapter = new FlagsListAdapter();
+        flagsListView.setAdapter(mListAdapter);
+
+        Button resetFlagsButton = findViewById(R.id.reset_flags_button);
+        resetFlagsButton.setOnClickListener((View view) -> { resetAllFlags(); });
 
         mDifferentPackageError =
                 new WebViewPackageError(this, findViewById(R.id.flags_activity_layout));
@@ -90,6 +92,15 @@ public class FlagsActivity extends Activity {
         mDifferentPackageError.showMessageIfDifferent();
     }
 
+    private static int booleanToState(Boolean b) {
+        if (b == null) {
+            return /* STATE_DEFAULT */ 0;
+        } else if (b) {
+            return /* STATE_ENABLED */ 1;
+        }
+        return /* STATE_DISABLED */ 2;
+    }
+
     private class FlagStateSpinnerSelectedListener implements AdapterView.OnItemSelectedListener {
         private Flag mFlag;
 
@@ -99,19 +110,28 @@ public class FlagsActivity extends Activity {
 
         @Override
         public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+            String flagName = mFlag.getName();
+            int oldState = booleanToState(mOverriddenFlags.get(flagName));
+
             switch (sFlagStates[position]) {
                 case STATE_DEFAULT:
-                    mOverriddenFlags.remove(mFlag.getName());
+                    mOverriddenFlags.remove(flagName);
                     break;
                 case STATE_ENABLED:
-                    mOverriddenFlags.put(mFlag.getName(), true);
+                    mOverriddenFlags.put(flagName, true);
                     break;
                 case STATE_DISABLED:
-                    mOverriddenFlags.put(mFlag.getName(), false);
+                    mOverriddenFlags.put(flagName, false);
                     break;
             }
 
-            sendFlagsToService();
+            // Only communicate with the service if the map actually updated. This optimizes the
+            // number of IPCs we make, but this also allows for atomic batch updates by updating
+            // mOverriddenFlags prior to updating the Spinner state.
+            int newState = booleanToState(mOverriddenFlags.get(flagName));
+            if (oldState != newState) {
+                sendFlagsToService();
+            }
         }
 
         @Override
@@ -122,11 +142,9 @@ public class FlagsActivity extends Activity {
      * Adapter to create rows of toggleable Flags.
      */
     private class FlagsListAdapter extends ArrayAdapter<Flag> {
-        private final List<Flag> mFlagsList;
-
-        public FlagsListAdapter(List<Flag> flagsList) {
-            super(FlagsActivity.this, R.layout.toggleable_flag, flagsList);
-            mFlagsList = flagsList;
+        public FlagsListAdapter() {
+            super(FlagsActivity.this, R.layout.toggleable_flag,
+                    ProductionSupportedFlagList.sFlagList);
         }
 
         @Override
@@ -148,6 +166,10 @@ public class FlagsActivity extends Activity {
                     new ArrayAdapter<>(FlagsActivity.this, R.layout.flag_states, sFlagStates);
             adapter.setDropDownViewResource(android.R.layout.select_dialog_singlechoice);
             flagToggle.setAdapter(adapter);
+
+            // Populate spinner state from map.
+            int state = booleanToState(mOverriddenFlags.get(flag.getName()));
+            flagToggle.setSelection(state);
             flagToggle.setOnItemSelectedListener(new FlagStateSpinnerSelectedListener(flag));
 
             return view;
@@ -209,5 +231,12 @@ public class FlagsActivity extends Activity {
                 new ComponentName(this, ServiceNames.DEVELOPER_UI_SERVICE);
         this.getPackageManager().setComponentEnabledSetting(developerModeService,
                 PackageManager.COMPONENT_ENABLED_STATE_ENABLED, PackageManager.DONT_KILL_APP);
+    }
+
+    private void resetAllFlags() {
+        // Clear the map, then update the Spinners from the map value.
+        mOverriddenFlags.clear();
+        mListAdapter.notifyDataSetChanged();
+        sendFlagsToService();
     }
 }
