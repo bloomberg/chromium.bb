@@ -3,10 +3,9 @@
 // found in the LICENSE file.
 
 // Include test fixture.
-GEN_INCLUDE(['//chrome/browser/resources/chromeos/accessibility/chromevox/testing/chromevox_next_e2e_test_base.js']);
-
-GEN_INCLUDE(['//chrome/browser/resources/chromeos/accessibility/chromevox/testing/assert_additions.js']);
-GEN_INCLUDE(['//chrome/browser/resources/chromeos/accessibility/chromevox/testing/snippets.js']);
+GEN_INCLUDE(['../testing/chromevox_next_e2e_test_base.js']);
+GEN_INCLUDE(['../testing/assert_additions.js']);
+GEN_INCLUDE(['../testing/snippets.js']);
 
 /**
  * Test fixture for automation_util.js.
@@ -31,36 +30,38 @@ ChromeVoxAutomationUtilE2ETest.prototype = {
     }
 
     window.getNonDesktopAncestors = function(node) {
-      return AutomationUtil.getAncestors(node)
-          .filter(filterNonDesktopRoot);
-    }
+      return AutomationUtil.getAncestors(node).filter(filterNonDesktopRoot);
+    };
 
     window.getNonDesktopUniqueAncestors = function(node1, node2) {
       return AutomationUtil.getUniqueAncestors(node1, node2)
           .filter(filterNonDesktopRoot);
-    }
+    };
   },
 
-  basicDoc: function() {/*!
-    <p><a href='#'></a>hello</p>
-    <h1><ul><li>a</ul><div role="group"><button></button></div></h1>
-  */},
+  basicDoc:
+      function() { /*!
+<p><a href='#'></a>hello</p>
+<h1><ul><li>a</ul><div role="group"><button></button></div></h1>
+*/ },
 
-  secondDoc: function() {/*!
-    <html>
-      <head><title>Second doc</title></head>
-      <body><div>Second</div></body>
-    </html>
-  */},
+  secondDoc:
+      function() { /*!
+<html>
+<head><title>Second doc</title></head>
+<body><div>Second</div></body>
+</html>
+*/ },
 
-  iframeDoc: function() {/*!
-    <html>
-      <head><title>Second doc</title></head>
-      <body>
-        <iframe src="data:text/html,<p>Inside</p>"></iframe>
-      </body>
-    </html>
-  */}
+  iframeDoc:
+      function() { /*!
+<html>
+<head><title>Second doc</title></head>
+<body>
+  <iframe src="data:text/html,<p>Inside</p>"></iframe>
+</body>
+</html>
+*/ }
 };
 
 TEST_F('ChromeVoxAutomationUtilE2ETest', 'GetAncestors', function() {
@@ -92,28 +93,20 @@ TEST_F('ChromeVoxAutomationUtilE2ETest', 'GetUniqueAncestors', function() {
     assertEquals(
         -1, AutomationUtil.getDivergence(leftAncestors, leftAncestors));
 
-    var uniqueAncestorsLeft =
-        getNonDesktopUniqueAncestors(rightmost, leftmost);
+    var uniqueAncestorsLeft = getNonDesktopUniqueAncestors(rightmost, leftmost);
     var uniqueAncestorsRight =
         getNonDesktopUniqueAncestors(leftmost, rightmost);
 
     assertEquals(2, uniqueAncestorsLeft.length);
-    assertEquals(RoleType.PARAGRAPH,
-        uniqueAncestorsLeft[0].role);
-    assertEquals(RoleType.LINK,
-        uniqueAncestorsLeft[1].role);
+    assertEquals(RoleType.PARAGRAPH, uniqueAncestorsLeft[0].role);
+    assertEquals(RoleType.LINK, uniqueAncestorsLeft[1].role);
 
     assertEquals(3, uniqueAncestorsRight.length);
-    assertEquals(RoleType.HEADING,
-        uniqueAncestorsRight[0].role);
-    assertEquals(RoleType.GROUP,
-        uniqueAncestorsRight[1].role);
-    assertEquals(RoleType.BUTTON,
-        uniqueAncestorsRight[2].role);
+    assertEquals(RoleType.HEADING, uniqueAncestorsRight[0].role);
+    assertEquals(RoleType.GROUP, uniqueAncestorsRight[1].role);
+    assertEquals(RoleType.BUTTON, uniqueAncestorsRight[2].role);
 
-    assertEquals(
-        1, getNonDesktopUniqueAncestors(leftmost, leftmost).length);
-
+    assertEquals(1, getNonDesktopUniqueAncestors(leftmost, leftmost).length);
   }.bind(this));
 });
 
@@ -140,20 +133,20 @@ TEST_F('ChromeVoxAutomationUtilE2ETest', 'GetDirection', function() {
 
 TEST_F('ChromeVoxAutomationUtilE2ETest', 'VisitContainer', function() {
   this.runWithLoadedTree(toolbarDoc, function(r) {
-    var pred = function(n) { return n.role != 'rootWebArea'; };
+    var pred = function(n) {
+      return n.role != 'rootWebArea';
+    };
 
     var toolbar = AutomationUtil.findNextNode(r, 'forward', pred);
     assertEquals('toolbar', toolbar.role);
 
     var back = AutomationUtil.findNextNode(toolbar, 'forward', pred);
     assertEquals('Back', back.name);
-    assertEquals(toolbar,
-                 AutomationUtil.findNextNode(back, 'backward', pred));
+    assertEquals(toolbar, AutomationUtil.findNextNode(back, 'backward', pred));
 
     var forward = AutomationUtil.findNextNode(back, 'forward', pred);
     assertEquals('Forward', forward.name);
-    assertEquals(back,
-                 AutomationUtil.findNextNode(forward, 'backward', pred));
+    assertEquals(back, AutomationUtil.findNextNode(forward, 'backward', pred));
   });
 });
 
@@ -162,57 +155,78 @@ TEST_F('ChromeVoxAutomationUtilE2ETest', 'HitTest', function() {
     // Gets the center point of a rect.
     function getCP(node) {
       var loc = node.location;
-      return {x: loc.left + loc.width/2, y: loc.top + loc.height/2};
+      return {x: loc.left + loc.width / 2, y: loc.top + loc.height / 2};
     }
     var h1, h2, a;
     [h1, h2, a] = r.findAll({role: 'inlineTextBox'});
 
     assertEquals(h1, AutomationUtil.hitTest(r, getCP(h1)));
     assertEquals(h1, AutomationUtil.hitTest(r, getCP(h1.parent)));
-    assertEquals(h1.parent.parent,
-                 AutomationUtil.hitTest(r, getCP(h1.parent.parent)));
+    assertEquals(
+        h1.parent.parent, AutomationUtil.hitTest(r, getCP(h1.parent.parent)));
 
     assertEquals(a, AutomationUtil.hitTest(r, getCP(a)));
     assertEquals(a, AutomationUtil.hitTest(r, getCP(a.parent)));
-    assertEquals(a.parent.parent,
-                 AutomationUtil.hitTest(r, getCP(a.parent.parent)));
+    assertEquals(
+        a.parent.parent, AutomationUtil.hitTest(r, getCP(a.parent.parent)));
   });
 });
 
 TEST_F('ChromeVoxAutomationUtilE2ETest', 'FindLastNodeSimple', function() {
-  this.runWithLoadedTree(function() {/*!
-    <p aria-label=" "><div aria-label="x"></div></p>
-  */}, function(r) {
-    assertEquals('x',
-        AutomationUtil.findLastNode(r, function(n) {
-          return n.role == RoleType.GENERIC_CONTAINER;
-        }).name);
-  });
+  this.runWithLoadedTree(
+      function() { /*!
+<p aria-label=" "><div aria-label="x"></div></p>
+*/ },
+      function(r) {
+        assertEquals(
+            'x',
+            AutomationUtil
+                .findLastNode(
+                    r,
+                    function(n) {
+                      return n.role == RoleType.GENERIC_CONTAINER;
+                    })
+                .name);
+      });
 });
 
 TEST_F('ChromeVoxAutomationUtilE2ETest', 'FindLastNodeNonLeaf', function() {
-  this.runWithLoadedTree(function() {/*!
-    <div role="button" aria-label="outer">
-      <div role="button" aria-label="inner">
-      </div>
-    </div>
-  */}, function(r) {
-    assertEquals('outer',
-        AutomationUtil.findLastNode(r, function(n) {
-          return n.role == RoleType.BUTTON;
-        }).name);
-  });
+  this.runWithLoadedTree(
+      function() { /*!
+<div role="button" aria-label="outer">
+<div role="button" aria-label="inner">
+</div>
+</div>
+*/ },
+      function(r) {
+        assertEquals(
+            'outer',
+            AutomationUtil
+                .findLastNode(
+                    r,
+                    function(n) {
+                      return n.role == RoleType.BUTTON;
+                    })
+                .name);
+      });
 });
 
 TEST_F('ChromeVoxAutomationUtilE2ETest', 'FindLastNodeLeaf', function() {
-  this.runWithLoadedTree(function() {/*!
-    <p>start</p>
-    <div aria-label="outer"><div aria-label="inner"></div></div>
-    <p>end</p>
-  */}, function(r) {
-    assertEquals('inner',
-        AutomationUtil.findLastNode(r, function(n) {
-          return n.role == RoleType.GENERIC_CONTAINER;
-        }).name);
-  });
+  this.runWithLoadedTree(
+      function() { /*!
+<p>start</p>
+<div aria-label="outer"><div aria-label="inner"></div></div>
+<p>end</p>
+*/ },
+      function(r) {
+        assertEquals(
+            'inner',
+            AutomationUtil
+                .findLastNode(
+                    r,
+                    function(n) {
+                      return n.role == RoleType.GENERIC_CONTAINER;
+                    })
+                .name);
+      });
 });

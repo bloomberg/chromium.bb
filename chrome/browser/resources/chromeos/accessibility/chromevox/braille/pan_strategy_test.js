@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-GEN_INCLUDE(['//chrome/browser/resources/chromeos/accessibility/chromevox/testing/chromevox_unittest_base.js']);
+GEN_INCLUDE(['../testing/chromevox_unittest_base.js']);
 
 /**
  * Test fixture.
@@ -36,7 +36,7 @@ function createArrayBuffer(content) {
   return result;
 }
 
- TEST_F('ChromeVoxPanStrategyUnitTest', 'FixedPanning', function() {
+TEST_F('ChromeVoxPanStrategyUnitTest', 'FixedPanning', function() {
   var panner = new PanStrategy();
   panner.setPanStrategy(false);
 
@@ -89,8 +89,7 @@ function createArrayBuffer(content) {
   assertEqualsJSON({firstRow: 0, lastRow: 1}, panner.viewPort);
 });
 
-TEST_F('ChromeVoxPanStrategyUnitTest', 'WrappedPanningSingleLine',
-       function() {
+TEST_F('ChromeVoxPanStrategyUnitTest', 'WrappedPanningSingleLine', function() {
   var panner = new PanStrategy();
   panner.setPanStrategy(true);
 
@@ -103,20 +102,23 @@ TEST_F('ChromeVoxPanStrategyUnitTest', 'WrappedPanningSingleLine',
 
   panner.setDisplaySize(1, 10);
   assertEqualsJSON({firstRow: 0, lastRow: 0}, panner.viewPort);
-  assertArrayBuffersEquals(createArrayBuffer('11234567  '),
-        panner.getCurrentBrailleViewportContents());
+  assertArrayBuffersEquals(
+      createArrayBuffer('11234567  '),
+      panner.getCurrentBrailleViewportContents());
   assertTrue(panner.next());
   assertEqualsJSON({firstRow: 1, lastRow: 1}, panner.viewPort);
-  assertArrayBuffersEquals(createArrayBuffer('9112345678'),
-        panner.getCurrentBrailleViewportContents());
+  assertArrayBuffersEquals(
+      createArrayBuffer('9112345678'),
+      panner.getCurrentBrailleViewportContents());
   assertTrue(panner.next());
   assertEqualsJSON({firstRow: 2, lastRow: 2}, panner.viewPort);
-  assertArrayBuffersEquals(createArrayBuffer('911 345   '),
-        panner.getCurrentBrailleViewportContents());
+  assertArrayBuffersEquals(
+      createArrayBuffer('911 345   '),
+      panner.getCurrentBrailleViewportContents());
   assertTrue(panner.next());
   assertEqualsJSON({firstRow: 3, lastRow: 3}, panner.viewPort);
-  assertArrayBuffersEquals(createArrayBuffer('789'),
-        panner.getCurrentBrailleViewportContents());
+  assertArrayBuffersEquals(
+      createArrayBuffer('789'), panner.getCurrentBrailleViewportContents());
   assertFalse(panner.next());
   assertEqualsJSON({firstRow: 3, lastRow: 3}, panner.viewPort);
   assertTrue(panner.previous());
@@ -129,18 +131,20 @@ TEST_F('ChromeVoxPanStrategyUnitTest', 'WrappedPanningSingleLine',
 
   panner.setContent('a', content, [], 21);
   assertEqualsJSON({firstRow: 2, lastRow: 2}, panner.viewPort);
-  assertArrayBuffersEquals(createArrayBuffer('911 345   '),
-        panner.getCurrentBrailleViewportContents());
+  assertArrayBuffersEquals(
+      createArrayBuffer('911 345   '),
+      panner.getCurrentBrailleViewportContents());
 
   panner.setContent('a', content, [], 30);
   assertEqualsJSON({firstRow: 3, lastRow: 3}, panner.viewPort);
-  assertArrayBuffersEquals(createArrayBuffer('789'),
-        panner.getCurrentBrailleViewportContents());
+  assertArrayBuffersEquals(
+      createArrayBuffer('789'), panner.getCurrentBrailleViewportContents());
 
   panner.setDisplaySize(1, 8);
   assertEqualsJSON({firstRow: 0, lastRow: 0}, panner.viewPort);
-  assertArrayBuffersEquals(createArrayBuffer('11234567'),
-        panner.getCurrentBrailleViewportContents());
+  assertArrayBuffersEquals(
+      createArrayBuffer('11234567'),
+      panner.getCurrentBrailleViewportContents());
 });
 
 TEST_F('ChromeVoxPanStrategyUnitTest', 'WrappedPanningMultiline', function() {
@@ -153,36 +157,40 @@ TEST_F('ChromeVoxPanStrategyUnitTest', 'WrappedPanningMultiline', function() {
 
   panner.setDisplaySize(2, 10);
   assertEqualsJSON({firstRow: 0, lastRow: 1}, panner.viewPort);
-  assertArrayBuffersEquals(createArrayBuffer('11234567  9112345678'),
-        panner.getCurrentBrailleViewportContents());
+  assertArrayBuffersEquals(
+      createArrayBuffer('11234567  9112345678'),
+      panner.getCurrentBrailleViewportContents());
   assertTrue(panner.next());
   assertEqualsJSON({firstRow: 2, lastRow: 3}, panner.viewPort);
-  assertArrayBuffersEquals(createArrayBuffer('911 345   789'),
-        panner.getCurrentBrailleViewportContents());
+  assertArrayBuffersEquals(
+      createArrayBuffer('911 345   789'),
+      panner.getCurrentBrailleViewportContents());
   assertFalse(panner.next());
   assertEqualsJSON({firstRow: 2, lastRow: 3}, panner.viewPort);
-  assertArrayBuffersEquals(createArrayBuffer('911 345   789'),
-        panner.getCurrentBrailleViewportContents());
+  assertArrayBuffersEquals(
+      createArrayBuffer('911 345   789'),
+      panner.getCurrentBrailleViewportContents());
   assertTrue(panner.previous());
   assertEqualsJSON({firstRow: 0, lastRow: 1}, panner.viewPort);
-  assertArrayBuffersEquals(createArrayBuffer('11234567  9112345678'),
-        panner.getCurrentBrailleViewportContents());
+  assertArrayBuffersEquals(
+      createArrayBuffer('11234567  9112345678'),
+      panner.getCurrentBrailleViewportContents());
   assertFalse(panner.previous());
   assertEqualsJSON({firstRow: 0, lastRow: 1}, panner.viewPort);
-  assertArrayBuffersEquals(createArrayBuffer('11234567  9112345678'),
-        panner.getCurrentBrailleViewportContents());
+  assertArrayBuffersEquals(
+      createArrayBuffer('11234567  9112345678'),
+      panner.getCurrentBrailleViewportContents());
 });
 
 TEST_F('ChromeVoxPanStrategyUnitTest', 'FixedSetContent', function() {
   var panner = new PanStrategy();
   panner.setPanStrategy(false);
 
-  var textContent = "ABCDE FGHI"
+  var textContent = 'ABCDE FGHI';
   var translatedContent = createArrayBuffer('11234 6789');
-  var mapping = [0,1,2,3,4,5,6,7,8,9];
+  var mapping = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
   panner.setDisplaySize(1, 5);
-  panner.setContent(textContent, translatedContent,
-    mapping, 0);
+  panner.setContent(textContent, translatedContent, mapping, 0);
   var expectedBufferValue = translatedContent;
   assertArrayBuffersEquals(expectedBufferValue, panner.fixedBuffer_);
   var expectedMappingValue = mapping;
@@ -194,12 +202,11 @@ TEST_F('ChromeVoxPanStrategyUnitTest', 'WrappedSetContent', function() {
   panner.setPanStrategy(true);
 
   // When first word is bigger than column size. (Don't wrap word)
-  var textContent = "ABCDE"
+  var textContent = 'ABCDE';
   var translatedContent = createArrayBuffer('11234');
-  var mapping = [0,1,2,3,4];
+  var mapping = [0, 1, 2, 3, 4];
   panner.setDisplaySize(1, 4);
-  panner.setContent(textContent, translatedContent,
-    mapping, 0);
+  panner.setContent(textContent, translatedContent, mapping, 0);
   var expectedBufferValue = translatedContent;
   assertArrayBuffersEquals(expectedBufferValue, panner.wrappedBuffer_);
   var expectedMappingValue = mapping;
@@ -207,15 +214,14 @@ TEST_F('ChromeVoxPanStrategyUnitTest', 'WrappedSetContent', function() {
 
   // When first word is equal to column size.
   // (We expect space to be removed on next line)
-  textContent = "ABCDE FGHI"
+  textContent = 'ABCDE FGHI';
   translatedContent = createArrayBuffer('11234 6789');
-  var mapping = [0,1,2,3,4,5,6,7,8,9];
+  var mapping = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
   panner.setDisplaySize(1, 5);
-  panner.setContent(textContent, translatedContent,
-    mapping, 0);
+  panner.setContent(textContent, translatedContent, mapping, 0);
   expectedBufferValue = createArrayBuffer('112346789');
   assertArrayBuffersEquals(expectedBufferValue, panner.wrappedBuffer_);
-  expectedMappingValue = [0,1,2,3,4,6,7,8,9];
+  expectedMappingValue = [0, 1, 2, 3, 4, 6, 7, 8, 9];
   assertArraysEquals(expectedMappingValue, panner.brailleToText);
 
   // When first word is equal to column size + 1. (Space stays)
@@ -230,46 +236,48 @@ TEST_F('ChromeVoxPanStrategyUnitTest', 'WrappedSetContent', function() {
   panner.setDisplaySize(1, 7);
   expectedBufferValue = createArrayBuffer('11234  6789');
   assertArrayBuffersEquals(expectedBufferValue, panner.wrappedBuffer_);
-  expectedMappingValue = [0,1,2,3,4,5,5,6,7,8,9];
+  expectedMappingValue = [0, 1, 2, 3, 4, 5, 5, 6, 7, 8, 9];
   assertArraysEquals(expectedMappingValue, panner.brailleToText);
 
   // Test all excess spaces are removed.
   panner.setDisplaySize(1, 6);
-  textContent = "ABCDEF GHI"
+  textContent = 'ABCDEF GHI';
   translatedContent = createArrayBuffer('112345     789');
-  mapping = [0,1,2,3,4,5,6,7,7,7,7,7,8,9,10];
-  panner.setContent(textContent, translatedContent,
-    mapping, 0);
+  mapping = [0, 1, 2, 3, 4, 5, 6, 7, 7, 7, 7, 7, 8, 9, 10];
+  panner.setContent(textContent, translatedContent, mapping, 0);
   expectedBufferValue = createArrayBuffer('112345789');
   assertArrayBuffersEquals(expectedBufferValue, panner.wrappedBuffer_);
-  expectedMappingValue = [0,1,2,3,4,5,7,8,9];
+  expectedMappingValue = [0, 1, 2, 3, 4, 5, 7, 8, 9];
   assertArraysEquals(expectedMappingValue, panner.brailleToText);
 });
 
-TEST_F('ChromeVoxPanStrategyUnitTest', 'getCurrentTextViewportContents',
-       function() {
-  var panner = new PanStrategy();
-  panner.setPanStrategy(true);
+TEST_F(
+    'ChromeVoxPanStrategyUnitTest', 'getCurrentTextViewportContents',
+    function() {
+      var panner = new PanStrategy();
+      panner.setPanStrategy(true);
 
-  // 30 cells with blank cells at positions 8, 22 and 26.
-  var content = createArrayBuffer('11234567 9112345678911 345 789');
-  var mapping = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,
-                21,22,23,24,25,26,27,28,29];
-  panner.setContent('11234567 9112345678911 345 789', content, mapping, 0);
-  assertEqualsJSON({firstRow: 0, lastRow: 0}, panner.viewPort);
-  assertFalse(panner.next());
-  assertFalse(panner.previous());
+      // 30 cells with blank cells at positions 8, 22 and 26.
+      var content = createArrayBuffer('11234567 9112345678911 345 789');
+      var mapping = [
+        0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14,
+        15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29
+      ];
+      panner.setContent('11234567 9112345678911 345 789', content, mapping, 0);
+      assertEqualsJSON({firstRow: 0, lastRow: 0}, panner.viewPort);
+      assertFalse(panner.next());
+      assertFalse(panner.previous());
 
-  panner.setDisplaySize(1, 10);
-  assertEqualsJSON({firstRow: 0, lastRow: 0}, panner.viewPort);
-  assertEquals('11234567 ', panner.getCurrentTextViewportContents());
-  panner.next();
-  assertEquals('9112345678', panner.getCurrentTextViewportContents());
-  panner.next();
-  assertEquals('911 345 ', panner.getCurrentTextViewportContents());
-  panner.next();
-  assertEquals('789', panner.getCurrentTextViewportContents());
-});
+      panner.setDisplaySize(1, 10);
+      assertEqualsJSON({firstRow: 0, lastRow: 0}, panner.viewPort);
+      assertEquals('11234567 ', panner.getCurrentTextViewportContents());
+      panner.next();
+      assertEquals('9112345678', panner.getCurrentTextViewportContents());
+      panner.next();
+      assertEquals('911 345 ', panner.getCurrentTextViewportContents());
+      panner.next();
+      assertEquals('789', panner.getCurrentTextViewportContents());
+    });
 
 TEST_F('ChromeVoxPanStrategyUnitTest', 'WrappedUnwrappedCursors', function() {
   var panner = new PanStrategy();

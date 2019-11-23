@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 // Include test fixture.
-GEN_INCLUDE(['//chrome/browser/resources/chromeos/accessibility/chromevox/testing/chromevox_next_e2e_test_base.js']);
+GEN_INCLUDE([
+  '//chrome/browser/resources/chromeos/accessibility/chromevox/testing/chromevox_next_e2e_test_base.js'
+]);
 
 /**
  * Test fixture for ISearch.
@@ -20,7 +22,7 @@ ChromeVoxISearchTest.prototype = {
   /** @override */
   runtimeDeps: ['ISearch', 'ISearchHandler'],
 
-  linksAndHeadingsDoc: function() {/*!
+  linksAndHeadingsDoc: `
     <p>start</p>
     <a href='#a'>Home</a>
     <a href='#b'>About US</a>
@@ -31,7 +33,7 @@ ChromeVoxISearchTest.prototype = {
     <a href='#bar'>Questions?</a>
     <h2>Privacy Policy</h2>
     <p>end<span>of test</span></p>
-  */}
+  `
 };
 
 /**
@@ -51,9 +53,7 @@ FakeISearchHandler.prototype = {
 
   /** @override */
   onSearchResultChanged: function(node, start, end) {
-    this.expect_.shift()({node: node,
-                          start: start,
-                          end: end});
+    this.expect_.shift()({node: node, start: start, end: end});
   },
 
   expect: function(str, opt_callback) {
@@ -80,28 +80,34 @@ TEST_F('ChromeVoxISearchTest', 'Simple', function() {
 
     // Simple forward search.
     search.search('US', 'forward');
-    handler.expect('start=6 end=8 text=About US',
-                   search.search.bind(search, 'start', 'backward'));
+    handler.expect(
+        'start=6 end=8 text=About US',
+        search.search.bind(search, 'start', 'backward'));
 
-    handler.expect('start',
-                   // Boundary (beginning).
-                   search.search.bind(search, 'foo', 'backward'));
+    handler.expect(
+        'start',
+        // Boundary (beginning).
+        search.search.bind(search, 'foo', 'backward'));
 
-    handler.expect('boundary=start',
-                   // Boundary (end).
-                   search.search.bind(search, 'foo', 'forward'));
+    handler.expect(
+        'boundary=start',
+        // Boundary (end).
+        search.search.bind(search, 'foo', 'forward'));
 
     // Search "focus" doesn't move.
-    handler.expect('boundary=start',
-                   // Mixed case substring.
-                   search.search.bind(search, 'bReak', 'forward'));
+    handler.expect(
+        'boundary=start',
+        // Mixed case substring.
+        search.search.bind(search, 'bReak', 'forward'));
 
-    handler.expect('start=7 end=12 text=Latest Breaking News',
-                   search.search.bind(search, 'bReaki', 'forward'));
+    handler.expect(
+        'start=7 end=12 text=Latest Breaking News',
+        search.search.bind(search, 'bReaki', 'forward'));
 
     // Incremental search stays on the current node.
-    handler.expect('start=7 end=13 text=Latest Breaking News',
-                                     search.search.bind(search, 'bReakio', 'forward'));
+    handler.expect(
+        'start=7 end=13 text=Latest Breaking News',
+        search.search.bind(search, 'bReakio', 'forward'));
 
     // No results for the search.
     handler.expect('boundary=Latest Breaking News');

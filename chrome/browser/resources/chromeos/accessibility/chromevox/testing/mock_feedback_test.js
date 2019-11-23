@@ -3,8 +3,7 @@
 // found in the LICENSE file.
 
 // Include test fixture.
-GEN_INCLUDE(['chromevox_unittest_base.js',
-             'mock_feedback.js']);
+GEN_INCLUDE(['chromevox_unittest_base.js', 'mock_feedback.js']);
 
 function speak(text, opt_properties) {
   ChromeVox.tts.speak(text, 0, opt_properties);
@@ -37,12 +36,8 @@ MockFeedbackUnitTest.prototype = {
     window.ChromeVox = window.ChromeVox || {};
   },
 
-  closureModuleDeps: [
-    'BrailleInterface',
-    'NavBraille',
-    'TtsInterface',
-    'AbstractEarcons'
-  ]
+  closureModuleDeps:
+      ['BrailleInterface', 'NavBraille', 'TtsInterface', 'AbstractEarcons']
 };
 
 TEST_F('MockFeedbackUnitTest', 'speechAndCallbacks', function() {
@@ -64,10 +59,12 @@ TEST_F('MockFeedbackUnitTest', 'speechAndCallbacks', function() {
       .call(function() {
         assertFalse(afterThirdStringCalled);
         afterThirdStringCalled = true;
-        speak('Spurious string', {endCallback: function() {
-          assertFalse(spruiousStringEndCallbackCalled);
-          spruiousStringEndCallbackCalled = true;
-        }});
+        speak('Spurious string', {
+          endCallback: function() {
+            assertFalse(spruiousStringEndCallbackCalled);
+            spruiousStringEndCallbackCalled = true;
+          }
+        });
         speak('Fourth string');
       })
       .expectSpeech('Fourth string')
@@ -85,29 +82,34 @@ TEST_F('MockFeedbackUnitTest', 'startAndEndCallbacks', function() {
   var mock = new MockFeedback();
   mock.install();
   speak('No callbacks', {});
-  speak('Only start callback', {startCallback: function() {
-    assertFalse(onlyStartCallbackCalled);
-    onlyStartCallbackCalled = true;
-    assertFalse(onlyEndCallbackCalled);
-  }});
-  speak('Only end callback', {endCallback: function() {
-    assertTrue(onlyStartCallbackCalled);
-    assertFalse(onlyEndCallbackCalled);
-    onlyEndCallbackCalled = true;
-    assertFalse(bothCallbacksStartCalled);
-  }});
-  speak('Both callbacks',
-        {startCallback: function() {
-          assertTrue(onlyEndCallbackCalled);
-          assertFalse(bothCallbacksStartCalled);
-          bothCallbacksStartCalled = true;
-          assertFalse(bothCallbacksEndCalled);
-        },
-        endCallback: function() {
-          assertTrue(bothCallbacksStartCalled);
-          assertFalse(bothCallbacksEndCalled);
-          bothCallbacksEndCalled = true;
-        }});
+  speak('Only start callback', {
+    startCallback: function() {
+      assertFalse(onlyStartCallbackCalled);
+      onlyStartCallbackCalled = true;
+      assertFalse(onlyEndCallbackCalled);
+    }
+  });
+  speak('Only end callback', {
+    endCallback: function() {
+      assertTrue(onlyStartCallbackCalled);
+      assertFalse(onlyEndCallbackCalled);
+      onlyEndCallbackCalled = true;
+      assertFalse(bothCallbacksStartCalled);
+    }
+  });
+  speak('Both callbacks', {
+    startCallback: function() {
+      assertTrue(onlyEndCallbackCalled);
+      assertFalse(bothCallbacksStartCalled);
+      bothCallbacksStartCalled = true;
+      assertFalse(bothCallbacksEndCalled);
+    },
+    endCallback: function() {
+      assertTrue(bothCallbacksStartCalled);
+      assertFalse(bothCallbacksEndCalled);
+      bothCallbacksEndCalled = true;
+    }
+  });
   mock.expectSpeech('Both callbacks');
   mock.replay();
   assertTrue(bothCallbacksEndCalled);
@@ -116,17 +118,19 @@ TEST_F('MockFeedbackUnitTest', 'startAndEndCallbacks', function() {
 TEST_F('MockFeedbackUnitTest', 'SpeechAndBraille', function() {
   var secondCallbackCalled = false;
   var finishCalled = false;
-  var mock = new MockFeedback(function() { finishCalled = true; });
+  var mock = new MockFeedback(function() {
+    finishCalled = true;
+  });
   var firstExpectedNavBraille;
   mock.install();
   braille('Some braille');
   speak('Some speech');
   mock.call(function() {
-    assertEquals(null, mock.lastMatchedBraille);
-    firstExpectedNavBraille = braille('First expected braille');
-    speak('First expected speech');
-    braille('Some other braille');
-  })
+        assertEquals(null, mock.lastMatchedBraille);
+        firstExpectedNavBraille = braille('First expected braille');
+        speak('First expected speech');
+        braille('Some other braille');
+      })
       .expectSpeech('First expected speech')
       .expectBraille('First expected braille')
       .call(function() {
@@ -142,9 +146,13 @@ TEST_F('MockFeedbackUnitTest', 'expectWithRegex', function() {
   var done = false;
   var mock = new MockFeedback();
   mock.install();
-  mock.call(function() { braille('Item 1 of 14'); })
+  mock.call(function() {
+        braille('Item 1 of 14');
+      })
       .expectBraille(/Item \d+ of \d+/)
-      .call(function() { done = true;})
+      .call(function() {
+        done = true;
+      })
       .replay();
   assertTrue(done);
 });
@@ -165,9 +173,9 @@ TEST_F('MockFeedbackUnitTest', 'NoMatchDoesNotFinish', function() {
   mock.install();
   braille('Some string');
   mock.call(function() {
-    braille('Some other string');
-    firstCallbackCalled = true;
-  })
+        braille('Some other string');
+        firstCallbackCalled = true;
+      })
       .expectBraille('Unmatched string')
       .call(function() {
         throw Error('Should not be called');
@@ -178,20 +186,26 @@ TEST_F('MockFeedbackUnitTest', 'NoMatchDoesNotFinish', function() {
 
 TEST_F('MockFeedbackUnitTest', 'SpeechAndEarcons', function() {
   var finishCalled = false;
-  var mock = new MockFeedback(function() { finishCalled = true; });
+  var mock = new MockFeedback(function() {
+    finishCalled = true;
+  });
   mock.install();
   mock.call(function() {
-    speak('MyButton', {startCallback: function() {
-      earcon('BUTTON');
-    }});
-  })
+        speak('MyButton', {
+          startCallback: function() {
+            earcon('BUTTON');
+          }
+        });
+      })
       .expectSpeech('MyButton')
       .expectEarcon(Earcon.BUTTON)
       .call(function() {
         earcon('ALERT_MODAL');
-        speak('MyTextField', {startCallback: function() {
-          earcon('EDITABLE_TEXT');
-        }});
+        speak('MyTextField', {
+          startCallback: function() {
+            earcon('EDITABLE_TEXT');
+          }
+        });
       })
       .expectEarcon(Earcon.ALERT_MODAL)
       .expectSpeech('MyTextField')
@@ -202,13 +216,15 @@ TEST_F('MockFeedbackUnitTest', 'SpeechAndEarcons', function() {
 
 TEST_F('MockFeedbackUnitTest', 'SpeechWithLanguage', function() {
   var finishCalled = false;
-  var mock = new MockFeedback(function() { finishCalled = true; });
+  var mock = new MockFeedback(function() {
+    finishCalled = true;
+  });
   mock.install();
 
   mock.call(function() {
-    speak('This is English', {lang: 'en'});
-    speak('This is also English', {lang: 'en'});
-  })
+        speak('This is English', {lang: 'en'});
+        speak('This is also English', {lang: 'en'});
+      })
       .expectSpeechWithLanguage('en', 'This is English', 'This is also English')
       .call(function() {
         speak('Expect French', {lang: 'fr'});
@@ -223,9 +239,9 @@ TEST_F('MockFeedbackUnitTest', 'SpeechWithLanguage', function() {
       })
       .expectSpeechWithLanguage('', 'Expect empty language')
       .call(function() {
-        speak('Expect no language')
+        speak('Expect no language');
       })
-      .expectSpeechWithLanguage(undefined,'Expect no language')
+      .expectSpeechWithLanguage(undefined, 'Expect no language')
       .replay();
   assertTrue(finishCalled);
 });

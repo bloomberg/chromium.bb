@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 // Include test fixture.
-GEN_INCLUDE(['//chrome/browser/resources/chromeos/accessibility/chromevox/testing/chromevox_unittest_base.js',
-             '//chrome/browser/resources/chromeos/accessibility/chromevox/testing/fake_objects.js']);
+GEN_INCLUDE(
+    ['../testing/chromevox_unittest_base.js', '../testing/fake_objects.js']);
 
 /**
  * Test fixture.
@@ -27,8 +27,8 @@ ChromeVoxBrailleDisplayManagerUnitTest.prototype = {
   /** @override */
   setUp: function() {
     /** @const */
-    this.NAV_BRAILLE = new NavBraille({ text: 'Hello, world!' });
-    this.EMPTY_NAV_BRAILLE = new NavBraille({ text: '' });
+    this.NAV_BRAILLE = new NavBraille({text: 'Hello, world!'});
+    this.EMPTY_NAV_BRAILLE = new NavBraille({text: ''});
     this.translator = new FakeTranslator();
     this.translatorManager = new FakeTranslatorManager();
     /** @const */
@@ -50,8 +50,11 @@ ChromeVoxBrailleDisplayManagerUnitTest.prototype = {
   },
 
   displayAvailable: function() {
-    this.displayState = {available: true, textRowCount: this.DISPLAY_ROW_SIZE,
-	textColumnCount: this.DISPLAY_COLUMN_SIZE};
+    this.displayState = {
+      available: true,
+      textRowCount: this.DISPLAY_ROW_SIZE,
+      textColumnCount: this.DISPLAY_COLUMN_SIZE
+    };
   },
 
   /**
@@ -74,13 +77,14 @@ ChromeVoxBrailleDisplayManagerUnitTest.prototype = {
     // We are asserting that start, which is an index, and firstCell,
     // which is a value, are the same because the fakeTranslator generates
     // the values of the braille cells based on indices.
-    assertEquals(start, firstCell,
-                 ' Start mismatch: ' + start + ' vs. ' + firstCell);
+    assertEquals(
+        start, firstCell, ' Start mismatch: ' + start + ' vs. ' + firstCell);
     if (opt_selStart !== undefined) {
       for (var i = opt_selStart; i < opt_selEnd; ++i) {
-        assertEquals(BrailleDisplayManager.CURSOR_DOTS,
-                     a[i] & BrailleDisplayManager.CURSOR_DOTS,
-                     'Missing cursor marker at position ' + i);
+        assertEquals(
+            BrailleDisplayManager.CURSOR_DOTS,
+            a[i] & BrailleDisplayManager.CURSOR_DOTS,
+            'Missing cursor marker at position ' + i);
       }
     }
   },
@@ -107,8 +111,7 @@ ChromeVoxBrailleDisplayManagerUnitTest.prototype = {
 };
 
 /** @extends {ExpandingBrailleTranslator} */
-function FakeTranslator() {
-}
+function FakeTranslator() {}
 
 FakeTranslator.prototype = {
   /**
@@ -141,8 +144,7 @@ FakeTranslator.prototype = {
 };
 
 /** @extends {BrailleTranslatorManager} */
-function FakeTranslatorManager() {
-}
+function FakeTranslatorManager() {}
 
 FakeTranslatorManager.prototype = {
   changeListener: null,
@@ -204,8 +206,7 @@ TEST_F('ChromeVoxBrailleDisplayManagerUnitTest', 'NoDisplay', function() {
 /**
  * Tests the typical sequence: setContent, setTranslator, setContent.
  */
-TEST_F('ChromeVoxBrailleDisplayManagerUnitTest', 'BasicSetContent',
-       function() {
+TEST_F('ChromeVoxBrailleDisplayManagerUnitTest', 'BasicSetContent', function() {
   this.addFakeApi();
   this.displayAvailable();
   var manager = new BrailleDisplayManager(this.translatorManager);
@@ -221,58 +222,58 @@ TEST_F('ChromeVoxBrailleDisplayManagerUnitTest', 'BasicSetContent',
 /**
  * Tests that setting empty content clears the display.
  */
-TEST_F('ChromeVoxBrailleDisplayManagerUnitTest',
-       'SetEmptyContentWithTranslator', function() {
-  this.addFakeApi();
-  this.displayAvailable();
+TEST_F(
+    'ChromeVoxBrailleDisplayManagerUnitTest', 'SetEmptyContentWithTranslator',
+    function() {
+      this.addFakeApi();
+      this.displayAvailable();
 
-  var manager = new BrailleDisplayManager(this.translatorManager);
-  this.assertEmptyDisplayAndClear();
-  manager.setContent(this.NAV_BRAILLE);
-  this.assertEmptyDisplayAndClear();
-  this.translatorManager.setTranslator(this.translator);
-  this.assertDisplayPositionAndClear(0);
-  manager.setContent(this.EMPTY_NAV_BRAILLE);
-  this.assertEmptyDisplayAndClear();
-});
+      var manager = new BrailleDisplayManager(this.translatorManager);
+      this.assertEmptyDisplayAndClear();
+      manager.setContent(this.NAV_BRAILLE);
+      this.assertEmptyDisplayAndClear();
+      this.translatorManager.setTranslator(this.translator);
+      this.assertDisplayPositionAndClear(0);
+      manager.setContent(this.EMPTY_NAV_BRAILLE);
+      this.assertEmptyDisplayAndClear();
+    });
 
 
-TEST_F('ChromeVoxBrailleDisplayManagerUnitTest', 'CursorAndPanning',
-       function() {
-  var text = 'This is a test string';
-  function createNavBrailleWithCursor(start, end) {
-    return new NavBraille({ text: text, startIndex: start,
-                                 endIndex: end});
-  }
+TEST_F(
+    'ChromeVoxBrailleDisplayManagerUnitTest', 'CursorAndPanning', function() {
+      var text = 'This is a test string';
+      function createNavBrailleWithCursor(start, end) {
+        return new NavBraille({text: text, startIndex: start, endIndex: end});
+      }
 
-  var translatedSize = Math.floor(text.length + text.length / 2);
+      var translatedSize = Math.floor(text.length + text.length / 2);
 
-  this.addFakeApi();
-  this.displayAvailable();
+      this.addFakeApi();
+      this.displayAvailable();
 
-  var manager = new BrailleDisplayManager(this.translatorManager);
-  this.assertEmptyDisplayAndClear();
-  this.translatorManager.setTranslator(this.translator);
-  this.assertEmptyDisplayAndClear();
+      var manager = new BrailleDisplayManager(this.translatorManager);
+      this.assertEmptyDisplayAndClear();
+      this.translatorManager.setTranslator(this.translator);
+      this.assertEmptyDisplayAndClear();
 
-  // Cursor at beginning of line.
-  manager.setContent(createNavBrailleWithCursor(0, 0));
-  this.assertDisplayPositionAndClear(0, 0);
-  // When cursor at end of line.
-  manager.setContent(createNavBrailleWithCursor(text.length, text.length));
-  // The first braille cell should be the result of the equation below.
-  this.assertDisplayPositionAndClear(
-      Math.floor(translatedSize / this.DISPLAY_COLUMN_SIZE) *
-          this.DISPLAY_COLUMN_SIZE,
-      translatedSize % this.DISPLAY_COLUMN_SIZE);
-  // Selection from the end of what fits on the first display to the end of the
-  // line.
-  manager.setContent(createNavBrailleWithCursor(7, text.length));
-  this.assertDisplayPositionAndClear(0, 10, this.DISPLAY_COLUMN_SIZE);
-  // Selection on all of the line.
-  manager.setContent(createNavBrailleWithCursor(0, text.length));
-  this.assertDisplayPositionAndClear(0, 0, this.DISPLAY_COLUMN_SIZE);
-});
+      // Cursor at beginning of line.
+      manager.setContent(createNavBrailleWithCursor(0, 0));
+      this.assertDisplayPositionAndClear(0, 0);
+      // When cursor at end of line.
+      manager.setContent(createNavBrailleWithCursor(text.length, text.length));
+      // The first braille cell should be the result of the equation below.
+      this.assertDisplayPositionAndClear(
+          Math.floor(translatedSize / this.DISPLAY_COLUMN_SIZE) *
+              this.DISPLAY_COLUMN_SIZE,
+          translatedSize % this.DISPLAY_COLUMN_SIZE);
+      // Selection from the end of what fits on the first display to the end of
+      // the line.
+      manager.setContent(createNavBrailleWithCursor(7, text.length));
+      this.assertDisplayPositionAndClear(0, 10, this.DISPLAY_COLUMN_SIZE);
+      // Selection on all of the line.
+      manager.setContent(createNavBrailleWithCursor(0, text.length));
+      this.assertDisplayPositionAndClear(0, 0, this.DISPLAY_COLUMN_SIZE);
+    });
 
 /**
  * Tests that the grouping algorithm works with one text character that maps
@@ -282,11 +283,11 @@ TEST_F('ChromeVoxBrailleDisplayManagerUnitTest', 'BasicGroup', function() {
   var text = 'a';
   var translated = '1';
   var mapping = [0];
-  var expected = [['a','1']];
+  var expected = [['a', '1']];
   var offsets = {brailleOffset: 0, textOffset: 0};
 
   var groups = BrailleCaptionsBackground.groupBrailleAndText(
-                                        translated, text, mapping, offsets);
+      translated, text, mapping, offsets);
   this.assertGroupsValid(groups, expected);
 });
 
@@ -297,12 +298,12 @@ TEST_F('ChromeVoxBrailleDisplayManagerUnitTest', 'BasicGroup', function() {
 TEST_F('ChromeVoxBrailleDisplayManagerUnitTest', 'OneRtoManyB', function() {
   var text = 'A';
   var translated = '11';
-  var mapping = [0,0];
+  var mapping = [0, 0];
   var expected = [['A', '11']];
   var offsets = {brailleOffset: 0, textOffset: 0};
 
   var groups = BrailleCaptionsBackground.groupBrailleAndText(
-					translated, text, mapping, offsets);
+      translated, text, mapping, offsets);
   this.assertGroupsValid(groups, expected);
 });
 
@@ -318,7 +319,7 @@ TEST_F('ChromeVoxBrailleDisplayManagerUnitTest', 'OneBtoManyR', function() {
   var offsets = {brailleOffset: 0, textOffset: 0};
 
   var groups = BrailleCaptionsBackground.groupBrailleAndText(
-					     translated, text, mapping, offsets);
+      translated, text, mapping, offsets);
   this.assertGroupsValid(groups, expected);
 });
 
@@ -326,36 +327,40 @@ TEST_F('ChromeVoxBrailleDisplayManagerUnitTest', 'OneBtoManyR', function() {
  * Tests that the grouping algorithm works with one string that on both ends,
  * have text characters that map to multiple braille cells.
  */
-TEST_F('ChromeVoxBrailleDisplayManagerUnitTest', 'OneRtoManyB_BothEnds',
-       function() {
-  var text = 'AbbC';
-  var translated = 'X122X3';
-  var mapping = [0,0,1,2,3,3];
-  var expected = [['A', 'X1'], ['b', '2'],['b', '2'], ['C', 'X3']];
-  var offsets = {brailleOffset: 0, textOffset: 0};
+TEST_F(
+    'ChromeVoxBrailleDisplayManagerUnitTest', 'OneRtoManyB_BothEnds',
+    function() {
+      var text = 'AbbC';
+      var translated = 'X122X3';
+      var mapping = [0, 0, 1, 2, 3, 3];
+      var expected = [['A', 'X1'], ['b', '2'], ['b', '2'], ['C', 'X3']];
+      var offsets = {brailleOffset: 0, textOffset: 0};
 
-  var groups = BrailleCaptionsBackground.groupBrailleAndText(
-					     translated, text, mapping, offsets);
-  this.assertGroupsValid(groups, expected);
-});
+      var groups = BrailleCaptionsBackground.groupBrailleAndText(
+          translated, text, mapping, offsets);
+      this.assertGroupsValid(groups, expected);
+    });
 
 /**
  * Tests that the grouping algorithm works with one string that on both ends,
  * have braille cells that map to multiple text characters.
  */
-TEST_F('ChromeVoxBrailleDisplayManagerUnitTest', 'OneBtoManyR_BothEnds',
-       function() {
-  var text = 'knowledgehappych';
-  var translated = '1234456';
-  var mapping = [0, 9, 10, 11, 12, 13, 14];
-  var expected = [['knowledge', '1'], ['h', '2'], ['a', '3'], ['p', '4'],
-      ['p', '4'], ['y', '5'], ['ch', '6']];
-  var offsets = {brailleOffset: 0, textOffset: 0};
+TEST_F(
+    'ChromeVoxBrailleDisplayManagerUnitTest', 'OneBtoManyR_BothEnds',
+    function() {
+      var text = 'knowledgehappych';
+      var translated = '1234456';
+      var mapping = [0, 9, 10, 11, 12, 13, 14];
+      var expected = [
+        ['knowledge', '1'], ['h', '2'], ['a', '3'], ['p', '4'], ['p', '4'],
+        ['y', '5'], ['ch', '6']
+      ];
+      var offsets = {brailleOffset: 0, textOffset: 0};
 
-  var groups = BrailleCaptionsBackground.groupBrailleAndText(translated,
-							 text, mapping, offsets);
-  this.assertGroupsValid(groups, expected);
-});
+      var groups = BrailleCaptionsBackground.groupBrailleAndText(
+          translated, text, mapping, offsets);
+      this.assertGroupsValid(groups, expected);
+    });
 
 /**
  * Tests that the grouping algorithm works with one  string that has both types
@@ -365,11 +370,13 @@ TEST_F('ChromeVoxBrailleDisplayManagerUnitTest', 'RandB_Random', function() {
   var text = 'knowledgeIsPower';
   var translated = '1X23X45678';
   var mapping = [0, 9, 9, 10, 11, 11, 12, 13, 14, 15];
-  var expected = [['knowledge', '1'], ['I', 'X2'], ['s', '3'], ['P', 'X4'],
-                           ['o', '5'], ['w', '6'], ['e', '7'], ['r', '8']];
+  var expected = [
+    ['knowledge', '1'], ['I', 'X2'], ['s', '3'], ['P', 'X4'], ['o', '5'],
+    ['w', '6'], ['e', '7'], ['r', '8']
+  ];
   var offsets = {brailleOffset: 0, textOffset: 0};
 
   var groups = BrailleCaptionsBackground.groupBrailleAndText(
-					     translated, text, mapping, offsets);
+      translated, text, mapping, offsets);
   this.assertGroupsValid(groups, expected);
 });

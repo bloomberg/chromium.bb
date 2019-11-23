@@ -3,8 +3,9 @@
 // found in the LICENSE file.
 
 // Include test fixture.
-GEN_INCLUDE(['//chrome/browser/resources/chromeos/accessibility/chromevox/testing/chromevox_unittest_base.js',
-            '//chrome/browser/resources/chromeos/accessibility/chromevox/testing/assert_additions.js']);
+GEN_INCLUDE([
+  '../testing/chromevox_unittest_base.js', '../testing/assert_additions.js'
+]);
 
 /**
  * Test fixture.
@@ -79,32 +80,33 @@ function assertArrayBufferMatches(expected, actual) {
   }
 }
 
-TEST_F('ChromeVoxExpandingBrailleTranslatorUnitTest', 'TranslationError',
+TEST_F(
+    'ChromeVoxExpandingBrailleTranslatorUnitTest', 'TranslationError',
     function() {
-  var text = new Spannable('error ok', new ValueSpan());
-  text.setSpan(new ValueSelectionSpan, 0, 0);
-  var contractedTranslator = new FakeTranslator('c');
-  // Translator that always results in an error.
-  var uncontractedTranslator = {
-    translate: function(text, formTypeMap, callback) {
-      callback(null, null, null);
-    }
-  };
-  var translationResult = null;
+      var text = new Spannable('error ok', new ValueSpan());
+      text.setSpan(new ValueSelectionSpan, 0, 0);
+      var contractedTranslator = new FakeTranslator('c');
+      // Translator that always results in an error.
+      var uncontractedTranslator = {
+        translate: function(text, formTypeMap, callback) {
+          callback(null, null, null);
+        }
+      };
+      var translationResult = null;
 
-  var expandingTranslator = new ExpandingBrailleTranslator(
-        contractedTranslator, uncontractedTranslator);
-  expandingTranslator.translate(
-      text, ExpandingBrailleTranslator.ExpansionType.SELECTION,
-      function(cells, textToBraille, brailleToText) {
-        // Expect the string ' ok' to be translated using the contracted
-        // translator.  The preceding part isn't included because it resulted
-        // in a translation error.
-        assertArrayBufferMatches('ccc', cells);
-        assertEqualsJSON([0, 0, 0, 0, 0, 0, 1, 2], textToBraille);
-        assertEqualsJSON([5, 6, 7], brailleToText);
-      });
-});
+      var expandingTranslator = new ExpandingBrailleTranslator(
+          contractedTranslator, uncontractedTranslator);
+      expandingTranslator.translate(
+          text, ExpandingBrailleTranslator.ExpansionType.SELECTION,
+          function(cells, textToBraille, brailleToText) {
+            // Expect the string ' ok' to be translated using the contracted
+            // translator.  The preceding part isn't included because it
+            // resulted in a translation error.
+            assertArrayBufferMatches('ccc', cells);
+            assertEqualsJSON([0, 0, 0, 0, 0, 0, 1, 2], textToBraille);
+            assertEqualsJSON([5, 6, 7], brailleToText);
+          });
+    });
 
 // Test for many variations of successful translations.
 
@@ -121,8 +123,8 @@ var totalRunTranslationTests = 0;
  * @param {string} expectedOutput Expected output as a string (see
  *     {@code TESTDATA} below for a description of the format).
  */
-function doTranslationTest(name, contracted, valueExpansion, text,
-                           expectedOutput) {
+function doTranslationTest(
+    name, contracted, valueExpansion, text, expectedOutput) {
   try {
     totalRunTranslationTests++;
     var uncontractedTranslator = new FakeTranslator('u');
@@ -132,8 +134,8 @@ function doTranslationTest(name, contracted, valueExpansion, text,
       expandingTranslator = new ExpandingBrailleTranslator(
           contractedTranslator, uncontractedTranslator);
     } else {
-      expandingTranslator = new ExpandingBrailleTranslator(
-          uncontractedTranslator);
+      expandingTranslator =
+          new ExpandingBrailleTranslator(uncontractedTranslator);
     }
     var extraCellsSpan = text.getSpanInstanceOf(ExtraCellsSpan);
     if (extraCellsSpan) {
@@ -162,7 +164,7 @@ function doTranslationTest(name, contracted, valueExpansion, text,
     console.error('Subtest ' + name + ' failed.');
     throw e;
   }
-};
+}
 
 /**
  * Runs two tests, one with the given values and one with the given values
@@ -176,8 +178,8 @@ function doTranslationTest(name, contracted, valueExpansion, text,
  * @param {boolean} withExtraCells Whether to insert an extra cells span
  *     right before the selection in the input.
  */
-function runTranslationTestVariants(testCase, contracted, valueExpansion,
-                                    withExtraCells) {
+function runTranslationTestVariants(
+    testCase, contracted, valueExpansion, withExtraCells) {
   var expType = ExpandingBrailleTranslator.ExpansionType;
   // Construct the full name.
   var fullName = contracted ? 'Contracted_' : 'Uncontracted_';
@@ -189,8 +191,8 @@ function runTranslationTestVariants(testCase, contracted, valueExpansion,
   var input = testCase.input;
   if (withExtraCells) {
     input = input.substring(0);  // Shallow copy.
-    var selectionStart = input.getSpanStart(
-        input.getSpanInstanceOf(ValueSelectionSpan));
+    var selectionStart =
+        input.getSpanStart(input.getSpanInstanceOf(ValueSelectionSpan));
     var extraCellsSpan = new ExtraCellsSpan();
     extraCellsSpan.cells = new Uint8Array(['e'.charCodeAt(0)]).buffer;
     input.setSpan(extraCellsSpan, selectionStart, selectionStart);
@@ -203,15 +205,14 @@ function runTranslationTestVariants(testCase, contracted, valueExpansion,
   } else if (contracted && valueExpansion === expType.ALL) {
     expectedOutput = new Array(testCase.input.length + 1).join('u');
   } else {
-    expectedOutput =
-        new Array(testCase.input.length + 1).join(outputChar);
+    expectedOutput = new Array(testCase.input.length + 1).join(outputChar);
   }
   if (withExtraCells) {
     expectedOutput = expectedOutput.substring(0, selectionStart) + 'e' +
         expectedOutput.substring(selectionStart);
   }
-  doTranslationTest(fullName, contracted, valueExpansion, input,
-                    expectedOutput);
+  doTranslationTest(
+      fullName, contracted, valueExpansion, input, expectedOutput);
 
   // Run another test, with the value surrounded by some text.
   var surroundedText = new Spannable('Name: ');
@@ -224,10 +225,10 @@ function runTranslationTestVariants(testCase, contracted, valueExpansion,
     surroundedExpectedOutput += outputChar;
   }
   surroundedText.append('edtxt');
-  surroundedExpectedOutput +=
-      new Array('edtxt'.length + 1).join(outputChar);
-  doTranslationTest(fullName + '_Surrounded', contracted, valueExpansion,
-                   surroundedText, surroundedExpectedOutput);
+  surroundedExpectedOutput += new Array('edtxt'.length + 1).join(outputChar);
+  doTranslationTest(
+      fullName + '_Surrounded', contracted, valueExpansion, surroundedText,
+      surroundedExpectedOutput);
 }
 
 /**
@@ -243,15 +244,13 @@ function createText(text, opt_selectionStart, opt_selectionEnd, opt_style) {
   result.setSpan(new ValueSpan, 0, text.length);
   if (goog.isDef(opt_selectionStart)) {
     result.setSpan(
-        new ValueSelectionSpan,
-        opt_selectionStart,
+        new ValueSelectionSpan, opt_selectionStart,
         goog.isDef(opt_selectionEnd) ? opt_selectionEnd : opt_selectionStart);
   }
 
   if (goog.isDef(opt_style)) {
     result.setSpan(
-        new BrailleTextStyleSpan(opt_style.formType),
-        opt_style.start,
+        new BrailleTextStyleSpan(opt_style.formType), opt_style.start,
         opt_style.end);
   }
   return result;
@@ -260,77 +259,90 @@ function createText(text, opt_selectionStart, opt_selectionEnd, opt_style) {
 
 var TEXT = 'Hello, world!';
 
-TEST_F('ChromeVoxExpandingBrailleTranslatorUnitTest', 'successfulTranslations',
-       function() {
-  /**
-   * Dictionary of test strings, keyed on a descriptive name for the
-   * test case.  The value is an array of the input string to the translation
-   * and the expected output using a translator with both uncontracted
-   * and contracted underlying translators.  The expected output is
-   * in the form of a string of the same length as the input, where an 'u'
-   * means that the uncontracted translator was used at this location and a
-   * 'c' means that the contracted translator was used.
-   */
-  var TESTDATA = [
-    { name: 'emptyText',
-      input: createText(''),
-      contractedOutput: '' },
-    { name: 'emptyTextWithCaret',
-      input: createText('', 0),
-      contractedOutput: '' },
-    { name: 'textWithNoSelection',
-      input: createText(TEXT),
-      contractedOutput: 'ccccccccccccc' },
-    { name: 'textWithCaretAtStart',
-      input: createText(TEXT, 0),
-      contractedOutput: 'uuuuuuccccccc' },
-    { name: 'textWithCaretAtEnd',
-      input: createText(TEXT, TEXT.length),
-      contractedOutput: 'cccccccuuuuuu' },
-    { name: 'textWithCaretInWhitespace',
-      input: createText(TEXT, 6),
-      contractedOutput: 'uuuuuuucccccc' },
-    { name: 'textWithSelectionEndInWhitespace',
-      input: createText(TEXT, 0, 7),
-      contractedOutput: 'uuuuuuucccccc' },
-    { name: 'textWithSelectionInTwoWords',
-      input: createText(TEXT, 2, 9),
-      contractedOutput: 'uuuuuucuuuuuu' }
-  ];
-  var TESTDATA_WITH_SELECTION = TESTDATA.filter(function(testCase) {
-    return testCase.input.getSpanInstanceOf(ValueSelectionSpan);
-  });
-
-  var expType = ExpandingBrailleTranslator.ExpansionType;
-  for (var i = 0, testCase; testCase = TESTDATA[i]; ++i) {
-    runTranslationTestVariants(testCase, false, expType.SELECTION, false);
-    runTranslationTestVariants(testCase, true, expType.NONE, false);
-    runTranslationTestVariants(testCase, true, expType.SELECTION, false);
-    runTranslationTestVariants(testCase, true, expType.ALL, false);
-  }
-  for (var i = 0, testCase; testCase = TESTDATA_WITH_SELECTION[i]; ++i)
-    runTranslationTestVariants(testCase, true, expType.SELECTION, true);
-
-  // Make sure that the logic above runs the tests, adjust when adding more
-  // test variants.
-  var totalExpectedTranslationTests =
-      2 * (TESTDATA.length * 4 + TESTDATA_WITH_SELECTION.length);
-  assertEquals(totalExpectedTranslationTests, totalRunTranslationTests);
-});
-
-TEST_F('ChromeVoxExpandingBrailleTranslatorUnitTest', 'StyleTranslations',
-       function() {
-  var formTypeMap = {};
-  formTypeMap[LibLouis.FormType.BOLD] = 'b';
-  formTypeMap[LibLouis.FormType.ITALIC] = 'i';
-  formTypeMap[LibLouis.FormType.UNDERLINE] = 'u';
-  var translator = new ExpandingBrailleTranslator(
-      new FakeTranslator('c', formTypeMap),
-      new FakeTranslator('u'));
-  translator.translate(createText('a test of text', undefined, undefined, {
-     start: 2, end: 6, formType: LibLouis.FormType.BOLD}),
-      ExpandingBrailleTranslator.ExpansionType.NONE,
-      function(cells) {
-        assertArrayBufferMatches('ccbbbbcccccccc', cells);
+TEST_F(
+    'ChromeVoxExpandingBrailleTranslatorUnitTest', 'successfulTranslations',
+    function() {
+      /**
+       * Dictionary of test strings, keyed on a descriptive name for the
+       * test case.  The value is an array of the input string to the
+       * translation and the expected output using a translator with both
+       * uncontracted and contracted underlying translators.  The expected
+       * output is in the form of a string of the same length as the input,
+       * where an 'u' means that the uncontracted translator was used at this
+       * location and a 'c' means that the contracted translator was used.
+       */
+      var TESTDATA = [
+        {name: 'emptyText', input: createText(''), contractedOutput: ''}, {
+          name: 'emptyTextWithCaret',
+          input: createText('', 0),
+          contractedOutput: ''
+        },
+        {
+          name: 'textWithNoSelection',
+          input: createText(TEXT),
+          contractedOutput: 'ccccccccccccc'
+        },
+        {
+          name: 'textWithCaretAtStart',
+          input: createText(TEXT, 0),
+          contractedOutput: 'uuuuuuccccccc'
+        },
+        {
+          name: 'textWithCaretAtEnd',
+          input: createText(TEXT, TEXT.length),
+          contractedOutput: 'cccccccuuuuuu'
+        },
+        {
+          name: 'textWithCaretInWhitespace',
+          input: createText(TEXT, 6),
+          contractedOutput: 'uuuuuuucccccc'
+        },
+        {
+          name: 'textWithSelectionEndInWhitespace',
+          input: createText(TEXT, 0, 7),
+          contractedOutput: 'uuuuuuucccccc'
+        },
+        {
+          name: 'textWithSelectionInTwoWords',
+          input: createText(TEXT, 2, 9),
+          contractedOutput: 'uuuuuucuuuuuu'
+        }
+      ];
+      var TESTDATA_WITH_SELECTION = TESTDATA.filter(function(testCase) {
+        return testCase.input.getSpanInstanceOf(ValueSelectionSpan);
       });
-});
+
+      var expType = ExpandingBrailleTranslator.ExpansionType;
+      for (var i = 0, testCase; testCase = TESTDATA[i]; ++i) {
+        runTranslationTestVariants(testCase, false, expType.SELECTION, false);
+        runTranslationTestVariants(testCase, true, expType.NONE, false);
+        runTranslationTestVariants(testCase, true, expType.SELECTION, false);
+        runTranslationTestVariants(testCase, true, expType.ALL, false);
+      }
+      for (var i = 0, testCase; testCase = TESTDATA_WITH_SELECTION[i]; ++i)
+        runTranslationTestVariants(testCase, true, expType.SELECTION, true);
+
+      // Make sure that the logic above runs the tests, adjust when adding more
+      // test variants.
+      var totalExpectedTranslationTests =
+          2 * (TESTDATA.length * 4 + TESTDATA_WITH_SELECTION.length);
+      assertEquals(totalExpectedTranslationTests, totalRunTranslationTests);
+    });
+
+TEST_F(
+    'ChromeVoxExpandingBrailleTranslatorUnitTest', 'StyleTranslations',
+    function() {
+      var formTypeMap = {};
+      formTypeMap[LibLouis.FormType.BOLD] = 'b';
+      formTypeMap[LibLouis.FormType.ITALIC] = 'i';
+      formTypeMap[LibLouis.FormType.UNDERLINE] = 'u';
+      var translator = new ExpandingBrailleTranslator(
+          new FakeTranslator('c', formTypeMap), new FakeTranslator('u'));
+      translator.translate(
+          createText(
+              'a test of text', undefined, undefined,
+              {start: 2, end: 6, formType: LibLouis.FormType.BOLD}),
+          ExpandingBrailleTranslator.ExpansionType.NONE, function(cells) {
+            assertArrayBufferMatches('ccbbbbcccccccc', cells);
+          });
+    });

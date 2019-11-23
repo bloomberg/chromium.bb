@@ -3,8 +3,9 @@
 // found in the LICENSE file.
 
 // Include test fixture.
-GEN_INCLUDE(['//chrome/browser/resources/chromeos/accessibility/chromevox/testing/chromevox_e2e_test_base.js',
-             '../testing/assert_additions.js']);
+GEN_INCLUDE([
+  '../testing/chromevox_e2e_test_base.js', '../testing/assert_additions.js'
+]);
 
 /**
  * Test fixture for BrailleTranslatorManager tests.
@@ -36,8 +37,7 @@ ChromeVoxBrailleTranslatorManagerTest.prototype = {
 };
 
 /** @extends {LibLouis} */
-function FakeLibLouis() {
-}
+function FakeLibLouis() {}
 
 FakeLibLouis.prototype = {
   /** @override */
@@ -89,27 +89,30 @@ TEST_F('ChromeVoxBrailleTranslatorManagerTest', 'testInitial', function() {
   });
 });
 
-TEST_F('ChromeVoxBrailleTranslatorManagerTest', 'testRefreshWithoutChange',
-       function() {
-  this.addChangeListener(function() {
-    assertNotEquals(null, this.manager.getExpandingTranslator());
-    // This works because the fake liblouis is actually not asynchonous.
-    this.manager.addChangeListener(function() {
-      assertNotReached('Refresh should not be called without a change.');
+TEST_F(
+    'ChromeVoxBrailleTranslatorManagerTest', 'testRefreshWithoutChange',
+    function() {
+      this.addChangeListener(function() {
+        assertNotEquals(null, this.manager.getExpandingTranslator());
+        // This works because the fake liblouis is actually not asynchonous.
+        this.manager.addChangeListener(function() {
+          assertNotReached('Refresh should not be called without a change.');
+        });
+        this.manager.refresh(localStorage['brailleTable']);
+      });
     });
-    this.manager.refresh(localStorage['brailleTable']);
-  });
-});
 
-TEST_F('ChromeVoxBrailleTranslatorManagerTest', 'testRefreshWithChange',
-       function() {
-  this.addChangeListener(function() {
-    assertNotEquals(null, this.manager.getExpandingTranslator());
-    this.addChangeListener(function() {
-      assertEquals('en-UEB-g2', this.manager.getDefaultTranslator().table.id);
-      assertEquals('en-US-comp8',
-                   this.manager.getUncontractedTranslator().table.id);
+TEST_F(
+    'ChromeVoxBrailleTranslatorManagerTest', 'testRefreshWithChange',
+    function() {
+      this.addChangeListener(function() {
+        assertNotEquals(null, this.manager.getExpandingTranslator());
+        this.addChangeListener(function() {
+          assertEquals(
+              'en-UEB-g2', this.manager.getDefaultTranslator().table.id);
+          assertEquals(
+              'en-US-comp8', this.manager.getUncontractedTranslator().table.id);
+        });
+        this.manager.refresh('en-UEB-g2');
+      });
     });
-    this.manager.refresh('en-UEB-g2');
-  });
-});

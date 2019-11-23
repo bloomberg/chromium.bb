@@ -3,8 +3,9 @@
 // found in the LICENSE file.
 
 // Include test fixture.
-GEN_INCLUDE(['//chrome/browser/resources/chromeos/accessibility/chromevox/testing/chromevox_e2e_test_base.js',
-             '//chrome/browser/resources/chromeos/accessibility/chromevox/testing/assert_additions.js']);
+GEN_INCLUDE([
+  '../testing/chromevox_e2e_test_base.js', '../testing/assert_additions.js'
+]);
 
 // E2E tests for TtsBackground.
 
@@ -78,16 +79,22 @@ TEST_F('ChromeVoxTtsBackgroundTest', 'UpdateVoice', function() {
   var tasks = [
     {testVoice: '', expectedVoice: constants.SYSTEM_VOICE},
 
-    {setup: function() {
-      voices[3].lang = 'en';
+    {
+      setup: function() {
+        voices[3].lang = 'en';
+      },
+      testVoice: 'U.S. English',
+      expectedVoice: 'U.S. English'
     },
-     testVoice: 'U.S. English', expectedVoice: 'U.S. English'},
 
-    {setup: function() {
-      voices[3].lang = 'fr-FR';
-      voices[3].voiceName = 'French';
+    {
+      setup: function() {
+        voices[3].lang = 'fr-FR';
+        voices[3].voiceName = 'French';
+      },
+      testVoice: '',
+      expectedVoice: constants.SYSTEM_VOICE
     },
-     testVoice: '', expectedVoice: constants.SYSTEM_VOICE},
 
     {testVoice: 'French', expectedVoice: 'French'},
 
@@ -98,22 +105,25 @@ TEST_F('ChromeVoxTtsBackgroundTest', 'UpdateVoice', function() {
 });
 
 // This test only works if Google tts is installed. Run it locally.
-TEST_F('ChromeVoxTtsBackgroundTest',
-       'DISABLED_EmptyStringCallsCallbacks', function() {
-  var tts = new TtsBackground(false);
-  var startCalls = 0, endCalls = 0;
-  assertCallsCallbacks = function(text, speakCalls) {
-    tts.speak(text, QueueMode.QUEUE,
-              {startCallback: function() { ++startCalls; },
-               endCallback: this.newCallback(function() {
-                 ++endCalls;
-                 assertEquals(speakCalls, endCalls);
-                 assertEquals(endCalls, startCalls);
-               })}
-             );
-  }.bind(this);
+TEST_F(
+    'ChromeVoxTtsBackgroundTest', 'DISABLED_EmptyStringCallsCallbacks',
+    function() {
+      var tts = new TtsBackground(false);
+      var startCalls = 0, endCalls = 0;
+      assertCallsCallbacks = function(text, speakCalls) {
+        tts.speak(text, QueueMode.QUEUE, {
+          startCallback: function() {
+            ++startCalls;
+          },
+          endCallback: this.newCallback(function() {
+            ++endCalls;
+            assertEquals(speakCalls, endCalls);
+            assertEquals(endCalls, startCalls);
+          })
+        });
+      }.bind(this);
 
-  assertCallsCallbacks('', 1);
-  assertCallsCallbacks('  ', 2);
-  assertCallsCallbacks(' \u00a0 ', 3);
-});
+      assertCallsCallbacks('', 1);
+      assertCallsCallbacks('  ', 2);
+      assertCallsCallbacks(' \u00a0 ', 3);
+    });

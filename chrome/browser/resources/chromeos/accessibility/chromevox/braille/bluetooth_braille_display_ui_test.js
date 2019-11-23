@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 // Include test fixture.
-GEN_INCLUDE(['//chrome/browser/resources/chromeos/accessibility/chromevox/testing/chromevox_unittest_base.js']);
+GEN_INCLUDE(['../testing/chromevox_unittest_base.js']);
 
-GEN_INCLUDE(['//chrome/browser/resources/chromeos/accessibility/chromevox/testing/fake_objects.js']);
+GEN_INCLUDE(['../testing/fake_objects.js']);
 
 // Fake out the Chrome API namespace we depend on.
 var chrome = {};
@@ -37,17 +37,17 @@ function ChromeVoxBluetoothBrailleDisplayUIUnitTest() {
 }
 
 ChromeVoxBluetoothBrailleDisplayUIUnitTest.prototype = {
-  __proto__ : ChromeVoxUnitTestBase.prototype,
+  __proto__: ChromeVoxUnitTestBase.prototype,
 
   /** @override */
-  closureModuleDeps : [
+  closureModuleDeps: [
     'BluetoothBrailleDisplayManager',
     'BluetoothBrailleDisplayUI',
     'TestMsgs',
   ],
 
   /** @override */
-  isAsync : true,
+  isAsync: true,
 
   /** @override */
   setUp: function() {
@@ -61,7 +61,7 @@ ChromeVoxBluetoothBrailleDisplayUIUnitTest.prototype = {
    * Builds an expected stringified version of the widget, inserting static
    * expected content as needed.
    * @param {string} controls The expected controls block.
-  * @return {string} The final expectation.
+   * @return {string} The final expectation.
    */
   buildUIExpectation: function(controls) {
     return `
@@ -76,12 +76,11 @@ ChromeVoxBluetoothBrailleDisplayUIUnitTest.prototype = {
 };
 
 SYNC_TEST_F(
-    'ChromeVoxBluetoothBrailleDisplayUIUnitTest',
-    'NoDisplays',
-    function() {
+    'ChromeVoxBluetoothBrailleDisplayUIUnitTest', 'NoDisplays', function() {
       var ui = new BluetoothBrailleDisplayUI();
       ui.attach(document.body);
-      assertEqualsDOM(this.buildUIExpectation(`
+      assertEqualsDOM(
+          this.buildUIExpectation(`
               <select aria-labelledby="bluetoothBrailleSelectLabel"></select>
                 <button id="connectOrDisconnect" disabled="">Connect</button>
                 <button id="forget" disabled="">Forget</button>`),
@@ -90,27 +89,26 @@ SYNC_TEST_F(
 
 SYNC_TEST_F(
     'ChromeVoxBluetoothBrailleDisplayUIUnitTest',
-    'ControlStateUpdatesNotConnectedOrPaired',
-    function() {
+    'ControlStateUpdatesNotConnectedOrPaired', function() {
       var ui = new BluetoothBrailleDisplayUI();
       ui.attach(document.body);
 
       var displays = [];
-      
-// Fake out getDevice using |display| as the backing source which changes below.
+
+      // Fake out getDevice using |display| as the backing source which changes
+      // below.
       chrome.bluetooth.getDevice = (address, callback) => {
-        var display = displays.find((display) => display.address == address );
+        var display = displays.find((display) => display.address == address);
         assertNotNullNorUndefined(display);
         callback(display);
       };
 
       // One display; it automatically gets selected.
       // Not connected, not paired.
-      displays = [{
-        name: 'Focus 40 BT', address: 'abcd1234'
-      }];
+      displays = [{name: 'Focus 40 BT', address: 'abcd1234'}];
       ui.onDisplayListChanged(displays);
-      assertEqualsDOM(this.buildUIExpectation(`
+      assertEqualsDOM(
+          this.buildUIExpectation(`
               <select aria-labelledby="bluetoothBrailleSelectLabel">
                 <option id="abcd1234"><span>Focus 40 BT</span></option>
               </select>
@@ -122,8 +120,7 @@ SYNC_TEST_F(
 
 SYNC_TEST_F(
     'ChromeVoxBluetoothBrailleDisplayUIUnitTest',
-    'ControlStateUpdatesPairedNotConnected',
-    function() {
+    'ControlStateUpdatesPairedNotConnected', function() {
       var ui = new BluetoothBrailleDisplayUI();
       ui.attach(document.body);
 
@@ -132,17 +129,16 @@ SYNC_TEST_F(
       // Fake out getDevice using |display| as the backing source which changes
       // below.
       chrome.bluetooth.getDevice = (address, callback) => {
-        var display = displays.find((display) => display.address == address );
+        var display = displays.find((display) => display.address == address);
         assertNotNullNorUndefined(display);
         callback(display);
       };
 
       // One display; paired, but not connected.
-      displays = [{
-        name: 'Focus 40 BT', address: 'abcd1234', paired: true
-      }];
+      displays = [{name: 'Focus 40 BT', address: 'abcd1234', paired: true}];
       ui.onDisplayListChanged(displays);
-      assertEqualsDOM(this.buildUIExpectation(`
+      assertEqualsDOM(
+          this.buildUIExpectation(`
               <select aria-labelledby="bluetoothBrailleSelectLabel">
                 <option id="abcd1234"><span>Focus 40 BT</span></option>
               </select>
@@ -154,9 +150,10 @@ SYNC_TEST_F(
       displays = [
         {name: 'Focus 40 BT', address: 'abcd1234', paired: true},
         {name: 'Focus 40 BT rev 2', address: '4321dcba'}
-];
+      ];
       ui.onDisplayListChanged(displays);
-      assertEqualsDOM(this.buildUIExpectation(`
+      assertEqualsDOM(
+          this.buildUIExpectation(`
               <select aria-labelledby="bluetoothBrailleSelectLabel">
                 <option id="abcd1234"><span>Focus 40 BT</span></option>
                 <option id="4321dcba"><span>Focus 40 BT rev 2</span></option>
@@ -168,7 +165,8 @@ SYNC_TEST_F(
       // Our selected display is connecting.
       displays[0].connecting = true;
       ui.onDisplayListChanged(displays);
-      assertEqualsDOM(this.buildUIExpectation(`
+      assertEqualsDOM(
+          this.buildUIExpectation(`
               <select aria-labelledby="bluetoothBrailleSelectLabel" disabled="">
                 <option id="abcd1234"><span>Focus 40 BT</span></option>
                 <option id="4321dcba"><span>Focus 40 BT rev 2</span></option>
@@ -181,7 +179,8 @@ SYNC_TEST_F(
       displays[0].connecting = false;
       displays[0].connected = true;
       ui.onDisplayListChanged(displays);
-      assertEqualsDOM(this.buildUIExpectation(`
+      assertEqualsDOM(
+          this.buildUIExpectation(`
               <select aria-labelledby="bluetoothBrailleSelectLabel">
                 <option id="abcd1234"><span>Focus 40 BT</span></option>
                 <option id="4321dcba"><span>Focus 40 BT rev 2</span></option>
@@ -198,7 +197,8 @@ SYNC_TEST_F(
       changeEvt.initEvent('change');
       select.dispatchEvent(changeEvt);
       // The controls update based on the newly selected display.
-      assertEqualsDOM(this.buildUIExpectation(`
+      assertEqualsDOM(
+          this.buildUIExpectation(`
               <select aria-labelledby="bluetoothBrailleSelectLabel">
                 <option id="abcd1234"><span>Focus 40 BT</span></option>
                 <option id="4321dcba"><span>Focus 40 BT rev 2</span></option>
@@ -209,15 +209,14 @@ SYNC_TEST_F(
     });
 
 SYNC_TEST_F(
-    'ChromeVoxBluetoothBrailleDisplayUIUnitTest',
-    'PincodeRequest',
-    function() {
+    'ChromeVoxBluetoothBrailleDisplayUIUnitTest', 'PincodeRequest', function() {
       var ui = new BluetoothBrailleDisplayUI();
       ui.attach(document.body);
 
       // Trigger pincode screen.
       ui.onPincodeRequested();
-      assertEqualsDOM(`
+      assertEqualsDOM(
+          `
           <div>
             <h2>Bluetooth Braille Display</h2>
             <form>
@@ -236,9 +235,7 @@ SYNC_TEST_F(
     });
 
 TEST_F(
-    'ChromeVoxBluetoothBrailleDisplayUIUnitTest',
-    'ClickControls',
-    function() {
+    'ChromeVoxBluetoothBrailleDisplayUIUnitTest', 'ClickControls', function() {
       var ui = new BluetoothBrailleDisplayUI();
       ui.attach(document.body);
 
@@ -247,17 +244,16 @@ TEST_F(
       // Fake out getDevice using |display| as the backing source which changes
       // below.
       chrome.bluetooth.getDevice = (address, callback) => {
-        var display = displays.find((display) => display.address == address );
+        var display = displays.find((display) => display.address == address);
         assertNotNullNorUndefined(display);
         callback(display);
       };
 
       // One display; paired, but not connected.
-      displays = [{
-        name: 'VarioUltra', address: 'abcd1234', paired: true
-      }];
+      displays = [{name: 'VarioUltra', address: 'abcd1234', paired: true}];
       ui.onDisplayListChanged(displays);
-      assertEqualsDOM(this.buildUIExpectation(`
+      assertEqualsDOM(
+          this.buildUIExpectation(`
               <select aria-labelledby="bluetoothBrailleSelectLabel">
                 <option id="abcd1234"><span>VarioUltra</span></option>
               </select>

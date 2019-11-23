@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 // Include test fixture.
-GEN_INCLUDE(['//chrome/browser/resources/chromeos/accessibility/chromevox/testing/chromevox_unittest_base.js']);
+GEN_INCLUDE(['../testing/chromevox_unittest_base.js']);
 
-GEN_INCLUDE(['//chrome/browser/resources/chromeos/accessibility/chromevox/testing/fake_objects.js']);
+GEN_INCLUDE(['../testing/fake_objects.js']);
 
 // Fake out the Chrome API namespace we depend on.
 var chrome = {};
@@ -61,8 +61,8 @@ FakeEditor.prototype.setContent = function(
     text, selectionStart, opt_selectionEnd) {
   this.text_ = text;
   this.selectionStart_ = selectionStart;
-  this.selectionEnd_ = goog.isDef(opt_selectionEnd) ?
-      opt_selectionEnd : selectionStart;
+  this.selectionEnd_ =
+      goog.isDef(opt_selectionEnd) ? opt_selectionEnd : selectionStart;
   this.callOnDisplayContentChanged_();
 };
 
@@ -86,9 +86,7 @@ FakeEditor.prototype.select = function(selectionStart, opt_selectionEnd) {
  *     otherwise leaves the cursor at the end of the new text.
  */
 FakeEditor.prototype.insert = function(newText, opt_select) {
-  this.text_ =
-      this.text_.substring(0, this.selectionStart_) +
-      newText +
+  this.text_ = this.text_.substring(0, this.selectionStart_) + newText +
       this.text_.substring(this.selectionEnd_);
   if (opt_select) {
     this.selectionEnd_ = this.selectionStart_ + newText.length;
@@ -131,8 +129,8 @@ FakeEditor.prototype.setActive = function(value) {
  */
 FakeEditor.prototype.assertContentIs = function(
     text, selectionStart, opt_selectionEnd) {
-  var selectionEnd = goog.isDef(opt_selectionEnd) ? opt_selectionEnd :
-      selectionStart;
+  var selectionEnd =
+      goog.isDef(opt_selectionEnd) ? opt_selectionEnd : selectionStart;
   assertEquals(text, this.text_);
   assertEquals(selectionStart, this.selectionStart_);
   assertEquals(selectionEnd, this.selectionEnd_);
@@ -196,14 +194,16 @@ FakeEditor.prototype.createValue = function(
  * @private
  */
 FakeEditor.prototype.callOnDisplayContentChanged_ = function() {
-  var content = this.createValue(
-      this.text_, this.selectionStart_, this.selectionEnd_)
+  var content =
+      this.createValue(this.text_, this.selectionStart_, this.selectionEnd_);
   var grabExtraCells = function() {
     var span = content.getSpanInstanceOf(ExtraCellsSpan);
     assertNotEquals(null, span);
     // Convert the ArrayBuffer to a normal array for easier comparision.
-    this.extraCells_ = Array.prototype.map.call(new Uint8Array(span.cells),
-                                                function(a) {return a;});
+    this.extraCells_ =
+        Array.prototype.map.call(new Uint8Array(span.cells), function(a) {
+          return a;
+        });
   }.bind(this);
   this.inputHandler_.onDisplayContentChanged(content, grabExtraCells);
   grabExtraCells();
@@ -218,9 +218,10 @@ FakeEditor.prototype.callOnDisplayContentChanged_ = function() {
  */
 FakeEditor.prototype.focus = function(fieldType) {
   this.contextID_++;
-  this.message_({type: 'inputContext',
-                 context: {type: fieldType,
-                           contextID: this.contextID_}});
+  this.message_({
+    type: 'inputContext',
+    context: {type: fieldType, contextID: this.contextID_}
+  });
 };
 
 
@@ -240,7 +241,7 @@ FakeEditor.prototype.blur = function() {
  */
 FakeEditor.prototype.handleMessage_ = function(msg) {
   assertEquals(this.contextID_, msg.contextID);
-  switch(msg.type) {
+  switch (msg.type) {
     case 'replaceText':
       var deleteBefore = msg.deleteBefore;
       var newText = msg.newText;
@@ -291,11 +292,11 @@ function FakePort() {
  * @const Array<Array<string> >
  */
 var UNCONTRACTED_TABLE = [
-  ['0', ' '],
-  ['1', 'a'], ['12', 'b'], ['14', 'c'], ['145', 'd'], ['15', 'e'],
-  ['124', 'f'], ['1245', 'g'], ['125', 'h'], ['24', 'i'], ['245', 'j'],
-  ['13', 'k'], ['123', 'l'], ['134', 'm'], ['1345', 'n'], ['135', 'o'],
-  ['1234', 'p'], ['12345', 'q'], ['1235', 'r'], ['234', 's'], ['2345', 't']
+  ['0', ' '],   ['1', 'a'],    ['12', 'b'],    ['14', 'c'],   ['145', 'd'],
+  ['15', 'e'],  ['124', 'f'],  ['1245', 'g'],  ['125', 'h'],  ['24', 'i'],
+  ['245', 'j'], ['13', 'k'],   ['123', 'l'],   ['134', 'm'],  ['1345', 'n'],
+  ['135', 'o'], ['1234', 'p'], ['12345', 'q'], ['1235', 'r'], ['234', 's'],
+  ['2345', 't']
 ];
 
 
@@ -310,9 +311,8 @@ var UNCONTRACTED_TABLE = [
  * @const
  */
 var CONTRACTED_TABLE = [
-  ['12 1235 123', 'braille'],
-  ['^12$', 'but'],
-  ['1456', 'this']].concat(UNCONTRACTED_TABLE);
+  ['12 1235 123', 'braille'], ['^12$', 'but'], ['1456', 'this']
+].concat(UNCONTRACTED_TABLE);
 
 /**
  * A fake braille translator that can do back translation according
@@ -374,8 +374,7 @@ FakeTranslator.prototype.backTranslate = function(cells, callback) {
       break;
     }
     assertNotEquals(
-        null, match,
-        'Backtranslating ' + cellsArray[pos] + ' at ' + pos);
+        null, match, 'Backtranslating ' + cellsArray[pos] + ' at ' + pos);
     result += match[1];
     pos += match[0].length;
   }
@@ -386,8 +385,7 @@ FakeTranslator.prototype.backTranslate = function(cells, callback) {
 };
 
 /** @extends {BrailleTranslatorManager} */
-function FakeTranslatorManager() {
-}
+function FakeTranslatorManager() {}
 
 FakeTranslatorManager.prototype = {
   defaultTranslator: null,
@@ -490,8 +488,10 @@ ChromeVoxBrailleInputHandlerUnitTest.prototype = {
    * @return {boolean} Whether the event was handled.
    */
   sendKeyEvent: function(keyCode) {
-    var event = {command: BrailleKeyCommand.STANDARD_KEY,
-                 standardKeyCode: keyCode};
+    var event = {
+      command: BrailleKeyCommand.STANDARD_KEY,
+      standardKeyCode: keyCode
+    };
     return this.inputHandler.onBrailleKeyEvent(event);
   },
 
@@ -499,24 +499,27 @@ ChromeVoxBrailleInputHandlerUnitTest.prototype = {
    * Shortcut for asserting that the value expansion mode is {@code NONE}.
    */
   assertExpandingNone: function() {
-    assertEquals(ExpandingBrailleTranslator.ExpansionType.NONE,
-                 this.inputHandler.getExpansionType());
+    assertEquals(
+        ExpandingBrailleTranslator.ExpansionType.NONE,
+        this.inputHandler.getExpansionType());
   },
 
   /**
    * Shortcut for asserting that the value expansion mode is {@code SELECTION}.
    */
   assertExpandingSelection: function() {
-    assertEquals(ExpandingBrailleTranslator.ExpansionType.SELECTION,
-                 this.inputHandler.getExpansionType());
+    assertEquals(
+        ExpandingBrailleTranslator.ExpansionType.SELECTION,
+        this.inputHandler.getExpansionType());
   },
 
   /**
    * Shortcut for asserting that the value expansion mode is {@code ALL}.
    */
   assertExpandingAll: function() {
-    assertEquals(ExpandingBrailleTranslator.ExpansionType.ALL,
-                 this.inputHandler.getExpansionType());
+    assertEquals(
+        ExpandingBrailleTranslator.ExpansionType.ALL,
+        this.inputHandler.getExpansionType());
   },
 
   storeKeyEvent: function(event, opt_callback) {
@@ -538,7 +541,7 @@ ChromeVoxBrailleInputHandlerUnitTest.prototype = {
     chrome.runtime.onConnectExternal = new FakeChromeEvent();
     this.port = new FakePort();
     chrome.virtualKeyboardPrivate.getKeyboardConfig = function(callback) {
-      callback({ a11ymode: true });
+      callback({a11ymode: true});
     };
     chrome.accessibilityPrivate.sendSyntheticKeyEvent =
         this.storeKeyEvent.bind(this);
@@ -554,12 +557,13 @@ ChromeVoxBrailleInputHandlerUnitTest.prototype = {
   }
 };
 
-TEST_F('ChromeVoxBrailleInputHandlerUnitTest', 'ConnectFromUnknownExtension',
-  function() {
-  this.port.sender.id = 'your unknown friend';
-  chrome.runtime.onConnectExternal.getListener()(this.port);
-  this.port.onMessage.assertNoListener();
-});
+TEST_F(
+    'ChromeVoxBrailleInputHandlerUnitTest', 'ConnectFromUnknownExtension',
+    function() {
+      this.port.sender.id = 'your unknown friend';
+      chrome.runtime.onConnectExternal.getListener()(this.port);
+      this.port.onMessage.assertNoListener();
+    });
 
 
 TEST_F('ChromeVoxBrailleInputHandlerUnitTest', 'NoTranslator', function() {
@@ -603,8 +607,8 @@ TEST_F('ChromeVoxBrailleInputHandlerUnitTest', 'InputUncontracted', function() {
 
 TEST_F('ChromeVoxBrailleInputHandlerUnitTest', 'InputContracted', function() {
   var editor = this.createEditor();
-  this.translatorManager.setTranslators(this.contractedTranslator,
-                                        this.uncontractedTranslator);
+  this.translatorManager.setTranslators(
+      this.contractedTranslator, this.uncontractedTranslator);
   editor.setContent('', 0);
   editor.setActive(true);
   editor.focus('text');
@@ -642,7 +646,7 @@ TEST_F('ChromeVoxBrailleInputHandlerUnitTest', 'InputContracted', function() {
   this.assertExpandingSelection();
   editor.select('bBRAILLE'.length);
   this.assertExpandingSelection();
-  assertTrue(this.sendCells('12')); // 'b'
+  assertTrue(this.sendCells('12'));  // 'b'
   editor.assertContentIs('bBRAILLEb ', 'bBRAILLEb'.length);
   // Move to the end, where contracted typing should work.
   editor.select('bBRAILLEb '.length);
@@ -661,34 +665,35 @@ TEST_F('ChromeVoxBrailleInputHandlerUnitTest', 'InputContracted', function() {
 });
 
 
-TEST_F('ChromeVoxBrailleInputHandlerUnitTest', 'TypingUrlWithContracted',
-       function() {
-  var editor = this.createEditor();
-  this.translatorManager.setTranslators(this.contractedTranslator,
-                                        this.uncontractedTranslator);
-  editor.setActive(true);
-  editor.focus('url');
-  this.assertExpandingAll();
-  assertTrue(this.sendCells('1245'));  // 'g'
-  editor.insert('oogle.com', true /*select*/);
-  editor.assertContentIs('google.com', 1, 'google.com'.length);
-  this.assertExpandingAll();
-  this.sendCells('135');  // 'o'
-  editor.insert('ogle.com', true /*select*/);
-  editor.assertContentIs('google.com', 2, 'google.com'.length);
-  this.assertExpandingAll();
-  this.sendCells('0');
-  editor.assertContentIs('go ', 'go '.length);
-  // In a URL, even when the cursor is in whitespace, all of the value
-  // is expanded to uncontracted braille.
-  this.assertExpandingAll();
-});
+TEST_F(
+    'ChromeVoxBrailleInputHandlerUnitTest', 'TypingUrlWithContracted',
+    function() {
+      var editor = this.createEditor();
+      this.translatorManager.setTranslators(
+          this.contractedTranslator, this.uncontractedTranslator);
+      editor.setActive(true);
+      editor.focus('url');
+      this.assertExpandingAll();
+      assertTrue(this.sendCells('1245'));  // 'g'
+      editor.insert('oogle.com', true /*select*/);
+      editor.assertContentIs('google.com', 1, 'google.com'.length);
+      this.assertExpandingAll();
+      this.sendCells('135');  // 'o'
+      editor.insert('ogle.com', true /*select*/);
+      editor.assertContentIs('google.com', 2, 'google.com'.length);
+      this.assertExpandingAll();
+      this.sendCells('0');
+      editor.assertContentIs('go ', 'go '.length);
+      // In a URL, even when the cursor is in whitespace, all of the value
+      // is expanded to uncontracted braille.
+      this.assertExpandingAll();
+    });
 
 
 TEST_F('ChromeVoxBrailleInputHandlerUnitTest', 'Backspace', function() {
   var editor = this.createEditor();
-  this.translatorManager.setTranslators(this.contractedTranslator,
-                                        this.uncontractedTranslator);
+  this.translatorManager.setTranslators(
+      this.contractedTranslator, this.uncontractedTranslator);
   editor.setActive(true);
   editor.focus('text');
 
@@ -710,8 +715,7 @@ TEST_F('ChromeVoxBrailleInputHandlerUnitTest', 'Backspace', function() {
   // Now, backspace should be handled as usual, synthetizing key events.
   assertEquals(0, this.keyEvents.length);
   this.sendKeyEvent('Backspace');
-  assertEqualsJSON([{keyCode: 8}],
-                   this.keyEvents);
+  assertEqualsJSON([{keyCode: 8}], this.keyEvents);
 });
 
 
@@ -719,7 +723,5 @@ TEST_F('ChromeVoxBrailleInputHandlerUnitTest', 'KeysImeNotActive', function() {
   var editor = this.createEditor();
   this.sendKeyEvent('Enter');
   this.sendKeyEvent('ArrowUp');
-  assertEqualsJSON([{keyCode: 13},
-                    {keyCode: 38}],
-                   this.keyEvents);
+  assertEqualsJSON([{keyCode: 13}, {keyCode: 38}], this.keyEvents);
 });

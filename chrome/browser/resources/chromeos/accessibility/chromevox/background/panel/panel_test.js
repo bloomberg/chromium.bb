@@ -3,9 +3,13 @@
 // found in the LICENSE file.
 
 // Include test fixture.
-GEN_INCLUDE(['//chrome/browser/resources/chromeos/accessibility/chromevox/testing/chromevox_next_e2e_test_base.js']);
+GEN_INCLUDE([
+  '//chrome/browser/resources/chromeos/accessibility/chromevox/testing/chromevox_next_e2e_test_base.js'
+]);
 
-GEN_INCLUDE(['//chrome/browser/resources/chromeos/accessibility/chromevox/testing/mock_feedback.js']);
+GEN_INCLUDE([
+  '//chrome/browser/resources/chromeos/accessibility/chromevox/testing/mock_feedback.js'
+]);
 
 /**
  * Test fixture for Panel.
@@ -21,15 +25,15 @@ ChromeVoxPanelTest.prototype = {
 
   /** @override */
   testGenCppIncludes: function() {
-    ChromeVoxE2ETest.prototype.  testGenCppIncludes.call(this);
+    ChromeVoxE2ETest.prototype.testGenCppIncludes.call(this);
   },
 
   /**
    * @return {!MockFeedback}
    */
   createMockFeedback: function() {
-    var mockFeedback = new MockFeedback(this.newCallback(),
-                                        this.newCallback.bind(this));
+    var mockFeedback =
+        new MockFeedback(this.newCallback(), this.newCallback.bind(this));
     mockFeedback.install();
     return mockFeedback;
   },
@@ -63,12 +67,12 @@ ChromeVoxPanelTest.prototype = {
     }.bind(this);
   },
 
-  linksDoc: function() {/*!
+  linksDoc: `
     <p>start</p>
     <a href="#">apple</a>
     <a href="#">grape</a>
     <a href="#">banana</a>
-  */}
+  `
 };
 
 // TODO: Flaky timeouts. https://crbug.com/795840 and https://crbug.com/990229
@@ -78,14 +82,14 @@ TEST_F('ChromeVoxPanelTest', 'DISABLED_ActivateMenu', function() {
     var openMenus = new PanelCommand(PanelCommandType.OPEN_MENUS);
     mockFeedback.call(openMenus.send.bind(openMenus))
         .expectSpeech(
-            'Jump',
-            'Menu',
+            'Jump', 'Menu',
             'Go To Beginning Of Table ChromeVox+Alt+Shift+Left arrow',
             / 1 of [0-9]{2} /)
         .call(this.fireMockEvent('ArrowRight'))
-        .expectSpeech('Speech', 'Menu',
-                      'Announce The Title Of The Current Page ChromeVox+A>W',
-                      'Menu item', / 1 of [0-9]{2} /)
+        .expectSpeech(
+            'Speech', 'Menu',
+            'Announce The Title Of The Current Page ChromeVox+A>W', 'Menu item',
+            / 1 of [0-9]{2} /)
         .replay();
   });
 });
@@ -96,13 +100,19 @@ TEST_F('ChromeVoxPanelTest', 'DISABLED_LinkMenu', function() {
   this.runWithLoadedTree(this.linksDoc, function(root) {
     var openMenus = new PanelCommand(PanelCommandType.OPEN_MENUS, 'role_link');
     mockFeedback.call(openMenus.send.bind(openMenus))
-        .expectSpeech('Link', 'Menu', 'apple Link', 'Menu item', ' 1 of 3 ',)
+        .expectSpeech(
+            'Link',
+            'Menu',
+            'apple Link',
+            'Menu item',
+            ' 1 of 3 ',
+            )
         .call(this.fireMockEvent('ArrowLeft'))
         .expectSpeech('Landmark', 'Menu', 'No items.', 'Menu item', ' 1 of 1 ')
         .call(this.fireMockEvent('ArrowRight'))
         .expectSpeech('Link', 'Menu', 'apple Link', 'Menu item', ' 1 of 3 ')
         .call(this.fireMockEvent('ArrowUp'))
-        .expectSpeech(  'banana Link', 'Menu item', ' 3 of 3 ')
+        .expectSpeech('banana Link', 'Menu item', ' 3 of 3 ')
         .clearPendingOutput()
         .call(this.fireMockEvent('Enter'))
         .expectSpeech('banana', 'Link')

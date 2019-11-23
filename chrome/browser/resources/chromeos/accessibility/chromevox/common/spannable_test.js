@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 // Include test fixture.
-GEN_INCLUDE(['//chrome/browser/resources/chromeos/accessibility/chromevox/testing/chromevox_unittest_base.js']);
+GEN_INCLUDE([
+  '//chrome/browser/resources/chromeos/accessibility/chromevox/testing/chromevox_unittest_base.js'
+]);
 
 UnserializableSpan = function() {};
 
@@ -188,8 +190,8 @@ TEST_F('ChromeVoxSpannableUnitTest', 'SetSpanRangeError', function() {
  * The first one added which applies should be returned by getSpan.
  */
 TEST_F('ChromeVoxSpannableUnitTest', 'MultipleSpans', function() {
-  var annotation1 = { number: 1 };
-  var annotation2 = { number: 2 };
+  var annotation1 = {number: 1};
+  var annotation2 = {number: 2};
   assertNotSame(annotation1, annotation2);
   var spannable = new Spannable('Hello world');
   spannable.setSpan(annotation1, 1, 4);
@@ -216,8 +218,8 @@ TEST_F('ChromeVoxSpannableUnitTest', 'AppendToString', function() {
  * Tests that appending Spannables combines annotations.
  */
 TEST_F('ChromeVoxSpannableUnitTest', 'AppendAnnotations', function() {
-  var annotation1 = { number: 1 };
-  var annotation2 = { number: 2 };
+  var annotation1 = {number: 1};
+  var annotation2 = {number: 2};
   assertNotSame(annotation1, annotation2);
   var left = new Spannable('hello');
   left.setSpan(annotation1, 0, 3);
@@ -243,25 +245,27 @@ TEST_F('ChromeVoxSpannableUnitTest', 'GetSpanStartAndEndAndLength', function() {
 /**
  * Tests that an absent span's bounds are reported correctly.
  */
-TEST_F('ChromeVoxSpannableUnitTest', 'GetSpanStartAndEndAndLengthAbsent',
-       function() {
-  var annotation = {};
-  var spannable = new Spannable('potato wedges');
-  assertSpanNotFound(spannable, annotation);
-});
+TEST_F(
+    'ChromeVoxSpannableUnitTest', 'GetSpanStartAndEndAndLengthAbsent',
+    function() {
+      var annotation = {};
+      var spannable = new Spannable('potato wedges');
+      assertSpanNotFound(spannable, annotation);
+    });
 
 /**
  * Test that a zero length span can still be found.
  */
-TEST_F('ChromeVoxSpannableUnitTest', 'GetSpanStartAndEndAndLengthZeroLength',
-       function() {
-  var annotation = {};
-  var spannable = new Spannable('potato wedges');
-  spannable.setSpan(annotation, 8, 8);
-  assertEquals(8, spannable.getSpanStart(annotation));
-  assertEquals(8, spannable.getSpanEnd(annotation));
-  assertEquals(0, spannable.getSpanLength(annotation));
-});
+TEST_F(
+    'ChromeVoxSpannableUnitTest', 'GetSpanStartAndEndAndLengthZeroLength',
+    function() {
+      var annotation = {};
+      var spannable = new Spannable('potato wedges');
+      spannable.setSpan(annotation, 8, 8);
+      assertEquals(8, spannable.getSpanStart(annotation));
+      assertEquals(8, spannable.getSpanEnd(annotation));
+      assertEquals(0, spannable.getSpanLength(annotation));
+    });
 
 /**
  * Tests that == (but not ===) objects are treated distinctly when getting
@@ -312,8 +316,9 @@ TEST_F('ChromeVoxSpannableUnitTest', 'SubstringRangeError', function() {
  * Tests that spans in the substring range are preserved.
  */
 TEST_F('ChromeVoxSpannableUnitTest', 'SubstringSpansIncluded', function() {
-  var assertSpanIncluded = function(expectedSpanStart, expectedSpanEnd,
-      initial, initialSpanStart, initialSpanEnd, start, opt_end) {
+  var assertSpanIncluded = function(
+      expectedSpanStart, expectedSpanEnd, initial, initialSpanStart,
+      initialSpanEnd, start, opt_end) {
     var annotation = {};
     var spannable = new Spannable(initial);
     spannable.setSpan(annotation, initialSpanStart, initialSpanEnd);
@@ -345,8 +350,8 @@ TEST_F('ChromeVoxSpannableUnitTest', 'SubstringSpansIncluded', function() {
  * It's fine to keep zero-length spans at the ends, though.
  */
 TEST_F('ChromeVoxSpannableUnitTest', 'SubstringSpansExcluded', function() {
-  var assertSpanExcluded = function(initial, spanStart, spanEnd,
-      start, opt_end) {
+  var assertSpanExcluded = function(
+      initial, spanStart, spanEnd, start, opt_end) {
     var annotation = {};
     var spannable = new Spannable(initial);
     spannable.setSpan(annotation, spanStart, spanEnd);
@@ -363,8 +368,9 @@ TEST_F('ChromeVoxSpannableUnitTest', 'SubstringSpansExcluded', function() {
  * Tests that spans which cross the boundary are clipped.
  */
 TEST_F('ChromeVoxSpannableUnitTest', 'SubstringSpansClipped', function() {
-  var assertSpanIncluded = function(expectedSpanStart, expectedSpanEnd,
-      initial, initialSpanStart, initialSpanEnd, start, opt_end) {
+  var assertSpanIncluded = function(
+      expectedSpanStart, expectedSpanEnd, initial, initialSpanStart,
+      initialSpanEnd, start, opt_end) {
     var annotation = {};
     var spannable = new Spannable(initial);
     spannable.setSpan(annotation, initialSpanStart, initialSpanEnd);
@@ -377,8 +383,8 @@ TEST_F('ChromeVoxSpannableUnitTest', 'SubstringSpansClipped', function() {
   assertSpanIncluded(0, 0, 'potato wedges', 0, 6, 6, 6);
 
   // The first of the above should produce "edge".
-  assertEquals('edge',
-      new Spannable('potato wedges').substring(8, 12).toString());
+  assertEquals(
+      'edge', new Spannable('potato wedges').substring(8, 12).toString());
 });
 
 /**
@@ -492,10 +498,10 @@ TEST_F('ChromeVoxSpannableUnitTest', 'Serialize', function() {
   fresh.setSpan(freshStatelessSerializable, 0, 2);
   fresh.setSpan(freshNonStatelessSerializable, 3, 4);
   var thawn = Spannable.fromJson(fresh.toJson());
-  var thawnStatelessSerializable = thawn.getSpanInstanceOf(
-      StatelessSerializableSpan);
-  var thawnNonStatelessSerializable = thawn.getSpanInstanceOf(
-      NonStatelessSerializableSpan);
+  var thawnStatelessSerializable =
+      thawn.getSpanInstanceOf(StatelessSerializableSpan);
+  var thawnNonStatelessSerializable =
+      thawn.getSpanInstanceOf(NonStatelessSerializableSpan);
   assertThat('text', eqJSON(thawn.toString()));
   assertUndefined(thawn.getSpanInstanceOf(UnserializableSpan));
   assertThat(
@@ -504,8 +510,8 @@ TEST_F('ChromeVoxSpannableUnitTest', 'Serialize', function() {
   assertThat(
       fresh.getSpanEnd(freshStatelessSerializable),
       eqJSON(thawn.getSpanEnd(thawnStatelessSerializable)));
-  assertThat(freshNonStatelessSerializable,
-             eqJSON(thawnNonStatelessSerializable));
+  assertThat(
+      freshNonStatelessSerializable, eqJSON(thawnNonStatelessSerializable));
 });
 
 TEST_F('ChromeVoxSpannableUnitTest', 'GetSpanIntervals', function() {

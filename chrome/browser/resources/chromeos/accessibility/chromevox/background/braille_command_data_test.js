@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 // Include test fixture.
-GEN_INCLUDE(['//chrome/browser/resources/chromeos/accessibility/chromevox/testing/chromevox_next_e2e_test_base.js']);
+GEN_INCLUDE(['../testing/chromevox_next_e2e_test_base.js']);
 
-GEN_INCLUDE(['//chrome/browser/resources/chromeos/accessibility/chromevox/testing/assert_additions.js']);
+GEN_INCLUDE(['../testing/assert_additions.js']);
 
 /**
  * Test fixture for braille_command_data.js.
@@ -24,7 +24,7 @@ SYNC_TEST_F('ChromeVoxBrailleCommandDataTest', 'Duplicates', function() {
   try {
     BrailleCommandData.DOT_PATTERN_TO_COMMAND = [];
     BrailleCommandData.init_();
-  } catch(e) {
+  } catch (e) {
     assertNotReached(e.toString());
   }
 });

@@ -3,8 +3,9 @@
 // found in the LICENSE file.
 
 // Include test fixture.
-GEN_INCLUDE(['//chrome/browser/resources/chromeos/accessibility/chromevox/testing/chromevox_e2e_test_base.js',
-             '../testing/assert_additions.js']);
+GEN_INCLUDE([
+  '../testing/chromevox_e2e_test_base.js', '../testing/assert_additions.js'
+]);
 
 /**
  * Test fixture for BrailleTable tests.
@@ -47,8 +48,7 @@ TEST_F('ChromeVoxBrailleTableTest', 'testGetDisplayName', function() {
     table = BrailleTable.forId(tables, 'ar-g1');
     expectEquals('Arabic, Grade 1', BrailleTable.getDisplayName(table));
     table = BrailleTable.forId(tables, 'en-UEB-g1');
-    expectEquals('English (UEB), Grade 1',
-                 BrailleTable.getDisplayName(table));
+    expectEquals('English (UEB), Grade 1', BrailleTable.getDisplayName(table));
   }));
 });
 
@@ -59,8 +59,8 @@ TEST_F('ChromeVoxBrailleTableTest', 'testGetUncontracted', function() {
   BrailleTable.getAll(this.newCallback(function(tables) {
     function expectUncontracted(uncontractedId, idToCheck) {
       var checkedTable = BrailleTable.forId(tables, idToCheck);
-      var uncontractedTable = BrailleTable.getUncontracted(
-          tables, checkedTable);
+      var uncontractedTable =
+          BrailleTable.getUncontracted(tables, checkedTable);
       expectNotEquals(null, uncontractedTable);
       expectEquals(uncontractedId, uncontractedTable.id);
     }

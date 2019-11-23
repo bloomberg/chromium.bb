@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // Include test fixture.
-GEN_INCLUDE(['//chrome/browser/resources/chromeos/accessibility/chromevox/testing/chromevox_next_e2e_test_base.js']);
+GEN_INCLUDE(['../testing/chromevox_next_e2e_test_base.js']);
 
 /**
  * Test fixture for Color.
@@ -26,9 +26,11 @@ SYNC_TEST_F('ChromeVoxColorTest', 'FindDistanceTest', function() {
   var opaqueRed = 0xffff0000;
   var transparentLime = 0x0000ff00;
 
-  assertEquals(Color.findDistance(red,lime), Color.findDistance(lime, blue));
+  assertEquals(Color.findDistance(red, lime), Color.findDistance(lime, blue));
   // Opacity should not factor into this calculation.
-  assertEquals(Color.findDistance(red,lime), Color.findDistance(opaqueRed, transparentLime));
+  assertEquals(
+      Color.findDistance(red, lime),
+      Color.findDistance(opaqueRed, transparentLime));
 });
 
 SYNC_TEST_F('ChromeVoxColorTest', 'FindClosestMatchingColorTest', function() {
@@ -55,7 +57,8 @@ SYNC_TEST_F('ChromeVoxColorTest', 'FindClosestMatchingColorTest', function() {
   assertEquals('Black', Color.findClosestMatchingColor(gmailDefaultTextColor));
   assertEquals('Pink', Color.findClosestMatchingColor(looksLikePink));
   assertEquals('Forest Green', Color.findClosestMatchingColor(looksLikeGreen));
-  assertEquals('Dark Slate Grey', Color.findClosestMatchingColor(looksLikeDarkGrey));
+  assertEquals(
+      'Dark Slate Grey', Color.findClosestMatchingColor(looksLikeDarkGrey));
 
   // No match.
   assertEquals('', Color.findClosestMatchingColor(unknownColor));
