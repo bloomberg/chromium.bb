@@ -3314,6 +3314,7 @@ static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
         best_eob = intra_txb_rd_info->eob;
         best_tx_type = intra_txb_rd_info->tx_type;
         perform_block_coeff_opt = intra_txb_rd_info->perform_block_coeff_opt;
+        skip_trellis |= !perform_block_coeff_opt;
         update_txk_array(xd, blk_row, blk_col, tx_size, best_tx_type);
         goto RECON_INTRA;
       }
@@ -3458,13 +3459,18 @@ static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
   // larger residuals, R-D optimization may not be effective.
   // TODO(any): Experiment with variance and mean based thresholds
   perform_block_coeff_opt = (block_mse_q8 <= x->coeff_opt_dist_threshold);
+  skip_trellis |= !perform_block_coeff_opt;
 
   assert(IMPLIES(txk_allowed < TX_TYPES, allowed_tx_mask == 1 << txk_allowed));
 
   TxfmParam txfm_param;
   QUANT_PARAM quant_param;
   av1_setup_xform(cm, x, tx_size, DCT_DCT, &txfm_param);
-  av1_setup_quant(cm, tx_size, &quant_param);
+  av1_setup_quant(cm, tx_size, !skip_trellis,
+                  skip_trellis ? (USE_B_QUANT_NO_TRELLIS ? AV1_XFORM_QUANT_B
+                                                         : AV1_XFORM_QUANT_FP)
+                               : AV1_XFORM_QUANT_FP,
+                  &quant_param);
   int use_qm = !(xd->lossless[mbmi->segment_id] || cm->using_qmatrix == 0);
 
   for (int idx = 0; idx < TX_TYPES; ++idx) {
@@ -3477,17 +3483,11 @@ static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
     if (plane == 0) xd->tx_type_map[tx_type_map_idx] = tx_type;
     RD_STATS this_rd_stats;
     av1_invalid_rd_stats(&this_rd_stats);
-    if (skip_trellis || (!perform_block_coeff_opt)) {
-      av1_xform_quant(
-          x, plane, block, blk_row, blk_col, plane_bsize,
-          USE_B_QUANT_NO_TRELLIS ? AV1_XFORM_QUANT_B : AV1_XFORM_QUANT_FP,
-          &txfm_param, &quant_param);
-      rate_cost =
-          av1_cost_coeffs(x, plane, block, tx_size, tx_type, txb_ctx,
-                          use_fast_coef_costing, cm->reduced_tx_set_used);
-    } else {
-      av1_xform_quant(x, plane, block, blk_row, blk_col, plane_bsize,
-                      AV1_XFORM_QUANT_FP, &txfm_param, &quant_param);
+
+    av1_xform_quant(x, plane, block, blk_row, blk_col, plane_bsize, &txfm_param,
+                    &quant_param);
+
+    if (quant_param.use_optimize_b) {
       if (cpi->sf.optimize_b_precheck && best_rd < INT64_MAX &&
           eobs_ptr[block] >= 4) {
         // Calculate distortion quickly in transform domain.
@@ -3501,7 +3501,12 @@ static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
       }
       av1_optimize_b(cpi, x, plane, block, tx_size, tx_type, txb_ctx,
                      cpi->sf.trellis_eob_fast, &rate_cost);
+    } else {
+      rate_cost =
+          av1_cost_coeffs(x, plane, block, tx_size, tx_type, txb_ctx,
+                          use_fast_coef_costing, cm->reduced_tx_set_used);
     }
+
     // If rd cost based on coeff rate is more than best_rd, skip the calculation
     // of distortion
     int64_t tmp_rd = RDCOST(x->rdmult, rate_cost, 0);
@@ -3660,18 +3665,17 @@ RECON_INTRA:
       TxfmParam txfm_param_intra;
       QUANT_PARAM quant_param_intra;
       av1_setup_xform(cm, x, tx_size, best_tx_type, &txfm_param_intra);
-      av1_setup_quant(cm, tx_size, &quant_param_intra);
+      av1_setup_quant(cm, tx_size, !skip_trellis,
+                      skip_trellis
+                          ? (USE_B_QUANT_NO_TRELLIS ? AV1_XFORM_QUANT_B
+                                                    : AV1_XFORM_QUANT_FP)
+                          : AV1_XFORM_QUANT_FP,
+                      &quant_param_intra);
       av1_setup_qmatrix(cm, x, plane, tx_size, best_tx_type,
                         &quant_param_intra);
-      if (skip_trellis || (!perform_block_coeff_opt)) {
-        av1_xform_quant(
-            x, plane, block, blk_row, blk_col, plane_bsize,
-            USE_B_QUANT_NO_TRELLIS ? AV1_XFORM_QUANT_B : AV1_XFORM_QUANT_FP,
-            &txfm_param_intra, &quant_param_intra);
-      } else {
-        av1_xform_quant(x, plane, block, blk_row, blk_col, plane_bsize,
-                        AV1_XFORM_QUANT_FP, &txfm_param_intra,
-                        &quant_param_intra);
+      av1_xform_quant(x, plane, block, blk_row, blk_col, plane_bsize,
+                      &txfm_param_intra, &quant_param_intra);
+      if (quant_param_intra.use_optimize_b) {
         av1_optimize_b(cpi, x, plane, block, tx_size, best_tx_type, txb_ctx,
                        cpi->sf.trellis_eob_fast, &rate_cost);
       }

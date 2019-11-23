@@ -61,14 +61,13 @@ void av1_encode_sby_pass1(AV1_COMMON *cm, MACROBLOCK *x, BLOCK_SIZE bsize);
 
 void av1_setup_xform(const AV1_COMMON *cm, MACROBLOCK *x, TX_SIZE tx_size,
                      TX_TYPE tx_type, TxfmParam *txfm_param);
-void av1_setup_quant(const AV1_COMMON *cm, TX_SIZE tx_size,
-                     QUANT_PARAM *qparam);
+void av1_setup_quant(const AV1_COMMON *cm, TX_SIZE tx_size, int use_optimize_b,
+                     int xform_quant_idx, QUANT_PARAM *qparam);
 void av1_setup_qmatrix(const AV1_COMMON *cm, MACROBLOCK *x, int plane,
                        TX_SIZE tx_size, TX_TYPE tx_type, QUANT_PARAM *qparam);
 
 void av1_xform_quant(MACROBLOCK *x, int plane, int block, int blk_row,
-                     int blk_col, BLOCK_SIZE plane_bsize,
-                     AV1_XFORM_QUANT xform_quant_idx, TxfmParam *txfm_param,
+                     int blk_col, BLOCK_SIZE plane_bsize, TxfmParam *txfm_param,
                      QUANT_PARAM *qparam);
 
 int av1_optimize_b(const struct AV1_COMP *cpi, MACROBLOCK *mb, int plane,
