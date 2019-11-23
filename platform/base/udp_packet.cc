@@ -4,7 +4,7 @@
 
 #include "platform/base/udp_packet.h"
 
-#include "util/logging.h"
+#include <cassert>
 
 namespace openscreen {
 namespace platform {
@@ -12,19 +12,19 @@ namespace platform {
 UdpPacket::UdpPacket() : std::vector<uint8_t>() {}
 
 UdpPacket::UdpPacket(size_type size) : std::vector<uint8_t>(size) {
-  OSP_DCHECK_LE(size, kUdpMaxPacketSize);
+  assert(size <= kUdpMaxPacketSize);
 }
 
 UdpPacket::UdpPacket(size_type size, uint8_t fill_value)
     : std::vector<uint8_t>(size, fill_value) {
-  OSP_DCHECK_LE(size, kUdpMaxPacketSize);
+  assert(size <= kUdpMaxPacketSize);
 }
 
 UdpPacket::UdpPacket(UdpPacket&& other) = default;
 
 UdpPacket::UdpPacket(std::initializer_list<uint8_t> init)
     : std::vector<uint8_t>(init) {
-  OSP_DCHECK_LE(size(), kUdpMaxPacketSize);
+  assert(size() <= kUdpMaxPacketSize);
 }
 
 UdpPacket::~UdpPacket() = default;

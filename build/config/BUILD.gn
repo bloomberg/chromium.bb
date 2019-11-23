@@ -118,6 +118,10 @@ config("openscreen_code") {
   defines = []
   if (dcheck_always_on) {
     defines += [ "DCHECK_ALWAYS_ON" ]
+  } else if (!is_debug) {
+    # C-style assertions in the standard library should match the behavior of
+    # OSP_DCHECKs. Thus, turn them off whenever OSP_DCHECKs would be turned off.
+    defines += [ "NDEBUG" ]
   }
 }
 

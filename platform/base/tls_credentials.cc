@@ -17,7 +17,6 @@
 #include "absl/strings/str_cat.h"
 #include "util/crypto/openssl_util.h"
 #include "util/crypto/sha2.h"
-#include "util/logging.h"
 
 namespace openscreen {
 namespace platform {

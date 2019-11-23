@@ -4,7 +4,7 @@
 
 #include "platform/base/trace_logging_activation.h"
 
-#include "util/logging.h"
+#include <cassert>
 
 namespace openscreen {
 namespace platform {
@@ -20,7 +20,7 @@ TraceLoggingPlatform* GetTracingDestination() {
 void StartTracing(TraceLoggingPlatform* destination) {
   // TODO(crbug.com/openscreen/85): Need to revisit this to ensure thread-safety
   // around the sequencing of starting and stopping tracing.
-  OSP_DCHECK(!g_current_destination);
+  assert(!g_current_destination);
   g_current_destination = destination;
 }
 

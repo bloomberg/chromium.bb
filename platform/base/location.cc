@@ -6,7 +6,6 @@
 
 #include "absl/strings/str_cat.h"
 #include "platform/base/macros.h"
-#include "util/logging.h"
 
 namespace openscreen {
 

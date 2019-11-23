@@ -5,11 +5,11 @@
 #ifndef PLATFORM_BASE_SERIAL_DELETE_PTR_H_
 #define PLATFORM_BASE_SERIAL_DELETE_PTR_H_
 
+#include <cassert>
 #include <memory>
 #include <utility>
 
 #include "platform/api/task_runner.h"
-#include "util/logging.h"
 
 namespace openscreen {
 
@@ -18,13 +18,13 @@ class SerialDelete {
  public:
   explicit SerialDelete(platform::TaskRunner* task_runner)
       : task_runner_(task_runner), deleter_() {
-    OSP_DCHECK(task_runner);
+    assert(task_runner);
   }
 
   template <typename DT>
   SerialDelete(platform::TaskRunner* task_runner, DT&& deleter)
       : task_runner_(task_runner), deleter_(std::forward<DT>(deleter)) {
-    OSP_DCHECK(task_runner);
+    assert(task_runner);
   }
 
   void operator()(Type* pointer) const {
@@ -45,21 +45,21 @@ class SerialDeletePtr
       : std::unique_ptr<Type, SerialDelete<Type, DeleterType>>(
             nullptr,
             SerialDelete<Type, DeleterType>(task_runner)) {
-    OSP_DCHECK(task_runner);
+    assert(task_runner);
   }
 
   SerialDeletePtr(platform::TaskRunner* task_runner, std::nullptr_t) noexcept
       : std::unique_ptr<Type, SerialDelete<Type, DeleterType>>(
             nullptr,
             SerialDelete<Type, DeleterType>(task_runner)) {
-    OSP_DCHECK(task_runner);
+    assert(task_runner);
   }
 
   SerialDeletePtr(platform::TaskRunner* task_runner, Type* pointer) noexcept
       : std::unique_ptr<Type, SerialDelete<Type, DeleterType>>(
             pointer,
             SerialDelete<Type, DeleterType>(task_runner)) {
-    OSP_DCHECK(task_runner);
+    assert(task_runner);
   }
 
   SerialDeletePtr(
@@ -71,7 +71,7 @@ class SerialDeletePtr
       : std::unique_ptr<Type, SerialDelete<Type, DeleterType>>(
             pointer,
             SerialDelete<Type, DeleterType>(task_runner, deleter)) {
-    OSP_DCHECK(task_runner);
+    assert(task_runner);
   }
 
   SerialDeletePtr(
@@ -81,7 +81,7 @@ class SerialDeletePtr
       : std::unique_ptr<Type, SerialDelete<Type, DeleterType>>(
             pointer,
             SerialDelete<Type, DeleterType>(task_runner, std::move(deleter))) {
-    OSP_DCHECK(task_runner);
+    assert(task_runner);
   }
 };
 
