@@ -4,8 +4,7 @@
 
 #include "chrome/browser/optimization_guide/prediction/prediction_manager.h"
 
-#include <memory>
-#include <vector>
+#include <utility>
 
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
@@ -175,9 +174,7 @@ void PredictionManager::RegisterOptimizationTargets(
   if (new_optimization_targets.size() == 0)
     return;
 
-  // Start loading the host model features if they are not already. Models
-  // cannot be loaded from the store until the host model features have loaded
-  // from the store as they are required to construct each prediction model.
+  // Start loading the host model features if they are not already.
   if (!host_model_features_loaded_) {
     LoadHostModelFeatures();
     return;
@@ -464,15 +461,13 @@ void PredictionManager::UpdateHostModelFeatures(
   SEQUENCE_CHECKER(sequence_checker_);
   for (const auto& host_model_features : host_model_features)
     ProcessAndStoreHostModelFeatures(host_model_features);
-  UpdateSupportedHostModelFeatures();
 }
 
 std::unique_ptr<PredictionModel> PredictionManager::CreatePredictionModel(
-    const proto::PredictionModel& model,
-    const base::flat_set<std::string>& host_model_features) const {
+    const proto::PredictionModel& model) const {
   SEQUENCE_CHECKER(sequence_checker_);
   return PredictionModel::Create(
-      std::make_unique<proto::PredictionModel>(model), host_model_features);
+      std::make_unique<proto::PredictionModel>(model));
 }
 
 void PredictionManager::UpdatePredictionModels(
@@ -494,10 +489,9 @@ void PredictionManager::OnStoreInitialized() {
     return;
 
   // The store is ready so start loading host model features and the models for
-  // the registered optimization targets. The host model features must be loaded
-  // first because prediction models require them to be constructed. Once the
-  // host model features are loaded, prediction models for the registered
-  // optimization targets will be loaded.
+  // the registered optimization targets.  Once the host model features are
+  // loaded, prediction models for the registered optimization targets will be
+  // loaded.
   LoadHostModelFeatures();
 
   MaybeScheduleModelAndHostModelFeaturesFetch();
@@ -524,7 +518,6 @@ void PredictionManager::OnLoadHostModelFeatures(
   if (all_host_model_features) {
     for (const auto& host_model_features : *all_host_model_features)
       ProcessAndStoreHostModelFeatures(host_model_features);
-    UpdateSupportedHostModelFeatures();
   }
   UMA_HISTOGRAM_COUNTS_1000(
       "OptimizationGuide.PredictionManager.HostModelFeaturesMapSize",
@@ -533,28 +526,6 @@ void PredictionManager::OnLoadHostModelFeatures(
   // Load the prediction models for all the registered optimization targets now
   // that it is not blocked by loading the host model features.
   LoadPredictionModels(registered_optimization_targets_);
-}
-
-void PredictionManager::UpdateSupportedHostModelFeatures() {
-  SEQUENCE_CHECKER(sequence_checker_);
-  if (host_model_features_map_.size() > 0) {
-    // Clear the current supported host model features if they exist.
-    if (supported_host_model_features_.size() != 0)
-      supported_host_model_features_.clear();
-    // TODO(crbug/1027224): Add support to collect the set of all features, not
-    // just for the first host in the map. This is needed when additional models
-    // are supported.
-    base::flat_map<std::string, float> host_model_features =
-        host_model_features_map_.begin()->second;
-    supported_host_model_features_.reserve(host_model_features.size());
-    for (const auto& model_feature : host_model_features)
-      supported_host_model_features_.insert(model_feature.first);
-  }
-}
-
-base::flat_set<std::string>
-PredictionManager::GetSupportedHostModelFeaturesForTesting() const {
-  return supported_host_model_features_;
 }
 
 void PredictionManager::LoadPredictionModels(
@@ -597,7 +568,7 @@ void PredictionManager::ProcessAndStorePredictionModel(
   }
 
   std::unique_ptr<PredictionModel> prediction_model =
-      CreatePredictionModel(model, supported_host_model_features_);
+      CreatePredictionModel(model);
   if (!prediction_model)
     return;
 

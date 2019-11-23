@@ -4,7 +4,10 @@
 
 #include "chrome/browser/optimization_guide/prediction/prediction_manager.h"
 
+#include <map>
 #include <memory>
+#include <string>
+#include <utility>
 
 #include "base/strings/string_number_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -94,9 +97,9 @@ std::unique_ptr<proto::GetModelsResponse> BuildGetModelsResponse(
 
 class TestPredictionModel : public PredictionModel {
  public:
-  TestPredictionModel(std::unique_ptr<proto::PredictionModel> prediction_model,
-                      const base::flat_set<std::string>& host_model_features)
-      : PredictionModel(std::move(prediction_model), host_model_features) {}
+  explicit TestPredictionModel(
+      std::unique_ptr<proto::PredictionModel> prediction_model)
+      : PredictionModel(std::move(prediction_model)) {}
   ~TestPredictionModel() override = default;
 
   optimization_guide::OptimizationTargetDecision Predict(
@@ -293,18 +296,15 @@ class TestPredictionManager : public PredictionManager {
   ~TestPredictionManager() override = default;
 
   std::unique_ptr<PredictionModel> CreatePredictionModel(
-      const proto::PredictionModel& model,
-      const base::flat_set<std::string>& host_model_features) const override {
+      const proto::PredictionModel& model) const override {
     std::unique_ptr<PredictionModel> prediction_model =
         std::make_unique<TestPredictionModel>(
-            std::make_unique<proto::PredictionModel>(model),
-            host_model_features);
+            std::make_unique<proto::PredictionModel>(model));
     return prediction_model;
   }
 
   using PredictionManager::GetHostModelFeaturesForTesting;
   using PredictionManager::GetPredictionModelForTesting;
-  using PredictionManager::GetSupportedHostModelFeaturesForTesting;
 
   std::unique_ptr<OptimizationGuideStore>
   CreateModelAndHostModelFeaturesStore() {
@@ -1212,22 +1212,6 @@ TEST_F(PredictionManagerTest,
       "foo.com"));
 
   EXPECT_FALSE(prediction_model_fetcher()->models_fetched());
-}
-
-TEST_F(PredictionManagerTest, SupportedHostModelFeaturesUpdated) {
-  CreatePredictionManager(
-      {optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD});
-  prediction_manager()->SetPredictionModelFetcherForTesting(
-      BuildTestPredictionModelFetcher(
-          PredictionModelFetcherEndState::kFetchFailed));
-  SetStoreInitialized();
-
-  EXPECT_TRUE(models_and_features_store()->WasHostModelFeaturesLoaded());
-  EXPECT_TRUE(prediction_manager()->GetHostModelFeaturesForTesting().contains(
-      "foo.com"));
-  EXPECT_TRUE(
-      prediction_manager()->GetSupportedHostModelFeaturesForTesting().contains(
-          "host_feat1"));
 }
 
 TEST_F(PredictionManagerTest, ModelFetcherTimerRetryDelay) {

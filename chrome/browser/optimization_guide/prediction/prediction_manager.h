@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_OPTIMIZATION_GUIDE_PREDICTION_PREDICTION_MANAGER_H_
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/containers/flat_map.h"
@@ -137,8 +138,7 @@ class PredictionManager
 
   // Create a PredictionModel, virtual for testing.
   virtual std::unique_ptr<PredictionModel> CreatePredictionModel(
-      const proto::PredictionModel& model,
-      const base::flat_set<std::string>& host_model_features) const;
+      const proto::PredictionModel& model) const;
 
   // Process |host_model_features| to be stored in |host_model_features_map|.
   void UpdateHostModelFeatures(
@@ -227,11 +227,6 @@ class PredictionManager
   void ProcessAndStoreHostModelFeatures(
       const proto::HostModelFeatures& host_model_features);
 
-  // Capture the set of feature names that each host in
-  // |host_model_features_map_| has and store them in
-  // |supported_host_model_features_|
-  void UpdateSupportedHostModelFeatures();
-
   // Return the time when a prediction model and host model features fetch was
   // last attempted.
   base::Time GetLastFetchAttemptTime() const;
@@ -264,10 +259,6 @@ class PredictionManager
   // restricted.
   base::flat_map<std::string, base::flat_map<std::string, float>>
       host_model_features_map_;
-
-  // The set of features available across every host in
-  // |host_model_features_map_|.
-  base::flat_set<std::string> supported_host_model_features_;
 
   // The current session's FCP statistics for HTTP/HTTPS navigations.
   OptimizationGuideSessionStatistic session_fcp_;
