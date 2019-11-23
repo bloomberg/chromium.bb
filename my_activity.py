@@ -168,6 +168,7 @@ class MyActivity(object):
     self.referenced_issues = []
     self.google_code_auth_token = None
     self.access_errors = set()
+    self.skip_servers = (options.skip_servers.split(','))
 
   def show_progress(self, how='.'):
     if sys.stdout.isatty():
@@ -216,6 +217,8 @@ class MyActivity(object):
       return []
 
   def gerrit_search(self, instance, owner=None, reviewer=None):
+    if instance['url'] in self.skip_servers:
+      return []
     max_age = datetime.today() - self.modified_after
     filters = ['-age:%ss' % (max_age.days * 24 * 3600 + max_age.seconds)]
     if owner:
@@ -724,6 +727,11 @@ def main():
       help='Do not fetch issues referenced by owned changes. Useful in '
            'combination with --changes-by-issue when you only want to list '
            'issues that have also been modified in the same time period.')
+  parser.add_option(
+      '--skip_servers',
+      action='store',
+      default='',
+      help='A comma separated list of gerrit and rietveld servers to ignore')
   parser.add_option(
       '--skip-own-issues-without-changes',
       action='store_true',
