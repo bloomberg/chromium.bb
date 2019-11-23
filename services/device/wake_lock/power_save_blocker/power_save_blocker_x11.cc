@@ -92,13 +92,7 @@ class PowerSaveBlocker::Delegate
 
  private:
   friend class base::RefCountedThreadSafe<Delegate>;
-  ~Delegate() {}
-
-  // Selects an appropriate D-Bus API to use for this object. Must be called on
-  // the UI thread. Checks enqueue_apply_ once an API has been selected, and
-  // enqueues a call back to ApplyBlock() if it is true. See the comments for
-  // enqueue_apply_ below.
-  void InitOnUIThread();
+  ~Delegate() = default;
 
   // Returns true if ApplyBlock() / RemoveBlock() should be called.
   bool ShouldBlock() const;
@@ -108,11 +102,6 @@ class PowerSaveBlocker::Delegate
   // the action to complete (with a timeout); the thread must thus allow I/O.
   void ApplyBlock();
   void RemoveBlock();
-
-  // Asynchronous callback functions for ApplyBlock and RemoveBlock.
-  // Functions do not receive ownership of |response|.
-  void ApplyBlockFinished(dbus::Response* response);
-  void RemoveBlockFinished(dbus::Response* response);
 
   // Wrapper for XScreenSaverSuspend. Checks whether the X11 Screen Saver
   // Extension is available first. If it isn't, this is a no-op.
@@ -131,23 +120,8 @@ class PowerSaveBlocker::Delegate
   const std::string description_;
   const bool freedesktop_only_;
 
-  // Initially, we post a message to the UI thread to select an API. When it
-  // finishes, it will post a message to the FILE thread to perform the actual
-  // application of the block, unless enqueue_apply_ is false. We set it to
-  // false when we post that message, or when RemoveBlock() is called before
-  // ApplyBlock() has run. Both api_ and enqueue_apply_ are guarded by lock_.
+  // Indicates which DBus interface this object uses.
   DBusAPI api_;
-  bool enqueue_apply_;
-  base::Lock lock_;
-
-  // Indicates that a D-Bus power save blocking request is in flight.
-  bool block_inflight_;
-  // Used to detect erronous redundant calls to RemoveBlock().
-  bool unblock_inflight_;
-  // Indicates that RemoveBlock() is called before ApplyBlock() has finished.
-  // If it's true, then the RemoveBlock() call will be processed immediately
-  // after ApplyBlock() has finished.
-  bool enqueue_unblock_;
 
   scoped_refptr<dbus::Bus> bus_;
 
@@ -170,8 +144,7 @@ PowerSaveBlocker::Delegate::Delegate(
     : type_(type),
       description_(description),
       freedesktop_only_(freedesktop_only),
-      api_(NO_API),
-      enqueue_apply_(false),
+      api_(SelectAPI()),
       inhibit_cookie_(0),
       ui_task_runner_(ui_task_runner),
       blocking_task_runner_(blocking_task_runner) {
@@ -180,51 +153,27 @@ PowerSaveBlocker::Delegate::Delegate(
 }
 
 void PowerSaveBlocker::Delegate::Init() {
-  base::AutoLock lock(lock_);
-  DCHECK(!enqueue_apply_);
-  enqueue_apply_ = true;
-  block_inflight_ = false;
-  unblock_inflight_ = false;
-  enqueue_unblock_ = false;
-  ui_task_runner_->PostTask(FROM_HERE,
-                            base::BindOnce(&Delegate::InitOnUIThread, this));
+  if (ShouldBlock()) {
+    // The thread we use here becomes the origin and D-Bus thread for the
+    // D-Bus library, so we need to use the same thread above for
+    // RemoveBlock(). It must be a thread that allows I/O operations, so we
+    // use the FILE thread.
+    blocking_task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(&Delegate::ApplyBlock, this));
+  }
+
+  ui_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&Delegate::XSSSuspendSet, this, true));
 }
 
 void PowerSaveBlocker::Delegate::CleanUp() {
-  base::AutoLock lock(lock_);
-  if (enqueue_apply_) {
-    // If a call to ApplyBlock() has not yet been enqueued because we are still
-    // initializing on the UI thread, then just cancel it. We don't need to
-    // remove the block because we haven't even applied it yet.
-    enqueue_apply_ = false;
-  } else {
-    if (ShouldBlock()) {
-      blocking_task_runner_->PostTask(
-          FROM_HERE, base::BindOnce(&Delegate::RemoveBlock, this));
-    }
-
-    ui_task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(&Delegate::XSSSuspendSet, this, false));
+  if (ShouldBlock()) {
+    blocking_task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(&Delegate::RemoveBlock, this));
   }
-}
 
-void PowerSaveBlocker::Delegate::InitOnUIThread() {
-  DCHECK(ui_task_runner_->RunsTasksInCurrentSequence());
-  base::AutoLock lock(lock_);
-  api_ = SelectAPI();
-
-  if (enqueue_apply_) {
-    if (ShouldBlock()) {
-      // The thread we use here becomes the origin and D-Bus thread for the
-      // D-Bus library, so we need to use the same thread above for
-      // RemoveBlock(). It must be a thread that allows I/O operations, so we
-      // use the FILE thread.
-      blocking_task_runner_->PostTask(
-          FROM_HERE, base::BindOnce(&Delegate::ApplyBlock, this));
-    }
-    XSSSuspendSet(true);
-  }
-  enqueue_apply_ = false;
+  ui_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&Delegate::XSSSuspendSet, this, false));
 }
 
 bool PowerSaveBlocker::Delegate::ShouldBlock() const {
@@ -234,7 +183,6 @@ bool PowerSaveBlocker::Delegate::ShouldBlock() const {
 void PowerSaveBlocker::Delegate::ApplyBlock() {
   DCHECK(blocking_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(!bus_);  // ApplyBlock() should only be called once.
-  DCHECK(!block_inflight_);
 
   dbus::Bus::Options options;
   options.bus_type = dbus::Bus::SESSION;
@@ -307,50 +255,24 @@ void PowerSaveBlocker::Delegate::ApplyBlock() {
       break;
   }
 
-  block_inflight_ = true;
-  object_proxy->CallMethod(
-      method_call.get(), dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-      base::Bind(&PowerSaveBlocker::Delegate::ApplyBlockFinished, this));
-}
-
-void PowerSaveBlocker::Delegate::ApplyBlockFinished(dbus::Response* response) {
-  DCHECK(blocking_task_runner_->RunsTasksInCurrentSequence());
-  DCHECK(bus_);
-  DCHECK(block_inflight_);
-  block_inflight_ = false;
+  std::unique_ptr<dbus::Response> response = object_proxy->CallMethodAndBlock(
+      method_call.get(), dbus::ObjectProxy::TIMEOUT_USE_DEFAULT);
 
   if (response) {
     // The method returns an inhibit_cookie, used to uniquely identify
     // this request. It should be used as an argument to Uninhibit()
     // in order to remove the request.
-    dbus::MessageReader message_reader(response);
+    dbus::MessageReader message_reader(response.get());
     if (!message_reader.PopUint32(&inhibit_cookie_))
       LOG(ERROR) << "Invalid Inhibit() response: " << response->ToString();
   } else {
     LOG(ERROR) << "No response to Inhibit() request!";
-  }
-
-  if (enqueue_unblock_) {
-    enqueue_unblock_ = false;
-    // RemoveBlock() was called while the Inhibit operation was in flight,
-    // so go ahead and remove the block now.
-    blocking_task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(&Delegate::RemoveBlock, this));
   }
 }
 
 void PowerSaveBlocker::Delegate::RemoveBlock() {
   DCHECK(blocking_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(bus_);  // RemoveBlock() should only be called once.
-  DCHECK(!unblock_inflight_);
-
-  if (block_inflight_) {
-    DCHECK(!enqueue_unblock_);
-    // Can't call RemoveBlock until ApplyBlock's async operation has
-    // finished. Enqueue it for execution once ApplyBlock is done.
-    enqueue_unblock_ = true;
-    return;
-  }
 
   scoped_refptr<dbus::ObjectProxy> object_proxy;
   std::unique_ptr<dbus::MethodCall> method_call;
@@ -388,16 +310,8 @@ void PowerSaveBlocker::Delegate::RemoveBlock() {
 
   dbus::MessageWriter message_writer(method_call.get());
   message_writer.AppendUint32(inhibit_cookie_);
-  unblock_inflight_ = true;
-  object_proxy->CallMethod(
-      method_call.get(), dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-      base::Bind(&PowerSaveBlocker::Delegate::RemoveBlockFinished, this));
-}
-
-void PowerSaveBlocker::Delegate::RemoveBlockFinished(dbus::Response* response) {
-  DCHECK(blocking_task_runner_->RunsTasksInCurrentSequence());
-  DCHECK(bus_);
-  unblock_inflight_ = false;
+  std::unique_ptr<dbus::Response> response = object_proxy->CallMethodAndBlock(
+      method_call.get(), dbus::ObjectProxy::TIMEOUT_USE_DEFAULT);
 
   if (!response)
     LOG(ERROR) << "No response to Uninhibit() request!";
@@ -439,7 +353,6 @@ bool PowerSaveBlocker::Delegate::XSSAvailable() {
 }
 
 DBusAPI PowerSaveBlocker::Delegate::SelectAPI() {
-  DCHECK(ui_task_runner_->RunsTasksInCurrentSequence());
   // Power saving APIs are not accessible in headless mode.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kHeadless))
     return NO_API;
