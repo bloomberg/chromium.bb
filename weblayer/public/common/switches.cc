@@ -2,13 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBLAYER_SHELL_COMMON_SHELL_SWITCHES_H_
-#define WEBLAYER_SHELL_COMMON_SHELL_SWITCHES_H_
+#include "weblayer/public/common/switches.h"
 
 namespace switches {
 
-extern const char kNoInitialNavigation[];
+// Makes WebLayer Shell use the given path for its data directory.
+const char kWebLayerUserDataDir[] = "weblayer-user-data-dir";
 
 }  // namespace switches
-
-#endif  // WEBLAYER_SHELL_COMMON_SHELL_SWITCHES_H_
