@@ -40,6 +40,8 @@ source_set("platform") {
     "base/trace_logging_activation.cc",
     "base/trace_logging_activation.h",
     "base/trace_logging_types.h",
+    "base/trivial_clock_traits.cc",
+    "base/trivial_clock_traits.h",
     "base/udp_packet.cc",
     "base/udp_packet.h",
   ]
