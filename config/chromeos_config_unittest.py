@@ -268,8 +268,6 @@ class UnifiedBuildConfigTestCase(object):
         self._site_config, self._fake_ge_build_config)
     chromeos_config.ReleaseBuilders(
         self._site_config, self._boards_dict, self._fake_ge_build_config)
-    chromeos_config.CqBuilders(
-        self._site_config, self._boards_dict, self._fake_ge_build_config)
 
 
 class UnifiedBuildReleaseBuilders(
@@ -290,24 +288,6 @@ class UnifiedBuildReleaseBuilders(
 
     master_release = self._site_config['master-release']
     self.assertIn('coral-release', master_release['slave_configs'])
-
-
-class UnifiedBuildCqBuilders(
-    cros_test_lib.OutputTestCase, UnifiedBuildConfigTestCase):
-  """Tests that verify how unified builder CQ configs are generated"""
-
-  def setUp(self):
-    UnifiedBuildConfigTestCase.setUp(self)
-
-  def testUnifiedCqBuilders(self):
-    coral_paladin = self._site_config['coral-paladin']
-    self.assertIsNotNone(coral_paladin)
-    models = coral_paladin['models']
-    self.assertEqual(len(models), 1)
-    self.assertIn(config_lib.ModelTestConfig('robo', 'robo'), models)
-
-    master_paladin = self._site_config['master-paladin']
-    self.assertIn('coral-paladin', master_paladin['slave_configs'])
 
 
 class ConfigClassTest(ChromeosConfigTestBase):
@@ -781,30 +761,6 @@ class CBuildBotTest(ChromeosConfigTestBase):
   #   have_vm_tests = any([self.site_config[name].vm_tests
   #                        for name in pre_cq_configs])
   #   self.assertTrue(have_vm_tests, 'No Pre-CQ builder has VM tests enabled')
-
-  def testPfqsHavePaladins(self):
-    """Make sure that every active PFQ has an associated Paladin.
-
-    This checks that every configured active PFQ on the external or internal
-    main waterfall has an associated active Paladin config.
-    """
-    # Get a list of all active Paladins boards.
-    paladin_boards = set()
-    for slave_config in self._getSlaveConfigsForMaster('master-paladin'):
-      paladin_boards.update(slave_config.boards)
-
-    for pfq_master in (constants.NYC_ANDROID_PFQ_MASTER,):
-      pfq_configs = self._getSlaveConfigsForMaster(pfq_master)
-
-      failures = set()
-      for config in pfq_configs:
-        self.assertEqual(len(config.boards), 1)
-        if config.boards[0] not in paladin_boards:
-          failures.add(config.name)
-
-      if failures:
-        self.fail("Some active PFQ configs don't have active Paladins: %s" % (
-            ', '.join(sorted(failures))))
 
   def testGetSlavesOnTrybot(self):
     """Make sure every master has a sane list of slaves"""

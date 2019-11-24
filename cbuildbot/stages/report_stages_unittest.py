@@ -158,7 +158,7 @@ class BuildStartStageTest(generic_stages_unittest.AbstractStageTestCase):
   def testSuiteSchedulingEqualsFalse(self):
     """Test that a run of the stage makes suite_scheduling False."""
     # Test suite_scheduling for **-paladin
-    self._Prepare(bot_id='amd64-generic-paladin')
+    self._Prepare(bot_id='amd64-generic-full')
     self.RunStage()
     self.assertFalse(self._run.attrs.metadata.GetValue('suite_scheduling'))
 
@@ -417,21 +417,6 @@ class ReportStageTest(AbstractReportStageTestCase):
     stage = self.ConstructStage()
     stage.PerformStage()
     self.assertEqual(mock_sd.call_count, 1)
-
-
-class ReportStageForMasterCQTest(AbstractReportStageTestCase):
-  """Test the Report stage for master-paladin."""
-
-  RELEASE_TAG = ''
-  BOT_ID = 'master-paladin'
-
-  def testPerformStage(self):
-    """Test PerformStage."""
-    mock_sd = self.PatchObject(metrics, 'CumulativeSecondsDistribution')
-    self.PatchObject(report_stages.ReportStage, 'ArchiveResults')
-    stage = self.ConstructStage()
-    stage.PerformStage()
-    self.assertEqual(mock_sd.call_count, 2)
 
 
 class ReportStageNoSyncTest(AbstractReportStageTestCase):

@@ -202,7 +202,7 @@ class TryjobTestParsing(TryjobTest):
         '--debug-cidb',
         '--pass-through=--cbuild-arg', '--pass-through', 'bar',
         '--list',
-        'eve-paladin', 'eve-release',
+        'eve-full', 'eve-release',
     ])
     options = self.cmd_mock.inst.options
 
@@ -223,7 +223,7 @@ class TryjobTestParsing(TryjobTest):
             '--debug-cidb',
         ],
         'passthrough_raw': ['--cbuild-arg', 'bar'],
-        'build_configs': ['eve-paladin', 'eve-release'],
+        'build_configs': ['eve-full', 'eve-release'],
     })
 
     self.assertDictContainsSubset(self.expected, vars(options))
@@ -387,7 +387,7 @@ class TryjobTestVerifyOptions(TryjobTest):
     """Test option verification with simplest normal options."""
     self.SetupCommandMock([
         '--cbuildbot',
-        'amd64-generic-paladin',
+        'amd64-generic-full',
     ])
     cros_tryjob.VerifyOptions(self.cmd_mock.inst.options, self.site_config)
 
@@ -420,7 +420,7 @@ class TryjobTestVerifyOptions(TryjobTest):
         '--committer-email', 'foo@bar',
         '--version', '1.2.3', '--channel', 'chan',
         '--pass-through=--cbuild-arg', '--pass-through=bar',
-        'eve-paladin', 'eve-release',
+        'eve-full', 'eve-release',
     ])
     cros_tryjob.VerifyOptions(self.cmd_mock.inst.options, self.site_config)
 
@@ -718,7 +718,7 @@ class TryjobTestCbuildbotArgs(TryjobTest):
         '--branch', 'source_branch',
         '--version', '1.2.3', '--channel', 'chan',
         '--pass-through=--cbuild-arg', '--pass-through=bar',
-        'eve-paladin', 'eve-release',
+        'eve-full', 'eve-release',
     ]
 
     args_out = self.helperOptionsToCbuildbotArgs(args_in)
@@ -774,7 +774,7 @@ class TryjobTestDisplayLabel(TryjobTest):
     return cros_tryjob.DisplayLabel(site_config, options, config_name)
 
   def testMasterTryjob(self):
-    label = self.FindLabel(['eve-paladin-tryjob'])
+    label = self.FindLabel(['eve-full-tryjob'])
     self.assertEqual(label, 'tryjob')
 
   def testMasterUnknown(self):
@@ -782,7 +782,7 @@ class TryjobTestDisplayLabel(TryjobTest):
     self.assertEqual(label, 'tryjob')
 
   def testMasterKnownProduction(self):
-    label = self.FindLabel(['--production', 'eve-paladin'])
+    label = self.FindLabel(['--production', 'eve-full'])
     self.assertEqual(label, 'production_tryjob')
 
   def testMasterUnknownProduction(self):

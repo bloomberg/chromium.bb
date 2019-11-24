@@ -152,23 +152,6 @@ class HWTestList(object):
         config_lib.HWTestConfig(constants.HWTEST_ARC_COMMIT_SUITE,
                                 **kwargs)]
 
-  def DefaultListCQ(self, **kwargs):
-    """Return a default list of HWTestConfigs for a CQ build.
-
-    Optional arguments may be overridden in `kwargs`, except that
-    the `blocking` setting cannot be provided.
-    """
-    default_dict = dict(pool=constants.HWTEST_QUOTA_POOL,
-                        timeout=config_lib.HWTestConfig.PALADIN_HW_TEST_TIMEOUT,
-                        file_bugs=False, quota_account='cq',
-                        minimum_duts=4)
-    # Allows kwargs overrides to default_dict for cq.
-    default_dict.update(kwargs)
-    suite_list = self.DefaultListNonCanary(**default_dict)
-    suite_list.append(self.TastConfig(constants.HWTEST_TAST_CQ_SUITE,
-                                      **default_dict))
-    return suite_list
-
   def DefaultListChromePFQInformational(self, **kwargs):
     """Return a default list of HWTestConfigs for an inform. Chrome PFQ build.
 
@@ -227,27 +210,6 @@ class HWTestList(object):
     suite_list = [config_lib.HWTestConfig(constants.HWTEST_SANITY_SUITE,
                                           **sanity_dict)]
     suite_list.extend(self.DefaultListPFQ(**default_dict))
-    return suite_list
-
-  def SharedPoolCQ(self, **kwargs):
-    """Return a list of HWTestConfigs for CQ which uses a shared pool.
-
-    The returned suites will run in pool:critical by default, which is
-    shared with other types of builder (canaries, pfq). The first suite in the
-    list is a blocking sanity suite that verifies the build will not break dut.
-    """
-    sanity_dict = dict(pool=constants.HWTEST_MACH_POOL,
-                       timeout=config_lib.HWTestConfig.SHARED_HW_TEST_TIMEOUT,
-                       file_bugs=False, priority=constants.HWTEST_CQ_PRIORITY)
-    sanity_dict.update(kwargs)
-    sanity_dict.update(dict(minimum_duts=1, suite_min_duts=1,
-                            blocking=True))
-    default_dict = dict(pool=constants.HWTEST_MACH_POOL,
-                        suite_min_duts=10)
-    default_dict.update(kwargs)
-    suite_list = [config_lib.HWTestConfig(constants.HWTEST_SANITY_SUITE,
-                                          **sanity_dict)]
-    suite_list.extend(self.DefaultListCQ(**default_dict))
     return suite_list
 
   def SharedPoolCanary(self, **kwargs):
@@ -477,16 +439,6 @@ def ApplyCustomOverrides(site_config):
           'vm_tests':[],
       },
 
-      'moblab-generic-vm-paladin': config_lib.BuildConfig().apply(
-          site_config.templates.moblab_vm_tests,
-          site_config.templates.tast_vm_paladin_tests,
-      ),
-
-      'amd64-generic-paladin': site_config.templates.tast_vm_paladin_tests,
-      'betty-arc64-paladin': site_config.templates.tast_vm_paladin_tests,
-      'betty-paladin': site_config.templates.tast_vm_paladin_tests,
-      'betty-pi-arc-paladin': site_config.templates.tast_vm_paladin_tests,
-
       'betty-arc64-nyc-android-pfq':
           site_config.templates.tast_vm_android_pfq_tests,
       'betty-nyc-android-pfq':
@@ -640,27 +592,6 @@ def GeneralTemplates(site_config, ge_build_config):
       site_config.templates.default_hw_tests_override,
   )
   # END Incremental
-
-  # BEGIN Paladin
-  paladin_hw_tests_override = (
-      hw_test_list.DefaultListNonCanary(pool=constants.HWTEST_TRYBOT_POOL,
-                                        file_bugs=False) +
-      [hw_test_list.TastConfig(constants.HWTEST_TAST_CQ_SUITE,
-                               pool=constants.HWTEST_TRYBOT_POOL,
-                               file_bugs=False)])
-
-  site_config.templates.paladin.apply(
-      hw_tests_override=paladin_hw_tests_override,
-  )
-
-  site_config.templates.internal_paladin.apply(
-      hw_tests_override=paladin_hw_tests_override,
-  )
-
-  site_config.templates.internal_nowithdebug_paladin.apply(
-      hw_tests_override=paladin_hw_tests_override,
-  )
-  # END Paladin
 
   # BEGIN Factory
   site_config.templates.factory.apply(

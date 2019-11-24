@@ -352,7 +352,7 @@ class BuildPackagesStageTest(AllConfigsTestCase,
 
   def testNoTests(self):
     """Test that self.options.tests = False works."""
-    self.RunTestsWithBotId('amd64-generic-paladin', options_tests=False)
+    self.RunTestsWithBotId('amd64-generic-full', options_tests=False)
 
   def testIgnoreExtractDependenciesError(self):
     """Ignore errors when failing to extract dependencies."""
@@ -360,7 +360,7 @@ class BuildPackagesStageTest(AllConfigsTestCase,
         commands,
         'ExtractDependencies',
         side_effect=Exception('unmet dependency'))
-    self.RunTestsWithBotId('amd64-generic-paladin')
+    self.RunTestsWithBotId('amd64-generic-full')
 
   def testFirmwareVersionsMixedImage(self):
     """Test that firmware versions are extracted correctly."""
@@ -381,7 +381,7 @@ class BuildPackagesStageTest(AllConfigsTestCase,
     osutils.Touch(update, makedirs=True)
 
     self._mock_configurator = _HookRunCommandFirmwareUpdate
-    self.RunTestsWithBotId('amd64-generic-paladin', options_tests=False)
+    self.RunTestsWithBotId('amd64-generic-full', options_tests=False)
     board_metadata = (
         self._run.attrs.metadata.GetDict()['board-metadata'].get(
             'amd64-generic'))
@@ -412,7 +412,7 @@ class BuildPackagesStageTest(AllConfigsTestCase,
     osutils.Touch(update, makedirs=True)
 
     self._mock_configurator = _HookRunCommandFirmwareUpdate
-    self.RunTestsWithBotId('amd64-generic-paladin', options_tests=False)
+    self.RunTestsWithBotId('amd64-generic-full', options_tests=False)
     board_metadata = (
         self._run.attrs.metadata.GetDict()['board-metadata'].get(
             'amd64-generic'))
@@ -467,7 +467,7 @@ EC (RW) version: reef_v1.1.5909-bd1f0c9
     osutils.Touch(cros_config_host, makedirs=True)
 
     self._mock_configurator = _HookRunCommand
-    self.RunTestsWithBotId('amd64-generic-paladin', options_tests=False)
+    self.RunTestsWithBotId('amd64-generic-full', options_tests=False)
     board_metadata = (
         self._run.attrs.metadata.GetDict()['board-metadata'].get(
             'amd64-generic'))
@@ -502,13 +502,13 @@ EC (RW) version: reef_v1.1.5909-bd1f0c9
                                     'chroot/usr/bin/cros_config_host')
     osutils.Touch(cros_config_host, makedirs=True)
     self._mock_configurator = _HookRunCommandCrosConfigHost
-    self.RunTestsWithBotId('amd64-generic-paladin', options_tests=False)
+    self.RunTestsWithBotId('amd64-generic-full', options_tests=False)
     self.assertTrue(self._run.attrs.metadata.GetDict()['unibuild'])
 
   def testGoma(self):
     self.PatchObject(
         build_stages.BuildPackagesStage, '_ShouldEnableGoma', return_value=True)
-    self._Prepare('amd64-generic-paladin')
+    self._Prepare('amd64-generic-full')
     # Set dummy dir name to enable goma.
     with osutils.TempDir() as goma_dir, \
          tempfile.NamedTemporaryFile() as temp_goma_client_json:
@@ -532,7 +532,7 @@ EC (RW) version: reef_v1.1.5909-bd1f0c9
   def testGomaWithMissingCertFile(self):
     self.PatchObject(
         build_stages.BuildPackagesStage, '_ShouldEnableGoma', return_value=True)
-    self._Prepare('amd64-generic-paladin')
+    self._Prepare('amd64-generic-full')
     # Set dummy dir name to enable goma.
     with osutils.TempDir() as goma_dir:
       self._run.options.goma_dir = goma_dir
@@ -547,7 +547,7 @@ EC (RW) version: reef_v1.1.5909-bd1f0c9
     self.PatchObject(
         build_stages.BuildPackagesStage, '_ShouldEnableGoma', return_value=True)
     self.PatchObject(cros_build_lib, 'HostIsCIBuilder', return_value=True)
-    self._Prepare('amd64-generic-paladin')
+    self._Prepare('amd64-generic-full')
     # Set dummy dir name to enable goma.
     with osutils.TempDir() as goma_dir:
       self._run.options.goma_dir = goma_dir
@@ -616,7 +616,7 @@ class BuildImageStageTest(BuildPackagesStageTest):
 class CleanUpStageTest(generic_stages_unittest.StageTestCase):
   """Test CleanUpStage."""
 
-  BOT_ID = 'master-paladin'
+  BOT_ID = 'amd64-generic-incremental'
 
   def setUp(self):
     self.PatchObject(buildbucket_lib, 'GetServiceAccount', return_value=True)
@@ -856,7 +856,7 @@ class CleanUpStageTest(generic_stages_unittest.StageTestCase):
 
 class CleanUpStageCancelSlaveBuilds(generic_stages_unittest.StageTestCase):
   """Test CleanUpStage.CancelObsoleteSlaveBuilds."""
-  BOT_ID = 'master-paladin'
+  BOT_ID = 'master-full'
 
   def setUp(self):
     self.PatchObject(buildbucket_lib, 'GetServiceAccount', return_value=True)

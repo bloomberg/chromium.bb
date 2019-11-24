@@ -232,7 +232,7 @@ class MockPatch(mock.MagicMock):
 class SyncStageTest(generic_stages_unittest.AbstractStageTestCase):
   """Tests the SyncStage."""
 
-  BOT_ID = 'master-paladin'
+  BOT_ID = 'amd64-generic-full'
 
   def setUp(self):
     self.PatchObject(

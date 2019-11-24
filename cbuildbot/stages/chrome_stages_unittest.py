@@ -32,7 +32,7 @@ class SimpleChromeArtifactsStage(cbuildbot_unittest.SimpleBuilderTestCase,
                                  generic_stages_unittest.AbstractStageTestCase,
                                  cros_test_lib.LoggingTestCase):
   """Verify stage that creates the chrome-sdk and builds chrome with it."""
-  BOT_ID = 'grunt-paladin'
+  BOT_ID = 'grunt-full'
   RELEASE_TAG = ''
 
   # pylint: disable=protected-access

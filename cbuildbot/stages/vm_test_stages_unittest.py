@@ -233,7 +233,7 @@ class MoblabVMTestStageTestCase(
 ):
   """Does what it says above."""
 
-  BOT_ID = 'moblab-generic-vm-paladin'
+  BOT_ID = 'moblab-generic-vm-full'
   RELEASE_TAG = ''
 
   def setUp(self):
