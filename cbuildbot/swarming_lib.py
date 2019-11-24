@@ -98,7 +98,7 @@ def RunSwarmingCommand(cmd, swarming_server, is_skylab=False,
       swarming_cmd += ['--expiration', str(expiration_secs)]
 
     if tags is not None:
-      for k, v in tags.items():
+      for k, v in sorted(tags.items()):
         swarming_cmd += ['--tags=%s:%s' % (k, v)]
 
     if service_account_json:
