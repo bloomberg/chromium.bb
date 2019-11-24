@@ -415,6 +415,9 @@ static void set_good_speed_features_framesize_independent(
                                                                          : 2;
     sf->tx_type_search.use_skip_flag_prediction =
         cm->allow_screen_content_tools ? 1 : 2;
+    // TODO(any): Experiment with binary search and extend for all frame types
+    // and speed = 1 and 2
+    sf->prune_palette_search_level = frame_is_intra_only(&cpi->common) ? 0 : 1;
   }
 
   if (speed >= 4) {
@@ -473,6 +476,7 @@ static void set_good_speed_features_framesize_independent(
     sf->simple_motion_search_prune_agg = 2;
     sf->use_interp_filter = 2;
     sf->prune_ref_mv_idx_search = 1;
+    sf->prune_palette_search_level = 1;
   }
 
   if (speed >= 5) {
@@ -865,6 +869,7 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
   sf->force_tx_search_off = 0;
   sf->motion_mode_for_winner_cand = 0;
   sf->num_inter_modes_for_tx_search = INT_MAX;
+  sf->prune_palette_search_level = 0;
 
   for (i = 0; i < TX_SIZES; i++) {
     sf->intra_y_mode_mask[i] = INTRA_ALL;

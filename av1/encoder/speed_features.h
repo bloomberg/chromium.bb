@@ -864,6 +864,13 @@ typedef struct SPEED_FEATURES {
 
   // If set forces interpolation filter to EIGHTTAP_REGULAR
   int skip_interp_filter_search;
+
+  // prune palette search
+  // 0: No pruning
+  // 1: Perform 2 way palette search from max colors to min colors (and min
+  // colors to remaining colors) and terminate the search if current number of
+  // palette colors is not the winner.
+  int prune_palette_search_level;
 } SPEED_FEATURES;
 
 struct AV1_COMP;
