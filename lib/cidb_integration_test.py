@@ -18,6 +18,7 @@ from chromite.lib import build_requests
 from chromite.lib import constants
 from chromite.lib import metadata_lib
 from chromite.lib import cidb
+from chromite.lib import clactions
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import hwtest_results
@@ -427,7 +428,7 @@ class DataSeries0Test(CIDBIntegrationTest):
     self.assertEqual(total_actions, 1877)
 
     actions_for_change = db.GetActionsForChanges(
-        [metadata_lib.GerritChangeTuple(205535, False)])
+        [clactions.GerritChangeTuple(205535, False)])
 
     actions_for_build = db.GetActionsForBuild(511)
     self.assertEqual(len(actions_for_build), 22)
