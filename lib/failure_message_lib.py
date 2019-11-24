@@ -347,7 +347,7 @@ class FailureMessageManager(object):
         outer_failure.inner_failures.append(failure)
         del failure_message_dict[failure.failure_id]
 
-    return failure_message_dict.values()
+    return list(failure_message_dict.values())
 
   @classmethod
   def ConstructStageFailureMessages(cls, stage_failures):
