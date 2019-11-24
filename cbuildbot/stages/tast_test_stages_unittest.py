@@ -9,6 +9,7 @@ from __future__ import print_function
 
 import json
 import os
+import sys
 
 from chromite.cbuildbot import cbuildbot_unittest
 from chromite.cbuildbot import commands
@@ -304,10 +305,14 @@ class TastVMTestStageTest(generic_stages_unittest.AbstractStageTestCase,
     self._test_results_data = 'bogus'
 
     self.assertRaises(failures_lib.TestFailure, self.RunStage)
+    # Python versions change the error message.
+    if sys.version_info.major < 3:
+      msg = 'No JSON object could be decoded'
+    else:
+      msg = 'Expecting value: line 1 column 1 (char 0)'
     self._VerifyStageResult(failures_lib.TestFailure,
                             tast_test_stages.FAILURE_BAD_RESULTS %
-                            (self._GetResultsFilePath(),
-                             'No JSON object could be decoded'))
+                            (self._GetResultsFilePath(), msg))
 
   def testFailedArchive(self):
     """Tests that archive failures raise InfrastructureFailure."""
