@@ -7,7 +7,6 @@
 #include <functional>
 #include <memory>
 
-#include "absl/types/optional.h"
 #include "platform/api/task_runner.h"
 #include "platform/api/time.h"
 #include "util/logging.h"
@@ -19,15 +18,12 @@ QuicServer::QuicServer(
     MessageDemuxer* demuxer,
     std::unique_ptr<QuicConnectionFactory> connection_factory,
     ProtocolConnectionServer::Observer* observer,
+    platform::ClockNowFunctionPtr now_function,
     platform::TaskRunner* task_runner)
     : ProtocolConnectionServer(demuxer, observer),
       connection_endpoints_(config.connection_endpoints),
-      connection_factory_(std::move(connection_factory)) {
-  if (task_runner != nullptr) {
-    platform::RepeatingFunction::Post(task_runner,
-                                      std::bind(&QuicServer::Cleanup, this));
-  }
-}
+      connection_factory_(std::move(connection_factory)),
+      cleanup_alarm_(now_function, task_runner) {}
 
 QuicServer::~QuicServer() {
   CloseAllConnections();
@@ -38,6 +34,7 @@ bool QuicServer::Start() {
     return false;
   state_ = State::kRunning;
   connection_factory_->SetServerDelegate(this, connection_endpoints_);
+  Cleanup();  // Start periodic clean-ups.
   observer_->OnRunning();
   return true;
 }
@@ -48,6 +45,7 @@ bool QuicServer::Stop() {
   connection_factory_->SetServerDelegate(nullptr, {});
   CloseAllConnections();
   state_ = State::kStopped;
+  Cleanup();  // Final clean-up.
   observer_->OnStopped();
   return true;
 }
@@ -69,20 +67,23 @@ bool QuicServer::Resume() {
   return true;
 }
 
-absl::optional<platform::Clock::duration> QuicServer::Cleanup() {
+void QuicServer::Cleanup() {
   for (auto& entry : connections_)
     entry.second.delegate->DestroyClosedStreams();
 
-  for (auto& entry : delete_connections_)
-    connections_.erase(entry);
-
+  for (uint64_t endpoint_id : delete_connections_) {
+    auto it = connections_.find(endpoint_id);
+    if (it != connections_.end()) {
+      connections_.erase(it);
+    }
+  }
   delete_connections_.clear();
 
-  constexpr platform::Clock::duration kQuicCleanupFrequency =
+  constexpr platform::Clock::duration kQuicCleanupPeriod =
       std::chrono::milliseconds(500);
-  return state_ == State::kStopped
-             ? absl::optional<platform::Clock::duration>(absl::nullopt)
-             : absl::optional<platform::Clock::duration>(kQuicCleanupFrequency);
+  if (state_ != State::kStopped) {
+    cleanup_alarm_.ScheduleFromNow([this] { Cleanup(); }, kQuicCleanupPeriod);
+  }
 }
 
 std::unique_ptr<ProtocolConnection> QuicServer::CreateProtocolConnection(
@@ -138,8 +139,7 @@ void QuicServer::OnConnectionClosed(uint64_t endpoint_id,
   auto connection_entry = connections_.find(endpoint_id);
   if (connection_entry == connections_.end())
     return;
-
-  delete_connections_.emplace_back(connection_entry);
+  delete_connections_.push_back(endpoint_id);
 
   // TODO(crbug.com/openscreen/42): If we reset request IDs when a connection is
   // closed, we might end up re-using request IDs when a new connection is

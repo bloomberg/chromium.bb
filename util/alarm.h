@@ -52,6 +52,15 @@ class Alarm {
                      alarm_time);
   }
 
+  // Same as Schedule(), but invoke the functor at the given |delay| after right
+  // now.
+  template <typename Functor>
+  inline void ScheduleFromNow(Functor functor,
+                              platform::Clock::duration delay) {
+    ScheduleWithTask(platform::TaskRunner::Task(std::move(functor)),
+                     now_function_() + delay);
+  }
+
   // Cancels an already-scheduled task from running, or no-op.
   void Cancel();
 

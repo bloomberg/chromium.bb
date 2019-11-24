@@ -18,7 +18,9 @@
 #include "osp/impl/service_publisher_impl.h"
 #include "platform/api/network_interface.h"
 #include "platform/api/task_runner.h"
+#include "platform/api/time.h"
 #include "platform/base/ip_address.h"
+#include "util/alarm.h"
 
 namespace openscreen {
 
@@ -34,6 +36,7 @@ class MdnsResponderService : public ServiceListenerImpl::Delegate,
                              public platform::UdpSocket::Client {
  public:
   MdnsResponderService(
+      platform::ClockNowFunctionPtr now_function,
       platform::TaskRunner* task_runner,
       const std::string& service_name,
       const std::string& service_protocol,
@@ -160,6 +163,9 @@ class MdnsResponderService : public ServiceListenerImpl::Delegate,
   platform::NetworkInterfaceIndex GetNetworkInterfaceIndexFromSocket(
       const platform::UdpSocket* socket) const;
 
+  // Runs background tasks to manage the internal mDNS state.
+  void RunBackgroundTasks();
+
   // Service type separated as service name and service protocol for both
   // listening and publishing (e.g. {"_openscreen", "_udp"}).
   std::array<std::string, 2> service_type_;
@@ -195,7 +201,10 @@ class MdnsResponderService : public ServiceListenerImpl::Delegate,
 
   std::map<std::string, ServiceInfo> receiver_info_;
 
-  platform::TaskRunner* task_runner_;
+  platform::TaskRunner* const task_runner_;
+
+  // Scheduled to run periodic background tasks.
+  Alarm background_tasks_alarm_;
 
   friend class TestingMdnsResponderService;
 };

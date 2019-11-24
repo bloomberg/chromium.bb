@@ -353,7 +353,7 @@ void MdnsResponderAdapterImpl::OnError(platform::UdpSocket* socket,
   OSP_UNIMPLEMENTED();
 }
 
-absl::optional<platform::Clock::duration> MdnsResponderAdapterImpl::RunTasks() {
+platform::Clock::duration MdnsResponderAdapterImpl::RunTasks() {
   TRACE_SCOPED(TraceCategory::mDNS, "MdnsResponderAdapterImpl::RunTasks");
 
   mDNS_Execute(&mdns_);

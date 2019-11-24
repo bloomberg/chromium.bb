@@ -16,6 +16,7 @@
 #include "platform/api/task_runner.h"
 #include "platform/api/time.h"
 #include "platform/base/ip_address.h"
+#include "util/alarm.h"
 
 namespace openscreen {
 
@@ -41,6 +42,7 @@ class QuicClient final : public ProtocolConnectionClient,
   QuicClient(MessageDemuxer* demuxer,
              std::unique_ptr<QuicConnectionFactory> connection_factory,
              ProtocolConnectionServiceObserver* observer,
+             platform::ClockNowFunctionPtr now_function,
              platform::TaskRunner* task_runner);
   ~QuicClient() override;
 
@@ -94,7 +96,7 @@ class QuicClient final : public ProtocolConnectionClient,
 
   // Deletes dead QUIC connections then returns the time interval before this
   // method should be run again.
-  absl::optional<platform::Clock::duration> Cleanup();
+  void Cleanup();
 
   std::unique_ptr<QuicConnectionFactory> connection_factory_;
 
@@ -123,9 +125,12 @@ class QuicClient final : public ProtocolConnectionClient,
   // completed the QUIC handshake.
   std::map<uint64_t, ServiceConnectionData> connections_;
 
-  // Connections that need to be destroyed, but have to wait for the next event
-  // loop due to the underlying QUIC implementation's way of referencing them.
-  std::vector<decltype(connections_)::iterator> delete_connections_;
+  // Connections (endpoint IDs) that need to be destroyed, but have to wait for
+  // the next event loop due to the underlying QUIC implementation's way of
+  // referencing them.
+  std::vector<uint64_t> delete_connections_;
+
+  Alarm cleanup_alarm_;
 };
 
 }  // namespace openscreen

@@ -170,8 +170,10 @@ void InternalServices::InternalPlatformLinkage::DeregisterInterfaces(
   }
 }
 
-InternalServices::InternalServices(platform::TaskRunner* task_runner)
-    : mdns_service_(task_runner,
+InternalServices::InternalServices(platform::ClockNowFunctionPtr now_function,
+                                   platform::TaskRunner* task_runner)
+    : mdns_service_(now_function,
+                    task_runner,
                     kServiceName,
                     kServiceProtocol,
                     std::make_unique<MdnsResponderAdapterImplFactory>(),
@@ -196,7 +198,7 @@ InternalServices* InternalServices::ReferenceSingleton(
     platform::TaskRunner* task_runner) {
   if (!g_instance) {
     OSP_CHECK_EQ(g_instance_ref_count, 0);
-    g_instance = new InternalServices(task_runner);
+    g_instance = new InternalServices(&platform::Clock::now, task_runner);
   }
   ++g_instance_ref_count;
   return g_instance;

@@ -39,7 +39,7 @@ class MdnsResponderAdapterImpl final : public MdnsResponderAdapter {
   void OnSendError(platform::UdpSocket* socket, Error error) override;
   void OnError(platform::UdpSocket* socket, Error error) override;
 
-  absl::optional<platform::Clock::duration> RunTasks() override;
+  platform::Clock::duration RunTasks() override;
 
   std::vector<PtrEvent> TakePtrResponses() override;
   std::vector<SrvEvent> TakeSrvResponses() override;

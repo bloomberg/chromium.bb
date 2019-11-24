@@ -28,7 +28,8 @@ class TestingMdnsResponderService final : public MdnsResponderService {
       const std::string& service_protocol,
       std::unique_ptr<MdnsResponderAdapterFactory> mdns_responder_factory,
       std::unique_ptr<MdnsPlatformService> platform_service)
-      : MdnsResponderService(task_runner,
+      : MdnsResponderService(&platform::FakeClock::now,
+                             task_runner,
                              service_name,
                              service_protocol,
                              std::move(mdns_responder_factory),

@@ -32,6 +32,7 @@ std::string ServiceIdFromServiceInstanceName(
 }  // namespace
 
 MdnsResponderService::MdnsResponderService(
+    platform::ClockNowFunctionPtr now_function,
     platform::TaskRunner* task_runner,
     const std::string& service_name,
     const std::string& service_protocol,
@@ -40,7 +41,8 @@ MdnsResponderService::MdnsResponderService(
     : service_type_{{service_name, service_protocol}},
       mdns_responder_factory_(std::move(mdns_responder_factory)),
       platform_(std::move(platform)),
-      task_runner_(task_runner) {}
+      task_runner_(task_runner),
+      background_tasks_alarm_(now_function, task_runner) {}
 
 MdnsResponderService::~MdnsResponderService() = default;
 
@@ -132,12 +134,7 @@ void MdnsResponderService::StartListenerInternal() {
 
   StartListening();
   ServiceListenerImpl::Delegate::SetState(ServiceListener::State::kRunning);
-  // TODO(rwkeane): Use new Alarm class instead once owning CL is merged in.
-  // Then it can be more effectively cancelled when the state changes away from
-  // 'running'.
-  platform::RepeatingFunction::Post(
-      task_runner_,
-      std::bind(&mdns::MdnsResponderAdapter::RunTasks, mdns_responder_.get()));
+  RunBackgroundTasks();
 }
 
 void MdnsResponderService::StartAndSuspendListenerInternal() {
@@ -171,14 +168,13 @@ void MdnsResponderService::SearchNowInternal(ServiceListener::State from) {
 }
 
 void MdnsResponderService::StartPublisherInternal() {
-  if (!mdns_responder_)
+  if (!mdns_responder_) {
     mdns_responder_ = mdns_responder_factory_->Create();
+  }
 
   StartService();
   ServicePublisherImpl::Delegate::SetState(ServicePublisher::State::kRunning);
-  platform::RepeatingFunction::Post(
-      task_runner_,
-      std::bind(&mdns::MdnsResponderAdapter::RunTasks, mdns_responder_.get()));
+  RunBackgroundTasks();
 }
 
 void MdnsResponderService::StartAndSuspendPublisherInternal() {
@@ -255,7 +251,7 @@ void MdnsResponderService::HandleMdnsEvents() {
     if (events_possible) {
       // NOTE: This still needs to be called here, even though it runs in the
       // background regularly, because we just finished processing MDNS events.
-      mdns_responder_->RunTasks();
+      RunBackgroundTasks();
     }
   } while (events_possible);
 
@@ -656,6 +652,15 @@ MdnsResponderService::GetNetworkInterfaceIndexFromSocket(
   if (it == bound_interfaces_.end())
     return platform::kInvalidNetworkInterfaceIndex;
   return it->interface_info.index;
+}
+
+void MdnsResponderService::RunBackgroundTasks() {
+  if (!mdns_responder_) {
+    return;
+  }
+  const auto delay_until_next_run = mdns_responder_->RunTasks();
+  background_tasks_alarm_.ScheduleFromNow([this] { RunBackgroundTasks(); },
+                                          delay_until_next_run);
 }
 
 }  // namespace openscreen

@@ -116,7 +116,7 @@ class FakeMdnsResponderAdapter final : public mdns::MdnsResponderAdapter {
                           platform::UdpSocket* socket) override;
   Error DeregisterInterface(platform::UdpSocket* socket) override;
 
-  absl::optional<platform::Clock::duration> RunTasks() override;
+  platform::Clock::duration RunTasks() override;
 
   std::vector<mdns::PtrEvent> TakePtrResponses() override;
   std::vector<mdns::SrvEvent> TakeSrvResponses() override;

@@ -29,11 +29,9 @@ FakeQuicBridge::FakeQuicBridge(platform::FakeTaskRunner* task_runner,
   client_socket_ = std::make_unique<platform::FakeUdpSocket>(
       task_runner_, fake_client_factory.get());
 
-  // TODO(rwkeane): Pass actual task runner instead of nullptr once the fake
-  // task runner correctly respects the time delay for delayed tasks.
-  quic_client = std::make_unique<QuicClient>(controller_demuxer.get(),
-                                             std::move(fake_client_factory),
-                                             &mock_client_observer, nullptr);
+  quic_client = std::make_unique<QuicClient>(
+      controller_demuxer.get(), std::move(fake_client_factory),
+      &mock_client_observer, now_function, task_runner);
 
   auto fake_server_factory =
       std::make_unique<FakeServerQuicConnectionFactory>(fake_bridge.get());
@@ -41,9 +39,9 @@ FakeQuicBridge::FakeQuicBridge(platform::FakeTaskRunner* task_runner,
       task_runner_, fake_server_factory.get());
   ServerConfig config;
   config.connection_endpoints.push_back(kReceiverEndpoint);
-  quic_server = std::make_unique<QuicServer>(config, receiver_demuxer.get(),
-                                             std::move(fake_server_factory),
-                                             &mock_server_observer, nullptr);
+  quic_server = std::make_unique<QuicServer>(
+      config, receiver_demuxer.get(), std::move(fake_server_factory),
+      &mock_server_observer, now_function, task_runner);
 
   quic_client->Start();
   quic_server->Start();

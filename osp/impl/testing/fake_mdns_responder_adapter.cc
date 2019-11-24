@@ -251,8 +251,8 @@ void FakeMdnsResponderAdapter::OnError(platform::UdpSocket* socket,
   OSP_NOTREACHED() << "Tests should not drive this class with packets";
 }
 
-absl::optional<platform::Clock::duration> FakeMdnsResponderAdapter::RunTasks() {
-  return absl::nullopt;
+platform::Clock::duration FakeMdnsResponderAdapter::RunTasks() {
+  return std::chrono::seconds(1);
 }
 
 std::vector<mdns::PtrEvent> FakeMdnsResponderAdapter::TakePtrResponses() {

@@ -10,7 +10,6 @@
 #include <string>
 #include <vector>
 
-#include "absl/types/optional.h"
 #include "osp/impl/discovery/mdns/domain_name.h"
 #include "osp/impl/discovery/mdns/mdns_responder_platform.h"
 #include "platform/api/network_interface.h"
@@ -192,7 +191,7 @@ class MdnsResponderAdapter : public platform::UdpSocket::Client {
 
   // Returns the time period after which this method must be called again, if
   // any.
-  virtual absl::optional<platform::Clock::duration> RunTasks() = 0;
+  virtual platform::Clock::duration RunTasks() = 0;
 
   virtual std::vector<PtrEvent> TakePtrResponses() = 0;
   virtual std::vector<SrvEvent> TakeSrvResponses() = 0;
