@@ -21,6 +21,7 @@ from chromite.lib import dev_server_wrapper
 from chromite.lib import osutils
 from chromite.lib import partial_mock
 from chromite.lib import remote_access
+from chromite.lib import remote_access_unittest
 
 from chromite.lib.paygen import paygen_payload_lib
 from chromite.lib.paygen import paygen_stateful_payload_lib
@@ -51,6 +52,18 @@ class RemoteDeviceUpdaterMock(partial_mock.PartialCmdMock):
     """Mock out ResolveAPPIDMismatchIfAny."""
 
 
+class RemoteAccessMock(remote_access_unittest.RemoteShMock):
+  """Mock out RemoteAccess."""
+
+  ATTRS = ('RemoteSh', 'Rsync', 'Scp')
+
+  def Rsync(self, *_args, **_kwargs):
+    return cros_build_lib.CommandResult(returncode=0)
+
+  def Scp(self, *_args, **_kwargs):
+    return cros_build_lib.CommandResult(returncode=0)
+
+
 class RemoteDeviceUpdaterTest(cros_test_lib.MockTempDirTestCase):
   """Test the flow of flash.Flash() with RemoteDeviceUpdater."""
 
@@ -69,7 +82,12 @@ class RemoteDeviceUpdaterTest(cros_test_lib.MockTempDirTestCase):
     self.PatchObject(paygen_payload_lib, 'GenerateUpdatePayload')
     self.PatchObject(paygen_stateful_payload_lib, 'GenerateStatefulPayload')
     self.PatchObject(remote_access, 'CHECK_INTERVAL', new=0)
-    self.PatchObject(remote_access, 'ChromiumOSDevice')
+    self.PatchObject(remote_access.ChromiumOSDevice, 'Pingable',
+                     return_value=True)
+    m = self.StartPatcher(RemoteAccessMock())
+    m.AddCmdResult(['cat', '/etc/lsb-release'],
+                   stdout='CHROMEOS_RELEASE_BOARD=board')
+    m.SetDefaultCmdResult()
 
   def testUpdateAll(self):
     """Tests that update methods are called correctly."""
