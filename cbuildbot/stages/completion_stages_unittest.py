@@ -333,7 +333,7 @@ class PublishUprevChangesStageTest(
         staging_branch=None)
     self.assertTrue(self._run.attrs.metadata.GetValue('UprevvedAndroid'))
     metadata_dict = self._run.attrs.metadata.GetDict()
-    self.assertFalse(metadata_dict.has_key('UprevvedChrome'))
+    self.assertNotIn('UprevvedChrome', metadata_dict)
 
   def testPerformStageOnChromePFQ(self):
     """Test PerformStage on ChromePFQ."""

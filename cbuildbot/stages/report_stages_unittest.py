@@ -376,8 +376,8 @@ class ReportStageTest(AbstractReportStageTestCase):
     metadata_dict = self._run.attrs.metadata.GetDict()
     self.assertEqual(metadata_dict['build-number'],
                      generic_stages_unittest.DEFAULT_BUILD_NUMBER)
-    self.assertTrue(metadata_dict.has_key('builder-name'))
-    self.assertTrue(metadata_dict.has_key('bot-hostname'))
+    self.assertIn('builder-name', metadata_dict)
+    self.assertIn('bot-hostname', metadata_dict)
 
   def testWriteTagMetadata(self):
     """Test that WriteTagMetadata writes expected keys correctly."""
@@ -387,8 +387,8 @@ class ReportStageTest(AbstractReportStageTestCase):
     tags_dict = self._run.attrs.metadata.GetValue(constants.METADATA_TAGS)
     self.assertEqual(tags_dict['build_number'],
                      generic_stages_unittest.DEFAULT_BUILD_NUMBER)
-    self.assertTrue(tags_dict.has_key('builder_name'))
-    self.assertTrue(tags_dict.has_key('bot_hostname'))
+    self.assertIn('builder_name', tags_dict)
+    self.assertIn('bot_hostname', tags_dict)
     self.RunStage()
     tags_content = osutils.WriteFile.call_args_list[1][0][1]
     tags_content_dict = json.loads(tags_content)

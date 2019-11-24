@@ -897,7 +897,7 @@ class CBuildBotTest(ChromeosConfigTestBase):
         prebuilt_slave_boards = {}
         for slave in prebuilt_slaves:
           for board in slave['boards']:
-            self.assertFalse(prebuilt_slave_boards.has_key(board),
+            self.assertNotIn(board, prebuilt_slave_boards,
                              'Configs %s and %s both upload prebuilts for '
                              'board %s.' % (prebuilt_slave_boards.get(board),
                                             slave['name'],
