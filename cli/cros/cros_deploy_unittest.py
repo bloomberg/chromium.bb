@@ -12,6 +12,7 @@ from chromite.cli import deploy
 from chromite.cli.cros import cros_deploy
 from chromite.lib import commandline
 from chromite.lib import cros_test_lib
+from chromite.lib import remote_access
 
 
 # pylint: disable=protected-access
@@ -39,7 +40,7 @@ class CrosDeployTest(cros_test_lib.MockTempDirTestCase,
   actual update flow should be done in the deploy unit tests.
   """
 
-  DEVICE = '1.1.1.1'
+  DEVICE = remote_access.TEST_IP
   PACKAGES = ['foo', 'bar']
 
   def SetupCommandMock(self, cmd_args):

@@ -69,7 +69,7 @@ class RemoteDeviceUpdaterTest(cros_test_lib.MockTempDirTestCase):
 
   IMAGE = '/path/to/image'
   DEVICE = commandline.Device(scheme=commandline.DEVICE_SCHEME_SSH,
-                              hostname='1.1.1.1')
+                              hostname=remote_access.TEST_IP)
 
   def setUp(self):
     """Patches objects."""

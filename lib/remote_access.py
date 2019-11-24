@@ -39,6 +39,11 @@ LOCALHOST = 'localhost'
 LOCALHOST_IP = '127.0.0.1'
 ROOT_ACCOUNT = 'root'
 
+# IP used for testing that is a valid IP address, but would fail quickly if
+# actually used for any real operation (e.g. pinging or making connections).
+# https://en.wikipedia.org/wiki/IPv4#Special-use_addresses
+TEST_IP = '0.1.2.3'
+
 REBOOT_MAX_WAIT = 180
 REBOOT_SSH_CONNECT_TIMEOUT = 2
 REBOOT_SSH_CONNECT_ATTEMPTS = 2

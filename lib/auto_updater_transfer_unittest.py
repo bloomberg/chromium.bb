@@ -99,7 +99,7 @@ class CrosTransferBaseClassTest(cros_test_lib.MockTestCase):
 
   def testErrorTriggerRetryTransferUpdateUtils(self):
     """Test if Transfer._TransferUpdateUtilsPackage() is retried properly."""
-    with remote_access.ChromiumOSDeviceHandler('1.1.1.1') as device:
+    with remote_access.ChromiumOSDeviceHandler(remote_access.TEST_IP) as device:
       CrOS_LocalTransfer = CreateLocalTransferInstance(device)
       self.PatchObject(auto_updater_transfer, '_DELAY_SEC_FOR_RETRY', 1)
       _MAX_RETRY = self.PatchObject(auto_updater_transfer, '_MAX_RETRY', 1)
@@ -113,7 +113,7 @@ class CrosTransferBaseClassTest(cros_test_lib.MockTestCase):
 
   def testErrorTriggerRetryTransferStateful(self):
     """Test if Transfer._TransferStatefulUpdate() is retried properly."""
-    with remote_access.ChromiumOSDeviceHandler('1.1.1.1') as device:
+    with remote_access.ChromiumOSDeviceHandler(remote_access.TEST_IP) as device:
       CrOS_LocalTransfer = CreateLocalTransferInstance(device)
       self.PatchObject(auto_updater_transfer, '_DELAY_SEC_FOR_RETRY', 1)
       _MAX_RETRY = self.PatchObject(auto_updater_transfer, '_MAX_RETRY', 2)
@@ -127,7 +127,7 @@ class CrosTransferBaseClassTest(cros_test_lib.MockTestCase):
 
   def testErrorTriggerRetryTransferRootfs(self):
     """Test if Transfer._TransferRootfsUpdate() is retried properly."""
-    with remote_access.ChromiumOSDeviceHandler('1.1.1.1') as device:
+    with remote_access.ChromiumOSDeviceHandler(remote_access.TEST_IP) as device:
       CrOS_LocalTransfer = CreateLocalTransferInstance(device)
       self.PatchObject(auto_updater_transfer, '_DELAY_SEC_FOR_RETRY', 1)
       _MAX_RETRY = self.PatchObject(auto_updater_transfer, '_MAX_RETRY', 3)
@@ -166,7 +166,7 @@ class CrosLocalTransferTest(cros_test_lib.MockTestCase):
                      '_EnsureDeviceDirectory')
     self.PatchObject(auto_updater_transfer, 'STATEFUL_FILENAME',
                      'test_stateful.tgz')
-    with remote_access.ChromiumOSDeviceHandler('1.1.1.1') as device:
+    with remote_access.ChromiumOSDeviceHandler(remote_access.TEST_IP) as device:
       CrOS_LocalTransfer = CreateLocalTransferInstance(device)
       CrOS_LocalTransfer._TransferStatefulUpdate()
       self.assertTrue(
@@ -193,7 +193,7 @@ class CrosLocalTransferTest(cros_test_lib.MockTestCase):
                      '_EnsureDeviceDirectory')
     self.PatchObject(auto_updater_transfer, 'STATEFUL_FILENAME',
                      'test_stateful.tgz')
-    with remote_access.ChromiumOSDeviceHandler('1.1.1.1') as device:
+    with remote_access.ChromiumOSDeviceHandler(remote_access.TEST_IP) as device:
       CrOS_LocalTransfer = CreateLocalTransferInstance(
           device, original_payload_dir='test_dir')
       CrOS_LocalTransfer._TransferStatefulUpdate()
@@ -211,7 +211,7 @@ class CrosLocalTransferTest(cros_test_lib.MockTestCase):
     payloads in its path.
     """
     self.PatchObject(os.path, 'exists', return_value=False)
-    with remote_access.ChromiumOSDeviceHandler('1.1.1.1') as device:
+    with remote_access.ChromiumOSDeviceHandler(remote_access.TEST_IP) as device:
       CrOS_LocalTransfer = CreateLocalTransferInstance(
           device, payload_name='does_not_exist')
       self.assertRaises(
@@ -224,7 +224,7 @@ class CrosLocalTransferTest(cros_test_lib.MockTestCase):
     Test will fail if ChromiumOSTransferError is raised when payload exists.
     """
     self.PatchObject(os.path, 'exists', return_value=True)
-    with remote_access.ChromiumOSDeviceHandler('1.1.1.1') as device:
+    with remote_access.ChromiumOSDeviceHandler(remote_access.TEST_IP) as device:
       CrOS_LocalTransfer = CreateLocalTransferInstance(device,
                                                        payload_name='exists')
       CrOS_LocalTransfer.CheckPayloads()
@@ -236,7 +236,7 @@ class CrosLocalTransferTest(cros_test_lib.MockTestCase):
     return True for the path returned by the path_util.FromChrootPath() call.
     """
     self.PatchObject(path_util, 'FromChrootPath', return_value='test_path')
-    with remote_access.ChromiumOSDeviceHandler('1.1.1.1') as device:
+    with remote_access.ChromiumOSDeviceHandler(remote_access.TEST_IP) as device:
       CrOS_LocalTransfer = CreateLocalTransferInstance(device)
       with self.PatchObject(os.path, 'exists', side_effect=[True]):
         self.assertTrue(CrOS_LocalTransfer._GetStatefulUpdateScript(),
@@ -250,7 +250,7 @@ class CrosLocalTransferTest(cros_test_lib.MockTestCase):
     _dev_dir and LOCAL_STATEFUL_UPDATE_FILENAME.
     """
     self.PatchObject(path_util, 'FromChrootPath', return_value='test_path')
-    with remote_access.ChromiumOSDeviceHandler('1.1.1.1') as device:
+    with remote_access.ChromiumOSDeviceHandler(remote_access.TEST_IP) as device:
       CrOS_LocalTransfer = CreateLocalTransferInstance(device)
       with self.PatchObject(os.path, 'exists', side_effect=[False, True]):
         self.assertEqual(CrOS_LocalTransfer._GetStatefulUpdateScript(),
@@ -264,7 +264,7 @@ class CrosLocalTransferTest(cros_test_lib.MockTestCase):
     rely on default return values.
     """
     self.PatchObject(path_util, 'FromChrootPath', return_value='test_path')
-    with remote_access.ChromiumOSDeviceHandler('1.1.1.1') as device:
+    with remote_access.ChromiumOSDeviceHandler(remote_access.TEST_IP) as device:
       CrOS_LocalTransfer = CreateLocalTransferInstance(device)
       with self.PatchObject(os.path, 'exists', side_effect=[False, False]):
         self.assertEqual(CrOS_LocalTransfer._GetStatefulUpdateScript(),
@@ -284,7 +284,7 @@ class CrosLabTransferTest(cros_test_lib.MockTestCase):
     Test whether LabTransfer._GetCurlCmdForPayloadDownload() is being called
     the correct number of times with the correct arguments.
     """
-    with remote_access.ChromiumOSDeviceHandler('1.1.1.1') as device:
+    with remote_access.ChromiumOSDeviceHandler(remote_access.TEST_IP) as device:
       CrOS_LabTransfer = CreateLabTransferInstance(device)
       lab_xfer = auto_updater_transfer.LabTransfer
       expected = [{'payload_dir': os.path.join(device.work_dir, 'src'),
@@ -305,7 +305,7 @@ class CrosLabTransferTest(cros_test_lib.MockTestCase):
     Test whether remote_access.ChromiumOSDevice.RunCommand() is being called
     the correct number of times with the correct arguments.
     """
-    with remote_access.ChromiumOSDeviceHandler('1.1.1.1') as device:
+    with remote_access.ChromiumOSDeviceHandler(remote_access.TEST_IP) as device:
       CrOS_LabTransfer = CreateLabTransferInstance(device)
       lab_xfer = auto_updater_transfer.LabTransfer
       expected = [['curl', '-o', '/test/work/dir/src/nebraska.py',
@@ -325,7 +325,7 @@ class CrosLabTransferTest(cros_test_lib.MockTestCase):
     Test whether LabTransfer._EnsureDeviceDirectory() is being called
     the correct number of times with the correct arguments.
     """
-    with remote_access.ChromiumOSDeviceHandler('1.1.1.1') as device:
+    with remote_access.ChromiumOSDeviceHandler(remote_access.TEST_IP) as device:
       CrOS_LabTransfer = CreateLabTransferInstance(device)
       lab_xfer = auto_updater_transfer.LabTransfer
       expected = [os.path.join(device.work_dir, 'src'), device.work_dir]
@@ -339,7 +339,7 @@ class CrosLabTransferTest(cros_test_lib.MockTestCase):
 
   def testErrorTransferUpdateUtilsServerError(self):
     """Test errors thrown by LabTransfer._TransferUpdateUtilsPackage()."""
-    with remote_access.ChromiumOSDeviceHandler('1.1.1.1') as device:
+    with remote_access.ChromiumOSDeviceHandler(remote_access.TEST_IP) as device:
       CrOS_LabTransfer = CreateLabTransferInstance(
           device, staging_server='http://wrong:server')
       self.PatchObject(auto_updater_transfer.LabTransfer,
@@ -351,7 +351,7 @@ class CrosLabTransferTest(cros_test_lib.MockTestCase):
 
   def testErrorTransferStatefulServerError(self):
     """Test errors thrown by LabTransfer._TransferStatefulUpdate()."""
-    with remote_access.ChromiumOSDeviceHandler('1.1.1.1') as device:
+    with remote_access.ChromiumOSDeviceHandler(remote_access.TEST_IP) as device:
       CrOS_LabTransfer = CreateLabTransferInstance(
           device, staging_server='http://wrong:server')
       self.PatchObject(auto_updater_transfer.LabTransfer,
@@ -367,7 +367,7 @@ class CrosLabTransferTest(cros_test_lib.MockTestCase):
     Test whether LabTransfer._GetCurlCmdForPayloadDownload() is being called
     the correct number of times with the correct arguments.
     """
-    with remote_access.ChromiumOSDeviceHandler('1.1.1.1') as device:
+    with remote_access.ChromiumOSDeviceHandler(remote_access.TEST_IP) as device:
       CrOS_LabTransfer = CreateLabTransferInstance(
           device, device_payload_dir='/test/device/payload/dir')
       lab_xfer = auto_updater_transfer.LabTransfer
@@ -395,7 +395,7 @@ class CrosLabTransferTest(cros_test_lib.MockTestCase):
     Test whether remote_access.ChromiumOSDevice.RunCommand() is being called
     the correct number of times with the correct arguments.
     """
-    with remote_access.ChromiumOSDeviceHandler('1.1.1.1') as device:
+    with remote_access.ChromiumOSDeviceHandler(remote_access.TEST_IP) as device:
       CrOS_LabTransfer = CreateLabTransferInstance(device)
       lab_xfer = auto_updater_transfer.LabTransfer
       expected = [
@@ -418,7 +418,7 @@ class CrosLabTransferTest(cros_test_lib.MockTestCase):
     Test whether LabTransfer._EnsureDeviceDirectory() is being called
     the correct number of times with the correct arguments.
     """
-    with remote_access.ChromiumOSDeviceHandler('1.1.1.1') as device:
+    with remote_access.ChromiumOSDeviceHandler(remote_access.TEST_IP) as device:
       CrOS_LabTransfer = CreateLabTransferInstance(
           device, device_payload_dir='/test/device/payload/dir')
       lab_xfer = auto_updater_transfer.LabTransfer
@@ -438,7 +438,7 @@ class CrosLabTransferTest(cros_test_lib.MockTestCase):
     the correct number of times with the correct arguments when original
     payload directory exists.
     """
-    with remote_access.ChromiumOSDeviceHandler('1.1.1.1') as device:
+    with remote_access.ChromiumOSDeviceHandler(remote_access.TEST_IP) as device:
       CrOS_LabTransfer = CreateLabTransferInstance(
           device, original_payload_dir='/test/original/payload/dir',
           device_payload_dir='/test/device/payload/dir',
@@ -476,7 +476,7 @@ class CrosLabTransferTest(cros_test_lib.MockTestCase):
     the correct number of times with the correct arguments when original
     payload directory exists.
     """
-    with remote_access.ChromiumOSDeviceHandler('1.1.1.1') as device:
+    with remote_access.ChromiumOSDeviceHandler(remote_access.TEST_IP) as device:
       CrOS_LabTransfer = CreateLabTransferInstance(
           device, original_payload_dir='/test/original/payload/dir')
       lab_xfer = auto_updater_transfer.LabTransfer
@@ -504,7 +504,7 @@ class CrosLabTransferTest(cros_test_lib.MockTestCase):
     the correct number of times with the correct arguments when original
     payload directory exists.
     """
-    with remote_access.ChromiumOSDeviceHandler('1.1.1.1') as device:
+    with remote_access.ChromiumOSDeviceHandler(remote_access.TEST_IP) as device:
       CrOS_LabTransfer = CreateLabTransferInstance(
           device, original_payload_dir='/test/original/payload/dir',
           device_payload_dir='/test/device/payload/dir',
@@ -522,7 +522,7 @@ class CrosLabTransferTest(cros_test_lib.MockTestCase):
 
   def testErrorTransferRootfsServerError(self):
     """Test errors thrown by LabTransfer._TransferRootfsUpdate()."""
-    with remote_access.ChromiumOSDeviceHandler('1.1.1.1') as device:
+    with remote_access.ChromiumOSDeviceHandler(remote_access.TEST_IP) as device:
       CrOS_LabTransfer = CreateLabTransferInstance(
           device, staging_server='http://wrong:server')
       self.PatchObject(auto_updater_transfer.LabTransfer,
@@ -538,7 +538,7 @@ class CrosLabTransferTest(cros_test_lib.MockTestCase):
     Test whether LabTransfer._GetCurlCmdForPayloadDownload() is being called
     the correct number of times with the correct arguments.
     """
-    with remote_access.ChromiumOSDeviceHandler('1.1.1.1') as device:
+    with remote_access.ChromiumOSDeviceHandler(remote_access.TEST_IP) as device:
       CrOS_LabTransfer = CreateLabTransferInstance(
           device, device_payload_dir='/test/device/payload/dir',
           payload_dir='test/payload/dir', payload_name='test_update.gz')
@@ -567,7 +567,7 @@ class CrosLabTransferTest(cros_test_lib.MockTestCase):
     Test whether remote_access.ChromiumOSDevice.RunCommand() is being called
     the correct number of times with the correct arguments.
     """
-    with remote_access.ChromiumOSDeviceHandler('1.1.1.1') as device:
+    with remote_access.ChromiumOSDeviceHandler(remote_access.TEST_IP) as device:
       CrOS_LabTransfer = CreateLabTransferInstance(
           device, payload_name='test_update.gz')
       lab_xfer = auto_updater_transfer.LabTransfer
@@ -591,7 +591,7 @@ class CrosLabTransferTest(cros_test_lib.MockTestCase):
     Test whether LabTransfer._EnsureDeviceDirectory() is being called
     the correct number of times with the correct arguments.
     """
-    with remote_access.ChromiumOSDeviceHandler('1.1.1.1') as device:
+    with remote_access.ChromiumOSDeviceHandler(remote_access.TEST_IP) as device:
       CrOS_LabTransfer = CreateLabTransferInstance(
           device, device_payload_dir='/test/device/payload/dir')
       lab_xfer = auto_updater_transfer.LabTransfer
@@ -609,7 +609,7 @@ class CrosLabTransferTest(cros_test_lib.MockTestCase):
 
     Tests the typical usage of the _GetCurlCmdForPayloadDownload() method.
     """
-    with remote_access.ChromiumOSDeviceHandler('1.1.1.1') as device:
+    with remote_access.ChromiumOSDeviceHandler(remote_access.TEST_IP) as device:
       CrOS_LabTransfer = CreateLabTransferInstance(device)
       expected_cmd = ['curl', '-o',
                       '/tmp/test_payload_dir/payload_filename.ext',
@@ -627,7 +627,7 @@ class CrosLabTransferTest(cros_test_lib.MockTestCase):
     Tests when the payload file is available in the static directory on the
     staging server.
     """
-    with remote_access.ChromiumOSDeviceHandler('1.1.1.1') as device:
+    with remote_access.ChromiumOSDeviceHandler(remote_access.TEST_IP) as device:
       CrOS_LabTransfer = CreateLabTransferInstance(device)
       expected_cmd = ['curl', '-o',
                       '/tmp/test_payload_dir/payload_filename.ext',
