@@ -162,7 +162,6 @@ PYTHON2_ONLY_TESTS = {
     'lib/auto_updater_unittest',
     'lib/buildbucket_v2_unittest',
     'lib/repo_manifest_unittest',
-    'scripts/cbuildbot_launch_unittest',
     'scripts/create_manifest_snapshot_unittest',
     'scripts/deploy_chrome_unittest',
     'scripts/loman_unittest',

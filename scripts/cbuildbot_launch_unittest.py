@@ -284,9 +284,9 @@ class RunTests(cros_test_lib.RunCommandTestCase):
             '--master-build-id', '123456789',
             '--buildnumber', '314',
             '--previous-build-state',
-            'eyJzdGF0dXMiOiAiZmFpbCIsICJtYXN0ZXJfYnVpbGRfaWQiOiAxMjMxMjMxMj'
-            'MsICJidWlsZF9udW1iZXIiOiAzMTMsICJidWlsZHJvb3RfbGF5b3V0IjogMiwg'
-            'ImJyYW5jaCI6ICJicmFuY2gifQ==',
+            'eyJicmFuY2giOiAiYnJhbmNoIiwgImJ1aWxkX251bWJlciI6IDMxMywgImJ1aWx'
+            'kcm9vdF9sYXlvdXQiOiAyLCAibWFzdGVyX2J1aWxkX2lkIjogMTIzMTIzMTIzLC'
+            'Aic3RhdHVzIjogImZhaWwifQ==',
             '--workspace', '/root/workspace',
             '--cache-dir', '/cache',
             '--ts-mon-task-num', '1',

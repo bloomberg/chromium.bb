@@ -101,7 +101,7 @@ class BuildSummary(object):
       val = getattr(self, a)
       if val:
         state[a] = getattr(self, a)
-    return json.dumps(state)
+    return json.dumps(state, sort_keys=True)
 
   def is_valid(self):
     """Indicate whether this object has a valid status."""

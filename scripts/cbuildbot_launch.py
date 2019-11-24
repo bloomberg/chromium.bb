@@ -512,7 +512,8 @@ def _main(options, argv):
          metrics.SecondsInstanceTimer(METRIC_CBUILDBOT_INSTANCE):
       if previous_build_state.is_valid():
         argv.append('--previous-build-state')
-        argv.append(base64.b64encode(previous_build_state.to_json()))
+        argv.append(base64.b64encode(previous_build_state.to_json().encode(
+            'utf-8')).decode('utf-8'))
       argv.extend(['--workspace', workspace])
 
       if not options.cache_dir_specified:
