@@ -18,7 +18,6 @@ from chromite.lib import build_requests
 from chromite.lib import constants
 from chromite.lib import metadata_lib
 from chromite.lib import cidb
-from chromite.lib import clactions
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import hwtest_results
@@ -320,8 +319,6 @@ class DataSeries0Test(CIDBIntegrationTest):
         'select build_type from buildTable').fetchall()
     self.assertTrue(all(x == ('paladin',) for x in build_types))
 
-    self._cl_action_checks(readonly_db)
-
     build_config_count = readonly_db._GetEngine().execute(
         'select COUNT(distinct build_config) from buildTable').fetchall()[0][0]
     self.assertEqual(build_config_count, 30)
@@ -344,7 +341,6 @@ class DataSeries0Test(CIDBIntegrationTest):
     self.assertEqual([x.get('id') for x in build_dicts], [1, 2])
 
     self._start_and_finish_time_checks(readonly_db)
-    self._cl_action_checks(readonly_db)
     self._last_updated_time_checks(readonly_db)
 
     # | Test get build_status from -- here's the relevant data from
@@ -412,40 +408,6 @@ class DataSeries0Test(CIDBIntegrationTest):
     # AFTER build #2 which was its slave.
     self.assertGreater(ids_by_last_updated.index(1),
                        ids_by_last_updated.index(2))
-
-  def _cl_action_checks(self, db):
-    """Sanity checks that correct cl actions were recorded."""
-    submitted_cl_count = db._GetEngine().execute(
-        'select count(*) from clActionTable where action="submitted"'
-        ).fetchall()[0][0]
-    rejected_cl_count = db._GetEngine().execute(
-        'select count(*) from clActionTable where action="kicked_out"'
-        ).fetchall()[0][0]
-    total_actions = db._GetEngine().execute(
-        'select count(*) from clActionTable').fetchall()[0][0]
-    self.assertEqual(submitted_cl_count, 56)
-    self.assertEqual(rejected_cl_count, 8)
-    self.assertEqual(total_actions, 1877)
-
-    actions_for_change = db.GetActionsForChanges(
-        [clactions.GerritChangeTuple(205535, False)])
-
-    actions_for_build = db.GetActionsForBuild(511)
-    self.assertEqual(len(actions_for_build), 22)
-
-    self.assertEqual(len(actions_for_change), 60)
-    last_action_dict = dict(actions_for_change[-1]._asdict())
-    last_action_dict.pop('timestamp')
-    last_action_dict.pop('id')
-    self.assertEqual(last_action_dict, {'action': 'submitted',
-                                        'build_config': 'master-paladin',
-                                        'build_id': 511L,
-                                        'change_number': 205535L,
-                                        'change_source': 'external',
-                                        'patch_number': 1L,
-                                        'reason': '',
-                                        'buildbucket_id': None,
-                                        'status': 'pass'})
 
   def _start_and_finish_time_checks(self, db):
     """Sanity checks that correct data was recorded, and can be retrieved."""

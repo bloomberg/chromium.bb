@@ -17,7 +17,6 @@ from six.moves import zip as izip
 
 from chromite.lib import build_requests
 from chromite.lib import constants
-from chromite.lib import clactions
 from chromite.lib import cros_logging as logging
 from chromite.lib import factory
 from chromite.lib import failure_message_lib
@@ -1416,105 +1415,6 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
         results[build_id] = []
       results[build_id].append(annotation)
     return results
-
-  @minimum_schema(11)
-  def GetActionsForChanges(self, changes, ignore_patch_number=True,
-                           status=None, action=None, start_time=None):
-    """Gets all the actions for the given changes.
-
-    Note, this includes all patches of the given changes.
-
-    Args:
-      changes: A sequence of GerritChangeTuple, GerritPatchTuple or GerritPatch
-        specifying the changes to whose actions should be fetched.
-      ignore_patch_number: Boolean indicating whether to ignore patch_number of
-        the changes. If ignore_patch_number is False, only get the actions with
-        matched patch_number. Default to True.
-      status: If provided, only return the actions with build is |status| (a
-        member of constants.BUILDER_ALL_STATUSES). Default to None.
-      action: If provided, only return the actions is |action| (a member of
-        constants.CL_ACTIONS). Default to None.
-      start_time: If provided, only return the actions with timestamp >=
-        start_time. Default to None.
-
-    Returns:
-      A list of CLAction instances, in action id order.
-    """
-    if not changes:
-      return []
-
-    clauses = []
-    basic_conds = []
-    if status is not None:
-      basic_conds.append('status = "%s"' % status)
-    if action is not None:
-      basic_conds.append('action = "%s"' % action)
-    if start_time is not None:
-      basic_conds.append('timestamp >= TIMESTAMP("%s")' % start_time)
-
-    # Note: We are using a string of OR statements rather than a 'WHERE IN'
-    # style clause, because 'WHERE IN' does not make use of multi-column
-    # indexes, and therefore has poor performance with a large table.
-    for change in changes:
-      change_number = int(change.gerrit_number)
-      change_source = 'internal' if change.internal else 'external'
-      conds = ['change_number = %d' % change_number,
-               'change_source = "%s"' % change_source]
-
-      if not ignore_patch_number:
-        patch_number = int(change.patch_number)
-        conds.append('patch_number = %d' % patch_number)
-
-      conds.extend(basic_conds)
-      conds_str = ' AND '.join(conds)
-      clauses.append('(' + conds_str + ')')
-
-    clause = ' OR '.join(clauses)
-    results = self._Execute(
-        '%s WHERE %s' % (self._SQL_FETCH_ACTIONS, clause)).fetchall()
-    return [clactions.CLAction(*values) for values in results]
-
-  @minimum_schema(11)
-  def GetActionsForBuild(self, build_id):
-    """Gets all the actions associated with build |build_id|.
-
-    Returns:
-      A list of CLAction instance, in action id order.
-    """
-    q = '%s WHERE build_id = %s' % (self._SQL_FETCH_ACTIONS, build_id)
-    results = self._Execute(q).fetchall()
-    return [clactions.CLAction(*values) for values in results]
-
-  @minimum_schema(11)
-  def GetActionHistory(self, start_date, end_date=None):
-    """Get the action history of CLs in the specified range.
-
-    This will get the full action history of any patches that were touched
-    by the CQ or Pre-CQ during the specified time range. Note: Since this
-    includes the full action history of these patches, it may include actions
-    outside the time range.
-
-    Args:
-      start_date: (Type: datetime.date) The first date on which you want action
-          history.
-      end_date: (Type: datetime.date) The last date on which you want action
-          history (inclusive).
-    """
-    values = {'start_date': start_date.strftime(self._DATE_FORMAT),
-              'end_date': end_date.strftime(self._DATE_FORMAT)}
-
-    # Enforce start and end date.
-    conds = 'timestamp >= TIMESTAMP(%(start_date)s)'
-    if end_date:
-      conds += (' AND timestamp < '
-                'TIMESTAMP(DATE_ADD(%(end_date)s, INTERVAL 1 DAY))')
-
-    changes = ('SELECT DISTINCT change_number, patch_number, change_source '
-               'FROM clActionTable WHERE %s' % conds)
-    query = '%s NATURAL JOIN (%s) as w' % (self._SQL_FETCH_ACTIONS, changes)
-    results = self._Execute(query, values).fetchall()
-    return clactions.CLActionHistory(clactions.CLAction(*values)
-                                     for values in results)
 
   @minimum_schema(40)
   def GetKeyVals(self):
