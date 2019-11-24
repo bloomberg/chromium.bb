@@ -105,7 +105,7 @@ class LKGMCandidateInfoTest(cros_test_lib.TestCase):
 
 @contextlib.contextmanager
 def TemporaryManifest():
-  with tempfile.NamedTemporaryFile() as f:
+  with tempfile.NamedTemporaryFile(mode='w') as f:
     # Create fake but empty manifest file.
     new_doc = minidom.getDOMImplementation().createDocument(
         None, 'manifest', None)
