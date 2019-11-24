@@ -48,18 +48,6 @@ class BuildFailureMessage(object):
 
     return to_str
 
-  def GetFailingStages(self):
-    """Get a list of the failing stage prefixes from failure_messages.
-
-    Returns:
-      A list of failing stage prefixes if there are failure_messages; None
-      otherwise.
-    """
-    failing_stages = None
-    if self.failure_messages:
-      failing_stages = set(x.stage_prefix_name for x in self.failure_messages)
-    return failing_stages
-
   def MatchesExceptionCategories(self, exception_categories):
     """Check if all of the failure_messages match the exception_categories.
 

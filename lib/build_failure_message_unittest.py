@@ -45,13 +45,6 @@ class BuildFailureMessageTests(cros_test_lib.MockTestCase):
 
     self.assertIsNotNone(build_failure.BuildFailureMessageToStr())
 
-  def testGetFailingStages(self):
-    """Test GetFailingStages."""
-    build_failure = self._GetBuildFailureMessageWithMixedMsgs()
-    failing_stages = build_failure.GetFailingStages()
-
-    self.assertCountEqual(failing_stages, ['Paygen', 'InitSDK', 'BuildImage'])
-
   def testMatchesExceptionCategoriesOnMixedFailuresReturnsFalse(self):
     """Test MatchesExceptionCategories on mixed failures returns False."""
     build_failure = self._GetBuildFailureMessageWithMixedMsgs()
