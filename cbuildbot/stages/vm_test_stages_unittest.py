@@ -40,7 +40,8 @@ class GCETestStageTest(generic_stages_unittest.AbstractStageTestCase,
   RELEASE_TAG = ''
 
   def setUp(self):
-    for cmd in ('CreateTestRoot', 'GenerateStackTraces', 'ArchiveFile',
+    self.PatchObject(commands, 'CreateTestRoot', return_value=self.tempdir)
+    for cmd in ('GenerateStackTraces', 'ArchiveFile',
                 'UploadArchivedFile', 'BuildAndArchiveTestResultsTarball'):
       self.PatchObject(commands, cmd, autospec=True)
     for cmd in (
@@ -112,7 +113,8 @@ class VMTestStageTest(generic_stages_unittest.AbstractStageTestCase,
   RELEASE_TAG = ''
 
   def setUp(self):
-    for cmd in ('CreateTestRoot', 'GenerateStackTraces', 'ArchiveFile',
+    self.PatchObject(commands, 'CreateTestRoot', return_value=self.tempdir)
+    for cmd in ('GenerateStackTraces', 'ArchiveFile',
                 'UploadArchivedFile', 'BuildAndArchiveTestResultsTarball'):
       self.PatchObject(commands, cmd, autospec=True)
     for cmd in (

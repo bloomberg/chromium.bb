@@ -162,7 +162,6 @@ PYTHON2_ONLY_TESTS = {
     'cbuildbot/stages/sdk_stages_unittest',
     'cbuildbot/stages/sync_stages_unittest',
     'cbuildbot/stages/tast_test_stages_unittest',
-    'cbuildbot/stages/vm_test_stages_unittest',
     'cbuildbot/validation_pool_unittest',
     'cli/cros/cros_chrome_sdk_unittest',
     'cli/deploy_unittest',
