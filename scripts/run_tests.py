@@ -148,7 +148,6 @@ PYTHON2_ONLY_TESTS = {
     'cbuildbot/cbuildbot_unittest',
     'cbuildbot/lkgm_manager_unittest',
     'cbuildbot/stages/completion_stages_unittest',
-    'cbuildbot/stages/sync_stages_unittest',
     'cbuildbot/stages/tast_test_stages_unittest',
     'cbuildbot/validation_pool_unittest',
     'cli/cros/cros_chrome_sdk_unittest',

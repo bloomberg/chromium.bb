@@ -455,7 +455,8 @@ class FakeCIDBConnection(object):
                        platform_version=None, starting_build_id=None,
                        final=False, reverse=False):
     """Returns the build history for the given |build_configs|."""
-    builds = sorted(self.buildTable, reverse=(not reverse))
+    builds = sorted(self.buildTable, reverse=(not reverse),
+                    key=lambda x: x['id'])
 
     # Filter results.
     if build_configs:
