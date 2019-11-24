@@ -1325,14 +1325,14 @@ void ServiceWorkerVersion::FocusClient(const std::string& client_uuid,
     std::move(callback).Run(nullptr /* client */);
     return;
   }
-  if (provider_host->container_host()->url().GetOrigin() !=
-      script_url_.GetOrigin()) {
+  ServiceWorkerContainerHost* container_host = provider_host->container_host();
+  if (container_host->url().GetOrigin() != script_url_.GetOrigin()) {
     mojo::ReportBadMessage(
         "Received WindowClient#focus() request for a cross-origin client.");
     receiver_.reset();
     return;
   }
-  if (provider_host->client_type() !=
+  if (container_host->client_type() !=
       blink::mojom::ServiceWorkerClientType::kWindow) {
     // focus() should be called only for WindowClient.
     mojo::ReportBadMessage(
@@ -1381,14 +1381,14 @@ void ServiceWorkerVersion::NavigateClient(const std::string& client_uuid,
                             std::string("The client was not found."));
     return;
   }
-  if (provider_host->container_host()->url().GetOrigin() !=
-      script_url_.GetOrigin()) {
+  ServiceWorkerContainerHost* container_host = provider_host->container_host();
+  if (container_host->url().GetOrigin() != script_url_.GetOrigin()) {
     mojo::ReportBadMessage(
         "Received WindowClient#navigate() request for a cross-origin client.");
     receiver_.reset();
     return;
   }
-  if (provider_host->client_type() !=
+  if (container_host->client_type() !=
       blink::mojom::ServiceWorkerClientType::kWindow) {
     // navigate() should be called only for WindowClient.
     mojo::ReportBadMessage(

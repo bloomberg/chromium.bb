@@ -253,8 +253,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   blink::mojom::ServiceWorkerProviderType provider_type() const;
   bool IsProviderForServiceWorker() const;
   bool IsProviderForClient() const;
-  // Can only be called when IsProviderForClient() is true.
-  blink::mojom::ServiceWorkerClientType client_type() const;
 
   // For service worker clients. Makes this client be controlled by
   // |registration|'s active worker, or makes this client be not

@@ -511,11 +511,6 @@ bool ServiceWorkerProviderHost::IsProviderForClient() const {
   return container_host_->IsContainerForClient();
 }
 
-blink::mojom::ServiceWorkerClientType ServiceWorkerProviderHost::client_type()
-    const {
-  return container_host_->client_type();
-}
-
 void ServiceWorkerProviderHost::SetControllerRegistration(
     scoped_refptr<ServiceWorkerRegistration> controller_registration,
     bool notify_controllerchange) {
@@ -831,7 +826,7 @@ bool ServiceWorkerProviderHost::IsControllerDecided() const {
   // when NetworkService is enabled, so remove/simplify it when
   // non-NetworkService code is removed.
 
-  switch (client_type()) {
+  switch (container_host_->client_type()) {
     case blink::mojom::ServiceWorkerClientType::kWindow:
       // |this| is hosting a reserved client undergoing navigation. Don't send
       // the controller since it can be changed again before the final
@@ -906,7 +901,8 @@ void ServiceWorkerProviderHost::Register(
           nullptr)) {
     return;
   }
-  if (client_type() != blink::mojom::ServiceWorkerClientType::kWindow) {
+  if (container_host_->client_type() !=
+      blink::mojom::ServiceWorkerClientType::kWindow) {
     mojo::ReportBadMessage(ServiceWorkerConsts::kBadMessageFromNonWindow);
     std::move(callback).Run(blink::mojom::ServiceWorkerErrorType::kUnknown,
                             std::string(), nullptr);
@@ -1245,7 +1241,8 @@ void ServiceWorkerProviderHost::OnExecutionReady() {
 bool ServiceWorkerProviderHost::IsValidGetRegistrationMessage(
     const GURL& client_url,
     std::string* out_error) const {
-  if (client_type() != blink::mojom::ServiceWorkerClientType::kWindow) {
+  if (container_host_->client_type() !=
+      blink::mojom::ServiceWorkerClientType::kWindow) {
     *out_error = ServiceWorkerConsts::kBadMessageFromNonWindow;
     return false;
   }
@@ -1264,7 +1261,8 @@ bool ServiceWorkerProviderHost::IsValidGetRegistrationMessage(
 
 bool ServiceWorkerProviderHost::IsValidGetRegistrationsMessage(
     std::string* out_error) const {
-  if (client_type() != blink::mojom::ServiceWorkerClientType::kWindow) {
+  if (container_host_->client_type() !=
+      blink::mojom::ServiceWorkerClientType::kWindow) {
     *out_error = ServiceWorkerConsts::kBadMessageFromNonWindow;
     return false;
   }
@@ -1278,7 +1276,8 @@ bool ServiceWorkerProviderHost::IsValidGetRegistrationsMessage(
 
 bool ServiceWorkerProviderHost::IsValidGetRegistrationForReadyMessage(
     std::string* out_error) const {
-  if (client_type() != blink::mojom::ServiceWorkerClientType::kWindow) {
+  if (container_host_->client_type() !=
+      blink::mojom::ServiceWorkerClientType::kWindow) {
     *out_error = ServiceWorkerConsts::kBadMessageFromNonWindow;
     return false;
   }
