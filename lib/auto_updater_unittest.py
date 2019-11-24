@@ -27,6 +27,7 @@ from chromite.lib import nebraska_wrapper
 from chromite.lib import osutils
 from chromite.lib import partial_mock
 from chromite.lib import remote_access
+from chromite.lib import remote_access_unittest
 
 
 class ChromiumOSBaseUpdaterMock(partial_mock.PartialCmdMock):
@@ -115,6 +116,18 @@ class ChromiumOSPreCheckMock(partial_mock.PartialCmdMock):
     """Mock out auto_updater.ChromiumOSUpdater._CheckNebraskaCanRun."""
 
 
+class RemoteAccessMock(remote_access_unittest.RemoteShMock):
+  """Mock out RemoteAccess."""
+
+  ATTRS = ('RemoteSh', 'Rsync', 'Scp')
+
+  def Rsync(self, *_args, **_kwargs):
+    return cros_build_lib.CommandResult(returncode=0)
+
+  def Scp(self, *_args, **_kwargs):
+    return cros_build_lib.CommandResult(returncode=0)
+
+
 class ChromiumOSUpdaterBaseTest(cros_test_lib.MockTempDirTestCase):
   """The base class for auto_updater.ChromiumOSUpdater test.
 
@@ -126,7 +139,10 @@ class ChromiumOSUpdaterBaseTest(cros_test_lib.MockTempDirTestCase):
     self._base_updater_mock = self.StartPatcher(ChromiumOSBaseUpdaterMock())
     self._transfer_mock = self.StartPatcher(CrOSLocalTransferMock())
     self._cros_transfer_mock = self.StartPatcher(ChromiumOSBaseTransferMock())
-    self.PatchObject(remote_access, 'ChromiumOSDevice')
+    self.PatchObject(remote_access.ChromiumOSDevice, 'Pingable',
+                     return_value=True)
+    m = self.StartPatcher(RemoteAccessMock())
+    m.SetDefaultCmdResult()
 
 
 class CrOSLocalTransferTest(ChromiumOSUpdaterBaseTest):
@@ -354,7 +370,7 @@ class ChromiumOSErrorTest(cros_test_lib.MockTestCase):
     """
     self._payload_dir = ''
     self.PatchObject(remote_access.RemoteDevice, 'Pingable', return_value=True)
-    self.PatchObject(remote_access.RemoteDevice, 'work_dir', return_value='')
+    self.PatchObject(remote_access.RemoteDevice, 'work_dir', new='')
     self.PatchObject(remote_access.RemoteDevice, 'Reboot')
     self.PatchObject(remote_access.RemoteDevice, 'Cleanup')
 
