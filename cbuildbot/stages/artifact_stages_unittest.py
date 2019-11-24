@@ -601,7 +601,7 @@ class CollectPGOProfilesStageTest(generic_stages_unittest.AbstractStageTestCase,
       with self.assertRaises(ValueError) as raised:
         stage._CollectLLVMMetadata()
 
-      self.assertIn('version string', raised.exception.message)
+      self.assertIn('version string', str(raised.exception))
 
   def testCollectLLVMMetadataRaisesIfClangIsntPGOGenerated(self):
     stage = self.ConstructStage()
@@ -624,7 +624,7 @@ class CollectPGOProfilesStageTest(generic_stages_unittest.AbstractStageTestCase,
         with self.assertRaises(ValueError) as raised:
           stage._CollectLLVMMetadata()
 
-        self.assertIn('pgo_generate flag', raised.exception.message)
+        self.assertIn('pgo_generate flag', str(raised.exception))
 
   def testCollectLLVMMetadataFunctionsInASimpleCase(self):
     def clang_version():
