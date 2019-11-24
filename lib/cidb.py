@@ -22,7 +22,6 @@ from chromite.lib import cros_logging as logging
 from chromite.lib import factory
 from chromite.lib import failure_message_lib
 from chromite.lib import hwtest_results
-from chromite.lib import metrics
 from chromite.lib import osutils
 from chromite.lib import retry_stats
 from chromite.utils import memoize
@@ -754,53 +753,6 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
       values.update({'deadline': now + duration})
 
     return self._Insert('buildTable', values)
-
-  @minimum_schema(3)
-  def InsertCLActions(self, build_id, cl_actions, timestamp=None):
-    """Insert a list of |cl_actions|.
-
-    If |cl_actions| is empty, this function does nothing.
-
-    Args:
-      build_id: primary key of build that performed these actions.
-      cl_actions: A list of CLAction objects.
-      timestamp: (Optional) timestamp of the cl_actions. If not provided, use
-        the current timestamp of the database.
-
-    Returns:
-      Number of actions inserted.
-    """
-    if not cl_actions:
-      return 0
-
-    values = []
-    for cl_action in cl_actions:
-      change_number = cl_action.change_number
-      patch_number = cl_action.patch_number
-      change_source = cl_action.change_source
-      action = cl_action.action
-      reason = cl_action.reason
-      buildbucket_id = cl_action.buildbucket_id
-      value = {
-          'build_id': build_id,
-          'change_source': change_source,
-          'change_number': change_number,
-          'patch_number': patch_number,
-          'action': action,
-          'reason': reason,
-          'buildbucket_id': buildbucket_id}
-      if timestamp != None:
-        value['timestamp'] = timestamp
-      values.append(value)
-
-    retval = self._InsertMany('clActionTable', values)
-
-    for cl_action in cl_actions:
-      r = cl_action.reason or 'no_reason'
-      counter = metrics.Counter(constants.MON_CL_ACTION)
-      counter.increment(fields={'reason': r, 'action': cl_action.action})
-
-    return retval
 
   @minimum_schema(6)
   def InsertBoardPerBuild(self, build_id, board):

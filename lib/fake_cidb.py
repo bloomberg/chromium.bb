@@ -143,35 +143,6 @@ class FakeCIDBConnection(object):
          'important': d.get('important')})
     return 1
 
-  def InsertCLActions(self, build_id, cl_actions, timestamp=None):
-    """Insert a list of |cl_actions|."""
-    if not cl_actions:
-      return 0
-
-    rows = []
-    for cl_action in cl_actions:
-      change_number = int(cl_action.change_number)
-      patch_number = int(cl_action.patch_number)
-      change_source = cl_action.change_source
-      action = cl_action.action
-      reason = cl_action.reason
-      buildbucket_id = cl_action.buildbucket_id
-
-      timestamp = cl_action.timestamp or timestamp or datetime.datetime.now()
-
-      rows.append({
-          'build_id' : build_id,
-          'change_source' : change_source,
-          'change_number': change_number,
-          'patch_number' : patch_number,
-          'action' : action,
-          'timestamp': timestamp,
-          'reason' : reason,
-          'buildbucket_id': buildbucket_id})
-
-    self.clActionTable.extend(rows)
-    return len(rows)
-
   def InsertBuildStage(self, build_id, name, board=None,
                        status=constants.BUILDER_STATUS_PLANNED):
     build_stage_id = len(self.buildStageTable)
