@@ -156,7 +156,6 @@ PYTHON2_ONLY_TESTS = {
     'cbuildbot/lkgm_manager_unittest',
     'cbuildbot/manifest_version_unittest',
     'cbuildbot/stages/artifact_stages_unittest',
-    'cbuildbot/stages/build_stages_unittest',
     'cbuildbot/stages/completion_stages_unittest',
     'cbuildbot/stages/release_stages_unittest',
     'cbuildbot/stages/report_stages_unittest',
