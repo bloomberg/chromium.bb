@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_CAPTURE_VIDEO_CHROMEOS_LOCAL_GPU_MEMORY_BUFFER_MANAGER_H_
-#define MEDIA_CAPTURE_VIDEO_CHROMEOS_LOCAL_GPU_MEMORY_BUFFER_MANAGER_H_
+#ifndef MEDIA_GPU_TEST_LOCAL_GPU_MEMORY_BUFFER_MANAGER_H_
+#define MEDIA_GPU_TEST_LOCAL_GPU_MEMORY_BUFFER_MANAGER_H_
 
 #include <memory>
 
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
-#include "media/capture/capture_export.h"
+#include "media/gpu/media_gpu_export.h"
 #include "ui/gfx/buffer_types.h"
 
 struct gbm_device;
@@ -23,11 +23,9 @@ namespace media {
 
 // A local, as opposed to the default IPC-based, implementation of
 // gfx::GpuMemoryBufferManager which interacts with the DRM render node device
-// directly.  The LocalGpuMemoryBufferManager is only for testing purposes and
+// directly. The LocalGpuMemoryBufferManager is only for testing purposes and
 // should not be used in production.
-//
-// TODO(crbug.com/974437): consider moving this to //media/gpu/test.
-class CAPTURE_EXPORT LocalGpuMemoryBufferManager
+class MEDIA_GPU_EXPORT LocalGpuMemoryBufferManager
     : public gpu::GpuMemoryBufferManager {
  public:
   LocalGpuMemoryBufferManager();
@@ -64,4 +62,4 @@ class CAPTURE_EXPORT LocalGpuMemoryBufferManager
 
 }  // namespace media
 
-#endif  // MEDIA_CAPTURE_VIDEO_CHROMEOS_LOCAL_GPU_MEMORY_BUFFER_MANAGER_H_
+#endif  // MEDIA_GPU_TEST_LOCAL_GPU_MEMORY_BUFFER_MANAGER_H_
