@@ -151,7 +151,6 @@ SLOW_TESTS = {
 # These are tests that have not yet been ported to Python 3.  No new tests
 # should be added to this list as they'll need to be ported at some point.
 PYTHON2_ONLY_TESTS = {
-    'cbuildbot/afdo_unittest',
     'cbuildbot/cbuildbot_unittest',
     'cbuildbot/commands_unittest',
     'cbuildbot/lkgm_manager_unittest',

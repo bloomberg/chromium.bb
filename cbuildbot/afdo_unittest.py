@@ -234,7 +234,7 @@ class AfdoTest(cros_test_lib.MockTempDirTestCase):
     write_file = self.PatchObject(osutils, 'WriteFile')
 
     global_tmpdir = '/global/tmp'
-    self.PatchObject(osutils, 'GetGlobalTempDir', returns=global_tmpdir)
+    self.PatchObject(osutils, 'GetGlobalTempDir', return_value=global_tmpdir)
 
     merge_plan = {
         1: ('gs://cwp/1.afdo.xz', 'gs://bench/1.afdo.bz2'),
