@@ -218,7 +218,8 @@ class Builder(object):
     if not self._run.options.cache_dir_specified:
       commandline.BaseParser.ConfigureCacheDir(None)
 
-    with tempfile.NamedTemporaryFile(prefix='metadata') as metadata_file:
+    with tempfile.NamedTemporaryFile(prefix='metadata',
+                                     mode='w') as metadata_file:
       metadata_file.write(self._run.attrs.metadata.GetJSON())
       metadata_file.flush()
       args += ['--metadata_dump', metadata_file.name]
