@@ -151,7 +151,6 @@ PYTHON2_ONLY_TESTS = {
     'cbuildbot/manifest_version_unittest',
     'cbuildbot/stages/completion_stages_unittest',
     'cbuildbot/stages/report_stages_unittest',
-    'cbuildbot/stages/sdk_stages_unittest',
     'cbuildbot/stages/sync_stages_unittest',
     'cbuildbot/stages/tast_test_stages_unittest',
     'cbuildbot/validation_pool_unittest',
