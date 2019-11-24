@@ -171,7 +171,6 @@ PYTHON2_ONLY_TESTS = {
     'lib/auto_updater_unittest',
     'lib/buildbucket_v2_unittest',
     'lib/builder_status_lib_unittest',
-    'lib/cidb_unittest',
     'lib/failure_message_lib_unittest',
     'lib/repo_manifest_unittest',
     'scripts/cbuildbot_launch_unittest',
