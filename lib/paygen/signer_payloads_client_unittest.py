@@ -329,7 +329,7 @@ versionrev = foo-version
     uris = ['foo', 'bar', 'is']
 
     # All Urls exist.
-    exists = self.PatchObject(self.ctx, 'Exists', returns=True)
+    exists = self.PatchObject(self.ctx, 'Exists', return_value=True)
 
     client = self.createStandardClient()
 
