@@ -147,7 +147,6 @@ SLOW_TESTS = {
 PYTHON2_ONLY_TESTS = {
     'cbuildbot/cbuildbot_unittest',
     'cbuildbot/lkgm_manager_unittest',
-    'cbuildbot/manifest_version_unittest',
     'cbuildbot/stages/completion_stages_unittest',
     'cbuildbot/stages/report_stages_unittest',
     'cbuildbot/stages/sync_stages_unittest',

@@ -345,7 +345,7 @@ class VersionInfo(object):
                   ('CHROMEOS_PATCH', self.patch_number),
                   ('CHROME_BRANCH', self.chrome_branch))
 
-    with tempfile.NamedTemporaryFile(prefix='mvp') as temp_fh:
+    with tempfile.NamedTemporaryFile(prefix='mvp', mode='w') as temp_fh:
       with open(self.version_file, 'r') as source_version_fh:
         for line in source_version_fh:
           for key, value in components:
