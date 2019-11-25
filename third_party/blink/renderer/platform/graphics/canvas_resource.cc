@@ -24,6 +24,7 @@
 #include "third_party/blink/renderer/platform/graphics/canvas_resource_provider.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/shared_gpu_context.h"
 #include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
+#include "third_party/blink/renderer/platform/graphics/unaccelerated_static_bitmap_image.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
@@ -256,7 +257,7 @@ scoped_refptr<StaticBitmapImage> CanvasResourceSharedBitmap::Bitmap() {
         static_cast<CanvasResourceSharedBitmap*>(resource_to_unref)->Release();
       },
       this);
-  auto image = StaticBitmapImage::Create(sk_image);
+  auto image = UnacceleratedStaticBitmapImage::Create(sk_image);
   image->SetOriginClean(is_origin_clean_);
   return image;
 }
@@ -532,7 +533,8 @@ scoped_refptr<StaticBitmapImage> CanvasResourceSharedImage::Bitmap() {
                     gpu_memory_buffer_->stride(0));
     auto sk_image = SkImage::MakeRasterCopy(pixmap);
     gpu_memory_buffer_->Unmap();
-    return sk_image ? StaticBitmapImage::Create(sk_image) : nullptr;
+    return sk_image ? UnacceleratedStaticBitmapImage::Create(sk_image)
+                    : nullptr;
   }
 
   // In order to avoid creating multiple representations for this shared image
