@@ -622,28 +622,29 @@ bool IsHostnameCandidate(const RTCIceCandidatePlatform& candidate) {
 }  // namespace
 
 // Implementation of LocalRTCStatsRequest.
-LocalRTCStatsRequest::LocalRTCStatsRequest(blink::WebRTCStatsRequest impl)
+LocalRTCStatsRequest::LocalRTCStatsRequest(RTCStatsRequest* impl)
     : impl_(impl) {}
 
 LocalRTCStatsRequest::LocalRTCStatsRequest() {}
 LocalRTCStatsRequest::~LocalRTCStatsRequest() {}
 
 bool LocalRTCStatsRequest::hasSelector() const {
-  return impl_.HasSelector();
+  return impl_->HasSelector();
 }
 
 blink::WebMediaStreamTrack LocalRTCStatsRequest::component() const {
-  return impl_.Component();
+  return impl_->Component();
 }
 
 scoped_refptr<LocalRTCStatsResponse> LocalRTCStatsRequest::createResponse() {
   return scoped_refptr<LocalRTCStatsResponse>(
-      new rtc::RefCountedObject<LocalRTCStatsResponse>(impl_.CreateResponse()));
+      new rtc::RefCountedObject<LocalRTCStatsResponse>(
+          impl_->CreateResponse()));
 }
 
 void LocalRTCStatsRequest::requestSucceeded(
     const LocalRTCStatsResponse* response) {
-  impl_.RequestSucceeded(response->webKitStatsResponse());
+  impl_->RequestSucceeded(response->webKitStatsResponse());
 }
 
 // Implementation of LocalRTCStatsResponse.
@@ -1629,8 +1630,7 @@ void RTCPeerConnectionHandler::GetStandardStatsForTracker(
   native_peer_connection_->GetStats(observer.get());
 }
 
-void RTCPeerConnectionHandler::GetStats(
-    const blink::WebRTCStatsRequest& request) {
+void RTCPeerConnectionHandler::GetStats(RTCStatsRequest* request) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   scoped_refptr<LocalRTCStatsRequest> inner_request(
       new rtc::RefCountedObject<LocalRTCStatsRequest>(request));

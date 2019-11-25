@@ -329,7 +329,7 @@ void MockWebRTCPeerConnectionHandler::AddICECandidate(
 
 void MockWebRTCPeerConnectionHandler::RestartIce() {}
 
-void MockWebRTCPeerConnectionHandler::GetStats(const WebRTCStatsRequest&) {}
+void MockWebRTCPeerConnectionHandler::GetStats(RTCStatsRequest*) {}
 
 void MockWebRTCPeerConnectionHandler::GetStats(
     blink::WebRTCStatsReportCallback,

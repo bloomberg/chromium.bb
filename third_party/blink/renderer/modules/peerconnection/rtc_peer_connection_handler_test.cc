@@ -32,7 +32,6 @@
 #include "third_party/blink/public/platform/web_rtc_peer_connection_handler_client.h"
 #include "third_party/blink/public/platform/web_rtc_rtp_receiver.h"
 #include "third_party/blink/public/platform/web_rtc_stats.h"
-#include "third_party/blink/public/platform/web_rtc_stats_request.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
 #include "third_party/blink/public/web/web_heap.h"
@@ -52,6 +51,7 @@
 #include "third_party/blink/renderer/platform/peerconnection/rtc_ice_candidate_platform.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_session_description_platform.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_stats.h"
+#include "third_party/blink/renderer/platform/peerconnection/rtc_stats_request.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_void_request.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
@@ -100,7 +100,7 @@ class MockRTCStatsResponse : public LocalRTCStatsResponse {
   int statistic_count_;
 };
 
-// Mocked wrapper for blink::WebRTCStatsRequest
+// Mocked wrapper for RTCStatsRequest
 class MockRTCStatsRequest : public LocalRTCStatsRequest {
  public:
   MockRTCStatsRequest()
