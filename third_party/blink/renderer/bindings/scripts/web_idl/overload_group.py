@@ -78,6 +78,9 @@ class OverloadGroup(WithIdentifier):
     def __len__(self):
         return len(self._functions)
 
+    def index(self, value):
+        return self._functions.index(value)
+
     @property
     def is_static(self):
         return self._is_static
