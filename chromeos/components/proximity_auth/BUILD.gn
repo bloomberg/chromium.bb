@@ -14,7 +14,6 @@ static_library("proximity_auth") {
     "messenger_observer.h",
     "metrics.cc",
     "metrics.h",
-    "notification_controller.h",
     "proximity_auth_client.h",
     "proximity_auth_local_state_pref_manager.cc",
     "proximity_auth_local_state_pref_manager.h",
