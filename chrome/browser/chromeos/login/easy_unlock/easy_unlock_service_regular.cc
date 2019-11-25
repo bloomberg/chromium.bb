@@ -60,9 +60,6 @@ namespace chromeos {
 
 namespace {
 
-// Key name of the local device permit record dictonary in kEasyUnlockPairing.
-const char kKeyPermitAccess[] = "permitAccess";
-
 // Key name of the remote device list in kEasyUnlockPairing.
 const char kKeyDevices[] = "devices";
 
@@ -292,12 +289,6 @@ AccountId EasyUnlockServiceRegular::GetAccountId() const {
   return primary_user->GetAccountId();
 }
 
-void EasyUnlockServiceRegular::ClearPermitAccess() {
-  DictionaryPrefUpdate pairing_update(profile()->GetPrefs(),
-                                      prefs::kEasyUnlockPairing);
-  pairing_update->RemoveWithoutPathExpansion(kKeyPermitAccess, NULL);
-}
-
 const base::ListValue* EasyUnlockServiceRegular::GetRemoteDevices() const {
   const base::DictionaryValue* pairing_dict =
       profile()->GetPrefs()->GetDictionary(prefs::kEasyUnlockPairing);
@@ -459,9 +450,6 @@ void EasyUnlockServiceRegular::ShowChromebookAddedNotification() {
 void EasyUnlockServiceRegular::ShowNotificationIfNewDevicePresent(
     const std::set<std::string>& public_keys_before_sync,
     const std::set<std::string>& public_keys_after_sync) {
-  if (public_keys_after_sync.empty())
-    ClearPermitAccess();
-
   if (public_keys_before_sync == public_keys_after_sync)
     return;
 

@@ -227,10 +227,6 @@ AccountId EasyUnlockServiceSignin::GetAccountId() const {
   return account_id_;
 }
 
-void EasyUnlockServiceSignin::ClearPermitAccess() {
-  NOTREACHED();
-}
-
 const base::ListValue* EasyUnlockServiceSignin::GetRemoteDevices() const {
   const UserData* data = FindLoadedDataForCurrentUser();
   if (!data)
