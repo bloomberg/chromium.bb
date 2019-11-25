@@ -4459,10 +4459,21 @@ void RenderFrameHostImpl::CreatePortal(
   if (frame_tree_node()->parent()) {
     mojo::ReportBadMessage(
         "RFHI::CreatePortal called in a nested browsing context");
+    frame_host_associated_receiver_.reset();
     return;
   }
+
   Portal* portal =
       Portal::Create(this, std::move(pending_receiver), std::move(client));
+  if (!portal) {
+    // |portal| is null when |Portal::Create| reports a bad message, so we need
+    // to close the receiver.
+    // TODO(1027302): Remove these manual calls to reset once we have a cleaner
+    // way of reporting a bad message for an AssociatedReceiver.
+    frame_host_associated_receiver_.reset();
+    return;
+  }
+
   RenderFrameProxyHost* proxy_host = portal->CreateProxyAndAttachPortal();
   std::move(callback).Run(proxy_host->GetRoutingID(), portal->portal_token(),
                           portal->GetDevToolsFrameToken());
@@ -4474,10 +4485,12 @@ void RenderFrameHostImpl::AdoptPortal(
   Portal* portal = Portal::FromToken(portal_token);
   if (!portal) {
     mojo::ReportBadMessage("Unknown portal_token when adopting portal.");
+    frame_host_associated_receiver_.reset();
     return;
   }
   if (portal->owner_render_frame_host() != this) {
     mojo::ReportBadMessage("AdoptPortal called from wrong frame.");
+    frame_host_associated_receiver_.reset();
     return;
   }
   RenderFrameProxyHost* proxy_host = portal->CreateProxyAndAttachPortal();
