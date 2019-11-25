@@ -1550,6 +1550,12 @@
         },
       },
       # chromium.memory
+      'Linux ASan LSan Tests (1)': {
+        'swarming': {
+          'shards': 4,
+        },
+      },
+      # chromium.memory
       'Linux TSan Tests': {
         'swarming': {
           'shards': 6,

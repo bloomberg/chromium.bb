@@ -4403,7 +4403,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "shards": 4
         },
         "test": "sync_integration_tests"
       },
