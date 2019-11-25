@@ -167,7 +167,7 @@ void ServiceWorkerNavigationLoader::StartRequest(
   fetch_dispatcher_ = std::make_unique<ServiceWorkerFetchDispatcher>(
       blink::mojom::FetchAPIRequest::From(resource_request_),
       static_cast<ResourceType>(resource_request_.resource_type),
-      provider_host_->client_uuid(), active_worker,
+      provider_host_->container_host()->client_uuid(), active_worker,
       base::BindOnce(&ServiceWorkerNavigationLoader::DidPrepareFetchEvent,
                      weak_factory_.GetWeakPtr(), active_worker,
                      active_worker->running_status()),

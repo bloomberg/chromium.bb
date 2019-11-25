@@ -166,7 +166,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
     return RenderProcessHost::FromID(render_process_id_);
   }
 
-  const std::string& client_uuid() const { return client_uuid_; }
   base::TimeTicks create_time() const { return create_time_; }
   int process_id() const { return render_process_id_; }
   int provider_id() const { return provider_id_; }
@@ -446,9 +445,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
 
   // Unique among all provider hosts.
   const int provider_id_;
-
-  // A GUID that is web-exposed as FetchEvent.clientId.
-  std::string client_uuid_;
 
   const base::TimeTicks create_time_;
   int render_process_id_;

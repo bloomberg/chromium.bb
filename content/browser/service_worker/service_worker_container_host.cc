@@ -4,6 +4,7 @@
 
 #include "content/browser/service_worker/service_worker_container_host.h"
 
+#include "base/guid.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_object_host.h"
@@ -43,6 +44,7 @@ ServiceWorkerContainerHost::ServiceWorkerContainerHost(
               ? base::NullCallback()
               : base::BindRepeating(&WebContents::FromFrameTreeNodeId,
                                     frame_tree_node_id)),
+      client_uuid_(base::GenerateGUID()),
       provider_host_(provider_host),
       context_(std::move(context)) {
   DCHECK(provider_host_);
@@ -58,6 +60,9 @@ ServiceWorkerContainerHost::ServiceWorkerContainerHost(
 ServiceWorkerContainerHost::~ServiceWorkerContainerHost() {
   if (fetch_request_window_id_)
     FrameTreeNodeIdRegistry::GetInstance()->Remove(fetch_request_window_id_);
+
+  if (controller_)
+    controller_->OnControlleeDestroyed(client_uuid_);
 
   // Remove |provider_host_| as an observer of ServiceWorkerRegistrations.
   // TODO(falken): Use ScopedObserver instead of this explicit call.
@@ -109,7 +114,7 @@ void ServiceWorkerContainerHost::SendSetControllerServiceWorker(
   DCHECK(IsContainerForClient());
 
   auto controller_info = blink::mojom::ControllerServiceWorkerInfo::New();
-  controller_info->client_id = provider_host_->client_uuid();
+  controller_info->client_id = client_uuid_;
   // Set |fetch_request_window_id| only when |controller_| is available.
   // Setting |fetch_request_window_id| should not affect correctness, however,
   // we have the extensions bug, https://crbug.com/963748, which we don't yet
@@ -286,6 +291,32 @@ void ServiceWorkerContainerHost::UpdateUrls(
       fetch_request_window_id_ = base::UnguessableToken::Create();
       registry->Add(fetch_request_window_id_, frame_tree_node_id_);
     }
+  }
+
+  auto previous_origin = url::Origin::Create(previous_url);
+  auto new_origin = url::Origin::Create(url);
+  // Update client id on cross origin redirects. This corresponds to the HTML
+  // standard's "process a navigation fetch" algorithm's step for discarding
+  // |reservedEnvironment|.
+  // https://html.spec.whatwg.org/multipage/browsing-the-web.html#process-a-navigate-fetch
+  // "If |reservedEnvironment| is not null and |currentURL|'s origin is not the
+  // same as |reservedEnvironment|'s creation URL's origin, then:
+  //    1. Run the environment discarding steps for |reservedEnvironment|.
+  //    2. Set |reservedEnvironment| to null."
+  if (previous_url.is_valid() &&
+      !new_origin.IsSameOriginWith(previous_origin)) {
+    // Remove old controller since we know the controller is definitely
+    // changed. We need to remove |this| from |controller_|'s controllee before
+    // updating UUID since ServiceWorkerVersion has a map from uuid to provider
+    // hosts.
+    SetControllerRegistration(nullptr, false /* notify_controllerchange */);
+
+    // Set UUID to the new one.
+    if (context_)
+      context_->UnregisterProviderHostByClientID(client_uuid_);
+    client_uuid_ = base::GenerateGUID();
+    if (context_)
+      context_->RegisterProviderHostByClientID(client_uuid_, provider_host_);
   }
 }
 
@@ -480,7 +511,7 @@ void ServiceWorkerContainerHost::UpdateController(
   if (version)
     version->AddControllee(provider_host_);
   if (previous_version)
-    previous_version->RemoveControllee(provider_host_->client_uuid());
+    previous_version->RemoveControllee(client_uuid_);
 
   // SetController message should be sent only for clients.
   DCHECK(IsContainerForClient());

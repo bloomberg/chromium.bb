@@ -263,6 +263,8 @@ class CONTENT_EXPORT ServiceWorkerContainerHost {
     return web_contents_getter_;
   }
 
+  const std::string& client_uuid() const { return client_uuid_; }
+
   // For service worker clients. Describes whether the client has a controller
   // and if it has a fetch event handler.
   blink::mojom::ControllerServiceWorkerMode GetControllerMode() const;
@@ -329,6 +331,9 @@ class CONTENT_EXPORT ServiceWorkerContainerHost {
   // Only set when this object is pre-created for a navigation. It indicates the
   // tab where the navigation occurs. Otherwise, a null callback.
   const WebContentsGetter web_contents_getter_;
+
+  // A GUID that is web-exposed as FetchEvent.clientId.
+  std::string client_uuid_;
 
   // For service worker clients.
   ClientPhase client_phase_ = ClientPhase::kInitial;

@@ -435,16 +435,17 @@ TEST_F(ServiceWorkerProviderHostTest, UpdateUrls_SameOriginRedirect) {
 
   ServiceWorkerProviderHost* host = CreateProviderHost(url1);
   ServiceWorkerContainerHost* container_host = host->container_host();
-  const std::string uuid1 = host->client_uuid();
+  const std::string uuid1 = container_host->client_uuid();
   EXPECT_EQ(url1, container_host->url());
   EXPECT_EQ(url1, container_host->site_for_cookies());
 
   host->UpdateUrls(url2, url2, url::Origin::Create(url2));
   EXPECT_EQ(url2, container_host->url());
   EXPECT_EQ(url2, container_host->site_for_cookies());
-  EXPECT_EQ(uuid1, host->client_uuid());
+  EXPECT_EQ(uuid1, container_host->client_uuid());
 
-  EXPECT_EQ(host, context_->GetProviderHostByClientID(host->client_uuid()));
+  EXPECT_EQ(host,
+            context_->GetProviderHostByClientID(container_host->client_uuid()));
 }
 
 TEST_F(ServiceWorkerProviderHostTest, UpdateUrls_CrossOriginRedirect) {
@@ -453,17 +454,18 @@ TEST_F(ServiceWorkerProviderHostTest, UpdateUrls_CrossOriginRedirect) {
 
   ServiceWorkerProviderHost* host = CreateProviderHost(url1);
   ServiceWorkerContainerHost* container_host = host->container_host();
-  const std::string uuid1 = host->client_uuid();
+  const std::string uuid1 = container_host->client_uuid();
   EXPECT_EQ(url1, container_host->url());
   EXPECT_EQ(url1, container_host->site_for_cookies());
 
   host->UpdateUrls(url2, url2, url::Origin::Create(url2));
   EXPECT_EQ(url2, container_host->url());
   EXPECT_EQ(url2, container_host->site_for_cookies());
-  EXPECT_NE(uuid1, host->client_uuid());
+  EXPECT_NE(uuid1, container_host->client_uuid());
 
   EXPECT_FALSE(context_->GetProviderHostByClientID(uuid1));
-  EXPECT_EQ(host, context_->GetProviderHostByClientID(host->client_uuid()));
+  EXPECT_EQ(host, context_->GetProviderHostByClientID(
+                      host->container_host()->client_uuid()));
 }
 
 class MockServiceWorkerRegistration : public ServiceWorkerRegistration {

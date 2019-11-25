@@ -197,7 +197,7 @@ ServiceWorkerControlleeRequestHandler::MaybeCreateSubresourceLoaderParams() {
     controller_info->remote_controller = remote.Unbind();
   }
 
-  controller_info->client_id = provider_host_->client_uuid();
+  controller_info->client_id = container_host->client_uuid();
   if (container_host->fetch_request_window_id()) {
     controller_info->fetch_request_window_id =
         base::make_optional(container_host->fetch_request_window_id());

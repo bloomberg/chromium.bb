@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/debug/alias.h"
-#include "base/guid.h"
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -238,7 +237,6 @@ ServiceWorkerProviderHost::ServiceWorkerProviderHost(
     scoped_refptr<ServiceWorkerVersion> running_hosted_version,
     base::WeakPtr<ServiceWorkerContextCore> context)
     : provider_id_(NextProviderId()),
-      client_uuid_(base::GenerateGUID()),
       create_time_(base::TimeTicks::Now()),
       render_process_id_(ChildProcessHost::kInvalidUniqueID),
       frame_id_(MSG_ROUTING_NONE),
@@ -264,7 +262,8 @@ ServiceWorkerProviderHost::ServiceWorkerProviderHost(
   // For service worker clients, ServiceWorkerProviderHost::UpdateUrls() will
   // be called later.
 
-  context_->RegisterProviderHostByClientID(client_uuid_, this);
+  context_->RegisterProviderHostByClientID(container_host_->client_uuid(),
+                                           this);
 
   DCHECK(host_receiver.is_valid());
   receiver_.Bind(std::move(host_receiver));
@@ -282,9 +281,7 @@ ServiceWorkerProviderHost::~ServiceWorkerProviderHost() {
   }
 
   if (context_)
-    context_->UnregisterProviderHostByClientID(client_uuid_);
-  if (container_host_->controller())
-    container_host_->controller()->OnControlleeDestroyed(client_uuid_);
+    context_->UnregisterProviderHostByClientID(container_host_->client_uuid());
 
   // Explicitly destroy the ServiceWorkerContainerHost to release
   // ServiceWorkerObjectHosts and ServiceWorkerRegistrationObjectHosts owned by
@@ -381,37 +378,9 @@ void ServiceWorkerProviderHost::UpdateUrls(
     const base::Optional<url::Origin>& top_frame_origin) {
   DCHECK(IsProviderForClient());
 
-  GURL previous_url = container_host_->url();
   container_host_->UpdateUrls(url, site_for_cookies, top_frame_origin);
   // TODO(https://crbug.com/931087): Move the remaining part to
   // ServiceWorkerContainerHost::UpdateUrls().
-
-  auto previous_origin = url::Origin::Create(previous_url);
-  auto new_origin = url::Origin::Create(url);
-  // Update client id on cross origin redirects. This corresponds to the HTML
-  // standard's "process a navigation fetch" algorithm's step for discarding
-  // |reservedEnvironment|.
-  // https://html.spec.whatwg.org/multipage/browsing-the-web.html#process-a-navigate-fetch
-  // "If |reservedEnvironment| is not null and |currentURL|'s origin is not the
-  // same as |reservedEnvironment|'s creation URL's origin, then:
-  //    1. Run the environment discarding steps for |reservedEnvironment|.
-  //    2. Set |reservedEnvironment| to null."
-  if (previous_url.is_valid() &&
-      !new_origin.IsSameOriginWith(previous_origin)) {
-    // Remove old controller since we know the controller is definitely
-    // changed. We need to remove |this| from |controller_|'s controllee before
-    // updating UUID since ServiceWorkerVersion has a map from uuid to provider
-    // hosts.
-    container_host_->SetControllerRegistration(
-        nullptr, false /* notify_controllerchange */);
-
-    // Set UUID to the new one.
-    if (context_)
-      context_->UnregisterProviderHostByClientID(client_uuid_);
-    client_uuid_ = base::GenerateGUID();
-    if (context_)
-      context_->RegisterProviderHostByClientID(client_uuid_, this);
-  }
 
   SyncMatchingRegistrations();
 }
@@ -1129,7 +1098,7 @@ void ServiceWorkerProviderHost::OnEnterBackForwardCache() {
             blink::mojom::ServiceWorkerProviderType::kForWindow);
   if (container_host_->controller())
     container_host_->controller()->MoveControlleeToBackForwardCacheMap(
-        client_uuid_);
+        container_host_->client_uuid());
   is_in_back_forward_cache_ = true;
 }
 
@@ -1140,7 +1109,7 @@ void ServiceWorkerProviderHost::OnRestoreFromBackForwardCache() {
             blink::mojom::ServiceWorkerProviderType::kForWindow);
   if (container_host_->controller())
     container_host_->controller()->RestoreControlleeFromBackForwardCacheMap(
-        client_uuid_);
+        container_host_->client_uuid());
   is_in_back_forward_cache_ = false;
 }
 

@@ -377,7 +377,7 @@ ServiceWorkerVersionInfo ServiceWorkerVersion::GetInfo() {
   for (const auto& controllee : controllee_map_) {
     ServiceWorkerProviderHost* host = controllee.second;
     info.clients.insert(std::make_pair(
-        host->client_uuid(),
+        host->container_host()->client_uuid(),
         ServiceWorkerClientInfo(host->process_id(), host->frame_id(),
                                 host->container_host()->web_contents_getter(),
                                 host->provider_type())));
@@ -715,8 +715,8 @@ void ServiceWorkerVersion::AddControllee(
   // TODO(crbug.com/1021718): Remove this CHECK once we figure out the cause of
   // crash.
   CHECK(provider_host);
-  const std::string& uuid = provider_host->client_uuid();
-  CHECK(!provider_host->client_uuid().empty());
+  const std::string& uuid = provider_host->container_host()->client_uuid();
+  CHECK(!provider_host->container_host()->client_uuid().empty());
   // TODO(crbug.com/1021718): Change to DCHECK once we figure out the cause of
   // crash.
   CHECK(!base::Contains(controllee_map_, uuid));
@@ -809,7 +809,8 @@ void ServiceWorkerVersion::EvictBackForwardCachedControllees() {
   while (!bfcached_controllee_map_.empty()) {
     auto controllee = bfcached_controllee_map_.begin();
     controllee->second->EvictFromBackForwardCache();
-    RemoveControlleeFromBackForwardCacheMap(controllee->second->client_uuid());
+    RemoveControlleeFromBackForwardCacheMap(
+        controllee->second->container_host()->client_uuid());
   }
 }
 
