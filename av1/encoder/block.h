@@ -35,11 +35,16 @@ extern "C" {
 #define MC_FLOW_BSIZE_1D 16
 #define MC_FLOW_NUM_PELS (MC_FLOW_BSIZE_1D * MC_FLOW_BSIZE_1D)
 #define MAX_MC_FLOW_BLK_IN_SB (MAX_SB_SIZE / MC_FLOW_BSIZE_1D)
-#define MAX_WINNER_MODE_COUNT 3
+#define MAX_WINNER_MODE_COUNT_INTRA 3
+#define MAX_WINNER_MODE_COUNT_INTER 1
 typedef struct {
   MB_MODE_INFO mbmi;
+  RD_STATS rd_cost;
   int64_t rd;
+  int rate_y;
+  int rate_uv;
   uint8_t color_index_map[64 * 64];
+  THR_MODES mode_index;
 } WinnerModeStats;
 
 typedef struct {
@@ -235,7 +240,8 @@ struct macroblock {
   MB_MODE_INFO_EXT *mbmi_ext;
   MB_MODE_INFO_EXT_FRAME *mbmi_ext_frame;
   // Array of mode stats for winner mode processing
-  WinnerModeStats winner_mode_stats[MAX_WINNER_MODE_COUNT];
+  WinnerModeStats winner_mode_stats[AOMMAX(MAX_WINNER_MODE_COUNT_INTRA,
+                                           MAX_WINNER_MODE_COUNT_INTER)];
   int winner_mode_count;
   int skip_block;
   int qindex;
