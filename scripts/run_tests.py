@@ -157,7 +157,6 @@ PYTHON2_ONLY_TESTS = {
     'cbuildbot/validation_pool_unittest',
     'cli/cros/cros_chrome_sdk_unittest',
     'cli/deploy_unittest',
-    'lib/buildbucket_v2_unittest',
     'scripts/deploy_chrome_unittest',
     'signing/image_signing/imagefile_unittest',
     'signing/lib/firmware_unittest',

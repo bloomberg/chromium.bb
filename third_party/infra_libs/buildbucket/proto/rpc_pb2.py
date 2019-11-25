@@ -15,9 +15,9 @@ _sym_db = _symbol_database.Default()
 from google.protobuf import field_mask_pb2 as google_dot_protobuf_dot_field__mask__pb2
 from google.protobuf import struct_pb2 as google_dot_protobuf_dot_struct__pb2
 from google.rpc import status_pb2 as google_dot_rpc_dot_status__pb2
-import common_pb2 as common__pb2
-import build_pb2 as build__pb2
-import notification_pb2 as notification__pb2
+from . import common_pb2 as common__pb2
+from . import build_pb2 as build__pb2
+from . import notification_pb2 as notification__pb2
 
 DESCRIPTOR = _descriptor.FileDescriptor(
     name='rpc.proto',

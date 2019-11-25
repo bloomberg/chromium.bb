@@ -14,8 +14,8 @@ _sym_db = _symbol_database.Default()
 
 from google.protobuf import timestamp_pb2 as google_dot_protobuf_dot_timestamp__pb2
 from google.protobuf import struct_pb2 as google_dot_protobuf_dot_struct__pb2
-import common_pb2 as common__pb2
-import step_pb2 as step__pb2
+from . import common_pb2 as common__pb2
+from . import step_pb2 as step__pb2
 
 DESCRIPTOR = _descriptor.FileDescriptor(
     name='build.proto',
