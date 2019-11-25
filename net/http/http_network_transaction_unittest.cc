@@ -20394,7 +20394,6 @@ TEST_F(HttpNetworkTransactionNetworkErrorLoggingTest,
 }
 
 TEST_F(HttpNetworkTransactionNetworkErrorLoggingTest, DontCreateReportHttp) {
-  base::HistogramTester histograms;
   RequestPolicy();
   EXPECT_EQ(1u, network_error_logging_service()->headers().size());
   EXPECT_EQ(1u, network_error_logging_service()->errors().size());
@@ -20432,16 +20431,11 @@ TEST_F(HttpNetworkTransactionNetworkErrorLoggingTest, DontCreateReportHttp) {
   EXPECT_EQ("hello world", response_data);
 
   // Insecure request does not generate a report
-  histograms.ExpectBucketCount(
-      NetworkErrorLoggingService::kRequestOutcomeHistogram,
-      NetworkErrorLoggingService::RequestOutcome::kDiscardedInsecureOrigin, 1);
-
   EXPECT_EQ(1u, network_error_logging_service()->errors().size());
 }
 
 TEST_F(HttpNetworkTransactionNetworkErrorLoggingTest,
        DontCreateReportHttpError) {
-  base::HistogramTester histograms;
   RequestPolicy();
   EXPECT_EQ(1u, network_error_logging_service()->headers().size());
   EXPECT_EQ(1u, network_error_logging_service()->errors().size());
@@ -20468,10 +20462,6 @@ TEST_F(HttpNetworkTransactionNetworkErrorLoggingTest,
 
   // Insecure request does not generate a report, regardless of existence of a
   // policy for the origin.
-  histograms.ExpectBucketCount(
-      NetworkErrorLoggingService::kRequestOutcomeHistogram,
-      NetworkErrorLoggingService::RequestOutcome::kDiscardedInsecureOrigin, 1);
-
   EXPECT_EQ(1u, network_error_logging_service()->errors().size());
 }
 
