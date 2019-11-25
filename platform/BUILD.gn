@@ -9,7 +9,6 @@ source_set("platform") {
 
   sources = [
     "api/logging.h",
-    "api/network_interface.cc",
     "api/network_interface.h",
     "api/scoped_wake_lock.cc",
     "api/scoped_wake_lock.h",
@@ -27,6 +26,8 @@ source_set("platform") {
     "api/udp_socket.h",
     "base/error.cc",
     "base/error.h",
+    "base/interface_info.cc",
+    "base/interface_info.h",
     "base/ip_address.cc",
     "base/ip_address.h",
     "base/location.cc",

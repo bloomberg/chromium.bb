@@ -527,12 +527,16 @@ void PublisherDemo(absl::string_view friendly_name) {
       PlatformClientPosix::GetInstance()->GetTaskRunner());
 
   ServerConfig server_config;
-  std::vector<platform::InterfaceAddresses> interfaces =
-      platform::GetInterfaceAddresses();
-  for (const auto& interface : interfaces) {
-    server_config.connection_endpoints.push_back(
-        IPEndpoint{interface.addresses[0].address, server_port});
+  for (const platform::InterfaceInfo& interface :
+       platform::GetNetworkInterfaces()) {
+    OSP_VLOG << "Found interface: " << interface;
+    if (!interface.addresses.empty()) {
+      server_config.connection_endpoints.push_back(
+          IPEndpoint{interface.addresses[0].address, server_port});
+    }
   }
+  OSP_LOG_IF(WARN, server_config.connection_endpoints.empty())
+      << "No network interfaces had usable addresses for mDNS publishing.";
 
   MessageDemuxer demuxer(platform::Clock::now,
                          MessageDemuxer::kDefaultBufferLimit);

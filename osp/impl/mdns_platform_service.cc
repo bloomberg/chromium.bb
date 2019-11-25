@@ -22,7 +22,7 @@ MdnsPlatformService::BoundInterface::~BoundInterface() = default;
 
 bool MdnsPlatformService::BoundInterface::operator==(
     const MdnsPlatformService::BoundInterface& other) const {
-  if (interface_info != other.interface_info)
+  if (interface_info.index != other.interface_info.index)
     return false;
 
   if (subnet.address != other.subnet.address ||

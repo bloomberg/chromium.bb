@@ -271,7 +271,9 @@ Error MdnsResponderAdapterImpl::RegisterInterface(
                                      interface_address.prefix_length);
   }
 
-  interface_info.CopyHardwareAddressTo(info.MAC.b);
+  static_assert(sizeof(info.MAC.b) == sizeof(interface_info.hardware_address),
+                "MAC addresss size mismatch.");
+  memcpy(info.MAC.b, interface_info.hardware_address, sizeof(info.MAC.b));
   info.McastTxRx = 1;
   platform_storage_.sockets.push_back(socket);
   auto result = mDNS_RegisterInterface(&mdns_, &info, mDNSfalse);

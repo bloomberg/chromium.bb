@@ -211,15 +211,23 @@ class MdnsResponderServiceTest : public ::testing::Test {
   std::unique_ptr<ServicePublisherImpl> service_publisher_;
   const uint8_t default_mac_[6] = {0, 11, 22, 33, 44, 55};
   const uint8_t second_mac_[6] = {55, 33, 22, 33, 44, 77};
+  const platform::IPSubnet default_subnet_{IPAddress{192, 168, 3, 2}, 24};
+  const platform::IPSubnet second_subnet_{IPAddress{10, 0, 0, 3}, 24};
   std::vector<MdnsPlatformService::BoundInterface> bound_interfaces_{
       MdnsPlatformService::BoundInterface{
-          platform::InterfaceInfo{1, default_mac_, "eth0",
-                                  platform::InterfaceInfo::Type::kEthernet},
-          platform::IPSubnet{IPAddress{192, 168, 3, 2}, 24}, kDefaultSocket},
+          platform::InterfaceInfo{1,
+                                  default_mac_,
+                                  "eth0",
+                                  platform::InterfaceInfo::Type::kEthernet,
+                                  {default_subnet_}},
+          default_subnet_, kDefaultSocket},
       MdnsPlatformService::BoundInterface{
-          platform::InterfaceInfo{2, second_mac_, "eth1",
-                                  platform::InterfaceInfo::Type::kEthernet},
-          platform::IPSubnet{IPAddress{10, 0, 0, 3}, 24}, kSecondSocket},
+          platform::InterfaceInfo{2,
+                                  second_mac_,
+                                  "eth1",
+                                  platform::InterfaceInfo::Type::kEthernet,
+                                  {second_subnet_}},
+          second_subnet_, kSecondSocket},
   };
 };
 
@@ -274,10 +282,11 @@ TEST_F(MdnsResponderServiceTest, BasicServiceStates) {
 
 TEST_F(MdnsResponderServiceTest, NetworkNetworkInterfaceIndex) {
   constexpr uint8_t mac[6] = {12, 34, 56, 78, 90};
+  const platform::IPSubnet subnet{IPAddress{10, 0, 0, 2}, 24};
   bound_interfaces_.emplace_back(
-      platform::InterfaceInfo{2, mac, "wlan0",
-                              platform::InterfaceInfo::Type::kWifi},
-      platform::IPSubnet{IPAddress{10, 0, 0, 2}, 24}, kSecondSocket);
+      platform::InterfaceInfo{
+          2, mac, "wlan0", platform::InterfaceInfo::Type::kWifi, {subnet}},
+      subnet, kSecondSocket);
   fake_platform_service_->set_interfaces(bound_interfaces_);
   EXPECT_CALL(observer_, OnStarted());
   service_listener_->Start();
