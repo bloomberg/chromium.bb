@@ -268,13 +268,7 @@ void TranslateBubbleView::Init() {
   should_always_translate_ = model_->ShouldAlwaysTranslate();
   // Create different view based on user selection in
   // kUseButtonTranslateBubbleUI.
-  if (bubble_ui_model_ == language::TranslateUIBubbleModel::BUTTON_GM2) {
-    before_translate_view_ = AddChildView(GM2CreateViewBeforeTranslate());
-    translating_view_ = AddChildView(GM2CreateViewTranslating());
-    after_translate_view_ = AddChildView(GM2CreateViewAfterTranslate());
-    error_view_ = AddChildView(CreateViewErrorGM2());
-    advanced_view_ = AddChildView(CreateViewAdvanced());
-  } else if (bubble_ui_model_ == language::TranslateUIBubbleModel::TAB) {
+  if (bubble_ui_model_ == language::TranslateUIBubbleModel::TAB) {
     // |tab_translate_view| is the child view being used before/during/after
     // translate in TAB UI.
     tab_translate_view_ = AddChildView(CreateViewTab());
@@ -372,13 +366,11 @@ views::View* TranslateBubbleView::GetInitiallyFocusedView() {
 }
 
 bool TranslateBubbleView::ShouldShowCloseButton() const {
-  return bubble_ui_model_ != language::TranslateUIBubbleModel::TAB &&
-         bubble_ui_model_ != language::TranslateUIBubbleModel::BUTTON_GM2;
+  return bubble_ui_model_ != language::TranslateUIBubbleModel::TAB;
 }
 
 bool TranslateBubbleView::ShouldShowWindowTitle() const {
-  return bubble_ui_model_ != language::TranslateUIBubbleModel::TAB &&
-         bubble_ui_model_ != language::TranslateUIBubbleModel::BUTTON_GM2;
+  return bubble_ui_model_ != language::TranslateUIBubbleModel::TAB;
 }
 
 void TranslateBubbleView::ResetLanguage() {
@@ -703,24 +695,15 @@ void TranslateBubbleView::ShowOriginal() {
 
 void TranslateBubbleView::ConfirmAdvancedOptions() {
   model_->SetAlwaysTranslate(should_always_translate_);
-  if (bubble_ui_model_ == language::TranslateUIBubbleModel::BUTTON_GM2) {
-    if (model_->IsPageTranslatedInCurrentLanguages()) {
-      model_->GoBackFromAdvanced();
-      UpdateChildVisibilities();
-      SizeToContents();
-    } else {
-      model_->Translate();
-      // TODO(crbug.com/963148): Label text doesn't change immediately at
-      // translating view, but reflected at after translate view.
-      gm2_source_language_label_->SetText(
-          model_->GetLanguageNameAt(model_->GetOriginalLanguageIndex()));
-      gm2_target_language_label_->SetText(
-          model_->GetLanguageNameAt(model_->GetTargetLanguageIndex()));
-      UpdateChildVisibilities();
-      SwitchView(TranslateBubbleModel::VIEW_STATE_TRANSLATING);
-    }
-  } else if (bubble_ui_model_ == language::TranslateUIBubbleModel::TAB) {
-    if (model_->IsPageTranslatedInCurrentLanguages()) {
+  if (bubble_ui_model_ == language::TranslateUIBubbleModel::TAB) {
+    // Switch back to the original page language if target language is the same
+    // as source language without triggering translating.
+    if (target_language_combobox_->GetSelectedIndex() ==
+        model_->GetOriginalLanguageIndex()) {
+      SwitchView(TranslateBubbleModel::VIEW_STATE_AFTER_TRANSLATE);
+      tabbed_pane_->SelectTabAt(0);
+      ShowOriginal();
+    } else if (model_->IsPageTranslatedInCurrentLanguages()) {
       SwitchView(TranslateBubbleModel::VIEW_STATE_BEFORE_TRANSLATE);
       SizeToContents();
     } else {
@@ -787,9 +770,8 @@ void TranslateBubbleView::UpdateChildVisibilities() {
   for (views::View* view : children())
     view->SetVisible(view == GetCurrentView());
 
-  // Not required for TAB UI or Button_GM2 UI because the title is not shown.
-  if (bubble_ui_model_ != language::TranslateUIBubbleModel::BUTTON_GM2 &&
-      bubble_ui_model_ != language::TranslateUIBubbleModel::TAB &&
+  // Not required for TAB UI because the title is not shown.
+  if (bubble_ui_model_ != language::TranslateUIBubbleModel::TAB &&
       GetWidget()) {
     GetWidget()->UpdateWindowTitle();
   }
@@ -969,175 +951,6 @@ std::unique_ptr<views::View> TranslateBubbleView::CreateViewTab() {
   return view;
 }
 
-std::unique_ptr<views::View> TranslateBubbleView::GM2CreateView(
-    std::unique_ptr<views::Button> action_button,
-    std::unique_ptr<views::View> status_indicator,
-    bool active_option_button,
-    std::unique_ptr<views::Label> source_language_label,
-    std::unique_ptr<views::Label> target_language_label) {
-  auto view = std::make_unique<views::View>();
-  views::GridLayout* layout =
-      view->SetLayoutManager(std::make_unique<views::GridLayout>());
-  ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
-
-  enum { COLUMN_SET_ID_TITLE, COLUMN_SET_ID_BUTTONS };
-
-  // Language icon
-  const int language_icon_id = IDR_TRANSLATE_BUBBLE_ICON;
-  std::unique_ptr<views::ImageView> language_icon =
-      std::make_unique<views::ImageView>();
-  gfx::ImageSkia* language_icon_image =
-      ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-          language_icon_id);
-  language_icon->SetImage(*language_icon_image);
-
-  // Initialize a columnset
-  views::ColumnSet* cs = layout->AddColumnSet(COLUMN_SET_ID_TITLE);
-  cs->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER,
-                views::GridLayout::kFixedSize, views::GridLayout::USE_PREF, 0,
-                0);
-  cs->AddPaddingColumn(views::GridLayout::kFixedSize,
-                       2 * provider->GetDistanceMetric(
-                               views::DISTANCE_RELATED_BUTTON_HORIZONTAL));
-  cs->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER,
-                views::GridLayout::kFixedSize, views::GridLayout::FIXED, 100,
-                0);
-  cs->AddPaddingColumn(views::GridLayout::kFixedSize,
-                       2 * provider->GetDistanceMetric(
-                               views::DISTANCE_RELATED_BUTTON_HORIZONTAL));
-  cs->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER,
-                views::GridLayout::kFixedSize, views::GridLayout::USE_PREF, 0,
-                0);
-  cs->AddPaddingColumn(views::GridLayout::kFixedSize,
-                       2 * provider->GetDistanceMetric(
-                               views::DISTANCE_RELATED_BUTTON_HORIZONTAL));
-  cs->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER,
-                views::GridLayout::kFixedSize, views::GridLayout::FIXED, 100,
-                0);
-  cs->AddPaddingColumn(views::GridLayout::kFixedSize,
-                       4 * provider->GetDistanceMetric(
-                               views::DISTANCE_UNRELATED_CONTROL_VERTICAL));
-  cs->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER,
-                views::GridLayout::kFixedSize, views::GridLayout::USE_PREF, 0,
-                0);
-
-  cs = layout->AddColumnSet(COLUMN_SET_ID_BUTTONS);
-  cs->AddPaddingColumn(1.0, 0);
-  cs->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER,
-                views::GridLayout::kFixedSize, views::GridLayout::USE_PREF, 0,
-                0);
-  cs->AddPaddingColumn(
-      views::GridLayout::kFixedSize,
-      provider->GetDistanceMetric(views::DISTANCE_RELATED_BUTTON_HORIZONTAL));
-  cs->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER,
-                views::GridLayout::kFixedSize, views::GridLayout::USE_PREF, 0,
-                0);
-
-  layout->StartRowWithPadding(
-      views::GridLayout::kFixedSize, COLUMN_SET_ID_TITLE,
-      views::GridLayout::kFixedSize,
-      provider->GetDistanceMetric(views::DISTANCE_UNRELATED_CONTROL_VERTICAL) /
-          2);
-  layout->AddView(std::move(language_icon));
-  gm2_source_language_label_ =
-      layout->AddView(std::move(source_language_label));
-  layout->AddView(std::move(status_indicator));
-  gm2_target_language_label_ =
-      layout->AddView(std::move(target_language_label));
-  layout->AddView(CreateCloseButton());
-
-  layout->StartRowWithPadding(
-      views::GridLayout::kFixedSize, COLUMN_SET_ID_BUTTONS,
-      views::GridLayout::kFixedSize,
-      provider->GetDistanceMetric(views::DISTANCE_UNRELATED_CONTROL_VERTICAL) *
-          1.5);
-
-  std::unique_ptr<views::MdTextButtonWithDownArrow>
-      before_translate_options_button =
-          std::make_unique<views::MdTextButtonWithDownArrow>(
-              this, l10n_util::GetStringUTF16(
-                        IDS_TRANSLATE_BUBBLE_OPTIONS_MENU_BUTTON));
-  before_translate_options_button->SetID(BUTTON_ID_OPTIONS_MENU);
-  before_translate_options_button->set_request_focus_on_press(true);
-  before_translate_options_button->SetEnabled(active_option_button);
-
-  layout->AddView(std::move(action_button));
-  before_translate_options_button_ =
-      layout->AddView(std::move(before_translate_options_button));
-
-  return view;
-}
-
-std::unique_ptr<views::View>
-TranslateBubbleView::GM2CreateViewBeforeTranslate() {
-  base::string16 gm2_source_language =
-      model_->GetLanguageNameAt(model_->GetOriginalLanguageIndex());
-  base::string16 gm2_target_language =
-      model_->GetLanguageNameAt(model_->GetTargetLanguageIndex());
-  if (gm2_source_language.empty()) {
-    gm2_source_language =
-        l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_UNKNOWN_LANGUAGE);
-  }
-  // Source language label
-  auto gm2_source_language_label = std::make_unique<views::Label>(
-      gm2_source_language, views::style::CONTEXT_LABEL,
-      views::style::STYLE_LINK);
-
-  // Forward arrow
-  std::unique_ptr<views::ImageView> forward_arrow =
-      std::make_unique<views::ImageView>();
-  const gfx::VectorIcon& forward_arrow_image = vector_icons::kForwardArrowIcon;
-  const SkColor forward_arrow_image_color = gfx::kChromeIconGrey;
-  forward_arrow->SetImage(
-      gfx::CreateVectorIcon(forward_arrow_image, forward_arrow_image_color));
-
-  // Target language label
-  auto gm2_target_language_label = std::make_unique<views::Label>(
-      gm2_target_language, views::style::CONTEXT_LABEL,
-      views::style::STYLE_PRIMARY);
-
-  auto accept_button = views::MdTextButton::CreateSecondaryUiButton(
-      this, l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_ACCEPT));
-  accept_button->SetID(BUTTON_ID_TRANSLATE);
-  accept_button->SetIsDefault(true);
-  return GM2CreateView(std::move(accept_button), std::move(forward_arrow), true,
-                       std::move(gm2_source_language_label),
-                       std::move(gm2_target_language_label));
-}
-
-std::unique_ptr<views::View> TranslateBubbleView::GM2CreateViewTranslating() {
-  base::string16 gm2_source_language =
-      model_->GetLanguageNameAt(model_->GetOriginalLanguageIndex());
-  base::string16 gm2_target_language =
-      model_->GetLanguageNameAt(model_->GetTargetLanguageIndex());
-  if (gm2_source_language.empty()) {
-    gm2_source_language =
-        l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_UNKNOWN_LANGUAGE);
-  }
-  // Source language label
-  auto gm2_source_language_label = std::make_unique<views::Label>(
-      gm2_source_language, views::style::CONTEXT_LABEL,
-      views::style::STYLE_LINK);
-  // Spinning Throb
-  std::unique_ptr<views::Throbber> spinning_throbber =
-      std::make_unique<views::Throbber>();
-  spinning_throbber->Start();
-
-  // Target language label
-  auto gm2_target_language_label = std::make_unique<views::Label>(
-      gm2_target_language, views::style::CONTEXT_LABEL,
-      views::style::STYLE_PRIMARY);
-
-  auto accept_button = views::MdTextButton::CreateSecondaryUiButton(
-      this, l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_ACCEPT));
-  accept_button->SetID(BUTTON_ID_TRANSLATE);
-  accept_button->SetIsDefault(false);
-  accept_button->SetEnabled(false);
-  return GM2CreateView(std::move(accept_button), std::move(spinning_throbber),
-                       false, std::move(gm2_source_language_label),
-                       std::move(gm2_target_language_label));
-}
-
 std::unique_ptr<views::View> TranslateBubbleView::CreateViewTranslating() {
   base::string16 target_language_name =
       model_->GetLanguageNameAt(model_->GetTargetLanguageIndex());
@@ -1175,43 +988,6 @@ std::unique_ptr<views::View> TranslateBubbleView::CreateViewTranslating() {
   layout->AddView(std::move(revert_button));
 
   return view;
-}
-
-std::unique_ptr<views::View>
-TranslateBubbleView::GM2CreateViewAfterTranslate() {
-  base::string16 gm2_source_language =
-      model_->GetLanguageNameAt(model_->GetOriginalLanguageIndex());
-  base::string16 gm2_target_language =
-      model_->GetLanguageNameAt(model_->GetTargetLanguageIndex());
-  if (gm2_source_language.empty()) {
-    gm2_source_language =
-        l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_UNKNOWN_LANGUAGE);
-  }
-  // Source language label
-  auto gm2_source_language_label = std::make_unique<views::Label>(
-      gm2_source_language, views::style::CONTEXT_LABEL,
-      views::style::STYLE_PRIMARY);
-  // Forward arrow
-  std::unique_ptr<views::ImageView> forward_arrow =
-      std::make_unique<views::ImageView>();
-  const gfx::VectorIcon& forward_arrow_image = vector_icons::kForwardArrowIcon;
-  const SkColor forward_arrow_image_color = gfx::kChromeIconGrey;
-  forward_arrow->SetImage(
-      gfx::CreateVectorIcon(forward_arrow_image, forward_arrow_image_color));
-
-  // Target language label
-  auto gm2_target_language_label = std::make_unique<views::Label>(
-      gm2_target_language, views::style::CONTEXT_LABEL,
-      views::style::STYLE_LINK);
-
-  auto revert_button = views::MdTextButton::CreateSecondaryUiButton(
-      this, l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_REVERT));
-  revert_button->SetID(BUTTON_ID_SHOW_ORIGINAL);
-  revert_button->SetEnabled(true);
-
-  return GM2CreateView(std::move(revert_button), std::move(forward_arrow), true,
-                       std::move(gm2_source_language_label),
-                       std::move(gm2_target_language_label));
 }
 
 std::unique_ptr<views::View> TranslateBubbleView::CreateViewAfterTranslate() {
@@ -1301,13 +1077,6 @@ std::unique_ptr<views::View> TranslateBubbleView::CreateViewErrorTab() {
       this, l10n_util::GetStringUTF16(IDS_CANCEL));
   return_button->SetID(BUTTON_ID_RETURN);
   return CreateViewErrorNoTitle(std::move(return_button));
-}
-
-std::unique_ptr<views::View> TranslateBubbleView::CreateViewErrorGM2() {
-  auto advanced_button = views::MdTextButton::CreateSecondaryUiButton(
-      this, l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_ADVANCED_BUTTON));
-  advanced_button->SetID(BUTTON_ID_ADVANCED);
-  return CreateViewErrorNoTitle(std::move(advanced_button));
 }
 
 std::unique_ptr<views::View> TranslateBubbleView::CreateViewErrorNoTitle(

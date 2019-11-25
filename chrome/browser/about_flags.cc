@@ -945,20 +945,11 @@ const FeatureEntry::FeatureVariation kOmniboxMaxURLMatchesVariations[] = {
 
 #if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN) || \
     defined(OS_CHROMEOS)
-const FeatureEntry::FeatureParam kTranslateBubbleUIButton[] = {
-    {language::kTranslateUIBubbleKey, language::kTranslateUIBubbleButtonValue}};
 const FeatureEntry::FeatureParam kTranslateBubbleUITab[] = {
     {language::kTranslateUIBubbleKey, language::kTranslateUIBubbleTabValue}};
-const FeatureEntry::FeatureParam kTranslateBubbleUIButtonGM2[] = {
-    {language::kTranslateUIBubbleKey,
-     language::kTranslateUIBubbleButtonGM2Value}};
 
 const FeatureEntry::FeatureVariation kTranslateBubbleUIVariations[] = {
-    {"Button", kTranslateBubbleUIButton, base::size(kTranslateBubbleUIButton),
-     nullptr},
-    {"Tab", kTranslateBubbleUITab, base::size(kTranslateBubbleUITab), nullptr},
-    {"Button_GM2", kTranslateBubbleUIButtonGM2,
-     base::size(kTranslateBubbleUIButton), nullptr}};
+    {"Tab", kTranslateBubbleUITab, base::size(kTranslateBubbleUITab), nullptr}};
 #endif  // OS_LINUX || OS_MACOSX || OS_WIN || OS_CHROMEOS
 
 const FeatureEntry::FeatureParam kMarkHttpAsDangerous[] = {
