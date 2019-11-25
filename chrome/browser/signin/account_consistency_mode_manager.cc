@@ -27,13 +27,6 @@
 
 using signin::AccountConsistencyMethod;
 
-// TODO(droger): Verify if this feature flag is still required now that
-// DICE migration was enabled by default for all users.
-const base::Feature kAccountConsistencyFeature{
-    "AccountConsistency", base::FEATURE_ENABLED_BY_DEFAULT};
-const char kAccountConsistencyFeatureMethodParameter[] = "method";
-const char kAccountConsistencyFeatureMethodMirror[] = "mirror";
-
 namespace {
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
@@ -205,14 +198,8 @@ AccountConsistencyModeManager::ComputeAccountConsistencyMethod(
   return AccountConsistencyMethod::kMirror;
 #endif
 
-  std::string method_value = base::GetFieldTrialParamValueByFeature(
-      kAccountConsistencyFeature, kAccountConsistencyFeatureMethodParameter);
-
 #if defined(OS_CHROMEOS)
-  if (chromeos::IsAccountManagerAvailable(profile))
-    return AccountConsistencyMethod::kMirror;
-
-  return (method_value == kAccountConsistencyFeatureMethodMirror ||
+  return (chromeos::IsAccountManagerAvailable(profile) ||
           profile->GetPrefs()->GetBoolean(
               prefs::kAccountConsistencyMirrorRequired))
              ? AccountConsistencyMethod::kMirror
