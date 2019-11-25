@@ -179,6 +179,7 @@ ServiceWorkerControlleeRequestHandler::MaybeCreateSubresourceLoaderParams() {
   // ServiceWorkerProviderHost::SetControllerRegistration() was not called.
   if (!provider_host_ || !provider_host_->controller())
     return base::nullopt;
+  ServiceWorkerContainerHost* container_host = provider_host_->container_host();
 
   // Otherwise let's send the controller service worker information along
   // with the navigation commit.
@@ -197,12 +198,12 @@ ServiceWorkerControlleeRequestHandler::MaybeCreateSubresourceLoaderParams() {
   }
 
   controller_info->client_id = provider_host_->client_uuid();
-  if (provider_host_->fetch_request_window_id()) {
+  if (container_host->fetch_request_window_id()) {
     controller_info->fetch_request_window_id =
-        base::make_optional(provider_host_->fetch_request_window_id());
+        base::make_optional(container_host->fetch_request_window_id());
   }
   base::WeakPtr<ServiceWorkerObjectHost> object_host =
-      provider_host_->container_host()->GetOrCreateServiceWorkerObjectHost(
+      container_host->GetOrCreateServiceWorkerObjectHost(
           provider_host_->controller());
   if (object_host) {
     params.controller_service_worker_object_host = object_host;
@@ -285,13 +286,13 @@ void ServiceWorkerControlleeRequestHandler::ContinueWithRegistration(
         GetContentClient()->browser()->AllowServiceWorkerOnUI(
             registration->scope(), container_host->site_for_cookies(),
             container_host->top_frame_origin(), /*script_url=*/GURL(),
-            browser_context_, provider_host_->web_contents_getter());
+            browser_context_, container_host->web_contents_getter());
   } else {
     allow_service_worker =
         GetContentClient()->browser()->AllowServiceWorkerOnIO(
             registration->scope(), container_host->site_for_cookies(),
             container_host->top_frame_origin(), /*script_url=*/GURL(),
-            resource_context_, provider_host_->web_contents_getter());
+            resource_context_, container_host->web_contents_getter());
   }
 
   if (!allow_service_worker) {

@@ -29,6 +29,7 @@ class ServiceWorkerProviderHost;
 class ServiceWorkerRegistration;
 class ServiceWorkerRegistrationObjectHost;
 class ServiceWorkerVersion;
+class WebContents;
 
 // ServiceWorkerContainerHost has a 1:1 correspondence to
 // blink::ServiceWorkerContainer (i.e., navigator.serviceWorker) in the renderer
@@ -54,12 +55,14 @@ class ServiceWorkerVersion;
 class CONTENT_EXPORT ServiceWorkerContainerHost {
  public:
   using ExecutionReadyCallback = base::OnceClosure;
+  using WebContentsGetter = base::RepeatingCallback<WebContents*()>;
 
   // TODO(https://crbug.com/931087): Rename ServiceWorkerProviderType to
   // ServiceWorkerContainerType.
   ServiceWorkerContainerHost(
       blink::mojom::ServiceWorkerProviderType type,
       bool is_parent_frame_secure,
+      int frame_tree_node_id,
       mojo::PendingAssociatedRemote<blink::mojom::ServiceWorkerContainer>
           container_remote,
       ServiceWorkerProviderHost* provider_host,
@@ -234,6 +237,16 @@ class CONTENT_EXPORT ServiceWorkerContainerHost {
   // section.
   bool IsControllerDecided() const;
 
+  const base::UnguessableToken& fetch_request_window_id() const {
+    return fetch_request_window_id_;
+  }
+
+  int frame_tree_node_id() const { return frame_tree_node_id_; }
+
+  const WebContentsGetter& web_contents_getter() const {
+    return web_contents_getter_;
+  }
+
  private:
   friend class service_worker_object_host_unittest::ServiceWorkerObjectHostTest;
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerJobTest, Unregister);
@@ -252,6 +265,16 @@ class CONTENT_EXPORT ServiceWorkerContainerHost {
   GURL site_for_cookies_;
   base::Optional<url::Origin> top_frame_origin_;
 
+  // For window clients. A token used internally to identify this context in
+  // requests. Corresponds to the Fetch specification's concept of a request's
+  // associated window: https://fetch.spec.whatwg.org/#concept-request-window
+  // This gets reset on redirects, unlike |client_uuid_|.
+  //
+  // TODO(falken): Consider using this for |client_uuid_| as well. We can't
+  // right now because this gets reset on redirects, and potentially sites rely
+  // on the GUID format.
+  base::UnguessableToken fetch_request_window_id_;
+
   // |is_parent_frame_secure_| is false if the container host is created for a
   // document whose parent frame is not secure. This doesn't mean the document
   // is necessarily an insecure context, because the document may have a URL
@@ -260,6 +283,14 @@ class CONTENT_EXPORT ServiceWorkerContainerHost {
   // the document does not have a parent frame, is_parent_frame_secure_| is
   // true.
   const bool is_parent_frame_secure_;
+
+  // FrameTreeNode id if this is a service worker window client.
+  // Otherwise, |FrameTreeNode::kFrameTreeNodeInvalidId|.
+  const int frame_tree_node_id_;
+
+  // Only set when this object is pre-created for a navigation. It indicates the
+  // tab where the navigation occurs. Otherwise, a null callback.
+  const WebContentsGetter web_contents_getter_;
 
   // For service worker clients.
   ClientPhase client_phase_ = ClientPhase::kInitial;

@@ -59,7 +59,6 @@ namespace content {
 class ServiceWorkerContainerHost;
 class ServiceWorkerContextCore;
 class ServiceWorkerVersion;
-class WebContents;
 
 // ServiceWorkerProviderHost is the browser-process representation of a
 // renderer-process entity that can involve service workers. Currently, these
@@ -118,8 +117,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
       public blink::mojom::ServiceWorkerContainerHost,
       public service_manager::mojom::InterfaceProvider {
  public:
-  using WebContentsGetter = base::RepeatingCallback<WebContents*()>;
-
   // Used to pre-create a ServiceWorkerProviderHost for a navigation. The
   // ServiceWorkerProviderContext will later be created in the renderer, should
   // the navigation succeed. |are_ancestors_secure| should be true for main
@@ -171,17 +168,10 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   }
 
   const std::string& client_uuid() const { return client_uuid_; }
-  const base::UnguessableToken& fetch_request_window_id() const {
-    return fetch_request_window_id_;
-  }
   base::TimeTicks create_time() const { return create_time_; }
   int process_id() const { return render_process_id_; }
   int provider_id() const { return provider_id_; }
   int frame_id() const { return frame_id_; }
-  const WebContentsGetter& web_contents_getter() const {
-    return web_contents_getter_;
-  }
-  int frame_tree_node_id() const { return frame_tree_node_id_; }
 
   // For service worker clients. Describes whether the client has a controller
   // and if it has a fetch event handler.
@@ -502,30 +492,12 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // A GUID that is web-exposed as FetchEvent.clientId.
   std::string client_uuid_;
 
-  // For window clients. A token used internally to identify this context in
-  // requests. Corresponds to the Fetch specification's concept of a request's
-  // associated window: https://fetch.spec.whatwg.org/#concept-request-window
-  // This gets reset on redirects, unlike |client_uuid_|.
-  //
-  // TODO(falken): Consider using this for |client_uuid_| as well. We can't
-  // right now because this gets reset on redirects, and potentially sites rely
-  // on the GUID format.
-  base::UnguessableToken fetch_request_window_id_;
-
   const base::TimeTicks create_time_;
   int render_process_id_;
 
   // The window's RenderFrame id, if this is a service worker window client.
   // Otherwise, |MSG_ROUTING_NONE|.
   int frame_id_;
-
-  // FrameTreeNode id if this is a service worker window client.
-  // Otherwise, |FrameTreeNode::kFrameTreeNodeInvalidId|.
-  const int frame_tree_node_id_;
-
-  // Only set when this object is pre-created for a navigation. It indicates the
-  // tab where the navigation occurs. Otherwise, a null callback.
-  const WebContentsGetter web_contents_getter_;
 
   // Keyed by registration scope URL length.
   using ServiceWorkerRegistrationMap =

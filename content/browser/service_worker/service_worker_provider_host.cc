@@ -30,7 +30,6 @@
 #include "content/browser/service_worker/service_worker_type_converters.h"
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/browser/url_loader_factory_getter.h"
-#include "content/browser/web_contents/frame_tree_node_id_registry.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/webtransport/quic_transport_connector_impl.h"
 #include "content/common/service_worker/service_worker_utils.h"
@@ -243,12 +242,6 @@ ServiceWorkerProviderHost::ServiceWorkerProviderHost(
       create_time_(base::TimeTicks::Now()),
       render_process_id_(ChildProcessHost::kInvalidUniqueID),
       frame_id_(MSG_ROUTING_NONE),
-      frame_tree_node_id_(frame_tree_node_id),
-      web_contents_getter_(
-          frame_tree_node_id == FrameTreeNode::kFrameTreeNodeInvalidId
-              ? base::NullCallback()
-              : base::BindRepeating(&WebContents::FromFrameTreeNodeId,
-                                    frame_tree_node_id_)),
       running_hosted_version_(std::move(running_hosted_version)),
       context_(context),
       interface_provider_binding_(this),
@@ -256,6 +249,7 @@ ServiceWorkerProviderHost::ServiceWorkerProviderHost(
       container_host_(std::make_unique<content::ServiceWorkerContainerHost>(
           type,
           is_parent_frame_secure,
+          frame_tree_node_id,
           std::move(container_remote),
           this,
           context)) {
@@ -291,8 +285,6 @@ ServiceWorkerProviderHost::~ServiceWorkerProviderHost() {
     context_->UnregisterProviderHostByClientID(client_uuid_);
   if (controller_)
     controller_->OnControlleeDestroyed(client_uuid_);
-  if (fetch_request_window_id_)
-    FrameTreeNodeIdRegistry::GetInstance()->Remove(fetch_request_window_id_);
 
   // Remove |this| as an observer of ServiceWorkerRegistrations.
   // TODO(falken): Use ScopedObserver instead of this explicit call.
@@ -427,19 +419,6 @@ void ServiceWorkerProviderHost::UpdateUrls(
   container_host_->UpdateUrls(url, site_for_cookies, top_frame_origin);
   // TODO(https://crbug.com/931087): Move the remaining part to
   // ServiceWorkerContainerHost::UpdateUrls().
-
-  if (previous_url != url) {
-    // Revoke the token on URL change since any service worker holding the token
-    // may no longer be the potential controller of this frame and shouldn't
-    // have the power to display SSL dialogs for it.
-    if (provider_type() ==
-        blink::mojom::ServiceWorkerProviderType::kForWindow) {
-      auto* registry = FrameTreeNodeIdRegistry::GetInstance();
-      registry->Remove(fetch_request_window_id_);
-      fetch_request_window_id_ = base::UnguessableToken::Create();
-      registry->Add(fetch_request_window_id_, frame_tree_node_id_);
-    }
-  }
 
   auto previous_origin = url::Origin::Create(previous_url);
   auto new_origin = url::Origin::Create(url);
@@ -750,9 +729,9 @@ void ServiceWorkerProviderHost::SendSetControllerServiceWorker(
   // the extensions bug, https://crbug.com/963748, which we don't yet
   // understand.  That is why we don't set |fetch_request_window_id| if there
   // is no controller, at least, until we can fix the extension bug.
-  if (controller_ && fetch_request_window_id_) {
+  if (controller_ && container_host_->fetch_request_window_id()) {
     controller_info->fetch_request_window_id =
-        base::make_optional(fetch_request_window_id_);
+        base::make_optional(container_host()->fetch_request_window_id());
   }
 
   if (!controller_) {

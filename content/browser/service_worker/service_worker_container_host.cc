@@ -9,6 +9,7 @@
 #include "content/browser/service_worker/service_worker_object_host.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_registration_object_host.h"
+#include "content/browser/web_contents/frame_tree_node_id_registry.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/origin_util.h"
@@ -29,12 +30,19 @@ void RunCallbacks(
 ServiceWorkerContainerHost::ServiceWorkerContainerHost(
     blink::mojom::ServiceWorkerProviderType type,
     bool is_parent_frame_secure,
+    int frame_tree_node_id,
     mojo::PendingAssociatedRemote<blink::mojom::ServiceWorkerContainer>
         container_remote,
     ServiceWorkerProviderHost* provider_host,
     base::WeakPtr<ServiceWorkerContextCore> context)
     : type_(type),
       is_parent_frame_secure_(is_parent_frame_secure),
+      frame_tree_node_id_(frame_tree_node_id),
+      web_contents_getter_(
+          frame_tree_node_id == FrameTreeNode::kFrameTreeNodeInvalidId
+              ? base::NullCallback()
+              : base::BindRepeating(&WebContents::FromFrameTreeNodeId,
+                                    frame_tree_node_id)),
       provider_host_(provider_host),
       context_(std::move(context)) {
   DCHECK(provider_host_);
@@ -48,6 +56,9 @@ ServiceWorkerContainerHost::ServiceWorkerContainerHost(
 }
 
 ServiceWorkerContainerHost::~ServiceWorkerContainerHost() {
+  if (fetch_request_window_id_)
+    FrameTreeNodeIdRegistry::GetInstance()->Remove(fetch_request_window_id_);
+
   // Ensure callbacks awaiting execution ready are notified.
   RunExecutionReadyCallbacks();
 }
@@ -185,10 +196,24 @@ void ServiceWorkerContainerHost::UpdateUrls(
     const GURL& url,
     const GURL& site_for_cookies,
     const base::Optional<url::Origin>& top_frame_origin) {
+  GURL previous_url = url_;
+
   DCHECK(!url.has_ref());
   url_ = url;
   site_for_cookies_ = site_for_cookies;
   top_frame_origin_ = top_frame_origin;
+
+  if (previous_url != url) {
+    // Revoke the token on URL change since any service worker holding the token
+    // may no longer be the potential controller of this frame and shouldn't
+    // have the power to display SSL dialogs for it.
+    if (type_ == blink::mojom::ServiceWorkerProviderType::kForWindow) {
+      auto* registry = FrameTreeNodeIdRegistry::GetInstance();
+      registry->Remove(fetch_request_window_id_);
+      fetch_request_window_id_ = base::UnguessableToken::Create();
+      registry->Add(fetch_request_window_id_, frame_tree_node_id_);
+    }
+  }
 }
 
 bool ServiceWorkerContainerHost::AllowServiceWorker(const GURL& scope,
