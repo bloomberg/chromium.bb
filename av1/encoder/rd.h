@@ -283,26 +283,29 @@ static INLINE uint32_t get_rd_opt_coeff_thresh(
 }
 
 // Used to reset the state of tx/mb rd hash information
-static INLINE void reset_hash_records(MACROBLOCK *const x) {
+static INLINE void reset_hash_records(MACROBLOCK *const x,
+                                      int use_inter_txb_hash) {
   int32_t record_idx;
 
   // Reset the state for use_inter_txb_hash
-  for (record_idx = 0; record_idx < ((MAX_MIB_SIZE >> 1) * (MAX_MIB_SIZE >> 1));
-       record_idx++)
-    x->txb_rd_record_8X8[record_idx].num =
-        x->txb_rd_record_8X8[record_idx].index_start = 0;
-  for (record_idx = 0; record_idx < ((MAX_MIB_SIZE >> 2) * (MAX_MIB_SIZE >> 2));
-       record_idx++)
-    x->txb_rd_record_16X16[record_idx].num =
-        x->txb_rd_record_16X16[record_idx].index_start = 0;
-  for (record_idx = 0; record_idx < ((MAX_MIB_SIZE >> 3) * (MAX_MIB_SIZE >> 3));
-       record_idx++)
-    x->txb_rd_record_32X32[record_idx].num =
-        x->txb_rd_record_32X32[record_idx].index_start = 0;
-  for (record_idx = 0; record_idx < ((MAX_MIB_SIZE >> 4) * (MAX_MIB_SIZE >> 4));
-       record_idx++)
-    x->txb_rd_record_64X64[record_idx].num =
-        x->txb_rd_record_64X64[record_idx].index_start = 0;
+  if (use_inter_txb_hash) {
+    for (record_idx = 0;
+         record_idx < ((MAX_MIB_SIZE >> 1) * (MAX_MIB_SIZE >> 1)); record_idx++)
+      x->txb_rd_record_8X8[record_idx].num =
+          x->txb_rd_record_8X8[record_idx].index_start = 0;
+    for (record_idx = 0;
+         record_idx < ((MAX_MIB_SIZE >> 2) * (MAX_MIB_SIZE >> 2)); record_idx++)
+      x->txb_rd_record_16X16[record_idx].num =
+          x->txb_rd_record_16X16[record_idx].index_start = 0;
+    for (record_idx = 0;
+         record_idx < ((MAX_MIB_SIZE >> 3) * (MAX_MIB_SIZE >> 3)); record_idx++)
+      x->txb_rd_record_32X32[record_idx].num =
+          x->txb_rd_record_32X32[record_idx].index_start = 0;
+    for (record_idx = 0;
+         record_idx < ((MAX_MIB_SIZE >> 4) * (MAX_MIB_SIZE >> 4)); record_idx++)
+      x->txb_rd_record_64X64[record_idx].num =
+          x->txb_rd_record_64X64[record_idx].index_start = 0;
+  }
 
   // Reset the state for use_intra_txb_hash
   x->txb_rd_record_intra.num = x->txb_rd_record_intra.index_start = 0;

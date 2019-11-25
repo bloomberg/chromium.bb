@@ -4179,7 +4179,6 @@ static AOM_INLINE void encode_sb_row(AV1_COMP *cpi, ThreadData *td,
   const int mib_size = cm->seq_params.mib_size;
   const int mib_size_log2 = cm->seq_params.mib_size_log2;
   const int sb_row = (mi_row - tile_info->mi_row_start) >> mib_size_log2;
-  int sb_mi_size = av1_get_sb_mi_size(cm);
 
 #if CONFIG_COLLECT_COMPONENT_TIMING
   start_timing(cpi, encode_sb_time);
@@ -4201,8 +4200,6 @@ static AOM_INLINE void encode_sb_row(AV1_COMP *cpi, ThreadData *td,
   // Code each SB in the row
   for (int mi_col = tile_info->mi_col_start, sb_col_in_tile = 0;
        mi_col < tile_info->mi_col_end; mi_col += mib_size, sb_col_in_tile++) {
-    if (!cpi->sf.use_real_time_ref_set)
-      memset(x->mbmi_ext, 0, sb_mi_size * sizeof(*x->mbmi_ext));
     (*(cpi->row_mt_sync_read_ptr))(&tile_data->row_mt_sync, sb_row,
                                    sb_col_in_tile);
     if (tile_data->allow_update_cdf && (cpi->row_mt == 1) &&
@@ -4267,17 +4264,12 @@ static AOM_INLINE void encode_sb_row(AV1_COMP *cpi, ThreadData *td,
         break;
       default: assert(0);
     }
-    x->mb_rd_record.num = x->mb_rd_record.index_start = 0;
     x->color_sensitivity[0] = 0;
     x->color_sensitivity[1] = 0;
 
-    if (cpi->sf.use_inter_txb_hash) {
-      av1_zero(x->txb_rd_record_8X8);
-      av1_zero(x->txb_rd_record_16X16);
-      av1_zero(x->txb_rd_record_32X32);
-      av1_zero(x->txb_rd_record_64X64);
-      av1_zero(x->txb_rd_record_intra);
-    }
+    // Reset hash state for transform/mode rd hash information
+    reset_hash_records(x, cpi->sf.use_inter_txb_hash);
+
     if (!use_nonrd_mode) {
       av1_zero(x->picked_ref_frames_mask);
       av1_zero(x->pred_mv);
