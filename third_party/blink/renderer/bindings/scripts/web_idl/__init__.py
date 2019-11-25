@@ -37,6 +37,7 @@ from .database import Database
 from .database_builder import build_database
 from .dictionary import Dictionary
 from .enumeration import Enumeration
+from .exposure import Exposure
 from .idl_type import IdlType
 from .interface import Interface
 from .namespace import Namespace
