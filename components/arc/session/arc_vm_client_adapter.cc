@@ -230,9 +230,15 @@ class ArcVmClientAdapter : public ArcClientAdapter,
   // Try to initialize them in the constructor and in StartMiniArc respectively.
   // They usually run when the system is not busy.
   explicit ArcVmClientAdapter(version_info::Channel channel)
+      : ArcVmClientAdapter(channel, {}) {}
+
+  // For testing purposes and the internal use (by the other ctor) only.
+  ArcVmClientAdapter(version_info::Channel channel,
+                     const FileSystemStatusRewriter& rewriter)
       : channel_(channel),
         is_host_on_vm_(chromeos::system::StatisticsProvider::GetInstance()
-                           ->IsRunningOnVm()) {
+                           ->IsRunningOnVm()),
+        file_system_status_rewriter_for_testing_(rewriter) {
     auto* client = GetConciergeClient();
     client->AddVmObserver(this);
     client->AddObserver(this);
@@ -451,6 +457,9 @@ class ArcVmClientAdapter : public ArcClientAdapter,
                           const base::FilePath& data_disk_path,
                           FileSystemStatus file_system_status) {
     VLOG(2) << "Got file system status";
+    if (file_system_status_rewriter_for_testing_)
+      file_system_status_rewriter_for_testing_.Run(&file_system_status);
+
     if (!file_system_status.property_files_expanded()) {
       // TODO(yusukes): Once build_image and push_to_device.py are updated, run
       // the |callback| with false here and return.
@@ -551,6 +560,8 @@ class ArcVmClientAdapter : public ArcClientAdapter,
   bool should_notify_observers_ = false;
   int64_t current_cid_ = kInvalidCid;
 
+  FileSystemStatusRewriter file_system_status_rewriter_for_testing_;
+
   // For callbacks.
   base::WeakPtrFactory<ArcVmClientAdapter> weak_factory_{this};
 
@@ -560,6 +571,12 @@ class ArcVmClientAdapter : public ArcClientAdapter,
 std::unique_ptr<ArcClientAdapter> CreateArcVmClientAdapter(
     version_info::Channel channel) {
   return std::make_unique<ArcVmClientAdapter>(channel);
+}
+
+std::unique_ptr<ArcClientAdapter> CreateArcVmClientAdapterForTesting(
+    version_info::Channel channel,
+    const FileSystemStatusRewriter& rewriter) {
+  return std::make_unique<ArcVmClientAdapter>(channel, rewriter);
 }
 
 }  // namespace arc

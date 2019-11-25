@@ -36,6 +36,36 @@ class FileSystemStatus {
   const base::FilePath& fstab_path() const { return fstab_path_; }
   bool property_files_expanded() const { return property_files_expanded_; }
 
+  // Setters for testing.
+  void set_android_debuggable_for_testing(bool is_android_debuggable) {
+    is_android_debuggable_ = is_android_debuggable;
+  }
+  void set_host_rootfs_writable_for_testing(bool is_host_rootfs_writable) {
+    is_host_rootfs_writable_ = is_host_rootfs_writable;
+  }
+  void set_system_image_ext_format_for_testing(
+      bool is_system_image_ext_format) {
+    is_system_image_ext_format_ = is_system_image_ext_format;
+  }
+  void set_system_image_path_for_testing(
+      const base::FilePath& system_image_path) {
+    system_image_path_ = system_image_path;
+  }
+  void set_vendor_image_path_for_testing(
+      const base::FilePath& vendor_image_path) {
+    vendor_image_path_ = vendor_image_path;
+  }
+  void set_guest_kernel_path_for_testing(
+      const base::FilePath& guest_kernel_path) {
+    guest_kernel_path_ = guest_kernel_path;
+  }
+  void set_fstab_path_for_testing(const base::FilePath& fstab_path) {
+    fstab_path_ = fstab_path;
+  }
+  void set_property_files_expanded_for_testing(bool property_files_expanded) {
+    property_files_expanded_ = property_files_expanded;
+  }
+
   static bool IsAndroidDebuggableForTesting(const base::FilePath& json_path) {
     return IsAndroidDebuggable(json_path);
   }

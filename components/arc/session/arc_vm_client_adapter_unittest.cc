@@ -127,7 +127,9 @@ class ArcVmClientAdapterTest : public testing::Test,
 
   void SetUp() override {
     run_loop_ = std::make_unique<base::RunLoop>();
-    adapter_ = CreateArcVmClientAdapter(version_info::Channel::STABLE);
+    adapter_ = CreateArcVmClientAdapterForTesting(
+        version_info::Channel::STABLE,
+        base::BindRepeating([](FileSystemStatus*) {}));
     arc_instance_stopped_called_ = false;
     adapter_->AddObserver(this);
     ASSERT_TRUE(dir_.CreateUniqueTempDir());
