@@ -107,6 +107,7 @@ class DataFetcher {
       }
     } else {
       // In-memory version for browsers without stream support
+      result = new Uint8Array(await response.arrayBuffer());
       yield result;
     }
 
