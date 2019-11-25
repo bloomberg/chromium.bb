@@ -1323,6 +1323,7 @@ if (closure_compile) {
       "components/security_interstitials/core/common/resources:closure_compile",
       "components/sync/driver/resources:closure_compile",
       "components/ukm/debug:closure_compile",
+      "components/flags_ui/resources:closure_compile",
       "content/browser/resources:closure_compile",
       "mojo/public/tools/bindings/generators/js_templates/lite/test:closure_compile",
       "ui/webui/resources:closure_compile",
