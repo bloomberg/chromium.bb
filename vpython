@@ -39,15 +39,4 @@ base_dir=$(dirname "$0")
 source "$base_dir/cipd_bin_setup.sh"
 cipd_bin_setup &> /dev/null
 
-# If Python bootstrapping is not disabled, make sure Python has been
-# bootstrapped and add it to the front of PATH.
-if [[ $MINGW != 0 && $DEPOT_TOOLS_BOOTSTRAP_PYTHON3 != 0 ]]; then
-  if [[ ! -e $base_dir/python_bin_reldir.txt ]]; then
-    source "$base_dir/bootstrap_python3"
-    bootstrap_python3
-  fi
-  PYTHON_BIN_RELDIR="$base_dir/$(cat $base_dir/python_bin_reldir.txt | xargs echo)"
-  PATH="$PYTHON_BIN_RELDIR":"$PYTHON_BIN_RELDIR/Scripts":"$PATH"
-fi
-
 exec "$base_dir/.cipd_bin/vpython" "$@"
