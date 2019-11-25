@@ -1178,6 +1178,7 @@ static void set_bitstream_level_tier(SequenceHeader *seq, AV1_COMMON *cm,
     level = SEQ_LEVEL_6_0;
   } else if (does_level_match(oxcf->width, oxcf->height, oxcf->init_framerate,
                               8192, 4352, 60.0, 2)) {
+    level = SEQ_LEVEL_6_1;
   } else if (does_level_match(oxcf->width, oxcf->height, oxcf->init_framerate,
                               8192, 4352, 120.0, 2)) {
     level = SEQ_LEVEL_6_2;
