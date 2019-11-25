@@ -1,14 +1,16 @@
-#!/usr/bin/env python
+#!/usr/bin/env vpython3
 # Copyright 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
 """Test gsutil.py."""
 
+from __future__ import unicode_literals
 
-import __builtin__
+
 import base64
 import hashlib
+import io
 import json
 import os
 import shutil
@@ -16,9 +18,12 @@ import subprocess
 import sys
 import tempfile
 import unittest
-import urllib2
 import zipfile
 
+try:
+  import urllib2 as urllib
+except ImportError:  # For Py3 compatibility
+  import urllib.request as urllib
 
 # Add depot_tools to path
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -30,21 +35,6 @@ import gsutil
 
 class TestError(Exception):
   pass
-
-
-class Buffer(object):
-  def __init__(self, data=None):
-    self.data = data or ''
-
-  def write(self, buf):
-    self.data += buf
-
-  def read(self, amount=None):
-    if not amount:
-      amount = len(self.data)
-    result = self.data[:amount]
-    self.data = self.data[amount:]
-    return result
 
 
 class FakeCall(object):
@@ -70,51 +60,55 @@ class GsutilUnitTests(unittest.TestCase):
   def setUp(self):
     self.fake = FakeCall()
     self.tempdir = tempfile.mkdtemp()
-    self.old_urlopen = getattr(urllib2, 'urlopen')
+    self.old_urlopen = getattr(urllib, 'urlopen')
     self.old_call = getattr(subprocess, 'call')
-    setattr(urllib2, 'urlopen', self.fake)
+    setattr(urllib, 'urlopen', self.fake)
     setattr(subprocess, 'call', self.fake)
 
   def tearDown(self):
     self.assertEqual(self.fake.expectations, [])
     shutil.rmtree(self.tempdir)
-    setattr(urllib2, 'urlopen', self.old_urlopen)
+    setattr(urllib, 'urlopen', self.old_urlopen)
     setattr(subprocess, 'call', self.old_call)
 
   def test_download_gsutil(self):
     version = '4.2'
     filename = 'gsutil_%s.zip' % version
     full_filename = os.path.join(self.tempdir, filename)
-    fake_file = 'This is gsutil.zip'
-    fake_file2 = 'This is other gsutil.zip'
+    fake_file = b'This is gsutil.zip'
+    fake_file2 = b'This is other gsutil.zip'
     url = '%s%s' % (gsutil.GSUTIL_URL, filename)
-    self.fake.add_expectation(url, _returns=Buffer(fake_file))
+    self.fake.add_expectation(url, _returns=io.BytesIO(fake_file))
 
     self.assertEqual(
         gsutil.download_gsutil(version, self.tempdir), full_filename)
-    with open(full_filename, 'r') as f:
+    with open(full_filename, 'rb') as f:
       self.assertEqual(fake_file, f.read())
 
     metadata_url = gsutil.API_URL + filename
     md5_calc = hashlib.md5()
     md5_calc.update(fake_file)
-    b64_md5 = base64.b64encode(md5_calc.hexdigest())
-    self.fake.add_expectation(metadata_url, _returns=Buffer(json.dumps({
-        'md5Hash': b64_md5
-    })))
+    b64_md5 = base64.b64encode(md5_calc.hexdigest().encode('utf-8'))
+    self.fake.add_expectation(
+        metadata_url,
+        _returns=io.BytesIO(
+            json.dumps({'md5Hash': b64_md5.decode('utf-8')}).encode('utf-8')))
     self.assertEqual(
         gsutil.download_gsutil(version, self.tempdir), full_filename)
-    with open(full_filename, 'r') as f:
+    with open(full_filename, 'rb') as f:
       self.assertEqual(fake_file, f.read())
     self.assertEqual(self.fake.expectations, [])
 
-    self.fake.add_expectation(metadata_url, _returns=Buffer(json.dumps({
-        'md5Hash': base64.b64encode('aaaaaaa')  # Bad MD5
-    })))
-    self.fake.add_expectation(url, _returns=Buffer(fake_file2))
+    self.fake.add_expectation(
+        metadata_url,
+        _returns=io.BytesIO(
+            json.dumps({
+              'md5Hash': base64.b64encode(b'aaaaaaa').decode('utf-8')  # Bad MD5
+            }).encode('utf-8')))
+    self.fake.add_expectation(url, _returns=io.BytesIO(fake_file2))
     self.assertEqual(
         gsutil.download_gsutil(version, self.tempdir), full_filename)
-    with open(full_filename, 'r') as f:
+    with open(full_filename, 'rb') as f:
       self.assertEqual(fake_file2, f.read())
     self.assertEqual(self.fake.expectations, [])
 
@@ -132,7 +126,7 @@ class GsutilUnitTests(unittest.TestCase):
     with zipfile.ZipFile(tempzip, 'w') as zf:
       zf.writestr('gsutil/gsutil', fake_gsutil)
     with open(tempzip, 'rb') as f:
-      self.fake.add_expectation(url, _returns=Buffer(f.read()))
+      self.fake.add_expectation(url, _returns=io.BytesIO(f.read()))
 
     # This should write the gsutil_bin with 'Fake gsutil'
     gsutil.ensure_gsutil(version, self.tempdir, False)

@@ -59,7 +59,7 @@ def download_gsutil(version, target_dir):
 
     metadata_url = '%s%s' % (API_URL, filename)
     metadata = json.load(urllib.urlopen(metadata_url))
-    remote_md5 = base64.b64decode(metadata['md5Hash'])
+    remote_md5 = base64.b64decode(metadata['md5Hash']).decode('utf-8')
 
     if local_md5 == remote_md5:
       return target_filename
