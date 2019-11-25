@@ -12,6 +12,9 @@ issues]].
 ** Braille table improvements
 - Punctuation corrections in Ethiopic Braille thanks to Dr. Tamru E.
   Belay.
+- Fixes to the Norwegian 8dot braille table in regards to 4 Sami
+  characters, capital and small letters S and Z with caron. Thanks to
+  Oddvar Øyan and Lars Bjørndal.
 ** Other changes
 - Make sure the log callback uses the same calling convention as all
   the other exported functions. Thanks to Leonard de Ruijter.
