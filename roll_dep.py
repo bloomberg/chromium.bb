@@ -52,7 +52,7 @@ class AlreadyRolledError(Error):
 def check_output(*args, **kwargs):
   """subprocess.check_output() passing shell=True on Windows for git."""
   kwargs.setdefault('shell', NEED_SHELL)
-  return subprocess.check_output(*args, **kwargs)
+  return subprocess.check_output(*args, **kwargs).decode('utf-8')
 
 
 def check_call(*args, **kwargs):
