@@ -25292,7 +25292,7 @@ Called by update_net_error_codes.py.-->
   <int value="2837" label="SandboxBackForwardAffectsFramesOutsideSubtree"/>
   <int value="2838" label="DownloadPrePolicyCheck"/>
   <int value="2839" label="DownloadPostPolicyCheck"/>
-  <int value="2840" label="DownloadInSandboxWithoutUserGesture"/>
+  <int value="2840" label="OBSOLETE_DownloadInSandboxWithoutUserGesture"/>
   <int value="2841" label="ReadableStreamGetReader"/>
   <int value="2842" label="ReadableStreamPipeThrough"/>
   <int value="2843" label="ReadableStreamPipeTo"/>
@@ -25633,7 +25633,7 @@ Called by update_net_error_codes.py.-->
   <int value="46" label="UnoptimizedLosslessImages"/>
   <int value="47" label="UnoptimizedLosslessImagesStrict"/>
   <int value="48" label="LoadingFrameDefaultEager"/>
-  <int value="49" label="DownloadsWithoutUserActivation"/>
+  <int value="49" label="Downloads"/>
   <int value="50" label="ExecutionWhileOutOfViewport"/>
   <int value="51" label="ExecutionWhileNotRendered"/>
   <int value="52" label="FocusWithoutUserActivation"/>

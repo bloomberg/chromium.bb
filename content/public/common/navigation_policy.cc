@@ -62,8 +62,6 @@ ResourceInterceptPolicy NavigationDownloadPolicy::GetResourceInterceptPolicy()
   if (disallowed_types.test(
           static_cast<size_t>(NavigationDownloadType::kSandbox)) ||
       disallowed_types.test(
-          static_cast<size_t>(NavigationDownloadType::kSandboxNoGesture)) ||
-      disallowed_types.test(
           static_cast<size_t>(NavigationDownloadType::kOpenerCrossOrigin)) ||
       disallowed_types.test(
           static_cast<size_t>(NavigationDownloadType::kAdFrame)) ||

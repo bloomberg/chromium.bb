@@ -80,13 +80,8 @@ bool ShouldInterveneDownloadByFramePolicy(LocalFrame* frame) {
   }
   if (document.IsSandboxed(WebSandboxFlags::kDownloads)) {
     UseCounter::Count(document, WebFeature::kDownloadInSandbox);
-    if (!has_gesture) {
-      UseCounter::Count(document,
-                        WebFeature::kDownloadInSandboxWithoutUserGesture);
-      if (RuntimeEnabledFeatures::
-              BlockingDownloadsInSandboxWithoutUserActivationEnabled())
-        should_intervene_download = true;
-    }
+    if (RuntimeEnabledFeatures::BlockingDownloadsInSandboxEnabled())
+      should_intervene_download = true;
   }
   if (!should_intervene_download)
     UseCounter::Count(document, WebFeature::kDownloadPostPolicyCheck);
