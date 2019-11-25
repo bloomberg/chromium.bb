@@ -113,6 +113,7 @@ class HasEnrolledInstrumentTest
               "PaymentRequest.CheckoutFunnel.NoShow",
               JourneyLogger::NOT_SHOWN_REASON_NO_SUPPORTED_PAYMENT_METHOD);
 
+      // Check code path where show() is called before instruments are ready.
       EXPECT_EQ(not_supported_message(),
                 content::EvalJs(GetActiveWebContents(), "show()"));
       // TODO(crbug.com/1027322): Fix NoShow logging on Android.
@@ -129,6 +130,16 @@ class HasEnrolledInstrumentTest
       EXPECT_EQ(not_supported_message(),
                 content::EvalJs(GetActiveWebContents(),
                                 "show({requestPayerEmail:true})"));
+
+      // Check code path where show() is called after instruments are ready.
+      EXPECT_EQ(not_supported_message(),
+                content::EvalJs(GetActiveWebContents(), "delayedShow()"));
+      EXPECT_EQ(not_supported_message(),
+                content::EvalJs(GetActiveWebContents(),
+                                "delayedShow({requestShipping:true})"));
+      EXPECT_EQ(not_supported_message(),
+                content::EvalJs(GetActiveWebContents(),
+                                "delayedShow({requestPayerEmail:true})"));
     }
   }
 

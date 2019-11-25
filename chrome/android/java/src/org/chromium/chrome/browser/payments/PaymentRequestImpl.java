@@ -914,6 +914,9 @@ public class PaymentRequestImpl
 
         setShowingPaymentRequest(this);
         mIsCurrentPaymentRequestShowing = true;
+        mIsUserGestureShow = isUserGesture;
+        mWaitForUpdatedDetails = waitForUpdatedDetails;
+
         mJourneyLogger.setTriggerTime();
         if (disconnectIfNoPaymentMethodsSupported()) return;
 
@@ -924,9 +927,6 @@ public class PaymentRequestImpl
             if (sObserverForTest != null) sObserverForTest.onPaymentRequestServiceShowFailed();
             return;
         }
-
-        mIsUserGestureShow = isUserGesture;
-        mWaitForUpdatedDetails = waitForUpdatedDetails;
 
         if (isFinishedQueryingPaymentApps()) {
             // Calculate skip ui and build ui only after all payment instruments are ready and
