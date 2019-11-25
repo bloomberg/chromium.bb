@@ -172,8 +172,10 @@ vm_tools::concierge::StartArcVmRequest CreateStartArcVmRequest(
   request.set_owner_id(user_id_hash);
 
   request.add_params("root=/dev/vda");
-  if (file_system_status.is_host_rootfs_writable())
+  if (file_system_status.is_host_rootfs_writable() &&
+      file_system_status.is_system_image_ext_format()) {
     request.add_params("rw");
+  }
   request.add_params("init=/init");
   for (auto& entry : kernel_cmdline)
     request.add_params(std::move(entry));
@@ -322,10 +324,12 @@ class ArcVmClientAdapter : public ArcClientAdapter,
 
   void SetUserInfo(const std::string& hash,
                    const std::string& serial_number) override {
-    DCHECK(!hash.empty());
     DCHECK(user_id_hash_.empty());
-    DCHECK(!serial_number.empty());
     DCHECK(serial_number_.empty());
+    if (hash.empty())
+      LOG(WARNING) << "hash is empty";
+    if (serial_number.empty())
+      LOG(WARNING) << "serial_number is empty";
     user_id_hash_ = hash;
     serial_number_ = serial_number;
   }

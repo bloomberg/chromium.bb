@@ -4,15 +4,18 @@
 
 #include "components/arc/session/arc_vm_client_adapter.h"
 
+#include <iterator>
 #include <memory>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/task/post_task.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon/fake_debug_daemon_client.h"
@@ -135,7 +138,10 @@ class ArcVmClientAdapterTest : public testing::Test,
     arc_instance_stopped_called_ = false;
     adapter_->AddObserver(this);
     ASSERT_TRUE(dir_.CreateUniqueTempDir());
+
     property_files_expanded_ = true;
+    host_rootfs_writable_ = false;
+    system_image_ext_format_ = false;
 
     // The fake client returns VM_STATUS_STARTING by default. Change it
     // to VM_STATUS_RUNNING which is used by ARCVM.
@@ -267,6 +273,14 @@ class ArcVmClientAdapterTest : public testing::Test,
     property_files_expanded_ = property_files_expanded;
   }
 
+  void set_host_rootfs_writable(bool host_rootfs_writable) {
+    host_rootfs_writable_ = host_rootfs_writable;
+  }
+
+  void set_system_image_ext_format(bool system_image_ext_format) {
+    system_image_ext_format_ = system_image_ext_format;
+  }
+
  private:
   TestDebugDaemonClient* GetTestDebugDaemonClient() {
     return static_cast<TestDebugDaemonClient*>(
@@ -275,6 +289,8 @@ class ArcVmClientAdapterTest : public testing::Test,
 
   void RewriteStatus(FileSystemStatus* status) {
     status->set_property_files_expanded_for_testing(property_files_expanded_);
+    status->set_host_rootfs_writable_for_testing(host_rootfs_writable_);
+    status->set_system_image_ext_format_for_testing(system_image_ext_format_);
   }
 
   std::unique_ptr<base::RunLoop> run_loop_;
@@ -284,8 +300,10 @@ class ArcVmClientAdapterTest : public testing::Test,
   content::BrowserTaskEnvironment browser_task_environment_;
   base::ScopedTempDir dir_;
 
-  // A variable to override the value in FileSystemStatus.
+  // Variables to override the value in FileSystemStatus.
   bool property_files_expanded_;
+  bool host_rootfs_writable_;
+  bool system_image_ext_format_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcVmClientAdapterTest);
 };
@@ -401,11 +419,35 @@ TEST_F(ArcVmClientAdapterTest, UpgradeArc_StartConciergeFailure) {
 }
 
 // Tests that "no user ID hash" failure is handled properly.
-TEST_F(ArcVmClientAdapterTest, UpgradeArc_NoUserInfo) {
+TEST_F(ArcVmClientAdapterTest, UpgradeArc_NoUserId) {
+  // Don't set the user id hash. Note that we cannot call StartArcVm() without
+  // it.
+  adapter()->SetUserInfo(std::string(), kSerialNumber);
   StartMiniArc();
 
-  // Don't call SetValidUserInfo(). Note that we cannot call StartArcVm()
-  // without valid user info.
+  UpgradeArc(false);
+  EXPECT_TRUE(GetStartConciergeCalled());
+  EXPECT_FALSE(GetTestConciergeClient()->start_arc_vm_called());
+  EXPECT_FALSE(arc_instance_stopped_called());
+
+  // Try to stop the VM. StopVm will fail in this case because
+  // no VM is running.
+  vm_tools::concierge::StopVmResponse response;
+  response.set_success(false);
+  GetTestConciergeClient()->set_stop_vm_response(response);
+  adapter()->StopArcInstance(/*on_shutdown=*/false);
+  run_loop()->Run();
+  EXPECT_TRUE(GetTestConciergeClient()->stop_vm_called());
+  EXPECT_TRUE(arc_instance_stopped_called());
+}
+
+// Tests that "no serial" failure is handled properly.
+TEST_F(ArcVmClientAdapterTest, UpgradeArc_NoSerial) {
+  // Don't set the serial number. Note that we cannot call StartArcVm() without
+  // it.
+  adapter()->SetUserInfo(kUserIdHash, std::string());
+  StartMiniArc();
+
   UpgradeArc(false);
   EXPECT_TRUE(GetStartConciergeCalled());
   EXPECT_FALSE(GetTestConciergeClient()->start_arc_vm_called());
@@ -659,6 +701,56 @@ TEST_F(ArcVmClientAdapterTest, VmStartedSignal) {
   RecreateRunLoop();
   SendVmStartedSignalNotForArcVm();
   run_loop()->RunUntilIdle();
+}
+
+// Tests that ConciergeServiceRestarted() doesn't crash.
+TEST_F(ArcVmClientAdapterTest, TestConciergeServiceRestarted) {
+  StartMiniArc();
+  for (auto& observer : GetTestConciergeClient()->observer_list())
+    observer.ConciergeServiceRestarted();
+}
+
+// Tests that the kernel parameter does not include "rw" by default.
+TEST_F(ArcVmClientAdapterTest, KernelParam_RO) {
+  SetValidUserInfo();
+  StartMiniArc();
+  set_host_rootfs_writable(false);
+  set_system_image_ext_format(false);
+  UpgradeArc(true);
+  EXPECT_TRUE(GetTestConciergeClient()->start_arc_vm_called());
+
+  // Check "rw" is not in |params|.
+  auto request = GetTestConciergeClient()->start_arc_vm_request();
+  const std::vector<std::string> params(
+      std::make_move_iterator(request.mutable_params()->begin()),
+      std::make_move_iterator(request.mutable_params()->end()));
+  EXPECT_FALSE(base::Contains(params, "rw"));
+}
+
+// Tests that the kernel parameter does include "rw" when '/' is writable and
+// the image is in ext4.
+TEST_F(ArcVmClientAdapterTest, KernelParam_RW) {
+  SetValidUserInfo();
+  StartMiniArc();
+  set_host_rootfs_writable(true);
+  set_system_image_ext_format(true);
+  UpgradeArc(true);
+  EXPECT_TRUE(GetTestConciergeClient()->start_arc_vm_called());
+
+  // Check "rw" is in |params|.
+  auto request = GetTestConciergeClient()->start_arc_vm_request();
+  const std::vector<std::string> params(
+      std::make_move_iterator(request.mutable_params()->begin()),
+      std::make_move_iterator(request.mutable_params()->end()));
+  EXPECT_TRUE(base::Contains(params, "rw"));
+}
+
+// Tests that CreateArcVmClientAdapter(), the non-testing version, doesn't
+// crash.
+TEST_F(ArcVmClientAdapterTest, TestCreateArcVmClientAdapter) {
+  CreateArcVmClientAdapter(version_info::Channel::STABLE);
+  CreateArcVmClientAdapter(version_info::Channel::BETA);
+  CreateArcVmClientAdapter(version_info::Channel::DEV);
 }
 
 }  // namespace
