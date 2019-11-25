@@ -41,8 +41,6 @@ static_library("proximity_auth") {
     "screenlock_state.h",
     "smart_lock_metrics_recorder.cc",
     "smart_lock_metrics_recorder.h",
-    "switches.cc",
-    "switches.h",
     "unlock_manager.h",
     "unlock_manager_impl.cc",
     "unlock_manager_impl.h",
