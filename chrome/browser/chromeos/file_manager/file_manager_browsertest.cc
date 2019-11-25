@@ -420,7 +420,6 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("openQuickViewSniffedText"),
         TestCase("openQuickViewScrollText"),
         TestCase("openQuickViewScrollHtml"),
-        TestCase("openQuickViewBackgroundColorText"),
         TestCase("openQuickViewBackgroundColorHtml"),
         TestCase("openQuickViewDrive"),
         TestCase("openQuickViewAndroid"),
