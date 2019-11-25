@@ -864,7 +864,6 @@ if (is_win) {
       "//components/zucchini",
       "//courgette",
       "//courgette:copy_courgette_binaries",
-      "//remoting/webapp",
       "//tools/metrics:metrics_metadata",
     ]
 
