@@ -43,7 +43,8 @@ class SmsBrowserTest : public ContentBrowserTest {
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     ContentBrowserTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitchASCII("enable-blink-features", "SmsReceiver");
+    command_line->AppendSwitchASCII(switches::kEnableBlinkFeatures,
+                                    "SmsReceiver");
     command_line->AppendSwitch(
         switches::kEnableExperimentalWebPlatformFeatures);
     cert_verifier_.SetUpCommandLine(command_line);
