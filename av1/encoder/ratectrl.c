@@ -155,13 +155,12 @@ double av1_convert_qindex_to_q(int qindex, aom_bit_depth_t bit_depth) {
 int av1_rc_bits_per_mb(FRAME_TYPE frame_type, int qindex,
                        double correction_factor, aom_bit_depth_t bit_depth) {
   const double q = av1_convert_qindex_to_q(qindex, bit_depth);
-  int enumerator = frame_type == KEY_FRAME ? 2000000 : 1440000;
+  int enumerator = frame_type == KEY_FRAME ? 2000000 : 1500000;
 
   assert(correction_factor <= MAX_BPB_FACTOR &&
          correction_factor >= MIN_BPB_FACTOR);
 
   // q based adjustment to baseline enumerator
-  enumerator += (int)(enumerator * q) >> 12;
   return (int)(enumerator * correction_factor / q);
 }
 

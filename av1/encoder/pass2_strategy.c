@@ -173,7 +173,7 @@ static int find_qindex_by_rate_with_correction(
     const int mid = (low + high) >> 1;
     const double mid_factor = calc_correction_factor(error_per_mb, mid);
     const double q = av1_convert_qindex_to_q(mid, bit_depth);
-    const int enumerator = 1600000 + ((int)(1600000 * q) >> 12);
+    const int enumerator = 1650000;
     const int mid_bits_per_mb =
         (int)((enumerator * mid_factor * group_weight_factor) / q);
 
