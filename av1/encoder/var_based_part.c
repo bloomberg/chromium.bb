@@ -416,7 +416,7 @@ static AOM_INLINE void set_vbp_thresholds(AV1_COMP *cpi, int64_t thresholds[],
       if (last_qindex >= QINDEX_HIGH_THR) {
         threshold_base = (5 * threshold_base) >> 1;
         thresholds[1] = threshold_base >> 3;
-        thresholds[2] = threshold_base;
+        thresholds[2] = threshold_base << 2;
         thresholds[3] = threshold_base << 5;
       } else if (last_qindex < QINDEX_LOW_THR) {
         thresholds[1] = threshold_base >> 3;

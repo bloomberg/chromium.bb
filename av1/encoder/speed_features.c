@@ -681,9 +681,7 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->mode_search_skip_flags |= FLAG_SKIP_INTRA_DIRMISMATCH;
     sf->use_real_time_ref_set = 1;
     sf->tx_type_search.prune_mode = PRUNE_2D_MORE;
-    // Can't use LARGEST TX mode with pre-calculated partition
-    // and disabled TX64
-    if (!cpi->oxcf.enable_tx64) sf->tx_size_search_level = 1;
+    sf->tx_size_search_level = 1;
     sf->use_comp_ref_nonrd = 0;
     sf->inter_mode_rd_model_estimation = 2;
     sf->cdef_pick_method = CDEF_PICK_FROM_Q;
@@ -706,7 +704,6 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->mv.search_method = FAST_DIAMOND;
     sf->partition_search_type = VAR_BASED_PARTITION;
     sf->mode_search_skip_flags |= FLAG_SKIP_INTRA_DIRMISMATCH;
-    sf->tx_size_search_level = 1;
     sf->use_nonrd_pick_mode = 1;
     sf->use_comp_ref_nonrd = 0;
     sf->inter_mode_rd_model_estimation = 2;
