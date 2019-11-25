@@ -20,8 +20,7 @@ class BrowserMinidumpTest(tab_test_case.TabTestCase):
   # Android is currently hard coded to return None for minidump paths.
   # Minidump symbolization doesn't work in ChromeOS local mode if the rootfs is
   # still read-only, so skip the test in that case.
-  # Flakes on chromeos: crbug.com/1014754
-  @decorators.Disabled('android', 'chromeos', 'chromeos-local')
+  @decorators.Disabled('android', 'chromeos-local')
   def testSymbolizeMinidump(self):
     # Wait for the browser to restart fully before crashing
     self._LoadPageThenWait('var sam = "car";', 'sam')
@@ -102,8 +101,7 @@ class BrowserMinidumpTest(tab_test_case.TabTestCase):
   @decorators.Isolated
   # Minidump symbolization doesn't work in ChromeOS local mode if the rootfs is
   # still read-only, so skip the test in that case.
-  # Flakes on chromeos: crbug.com/1014754
-  @decorators.Disabled('android', 'chromeos', 'chromeos-local')
+  @decorators.Disabled('android', 'chromeos-local')
   def testMultipleCrashMinidumps(self):
     # Wait for the browser to restart fully before crashing
     self._LoadPageThenWait('var cat = "dog";', 'cat')
