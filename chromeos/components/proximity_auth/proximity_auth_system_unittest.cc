@@ -397,7 +397,7 @@ TEST_F(ProximityAuthSystemTest, StopSystem_RegisteredUserFocused) {
 TEST_F(ProximityAuthSystemTest, OnAuthAttempted) {
   FocusUser(kUser1);
   EXPECT_CALL(*unlock_manager_, OnAuthAttempted(_));
-  proximity_auth_system_->OnAuthAttempted(AccountId::FromUserEmail(kUser1));
+  proximity_auth_system_->OnAuthAttempted();
 }
 
 TEST_F(ProximityAuthSystemTest, Suspend_ScreenUnlocked) {
