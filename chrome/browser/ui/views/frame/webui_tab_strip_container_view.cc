@@ -179,8 +179,8 @@ WebUITabStripContainerView::CreateNewTabButton() {
 std::unique_ptr<views::View> WebUITabStripContainerView::CreateTabCounter() {
   DCHECK_EQ(nullptr, tab_counter_);
 
-  auto tab_counter = CreateWebUITabCounterButton(
-      this, browser_->tab_strip_model(), GetThemeProvider());
+  auto tab_counter =
+      CreateWebUITabCounterButton(this, browser_->tab_strip_model());
 
   tab_counter_ = tab_counter.get();
   view_observer_.Add(tab_counter_);
