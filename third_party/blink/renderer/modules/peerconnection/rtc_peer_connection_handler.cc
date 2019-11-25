@@ -647,12 +647,12 @@ void LocalRTCStatsRequest::requestSucceeded(
 }
 
 // Implementation of LocalRTCStatsResponse.
-blink::WebRTCStatsResponse LocalRTCStatsResponse::webKitStatsResponse() const {
+RTCStatsResponseBase* LocalRTCStatsResponse::webKitStatsResponse() const {
   return impl_;
 }
 
 void LocalRTCStatsResponse::addStats(const blink::WebRTCLegacyStats& stats) {
-  impl_.AddStats(stats);
+  impl_->AddStats(stats);
 }
 
 // Processes the resulting state changes of a SetLocalDescription() or
