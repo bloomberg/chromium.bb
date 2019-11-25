@@ -38,9 +38,11 @@ from .database_builder import build_database
 from .dictionary import Dictionary
 from .enumeration import Enumeration
 from .exposure import Exposure
+from .function_like import FunctionLike
 from .idl_type import IdlType
 from .interface import Interface
 from .namespace import Namespace
+from .overload_group import OverloadGroup
 from .runtime_enabled_features import RuntimeEnabledFeatures
 from .typedef import Typedef
 from .union import Union

@@ -152,9 +152,13 @@ class IdlType(WithExtendedAttributes, WithDebugInfo):
 
     class Optionality(object):
         """https://heycam.github.io/webidl/#dfn-optionality-value"""
-        REQUIRED = 0
-        OPTIONAL = 1
-        VARIADIC = 2
+
+        class Type(str):
+            pass
+
+        REQUIRED = Type('required')
+        OPTIONAL = Type('optional')
+        VARIADIC = Type('variadic')
 
     def __init__(self,
                  is_optional=False,
