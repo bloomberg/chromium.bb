@@ -197,6 +197,12 @@ class TabStripUIHandler : public content::WebUIMessageHandler,
     FireWebUIListener("layout-changed", embedder_->GetLayout().AsDictionary());
   }
 
+  void NotifyReceivedKeyboardFocus() {
+    if (!IsJavascriptAllowed())
+      return;
+    FireWebUIListener("received-keyboard-focus");
+  }
+
   // TabStripModelObserver:
   void OnTabStripModelChanged(
       TabStripModel* tab_strip_model,
@@ -574,4 +580,8 @@ void TabStripUI::Initialize(Browser* browser, Embedder* embedder) {
 
 void TabStripUI::LayoutChanged() {
   handler_->NotifyLayoutChanged();
+}
+
+void TabStripUI::ReceivedKeyboardFocus() {
+  handler_->NotifyReceivedKeyboardFocus();
 }

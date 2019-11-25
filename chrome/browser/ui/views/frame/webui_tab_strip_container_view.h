@@ -86,6 +86,9 @@ class WebUITabStripContainerView : public TabStripUI::Embedder,
   void OnViewBoundsChanged(View* observed_view) override;
   void OnViewIsDeleting(View* observed_view) override;
 
+  // views::AccessiblePaneView
+  bool SetPaneFocusAndFocusDefault() override;
+
   Browser* const browser_;
   views::WebView* const web_view_;
   views::View* const tab_contents_container_;

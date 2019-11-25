@@ -298,7 +298,7 @@ void WebUITabStripContainerView::ButtonPressed(views::Button* sender,
     if (GetVisible() && sender->HasFocus()) {
       // Automatically move focus to the tab strip WebUI if the focus is
       // currently on the toggle button.
-      SetPaneFocus(web_view_);
+      SetPaneFocusAndFocusDefault();
     }
   } else if (sender->GetID() == VIEW_ID_WEBUI_TAB_STRIP_NEW_TAB_BUTTON) {
     chrome::ExecuteCommand(browser_, IDC_NEW_TAB);
@@ -329,4 +329,16 @@ void WebUITabStripContainerView::OnViewIsDeleting(View* observed_view) {
     new_tab_button_ = nullptr;
   else if (observed_view == tab_counter_)
     tab_counter_ = nullptr;
+}
+
+bool WebUITabStripContainerView::SetPaneFocusAndFocusDefault() {
+  // Make sure the pane first receives focus, then send a WebUI event to the
+  // front-end so the correct HTML element receives focus.
+  bool received_focus = AccessiblePaneView::SetPaneFocusAndFocusDefault();
+  if (received_focus) {
+    TabStripUI* const tab_strip_ui = static_cast<TabStripUI*>(
+        web_view_->GetWebContents()->GetWebUI()->GetController());
+    tab_strip_ui->ReceivedKeyboardFocus();
+  }
+  return received_focus;
 }

@@ -7,6 +7,7 @@ import './tab.js';
 
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {addWebUIListener} from 'chrome://resources/js/cr.m.js';
+import {FocusOutlineManager} from 'chrome://resources/js/cr/ui/focus_outline_manager.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 
 import {CustomElement} from './custom_element.js';
@@ -58,6 +59,9 @@ class TabListElement extends CustomElement {
      */
     this.draggedItem_;
 
+    /** @private @const {!FocusOutlineManager} */
+    this.focusOutlineManager_ = FocusOutlineManager.forDocument(document);
+
     /**
      * An intersection observer is needed to observe which TabElements are
      * currently in view or close to being in view, which will help determine
@@ -98,9 +102,6 @@ class TabListElement extends CustomElement {
     /** @private {!Function} */
     this.windowBlurListener_ = () => this.onWindowBlur_();
 
-    /** @private {!Function} */
-    this.windowFocusListener_ = () => this.onWindowFocus_();
-
     addWebUIListener(
         'layout-changed', layout => this.applyCSSDictionary_(layout));
     addWebUIListener('theme-changed', () => this.fetchAndUpdateColors_());
@@ -118,8 +119,9 @@ class TabListElement extends CustomElement {
 
     document.addEventListener(
         'visibilitychange', this.documentVisibilityChangeListener_);
+    addWebUIListener(
+        'received-keyboard-focus', () => this.onReceivedKeyboardFocus_());
     window.addEventListener('blur', this.windowBlurListener_);
-    window.addEventListener('focus', this.windowFocusListener_);
 
     if (loadTimeData.getBoolean('showDemoOptions')) {
       this.shadowRoot.querySelector('#demoOptions').style.display = 'block';
@@ -182,7 +184,6 @@ class TabListElement extends CustomElement {
     document.removeEventListener(
         'visibilitychange', this.documentVisibilityChangeListener_);
     window.removeEventListener('blur', this.windowBlurListener_);
-    window.removeEventListener('focus', this.windowFocusListener_);
   }
 
   /**
@@ -341,6 +342,15 @@ class TabListElement extends CustomElement {
         event.pageY - this.draggedItem_.offsetTop);
   }
 
+  /** @private */
+  onReceivedKeyboardFocus_() {
+    // FocusOutlineManager relies on the most recent event fired on the
+    // document. When the tab strip first gains keyboard focus, no such event
+    // exists yet, so the outline needs to be explicitly set to visible.
+    this.focusOutlineManager_.visible = true;
+    this.shadowRoot.querySelector('tabstrip-tab').focus();
+  }
+
   /**
    * @param {number} tabId
    * @private
@@ -463,11 +473,6 @@ class TabListElement extends CustomElement {
       // previously focused element when the focus returns to this window.
       this.shadowRoot.activeElement.blur();
     }
-  }
-
-  /** @private */
-  onWindowFocus_() {
-    this.shadowRoot.querySelector('tabstrip-tab').focus();
   }
 
   /**

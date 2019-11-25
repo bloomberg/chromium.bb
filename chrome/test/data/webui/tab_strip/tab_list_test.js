@@ -5,6 +5,7 @@
 import 'chrome://tab-strip/tab_list.js';
 
 import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
+import {FocusOutlineManager} from 'chrome://resources/js/cr/ui/focus_outline_manager.m.js';
 import {TabStripEmbedderProxy} from 'chrome://tab-strip/tab_strip_embedder_proxy.js';
 import {TabsApiProxy} from 'chrome://tab-strip/tabs_api_proxy.js';
 
@@ -513,15 +514,22 @@ suite('TabList', () => {
   });
 
   test(
-      'focusing and blurring the window focuses and blurs the first tab',
+      'focusing on tab strip with the keyboard adds a class and focuses ' +
+          'the first tab',
       () => {
-        window.dispatchEvent(new Event('focus'));
+        webUIListenerCallback('received-keyboard-focus');
         assertEquals(document.activeElement, tabList);
         assertEquals(tabList.shadowRoot.activeElement, getUnpinnedTabs()[0]);
-
-        window.dispatchEvent(new Event('blur'));
-        assertEquals(tabList.shadowRoot.activeElement, null);
+        assertTrue(FocusOutlineManager.forDocument(document).visible);
       });
+
+  test('blurring the tab strip blurs the active element', () => {
+    // First, make sure tab strip has keyboard focus.
+    webUIListenerCallback('received-keyboard-focus');
+
+    window.dispatchEvent(new Event('blur'));
+    assertEquals(tabList.shadowRoot.activeElement, null);
+  });
 
   test('should update the ID when a tab is replaced', () => {
     assertEquals(getUnpinnedTabs()[0].tab.id, 0);
