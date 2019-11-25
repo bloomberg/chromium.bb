@@ -51,6 +51,7 @@ namespace ash {
 enum class AnimationChangeType;
 class DragWindowFromShelfController;
 class PanelLayoutManagerTest;
+class PresentationTimeRecorder;
 class Shelf;
 class ShelfLayoutManagerObserver;
 class ShelfLayoutManagerTestBase;
@@ -672,6 +673,9 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
 
   // Tracks whether the shelf is currently dimmed for inactivity.
   bool dimmed_for_inactivity_ = false;
+
+  // Records the presentation time for hotseat dragging.
+  std::unique_ptr<PresentationTimeRecorder> hotseat_presentation_time_recorder_;
 
   DISALLOW_COPY_AND_ASSIGN(ShelfLayoutManager);
 };

@@ -18,6 +18,7 @@
 #include "ash/home_screen/home_screen_controller.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/public/cpp/ash_features.h"
+#include "ash/public/cpp/presentation_time_recorder.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -2292,6 +2293,14 @@ bool ShelfLayoutManager::StartShelfDrag(
                               ? auto_hide_state()
                               : SHELF_AUTO_HIDE_SHOWN;
   MaybeSetupHotseatDrag(event_in_screen);
+  if (hotseat_is_in_drag_) {
+    DCHECK(!hotseat_presentation_time_recorder_);
+    hotseat_presentation_time_recorder_ =
+        ash::CreatePresentationTimeHistogramRecorder(
+            shelf_widget_->hotseat_widget()->GetCompositor(),
+            "Ash.HotseatTransition.Drag.PresentationTime",
+            "Ash.HotseatTransition.Drag.PresentationTime.MaxLatency");
+  }
   MaybeUpdateShelfBackground(AnimationChangeType::ANIMATE);
 
   // For the hotseat, |drag_amount_| is relative to the top of the shelf.
@@ -2324,6 +2333,10 @@ void ShelfLayoutManager::MaybeSetupHotseatDrag(
 void ShelfLayoutManager::UpdateDrag(const ui::LocatedEvent& event_in_screen,
                                     float scroll_x,
                                     float scroll_y) {
+  if (hotseat_is_in_drag_) {
+    DCHECK(hotseat_presentation_time_recorder_);
+    hotseat_presentation_time_recorder_->RequestNext();
+  }
   if (drag_status_ == kDragAppListInProgress) {
     // Dismiss the app list if the shelf changed to vertical alignment during
     // dragging.
@@ -2434,6 +2447,7 @@ void ShelfLayoutManager::CancelDrag() {
     shelf_widget_->hotseat_widget()->set_manually_extended(
         hotseat_state() == HotseatState::kExtended &&
         !Shell::Get()->overview_controller()->InOverviewSession());
+    hotseat_presentation_time_recorder_.reset();
   }
   hotseat_is_in_drag_ = false;
   drag_status_ = kDragNone;
@@ -2457,6 +2471,8 @@ void ShelfLayoutManager::CompleteDragWithChangedVisibility() {
 
   UpdateVisibilityState();
   drag_status_ = kDragNone;
+  if (hotseat_is_in_drag_)
+    hotseat_presentation_time_recorder_.reset();
   hotseat_is_in_drag_ = false;
 }
 
