@@ -139,16 +139,6 @@ Bug(none) virtual/composite-after-paint/paint/frames [ Pass ]
 Bug(none) virtual/composite-after-paint/scrollingcoordinator [ Pass ]
 # --- End CompositeAfterPaint Tests --
 
-# CompositeAfterPaint incorrectly composites all scrollers, and these do not
-# produce non-fast scrollable regions, so there are differences in the non-fast
-# regions compared to pre-CompositeAfterPaint.
-crbug.com/980290 virtual/composite-after-paint/scrollingcoordinator/donot-compute-non-fast-scrollable-region-for-hidden-frames.html [ Failure ]
-crbug.com/980290 virtual/composite-after-paint/scrollingcoordinator/non-fast-scrollable-region-nested.html [ Failure ]
-crbug.com/980290 virtual/composite-after-paint/scrollingcoordinator/non-fast-scrollable-region-scaled-iframe.html [ Failure ]
-crbug.com/980290 virtual/composite-after-paint/scrollingcoordinator/non-fast-scrollable-region-transformed-iframe.html [ Failure ]
-crbug.com/980290 virtual/composite-after-paint/scrollingcoordinator/non-fast-scrollable-transform-changed.html [ Failure ]
-crbug.com/980290 virtual/composite-after-paint/scrollingcoordinator/non-fast-scrollable-visibility-change.html [ Failure ]
-
 # Subpixel differences
 crbug.com/771643 external/wpt/css/css-backgrounds/background-attachment-local/attachment-local-clipping-color-5.html [ Failure ]
 crbug.com/771643 external/wpt/css/css-backgrounds/background-attachment-local/attachment-local-clipping-image-5.html [ Failure ]
@@ -773,7 +763,6 @@ crbug.com/591099 fast/selectors/shadow-host-div-with-span.html [ Failure ]
 crbug.com/591099 fast/selectors/shadow-host-div-with-text.html [ Failure ]
 crbug.com/591099 virtual/text-antialias/selection/inline-block-in-selection-root.html [ Failure ]
 crbug.com/591099 paint/invalidation/media-audio-no-spurious-repaints.html [ Failure Timeout ]
-crbug.com/591099 virtual/composite-after-paint/paint/background/scrolling-background-with-negative-z-child.html [ Failure Crash ]
 crbug.com/591099 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-span-all-list-item-002.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/border-radius-clipped-layer.html [ Failure ]
 crbug.com/591099 editing/selection/paint-hyphen.html [ Failure Pass ]
