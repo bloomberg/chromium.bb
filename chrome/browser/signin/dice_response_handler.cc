@@ -16,7 +16,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/signin/about_signin_internals_factory.h"
-#include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/signin/account_reconcilor_factory.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
@@ -109,7 +108,6 @@ class DiceResponseHandlerFactory : public BrowserContextKeyedServiceFactory {
         IdentityManagerFactory::GetForProfile(profile),
         AccountReconcilorFactory::GetForProfile(profile),
         AboutSigninInternalsFactory::GetForProfile(profile),
-        AccountConsistencyModeManager::GetMethodForProfile(profile),
         profile->GetPath());
   }
 };
@@ -206,19 +204,16 @@ DiceResponseHandler::DiceResponseHandler(
     signin::IdentityManager* identity_manager,
     AccountReconcilor* account_reconcilor,
     AboutSigninInternals* about_signin_internals,
-    signin::AccountConsistencyMethod account_consistency,
     const base::FilePath& profile_path)
     : signin_client_(signin_client),
       identity_manager_(identity_manager),
       account_reconcilor_(account_reconcilor),
       about_signin_internals_(about_signin_internals),
-      account_consistency_(account_consistency),
       profile_path_(profile_path) {
   DCHECK(signin_client_);
   DCHECK(identity_manager_);
   DCHECK(account_reconcilor_);
   DCHECK(about_signin_internals_);
-  DCHECK_EQ(account_consistency_, signin::AccountConsistencyMethod::kDice);
 }
 
 DiceResponseHandler::~DiceResponseHandler() {}
