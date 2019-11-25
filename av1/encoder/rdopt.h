@@ -123,6 +123,9 @@ void av1_rd_pick_inter_mode_sb(struct AV1_COMP *cpi,
                                BLOCK_SIZE bsize, PICK_MODE_CONTEXT *ctx,
                                int64_t best_rd_so_far);
 
+void av1_pick_intra_mode(AV1_COMP *cpi, MACROBLOCK *x, RD_STATS *rd_cost,
+                         BLOCK_SIZE bsize, PICK_MODE_CONTEXT *ctx);
+
 void av1_nonrd_pick_inter_mode_sb(struct AV1_COMP *cpi,
                                   struct TileDataEnc *tile_data,
                                   struct macroblock *x,

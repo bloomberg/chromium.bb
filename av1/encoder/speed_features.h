@@ -880,6 +880,10 @@ typedef struct SPEED_FEATURES {
   // colors to remaining colors) and terminate the search if current number of
   // palette colors is not the winner.
   int prune_palette_search_level;
+
+  // Use hybrid (rd for bsize < 16x16, otherwise nonrd) intra search for intra
+  // only frames.
+  int hybrid_intra_pickmode;
 } SPEED_FEATURES;
 
 struct AV1_COMP;

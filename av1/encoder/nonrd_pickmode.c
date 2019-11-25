@@ -1361,6 +1361,76 @@ static void compute_intra_yprediction(const AV1_COMMON *cm,
   pd->dst.buf = dst_buf_base;
 }
 
+void av1_pick_intra_mode(AV1_COMP *cpi, MACROBLOCK *x, RD_STATS *rd_cost,
+                         BLOCK_SIZE bsize, PICK_MODE_CONTEXT *ctx) {
+  AV1_COMMON *const cm = &cpi->common;
+  MACROBLOCKD *const xd = &x->e_mbd;
+  MB_MODE_INFO *const mi = xd->mi[0];
+  RD_STATS this_rdc, best_rdc;
+  struct estimate_block_intra_args args = { cpi, x, DC_PRED, 1, 0 };
+  const TX_SIZE intra_tx_size =
+      AOMMIN(max_txsize_lookup[bsize],
+             tx_mode_to_biggest_tx_size[x->tx_mode_search_type]);
+  int *bmode_costs;
+  const MB_MODE_INFO *above_mi = xd->above_mbmi;
+  const MB_MODE_INFO *left_mi = xd->left_mbmi;
+  const PREDICTION_MODE A = av1_above_block_mode(above_mi);
+  const PREDICTION_MODE L = av1_left_block_mode(left_mi);
+  bmode_costs = x->y_mode_costs[A][L];
+
+  av1_invalid_rd_stats(&best_rdc);
+  av1_invalid_rd_stats(&this_rdc);
+
+  mi->ref_frame[0] = INTRA_FRAME;
+  mi->ref_frame[1] = NONE_FRAME;
+  mi->use_intrabc = 0;
+  mi->skip_mode = 0;
+
+  // Initialize interp_filter here so we do not have to check for inter block
+  // modes in get_pred_context_switchable_interp()
+  mi->interp_filters = av1_broadcast_interp_filter(SWITCHABLE_FILTERS);
+
+  mi->mv[0].as_int = INVALID_MV;
+  mi->uv_mode = DC_PRED;
+  memset(xd->tx_type_map, DCT_DCT,
+         sizeof(xd->tx_type_map[0]) * ctx->num_4x4_blk);
+  av1_zero(x->blk_skip);
+
+  // Change the limit of this loop to add other intra prediction
+  // mode tests.
+  for (int i = 0; i < 4; ++i) {
+    PREDICTION_MODE this_mode = intra_mode_list[i];
+    this_rdc.dist = this_rdc.rate = 0;
+    args.mode = this_mode;
+    args.skippable = 1;
+    args.rdc = &this_rdc;
+    mi->tx_size = intra_tx_size;
+    init_mbmi(mi, this_mode, INTRA_FRAME, NONE_FRAME, cm);
+    av1_foreach_transformed_block_in_plane(xd, bsize, 0, estimate_block_intra,
+                                           &args);
+    if (args.skippable) {
+      this_rdc.rate = av1_cost_symbol(av1_get_skip_cdf(xd)[1]);
+    } else {
+      this_rdc.rate += av1_cost_symbol(av1_get_skip_cdf(xd)[0]);
+    }
+    this_rdc.rate += bmode_costs[this_mode];
+    this_rdc.rdcost = RDCOST(x->rdmult, this_rdc.rate, this_rdc.dist);
+
+    if (this_rdc.rdcost < best_rdc.rdcost) {
+      best_rdc = this_rdc;
+      mi->mode = this_mode;
+    }
+  }
+
+  *rd_cost = best_rdc;
+
+#if CONFIG_INTERNAL_STATS
+  store_coding_context(x, ctx, mi->mode);
+#else
+  store_coding_context(x, ctx);
+#endif  // CONFIG_INTERNAL_STATS
+}
+
 void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
                                   MACROBLOCK *x, RD_STATS *rd_cost,
                                   BLOCK_SIZE bsize, PICK_MODE_CONTEXT *ctx,

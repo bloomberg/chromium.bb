@@ -84,6 +84,30 @@ class DatarateTestLarge
         << " The datarate for the file is greater than target by too much!";
   }
 
+  virtual void BasicRateTargetingCBRPeriodicKeyFrameTest() {
+    cfg_.rc_buf_initial_sz = 500;
+    cfg_.rc_buf_optimal_sz = 500;
+    cfg_.rc_buf_sz = 1000;
+    cfg_.rc_dropframe_thresh = 1;
+    cfg_.rc_min_quantizer = 0;
+    cfg_.rc_max_quantizer = 63;
+    cfg_.rc_end_usage = AOM_CBR;
+    cfg_.g_lag_in_frames = 0;
+    // Periodic keyframe
+    cfg_.kf_max_dist = 50;
+
+    ::libaom_test::I420VideoSource video("pixel_capture_w320h240.yuv", 320, 240,
+                                         30, 1, 0, 310);
+    const int bitrate_array[2] = { 150, 550 };
+    cfg_.rc_target_bitrate = bitrate_array[GET_PARAM(4)];
+    ResetModel();
+    ASSERT_NO_FATAL_FAILURE(RunLoop(&video));
+    ASSERT_GE(effective_datarate_, cfg_.rc_target_bitrate * 0.85)
+        << " The datarate for the file is lower than target by too much!";
+    ASSERT_LE(effective_datarate_, cfg_.rc_target_bitrate * 1.15)
+        << " The datarate for the file is greater than target by too much!";
+  }
+
   virtual void BasicRateTargetingAQModeOnOffCBRTest() {
     if (GET_PARAM(4) > 0) return;
     cfg_.rc_buf_initial_sz = 500;
@@ -211,9 +235,14 @@ TEST_P(DatarateTestLarge, BasicRateTargetingVBR) {
   BasicRateTargetingVBRTest();
 }
 
-// Check basic rate targeting for CBR,
+// Check basic rate targeting for CBR.
 TEST_P(DatarateTestLarge, BasicRateTargetingCBR) {
   BasicRateTargetingCBRTest();
+}
+
+// Check basic rate targeting for periodic key frame.
+TEST_P(DatarateTestLarge, PeriodicKeyFrameCBR) {
+  BasicRateTargetingCBRPeriodicKeyFrameTest();
 }
 
 // Check basic rate targeting for CBR.
@@ -291,9 +320,14 @@ TEST_P(DatarateTestRealtime, BasicRateTargetingVBR) {
   BasicRateTargetingVBRTest();
 }
 
-// Check basic rate targeting for CBR,
+// Check basic rate targeting for CBR.
 TEST_P(DatarateTestRealtime, BasicRateTargetingCBR) {
   BasicRateTargetingCBRTest();
+}
+
+// Check basic rate targeting for periodic key frame.
+TEST_P(DatarateTestRealtime, PeriodicKeyFrameCBR) {
+  BasicRateTargetingCBRPeriodicKeyFrameTest();
 }
 
 // Check basic rate targeting for CBR.

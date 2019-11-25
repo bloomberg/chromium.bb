@@ -668,6 +668,15 @@ static INLINE void copy_winner_ref_mode_from_mbmi_ext(MACROBLOCK *const x) {
          sizeof(x->mbmi_ext->global_mvs));
 }
 
+static void hybrid_intra_mode_search(AV1_COMP *cpi, MACROBLOCK *const x,
+                                     RD_STATS *rd_cost, BLOCK_SIZE bsize,
+                                     PICK_MODE_CONTEXT *ctx) {
+  if (!cpi->sf.hybrid_intra_pickmode || bsize < BLOCK_16X16)
+    av1_rd_pick_intra_mode_sb(cpi, x, rd_cost, bsize, ctx, INT64_MAX);
+  else
+    av1_pick_intra_mode(cpi, x, rd_cost, bsize, ctx);
+}
+
 static AOM_INLINE void pick_sb_modes(AV1_COMP *const cpi,
                                      TileDataEnc *tile_data,
                                      MACROBLOCK *const x, int mi_row,
@@ -783,7 +792,15 @@ static AOM_INLINE void pick_sb_modes(AV1_COMP *const cpi,
 #if CONFIG_COLLECT_COMPONENT_TIMING
     start_timing(cpi, av1_rd_pick_intra_mode_sb_time);
 #endif
-    av1_rd_pick_intra_mode_sb(cpi, x, rd_cost, bsize, ctx, best_rd.rdcost);
+    switch (pick_mode_type) {
+      case PICK_MODE_RD:
+        av1_rd_pick_intra_mode_sb(cpi, x, rd_cost, bsize, ctx, best_rd.rdcost);
+        break;
+      case PICK_MODE_NONRD:
+        hybrid_intra_mode_search(cpi, x, rd_cost, bsize, ctx);
+        break;
+      default: assert(0 && "Unknown pick mode type.");
+    }
 #if CONFIG_COLLECT_COMPONENT_TIMING
     end_timing(cpi, av1_rd_pick_intra_mode_sb_time);
 #endif
@@ -795,8 +812,7 @@ static AOM_INLINE void pick_sb_modes(AV1_COMP *const cpi,
       av1_rd_pick_inter_mode_sb_seg_skip(cpi, tile_data, x, mi_row, mi_col,
                                          rd_cost, bsize, ctx, best_rd.rdcost);
     } else {
-      // TODO(kyslov): do the same for pick_intra_mode and
-      //               pick_inter_mode_sb_seg_skip
+      // TODO(kyslov): do the same for pick_inter_mode_sb_seg_skip
       switch (pick_mode_type) {
         case PICK_MODE_RD:
           av1_rd_pick_inter_mode_sb(cpi, tile_data, x, rd_cost, bsize, ctx,
