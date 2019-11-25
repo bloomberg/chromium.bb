@@ -2,8 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//components/signin/features.gni")
-
 # This target forms the core of the IdentityManager implementation
 # (//components/signin/public/identity_manager/identity_manager.*).
 source_set("identity_manager") {
@@ -77,9 +75,7 @@ source_set("identity_manager") {
       "//components/signin/core/browser/android:jni_headers",
       "//components/signin/internal/base",
     ]
-  }
-
-  if (enable_dice_support) {
+  } else {
     sources += [
       "mutable_profile_oauth2_token_service_delegate.cc",
       "mutable_profile_oauth2_token_service_delegate.h",
@@ -180,7 +176,7 @@ source_set("unit_tests") {
     deps += [ "//components/signin/public/identity_manager/ios:test_support" ]
   }
 
-  if (enable_dice_support) {
+  if (!is_android) {
     sources += [ "mutable_profile_oauth2_token_service_delegate_unittest.cc" ]
   }
 }

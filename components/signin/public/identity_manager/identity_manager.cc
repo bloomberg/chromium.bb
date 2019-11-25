@@ -12,7 +12,6 @@
 #include "components/signin/internal/identity_manager/account_tracker_service.h"
 #include "components/signin/internal/identity_manager/gaia_cookie_manager_service.h"
 #include "components/signin/internal/identity_manager/ubertoken_fetcher_impl.h"
-#include "components/signin/public/base/signin_buildflags.h"
 #include "components/signin/public/identity_manager/accounts_cookie_mutator.h"
 #include "components/signin/public/identity_manager/accounts_in_cookie_jar_info.h"
 #include "components/signin/public/identity_manager/accounts_mutator.h"
@@ -25,9 +24,7 @@
 #include "base/android/jni_string.h"
 #include "components/signin/internal/identity_manager/android/jni_headers/IdentityManager_jni.h"
 #include "components/signin/internal/identity_manager/profile_oauth2_token_service_delegate.h"
-#endif
-
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+#elif !defined(OS_IOS)
 #include "components/signin/internal/identity_manager/mutable_profile_oauth2_token_service_delegate.h"
 #endif
 
@@ -368,7 +365,7 @@ void IdentityManager::RegisterProfilePrefs(PrefRegistrySimple* registry) {
   AccountFetcherService::RegisterPrefs(registry);
   AccountTrackerService::RegisterPrefs(registry);
   GaiaCookieManagerService::RegisterPrefs(registry);
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
   MutableProfileOAuth2TokenServiceDelegate::RegisterProfilePrefs(registry);
 #endif
 }
