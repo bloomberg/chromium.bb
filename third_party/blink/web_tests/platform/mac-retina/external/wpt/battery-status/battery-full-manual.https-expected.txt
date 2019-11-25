@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL Battery Test: battery full, charger plugged in assert_equals: chargingTime must be set to 0 expected 0 but got Infinity
+Harness: the test ran to completion.
+
