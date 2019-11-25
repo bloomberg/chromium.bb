@@ -76,9 +76,6 @@ class StyledMarkupAccumulator final {
   bool ShouldConvertBlocksToInlines() const {
     return options_.ShouldConvertBlocksToInlines();
   }
-  bool IsForMarkupSanitization() const {
-    return options_.IsForMarkupSanitization();
-  }
 
  private:
   String RenderedText(Text&);

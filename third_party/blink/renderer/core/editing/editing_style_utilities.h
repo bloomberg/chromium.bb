@@ -64,8 +64,6 @@ class EditingStyleUtilities {
            unicode_bidi == CSSValueID::kEmbed;
   }
 
-  static void StripUAStyleRulesForMarkupSanitization(EditingStyle* style);
-
   static bool IsTransparentColorValue(const CSSValue*);
   static bool HasTransparentBackgroundColor(CSSStyleDeclaration*);
   static bool HasTransparentBackgroundColor(CSSPropertyValueSet*);
