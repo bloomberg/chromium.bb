@@ -4464,6 +4464,16 @@ void RenderFrameHostImpl::CreatePortal(
     return;
   }
 
+  // Note that we don't check |GetLastCommittedOrigin|, since that is inherited
+  // by the initial empty document of a new frame.
+  // TODO(1008989): Once issue 1008989 is fixed we could move this check into
+  // |Portal::Create|.
+  if (!GetLastCommittedURL().SchemeIsHTTPOrHTTPS()) {
+    mojo::ReportBadMessage("Portal creation is restricted to the HTTP family.");
+    frame_host_associated_receiver_.reset();
+    return;
+  }
+
   Portal* portal =
       Portal::Create(this, std::move(pending_receiver), std::move(client));
   if (!portal) {
