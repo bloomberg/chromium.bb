@@ -1,20 +1,13 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/assistant/model/assistant_ui_element.h"
+#include "ash/assistant/model/ui/assistant_card_element.h"
 
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "base/base64.h"
 
 namespace ash {
-
-namespace {
-
-// Navigable contents.
-constexpr char kDataUriPrefix[] = "data:text/html;base64,";
-
-}  // namespace
 
 // AssistantCardElement --------------------------------------------------------
 
@@ -69,9 +62,12 @@ void AssistantCardElement::Processor::Process() {
   // Observe |contents_| so that we are notified when loading is complete.
   contents_->AddObserver(this);
 
-  // Navigate to the data URL which represents the card.
+  // Encode the html string to be URL-safe.
   std::string encoded_html;
   base::Base64Encode(card_element_.html(), &encoded_html);
+
+  // Navigate to the data URL which represents the card.
+  constexpr char kDataUriPrefix[] = "data:text/html;base64,";
   contents_->Navigate(GURL(kDataUriPrefix + encoded_html));
 }
 

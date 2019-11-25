@@ -1,44 +1,19 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_ASSISTANT_MODEL_ASSISTANT_UI_ELEMENT_H_
-#define ASH_ASSISTANT_MODEL_ASSISTANT_UI_ELEMENT_H_
+#ifndef ASH_ASSISTANT_MODEL_UI_ASSISTANT_CARD_ELEMENT_H_
+#define ASH_ASSISTANT_MODEL_UI_ASSISTANT_CARD_ELEMENT_H_
 
 #include <memory>
 #include <string>
 
+#include "ash/assistant/model/ui/assistant_ui_element.h"
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "services/content/public/cpp/navigable_contents.h"
 
 namespace ash {
-
-// AssistantUiElementType ------------------------------------------------------
-
-// Defines possible types of Assistant UI elements.
-enum class AssistantUiElementType {
-  kCard,  // See AssistantCardElement.
-  kText,  // See AssistantTextElement.
-};
-
-// AssistantUiElement ----------------------------------------------------------
-
-// Base class for a UI element that will be rendered inside of Assistant UI.
-class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantUiElement {
- public:
-  virtual ~AssistantUiElement() = default;
-
-  AssistantUiElementType GetType() const { return type_; }
-
- protected:
-  explicit AssistantUiElement(AssistantUiElementType type) : type_(type) {}
-
- private:
-  const AssistantUiElementType type_;
-
-  DISALLOW_COPY_AND_ASSIGN(AssistantUiElement);
-};
 
 // AssistantCardElement --------------------------------------------------------
 
@@ -102,25 +77,6 @@ class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantCardElement
   DISALLOW_COPY_AND_ASSIGN(AssistantCardElement);
 };
 
-// AssistantTextElement --------------------------------------------------------
-
-// An Assistant UI element that will be rendered as text.
-class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantTextElement
-    : public AssistantUiElement {
- public:
-  explicit AssistantTextElement(const std::string& text)
-      : AssistantUiElement(AssistantUiElementType::kText), text_(text) {}
-
-  ~AssistantTextElement() override = default;
-
-  const std::string& text() const { return text_; }
-
- private:
-  const std::string text_;
-
-  DISALLOW_COPY_AND_ASSIGN(AssistantTextElement);
-};
-
 }  // namespace ash
 
-#endif  // ASH_ASSISTANT_MODEL_ASSISTANT_UI_ELEMENT_H_
+#endif  // ASH_ASSISTANT_MODEL_UI_ASSISTANT_CARD_ELEMENT_H_
