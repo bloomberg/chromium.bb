@@ -3012,7 +3012,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/android_deps/libs/com_google_errorprone_error_prone_annotation',
-              'version': 'version:2.3.1-cr0',
+              'version': 'version:2.3.3-cr0',
           },
       ],
       'condition': 'checkout_android',
@@ -3023,7 +3023,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/android_deps/libs/com_google_errorprone_error_prone_annotations',
-              'version': 'version:2.3.1-cr0',
+              'version': 'version:2.3.3-cr0',
           },
       ],
       'condition': 'checkout_android',
@@ -3034,7 +3034,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/android_deps/libs/com_google_errorprone_error_prone_check_api',
-              'version': 'version:2.3.1-cr0',
+              'version': 'version:2.3.3-cr0',
           },
       ],
       'condition': 'checkout_android',
@@ -3045,7 +3045,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/android_deps/libs/com_google_errorprone_error_prone_core',
-              'version': 'version:2.3.1-cr0',
+              'version': 'version:2.3.3-cr0',
           },
       ],
       'condition': 'checkout_android',
@@ -3056,7 +3056,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/android_deps/libs/com_google_errorprone_error_prone_type_annotations',
-              'version': 'version:2.3.1-cr0',
+              'version': 'version:2.3.3-cr0',
           },
       ],
       'condition': 'checkout_android',
@@ -3134,6 +3134,17 @@ deps = {
           {
               'package': 'chromium/third_party/android_deps/libs/com_google_j2objc_j2objc_annotations',
               'version': 'version:1.1-cr0',
+          },
+      ],
+      'condition': 'checkout_android',
+      'dep_type': 'cipd',
+  },
+
+  'src/third_party/android_deps/libs/com_google_protobuf_protobuf_java': {
+      'packages': [
+          {
+              'package': 'chromium/third_party/android_deps/libs/com_google_protobuf_protobuf_java',
+              'version': 'version:3.4.0-cr0',
           },
       ],
       'condition': 'checkout_android',
@@ -3221,7 +3232,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/android_deps/libs/org_checkerframework_checker_qual',
-              'version': 'version:2.5.2-cr0',
+              'version': 'version:2.5.3-cr0',
           },
       ],
       'condition': 'checkout_android',
@@ -3232,7 +3243,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/android_deps/libs/org_checkerframework_dataflow',
-              'version': 'version:2.5.0-cr0',
+              'version': 'version:2.5.3-cr0',
           },
       ],
       'condition': 'checkout_android',
@@ -3243,7 +3254,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/android_deps/libs/org_checkerframework_javacutil',
-              'version': 'version:2.5.0-cr0',
+              'version': 'version:2.5.3-cr0',
           },
       ],
       'condition': 'checkout_android',
