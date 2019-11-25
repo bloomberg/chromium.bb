@@ -2389,6 +2389,20 @@ crbug.com/491764 http/tests/devtools/service-workers/user-agent-override.js [ Pa
 crbug.com/492511 [ Mac ] virtual/text-antialias/atsui-negative-spacing-features.html [ Failure ]
 crbug.com/492511 [ Mac ] virtual/text-antialias/international/arabic-justify.html [ Failure ]
 
+# Temporarily disable top-level await tests as the implementation moves
+# from the DevTools frontend to native V8
+crbug.com/1021921 http/tests/devtools/console/console-top-level-await.js [ Skip ]
+crbug.com/1021921 http/tests/devtools/unit/preprocess-top-level-awaits.js [ Skip ]
+crbug.com/1021921 http/tests/devtools/console/console-eval-exception-report.js [ Skip ]
+crbug.com/1021921 http/tests/devtools/console/console-eval-object-literal.js [ Skip ]
+crbug.com/1021921 http/tests/devtools/console/console-eval-throw.js [ Skip ]
+crbug.com/1021921 http/tests/devtools/console/console-eval-undefined-override.js [ Skip ]
+crbug.com/1021921 http/tests/devtools/console/console-group-similar.js [ Skip ]
+crbug.com/1021921 http/tests/devtools/console/console-xpath.js [ Skip ]
+crbug.com/1021921 http/tests/devtools/console/exception-objects.js [ Skip ]
+crbug.com/1021921 http/tests/devtools/console/nested-worker-eval-contains-stack.js [ Skip ]
+crbug.com/1021921 http/tests/devtools/console/worker-eval-contains-stack.js [ Skip ]
+
 # Ref tests that fail due to differences in inline box structure, even though they contain the same text.
 # This happens because inline box layout uses fixed-point measurements, which can cause rounding differences.
 crbug.com/321237 [ Mac ] fast/selectors/007a.html [ Failure ]
