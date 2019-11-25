@@ -219,7 +219,7 @@ class IdlType(WithExtendedAttributes, WithDebugInfo):
         """
         callback(self)
 
-    def unwrap(self, nullable=None, typedef=None):
+    def unwrap(self, nullable=None, typedef=None, variadic=None):
         """
         Returns the body part of the actual type, i.e. returns the interesting
         part of this type.
@@ -237,6 +237,7 @@ class IdlType(WithExtendedAttributes, WithDebugInfo):
         switches = {
             'nullable': nullable,
             'typedef': typedef,
+            'variadic': variadic,
         }
 
         value_counts = {None: 0, False: 0, True: 0}
@@ -885,6 +886,11 @@ class VariadicType(_ArrayLikeType):
     @property
     def is_variadic(self):
         return True
+
+    def _unwrap(self, switches):
+        if switches['variadic']:
+            return self.element_type._unwrap(switches)
+        return self
 
 
 class RecordType(IdlType):
