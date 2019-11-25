@@ -936,7 +936,7 @@ TEST_P(AppSearchProviderWithExtensionInstallType, OemResultsOnFirstBoot) {
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    ,
+    All,
     AppSearchProviderWithExtensionInstallType,
     ::testing::ValuesIn({TestExtensionInstallType::CONTROLLED_BY_POLICY,
                          TestExtensionInstallType::CHROME_COMPONENT,
@@ -1027,7 +1027,7 @@ TEST_P(AppSearchProviderWithArcAppInstallType,
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    ,
+    All,
     AppSearchProviderWithArcAppInstallType,
     ::testing::ValuesIn({TestArcAppInstallType::CONTROLLED_BY_POLICY,
                          TestArcAppInstallType::INSTALLED_BY_DEFAULT}));
