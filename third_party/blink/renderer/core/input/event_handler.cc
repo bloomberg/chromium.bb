@@ -2166,7 +2166,7 @@ void EventHandler::MayUpdateHoverWhenContentUnderMouseChanged(
 }
 
 void EventHandler::MayUpdateHoverAfterScroll(
-    const FloatQuad& scroller_rect_in_frame) {
+    const FloatRect& scroller_rect_in_frame) {
   mouse_event_manager_->MayUpdateHoverAfterScroll(scroller_rect_in_frame);
 }
 
