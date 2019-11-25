@@ -64,6 +64,7 @@ class SynchronousCompositorHost : public SynchronousCompositor,
       const gfx::ScrollOffset& root_offset) override;
   void SynchronouslyZoomBy(float zoom_delta, const gfx::Point& anchor) override;
   void OnComputeScroll(base::TimeTicks animation_time) override;
+  void ProgressFling(base::TimeTicks frame_time) override;
 
   ui::ViewAndroid::CopyViewCallback GetCopyViewCallback();
   void DidOverscroll(const ui::DidOverscrollParams& over_scroll_params);
