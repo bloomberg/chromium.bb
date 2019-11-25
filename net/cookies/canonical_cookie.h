@@ -197,6 +197,11 @@ class NET_EXPORT CanonicalCookie {
       CookieAccessSemantics access_semantics =
           CookieAccessSemantics::UNKNOWN) const;
 
+  // Overload that updates an existing |status| rather than returning a new one.
+  void IsSetPermittedInContext(const CookieOptions& options,
+                               CookieAccessSemantics access_semantics,
+                               CookieInclusionStatus* status) const;
+
   std::string DebugString() const;
 
   static std::string CanonPathWithString(const GURL& url,
@@ -388,13 +393,13 @@ class NET_EXPORT CanonicalCookie::CookieInclusionStatus {
   // Add an exclusion reason.
   void AddExclusionReason(ExclusionReason status_type);
 
-  // Add all the exclusion reasons given in |other|. If there is a warning in
-  // |other| (other than DO_NOT_WARN), also apply that. This could overwrite the
-  // existing warning, so set the most important warnings last.
-  void AddExclusionReasonsAndWarningIfAny(const CookieInclusionStatus& other);
-
   // Remove an exclusion reason.
   void RemoveExclusionReason(ExclusionReason reason);
+
+  // If the cookie would have been excluded for reasons other than
+  // SAMESITE_UNSPECIFIED_TREATED_AS_LAX or SAMESITE_NONE_INSECURE, don't bother
+  // warning about it (clear the warning).
+  void MaybeClearSameSiteWarning();
 
   // Whether the cookie should be warned about.
   bool ShouldWarn() const;
