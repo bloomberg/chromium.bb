@@ -7,6 +7,7 @@
 #include "ash/assistant/assistant_controller.h"
 #include "ash/assistant/assistant_suggestions_controller.h"
 #include "ash/assistant/assistant_ui_controller.h"
+#include "ash/assistant/ui/proactive_suggestions_simple_view.h"
 #include "ash/assistant/ui/proactive_suggestions_view.h"
 #include "ash/public/cpp/assistant/proactive_suggestions.h"
 #include "ash/public/cpp/assistant/util/histogram_util.h"
@@ -208,7 +209,12 @@ void AssistantProactiveSuggestionsController::MaybeShowUi() {
     return;
   }
 
-  view_ = new ProactiveSuggestionsView(assistant_controller_->view_delegate());
+  // TODO(dmblack): Use a different ProactiveSuggestionsView implementation to
+  // instead show a richer affordance (if enabled via feature param).
+  view_ = new ProactiveSuggestionsSimpleView(
+      assistant_controller_->view_delegate());
+
+  view_->Init();
   view_->GetWidget()->ShowInactive();
 
   RecordProactiveSuggestionsShowAttempt(
