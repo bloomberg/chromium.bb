@@ -1309,7 +1309,7 @@ void ServiceWorkerVersion::PostMessageToClient(
     receiver_.reset();
     return;
   }
-  provider_host->PostMessageToClient(this, std::move(message));
+  container_host->PostMessageToClient(this, std::move(message));
 }
 
 void ServiceWorkerVersion::FocusClient(const std::string& client_uuid,
@@ -1530,7 +1530,7 @@ void ServiceWorkerVersion::CountFeature(blink::mojom::WebFeature feature) {
   if (!used_features_.insert(feature).second)
     return;
   for (auto provider_host_by_uuid : controllee_map_)
-    provider_host_by_uuid.second->CountFeature(feature);
+    provider_host_by_uuid.second->container_host()->CountFeature(feature);
 }
 
 // static
