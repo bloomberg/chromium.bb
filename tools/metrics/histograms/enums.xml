@@ -61679,6 +61679,12 @@ would be helpful to identify which type is being sent.
   <int value="3" label="CLIENT_NO_CHANNEL_ID_SERVICE"/>
 </enum>
 
+<enum name="TokenStateOnRegistrationRequest">
+  <int value="0" label="Token was empty"/>
+  <int value="1" label="Token stayed unchanged"/>
+  <int value="2" label="Token has changed"/>
+</enum>
+
 <enum name="TouchActions">
   <int value="0" label="NONE"/>
   <int value="1" label="PAN_LEFT"/>
