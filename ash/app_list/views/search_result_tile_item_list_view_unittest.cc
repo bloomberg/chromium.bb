@@ -361,7 +361,7 @@ TEST_P(SearchResultTileItemListViewTest, TestRecommendations) {
   }
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          SearchResultTileItemListViewTest,
                          testing::ValuesIn({std::make_pair(false, false),
                                             std::make_pair(false, true),
