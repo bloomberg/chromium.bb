@@ -203,6 +203,7 @@
 #include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom.h"
 #include "third_party/blink/public/mojom/choosers/file_chooser.mojom.h"
 #include "third_party/blink/public/mojom/frame/fullscreen.mojom.h"
+#include "third_party/blink/public/mojom/geolocation/geolocation_service.mojom.h"
 #include "third_party/blink/public/mojom/loader/pause_subresource_loading_handle.mojom.h"
 #include "third_party/blink/public/mojom/loader/url_loader_factory_bundle.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
@@ -4619,22 +4620,6 @@ void RenderFrameHostImpl::ResourceLoadComplete(
 void RenderFrameHostImpl::RegisterMojoInterfaces() {
   auto* command_line = base::CommandLine::ForCurrentProcess();
 
-  PermissionControllerImpl* permission_controller =
-      PermissionControllerImpl::FromBrowserContext(
-          GetProcess()->GetBrowserContext());
-  auto* geolocation_context = delegate_->GetGeolocationContext();
-  if (geolocation_context) {
-    geolocation_service_.reset(new GeolocationServiceImpl(
-        geolocation_context, permission_controller, this));
-    // NOTE: Both the |interface_registry_| and |geolocation_service_| are
-    // owned by |this|, so their destruction will be triggered together.
-    // |interface_registry_| is declared after |geolocation_service_|, so it
-    // will be destroyed prior to |geolocation_service_|.
-    registry_->AddInterface(
-        base::BindRepeating(&GeolocationServiceImpl::Bind,
-                            base::Unretained(geolocation_service_.get())));
-  }
-
   registry_->AddInterface<media::mojom::InterfaceFactory>(base::BindRepeating(
       &RenderFrameHostImpl::BindMediaInterfaceFactoryRequest,
       base::Unretained(this)));
@@ -6652,6 +6637,18 @@ void RenderFrameHostImpl::GetFileSystemManager(
                  base::BindOnce(&FileSystemManagerImpl::BindReceiver,
                                 base::Unretained(file_system_manager_.get()),
                                 std::move(receiver)));
+}
+
+void RenderFrameHostImpl::GetGeolocationService(
+    mojo::PendingReceiver<blink::mojom::GeolocationService> receiver) {
+  if (!geolocation_service_) {
+    auto* geolocation_context = delegate_->GetGeolocationContext();
+    if (!geolocation_context)
+      return;
+    geolocation_service_ =
+        std::make_unique<GeolocationServiceImpl>(geolocation_context, this);
+  }
+  geolocation_service_->Bind(std::move(receiver));
 }
 
 void RenderFrameHostImpl::GetNativeFileSystemManager(
