@@ -2,13 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-enum XRHitTestTrackableType {
-  "point",
-  "plane"
-};
-
-dictionary XRHitTestOptionsInit {
-  required XRSpace space;
+dictionary XRTransientInputHitTestOptionsInit {
+  required DOMString profile;
   FrozenArray<XRHitTestTrackableType> entityTypes;
   XRRay offsetRay;
 };

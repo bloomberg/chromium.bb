@@ -19,7 +19,7 @@ HeapVector<Member<XRHitTestResult>> XRHitTestSource::Results() {
   HeapVector<Member<XRHitTestResult>> results;
 
   for (const auto& result : last_frame_results_) {
-    results.emplace_back(MakeGarbageCollected<XRHitTestResult>(this, *result));
+    results.emplace_back(MakeGarbageCollected<XRHitTestResult>(*result));
   }
 
   return results;
