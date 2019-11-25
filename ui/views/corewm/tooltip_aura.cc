@@ -81,7 +81,7 @@ namespace corewm {
 // TODO(oshima): Consider to use views::Label.
 class TooltipAura::TooltipView : public views::View {
  public:
-  TooltipView() : render_text_(gfx::RenderText::CreateHarfBuzzInstance()) {
+  TooltipView() : render_text_(gfx::RenderText::CreateRenderText()) {
     SetBorder(CreateEmptyBorder(kVerticalPaddingTop, kHorizontalPadding,
                                 kVerticalPaddingBottom, kHorizontalPadding));
 
