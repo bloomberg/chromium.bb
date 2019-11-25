@@ -20,6 +20,7 @@
 #include "chromeos/dbus/upstart/fake_upstart_client.h"
 #include "components/arc/arc_util.h"
 #include "components/arc/session/arc_session.h"
+#include "components/arc/session/file_system_status.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -129,10 +130,12 @@ class ArcVmClientAdapterTest : public testing::Test,
     run_loop_ = std::make_unique<base::RunLoop>();
     adapter_ = CreateArcVmClientAdapterForTesting(
         version_info::Channel::STABLE,
-        base::BindRepeating([](FileSystemStatus*) {}));
+        base::BindRepeating(&ArcVmClientAdapterTest::RewriteStatus,
+                            base::Unretained(this)));
     arc_instance_stopped_called_ = false;
     adapter_->AddObserver(this);
     ASSERT_TRUE(dir_.CreateUniqueTempDir());
+    property_files_expanded_ = true;
 
     // The fake client returns VM_STATUS_STARTING by default. Change it
     // to VM_STATUS_RUNNING which is used by ARCVM.
@@ -260,10 +263,18 @@ class ArcVmClientAdapterTest : public testing::Test,
         chromeos::DBusThreadManager::Get()->GetConciergeClient());
   }
 
+  void set_property_files_expanded(bool property_files_expanded) {
+    property_files_expanded_ = property_files_expanded;
+  }
+
  private:
   TestDebugDaemonClient* GetTestDebugDaemonClient() {
     return static_cast<TestDebugDaemonClient*>(
         chromeos::DBusThreadManager::Get()->GetDebugDaemonClient());
+  }
+
+  void RewriteStatus(FileSystemStatus* status) {
+    status->set_property_files_expanded_for_testing(property_files_expanded_);
   }
 
   std::unique_ptr<base::RunLoop> run_loop_;
@@ -272,6 +283,9 @@ class ArcVmClientAdapterTest : public testing::Test,
 
   content::BrowserTaskEnvironment browser_task_environment_;
   base::ScopedTempDir dir_;
+
+  // A variable to override the value in FileSystemStatus.
+  bool property_files_expanded_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcVmClientAdapterTest);
 };
@@ -392,6 +406,29 @@ TEST_F(ArcVmClientAdapterTest, UpgradeArc_NoUserInfo) {
 
   // Don't call SetValidUserInfo(). Note that we cannot call StartArcVm()
   // without valid user info.
+  UpgradeArc(false);
+  EXPECT_TRUE(GetStartConciergeCalled());
+  EXPECT_FALSE(GetTestConciergeClient()->start_arc_vm_called());
+  EXPECT_FALSE(arc_instance_stopped_called());
+
+  // Try to stop the VM. StopVm will fail in this case because
+  // no VM is running.
+  vm_tools::concierge::StopVmResponse response;
+  response.set_success(false);
+  GetTestConciergeClient()->set_stop_vm_response(response);
+  adapter()->StopArcInstance(/*on_shutdown=*/false);
+  run_loop()->Run();
+  EXPECT_TRUE(GetTestConciergeClient()->stop_vm_called());
+  EXPECT_TRUE(arc_instance_stopped_called());
+}
+
+// Tests that property expansion failure is handled correctly.
+TEST_F(ArcVmClientAdapterTest, UpgradeArc_PropertyExpansionError) {
+  SetValidUserInfo();
+  StartMiniArc();
+  // Inject failure to the FileSystemStatus object.
+  set_property_files_expanded(false);
+
   UpgradeArc(false);
   EXPECT_TRUE(GetStartConciergeCalled());
   EXPECT_FALSE(GetTestConciergeClient()->start_arc_vm_called());

@@ -461,8 +461,9 @@ class ArcVmClientAdapter : public ArcClientAdapter,
       file_system_status_rewriter_for_testing_.Run(&file_system_status);
 
     if (!file_system_status.property_files_expanded()) {
-      // TODO(yusukes): Once build_image and push_to_device.py are updated, run
-      // the |callback| with false here and return.
+      LOG(ERROR) << "Failed to expand property files";
+      std::move(callback).Run(false);
+      return;
     }
 
     if (serial_number_.empty()) {
