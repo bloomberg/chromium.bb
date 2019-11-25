@@ -210,7 +210,7 @@ HistorySupervisedUserTest.prototype = {
   ]),
 };
 
-GEN('#if !defined(OS_MACOSX)');
+GEN('#if defined(OS_MACOSX)');
 GEN('#define MAYBE_AllTest DISABLED_AllTest');
 GEN('#else');
 GEN('#define MAYBE_AllTest AllTest');
