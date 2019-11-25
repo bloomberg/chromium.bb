@@ -61,7 +61,7 @@ class WebMediaStream;
 class WebMediaStreamTrack;
 class WebRTCStatsRequest;
 class WebString;
-struct WebRTCDataChannelInit;
+struct RTCDataChannelInitPlatform;
 
 class WebRTCPeerConnectionHandler {
  public:
@@ -125,7 +125,7 @@ class WebRTCPeerConnectionHandler {
                         const WebVector<webrtc::NonStandardGroupId>&) = 0;
   virtual scoped_refptr<webrtc::DataChannelInterface> CreateDataChannel(
       const WebString& label,
-      const WebRTCDataChannelInit&) = 0;
+      const RTCDataChannelInitPlatform&) = 0;
   virtual webrtc::RTCErrorOr<std::unique_ptr<WebRTCRtpTransceiver>>
   AddTransceiverWithTrack(const WebMediaStreamTrack&,
                           const webrtc::RtpTransceiverInit&) = 0;

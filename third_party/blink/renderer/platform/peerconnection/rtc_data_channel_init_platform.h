@@ -28,16 +28,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_RTC_DATA_CHANNEL_INIT_H_
-#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_RTC_DATA_CHANNEL_INIT_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_PEERCONNECTION_RTC_DATA_CHANNEL_INIT_PLATFORM_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_PEERCONNECTION_RTC_DATA_CHANNEL_INIT_PLATFORM_H_
 
-#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
-struct WebRTCDataChannelInit {
+struct RTCDataChannelInitPlatform {
  public:
-  WebRTCDataChannelInit()
+  RTCDataChannelInitPlatform()
       : ordered(true),
         max_retransmit_time(-1),
         max_retransmits(-1),
@@ -46,11 +46,11 @@ struct WebRTCDataChannelInit {
   bool ordered;
   int max_retransmit_time;
   int max_retransmits;
-  WebString protocol;
+  String protocol;
   bool negotiated;
   int id;
 };
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_RTC_DATA_CHANNEL_INIT_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_PEERCONNECTION_RTC_DATA_CHANNEL_INIT_PLATFORM_H_

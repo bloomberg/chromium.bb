@@ -27,7 +27,6 @@
 #include "third_party/blink/public/platform/modules/mediastream/web_platform_media_stream_track.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_media_constraints.h"
-#include "third_party/blink/public/platform/web_rtc_data_channel_init.h"
 #include "third_party/blink/public/platform/web_rtc_legacy_stats.h"
 #include "third_party/blink/public/platform/web_rtc_rtp_transceiver.h"
 #include "third_party/blink/public/platform/web_rtc_stats.h"
@@ -42,6 +41,7 @@
 #include "third_party/blink/renderer/modules/webrtc/webrtc_audio_device_impl.h"
 #include "third_party/blink/renderer/platform/mediastream/webrtc_uma_histograms.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_answer_options_platform.h"
+#include "third_party/blink/renderer/platform/peerconnection/rtc_data_channel_init_platform.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_event_log_output_sink.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_event_log_output_sink_proxy.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_ice_candidate_platform.h"
@@ -2051,7 +2051,7 @@ void RTCPeerConnectionHandler::OnWebRtcEventLogWrite(const String& output) {
 
 scoped_refptr<DataChannelInterface> RTCPeerConnectionHandler::CreateDataChannel(
     const blink::WebString& label,
-    const blink::WebRTCDataChannelInit& init) {
+    const RTCDataChannelInitPlatform& init) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::createDataChannel");
   DVLOG(1) << "createDataChannel label " << label.Utf8();
