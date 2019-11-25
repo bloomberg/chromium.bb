@@ -59,9 +59,6 @@ DiceMigrationStatus GetDiceMigrationStatus(
   switch (account_consistency) {
     case AccountConsistencyMethod::kDice:
       return DiceMigrationStatus::kEnabled;
-    case AccountConsistencyMethod::kDiceMigration:
-      NOTREACHED();  // Dice migration is now complete.
-      return DiceMigrationStatus::kDisabledNotReadyForMigration;
     case AccountConsistencyMethod::kDisabled:
       return DiceMigrationStatus::kDisabled;
     case AccountConsistencyMethod::kMirror:

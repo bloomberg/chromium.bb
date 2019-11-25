@@ -115,7 +115,7 @@ class DiceResponseHandlerTest : public testing::Test,
     AboutSigninInternals::RegisterPrefs(pref_service_.registry());
     auto account_reconcilor_delegate =
         std::make_unique<signin::DiceAccountReconcilorDelegate>(
-            &signin_client_, signin::AccountConsistencyMethod::kDiceMigration,
+            &signin_client_,
             /*migration_completed=*/false);
     account_reconcilor_ = std::make_unique<AccountReconcilor>(
         identity_test_env_.identity_manager(), &signin_client_,
@@ -500,42 +500,6 @@ TEST_F(DiceResponseHandlerTest, SignoutMainAccount) {
       identity_manager()->HasAccountWithRefreshTokenInPersistentErrorState(
           secondary_account_info.account_id));
 
-  EXPECT_TRUE(identity_manager()->HasPrimaryAccount());
-  // Check that the reconcilor was not blocked.
-  EXPECT_EQ(0, reconcilor_blocked_count_);
-  EXPECT_EQ(0, reconcilor_unblocked_count_);
-}
-
-TEST_F(DiceResponseHandlerTest, MigrationSignout) {
-  InitializeDiceResponseHandler(
-      signin::AccountConsistencyMethod::kDiceMigration);
-  const char kSecondaryEmail[] = "other@gmail.com";
-  DiceResponseParams dice_params = MakeDiceParams(DiceAction::SIGNOUT);
-  dice_params.signout_info->account_infos.emplace_back(
-      signin::GetTestGaiaIdForEmail(kSecondaryEmail), kSecondaryEmail, 1);
-  const auto& main_account_info = dice_params.signout_info->account_infos[0];
-
-  // User is signed in to Chrome, and has some refresh token for a secondary
-  // account.
-  AccountInfo account_info =
-      identity_test_env_.MakePrimaryAccountAvailable(main_account_info.email);
-  AccountInfo secondary_account_info =
-      identity_test_env_.MakeAccountAvailable(kSecondaryEmail);
-  EXPECT_TRUE(
-      identity_manager()->HasAccountWithRefreshToken(account_info.account_id));
-  EXPECT_TRUE(identity_manager()->HasAccountWithRefreshToken(
-      secondary_account_info.account_id));
-  EXPECT_TRUE(identity_manager()->HasPrimaryAccount());
-
-  // Receive signout response for all accounts.
-  dice_response_handler_->ProcessDiceHeader(
-      dice_params, std::make_unique<TestProcessDiceHeaderDelegate>(this));
-
-  // User is not signed out from Chrome, only the secondary token is deleted.
-  EXPECT_TRUE(
-      identity_manager()->HasAccountWithRefreshToken(account_info.account_id));
-  EXPECT_FALSE(identity_manager()->HasAccountWithRefreshToken(
-      secondary_account_info.account_id));
   EXPECT_TRUE(identity_manager()->HasPrimaryAccount());
   // Check that the reconcilor was not blocked.
   EXPECT_EQ(0, reconcilor_blocked_count_);

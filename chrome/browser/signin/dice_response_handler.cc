@@ -218,8 +218,7 @@ DiceResponseHandler::DiceResponseHandler(
   DCHECK(identity_manager_);
   DCHECK(account_reconcilor_);
   DCHECK(about_signin_internals_);
-  DCHECK(signin::DiceMethodGreaterOrEqual(
-      account_consistency_, signin::AccountConsistencyMethod::kDiceMigration));
+  DCHECK_EQ(account_consistency_, signin::AccountConsistencyMethod::kDice);
 }
 
 DiceResponseHandler::~DiceResponseHandler() {}
@@ -318,16 +317,10 @@ void DiceResponseHandler::ProcessDiceSignoutHeader(
       primary_account_signed_out = true;
       RecordDiceResponseHeader(kSignoutPrimary);
 
-      if (account_consistency_ == signin::AccountConsistencyMethod::kDice) {
-        // Put the account in error state.
-        accounts_mutator->InvalidateRefreshTokenForPrimaryAccount(
-            signin_metrics::SourceForRefreshTokenOperation::
-                kDiceResponseHandler_Signout);
-      } else {
-        // If Dice migration is not complete, the token for the main account
-        // must not be deleted when signing out of the web.
-        continue;
-      }
+      // Put the account in error state.
+      accounts_mutator->InvalidateRefreshTokenForPrimaryAccount(
+          signin_metrics::SourceForRefreshTokenOperation::
+              kDiceResponseHandler_Signout);
     } else {
       accounts_mutator->RemoveAccount(
           signed_out_account, signin_metrics::SourceForRefreshTokenOperation::
