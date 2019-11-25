@@ -77,7 +77,7 @@ bool ConsiderAnimationAsIncompatible(const Animation& animation,
   if (animation.NeedsCompositorTimeSync())
     return true;
 
-  switch (animation.GetPlayState()) {
+  switch (animation.CalculateAnimationPlayState()) {
     case Animation::kIdle:
       return false;
     case Animation::kRunning:
