@@ -1776,15 +1776,15 @@ int av1_diamond_search_sad_c(MACROBLOCK *x, const search_site_config *cfg,
 /* do_refine: If last step (1-away) of n-step search doesn't pick the center
               point as the best match, we will do a final 1-away diamond
               refining search  */
-static int full_pixel_diamond(const AV1_COMP *const cpi, MACROBLOCK *x,
-                              MV *mvp_full, int step_param, int sadpb,
-                              int further_steps, int do_refine, int *cost_list,
+static int full_pixel_diamond(MACROBLOCK *x, MV *mvp_full, int step_param,
+                              int sadpb, int further_steps, int do_refine,
+                              int *cost_list,
                               const aom_variance_fn_ptr_t *fn_ptr,
                               const MV *ref_mv, const search_site_config *cfg) {
   MV temp_mv;
   int thissme, n, num00 = 0;
-  int bestsme = cpi->diamond_search_sad(x, cfg, mvp_full, &temp_mv, step_param,
-                                        sadpb, &n, fn_ptr, ref_mv);
+  int bestsme = av1_diamond_search_sad_c(x, cfg, mvp_full, &temp_mv, step_param,
+                                         sadpb, &n, fn_ptr, ref_mv);
   if (bestsme < INT_MAX)
     bestsme = av1_get_mvpred_var(x, &temp_mv, ref_mv, fn_ptr, 1);
   x->best_mv.as_mv = temp_mv;
@@ -1800,8 +1800,8 @@ static int full_pixel_diamond(const AV1_COMP *const cpi, MACROBLOCK *x,
       num00--;
     } else {
       thissme =
-          cpi->diamond_search_sad(x, cfg, mvp_full, &temp_mv, step_param + n,
-                                  sadpb, &num00, fn_ptr, ref_mv);
+          av1_diamond_search_sad_c(x, cfg, mvp_full, &temp_mv, step_param + n,
+                                   sadpb, &num00, fn_ptr, ref_mv);
       if (thissme < INT_MAX)
         thissme = av1_get_mvpred_var(x, &temp_mv, ref_mv, fn_ptr, 1);
 
@@ -2331,7 +2331,7 @@ int av1_full_pixel_search(const AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
                           fn_ptr, 1, ref_mv);
       break;
     case NSTEP:
-      var = full_pixel_diamond(cpi, x, mvp_full, step_param, error_per_bit,
+      var = full_pixel_diamond(x, mvp_full, step_param, error_per_bit,
                                MAX_MVSEARCH_STEPS - 1 - step_param, 1,
                                cost_list, fn_ptr, ref_mv, cfg);
       break;

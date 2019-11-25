@@ -958,8 +958,6 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
     sf->partition_search_breakout_dist_thr <<= 2 * (MAX_SB_SIZE_LOG2 - 6);
   }
 
-  cpi->diamond_search_sad = av1_diamond_search_sad;
-
   sf->allow_exhaustive_searches = 1;
 
   const int mesh_speed = AOMMIN(speed, MAX_MESH_SPEED);
