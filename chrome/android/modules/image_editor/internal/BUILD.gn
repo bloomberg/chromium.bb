@@ -11,7 +11,13 @@ android_library("java") {
 
   deps = [
     "//chrome/android/modules/image_editor/public:java",
-    "//chrome/browser/image_editor/internal:java",
     "//chrome/browser/image_editor/public:java",
   ]
+
+  # The actual feature implementation lives downstream.
+  if (enable_chrome_android_internal) {
+    deps += [ "//clank/browser/image_editor/internal:java" ]
+  } else {
+    deps += [ "//chrome/browser/image_editor/internal:java" ]
+  }
 }
