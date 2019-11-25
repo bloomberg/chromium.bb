@@ -33,6 +33,7 @@ class COMPONENT_EXPORT(ASSISTANT_UI) ProactiveSuggestionsView
 
   // views::Button:
   const char* GetClassName() const override;
+  void PreferredSizeChanged() override;
   void OnGestureEvent(ui::GestureEvent* event) override;
   void OnMouseEntered(const ui::MouseEvent& event) override;
   void OnMouseExited(const ui::MouseEvent& event) override;

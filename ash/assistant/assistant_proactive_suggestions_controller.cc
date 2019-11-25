@@ -7,6 +7,7 @@
 #include "ash/assistant/assistant_controller.h"
 #include "ash/assistant/assistant_suggestions_controller.h"
 #include "ash/assistant/assistant_ui_controller.h"
+#include "ash/assistant/ui/proactive_suggestions_rich_view.h"
 #include "ash/assistant/ui/proactive_suggestions_simple_view.h"
 #include "ash/assistant/ui/proactive_suggestions_view.h"
 #include "ash/public/cpp/assistant/proactive_suggestions.h"
@@ -209,10 +210,16 @@ void AssistantProactiveSuggestionsController::MaybeShowUi() {
     return;
   }
 
-  // TODO(dmblack): Use a different ProactiveSuggestionsView implementation to
-  // instead show a richer affordance (if enabled via feature param).
-  view_ = new ProactiveSuggestionsSimpleView(
-      assistant_controller_->view_delegate());
+  // Depending on which is enabled, we'll either use a rich, content-forward UI
+  // affordance or a simple UI affordance as the feature entry point.
+  if (chromeos::assistant::features::
+          IsProactiveSuggestionsShowRichEntryPointEnabled()) {
+    view_ = new ProactiveSuggestionsRichView(
+        assistant_controller_->view_delegate());
+  } else {
+    view_ = new ProactiveSuggestionsSimpleView(
+        assistant_controller_->view_delegate());
+  }
 
   view_->Init();
   view_->GetWidget()->ShowInactive();

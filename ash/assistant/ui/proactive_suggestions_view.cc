@@ -50,6 +50,11 @@ const char* ProactiveSuggestionsView::GetClassName() const {
   return "ProactiveSuggestionsView";
 }
 
+void ProactiveSuggestionsView::PreferredSizeChanged() {
+  if (GetWidget())
+    UpdateBounds();
+}
+
 void ProactiveSuggestionsView::OnMouseEntered(const ui::MouseEvent& event) {
   views::Button::OnMouseEntered(event);
   delegate_->OnProactiveSuggestionsViewHoverChanged(/*is_hovering=*/true);
