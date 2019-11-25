@@ -8339,6 +8339,12 @@ be describing additional metrics about the same event.
       currently contains text form entry.
     </summary>
   </metric>
+  <metric name="FailureLiveStateHasNotificationsPermission" enum="Boolean">
+    <summary>
+      Boolean indicating that the intervention was disallowed because the tab
+      has the permission to use notifications.
+    </summary>
+  </metric>
   <metric name="FailureLiveStateIsPDF" enum="Boolean">
     <summary>
       Boolean indicating that the intervention was disallowed because the tab is
