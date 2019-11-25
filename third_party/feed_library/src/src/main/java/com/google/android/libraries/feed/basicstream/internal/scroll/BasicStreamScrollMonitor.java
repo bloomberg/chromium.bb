@@ -11,8 +11,8 @@ import com.google.android.libraries.feed.sharedstream.publicapi.scroll.ScrollObs
 import com.google.android.libraries.feed.sharedstream.publicapi.scroll.ScrollObserver;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Monitors and dispatches scroll events to the registered listeners.
@@ -29,7 +29,7 @@ public class BasicStreamScrollMonitor
 
     public BasicStreamScrollMonitor(Clock clock) {
         this.mClock = clock;
-        mScrollObservers = Collections.newSetFromMap(new ConcurrentHashMap<>());
+        mScrollObservers = Collections.newSetFromMap(Collections.synchronizedMap(new HashMap<>()));
     }
 
     @Override

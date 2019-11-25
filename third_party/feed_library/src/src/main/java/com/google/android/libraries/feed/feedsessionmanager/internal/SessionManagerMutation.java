@@ -213,7 +213,7 @@ public final class SessionManagerMutation implements Dumpable {
         private final BasicLoggingApi mBasicLoggingApi;
 
         @VisibleForTesting
-        boolean mClearedHead = false;
+        boolean mClearedHead;
         private Model mModel;
 
         private MutationCommitter(String task, MutationContext mutationContext,

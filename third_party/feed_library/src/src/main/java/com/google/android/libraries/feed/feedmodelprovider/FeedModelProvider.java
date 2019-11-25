@@ -1071,7 +1071,7 @@ public final class FeedModelProvider
     @VisibleForTesting
     final class TokenMutation extends MutationHandler {
         private final StreamToken mMutationSourceToken;
-        /*@Nullable*/ TokenTracking mToken = null;
+        /*@Nullable*/ TokenTracking mToken;
         int mNewCursorStart = -1;
 
         TokenMutation(StreamToken mutationSourceToken) {

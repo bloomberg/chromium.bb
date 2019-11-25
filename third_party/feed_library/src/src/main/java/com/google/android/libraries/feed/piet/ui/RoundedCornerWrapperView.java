@@ -6,6 +6,7 @@ package com.google.android.libraries.feed.piet.ui;
 
 import static com.google.android.libraries.feed.common.Validators.checkState;
 
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Outline;
@@ -138,6 +139,7 @@ public class RoundedCornerWrapperView extends FrameLayout {
         mRoundingDelegate.initializeForView(this);
     }
 
+    @TargetApi(VERSION_CODES.LOLLIPOP)
     private void setupOutlineProvider() {
         if (mHasRoundedCorners) {
             super.setOutlineProvider(new ViewOutlineProvider() {
@@ -203,6 +205,7 @@ public class RoundedCornerWrapperView extends FrameLayout {
      * strategy requires manipulating the {@link Canvas}, which the delegate handles.
      */
     @Override
+    @SuppressWarnings("MissingSuperCall")
     public void draw(Canvas canvas) {
         mDrawSuperCalled = false;
         mRoundingDelegate.draw(this, canvas);

@@ -428,7 +428,7 @@ public final class FeedRequestManagerImpl implements FeedRequestManager {
 
         private ClientInfo buildClientInfo() {
             ClientInfo.Builder clientInfoBuilder = ClientInfo.newBuilder();
-            clientInfoBuilder.setPlatformType(PlatformType.ANDROID);
+            clientInfoBuilder.setPlatformType(PlatformType.ANDROID_ID);
             clientInfoBuilder.setPlatformVersion(getPlatformVersion());
             clientInfoBuilder.setLocale(LocaleUtils.getLanguageTag(mContext));
             clientInfoBuilder.setAppType(Utils.convertAppType(mApplicationInfo.getAppType()));

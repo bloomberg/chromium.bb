@@ -9,8 +9,9 @@ import com.google.android.libraries.feed.common.logging.Dumper;
 import com.google.android.libraries.feed.common.logging.Logger;
 import com.google.search.now.feed.client.StreamDataProto.StreamPayload;
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * In order to support optimistic writes, the cache must store the payloads for the full duration of
@@ -32,7 +33,7 @@ public final class ContentCache implements Dumpable {
     private int mMutationsCount;
 
     public ContentCache() {
-        mMutationCache = new ConcurrentHashMap<>();
+        mMutationCache = Collections.synchronizedMap(new HashMap<>());
     }
 
     /**

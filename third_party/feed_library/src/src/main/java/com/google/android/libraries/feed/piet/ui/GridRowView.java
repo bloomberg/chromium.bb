@@ -26,7 +26,7 @@ public class GridRowView extends LinearLayout {
     // parent is wider than the space required by the GridRowView.
     // This is the analogue of LinearLayout.mTotalLength
     @VisibleForTesting
-    int mTotalContentWidth = 0;
+    int mTotalContentWidth;
 
     // Copied from LinearLayout.
     private int mViewGravity = Gravity.START | Gravity.TOP;

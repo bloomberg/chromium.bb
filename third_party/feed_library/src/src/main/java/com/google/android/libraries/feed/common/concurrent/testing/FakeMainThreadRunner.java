@@ -12,7 +12,6 @@ import com.google.android.libraries.feed.common.concurrent.MainThreadRunner;
 import com.google.android.libraries.feed.common.time.testing.FakeClock;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.PriorityQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -28,10 +27,8 @@ public final class FakeMainThreadRunner extends MainThreadRunner {
     private final List<Runnable> mTasksToRun = new ArrayList<>();
     private final boolean mShouldQueueTasks;
 
-    // Suppressing use of Comparator, which is fine because this is only used in tests.
-    @SuppressWarnings("AndroidJdkLibsChecker")
-    private final PriorityQueue<TimedRunnable> mDelayedTasks =
-            new PriorityQueue<>(Comparator.comparingLong(TimedRunnable::getExecutionTime));
+    private final PriorityQueue<TimedRunnable> mDelayedTasks = new PriorityQueue<>(
+            1, (a, b) -> Long.compare(a.getExecutionTime(), b.getExecutionTime()));
 
     private int mCompletedTaskCount;
 

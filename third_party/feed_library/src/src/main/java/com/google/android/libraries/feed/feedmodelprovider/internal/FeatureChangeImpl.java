@@ -45,16 +45,19 @@ public final class FeatureChangeImpl implements FeatureChange {
     }
 
     /** Returns {@code true} if the ModelFeature changed. */
+    @Override
     public boolean isFeatureChanged() {
         return mFeatureChanged;
     }
 
     /** Returns the ModelFeature that was changed. */
+    @Override
     public ModelFeature getModelFeature() {
         return mModelFeature;
     }
 
     /** Returns the structural changes to the ModelFeature. */
+    @Override
     public ChildChanges getChildChanges() {
         return mChildChanges;
     }
