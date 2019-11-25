@@ -2018,8 +2018,7 @@ bool RenderFrameHostImpl::CreateRenderFrame(int previous_routing_id,
 
   mojom::CreateFrameParamsPtr params = mojom::CreateFrameParams::New();
   params->interface_bundle = mojom::DocumentScopedInterfaceBundle::New(
-      interface_provider.PassInterface(),
-      std::move(browser_interface_broker));
+      interface_provider.PassInterface(), std::move(browser_interface_broker));
 
   params->routing_id = routing_id_;
   params->previous_routing_id = previous_routing_id;
@@ -6357,6 +6356,10 @@ void RenderFrameHostImpl::AXContentTreeDataToAXTreeData(ui::AXTreeData* dst) {
 
 void RenderFrameHostImpl::CreatePaymentManager(
     mojo::PendingReceiver<payments::mojom::PaymentManager> receiver) {
+  if (!IsFeatureEnabled(blink::mojom::FeaturePolicyFeature::kPayment)) {
+    mojo::ReportBadMessage("Feature policy blocks Payment");
+    return;
+  }
   GetProcess()->CreatePaymentManagerForOrigin(GetLastCommittedOrigin(),
                                               std::move(receiver));
 }
