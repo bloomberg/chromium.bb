@@ -156,14 +156,6 @@ class CORE_EXPORT Animation : public EventTargetWithInlineData,
            !is_paused_for_testing_;
   }
 
-  // Indicates if the animation is out of sync with the compositor. A change to
-  // the play state (running/paused) requires synchronization with the
-  // compositor.
-  bool NeedsCompositorTimeSync() const {
-    // TODO(crbug.com/958433): Eliminate need for pending play state.
-    return internal_play_state_ == kPending;
-  }
-
   bool Limited() const { return Limited(CurrentTimeInternal()); }
   bool FinishedInternal() const { return finished_; }
 
