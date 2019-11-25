@@ -34,7 +34,6 @@
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
-#include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
@@ -173,21 +172,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   int provider_id() const { return provider_id_; }
   int frame_id() const { return frame_id_; }
 
-  // For service worker clients. Describes whether the client has a controller
-  // and if it has a fetch event handler.
-  blink::mojom::ControllerServiceWorkerMode GetControllerMode() const;
-
-  // For service worker clients. Returns this client's controller.
-  ServiceWorkerVersion* controller() const;
-
-  ServiceWorkerRegistration* controller_registration() const {
-#if DCHECK_IS_ON()
-    CheckControllerConsistency(false);
-#endif  // DCHECK_IS_ON()
-
-    return controller_registration_.get();
-  }
-
   // For service worker execution contexts. The version of the service worker.
   // This is nullptr when the worker is still starting up (until
   // CompleteStartWorkerPreparation() is called).
@@ -244,20 +228,8 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   bool IsProviderForServiceWorker() const;
   bool IsProviderForClient() const;
 
-  // For service worker clients. Makes this client be controlled by
-  // |registration|'s active worker, or makes this client be not
-  // controlled if |registration| is null. If |notify_controllerchange| is true,
-  // instructs the renderer to dispatch a 'controllerchange' event.
-  void SetControllerRegistration(
-      scoped_refptr<ServiceWorkerRegistration> controller_registration,
-      bool notify_controllerchange);
-
   // May return nullptr if the context has shut down.
   base::WeakPtr<ServiceWorkerContextCore> context() { return context_; }
-
-  // |registration| claims the document to be controlled.
-  void ClaimedByRegistration(
-      scoped_refptr<ServiceWorkerRegistration> registration);
 
   // For service worker window clients. Called when the navigation is ready to
   // commit. Updates this host with information about the frame committed to.
@@ -371,6 +343,8 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
       base::WeakPtr<ServiceWorkerContextCore> context);
 
   // ServiceWorkerRegistration::Listener overrides.
+  // TODO(https://crbug.com/931087): Move these overrides to
+  // ServiceWorkerContainerHost.
   void OnVersionAttributesChanged(
       ServiceWorkerRegistration* registration,
       blink::mojom::ChangedServiceWorkerObjectsMaskPtr changed_mask,
@@ -379,13 +353,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   void OnRegistrationFinishedUninstalling(
       ServiceWorkerRegistration* registration) override;
   void OnSkippedWaiting(ServiceWorkerRegistration* registration) override;
-
-  // Sets the controller to |controller_registration_->active_version()| or null
-  // if there is no associated registration.
-  //
-  // If |notify_controllerchange| is true, instructs the renderer to dispatch a
-  // 'controller' change event.
-  void UpdateController(bool notify_controllerchange);
 
   // Syncs matching registrations with live registrations.
   void SyncMatchingRegistrations();
@@ -398,15 +365,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   void RemoveAllMatchingRegistrations();
 
   void ReturnRegistrationForReadyIfNeeded();
-
-  // Sends information about the controller to the providers of the service
-  // worker clients in the renderer. If |notify_controllerchange| is true,
-  // instructs the renderer to dispatch a 'controllerchange' event.
-  void SendSetControllerServiceWorker(bool notify_controllerchange);
-
-#if DCHECK_IS_ON()
-  void CheckControllerConsistency(bool should_crash) const;
-#endif  // DCHECK_IS_ON()
 
   // Implements blink::mojom::ServiceWorkerContainerHost.
   void Register(const GURL& script_url,
@@ -516,16 +474,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // 3. |*get_ready_callback_| is a null OnceCallback after the callback has
   //    been run.
   std::unique_ptr<GetRegistrationForReadyCallback> get_ready_callback_;
-
-  // For service worker clients. The controller service worker (i.e.,
-  // ServiceWorkerContainer#controller) and its registration. The controller is
-  // typically the same as the registration's active version, but during
-  // algorithms such as the update, skipWaiting(), and claim() steps, the active
-  // version and controller may temporarily differ. For example, to perform
-  // skipWaiting(), the registration's active version is updated first and then
-  // the provider host's controller is updated to match it.
-  scoped_refptr<ServiceWorkerVersion> controller_;
-  scoped_refptr<ServiceWorkerRegistration> controller_registration_;
 
   // For service worker execution contexts. The ServiceWorkerVersion of the
   // service worker this is a provider for.

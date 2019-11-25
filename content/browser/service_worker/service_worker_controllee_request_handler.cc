@@ -90,7 +90,7 @@ ServiceWorkerControlleeRequestHandler::
 }
 
 void ServiceWorkerControlleeRequestHandler::MaybeScheduleUpdate() {
-  if (!provider_host_ || !provider_host_->controller())
+  if (!provider_host_ || !provider_host_->container_host()->controller())
     return;
 
   // For navigations, the update logic is taken care of
@@ -107,7 +107,7 @@ void ServiceWorkerControlleeRequestHandler::MaybeScheduleUpdate() {
   if (force_update_started_)
     return;
 
-  provider_host_->controller()->ScheduleUpdate();
+  provider_host_->container_host()->controller()->ScheduleUpdate();
 }
 
 void ServiceWorkerControlleeRequestHandler::MaybeCreateLoader(
@@ -177,7 +177,7 @@ ServiceWorkerControlleeRequestHandler::MaybeCreateSubresourceLoaderParams() {
   // ContinueWithRegistration() for the request didn't find a matching service
   // worker for this request, and
   // ServiceWorkerProviderHost::SetControllerRegistration() was not called.
-  if (!provider_host_ || !provider_host_->controller())
+  if (!provider_host_ || !provider_host_->container_host()->controller())
     return base::nullopt;
   ServiceWorkerContainerHost* container_host = provider_host_->container_host();
 
@@ -185,7 +185,7 @@ ServiceWorkerControlleeRequestHandler::MaybeCreateSubresourceLoaderParams() {
   // with the navigation commit.
   SubresourceLoaderParams params;
   auto controller_info = blink::mojom::ControllerServiceWorkerInfo::New();
-  controller_info->mode = provider_host_->GetControllerMode();
+  controller_info->mode = container_host->GetControllerMode();
   // Note that |controller_info->remote_controller| is null if the controller
   // has no fetch event handler. In that case the renderer frame won't get the
   // controller pointer upon the navigation commit, and subresource loading will
@@ -204,12 +204,12 @@ ServiceWorkerControlleeRequestHandler::MaybeCreateSubresourceLoaderParams() {
   }
   base::WeakPtr<ServiceWorkerObjectHost> object_host =
       container_host->GetOrCreateServiceWorkerObjectHost(
-          provider_host_->controller());
+          container_host->controller());
   if (object_host) {
     params.controller_service_worker_object_host = object_host;
     controller_info->object_info = object_host->CreateIncompleteObjectInfo();
   }
-  for (const auto feature : provider_host_->controller()->used_features()) {
+  for (const auto feature : container_host->controller()->used_features()) {
     controller_info->used_features.push_back(feature);
   }
   params.controller_service_worker_info = std::move(controller_info);
@@ -226,8 +226,9 @@ bool ServiceWorkerControlleeRequestHandler::InitializeProvider(
 
   // Update the provider host with this request, clearing old controller state
   // if this is a redirect.
-  provider_host_->SetControllerRegistration(nullptr,
-                                            /*notify_controllerchange=*/false);
+  provider_host_->container_host()->SetControllerRegistration(
+      nullptr,
+      /*notify_controllerchange=*/false);
   stripped_url_ = net::SimplifyUrlForRequest(tentative_resource_request.url);
   provider_host_->UpdateUrls(
       stripped_url_, tentative_resource_request.site_for_cookies,
@@ -433,11 +434,11 @@ void ServiceWorkerControlleeRequestHandler::ContinueWithActivatedVersion(
     return;
   }
 
-  provider_host_->SetControllerRegistration(
+  provider_host_->container_host()->SetControllerRegistration(
       registration, false /* notify_controllerchange */);
 
   DCHECK_EQ(active_version, registration->active_version());
-  DCHECK_EQ(active_version, provider_host_->controller());
+  DCHECK_EQ(active_version, provider_host_->container_host()->controller());
   DCHECK_NE(active_version->fetch_handler_existence(),
             ServiceWorkerVersion::FetchHandlerExistence::UNKNOWN);
   ServiceWorkerMetrics::CountControlledPageLoad(

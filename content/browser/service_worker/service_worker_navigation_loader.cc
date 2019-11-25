@@ -149,7 +149,7 @@ void ServiceWorkerNavigationLoader::StartRequest(
   }
 
   scoped_refptr<ServiceWorkerVersion> active_worker =
-      provider_host_->controller();
+      provider_host_->container_host()->controller();
   if (!active_worker) {
     CommitCompleted(net::ERR_FAILED, "No active worker");
     return;

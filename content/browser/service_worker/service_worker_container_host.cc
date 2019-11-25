@@ -59,8 +59,23 @@ ServiceWorkerContainerHost::~ServiceWorkerContainerHost() {
   if (fetch_request_window_id_)
     FrameTreeNodeIdRegistry::GetInstance()->Remove(fetch_request_window_id_);
 
+  // Remove |provider_host_| as an observer of ServiceWorkerRegistrations.
+  // TODO(falken): Use ScopedObserver instead of this explicit call.
+  controller_.reset();
+  controller_registration_.reset();
+
   // Ensure callbacks awaiting execution ready are notified.
   RunExecutionReadyCallbacks();
+}
+
+void ServiceWorkerContainerHost::OnSkippedWaiting(
+    ServiceWorkerRegistration* registration) {
+  DCHECK(controller_);
+  ServiceWorkerVersion* active = controller_registration_->active_version();
+  DCHECK(active);
+  DCHECK_NE(active, controller_.get());
+  DCHECK_EQ(active->status(), ServiceWorkerVersion::ACTIVATING);
+  UpdateController(true /* notify_controllerchange */);
 }
 
 void ServiceWorkerContainerHost::PostMessageToClient(
@@ -90,11 +105,69 @@ void ServiceWorkerContainerHost::CountFeature(
 }
 
 void ServiceWorkerContainerHost::SendSetControllerServiceWorker(
-    blink::mojom::ControllerServiceWorkerInfoPtr controller_info,
     bool notify_controllerchange) {
   DCHECK(IsContainerForClient());
+
+  auto controller_info = blink::mojom::ControllerServiceWorkerInfo::New();
+  controller_info->client_id = provider_host_->client_uuid();
+  // Set |fetch_request_window_id| only when |controller_| is available.
+  // Setting |fetch_request_window_id| should not affect correctness, however,
+  // we have the extensions bug, https://crbug.com/963748, which we don't yet
+  // understand.  That is why we don't set |fetch_request_window_id| if there
+  // is no controller, at least, until we can fix the extension bug.
+  if (controller_ && fetch_request_window_id_) {
+    controller_info->fetch_request_window_id =
+        base::make_optional(fetch_request_window_id_);
+  }
+
+  if (!controller_) {
+    container_->SetController(std::move(controller_info),
+                              notify_controllerchange);
+    return;
+  }
+
+  DCHECK(controller_registration());
+  DCHECK_EQ(controller_registration_->active_version(), controller_.get());
+
+  controller_info->mode = GetControllerMode();
+
+  // Pass an endpoint for the client to talk to this controller.
+  mojo::Remote<blink::mojom::ControllerServiceWorker> remote =
+      provider_host_->GetRemoteControllerServiceWorker();
+  if (remote.is_bound()) {
+    controller_info->remote_controller = remote.Unbind();
+  }
+
+  // Set the info for the JavaScript ServiceWorkerContainer#controller object.
+  base::WeakPtr<ServiceWorkerObjectHost> object_host =
+      GetOrCreateServiceWorkerObjectHost(controller_);
+  if (object_host) {
+    controller_info->object_info =
+        object_host->CreateCompleteObjectInfoToSend();
+  }
+
+  // Populate used features for UseCounter purposes.
+  for (const blink::mojom::WebFeature feature : controller_->used_features())
+    controller_info->used_features.push_back(feature);
+
   container_->SetController(std::move(controller_info),
                             notify_controllerchange);
+}
+
+void ServiceWorkerContainerHost::ClaimedByRegistration(
+    scoped_refptr<ServiceWorkerRegistration> registration) {
+  DCHECK(IsContainerForClient());
+  DCHECK(registration->active_version());
+  DCHECK(is_execution_ready());
+
+  // TODO(falken): This should just early return, or DCHECK. claim() should have
+  // no effect on a page that's already using the registration.
+  if (registration == controller_registration_) {
+    UpdateController(true /* notify_controllerchange */);
+    return;
+  }
+
+  SetControllerRegistration(registration, true /* notify_controllerchange */);
 }
 
 blink::mojom::ServiceWorkerRegistrationObjectInfoPtr
@@ -216,6 +289,26 @@ void ServiceWorkerContainerHost::UpdateUrls(
   }
 }
 
+void ServiceWorkerContainerHost::SetControllerRegistration(
+    scoped_refptr<ServiceWorkerRegistration> controller_registration,
+    bool notify_controllerchange) {
+  DCHECK(IsContainerForClient());
+
+  if (controller_registration) {
+    CHECK(IsContextSecureForServiceWorker());
+    DCHECK(controller_registration->active_version());
+#if DCHECK_IS_ON()
+    // TODO(https://crbug.com/931087): Enable this check again after
+    // IsMatchingRegistration() is moved from ServiceWorkerProviderHost to
+    // ServiceWorkerContainerHost.
+    // DCHECK(IsMatchingRegistration(controller_registration.get()));
+#endif  // DCHECK_IS_ON()
+  }
+
+  controller_registration_ = controller_registration;
+  UpdateController(notify_controllerchange);
+}
+
 bool ServiceWorkerContainerHost::AllowServiceWorker(const GURL& scope,
                                                     const GURL& script_url,
                                                     int render_process_id,
@@ -331,11 +424,111 @@ bool ServiceWorkerContainerHost::IsControllerDecided() const {
   return true;
 }
 
+blink::mojom::ControllerServiceWorkerMode
+ServiceWorkerContainerHost::GetControllerMode() const {
+  DCHECK(IsContainerForClient());
+  if (!controller_)
+    return blink::mojom::ControllerServiceWorkerMode::kNoController;
+  switch (controller_->fetch_handler_existence()) {
+    case ServiceWorkerVersion::FetchHandlerExistence::DOES_NOT_EXIST:
+      return blink::mojom::ControllerServiceWorkerMode::kNoFetchEventHandler;
+    case ServiceWorkerVersion::FetchHandlerExistence::EXISTS:
+      return blink::mojom::ControllerServiceWorkerMode::kControlled;
+    case ServiceWorkerVersion::FetchHandlerExistence::UNKNOWN:
+      // UNKNOWN means the controller is still installing. It's not possible to
+      // have a controller that hasn't finished installing.
+      NOTREACHED();
+  }
+  NOTREACHED();
+  return blink::mojom::ControllerServiceWorkerMode::kNoController;
+}
+
+ServiceWorkerVersion* ServiceWorkerContainerHost::controller() const {
+#if DCHECK_IS_ON()
+  CheckControllerConsistency(false);
+#endif  // DCHECK_IS_ON()
+  return controller_.get();
+}
+
+ServiceWorkerRegistration* ServiceWorkerContainerHost::controller_registration()
+    const {
+#if DCHECK_IS_ON()
+  CheckControllerConsistency(false);
+#endif  // DCHECK_IS_ON()
+  return controller_registration_.get();
+}
+
 void ServiceWorkerContainerHost::RunExecutionReadyCallbacks() {
   std::vector<ExecutionReadyCallback> callbacks;
   execution_ready_callbacks_.swap(callbacks);
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(&RunCallbacks, std::move(callbacks)));
 }
+
+void ServiceWorkerContainerHost::UpdateController(
+    bool notify_controllerchange) {
+  ServiceWorkerVersion* version =
+      controller_registration_ ? controller_registration_->active_version()
+                               : nullptr;
+  CHECK(!version || IsContextSecureForServiceWorker());
+  if (version == controller_.get())
+    return;
+
+  scoped_refptr<ServiceWorkerVersion> previous_version = controller_;
+  controller_ = version;
+
+  if (version)
+    version->AddControllee(provider_host_);
+  if (previous_version)
+    previous_version->RemoveControllee(provider_host_->client_uuid());
+
+  // SetController message should be sent only for clients.
+  DCHECK(IsContainerForClient());
+
+  if (!IsControllerDecided())
+    return;
+
+  SendSetControllerServiceWorker(notify_controllerchange);
+}
+
+#if DCHECK_IS_ON()
+void ServiceWorkerContainerHost::CheckControllerConsistency(
+    bool should_crash) const {
+  if (!controller_) {
+    DCHECK(!controller_registration_);
+    return;
+  }
+
+  DCHECK(IsContainerForClient());
+  DCHECK(controller_registration_);
+  DCHECK_EQ(controller_->registration_id(), controller_registration_->id());
+
+  switch (controller_->status()) {
+    case ServiceWorkerVersion::NEW:
+    case ServiceWorkerVersion::INSTALLING:
+    case ServiceWorkerVersion::INSTALLED:
+      if (should_crash) {
+        ServiceWorkerVersion::Status status = controller_->status();
+        base::debug::Alias(&status);
+        CHECK(false) << "Controller service worker has a bad status: "
+                     << ServiceWorkerVersion::VersionStatusToString(status);
+      }
+      break;
+    case ServiceWorkerVersion::REDUNDANT: {
+      if (should_crash) {
+        DEBUG_ALIAS_FOR_CSTR(
+            redundant_callstack_str,
+            controller_->redundant_state_callstack().ToString().c_str(), 1024);
+        CHECK(false);
+      }
+      break;
+    }
+    case ServiceWorkerVersion::ACTIVATING:
+    case ServiceWorkerVersion::ACTIVATED:
+      // Valid status, controller is being activated.
+      break;
+  }
+}
+#endif  // DCHECK_IS_ON()
 
 }  // namespace content
