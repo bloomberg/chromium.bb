@@ -131,5 +131,4 @@ public class StubbedHistoryProvider implements HistoryProvider {
             return null;
         }
     }
-
 }

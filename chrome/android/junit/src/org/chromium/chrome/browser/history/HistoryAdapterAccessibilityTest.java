@@ -6,9 +6,6 @@ package org.chromium.chrome.browser.history;
 
 import static org.chromium.chrome.browser.history.HistoryTestUtils.checkAdapterContents;
 
-import android.os.Build;
-import android.support.test.filters.SmallTest;
-
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -16,13 +13,12 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import org.robolectric.annotation.Config;
 
-import org.chromium.base.test.util.DisableIf;
+import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.ui.widget.MoreProgressButton;
 import org.chromium.chrome.browser.ui.widget.MoreProgressButton.State;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
-import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
@@ -31,9 +27,8 @@ import java.util.concurrent.TimeUnit;
  * Tests for the {@link HistoryAdapter}. This test will more focusing on cases when accessibility
  * turned on (HistoryManager::isScrollToLoadDisabled() == true).
  */
-@RunWith(ChromeJUnit4ClassRunner.class)
-@DisableIf.Build(supported_abis_includes = "arm64-v8a",
-        sdk_is_greater_than = Build.VERSION_CODES.LOLLIPOP, message = "crbug.com/1023426")
+@RunWith(BaseRobolectricTestRunner.class)
+@Config(manifest = Config.NONE)
 public class HistoryAdapterAccessibilityTest {
     public static final int PAGING = 2;
 
@@ -55,26 +50,20 @@ public class HistoryAdapterAccessibilityTest {
         mAdapter.setScrollToLoadDisabledForTest(true);
     }
 
-    private void initializeAdapter() {
-        TestThreadUtils.runOnUiThreadBlocking(() -> mAdapter.initialize());
-    }
-
     @Test
-    @SmallTest
     public void testInitializeEmpty() {
-        initializeAdapter();
+        mAdapter.initialize();
         checkAdapterContents(mAdapter, false, false);
     }
 
     @Test
-    @SmallTest
     public void testInitializeSingleItem() {
         Date today = new Date();
         long timestamp = today.getTime();
         HistoryItem item1 = StubbedHistoryProvider.createHistoryItem(0, timestamp);
         mHistoryProvider.addItem(item1);
 
-        initializeAdapter();
+        mAdapter.initialize();
 
         // There should be three items - the header, a date and the history item;
         // The number of items is less than paging, so the view should not contain footer items.
@@ -82,7 +71,6 @@ public class HistoryAdapterAccessibilityTest {
     }
 
     @Test
-    @SmallTest
     public void testInitializeThreeItems() {
         Date today = new Date();
         long timestamp = today.getTime();
@@ -95,7 +83,7 @@ public class HistoryAdapterAccessibilityTest {
         HistoryItem item3 = StubbedHistoryProvider.createHistoryItem(2, timestamp);
         mHistoryProvider.addItem(item3);
 
-        initializeAdapter();
+        mAdapter.initialize();
 
         // There should be five items - the header, a date, two history item, and a footer;
         checkAdapterContents(mAdapter, true, true, null, null, item1, item2, null);
@@ -105,7 +93,6 @@ public class HistoryAdapterAccessibilityTest {
     }
 
     @Test
-    @SmallTest
     public void testRemoveItemsWithFooter() {
         Date today = new Date();
         long timestamp = today.getTime();
@@ -120,7 +107,7 @@ public class HistoryAdapterAccessibilityTest {
         HistoryItem item3 = StubbedHistoryProvider.createHistoryItem(2, timestamp2);
         mHistoryProvider.addItem(item3);
 
-        initializeAdapter();
+        mAdapter.initialize();
 
         // There should be six items - the list header, a date header, a history item, another
         // date header, another history item, and the footer.
@@ -158,7 +145,6 @@ public class HistoryAdapterAccessibilityTest {
     }
 
     @Test
-    @SmallTest
     public void testSearchWithFooter() {
         Date today = new Date();
         long timestamp = today.getTime();
@@ -177,7 +163,7 @@ public class HistoryAdapterAccessibilityTest {
         HistoryItem item4 = StubbedHistoryProvider.createHistoryItem(0, timestamp4);
         mHistoryProvider.addItem(item4);
 
-        initializeAdapter();
+        mAdapter.initialize();
         checkAdapterContents(mAdapter, true, true, null, null, item1, null, item2, null);
 
         mAdapter.search("google");
@@ -195,7 +181,6 @@ public class HistoryAdapterAccessibilityTest {
     }
 
     @Test
-    @SmallTest
     public void testSearchWithoutFooter() {
         Date today = new Date();
         long timestamp = today.getTime();
@@ -214,7 +199,7 @@ public class HistoryAdapterAccessibilityTest {
         HistoryItem item4 = StubbedHistoryProvider.createHistoryItem(1, timestamp4);
         mHistoryProvider.addItem(item4);
 
-        initializeAdapter();
+        mAdapter.initialize();
         checkAdapterContents(mAdapter, true, true, null, null, item1, null, item2, null);
 
         mAdapter.search("google");
@@ -231,7 +216,6 @@ public class HistoryAdapterAccessibilityTest {
     }
 
     @Test
-    @SmallTest
     public void testLoadMoreItems() {
         Date today = new Date();
         long timestamp = today.getTime();
@@ -248,7 +232,7 @@ public class HistoryAdapterAccessibilityTest {
         HistoryItem item4 = StubbedHistoryProvider.createHistoryItem(4, timestamp2);
         mHistoryProvider.addItem(item4);
 
-        initializeAdapter();
+        mAdapter.initialize();
 
         // Only the first 2 of five items should be loaded.
         checkAdapterContents(mAdapter, true, true, null, null, item1, item2, null);
@@ -263,7 +247,6 @@ public class HistoryAdapterAccessibilityTest {
     }
 
     @Test
-    @SmallTest
     public void testLoadMoreItemsInSearch() {
         Date today = new Date();
         long timestamp = today.getTime();
@@ -281,7 +264,7 @@ public class HistoryAdapterAccessibilityTest {
         HistoryItem item4 = StubbedHistoryProvider.createHistoryItem(0, timestamp4);
         mHistoryProvider.addItem(item4);
 
-        initializeAdapter();
+        mAdapter.initialize();
         checkAdapterContents(mAdapter, true, true, null, null, item1, item2, null);
 
         mAdapter.search("google");
