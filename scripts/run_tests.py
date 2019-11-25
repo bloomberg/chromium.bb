@@ -142,11 +142,6 @@ SLOW_TESTS = {
     'cli/cros/cros_branch_unittest': SKIP,
 }
 
-# These are tests that have not yet been ported to Python 3.  No new tests
-# should be added to this list as they'll need to be ported at some point.
-PYTHON2_ONLY_TESTS = {
-}
-
 
 def RunTest(test, interp, cmd, tmpfile, finished, total):
   """Run |test| with the |cmd| line and save output to |tmpfile|.
@@ -288,8 +283,7 @@ def BuildTestSets(tests, chroot_available, network, config_skew, jobs=1,
       if pyver is None or pyver == 'py2':
         yield (test, 'python2')
       if pyver is None or pyver == 'py3':
-        if test not in PYTHON2_ONLY_TESTS:
-          yield (test, 'python3')
+        yield (test, 'python3')
 
   for (test, interp) in PythonWrappers(SortTests(tests, jobs=jobs)):
     cmd = [interp, test]
@@ -581,10 +575,6 @@ def main(argv):
   # Process list output quickly as it takes no privileges.
   if opts.list:
     tests = set(opts.tests or FindTests((constants.CHROMITE_DIR,)))
-    if opts.pyver == 'py3':
-      tests -= PYTHON2_ONLY_TESTS
-    elif opts.pyver == 'py2':
-      tests &= PYTHON2_ONLY_TESTS
     print('\n'.join(sorted(tests)))
     return
 
