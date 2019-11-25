@@ -2725,18 +2725,6 @@ TEST_P(ShelfLayoutManagerTest, ShelfLayoutInUnifiedDesktop) {
   EXPECT_EQ(gfx::Point(500, 400), status_area_bounds.bottom_right());
 }
 
-// Tests that the always shown shelf forwards the appropriate events to the home
-// launcher gesture handler to handle.
-TEST_P(ShelfLayoutManagerTest, HomeLauncherGestureHandler) {
-  TestHomeLauncherGestureHandler(/*autohide_shelf=*/false);
-}
-
-// Tests that the auto-hide shelf keeps visible and forwards the appropriate
-// events to the home launcher gesture handler to handle.
-TEST_P(ShelfLayoutManagerTest, HomeLauncherGestureHandlerAutoHideShelf) {
-  TestHomeLauncherGestureHandler(/*autohide_shelf=*/true);
-}
-
 // Tests that tapping the home button is successful on the autohidden shelf.
 TEST_P(ShelfLayoutManagerTest, PressHomeButtonOnAutoHideShelf) {
   TabletModeControllerTestApi().EnterTabletMode();
@@ -3256,6 +3244,18 @@ class HotseatShelfLayoutManagerTest
  private:
   DISALLOW_COPY_AND_ASSIGN(HotseatShelfLayoutManagerTest);
 };
+
+// Tests that the always shown shelf forwards the appropriate events to the home
+// launcher gesture handler to handle.
+TEST_P(HotseatShelfLayoutManagerTest, HomeLauncherGestureHandler) {
+  TestHomeLauncherGestureHandler(/*autohide_shelf=*/false);
+}
+
+// Tests that the auto-hide shelf keeps visible and forwards the appropriate
+// events to the home launcher gesture handler to handle.
+TEST_P(HotseatShelfLayoutManagerTest, HomeLauncherGestureHandlerAutoHideShelf) {
+  TestHomeLauncherGestureHandler(/*autohide_shelf=*/true);
+}
 
 // Records HotseatState transitions.
 class HotseatStateWatcher : public ShelfLayoutManagerObserver {
