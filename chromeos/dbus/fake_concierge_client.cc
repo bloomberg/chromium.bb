@@ -283,6 +283,8 @@ void FakeConciergeClient::InitializeProtoResponses() {
 
   start_vm_response_.emplace();
   start_vm_response_->set_status(vm_tools::concierge::VM_STATUS_STARTING);
+  start_vm_response_->set_mount_result(
+      vm_tools::concierge::StartVmResponse::SUCCESS);
 
   stop_vm_response_.emplace();
   stop_vm_response_->set_success(true);

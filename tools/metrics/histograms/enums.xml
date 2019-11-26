@@ -11227,6 +11227,12 @@ Called by update_net_error_codes.py.-->
   <int value="3" label="Hash Mismatch"/>
 </enum>
 
+<enum name="CorruptionStates">
+  <int value="0" label="Corruption Detected After Mount"/>
+  <int value="1" label="Mount Failed"/>
+  <int value="2" label="Rolled Back During Mount"/>
+</enum>
+
 <enum name="CorsAccessCheckError">
   <summary>The CORS check results for each request.</summary>
   <int value="0" label="CORS request was permitted"/>

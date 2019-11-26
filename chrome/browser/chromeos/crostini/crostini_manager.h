@@ -22,6 +22,8 @@
 #include "chrome/browser/chromeos/vm_starting_observer.h"
 #include "chrome/browser/component_updater/cros_component_installer_chromeos.h"
 #include "chrome/browser/ui/browser.h"
+#include "chromeos/dbus/anomaly_detector/anomaly_detector.pb.h"
+#include "chromeos/dbus/anomaly_detector_client.h"
 #include "chromeos/dbus/cicerone/cicerone_service.pb.h"
 #include "chromeos/dbus/cicerone_client.h"
 #include "chromeos/dbus/concierge/concierge_service.pb.h"
@@ -119,6 +121,7 @@ class VmShutdownObserver : public base::CheckedObserver {
 // possible. The existence of Cicerone is abstracted behind this class and
 // only the Concierge name is exposed outside of here.
 class CrostiniManager : public KeyedService,
+                        public chromeos::AnomalyDetectorClient::Observer,
                         public chromeos::ConciergeClient::VmObserver,
                         public chromeos::ConciergeClient::ContainerObserver,
                         public chromeos::CiceroneClient::Observer,
@@ -467,6 +470,10 @@ class CrostiniManager : public KeyedService,
   // Add/remove vm starting observers.
   void AddVmStartingObserver(chromeos::VmStartingObserver* observer);
   void RemoveVmStartingObserver(chromeos::VmStartingObserver* observer);
+
+  // AnomalyDetectorClient::Observer:
+  void OnGuestFileCorruption(
+      const anomaly_detector::GuestFileCorruptionSignal& signal) override;
 
   // ConciergeClient::VmObserver:
   void OnVmStarted(const vm_tools::concierge::VmStartedSignal& signal) override;

@@ -29,6 +29,7 @@ source_set("chromeos") {
     "//chrome/app/theme:chrome_unscaled_resources",
     "//chrome/app/theme:theme_resources",
     "//chrome/browser/chromeos/power/ml:user_activity_ukm_logger_helpers",
+    "//chromeos/dbus:anomaly_detector_proto",
     "//chromeos/dbus:cicerone_proto",
     "//chromeos/dbus:concierge_proto",
     "//chromeos/dbus:runtime_probe_proto",

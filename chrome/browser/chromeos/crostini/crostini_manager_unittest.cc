@@ -11,6 +11,7 @@
 #include "base/files/file_util.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/chromeos/crostini/ansible/ansible_management_test_helper.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
@@ -23,6 +24,7 @@
 #include "chromeos/dbus/cicerone/cicerone_service.pb.h"
 #include "chromeos/dbus/concierge/concierge_service.pb.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/fake_anomaly_detector_client.h"
 #include "chromeos/dbus/fake_cicerone_client.h"
 #include "chromeos/dbus/fake_concierge_client.h"
 #include "chromeos/disks/mock_disk_mount_manager.h"
@@ -143,6 +145,9 @@ class CrostiniManagerTest : public testing::Test {
         chromeos::DBusThreadManager::Get()->GetCiceroneClient());
     fake_concierge_client_ = static_cast<chromeos::FakeConciergeClient*>(
         chromeos::DBusThreadManager::Get()->GetConciergeClient());
+    fake_anomaly_detector_client_ =
+        static_cast<chromeos::FakeAnomalyDetectorClient*>(
+            chromeos::DBusThreadManager::Get()->GetAnomalyDetectorClient());
   }
 
   ~CrostiniManagerTest() override { chromeos::DBusThreadManager::Shutdown(); }
@@ -182,6 +187,7 @@ class CrostiniManagerTest : public testing::Test {
   // Owned by chromeos::DBusThreadManager
   chromeos::FakeCiceroneClient* fake_cicerone_client_;
   chromeos::FakeConciergeClient* fake_concierge_client_;
+  chromeos::FakeAnomalyDetectorClient* fake_anomaly_detector_client_;
 
   std::unique_ptr<base::RunLoop>
       run_loop_;  // run_loop_ must be created on the UI thread.
@@ -262,6 +268,19 @@ TEST_F(CrostiniManagerTest, StartTerminaVmNameError) {
   EXPECT_FALSE(fake_concierge_client_->start_termina_vm_called());
 }
 
+TEST_F(CrostiniManagerTest, StartTerminaVmAnomalyDetectorNotConnectedError) {
+  const base::FilePath& disk_path = base::FilePath(kVmName);
+
+  fake_anomaly_detector_client_->set_guest_file_corruption_signal_connected(
+      false);
+
+  crostini_manager()->StartTerminaVm(
+      kVmName, disk_path,
+      base::BindOnce(&ExpectFailure, run_loop()->QuitClosure()));
+  run_loop()->Run();
+  EXPECT_FALSE(fake_concierge_client_->start_termina_vm_called());
+}
+
 TEST_F(CrostiniManagerTest, StartTerminaVmDiskPathError) {
   const base::FilePath& disk_path = base::FilePath();
 
@@ -272,7 +291,45 @@ TEST_F(CrostiniManagerTest, StartTerminaVmDiskPathError) {
   EXPECT_FALSE(fake_concierge_client_->start_termina_vm_called());
 }
 
+TEST_F(CrostiniManagerTest, StartTerminaVmMountError) {
+  base::HistogramTester histogram_tester{};
+  const base::FilePath& disk_path = base::FilePath(kVmName);
+
+  vm_tools::concierge::StartVmResponse response;
+  response.set_status(vm_tools::concierge::VM_STATUS_FAILURE);
+  response.set_mount_result(vm_tools::concierge::StartVmResponse::FAILURE);
+  fake_concierge_client_->set_start_vm_response(response);
+
+  crostini_manager()->StartTerminaVm(
+      kVmName, disk_path,
+      base::BindOnce(&ExpectFailure, run_loop()->QuitClosure()));
+  run_loop()->Run();
+  EXPECT_TRUE(fake_concierge_client_->start_termina_vm_called());
+  histogram_tester.ExpectUniqueSample(kCrostiniCorruptionHistogram,
+                                      CorruptionStates::MOUNT_FAILED, 1);
+}
+
+TEST_F(CrostiniManagerTest, StartTerminaVmMountErrorThenSuccess) {
+  base::HistogramTester histogram_tester{};
+  const base::FilePath& disk_path = base::FilePath(kVmName);
+
+  vm_tools::concierge::StartVmResponse response;
+  response.set_status(vm_tools::concierge::VM_STATUS_STARTING);
+  response.set_mount_result(
+      vm_tools::concierge::StartVmResponse::PARTIAL_DATA_LOSS);
+  fake_concierge_client_->set_start_vm_response(response);
+
+  crostini_manager()->StartTerminaVm(
+      kVmName, disk_path,
+      base::BindOnce(&ExpectSuccess, run_loop()->QuitClosure()));
+  run_loop()->Run();
+  EXPECT_TRUE(fake_concierge_client_->start_termina_vm_called());
+  histogram_tester.ExpectUniqueSample(kCrostiniCorruptionHistogram,
+                                      CorruptionStates::MOUNT_ROLLED_BACK, 1);
+}
+
 TEST_F(CrostiniManagerTest, StartTerminaVmSuccess) {
+  base::HistogramTester histogram_tester{};
   const base::FilePath& disk_path = base::FilePath(kVmName);
 
   crostini_manager()->StartTerminaVm(
@@ -280,6 +337,7 @@ TEST_F(CrostiniManagerTest, StartTerminaVmSuccess) {
       base::BindOnce(&ExpectSuccess, run_loop()->QuitClosure()));
   run_loop()->Run();
   EXPECT_TRUE(fake_concierge_client_->start_termina_vm_called());
+  histogram_tester.ExpectTotalCount(kCrostiniCorruptionHistogram, 0);
 }
 
 TEST_F(CrostiniManagerTest, OnStartTremplinRecordsRunningVm) {
@@ -1482,6 +1540,16 @@ TEST_F(CrostiniManagerTest, StartContainerSuccess) {
                      CrostiniResult::SUCCESS));
 
   run_loop()->Run();
+}
+
+TEST_F(CrostiniManagerTest, FileSystemCorruptionSignal) {
+  base::HistogramTester histogram_tester{};
+
+  anomaly_detector::GuestFileCorruptionSignal signal;
+  fake_anomaly_detector_client_->NotifyGuestFileCorruption(signal);
+
+  histogram_tester.ExpectUniqueSample(kCrostiniCorruptionHistogram,
+                                      CorruptionStates::OTHER_CORRUPTION, 1);
 }
 
 class CrostiniManagerAnsibleInfraTest : public CrostiniManagerTest {
