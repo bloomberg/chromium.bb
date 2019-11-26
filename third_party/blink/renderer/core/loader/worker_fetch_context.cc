@@ -228,7 +228,11 @@ void WorkerFetchContext::AddResourceTiming(const ResourceTimingInfo& info) {
                                               .GetSecurityOrigin();
   WebResourceTimingInfo web_info = Performance::GenerateResourceTiming(
       *security_origin, info, *global_scope_);
-  resource_timing_notifier_->AddResourceTiming(web_info, info.InitiatorType());
+  // |info| is taken const-ref but this can make destructive changes to
+  // WorkerTimingContainer on |info| when a page is controlled by a service
+  // worker.
+  resource_timing_notifier_->AddResourceTiming(web_info, info.InitiatorType(),
+                                               info.TakeWorkerTimingReceiver());
 }
 
 void WorkerFetchContext::PopulateResourceRequest(

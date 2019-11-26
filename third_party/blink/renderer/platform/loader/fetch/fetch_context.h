@@ -99,6 +99,12 @@ class PLATFORM_EXPORT FetchContext : public GarbageCollected<FetchContext> {
                               WebScopedVirtualTimePauser& virtual_time_pauser,
                               ResourceType);
 
+  // WARNING: |info| can be modified by the implementation of this method
+  // despite the fact that it is given as const-ref. Namely, if
+  // |worker_timing_receiver_| is set implementations may take (move out) the
+  // field.
+  // TODO(shimazu): Fix this. Eventually ResourceTimingInfo should become a mojo
+  // struct and this should take a moved-value of it.
   virtual void AddResourceTiming(const ResourceTimingInfo&);
   virtual bool AllowImage(bool, const KURL&) const { return false; }
   virtual base::Optional<ResourceRequestBlockedReason> CanRequest(

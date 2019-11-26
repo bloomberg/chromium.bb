@@ -642,6 +642,9 @@ void DocumentLoader::BodyLoadingFinished(
           // which will be fixed with synchronous commit.
           // Main resource timing information is reported through the owner
           // to be passed to the parent frame, if appropriate.
+
+          // TODO(https://crbug.com/900700): Set a Mojo pending receiver for
+          // WorkerTimingContainer in |navigation_timing_info|.
           frame_->Owner()->AddResourceTiming(*navigation_timing_info_);
         }
         frame_->SetShouldSendResourceTimingInfoToParent(false);
