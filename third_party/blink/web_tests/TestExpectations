@@ -5905,6 +5905,3 @@ crbug.com/1028116 virtual/gpu-rasterization/images/yuv-decode-eligible/color-pro
 crbug.com/1028116 virtual/gpu-rasterization/images/yuv-decode-eligible/color-profile-image.html [ Pass Failure ]
 crbug.com/1028116 virtual/gpu-rasterization/images/yuv-decode-eligible/webp-color-profile-lossy.html [ Pass Failure ]
 
-crbug.com/1025557 external/wpt/webrtc/RTCPeerConnection-setRemoteDescription-rollback.html [ Failure Pass ]
-crbug.com/1025557 virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCPeerConnection-setRemoteDescription-rollback.html [ Failure Pass ]
-
