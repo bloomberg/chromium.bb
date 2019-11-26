@@ -4,13 +4,9 @@
 
 package org.chromium.chrome.browser.feed;
 
-import static com.google.android.libraries.feed.basicstream.internal.viewholders.ViewHolderType.TYPE_CARD;
+import static org.chromium.chrome.browser.feed.library.basicstream.internal.viewholders.ViewHolderType.TYPE_CARD;
 
 import android.support.v7.widget.RecyclerView;
-
-import com.google.android.libraries.feed.api.client.stream.Stream;
-import com.google.android.libraries.feed.hostimpl.storage.testing.InMemoryContentStorage;
-import com.google.android.libraries.feed.hostimpl.storage.testing.InMemoryJournalStorage;
 
 import org.junit.Assert;
 import org.junit.rules.TestWatcher;
@@ -19,6 +15,9 @@ import org.junit.runner.Description;
 import org.chromium.base.Log;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.UrlUtils;
+import org.chromium.chrome.browser.feed.library.api.client.stream.Stream;
+import org.chromium.chrome.browser.feed.library.hostimpl.storage.testing.InMemoryContentStorage;
+import org.chromium.chrome.browser.feed.library.hostimpl.storage.testing.InMemoryJournalStorage;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.io.IOException;

@@ -7,20 +7,19 @@ package org.chromium.chrome.browser.feed;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
-import com.google.android.libraries.feed.api.client.scope.ProcessScope;
-import com.google.android.libraries.feed.api.client.scope.ProcessScopeBuilder;
-import com.google.android.libraries.feed.api.host.config.ApplicationInfo;
-import com.google.android.libraries.feed.api.host.config.Configuration;
-import com.google.android.libraries.feed.api.host.config.DebugBehavior;
-import com.google.android.libraries.feed.api.host.network.NetworkClient;
-import com.google.android.libraries.feed.api.host.storage.ContentStorageDirect;
-import com.google.android.libraries.feed.api.host.storage.JournalStorageDirect;
-
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.task.SequencedTaskRunner;
 import org.chromium.base.task.TaskTraits;
+import org.chromium.chrome.browser.feed.library.api.client.scope.ProcessScope;
+import org.chromium.chrome.browser.feed.library.api.client.scope.ProcessScopeBuilder;
+import org.chromium.chrome.browser.feed.library.api.host.config.ApplicationInfo;
+import org.chromium.chrome.browser.feed.library.api.host.config.Configuration;
+import org.chromium.chrome.browser.feed.library.api.host.config.DebugBehavior;
+import org.chromium.chrome.browser.feed.library.api.host.network.NetworkClient;
+import org.chromium.chrome.browser.feed.library.api.host.storage.ContentStorageDirect;
+import org.chromium.chrome.browser.feed.library.api.host.storage.JournalStorageDirect;
 import org.chromium.chrome.browser.feed.tooltip.BasicTooltipSupportedApi;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefChangeRegistrar;
