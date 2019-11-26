@@ -661,6 +661,7 @@ class Document::SecurityContextInit : public FeaturePolicyParserDelegate {
 
   OriginTrialContext* GetOriginTrialContext() { return origin_trials_; }
 
+  WindowAgentFactory* GetWindowAgentFactory() { return window_agent_factory_; }
   Agent* GetAgent() { return agent_; }
 
   void CountFeaturePolicyUsage(mojom::WebFeature feature) override {
@@ -956,25 +957,33 @@ class Document::SecurityContextInit : public FeaturePolicyParserDelegate {
     } else if (!frame) {
       if (Document* context_document = initializer.ContextDocument()) {
         frame = context_document->GetFrame();
-      } else if (Document* owner_document = initializer.OwnerDocument()) {
+        window_agent_factory_ = context_document->window_agent_factory_;
+      } else if (const Document* owner_document = initializer.OwnerDocument()) {
         frame = owner_document->GetFrame();
+        window_agent_factory_ = owner_document->window_agent_factory_;
       }
     }
+
+    if (!window_agent_factory_ && frame)
+      window_agent_factory_ = &frame->window_agent_factory();
 
     // If we are allowed to share our document with other windows then we need
     // to look at the window agent factory, otherwise we should create our own
     // window agent.
-    if (frame && feature_policy_->IsFeatureEnabled(
-                     mojom::FeaturePolicyFeature::kDocumentAccess)) {
+    if (window_agent_factory_ &&
+        feature_policy_->IsFeatureEnabled(
+            mojom::FeaturePolicyFeature::kDocumentAccess)) {
       bool has_potential_universal_access_privilege = false;
-      if (Settings* settings = frame->GetSettings()) {
-        // TODO(keishi): Also check if AllowUniversalAccessFromFileURLs might
-        // dynamically change.
-        if (!settings->GetWebSecurityEnabled() ||
-            settings->GetAllowUniversalAccessFromFileURLs())
-          has_potential_universal_access_privilege = true;
+      if (frame) {
+        if (Settings* settings = frame->GetSettings()) {
+          // TODO(keishi): Also check if AllowUniversalAccessFromFileURLs might
+          // dynamically change.
+          if (!settings->GetWebSecurityEnabled() ||
+              settings->GetAllowUniversalAccessFromFileURLs())
+            has_potential_universal_access_privilege = true;
+        }
       }
-      agent_ = frame->window_agent_factory().GetAgentForOrigin(
+      agent_ = window_agent_factory_->GetAgentForOrigin(
           has_potential_universal_access_privilege,
           V8PerIsolateData::MainThreadIsolate(), security_origin_.get());
     } else {
@@ -1002,6 +1011,7 @@ class Document::SecurityContextInit : public FeaturePolicyParserDelegate {
   Member<ContentSecurityPolicy> csp_;
   Member<OriginTrialContext> origin_trials_;
   Member<Agent> agent_;
+  Member<WindowAgentFactory> window_agent_factory_;
   HashSet<mojom::FeaturePolicyFeature> parsed_feature_policies_;
   HashSet<mojom::WebFeature> feature_count_;
   bool bind_csp_immediately_ = false;
@@ -1051,6 +1061,7 @@ Document::Document(const DocumentInit& initializer,
                        security_initializer.GetOriginTrialContext()),
       evaluate_media_queries_on_style_recalc_(false),
       pending_sheet_layout_(kNoLayoutWithPendingSheets),
+      window_agent_factory_(security_initializer.GetWindowAgentFactory()),
       frame_(initializer.GetFrame()),
       // TODO(dcheng): Why does this need both a LocalFrame and LocalDOMWindow
       // pointer?
@@ -8277,6 +8288,7 @@ void Document::Trace(Visitor* visitor) {
   visitor->Trace(form_controller_);
   visitor->Trace(visited_link_state_);
   visitor->Trace(element_computed_style_map_);
+  visitor->Trace(window_agent_factory_);
   visitor->Trace(frame_);
   visitor->Trace(dom_window_);
   visitor->Trace(fetcher_);
