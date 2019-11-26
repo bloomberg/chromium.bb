@@ -104,38 +104,6 @@ def _DumpJson(data, output_path):
     json.dump(data, output_file, indent=4, separators=(',', ': '))
 
 
-def _GenerateBenchmarksToShardsList(benchmarks):
-  """Return |benchmarks_to_shard| from given list of |benchmarks|.
-
-    benchmarks_to_shard is a list all benchmarks to be sharded. Its
-    structure is as follows:
-    [{
-       "name": "benchmark_1",
-       "stories": [ "storyA", "storyB",...],
-       "repeat": <number of pageset_repeat>
-      },
-      {
-       "name": "benchmark_2",
-       "stories": [ "storyA", "storyB",...],
-       "repeat": <number of pageset_repeat>
-      },
-       ...
-    ]
-
-    The "stories" field contains a list of ordered story names. Notes that
-    this should match the actual order of how the benchmark stories are
-    executed for the sharding algorithm to be effective.
-  """
-  benchmarks_to_shard = []
-  for b in benchmarks:
-    benchmarks_to_shard.append({
-        'name': b.Name(),
-        'repeat': b().options.get('pageset_repeat', 1),
-        'stories': benchmark_utils.GetBenchmarkStoryNames(b())
-    })
-  return benchmarks_to_shard
-
-
 def _LoadTimingData(args):
   builder_name, timing_file_path = args
   data = retrieve_story_timing.FetchAverageStortyTimingData(
@@ -150,8 +118,7 @@ def _GenerateShardMap(
   if builder:
     with open(builder.timing_file_path) as f:
       timing_data = json.load(f)
-  benchmarks_to_shard = _GenerateBenchmarksToShardsList(
-      list(builder.benchmarks_to_run))
+  benchmarks_to_shard = list(builder.benchmark_configs)
   sharding_map = sharding_map_generator.generate_sharding_map(
       benchmarks_to_shard, timing_data, num_shards=num_of_shards,
       debug=debug)
@@ -265,7 +232,7 @@ def _ValidateShardMaps(args):
   # Check that bot_platforms.py matches the actual shard maps
   for platform in bot_platforms.ALL_PLATFORMS:
     platform_benchmark_names = set(
-        b.Name() for b in platform.benchmarks_to_run)
+        b.name for b in platform.benchmark_configs)
     shard_map_benchmark_names = _ParseBenchmarks(platform.shards_map_file_path)
     for benchmark in platform_benchmark_names - shard_map_benchmark_names:
       errors.append(
