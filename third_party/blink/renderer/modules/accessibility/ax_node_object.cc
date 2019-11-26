@@ -720,7 +720,7 @@ ax::mojom::Role AXNodeObject::NativeRoleIgnoringAria() const {
   if (HeadingLevel())
     return ax::mojom::Role::kHeading;
 
-  if (IsHTMLDivElement(*GetNode()))
+  if (IsA<HTMLDivElement>(*GetNode()))
     return ax::mojom::Role::kGenericContainer;
 
   if (IsA<HTMLMeterElement>(*GetNode()))
@@ -1169,7 +1169,7 @@ bool AXNodeObject::IsInPageLinkTarget() const {
 
   if (element->HasID() &&
       (IsLandmarkRelated() || IsA<HTMLSpanElement>(element) ||
-       IsHTMLDivElement(element))) {
+       IsA<HTMLDivElement>(element))) {
     return true;
   }
   return false;
