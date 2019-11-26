@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-var lastChanged = null;
-var lastFocused = null;
-var restartButton = $('experiment-restart-button');
+let lastChanged = null;
+let lastFocused = null;
+const restartButton = $('experiment-restart-button');
 
 /** @type {?function():void} */
-var experimentalFeaturesResolver = null;
+let experimentalFeaturesResolver = null;
 
 /** @type {!Promise} */
-var experimentalFeaturesReady = new Promise(resolve => {
+const experimentalFeaturesReady = new Promise(resolve => {
   experimentalFeaturesResolver = resolve;
 });
 
@@ -28,9 +28,9 @@ var experimentalFeaturesReady = new Promise(resolve => {
  * object.
  */
 function renderTemplate(experimentalFeaturesData) {
-  var templateToProcess = jstGetTemplate('tab-content-available-template');
-  var context = new JsEvalContext(experimentalFeaturesData);
-  var content = $('tab-content-available');
+  const templateToProcess = jstGetTemplate('tab-content-available-template');
+  const context = new JsEvalContext(experimentalFeaturesData);
+  const content = $('tab-content-available');
 
   // Duplicate the template into the content area.
   // This prevents the misrendering of available flags when the template
@@ -42,7 +42,7 @@ function renderTemplate(experimentalFeaturesData) {
   jstProcess(context, templateToProcess);
 
   // Unavailable flags are not shown on iOS.
-  var unavailableTemplate = $('tab-content-unavailable');
+  const unavailableTemplate = $('tab-content-unavailable');
   if (unavailableTemplate) {
     jstProcess(context, $('tab-content-unavailable'));
   }
@@ -50,7 +50,7 @@ function renderTemplate(experimentalFeaturesData) {
   showRestartToast(experimentalFeaturesData.needsRestart);
 
   // Add handlers to dynamically created HTML elements.
-  var elements = document.getElementsByClassName('experiment-select');
+  let elements = document.getElementsByClassName('experiment-select');
   for (let element of elements) {
     element.onchange = function() {
       const selectElement = /** @type {!HTMLSelectElement} */ (element);
@@ -90,11 +90,11 @@ function renderTemplate(experimentalFeaturesData) {
   }
 
   // Tab panel selection.
-  var tabEls = document.getElementsByClassName('tab');
-  for (var i = 0; i < tabEls.length; ++i) {
+  const tabEls = document.getElementsByClassName('tab');
+  for (let i = 0; i < tabEls.length; ++i) {
     tabEls[i].addEventListener('click', function(e) {
       e.preventDefault();
-      for (var j= 0; j < tabEls.length; ++j) {
+      for (let j = 0; j < tabEls.length; ++j) {
         tabEls[j].parentNode.classList.toggle('selected', tabEls[j] == this);
         tabEls[j].setAttribute('aria-selected', tabEls[j] == this);
       }
@@ -102,11 +102,11 @@ function renderTemplate(experimentalFeaturesData) {
     });
   }
 
-  var smallScreenCheck = window.matchMedia('(max-width: 480px)');
+  const smallScreenCheck = window.matchMedia('(max-width: 480px)');
   // Toggling of experiment description overflow content on smaller screens.
   if(smallScreenCheck.matches){
     elements = document.querySelectorAll('.experiment .flex:first-child');
-    for (var element of elements) {
+    for (let element of elements) {
       element.onclick = () => element.classList.toggle('expand');
     }
   }
@@ -114,7 +114,7 @@ function renderTemplate(experimentalFeaturesData) {
   $('experiment-reset-all').onclick = resetAllFlags;
 
   highlightReferencedFlag();
-  var search = FlagSearch.getInstance();
+  const search = FlagSearch.getInstance();
   search.init();
 }
 
@@ -145,7 +145,7 @@ function registerFocusEvents(el) {
  */
 function highlightReferencedFlag() {
   if (window.location.hash) {
-    var el = document.querySelector(window.location.hash);
+    const el = document.querySelector(window.location.hash);
     if (el && !el.classList.contains('referenced')) {
       // Unhighlight whatever's highlighted.
       if (document.querySelector('.referenced')) {
@@ -205,7 +205,7 @@ function resetAllFlags() {
  */
 function showRestartToast(show) {
   $('needs-restart').classList.toggle('show', show);
-  var restartButton = $('experiment-restart-button');
+  const restartButton = $('experiment-restart-button');
   if (restartButton) {
     restartButton.setAttribute("tabindex", show ? '9' : '-1');
   }
@@ -280,7 +280,7 @@ var ExperimentalFeaturesData;
  *   }
  */
 function returnExperimentalFeatures(experimentalFeaturesData) {
-  var bodyContainer = $('body-container');
+  const bodyContainer = $('body-container');
   renderTemplate(experimentalFeaturesData);
 
   if (experimentalFeaturesData.showBetaChannelPromotion) {
@@ -293,7 +293,7 @@ function returnExperimentalFeatures(experimentalFeaturesData) {
       !experimentalFeaturesData.showDevChannelPromotion;
 
   bodyContainer.style.visibility = 'visible';
-  var ownerWarningDiv = $('owner-warning');
+  const ownerWarningDiv = $('owner-warning');
   if (ownerWarningDiv) {
     ownerWarningDiv.hidden = !experimentalFeaturesData.showOwnerWarning;
   }
@@ -309,10 +309,10 @@ function returnExperimentalFeatures(experimentalFeaturesData) {
  * @param {number} index The selected option index.
  */
 function experimentChangesUiUpdates(node, index) {
-  var selected = node.options[index];
+  const selected = node.options[index];
   /** @suppress {missingProperties} */
-  var experimentContainerEl = $(node.internal_name).firstElementChild;
-  var isDefault =
+  const experimentContainerEl = $(node.internal_name).firstElementChild;
+  const isDefault =
       ("default" in selected.dataset && selected.dataset.default == "1") ||
       (!("default" in selected.dataset) && index === 0);
   experimentContainerEl.classList.toggle('experiment-default', isDefault);
@@ -356,7 +356,7 @@ function handleSelectExperimentalFeatureChoice(node, index) {
  * Handles in page searching. Matches against the experiment flag name.
  * @constructor
  */
-var FlagSearch = function() {
+const FlagSearch = function() {
   FlagSearch.instance_ = this;
 
   /** @private {!FlagSearch.SearchContent} */
@@ -482,9 +482,9 @@ FlagSearch.prototype = {
    */
   highlightMatchInElement: function(searchTerm, el) {
     // Experiment container.
-    var parentEl = el.parentNode.parentNode.parentNode;
-    var text = el.textContent;
-    var match = text.toLowerCase().indexOf(searchTerm);
+    const parentEl = el.parentNode.parentNode.parentNode;
+    const text = el.textContent;
+    const match = text.toLowerCase().indexOf(searchTerm);
 
     parentEl.classList.toggle('hidden', match == -1);
 
@@ -498,18 +498,18 @@ FlagSearch.prototype = {
       el.textContent = '';
 
       if (match > 0) {
-        var textNodePrefix =
+        const textNodePrefix =
             document.createTextNode(text.substring(0, match));
         el.appendChild(textNodePrefix);
       }
 
-      var matchEl = document.createElement('mark');
+      const matchEl = document.createElement('mark');
       matchEl.textContent = text.substr(match, searchTerm.length);
       el.appendChild(matchEl);
 
-      var matchSuffix = text.substring(match + searchTerm.length);
+      const matchSuffix = text.substring(match + searchTerm.length);
       if (matchSuffix) {
-        var textNodeSuffix = document.createTextNode(matchSuffix);
+        const textNodeSuffix = document.createTextNode(matchSuffix);
         el.appendChild(textNodeSuffix);
       }
     } else {
@@ -529,8 +529,8 @@ FlagSearch.prototype = {
    * @return {number} The number of matches found.
    */
   highlightAllMatches: function(searchContent, searchTerm) {
-    var matches = 0;
-    for (var i = 0, j = searchContent.link.length; i < j; i++) {
+    let matches = 0;
+    for (let i = 0, j = searchContent.link.length; i < j; i++) {
       if (this.highlightMatchInElement(searchTerm, searchContent.title[i])) {
         this.resetHighlights(searchContent.description[i],
             searchContent.description[i].textContent);
@@ -566,7 +566,7 @@ FlagSearch.prototype = {
    * Performs a search against the experiment title, description, permalink.
    */
   doSearch: function() {
-    var searchTerm = this.searchBox_.value.trim().toLowerCase();
+    const searchTerm = this.searchBox_.value.trim().toLowerCase();
 
     if (searchTerm || searchTerm == '') {
       document.body.classList.toggle('searching', searchTerm);
@@ -586,21 +586,21 @@ FlagSearch.prototype = {
   },
 
   announceSearchResults: function() {
-    var searchTerm = this.searchBox_.value.trim().toLowerCase();
+    const searchTerm = this.searchBox_.value.trim().toLowerCase();
     if (!searchTerm) {
       return;
     }
 
-    var tabAvailable = true;
-    var tabEls = document.getElementsByClassName('tab');
-    for (var i = 0; i < tabEls.length; ++i) {
+    let tabAvailable = true;
+    const tabEls = document.getElementsByClassName('tab');
+    for (let i = 0; i < tabEls.length; ++i) {
       if (tabEls[i].parentNode.classList.contains('selected')) {
         tabAvailable = tabEls[i].id == 'tab-available';
       }
     }
-    var seletedTabId =
+    const seletedTabId =
         tabAvailable ? '#tab-content-available' : '#tab-content-unavailable';
-    var queryString = seletedTabId + ' .experiment:not(.hidden)';
+    const queryString = seletedTabId + ' .experiment:not(.hidden)';
     const total = document.querySelectorAll(queryString).length;
     if (total) {
       announceStatus((total == 1) ?
