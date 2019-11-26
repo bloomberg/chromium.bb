@@ -254,9 +254,6 @@ struct ExtensionAppShimHandler::AppState {
   // The profile state for the profiles currently running this app.
   std::map<Profile*, std::unique_ptr<ProfileState>> profiles;
 
-  // The set of profiles for which this app is installed.
-  std::set<base::FilePath> installed_profiles;
-
  private:
   DISALLOW_COPY_AND_ASSIGN(AppState);
 };
@@ -299,14 +296,6 @@ Profile* ExtensionAppShimHandler::Delegate::ProfileForPath(
 
   // Use IsValidProfile to check if the profile has been created.
   return profile && profile_manager->IsValidProfile(profile) ? profile : NULL;
-}
-
-void ExtensionAppShimHandler::Delegate::GetProfilesForAppAsync(
-    const std::string& app_id,
-    const std::vector<base::FilePath>& profile_paths_to_check,
-    base::OnceCallback<void(const std::vector<base::FilePath>&)> callback) {
-  web_app::GetProfilesForAppShim(app_id, profile_paths_to_check,
-                                 std::move(callback));
 }
 
 void ExtensionAppShimHandler::Delegate::LoadProfileAsync(
@@ -1070,9 +1059,11 @@ void ExtensionAppShimHandler::OnBrowserSetLastActive(Browser* browser) {
   // is next to the new-active item).
   if (avatar_menu_)
     avatar_menu_->ActiveBrowserChanged(browser);
-  UpdateProfileMenuItems();
+  UpdateAllProfileMenus();
+}
 
-  // Update all multi-profile apps' profile menus.
+void ExtensionAppShimHandler::UpdateAllProfileMenus() {
+  RebuildProfileMenuItemsFromAvatarMenu();
   for (auto& iter_app : apps_) {
     AppState* app_state = iter_app.second.get();
     if (app_state->IsMultiProfile())
@@ -1080,7 +1071,7 @@ void ExtensionAppShimHandler::OnBrowserSetLastActive(Browser* browser) {
   }
 }
 
-void ExtensionAppShimHandler::UpdateProfileMenuItems() {
+void ExtensionAppShimHandler::RebuildProfileMenuItemsFromAvatarMenu() {
   if (!avatar_menu_) {
     ProfileManager* profile_manager = g_browser_process->profile_manager();
     avatar_menu_ = std::make_unique<AvatarMenu>(
@@ -1105,44 +1096,7 @@ void ExtensionAppShimHandler::OnAvatarMenuChanged(AvatarMenu* menu) {
   // Rebuild the profile menu to reflect changes (e.g, added or removed
   // profiles).
   DCHECK_EQ(avatar_menu_.get(), menu);
-  UpdateProfileMenuItems();
-
-  // Because profiles may have been added or removed, for each app, update the
-  // list of profiles for which that app is installed.
-  for (auto& iter_app : apps_) {
-    const std::string& app_id = iter_app.first;
-    AppState* app_state = iter_app.second.get();
-    if (!app_state->IsMultiProfile())
-      continue;
-    GetProfilesForAppAsync(
-        iter_app.first,
-        base::BindOnce(&ExtensionAppShimHandler::OnGotProfilesForApp,
-                       weak_factory_.GetWeakPtr(), app_id));
-  }
-}
-
-void ExtensionAppShimHandler::GetProfilesForAppAsync(
-    const std::string& app_id,
-    base::OnceCallback<void(const std::vector<base::FilePath>&)> callback) {
-  std::vector<base::FilePath> profile_paths_to_check;
-  for (const auto& item : profile_menu_items_)
-    profile_paths_to_check.push_back(item->profile_path);
-  delegate_->GetProfilesForAppAsync(app_id, profile_paths_to_check,
-                                    std::move(callback));
-}
-
-void ExtensionAppShimHandler::OnGotProfilesForApp(
-    const std::string& app_id,
-    const std::vector<base::FilePath>& profiles) {
-  auto found_app = apps_.find(app_id);
-  if (found_app == apps_.end())
-    return;
-  AppState* app_state = found_app->second.get();
-  DCHECK(app_state->IsMultiProfile());
-  app_state->installed_profiles.clear();
-  for (const auto& profile_path : profiles)
-    app_state->installed_profiles.insert(profile_path);
-  UpdateAppProfileMenu(app_state);
+  UpdateAllProfileMenus();
 }
 
 void ExtensionAppShimHandler::UpdateAppProfileMenu(AppState* app_state) {
@@ -1150,8 +1104,10 @@ void ExtensionAppShimHandler::UpdateAppProfileMenu(AppState* app_state) {
   // Include in |items| the profiles from |profile_menu_items_| for which this
   // app is installed, sorted by |menu_index|.
   std::vector<chrome::mojom::ProfileMenuItemPtr> items;
+  auto installed_profiles =
+      AppShimRegistry::Get()->GetInstalledProfilesForApp(app_state->app_id);
   for (const auto& item : profile_menu_items_) {
-    if (app_state->installed_profiles.count(item->profile_path))
+    if (installed_profiles.count(item->profile_path))
       items.push_back(item->Clone());
   }
   std::sort(items.begin(), items.end(), ProfileMenuItemComparator);
@@ -1195,6 +1151,10 @@ ExtensionAppShimHandler::GetOrCreateProfileState(
   }
   AppState* app_state = found_app->second.get();
 
+  // Initialize the profile menu.
+  if (is_multi_profile)
+    UpdateAppProfileMenu(app_state);
+
   auto found_profile = app_state->profiles.find(profile);
   if (found_profile == app_state->profiles.end()) {
     std::unique_ptr<AppShimHost> single_profile_host;
@@ -1208,16 +1168,6 @@ ExtensionAppShimHandler::GetOrCreateProfileState(
         app_state->profiles
             .insert(std::make_pair(profile, std::move(new_profile_state)))
             .first;
-    // Update the profile menu as each new profile uses this app. Note that
-    // ideally this should be done when when |multi_profile_host| is created
-    // above, and should be updated when apps are installed or uninstalled
-    // (but do not).
-    if (app_state->IsMultiProfile()) {
-      UpdateProfileMenuItems();
-      GetProfilesForAppAsync(
-          app_id, base::BindOnce(&ExtensionAppShimHandler::OnGotProfilesForApp,
-                                 weak_factory_.GetWeakPtr(), app_id));
-    }
   }
   return found_profile->second.get();
 }

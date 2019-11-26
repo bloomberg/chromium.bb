@@ -51,15 +51,6 @@ class MockDelegate : public ExtensionAppShimHandler::Delegate {
  public:
   virtual ~MockDelegate() { DCHECK(load_profile_callbacks_.empty()); }
 
-  void GetProfilesForAppAsync(
-      const std::string& app_id,
-      const std::vector<base::FilePath>& profile_paths_to_check,
-      base::OnceCallback<void(const std::vector<base::FilePath>&)> callback)
-      override {
-    get_profiles_for_app_callbacks_.push_back(
-        base::BindOnce(std::move(callback), profile_paths_to_check));
-  }
-
   MOCK_METHOD1(ProfileForPath, Profile*(const base::FilePath&));
   void LoadProfileAsync(const base::FilePath& path,
                         base::OnceCallback<void(Profile*)> callback) override {
@@ -141,22 +132,12 @@ class MockDelegate : public ExtensionAppShimHandler::Delegate {
     return load_profile_callbacks_.erase(path);
   }
 
-  bool RunGetProfilesForAppCallback() {
-    if (get_profiles_for_app_callbacks_.empty())
-      return false;
-    std::move(get_profiles_for_app_callbacks_.front()).Run();
-    get_profiles_for_app_callbacks_.pop_front();
-    return true;
-  }
-
  private:
   ShimLaunchedCallback* launch_shim_callback_capture_ = nullptr;
   ShimTerminatedCallback* terminated_shim_callback_capture_ = nullptr;
   std::map<base::FilePath, base::OnceCallback<void(Profile*)>>
       load_profile_callbacks_;
   std::unique_ptr<AppShimHost> host_for_create_ = nullptr;
-
-  std::list<base::OnceClosure> get_profiles_for_app_callbacks_;
   bool allow_shim_to_connect_ = true;
 };
 
@@ -183,7 +164,7 @@ class TestingExtensionAppShimHandler : public ExtensionAppShimHandler {
     new_profile_menu_items_ = std::move(new_profile_menu_items);
     OnAvatarMenuChanged(nullptr);
   }
-  void UpdateProfileMenuItems() override {
+  void RebuildProfileMenuItemsFromAvatarMenu() override {
     profile_menu_items_.clear();
     for (const auto& item : new_profile_menu_items_)
       profile_menu_items_.push_back(item.Clone());
@@ -416,19 +397,16 @@ class ExtensionAppShimHandlerTestBase : public testing::Test {
       handler_->SetProfileMenuItems(std::move(items));
     }
 
-    printf("Adding A: %s\n", profile_path_a_.value().c_str());
     EXPECT_CALL(*delegate_, IsProfileLockedForPath(profile_path_a_))
         .WillRepeatedly(Return(false));
     EXPECT_CALL(*delegate_, ProfileForPath(profile_path_a_))
         .WillRepeatedly(Return(&profile_a_));
 
-    printf("Adding B: %s\n", profile_path_b_.value().c_str());
     EXPECT_CALL(*delegate_, IsProfileLockedForPath(profile_path_b_))
         .WillRepeatedly(Return(false));
     EXPECT_CALL(*delegate_, ProfileForPath(profile_path_b_))
         .WillRepeatedly(Return(&profile_b_));
 
-    printf("Adding C: %s\n", profile_path_c_.value().c_str());
     EXPECT_CALL(*delegate_, IsProfileLockedForPath(profile_path_c_))
         .WillRepeatedly(Return(false));
     EXPECT_CALL(*delegate_, ProfileForPath(profile_path_c_))
@@ -1063,7 +1041,6 @@ TEST_F(ExtensionAppShimHandlerTestMultiProfile, MultiProfileSelectMenu) {
 }
 
 TEST_F(ExtensionAppShimHandlerTestMultiProfile, ProfileMenuOneProfile) {
-  // Set this app to be installed for profile A.
   {
     auto item_a = chrome::mojom::ProfileMenuItem::New();
     item_a->profile_path = profile_path_a_;
@@ -1074,12 +1051,15 @@ TEST_F(ExtensionAppShimHandlerTestMultiProfile, ProfileMenuOneProfile) {
     handler_->SetProfileMenuItems(std::move(items));
   }
 
+  // Set this app to be installed for profile A.
+  AppShimRegistry::Get()->OnAppInstalledForProfile(kTestAppIdA,
+                                                   profile_path_a_);
+
   // When the app activates, a host is created. This will trigger building
   // the avatar menu.
   delegate_->SetHostForCreate(std::move(host_aa_unique_));
   EXPECT_CALL(*delegate_, DoLaunchShim(&profile_a_, extension_a_.get(), false));
   handler_->OnAppActivated(&profile_a_, kTestAppIdA);
-  EXPECT_TRUE(delegate_->RunGetProfilesForAppCallback());
   EXPECT_EQ(host_aa_.get(), handler_->FindHost(&profile_a_, kTestAppIdA));
 
   // Launch the shim.
@@ -1092,7 +1072,6 @@ TEST_F(ExtensionAppShimHandlerTestMultiProfile, ProfileMenuOneProfile) {
   const auto& menu_items = host_aa_->test_app_shim_->profile_menu_items_;
 
   // We should have no menu items, because there is only one installed profile.
-  EXPECT_FALSE(delegate_->RunGetProfilesForAppCallback());
   EXPECT_TRUE(menu_items.empty());
 
   // Add profile B to the avatar menu and call the avatar menu observer update
@@ -1111,19 +1090,18 @@ TEST_F(ExtensionAppShimHandlerTestMultiProfile, ProfileMenuOneProfile) {
     items.push_back(std::move(item_b));
     handler_->SetProfileMenuItems(std::move(items));
   }
-  EXPECT_TRUE(delegate_->RunGetProfilesForAppCallback());
-  EXPECT_FALSE(delegate_->RunGetProfilesForAppCallback());
 
-  // We should now have 2 menu items. They should be sorted by menu_index,
-  // making b be before a.
+  // We should still only have no menu items, because the app is not installed
+  // for multiple profiles.
+  EXPECT_TRUE(menu_items.empty());
+
+  // Now install for profile B.
+  AppShimRegistry::Get()->OnAppInstalledForProfile(kTestAppIdA,
+                                                   profile_path_b_);
+  handler_->OnAppActivated(&profile_b_, kTestAppIdA);
   EXPECT_EQ(menu_items.size(), 2u);
   EXPECT_EQ(menu_items[0]->profile_path, profile_path_b_);
   EXPECT_EQ(menu_items[1]->profile_path, profile_path_a_);
-
-  // Activate profile B. This should trigger re-building the avatar menu.
-  handler_->OnAppActivated(&profile_b_, kTestAppIdA);
-  EXPECT_TRUE(delegate_->RunGetProfilesForAppCallback());
-  EXPECT_FALSE(delegate_->RunGetProfilesForAppCallback());
 }
 
 TEST_F(ExtensionAppShimHandlerTestMultiProfile, FindProfileFromBadProfile) {
