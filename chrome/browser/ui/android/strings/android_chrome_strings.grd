@@ -4031,6 +4031,13 @@ The site does NOT gain access to the camera. The camera images are only visible 
         Test Dummy
       </message>
 
+      <message name="IDS_STACK_UNWINDER_MODULE_TITLE"
+        desc="Text shown when the stack unwinder module is referenced in install start, success,
+              failure UI (e.g. in IDS_MODULE_INSTALL_START_TEXT, which will expand to
+              'Installing Stack Unwinder for Chrome…').">
+        Stack Unwinder
+      </message>
+
       <message name="IDS_EXTRA_ICU_MODULE_TITLE"
         desc="Text shown when the extra ICU module is referenced in install start, success,
               failure UI (e.g. in IDS_MODULE_INSTALL_START_TEXT, which will expand to
