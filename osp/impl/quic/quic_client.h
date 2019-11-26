@@ -19,6 +19,7 @@
 #include "util/alarm.h"
 
 namespace openscreen {
+namespace osp {
 
 // This class is the default implementation of ProtocolConnectionClient for the
 // library.  It manages connections to other endpoints as well as the lifetime
@@ -133,6 +134,7 @@ class QuicClient final : public ProtocolConnectionClient,
   Alarm cleanup_alarm_;
 };
 
+}  // namespace osp
 }  // namespace openscreen
 
 #endif  // OSP_IMPL_QUIC_QUIC_CLIENT_H_

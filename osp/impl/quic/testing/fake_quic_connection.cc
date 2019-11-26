@@ -10,6 +10,7 @@
 #include "util/logging.h"
 
 namespace openscreen {
+namespace osp {
 
 FakeQuicStream::FakeQuicStream(Delegate* delegate, uint64_t id)
     : QuicStream(delegate, id) {}
@@ -90,4 +91,5 @@ void FakeQuicConnection::Close() {
   }
 }
 
+}  // namespace osp
 }  // namespace openscreen

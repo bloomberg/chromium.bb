@@ -10,6 +10,7 @@
 #include "osp/impl/mdns_platform_service.h"
 
 namespace openscreen {
+namespace osp {
 
 class FakeMdnsPlatformService final : public MdnsPlatformService {
  public:
@@ -32,6 +33,7 @@ class FakeMdnsPlatformService final : public MdnsPlatformService {
   std::vector<BoundInterface> interfaces_;
 };
 
+}  // namespace osp
 }  // namespace openscreen
 
 #endif  // OSP_IMPL_TESTING_FAKE_MDNS_PLATFORM_SERVICE_H_

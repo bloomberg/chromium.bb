@@ -19,7 +19,7 @@
 #include "platform/base/ip_address.h"
 
 namespace openscreen {
-namespace mdns {
+namespace osp {
 
 struct QueryEventHeader {
   enum class Type {
@@ -252,7 +252,7 @@ class MdnsResponderAdapter : public platform::UdpSocket::Client {
       const std::map<std::string, std::string>& txt_data) = 0;
 };
 
-}  // namespace mdns
+}  // namespace osp
 }  // namespace openscreen
 
 #endif  // OSP_IMPL_DISCOVERY_MDNS_MDNS_RESPONDER_ADAPTER_H_

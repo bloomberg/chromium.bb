@@ -21,10 +21,9 @@
 #include "util/logging.h"
 
 namespace openscreen {
+namespace osp {
 
 class ProtocolConnection;
-
-namespace presentation {
 
 enum class TerminationReason {
   kReceiverTerminateCalled = 0,
@@ -214,7 +213,7 @@ class ConnectionManager final : public MessageDemuxer::MessageCallback {
   OSP_DISALLOW_COPY_AND_ASSIGN(ConnectionManager);
 };
 
-}  // namespace presentation
+}  // namespace osp
 }  // namespace openscreen
 
 #endif  // OSP_PUBLIC_PRESENTATION_PRESENTATION_CONNECTION_H_

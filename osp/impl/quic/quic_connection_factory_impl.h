@@ -16,6 +16,7 @@
 #include "third_party/chromium_quic/src/net/third_party/quic/quartc/quartc_factory.h"
 
 namespace openscreen {
+namespace osp {
 
 class QuicTaskRunner;
 
@@ -61,6 +62,7 @@ class QuicConnectionFactoryImpl final : public QuicConnectionFactory {
   platform::TaskRunner* const task_runner_;
 };
 
+}  // namespace osp
 }  // namespace openscreen
 
 #endif  // OSP_IMPL_QUIC_QUIC_CONNECTION_FACTORY_IMPL_H_

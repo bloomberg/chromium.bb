@@ -10,7 +10,7 @@
 #include "util/stringprintf.h"
 
 namespace openscreen {
-namespace mdns {
+namespace osp {
 
 // static
 DomainName DomainName::GetLocalDomain() {
@@ -128,5 +128,5 @@ std::ostream& operator<<(std::ostream& os, const DomainName& domain_name) {
   return os;
 }
 
-}  // namespace mdns
+}  // namespace osp
 }  // namespace openscreen

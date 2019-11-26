@@ -19,7 +19,7 @@
 #include "platform/test/fake_task_runner.h"
 
 namespace openscreen {
-namespace presentation {
+namespace osp {
 
 using std::chrono::seconds;
 using ::testing::_;
@@ -537,5 +537,5 @@ TEST_F(ControllerTest, Reconnect) {
   EXPECT_EQ(connection->state(), Connection::State::kConnected);
 }
 
-}  // namespace presentation
+}  // namespace osp
 }  // namespace openscreen

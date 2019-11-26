@@ -19,6 +19,7 @@
 #include "platform/base/macros.h"
 
 namespace openscreen {
+namespace osp {
 
 class ProtocolConnectionServer {
  public:
@@ -97,6 +98,7 @@ class ProtocolConnectionServer {
 std::ostream& operator<<(std::ostream& os,
                          ProtocolConnectionServer::State state);
 
+}  // namespace osp
 }  // namespace openscreen
 
 #endif  // OSP_PUBLIC_PROTOCOL_CONNECTION_SERVER_H_

@@ -11,9 +11,12 @@
 #include "osp/public/server_config.h"
 
 namespace openscreen {
+
 namespace platform {
 class TaskRunner;
 }
+
+namespace osp {
 
 class ProtocolConnectionServerFactory {
  public:
@@ -24,6 +27,7 @@ class ProtocolConnectionServerFactory {
       platform::TaskRunner* task_runner);
 };
 
+}  // namespace osp
 }  // namespace openscreen
 
 #endif  // OSP_PUBLIC_PROTOCOL_CONNECTION_SERVER_FACTORY_H_

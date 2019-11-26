@@ -13,6 +13,7 @@
 #include "platform/api/time.h"
 
 namespace openscreen {
+namespace osp {
 
 // static
 std::unique_ptr<ProtocolConnectionServer>
@@ -26,4 +27,5 @@ ProtocolConnectionServerFactory::Create(
       observer, &platform::Clock::now, task_runner);
 }
 
+}  // namespace osp
 }  // namespace openscreen

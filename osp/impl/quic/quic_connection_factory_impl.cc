@@ -21,6 +21,7 @@
 using openscreen::platform::TraceCategory;
 
 namespace openscreen {
+namespace osp {
 class QuicTaskRunner final : public ::base::TaskRunner {
  public:
   explicit QuicTaskRunner(platform::TaskRunner* task_runner);
@@ -221,4 +222,5 @@ void QuicConnectionFactoryImpl::OnSendError(platform::UdpSocket* socket,
   OSP_UNIMPLEMENTED();
 }
 
+}  // namespace osp
 }  // namespace openscreen

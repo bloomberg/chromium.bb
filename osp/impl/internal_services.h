@@ -24,9 +24,12 @@
 #include "platform/base/macros.h"
 
 namespace openscreen {
+
 namespace platform {
 class TaskRunner;
 }  // namespace platform
+
+namespace osp {
 
 // Factory for ServiceListener and ServicePublisher instances; owns internal
 // objects needed to instantiate them such as MdnsResponderService and runs an
@@ -86,6 +89,7 @@ class InternalServices : platform::UdpSocket::Client {
   OSP_DISALLOW_COPY_AND_ASSIGN(InternalServices);
 };
 
+}  // namespace osp
 }  // namespace openscreen
 
 #endif  // OSP_IMPL_INTERNAL_SERVICES_H_

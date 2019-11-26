@@ -18,6 +18,7 @@
 #include "util/logging.h"
 
 namespace openscreen {
+namespace osp {
 
 template <typename T>
 using MessageDecodingFunction = ssize_t (*)(const uint8_t*, size_t, T*);
@@ -220,6 +221,7 @@ class RequestResponseHandler : public MessageDemuxer::MessageCallback {
   OSP_DISALLOW_COPY_AND_ASSIGN(RequestResponseHandler);
 };
 
+}  // namespace osp
 }  // namespace openscreen
 
 #endif  // OSP_MSGS_REQUEST_RESPONSE_HANDLER_H_

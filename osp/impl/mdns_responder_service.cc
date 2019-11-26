@@ -16,12 +16,13 @@
 using openscreen::platform::TraceCategory;
 
 namespace openscreen {
+namespace osp {
 namespace {
 
 // TODO(btolsch): This should probably at least also contain network identity
 // information.
 std::string ServiceIdFromServiceInstanceName(
-    const mdns::DomainName& service_instance) {
+    const DomainName& service_instance) {
   std::string service_id;
   service_id.assign(
       reinterpret_cast<const char*>(service_instance.domain_name().data()),
@@ -209,7 +210,7 @@ bool MdnsResponderService::NetworkScopedDomainNameComparator::operator()(
   if (a.socket != b.socket) {
     return (a.socket - b.socket) < 0;
   }
-  return mdns::DomainNameComparator()(a.domain_name, b.domain_name);
+  return DomainNameComparator()(a.domain_name, b.domain_name);
 }
 
 void MdnsResponderService::HandleMdnsEvents() {
@@ -311,8 +312,8 @@ void MdnsResponderService::StartListening() {
                                          interface.subnet, interface.socket);
     }
   }
-  ErrorOr<mdns::DomainName> service_type =
-      mdns::DomainName::FromLabels(service_type_.begin(), service_type_.end());
+  ErrorOr<DomainName> service_type =
+      DomainName::FromLabels(service_type_.begin(), service_type_.end());
   OSP_CHECK(service_type);
   for (const auto& interface : bound_interfaces_) {
     mdns_responder_->StartPtrQuery(interface.socket, service_type.value());
@@ -320,8 +321,8 @@ void MdnsResponderService::StartListening() {
 }
 
 void MdnsResponderService::StopListening() {
-  ErrorOr<mdns::DomainName> service_type =
-      mdns::DomainName::FromLabels(service_type_.begin(), service_type_.end());
+  ErrorOr<DomainName> service_type =
+      DomainName::FromLabels(service_type_.begin(), service_type_.end());
   OSP_CHECK(service_type);
   for (const auto& kv : network_scoped_domain_to_host_) {
     const NetworkScopedDomainName& scoped_domain = kv.first;
@@ -377,12 +378,12 @@ void MdnsResponderService::StartService() {
     }
   }
 
-  ErrorOr<mdns::DomainName> domain_name =
-      mdns::DomainName::FromLabels(&service_hostname_, &service_hostname_ + 1);
+  ErrorOr<DomainName> domain_name =
+      DomainName::FromLabels(&service_hostname_, &service_hostname_ + 1);
   OSP_CHECK(domain_name) << "bad hostname configured: " << service_hostname_;
-  mdns::DomainName name = std::move(domain_name.value());
+  DomainName name = std::move(domain_name.value());
 
-  Error error = name.Append(mdns::DomainName::GetLocalDomain());
+  Error error = name.Append(DomainName::GetLocalDomain());
   OSP_CHECK(error.ok());
 
   mdns_responder_->RegisterService(service_instance_name_, service_type_[0],
@@ -406,7 +407,7 @@ void MdnsResponderService::StopMdnsResponder() {
 
 void MdnsResponderService::UpdatePendingServiceInfoSet(
     InstanceNameSet* modified_instance_names,
-    const mdns::DomainName& domain_name) {
+    const DomainName& domain_name) {
   for (auto& entry : service_by_name_) {
     const auto& instance_name = entry.first;
     const auto& instance = entry.second;
@@ -424,16 +425,16 @@ void MdnsResponderService::RemoveAllReceivers() {
 }
 
 bool MdnsResponderService::HandlePtrEvent(
-    const mdns::PtrEvent& ptr_event,
+    const PtrEvent& ptr_event,
     InstanceNameSet* modified_instance_names) {
   bool events_possible = false;
   const auto& instance_name = ptr_event.service_instance;
   platform::UdpSocket* const socket = ptr_event.header.socket;
   auto entry = service_by_name_.find(ptr_event.service_instance);
   switch (ptr_event.header.response_type) {
-    case mdns::QueryEventHeader::Type::kAddedNoCache:
+    case QueryEventHeader::Type::kAddedNoCache:
       break;
-    case mdns::QueryEventHeader::Type::kAdded: {
+    case QueryEventHeader::Type::kAdded: {
       if (entry != service_by_name_.end()) {
         entry->second->has_ptr_record = true;
         modified_instance_names->emplace(instance_name);
@@ -450,7 +451,7 @@ bool MdnsResponderService::HandlePtrEvent(
       service_by_name_.emplace(std::move(instance_name),
                                std::move(new_instance));
     } break;
-    case mdns::QueryEventHeader::Type::kRemoved:
+    case QueryEventHeader::Type::kRemoved:
       if (entry == service_by_name_.end())
         break;
       if (entry->second->ptr_socket != socket)
@@ -475,7 +476,7 @@ bool MdnsResponderService::HandlePtrEvent(
 }
 
 bool MdnsResponderService::HandleSrvEvent(
-    const mdns::SrvEvent& srv_event,
+    const SrvEvent& srv_event,
     InstanceNameSet* modified_instance_names) {
   bool events_possible = false;
   auto& domain_name = srv_event.domain_name;
@@ -485,9 +486,9 @@ bool MdnsResponderService::HandleSrvEvent(
   if (entry == service_by_name_.end())
     return events_possible;
   switch (srv_event.header.response_type) {
-    case mdns::QueryEventHeader::Type::kAddedNoCache:
+    case QueryEventHeader::Type::kAddedNoCache:
       break;
-    case mdns::QueryEventHeader::Type::kAdded: {
+    case QueryEventHeader::Type::kAdded: {
       NetworkScopedDomainName scoped_domain_name{socket, domain_name};
       auto host_entry = network_scoped_domain_to_host_.find(scoped_domain_name);
       if (host_entry == network_scoped_domain_to_host_.end()) {
@@ -509,7 +510,7 @@ bool MdnsResponderService::HandleSrvEvent(
       entry->second->port = srv_event.port;
       modified_instance_names->emplace(std::move(instance_name));
     } break;
-    case mdns::QueryEventHeader::Type::kRemoved: {
+    case QueryEventHeader::Type::kRemoved: {
       NetworkScopedDomainName scoped_domain_name{socket, domain_name};
       auto host_entry = network_scoped_domain_to_host_.find(scoped_domain_name);
       if (host_entry != network_scoped_domain_to_host_.end()) {
@@ -526,7 +527,7 @@ bool MdnsResponderService::HandleSrvEvent(
           network_scoped_domain_to_host_.erase(host_entry);
         }
       }
-      entry->second->domain_name = mdns::DomainName();
+      entry->second->domain_name = DomainName();
       entry->second->port = 0;
       if (!entry->second->has_ptr_record) {
         mdns_responder_->StopSrvQuery(socket, instance_name);
@@ -539,7 +540,7 @@ bool MdnsResponderService::HandleSrvEvent(
 }
 
 bool MdnsResponderService::HandleTxtEvent(
-    const mdns::TxtEvent& txt_event,
+    const TxtEvent& txt_event,
     InstanceNameSet* modified_instance_names) {
   bool events_possible = false;
   const auto& instance_name = txt_event.service_instance;
@@ -547,9 +548,9 @@ bool MdnsResponderService::HandleTxtEvent(
   if (entry == service_by_name_.end())
     return events_possible;
   switch (txt_event.header.response_type) {
-    case mdns::QueryEventHeader::Type::kAddedNoCache:
+    case QueryEventHeader::Type::kAddedNoCache:
       break;
-    case mdns::QueryEventHeader::Type::kAdded:
+    case QueryEventHeader::Type::kAdded:
       modified_instance_names->emplace(instance_name);
       if (entry == service_by_name_.end()) {
         auto result = service_by_name_.emplace(
@@ -558,7 +559,7 @@ bool MdnsResponderService::HandleTxtEvent(
       }
       entry->second->txt_info = std::move(txt_event.txt_info);
       break;
-    case mdns::QueryEventHeader::Type::kRemoved:
+    case QueryEventHeader::Type::kRemoved:
       entry->second->txt_info.clear();
       modified_instance_names->emplace(std::move(instance_name));
       break;
@@ -568,16 +569,16 @@ bool MdnsResponderService::HandleTxtEvent(
 
 bool MdnsResponderService::HandleAddressEvent(
     platform::UdpSocket* socket,
-    mdns::QueryEventHeader::Type response_type,
-    const mdns::DomainName& domain_name,
+    QueryEventHeader::Type response_type,
+    const DomainName& domain_name,
     bool a_event,
     const IPAddress& address,
     InstanceNameSet* modified_instance_names) {
   bool events_possible = false;
   switch (response_type) {
-    case mdns::QueryEventHeader::Type::kAddedNoCache:
+    case QueryEventHeader::Type::kAddedNoCache:
       break;
-    case mdns::QueryEventHeader::Type::kAdded: {
+    case QueryEventHeader::Type::kAdded: {
       HostInfo* host = AddOrGetHostInfo(socket, domain_name);
       if (a_event)
         host->v4_address = address;
@@ -585,7 +586,7 @@ bool MdnsResponderService::HandleAddressEvent(
         host->v6_address = address;
       UpdatePendingServiceInfoSet(modified_instance_names, domain_name);
     } break;
-    case mdns::QueryEventHeader::Type::kRemoved: {
+    case QueryEventHeader::Type::kRemoved: {
       HostInfo* host = GetHostInfo(socket, domain_name);
 
       if (a_event)
@@ -601,7 +602,7 @@ bool MdnsResponderService::HandleAddressEvent(
 }
 
 bool MdnsResponderService::HandleAEvent(
-    const mdns::AEvent& a_event,
+    const AEvent& a_event,
     InstanceNameSet* modified_instance_names) {
   return HandleAddressEvent(a_event.header.socket, a_event.header.response_type,
                             a_event.domain_name, true, a_event.address,
@@ -609,7 +610,7 @@ bool MdnsResponderService::HandleAEvent(
 }
 
 bool MdnsResponderService::HandleAaaaEvent(
-    const mdns::AaaaEvent& aaaa_event,
+    const AaaaEvent& aaaa_event,
     InstanceNameSet* modified_instance_names) {
   return HandleAddressEvent(aaaa_event.header.socket,
                             aaaa_event.header.response_type,
@@ -619,14 +620,14 @@ bool MdnsResponderService::HandleAaaaEvent(
 
 MdnsResponderService::HostInfo* MdnsResponderService::AddOrGetHostInfo(
     platform::UdpSocket* socket,
-    const mdns::DomainName& domain_name) {
+    const DomainName& domain_name) {
   return &network_scoped_domain_to_host_[NetworkScopedDomainName{socket,
                                                                  domain_name}];
 }
 
 MdnsResponderService::HostInfo* MdnsResponderService::GetHostInfo(
     platform::UdpSocket* socket,
-    const mdns::DomainName& domain_name) {
+    const DomainName& domain_name) {
   auto kv = network_scoped_domain_to_host_.find(
       NetworkScopedDomainName{socket, domain_name});
   if (kv == network_scoped_domain_to_host_.end())
@@ -663,4 +664,5 @@ void MdnsResponderService::RunBackgroundTasks() {
                                           delay_until_next_run);
 }
 
+}  // namespace osp
 }  // namespace openscreen

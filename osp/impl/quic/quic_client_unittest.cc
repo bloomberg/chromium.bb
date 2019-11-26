@@ -20,6 +20,7 @@
 #include "util/logging.h"
 
 namespace openscreen {
+namespace osp {
 namespace {
 
 using ::testing::_;
@@ -268,4 +269,5 @@ TEST_F(QuicClientTest, RequestIds) {
   EXPECT_EQ(0u, client_->endpoint_request_ids()->GetNextRequestId(endpoint_id));
 }
 
+}  // namespace osp
 }  // namespace openscreen

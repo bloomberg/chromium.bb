@@ -11,6 +11,7 @@
 #include "platform/base/error.h"
 
 namespace openscreen {
+namespace osp {
 
 class ReceiverList {
  public:
@@ -31,6 +32,7 @@ class ReceiverList {
   std::vector<ServiceInfo> receivers_;
 };
 
+}  // namespace osp
 }  // namespace openscreen
 
 #endif  // OSP_IMPL_RECEIVER_LIST_H_

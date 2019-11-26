@@ -8,6 +8,7 @@
 #include "platform/base/error.h"
 
 namespace openscreen {
+namespace osp {
 
 TEST(ReceiverListTest, AddReceivers) {
   ReceiverList list;
@@ -91,4 +92,5 @@ TEST(ReceiverListTest, RemoveAllReceivers) {
   ASSERT_TRUE(list.receivers().empty());
 }
 
+}  // namespace osp
 }  // namespace openscreen

@@ -12,6 +12,7 @@
 #include "platform/test/fake_task_runner.h"
 
 namespace openscreen {
+namespace osp {
 
 FakeQuicBridge::FakeQuicBridge(platform::FakeTaskRunner* task_runner,
                                platform::ClockNowFunctionPtr now_function)
@@ -79,4 +80,5 @@ void FakeQuicBridge::RunTasksUntilIdle() {
   task_runner_->RunTasksUntilIdle();
 }
 
+}  // namespace osp
 }  // namespace openscreen

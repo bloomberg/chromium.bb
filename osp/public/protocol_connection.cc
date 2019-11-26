@@ -5,6 +5,7 @@
 #include "osp/public/protocol_connection.h"
 
 namespace openscreen {
+namespace osp {
 
 ProtocolConnection::ProtocolConnection(uint64_t endpoint_id, uint64_t id)
     : endpoint_id_(endpoint_id), id_(id) {}
@@ -14,4 +15,5 @@ void ProtocolConnection::SetObserver(Observer* observer) {
   observer_ = observer;
 }
 
+}  // namespace osp
 }  // namespace openscreen

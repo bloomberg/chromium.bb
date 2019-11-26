@@ -23,6 +23,7 @@
 #include "platform/test/fake_udp_socket.h"
 
 namespace openscreen {
+namespace osp {
 
 class MockServiceObserver : public ProtocolConnectionServiceObserver {
  public:
@@ -84,6 +85,7 @@ class FakeQuicBridge {
   std::unique_ptr<platform::FakeUdpSocket> server_socket_;
 };
 
+}  // namespace osp
 }  // namespace openscreen
 
 #endif  // OSP_IMPL_QUIC_TESTING_QUIC_TEST_SUPPORT_H_

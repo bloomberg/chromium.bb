@@ -14,6 +14,7 @@
 #include "platform/base/macros.h"
 
 namespace openscreen {
+namespace osp {
 
 class ServiceListenerImpl final : public ServiceListener,
                                   public WithDestructionCallback {
@@ -79,6 +80,7 @@ class ServiceListenerImpl final : public ServiceListener,
   OSP_DISALLOW_COPY_AND_ASSIGN(ServiceListenerImpl);
 };
 
+}  // namespace osp
 }  // namespace openscreen
 
 #endif  // OSP_IMPL_SERVICE_LISTENER_IMPL_H_

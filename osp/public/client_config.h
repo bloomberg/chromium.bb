@@ -11,6 +11,7 @@
 #include "platform/api/network_interface.h"
 
 namespace openscreen {
+namespace osp {
 
 struct ClientConfig {
   ClientConfig();
@@ -22,6 +23,7 @@ struct ClientConfig {
   std::vector<platform::NetworkInterfaceIndex> interface_indexes;
 };
 
+}  // namespace osp
 }  // namespace openscreen
 
 #endif  // OSP_PUBLIC_CLIENT_CONFIG_H_

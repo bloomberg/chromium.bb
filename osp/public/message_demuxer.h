@@ -14,6 +14,7 @@
 #include "platform/base/error.h"
 
 namespace openscreen {
+namespace osp {
 
 class QuicStream;
 
@@ -29,8 +30,9 @@ class MessageDemuxer {
 
     // |buffer| contains data for a message of type |message_type|.  However,
     // the data may be incomplete, in which case the callback should return an
-    // error code of Error::Code::kCborIncompleteMessage.  This way, the
-    // MessageDemuxer knows to neither consume the data nor discard it as bad.
+    // error code of Error::Code::kCborIncompleteMessage.  This way,
+    // the MessageDemuxer knows to neither consume the data nor discard it as
+    // bad.
     virtual ErrorOr<size_t> OnStreamMessage(
         uint64_t endpoint_id,
         uint64_t connection_id,
@@ -131,6 +133,7 @@ class MessageTypeDecoder {
                                          size_t* num_bytes_decoded);
 };
 
+}  // namespace osp
 }  // namespace openscreen
 
 #endif  // OSP_PUBLIC_MESSAGE_DEMUXER_H_

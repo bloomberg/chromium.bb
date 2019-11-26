@@ -23,12 +23,13 @@
 #include "util/alarm.h"
 
 namespace openscreen {
+namespace osp {
 
 class MdnsResponderAdapterFactory {
  public:
   virtual ~MdnsResponderAdapterFactory() = default;
 
-  virtual std::unique_ptr<mdns::MdnsResponderAdapter> Create() = 0;
+  virtual std::unique_ptr<MdnsResponderAdapter> Create() = 0;
 };
 
 class MdnsResponderService : public ServiceListenerImpl::Delegate,
@@ -75,7 +76,7 @@ class MdnsResponderService : public ServiceListenerImpl::Delegate,
  protected:
   void HandleMdnsEvents();
 
-  std::unique_ptr<mdns::MdnsResponderAdapter> mdns_responder_;
+  std::unique_ptr<MdnsResponderAdapter> mdns_responder_;
 
  private:
   // Create internal versions of all public methods. These are used to push all
@@ -98,7 +99,7 @@ class MdnsResponderService : public ServiceListenerImpl::Delegate,
   // NOTE: service_instance implicit in map key.
   struct ServiceInstance {
     platform::UdpSocket* ptr_socket = nullptr;
-    mdns::DomainName domain_name;
+    DomainName domain_name;
     uint16_t port = 0;
     bool has_ptr_record = false;
     std::vector<std::string> txt_info;
@@ -116,7 +117,7 @@ class MdnsResponderService : public ServiceListenerImpl::Delegate,
 
   struct NetworkScopedDomainName {
     platform::UdpSocket* socket;
-    mdns::DomainName domain_name;
+    DomainName domain_name;
   };
 
   struct NetworkScopedDomainNameComparator {
@@ -124,8 +125,7 @@ class MdnsResponderService : public ServiceListenerImpl::Delegate,
                     const NetworkScopedDomainName& b) const;
   };
 
-  using InstanceNameSet =
-      std::set<mdns::DomainName, mdns::DomainNameComparator>;
+  using InstanceNameSet = std::set<DomainName, DomainNameComparator>;
 
   void StartListening();
   void StopListening();
@@ -133,32 +133,32 @@ class MdnsResponderService : public ServiceListenerImpl::Delegate,
   void StopService();
   void StopMdnsResponder();
   void UpdatePendingServiceInfoSet(InstanceNameSet* modified_instance_names,
-                                   const mdns::DomainName& domain_name);
+                                   const DomainName& domain_name);
   void RemoveAllReceivers();
 
   // NOTE: |modified_instance_names| is used to track which service instances
   // are modified by the record events.  See HandleMdnsEvents for more details.
-  bool HandlePtrEvent(const mdns::PtrEvent& ptr_event,
+  bool HandlePtrEvent(const PtrEvent& ptr_event,
                       InstanceNameSet* modified_instance_names);
-  bool HandleSrvEvent(const mdns::SrvEvent& srv_event,
+  bool HandleSrvEvent(const SrvEvent& srv_event,
                       InstanceNameSet* modified_instance_names);
-  bool HandleTxtEvent(const mdns::TxtEvent& txt_event,
+  bool HandleTxtEvent(const TxtEvent& txt_event,
                       InstanceNameSet* modified_instance_names);
   bool HandleAddressEvent(platform::UdpSocket* socket,
-                          mdns::QueryEventHeader::Type response_type,
-                          const mdns::DomainName& domain_name,
+                          QueryEventHeader::Type response_type,
+                          const DomainName& domain_name,
                           bool a_event,
                           const IPAddress& address,
                           InstanceNameSet* modified_instance_names);
-  bool HandleAEvent(const mdns::AEvent& a_event,
+  bool HandleAEvent(const AEvent& a_event,
                     InstanceNameSet* modified_instance_names);
-  bool HandleAaaaEvent(const mdns::AaaaEvent& aaaa_event,
+  bool HandleAaaaEvent(const AaaaEvent& aaaa_event,
                        InstanceNameSet* modified_instance_names);
 
   HostInfo* AddOrGetHostInfo(platform::UdpSocket* socket,
-                             const mdns::DomainName& domain_name);
+                             const DomainName& domain_name);
   HostInfo* GetHostInfo(platform::UdpSocket* socket,
-                        const mdns::DomainName& domain_name);
+                        const DomainName& domain_name);
   bool IsServiceReady(const ServiceInstance& instance, HostInfo* host) const;
   platform::NetworkInterfaceIndex GetNetworkInterfaceIndexFromSocket(
       const platform::UdpSocket* socket) const;
@@ -184,9 +184,7 @@ class MdnsResponderService : public ServiceListenerImpl::Delegate,
 
   // A map of service information collected from PTR, SRV, and TXT records.  It
   // is keyed by service instance names.
-  std::map<mdns::DomainName,
-           std::unique_ptr<ServiceInstance>,
-           mdns::DomainNameComparator>
+  std::map<DomainName, std::unique_ptr<ServiceInstance>, DomainNameComparator>
       service_by_name_;
 
   // The map key is a combination of the interface to which the address records
@@ -209,6 +207,7 @@ class MdnsResponderService : public ServiceListenerImpl::Delegate,
   friend class TestingMdnsResponderService;
 };
 
+}  // namespace osp
 }  // namespace openscreen
 
 #endif  // OSP_IMPL_MDNS_RESPONDER_SERVICE_H_

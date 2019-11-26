@@ -5,7 +5,7 @@
 #include "osp/impl/discovery/mdns/mdns_responder_adapter.h"
 
 namespace openscreen {
-namespace mdns {
+namespace osp {
 
 QueryEventHeader::QueryEventHeader() = default;
 QueryEventHeader::QueryEventHeader(QueryEventHeader::Type response_type,
@@ -73,5 +73,5 @@ TxtEvent& TxtEvent::operator=(TxtEvent&&) noexcept = default;
 MdnsResponderAdapter::MdnsResponderAdapter() = default;
 MdnsResponderAdapter::~MdnsResponderAdapter() = default;
 
-}  // namespace mdns
+}  // namespace osp
 }  // namespace openscreen

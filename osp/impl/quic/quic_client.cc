@@ -13,6 +13,7 @@
 #include "util/logging.h"
 
 namespace openscreen {
+namespace osp {
 
 QuicClient::QuicClient(
     MessageDemuxer* demuxer,
@@ -249,4 +250,5 @@ void QuicClient::CancelConnectRequest(uint64_t request_id) {
   request_map_.erase(request_entry);
 }
 
+}  // namespace osp
 }  // namespace openscreen

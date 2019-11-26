@@ -18,7 +18,7 @@
 #include "platform/base/error.h"
 
 namespace openscreen {
-namespace presentation {
+namespace osp {
 
 class UrlAvailabilityRequester;
 
@@ -217,7 +217,7 @@ class Controller final : public ServiceListener::Observer,
       termination_listener_by_id_;
 };
 
-}  // namespace presentation
+}  // namespace osp
 }  // namespace openscreen
 
 #endif  // OSP_PUBLIC_PRESENTATION_PRESENTATION_CONTROLLER_H_

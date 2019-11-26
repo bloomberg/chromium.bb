@@ -7,9 +7,12 @@
 #include "osp/impl/internal_services.h"
 
 namespace openscreen {
+
 namespace platform {
 class TaskRunner;
 }  // namespace platform
+
+namespace osp {
 
 // static
 std::unique_ptr<ServicePublisher> MdnsServicePublisherFactory::Create(
@@ -19,4 +22,5 @@ std::unique_ptr<ServicePublisher> MdnsServicePublisherFactory::Create(
   return InternalServices::CreatePublisher(config, observer, task_runner);
 }
 
+}  // namespace osp
 }  // namespace openscreen

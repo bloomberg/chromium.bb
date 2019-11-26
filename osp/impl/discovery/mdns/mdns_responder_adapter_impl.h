@@ -15,7 +15,7 @@
 #include "third_party/mDNSResponder/src/mDNSCore/mDNSEmbeddedAPI.h"
 
 namespace openscreen {
-namespace mdns {
+namespace osp {
 
 class MdnsResponderAdapterImpl final : public MdnsResponderAdapter {
  public:
@@ -153,7 +153,7 @@ class MdnsResponderAdapterImpl final : public MdnsResponderAdapter {
   std::vector<std::unique_ptr<ServiceRecordSet>> service_records_;
 };
 
-}  // namespace mdns
+}  // namespace osp
 }  // namespace openscreen
 
 #endif  // OSP_IMPL_DISCOVERY_MDNS_MDNS_RESPONDER_ADAPTER_IMPL_H_

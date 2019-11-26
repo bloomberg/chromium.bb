@@ -5,6 +5,7 @@
 #include "osp/public/endpoint_request_ids.h"
 
 namespace openscreen {
+namespace osp {
 
 EndpointRequestIds::EndpointRequestIds(Role role) : role_(role) {}
 EndpointRequestIds::~EndpointRequestIds() = default;
@@ -26,4 +27,5 @@ void EndpointRequestIds::Reset() {
   request_ids_by_endpoint_id_.clear();
 }
 
+}  // namespace osp
 }  // namespace openscreen

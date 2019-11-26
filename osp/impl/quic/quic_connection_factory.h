@@ -14,6 +14,7 @@
 #include "platform/base/ip_address.h"
 
 namespace openscreen {
+namespace osp {
 
 // This interface provides a way to make new QUIC connections to endpoints.  It
 // also provides a way to receive incoming QUIC connections (as a server).
@@ -41,6 +42,7 @@ class QuicConnectionFactory : public platform::UdpSocket::Client {
       QuicConnection::Delegate* connection_delegate) = 0;
 };
 
+}  // namespace osp
 }  // namespace openscreen
 
 #endif  // OSP_IMPL_QUIC_QUIC_CONNECTION_FACTORY_H_

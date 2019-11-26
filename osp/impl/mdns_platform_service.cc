@@ -9,6 +9,7 @@
 #include "util/logging.h"
 
 namespace openscreen {
+namespace osp {
 
 MdnsPlatformService::BoundInterface::BoundInterface(
     const platform::InterfaceInfo& interface_info,
@@ -41,4 +42,5 @@ bool MdnsPlatformService::BoundInterface::operator!=(
   return !(*this == other);
 }
 
+}  // namespace osp
 }  // namespace openscreen

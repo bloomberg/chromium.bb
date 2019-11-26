@@ -10,9 +10,12 @@
 #include "osp/public/service_publisher.h"
 
 namespace openscreen {
+
 namespace platform {
 class TaskRunner;
 }  // namespace platform
+
+namespace osp {
 
 class MdnsServicePublisherFactory {
  public:
@@ -22,6 +25,7 @@ class MdnsServicePublisherFactory {
       platform::TaskRunner* task_runner);
 };
 
+}  // namespace osp
 }  // namespace openscreen
 
 #endif  // OSP_PUBLIC_MDNS_SERVICE_PUBLISHER_FACTORY_H_

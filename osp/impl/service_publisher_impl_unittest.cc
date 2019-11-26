@@ -10,6 +10,7 @@
 #include "gtest/gtest.h"
 
 namespace openscreen {
+namespace osp {
 namespace {
 
 using ::testing::Expectation;
@@ -156,4 +157,5 @@ TEST_F(ServicePublisherImplTest, ObserverTransitions) {
   mock_delegate.SetState(State::kStopped);
 }
 
+}  // namespace osp
 }  // namespace openscreen

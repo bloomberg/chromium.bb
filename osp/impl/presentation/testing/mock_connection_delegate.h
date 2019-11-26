@@ -9,7 +9,7 @@
 #include "osp/public/presentation/presentation_connection.h"
 
 namespace openscreen {
-namespace presentation {
+namespace osp {
 
 class MockConnectionDelegate : public Connection::Delegate {
  public:
@@ -24,7 +24,7 @@ class MockConnectionDelegate : public Connection::Delegate {
   MOCK_METHOD1(OnBinaryMessage, void(const std::vector<uint8_t>& data));
 };
 
-}  // namespace presentation
+}  // namespace osp
 }  // namespace openscreen
 
 #endif  // OSP_IMPL_PRESENTATION_TESTING_MOCK_CONNECTION_DELEGATE_H_

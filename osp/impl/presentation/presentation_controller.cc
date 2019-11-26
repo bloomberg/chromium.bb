@@ -18,7 +18,7 @@
 #include "util/logging.h"
 
 namespace openscreen {
-namespace presentation {
+namespace osp {
 
 #define DECLARE_MSG_REQUEST_RESPONSE(base_name)                        \
   using RequestMsgType = msgs::Presentation##base_name##Request;       \
@@ -783,5 +783,5 @@ void Controller::OnAllReceiversRemoved() {
   availability_requester_->RemoveAllReceivers();
 }
 
-}  // namespace presentation
+}  // namespace osp
 }  // namespace openscreen

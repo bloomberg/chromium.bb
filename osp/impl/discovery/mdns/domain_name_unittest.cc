@@ -10,7 +10,7 @@
 #include "platform/base/error.h"
 
 namespace openscreen {
-namespace mdns {
+namespace osp {
 
 namespace {
 
@@ -190,5 +190,5 @@ TEST(DomainNameTest, StreamEscaping) {
   }
 }
 
-}  // namespace mdns
+}  // namespace osp
 }  // namespace openscreen

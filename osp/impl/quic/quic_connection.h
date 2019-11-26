@@ -11,6 +11,7 @@
 #include "platform/api/udp_socket.h"
 
 namespace openscreen {
+namespace osp {
 
 class QuicStream {
  public:
@@ -75,6 +76,7 @@ class QuicConnection : public platform::UdpSocket::Client {
   Delegate* const delegate_;
 };
 
+}  // namespace osp
 }  // namespace openscreen
 
 #endif  // OSP_IMPL_QUIC_QUIC_CONNECTION_H_

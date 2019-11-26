@@ -17,6 +17,7 @@
 using openscreen::platform::TraceCategory;
 
 namespace openscreen {
+namespace osp {
 
 UdpTransport::UdpTransport(platform::UdpSocket* socket,
                            const IPEndpoint& destination)
@@ -154,4 +155,5 @@ void QuicConnectionImpl::OnConnectionClosed(
   delegate_->OnConnectionClosed(session_->connection_id());
 }
 
+}  // namespace osp
 }  // namespace openscreen

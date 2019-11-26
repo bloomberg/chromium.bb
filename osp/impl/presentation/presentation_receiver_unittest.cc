@@ -20,7 +20,7 @@
 #include "platform/test/fake_task_runner.h"
 
 namespace openscreen {
-namespace presentation {
+namespace osp {
 
 namespace {
 
@@ -206,5 +206,5 @@ TEST_F(PresentationReceiverTest, StartPresentation) {
 // TODO(btolsch): Connect and reconnect.
 // TODO(btolsch): Terminate request and event.
 
-}  // namespace presentation
+}  // namespace osp
 }  // namespace openscreen

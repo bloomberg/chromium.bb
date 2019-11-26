@@ -21,7 +21,7 @@ using std::chrono::milliseconds;
 using std::chrono::seconds;
 
 namespace openscreen {
-namespace presentation {
+namespace osp {
 
 using ::testing::_;
 using ::testing::Invoke;
@@ -675,5 +675,5 @@ TEST_F(UrlAvailabilityRequesterTest, RemoveObserverInSteps) {
   quic_bridge_->RunTasksUntilIdle();
 }
 
-}  // namespace presentation
+}  // namespace osp
 }  // namespace openscreen
