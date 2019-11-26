@@ -218,26 +218,31 @@ class ExtensionAppShimHandler : public AppShimHostBootstrap::Client,
   // Close one specified app.
   void CloseShimForApp(Profile* profile, const std::string& app_id);
 
-  // Return the profile that should be opened for |app_id|, preferring
-  // |specified_profile_path| if is valid, otherwise prefering the most recently
-  // used of |profile_paths|.
-  base::FilePath SelectProfileForApp(
-      const std::string& app_id,
-      const base::FilePath& specified_profile_path,
-      const std::vector<base::FilePath>& profile_paths) const;
+  // This is called by OnShimProcessConnected if the app shim was launched by
+  // Chrome, and should connect to an already-existing AppShimHost.
+  void OnShimProcessConnectedForRegisterOnly(
+      std::unique_ptr<AppShimHostBootstrap> bootstrap);
 
-  // Continuation of OnShimProcessConnected, once the query for all profiles
-  // with the app installed has returned.profiles
-  void OnShimProcessConnectedAndProfilesRetrieved(
-      std::unique_ptr<AppShimHostBootstrap> bootstrap,
-      const std::vector<base::FilePath>& profiles);
+  // This is called by OnShimProcessConnected when the shim was was launched
+  // not by Chrome, and needs to launch the app (that is, open a new app
+  // window).
+  void OnShimProcessConnectedForLaunch(
+      std::unique_ptr<AppShimHostBootstrap> bootstrap);
 
-  // Continuation of OnShimProcessConnectedAndProfilesRetrieved, once the
-  // decided profile has loaded.
-  void OnShimProcessConnectedAndAppLoaded(
+  // Continuation of OnShimProcessConnectedForLaunch, once all of the profiles
+  // to use have been loaded. The list of profiles to launch is in
+  // |profile_paths_to_launch|. The first entry corresponds to the bootstrap-
+  // specified profile, and may be a blank path.
+  void OnShimProcessConnectedAndProfilesToLaunchLoaded(
       std::unique_ptr<AppShimHostBootstrap> bootstrap,
-      Profile* profile,
-      const extensions::Extension* extension);
+      const std::vector<base::FilePath>& profile_paths_to_launch);
+
+  // The final step of both paths for OnShimProcessConnected. This will connect
+  // |bootstrap| to |profile_state|'s AppShimHost, if possible.
+  void OnShimProcessConnectedAndAllLaunchesDone(
+      ProfileState* profile_state,
+      chrome::mojom::AppShimLaunchResult result,
+      std::unique_ptr<AppShimHostBootstrap> bootstrap);
 
   // Continuation of OnShimSelectedProfile, once the profile has loaded.
   void OnShimSelectedProfileAndAppLoaded(
