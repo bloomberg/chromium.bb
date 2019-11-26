@@ -34,9 +34,8 @@ namespace {
 
 const int kScanningTimeoutSeconds = 5 * 60;  // 5 minutes
 
-// TODO(crbug/1020434): Once we have an endpoint for uploads, place the URL
-// here.
-const char kSbBinaryUploadUrl[] = "";
+const char kSbBinaryUploadUrl[] =
+    "https://safebrowsing.google.com/safebrowsing/uploads/scan";
 
 policy::DMToken* GetTestingDMTokenStorage() {
   static policy::DMToken dm_token =
