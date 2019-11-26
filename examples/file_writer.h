@@ -24,7 +24,7 @@
 
 #include "absl/base/attributes.h"
 #include "absl/strings/string_view.h"
-#include "src/gav1/decoder_buffer.h"
+#include "gav1/decoder_buffer.h"
 
 namespace libgav1 {
 
