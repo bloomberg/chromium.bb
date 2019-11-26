@@ -470,11 +470,6 @@ typedef struct SPEED_FEATURES {
   // 2: used with static rd model
   int inter_mode_rd_model_estimation;
 
-  // Perform a full TX search on some modes while using the
-  // inter-mode RD model for others. Currently not in use.
-  // TODO(any): Find out when we can actually skip tx_search on some modes.
-  int inter_mode_rd_model_estimation_adaptive;
-
   // Limit the inter mode tested in the RD loop
   int reduce_inter_modes;
 
@@ -495,9 +490,6 @@ typedef struct SPEED_FEATURES {
   // 1 implies prune for extended partition
   // 2 implies prune horiz, vert and extended partition
   int prune_ref_frame_for_rect_partitions;
-
-  // flag to drop some ref frames in compound motion search
-  int drop_ref;
 
   int alt_ref_search_fp;
 

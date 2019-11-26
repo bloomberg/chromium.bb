@@ -12938,55 +12938,6 @@ static int compound_skip_by_single_states(
   return 0;
 }
 
-static INLINE int sf_check_is_drop_ref(const MODE_DEFINITION *mode,
-                                       InterModeSearchState *search_state) {
-  const MV_REFERENCE_FRAME ref_frame = mode->ref_frame[0];
-  const MV_REFERENCE_FRAME second_ref_frame = mode->ref_frame[1];
-  if (search_state->num_available_refs > 2) {
-    if ((ref_frame == search_state->dist_order_refs[0] &&
-         second_ref_frame == search_state->dist_order_refs[1]) ||
-        (ref_frame == search_state->dist_order_refs[1] &&
-         second_ref_frame == search_state->dist_order_refs[0]))
-      return 1;  // drop this pair of refs
-  }
-  return 0;
-}
-
-static INLINE void sf_drop_ref_analyze(InterModeSearchState *search_state,
-                                       const MODE_DEFINITION *mode,
-                                       int64_t distortion2) {
-  const PREDICTION_MODE this_mode = mode->mode;
-  MV_REFERENCE_FRAME ref_frame = mode->ref_frame[0];
-  const int idx = ref_frame - LAST_FRAME;
-  if (idx && distortion2 > search_state->dist_refs[idx]) {
-    search_state->dist_refs[idx] = distortion2;
-    search_state->dist_order_refs[idx] = ref_frame;
-  }
-
-  // Reach the last single ref prediction mode
-  if (ref_frame == ALTREF_FRAME && this_mode == GLOBALMV) {
-    // bubble sort dist_refs and the order index
-    for (int i = 0; i < REF_FRAMES; ++i) {
-      for (int k = i + 1; k < REF_FRAMES; ++k) {
-        if (search_state->dist_refs[i] < search_state->dist_refs[k]) {
-          int64_t tmp_dist = search_state->dist_refs[i];
-          search_state->dist_refs[i] = search_state->dist_refs[k];
-          search_state->dist_refs[k] = tmp_dist;
-
-          int tmp_idx = search_state->dist_order_refs[i];
-          search_state->dist_order_refs[i] = search_state->dist_order_refs[k];
-          search_state->dist_order_refs[k] = tmp_idx;
-        }
-      }
-    }
-    for (int i = 0; i < REF_FRAMES; ++i) {
-      if (search_state->dist_refs[i] == -1) break;
-      search_state->num_available_refs = i;
-    }
-    search_state->num_available_refs++;
-  }
-}
-
 static int compare_int64(const void *a, const void *b) {
   int64_t a64 = *((int64_t *)a);
   int64_t b64 = *((int64_t *)b);
@@ -13324,12 +13275,6 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
     x->skip = 0;
     set_ref_ptrs(cm, xd, ref_frame, second_ref_frame);
 
-    if (sf->drop_ref && comp_pred) {
-      if (sf_check_is_drop_ref(mode_def, &search_state)) {
-        continue;
-      }
-    }
-
     if (search_state.best_rd < search_state.mode_threshold[mode_enum]) continue;
 
     if (sf->prune_comp_search_by_single_result > 0 && comp_pred) {
@@ -13481,10 +13426,6 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
       }
       if (hybrid_rd < search_state.best_pred_rd[REFERENCE_MODE_SELECT])
         search_state.best_pred_rd[REFERENCE_MODE_SELECT] = hybrid_rd;
-    }
-    if (sf->drop_ref && second_ref_frame == NONE_FRAME) {
-      // Collect data from single ref mode, and analyze data.
-      sf_drop_ref_analyze(&search_state, mode_def, rd_stats.dist);
     }
 
     if (x->skip && !comp_pred) break;

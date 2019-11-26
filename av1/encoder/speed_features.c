@@ -842,7 +842,6 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
   sf->reduce_wiener_window_size = 0;
   sf->fast_wedge_sign_estimate = 0;
   sf->prune_wedge_pred_diff_based = 0;
-  sf->drop_ref = 0;
   sf->skip_intra_in_interframe = 1;
   sf->txb_split_cap = 1;
   sf->adaptive_txb_search_level = 0;
