@@ -225,7 +225,7 @@ TEST_F(DnsSdQuerierImplTest, TestCreateDeletePtrRecord) {
   EXPECT_CALL(*querier.service(),
               StopQuery(_, DnsType::kANY, DnsClass::kANY, _))
       .Times(1);
-  querier.OnRecordChanged(ptr2, RecordChangedEvent::kDeleted);
+  querier.OnRecordChanged(ptr2, RecordChangedEvent::kExpired);
 }
 
 TEST_F(DnsSdQuerierImplTest, CallbackCalledWhenPtrDeleted) {
@@ -246,7 +246,7 @@ TEST_F(DnsSdQuerierImplTest, CallbackCalledWhenPtrDeleted) {
   EXPECT_CALL(*querier.service(),
               StopQuery(_, DnsType::kANY, DnsClass::kANY, _))
       .Times(1);
-  querier.OnRecordChanged(ptr, RecordChangedEvent::kDeleted);
+  querier.OnRecordChanged(ptr, RecordChangedEvent::kExpired);
   EXPECT_FALSE(querier.GetDnsData(instance, service, domain).has_value());
 }
 
@@ -289,7 +289,7 @@ TEST_F(DnsSdQuerierImplTest, BothNewAndOldValidRecords) {
   querier.OnRecordChanged(aaaa_record, RecordChangedEvent::kUpdated);
 
   EXPECT_CALL(callback, OnInstanceUpdated(_)).Times(1);
-  querier.OnRecordChanged(a_record, RecordChangedEvent::kDeleted);
+  querier.OnRecordChanged(a_record, RecordChangedEvent::kExpired);
 }
 
 TEST_F(DnsSdQuerierImplTest, OnlyNewRecordValid) {
@@ -318,7 +318,7 @@ TEST_F(DnsSdQuerierImplTest, OnlyOldRecordValid) {
                       RecordType::kUnique, std::chrono::seconds(0), a_rdata);
 
   EXPECT_CALL(callback, OnInstanceDeleted(_)).Times(1);
-  querier.OnRecordChanged(a_record, RecordChangedEvent::kDeleted);
+  querier.OnRecordChanged(a_record, RecordChangedEvent::kExpired);
 }
 
 }  // namespace discovery

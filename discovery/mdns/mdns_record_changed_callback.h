@@ -13,7 +13,7 @@ class MdnsRecord;
 enum class RecordChangedEvent {
   kCreated,
   kUpdated,
-  kDeleted,
+  kExpired,
 };
 
 class MdnsRecordChangedCallback {

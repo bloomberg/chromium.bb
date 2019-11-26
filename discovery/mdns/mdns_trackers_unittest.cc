@@ -83,34 +83,8 @@ class MdnsTrackerTest : public testing::Test {
                   std::chrono::seconds(120),
                   ARecordRdata(IPAddress{172, 0, 0, 1})) {}
 
-  template <class TrackerType, class TrackedType>
-  void TrackerStartStop(TrackerType tracker, TrackedType tracked_data) {
-    EXPECT_EQ(tracker->IsStarted(), false);
-    EXPECT_EQ(tracker->Stop(), Error(Error::Code::kOperationInvalid));
-    EXPECT_EQ(tracker->IsStarted(), false);
-    EXPECT_EQ(tracker->Start(tracked_data), Error(Error::Code::kNone));
-    EXPECT_EQ(tracker->IsStarted(), true);
-    EXPECT_EQ(tracker->Start(tracked_data),
-              Error(Error::Code::kOperationInvalid));
-    EXPECT_EQ(tracker->IsStarted(), true);
-    EXPECT_EQ(tracker->Stop(), Error(Error::Code::kNone));
-    EXPECT_EQ(tracker->IsStarted(), false);
-  }
-
-  template <class TrackerType, class TrackedType>
-  void TrackerNoQueryAfterStop(TrackerType tracker, TrackedType tracked_data) {
-    EXPECT_EQ(tracker->Start(tracked_data), Error(Error::Code::kNone));
-    EXPECT_EQ(tracker->Stop(), Error(Error::Code::kNone));
-    EXPECT_CALL(socket_, SendMessage(_, _, _)).Times(0);
-    // Advance fake clock by a long time interval to make sure if there's a
-    // scheduled task, it will run.
-    clock_.Advance(std::chrono::hours(1));
-  }
-
-  template <class TrackerType, class TrackedType>
-  void TrackerNoQueryAfterDestruction(TrackerType tracker,
-                                      TrackedType tracked_data) {
-    tracker->Start(tracked_data);
+  template <class TrackerType>
+  void TrackerNoQueryAfterDestruction(TrackerType tracker) {
     tracker.reset();
     EXPECT_CALL(socket_, SendMessage(_, _, _)).Times(0);
     // Advance fake clock by a long time interval to make sure if there's a
@@ -118,16 +92,17 @@ class MdnsTrackerTest : public testing::Test {
     clock_.Advance(std::chrono::hours(1));
   }
 
-  std::unique_ptr<MdnsRecordTracker> CreateRecordTracker() {
+  std::unique_ptr<MdnsRecordTracker> CreateRecordTracker(
+      const MdnsRecord& record) {
     return std::make_unique<MdnsRecordTracker>(
-        &sender_, &task_runner_, &FakeClock::now, &random_,
-        [this](const MdnsRecord& record) { update_called_ = true; },
+        record, &sender_, &task_runner_, &FakeClock::now, &random_,
         [this](const MdnsRecord& record) { expiration_called_ = true; });
   }
 
-  std::unique_ptr<MdnsQuestionTracker> CreateQuestionTracker() {
-    return std::make_unique<MdnsQuestionTracker>(&sender_, &task_runner_,
-                                                 &FakeClock::now, &random_);
+  std::unique_ptr<MdnsQuestionTracker> CreateQuestionTracker(
+      const MdnsQuestion& question) {
+    return std::make_unique<MdnsQuestionTracker>(
+        question, &sender_, &task_runner_, &FakeClock::now, &random_);
   }
 
  protected:
@@ -172,7 +147,6 @@ class MdnsTrackerTest : public testing::Test {
   MdnsQuestion a_question_;
   MdnsRecord a_record_;
 
-  bool update_called_ = false;
   bool expiration_called_ = false;
 };
 
@@ -184,14 +158,13 @@ class MdnsTrackerTest : public testing::Test {
 // sure that task gets executed.
 // https://tools.ietf.org/html/rfc6762#section-5.2
 
-TEST_F(MdnsTrackerTest, RecordTrackerStartStop) {
-  std::unique_ptr<MdnsRecordTracker> tracker = CreateRecordTracker();
-  TrackerStartStop(std::move(tracker), a_record_);
+TEST_F(MdnsTrackerTest, RecordTrackerRecordAccessor) {
+  std::unique_ptr<MdnsRecordTracker> tracker = CreateRecordTracker(a_record_);
+  EXPECT_EQ(tracker->record(), a_record_);
 }
 
 TEST_F(MdnsTrackerTest, RecordTrackerQueryAfterDelay) {
-  std::unique_ptr<MdnsRecordTracker> tracker = CreateRecordTracker();
-  tracker->Start(a_record_);
+  std::unique_ptr<MdnsRecordTracker> tracker = CreateRecordTracker(a_record_);
   // Only expect 4 queries being sent, when record reaches it's TTL it's
   // considered expired and another query is not sent
   constexpr double kTtlFractions[] = {0.83, 0.88, 0.93, 0.98, 1.00};
@@ -208,8 +181,7 @@ TEST_F(MdnsTrackerTest, RecordTrackerQueryAfterDelay) {
 }
 
 TEST_F(MdnsTrackerTest, RecordTrackerSendsMessage) {
-  std::unique_ptr<MdnsRecordTracker> tracker = CreateRecordTracker();
-  tracker->Start(a_record_);
+  std::unique_ptr<MdnsRecordTracker> tracker = CreateRecordTracker(a_record_);
 
   EXPECT_CALL(socket_, SendMessage(_, _, _))
       .WillOnce(WithArgs<0, 1>(VerifyMessageBytesWithoutId(
@@ -219,19 +191,13 @@ TEST_F(MdnsTrackerTest, RecordTrackerSendsMessage) {
       std::chrono::duration_cast<Clock::duration>(a_record_.ttl() * 0.83));
 }
 
-TEST_F(MdnsTrackerTest, RecordTrackerNoQueryAfterStop) {
-  std::unique_ptr<MdnsRecordTracker> tracker = CreateRecordTracker();
-  TrackerNoQueryAfterStop(std::move(tracker), a_record_);
-}
-
 TEST_F(MdnsTrackerTest, RecordTrackerNoQueryAfterDestruction) {
-  std::unique_ptr<MdnsRecordTracker> tracker = CreateRecordTracker();
-  TrackerNoQueryAfterDestruction(std::move(tracker), a_record_);
+  std::unique_ptr<MdnsRecordTracker> tracker = CreateRecordTracker(a_record_);
+  TrackerNoQueryAfterDestruction(std::move(tracker));
 }
 
 TEST_F(MdnsTrackerTest, RecordTrackerNoQueryAfterLateTask) {
-  std::unique_ptr<MdnsRecordTracker> tracker = CreateRecordTracker();
-  tracker->Start(a_record_);
+  std::unique_ptr<MdnsRecordTracker> tracker = CreateRecordTracker(a_record_);
   // If task runner was too busy and callback happened too late, there should be
   // no query and instead the record will expire.
   // Check lower bound for task being late (TTL) and an arbitrarily long time
@@ -241,108 +207,94 @@ TEST_F(MdnsTrackerTest, RecordTrackerNoQueryAfterLateTask) {
   clock_.Advance(std::chrono::hours(1));
 }
 
-TEST_F(MdnsTrackerTest, RecordTrackerUpdateFailsWhenNotStarted) {
-  std::unique_ptr<MdnsRecordTracker> tracker = CreateRecordTracker();
-  EXPECT_EQ(tracker->Update(a_record_), Error(Error::Code::kOperationInvalid));
-}
-
-TEST_F(MdnsTrackerTest, RecordTrackerUpdateFailsForMismatchedRecord) {
-  std::unique_ptr<MdnsRecordTracker> tracker = CreateRecordTracker();
-  tracker->Start(a_record_);
-  MdnsRecord updated_record = MdnsRecord(
-      DomainName{"alpha"}, a_record_.dns_type(), a_record_.dns_class(),
-      a_record_.record_type(), a_record_.ttl(), a_record_.rdata());
-  EXPECT_EQ(tracker->Update(updated_record),
-            Error(Error::Code::kParameterInvalid));
-
-  updated_record =
-      MdnsRecord(a_record_.name(), DnsType::kPTR, a_record_.dns_class(),
-                 a_record_.record_type(), a_record_.ttl(),
-                 PtrRecordRdata(DomainName{"bravo"}));
-  EXPECT_EQ(tracker->Update(updated_record),
-            Error(Error::Code::kParameterInvalid));
-
-  updated_record = MdnsRecord(a_record_.name(), a_record_.dns_type(),
-                              static_cast<DnsClass>(2), a_record_.record_type(),
-                              a_record_.ttl(), a_record_.rdata());
-  EXPECT_EQ(tracker->Update(updated_record),
-            Error(Error::Code::kParameterInvalid));
-}
-
-TEST_F(MdnsTrackerTest, RecordTrackerCallbackOnRdataUpdate) {
-  MdnsRecord updated_record(a_record_.name(), a_record_.dns_type(),
-                            a_record_.dns_class(), a_record_.record_type(),
-                            a_record_.ttl(),
-                            ARecordRdata(IPAddress{192, 168, 0, 1}));
-
-  update_called_ = false;
-  std::unique_ptr<MdnsRecordTracker> tracker = CreateRecordTracker();
-  tracker->Start(a_record_);
-  EXPECT_EQ(tracker->Update(updated_record), Error::None());
-  EXPECT_TRUE(update_called_);
-}
-
-TEST_F(MdnsTrackerTest, RecordTrackerNoCallbackOnTtlUpdate) {
-  update_called_ = false;
-  std::unique_ptr<MdnsRecordTracker> tracker = CreateRecordTracker();
-  tracker->Start(a_record_);
-  EXPECT_EQ(tracker->Update(a_record_), Error::None());
-  EXPECT_FALSE(update_called_);
-}
-
 TEST_F(MdnsTrackerTest, RecordTrackerUpdateResetsTtl) {
   expiration_called_ = false;
-  std::unique_ptr<MdnsRecordTracker> tracker = CreateRecordTracker();
-  tracker->Start(a_record_);
+  std::unique_ptr<MdnsRecordTracker> tracker = CreateRecordTracker(a_record_);
   // Advance time by 60% of record's TTL
   Clock::duration advance_time =
       std::chrono::duration_cast<Clock::duration>(a_record_.ttl() * 0.6);
   clock_.Advance(advance_time);
   // Now update the record, this must reset expiration time
-  EXPECT_EQ(tracker->Update(a_record_), Error::None());
+  EXPECT_EQ(tracker->Update(a_record_).value(),
+            MdnsRecordTracker::UpdateType::kTTLOnly);
   // Advance time by 60% of record's TTL again
   clock_.Advance(advance_time);
   // Check that expiration callback was not called
   EXPECT_FALSE(expiration_called_);
 }
 
+TEST_F(MdnsTrackerTest, RecordTrackerForceExpiration) {
+  expiration_called_ = false;
+  std::unique_ptr<MdnsRecordTracker> tracker = CreateRecordTracker(a_record_);
+  tracker->ExpireSoon();
+  // Expire schedules expiration after 1 second.
+  clock_.Advance(std::chrono::seconds(1));
+  EXPECT_TRUE(expiration_called_);
+}
+
 TEST_F(MdnsTrackerTest, RecordTrackerExpirationCallback) {
   expiration_called_ = false;
-  std::unique_ptr<MdnsRecordTracker> tracker = CreateRecordTracker();
-  tracker->Start(a_record_);
+  std::unique_ptr<MdnsRecordTracker> tracker = CreateRecordTracker(a_record_);
   clock_.Advance(a_record_.ttl());
   EXPECT_TRUE(expiration_called_);
 }
 
 TEST_F(MdnsTrackerTest, RecordTrackerExpirationCallbackAfterGoodbye) {
-  update_called_ = false;
   expiration_called_ = false;
-  std::unique_ptr<MdnsRecordTracker> tracker = CreateRecordTracker();
-  tracker->Start(a_record_);
+  std::unique_ptr<MdnsRecordTracker> tracker = CreateRecordTracker(a_record_);
   MdnsRecord goodbye_record(a_record_.name(), a_record_.dns_type(),
                             a_record_.dns_class(), a_record_.record_type(),
                             std::chrono::seconds{0}, a_record_.rdata());
 
-  EXPECT_EQ(tracker->Update(goodbye_record), Error::None());
   // After a goodbye record is received, expiration is schedule in a second.
-  clock_.Advance(std::chrono::seconds{1});
-  EXPECT_FALSE(update_called_);
+  EXPECT_EQ(tracker->Update(goodbye_record).value(),
+            MdnsRecordTracker::UpdateType::kGoodbye);
+
+  // No refresh queries are sent after goodbye record is received.
+  EXPECT_CALL(socket_, SendMessage(_, _, _)).Times(0);
+
+  // Advance clock to just before the expiration time of 1 second.
+  clock_.Advance(std::chrono::microseconds{999999});
+  EXPECT_FALSE(expiration_called_);
+  // Advance clock to exactly the expiration time.
+  clock_.Advance(std::chrono::microseconds{1});
   EXPECT_TRUE(expiration_called_);
 }
 
-TEST_F(MdnsTrackerTest, RecordTrackerNoExpirationCallbackAfterStop) {
-  expiration_called_ = false;
-  std::unique_ptr<MdnsRecordTracker> tracker = CreateRecordTracker();
-  tracker->Start(a_record_);
-  tracker->Stop();
-  clock_.Advance(a_record_.ttl());
-  EXPECT_FALSE(expiration_called_);
+TEST_F(MdnsTrackerTest, RecordTrackerInvalidUpdate) {
+  std::unique_ptr<MdnsRecordTracker> tracker = CreateRecordTracker(a_record_);
+
+  MdnsRecord invalid_name(DomainName{"invalid"}, a_record_.dns_type(),
+                          a_record_.dns_class(), a_record_.record_type(),
+                          a_record_.ttl(), a_record_.rdata());
+  EXPECT_EQ(tracker->Update(invalid_name).error(),
+            Error::Code::kParameterInvalid);
+
+  MdnsRecord invalid_type(a_record_.name(), DnsType::kPTR,
+                          a_record_.dns_class(), a_record_.record_type(),
+                          a_record_.ttl(),
+                          PtrRecordRdata{DomainName{"invalid"}});
+  EXPECT_EQ(tracker->Update(invalid_type).error(),
+            Error::Code::kParameterInvalid);
+
+  MdnsRecord invalid_class(a_record_.name(), a_record_.dns_type(),
+                           DnsClass::kANY, a_record_.record_type(),
+                           a_record_.ttl(), a_record_.rdata());
+  EXPECT_EQ(tracker->Update(invalid_class).error(),
+            Error::Code::kParameterInvalid);
+
+  // RDATA must match the old RDATA for goodbye records
+  MdnsRecord invalid_rdata(a_record_.name(), a_record_.dns_type(),
+                           a_record_.dns_class(), a_record_.record_type(),
+                           std::chrono::seconds{0},
+                           ARecordRdata(IPAddress{172, 0, 0, 2}));
+  EXPECT_EQ(tracker->Update(invalid_rdata).error(),
+            Error::Code::kParameterInvalid);
 }
 
 TEST_F(MdnsTrackerTest, RecordTrackerNoExpirationCallbackAfterDestruction) {
   expiration_called_ = false;
-  std::unique_ptr<MdnsRecordTracker> tracker = CreateRecordTracker();
-  tracker->Start(a_record_);
+  std::unique_ptr<MdnsRecordTracker> tracker = CreateRecordTracker(a_record_);
   tracker.reset();
   clock_.Advance(a_record_.ttl());
   EXPECT_FALSE(expiration_called_);
@@ -354,14 +306,15 @@ TEST_F(MdnsTrackerTest, RecordTrackerNoExpirationCallbackAfterDestruction) {
 // next query up until it's capped at 1 hour.
 // https://tools.ietf.org/html/rfc6762#section-5.2
 
-TEST_F(MdnsTrackerTest, QuestionTrackerStartStop) {
-  std::unique_ptr<MdnsQuestionTracker> tracker = CreateQuestionTracker();
-  TrackerStartStop(std::move(tracker), a_question_);
+TEST_F(MdnsTrackerTest, QuestionTrackerQuestionAccessor) {
+  std::unique_ptr<MdnsQuestionTracker> tracker =
+      CreateQuestionTracker(a_question_);
+  EXPECT_EQ(tracker->question(), a_question_);
 }
 
 TEST_F(MdnsTrackerTest, QuestionTrackerQueryAfterDelay) {
-  std::unique_ptr<MdnsQuestionTracker> tracker = CreateQuestionTracker();
-  tracker->Start(a_question_);
+  std::unique_ptr<MdnsQuestionTracker> tracker =
+      CreateQuestionTracker(a_question_);
 
   EXPECT_CALL(socket_, SendMessage(_, _, _)).Times(1);
   clock_.Advance(std::chrono::milliseconds(120));
@@ -375,8 +328,8 @@ TEST_F(MdnsTrackerTest, QuestionTrackerQueryAfterDelay) {
 }
 
 TEST_F(MdnsTrackerTest, QuestionTrackerSendsMessage) {
-  std::unique_ptr<MdnsQuestionTracker> tracker = CreateQuestionTracker();
-  tracker->Start(a_question_);
+  std::unique_ptr<MdnsQuestionTracker> tracker =
+      CreateQuestionTracker(a_question_);
 
   EXPECT_CALL(socket_, SendMessage(_, _, _))
       .WillOnce(WithArgs<0, 1>(VerifyMessageBytesWithoutId(
@@ -385,101 +338,10 @@ TEST_F(MdnsTrackerTest, QuestionTrackerSendsMessage) {
   clock_.Advance(std::chrono::milliseconds(120));
 }
 
-TEST_F(MdnsTrackerTest, QuestionTrackerNoQueryAfterStop) {
-  std::unique_ptr<MdnsQuestionTracker> tracker = CreateQuestionTracker();
-  TrackerNoQueryAfterStop(std::move(tracker), a_question_);
-}
-
 TEST_F(MdnsTrackerTest, QuestionTrackerNoQueryAfterDestruction) {
-  std::unique_ptr<MdnsQuestionTracker> tracker = CreateQuestionTracker();
-  TrackerNoQueryAfterDestruction(std::move(tracker), a_question_);
-}
-
-TEST_F(MdnsTrackerTest, QuestionTrackerCallbackOnRecordReceived) {
-  std::unique_ptr<MdnsQuestionTracker> tracker = CreateQuestionTracker();
-  MockRecordChangedCallback callback1;
-  MockRecordChangedCallback callback2;
-
-  tracker->Start(a_question_);
-  tracker->AddCallback(&callback1);
-  tracker->AddCallback(&callback2);
-  // Advance fake clock for callback addition on task runner to happen
-  clock_.Advance(std::chrono::milliseconds(1));
-
-  // All added callbacks must be called
-  EXPECT_CALL(callback1, OnRecordChanged(_, _)).Times(1);
-  EXPECT_CALL(callback2, OnRecordChanged(_, _)).Times(1);
-  tracker->OnRecordReceived(a_record_);
-}
-
-TEST_F(MdnsTrackerTest, QuestionTrackerNoCallbackAfterRemoval) {
-  std::unique_ptr<MdnsQuestionTracker> tracker = CreateQuestionTracker();
-  MockRecordChangedCallback callback1;
-  MockRecordChangedCallback callback2;
-
-  tracker->Start(a_question_);
-  tracker->AddCallback(&callback1);
-  tracker->AddCallback(&callback2);
-  // Advance fake clock for callback addition on task runner to happen
-  clock_.Advance(std::chrono::milliseconds(1));
-  tracker->RemoveCallback(&callback2);
-  // Advance fake clock for callback removal on task runner to happen
-  clock_.Advance(std::chrono::milliseconds(1));
-
-  // Removed callback must not be called
-  EXPECT_CALL(callback1, OnRecordChanged(_, _)).Times(1);
-  EXPECT_CALL(callback2, OnRecordChanged(_, _)).Times(0);
-  tracker->OnRecordReceived(a_record_);
-}
-
-TEST_F(MdnsTrackerTest, QuestionTrackerCallbackOnCreateUpdateGoodbye) {
-  std::unique_ptr<MdnsQuestionTracker> tracker = CreateQuestionTracker();
-  MockRecordChangedCallback callback;
-
-  tracker->Start(a_question_);
-  tracker->AddCallback(&callback);
-  // Advance fake clock for callback addition on task runner to happen
-  clock_.Advance(std::chrono::milliseconds(1));
-
-  EXPECT_CALL(callback, OnRecordChanged(_, RecordChangedEvent::kCreated))
-      .Times(1);
-  tracker->OnRecordReceived(a_record_);
-
-  MdnsRecord updated_record(a_record_.name(), a_record_.dns_type(),
-                            a_record_.dns_class(), a_record_.record_type(),
-                            a_record_.ttl(),
-                            ARecordRdata(IPAddress{192, 168, 0, 1}));
-
-  EXPECT_CALL(callback, OnRecordChanged(_, RecordChangedEvent::kUpdated))
-      .Times(1);
-  tracker->OnRecordReceived(updated_record);
-
-  MdnsRecord goodbye_record(updated_record.name(), updated_record.dns_type(),
-                            updated_record.dns_class(),
-                            updated_record.record_type(),
-                            std::chrono::seconds{0}, updated_record.rdata());
-
-  EXPECT_CALL(callback, OnRecordChanged(_, RecordChangedEvent::kDeleted))
-      .Times(1);
-  tracker->OnRecordReceived(goodbye_record);
-  // Expiration is scheduled on the task runner to happen 1 second later as per
-  // RFC 6762. Advance the fake clock to receive the callback.
-  clock_.Advance(std::chrono::seconds(10));
-}
-
-TEST_F(MdnsTrackerTest, QuestionTrackerNoCallbackOnNoUpdate) {
-  std::unique_ptr<MdnsQuestionTracker> tracker = CreateQuestionTracker();
-  MockRecordChangedCallback callback;
-
-  tracker->Start(a_question_);
-  tracker->AddCallback(&callback);
-  // Advance fake clock for callback addition on task runner to happen
-  clock_.Advance(std::chrono::milliseconds(1));
-
-  // Callback must not be called again if the record has not changed
-  EXPECT_CALL(callback, OnRecordChanged(_, _)).Times(1);
-  tracker->OnRecordReceived(a_record_);
-  tracker->OnRecordReceived(a_record_);
+  std::unique_ptr<MdnsQuestionTracker> tracker =
+      CreateQuestionTracker(a_question_);
+  TrackerNoQueryAfterDestruction(std::move(tracker));
 }
 
 }  // namespace discovery

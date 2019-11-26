@@ -52,7 +52,7 @@ class DnsDataTesting : public DnsData {
       MdnsRecord record(DomainName{"0"}, type, DnsClass::kIN,
                         RecordType::kUnique, std::chrono::seconds(1),
                         old_val.value());
-      ApplyDataRecordChange(record, RecordChangedEvent::kDeleted);
+      ApplyDataRecordChange(record, RecordChangedEvent::kExpired);
       return;
     }
 
@@ -205,7 +205,7 @@ TEST(DnsSdDnsDataTests, TestApplyRecordChanges) {
 
   record = CreateFullyPopulatedRecord();
   EXPECT_TRUE(
-      data.ApplyDataRecordChange(record, RecordChangedEvent::kDeleted).ok());
+      data.ApplyDataRecordChange(record, RecordChangedEvent::kExpired).ok());
   ASSERT_FALSE(data.srv().has_value());
 
   record = CreateFullyPopulatedRecord(1234);

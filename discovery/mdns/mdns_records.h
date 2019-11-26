@@ -46,10 +46,10 @@ class DomainName {
 
   DomainName& operator=(const DomainName& rhs);
   DomainName& operator=(DomainName&& rhs);
-  bool operator>(const DomainName& rhs) const;
   bool operator<(const DomainName& rhs) const;
-  bool operator>=(const DomainName& rhs) const;
   bool operator<=(const DomainName& rhs) const;
+  bool operator>(const DomainName& rhs) const;
+  bool operator>=(const DomainName& rhs) const;
   bool operator==(const DomainName& rhs) const;
   bool operator!=(const DomainName& rhs) const;
 

@@ -5,6 +5,7 @@
 #include "discovery/mdns/mdns_records.h"
 
 #include <atomic>
+#include <cctype>
 
 #include "absl/strings/ascii.h"
 #include "absl/strings/match.h"
@@ -12,6 +13,27 @@
 
 namespace openscreen {
 namespace discovery {
+
+namespace {
+
+inline int CompareIgnoreCase(const std::string& x, const std::string& y) {
+  size_t i = 0;
+  for (; i < x.size(); i++) {
+    if (i == y.size()) {
+      return 1;
+    }
+    const char& x_char = std::tolower(x[i]);
+    const char& y_char = std::tolower(y[i]);
+    if (x_char < y_char) {
+      return -1;
+    } else if (y_char < x_char) {
+      return 1;
+    }
+  }
+  return i == y.size() ? 0 : -1;
+}
+
+}  // namespace
 
 bool IsValidDomainLabel(absl::string_view label) {
   const size_t label_size = label.size();
@@ -41,49 +63,45 @@ std::string DomainName::ToString() const {
   return absl::StrJoin(labels_, ".");
 }
 
-bool DomainName::operator>(const DomainName& rhs) const {
-  if (labels_.size() != rhs.labels_.size()) {
-    return labels_.size() > rhs.labels_.size();
-  }
-
-  auto this_it = labels_.begin();
-  auto other_it = rhs.labels_.begin();
-  while (this_it != labels_.end()) {
-    const std::string& this_label = *this_it;
-    const std::string& other_label = *other_it;
-
-    if (this_label.size() != other_label.size()) {
-      return this_label.size() > other_label.size();
-    }
-
-    for (size_t i = 0; i < this_label.size(); i++) {
-      if ((this_label[i] != other_label[i]) &&
-          (std::tolower(this_label[i] != std::tolower(other_label[i])))) {
-        return this_label[i] > other_label[i];
+bool DomainName::operator<(const DomainName& rhs) const {
+  size_t i = 0;
+  for (; i < labels_.size(); i++) {
+    if (i == rhs.labels_.size()) {
+      return false;
+    } else {
+      int result = CompareIgnoreCase(labels_[i], rhs.labels_[i]);
+      if (result < 0) {
+        return true;
+      } else if (result > 0) {
+        return false;
       }
     }
-
-    this_it++;
-    other_it++;
   }
-
-  return false;
+  return i < rhs.labels_.size();
 }
 
-bool DomainName::operator<(const DomainName& rhs) const {
-  return rhs > *this;
+bool DomainName::operator<=(const DomainName& rhs) const {
+  return (*this < rhs) || (*this == rhs);
+}
+
+bool DomainName::operator>(const DomainName& rhs) const {
+  return !(*this < rhs) && !(*this == rhs);
 }
 
 bool DomainName::operator>=(const DomainName& rhs) const {
   return !(*this < rhs);
 }
 
-bool DomainName::operator<=(const DomainName& rhs) const {
-  return !(*this > rhs);
-}
-
 bool DomainName::operator==(const DomainName& rhs) const {
-  return (*this <= rhs) && (*this >= rhs);
+  if (labels_.size() != rhs.labels_.size()) {
+    return false;
+  }
+  for (size_t i = 0; i < labels_.size(); i++) {
+    if (CompareIgnoreCase(labels_[i], rhs.labels_[i]) != 0) {
+      return false;
+    }
+  }
+  return true;
 }
 
 bool DomainName::operator!=(const DomainName& rhs) const {

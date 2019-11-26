@@ -94,7 +94,7 @@ Error QuerierImpl::HandlePtrRecordChange(const MdnsRecord& record,
     case RecordChangedEvent::kCreated:
       StartDnsQuery(query);
       return Error::None();
-    case RecordChangedEvent::kDeleted:
+    case RecordChangedEvent::kExpired:
       StopDnsQuery(query);
       EraseInstancesOf(ServiceKey(key));
       return Error::None();

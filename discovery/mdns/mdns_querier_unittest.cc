@@ -79,26 +79,32 @@ class MdnsQuerierTest : public testing::Test {
         record0_created_(DomainName{"testing", "local"},
                          DnsType::kA,
                          DnsClass::kIN,
-                         RecordType::kShared,
+                         RecordType::kUnique,
                          std::chrono::seconds(120),
                          ARecordRdata(IPAddress{172, 0, 0, 1})),
         record0_updated_(DomainName{"testing", "local"},
                          DnsType::kA,
                          DnsClass::kIN,
-                         RecordType::kShared,
+                         RecordType::kUnique,
                          std::chrono::seconds(120),
                          ARecordRdata(IPAddress{172, 0, 0, 2})),
         record0_deleted_(DomainName{"testing", "local"},
                          DnsType::kA,
                          DnsClass::kIN,
-                         RecordType::kShared,
-                         std::chrono::seconds(0),  // a good bye record
+                         RecordType::kUnique,
+                         std::chrono::seconds(0),  // a goodbye record
                          ARecordRdata(IPAddress{172, 0, 0, 2})),
         record1_created_(DomainName{"poking", "local"},
                          DnsType::kA,
                          DnsClass::kIN,
                          RecordType::kShared,
                          std::chrono::seconds(120),
+                         ARecordRdata(IPAddress{192, 168, 0, 1})),
+        record1_deleted_(DomainName{"poking", "local"},
+                         DnsType::kA,
+                         DnsClass::kIN,
+                         RecordType::kShared,
+                         std::chrono::seconds(0),  // a goodbye record
                          ARecordRdata(IPAddress{192, 168, 0, 1})) {
     receiver_.Start();
   }
@@ -121,7 +127,7 @@ class MdnsQuerierTest : public testing::Test {
 
   FakeClock clock_;
   FakeTaskRunner task_runner_;
-  MockUdpSocket socket_;
+  testing::NiceMock<MockUdpSocket> socket_;
   MdnsSender sender_;
   MdnsReceiver receiver_;
   MdnsRandom random_;
@@ -130,15 +136,13 @@ class MdnsQuerierTest : public testing::Test {
   MdnsRecord record0_updated_;
   MdnsRecord record0_deleted_;
   MdnsRecord record1_created_;
-  MdnsRecord record1_updated_;
   MdnsRecord record1_deleted_;
 };
 
-TEST_F(MdnsQuerierTest, RecordCreatedUpdatedDeleted) {
+TEST_F(MdnsQuerierTest, UniqueRecordCreatedUpdatedDeleted) {
   std::unique_ptr<MdnsQuerier> querier = CreateQuerier();
   MockRecordChangedCallback callback;
 
-  EXPECT_CALL(socket_, SendMessage(_, _, _));
   querier->StartQuery(DomainName{"testing", "local"}, DnsType::kA,
                       DnsClass::kIN, &callback);
 
@@ -146,15 +150,59 @@ TEST_F(MdnsQuerierTest, RecordCreatedUpdatedDeleted) {
       .WillOnce(WithArgs<0>(PartialCompareRecords(record0_created_)));
   EXPECT_CALL(callback, OnRecordChanged(_, RecordChangedEvent::kUpdated))
       .WillOnce(WithArgs<0>(PartialCompareRecords(record0_updated_)));
-  EXPECT_CALL(callback, OnRecordChanged(_, RecordChangedEvent::kDeleted))
+  EXPECT_CALL(callback, OnRecordChanged(_, RecordChangedEvent::kExpired))
       .WillOnce(WithArgs<0>(PartialCompareRecords(record0_deleted_)));
 
+  receiver_.OnRead(&socket_, CreatePacketWithRecord(record0_created_));
+  // Receiving the same record should only reset TTL, no callback
   receiver_.OnRead(&socket_, CreatePacketWithRecord(record0_created_));
   receiver_.OnRead(&socket_, CreatePacketWithRecord(record0_updated_));
   receiver_.OnRead(&socket_, CreatePacketWithRecord(record0_deleted_));
 
   // Advance clock for expiration to happen, since it's delayed by 1 second as
-  // per RFC 6762
+  // per RFC 6762.
+  clock_.Advance(std::chrono::seconds(1));
+}
+
+TEST_F(MdnsQuerierTest, WildcardQuery) {
+  std::unique_ptr<MdnsQuerier> querier = CreateQuerier();
+  MockRecordChangedCallback callback;
+
+  querier->StartQuery(DomainName{"poking", "local"}, DnsType::kANY,
+                      DnsClass::kANY, &callback);
+
+  EXPECT_CALL(callback, OnRecordChanged(_, RecordChangedEvent::kCreated))
+      .WillOnce(WithArgs<0>(PartialCompareRecords(record1_created_)));
+  EXPECT_CALL(callback, OnRecordChanged(_, RecordChangedEvent::kExpired))
+      .WillOnce(WithArgs<0>(PartialCompareRecords(record1_deleted_)));
+
+  receiver_.OnRead(&socket_, CreatePacketWithRecord(record1_created_));
+  receiver_.OnRead(&socket_, CreatePacketWithRecord(record1_deleted_));
+
+  // Advance clock for expiration to happen, since it's delayed by 1 second as
+  // per RFC 6762.
+  clock_.Advance(std::chrono::seconds(1));
+}
+
+TEST_F(MdnsQuerierTest, SharedRecordCreatedDeleted) {
+  std::unique_ptr<MdnsQuerier> querier = CreateQuerier();
+  MockRecordChangedCallback callback;
+
+  querier->StartQuery(DomainName{"poking", "local"}, DnsType::kA, DnsClass::kIN,
+                      &callback);
+
+  EXPECT_CALL(callback, OnRecordChanged(_, RecordChangedEvent::kCreated))
+      .WillOnce(WithArgs<0>(PartialCompareRecords(record1_created_)));
+  EXPECT_CALL(callback, OnRecordChanged(_, RecordChangedEvent::kExpired))
+      .WillOnce(WithArgs<0>(PartialCompareRecords(record1_deleted_)));
+
+  receiver_.OnRead(&socket_, CreatePacketWithRecord(record1_created_));
+  // Receiving the same record should only reset TTL, no callback
+  receiver_.OnRead(&socket_, CreatePacketWithRecord(record1_created_));
+  receiver_.OnRead(&socket_, CreatePacketWithRecord(record1_deleted_));
+
+  // Advance clock for expiration to happen, since it's delayed by 1 second as
+  // per RFC 6762.
   clock_.Advance(std::chrono::seconds(1));
 }
 
@@ -170,6 +218,34 @@ TEST_F(MdnsQuerierTest, StartQueryTwice) {
   EXPECT_CALL(callback, OnRecordChanged(_, _)).Times(1);
 
   receiver_.OnRead(&socket_, CreatePacketWithRecord(record0_created_));
+}
+
+TEST_F(MdnsQuerierTest, MultipleCallbacks) {
+  std::unique_ptr<MdnsQuerier> querier = CreateQuerier();
+  MockRecordChangedCallback callback_1;
+  MockRecordChangedCallback callback_2;
+
+  querier->StartQuery(DomainName{"testing", "local"}, DnsType::kA,
+                      DnsClass::kIN, &callback_1);
+  querier->StartQuery(DomainName{"testing", "local"}, DnsType::kA,
+                      DnsClass::kIN, &callback_2);
+
+  EXPECT_CALL(callback_1, OnRecordChanged(_, _)).Times(1);
+  EXPECT_CALL(callback_2, OnRecordChanged(_, _)).Times(2);
+
+  // Both callbacks will be invoked.
+  receiver_.OnRead(&socket_, CreatePacketWithRecord(record0_created_));
+
+  querier->StopQuery(DomainName{"testing", "local"}, DnsType::kA, DnsClass::kIN,
+                     &callback_1);
+
+  // Only callback_2 will be invoked.
+  receiver_.OnRead(&socket_, CreatePacketWithRecord(record0_updated_));
+
+  querier->StopQuery(DomainName{"testing", "local"}, DnsType::kA, DnsClass::kIN,
+                     &callback_2);
+  // No callbacks will be invoked as all have been stopped.
+  receiver_.OnRead(&socket_, CreatePacketWithRecord(record0_updated_));
 }
 
 TEST_F(MdnsQuerierTest, NoRecordChangesAfterStop) {

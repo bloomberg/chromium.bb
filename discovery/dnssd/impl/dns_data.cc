@@ -48,7 +48,7 @@ inline Error ProcessRecord(absl::optional<T>* stored,
       return CreateRecord(stored, record);
     case RecordChangedEvent::kUpdated:
       return UpdateRecord(stored, record);
-    case RecordChangedEvent::kDeleted:
+    case RecordChangedEvent::kExpired:
       return DeleteRecord(stored);
   }
   return Error::Code::kUnknownError;

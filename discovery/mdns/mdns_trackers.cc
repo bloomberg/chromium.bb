@@ -62,250 +62,121 @@ MdnsTracker::MdnsTracker(MdnsSender* sender,
 }
 
 MdnsRecordTracker::MdnsRecordTracker(
+    MdnsRecord record,
     MdnsSender* sender,
     TaskRunner* task_runner,
     ClockNowFunctionPtr now_function,
     MdnsRandom* random_delay,
-    std::function<void(const MdnsRecord&)> record_updated_callback,
     std::function<void(const MdnsRecord&)> record_expired_callback)
     : MdnsTracker(sender, task_runner, now_function, random_delay),
-      record_updated_callback_(record_updated_callback),
+      record_(std::move(record)),
+      start_time_(now_function_()),
       record_expired_callback_(record_expired_callback) {
-  OSP_DCHECK(record_updated_callback);
   OSP_DCHECK(record_expired_callback);
-}
 
-Error MdnsRecordTracker::Start(MdnsRecord record) {
-  OSP_DCHECK(task_runner_->IsRunningOnTaskRunner());
-
-  if (record_.has_value()) {
-    return Error::Code::kOperationInvalid;
-  }
-
-  record_ = std::move(record);
-  start_time_ = now_function_();
-  send_count_ = 0;
   send_alarm_.Schedule([this] { SendQuery(); }, GetNextSendTime());
-  return Error::None();
 }
 
-Error MdnsRecordTracker::Stop() {
+ErrorOr<MdnsRecordTracker::UpdateType> MdnsRecordTracker::Update(
+    const MdnsRecord& new_record) {
   OSP_DCHECK(task_runner_->IsRunningOnTaskRunner());
+  bool has_same_rdata = record_.rdata() == new_record.rdata();
 
-  if (!record_.has_value()) {
-    return Error::Code::kOperationInvalid;
-  }
-
-  send_alarm_.Cancel();
-  record_.reset();
-  return Error::None();
-}
-
-Error MdnsRecordTracker::Update(const MdnsRecord& new_record) {
-  OSP_DCHECK(task_runner_->IsRunningOnTaskRunner());
-
-  if (!record_.has_value()) {
-    return Error::Code::kOperationInvalid;
-  }
-
-  MdnsRecord& old_record = record_.value();
-  if ((old_record.dns_type() != new_record.dns_type()) ||
-      (old_record.dns_class() != new_record.dns_class()) ||
-      (old_record.name() != new_record.name())) {
-    // The new record has been passed to a wrong tracker
+  // Goodbye records must have the same RDATA but TTL of 0.
+  // RFC 6762 Section 10.1
+  // https://tools.ietf.org/html/rfc6762#section-10.1
+  if ((record_.dns_type() != new_record.dns_type()) ||
+      (record_.dns_class() != new_record.dns_class()) ||
+      (record_.name() != new_record.name()) ||
+      (IsGoodbyeRecord(new_record) && !has_same_rdata)) {
+    // The new record has been passed to a wrong tracker.
     return Error::Code::kParameterInvalid;
   }
 
-  // Check if RDATA has changed before a call to Stop clears the old record
-  const bool is_updated = (new_record.rdata() != old_record.rdata());
-
-  Error error = Stop();
-  if (!error.ok()) {
-    return error;
-  }
-
+  UpdateType result = UpdateType::kGoodbye;
   if (IsGoodbyeRecord(new_record)) {
-    error = Start(MdnsRecord(new_record.name(), new_record.dns_type(),
-                             new_record.dns_class(), new_record.record_type(),
-                             kGoodbyeRecordTtl, new_record.rdata()));
+    record_ = MdnsRecord(new_record.name(), new_record.dns_type(),
+                         new_record.dns_class(), new_record.record_type(),
+                         kGoodbyeRecordTtl, new_record.rdata());
+
+    // Goodbye records do not need to be requeried, set the attempt count to the
+    // last item, which is 100% of TTL, i.e. record expiration.
+    attempt_count_ = openscreen::countof(kTtlFractions) - 1;
   } else {
-    error = Start(new_record);
+    record_ = new_record;
+    attempt_count_ = 0;
+    result = has_same_rdata ? UpdateType::kTTLOnly : UpdateType::kRdata;
   }
 
-  if (!error.ok()) {
-    return error;
-  }
+  start_time_ = now_function_();
+  send_alarm_.Schedule([this] { SendQuery(); }, GetNextSendTime());
 
-  if (is_updated) {
-    record_updated_callback_(record_.value());
-  }
-
-  return Error::None();
+  return result;
 }
 
-bool MdnsRecordTracker::IsStarted() {
+void MdnsRecordTracker::ExpireSoon() {
   OSP_DCHECK(task_runner_->IsRunningOnTaskRunner());
 
-  return record_.has_value();
+  record_ =
+      MdnsRecord(record_.name(), record_.dns_type(), record_.dns_class(),
+                 record_.record_type(), kGoodbyeRecordTtl, record_.rdata());
+
+  // Set the attempt count to the last item, which is 100% of TTL, i.e. record
+  // expiration, to prevent any requeries
+  attempt_count_ = openscreen::countof(kTtlFractions) - 1;
+  start_time_ = now_function_();
+  send_alarm_.Schedule([this] { SendQuery(); }, GetNextSendTime());
 }
 
 void MdnsRecordTracker::SendQuery() {
-  const MdnsRecord& record = record_.value();
-  const Clock::time_point expiration_time = start_time_ + record.ttl();
+  const Clock::time_point expiration_time = start_time_ + record_.ttl();
   const bool is_expired = (now_function_() >= expiration_time);
   if (!is_expired) {
-    MdnsQuestion question(record.name(), record.dns_type(), record.dns_class(),
-                          ResponseType::kMulticast);
+    MdnsQuestion question(record_.name(), record_.dns_type(),
+                          record_.dns_class(), ResponseType::kMulticast);
     MdnsMessage message(CreateMessageId(), MessageType::Query);
     message.AddQuestion(std::move(question));
     sender_->SendMulticast(message);
     send_alarm_.Schedule([this] { MdnsRecordTracker::SendQuery(); },
                          GetNextSendTime());
   } else {
-    record_expired_callback_(record);
+    record_expired_callback_(record_);
   }
 }
 
 openscreen::platform::Clock::time_point MdnsRecordTracker::GetNextSendTime() {
-  OSP_DCHECK(send_count_ < openscreen::countof(kTtlFractions));
+  OSP_DCHECK(attempt_count_ < openscreen::countof(kTtlFractions));
 
-  double ttl_fraction = kTtlFractions[send_count_++];
+  double ttl_fraction = kTtlFractions[attempt_count_++];
 
   // Do not add random variation to the expiration time (last fraction of TTL)
-  if (send_count_ != openscreen::countof(kTtlFractions)) {
+  if (attempt_count_ != openscreen::countof(kTtlFractions)) {
     ttl_fraction += random_delay_->GetRecordTtlVariation();
   }
 
-  const Clock::duration delay = std::chrono::duration_cast<Clock::duration>(
-      record_.value().ttl() * ttl_fraction);
+  const Clock::duration delay =
+      std::chrono::duration_cast<Clock::duration>(record_.ttl() * ttl_fraction);
   return start_time_ + delay;
 }
 
-MdnsQuestionTracker::MdnsQuestionTracker(MdnsSender* sender,
+MdnsQuestionTracker::MdnsQuestionTracker(MdnsQuestion question,
+                                         MdnsSender* sender,
                                          TaskRunner* task_runner,
                                          ClockNowFunctionPtr now_function,
                                          MdnsRandom* random_delay)
-    : MdnsTracker(sender, task_runner, now_function, random_delay) {}
-
-Error MdnsQuestionTracker::Start(MdnsQuestion question) {
-  OSP_DCHECK(task_runner_->IsRunningOnTaskRunner());
-
-  if (question_.has_value()) {
-    return Error::Code::kOperationInvalid;
-  }
-
-  question_ = std::move(question);
-  send_delay_ = kMinimumQueryInterval;
+    : MdnsTracker(sender, task_runner, now_function, random_delay),
+      question_(std::move(question)),
+      send_delay_(kMinimumQueryInterval) {
   // The initial query has to be sent after a random delay of 20-120
   // milliseconds.
   const Clock::duration delay = random_delay_->GetInitialQueryDelay();
   send_alarm_.Schedule([this] { MdnsQuestionTracker::SendQuery(); },
                        now_function_() + delay);
-  return Error::None();
-}
-
-Error MdnsQuestionTracker::Stop() {
-  OSP_DCHECK(task_runner_->IsRunningOnTaskRunner());
-
-  if (!question_.has_value()) {
-    return Error::Code::kOperationInvalid;
-  }
-
-  send_alarm_.Cancel();
-  question_.reset();
-  record_trackers_.clear();
-  return Error::None();
-}
-
-bool MdnsQuestionTracker::IsStarted() {
-  OSP_DCHECK(task_runner_->IsRunningOnTaskRunner());
-
-  return question_.has_value();
-}
-
-void MdnsQuestionTracker::AddCallback(MdnsRecordChangedCallback* callback) {
-  OSP_DCHECK(task_runner_->IsRunningOnTaskRunner());
-
-  const auto find_result =
-      std::find(callbacks_.begin(), callbacks_.end(), callback);
-  if (find_result == callbacks_.end()) {
-    callbacks_.push_back(callback);
-    // TODO(yakimakha): Notify the new callback with all known answers
-  }
-}
-
-void MdnsQuestionTracker::RemoveCallback(MdnsRecordChangedCallback* callback) {
-  OSP_DCHECK(task_runner_->IsRunningOnTaskRunner());
-
-  const auto find_result =
-      std::find(callbacks_.begin(), callbacks_.end(), callback);
-  if (find_result != callbacks_.end()) {
-    callbacks_.erase(find_result);
-  }
-}
-
-bool MdnsQuestionTracker::HasCallbacks() const {
-  OSP_DCHECK(task_runner_->IsRunningOnTaskRunner());
-
-  return !callbacks_.empty();
-}
-
-void MdnsQuestionTracker::OnRecordReceived(const MdnsRecord& record) {
-  OSP_DCHECK(task_runner_->IsRunningOnTaskRunner());
-
-  if (!question_.has_value()) {
-    return;
-  }
-
-  const RecordKey key(record.name(), record.dns_type(), record.dns_class());
-
-  const auto find_result = record_trackers_.find(key);
-  if (find_result != record_trackers_.end()) {
-    MdnsRecordTracker* record_tracker = find_result->second.get();
-    record_tracker->Update(record);
-    return;
-  }
-
-  std::unique_ptr<MdnsRecordTracker> record_tracker =
-      std::make_unique<MdnsRecordTracker>(
-          sender_, task_runner_, now_function_, random_delay_,
-          [this](const MdnsRecord& record) {
-            MdnsQuestionTracker::OnRecordUpdated(record);
-          },
-          [this](const MdnsRecord& record) {
-            MdnsQuestionTracker::OnRecordExpired(record);
-          });
-
-  record_tracker->Start(record);
-  record_trackers_.emplace(key, std::move(record_tracker));
-
-  for (auto callback : callbacks_) {
-    callback->OnRecordChanged(record, RecordChangedEvent::kCreated);
-  }
-}
-
-void MdnsQuestionTracker::OnRecordExpired(const MdnsRecord& record) {
-  OSP_DCHECK(task_runner_->IsRunningOnTaskRunner());
-
-  for (auto callback : callbacks_) {
-    callback->OnRecordChanged(record, RecordChangedEvent::kDeleted);
-  }
-
-  const RecordKey key(record.name(), record.dns_type(), record.dns_class());
-  record_trackers_.erase(key);
-}
-
-void MdnsQuestionTracker::OnRecordUpdated(const MdnsRecord& record) {
-  OSP_DCHECK(task_runner_->IsRunningOnTaskRunner());
-
-  for (auto* callback : callbacks_) {
-    callback->OnRecordChanged(record, RecordChangedEvent::kUpdated);
-  }
 }
 
 void MdnsQuestionTracker::SendQuery() {
   MdnsMessage message(CreateMessageId(), MessageType::Query);
-  message.AddQuestion(question_.value());
+  message.AddQuestion(question_);
   // TODO(yakimakha): Implement known-answer suppression by adding known
   // answers to the question
   sender_->SendMulticast(message);
