@@ -1,10 +1,11 @@
+# Tests related to contractions and the grade 1 indicator within computer code
+# 
 # Copyright © 2018, 2019 by Michael Robin <robin@chapman.edu>
 #
 # Copying and distribution of this file, with or without modification,
 # are permitted in any medium without royalty provided the copyright
 # notice and this notice are preserved. This file is offered as-is,
 # without any warranty.
-#
 # ----------------------------------------------------------------------------------------------
 
 table:
@@ -105,13 +106,6 @@ tests:
 - - ':text a:ept'
   - ';:text a;:ept'
   - {xfail: 'grade 1 indicator is missing preceding ":"'}
-
-# https://www.freelists.org/post/liblouis-liblouisxml/FW-UEB-grade-2-with-repeated-underscores-as-one-or-two-cells-instead-of-full-cells
-
-# See also #792 that contains a change related to the following test.
-- - '_ __ ___'
-  - '_ _.- _.-_'
-  - {xfail: multiple "_" becomes single "_"}
 
 # https://www.freelists.org/post/liblouis-liblouisxml/FW-Ambiguous-grade-2-UEB-32-in-JAWS-2018
 

@@ -102,9 +102,10 @@ dist_braille_specs_TESTS =				  \
 	braille-specs/en-ueb-g2-dictionary_harness.yaml	  \
 	braille-specs/en-ueb-g2_backward.yaml		  \
 	braille-specs/en-ueb-g2_backward_no_dis.yaml	  \
+	braille-specs/en-ueb-computer-code.yaml		  \
 	braille-specs/en-ueb-math.yaml			  \
+	braille-specs/en-ueb-repeated-underscores.yaml	  \
 	braille-specs/en-ueb-symbols_harness.yaml	  \
-	braille-specs/en-ueb-michael-robin.yaml		  \
 	braille-specs/en-us-comp6.yaml			  \
 	braille-specs/en-us-comp8-ext-back_harness.yaml	  \
 	braille-specs/en-us-comp8-ext-for_harness.yaml	  \
