@@ -4277,7 +4277,9 @@ bool Element::SupportsSpatialNavigationFocus() const {
   if (HasJSBasedEventListeners(event_type_names::kClick) ||
       HasJSBasedEventListeners(event_type_names::kKeydown) ||
       HasJSBasedEventListeners(event_type_names::kKeypress) ||
-      HasJSBasedEventListeners(event_type_names::kKeyup))
+      HasJSBasedEventListeners(event_type_names::kKeyup) ||
+      HasJSBasedEventListeners(event_type_names::kMouseover) ||
+      HasJSBasedEventListeners(event_type_names::kMouseenter))
     return true;
 
   // Some web apps use click-handlers to react on clicks within rects that are
