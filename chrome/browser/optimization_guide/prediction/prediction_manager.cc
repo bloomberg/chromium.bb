@@ -66,14 +66,12 @@ constexpr base::TimeDelta kFetchRetryDelay = base::TimeDelta::FromMinutes(16);
 constexpr base::TimeDelta kUpdateModelsAndFeaturesDelay =
     base::TimeDelta::FromHours(24);
 
-// Provide a random time delta in seconds between |kFetchRandomMinDelay| and
-// |kFetchRandomMaxDelay|.
+// Provide a random time delta in seconds before fetching models and host model
+// features.
 base::TimeDelta RandomFetchDelay() {
-  // TODO(crbug/1027526): Add finch support for the random delay ranges.
-  constexpr int kFetchRandomMinDelaySecs = 30;
-  constexpr int kFetchRandomMaxDelaySecs = 180;
-  return base::TimeDelta::FromSeconds(
-      base::RandInt(kFetchRandomMinDelaySecs, kFetchRandomMaxDelaySecs));
+  return base::TimeDelta::FromSeconds(base::RandInt(
+      optimization_guide::features::PredictionModelFetchRandomMinDelaySecs(),
+      optimization_guide::features::PredictionModelFetchRandomMaxDelaySecs()));
 }
 
 }  // namespace
