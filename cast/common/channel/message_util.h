@@ -5,6 +5,7 @@
 #ifndef CAST_COMMON_CHANNEL_MESSAGE_UTIL_H_
 #define CAST_COMMON_CHANNEL_MESSAGE_UTIL_H_
 
+#include "absl/strings/string_view.h"
 #include "cast/common/channel/proto/cast_channel.pb.h"
 
 namespace cast {
@@ -13,6 +14,8 @@ namespace channel {
 // Reserved message namespaces for internal messages.
 static constexpr char kCastInternalNamespacePrefix[] =
     "urn:x-cast:com.google.cast.";
+static constexpr char kTransportNamespacePrefix[] =
+    "urn:x-cast:com.google.cast.tp.";
 static constexpr char kAuthNamespace[] =
     "urn:x-cast:com.google.cast.tp.deviceauth";
 static constexpr char kHeartbeatNamespace[] =
@@ -31,6 +34,11 @@ static constexpr char kPlatformReceiverId[] = "receiver-0";
 
 inline bool IsAuthMessage(const CastMessage& message) {
   return message.namespace_() == kAuthNamespace;
+}
+
+inline bool IsTransportNamespace(absl::string_view namespace_) {
+  return (namespace_.size() > (sizeof(kTransportNamespacePrefix) - 1)) &&
+         (namespace_.find_first_of(kTransportNamespacePrefix) == 0);
 }
 
 }  // namespace channel
