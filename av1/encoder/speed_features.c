@@ -853,8 +853,6 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
   sf->use_dist_wtd_comp_flag = DIST_WTD_COMP_ENABLED;
   sf->reuse_inter_intra_mode = 0;
   sf->intra_pruning_with_hog = 0;
-  sf->skip_obmc_in_uniform_mv_field = 0;
-  sf->skip_wm_in_uniform_mv_field = 0;
   sf->adaptive_interp_filter_search = 0;
   sf->src_var_thresh_intra_skip = 1;
   sf->reduce_high_precision_mv_usage = 0;

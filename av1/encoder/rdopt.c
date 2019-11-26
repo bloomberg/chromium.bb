@@ -9743,55 +9743,6 @@ static int check_if_optimal_warp(const AV1_COMP *cpi,
   return is_valid_warp;
 }
 
-struct obmc_check_mv_field_ctxt {
-  MB_MODE_INFO *current_mi;
-  int mv_field_check_result;
-};
-
-static INLINE void obmc_check_identical_mv(MACROBLOCKD *xd, int rel_mi_row,
-                                           int rel_mi_col, uint8_t op_mi_size,
-                                           int dir, MB_MODE_INFO *nb_mi,
-                                           void *fun_ctxt,
-                                           const int num_planes) {
-  (void)xd;
-  (void)rel_mi_row;
-  (void)rel_mi_col;
-  (void)op_mi_size;
-  (void)dir;
-  (void)num_planes;
-  struct obmc_check_mv_field_ctxt *ctxt =
-      (struct obmc_check_mv_field_ctxt *)fun_ctxt;
-  const MB_MODE_INFO *current_mi = ctxt->current_mi;
-
-  if (ctxt->mv_field_check_result == 0) return;
-
-  if (nb_mi->ref_frame[0] != current_mi->ref_frame[0] ||
-      nb_mi->mv[0].as_int != current_mi->mv[0].as_int ||
-      nb_mi->interp_filters.as_int != current_mi->interp_filters.as_int) {
-    ctxt->mv_field_check_result = 0;
-  }
-}
-
-// Check if the neighbors' motions used by obmc have same parameters as for
-// the current block. If all the parameters are identical, obmc will produce
-// the same prediction as from regular bmc, therefore we can skip the
-// overlapping operations for less complexity. The parameters checked include
-// reference frame, motion vector, and interpolation filter.
-static int check_identical_obmc_mv_field(const AV1_COMMON *cm,
-                                         MACROBLOCKD *xd) {
-  const BLOCK_SIZE bsize = xd->mi[0]->sb_type;
-  struct obmc_check_mv_field_ctxt mv_field_check_ctxt = { xd->mi[0], 1 };
-
-  foreach_overlappable_nb_above(cm, xd,
-                                max_neighbor_obmc[mi_size_wide_log2[bsize]],
-                                obmc_check_identical_mv, &mv_field_check_ctxt);
-  foreach_overlappable_nb_left(cm, xd,
-                               max_neighbor_obmc[mi_size_high_log2[bsize]],
-                               obmc_check_identical_mv, &mv_field_check_ctxt);
-
-  return mv_field_check_ctxt.mv_field_check_result;
-}
-
 static INLINE void update_mode_start_end_index(const AV1_COMP *const cpi,
                                                int *mode_index_start,
                                                int *mode_index_end,
@@ -9864,11 +9815,6 @@ static int64_t motion_mode_rd(
       av1_is_interp_needed(xd) ? av1_get_switchable_rate(cm, x, xd) : 0;
   int64_t best_rd = INT64_MAX;
   int best_rate_mv = rate_mv0;
-  const int identical_obmc_mv_field_detected =
-      (cpi->sf.skip_obmc_in_uniform_mv_field ||
-       cpi->sf.skip_wm_in_uniform_mv_field)
-          ? check_identical_obmc_mv_field(cm, xd)
-          : 0;
   const int mi_row = xd->mi_row;
   const int mi_col = xd->mi_col;
   int mode_index_start, mode_index_end;
@@ -9900,15 +9846,6 @@ static int64_t motion_mode_rd(
          cpi->sf.use_nonrd_pick_mode || prune_obmc) &&
         mbmi->motion_mode == OBMC_CAUSAL)
       continue;
-
-    if (identical_obmc_mv_field_detected) {
-      if (cpi->sf.skip_obmc_in_uniform_mv_field &&
-          mbmi->motion_mode == OBMC_CAUSAL)
-        continue;
-      if (cpi->sf.skip_wm_in_uniform_mv_field &&
-          mbmi->motion_mode == WARPED_CAUSAL)
-        continue;
-    }
 
     if (mbmi->motion_mode == SIMPLE_TRANSLATION && !is_interintra_mode) {
       // SIMPLE_TRANSLATION mode: no need to recalculate.

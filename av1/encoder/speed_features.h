@@ -545,11 +545,6 @@ typedef struct SPEED_FEATURES {
   // Disable one sided compound modes.
   int disable_onesided_comp;
 
-  // Skip obmc or warped motion mode when neighborhood motion field is
-  // identical
-  int skip_obmc_in_uniform_mv_field;
-  int skip_wm_in_uniform_mv_field;
-
   // Prune/gate motion mode evaluation based on token based rd
   // during transform search for inter blocks
   // Values are 0 (not used) , 1 - 3 with progressively increasing
