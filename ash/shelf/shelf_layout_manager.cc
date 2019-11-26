@@ -1047,11 +1047,9 @@ int ShelfLayoutManager::CalculateHotseatYInShelf(
           ShelfConfig::Get()->hotseat_bottom_padding() + hotseat_size;
       break;
   }
-  const int target_shelf_size = hotseat_target_state == HotseatState::kShown
-                                    ? ShelfConfig::Get()->system_shelf_size()
-                                    : ShelfConfig::Get()->in_app_shelf_size();
+  const int current_shelf_size = target_bounds_.shelf_bounds.size().height();
   const int hotseat_y_in_shelf =
-      -(hotseat_distance_from_bottom_of_display - target_shelf_size);
+      -(hotseat_distance_from_bottom_of_display - current_shelf_size);
   return hotseat_y_in_shelf;
 }
 
