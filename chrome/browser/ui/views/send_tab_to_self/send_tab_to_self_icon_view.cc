@@ -51,20 +51,16 @@ void SendTabToSelfIconView::UpdateImpl() {
   }
 
   if (GetVisible()) {
-    if (omnibox_view->model()->user_input_in_progress()) {
-      SetVisible(false);
-    } else {
-      SendTabToSelfBubbleController* controller = GetController();
-      if (controller && controller->show_message()) {
-        controller->set_show_message(false);
-        if (initial_animation_state_ == AnimationState::kShowing &&
-            label()->GetVisible()) {
-          initial_animation_state_ = AnimationState::kShown;
-          SetLabel(l10n_util::GetStringUTF16(
-              IDS_BROWSER_SHARING_OMNIBOX_SENDING_LABEL));
-        } else {
-          AnimateIn(IDS_BROWSER_SHARING_OMNIBOX_SENDING_LABEL);
-        }
+    SendTabToSelfBubbleController* controller = GetController();
+    if (controller && controller->show_message()) {
+      controller->set_show_message(false);
+      if (initial_animation_state_ == AnimationState::kShowing &&
+          label()->GetVisible()) {
+        initial_animation_state_ = AnimationState::kShown;
+        SetLabel(l10n_util::GetStringUTF16(
+            IDS_BROWSER_SHARING_OMNIBOX_SENDING_LABEL));
+      } else {
+        AnimateIn(IDS_BROWSER_SHARING_OMNIBOX_SENDING_LABEL);
       }
     }
   } else if (omnibox_view->model()->has_focus() &&

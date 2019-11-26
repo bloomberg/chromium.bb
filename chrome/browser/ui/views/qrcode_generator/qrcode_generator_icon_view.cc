@@ -49,18 +49,10 @@ void QRCodeGeneratorIconView::UpdateImpl() {
   if (!omnibox_view)
     return;
 
-  if (GetVisible()) {
+  if (!GetVisible() && omnibox_view->model()->has_focus()) {
     // TODO(skare): Finch variation params here.
-    // Don't show icon if URL is being edited.
-    if (omnibox_view->model()->user_input_in_progress()) {
-      SetVisible(false);
-    }
-  } else {
     // TODO(skare): Check if this is feature-gated.
-    if (omnibox_view->model()->has_focus() &&
-        !omnibox_view->model()->user_input_in_progress()) {
-      SetVisible(true);
-    }
+    SetVisible(true);
   }
 }
 
