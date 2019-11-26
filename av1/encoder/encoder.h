@@ -170,7 +170,7 @@ typedef struct TplDepStats {
   int64_t recrf_rate;
   int64_t mc_dep_rate;
   int64_t mc_dep_dist;
-  int_mv mv;
+  int_mv mv[REF_FRAMES];
   int ref_frame_index;
 #if !USE_TPL_CLASSIC_MODEL
   int64_t mc_count;

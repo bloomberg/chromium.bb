@@ -284,7 +284,7 @@ static AOM_INLINE void mode_estimation(
   int64_t best_inter_cost = INT64_MAX;
   int rf_idx;
 
-  best_mv.as_int = 0;
+  best_mv.as_int = INVALID_MV;
 
   for (rf_idx = 0; rf_idx < INTER_REFS_PER_FRAME; ++rf_idx) {
     if (ref_frame[rf_idx] == NULL) continue;
@@ -381,8 +381,10 @@ static AOM_INLINE void mode_estimation(
   tpl_stats->recrf_dist = AOMMAX(tpl_stats->srcrf_dist, tpl_stats->recrf_dist);
   tpl_stats->recrf_rate = AOMMAX(tpl_stats->srcrf_rate, tpl_stats->recrf_rate);
 
-  tpl_stats->mv.as_int = best_mv.as_int;
-  tpl_stats->ref_frame_index = best_rf_idx;
+  if (best_rf_idx >= 0) {
+    tpl_stats->mv[best_rf_idx].as_int = best_mv.as_int;
+    tpl_stats->ref_frame_index = best_rf_idx;
+  }
 }
 
 static int round_floor(int ref_pos, int bsize_pix) {
@@ -465,13 +467,15 @@ static AOM_INLINE void tpl_model_update_b(AV1_COMP *cpi, TplDepFrame *tpl_frame,
                                           const BLOCK_SIZE bsize,
                                           int frame_idx) {
   if (tpl_stats_ptr->ref_frame_index < 0) return;
+  const int ref_frame_index = tpl_stats_ptr->ref_frame_index;
   TplDepFrame *ref_tpl_frame =
-      &tpl_frame[tpl_frame[frame_idx]
-                     .ref_map_index[tpl_stats_ptr->ref_frame_index]];
+      &tpl_frame[tpl_frame[frame_idx].ref_map_index[ref_frame_index]];
   TplDepStats *ref_stats_ptr = ref_tpl_frame->tpl_stats_ptr;
 
-  const int ref_pos_row = mi_row * MI_SIZE + (tpl_stats_ptr->mv.as_mv.row >> 3);
-  const int ref_pos_col = mi_col * MI_SIZE + (tpl_stats_ptr->mv.as_mv.col >> 3);
+  const int ref_pos_row =
+      mi_row * MI_SIZE + (tpl_stats_ptr->mv[ref_frame_index].as_mv.row >> 3);
+  const int ref_pos_col =
+      mi_col * MI_SIZE + (tpl_stats_ptr->mv[ref_frame_index].as_mv.col >> 3);
 
   const int bw = 4 << mi_size_wide_log2[bsize];
   const int bh = 4 << mi_size_high_log2[bsize];
@@ -574,7 +578,7 @@ static AOM_INLINE void tpl_model_store(AV1_COMP *cpi,
       tpl_ptr->recrf_dist = recrf_dist;
       tpl_ptr->srcrf_rate = srcrf_rate;
       tpl_ptr->recrf_rate = recrf_rate;
-      tpl_ptr->mv.as_int = src_stats->mv.as_int;
+      memcpy(tpl_ptr->mv, src_stats->mv, sizeof(tpl_ptr->mv));
       tpl_ptr->ref_frame_index = src_stats->ref_frame_index;
       ++tpl_ptr;
     }
