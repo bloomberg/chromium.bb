@@ -199,7 +199,8 @@ TEST_F(BookmarkAppInstallFinalizerTest, BasicInstallFails) {
       *info, options,
       base::BindLambdaForTesting([&](const web_app::AppId& installed_app_id,
                                      web_app::InstallResultCode code) {
-        EXPECT_EQ(web_app::InstallResultCode::kFailedUnknownReason, code);
+        EXPECT_EQ(web_app::InstallResultCode::kBookmarkExtensionInstallError,
+                  code);
         EXPECT_TRUE(installed_app_id.empty());
         callback_called = true;
         run_loop.Quit();

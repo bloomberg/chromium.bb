@@ -150,6 +150,7 @@ void WebAppProvider::Shutdown() {
   pending_app_manager_->Shutdown();
   install_manager_->Shutdown();
   manifest_update_manager_->Shutdown();
+  system_web_app_manager_->Shutdown();
 }
 
 void WebAppProvider::StartImpl() {

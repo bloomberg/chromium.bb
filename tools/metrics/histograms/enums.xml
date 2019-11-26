@@ -65049,7 +65049,7 @@ Full version information for the fingerprint enum values:
 <enum name="WebAppInstallResultCode">
   <int value="0" label="Success"/>
   <int value="1" label="AlreadyInstalled"/>
-  <int value="2" label="FailedUnknownReason"/>
+  <int value="2" label="DEPRECATED: FailedUnknownReason"/>
   <int value="3" label="GetWebApplicationInfoFailed"/>
   <int value="4" label="PreviouslyUninstalled"/>
   <int value="5" label="WebContentsDestroyed"/>
@@ -65063,6 +65063,12 @@ Full version information for the fingerprint enum values:
   <int value="13" label="InstallURLRedirected"/>
   <int value="14" label="InstallURLLoadFailed"/>
   <int value="15" label="ExpectedAppIdCheckFailed"/>
+  <int value="16" label="InstallURLLoadTimeout"/>
+  <int value="17" label="FailedPlaceholderUninstall"/>
+  <int value="18" label="NotInstallable"/>
+  <int value="19" label="BookmarkExtensionInstallError"/>
+  <int value="20" label="ApkWebInstallFailed"/>
+  <int value="21" label="FailedShuttingDown"/>
 </enum>
 
 <enum name="WebAppInstallSource">

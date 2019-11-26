@@ -5,6 +5,7 @@
 #include "chrome/browser/web_applications/extensions/bookmark_app_install_finalizer.h"
 
 #include <memory>
+#include <string>
 #include <utility>
 
 #include "base/bind.h"
@@ -266,8 +267,9 @@ void BookmarkAppInstallFinalizer::OnExtensionInstalled(
     scoped_refptr<CrxInstaller> crx_installer,
     const base::Optional<CrxInstallError>& error) {
   if (error) {
-    std::move(callback).Run(web_app::AppId(),
-                            web_app::InstallResultCode::kFailedUnknownReason);
+    std::move(callback).Run(
+        web_app::AppId(),
+        web_app::InstallResultCode::kBookmarkExtensionInstallError);
     return;
   }
 
@@ -301,8 +303,9 @@ void BookmarkAppInstallFinalizer::OnExtensionUpdated(
     scoped_refptr<CrxInstaller> crx_installer,
     const base::Optional<CrxInstallError>& error) {
   if (error) {
-    std::move(callback).Run(web_app::AppId(),
-                            web_app::InstallResultCode::kFailedUnknownReason);
+    std::move(callback).Run(
+        web_app::AppId(),
+        web_app::InstallResultCode::kBookmarkExtensionInstallError);
     return;
   }
 

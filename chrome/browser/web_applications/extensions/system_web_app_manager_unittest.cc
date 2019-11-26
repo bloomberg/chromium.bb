@@ -386,6 +386,24 @@ TEST_F(SystemWebAppManagerTest, InstallResultHistogram) {
         SystemWebAppManager::kInstallResultHistogramName,
         InstallResultCode::kProfileDestroyed, 2);
   }
+  {
+    base::flat_map<SystemAppType, SystemAppInfo> system_apps;
+    system_apps[SystemAppType::SETTINGS] = SystemAppInfo(kAppUrl1);
+    system_web_app_manager()->SetSystemApps(system_apps);
+    pending_app_manager()->SetInstallResultCode(
+        InstallResultCode::kProfileDestroyed);
+
+    system_web_app_manager()->Start();
+    system_web_app_manager()->Shutdown();
+    base::RunLoop().RunUntilIdle();
+
+    histograms.ExpectBucketCount(
+        SystemWebAppManager::kInstallResultHistogramName,
+        InstallResultCode::kFailedShuttingDown, 1);
+    histograms.ExpectBucketCount(
+        SystemWebAppManager::kInstallResultHistogramName,
+        InstallResultCode::kProfileDestroyed, 2);
+  }
 }
 
 }  // namespace web_app

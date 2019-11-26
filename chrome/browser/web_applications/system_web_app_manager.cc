@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -163,6 +164,10 @@ SystemWebAppManager::SystemWebAppManager(Profile* profile)
 
 SystemWebAppManager::~SystemWebAppManager() = default;
 
+void SystemWebAppManager::Shutdown() {
+  shutting_down_ = true;
+}
+
 void SystemWebAppManager::SetSubsystems(PendingAppManager* pending_app_manager,
                                         AppRegistrar* registrar,
                                         WebAppUiManager* ui_manager) {
@@ -262,6 +267,16 @@ const std::string& SystemWebAppManager::CurrentLocale() const {
   return g_browser_process->GetApplicationLocale();
 }
 
+void SystemWebAppManager::RecordSystemWebAppInstallResultCode(
+    const std::map<GURL, InstallResultCode>& install_results) const {
+  // Record aggregate result.
+  for (const auto& url_and_result : install_results)
+    base::UmaHistogramEnumeration(kInstallResultHistogramName,
+                                  shutting_down_
+                                      ? InstallResultCode::kFailedShuttingDown
+                                      : url_and_result.second);
+}
+
 void SystemWebAppManager::OnAppsSynchronized(
     std::map<GURL, InstallResultCode> install_results,
     std::map<GURL, bool> uninstall_results) {
@@ -274,8 +289,7 @@ void SystemWebAppManager::OnAppsSynchronized(
                              CurrentLocale());
   }
 
-  RecordExternalAppInstallResultCode(kInstallResultHistogramName,
-                                     install_results);
+  RecordSystemWebAppInstallResultCode(install_results);
 
   // Build the map from installed app id to app type.
   for (const auto& it : system_app_infos_) {

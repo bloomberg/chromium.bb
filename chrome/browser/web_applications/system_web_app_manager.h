@@ -128,6 +128,8 @@ class SystemWebAppManager {
 
   void SetUpdatePolicyForTesting(UpdatePolicy policy);
 
+  void Shutdown();
+
  protected:
   virtual const base::Version& CurrentVersion() const;
   virtual const std::string& CurrentLocale() const;
@@ -137,7 +139,12 @@ class SystemWebAppManager {
                           std::map<GURL, bool> uninstall_results);
   bool NeedsUpdate() const;
 
+  void RecordSystemWebAppInstallResultCode(
+      const std::map<GURL, InstallResultCode>& install_results) const;
+
   std::unique_ptr<base::OneShotEvent> on_apps_synchronized_;
+
+  bool shutting_down_ = false;
 
   UpdatePolicy update_policy_;
 
