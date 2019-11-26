@@ -764,8 +764,8 @@ ConsoleMessage* MixedContentChecker::CreateConsoleMessageAboutFetchAutoupgrade(
       "Mixed Content: The page at '%s' was loaded over HTTPS, but requested an "
       "insecure element '%s'. This request was "
       "automatically upgraded to HTTPS, For more information see "
-      "https://chromium.googlesource.com/chromium/src/+/master/docs/security/"
-      "autoupgrade-mixed.md",
+      "https://blog.chromium.org/2019/10/"
+      "no-more-mixed-messages-about-https.html",
       main_resource_url.ElidedString().Utf8().c_str(),
       mixed_content_url.ElidedString().Utf8().c_str());
   return ConsoleMessage::Create(mojom::ConsoleMessageSource::kSecurity,
