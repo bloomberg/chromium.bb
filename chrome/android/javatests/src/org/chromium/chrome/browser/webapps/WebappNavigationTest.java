@@ -27,6 +27,7 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.CommandLine;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
@@ -100,6 +101,7 @@ public class WebappNavigationTest {
      */
     @Test
     @SmallTest
+    @DisabledTest(message = "https://crbug.com/1028636")
     @Feature({"Webapps"})
     @RetryOnFailure
     public void testRegularLinkOffOriginNoWebappThemeColor() throws Exception {
@@ -122,6 +124,7 @@ public class WebappNavigationTest {
      */
     @Test
     @SmallTest
+    @DisabledTest(message = "https://crbug.com/1028636")
     @Feature({"Webapps"})
     @RetryOnFailure
     public void testRegularLinkOffOriginThemeColor() throws Exception {
@@ -144,6 +147,7 @@ public class WebappNavigationTest {
      */
     @Test
     @SmallTest
+    @DisabledTest(message = "https://crbug.com/1028636")
     @Feature({"Webapps"})
     public void testRegularLinkOffOriginTwa() throws Exception {
         Intent launchIntent = mActivityTestRule.createIntent().putExtra(
@@ -172,6 +176,7 @@ public class WebappNavigationTest {
     @Test
     @SmallTest
     @Feature({"Webapps"})
+    @DisabledTest(message = "https://crbug.com/1028636")
     @RetryOnFailure
     public void testFormSubmitOffOrigin() throws Exception {
         Intent launchIntent = mActivityTestRule.createIntent().putExtra(
@@ -256,6 +261,7 @@ public class WebappNavigationTest {
      */
     @Test
     @SmallTest
+    @DisabledTest(message = "https://crbug.com/1028636")
     @Feature({"Webapps"})
     @RetryOnFailure
     public void testInScopeNavigationStaysInWebapp() throws Exception {
