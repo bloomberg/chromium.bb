@@ -25590,6 +25590,7 @@ Called by update_net_error_codes.py.-->
   <int value="3100" label="V8PortalHost_PostMessage_Method"/>
   <int value="3101" label="V8PortalActivateEvent_Data_AttributeGetter"/>
   <int value="3102" label="V8PortalActivateEvent_AdoptPredecessor_Method"/>
+  <int value="3103" label="LinkRelPrefetchForSignedExchanges"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
