@@ -54,6 +54,7 @@
 using testing::Each;
 using testing::ElementsAre;
 using testing::Not;
+using testing::UnorderedElementsAreArray;
 
 namespace content {
 
@@ -142,9 +143,9 @@ class BackForwardCacheBrowserTest : public ContentBrowserTest {
     base::HistogramBase::Sample sample = base::HistogramBase::Sample(outcome);
     AddSampleToBuckets(&expected_outcomes_, sample);
 
-    EXPECT_EQ(expected_outcomes_,
-              histogram_tester_.GetAllSamples(
-                  "BackForwardCache.HistoryNavigationOutcome"))
+    EXPECT_THAT(histogram_tester_.GetAllSamples(
+                    "BackForwardCache.HistoryNavigationOutcome"),
+                UnorderedElementsAreArray(expected_outcomes_))
         << location.ToString();
   }
 
@@ -163,10 +164,10 @@ class BackForwardCacheBrowserTest : public ContentBrowserTest {
       AddSampleToBuckets(&expected_not_restored_, sample);
     }
 
-    EXPECT_EQ(expected_not_restored_,
-              histogram_tester_.GetAllSamples(
-                  "BackForwardCache.HistoryNavigationOutcome."
-                  "NotRestoredReason"))
+    EXPECT_THAT(histogram_tester_.GetAllSamples(
+                    "BackForwardCache.HistoryNavigationOutcome."
+                    "NotRestoredReason"),
+                UnorderedElementsAreArray(expected_not_restored_))
         << location.ToString();
   }
 
@@ -184,10 +185,10 @@ class BackForwardCacheBrowserTest : public ContentBrowserTest {
     base::HistogramBase::Sample sample = base::HistogramBase::Sample(feature);
     AddSampleToBuckets(&expected_blocklisted_features_, sample);
 
-    EXPECT_EQ(expected_blocklisted_features_,
-              histogram_tester_.GetAllSamples(
-                  "BackForwardCache.HistoryNavigationOutcome."
-                  "BlocklistedFeature"))
+    EXPECT_THAT(histogram_tester_.GetAllSamples(
+                    "BackForwardCache.HistoryNavigationOutcome."
+                    "BlocklistedFeature"),
+                UnorderedElementsAreArray(expected_blocklisted_features_))
         << location.ToString();
   }
 
@@ -197,10 +198,10 @@ class BackForwardCacheBrowserTest : public ContentBrowserTest {
         base::HistogramBase::Sample(base::HashMetricName(reason));
     AddSampleToBuckets(&expected_disabled_reasons_, sample);
 
-    EXPECT_EQ(expected_disabled_reasons_,
-              histogram_tester_.GetAllSamples(
-                  "BackForwardCache.HistoryNavigationOutcome."
-                  "DisabledForRenderFrameHostReason"))
+    EXPECT_THAT(histogram_tester_.GetAllSamples(
+                    "BackForwardCache.HistoryNavigationOutcome."
+                    "DisabledForRenderFrameHostReason"),
+                UnorderedElementsAreArray(expected_disabled_reasons_))
         << location.ToString();
   }
 
@@ -214,9 +215,9 @@ class BackForwardCacheBrowserTest : public ContentBrowserTest {
       AddSampleToBuckets(&expected_eviction_after_committing_, sample);
     }
 
-    EXPECT_EQ(expected_eviction_after_committing_,
-              histogram_tester_.GetAllSamples(
-                  "BackForwardCache.EvictedAfterDocumentRestoredReason"))
+    EXPECT_THAT(histogram_tester_.GetAllSamples(
+                    "BackForwardCache.EvictedAfterDocumentRestoredReason"),
+                UnorderedElementsAreArray(expected_eviction_after_committing_))
         << location.ToString();
   }
 
@@ -2870,7 +2871,13 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
 
   ExpectOutcome(BackForwardCacheMetrics::HistoryNavigationOutcome::kNotRestored,
                 FROM_HERE);
-  // TODO(hajimehoshi): kConflictingBrowsingInstance should be recorded here.
+  // TODO(hajimehoshi): Record kConflictingBrowsingInstance instead of kUnknown
+  // here.
+  ExpectNotRestored(
+      {
+          BackForwardCacheMetrics::NotRestoredReason::kUnknown,
+      },
+      FROM_HERE);
 
   // 5) Go back to B3.
   web_contents()->GetController().GoToIndex(2);
