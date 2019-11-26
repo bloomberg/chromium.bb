@@ -502,7 +502,8 @@ void ServiceWorkerProviderHost::OnBeginNavigationCommit(
 
 void ServiceWorkerProviderHost::CompleteStartWorkerPreparation(
     int process_id,
-    service_manager::mojom::InterfaceProviderRequest interface_provider_request,
+    mojo::PendingReceiver<service_manager::mojom::InterfaceProvider>
+        interface_provider_receiver,
     mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>
         broker_receiver) {
   DCHECK(context_);
@@ -514,7 +515,7 @@ void ServiceWorkerProviderHost::CompleteStartWorkerPreparation(
 
   interface_provider_binding_.Bind(FilterRendererExposedInterfaces(
       blink::mojom::kNavigation_ServiceWorkerSpec, process_id,
-      std::move(interface_provider_request)));
+      std::move(interface_provider_receiver)));
 
   broker_receiver_.Bind(std::move(broker_receiver));
 }

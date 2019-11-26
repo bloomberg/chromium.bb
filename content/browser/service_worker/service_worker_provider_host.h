@@ -244,8 +244,8 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // the worker.
   void CompleteStartWorkerPreparation(
       int process_id,
-      service_manager::mojom::InterfaceProviderRequest
-          interface_provider_request,
+      mojo::PendingReceiver<service_manager::mojom::InterfaceProvider>
+          interface_provider_receiver,
       mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>
           broker_receiver);
 
