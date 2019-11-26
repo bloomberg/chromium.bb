@@ -79,6 +79,8 @@ PLATFORM_EXPORT bool GetFileModificationTime(
 PLATFORM_EXPORT bool GetFileMetadata(const String&, FileMetadata&);
 PLATFORM_EXPORT KURL FilePathToURL(const String&);
 
+PLATFORM_EXPORT void RebindFileUtilitiesForTesting();
+
 // TODO(crbug.com/988343): Temporary conversion function. This should be
 // removed.
 inline double ToJsTimeOrNaN(base::Optional<base::Time> time) {
