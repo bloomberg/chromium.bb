@@ -857,6 +857,18 @@ static AOM_INLINE void search_sgrproj(const RestorationTileLimits *limits,
   const int highbd = cm->seq_params.use_highbitdepth;
   const int bit_depth = cm->seq_params.bit_depth;
 
+  const int64_t bits_none = x->sgrproj_restore_cost[0];
+  // Prune evaluation of RESTORE_SGRPROJ if RESTORE_NONE was the winner (no loop
+  // restoration)
+  if (rsc->sf->prune_sgr_based_on_wiener &&
+      rusi->best_rtype[RESTORE_WIENER - 1] == RESTORE_NONE) {
+    rsc->bits += bits_none;
+    rsc->sse += rusi->sse[RESTORE_NONE];
+    rusi->best_rtype[RESTORE_SGRPROJ - 1] = RESTORE_NONE;
+    rusi->sse[RESTORE_SGRPROJ] = INT64_MAX;
+    return;
+  }
+
   uint8_t *dgd_start =
       rsc->dgd_buffer + limits->v_start * rsc->dgd_stride + limits->h_start;
   const uint8_t *src_start =
@@ -880,7 +892,6 @@ static AOM_INLINE void search_sgrproj(const RestorationTileLimits *limits,
 
   rusi->sse[RESTORE_SGRPROJ] = try_restoration_unit(rsc, limits, tile, &rui);
 
-  const int64_t bits_none = x->sgrproj_restore_cost[0];
   const int64_t bits_sgr = x->sgrproj_restore_cost[1] +
                            (count_sgrproj_bits(&rusi->sgrproj, &rsc->sgrproj)
                             << AV1_PROB_COST_SHIFT);

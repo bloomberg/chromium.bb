@@ -803,6 +803,9 @@ typedef struct SPEED_FEATURES {
   // Disable loop restoration for Chroma plane
   int disable_loop_restoration_chroma;
 
+  // Prune self-guided loop restoration based on wiener search results
+  int prune_sgr_based_on_wiener;
+
   // Reduce the wiener filter win size for luma
   int reduce_wiener_window_size;
 

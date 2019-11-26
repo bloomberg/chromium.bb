@@ -405,6 +405,7 @@ static void set_good_speed_features_framesize_independent(
     sf->enable_winner_mode_for_use_tx_domain_dist =
         cm->allow_screen_content_tools ? 0 : 1;
     sf->reduce_wiener_window_size = is_boosted_arf2_bwd_type ? 0 : 1;
+    sf->prune_sgr_based_on_wiener = cm->allow_screen_content_tools ? 0 : 1;
     sf->mv.subpel_search_method = SUBPEL_TREE_PRUNED;
     sf->simple_motion_search_prune_agg = 1;
     sf->disable_sb_level_mv_cost_upd = 1;
@@ -842,6 +843,7 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
   sf->disable_wedge_search_edge_thresh = 0;
   sf->disable_wedge_search_var_thresh = 0;
   sf->disable_loop_restoration_chroma = 0;
+  sf->prune_sgr_based_on_wiener = 0;
   sf->enable_sgr_ep_pruning = 0;
   sf->reduce_wiener_window_size = 0;
   sf->fast_wedge_sign_estimate = 0;
