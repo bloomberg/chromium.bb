@@ -91,9 +91,6 @@ constexpr float kDefaultShelfOpacity = 1.0f;
 // Delay before showing the shelf. This is after the mouse stops moving.
 constexpr int kAutoHideDelayMS = 200;
 
-// Duration of the animation to show or hide the shelf.
-constexpr int kAnimationDurationMS = 200;
-
 // To avoid hiding the shelf when the mouse transitions from a message bubble
 // into the shelf, the hit test area is enlarged by this amount of pixels to
 // keep the shelf from hiding.
@@ -1395,7 +1392,7 @@ void ShelfLayoutManager::UpdateBoundsAndOpacity(
       shelf_animation_setter.AddObserver(hide_animation_observer_.get());
 
     if (animate) {
-      auto duration = base::TimeDelta::FromMilliseconds(kAnimationDurationMS);
+      auto duration = ShelfConfig::Get()->shelf_animation_duration();
       shelf_animation_setter.SetTransitionDuration(duration);
       shelf_animation_setter.SetTweenType(gfx::Tween::EASE_OUT);
       shelf_animation_setter.SetPreemptionStrategy(
