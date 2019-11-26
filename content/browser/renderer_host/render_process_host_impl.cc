@@ -2270,7 +2270,7 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
 
   AddUIThreadInterface(
       registry.get(),
-      base::BindRepeating(&AecDumpManagerImpl::AddRequest,
+      base::BindRepeating(&AecDumpManagerImpl::AddReceiver,
                           base::Unretained(&aec_dump_manager_)));
 
   // ---- Please do not register interfaces below this line ------
