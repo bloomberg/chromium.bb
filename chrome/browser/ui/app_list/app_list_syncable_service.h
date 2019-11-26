@@ -326,7 +326,6 @@ class AppListSyncableService : public syncer::SyncableService,
   syncer::SyncableService::StartSyncFlare flare_;
   bool initial_sync_data_processed_;
   bool first_app_list_sync_;
-  const bool is_app_service_enabled_;
   std::string oem_folder_name_;
   base::OnceClosure wait_until_ready_to_sync_cb_;
 
