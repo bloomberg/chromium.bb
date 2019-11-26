@@ -599,16 +599,30 @@ StatusCode DecoderImpl::DecodeTiles(const ObuParser* obu) {
   }
   assert(tiles.size() == static_cast<size_t>(tile_count));
   bool tile_decoding_failed = false;
-  if (threading_strategy_.tile_thread_pool() == nullptr) {
-    for (const auto& tile_ptr : tiles) {
-      if (!tile_decoding_failed) {
-        if (!tile_ptr->Decode(/*is_main_thread=*/true)) {
-          LIBGAV1_DLOG(ERROR, "Error decoding tile #%d", tile_ptr->number());
-          tile_decoding_failed = true;
+  if (settings_.threads == 1) {
+    bool ok = true;
+    // Decode in superblock row order.
+    const int block_width4x4 =
+        obu->sequence_header().use_128x128_superblock ? 32 : 16;
+    std::unique_ptr<DecoderScratchBuffer> scratch_buffer =
+        decoder_scratch_buffer_pool_.Get();
+    if (scratch_buffer != nullptr) {
+      for (int row4x4 = 0; row4x4 < obu->frame_header().rows4x4;
+           row4x4 += block_width4x4) {
+        for (const auto& tile_ptr : tiles) {
+          if (!tile_ptr->DecodeSuperBlockRow(row4x4, scratch_buffer.get())) {
+            ok = false;
+            break;
+          }
         }
-      } else {
-        pending_tiles.Decrement(false);
+        if (!ok) break;
       }
+      decoder_scratch_buffer_pool_.Release(std::move(scratch_buffer));
+    } else {
+      ok = false;
+    }
+    for (size_t i = 0; i < tiles.size(); ++i) {
+      pending_tiles.Decrement(ok);
     }
   } else {
     const int num_workers = threading_strategy_.tile_thread_count();

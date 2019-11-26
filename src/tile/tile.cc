@@ -368,7 +368,8 @@ Tile::Tile(
       residual_buffer_pool_(residual_buffer_pool),
       decoder_scratch_buffer_pool_(decoder_scratch_buffer_pool),
       pending_tiles_(pending_tiles),
-      build_bit_mask_when_parsing_(false) {
+      build_bit_mask_when_parsing_(false),
+      initialized_(false) {
   row_ = number_ / frame_header.tile_info.tile_columns;
   column_ = number_ % frame_header.tile_info.tile_columns;
   row4x4_start_ = frame_header.tile_info.tile_row_start[row_];
@@ -439,7 +440,41 @@ bool Tile::Init() {
       return false;
     }
   }
+  if (frame_header_.use_ref_frame_mvs) {
+    SetupMotionField(sequence_header_, frame_header_, current_frame_,
+                     reference_frames_, motion_field_mv_, row4x4_start_,
+                     row4x4_end_, column4x4_start_, column4x4_end_);
+  }
+  ResetLoopRestorationParams();
+  initialized_ = true;
   return true;
+}
+
+bool Tile::DecodeSuperBlockRow(int row4x4,
+                               DecoderScratchBuffer* const scratch_buffer) {
+  if (row4x4 < row4x4_start_ || row4x4 >= row4x4_end_) return true;
+  if (!initialized_ && !Init()) return false;
+  assert(scratch_buffer != nullptr);
+  const int block_width4x4 = kNum4x4BlocksWide[SuperBlockSize()];
+  for (int column4x4 = column4x4_start_; column4x4 < column4x4_end_;
+       column4x4 += block_width4x4) {
+    if (!ProcessSuperBlock(row4x4, column4x4, block_width4x4, scratch_buffer,
+                           kProcessingModeParseAndDecode)) {
+      pending_tiles_->Decrement(false);
+      LIBGAV1_DLOG(ERROR, "Error decoding super block row: %d column: %d",
+                   row4x4, column4x4);
+      return false;
+    }
+  }
+  if (row4x4 + block_width4x4 >= row4x4_end_) SaveSymbolDecoderContext();
+  return true;
+}
+
+void Tile::SaveSymbolDecoderContext() {
+  if (frame_header_.enable_frame_end_update_cdf &&
+      number_ == frame_header_.tile_info.context_update_id) {
+    *saved_symbol_decoder_context_ = symbol_decoder_context_;
+  }
 }
 
 bool Tile::Decode(bool is_main_thread) {
@@ -447,12 +482,6 @@ bool Tile::Decode(bool is_main_thread) {
     pending_tiles_->Decrement(false);
     return false;
   }
-  if (frame_header_.use_ref_frame_mvs) {
-    SetupMotionField(sequence_header_, frame_header_, current_frame_,
-                     reference_frames_, motion_field_mv_, row4x4_start_,
-                     row4x4_end_, column4x4_start_, column4x4_end_);
-  }
-  ResetLoopRestorationParams();
   // If this is the main thread, we build the loop filter bit masks when parsing
   // so that it happens in the current thread. This ensures that the main thread
   // does as much work as possible.
@@ -470,24 +499,11 @@ bool Tile::Decode(bool is_main_thread) {
     }
     for (int row4x4 = row4x4_start_; row4x4 < row4x4_end_;
          row4x4 += block_width4x4) {
-      for (int column4x4 = column4x4_start_; column4x4 < column4x4_end_;
-           column4x4 += block_width4x4) {
-        if (!ProcessSuperBlock(row4x4, column4x4, block_width4x4,
-                               scratch_buffer.get(),
-                               kProcessingModeParseAndDecode)) {
-          pending_tiles_->Decrement(false);
-          LIBGAV1_DLOG(ERROR, "Error decoding super block row: %d column: %d",
-                       row4x4, column4x4);
-          return false;
-        }
-      }
+      DecodeSuperBlockRow(row4x4, scratch_buffer.get());
     }
     decoder_scratch_buffer_pool_->Release(std::move(scratch_buffer));
   }
-  if (frame_header_.enable_frame_end_update_cdf &&
-      number_ == frame_header_.tile_info.context_update_id) {
-    *saved_symbol_decoder_context_ = symbol_decoder_context_;
-  }
+  SaveSymbolDecoderContext();
   if (!split_parse_and_decode_) {
     pending_tiles_->Decrement(true);
   }

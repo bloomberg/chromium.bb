@@ -95,6 +95,9 @@ class Tile : public Allocable {
   struct Block;  // Defined after this class.
 
   bool Decode(bool is_main_thread);  // 5.11.2.
+  // Decodes all the columns of the superblock row at |row4x4| that are within
+  // this Tile.
+  bool DecodeSuperBlockRow(int row4x4, DecoderScratchBuffer* scratch_buffer);
   const ObuSequenceHeader& sequence_header() const { return sequence_header_; }
   const ObuFrameHeader& frame_header() const { return frame_header_; }
   const RefCountedBuffer& current_frame() const { return current_frame_; }
@@ -169,8 +172,13 @@ class Tile : public Allocable {
   //    every transform block.
   using ResidualPtr = uint8_t*;
 
-  // Performs member initializations that may fail. Called by Decode().
+  // Performs member initializations that may fail. Called by Decode() and
+  // DecodeSuperBlockRow().
   LIBGAV1_MUST_USE_RESULT bool Init();
+
+  // Saves the symbol decoder context of this tile into
+  // |saved_symbol_decoder_context_| if necessary.
+  void SaveSymbolDecoderContext();
 
   // Entry point for multi-threaded decoding. This function performs the same
   // functionality as Decode(). The current thread does the "parse" step while
@@ -642,6 +650,7 @@ class Tile : public Allocable {
   // True if all the values in |delta_lf_| are zero. False otherwise.
   bool delta_lf_all_zero_;
   bool build_bit_mask_when_parsing_;
+  bool initialized_;
 };
 
 struct Tile::Block {
