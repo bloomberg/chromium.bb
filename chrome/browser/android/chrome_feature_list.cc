@@ -196,6 +196,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &net::features::kCookiesWithoutSameSiteMustBeSecure,
     &payments::features::kAlwaysAllowJustInTimePaymentApp,
     &payments::features::kPaymentRequestSkipToGPay,
+    &payments::features::kPaymentRequestSkipToGPayIfNoCard,
     &payments::features::kReturnGooglePayInBasicCard,
     &payments::features::kStrictHasEnrolledAutofillInstrument,
     &payments::features::kWebPaymentMicrotransaction,

@@ -301,6 +301,8 @@ public abstract class ChromeFeatureList {
             "PasswordManagerOnboardingAndroid";
     public static final String PAY_WITH_GOOGLE_V1 = "PayWithGoogleV1";
     public static final String PAYMENT_REQUEST_SKIP_TO_GPAY = "PaymentRequestSkipToGPay";
+    public static final String PAYMENT_REQUEST_SKIP_TO_GPAY_IF_NO_CARD =
+            "PaymentRequestSkipToGPayIfNoCard";
     public static final String PERMISSION_DELEGATION = "PermissionDelegation";
     public static final String PER_METHOD_CAN_MAKE_PAYMENT_QUOTA =
             "WebPaymentsPerMethodCanMakePaymentQuota";
