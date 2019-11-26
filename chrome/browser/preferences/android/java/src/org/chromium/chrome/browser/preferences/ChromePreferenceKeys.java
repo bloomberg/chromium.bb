@@ -355,6 +355,13 @@ public final class ChromePreferenceKeys {
     public static final String TAB_GROUPS_ANDROID_ENABLED_KEY = "tab_group_android_enabled";
 
     /**
+     * Whether or not the Duet-TabStrip integration is enabled.
+     * Default value is false.
+     */
+    public static final String DUET_TABSTRIP_INTEGRATION_ANDROID_ENABLED_KEY =
+            "Chrome.Flags.DuetTabstripIntegrationEnabled";
+
+    /**
      * Whether or not bootstrap tasks should be prioritized (i.e. bootstrap task prioritization
      * experiment is enabled). Default value is true.
      */
@@ -464,6 +471,7 @@ public final class ChromePreferenceKeys {
                 START_SURFACE_ENABLED_KEY,
                 GRID_TAB_SWITCHER_ENABLED_KEY,
                 TAB_GROUPS_ANDROID_ENABLED_KEY,
+                DUET_TABSTRIP_INTEGRATION_ANDROID_ENABLED_KEY,
                 PRIORITIZE_BOOTSTRAP_TASKS_KEY,
                 NETWORK_SERVICE_WARM_UP_ENABLED_KEY,
                 IMMERSIVE_UI_MODE_ENABLED,

@@ -519,6 +519,9 @@ extern const char kMemlogStackModePseudo[];
 extern const char kDownloadAutoResumptionNativeName[];
 extern const char kDownloadAutoResumptionNativeDescription[];
 
+extern const char kDuetTabStripIntegrationAndroidName[];
+extern const char kDuetTabStripIntegrationAndroidDescription[];
+
 extern const char kEnableNewDownloadBackendName[];
 extern const char kEnableNewDownloadBackendDescription[];
 

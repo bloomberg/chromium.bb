@@ -3370,6 +3370,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kTabEngagementReportingName,
      flag_descriptions::kTabEngagementReportingDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kTabEngagementReportingAndroid)},
+
+    {"enable-duet-tabstrip-integration",
+     flag_descriptions::kDuetTabStripIntegrationAndroidName,
+     flag_descriptions::kDuetTabStripIntegrationAndroidDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kDuetTabStripIntegrationAndroid)},
 #endif  // OS_ANDROID
 
     {"enable-built-in-module-all", flag_descriptions::kBuiltInModuleAllName,

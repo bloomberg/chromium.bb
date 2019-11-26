@@ -2510,6 +2510,10 @@ const char kDirectActionsDescription[] =
 const char kDownloadRenameName[] = "Enable download rename";
 const char kDownloadRenameDescription[] = "Enables rename option for downloads";
 
+const char kDuetTabStripIntegrationAndroidName[] = "Duet-TabStrip Integration";
+const char kDuetTabStripIntegrationAndroidDescription[] =
+    "Allows users to access integration of Duet and TabStrip.";
+
 const char kAutofillManualFallbackAndroidName[] =
     "Enable Autofill manual fallback for Addresses and Payments (Android)";
 const char kAutofillManualFallbackAndroidDescription[] =

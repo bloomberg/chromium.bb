@@ -122,8 +122,11 @@ public class FeatureUtilities {
         cacheReachedCodeProfilerTrialGroup();
         cacheStartSurfaceEnabled();
 
-        if (isHighEndPhone()) cacheGridTabSwitcherEnabled();
-        if (isHighEndPhone()) cacheTabGroupsAndroidEnabled();
+        if (isHighEndPhone()) {
+            cacheGridTabSwitcherEnabled();
+            cacheTabGroupsAndroidEnabled();
+            cacheDuetTabStripIntegrationAndroidEnabled();
+        }
 
         // Propagate REACHED_CODE_PROFILER feature value to LibraryLoader. This can't be done in
         // LibraryLoader itself because it lives in //base and can't depend on ChromeFeatureList.
@@ -403,11 +406,18 @@ public class FeatureUtilities {
     }
 
     private static void cacheGridTabSwitcherEnabled() {
-        SharedPreferencesManager.getInstance().writeBoolean(
-                ChromePreferenceKeys.GRID_TAB_SWITCHER_ENABLED_KEY,
-                !DeviceClassManager.enableAccessibilityLayout()
-                        && ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID)
-                        && TabManagementModuleProvider.getDelegate() != null);
+        SharedPreferencesManager sharedPreferencesManager = SharedPreferencesManager.getInstance();
+        String featureKey = ChromePreferenceKeys.GRID_TAB_SWITCHER_ENABLED_KEY;
+        boolean shouldQueryFeatureFlag = !DeviceClassManager.enableAccessibilityLayout();
+        if (!shouldQueryFeatureFlag) {
+            sharedPreferencesManager.writeBoolean(featureKey, false);
+            return;
+        }
+        boolean queriedFlagValue =
+                ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID);
+        boolean gridTabSwitcherEnabled =
+                queriedFlagValue && TabManagementModuleProvider.isTabManagementModuleSupported();
+        sharedPreferencesManager.writeBoolean(featureKey, gridTabSwitcherEnabled);
     }
 
     /**
@@ -431,11 +441,33 @@ public class FeatureUtilities {
     }
 
     private static void cacheTabGroupsAndroidEnabled() {
-        SharedPreferencesManager.getInstance().writeBoolean(
-                ChromePreferenceKeys.TAB_GROUPS_ANDROID_ENABLED_KEY,
-                !DeviceClassManager.enableAccessibilityLayout()
-                        && ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_GROUPS_ANDROID)
-                        && TabManagementModuleProvider.getDelegate() != null && isHighEndPhone());
+        SharedPreferencesManager sharedPreferencesManager = SharedPreferencesManager.getInstance();
+        String featureKey = ChromePreferenceKeys.TAB_GROUPS_ANDROID_ENABLED_KEY;
+        boolean shouldQueryFeatureFlag = !DeviceClassManager.enableAccessibilityLayout();
+        if (!shouldQueryFeatureFlag) {
+            sharedPreferencesManager.writeBoolean(featureKey, false);
+            return;
+        }
+        boolean queriedFlagValue =
+                ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_GROUPS_ANDROID);
+        boolean tabGroupsEnabled =
+                queriedFlagValue && TabManagementModuleProvider.isTabManagementModuleSupported();
+        sharedPreferencesManager.writeBoolean(featureKey, tabGroupsEnabled);
+    }
+
+    private static void cacheDuetTabStripIntegrationAndroidEnabled() {
+        SharedPreferencesManager sharedPreferencesManager = SharedPreferencesManager.getInstance();
+        String featureKey = ChromePreferenceKeys.DUET_TABSTRIP_INTEGRATION_ANDROID_ENABLED_KEY;
+        boolean shouldQueryFeatureFlag = !DeviceClassManager.enableAccessibilityLayout();
+        if (!shouldQueryFeatureFlag) {
+            sharedPreferencesManager.writeBoolean(featureKey, false);
+            return;
+        }
+        boolean queriedFlagValue =
+                ChromeFeatureList.isEnabled(ChromeFeatureList.DUET_TABSTRIP_INTEGRATION_ANDROID);
+        boolean duetTabStripIntegrationEnabled =
+                queriedFlagValue && TabManagementModuleProvider.isTabManagementModuleSupported();
+        sharedPreferencesManager.writeBoolean(featureKey, duetTabStripIntegrationEnabled);
     }
 
     /**
@@ -484,6 +516,15 @@ public class FeatureUtilities {
     public static boolean isTabGroupsAndroidContinuationEnabled() {
         return isTabGroupsAndroidEnabled()
                 && ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID);
+    }
+
+    /**
+     * @return Whether the tab strip and duet integration feature is enabled and available for use.
+     */
+    public static boolean isDuetTabStripIntegrationAndroidEnabled() {
+        return isTabGroupsAndroidEnabled()
+                && isFlagEnabled(
+                        ChromePreferenceKeys.DUET_TABSTRIP_INTEGRATION_ANDROID_ENABLED_KEY, false);
     }
 
     /**
