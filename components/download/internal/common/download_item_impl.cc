@@ -873,6 +873,10 @@ bool DownloadItemImpl::IsSavePackageDownload() const {
   return job_ && job_->IsSavePackageDownload();
 }
 
+DownloadSource DownloadItemImpl::GetDownloadSource() const {
+  return download_source_;
+}
+
 const base::FilePath& DownloadItemImpl::GetFullPath() const {
   return destination_info_.current_path;
 }
