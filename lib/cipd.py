@@ -18,7 +18,6 @@ import pprint
 import tempfile
 
 import httplib2
-import six
 from six.moves import urllib
 
 import chromite.lib.cros_logging as log
@@ -72,7 +71,7 @@ def _ChromeInfraRequest(method, request):
   if resp.status != 200:
     raise Error('Got HTTP %d from CIPD %r: %s' % (resp.status, method, body))
   try:
-    return json.loads(body.lstrip(")]}'\n"))
+    return json.loads(body.lstrip(b")]}'\n"))
   except ValueError:
     raise Error('Bad response from CIPD server:\n%s' % (body,))
 
@@ -107,7 +106,7 @@ def _DownloadCIPD(instance_sha256):
     raise Error('Got a %d response from Google Storage.' % response.status)
 
   # Check SHA256 matches what server expects.
-  digest = six.text_type(hashlib.sha256(binary).hexdigest())
+  digest = hashlib.sha256(binary).hexdigest()
   for alias in resp['clientRefAliases']:
     if alias['hashAlgo'] == 'SHA256':
       if digest != alias['hexDigest']:
@@ -127,7 +126,7 @@ class CipdCache(cache.RemoteCache):
     instance_sha256 = urllib.parse.urlparse(url).netloc
     binary = _DownloadCIPD(instance_sha256)
     log.info('Fetched CIPD package %s:%s', CIPD_CLIENT_PACKAGE, instance_sha256)
-    osutils.WriteFile(local_path, binary)
+    osutils.WriteFile(local_path, binary, mode='wb')
     os.chmod(local_path, 0o755)
 
 
