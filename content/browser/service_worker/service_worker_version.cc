@@ -1066,7 +1066,7 @@ void ServiceWorkerVersion::OnStopping() {
   DCHECK(stop_time_.is_null());
   RestartTick(&stop_time_);
   TRACE_EVENT_ASYNC_BEGIN2("ServiceWorker", "ServiceWorkerVersion::StopWorker",
-                           stop_time_.ToInternalValue(), "Script",
+                           stop_time_.since_origin().InMicroseconds(), "Script",
                            script_url_.spec(), "Version Status",
                            VersionStatusToString(status_));
 
@@ -1134,7 +1134,8 @@ void ServiceWorkerVersion::OnStartSent(blink::ServiceWorkerStatusCode status) {
 
 void ServiceWorkerVersion::SetCachedMetadata(const GURL& url,
                                              base::span<const uint8_t> data) {
-  int64_t callback_id = tick_clock_->NowTicks().ToInternalValue();
+  int64_t callback_id =
+      base::Time::Now().ToDeltaSinceWindowsEpoch().InMicroseconds();
   TRACE_EVENT_ASYNC_BEGIN1("ServiceWorker",
                            "ServiceWorkerVersion::SetCachedMetadata",
                            callback_id, "URL", url.spec());
@@ -1145,7 +1146,8 @@ void ServiceWorkerVersion::SetCachedMetadata(const GURL& url,
 }
 
 void ServiceWorkerVersion::ClearCachedMetadata(const GURL& url) {
-  int64_t callback_id = tick_clock_->NowTicks().ToInternalValue();
+  int64_t callback_id =
+      base::Time::Now().ToDeltaSinceWindowsEpoch().InMicroseconds();
   TRACE_EVENT_ASYNC_BEGIN1("ServiceWorker",
                            "ServiceWorkerVersion::ClearCachedMetadata",
                            callback_id, "URL", url.spec());
@@ -2046,8 +2048,8 @@ void ServiceWorkerVersion::OnStoppedInternal(EmbeddedWorkerStatus old_status) {
 
   if (!stop_time_.is_null()) {
     TRACE_EVENT_ASYNC_END1("ServiceWorker", "ServiceWorkerVersion::StopWorker",
-                           stop_time_.ToInternalValue(), "Restart",
-                           should_restart);
+                           stop_time_.since_origin().InMicroseconds(),
+                           "Restart", should_restart);
     ClearTick(&stop_time_);
   }
   StopTimeoutTimer();
