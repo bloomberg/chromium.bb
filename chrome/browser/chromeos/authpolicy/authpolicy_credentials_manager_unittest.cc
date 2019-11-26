@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/authpolicy/auth_policy_credentials_manager.h"
+#include "chrome/browser/chromeos/authpolicy/authpolicy_credentials_manager.h"
 
 #include <memory>
 
@@ -16,7 +16,7 @@
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
-#include "chromeos/dbus/auth_policy/fake_auth_policy_client.h"
+#include "chromeos/dbus/authpolicy/fake_authpolicy_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/network/network_handler.h"
 #include "components/user_manager/scoped_user_manager.h"
@@ -53,7 +53,7 @@ class AuthPolicyCredentialsManagerTest : public testing::Test {
     chromeos::DBusThreadManager::Initialize();
     chromeos::NetworkHandler::Initialize();
     AuthPolicyClient::InitializeFake();
-    fake_auth_policy_client()->DisableOperationDelayForTesting();
+    fake_authpolicy_client()->DisableOperationDelayForTesting();
 
     TestingProfile::Builder profile_builder;
     profile_builder.SetProfileName(kProfileEmail);
@@ -62,18 +62,17 @@ class AuthPolicyCredentialsManagerTest : public testing::Test {
     mock_user_manager()->AddUser(account_id_);
 
     base::RunLoop run_loop;
-    fake_auth_policy_client()->set_on_get_status_closure(
-        run_loop.QuitClosure());
+    fake_authpolicy_client()->set_on_get_status_closure(run_loop.QuitClosure());
 
     profile_ = profile_builder.Build();
     display_service_ =
         std::make_unique<NotificationDisplayServiceTester>(profile());
 
-    auth_policy_credentials_manager_ =
+    authpolicy_credentials_manager_ =
         static_cast<AuthPolicyCredentialsManager*>(
             AuthPolicyCredentialsManagerFactory::GetInstance()
                 ->GetServiceForBrowserContext(profile(), false /* create */));
-    EXPECT_TRUE(auth_policy_credentials_manager_);
+    EXPECT_TRUE(authpolicy_credentials_manager_);
 
     EXPECT_CALL(*mock_user_manager(),
                 SaveForceOnlineSignin(account_id(), false));
@@ -92,10 +91,10 @@ class AuthPolicyCredentialsManagerTest : public testing::Test {
  protected:
   AccountId& account_id() { return account_id_; }
   TestingProfile* profile() { return profile_.get(); }
-  AuthPolicyCredentialsManager* auth_policy_credentials_manager() {
-    return auth_policy_credentials_manager_;
+  AuthPolicyCredentialsManager* authpolicy_credentials_manager() {
+    return authpolicy_credentials_manager_;
   }
-  chromeos::FakeAuthPolicyClient* fake_auth_policy_client() const {
+  chromeos::FakeAuthPolicyClient* fake_authpolicy_client() const {
     return chromeos::FakeAuthPolicyClient::Get();
   }
 
@@ -120,9 +119,8 @@ class AuthPolicyCredentialsManagerTest : public testing::Test {
 
   void CallGetUserStatusAndWait() {
     base::RunLoop run_loop;
-    fake_auth_policy_client()->set_on_get_status_closure(
-        run_loop.QuitClosure());
-    auth_policy_credentials_manager()->GetUserStatus();
+    fake_authpolicy_client()->set_on_get_status_closure(run_loop.QuitClosure());
+    authpolicy_credentials_manager()->GetUserStatus();
     run_loop.Run();
     testing::Mock::VerifyAndClearExpectations(mock_user_manager());
   }
@@ -132,7 +130,7 @@ class AuthPolicyCredentialsManagerTest : public testing::Test {
   std::unique_ptr<TestingProfile> profile_;
 
   // Owned by AuthPolicyCredentialsManagerFactory.
-  AuthPolicyCredentialsManager* auth_policy_credentials_manager_;
+  AuthPolicyCredentialsManager* authpolicy_credentials_manager_;
   user_manager::ScopedUserManager user_manager_enabler_;
 
   std::unique_ptr<NotificationDisplayServiceTester> display_service_;
@@ -146,8 +144,8 @@ class AuthPolicyCredentialsManagerTest : public testing::Test {
 // Tests saving display and given name into user manager. No error means no
 // notifications are shown.
 TEST_F(AuthPolicyCredentialsManagerTest, SaveNames) {
-  fake_auth_policy_client()->set_display_name(kDisplayName);
-  fake_auth_policy_client()->set_given_name(kGivenName);
+  fake_authpolicy_client()->set_display_name(kDisplayName);
+  fake_authpolicy_client()->set_given_name(kGivenName);
   user_manager::UserManager::UserAccountData user_account_data(
       base::UTF8ToUTF16(kDisplayName), base::UTF8ToUTF16(kGivenName),
       std::string() /* locale */);
@@ -165,7 +163,7 @@ TEST_F(AuthPolicyCredentialsManagerTest, SaveNames) {
 TEST_F(AuthPolicyCredentialsManagerTest, ShowSameNotificationOnce) {
   // In case of expired password save to force online signin and show
   // notification.
-  fake_auth_policy_client()->set_password_status(
+  fake_authpolicy_client()->set_password_status(
       authpolicy::ActiveDirectoryUserStatus::PASSWORD_EXPIRED);
   EXPECT_CALL(*mock_user_manager(), SaveForceOnlineSignin(account_id(), true));
   CallGetUserStatusAndWait();
@@ -182,9 +180,9 @@ TEST_F(AuthPolicyCredentialsManagerTest, ShowSameNotificationOnce) {
 TEST_F(AuthPolicyCredentialsManagerTest, ShowDifferentNotifications) {
   // In case of expired password save to force online signin and show
   // notification.
-  fake_auth_policy_client()->set_password_status(
+  fake_authpolicy_client()->set_password_status(
       authpolicy::ActiveDirectoryUserStatus::PASSWORD_CHANGED);
-  fake_auth_policy_client()->set_tgt_status(
+  fake_authpolicy_client()->set_tgt_status(
       authpolicy::ActiveDirectoryUserStatus::TGT_EXPIRED);
   EXPECT_CALL(*mock_user_manager(), SaveForceOnlineSignin(account_id(), true));
   CallGetUserStatusAndWait();
@@ -197,7 +195,7 @@ TEST_F(AuthPolicyCredentialsManagerTest, ShowDifferentNotifications) {
 // Tests invalid TGT status does not force online signin but still shows
 // a notification.
 TEST_F(AuthPolicyCredentialsManagerTest, InvalidTGTDoesntForceOnlineSignin) {
-  fake_auth_policy_client()->set_tgt_status(
+  fake_authpolicy_client()->set_tgt_status(
       authpolicy::ActiveDirectoryUserStatus::TGT_EXPIRED);
   EXPECT_CALL(*mock_user_manager(), SaveForceOnlineSignin(account_id(), false));
   CallGetUserStatusAndWait();

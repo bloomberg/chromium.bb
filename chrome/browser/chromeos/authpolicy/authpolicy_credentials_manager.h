@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_AUTHPOLICY_AUTH_POLICY_CREDENTIALS_MANAGER_H_
-#define CHROME_BROWSER_CHROMEOS_AUTHPOLICY_AUTH_POLICY_CREDENTIALS_MANAGER_H_
+#ifndef CHROME_BROWSER_CHROMEOS_AUTHPOLICY_AUTHPOLICY_CREDENTIALS_MANAGER_H_
+#define CHROME_BROWSER_CHROMEOS_AUTHPOLICY_AUTHPOLICY_CREDENTIALS_MANAGER_H_
 
 #include <set>
 #include <string>
@@ -11,7 +11,7 @@
 #include "base/cancelable_callback.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/authpolicy/kerberos_files_handler.h"
-#include "chromeos/dbus/auth_policy/active_directory_info.pb.h"
+#include "chromeos/dbus/authpolicy/active_directory_info.pb.h"
 #include "chromeos/network/network_state_handler_observer.h"
 #include "components/account_id/account_id.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
@@ -147,4 +147,4 @@ class AuthPolicyCredentialsManagerFactory
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_AUTHPOLICY_AUTH_POLICY_CREDENTIALS_MANAGER_H_
+#endif  // CHROME_BROWSER_CHROMEOS_AUTHPOLICY_AUTHPOLICY_CREDENTIALS_MANAGER_H_

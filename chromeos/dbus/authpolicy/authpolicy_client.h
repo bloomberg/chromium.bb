@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_DBUS_AUTH_POLICY_AUTH_POLICY_CLIENT_H_
-#define CHROMEOS_DBUS_AUTH_POLICY_AUTH_POLICY_CLIENT_H_
+#ifndef CHROMEOS_DBUS_AUTHPOLICY_AUTHPOLICY_CLIENT_H_
+#define CHROMEOS_DBUS_AUTHPOLICY_AUTHPOLICY_CLIENT_H_
 
 #include <string>
 
 #include "base/callback.h"
 #include "base/component_export.h"
-#include "chromeos/dbus/auth_policy/active_directory_info.pb.h"
+#include "chromeos/dbus/authpolicy/active_directory_info.pb.h"
 #include "dbus/object_proxy.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -20,7 +20,7 @@ namespace chromeos {
 // AuthPolicyClient is used to communicate with the org.chromium.AuthPolicy
 // sevice. All method should be called from the origin thread (UI thread) which
 // initializes the DBusThreadManager instance.
-class COMPONENT_EXPORT(AUTH_POLICY) AuthPolicyClient {
+class COMPONENT_EXPORT(AUTHPOLICY) AuthPolicyClient {
  public:
   using AuthCallback = base::OnceCallback<void(
       authpolicy::ErrorType error,
@@ -106,4 +106,4 @@ class COMPONENT_EXPORT(AUTH_POLICY) AuthPolicyClient {
 
 }  // namespace chromeos
 
-#endif  // CHROMEOS_DBUS_AUTH_POLICY_AUTH_POLICY_CLIENT_H_
+#endif  // CHROMEOS_DBUS_AUTHPOLICY_AUTHPOLICY_CLIENT_H_

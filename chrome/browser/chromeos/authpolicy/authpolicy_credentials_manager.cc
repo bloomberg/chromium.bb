@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/authpolicy/auth_policy_credentials_manager.h"
+#include "chrome/browser/chromeos/authpolicy/authpolicy_credentials_manager.h"
 
 #include <memory>
 #include <utility>
@@ -27,7 +27,7 @@
 #include "chrome/grit/theme_resources.h"
 #include "chromeos/components/account_manager/account_manager.h"
 #include "chromeos/components/account_manager/account_manager_factory.h"
-#include "chromeos/dbus/auth_policy/auth_policy_client.h"
+#include "chromeos/dbus/authpolicy/authpolicy_client.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"

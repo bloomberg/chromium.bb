@@ -6,8 +6,8 @@ import("//third_party/protobuf/proto_library.gni")
 
 assert(is_chromeos, "Non-Chrome-OS builds cannot depend on //chromeos")
 
-component("auth_policy") {
-  defines = [ "IS_AUTH_POLICY_IMPL" ]
+component("authpolicy") {
+  defines = [ "IS_AUTHPOLICY_IMPL" ]
 
   deps = [
     ":authpolicy_proto",
@@ -25,10 +25,10 @@ component("auth_policy") {
   ]
 
   sources = [
-    "auth_policy_client.cc",
-    "auth_policy_client.h",
-    "fake_auth_policy_client.cc",
-    "fake_auth_policy_client.h",
+    "authpolicy_client.cc",
+    "authpolicy_client.h",
+    "fake_authpolicy_client.cc",
+    "fake_authpolicy_client.h",
   ]
 }
 
@@ -37,5 +37,5 @@ proto_library("authpolicy_proto") {
     "//third_party/cros_system_api/dbus/authpolicy/active_directory_info.proto",
   ]
 
-  proto_out_dir = "chromeos/dbus/auth_policy"
+  proto_out_dir = "chromeos/dbus/authpolicy"
 }
