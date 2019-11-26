@@ -905,6 +905,64 @@ IN_PROC_BROWSER_TEST_P(LoginPromptBrowserTest,
   EXPECT_EQ(1, observer.auth_needed_count());
 }
 
+// Deep cross-domain image login prompting should be blocked, too.
+IN_PROC_BROWSER_TEST_P(LoginPromptBrowserTest,
+                       BlockDeepCrossdomainPromptForSubresources) {
+  const char kTestPage[] = "/iframe_login_load_img_from_b.html";
+
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  NavigationController* controller = &contents->GetController();
+  LoginPromptBrowserTestObserver observer;
+  observer.Register(content::Source<NavigationController>(controller));
+
+  // b.com is iframe'd under 127.0.0.1 and includes an image. This is still
+  // cross-domain.
+  {
+    GURL test_page = embedded_test_server()->GetURL(kTestPage);
+    ASSERT_EQ("127.0.0.1", test_page.host());
+
+    WindowedLoadStopObserver load_stop_waiter(controller, 1);
+    browser()->OpenURL(OpenURLParams(test_page, Referrer(),
+                                     WindowOpenDisposition::CURRENT_TAB,
+                                     ui::PAGE_TRANSITION_TYPED, false));
+    load_stop_waiter.Wait();
+  }
+  EXPECT_EQ(0, observer.auth_needed_count());
+
+  // b.com iframe'd under b.com and includes an image.
+  {
+    GURL test_page = embedded_test_server()->GetURL(kTestPage);
+    ASSERT_EQ("127.0.0.1", test_page.host());
+
+    // Change the host from 127.0.0.1 to www.b.com so that when the
+    // page tries to load from b, it will be same-origin.
+    GURL::Replacements replacements;
+    replacements.SetHostStr("www.b.com");
+    test_page = test_page.ReplaceComponents(replacements);
+
+    WindowedAuthNeededObserver auth_needed_waiter(controller);
+    browser()->OpenURL(OpenURLParams(test_page, Referrer(),
+                                     WindowOpenDisposition::CURRENT_TAB,
+                                     ui::PAGE_TRANSITION_TYPED, false));
+    auth_needed_waiter.Wait();
+    ASSERT_EQ(1u, observer.handlers().size());
+
+    while (!observer.handlers().empty()) {
+      WindowedAuthCancelledObserver auth_cancelled_waiter(controller);
+      LoginHandler* handler = *observer.handlers().begin();
+
+      ASSERT_TRUE(handler);
+      handler->CancelAuth();
+      auth_cancelled_waiter.Wait();
+    }
+  }
+
+  EXPECT_EQ(1, observer.auth_needed_count());
+}
+
 // Block same domain image resource if the top level frame is HTTPS and the
 // image resource is HTTP.
 // E.g. Top level: https://example.com, Image resource: http://example.com/image
