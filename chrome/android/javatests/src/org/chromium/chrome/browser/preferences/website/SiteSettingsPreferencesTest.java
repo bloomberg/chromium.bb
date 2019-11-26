@@ -229,8 +229,6 @@ public class SiteSettingsPreferencesTest {
      * Tests that the Preferences designated by keys in |expectedKeys|, and only
      * these preferences, will be shown for the category specified by |type|. The
      * order of Preferences matters.
-     *
-     * @throws Exception
      */
     private void checkPreferencesForCategory(
             final @SiteSettingsCategory.Type int type, String[] expectedKeys) {
