@@ -191,7 +191,8 @@ _ANDROID_PIXEL2_BENCHMARK_CONFIGS = _OFFICIAL_EXCEPT_DISPLAY_LOCKING
 _ANDROID_PIXEL2_WEBVIEW_BENCHMARK_CONFIGS = (
     _OFFICIAL_EXCEPT_DISPLAY_LOCKING_JETSTREAM2)
 _ANDROID_PIXEL2_WEBLAYER_BENCHMARK_CONFIGS = frozenset([
-    _GetBenchmarkConfig('system_health.common_mobile')])
+    _GetBenchmarkConfig('system_health.common_mobile', True),
+    _GetBenchmarkConfig('system_health.memory_mobile', True)])
 _ANDROID_NEXUS5X_FYI_BENCHMARK_CONFIGS = frozenset([
     _GetBenchmarkConfig('heap_profiling.mobile.disabled'),
     _GetBenchmarkConfig('heap_profiling.mobile.native'),
