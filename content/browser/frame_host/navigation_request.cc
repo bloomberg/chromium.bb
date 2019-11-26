@@ -1663,6 +1663,52 @@ void NavigationRequest::OnResponseStarted(
     }
   }
 
+  auto cross_origin_embedder_policy =
+      network::mojom::CrossOriginEmbedderPolicy::kNone;
+  if (base::FeatureList::IsEnabled(network::features::kCrossOriginIsolation)) {
+    // Parse the Cross-Origin-Opener-Policy header.
+    {
+      std::string header_value;
+      if (response_head->head.headers &&
+          response_head->head.headers->GetNormalizedHeader(
+              "cross-origin-embedder-policy", &header_value) &&
+          header_value == "require-corp") {
+        cross_origin_embedder_policy =
+            network::mojom::CrossOriginEmbedderPolicy::kRequireCorp;
+      }
+    }
+    // https://mikewest.github.io/corpp/#process-navigation-response.
+    if (GetParentFrame() &&
+        GetParentFrame()->cross_origin_embedder_policy() ==
+            network::mojom::CrossOriginEmbedderPolicy::kRequireCorp) {
+      // Some special URLs not loaded using the network are inheriting the
+      // Cross-Origin-Embedder-Policy header from their parent.
+      //
+      // TODO(ahemery): Find a way for navigation with no responses to
+      // inherit the COEP header. Example of such a URLs:
+      //  - about:blank
+      //  - about:srcdoc.
+      // Currently, it is possible for a main document with the COEP header to
+      // host an iframe without it by adding an about:srcdoc iframe in
+      // between.
+      if (common_params_->url.SchemeIsBlob() ||
+          common_params_->url.SchemeIs(url::kDataScheme)) {
+        cross_origin_embedder_policy =
+            network::mojom::CrossOriginEmbedderPolicy::kRequireCorp;
+      }
+      if (cross_origin_embedder_policy ==
+          network::mojom::CrossOriginEmbedderPolicy::kNone) {
+        OnRequestFailedInternal(
+            network::URLLoaderCompletionStatus(net::ERR_FAILED),
+            false /* skip_throttles */, base::nullopt /* error_page_content */,
+            false /* collapse_frame */);
+        // DO NOT ADD CODE after this. The previous call to
+        // OnRequestFailedInternal has destroyed the NavigationRequest.
+        return;
+      }
+    }
+  }
+
   // Select an appropriate renderer to commit the navigation.
   if (IsServedFromBackForwardCache()) {
     NavigationControllerImpl* controller =
@@ -1688,6 +1734,11 @@ void NavigationRequest::OnResponseStarted(
     render_frame_host_ = nullptr;
   }
   DCHECK(render_frame_host_ || !response_should_be_rendered_);
+
+  if (render_frame_host_) {
+    render_frame_host_->set_cross_origin_embedder_policy(
+        cross_origin_embedder_policy);
+  }
 
   if (!browser_initiated_ && render_frame_host_ &&
       render_frame_host_ != frame_tree_node_->current_frame_host()) {
@@ -1811,42 +1862,6 @@ void NavigationRequest::OnResponseStarted(
     // DO NOT ADD CODE after this. The previous call to OnRequestFailedInternal
     // has destroyed the NavigationRequest.
     return;
-  }
-
-  // https://mikewest.github.io/corpp/#process-navigation-response
-  if (base::FeatureList::IsEnabled(network::features::kCrossOriginIsolation) &&
-      render_frame_host_) {
-    auto cross_origin_embedder_policy =
-        network::mojom::CrossOriginEmbedderPolicy::kNone;
-    std::string header_value;
-    if (response_head->head.headers &&
-        response_head->head.headers->GetNormalizedHeader(
-            "cross-origin-embedder-policy", &header_value) &&
-        header_value == "require-corp") {
-      cross_origin_embedder_policy =
-          network::mojom::CrossOriginEmbedderPolicy::kRequireCorp;
-    } else {
-      if (render_frame_host_->GetParent() &&
-          render_frame_host_->GetParent()->cross_origin_embedder_policy() ==
-              network::mojom::CrossOriginEmbedderPolicy::kRequireCorp) {
-        if (common_params_->url.SchemeIsBlob() ||
-            common_params_->url.SchemeIs("data")) {
-          cross_origin_embedder_policy =
-              network::mojom::CrossOriginEmbedderPolicy::kRequireCorp;
-        } else {
-          OnRequestFailedInternal(
-              network::URLLoaderCompletionStatus(net::ERR_FAILED),
-              false /* skip_throttles */,
-              base::nullopt /* error_page_content */,
-              false /* collapse_frame */);
-          // DO NOT ADD CODE after this. The previous call to
-          // OnRequestFailedInternal has destroyed the NavigationRequest.
-          return;
-        }
-      }
-    }
-    render_frame_host_->set_cross_origin_embedder_policy(
-        cross_origin_embedder_policy);
   }
 
   // Check if the navigation should be allowed to proceed.

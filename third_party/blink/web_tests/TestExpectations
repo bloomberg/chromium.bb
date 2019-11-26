@@ -3830,7 +3830,6 @@ crbug.com/964181 external/wpt/css/css-text/word-break/word-break-break-all-inlin
 crbug.com/964181 external/wpt/css/css-text/word-break/word-break-break-all-inline-010.html [ Failure ]
 
 # Sheriff 2019-08-19:
-crbug.com/626703 external/wpt/html/cross-origin-embedder-policy/none.https.html [ Failure ]
 crbug.com/626703 external/wpt/html/cross-origin-opener-policy/coop-sandbox.https.html [ Failure ]
 crbug.com/626703 [ Debug ] external/wpt/html/cross-origin-embedder-policy/require-corp.https.html [ Failure ]
 crbug.com/626703 [ Debug ] virtual/cross-origin-isolation/external/wpt/html/cross-origin-embedder-policy/require-corp.https.html [ Pass Failure ]
