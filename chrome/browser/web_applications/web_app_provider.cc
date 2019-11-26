@@ -241,12 +241,9 @@ void WebAppProvider::StartRegistryController() {
 void WebAppProvider::OnRegistryControllerReady() {
   DCHECK(!on_registry_ready_.is_signaled());
 
-  // TODO(crbug.com/877898): Port all these managers to support BMO. Start them.
-  if (!base::FeatureList::IsEnabled(features::kDesktopPWAsWithoutExtensions)) {
-    external_web_app_manager_->Start();
-    web_app_policy_manager_->Start();
-    system_web_app_manager_->Start();
-  }
+  external_web_app_manager_->Start();
+  web_app_policy_manager_->Start();
+  system_web_app_manager_->Start();
   manifest_update_manager_->Start();
   file_handler_manager_->Start();
 
