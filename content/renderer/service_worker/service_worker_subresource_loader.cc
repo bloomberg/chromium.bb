@@ -160,7 +160,9 @@ ServiceWorkerSubresourceLoader::ServiceWorkerSubresourceLoader(
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
     scoped_refptr<ControllerServiceWorkerConnector> controller_connector,
     scoped_refptr<network::SharedURLLoaderFactory> fallback_factory,
-    scoped_refptr<base::SequencedTaskRunner> task_runner)
+    scoped_refptr<base::SequencedTaskRunner> task_runner,
+    base::WeakPtr<ServiceWorkerSubresourceLoaderFactory>
+        service_worker_subresource_loader_factory)
     : redirect_limit_(net::URLRequest::kMaxRedirects),
       url_loader_client_(std::move(client)),
       url_loader_receiver_(this, std::move(receiver)),
@@ -176,6 +178,8 @@ ServiceWorkerSubresourceLoader::ServiceWorkerSubresourceLoader(
       resource_request_(resource_request),
       fallback_factory_(std::move(fallback_factory)),
       task_runner_(std::move(task_runner)),
+      service_worker_subresource_loader_factory_(
+          std::move(service_worker_subresource_loader_factory)),
       response_source_(network::mojom::FetchResponseSource::kUnspecified) {
   DCHECK(controller_connector_);
   response_head_->request_start = base::TimeTicks::Now();
@@ -260,10 +264,11 @@ void ServiceWorkerSubresourceLoader::DispatchFetchEvent() {
   params->request = blink::mojom::FetchAPIRequest::From(resource_request_);
   params->client_id = controller_connector_->client_id();
 
-  // TODO(https://crbug.com/900700): Implement this, making the remote
-  // connected to a receiver which is passed to
-  // blink::PerformanceResourceTiming.
-  params->worker_timing_remote = mojo::NullRemote();
+  if (service_worker_subresource_loader_factory_) {
+    service_worker_subresource_loader_factory_->AddPendingWorkerTimingReceiver(
+        request_id_,
+        params->worker_timing_remote.InitWithNewPipeAndPassReceiver());
+  }
 
   // TODO(falken): Grant the controller service worker's process access to files
   // in the body, like ServiceWorkerFetchDispatcher::DispatchFetchEvent() does.
@@ -791,20 +796,27 @@ void ServiceWorkerSubresourceLoaderFactory::Create(
     scoped_refptr<ControllerServiceWorkerConnector> controller_connector,
     scoped_refptr<network::SharedURLLoaderFactory> fallback_factory,
     mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver,
-    scoped_refptr<base::SequencedTaskRunner> task_runner) {
+    scoped_refptr<base::SequencedTaskRunner> task_runner,
+    scoped_refptr<base::SequencedTaskRunner> parent_task_runner,
+    WorkerTimingCallback worker_timing_callback) {
   new ServiceWorkerSubresourceLoaderFactory(
       std::move(controller_connector), std::move(fallback_factory),
-      std::move(receiver), std::move(task_runner));
+      std::move(receiver), std::move(task_runner),
+      std::move(parent_task_runner), std::move(worker_timing_callback));
 }
 
 ServiceWorkerSubresourceLoaderFactory::ServiceWorkerSubresourceLoaderFactory(
     scoped_refptr<ControllerServiceWorkerConnector> controller_connector,
     scoped_refptr<network::SharedURLLoaderFactory> fallback_factory,
     mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver,
-    scoped_refptr<base::SequencedTaskRunner> task_runner)
+    scoped_refptr<base::SequencedTaskRunner> task_runner,
+    scoped_refptr<base::SequencedTaskRunner> parent_task_runner,
+    WorkerTimingCallback worker_timing_callback)
     : controller_connector_(std::move(controller_connector)),
       fallback_factory_(std::move(fallback_factory)),
-      task_runner_(std::move(task_runner)) {
+      task_runner_(std::move(task_runner)),
+      parent_task_runner_(std::move(parent_task_runner)),
+      worker_timing_callback_(std::move(worker_timing_callback)) {
   DCHECK(fallback_factory_);
   receivers_.Add(this, std::move(receiver));
   receivers_.set_disconnect_handler(base::BindRepeating(
@@ -814,6 +826,14 @@ ServiceWorkerSubresourceLoaderFactory::ServiceWorkerSubresourceLoaderFactory(
 
 ServiceWorkerSubresourceLoaderFactory::
     ~ServiceWorkerSubresourceLoaderFactory() = default;
+
+void ServiceWorkerSubresourceLoaderFactory::AddPendingWorkerTimingReceiver(
+    int request_id,
+    mojo::PendingReceiver<blink::mojom::WorkerTimingContainer> receiver) {
+  parent_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(worker_timing_callback_, request_id, std::move(receiver)));
+}
 
 void ServiceWorkerSubresourceLoaderFactory::CreateLoaderAndStart(
     mojo::PendingReceiver<network::mojom::URLLoader> receiver,
@@ -830,7 +850,7 @@ void ServiceWorkerSubresourceLoaderFactory::CreateLoaderAndStart(
   new ServiceWorkerSubresourceLoader(
       std::move(receiver), routing_id, request_id, options, resource_request,
       std::move(client), traffic_annotation, controller_connector_,
-      fallback_factory_, task_runner_);
+      fallback_factory_, task_runner_, weak_factory_.GetWeakPtr());
 }
 
 void ServiceWorkerSubresourceLoaderFactory::Clone(

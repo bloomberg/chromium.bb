@@ -290,8 +290,8 @@ class ServiceWorkerProviderContextTest : public testing::Test {
     mojo::PendingRemote<network::mojom::URLLoader> loader;
     network::TestURLLoaderClient loader_client;
     factory->CreateLoaderAndStart(
-        loader.InitWithNewPipeAndPassReceiver(), 0, 0,
-        network::mojom::kURLLoadOptionNone, request,
+        loader.InitWithNewPipeAndPassReceiver(), 0 /* routing_id */,
+        NextRequestId(), network::mojom::kURLLoadOptionNone, request,
         loader_client.CreateRemote(),
         net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
   }
@@ -305,6 +305,11 @@ class ServiceWorkerProviderContextTest : public testing::Test {
   base::test::TaskEnvironment task_environment;
   FakeURLLoaderFactory fake_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> loader_factory_;
+
+ private:
+  int NextRequestId() { return request_id_++; }
+
+  int request_id_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerProviderContextTest);
 };

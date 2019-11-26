@@ -1816,6 +1816,9 @@ void ResourceFetcher::HandleLoaderFinish(Resource* resource,
       info->AddFinalTransferSize(
           encoded_data_length == -1 ? 0 : encoded_data_length);
 
+      // TODO(https://crbug.com/900700): Get |request_id| from ResourceResponse
+      // through |resource| and take a Mojo pending receiver for
+      // WorkerTimingContainer which is set on |info|.
       if (resource->Options().request_initiator_context == kDocumentContext)
         Context().AddResourceTiming(*info);
     }

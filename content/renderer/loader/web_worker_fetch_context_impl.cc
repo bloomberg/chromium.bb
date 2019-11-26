@@ -48,13 +48,19 @@ void CreateServiceWorkerSubresourceLoaderFactory(
     const std::string& client_id,
     std::unique_ptr<network::SharedURLLoaderFactoryInfo> fallback_factory,
     mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver,
-    scoped_refptr<base::SequencedTaskRunner> task_runner) {
+    scoped_refptr<base::SequencedTaskRunner> task_runner,
+    scoped_refptr<base::SequencedTaskRunner> worker_timing_callback_task_runner,
+    base::RepeatingCallback<
+        void(int, mojo::PendingReceiver<blink::mojom::WorkerTimingContainer>)>
+        worker_timing_callback) {
   ServiceWorkerSubresourceLoaderFactory::Create(
       base::MakeRefCounted<ControllerServiceWorkerConnector>(
           std::move(remote_container_host),
           mojo::NullRemote() /* remote_controller */, client_id),
       network::SharedURLLoaderFactory::Create(std::move(fallback_factory)),
-      std::move(receiver), std::move(task_runner));
+      std::move(receiver), std::move(task_runner),
+      std::move(worker_timing_callback_task_runner),
+      std::move(worker_timing_callback));
 }
 
 }  // namespace
@@ -625,6 +631,11 @@ void WebWorkerFetchContextImpl::ResetServiceWorkerURLLoaderFactory() {
   auto task_runner = base::CreateSequencedTaskRunner(
       {base::ThreadPool(), base::MayBlock(),
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
+  auto current_task_runner =
+      base::CreateSequencedTaskRunner({base::CurrentThread()});
+  // TODO(https://crbug.com/900700): Pass RepeatingCallback to store
+  // WorkerTimingContainer pending receiver and request_id from
+  // ServiceWorkerSubresourceLoaderFactory.
   task_runner->PostTask(
       FROM_HERE,
       base::BindOnce(
@@ -632,7 +643,7 @@ void WebWorkerFetchContextImpl::ResetServiceWorkerURLLoaderFactory() {
           std::move(service_worker_container_host), client_id_,
           fallback_factory_->Clone(),
           service_worker_url_loader_factory.InitWithNewPipeAndPassReceiver(),
-          task_runner));
+          task_runner, std::move(current_task_runner), base::DoNothing()));
   web_loader_factory_->SetServiceWorkerURLLoaderFactory(
       std::move(service_worker_url_loader_factory));
 }

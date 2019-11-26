@@ -245,6 +245,12 @@ void WorkerFetchContext::PopulateResourceRequest(
     out_request.SetTopFrameOrigin(GetTopFrameOrigin());
 }
 
+mojo::PendingReceiver<mojom::blink::WorkerTimingContainer>
+WorkerFetchContext::TakePendingWorkerTimingReceiver(int request_id) {
+  // TODO(https://crbug.com/900700): Take a pending receiver for
+  // WorkerTimingContainer from WebWorkerFetchContextImpl.
+  return mojo::NullReceiver();
+}
 void WorkerFetchContext::SetFirstPartyCookie(ResourceRequest& out_request) {
   if (out_request.SiteForCookies().IsNull())
     out_request.SetSiteForCookies(GetSiteForCookies());

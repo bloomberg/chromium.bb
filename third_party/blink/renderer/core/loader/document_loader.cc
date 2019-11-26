@@ -569,6 +569,17 @@ void DocumentLoader::SetHistoryItemStateForCommit(
   }
 }
 
+mojo::PendingReceiver<mojom::blink::WorkerTimingContainer>
+DocumentLoader::TakePendingWorkerTimingReceiver(int request_id) {
+  if (!GetServiceWorkerNetworkProvider())
+    return mojo::NullReceiver();
+  mojo::ScopedMessagePipeHandle pipe =
+      GetServiceWorkerNetworkProvider()->TakePendingWorkerTimingReceiver(
+          request_id);
+  return mojo::PendingReceiver<mojom::blink::WorkerTimingContainer>(
+      std::move(pipe));
+}
+
 void DocumentLoader::BodyCodeCacheReceived(mojo_base::BigBuffer data) {
   if (cached_metadata_handler_) {
     cached_metadata_handler_->SetSerializedCachedMetadata(std::move(data));
