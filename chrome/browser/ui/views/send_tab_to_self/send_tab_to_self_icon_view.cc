@@ -39,19 +39,18 @@ views::BubbleDialogDelegateView* SendTabToSelfIconView::GetBubble() const {
       controller->send_tab_to_self_bubble_view());
 }
 
-bool SendTabToSelfIconView::UpdateImpl() {
+void SendTabToSelfIconView::UpdateImpl() {
   content::WebContents* web_contents = GetWebContents();
   if (!send_tab_to_self::ShouldOfferOmniboxIcon(web_contents)) {
-    return false;
+    return;
   }
 
-  const bool was_visible = GetVisible();
   const OmniboxView* omnibox_view = delegate()->GetOmniboxView();
   if (!omnibox_view) {
-    return false;
+    return;
   }
 
-  if (was_visible) {
+  if (GetVisible()) {
     if (omnibox_view->model()->user_input_in_progress()) {
       SetVisible(false);
     } else {
@@ -77,8 +76,6 @@ bool SendTabToSelfIconView::UpdateImpl() {
     }
     SetVisible(true);
   }
-
-  return was_visible != GetVisible();
 }
 
 void SendTabToSelfIconView::OnExecuting(

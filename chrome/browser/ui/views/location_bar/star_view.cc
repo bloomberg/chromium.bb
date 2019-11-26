@@ -83,12 +83,10 @@ void StarView::ShowPromo() {
   }
 }
 
-bool StarView::UpdateImpl() {
-  bool was_visible = GetVisible();
+void StarView::UpdateImpl() {
   SetVisible(browser_defaults::bookmarks_enabled &&
              edit_bookmarks_enabled_.GetValue() &&
              !IsBookmarkStarHiddenByExtension());
-  return was_visible != GetVisible();
 }
 
 void StarView::OnExecuting(PageActionIconView::ExecuteSource execute_source) {
