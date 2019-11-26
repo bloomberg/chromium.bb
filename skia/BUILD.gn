@@ -198,6 +198,7 @@ config("skia_library_config") {
     cflags_cc = [ "/std:c++17" ]
   } else {
     cflags_cc = [ "-std=c++17" ]
+    cflags_objcc = [ "-std=c++17" ]
   }
 }
 
