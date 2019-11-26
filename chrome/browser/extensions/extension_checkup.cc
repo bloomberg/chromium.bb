@@ -41,7 +41,11 @@ bool ShouldShowExtensionsCheckup(content::BrowserContext* context) {
   // are policy-installed (even if they can be disabled), then do not show the
   // extensions checkup experiment.
   for (const auto& extension : *extension_set) {
-    if (!extensions::Manifest::IsPolicyLocation(extension->location())) {
+    if (extension->is_extension() &&
+        !extensions::Manifest::IsPolicyLocation(extension->location()) &&
+        !extensions::Manifest::IsComponentLocation(extension->location()) &&
+        !(extension->creation_flags() &
+          extensions::Extension::WAS_INSTALLED_BY_DEFAULT)) {
       return true;
     }
   }
@@ -51,6 +55,9 @@ bool ShouldShowExtensionsCheckup(content::BrowserContext* context) {
 }  // namespace
 
 namespace extensions {
+
+const char kNtpPromoExperiment[] = "promo";
+const char kStartupExperiment[] = "startup";
 
 bool ShouldShowExtensionsCheckupOnStartup(content::BrowserContext* context) {
   ExtensionPrefs* prefs = ExtensionPrefs::Get(context);
