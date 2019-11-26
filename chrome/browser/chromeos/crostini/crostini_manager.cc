@@ -1723,41 +1723,6 @@ void CrostiniManager::OnDetachUsbDevice(
   std::move(callback).Run(/*success=*/true);
 }
 
-void CrostiniManager::ListUsbDevices(const std::string& vm_name,
-                                     ListUsbDevicesCallback callback) {
-  vm_tools::concierge::ListUsbDeviceRequest request;
-  request.set_vm_name(vm_name);
-  request.set_owner_id(CryptohomeIdForProfile(profile_));
-
-  GetConciergeClient()->ListUsbDevices(
-      std::move(request), base::BindOnce(&CrostiniManager::OnListUsbDevices,
-                                         weak_ptr_factory_.GetWeakPtr(),
-                                         vm_name, std::move(callback)));
-}
-
-void CrostiniManager::OnListUsbDevices(
-    const std::string& vm_name,
-    ListUsbDevicesCallback callback,
-    base::Optional<vm_tools::concierge::ListUsbDeviceResponse> response) {
-  if (!response) {
-    LOG(ERROR) << "Failed to list USB devices, empty dbus response";
-    std::move(callback).Run(/*success=*/false, {});
-    return;
-  }
-
-  if (!response->success()) {
-    LOG(ERROR) << "Failed to list USB devices";
-    std::move(callback).Run(/*success=*/false, {});
-    return;
-  }
-
-  std::vector<std::pair<std::string, uint8_t>> mount_points;
-  for (const auto& dev : response->usb_devices()) {
-    mount_points.push_back(std::make_pair(vm_name, dev.guest_port()));
-  }
-  std::move(callback).Run(/*success=*/true, std::move(mount_points));
-}
-
 CrostiniManager::RestartId CrostiniManager::RestartCrostini(
     std::string vm_name,
     std::string container_name,

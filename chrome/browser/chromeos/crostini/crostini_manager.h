@@ -397,14 +397,6 @@ class CrostiniManager : public KeyedService,
                        uint8_t guest_port,
                        BoolCallback callback);
 
-  // Lists USB devices attached to a guest VM.
-  // TODO(jopra): Rename to reflect that this now lists the mount points for USB
-  // devices.
-  using ListUsbDevicesCallback = base::OnceCallback<
-      void(bool success, std::vector<std::pair<std::string, uint8_t>> devices)>;
-  void ListUsbDevices(const std::string& vm_name,
-                      ListUsbDevicesCallback callback);
-
   using RestartId = int;
   static const RestartId kUninitializedRestartId = -1;
   // Runs all the steps required to restart the given crostini vm and container.
@@ -755,12 +747,6 @@ class CrostiniManager : public KeyedService,
       device::mojom::UsbDeviceInfoPtr device,
       BoolCallback callback,
       base::Optional<vm_tools::concierge::DetachUsbDeviceResponse> response);
-
-  // Callback for CrostiniManager::ListUsbDevices
-  void OnListUsbDevices(
-      const std::string& vm_name,
-      ListUsbDevicesCallback callback,
-      base::Optional<vm_tools::concierge::ListUsbDeviceResponse> response);
 
   // Callback for AnsibleManagementService::ConfigureDefaultContainer
   void OnDefaultContainerConfigured(bool success);

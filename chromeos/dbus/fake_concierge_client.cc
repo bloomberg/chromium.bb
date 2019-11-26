@@ -246,16 +246,6 @@ void FakeConciergeClient::DetachUsbDevice(
       base::BindOnce(std::move(callback), detach_usb_device_response_));
 }
 
-void FakeConciergeClient::ListUsbDevices(
-    const vm_tools::concierge::ListUsbDeviceRequest& request,
-    DBusMethodCallback<vm_tools::concierge::ListUsbDeviceResponse> callback) {
-  list_usb_devices_called_ = true;
-
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(std::move(callback), list_usb_devices_response_));
-}
-
 void FakeConciergeClient::StartArcVm(
     const vm_tools::concierge::StartArcVmRequest& request,
     DBusMethodCallback<vm_tools::concierge::StartVmResponse> callback) {
@@ -315,9 +305,6 @@ void FakeConciergeClient::InitializeProtoResponses() {
 
   detach_usb_device_response_.emplace();
   detach_usb_device_response_->set_success(true);
-
-  list_usb_devices_response_.emplace();
-  list_usb_devices_response_->set_success(true);
 }
 
 }  // namespace chromeos
