@@ -141,7 +141,7 @@ class CrosTransferBaseClassTest(cros_test_lib.MockTestCase):
       self.assertEqual(transfer_rootfs.call_count, _MAX_RETRY + 1)
 
 
-class CrosLocalTransferTest(cros_test_lib.MockTestCase):
+class CrosLocalTransferTest(cros_test_lib.MockTempDirTestCase):
   """Test whether LocalTransfer's transfer functions are retried."""
 
   def setUp(self):
@@ -271,6 +271,47 @@ class CrosLocalTransferTest(cros_test_lib.MockTestCase):
         self.assertEqual(CrOS_LocalTransfer._GetStatefulUpdateScript(),
                          (False, '/usr/local/bin/stateful_update'))
 
+  def testGetPayloadPropsLocal(self):
+    """Tests LocalTransfer.GetPayloadProps().
+
+    Tests LocalTransfer.GetPayloadProps() when payload_name is in the
+    format payloads/chromeos_xxxx.0.0_<blah>.
+    """
+    with remote_access.ChromiumOSDeviceHandler(remote_access.TEST_IP) as device:
+      CrOS_LocalTransfer = CreateLocalTransferInstance(
+          device, payload_dir=self.tempdir,
+          payload_name='payloads/chromeos_12345.100.0_board_stable_'
+                       'full_v4-1a3e3fd5a2005948ce8e605b66c96b2f.bin')
+      self.PatchObject(os.path, 'getsize', return_value=100)
+      expected = {'image_version': '12345.100.0', 'size': 100}
+      self.assertDictEqual(CrOS_LocalTransfer.GetPayloadProps(),
+                           expected)
+
+  def testGetPayloadPropsLocalError(self):
+    """Tests error thrown by LocalTransfer.GetPayloadProps().
+
+    Test error thrown when payload_name is not in the expected format of
+    payloads/chromeos_xxxx.0.0_<blah> or called update.gz.
+    """
+    with remote_access.ChromiumOSDeviceHandler(remote_access.TEST_IP) as device:
+      CrOS_LocalTransfer = CreateLocalTransferInstance(
+          device, payload_dir=self.tempdir, payload_name='wrong_format')
+      self.PatchObject(os.path, 'getsize')
+      self.assertRaises(ValueError, CrOS_LocalTransfer.GetPayloadProps)
+
+  def testGetPayloadPropsLocalDefaultFilename(self):
+    """Tests LocalTransfer.GetPayloadProps().
+
+    Tests LocalTransfer.GetPayloadProps() when payload_name is named
+    update.gz.
+    """
+    with remote_access.ChromiumOSDeviceHandler(remote_access.TEST_IP) as device:
+      CrOS_LocalTransfer = CreateLocalTransferInstance(
+          device, payload_dir=self.tempdir, payload_name='update.gz')
+      self.PatchObject(os.path, 'getsize', return_value=101)
+      expected = {'image_version': '99999.0.0', 'size': 101}
+      self.assertDictEqual(CrOS_LocalTransfer.GetPayloadProps(),
+                           expected)
 
 class CrosLabTransferTest(cros_test_lib.MockTempDirTestCase):
   """Test all methods in auto_updater_transfer.LabTransfer."""
@@ -823,4 +864,69 @@ class CrosLabTransferTest(cros_test_lib.MockTempDirTestCase):
                        side_effect=retry_util.DownloadError())
       self.assertRaises(auto_updater_transfer.ChromiumOSTransferError,
                         CrOS_LabTransfer.GetPayloadPropsFile)
-      self.assertEqual(CrOS_LabTransfer._local_payload_props_path, None)
+      self.assertIsNone(CrOS_LabTransfer._local_payload_props_path)
+
+  def testGetPayloadSize(self):
+    """Test auto_updater_transfer._GetPayloadSize()."""
+    with remote_access.ChromiumOSDeviceHandler(remote_access.TEST_IP) as device:
+      CrOS_LabTransfer = CreateLabTransferInstance(
+          device, payload_name='test_update.gz',
+          payload_dir='/test/payload/dir')
+      expected_size = 75810234
+      output = 'Content-Length: %s' % str(expected_size)
+      self.PatchObject(retry_util, 'RunCurl',
+                       return_value=cros_build_lib.CommandResult(output=output))
+      size = CrOS_LabTransfer._GetPayloadSize()
+      self.assertEqual(size, expected_size)
+
+  def testGetPayloadSizeNoRegexMatchError(self):
+    """Test errors thrown by auto_updater_transfer._GetPayloadSize().
+
+    Test error thrown when the output received from the curl command does not
+    contain expected fields.
+    """
+    with remote_access.ChromiumOSDeviceHandler(remote_access.TEST_IP) as device:
+      CrOS_LabTransfer = CreateLabTransferInstance(
+          device, payload_name='test_update.gz',
+          payload_dir='/test/payload/dir')
+      output = 'No Match Output'
+      self.PatchObject(retry_util, 'RunCurl',
+                       return_value=cros_build_lib.CommandResult(output=output))
+      self.assertRaises(auto_updater_transfer.ChromiumOSTransferError,
+                        CrOS_LabTransfer._GetPayloadSize)
+
+  def testGetPayloadSizeCurlRunCommandError(self):
+    """Test errors thrown by auto_updater_transfer.GetPayloadSize().
+
+    Test error thrown when cros_build_lib.run raises a RunCommandError.
+    """
+    with remote_access.ChromiumOSDeviceHandler(remote_access.TEST_IP) as device:
+      CrOS_LabTransfer = CreateLabTransferInstance(
+          device, payload_name='test_update.gz',
+          payload_dir='/test/payload/dir')
+      self.PatchObject(retry_util, 'RunCurl',
+                       side_effect=cros_build_lib.RunCommandError(msg=''))
+      self.assertRaises(auto_updater_transfer.ChromiumOSTransferError,
+                        CrOS_LabTransfer._GetPayloadSize)
+
+  def testGetPayloadPropsLab(self):
+    """Test LabTransfer.GetPayloadProps()."""
+    with remote_access.ChromiumOSDeviceHandler(remote_access.TEST_IP) as device:
+      CrOS_LabTransfer = CreateLabTransferInstance(
+          device, payload_dir='test-board-name/R77-12345.0.0')
+      self.PatchObject(auto_updater_transfer.LabTransfer, '_GetPayloadSize',
+                       return_value=123)
+      expected = {'image_version': '12345.0.0', 'size': 123}
+      self.assertDictEqual(CrOS_LabTransfer.GetPayloadProps(), expected)
+
+  def testGetPayloadPropsLabError(self):
+    """Test error thrown by LabTransfer.GetPayloadProps().
+
+    Test error thrown when payload_dir is not in the expected format of
+    <board-name>/Rxx-12345.6.7.
+    """
+    with remote_access.ChromiumOSDeviceHandler(remote_access.TEST_IP) as device:
+      CrOS_LabTransfer = CreateLabTransferInstance(
+          device, payload_dir='/wrong/format/will/fail')
+      self.PatchObject(auto_updater_transfer.LabTransfer, '_GetPayloadSize')
+      self.assertRaises(ValueError, CrOS_LabTransfer.GetPayloadProps)

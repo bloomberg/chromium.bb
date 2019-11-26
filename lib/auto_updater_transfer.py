@@ -41,6 +41,7 @@ from __future__ import print_function
 import abc
 import glob
 import os
+import re
 import shutil
 
 import six
@@ -190,6 +191,14 @@ class Transfer(six.with_metaclass(abc.ABCMeta, object)):
   def GetPayloadPropsFile(self):
     """Get the payload properties file path."""
 
+  @abc.abstractmethod
+  def GetPayloadProps(self):
+    """Gets properties necessary to fix the payload properties file.
+
+    Returns:
+      Dict in the format: {'image_version': 12345.0.0, 'size': 123456789}.
+    """
+
 
 class LocalTransfer(Transfer):
   """Abstracts logic that handles transferring local files to the DUT."""
@@ -198,7 +207,6 @@ class LocalTransfer(Transfer):
   LOCAL_STATEFUL_UPDATE_FILENAME = _STATEFUL_UPDATE_FILENAME
   LOCAL_CHROOT_STATEFUL_UPDATE_PATH = '/usr/bin/stateful_update'
   REMOTE_STATEFUL_UPDATE_PATH = '/usr/local/bin/stateful_update'
-
 
   def __init__(self, *args, **kwargs):
     """Initialize LocalTransfer to handle transferring files from local to DUT.
@@ -332,9 +340,38 @@ class LocalTransfer(Transfer):
     """Finds the local payload properties file."""
     # Payload properties file is available locally so just catch the first
     # json file and assume it is a payload property file.
-    prop_file = glob.glob(os.path.join(self._payload_dir, '*.json'))[0]
-    self._local_payload_props_path = os.path.join(self._payload_dir, prop_file)
+    if self._local_payload_props_path is None:
+      prop_file = glob.glob(os.path.join(self._payload_dir, '*.json'))[0]
+      self._local_payload_props_path = os.path.join(self._payload_dir,
+                                                    prop_file)
     return self._local_payload_props_path
+
+  def GetPayloadProps(self):
+    """Gets image_version from the payload_name and size of the payload.
+
+    The payload_dir must be in the format <board>/Rxx-12345.0.0 for a complete
+    match; else a ValueError will be raised. In case the payload filename is
+    update.gz, then image_version cannot be extracted from its name; therefore,
+    image_version is set to a dummy 99999.0.0.
+
+    Returns:
+      Dict - See parent class's function for full details.
+    """
+    payload_filepath = os.path.join(self._payload_dir, self._payload_name)
+    values = {
+        'image_version': '99999.0.0',
+        'size': os.path.getsize(payload_filepath)
+    }
+    if self._payload_name != ROOTFS_FILENAME:
+      payload_format = self._payload_name
+      full_exp = r'payloads/chromeos_(?P<image_version>[^_]+)_.*'
+      m = re.match(full_exp, payload_format)
+      if not m:
+        raise ValueError('Regular expression %r did not match the expected '
+                         'payload format %s' % (full_exp, payload_format))
+      values.update(m.groupdict())
+    return values
+
 
 class LabTransfer(Transfer):
   """Abstracts logic that transfers files from staging server to the DUT."""
@@ -514,3 +551,43 @@ class LabTransfer(Transfer):
         self._local_payload_props_path = os.path.join(self._tempdir,
                                                       payload_props_filename)
     return self._local_payload_props_path
+
+  def _GetPayloadSize(self):
+    """Returns the size of the payload by running a curl -I command.
+
+    Returns:
+      Payload size in bytes.
+    """
+    payload_url = self._GetStagedUrl(staged_filename=self._payload_name,
+                                     build_id=self._payload_dir)
+    try:
+      proc = retry_util.RunCurl(curl_args=['-I', payload_url, '--fail'],
+                                log_output=True)
+    except cros_build_lib.RunCommandError as e:
+      raise ChromiumOSTransferError('Unable to get payload size: %s' % e)
+    else:
+      pattern = re.compile(r'Content-Length: [0-9]+', re.I)
+      match = pattern.findall(proc.output)
+      if not match:
+        raise ChromiumOSTransferError('Could not get payload size from output: '
+                                      '%s ' % proc.output)
+      return int(match[0].split()[1].strip())
+
+  def GetPayloadProps(self):
+    """Gets image_version from the payload_dir name and gets payload size.
+
+    The payload_dir must be in the format <board>/Rxx-12345.0.0 for a complete
+    match; else a ValueError will be raised.
+
+    Returns:
+      Dict - See parent class's function for full details.
+    """
+    values = {'size': self._GetPayloadSize()}
+    payload_format = self._payload_dir
+    full_exp = r'.*/(R[0-9]+-)(?P<image_version>.+)'
+    m = re.match(full_exp, payload_format)
+    if not m:
+      raise ValueError('Regular expression %r did not match the expected '
+                       'payload format %s' % (full_exp, payload_format))
+    values.update(m.groupdict())
+    return values

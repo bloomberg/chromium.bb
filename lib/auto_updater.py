@@ -279,10 +279,6 @@ class ChromiumOSUpdater(BaseUpdater):
   def is_au_endtoendtest(self):
     return self.payload_filename is not None
 
-  def GetPayloadPropertiesFileName(self, payload):
-    """Returns the payload properties file given the path to the payload."""
-    return payload + '.json'
-
   def CheckPayloads(self):
     """DEPRECATED.  Use auto_updater_transfer.Transfer Class instead.
 
@@ -601,10 +597,10 @@ class ChromiumOSUpdater(BaseUpdater):
   def _FixPayloadPropertiesFile(self):
     """Fix the update payload properties file so nebraska can use it.
 
-    Update the payload properties file for end-to-end tests to make sure
-    nebraska can use it. The reason is that very old payloads are still being
-    used for provisioning the AU tests, but those properties files are not
-    compatible with recent nebraska protocols.
+    Update the payload properties file to make sure that nebraska can use it.
+    The reason is that very old payloads are still being used for provisioning
+    the AU tests, but those properties files are not compatible with recent
+    nebraska protocols.
 
     TODO(ahassani): Once we only test delta or full payload with
     source image of M77 or higher, this function can be deprecated.
@@ -612,18 +608,9 @@ class ChromiumOSUpdater(BaseUpdater):
     TODO(ahassani): Merge this somehow with ResolveAPPIDMismatchIfAny().
     """
     logging.info('Fixing payload properties file.')
-    payload_name = self._GetRootFsPayloadFileName()
-    payload_path = os.path.join(self.payload_dir, payload_name)
-    payload_properties_path = self.GetPayloadPropertiesFileName(payload_path)
+    payload_properties_path = self._transfer_obj.GetPayloadPropsFile()
     props = json.loads(osutils.ReadFile(payload_properties_path))
-
-    full_exp = r'payloads/chromeos_(?P<image_version>[^_]+)_.*'
-    m = re.match(full_exp, payload_name)
-    if not m:
-      raise ValueError(
-          'Regular expression %r did not match the payload file name %s' %
-          (full_exp, payload_name))
-    values = m.groupdict()
+    values = self._transfer_obj.GetPayloadProps()
 
     # TODO(ahassani): Use the keys form nebraska.py once it is moved to
     # chromite.
@@ -632,16 +619,19 @@ class ChromiumOSUpdater(BaseUpdater):
         # Since only old payloads don't have this and they are only used for
         # provisioning, they will be full payloads.
         'is_delta': False,
-        'size': os.path.getsize(payload_path),
+        'size': values['size'],
         'target_version': values['image_version'],
     }
 
+    are_props_modified = False
     for key, value in valid_entries.items():
       if props.get(key) is None:
         props[key] = value
+        are_props_modified = True
 
-    with open(payload_properties_path, 'w') as fp:
-      json.dump(props, fp)
+    if are_props_modified:
+      with open(payload_properties_path, 'w') as fp:
+        json.dump(props, fp)
 
   def RunUpdateRootfs(self):
     """Run all processes needed by updating rootfs.
@@ -659,8 +649,7 @@ class ChromiumOSUpdater(BaseUpdater):
     # removed. For more details on TODOs, refer to self.TransferRootfsUpdate()
     # docstrings.
 
-    if self.is_au_endtoendtest:
-      self._FixPayloadPropertiesFile()
+    self._FixPayloadPropertiesFile()
 
     # Copy payload for rootfs update.
 
@@ -1032,8 +1021,7 @@ class ChromiumOSUpdater(BaseUpdater):
     # TODO(ahassani): This is not the ideal place to do this, but since any
     # changes to this needs to be reflected in cros_update.py too, just do it
     # for now here.
-    if self.is_au_endtoendtest:
-      self._FixPayloadPropertiesFile()
+    self._FixPayloadPropertiesFile()
 
     self._transfer_obj.TransferRootfsUpdate()
 
