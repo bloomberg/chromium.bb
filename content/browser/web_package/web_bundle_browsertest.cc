@@ -1160,4 +1160,66 @@ IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest, ParseResponseCrash) {
                         "Cannot connect to the remote parser service");
 }
 
+IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest, PathMismatch) {
+  const std::string test_bundle =
+      GetTestFile("web_bundle_browsertest_network.wbn");
+  RegisterRequestHandler(
+      "/other_dir/test.wbn",
+      base::StringPrintf("HTTP/1.1 200 OK\n"
+                         "Content-Type:application/webbundle\n"
+                         "Content-Length: %" PRIuS "\n",
+                         test_bundle.size()),
+      test_bundle);
+  ASSERT_TRUE(embedded_test_server()->Start(kNetworkTestPort));
+  TestNavigationFailure(
+      GURL(base::StringPrintf("http://localhost:%d/other_dir/"
+                              "test.wbn",
+                              kNetworkTestPort)),
+      base::StringPrintf(
+          "Path restriction mismatch: Can't navigate to "
+          "http://localhost:%d/web_bundle/network/ in the web bundle served "
+          "from http://localhost:%d/other_dir/test.wbn.",
+          kNetworkTestPort, kNetworkTestPort));
+}
+
+IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest, Navigations) {
+  const std::string test_bundle = GetTestFile("path_test.wbn");
+  RegisterRequestHandler(
+      "/web_bundle/path_test/in_scope/path_test.wbn",
+      base::StringPrintf("HTTP/1.1 200 OK\n"
+                         "Content-Type:application/webbundle\n"
+                         "Content-Length: %" PRIuS "\n",
+                         test_bundle.size()),
+      test_bundle);
+  ASSERT_TRUE(embedded_test_server()->Start(kNetworkTestPort));
+
+  NavigateToBundleAndWaitForReady(
+      GURL(base::StringPrintf(
+          "http://localhost:%d/web_bundle/path_test/in_scope/path_test.wbn",
+          kNetworkTestPort)),
+      GURL(base::StringPrintf(
+          "http://localhost:%d/web_bundle/path_test/in_scope/",
+          kNetworkTestPort)));
+
+  NavigateToURLAndWaitForTitle(
+      GURL(base::StringPrintf(
+          "http://localhost:%d/web_bundle/path_test/in_scope/page.html",
+          kNetworkTestPort)),
+      "In scope page in Web Bundle / in scope script in Web Bundle");
+
+  NavigateToURLAndWaitForTitle(
+      GURL(base::StringPrintf(
+          "http://localhost:%d/web_bundle/path_test/out_scope/page.html",
+          kNetworkTestPort)),
+      "Out scope page from server / out scope script from server");
+
+  // TODO(crbug.com/1027050): Add this test after isolating memory cache.
+  //
+  // NavigateToURLAndWaitForTitle(
+  //     GURL(base::StringPrintf(
+  //         "http://localhost:%d/web_bundle/path_test/in_scope/page.html",
+  //         kNetworkTestPort)),
+  //     "In scope page from server / in scope script from server");
+}
+
 }  // namespace content
