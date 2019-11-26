@@ -502,10 +502,10 @@ static TX_SIZE calculate_tx_size(const AV1_COMP *const cpi, BLOCK_SIZE bsize,
                                  unsigned int sse) {
   MACROBLOCKD *const xd = &x->e_mbd;
   TX_SIZE tx_size;
-  if (x->tx_mode == TX_MODE_SELECT) {
+  if (x->tx_mode_search_type == TX_MODE_SELECT) {
     if (sse > (var << 2))
       tx_size = AOMMIN(max_txsize_lookup[bsize],
-                       tx_mode_to_biggest_tx_size[x->tx_mode]);
+                       tx_mode_to_biggest_tx_size[x->tx_mode_search_type]);
     else
       tx_size = TX_8X8;
 
@@ -516,7 +516,7 @@ static TX_SIZE calculate_tx_size(const AV1_COMP *const cpi, BLOCK_SIZE bsize,
       tx_size = TX_16X16;
   } else {
     tx_size = AOMMIN(max_txsize_lookup[bsize],
-                     tx_mode_to_biggest_tx_size[x->tx_mode]);
+                     tx_mode_to_biggest_tx_size[x->tx_mode_search_type]);
   }
   if (bsize > BLOCK_32X32) tx_size = TX_16X16;
   return AOMMIN(tx_size, TX_16X16);
@@ -1557,9 +1557,10 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
 #endif
     init_mbmi(mi, this_mode, ref_frame, NONE_FRAME, cm);
 
-    mi->tx_size = AOMMIN(AOMMIN(max_txsize_lookup[bsize],
-                                tx_mode_to_biggest_tx_size[x->tx_mode]),
-                         TX_16X16);
+    mi->tx_size =
+        AOMMIN(AOMMIN(max_txsize_lookup[bsize],
+                      tx_mode_to_biggest_tx_size[x->tx_mode_search_type]),
+               TX_16X16);
     memset(mi->inter_tx_size, mi->tx_size, sizeof(mi->inter_tx_size));
     memset(xd->tx_type_map, DCT_DCT,
            sizeof(xd->tx_type_map[0]) * ctx->num_4x4_blk);
@@ -1901,7 +1902,7 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
     PRED_BUFFER *const best_pred = best_pickmode.best_pred;
     TX_SIZE intra_tx_size =
         AOMMIN(AOMMIN(max_txsize_lookup[bsize],
-                      tx_mode_to_biggest_tx_size[x->tx_mode]),
+                      tx_mode_to_biggest_tx_size[x->tx_mode_search_type]),
                TX_16X16);
 
     if (reuse_inter_pred && best_pred != NULL) {

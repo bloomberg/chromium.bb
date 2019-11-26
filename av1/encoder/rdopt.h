@@ -211,24 +211,13 @@ static INLINE void av1_copy_usable_ref_mv_stack_and_weight(
 static TX_MODE select_tx_mode(
     const AV1_COMP *cpi, const TX_SIZE_SEARCH_METHOD tx_size_search_method) {
   if (cpi->common.coded_lossless) return ONLY_4X4;
-  if (tx_size_search_method == USE_LARGESTALL)
+  if (tx_size_search_method == USE_LARGESTALL) {
     return TX_MODE_LARGEST;
-  else if (tx_size_search_method == USE_FULL_RD ||
-           tx_size_search_method == USE_FAST_RD)
+  } else {
+    assert(tx_size_search_method == USE_FULL_RD ||
+           tx_size_search_method == USE_FAST_RD);
     return TX_MODE_SELECT;
-  else
-    return cpi->common.tx_mode;
-}
-
-static INLINE TX_MODE get_eval_tx_mode(const AV1_COMP *cpi,
-                                       MODE_EVAL_TYPE eval_type) {
-  TX_MODE tx_mode;
-  if (cpi->sf.enable_winner_mode_for_tx_size_srch)
-    tx_mode = select_tx_mode(cpi, cpi->tx_size_search_methods[eval_type]);
-  else
-    tx_mode = select_tx_mode(cpi, cpi->tx_size_search_methods[DEFAULT_EVAL]);
-
-  return tx_mode;
+  }
 }
 
 static INLINE void set_tx_size_search_method(
@@ -242,7 +231,7 @@ static INLINE void set_tx_size_search_method(
     else
       x->tx_size_search_method = cpi->tx_size_search_methods[MODE_EVAL];
   }
-  x->tx_mode = select_tx_mode(cpi, x->tx_size_search_method);
+  x->tx_mode_search_type = select_tx_mode(cpi, x->tx_size_search_method);
 }
 
 static INLINE void set_tx_type_prune(const SPEED_FEATURES *sf, MACROBLOCK *x,

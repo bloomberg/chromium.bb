@@ -3821,7 +3821,8 @@ static AOM_INLINE void txfm_rd_in_plane(MACROBLOCK *x, const AV1_COMP *cpi,
 static int tx_size_cost(const MACROBLOCK *const x, BLOCK_SIZE bsize,
                         TX_SIZE tx_size) {
   assert(bsize == x->e_mbd.mi[0]->sb_type);
-  if (x->tx_mode != TX_MODE_SELECT || !block_signals_txsize(bsize)) return 0;
+  if (x->tx_mode_search_type != TX_MODE_SELECT || !block_signals_txsize(bsize))
+    return 0;
 
   const int32_t tx_size_cat = bsize_to_tx_size_cat(bsize);
   const int depth = tx_size_to_depth(tx_size, bsize);
@@ -3840,8 +3841,8 @@ static int64_t txfm_yrd(const AV1_COMP *const cpi, MACROBLOCK *x,
   const int skip_ctx = av1_get_skip_context(xd);
   int s0, s1;
   const int is_inter = is_inter_block(mbmi);
-  const int tx_select =
-      x->tx_mode == TX_MODE_SELECT && block_signals_txsize(mbmi->sb_type);
+  const int tx_select = x->tx_mode_search_type == TX_MODE_SELECT &&
+                        block_signals_txsize(mbmi->sb_type);
   int ctx = txfm_partition_context(
       xd->above_txfm_context, xd->left_txfm_context, mbmi->sb_type, tx_size);
   const int r_tx_size =
@@ -3920,7 +3921,35 @@ static AOM_INLINE void choose_largest_tx_size(const AV1_COMP *const cpi,
                                               BLOCK_SIZE bs) {
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = xd->mi[0];
-  mbmi->tx_size = tx_size_from_tx_mode(bs, x->tx_mode);
+  mbmi->tx_size = tx_size_from_tx_mode(bs, x->tx_mode_search_type);
+
+  // If tx64 is not enabled, we need to go down to the next available size
+  if (!cpi->oxcf.enable_tx64) {
+    static const TX_SIZE tx_size_max_32[TX_SIZES_ALL] = {
+      TX_4X4,    // 4x4 transform
+      TX_8X8,    // 8x8 transform
+      TX_16X16,  // 16x16 transform
+      TX_32X32,  // 32x32 transform
+      TX_32X32,  // 64x64 transform
+      TX_4X8,    // 4x8 transform
+      TX_8X4,    // 8x4 transform
+      TX_8X16,   // 8x16 transform
+      TX_16X8,   // 16x8 transform
+      TX_16X32,  // 16x32 transform
+      TX_32X16,  // 32x16 transform
+      TX_32X32,  // 32x64 transform
+      TX_32X32,  // 64x32 transform
+      TX_4X16,   // 4x16 transform
+      TX_16X4,   // 16x4 transform
+      TX_8X32,   // 8x32 transform
+      TX_32X8,   // 32x8 transform
+      TX_16X32,  // 16x64 transform
+      TX_32X16,  // 64x16 transform
+    };
+
+    mbmi->tx_size = tx_size_max_32[mbmi->tx_size];
+  }
+
   const int skip_ctx = av1_get_skip_context(xd);
   int s0, s1;
 
@@ -3987,7 +4016,7 @@ static AOM_INLINE void choose_tx_size_type_from_rd(const AV1_COMP *const cpi,
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = xd->mi[0];
   const TX_SIZE max_rect_tx_size = max_txsize_rect_lookup[bs];
-  const int tx_select = x->tx_mode == TX_MODE_SELECT;
+  const int tx_select = x->tx_mode_search_type == TX_MODE_SELECT;
   int start_tx;
   int depth, init_depth;
 
@@ -3997,7 +4026,8 @@ static AOM_INLINE void choose_tx_size_type_from_rd(const AV1_COMP *const cpi,
                                        is_inter_block(mbmi), &cpi->sf,
                                        x->tx_size_search_method);
   } else {
-    const TX_SIZE chosen_tx_size = tx_size_from_tx_mode(bs, x->tx_mode);
+    const TX_SIZE chosen_tx_size =
+        tx_size_from_tx_mode(bs, x->tx_mode_search_type);
     start_tx = chosen_tx_size;
     init_depth = MAX_TX_DEPTH;
   }
@@ -4431,7 +4461,7 @@ static int64_t intra_model_yrd(const AV1_COMP *const cpi, MACROBLOCK *const x,
   RD_STATS this_rd_stats;
   int row, col;
   int64_t temp_sse, this_rd;
-  TX_SIZE tx_size = tx_size_from_tx_mode(bsize, x->tx_mode);
+  TX_SIZE tx_size = tx_size_from_tx_mode(bsize, x->tx_mode_search_type);
   const int stepr = tx_size_high_unit[tx_size];
   const int stepc = tx_size_wide_unit[tx_size];
   const int max_blocks_wide = max_block_wide(xd, bsize, 0);
@@ -9469,7 +9499,8 @@ static int txfm_search(const AV1_COMP *cpi, const TileDataEnc *tile_data,
 
   // cost and distortion
   av1_subtract_plane(x, bsize, 0);
-  if (x->tx_mode == TX_MODE_SELECT && !xd->lossless[mbmi->segment_id]) {
+  if (x->tx_mode_search_type == TX_MODE_SELECT &&
+      !xd->lossless[mbmi->segment_id]) {
     pick_tx_size_type_yrd(cpi, x, rd_stats_y, bsize, rd_thresh);
 #if CONFIG_COLLECT_RD_STATS == 2
     PrintPredictionUnitStats(cpi, tile_data, x, rd_stats_y, bsize);
@@ -11705,8 +11736,9 @@ static AOM_INLINE void rd_pick_skip_mode(
 
     // Set up tx_size related variables for skip-specific loop filtering.
     search_state->best_mbmode.tx_size =
-        block_signals_txsize(bsize) ? tx_size_from_tx_mode(bsize, x->tx_mode)
-                                    : max_txsize_rect_lookup[bsize];
+        block_signals_txsize(bsize)
+            ? tx_size_from_tx_mode(bsize, x->tx_mode_search_type)
+            : max_txsize_rect_lookup[bsize];
     memset(search_state->best_mbmode.inter_tx_size,
            search_state->best_mbmode.tx_size,
            sizeof(search_state->best_mbmode.inter_tx_size));
@@ -11788,7 +11820,8 @@ static AOM_INLINE void refine_winner_mode_tx(
           av1_build_obmc_inter_predictors_sb(cm, xd);
 
         av1_subtract_plane(x, bsize, 0);
-        if (x->tx_mode == TX_MODE_SELECT && !xd->lossless[mbmi->segment_id]) {
+        if (x->tx_mode_search_type == TX_MODE_SELECT &&
+            !xd->lossless[mbmi->segment_id]) {
           pick_tx_size_type_yrd(cpi, x, &rd_stats_y, bsize, INT64_MAX);
           assert(rd_stats_y.rate != INT_MAX);
         } else {

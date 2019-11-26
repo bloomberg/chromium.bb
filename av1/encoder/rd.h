@@ -51,9 +51,10 @@ extern "C" {
 #define SWITCHABLE_INTERP_RATE_FACTOR 1
 
 enum {
-  // Default initialization
+  // Default initialization when we are not using winner mode framework. e.g.
+  // intrabc
   DEFAULT_EVAL = 0,
-  // Initialization for default mode evaluation
+  // Initialization for selecting winner mode
   MODE_EVAL,
   // Initialization for winner mode evaluation
   WINNER_MODE_EVAL,

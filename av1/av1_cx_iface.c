@@ -519,6 +519,10 @@ static aom_codec_err_t validate_config(aom_codec_alg_priv_t *ctx,
 
   RANGE_CHECK(extra_cfg, tx_size_search_method, 0, 2);
 
+  if (!extra_cfg->enable_tx64 && extra_cfg->tx_size_search_method == 2) {
+    ERROR("TX64 cannot be disabled when search_method is USE_LARGESTALL (2).");
+  }
+
   for (int i = 0; i < MAX_NUM_OPERATING_POINTS; ++i) {
     const int level_idx = extra_cfg->target_seq_level_idx[i];
     if (!is_valid_seq_level_idx(level_idx) && level_idx != SEQ_LEVELS) {
@@ -558,6 +562,10 @@ static aom_codec_err_t validate_img(aom_codec_alg_priv_t *ctx,
 
   if (img->d_w != ctx->cfg.g_w || img->d_h != ctx->cfg.g_h)
     ERROR("Image size must match encoder init configuration size");
+
+  if (img->fmt != AOM_IMG_FMT_I420 && !ctx->extra_cfg.enable_tx64) {
+    ERROR("TX64 can only be disabled on I420 images.");
+  }
 
   return AOM_CODEC_OK;
 }
