@@ -640,6 +640,14 @@ template("skia_source_set") {
     if (using_mismatched_sample_profile) {
       configs -= [ "//build/config/compiler:afdo_optimize_size" ]
     }
+    if (is_win) {
+      cflags_cc = [
+        "/std:c++17",
+        "/wd5041",  # out-of-line definition for constexpr static data member is not needed and is deprecated in C++17
+      ]
+    } else {
+      cflags_cc = [ "-std=c++17" ]
+    }
   }
 }
 
