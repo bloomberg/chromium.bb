@@ -27,7 +27,10 @@ sys.path.insert(
 import colorama
 
 
+# Full list of checks: https://errorprone.info/bugpatterns
 ERRORPRONE_WARNINGS_TO_TURN_OFF = [
+    # This one should really be turned on.
+    'ParameterNotNullable',
     # TODO(crbug.com/834807): Follow steps in bug
     'DoubleBraceInitialization',
     # TODO(crbug.com/834790): Follow steps in bug.
@@ -108,8 +111,38 @@ ERRORPRONE_WARNINGS_TO_TURN_OFF = [
     'UndefinedEquals',
     # Nice to have.
     'ExtendingJUnitAssert',
+    # Nice to have.
+    'SystemExitOutsideMain',
+    # Nice to have.
+    'TypeParameterNaming',
+    # Nice to have.
+    'UnusedException',
+    # Nice to have.
+    'UngroupedOverloads',
+    # Nice to have.
+    'FunctionalInterfaceClash',
+    # Nice to have.
+    'InconsistentOverloads',
 ]
 
+# Full list of checks: https://errorprone.info/bugpatterns
+# Only those marked as "experimental" need to be listed here in order to be
+# enabled. We build with -Werror, so all default checks cause builds to fail.
+ERRORPRONE_WARNINGS_TO_ERROR = [
+    'BinderIdentityRestoredDangerously',
+    'EmptyIf',
+    'EqualsBrokenForNull',
+    'InvalidThrows',
+    'LongLiteralLowerCaseSuffix',
+    'RedundantOverride',
+    'RemoveUnusedImports',
+    'StaticQualifiedUsingExpression',
+    'StringEquality',
+    'TimeUnitMismatch',
+    'UnnecessaryStaticImport',
+    'UseBinds',
+    'WildcardImport',
+]
 
 
 def ProcessJavacOutput(output):
@@ -514,6 +547,8 @@ def main(argv):
     errorprone_flags = ['-Xplugin:ErrorProne']
     for warning in ERRORPRONE_WARNINGS_TO_TURN_OFF:
       errorprone_flags.append('-Xep:{}:OFF'.format(warning))
+    for warning in ERRORPRONE_WARNINGS_TO_ERROR:
+      errorprone_flags.append('-Xep:{}:ERROR'.format(warning))
     javac_cmd += ['-XDcompilePolicy=simple', ' '.join(errorprone_flags)]
 
   if options.java_version:
