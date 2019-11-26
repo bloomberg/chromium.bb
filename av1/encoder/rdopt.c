@@ -11065,7 +11065,7 @@ static int64_t handle_inter_mode(AV1_COMP *const cpi, TileDataEnc *tile_data,
                     x->mv_cost_stack, MV_COST_WEIGHT);
                 const int this_cost = this_rate_mv + drl_cost;
 
-                if (compare_cost < this_cost) {
+                if (compare_cost <= this_cost) {
                   skip = 1;
                   break;
                 } else {
