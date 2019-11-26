@@ -27255,6 +27255,13 @@ Called by update_net_error_codes.py.-->
   <int value="7" label="Allowed navigation, user gesture, ad frame"/>
 </enum>
 
+<enum name="FramePrioritiesSeen">
+  <int value="0" label="No frames seen."/>
+  <int value="1" label="Low and normal priority frames seen."/>
+  <int value="2" label="Only low priority frames seen."/>
+  <int value="3" label="Only normal priority frames seen."/>
+</enum>
+
 <enum name="FrameSiteInstanceProcessRelationship">
   <summary>
     Used to describe the relationship between frames hosted in a process,
