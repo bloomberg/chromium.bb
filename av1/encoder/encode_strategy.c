@@ -967,6 +967,10 @@ static int denoise_and_encode(AV1_COMP *const cpi, uint8_t *const dest,
     aom_extend_frame_borders(&cpi->alt_ref_buffer, num_planes);
     // Use the filtered frame for encoding.
     frame_input->source = &cpi->alt_ref_buffer;
+    // Copy metadata info to alt-ref buffer.
+    aom_remove_metadata_from_frame_buffer(frame_input->source);
+    aom_copy_metadata_to_frame_buffer(frame_input->source,
+                                      source_kf_buffer->metadata);
     *temporal_filtered = 1;
   }
 
