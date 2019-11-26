@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SAFE_BROWSING_DOWNLOAD_PROTECTION_BINARY_FCM_SERVICE_H_
-#define CHROME_BROWSER_SAFE_BROWSING_DOWNLOAD_PROTECTION_BINARY_FCM_SERVICE_H_
+#ifndef CHROME_BROWSER_SAFE_BROWSING_CLOUD_CONTENT_SCANNING_BINARY_FCM_SERVICE_H_
+#define CHROME_BROWSER_SAFE_BROWSING_CLOUD_CONTENT_SCANNING_BINARY_FCM_SERVICE_H_
 
 #include "base/memory/weak_ptr.h"
 #include "components/gcm_driver/gcm_app_handler.h"
@@ -85,4 +85,4 @@ class BinaryFCMService : public gcm::GCMAppHandler {
 
 }  // namespace safe_browsing
 
-#endif  // CHROME_BROWSER_SAFE_BROWSING_DOWNLOAD_PROTECTION_BINARY_FCM_SERVICE_H_
+#endif  // CHROME_BROWSER_SAFE_BROWSING_CLOUD_CONTENT_SCANNING_BINARY_FCM_SERVICE_H_

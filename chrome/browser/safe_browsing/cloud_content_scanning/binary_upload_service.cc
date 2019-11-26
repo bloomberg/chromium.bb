@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/safe_browsing/download_protection/binary_upload_service.h"
+#include "chrome/browser/safe_browsing/cloud_content_scanning/binary_upload_service.h"
 
 #include <memory>
 #include <utility>
@@ -20,8 +20,8 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/policy/browser_dm_token_storage.h"
 #include "chrome/browser/policy/chrome_browser_cloud_management_controller.h"
-#include "chrome/browser/safe_browsing/download_protection/binary_fcm_service.h"
-#include "chrome/browser/safe_browsing/download_protection/multipart_uploader.h"
+#include "chrome/browser/safe_browsing/cloud_content_scanning/binary_fcm_service.h"
+#include "chrome/browser/safe_browsing/cloud_content_scanning/multipart_uploader.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/proto/webprotect.pb.h"
@@ -32,7 +32,7 @@
 namespace safe_browsing {
 namespace {
 
-const int kScanningTimeoutSeconds = 5 * 60;           // 5 minutes
+const int kScanningTimeoutSeconds = 5 * 60;  // 5 minutes
 
 // TODO(crbug/1020434): Once we have an endpoint for uploads, place the URL
 // here.

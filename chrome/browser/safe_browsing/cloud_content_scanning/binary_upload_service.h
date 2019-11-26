@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SAFE_BROWSING_DOWNLOAD_PROTECTION_BINARY_UPLOAD_SERVICE_H_
-#define CHROME_BROWSER_SAFE_BROWSING_DOWNLOAD_PROTECTION_BINARY_UPLOAD_SERVICE_H_
+#ifndef CHROME_BROWSER_SAFE_BROWSING_CLOUD_CONTENT_SCANNING_BINARY_UPLOAD_SERVICE_H_
+#define CHROME_BROWSER_SAFE_BROWSING_CLOUD_CONTENT_SCANNING_BINARY_UPLOAD_SERVICE_H_
 
 #include <list>
 #include <memory>
@@ -17,8 +17,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/timer/timer.h"
-#include "chrome/browser/safe_browsing/download_protection/binary_fcm_service.h"
-#include "chrome/browser/safe_browsing/download_protection/multipart_uploader.h"
+#include "chrome/browser/safe_browsing/cloud_content_scanning/binary_fcm_service.h"
+#include "chrome/browser/safe_browsing/cloud_content_scanning/multipart_uploader.h"
 #include "components/safe_browsing/proto/webprotect.pb.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
@@ -226,4 +226,4 @@ class BinaryUploadService {
 
 }  // namespace safe_browsing
 
-#endif  // CHROME_BROWSER_SAFE_BROWSING_DOWNLOAD_PROTECTION_BINARY_UPLOAD_SERVICE_H_
+#endif  // CHROME_BROWSER_SAFE_BROWSING_CLOUD_CONTENT_SCANNING_BINARY_UPLOAD_SERVICE_H_

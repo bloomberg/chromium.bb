@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/safe_browsing/download_protection/binary_upload_service.h"
+#include "chrome/browser/safe_browsing/cloud_content_scanning/binary_upload_service.h"
 
 #include <memory>
 #include <utility>
@@ -10,8 +10,8 @@
 #include "base/bind.h"
 #include "base/callback_forward.h"
 #include "base/time/time.h"
-#include "chrome/browser/safe_browsing/download_protection/binary_fcm_service.h"
-#include "chrome/browser/safe_browsing/download_protection/multipart_uploader.h"
+#include "chrome/browser/safe_browsing/cloud_content_scanning/binary_fcm_service.h"
+#include "chrome/browser/safe_browsing/cloud_content_scanning/multipart_uploader.h"
 #include "components/safe_browsing/proto/webprotect.pb.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_utils.h"

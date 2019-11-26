@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/safe_browsing/download_protection/binary_fcm_service.h"
+#include "chrome/browser/safe_browsing/cloud_content_scanning/binary_fcm_service.h"
 
 #include <memory>
 
