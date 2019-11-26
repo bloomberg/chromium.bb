@@ -32,7 +32,6 @@
 #include "chrome/browser/ui/app_list/chrome_app_list_item.h"
 #include "chrome/browser/ui/app_list/chrome_app_list_model_updater.h"
 #include "chrome/browser/ui/app_list/extension_app_item.h"
-#include "chrome/browser/ui/app_list/extension_app_model_builder.h"
 #include "chrome/browser/ui/app_list/page_break_app_item.h"
 #include "chrome/browser/ui/app_list/page_break_constants.h"
 #include "chrome/common/chrome_features.h"
@@ -408,9 +407,7 @@ void AppListSyncableService::InitFromLocalStorage() {
 }
 
 bool AppListSyncableService::IsInitialized() const {
-  if (is_app_service_enabled_)
-    return app_service_apps_builder_.get();
-  return ext_apps_builder_.get();
+  return app_service_apps_builder_.get();
 }
 
 bool AppListSyncableService::IsSyncing() const {
@@ -424,21 +421,13 @@ void AppListSyncableService::BuildModel() {
   AppListClientImpl* client = AppListClientImpl::GetInstance();
   AppListControllerDelegate* controller = client;
 
-  if (is_app_service_enabled_) {
-    app_service_apps_builder_ =
-        std::make_unique<AppServiceAppModelBuilder>(controller);
-  } else {
-    ext_apps_builder_ = std::make_unique<ExtensionAppModelBuilder>(controller);
-  }
+  app_service_apps_builder_ =
+      std::make_unique<AppServiceAppModelBuilder>(controller);
 
   DCHECK(profile_);
   SyncStarted();
 
-  if (is_app_service_enabled_) {
-    app_service_apps_builder_->Initialize(this, profile_, model_updater_.get());
-  } else {
-    ext_apps_builder_->Initialize(this, profile_, model_updater_.get());
-  }
+  app_service_apps_builder_->Initialize(this, profile_, model_updater_.get());
 
   HandleUpdateFinished();
 
@@ -1021,11 +1010,7 @@ syncer::SyncError AppListSyncableService::ProcessSyncChanges(
 }
 
 void AppListSyncableService::Shutdown() {
-  if (is_app_service_enabled_) {
-    app_service_apps_builder_.reset();
-    return;
-  }
-  ext_apps_builder_.reset();
+  app_service_apps_builder_.reset();
 }
 
 // AppListSyncableService private
