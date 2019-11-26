@@ -12,7 +12,7 @@ class QuickViewController {
    * @param {!MetadataModel} metadataModel File system metadata.
    * @param {!FileSelectionHandler} selectionHandler
    * @param {!ListContainer} listContainer
-   * @param {!cr.ui.MenuButton} selectionMenuButton
+   * @param {!cr.ui.MultiMenuButton} selectionMenuButton
    * @param {!QuickViewModel} quickViewModel
    * @param {!TaskController} taskController
    * @param {!cr.ui.ListSelectionModel} fileListSelectionModel
