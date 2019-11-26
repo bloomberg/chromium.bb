@@ -975,7 +975,9 @@ static int denoise_and_encode(AV1_COMP *const cpi, uint8_t *const dest,
     av1_configure_buffer_updates(cpi, frame_params, KEY_FRAME, 0);
     av1_set_frame_size(cpi, cm->width, cm->height);
     av1_set_speed_features_framesize_independent(cpi, oxcf->speed);
-    av1_tpl_setup_stats(cpi, frame_params, frame_input);
+    if (cpi->oxcf.enable_tpl_model) {
+      av1_tpl_setup_stats(cpi, frame_params, frame_input);
+    }
   }
 
   if (av1_encode(cpi, dest, frame_input, frame_params, frame_results) !=
