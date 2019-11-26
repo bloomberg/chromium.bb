@@ -368,6 +368,7 @@ class EBuild(object):
   # These eclass files imply that src_test is defined for an ebuild.
   _ECLASS_IMPLIES_TEST = set((
       'cros-common.mk',
+      'cros-ec',      # defines src_test
       'cros-firmware',
       'cros-go',      # defines src_test
       'tast-bundle',  # inherits cros-go
