@@ -430,9 +430,8 @@ def _fetch_service_config(urlhost):
     # attacker needs some process running on user's machine to successfully
     # complete the flow and grab access_token. When you have malicious code
     # running on your machine you're screwed anyway.
-    response = requests.get(
-        '%s/auth/api/v1/server/oauth_config' % urlhost.rstrip('/'),
-        verify=tools.get_cacerts_bundle())
+    url = '%s/auth/api/v1/server/oauth_config' % urlhost.rstrip('/')
+    response = requests.get(url, verify=tools.get_cacerts_bundle())
     if response.status_code == 200:
       try:
         config = response.json()
@@ -446,7 +445,7 @@ def _fetch_service_config(urlhost):
         logging.error('Invalid response from the service: %s', err)
     else:
       logging.warning(
-          'Error when fetching oauth_config, HTTP status code %d',
+          'Error when fetching oauth_config from %s, HTTP status code %d', url,
           response.status_code)
     return None
 
