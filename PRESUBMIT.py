@@ -405,7 +405,6 @@ _NOT_CONVERTED_TO_MODERN_BIND_AND_CALLBACK = '|'.join((
   '^content/renderer/pepper/',
   '^content/renderer/service_worker/',
   '^content/renderer/worker/',
-  '^content/test/',
   '^content/utility/',
   '^dbus/',
   '^device/base/',
