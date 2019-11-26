@@ -6214,26 +6214,6 @@
             ]
         }
     ],
-    "SyncE2ELatency": [
-        {
-            "platforms": [
-                "android",
-                "windows",
-                "mac",
-                "chromeos",
-                "ios",
-                "linux"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "SyncE2ELatencyMeasurement"
-                    ]
-                }
-            ]
-        }
-    ],
     "SyncScryptCustomPassphrase": [
         {
             "platforms": [
