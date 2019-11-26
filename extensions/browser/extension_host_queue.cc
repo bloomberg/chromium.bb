@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "extensions/browser/serial_extension_host_queue.h"
+#include "extensions/browser/extension_host_queue.h"
+
+#include <algorithm>
 
 #include "base/bind.h"
 #include "base/location.h"
@@ -20,6 +22,7 @@ namespace {
 // Gets the number of milliseconds to delay between loading ExtensionHosts. By
 // default this is 0, but it can be overridden by field trials.
 int GetDelayMs() {
+  // TODO(devlin): I think these field trials are dead. Confirm, and remove.
   // A sanity check for the maximum delay, to guard against a bad field trial
   // config being pushed that delays loading too much (e.g. using wrong units).
   static const int kMaxDelayMs = 30 * 1000;
@@ -42,34 +45,33 @@ int GetDelayMs() {
 
 }  // namespace
 
-SerialExtensionHostQueue::SerialExtensionHostQueue() : pending_create_(false) {}
+ExtensionHostQueue::ExtensionHostQueue() : pending_create_(false) {}
 
-SerialExtensionHostQueue::~SerialExtensionHostQueue() {
-}
+ExtensionHostQueue::~ExtensionHostQueue() = default;
 
-void SerialExtensionHostQueue::Add(DeferredStartRenderHost* host) {
+void ExtensionHostQueue::Add(DeferredStartRenderHost* host) {
   queue_.push_back(host);
   PostTask();
 }
 
-void SerialExtensionHostQueue::Remove(DeferredStartRenderHost* host) {
+void ExtensionHostQueue::Remove(DeferredStartRenderHost* host) {
   auto it = std::find(queue_.begin(), queue_.end(), host);
   if (it != queue_.end())
     queue_.erase(it);
 }
 
-void SerialExtensionHostQueue::PostTask() {
+void ExtensionHostQueue::PostTask() {
   if (!pending_create_) {
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
-        base::BindOnce(&SerialExtensionHostQueue::ProcessOneHost,
+        base::BindOnce(&ExtensionHostQueue::ProcessOneHost,
                        ptr_factory_.GetWeakPtr()),
         base::TimeDelta::FromMilliseconds(GetDelayMs()));
     pending_create_ = true;
   }
 }
 
-void SerialExtensionHostQueue::ProcessOneHost() {
+void ExtensionHostQueue::ProcessOneHost() {
   pending_create_ = false;
   if (queue_.empty())
     return;  // can happen on shutdown
