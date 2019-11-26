@@ -389,7 +389,6 @@ _NOT_CONVERTED_TO_MODERN_BIND_AND_CALLBACK = '|'.join((
   '^components/webdata_services/',
   '^components/wifi/',
   '^components/zoom/',
-  '^content/app/',
   '^content/browser/',
   '^content/child/',
   '^content/public/',
