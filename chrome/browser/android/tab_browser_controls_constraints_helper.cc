@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/android/tab_browser_controls_state.h"
+#include "chrome/browser/android/tab_browser_controls_constraints_helper.h"
 
-#include "chrome/android/chrome_jni_headers/TabBrowserControlsState_jni.h"
+#include "chrome/android/chrome_jni_headers/TabBrowserControlsConstraintsHelper_jni.h"
 #include "chrome/common/chrome_render_frame.mojom.h"
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/render_frame_host.h"
@@ -15,19 +15,21 @@ using base::android::AttachCurrentThread;
 using base::android::JavaParamRef;
 using base::android::JavaRef;
 
-TabBrowserControlsState::TabBrowserControlsState(
+TabBrowserControlsConstraintsHelper::TabBrowserControlsConstraintsHelper(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj)
     : jobj_(env, obj) {}
 
-TabBrowserControlsState::~TabBrowserControlsState() = default;
+TabBrowserControlsConstraintsHelper::~TabBrowserControlsConstraintsHelper() =
+    default;
 
-void TabBrowserControlsState::OnDestroyed(JNIEnv* env,
-                                          const JavaParamRef<jobject>& obj) {
+void TabBrowserControlsConstraintsHelper::OnDestroyed(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
   delete this;
 }
 
-void TabBrowserControlsState::UpdateState(
+void TabBrowserControlsConstraintsHelper::UpdateState(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
     const JavaParamRef<jobject>& jweb_contents,
@@ -51,8 +53,9 @@ void TabBrowserControlsState::UpdateState(
   }
 }
 
-static jlong JNI_TabBrowserControlsState_Init(
+static jlong JNI_TabBrowserControlsConstraintsHelper_Init(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
-  return reinterpret_cast<intptr_t>(new TabBrowserControlsState(env, obj));
+  return reinterpret_cast<intptr_t>(
+      new TabBrowserControlsConstraintsHelper(env, obj));
 }

@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.tab;
 
-import org.chromium.base.ObserverList.RewindableIterator;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.content_public.browser.ImeAdapter;
 import org.chromium.content_public.browser.ImeEventObserver;
@@ -14,26 +13,21 @@ import org.chromium.content_public.common.BrowserControlsState;
 /**
  * Manages the state of tab browser controls.
  */
-public class TabBrowserControlsState extends TabWebContentsUserData implements ImeEventObserver {
-    private static final Class<TabBrowserControlsState> USER_DATA_KEY =
-            TabBrowserControlsState.class;
+public class TabBrowserControlsConstraintsHelper
+        extends TabWebContentsUserData implements ImeEventObserver {
+    private static final Class<TabBrowserControlsConstraintsHelper> USER_DATA_KEY =
+            TabBrowserControlsConstraintsHelper.class;
 
     private final TabImpl mTab;
-    private long mNativeTabBrowserControlsState; // Lazily initialized in |update|
+    private long mNativeTabBrowserControlsConstraintsHelper; // Lazily initialized in |update|
     private BrowserControlsVisibilityDelegate mVisibilityDelegate;
 
-    private int mTopControlsOffset;
-    private int mBottomControlsOffset;
-    private int mContentOffset;
-
-    /** {@code true} if offset was changed by compositor. */
-    private boolean mOffsetInitialized;
-
     public static void createForTab(Tab tab) {
-        tab.getUserDataHost().setUserData(USER_DATA_KEY, new TabBrowserControlsState(tab));
+        tab.getUserDataHost().setUserData(
+                USER_DATA_KEY, new TabBrowserControlsConstraintsHelper(tab));
     }
 
-    public static TabBrowserControlsState get(Tab tab) {
+    public static TabBrowserControlsConstraintsHelper get(Tab tab) {
         return tab.getUserDataHost().getUserData(USER_DATA_KEY);
     }
 
@@ -75,7 +69,7 @@ public class TabBrowserControlsState extends TabWebContentsUserData implements I
     }
 
     /** Constructor */
-    private TabBrowserControlsState(Tab tab) {
+    private TabBrowserControlsConstraintsHelper(Tab tab) {
         super(tab);
         mTab = (TabImpl) tab;
         mTab.addObserver(new EmptyTabObserver() {
@@ -114,54 +108,18 @@ public class TabBrowserControlsState extends TabWebContentsUserData implements I
             }
 
             @Override
-            public void onCrash(Tab tab) {
-                mTopControlsOffset = 0;
-                mBottomControlsOffset = 0;
-                mContentOffset = 0;
-                mOffsetInitialized = false;
-            }
-
-            @Override
             public void onDestroyed(Tab tab) {
                 tab.removeObserver(this);
             }
         });
     }
 
-    /**
-     * Sets new top control and content offset from renderer.
-     * @param topControlsOffset Top control offset.
-     * @param contentOffset Content offset.
-     */
-    void setTopOffset(int topControlsOffset, int contentOffset) {
-        mTopControlsOffset = topControlsOffset;
-        mContentOffset = contentOffset;
-        notifyControlsOffsetChanged();
-    }
-
-    /**
-     * Sets new bottom control offset from renderer.
-     * @param bottomControlsOffset Bottom control offset.
-     */
-    void setBottomOffset(int bottomControlsOffset) {
-        mBottomControlsOffset = bottomControlsOffset;
-        notifyControlsOffsetChanged();
-    }
-
-    private void notifyControlsOffsetChanged() {
-        mOffsetInitialized = true;
-        RewindableIterator<TabObserver> observers = mTab.getTabObservers();
-        while (observers.hasNext()) {
-            observers.next().onBrowserControlsOffsetChanged(
-                    mTab, mTopControlsOffset, mBottomControlsOffset, mContentOffset);
-        }
-    }
-
     @Override
     public void destroyInternal() {
-        if (mNativeTabBrowserControlsState != 0) {
-            TabBrowserControlsStateJni.get().onDestroyed(
-                    mNativeTabBrowserControlsState, TabBrowserControlsState.this);
+        if (mNativeTabBrowserControlsConstraintsHelper != 0) {
+            TabBrowserControlsConstraintsHelperJni.get().onDestroyed(
+                    mNativeTabBrowserControlsConstraintsHelper,
+                    TabBrowserControlsConstraintsHelper.this);
         }
     }
 
@@ -197,12 +155,15 @@ public class TabBrowserControlsState extends TabWebContentsUserData implements I
                         && current == BrowserControlsState.HIDDEN)) {
             return;
         }
-        if (mNativeTabBrowserControlsState == 0) {
-            mNativeTabBrowserControlsState =
-                    TabBrowserControlsStateJni.get().init(TabBrowserControlsState.this);
+        if (mNativeTabBrowserControlsConstraintsHelper == 0) {
+            mNativeTabBrowserControlsConstraintsHelper =
+                    TabBrowserControlsConstraintsHelperJni.get().init(
+                            TabBrowserControlsConstraintsHelper.this);
         }
-        TabBrowserControlsStateJni.get().updateState(mNativeTabBrowserControlsState,
-                TabBrowserControlsState.this, mTab.getWebContents(), constraints, current, animate);
+        TabBrowserControlsConstraintsHelperJni.get().updateState(
+                mNativeTabBrowserControlsConstraintsHelper,
+                TabBrowserControlsConstraintsHelper.this, mTab.getWebContents(), constraints,
+                current, animate);
     }
 
     /**
@@ -231,26 +192,6 @@ public class TabBrowserControlsState extends TabWebContentsUserData implements I
         return constraints;
     }
 
-    /** @return Top control offset */
-    public int topControlsOffset() {
-        return mTopControlsOffset;
-    }
-
-    /** @return Bottom control offset */
-    public int bottomControlsOffset() {
-        return mBottomControlsOffset;
-    }
-
-    /** @return content offset */
-    public int contentOffset() {
-        return mContentOffset;
-    }
-
-    /** @return Whether the control offset is initialized by compositor. */
-    public boolean offsetInitialized() {
-        return mOffsetInitialized;
-    }
-
     // ImeEventObserver
 
     @Override
@@ -261,9 +202,11 @@ public class TabBrowserControlsState extends TabWebContentsUserData implements I
 
     @NativeMethods
     interface Natives {
-        long init(TabBrowserControlsState caller);
-        void onDestroyed(long nativeTabBrowserControlsState, TabBrowserControlsState caller);
-        void updateState(long nativeTabBrowserControlsState, TabBrowserControlsState caller,
-                WebContents webContents, int contraints, int current, boolean animate);
+        long init(TabBrowserControlsConstraintsHelper caller);
+        void onDestroyed(long nativeTabBrowserControlsConstraintsHelper,
+                TabBrowserControlsConstraintsHelper caller);
+        void updateState(long nativeTabBrowserControlsConstraintsHelper,
+                TabBrowserControlsConstraintsHelper caller, WebContents webContents, int contraints,
+                int current, boolean animate);
     }
 }

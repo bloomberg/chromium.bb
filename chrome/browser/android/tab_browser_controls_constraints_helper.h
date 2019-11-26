@@ -2,17 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_ANDROID_TAB_BROWSER_CONTROLS_STATE_H_
-#define CHROME_BROWSER_ANDROID_TAB_BROWSER_CONTROLS_STATE_H_
+#ifndef CHROME_BROWSER_ANDROID_TAB_BROWSER_CONTROLS_CONSTRAINTS_HELPER_H_
+#define CHROME_BROWSER_ANDROID_TAB_BROWSER_CONTROLS_CONSTRAINTS_HELPER_H_
 
 #include "base/android/scoped_java_ref.h"
 
-// Native TabBrowsreControlsState. Managed by Java class.
-class TabBrowserControlsState {
+// Dispatches changes to the browser controls constraints for a given tab.
+class TabBrowserControlsConstraintsHelper {
  public:
-  TabBrowserControlsState(JNIEnv* env,
-                          const base::android::JavaParamRef<jobject>& obj);
-  ~TabBrowserControlsState();
+  TabBrowserControlsConstraintsHelper(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
+  ~TabBrowserControlsConstraintsHelper();
 
   void UpdateState(JNIEnv* env,
                    const base::android::JavaParamRef<jobject>& obj,
@@ -27,4 +28,4 @@ class TabBrowserControlsState {
   base::android::ScopedJavaGlobalRef<jobject> jobj_;
 };
 
-#endif  // CHROME_BROWSER_ANDROID_TAB_BROWSER_CONTROLS_STATE_H_
+#endif  // CHROME_BROWSER_ANDROID_TAB_BROWSER_CONTROLS_CONSTRAINTS_HELPER_H_
