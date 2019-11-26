@@ -126,6 +126,8 @@ class DecoderImpl : public Allocable {
   // in output_frame_.
   StatusCode CopyFrameToOutputBuffer(const RefCountedBufferPtr& frame);
   StatusCode DecodeTiles(const ObuParser* obu);
+  void PostFilterRow(PostFilter* post_filter, int row4x4, int sb4x4,
+                     bool is_last_row);
   // Sets the current frame's segmentation map for two cases. The third case
   // is handled in Tile::DecodeBlock().
   void SetCurrentFrameSegmentationMap(const ObuFrameHeader& frame_header,

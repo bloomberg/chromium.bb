@@ -607,7 +607,8 @@ StatusCode DecoderImpl::DecodeTiles(const ObuParser* obu) {
     std::unique_ptr<DecoderScratchBuffer> scratch_buffer =
         decoder_scratch_buffer_pool_.Get();
     if (scratch_buffer != nullptr) {
-      for (int row4x4 = 0; row4x4 < obu->frame_header().rows4x4;
+      int row4x4;
+      for (row4x4 = 0; row4x4 < obu->frame_header().rows4x4;
            row4x4 += block_width4x4) {
         for (const auto& tile_ptr : tiles) {
           if (!tile_ptr->DecodeSuperBlockRow(row4x4, scratch_buffer.get())) {
@@ -616,7 +617,13 @@ StatusCode DecoderImpl::DecodeTiles(const ObuParser* obu) {
           }
         }
         if (!ok) break;
+        // Apply post filters for the row above the current row.
+        PostFilterRow(&post_filter, row4x4 - block_width4x4, block_width4x4,
+                      false);
       }
+      // Apply post filters for the last row.
+      PostFilterRow(&post_filter, row4x4 - block_width4x4, block_width4x4,
+                    true);
       decoder_scratch_buffer_pool_.Release(std::move(scratch_buffer));
     } else {
       ok = false;
@@ -692,6 +699,16 @@ StatusCode DecoderImpl::DecodeTiles(const ObuParser* obu) {
   }
   SetCurrentFrameSegmentationMap(obu->frame_header(), prev_segment_ids);
   return kLibgav1StatusOk;
+}
+
+void DecoderImpl::PostFilterRow(PostFilter* post_filter, int row4x4, int sb4x4,
+                                bool /*is_last_row*/) {
+  // |is_last_row| is not used for now. It will be used eventually when we do
+  // the other post filters here.
+  if (row4x4 < 0) return;
+  if (post_filter->DoDeblock()) {
+    post_filter->ApplyDeblockFilterForOneSuperBlockRow(row4x4, sb4x4);
+  }
 }
 
 void DecoderImpl::SetCurrentFrameSegmentationMap(

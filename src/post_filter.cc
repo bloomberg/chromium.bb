@@ -191,7 +191,9 @@ void ComputeSuperRes(const uint8_t* source, const int upscaled_width,
 constexpr int PostFilter::kCdefLargeValue;
 
 bool PostFilter::ApplyFiltering() {
-  if (DoDeblock() && !ApplyDeblockFilter()) return false;
+  if (thread_pool_ != nullptr && DoDeblock() && !ApplyDeblockFilterThreaded()) {
+    return false;
+  }
   if (DoCdef() && DoRestoration()) {
     // We need to store 4 rows per 64x64 unit.
     const int num_deblock_units =
@@ -433,52 +435,37 @@ void PostFilter::CopyDeblockedPixels(Plane plane, int row4x4, int row_unit) {
   }
 }
 
-bool PostFilter::ApplyDeblockFilter() {
-  InitDeblockFilterParams();
-
-  if (thread_pool_ != nullptr) {
-    return ApplyDeblockFilterThreaded();
-  }
-
-  const DeblockFilter vertical_deblock_filter_func =
-      deblock_filter_type_table_[kDeblockFilterBitMask]
-                                [kLoopFilterTypeVertical];
-  const DeblockFilter horizontal_deblock_filter_func =
-      deblock_filter_type_table_[kDeblockFilterBitMask]
-                                [kLoopFilterTypeHorizontal];
-
+void PostFilter::ApplyDeblockFilterForOneSuperBlockRow(int row4x4_start,
+                                                       int sb4x4) {
+  assert(row4x4_start >= 0);
+  assert(DoDeblock());
   for (int plane = kPlaneY; plane < planes_; ++plane) {
     if (plane != kPlaneY && frame_header_.loop_filter.level[plane + 1] == 0) {
       continue;
     }
 
-    // Iterate through each 64x64 block and apply deblock filtering.
-    for (int row4x4 = 0, row_unit = 0; row4x4 < frame_header_.rows4x4;
-         row4x4 += kNum4x4InLoopFilterMaskUnit, ++row_unit) {
+    for (int y = 0; y < sb4x4; y += 16) {
+      const int row4x4 = row4x4_start + y;
+      if (row4x4 >= frame_header_.rows4x4) break;
       int column4x4;
-      int column_unit;
-      for (column4x4 = 0, column_unit = 0; column4x4 < frame_header_.columns4x4;
-           column4x4 += kNum4x4InLoopFilterMaskUnit, ++column_unit) {
+      for (column4x4 = 0; column4x4 < frame_header_.columns4x4;
+           column4x4 += kNum4x4InLoopFilterMaskUnit) {
         // First apply vertical filtering
-        const int unit_id = GetDeblockUnitId(row_unit, column_unit);
-        (this->*vertical_deblock_filter_func)(static_cast<Plane>(plane), row4x4,
-                                              column4x4, unit_id);
+        VerticalDeblockFilterNoMask(static_cast<Plane>(plane), row4x4,
+                                    column4x4, 0);
 
         // Delay one superblock to apply horizontal filtering.
         if (column4x4 != 0) {
-          (this->*horizontal_deblock_filter_func)(
-              static_cast<Plane>(plane), row4x4,
-              column4x4 - kNum4x4InLoopFilterMaskUnit, unit_id - 1);
+          HorizontalDeblockFilterNoMask(static_cast<Plane>(plane), row4x4,
+                                        column4x4 - kNum4x4InLoopFilterMaskUnit,
+                                        0);
         }
       }
       // Horizontal filtering for the last 64x64 block.
-      const int unit_id = GetDeblockUnitId(row_unit, column_unit - 1);
-      (this->*horizontal_deblock_filter_func)(
-          static_cast<Plane>(plane), row4x4,
-          column4x4 - kNum4x4InLoopFilterMaskUnit, unit_id);
+      HorizontalDeblockFilterNoMask(static_cast<Plane>(plane), row4x4,
+                                    column4x4 - kNum4x4InLoopFilterMaskUnit, 0);
     }
   }
-  return true;
 }
 
 void PostFilter::ComputeDeblockFilterLevels(

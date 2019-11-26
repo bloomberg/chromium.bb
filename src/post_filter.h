@@ -96,6 +96,9 @@ class PostFilter {
         thread_pool_(thread_pool) {
     const int8_t zero_delta_lf[kFrameLfCount] = {};
     ComputeDeblockFilterLevels(zero_delta_lf, deblock_filter_levels_);
+    if (DoDeblock()) {
+      InitDeblockFilterParams();
+    }
   }
 
   // non copyable/movable.
@@ -232,6 +235,10 @@ class PostFilter {
     return std::min(adjusted_frame_height, window_height);
   }
 
+  // Applies deblock filtering for the superblock row starting at |row4x4| with
+  // a height of 4*|sb4x4|.
+  void ApplyDeblockFilterForOneSuperBlockRow(int row4x4, int sb4x4);
+
  private:
   // The type of the HorizontalDeblockFilter and VerticalDeblockFilter member
   // functions.
@@ -275,7 +282,6 @@ class PostFilter {
     } box_filter;
   };
 
-  bool ApplyDeblockFilter();
   // Copies the deblocked pixels needed for loop restoration.
   void CopyDeblockedPixels(Plane plane, int row4x4, int row_unit);
   void DeblockFilterWorker(const DeblockFilterJob* jobs, int num_jobs,
