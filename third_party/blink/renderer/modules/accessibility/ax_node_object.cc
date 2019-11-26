@@ -428,7 +428,7 @@ static bool IsRequiredOwnedElement(AXObject* parent,
   if (IsHTMLTableCellElement(*current_element))
     return IsA<HTMLTableRowElement>(*parent_node);
   if (IsA<HTMLTableRowElement>(*current_element))
-    return IsHTMLTableSectionElement(parent_html_element);
+    return IsA<HTMLTableSectionElement>(parent_html_element);
 
   // In case of ListboxRole and its child, ListBoxOptionRole, inheritance of
   // presentation role is handled in AXListBoxOption because ListBoxOption Role
