@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/no_destructor.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -19,6 +20,12 @@ namespace extensions {
 ExtensionHostQueue::ExtensionHostQueue() : pending_create_(false) {}
 
 ExtensionHostQueue::~ExtensionHostQueue() = default;
+
+// static
+ExtensionHostQueue& ExtensionHostQueue::GetInstance() {
+  static base::NoDestructor<ExtensionHostQueue> queue;
+  return *queue;
+}
 
 void ExtensionHostQueue::Add(DeferredStartRenderHost* host) {
   queue_.push_back(host);
