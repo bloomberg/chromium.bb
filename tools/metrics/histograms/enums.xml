@@ -51229,6 +51229,13 @@ Called by update_net_trust_anchors.py.-->
   <int value="3" label="kCloseByUser"/>
 </enum>
 
+<enum name="ProactiveSuggestionsVeId">
+  <int value="76953" label="kRelatedNewsTimelineCard"/>
+  <int value="76954" label="kRelatedNewsVideoCard"/>
+  <int value="76955" label="kRelatedPageCard"/>
+  <int value="76958" label="kRelatedYoutubeVideoCard"/>
+</enum>
+
 <enum name="ProbeResult">
   <int value="0" label="No internet"/>
   <int value="1" label="Server error"/>
