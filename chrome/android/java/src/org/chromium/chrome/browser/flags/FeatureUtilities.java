@@ -255,7 +255,7 @@ public class FeatureUtilities {
         return isFlagEnabled(ChromePreferenceKeys.BOTTOM_TOOLBAR_ENABLED_KEY, false)
                 && !DeviceFormFactor.isNonMultiDisplayContextOnTablet(
                         ContextUtils.getApplicationContext())
-                && !isTabGroupsAndroidEnabled();
+                && (isDuetTabStripIntegrationAndroidEnabled() || !isTabGroupsAndroidEnabled());
     }
 
     /**
@@ -271,7 +271,8 @@ public class FeatureUtilities {
      */
     public static boolean isAdaptiveToolbarEnabled() {
         return isFlagEnabled(ChromePreferenceKeys.ADAPTIVE_TOOLBAR_ENABLED_KEY, true)
-                && isBottomToolbarEnabled() && !isGridTabSwitcherEnabled();
+                && isBottomToolbarEnabled()
+                && (isDuetTabStripIntegrationAndroidEnabled() || !isGridTabSwitcherEnabled());
     }
 
     /**
