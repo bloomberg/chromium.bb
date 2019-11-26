@@ -1629,6 +1629,10 @@ Unknown properties are collapsed to zero. -->
   <int value="257" label="GATT_FAILURE"/>
 </enum>
 
+<enum name="AndroidIntentNonSafelistedHeaderNameHashes">
+  <int value="4229679564" label="user-agent"/>
+</enum>
+
 <enum name="AndroidKernelVersion">
   <int value="131078" label="2.6"/>
   <int value="196608" label="3.0"/>
