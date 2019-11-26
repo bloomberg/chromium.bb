@@ -102,6 +102,42 @@ std::string EncodePNGAndMakeDataURI(gfx::ImageSkia image, float scale_factor) {
       base::as_bytes(base::make_span(stream.GetBuffer())), "png");
 }
 
+class WebUIBackgroundMenuModel : public ui::SimpleMenuModel {
+ public:
+  explicit WebUIBackgroundMenuModel(ui::SimpleMenuModel::Delegate* delegate)
+      : ui::SimpleMenuModel(delegate) {
+    AddItemWithStringId(IDC_NEW_TAB, IDS_NEW_TAB);
+    AddItemWithStringId(IDC_RESTORE_TAB, IDS_RESTORE_TAB);
+    AddItemWithStringId(IDC_BOOKMARK_ALL_TABS, IDS_BOOKMARK_ALL_TABS);
+  }
+};
+
+class WebUIBackgroundContextMenu : public ui::SimpleMenuModel::Delegate,
+                                   public WebUIBackgroundMenuModel {
+ public:
+  WebUIBackgroundContextMenu(
+      Browser* browser,
+      const ui::AcceleratorProvider* accelerator_provider)
+      : WebUIBackgroundMenuModel(this),
+        browser_(browser),
+        accelerator_provider_(accelerator_provider) {}
+  ~WebUIBackgroundContextMenu() override = default;
+
+  void ExecuteCommand(int command_id, int event_flags) override {
+    chrome::ExecuteCommand(browser_, command_id);
+  }
+
+  bool GetAcceleratorForCommandId(int command_id,
+                                  ui::Accelerator* accelerator) const override {
+    return accelerator_provider_->GetAcceleratorForCommandId(command_id,
+                                                             accelerator);
+  }
+
+ private:
+  Browser* const browser_;
+  const ui::AcceleratorProvider* const accelerator_provider_;
+};
+
 class WebUITabMenuModel : public ui::SimpleMenuModel {
  public:
   WebUITabMenuModel(ui::SimpleMenuModel::Delegate* delegate,
@@ -299,6 +335,10 @@ class TabStripUIHandler : public content::WebUIMessageHandler,
         "closeContainer", base::Bind(&TabStripUIHandler::HandleCloseContainer,
                                      base::Unretained(this)));
     web_ui()->RegisterMessageCallback(
+        "showBackgroundContextMenu",
+        base::Bind(&TabStripUIHandler::HandleShowBackgroundContextMenu,
+                   base::Unretained(this)));
+    web_ui()->RegisterMessageCallback(
         "showTabContextMenu",
         base::Bind(&TabStripUIHandler::HandleShowTabContextMenu,
                    base::Unretained(this)));
@@ -419,6 +459,23 @@ class TabStripUIHandler : public content::WebUIMessageHandler,
     RecordTabStripUICloseHistogram(TabStripUICloseAction::kTabSelected);
     DCHECK(embedder_);
     embedder_->CloseContainer();
+  }
+
+  void HandleShowBackgroundContextMenu(const base::ListValue* args) {
+    gfx::PointF point;
+    {
+      double x = 0;
+      args->GetDouble(0, &x);
+      double y = 0;
+      args->GetDouble(1, &y);
+      point = gfx::PointF(x, y);
+    }
+
+    DCHECK(embedder_);
+    embedder_->ShowContextMenuAtPoint(
+        gfx::ToRoundedPoint(point),
+        std::make_unique<WebUIBackgroundContextMenu>(
+            browser_, embedder_->GetAcceleratorProvider()));
   }
 
   void HandleShowTabContextMenu(const base::ListValue* args) {

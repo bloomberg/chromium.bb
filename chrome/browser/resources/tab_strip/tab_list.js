@@ -102,6 +102,9 @@ class TabListElement extends CustomElement {
     /** @private {!Function} */
     this.windowBlurListener_ = () => this.onWindowBlur_();
 
+    /** @private {!Function} */
+    this.contextMenuListener_ = e => this.onContextMenu_(e);
+
     addWebUIListener(
         'layout-changed', layout => this.applyCSSDictionary_(layout));
     addWebUIListener('theme-changed', () => this.fetchAndUpdateColors_());
@@ -117,6 +120,7 @@ class TabListElement extends CustomElement {
     this.addEventListener(
         'dragover', (e) => this.onDragOver_(/** @type {!DragEvent} */ (e)));
 
+    document.addEventListener('contextmenu', this.contextMenuListener_);
     document.addEventListener(
         'visibilitychange', this.documentVisibilityChangeListener_);
     addWebUIListener(
@@ -181,6 +185,7 @@ class TabListElement extends CustomElement {
   }
 
   disconnectedCallback() {
+    document.removeEventListener('contextmenu', this.contextMenuListener_);
     document.removeEventListener(
         'visibilitychange', this.documentVisibilityChangeListener_);
     window.removeEventListener('blur', this.windowBlurListener_);
@@ -265,6 +270,16 @@ class TabListElement extends CustomElement {
     } else {
       this.scrollToTab_(activeTab);
     }
+  }
+
+  /**
+   * @param {!Event} event
+   * @private
+   */
+  onContextMenu_(event) {
+    event.preventDefault();
+    this.tabStripEmbedderProxy_.showBackgroundContextMenu(
+        event.clientX, event.clientY);
   }
 
   /** @private */

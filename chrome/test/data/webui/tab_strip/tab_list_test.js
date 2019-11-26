@@ -536,4 +536,16 @@ suite('TabList', () => {
     webUIListenerCallback('tab-replaced', tabs[0].id, 1000);
     assertEquals(getUnpinnedTabs()[0].tab.id, 1000);
   });
+
+  test('has custom context menu', async () => {
+    let event = new Event('contextmenu');
+    event.clientX = 1;
+    event.clientY = 2;
+    document.dispatchEvent(event);
+
+    const contextMenuArgs =
+        await testTabStripEmbedderProxy.whenCalled('showBackgroundContextMenu');
+    assertEquals(contextMenuArgs[0], 1);
+    assertEquals(contextMenuArgs[1], 2);
+  });
 });
