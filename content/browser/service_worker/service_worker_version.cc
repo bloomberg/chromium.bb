@@ -378,9 +378,10 @@ ServiceWorkerVersionInfo ServiceWorkerVersion::GetInfo() {
     ServiceWorkerProviderHost* host = controllee.second;
     info.clients.insert(std::make_pair(
         host->container_host()->client_uuid(),
-        ServiceWorkerClientInfo(host->process_id(), host->frame_id(),
+        ServiceWorkerClientInfo(host->container_host()->process_id(),
+                                host->container_host()->frame_id(),
                                 host->container_host()->web_contents_getter(),
-                                host->provider_type())));
+                                host->container_host()->type())));
   }
 
   info.script_response_time = script_response_time_for_devtools_;
@@ -740,9 +741,10 @@ void ServiceWorkerVersion::AddControllee(
       base::BindOnce(&ServiceWorkerVersion::NotifyControlleeAdded,
                      weak_factory_.GetWeakPtr(), uuid,
                      ServiceWorkerClientInfo(
-                         provider_host->process_id(), provider_host->frame_id(),
+                         provider_host->container_host()->process_id(),
+                         provider_host->container_host()->frame_id(),
                          provider_host->container_host()->web_contents_getter(),
-                         provider_host->provider_type())));
+                         provider_host->container_host()->type())));
 }
 
 void ServiceWorkerVersion::RemoveControllee(const std::string& client_uuid) {
@@ -1406,8 +1408,9 @@ void ServiceWorkerVersion::NavigateClient(const std::string& client_uuid,
   }
 
   service_worker_client_utils::NavigateClient(
-      url, script_url_, provider_host->process_id(), provider_host->frame_id(),
-      context_, base::BindOnce(&DidNavigateClient, std::move(callback), url));
+      url, script_url_, provider_host->container_host()->process_id(),
+      provider_host->container_host()->frame_id(), context_,
+      base::BindOnce(&DidNavigateClient, std::move(callback), url));
 }
 
 void ServiceWorkerVersion::SkipWaiting(SkipWaitingCallback callback) {
@@ -2215,8 +2218,8 @@ bool ServiceWorkerVersion::ShouldRequireForegroundPriority(
   // service workers.  The impact of foreground service workers is further
   // limited by the automatic shutdown mechanism.
   for (const auto& controllee : controllee_map_) {
-    const ServiceWorkerProviderHost* host = controllee.second;
-    if (host->process_id() != worker_process_id)
+    ServiceWorkerProviderHost* host = controllee.second;
+    if (host->container_host()->process_id() != worker_process_id)
       return true;
   }
   return false;
