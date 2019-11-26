@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/visitedlink/renderer/visitedlink_slave.h"
+#include "components/visitedlink/renderer/visitedlink_reader.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -15,20 +15,20 @@ using blink::WebView;
 
 namespace visitedlink {
 
-VisitedLinkSlave::VisitedLinkSlave() = default;
+VisitedLinkReader::VisitedLinkReader() = default;
 
-VisitedLinkSlave::~VisitedLinkSlave() {
+VisitedLinkReader::~VisitedLinkReader() {
   FreeTable();
 }
 
 base::Callback<void(mojo::PendingReceiver<mojom::VisitedLinkNotificationSink>)>
-VisitedLinkSlave::GetBindCallback() {
-  return base::Bind(&VisitedLinkSlave::Bind, weak_factory_.GetWeakPtr());
+VisitedLinkReader::GetBindCallback() {
+  return base::Bind(&VisitedLinkReader::Bind, weak_factory_.GetWeakPtr());
 }
 
 // Initializes the table with the given shared memory handle. This memory is
 // mapped into the process.
-void VisitedLinkSlave::UpdateVisitedLinks(
+void VisitedLinkReader::UpdateVisitedLinks(
     base::ReadOnlySharedMemoryRegion table_region) {
   // Since this function may be called again to change the table, we may need
   // to free old objects.
@@ -61,17 +61,17 @@ void VisitedLinkSlave::UpdateVisitedLinks(
   table_length_ = table_len;
 }
 
-void VisitedLinkSlave::AddVisitedLinks(
-    const std::vector<VisitedLinkSlave::Fingerprint>& fingerprints) {
+void VisitedLinkReader::AddVisitedLinks(
+    const std::vector<VisitedLinkReader::Fingerprint>& fingerprints) {
   for (size_t i = 0; i < fingerprints.size(); ++i)
     WebView::UpdateVisitedLinkState(fingerprints[i]);
 }
 
-void VisitedLinkSlave::ResetVisitedLinks(bool invalidate_hashes) {
+void VisitedLinkReader::ResetVisitedLinks(bool invalidate_hashes) {
   WebView::ResetVisitedLinkState(invalidate_hashes);
 }
 
-void VisitedLinkSlave::FreeTable() {
+void VisitedLinkReader::FreeTable() {
   if (!hash_table_)
     return;
 
@@ -80,7 +80,7 @@ void VisitedLinkSlave::FreeTable() {
   table_length_ = 0;
 }
 
-void VisitedLinkSlave::Bind(
+void VisitedLinkReader::Bind(
     mojo::PendingReceiver<mojom::VisitedLinkNotificationSink> receiver) {
   receiver_.Bind(std::move(receiver));
 }

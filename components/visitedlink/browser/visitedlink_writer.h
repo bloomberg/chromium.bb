@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_VISITEDLINK_BROWSER_VISITEDLINK_MASTER_H_
-#define COMPONENTS_VISITEDLINK_BROWSER_VISITEDLINK_MASTER_H_
+#ifndef COMPONENTS_VISITEDLINK_BROWSER_VISITEDLINK_WRITER_H_
+#define COMPONENTS_VISITEDLINK_BROWSER_VISITEDLINK_WRITER_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -44,15 +44,15 @@ namespace visitedlink {
 
 class VisitedLinkDelegate;
 
-// Controls the link coloring database. The master controls all writing to the
-// database as well as disk I/O. There should be only one master.
+// Controls the link coloring database. The writer controls all writing to the
+// database as well as disk I/O. There should be only one writer.
 //
 // This class will defer writing operations to the file thread. This means that
 // class destruction, the file may still be open since operations are pending on
 // another thread.
-class VisitedLinkMaster : public VisitedLinkCommon {
+class VisitedLinkWriter : public VisitedLinkCommon {
  public:
-  // Listens to the link coloring database events. The master is given this
+  // Listens to the link coloring database events. The writer is given this
   // event as a constructor argument and dispatches events using it.
   class Listener {
    public:
@@ -75,7 +75,7 @@ class VisitedLinkMaster : public VisitedLinkCommon {
     virtual void Reset(bool invalidate_hashes) = 0;
   };
 
-  VisitedLinkMaster(content::BrowserContext* browser_context,
+  VisitedLinkWriter(content::BrowserContext* browser_context,
                     VisitedLinkDelegate* delegate,
                     bool persist_to_disk);
 
@@ -94,13 +94,13 @@ class VisitedLinkMaster : public VisitedLinkCommon {
   // When |suppress_rebuild| is set, we'll not attempt to load data from
   // history if the file can't be loaded. This should generally be set for
   // testing except when you want to test the rebuild process explicitly.
-  VisitedLinkMaster(Listener* listener,
+  VisitedLinkWriter(Listener* listener,
                     VisitedLinkDelegate* delegate,
                     bool persist_to_disk,
                     bool suppress_rebuild,
                     const base::FilePath& filename,
                     int32_t default_table_size);
-  ~VisitedLinkMaster() override;
+  ~VisitedLinkWriter() override;
 
   // Must be called immediately after object creation. Nothing else will work
   // until this is called. Returns true on success, false means that this
@@ -139,7 +139,7 @@ class VisitedLinkMaster : public VisitedLinkCommon {
   // part of history clearing.
   void DeleteAllURLs();
 
-  // Returns the Delegate of this Master.
+  // Returns the Delegate of this Writer.
   VisitedLinkDelegate* GetDelegate();
 
 #if defined(UNIT_TEST) || !defined(NDEBUG) || defined(PERF_TEST)
@@ -159,9 +159,7 @@ class VisitedLinkMaster : public VisitedLinkCommon {
   int32_t GetUsedCount() const { return used_items_; }
 
   // Returns the listener.
-  VisitedLinkMaster::Listener* GetListener() const {
-    return listener_.get();
-  }
+  VisitedLinkWriter::Listener* GetListener() const { return listener_.get(); }
 
   // Call to cause the entire database file to be re-written from scratch
   // to disk. Used by the performance tester.
@@ -403,7 +401,7 @@ class VisitedLinkMaster : public VisitedLinkCommon {
   content::BrowserContext* browser_context_ = nullptr;
 
   // Client owns the delegate and is responsible for it being valid through
-  // the life time this VisitedLinkMaster.
+  // the life time this VisitedLinkWriter.
   VisitedLinkDelegate* delegate_;
 
   // VisitedLinkEventListener to handle incoming events.
@@ -482,16 +480,16 @@ class VisitedLinkMaster : public VisitedLinkCommon {
   // will be false in production.
   bool suppress_rebuild_ = false;
 
-  base::WeakPtrFactory<VisitedLinkMaster> weak_ptr_factory_{this};
+  base::WeakPtrFactory<VisitedLinkWriter> weak_ptr_factory_{this};
 
-  DISALLOW_COPY_AND_ASSIGN(VisitedLinkMaster);
+  DISALLOW_COPY_AND_ASSIGN(VisitedLinkWriter);
 };
 
 // NOTE: These methods are defined inline here, so we can share the compilation
-//       of visitedlink_master.cc between the browser and the unit/perf tests.
+//       of visitedlink_writer.cc between the browser and the unit/perf tests.
 
 #if defined(UNIT_TEST) || defined(PERF_TEST) || !defined(NDEBUG)
-inline void VisitedLinkMaster::DebugValidate() {
+inline void VisitedLinkWriter::DebugValidate() {
   int32_t used_count = 0;
   for (int32_t i = 0; i < table_length_; i++) {
     if (hash_table_[i])
@@ -503,4 +501,4 @@ inline void VisitedLinkMaster::DebugValidate() {
 
 }  // namespace visitedlink
 
-#endif  // COMPONENTS_VISITEDLINK_BROWSER_VISITEDLINK_MASTER_H_
+#endif  // COMPONENTS_VISITEDLINK_BROWSER_VISITEDLINK_WRITER_H_

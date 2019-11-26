@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/visitedlink/browser/visitedlink_master.h"
+#include "components/visitedlink/browser/visitedlink_writer.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -40,22 +40,22 @@ using content::BrowserThread;
 
 namespace visitedlink {
 
-const int32_t VisitedLinkMaster::kFileHeaderSignatureOffset = 0;
-const int32_t VisitedLinkMaster::kFileHeaderVersionOffset = 4;
-const int32_t VisitedLinkMaster::kFileHeaderLengthOffset = 8;
-const int32_t VisitedLinkMaster::kFileHeaderUsedOffset = 12;
-const int32_t VisitedLinkMaster::kFileHeaderSaltOffset = 16;
+const int32_t VisitedLinkWriter::kFileHeaderSignatureOffset = 0;
+const int32_t VisitedLinkWriter::kFileHeaderVersionOffset = 4;
+const int32_t VisitedLinkWriter::kFileHeaderLengthOffset = 8;
+const int32_t VisitedLinkWriter::kFileHeaderUsedOffset = 12;
+const int32_t VisitedLinkWriter::kFileHeaderSaltOffset = 16;
 
-const int32_t VisitedLinkMaster::kFileCurrentVersion = 3;
+const int32_t VisitedLinkWriter::kFileCurrentVersion = 3;
 
 // the signature at the beginning of the URL table = "VLnk" (visited links)
-const int32_t VisitedLinkMaster::kFileSignature = 0x6b6e4c56;
-const size_t VisitedLinkMaster::kFileHeaderSize =
+const int32_t VisitedLinkWriter::kFileSignature = 0x6b6e4c56;
+const size_t VisitedLinkWriter::kFileHeaderSize =
     kFileHeaderSaltOffset + LINK_SALT_LENGTH;
 
 // This value should also be the same as the smallest size in the lookup
 // table in NewTableSizeForCount (prime number).
-const unsigned VisitedLinkMaster::kDefaultTableSize = 16381;
+const unsigned VisitedLinkWriter::kDefaultTableSize = 16381;
 
 namespace {
 
@@ -121,7 +121,7 @@ void AsyncClose(FILE** file) {
 
 }  // namespace
 
-struct VisitedLinkMaster::LoadFromFileResult
+struct VisitedLinkWriter::LoadFromFileResult
     : public base::RefCountedThreadSafe<LoadFromFileResult> {
   LoadFromFileResult(base::ScopedFILE file,
                      base::MappedReadOnlyRegion hash_table_memory,
@@ -142,7 +142,7 @@ struct VisitedLinkMaster::LoadFromFileResult
   DISALLOW_COPY_AND_ASSIGN(LoadFromFileResult);
 };
 
-VisitedLinkMaster::LoadFromFileResult::LoadFromFileResult(
+VisitedLinkWriter::LoadFromFileResult::LoadFromFileResult(
     base::ScopedFILE file,
     base::MappedReadOnlyRegion hash_table_memory,
     int32_t num_entries,
@@ -155,8 +155,7 @@ VisitedLinkMaster::LoadFromFileResult::LoadFromFileResult(
   memcpy(this->salt, salt, LINK_SALT_LENGTH);
 }
 
-VisitedLinkMaster::LoadFromFileResult::~LoadFromFileResult() {
-}
+VisitedLinkWriter::LoadFromFileResult::~LoadFromFileResult() {}
 
 // TableBuilder ---------------------------------------------------------------
 
@@ -164,29 +163,29 @@ VisitedLinkMaster::LoadFromFileResult::~LoadFromFileResult() {
 // ---------------------------------
 //
 // We mark that we're rebuilding from history by setting the table_builder_
-// member in VisitedLinkMaster to the TableBuilder we create. This builder
+// member in VisitedLinkWriter to the TableBuilder we create. This builder
 // will be called on the history thread by the history system for every URL
 // in the database.
 //
 // The builder will store the fingerprints for those URLs, and then marshalls
-// back to the main thread where the VisitedLinkMaster will be notified. The
-// master then replaces its table with a new table containing the computed
+// back to the main thread where the VisitedLinkWriter will be notified. The
+// writer then replaces its table with a new table containing the computed
 // fingerprints.
 //
 // The builder must remain active while the history system is using it.
-// Sometimes, the master will be deleted before the rebuild is complete, in
-// which case it notifies the builder via DisownMaster(). The builder will
+// Sometimes, the writer will be deleted before the rebuild is complete, in
+// which case it notifies the builder via DisownWriter(). The builder will
 // delete itself once rebuilding is complete, and not execute any callback.
-class VisitedLinkMaster::TableBuilder
+class VisitedLinkWriter::TableBuilder
     : public VisitedLinkDelegate::URLEnumerator {
  public:
-  TableBuilder(VisitedLinkMaster* master, const uint8_t salt[LINK_SALT_LENGTH]);
+  TableBuilder(VisitedLinkWriter* writer, const uint8_t salt[LINK_SALT_LENGTH]);
 
-  // Called on the main thread when the master is being destroyed. This will
-  // prevent a crash when the query completes and the master is no longer
+  // Called on the main thread when the writer is being destroyed. This will
+  // prevent a crash when the query completes and the writer is no longer
   // around. We can not actually do anything but mark this fact, since the
   // table will be being rebuilt simultaneously on the other thread.
-  void DisownMaster();
+  void DisownWriter();
 
   // VisitedLinkDelegate::URLEnumerator
   void OnURL(const GURL& url) override;
@@ -200,7 +199,7 @@ class VisitedLinkMaster::TableBuilder
   void OnCompleteMainThread();
 
   // Owner of this object. MAY ONLY BE ACCESSED ON THE MAIN THREAD!
-  VisitedLinkMaster* master_;
+  VisitedLinkWriter* writer_;
 
   // Indicates whether the operation has failed or not.
   bool success_;
@@ -214,9 +213,9 @@ class VisitedLinkMaster::TableBuilder
   DISALLOW_COPY_AND_ASSIGN(TableBuilder);
 };
 
-// VisitedLinkMaster ----------------------------------------------------------
+// VisitedLinkWriter ----------------------------------------------------------
 
-VisitedLinkMaster::VisitedLinkMaster(content::BrowserContext* browser_context,
+VisitedLinkWriter::VisitedLinkWriter(content::BrowserContext* browser_context,
                                      VisitedLinkDelegate* delegate,
                                      bool persist_to_disk)
     : browser_context_(browser_context),
@@ -224,7 +223,7 @@ VisitedLinkMaster::VisitedLinkMaster(content::BrowserContext* browser_context,
       listener_(std::make_unique<VisitedLinkEventListener>(browser_context)),
       persist_to_disk_(persist_to_disk) {}
 
-VisitedLinkMaster::VisitedLinkMaster(Listener* listener,
+VisitedLinkWriter::VisitedLinkWriter(Listener* listener,
                                      VisitedLinkDelegate* delegate,
                                      bool persist_to_disk,
                                      bool suppress_rebuild,
@@ -239,13 +238,13 @@ VisitedLinkMaster::VisitedLinkMaster(Listener* listener,
   suppress_rebuild_ = suppress_rebuild;
 }
 
-VisitedLinkMaster::~VisitedLinkMaster() {
+VisitedLinkWriter::~VisitedLinkWriter() {
   if (table_builder_) {
     // Prevent the table builder from calling us back now that we're being
     // destroyed. Note that we DON'T delete the object, since the history
     // system is still writing into it. When that is complete, the table
     // builder will destroy itself when it finds we are gone.
-    table_builder_->DisownMaster();
+    table_builder_->DisownWriter();
   }
   FreeURLTable();
   // FreeURLTable() will schedule closing of the file and deletion of |file_|.
@@ -263,7 +262,7 @@ VisitedLinkMaster::~VisitedLinkMaster() {
   }
 }
 
-bool VisitedLinkMaster::Init() {
+bool VisitedLinkWriter::Init() {
   // Create the temporary table. If the table is rebuilt that temporary table
   // will be became the main table.
   // The salt must be generated before the table so that it can be copied to
@@ -286,8 +285,8 @@ bool VisitedLinkMaster::Init() {
   return InitFromScratch(suppress_rebuild_);
 }
 
-void VisitedLinkMaster::AddURL(const GURL& url, bool update_file) {
-  TRACE_EVENT0("browser", "VisitedLinkMaster::AddURL");
+void VisitedLinkWriter::AddURL(const GURL& url, bool update_file) {
+  TRACE_EVENT0("browser", "VisitedLinkWriter::AddURL");
   Hash index = TryToAddURL(url);
   if (!table_builder_ && !table_is_loading_from_file_ && index != null_hash_) {
     // Not rebuilding, so we want to keep the file on disk up to date.
@@ -299,7 +298,7 @@ void VisitedLinkMaster::AddURL(const GURL& url, bool update_file) {
   }
 }
 
-VisitedLinkMaster::Hash VisitedLinkMaster::TryToAddURL(const GURL& url) {
+VisitedLinkWriter::Hash VisitedLinkWriter::TryToAddURL(const GURL& url) {
   // Extra check that we are not incognito. This should not happen.
   // TODO(boliu): Move this check to HistoryService when IsOffTheRecord is
   // removed from BrowserContext.
@@ -311,9 +310,8 @@ VisitedLinkMaster::Hash VisitedLinkMaster::TryToAddURL(const GURL& url) {
   if (!url.is_valid())
     return null_hash_;  // Don't add invalid URLs.
 
-  Fingerprint fingerprint = ComputeURLFingerprint(url.spec().data(),
-                                                  url.spec().size(),
-                                                  salt_);
+  Fingerprint fingerprint =
+      ComputeURLFingerprint(url.spec().data(), url.spec().size(), salt_);
   // If the table isn't loaded the table will be rebuilt and after
   // that accumulated fingerprints will be applied to the table.
   if (table_builder_.get() || table_is_loading_from_file_) {
@@ -344,18 +342,18 @@ VisitedLinkMaster::Hash VisitedLinkMaster::TryToAddURL(const GURL& url) {
   return AddFingerprint(fingerprint, true);
 }
 
-void VisitedLinkMaster::PostIOTask(const base::Location& from_here,
+void VisitedLinkWriter::PostIOTask(const base::Location& from_here,
                                    const base::Closure& task) {
   DCHECK(persist_to_disk_);
   file_task_runner_->PostTask(from_here, task);
 }
 
-void VisitedLinkMaster::AddURL(const GURL& url) {
+void VisitedLinkWriter::AddURL(const GURL& url) {
   AddURL(url, /*update_file=*/true);
 }
 
-void VisitedLinkMaster::AddURLs(const std::vector<GURL>& urls) {
-  TRACE_EVENT0("browser", "VisitedLinkMaster::AddURLs");
+void VisitedLinkWriter::AddURLs(const std::vector<GURL>& urls) {
+  TRACE_EVENT0("browser", "VisitedLinkWriter::AddURLs");
 
   bool bulk_write = (urls.size() > kBulkOperationThreshold);
 
@@ -369,7 +367,7 @@ void VisitedLinkMaster::AddURLs(const std::vector<GURL>& urls) {
   }
 }
 
-void VisitedLinkMaster::DeleteAllURLs() {
+void VisitedLinkWriter::DeleteAllURLs() {
   // Any pending modifications are invalid.
   added_since_rebuild_.clear();
   deleted_since_rebuild_.clear();
@@ -390,11 +388,11 @@ void VisitedLinkMaster::DeleteAllURLs() {
   listener_->Reset(false);
 }
 
-VisitedLinkDelegate* VisitedLinkMaster::GetDelegate() {
+VisitedLinkDelegate* VisitedLinkWriter::GetDelegate() {
   return delegate_;
 }
 
-void VisitedLinkMaster::DeleteURLs(URLIterator* urls) {
+void VisitedLinkWriter::DeleteURLs(URLIterator* urls) {
   if (!urls->HasNextURL())
     return;
 
@@ -441,7 +439,7 @@ void VisitedLinkMaster::DeleteURLs(URLIterator* urls) {
 }
 
 // See VisitedLinkCommon::IsVisited which should be in sync with this algorithm
-VisitedLinkMaster::Hash VisitedLinkMaster::AddFingerprint(
+VisitedLinkWriter::Hash VisitedLinkWriter::AddFingerprint(
     Fingerprint fingerprint,
     bool send_notifications) {
   if (!hash_table_ || table_length_ == 0) {
@@ -478,7 +476,7 @@ VisitedLinkMaster::Hash VisitedLinkMaster::AddFingerprint(
   }
 }
 
-void VisitedLinkMaster::DeleteFingerprintsFromCurrentTable(
+void VisitedLinkWriter::DeleteFingerprintsFromCurrentTable(
     const std::set<Fingerprint>& fingerprints) {
   bool bulk_write = (fingerprints.size() > kBulkOperationThreshold);
 
@@ -495,7 +493,7 @@ void VisitedLinkMaster::DeleteFingerprintsFromCurrentTable(
     WriteFullTable();
 }
 
-bool VisitedLinkMaster::DeleteFingerprint(Fingerprint fingerprint,
+bool VisitedLinkWriter::DeleteFingerprint(Fingerprint fingerprint,
                                           bool update_file) {
   if (!hash_table_ || table_length_ == 0) {
     NOTREACHED();  // Not initialized.
@@ -556,7 +554,7 @@ bool VisitedLinkMaster::DeleteFingerprint(Fingerprint fingerprint,
   return true;
 }
 
-void VisitedLinkMaster::WriteFullTable() {
+void VisitedLinkWriter::WriteFullTable() {
   // This function can get called when the file is open, for example, when we
   // resize the table. We must handle this case and not try to reopen the file,
   // since there may be write operations pending on the file I/O thread.
@@ -588,14 +586,14 @@ void VisitedLinkMaster::WriteFullTable() {
   WriteToFile(file_, sizeof(header), salt_, LINK_SALT_LENGTH);
 
   // Write the hash data.
-  WriteToFile(file_, kFileHeaderSize,
-              hash_table_, table_length_ * sizeof(Fingerprint));
+  WriteToFile(file_, kFileHeaderSize, hash_table_,
+              table_length_ * sizeof(Fingerprint));
 
   // The hash table may have shrunk, so make sure this is the end.
   PostIOTask(FROM_HERE, base::Bind(&AsyncTruncate, file_));
 }
 
-bool VisitedLinkMaster::InitFromFile() {
+bool VisitedLinkWriter::InitFromFile() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   DCHECK(file_ == nullptr);
@@ -608,16 +606,16 @@ bool VisitedLinkMaster::InitFromFile() {
   table_is_loading_from_file_ = true;
 
   TableLoadCompleteCallback callback = base::Bind(
-      &VisitedLinkMaster::OnTableLoadComplete, weak_ptr_factory_.GetWeakPtr());
+      &VisitedLinkWriter::OnTableLoadComplete, weak_ptr_factory_.GetWeakPtr());
 
   PostIOTask(FROM_HERE,
-             base::Bind(&VisitedLinkMaster::LoadFromFile, filename, callback));
+             base::Bind(&VisitedLinkWriter::LoadFromFile, filename, callback));
 
   return true;
 }
 
 // static
-void VisitedLinkMaster::LoadFromFile(
+void VisitedLinkWriter::LoadFromFile(
     const base::FilePath& filename,
     const TableLoadCompleteCallback& callback) {
   scoped_refptr<LoadFromFileResult> load_from_file_result;
@@ -628,7 +626,7 @@ void VisitedLinkMaster::LoadFromFile(
 }
 
 // static
-bool VisitedLinkMaster::LoadApartFromFile(
+bool VisitedLinkWriter::LoadApartFromFile(
     const base::FilePath& filename,
     scoped_refptr<LoadFromFileResult>* load_from_file_result) {
   DCHECK(load_from_file_result);
@@ -659,7 +657,7 @@ bool VisitedLinkMaster::LoadApartFromFile(
   return true;
 }
 
-void VisitedLinkMaster::OnTableLoadComplete(
+void VisitedLinkWriter::OnTableLoadComplete(
     bool success,
     scoped_refptr<LoadFromFileResult> load_from_file_result) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -754,7 +752,7 @@ void VisitedLinkMaster::OnTableLoadComplete(
   listener_->Reset(true);
 }
 
-bool VisitedLinkMaster::InitFromScratch(bool suppress_rebuild) {
+bool VisitedLinkWriter::InitFromScratch(bool suppress_rebuild) {
   if (suppress_rebuild && persist_to_disk_) {
     // When we disallow rebuilds (normally just unit tests), just use the
     // current empty table.
@@ -771,7 +769,7 @@ bool VisitedLinkMaster::InitFromScratch(bool suppress_rebuild) {
 }
 
 // static
-bool VisitedLinkMaster::ReadFileHeader(FILE* file,
+bool VisitedLinkWriter::ReadFileHeader(FILE* file,
                                        int32_t* num_entries,
                                        int32_t* used_count,
                                        uint8_t salt[LINK_SALT_LENGTH]) {
@@ -821,7 +819,7 @@ bool VisitedLinkMaster::ReadFileHeader(FILE* file,
   return true;
 }
 
-bool VisitedLinkMaster::GetDatabaseFileName(base::FilePath* filename) {
+bool VisitedLinkWriter::GetDatabaseFileName(base::FilePath* filename) {
   if (!database_name_override_.empty()) {
     // use this filename, the directory must exist
     *filename = database_name_override_;
@@ -838,7 +836,7 @@ bool VisitedLinkMaster::GetDatabaseFileName(base::FilePath* filename) {
 
 // Initializes the shared memory structure. The salt should already be filled
 // in so that it can be written to the shared memory
-bool VisitedLinkMaster::CreateURLTable(int32_t num_entries) {
+bool VisitedLinkWriter::CreateURLTable(int32_t num_entries) {
   base::MappedReadOnlyRegion table_memory;
   if (CreateApartURLTable(num_entries, salt_, &table_memory)) {
     mapped_table_memory_ = std::move(table_memory);
@@ -852,7 +850,7 @@ bool VisitedLinkMaster::CreateURLTable(int32_t num_entries) {
 }
 
 // static
-bool VisitedLinkMaster::CreateApartURLTable(
+bool VisitedLinkWriter::CreateApartURLTable(
     int32_t num_entries,
     const uint8_t salt[LINK_SALT_LENGTH],
     base::MappedReadOnlyRegion* memory) {
@@ -878,7 +876,7 @@ bool VisitedLinkMaster::CreateApartURLTable(
   return true;
 }
 
-bool VisitedLinkMaster::BeginReplaceURLTable(int32_t num_entries) {
+bool VisitedLinkWriter::BeginReplaceURLTable(int32_t num_entries) {
   base::MappedReadOnlyRegion old_memory = std::move(mapped_table_memory_);
   int32_t old_table_length = table_length_;
   if (!CreateURLTable(num_entries)) {
@@ -896,7 +894,7 @@ bool VisitedLinkMaster::BeginReplaceURLTable(int32_t num_entries) {
   return true;
 }
 
-void VisitedLinkMaster::FreeURLTable() {
+void VisitedLinkWriter::FreeURLTable() {
   mapped_table_memory_ = base::MappedReadOnlyRegion();
   if (!persist_to_disk_ || !file_)
     return;
@@ -905,7 +903,7 @@ void VisitedLinkMaster::FreeURLTable() {
   file_ = nullptr;
 }
 
-bool VisitedLinkMaster::ResizeTableIfNecessary() {
+bool VisitedLinkWriter::ResizeTableIfNecessary() {
   DCHECK(table_length_ > 0) << "Must have a table";
 
   // Load limits for good performance/space. We are pretty conservative about
@@ -929,7 +927,7 @@ bool VisitedLinkMaster::ResizeTableIfNecessary() {
   return true;
 }
 
-void VisitedLinkMaster::ResizeTable(int32_t new_size) {
+void VisitedLinkWriter::ResizeTable(int32_t new_size) {
   DCHECK(mapped_table_memory_.region.IsValid() &&
          mapped_table_memory_.mapping.IsValid());
   shared_memory_serial_++;
@@ -970,14 +968,14 @@ void VisitedLinkMaster::ResizeTable(int32_t new_size) {
     WriteFullTable();
 }
 
-uint32_t VisitedLinkMaster::DefaultTableSize() const {
+uint32_t VisitedLinkWriter::DefaultTableSize() const {
   if (table_size_override_)
     return table_size_override_;
 
   return kDefaultTableSize;
 }
 
-uint32_t VisitedLinkMaster::NewTableSizeForCount(int32_t item_count) const {
+uint32_t VisitedLinkWriter::NewTableSizeForCount(int32_t item_count) const {
   // These table sizes are selected to be the maximum prime number less than
   // a "convenient" multiple of 1K.
   static const int table_sizes[] = {
@@ -1010,7 +1008,7 @@ uint32_t VisitedLinkMaster::NewTableSizeForCount(int32_t item_count) const {
 }
 
 // See the TableBuilder definition in the header file for how this works.
-bool VisitedLinkMaster::RebuildTableFromDelegate() {
+bool VisitedLinkWriter::RebuildTableFromDelegate() {
   DCHECK(!table_builder_);
 
   // TODO(brettw) make sure we have reasonable salt!
@@ -1020,7 +1018,7 @@ bool VisitedLinkMaster::RebuildTableFromDelegate() {
 }
 
 // See the TableBuilder declaration above for how this works.
-void VisitedLinkMaster::OnTableRebuildComplete(
+void VisitedLinkWriter::OnTableRebuildComplete(
     bool success,
     const std::vector<Fingerprint>& fingerprints) {
   if (success) {
@@ -1065,7 +1063,7 @@ void VisitedLinkMaster::OnTableRebuildComplete(
   }
 }
 
-void VisitedLinkMaster::WriteToFile(FILE** file,
+void VisitedLinkWriter::WriteToFile(FILE** file,
                                     off_t offset,
                                     void* data,
                                     int32_t data_size) {
@@ -1076,14 +1074,14 @@ void VisitedLinkMaster::WriteToFile(FILE** file,
                  std::string(static_cast<const char*>(data), data_size)));
 }
 
-void VisitedLinkMaster::WriteUsedItemCountToFile() {
+void VisitedLinkWriter::WriteUsedItemCountToFile() {
   DCHECK(persist_to_disk_);
   if (!file_)
     return;  // See comment on the file_ variable for why this might happen.
   WriteToFile(file_, kFileHeaderUsedOffset, &used_items_, sizeof(used_items_));
 }
 
-void VisitedLinkMaster::WriteHashRangeToFile(Hash first_hash, Hash last_hash) {
+void VisitedLinkWriter::WriteHashRangeToFile(Hash first_hash, Hash last_hash) {
   DCHECK(persist_to_disk_);
 
   if (!file_)
@@ -1106,7 +1104,7 @@ void VisitedLinkMaster::WriteHashRangeToFile(Hash first_hash, Hash last_hash) {
 }
 
 // static
-bool VisitedLinkMaster::ReadFromFile(FILE* file,
+bool VisitedLinkWriter::ReadFromFile(FILE* file,
                                      off_t offset,
                                      void* data,
                                      size_t data_size) {
@@ -1119,44 +1117,44 @@ bool VisitedLinkMaster::ReadFromFile(FILE* file,
 
 // VisitedLinkTableBuilder ----------------------------------------------------
 
-VisitedLinkMaster::TableBuilder::TableBuilder(
-    VisitedLinkMaster* master,
+VisitedLinkWriter::TableBuilder::TableBuilder(
+    VisitedLinkWriter* writer,
     const uint8_t salt[LINK_SALT_LENGTH])
-    : master_(master), success_(true) {
+    : writer_(writer), success_(true) {
   fingerprints_.reserve(4096);
   memcpy(salt_, salt, LINK_SALT_LENGTH * sizeof(uint8_t));
 }
 
 // TODO(brettw): Do we want to try to cancel the request if this happens? It
 // could delay shutdown if there are a lot of URLs.
-void VisitedLinkMaster::TableBuilder::DisownMaster() {
-  master_ = nullptr;
+void VisitedLinkWriter::TableBuilder::DisownWriter() {
+  writer_ = nullptr;
 }
 
-void VisitedLinkMaster::TableBuilder::OnURL(const GURL& url) {
+void VisitedLinkWriter::TableBuilder::OnURL(const GURL& url) {
   if (!url.is_empty()) {
-    fingerprints_.push_back(VisitedLinkMaster::ComputeURLFingerprint(
+    fingerprints_.push_back(VisitedLinkWriter::ComputeURLFingerprint(
         url.spec().data(), url.spec().length(), salt_));
   }
 }
 
-void VisitedLinkMaster::TableBuilder::OnComplete(bool success) {
+void VisitedLinkWriter::TableBuilder::OnComplete(bool success) {
   success_ = success;
   DLOG_IF(WARNING, !success) << "Unable to rebuild visited links";
 
-  // Marshal to the main thread to notify the VisitedLinkMaster that the
+  // Marshal to the main thread to notify the VisitedLinkWriter that the
   // rebuild is complete.
   base::PostTask(FROM_HERE, {BrowserThread::UI},
                  base::BindOnce(&TableBuilder::OnCompleteMainThread, this));
 }
 
-void VisitedLinkMaster::TableBuilder::OnCompleteMainThread() {
-  if (master_)
-    master_->OnTableRebuildComplete(success_, fingerprints_);
+void VisitedLinkWriter::TableBuilder::OnCompleteMainThread() {
+  if (writer_)
+    writer_->OnTableRebuildComplete(success_, fingerprints_);
 }
 
 // static
-VisitedLinkCommon::Fingerprint* VisitedLinkMaster::GetHashTableFromMapping(
+VisitedLinkCommon::Fingerprint* VisitedLinkWriter::GetHashTableFromMapping(
     const base::WritableSharedMemoryMapping& hash_table_mapping) {
   DCHECK(hash_table_mapping.IsValid());
   // Our table pointer is just the data immediately following the header.
