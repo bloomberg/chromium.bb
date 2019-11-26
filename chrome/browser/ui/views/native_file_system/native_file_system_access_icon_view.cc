@@ -32,7 +32,7 @@ views::BubbleDialogDelegateView* NativeFileSystemAccessIconView::GetBubble()
   return NativeFileSystemUsageBubbleView::GetBubble();
 }
 
-bool NativeFileSystemAccessIconView::Update() {
+bool NativeFileSystemAccessIconView::UpdateImpl() {
   const bool was_visible = GetVisible();
   const bool had_write_access = has_write_access_;
 

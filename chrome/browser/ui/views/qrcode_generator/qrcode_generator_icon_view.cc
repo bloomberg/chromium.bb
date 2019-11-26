@@ -40,7 +40,7 @@ views::BubbleDialogDelegateView* QRCodeGeneratorIconView::GetBubble() const {
       bubble_controller->qrcode_generator_bubble_view());
 }
 
-bool QRCodeGeneratorIconView::Update() {
+bool QRCodeGeneratorIconView::UpdateImpl() {
   content::WebContents* web_contents = GetWebContents();
   if (!web_contents)
     return false;

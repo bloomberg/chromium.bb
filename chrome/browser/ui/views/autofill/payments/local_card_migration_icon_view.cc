@@ -58,7 +58,7 @@ views::BubbleDialogDelegateView* LocalCardMigrationIconView::GetBubble() const {
   }
 }
 
-bool LocalCardMigrationIconView::Update() {
+bool LocalCardMigrationIconView::UpdateImpl() {
   if (!GetWebContents())
     return false;
 

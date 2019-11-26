@@ -52,7 +52,7 @@ views::BubbleDialogDelegateView* ManagePasswordsIconViews::GetBubble() const {
   return PasswordBubbleViewBase::manage_password_bubble();
 }
 
-bool ManagePasswordsIconViews::Update() {
+bool ManagePasswordsIconViews::UpdateImpl() {
   if (!GetWebContents())
     return false;
 

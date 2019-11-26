@@ -24,7 +24,7 @@ CookieControlsIconView::CookieControlsIconView(
 
 CookieControlsIconView::~CookieControlsIconView() = default;
 
-bool CookieControlsIconView::Update() {
+bool CookieControlsIconView::UpdateImpl() {
   bool was_visible = GetVisible();
   auto* web_contents = delegate()->GetWebContentsForPageActionIconView();
   if (web_contents) {

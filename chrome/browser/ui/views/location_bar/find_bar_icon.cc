@@ -49,7 +49,7 @@ const gfx::VectorIcon& FindBarIcon::GetVectorIcon() const {
   return omnibox::kFindInPageIcon;
 }
 
-bool FindBarIcon::Update() {
+bool FindBarIcon::UpdateImpl() {
   // |browser_->window()| may return nullptr because Update() is called while
   // BrowserWindow is being constructed.
   if (!browser_->window() || !browser_->HasFindBarController())

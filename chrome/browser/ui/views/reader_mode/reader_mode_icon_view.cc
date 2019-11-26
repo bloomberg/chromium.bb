@@ -24,7 +24,7 @@ void ReaderModeIconView::DidFinishNavigation(
     AnimateInkDrop(views::InkDropState::HIDDEN, nullptr);
 }
 
-bool ReaderModeIconView::Update() {
+bool ReaderModeIconView::UpdateImpl() {
   content::WebContents* contents = GetWebContents();
   if (!contents) {
     SetVisible(false);

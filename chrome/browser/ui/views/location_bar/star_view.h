@@ -32,7 +32,7 @@ class StarView : public PageActionIconView,
 
  protected:
   // PageActionIconView:
-  bool Update() override;
+  bool UpdateImpl() override;
   void OnExecuting(PageActionIconView::ExecuteSource execute_source) override;
   void ExecuteCommand(ExecuteSource source) override;
   views::BubbleDialogDelegateView* GetBubble() const override;

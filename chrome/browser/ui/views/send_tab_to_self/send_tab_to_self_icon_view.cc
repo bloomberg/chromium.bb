@@ -39,7 +39,7 @@ views::BubbleDialogDelegateView* SendTabToSelfIconView::GetBubble() const {
       controller->send_tab_to_self_bubble_view());
 }
 
-bool SendTabToSelfIconView::Update() {
+bool SendTabToSelfIconView::UpdateImpl() {
   content::WebContents* web_contents = GetWebContents();
   if (!send_tab_to_self::ShouldOfferOmniboxIcon(web_contents)) {
     return false;

@@ -205,6 +205,18 @@ void PageActionIconView::SetActive(bool active) {
   UpdateIconImage();
 }
 
+bool PageActionIconView::Update() {
+  // Currently no page action icon should be visible during user input.
+  // A future subclass may need a hook here if that changes.
+  if (delegate_->IsLocationBarUserInputInProgress()) {
+    bool was_visible = GetVisible();
+    SetVisible(false);
+    return was_visible != GetVisible();
+  } else {
+    return UpdateImpl();
+  }
+}
+
 void PageActionIconView::UpdateIconImage() {
   const ui::NativeTheme* theme = GetNativeTheme();
   SkColor icon_color = active_

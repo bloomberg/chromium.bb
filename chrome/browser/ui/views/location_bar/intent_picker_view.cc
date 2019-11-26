@@ -36,7 +36,7 @@ IntentPickerView::IntentPickerView(Browser* browser,
 
 IntentPickerView::~IntentPickerView() = default;
 
-bool IntentPickerView::Update() {
+bool IntentPickerView::UpdateImpl() {
   bool was_visible = GetVisible();
 
   SetVisible(ShouldShowIcon());

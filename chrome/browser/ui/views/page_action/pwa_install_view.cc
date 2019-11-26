@@ -27,7 +27,7 @@ PwaInstallView::PwaInstallView(CommandUpdater* command_updater,
 
 PwaInstallView::~PwaInstallView() {}
 
-bool PwaInstallView::Update() {
+bool PwaInstallView::UpdateImpl() {
   content::WebContents* web_contents = GetWebContents();
   if (!web_contents)
     return false;

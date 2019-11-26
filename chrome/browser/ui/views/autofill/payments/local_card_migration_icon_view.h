@@ -24,7 +24,7 @@ class LocalCardMigrationIconView : public PageActionIconView {
 
   // PageActionIconView:
   views::BubbleDialogDelegateView* GetBubble() const override;
-  bool Update() override;
+  bool UpdateImpl() override;
   base::string16 GetTextForTooltipAndAccessibleName() const override;
 
  protected:

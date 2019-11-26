@@ -31,7 +31,7 @@ views::BubbleDialogDelegateView* TranslateIconView::GetBubble() const {
   return TranslateBubbleView::GetCurrentBubble();
 }
 
-bool TranslateIconView::Update() {
+bool TranslateIconView::UpdateImpl() {
   if (!GetWebContents())
     return false;
 

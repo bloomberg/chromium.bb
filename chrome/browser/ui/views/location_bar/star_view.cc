@@ -83,10 +83,9 @@ void StarView::ShowPromo() {
   }
 }
 
-bool StarView::Update() {
+bool StarView::UpdateImpl() {
   bool was_visible = GetVisible();
   SetVisible(browser_defaults::bookmarks_enabled &&
-             !delegate()->IsLocationBarUserInputInProgress() &&
              edit_bookmarks_enabled_.GetValue() &&
              !IsBookmarkStarHiddenByExtension());
   return was_visible != GetVisible();

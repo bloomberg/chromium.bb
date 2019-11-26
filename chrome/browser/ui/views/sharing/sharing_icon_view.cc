@@ -57,7 +57,7 @@ void SharingIconView::StopLoadingAnimation() {
 // TODO(knollr): Introduce IconState / ControllerState {eg, Hidden, Success,
 // Sending} to define the various cases instead of a number of if else
 // statements.
-bool SharingIconView::Update() {
+bool SharingIconView::UpdateImpl() {
   auto* controller = GetController();
   if (!controller)
     return false;
