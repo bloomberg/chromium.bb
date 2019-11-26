@@ -7,6 +7,7 @@
 
 from __future__ import print_function
 
+import collections
 import os
 
 import mock
@@ -23,6 +24,10 @@ from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 from chromite.lib import sysroot_lib
 from chromite.service import artifacts as artifacts_svc
+
+
+PinnedGuestImage = collections.namedtuple('PinnedGuestImage',
+                                          ['filename', 'uri'])
 
 
 class BundleRequestMixin(object):
@@ -106,6 +111,18 @@ class BundleImageArchivesTest(BundleTestCase):
                                   self.validate_only_config)
     patch.assert_not_called()
 
+  def testMockCall(self):
+    """Test that a mock call does not execute logic, returns mocked value."""
+    patch = self.PatchObject(artifacts_svc, 'ArchiveImages')
+    artifacts.BundleImageArchives(self.target_request, self.response,
+                                  self.mock_call_config)
+    patch.assert_not_called()
+    self.assertEqual(len(self.response.artifacts), 2)
+    self.assertEqual(self.response.artifacts[0].path,
+                     os.path.join(self.output_dir, 'path0.tar.xz'))
+    self.assertEqual(self.response.artifacts[1].path,
+                     os.path.join(self.output_dir, 'path1.tar.xz'))
+
   def testNoBuildTarget(self):
     """Test that no build target fails."""
     request = self.BuildTargetRequest(output_dir=self.tempdir)
@@ -147,6 +164,16 @@ class BundleImageZipTest(BundleTestCase):
                              self.validate_only_config)
     patch.assert_not_called()
 
+  def testMockCall(self):
+    """Test that a mock call does not execute logic, returns mocked value."""
+    patch = self.PatchObject(commands, 'BuildImageZip')
+    artifacts.BundleImageZip(self.target_request, self.response,
+                             self.mock_call_config)
+    patch.assert_not_called()
+    self.assertEqual(len(self.response.artifacts), 1)
+    self.assertEqual(self.response.artifacts[0].path,
+                     os.path.join(self.output_dir, 'image.zip'))
+
   def testBundleImageZip(self):
     """BundleImageZip calls cbuildbot/commands with correct args."""
     bundle_image_zip = self.PatchObject(
@@ -180,6 +207,16 @@ class BundleAutotestFilesTest(BundleTestCase):
     artifacts.BundleAutotestFiles(self.target_request, self.response,
                                   self.validate_only_config)
     patch.assert_not_called()
+
+  def testMockCall(self):
+    """Test that a mock call does not execute logic, returns mocked value."""
+    patch = self.PatchObject(artifacts_svc, 'BundleAutotestFiles')
+    artifacts.BundleAutotestFiles(self.target_request, self.response,
+                                  self.mock_call_config)
+    patch.assert_not_called()
+    self.assertEqual(len(self.response.artifacts), 1)
+    self.assertEqual(self.response.artifacts[0].path,
+                     os.path.join(self.output_dir, 'autotest-a.tar.gz'))
 
   def testBundleAutotestFilesLegacy(self):
     """BundleAutotestFiles calls service correctly with legacy args."""
@@ -257,6 +294,16 @@ class BundleTastFilesTest(BundleTestCase):
                               self.validate_only_config)
     patch.assert_not_called()
 
+  def testMockCall(self):
+    """Test that a mock call does not execute logic, returns mocked value."""
+    patch = self.PatchObject(artifacts_svc, 'BundleTastFiles')
+    artifacts.BundleTastFiles(self.target_request, self.response,
+                              self.mock_call_config)
+    patch.assert_not_called()
+    self.assertEqual(len(self.response.artifacts), 1)
+    self.assertEqual(self.response.artifacts[0].path,
+                     os.path.join(self.output_dir, 'tast_bundles.tar.gz'))
+
   def testBundleTastFilesNoLogs(self):
     """BundleTasteFiles dies when no tast files found."""
     self.PatchObject(commands, 'BuildTastBundleTarball',
@@ -322,6 +369,17 @@ class BundlePinnedGuestImagesTest(BundleTestCase):
                                       self.validate_only_config)
     patch.assert_not_called()
 
+  def testMockCall(self):
+    """Test that a mock call does not execute logic, returns mocked value."""
+    patch = self.PatchObject(commands, 'BuildPinnedGuestImagesTarball')
+    artifacts.BundlePinnedGuestImages(self.target_request, self.response,
+                                      self.mock_call_config)
+    patch.assert_not_called()
+    self.assertEqual(len(self.response.artifacts), 1)
+    self.assertEqual(self.response.artifacts[0].path,
+                     os.path.join(self.output_dir,
+                                  'pinned-guest-images.tar.gz'))
+
   def testBundlePinnedGuestImages(self):
     """BundlePinnedGuestImages calls cbuildbot/commands with correct args."""
     build_pinned_guest_images_tarball = self.PatchObject(
@@ -345,6 +403,59 @@ class BundlePinnedGuestImagesTest(BundleTestCase):
     self.assertFalse(self.response.artifacts)
 
 
+class FetchPinnedGuestImagesTest(cros_test_lib.MockTempDirTestCase,
+                                 api_config.ApiConfigMixin, BundleRequestMixin):
+  """Unittests for FetchPinnedGuestImages."""
+
+  def setUp(self):
+    self.build_target = 'board'
+    self.chroot_dir = os.path.join(self.tempdir, 'chroot_dir')
+    self.sysroot_path = '/sysroot'
+    self.sysroot_dir = os.path.join(self.chroot_dir, 'sysroot')
+    osutils.SafeMakedirs(self.sysroot_dir)
+
+    self.input_request = artifacts_pb2.PinnedGuestImageUriRequest(
+        sysroot={'path': self.sysroot_path,
+                 'build_target': {'name': self.build_target}},
+        chroot={'path': self.chroot_dir})
+
+    self.response = artifacts_pb2.PinnedGuestImageUriResponse()
+
+  def testValidateOnly(self):
+    """Sanity check that a validate only call does not execute any logic."""
+    patch = self.PatchObject(artifacts_svc, 'FetchPinnedGuestImages')
+    artifacts.FetchPinnedGuestImages(self.input_request, self.response,
+                                     self.validate_only_config)
+    patch.assert_not_called()
+
+  def testMockCall(self):
+    """Test that a mock call does not execute logic, returns mocked value."""
+    patch = self.PatchObject(artifacts_svc, 'FetchPinnedGuestImages')
+    artifacts.FetchPinnedGuestImages(self.input_request, self.response,
+                                     self.mock_call_config)
+    patch.assert_not_called()
+    self.assertEqual(len(self.response.pinned_images), 1)
+    self.assertEqual(self.response.pinned_images[0].filename,
+                     'pinned_file.tar.gz')
+    self.assertEqual(self.response.pinned_images[0].uri,
+                     'https://testuri.com')
+
+  def testFetchPinnedGuestImages(self):
+    """FetchPinnedGuestImages calls service with correct args."""
+    pins = []
+    pins.append(PinnedGuestImage(
+        filename='my_pinned_file.tar.gz', uri='https://the_testuri.com'))
+    self.PatchObject(artifacts_svc, 'FetchPinnedGuestImages',
+                     return_value=pins)
+    artifacts.FetchPinnedGuestImages(self.input_request, self.response,
+                                     self.api_config)
+    self.assertEqual(len(self.response.pinned_images), 1)
+    self.assertEqual(self.response.pinned_images[0].filename,
+                     'my_pinned_file.tar.gz')
+    self.assertEqual(self.response.pinned_images[0].uri,
+                     'https://the_testuri.com')
+
+
 class BundleFirmwareTest(BundleTestCase):
   """Unittests for BundleFirmware."""
 
@@ -354,6 +465,16 @@ class BundleFirmwareTest(BundleTestCase):
     artifacts.BundleFirmware(self.sysroot_request, self.response,
                              self.validate_only_config)
     patch.assert_not_called()
+
+  def testMockCall(self):
+    """Test that a mock call does not execute logic, returns mocked value."""
+    patch = self.PatchObject(artifacts_svc, 'BundleTastFiles')
+    artifacts.BundleFirmware(self.sysroot_request, self.response,
+                             self.mock_call_config)
+    patch.assert_not_called()
+    self.assertEqual(len(self.response.artifacts), 1)
+    self.assertEqual(self.response.artifacts[0].path,
+                     os.path.join(self.output_dir, 'firmware.tar.gz'))
 
   def testBundleFirmware(self):
     """BundleFirmware calls cbuildbot/commands with correct args."""
@@ -385,6 +506,16 @@ class BundleEbuildLogsTest(BundleTestCase):
     artifacts.BundleEbuildLogs(self.target_request, self.response,
                                self.validate_only_config)
     patch.assert_not_called()
+
+  def testMockCall(self):
+    """Test that a mock call does not execute logic, returns mocked value."""
+    patch = self.PatchObject(commands, 'BuildEbuildLogsTarball')
+    artifacts.BundleEbuildLogs(self.target_request, self.response,
+                               self.mock_call_config)
+    patch.assert_not_called()
+    self.assertEqual(len(self.response.artifacts), 1)
+    self.assertEqual(self.response.artifacts[0].path,
+                     os.path.join(self.output_dir, 'ebuild-logs.tar.gz'))
 
   def testBundleEbuildLogs(self):
     """BundleEbuildLogs calls cbuildbot/commands with correct args."""
@@ -429,6 +560,16 @@ class BundleChromeOSConfigTest(BundleTestCase):
     artifacts.BundleChromeOSConfig(self.target_request, self.response,
                                    self.validate_only_config)
     patch.assert_not_called()
+
+  def testMockCall(self):
+    """Test that a mock call does not execute logic, returns mocked value."""
+    patch = self.PatchObject(artifacts_svc, 'BundleChromeOSConfig')
+    artifacts.BundleChromeOSConfig(self.target_request, self.response,
+                                   self.mock_call_config)
+    patch.assert_not_called()
+    self.assertEqual(len(self.response.artifacts), 1)
+    self.assertEqual(self.response.artifacts[0].path,
+                     os.path.join(self.output_dir, 'config.yaml'))
 
   def testBundleChromeOSConfigCallWithSysroot(self):
     """Call with a request that sets sysroot."""
@@ -503,6 +644,16 @@ class BundleTestUpdatePayloadsTest(cros_test_lib.MockTempDirTestCase,
     artifacts.BundleTestUpdatePayloads(self.input_proto, self.output_proto,
                                        self.validate_only_config)
     patch.assert_not_called()
+
+  def testMockCall(self):
+    """Test that a mock call does not execute logic, returns mocked value."""
+    patch = self.PatchObject(artifacts_svc, 'BundleTestUpdatePayloads')
+    artifacts.BundleTestUpdatePayloads(self.input_proto, self.output_proto,
+                                       self.mock_call_config)
+    patch.assert_not_called()
+    self.assertEqual(len(self.output_proto.artifacts), 1)
+    self.assertEqual(self.output_proto.artifacts[0].path,
+                     os.path.join(self.archive_root, 'payload1.bin'))
 
   def testBundleTestUpdatePayloads(self):
     """BundleTestUpdatePayloads calls cbuildbot/commands with correct args."""
@@ -580,6 +731,19 @@ class BundleSimpleChromeArtifactsTest(cros_test_lib.MockTempDirTestCase,
     artifacts.BundleSimpleChromeArtifacts(request, self.response,
                                           self.validate_only_config)
     patch.assert_not_called()
+
+  def testMockCall(self):
+    """Test that a mock call does not execute logic, returns mocked value."""
+    patch = self.PatchObject(artifacts_svc, 'BundleSimpleChromeArtifacts')
+    request = self._GetRequest(chroot=self.chroot_dir,
+                               sysroot=self.sysroot_path,
+                               build_target='board', output_dir=self.output_dir)
+    artifacts.BundleSimpleChromeArtifacts(request, self.response,
+                                          self.mock_call_config)
+    patch.assert_not_called()
+    self.assertEqual(len(self.response.artifacts), 1)
+    self.assertEqual(self.response.artifacts[0].path,
+                     os.path.join(self.output_dir, 'simple_chrome.txt'))
 
   def testNoBuildTarget(self):
     """Test no build target fails."""
@@ -676,6 +840,18 @@ class BundleVmFilesTest(cros_test_lib.MockTempDirTestCase,
                               output_dir=self.output_dir)
     artifacts.BundleVmFiles(in_proto, self.response, self.validate_only_config)
     patch.assert_not_called()
+
+  def testMockCall(self):
+    """Test that a mock call does not execute logic, returns mocked value."""
+    patch = self.PatchObject(artifacts_svc, 'BundleVmFiles')
+    in_proto = self._GetInput(chroot='/chroot/dir', sysroot='/build/board',
+                              test_results_dir='/test/results',
+                              output_dir=self.output_dir)
+    artifacts.BundleVmFiles(in_proto, self.response, self.mock_call_config)
+    patch.assert_not_called()
+    self.assertEqual(len(self.response.artifacts), 1)
+    self.assertEqual(self.response.artifacts[0].path,
+                     os.path.join(self.output_dir, 'f1.tar'))
 
   def testChrootMissing(self):
     """Test error handling for missing chroot."""
@@ -792,6 +968,22 @@ class BundleAFDOGenerationArtifactsTestCase(
     artifacts.BundleAFDOGenerationArtifacts(request, self.response,
                                             self.validate_only_config)
     patch.assert_not_called()
+
+  def testMockCall(self):
+    """Test that a mock call does not execute logic, returns mocked value."""
+    patch = self.PatchObject(artifacts_svc,
+                             'BundleAFDOGenerationArtifacts')
+    request = self._GetRequest(chroot=self.chroot_dir,
+                               build_target=self.build_target,
+                               chrome_root=self.chrome_root,
+                               output_dir=self.output_dir,
+                               artifact_type=self.valid_artifact_type)
+    artifacts.BundleAFDOGenerationArtifacts(request, self.response,
+                                            self.mock_call_config)
+    patch.assert_not_called()
+    self.assertEqual(len(self.response.artifacts), 1)
+    self.assertEqual(self.response.artifacts[0].path,
+                     os.path.join(self.output_dir, 'artifact1'))
 
   def testNoBuildTarget(self):
     """Test no build target fails."""
@@ -913,6 +1105,23 @@ class ExportCpeReportTest(cros_test_lib.MockTempDirTestCase,
     artifacts.ExportCpeReport(request, self.response, self.validate_only_config)
 
     patch.assert_not_called()
+
+  def testMockCall(self):
+    """Test that a mock call does not execute logic, returns mocked value."""
+    patch = self.PatchObject(artifacts_svc, 'GenerateCpeReport')
+
+    request = artifacts_pb2.BundleRequest()
+    request.build_target.name = 'board'
+    request.output_dir = self.tempdir
+
+    artifacts.ExportCpeReport(request, self.response, self.mock_call_config)
+
+    patch.assert_not_called()
+    self.assertEqual(len(self.response.artifacts), 2)
+    self.assertEqual(self.response.artifacts[0].path,
+                     os.path.join(self.tempdir, 'cpe_report.txt'))
+    self.assertEqual(self.response.artifacts[1].path,
+                     os.path.join(self.tempdir, 'cpe_warnings.txt'))
 
   def testNoBuildTarget(self):
     request = artifacts_pb2.BundleRequest()

@@ -45,7 +45,16 @@ def _GetImageDir(build_root, target):
   return image_dir
 
 
-@faux.all_empty
+def _BundleImageArchivesResponse(input_proto, output_proto, _config):
+  """Add artifact paths to a successful response."""
+  output_proto.artifacts.add().path = os.path.join(input_proto.output_dir,
+                                                   'path0.tar.xz')
+  output_proto.artifacts.add().path = os.path.join(input_proto.output_dir,
+                                                   'path1.tar.xz')
+
+
+@faux.success(_BundleImageArchivesResponse)
+@faux.empty_error
 @validate.require('build_target.name')
 @validate.exists('output_dir')
 @validate.validation_complete
@@ -63,7 +72,14 @@ def BundleImageArchives(input_proto, output_proto, _config):
     output_proto.artifacts.add().path = os.path.join(output_dir, archive)
 
 
-@faux.all_empty
+def _BundleImageZipResponse(input_proto, output_proto, _config):
+  """Add artifact zip files to a successful response."""
+  output_proto.artifacts.add().path = os.path.join(input_proto.output_dir,
+                                                   'image.zip')
+
+
+@faux.success(_BundleImageZipResponse)
+@faux.empty_error
 @validate.require('build_target.name', 'output_dir')
 @validate.exists('output_dir')
 @validate.validation_complete
@@ -85,7 +101,14 @@ def BundleImageZip(input_proto, output_proto, _config):
   output_proto.artifacts.add().path = os.path.join(output_dir, archive)
 
 
-@faux.all_empty
+def _BundleTestUpdatePayloadsResponse(input_proto, output_proto, _config):
+  """Add test payload files to a successful response."""
+  output_proto.artifacts.add().path = os.path.join(input_proto.output_dir,
+                                                   'payload1.bin')
+
+
+@faux.success(_BundleTestUpdatePayloadsResponse)
+@faux.empty_error
 @validate.require('build_target.name', 'output_dir')
 @validate.exists('output_dir')
 @validate.validation_complete
@@ -123,7 +146,14 @@ def BundleTestUpdatePayloads(input_proto, output_proto, _config):
     output_proto.artifacts.add().path = payload
 
 
-@faux.all_empty
+def _BundleAutotestFilesResponse(input_proto, output_proto, _config):
+  """Add test autotest files to a successful response."""
+  output_proto.artifacts.add().path = os.path.join(input_proto.output_dir,
+                                                   'autotest-a.tar.gz')
+
+
+@faux.success(_BundleAutotestFilesResponse)
+@faux.empty_error
 @validate.require('output_dir')
 @validate.exists('output_dir')
 def BundleAutotestFiles(input_proto, output_proto, config):
@@ -166,7 +196,14 @@ def BundleAutotestFiles(input_proto, output_proto, config):
     output_proto.artifacts.add().path = archive
 
 
-@faux.all_empty
+def _BundleTastFilesResponse(input_proto, output_proto, _config):
+  """Add test tast files to a successful response."""
+  output_proto.artifacts.add().path = os.path.join(input_proto.output_dir,
+                                                   'tast_bundles.tar.gz')
+
+
+@faux.success(_BundleTastFilesResponse)
+@faux.empty_error
 @validate.require('output_dir')
 @validate.exists('output_dir')
 def BundleTastFiles(input_proto, output_proto, config):
@@ -214,7 +251,14 @@ def BundleTastFiles(input_proto, output_proto, config):
   output_proto.artifacts.add().path = archive
 
 
-@faux.all_empty
+def _BundlePinnedGuestImagesResponse(input_proto, output_proto, _config):
+  """Add test pinned guest image files to a successful response."""
+  output_proto.artifacts.add().path = os.path.join(
+      input_proto.output_dir, 'pinned-guest-images.tar.gz')
+
+
+@faux.success(_BundlePinnedGuestImagesResponse)
+@faux.empty_error
 @validate.require('build_target.name', 'output_dir')
 @validate.exists('output_dir')
 @validate.validation_complete
@@ -241,7 +285,15 @@ def BundlePinnedGuestImages(input_proto, output_proto, _config):
   output_proto.artifacts.add().path = os.path.join(output_dir, archive)
 
 
-@faux.all_empty
+def _FetchPinnedGuestImagesResponse(_input_proto, output_proto, _config):
+  """Add test fetched pinned guest image files to a successful response."""
+  pinned_image = output_proto.pinned_images.add()
+  pinned_image.filename = 'pinned_file.tar.gz'
+  pinned_image.uri = 'https://testuri.com'
+
+
+@faux.success(_FetchPinnedGuestImagesResponse)
+@faux.empty_error
 @validate.require('sysroot.path')
 @validate.validation_complete
 def FetchPinnedGuestImages(input_proto, output_proto, _config):
@@ -265,7 +317,14 @@ def FetchPinnedGuestImages(input_proto, output_proto, _config):
     pinned_image.uri = pin.uri
 
 
-@faux.all_empty
+def _BundleFirmwareResponse(input_proto, output_proto, _config):
+  """Add test firmware image files to a successful response."""
+  output_proto.artifacts.add().path = os.path.join(
+      input_proto.output_dir, 'firmware.tar.gz')
+
+
+@faux.success(_BundleFirmwareResponse)
+@faux.empty_error
 @validate.require('output_dir', 'sysroot.path')
 @validate.exists('output_dir')
 @validate.validation_complete
@@ -298,7 +357,14 @@ def BundleFirmware(input_proto, output_proto, _config):
   output_proto.artifacts.add().path = archive
 
 
-@faux.all_empty
+def _BundleEbuildLogsResponse(input_proto, output_proto, _config):
+  """Add test log files to a successful response."""
+  output_proto.artifacts.add().path = os.path.join(
+      input_proto.output_dir, 'ebuild-logs.tar.gz')
+
+
+@faux.success(_BundleEbuildLogsResponse)
+@faux.empty_error
 @validate.exists('output_dir')
 def BundleEbuildLogs(input_proto, output_proto, config):
   """Tar the ebuild logs for a build target.
@@ -334,7 +400,14 @@ def BundleEbuildLogs(input_proto, output_proto, config):
   output_proto.artifacts.add().path = os.path.join(output_dir, archive)
 
 
-@faux.all_empty
+def _BundleChromeOSConfigResponse(input_proto, output_proto, _config):
+  """Add test config files to a successful response."""
+  output_proto.artifacts.add().path = os.path.join(
+      input_proto.output_dir, 'config.yaml')
+
+
+@faux.success(_BundleChromeOSConfigResponse)
+@faux.empty_error
 @validate.exists('output_dir')
 @validate.validation_complete
 def BundleChromeOSConfig(input_proto, output_proto, _config):
@@ -366,7 +439,14 @@ def BundleChromeOSConfig(input_proto, output_proto, _config):
   output_proto.artifacts.add().path = os.path.join(output_dir, chromeos_config)
 
 
-@faux.all_empty
+def _BundleSimpleChromeArtifactsResponse(input_proto, output_proto, _config):
+  """Add test simple chrome files to a successful response."""
+  output_proto.artifacts.add().path = os.path.join(
+      input_proto.output_dir, 'simple_chrome.txt')
+
+
+@faux.success(_BundleSimpleChromeArtifactsResponse)
+@faux.empty_error
 @validate.require('output_dir', 'sysroot.build_target.name', 'sysroot.path')
 @validate.exists('output_dir')
 @validate.validation_complete
@@ -403,7 +483,14 @@ def BundleSimpleChromeArtifacts(input_proto, output_proto, _config):
     output_proto.artifacts.add().path = file_name
 
 
-@faux.all_empty
+def _BundleVmFilesResponse(input_proto, output_proto, _config):
+  """Add test vm files to a successful response."""
+  output_proto.artifacts.add().path = os.path.join(
+      input_proto.output_dir, 'f1.tar')
+
+
+@faux.success(_BundleVmFilesResponse)
+@faux.empty_error
 @validate.require('chroot.path', 'test_results_dir', 'output_dir')
 @validate.exists('output_dir')
 @validate.validation_complete
@@ -424,17 +511,23 @@ def BundleVmFiles(input_proto, output_proto, _config):
   for archive in archives:
     output_proto.artifacts.add().path = archive
 
+def _BundleAFDOGenerationArtifactsResponse(input_proto, output_proto, _config):
+  """Add test tarball AFDO file to a successful response."""
+  output_proto.artifacts.add().path = os.path.join(
+      input_proto.output_dir, 'artifact1')
+
 
 _VALID_ARTIFACT_TYPES = [toolchain_pb2.BENCHMARK_AFDO,
                          toolchain_pb2.ORDERFILE]
-@faux.all_empty
+@faux.success(_BundleAFDOGenerationArtifactsResponse)
+@faux.empty_error
 @validate.require('build_target.name', 'output_dir')
 @validate.is_in('artifact_type', _VALID_ARTIFACT_TYPES)
 @validate.exists('output_dir')
 @validate.exists('chroot.chrome_dir')
 @validate.validation_complete
 def BundleAFDOGenerationArtifacts(input_proto, output_proto, _config):
-  """Generic function for creating tarballs of both AFDO and orerfile.
+  """Generic function for creating tarballs of both AFDO and orderfile.
 
   Args:
     input_proto (BundleChromeAFDORequest): The input proto.
@@ -465,7 +558,16 @@ def BundleAFDOGenerationArtifacts(input_proto, output_proto, _config):
     output_proto.artifacts.add().path = file_name
 
 
-@faux.all_empty
+def _ExportCpeReportResponse(input_proto, output_proto, _config):
+  """Add test cpe results to a successful response."""
+  output_proto.artifacts.add().path = os.path.join(
+      input_proto.output_dir, 'cpe_report.txt')
+  output_proto.artifacts.add().path = os.path.join(
+      input_proto.output_dir, 'cpe_warnings.txt')
+
+
+@faux.success(_ExportCpeReportResponse)
+@faux.empty_error
 @validate.exists('output_dir')
 def ExportCpeReport(input_proto, output_proto, config):
   """Export a CPE report.
