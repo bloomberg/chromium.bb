@@ -611,6 +611,9 @@ extern const char kExperimentalCanvasFeaturesDescription[];
 extern const char kExperimentalExtensionApisName[];
 extern const char kExperimentalExtensionApisDescription[];
 
+extern const char kExperimentalFlingAnimationName[];
+extern const char kExperimentalFlingAnimationDescription[];
+
 extern const char kExperimentalProductivityFeaturesName[];
 extern const char kExperimentalProductivityFeaturesDescription[];
 
@@ -1792,9 +1795,6 @@ extern const char kEnableAuraTooltipsOnWindowsDescription[];
 
 extern const char kEnableGpuAppcontainerName[];
 extern const char kEnableGpuAppcontainerDescription[];
-
-extern const char kExperimentalFlingAnimationName[];
-extern const char kExperimentalFlingAnimationDescription[];
 
 extern const char kGdiTextPrinting[];
 extern const char kGdiTextPrintingDescription[];
