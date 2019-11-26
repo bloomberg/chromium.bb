@@ -1209,7 +1209,7 @@
           "experimental": false,
           "leader_board": false,
           "board_group": "reef",
-          "arch": "X86_INTERNAL"
+          "arch": "UNKNOWN"
         }
       ]
     },
@@ -1532,7 +1532,7 @@
     {
       "name": "coral",
       "reference_board_name": "coral",
-      "arch": "X86_INTERNAL",
+      "arch": "UNKNOWN",
       "builder": "RELEASE",
       "experimental": false,
       "models": [
