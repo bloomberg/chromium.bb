@@ -95,7 +95,7 @@ def parse_blame(blameoutput):
     yield BlameLine(commit, context, lineno_then, lineno_now, False)
 
 
-def print_table(table, colsep=' ', rowsep='\n', align=None, out=sys.stdout):
+def print_table(table, align=None, out=sys.stdout):
   """Print a 2D rectangular array, aligning columns with spaces.
 
   Args:
@@ -124,9 +124,10 @@ def print_table(table, colsep=' ', rowsep='\n', align=None, out=sys.stdout):
       elif i < len(row) - 1:
         # Do not pad the final column if left-aligned.
         cell += padding
+      cell = cell.encode('utf-8', 'replace')
       cells.append(cell)
     try:
-      print(*cells, sep=colsep, end=rowsep, file=out)
+      out.write(b' '.join(cells) + b'\n')
     except IOError:  # pragma: no cover
       # Can happen on Windows if the pipe is closed early.
       pass

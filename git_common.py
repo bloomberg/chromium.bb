@@ -677,7 +677,9 @@ def less():  # pragma: no cover
   running less and just yields sys.stdout.
   """
   if not setup_color.IS_TTY:
-    yield sys.stdout
+    # On Python 3, sys.stdout doesn't accept bytes, and sys.stdout.buffer must
+    # be used.
+    yield getattr(sys.stdout, 'buffer', sys.stdout)
     return
 
   # Run with the same options that git uses (see setup_pager in git repo).

@@ -14,6 +14,7 @@ import sys
 import tempfile
 import unittest
 
+from io import BytesIO
 if sys.version_info.major == 2:
   from StringIO import StringIO
 else:
@@ -38,12 +39,12 @@ class GitHyperBlameTestBase(git_test_utils.GitRepoReadOnlyTestBase):
     cls.git_hyper_blame = git_hyper_blame
 
   def run_hyperblame(self, ignored, filename, revision):
-    stdout = StringIO()
+    stdout = BytesIO()
     stderr = StringIO()
     ignored = [self.repo[c] for c in ignored]
     retval = self.repo.run(self.git_hyper_blame.hyper_blame, ignored, filename,
                            revision=revision, out=stdout, err=stderr)
-    return retval, stdout.getvalue().rstrip().split('\n')
+    return retval, stdout.getvalue().rstrip().split(b'\n')
 
   def blame_line(self, commit_name, rest, author=None, filename=None):
     """Generate a blame line from a commit.
@@ -60,7 +61,7 @@ class GitHyperBlameTestBase(git_test_utils.GitRepoReadOnlyTestBase):
       author = self.repo.show_commit(commit_name, format_string='%an %ai')
     else:
       author += self.repo.show_commit(commit_name, format_string=' %ai')
-    return '%s (%s %s' % (start, author, rest)
+    return ('%s (%s %s' % (start, author, rest)).encode('utf-8')
 
 class GitHyperBlameMainTest(GitHyperBlameTestBase):
   """End-to-end tests on a very simple repo."""
@@ -95,26 +96,26 @@ class GitHyperBlameMainTest(GitHyperBlameTestBase):
     """Tests the main function (simple end-to-end test with no ignores)."""
     expected_output = [self.blame_line('C', '1) line 1.1'),
                        self.blame_line('B', '2) line 2.1')]
-    stdout = StringIO()
+    stdout = BytesIO()
     stderr = StringIO()
     retval = self.repo.run(self.git_hyper_blame.main,
                            args=['tag_C', 'some/files/file'], stdout=stdout,
                            stderr=stderr)
     self.assertEqual(0, retval)
-    self.assertEqual(expected_output, stdout.getvalue().rstrip().split('\n'))
+    self.assertEqual(expected_output, stdout.getvalue().rstrip().split(b'\n'))
     self.assertEqual('', stderr.getvalue())
 
   def testIgnoreSimple(self):
     """Tests the main function (simple end-to-end test with ignores)."""
     expected_output = [self.blame_line('C', ' 1) line 1.1'),
                        self.blame_line('A', '2*) line 2.1')]
-    stdout = StringIO()
+    stdout = BytesIO()
     stderr = StringIO()
     retval = self.repo.run(self.git_hyper_blame.main,
                            args=['-i', 'tag_B', 'tag_C', 'some/files/file'],
                            stdout=stdout, stderr=stderr)
     self.assertEqual(0, retval)
-    self.assertEqual(expected_output, stdout.getvalue().rstrip().split('\n'))
+    self.assertEqual(expected_output, stdout.getvalue().rstrip().split(b'\n'))
     self.assertEqual('', stderr.getvalue())
 
   def testBadRepo(self):
@@ -124,7 +125,7 @@ class GitHyperBlameMainTest(GitHyperBlameTestBase):
     tempdir = tempfile.mkdtemp(suffix='_nogit', prefix='git_repo')
     try:
       os.chdir(tempdir)
-      stdout = StringIO()
+      stdout = BytesIO()
       stderr = StringIO()
       retval = self.git_hyper_blame.main(
           args=['-i', 'tag_B', 'tag_C', 'some/files/file'], stdout=stdout,
@@ -134,19 +135,19 @@ class GitHyperBlameMainTest(GitHyperBlameTestBase):
       os.chdir(curdir)
 
     self.assertNotEqual(0, retval)
-    self.assertEqual('', stdout.getvalue())
+    self.assertEqual(b'', stdout.getvalue())
     r = re.compile('^fatal: Not a git repository', re.I)
     self.assertRegexpMatches(stderr.getvalue(), r)
 
   def testBadFilename(self):
     """Tests the main function (bad filename)."""
-    stdout = StringIO()
+    stdout = BytesIO()
     stderr = StringIO()
     retval = self.repo.run(self.git_hyper_blame.main,
                            args=['-i', 'tag_B', 'tag_C', 'some/files/xxxx'],
                            stdout=stdout, stderr=stderr)
     self.assertNotEqual(0, retval)
-    self.assertEqual('', stdout.getvalue())
+    self.assertEqual(b'', stdout.getvalue())
     # TODO(mgiuca): This test used to test the exact string, but it broke due to
     # an upstream bug in git-blame. For now, just check the start of the string.
     # A patch has been sent upstream; when it rolls out we can revert back to
@@ -156,13 +157,13 @@ class GitHyperBlameMainTest(GitHyperBlameTestBase):
 
   def testBadRevision(self):
     """Tests the main function (bad revision to blame from)."""
-    stdout = StringIO()
+    stdout = BytesIO()
     stderr = StringIO()
     retval = self.repo.run(self.git_hyper_blame.main,
                            args=['-i', 'tag_B', 'xxxx', 'some/files/file'],
                            stdout=stdout, stderr=stderr)
     self.assertNotEqual(0, retval)
-    self.assertEqual('', stdout.getvalue())
+    self.assertEqual(b'', stdout.getvalue())
     self.assertRegexpMatches(stderr.getvalue(),
                              '^fatal: ambiguous argument \'xxxx\': unknown '
                              'revision or path not in the working tree.')
@@ -171,20 +172,20 @@ class GitHyperBlameMainTest(GitHyperBlameTestBase):
     """Tests the main function (bad revision passed to -i)."""
     expected_output = [self.blame_line('C', '1) line 1.1'),
                        self.blame_line('B', '2) line 2.1')]
-    stdout = StringIO()
+    stdout = BytesIO()
     stderr = StringIO()
     retval = self.repo.run(self.git_hyper_blame.main,
                            args=['-i', 'xxxx', 'tag_C', 'some/files/file'],
                            stdout=stdout, stderr=stderr)
     self.assertEqual(0, retval)
-    self.assertEqual(expected_output, stdout.getvalue().rstrip().split('\n'))
+    self.assertEqual(expected_output, stdout.getvalue().rstrip().split(b'\n'))
     self.assertEqual('warning: unknown revision \'xxxx\'.\n', stderr.getvalue())
 
   def testIgnoreFile(self):
     """Tests passing the ignore list in a file."""
     expected_output = [self.blame_line('C', ' 1) line 1.1'),
                        self.blame_line('A', '2*) line 2.1')]
-    stdout = StringIO()
+    stdout = BytesIO()
     stderr = StringIO()
 
     with tempfile.NamedTemporaryFile(mode='w+', prefix='ignore') as ignore_file:
@@ -200,7 +201,7 @@ class GitHyperBlameMainTest(GitHyperBlameTestBase):
                              stdout=stdout, stderr=stderr)
 
     self.assertEqual(0, retval)
-    self.assertEqual(expected_output, stdout.getvalue().rstrip().split('\n'))
+    self.assertEqual(expected_output, stdout.getvalue().rstrip().split(b'\n'))
     self.assertEqual('warning: unknown revision \'xxxx\'.\n', stderr.getvalue())
 
   def testDefaultIgnoreFile(self):
@@ -211,7 +212,7 @@ class GitHyperBlameMainTest(GitHyperBlameTestBase):
 
     expected_output = [self.blame_line('A', '1*) line 1.1'),
                        self.blame_line('B', ' 2) line 2.1')]
-    stdout = StringIO()
+    stdout = BytesIO()
     stderr = StringIO()
 
     retval = self.repo.run(self.git_hyper_blame.main,
@@ -219,13 +220,13 @@ class GitHyperBlameMainTest(GitHyperBlameTestBase):
                            stdout=stdout, stderr=stderr)
 
     self.assertEqual(0, retval)
-    self.assertEqual(expected_output, stdout.getvalue().rstrip().split('\n'))
+    self.assertEqual(expected_output, stdout.getvalue().rstrip().split(b'\n'))
     self.assertEqual('', stderr.getvalue())
 
     # Test blame from a different revision. Despite the default ignore file
     # *not* being committed at that revision, it should still be picked up
     # because D is currently checked out.
-    stdout = StringIO()
+    stdout = BytesIO()
     stderr = StringIO()
 
     retval = self.repo.run(self.git_hyper_blame.main,
@@ -233,7 +234,7 @@ class GitHyperBlameMainTest(GitHyperBlameTestBase):
                            stdout=stdout, stderr=stderr)
 
     self.assertEqual(0, retval)
-    self.assertEqual(expected_output, stdout.getvalue().rstrip().split('\n'))
+    self.assertEqual(expected_output, stdout.getvalue().rstrip().split(b'\n'))
     self.assertEqual('', stderr.getvalue())
 
   def testNoDefaultIgnores(self):
@@ -244,7 +245,7 @@ class GitHyperBlameMainTest(GitHyperBlameTestBase):
 
     expected_output = [self.blame_line('C', '1) line 1.1'),
                        self.blame_line('B', '2) line 2.1')]
-    stdout = StringIO()
+    stdout = BytesIO()
     stderr = StringIO()
 
     retval = self.repo.run(
@@ -253,7 +254,7 @@ class GitHyperBlameMainTest(GitHyperBlameTestBase):
         stdout=stdout, stderr=stderr)
 
     self.assertEqual(0, retval)
-    self.assertEqual(expected_output, stdout.getvalue().rstrip().split('\n'))
+    self.assertEqual(expected_output, stdout.getvalue().rstrip().split(b'\n'))
     self.assertEqual('', stderr.getvalue())
 
 class GitHyperBlameSimpleTest(GitHyperBlameTestBase):
@@ -305,14 +306,14 @@ class GitHyperBlameSimpleTest(GitHyperBlameTestBase):
 
   def testBlameError(self):
     """Tests a blame on a non-existent file."""
-    expected_output = ['']
+    expected_output = [b'']
     retval, output = self.run_hyperblame([], 'some/other/file2', 'tag_D')
     self.assertNotEqual(0, retval)
     self.assertEqual(expected_output, output)
 
   def testBlameEmpty(self):
     """Tests a blame of an empty file with no ignores."""
-    expected_output = ['']
+    expected_output = [b'']
     retval, output = self.run_hyperblame([], 'some/files/empty', 'tag_A')
     self.assertEqual(0, retval)
     self.assertEqual(expected_output, output)
