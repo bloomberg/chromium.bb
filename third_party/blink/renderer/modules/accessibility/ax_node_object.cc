@@ -624,7 +624,7 @@ ax::mojom::Role AXNodeObject::NativeRoleIgnoringAria() const {
   if (IsA<HTMLButtonElement>(*GetNode()))
     return ButtonRoleType();
 
-  if (IsHTMLDetailsElement(*GetNode()))
+  if (IsA<HTMLDetailsElement>(*GetNode()))
     return ax::mojom::Role::kDetails;
 
   if (IsHTMLSummaryElement(*GetNode())) {
