@@ -2719,16 +2719,17 @@ void ConvolveVertical_NEON(const void* const reference,
 void ConvolveCompoundCopy_NEON(
     const void* const reference, const ptrdiff_t reference_stride,
     const int /*horizontal_filter_index*/, const int /*vertical_filter_index*/,
-    const int /*inter_round_bits_vertical*/, const int /*subpixel_x*/,
+    const int inter_round_bits_vertical, const int /*subpixel_x*/,
     const int /*subpixel_y*/, const int /*step_x*/, const int /*step_y*/,
     const int width, const int height, void* prediction,
     const ptrdiff_t pred_stride) {
   const auto* src = static_cast<const uint8_t*>(reference);
   const ptrdiff_t src_stride = reference_stride;
   auto* dest = static_cast<uint16_t*>(prediction);
-  const int compound_round_offset =
-      (1 << (kBitdepth8 + 4)) + (1 << (kBitdepth8 + 3));
+  const int compound_round_offset = (1 << kBitdepth8) + (1 << (kBitdepth8 - 1));
   const uint16x8_t v_compound_round_offset = vdupq_n_u16(compound_round_offset);
+  const int final_shift = kInterRoundBitsVertical - inter_round_bits_vertical;
+  const int16x8_t v_final_shift = vdupq_n_s16(final_shift);
 
   if (width >= 16) {
     int y = 0;
@@ -2736,12 +2737,12 @@ void ConvolveCompoundCopy_NEON(
       int x = 0;
       do {
         const uint8x16_t v_src = vld1q_u8(&src[x]);
-        const uint16x8_t v_src_x16_lo = vshll_n_u8(vget_low_u8(v_src), 4);
-        const uint16x8_t v_src_x16_hi = vshll_n_u8(vget_high_u8(v_src), 4);
-        const uint16x8_t v_dest_lo =
-            vaddq_u16(v_src_x16_lo, v_compound_round_offset);
-        const uint16x8_t v_dest_hi =
-            vaddq_u16(v_src_x16_hi, v_compound_round_offset);
+        const uint16x8_t v_offset_lo =
+            vaddw_u8(v_compound_round_offset, vget_low_u8(v_src));
+        const uint16x8_t v_offset_hi =
+            vaddw_u8(v_compound_round_offset, vget_high_u8(v_src));
+        const uint16x8_t v_dest_lo = vshlq_u16(v_offset_lo, v_final_shift);
+        const uint16x8_t v_dest_hi = vshlq_u16(v_offset_hi, v_final_shift);
         vst1q_u16(&dest[x], v_dest_lo);
         x += 8;
         vst1q_u16(&dest[x], v_dest_hi);
@@ -2754,8 +2755,8 @@ void ConvolveCompoundCopy_NEON(
     int y = 0;
     do {
       const uint8x8_t v_src = vld1_u8(&src[0]);
-      const uint16x8_t v_src_x16 = vshll_n_u8(v_src, 4);
-      vst1q_u16(&dest[0], vaddq_u16(v_src_x16, v_compound_round_offset));
+      const uint16x8_t v_offset = vaddw_u8(v_compound_round_offset, v_src);
+      vst1q_u16(&dest[0], vshlq_u16(v_offset, v_final_shift));
       src += src_stride;
       dest += pred_stride;
     } while (++y < height);
@@ -2764,9 +2765,8 @@ void ConvolveCompoundCopy_NEON(
     int y = 0;
     do {
       const uint8x8_t v_src = LoadLo4(&src[0], zero);
-      const uint16x8_t v_src_x16 = vshll_n_u8(v_src, 4);
-      const uint16x8_t v_dest = vaddq_u16(v_src_x16, v_compound_round_offset);
-      vst1_u16(&dest[0], vget_low_u16(v_dest));
+      const uint16x8_t v_offset = vaddw_u8(v_compound_round_offset, v_src);
+      vst1_u16(&dest[0], vget_low_u16(vshlq_u16(v_offset, v_final_shift)));
       src += src_stride;
       dest += pred_stride;
     } while (++y < height);
@@ -2774,8 +2774,8 @@ void ConvolveCompoundCopy_NEON(
     assert(width == 2);
     int y = 0;
     do {
-      dest[0] = (src[0] << 4) + compound_round_offset;
-      dest[1] = (src[1] << 4) + compound_round_offset;
+      dest[0] = (src[0] + compound_round_offset) << final_shift;
+      dest[1] = (src[1] + compound_round_offset) << final_shift;
       src += src_stride;
       dest += pred_stride;
     } while (++y < height);
