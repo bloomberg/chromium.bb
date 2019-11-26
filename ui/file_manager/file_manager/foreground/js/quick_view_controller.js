@@ -319,7 +319,7 @@ class QuickViewController {
       type: type,
       subtype: typeInfo.subtype,
       filePath: label,
-      hasTask: tasks.length > 0,
+      hasTask: tasks.length > 0 && this.dialogType_ === DialogType.FULL_PAGE,
     };
 
     const volumeInfo = this.volumeManager_.getVolumeInfo(entry);
