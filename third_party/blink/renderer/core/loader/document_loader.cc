@@ -1655,15 +1655,6 @@ void DocumentLoader::CreateParserPostCommit() {
         document, &initiator_origin_trial_features_);
   }
 
-  bool opted_out_mixed_autoupgrade = EqualIgnoringASCIICase(
-      response_.HttpHeaderField("mixed-content"), "noupgrade");
-
-  if (opted_out_mixed_autoupgrade) {
-    document->SetMixedAutoupgradeOptOut(true);
-  }
-  UMA_HISTOGRAM_BOOLEAN("MixedAutoupgrade.Navigation.OptedOut",
-                        opted_out_mixed_autoupgrade);
-
   ParserSynchronizationPolicy parsing_policy = kAllowAsynchronousParsing;
   if (loading_url_as_javascript_ ||
       !Document::ThreadedParsingEnabledForTesting()) {
