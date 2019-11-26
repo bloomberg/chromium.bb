@@ -364,17 +364,14 @@ class OrderfileUpdater(object):
   _CLOUD_STORAGE_BUCKET = None
   _UPLOAD_TO_CLOUD_COMMAND = 'upload_to_google_storage.py'
 
-  def __init__(self, repository_root, step_recorder, branch, netrc=None):
+  def __init__(self, repository_root, step_recorder, branch):
     """Constructor.
 
     Args:
       repository_root: (str) Root of the target repository.
       step_recorder: (StepRecorder) Step recorder, for logging.
       branch: (str) Branch to commit to.
-      netrc: (str) Obsolete. Specified by code in internal repo. TODO(pasko):
-          remove.
     """
-    # pylint: disable=unused-argument
     self._repository_root = repository_root
     self._step_recorder = step_recorder
     self._branch = branch
