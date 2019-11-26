@@ -25591,6 +25591,9 @@ Called by update_net_error_codes.py.-->
   <int value="3101" label="V8PortalActivateEvent_Data_AttributeGetter"/>
   <int value="3102" label="V8PortalActivateEvent_AdoptPredecessor_Method"/>
   <int value="3103" label="LinkRelPrefetchForSignedExchanges"/>
+  <int value="3104" label="MessageEventSharedArrayBufferSameOrigin"/>
+  <int value="3105" label="MessageEventSharedArrayBufferSameAgentCluster"/>
+  <int value="3106" label="MessageEventSharedArrayBufferDifferentAgentCluster"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
