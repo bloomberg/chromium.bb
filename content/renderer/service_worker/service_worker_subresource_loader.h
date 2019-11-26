@@ -80,7 +80,7 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoader
     kCompleted,
   };
 
-  void OnConnectionError();
+  void OnMojoDisconnect();
 
   void StartRequest(const network::ResourceRequest& resource_request);
   void DispatchFetchEvent();
@@ -149,7 +149,7 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoader
   int redirect_limit_;
 
   mojo::Remote<network::mojom::URLLoaderClient> url_loader_client_;
-  mojo::Binding<network::mojom::URLLoader> url_loader_binding_;
+  mojo::Receiver<network::mojom::URLLoader> url_loader_receiver_;
 
   // For handling FetchEvent response.
   mojo::Receiver<blink::mojom::ServiceWorkerFetchResponseCallback>

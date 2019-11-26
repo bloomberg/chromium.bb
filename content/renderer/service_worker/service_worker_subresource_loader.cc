@@ -163,7 +163,7 @@ ServiceWorkerSubresourceLoader::ServiceWorkerSubresourceLoader(
     scoped_refptr<base::SequencedTaskRunner> task_runner)
     : redirect_limit_(net::URLRequest::kMaxRedirects),
       url_loader_client_(std::move(client)),
-      url_loader_binding_(this, std::move(receiver)),
+      url_loader_receiver_(this, std::move(receiver)),
       body_as_blob_size_(blink::BlobUtils::kUnknownSize),
       controller_connector_(std::move(controller_connector)),
       fetch_request_restarted_(false),
@@ -181,16 +181,16 @@ ServiceWorkerSubresourceLoader::ServiceWorkerSubresourceLoader(
   response_head_->request_start = base::TimeTicks::Now();
   response_head_->load_timing.request_start = base::TimeTicks::Now();
   response_head_->load_timing.request_start_time = base::Time::Now();
-  // base::Unretained() is safe since |url_loader_binding_| is owned by |this|.
-  url_loader_binding_.set_connection_error_handler(
-      base::BindOnce(&ServiceWorkerSubresourceLoader::OnConnectionError,
+  // base::Unretained() is safe since |url_loader_receiver_| is owned by |this|.
+  url_loader_receiver_.set_disconnect_handler(
+      base::BindOnce(&ServiceWorkerSubresourceLoader::OnMojoDisconnect,
                      base::Unretained(this)));
   StartRequest(resource_request);
 }
 
 ServiceWorkerSubresourceLoader::~ServiceWorkerSubresourceLoader() = default;
 
-void ServiceWorkerSubresourceLoader::OnConnectionError() {
+void ServiceWorkerSubresourceLoader::OnMojoDisconnect() {
   delete this;
 }
 
@@ -241,7 +241,7 @@ void ServiceWorkerSubresourceLoader::DispatchFetchEvent() {
       // The controller was lost after this loader or its loader factory was
       // created.
       fallback_factory_->CreateLoaderAndStart(
-          url_loader_binding_.Unbind(), routing_id_, request_id_, options_,
+          url_loader_receiver_.Unbind(), routing_id_, request_id_, options_,
           resource_request_, url_loader_client_.Unbind(), traffic_annotation_);
       delete this;
       return;
@@ -424,7 +424,7 @@ void ServiceWorkerSubresourceLoader::OnFallback(
                               client.InitWithNewPipeAndPassReceiver());
 
   fallback_factory_->CreateLoaderAndStart(
-      url_loader_binding_.Unbind(), routing_id_, request_id_, options_,
+      url_loader_receiver_.Unbind(), routing_id_, request_id_, options_,
       resource_request_, std::move(client), traffic_annotation_);
 
   // Per spec, redirects after this point are not intercepted by the service
