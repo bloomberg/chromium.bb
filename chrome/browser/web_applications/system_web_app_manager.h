@@ -81,6 +81,8 @@ class SystemWebAppManager {
 
   static constexpr char kInstallResultHistogramName[] =
       "Webapp.InstallResult.System";
+  static constexpr char kInstallDurationHistogramName[] =
+      "Webapp.InstallDuration.System";
 
   // Returns whether the given app type is enabled.
   static bool IsAppEnabled(SystemAppType type);
@@ -138,12 +140,14 @@ class SystemWebAppManager {
   virtual const std::string& CurrentLocale() const;
 
  private:
-  void OnAppsSynchronized(std::map<GURL, InstallResultCode> install_results,
+  void OnAppsSynchronized(const base::TimeTicks& install_start_time,
+                          std::map<GURL, InstallResultCode> install_results,
                           std::map<GURL, bool> uninstall_results);
   bool NeedsUpdate() const;
 
-  void RecordSystemWebAppInstallResultCode(
-      const std::map<GURL, InstallResultCode>& install_results) const;
+  void RecordSystemWebAppInstallMetrics(
+      const std::map<GURL, InstallResultCode>& install_results,
+      const base::TimeDelta& install_duration) const;
 
   std::unique_ptr<base::OneShotEvent> on_apps_synchronized_;
 

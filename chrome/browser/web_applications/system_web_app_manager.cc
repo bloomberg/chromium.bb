@@ -129,6 +129,7 @@ SystemAppInfo::~SystemAppInfo() = default;
 
 // static
 const char SystemWebAppManager::kInstallResultHistogramName[];
+const char SystemWebAppManager::kInstallDurationHistogramName[];
 
 // static
 bool SystemWebAppManager::IsAppEnabled(SystemAppType type) {
@@ -191,6 +192,8 @@ void SystemWebAppManager::SetSubsystems(PendingAppManager* pending_app_manager,
 }
 
 void SystemWebAppManager::Start() {
+  const base::TimeTicks install_start_time = base::TimeTicks::Now();
+
   std::vector<ExternalInstallOptions> install_options_list;
   if (IsEnabled()) {
     // Skipping this will uninstall all System Apps currently installed.
@@ -199,11 +202,10 @@ void SystemWebAppManager::Start() {
           CreateInstallOptionsForSystemApp(app.second, NeedsUpdate()));
     }
   }
-
   pending_app_manager_->SynchronizeInstalledApps(
       std::move(install_options_list), ExternalInstallSource::kSystemInstalled,
       base::BindOnce(&SystemWebAppManager::OnAppsSynchronized,
-                     weak_ptr_factory_.GetWeakPtr()));
+                     weak_ptr_factory_.GetWeakPtr(), install_start_time));
 }
 
 void SystemWebAppManager::InstallSystemAppsForTesting() {
@@ -281,8 +283,15 @@ const std::string& SystemWebAppManager::CurrentLocale() const {
   return g_browser_process->GetApplicationLocale();
 }
 
-void SystemWebAppManager::RecordSystemWebAppInstallResultCode(
-    const std::map<GURL, InstallResultCode>& install_results) const {
+void SystemWebAppManager::RecordSystemWebAppInstallMetrics(
+    const std::map<GURL, InstallResultCode>& install_results,
+    const base::TimeDelta& install_duration) const {
+  // Record the time spent to install system web apps.
+  if (!shutting_down_) {
+    base::UmaHistogramMediumTimes(kInstallDurationHistogramName,
+                                  install_duration);
+  }
+
   // Record aggregate result.
   for (const auto& url_and_result : install_results)
     base::UmaHistogramEnumeration(kInstallResultHistogramName,
@@ -315,8 +324,12 @@ void SystemWebAppManager::RecordSystemWebAppInstallResultCode(
 }
 
 void SystemWebAppManager::OnAppsSynchronized(
+    const base::TimeTicks& install_start_time,
     std::map<GURL, InstallResultCode> install_results,
     std::map<GURL, bool> uninstall_results) {
+  const base::TimeDelta install_duration =
+      install_start_time - base::TimeTicks::Now();
+
   if (IsEnabled()) {
     // TODO(qjw): Figure out where install_results come from, decide if
     // installation failures need to be handled
@@ -326,7 +339,7 @@ void SystemWebAppManager::OnAppsSynchronized(
                              CurrentLocale());
   }
 
-  RecordSystemWebAppInstallResultCode(install_results);
+  RecordSystemWebAppInstallMetrics(install_results, install_duration);
 
   // Build the map from installed app id to app type.
   for (const auto& it : system_app_infos_) {
