@@ -37,6 +37,7 @@
 #include "content/public/test/url_loader_interceptor.h"
 #include "content/shell/browser/shell.h"
 #include "content/test/content_browser_test_utils_internal.h"
+#include "media/base/media_switches.h"
 #include "net/base/filename_util.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/controllable_http_response.h"
@@ -94,6 +95,10 @@ class BackForwardCacheBrowserTest : public ContentBrowserTest {
                               "TimeToLiveInBackForwardCacheInSeconds", "3600");
     EnableFeatureAndSetParams(features::kServiceWorkerOnUI, "", "");
     SetupFeaturesAndParameters();
+
+    command_line->AppendSwitchASCII(
+        switches::kAutoplayPolicy,
+        switches::autoplay::kNoUserGestureRequiredPolicy);
 
     ContentBrowserTest::SetUpCommandLine(command_line);
   }
@@ -3931,6 +3936,166 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   EXPECT_TRUE(observer.did_fire());
   EXPECT_EQ(observer.color(), 0xFFFF0000u);
   EXPECT_EQ(web_contents()->GetThemeColor(), 0xFFFF0000u);
+}
+
+// Check that an audio suspends when the page goes to the cache and can resume
+// after restored.
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, AudioSuspendAndResume) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
+
+  // 1) Navigate to A.
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+  RenderFrameHostImpl* rfh_a = current_frame_host();
+  EXPECT_TRUE(ExecJs(rfh_a, R"(
+    var audio = document.createElement('audio');
+    document.body.appendChild(audio);
+
+    audio.testObserverEvents = [];
+    let event_list = [
+      'canplaythrough',
+      'pause',
+      'play',
+      'error',
+    ];
+    for (event_name of event_list) {
+      let result = event_name;
+      audio.addEventListener(event_name, event => {
+        document.title = result;
+        audio.testObserverEvents.push(result);
+      });
+    }
+
+    audio.src = 'media/bear-opus.ogg';
+
+    var timeOnFrozen = 0.0;
+    audio.addEventListener('pause', () => {
+      timeOnFrozen = audio.currentTime;
+    });
+  )"));
+
+  // Load the media.
+  {
+    TitleWatcher title_watcher(shell()->web_contents(),
+                               base::ASCIIToUTF16("canplaythrough"));
+    title_watcher.AlsoWaitForTitle(base::ASCIIToUTF16("error"));
+    EXPECT_EQ(base::ASCIIToUTF16("canplaythrough"),
+              title_watcher.WaitAndGetTitle());
+  }
+
+  EXPECT_TRUE(ExecJs(rfh_a, R"(
+    new Promise(async resolve => {
+      audio.play();
+      while (audio.currentTime === 0)
+        await new Promise(r => setTimeout(r, 1));
+      resolve();
+    });
+  )"));
+
+  // 2) Navigate to B.
+  EXPECT_TRUE(NavigateToURL(shell(), url_b));
+  EXPECT_TRUE(rfh_a->is_in_back_forward_cache());
+
+  // 3) Navigate back to A.
+  web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  EXPECT_EQ(rfh_a, current_frame_host());
+
+  // Check that the media position is not changed when the page is in cache.
+  double duration1 = EvalJs(rfh_a, "timeOnFrozen;").ExtractDouble();
+  double duration2 = EvalJs(rfh_a, "audio.currentTime;").ExtractDouble();
+  EXPECT_LE(0.0, duration2 - duration1);
+  EXPECT_GT(0.01, duration2 - duration1);
+
+  // Resume the media.
+  EXPECT_TRUE(ExecJs(rfh_a, "audio.play();"));
+
+  // Confirm that the media pauses automatically when going to the cache.
+  // TODO(hajimehoshi): Confirm that this media automatically resumes if
+  // autoplay attribute exists.
+  EXPECT_EQ(ListValueOf("canplaythrough", "play", "pause", "play"),
+            EvalJs(rfh_a, "audio.testObserverEvents"));
+}
+
+// Check that a video suspends when the page goes to the cache and can resume
+// after restored.
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, VideoSuspendAndResume) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
+
+  // 1) Navigate to A.
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+  RenderFrameHostImpl* rfh_a = current_frame_host();
+  EXPECT_TRUE(ExecJs(rfh_a, R"(
+    var video = document.createElement('video');
+    document.body.appendChild(video);
+
+    video.testObserverEvents = [];
+    let event_list = [
+      'canplaythrough',
+      'pause',
+      'play',
+      'error',
+    ];
+    for (event_name of event_list) {
+      let result = event_name;
+      video.addEventListener(event_name, event => {
+        document.title = result;
+        video.testObserverEvents.push(result);
+      });
+    }
+
+    video.src = 'media/bear.webm';
+
+    var timeOnFrozen = 0.0;
+    video.addEventListener('pause', () => {
+      timeOnFrozen = video.currentTime;
+    });
+  )"));
+
+  // Load the media.
+  {
+    TitleWatcher title_watcher(shell()->web_contents(),
+                               base::ASCIIToUTF16("canplaythrough"));
+    title_watcher.AlsoWaitForTitle(base::ASCIIToUTF16("error"));
+    EXPECT_EQ(base::ASCIIToUTF16("canplaythrough"),
+              title_watcher.WaitAndGetTitle());
+  }
+
+  EXPECT_TRUE(ExecJs(rfh_a, R"(
+    new Promise(async resolve => {
+      video.play();
+      while (video.currentTime == 0)
+        await new Promise(r => setTimeout(r, 1));
+      resolve();
+    });
+  )"));
+
+  // 2) Navigate to B.
+  EXPECT_TRUE(NavigateToURL(shell(), url_b));
+  EXPECT_TRUE(rfh_a->is_in_back_forward_cache());
+
+  // 3) Navigate back to A.
+  web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  EXPECT_EQ(rfh_a, current_frame_host());
+
+  // Check that the media position is not changed when the page is in cache.
+  double duration1 = EvalJs(rfh_a, "timeOnFrozen;").ExtractDouble();
+  double duration2 = EvalJs(rfh_a, "video.currentTime;").ExtractDouble();
+  EXPECT_LE(0.0, duration2 - duration1);
+  EXPECT_GT(0.01, duration2 - duration1);
+
+  // Resume the media.
+  EXPECT_TRUE(ExecJs(rfh_a, "video.play();"));
+
+  // Confirm that the media pauses automatically when going to the cache.
+  // TODO(hajimehoshi): Confirm that this media automatically resumes if
+  // autoplay attribute exists.
+  EXPECT_EQ(ListValueOf("canplaythrough", "play", "pause", "play"),
+            EvalJs(rfh_a, "video.testObserverEvents"));
 }
 
 class SensorBackForwardCacheBrowserTest : public BackForwardCacheBrowserTest {
