@@ -47,10 +47,13 @@ enum class SystemAppType {
 
 // The configuration options for a System App.
 struct SystemAppInfo {
-  SystemAppInfo();
-  explicit SystemAppInfo(const GURL& install_url);
+  SystemAppInfo(const std::string& name_for_logging, const GURL& install_url);
   SystemAppInfo(const SystemAppInfo& other);
   ~SystemAppInfo();
+
+  // A developer-friendly name for reporting metrics. Should follow UMA naming
+  // conventions.
+  std::string name_for_logging;
 
   // The URL that the System App will be installed from.
   GURL install_url;
