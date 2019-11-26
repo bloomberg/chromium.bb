@@ -27,11 +27,14 @@ _VALID_IMAGE_PAIRS = (('src_signed_image', 'tgt_signed_image'),
 @validate.require('bucket')
 def GeneratePayload(input_proto, output_proto, config):
   """Generate a update payload ('do paygen').
+
   Args:
-      input_proto (PayloadGenerationRequest): Input proto.
-      output_proto (PayloadGenerationResult): Output proto.
-      config: (api.config.ApiConfig): The API call config.
-  Returns: A controller return code (e.g. controller.RETURN_CODE_SUCCESS).
+    input_proto (PayloadGenerationRequest): Input proto.
+    output_proto (PayloadGenerationResult): Output proto.
+    config (api.config.ApiConfig): The API call config.
+
+  Returns:
+    A controller return code (e.g. controller.RETURN_CODE_SUCCESS).
   """
 
   # Resolve the tgt image oneof.
@@ -87,8 +90,9 @@ def GeneratePayload(input_proto, output_proto, config):
 
 def _SetGeneratePayloadOutputProto(output_proto, generate_payload_ok):
   """Set the output proto with the results from the service class.
+
   Args:
-      output_proto (PayloadGenerationResult_pb2): The output proto.
-      generate_payload_ok (bool): value to set output_proto.success.
+    output_proto (PayloadGenerationResult_pb2): The output proto.
+    generate_payload_ok (bool): value to set output_proto.success.
   """
   output_proto.success = generate_payload_ok

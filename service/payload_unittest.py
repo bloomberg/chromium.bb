@@ -75,6 +75,7 @@ class PayloadServiceTest(cros_test_lib.MockTestCase):
 
 
 class PayloadUtilitiesTest(cros_test_lib.TestCase):
+  """Test utilities related to payloads."""
 
   def testImageType(self):
     """Test _ImageTypeToStr works."""

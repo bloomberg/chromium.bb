@@ -85,7 +85,8 @@ class PayloadConfig(object):
   def GeneratePayload(self):
     """Do payload generation (& maybe sign) on Google Storage cros images.
 
-    Returns: True if successful, raises otherwise.
+    Returns:
+      True if successful, raises otherwise.
     """
     should_sign = True if self.keyset != '' else False
 
@@ -122,7 +123,8 @@ def _GenSignedGSPath(image, image_type):
     image (SignedImage_pb2): The build to create the gspath from.
     image_type (string): The image type, either "recovery" or "base".
 
-  Returns: A gspaths.Image instance.
+  Returns:
+    A gspaths.Image instance.
   """
   build = gspaths.Build(board=image.build.build_target.name,
                         version=image.build.version,
@@ -146,7 +148,8 @@ def _GenUnsignedGSPath(image, image_type):
     image (UnsignedImage_pb2): The build to create the gspath from.
     image_type (string): The image type, either "recovery" or "test".
 
-  Returns: A gspaths.UnsignedImageArchive instance.
+  Returns:
+    A gspaths.UnsignedImageArchive instance.
   """
   build = gspaths.Build(board=image.build.build_target.name,
                         version=image.build.version,
