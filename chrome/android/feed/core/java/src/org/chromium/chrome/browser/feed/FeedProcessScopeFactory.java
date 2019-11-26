@@ -51,6 +51,8 @@ public class FeedProcessScopeFactory {
     private static FeedScheduler sFeedScheduler;
     private static FeedOfflineIndicator sFeedOfflineIndicator;
     private static NetworkClient sTestNetworkClient;
+    private static ContentStorageDirect sTestContentStorageDirect;
+    private static JournalStorageDirect sTestJournalStorageDirect;
     private static FeedLoggingBridge sFeedLoggingBridge;
 
     /** @return The shared {@link ProcessScope} instance. Null if the Feed is disabled. */
@@ -151,12 +153,15 @@ public class FeedProcessScopeFactory {
 
         FeedSchedulerBridge schedulerBridge = new FeedSchedulerBridge(profile);
         sFeedScheduler = schedulerBridge;
-        ContentStorageDirect contentStorageDirect =
-                new FeedContentStorageDirect(new FeedContentStorage(profile));
-        JournalStorageDirect journalStorageDirect =
-                new FeedJournalStorageDirect(new FeedJournalStorage(profile));
-        NetworkClient networkClient = sTestNetworkClient == null ?
-            new FeedNetworkBridge(profile) : sTestNetworkClient;
+        ContentStorageDirect contentStorageDirect = sTestContentStorageDirect == null
+                ? new FeedContentStorageDirect(new FeedContentStorage(profile))
+                : sTestContentStorageDirect;
+        JournalStorageDirect journalStorageDirect = sTestJournalStorageDirect == null
+                ? new FeedJournalStorageDirect(new FeedJournalStorage(profile))
+                : sTestJournalStorageDirect;
+        NetworkClient networkClient =
+                sTestNetworkClient == null ? new FeedNetworkBridge(profile) : sTestNetworkClient;
+
         sFeedLoggingBridge = new FeedLoggingBridge(profile);
 
         SequencedTaskRunner sequencedTaskRunner =
@@ -223,6 +228,32 @@ public class FeedProcessScopeFactory {
         } else {
             throw(new IllegalStateException(
                     "TestNetworkClient can not be set after ProcessScope has initialized."));
+        }
+    }
+
+    /** Use supplied ContentStorageDirect instead of real one, for tests. */
+    @VisibleForTesting
+    public static void setTestContentStorageDirect(ContentStorageDirect storage) {
+        if (storage == null) {
+            sTestContentStorageDirect = null;
+        } else if (sProcessScope == null) {
+            sTestContentStorageDirect = storage;
+        } else {
+            throw new IllegalStateException(
+                    "TestContentStorageDirect can not be set after ProcessScope has initialized.");
+        }
+    }
+
+    /** Use supplied JournalStorageDirect instead of real one, for tests. */
+    @VisibleForTesting
+    public static void setTestJournalStorageDirect(JournalStorageDirect storage) {
+        if (storage == null) {
+            sTestJournalStorageDirect = null;
+        } else if (sProcessScope == null) {
+            sTestJournalStorageDirect = storage;
+        } else {
+            throw new IllegalStateException(
+                    "TestJournalStorageDirect can not be set after ProcessScope has initialized.");
         }
     }
 

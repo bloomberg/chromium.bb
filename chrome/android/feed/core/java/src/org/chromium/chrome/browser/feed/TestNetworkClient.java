@@ -14,7 +14,6 @@ import com.google.android.libraries.feed.api.host.network.HttpRequest.HttpMethod
 import com.google.android.libraries.feed.api.host.network.HttpResponse;
 import com.google.android.libraries.feed.api.host.network.NetworkClient;
 import com.google.android.libraries.feed.common.functional.Consumer;
-import com.google.android.libraries.feed.common.logging.Logger;
 import com.google.android.libraries.feed.feedrequestmanager.RequestHelper;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.CodedOutputStream;
@@ -96,7 +95,6 @@ public class TestNetworkClient implements NetworkClient {
             if (requestToken != null) {
                 for (ConditionalResponse response : mMockServer.getConditionalResponsesList()) {
                     if (!response.hasContinuationToken()) {
-                        Logger.w(TAG, "Conditional response without a token");
                         continue;
                     }
                     if (requestToken.equals(response.getContinuationToken())) {
