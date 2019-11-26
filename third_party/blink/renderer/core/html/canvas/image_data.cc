@@ -882,8 +882,9 @@ ImageData::ImageData(const IntSize& size,
           static_cast<const DOMUint8ClampedArray*>(data));
       DCHECK(data_);
       data_union_.SetUint8ClampedArray(data_);
-      SECURITY_CHECK(static_cast<size_t>(size.Width() * size.Height() * 4) <=
-                     data_->lengthAsSizeT());
+      SECURITY_CHECK(
+          (base::CheckedNumeric<size_t>(size.Width()) * size.Height() * 4)
+              .ValueOrDie() <= data_->lengthAsSizeT());
       break;
 
     case kUint16ArrayStorageFormat:
@@ -892,8 +893,9 @@ ImageData::ImageData(const IntSize& size,
           const_cast<DOMUint16Array*>(static_cast<const DOMUint16Array*>(data));
       DCHECK(data_u16_);
       data_union_.SetUint16Array(data_u16_);
-      SECURITY_CHECK(static_cast<size_t>(size.Width() * size.Height() * 4) <=
-                     data_u16_->lengthAsSizeT());
+      SECURITY_CHECK(
+          (base::CheckedNumeric<size_t>(size.Width()) * size.Height() * 4)
+              .ValueOrDie() <= data_u16_->lengthAsSizeT());
       break;
 
     case kFloat32ArrayStorageFormat:
@@ -902,8 +904,9 @@ ImageData::ImageData(const IntSize& size,
           static_cast<const DOMFloat32Array*>(data));
       DCHECK(data_f32_);
       data_union_.SetFloat32Array(data_f32_);
-      SECURITY_CHECK(static_cast<size_t>(size.Width() * size.Height() * 4) <=
-                     data_f32_->lengthAsSizeT());
+      SECURITY_CHECK(
+          (base::CheckedNumeric<size_t>(size.Width()) * size.Height() * 4)
+              .ValueOrDie() <= data_f32_->lengthAsSizeT());
       break;
 
     default:
