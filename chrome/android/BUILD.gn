@@ -1806,25 +1806,28 @@ if (public_android_sdk) {
     }
   }
 
-  trichrome_library_apk_tmpl("trichrome_library_64_32_apk") {
-    apk_name = "TrichromeLibrary6432"
-    android_manifest = trichrome_library_64_32_android_manifest
-    android_manifest_dep = ":trichrome_library_64_32_android_manifest"
-    is_64_bit_browser = true
+  if (android_64bit_target_cpu) {
+    trichrome_library_apk_tmpl("trichrome_library_64_32_apk") {
+      apk_name = "TrichromeLibrary6432"
+      android_manifest = trichrome_library_64_32_android_manifest
+      android_manifest_dep = ":trichrome_library_64_32_android_manifest"
+      is_64_bit_browser = true
 
-    if (trichrome_synchronized_proguard) {
-      shared_resources_whitelist_target = "//android_webview:system_webview_apk"
-      shared_resources_whitelist_locales = locales
-      static_library_dependent_targets = [
-        {
-          name = "//android_webview:trichrome_webview_64_32_apk"
-          is_resource_ids_provider = true
-        },
-        {
-          name = ":trichrome_chrome_64_32_bundle"
-          is_resource_ids_provider = false
-        },
-      ]
+      if (trichrome_synchronized_proguard) {
+        shared_resources_whitelist_target =
+            "//android_webview:system_webview_apk"
+        shared_resources_whitelist_locales = locales
+        static_library_dependent_targets = [
+          {
+            name = "//android_webview:trichrome_webview_64_32_apk"
+            is_resource_ids_provider = true
+          },
+          {
+            name = ":trichrome_chrome_64_32_bundle"
+            is_resource_ids_provider = false
+          },
+        ]
+      }
     }
   }
 }
