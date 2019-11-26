@@ -17,6 +17,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -89,6 +90,7 @@ public class WebappDisplayModeTest {
 
     @Test
     @SmallTest
+    @DisabledTest(message = "https://crbug.com/1028636")
     @Feature({"Webapps"})
     public void testMinimalUi() {
         WebappActivity activity = startActivity(WebDisplayMode.MINIMAL_UI, "");
