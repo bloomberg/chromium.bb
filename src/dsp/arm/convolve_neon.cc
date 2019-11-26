@@ -2787,10 +2787,15 @@ template <int min_width, int filter_index, bool negative_outside_taps = false>
 void FilterCompoundVertical(const uint8_t* src, const ptrdiff_t src_stride,
                             uint16_t* dst, const ptrdiff_t dst_stride,
                             const int width, const int height,
-                            const uint8x8_t* const taps) {
+                            const uint8x8_t* const taps,
+                            const int inter_round_bits_vertical) {
   const int num_taps = GetNumTapsInFilter(filter_index);
   const int next_row = num_taps - 1;
-  const uint16x8_t compound_round_offset = vdupq_n_u16(1 << 12);
+  const uint16x8_t compound_round_offset = vdupq_n_u16(
+      (1 << (kBitdepth8 + 4)) >> (inter_round_bits_vertical - kFilterBits));
+  const int bits_shift = kFilterBits - kHorizontalOffset;
+  const int16x8_t v_vertical_shift =
+      vdupq_n_s16(-(inter_round_bits_vertical - bits_shift));
 
   int x = 0;
   do {
@@ -2824,7 +2829,7 @@ void FilterCompoundVertical(const uint8_t* src, const ptrdiff_t src_stride,
 
       const uint16x8_t sums =
           SumVerticalTaps8To16<filter_index, negative_outside_taps>(srcs, taps);
-      const uint16x8_t shifted = vrshrq_n_u16(sums, 3);
+      const uint16x8_t shifted = vqrshlq_u16(sums, v_vertical_shift);
       // In order to keep the sum in 16 bits we added an offset to the sum
       // (1 << (bitdepth + kFilterBits - 1) == 1 << 14). This ensures that the
       // results will never be negative.
@@ -2868,7 +2873,7 @@ void FilterCompoundVertical(const uint8_t* src, const ptrdiff_t src_stride,
 void ConvolveCompoundVertical_NEON(
     const void* const reference, const ptrdiff_t reference_stride,
     const int /*horizontal_filter_index*/, const int vertical_filter_index,
-    const int /*inter_round_bits_vertical*/, const int /*subpixel_x*/,
+    const int inter_round_bits_vertical, const int /*subpixel_x*/,
     const int subpixel_y, const int /*step_x*/, const int /*step_y*/,
     const int width, const int height, void* prediction,
     const ptrdiff_t pred_stride) {
@@ -2892,10 +2897,10 @@ void ConvolveCompoundVertical_NEON(
                                                  pred_stride, height, taps + 1);
     } else if (width == 4) {
       FilterCompoundVertical<4, 0>(src, src_stride, dest, pred_stride, width,
-                                   height, taps + 1);
+                                   height, taps + 1, inter_round_bits_vertical);
     } else {
       FilterCompoundVertical<8, 0>(src, src_stride, dest, pred_stride, width,
-                                   height, taps + 1);
+                                   height, taps + 1, inter_round_bits_vertical);
     }
   } else if ((filter_index == 1) &
              ((filter_id == 1) | (filter_id == 15))) {  // 5 tap.
@@ -2904,10 +2909,10 @@ void ConvolveCompoundVertical_NEON(
                                                  pred_stride, height, taps + 1);
     } else if (width == 4) {
       FilterCompoundVertical<4, 1>(src, src_stride, dest, pred_stride, width,
-                                   height, taps + 1);
+                                   height, taps + 1, inter_round_bits_vertical);
     } else {
       FilterCompoundVertical<8, 1>(src, src_stride, dest, pred_stride, width,
-                                   height, taps + 1);
+                                   height, taps + 1, inter_round_bits_vertical);
     }
   } else if ((filter_index == 1) &
              ((filter_id == 7) | (filter_id == 8) |
@@ -2918,10 +2923,12 @@ void ConvolveCompoundVertical_NEON(
           src, src_stride, dest, pred_stride, height, taps + 1);
     } else if (width == 4) {
       FilterCompoundVertical<4, 1, true>(src, src_stride, dest, pred_stride,
-                                         width, height, taps + 1);
+                                         width, height, taps + 1,
+                                         inter_round_bits_vertical);
     } else {
       FilterCompoundVertical<8, 1, true>(src, src_stride, dest, pred_stride,
-                                         width, height, taps + 1);
+                                         width, height, taps + 1,
+                                         inter_round_bits_vertical);
     }
   } else if (filter_index == 2) {  // 8 tap.
     if (width == 2) {
@@ -2929,10 +2936,10 @@ void ConvolveCompoundVertical_NEON(
                                                  pred_stride, height, taps);
     } else if (width == 4) {
       FilterCompoundVertical<4, 2>(src, src_stride, dest, pred_stride, width,
-                                   height, taps);
+                                   height, taps, inter_round_bits_vertical);
     } else {
       FilterCompoundVertical<8, 2>(src, src_stride, dest, pred_stride, width,
-                                   height, taps);
+                                   height, taps, inter_round_bits_vertical);
     }
   } else if (filter_index == 3) {  // 2 tap.
     if (width == 2) {
@@ -2940,10 +2947,10 @@ void ConvolveCompoundVertical_NEON(
                                                  pred_stride, height, taps + 3);
     } else if (width == 4) {
       FilterCompoundVertical<4, 3>(src, src_stride, dest, pred_stride, width,
-                                   height, taps + 3);
+                                   height, taps + 3, inter_round_bits_vertical);
     } else {
       FilterCompoundVertical<8, 3>(src, src_stride, dest, pred_stride, width,
-                                   height, taps + 3);
+                                   height, taps + 3, inter_round_bits_vertical);
     }
   } else if (filter_index == 4) {  // 4 tap.
     if (width == 2) {
@@ -2951,10 +2958,10 @@ void ConvolveCompoundVertical_NEON(
                                                  pred_stride, height, taps + 2);
     } else if (width == 4) {
       FilterCompoundVertical<4, 4>(src, src_stride, dest, pred_stride, width,
-                                   height, taps + 2);
+                                   height, taps + 2, inter_round_bits_vertical);
     } else {
       FilterCompoundVertical<8, 4>(src, src_stride, dest, pred_stride, width,
-                                   height, taps + 2);
+                                   height, taps + 2, inter_round_bits_vertical);
     }
   } else {
     // 4 tap. When |filter_index| == 1 the |filter_id| values listed below map
@@ -2973,10 +2980,10 @@ void ConvolveCompoundVertical_NEON(
                                                  pred_stride, height, taps + 2);
     } else if (width == 4) {
       FilterCompoundVertical<4, 5>(src, src_stride, dest, pred_stride, width,
-                                   height, taps + 2);
+                                   height, taps + 2, inter_round_bits_vertical);
     } else {
       FilterCompoundVertical<8, 5>(src, src_stride, dest, pred_stride, width,
-                                   height, taps + 2);
+                                   height, taps + 2, inter_round_bits_vertical);
     }
   }
 }

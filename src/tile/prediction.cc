@@ -1138,7 +1138,7 @@ void Tile::BlockInterPrediction(
 // TODO(slavarnway): Fix neon convolve functions for inter_intra.  Then the
 // following can be deleted.
 #if LIBGAV1_ENABLE_NEON
-  if (has_vertical_filter || has_horizontal_filter) {
+  if (has_horizontal_filter) {
     // TODO(b/127805357): Refactor is_inter_intra into single prediction.
     if (is_inter_intra && !is_scaled) {
       convolve_func = dsp_.convolve[0][1][1][1];
