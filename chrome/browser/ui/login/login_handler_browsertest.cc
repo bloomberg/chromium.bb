@@ -72,15 +72,14 @@ void TestProxyAuth(Browser* browser, const GURL& test_page) {
 
   {
     WindowedAuthNeededObserver auth_needed_waiter(controller);
-    browser->OpenURL(OpenURLParams(test_page, Referrer(),
-                                   WindowOpenDisposition::CURRENT_TAB,
-                                   ui::PAGE_TRANSITION_TYPED, false));
+    ui_test_utils::NavigateToURL(browser, test_page);
     auth_needed_waiter.Wait();
   }
 
   // On HTTPS pages, no error page content should be rendered to avoid origin
   // confusion issues.
   if (https) {
+    EXPECT_FALSE(contents->IsLoading());
     EXPECT_EQ("<head></head><body></body>",
               content::EvalJs(contents, "document.documentElement.innerHTML"));
   }
