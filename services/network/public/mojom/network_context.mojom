@@ -1031,8 +1031,11 @@ interface NetworkContext {
   CreateProxyResolvingSocketFactory(
       pending_receiver<ProxyResolvingSocketFactory> factory);
 
-  // Looks up what proxy to use for a particular URL.
+  // Looks up what proxy to use for a particular URL. |network_isolation_key|
+  // is used to partition the DNS cache in the case a PAC script is used, and
+  // should match the NIK of the frame the lookup is for use with.
   LookUpProxyForURL(url.mojom.Url url,
+                    NetworkIsolationKey network_isolation_key,
                     pending_remote<ProxyLookupClient> proxy_lookup_client);
 
   // Forces refetching the proxy configuration, and applying it.
