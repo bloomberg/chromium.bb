@@ -38,7 +38,6 @@ ChromiumOSUpdater includes:
 
 from __future__ import print_function
 
-import glob
 import json
 import os
 import re
@@ -266,15 +265,15 @@ class ChromiumOSUpdater(BaseUpdater):
                  'dev_dir': self.dev_dir,
                  'original_payload_dir': self.original_payload_dir,
                  'device_restore_dir': self.device_restore_dir,
-                 'device_payload_dir': self.device_payload_dir}
+                 'device_payload_dir': self.device_payload_dir,
+                 'tempdir': self.tempdir, 'payload_mode': self.payload_mode}
     if transfer_obj:
       self._transfer_obj = transfer_obj
     elif staging_server:
       self._transfer_obj = auto_updater_transfer.LabTransfer(
           staging_server=self._staging_server, **arguments)
     else:
-      self._transfer_obj = auto_updater_transfer.LocalTransfer(
-          tempdir=self.tempdir, payload_mode=self.payload_mode, **arguments)
+      self._transfer_obj = auto_updater_transfer.LocalTransfer(**arguments)
 
   @property
   def is_au_endtoendtest(self):
@@ -715,25 +714,21 @@ class ChromiumOSUpdater(BaseUpdater):
             'signing problem, or an automated rollback occurred because '
             'your new image failed to boot.')
 
-  def ResolveAPPIDMismatchIfAny(self):
+  def PreparePayloadPropsFile(self):
+    """Triggers download for payload properties file for LabTransfer usecase."""
+    prop_file = self._transfer_obj.GetPayloadPropsFile()
+    self.ResolveAPPIDMismatchIfAny(prop_file)
+
+  def ResolveAPPIDMismatchIfAny(self, prop_file):
     """Resolves and APP ID mismatch between the payload and device.
 
     If the APP ID of the payload is different than the device, then the nebraska
     will fail. We empty the payload's AppID so nebraska can do partial APP ID
     matching.
     """
-    # TODO (sanikak): This function will need to be updated as this assumes the
-    # payload properties file to be local. In the autotest provision_AutoUpdater
-    # case, this properties file will have to be downloaded onto to the drone
-    # first before the rest of the function is allowed to be continued.
-
     if not self.device.app_id:
-      logging.warn('Device does not a propper APP ID!')
+      logging.warn('Device does not a proper APP ID!')
       return
-
-    # Just catch the first json file and assume it is a payload property file.
-    prop_file = glob.glob(os.path.join(self.payload_dir, '*.json'))[0]
-    prop_file = os.path.join(self.payload_dir, prop_file)
 
     content = json.loads(osutils.ReadFile(prop_file))
     payload_app_id = content.get('appid', '')

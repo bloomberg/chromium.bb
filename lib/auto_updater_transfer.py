@@ -39,6 +39,7 @@ from __future__ import division
 from __future__ import print_function
 
 import abc
+import glob
 import os
 import shutil
 
@@ -89,9 +90,10 @@ class Transfer(six.with_metaclass(abc.ABCMeta, object)):
 
   PAYLOAD_DIR_NAME = 'payloads'
 
-  def __init__(self, device, payload_dir, device_restore_dir,
+  def __init__(self, device, payload_dir, device_restore_dir, tempdir,
                payload_name, cmd_kwargs, device_payload_dir, dev_dir='',
-               original_payload_dir=None, transfer_stateful_update=True,
+               payload_mode='scp', original_payload_dir=None,
+               transfer_stateful_update=True,
                transfer_rootfs_update=True):
     """Initialize Base Class for transferring payloads functionality.
 
@@ -100,12 +102,17 @@ class Transfer(six.with_metaclass(abc.ABCMeta, object)):
       payload_dir: The directory of payload(s).
       device_restore_dir: Path to the old payload directory in the device's work
           directory.
+      tempdir: The temp directory in caller, not in the device. For example,
+          the tempdir for cros flash is /tmp/cros-flash****/, used to
+          temporarily keep files when transferring update-utils package, and
+          reserve nebraska and update engine logs.
       payload_name: Filename of exact payload file to use for update.
       cmd_kwargs: Keyword arguments that are sent along with the commands that
           are run on the device.
       device_payload_dir: Path to the payload directory in the device's work
           directory.
       dev_dir: The directory of the nebraska that runs the CrOS auto-update.
+      payload_mode: The payload mode - it can be 'parallel' or 'scp'.
       original_payload_dir: The directory containing payloads whose version is
           the same as current host's rootfs partition. If it's None, will first
           try installing the matched stateful.tgz with the host's rootfs
@@ -119,14 +126,20 @@ class Transfer(six.with_metaclass(abc.ABCMeta, object)):
     self._device = device
     self._payload_dir = payload_dir
     self._device_restore_dir = device_restore_dir
+    self._tempdir = tempdir
     self._payload_name = payload_name
     self._cmd_kwargs = cmd_kwargs
     self._device_payload_dir = device_payload_dir
     self._dev_dir = dev_dir
+    if payload_mode not in ('scp', 'parallel'):
+      raise ValueError('The given value %s for payload mode is not valid.' %
+                       payload_mode)
+    self._payload_mode = payload_mode
     self._original_payload_dir = original_payload_dir
     self._transfer_stateful_update = transfer_stateful_update
     self._transfer_rootfs_update = transfer_rootfs_update
     self._stateful_update_bin = None
+    self._local_payload_props_path = None
 
   @abc.abstractmethod
   def CheckPayloads(self):
@@ -173,6 +186,10 @@ class Transfer(six.with_metaclass(abc.ABCMeta, object)):
     """
     self._device.RunCommand(['mkdir', '-p', directory], **self._cmd_kwargs)
 
+  @abc.abstractmethod
+  def GetPayloadPropsFile(self):
+    """Get the payload properties file path."""
+
 
 class LocalTransfer(Transfer):
   """Abstracts logic that handles transferring local files to the DUT."""
@@ -182,22 +199,16 @@ class LocalTransfer(Transfer):
   LOCAL_CHROOT_STATEFUL_UPDATE_PATH = '/usr/bin/stateful_update'
   REMOTE_STATEFUL_UPDATE_PATH = '/usr/local/bin/stateful_update'
 
-  def __init__(self, tempdir, payload_mode='scp', *args, **kwargs):
+
+  def __init__(self, *args, **kwargs):
     """Initialize LocalTransfer to handle transferring files from local to DUT.
 
     Args:
-      tempdir: The temp directory in caller, not in the device. For example,
-          the tempdir for cros flash is /tmp/cros-flash****/, used to
-          temporarily keep files when transferring update-utils package, and
-          reserve nebraska and update engine logs.
-      payload_mode: The payload mode - it can be 'parallel' or 'scp'.
       *args: The list of arguments to be passed. See Base class for a complete
           list of accepted arguments.
       **kwargs: Any keyword arguments to be passed. See Base class for a
           complete list of accepted keyword arguments.
     """
-    self._tempdir = tempdir
-    self._payload_mode = payload_mode
     super(LocalTransfer, self).__init__(*args, **kwargs)
 
   def CheckPayloads(self):
@@ -317,6 +328,13 @@ class LocalTransfer(Transfer):
     self._device.CopyToWorkDir(payload, mode=self._payload_mode,
                                log_output=True, **self._cmd_kwargs)
 
+  def GetPayloadPropsFile(self):
+    """Finds the local payload properties file."""
+    # Payload properties file is available locally so just catch the first
+    # json file and assume it is a payload property file.
+    prop_file = glob.glob(os.path.join(self._payload_dir, '*.json'))[0]
+    self._local_payload_props_path = os.path.join(self._payload_dir, prop_file)
+    return self._local_payload_props_path
 
 class LabTransfer(Transfer):
   """Abstracts logic that transfers files from staging server to the DUT."""
@@ -469,7 +487,30 @@ class LabTransfer(Transfer):
         payload_dir=self._device_payload_dir, build_id=self._payload_dir,
         payload_filename=self._payload_name))
 
-    payload_props_filename = GetPayloadPropertiesFileName(self._payload_name)
-    self._device.RunCommand(self._GetCurlCmdForPayloadDownload(
-        payload_dir=self._device_payload_dir, build_id=self._payload_dir,
-        payload_filename=payload_props_filename))
+    self._device.CopyToWorkDir(src=self._local_payload_props_path,
+                               dest=self.PAYLOAD_DIR_NAME,
+                               mode=self._payload_mode,
+                               log_output=True, **self._cmd_kwargs)
+
+  def GetPayloadPropsFile(self):
+    """Downloads the PayloadProperties file onto the drone.
+
+    The payload properties file may be required to be updated in
+    auto_updater.ResolveAppIsMismatchIfAny(). Download the file from where it
+    has been staged on the staging server into the tempdir of the drone, so that
+    the file is available locally for any updates.
+    """
+    if self._local_payload_props_path is None:
+      payload_props_filename = GetPayloadPropertiesFileName(self._payload_name)
+      cmd = self._GetCurlCmdForPayloadDownload(
+          payload_dir=self._tempdir, build_id=self._payload_dir,
+          payload_filename=payload_props_filename)
+      try:
+        retry_util.RunCurl(cmd[1:])
+      except retry_util.DownloadError as e:
+        raise ChromiumOSTransferError('Unable to download %s: %s' %
+                                      (payload_props_filename, e))
+      else:
+        self._local_payload_props_path = os.path.join(self._tempdir,
+                                                      payload_props_filename)
+    return self._local_payload_props_path

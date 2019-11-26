@@ -62,7 +62,7 @@ def CreateLabTransferInstance(device, **kwargs):
   """
   default_args = {'payload_dir': '', 'device_payload_dir': '',
                   'payload_name': '', 'cmd_kwargs': {},
-                  'device_restore_dir': '',
+                  'device_restore_dir': '', 'tempdir': '',
                   'staging_server': 'http://0.0.0.0:8000'}
   default_args.update(kwargs)
   return auto_updater_transfer.LabTransfer(device=device, **default_args)
@@ -272,7 +272,7 @@ class CrosLocalTransferTest(cros_test_lib.MockTestCase):
                          (False, '/usr/local/bin/stateful_update'))
 
 
-class CrosLabTransferTest(cros_test_lib.MockTestCase):
+class CrosLabTransferTest(cros_test_lib.MockTempDirTestCase):
   """Test all methods in auto_updater_transfer.LabTransfer."""
 
   def setUp(self):
@@ -547,14 +547,12 @@ class CrosLabTransferTest(cros_test_lib.MockTestCase):
       expected = [
           {'payload_dir': CrOS_LabTransfer._device_payload_dir,
            'payload_filename': CrOS_LabTransfer._payload_name,
-           'build_id': CrOS_LabTransfer._payload_dir},
-          {'payload_dir': CrOS_LabTransfer._device_payload_dir,
-           'payload_filename': CrOS_LabTransfer._payload_name + '.json',
            'build_id': CrOS_LabTransfer._payload_dir}]
 
       self.PatchObject(lab_xfer, '_EnsureDeviceDirectory')
       self.PatchObject(lab_xfer, '_GetCurlCmdForPayloadDownload')
       self.PatchObject(remote_access.ChromiumOSDevice, 'RunCommand')
+      self.PatchObject(remote_access.ChromiumOSDevice, 'CopyToWorkDir')
 
       CrOS_LabTransfer._TransferRootfsUpdate()
 
@@ -572,14 +570,40 @@ class CrosLabTransferTest(cros_test_lib.MockTestCase):
       CrOS_LabTransfer = CreateLabTransferInstance(
           device, payload_name='test_update.gz')
       lab_xfer = auto_updater_transfer.LabTransfer
-      expected = [
-          ['curl', '-o', 'test_update.gz',
-           'http://0.0.0.0:8000/static/test_update.gz'],
-          ['curl', '-o', 'test_update.gz.json',
-           'http://0.0.0.0:8000/static/test_update.gz.json']]
+      expected = [['curl', '-o', 'test_update.gz',
+                   'http://0.0.0.0:8000/static/test_update.gz']]
 
       self.PatchObject(lab_xfer, '_EnsureDeviceDirectory')
       self.PatchObject(remote_access.ChromiumOSDevice, 'RunCommand')
+      self.PatchObject(remote_access.ChromiumOSDevice, 'CopyToWorkDir')
+
+      CrOS_LabTransfer._TransferRootfsUpdate()
+      self.assertListEqual(
+          remote_access.ChromiumOSDevice.RunCommand.call_args_list,
+          [mock.call(x) for x in expected])
+
+  def testTransferRootfsRunCmdLocalPayloadProps(self):
+    """Test method calls of LabTransfer._TransferRootfsUpdate().
+
+    Test whether remote_access.ChromiumOSDevice.RunCommand() is being called
+    the correct number of times with the correct arguments when
+    LabTransfer.LocalPayloadPropsFile is set to a valid local filepath.
+    """
+    with remote_access.ChromiumOSDeviceHandler(remote_access.TEST_IP) as device:
+      CrOS_LabTransfer = CreateLabTransferInstance(
+          device, payload_name='test_update.gz')
+
+      self.PatchObject(os.path, 'isfile', return_value=True)
+      CrOS_LabTransfer.LocalPayloadPropsFile = '/existent/test.gz.json'
+
+      lab_xfer = auto_updater_transfer.LabTransfer
+      expected = [
+          ['curl', '-o', 'test_update.gz',
+           'http://0.0.0.0:8000/static/test_update.gz']]
+
+      self.PatchObject(lab_xfer, '_EnsureDeviceDirectory')
+      self.PatchObject(remote_access.ChromiumOSDevice, 'RunCommand')
+      self.PatchObject(remote_access.ChromiumOSDevice, 'CopyToWorkDir')
 
       CrOS_LabTransfer._TransferRootfsUpdate()
       self.assertListEqual(
@@ -600,10 +624,39 @@ class CrosLabTransferTest(cros_test_lib.MockTestCase):
 
       self.PatchObject(lab_xfer, '_EnsureDeviceDirectory')
       self.PatchObject(remote_access.ChromiumOSDevice, 'RunCommand')
+      self.PatchObject(remote_access.ChromiumOSDevice, 'CopyToWorkDir')
 
       CrOS_LabTransfer._TransferRootfsUpdate()
       self.assertListEqual(lab_xfer._EnsureDeviceDirectory.call_args_list,
                            [mock.call(x) for x in expected])
+
+  def testTransferRootfsCopyToWorkdirLocalPayloadProps(self):
+    """Test method calls of LabTransfer._TransferRootfsUpdate().
+
+    Test whether LabTransfer.device.CopyToWorkDir() is being called
+    the correct number of times with the correct arguments when
+    LabTransfer.LocalPayloadPropsFile is set to a valid local filepath.
+    """
+    with remote_access.ChromiumOSDeviceHandler(remote_access.TEST_IP) as device:
+      CrOS_LabTransfer = CreateLabTransferInstance(device,
+                                                   cmd_kwargs={'test': 'test'})
+
+      CrOS_LabTransfer._local_payload_props_path = '/existent/test.gz.json'
+
+      lab_xfer = auto_updater_transfer.LabTransfer
+      expected = [{'src': CrOS_LabTransfer._local_payload_props_path,
+                   'dest': CrOS_LabTransfer.PAYLOAD_DIR_NAME,
+                   'mode': CrOS_LabTransfer._payload_mode,
+                   'log_output': True, 'test': 'test'}]
+
+      self.PatchObject(lab_xfer, '_EnsureDeviceDirectory')
+      self.PatchObject(remote_access.ChromiumOSDevice, 'RunCommand')
+      self.PatchObject(remote_access.ChromiumOSDevice, 'CopyToWorkDir')
+
+      CrOS_LabTransfer._TransferRootfsUpdate()
+      self.assertListEqual(
+          remote_access.ChromiumOSDevice.CopyToWorkDir.call_args_list,
+          [mock.call(**x) for x in expected])
 
   def testLabTransferGetCurlCmdStandard(self):
     """Test auto_updater_transfer._GetCurlCmdForPayloadDownload.
@@ -746,3 +799,28 @@ class CrosLabTransferTest(cros_test_lib.MockTestCase):
       url = CrOS_LabTransfer._GetStagedUrl(
           staged_filename='payload_filename.ext')
       self.assertEqual(url, expected_url)
+
+  def testGetPayloadPropsFile(self):
+    """Test LabTransfer.GetPayloadPropsFile()."""
+    with remote_access.ChromiumOSDeviceHandler(remote_access.TEST_IP) as device:
+      CrOS_LabTransfer = CreateLabTransferInstance(
+          device, tempdir=self.tempdir, payload_name='test_update.gz')
+      self.PatchObject(retry_util, 'RunCurl')
+      self.PatchObject(os.path, 'isfile', return_value=True)
+      CrOS_LabTransfer.GetPayloadPropsFile()
+      self.assertEqual(CrOS_LabTransfer._local_payload_props_path,
+                       os.path.join(self.tempdir, 'test_update.gz.json'))
+
+  def testGetPayloadPropsFileError(self):
+    """Test LabTransfer.GetPayloadPropsFile().
+
+    Test when the GetPayloadPropsFile() method throws an error.
+    """
+    with remote_access.ChromiumOSDeviceHandler(remote_access.TEST_IP) as device:
+      CrOS_LabTransfer = CreateLabTransferInstance(
+          device, tempdir=self.tempdir, payload_name='test_update.gz')
+      self.PatchObject(retry_util, 'RunCurl',
+                       side_effect=retry_util.DownloadError())
+      self.assertRaises(auto_updater_transfer.ChromiumOSTransferError,
+                        CrOS_LabTransfer.GetPayloadPropsFile)
+      self.assertEqual(CrOS_LabTransfer._local_payload_props_path, None)
