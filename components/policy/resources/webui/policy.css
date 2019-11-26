@@ -91,7 +91,7 @@ body > main {
   white-space: pre-wrap;
 }
 
-<if expr="not is_android">
+<if expr="not is_android and not is_ios">
 .errors.row .name,
 .warnings.row .name,
 .conflict.row .name,
@@ -182,7 +182,7 @@ a {
   display: none;
 }
 
-<if expr="is_android">
+<if expr="is_android or is_ios">
 body > main {
   padding: 0;
 }

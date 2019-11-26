@@ -125,12 +125,13 @@ cr.define('policy', function() {
         this.setLabelAndShow_(
             '.directory-api-id', status.directoryApiId || notSpecifiedString);
         this.setLabelAndShow_('.client-id', status.clientId);
-        //For off-hours policy, indicate if it's active or not.
+        // For off-hours policy, indicate if it's active or not.
         if (status.isOffHoursActive != null) {
           this.setLabelAndShow_(
               '.is-offhours-active',
               loadTimeData.getString(
-                  status.isOffHoursActive ? 'offHoursActive' : 'offHoursNotActive'));
+                  status.isOffHoursActive ? 'offHoursActive' :
+                                            'offHoursNotActive'));
         }
       } else if (scope == 'machine') {
         // For machine policy, set the appropriate title and populate
@@ -495,29 +496,28 @@ cr.define('policy', function() {
      * @private
      */
     onPoliciesReceived_(policyNames, policyValues) {
-      /** @type {Array<!PolicyTableModel>} */ const policyGroups =
-          policyValues.map(value => {
-            const knownPolicyNames =
-                (policyNames[value.id] || policyNames.chrome).policyNames;
-            const knownPolicyNamesSet = new Set(knownPolicyNames);
-            const receivedPolicyNames = Object.keys(value.policies);
-            const allPolicyNames = Array.from(
-                new Set([...knownPolicyNames, ...receivedPolicyNames]));
-            const policies = allPolicyNames.map(
-                name => Object.assign(
-                    {
-                      name,
-                      link:
-                          knownPolicyNames === policyNames.chrome.policyNames &&
-                              knownPolicyNamesSet.has(name) ?
-                          `https://cloud.google.com/docs/chrome-enterprise/policies/?policy=${
-                              name}` :
-                          undefined,
-                    },
-                    value.policies[name]));
+      /** @type {Array<!PolicyTableModel>} */
+      const policyGroups = policyValues.map(value => {
+        const knownPolicyNames =
+            (policyNames[value.id] || policyNames.chrome).policyNames;
+        const knownPolicyNamesSet = new Set(knownPolicyNames);
+        const receivedPolicyNames = Object.keys(value.policies);
+        const allPolicyNames =
+            Array.from(new Set([...knownPolicyNames, ...receivedPolicyNames]));
+        const policies = allPolicyNames.map(
+            name => Object.assign(
+                {
+                  name,
+                  link: knownPolicyNames === policyNames.chrome.policyNames &&
+                          knownPolicyNamesSet.has(name) ?
+                      `https://cloud.google.com/docs/chrome-enterprise/policies/?policy=${
+                          name}` :
+                      undefined,
+                },
+                value.policies[name]));
 
-            return {name: value.name, id: value.id, policies};
-          });
+        return {name: value.name, id: value.id, policies};
+      });
 
       policyGroups.forEach(group => this.createOrUpdatePolicyTable(group));
 
