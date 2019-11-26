@@ -150,7 +150,7 @@ std::unique_ptr<TransformationMatrix> getPoseMatrix(
 }
 
 base::Optional<device::mojom::blink::EntityTypeForHitTest>
-EntityTypeForHitTestFromString(const WTF::String& string) {
+EntityTypeForHitTestFromString(const String& string) {
   if (string == "plane")
     return device::mojom::blink::EntityTypeForHitTest::PLANE;
 
@@ -165,10 +165,10 @@ EntityTypeForHitTestFromString(const WTF::String& string) {
 // OptionsType can be either XRHitTestOptionsInit or
 // XRTransientInputHitTestOptionsInit.
 template <typename OptionsType>
-WTF::Vector<device::mojom::blink::EntityTypeForHitTest>
-GetEntityTypesForHitTest(OptionsType* options_init) {
+Vector<device::mojom::blink::EntityTypeForHitTest> GetEntityTypesForHitTest(
+    OptionsType* options_init) {
   DCHECK(options_init);
-  WTF::HashSet<device::mojom::blink::EntityTypeForHitTest> result_set;
+  HashSet<device::mojom::blink::EntityTypeForHitTest> result_set;
 
   if (options_init->hasEntityTypes()) {
     DVLOG(2) << __func__ << ": options_init->entityTypes().size()="
@@ -191,8 +191,8 @@ GetEntityTypesForHitTest(OptionsType* options_init) {
   DVLOG(2) << __func__ << ": result_set.size()=" << result_set.size();
   DCHECK(!result_set.IsEmpty());
 
-  WTF::Vector<device::mojom::blink::EntityTypeForHitTest> result;
-  WTF::CopyToVector(result_set, result);
+  Vector<device::mojom::blink::EntityTypeForHitTest> result;
+  CopyToVector(result_set, result);
 
   DVLOG(2) << __func__ << ": result.size()=" << result.size();
   return result;
@@ -836,7 +836,7 @@ ScriptPromise XRSession::requestHitTestSourceForTransientInput(
 
 void XRSession::OnHitTestResults(
     ScriptPromiseResolver* resolver,
-    base::Optional<WTF::Vector<device::mojom::blink::XRHitResultPtr>> results) {
+    base::Optional<Vector<device::mojom::blink::XRHitResultPtr>> results) {
   DCHECK(hit_test_promises_.Contains(resolver));
   hit_test_promises_.erase(resolver);
 
@@ -1753,7 +1753,7 @@ void XRSession::SetXRDisplayInfo(
   display_info_ = std::move(display_info);
 }
 
-WTF::Vector<XRViewData>& XRSession::views() {
+Vector<XRViewData>& XRSession::views() {
   // TODO(bajones): For now we assume that immersive sessions render a stereo
   // pair of views and non-immersive sessions render a single view. That doesn't
   // always hold true, however, so the view configuration should ultimately come

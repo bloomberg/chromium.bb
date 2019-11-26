@@ -25,8 +25,7 @@ class XRTransientInputHitTestSource : public ScriptWrappable {
   uint64_t id() const;
 
   void Update(
-      const WTF::HashMap<uint32_t,
-                         WTF::Vector<device::mojom::blink::XRHitResultPtr>>&
+      const HashMap<uint32_t, Vector<device::mojom::blink::XRHitResultPtr>>&
           hit_test_results,
       XRInputSourceArray* input_source_array);
 

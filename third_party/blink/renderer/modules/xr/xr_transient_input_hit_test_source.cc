@@ -18,8 +18,7 @@ uint64_t XRTransientInputHitTestSource::id() const {
 }
 
 void XRTransientInputHitTestSource::Update(
-    const WTF::HashMap<uint32_t,
-                       WTF::Vector<device::mojom::blink::XRHitResultPtr>>&
+    const HashMap<uint32_t, Vector<device::mojom::blink::XRHitResultPtr>>&
         hit_test_results,
     XRInputSourceArray* input_source_array) {
   // TODO: Be smarter about the update - it's possible to add new resulst /

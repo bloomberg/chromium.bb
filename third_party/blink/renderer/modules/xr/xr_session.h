@@ -56,7 +56,7 @@ class XRWorldInformation;
 class XRWorldTrackingState;
 class XRWorldTrackingStateInit;
 
-using XRSessionFeatureSet = WTF::HashSet<device::mojom::XRSessionFeature>;
+using XRSessionFeatureSet = HashSet<device::mojom::XRSessionFeature>;
 
 class XRSession final
     : public EventTargetWithInlineData,
@@ -88,7 +88,7 @@ class XRSession final
 
     // Keeps track of which features have already been reported, to reduce
     // redundant mojom calls.
-    WTF::HashSet<device::mojom::blink::XRSessionFeature> reported_features_;
+    HashSet<device::mojom::blink::XRSessionFeature> reported_features_;
   };
 
   XRSession(XR* xr,
@@ -198,7 +198,7 @@ class XRSession final
   void OnButtonEvent(
       device::mojom::blink::XRInputSourceStatePtr input_source) override;
 
-  WTF::Vector<XRViewData>& views();
+  Vector<XRViewData>& views();
 
   void AddTransientInputSource(XRInputSource* input_source);
   void RemoveTransientInputSource(XRInputSource* input_source);
@@ -322,8 +322,7 @@ class XRSession final
 
   void OnHitTestResults(
       ScriptPromiseResolver* resolver,
-      base::Optional<WTF::Vector<device::mojom::blink::XRHitResultPtr>>
-          results);
+      base::Optional<Vector<device::mojom::blink::XRHitResultPtr>> results);
 
   void OnSubscribeToHitTestResult(
       ScriptPromiseResolver* resolver,
@@ -393,7 +392,7 @@ class XRSession final
   HeapHashMap<uint64_t, WeakMember<XRTransientInputHitTestSource>>
       hit_test_source_ids_to_transient_input_hit_test_sources_;
 
-  WTF::Vector<XRViewData> views_;
+  Vector<XRViewData> views_;
 
   Member<XRInputSourceArray> input_sources_;
   Member<XRWebGLLayer> prev_base_layer_;

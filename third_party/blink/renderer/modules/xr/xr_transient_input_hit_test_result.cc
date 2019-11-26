@@ -12,7 +12,7 @@ namespace blink {
 
 XRTransientInputHitTestResult::XRTransientInputHitTestResult(
     XRInputSource* input_source,
-    const WTF::Vector<device::mojom::blink::XRHitResultPtr>& results)
+    const Vector<device::mojom::blink::XRHitResultPtr>& results)
     : input_source_(input_source) {
   for (const auto& result : results) {
     results_.push_back(

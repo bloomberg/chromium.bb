@@ -20,7 +20,7 @@ class XRTransientInputHitTestResult : public ScriptWrappable {
  public:
   XRTransientInputHitTestResult(
       XRInputSource* input_source,
-      const WTF::Vector<device::mojom::blink::XRHitResultPtr>& results);
+      const Vector<device::mojom::blink::XRHitResultPtr>& results);
 
   XRInputSource* inputSource();
 

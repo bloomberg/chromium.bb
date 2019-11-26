@@ -26,7 +26,7 @@ HeapVector<Member<XRHitTestResult>> XRHitTestSource::Results() {
 }
 
 void XRHitTestSource::Update(
-    const WTF::Vector<device::mojom::blink::XRHitResultPtr>& hit_test_results) {
+    const Vector<device::mojom::blink::XRHitResultPtr>& hit_test_results) {
   last_frame_results_.clear();
 
   for (auto& result : hit_test_results) {
