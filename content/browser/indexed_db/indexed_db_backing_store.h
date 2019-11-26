@@ -20,6 +20,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/sequence_checker.h"
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -182,7 +183,7 @@ class CONTENT_EXPORT IndexedDBBackingStore {
 
     // This holds a BlobEntryKey and the encoded IndexedDBBlobInfo vector stored
     // under that key.
-    typedef std::vector<std::pair<BlobEntryKey, std::string> >
+    typedef std::vector<std::pair<BlobEntryKey, std::string>>
         BlobEntryKeyValuePairVec;
 
     class CONTENT_EXPORT WriteDescriptor {
@@ -270,6 +271,8 @@ class CONTENT_EXPORT IndexedDBBackingStore {
     // into live (active references) and dead (no references).
     void PartitionBlobsToRemove(BlobJournalType* dead_blobs,
                                 BlobJournalType* live_blobs) const;
+
+    SEQUENCE_CHECKER(idb_sequence_checker_);
 
     // This does NOT mean that this class can outlive the IndexedDBBackingStore.
     // This is only to protect against security issues before this class is
@@ -361,6 +364,8 @@ class CONTENT_EXPORT IndexedDBBackingStore {
 
     bool IsPastBounds() const;
     bool HaveEnteredRange() const;
+
+    SEQUENCE_CHECKER(idb_sequence_checker_);
 
     // This does NOT mean that this class can outlive the Transaction.
     // This is only to protect against security issues before this class is
@@ -652,6 +657,8 @@ class CONTENT_EXPORT IndexedDBBackingStore {
   void WillCommitTransaction();
   // Can run a journal cleaning job if one is pending.
   void DidCommitTransaction();
+
+  SEQUENCE_CHECKER(idb_sequence_checker_);
 
   Mode backing_store_mode_;
   TransactionalLevelDBFactory* const transactional_leveldb_factory_;
