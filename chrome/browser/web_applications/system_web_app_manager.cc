@@ -21,6 +21,7 @@
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_install_utils.h"
 #include "chrome/browser/web_applications/components/web_app_ui_manager.h"
+#include "chrome/browser/web_applications/components/web_app_utils.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/webui_url_constants.h"
@@ -153,6 +154,9 @@ bool SystemWebAppManager::IsAppEnabled(SystemAppType type) {
 }
 SystemWebAppManager::SystemWebAppManager(Profile* profile)
     : on_apps_synchronized_(new base::OneShotEvent()),
+      install_result_per_profile_histogram_name_(
+          std::string(kInstallResultHistogramName) + ".Profiles." +
+          GetProfileCategoryForLogging(profile)),
       pref_service_(profile->GetPrefs()) {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           ::switches::kTestType)) {
@@ -299,6 +303,14 @@ void SystemWebAppManager::RecordSystemWebAppInstallResultCode(
                                         ? InstallResultCode::kFailedShuttingDown
                                         : url_and_result->second);
     }
+  }
+
+  // Record per-profile result.
+  for (const auto url_and_result : install_results) {
+    base::UmaHistogramEnumeration(install_result_per_profile_histogram_name_,
+                                  shutting_down_
+                                      ? InstallResultCode::kFailedShuttingDown
+                                      : url_and_result.second);
   }
 }
 

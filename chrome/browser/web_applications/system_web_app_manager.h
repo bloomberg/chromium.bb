@@ -149,6 +149,8 @@ class SystemWebAppManager {
 
   bool shutting_down_ = false;
 
+  std::string install_result_per_profile_histogram_name_;
+
   UpdatePolicy update_policy_;
 
   base::flat_map<SystemAppType, SystemAppInfo> system_app_infos_;

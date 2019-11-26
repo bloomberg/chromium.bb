@@ -380,6 +380,10 @@ TEST_F(SystemWebAppManagerTest, InstallResultHistogram) {
   const std::string discover_app_install_result_histogram =
       std::string(SystemWebAppManager::kInstallResultHistogramName) + ".Apps." +
       kDiscoverAppNameForLogging;
+  // Profile category for Chrome OS testing environment is "Other".
+  const std::string profile_install_result_histogram =
+      std::string(SystemWebAppManager::kInstallResultHistogramName) +
+      ".Profiles.Other";
   {
     base::flat_map<SystemAppType, SystemAppInfo> system_apps;
     system_apps.emplace(
@@ -390,6 +394,7 @@ TEST_F(SystemWebAppManagerTest, InstallResultHistogram) {
     histograms.ExpectTotalCount(
         SystemWebAppManager::kInstallResultHistogramName, 0);
     histograms.ExpectTotalCount(settings_app_install_result_histogram, 0);
+    histograms.ExpectTotalCount(profile_install_result_histogram, 0);
 
     system_web_app_manager()->Start();
     base::RunLoop().RunUntilIdle();
@@ -401,6 +406,9 @@ TEST_F(SystemWebAppManagerTest, InstallResultHistogram) {
         InstallResultCode::kSuccessNewInstall, 1);
     histograms.ExpectTotalCount(settings_app_install_result_histogram, 1);
     histograms.ExpectBucketCount(settings_app_install_result_histogram,
+                                 InstallResultCode::kSuccessNewInstall, 1);
+    histograms.ExpectTotalCount(profile_install_result_histogram, 1);
+    histograms.ExpectBucketCount(profile_install_result_histogram,
                                  InstallResultCode::kSuccessNewInstall, 1);
   }
   {
@@ -441,6 +449,8 @@ TEST_F(SystemWebAppManagerTest, InstallResultHistogram) {
 
     histograms.ExpectBucketCount(settings_app_install_result_histogram,
                                  InstallResultCode::kFailedShuttingDown, 0);
+    histograms.ExpectBucketCount(profile_install_result_histogram,
+                                 InstallResultCode::kFailedShuttingDown, 0);
 
     system_web_app_manager()->Start();
     system_web_app_manager()->Shutdown();
@@ -454,6 +464,8 @@ TEST_F(SystemWebAppManagerTest, InstallResultHistogram) {
         InstallResultCode::kProfileDestroyed, 2);
 
     histograms.ExpectBucketCount(settings_app_install_result_histogram,
+                                 InstallResultCode::kFailedShuttingDown, 1);
+    histograms.ExpectBucketCount(profile_install_result_histogram,
                                  InstallResultCode::kFailedShuttingDown, 1);
   }
 }
