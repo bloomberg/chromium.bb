@@ -62,6 +62,9 @@ class WebUITabStripContainerView : public TabStripUI::Embedder,
   // through to its target.
   bool EventShouldPropagate(const ui::Event& event);
 
+  // Passed to the AutoCloser to handle closing.
+  void CloseForEventOutsideTabStrip();
+
   // TabStripUI::Embedder:
   const ui::AcceleratorProvider* GetAcceleratorProvider() const override;
   void CloseContainer() override;

@@ -32,6 +32,7 @@
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
 #include "chrome/browser/ui/webui/tab_strip/tab_strip_ui_layout.h"
+#include "chrome/browser/ui/webui/tab_strip/tab_strip_ui_metrics.h"
 #include "chrome/browser/ui/webui/theme_handler.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/webui_url_constants.h"
@@ -414,6 +415,8 @@ class TabStripUIHandler : public content::WebUIMessageHandler,
   }
 
   void HandleCloseContainer(const base::ListValue* args) {
+    // We only autoclose for tab selection.
+    RecordTabStripUICloseHistogram(TabStripUICloseAction::kTabSelected);
     DCHECK(embedder_);
     embedder_->CloseContainer();
   }

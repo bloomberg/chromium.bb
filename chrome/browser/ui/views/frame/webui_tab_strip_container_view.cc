@@ -28,6 +28,7 @@
 #include "chrome/browser/ui/views/toolbar/webui_tab_counter_button.h"
 #include "chrome/browser/ui/webui/tab_strip/tab_strip_ui.h"
 #include "chrome/browser/ui/webui/tab_strip/tab_strip_ui_layout.h"
+#include "chrome/browser/ui/webui/tab_strip/tab_strip_ui_metrics.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/generated_resources.h"
@@ -105,7 +106,7 @@ WebUITabStripContainerView::WebUITabStripContainerView(
       auto_closer_(std::make_unique<AutoCloser>(
           base::Bind(&WebUITabStripContainerView::EventShouldPropagate,
                      base::Unretained(this)),
-          base::Bind(&WebUITabStripContainerView::CloseContainer,
+          base::Bind(&WebUITabStripContainerView::CloseForEventOutsideTabStrip,
                      base::Unretained(this)))) {
   DCHECK(UseTouchableTabStrip());
   animation_.SetTweenType(gfx::Tween::Type::FAST_OUT_SLOW_IN);
@@ -246,6 +247,11 @@ bool WebUITabStripContainerView::EventShouldPropagate(const ui::Event& event) {
   return false;
 }
 
+void WebUITabStripContainerView::CloseForEventOutsideTabStrip() {
+  RecordTabStripUICloseHistogram(TabStripUICloseAction::kTapOutsideTabStrip);
+  SetContainerTargetVisibility(false);
+}
+
 void WebUITabStripContainerView::AnimationEnded(
     const gfx::Animation* animation) {
   DCHECK_EQ(&animation_, animation);
@@ -293,7 +299,14 @@ int WebUITabStripContainerView::GetHeightForWidth(int w) const {
 void WebUITabStripContainerView::ButtonPressed(views::Button* sender,
                                                const ui::Event& event) {
   if (sender->GetID() == VIEW_ID_WEBUI_TAB_STRIP_TAB_COUNTER) {
-    SetContainerTargetVisibility(!GetVisible());
+    const bool new_visibility = !GetVisible();
+    if (new_visibility) {
+      RecordTabStripUIOpenHistogram(TabStripUIOpenAction::kTapOnTabCounter);
+    } else {
+      RecordTabStripUICloseHistogram(TabStripUICloseAction::kTapOnTabCounter);
+    }
+
+    SetContainerTargetVisibility(new_visibility);
 
     if (GetVisible() && sender->HasFocus()) {
       // Automatically move focus to the tab strip WebUI if the focus is

@@ -4069,6 +4069,8 @@ jumbo_static_library("ui") {
       "webui/tab_strip/tab_strip_ui.h",
       "webui/tab_strip/tab_strip_ui_layout.cc",
       "webui/tab_strip/tab_strip_ui_layout.h",
+      "webui/tab_strip/tab_strip_ui_metrics.cc",
+      "webui/tab_strip/tab_strip_ui_metrics.h",
       "webui/tab_strip/thumbnail_tracker.cc",
       "webui/tab_strip/thumbnail_tracker.h",
     ]
