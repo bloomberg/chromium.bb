@@ -155,60 +155,60 @@ MAX_AGE_SECS = 21*24*60*60
 TaskData = collections.namedtuple(
     'TaskData',
     [
-      # List of strings; the command line to use, independent of what was
-      # specified in the isolated file.
-      'command',
-      # Relative directory to start command into.
-      'relative_cwd',
-      # List of strings; the arguments to add to the command specified in the
-      # isolated file.
-      'extra_args',
-      # Hash of the .isolated file that must be retrieved to recreate the tree
-      # of files to run the target executable. The command specified in the
-      # .isolated is executed.  Mutually exclusive with command argument.
-      'isolated_hash',
-      # isolateserver.Storage instance to retrieve remote objects. This object
-      # has a reference to an isolateserver.StorageApi, which does the actual
-      # I/O.
-      'storage',
-      # isolateserver.LocalCache instance to keep from retrieving the same
-      # objects constantly by caching the objects retrieved. Can be on-disk or
-      # in-memory.
-      'isolate_cache',
-      # List of paths relative to root_dir to put into the output isolated
-      # bundle upon task completion (see link_outputs_to_outdir).
-      'outputs',
-      # Function (run_dir) => context manager that installs named caches into
-      # |run_dir|.
-      'install_named_caches',
-      # If True, the temporary directory will be deliberately leaked for later
-      # examination.
-      'leak_temp_dir',
-      # Path to the directory to use to create the temporary directory. If not
-      # specified, a random temporary directory is created.
-      'root_dir',
-      # Kills the process if it lasts more than this amount of seconds.
-      'hard_timeout',
-      # Number of seconds to wait between SIGTERM and SIGKILL.
-      'grace_period',
-      # Path to a file with bot state, used in place of ${SWARMING_BOT_FILE}
-      # task command line argument.
-      'bot_file',
-      # Logical account to switch LUCI_CONTEXT into.
-      'switch_to_account',
-      # Context manager dir => CipdInfo, see install_client_and_packages.
-      'install_packages_fn',
-      # Create tree with symlinks instead of hardlinks.
-      'use_symlinks',
-      # Environment variables to set.
-      'env',
-      # Environment variables to mutate with relative directories.
-      # Example: {"ENV_KEY": ['relative', 'paths', 'to', 'prepend']}
-      'env_prefix',
-      # Lowers the task process priority.
-      'lower_priority',
-      # subprocess42.Containment instance. Can be None.
-      'containment',
+        # List of strings; the command line to use, independent of what was
+        # specified in the isolated file.
+        'command',
+        # Relative directory to start command into.
+        'relative_cwd',
+        # List of strings; the arguments to add to the command specified in the
+        # isolated file.
+        'extra_args',
+        # Hash of the .isolated file that must be retrieved to recreate the tree
+        # of files to run the target executable. The command specified in the
+        # .isolated is executed.  Mutually exclusive with command argument.
+        'isolated_hash',
+        # isolateserver.Storage instance to retrieve remote objects. This object
+        # has a reference to an isolateserver.StorageApi, which does the actual
+        # I/O.
+        'storage',
+        # isolateserver.LocalCache instance to keep from retrieving the same
+        # objects constantly by caching the objects retrieved. Can be on-disk or
+        # in-memory.
+        'isolate_cache',
+        # List of paths relative to root_dir to put into the output isolated
+        # bundle upon task completion (see link_outputs_to_outdir).
+        'outputs',
+        # Function (run_dir) => context manager that installs named caches into
+        # |run_dir|.
+        'install_named_caches',
+        # If True, the temporary directory will be deliberately leaked for later
+        # examination.
+        'leak_temp_dir',
+        # Path to the directory to use to create the temporary directory. If not
+        # specified, a random temporary directory is created.
+        'root_dir',
+        # Kills the process if it lasts more than this amount of seconds.
+        'hard_timeout',
+        # Number of seconds to wait between SIGTERM and SIGKILL.
+        'grace_period',
+        # Path to a file with bot state, used in place of ${SWARMING_BOT_FILE}
+        # task command line argument.
+        'bot_file',
+        # Logical account to switch LUCI_CONTEXT into.
+        'switch_to_account',
+        # Context manager dir => CipdInfo, see install_client_and_packages.
+        'install_packages_fn',
+        # Create tree with symlinks instead of hardlinks.
+        'use_symlinks',
+        # Environment variables to set.
+        'env',
+        # Environment variables to mutate with relative directories.
+        # Example: {"ENV_KEY": ['relative', 'paths', 'to', 'prepend']}
+        'env_prefix',
+        # Lowers the task process priority.
+        'lower_priority',
+        # subprocess42.Containment instance. Can be None.
+        'containment',
     ])
 
 
