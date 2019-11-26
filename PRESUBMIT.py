@@ -392,7 +392,6 @@ _NOT_CONVERTED_TO_MODERN_BIND_AND_CALLBACK = '|'.join((
   '^content/app/',
   '^content/browser/',
   '^content/child/',
-  '^content/common/',
   '^content/public/',
   '^content/renderer/android/',
   '^content/renderer/fetchers/',
