@@ -210,6 +210,7 @@ aura::Window* GetWindowForDragToHomeOrOverview(
 // Returns the null value if no gesture should be recorded.
 base::Optional<InAppShelfGestures> CalculateHotseatGestureToRecord(
     base::Optional<ShelfWindowDragResult> window_drag_result,
+    bool transitioned_from_overview_to_home,
     HotseatState old_state,
     HotseatState current_state) {
   if (window_drag_result.has_value() &&
@@ -222,6 +223,9 @@ base::Optional<InAppShelfGestures> CalculateHotseatGestureToRecord(
       window_drag_result == ShelfWindowDragResult::kGoToHomeScreen) {
     return InAppShelfGestures::kFlingUpToShowHomeScreen;
   }
+
+  if (transitioned_from_overview_to_home)
+    return InAppShelfGestures::kFlingUpToShowHomeScreen;
 
   if (old_state == current_state)
     return base::nullopt;
@@ -2366,6 +2370,15 @@ void ShelfLayoutManager::CompleteDrag(const ui::LocatedEvent& event_in_screen) {
       MaybeEndWindowDrag(event_in_screen);
   HotseatState old_hotseat_state = hotseat_state();
 
+  const bool transitioned_from_overview_to_home =
+      MaybeEndDragFromOverviewToHome(event_in_screen);
+  allow_fling_from_overview_to_home_ = false;
+
+  // Fling from overview to home should be allowed only if window_drag_handler_
+  // is not handling a window.
+  DCHECK(!transitioned_from_overview_to_home ||
+         !window_drag_result.has_value());
+
   if (ShouldChangeVisibilityAfterDrag(event_in_screen))
     CompleteDragWithChangedVisibility();
   else
@@ -2374,8 +2387,9 @@ void ShelfLayoutManager::CompleteDrag(const ui::LocatedEvent& event_in_screen) {
   // Hotseat gestures are meaningful only in tablet mode with hotseat enabled.
   if (chromeos::switches::ShouldShowShelfHotseat() && IsTabletModeEnabled()) {
     base::Optional<InAppShelfGestures> gesture_to_record =
-        CalculateHotseatGestureToRecord(window_drag_result, old_hotseat_state,
-                                        hotseat_state());
+        CalculateHotseatGestureToRecord(window_drag_result,
+                                        transitioned_from_overview_to_home,
+                                        old_hotseat_state, hotseat_state());
     if (gesture_to_record.has_value()) {
       UMA_HISTOGRAM_ENUMERATION(kHotseatGestureHistogramName,
                                 gesture_to_record.value());
@@ -2619,6 +2633,7 @@ bool ShelfLayoutManager::MaybeStartDragWindowFromShelf(
 
   aura::Window* window =
       GetWindowForDragToHomeOrOverview(event_in_screen.location());
+  allow_fling_from_overview_to_home_ = !window;
   if (!window)
     return false;
 
@@ -2655,6 +2670,43 @@ base::Optional<ShelfWindowDragResult> ShelfLayoutManager::MaybeEndWindowDrag(
 
   return window_drag_controller_->EndDrag(event_in_screen.location(),
                                           velocity_y);
+}
+
+bool ShelfLayoutManager::MaybeEndDragFromOverviewToHome(
+    const ui::LocatedEvent& event_in_screen) {
+  if (!IsHotseatEnabled())
+    return false;
+
+  if (!allow_fling_from_overview_to_home_ ||
+      !Shell::Get()->overview_controller()->InOverviewSession()) {
+    return false;
+  }
+
+  if (event_in_screen.type() != ui::ET_SCROLL_FLING_START)
+    return false;
+
+  const float velocity_y =
+      event_in_screen.AsGestureEvent()->details().velocity_y();
+  if (velocity_y >
+      -DragWindowFromShelfController::kVelocityToHomeScreenThreshold) {
+    return false;
+  }
+
+  // If the drag started from hidden hotseat, check that the swipe length is
+  // sufficiently longer than the amount needed to fling the hotseat up, to
+  // reduce false positives when the user is pulling up the hotseat.
+  if (hotseat_state() == HotseatState::kHidden) {
+    const float kHotseatSizeMultiplier = 2;
+    ShelfConfig* shelf_config = ShelfConfig::Get();
+    const int drag_amount_threshold =
+        -(shelf_config->shelf_size() + shelf_config->hotseat_bottom_padding() +
+          kHotseatSizeMultiplier * shelf_config->hotseat_size());
+    if (drag_amount_ > drag_amount_threshold)
+      return false;
+  }
+
+  Shell::Get()->home_screen_controller()->GoHome(display_.id());
+  return true;
 }
 
 void ShelfLayoutManager::MaybeCancelWindowDrag() {

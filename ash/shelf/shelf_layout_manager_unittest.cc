@@ -4820,6 +4820,150 @@ TEST_F(ShelfLayoutManagerWindowDraggingTest, NoOpInOverview) {
   EndScroll(/*is_fling=*/false, 0.f);
 }
 
+// Test that upward fling in overview transitions from overview to home.
+TEST_F(ShelfLayoutManagerWindowDraggingTest, FlingInOverview) {
+  const gfx::Rect shelf_widget_bounds =
+      GetShelfWidget()->GetWindowBoundsInScreen();
+  const int shelf_size = ShelfConfig::Get()->shelf_size();
+  const int hotseat_size = ShelfConfig::Get()->hotseat_size();
+  const int hotseat_padding_size = ShelfConfig::Get()->hotseat_bottom_padding();
+  std::unique_ptr<aura::Window> window1 =
+      AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
+  wm::ActivateWindow(window1.get());
+
+  OverviewController* overview_controller = Shell::Get()->overview_controller();
+  overview_controller->StartOverview();
+
+  base::HistogramTester histogram_tester;
+  HotseatStateWatcher watcher(GetShelfLayoutManager());
+
+  // Fling up from the center of the shelf's bottom.
+  StartScroll(shelf_widget_bounds.bottom_center());
+  UpdateScroll(-shelf_size - hotseat_size - hotseat_padding_size);
+  EndScroll(
+      true /* is_fling */,
+      -(DragWindowFromShelfController::kVelocityToHomeScreenThreshold + 10));
+
+  EXPECT_FALSE(overview_controller->InOverviewSession());
+
+  watcher.WaitUntilStateChanged();
+  watcher.CheckEqual({HotseatState::kShown});
+
+  histogram_tester.ExpectBucketCount(
+      kHotseatGestureHistogramName,
+      InAppShelfGestures::kFlingUpToShowHomeScreen, 1);
+  histogram_tester.ExpectBucketCount(kHotseatGestureHistogramName,
+                                     InAppShelfGestures::kSwipeUpToShow, 0);
+}
+
+// Test that upward fling in split mode on overview side shows hotseat and
+// remains in split view is the swipe is short.
+TEST_F(ShelfLayoutManagerWindowDraggingTest,
+       FlingToShowHotseatInSplitModeWithOverview) {
+  const gfx::Rect shelf_widget_bounds =
+      GetShelfWidget()->GetWindowBoundsInScreen();
+  const int shelf_size = ShelfConfig::Get()->shelf_size();
+  const int hotseat_size = ShelfConfig::Get()->hotseat_size();
+  const int hotseat_padding_size = ShelfConfig::Get()->hotseat_bottom_padding();
+  std::unique_ptr<aura::Window> window1 =
+      AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
+  std::unique_ptr<aura::Window> window2 =
+      AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
+
+  SplitViewController* split_view_controller =
+      SplitViewController::Get(Shell::GetPrimaryRootWindow());
+  split_view_controller->SnapWindow(window1.get(), SplitViewController::LEFT);
+  split_view_controller->SnapWindow(window2.get(), SplitViewController::RIGHT);
+  OverviewController* overview_controller = Shell::Get()->overview_controller();
+  overview_controller->StartOverview();
+  EXPECT_TRUE(overview_controller->InOverviewSession());
+  EXPECT_EQ(HotseatState::kHidden, GetShelfLayoutManager()->hotseat_state());
+
+  base::HistogramTester histogram_tester;
+  HotseatStateWatcher watcher(GetShelfLayoutManager());
+
+  // Short fling (little longer than the drag required to show the extended
+  // hotseat).
+  StartScroll(shelf_widget_bounds.bottom_right());
+  UpdateScroll(-shelf_size - 1.5f * hotseat_size - hotseat_padding_size);
+  EndScroll(
+      true /* is_fling */,
+      -(DragWindowFromShelfController::kVelocityToHomeScreenThreshold + 10));
+
+  EXPECT_TRUE(overview_controller->InOverviewSession());
+  EXPECT_TRUE(split_view_controller->InSplitViewMode());
+  watcher.CheckEqual({HotseatState::kExtended});
+
+  histogram_tester.ExpectBucketCount(kHotseatGestureHistogramName,
+                                     InAppShelfGestures::kSwipeUpToShow, 1);
+
+  // The same fling gesture should transition to home if the hotseat is in
+  // extended state.
+  StartScroll(shelf_widget_bounds.bottom_right());
+  UpdateScroll(-shelf_size - 1.5f * hotseat_size - hotseat_padding_size);
+  EndScroll(
+      true /* is_fling */,
+      -(DragWindowFromShelfController::kVelocityToHomeScreenThreshold + 10));
+
+  EXPECT_FALSE(overview_controller->InOverviewSession());
+  EXPECT_FALSE(split_view_controller->InSplitViewMode());
+
+  watcher.WaitUntilStateChanged();
+  watcher.CheckEqual({HotseatState::kExtended, HotseatState::kShown});
+
+  histogram_tester.ExpectBucketCount(
+      kHotseatGestureHistogramName,
+      InAppShelfGestures::kFlingUpToShowHomeScreen, 1);
+  histogram_tester.ExpectBucketCount(kHotseatGestureHistogramName,
+                                     InAppShelfGestures::kSwipeUpToShow, 1);
+}
+
+// Test that upward fling in split mode on overview side transitions to home, if
+// the swipe length is long enough.
+TEST_F(ShelfLayoutManagerWindowDraggingTest, FlingHomeInSplitModeWithOverview) {
+  const gfx::Rect shelf_widget_bounds =
+      GetShelfWidget()->GetWindowBoundsInScreen();
+  const int shelf_size = ShelfConfig::Get()->shelf_size();
+  const int hotseat_size = ShelfConfig::Get()->hotseat_size();
+  const int hotseat_padding_size = ShelfConfig::Get()->hotseat_bottom_padding();
+  std::unique_ptr<aura::Window> window1 =
+      AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
+  std::unique_ptr<aura::Window> window2 =
+      AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
+
+  SplitViewController* split_view_controller =
+      SplitViewController::Get(Shell::GetPrimaryRootWindow());
+  split_view_controller->SnapWindow(window1.get(), SplitViewController::LEFT);
+  split_view_controller->SnapWindow(window2.get(), SplitViewController::RIGHT);
+  OverviewController* overview_controller = Shell::Get()->overview_controller();
+  overview_controller->StartOverview();
+  EXPECT_TRUE(overview_controller->InOverviewSession());
+  EXPECT_EQ(HotseatState::kHidden, GetShelfLayoutManager()->hotseat_state());
+
+  base::HistogramTester histogram_tester;
+  HotseatStateWatcher watcher(GetShelfLayoutManager());
+
+  // Longer fling, one that significantly exceeds the distance required to show
+  // the hotseat (by 2 hotseat heights).
+  StartScroll(shelf_widget_bounds.bottom_right());
+  UpdateScroll(-shelf_size - 3 * hotseat_size - hotseat_padding_size);
+  EndScroll(
+      true /* is_fling */,
+      -(DragWindowFromShelfController::kVelocityToHomeScreenThreshold + 10));
+
+  EXPECT_FALSE(overview_controller->InOverviewSession());
+  EXPECT_FALSE(split_view_controller->InSplitViewMode());
+
+  watcher.WaitUntilStateChanged();
+  EXPECT_EQ(HotseatState::kShown, GetShelfLayoutManager()->hotseat_state());
+
+  histogram_tester.ExpectBucketCount(
+      kHotseatGestureHistogramName,
+      InAppShelfGestures::kFlingUpToShowHomeScreen, 1);
+  histogram_tester.ExpectBucketCount(kHotseatGestureHistogramName,
+                                     InAppShelfGestures::kSwipeUpToShow, 0);
+}
+
 // Test that if shelf if hidden or auto-hide hidden, drag window from shelf is a
 // no-op.
 // TODO(1024163): This test consistently crashes.
