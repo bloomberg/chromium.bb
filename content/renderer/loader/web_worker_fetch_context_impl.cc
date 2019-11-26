@@ -524,6 +524,17 @@ WebWorkerFetchContextImpl::CreateWebSocketHandshakeThrottle(
       ancestor_frame_id_, std::move(task_runner));
 }
 
+mojo::ScopedMessagePipeHandle
+WebWorkerFetchContextImpl::TakePendingWorkerTimingReceiver(int request_id) {
+  auto iter = worker_timing_container_receivers_.find(request_id);
+  if (iter == worker_timing_container_receivers_.end()) {
+    return {};
+  }
+  auto receiver = std::move(iter->second);
+  worker_timing_container_receivers_.erase(iter);
+  return receiver.PassPipe();
+}
+
 void WebWorkerFetchContextImpl::set_controller_service_worker_mode(
     blink::mojom::ControllerServiceWorkerMode mode) {
   controller_service_worker_mode_ = mode;
@@ -633,9 +644,6 @@ void WebWorkerFetchContextImpl::ResetServiceWorkerURLLoaderFactory() {
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
   auto current_task_runner =
       base::CreateSequencedTaskRunner({base::CurrentThread()});
-  // TODO(https://crbug.com/900700): Pass RepeatingCallback to store
-  // WorkerTimingContainer pending receiver and request_id from
-  // ServiceWorkerSubresourceLoaderFactory.
   task_runner->PostTask(
       FROM_HERE,
       base::BindOnce(
@@ -643,7 +651,10 @@ void WebWorkerFetchContextImpl::ResetServiceWorkerURLLoaderFactory() {
           std::move(service_worker_container_host), client_id_,
           fallback_factory_->Clone(),
           service_worker_url_loader_factory.InitWithNewPipeAndPassReceiver(),
-          task_runner, std::move(current_task_runner), base::DoNothing()));
+          task_runner, std::move(current_task_runner),
+          base::BindRepeating(
+              &WebWorkerFetchContextImpl::AddPendingWorkerTimingReceiver,
+              weak_factory_.GetWeakPtr())));
   web_loader_factory_->SetServiceWorkerURLLoaderFactory(
       std::move(service_worker_url_loader_factory));
 }
@@ -676,6 +687,15 @@ void WebWorkerFetchContextImpl::NotifyUpdate(
 
 blink::WebString WebWorkerFetchContextImpl::GetAcceptLanguages() const {
   return blink::WebString::FromUTF8(renderer_preferences_.accept_languages);
+}
+
+void WebWorkerFetchContextImpl::AddPendingWorkerTimingReceiver(
+    int request_id,
+    mojo::PendingReceiver<blink::mojom::WorkerTimingContainer> receiver) {
+  // TODO(https://crbug.com/900700): Handle redirects properly. Currently on
+  // redirect, the receiver is replaced with a new one, discarding the timings
+  // before the redirect.
+  worker_timing_container_receivers_[request_id] = std::move(receiver);
 }
 
 }  // namespace content
