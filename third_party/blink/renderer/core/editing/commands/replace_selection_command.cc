@@ -2077,7 +2077,7 @@ bool ReplaceSelectionCommand::PerformTrivialReplace(
   if (node_after_insertion_pos && node_after_insertion_pos->parentNode() &&
       IsA<HTMLBRElement>(*node_after_insertion_pos) &&
       ShouldRemoveEndBR(
-          ToHTMLBRElement(node_after_insertion_pos),
+          To<HTMLBRElement>(node_after_insertion_pos),
           VisiblePosition::BeforeNode(*node_after_insertion_pos))) {
     RemoveNodeAndPruneAncestors(node_after_insertion_pos, editing_state);
     if (editing_state->IsAborted())
