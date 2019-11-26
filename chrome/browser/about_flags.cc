@@ -3933,10 +3933,6 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // !defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)
-    {"app-service-ash", flag_descriptions::kAppServiceAshName,
-     flag_descriptions::kAppServiceAshDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(features::kAppServiceAsh)},
-
     {"app-service-instance-registry",
      flag_descriptions::kAppServiceInstanceRegistryName,
      flag_descriptions::kAppServiceInstanceRegistryDescription, kOsCrOS,
