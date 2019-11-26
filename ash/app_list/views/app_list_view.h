@@ -549,9 +549,6 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   // An observer to notify AppListView of bounds animation completion.
   std::unique_ptr<BoundsAnimationObserver> bounds_animation_observer_;
 
-  // For UMA and testing. If non-null, triggered when the app list is painted.
-  base::Closure next_paint_callback_;
-
   // Metric reporter for state change animations.
   const std::unique_ptr<StateAnimationMetricsReporter>
       state_animation_metrics_reporter_;

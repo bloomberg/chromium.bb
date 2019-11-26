@@ -765,10 +765,6 @@ bool AppListView::Back() {
 
 void AppListView::OnPaint(gfx::Canvas* canvas) {
   views::WidgetDelegateView::OnPaint(canvas);
-  if (!next_paint_callback_.is_null()) {
-    next_paint_callback_.Run();
-    next_paint_callback_.Reset();
-  }
 }
 
 const char* AppListView::GetClassName() const {
