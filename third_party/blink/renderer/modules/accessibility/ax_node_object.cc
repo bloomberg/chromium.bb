@@ -421,7 +421,7 @@ static bool IsRequiredOwnedElement(AXObject* parent,
   if (current_role == ax::mojom::Role::kMenuItemCheckBox ||
       current_role == ax::mojom::Role::kMenuItem ||
       current_role == ax::mojom::Role::kMenuItemRadio)
-    return IsHTMLMenuElement(*parent_node);
+    return IsA<HTMLMenuElement>(*parent_node);
 
   if (!current_element)
     return false;
@@ -653,7 +653,7 @@ ax::mojom::Role AXNodeObject::NativeRoleIgnoringAria() const {
       return ax::mojom::Role::kTextFieldWithComboBox;
     if (type == input_type_names::kButton) {
       if ((GetNode()->parentNode() &&
-           IsHTMLMenuElement(GetNode()->parentNode())) ||
+           IsA<HTMLMenuElement>(GetNode()->parentNode())) ||
           (ParentObject() &&
            ParentObject()->RoleValue() == ax::mojom::Role::kMenu))
         return ax::mojom::Role::kMenuItem;
@@ -661,7 +661,7 @@ ax::mojom::Role AXNodeObject::NativeRoleIgnoringAria() const {
     }
     if (type == input_type_names::kCheckbox) {
       if ((GetNode()->parentNode() &&
-           IsHTMLMenuElement(GetNode()->parentNode())) ||
+           IsA<HTMLMenuElement>(GetNode()->parentNode())) ||
           (ParentObject() &&
            ParentObject()->RoleValue() == ax::mojom::Role::kMenu))
         return ax::mojom::Role::kMenuItemCheckBox;
@@ -677,7 +677,7 @@ ax::mojom::Role AXNodeObject::NativeRoleIgnoringAria() const {
       return ax::mojom::Role::kButton;
     if (type == input_type_names::kRadio) {
       if ((GetNode()->parentNode() &&
-           IsHTMLMenuElement(GetNode()->parentNode())) ||
+           IsA<HTMLMenuElement>(GetNode()->parentNode())) ||
           (ParentObject() &&
            ParentObject()->RoleValue() == ax::mojom::Role::kMenu))
         return ax::mojom::Role::kMenuItemRadio;
