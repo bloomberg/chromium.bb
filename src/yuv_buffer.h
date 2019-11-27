@@ -17,6 +17,7 @@
 #ifndef LIBGAV1_SRC_YUV_BUFFER_H_
 #define LIBGAV1_SRC_YUV_BUFFER_H_
 
+#include <cassert>
 #include <cstddef>
 #include <cstdint>
 
@@ -130,18 +131,17 @@ class YuvBuffer {
   // Returns the alignment of frame buffer row in bytes.
   int alignment() const { return 16; }
 
-  // Returns whether shifting frame buffer is successful.
-  // |vertical_shift| and |horizontal_shift| are in pixels.
+  // Shifts the |plane| buffer horizontally by |horizontal_shift| pixels and
+  // vertically by |vertical_shift| pixels. There must be enough border for the
+  // shifts to be successful.
   // TODO(chengchen):
   // Warning: this implementation doesn't handle the byte_alignment requirement.
   // For example, if the frame is required to be 4K-byte aligned, this method
   // fails. Figure out alternative solutions if the feature of
   // byte_alignment is required in practice.
-  bool ShiftBuffer(int plane, int horizontal_shift, int vertical_shift) {
-    if (!ValidHorizontalShift(plane, horizontal_shift) ||
-        !ValidVerticalShift(plane, vertical_shift)) {
-      return false;
-    }
+  void ShiftBuffer(int plane, int horizontal_shift, int vertical_shift) {
+    assert(ValidHorizontalShift(plane, horizontal_shift));
+    assert(ValidVerticalShift(plane, vertical_shift));
     left_border_[plane] += horizontal_shift;
     right_border_[plane] -= horizontal_shift;
     top_border_[plane] += vertical_shift;
@@ -150,7 +150,6 @@ class YuvBuffer {
         static_cast<int>((bitdepth_ == 8) ? sizeof(uint8_t) : sizeof(uint16_t));
     buffer_[plane] +=
         vertical_shift * stride_[plane] + horizontal_shift * pixel_size;
-    return true;
   }
 
   // Returns the data buffer for |plane|.

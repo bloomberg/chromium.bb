@@ -206,13 +206,7 @@ bool PostFilter::ApplyFiltering() {
         const int vertical_shift =
             (shift_cdef ? -kCdefBorder : 0) +
             (shift_loop_restoration ? -kRestorationBorder : 0);
-        if (!source_buffer_->ShiftBuffer(plane, horizontal_shift,
-                                         vertical_shift)) {
-          LIBGAV1_DLOG(ERROR,
-                       "Error shifting frame buffer head pointer at plane: %d",
-                       plane);
-          return false;
-        }
+        source_buffer_->ShiftBuffer(plane, horizontal_shift, vertical_shift);
       }
     }
   } else {
@@ -223,13 +217,17 @@ bool PostFilter::ApplyFiltering() {
         SetupDeblockBuffer(row4x4, kNum4x4InLoopFilterMaskUnit);
       }
     }
-    if (DoCdef() && !ApplyCdef()) return false;
+    if (DoCdef()) {
+      ApplyCdef();
+    }
     if (DoSuperRes() &&
         !FrameSuperRes(source_buffer_, frame_header_.rows4x4, subsampling_y_,
                        /*plane_offsets=*/{0, 0, 0})) {
       return false;
     }
-    if (DoRestoration() && !ApplyLoopRestoration()) return false;
+    if (DoRestoration()) {
+      ApplyLoopRestoration();
+    }
   }
   // Extend frame boundary for inter frame convolution and referencing if the
   // frame will be saved as a reference frame.
@@ -705,7 +703,7 @@ void PostFilter::ApplyCdefForOneRowInWindow(const int row4x4,
 // Each thread processes one row inside the window.
 // Y, U, V planes are processed together inside one thread.
 template <typename Pixel>
-bool PostFilter::ApplyCdefThreaded() {
+void PostFilter::ApplyCdefThreaded() {
   assert((window_buffer_height_ & 63) == 0);
   const int num_workers = thread_pool_->num_threads();
   // abs(horizontal_shift) must be at least kCdefBorder. Increase it to
@@ -768,14 +766,8 @@ bool PostFilter::ApplyCdefThreaded() {
     }
   }
   for (int plane = kPlaneY; plane < planes_; ++plane) {
-    if (!source_buffer_->ShiftBuffer(plane, horizontal_shift, vertical_shift)) {
-      LIBGAV1_DLOG(ERROR,
-                   "Error shifting frame buffer head pointer at plane: %d",
-                   plane);
-      return false;
-    }
+    source_buffer_->ShiftBuffer(plane, horizontal_shift, vertical_shift);
   }
-  return true;
 }
 
 bool PostFilter::ApplySuperResForOneSuperBlockRow(int row4x4_start, int sb4x4) {
@@ -829,13 +821,14 @@ void PostFilter::ApplyCdefForOneSuperBlockRow(int row4x4_start, int sb4x4) {
   }
 }
 
-bool PostFilter::ApplyCdef() {
+void PostFilter::ApplyCdef() {
 #if LIBGAV1_MAX_BITDEPTH >= 10
   if (bitdepth_ >= 10) {
-    return ApplyCdefThreaded<uint16_t>();
+    ApplyCdefThreaded<uint16_t>();
+    return;
   }
 #endif
-  return ApplyCdefThreaded<uint8_t>();
+  ApplyCdefThreaded<uint8_t>();
 }
 
 bool PostFilter::FrameSuperRes(
@@ -1151,7 +1144,7 @@ void PostFilter::ApplyLoopRestorationForOneUnit(
 // restoration for each thread. After all units inside the window are filtered,
 // the output is written to the frame buffer.
 template <typename Pixel>
-bool PostFilter::ApplyLoopRestorationThreaded() {
+void PostFilter::ApplyLoopRestorationThreaded() {
   const int plane_process_unit_width[kMaxPlanes] = {
       kRestorationProcessingUnitSize,
       kRestorationProcessingUnitSize >> subsampling_x_,
@@ -1270,24 +1263,19 @@ bool PostFilter::ApplyLoopRestorationThreaded() {
       }
       if (y == 0) y -= unit_height_offset;
     }
-    if (!source_buffer_->ShiftBuffer(plane, horizontal_shift, vertical_shift)) {
-      LIBGAV1_DLOG(ERROR,
-                   "Error shifting frame buffer head pointer at plane: %d",
-                   plane);
-      return false;
-    }
+    source_buffer_->ShiftBuffer(plane, horizontal_shift, vertical_shift);
   }
-  return true;
 }
 
-bool PostFilter::ApplyLoopRestoration() {
+void PostFilter::ApplyLoopRestoration() {
   assert(threaded_window_buffer_ != nullptr);
 #if LIBGAV1_MAX_BITDEPTH >= 10
   if (bitdepth_ >= 10) {
-    return ApplyLoopRestorationThreaded<uint16_t>();
+    ApplyLoopRestorationThreaded<uint16_t>();
+    return;
   }
 #endif
-  return ApplyLoopRestorationThreaded<uint8_t>();
+  ApplyLoopRestorationThreaded<uint8_t>();
 }
 
 void PostFilter::HorizontalDeblockFilter(Plane plane, int row4x4_start,

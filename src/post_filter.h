@@ -327,8 +327,8 @@ class PostFilter {
   template <typename Pixel>
   void ApplyCdefForOneRowInWindow(int row, int column);
   template <typename Pixel>
-  bool ApplyCdefThreaded();
-  bool ApplyCdef();  // Sections 7.15 and 7.15.1.
+  void ApplyCdefThreaded();
+  void ApplyCdef();  // Sections 7.15 and 7.15.1.
 
   // Note for ApplyLoopRestoration():
   // First, we must differentiate loop restoration processing unit from loop
@@ -361,9 +361,9 @@ class PostFilter {
   // then sizes of the first row of processing units are 64x56, 64x56, 12x56,
   // respectively. The second row is 64x64, 64x64, 12x64.
   // The third row is 64x20, 64x20, 12x20.
-  bool ApplyLoopRestoration();
+  void ApplyLoopRestoration();
   template <typename Pixel>
-  bool ApplyLoopRestorationThreaded();
+  void ApplyLoopRestorationThreaded();
   template <typename Pixel>
   void ApplyLoopRestorationForOneRowInWindow(
       uint8_t* cdef_buffer, ptrdiff_t cdef_buffer_stride, Plane plane,
