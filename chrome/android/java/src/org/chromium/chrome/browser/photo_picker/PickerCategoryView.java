@@ -588,7 +588,10 @@ public class PickerCategoryView extends RelativeLayout
                 return;
             }
 
-            int left = 0, right = 0, top = 0, bottom = 0;
+            int left = 0;
+            int right = 0;
+            int top = 0;
+            int bottom = 0;
             int position = parent.getChildAdapterPosition(view);
 
             if (position >= 0) {

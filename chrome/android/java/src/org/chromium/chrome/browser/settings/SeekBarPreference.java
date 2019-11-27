@@ -25,8 +25,9 @@ import org.chromium.chrome.R;
  * and a TextView with ID "seekbar_amount".
  */
 public class SeekBarPreference extends Preference implements OnSeekBarChangeListener {
-
-    private float mMin, mMax, mStep;
+    private float mMin;
+    private float mMax;
+    private float mStep;
     private float mValue;
     private boolean mTrackingTouch;
     CharSequence mSummary;
