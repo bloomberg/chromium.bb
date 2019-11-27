@@ -161,6 +161,7 @@ class ServiceListener {
 
 // TODO: Remove after downstream has migrated to new namespace.
 using ServiceListener = osp::ServiceListener;
+using ServiceListenerError = osp::ServiceListenerError;
 
 }  // namespace openscreen
 
