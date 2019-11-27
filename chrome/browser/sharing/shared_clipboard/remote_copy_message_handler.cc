@@ -40,6 +40,8 @@
 #include "url/origin.h"
 
 namespace {
+constexpr size_t kMaxImageDownloadSize = 5 * 1024 * 1024;
+
 // These values are the 2x of the preferred width and height defined in
 // message_center_constants.h, which are in dip.
 constexpr int kNotificationImageMaxWidthPx = 720;
@@ -165,13 +167,12 @@ void RemoteCopyMessageHandler::HandleImage(const std::string& image_url) {
   url_loader_ =
       network::SimpleURLLoader::Create(std::move(request), kTrafficAnnotation);
   timer_ = base::ElapsedTimer();
-  // TODO(mvanouwerkerk): Downloads > 1MB (kMaxBoundedStringDownloadSize).
   // Unretained(this) is safe here because |this| owns |url_loader_|.
   url_loader_->DownloadToString(
       profile_->GetURLLoaderFactory().get(),
       base::BindOnce(&RemoteCopyMessageHandler::OnURLLoadComplete,
                      base::Unretained(this)),
-      network::SimpleURLLoader::kMaxBoundedStringDownloadSize);
+      kMaxImageDownloadSize);
 }
 
 bool RemoteCopyMessageHandler::IsOriginAllowed(const GURL& image_url) {
