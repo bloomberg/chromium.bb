@@ -5901,3 +5901,8 @@ crbug.com/1028116 virtual/gpu-rasterization/images/yuv-decode-eligible/color-pro
 crbug.com/1028116 virtual/gpu-rasterization/images/yuv-decode-eligible/webp-color-profile-lossy.html [ Pass Failure ]
 
 crbug.com/833100 [ Mac ] external/wpt/battery-status/battery-full-manual.https.html [ Pass Failure ]
+
+# Tests include race-conditions that will be fixed after DevTools fully uses ES modules
+crbug.com/1006759 http/tests/devtools/sources/debugger-ui/continue-to-location-markers-in-top-level-function.js [ Pass Failure ]
+crbug.com/1006759 http/tests/devtools/sources/debugger-ui/continue-to-location-markers.js [ Pass Failure ]
+crbug.com/1006759 http/tests/devtools/sources/debugger-ui/popover-for-spread-operator.js [ Pass Failure ]
