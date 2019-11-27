@@ -102,8 +102,6 @@ ExtensionHost::~ExtensionHost() {
       content::Details<ExtensionHost>(this));
   for (auto& observer : observer_list_)
     observer.OnExtensionHostDestroyed(this);
-  for (auto& observer : deferred_start_render_host_observer_list_)
-    observer.OnDeferredStartRenderHostDestroyed(this);
 
   // Remove ourselves from the queue as late as possible (before effectively
   // destroying self, but after everything else) so that queues that are
@@ -260,13 +258,6 @@ void ExtensionHost::RenderProcessGone(base::TerminationStatus status) {
       extensions::NOTIFICATION_EXTENSION_PROCESS_TERMINATED,
       content::Source<BrowserContext>(browser_context_),
       content::Details<ExtensionHost>(this));
-}
-
-void ExtensionHost::DidStartLoading() {
-  if (!has_loaded_once_) {
-    for (auto& observer : deferred_start_render_host_observer_list_)
-      observer.OnDeferredStartRenderHostDidStartFirstLoad(this);
-  }
 }
 
 void ExtensionHost::DidStopLoading() {

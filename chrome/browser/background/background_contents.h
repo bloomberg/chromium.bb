@@ -88,7 +88,6 @@ class BackgroundContents : public extensions::DeferredStartRenderHost,
 
   // content::WebContentsObserver implementation:
   void RenderProcessGone(base::TerminationStatus status) override;
-  void DidStartLoading() override;
   void DidStopLoading() override;
 
  protected:

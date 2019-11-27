@@ -10,22 +10,14 @@ class DeferredStartRenderHost;
 
 // Observer of DeferredStartRenderHost lifetime.
 //
-// Note that if BackgroundContents and ExtensionHost are unified
-// (crbug.com/77790), this can be replaced by ExtensionHostObserver.
+// TODO(devlin): Move OnDeferredStartRenderHostDidStopFirstLoad() into
+// ExtensionHostObserver, and remove this class.
 class DeferredStartRenderHostObserver {
  public:
   virtual ~DeferredStartRenderHostObserver() {}
 
-  // Called when a DeferredStartRenderHost started loading.
-  virtual void OnDeferredStartRenderHostDidStartFirstLoad(
-      const DeferredStartRenderHost* host) {}
-
   // Called when a DeferredStartRenderHost stopped loading.
   virtual void OnDeferredStartRenderHostDidStopFirstLoad(
-      const DeferredStartRenderHost* host) {}
-
-  // Called when a DeferredStartRenderHost is destroyed.
-  virtual void OnDeferredStartRenderHostDestroyed(
       const DeferredStartRenderHost* host) {}
 };
 

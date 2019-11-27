@@ -107,7 +107,6 @@ class ExtensionHost : public DeferredStartRenderHost,
   void RenderViewReady() override;
   void RenderProcessGone(base::TerminationStatus status) override;
   void DocumentAvailableInMainFrame() override;
-  void DidStartLoading() override;
   void DidStopLoading() override;
 
   // content::WebContentsDelegate:

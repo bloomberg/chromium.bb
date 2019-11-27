@@ -81,9 +81,6 @@ BackgroundContents::~BackgroundContents() {
   if (!web_contents_.get())   // Will be null for unit tests.
     return;
 
-  for (auto& observer : deferred_start_render_host_observer_list_)
-    observer.OnDeferredStartRenderHostDestroyed(this);
-
   extensions::ExtensionHostQueue::GetInstance().Remove(this);
 }
 
@@ -137,13 +134,6 @@ bool BackgroundContents::IsNeverVisible(content::WebContents* web_contents) {
 void BackgroundContents::RenderProcessGone(base::TerminationStatus status) {
   delegate_->OnBackgroundContentsTerminated(this);
   // |this| is deleted.
-}
-
-void BackgroundContents::DidStartLoading() {
-  // BackgroundContents only loads once, so this can only be the first time it
-  // has started loading.
-  for (auto& observer : deferred_start_render_host_observer_list_)
-    observer.OnDeferredStartRenderHostDidStartFirstLoad(this);
 }
 
 void BackgroundContents::DidStopLoading() {
