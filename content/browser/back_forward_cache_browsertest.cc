@@ -4487,4 +4487,35 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTestForHighMemoryDevices,
   // greater than the memory threshold.
   EXPECT_TRUE(rfh_a->is_in_back_forward_cache());
 }
+
+IN_PROC_BROWSER_TEST_F(
+    BackForwardCacheBrowserTest,
+    EvictingDocumentsInRelatedSiteInstancesDoesNotRestartNavigation) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url_a1(embedded_test_server()->GetURL("a.com", "/title1.html#part1"));
+  GURL url_a2(embedded_test_server()->GetURL("a.com", "/title1.html#part2"));
+  GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
+
+  // 1) Navigate to A1.
+  EXPECT_TRUE(NavigateToURL(shell(), url_a1));
+
+  // 2) Navigate to A2.
+  EXPECT_TRUE(NavigateToURL(shell(), url_a2));
+
+  // 3) Navigate to B.
+  EXPECT_TRUE(NavigateToURL(shell(), url_b));
+
+  // 4) Go back to A2, but do not wait for the navigation to commit.
+  web_contents()->GetController().GoBack();
+
+  // 5) Go back to A1.
+  // This will attempt to evict A2 from the cache because
+  // their navigation entries have related site instances, while a navigation
+  // to A2 is in flight. Ensure that we do not try to restart it as it should
+  // be superseded by a navigation to A1.
+  web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  EXPECT_EQ(url_a1, web_contents()->GetURL());
+}
+
 }  // namespace content

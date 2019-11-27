@@ -3748,8 +3748,8 @@ void RenderFrameHostImpl::EvictFromBackForwardCacheWithReason(
 
 void RenderFrameHostImpl::EvictFromBackForwardCacheWithReasons(
     const BackForwardCacheCanStoreDocumentResult& can_store) {
-  TRACE_EVENT1("navigation", "RenderFrameHostImpl::EvictFromBackForwardCache",
-               "can_store", can_store.ToString());
+  TRACE_EVENT2("navigation", "RenderFrameHostImpl::EvictFromBackForwardCache",
+               "can_store", can_store.ToString(), "rfh", this);
   DCHECK(IsBackForwardCacheEnabled());
 
   if (is_evicted_from_back_forward_cache_)
@@ -3791,6 +3791,19 @@ void RenderFrameHostImpl::EvictFromBackForwardCacheWithReasons(
        in_flight_navigation_request->rfh_restored_from_back_forward_cache() ==
            top_document);
 
+  if (is_navigation_to_evicted_frame_in_flight) {
+    // If we are currently navigating to the frame that was just evicted, we
+    // must restart the navigation. This is important because restarting the
+    // navigation deletes the NavigationRequest associated with the evicted
+    // frame (preventing use-after-free).
+    // This should also happen asynchronously as eviction might happen in the
+    // middle of another navigation — we should not try to restart the
+    // navigation in that case.
+    // NOTE: Here we rely on the PostTask inside this function running before
+    // the task posted to destroy the evicted frames below.
+    in_flight_navigation_request->RestartBackForwardCachedNavigation();
+  }
+
   NavigationControllerImpl* controller = static_cast<NavigationControllerImpl*>(
       frame_tree_node_->navigator()->GetController());
 
@@ -3799,17 +3812,6 @@ void RenderFrameHostImpl::EvictFromBackForwardCacheWithReasons(
   // worry about use-after-free of |this|.
   top_document->is_evicted_from_back_forward_cache_ = true;
   controller->GetBackForwardCache().PostTaskToDestroyEvictedFrames();
-
-  if (!is_navigation_to_evicted_frame_in_flight)
-    return;
-
-  // If we are currently navigating to the frame that was just evicted, we
-  // must restart the navigation. This is important because restarting the
-  // navigation deletes the NavigationRequest associated with the evicted
-  // frame (preventing use-after-free).
-  int nav_index = controller->GetEntryIndexWithUniqueID(
-      in_flight_navigation_request->nav_entry_id());
-  controller->GoToIndex(nav_index);
 }
 
 void RenderFrameHostImpl::OnAccessibilityLocationChanges(
