@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/thread_profiler.h"
+#include "chrome/common/profiler/thread_profiler.h"
 
 #include "base/macros.h"
 #include "base/test/bind_test_util.h"

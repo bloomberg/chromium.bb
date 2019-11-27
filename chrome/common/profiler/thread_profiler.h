@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_THREAD_PROFILER_H_
-#define CHROME_COMMON_THREAD_PROFILER_H_
+#ifndef CHROME_COMMON_PROFILER_THREAD_PROFILER_H_
+#define CHROME_COMMON_PROFILER_THREAD_PROFILER_H_
 
 #include <memory>
 
@@ -152,4 +152,4 @@ class ThreadProfiler {
   DISALLOW_COPY_AND_ASSIGN(ThreadProfiler);
 };
 
-#endif  // CHROME_COMMON_THREAD_PROFILER_H_
+#endif  // CHROME_COMMON_PROFILER_THREAD_PROFILER_H_

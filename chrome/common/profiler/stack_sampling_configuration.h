@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_STACK_SAMPLING_CONFIGURATION_H_
-#define CHROME_COMMON_STACK_SAMPLING_CONFIGURATION_H_
+#ifndef CHROME_COMMON_PROFILER_STACK_SAMPLING_CONFIGURATION_H_
+#define CHROME_COMMON_PROFILER_STACK_SAMPLING_CONFIGURATION_H_
 
 #include <string>
 
@@ -25,7 +25,7 @@ class StackSamplingConfiguration {
 
   // Get the stack sampling params to use for this process.
   base::StackSamplingProfiler::SamplingParams
-      GetSamplingParamsForCurrentProcess() const;
+  GetSamplingParamsForCurrentProcess() const;
 
   // Returns true if the profiler should be started for the current process.
   bool IsProfilerEnabledForCurrentProcess() const;
@@ -86,4 +86,4 @@ class StackSamplingConfiguration {
   DISALLOW_COPY_AND_ASSIGN(StackSamplingConfiguration);
 };
 
-#endif  // CHROME_COMMON_STACK_SAMPLING_CONFIGURATION_H_
+#endif  // CHROME_COMMON_PROFILER_STACK_SAMPLING_CONFIGURATION_H_

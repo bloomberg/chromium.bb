@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/thread_profiler.h"
+#include "chrome/common/profiler/thread_profiler.h"
 
 #include <string>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/work_id_provider.h"
 #include "base/no_destructor.h"
 #include "base/profiler/sample_metadata.h"
@@ -18,7 +19,7 @@
 #include "base/threading/sequence_local_storage_slot.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
-#include "chrome/common/stack_sampling_configuration.h"
+#include "chrome/common/profiler/stack_sampling_configuration.h"
 #include "components/metrics/call_stack_profile_builder.h"
 #include "components/metrics/call_stack_profile_metrics_provider.h"
 #include "content/public/common/content_switches.h"
@@ -151,8 +152,8 @@ std::unique_ptr<ThreadProfiler> ThreadProfiler::CreateAndStartOnMainThread() {
   bool is_single_process = command_line->HasSwitch(switches::kSingleProcess) ||
                            command_line->HasSwitch(switches::kInProcessGPU);
   DCHECK(!g_main_thread_instance || is_single_process);
-  auto instance = std::unique_ptr<ThreadProfiler>(
-      new ThreadProfiler(CallStackProfileParams::MAIN_THREAD));
+  auto instance =
+      base::WrapUnique(new ThreadProfiler(CallStackProfileParams::MAIN_THREAD));
   if (!g_main_thread_instance)
     g_main_thread_instance = instance.get();
   return instance;

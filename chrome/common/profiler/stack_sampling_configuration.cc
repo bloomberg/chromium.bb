@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/stack_sampling_configuration.h"
+#include "chrome/common/profiler/stack_sampling_configuration.h"
 
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
@@ -89,8 +89,7 @@ bool IsTrendMicroInProcess() {
 }  // namespace
 
 StackSamplingConfiguration::StackSamplingConfiguration()
-    : configuration_(GenerateConfiguration()) {
-}
+    : configuration_(GenerateConfiguration()) {}
 
 base::StackSamplingProfiler::SamplingParams
 StackSamplingConfiguration::GetSamplingParamsForCurrentProcess() const {

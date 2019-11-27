@@ -1564,8 +1564,6 @@
     'sampling_profiler': {
       'filepath': 'base/profiler/'\
                   '|chrome/common/profiler/'\
-                  '|chrome/common/stack_sampling_configuration*'\
-                  '|chrome/common/thread_profiler*'\
                   '|chrome/renderer/v8_unwinder*'\
                   '|components/metrics/*call_stack*'\
                   '|components/metrics/public/mojom/call_stack*',
