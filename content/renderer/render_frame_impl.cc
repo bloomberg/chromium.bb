@@ -6011,6 +6011,15 @@ void RenderFrameImpl::BeginNavigation(
     int cumulative_bindings = RenderProcess::current()->GetEnabledBindings();
     bool should_fork = HasWebUIScheme(url) || HasWebUIScheme(old_url) ||
                        (cumulative_bindings & kWebUIBindingsPolicyMask);
+
+    if (!should_fork) {
+      // Give the embedder a chance.
+      bool is_initial_navigation = render_view_->history_list_length_ == 0;
+      should_fork = GetContentClient()->renderer()->ShouldFork(
+          frame_, url, info->url_request.HttpMethod().Utf8(),
+          is_initial_navigation, false /* is_redirect */);
+    }
+
     if (should_fork) {
       OpenURL(std::move(info));
       return;  // Suppress the load here.
