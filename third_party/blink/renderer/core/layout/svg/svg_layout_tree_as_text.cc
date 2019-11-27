@@ -614,7 +614,7 @@ void WriteSVGResourceContainer(WTF::TextStream& ts,
     // gradients using xlink:href, we need to build the full inheritance chain,
     // aka. collectGradientProperties()
     LinearGradientAttributes attributes;
-    ToSVGLinearGradientElement(gradient->GetElement())
+    To<SVGLinearGradientElement>(gradient->GetElement())
         ->CollectGradientAttributes(attributes);
     WriteCommonGradientProperties(ts, attributes);
 
