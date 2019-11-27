@@ -44,7 +44,7 @@ bool TargetCanHaveMotionTransform(const SVGElement& target) {
   // Spec: SVG 1.1 section 19.2.15
   // FIXME: svgTag is missing. Needs to be checked, if transforming <svg> could
   // cause problems.
-  return IsSVGGElement(target) || IsSVGDefsElement(target) ||
+  return IsA<SVGGElement>(target) || IsSVGDefsElement(target) ||
          IsSVGUseElement(target) || IsSVGImageElement(target) ||
          IsSVGSwitchElement(target) || IsSVGPathElement(target) ||
          IsSVGRectElement(target) || IsSVGCircleElement(target) ||
