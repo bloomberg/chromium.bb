@@ -114,9 +114,6 @@ class ChromeDownloadManagerDelegate
       download::DownloadUrlParameters* params) override;
   void OpenDownload(download::DownloadItem* download) override;
   void ShowDownloadInShell(download::DownloadItem* download) override;
-  void CheckForFileExistence(
-      download::DownloadItem* download,
-      content::CheckForFileExistenceCallback callback) override;
   std::string ApplicationClientIdForFileScanning() override;
   void CheckDownloadAllowed(
       const content::WebContents::Getter& web_contents_getter,
@@ -292,11 +289,6 @@ class ChromeDownloadManagerDelegate
   // database.
   IdCallbackVector id_callbacks_;
   std::unique_ptr<DownloadPrefs> download_prefs_;
-
-  // SequencedTaskRunner to check for file existence. A sequence is used so
-  // that a large download history doesn't cause a large number of concurrent
-  // disk operations.
-  const scoped_refptr<base::SequencedTaskRunner> disk_access_task_runner_;
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   // Maps from pending extension installations to DownloadItem IDs.
