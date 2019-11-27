@@ -154,10 +154,7 @@ MediaFactory::GetVideoSurfaceLayerMode() {
     return blink::WebMediaPlayer::SurfaceLayerMode::kNever;
 #endif  // OS_ANDROID
 
-  if (base::FeatureList::IsEnabled(media::kUseSurfaceLayerForVideo))
-    return blink::WebMediaPlayer::SurfaceLayerMode::kAlways;
-
-  return blink::WebMediaPlayer::SurfaceLayerMode::kOnDemand;
+  return blink::WebMediaPlayer::SurfaceLayerMode::kAlways;
 }
 
 MediaFactory::MediaFactory(
