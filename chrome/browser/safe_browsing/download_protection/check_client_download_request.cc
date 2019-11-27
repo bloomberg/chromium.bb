@@ -136,8 +136,14 @@ void MaybeReportDeepScanningVerdict(Profile* profile,
                                     DeepScanningClientResponse response) {
   if (result == BinaryUploadService::Result::FILE_TOO_LARGE) {
     extensions::SafeBrowsingPrivateEventRouterFactory::GetForProfile(profile)
-        ->OnLargeUnscannedFileEvent(url, file_name, download_digest_sha256,
-                                    mime_type, trigger, content_size);
+        ->OnUnscannedFileEvent(url, file_name, download_digest_sha256,
+                               mime_type, trigger, "fileTooLarge",
+                               content_size);
+  } else if (result == BinaryUploadService::Result::TIMEOUT) {
+    extensions::SafeBrowsingPrivateEventRouterFactory::GetForProfile(profile)
+        ->OnUnscannedFileEvent(url, file_name, download_digest_sha256,
+                               mime_type, trigger, "scanTimedOut",
+                               content_size);
   }
 
   if (result != BinaryUploadService::Result::SUCCESS)
@@ -267,6 +273,8 @@ CheckClientDownloadRequest::CheckClientDownloadRequest(
           item->GetFullPath(),
           {item->GetTabUrl(), item->GetTabReferrerUrl()},
           item->GetReceivedBytes(),
+          item->GetMimeType(),
+          item->GetHash(),
           content::DownloadItemUtils::GetBrowserContext(item),
           callback,
           service,

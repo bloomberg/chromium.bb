@@ -76,8 +76,8 @@ const char SafeBrowsingPrivateEventRouter::kKeyInterstitialEvent[] =
     "interstitialEvent";
 const char SafeBrowsingPrivateEventRouter::kKeySensitiveDataEvent[] =
     "sensitiveDataEvent";
-const char SafeBrowsingPrivateEventRouter::kKeyLargeUnscannedFileEvent[] =
-    "largeUnscannedFileEvent";
+const char SafeBrowsingPrivateEventRouter::kKeyUnscannedFileEvent[] =
+    "unscannedFileEvent";
 
 const char SafeBrowsingPrivateEventRouter::kTriggerFileDownload[] =
     "FILE_DOWNLOAD";
@@ -409,23 +409,25 @@ void SafeBrowsingPrivateEventRouter::OnSensitiveDataEvent(
           GetProfileUserName(), mime_type, trigger, content_size));
 }
 
-void SafeBrowsingPrivateEventRouter::OnLargeUnscannedFileEvent(
+void SafeBrowsingPrivateEventRouter::OnUnscannedFileEvent(
     const GURL& url,
     const std::string& file_name,
     const std::string& download_digest_sha256,
     const std::string& mime_type,
     const std::string& trigger,
+    const std::string& reason,
     const int64_t content_size) {
   if (!IsRealtimeReportingEnabled())
     return;
 
   ReportRealtimeEvent(
-      kKeyLargeUnscannedFileEvent,
+      kKeyUnscannedFileEvent,
       base::BindOnce(
           [](const std::string& url, const std::string& file_name,
              const std::string& download_digest_sha256,
              const std::string& profile_user_name, const std::string& mime_type,
-             const std::string& trigger, const int64_t content_size) {
+             const std::string& trigger, const std::string& reason,
+             const int64_t content_size) {
             // Create a real-time event dictionary from the arguments and
             // report it.
             base::Value event(base::Value::Type::DICTIONARY);
@@ -435,6 +437,7 @@ void SafeBrowsingPrivateEventRouter::OnLargeUnscannedFileEvent(
                                download_digest_sha256);
             event.SetStringKey(kKeyProfileUserName, profile_user_name);
             event.SetStringKey(kKeyContentType, mime_type);
+            event.SetStringKey(kKeyReason, reason);
             // |content_size| can be set to -1 to indicate an unknown size, in
             // which case the field is not set.
             if (content_size >= 0)
@@ -443,7 +446,7 @@ void SafeBrowsingPrivateEventRouter::OnLargeUnscannedFileEvent(
             return event;
           },
           url.spec(), file_name, download_digest_sha256, GetProfileUserName(),
-          mime_type, trigger, content_size));
+          mime_type, trigger, reason, content_size));
 }
 
 void SafeBrowsingPrivateEventRouter::OnDangerousDownloadWarning(
