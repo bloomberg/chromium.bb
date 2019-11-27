@@ -17,6 +17,7 @@ import org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabToolbarC
 import org.chromium.chrome.browser.dependency_injection.ChromeActivityComponent;
 import org.chromium.chrome.browser.tab.TabState;
 import org.chromium.chrome.browser.ui.RootUiCoordinator;
+import org.chromium.chrome.browser.webapps.WebappExtras;
 
 /**
  * Contains functionality which is shared between {@link WebappActivity} and
@@ -82,6 +83,11 @@ public abstract class BaseCustomTabActivity<C extends ChromeActivityComponent>
     @Override
     public int getActivityThemeColor() {
         if (getIntentDataProvider().isOpenedByChrome()) {
+            return TabState.UNSPECIFIED_THEME_COLOR;
+        }
+
+        WebappExtras webappExtras = getIntentDataProvider().getWebappExtras();
+        if (webappExtras != null && !webappExtras.hasCustomToolbarColor) {
             return TabState.UNSPECIFIED_THEME_COLOR;
         }
 
