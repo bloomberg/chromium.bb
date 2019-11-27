@@ -2667,8 +2667,7 @@ void ChromeContentBrowserClient::AllowCertificateError(
     const GURL& request_url,
     bool is_main_frame_request,
     bool strict_enforcement,
-    const base::Callback<void(content::CertificateRequestResultType)>&
-        callback) {
+    base::OnceCallback<void(content::CertificateRequestResultType)> callback) {
   DCHECK(web_contents);
   if (!is_main_frame_request) {
     // A sub-resource has a certificate error. The user doesn't really
@@ -2676,7 +2675,7 @@ void ChromeContentBrowserClient::AllowCertificateError(
     // request hard, without an info bar to allow showing the insecure
     // content.
     if (!callback.is_null())
-      callback.Run(content::CERTIFICATE_REQUEST_RESULT_TYPE_DENY);
+      std::move(callback).Run(content::CERTIFICATE_REQUEST_RESULT_TYPE_DENY);
     return;
   }
 
@@ -2686,12 +2685,12 @@ void ChromeContentBrowserClient::AllowCertificateError(
   if (prerender_contents) {
     prerender_contents->Destroy(prerender::FINAL_STATUS_SSL_ERROR);
     if (!callback.is_null()) {
-      callback.Run(content::CERTIFICATE_REQUEST_RESULT_TYPE_CANCEL);
+      std::move(callback).Run(content::CERTIFICATE_REQUEST_RESULT_TYPE_CANCEL);
     }
     return;
   }
 
-  callback.Run(content::CERTIFICATE_REQUEST_RESULT_TYPE_DENY);
+  std::move(callback).Run(content::CERTIFICATE_REQUEST_RESULT_TYPE_DENY);
   return;
 }
 

@@ -49,14 +49,6 @@ enum class MixedContentType {
   kMaxValue = kScriptingWithCertErrors,
 };
 
-void OnAllowCertificateWithRecordDecision(
-    bool record_decision,
-    const base::Callback<void(bool, content::CertificateRequestResultType)>&
-        callback,
-    CertificateRequestResultType decision) {
-  callback.Run(record_decision, decision);
-}
-
 void OnAllowCertificate(SSLErrorHandler* handler,
                         SSLHostStateDelegate* state_delegate,
                         bool record_decision,
@@ -364,22 +356,20 @@ void SSLManager::OnCertErrorInternal(std::unique_ptr<SSLErrorHandler> handler) {
   bool is_main_frame_request = handler->is_main_frame_request();
   bool fatal = handler->fatal();
 
-  base::Callback<void(bool, content::CertificateRequestResultType)> callback =
-      base::Bind(&OnAllowCertificate, base::Owned(handler.release()),
-                 ssl_host_state_delegate_);
+  base::RepeatingCallback<void(bool, content::CertificateRequestResultType)>
+      callback = base::BindRepeating(&OnAllowCertificate,
+                                     base::Owned(handler.release()),
+                                     ssl_host_state_delegate_);
 
   if (devtools_instrumentation::HandleCertificateError(
           web_contents, cert_error, request_url,
-          base::BindRepeating(&OnAllowCertificateWithRecordDecision, false,
-                              callback))) {
+          base::BindRepeating(callback, false))) {
     return;
   }
 
   GetContentClient()->browser()->AllowCertificateError(
       web_contents, cert_error, ssl_info, request_url, is_main_frame_request,
-      fatal,
-      base::Bind(&OnAllowCertificateWithRecordDecision, true,
-                 std::move(callback)));
+      fatal, base::BindOnce(std::move(callback), true));
 }
 
 bool SSLManager::UpdateEntry(NavigationEntryImpl* entry,
