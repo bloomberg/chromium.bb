@@ -88,8 +88,8 @@
       'filepath': 'chrome/android/java/src/org/chromium/chrome/browser/Tab'
     },
     'android_uma_settings': {
-      'filepath': 'chrome/android/java/src/org/chromium/chrome/browser/preferences/privacy/PrivacyPreferencesManager.java|'\
-                  'chrome/android/java/src/org/chromium/chrome/browser/preferences/privacy/PrivacyPreferences.java|'\
+      'filepath': 'chrome/android/java/src/org/chromium/chrome/browser/settings/privacy/PrivacyPreferencesManager.java|'\
+                  'chrome/android/java/src/org/chromium/chrome/browser/settings/privacy/PrivacyPreferences.java|'\
                   'chrome/android/java/src/org/chromium/chrome/browser/metrics/UmaSessionStats.java',
     },
     'android_webapk': {
