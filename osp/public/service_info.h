@@ -50,10 +50,6 @@ struct ServiceInfo {
 };
 
 }  // namespace osp
-
-// TODO: Remove after downstream has migrated to new namespace.
-using ServiceInfo = osp::ServiceInfo;
-
 }  // namespace openscreen
 
 #endif  // OSP_PUBLIC_SERVICE_INFO_H_
