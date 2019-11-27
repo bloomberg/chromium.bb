@@ -38,11 +38,13 @@ mr.Init.providerManager_;
 
 /**
  * @param {!mr.ProviderManager} providerManager
+ * @param {boolean} enableExtensionCastProvider
  * @return {!Array.<!mr.Provider>}
  * @private
  */
-mr.Init.getProviders_ = function(providerManager) {
-  const providers = mr.InitHelper.getProviders(providerManager);
+mr.Init.getProviders_ = function(providerManager, enableExtensionCastProvider) {
+  const providers =
+      mr.InitHelper.getProviders(providerManager, enableExtensionCastProvider);
   if (!mr.Config.isPublicChannel) {
     providers.push(new mr.TestProvider(providerManager));
   }
@@ -86,7 +88,8 @@ mr.Init.initProviderManager_ = function() {
 
         mr.LogManager.getInstance().registerDataManager();
 
-        const providers = mr.Init.getProviders_(providerManager);
+        const providers = mr.Init.getProviders_(
+            providerManager, !!result['mrConfig'].enable_cast_sink_query);
         if (!mr.Config.isDebugChannel) {
           // Log unhandled promise rejections for external channels,
           // but leave them as thrown exceptions for internal.
