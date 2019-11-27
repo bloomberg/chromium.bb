@@ -1161,11 +1161,40 @@ CrSettingsPrivacyPageTest.prototype = {
     'privacy_page_test.js',
   ]),
 };
-// Disabling on all platforms due to flakiness.
-// https://crbug.com/877109
-TEST_F('CrSettingsPrivacyPageTest', 'DISABLED_All', function() {
+
+TEST_F('CrSettingsPrivacyPageTest', 'ClearBrowsingDataTests', function() {
+  settings_privacy_page.registerClearBrowsingDataTests();
   mocha.run();
 });
+
+TEST_F('CrSettingsPrivacyPageTest', 'PrivacyPageTests', function() {
+  settings_privacy_page.registerPrivacyPageTests();
+  mocha.run();
+});
+
+TEST_F('CrSettingsPrivacyPageTest', 'PrivacyPageSoundTests', function() {
+  settings_privacy_page.registerPrivacyPageSoundTests();
+  mocha.run();
+});
+
+TEST_F('CrSettingsPrivacyPageTest', 'UMALoggingTests', function() {
+  settings_privacy_page.registerUMALoggingTests();
+  mocha.run();
+});
+
+GEN('#if defined(OS_MACOSX) || defined(OS_WIN)');
+TEST_F('CrSettingsPrivacyPageTest', 'CertificateManagerTests', function() {
+  settings_privacy_page.registerNativeCertificateManagerTests();
+  mocha.run();
+});
+GEN('#endif');
+
+GEN('#if !defined(OS_CHROMEOS)');
+TEST_F('CrSettingsPrivacyPageTest', 'ClearBrowsingDataTestsDice', function() {
+  settings_privacy_page.registerClearBrowsingDataTestsDice();
+  mocha.run();
+});
+GEN('#endif');
 
 /**
  * @constructor
