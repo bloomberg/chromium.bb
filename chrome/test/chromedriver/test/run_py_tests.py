@@ -87,17 +87,7 @@ _OS_SPECIFIC_FILTER = {}
 _OS_SPECIFIC_FILTER['win'] = [
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=299
     'ChromeLogPathCapabilityTest.testChromeLogPath',
-    # https://bugs.chromium.org/p/chromium/issues/detail?id=946704
-    'ChromeDownloadDirTest.testFileDownloadWithClick',
-    'ChromeDriverTest.testBackNavigationAfterClickElement',
-    'ChromeDriverTest.testCanClickInIframes',
-    'ChromeDriverTest.testClickElementAfterNavigation',
-    'ChromeDriverTest.testCloseWindow',
-    'ChromeDriverTest.testCloseWindowUsingJavascript',
-    'ChromeDriverTest.testGetLogOnClosedWindow',
-    'ChromeDriverTest.testGetWindowHandles',
-    'ChromeDriverTest.testShouldHandleNewWindowLoadingProperly',
-    'ChromeDriverTest.testSwitchToWindow',
+    # https://bugs.chromium.org/p/chromium/issues/detail?id=1011095
     'ChromeDownloadDirTest.testFileDownloadAfterTabHeadless',
     'ChromeDownloadDirTest.testFileDownloadWithClickHeadless',
     'ChromeDownloadDirTest.testFileDownloadWithGetHeadless',
