@@ -2279,8 +2279,8 @@ source_set("net_deps") {
 
     if (is_fuchsia) {
       public_deps += [
-        "//third_party/fuchsia-sdk/sdk:hardware_ethernet",
-        "//third_party/fuchsia-sdk/sdk:netstack",
+        "//third_party/fuchsia-sdk/sdk:fuchsia-hardware-ethernet",
+        "//third_party/fuchsia-sdk/sdk:fuchsia-netstack",
         "//third_party/fuchsia-sdk/sdk:sys_cpp",
       ]
     }
@@ -5891,7 +5891,7 @@ test("net_unittests") {
     use_test_server = true
     deps += [
       "//third_party/fuchsia-sdk/sdk:fidl_cpp",
-      "//third_party/fuchsia-sdk/sdk:netstack",
+      "//third_party/fuchsia-sdk/sdk:fuchsia-netstack",
     ]
     sources += [ "base/network_change_notifier_fuchsia_unittest.cc" ]
   }
