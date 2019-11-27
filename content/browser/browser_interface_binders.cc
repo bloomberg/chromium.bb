@@ -28,6 +28,7 @@
 #include "content/browser/wake_lock/wake_lock_service_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/worker_host/dedicated_worker_host.h"
+#include "content/browser/worker_host/shared_worker_connector_impl.h"
 #include "content/browser/worker_host/shared_worker_host.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -85,6 +86,7 @@
 #include "third_party/blink/public/mojom/webauthn/virtual_authenticator.mojom.h"
 #include "third_party/blink/public/mojom/websockets/websocket_connector.mojom.h"
 #include "third_party/blink/public/mojom/webtransport/quic_transport_connector.mojom.h"
+#include "third_party/blink/public/mojom/worker/shared_worker_connector.mojom.h"
 
 #if !defined(OS_ANDROID)
 #include "base/command_line.h"
@@ -183,6 +185,13 @@ void BindProcessInternalsHandler(
             kChromeUIProcessInternalsHost);
   static_cast<ProcessInternalsUI*>(contents->GetWebUI()->GetController())
       ->BindProcessInternalsHandler(std::move(receiver), host);
+}
+
+void BindSharedWorkerConnector(
+    RenderFrameHostImpl* host,
+    mojo::PendingReceiver<blink::mojom::SharedWorkerConnector> receiver) {
+  SharedWorkerConnectorImpl::Create(host->GetProcess()->GetID(),
+                                    host->GetRoutingID(), std::move(receiver));
 }
 
 #if defined(OS_ANDROID)
@@ -461,6 +470,9 @@ void PopulateFrameBinders(RenderFrameHostImpl* host,
 
   map->Add<blink::mojom::PresentationService>(base::BindRepeating(
       &RenderFrameHostImpl::GetPresentationService, base::Unretained(host)));
+
+  map->Add<blink::mojom::SharedWorkerConnector>(
+      base::BindRepeating(&BindSharedWorkerConnector, base::Unretained(host)));
 
   map->Add<blink::mojom::SpeechRecognizer>(
       base::BindRepeating(&SpeechRecognitionDispatcherHost::Create,
