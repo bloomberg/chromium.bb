@@ -2224,7 +2224,6 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
                         OnGetSavableResourceLinks)
     IPC_MESSAGE_HANDLER(FrameMsg_GetSerializedHtmlWithLocalLinks,
                         OnGetSerializedHtmlWithLocalLinks)
-    IPC_MESSAGE_HANDLER(FrameMsg_EnableViewSourceMode, OnEnableViewSourceMode)
     IPC_MESSAGE_HANDLER(FrameMsg_SuppressFurtherDialogs,
                         OnSuppressFurtherDialogs)
     IPC_MESSAGE_HANDLER(FrameMsg_ClearFocusedElement, OnClearFocusedElement)
@@ -6244,12 +6243,6 @@ void RenderFrameImpl::OnWriteMHTMLComplete(
                 "mismatching enums: " #a)
 #undef STATIC_ASSERT_ENUM
 #endif
-
-void RenderFrameImpl::OnEnableViewSourceMode() {
-  DCHECK(frame_);
-  DCHECK(!frame_->Parent());
-  frame_->EnableViewSourceMode(true);
-}
 
 void RenderFrameImpl::OnSuppressFurtherDialogs() {
   suppress_further_dialogs_ = true;

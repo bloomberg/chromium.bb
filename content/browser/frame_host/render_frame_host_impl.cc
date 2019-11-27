@@ -5288,7 +5288,7 @@ void RenderFrameHostImpl::CommitNavigation(
   // happen. When reusing the same renderer, overwrite to recover the mode.
   if (is_view_source && IsCurrent()) {
     DCHECK(!GetParent());
-    render_view_host()->Send(new FrameMsg_EnableViewSourceMode(routing_id_));
+    GetAssociatedLocalFrame()->EnableViewSourceMode();
   }
 
   // TODO(lfg): The renderer is not able to handle a null response, so the
