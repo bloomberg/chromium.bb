@@ -279,12 +279,14 @@ class TestSafeBrowsingBlockingPage : public SafeBrowsingBlockingPage {
       WebContents* web_contents,
       const GURL& main_frame_url,
       const UnsafeResourceList& unsafe_resources,
-      const BaseSafeBrowsingErrorUI::SBErrorDisplayOptions& display_options)
+      const BaseSafeBrowsingErrorUI::SBErrorDisplayOptions& display_options,
+      bool should_trigger_reporting)
       : SafeBrowsingBlockingPage(manager,
                                  web_contents,
                                  main_frame_url,
                                  unsafe_resources,
-                                 display_options),
+                                 display_options,
+                                 should_trigger_reporting),
         wait_for_delete_(false) {
     // Don't wait the whole 3 seconds for the browser test.
     SetThreatDetailsProceedDelayForTesting(100);
@@ -329,8 +331,8 @@ class TestSafeBrowsingBlockingPageFactory
       BaseUIManager* delegate,
       WebContents* web_contents,
       const GURL& main_frame_url,
-      const SafeBrowsingBlockingPage::UnsafeResourceList& unsafe_resources)
-      override {
+      const SafeBrowsingBlockingPage::UnsafeResourceList& unsafe_resources,
+      bool should_trigger_reporting) override {
     PrefService* prefs =
         Profile::FromBrowserContext(web_contents->GetBrowserContext())
             ->GetPrefs();
@@ -348,9 +350,9 @@ class TestSafeBrowsingBlockingPageFactory
         true,  // should_open_links_in_new_tab
         always_show_back_to_safety_,
         "cpn_safe_browsing" /* help_center_article_link */);
-    return new TestSafeBrowsingBlockingPage(delegate, web_contents,
-                                            main_frame_url, unsafe_resources,
-                                            display_options);
+    return new TestSafeBrowsingBlockingPage(
+        delegate, web_contents, main_frame_url, unsafe_resources,
+        display_options, should_trigger_reporting);
   }
 
  private:
@@ -1037,10 +1039,6 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest, IframeProceed) {
 
 IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest,
                        IframeOptInAndReportThreatDetails) {
-  // TODO(crbug.com/1024015, carlosil): Reporting is broken for subresources
-  // with CI. This test should be re-enabled when that is fixed.
-  if (base::FeatureList::IsEnabled(safe_browsing::kCommittedSBInterstitials))
-    return;
   // The extended reporting opt-in is presented in the interstitial for malware,
   // phishing, and UwS threats.
   const bool expect_threat_details =
@@ -1882,7 +1880,7 @@ class SafeBrowsingBlockingPageIDNTest
     return SafeBrowsingBlockingPage::CreateBlockingPage(
         sb_service->ui_manager().get(), contents,
         is_subresource ? GURL("http://mainframe.example.com/") : request_url,
-        resource);
+        resource, true);
   }
 };
 
