@@ -2730,6 +2730,9 @@ crbug.com/618969 external/wpt/css/css-grid/subgrid/ [ Skip ]
 crbug.com/1012627 [ Win7 ] external/wpt/css/css-text/line-breaking/line-breaking-021.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Linux ] external/wpt/svg/painting/marker-orient-001.svg [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/svg/painting/marker-orient-001.svg [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/svg/painting/marker-orient-001.svg [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/infrastructure/reftest/reftest_wait_TestRendered.html [ Timeout ]
 crbug.com/626703 [ Mac ] external/wpt/infrastructure/reftest/reftest_wait_TestRendered.html [ Timeout ]
 crbug.com/626703 [ Win ] external/wpt/infrastructure/reftest/reftest_wait_TestRendered.html [ Timeout ]
