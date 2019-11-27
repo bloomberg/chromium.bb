@@ -580,22 +580,35 @@ const FeatureEntry::Choice kSchedulerConfigurationChoices[] = {
 #if defined(OS_ANDROID)
 const FeatureEntry::FeatureParam
     kInterestFeedLargerImagesFeatureVariationConstant[] = {
-        {"feed_ui_enabled", "true"}};
+        {"feed_ui_enabled", "true"},
+        {"snippets_enabled", "false"},
+        {"undoable_actions_enabled", "false"},
+        {"manage_interests_enabled", "false"},
+        {"card_menu_tooltip_eligible", "false"}};
 const FeatureEntry::FeatureParam
     kInterestFeedSnippetsFeatureVariationConstant[] = {
-        {"snippets_enabled", "true"}};
+        {"feed_ui_enabled", "false"},
+        {"snippets_enabled", "true"},
+        {"undoable_actions_enabled", "false"},
+        {"manage_interests_enabled", "false"},
+        {"card_menu_tooltip_eligible", "false"}};
 const FeatureEntry::FeatureParam
     kInterestFeedLargeImagesAndSnippetsFeatureVariationConstant[] = {
         {"feed_ui_enabled", "true"},
-        {"snippets_enabled", "true"}};
+        {"snippets_enabled", "true"},
+        {"undoable_actions_enabled", "false"},
+        {"manage_interests_enabled", "false"},
+        {"card_menu_tooltip_eligible", "false"}};
 const FeatureEntry::FeatureParam
     kInterestFeedLargerImagesWithUndoableActionsFeatureVariationConstant[] = {
         {"feed_ui_enabled", "true"},
+        {"snippets_enabled", "false"},
         {"undoable_actions_enabled", "true"},
         {"manage_interests_enabled", "true"},
         {"card_menu_tooltip_eligible", "true"}};
 const FeatureEntry::FeatureParam
     kInterestFeedSnippetsWithUndoableActionsFeatureVariationConstant[] = {
+        {"feed_ui_enabled", "false"},
         {"snippets_enabled", "true"},
         {"undoable_actions_enabled", "true"},
         {"manage_interests_enabled", "true"},
