@@ -30,12 +30,7 @@ def ReformatTargetName(dep_name):
   """"Substitutes characters in |dep_name| which are not valid in GN target
   names (e.g. dots become hyphens)."""
 
-  # TODO(fxb/42135): Remove this rewriting and use names already containing
-  # hyphens as-is.
-  reformatted_name = dep_name.replace('-','_')
-
-  reformatted_name = reformatted_name.replace('.','-')
-
+  reformatted_name = dep_name.replace('.','-')
   return reformatted_name
 
 def ConvertCommonFields(json):
@@ -183,8 +178,10 @@ def ConvertSdkManifests():
                         (part['type'], part['meta']))
 
       converted = convert_function(parsed)
-      if converted:
-        buildfile.write(FormatGNTarget(converted) + '\n\n')
+      if not converted:
+        continue
+
+      buildfile.write(FormatGNTarget(converted) + '\n\n')
 
       # TODO(fxb/42135): Remove this hack once dependencies have been updated.
       # Create dummy targets using the old short names, which depend on the
@@ -202,6 +199,14 @@ def ConvertSdkManifests():
 
         fields = {
             'target_name' : short_target_name,
+            'type': 'group',
+            'public_deps': [ ':' + target_name]
+        }
+        buildfile.write(FormatGNTarget(fields) + '\n\n')
+      elif '-' in parsed['name']:
+        target_name = ReformatTargetName(parsed['name'])
+        fields = {
+            'target_name' : target_name.replace('-', '_'),
             'type': 'group',
             'public_deps': [ ':' + target_name]
         }
