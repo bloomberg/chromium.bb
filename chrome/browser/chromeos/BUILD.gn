@@ -790,6 +790,8 @@ source_set("chromeos") {
     "child_accounts/time_limits/app_time_controller.h",
     "child_accounts/time_limits/web_time_limit_enforcer.cc",
     "child_accounts/time_limits/web_time_limit_enforcer.h",
+    "child_accounts/time_limits/web_time_limit_navigation_throttle.cc",
+    "child_accounts/time_limits/web_time_limit_navigation_throttle.h",
     "child_accounts/usage_time_limit_processor.cc",
     "child_accounts/usage_time_limit_processor.h",
     "child_accounts/usage_time_state_notifier.cc",

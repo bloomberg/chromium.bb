@@ -541,6 +541,10 @@
 #include "chrome/browser/supervised_user/supervised_user_google_auth_navigation_throttle.h"
 #endif
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/child_accounts/time_limits/web_time_limit_navigation_throttle.h"
+#endif  // defined(OS_CHROMEOS)
+
 #if BUILDFLAG(ENABLE_MEDIA_REMOTING)
 #include "chrome/browser/media/cast_remoting_connector.h"
 #endif
@@ -3810,6 +3814,12 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
   MaybeAddThrottle(&throttles,
                    FlashDownloadInterception::MaybeCreateThrottleFor(handle));
 #endif
+
+#if defined(OS_CHROMEOS)
+  MaybeAddThrottle(
+      &throttles,
+      chromeos::WebTimeLimitNavigationThrottle::MaybeCreateThrottleFor(handle));
+#endif  // defined(OS_CHROMEOS)
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
   MaybeAddThrottle(
