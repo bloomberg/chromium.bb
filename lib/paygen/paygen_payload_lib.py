@@ -912,9 +912,8 @@ class PaygenPayload(object):
     start_time = datetime.datetime.now()
 
     self._Create()
-    # TODO(crbug/1027199): Reenable this verification once the bug is resolved.
-    # if self._verify:
-    #   self._VerifyPayload()
+    if self._verify:
+      self._VerifyPayload()
     self._UploadResults()
 
     end_time = datetime.datetime.now()
