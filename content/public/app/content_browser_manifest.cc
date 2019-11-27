@@ -185,7 +185,6 @@ const service_manager::Manifest& GetContentBrowserManifest() {
                   "blink.mojom.DisplayCutoutHost",
                   "blink.mojom.DedicatedWorkerHostFactory",
                   "blink.mojom.Portal",
-                  "blink.mojom.PrefetchURLLoaderService",
                   "blink.mojom.QuotaDispatcherHost",
                   "content.mojom.InputInjector",
                   "content.mojom.RendererAudioInputStreamFactory",
@@ -194,7 +193,6 @@ const service_manager::Manifest& GetContentBrowserManifest() {
                   "media.mojom.InterfaceFactory",
                   "media.mojom.MediaMetricsProvider",
                   "media.mojom.RemoterFactory",
-                  "media.mojom.Renderer",
                   "network.mojom.RestrictedCookieManager",
                   "viz.mojom.Gpu"})
           .PackageService(content::GetManifest())
