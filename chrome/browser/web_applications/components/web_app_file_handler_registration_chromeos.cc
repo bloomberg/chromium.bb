@@ -4,19 +4,16 @@
 
 #include "chrome/browser/web_applications/components/web_app_file_handler_registration.h"
 
-#include "base/logging.h"
-#include "build/build_config.h"
+#include "base/bind.h"
+#include "base/bind_helpers.h"
+#include "chrome/browser/web_applications/components/app_shortcut_manager.h"
+#include "chrome/browser/web_applications/components/web_app_provider_base.h"
+#include "chrome/browser/web_applications/components/web_app_shortcut.h"
 
 namespace web_app {
 
-// This block defines stub implementations of OS specific methods for
-// FileHandling. Currently, Windows and Desktop Linux and Chrome OS have
-// their own implementations.
-//
-// Note: OS_LINUX includes OS_CHROMEOS
-#if !defined(OS_WIN) && !defined(OS_LINUX)
 bool OsSupportsWebAppFileHandling() {
-  return false;
+  return true;
 }
 
 void RegisterFileHandlersForWebApp(const AppId& app_id,
@@ -24,14 +21,13 @@ void RegisterFileHandlersForWebApp(const AppId& app_id,
                                    Profile* profile,
                                    const std::set<std::string>& file_extensions,
                                    const std::set<std::string>& mime_types) {
-  DCHECK(OsSupportsWebAppFileHandling());
-  // Stub function for OS's that don't support Web App file handling yet.
+  // ChromeOS talks directly to FileHandlerManager for file handler
+  // registrations.
 }
 
 void UnregisterFileHandlersForWebApp(const AppId& app_id, Profile* profile) {
-  DCHECK(OsSupportsWebAppFileHandling());
-  // Stub function for OS's that don't support Web App file handling yet.
+  // ChromeOS talks directly to FileHandlerManager for file handler
+  // registrations.
 }
-#endif
 
 }  // namespace web_app
