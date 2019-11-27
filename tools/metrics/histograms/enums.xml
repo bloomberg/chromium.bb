@@ -51265,6 +51265,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="1" label="kCloseByContextChange"/>
   <int value="2" label="kCloseByTimeout"/>
   <int value="3" label="kCloseByUser"/>
+  <int value="4" label="kTeleport"/>
 </enum>
 
 <enum name="ProactiveSuggestionsVeId">
