@@ -5906,3 +5906,7 @@ crbug.com/833100 [ Mac ] external/wpt/battery-status/battery-full-manual.https.h
 crbug.com/1006759 http/tests/devtools/sources/debugger-ui/continue-to-location-markers-in-top-level-function.js [ Pass Failure ]
 crbug.com/1006759 http/tests/devtools/sources/debugger-ui/continue-to-location-markers.js [ Pass Failure ]
 crbug.com/1006759 http/tests/devtools/sources/debugger-ui/popover-for-spread-operator.js [ Pass Failure ]
+
+# Disabled for three-way merge after https://crrev.com/c/devtools/devtools-frontend/+/1934218 is submitted
+crbug.com/1006759 http/tests/devtools/modules-load-network.js [ Pass Failure ]
+crbug.com/1006759 http/tests/devtools/modules-load-source.js [ Pass Failure ]
