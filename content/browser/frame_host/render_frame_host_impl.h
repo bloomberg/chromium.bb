@@ -1157,6 +1157,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void CreateWebUsbService(
       mojo::PendingReceiver<blink::mojom::WebUsbService> receiver);
 
+  void CreateWebSocketConnector(
+      mojo::PendingReceiver<blink::mojom::WebSocketConnector> receiver);
+
   // https://mikewest.github.io/corpp/#initialize-embedder-policy-for-global
   network::mojom::CrossOriginEmbedderPolicy cross_origin_embedder_policy()
       const {
@@ -1664,9 +1667,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   void BindMediaInterfaceFactoryRequest(
       mojo::PendingReceiver<media::mojom::InterfaceFactory> receiver);
-
-  void CreateWebSocketConnector(
-      mojo::PendingReceiver<blink::mojom::WebSocketConnector> receiver);
 
   void CreateDedicatedWorkerHostFactory(
       mojo::PendingReceiver<blink::mojom::DedicatedWorkerHostFactory> receiver);

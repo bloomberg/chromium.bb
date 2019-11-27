@@ -4641,9 +4641,6 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
       base::Unretained(this)));
 
   registry_->AddInterface(base::BindRepeating(
-      &RenderFrameHostImpl::CreateWebSocketConnector, base::Unretained(this)));
-
-  registry_->AddInterface(base::BindRepeating(
       &RenderFrameHostImpl::CreateDedicatedWorkerHostFactory,
       base::Unretained(this)));
 

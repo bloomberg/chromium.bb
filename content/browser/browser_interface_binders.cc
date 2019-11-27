@@ -83,6 +83,7 @@
 #include "third_party/blink/public/mojom/webaudio/audio_context_manager.mojom.h"
 #include "third_party/blink/public/mojom/webauthn/authenticator.mojom.h"
 #include "third_party/blink/public/mojom/webauthn/virtual_authenticator.mojom.h"
+#include "third_party/blink/public/mojom/websockets/websocket_connector.mojom.h"
 #include "third_party/blink/public/mojom/webtransport/quic_transport_connector.mojom.h"
 
 #if !defined(OS_ANDROID)
@@ -480,6 +481,9 @@ void PopulateFrameBinders(RenderFrameHostImpl* host,
   map->Add<blink::mojom::WebUsbService>(base::BindRepeating(
       &RenderFrameHostImpl::CreateWebUsbService, base::Unretained(host)));
 
+  map->Add<blink::mojom::WebSocketConnector>(base::BindRepeating(
+      &RenderFrameHostImpl::CreateWebSocketConnector, base::Unretained(host)));
+
   map->Add<blink::mojom::LockManager>(base::BindRepeating(
       &RenderFrameHostImpl::CreateLockManager, base::Unretained(host)));
 
@@ -649,6 +653,8 @@ void PopulateDedicatedWorkerBinders(DedicatedWorkerHost* host,
   }
   map->Add<blink::mojom::WebUsbService>(base::BindRepeating(
       &DedicatedWorkerHost::CreateWebUsbService, base::Unretained(host)));
+  map->Add<blink::mojom::WebSocketConnector>(base::BindRepeating(
+      &DedicatedWorkerHost::CreateWebSocketConnector, base::Unretained(host)));
   map->Add<blink::mojom::QuicTransportConnector>(
       base::BindRepeating(&DedicatedWorkerHost::CreateQuicTransportConnector,
                           base::Unretained(host)));
@@ -749,6 +755,8 @@ void PopulateBinderMapWithContext(
   }
   map->Add<blink::mojom::NotificationService>(BindSharedWorkerReceiverForOrigin(
       &RenderProcessHost::CreateNotificationService, host));
+  map->Add<blink::mojom::WebSocketConnector>(BindSharedWorkerReceiverForOrigin(
+      &RenderProcessHost::CreateWebSocketConnector, host));
 
   // render process host binders taking a frame id and an origin
   map->Add<blink::mojom::LockManager>(
@@ -838,6 +846,8 @@ void PopulateBinderMapWithContext(
   map->Add<blink::mojom::NotificationService>(
       BindServiceWorkerReceiverForOrigin(
           &RenderProcessHost::CreateNotificationService, host));
+  map->Add<blink::mojom::WebSocketConnector>(BindServiceWorkerReceiverForOrigin(
+      &RenderProcessHost::CreateWebSocketConnector, host));
 
   // render process host binders taking a frame id and an origin
   map->Add<blink::mojom::IDBFactory>(
