@@ -1,19 +1,25 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_COOKIE_STORE_GLOBAL_COOKIE_STORE_IMPL_H_
-#define THIRD_PARTY_BLINK_RENDERER_MODULES_COOKIE_STORE_GLOBAL_COOKIE_STORE_IMPL_H_
+#include "third_party/blink/renderer/modules/cookie_store/global_cookie_store.h"
 
 #include <utility>
 
+#include "services/network/public/mojom/restricted_cookie_manager.mojom-blink.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/modules/cookie_store/cookie_store.h"
+#include "third_party/blink/renderer/modules/service_worker/service_worker_global_scope.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
 
 namespace blink {
+
+namespace {
 
 template <typename T>
 class GlobalCookieStoreImpl final
@@ -45,13 +51,15 @@ class GlobalCookieStoreImpl final
           execution_context->GetInterfaceProvider();
       if (!interface_provider)
         return nullptr;
-      cookie_store_ = BuildCookieStore(execution_context, interface_provider);
+
+      mojo::Remote<network::mojom::blink::RestrictedCookieManager> backend;
+      interface_provider->GetInterface(backend.BindNewPipeAndPassReceiver(
+          execution_context->GetTaskRunner(TaskType::kMiscPlatformAPI)));
+      cookie_store_ = MakeGarbageCollected<CookieStore>(execution_context,
+                                                        std::move(backend));
     }
     return cookie_store_;
   }
-
-  CookieStore* BuildCookieStore(ExecutionContext*,
-                                service_manager::InterfaceProvider*);
 
   void Trace(blink::Visitor* visitor) override {
     visitor->Trace(cookie_store_);
@@ -67,6 +75,20 @@ template <typename T>
 const char GlobalCookieStoreImpl<T>::kSupplementName[] =
     "GlobalCookieStoreImpl";
 
-}  // namespace blink
+}  // namespace
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_COOKIE_STORE_GLOBAL_COOKIE_STORE_IMPL_H_
+// static
+CookieStore* GlobalCookieStore::cookieStore(LocalDOMWindow& window) {
+  return GlobalCookieStoreImpl<LocalDOMWindow>::From(window).GetCookieStore(
+      window);
+}
+
+// static
+CookieStore* GlobalCookieStore::cookieStore(ServiceWorkerGlobalScope& worker) {
+  // ServiceWorkerGlobalScope is Supplementable<WorkerGlobalScope>, not
+  // Supplementable<ServiceWorkerGlobalScope>.
+  return GlobalCookieStoreImpl<WorkerGlobalScope>::From(worker).GetCookieStore(
+      worker);
+}
+
+}  // namespace blink

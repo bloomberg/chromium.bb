@@ -1188,6 +1188,12 @@ interface CookieStore : EventTarget
     method getAll
     method set
     setter onchange
+interface CookieStoreManager
+    attribute @@toStringTag
+    method constructor
+    method getSubscriptions
+    method subscribe
+    method unsubscribe
 interface CountQueuingStrategy
     attribute @@toStringTag
     getter highWaterMark
@@ -7881,6 +7887,7 @@ interface ServiceWorkerRegistration : EventTarget
     attribute @@toStringTag
     getter active
     getter backgroundFetch
+    getter cookies
     getter index
     getter installing
     getter navigationPreload
