@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PLATFORM_BASE_SERIAL_DELETE_PTR_H_
-#define PLATFORM_BASE_SERIAL_DELETE_PTR_H_
+#ifndef UTIL_SERIAL_DELETE_PTR_H_
+#define UTIL_SERIAL_DELETE_PTR_H_
 
 #include <cassert>
 #include <memory>
@@ -13,6 +13,9 @@
 
 namespace openscreen {
 
+// A functor that deletes an object via a task on a specific TaskRunner. This is
+// used for ensuring an object is deleted after any tasks that reference it have
+// completed.
 template <typename Type, typename DeleterType>
 class SerialDelete {
  public:
@@ -37,6 +40,8 @@ class SerialDelete {
   DeleterType deleter_;
 };
 
+// A wrapper around std::unique_ptr<> that uses SerialDelete<> to schedule the
+// object's deletion.
 template <typename Type, typename DeleterType = std::default_delete<Type>>
 class SerialDeletePtr
     : public std::unique_ptr<Type, SerialDelete<Type, DeleterType>> {
@@ -94,4 +99,4 @@ SerialDeletePtr<Type> MakeSerialDelete(platform::TaskRunner* task_runner,
 
 }  // namespace openscreen
 
-#endif  // PLATFORM_BASE_SERIAL_DELETE_PTR_H_
+#endif  // UTIL_SERIAL_DELETE_PTR_H_

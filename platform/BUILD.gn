@@ -32,7 +32,6 @@ source_set("platform") {
     "base/ip_address.h",
     "base/location.cc",
     "base/location.h",
-    "base/serial_delete_ptr.h",
     "base/socket_state.h",
     "base/tls_connect_options.h",
     "base/tls_credentials.cc",
@@ -148,7 +147,6 @@ source_set("unittests") {
     "base/error_unittest.cc",
     "base/ip_address_unittest.cc",
     "base/location_unittest.cc",
-    "base/serial_delete_ptr_unittest.cc",
   ]
 
   # The unit tests in impl/ assume the standalone implementation is being used.

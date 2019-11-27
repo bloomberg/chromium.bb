@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/base/serial_delete_ptr.h"
+#include "util/serial_delete_ptr.h"
 
 #include "gtest/gtest.h"
 #include "platform/test/fake_clock.h"

@@ -5,22 +5,31 @@
 #ifndef PLATFORM_API_SCOPED_WAKE_LOCK_H_
 #define PLATFORM_API_SCOPED_WAKE_LOCK_H_
 
-#include <atomic>
 #include <memory>
-
-#include "platform/base/serial_delete_ptr.h"
 
 namespace openscreen {
 namespace platform {
 
-class TaskRunner;
-
-// Ensures that the device does not got to sleep. The wake lock
-// is automatically taken as part of construction, and released as part
-// of destruction.
+// Ensures that the device does not got to sleep. This is used, for example,
+// while Open Screen is communicating with peers over the network for things
+// like media streaming.
+//
+// The wake lock is RAII: It is automatically engaged when the ScopedWakeLock is
+// created and released when the ScopedWakeLock is destroyed. Open Screen code
+// may sometimes create multiple instances. In that case, the wake lock should
+// be engaged upon creating the first instance, and then held until all
+// instances have been destroyed.
 class ScopedWakeLock {
  public:
-  static SerialDeletePtr<ScopedWakeLock> Create(TaskRunner* task_runner);
+  static std::unique_ptr<ScopedWakeLock> Create();
+
+  // Instances are not copied nor moved.
+  ScopedWakeLock(const ScopedWakeLock&) = delete;
+  ScopedWakeLock(ScopedWakeLock&&) = delete;
+  ScopedWakeLock& operator=(const ScopedWakeLock&) = delete;
+  ScopedWakeLock& operator=(ScopedWakeLock&&) = delete;
+
+  ScopedWakeLock();
   virtual ~ScopedWakeLock();
 };
 

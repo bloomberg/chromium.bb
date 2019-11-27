@@ -7,9 +7,6 @@
 
 #include <IOKit/pwr_mgt/IOPMLib.h>
 
-#include <atomic>
-#include <memory>
-
 #include "platform/api/scoped_wake_lock.h"
 
 namespace openscreen {
@@ -17,11 +14,7 @@ namespace platform {
 
 class ScopedWakeLockMac : public ScopedWakeLock {
  public:
-  ScopedWakeLockMac(TaskRunner* task_runner);
-  ScopedWakeLockMac(const ScopedWakeLockMac& other) = delete;
-  ScopedWakeLockMac(ScopedWakeLockMac&& other) = delete;
-  ScopedWakeLockMac& operator=(const ScopedWakeLockMac& other) = delete;
-  ScopedWakeLockMac& operator=(ScopedWakeLockMac&& other) = delete;
+  ScopedWakeLockMac();
   ~ScopedWakeLockMac() override;
 
  private:
@@ -30,11 +23,10 @@ class ScopedWakeLockMac : public ScopedWakeLock {
     IOPMAssertionID assertion_id = kIOPMNullAssertionID;
   };
 
-  void AcquireWakeLock();
-  void ReleaseWakeLock();
+  static void AcquireWakeLock();
+  static void ReleaseWakeLock();
 
   static LockState lock_state_;
-  TaskRunner* const task_runner_;
 };
 
 }  // namespace platform

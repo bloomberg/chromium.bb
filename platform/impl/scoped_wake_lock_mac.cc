@@ -7,6 +7,7 @@
 #include <CoreFoundation/CoreFoundation.h>
 
 #include "platform/api/task_runner.h"
+#include "platform/impl/platform_client_posix.h"
 #include "util/logging.h"
 
 namespace openscreen {
@@ -14,27 +15,38 @@ namespace platform {
 
 ScopedWakeLockMac::LockState ScopedWakeLockMac::lock_state_{};
 
-SerialDeletePtr<ScopedWakeLock> ScopedWakeLock::Create(
-    TaskRunner* task_runner) {
-  return SerialDeletePtr<ScopedWakeLock>(task_runner,
-                                         new ScopedWakeLockMac(task_runner));
+std::unique_ptr<ScopedWakeLock> ScopedWakeLock::Create() {
+  return std::make_unique<ScopedWakeLockMac>();
 }
 
-ScopedWakeLockMac::ScopedWakeLockMac(TaskRunner* task_runner)
-    : task_runner_(task_runner) {
-  OSP_DCHECK(task_runner_->IsRunningOnTaskRunner());
+namespace {
+
+TaskRunner* GetTaskRunner() {
+  auto* const platform_client = PlatformClientPosix::GetInstance();
+  OSP_DCHECK(platform_client);
+  auto* const task_runner = platform_client->GetTaskRunner();
+  OSP_DCHECK(task_runner);
+  return task_runner;
+}
+
+}  // namespace
+
+ScopedWakeLockMac::ScopedWakeLockMac() : ScopedWakeLock() {
+  OSP_DCHECK(GetTaskRunner()->IsRunningOnTaskRunner());
   if (lock_state_.reference_count++ == 0) {
     AcquireWakeLock();
   }
 }
 
 ScopedWakeLockMac::~ScopedWakeLockMac() {
-  OSP_DCHECK(task_runner_->IsRunningOnTaskRunner());
-  if (--lock_state_.reference_count == 0) {
-    ReleaseWakeLock();
-  }
+  GetTaskRunner()->PostTask([] {
+    if (--lock_state_.reference_count == 0) {
+      ReleaseWakeLock();
+    }
+  });
 }
 
+// static
 void ScopedWakeLockMac::AcquireWakeLock() {
   // The new way of doing an IOPM assertion requires constructing a standard
   // Foundation dictionary and adding the expected properties.
@@ -52,6 +64,7 @@ void ScopedWakeLockMac::AcquireWakeLock() {
   OSP_DCHECK_EQ(result, kIOReturnSuccess);
 }
 
+// static
 void ScopedWakeLockMac::ReleaseWakeLock() {
   const IOReturn result = IOPMAssertionRelease(lock_state_.assertion_id);
   OSP_DCHECK_EQ(result, kIOReturnSuccess);

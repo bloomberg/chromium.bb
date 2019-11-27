@@ -13,10 +13,4 @@ specific_include_rules = {
     '+util',
     '+third_party',
   ],
-
-  # TODO(crbug.com/openscreen/89): These are temporary, to be removed once
-  # future code changes rectify the circular dependencies between api and base.
-  "serial_delete_ptr\.h": [
-    '+platform/api',
-  ],
 }
