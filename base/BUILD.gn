@@ -1608,9 +1608,9 @@ jumbo_component("base") {
     ]
 
     deps += [
-      "//third_party/fuchsia-sdk/sdk:async_default",
-      "//third_party/fuchsia-sdk/sdk:async_loop_cpp",
-      "//third_party/fuchsia-sdk/sdk:async_loop_default",
+      "//third_party/fuchsia-sdk/sdk:async-default",
+      "//third_party/fuchsia-sdk/sdk:async-loop-cpp",
+      "//third_party/fuchsia-sdk/sdk:async-loop-default",
       "//third_party/fuchsia-sdk/sdk:fidl",
       "//third_party/fuchsia-sdk/sdk:fuchsia-deprecatedtimezone",
       "//third_party/fuchsia-sdk/sdk:fuchsia-sys",
@@ -3052,7 +3052,7 @@ test("base_unittests") {
       ":test_interface_impl",
       ":testfidl",
       "//third_party/fuchsia-sdk/sdk:async",
-      "//third_party/fuchsia-sdk/sdk:async_default",
+      "//third_party/fuchsia-sdk/sdk:async-default",
       "//third_party/fuchsia-sdk/sdk:fdio",
       "//third_party/fuchsia-sdk/sdk:fuchsia-logger",
       "//third_party/fuchsia-sdk/sdk:fuchsia-sys",
