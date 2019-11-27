@@ -66,7 +66,8 @@ class PostFilter {
              BlockParametersHolder* block_parameters,
              YuvBuffer* const source_buffer, YuvBuffer* const deblock_buffer,
              const dsp::Dsp* dsp, ThreadPool* const thread_pool,
-             uint8_t* const threaded_window_buffer, int do_post_filter_mask)
+             uint8_t* const threaded_window_buffer,
+             uint8_t* const superres_line_buffer, int do_post_filter_mask)
       : frame_header_(frame_header),
         loop_restoration_(frame_header.loop_restoration),
         dsp_(*dsp),
@@ -90,6 +91,7 @@ class PostFilter {
         restoration_info_(restoration_info),
         window_buffer_width_(GetWindowBufferWidth(thread_pool, frame_header)),
         window_buffer_height_(GetWindowBufferHeight(thread_pool, frame_header)),
+        superres_line_buffer_(superres_line_buffer),
         block_parameters_(*block_parameters),
         source_buffer_(source_buffer),
         deblock_buffer_(*deblock_buffer),
@@ -186,8 +188,15 @@ class PostFilter {
   // and mask.
   static bool DoRestoration(const LoopRestoration& loop_restoration,
                             uint8_t do_post_filter_mask, int num_planes);
+  // Returns true if SuperRes will be performed for the given frame header and
+  // mask.
+  static bool DoSuperRes(const ObuFrameHeader& frame_header,
+                         uint8_t do_post_filter_mask) {
+    return (do_post_filter_mask & 0x04) != 0 &&
+           frame_header.width != frame_header.upscaled_width;
+  }
   bool DoSuperRes() const {
-    return (do_post_filter_mask_ & 0x04) != 0 && width_ != upscaled_width_;
+    return DoSuperRes(frame_header_, do_post_filter_mask_);
   }
   LoopFilterMask* masks() const { return masks_; }
   LoopRestorationInfo* restoration_info() const { return restoration_info_; }
@@ -246,7 +255,7 @@ class PostFilter {
 
   // Applies SuperRes for the superblock row starting at |row4x4| with a height
   // of 4*|sb4x4|.
-  bool ApplySuperResForOneSuperBlockRow(int row4x4, int sb4x4);
+  void ApplySuperResForOneSuperBlockRow(int row4x4, int sb4x4);
 
   // Sets up the |deblock_buffer_| for loop restoration.
   void SetupDeblockBuffer(int row4x4_start, int sb4x4);
@@ -420,8 +429,9 @@ class PostFilter {
   void InitDeblockFilterParams();  // Part of 7.14.4.
   void GetDeblockFilterParams(uint8_t level, int* outer_thresh,
                               int* inner_thresh, int* hev_thresh) const;
-  // Applies super resolution and writes result to input_buffer.
-  bool FrameSuperRes(
+  // Applies super resolution for the |buffer| for 4*|rows4x4| rows starting
+  // from |plane_offset[]| for each plane.
+  void ApplySuperRes(
       YuvBuffer* input_buffer, int rows4x4, int8_t chroma_subsampling_y,
       const std::array<ptrdiff_t, kMaxPlanes>& plane_offsets);  // Section 7.16.
 
@@ -461,6 +471,10 @@ class PostFilter {
   LoopRestorationInfo* const restoration_info_;
   const int window_buffer_width_;
   const int window_buffer_height_;
+  // Pointer to the line buffer used by ApplySuperRes(). If SuperRes is on, then
+  // the buffer will be large enough to hold one downscaled row +
+  // kSuperResBorder.
+  uint8_t* const superres_line_buffer_;
   const BlockParametersHolder& block_parameters_;
   // Frame buffer to hold cdef filtered frame.
   YuvBuffer cdef_filtered_buffer_;

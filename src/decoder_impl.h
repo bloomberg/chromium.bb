@@ -126,7 +126,7 @@ class DecoderImpl : public Allocable {
   // in output_frame_.
   StatusCode CopyFrameToOutputBuffer(const RefCountedBufferPtr& frame);
   StatusCode DecodeTiles(const ObuParser* obu);
-  bool PostFilterRow(PostFilter* post_filter, int row4x4, int sb4x4,
+  void PostFilterRow(PostFilter* post_filter, int row4x4, int sb4x4,
                      bool is_last_row);
   // Sets the current frame's segmentation map for two cases. The third case
   // is handled in Tile::DecodeBlock().
@@ -151,6 +151,9 @@ class DecoderImpl : public Allocable {
   std::unique_ptr<ResidualBufferPool> residual_buffer_pool_;
   AlignedUniquePtr<uint8_t> threaded_window_buffer_;
   size_t threaded_window_buffer_size_ = 0;
+  // Buffer used to temporarily store the input row for applying SuperRes.
+  AlignedUniquePtr<uint8_t> superres_line_buffer_;
+  size_t superres_line_buffer_size_ = 0;
   Array2D<TransformSize> inter_transform_sizes_;
   Array2D<int16_t> cdef_index_;
   DecoderScratchBufferPool decoder_scratch_buffer_pool_;

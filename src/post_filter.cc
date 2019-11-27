@@ -34,9 +34,6 @@
 namespace libgav1 {
 namespace {
 
-constexpr int kLeftLineBorder = 4;
-constexpr int kRightLineBorder = 4;
-
 constexpr uint8_t kCdefUvDirection[2][2][8] = {
     {{0, 1, 2, 3, 4, 5, 6, 7}, {1, 2, 2, 2, 3, 4, 6, 0}},
     {{7, 0, 2, 4, 5, 6, 6, 6}, {0, 1, 2, 3, 4, 5, 6, 7}}};
@@ -220,10 +217,9 @@ bool PostFilter::ApplyFiltering() {
     if (DoCdef()) {
       ApplyCdef();
     }
-    if (DoSuperRes() &&
-        !FrameSuperRes(source_buffer_, frame_header_.rows4x4, subsampling_y_,
-                       /*plane_offsets=*/{0, 0, 0})) {
-      return false;
+    if (DoSuperRes()) {
+      ApplySuperRes(source_buffer_, frame_header_.rows4x4, subsampling_y_,
+                    /*plane_offsets=*/{0, 0, 0});
     }
     if (DoRestoration()) {
       ApplyLoopRestoration();
@@ -385,7 +381,7 @@ void PostFilter::SetupDeblockBuffer(int row4x4_start, int sb4x4) {
           row_offset_start * deblock_buffer_.stride(kPlaneY),
           row_offset_start * deblock_buffer_.stride(kPlaneU),
           row_offset_start * deblock_buffer_.stride(kPlaneV)};
-      FrameSuperRes(&deblock_buffer_, /*rows4x4=*/1, /*chroma_subsampling_y=*/0,
+      ApplySuperRes(&deblock_buffer_, /*rows4x4=*/1, /*chroma_subsampling_y=*/0,
                     plane_offsets);
     }
     // Extend the left and right boundaries needed for loop restoration.
@@ -770,7 +766,7 @@ void PostFilter::ApplyCdefThreaded() {
   }
 }
 
-bool PostFilter::ApplySuperResForOneSuperBlockRow(int row4x4_start, int sb4x4) {
+void PostFilter::ApplySuperResForOneSuperBlockRow(int row4x4_start, int sb4x4) {
   assert(row4x4_start >= 0);
   assert(DoSuperRes());
   const int horizontal_shift = -source_buffer_->alignment();
@@ -789,8 +785,7 @@ bool PostFilter::ApplySuperResForOneSuperBlockRow(int row4x4_start, int sb4x4) {
     plane_offsets[plane] = cdef_offset + row_offset;
   }
   const int num_rows4x4 = std::min(sb4x4, frame_header_.rows4x4 - row4x4_start);
-  return FrameSuperRes(source_buffer_, num_rows4x4, subsampling_y_,
-                       plane_offsets);
+  ApplySuperRes(source_buffer_, num_rows4x4, subsampling_y_, plane_offsets);
 }
 
 void PostFilter::ApplyCdefForOneSuperBlockRow(int row4x4_start, int sb4x4) {
@@ -831,17 +826,11 @@ void PostFilter::ApplyCdef() {
   ApplyCdefThreaded<uint8_t>();
 }
 
-bool PostFilter::FrameSuperRes(
-    YuvBuffer* const input_buffer, int rows4x4, int8_t chroma_subsampling_y,
+void PostFilter::ApplySuperRes(
+    YuvBuffer* const buffer, int rows4x4, int8_t chroma_subsampling_y,
     const std::array<ptrdiff_t, kMaxPlanes>& plane_offsets) {
-  const int line_buffer_size = MultiplyBy4(frame_header_.columns4x4) +
-                               kLeftLineBorder + kRightLineBorder;
-  auto* const line_buffer =
-      static_cast<uint8_t*>(AlignedAlloc(16, line_buffer_size * pixel_size_));
-  if (line_buffer == nullptr) return false;
-
   uint8_t* const line_buffer_start =
-      line_buffer + kLeftLineBorder * pixel_size_;
+      superres_line_buffer_ + kSuperResBorder * pixel_size_;
   for (int plane = kPlaneY; plane < planes_; ++plane) {
     const int8_t subsampling_x = (plane == kPlaneY) ? 0 : subsampling_x_;
     const int8_t subsampling_y = (plane == kPlaneY) ? 0 : chroma_subsampling_y;
@@ -860,30 +849,28 @@ bool PostFilter::FrameSuperRes(
             upscaled_width +
         (1 << (kSuperResExtraBits - 1)) - error / 2;
     initial_subpixel_x &= kSuperResScaleMask;
-    uint8_t* input = input_buffer->data(plane) + plane_offsets[plane];
-    const uint32_t input_stride = input_buffer->stride(plane);
+    uint8_t* input = buffer->data(plane) + plane_offsets[plane];
+    const uint32_t input_stride = buffer->stride(plane);
     for (int y = 0; y < plane_height; ++y, input += input_stride) {
 #if LIBGAV1_MAX_BITDEPTH >= 10
       if (bitdepth_ >= 10) {
         CopyPlane<uint16_t>(input, input_stride, plane_width, 1,
-                            line_buffer_start, line_buffer_size);
-        ExtendLine<uint16_t>(line_buffer_start, plane_width, kLeftLineBorder,
-                             kRightLineBorder);
+                            line_buffer_start, /*dest_stride=*/0);
+        ExtendLine<uint16_t>(line_buffer_start, plane_width, kSuperResBorder,
+                             kSuperResBorder);
         ComputeSuperRes<10, uint16_t>(line_buffer_start, upscaled_width,
                                       initial_subpixel_x, step, input);
         continue;
       }
 #endif  // LIBGAV1_MAX_BITDEPTH >= 10
       CopyPlane<uint8_t>(input, input_stride, plane_width, 1, line_buffer_start,
-                         line_buffer_size);
-      ExtendLine<uint8_t>(line_buffer_start, plane_width, kLeftLineBorder,
-                          kRightLineBorder);
+                         /*dest_stride=*/0);
+      ExtendLine<uint8_t>(line_buffer_start, plane_width, kSuperResBorder,
+                          kSuperResBorder);
       ComputeSuperRes<8, uint8_t>(line_buffer_start, upscaled_width,
                                   initial_subpixel_x, step, input);
     }
   }
-  AlignedFree(line_buffer);
-  return true;
 }
 
 template <typename Pixel>

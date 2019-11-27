@@ -558,12 +558,31 @@ StatusCode DecoderImpl::DecodeTiles(const ObuParser* obu) {
     }
   }
 
+  if (PostFilter::DoSuperRes(obu->frame_header(), settings_.post_filter_mask)) {
+    const size_t superres_line_buffer_size =
+        (MultiplyBy4(obu->frame_header().columns4x4) +
+         MultiplyBy2(kSuperResBorder)) *
+        (obu->sequence_header().color_config.bitdepth == 8 ? sizeof(uint8_t)
+                                                           : sizeof(uint16_t));
+    if (superres_line_buffer_size_ < superres_line_buffer_size) {
+      superres_line_buffer_ =
+          MakeAlignedUniquePtr<uint8_t>(16, superres_line_buffer_size);
+      if (superres_line_buffer_ == nullptr) {
+        LIBGAV1_DLOG(ERROR, "Failed to allocate superres line buffer.\n");
+        superres_line_buffer_size_ = 0;
+        return kLibgav1StatusOutOfMemory;
+      }
+      superres_line_buffer_size_ = superres_line_buffer_size;
+    }
+  }
+
   PostFilter post_filter(
       obu->frame_header(), obu->sequence_header(), &loop_filter_mask_,
       cdef_index_, inter_transform_sizes_, &loop_restoration_info,
       &block_parameters_holder, state_.current_frame->buffer(),
       &deblock_buffer_, dsp, threading_strategy_.post_filter_thread_pool(),
-      threaded_window_buffer_.get(), settings_.post_filter_mask);
+      threaded_window_buffer_.get(), superres_line_buffer_.get(),
+      settings_.post_filter_mask);
   SymbolDecoderContext saved_symbol_decoder_context;
   int tile_index = 0;
   BlockingCounterWithStatus pending_tiles(tile_count);
@@ -636,13 +655,13 @@ StatusCode DecoderImpl::DecodeTiles(const ObuParser* obu) {
         }
         if (!ok) break;
         // Apply post filters for the row above the current row.
-        ok = PostFilterRow(&post_filter, row4x4 - block_width4x4,
-                           block_width4x4, false);
+        PostFilterRow(&post_filter, row4x4 - block_width4x4, block_width4x4,
+                      false);
         if (!ok) break;
       }
       // Apply post filters for the last row.
-      ok = PostFilterRow(&post_filter, row4x4 - block_width4x4, block_width4x4,
-                         true);
+      PostFilterRow(&post_filter, row4x4 - block_width4x4, block_width4x4,
+                    true);
       decoder_scratch_buffer_pool_.Release(std::move(scratch_buffer));
     } else {
       ok = false;
@@ -720,9 +739,9 @@ StatusCode DecoderImpl::DecodeTiles(const ObuParser* obu) {
   return kLibgav1StatusOk;
 }
 
-bool DecoderImpl::PostFilterRow(PostFilter* post_filter, int row4x4, int sb4x4,
+void DecoderImpl::PostFilterRow(PostFilter* post_filter, int row4x4, int sb4x4,
                                 bool is_last_row) {
-  if (row4x4 < 0) return true;
+  if (row4x4 < 0) return;
   if (post_filter->DoDeblock()) {
     post_filter->ApplyDeblockFilterForOneSuperBlockRow(row4x4, sb4x4);
   }
@@ -737,10 +756,8 @@ bool DecoderImpl::PostFilterRow(PostFilter* post_filter, int row4x4, int sb4x4,
     if (post_filter->DoCdef()) {
       post_filter->ApplyCdefForOneSuperBlockRow(previous_row4x4, sb4x4);
     }
-    if (post_filter->DoSuperRes() &&
-        !post_filter->ApplySuperResForOneSuperBlockRow(previous_row4x4,
-                                                       sb4x4)) {
-      return false;
+    if (post_filter->DoSuperRes()) {
+      post_filter->ApplySuperResForOneSuperBlockRow(previous_row4x4, sb4x4);
     }
     if (post_filter->DoRestoration()) {
       post_filter->CopyBorderForRestoration(previous_row4x4, sb4x4);
@@ -755,9 +772,8 @@ bool DecoderImpl::PostFilterRow(PostFilter* post_filter, int row4x4, int sb4x4,
     if (post_filter->DoCdef()) {
       post_filter->ApplyCdefForOneSuperBlockRow(row4x4, sb4x4);
     }
-    if (post_filter->DoSuperRes() &&
-        !post_filter->ApplySuperResForOneSuperBlockRow(row4x4, sb4x4)) {
-      return false;
+    if (post_filter->DoSuperRes()) {
+      post_filter->ApplySuperResForOneSuperBlockRow(row4x4, sb4x4);
     }
     if (post_filter->DoRestoration()) {
       post_filter->CopyBorderForRestoration(row4x4, sb4x4);
@@ -767,7 +783,6 @@ bool DecoderImpl::PostFilterRow(PostFilter* post_filter, int row4x4, int sb4x4,
       post_filter->ApplyLoopRestorationForOneSuperBlockRow(row4x4 + sb4x4, 16);
     }
   }
-  return true;
 }
 
 void DecoderImpl::SetCurrentFrameSegmentationMap(
