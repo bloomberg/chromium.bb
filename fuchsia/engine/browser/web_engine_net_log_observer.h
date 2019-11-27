@@ -2,13 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef FUCHSIA_ENGINE_BROWSER_WEB_ENGINE_NET_LOG_H_
-#define FUCHSIA_ENGINE_BROWSER_WEB_ENGINE_NET_LOG_H_
+#ifndef FUCHSIA_ENGINE_BROWSER_WEB_ENGINE_NET_LOG_OBSERVER_H_
+#define FUCHSIA_ENGINE_BROWSER_WEB_ENGINE_NET_LOG_OBSERVER_H_
 
 #include <memory>
 
 #include "base/macros.h"
-#include "net/log/net_log.h"
 
 namespace base {
 class FilePath;
@@ -18,15 +17,15 @@ namespace net {
 class FileNetLogObserver;
 }  // namespace net
 
-class WebEngineNetLog : public net::NetLog {
+class WebEngineNetLogObserver {
  public:
-  explicit WebEngineNetLog(const base::FilePath& log_path);
-  ~WebEngineNetLog() override;
+  explicit WebEngineNetLogObserver(const base::FilePath& log_path);
+  ~WebEngineNetLogObserver();
 
  private:
   std::unique_ptr<net::FileNetLogObserver> file_net_log_observer_;
 
-  DISALLOW_COPY_AND_ASSIGN(WebEngineNetLog);
+  DISALLOW_COPY_AND_ASSIGN(WebEngineNetLogObserver);
 };
 
-#endif  // FUCHSIA_ENGINE_BROWSER_WEB_ENGINE_NET_LOG_H_
+#endif  // FUCHSIA_ENGINE_BROWSER_WEB_ENGINE_NET_LOG_OBSERVER_H_

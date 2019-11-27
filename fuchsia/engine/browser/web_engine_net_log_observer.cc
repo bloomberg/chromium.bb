@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "fuchsia/engine/browser/web_engine_net_log.h"
+#include "fuchsia/engine/browser/web_engine_net_log_observer.h"
 
 #include <string>
 #include <utility>
@@ -13,6 +13,7 @@
 #include "base/files/file_path.h"
 #include "base/values.h"
 #include "net/log/file_net_log_observer.h"
+#include "net/log/net_log.h"
 #include "net/log/net_log_util.h"
 
 namespace {
@@ -35,16 +36,17 @@ std::unique_ptr<base::DictionaryValue> GetWebEngineConstants() {
 
 }  // namespace
 
-WebEngineNetLog::WebEngineNetLog(const base::FilePath& log_path) {
+WebEngineNetLogObserver::WebEngineNetLogObserver(
+    const base::FilePath& log_path) {
   if (!log_path.empty()) {
     net::NetLogCaptureMode capture_mode = net::NetLogCaptureMode::kDefault;
     file_net_log_observer_ = net::FileNetLogObserver::CreateUnbounded(
         log_path, GetWebEngineConstants());
-    file_net_log_observer_->StartObserving(this, capture_mode);
+    file_net_log_observer_->StartObserving(net::NetLog::Get(), capture_mode);
   }
 }
 
-WebEngineNetLog::~WebEngineNetLog() {
+WebEngineNetLogObserver::~WebEngineNetLogObserver() {
   if (file_net_log_observer_)
     file_net_log_observer_->StopObserving(nullptr, base::OnceClosure());
 }
