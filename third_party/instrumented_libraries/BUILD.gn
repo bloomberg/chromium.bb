@@ -681,6 +681,7 @@ if (use_locally_built_instrumented_libraries) {
       "--enable-unicode-properties",
       "--disable-static",
     ]
+    pre_build = "scripts/pre-build/dh_autoreconf.sh"
   }
 
   instrumented_library("libpixman-1-0") {
