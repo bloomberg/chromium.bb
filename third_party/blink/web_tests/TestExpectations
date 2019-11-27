@@ -5899,3 +5899,5 @@ crbug.com/1028116 virtual/gpu-rasterization/images/webp-color-profile-lossy-alph
 crbug.com/1028116 virtual/gpu-rasterization/images/yuv-decode-eligible/color-profile-filter.html [ Pass Failure ]
 crbug.com/1028116 virtual/gpu-rasterization/images/yuv-decode-eligible/color-profile-image.html [ Pass Failure ]
 crbug.com/1028116 virtual/gpu-rasterization/images/yuv-decode-eligible/webp-color-profile-lossy.html [ Pass Failure ]
+
+crbug.com/833100 [ Mac ] external/wpt/battery-status/battery-full-manual.https.html [ Pass Failure ]
