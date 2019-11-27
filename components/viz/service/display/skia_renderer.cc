@@ -791,7 +791,7 @@ void SkiaRenderer::FinishDrawingFrame() {
   if (!current_frame()->overlay_list.empty()) {
     DCHECK_EQ(current_frame()->overlay_list.size(), 1u);
     overlay_resource_locks_.emplace_back(
-        DisplayResourceProvider::ScopedReadLockSharedImage(
+        std::make_unique<DisplayResourceProvider::ScopedReadLockSharedImage>(
             resource_provider_,
             current_frame()->overlay_list.front().resource_id));
     skia_output_surface_->RenderToOverlay(
@@ -799,7 +799,7 @@ void SkiaRenderer::FinishDrawingFrame() {
         overlay_resource_locks_.back()->mailbox(),
         ToNearestRect(current_frame()->overlay_list.front().display_rect));
   } else {
-    overlay_resource_locks_.emplace_back(base::nullopt);
+    overlay_resource_locks_.emplace_back(nullptr);
   }
 #endif
 
