@@ -59,6 +59,14 @@ ServiceWorkerContainerHost::ServiceWorkerContainerHost(
 }
 
 ServiceWorkerContainerHost::~ServiceWorkerContainerHost() {
+  if (IsBackForwardCacheEnabled() &&
+      ServiceWorkerContext::IsServiceWorkerOnUIEnabled() &&
+      IsContainerForClient()) {
+    auto* rfh = RenderFrameHostImpl::FromID(process_id_, frame_id_);
+    if (rfh)
+      rfh->RemoveServiceWorkerContainerHost(this);
+  }
+
   if (fetch_request_window_id_)
     FrameTreeNodeIdRegistry::GetInstance()->Remove(fetch_request_window_id_);
 
@@ -76,11 +84,29 @@ ServiceWorkerContainerHost::~ServiceWorkerContainerHost() {
 
 void ServiceWorkerContainerHost::OnSkippedWaiting(
     ServiceWorkerRegistration* registration) {
+  if (controller_registration_ != registration)
+    return;
+
+#if DCHECK_IS_ON()
   DCHECK(controller_);
   ServiceWorkerVersion* active = controller_registration_->active_version();
   DCHECK(active);
   DCHECK_NE(active, controller_.get());
   DCHECK_EQ(active->status(), ServiceWorkerVersion::ACTIVATING);
+#endif  // DCHECK_IS_ON()
+
+  if (ServiceWorkerContext::IsServiceWorkerOnUIEnabled() &&
+      IsBackForwardCacheEnabled() && IsInBackForwardCache()) {
+    // This ServiceWorkerContainerHost is evicted from BackForwardCache in
+    // |ActivateWaitingVersion|, but not deleted yet. This can happen because
+    // asynchronous eviction and |OnSkippedWaiting| are in the same task.
+    // The controller does not have to be updated because |this| will be evicted
+    // from BackForwardCache.
+    // TODO(yuzus): Wire registration with ServiceWorkerContainerHost so that we
+    // can check on the caller side.
+    return;
+  }
+
   UpdateController(true /* notify_controllerchange */);
 }
 
@@ -158,6 +184,10 @@ void ServiceWorkerContainerHost::SendSetControllerServiceWorker(
 
   container_->SetController(std::move(controller_info),
                             notify_controllerchange);
+}
+
+void ServiceWorkerContainerHost::NotifyControllerLost() {
+  SetControllerRegistration(nullptr, true /* notify_controllerchange */);
 }
 
 void ServiceWorkerContainerHost::ClaimedByRegistration(
@@ -283,6 +313,14 @@ void ServiceWorkerContainerHost::OnBeginNavigationCommit(
   DCHECK_EQ(MSG_ROUTING_NONE, frame_id_);
   DCHECK_NE(MSG_ROUTING_NONE, container_frame_id);
   frame_id_ = container_frame_id;
+
+  if (IsBackForwardCacheEnabled() &&
+      ServiceWorkerContext::IsServiceWorkerOnUIEnabled()) {
+    auto* rfh = RenderFrameHostImpl::FromID(process_id_, frame_id_);
+    // |rfh| may be null in tests (but it should not happen in production).
+    if (rfh)
+      rfh->AddServiceWorkerContainerHost(this);
+  }
 }
 
 void ServiceWorkerContainerHost::UpdateUrls(
@@ -511,6 +549,43 @@ ServiceWorkerRegistration* ServiceWorkerContainerHost::controller_registration()
   return controller_registration_.get();
 }
 
+bool ServiceWorkerContainerHost::IsInBackForwardCache() const {
+  DCHECK(ServiceWorkerContext::IsServiceWorkerOnUIEnabled());
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  return is_in_back_forward_cache_;
+}
+
+void ServiceWorkerContainerHost::EvictFromBackForwardCache(
+    BackForwardCacheMetrics::NotRestoredReason reason) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(IsBackForwardCacheEnabled());
+  DCHECK_EQ(type_, blink::mojom::ServiceWorkerProviderType::kForWindow);
+  is_in_back_forward_cache_ = false;
+  auto* rfh = RenderFrameHostImpl::FromID(process_id_, frame_id_);
+  // |rfh| could be evicted before this function is called.
+  if (!rfh || !rfh->is_in_back_forward_cache())
+    return;
+  rfh->EvictFromBackForwardCacheWithReason(reason);
+}
+
+void ServiceWorkerContainerHost::OnEnterBackForwardCache() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(IsBackForwardCacheEnabled());
+  DCHECK_EQ(type_, blink::mojom::ServiceWorkerProviderType::kForWindow);
+  if (controller_)
+    controller_->MoveControlleeToBackForwardCacheMap(client_uuid_);
+  is_in_back_forward_cache_ = true;
+}
+
+void ServiceWorkerContainerHost::OnRestoreFromBackForwardCache() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(IsBackForwardCacheEnabled());
+  DCHECK_EQ(type_, blink::mojom::ServiceWorkerProviderType::kForWindow);
+  if (controller_)
+    controller_->RestoreControlleeFromBackForwardCacheMap(client_uuid_);
+  is_in_back_forward_cache_ = false;
+}
+
 void ServiceWorkerContainerHost::RunExecutionReadyCallbacks() {
   std::vector<ExecutionReadyCallback> callbacks;
   execution_ready_callbacks_.swap(callbacks);
@@ -531,7 +606,7 @@ void ServiceWorkerContainerHost::UpdateController(
   controller_ = version;
 
   if (version)
-    version->AddControllee(provider_host_);
+    version->AddControllee(this);
   if (previous_version)
     previous_version->RemoveControllee(client_uuid_);
 

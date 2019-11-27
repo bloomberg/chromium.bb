@@ -20,7 +20,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/unguessable_token.h"
 #include "content/browser/browser_interface_broker_impl.h"
-#include "content/browser/frame_host/back_forward_cache_metrics.h"
 #include "content/browser/service_worker/service_worker_object_host.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/common/content_export.h"
@@ -272,11 +271,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // for current document.
   ServiceWorkerRegistration* MatchRegistration() const;
 
-  // Called when our controller has been terminated and doomed due to an
-  // exceptional condition like it could no longer be read from the script
-  // cache.
-  void NotifyControllerLost();
-
   // For service worker clients. Called when |version| is the active worker upon
   // the main resource request for this client. Remembers |version| as needing
   // a Soft Update. To avoid affecting page load performance, the update occurs
@@ -295,18 +289,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // For service worker execution contexts.
   void CreateQuicTransportConnector(
       mojo::PendingReceiver<blink::mojom::QuicTransportConnector> receiver);
-
-  // BackForwardCache:
-  // For service worker clients that are windows.
-  bool IsInBackForwardCache() const;
-  void EvictFromBackForwardCache(
-      BackForwardCacheMetrics::NotRestoredReason reason);
-  // Called when this provider host's frame goes into BackForwardCache.
-  void OnEnterBackForwardCache();
-  // Called when a frame gets restored from BackForwardCache. Note that a
-  // BackForwardCached frame can be deleted while in the cache but in this case
-  // OnRestoreFromBackForwardCache will not be called.
-  void OnRestoreFromBackForwardCache();
 
   content::ServiceWorkerContainerHost* container_host() {
     return container_host_.get();
@@ -434,9 +416,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // worker execution context.
   void SetWorkerProcessId(int process_id);
 
-  void EnterBackForwardCacheForTesting() { is_in_back_forward_cache_ = true; }
-  void LeaveBackForwardCacheForTesting() { is_in_back_forward_cache_ = false; }
-
   // Unique among all provider hosts.
   const int provider_id_;
 
@@ -513,10 +492,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // response commit.
   base::Optional<network::mojom::CrossOriginEmbedderPolicy>
       cross_origin_embedder_policy_;
-
-  // TODO(yuzus): This bit will be unnecessary once ServiceWorkerProviderHost
-  // and RenderFrameHost have the same lifetime.
-  bool is_in_back_forward_cache_;
 
   // TODO(https://crbug.com/931087): Make an execution context host (e.g.,
   // RenderFrameHostImpl) own this container host.

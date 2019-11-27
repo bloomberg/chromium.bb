@@ -1147,9 +1147,9 @@ void ServiceWorkerProviderHostTest::TestBackForwardCachedClientsAreNotExposed(
     remote_endpoint.host_remote()->get()->OnExecutionReady();
     run_loop.Run();
     EXPECT_TRUE(CanFindClientProviderHost(host.get()));
-    host->EnterBackForwardCacheForTesting();
+    host->container_host()->EnterBackForwardCacheForTesting();
     EXPECT_FALSE(CanFindClientProviderHost(host.get()));
-    host->LeaveBackForwardCacheForTesting();
+    host->container_host()->LeaveBackForwardCacheForTesting();
     EXPECT_TRUE(CanFindClientProviderHost(host.get()));
   }
 }

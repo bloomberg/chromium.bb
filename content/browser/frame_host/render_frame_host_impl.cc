@@ -97,6 +97,7 @@
 #include "content/browser/renderer_host/render_widget_host_view_child_frame.h"
 #include "content/browser/renderer_interface_binders.h"
 #include "content/browser/scoped_active_url.h"
+#include "content/browser/service_worker/service_worker_container_host.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/sms/sms_service.h"
 #include "content/browser/speech/speech_synthesis_impl.h"
@@ -1211,8 +1212,8 @@ void RenderFrameHostImpl::EnterBackForwardCache() {
     StartBackForwardCacheEvictionTimer();
   for (auto& child : children_)
     child->current_frame_host()->EnterBackForwardCache();
-  for (auto* host : service_worker_provider_hosts_)
-    host->OnEnterBackForwardCache();
+  for (auto* container_host : service_worker_container_hosts_)
+    container_host->OnEnterBackForwardCache();
 }
 
 // The frame as been restored from the BackForwardCache.
@@ -1225,8 +1226,8 @@ void RenderFrameHostImpl::LeaveBackForwardCache() {
   for (auto& child : children_)
     child->current_frame_host()->LeaveBackForwardCache();
 
-  for (auto* host : service_worker_provider_hosts_)
-    host->OnRestoreFromBackForwardCache();
+  for (auto* container_host : service_worker_container_hosts_)
+    container_host->OnRestoreFromBackForwardCache();
 }
 
 std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params>
@@ -7542,18 +7543,18 @@ RenderFrameHostImpl::BuildCommitFailedNavigationCallback(
       base::Unretained(this), navigation_request);
 }
 
-void RenderFrameHostImpl::AddServiceWorkerProviderHost(
-    ServiceWorkerProviderHost* host) {
-  DCHECK(!base::Contains(service_worker_provider_hosts_, host));
-  service_worker_provider_hosts_.push_back(host);
+void RenderFrameHostImpl::AddServiceWorkerContainerHost(
+    ServiceWorkerContainerHost* host) {
+  DCHECK(!base::Contains(service_worker_container_hosts_, host));
+  service_worker_container_hosts_.push_back(host);
 }
 
-void RenderFrameHostImpl::RemoveServiceWorkerProviderHost(
-    ServiceWorkerProviderHost* host) {
-  DCHECK(base::Contains(service_worker_provider_hosts_, host));
-  service_worker_provider_hosts_.erase(
-      std::find(service_worker_provider_hosts_.begin(),
-                service_worker_provider_hosts_.end(), host));
+void RenderFrameHostImpl::RemoveServiceWorkerContainerHost(
+    ServiceWorkerContainerHost* host) {
+  DCHECK(base::Contains(service_worker_container_hosts_, host));
+  service_worker_container_hosts_.erase(
+      std::find(service_worker_container_hosts_.begin(),
+                service_worker_container_hosts_.end(), host));
 }
 
 void RenderFrameHostImpl::UpdateFrameFrozenState() {

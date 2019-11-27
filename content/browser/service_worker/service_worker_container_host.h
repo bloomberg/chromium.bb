@@ -11,6 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
+#include "content/browser/frame_host/back_forward_cache_metrics.h"
 #include "content/common/content_export.h"
 #include "content/public/common/child_process_host.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
@@ -96,6 +97,11 @@ class CONTENT_EXPORT ServiceWorkerContainerHost {
   // worker clients in the renderer. If |notify_controllerchange| is true,
   // instructs the renderer to dispatch a 'controllerchange' event.
   void SendSetControllerServiceWorker(bool notify_controllerchange);
+
+  // Called when this container host's controller has been terminated and doomed
+  // due to an exceptional condition like it could no longer be read from the
+  // script cache.
+  void NotifyControllerLost();
 
   // Returns an object info representing |registration|. The object info holds a
   // Mojo connection to the ServiceWorkerRegistrationObjectHost for the
@@ -289,6 +295,21 @@ class CONTENT_EXPORT ServiceWorkerContainerHost {
   // registration.
   ServiceWorkerRegistration* controller_registration() const;
 
+  // BackForwardCache:
+  // For service worker clients that are windows.
+  bool IsInBackForwardCache() const;
+  void EvictFromBackForwardCache(
+      BackForwardCacheMetrics::NotRestoredReason reason);
+  // Called when this container host's frame goes into BackForwardCache.
+  void OnEnterBackForwardCache();
+  // Called when a frame gets restored from BackForwardCache. Note that a
+  // BackForwardCached frame can be deleted while in the cache but in this case
+  // OnRestoreFromBackForwardCache will not be called.
+  void OnRestoreFromBackForwardCache();
+
+  void EnterBackForwardCacheForTesting() { is_in_back_forward_cache_ = true; }
+  void LeaveBackForwardCacheForTesting() { is_in_back_forward_cache_ = false; }
+
  private:
   friend class service_worker_object_host_unittest::ServiceWorkerObjectHostTest;
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerJobTest, Unregister);
@@ -360,6 +381,10 @@ class CONTENT_EXPORT ServiceWorkerContainerHost {
 
   // For service worker clients.
   ClientPhase client_phase_ = ClientPhase::kInitial;
+
+  // TODO(yuzus): This bit will be unnecessary once ServiceWorkerContainerHost
+  // and RenderFrameHost have the same lifetime.
+  bool is_in_back_forward_cache_ = false;
 
   // For service worker clients. Callbacks to run upon transition to
   // kExecutionReady.
