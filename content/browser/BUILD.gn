@@ -977,6 +977,8 @@ jumbo_source_set("browser") {
     "indexed_db/indexed_db_backing_store.h",
     "indexed_db/indexed_db_blob_info.cc",
     "indexed_db/indexed_db_blob_info.h",
+    "indexed_db/indexed_db_blob_storage.cc",
+    "indexed_db/indexed_db_blob_storage.h",
     "indexed_db/indexed_db_callback_helpers.h",
     "indexed_db/indexed_db_callbacks.cc",
     "indexed_db/indexed_db_callbacks.h",
