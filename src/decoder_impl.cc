@@ -540,11 +540,29 @@ StatusCode DecoderImpl::DecodeTiles(const ObuParser* obu) {
     }
   }
 
+  if (do_cdef && do_restoration) {
+    // We need to store 4 rows per 64x64 unit.
+    const int num_deblock_units =
+        4 + MultiplyBy4(Ceil(obu->frame_header().rows4x4, 16));
+    // subsampling_y is set to zero irrespective of the actual frame's
+    // subsampling since we need to store exactly |num_deblock_units| rows of
+    // the deblocked pixels.
+    if (!deblock_buffer_.Realloc(
+            obu->sequence_header().color_config.bitdepth,
+            obu->sequence_header().color_config.is_monochrome,
+            obu->frame_header().upscaled_width, num_deblock_units,
+            obu->sequence_header().color_config.subsampling_x,
+            /*subsampling_y=*/0, kBorderPixels,
+            /*byte_alignment=*/0, nullptr, nullptr, nullptr)) {
+      return kLibgav1StatusOutOfMemory;
+    }
+  }
+
   PostFilter post_filter(
       obu->frame_header(), obu->sequence_header(), &loop_filter_mask_,
       cdef_index_, inter_transform_sizes_, &loop_restoration_info,
-      &block_parameters_holder, state_.current_frame->buffer(), dsp,
-      threading_strategy_.post_filter_thread_pool(),
+      &block_parameters_holder, state_.current_frame->buffer(),
+      &deblock_buffer_, dsp, threading_strategy_.post_filter_thread_pool(),
       threaded_window_buffer_.get(), settings_.post_filter_mask);
   SymbolDecoderContext saved_symbol_decoder_context;
   int tile_index = 0;

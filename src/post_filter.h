@@ -64,8 +64,8 @@ class PostFilter {
              const Array2D<TransformSize>& inter_transform_sizes,
              LoopRestorationInfo* const restoration_info,
              BlockParametersHolder* block_parameters,
-             YuvBuffer* const source_buffer, const dsp::Dsp* dsp,
-             ThreadPool* const thread_pool,
+             YuvBuffer* const source_buffer, YuvBuffer* const deblock_buffer,
+             const dsp::Dsp* dsp, ThreadPool* const thread_pool,
              uint8_t* const threaded_window_buffer, int do_post_filter_mask)
       : frame_header_(frame_header),
         loop_restoration_(frame_header.loop_restoration),
@@ -92,6 +92,7 @@ class PostFilter {
         window_buffer_height_(GetWindowBufferHeight(thread_pool, frame_header)),
         block_parameters_(*block_parameters),
         source_buffer_(source_buffer),
+        deblock_buffer_(*deblock_buffer),
         do_post_filter_mask_(do_post_filter_mask),
         thread_pool_(thread_pool) {
     const int8_t zero_delta_lf[kFrameLfCount] = {};
@@ -446,9 +447,8 @@ class PostFilter {
   // for every 32x32 for chroma with subsampling). The indices of the rows that
   // are stored are specified in |kDeblockedRowsForLoopRestoration|. First 4
   // rows of this buffer are never populated and never used.
-  // TODO(vigneshv): The first 4 unused rows can probably be removed by
-  // adjusting the offsets.
-  YuvBuffer deblock_buffer_;
+  // This buffer is used only when both Cdef and Loop Restoration are on.
+  YuvBuffer& deblock_buffer_;
   const uint8_t do_post_filter_mask_;
 
   ThreadPool* const thread_pool_;

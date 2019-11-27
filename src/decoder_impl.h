@@ -154,6 +154,14 @@ class DecoderImpl : public Allocable {
   Array2D<TransformSize> inter_transform_sizes_;
   Array2D<int16_t> cdef_index_;
   DecoderScratchBufferPool decoder_scratch_buffer_pool_;
+  // Buffer used to store the deblocked pixels that are necessary for loop
+  // restoration. This buffer will store 4 rows for every 64x64 block (4 rows
+  // for every 32x32 for chroma with subsampling). The indices of the rows that
+  // are stored are specified in |kDeblockedRowsForLoopRestoration|. First 4
+  // rows of this buffer are never populated and never used.
+  // TODO(vigneshv): The first 4 unused rows can probably be removed by
+  // adjusting the offsets.
+  YuvBuffer deblock_buffer_;
 
   LoopFilterMask loop_filter_mask_;
 

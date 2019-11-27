@@ -51,10 +51,6 @@ constexpr int SubsampledValue(int value, int subsampling) {
   return (subsampling == 0) ? value : DivideBy2(value + 1);
 }
 
-constexpr int Ceil(int dividend, int divisor) {
-  return dividend / divisor + static_cast<int>(dividend % divisor != 0);
-}
-
 // The following example illustrates how ExtendFrame() extends a frame.
 // Suppose the frame width is 8 and height is 4, and left, right, top, and
 // bottom are all equal to 3.
@@ -195,19 +191,6 @@ bool PostFilter::ApplyFiltering() {
     return false;
   }
   if (DoCdef() && DoRestoration()) {
-    // We need to store 4 rows per 64x64 unit.
-    const int num_deblock_units =
-        4 + MultiplyBy4(Ceil(frame_header_.rows4x4, 16));
-    // subsampling_y is set to zero irrespective of the actual frame's
-    // subsampling since we need to store exactly |num_deblock_units| rows of
-    // the deblocked pixels.
-    if (!deblock_buffer_.Realloc(
-            bitdepth_, planes_ == kMaxPlanesMonochrome, upscaled_width_,
-            num_deblock_units, subsampling_x_,
-            /*subsampling_y=*/0, kBorderPixels,
-            /*byte_alignment=*/0, nullptr, nullptr, nullptr)) {
-      return false;
-    }
     for (int plane = 0; plane < planes_; ++plane) {
 #if LIBGAV1_MSAN
       // The first four rows of |deblock_buffer_| are never used. However, we
@@ -226,6 +209,8 @@ bool PostFilter::ApplyFiltering() {
         CopyDeblockedPixels(static_cast<Plane>(plane), row4x4, row_unit);
       }
     }
+    const int num_deblock_units =
+        4 + MultiplyBy4(Ceil(frame_header_.rows4x4, 16));
     // Apply SuperRes if necessary for the deblocked pixels.
     // chroma_subsampling_y has to be passed in as 0 since we need to apply
     // superres to all the rows in deblock_buffer_ irrespective of what the

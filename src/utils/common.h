@@ -174,6 +174,10 @@ inline int CeilLog2(unsigned int n) {
   return (n < 2) ? 0 : FloorLog2(n - 1) + 1;
 }
 
+constexpr int Ceil(int dividend, int divisor) {
+  return dividend / divisor + static_cast<int>(dividend % divisor != 0);
+}
+
 inline int32_t RightShiftWithRounding(int32_t value, int bits) {
   assert(bits >= 0);
   return (value + ((1 << bits) >> 1)) >> bits;
