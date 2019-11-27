@@ -726,15 +726,14 @@ bool DecoderImpl::PostFilterRow(PostFilter* post_filter, int row4x4, int sb4x4,
   if (post_filter->DoDeblock()) {
     post_filter->ApplyDeblockFilterForOneSuperBlockRow(row4x4, sb4x4);
   }
-  // TODO(vigneshv): If loop restoration is on, then all the other filters will
-  // be applied in the end. This is temporary and only to facilitate smaller CLs
-  // for easier review. It will go away shortly.
-  if (post_filter->DoRestoration()) return true;
   // Cdef lags by 1 superblock row relative to deblocking (since deblocking the
   // current superblock row could change the pixels in the previous superblock
   // row).
   const int previous_row4x4 = row4x4 - sb4x4;
   if (previous_row4x4 >= 0) {
+    if (post_filter->DoRestoration() && post_filter->DoCdef()) {
+      post_filter->SetupDeblockBuffer(previous_row4x4, sb4x4);
+    }
     if (post_filter->DoCdef()) {
       post_filter->ApplyCdefForOneSuperBlockRow(previous_row4x4, sb4x4);
     }
@@ -743,14 +742,29 @@ bool DecoderImpl::PostFilterRow(PostFilter* post_filter, int row4x4, int sb4x4,
                                                        sb4x4)) {
       return false;
     }
+    if (post_filter->DoRestoration()) {
+      post_filter->CopyBorderForRestoration(previous_row4x4, sb4x4);
+      post_filter->ApplyLoopRestorationForOneSuperBlockRow(previous_row4x4,
+                                                           sb4x4);
+    }
   }
   if (is_last_row) {
+    if (post_filter->DoRestoration() && post_filter->DoCdef()) {
+      post_filter->SetupDeblockBuffer(row4x4, sb4x4);
+    }
     if (post_filter->DoCdef()) {
       post_filter->ApplyCdefForOneSuperBlockRow(row4x4, sb4x4);
     }
     if (post_filter->DoSuperRes() &&
         !post_filter->ApplySuperResForOneSuperBlockRow(row4x4, sb4x4)) {
       return false;
+    }
+    if (post_filter->DoRestoration()) {
+      post_filter->CopyBorderForRestoration(row4x4, sb4x4);
+      post_filter->ApplyLoopRestorationForOneSuperBlockRow(row4x4, sb4x4);
+      // Loop restoration operates with a lag of 8 rows. So make sure to cover
+      // all the rows of the last superblock row.
+      post_filter->ApplyLoopRestorationForOneSuperBlockRow(row4x4 + sb4x4, 16);
     }
   }
   return true;

@@ -187,59 +187,50 @@ void ComputeSuperRes(const uint8_t* source, const int upscaled_width,
 constexpr int PostFilter::kCdefLargeValue;
 
 bool PostFilter::ApplyFiltering() {
-  if (thread_pool_ != nullptr && DoDeblock() && !ApplyDeblockFilterThreaded()) {
-    return false;
-  }
-  if (DoCdef() && DoRestoration()) {
-    for (int plane = 0; plane < planes_; ++plane) {
-#if LIBGAV1_MSAN
-      // The first four rows of |deblock_buffer_| are never used. However, we
-      // apply SuperRes for the entire buffer for simplicity. Zero-out those
-      // rows so that MSAN does not complain about uninitialized access.
-      if (DoSuperRes()) {
-        for (int i = 0; i < 4; ++i) {
-          memset(
-              deblock_buffer_.data(plane) + deblock_buffer_.stride(plane) * i,
-              0, deblock_buffer_.stride(plane));
+  if (thread_pool_ == nullptr) {
+    if (DoCdef() || DoRestoration()) {
+      // Adjust the frame buffer pointers after cdef/loop restoration was
+      // applied. For Cdef and Loop Restoration, we write the filtered output to
+      // the upper-left side of the original source_buffer_->data(). The new
+      // buffer pointer is still guaranteed to be within the original buffer's
+      // data region because of the borders. Negative shifts are used, to
+      // indicate shifting towards the upper-left corner. Shifts are in pixels.
+      for (int plane = kPlaneY; plane < planes_; ++plane) {
+        const bool shift_cdef = DoCdef();
+        const bool shift_loop_restoration =
+            DoRestoration() &&
+            loop_restoration_.type[plane] != kLoopRestorationTypeNone;
+        const int horizontal_shift = -source_buffer_->alignment() *
+                                     (static_cast<int>(shift_cdef) +
+                                      static_cast<int>(shift_loop_restoration));
+        const int vertical_shift =
+            (shift_cdef ? -kCdefBorder : 0) +
+            (shift_loop_restoration ? -kRestorationBorder : 0);
+        if (!source_buffer_->ShiftBuffer(plane, horizontal_shift,
+                                         vertical_shift)) {
+          LIBGAV1_DLOG(ERROR,
+                       "Error shifting frame buffer head pointer at plane: %d",
+                       plane);
+          return false;
         }
       }
-#endif
+    }
+  } else {
+    if (DoDeblock() && !ApplyDeblockFilterThreaded()) return false;
+    if (DoCdef() && DoRestoration()) {
       for (int row4x4 = 0; row4x4 < frame_header_.rows4x4;
            row4x4 += kNum4x4InLoopFilterMaskUnit) {
-        CopyDeblockedPixels(static_cast<Plane>(plane), row4x4);
+        SetupDeblockBuffer(row4x4, kNum4x4InLoopFilterMaskUnit);
       }
     }
-    const int num_deblock_units =
-        4 + MultiplyBy4(Ceil(frame_header_.rows4x4, 16));
-    // Apply SuperRes if necessary for the deblocked pixels.
-    // chroma_subsampling_y has to be passed in as 0 since we need to apply
-    // superres to all the rows in deblock_buffer_ irrespective of what the
-    // chroma subsampling_y of the actual frame is.
-    if (DoSuperRes() &&
-        !FrameSuperRes(&deblock_buffer_, DivideBy4(num_deblock_units),
-                       /*chroma_subsampling_y=*/0,
-                       /*plane_offsets=*/{0, 0, 0})) {
-      return false;
-    }
-    // Extend the left and right boundaries needed for Loop Restoration.
-    for (int plane = 0; plane < planes_; ++plane) {
-      const int subsampling_x = (plane == kPlaneY) ? 0 : subsampling_x_;
-      const int plane_width =
-          RightShiftWithRounding(upscaled_width_, subsampling_x);
-      ExtendFrameBoundary(deblock_buffer_.data(plane), plane_width,
-                          num_deblock_units, deblock_buffer_.stride(plane),
-                          kRestorationBorder, kRestorationBorder, 0, 0);
-    }
-  }
-  if (DoCdef() && !ApplyCdef()) return false;
-  if (thread_pool_ != nullptr || DoRestoration()) {
+    if (DoCdef() && !ApplyCdef()) return false;
     if (DoSuperRes() &&
         !FrameSuperRes(source_buffer_, frame_header_.rows4x4, subsampling_y_,
                        /*plane_offsets=*/{0, 0, 0})) {
       return false;
     }
+    if (DoRestoration() && !ApplyLoopRestoration()) return false;
   }
-  if (DoRestoration() && !ApplyLoopRestoration()) return false;
   // Extend frame boundary for inter frame convolution and referencing if the
   // frame will be saved as a reference frame.
   if (frame_header_.refresh_frame_flags != 0) {
@@ -378,6 +369,49 @@ bool PostFilter::ApplyDeblockFilterThreaded() {
     pending_workers.Wait();
   }
   return true;
+}
+
+void PostFilter::SetupDeblockBuffer(int row4x4_start, int sb4x4) {
+  assert(row4x4_start >= 0);
+  assert(DoCdef());
+  assert(DoRestoration());
+  for (int sb_y = 0; sb_y < sb4x4; sb_y += 16) {
+    const int row4x4 = row4x4_start + sb_y;
+    for (int plane = 0; plane < planes_; ++plane) {
+      CopyDeblockedPixels(static_cast<Plane>(plane), row4x4);
+    }
+    const int row_unit = DivideBy16(row4x4);
+    const int row_offset_start = MultiplyBy4(row_unit + 1);
+    if (DoSuperRes()) {
+      std::array<ptrdiff_t, kMaxPlanes> plane_offsets{
+          row_offset_start * deblock_buffer_.stride(kPlaneY),
+          row_offset_start * deblock_buffer_.stride(kPlaneU),
+          row_offset_start * deblock_buffer_.stride(kPlaneV)};
+      FrameSuperRes(&deblock_buffer_, /*rows4x4=*/1, /*chroma_subsampling_y=*/0,
+                    plane_offsets);
+    }
+    // Extend the left and right boundaries needed for loop restoration.
+    for (int plane = 0; plane < planes_; ++plane) {
+      uint8_t* src = deblock_buffer_.data(plane) +
+                     row_offset_start * deblock_buffer_.stride(plane);
+      const int subsampling_x = (plane == kPlaneY) ? 0 : subsampling_x_;
+      const int plane_width =
+          RightShiftWithRounding(upscaled_width_, subsampling_x);
+      for (int i = 0; i < 4; ++i) {
+#if LIBGAV1_MAX_BITDEPTH >= 10
+        if (bitdepth_ >= 10) {
+          ExtendLine<uint16_t>(src, plane_width, kRestorationBorder,
+                               kRestorationBorder);
+        } else  // NOLINT.
+#endif
+        {
+          ExtendLine<uint8_t>(src, plane_width, kRestorationBorder,
+                              kRestorationBorder);
+        }
+        src += deblock_buffer_.stride(plane);
+      }
+    }
+  }
 }
 
 void PostFilter::CopyDeblockedPixels(Plane plane, int row4x4) {
@@ -796,36 +830,12 @@ void PostFilter::ApplyCdefForOneSuperBlockRow(int row4x4_start, int sb4x4) {
 }
 
 bool PostFilter::ApplyCdef() {
-  if (thread_pool_ != nullptr) {
 #if LIBGAV1_MAX_BITDEPTH >= 10
-    if (bitdepth_ >= 10) {
-      return ApplyCdefThreaded<uint16_t>();
-    }
+  if (bitdepth_ >= 10) {
+    return ApplyCdefThreaded<uint16_t>();
+  }
 #endif
-    return ApplyCdefThreaded<uint8_t>();
-  }
-
-  if (DoRestoration()) {
-    const int step_64x64 = 16;  // = 64/4.
-    // Apply cdef on each 8x8 Y block and
-    // (8 >> subsampling_x)x(8 >> subsampling_y) UV block.
-    for (int row4x4 = 0; row4x4 < frame_header_.rows4x4; row4x4 += step_64x64) {
-      ApplyCdefForOneSuperBlockRow(row4x4, 16);
-    }
-  }
-  // abs(horizontal_shift) must be at least kCdefBorder. Increase it to
-  // preserve buffer alignment.
-  const int horizontal_shift = -source_buffer_->alignment();
-  const int vertical_shift = -kCdefBorder;
-  for (int plane = kPlaneY; plane < planes_; ++plane) {
-    if (!source_buffer_->ShiftBuffer(plane, horizontal_shift, vertical_shift)) {
-      LIBGAV1_DLOG(ERROR,
-                   "Error shifting frame buffer head pointer at plane: %d",
-                   plane);
-      return false;
-    }
-  }
-  return true;
+  return ApplyCdefThreaded<uint8_t>();
 }
 
 bool PostFilter::FrameSuperRes(
@@ -878,15 +888,6 @@ bool PostFilter::FrameSuperRes(
       ComputeSuperRes<8, uint8_t>(line_buffer_start, upscaled_width,
                                   initial_subpixel_x, step, input);
     }
-    // If loop restoration is on, extend the original frame by copying into the
-    // borders.
-    if (DoRestoration()) {
-      ExtendFrameBoundary(
-          input_buffer->data(plane), upscaled_width,
-          input_buffer->displayed_height(plane), input_buffer->stride(plane),
-          input_buffer->left_border(plane), input_buffer->right_border(plane),
-          input_buffer->top_border(plane), input_buffer->bottom_border(plane));
-    }
   }
   AlignedFree(line_buffer);
   return true;
@@ -910,6 +911,147 @@ void PostFilter::ApplyLoopRestorationForOneRowInWindow(
         plane_unit_size, num_horizontal_units, plane_width,
         &loop_restored_window);
   }
+}
+
+void PostFilter::CopyBorderForRestoration(int row4x4, int sb4x4) {
+  assert(row4x4 >= 0);
+  assert(DoRestoration());
+  for (int plane = 0; plane < planes_; ++plane) {
+    int subsampling_y = (plane == kPlaneY) ? 0 : subsampling_y_;
+    int subsampling_x = (plane == kPlaneY) ? 0 : subsampling_x_;
+    const int row = MultiplyBy4(row4x4) >> subsampling_y;
+    const int plane_width =
+        RightShiftWithRounding(upscaled_width_, subsampling_x);
+    const int plane_height = RightShiftWithRounding(
+        std::min(MultiplyBy4(sb4x4), height_ - MultiplyBy4(row4x4)),
+        subsampling_y);
+    const bool copy_bottom = row4x4 + sb4x4 >= frame_header_.rows4x4;
+    const int cdef_horizontal_shift = -source_buffer_->alignment();
+    const int cdef_vertical_shift = -kCdefBorder;
+    const ptrdiff_t cdef_buffer_offset =
+        DoCdef() ? cdef_vertical_shift * source_buffer_->stride(plane) +
+                       cdef_horizontal_shift * pixel_size_
+                 : 0;
+    uint8_t* const start =
+        SetBufferOffset(source_buffer_, static_cast<Plane>(plane), row4x4, 0,
+                        subsampling_x, subsampling_y) +
+        cdef_buffer_offset;
+    const ptrdiff_t stride = source_buffer_->stride(plane);
+#if LIBGAV1_MAX_BITDEPTH >= 10
+    if (bitdepth_ >= 10) {
+      ExtendFrame<uint16_t>(start, plane_width, plane_height, stride,
+                            kRestorationBorder, kRestorationBorder,
+                            (row == 0) ? kRestorationBorder : 0,
+                            copy_bottom ? kRestorationBorder : 0);
+      continue;
+    }
+#endif
+    ExtendFrame<uint8_t>(start, plane_width, plane_height, stride,
+                         kRestorationBorder, kRestorationBorder,
+                         (row == 0) ? kRestorationBorder : 0,
+                         copy_bottom ? kRestorationBorder : 0);
+  }
+}
+
+void PostFilter::ApplyLoopRestorationForOneSuperBlockRow(int row4x4_start,
+                                                         int sb4x4) {
+  assert(row4x4_start >= 0);
+  assert(DoRestoration());
+  const int plane_process_unit_width[kMaxPlanes] = {
+      kRestorationProcessingUnitSize,
+      kRestorationProcessingUnitSize >> subsampling_x_,
+      kRestorationProcessingUnitSize >> subsampling_x_};
+  const int plane_process_unit_height[kMaxPlanes] = {
+      kRestorationProcessingUnitSize,
+      kRestorationProcessingUnitSize >> subsampling_y_,
+      kRestorationProcessingUnitSize >> subsampling_y_};
+  for (int plane = 0; plane < planes_; ++plane) {
+    if (frame_header_.loop_restoration.type[plane] ==
+        kLoopRestorationTypeNone) {
+      continue;
+    }
+    const int subsampling_y = (plane == kPlaneY) ? 0 : subsampling_y_;
+    const int subsampling_x = (plane == kPlaneY) ? 0 : subsampling_x_;
+    const int unit_height_offset = kRestorationUnitOffset >> subsampling_y;
+    const int plane_height =
+        RightShiftWithRounding(frame_header_.height, subsampling_y);
+    const int plane_width =
+        RightShiftWithRounding(frame_header_.upscaled_width, subsampling_x);
+    const int num_vertical_units =
+        restoration_info_->num_vertical_units(static_cast<Plane>(plane));
+    const int process_unit_width = plane_process_unit_width[plane];
+    for (int sb_y = 0; sb_y < sb4x4; sb_y += 16) {
+      const int row4x4 = row4x4_start + sb_y;
+      const int y =
+          (MultiplyBy4(row4x4) - (row4x4 == 0 ? 0 : 8)) >> subsampling_y;
+      if (y >= plane_height) break;
+      const int plane_unit_size =
+          frame_header_.loop_restoration.unit_size[plane];
+      const int unit_row = std::min((y + unit_height_offset) / plane_unit_size,
+                                    num_vertical_units - 1);
+      const int expected_height = plane_process_unit_height[plane] +
+                                  ((y == 0) ? -unit_height_offset : 0);
+      const int current_process_unit_height =
+          (y + expected_height <= plane_height) ? expected_height
+                                                : plane_height - y;
+      for (int column4x4 = 0;; column4x4 += 16) {
+        const int x = MultiplyBy4(column4x4) >> subsampling_x;
+        if (x >= plane_width) break;
+#if LIBGAV1_MAX_BITDEPTH >= 10
+        if (bitdepth_ >= 10) {
+          ApplyLoopRestorationForSuperBlock<uint16_t>(
+              static_cast<Plane>(plane), x, y, unit_row,
+              current_process_unit_height, process_unit_width);
+          continue;
+        }
+#endif
+        ApplyLoopRestorationForSuperBlock<uint8_t>(
+            static_cast<Plane>(plane), x, y, unit_row,
+            current_process_unit_height, process_unit_width);
+      }
+    }
+  }
+}
+
+template <typename Pixel>
+void PostFilter::ApplyLoopRestorationForSuperBlock(
+    const Plane plane, const int x, const int y, const int unit_row,
+    const int current_process_unit_height, const int process_unit_width) {
+  uint8_t* const src_buffer = source_buffer_->data(plane);
+  const int src_stride = source_buffer_->stride(plane);
+  const int cdef_horizontal_shift = -source_buffer_->alignment();
+  const int cdef_vertical_shift = -kCdefBorder;
+  const ptrdiff_t cdef_buffer_offset =
+      DoCdef() ? cdef_vertical_shift * src_stride +
+                     cdef_horizontal_shift * pixel_size_
+               : 0;
+  // The input to loop restoration is the cdef filtered pixels. If cdef
+  // filtering is on, then the output is written with a shift. So the source
+  // buffer has to be offset by that shift.
+  uint8_t* const cdef_buffer = source_buffer_->data(plane) + cdef_buffer_offset;
+  const int plane_unit_size = loop_restoration_.unit_size[plane];
+  const int num_horizontal_units =
+      restoration_info_->num_horizontal_units(static_cast<Plane>(plane));
+  const int8_t subsampling_x = (plane == kPlaneY) ? 0 : subsampling_x_;
+  const int8_t subsampling_y = (plane == kPlaneY) ? 0 : subsampling_y_;
+  const int plane_width =
+      RightShiftWithRounding(upscaled_width_, subsampling_x);
+  const int plane_height = RightShiftWithRounding(height_, subsampling_y);
+  const int horizontal_shift = -source_buffer_->alignment();
+  const int vertical_shift = -kRestorationBorder;
+  const ptrdiff_t src_unit_buffer_offset = vertical_shift * src_stride +
+                                           horizontal_shift * pixel_size_ +
+                                           cdef_buffer_offset;
+  // The output of loop restoration is written into the source frame buffer with
+  // a shift to the top left.
+  Array2DView<Pixel> loop_restored_window(
+      source_buffer_->height(plane), src_stride / sizeof(Pixel),
+      reinterpret_cast<Pixel*>(src_buffer + y * src_stride + x * pixel_size_ +
+                               src_unit_buffer_offset));
+  ApplyLoopRestorationForOneUnit<Pixel>(
+      cdef_buffer, src_stride, plane, plane_height, x, y, 0, 0, unit_row,
+      current_process_unit_height, process_unit_width, plane_unit_size,
+      num_horizontal_units, plane_width, &loop_restored_window);
 }
 
 template <typename Pixel>
@@ -1139,224 +1281,13 @@ bool PostFilter::ApplyLoopRestorationThreaded() {
 }
 
 bool PostFilter::ApplyLoopRestoration() {
-  if (thread_pool_ != nullptr) {
-    assert(threaded_window_buffer_ != nullptr);
+  assert(threaded_window_buffer_ != nullptr);
 #if LIBGAV1_MAX_BITDEPTH >= 10
-    if (bitdepth_ >= 10) {
-      return ApplyLoopRestorationThreaded<uint16_t>();
-    }
-#endif
-    return ApplyLoopRestorationThreaded<uint8_t>();
+  if (bitdepth_ >= 10) {
+    return ApplyLoopRestorationThreaded<uint16_t>();
   }
-
-  const ptrdiff_t block_buffer_stride =
-      kRestorationProcessingUnitSizeWithBorders * pixel_size_;
-  const int plane_process_unit_width[kMaxPlanes] = {
-      kRestorationProcessingUnitSize,
-      kRestorationProcessingUnitSize >> subsampling_x_,
-      kRestorationProcessingUnitSize >> subsampling_x_};
-  const int plane_process_unit_height[kMaxPlanes] = {
-      kRestorationProcessingUnitSize,
-      kRestorationProcessingUnitSize >> subsampling_y_,
-      kRestorationProcessingUnitSize >> subsampling_y_};
-  IntermediateBuffers intermediate_buffers;
-  RestorationBuffer restoration_buffer = {
-      {intermediate_buffers.box_filter.output[0],
-       intermediate_buffers.box_filter.output[1]},
-      plane_process_unit_width[kPlaneY],
-      {intermediate_buffers.box_filter.intermediate_a,
-       intermediate_buffers.box_filter.intermediate_b},
-      kRestorationProcessingUnitSizeWithBorders + kRestorationPadding,
-      intermediate_buffers.wiener,
-      kMaxSuperBlockSizeInPixels};
-
-  for (int plane = kPlaneY; plane < planes_; ++plane) {
-    if (loop_restoration_.type[plane] == kLoopRestorationTypeNone) {
-      continue;
-    }
-    const int8_t subsampling_x = (plane == kPlaneY) ? 0 : subsampling_x_;
-    const int8_t subsampling_y = (plane == kPlaneY) ? 0 : subsampling_y_;
-    const int unit_height_offset = kRestorationUnitOffset >> subsampling_y;
-    restoration_buffer.box_filter_process_output_stride =
-        plane_process_unit_width[plane];
-    uint8_t* src_buffer = source_buffer_->data(plane);
-    const ptrdiff_t src_stride = source_buffer_->stride(plane);
-    uint8_t* deblock_buffer = deblock_buffer_.data(plane);
-    const ptrdiff_t deblock_buffer_stride = deblock_buffer_.stride(plane);
-    const int plane_unit_size = loop_restoration_.unit_size[plane];
-    const int num_vertical_units =
-        restoration_info_->num_vertical_units(static_cast<Plane>(plane));
-    const int num_horizontal_units =
-        restoration_info_->num_horizontal_units(static_cast<Plane>(plane));
-    const int plane_width =
-        RightShiftWithRounding(upscaled_width_, subsampling_x);
-    const int plane_height = RightShiftWithRounding(height_, subsampling_y);
-    ExtendFrameBoundary(src_buffer, plane_width, plane_height, src_stride,
-                        kRestorationBorder, kRestorationBorder,
-                        kRestorationBorder, kRestorationBorder);
-
-    int loop_restored_rows = 0;
-    // abs(horizontal_shift) must be at least kRestorationBorder. Increase it
-    // to preserve buffer alignment.
-    const int horizontal_shift = -source_buffer_->alignment();
-    const int vertical_shift = -kRestorationBorder;
-    const ptrdiff_t src_unit_buffer_offset =
-        vertical_shift * src_stride + horizontal_shift * pixel_size_;
-    const int deblock_buffer_units = 64 >> subsampling_y;
-    for (int unit_row = 0; unit_row < num_vertical_units; ++unit_row) {
-      int current_unit_height = plane_unit_size;
-      // Note [1]: we need to identify the entire restoration area. So the
-      // condition check of finding the boundary is first. In contrast, Note [2]
-      // is a case where condition check of the first row is first.
-      if (unit_row == num_vertical_units - 1) {
-        // Take care of the last row. The max height of last row units could be
-        // 3/2 unit_size.
-        current_unit_height = plane_height - loop_restored_rows;
-      } else if (unit_row == 0) {
-        // The size of restoration units in the first row has to subtract the
-        // height offset.
-        current_unit_height -= unit_height_offset;
-      }
-
-      for (int unit_column = 0; unit_column < num_horizontal_units;
-           ++unit_column) {
-        const int unit_id = unit_row * num_horizontal_units + unit_column;
-        const LoopRestorationType type =
-            restoration_info_
-                ->loop_restoration_info(static_cast<Plane>(plane), unit_id)
-                .type;
-        uint8_t* src_unit_buffer =
-            src_buffer + unit_column * plane_unit_size * pixel_size_;
-        uint8_t* deblock_unit_buffer =
-            (deblock_buffer != nullptr)
-                ? deblock_buffer + unit_column * plane_unit_size * pixel_size_
-                : nullptr;
-
-        // Take care of the last column. The max width of last column unit
-        // could be 3/2 unit_size.
-        const int current_unit_width =
-            (unit_column == num_horizontal_units - 1)
-                ? plane_width - plane_unit_size * unit_column
-                : plane_unit_size;
-
-        if (type == kLoopRestorationTypeNone) {
-          for (int y = 0; y < current_unit_height; ++y) {
-            memcpy(src_unit_buffer + src_unit_buffer_offset, src_unit_buffer,
-                   current_unit_width * pixel_size_);
-            src_unit_buffer += src_stride;
-          }
-          continue;
-        }
-
-        assert(type == kLoopRestorationTypeWiener ||
-               type == kLoopRestorationTypeSgrProj);
-        const dsp::LoopRestorationFunc restoration_func =
-            dsp_.loop_restorations[type - 2];
-        for (int row = 0; row < current_unit_height;) {
-          const int current_process_unit_height =
-              plane_process_unit_height[plane] +
-              ((unit_row + row == 0) ? -unit_height_offset : 0);
-
-          for (int column = 0; column < current_unit_width;
-               column += plane_process_unit_width[plane]) {
-            const int processing_unit_width = std::min(
-                plane_process_unit_width[plane], current_unit_width - column);
-            int processing_unit_height = plane_process_unit_height[plane];
-            // Note [2]: the height of processing units in the first row has
-            // special cases where the frame height is less than
-            // plane_process_unit_height[plane].
-            if (unit_row + row == 0) {
-              processing_unit_height = std::min(
-                  plane_process_unit_height[plane] - unit_height_offset,
-                  current_unit_height);
-            } else if (current_unit_height - row <
-                       plane_process_unit_height[plane]) {
-              // The height of last row of processing units.
-              processing_unit_height = current_unit_height - row;
-            }
-            // We apply in-place loop restoration, by copying the source block
-            // to a buffer and computing loop restoration on it. The restored
-            // pixel values are then stored to the frame buffer. However,
-            // loop restoration requires (a) 3 pixel extension on current 64x64
-            // processing unit, (b) unrestored pixels.
-            // To address this, we store the restored pixels not onto the start
-            // of current block on the source frame buffer, say point A,
-            // but to its top by three pixels and to the left by
-            // alignment/pixel_size_ pixels, say point B, such that
-            // next processing unit can fetch 3 pixel border of unrestored
-            // values. And we need to adjust the input frame buffer pointer to
-            // its left and top corner, point B.
-            uint8_t* const src_process_unit_buffer =
-                src_unit_buffer + column * pixel_size_;
-            uint8_t* const deblock_process_unit_buffer =
-                (deblock_unit_buffer != nullptr)
-                    ? deblock_unit_buffer + column * pixel_size_
-                    : nullptr;
-            const bool frame_top_border = unit_row + row == 0;
-            const bool frame_bottom_border =
-                (unit_row == num_vertical_units - 1) &&
-                (row + current_process_unit_height >= current_unit_height);
-#if LIBGAV1_MAX_BITDEPTH >= 10
-            if (bitdepth_ >= 10) {
-              PrepareLoopRestorationBlock<uint16_t>(
-                  DoCdef(), src_process_unit_buffer, src_stride,
-                  deblock_process_unit_buffer, deblock_buffer_stride,
-                  block_buffer_, block_buffer_stride, processing_unit_width,
-                  processing_unit_height, frame_top_border,
-                  frame_bottom_border);
-            } else
 #endif
-            {
-              PrepareLoopRestorationBlock<uint8_t>(
-                  DoCdef(), src_process_unit_buffer, src_stride,
-                  deblock_process_unit_buffer, deblock_buffer_stride,
-                  block_buffer_, block_buffer_stride, processing_unit_width,
-                  processing_unit_height, frame_top_border,
-                  frame_bottom_border);
-            }
-            restoration_func(
-                reinterpret_cast<const uint8_t*>(
-                    block_buffer_ + kRestorationBorder * block_buffer_stride +
-                    kRestorationBorder * pixel_size_),
-                src_unit_buffer + column * pixel_size_ + src_unit_buffer_offset,
-                restoration_info_->loop_restoration_info(
-                    static_cast<Plane>(plane), unit_id),
-                block_buffer_stride, src_stride, processing_unit_width,
-                processing_unit_height, &restoration_buffer);
-          }
-          row += current_process_unit_height;
-          src_unit_buffer += current_process_unit_height * src_stride;
-          if (deblock_unit_buffer != nullptr) {
-            const int deblock_process_unit_height = MultiplyBy4(
-                Ceil(current_process_unit_height, deblock_buffer_units));
-            deblock_unit_buffer +=
-                deblock_process_unit_height * deblock_buffer_stride;
-          }
-        }
-      }
-      loop_restored_rows += current_unit_height;
-      src_buffer += current_unit_height * src_stride;
-      if (deblock_buffer != nullptr) {
-        const int deblock_unit_height =
-            MultiplyBy4(Ceil(current_unit_height, deblock_buffer_units));
-        deblock_buffer += deblock_unit_height * deblock_buffer_stride;
-      }
-    }
-    // Adjust frame buffer pointer once a plane is loop restored.
-    // If loop restoration is applied to a plane, we write the filtered frame
-    // to the upper-left side of original source_buffer_->data().
-    // The new buffer pointer is still within the physical frame buffer.
-    // Here negative shifts are used, to indicate shifting towards the
-    // upper-left corner. Shifts are in pixels.
-    if (!source_buffer_->ShiftBuffer(plane, horizontal_shift, vertical_shift)) {
-      LIBGAV1_DLOG(ERROR,
-                   "Error shifting frame buffer head pointer at plane: %d",
-                   plane);
-      return false;
-    }
-  }
-
-  return true;
+  return ApplyLoopRestorationThreaded<uint8_t>();
 }
 
 void PostFilter::HorizontalDeblockFilter(Plane plane, int row4x4_start,

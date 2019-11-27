@@ -248,6 +248,16 @@ class PostFilter {
   // of 4*|sb4x4|.
   bool ApplySuperResForOneSuperBlockRow(int row4x4, int sb4x4);
 
+  // Sets up the |deblock_buffer_| for loop restoration.
+  void SetupDeblockBuffer(int row4x4_start, int sb4x4);
+
+  // Copies the borders necessary for loop restoration.
+  void CopyBorderForRestoration(int row4x4, int sb4x4);
+
+  // Applies loop restoration for the superblock row starting at |row4x4_start|
+  // with a height of 4*|sb4x4|.
+  void ApplyLoopRestorationForOneSuperBlockRow(int row4x4_start, int sb4x4);
+
  private:
   // The type of the HorizontalDeblockFilter and VerticalDeblockFilter member
   // functions.
@@ -293,6 +303,13 @@ class PostFilter {
 
   // Copies the deblocked pixels needed for loop restoration.
   void CopyDeblockedPixels(Plane plane, int row4x4);
+
+  template <typename Pixel>
+  void ApplyLoopRestorationForSuperBlock(Plane plane, int x, int y,
+                                         int unit_row,
+                                         int current_process_unit_height,
+                                         int process_unit_width);
+
   void DeblockFilterWorker(const DeblockFilterJob* jobs, int num_jobs,
                            std::atomic<int>* job_counter,
                            DeblockFilter deblock_filter);
