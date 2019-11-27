@@ -6,6 +6,7 @@
 #define DISCOVERY_MDNS_MDNS_RECORDS_H_
 
 #include <chrono>
+#include <functional>
 #include <initializer_list>
 #include <string>
 #include <vector>
@@ -273,6 +274,8 @@ using Rdata = absl::variant<RawRecordRdata,
 // according to the TYPE and CLASS of the resource record.
 class MdnsRecord {
  public:
+  using ConstRef = std::reference_wrapper<const MdnsRecord>;
+
   MdnsRecord();
   MdnsRecord(DomainName name,
              DnsType dns_type,
