@@ -131,10 +131,6 @@ class NET_EXPORT_PRIVATE HttpAuthHandlerNTLM : public HttpAuthHandler {
   bool AllowsDefaultCredentials() override;
 
  protected:
-  // This function acquires a credentials handle in the SSPI implementation.
-  // It does nothing in the portable implementation.
-  int InitializeBeforeFirstChallenge();
-
   // HttpAuthHandler
   bool Init(HttpAuthChallengeTokenizer* tok, const SSLInfo& ssl_info) override;
   int GenerateAuthTokenImpl(const AuthCredentials* credentials,
