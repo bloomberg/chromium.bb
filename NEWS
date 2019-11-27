@@ -12,6 +12,9 @@ issues]].
 ** Braille table improvements
 - Punctuation corrections in Ethiopic Braille thanks to Dr. Tamru E.
   Belay.
+- Fixes to the Norwegian 8dot braille table in regards to 4 Sami
+  characters, capital and small letters S and Z with caron. Thanks to
+  Oddvar Øyan and Lars Bjørndal.
 - Improvements to Afrikaans contracted braille thanks to Christo de Klerk
   - Over 50 cases have been corrected where braille rules were not
     correctly applied in words, mainly in those cases where
