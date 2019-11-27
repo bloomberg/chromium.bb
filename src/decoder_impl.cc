@@ -636,12 +636,13 @@ StatusCode DecoderImpl::DecodeTiles(const ObuParser* obu) {
         }
         if (!ok) break;
         // Apply post filters for the row above the current row.
-        PostFilterRow(&post_filter, row4x4 - block_width4x4, block_width4x4,
-                      false);
+        ok = PostFilterRow(&post_filter, row4x4 - block_width4x4,
+                           block_width4x4, false);
+        if (!ok) break;
       }
       // Apply post filters for the last row.
-      PostFilterRow(&post_filter, row4x4 - block_width4x4, block_width4x4,
-                    true);
+      ok = PostFilterRow(&post_filter, row4x4 - block_width4x4, block_width4x4,
+                         true);
       decoder_scratch_buffer_pool_.Release(std::move(scratch_buffer));
     } else {
       ok = false;
@@ -719,16 +720,16 @@ StatusCode DecoderImpl::DecodeTiles(const ObuParser* obu) {
   return kLibgav1StatusOk;
 }
 
-void DecoderImpl::PostFilterRow(PostFilter* post_filter, int row4x4, int sb4x4,
+bool DecoderImpl::PostFilterRow(PostFilter* post_filter, int row4x4, int sb4x4,
                                 bool is_last_row) {
-  if (row4x4 < 0) return;
+  if (row4x4 < 0) return true;
   if (post_filter->DoDeblock()) {
     post_filter->ApplyDeblockFilterForOneSuperBlockRow(row4x4, sb4x4);
   }
   // TODO(vigneshv): If loop restoration is on, then all the other filters will
   // be applied in the end. This is temporary and only to facilitate smaller CLs
   // for easier review. It will go away shortly.
-  if (post_filter->DoRestoration()) return;
+  if (post_filter->DoRestoration()) return true;
   // Cdef lags by 1 superblock row relative to deblocking (since deblocking the
   // current superblock row could change the pixels in the previous superblock
   // row).
@@ -737,12 +738,22 @@ void DecoderImpl::PostFilterRow(PostFilter* post_filter, int row4x4, int sb4x4,
     if (post_filter->DoCdef()) {
       post_filter->ApplyCdefForOneSuperBlockRow(previous_row4x4, sb4x4);
     }
+    if (post_filter->DoSuperRes() &&
+        !post_filter->ApplySuperResForOneSuperBlockRow(previous_row4x4,
+                                                       sb4x4)) {
+      return false;
+    }
   }
   if (is_last_row) {
     if (post_filter->DoCdef()) {
       post_filter->ApplyCdefForOneSuperBlockRow(row4x4, sb4x4);
     }
+    if (post_filter->DoSuperRes() &&
+        !post_filter->ApplySuperResForOneSuperBlockRow(row4x4, sb4x4)) {
+      return false;
+    }
   }
+  return true;
 }
 
 void DecoderImpl::SetCurrentFrameSegmentationMap(

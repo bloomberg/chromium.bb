@@ -217,7 +217,8 @@ bool PostFilter::ApplyFiltering() {
     // chroma subsampling_y of the actual frame is.
     if (DoSuperRes() &&
         !FrameSuperRes(&deblock_buffer_, DivideBy4(num_deblock_units),
-                       /*chroma_subsampling_y=*/0)) {
+                       /*chroma_subsampling_y=*/0,
+                       /*plane_offsets=*/{0, 0, 0})) {
       return false;
     }
     // Extend the left and right boundaries needed for Loop Restoration.
@@ -231,9 +232,12 @@ bool PostFilter::ApplyFiltering() {
     }
   }
   if (DoCdef() && !ApplyCdef()) return false;
-  if (DoSuperRes() &&
-      !FrameSuperRes(source_buffer_, frame_header_.rows4x4, subsampling_y_)) {
-    return false;
+  if (thread_pool_ != nullptr || DoRestoration()) {
+    if (DoSuperRes() &&
+        !FrameSuperRes(source_buffer_, frame_header_.rows4x4, subsampling_y_,
+                       /*plane_offsets=*/{0, 0, 0})) {
+      return false;
+    }
   }
   if (DoRestoration() && !ApplyLoopRestoration()) return false;
   // Extend frame boundary for inter frame convolution and referencing if the
@@ -740,6 +744,29 @@ bool PostFilter::ApplyCdefThreaded() {
   return true;
 }
 
+bool PostFilter::ApplySuperResForOneSuperBlockRow(int row4x4_start, int sb4x4) {
+  assert(row4x4_start >= 0);
+  assert(DoSuperRes());
+  const int horizontal_shift = -source_buffer_->alignment();
+  const int vertical_shift = -kCdefBorder;
+  std::array<ptrdiff_t, kMaxPlanes> plane_offsets;
+  for (int plane = 0; plane < planes_; ++plane) {
+    // If cdef is on, then the output of cdef was written with a shift to allow
+    // in-place cdef filtering.
+    const ptrdiff_t cdef_offset =
+        DoCdef() ? vertical_shift * (source_buffer_->stride(plane)) +
+                       horizontal_shift * pixel_size_
+                 : 0;
+    const int subsampling_y = (plane == kPlaneY) ? 0 : subsampling_y_;
+    const ptrdiff_t row_offset = (MultiplyBy4(row4x4_start) >> subsampling_y) *
+                                 source_buffer_->stride(plane);
+    plane_offsets[plane] = cdef_offset + row_offset;
+  }
+  const int num_rows4x4 = std::min(sb4x4, frame_header_.rows4x4 - row4x4_start);
+  return FrameSuperRes(source_buffer_, num_rows4x4, subsampling_y_,
+                       plane_offsets);
+}
+
 void PostFilter::ApplyCdefForOneSuperBlockRow(int row4x4_start, int sb4x4) {
   assert(row4x4_start >= 0);
   assert(DoCdef());
@@ -801,8 +828,9 @@ bool PostFilter::ApplyCdef() {
   return true;
 }
 
-bool PostFilter::FrameSuperRes(YuvBuffer* const input_buffer, int rows4x4,
-                               int8_t chroma_subsampling_y) {
+bool PostFilter::FrameSuperRes(
+    YuvBuffer* const input_buffer, int rows4x4, int8_t chroma_subsampling_y,
+    const std::array<ptrdiff_t, kMaxPlanes>& plane_offsets) {
   const int line_buffer_size = MultiplyBy4(frame_header_.columns4x4) +
                                kLeftLineBorder + kRightLineBorder;
   auto* const line_buffer =
@@ -829,7 +857,7 @@ bool PostFilter::FrameSuperRes(YuvBuffer* const input_buffer, int rows4x4,
             upscaled_width +
         (1 << (kSuperResExtraBits - 1)) - error / 2;
     initial_subpixel_x &= kSuperResScaleMask;
-    uint8_t* input = input_buffer->data(plane);
+    uint8_t* input = input_buffer->data(plane) + plane_offsets[plane];
     const uint32_t input_stride = input_buffer->stride(plane);
     for (int y = 0; y < plane_height; ++y, input += input_stride) {
 #if LIBGAV1_MAX_BITDEPTH >= 10
@@ -850,12 +878,15 @@ bool PostFilter::FrameSuperRes(YuvBuffer* const input_buffer, int rows4x4,
       ComputeSuperRes<8, uint8_t>(line_buffer_start, upscaled_width,
                                   initial_subpixel_x, step, input);
     }
-    // Extend original frame, copy to borders.
-    ExtendFrameBoundary(
-        input_buffer->data(plane), upscaled_width,
-        input_buffer->displayed_height(plane), input_buffer->stride(plane),
-        input_buffer->left_border(plane), input_buffer->right_border(plane),
-        input_buffer->top_border(plane), input_buffer->bottom_border(plane));
+    // If loop restoration is on, extend the original frame by copying into the
+    // borders.
+    if (DoRestoration()) {
+      ExtendFrameBoundary(
+          input_buffer->data(plane), upscaled_width,
+          input_buffer->displayed_height(plane), input_buffer->stride(plane),
+          input_buffer->left_border(plane), input_buffer->right_border(plane),
+          input_buffer->top_border(plane), input_buffer->bottom_border(plane));
+    }
   }
   AlignedFree(line_buffer);
   return true;

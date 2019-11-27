@@ -244,6 +244,10 @@ class PostFilter {
   // height of 4*|sb4x4|.
   void ApplyCdefForOneSuperBlockRow(int row4x4, int sb4x4);
 
+  // Applies SuperRes for the superblock row starting at |row4x4| with a height
+  // of 4*|sb4x4|.
+  bool ApplySuperResForOneSuperBlockRow(int row4x4, int sb4x4);
+
  private:
   // The type of the HorizontalDeblockFilter and VerticalDeblockFilter member
   // functions.
@@ -400,8 +404,9 @@ class PostFilter {
   void GetDeblockFilterParams(uint8_t level, int* outer_thresh,
                               int* inner_thresh, int* hev_thresh) const;
   // Applies super resolution and writes result to input_buffer.
-  bool FrameSuperRes(YuvBuffer* input_buffer, int rows4x4,
-                     int8_t chroma_subsampling_y);  // Section 7.16.
+  bool FrameSuperRes(
+      YuvBuffer* input_buffer, int rows4x4, int8_t chroma_subsampling_y,
+      const std::array<ptrdiff_t, kMaxPlanes>& plane_offsets);  // Section 7.16.
 
   const ObuFrameHeader& frame_header_;
   const LoopRestoration& loop_restoration_;
