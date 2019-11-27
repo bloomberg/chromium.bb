@@ -806,14 +806,21 @@ void ServiceWorkerVersion::OnControlleeDestroyed(
   }
 }
 
-void ServiceWorkerVersion::EvictBackForwardCachedControllees() {
+void ServiceWorkerVersion::EvictBackForwardCachedControllees(
+    BackForwardCacheMetrics::NotRestoredReason reason) {
   DCHECK(IsBackForwardCacheEnabled());
   while (!bfcached_controllee_map_.empty()) {
     auto controllee = bfcached_controllee_map_.begin();
-    controllee->second->EvictFromBackForwardCache();
-    RemoveControlleeFromBackForwardCacheMap(
-        controllee->second->container_host()->client_uuid());
+    EvictBackForwardCachedControllee(controllee->second, reason);
   }
+}
+
+void ServiceWorkerVersion::EvictBackForwardCachedControllee(
+    ServiceWorkerProviderHost* controllee,
+    BackForwardCacheMetrics::NotRestoredReason reason) {
+  controllee->EvictFromBackForwardCache(reason);
+  RemoveControlleeFromBackForwardCacheMap(
+      controllee->container_host()->client_uuid());
 }
 
 void ServiceWorkerVersion::AddObserver(Observer* observer) {
@@ -1279,6 +1286,18 @@ void ServiceWorkerVersion::PostMessageToClient(
     // The client may already have been closed, just ignore.
     return;
   }
+  if (IsBackForwardCacheEnabled() &&
+      ServiceWorkerContext::IsServiceWorkerOnUIEnabled()) {
+    // When |PostMessageToClient| is called on a client that is in bfcache,
+    // evict the bfcache entry.
+    if (provider_host->IsInBackForwardCache()) {
+      EvictBackForwardCachedControllee(
+          provider_host, BackForwardCacheMetrics::NotRestoredReason::
+                             kServiceWorkerPostMessage);
+      return;
+    }
+  }
+
   ServiceWorkerContainerHost* container_host = provider_host->container_host();
   if (container_host->url().GetOrigin() != script_url_.GetOrigin()) {
     mojo::ReportBadMessage(

@@ -1062,7 +1062,8 @@ bool ServiceWorkerProviderHost::IsInBackForwardCache() const {
   return is_in_back_forward_cache_;
 }
 
-void ServiceWorkerProviderHost::EvictFromBackForwardCache() {
+void ServiceWorkerProviderHost::EvictFromBackForwardCache(
+    BackForwardCacheMetrics::NotRestoredReason reason) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(IsBackForwardCacheEnabled());
   DCHECK_EQ(provider_type(),
@@ -1073,9 +1074,7 @@ void ServiceWorkerProviderHost::EvictFromBackForwardCache() {
   // |rfh| could be evicted before this function is called.
   if (!rfh || !rfh->is_in_back_forward_cache())
     return;
-  rfh->EvictFromBackForwardCacheWithReason(
-      BackForwardCacheMetrics::NotRestoredReason::
-          kServiceWorkerVersionActivation);
+  rfh->EvictFromBackForwardCacheWithReason(reason);
 }
 
 void ServiceWorkerProviderHost::OnEnterBackForwardCache() {

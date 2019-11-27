@@ -4947,9 +4947,10 @@ Unknown properties are collapsed to zero. -->
   <int value="19" label="Scheduler tracked feature used"/>
   <int value="20" label="Conflicting BrowsingInstance"/>
   <int value="21" label="Cache flushed"/>
-  <int value="22" label="Service worker version activation"/>
+  <int value="22" label="ServiceWorker version activation"/>
   <int value="23" label="Session restored"/>
   <int value="24" label="Unknown (should not be happening)"/>
+  <int value="25" label="ServiceWorker postMessage"/>
 </enum>
 
 <enum name="BackForwardNavigationType">

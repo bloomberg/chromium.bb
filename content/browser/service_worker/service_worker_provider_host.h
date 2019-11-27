@@ -20,6 +20,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/unguessable_token.h"
 #include "content/browser/browser_interface_broker_impl.h"
+#include "content/browser/frame_host/back_forward_cache_metrics.h"
 #include "content/browser/service_worker/service_worker_object_host.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/common/content_export.h"
@@ -298,7 +299,8 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // BackForwardCache:
   // For service worker clients that are windows.
   bool IsInBackForwardCache() const;
-  void EvictFromBackForwardCache();
+  void EvictFromBackForwardCache(
+      BackForwardCacheMetrics::NotRestoredReason reason);
   // Called when this provider host's frame goes into BackForwardCache.
   void OnEnterBackForwardCache();
   // Called when a frame gets restored from BackForwardCache. Note that a

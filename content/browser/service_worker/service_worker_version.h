@@ -28,6 +28,7 @@
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "content/browser/frame_host/back_forward_cache_metrics.h"
 #include "content/browser/service_worker/embedded_worker_instance.h"
 #include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/browser/service_worker/service_worker_client_info.h"
@@ -387,7 +388,11 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // Evicts all the controllees from back-forward cache. The controllees in
   // |bfcached_controllee_map_| will be removed asynchronously as a result of
   // eviction.
-  void EvictBackForwardCachedControllees();
+  void EvictBackForwardCachedControllees(
+      BackForwardCacheMetrics::NotRestoredReason reason);
+  void EvictBackForwardCachedControllee(
+      ServiceWorkerProviderHost* controllee,
+      BackForwardCacheMetrics::NotRestoredReason reason);
 
   // The provider host hosting this version. Only valid while the version is
   // running.

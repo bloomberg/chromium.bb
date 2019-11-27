@@ -2717,6 +2717,67 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTestWithServiceWorkerEnabled,
       FROM_HERE);
 }
 
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTestWithServiceWorkerEnabled,
+                       EvictWithPostMessageToCachedClient) {
+  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_server.RegisterRequestHandler(
+      base::BindRepeating(&RequestHandlerForUpdateWorker));
+  https_server.AddDefaultHandlers(GetTestDataFilePath());
+  https_server.SetSSLConfig(net::EmbeddedTestServer::CERT_OK);
+  SetupCrossSiteRedirector(&https_server);
+  ASSERT_TRUE(https_server.Start());
+  Shell* tab_to_execute_service_worker = shell();
+  Shell* tab_to_be_bfcached = CreateBrowser();
+
+  // 1) Navigate to A in |tab_to_execute_service_worker|.
+  EXPECT_TRUE(NavigateToURL(
+      tab_to_execute_service_worker,
+      https_server.GetURL(
+          "a.com", "/back_forward_cache/service_worker_post_message.html")));
+
+  // 2) Register a service worker.
+  EXPECT_EQ("DONE", EvalJs(tab_to_execute_service_worker,
+                           "register('service_worker_post_message.js')"));
+
+  // 3) Navigate to A in |tab_to_be_bfcached|.
+  EXPECT_TRUE(NavigateToURL(
+      tab_to_be_bfcached,
+      https_server.GetURL(
+          "a.com", "/back_forward_cache/service_worker_post_message.html")));
+  const std::string script_to_store =
+      "executeCommandOnServiceWorker('StoreClients')";
+  EXPECT_EQ("DONE", EvalJs(tab_to_execute_service_worker, script_to_store));
+  RenderFrameHostImpl* rfh =
+      static_cast<WebContentsImpl*>(tab_to_be_bfcached->web_contents())
+          ->GetFrameTree()
+          ->root()
+          ->current_frame_host();
+  RenderFrameDeletedObserver deleted_observer_rfh(rfh);
+
+  // 4) Navigate away to B in |tab_to_be_bfcached|.
+  EXPECT_TRUE(NavigateToURL(tab_to_be_bfcached,
+                            https_server.GetURL("b.com", "/title1.html")));
+  EXPECT_FALSE(deleted_observer_rfh.deleted());
+  EXPECT_TRUE(rfh->is_in_back_forward_cache());
+
+  // 5) Trigger client.postMessage via |tab_to_execute_service_worker|. Cache in
+  // |tab_to_be_bfcached| will be evicted.
+  const std::string script_to_post_message =
+      "executeCommandOnServiceWorker('PostMessageToStoredClients')";
+  EXPECT_EQ("DONE",
+            EvalJs(tab_to_execute_service_worker, script_to_post_message));
+  deleted_observer_rfh.WaitUntilDeleted();
+
+  // 6) Go back to A in |tab_to_be_bfcached|.
+  tab_to_be_bfcached->web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(tab_to_be_bfcached->web_contents()));
+  ExpectOutcome(BackForwardCacheMetrics::HistoryNavigationOutcome::kNotRestored,
+                FROM_HERE);
+  ExpectNotRestored(
+      {BackForwardCacheMetrics::NotRestoredReason::kServiceWorkerPostMessage},
+      FROM_HERE);
+}
+
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, CachePagesWithBeacon) {
   constexpr char kKeepalivePath[] = "/keepalive";
 
