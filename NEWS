@@ -40,6 +40,11 @@ issues]].
                the characters defined in display rules (in display
                tables) but as a fallback it uses mappings defined in
                the translation table, e.g. letter rules.
+- No longer install ~lou_compare~, a tool that is used to run
+  regression tests for UEB. As it is only run during testing it will
+  no longer be installed by default on a users machine.
+- Remove a hidden feature of ~lou_translate~ that would cause it to
+  crash if passed an invalid file name. Thanks to Christian Egli.
 
 ** Deprecation notice
 None
