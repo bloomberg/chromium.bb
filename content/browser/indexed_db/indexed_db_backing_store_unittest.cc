@@ -970,8 +970,7 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, ActiveBlobJournal) {
         EXPECT_TRUE(transaction3->CommitPhaseTwo().ok());
         EXPECT_EQ(0U, backing_store()->removals().size());
         for (size_t i = 0; i < read_result_value.blob_info.size(); ++i) {
-          read_result_value.blob_info[i].release_callback().Run(
-              read_result_value.blob_info[i].file_path());
+          read_result_value.blob_info[i].release_callback().Run();
         }
       }));
   RunAllTasksUntilIdle();

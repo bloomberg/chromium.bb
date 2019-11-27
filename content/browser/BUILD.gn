@@ -970,6 +970,8 @@ jumbo_source_set("browser") {
     "indexed_db/cursor_impl.h",
     "indexed_db/database_impl.cc",
     "indexed_db/database_impl.h",
+    "indexed_db/file_stream_reader_to_data_pipe.cc",
+    "indexed_db/file_stream_reader_to_data_pipe.h",
     "indexed_db/indexed_db.h",
     "indexed_db/indexed_db_active_blob_registry.cc",
     "indexed_db/indexed_db_active_blob_registry.h",
