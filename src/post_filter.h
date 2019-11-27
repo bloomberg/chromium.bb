@@ -284,7 +284,7 @@ class PostFilter {
   };
 
   // Copies the deblocked pixels needed for loop restoration.
-  void CopyDeblockedPixels(Plane plane, int row4x4, int row_unit);
+  void CopyDeblockedPixels(Plane plane, int row4x4);
   void DeblockFilterWorker(const DeblockFilterJob* jobs, int num_jobs,
                            std::atomic<int>* job_counter,
                            DeblockFilter deblock_filter);

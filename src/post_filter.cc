@@ -204,9 +204,9 @@ bool PostFilter::ApplyFiltering() {
         }
       }
 #endif
-      for (int row4x4 = 0, row_unit = 0; row4x4 < frame_header_.rows4x4;
-           row4x4 += kNum4x4InLoopFilterMaskUnit, ++row_unit) {
-        CopyDeblockedPixels(static_cast<Plane>(plane), row4x4, row_unit);
+      for (int row4x4 = 0; row4x4 < frame_header_.rows4x4;
+           row4x4 += kNum4x4InLoopFilterMaskUnit) {
+        CopyDeblockedPixels(static_cast<Plane>(plane), row4x4);
       }
     }
     const int num_deblock_units =
@@ -376,7 +376,7 @@ bool PostFilter::ApplyDeblockFilterThreaded() {
   return true;
 }
 
-void PostFilter::CopyDeblockedPixels(Plane plane, int row4x4, int row_unit) {
+void PostFilter::CopyDeblockedPixels(Plane plane, int row4x4) {
   const int subsampling_x = (plane == kPlaneY) ? 0 : subsampling_x_;
   const int subsampling_y = (plane == kPlaneY) ? 0 : subsampling_y_;
   const ptrdiff_t src_stride = source_buffer_->stride(plane);
@@ -384,6 +384,7 @@ void PostFilter::CopyDeblockedPixels(Plane plane, int row4x4, int row_unit) {
       SetBufferOffset(source_buffer_, static_cast<Plane>(plane), row4x4, 0,
                       subsampling_x, subsampling_y);
   const ptrdiff_t dst_stride = deblock_buffer_.stride(plane);
+  const int row_unit = DivideBy16(row4x4);
   // First 4 rows of |deblock_buffer_| are never populated since they will not
   // be used by loop restoration. So |row_unit| is offset by 1.
   const int row_offset = MultiplyBy4(row_unit + 1);
