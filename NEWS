@@ -23,6 +23,8 @@ issues]].
     they are adjacent to lower punctuation, for example: "hier
   - Words are now contracted into their lower contractions when they
     are adjacent to upper punctuation, for example: (hier
+- New draft table for Dutch 8-dot computer braille thanks to Leonard
+  de Ruijter
 ** Other changes
 - Make sure the log callback uses the same calling convention as all
   the other exported functions. Thanks to Leonard de Ruijter.
@@ -49,7 +51,7 @@ None
 
 ** New, renamed or removed tables
 *** New
-None
+- nl-comp8.utb
 
 *** Renamed
 None
