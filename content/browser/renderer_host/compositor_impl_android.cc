@@ -190,7 +190,7 @@ void CreateContextProviderAfterGpuChannelEstablished(
     Compositor::ContextProviderCallback callback,
     scoped_refptr<gpu::GpuChannelHost> gpu_channel_host) {
   if (!gpu_channel_host)
-    callback.Run(nullptr);
+    std::move(callback).Run(nullptr);
 
   gpu::GpuChannelEstablishFactory* factory =
       BrowserMainLoop::GetInstance()->gpu_channel_establish_factory();
@@ -210,7 +210,7 @@ void CreateContextProviderAfterGpuChannelEstablished(
           automatic_flushes, support_locking, support_grcontext,
           shared_memory_limits, attributes,
           viz::command_buffer_metrics::ContextType::UNKNOWN);
-  callback.Run(std::move(context_provider));
+  std::move(callback).Run(std::move(context_provider));
 }
 
 static bool g_initialized = false;
@@ -275,9 +275,9 @@ void Compositor::CreateContextProvider(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   BrowserMainLoop::GetInstance()
       ->gpu_channel_establish_factory()
-      ->EstablishGpuChannel(
-          base::BindOnce(&CreateContextProviderAfterGpuChannelEstablished,
-                         handle, attributes, shared_memory_limits, callback));
+      ->EstablishGpuChannel(base::BindOnce(
+          &CreateContextProviderAfterGpuChannelEstablished, handle, attributes,
+          shared_memory_limits, std::move(callback)));
 }
 
 // static
