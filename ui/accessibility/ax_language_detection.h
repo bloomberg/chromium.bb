@@ -164,8 +164,7 @@ class AX_EXPORT AXLanguageDetectionManager {
       ax::mojom::StringAttribute attr);
 
  private:
-  // TODO(chrishall): should this be stored by pointer or value?
-  AXLanguageInfoStats lang_info_stats;
+  AXLanguageInfoStats lang_info_stats_;
 
   void DetectLanguageForSubtreeInternal(AXNode* subtree_root);
   void LabelLanguageForSubtreeInternal(AXNode* subtree_root);
