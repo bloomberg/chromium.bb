@@ -67,9 +67,6 @@ bool ShouldShowExtensionsCheckupOnStartup(content::BrowserContext* context) {
           extensions_features::kExtensionsCheckupToolEntryPointParameter) ==
           "startup" &&
       !prefs->HasUserSeenExtensionsCheckupOnStartup()) {
-    // Stores a boolean in ExtensionPrefs so we can make sure that the user is
-    // redirected to the extensions page upon startup once.
-    prefs->SetUserHasSeenExtensionsCheckupOnStartup(true);
     return true;
   }
   return false;
