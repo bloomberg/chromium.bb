@@ -5755,7 +5755,6 @@ crbug.com/1013779 virtual/scalefactor200/fast/hidpi/static/pointerevents/pointer
 crbug.com/1013779 virtual/scalefactor200/fast/hidpi/static/popup-menu-appearance.html [ Failure Pass ]
 crbug.com/1013779 virtual/scalefactor200/fast/hidpi/static/validation-bubble-appearance-hidpi.html [ Failure Pass ]
 crbug.com/990900 external/wpt/cookie-store/idlharness.tentative.https.any.serviceworker.html [ Pass Timeout ]
-crbug.com/990900 virtual/omt-worker-fetch/external/wpt/fetch/api/idlharness.any.html [ Pass Timeout ]
 
 # Sheriff 2019-10-15
 crbug.com/1014327 [ Mac ] external/wpt/preload/onerror-event.html [ Pass Timeout ]
@@ -5859,9 +5858,6 @@ crbug.com/977033 http/tests/priorities/resource-load-priorities-media-preload.ht
 crbug.com/963183 http/tests/devtools/sources/debugger-pause/debugger-change-variable.js [ Pass Failure ]
 crbug.com/963183 http/tests/devtools/sources/debugger-pause/debugger-eval-on-call-frame-inside-iframe.js [ Pass Failure ]
 crbug.com/963183 http/tests/devtools/sources/debugger-pause/debugger-eval-while-paused.js [ Pass Failure ]
-
-# Sheriff 2019-11-20
-crbug.com/1026151 virtual/omt-worker-fetch/external/wpt/fetch/api/idlharness.any.sharedworker.html [ Timeout ]
 
 # Sheriff 2019-11-21
 crbug.com/1027287 css3/filters/effect-reference-image-lazy-attach.html [ Pass Failure ]
