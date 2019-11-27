@@ -119,7 +119,7 @@ void SSLManager::OnSSLCertificateError(
     const base::WeakPtr<SSLErrorHandler::Delegate>& delegate,
     bool is_main_frame_request,
     const GURL& url,
-    const base::Callback<WebContents*(void)>& web_contents_getter,
+    WebContents* web_contents,
     int net_error,
     const net::SSLInfo& ssl_info,
     bool fatal) {
@@ -129,7 +129,6 @@ void SSLManager::OnSSLCertificateError(
            << ssl_info.cert_status;
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  content::WebContents* web_contents = web_contents_getter.Run();
   std::unique_ptr<SSLErrorHandler> handler(
       new SSLErrorHandler(web_contents, delegate, is_main_frame_request, url,
                           net_error, ssl_info, fatal));
@@ -160,8 +159,8 @@ void SSLManager::OnSSLCertificateSubresourceError(
     const net::SSLInfo& ssl_info,
     bool fatal) {
   OnSSLCertificateError(delegate, false, url,
-                        base::Bind(&WebContentsImpl::FromRenderFrameHostID,
-                                   render_process_id, render_frame_id),
+                        WebContentsImpl::FromRenderFrameHostID(
+                            render_process_id, render_frame_id),
                         net_error, ssl_info, fatal);
 }
 
