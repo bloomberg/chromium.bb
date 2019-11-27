@@ -33,7 +33,7 @@
       "-kind",
       "mac",
       "-xcode-version",
-      "9f2000",
+      "9c40b",
       "-output-dir",
       "[CACHE]/osx_sdk/XCode.app"
     ],

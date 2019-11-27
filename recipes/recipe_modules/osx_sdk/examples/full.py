@@ -20,3 +20,23 @@ def GenTests(api):
   for platform in ('linux', 'mac', 'win'):
     yield (api.test(platform) +
            api.platform.name(platform))
+
+  yield api.test(
+      'explicit_version',
+      api.platform.name('mac'),
+      api.properties(**{'$depot_tools/osx_sdk': {
+        'sdk_version': 'deadbeef',
+      }})
+  )
+
+  yield api.test(
+      'automatic_version',
+      api.platform.name('mac'),
+      api.platform.mac_release('10.14.5'),
+  )
+
+  yield api.test(
+      'ancient_version',
+      api.platform.name('mac'),
+      api.platform.mac_release('10.1.0'),
+  )

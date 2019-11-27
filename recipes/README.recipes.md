@@ -693,18 +693,18 @@ uses the more generic [CACHE]/git path (LUCI world).
 &mdash; **def [initialize](/recipes/recipe_modules/infra_paths/api.py#11)(self):**
 ### *recipe_modules* / [osx\_sdk](/recipes/recipe_modules/osx_sdk)
 
-[DEPS](/recipes/recipe_modules/osx_sdk/__init__.py#5): [recipe\_engine/cipd][recipe_engine/recipe_modules/cipd], [recipe\_engine/context][recipe_engine/recipe_modules/context], [recipe\_engine/json][recipe_engine/recipe_modules/json], [recipe\_engine/path][recipe_engine/recipe_modules/path], [recipe\_engine/platform][recipe_engine/recipe_modules/platform], [recipe\_engine/step][recipe_engine/recipe_modules/step]
+[DEPS](/recipes/recipe_modules/osx_sdk/__init__.py#5): [recipe\_engine/cipd][recipe_engine/recipe_modules/cipd], [recipe\_engine/context][recipe_engine/recipe_modules/context], [recipe\_engine/json][recipe_engine/recipe_modules/json], [recipe\_engine/path][recipe_engine/recipe_modules/path], [recipe\_engine/platform][recipe_engine/recipe_modules/platform], [recipe\_engine/step][recipe_engine/recipe_modules/step], [recipe\_engine/version][recipe_engine/recipe_modules/version]
 
 The `osx_sdk` module provides safe functions to access a semi-hermetic
 XCode installation.
 
 Available only to Google-run bots.
 
-#### **class [OSXSDKApi](/recipes/recipe_modules/osx_sdk/api.py#24)([RecipeApi][recipe_engine/wkt/RecipeApi]):**
+#### **class [OSXSDKApi](/recipes/recipe_modules/osx_sdk/api.py#35)([RecipeApi][recipe_engine/wkt/RecipeApi]):**
 
 API for using OS X SDK distributed via CIPD.
 
-&emsp; **@contextmanager**<br>&mdash; **def [\_\_call\_\_](/recipes/recipe_modules/osx_sdk/api.py#37)(self, kind):**
+&emsp; **@contextmanager**<br>&mdash; **def [\_\_call\_\_](/recipes/recipe_modules/osx_sdk/api.py#61)(self, kind):**
 
 Sets up the XCode SDK environment.
 
@@ -751,6 +751,8 @@ Args:
 
 Raises:
     StepFailure or InfraFailure.
+
+&mdash; **def [initialize](/recipes/recipe_modules/osx_sdk/api.py#46)(self):**
 ### *recipe_modules* / [presubmit](/recipes/recipe_modules/presubmit)
 
 [DEPS](/recipes/recipe_modules/presubmit/__init__.py#11): [bot\_update](#recipe_modules-bot_update), [depot\_tools](#recipe_modules-depot_tools), [gclient](#recipe_modules-gclient), [git](#recipe_modules-git), [tryserver](#recipe_modules-tryserver), [recipe\_engine/context][recipe_engine/recipe_modules/context], [recipe\_engine/cq][recipe_engine/recipe_modules/cq], [recipe\_engine/json][recipe_engine/recipe_modules/json], [recipe\_engine/path][recipe_engine/recipe_modules/path], [recipe\_engine/properties][recipe_engine/recipe_modules/properties], [recipe\_engine/python][recipe_engine/recipe_modules/python], [recipe\_engine/step][recipe_engine/recipe_modules/step]
@@ -1086,4 +1088,5 @@ Move things around in a loop!
 [recipe_engine/recipe_modules/source_manifest]: https://chromium.googlesource.com/infra/luci/recipes-py.git/+/c48c77264fea1fbe3bdc8352451a91b3dd529c96/README.recipes.md#recipe_modules-source_manifest
 [recipe_engine/recipe_modules/step]: https://chromium.googlesource.com/infra/luci/recipes-py.git/+/c48c77264fea1fbe3bdc8352451a91b3dd529c96/README.recipes.md#recipe_modules-step
 [recipe_engine/recipe_modules/url]: https://chromium.googlesource.com/infra/luci/recipes-py.git/+/c48c77264fea1fbe3bdc8352451a91b3dd529c96/README.recipes.md#recipe_modules-url
+[recipe_engine/recipe_modules/version]: https://chromium.googlesource.com/infra/luci/recipes-py.git/+/c48c77264fea1fbe3bdc8352451a91b3dd529c96/README.recipes.md#recipe_modules-version
 [recipe_engine/wkt/RecipeApi]: https://chromium.googlesource.com/infra/luci/recipes-py.git/+/c48c77264fea1fbe3bdc8352451a91b3dd529c96/recipe_engine/recipe_api.py#871
