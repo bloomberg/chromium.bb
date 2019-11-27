@@ -124,7 +124,6 @@ _INTEGRATION_NEGATIVE_FILTER = [
     # already tested by other test cases.
     'ChromeDriverTest.testGetCurrentWindowHandle',
     'ChromeDriverTest.testStartStop',
-    'ChromeDriverTest.testSendCommand*',
     # https://crbug.com/867511
     'ChromeDriverTest.testWindowMaximize',
     # LaunchApp is an obsolete API.
@@ -1600,18 +1599,6 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     # we have to explicitly wait for this to change. We can't rely on the
     # navigation tracker to block the call to Load() above.
     self.WaitForCondition(lambda: 'is not available' in self._driver.GetTitle())
-
-  def testSendCommand(self):
-    """Sends a custom command to the DevTools debugger"""
-    params = {}
-    res = self._driver.SendCommandAndGetResult('CSS.enable', params)
-    self.assertEqual({}, res)
-
-  def testSendCommandNoParams(self):
-    """Sends a custom command to the DevTools debugger without params"""
-    self.assertRaisesRegexp(
-            chromedriver.InvalidArgument, "params not passed",
-            self._driver.SendCommandAndGetResult, 'CSS.enable', None)
 
   def testSendCommandAndGetResult(self):
     """Sends a custom command to the DevTools debugger and gets the result"""
