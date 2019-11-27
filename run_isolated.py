@@ -900,7 +900,7 @@ def noop_install_packages(_run_dir):
   yield None
 
 
-def _install_packages(run_dir, cipd_cache_dir, client, packages, timeout):
+def _install_packages(run_dir, cipd_cache_dir, client, packages):
   """Calls 'cipd ensure' for packages.
 
   Args:
@@ -908,7 +908,6 @@ def _install_packages(run_dir, cipd_cache_dir, client, packages, timeout):
     cipd_cache_dir (str): the directory to use for the cipd package cache.
     client (CipdClient): the cipd client to use
     packages: packages to install, list [(path, package_name, version), ...].
-    timeout: max duration in seconds that this function can take.
 
   Returns: list of pinned packages.  Looks like [
     {
@@ -936,13 +935,12 @@ def _install_packages(run_dir, cipd_cache_dir, client, packages, timeout):
     by_path[path].append((name, version, i))
 
   pins = client.ensure(
-    run_dir,
-    {
-      subdir: [(name, vers) for name, vers, _ in pkgs]
-      for subdir, pkgs in by_path.items()
-    },
-    cache_dir=cipd_cache_dir,
-    timeout=timeout,
+      run_dir,
+      {
+          subdir: [(name, vers) for name, vers, _ in pkgs
+                  ] for subdir, pkgs in by_path.items()
+      },
+      cache_dir=cipd_cache_dir,
   )
 
   for subdir, pin_list in sorted(pins.items()):
@@ -956,9 +954,8 @@ def _install_packages(run_dir, cipd_cache_dir, client, packages, timeout):
 
 
 @contextlib.contextmanager
-def install_client_and_packages(
-    run_dir, packages, service_url, client_package_name,
-    client_version, cache_dir, timeout=None):
+def install_client_and_packages(run_dir, packages, service_url,
+                                client_package_name, client_version, cache_dir):
   """Bootstraps CIPD client and installs CIPD packages.
 
   Yields CipdClient, stats, client info and pins (as single CipdInfo object).
@@ -990,11 +987,9 @@ def install_client_and_packages(
     client_package_name (str): CIPD package name of CIPD client.
     client_version (str): Version of CIPD client.
     cache_dir (str): where to keep cache of cipd clients, packages and tags.
-    timeout: max duration in seconds that this function can take.
   """
   assert cache_dir
 
-  timeoutfn = tools.sliding_timeout(timeout)
   start = time.time()
 
   cache_dir = os.path.abspath(cache_dir)
@@ -1003,17 +998,16 @@ def install_client_and_packages(
   packages = packages or []
 
   get_client_start = time.time()
-  client_manager = cipd.get_client(
-      service_url, client_package_name, client_version, cache_dir,
-      timeout=timeoutfn())
+  client_manager = cipd.get_client(service_url, client_package_name,
+                                   client_version, cache_dir)
 
   with client_manager as client:
     get_client_duration = time.time() - get_client_start
 
     package_pins = []
     if packages:
-      package_pins = _install_packages(
-        run_dir, cipd_cache_dir, client, packages, timeoutfn())
+      package_pins = _install_packages(run_dir, cipd_cache_dir, client,
+                                       packages)
 
     file_path.make_tree_files_read_only(run_dir)
 
