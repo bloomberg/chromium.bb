@@ -30,7 +30,7 @@ extern "C" {
  * types, removing or reassigning enums, adding/removing/rearranging
  * fields to structures
  */
-#define AOM_IMAGE_ABI_VERSION (7) /**<\hideinitializer*/
+#define AOM_IMAGE_ABI_VERSION (6) /**<\hideinitializer*/
 
 #define AOM_IMG_FMT_PLANAR 0x100  /**< Image is a planar format. */
 #define AOM_IMG_FMT_UV_FLIP 0x200 /**< V plane precedes U in memory. */
@@ -350,32 +350,6 @@ int aom_img_plane_height(const aom_image_t *img, int plane);
  */
 int aom_img_add_metadata(aom_image_t *img, uint32_t type, const uint8_t *data,
                          size_t sz);
-
-/*!\brief Return a metadata payload stored within the image metadata array.
- *
- * Gets the metadata (aom_metadata_t) at the indicated index in the image
- * metadata array. Caller of this function owns the memory.
- *
- * \param[in] img          Pointer to image descriptor to get metadata from
- * \param[in] index        Metadata index to get from metadata array
- *
- * \return Returns a pointer to a newly allocated copy of the selected metadata,
- * if img and/or index is invalid, it returns NULL.
- */
-aom_metadata_t *aom_img_get_metadata(aom_image_t *img, size_t index);
-
-/*!\brief Return the number of metadata blocks within the image.
- *
- * Gets the number of metadata blocks contained within the provided image
- * metadata array.
- *
- * \param[in] img          Pointer to image descriptor to get metadata number
- * from.
- *
- * \return Returns the size of the metadata array. If img or metadata is NULL,
- * it returns 0.
- */
-size_t aom_img_num_metadata(aom_image_t *img);
 
 /*!\brief Remove metadata from image.
  *

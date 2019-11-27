@@ -243,7 +243,6 @@ typedef struct AV1Decoder {
 #endif
 
   AV1DecRowMTInfo frame_row_mt_info;
-  aom_metadata_array_t *metadata;
 } AV1Decoder;
 
 // Returns 0 on success. Sets pbi->common.error.error_code to a nonzero error

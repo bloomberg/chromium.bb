@@ -548,33 +548,32 @@ static uint32_t read_and_decode_one_tile_list(AV1Decoder *pbi,
   return tile_list_payload_size;
 }
 
-// On success, returns the number of bytes read from 'data'. On failure, calls
+// Reads the country code as specified in Recommendation ITU-T T.35. On
+// success, returns the number of bytes read from 'data'. On failure, calls
 // aom_internal_error() and does not return.
-static size_t read_metadata_itut_t35(AV1Decoder *const pbi, const uint8_t *data,
+//
+// Note: This function does not read itu_t_t35_payload_bytes because the exact
+// syntax of itu_t_t35_payload_bytes is not defined in the spec.
+static size_t read_metadata_itut_t35(AV1_COMMON *const cm, const uint8_t *data,
                                      size_t sz) {
-  if (sz <= 0) {
-    AV1_COMMON *const cm = &pbi->common;
+  size_t i = 0;
+  // itu_t_t35_country_code f(8)
+  if (i >= sz) {
     aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
                        "itu_t_t35_country_code is missing");
   }
-
-  if (!pbi->metadata) {
-    pbi->metadata = aom_img_metadata_array_alloc(1);
-  } else {
-    aom_metadata_array_t *metadata =
-        aom_img_metadata_array_alloc(pbi->metadata->sz + 1);
-    for (size_t i = 0; i < pbi->metadata->sz; ++i) {
-      metadata->metadata_array[i] =
-          aom_img_metadata_alloc(pbi->metadata->metadata_array[i]->type,
-                                 pbi->metadata->metadata_array[i]->payload,
-                                 pbi->metadata->metadata_array[i]->sz);
+  const int itu_t_t35_country_code = data[i];
+  ++i;
+  if (itu_t_t35_country_code == 0xFF) {
+    // itu_t_t35_country_code_extension_byte f(8)
+    if (i >= sz) {
+      aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
+                         "itu_t_t35_country_code_extension_byte is missing");
     }
-    aom_img_metadata_array_free(pbi->metadata);
-    pbi->metadata = metadata;
+    ++i;
   }
-  pbi->metadata->metadata_array[pbi->metadata->sz - 1] =
-      aom_img_metadata_alloc(OBU_METADATA_TYPE_ITUT_T35, data, sz - 1);
-  return sz - 1;
+  // itu_t_t35_payload_bytes
+  return i;
 }
 
 static void read_metadata_hdr_cll(struct aom_read_bit_buffer *rb) {
@@ -710,7 +709,7 @@ static size_t read_metadata(AV1Decoder *pbi, const uint8_t *data, size_t sz) {
   if (metadata_type == OBU_METADATA_TYPE_ITUT_T35) {
     size_t bytes_read =
         type_length +
-        read_metadata_itut_t35(pbi, data + type_length, sz - type_length);
+        read_metadata_itut_t35(cm, data + type_length, sz - type_length);
     // Ignore itu_t_t35_payload_bytes and check trailing bits. Section 6.7.2
     // of the spec says:
     //   itu_t_t35_payload_bytes shall be bytes containing data registered as
