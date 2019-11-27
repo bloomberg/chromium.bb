@@ -118,14 +118,18 @@ typedef std::vector<WriteDescriptor> WriteDescriptorVec;
 // This class facilitates writing multiple blobs to files.
 class ChainedBlobWriter : public base::RefCountedThreadSafe<ChainedBlobWriter> {
  public:
+  // Called on the IO thread.
   virtual void set_delegate(
       std::unique_ptr<storage::FileWriterDelegate> delegate) = 0;
 
+  // Called on the IDB task runner.
   virtual void ReportWriteCompletion(bool succeeded, int64_t bytes_written) = 0;
 
+  // Called on the IDB task runner.
   virtual void Abort() = 0;
 
   // Whether to flush to the file system when writing or not.
+  // Called on the IO thread.
   virtual storage::FlushPolicy GetFlushPolicy() const = 0;
 
  protected:

@@ -90,6 +90,8 @@ using indexed_db::PutVarInt;
 using indexed_db::ReportOpenStatus;
 
 namespace {
+using WriteBlobFileCallback = base::RepeatingCallback<
+    bool(/*database_id=*/int64_t, const WriteDescriptor&, ChainedBlobWriter*)>;
 
 FilePath GetBlobDirectoryName(const FilePath& path_base, int64_t database_id) {
   return path_base.AppendASCII(base::StringPrintf("%" PRIx64, database_id));
@@ -1379,18 +1381,19 @@ Status IndexedDBBackingStore::KeyExistsInObjectStore(
 class IndexedDBBackingStore::Transaction::ChainedBlobWriterImpl
     : public ChainedBlobWriter {
  public:
+  // Must be called on the IDB task runner.
   static scoped_refptr<ChainedBlobWriterImpl> Create(
       int64_t database_id,
-      base::WeakPtr<IndexedDBBackingStore> backing_store,
       WriteDescriptorVec* blobs,
       blink::mojom::IDBTransactionDurability durability,
+      WriteBlobFileCallback write_file_callback,
       BlobWriteCallback callback) {
-    DCHECK(backing_store->task_runner()->RunsTasksInCurrentSequence());
     auto writer = base::WrapRefCounted(new ChainedBlobWriterImpl(
-        database_id, backing_store, durability, std::move(callback)));
+        database_id, durability, std::move(write_file_callback),
+        std::move(callback)));
     writer->blobs_.swap(*blobs);
     writer->iter_ = writer->blobs_.begin();
-    backing_store->task_runner()->PostTask(
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(&ChainedBlobWriterImpl::WriteNextFile, writer));
     return writer;
@@ -1439,20 +1442,20 @@ class IndexedDBBackingStore::Transaction::ChainedBlobWriterImpl
   }
 
  private:
+  // Must be called on the IDB task runner.
   ChainedBlobWriterImpl(int64_t database_id,
-                        base::WeakPtr<IndexedDBBackingStore> backing_store,
                         blink::mojom::IDBTransactionDurability durability,
+                        WriteBlobFileCallback write_file_callback,
                         BlobWriteCallback callback)
       : waiting_for_callback_(false),
         durability_(durability),
         database_id_(database_id),
-        backing_store_(backing_store),
+        write_file_callback_(std::move(write_file_callback)),
         callback_(std::move(callback)),
-        aborted_(false) {
-    DCHECK(!backing_store_ ||
-           backing_store_->task_runner()->RunsTasksInCurrentSequence());
+        aborted_(false) {}
+  ~ChainedBlobWriterImpl() override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
   }
-  ~ChainedBlobWriterImpl() override {}
 
   void WriteNextFile() {
     DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
@@ -1466,8 +1469,7 @@ class IndexedDBBackingStore::Transaction::ChainedBlobWriterImpl
       std::move(callback_).Run(BlobWriteResult::kRunPhaseTwoAsync);
       return;
     } else {
-      if (!backing_store_ ||
-          !backing_store_->WriteBlobFile(database_id_, *iter_, this)) {
+      if (!write_file_callback_.Run(database_id_, *iter_, this)) {
         std::move(callback_).Run(BlobWriteResult::kFailure);
         return;
       }
@@ -1481,7 +1483,7 @@ class IndexedDBBackingStore::Transaction::ChainedBlobWriterImpl
   WriteDescriptorVec blobs_;
   WriteDescriptorVec::const_iterator iter_;
   int64_t database_id_;
-  base::WeakPtr<IndexedDBBackingStore> backing_store_;
+  WriteBlobFileCallback write_file_callback_;
   // Callback result is useless as call stack is no longer transaction's
   // operations queue. Errors are instead handled in
   // IndexedDBTransaction::BlobWriteComplete.
@@ -3264,8 +3266,17 @@ leveldb::Status IndexedDBBackingStore::Transaction::WriteNewBlobs(
   // Creating the writer will start it going asynchronously. The transaction
   // can be destructed before the callback is triggered.
   chained_blob_writer_ = ChainedBlobWriterImpl::Create(
-      database_id_, backing_store_->AsWeakPtr(), new_files_to_write,
-      durability_,
+      database_id_, new_files_to_write, durability_,
+      base::BindRepeating(
+          [](base::WeakPtr<IndexedDBBackingStore> backing_store,
+             int64_t database_id, const WriteDescriptor& descriptor,
+             ChainedBlobWriter* chained_blob_writer) {
+            if (!backing_store)
+              return false;
+            return backing_store->WriteBlobFile(database_id, descriptor,
+                                                chained_blob_writer);
+          },
+          backing_store_->AsWeakPtr()),
       base::BindOnce(
           [](base::WeakPtr<IndexedDBBackingStore::Transaction> transaction,
              void* tracing_end_ptr, BlobWriteCallback final_callback,
