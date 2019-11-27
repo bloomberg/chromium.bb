@@ -189,8 +189,10 @@ void CreateContextProviderAfterGpuChannelEstablished(
     gpu::SharedMemoryLimits shared_memory_limits,
     Compositor::ContextProviderCallback callback,
     scoped_refptr<gpu::GpuChannelHost> gpu_channel_host) {
-  if (!gpu_channel_host)
+  if (!gpu_channel_host) {
     std::move(callback).Run(nullptr);
+    return;
+  }
 
   gpu::GpuChannelEstablishFactory* factory =
       BrowserMainLoop::GetInstance()->gpu_channel_establish_factory();
