@@ -26,6 +26,16 @@ void RunCallbacks(
   }
 }
 
+ServiceWorkerMetrics::EventType PurposeToEventType(
+    blink::mojom::ControllerServiceWorkerPurpose purpose) {
+  switch (purpose) {
+    case blink::mojom::ControllerServiceWorkerPurpose::FETCH_SUB_RESOURCE:
+      return ServiceWorkerMetrics::EventType::FETCH_SUB_RESOURCE;
+  }
+  NOTREACHED();
+  return ServiceWorkerMetrics::EventType::UNKNOWN;
+}
+
 }  // namespace
 
 ServiceWorkerContainerHost::ServiceWorkerContainerHost(
@@ -80,6 +90,19 @@ ServiceWorkerContainerHost::~ServiceWorkerContainerHost() {
 
   // Ensure callbacks awaiting execution ready are notified.
   RunExecutionReadyCallbacks();
+}
+
+void ServiceWorkerContainerHost::EnsureControllerServiceWorker(
+    mojo::PendingReceiver<blink::mojom::ControllerServiceWorker> receiver,
+    blink::mojom::ControllerServiceWorkerPurpose purpose) {
+  // TODO(kinuko): Log the reasons we drop the request.
+  if (!context_ || !controller_)
+    return;
+
+  controller_->RunAfterStartWorker(
+      PurposeToEventType(purpose),
+      base::BindOnce(&ServiceWorkerContainerHost::StartControllerComplete,
+                     weak_factory_.GetWeakPtr(), std::move(receiver)));
 }
 
 void ServiceWorkerContainerHost::OnSkippedWaiting(
@@ -165,7 +188,7 @@ void ServiceWorkerContainerHost::SendSetControllerServiceWorker(
 
   // Pass an endpoint for the client to talk to this controller.
   mojo::Remote<blink::mojom::ControllerServiceWorker> remote =
-      provider_host_->GetRemoteControllerServiceWorker();
+      GetRemoteControllerServiceWorker();
   if (remote.is_bound()) {
     controller_info->remote_controller = remote.Unbind();
   }
@@ -314,6 +337,15 @@ void ServiceWorkerContainerHost::OnBeginNavigationCommit(
   DCHECK_NE(MSG_ROUTING_NONE, container_frame_id);
   frame_id_ = container_frame_id;
 
+  DCHECK(!cross_origin_embedder_policy_.has_value());
+  cross_origin_embedder_policy_ = cross_origin_embedder_policy;
+  if (controller_ && controller_->fetch_handler_existence() ==
+                         ServiceWorkerVersion::FetchHandlerExistence::EXISTS) {
+    DCHECK(pending_controller_receiver_);
+    controller_->controller()->Clone(std::move(pending_controller_receiver_),
+                                     cross_origin_embedder_policy_.value());
+  }
+
   if (IsBackForwardCacheEnabled() &&
       ServiceWorkerContext::IsServiceWorkerOnUIEnabled()) {
     auto* rfh = RenderFrameHostImpl::FromID(process_id_, frame_id_);
@@ -321,6 +353,27 @@ void ServiceWorkerContainerHost::OnBeginNavigationCommit(
     if (rfh)
       rfh->AddServiceWorkerContainerHost(this);
   }
+
+  TransitionToClientPhase(ClientPhase::kResponseCommitted);
+}
+
+void ServiceWorkerContainerHost::CompleteWebWorkerPreparation(
+    network::mojom::CrossOriginEmbedderPolicy cross_origin_embedder_policy) {
+  using ServiceWorkerProviderType = blink::mojom::ServiceWorkerProviderType;
+  DCHECK(type_ == ServiceWorkerProviderType::kForDedicatedWorker ||
+         type_ == ServiceWorkerProviderType::kForSharedWorker);
+
+  DCHECK(!cross_origin_embedder_policy_.has_value());
+  cross_origin_embedder_policy_ = cross_origin_embedder_policy;
+  if (controller_ && controller_->fetch_handler_existence() ==
+                         ServiceWorkerVersion::FetchHandlerExistence::EXISTS) {
+    DCHECK(pending_controller_receiver_);
+    controller_->controller()->Clone(std::move(pending_controller_receiver_),
+                                     cross_origin_embedder_policy_.value());
+  }
+
+  TransitionToClientPhase(ClientPhase::kResponseCommitted);
+  SetExecutionReady();
 }
 
 void ServiceWorkerContainerHost::UpdateUrls(
@@ -391,6 +444,31 @@ void ServiceWorkerContainerHost::SetControllerRegistration(
 
   controller_registration_ = controller_registration;
   UpdateController(notify_controllerchange);
+}
+
+mojo::Remote<blink::mojom::ControllerServiceWorker>
+ServiceWorkerContainerHost::GetRemoteControllerServiceWorker() {
+  DCHECK(controller_);
+  if (controller_->fetch_handler_existence() ==
+      ServiceWorkerVersion::FetchHandlerExistence::DOES_NOT_EXIST) {
+    return mojo::Remote<blink::mojom::ControllerServiceWorker>();
+  }
+
+  mojo::Remote<blink::mojom::ControllerServiceWorker> remote_controller;
+  if (!is_response_committed()) {
+    // The receiver will be connected to the controller in
+    // OnBeginNavigationCommit() or CompleteWebWorkerPreparation(). The pair of
+    // Mojo endpoints is created on each main resource response including
+    // redirect. The final Mojo endpoint which is corresponding to the OK
+    // response will be sent to the service worker.
+    pending_controller_receiver_ =
+        remote_controller.BindNewPipeAndPassReceiver();
+  } else {
+    controller_->controller()->Clone(
+        remote_controller.BindNewPipeAndPassReceiver(),
+        cross_origin_embedder_policy_.value());
+  }
+  return remote_controller;
 }
 
 bool ServiceWorkerContainerHost::AllowServiceWorker(const GURL& scope,
@@ -658,5 +736,15 @@ void ServiceWorkerContainerHost::CheckControllerConsistency(
   }
 }
 #endif  // DCHECK_IS_ON()
+
+void ServiceWorkerContainerHost::StartControllerComplete(
+    mojo::PendingReceiver<blink::mojom::ControllerServiceWorker> receiver,
+    blink::ServiceWorkerStatusCode status) {
+  if (status == blink::ServiceWorkerStatusCode::kOk) {
+    DCHECK(is_response_committed());
+    controller_->controller()->Clone(std::move(receiver),
+                                     cross_origin_embedder_policy_.value());
+  }
+}
 
 }  // namespace content
