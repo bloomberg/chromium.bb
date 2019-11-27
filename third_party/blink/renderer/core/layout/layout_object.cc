@@ -3382,6 +3382,11 @@ void LayoutObject::ForceLayout() {
 const ComputedStyle* LayoutObject::FirstLineStyleWithoutFallback() const {
   DCHECK(GetDocument().GetStyleEngine().UsesFirstLineRules());
 
+  // Normal markers don't use ::first-line styles in Chromium, so be consistent
+  // and return null for content markers. This may need to change depending on
+  // https://github.com/w3c/csswg-drafts/issues/4506
+  if (IsMarkerContent())
+    return nullptr;
   if (IsBeforeOrAfterContent() || IsText()) {
     if (!Parent())
       return nullptr;
