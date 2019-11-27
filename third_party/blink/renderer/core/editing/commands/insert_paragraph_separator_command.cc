@@ -305,8 +305,8 @@ void InsertParagraphSeparatorCommand::DoApply(EditingState* editing_state) {
       // then don't want the newline within the blockquote or else it will also
       // be quoted.
       if (paste_blockquote_into_unquoted_area_) {
-        if (HTMLQuoteElement* highest_blockquote =
-                ToHTMLQuoteElement(HighestEnclosingNodeOfType(
+        if (auto* highest_blockquote =
+                To<HTMLQuoteElement>(HighestEnclosingNodeOfType(
                     canonical_pos, &IsMailHTMLBlockquoteElement)))
           start_block = highest_blockquote;
       }
