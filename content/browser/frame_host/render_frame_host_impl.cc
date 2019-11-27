@@ -516,6 +516,9 @@ url::Origin GetOriginForURLLoaderFactory(
 
   // Any non-opaque |result| must be an origin that is allowed to be accessed
   // from the process that is the target of this navigation.
+  //
+  // TODO(lukasza): https://crbug.com/1029092: The CHECK below should also apply
+  // to opaque origin.
   if (!result.opaque()) {
     auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
     CHECK(policy->CanAccessDataForOrigin(
