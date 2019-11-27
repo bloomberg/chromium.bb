@@ -167,7 +167,7 @@ class NET_EXPORT_PRIVATE HttpAuthHandlerNTLM : public HttpAuthHandler {
   static std::string CreateSPN(const GURL& origin);
 
 #if defined(NTLM_SSPI)
-  HttpAuthSSPI auth_sspi_;
+  HttpAuthSSPI mechanism_;
 #elif defined(NTLM_PORTABLE)
   ntlm::NtlmClient ntlm_client_;
 #endif
