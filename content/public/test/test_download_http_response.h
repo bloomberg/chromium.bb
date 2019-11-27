@@ -32,7 +32,9 @@ class TestDownloadHttpResponse {
   static GURL GetNextURLForDownload();
 
   // OnPauseHandler can be used to pause the response until the enclosed
-  // callback is called.
+  // callback is called. The OnPauseHandler is copyable for Parameters
+  // objects to be used repeatedly, though it will only be called once when
+  // given to a TestDownloadHttpResponse.
   using OnPauseHandler = base::RepeatingCallback<void(base::OnceClosure)>;
 
   // Called when an injected error triggers.
@@ -70,11 +72,9 @@ class TestDownloadHttpResponse {
     // Last-Modified header and the server supports byte range requests.
     Parameters();
 
-    // Parameters is expected to be copyable and moveable.
-    Parameters(Parameters&&);
     Parameters(const Parameters&);
-    Parameters& operator=(Parameters&&);
     Parameters& operator=(const Parameters&);
+
     ~Parameters();
 
     // Clears the errors in injected_errors.
@@ -176,8 +176,9 @@ class TestDownloadHttpResponse {
     // Callback to run when an injected error triggers.
     InjectErrorCallback inject_error_cb;
 
-    // If on_pause_handler is valid, it will be invoked when the
-    // |pause_condition| is reached.
+    // If on_pause_handler is valid, it will be invoked once when the
+    // |pause_condition| is reached. It is not a OnceCallback to allow
+    // Parameters to be reused.
     OnPauseHandler on_pause_handler;
 
     // Offset of body to pause the response sending. A -1 offset will pause
@@ -199,7 +200,7 @@ class TestDownloadHttpResponse {
 
   // Called when response are sent to the client.
   using OnResponseSentCallback =
-      base::Callback<void(std::unique_ptr<CompletedRequest>)>;
+      base::OnceCallback<void(std::unique_ptr<CompletedRequest>)>;
 
   // Generate a pseudo random pattern.
   //
@@ -240,10 +241,9 @@ class TestDownloadHttpResponse {
   static void StartServingStaticResponse(const std::string& headers,
                                          const GURL& url);
 
-  TestDownloadHttpResponse(
-      const net::test_server::HttpRequest& request,
-      const Parameters& parameters,
-      const OnResponseSentCallback& on_response_sent_callback);
+  TestDownloadHttpResponse(const net::test_server::HttpRequest& request,
+                           const Parameters& parameters,
+                           OnResponseSentCallback on_response_sent_callback);
   ~TestDownloadHttpResponse();
 
   // Creates a shim HttpResponse object for embedded test server. This life time
@@ -355,7 +355,7 @@ class TestDownloadHttpResponse {
 class TestDownloadResponseHandler {
  public:
   std::unique_ptr<net::test_server::HttpResponse> HandleTestDownloadRequest(
-      const TestDownloadHttpResponse::OnResponseSentCallback& callback,
+      TestDownloadHttpResponse::OnResponseSentCallback callback,
       const net::test_server::HttpRequest& request);
 
   TestDownloadResponseHandler();
