@@ -33,19 +33,6 @@ constexpr int kSubPixelMask = (1 << kSubPixelBits) - 1;
 constexpr int kHorizontalOffset = 3;
 constexpr int kVerticalOffset = 3;
 
-int GetFilterIndex(const int filter_index, const int length) {
-  if (length <= 4) {
-    if (filter_index == kInterpolationFilterEightTap ||
-        filter_index == kInterpolationFilterEightTapSharp) {
-      return 4;
-    }
-    if (filter_index == kInterpolationFilterEightTapSmooth) {
-      return 5;
-    }
-  }
-  return filter_index;
-}
-
 template <int bitdepth, typename Pixel>
 void ConvolveScale2D_C(
     const void* const reference, const ptrdiff_t reference_stride,

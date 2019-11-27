@@ -41,19 +41,6 @@ constexpr int kSubPixelMask = (1 << kSubPixelBits) - 1;
 constexpr int kHorizontalOffset = 3;
 constexpr int kFilterIndexShift = 6;
 
-int GetFilterIndex(const int filter_index, const int length) {
-  if (length <= 4) {
-    if (filter_index == kInterpolationFilterEightTap ||
-        filter_index == kInterpolationFilterEightTapSharp) {
-      return 4;
-    }
-    if (filter_index == kInterpolationFilterEightTapSmooth) {
-      return 5;
-    }
-  }
-  return filter_index;
-}
-
 // Multiply every entry in |src[]| by the corresponding entry in |taps[]| and
 // sum. The sum of the filters in |taps[]| is always 128. In some situations
 // negative values are used. This creates a situation where the positive taps

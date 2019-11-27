@@ -386,6 +386,21 @@ constexpr LoopFilterTransformSizeId GetTransformSizeIdWidth(
                        left_tx_size > kTransformSize8x32));
 }
 
+// This is used for 7.11.3.4 Block Inter Prediction Process, to select convolve
+// filters.
+inline int GetFilterIndex(const int filter_index, const int length) {
+  if (length <= 4) {
+    if (filter_index == kInterpolationFilterEightTap ||
+        filter_index == kInterpolationFilterEightTapSharp) {
+      return 4;
+    }
+    if (filter_index == kInterpolationFilterEightTapSmooth) {
+      return 5;
+    }
+  }
+  return filter_index;
+}
+
 }  // namespace libgav1
 
 #endif  // LIBGAV1_SRC_UTILS_COMMON_H_

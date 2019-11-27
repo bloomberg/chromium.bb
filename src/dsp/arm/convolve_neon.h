@@ -39,6 +39,7 @@ void ConvolveInit_NEON();
 #define LIBGAV1_Dsp8bpp_ConvolveCompoundVertical LIBGAV1_CPU_NEON
 #define LIBGAV1_Dsp8bpp_ConvolveCompound2D LIBGAV1_CPU_NEON
 
+#define LIBGAV1_Dsp8bpp_ConvolveScale2D LIBGAV1_CPU_NEON
 #define LIBGAV1_Dsp8bpp_ConvolveCompoundScale2D LIBGAV1_CPU_NEON
 #endif  // LIBGAV1_ENABLE_NEON
 
