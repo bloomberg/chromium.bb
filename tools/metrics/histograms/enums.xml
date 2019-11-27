@@ -46560,7 +46560,7 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="OmniboxInputType">
-  <int value="0" label="invalid"/>
+  <int value="0" label="empty"/>
   <int value="1" label="unknown"/>
   <int value="2" label="deprecated: requested url"/>
   <int value="3" label="url"/>
