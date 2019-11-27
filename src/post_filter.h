@@ -348,10 +348,10 @@ class PostFilter {
   template <typename Pixel>
   void ApplyLoopRestorationForOneUnit(
       uint8_t* cdef_buffer, ptrdiff_t cdef_buffer_stride, Plane plane,
-      int plane_height, int unit_id, LoopRestorationType type, int x, int y,
-      int row, int column, int current_process_unit_width,
+      int plane_height, int x, int y, int row, int column, int unit_row,
       int current_process_unit_height, int plane_process_unit_width,
-      int window_width);
+      int plane_unit_size, int num_horizontal_units, int plane_width,
+      Array2DView<Pixel>* loop_restored_window);
   static int GetIndex(int row4x4) { return DivideBy4(row4x4); }
   static int GetShift(int row4x4, int column4x4) {
     return ((row4x4 & 3) << 4) | column4x4;

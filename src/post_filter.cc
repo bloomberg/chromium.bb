@@ -856,45 +856,46 @@ void PostFilter::ApplyLoopRestorationForOneRowInWindow(
     const int current_process_unit_height, const int process_unit_width,
     const int window_width, const int plane_unit_size,
     const int num_horizontal_units) {
+  Array2DView<Pixel> loop_restored_window(
+      window_buffer_height_, window_buffer_width_,
+      reinterpret_cast<Pixel*>(threaded_window_buffer_));
   for (int column = 0; column < window_width; column += process_unit_width) {
-    const int unit_x = x + column;
-    const int unit_column =
-        std::min(unit_x / plane_unit_size, num_horizontal_units - 1);
-    const int unit_id = unit_row * num_horizontal_units + unit_column;
-    const LoopRestorationType type =
-        restoration_info_
-            ->loop_restoration_info(static_cast<Plane>(plane), unit_id)
-            .type;
-    const int current_process_unit_width =
-        (unit_x + process_unit_width <= plane_width) ? process_unit_width
-                                                     : plane_width - unit_x;
     ApplyLoopRestorationForOneUnit<Pixel>(
-        cdef_buffer, cdef_buffer_stride, plane, plane_height, unit_id, type, x,
-        y, row, column, current_process_unit_width, current_process_unit_height,
-        process_unit_width, window_buffer_width_);
+        cdef_buffer, cdef_buffer_stride, plane, plane_height, x, y, row, column,
+        unit_row, current_process_unit_height, process_unit_width,
+        plane_unit_size, num_horizontal_units, plane_width,
+        &loop_restored_window);
   }
 }
 
 template <typename Pixel>
 void PostFilter::ApplyLoopRestorationForOneUnit(
     uint8_t* const cdef_buffer, const ptrdiff_t cdef_buffer_stride,
-    const Plane plane, const int plane_height, const int unit_id,
-    const LoopRestorationType type, const int x, const int y, const int row,
-    const int column, const int current_process_unit_width,
+    const Plane plane, const int plane_height, const int x, const int y,
+    const int row, const int column, const int unit_row,
     const int current_process_unit_height, const int plane_process_unit_width,
-    const int window_width) {
+    const int plane_unit_size, const int num_horizontal_units,
+    const int plane_width, Array2DView<Pixel>* const loop_restored_window) {
   const int unit_x = x + column;
   const int unit_y = y + row;
+  const int current_process_unit_width =
+      (unit_x + plane_process_unit_width <= plane_width)
+          ? plane_process_unit_width
+          : plane_width - unit_x;
   uint8_t* cdef_unit_buffer =
       cdef_buffer + unit_y * cdef_buffer_stride + unit_x * pixel_size_;
-  Array2DView<Pixel> loop_restored_window(
-      window_buffer_height_, window_buffer_width_,
-      reinterpret_cast<Pixel*>(threaded_window_buffer_));
+  const int unit_column =
+      std::min(unit_x / plane_unit_size, num_horizontal_units - 1);
+  const int unit_id = unit_row * num_horizontal_units + unit_column;
+  const LoopRestorationType type =
+      restoration_info_
+          ->loop_restoration_info(static_cast<Plane>(plane), unit_id)
+          .type;
   if (type == kLoopRestorationTypeNone) {
-    Pixel* dest = &loop_restored_window[row][column];
+    Pixel* dest = &(*loop_restored_window)[row][column];
     for (int k = 0; k < current_process_unit_height; ++k) {
       memcpy(dest, cdef_unit_buffer, current_process_unit_width * pixel_size_);
-      dest += window_width;
+      dest += loop_restored_window->columns();
       cdef_unit_buffer += cdef_buffer_stride;
     }
     return;
@@ -943,10 +944,11 @@ void PostFilter::ApplyLoopRestorationForOneUnit(
   restoration_func(reinterpret_cast<const uint8_t*>(
                        block_buffer + kRestorationBorder * block_buffer_stride +
                        kRestorationBorder * pixel_size_),
-                   &loop_restored_window[row][column],
+                   &(*loop_restored_window)[row][column],
                    restoration_info_->loop_restoration_info(
                        static_cast<Plane>(plane), unit_id),
-                   block_buffer_stride, window_width * pixel_size_,
+                   block_buffer_stride,
+                   loop_restored_window->columns() * pixel_size_,
                    current_process_unit_width, current_process_unit_height,
                    &restoration_buffer);
 }
