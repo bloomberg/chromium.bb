@@ -33,10 +33,10 @@ class TestDownloadHttpResponse {
 
   // OnPauseHandler can be used to pause the response until the enclosed
   // callback is called.
-  using OnPauseHandler = base::Callback<void(const base::Closure&)>;
+  using OnPauseHandler = base::RepeatingCallback<void(base::OnceClosure)>;
 
   // Called when an injected error triggers.
-  using InjectErrorCallback = base::Callback<void(int64_t, int64_t)>;
+  using InjectErrorCallback = base::RepeatingCallback<void(int64_t, int64_t)>;
 
   struct HttpResponseData {
     HttpResponseData() = default;
@@ -254,7 +254,7 @@ class TestDownloadHttpResponse {
   // operate on HTTP connection in embedded test server, and will out live the
   // shim HttpResponse object created by |CreateResponseForTestServer|.
   void SendResponse(const net::test_server::SendBytesCallback& send,
-                    const net::test_server::SendCompleteCallback& done);
+                    net::test_server::SendCompleteCallback done);
 
  private:
   // Parses the request headers.
@@ -297,7 +297,7 @@ class TestDownloadHttpResponse {
   // Will pause or throw error based on configuration in |paramters_|.
   void SendResponseBodyChunk();
   void SendBodyChunkInternal(const net::HttpByteRange& buffer_range,
-                             const base::RepeatingClosure& next);
+                             base::OnceClosure next);
   net::test_server::SendCompleteCallback SendNextBodyChunkClosure();
 
   // Generate CompletedRequest as result.

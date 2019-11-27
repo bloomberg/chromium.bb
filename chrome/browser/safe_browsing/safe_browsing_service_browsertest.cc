@@ -142,24 +142,12 @@ const char kNeverCompletesPath[] = "/never_completes";
 const char kPrefetchMalwarePage[] = "/safe_browsing/prefetch_malware.html";
 const char kBillingInterstitialPage[] = "/safe_browsing/billing.html";
 
-// TODO(ricea): Use net::test_server::HungResponse instead.
-class NeverCompletingHttpResponse : public net::test_server::HttpResponse {
- public:
-  ~NeverCompletingHttpResponse() override {}
-
-  void SendResponse(
-      const net::test_server::SendBytesCallback& send,
-      const net::test_server::SendCompleteCallback& done) override {
-    // Do nothing. |done| is never called.
-  }
-};
-
 std::unique_ptr<net::test_server::HttpResponse> HandleNeverCompletingRequests(
     const net::test_server::HttpRequest& request) {
   if (!base::StartsWith(request.relative_url, kNeverCompletesPath,
                         base::CompareCase::SENSITIVE))
     return nullptr;
-  return std::make_unique<NeverCompletingHttpResponse>();
+  return std::make_unique<net::test_server::HungResponse>();
 }
 
 // This is not a proper WebSocket server. It does the minimum necessary to make
@@ -178,9 +166,8 @@ class QuasiWebSocketHttpResponse : public net::test_server::HttpResponse {
   }
   ~QuasiWebSocketHttpResponse() override {}
 
-  void SendResponse(
-      const net::test_server::SendBytesCallback& send,
-      const net::test_server::SendCompleteCallback& done) override {
+  void SendResponse(const net::test_server::SendBytesCallback& send,
+                    net::test_server::SendCompleteCallback done) override {
     const auto response_headers = base::StringPrintf(
         "HTTP/1.1 101 WebSocket Protocol Handshake\r\n"
         "Upgrade: WebSocket\r\n"

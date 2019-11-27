@@ -54,8 +54,8 @@ uint64_t XorShift64StarWithIndex(uint64_t seed, uint64_t index) {
 
 // Called to resume the response.
 void OnResume(scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-              const base::Closure& resume_callback) {
-  task_runner->PostTask(FROM_HERE, resume_callback);
+              base::OnceClosure resume_callback) {
+  task_runner->PostTask(FROM_HERE, std::move(resume_callback));
 }
 
 void OnResponseSentOnServerIOThread(
@@ -81,11 +81,10 @@ class HttpResponse : public net::test_server::HttpResponse {
 
  private:
   // net::test_server::HttpResponse implementations.
-  void SendResponse(
-      const net::test_server::SendBytesCallback& send,
-      const net::test_server::SendCompleteCallback& done) override {
+  void SendResponse(const net::test_server::SendBytesCallback& send,
+                    net::test_server::SendCompleteCallback done) override {
     if (owner_)
-      owner_->SendResponse(send, done);
+      owner_->SendResponse(send, std::move(done));
   }
 
   base::WeakPtr<TestDownloadHttpResponse> owner_;
@@ -260,9 +259,9 @@ TestDownloadHttpResponse::~TestDownloadHttpResponse() = default;
 
 void TestDownloadHttpResponse::SendResponse(
     const net::test_server::SendBytesCallback& send,
-    const net::test_server::SendCompleteCallback& done) {
+    net::test_server::SendCompleteCallback done) {
   bytes_sender_ = send;
-  done_callback_ = done;
+  done_callback_ = std::move(done);
 
   // Throw error before sending headers.
   if (ShouldAbortImmediately()) {
@@ -508,8 +507,7 @@ bool TestDownloadHttpResponse::HandlePause(
   if (range.last_byte_position() > pause_offset) {
     range.set_last_byte_position(pause_offset - 1);
     response_sent_offset_ = pause_offset;
-    base::RepeatingClosure nothing = base::BindRepeating([]() {});
-    SendBodyChunkInternal(range, nothing);
+    SendBodyChunkInternal(range, base::DoNothing());
   }
 
   // Pause now. Don't close the connection to wait for resumption.
@@ -559,11 +557,11 @@ void TestDownloadHttpResponse::PauseResponsesAndWaitForResumption() {
   auto pause_callback = parameters_.on_pause_handler;
   parameters_.on_pause_handler.Reset();
 
-  base::RepeatingClosure continue_closure = SendNextBodyChunkClosure();
+  base::OnceClosure continue_closure = SendNextBodyChunkClosure();
 
   // We may pause before sending the headers.
   if (parameters_.pause_offset == -1) {
-    continue_closure = base::BindRepeating(
+    continue_closure = base::BindOnce(
         &TestDownloadHttpResponse::SendResponseHeaders, base::Unretained(this));
   }
 
@@ -573,8 +571,8 @@ void TestDownloadHttpResponse::PauseResponsesAndWaitForResumption() {
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(
           pause_callback,
-          base::BindRepeating(&OnResume, base::ThreadTaskRunnerHandle::Get(),
-                              continue_closure)));
+          base::BindOnce(&OnResume, base::ThreadTaskRunnerHandle::Get(),
+                         std::move(continue_closure))));
 }
 
 void TestDownloadHttpResponse::SendResponseBodyChunk() {
@@ -606,16 +604,16 @@ void TestDownloadHttpResponse::SendResponseBodyChunk() {
 
 void TestDownloadHttpResponse::SendBodyChunkInternal(
     const net::HttpByteRange& buffer_range,
-    const base::RepeatingClosure& next) {
+    base::OnceClosure next) {
   std::string response_chunk = GetResponseChunk(buffer_range);
   transferred_bytes_ += static_cast<int64_t>(response_chunk.size());
-  bytes_sender_.Run(response_chunk, next);
+  bytes_sender_.Run(response_chunk, std::move(next));
 }
 
 net::test_server::SendCompleteCallback
 TestDownloadHttpResponse::SendNextBodyChunkClosure() {
-  return base::BindRepeating(&TestDownloadHttpResponse::SendResponseBodyChunk,
-                             base::Unretained(this));
+  return base::BindOnce(&TestDownloadHttpResponse::SendResponseBodyChunk,
+                        base::Unretained(this));
 }
 
 void TestDownloadHttpResponse::GenerateResult() {
@@ -626,13 +624,13 @@ void TestDownloadHttpResponse::GenerateResult() {
                                  std::move(completed_request));
 
   // Close the HTTP connection.
-  done_callback_.Run();
+  std::move(done_callback_).Run();
 }
 
 net::test_server::SendCompleteCallback
 TestDownloadHttpResponse::GenerateResultClosure() {
-  return base::BindRepeating(&TestDownloadHttpResponse::GenerateResult,
-                             base::Unretained(this));
+  return base::BindOnce(&TestDownloadHttpResponse::GenerateResult,
+                        base::Unretained(this));
 }
 
 std::unique_ptr<net::test_server::HttpResponse>
