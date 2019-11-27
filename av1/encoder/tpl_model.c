@@ -118,11 +118,11 @@ static AOM_INLINE void txfm_quant_rdcost(
                               eob, 0);
 }
 
-static AOM_INLINE uint32_t motion_estimation(AV1_COMP *cpi, MACROBLOCK *x,
-                                             uint8_t *cur_frame_buf,
-                                             uint8_t *ref_frame_buf, int stride,
-                                             int stride_ref, BLOCK_SIZE bsize,
-                                             int mi_row, int mi_col) {
+static uint32_t motion_estimation(AV1_COMP *cpi, MACROBLOCK *x,
+                                  uint8_t *cur_frame_buf,
+                                  uint8_t *ref_frame_buf, int stride,
+                                  int stride_ref, BLOCK_SIZE bsize, int mi_row,
+                                  int mi_col, MV center_mv) {
   AV1_COMMON *cm = &cpi->common;
   MACROBLOCKD *const xd = &x->e_mbd;
   MV_SPEED_FEATURES *const mv_sf = &cpi->sf.mv_sf;
@@ -141,11 +141,10 @@ static AOM_INLINE uint32_t motion_estimation(AV1_COMP *cpi, MACROBLOCK *x,
   // multi-threading.
   static search_site_config ss_cfgs[11];
 
-  MV best_ref_mv1 = { 0, 0 };
   MV best_ref_mv1_full; /* full-pixel value of best_ref_mv1 */
 
-  best_ref_mv1_full.col = best_ref_mv1.col >> 3;
-  best_ref_mv1_full.row = best_ref_mv1.row >> 3;
+  best_ref_mv1_full.col = center_mv.col >> 3;
+  best_ref_mv1_full.row = center_mv.row >> 3;
 
   // Setup frame pointers
   x->plane[0].src.buf = cur_frame_buf;
@@ -156,7 +155,7 @@ static AOM_INLINE uint32_t motion_estimation(AV1_COMP *cpi, MACROBLOCK *x,
   step_param = tpl_sf->reduce_first_step_size;
   step_param = AOMMIN(step_param, MAX_MVSEARCH_STEPS - 2);
 
-  av1_set_mv_search_range(&x->mv_limits, &best_ref_mv1);
+  av1_set_mv_search_range(&x->mv_limits, &center_mv);
 
   search_site_config *ss_cfg = &ss_cfgs[stride_ref % 11];
   if (ss_cfg->stride != stride_ref) {
@@ -164,7 +163,7 @@ static AOM_INLINE uint32_t motion_estimation(AV1_COMP *cpi, MACROBLOCK *x,
   }
   av1_full_pixel_search(cpi, x, bsize, &best_ref_mv1_full, step_param, 1,
                         search_method, 0, sadpb, cond_cost_list(cpi, cost_list),
-                        &best_ref_mv1, INT_MAX, 0, (MI_SIZE * mi_col),
+                        &center_mv, INT_MAX, 0, (MI_SIZE * mi_col),
                         (MI_SIZE * mi_row), 0, ss_cfg, 0);
 
   /* restore UMV window */
@@ -173,7 +172,7 @@ static AOM_INLINE uint32_t motion_estimation(AV1_COMP *cpi, MACROBLOCK *x,
   const int pw = block_size_wide[bsize];
   const int ph = block_size_high[bsize];
   bestsme = cpi->find_fractional_mv_step(
-      x, cm, mi_row, mi_col, &best_ref_mv1, cpi->common.allow_high_precision_mv,
+      x, cm, mi_row, mi_col, &center_mv, cpi->common.allow_high_precision_mv,
       x->errorperbit, &cpi->fn_ptr[bsize], 0, mv_sf->subpel_iters_per_step,
       cond_cost_list(cpi, cost_list), NULL, NULL, &distortion, &sse, NULL, NULL,
       0, 0, pw, ph, 1, 1);
@@ -224,12 +223,15 @@ static AOM_INLINE void mode_estimation(
 
   memset(tpl_stats, 0, sizeof(*tpl_stats));
 
-  xd->above_mbmi = NULL;
-  xd->left_mbmi = NULL;
+  const int mi_width = mi_size_wide[bsize];
+  const int mi_height = mi_size_high[bsize];
+  set_mode_info_offsets(cpi, x, xd, mi_row, mi_col);
+  set_mi_row_col(xd, &xd->tile, mi_row, mi_height, mi_col, mi_width,
+                 cm->mi_rows, cm->mi_cols);
+  set_plane_n4(xd, mi_size_wide[bsize], mi_size_high[bsize],
+               av1_num_planes(cm));
   xd->mi[0]->sb_type = bsize;
   xd->mi[0]->motion_mode = SIMPLE_TRANSLATION;
-  xd->up_available = mi_row > 0;
-  xd->left_available = mi_col > 0;
 
   // Intra prediction search
   xd->mi[0]->ref_frame[0] = INTRA_FRAME;
@@ -276,7 +278,7 @@ static AOM_INLINE void mode_estimation(
   }
 
   // Motion compensated prediction
-  xd->mi[0]->ref_frame[0] = GOLDEN_FRAME;
+  xd->mi[0]->ref_frame[0] = INTRA_FRAME;
 
   int best_rf_idx = -1;
   int_mv best_mv;
@@ -296,8 +298,56 @@ static AOM_INLINE void mode_estimation(
     uint8_t *ref_mb = ref_frame_ptr->y_buffer + ref_mb_offset;
     int ref_stride = ref_frame_ptr->y_stride;
 
-    motion_estimation(cpi, x, src_mb_buffer, ref_mb, src_stride, ref_stride,
-                      bsize, mi_row, mi_col);
+    int_mv best_rfidx_mv = { 0 };
+    uint32_t bestsme = UINT32_MAX;
+
+    int_mv center_mvs[4] = { { 0 } };
+    int refmv_count = 1;
+
+    if (xd->up_available) {
+      TplDepStats *ref_tpl_stats = &tpl_frame->tpl_stats_ptr[av1_tpl_ptr_pos(
+          cpi, mi_row - mi_height, mi_col, tpl_frame->stride)];
+      if (ref_tpl_stats->mv[rf_idx].as_int != 0) {
+        center_mvs[refmv_count].as_int = ref_tpl_stats->mv[rf_idx].as_int;
+        ++refmv_count;
+      }
+    }
+
+    if (xd->left_available) {
+      TplDepStats *ref_tpl_stats = &tpl_frame->tpl_stats_ptr[av1_tpl_ptr_pos(
+          cpi, mi_row, mi_col - mi_width, tpl_frame->stride)];
+      if (ref_tpl_stats->mv[rf_idx].as_int != 0 &&
+          ref_tpl_stats->mv[rf_idx].as_int != center_mvs[1].as_int) {
+        center_mvs[refmv_count].as_int = ref_tpl_stats->mv[rf_idx].as_int;
+        ++refmv_count;
+      }
+    }
+
+    if (xd->up_available && mi_col + mi_width < xd->tile.mi_col_end) {
+      TplDepStats *ref_tpl_stats = &tpl_frame->tpl_stats_ptr[av1_tpl_ptr_pos(
+          cpi, mi_row - mi_height, mi_col + mi_width, tpl_frame->stride)];
+      if (ref_tpl_stats->mv[rf_idx].as_int != 0 &&
+          ref_tpl_stats->mv[rf_idx].as_int != center_mvs[1].as_int &&
+          ref_tpl_stats->mv[rf_idx].as_int != center_mvs[2].as_int) {
+        center_mvs[refmv_count].as_int = ref_tpl_stats->mv[rf_idx].as_int;
+        ++refmv_count;
+      }
+    }
+
+    for (int idx = 0; idx < refmv_count; ++idx) {
+      uint32_t thissme = motion_estimation(
+          cpi, x, src_mb_buffer, ref_mb, src_stride, ref_stride, bsize, mi_row,
+          mi_col, center_mvs[idx].as_mv);
+
+      if (thissme < bestsme) {
+        bestsme = thissme;
+        best_rfidx_mv.as_int = x->best_mv.as_int;
+      }
+    }
+
+    x->best_mv.as_int = best_rfidx_mv.as_int;
+
+    tpl_stats->mv[rf_idx].as_int = x->best_mv.as_int;
 
     struct buf_2d ref_buf = { NULL, ref_frame_ptr->y_buffer,
                               ref_frame_ptr->y_width, ref_frame_ptr->y_height,
@@ -321,6 +371,8 @@ static AOM_INLINE void mode_estimation(
       best_mv.as_int = x->best_mv.as_int;
       if (best_inter_cost < best_intra_cost) {
         best_mode = NEWMV;
+        xd->mi[0]->ref_frame[0] = best_rf_idx + LAST_FRAME;
+        xd->mi[0]->mv[0].as_int = best_mv.as_int;
       }
     }
   }
@@ -384,6 +436,15 @@ static AOM_INLINE void mode_estimation(
   if (best_rf_idx >= 0) {
     tpl_stats->mv[best_rf_idx].as_int = best_mv.as_int;
     tpl_stats->ref_frame_index = best_rf_idx;
+  }
+
+  for (int idy = 0; idy < mi_height; ++idy) {
+    for (int idx = 0; idx < mi_width; ++idx) {
+      if ((xd->mb_to_right_edge >> (3 + MI_SIZE_LOG2)) + mi_width > idx &&
+          (xd->mb_to_bottom_edge >> (3 + MI_SIZE_LOG2)) + mi_height > idy) {
+        xd->mi[idx + idy * cm->mi_stride] = xd->mi[0];
+      }
+    }
   }
 }
 
@@ -1082,13 +1143,16 @@ static AOM_INLINE void get_tpl_forward_stats(AV1_COMP *cpi, MACROBLOCK *x,
       // Motion estimation column boundary
       xd->mi[0]->ref_frame[0] = GOLDEN_FRAME;
 
+      int_mv center_mv;
+      center_mv.as_int = 0;
+
       const int mb_y_offset =
           mi_row * MI_SIZE * src->y_stride + mi_col * MI_SIZE;
       const int mb_y_offset_ref =
           mi_row * MI_SIZE * ref->y_stride + mi_col * MI_SIZE;
       motion_estimation(cpi, x, src->y_buffer + mb_y_offset,
                         ref->y_buffer + mb_y_offset_ref, src->y_stride,
-                        ref->y_stride, bsize, mi_row, mi_col);
+                        ref->y_stride, bsize, mi_row, mi_col, center_mv.as_mv);
 
       struct buf_2d ref_buf = { NULL, ref->y_buffer, ref->y_width,
                                 ref->y_height, ref->y_stride };
