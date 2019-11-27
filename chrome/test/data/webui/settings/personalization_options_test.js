@@ -157,15 +157,28 @@ cr.define('settings_personalization_options', function() {
     });
 
     test('Spellcheck toggle', function() {
-      testElement.prefs = {spellcheck: {dictionaries: {value: ['en-US']}}};
+      testElement.prefs = {
+        profile: {password_manager_leak_detection: {value: true}},
+        safebrowsing:
+            {enabled: {value: true}, scout_reporting_enabled: {value: true}},
+        spellcheck: {dictionaries: {value: ['en-US']}}
+      };
       Polymer.dom.flush();
       assertFalse(testElement.$.spellCheckControl.hidden);
 
-      testElement.prefs = {spellcheck: {dictionaries: {value: []}}};
+      testElement.prefs = {
+        profile: {password_manager_leak_detection: {value: true}},
+        safebrowsing:
+            {enabled: {value: true}, scout_reporting_enabled: {value: true}},
+        spellcheck: {dictionaries: {value: []}}
+      };
       Polymer.dom.flush();
       assertTrue(testElement.$.spellCheckControl.hidden);
 
       testElement.prefs = {
+        profile: {password_manager_leak_detection: {value: true}},
+        safebrowsing:
+            {enabled: {value: true}, scout_reporting_enabled: {value: true}},
         browser: {enable_spellchecking: {value: false}},
         spellcheck: {
           dictionaries: {value: ['en-US']},
