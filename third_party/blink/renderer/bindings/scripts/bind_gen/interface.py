@@ -246,6 +246,15 @@ def bind_v8_set_return_value(code_node, cg_context):
     code_node.add_template_var("v8_set_return_value", TextNode(text))
 
 
+_callback_common_binders = (
+    bind_blink_api_arguments,
+    bind_blink_api_call,
+    bind_callback_local_vars,
+    bind_return_value,
+    bind_v8_set_return_value,
+)
+
+
 def make_check_receiver(cg_context):
     assert isinstance(cg_context, CodeGenContext)
 
@@ -323,6 +332,15 @@ def make_log_activity(cg_context):
     return node
 
 
+def _make_overloaded_function_name(function_like):
+    if isinstance(function_like, web_idl.Constructor):
+        return name_style.func("constructor", "overload",
+                               function_like.overload_index + 1)
+    else:
+        return name_style.func(function_like.identifier, "op", "overload",
+                               function_like.overload_index + 1)
+
+
 def _make_overload_dispatcher_per_arg_size(items):
     """
     https://heycam.github.io/webidl/#dfn-overload-resolution-algorithm
@@ -378,14 +396,8 @@ def _make_overload_dispatcher_per_arg_size(items):
 
     def make_node(pattern):
         value = _format("${info}[{}]", arg_index)
-        if isinstance(func_like, web_idl.Constructor):
-            func_name = name_style.func("constructor",
-                                        func_like.overload_index, "overload")
-        else:
-            func_name = name_style.func(func_like.identifier, "op",
-                                        func_like.overload_index, "overload")
-        text = _format(pattern, value=value, func_name=func_name)
-        return TextNode(text)
+        func_name = _make_overloaded_function_name(func_like)
+        return TextNode(_format(pattern, value=value, func_name=func_name))
 
     def dispatch_if(expr):
         if expr is True:
@@ -691,27 +703,16 @@ def make_runtime_call_timer_scope(cg_context):
     return node
 
 
-_callback_common_binders = (
-    bind_blink_api_arguments,
-    bind_blink_api_call,
-    bind_callback_local_vars,
-    bind_return_value,
-    bind_v8_set_return_value,
-)
-
-
-def make_attribute_get_def(cg_context):
+def make_attribute_get_callback_def(cg_context, function_name):
     assert isinstance(cg_context, CodeGenContext)
+    assert isinstance(function_name, str)
 
     T = TextNode
 
     cg_context = cg_context.make_copy(attribute_get=True)
 
-    func_name = name_style.func(cg_context.attribute.identifier,
-                                "AttributeGetCallback")
-
     func_def = FunctionDefinitionNode(
-        name=T(func_name),
+        name=T(function_name),
         arg_decls=[T("const v8::FunctionCallbackInfo<v8::Value>& info")],
         return_type=T("void"))
 
@@ -736,16 +737,21 @@ def make_attribute_get_def(cg_context):
     return func_def
 
 
-def make_operation_def(cg_context):
+def make_attribute_set_callback_def(cg_context, function_name):
     assert isinstance(cg_context, CodeGenContext)
+    assert isinstance(function_name, str)
+
+    return None
+
+
+def make_operation_function_def(cg_context, function_name):
+    assert isinstance(cg_context, CodeGenContext)
+    assert isinstance(function_name, str)
 
     T = TextNode
 
-    func_name = name_style.func(cg_context.operation.identifier,
-                                "OperationCallback")
-
     func_def = FunctionDefinitionNode(
-        name=T(func_name),
+        name=T(function_name),
         arg_decls=[T("const v8::FunctionCallbackInfo<v8::Value>& info")],
         return_type=T("void"))
 
@@ -770,16 +776,14 @@ def make_operation_def(cg_context):
     return func_def
 
 
-def make_operation_group_def(cg_context):
+def make_overload_dispatcher_function_def(cg_context, function_name):
     assert isinstance(cg_context, CodeGenContext)
+    assert isinstance(function_name, str)
 
     T = TextNode
 
-    func_name = name_style.func(cg_context.operation_group.identifier,
-                                "OperationGroupCallback")
-
     func_def = FunctionDefinitionNode(
-        name=T(func_name),
+        name=T(function_name),
         arg_decls=[T("const v8::FunctionCallbackInfo<v8::Value>& info")],
         return_type=T("void"))
 
@@ -789,11 +793,30 @@ def make_operation_group_def(cg_context):
 
     bind_callback_local_vars(body, cg_context)
 
-    body.extend([
-        make_overload_dispatcher(cg_context),
-    ])
+    body.append(make_overload_dispatcher(cg_context))
 
     return func_def
+
+
+def make_operation_callback_def(cg_context, function_name):
+    assert isinstance(cg_context, CodeGenContext)
+    assert isinstance(function_name, str)
+
+    operation_group = cg_context.constructor_group or cg_context.operation_group
+
+    if len(operation_group) == 1:
+        return make_operation_function_def(
+            cg_context.make_copy(operation=operation_group[0]), function_name)
+
+    node = SymbolScopeNode()
+    for operation in operation_group:
+        node.append(
+            make_operation_function_def(
+                cg_context.make_copy(operation=operation),
+                _make_overloaded_function_name(operation)))
+    node.append(
+        make_overload_dispatcher_function_def(cg_context, function_name))
+    return node
 
 
 def bind_template_installer_local_vars(code_node, cg_context):
@@ -878,7 +901,7 @@ def generate_interfaces(web_idl_database, output_dirs):
     filename = "v8_example_interface.cc"
     filepath = os.path.join(output_dirs['core'], filename)
 
-    interface = web_idl_database.find("TestNamespace")
+    interface = web_idl_database.find("TestInterfaceConstructor")
 
     cg_context = CodeGenContext(interface=interface)
 
@@ -892,18 +915,31 @@ def generate_interfaces(web_idl_database, output_dirs):
     code_node = SymbolScopeNode()
 
     for attribute in interface.attributes:
+        func_name = name_style.func(attribute.identifier,
+                                    "AttributeGetCallback")
         code_node.append(
-            make_attribute_get_def(cg_context.make_copy(attribute=attribute)))
+            make_attribute_get_callback_def(
+                cg_context.make_copy(attribute=attribute), func_name))
+        func_name = name_style.func(attribute.identifier,
+                                    "AttributeSetCallback")
+        code_node.append(
+            make_attribute_set_callback_def(
+                cg_context.make_copy(attribute=attribute), func_name))
+
+    for constructor_group in interface.constructor_groups:
+        func_name = name_style.func("ConstructorCallback")
+        code_node.append(
+            make_operation_callback_def(
+                cg_context.make_copy(constructor_group=constructor_group),
+                func_name))
 
     for operation_group in interface.operation_groups:
+        func_name = name_style.func(operation_group.identifier,
+                                    "OperationCallback")
         code_node.append(
-            make_operation_group_def(
-                cg_context.make_copy(operation_group=operation_group)))
-        for operation in operation_group:
-            code_node.append(
-                make_operation_def(
-                    cg_context.make_copy(
-                        operation_group=operation_group, operation=operation)))
+            make_operation_callback_def(
+                cg_context.make_copy(operation_group=operation_group),
+                func_name))
 
     code_node.append(make_install_interface_template_def(cg_context))
 
