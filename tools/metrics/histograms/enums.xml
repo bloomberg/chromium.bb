@@ -21435,6 +21435,7 @@ Called by update_net_error_codes.py.-->
   <int value="1416" label="TERMINALPRIVATE_SETSETTINGS"/>
   <int value="1417" label="WEBSTOREPRIVATE_REQUESTEXTENSION"/>
   <int value="1418" label="AUTOTESTPRIVATE_INSTALLPLUGINVM"/>
+  <int value="1419" label="CRASHREPORTPRIVATE_REPORTERROR"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -21988,6 +21989,7 @@ Called by update_net_error_codes.py.-->
   <int value="222" label="kLoginState"/>
   <int value="223" label="kPrintingMetrics"/>
   <int value="224" label="kPrinting"/>
+  <int value="225" label="kCrashReportPrivate"/>
 </enum>
 
 <enum name="ExtensionServiceVerifyAllSuccess">
