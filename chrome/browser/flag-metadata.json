@@ -1608,7 +1608,7 @@
   },
   {
     "name": "enable-ntp-remote-suggestions",
-    "owners": [ "fgorski" ],
+    "owners": [ "//chrome/android/feed/OWNERS", "feed@chromium.org" ],
     "expiry_milestone": 80
   },
   {
