@@ -7,7 +7,7 @@ foreach $file (@data)
 {
 	chomp($file);
 
-	@output = `./compare_ueb_test_data -t tables/en-ueb-g2.ctb < $file`;
+	@output = `./check_ueb_test_data -t tables/en-ueb-g2.ctb < $file`;
 	if($? != 0)
 	{
 		$result = 1;
