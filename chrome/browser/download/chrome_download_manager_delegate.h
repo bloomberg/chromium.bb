@@ -113,8 +113,6 @@ class ChromeDownloadManagerDelegate
   void SanitizeDownloadParameters(
       download::DownloadUrlParameters* params) override;
   void OpenDownload(download::DownloadItem* download) override;
-  bool IsMostRecentDownloadItemAtFilePath(
-      download::DownloadItem* download) override;
   void ShowDownloadInShell(download::DownloadItem* download) override;
   void CheckForFileExistence(
       download::DownloadItem* download,
@@ -261,6 +259,10 @@ class ChromeDownloadManagerDelegate
       content::CheckDownloadAllowedCallback check_download_allowed_cb,
       bool storage_permission_granted,
       bool allow);
+
+  // Returns whether this is the most recent download in the rare event where
+  // multiple downloads are associated with the same file path.
+  bool IsMostRecentDownloadItemAtFilePath(download::DownloadItem* download);
 
 #if defined(OS_ANDROID)
   // Called after a unique file name is generated in the case that there is a

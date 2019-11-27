@@ -225,8 +225,6 @@ class CONTENT_EXPORT DownloadManagerImpl
       std::unique_ptr<download::DownloadUrlParameters> params,
       const GURL& site_url) override;
   void OpenDownload(download::DownloadItemImpl* download) override;
-  bool IsMostRecentDownloadItemAtFilePath(
-      download::DownloadItemImpl* download) override;
   void ShowDownloadInShell(download::DownloadItemImpl* download) override;
   void DownloadRemoved(download::DownloadItemImpl* download) override;
   void DownloadInterrupted(download::DownloadItemImpl* download) override;
