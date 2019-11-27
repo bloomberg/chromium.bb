@@ -1801,7 +1801,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // under the root at A0, but only B, C, and E are considered immediate local
   // roots of A0. Note that this will exclude any speculative or pending RFHs.
   void ForEachImmediateLocalRoot(
-      const base::Callback<void(RenderFrameHostImpl*)>& callback);
+      const base::RepeatingCallback<void(RenderFrameHostImpl*)>& callback);
 
   // Lazily initializes and returns the mojom::FrameNavigationControl interface
   // for this frame. May be overridden by friend subclasses for e.g. tests which
