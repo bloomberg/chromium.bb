@@ -34,8 +34,8 @@
                    userName:(NSString*)userName
                      origin:(NSString*)origin;
 
-// Creates a blacklisted password form for given origin.
-+ (BOOL)saveExampleBlacklistedOrigin:(NSString*)origin;
+// Creates a blocked password form for given origin.
++ (BOOL)saveExampleBlockedOrigin:(NSString*)origin;
 
 // Creates a federated password form for given origins and user.
 + (BOOL)saveExampleFederatedOrigin:(NSString*)federatedOrigin

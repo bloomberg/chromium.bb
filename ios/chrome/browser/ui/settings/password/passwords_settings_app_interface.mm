@@ -181,7 +181,7 @@ static MockReauthenticationModule* _mockReauthenticationModule;
   return SaveToPasswordStore(example);
 }
 
-+ (BOOL)saveExampleBlacklistedOrigin:(NSString*)origin {
++ (BOOL)saveExampleBlockedOrigin:(NSString*)origin {
   PasswordForm example;
   example.origin = GURL(base::SysNSStringToUTF16(origin));
   example.blacklisted_by_user = true;

@@ -330,13 +330,13 @@ void SaveExamplePasswordForms() {
              @"Stored form was not found in the PasswordStore results.");
 }
 
-// Saves two example blacklisted forms in the store.
-void SaveExampleBlacklistedForms() {
+// Saves two example blocked forms in the store.
+void SaveExampleBlockedForms() {
   GREYAssert([PasswordSettingsAppInterface
-                 saveExampleBlacklistedOrigin:@"https://exclude1.com"],
+                 saveExampleBlockedOrigin:@"https://exclude1.com"],
              @"Stored form was not found in the PasswordStore results.");
   GREYAssert([PasswordSettingsAppInterface
-                 saveExampleBlacklistedOrigin:@"https://exclude2.com"],
+                 saveExampleBlockedOrigin:@"https://exclude2.com"],
              @"Stored form was not found in the PasswordStore results.");
 }
 
@@ -682,9 +682,9 @@ void TapEdit() {
       performAction:grey_tap()];
 }
 
-// Checks that deleting a blacklisted form from password details view goes
+// Checks that deleting a blocked form from password details view goes
 // back to the list-of-passwords view which doesn't display that form anymore.
-- (void)testBlacklistedFormDeletionInDetailView {
+- (void)testBlockedFormDeletionInDetailView {
   // TODO(crbug.com/1023619): Enable the test on 13.2+ iPad once the bug is
   // fixed.
   if (base::ios::IsRunningOnOrLater(13, 2, 0) && [ChromeEarlGrey isIPadIdiom]) {
@@ -692,12 +692,12 @@ void TapEdit() {
   }
   // Save blacklisted form to be deleted later.
   GREYAssert([PasswordSettingsAppInterface
-                 saveExampleBlacklistedOrigin:@"https://blacklisted.com"],
+                 saveExampleBlockedOrigin:@"https://blocked.com"],
              @"Stored form was not found in the PasswordStore results.");
 
   OpenPasswordSettings();
 
-  [GetInteractionForPasswordEntry(@"blacklisted.com") performAction:grey_tap()];
+  [GetInteractionForPasswordEntry(@"blocked.com") performAction:grey_tap()];
 
   [GetInteractionForPasswordDetailItem(DeleteButton())
       performAction:grey_tap()];
@@ -1019,7 +1019,7 @@ void TapEdit() {
 }
 
 // Checks the order of the elements in the detail view layout for a
-// non-federated, non-blacklisted credential.
+// non-federated, non-blocked credential.
 - (void)testLayoutNormal {
   SaveExamplePasswordForm();
 
@@ -1075,11 +1075,11 @@ void TapEdit() {
       performAction:grey_tap()];
 }
 
-// Checks the order of the elements in the detail view layout for a blacklisted
+// Checks the order of the elements in the detail view layout for a blocked
 // credential.
-- (void)testLayoutBlacklisted {
+- (void)testLayoutForBlockedCredential {
   GREYAssert([PasswordSettingsAppInterface
-                 saveExampleBlacklistedOrigin:@"https://example.com"],
+                 saveExampleBlockedOrigin:@"https://example.com"],
              @"Stored form was not found in the PasswordStore results.");
 
   OpenPasswordSettings();
@@ -1174,7 +1174,7 @@ void TapEdit() {
   SaveExamplePasswordForm();
 
   GREYAssert([PasswordSettingsAppInterface
-                 saveExampleBlacklistedOrigin:@"https://blacklisted.com"],
+                 saveExampleBlockedOrigin:@"https://blocked.com"],
              @"Stored form was not found in the PasswordStore results.");
 
   OpenPasswordSettings();
@@ -1199,7 +1199,7 @@ void TapEdit() {
     // Check the stored items. Scroll down if needed.
     [GetInteractionForPasswordEntry(@"example.com, concrete username")
         assertWithMatcher:grey_notNil()];
-    [GetInteractionForPasswordEntry(@"blacklisted.com")
+    [GetInteractionForPasswordEntry(@"blocked.com")
         assertWithMatcher:grey_notNil()];
   }
 
@@ -1492,11 +1492,11 @@ void TapEdit() {
                             UIAccessibilityTraitNotEnabled))];
 }
 
-// Test that when user types text in search field, passwords and blacklisted
+// Test that when user types text in search field, passwords and blocked
 // items are filtered out and "save passwords" switch is removed.
 - (void)testSearchPasswords {
   SaveExamplePasswordForms();
-  SaveExampleBlacklistedForms();
+  SaveExampleBlockedForms();
 
   OpenPasswordSettings();
 
@@ -1527,10 +1527,10 @@ void TapEdit() {
       assertWithMatcher:grey_notNil()];
 }
 
-// Test search and delete all passwords and blacklisted items.
+// Test search and delete all passwords and blocked items.
 - (void)testSearchAndDeleteAllPasswords {
   SaveExamplePasswordForms();
-  SaveExampleBlacklistedForms();
+  SaveExampleBlockedForms();
 
   OpenPasswordSettings();
 
