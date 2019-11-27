@@ -720,12 +720,28 @@ StatusCode DecoderImpl::DecodeTiles(const ObuParser* obu) {
 }
 
 void DecoderImpl::PostFilterRow(PostFilter* post_filter, int row4x4, int sb4x4,
-                                bool /*is_last_row*/) {
-  // |is_last_row| is not used for now. It will be used eventually when we do
-  // the other post filters here.
+                                bool is_last_row) {
   if (row4x4 < 0) return;
   if (post_filter->DoDeblock()) {
     post_filter->ApplyDeblockFilterForOneSuperBlockRow(row4x4, sb4x4);
+  }
+  // TODO(vigneshv): If loop restoration is on, then all the other filters will
+  // be applied in the end. This is temporary and only to facilitate smaller CLs
+  // for easier review. It will go away shortly.
+  if (post_filter->DoRestoration()) return;
+  // Cdef lags by 1 superblock row relative to deblocking (since deblocking the
+  // current superblock row could change the pixels in the previous superblock
+  // row).
+  const int previous_row4x4 = row4x4 - sb4x4;
+  if (previous_row4x4 >= 0) {
+    if (post_filter->DoCdef()) {
+      post_filter->ApplyCdefForOneSuperBlockRow(previous_row4x4, sb4x4);
+    }
+  }
+  if (is_last_row) {
+    if (post_filter->DoCdef()) {
+      post_filter->ApplyCdefForOneSuperBlockRow(row4x4, sb4x4);
+    }
   }
 }
 

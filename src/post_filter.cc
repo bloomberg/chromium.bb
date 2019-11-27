@@ -740,20 +740,13 @@ bool PostFilter::ApplyCdefThreaded() {
   return true;
 }
 
-bool PostFilter::ApplyCdef() {
-  if (thread_pool_ != nullptr) {
-#if LIBGAV1_MAX_BITDEPTH >= 10
-    if (bitdepth_ >= 10) {
-      return ApplyCdefThreaded<uint16_t>();
-    }
-#endif
-    return ApplyCdefThreaded<uint8_t>();
-  }
-
-  const int step_64x64 = 16;  // = 64/4.
-  // Apply cdef on each 8x8 Y block and
-  // (8 >> subsampling_x)x(8 >> subsampling_y) UV block.
-  for (int row4x4 = 0; row4x4 < frame_header_.rows4x4; row4x4 += step_64x64) {
+void PostFilter::ApplyCdefForOneSuperBlockRow(int row4x4_start, int sb4x4) {
+  assert(row4x4_start >= 0);
+  assert(DoCdef());
+  static constexpr int step_64x64 = 16;
+  for (int y = 0; y < sb4x4; y += step_64x64) {
+    const int row4x4 = row4x4_start + y;
+    if (row4x4 >= frame_header_.rows4x4) break;
     for (int column4x4 = 0; column4x4 < frame_header_.columns4x4;
          column4x4 += step_64x64) {
       const int index = cdef_index_[DivideBy16(row4x4)][DivideBy16(column4x4)];
@@ -771,6 +764,26 @@ bool PostFilter::ApplyCdef() {
 #endif  // LIBGAV1_MAX_BITDEPTH >= 10
       ApplyCdefForOneUnit<uint8_t>(cdef_block_, index, block_width4x4,
                                    block_height4x4, row4x4, column4x4);
+    }
+  }
+}
+
+bool PostFilter::ApplyCdef() {
+  if (thread_pool_ != nullptr) {
+#if LIBGAV1_MAX_BITDEPTH >= 10
+    if (bitdepth_ >= 10) {
+      return ApplyCdefThreaded<uint16_t>();
+    }
+#endif
+    return ApplyCdefThreaded<uint8_t>();
+  }
+
+  if (DoRestoration()) {
+    const int step_64x64 = 16;  // = 64/4.
+    // Apply cdef on each 8x8 Y block and
+    // (8 >> subsampling_x)x(8 >> subsampling_y) UV block.
+    for (int row4x4 = 0; row4x4 < frame_header_.rows4x4; row4x4 += step_64x64) {
+      ApplyCdefForOneSuperBlockRow(row4x4, 16);
     }
   }
   // abs(horizontal_shift) must be at least kCdefBorder. Increase it to

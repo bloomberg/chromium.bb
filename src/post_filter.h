@@ -240,6 +240,10 @@ class PostFilter {
   // a height of 4*|sb4x4|.
   void ApplyDeblockFilterForOneSuperBlockRow(int row4x4, int sb4x4);
 
+  // Applies cdef filtering for the superblock row starting at |row4x4| with a
+  // height of 4*|sb4x4|.
+  void ApplyCdefForOneSuperBlockRow(int row4x4, int sb4x4);
+
  private:
   // The type of the HorizontalDeblockFilter and VerticalDeblockFilter member
   // functions.
