@@ -5834,6 +5834,11 @@ if (!is_android) {
     if (is_linux && !is_chromeos) {
       deps += [ "//ui/base/ime/linux" ]
     }
+
+    if (enable_webui_tab_strip) {
+      sources +=
+          [ "../browser/ui/views/frame/webui_tab_strip_interactive_uitest.cc" ]
+    }
   }
 }
 
