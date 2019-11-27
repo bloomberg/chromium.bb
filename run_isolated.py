@@ -103,10 +103,15 @@ RUN_TEST_CASES_LOG = 'run_test_cases.log'
 # - ir stands for isolated_run
 # - io stands for isolated_out
 # - it stands for isolated_tmp
+# - ic stands for isolated_client
 ISOLATED_RUN_DIR = u'ir'
 ISOLATED_OUT_DIR = u'io'
 ISOLATED_TMP_DIR = u'it'
+ISOLATED_CLIENT_DIR = u'ic'
 
+# Take revision from
+# https://ci.chromium.org/p/infra-internal/g/infra-packagers/console
+ISOLATED_REVISION = 'git_revision:f815be8c7bf743c5b5c4db0393888350746010a4'
 
 # Keep synced with task_request.py
 CACHE_NAME_RE = re.compile(r'^[a-z0-9_]{1,4096}$')
@@ -698,12 +703,13 @@ def map_and_run(data, constant_run_path):
   out_dir = make_temp_dir(
       ISOLATED_OUT_DIR, data.root_dir) if data.storage else None
   tmp_dir = make_temp_dir(ISOLATED_TMP_DIR, data.root_dir)
+  isolated_client_dir = make_temp_dir(ISOLATED_CLIENT_DIR, data.root_dir)
   cwd = run_dir
   if data.relative_cwd:
     cwd = os.path.normpath(os.path.join(cwd, data.relative_cwd))
   command = data.command
   try:
-    with data.install_packages_fn(run_dir) as cipd_info:
+    with data.install_packages_fn(run_dir, isolated_client_dir) as cipd_info:
       if cipd_info:
         result['stats']['cipd'] = cipd_info.stats
         result['cipd_pins'] = cipd_info.pins
@@ -798,7 +804,7 @@ def map_and_run(data, constant_run_path):
         # process locks *.exe file). Examine out_dir only after that call
         # completes (since child processes may write to out_dir too and we need
         # to wait for them to finish).
-        for directory in (run_dir, tmp_dir):
+        for directory in (run_dir, tmp_dir, isolated_client_dir):
           if not fs.isdir(directory):
             continue
           try:
@@ -895,7 +901,7 @@ CipdInfo = collections.namedtuple('CipdInfo', [
 
 
 @contextlib.contextmanager
-def noop_install_packages(_run_dir):
+def noop_install_packages(_run_dir, _isolated_dir):
   """Placeholder for 'install_client_and_packages' if cipd is disabled."""
   yield None
 
@@ -955,7 +961,8 @@ def _install_packages(run_dir, cipd_cache_dir, client, packages):
 
 @contextlib.contextmanager
 def install_client_and_packages(run_dir, packages, service_url,
-                                client_package_name, client_version, cache_dir):
+                                client_package_name, client_version, cache_dir,
+                                isolated_dir):
   """Bootstraps CIPD client and installs CIPD packages.
 
   Yields CipdClient, stats, client info and pins (as single CipdInfo object).
@@ -987,6 +994,7 @@ def install_client_and_packages(run_dir, packages, service_url,
     client_package_name (str): CIPD package name of CIPD client.
     client_version (str): Version of CIPD client.
     cache_dir (str): where to keep cache of cipd clients, packages and tags.
+    isolated_dir (str): where to download isolated client.
   """
   assert cache_dir
 
@@ -1008,6 +1016,11 @@ def install_client_and_packages(run_dir, packages, service_url,
     if packages:
       package_pins = _install_packages(run_dir, cipd_cache_dir, client,
                                        packages)
+
+    # Install isolated client to |isolated_dir|.
+    _install_packages(
+        isolated_dir, cipd_cache_dir, client,
+        [('', 'infra/tools/luci/isolated/${platform}', ISOLATED_REVISION)])
 
     file_path.make_tree_files_read_only(run_dir)
 
@@ -1333,10 +1346,12 @@ def main(args):
 
   install_packages_fn = noop_install_packages
   if options.cipd_enabled:
-    install_packages_fn = lambda run_dir: install_client_and_packages(
+    install_packages_fn = (
+      lambda run_dir, isolated_dir: install_client_and_packages(
         run_dir, cipd.parse_package_args(options.cipd_packages),
         options.cipd_server, options.cipd_client_package,
-        options.cipd_client_version, cache_dir=options.cipd_cache)
+        options.cipd_client_version, cache_dir=options.cipd_cache,
+        isolated_dir=isolated_dir))
 
   @contextlib.contextmanager
   def install_named_caches(run_dir):
