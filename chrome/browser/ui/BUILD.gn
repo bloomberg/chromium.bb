@@ -933,6 +933,8 @@ jumbo_static_library("ui") {
       "global_media_controls/cast_media_notification_item.h",
       "global_media_controls/cast_media_notification_provider.cc",
       "global_media_controls/cast_media_notification_provider.h",
+      "global_media_controls/cast_media_session_controller.cc",
+      "global_media_controls/cast_media_session_controller.h",
       "global_media_controls/media_dialog_delegate.cc",
       "global_media_controls/media_dialog_delegate.h",
       "global_media_controls/media_notification_container_impl.h",

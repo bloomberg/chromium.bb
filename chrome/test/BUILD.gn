@@ -3880,6 +3880,7 @@ test("unit_tests") {
       "../browser/ui/global_error/global_error_service_unittest.cc",
       "../browser/ui/global_media_controls/cast_media_notification_item_unittest.cc",
       "../browser/ui/global_media_controls/cast_media_notification_provider_unittest.cc",
+      "../browser/ui/global_media_controls/cast_media_session_controller_unittest.cc",
       "../browser/ui/global_media_controls/media_notification_service_unittest.cc",
       "../browser/ui/global_media_controls/media_toolbar_button_controller_unittest.cc",
       "../browser/ui/hid/hid_chooser_controller_unittest.cc",
