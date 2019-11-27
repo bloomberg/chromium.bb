@@ -500,8 +500,8 @@ void RendererImpl::FlushAudioRenderer() {
   if (!audio_renderer_ || !audio_playing_) {
     OnAudioRendererFlushDone();
   } else {
-    audio_renderer_->Flush(base::BindRepeating(
-        &RendererImpl::OnAudioRendererFlushDone, weak_this_));
+    audio_renderer_->Flush(
+        base::BindOnce(&RendererImpl::OnAudioRendererFlushDone, weak_this_));
   }
 }
 
@@ -1026,7 +1026,7 @@ void RendererImpl::OnEnabledAudioTracksChanged(
   if (audio_playing_)
     PausePlayback();
 
-  audio_renderer_->Flush(base::BindRepeating(
+  audio_renderer_->Flush(base::BindOnce(
       &RendererImpl::CleanUpTrackChange, weak_this_,
       base::Passed(&fix_stream_cb), &audio_ended_, &audio_playing_));
 }
