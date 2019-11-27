@@ -5,6 +5,8 @@
 #ifndef PLATFORM_IMPL_TLS_CONNECTION_FACTORY_POSIX_H_
 #define PLATFORM_IMPL_TLS_CONNECTION_FACTORY_POSIX_H_
 
+#include <openssl/ssl.h>
+
 #include <memory>
 
 #include "platform/api/tls_connection.h"

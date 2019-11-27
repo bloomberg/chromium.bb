@@ -5,6 +5,8 @@
 #ifndef CAST_SENDER_CHANNEL_SENDER_SOCKET_FACTORY_H_
 #define CAST_SENDER_CHANNEL_SENDER_SOCKET_FACTORY_H_
 
+#include <openssl/x509.h>
+
 #include <set>
 #include <utility>
 #include <vector>
@@ -57,10 +59,10 @@ class SenderSocketFactory final : public TlsConnectionFactory::Client,
 
   // TlsConnectionFactory::Client overrides.
   void OnAccepted(TlsConnectionFactory* factory,
-                  X509* peer_cert,
+                  std::vector<uint8_t> der_x509_peer_cert,
                   std::unique_ptr<TlsConnection> connection) override;
   void OnConnected(TlsConnectionFactory* factory,
-                   X509* peer_cert,
+                   std::vector<uint8_t> der_x509_peer_cert,
                    std::unique_ptr<TlsConnection> connection) override;
   void OnConnectionFailed(TlsConnectionFactory* factory,
                           const IPEndpoint& remote_address) override;
@@ -79,7 +81,7 @@ class SenderSocketFactory final : public TlsConnectionFactory::Client,
     std::unique_ptr<CastSocket> socket;
     CastSocket::Client* client;
     AuthContext auth_context;
-    X509* peer_cert;
+    bssl::UniquePtr<X509> peer_cert;
   };
 
   friend bool operator<(const std::unique_ptr<PendingAuth>& a, uint32_t b);

@@ -19,8 +19,4 @@ specific_include_rules = {
   "serial_delete_ptr\.h": [
     '+platform/api',
   ],
-  "tls_credentials\.(cc|h)": [
-    '+platform/api',
-    '+util',
-  ],
 }

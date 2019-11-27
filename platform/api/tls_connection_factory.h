@@ -5,9 +5,10 @@
 #ifndef PLATFORM_API_TLS_CONNECTION_FACTORY_H_
 #define PLATFORM_API_TLS_CONNECTION_FACTORY_H_
 
-#include <openssl/crypto.h>
+#include <stdint.h>
 
 #include <memory>
+#include <vector>
 
 #include "platform/base/ip_address.h"
 
@@ -17,7 +18,7 @@ namespace platform {
 class TaskRunner;
 class TlsConnection;
 struct TlsConnectOptions;
-class TlsCredentials;
+struct TlsCredentials;
 struct TlsListenOptions;
 
 // We expect a single factory to be able to handle an arbitrary number of
@@ -27,12 +28,18 @@ class TlsConnectionFactory {
   // Client callbacks are ran on the provided TaskRunner.
   class Client {
    public:
+    // Provides a new |connection| that resulted from listening on the local
+    // socket. |der_x509_peer_cert| is the DER-encoded X509 certificate from the
+    // peer.
     virtual void OnAccepted(TlsConnectionFactory* factory,
-                            X509* peer_cert,
+                            std::vector<uint8_t> der_x509_peer_cert,
                             std::unique_ptr<TlsConnection> connection) = 0;
 
+    // Provides a new |connection| that resulted from connecting to a remote
+    // endpoint. |der_x509_peer_cert| is the DER-encoded X509 certificate from
+    // the peer.
     virtual void OnConnected(TlsConnectionFactory* factory,
-                             X509* peer_cert,
+                             std::vector<uint8_t> der_x509_peer_cert,
                              std::unique_ptr<TlsConnection> connection) = 0;
 
     virtual void OnConnectionFailed(TlsConnectionFactory* factory,

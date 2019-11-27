@@ -149,7 +149,6 @@ source_set("unittests") {
     "base/ip_address_unittest.cc",
     "base/location_unittest.cc",
     "base/serial_delete_ptr_unittest.cc",
-    "base/tls_credentials_unittest.cc",
   ]
 
   # The unit tests in impl/ assume the standalone implementation is being used.

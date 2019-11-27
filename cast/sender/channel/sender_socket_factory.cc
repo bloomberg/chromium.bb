@@ -7,6 +7,7 @@
 #include "cast/common/channel/cast_socket.h"
 #include "cast/sender/channel/message_util.h"
 #include "platform/base/tls_connect_options.h"
+#include "util/crypto/certificate_utils.h"
 
 namespace cast {
 namespace channel {
@@ -43,14 +44,14 @@ void SenderSocketFactory::Connect(const IPEndpoint& endpoint,
 
 void SenderSocketFactory::OnAccepted(
     TlsConnectionFactory* factory,
-    X509* peer_cert,
+    std::vector<uint8_t> der_x509_peer_cert,
     std::unique_ptr<TlsConnection> connection) {
   OSP_NOTREACHED() << "This factory is connect-only.";
 }
 
 void SenderSocketFactory::OnConnected(
     TlsConnectionFactory* factory,
-    X509* peer_cert,
+    std::vector<uint8_t> der_x509_peer_cert,
     std::unique_ptr<TlsConnection> connection) {
   const IPEndpoint& endpoint = connection->GetRemoteEndpoint();
   auto it = FindPendingConnection(endpoint);
@@ -63,16 +64,18 @@ void SenderSocketFactory::OnConnected(
   CastSocket::Client* client = it->client;
   pending_connections_.erase(it);
 
+  ErrorOr<bssl::UniquePtr<X509>> peer_cert = openscreen::ImportCertificate(
+      der_x509_peer_cert.data(), der_x509_peer_cert.size());
   if (!peer_cert) {
-    client_->OnError(this, endpoint, Error::Code::kErrCertsMissing);
+    client_->OnError(this, endpoint, peer_cert.error());
     return;
   }
 
   auto socket = std::make_unique<CastSocket>(std::move(connection), this,
                                              GetNextSocketId());
-  pending_auth_.emplace_back(new PendingAuth{endpoint, media_policy,
-                                             std::move(socket), client,
-                                             AuthContext::Create(), peer_cert});
+  pending_auth_.emplace_back(
+      new PendingAuth{endpoint, media_policy, std::move(socket), client,
+                      AuthContext::Create(), std::move(peer_cert.value())});
   PendingAuth& pending = *pending_auth_.back();
 
   CastMessage auth_challenge = CreateAuthChallengeMessage(pending.auth_context);
@@ -146,7 +149,7 @@ void SenderSocketFactory::OnMessage(CastSocket* socket, CastMessage message) {
   }
 
   ErrorOr<CastDeviceCertPolicy> policy_or_error = AuthenticateChallengeReply(
-      message, (*it)->peer_cert, (*it)->auth_context);
+      message, (*it)->peer_cert.get(), (*it)->auth_context);
   if (policy_or_error.is_error()) {
     client_->OnError(this, pending->endpoint, policy_or_error.error());
     return;

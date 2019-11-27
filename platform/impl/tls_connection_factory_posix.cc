@@ -23,12 +23,24 @@
 #include "platform/base/tls_listen_options.h"
 #include "platform/impl/stream_socket.h"
 #include "platform/impl/tls_connection_posix.h"
+#include "util/crypto/certificate_utils.h"
 #include "util/crypto/openssl_util.h"
 #include "util/logging.h"
 #include "util/trace_logging.h"
 
 namespace openscreen {
 namespace platform {
+
+namespace {
+
+ErrorOr<std::vector<uint8_t>> GetDEREncodedPeerCertificate(const SSL& ssl) {
+  X509* const peer_cert = SSL_get_peer_certificate(&ssl);
+  ErrorOr<std::vector<uint8_t>> der_peer_cert = ExportCertificate(*peer_cert);
+  X509_free(peer_cert);
+  return der_peer_cert;
+}
+
+}  // namespace
 
 std::unique_ptr<TlsConnectionFactory> TlsConnectionFactory::CreateFactory(
     Client* client,
@@ -84,11 +96,20 @@ void TlsConnectionFactoryPosix::Connect(const IPEndpoint& remote_address,
     return;
   }
 
+  ErrorOr<std::vector<uint8_t>> der_peer_cert =
+      GetDEREncodedPeerCertificate(*connection->ssl_);
+  if (!der_peer_cert) {
+    DispatchConnectionFailed(connection->GetRemoteEndpoint());
+    TRACE_SET_RESULT(der_peer_cert.error());
+    return;
+  }
+
   task_runner_->PostTask([weak_this = weak_factory_.GetWeakPtr(),
+                          der = std::move(der_peer_cert.value()),
                           moved_connection = std::move(connection)]() mutable {
     if (auto* self = weak_this.get()) {
-      X509* peer_cert = SSL_get_peer_certificate(moved_connection->ssl_.get());
-      self->client_->OnConnected(self, peer_cert, std::move(moved_connection));
+      self->client_->OnConnected(self, std::move(der),
+                                 std::move(moved_connection));
     }
   });
 }
@@ -97,10 +118,10 @@ void TlsConnectionFactoryPosix::SetListenCredentials(
     const TlsCredentials& credentials) {
   EnsureInitialized();
 
-  // We don't really change the certificate, but we do apply ref counting to
-  // it, so a const cast is unfortunately necessary.
-  X509* non_const_cert = const_cast<X509*>(&credentials.certificate());
-  if (SSL_CTX_use_certificate(ssl_context_.get(), non_const_cert) != 1) {
+  ErrorOr<bssl::UniquePtr<X509>> cert = ImportCertificate(
+      credentials.der_x509_cert.data(), credentials.der_x509_cert.size());
+  if (!cert ||
+      SSL_CTX_use_certificate(ssl_context_.get(), cert.value().get()) != 1) {
     DispatchError(Error::Code::kSocketListenFailure);
     TRACE_SET_RESULT(Error::Code::kSocketListenFailure);
     return;
@@ -170,11 +191,20 @@ void TlsConnectionFactoryPosix::OnSocketAccepted(
     return;
   }
 
+  ErrorOr<std::vector<uint8_t>> der_peer_cert =
+      GetDEREncodedPeerCertificate(*connection->ssl_);
+  if (!der_peer_cert) {
+    DispatchConnectionFailed(connection->GetRemoteEndpoint());
+    TRACE_SET_RESULT(der_peer_cert.error());
+    return;
+  }
+
   task_runner_->PostTask([weak_this = weak_factory_.GetWeakPtr(),
+                          der = std::move(der_peer_cert.value()),
                           moved_connection = std::move(connection)]() mutable {
     if (auto* self = weak_this.get()) {
-      X509* peer_cert = SSL_get_peer_certificate(moved_connection->ssl_.get());
-      self->client_->OnAccepted(self, peer_cert, std::move(moved_connection));
+      self->client_->OnAccepted(self, std::move(der),
+                                std::move(moved_connection));
     }
   });
 }

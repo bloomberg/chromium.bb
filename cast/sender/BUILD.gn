@@ -13,12 +13,14 @@ source_set("channel") {
   ]
 
   deps = [
+    "../../util",
     "../common/certificate/proto:certificate_proto",
     "../common/channel/proto:channel_proto",
   ]
 
   public_deps = [
     "../../platform",
+    "../../third_party/boringssl",
   ]
 }
 
