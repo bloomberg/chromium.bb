@@ -7,6 +7,7 @@
 
 import argparse
 import ast
+import errno
 import fcntl
 import os
 import platform
@@ -310,7 +311,11 @@ class DebianBuilder(InstrumentedPackageBuilder):
     lib_paths = glob.glob(os.path.join(self.temp_dir(), lib_dir, "*.so.*"))
     for lib_path in lib_paths:
       dest_path = os.path.join(self.dest_libdir(), os.path.basename(lib_path))
-      os.unlink(dest_path)
+      try:
+        os.unlink(dest_path)
+      except OSError as exception:
+        if exception.errno != errno.ENOENT:
+          raise
       if os.path.islink(lib_path):
         if self._verbose:
           print('linking %s' % os.path.basename(lib_path))
