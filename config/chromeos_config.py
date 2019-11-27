@@ -2642,12 +2642,9 @@ def ApplyCustomOverrides(site_config):
           'hw_tests_override': []
       },
 
-      # Disable VM tests. See crbug.com/1026430.
       'betty-pi-arc-release': {
           'hw_tests': [],
-          'hw_tests_override': [],
-          'vm_tests': [],
-          'vm_tests_override': []
+          'hw_tests_override': []
       },
 
       'betty-qt-arc-release': {

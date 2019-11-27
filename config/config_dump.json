@@ -5762,9 +5762,7 @@
         "tast_vm_tests": [
             "{\n    \"suite_name\": \"tast_vm_canary_critical\",\n    \"test_exprs\": [\n        \"(!disabled && (\\\"group:mainline\\\" || !\\\"group:*\\\") && !informational)\"\n    ],\n    \"timeout\": 3600\n}",
             "{\n    \"suite_name\": \"tast_vm_canary_informational\",\n    \"test_exprs\": [\n        \"(!disabled && (\\\"group:mainline\\\" || !\\\"group:*\\\") && informational)\"\n    ],\n    \"timeout\": 7200\n}"
-        ],
-        "vm_tests": [],
-        "vm_tests_override": []
+        ]
     },
     "betty-pi-arc-release-afdo": {
         "_template": "release_afdo_generate",
@@ -5885,7 +5883,6 @@
             "{\n    \"suite_name\": \"tast_vm_canary_critical\",\n    \"test_exprs\": [\n        \"(!disabled && (\\\"group:mainline\\\" || !\\\"group:*\\\") && !informational)\"\n    ],\n    \"timeout\": 3600\n}",
             "{\n    \"suite_name\": \"tast_vm_canary_informational\",\n    \"test_exprs\": [\n        \"(!disabled && (\\\"group:mainline\\\" || !\\\"group:*\\\") && informational)\"\n    ],\n    \"timeout\": 7200\n}"
         ],
-        "vm_tests": [],
         "vm_tests_override": null
     },
     "betty-pi-arc-unittest-stress": {
