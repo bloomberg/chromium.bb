@@ -25600,6 +25600,7 @@ Called by update_net_error_codes.py.-->
   <int value="3104" label="MessageEventSharedArrayBufferSameOrigin"/>
   <int value="3105" label="MessageEventSharedArrayBufferSameAgentCluster"/>
   <int value="3106" label="MessageEventSharedArrayBufferDifferentAgentCluster"/>
+  <int value="3107" label="CacheStorageCodeCacheHint"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
