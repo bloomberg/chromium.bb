@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/ash/launcher/arc_launcher_context_menu.h"
+#include "chrome/browser/ui/ash/launcher/arc_shelf_context_menu.h"
 
 #include <memory>
 #include <utility>
@@ -25,15 +25,14 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
 
-ArcLauncherContextMenu::ArcLauncherContextMenu(
-    ChromeLauncherController* controller,
-    const ash::ShelfItem* item,
-    int64_t display_id)
-    : LauncherContextMenu(controller, item, display_id) {}
+ArcShelfContextMenu::ArcShelfContextMenu(ChromeLauncherController* controller,
+                                         const ash::ShelfItem* item,
+                                         int64_t display_id)
+    : ShelfContextMenu(controller, item, display_id) {}
 
-ArcLauncherContextMenu::~ArcLauncherContextMenu() = default;
+ArcShelfContextMenu::~ArcShelfContextMenu() = default;
 
-void ArcLauncherContextMenu::GetMenuModel(GetMenuModelCallback callback) {
+void ArcShelfContextMenu::GetMenuModel(GetMenuModelCallback callback) {
   auto menu_model = std::make_unique<ui::SimpleMenuModel>(this);
   const ArcAppListPrefs* arc_list_prefs =
       ArcAppListPrefs::Get(controller()->profile());
@@ -69,7 +68,7 @@ void ArcLauncherContextMenu::GetMenuModel(GetMenuModelCallback callback) {
 
   if (app_is_open) {
     AddContextMenuOption(menu_model.get(), ash::MENU_CLOSE,
-                         IDS_LAUNCHER_CONTEXT_MENU_CLOSE);
+                         IDS_SHELF_CONTEXT_MENU_CLOSE);
   }
 
   DCHECK(!app_shortcuts_menu_builder_);
@@ -81,7 +80,7 @@ void ArcLauncherContextMenu::GetMenuModel(GetMenuModelCallback callback) {
       app_info->package_name, std::move(menu_model), std::move(callback));
 }
 
-bool ArcLauncherContextMenu::IsCommandIdEnabled(int command_id) const {
+bool ArcShelfContextMenu::IsCommandIdEnabled(int command_id) const {
   const ArcAppListPrefs* arc_prefs =
       ArcAppListPrefs::Get(controller()->profile());
 
@@ -95,13 +94,13 @@ bool ArcLauncherContextMenu::IsCommandIdEnabled(int command_id) const {
     case ash::SHOW_APP_INFO:
       return app_info && app_info->ready;
     default:
-      return LauncherContextMenu::IsCommandIdEnabled(command_id);
+      return ShelfContextMenu::IsCommandIdEnabled(command_id);
   }
   NOTREACHED();
   return false;
 }
 
-void ArcLauncherContextMenu::ExecuteCommand(int command_id, int event_flags) {
+void ArcShelfContextMenu::ExecuteCommand(int command_id, int event_flags) {
   if (command_id >= ash::LAUNCH_APP_SHORTCUT_FIRST &&
       command_id <= ash::LAUNCH_APP_SHORTCUT_LAST) {
     DCHECK(app_shortcuts_menu_builder_);
@@ -120,10 +119,10 @@ void ArcLauncherContextMenu::ExecuteCommand(int command_id, int event_flags) {
     return;
   }
 
-  LauncherContextMenu::ExecuteCommand(command_id, event_flags);
+  ShelfContextMenu::ExecuteCommand(command_id, event_flags);
 }
 
-void ArcLauncherContextMenu::ShowPackageInfo() {
+void ArcShelfContextMenu::ShowPackageInfo() {
   const ArcAppListPrefs* arc_prefs =
       ArcAppListPrefs::Get(controller()->profile());
   DCHECK(arc_prefs);
@@ -138,7 +137,7 @@ void ArcLauncherContextMenu::ShowPackageInfo() {
     chrome::ShowAppManagementPage(controller()->profile(), item().id.app_id);
     base::UmaHistogramEnumeration(
         kAppManagementEntryPointsHistogramName,
-        AppManagementEntryPoint::kLauncherContextMenuAppInfoArc);
+        AppManagementEntryPoint::kShelfContextMenuAppInfoArc);
     return;
   }
   arc::ShowPackageInfo(app_info->package_name,

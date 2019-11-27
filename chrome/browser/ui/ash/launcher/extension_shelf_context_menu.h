@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_ASH_LAUNCHER_EXTENSION_LAUNCHER_CONTEXT_MENU_H_
-#define CHROME_BROWSER_UI_ASH_LAUNCHER_EXTENSION_LAUNCHER_CONTEXT_MENU_H_
+#ifndef CHROME_BROWSER_UI_ASH_LAUNCHER_EXTENSION_SHELF_CONTEXT_MENU_H_
+#define CHROME_BROWSER_UI_ASH_LAUNCHER_EXTENSION_SHELF_CONTEXT_MENU_H_
 
 #include <memory>
 
 #include "base/macros.h"
-#include "chrome/browser/ui/ash/launcher/launcher_context_menu.h"
+#include "chrome/browser/ui/ash/launcher/shelf_context_menu.h"
 #include "extensions/common/constants.h"
 
 namespace extensions {
@@ -16,14 +16,14 @@ class ContextMenuMatcher;
 }
 
 // Context menu shown for an extension item in the shelf.
-class ExtensionLauncherContextMenu : public LauncherContextMenu {
+class ExtensionShelfContextMenu : public ShelfContextMenu {
  public:
-  ExtensionLauncherContextMenu(ChromeLauncherController* controller,
-                               const ash::ShelfItem* item,
-                               int64_t display_id);
-  ~ExtensionLauncherContextMenu() override;
+  ExtensionShelfContextMenu(ChromeLauncherController* controller,
+                            const ash::ShelfItem* item,
+                            int64_t display_id);
+  ~ExtensionShelfContextMenu() override;
 
-  // LauncherContextMenu overrides:
+  // ShelfContextMenu overrides:
   void GetMenuModel(GetMenuModelCallback callback) override;
 
   // ui::SimpleMenuModel::Delegate overrides:
@@ -34,7 +34,6 @@ class ExtensionLauncherContextMenu : public LauncherContextMenu {
  private:
   // Creates the actionable submenu for MENU_OPEN_NEW.
   void CreateOpenNewSubmenu(ui::SimpleMenuModel* menu_model);
-
 
   // Helpers to get and set the launch type for the extension item.
   extensions::LaunchType GetLaunchType() const;
@@ -49,7 +48,7 @@ class ExtensionLauncherContextMenu : public LauncherContextMenu {
 
   std::unique_ptr<extensions::ContextMenuMatcher> extension_items_;
 
-  DISALLOW_COPY_AND_ASSIGN(ExtensionLauncherContextMenu);
+  DISALLOW_COPY_AND_ASSIGN(ExtensionShelfContextMenu);
 };
 
-#endif  // CHROME_BROWSER_UI_ASH_LAUNCHER_EXTENSION_LAUNCHER_CONTEXT_MENU_H_
+#endif  // CHROME_BROWSER_UI_ASH_LAUNCHER_EXTENSION_SHELF_CONTEXT_MENU_H_

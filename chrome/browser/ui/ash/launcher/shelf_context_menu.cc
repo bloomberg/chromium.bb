@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/ash/launcher/launcher_context_menu.h"
+#include "chrome/browser/ui/ash/launcher/shelf_context_menu.h"
 
 #include <memory>
 #include <string>
@@ -18,11 +18,11 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/app_list/extension_uninstaller.h"
 #include "chrome/browser/ui/app_list/internal_app/internal_app_metadata.h"
-#include "chrome/browser/ui/ash/launcher/arc_launcher_context_menu.h"
+#include "chrome/browser/ui/ash/launcher/arc_shelf_context_menu.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_util.h"
 #include "chrome/browser/ui/ash/launcher/crostini_shelf_context_menu.h"
-#include "chrome/browser/ui/ash/launcher/extension_launcher_context_menu.h"
+#include "chrome/browser/ui/ash/launcher/extension_shelf_context_menu.h"
 #include "chrome/browser/ui/ash/launcher/internal_app_shelf_context_menu.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
@@ -43,17 +43,16 @@ void UninstallApp(Profile* profile, const std::string& app_id) {
 }  // namespace
 
 // static
-std::unique_ptr<LauncherContextMenu> LauncherContextMenu::Create(
+std::unique_ptr<ShelfContextMenu> ShelfContextMenu::Create(
     ChromeLauncherController* controller,
     const ash::ShelfItem* item,
     int64_t display_id) {
   DCHECK(controller);
   DCHECK(item);
   DCHECK(!item->id.IsNull());
-  // Create an ArcLauncherContextMenu if the item is an ARC app.
+  // Create an ArcShelfContextMenu if the item is an ARC app.
   if (arc::IsArcItem(controller->profile(), item->id.app_id)) {
-    return std::make_unique<ArcLauncherContextMenu>(controller, item,
-                                                    display_id);
+    return std::make_unique<ArcShelfContextMenu>(controller, item, display_id);
   }
 
   // Create an CrostiniShelfContextMenu if the item is Crostini app.
@@ -71,28 +70,28 @@ std::unique_ptr<LauncherContextMenu> LauncherContextMenu::Create(
                                                          display_id);
   }
 
-  // Create an ExtensionLauncherContextMenu for other items.
-  return std::make_unique<ExtensionLauncherContextMenu>(controller, item,
-                                                        display_id);
+  // Create an ExtensionShelfContextMenu for other items.
+  return std::make_unique<ExtensionShelfContextMenu>(controller, item,
+                                                     display_id);
 }
 
-LauncherContextMenu::LauncherContextMenu(ChromeLauncherController* controller,
-                                         const ash::ShelfItem* item,
-                                         int64_t display_id)
+ShelfContextMenu::ShelfContextMenu(ChromeLauncherController* controller,
+                                   const ash::ShelfItem* item,
+                                   int64_t display_id)
     : controller_(controller),
       item_(item ? *item : ash::ShelfItem()),
       display_id_(display_id) {
   DCHECK_NE(display_id, display::kInvalidDisplayId);
 }
 
-LauncherContextMenu::~LauncherContextMenu() = default;
+ShelfContextMenu::~ShelfContextMenu() = default;
 
-bool LauncherContextMenu::IsCommandIdChecked(int command_id) const {
+bool ShelfContextMenu::IsCommandIdChecked(int command_id) const {
   DCHECK(command_id < ash::COMMAND_ID_COUNT);
   return false;
 }
 
-bool LauncherContextMenu::IsCommandIdEnabled(int command_id) const {
+bool ShelfContextMenu::IsCommandIdEnabled(int command_id) const {
   if (command_id == ash::MENU_PIN) {
     // Users cannot modify the pinned state of apps pinned by policy.
     return !item_.pinned_by_policy &&
@@ -103,7 +102,7 @@ bool LauncherContextMenu::IsCommandIdEnabled(int command_id) const {
   return true;
 }
 
-void LauncherContextMenu::ExecuteCommand(int command_id, int event_flags) {
+void ShelfContextMenu::ExecuteCommand(int command_id, int event_flags) {
   ash::ShelfModel::ScopedUserTriggeredMutation user_triggered(
       controller_->shelf_model());
   switch (static_cast<ash::CommandId>(command_id)) {
@@ -143,18 +142,18 @@ void LauncherContextMenu::ExecuteCommand(int command_id, int event_flags) {
   }
 }
 
-void LauncherContextMenu::AddPinMenu(ui::SimpleMenuModel* menu_model) {
+void ShelfContextMenu::AddPinMenu(ui::SimpleMenuModel* menu_model) {
   // Expect a valid ShelfID to add pin/unpin menu item.
   DCHECK(!item_.id.IsNull());
   int menu_pin_string_id;
   switch (GetPinnableForAppID(item_.id.app_id, controller_->profile())) {
     case AppListControllerDelegate::PIN_EDITABLE:
       menu_pin_string_id = controller_->IsPinned(item_.id)
-                               ? IDS_LAUNCHER_CONTEXT_MENU_UNPIN
-                               : IDS_LAUNCHER_CONTEXT_MENU_PIN;
+                               ? IDS_SHELF_CONTEXT_MENU_UNPIN
+                               : IDS_SHELF_CONTEXT_MENU_PIN;
       break;
     case AppListControllerDelegate::PIN_FIXED:
-      menu_pin_string_id = IDS_LAUNCHER_CONTEXT_MENU_PIN_ENFORCED_BY_POLICY;
+      menu_pin_string_id = IDS_SHELF_CONTEXT_MENU_PIN_ENFORCED_BY_POLICY;
       break;
     case AppListControllerDelegate::NO_PIN:
       return;
@@ -165,23 +164,22 @@ void LauncherContextMenu::AddPinMenu(ui::SimpleMenuModel* menu_model) {
   AddContextMenuOption(menu_model, ash::MENU_PIN, menu_pin_string_id);
 }
 
-bool LauncherContextMenu::ExecuteCommonCommand(int command_id,
-                                               int event_flags) {
+bool ShelfContextMenu::ExecuteCommonCommand(int command_id, int event_flags) {
   switch (command_id) {
     case ash::MENU_OPEN_NEW:
     case ash::MENU_CLOSE:
     case ash::MENU_PIN:
     case ash::UNINSTALL:
-      LauncherContextMenu::ExecuteCommand(command_id, event_flags);
+      ShelfContextMenu::ExecuteCommand(command_id, event_flags);
       return true;
     default:
       return false;
   }
 }
 
-void LauncherContextMenu::AddContextMenuOption(ui::SimpleMenuModel* menu_model,
-                                               ash::CommandId type,
-                                               int string_id) {
+void ShelfContextMenu::AddContextMenuOption(ui::SimpleMenuModel* menu_model,
+                                            ash::CommandId type,
+                                            int string_id) {
   // Do not include disabled items.
   if (!IsCommandIdEnabled(type))
     return;
@@ -207,7 +205,7 @@ void LauncherContextMenu::AddContextMenuOption(ui::SimpleMenuModel* menu_model,
   menu_model->AddItemWithStringId(type, string_id);
 }
 
-const gfx::VectorIcon& LauncherContextMenu::GetCommandIdVectorIcon(
+const gfx::VectorIcon& ShelfContextMenu::GetCommandIdVectorIcon(
     ash::CommandId type,
     int string_id) const {
   switch (type) {

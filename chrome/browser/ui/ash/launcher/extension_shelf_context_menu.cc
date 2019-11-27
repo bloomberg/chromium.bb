@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/ash/launcher/extension_launcher_context_menu.h"
+#include "chrome/browser/ui/ash/launcher/extension_shelf_context_menu.h"
 
 #include <utility>
 
@@ -58,15 +58,15 @@ class ScopedDisplayIdForNewWindows {
 
 }  // namespace
 
-ExtensionLauncherContextMenu::ExtensionLauncherContextMenu(
+ExtensionShelfContextMenu::ExtensionShelfContextMenu(
     ChromeLauncherController* controller,
     const ash::ShelfItem* item,
     int64_t display_id)
-    : LauncherContextMenu(controller, item, display_id) {}
+    : ShelfContextMenu(controller, item, display_id) {}
 
-ExtensionLauncherContextMenu::~ExtensionLauncherContextMenu() = default;
+ExtensionShelfContextMenu::~ExtensionShelfContextMenu() = default;
 
-void ExtensionLauncherContextMenu::GetMenuModel(GetMenuModelCallback callback) {
+void ExtensionShelfContextMenu::GetMenuModel(GetMenuModelCallback callback) {
   auto menu_model = std::make_unique<ui::SimpleMenuModel>(this);
   Profile* profile = controller()->profile();
   const std::string app_id = item().id.app_id;
@@ -88,7 +88,7 @@ void ExtensionLauncherContextMenu::GetMenuModel(GetMenuModelCallback callback) {
 
     if (controller()->IsOpen(item().id)) {
       AddContextMenuOption(menu_model.get(), ash::MENU_CLOSE,
-                           IDS_LAUNCHER_CONTEXT_MENU_CLOSE);
+                           IDS_SHELF_CONTEXT_MENU_CLOSE);
     }
   } else if (item().type == ash::TYPE_BROWSER_SHORTCUT) {
     AddContextMenuOption(menu_model.get(), ash::MENU_NEW_WINDOW,
@@ -100,7 +100,7 @@ void ExtensionLauncherContextMenu::GetMenuModel(GetMenuModelCallback callback) {
     if (!BrowserShortcutLauncherItemController::IsListOfActiveBrowserEmpty() ||
         item().type == ash::TYPE_DIALOG || controller()->IsOpen(item().id)) {
       AddContextMenuOption(menu_model.get(), ash::MENU_CLOSE,
-                           IDS_LAUNCHER_CONTEXT_MENU_CLOSE);
+                           IDS_SHELF_CONTEXT_MENU_CLOSE);
     }
   }
   if (app_id != extension_misc::kChromeAppId) {
@@ -128,7 +128,7 @@ void ExtensionLauncherContextMenu::GetMenuModel(GetMenuModelCallback callback) {
   std::move(callback).Run(std::move(menu_model));
 }
 
-bool ExtensionLauncherContextMenu::IsCommandIdChecked(int command_id) const {
+bool ExtensionShelfContextMenu::IsCommandIdChecked(int command_id) const {
   switch (command_id) {
     case ash::LAUNCH_TYPE_PINNED_TAB:
       return GetLaunchType() == extensions::LAUNCH_TYPE_PINNED;
@@ -140,13 +140,13 @@ bool ExtensionLauncherContextMenu::IsCommandIdChecked(int command_id) const {
       return GetLaunchType() == extensions::LAUNCH_TYPE_FULLSCREEN;
     default:
       if (command_id < ash::COMMAND_ID_COUNT)
-        return LauncherContextMenu::IsCommandIdChecked(command_id);
+        return ShelfContextMenu::IsCommandIdChecked(command_id);
       return (extension_items_ &&
               extension_items_->IsCommandIdChecked(command_id));
   }
 }
 
-bool ExtensionLauncherContextMenu::IsCommandIdEnabled(int command_id) const {
+bool ExtensionShelfContextMenu::IsCommandIdEnabled(int command_id) const {
   switch (command_id) {
     case ash::UNINSTALL:
       return controller()->UninstallAllowed(item().id.app_id);
@@ -162,14 +162,14 @@ bool ExtensionLauncherContextMenu::IsCommandIdEnabled(int command_id) const {
              IncognitoModePrefs::DISABLED;
     default:
       if (command_id < ash::COMMAND_ID_COUNT)
-        return LauncherContextMenu::IsCommandIdEnabled(command_id);
+        return ShelfContextMenu::IsCommandIdEnabled(command_id);
       return (extension_items_ &&
               extension_items_->IsCommandIdEnabled(command_id));
   }
 }
 
-void ExtensionLauncherContextMenu::ExecuteCommand(int command_id,
-                                                  int event_flags) {
+void ExtensionShelfContextMenu::ExecuteCommand(int command_id,
+                                               int event_flags) {
   if (ExecuteCommonCommand(command_id, event_flags))
     return;
 
@@ -213,7 +213,7 @@ void ExtensionLauncherContextMenu::ExecuteCommand(int command_id,
   }
 }
 
-void ExtensionLauncherContextMenu::CreateOpenNewSubmenu(
+void ExtensionShelfContextMenu::CreateOpenNewSubmenu(
     ui::SimpleMenuModel* menu_model) {
   // Touchable extension context menus use an actionable submenu for
   // MENU_OPEN_NEW.
@@ -230,7 +230,7 @@ void ExtensionLauncherContextMenu::CreateOpenNewSubmenu(
       GetCommandIdVectorIcon(ash::MENU_OPEN_NEW, GetLaunchTypeStringId()));
 }
 
-extensions::LaunchType ExtensionLauncherContextMenu::GetLaunchType() const {
+extensions::LaunchType ExtensionShelfContextMenu::GetLaunchType() const {
   const extensions::Extension* extension =
       GetExtensionForAppID(item().id.app_id, controller()->profile());
 
@@ -242,11 +242,11 @@ extensions::LaunchType ExtensionLauncherContextMenu::GetLaunchType() const {
       extensions::ExtensionPrefs::Get(controller()->profile()), extension);
 }
 
-void ExtensionLauncherContextMenu::SetLaunchType(extensions::LaunchType type) {
+void ExtensionShelfContextMenu::SetLaunchType(extensions::LaunchType type) {
   extensions::SetLaunchType(controller()->profile(), item().id.app_id, type);
 }
 
-int ExtensionLauncherContextMenu::GetLaunchTypeStringId() const {
+int ExtensionShelfContextMenu::GetLaunchTypeStringId() const {
   return (GetLaunchType() == extensions::LAUNCH_TYPE_PINNED ||
           GetLaunchType() == extensions::LAUNCH_TYPE_REGULAR)
              ? IDS_APP_LIST_CONTEXT_MENU_NEW_TAB
