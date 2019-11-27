@@ -96,6 +96,7 @@ printRule(TranslationTableRule *rule, widechar *rule_string) {
 		for (int k = 0; k < rule->charslen; k++) rule_string[l++] = rule->charsdots[k];
 		rule_string[l++] = ' ';
 		for (int k = 0; k < rule->dotslen; k++)
+			// assume that _lou_getCharFromDots finds a char
 			rule_string[l++] = _lou_getCharFromDots(
 					rule->charsdots[rule->charslen + k], displayTable);
 		rule_string[l++] = '\0';
