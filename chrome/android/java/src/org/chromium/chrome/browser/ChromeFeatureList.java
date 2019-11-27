@@ -307,6 +307,7 @@ public abstract class ChromeFeatureList {
     public static final String PER_METHOD_CAN_MAKE_PAYMENT_QUOTA =
             "WebPaymentsPerMethodCanMakePaymentQuota";
     public static final String PHOTO_PICKER_VIDEO_SUPPORT = "PhotoPickerVideoSupport";
+    public static final String PHOTO_PICKER_ZOOM = "PhotoPickerZoom";
     public static final String PREDICTIVE_PREFETCHING_ALLOWED_ON_ALL_CONNECTION_TYPES =
             "PredictivePrefetchingAllowedOnAllConnectionTypes";
     public static final String PRIORITIZE_BOOTSTRAP_TASKS = "PrioritizeBootstrapTasks";
