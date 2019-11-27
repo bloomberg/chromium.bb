@@ -12,6 +12,17 @@ issues]].
 ** Braille table improvements
 - Punctuation corrections in Ethiopic Braille thanks to Dr. Tamru E.
   Belay.
+- Improvements to Afrikaans contracted braille thanks to Christo de Klerk
+  - Over 50 cases have been corrected where braille rules were not
+    correctly applied in words, mainly in those cases where
+    contractions depend on pronunciation; for example, ui or ie must
+    not be contracted in requiem.
+  - Corrected contraction errors caused by start or end of input not
+    properly taken into account
+  - Words are no longer contracted into lower word contractions when
+    they are adjacent to lower punctuation, for example: "hier
+  - Words are now contracted into their lower contractions when they
+    are adjacent to upper punctuation, for example: (hier
 ** Other changes
 - Make sure the log callback uses the same calling convention as all
   the other exported functions. Thanks to Leonard de Ruijter.
