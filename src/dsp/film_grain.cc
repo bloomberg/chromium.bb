@@ -1365,6 +1365,8 @@ void Init8bpp() {
 #ifndef LIBGAV1_Dsp8bpp_FilmGrainBlendNoiseChroma
   dsp->film_grain.blend_noise_chroma[0] =
       BlendNoiseWithImageChroma_C<8, int8_t, uint8_t>;
+#endif
+#ifndef LIBGAV1_Dsp8bpp_FilmGrainBlendNoiseChromaWithCfl
   dsp->film_grain.blend_noise_chroma[1] =
       BlendNoiseWithImageChromaWithCfl_C<8, int8_t, uint8_t>;
 #endif
@@ -1485,6 +1487,8 @@ void Init10bpp() {
 #ifndef LIBGAV1_Dsp10bpp_FilmGrainBlendNoiseChroma
   dsp->film_grain.blend_noise_chroma[0] =
       BlendNoiseWithImageChroma_C<10, int16_t, uint16_t>;
+#endif
+#ifndef LIBGAV1_Dsp10bpp_FilmGrainBlendNoiseChromaWithCfl
   dsp->film_grain.blend_noise_chroma[1] =
       BlendNoiseWithImageChromaWithCfl_C<10, int16_t, uint16_t>;
 #endif
