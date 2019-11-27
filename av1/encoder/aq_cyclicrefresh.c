@@ -218,12 +218,15 @@ void av1_cyclic_refresh_postencode(AV1_COMP *const cpi) {
     for (int mi_col = 0; mi_col < cm->mi_cols; mi_col++) {
       MB_MODE_INFO **mi = cm->mi_grid_base + mi_row * cm->mi_stride + mi_col;
       MV mv = mi[0]->mv[0].as_mv;
-      int map_index = mi_row * cm->mi_cols + mi_col;
-      if (cyclic_refresh_segment_id(seg_map[map_index]) == CR_SEGMENT_ID_BOOST1)
-        cr->actual_num_seg1_blocks++;
-      else if (cyclic_refresh_segment_id(seg_map[map_index]) ==
-               CR_SEGMENT_ID_BOOST2)
-        cr->actual_num_seg2_blocks++;
+      if (cm->seg.enabled) {
+        int map_index = mi_row * cm->mi_cols + mi_col;
+        if (cyclic_refresh_segment_id(seg_map[map_index]) ==
+            CR_SEGMENT_ID_BOOST1)
+          cr->actual_num_seg1_blocks++;
+        else if (cyclic_refresh_segment_id(seg_map[map_index]) ==
+                 CR_SEGMENT_ID_BOOST2)
+          cr->actual_num_seg2_blocks++;
+      }
       // Accumulate low_content_frame.
       if (is_inter_block(mi[0]) && abs(mv.row) < 16 && abs(mv.col) < 16)
         cr->cnt_zeromv++;
@@ -343,7 +346,7 @@ void av1_cyclic_refresh_update_parameters(AV1_COMP *const cpi) {
       rc->avg_frame_qindex[INTER_FRAME] < qp_thresh ||
       (rc->frames_since_key > 20 &&
        rc->avg_frame_qindex[INTER_FRAME] > qp_max_thresh) ||
-      (cr->avg_frame_low_motion < 20 && rc->frames_since_key > 40)) {
+      (cr->avg_frame_low_motion < 45 && rc->frames_since_key > 40)) {
     cr->apply_cyclic_refresh = 0;
     return;
   }
