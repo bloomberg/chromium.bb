@@ -5864,7 +5864,7 @@ crbug.com/1027287 css3/filters/effect-reference-image-lazy-attach.html [ Pass Fa
 
 # Sheriff 2019-11-26
 crbug.com/1028482 http/tests/devtools/sources/debugger/navigator-view.js [ Pass Crash ]
-crbug.com/1028684 [ Win10 ] inspector-protocol/animation/animation-release.js [ Pass Failure ]
+crbug.com/1028684 inspector-protocol/animation/animation-release.js [ Pass Failure ]
 crbug.com/1015187 virtual/cross-origin-isolation/external/wpt/html/cross-origin-embedder-policy/none.https.html [ Pass Failure ]
 crbug.com/1015187 [ Linux Mac ] external/wpt/html/cross-origin-embedder-policy/none.https.html [ Pass Failure Timeout ]
 
@@ -5899,4 +5899,3 @@ crbug.com/1028116 virtual/gpu-rasterization/images/webp-color-profile-lossy-alph
 crbug.com/1028116 virtual/gpu-rasterization/images/yuv-decode-eligible/color-profile-filter.html [ Pass Failure ]
 crbug.com/1028116 virtual/gpu-rasterization/images/yuv-decode-eligible/color-profile-image.html [ Pass Failure ]
 crbug.com/1028116 virtual/gpu-rasterization/images/yuv-decode-eligible/webp-color-profile-lossy.html [ Pass Failure ]
-
