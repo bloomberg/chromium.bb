@@ -2879,11 +2879,6 @@ const char kChromeColorsCustomColorPickerName[] =
 const char kChromeColorsCustomColorPickerDescription[] =
     "Show custom color picker in Chrome Colors menu.";
 
-const char kDialMediaRouteProviderName[] = "DIAL Media Route Provider";
-const char kDialMediaRouteProviderDescription[] =
-    "Enables the native DIAL Media Route Provider implementation to be used "
-    "instead of the implementation in the Media Router component extension.";
-
 const char kNtpConfirmSuggestionRemovalsName[] =
     "Confirm removing \"realbox\" suggestions on New Tab page";
 const char kNtpConfirmSuggestionRemovalsDescription[] =
