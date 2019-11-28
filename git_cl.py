@@ -103,7 +103,7 @@ TRACES_README_FORMAT = (
 
 COMMIT_BOT_EMAIL = 'commit-bot@chromium.org'
 POSTUPSTREAM_HOOK = '.git/hooks/post-cl-land'
-DESCRIPTION_BACKUP_FILE = '~/.git_cl_description_backup'
+DESCRIPTION_BACKUP_FILE = '.git_cl_description_backup'
 REFS_THAT_ALIAS_TO_OTHER_REFS = {
     'refs/remotes/origin/lkgr': 'refs/remotes/origin/master',
     'refs/remotes/origin/lkcr': 'refs/remotes/origin/master',
@@ -138,7 +138,7 @@ def DieWithError(message, change_desc=None):
 
 
 def SaveDescriptionBackup(change_desc):
-  backup_path = os.path.expanduser(DESCRIPTION_BACKUP_FILE)
+  backup_path = os.path.join(settings.GetRoot(), DESCRIPTION_BACKUP_FILE)
   print('\nsaving CL description to %s\n' % backup_path)
   backup_file = open(backup_path, 'w')
   backup_file.write(change_desc.description)
