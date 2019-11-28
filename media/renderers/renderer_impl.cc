@@ -536,8 +536,8 @@ void RendererImpl::FlushVideoRenderer() {
   if (!video_renderer_ || !video_playing_) {
     OnVideoRendererFlushDone();
   } else {
-    video_renderer_->Flush(base::BindRepeating(
-        &RendererImpl::OnVideoRendererFlushDone, weak_this_));
+    video_renderer_->Flush(
+        base::BindOnce(&RendererImpl::OnVideoRendererFlushDone, weak_this_));
   }
 }
 
@@ -984,7 +984,7 @@ void RendererImpl::OnSelectedVideoTracksChanged(
   }
 
   pending_video_track_change_ = true;
-  video_renderer_->Flush(base::BindRepeating(
+  video_renderer_->Flush(base::BindOnce(
       &RendererImpl::CleanUpTrackChange, weak_this_,
       base::Passed(&fix_stream_cb), &video_ended_, &video_playing_));
 }
