@@ -177,7 +177,6 @@
       }
 
       #pinInput[make-contrast] {
-        --cr-disabled-opacity: var(--dark-primary-opacity);
         opacity: var(--dark-primary-opacity);
       }
 
@@ -200,7 +199,7 @@
             placeholder="[[getInputPlaceholder_(enablePassword,
                 enablePlaceholder)]]"
             on-keydown="onInputKeyDown_" force-underline="true"
-            disabled="[[crInputDisabled_(disabled, isIncognitoUi)]]">
+            disabled="[[disabled]]">
         </cr-input>
       </div>
       <slot select="[problem]"></slot>

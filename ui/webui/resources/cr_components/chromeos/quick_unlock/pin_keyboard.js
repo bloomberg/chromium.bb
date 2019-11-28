@@ -159,15 +159,6 @@ Polymer({
     },
 
     /**
-     * Turns on "incognito mode". (FIXME after https://crbug.com/900351 is
-     * fixed).
-     */
-    isIncognitoUi: {
-      type: Boolean,
-      value: false,
-    },
-
-    /**
      * The aria label to be used for the input element.
      */
     ariaLabel: {
@@ -532,14 +523,6 @@ Polymer({
     // input field that will be populated with the keypad.
     return this.passwordElement ||
         (/** @type {CrInputElement} */ (this.$.pinInput)).inputElement;
-  },
-
-  /**
-   * Needed for "incognito mode". (FIXME after https://crbug.com/900351 is
-   * fixed).
-   */
-  crInputDisabled_: function() {
-    return this.disabled || this.isIncognitoUi;
   },
 });
 })();
