@@ -251,6 +251,9 @@ js_library("oobe_buttons") {
 }
 
 js_library("oobe_dialog") {
+  deps = [
+    "//ui/webui/resources/cr_elements:cr_scrollable_behavior",
+  ]
 }
 
 js_library("oobe_eula") {
