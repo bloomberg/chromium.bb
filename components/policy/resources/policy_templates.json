@@ -18909,7 +18909,9 @@
 
       Specifically, if a URL matches one of the patterns provided through this policy, it will be allowed to receive a HTTP header containing a response to a remote attestation challenge, attesting device identity and device state.
 
-      If this policy is not set or is set to an empty list, no URL is allowed to use remote attestation on the sign-in screen.'''
+      If this policy is not set or is set to an empty list, no URL is allowed to use remote attestation on the sign-in screen.
+
+      URLs must have HTTPS scheme, e.g. "https://example.com".'''
     },
     {
       'name': 'DeviceShowNumericKeyboardForPassword',
