@@ -312,6 +312,7 @@
     guado-macrophage-release
     guado-release
     guado_labstation-release
+    hana-kernelnext-release
     hana-release
     hatch-release
     heli-release
@@ -1285,6 +1286,11 @@
   guado_labstation-unittest-stress
   hana-factory-oak-8182.B-factorybranch-tryjob
   hana-full-tryjob
+  hana-kernelnext-full-tryjob
+  hana-kernelnext-llvm-next-toolchain-tryjob
+  hana-kernelnext-llvm-toolchain-tryjob
+  hana-kernelnext-release-tryjob
+  hana-kernelnext-unittest-stress
   hana-llvm-next-toolchain-tryjob
   hana-llvm-toolchain-tryjob
   hana-payloads-tryjob
@@ -1630,6 +1636,7 @@
     guado-macrophage-release-tryjob
     guado-release-tryjob
     guado_labstation-release-tryjob
+    hana-kernelnext-release-tryjob
     hana-release-tryjob
     hatch-release-tryjob
     heli-release-tryjob
