@@ -2212,16 +2212,16 @@ BrowserContext* StoragePartitionImpl::browser_context() const {
   return browser_context_;
 }
 
-mojo::BindingId StoragePartitionImpl::Bind(
+mojo::ReceiverId StoragePartitionImpl::Bind(
     int process_id,
     mojo::PendingReceiver<blink::mojom::StoragePartitionService> receiver) {
   DCHECK(initialized_);
   return receivers_.Add(this, std::move(receiver), process_id);
 }
 
-void StoragePartitionImpl::Unbind(mojo::BindingId binding_id) {
+void StoragePartitionImpl::Unbind(mojo::ReceiverId receiver_id) {
   DCHECK(initialized_);
-  receivers_.Remove(binding_id);
+  receivers_.Remove(receiver_id);
 }
 
 void StoragePartitionImpl::OverrideQuotaManagerForTesting(
