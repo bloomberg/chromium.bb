@@ -418,6 +418,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/customtabs/content/DefaultCustomTabIntentHandlingStrategy.java",
   "java/src/org/chromium/chrome/browser/customtabs/content/TabCreationMode.java",
   "java/src/org/chromium/chrome/browser/customtabs/content/TabObserverRegistrar.java",
+  "java/src/org/chromium/chrome/browser/customtabs/dependency_injection/BaseCustomTabActivityComponent.java",
   "java/src/org/chromium/chrome/browser/customtabs/dependency_injection/CustomTabActivityComponent.java",
   "java/src/org/chromium/chrome/browser/customtabs/dependency_injection/CustomTabActivityModule.java",
   "java/src/org/chromium/chrome/browser/customtabs/dynamicmodule/ActivityDelegate.java",

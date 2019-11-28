@@ -355,11 +355,10 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
         WebappActivityComponent component =
                 ChromeApplication.getComponent().createWebappActivityComponent(
                         commonsModule, webappModule);
-        mTabController = component.resolveTabController();
-        mToolbarCoordinator = component.resolveToolbarCoordinator();
-        mNavigationController = component.resolveNavigationController();
+        onComponentCreated(component);
 
-        mStatusBarColorProvider = component.resolveCustomTabStatusBarColorProvider();
+        mTabController = component.resolveTabController();
+
         mStatusBarColorProvider.setUseTabThemeColor(true /* useTabThemeColor */);
 
         mNavigationController.setFinishHandler((reason) -> { handleFinishAndClose(); });
@@ -368,9 +367,6 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
 
         mTabObserverRegistrar = component.resolveTabObserverRegistrar();
         mSplashController = component.resolveSplashController();
-
-        component.resolveCompositorContentInitializer();
-        component.resolveTaskDescriptionHelper();
 
         return component;
     }
