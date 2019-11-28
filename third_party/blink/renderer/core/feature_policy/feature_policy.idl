@@ -4,7 +4,6 @@
 
 // https://wicg.github.io/feature-policy/#the-policy-object
 [
-  NoInterfaceObject,
   RuntimeEnabled=FeaturePolicyJavaScriptInterface,
   ImplementedAs=DOMFeaturePolicy
 ] interface FeaturePolicy {
