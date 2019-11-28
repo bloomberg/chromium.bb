@@ -287,6 +287,7 @@ public class PaymentRequestImpl
         void onNotSupportedError();
         void onConnectionTerminated();
         void onAbortCalled();
+        void onCompleteCalled();
     }
 
     /** Limit in the number of suggested items in a section. */
@@ -2274,6 +2275,10 @@ public class PaymentRequestImpl
                         this::onMicrotransactionUiCompletedAndClosed);
             }
             return;
+        }
+
+        if (mNativeObserverForTest != null) {
+            mNativeObserverForTest.onCompleteCalled();
         }
 
         closeUIAndDestroyNativeObjects(/*immediateClose=*/PaymentComplete.FAIL != result);
