@@ -183,8 +183,48 @@ void ComputeSuperRes(const uint8_t* source, const int upscaled_width,
 // Static data member definitions.
 constexpr int PostFilter::kCdefLargeValue;
 
-bool PostFilter::ApplyFiltering() {
-  if (thread_pool_ == nullptr) {
+void PostFilter::ApplyFilteringForOneSuperBlockRow(int row4x4, int sb4x4,
+                                                   bool is_last_row) {
+  if (row4x4 < 0) return;
+  if (DoDeblock()) {
+    ApplyDeblockFilterForOneSuperBlockRow(row4x4, sb4x4);
+  }
+  // Cdef and subsequent filters lag by 1 superblock row relative to deblocking
+  // (since deblocking the current superblock row could change the pixels in the
+  // previous superblock row).
+  const int previous_row4x4 = row4x4 - sb4x4;
+  if (previous_row4x4 >= 0) {
+    if (DoRestoration() && DoCdef()) {
+      SetupDeblockBuffer(previous_row4x4, sb4x4);
+    }
+    if (DoCdef()) {
+      ApplyCdefForOneSuperBlockRow(previous_row4x4, sb4x4);
+    }
+    if (DoSuperRes()) {
+      ApplySuperResForOneSuperBlockRow(previous_row4x4, sb4x4);
+    }
+    if (DoRestoration()) {
+      CopyBorderForRestoration(previous_row4x4, sb4x4);
+      ApplyLoopRestorationForOneSuperBlockRow(previous_row4x4, sb4x4);
+    }
+  }
+  if (is_last_row) {
+    if (DoRestoration() && DoCdef()) {
+      SetupDeblockBuffer(row4x4, sb4x4);
+    }
+    if (DoCdef()) {
+      ApplyCdefForOneSuperBlockRow(row4x4, sb4x4);
+    }
+    if (DoSuperRes()) {
+      ApplySuperResForOneSuperBlockRow(row4x4, sb4x4);
+    }
+    if (DoRestoration()) {
+      CopyBorderForRestoration(row4x4, sb4x4);
+      ApplyLoopRestorationForOneSuperBlockRow(row4x4, sb4x4);
+      // Loop restoration operates with a lag of 8 rows. So make sure to cover
+      // all the rows of the last superblock row.
+      ApplyLoopRestorationForOneSuperBlockRow(row4x4 + sb4x4, 16);
+    }
     if (DoCdef() || DoRestoration()) {
       // Adjust the frame buffer pointers after cdef/loop restoration was
       // applied. For Cdef and Loop Restoration, we write the filtered output to
@@ -206,55 +246,54 @@ bool PostFilter::ApplyFiltering() {
         source_buffer_->ShiftBuffer(plane, horizontal_shift, vertical_shift);
       }
     }
-  } else {
-    if (DoDeblock() && !ApplyDeblockFilterThreaded()) return false;
-    if (DoCdef() && DoRestoration()) {
-      for (int row4x4 = 0; row4x4 < frame_header_.rows4x4;
-           row4x4 += kNum4x4InLoopFilterMaskUnit) {
-        SetupDeblockBuffer(row4x4, kNum4x4InLoopFilterMaskUnit);
-      }
-    }
-    if (DoCdef()) {
-      ApplyCdef();
-    }
-    if (DoSuperRes()) {
-      ApplySuperRes(source_buffer_, frame_header_.rows4x4, subsampling_y_,
-                    /*plane_offsets=*/{0, 0, 0});
-    }
-    if (DoRestoration()) {
-      ApplyLoopRestoration();
+    ExtendBordersForReferenceFrame();
+  }
+}
+
+bool PostFilter::ApplyFilteringThreaded() {
+  if (DoDeblock() && !ApplyDeblockFilterThreaded()) return false;
+  if (DoCdef() && DoRestoration()) {
+    for (int row4x4 = 0; row4x4 < frame_header_.rows4x4;
+         row4x4 += kNum4x4InLoopFilterMaskUnit) {
+      SetupDeblockBuffer(row4x4, kNum4x4InLoopFilterMaskUnit);
     }
   }
-  // Extend frame boundary for inter frame convolution and referencing if the
-  // frame will be saved as a reference frame.
-  if (frame_header_.refresh_frame_flags != 0) {
-    for (int plane = kPlaneY; plane < planes_; ++plane) {
-      const int8_t subsampling_x = (plane == kPlaneY) ? 0 : subsampling_x_;
-      const int8_t subsampling_y = (plane == kPlaneY) ? 0 : subsampling_y_;
-      const int plane_width =
-          RightShiftWithRounding(upscaled_width_, subsampling_x);
-      const int plane_height = RightShiftWithRounding(height_, subsampling_y);
-      assert(source_buffer_->left_border(plane) >= kMinLeftBorderPixels &&
-             source_buffer_->right_border(plane) >= kMinRightBorderPixels &&
-             source_buffer_->top_border(plane) >= kMinTopBorderPixels &&
-             source_buffer_->bottom_border(plane) >= kMinBottomBorderPixels);
-      // plane subsampling_x_ left_border
-      //   Y        N/A         64, 48
-      //  U,V        0          64, 48
-      //  U,V        1          32, 16
-      assert(source_buffer_->left_border(plane) >= 16);
-      // The |left| argument to ExtendFrameBoundary() must be at least
-      // kMinLeftBorderPixels (13) for warp.
-      static_assert(16 >= kMinLeftBorderPixels, "");
-      ExtendFrameBoundary(source_buffer_->data(plane), plane_width,
-                          plane_height, source_buffer_->stride(plane),
-                          source_buffer_->left_border(plane),
-                          source_buffer_->right_border(plane),
-                          source_buffer_->top_border(plane),
-                          source_buffer_->bottom_border(plane));
-    }
+  if (DoCdef()) ApplyCdef();
+  if (DoSuperRes()) {
+    ApplySuperRes(source_buffer_, frame_header_.rows4x4, subsampling_y_,
+                  /*plane_offsets=*/{0, 0, 0});
   }
+  if (DoRestoration()) ApplyLoopRestoration();
+  ExtendBordersForReferenceFrame();
   return true;
+}
+
+void PostFilter::ExtendBordersForReferenceFrame() {
+  if (frame_header_.refresh_frame_flags == 0) return;
+  for (int plane = kPlaneY; plane < planes_; ++plane) {
+    const int8_t subsampling_x = (plane == kPlaneY) ? 0 : subsampling_x_;
+    const int8_t subsampling_y = (plane == kPlaneY) ? 0 : subsampling_y_;
+    const int plane_width =
+        RightShiftWithRounding(upscaled_width_, subsampling_x);
+    const int plane_height = RightShiftWithRounding(height_, subsampling_y);
+    assert(source_buffer_->left_border(plane) >= kMinLeftBorderPixels &&
+           source_buffer_->right_border(plane) >= kMinRightBorderPixels &&
+           source_buffer_->top_border(plane) >= kMinTopBorderPixels &&
+           source_buffer_->bottom_border(plane) >= kMinBottomBorderPixels);
+    // plane subsampling_x_ left_border
+    //   Y        N/A         64, 48
+    //  U,V        0          64, 48
+    //  U,V        1          32, 16
+    assert(source_buffer_->left_border(plane) >= 16);
+    // The |left| argument to ExtendFrameBoundary() must be at least
+    // kMinLeftBorderPixels (13) for warp.
+    static_assert(16 >= kMinLeftBorderPixels, "");
+    ExtendFrameBoundary(
+        source_buffer_->data(plane), plane_width, plane_height,
+        source_buffer_->stride(plane), source_buffer_->left_border(plane),
+        source_buffer_->right_border(plane), source_buffer_->top_border(plane),
+        source_buffer_->bottom_border(plane));
+  }
 }
 
 bool PostFilter::DoRestoration() const {

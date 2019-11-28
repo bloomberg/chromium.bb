@@ -655,13 +655,12 @@ StatusCode DecoderImpl::DecodeTiles(const ObuParser* obu) {
         }
         if (!ok) break;
         // Apply post filters for the row above the current row.
-        PostFilterRow(&post_filter, row4x4 - block_width4x4, block_width4x4,
-                      false);
-        if (!ok) break;
+        post_filter.ApplyFilteringForOneSuperBlockRow(row4x4 - block_width4x4,
+                                                      block_width4x4, false);
       }
       // Apply post filters for the last row.
-      PostFilterRow(&post_filter, row4x4 - block_width4x4, block_width4x4,
-                    true);
+      post_filter.ApplyFilteringForOneSuperBlockRow(row4x4 - block_width4x4,
+                                                    block_width4x4, true);
       decoder_scratch_buffer_pool_.Release(std::move(scratch_buffer));
     } else {
       ok = false;
@@ -731,58 +730,13 @@ StatusCode DecoderImpl::DecodeTiles(const ObuParser* obu) {
                             obu->tile_groups().back().end,
                             block_parameters_holder, inter_transform_sizes_);
   }
-  if (!post_filter.ApplyFiltering()) {
+  if (threading_strategy_.post_filter_thread_pool() != nullptr &&
+      !post_filter.ApplyFilteringThreaded()) {
     LIBGAV1_DLOG(ERROR, "Error applying in-loop filtering.");
     return kLibgav1StatusUnknownError;
   }
   SetCurrentFrameSegmentationMap(obu->frame_header(), prev_segment_ids);
   return kLibgav1StatusOk;
-}
-
-void DecoderImpl::PostFilterRow(PostFilter* post_filter, int row4x4, int sb4x4,
-                                bool is_last_row) {
-  if (row4x4 < 0) return;
-  if (post_filter->DoDeblock()) {
-    post_filter->ApplyDeblockFilterForOneSuperBlockRow(row4x4, sb4x4);
-  }
-  // Cdef lags by 1 superblock row relative to deblocking (since deblocking the
-  // current superblock row could change the pixels in the previous superblock
-  // row).
-  const int previous_row4x4 = row4x4 - sb4x4;
-  if (previous_row4x4 >= 0) {
-    if (post_filter->DoRestoration() && post_filter->DoCdef()) {
-      post_filter->SetupDeblockBuffer(previous_row4x4, sb4x4);
-    }
-    if (post_filter->DoCdef()) {
-      post_filter->ApplyCdefForOneSuperBlockRow(previous_row4x4, sb4x4);
-    }
-    if (post_filter->DoSuperRes()) {
-      post_filter->ApplySuperResForOneSuperBlockRow(previous_row4x4, sb4x4);
-    }
-    if (post_filter->DoRestoration()) {
-      post_filter->CopyBorderForRestoration(previous_row4x4, sb4x4);
-      post_filter->ApplyLoopRestorationForOneSuperBlockRow(previous_row4x4,
-                                                           sb4x4);
-    }
-  }
-  if (is_last_row) {
-    if (post_filter->DoRestoration() && post_filter->DoCdef()) {
-      post_filter->SetupDeblockBuffer(row4x4, sb4x4);
-    }
-    if (post_filter->DoCdef()) {
-      post_filter->ApplyCdefForOneSuperBlockRow(row4x4, sb4x4);
-    }
-    if (post_filter->DoSuperRes()) {
-      post_filter->ApplySuperResForOneSuperBlockRow(row4x4, sb4x4);
-    }
-    if (post_filter->DoRestoration()) {
-      post_filter->CopyBorderForRestoration(row4x4, sb4x4);
-      post_filter->ApplyLoopRestorationForOneSuperBlockRow(row4x4, sb4x4);
-      // Loop restoration operates with a lag of 8 rows. So make sure to cover
-      // all the rows of the last superblock row.
-      post_filter->ApplyLoopRestorationForOneSuperBlockRow(row4x4 + sb4x4, 16);
-    }
-  }
 }
 
 void DecoderImpl::SetCurrentFrameSegmentationMap(

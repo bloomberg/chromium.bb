@@ -110,7 +110,8 @@ class PostFilter {
   PostFilter(PostFilter&&) = delete;
   PostFilter& operator=(PostFilter&&) = delete;
 
-  // The overall function that applies all post processing filtering.
+  // The overall function that applies all post processing filtering with
+  // multiple threads.
   // * The filtering order is:
   //   deblock --> CDEF --> super resolution--> loop restoration.
   // * The output of each filter is the input for the following filter. A
@@ -122,21 +123,8 @@ class PostFilter {
   //              -----------> super resolution -----
   // * Any of these filters could be present or absent.
   // * |source_buffer_| points to the decoded frame buffer. When
-  //   ApplyFiltering() is called, |source_buffer_| is modified by each of the
-  //   filters as described below.
-  // Filter behavior (single-threaded):
-  // * Deblock: In-place filtering. The output is written to |source_buffer_|.
-  //            If cdef and loop restoration are both on, then 4 rows (as
-  //            specified by |kDeblockedRowsForLoopRestoration|) in every 64x64
-  //            block is copied into |deblock_buffer_|.
-  // * Cdef: In-place filtering. The output is written to |source_buffer_| with
-  //         a shift on the top left.
-  // * SuperRes: Near in-place filtering (with an additional line buffer for
-  //             each row). The output is written to |source_buffer_|.
-  // * Restoration: Near in-place filtering. Uses a local block of size 64x64.
-  //                Uses the |source_buffer_| and |deblock_buffer_| as the input
-  //                and the output is written into |source_buffer_| with a shift
-  //                on the top left.
+  //   ApplyFilteringThreaded() is called, |source_buffer_| is modified by each
+  //   of the filters as described below.
   // Filter behavior (multi-threaded):
   // * Deblock: In-place filtering. The output is written to |source_buffer_|.
   //            If cdef and loop restoration are both on, then 4 rows (as
@@ -150,7 +138,28 @@ class PostFilter {
   //                and the output is written into the
   //                |threaded_window_buffer_|. It is then copied to the
   //                |source_buffer_| with a shift on the top left.
-  bool ApplyFiltering();
+  bool ApplyFilteringThreaded();
+
+  // Does the overall post processing filter for one superblock row (starting at
+  // |row4x4| with height 4*|sb4x4|. Cdef, SuperRes and Loop Restoration lag by
+  // one superblock row to account for deblocking.
+  //
+  // Filter behavior (single-threaded):
+  // * Deblock: In-place filtering. The output is written to |source_buffer_|.
+  //            If cdef and loop restoration are both on, then 4 rows (as
+  //            specified by |kDeblockedRowsForLoopRestoration|) in every 64x64
+  //            block is copied into |deblock_buffer_|.
+  // * Cdef: In-place filtering. The output is written to |source_buffer_| with
+  //         a shift on the top left.
+  // * SuperRes: Near in-place filtering (with an additional line buffer for
+  //             each row). The output is written to |source_buffer_|.
+  // * Restoration: Near in-place filtering. Uses a local block of size 64x64.
+  //                Uses the |source_buffer_| and |deblock_buffer_| as the input
+  //                and the output is written into |source_buffer_| with a shift
+  //                on the top left.
+  void ApplyFilteringForOneSuperBlockRow(int row4x4, int sb4x4,
+                                         bool is_last_row);
+
   bool DoCdef() const { return DoCdef(frame_header_, do_post_filter_mask_); }
   static bool DoCdef(const ObuFrameHeader& frame_header,
                      int do_post_filter_mask) {
@@ -244,28 +253,6 @@ class PostFilter {
     const int adjusted_frame_height = Align(frame_header.height, 64);
     return std::min(adjusted_frame_height, window_height);
   }
-
-  // Applies deblock filtering for the superblock row starting at |row4x4| with
-  // a height of 4*|sb4x4|.
-  void ApplyDeblockFilterForOneSuperBlockRow(int row4x4, int sb4x4);
-
-  // Applies cdef filtering for the superblock row starting at |row4x4| with a
-  // height of 4*|sb4x4|.
-  void ApplyCdefForOneSuperBlockRow(int row4x4, int sb4x4);
-
-  // Applies SuperRes for the superblock row starting at |row4x4| with a height
-  // of 4*|sb4x4|.
-  void ApplySuperResForOneSuperBlockRow(int row4x4, int sb4x4);
-
-  // Sets up the |deblock_buffer_| for loop restoration.
-  void SetupDeblockBuffer(int row4x4_start, int sb4x4);
-
-  // Copies the borders necessary for loop restoration.
-  void CopyBorderForRestoration(int row4x4, int sb4x4);
-
-  // Applies loop restoration for the superblock row starting at |row4x4_start|
-  // with a height of 4*|sb4x4|.
-  void ApplyLoopRestorationForOneSuperBlockRow(int row4x4_start, int sb4x4);
 
  private:
   // The type of the HorizontalDeblockFilter and VerticalDeblockFilter member
@@ -434,6 +421,32 @@ class PostFilter {
   void ApplySuperRes(
       YuvBuffer* input_buffer, int rows4x4, int8_t chroma_subsampling_y,
       const std::array<ptrdiff_t, kMaxPlanes>& plane_offsets);  // Section 7.16.
+
+  // Applies deblock filtering for the superblock row starting at |row4x4| with
+  // a height of 4*|sb4x4|.
+  void ApplyDeblockFilterForOneSuperBlockRow(int row4x4, int sb4x4);
+
+  // Applies cdef filtering for the superblock row starting at |row4x4| with a
+  // height of 4*|sb4x4|.
+  void ApplyCdefForOneSuperBlockRow(int row4x4, int sb4x4);
+
+  // Applies SuperRes for the superblock row starting at |row4x4| with a height
+  // of 4*|sb4x4|.
+  void ApplySuperResForOneSuperBlockRow(int row4x4, int sb4x4);
+
+  // Sets up the |deblock_buffer_| for loop restoration.
+  void SetupDeblockBuffer(int row4x4_start, int sb4x4);
+
+  // Copies the borders necessary for loop restoration.
+  void CopyBorderForRestoration(int row4x4, int sb4x4);
+
+  // Applies loop restoration for the superblock row starting at |row4x4_start|
+  // with a height of 4*|sb4x4|.
+  void ApplyLoopRestorationForOneSuperBlockRow(int row4x4_start, int sb4x4);
+
+  // Extend frame boundary for inter frame convolution and referencing if the
+  // frame will be saved as a reference frame.
+  void ExtendBordersForReferenceFrame();
 
   const ObuFrameHeader& frame_header_;
   const LoopRestoration& loop_restoration_;
