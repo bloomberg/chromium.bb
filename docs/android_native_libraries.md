@@ -53,8 +53,7 @@ For example, the 64-bit browser version with extra 32-bit Webview is
 Builds on | Variant | Description
 --- | --- | ---
 32-bit | monochrome | The original 32-bit-only version
-64-bit | monochrome | The original 64-bit version, with 32-bit combined lib
- and 64-bit Webview. This would be named monochrome_32_64_apk if not for legacy naming.
+64-bit | monochrome | The original 64-bit version, with 32-bit combined lib and 64-bit Webview. This would be named monochrome_32_64_apk if not for legacy naming.
 64-bit | monochrome_64_32 | 64-bit combined lib with 32-bit Webview library.
 64-bit | monochrome_64 | 64-bit combined lib only, for eventual pure 64-bit hardware.
 64-bit | monochrome_32 | A mirror of the original 32-bit-only version on 64-bit, to allow building all products on one builder. The result won't be bit-identical to the original, since there are subtle compilation differences.
