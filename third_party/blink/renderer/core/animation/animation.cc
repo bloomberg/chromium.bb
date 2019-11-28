@@ -1541,9 +1541,12 @@ Animation::CheckCanStartAnimationOnCompositorInternal() const {
   if (playback_rate_ == 0)
     reasons |= CompositorAnimations::kInvalidAnimationOrEffect;
 
-  // An infinite duration animation with a negative playback rate is essentially
-  // a static value, so there is no reason to composite it.
-  if (std::isinf(EffectEnd()) && playback_rate_ < 0)
+  // Cannot composite an infinite duration animation with a negative playback
+  // rate. TODO(crbug.com/1029167): Fix calculation of compositor timing to
+  // enable compositing provided the iteration duration is finite. Having an
+  // infinite number of iterations in the animation should not impede the
+  // ability to composite the animation.
+  if (std::isinf(EffectEnd()) && EffectivePlaybackRate() < 0)
     reasons |= CompositorAnimations::kInvalidAnimationOrEffect;
 
   // An Animation without a timeline effectively isn't playing, so there is no
@@ -1581,7 +1584,14 @@ void Animation::StartAnimationOnCompositor(
 
   base::Optional<double> start_time = base::nullopt;
   double time_offset = 0;
-  if (start_time_) {
+  // Start the animation on the compositor with either a start time or time
+  // offset. The start time is used for synchronous updates where the
+  // compositor start time must be in precise alignment with the specified time
+  // (e.g. after calling setStartTime). Asynchronous updates such as updating
+  // the playback rate preserve current time even if the start time is set.
+  // Asynchronous updates have an associated pending play or pending pause
+  // task associated with them.
+  if (start_time_ && !pending()) {
     start_time =
         ToDocumentTimeline(timeline_)->ZeroTime().since_origin().InSecondsF() +
         start_time_.value();
@@ -1635,7 +1645,7 @@ void Animation::SetCompositorPending(bool effect_changed) {
   // sync them. This can happen if the blink side animation was started, the
   // compositor side hadn't started on its side yet, and then the blink side
   // start time was cleared (e.g. by setting current time).
-  if (!compositor_state_ || compositor_state_->effect_changed ||
+  if (pending() || !compositor_state_ || compositor_state_->effect_changed ||
       compositor_state_->playback_rate != EffectivePlaybackRate() ||
       compositor_state_->start_time != start_time_ ||
       !compositor_state_->start_time || !start_time_) {
