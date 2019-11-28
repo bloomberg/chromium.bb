@@ -150,7 +150,8 @@ TEST_F(WebAppIconManagerTest, WriteAndReadIcon) {
     base::RunLoop run_loop;
 
     const bool icon_requested = icon_manager().ReadIcon(
-        app_id, sizes_px[0], base::BindLambdaForTesting([&](SkBitmap bitmap) {
+        app_id, sizes_px[0],
+        base::BindLambdaForTesting([&](const SkBitmap& bitmap) {
           EXPECT_FALSE(bitmap.empty());
           EXPECT_EQ(colors[0], bitmap.getColor(0, 0));
           run_loop.Quit();
@@ -183,7 +184,8 @@ TEST_F(WebAppIconManagerTest, ReadIconFailed) {
   base::RunLoop run_loop;
 
   const bool icon_requested = icon_manager().ReadIcon(
-      app_id, icon_size_px, base::BindLambdaForTesting([&](SkBitmap bitmap) {
+      app_id, icon_size_px,
+      base::BindLambdaForTesting([&](const SkBitmap& bitmap) {
         EXPECT_TRUE(bitmap.empty());
         run_loop.Quit();
       }));
@@ -207,8 +209,9 @@ TEST_F(WebAppIconManagerTest, FindExact) {
 
   {
     const bool icon_requested = icon_manager().ReadIcon(
-        app_id, 40,
-        base::BindLambdaForTesting([&](SkBitmap bitmap) { NOTREACHED(); }));
+        app_id, 40, base::BindLambdaForTesting([&](const SkBitmap& bitmap) {
+          NOTREACHED();
+        }));
     EXPECT_FALSE(icon_requested);
   }
 
@@ -216,7 +219,7 @@ TEST_F(WebAppIconManagerTest, FindExact) {
     base::RunLoop run_loop;
 
     const bool icon_requested = icon_manager().ReadIcon(
-        app_id, 20, base::BindLambdaForTesting([&](SkBitmap bitmap) {
+        app_id, 20, base::BindLambdaForTesting([&](const SkBitmap& bitmap) {
           EXPECT_FALSE(bitmap.empty());
           EXPECT_EQ(SK_ColorBLUE, bitmap.getColor(0, 0));
           run_loop.Quit();
@@ -242,8 +245,9 @@ TEST_F(WebAppIconManagerTest, FindSmallest) {
 
   {
     const bool icon_requested = icon_manager().ReadSmallestIcon(
-        app_id, 70,
-        base::BindLambdaForTesting([&](SkBitmap bitmap) { NOTREACHED(); }));
+        app_id, 70, base::BindLambdaForTesting([&](const SkBitmap& bitmap) {
+          NOTREACHED();
+        }));
     EXPECT_FALSE(icon_requested);
   }
 
@@ -251,7 +255,7 @@ TEST_F(WebAppIconManagerTest, FindSmallest) {
     base::RunLoop run_loop;
 
     const bool icon_requested = icon_manager().ReadSmallestIcon(
-        app_id, 40, base::BindLambdaForTesting([&](SkBitmap bitmap) {
+        app_id, 40, base::BindLambdaForTesting([&](const SkBitmap& bitmap) {
           EXPECT_FALSE(bitmap.empty());
           EXPECT_EQ(SK_ColorGREEN, bitmap.getColor(0, 0));
           run_loop.Quit();
@@ -265,7 +269,7 @@ TEST_F(WebAppIconManagerTest, FindSmallest) {
     base::RunLoop run_loop;
 
     const bool icon_requested = icon_manager().ReadSmallestIcon(
-        app_id, 20, base::BindLambdaForTesting([&](SkBitmap bitmap) {
+        app_id, 20, base::BindLambdaForTesting([&](const SkBitmap& bitmap) {
           EXPECT_FALSE(bitmap.empty());
           EXPECT_EQ(SK_ColorBLUE, bitmap.getColor(0, 0));
           run_loop.Quit();

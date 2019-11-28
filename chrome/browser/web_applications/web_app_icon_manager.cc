@@ -260,7 +260,7 @@ void WebAppIconManager::DeleteData(AppId app_id, WriteDataCallback callback) {
 
 bool WebAppIconManager::ReadIcon(const AppId& app_id,
                                  int icon_size_in_px,
-                                 ReadIconCallback callback) {
+                                 ReadIconCallback callback) const {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   const WebApp* web_app = registrar_.GetAppById(app_id);
@@ -279,7 +279,7 @@ bool WebAppIconManager::ReadIcon(const AppId& app_id,
 
 bool WebAppIconManager::ReadSmallestIcon(const AppId& app_id,
                                          int icon_size_in_px,
-                                         ReadIconCallback callback) {
+                                         ReadIconCallback callback) const {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   int best_size_in_px = 0;
@@ -293,7 +293,7 @@ bool WebAppIconManager::ReadSmallestIcon(const AppId& app_id,
 bool WebAppIconManager::ReadSmallestCompressedIcon(
     const AppId& app_id,
     int icon_size_in_px,
-    ReadCompressedIconCallback callback) {
+    ReadCompressedIconCallback callback) const {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   int best_size_in_px = 0;
@@ -329,7 +329,7 @@ bool WebAppIconManager::FindBestSizeInPx(const AppId& app_id,
 
 void WebAppIconManager::ReadIconInternal(const AppId& app_id,
                                          int icon_size_in_px,
-                                         ReadIconCallback callback) {
+                                         ReadIconCallback callback) const {
   base::PostTaskAndReplyWithResult(
       FROM_HERE, kTaskTraits,
       base::BindOnce(ReadIconBlocking, utils_->Clone(), web_apps_directory_,
