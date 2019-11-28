@@ -48,7 +48,7 @@ infra/tools/prpc/${platform} git_revision:edd5644be66d37cdf82978efb0e5d6504d0d55
 infra/tools/luci-auth/${platform} git_revision:edd5644be66d37cdf82978efb0e5d6504d0d552f
 
 # LUCI Buildbucket CLI
-infra/tools/bb/${platform} git_revision:bdbeaf7b6f457238c69f328bfc7684fc1f2a79e6
+infra/tools/bb/${platform} git_revision:5231cedceb26a6ba371e1018ab880cdfcb65073e
 
 # CHROMEOS Buildjobs CLI
 chromiumos/infra/crosjobs/${platform=linux-amd64} git_revision:ed616d595eb7241d39d34907050d2949121d6ae8
