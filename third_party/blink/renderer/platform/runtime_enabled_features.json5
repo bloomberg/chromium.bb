@@ -1465,6 +1465,10 @@
       name: "ScrollCustomization",
     },
     {
+      name: "ScrollSnapAfterLayout",
+      status: "experimental",
+    },
+    {
       name: "ScrollTimeline",
       status: "experimental",
       origin_trial_feature_name: "AnimationWorklet",
