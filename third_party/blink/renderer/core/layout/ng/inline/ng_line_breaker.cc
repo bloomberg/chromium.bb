@@ -1691,7 +1691,11 @@ void NGLineBreaker::HandleOverflow(NGLineInfo* line_info) {
     if (item.Type() == NGInlineItem::kText) {
       DCHECK(item_result->shape_result ||
              (item_result->break_anywhere_if_overflow &&
-              !override_break_anywhere_));
+              !override_break_anywhere_) ||
+             // |HandleTextForFastMinContent| can produce an item without
+             // |ShapeResult|. In this case, it is not breakable.
+             (mode_ == NGLineBreakerMode::kMinContent &&
+              !item_result->may_break_inside));
       // If space is available, and if this text is breakable, part of the text
       // may fit. Try to break this item.
       if (width_to_rewind < 0 && item_result->may_break_inside) {
