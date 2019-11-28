@@ -228,6 +228,12 @@ const char kGesturePropertiesServiceListPropertiesMethod[] = "ListProperties";
 const char kGesturePropertiesServiceGetPropertyMethod[] = "GetProperty";
 const char kGesturePropertiesServiceSetPropertyMethod[] = "SetProperty";
 
+const char kPrintersServiceName[] = "org.chromium.PrintersService";
+const char kPrintersServicePath[] = "/org/chromium/PrintersService";
+const char kPrintersServiceInterface[] =
+    "org.chromium.PrintersServiceInterface";
+const char kPrintersServicePrintersChangedSignal[] = "PrintersChanged";
+
 }  // namespace chromeos
 
 namespace media_perception {
