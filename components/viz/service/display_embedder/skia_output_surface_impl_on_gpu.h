@@ -77,6 +77,8 @@ struct RenderPassGeometry;
 class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate,
                                    public gpu::DisplayContext {
  public:
+  class ScopedUseContextProvider;
+
   using DidSwapBufferCompleteCallback =
       base::RepeatingCallback<void(gpu::SwapBuffersCompleteParams,
                                    const gfx::Size& pixel_size)>;
@@ -171,8 +173,6 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate,
 
   bool was_context_lost() { return context_state_->context_lost(); }
 
-  class ScopedUseContextProvider;
-
   void SetCapabilitiesForTesting(
       const OutputSurface::Capabilities& capabilities);
 
@@ -203,6 +203,26 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate,
 
  private:
   class ScopedPromiseImageAccess;
+
+  // Offscreen surfaces for render passes. It can only be accessed on GPU
+  // thread.
+  class OffscreenSurface {
+   public:
+    OffscreenSurface();
+    OffscreenSurface(const OffscreenSurface& offscreen_surface) = delete;
+    OffscreenSurface(OffscreenSurface&& offscreen_surface);
+    OffscreenSurface& operator=(const OffscreenSurface& offscreen_surface) =
+        delete;
+    OffscreenSurface& operator=(OffscreenSurface&& offscreen_surface);
+    ~OffscreenSurface();
+    SkSurface* surface() const;
+    SkPromiseImageTexture* fulfill();
+    void set_surface(sk_sp<SkSurface> surface);
+
+   private:
+    sk_sp<SkSurface> surface_;
+    sk_sp<SkPromiseImageTexture> promise_texture_;
+  };
 
   bool Initialize();
   bool InitializeForGL();
@@ -272,25 +292,6 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate,
   base::Optional<OverlayProcessor::OutputSurfaceOverlayPlane>
       output_surface_plane_;
 
-  // Offscreen surfaces for render passes. It can only be accessed on GPU
-  // thread.
-  class OffscreenSurface {
-   public:
-    OffscreenSurface();
-    OffscreenSurface(const OffscreenSurface& offscreen_surface) = delete;
-    OffscreenSurface(OffscreenSurface&& offscreen_surface);
-    OffscreenSurface& operator=(const OffscreenSurface& offscreen_surface) =
-        delete;
-    OffscreenSurface& operator=(OffscreenSurface&& offscreen_surface);
-    ~OffscreenSurface();
-    SkSurface* surface() const;
-    SkPromiseImageTexture* fulfill();
-    void set_surface(sk_sp<SkSurface> surface);
-
-   private:
-    sk_sp<SkSurface> surface_;
-    sk_sp<SkPromiseImageTexture> promise_texture_;
-  };
   base::flat_map<RenderPassId, OffscreenSurface> offscreen_surfaces_;
 
   scoped_refptr<base::SingleThreadTaskRunner> context_current_task_runner_;
