@@ -30,10 +30,7 @@ def GetOptions(cmd_name=None):
   Returns:
     A commandline.ArgumentParser object.
   """
-  # We need to omit help for the base parser so that we're able to parse out the
-  # subcommand for further parsing.
-  parser = commandline.ArgumentParser(caching=True, default_log_level='notice',
-                                      add_help=cmd_name is not None)
+  parser = commandline.ArgumentParser(caching=True, default_log_level='notice')
 
   subparsers = parser.add_subparsers(title='Subcommands', dest='subcommand')
   subparsers.required = True

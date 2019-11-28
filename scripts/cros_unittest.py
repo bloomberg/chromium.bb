@@ -23,8 +23,7 @@ class RunScriptTest(cros_test_lib.MockTempDirTestCase):
     arg_parser = self.PatchObject(commandline, 'ArgumentParser',
                                   return_value=commandline.ArgumentParser())
     cros.GetOptions()
-    arg_parser.assert_called_with(caching=True, default_log_level='notice',
-                                  add_help=False)
+    arg_parser.assert_called_with(caching=True, default_log_level='notice')
 
   def testSubcommand(self):
     """Test parser when given a subcommand."""
