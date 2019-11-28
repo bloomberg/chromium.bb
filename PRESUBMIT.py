@@ -401,7 +401,6 @@ _NOT_CONVERTED_TO_MODERN_BIND_AND_CALLBACK = '|'.join((
   '^media/remoting/',
   '^media/renderers/',
   '^media/test/',
-  '^mojo/public/',
   '^net/',
   '^ppapi/proxy/',
   '^ppapi/shared_impl/',
