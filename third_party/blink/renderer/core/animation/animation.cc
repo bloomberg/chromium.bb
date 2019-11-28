@@ -1684,14 +1684,20 @@ bool Animation::HasActiveAnimationsOnCompositor() {
   return ToKeyframeEffect(content_.Get())->HasActiveAnimationsOnCompositor();
 }
 
+// Update current time of the animation. Refer to step 1 in:
+// https://drafts.csswg.org/web-animations/#update-animations-and-send-events
 bool Animation::Update(TimingUpdateReason reason) {
+  // Due to the hierarchical nature of the timing model, updating the current
+  // time of an animation also involves:
+  //   * Running the update an animation’s finished state procedure.
+  //   * Queueing animation events.
   if (!timeline_)
     return false;
 
-  PlayStateUpdateScope update_scope(*this, reason, kDoNotSetCompositorPending);
-
   ClearOutdated();
-  bool idle = PlayStateInternal() == kIdle;
+  bool idle = CalculateAnimationPlayState() == kIdle;
+  if (!idle)
+    UpdateFinishedState(UpdateType::kContinuous, NotificationType::kAsync);
 
   if (content_) {
     base::Optional<double> inherited_time = idle || !timeline_->CurrentTime()
@@ -1712,14 +1718,14 @@ bool Animation::Update(TimingUpdateReason reason) {
       CancelAnimationOnCompositor();
   }
 
-  if ((idle || Limited()) && !finished_) {
-    if (reason == kTimingUpdateForAnimationFrame && (idle || start_time_)) {
-      if (!idle)
-        QueueFinishedEvent();
+  if (reason == kTimingUpdateForAnimationFrame) {
+    if (idle || CalculateAnimationPlayState() == kFinished)
       finished_ = true;
-    }
   }
+
   DCHECK(!outdated_);
+  NotifyProbe();
+
   return !finished_ || TimeToEffectChange();
 }
 
@@ -1999,7 +2005,13 @@ void Animation::AddedEventListener(
 }
 
 void Animation::PauseForTesting(double pause_time) {
-  SetCurrentTimeInternal(pause_time, kTimingUpdateOnDemand);
+  // Do not restart a canceled animation.
+  if (CalculateAnimationPlayState() == kIdle)
+    return;
+
+  // Pause a running animation, or update the hold time of a previously paused
+  // animation.
+  SetCurrentTimeInternal(pause_time);
   if (HasActiveAnimationsOnCompositor()) {
     base::Optional<double> current_time = CurrentTimeInternal();
     DCHECK(current_time);
