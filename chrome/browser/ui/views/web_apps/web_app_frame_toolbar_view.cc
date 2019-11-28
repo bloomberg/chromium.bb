@@ -537,6 +537,10 @@ void WebAppFrameToolbarView::UpdateStatusIconsVisibility() {
 void WebAppFrameToolbarView::UpdateCaptionColors() {
   const BrowserNonClientFrameView* frame_view =
       browser_view_->frame()->GetFrameView();
+
+  // frame_view is nullptr during BrowserNonClientFrameViewAsh::Init().
+  if (!frame_view)
+    return;
   active_color_ = frame_view->GetCaptionColor(BrowserFrameActiveState::kActive);
   inactive_color_ =
       frame_view->GetCaptionColor(BrowserFrameActiveState::kInactive);

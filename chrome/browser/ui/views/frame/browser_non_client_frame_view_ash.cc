@@ -253,6 +253,8 @@ void BrowserNonClientFrameViewAsh::UpdateFrameColor() {
   }
 
   frame_header_->UpdateFrameColors();
+
+  BrowserNonClientFrameView::UpdateFrameColor();
 }
 
 void BrowserNonClientFrameViewAsh::UpdateThrobber(bool running) {
