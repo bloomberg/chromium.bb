@@ -2149,10 +2149,11 @@ viz::CompositorFrameMetadata LayerTreeHostImpl::MakeCompositorFrameMetadata() {
 
   metadata.min_page_scale_factor = active_tree_->min_page_scale_factor();
 
-  metadata.top_controls_height =
-      browser_controls_offset_manager_->TopControlsHeight();
-  metadata.top_controls_shown_ratio =
-      browser_controls_offset_manager_->TopControlsShownRatio();
+  if (browser_controls_offset_manager_->TopControlsHeight() > 0) {
+    metadata.top_controls_visible_height.emplace(
+        browser_controls_offset_manager_->TopControlsHeight() *
+        browser_controls_offset_manager_->TopControlsShownRatio());
+  }
 
   metadata.local_surface_id_allocation_time =
       child_local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation()
