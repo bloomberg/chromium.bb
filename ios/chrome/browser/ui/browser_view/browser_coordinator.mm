@@ -7,10 +7,12 @@
 #include <memory>
 
 #include "base/scoped_observer.h"
+#include "base/strings/sys_string_conversions.h"
 #import "ios/chrome/browser/app_launcher/app_launcher_abuse_detector.h"
 #import "ios/chrome/browser/app_launcher/app_launcher_tab_helper.h"
 #import "ios/chrome/browser/autofill/autofill_tab_helper.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#include "ios/chrome/browser/download/download_directory_util.h"
 #import "ios/chrome/browser/download/pass_kit_tab_helper.h"
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/store_kit/store_kit_coordinator.h"
@@ -434,6 +436,26 @@
       initWithBaseViewController:self.viewController
                     browserState:self.browserState];
   [self.readingListCoordinator start];
+}
+
+- (void)showDownloadsFolder {
+  base::FilePath download_dir;
+  if (!GetDownloadsDirectory(&download_dir)) {
+    return;
+  }
+  UIDocumentPickerViewController* documentPicker =
+      [[UIDocumentPickerViewController alloc]
+          initWithDocumentTypes:@[ @"public.data" ]
+                         inMode:UIDocumentPickerModeImport];
+  documentPicker.modalPresentationStyle = UIModalPresentationFormSheet;
+  if (@available(iOS 13, *)) {
+    NSURL* URL =
+        [NSURL fileURLWithPath:base::SysUTF8ToNSString(download_dir.value())];
+    documentPicker.directoryURL = URL;
+  }
+  [self.viewController presentViewController:documentPicker
+                                    animated:YES
+                                  completion:nil];
 }
 
 - (void)showRecentTabs {
