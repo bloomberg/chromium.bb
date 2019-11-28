@@ -180,7 +180,7 @@ CommandUtil.forceDefaultHandler = (node, commandId) => {
     event.cancelBubble = true;
   });
   node.addEventListener('canExecute', event => {
-    if (event.command.id !== commandId) {
+    if (event.command.id !== commandId || event.target !== node) {
       return;
     }
     event.canExecute = document.queryCommandEnabled(event.command.id);
