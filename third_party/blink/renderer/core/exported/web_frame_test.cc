@@ -8323,8 +8323,8 @@ TEST_F(WebFrameTest, OverlayFullscreenVideo) {
   LocalFrame* frame = web_view_impl->MainFrameImpl()->GetFrame();
   std::unique_ptr<UserGestureIndicator> gesture =
       LocalFrame::NotifyUserActivation(frame);
-  HTMLVideoElement* video =
-      ToHTMLVideoElement(frame->GetDocument()->getElementById("video"));
+  auto* video =
+      To<HTMLVideoElement>(frame->GetDocument()->getElementById("video"));
   EXPECT_TRUE(video->UsesOverlayFullscreenVideo());
   EXPECT_FALSE(video->IsFullscreen());
   EXPECT_EQ(SkColorGetA(layer_tree_host->background_color()), SK_AlphaOPAQUE);
@@ -8396,8 +8396,8 @@ TEST_F(WebFrameTest, OverlayFullscreenVideoInIframe) {
           ->GetFrame();
   std::unique_ptr<UserGestureIndicator> gesture =
       LocalFrame::NotifyUserActivation(iframe);
-  HTMLVideoElement* video =
-      ToHTMLVideoElement(iframe->GetDocument()->getElementById("video"));
+  auto* video =
+      To<HTMLVideoElement>(iframe->GetDocument()->getElementById("video"));
   EXPECT_TRUE(video->UsesOverlayFullscreenVideo());
   EXPECT_FALSE(video->IsFullscreen());
   EXPECT_EQ(SkColorGetA(layer_tree_host->background_color()), SK_AlphaOPAQUE);

@@ -749,7 +749,7 @@ ax::mojom::Role AXNodeObject::NativeRoleIgnoringAria() const {
 
   if (IsA<HTMLAudioElement>(*GetNode()))
     return ax::mojom::Role::kAudio;
-  if (IsHTMLVideoElement(*GetNode()))
+  if (IsA<HTMLVideoElement>(*GetNode()))
     return ax::mojom::Role::kVideo;
 
   if (GetNode()->HasTagName(html_names::kDdTag))
@@ -1082,7 +1082,7 @@ bool AXNodeObject::IsControllingVideoElement() const {
   if (!node)
     return true;
 
-  return IsHTMLVideoElement(
+  return IsA<HTMLVideoElement>(
       MediaControlElementsHelper::ToParentMediaElement(node));
 }
 
