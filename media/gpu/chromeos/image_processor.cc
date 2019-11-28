@@ -102,6 +102,8 @@ ImageProcessor::ImageProcessor(
   DETACH_FROM_SEQUENCE(client_sequence_checker_);
 }
 
+ImageProcessor::~ImageProcessor() = default;
+
 #if defined(OS_POSIX) || defined(OS_FUCHSIA)
 bool ImageProcessor::Process(scoped_refptr<VideoFrame> frame,
                              LegacyFrameReadyCB cb) {
