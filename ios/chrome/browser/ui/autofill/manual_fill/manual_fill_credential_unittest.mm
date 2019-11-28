@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/autofill/manual_fill/credential.h"
+#import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_credential.h"
 
 #include "testing/platform_test.h"
 #include "url/gurl.h"

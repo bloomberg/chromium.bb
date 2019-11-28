@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/autofill/manual_fill/credential_password_form.h"
+#import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_credential+PasswordForm.h"
 
 #include "base/strings/sys_string_conversions.h"
 #include "components/autofill/core/common/password_form.h"

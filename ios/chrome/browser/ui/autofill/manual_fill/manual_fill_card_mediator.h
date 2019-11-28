@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_AUTOFILL_MANUAL_FILL_CARD_MEDIATOR_H_
-#define IOS_CHROME_BROWSER_UI_AUTOFILL_MANUAL_FILL_CARD_MEDIATOR_H_
+#ifndef IOS_CHROME_BROWSER_UI_AUTOFILL_MANUAL_FILL_MANUAL_FILL_CARD_MEDIATOR_H_
+#define IOS_CHROME_BROWSER_UI_AUTOFILL_MANUAL_FILL_MANUAL_FILL_CARD_MEDIATOR_H_
 
 #import <UIKit/UIKit.h>
 
@@ -27,7 +27,7 @@ extern NSString* const kAddCreditCardsAccessibilityIdentifier;
 // Object in charge of getting the cards relevant for the manual fill
 // cards UI.
 @interface ManualFillCardMediator
-    : NSObject<FullCardRequestResultDelegateObserving>
+    : NSObject <FullCardRequestResultDelegateObserving>
 
 // The consumer for cards updates. Setting it will trigger the consumer
 // methods with the current data.
@@ -55,4 +55,4 @@ extern NSString* const kAddCreditCardsAccessibilityIdentifier;
 
 @end
 
-#endif  // IOS_CHROME_BROWSER_UI_AUTOFILL_MANUAL_FILL_CARD_MEDIATOR_H_
+#endif  // IOS_CHROME_BROWSER_UI_AUTOFILL_MANUAL_FILL_MANUAL_FILL_CARD_MEDIATOR_H_

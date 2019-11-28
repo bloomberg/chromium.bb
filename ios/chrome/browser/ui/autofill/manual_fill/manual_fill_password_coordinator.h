@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_AUTOFILL_MANUAL_FILL_PASSWORD_COORDINATOR_H_
-#define IOS_CHROME_BROWSER_UI_AUTOFILL_MANUAL_FILL_PASSWORD_COORDINATOR_H_
+#ifndef IOS_CHROME_BROWSER_UI_AUTOFILL_MANUAL_FILL_MANUAL_FILL_PASSWORD_COORDINATOR_H_
+#define IOS_CHROME_BROWSER_UI_AUTOFILL_MANUAL_FILL_MANUAL_FILL_PASSWORD_COORDINATOR_H_
 
 #import "ios/chrome/browser/ui/autofill/manual_fill/fallback_coordinator.h"
 
 class GURL;
 
 // Delegate for the coordinator actions.
-@protocol PasswordCoordinatorDelegate<FallbackCoordinatorDelegate>
+@protocol PasswordCoordinatorDelegate <FallbackCoordinatorDelegate>
 
 // Opens the passwords settings.
 - (void)openPasswordSettings;
@@ -41,9 +41,9 @@ class GURL;
 // Unavailable, use
 // -initWithBaseViewController:browserState:webStateList:injectionHandler:.
 - (instancetype)
-initWithBaseViewController:(UIViewController*)viewController
-              browserState:(ios::ChromeBrowserState*)browserState
-          injectionHandler:(ManualFillInjectionHandler*)injectionHandler
+    initWithBaseViewController:(UIViewController*)viewController
+                  browserState:(ios::ChromeBrowserState*)browserState
+              injectionHandler:(ManualFillInjectionHandler*)injectionHandler
     NS_UNAVAILABLE;
 
 // Presents the password view controller as a popover from the passed button.
@@ -51,4 +51,4 @@ initWithBaseViewController:(UIViewController*)viewController
 
 @end
 
-#endif  // IOS_CHROME_BROWSER_UI_AUTOFILL_MANUAL_FILL_PASSWORD_COORDINATOR_H_
+#endif  // IOS_CHROME_BROWSER_UI_AUTOFILL_MANUAL_FILL_MANUAL_FILL_PASSWORD_COORDINATOR_H_

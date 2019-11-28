@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/autofill/manual_fill/address.h"
+#import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_address.h"
 
 #include "testing/platform_test.h"
 

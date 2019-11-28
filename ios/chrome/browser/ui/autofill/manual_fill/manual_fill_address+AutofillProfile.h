@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_AUTOFILL_MANUAL_FILL_ADDRESS_FORM_H_
-#define IOS_CHROME_BROWSER_UI_AUTOFILL_MANUAL_FILL_ADDRESS_FORM_H_
+#ifndef IOS_CHROME_BROWSER_UI_AUTOFILL_MANUAL_FILL_MANUAL_FILL_ADDRESS_AUTOFILLPROFILE_H_
+#define IOS_CHROME_BROWSER_UI_AUTOFILL_MANUAL_FILL_MANUAL_FILL_ADDRESS_AUTOFILLPROFILE_H_
 
-#import "ios/chrome/browser/ui/autofill/manual_fill/address.h"
+#import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_address.h"
 
 #include <vector>
 
@@ -27,4 +27,4 @@ class AutofillProfile;
 
 @end
 
-#endif  // IOS_CHROME_BROWSER_UI_AUTOFILL_MANUAL_FILL_ADDRESS_FORM_H_
+#endif  // IOS_CHROME_BROWSER_UI_AUTOFILL_MANUAL_FILL_MANUAL_FILL_ADDRESS_AUTOFILLPROFILE_H_

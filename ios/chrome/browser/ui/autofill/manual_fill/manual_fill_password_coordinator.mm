@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/autofill/manual_fill/password_coordinator.h"
+#import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_password_coordinator.h"
 
 #include "base/mac/foundation_util.h"
 #include "components/keyed_service/core/service_access_type.h"
