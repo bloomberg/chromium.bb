@@ -192,7 +192,6 @@ const service_manager::Manifest& GetContentBrowserManifest() {
                   "discardable_memory.mojom.DiscardableSharedMemoryManager",
                   "media.mojom.InterfaceFactory",
                   "media.mojom.MediaMetricsProvider",
-                  "media.mojom.RemoterFactory",
                   "network.mojom.RestrictedCookieManager",
                   "viz.mojom.Gpu"})
           .PackageService(content::GetManifest())

@@ -381,15 +381,6 @@ class RemoterFactoryImpl final : public media::mojom::RemoterFactory {
   RemoterFactoryImpl(int process_id, int routing_id)
       : process_id_(process_id), routing_id_(routing_id) {}
 
-  static void Bind(
-      int process_id,
-      int routing_id,
-      mojo::PendingReceiver<media::mojom::RemoterFactory> receiver) {
-    mojo::MakeSelfOwnedReceiver(
-        std::make_unique<RemoterFactoryImpl>(process_id, routing_id),
-        std::move(receiver));
-  }
-
  private:
   void Create(mojo::PendingRemote<media::mojom::RemotingSource> source,
               mojo::PendingReceiver<media::mojom::Remoter> receiver) final {
@@ -4654,11 +4645,6 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
       base::BindRepeating(&RenderFrameHostImpl::CreateAudioOutputStreamFactory,
                           base::Unretained(this)));
 
-#if BUILDFLAG(ENABLE_MEDIA_REMOTING)
-  registry_->AddInterface(base::BindRepeating(
-      &RemoterFactoryImpl::Bind, GetProcess()->GetID(), GetRoutingID()));
-#endif  // BUILDFLAG(ENABLE_MEDIA_REMOTING)
-
   // Only save decode stats when BrowserContext provides a VideoPerfHistory.
   // Off-the-record contexts will internally use an ephemeral history DB.
   media::VideoDecodePerfHistory::SaveCallback save_stats_cb;
@@ -6461,6 +6447,15 @@ void RenderFrameHostImpl::BindMediaInterfaceFactoryRequest(
           &RenderFrameHostImpl::OnMediaInterfaceFactoryConnectionError,
           base::Unretained(this))));
 }
+
+#if BUILDFLAG(ENABLE_MEDIA_REMOTING)
+void RenderFrameHostImpl::BindMediaRemoterFactoryReceiver(
+    mojo::PendingReceiver<media::mojom::RemoterFactory> receiver) {
+  mojo::MakeSelfOwnedReceiver(
+      std::make_unique<RemoterFactoryImpl>(GetProcess()->GetID(), routing_id_),
+      std::move(receiver));
+}
+#endif
 
 void RenderFrameHostImpl::CreateWebSocketConnector(
     mojo::PendingReceiver<blink::mojom::WebSocketConnector> receiver) {

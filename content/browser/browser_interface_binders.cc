@@ -106,6 +106,10 @@
 #include "third_party/blink/public/mojom/input/input_host.mojom.h"
 #endif
 
+#if BUILDFLAG(ENABLE_MEDIA_REMOTING)
+#include "media/mojo/mojom/remoting.mojom-forward.h"
+#endif
+
 namespace content {
 namespace internal {
 
@@ -562,6 +566,12 @@ void PopulateFrameBinders(RenderFrameHostImpl* host,
 
   map->Add<media::mojom::ImageCapture>(
       base::BindRepeating(&ImageCaptureImpl::Create));
+
+#if BUILDFLAG(ENABLE_MEDIA_REMOTING)
+  map->Add<media::mojom::RemoterFactory>(
+      base::BindRepeating(&RenderFrameHostImpl::BindMediaRemoterFactoryReceiver,
+                          base::Unretained(host)));
+#endif
 
   map->Add<media::mojom::VideoDecodePerfHistory>(
       base::BindRepeating(&RenderProcessHost::BindVideoDecodePerfHistory,

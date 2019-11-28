@@ -125,6 +125,10 @@
 #include "third_party/blink/public/mojom/serial/serial.mojom.h"
 #endif
 
+#if BUILDFLAG(ENABLE_MEDIA_REMOTING)
+#include "media/mojo/mojom/remoting.mojom-forward.h"
+#endif
+
 class GURL;
 struct AccessibilityHostMsg_EventBundleParams;
 struct AccessibilityHostMsg_FindInPageResultParams;
@@ -1159,6 +1163,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   void CreateWebSocketConnector(
       mojo::PendingReceiver<blink::mojom::WebSocketConnector> receiver);
+
+#if BUILDFLAG(ENABLE_MEDIA_REMOTING)
+  void BindMediaRemoterFactoryReceiver(
+      mojo::PendingReceiver<media::mojom::RemoterFactory> receiver);
+#endif
 
   // https://mikewest.github.io/corpp/#initialize-embedder-policy-for-global
   network::mojom::CrossOriginEmbedderPolicy cross_origin_embedder_policy()
