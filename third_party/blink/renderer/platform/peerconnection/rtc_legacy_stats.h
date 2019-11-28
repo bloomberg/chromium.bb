@@ -6,21 +6,11 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_PEERCONNECTION_RTC_LEGACY_STATS_H_
 
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/webrtc/api/stats_types.h"
 
 namespace blink {
 
 class RTCLegacyStatsMemberIterator;
-
-// TODO(crbug.com/787254): Use webrtc::StatsReport::Value::Type
-// directly.
-enum RTCLegacyStatsMemberType {
-  kRTCLegacyStatsMemberTypeInt,
-  kRTCLegacyStatsMemberTypeInt64,
-  kRTCLegacyStatsMemberTypeFloat,
-  kRTCLegacyStatsMemberTypeString,
-  kRTCLegacyStatsMemberTypeBool,
-  kRTCLegacyStatsMemberTypeId,
-};
 
 // TODO(crbug.com/787254): Remove both RTCLegacyStats and
 // RTCLegacyStatsMemberIterator base interfaces when they stopped
@@ -45,14 +35,14 @@ class RTCLegacyStatsMemberIterator {
   virtual void Next() = 0;
 
   virtual String GetName() const = 0;
-  virtual RTCLegacyStatsMemberType GetType() const = 0;
+  virtual webrtc::StatsReport::Value::Type GetType() const = 0;
   // Value getters. No conversion is performed; the function must match the
   // member's |type|.
-  virtual int ValueInt() const = 0;           // kRTCLegacyStatsMemberTypeInt
-  virtual int64_t ValueInt64() const = 0;     // kRTCLegacyStatsMemberTypeInt64
-  virtual float ValueFloat() const = 0;       // kRTCLegacyStatsMemberTypeFloat
-  virtual String ValueString() const = 0;     // kRTCLegacyStatsMemberTypeString
-  virtual bool ValueBool() const = 0;         // kRTCLegacyStatsMemberTypeBool
+  virtual int ValueInt() const = 0;
+  virtual int64_t ValueInt64() const = 0;
+  virtual float ValueFloat() const = 0;
+  virtual String ValueString() const = 0;
+  virtual bool ValueBool() const = 0;
 
   // Converts the value to string (regardless of |type|).
   virtual String ValueToString() const = 0;

@@ -302,27 +302,6 @@ class CreateSessionDescriptionRequest
   PeerConnectionTracker::Action action_;
 };
 
-RTCLegacyStatsMemberType RTCLegacyStatsMemberTypeFromStatsValueType(
-    webrtc::StatsReport::Value::Type type) {
-  switch (type) {
-    case StatsReport::Value::kInt:
-      return kRTCLegacyStatsMemberTypeInt;
-    case StatsReport::Value::kInt64:
-      return kRTCLegacyStatsMemberTypeInt64;
-    case StatsReport::Value::kFloat:
-      return kRTCLegacyStatsMemberTypeFloat;
-    case StatsReport::Value::kString:
-    case StatsReport::Value::kStaticString:
-      return kRTCLegacyStatsMemberTypeString;
-    case StatsReport::Value::kBool:
-      return kRTCLegacyStatsMemberTypeBool;
-    case StatsReport::Value::kId:
-      return kRTCLegacyStatsMemberTypeId;
-  }
-  NOTREACHED();
-  return kRTCLegacyStatsMemberTypeInt;
-}
-
 // Class mapping responses from calls to libjingle
 // GetStats into a blink::WebRTCStatsCallback.
 class StatsResponse : public webrtc::StatsObserver {
@@ -369,8 +348,8 @@ class StatsResponse : public webrtc::StatsObserver {
       String GetName() const override {
         return String::FromUTF8(it_->second->display_name());
       }
-      RTCLegacyStatsMemberType GetType() const override {
-        return RTCLegacyStatsMemberTypeFromStatsValueType(it_->second->type());
+      webrtc::StatsReport::Value::Type GetType() const override {
+        return it_->second->type();
       }
       int ValueInt() const override { return it_->second->int_val(); }
       int64_t ValueInt64() const override { return it_->second->int64_val(); }
