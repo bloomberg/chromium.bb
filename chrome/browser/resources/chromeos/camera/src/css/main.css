@@ -172,7 +172,7 @@ body.tablet-landscape .actions-group {
 
 body:not(.streaming) #modes-group,
 body.taking #modes-group,
-body.taking:not(.video-mode) #shutters-group {
+body.taking:not(.video) #shutters-group {
   opacity: 0.38;
 }
 
@@ -290,11 +290,11 @@ button.shutter {
   z-index: 1;  /* On top of transforming switch-mode buttons. */
 }
 
-body.video-mode:not(.taking) #start-recordvideo,
-body.video-mode.taking #stop-recordvideo,
-body:not(.taking):not(.video-mode) #start-takephoto,
-body:not(.timer):not(.video-mode) #start-takephoto,
-body.taking.timer:not(.video-mode) #stop-takephoto {
+body.video:not(.taking) #start-recordvideo,
+body.video.taking #stop-recordvideo,
+body:not(.taking):not(.video) #start-takephoto,
+body:not(.timer):not(.video) #start-takephoto,
+body.taking.timer:not(.video) #stop-takephoto {
   display: inline-block;
 }
 
@@ -334,7 +334,7 @@ body.taking.timer:not(.video-mode) #stop-takephoto {
   background-image: url(../images/camera_shutter_video_stop_hover.svg);
 }
 
-body:not(.video-mode) #toggle-mic,
+body:not(.video) #toggle-mic,
 body:not(.multi-camera) #switch-device {
   visibility: hidden;
 }
@@ -346,15 +346,15 @@ body:not(.multi-camera) #switch-device {
   width: 40px;
 }
 
-body.video-mode #camera-mode {
+body.video #camera-mode {
   background-image: url(../images/camera_mode_video.svg);
 }
 
-body.square-mode #camera-mode {
+body.square #camera-mode {
   background-image: url(../images/camera_mode_square.svg);
 }
 
-body.portrait-mode #camera-mode {
+body.portrait #camera-mode {
   background-image: url(../images/camera_mode_portrait.svg);
 }
 
@@ -471,7 +471,7 @@ body._10sec #toggle-timer:checked {
 }
 
 body:not(.multi-fps) #toggle-fps,
-body:not(.video-mode) #toggle-fps {
+body:not(.video) #toggle-fps {
   display: none;
 }
 
