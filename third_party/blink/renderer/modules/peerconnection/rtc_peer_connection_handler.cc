@@ -366,8 +366,8 @@ class StatsResponse : public webrtc::StatsObserver {
       // RTCLegacyStatsMemberIterator
       bool IsEnd() const override { return it_ == end_; }
       void Next() override { ++it_; }
-      blink::WebString GetName() const override {
-        return blink::WebString::FromUTF8(it_->second->display_name());
+      String GetName() const override {
+        return String::FromUTF8(it_->second->display_name());
       }
       RTCLegacyStatsMemberType GetType() const override {
         return RTCLegacyStatsMemberTypeFromStatsValueType(it_->second->type());
@@ -375,21 +375,21 @@ class StatsResponse : public webrtc::StatsObserver {
       int ValueInt() const override { return it_->second->int_val(); }
       int64_t ValueInt64() const override { return it_->second->int64_val(); }
       float ValueFloat() const override { return it_->second->float_val(); }
-      blink::WebString ValueString() const override {
+      String ValueString() const override {
         const StatsReport::ValuePtr& value = it_->second;
         if (value->type() == StatsReport::Value::kString)
-          return blink::WebString::FromUTF8(value->string_val());
+          return String::FromUTF8(value->string_val());
         DCHECK_EQ(value->type(), StatsReport::Value::kStaticString);
-        return blink::WebString::FromUTF8(value->static_string_val());
+        return String::FromUTF8(value->static_string_val());
       }
       bool ValueBool() const override { return it_->second->bool_val(); }
-      blink::WebString ValueToString() const override {
+      String ValueToString() const override {
         const StatsReport::ValuePtr& value = it_->second;
         if (value->type() == StatsReport::Value::kString)
-          return blink::WebString::FromUTF8(value->string_val());
+          return String::FromUTF8(value->string_val());
         if (value->type() == StatsReport::Value::kStaticString)
-          return blink::WebString::FromUTF8(value->static_string_val());
-        return blink::WebString::FromUTF8(value->ToString());
+          return String::FromUTF8(value->static_string_val());
+        return String::FromUTF8(value->ToString());
       }
 
      private:
@@ -411,12 +411,8 @@ class StatsResponse : public webrtc::StatsObserver {
     }
 
     // RTCLegacyStats
-    blink::WebString Id() const override {
-      return blink::WebString::FromUTF8(id_);
-    }
-    blink::WebString GetType() const override {
-      return blink::WebString::FromUTF8(type_name_);
-    }
+    String Id() const override { return String::FromUTF8(id_); }
+    String GetType() const override { return String::FromUTF8(type_name_); }
     double Timestamp() const override { return timestamp_; }
     RTCLegacyStatsMemberIterator* Iterator() const override {
       return new MemberIterator(values_.cbegin(), values_.cend());

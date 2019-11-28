@@ -5,7 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_PEERCONNECTION_RTC_LEGACY_STATS_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_PEERCONNECTION_RTC_LEGACY_STATS_H_
 
-#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -29,8 +29,8 @@ class RTCLegacyStats {
  public:
   virtual ~RTCLegacyStats() = default;
 
-  virtual WebString Id() const = 0;
-  virtual WebString GetType() const = 0;
+  virtual String Id() const = 0;
+  virtual String GetType() const = 0;
   virtual double Timestamp() const = 0;
 
   // The caller owns the iterator. The iterator must not be used after
@@ -44,18 +44,18 @@ class RTCLegacyStatsMemberIterator {
   virtual bool IsEnd() const = 0;
   virtual void Next() = 0;
 
-  virtual WebString GetName() const = 0;
+  virtual String GetName() const = 0;
   virtual RTCLegacyStatsMemberType GetType() const = 0;
   // Value getters. No conversion is performed; the function must match the
   // member's |type|.
   virtual int ValueInt() const = 0;           // kRTCLegacyStatsMemberTypeInt
   virtual int64_t ValueInt64() const = 0;     // kRTCLegacyStatsMemberTypeInt64
   virtual float ValueFloat() const = 0;       // kRTCLegacyStatsMemberTypeFloat
-  virtual WebString ValueString() const = 0;  // kRTCLegacyStatsMemberTypeString
+  virtual String ValueString() const = 0;     // kRTCLegacyStatsMemberTypeString
   virtual bool ValueBool() const = 0;         // kRTCLegacyStatsMemberTypeBool
 
   // Converts the value to string (regardless of |type|).
-  virtual WebString ValueToString() const = 0;
+  virtual String ValueToString() const = 0;
 };
 
 }  // namespace blink
