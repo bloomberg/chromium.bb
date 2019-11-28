@@ -66,4 +66,12 @@ bool BookmarkAppIconManager::ReadSmallestIcon(const web_app::AppId& app_id,
                            ExtensionIconSet::MATCH_BIGGER, std::move(callback));
 }
 
+bool BookmarkAppIconManager::ReadSmallestCompressedIcon(
+    const web_app::AppId& app_id,
+    int icon_size_in_px,
+    ReadCompressedIconCallback callback) {
+  NOTIMPLEMENTED();
+  return false;
+}
+
 }  // namespace extensions

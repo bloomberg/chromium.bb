@@ -42,8 +42,15 @@ class WebAppIconManager : public AppIconManager {
   bool ReadSmallestIcon(const AppId& app_id,
                         int icon_size_in_px,
                         ReadIconCallback callback) override;
+  bool ReadSmallestCompressedIcon(const AppId& app_id,
+                                  int icon_size_in_px,
+                                  ReadCompressedIconCallback callback) override;
 
  private:
+  bool FindBestSizeInPx(const AppId& app_id,
+                        int icon_size_in_px,
+                        int* best_size_in_px) const;
+
   void ReadIconInternal(const AppId& app_id,
                         int icon_size_in_px,
                         ReadIconCallback callback);

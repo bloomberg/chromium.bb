@@ -5,6 +5,9 @@
 #ifndef CHROME_BROWSER_WEB_APPLICATIONS_COMPONENTS_APP_ICON_MANAGER_H_
 #define CHROME_BROWSER_WEB_APPLICATIONS_COMPONENTS_APP_ICON_MANAGER_H_
 
+#include <cstdint>
+#include <vector>
+
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
@@ -32,6 +35,16 @@ class AppIconManager {
   virtual bool ReadSmallestIcon(const AppId& app_id,
                                 int icon_size_in_px,
                                 ReadIconCallback callback) = 0;
+
+  // Reads smallest icon, compressed as PNG with size at least
+  // |icon_size_in_px|. Returns false if there is no such icon. Returns empty
+  // |data| in |callback| if IO error.
+  using ReadCompressedIconCallback =
+      base::OnceCallback<void(std::vector<uint8_t> data)>;
+  virtual bool ReadSmallestCompressedIcon(
+      const AppId& app_id,
+      int icon_size_in_px,
+      ReadCompressedIconCallback callback) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AppIconManager);

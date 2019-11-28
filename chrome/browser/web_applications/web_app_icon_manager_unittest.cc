@@ -83,6 +83,23 @@ class WebAppIconManagerTest : public WebAppTest {
     return icons;
   }
 
+  std::vector<uint8_t> ReadSmallestCompressedIcon(const AppId& app_id,
+                                                  int icon_size_in_px) {
+    std::vector<uint8_t> result;
+
+    base::RunLoop run_loop;
+    bool icon_requested = icon_manager().ReadSmallestCompressedIcon(
+        app_id, icon_size_in_px,
+        base::BindLambdaForTesting([&](std::vector<uint8_t> data) {
+          result = std::move(data);
+          run_loop.Quit();
+        }));
+
+    EXPECT_TRUE(icon_requested);
+    run_loop.Run();
+    return result;
+  }
+
   std::unique_ptr<WebApp> CreateWebApp() {
     const GURL app_url = GURL("https://example.com/path");
     const AppId app_id = GenerateAppIdFromURL(app_url);
@@ -307,6 +324,43 @@ TEST_F(WebAppIconManagerTest, DeleteData_Failure) {
                               run_loop.Quit();
                             }));
   run_loop.Run();
+}
+
+TEST_F(WebAppIconManagerTest, ReadSmallestCompressedIcon_Success) {
+  auto web_app = CreateWebApp();
+  const AppId app_id = web_app->app_id();
+
+  const std::vector<int> sizes_px{icon_size::k128};
+  const std::vector<SkColor> colors{SK_ColorGREEN};
+  WriteIcons(app_id, web_app->launch_url(), sizes_px, colors);
+
+  web_app->SetIcons(ListIcons(web_app->launch_url(), sizes_px));
+
+  controller().RegisterApp(std::move(web_app));
+
+  std::vector<uint8_t> compressed_data =
+      ReadSmallestCompressedIcon(app_id, sizes_px[0]);
+  EXPECT_FALSE(compressed_data.empty());
+
+  auto* data_ptr = reinterpret_cast<const char*>(compressed_data.data());
+
+  // Check that |compressed_data| starts with the 8-byte PNG magic string.
+  std::string png_magic_string{data_ptr, 8};
+  EXPECT_EQ(png_magic_string, "\x89\x50\x4e\x47\x0d\x0a\x1a\x0a");
+}
+
+TEST_F(WebAppIconManagerTest, ReadSmallestCompressedIcon_Failure) {
+  auto web_app = CreateWebApp();
+  const AppId app_id = web_app->app_id();
+
+  const std::vector<int> sizes_px{icon_size::k64};
+  web_app->SetIcons(ListIcons(web_app->launch_url(), sizes_px));
+
+  controller().RegisterApp(std::move(web_app));
+
+  std::vector<uint8_t> compressed_data =
+      ReadSmallestCompressedIcon(app_id, sizes_px[0]);
+  EXPECT_TRUE(compressed_data.empty());
 }
 
 }  // namespace web_app
