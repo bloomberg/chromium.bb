@@ -254,7 +254,7 @@ _BANNED_IOS_EGTEST_FUNCTIONS = (
 # Find sub-directories from a given directory by running:
 # for i in `find . -maxdepth 1 -type d|sort`; do
 #   echo "-- $i"
-#   (cd $i; git grep -P 'base::(Bind\(|(Callback<|Closure))'|wc -l)
+#   (cd $i; git grep -nP 'base::(Bind\(|(Callback<|Closure))'|wc -l)
 # done
 #
 # TODO(crbug.com/714018): Remove (or narrow the scope of) paths from this list
