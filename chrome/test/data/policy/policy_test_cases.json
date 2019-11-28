@@ -4505,6 +4505,19 @@
     ]
   },
 
+  "AmbientAuthenticationInPrivateModesEnabled":{
+    "os": ["win", "linux", "mac", "chromeos", "android"],
+    "test_policy":{"AmbientAuthenticationInPrivateModesEnabled": true},
+    "policy_pref_mapping_test": [
+      {
+        "policies": {
+          "AmbientAuthenticationInPrivateModesEnabled": 0
+        },
+        "prefs": { "auth.ambient_auth_in_private_modes": {"local_state": true } }
+      }
+    ]
+  },
+
   "NetworkFileSharesPreconfiguredShares": {
     "os": ["chromeos"],
     "policy_pref_mapping_test": [
