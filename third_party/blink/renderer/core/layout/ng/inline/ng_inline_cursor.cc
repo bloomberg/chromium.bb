@@ -629,7 +629,9 @@ void NGInlineCursor::MakeNull() {
 void NGInlineCursor::InternalMoveTo(const LayoutObject& layout_object) {
   DCHECK(layout_object.IsInLayoutNGInlineFormattingContext());
   // If this cursor is rootless, find the root of the inline formatting context.
+  bool had_root = true;
   if (!HasRoot()) {
+    had_root = false;
     const LayoutBlockFlow& root = *layout_object.RootInlineFormattingContext();
     DCHECK(&root);
     SetRoot(root);
@@ -645,10 +647,30 @@ void NGInlineCursor::InternalMoveTo(const LayoutObject& layout_object) {
     }
   }
   if (fragment_items_) {
-    item_iter_ = items_.begin();
-    while (current_item_ && CurrentLayoutObject() != &layout_object)
-      MoveToNextItem();
-    return;
+    const wtf_size_t index = layout_object.FirstInlineFragmentItemIndex();
+    if (!index) {
+      // TODO(yosin): Once we update all |LayoutObject::FirstInlineFragment()|
+      // clients, we should replace to |return MakeNull()|
+      item_iter_ = items_.begin();
+      while (current_item_ && CurrentLayoutObject() != &layout_object)
+        MoveToNextItem();
+      return;
+    }
+    DCHECK_LT(index, items_.size());
+    if (!had_root)
+      return MoveToItem(items_.begin() + index);
+    // Map |index| in |NGFragmentItems| to index of |items_|.
+    const LayoutBlockFlow& block_flow =
+        *layout_object.RootInlineFormattingContext();
+    const auto items =
+        ItemsSpan(block_flow.CurrentFragment()->Items()->Items());
+    // Note: We use address instead of iterator because we can't compare
+    // iterators in different span. See |base::CheckedContiguousIterator<T>|.
+    const ptrdiff_t adjusted_index =
+        &*(items.begin() + index) - &*items_.begin();
+    DCHECK_GE(adjusted_index, 0);
+    DCHECK_LT(static_cast<size_t>(adjusted_index), items_.size());
+    return MoveToItem(items_.begin() + adjusted_index);
   }
   if (root_paint_fragment_) {
     const auto fragments = NGPaintFragment::InlineFragmentsFor(&layout_object);
@@ -810,12 +832,10 @@ void NGInlineCursor::MoveToNextForSameLayoutObject() {
     return MakeNull();
   }
   if (current_item_) {
-    const LayoutObject* const layout_object = CurrentLayoutObject();
-    DCHECK(layout_object);
-    do {
-      MoveToNextItem();
-    } while (current_item_ && CurrentLayoutObject() != layout_object);
-    return;
+    const wtf_size_t delta = current_item_->DeltaToNextForSameLayoutObject();
+    if (delta == 0u)
+      return MakeNull();
+    return MoveToItem(item_iter_ + delta);
   }
 }
 
