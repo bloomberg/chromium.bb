@@ -797,6 +797,19 @@
     ]
   },
 
+  "SyncTypesListDisabled": {
+    "os": ["win", "linux", "mac", "android", "chromeos"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": { "SyncTypesListDisabled": ["preferences", "bookmarks"] },
+        "prefs": {
+          "sync.preferences": { "value": false },
+          "sync.bookmarks": { "value": false}
+        }
+      }
+    ]
+  },
+
   "SigninAllowed": {
     "os": ["win", "linux", "mac"],
     "policy_pref_mapping_test": [
