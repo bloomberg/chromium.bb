@@ -69,8 +69,8 @@
 // Whether the coordinator is started.
 @property(nonatomic, assign, getter=isStarted) BOOL started;
 
-// Handles command dispatching.
-@property(nonatomic, strong) CommandDispatcher* dispatcher;
+// Handles command dispatching, provided by the Browser instance.
+@property(nonatomic, weak) CommandDispatcher* dispatcher;
 
 // The coordinator managing the container view controller.
 @property(nonatomic, strong)
@@ -158,13 +158,20 @@
 
 #pragma mark - ChromeCoordinator
 
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController
+                                   browser:(Browser*)browser {
+  if (self = [super initWithBaseViewController:viewController
+                                       browser:browser]) {
+    _dispatcher = browser->GetCommandDispatcher();
+  }
+  return self;
+}
 - (void)start {
   if (self.started)
     return;
 
   DCHECK(self.browserState);
   DCHECK(!self.viewController);
-  self.dispatcher = [[CommandDispatcher alloc] init];
   [self startBrowserContainer];
   [self createViewController];
   [self startChildCoordinators];
