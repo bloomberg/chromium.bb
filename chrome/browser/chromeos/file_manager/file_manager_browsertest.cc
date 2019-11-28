@@ -695,7 +695,9 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("saveFileDialogDriveOfflinePinned").WithBrowser().Offline(),
         TestCase("openFileDialogDefaultFilter").WithBrowser(),
         TestCase("saveFileDialogDefaultFilter").WithBrowser(),
-        TestCase("openFileDialogFileListShowContextMenu").WithBrowser()));
+        TestCase("openFileDialogFileListShowContextMenu").WithBrowser(),
+        TestCase("openFileDialogSelectAllDisabled").WithBrowser(),
+        TestCase("openMultiFileDialogSelectAllEnabled").WithBrowser()));
 
 #if defined(NDEBUG)
 #define MAYBE_CopyBetweenWindows CopyBetweenWindows
