@@ -499,7 +499,7 @@ bool Tile::Decode(bool is_main_thread) {
     }
     for (int row4x4 = row4x4_start_; row4x4 < row4x4_end_;
          row4x4 += block_width4x4) {
-      DecodeSuperBlockRow(row4x4, scratch_buffer.get());
+      if (!DecodeSuperBlockRow(row4x4, scratch_buffer.get())) return false;
     }
     decoder_scratch_buffer_pool_->Release(std::move(scratch_buffer));
   }
