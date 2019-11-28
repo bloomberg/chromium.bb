@@ -95,6 +95,9 @@ class CORE_EXPORT NGFragmentItem : public DisplayItemClient {
     return layout_object_->EffectiveStyle(StyleVariant());
   }
   const LayoutObject* GetLayoutObject() const { return layout_object_; }
+  LayoutObject* GetMutableLayoutObject() const {
+    return const_cast<LayoutObject*>(layout_object_);
+  }
   Node* GetNode() const { return layout_object_->GetNode(); }
   bool HasSameParent(const NGFragmentItem& other) const;
 

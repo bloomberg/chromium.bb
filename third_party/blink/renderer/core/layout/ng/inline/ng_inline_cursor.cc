@@ -447,6 +447,15 @@ const LayoutObject* NGInlineCursor::CurrentLayoutObject() const {
   return nullptr;
 }
 
+LayoutObject* NGInlineCursor::CurrentMutableLayoutObject() const {
+  if (current_paint_fragment_)
+    return current_paint_fragment_->GetMutableLayoutObject();
+  if (current_item_)
+    return current_item_->GetMutableLayoutObject();
+  NOTREACHED();
+  return nullptr;
+}
+
 Node* NGInlineCursor::CurrentNode() const {
   if (const LayoutObject* layout_object = CurrentLayoutObject())
     return layout_object->GetNode();
@@ -752,6 +761,15 @@ void NGInlineCursor::MoveToLastChild() {
     MakeNull();
 }
 
+void NGInlineCursor::MoveToLastForSameLayoutObject() {
+  NGInlineCursor last;
+  while (IsNotNull()) {
+    last = *this;
+    MoveToNextForSameLayoutObject();
+  }
+  *this = last;
+}
+
 void NGInlineCursor::MoveToLastLogicalLeaf() {
   DCHECK(IsLineBox());
   // TODO(yosin): This isn't correct for mixed Bidi. Fix it. Besides, we
@@ -814,6 +832,21 @@ void NGInlineCursor::MoveToNextInlineLeafIgnoringLineBreak() {
   } while (IsNotNull() && IsLineBreak());
 }
 
+void NGInlineCursor::MoveToNextInlineLeafOnLine() {
+  MoveToLastForSameLayoutObject();
+  if (IsNull())
+    return;
+  NGInlineCursor last_item = *this;
+  MoveToContainingLine();
+  NGInlineCursor cursor = CursorForDescendants();
+  cursor.MoveTo(last_item);
+  // Note: AX requires this for AccessibilityLayoutTest.NextOnLine.
+  if (!cursor.IsInlineLeaf())
+    cursor.MoveToNextInlineLeaf();
+  cursor.MoveToNextInlineLeaf();
+  MoveTo(cursor);
+}
+
 void NGInlineCursor::MoveToNextLine() {
   DCHECK(IsLineBox());
   if (current_paint_fragment_) {
@@ -859,6 +892,20 @@ void NGInlineCursor::MoveToPreviousInlineLeafIgnoringLineBreak() {
   do {
     MoveToPreviousInlineLeaf();
   } while (IsNotNull() && IsLineBreak());
+}
+
+void NGInlineCursor::MoveToPreviousInlineLeafOnLine() {
+  if (IsNull())
+    return;
+  NGInlineCursor first_item = *this;
+  MoveToContainingLine();
+  NGInlineCursor cursor = CursorForDescendants();
+  cursor.MoveTo(first_item);
+  // Note: AX requires this for AccessibilityLayoutTest.NextOnLine.
+  if (!cursor.IsInlineLeaf())
+    cursor.MoveToPreviousInlineLeaf();
+  cursor.MoveToPreviousInlineLeaf();
+  MoveTo(cursor);
 }
 
 void NGInlineCursor::MoveToPreviousLine() {
