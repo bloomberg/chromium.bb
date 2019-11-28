@@ -94,6 +94,11 @@ Polymer({
 
     hasError: Boolean,
 
+    disabled: {
+      type: Boolean,
+      value: false,
+    },
+
     /**
      * The password element the pin keyboard is associated with. If this is not
      * set, then a default input element is shown and used.
@@ -527,6 +532,14 @@ Polymer({
     // input field that will be populated with the keypad.
     return this.passwordElement ||
         (/** @type {CrInputElement} */ (this.$.pinInput)).inputElement;
+  },
+
+  /**
+   * Needed for "incognito mode". (FIXME after https://crbug.com/900351 is
+   * fixed).
+   */
+  crInputDisabled_: function() {
+    return this.disabled || this.isIncognitoUi;
   },
 });
 })();
