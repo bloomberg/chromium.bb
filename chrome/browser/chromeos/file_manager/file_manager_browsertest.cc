@@ -832,6 +832,7 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
     FilesAppBrowserTest,
     ::testing::Values(TestCase("searchDownloadsWithResults"),
                       TestCase("searchDownloadsWithNoResults"),
+                      TestCase("searchDownloadsClearSearchKeyDown"),
                       TestCase("searchDownloadsClearSearch")));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
