@@ -229,9 +229,6 @@ void DedicatedWorkerHost::RegisterMojoInterfaces() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   registry_.AddInterface(base::BindRepeating(
       &DedicatedWorkerHost::CreateWebUsbService, base::Unretained(this)));
-  registry_.AddInterface(
-      base::BindRepeating(&DedicatedWorkerHost::CreateNestedDedicatedWorker,
-                          base::Unretained(this)));
 }
 
 void DedicatedWorkerHost::DidStartScriptLoad(

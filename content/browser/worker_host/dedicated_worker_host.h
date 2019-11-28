@@ -75,6 +75,8 @@ class DedicatedWorkerHost final
 
   void CreateIdleManager(
       mojo::PendingReceiver<blink::mojom::IdleManager> receiver);
+  void CreateNestedDedicatedWorker(
+      mojo::PendingReceiver<blink::mojom::DedicatedWorkerHostFactory> receiver);
   void BindSmsReceiverReceiver(
       mojo::PendingReceiver<blink::mojom::SmsReceiver> receiver);
   void CreateWebUsbService(
@@ -146,9 +148,6 @@ class DedicatedWorkerHost final
   CreateNetworkFactoryForSubresources(RenderProcessHost* worker_process_host,
                                       RenderFrameHostImpl* render_frame_host,
                                       bool* bypass_redirect_checks);
-
-  void CreateNestedDedicatedWorker(
-      mojo::PendingReceiver<blink::mojom::DedicatedWorkerHostFactory> receiver);
 
   // Updates subresource loader factories. This is supposed to be called when
   // out-of-process Network Service crashes.
