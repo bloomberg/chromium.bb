@@ -616,12 +616,11 @@ void ExtensionApps::OpenNativeSettings(const std::string& app_id) {
 
   } else if (extension->ShouldDisplayInExtensionSettings()) {
     Browser* browser = chrome::FindTabbedBrowser(profile_, false);
-    if (browser) {
-      chrome::ShowExtensions(browser, extension->id());
+    if (!browser) {
+      browser = new Browser(Browser::CreateParams(profile_, true));
     }
-    // TODO(crbug.com/826982): Either create new browser if one isn't found, or
-    // make a version of chrome::ShowExtensions which accepts a Profile
-    // instead of a Browser, similar to chrome::ShowSiteSettings.
+
+    chrome::ShowExtensions(browser, extension->id());
   }
 }
 
