@@ -15,6 +15,8 @@
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
 #include "build/build_config.h"
+#include "content/browser/resources/media/grit/media_internals_resources.h"
+#include "content/browser/resources/media/grit/media_internals_resources_map.h"
 #include "content/grit/content_resources.h"
 #include "content/grit/content_resources_map.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -257,6 +259,9 @@ const ResourcesMap* CreateResourcesMap() {
   AddResourcesToMap(result);
   AddAliasedResourcesToMap(CreateContentResourceIdToAliasMap(),
                            kContentResources, kContentResourcesSize, result);
+  AddAliasedResourcesToMap(CreateContentResourceIdToAliasMap(),
+                           kMediaInternalsResources,
+                           kMediaInternalsResourcesSize, result);
   AddAliasedResourcesToMap(CreateMojoResourceIdToAliasMap(),
                            kMojoBindingsResources, kMojoBindingsResourcesSize,
                            result);
