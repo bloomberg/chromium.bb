@@ -556,7 +556,7 @@ std::unique_ptr<RenderText> RenderText::CreateRenderText() {
 
 std::unique_ptr<RenderText> RenderText::CreateInstanceOfSameStyle(
     const base::string16& text) const {
-  std::unique_ptr<RenderText> render_text = CreateInstanceOfSameType();
+  std::unique_ptr<RenderText> render_text = CreateRenderText();
   // |SetText()| must be called before styles are set.
   render_text->SetText(text);
   render_text->SetFontList(font_list_);
