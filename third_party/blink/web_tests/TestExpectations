@@ -5898,5 +5898,11 @@ crbug.com/1006759 http/tests/devtools/editor/php-highlighter.js [ Pass Failure ]
 crbug.com/1006759 http/tests/devtools/modules-load-network.js [ Pass Failure ]
 crbug.com/1006759 http/tests/devtools/modules-load-source.js [ Pass Failure ]
 
+# Failing document policy tests
+crbug.com/993790 external/wpt/document-policy/required-policy/document-policy.html [ Failure ]
+crbug.com/993790 external/wpt/document-policy/required-policy/no-document-policy.html [ Failure ]
+crbug.com/993790 external/wpt/document-policy/required-policy/required-document-policy-nested.html [ Failure ]
+crbug.com/993790 external/wpt/document-policy/required-policy/required-document-policy.html [ Failure ]
+
 # Temporary suppression to allow devtools-frontend changes
 crbug.com/1016772 http/tests/devtools/sourcemap-section-warning.js [ Pass Failure ]
