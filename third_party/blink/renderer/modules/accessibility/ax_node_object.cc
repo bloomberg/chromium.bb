@@ -90,7 +90,8 @@ bool IsNeutralWithinTable(blink::AXObject* obj) {
   ax::mojom::Role role = obj->RoleValue();
   return role == ax::mojom::Role::kGroup ||
          role == ax::mojom::Role::kGenericContainer ||
-         role == ax::mojom::Role::kIgnored;
+         role == ax::mojom::Role::kIgnored ||
+         role == ax::mojom::Role::kRowGroup;
 }
 }  // namespace
 
@@ -551,6 +552,20 @@ static ax::mojom::Role DecideRoleFromSiblings(Element* cell) {
   return ax::mojom::Role::kColumnHeader;
 }
 
+ax::mojom::Role AXNodeObject::DetermineTableSectionRole() const {
+  if (!GetElement())
+    return ax::mojom::Role::kUnknown;
+
+  AXObject* parent = ParentObject();
+  if (!parent || !parent->IsTableLikeRole())
+    return ax::mojom::Role::kGenericContainer;
+
+  if (parent->RoleValue() == ax::mojom::Role::kLayoutTable)
+    return ax::mojom::Role::kIgnored;
+
+  return ax::mojom::Role::kRowGroup;
+}
+
 ax::mojom::Role AXNodeObject::DetermineTableRowRole() const {
   AXObject* parent = ParentObject();
   while (IsNeutralWithinTable(parent))
@@ -645,6 +660,8 @@ ax::mojom::Role AXNodeObject::NativeRoleIgnoringAria() const {
   if (IsA<HTMLTableRowElement>(*GetNode()))
     return DetermineTableRowRole();
   if (IsHTMLTableCellElement(*GetNode()))
+    return DetermineTableCellRole();
+  if (IsA<HTMLTableSectionElement>(*GetNode()))
     return DetermineTableCellRole();
 
   if (const auto* input = ToHTMLInputElementOrNull(*GetNode())) {
