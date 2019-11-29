@@ -240,7 +240,7 @@ def _validate_tar_file(tar, prefix):
   return all(map(_validate, tar.getmembers()))
 
 def _downloader_worker_thread(thread_num, q, force, base_url,
-                              gsutil, out_q, ret_codes, _verbose, extract,
+                              gsutil, out_q, ret_codes, verbose, extract,
                               delete=True):
   while True:
     input_sha1_sum, output_filename = q.get()
@@ -275,7 +275,8 @@ def _downloader_worker_thread(thread_num, q, force, base_url,
                        (file_url, output_filename, err)))
       continue
     # Fetch the file.
-    out_q.put('%d> Downloading %s...' % (thread_num, output_filename))
+    if verbose:
+      out_q.put('%d> Downloading %s...' % (thread_num, output_filename))
     try:
       if delete:
         os.remove(output_filename)  # Delete the file if it exists already.
