@@ -138,7 +138,7 @@ def DieWithError(message, change_desc=None):
 
 
 def SaveDescriptionBackup(change_desc):
-  backup_path = os.path.join(settings.GetRoot(), DESCRIPTION_BACKUP_FILE)
+  backup_path = os.path.join(DEPOT_TOOLS, DESCRIPTION_BACKUP_FILE)
   print('\nsaving CL description to %s\n' % backup_path)
   backup_file = open(backup_path, 'w')
   backup_file.write(change_desc.description)
