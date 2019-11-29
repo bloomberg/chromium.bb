@@ -15,10 +15,6 @@ const char kInvalidationUseGCMChannel[] = "invalidation-use-gcm-channel";
 // Overrides the default host:port used for notifications.
 const char kSyncNotificationHostPort[] = "sync-notification-host-port";
 
-// Allows insecure XMPP connections for sync (for testing).
-const char kSyncAllowInsecureXmppConnection[] =
-    "sync-allow-insecure-xmpp-connection";
-
 const base::Feature kFCMInvalidationsConservativeEnabling = {
     "FCMInvalidationsConservativeEnabling", base::FEATURE_ENABLED_BY_DEFAULT};
 

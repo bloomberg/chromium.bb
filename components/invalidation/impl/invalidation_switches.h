@@ -16,7 +16,6 @@ extern const char kInvalidationUseGCMChannel[];
 #endif  // OS_CHROMEOS
 
 extern const char kSyncNotificationHostPort[];
-extern const char kSyncAllowInsecureXmppConnection[];
 extern const base::Feature kFCMInvalidationsConservativeEnabling;
 extern const base::Feature kFCMInvalidationsStartOnceActiveAccountAvailable;
 extern const base::Feature kFCMInvalidationsForSyncDontCheckVersion;
