@@ -4414,7 +4414,6 @@ crbug.com/757165 [ Win ] http/tests/devtools/console/console-links-in-errors-wit
 crbug.com/757165 [ Win ] http/tests/devtools/extensions/extensions-panel.js [ Skip ]
 crbug.com/757165 [ Win ] http/tests/devtools/sources/ui-source-code-metadata.js [ Skip ]
 crbug.com/757165 [ Win ] http/tests/misc/client-hints-accept-meta-preloader.html [ Skip ]
-crbug.com/757165 [ Win ] inspector-protocol/debugger/debugger-evaluate-in-worker-while-pause-in-page.js [ Skip ]
 crbug.com/757165 [ Win ] paint/invalidation/filters/filter-repaint-accelerated-child-with-filter-child.html [ Skip ]
 crbug.com/757165 [ Win ] paint/invalidation/filters/filter-repaint-on-accelerated-layer.html [ Skip ]
 crbug.com/757165 [ Win ] virtual/gpu/fast/canvas/canvas-filter-modified-save-restore.html [ Skip ]
