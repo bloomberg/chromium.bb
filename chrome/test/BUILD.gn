@@ -763,6 +763,7 @@ if (!is_android) {
       "//ppapi:ppapi_tests",
       "//ppapi:power_saver_test_plugin",
       "//testing/buildbot/filters:browser_tests_filters",
+      "//testing/buildbot/filters:linux_trusty_rel_browser_tests_filters",
       "//third_party/mesa_headers",
       "//third_party/widevine/cdm:widevine_test_license_server",
       "//tools/media_engagement_preload:generator",
