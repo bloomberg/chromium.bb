@@ -42,6 +42,7 @@ issues]].
 - Fix several conflicts in ~fr-bfu-comp68.cti~ with regards to the IPA
   Unicode range. These had been especially noticed when
   ~compbrlAtCursor~ mode flag was used. Thanks to André-Abush Clause.
+- Improvements to contraction use in UEB thanks to James Bowden
 ** Other changes
 - Make sure the log callback uses the same calling convention as all
   the other exported functions. Thanks to Leonard de Ruijter.
