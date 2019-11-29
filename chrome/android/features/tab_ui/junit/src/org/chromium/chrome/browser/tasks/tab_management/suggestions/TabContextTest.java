@@ -37,7 +37,7 @@ import java.util.List;
  */
 @RunWith(LocalRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
-public class TabContextTests {
+public class TabContextTest {
     private static final int TAB_0_ID = 0;
     private static final int RELATED_TAB_0_ID = 1;
     private static final int RELATED_TAB_1_ID = 2;
