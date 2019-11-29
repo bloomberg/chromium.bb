@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
+#include "chrome/browser/sharing/click_to_call/phone_number_regex.h"
 #include "chrome/browser/sharing/shared_clipboard/remote_copy_handle_message_result.h"
 #include "chrome/browser/sharing/sharing_constants.h"
 #include "chrome/browser/sharing/sharing_send_message_result.h"
@@ -20,11 +21,6 @@ class WebContents;
 }  // namespace content
 
 enum class SharingDeviceRegistrationResult;
-
-// Phone number regex to use to detect numbers from text selections.
-enum class PhoneNumberRegexVariant {
-  kSimple = 0,
-};
 
 // Result of VAPID key creation during Sharing registration.
 // These values are logged to UMA. Entries should not be renumbered and numeric

@@ -47,11 +47,14 @@ const char* ClickToCallEntryPointToSuffix(
   }
 }
 
+// The returned values must match the values of the PhoneNumberRegexVariant
+// suffixes defined in histograms.xml.
 const char* PhoneNumberRegexVariantToSuffix(PhoneNumberRegexVariant variant) {
   switch (variant) {
     case PhoneNumberRegexVariant::kSimple:
-      // Keep the initial regex in the default metric.
-      return "";
+      return "Simple";
+    case PhoneNumberRegexVariant::kLowConfidenceModified:
+      return "LowConfidenceModified";
   }
 }
 
@@ -80,11 +83,19 @@ ScopedUmaHistogramMicrosecondsTimer::ScopedUmaHistogramMicrosecondsTimer(
     : variant_(variant) {}
 
 ScopedUmaHistogramMicrosecondsTimer::~ScopedUmaHistogramMicrosecondsTimer() {
+  constexpr char kPrefix[] =
+      "Sharing.ClickToCallContextMenuPhoneNumberParsingDelay";
+  constexpr base::TimeDelta kMinTime = base::TimeDelta::FromMicroseconds(1);
+  constexpr base::TimeDelta kMaxTime = base::TimeDelta::FromSeconds(1);
+  constexpr int kBuckets = 50;
+
+  base::TimeDelta elapsed = timer_.Elapsed();
+  // Default bucket for all variants.
+  base::UmaHistogramCustomMicrosecondsTimes(kPrefix, elapsed, kMinTime,
+                                            kMaxTime, kBuckets);
   base::UmaHistogramCustomMicrosecondsTimes(
-      base::StrCat({"Sharing.ClickToCallContextMenuPhoneNumberParsingDelay",
-                    PhoneNumberRegexVariantToSuffix(variant_)}),
-      timer_.Elapsed(), base::TimeDelta::FromMicroseconds(1),
-      base::TimeDelta::FromSeconds(1), 50);
+      base::StrCat({kPrefix, ".", PhoneNumberRegexVariantToSuffix(variant_)}),
+      elapsed, kMinTime, kMaxTime, kBuckets);
 }
 
 chrome_browser_sharing::MessageType SharingPayloadCaseToMessageType(

@@ -74,6 +74,11 @@ base::Optional<std::string> ExtractPhoneNumberForClickToCall(
   if (!IsClickToCallEnabled(browser_context))
     return base::nullopt;
 
+  if (base::FeatureList::IsEnabled(kClickToCallDetectionV2)) {
+    return ExtractPhoneNumber(selection_text,
+                              PhoneNumberRegexVariant::kLowConfidenceModified);
+  }
+
   return ExtractPhoneNumber(selection_text, PhoneNumberRegexVariant::kSimple);
 }
 
