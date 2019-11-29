@@ -242,3 +242,8 @@ crbug.com/681341 [ mac ] Pixel_WebGLLowToHighPower [ Skip ]
 
 # Flakes on Mac Retine NVIDIA producing a blank image.
 crbug.com/1027518 [ mac nvidia ] Pixel_Video_Context_Loss_VP9 [ Skip ]
+
+# Flakes on Linux, Mac and Windows
+crbug.com/1028975 [ linux ] Pixel_PrecisionRoundedCorner [ RetryOnFailure ]
+crbug.com/1028975 [ mac ] Pixel_PrecisionRoundedCorner [ RetryOnFailure ]
+crbug.com/1028975 [ win ] Pixel_PrecisionRoundedCorner [ RetryOnFailure ]
