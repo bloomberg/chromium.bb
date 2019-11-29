@@ -516,6 +516,8 @@ void FillNavigationParamsRequest(
   }
 
   navigation_params->had_transient_activation = common_params.has_user_gesture;
+  navigation_params->web_bundle_physical_url =
+      commit_params.web_bundle_physical_url;
   navigation_params->base_url_override_for_web_bundle =
       commit_params.base_url_override_for_web_bundle;
 }
