@@ -109,8 +109,10 @@ ISOLATED_OUT_DIR = u'io'
 ISOLATED_TMP_DIR = u'it'
 ISOLATED_CLIENT_DIR = u'ic'
 
+# TODO(tikuta): take these parameter from luci-config?
 # Take revision from
 # https://ci.chromium.org/p/infra-internal/g/infra-packagers/console
+ISOLATED_PACKAGE = 'infra/tools/luci/isolated/${platform}'
 ISOLATED_REVISION = 'git_revision:2ee27ca739de90c29d46eb3af3371a42fec3ebff'
 
 # Keep synced with task_request.py
@@ -1018,9 +1020,8 @@ def install_client_and_packages(run_dir, packages, service_url,
                                        packages)
 
     # Install isolated client to |isolated_dir|.
-    _install_packages(
-        isolated_dir, cipd_cache_dir, client,
-        [('', 'infra/tools/luci/isolated/${platform}', ISOLATED_REVISION)])
+    _install_packages(isolated_dir, cipd_cache_dir, client,
+                      [('', ISOLATED_PACKAGE, ISOLATED_REVISION)])
 
     file_path.make_tree_files_read_only(run_dir)
 
