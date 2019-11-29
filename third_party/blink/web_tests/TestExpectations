@@ -5853,6 +5853,8 @@ crbug.com/1015187 [ Linux Mac ] external/wpt/html/cross-origin-embedder-policy/n
 
 # Sheriff 2019-11-29
 crbug.com/1027436 [ Mac ] inspector-protocol/heap-profiler/heap-snapshot-with-detached-dom-tree.js [ Pass Timeout ]
+crbug.com/1019079 [ Mac ] virtual/gpu/fast/canvas/OffscreenCanvas-placeholder-createImageBitmap.html [ Pass Failure ]
+crbug.com/1019079 [ Mac ] fast/canvas/OffscreenCanvas-placeholder-createImageBitmap.html [ Pass Failure ]
 
 # Temporary suppression to allow Skia change to opaqueness tracking
 crbug.com/1028116 virtual/gpu-rasterization-disable-yuv/images/yuv-decode-eligible/color-profile-border-radius.html [ Pass Failure ]
