@@ -433,7 +433,14 @@ def get_client(service_url, package_template, version, cache_dir, timeout=None):
   binary_path = os.path.join(cipd_bin_dir, 'cipd' + EXECUTABLE_SUFFIX)
   if fs.isfile(binary_path):
     # TODO(maruel): Do not unconditionally remove the binary.
-    file_path.remove(binary_path)
+    try:
+      file_path.remove(binary_path)
+    except WindowsError:  # pylint: disable=undefined-variable
+      # See whether cipd.exe is running for crbug.com/1028781
+      ret = subprocess42.call(['tasklist.exe'])
+      if ret:
+        logging.error('tasklist returns non-zero: %d', ret)
+      raise
   else:
     file_path.ensure_tree(cipd_bin_dir)
 
