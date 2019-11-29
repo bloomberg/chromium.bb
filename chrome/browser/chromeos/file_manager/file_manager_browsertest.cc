@@ -835,7 +835,8 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
     ::testing::Values(TestCase("searchDownloadsWithResults"),
                       TestCase("searchDownloadsWithNoResults"),
                       TestCase("searchDownloadsClearSearchKeyDown"),
-                      TestCase("searchDownloadsClearSearch")));
+                      TestCase("searchDownloadsClearSearch"),
+                      TestCase("searchHidingTextEntryField")));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     Metrics, /* metrics.js */

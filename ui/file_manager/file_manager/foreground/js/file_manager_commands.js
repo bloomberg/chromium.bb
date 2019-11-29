@@ -1517,7 +1517,7 @@ CommandHandler.COMMANDS_['search'] = new class extends Command {
 
     // Focus and unhide the search box.
     const element = fileManager.document.querySelector('#search-box cr-input');
-    element.hidden = false;
+    element.disabled = false;
     (/** @type {!CrInputElement} */ (element)).select();
   }
 

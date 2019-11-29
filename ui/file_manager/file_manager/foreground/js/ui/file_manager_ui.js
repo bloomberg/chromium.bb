@@ -169,6 +169,10 @@ class FileManagerUI {
     this.searchBox = new SearchBox(
         queryRequiredElement('#search-box', this.element),
         queryRequiredElement('#search-button', this.element));
+    // Add a listener to the containing action bar for hiding the search box.
+    this.actionbar.addEventListener('click', (event) => {
+      this.searchBox.removeHidePending(event);
+    });
 
     /**
      * Empty folder UI.

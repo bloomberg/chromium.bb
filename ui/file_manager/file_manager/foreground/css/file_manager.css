@@ -690,12 +690,14 @@ body.check-select #search-box {
 }
 
 #search-box.has-cursor,
-#search-box.has-text {
+#search-box.has-text,
+#search-box.hide-pending {
   margin-inline-end: 12px;
 }
 
 #search-box.has-cursor cr-input,
-#search-box.has-text cr-input {
+#search-box.has-text cr-input,
+#search-box.hide-pending cr-input {
   width: 202px;
 }
 
