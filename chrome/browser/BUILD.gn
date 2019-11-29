@@ -3096,6 +3096,7 @@ jumbo_static_library("browser") {
       "enterprise_reporting/profile_report_generator.h",
       "enterprise_reporting/report_generator.cc",
       "enterprise_reporting/report_generator.h",
+      "enterprise_reporting/report_request_definition.h",
       "enterprise_reporting/report_request_queue_generator.cc",
       "enterprise_reporting/report_request_queue_generator.h",
       "enterprise_reporting/report_scheduler.cc",
