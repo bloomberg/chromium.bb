@@ -71,7 +71,7 @@ FilterEffect* SVGFEComponentTransferElement::Build(
        element = Traversal<SVGElement>::NextSibling(*element)) {
     if (auto* func_r = ToSVGFEFuncRElementOrNull(*element))
       red = func_r->TransferFunction();
-    else if (auto* func_g = ToSVGFEFuncGElementOrNull(*element))
+    else if (auto* func_g = DynamicTo<SVGFEFuncGElement>(*element))
       green = func_g->TransferFunction();
     else if (auto* func_b = ToSVGFEFuncBElementOrNull(*element))
       blue = func_b->TransferFunction();
