@@ -140,7 +140,7 @@ static void TransferUseWidthAndHeightIfNeeded(
   // Use |original_element| for checking the element type, because we will
   // have replaced a <symbol> with an <svg> in the instance tree.
   if (!IsSVGSymbolElement(original_element) &&
-      !IsSVGSVGElement(original_element))
+      !IsA<SVGSVGElement>(original_element))
     return;
 
   // "The width and height properties on the 'use' element override the values
