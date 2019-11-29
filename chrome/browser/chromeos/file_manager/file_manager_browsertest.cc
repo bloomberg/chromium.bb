@@ -846,6 +846,7 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
     FilesAppBrowserTest,
     ::testing::Values(TestCase("breadcrumbsNavigate"),
                       TestCase("breadcrumbsLeafNoFocus"),
+                      TestCase("breadcrumbsTooltip"),
                       TestCase("breadcrumbsDownloadsTranslation")));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(

@@ -490,8 +490,11 @@ class FileManagerUI {
    * Attaches files tooltip.
    */
   attachFilesTooltip() {
-    assertInstanceof(document.querySelector('files-tooltip'), FilesTooltip)
-        .addTargets(document.querySelectorAll('[has-tooltip]'));
+    const filesTooltip =
+        assertInstanceof(document.querySelector('files-tooltip'), FilesTooltip);
+    filesTooltip.addTargets(document.querySelectorAll('[has-tooltip]'));
+
+    this.locationLine.filesTooltip = filesTooltip;
   }
 
   /**
