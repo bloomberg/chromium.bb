@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_ALERT_VIEW_CONTROLLER_TEST_FAKE_ALERT_CONSUMER_H_
-#define IOS_CHROME_BROWSER_UI_ALERT_VIEW_CONTROLLER_TEST_FAKE_ALERT_CONSUMER_H_
+#ifndef IOS_CHROME_BROWSER_UI_ALERT_VIEW_TEST_FAKE_ALERT_CONSUMER_H_
+#define IOS_CHROME_BROWSER_UI_ALERT_VIEW_TEST_FAKE_ALERT_CONSUMER_H_
 
-#import "ios/chrome/browser/ui/alert_view_controller/alert_consumer.h"
+#import "ios/chrome/browser/ui/alert_view/alert_consumer.h"
 
 // Fake version of AlertConsumer that allows read access to consumed values.
 @interface FakeAlertConsumer : NSObject <AlertConsumer>
@@ -19,4 +19,4 @@
 
 @end
 
-#endif  // IOS_CHROME_BROWSER_UI_ALERT_VIEW_CONTROLLER_TEST_FAKE_ALERT_CONSUMER_H_
+#endif  // IOS_CHROME_BROWSER_UI_ALERT_VIEW_TEST_FAKE_ALERT_CONSUMER_H_

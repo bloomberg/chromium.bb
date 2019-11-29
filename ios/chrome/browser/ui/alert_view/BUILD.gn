@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-source_set("alert_view_controller") {
+source_set("alert_view") {
   sources = [
     "alert_action.h",
     "alert_action.mm",
@@ -29,7 +29,7 @@ source_set("unit_tests") {
     "alert_view_controller_unittest.mm",
   ]
   deps = [
-    ":alert_view_controller",
+    ":alert_view",
     "//testing/gtest:gtest",
   ]
 }
