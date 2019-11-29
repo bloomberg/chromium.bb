@@ -33,11 +33,6 @@ using EncodedVideoFrameInternalCallback =
     WTF::CrossThreadFunction<void(scoped_refptr<EncodedVideoFrame> frame,
                                   base::TimeTicks estimated_capture_time)>;
 
-void ResetCallback(
-    std::unique_ptr<VideoCaptureDeliverFrameInternalCallback> callback) {
-  // |callback| will be deleted when this exits.
-}
-
 }  // namespace
 
 // MediaStreamVideoTrack::FrameDeliverer is a helper class used for registering
@@ -211,15 +206,13 @@ void MediaStreamVideoTrack::FrameDeliverer::RemoveCallbackOnIO(
   auto it = callbacks_.begin();
   for (; it != callbacks_.end(); ++it) {
     if (it->first == id) {
-      // Callback is copied to heap and then deleted on the target thread.
-      // TODO(handellm): remove this arcane method.
-      std::unique_ptr<VideoCaptureDeliverFrameInternalCallback> callback;
-      callback.reset(
-          new VideoCaptureDeliverFrameInternalCallback(std::move(it->second)));
-      callbacks_.erase(it);
+      // Callback destruction needs to happen on the specified task runner.
       PostCrossThreadTask(
           *task_runner, FROM_HERE,
-          CrossThreadBindOnce(&ResetCallback, std::move(callback)));
+          CrossThreadBindOnce(
+              [](VideoCaptureDeliverFrameInternalCallback callback) {},
+              std::move(it->second)));
+      callbacks_.erase(it);
       return;
     }
   }
@@ -240,18 +233,16 @@ void MediaStreamVideoTrack::FrameDeliverer::RemoveEncodedCallbackOnIO(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
 
-  // The callback needs to be destroyed on the sequence it was created on.
-  // Send it to a dumpster lambda.
+  // Callback destruction needs to happen on the specified task runner.
   auto it = encoded_callbacks_.find(id);
   if (it == encoded_callbacks_.end()) {
     return;
   }
-  auto callback = std::move(it->value);
-  encoded_callbacks_.erase(it);
   PostCrossThreadTask(
       *task_runner, FROM_HERE,
       CrossThreadBindOnce([](EncodedVideoFrameInternalCallback callback) {},
-                          std::move(callback)));
+                          std::move(it->value)));
+  encoded_callbacks_.erase(it);
 }
 
 void MediaStreamVideoTrack::FrameDeliverer::SetEnabled(bool enabled,
