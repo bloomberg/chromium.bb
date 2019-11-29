@@ -111,7 +111,7 @@ ISOLATED_CLIENT_DIR = u'ic'
 
 # Take revision from
 # https://ci.chromium.org/p/infra-internal/g/infra-packagers/console
-ISOLATED_REVISION = 'git_revision:f815be8c7bf743c5b5c4db0393888350746010a4'
+ISOLATED_REVISION = 'git_revision:2ee27ca739de90c29d46eb3af3371a42fec3ebff'
 
 # Keep synced with task_request.py
 CACHE_NAME_RE = re.compile(r'^[a-z0-9_]{1,4096}$')
