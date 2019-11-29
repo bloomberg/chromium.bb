@@ -2444,6 +2444,26 @@ CommandHandler.COMMANDS_['volume-storage'] = new class extends Command {
   execute(event, fileManager) {
     chrome.fileManagerPrivate.openSettingsSubpage('storage');
   }
+
+  /** @override */
+  canExecute(event, fileManager) {
+    event.canExecute = false;
+    const currentVolumeInfo = fileManager.directoryModel.getCurrentVolumeInfo();
+    if (!currentVolumeInfo) {
+      return;
+    }
+    // Can execute only for local file systems.
+    if (currentVolumeInfo.volumeType ==
+            VolumeManagerCommon.VolumeType.MY_FILES ||
+        currentVolumeInfo.volumeType ==
+            VolumeManagerCommon.VolumeType.DOWNLOADS ||
+        currentVolumeInfo.volumeType ==
+            VolumeManagerCommon.VolumeType.CROSTINI ||
+        currentVolumeInfo.volumeType ==
+            VolumeManagerCommon.VolumeType.ANDROID_FILES) {
+      event.canExecute = true;
+    }
+  }
 };
 
 /**
