@@ -53,6 +53,8 @@ SkiaOutputDeviceGL::SkiaOutputDeviceGL(
   // only update this for Android.
   // This output device is never offscreen.
   capabilities_.supports_surfaceless = gl_surface_->IsSurfaceless();
+  if (gl_surface_->SupportsSwapTimestamps())
+    gl_surface_->SetEnableSwapTimestamps();
 #endif
 }
 
