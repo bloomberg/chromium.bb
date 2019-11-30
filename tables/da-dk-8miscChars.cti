@@ -151,6 +151,12 @@ sign \x2190 1256-246 Left arrow
 sign \x2191 1256-346 Up arrow
 sign \x2192 1256-135 Right arrow
 sign \x2193 1256-146 Down arrow
+sign \x2194 1256-2456-1235-135 Left-right arrow
+sign \x2196 1256-156 Northwest arrow
+sign \x2197 1256-234 Northeast arrow
+sign \x2198 1256-126 Southeast arrow
+sign \x2199 1256-345 Southwest arrow
+sign \x21d4 1256-2456-2356-1235-135 Left-right double arrow
 
 # Geometrical shapes
 
