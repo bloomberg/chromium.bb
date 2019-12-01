@@ -96,7 +96,7 @@ noback lowercase \x017f 5-234 Latin small letter long s
 sign \x0192 45-124 #Flurihn (0x83)
 noback sign \x02DC 45-6 #SMALL TILDE (0x98)
 
-# Greek letters (with dot 5 as prefix)
+# Greek letters (with dots 458 as prefix)
 
  uplow \x0386\x03AC 458-5-17,458-5-1 Greek letter alpha with tonos
 uplow \x0388\x03AD 458-5-157,458-5-15 Greek letter epsilon with tonos
@@ -132,8 +132,6 @@ uplow \x03A8\x03C8 458-134567,458-13456 Greek letter Psi
 uplow \x03A9\x03C9 458-24567,458-2456 Greek letter Omega
 
 
-
-
 # Punctuation and bullits
 
 noback space \x2000 0 # En quad
@@ -154,7 +152,7 @@ noback sign \x2016 4568-4568 # Double Vertical Line
 sign \x2017 45-3678 # Double low line
 noback punctuation \x201a 4 # Single Low-9 Quotation Mark
 noback punctuation \x201b 4 # Single High-Reversed-9 Quotation Mark
-noback punctuation \x201e 2356 # Double High-Reversed-9 Quotation Mark
+noback punctuation \x201e 2356 # Double low-9 Quotation Mark
 noback punctuation \x201f 2356 # Double High-Reversed-9 Quotation Mark
 sign \x2022 45-3 #Bullit (0x95)
 noback sign \x2023 45-3 #Triangular bullit
@@ -183,7 +181,7 @@ sign \x21d4 45-1256-2456-2356-1235-135 Left-right double arrow
 
 # Math signs (experimental)
 
-math \x22000 45-1 # For all
+math \x2200 45-1 # For all
 math \x2208 45-15 # Element of
 math \x2213 456-36 # Minus or plus
 math \x221d 456-5-23568 # Proportional to
