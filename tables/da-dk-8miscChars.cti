@@ -183,8 +183,12 @@ sign \x21d4 45-1256-2456-2356-1235-135 Left-right double arrow
 
 # Math signs (experimental)
 
+math \x22000 45-1 # For all
+math \x2208 45-15 # Element of
 math \x2213 456-36 # Minus or plus
 math \x221d 456-5-23568 # Proportional to
+math \x2229 46-236 # Intersection
+math \x222a 46-235 # Union
 math \x2243 456-35 # approx. equal to
 math \x2245 5-45-35 # approx. equal to
 math \x2248 45-35 # approx. equal to
