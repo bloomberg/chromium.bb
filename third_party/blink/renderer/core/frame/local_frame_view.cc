@@ -605,17 +605,14 @@ void LocalFrameView::PerformPreLayoutTasks() {
 
 void LocalFrameView::LayoutFromRootObject(LayoutObject& root) {
   LayoutState layout_state(root);
-  // Since we are starting layout from an arbitrary node, we need to notify all
-  // possible scroll anchors above us, as they aren't notified during layout.
-  for (auto* ancestor = root.Container(); ancestor;
-       ancestor = ancestor->Container()) {
-    if (ancestor->HasOverflowClip() && ancestor->IsLayoutBlock()) {
-      auto* scrollable_area =
-          ToLayoutBoxModelObject(ancestor)->GetScrollableArea();
-      DCHECK(scrollable_area);
-      scrollable_area->GetScrollAnchor()->NotifyBeforeLayout();
+  if (scrollable_areas_) {
+    for (auto& scrollable_area : *scrollable_areas_) {
+      if (scrollable_area->GetScrollAnchor() &&
+          scrollable_area->ShouldPerformScrollAnchoring())
+        scrollable_area->GetScrollAnchor()->NotifyBeforeLayout();
     }
   }
+
   root.UpdateLayout();
 }
 
