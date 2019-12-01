@@ -24,6 +24,7 @@ from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import image_lib
 from chromite.lib import osutils
+from chromite.lib import portage_util
 from chromite.lib import sysroot_lib
 from chromite.scripts import cros_set_lsb_release
 from chromite.service import test
@@ -58,7 +59,23 @@ def DebugInfoTest(input_proto, _output_proto, config):
     return controller.RETURN_CODE_COMPLETED_UNSUCCESSFULLY
 
 
-@faux.all_empty
+def _BuildTargetUnitTestResponse(input_proto, output_proto, _config):
+  """Add tarball path to a successful response."""
+  output_proto.tarball_path = os.path.join(input_proto.result_path,
+                                           'unit_tests.tar')
+
+
+def _BuildTargetUnitTestFailedResponse(_input_proto, output_proto, _config):
+  """Add failed packages to a failed response."""
+  packages = ['foo/bar', 'cat/pkg']
+  failed_cpvs = [portage_util.SplitCPV(p, strict=False) for p in packages]
+  for cpv in failed_cpvs:
+    package_info = output_proto.failed_packages.add()
+    controller_util.CPVToPackageInfo(cpv, package_info)
+
+
+@faux.success(_BuildTargetUnitTestResponse)
+@faux.error(_BuildTargetUnitTestFailedResponse)
 @validate.require('build_target.name', 'result_path')
 @validate.exists('result_path')
 @validate.validation_complete
@@ -114,7 +131,6 @@ def ChromiteUnitTest(_input_proto, _output_proto, _config):
     return controller.RETURN_CODE_SUCCESS
   else:
     return controller.RETURN_CODE_COMPLETED_UNSUCCESSFULLY
-
 
 
 @faux.all_empty
