@@ -10,6 +10,7 @@ from __future__ import print_function
 import json
 import multiprocessing
 import os
+import sys
 
 from chromite.cli import command
 from chromite.cli import deploy
@@ -448,6 +449,7 @@ class TestDeploy(cros_test_lib.ProgressBarTestCase):
       for event in op.MERGE_EVENTS:
         queue.get()
         print(event)
+        sys.stdout.flush()
 
     queue = multiprocessing.Queue()
     # Emerge one package.
@@ -465,6 +467,7 @@ class TestDeploy(cros_test_lib.ProgressBarTestCase):
       for event in op.UNMERGE_EVENTS:
         queue.get()
         print(event)
+        sys.stdout.flush()
 
     queue = multiprocessing.Queue()
     # Unmerge one package.
