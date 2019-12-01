@@ -706,12 +706,13 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
     }
 
     // SVG text layout code expects us to be a block-level style element.
-    if ((IsSVGForeignObjectElement(*element) || IsSVGTextElement(*element)) &&
+    if ((IsSVGForeignObjectElement(*element) ||
+         IsA<SVGTextElement>(*element)) &&
         style.IsDisplayInlineType())
       style.SetDisplay(EDisplay::kBlock);
 
     // Columns don't apply to svg text elements.
-    if (IsSVGTextElement(*element))
+    if (IsA<SVGTextElement>(*element))
       style.ClearMultiCol();
   } else if (element && element->IsMathMLElement()) {
     if (style.Display() == EDisplay::kContents) {
