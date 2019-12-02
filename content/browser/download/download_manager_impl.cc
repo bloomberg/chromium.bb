@@ -710,13 +710,13 @@ void DownloadManagerImpl::CreateSavePackageDownloadItem(
     int render_process_id,
     int render_frame_id,
     download::DownloadJob::CancelRequestCallback cancel_request_callback,
-    const DownloadItemImplCreated& item_created) {
+    DownloadItemImplCreated item_created) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  GetNextId(
-      base::BindOnce(&DownloadManagerImpl::CreateSavePackageDownloadItemWithId,
-                     weak_factory_.GetWeakPtr(), main_file_path, page_url,
-                     mime_type, render_process_id, render_frame_id,
-                     std::move(cancel_request_callback), item_created));
+  GetNextId(base::BindOnce(
+      &DownloadManagerImpl::CreateSavePackageDownloadItemWithId,
+      weak_factory_.GetWeakPtr(), main_file_path, page_url, mime_type,
+      render_process_id, render_frame_id, std::move(cancel_request_callback),
+      std::move(item_created)));
 }
 
 void DownloadManagerImpl::CreateSavePackageDownloadItemWithId(
@@ -726,7 +726,7 @@ void DownloadManagerImpl::CreateSavePackageDownloadItemWithId(
     int render_process_id,
     int render_frame_id,
     download::DownloadJob::CancelRequestCallback cancel_request_callback,
-    const DownloadItemImplCreated& item_created,
+    DownloadItemImplCreated item_created,
     uint32_t id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_NE(download::DownloadItem::kInvalidId, id);
@@ -739,7 +739,7 @@ void DownloadManagerImpl::CreateSavePackageDownloadItemWithId(
                                     render_process_id, render_frame_id));
   OnDownloadCreated(base::WrapUnique(download_item));
   if (!item_created.is_null())
-    item_created.Run(download_item);
+    std::move(item_created).Run(download_item);
 }
 
 // Resume a download of a specific URL. We send the request to the

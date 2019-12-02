@@ -51,7 +51,7 @@ class CONTENT_EXPORT DownloadManagerImpl
       private download::DownloadItemImplDelegate {
  public:
   using DownloadItemImplCreated =
-      base::Callback<void(download::DownloadItemImpl*)>;
+      base::OnceCallback<void(download::DownloadItemImpl*)>;
 
   // Caller guarantees that |net_log| will remain valid
   // for the lifetime of DownloadManagerImpl (until Shutdown() is called).
@@ -63,14 +63,14 @@ class CONTENT_EXPORT DownloadManagerImpl
   // Creates a download item for the SavePackage system.
   // Must be called on the UI thread.  Note that the DownloadManager
   // retains ownership.
-  virtual void CreateSavePackageDownloadItem(
+  void CreateSavePackageDownloadItem(
       const base::FilePath& main_file_path,
       const GURL& page_url,
       const std::string& mime_type,
       int render_process_id,
       int render_frame_id,
       download::DownloadJob::CancelRequestCallback cancel_request_callback,
-      const DownloadItemImplCreated& item_created);
+      DownloadItemImplCreated item_created);
 
   // DownloadManager functions.
   void SetDelegate(DownloadManagerDelegate* delegate) override;
@@ -172,7 +172,7 @@ class CONTENT_EXPORT DownloadManagerImpl
       int render_process_id,
       int render_frame_id,
       download::DownloadJob::CancelRequestCallback cancel_request_callback,
-      const DownloadItemImplCreated& on_started,
+      DownloadItemImplCreated on_started,
       uint32_t id);
 
   // InProgressDownloadManager::Delegate implementations.
