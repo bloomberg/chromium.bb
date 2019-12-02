@@ -5083,7 +5083,7 @@ jumbo_static_library("browser") {
       "spellchecker/spellcheck_service.h",
     ]
 
-    if (use_browser_spellchecker) {
+    if (use_browser_spellchecker && enable_spelling_service) {
       sources += [
         "spellchecker/spelling_request.cc",
         "spellchecker/spelling_request.h",
