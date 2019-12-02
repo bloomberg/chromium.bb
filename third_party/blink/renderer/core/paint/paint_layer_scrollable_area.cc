@@ -2978,7 +2978,7 @@ void PaintLayerScrollableArea::DidScrollWithScrollbar(
   UseCounter::Count(document, scrollbar_use_uma);
 }
 
-CompositorElementId PaintLayerScrollableArea::GetCompositorElementId() const {
+CompositorElementId PaintLayerScrollableArea::GetScrollElementId() const {
   return CompositorElementIdFromUniqueObjectId(
       GetLayoutBox()->UniqueId(), CompositorElementIdNamespace::kScroll);
 }

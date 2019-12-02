@@ -3584,14 +3584,14 @@ ScrollableArea* LocalFrameView::ScrollableAreaWithElementId(
   // composited scrolling layers per crbug.com/784053, so we don't have to worry
   // about them.)
   ScrollableArea* viewport = LayoutViewport();
-  if (id == viewport->GetCompositorElementId())
+  if (id == viewport->GetScrollElementId())
     return viewport;
 
   if (scrollable_areas_) {
     // This requires iterating over all scrollable areas. We may want to store a
     // map of ElementId to ScrollableArea if this is an issue for performance.
     for (ScrollableArea* scrollable_area : *scrollable_areas_) {
-      if (id == scrollable_area->GetCompositorElementId())
+      if (id == scrollable_area->GetScrollElementId())
         return scrollable_area;
     }
   }

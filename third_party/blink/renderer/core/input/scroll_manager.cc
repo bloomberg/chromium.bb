@@ -1022,7 +1022,7 @@ Node* ScrollManager::NodeTargetForScrollableAreaElementId(
   Page* page = frame_->GetPage();
   DCHECK(page);
   ScrollableArea* scrollable_area = nullptr;
-  if (page->GetVisualViewport().GetCompositorElementId() == element_id) {
+  if (page->GetVisualViewport().GetScrollElementId() == element_id) {
     // If the element_id is the visual viewport, redirect to the
     // root LocalFrameView's scrollable area (i.e. the RootFrameViewport).
     scrollable_area = frame_->LocalFrameRoot().View()->GetScrollableArea();
