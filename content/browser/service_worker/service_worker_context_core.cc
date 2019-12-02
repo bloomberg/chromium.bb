@@ -333,15 +333,6 @@ void ServiceWorkerContextCore::AddProviderHost(
   providers_->emplace(provider_id, std::move(host));
 }
 
-ServiceWorkerProviderHost* ServiceWorkerContextCore::GetProviderHost(
-    int provider_id) {
-  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
-  auto found = providers_->find(provider_id);
-  if (found == providers_->end())
-    return nullptr;
-  return found->second.get();
-}
-
 void ServiceWorkerContextCore::RemoveProviderHost(int provider_id) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   providers_->erase(provider_id);

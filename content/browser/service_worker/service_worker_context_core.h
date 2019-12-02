@@ -161,7 +161,6 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   // The context class owns the set of ProviderHosts.
   void AddProviderHost(
       std::unique_ptr<ServiceWorkerProviderHost> provider_host);
-  ServiceWorkerProviderHost* GetProviderHost(int provider_id);
   void RemoveProviderHost(int provider_id);
 
   // Returns a ContainerHost iterator for all service worker clients for the

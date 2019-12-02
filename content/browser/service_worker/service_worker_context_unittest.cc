@@ -1005,16 +1005,12 @@ TEST_F(ServiceWorkerContextTest, ContainerHostIterator) {
       CreateProviderHostForServiceWorkerContext(
           kRenderProcessId2, true /* is_parent_frame_secure */, version.get(),
           context()->AsWeakPtr(), &remote_endpoints.back());
-  const int host4_provider_id = host4->provider_id();
-  EXPECT_NE(host4_provider_id, blink::kInvalidServiceWorkerProviderId);
+  EXPECT_NE(host4->provider_id(), blink::kInvalidServiceWorkerProviderId);
 
-  ServiceWorkerProviderHost* host1_raw = host1.get();
-  ServiceWorkerProviderHost* host2_raw = host2.get();
-  ServiceWorkerProviderHost* host3_raw = host3.get();
-  ASSERT_TRUE(context()->GetProviderHost(host1->provider_id()));
-  ASSERT_TRUE(context()->GetProviderHost(host2->provider_id()));
-  ASSERT_TRUE(context()->GetProviderHost(host3->provider_id()));
-  ASSERT_TRUE(context()->GetProviderHost(host4->provider_id()));
+  ASSERT_TRUE(host1);
+  ASSERT_TRUE(host2);
+  ASSERT_TRUE(host3);
+  ASSERT_TRUE(host4);
 
   // Iterate over the client container hosts that belong to kOrigin1.
   std::set<ServiceWorkerContainerHost*> results;
@@ -1024,8 +1020,8 @@ TEST_F(ServiceWorkerContextTest, ContainerHostIterator) {
     results.insert(it->GetContainerHost());
   }
   EXPECT_EQ(2u, results.size());
-  EXPECT_TRUE(base::Contains(results, host1_raw->container_host()));
-  EXPECT_TRUE(base::Contains(results, host3_raw->container_host()));
+  EXPECT_TRUE(base::Contains(results, host1->container_host()));
+  EXPECT_TRUE(base::Contains(results, host3->container_host()));
 
   // Iterate over the container hosts that belong to kOrigin2.
   // (This should not include host4 as it's not for controllee.)
@@ -1036,12 +1032,12 @@ TEST_F(ServiceWorkerContextTest, ContainerHostIterator) {
     results.insert(it->GetContainerHost());
   }
   EXPECT_EQ(1u, results.size());
-  EXPECT_TRUE(base::Contains(results, host2_raw->container_host()));
+  EXPECT_TRUE(base::Contains(results, host2->container_host()));
 
   context()->RemoveProviderHost(host1->provider_id());
   context()->RemoveProviderHost(host2->provider_id());
   context()->RemoveProviderHost(host3->provider_id());
-  context()->RemoveProviderHost(host4_provider_id);
+  context()->RemoveProviderHost(host4->provider_id());
 }
 
 class ServiceWorkerContextRecoveryTest
