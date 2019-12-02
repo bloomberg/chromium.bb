@@ -272,6 +272,14 @@ std::unique_ptr<network::ResourceRequest> CreateResourceRequest(
     }
   }
 
+  if (ui::PageTransitionIsWebTriggerable(
+          request_info->common_params->transition)) {
+    new_request->trusted_params->has_user_activation =
+        request_info->common_params->has_user_gesture;
+  } else {
+    new_request->trusted_params->has_user_activation = true;
+  }
+
   new_request->credentials_mode = network::mojom::CredentialsMode::kInclude;
   new_request->redirect_mode = network::mojom::RedirectMode::kManual;
   new_request->fetch_request_context_type =
