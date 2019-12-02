@@ -171,13 +171,19 @@ class CONTENT_EXPORT ServiceWorkerContextCore
       const GURL& origin,
       bool include_reserved_clients);
 
+  // Returns a ProviderHost iterator for service worker window clients for the
+  // |origin|. If |include_reserved_clients| is false, this only returns clients
+  // that are execution ready.
+  std::unique_ptr<ProviderHostIterator> GetWindowClientProviderHostIterator(
+      const GURL& origin,
+      bool include_reserved_clients);
+
   // Runs the callback with true if there is a ProviderHost for |origin| of type
   // blink::mojom::ServiceWorkerProviderType::kForWindow which is a main
   // (top-level) frame. Reserved clients are ignored.
   // TODO(crbug.com/824858): Make this synchronously return bool when the core
   // thread is UI.
-  void HasMainFrameProviderHost(const GURL& origin,
-                                BoolCallback callback) const;
+  void HasMainFrameProviderHost(const GURL& origin, BoolCallback callback);
 
   // Maintains a map from Client UUID to ServiceWorkerContainerHost for service
   // worker clients. |container_host| should not be for a service worker

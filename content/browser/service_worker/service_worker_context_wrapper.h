@@ -185,10 +185,10 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
   void HasMainFrameProviderHost(const GURL& origin,
                                 BoolCallback callback) const;
 
-  // Returns all frame ids for the given |origin|. Must be called on the core
-  // thread.
-  std::unique_ptr<std::vector<GlobalFrameRoutingId>> GetProviderHostIds(
-      const GURL& origin) const;
+  // Returns all frame routing ids for the given |origin|. Must be called on the
+  // core thread.
+  std::unique_ptr<std::vector<GlobalFrameRoutingId>>
+  GetWindowClientFrameRoutingIds(const GURL& origin) const;
 
   // Returns the registration whose scope longest matches |client_url|. It is
   // guaranteed that the returned registration has the activated worker.

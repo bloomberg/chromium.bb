@@ -140,8 +140,9 @@ bool IsSameOriginClientProviderHost(const GURL& origin,
           host->container_host()->is_execution_ready());
 }
 
-bool IsSameOriginWindowProviderHost(const GURL& origin,
-                                    ServiceWorkerProviderHost* host) {
+bool IsSameOriginWindowClientProviderHost(const GURL& origin,
+                                          bool allow_reserved_client,
+                                          ServiceWorkerProviderHost* host) {
   // If |host| is in BackForwardCache, it should be skipped in iteration,
   // because (1) hosts in BackForwardCache should never be exposed to web as
   // clients and (2) hosts could be in an unknown state after eviction and
@@ -154,7 +155,8 @@ bool IsSameOriginWindowProviderHost(const GURL& origin,
   return host->container_host()->type() ==
              blink::mojom::ServiceWorkerProviderType::kForWindow &&
          host->container_host()->url().GetOrigin() == origin &&
-         host->container_host()->is_execution_ready();
+         (allow_reserved_client ||
+          host->container_host()->is_execution_ready());
 }
 
 // Returns true if any of the frames specified by |frames| is a top-level frame.
@@ -353,15 +355,25 @@ ServiceWorkerContextCore::GetClientProviderHostIterator(
                                             origin, include_reserved_clients)));
 }
 
-void ServiceWorkerContextCore::HasMainFrameProviderHost(
+std::unique_ptr<ServiceWorkerContextCore::ProviderHostIterator>
+ServiceWorkerContextCore::GetWindowClientProviderHostIterator(
     const GURL& origin,
-    BoolCallback callback) const {
+    bool include_reserved_clients) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
-  ProviderHostIterator provider_host_iterator(
+  return base::WrapUnique(new ProviderHostIterator(
       providers_.get(),
-      base::BindRepeating(IsSameOriginWindowProviderHost, origin));
+      base::BindRepeating(IsSameOriginWindowClientProviderHost, origin,
+                          include_reserved_clients)));
+}
 
-  if (provider_host_iterator.IsAtEnd()) {
+void ServiceWorkerContextCore::HasMainFrameProviderHost(const GURL& origin,
+                                                        BoolCallback callback) {
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
+  std::unique_ptr<ProviderHostIterator> provider_host_iterator =
+      GetWindowClientProviderHostIterator(origin,
+                                          /*include_reserved_clients=*/false);
+
+  if (provider_host_iterator->IsAtEnd()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback), false));
     return;
@@ -370,13 +382,15 @@ void ServiceWorkerContextCore::HasMainFrameProviderHost(
   std::unique_ptr<std::vector<std::pair<int, int>>> render_frames(
       new std::vector<std::pair<int, int>>());
 
-  while (!provider_host_iterator.IsAtEnd()) {
+  while (!provider_host_iterator->IsAtEnd()) {
     ServiceWorkerProviderHost* provider_host =
-        provider_host_iterator.GetProviderHost();
+        provider_host_iterator->GetProviderHost();
+    DCHECK_EQ(provider_host->provider_type(),
+              blink::mojom::ServiceWorkerProviderType::kForWindow);
     render_frames->push_back(
         std::make_pair(provider_host->container_host()->process_id(),
                        provider_host->container_host()->frame_id()));
-    provider_host_iterator.Advance();
+    provider_host_iterator->Advance();
   }
 
   if (ServiceWorkerContext::IsServiceWorkerOnUIEnabled()) {

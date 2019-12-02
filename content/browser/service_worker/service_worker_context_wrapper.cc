@@ -879,25 +879,28 @@ void ServiceWorkerContextWrapper::HasMainFrameProviderHostOnCoreThread(
 }
 
 std::unique_ptr<std::vector<GlobalFrameRoutingId>>
-ServiceWorkerContextWrapper::GetProviderHostIds(const GURL& origin) const {
+ServiceWorkerContextWrapper::GetWindowClientFrameRoutingIds(
+    const GURL& origin) const {
   DCHECK_CURRENTLY_ON(GetCoreThreadId());
 
-  std::unique_ptr<std::vector<GlobalFrameRoutingId>> provider_host_ids(
+  std::unique_ptr<std::vector<GlobalFrameRoutingId>> frame_routing_ids(
       new std::vector<GlobalFrameRoutingId>());
   if (!context_core_)
-    return provider_host_ids;
+    return frame_routing_ids;
 
   for (std::unique_ptr<ServiceWorkerContextCore::ProviderHostIterator> it =
-           context_core_->GetClientProviderHostIterator(
-               origin, false /* include_reserved_clients */);
+           context_core_->GetWindowClientProviderHostIterator(
+               origin, /*include_reserved_clients=*/false);
        !it->IsAtEnd(); it->Advance()) {
     ServiceWorkerProviderHost* provider_host = it->GetProviderHost();
-    provider_host_ids->push_back(
+    DCHECK_EQ(provider_host->provider_type(),
+              blink::mojom::ServiceWorkerProviderType::kForWindow);
+    frame_routing_ids->push_back(
         GlobalFrameRoutingId(provider_host->container_host()->process_id(),
                              provider_host->container_host()->frame_id()));
   }
 
-  return provider_host_ids;
+  return frame_routing_ids;
 }
 
 void ServiceWorkerContextWrapper::FindReadyRegistrationForClientUrl(
