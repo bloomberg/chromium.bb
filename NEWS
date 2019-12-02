@@ -39,6 +39,9 @@ issues]].
   - Makes it possible to type dot from a braille keyboard.
   - Adds Greek letters and some commonly used math operators to both
     the Grade 1 and the computer braille table.
+- Fix several conflicts in ~fr-bfu-comp68.cti~ with regards to the IPA
+  Unicode range. These had been especially noticed when
+  ~compbrlAtCursor~ mode flag was used. Thanks to André-Abush Clause.
 ** Other changes
 - Make sure the log callback uses the same calling convention as all
   the other exported functions. Thanks to Leonard de Ruijter.
