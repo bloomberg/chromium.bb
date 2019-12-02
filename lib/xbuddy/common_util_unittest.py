@@ -10,8 +10,8 @@ from __future__ import print_function
 import os
 import shutil
 import tempfile
-import unittest
 
+from chromite.lib import cros_test_lib
 from chromite.lib.xbuddy import common_util
 from chromite.lib.xbuddy import devserver_constants
 
@@ -25,7 +25,7 @@ TEST_LAYOUT = {
 
 
 
-class CommonUtilTest(unittest.TestCase):
+class CommonUtilTest(cros_test_lib.TestCase):
   """Base class for CommonUtil tests."""
 
   def setUp(self):

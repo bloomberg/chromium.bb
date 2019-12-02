@@ -11,11 +11,11 @@ import os
 import shutil
 import tempfile
 import time
-import unittest
 
 import mock
 from six.moves import configparser
 
+from chromite.lib import cros_test_lib
 from chromite.lib import gs
 from chromite.lib.xbuddy import xbuddy
 
@@ -25,7 +25,7 @@ from chromite.lib.xbuddy import xbuddy
 
 GS_ALTERNATE_DIR = 'gs://chromeos-alternate-archive/'
 
-class xBuddyTest(unittest.TestCase):
+class xBuddyTest(cros_test_lib.TestCase):
   """Regression tests for xbuddy."""
   def setUp(self):
 

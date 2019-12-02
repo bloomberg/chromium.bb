@@ -10,16 +10,16 @@ from __future__ import print_function
 import os
 import shutil
 import tempfile
-import unittest
 
 import mock
 
+from chromite.lib import cros_test_lib
 from chromite.lib.xbuddy import build_artifact
 from chromite.lib.xbuddy import downloader
 
 
 # pylint: disable=protected-access,no-value-for-parameter
-class DownloaderTestBase(unittest.TestCase):
+class DownloaderTestBase(cros_test_lib.TestCase):
   """Downloader Unittests."""
 
   def setUp(self):
@@ -104,7 +104,7 @@ class DownloaderTestBase(unittest.TestCase):
         downloader.LocalDownloader(self._work_dir, self.local_path))
 
 
-class AndroidDownloaderTestBase(unittest.TestCase):
+class AndroidDownloaderTestBase(cros_test_lib.TestCase):
   """Android Downloader Unittests."""
 
   def setUp(self):
