@@ -567,8 +567,8 @@ void WriteSVGResourceContainer(WTF::TextStream& ts,
     auto* dummy_filter = MakeGarbageCollected<Filter>(dummy_rect, dummy_rect, 1,
                                                       Filter::kBoundingBox);
     SVGFilterBuilder builder(dummy_filter->GetSourceGraphic());
-    builder.BuildGraph(dummy_filter, ToSVGFilterElement(*filter->GetElement()),
-                       dummy_rect);
+    builder.BuildGraph(dummy_filter,
+                       To<SVGFilterElement>(*filter->GetElement()), dummy_rect);
     if (FilterEffect* last_effect = builder.LastEffect())
       last_effect->ExternalRepresentation(ts, indent + 1);
   } else if (resource->ResourceType() == kClipperResourceType) {
