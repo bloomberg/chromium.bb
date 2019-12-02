@@ -12095,6 +12095,9 @@ Called by update_net_error_codes.py.-->
   <int value="21" label="Vm.VmcStart"/>
   <int value="22" label="Vm.VmcStartSuccess"/>
   <int value="23" label="Vm.DiskEraseFailed"/>
+  <int value="24" label="Fingerprint.MCU.Reboot"/>
+  <int value="25" label="Crash.Chrome.CrashesFromKernel"/>
+  <int value="26" label="Crash.Chrome.MissedCrashes"/>
 </enum>
 
 <enum name="CrosFirstRunTutorialCompletionType">
