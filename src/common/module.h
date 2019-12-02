@@ -106,7 +106,7 @@ class Module {
     }
 
     // The function's name.
-    const string name;
+    string name;
 
     // The start address and the address ranges covered by the function.
     const Address address;
