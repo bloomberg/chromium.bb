@@ -158,6 +158,9 @@ void TabDataAccess::SetUsedInBgFromSiteCharacteristicsDB(
 
   if (reader->DataLoaded()) {
     SetUsedInBgFromSiteCharacteristicsDataReader(tab_data, std::move(reader));
+    DCHECK(tab_data->used_in_bg.has_value());
+    if (tab_data->used_in_bg)
+      ++policy->tabs_used_in_bg_;
   } else {
     auto* reader_raw = reader.get();
     tab_data->used_in_bg_setter_cancel_closure.Reset(
