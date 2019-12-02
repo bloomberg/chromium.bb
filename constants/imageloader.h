@@ -13,6 +13,9 @@ const char kDlcManifestRootpath[] = "/opt/google/dlc/";
 // The root path of all DLC module images.
 const char kDlcImageRootpath[] = "/var/cache/dlc/";
 
+// The root path of all DLC modules metadata.
+const char kDlcMetadataRootpath[] = "/var/lib/dlc/";
+
 }  // namespace imageloader
 
 #endif  // SYSTEM_API_CONSTANTS_IMAGELOADER_H_
