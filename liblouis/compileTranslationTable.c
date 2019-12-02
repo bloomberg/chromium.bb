@@ -579,7 +579,7 @@ widechar EXPORT_CALL
 _lou_getCharFromDots(widechar d, const DisplayTableHeader *table) {
 	CharOrDots *cdPtr = getCharOrDots(d, 1, table);
 	if (cdPtr) return cdPtr->found;
-	return ' ';
+	return '\0';
 }
 
 static int
