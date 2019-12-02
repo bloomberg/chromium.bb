@@ -8,7 +8,6 @@
 from __future__ import print_function
 
 import copy
-import json
 import os
 
 import mock
@@ -20,12 +19,10 @@ from chromite.cbuildbot.stages import generic_stages_unittest
 from chromite.cbuildbot.stages import generic_stages
 from chromite.cbuildbot.stages import test_stages
 from chromite.lib import config_lib
-from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import cros_test_lib
 from chromite.lib import failures_lib
-from chromite.lib import fake_cidb
 from chromite.lib import osutils
 from chromite.lib import parallel
 from chromite.lib import path_util
@@ -301,55 +298,6 @@ class HWTestStageTest(generic_stages_unittest.AbstractStageTestCase,
     # We exit early, so commands.RunHWTestSuite should not have been
     # called.
     self.assertFalse(self.run_suite_mock.called)
-
-  def testReportHWTestResults(self):
-    """Test ReportHWTestResults."""
-    stage = self.ConstructStage()
-    json_str = """
-{
-  "tests":{
-    "Suite job":{
-       "status":"FAIL"
-    },
-    "cheets_CTS.com.android.cts.dram":{
-       "status":"FAIL"
-    },
-    "cheets_ContainerSmokeTest":{
-       "status":"GOOD"
-    },
-    "cheets_DownloadsFilesystem":{
-       "status":"ABORT"
-    },
-    "cheets_KeyboardTest":{
-       "status":"UNKNOWN"
-    }
-  }
-}
-"""
-    json_dump_dict = json.loads(json_str)
-    db = fake_cidb.FakeCIDBConnection()
-    build_id = db.InsertBuild('build_1', 1, 'build_1', 'bot_hostname')
-
-    # When json_dump_dict is None
-    self.assertIsNone(stage.ReportHWTestResults(None, build_id, db))
-
-    # When db is None
-    self.assertIsNone(stage.ReportHWTestResults(json_dump_dict, build_id, None))
-
-    # When results are successfully reported
-    stage.ReportHWTestResults(json_dump_dict, build_id, db)
-    results = db.GetHWTestResultsForBuilds([build_id])
-    result_dict = {x.test_name: x.status for x in results}
-
-    expect_dict = {
-        'cheets_DownloadsFilesystem': constants.HWTEST_STATUS_ABORT,
-        'cheets_KeyboardTest': constants.HWTEST_STATUS_OTHER,
-        'Suite job': constants.HWTEST_STATUS_FAIL,
-        'cheets_CTS.com.android.cts.dram': constants.HWTEST_STATUS_FAIL,
-        'cheets_ContainerSmokeTest': constants.HWTEST_STATUS_PASS
-    }
-    self.assertCountEqual(expect_dict, result_dict)
-    self.assertEqual(len(results), 5)
 
   def testPerformStageOnCQ(self):
     """Test PerformStage on CQ."""
