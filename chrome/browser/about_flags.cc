@@ -4093,10 +4093,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kUseSkiaRenderer)},
 
 #if defined(OS_CHROMEOS)
-    {"allow-ambient-eq", flag_descriptions::kAllowAmbientEQName,
-     flag_descriptions::kAllowAmbientEQDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(ash::features::kAllowAmbientEQ)},
-
     {"allow-disable-mouse-acceleration",
      flag_descriptions::kAllowDisableMouseAccelerationName,
      flag_descriptions::kAllowDisableMouseAccelerationDescription, kOsCrOS,
