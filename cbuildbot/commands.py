@@ -548,16 +548,6 @@ def RunLocalTryjob(buildroot, build_config, args=None, target_buildroot=None):
     RunBuildScript(buildroot, cmd, chromite_cmd=True)
 
 
-def UpdateBinhostJson(buildroot):
-  """Test prebuilts for all boards, making sure everybody gets Chrome prebuilts.
-
-  Args:
-    buildroot: The buildroot of the current build.
-  """
-  cmd = ['../cbuildbot/update_binhost_json']
-  RunBuildScript(buildroot, cmd, chromite_cmd=True, enter_chroot=True)
-
-
 def Build(buildroot,
           board,
           build_autotest,

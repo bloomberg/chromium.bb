@@ -352,7 +352,3 @@ class BinhostConfWriter(object):
           category=self._prebuilt_type, chrome_rev=self._chrome_rev,
           private_bucket=True, buildroot=self._build_root, board=None,
           extra_args=generated_args + private_args)
-
-    # If we're the Chrome PFQ master, update our binhost JSON file.
-    if self._run.config.build_type == constants.CHROME_PFQ_TYPE:
-      commands.UpdateBinhostJson(self._build_root)
