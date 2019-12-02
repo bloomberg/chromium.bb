@@ -96,7 +96,11 @@ IndexedDBCallbacks::IndexedDBValueBlob::IndexedDBValueBlob(
     const IndexedDBBlobInfo& blob_info,
     blink::mojom::IDBBlobInfoPtr* blob_or_file_info)
     : blob_info_(blob_info) {
-  if (blob_info_.blob_handle()) {
+  if (blob_info_.is_remote_valid()) {
+    // TODO(enne): when blob handle gets removed entirely, there's no
+    // need for uuid to be stored here in IDBBlobInfoPtr.  For now,
+    // this needs to stay, unfortunately.
+    DCHECK(blob_info_.blob_handle());
     uuid_ = blob_info_.blob_handle()->uuid();
   } else {
     uuid_ = base::GenerateGUID();
@@ -145,13 +149,14 @@ void IndexedDBCallbacks::CreateAllBlobs(
   if (value_blobs.empty())
     return;
 
-  // First, handle all the "file path" value blobs on this sequence.
   for (auto& blob : value_blobs) {
     DCHECK(blob.receiver_.is_valid());
 
     auto& blob_info = blob.blob_info_;
-    if (blob_info.blob_handle())
+    if (blob_info.is_remote_valid()) {
+      blob_info.Clone(std::move(blob.receiver_));
       continue;
+    }
 
     auto element = storage::mojom::BlobDataItem::New();
     // TODO(enne): do we have to handle unknown size here??
@@ -168,40 +173,6 @@ void IndexedDBCallbacks::CreateAllBlobs(
     dispatcher_host->mojo_blob_storage_context()->RegisterFromDataItem(
         std::move(blob.receiver_), blob.uuid_, std::move(element));
   }
-
-  // TODO(crbug.com/932869): Remove IO thread hop entirely.
-  base::WaitableEvent signal_when_finished(
-      base::WaitableEvent::ResetPolicy::AUTOMATIC,
-      base::WaitableEvent::InitialState::NOT_SIGNALED);
-
-  // Then, handle all the "blob handle" value blobs on the IO thread,
-  // as BlobImpl can only be accessed from there.
-  //
-  // WARNING: IndexedDBValueBlob holds a const *reference* to its blob_info_
-  // and therefore must not outlive the blob info it points to.  This is
-  // why the waitable event is required here so that the IO thread task
-  // can finish with the value blobs still alive.
-  base::PostTask(FROM_HERE, {BrowserThread::IO},
-                 base::BindOnce(
-                     [](std::vector<IndexedDBValueBlob> value_blobs,
-                        base::WaitableEvent* signal) {
-                       for (auto& blob : value_blobs) {
-                         auto& blob_info = blob.blob_info_;
-                         if (!blob_info.blob_handle())
-                           continue;
-
-                         // TODO(enne): when blob handle becomes a remote, this
-                         // will become a Clone() call.
-                         auto blob_data =
-                             std::make_unique<storage::BlobDataHandle>(
-                                 *blob_info.blob_handle());
-                         storage::BlobImpl::Create(std::move(blob_data),
-                                                   std::move(blob.receiver_));
-                       }
-                       signal->Signal();
-                     },
-                     std::move(value_blobs), &signal_when_finished));
-  signal_when_finished.Wait();
 }
 
 IndexedDBCallbacks::IndexedDBCallbacks(
