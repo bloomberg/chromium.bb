@@ -823,29 +823,6 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
                          'suite_scheduling': d.get('suite_scheduling', False),
                          'branch': d.get('branch')})
 
-  @minimum_schema(32)
-  def ExtendDeadline(self, build_id, timeout_seconds):
-    """Extend the deadline for this build.
-
-    Args:
-      build_id: primary key, in buildTable, of the build for which deadline
-          should be extended.
-      timeout_seconds: Time remaining for the deadline from the current time.
-
-    Returns:
-      Number of rows updated (1 for success, 0 for failure)
-      Deadline extension can fail if
-        (1) The deadline is already past, or
-        (2) The new deadline requested is earlier than the original deadline.
-    """
-    return self._Execute(
-        'UPDATE buildTable SET deadline = NOW() + INTERVAL %d SECOND WHERE '
-        'id = %d AND '
-        '(deadline = 0 OR deadline > NOW()) AND '
-        'NOW() + INTERVAL %d SECOND > deadline'
-        % (timeout_seconds, build_id, timeout_seconds)
-        ).rowcount
-
   @minimum_schema(6)
   def UpdateBoardPerBuildMetadata(self, build_id, board, board_metadata):
     """Update the given board-per-build metadata.
@@ -1138,39 +1115,6 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
 
     results = self._Execute(query).fetchall()
     return [failure_message_lib.StageFailure(*values) for values in results]
-
-  @minimum_schema(32)
-  def GetTimeToDeadline(self, build_id):
-    """Gets the time remaining till the deadline for given build_id.
-
-    Always use this function to find time remaining to a deadline. This function
-    computes all times on the database. You run the risk of hitting timezone
-    issues if you compute remaining time locally.
-
-    Args:
-      build_id: The build_id of the build to query.
-
-    Returns:
-      The time remaining to the deadline in seconds.
-      0 if the deadline is already past.
-      None if no deadline is found.
-    """
-    # Sign information is lost in the timediff coercion into python
-    # datetime.timedelta type. So, we must find out if the deadline is past
-    # separately.
-    r = self._Execute(
-        'SELECT deadline >= NOW(), TIMEDIFF(deadline, NOW()), deadline '
-        'from buildTable where id = %d' % build_id).fetchall()
-    if not r:
-      return None
-
-    time_remaining = r[0][1]
-    deadline = r[0][2]
-    if deadline is None:
-      return None
-
-    deadline_past = (r[0][0] == 0)
-    return 0 if deadline_past else abs(time_remaining.total_seconds())
 
   @minimum_schema(65)
   def GetBuildHistory(self, build_config, num_results,

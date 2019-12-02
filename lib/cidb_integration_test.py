@@ -12,7 +12,6 @@ import glob
 import os
 import random
 import shutil
-import time
 
 from chromite.lib import constants
 from chromite.lib import metadata_lib
@@ -469,67 +468,6 @@ class BuildStagesAndFailureTest(CIDBIntegrationTest):
 
 class BuildTableTest(CIDBIntegrationTest):
   """Test buildTable functionality not tested by the DataSeries tests."""
-
-  def testInsertWithDeadline(self):
-    """Test deadline setting/querying API."""
-    self._PrepareDatabase()
-    bot_db = self.LocalCIDBConnection(self.CIDB_USER_BOT)
-
-    build_id = bot_db.InsertBuild('build_name',
-                                  _random(),
-                                  'build_config',
-                                  'bot_hostname',
-                                  timeout_seconds=30 * 60)
-    # This will flake if the few cidb calls above take hours. Unlikely.
-    self.assertLess(10, bot_db.GetTimeToDeadline(build_id))
-
-    build_id = bot_db.InsertBuild('build_name',
-                                  _random(),
-                                  'build_config',
-                                  'bot_hostname',
-                                  timeout_seconds=1)
-    # Sleep till the deadline expires.
-    time.sleep(3)
-    self.assertEqual(0, bot_db.GetTimeToDeadline(build_id))
-
-    build_id = bot_db.InsertBuild('build_name',
-                                  _random(),
-                                  'build_config',
-                                  'bot_hostname')
-    self.assertEqual(None, bot_db.GetTimeToDeadline(build_id))
-
-    self.assertEqual(None, bot_db.GetTimeToDeadline(build_id))
-
-  def testExtendDeadline(self):
-    """Test that a deadline in the future can be extended."""
-
-    self._PrepareDatabase()
-    bot_db = self.LocalCIDBConnection(self.CIDB_USER_BOT)
-
-    build_id = bot_db.InsertBuild('build_name',
-                                  _random(),
-                                  'build_config',
-                                  'bot_hostname')
-    self.assertEqual(None, bot_db.GetTimeToDeadline(build_id))
-
-    self.assertEqual(1, bot_db.ExtendDeadline(build_id, 1))
-    time.sleep(2)
-    self.assertEqual(0, bot_db.GetTimeToDeadline(build_id))
-    self.assertEqual(0, bot_db.ExtendDeadline(build_id, 10 * 60))
-    self.assertEqual(0, bot_db.GetTimeToDeadline(build_id))
-
-    build_id = bot_db.InsertBuild('build_name',
-                                  _random(),
-                                  'build_config',
-                                  'bot_hostname',
-                                  timeout_seconds=30 * 60)
-    self.assertLess(10, bot_db.GetTimeToDeadline(build_id))
-
-    self.assertEqual(0, bot_db.ExtendDeadline(build_id, 10 * 60))
-    self.assertLess(20 * 60, bot_db.GetTimeToDeadline(build_id))
-
-    self.assertEqual(1, bot_db.ExtendDeadline(build_id, 60 * 60))
-    self.assertLess(40 * 60, bot_db.GetTimeToDeadline(build_id))
 
   def testBuildbucketId(self):
     """Test InsertBuild with buildbucket_id."""

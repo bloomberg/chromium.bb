@@ -220,12 +220,6 @@ class FakeCIDBConnection(object):
     self.buildStageTable[build_stage_id]['status'] = (
         constants.BUILDER_STATUS_WAITING)
 
-  def ExtendDeadline(self, build_id, timeout):
-    # No sanity checking in fake object.
-    now = datetime.datetime.now()
-    timediff = datetime.timedelta(seconds=timeout)
-    self.buildStageTable[build_id]['deadline'] = now + timediff
-
   def FinishBuildStage(self, build_stage_id, status):
     if build_stage_id > len(self.buildStageTable):
       return
@@ -333,12 +327,6 @@ class FakeCIDBConnection(object):
       return builds[:num_results]
     else:
       return builds
-
-  def GetTimeToDeadline(self, build_id):
-    """Gets the time remaining until deadline."""
-    now = datetime.datetime.now()
-    deadline = self.buildTable[build_id]['deadline']
-    return max(0, (deadline - now).total_seconds())
 
   def GetKeyVals(self):
     """Gets contents of keyvalTable."""
