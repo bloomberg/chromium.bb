@@ -360,7 +360,7 @@ static WTF::TextStream& operator<<(WTF::TextStream& ts,
                        element->x2()->CurrentValue()->Value(length_context));
     WriteNameValuePair(ts, "y2",
                        element->y2()->CurrentValue()->Value(length_context));
-  } else if (IsSVGEllipseElement(*svg_element)) {
+  } else if (IsA<SVGEllipseElement>(*svg_element)) {
     WriteNameValuePair(ts, "cx",
                        length_context.ValueForLength(svg_style.Cx(), style,
                                                      SVGLengthMode::kWidth));
