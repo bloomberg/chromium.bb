@@ -22,9 +22,9 @@
 #include "third_party/blink/renderer/core/streams/stream_promise_resolver.h"
 #include "third_party/blink/renderer/core/streams/transferable_streams.h"
 #include "third_party/blink/renderer/core/streams/underlying_source_base.h"
+#include "third_party/blink/renderer/core/streams/writable_stream.h"
 #include "third_party/blink/renderer/core/streams/writable_stream_default_controller.h"
 #include "third_party/blink/renderer/core/streams/writable_stream_default_writer.h"
-#include "third_party/blink/renderer/core/streams/writable_stream_native.h"
 #include "third_party/blink/renderer/platform/bindings/exception_code.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
@@ -137,8 +137,7 @@ class ReadableStream::PipeToEngine final
       : script_state_(script_state), pipe_options_(pipe_options) {}
 
   // This is the main entrypoint for ReadableStreamPipeTo().
-  ScriptPromise Start(ReadableStream* readable,
-                      WritableStreamNative* destination) {
+  ScriptPromise Start(ReadableStream* readable, WritableStream* destination) {
     // 1. Assert: ! IsReadableStream(source) is true.
     DCHECK(readable);
 
@@ -157,7 +156,7 @@ class ReadableStream::PipeToEngine final
     DCHECK(!ReadableStream::IsLocked(readable));
 
     // 6. Assert: ! IsWritableStreamLocked(dest) is false.
-    DCHECK(!WritableStreamNative::IsLocked(destination));
+    DCHECK(!WritableStream::IsLocked(destination));
 
     auto* isolate = script_state_->GetIsolate();
     ExceptionState exception_state(isolate, ExceptionState::kUnknownContext, "",
@@ -174,8 +173,8 @@ class ReadableStream::PipeToEngine final
     DCHECK(!exception_state.HadException());
 
     // 9. Let writer be ! AcquireWritableStreamDefaultWriter(dest).
-    writer_ = WritableStreamNative::AcquireDefaultWriter(
-        script_state_, destination, exception_state);
+    writer_ = WritableStream::AcquireDefaultWriter(script_state_, destination,
+                                                   exception_state);
     DCHECK(!exception_state.HadException());
 
     // 10. Let shuttingDown be false.
@@ -357,7 +356,7 @@ class ReadableStream::PipeToEngine final
     if (!pipe_options_->PreventAbort() && Destination()->IsWritable()) {
       actions.push_back(ScriptPromise(
           script_state_,
-          WritableStreamNative::Abort(script_state_, Destination(), error)));
+          WritableStream::Abort(script_state_, Destination(), error)));
     }
 
     //  iv. If preventCancel is false, append the following action action to
@@ -655,7 +654,7 @@ class ReadableStream::PipeToEngine final
     // "If dest.[[state]] is "writable" and !
     // WritableStreamCloseQueuedOrInFlight(dest) is false"
     return Destination()->IsWritable() &&
-           !WritableStreamNative::CloseQueuedOrInFlight(Destination());
+           !WritableStream::CloseQueuedOrInFlight(Destination());
   }
 
   v8::Local<v8::Promise> WriteQueuedChunks() {
@@ -691,8 +690,7 @@ class ReadableStream::PipeToEngine final
   }
 
   v8::Local<v8::Promise> WritableStreamAbortAction() {
-    return WritableStreamNative::Abort(script_state_, Destination(),
-                                       ShutdownError());
+    return WritableStream::Abort(script_state_, Destination(), ShutdownError());
   }
 
   v8::Local<v8::Promise> ReadableStreamCancelAction() {
@@ -710,9 +708,9 @@ class ReadableStream::PipeToEngine final
     return v8::Undefined(script_state_->GetIsolate());
   }
 
-  WritableStreamNative* Destination() { return writer_->OwnerWritableStream(); }
+  WritableStream* Destination() { return writer_->OwnerWritableStream(); }
 
-  const WritableStreamNative* Destination() const {
+  const WritableStream* Destination() const {
     return writer_->OwnerWritableStream();
   }
 
@@ -1293,17 +1291,11 @@ ScriptValue ReadableStream::pipeThrough(ScriptState* script_state,
     return ScriptValue();
   }
 
-  // This cast is safe because the following code will only be run when the
-  // native version of WritableStream is in use.
-  WritableStreamNative* writable_native =
-      static_cast<WritableStreamNative*>(writable);
-
   // 8. Let _promise_ be ! ReadableStreamPipeTo(*this*, _writable_,
   //    _preventClose_, _preventAbort_, _preventCancel_,
   //   _signal_).
 
-  ScriptPromise promise =
-      PipeTo(script_state, this, writable_native, pipe_options);
+  ScriptPromise promise = PipeTo(script_state, this, writable, pipe_options);
 
   // 9. Set _promise_.[[PromiseIsHandled]] to *true*.
   promise.MarkAsHandled();
@@ -1338,12 +1330,7 @@ ScriptPromise ReadableStream::pipeTo(ScriptState* script_state,
     return ScriptPromise();
   }
 
-  // This cast is safe because the following code will only be run when the
-  // native version of WritableStream is in use.
-  WritableStreamNative* destination_native =
-      static_cast<WritableStreamNative*>(destination);
-
-  return PipeTo(script_state, this, destination_native, pipe_options);
+  return PipeTo(script_state, this, destination, pipe_options);
 }
 
 ScriptValue ReadableStream::tee(ScriptState* script_state,
@@ -1562,7 +1549,7 @@ ReadableStreamDefaultReader* ReadableStream::GetReaderNotForAuthorCode(
 
 ScriptPromise ReadableStream::PipeTo(ScriptState* script_state,
                                      ReadableStream* readable,
-                                     WritableStreamNative* destination,
+                                     WritableStream* destination,
                                      PipeOptions* pipe_options) {
   auto* engine = MakeGarbageCollected<PipeToEngine>(script_state, pipe_options);
   return engine->Start(readable, destination);
@@ -1978,13 +1965,10 @@ WritableStream* ReadableStream::PipeToCheckSourceAndDestination(
 
   // 6. If ! IsWritableStreamLocked(dest) is true, return a promise rejected
   // with a TypeError exception.
-  if (destination->locked(script_state, exception_state) &&
-      !exception_state.HadException()) {
+  if (destination->locked()) {
     exception_state.ThrowTypeError("Cannot pipe to a locked stream");
     return nullptr;
   }
-  if (exception_state.HadException())
-    return nullptr;
 
   return destination;
 }

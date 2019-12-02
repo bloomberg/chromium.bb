@@ -47,11 +47,7 @@ blink_core_sources("streams") {
     "writable_stream.h",
     "writable_stream_default_controller.cc",
     "writable_stream_default_controller.h",
-    "writable_stream_default_controller_interface.cc",
-    "writable_stream_default_controller_interface.h",
     "writable_stream_default_writer.cc",
     "writable_stream_default_writer.h",
-    "writable_stream_native.cc",
-    "writable_stream_native.h",
   ]
 }

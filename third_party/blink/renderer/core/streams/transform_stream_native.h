@@ -23,7 +23,6 @@ class TransformStreamDefaultController;
 class TransformStreamTransformer;
 class Visitor;
 class WritableStream;
-class WritableStreamNative;
 
 // Implementation of TransformStream for Blink.  See
 // https://streams.spec.whatwg.org/#ts. The implementation closely follows the
@@ -126,7 +125,7 @@ class CORE_EXPORT TransformStreamNative final
   Member<StreamPromiseResolver> backpressure_change_promise_;
   Member<ReadableStream> readable_;
   Member<TransformStreamDefaultController> transform_stream_controller_;
-  Member<WritableStreamNative> writable_;
+  Member<WritableStream> writable_;
 };
 
 }  // namespace blink

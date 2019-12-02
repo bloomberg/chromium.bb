@@ -16,8 +16,8 @@
 #include "third_party/blink/renderer/core/streams/transform_stream_default_controller.h"
 #include "third_party/blink/renderer/core/streams/transform_stream_default_controller_interface.h"
 #include "third_party/blink/renderer/core/streams/transform_stream_transformer.h"
+#include "third_party/blink/renderer/core/streams/writable_stream.h"
 #include "third_party/blink/renderer/core/streams/writable_stream_default_controller.h"
-#include "third_party/blink/renderer/core/streams/writable_stream_native.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/to_v8.h"
@@ -340,7 +340,7 @@ class TransformStreamNative::DefaultSinkWriteAlgorithm final
           // c. Return the result of transforming backpressureChangePromise with
           //    a fulfillment handler which performs the following steps:
           //    i. Let writable be stream.[[writable]].
-          WritableStreamNative* writable = stream_->writable_;
+          WritableStream* writable = stream_->writable_;
 
           //   ii. Let state be writable.[[state]].
           //  iii. If state is "erroring", throw writable.[[storedError]].
@@ -777,7 +777,7 @@ void TransformStreamNative::Initialize(
   // 5. Set stream.[[writable]] to ! CreateWritableStream(startAlgorithm,
   //    writeAlgorithm, closeAlgorithm, abortAlgorithm, writableHighWaterMark,
   //    writableSizeAlgorithm).
-  stream->writable_ = WritableStreamNative::Create(
+  stream->writable_ = WritableStream::Create(
       script_state, start_algorithm, write_algorithm, close_algorithm,
       abort_algorithm, writable_high_water_mark, writable_size_algorithm,
       exception_state);

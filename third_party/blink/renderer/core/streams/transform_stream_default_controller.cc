@@ -10,7 +10,7 @@
 #include "third_party/blink/renderer/core/streams/readable_stream_default_controller.h"
 #include "third_party/blink/renderer/core/streams/stream_algorithms.h"
 #include "third_party/blink/renderer/core/streams/transform_stream_native.h"
-#include "third_party/blink/renderer/core/streams/writable_stream_native.h"
+#include "third_party/blink/renderer/core/streams/writable_stream.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/to_v8.h"

@@ -30,7 +30,6 @@ class StreamStartAlgorithm;
 class UnderlyingSourceBase;
 class Visitor;
 class WritableStream;
-class WritableStreamNative;
 
 // C++ implementation of ReadableStream.
 // See https://streams.spec.whatwg.org/#rs-model for background.
@@ -196,7 +195,7 @@ class CORE_EXPORT ReadableStream : public ScriptWrappable {
   // https://streams.spec.whatwg.org/#readable-stream-pipe-to
   static ScriptPromise PipeTo(ScriptState*,
                               ReadableStream*,
-                              WritableStreamNative*,
+                              WritableStream*,
                               PipeOptions*);
 
   //
