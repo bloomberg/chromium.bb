@@ -25,6 +25,7 @@ from chromite.lib import hwtest_results
 from chromite.lib import metrics
 from chromite.lib import osutils
 from chromite.lib import retry_stats
+from chromite.utils import memoize
 
 
 sqlalchemy_imported = False
@@ -1774,9 +1775,9 @@ class CIDBConnectionFactoryClass(factory.ObjectFactory):
   """Factory class used by builders to fetch the appropriate cidb connection"""
 
   _CIDB_CONNECTION_TYPES = {
-      CONNECTION_TYPE_PROD: factory.CachedFunctionCall(
+      CONNECTION_TYPE_PROD: memoize.Memoize(
           lambda: CIDBConnection(constants.CIDB_PROD_BOT_CREDS)),
-      CONNECTION_TYPE_DEBUG: factory.CachedFunctionCall(
+      CONNECTION_TYPE_DEBUG: memoize.Memoize(
           lambda: CIDBConnection(constants.CIDB_DEBUG_BOT_CREDS)),
       CONNECTION_TYPE_MOCK: None,
       CONNECTION_TYPE_NONE: lambda: None,

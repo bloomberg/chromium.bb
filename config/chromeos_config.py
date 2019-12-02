@@ -12,7 +12,7 @@ import re
 
 from chromite.lib import config_lib
 from chromite.lib import constants
-from chromite.lib import factory
+from chromite.utils import memoize
 
 from chromite.config import chromeos_config_boards as chromeos_boards
 from chromite.config import chromeos_test_config as chromeos_test
@@ -3309,7 +3309,7 @@ def BranchScheduleConfig():
   return result
 
 
-@factory.CachedFunctionCall
+@memoize.Memoize
 def GetConfig():
   """Create the Site configuration for all ChromeOS builds.
 
