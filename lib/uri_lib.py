@@ -325,17 +325,3 @@ def ConstructGoldenEyeBuildDetailsUri(build_id):
   _link = ('http://go/goldeneye/'
            'chromeos/healthmonitoring/buildDetails?id=%(build_id)s')
   return _link % {'build_id': build_id}
-
-
-def ConstructAnnotatorUri(build_id):
-  """Return the build annotator URL for this run.
-
-  Args:
-    build_id: CIDB id for the master build.
-
-  Returns:
-    The fully formed URI.
-  """
-  _link = ('https://chromiumos-build-annotator.googleplex.com/'
-           'build_annotations/edit_annotations/master-paladin/%(build_id)s/?')
-  return _link % {'build_id': build_id}

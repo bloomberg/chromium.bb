@@ -168,10 +168,3 @@ class ConstructUrlTests(cros_test_lib.TestCase):
     expected = ('http://go/goldeneye/'
                 'chromeos/healthmonitoring/buildDetails?id=123')
     self.assertEqual(actual, expected)
-
-  def testConstructAnnotatorUri(self):
-    """Test generating GoldenEye suite details URIs with suite ID."""
-    actual = uri_lib.ConstructAnnotatorUri(123)
-    expected = ('https://chromiumos-build-annotator.googleplex.com/'
-                'build_annotations/edit_annotations/master-paladin/123/?')
-    self.assertEqual(actual, expected)

@@ -13,9 +13,6 @@ import glob
 import os
 import re
 
-from six.moves import zip as izip
-
-from chromite.lib import build_requests
 from chromite.lib import constants
 from chromite.lib import cros_logging as logging
 from chromite.lib import factory
@@ -398,28 +395,6 @@ class SchemaVersionedMySQLConnection(object):
     ins = self._meta.tables[table].insert().values(values)
     r = self._Execute(ins)
     return r.inserted_primary_key[0]
-
-  def _InsertMany(self, table, values):
-    """Create and execute an multi-row INSERT query.
-
-    Args:
-      table: Table name to insert to.
-      values: A list of value dictionaries to insert multiple rows.
-
-    Returns:
-      The number of inserted rows.
-    """
-    # sqlalchemy 0.7 and prior has a bug in which it does not always
-    # correctly unpack a list of rows to multi-insert if the list contains
-    # only one item.
-    if len(values) == 1:
-      self._Insert(table, values[0])
-      return 1
-
-    self._ReflectToMetadata()
-    ins = self._meta.tables[table].insert()
-    r = self._Execute(ins, *values)
-    return r.rowcount
 
   def _GetPrimaryKey(self, table):
     """Gets the primary key column of |table|.
@@ -821,32 +796,6 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
               'message_value': message_value,
               'board': board}
     return self._Insert('buildMessageTable', values)
-
-  @minimum_schema(60)
-  def InsertBuildRequests(self, build_reqs):
-    """Insert a list of build requests.
-
-    Args:
-      build_reqs: A list of build_requests.BuildRequest instances.
-
-    Returns:
-      The number of inserted rows.
-    """
-    values = []
-    for build_request in build_reqs:
-      value = {
-          'build_id': build_request.build_id,
-          'request_build_config': build_request.request_build_config,
-          'request_build_args': build_request.request_build_args,
-          'request_buildbucket_id': build_request.request_buildbucket_id,
-          'request_reason': build_request.request_reason
-      }
-      if build_request.timestamp:
-        value['timestamp'] = build_request.timestamp
-
-      values.append(value)
-
-    return self._InsertMany('buildRequestTable', values)
 
   @minimum_schema(65)
   def UpdateMetadata(self, build_id, metadata):
@@ -1456,122 +1405,6 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
     results = self._Execute('%s WHERE %s' % (self._SQL_FETCH_MESSAGES,
                                              clause)).fetchall()
     return [dict(zip(columns, values)) for values in results]
-
-  @minimum_schema(59)
-  def GetBuildRequestsForBuildConfigs(self,
-                                      request_build_configs,
-                                      num_results=NUM_RESULTS_NO_LIMIT,
-                                      start_time=None):
-    """Get BuildRequests for a list of request_build_configs.
-
-    Args:
-      request_build_configs: A list of build configs (string) to request.
-      num_results: Number of results to return, default to
-        self.NUM_RESULTS_NO_LIMIT.
-      start_time: If not None, only return build requests sent after the
-        start_time. Default to None.
-
-    Returns:
-      A list of BuildRequest instances sorted by id in descending order.
-    """
-    query = ('SELECT * from buildRequestTable WHERE request_build_config IN '
-             '(%s)' % (','.join('"%s"' % x for x in request_build_configs)))
-
-    if start_time is not None:
-      query += (' and timestamp > TIMESTAMP("%s")' % start_time)
-
-    query += ' ORDER BY id DESC'
-
-    if num_results != self.NUM_RESULTS_NO_LIMIT:
-      query += (' LIMIT %d' % num_results)
-
-    results = self._Execute(query).fetchall()
-
-    return [build_requests.BuildRequest(*values) for values in results]
-
-  @minimum_schema(59)
-  def GetLatestBuildRequestsForReason(self, request_reason,
-                                      num_results=NUM_RESULTS_NO_LIMIT,
-                                      n_days_back=7):
-    """Gets the latest build_requests associated with the request_reason.
-
-    Args:
-      request_reason: The reason to filter by
-      num_results: Number of results to return, default to
-        self.NUM_RESULTS_NO_LIMIT.
-      n_days_back: How many days back to look for build requests.
-
-    Returns:
-      A list of build_request.BuildRequest instances.
-    """
-    query = [self._SQL_FETCH_LATEST_BUILD_REQUEST]
-    query.append("AND t1.request_reason = '%s'" % request_reason)
-
-    if n_days_back is not None:
-      query.append(
-          'AND t1.timestamp > TIMESTAMP(DATE_SUB(NOW(), INTERVAL %s DAY))'
-          % n_days_back)
-
-    if num_results != self.NUM_RESULTS_NO_LIMIT:
-      query.append('LIMIT %d' % num_results)
-
-    results = self._Execute(' '.join(query)).fetchall()
-    return [build_requests.BuildRequest(*values) for values in results]
-
-  def GetBuildRequestsForRequesterBuild(self, requester_build_id,
-                                        request_reason=None):
-    """Get the build_requests associated to the requester build.
-
-    Args:
-      requester_build_id: The build id of the requester build.
-      request_reason: If provided, only return the build_request of the given
-        request reason. Default to None.
-
-    Returns:
-      A list of build_request.BuildRequest instances.
-    """
-    query = ('SELECT * from buildRequestTable WHERE build_id = %d' %
-             requester_build_id)
-
-    if request_reason is not None:
-      query += ' AND request_reason = "%s"' % request_reason
-
-    results = self._Execute(query).fetchall()
-    return [build_requests.BuildRequest(*values) for values in results]
-
-  def GetPreCQFlakeCounts(self, start_date=None, end_date=None):
-    """Gets counts of pre-CQ flake and total pre-CQ runs by build config.
-
-    Finds counts of pre-CQ builds failing and then succeeding on retry for
-    the same patchset within a time window bounded by |start_date| and
-    |end_date|.
-
-    Note: if neither |start_date| or |end_date| is provided, this defaults
-    to a 7-day window.
-
-    Args:
-      start_date: The start date for the time window.
-      end_date: The last day to include in the time window.
-
-    Returns:
-      A list of dicts, keys = ('build_config', 'flake_count', 'build_count')
-    """
-    time_constraint = ''
-    if not start_date and not end_date:
-      time_constraint = ' AND b.start_time >= DATE_SUB(NOW(), INTERVAL 7 DAY)'
-    if start_date:
-      time_constraint += ' AND b.start_time >= DATE(%s)' % (
-          start_date.strftime(self._DATE_FORMAT))
-    if end_date:
-      time_constraint += ' AND b.start_time <= DATE(%s)' % (
-          end_date.strftime(self._DATE_FORMAT))
-
-    query = self._SQL_FETCH_RETRIED_PRE_CQ_FAILURES.format(
-        time_constraint=time_constraint)
-
-    results = self._Execute(query).fetchall()
-    keys = ('build_config', 'flake_count', 'build_count')
-    return [dict(izip(keys, row)) for row in results]
 
 
 def _INV():

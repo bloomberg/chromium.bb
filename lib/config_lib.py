@@ -196,11 +196,6 @@ def IsMasterAndroidPFQ(config):
   return config.build_type == constants.ANDROID_PFQ_TYPE and config.master
 
 
-def IsMasterCQ(config):
-  """Returns True if this build is master CQ."""
-  return config.build_type == constants.PALADIN_TYPE and config.master
-
-
 def GetHWTestEnv(builder_run_config, model_config=None, suite_config=None):
   """Return the env of a suite to run for a given build/model.
 

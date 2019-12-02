@@ -338,7 +338,6 @@ class PublishUprevChangesStageTest(
   def testPerformStageOnChromePFQ(self):
     """Test PerformStage on ChromePFQ."""
     stage = self.ConstructStage()
-    stage.sync_stage.pool.HasPickedUpCLs.return_value = True
     stage.PerformStage()
     self.push_mock.assert_called_once_with(
         self.build_root, overlay_type='both', dryrun=False, staging_branch=None)

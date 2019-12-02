@@ -721,12 +721,6 @@ class PublishUprevChangesStage(generic_stages.BuilderStage):
       return False
 
   def PerformStage(self):
-    if (config_lib.IsMasterCQ(self._run.config) and
-        not self.sync_stage.pool.HasPickedUpCLs()):
-      logging.info('No CLs have been picked up and no slaves have been '
-                   'scheduled in this run. Will not publish uprevs.')
-      return
-
     # Either has to be a master or not have any push overlays.
     assert self._run.config.master
     assert self._run.config.push_overlays

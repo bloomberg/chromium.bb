@@ -1033,16 +1033,6 @@ class ReportStage(generic_stages.BuilderStage,
         ).set(self._run.buildnumber,
               fields=dict(mon_fields, builder_name=self._run.GetBuilderName()))
 
-      if config_lib.IsMasterCQ(self._run.config):
-        self_destructed = self._run.attrs.metadata.GetValueWithDefault(
-            constants.SELF_DESTRUCTED_BUILD, False)
-        mon_fields = {'status': status_for_db,
-                      'self_destructed': self_destructed}
-        metrics.CumulativeSecondsDistribution(
-            constants.MON_CQ_BUILD_DURATION).add(duration, fields=mon_fields)
-        annotator_link = uri_lib.ConstructAnnotatorUri(build_id)
-        logging.PrintBuildbotLink('Build annotator', annotator_link)
-
       # From this point forward, treat all exceptions as warnings.
       self._post_completion = True
 

@@ -58,7 +58,6 @@ class SlaveStatus(object):
     self.master_build_identifier = master_build_identifier
     self.master_build_id = master_build_identifier.cidb_id
     self.buildstore = buildstore
-    self.db = buildstore.GetCIDBHandle()
     self.config = config
     self.metadata = metadata
     self.buildbucket_client = buildbucket_client
@@ -479,9 +478,6 @@ class SlaveStatus(object):
       except buildbucket_lib.BuildbucketResponseException as e:
         logging.error('Failed to retry build %s buildbucket_id %s: %s',
                       build, buildbucket_id, e)
-
-    if config_lib.IsMasterCQ(self.config) and new_scheduled_build_reqs:
-      self.db.InsertBuildRequests(new_scheduled_build_reqs)
 
     if new_scheduled_important_slaves:
       self.metadata.ExtendKeyListWithList(

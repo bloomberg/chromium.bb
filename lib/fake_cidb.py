@@ -9,7 +9,6 @@ from __future__ import print_function
 
 import datetime
 
-from chromite.lib import build_requests
 from chromite.lib import constants
 from chromite.lib import cidb
 from chromite.lib import failure_message_lib
@@ -26,13 +25,11 @@ class FakeCIDBConnection(object):
 
   def __init__(self, fake_keyvals=None):
     self.buildTable = []
-    self.clActionTable = []
     self.buildStageTable = {}
     self.failureTable = {}
     self.fake_time = None
     self.fake_keyvals = fake_keyvals or {}
     self.buildMessageTable = {}
-    self.buildRequestTable = {}
 
   def _TrimStatus(self, status):
     """Trims a build row to keys that should be returned by GetBuildStatus"""
@@ -185,30 +182,6 @@ class FakeCIDBConnection(object):
               'board': board}
     self.buildMessageTable[build_message_id] = values
     return build_message_id
-
-  def InsertBuildRequests(self, build_reqs):
-    """Insert a list of build requests.
-
-    Args:
-      build_reqs: A list of build_requests.BuildRequest instances.
-
-    Returns:
-      The number of inserted rows.
-    """
-    request_id = len(self.buildRequestTable)
-    for build_req in build_reqs:
-      values = {
-          'id': request_id,
-          'build_id': build_req.build_id,
-          'request_build_config': build_req.request_build_config,
-          'request_build_args': build_req.request_build_args,
-          'request_buildbucket_id': build_req.request_buildbucket_id,
-          'request_reason': build_req.request_reason,
-          'timestamp': build_req.timestamp or datetime.datetime.now()}
-      self.buildRequestTable[request_id] = values
-      request_id = request_id + 1
-
-    return len(build_reqs)
 
   def GetBuildMessages(self, build_id, message_type=None, message_subtype=None):
     """Get the build messages of the given build id.
@@ -403,167 +376,6 @@ class FakeCIDBConnection(object):
                   f_dict, bs_dict, b_dict))
 
     return stage_failures
-
-  def GetBuildRequestsForBuildConfigs(self, request_build_configs,
-                                      num_results=-1, start_time=None):
-    """Get BuildRequests for a list build_configs.
-
-    Args:
-      request_build_configs: build configs (string) to request.
-      num_results: number of results to return, default to -1.
-      start_time: get build requests sent after start_time.
-
-    Returns:
-      A list of BuildRequest instances sorted by id in descending order.
-    """
-    results = []
-    for value in self.buildRequestTable.values():
-
-      if start_time is not None and value['timestamp'] < start_time:
-        continue
-
-      if value['request_build_config'] in request_build_configs:
-        results.append(build_requests.BuildRequest(
-            value['id'], value['build_id'], value['request_build_config'],
-            value['request_build_args'], value['request_buildbucket_id'],
-            value['request_reason'], value['timestamp']))
-
-    requests = sorted(results, key=lambda r: r.id, reverse=True)
-
-    if num_results != -1:
-      return requests[:num_results]
-    else:
-      return requests
-
-  def GetLatestBuildRequestsForReason(self, request_reason,
-                                      status=None,
-                                      num_results=NUM_RESULTS_NO_LIMIT,
-                                      n_days_back=7):
-    """Gets the latest build_requests associated with the request_reason.
-
-    Args:
-      request_reason: The reason to filter by
-      status: Whether to filter on status
-      num_results: Number of results to return, default to
-        self.NUM_RESULTS_NO_LIMIT.
-      n_days_back: How many days back to look for build requests.
-
-    Returns:
-      A list of build_request.BuildRequest instances.
-    """
-    def _MatchesStatus(value):
-      return status is None or value['status'] == status
-
-    def _MatchesTimeConstraint(value):
-      if n_days_back is None:
-        return True
-
-      # MySQL doesn't support timestamps with microsecond resolution
-      now = datetime.datetime.now().replace(microsecond=0)
-      then = now - datetime.timedelta(days=n_days_back)
-      return then < value['timestamp']
-
-    by_build_config = {}
-    for value in self.buildRequestTable.values():
-      if (value['request_reason'] == request_reason
-          and _MatchesStatus(value)
-          and _MatchesTimeConstraint(value)):
-        by_build_config.setdefault(
-            value['request_build_config'], []).append(value)
-
-    max_in_group = [
-        build_requests.BuildRequest(
-            **max(group, key=lambda value: value['timestamp']))
-        for group in by_build_config.values()]
-
-    limit = None
-    if num_results != self.NUM_RESULTS_NO_LIMIT:
-      limit = num_results
-    return max_in_group[:limit]
-
-  def GetBuildRequestsForRequesterBuild(self, requester_build_id,
-                                        request_reason=None):
-    """Get the build_requests associated to the requester build.
-
-    Args:
-      requester_build_id: The build id of the requester build.
-      request_reason: If provided, only return the build_request of the given
-        request reason. Default to None.
-
-    Returns:
-      A list of build_request.BuildRequest instances.
-    """
-    results = []
-    for value in self.buildRequestTable.values():
-      if (value['build_id'] == requester_build_id and
-          request_reason is None or request_reason == value['request_reason']):
-        results.append(build_requests.BuildRequest(
-            value['id'], value['build_id'], value['request_build_config'],
-            value['request_build_args'], value['request_buildbucket_id'],
-            value['request_reason'], value['timestamp']))
-
-    return results
-
-  def GetPreCQFlakeCounts(self, start_date=None, end_date=None):
-    """Queries pre-CQ config flake & run counts.
-
-    Args:
-      start_date: The start date for the time window.
-      end_date: The last day to include in the time window.
-
-    Returns:
-      A list of (config, flake, runs) tuples.
-    """
-    if start_date is None:
-      start_date = datetime.datetime.now() - datetime.timedelta(days=7)
-
-    def TimeConstraint(build):
-      if end_date is not None and build['start_time'] >= end_date:
-        return False
-      return start_date <= build['start_time']
-
-    def JoinWithBuild(actions):
-      for action in actions:
-        yield action, builds_by_id[action['build_id']]
-
-    runs_by_build_config = {}
-    builds_by_id = {}
-    for build in self.buildTable:
-      if TimeConstraint(build):
-        runs_by_build_config.setdefault(build['build_config'], []).append(build)
-        builds_by_id.setdefault(build['id'], []).append(build)
-
-    actions_by_cl = {}
-    for action in self.clActionTable:
-      k = (action['change_number'],
-           action['patch_number'],
-           action['change_source'])
-      actions_by_cl.setdefault(k, []).append(action)
-    flakes = {}
-    ignored_flake_build_configs = set(['pre-cq-launcher'])
-    for _cl, actions in actions_by_cl.items():
-      has_precq_success = any(
-          c2['action'] == 'pre_cq_fully_verified'
-          for c2 in actions)
-      if has_precq_success:
-        # We must use a list here instead of a set, because we're counting
-        # flakes. We want to count two failures of the same config as two
-        # different instances of flake.
-        pre_cq_failed_configs = list([
-            b['build_config']
-            for c, b in JoinWithBuild(actions)
-            if c['action'] == 'pre_cq_failed'
-            and b['build_config'] not in ignored_flake_build_configs])
-
-        for config in pre_cq_failed_configs:
-          flakes.setdefault(config, 0)
-          flakes[config] += 1
-
-    result = []
-    for config in runs_by_build_config:
-      result.append(
-          (config, flakes.get(config, 0), len(runs_by_build_config[config])))
-    return result
 
   def UpdateBoardPerBuildMetadata(self, build_id, board, board_metadata):
     """Update the given board-per-build metadata.
