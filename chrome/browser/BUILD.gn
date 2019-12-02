@@ -1188,6 +1188,7 @@ jumbo_static_library("browser") {
     "permissions/permission_manager_factory.h",
     "permissions/permission_request.cc",
     "permissions/permission_request.h",
+    "permissions/permission_request_auto_blocker.h",
     "permissions/permission_request_id.cc",
     "permissions/permission_request_id.h",
     "permissions/permission_request_impl.cc",
