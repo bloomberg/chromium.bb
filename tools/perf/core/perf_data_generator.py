@@ -696,9 +696,10 @@ BUILDERS = {
     ],
     'platform': 'mac',
     'dimension': {
+      'gpu': '8086:1626',
+      'os': 'Mac-10.12.6',
       'pool': 'chrome.tests.perf',
-      'os': 'Mac-10.12',
-      'gpu': '8086:1626'
+      'synthetic_product_name': 'MacBookAir7,2_x86-64-i5-5350U_Intel Broadwell HD Graphics 6000_8192_APPLE SSD SM0128G'
     },
   },
   'linux-perf': {
@@ -795,7 +796,7 @@ BUILDERS = {
         'gpu': '1002:6821-4.0.20-3.2.8',
         'os': 'Mac-10.13.3',
         'pool': 'chrome.tests.perf',
-        'synthetic_product_name': 'MacBookPro11,5_x86-64-i7-4870HQ_AMD Radeon R8 M370X 4.0.20 [3.2.8]_Intel Haswell Iris Pro Graphics 5200 4.0.20 [3.2.8]_16384_1_475936.0',
+        'synthetic_product_name': 'MacBookPro11,5_x86-64-i7-4870HQ_AMD Radeon R8 M370X 4.0.20 [3.2.8]_Intel Haswell Iris Pro Graphics 5200 4.0.20 [3.2.8]_16384_APPLE SSD SM0512G',
     },
   },
 }
