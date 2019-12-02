@@ -20,7 +20,6 @@ from chromite.lib import metadata_lib
 from chromite.lib import cidb
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
-from chromite.lib import hwtest_results
 from chromite.lib import osutils
 
 
@@ -687,50 +686,6 @@ class BuildTableTest(CIDBIntegrationTest):
 
     result = bot_db.GetBuildHistory('build_3', -1)
     self.assertEqual(len(result), 0)
-
-
-class HWTestResultTableTest(CIDBIntegrationTest):
-  """Tests for hwTestResultTable."""
-
-  def testHWTestResults(self):
-    """Test Insert and Get operations on hwTestResultTable."""
-    HWTestResult = hwtest_results.HWTestResult
-    self._PrepareDatabase()
-    bot_db = self.LocalCIDBConnection(self.CIDB_USER_BOT)
-    b_id_1 = bot_db.InsertBuild('build_name',
-                                _random(),
-                                'build_config',
-                                'bot_hostname')
-    b_id_2 = bot_db.InsertBuild('build_name',
-                                _random(),
-                                'build_config',
-                                'bot_hostname')
-
-    r1 = HWTestResult.FromReport(b_id_1, 'test_a', 'pass')
-    r2 = HWTestResult.FromReport(b_id_1, 'test_b', 'fail')
-    r3 = HWTestResult.FromReport(b_id_1, 'test_c', 'abort')
-    r4 = HWTestResult.FromReport(b_id_2, 'test_d', 'other')
-    bot_db.InsertHWTestResults([r1, r2, r3, r4])
-
-    expected_result_1 = [
-        HWTestResult(1, b_id_1, 'test_a', 'pass'),
-        HWTestResult(2, b_id_1, 'test_b', 'fail'),
-        HWTestResult(3, b_id_1, 'test_c', 'abort')]
-    self.assertCountEqual(bot_db.GetHWTestResultsForBuilds([b_id_1]),
-                          expected_result_1)
-
-    expected_result_2 = [HWTestResult(4, b_id_2, 'test_d', 'other')]
-    self.assertCountEqual(bot_db.GetHWTestResultsForBuilds([b_id_2]),
-                          expected_result_2)
-
-    expected_result_3 = expected_result_1 + expected_result_2
-    self.assertCountEqual(bot_db.GetHWTestResultsForBuilds([b_id_1, b_id_2]),
-                          expected_result_3)
-
-    self.assertCountEqual(bot_db.GetHWTestResultsForBuilds([3]), [])
-
-    with self.assertRaises(AssertionError):
-      bot_db.GetHWTestResultsForBuilds([])
 
 
 class BuildRequestTableTest(CIDBIntegrationTest):

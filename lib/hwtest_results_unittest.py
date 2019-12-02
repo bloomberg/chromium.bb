@@ -9,7 +9,6 @@ from __future__ import print_function
 
 import mock
 
-from chromite.lib import constants
 from chromite.lib import cros_test_lib
 from chromite.lib import fake_cidb
 from chromite.lib import git
@@ -37,67 +36,6 @@ class HWTestResultManagerTest(cros_test_lib.MockTestCase):
     self.manager = hwtest_results.HWTestResultManager()
     self.db = fake_cidb.FakeCIDBConnection()
     self._patch_factory = patch_unittest.MockPatchFactory()
-
-  def _ReportHWTestResults(self):
-    build_1 = self.db.InsertBuild('build_1', 1,
-                                  'build_1', 'bot_hostname')
-    build_2 = self.db.InsertBuild('build_2', 2,
-                                  'build_2', 'bot_hostname')
-    r1 = hwtest_results.HWTestResult.FromReport(
-        build_1, 'Suite job', 'pass')
-    r2 = hwtest_results.HWTestResult.FromReport(
-        build_1, 'test_b.test', 'fail')
-    r3 = hwtest_results.HWTestResult.FromReport(
-        build_1, 'test_c.test', 'abort')
-    r4 = hwtest_results.HWTestResult.FromReport(
-        build_2, 'test_d.test', 'other')
-    r5 = hwtest_results.HWTestResult.FromReport(
-        build_2, 'test_e', 'pass')
-
-    self.db.InsertHWTestResults([r1, r2, r3, r4, r5])
-
-    return ((build_1, build_2), (r1, r2, r3, r4, r5))
-
-  def GetHWTestResultsFromCIDB(self):
-    """Test GetHWTestResultsFromCIDB."""
-    (build_1, build_2), _ = self._ReportHWTestResults()
-
-    expect_r1 = hwtest_results.HWTestResult(0, build_1, 'Suite job', 'pass')
-    expect_r2 = hwtest_results.HWTestResult(1, build_1, 'test_b.test', 'fail')
-    expect_r3 = hwtest_results.HWTestResult(2, build_1, 'test_c.test', 'abort')
-    expect_r4 = hwtest_results.HWTestResult(3, build_2, 'test_d.test', 'other')
-    expect_r5 = hwtest_results.HWTestResult(4, build_2, 'test_e', 'pass')
-
-    results = self.manager.GetHWTestResultsFromCIDB(self.db, [build_1])
-    self.assertCountEqual(results, [expect_r1, expect_r2, expect_r3])
-
-    results = self.manager.GetHWTestResultsFromCIDB(
-        self.db, [build_1], test_statues=constants.HWTEST_STATUES_NOT_PASSED)
-    self.assertCountEqual(results, [expect_r2, expect_r3])
-
-    results = self.manager.GetHWTestResultsFromCIDB(self.db, [build_1, build_2])
-    self.assertCountEqual(
-        results, [expect_r1, expect_r2, expect_r3, expect_r4, expect_r5])
-
-    results = self.manager.GetHWTestResultsFromCIDB(
-        self.db, [build_1, build_2],
-        test_statues=constants.HWTEST_STATUES_NOT_PASSED)
-    self.assertCountEqual(results, [expect_r2, expect_r3, expect_r4])
-
-  def testGetFailedHWTestsFromCIDB(self):
-    """Test GetFailedHWTestsFromCIDB."""
-    (build_1, build_2), (r1, r2, r3, r4, r5) = self._ReportHWTestResults()
-    mock_get_hwtest_results = self.PatchObject(
-        hwtest_results.HWTestResultManager, 'GetHWTestResultsFromCIDB',
-        return_value=[r1, r2, r3, r4, r5])
-    failed_tests = self.manager.GetFailedHWTestsFromCIDB(
-        self.db, [build_1, build_2])
-
-    self.assertCountEqual(failed_tests,
-                          ['test_b', 'test_c', 'test_d', 'test_e'])
-    mock_get_hwtest_results.assert_called_once_with(
-        self.db, [build_1, build_2],
-        test_statues=constants.HWTEST_STATUES_NOT_PASSED)
 
   def testGetFailedHwtestsAffectedByChange(self):
     """Test GetFailedHwtestsAffectedByChange."""

@@ -13,7 +13,6 @@ from chromite.lib import build_requests
 from chromite.lib import constants
 from chromite.lib import cidb
 from chromite.lib import failure_message_lib
-from chromite.lib import hwtest_results
 
 
 class FakeCIDBConnection(object):
@@ -33,7 +32,6 @@ class FakeCIDBConnection(object):
     self.fake_time = None
     self.fake_keyvals = fake_keyvals or {}
     self.buildMessageTable = {}
-    self.hwTestResultTable = {}
     self.buildRequestTable = {}
 
   def _TrimStatus(self, status):
@@ -187,26 +185,6 @@ class FakeCIDBConnection(object):
               'board': board}
     self.buildMessageTable[build_message_id] = values
     return build_message_id
-
-  def InsertHWTestResults(self, hwTestResults):
-    """Insert HWTestResults into the hwTestResultTable.
-
-    Args:
-      hwTestResults: A list of HWTestResult instances.
-
-    Returns:
-      The number of inserted rows.
-    """
-    result_id = len(self.hwTestResultTable)
-    for result in hwTestResults:
-      values = {'id': result_id,
-                'build_id': result.build_id,
-                'test_name': result.test_name,
-                'status': result.status}
-      self.hwTestResultTable[result_id] = values
-      result_id = result_id + 1
-
-    return len(hwTestResults)
 
   def InsertBuildRequests(self, build_reqs):
     """Insert a list of build requests.
@@ -425,24 +403,6 @@ class FakeCIDBConnection(object):
                   f_dict, bs_dict, b_dict))
 
     return stage_failures
-
-  def GetHWTestResultsForBuilds(self, build_ids):
-    """Get hwTestResults for builds.
-
-    Args:
-      build_ids: A list of build_id (strings) of build.
-
-    Returns:
-      A list of hwtest_results.HWTestResult instances.
-    """
-    results = []
-    for value in self.hwTestResultTable.values():
-      if value['build_id'] in build_ids:
-        results.append(hwtest_results.HWTestResult(
-            value['id'], value['build_id'], value['test_name'],
-            value['status']))
-
-    return results
 
   def GetBuildRequestsForBuildConfigs(self, request_build_configs,
                                       num_results=-1, start_time=None):
