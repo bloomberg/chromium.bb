@@ -401,9 +401,9 @@ class TestCalculateRootfsHash(cros_test_lib.RunCommandTempDirTestCase):
         self.image, kernel_cmdline.CommandLine(SAMPLE_KERNEL_CONFIG))
     # We don't actually care about the return, it's checked elsewhere.
     file_name = rootfs_hash.hashtree_filename
-    self.assertTrue(os.path.exists(file_name))
+    self.assertExists(file_name)
     del rootfs_hash
-    self.assertFalse(os.path.exists(file_name))
+    self.assertNotExists(file_name)
 
   def testSaltOptional(self):
     """Test that salt= is properly optional."""

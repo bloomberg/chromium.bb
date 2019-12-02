@@ -404,12 +404,12 @@ class RunThroughTest(cros_test_lib.MockTempDirTestCase,
     old_chrome_cache = os.path.join(self.chrome_root, '.cros_cache')
     chrome_cache = os.path.join(self.chrome_src_dir, 'build/cros_cache')
     osutils.SafeMakedirs(old_chrome_cache)
-    self.assertFalse(os.path.exists(chrome_cache))
+    self.assertNotExists(chrome_cache)
 
     self.cmd_mock.inst.Run()
     # Old chrome cache should be gone and the new one should now exist.
-    self.assertFalse(os.path.exists(old_chrome_cache))
-    self.assertTrue(os.path.exists(chrome_cache))
+    self.assertNotExists(old_chrome_cache)
+    self.assertExists(chrome_cache)
 
   def testSeabiosDownload(self):
     """Verify _CreateSeabiosFWSymlinks.
@@ -441,7 +441,7 @@ class RunThroughTest(cros_test_lib.MockTempDirTestCase,
       for link in os.listdir(qemu_share_dir):
         full_link = os.path.join(qemu_share_dir, link)
         self.assertTrue(os.path.islink(full_link))
-        self.assertFalse(os.path.exists(full_link) == broken)
+        self.assertNotEqual(os.path.exists(full_link), broken)
 
     # Create qemu links.
     for bios in ['bios.bin', 'bios256k.bin']:

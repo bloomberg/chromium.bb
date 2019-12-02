@@ -329,7 +329,7 @@ class TestKeyVersions(cros_test_lib.TempDirTestCase):
   def testInitReturnsDefaultButDoesNotCreateFile(self):
     kv_path = os.path.join(self.tempdir, 'key.versions')
     kv = keys.KeyVersions(kv_path)
-    self.assertFalse(os.path.exists(kv_path))
+    self.assertNotExists(kv_path)
     expected = {
         'name': 'unknown',
         'firmware_key_version': 1,

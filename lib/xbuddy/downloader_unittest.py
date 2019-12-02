@@ -51,8 +51,8 @@ class DownloaderTestBase(cros_test_lib.TestCase):
     downloader_instance.Download(factory)
     # Sanity check the timestamp file exists.
     install_dir = os.path.join(self._work_dir, self.board, self.build)
-    self.assertTrue(os.path.exists(
-        os.path.join(install_dir, downloader.Downloader._TIMESTAMP_FILENAME)))
+    self.assertExists(
+        os.path.join(install_dir, downloader.Downloader._TIMESTAMP_FILENAME))
     serial_mock.assert_called()
     bg_mock.assert_called()
 
@@ -128,8 +128,8 @@ class AndroidDownloaderTestBase(cros_test_lib.TestCase):
 
     downloader_instance.Download(factory)
     # Sanity check the timestamp file exists.
-    self.assertTrue(os.path.exists(
+    self.assertExists(
         os.path.join(self._work_dir, self.branch, self.target, self.build_id,
-                     downloader.Downloader._TIMESTAMP_FILENAME)))
+                     downloader.Downloader._TIMESTAMP_FILENAME))
     serial_mock.assert_called()
     bg_mock.assert_not_called()

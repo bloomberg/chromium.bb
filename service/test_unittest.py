@@ -209,7 +209,7 @@ class PrepareMoblabVmImageCacheTest(MoblabVmTestCase):
 
     copied_payload_file = os.path.join(self.tempdir, expected_cache_dir,
                                        self.payload_file_name)
-    self.assertTrue(os.path.exists(copied_payload_file))
+    self.assertExists(copied_payload_file)
     self.assertEqual(osutils.ReadFile(copied_payload_file),
                      self.payload_file_content)
 
