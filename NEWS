@@ -28,6 +28,8 @@ issues]].
     are adjacent to upper punctuation, for example: (hier
 - New draft table for Dutch 8-dot computer braille thanks to Leonard
   de Ruijter
+- Updates to the Chinese braille table (~zh-tw.ctb~) thanks to
+  Bo-Cheng Jhan, Coscell Kao, 特種兵, 黃偉豪, and Victor Cai.
 ** Other changes
 - Make sure the log callback uses the same calling convention as all
   the other exported functions. Thanks to Leonard de Ruijter.
