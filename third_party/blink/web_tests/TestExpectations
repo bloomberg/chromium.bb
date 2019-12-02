@@ -5979,7 +5979,8 @@ crbug.com/1027436 [ Mac ] inspector-protocol/heap-profiler/heap-snapshot-with-de
 crbug.com/1019079 virtual/gpu/fast/canvas/OffscreenCanvas-placeholder-createImageBitmap.html [ Pass Failure ]
 crbug.com/1019079 fast/canvas/OffscreenCanvas-placeholder-createImageBitmap.html [ Pass Failure ]
 crbug.com/1027435 [ Mac ] external/wpt/html/cross-origin-opener-policy/popup-none.https.html [ Pass Timeout ]
-crbug.com/1027434 [ Mac ] external/wpt/html/browsers/origin/cross-origin-objects/cross-origin-objects.html [ Pass Timeout ]
+crbug.com/1027434 external/wpt/html/browsers/origin/cross-origin-objects/cross-origin-objects.html [ Pass Timeout ]
+crbug.com/1027434 virtual/not-site-per-process/external/wpt/html/browsers/origin/cross-origin-objects/cross-origin-objects.html [ Pass Timeout ]
 
 # Sheriff 2019-12-02
 crbug.com/1029713 external/wpt/cookie-store/cookieStoreManager_getSubscriptions_multiple.tentative.https.any.html [ Pass Failure ]
