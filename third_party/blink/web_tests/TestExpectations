@@ -5966,6 +5966,8 @@ crbug.com/963183 http/tests/devtools/sources/debugger-pause/debugger-change-vari
 crbug.com/963183 http/tests/devtools/sources/debugger-pause/debugger-eval-on-call-frame-inside-iframe.js [ Pass Failure ]
 crbug.com/963183 http/tests/devtools/sources/debugger-pause/debugger-eval-while-paused.js [ Pass Failure ]
 
+crbug.com/1016815 external/wpt/longtask-timing/buffered-flag.window.html [ Failure ]
+
 # Sheriff 2019-11-21
 crbug.com/1027287 css3/filters/effect-reference-image-lazy-attach.html [ Pass Failure ]
 
