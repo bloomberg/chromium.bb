@@ -39,7 +39,7 @@ class Attribute(WithIdentifier, WithExtendedAttributes, WithCodeGeneratorInfo,
             WithExtendedAttributes.__init__(self, extended_attributes)
             WithCodeGeneratorInfo.__init__(self)
             WithExposure.__init__(self)
-            WithComponent.__init__(self, component=component)
+            WithComponent.__init__(self, component)
             WithDebugInfo.__init__(self, debug_info)
 
             self.idl_type = idl_type
@@ -51,14 +51,13 @@ class Attribute(WithIdentifier, WithExtendedAttributes, WithCodeGeneratorInfo,
         assert isinstance(ir, Attribute.IR)
 
         ir = make_copy(ir)
-        WithIdentifier.__init__(self, ir.identifier)
-        WithExtendedAttributes.__init__(self, ir.extended_attributes)
-        WithCodeGeneratorInfo.__init__(
-            self, CodeGeneratorInfo(ir.code_generator_info))
-        WithExposure.__init__(self, Exposure(ir.exposure))
+        WithIdentifier.__init__(self, ir)
+        WithExtendedAttributes.__init__(self, ir)
+        WithCodeGeneratorInfo.__init__(self, ir, readonly=True)
+        WithExposure.__init__(self, ir, readonly=True)
         WithOwner.__init__(self, owner)
-        WithComponent.__init__(self, components=ir.components)
-        WithDebugInfo.__init__(self, ir.debug_info)
+        WithComponent.__init__(self, ir, readonly=True)
+        WithDebugInfo.__init__(self, ir)
 
         self._idl_type = ir.idl_type
         self._is_static = ir.is_static

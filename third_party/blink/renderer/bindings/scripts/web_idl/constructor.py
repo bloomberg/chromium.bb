@@ -36,20 +36,19 @@ class Constructor(FunctionLike, WithExtendedAttributes, WithCodeGeneratorInfo,
             WithExtendedAttributes.__init__(self, extended_attributes)
             WithCodeGeneratorInfo.__init__(self)
             WithExposure.__init__(self)
-            WithComponent.__init__(self, component=component)
+            WithComponent.__init__(self, component)
             WithDebugInfo.__init__(self, debug_info)
 
     def __init__(self, ir, owner):
         assert isinstance(ir, Constructor.IR)
 
         FunctionLike.__init__(self, ir)
-        WithExtendedAttributes.__init__(self, ir.extended_attributes)
-        WithCodeGeneratorInfo.__init__(
-            self, CodeGeneratorInfo(ir.code_generator_info))
-        WithExposure.__init__(self, Exposure(ir.exposure))
+        WithExtendedAttributes.__init__(self, ir)
+        WithCodeGeneratorInfo.__init__(self, ir, readonly=True)
+        WithExposure.__init__(self, ir, readonly=True)
         WithOwner.__init__(self, owner)
-        WithComponent.__init__(self, components=ir.components)
-        WithDebugInfo.__init__(self, ir.debug_info)
+        WithComponent.__init__(self, ir, readonly=True)
+        WithDebugInfo.__init__(self, ir)
 
 
 class ConstructorGroup(OverloadGroup, WithCodeGeneratorInfo, WithExposure,
@@ -83,8 +82,7 @@ class ConstructorGroup(OverloadGroup, WithCodeGeneratorInfo, WithExposure,
 
         ir = make_copy(ir)
         OverloadGroup.__init__(self, functions=constructors)
-        WithCodeGeneratorInfo.__init__(
-            self, CodeGeneratorInfo(ir.code_generator_info))
-        WithExposure.__init__(self, Exposure(ir.exposure))
+        WithCodeGeneratorInfo.__init__(self, ir, readonly=True)
+        WithExposure.__init__(self, ir, readonly=True)
         WithOwner.__init__(self, owner)
-        WithDebugInfo.__init__(self, ir.debug_info)
+        WithDebugInfo.__init__(self, ir)
