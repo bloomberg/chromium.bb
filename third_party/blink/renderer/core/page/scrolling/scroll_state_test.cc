@@ -24,7 +24,7 @@ ScrollState* CreateScrollState(double delta_x,
   scroll_state_data->delta_y = delta_y;
   scroll_state_data->is_beginning = beginning;
   scroll_state_data->is_ending = ending;
-  return ScrollState::Create(std::move(scroll_state_data));
+  return MakeGarbageCollected<ScrollState>(std::move(scroll_state_data));
 }
 
 class ScrollStateTest : public testing::Test {};
