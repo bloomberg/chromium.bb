@@ -77,6 +77,7 @@ class IdlCompiler(object):
         self._did_run = True
 
         # Merge partial definitions.
+        self._record_defined_in_partial_and_mixin()
         self._propagate_extattrs_per_idl_fragment()
         self._merge_partial_interface_likes()
         self._merge_partial_dictionaries()
@@ -105,6 +106,25 @@ class IdlCompiler(object):
         self._create_public_unions()
 
         return Database(self._db)
+
+    def _record_defined_in_partial_and_mixin(self):
+        old_irs = self._ir_map.irs_of_kinds(
+            IRMap.IR.Kind.DICTIONARY, IRMap.IR.Kind.INTERFACE,
+            IRMap.IR.Kind.INTERFACE_MIXIN, IRMap.IR.Kind.NAMESPACE,
+            IRMap.IR.Kind.PARTIAL_DICTIONARY, IRMap.IR.Kind.PARTIAL_INTERFACE,
+            IRMap.IR.Kind.PARTIAL_INTERFACE_MIXIN,
+            IRMap.IR.Kind.PARTIAL_NAMESPACE)
+
+        self._ir_map.move_to_new_phase()
+
+        for old_ir in old_irs:
+            new_ir = make_copy(old_ir)
+            self._ir_map.add(new_ir)
+            for member in new_ir.iter_all_members():
+                member.code_generator_info.set_defined_in_partial(
+                    hasattr(new_ir, 'is_partial') and new_ir.is_partial)
+                member.code_generator_info.set_defined_in_mixin(
+                    hasattr(new_ir, 'is_mixin') and new_ir.is_mixin)
 
     def _propagate_extattrs_per_idl_fragment(self):
         def propagate_extattr(extattr_key_and_attr_name,
