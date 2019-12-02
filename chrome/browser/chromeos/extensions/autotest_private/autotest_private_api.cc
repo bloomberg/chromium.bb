@@ -1313,6 +1313,7 @@ AutotestPrivateGetHistogramFunction::GetHistogram(const std::string& name) {
   std::unique_ptr<base::HistogramSamples> samples =
       histogram->SnapshotSamples();
   api::autotest_private::Histogram result;
+  result.sum = samples->sum();
 
   for (std::unique_ptr<base::SampleCountIterator> it = samples->Iterator();
        !it->Done(); it->Next()) {
