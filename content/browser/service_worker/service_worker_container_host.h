@@ -24,11 +24,11 @@
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider_type.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
 
+namespace content {
+
 namespace service_worker_object_host_unittest {
 class ServiceWorkerObjectHostTest;
 }
-
-namespace content {
 
 class ServiceWorkerContextCore;
 class ServiceWorkerObjectHost;
