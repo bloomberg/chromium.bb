@@ -9,6 +9,8 @@ issues]].
 ** Bug fixes
 - Fix a memory leak when several tables are specified and some of them
   that can't be resolved. Thanks to André-Abush Clause.
+- Fix an endless loop with multipass rules where ~endReplace~ is
+  smaller or equal to ~startMatch~. Thanks to Bert Frees.
 ** Braille table improvements
 - Punctuation corrections in Ethiopic Braille thanks to Dr. Tamru E.
   Belay.
