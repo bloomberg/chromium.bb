@@ -95,7 +95,7 @@ class CORE_EXPORT WritableStreamNative : public WritableStream {
                                            ExceptionState&);
 
   //
-  // Methods used by ReadableStreamNative::PipeTo
+  // Methods used by ReadableStream::PipeTo
   //
 
   // https://streams.spec.whatwg.org/#acquire-writable-stream-default-writer

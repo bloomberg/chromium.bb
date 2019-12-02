@@ -9,7 +9,7 @@
 #include "third_party/blink/renderer/core/streams/miscellaneous_operations.h"
 #include "third_party/blink/renderer/core/streams/promise_handler.h"
 #include "third_party/blink/renderer/core/streams/queuing_strategy_init.h"
-#include "third_party/blink/renderer/core/streams/readable_stream_native.h"
+#include "third_party/blink/renderer/core/streams/readable_stream.h"
 #include "third_party/blink/renderer/core/streams/stream_promise_resolver.h"
 #include "third_party/blink/renderer/core/streams/transferable_streams.h"
 #include "third_party/blink/renderer/core/streams/underlying_sink_base.h"
@@ -210,9 +210,9 @@ void WritableStreamNative::Serialize(ScriptState* script_state,
     return;
   }
 
-  auto promise = ReadableStreamNative::PipeTo(
+  auto promise = ReadableStream::PipeTo(
       script_state, readable, this,
-      MakeGarbageCollected<ReadableStreamNative::PipeOptions>());
+      MakeGarbageCollected<ReadableStream::PipeOptions>());
   promise.MarkAsHandled();
 }
 

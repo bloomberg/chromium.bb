@@ -263,9 +263,8 @@ TEST_F(TransformStreamTest, EnqueueFromTransform) {
                         "writer.write('a');\n");
 
   ReadableStream* readable = Stream()->Readable();
-  auto* read_handle =
-      readable->GetReadHandle(script_state, ASSERT_NO_EXCEPTION);
-  ScriptPromiseTester tester(script_state, read_handle->Read(script_state));
+  auto* reader = readable->getReader(script_state, ASSERT_NO_EXCEPTION);
+  ScriptPromiseTester tester(script_state, reader->read(script_state));
   tester.WaitUntilSettled();
   EXPECT_TRUE(tester.IsFulfilled());
   EXPECT_TRUE(IsIteratorForStringMatching(script_state, tester.Value(), "a"));
@@ -295,9 +294,8 @@ TEST_F(TransformStreamTest, EnqueueFromFlush) {
                         "writer.close();\n");
 
   ReadableStream* readable = Stream()->Readable();
-  auto* read_handle =
-      readable->GetReadHandle(script_state, ASSERT_NO_EXCEPTION);
-  ScriptPromiseTester tester(script_state, read_handle->Read(script_state));
+  auto* reader = readable->getReader(script_state, ASSERT_NO_EXCEPTION);
+  ScriptPromiseTester tester(script_state, reader->read(script_state));
   tester.WaitUntilSettled();
   EXPECT_TRUE(tester.IsFulfilled());
   EXPECT_TRUE(IsIteratorForStringMatching(script_state, tester.Value(), "a"));
@@ -331,10 +329,8 @@ TEST_F(TransformStreamTest, ThrowFromTransform) {
                             "writer.write('a');\n");
 
   ReadableStream* readable = Stream()->Readable();
-  auto* read_handle =
-      readable->GetReadHandle(script_state, ASSERT_NO_EXCEPTION);
-  ScriptPromiseTester read_tester(script_state,
-                                  read_handle->Read(script_state));
+  auto* reader = readable->getReader(script_state, ASSERT_NO_EXCEPTION);
+  ScriptPromiseTester read_tester(script_state, reader->read(script_state));
   read_tester.WaitUntilSettled();
   EXPECT_TRUE(read_tester.IsRejected());
   EXPECT_TRUE(IsTypeError(script_state, read_tester.Value(), kMessage));
@@ -370,10 +366,8 @@ TEST_F(TransformStreamTest, ThrowFromFlush) {
                             "writer.close();\n");
 
   ReadableStream* readable = Stream()->Readable();
-  auto* read_handle =
-      readable->GetReadHandle(script_state, ASSERT_NO_EXCEPTION);
-  ScriptPromiseTester read_tester(script_state,
-                                  read_handle->Read(script_state));
+  auto* reader = readable->getReader(script_state, ASSERT_NO_EXCEPTION);
+  ScriptPromiseTester read_tester(script_state, reader->read(script_state));
   read_tester.WaitUntilSettled();
   EXPECT_TRUE(read_tester.IsRejected());
   EXPECT_TRUE(IsTypeError(script_state, read_tester.Value(), kMessage));
@@ -443,8 +437,8 @@ TEST_F(TransformStreamTest, WaitInTransform) {
   // Need to read to relieve backpressure.
   Stream()
       ->Readable()
-      ->GetReadHandle(script_state, ASSERT_NO_EXCEPTION)
-      ->Read(script_state);
+      ->getReader(script_state, ASSERT_NO_EXCEPTION)
+      ->read(script_state);
 
   ScriptPromiseTester write_tester(script_state,
                                    ScriptPromise::Cast(script_state, promise));
@@ -501,8 +495,8 @@ TEST_F(TransformStreamTest, WaitInFlush) {
   // Need to read to relieve backpressure.
   Stream()
       ->Readable()
-      ->GetReadHandle(script_state, ASSERT_NO_EXCEPTION)
-      ->Read(script_state);
+      ->getReader(script_state, ASSERT_NO_EXCEPTION)
+      ->read(script_state);
 
   ScriptPromiseTester close_tester(script_state,
                                    ScriptPromise::Cast(script_state, promise));

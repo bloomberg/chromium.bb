@@ -17,8 +17,8 @@
 #include "third_party/blink/renderer/core/messaging/post_message_options.h"
 #include "third_party/blink/renderer/core/streams/miscellaneous_operations.h"
 #include "third_party/blink/renderer/core/streams/promise_handler.h"
+#include "third_party/blink/renderer/core/streams/readable_stream.h"
 #include "third_party/blink/renderer/core/streams/readable_stream_default_controller.h"
-#include "third_party/blink/renderer/core/streams/readable_stream_native.h"
 #include "third_party/blink/renderer/core/streams/stream_algorithms.h"
 #include "third_party/blink/renderer/core/streams/stream_promise_resolver.h"
 #include "third_party/blink/renderer/core/streams/writable_stream_default_controller.h"
@@ -686,7 +686,7 @@ class CrossRealmTransformReadable final : public CrossRealmTransformStream {
         backpressure_promise_(
             MakeGarbageCollected<StreamPromiseResolver>(script_state)) {}
 
-  ReadableStreamNative* CreateReadableStream(ExceptionState&);
+  ReadableStream* CreateReadableStream(ExceptionState&);
 
   ScriptState* GetScriptState() const override { return script_state_; }
   MessagePort* GetMessagePort() const override { return message_port_; }
@@ -785,7 +785,7 @@ class CrossRealmTransformReadable::CancelAlgorithm final
   const Member<CrossRealmTransformReadable> readable_;
 };
 
-ReadableStreamNative* CrossRealmTransformReadable::CreateReadableStream(
+ReadableStream* CrossRealmTransformReadable::CreateReadableStream(
     ExceptionState& exception_state) {
   DCHECK(!controller_) << "CreateReadableStream can only be called once";
 
@@ -794,7 +794,7 @@ ReadableStreamNative* CrossRealmTransformReadable::CreateReadableStream(
   message_port_->setOnmessageerror(
       MakeGarbageCollected<CrossRealmTransformErrorListener>(this));
 
-  auto* stream = ReadableStreamNative::Create(
+  auto* stream = ReadableStream::Create(
       script_state_, CreateTrivialStartAlgorithm(),
       MakeGarbageCollected<PullAlgorithm>(this),
       MakeGarbageCollected<CancelAlgorithm>(this),
@@ -867,7 +867,7 @@ CORE_EXPORT WritableStreamNative* CreateCrossRealmTransformWritable(
       ->CreateWritableStream(exception_state);
 }
 
-CORE_EXPORT ReadableStreamNative* CreateCrossRealmTransformReadable(
+CORE_EXPORT ReadableStream* CreateCrossRealmTransformReadable(
     ScriptState* script_state,
     MessagePort* port,
     ExceptionState& exception_state) {

@@ -14,7 +14,6 @@ namespace blink {
 
 class ExceptionState;
 class ReadableStream;
-class ReadableStreamNative;
 class ScriptState;
 class StrategySizeAlgorithm;
 class StreamAlgorithm;
@@ -125,7 +124,7 @@ class CORE_EXPORT TransformStreamNative final
   // InitializeTransformStream(), so that is the initial value used here.
   bool had_backpressure_ = true;
   Member<StreamPromiseResolver> backpressure_change_promise_;
-  Member<ReadableStreamNative> readable_;
+  Member<ReadableStream> readable_;
   Member<TransformStreamDefaultController> transform_stream_controller_;
   Member<WritableStreamNative> writable_;
 };

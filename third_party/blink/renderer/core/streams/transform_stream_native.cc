@@ -9,8 +9,8 @@
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/streams/miscellaneous_operations.h"
 #include "third_party/blink/renderer/core/streams/promise_handler.h"
+#include "third_party/blink/renderer/core/streams/readable_stream.h"
 #include "third_party/blink/renderer/core/streams/readable_stream_default_controller.h"
-#include "third_party/blink/renderer/core/streams/readable_stream_native.h"
 #include "third_party/blink/renderer/core/streams/stream_algorithms.h"
 #include "third_party/blink/renderer/core/streams/stream_promise_resolver.h"
 #include "third_party/blink/renderer/core/streams/transform_stream_default_controller.h"
@@ -433,7 +433,7 @@ class TransformStreamNative::DefaultSinkCloseAlgorithm final
     DCHECK_EQ(argc, 0);
     // https://streams.spec.whatwg.org/#transform-stream-default-sink-close-algorithm
     // 1. Let readable be stream.[[readable]].
-    ReadableStreamNative* readable = stream_->readable_;
+    ReadableStream* readable = stream_->readable_;
 
     // 2. Let controller be stream.[[transformStreamController]].
     TransformStreamDefaultController* controller =
@@ -449,7 +449,7 @@ class TransformStreamNative::DefaultSinkCloseAlgorithm final
 
     class ResolveFunction final : public PromiseHandlerWithValue {
      public:
-      ResolveFunction(ScriptState* script_state, ReadableStreamNative* readable)
+      ResolveFunction(ScriptState* script_state, ReadableStream* readable)
           : PromiseHandlerWithValue(script_state), readable_(readable) {}
 
       v8::Local<v8::Value> CallWithLocal(v8::Local<v8::Value>) override {
@@ -457,7 +457,7 @@ class TransformStreamNative::DefaultSinkCloseAlgorithm final
         //    a. A fulfillment handler that performs the following steps:
         //       i. If readable.[[state]] is "errored", throw
         //          readable.[[storedError]].
-        if (ReadableStreamNative::IsErrored(readable_)) {
+        if (ReadableStream::IsErrored(readable_)) {
           // Returning a rejection is equivalent to throwing here.
           return PromiseReject(
               GetScriptState(),
@@ -486,7 +486,7 @@ class TransformStreamNative::DefaultSinkCloseAlgorithm final
       }
 
      private:
-      Member<ReadableStreamNative> readable_;
+      Member<ReadableStream> readable_;
     };
 
     class RejectFunction final : public PromiseHandlerWithValue {
@@ -798,7 +798,7 @@ void TransformStreamNative::Initialize(
   // 8. Set stream.[[readable]] to ! CreateReadableStream(startAlgorithm,
   //    pullAlgorithm, cancelAlgorithm, readableHighWaterMark,
   //    readableSizeAlgorithm).
-  stream->readable_ = ReadableStreamNative::Create(
+  stream->readable_ = ReadableStream::Create(
       script_state, start_algorithm, pull_algorithm, cancel_algorithm,
       readable_high_water_mark, readable_size_algorithm, exception_state);
   DCHECK(!exception_state.HadException());
@@ -824,7 +824,7 @@ void TransformStreamNative::Error(ScriptState* script_state,
   // https://streams.spec.whatwg.org/#transform-stream-error
   // 1. Perform ! ReadableStreamDefaultControllerError(stream.[[readable]].
   //    [[readableStreamController]], e).
-  ReadableStreamNative* readable = stream->readable_;
+  ReadableStream* readable = stream->readable_;
   ReadableStreamDefaultController::Error(script_state,
                                          readable->GetController(), e);
 

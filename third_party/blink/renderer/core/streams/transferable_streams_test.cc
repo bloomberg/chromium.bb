@@ -13,8 +13,8 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_readable_stream_default_reader.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_writable_stream_default_writer.h"
 #include "third_party/blink/renderer/core/messaging/message_channel.h"
+#include "third_party/blink/renderer/core/streams/readable_stream.h"
 #include "third_party/blink/renderer/core/streams/readable_stream_default_reader.h"
-#include "third_party/blink/renderer/core/streams/readable_stream_native.h"
 #include "third_party/blink/renderer/core/streams/writable_stream_default_writer.h"
 #include "third_party/blink/renderer/core/streams/writable_stream_native.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
@@ -44,10 +44,7 @@ TEST(TransferableStreamsTest, SmokeTest) {
       writable->getWriter(script_state, ASSERT_NO_EXCEPTION)
           .V8Value()
           .As<v8::Object>());
-  auto* reader = V8ReadableStreamDefaultReader::ToImpl(
-      readable->getReader(script_state, ASSERT_NO_EXCEPTION)
-          .V8Value()
-          .As<v8::Object>());
+  auto* reader = readable->getReader(script_state, ASSERT_NO_EXCEPTION);
 
   writer->write(script_state, ScriptValue::CreateNull(scope.GetIsolate()));
 

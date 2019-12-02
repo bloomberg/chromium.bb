@@ -74,7 +74,7 @@ class CORE_EXPORT WritableStreamDefaultWriter final : public ScriptWrappable {
                                          v8::Local<v8::Value> error);
 
   //
-  // Methods used by ReadableStreamNative
+  // Methods used by ReadableStream
   //
 
   // https://streams.spec.whatwg.org/#writable-stream-default-writer-close-with-error-propagation
@@ -91,7 +91,7 @@ class CORE_EXPORT WritableStreamDefaultWriter final : public ScriptWrappable {
                                       v8::Local<v8::Value> chunk);
 
   //
-  // Accessors used by ReadableStreamNative and WritableStreamNative. These do
+  // Accessors used by ReadableStream and WritableStreamNative. These do
   // not appear in the standard.
   //
 

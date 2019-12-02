@@ -24,9 +24,7 @@ class CORE_EXPORT WritableStreamDefaultControllerInterface
   static WritableStreamDefaultControllerInterface* Create(
       ScriptValue controller);
 
-  // Unlike the corresponding method in
-  // ReadableStreamDefaultControllerInterface, a caller needs to enter a
-  // ScriptState::Scope.
+  // Callers need to enter a ScriptState::Scope.
   virtual void Error(ScriptState* script_state, v8::Local<v8::Value>) = 0;
 
   // Helper method
