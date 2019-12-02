@@ -58,6 +58,8 @@ from telemetry import decorators
 #           'name': 'presentation_name',
 #
 #           # The number of shards for this test as an int.
+#           # This is only required for GTEST tests since this is defined
+#           # in bot_platforms.py for Telemetry tests.
 #           'num_shards': 2,
 #
 #           # What kind of test this is; for options, see TEST_TYPES
@@ -88,8 +90,6 @@ class TEST_TYPES(object):
   ALL = (GENERIC, GTEST, TELEMETRY)
 
 
-# TODO(crbug.com/902089): automatically generate --test-shard-map-filename
-# arguments once we track all the perf FYI builders to core/bot_platforms.py
 FYI_BUILDERS = {
   'android-nexus5x-perf-fyi': {
     'tests': [
@@ -97,9 +97,7 @@ FYI_BUILDERS = {
         'isolate': 'performance_test_suite',
         'extra_args': [
           '--output-format=histograms',
-          '--test-shard-map-filename=android-nexus5x-perf-fyi_map.json',
         ],
-        'num_shards': 3
       }
     ],
     'platform': 'android-chrome',
@@ -120,9 +118,7 @@ FYI_BUILDERS = {
           # --browser=exact (used by this bot to have it run Monochrome6432)
           # and --browser=reference together.
           #'--run-ref-build',
-          '--test-shard-map-filename=android-pixel2-perf-fyi_map.json',
         ],
-        'num_shards': 4
       }
     ],
     'platform': 'android-chrome',
@@ -139,11 +135,9 @@ FYI_BUILDERS = {
     'tests': [
       {
         'isolate': 'performance_test_suite',
-        'num_shards': 1,
         'extra_args': [
             '--output-format=histograms',
             '--experimental-proto-trace-format',
-            '--test-shard-map-filename=linux-perf-fyi_map.json',
         ],
       }
     ],
@@ -159,11 +153,8 @@ FYI_BUILDERS = {
     'tests': [
       {
         'isolate': 'performance_test_suite',
-        'num_shards': 1,
         'extra_args': [
             '--run-ref-build',
-            '--test-shard-map-filename='
-            'win-10_laptop_low_end-perf_HP-Candidate_map.json',
         ],
       },
     ],
@@ -182,9 +173,7 @@ FYI_BUILDERS = {
     'tests': [
       {
         'isolate': 'performance_test_suite',
-        'num_shards': 4,
         'extra_args': [
-            '--test-shard-map-filename=chromeos-kevin-perf-fyi_map.json',
             # The magic hostname that resolves to a CrOS device in the test lab
             '--remote=variable_chromeos_device_hostname',
         ],
@@ -338,9 +327,7 @@ BUILDERS = {
         'isolate': 'performance_test_suite',
         'extra_args': [
           '--run-ref-build',
-          '--test-shard-map-filename=android-go-perf_map.json',
         ],
-        'num_shards': 19
       }
     ],
     'platform': 'android-chrome',
@@ -356,10 +343,6 @@ BUILDERS = {
     'tests': [
       {
         'isolate': 'performance_webview_test_suite',
-        'extra_args': [
-            '--test-shard-map-filename=android-go_webview-perf_map.json',
-        ],
-        'num_shards': 13
       }
     ],
     'platform': 'android-webview-google',
@@ -375,10 +358,8 @@ BUILDERS = {
     'tests': [
       {
         'isolate': 'performance_test_suite',
-        'num_shards': 10,
         'extra_args': [
             '--run-ref-build',
-            '--test-shard-map-filename=android-nexus5x-perf_map.json',
             '--assert-gpu-compositing',
         ],
       },
@@ -429,10 +410,8 @@ BUILDERS = {
     'tests': [
       {
         'isolate': 'performance_test_suite',
-        'num_shards': 16,
         'extra_args': [
             '--run-ref-build',
-            '--test-shard-map-filename=android_nexus5_perf_map.json',
             '--assert-gpu-compositing',
         ],
       },
@@ -465,9 +444,7 @@ BUILDERS = {
     'tests': [
       {
         'isolate': 'performance_webview_test_suite',
-        'num_shards': 16,
         'extra_args': [
-            '--test-shard-map-filename=android_nexus5x_webview_perf_map.json',
             '--assert-gpu-compositing',
         ],
       }
@@ -485,9 +462,7 @@ BUILDERS = {
     'tests': [
       {
         'isolate': 'performance_webview_test_suite',
-        'num_shards': 12,
         'extra_args': [
-            '--test-shard-map-filename=android_nexus6_webview_perf_map.json',
             '--assert-gpu-compositing',
         ],
       }
@@ -506,9 +481,7 @@ BUILDERS = {
       {
         'isolate': 'performance_webview_test_suite',
         'extra_args': [
-          '--test-shard-map-filename=android-pixel2_webview-perf_map.json',
         ],
-        'num_shards': 28,
       }
     ],
     'platform': 'android-webview-google',
@@ -525,9 +498,7 @@ BUILDERS = {
       {
         'isolate': 'performance_weblayer_test_suite',
         'extra_args': [
-          '--test-shard-map-filename=android-pixel2_weblayer-perf_map.json',
         ],
-        'num_shards': 4,
       }
     ],
     'platform': 'android-weblayer',
@@ -545,9 +516,7 @@ BUILDERS = {
         'isolate': 'performance_test_suite',
         'extra_args': [
           '--run-ref-build',
-          '--test-shard-map-filename=android-pixel2-perf_map.json',
         ],
-        'num_shards': 35
       }
     ],
     'platform': 'android-chrome',
@@ -563,10 +532,8 @@ BUILDERS = {
     'tests': [
       {
         'isolate': 'performance_test_suite',
-        'num_shards': 26,
         'extra_args': [
             '--run-ref-build',
-            '--test-shard-map-filename=win-10-perf_map.json',
             '--assert-gpu-compositing',
         ],
       },
@@ -624,10 +591,8 @@ BUILDERS = {
     'tests': [
       {
         'isolate': 'performance_test_suite',
-        'num_shards': 5,
         'extra_args': [
             '--run-ref-build',
-            '--test-shard-map-filename=win_7_perf_map.json',
         ],
       },
       {
@@ -659,10 +624,8 @@ BUILDERS = {
     'tests': [
       {
         'isolate': 'performance_test_suite',
-        'num_shards': 5,
         'extra_args': [
             '--run-ref-build',
-            '--test-shard-map-filename=win_7_nvidia_gpu_perf_map.json',
             '--assert-gpu-compositing',
         ],
       },
@@ -715,11 +678,8 @@ BUILDERS = {
     'tests': [
       {
         'isolate': 'performance_test_suite',
-        'num_shards': 26,
         'extra_args': [
             '--run-ref-build',
-            ('--test-shard-map-filename='
-             'mac-10_12_laptop_low_end-perf_map.json'),
             '--assert-gpu-compositing',
         ],
       },
@@ -746,10 +706,8 @@ BUILDERS = {
       # Add views_perftests, crbug.com/811766
       {
         'isolate': 'performance_test_suite',
-        'num_shards': 26,
         'extra_args': [
             '--run-ref-build',
-            '--test-shard-map-filename=linux-perf_map.json',
             '--assert-gpu-compositing',
         ],
       },
@@ -798,10 +756,8 @@ BUILDERS = {
         'isolate': 'performance_test_suite',
         'extra_args': [
           '--run-ref-build',
-          '--test-shard-map-filename=mac-10_13_laptop_high_end-perf_map.json',
-            '--assert-gpu-compositing',
+          '--assert-gpu-compositing',
         ],
-        'num_shards': 26
       },
       {
         'isolate': 'performance_browser_tests',
@@ -852,7 +808,7 @@ def update_all_tests(builders_dict, file_path):
   tests['AAAAA2 See //tools/perf/generate_perf_data to make changes'] = {}
 
   for name, config in builders_dict.iteritems():
-    tests[name] = generate_builder_config(config)
+    tests[name] = generate_builder_config(config, name)
 
   with open(file_path, 'w') as fp:
     json.dump(tests, fp, indent=2, separators=(',', ': '), sort_keys=True)
@@ -1140,7 +1096,7 @@ def validate_docs(labs_docs_file):
     os.remove(labs_docs_tempfile)
 
 
-def generate_telemetry_args(tester_config):
+def generate_telemetry_args(tester_config, platform):
   # First determine the browser that you need based on the tester
   browser_name = ''
   # For trybot testing we always use the reference build
@@ -1159,13 +1115,12 @@ def generate_telemetry_args(tester_config):
     browser_name = 'release_x64'
   else:
     browser_name ='release'
-
   test_args = [
     '-v',
     '--browser=%s' % browser_name,
-    '--upload-results'
+    '--upload-results',
+    '--test-shard-map-filename=%s' % platform.shards_map_file_name,
   ]
-
   if 'browser' in tester_config:
     test_args.append('--browser-executable=../../out/Release/%s' %
                      tester_config['browser'])
@@ -1180,7 +1135,6 @@ def generate_telemetry_args(tester_config):
         '--webview-embedder-apk=../../out/Release/apks/WebLayerShell.apk')
     test_args.append(
         '--webview-embedder-apk=../../out/Release/apks/WebLayerSupport.apk')
-
   return test_args
 
 
@@ -1193,18 +1147,23 @@ def generate_gtest_args(test_name):
   ]
 
 
-def generate_performance_test(tester_config, test):
+def generate_performance_test(tester_config, test, builder_name):
   isolate_name = test['isolate']
 
   test_name = test.get('name', isolate_name)
   test_type = test.get('type', TEST_TYPES.TELEMETRY)
   assert test_type in TEST_TYPES.ALL
 
+  shards = test.get('num_shards', None)
   test_args = []
   if test_type == TEST_TYPES.TELEMETRY:
-    test_args += generate_telemetry_args(tester_config)
+    platform = bot_platforms.PLATFORMS_BY_NAME[builder_name]
+    test_args += generate_telemetry_args(tester_config, platform)
+    assert shards is None
+    shards = platform.num_shards
   elif test_type == TEST_TYPES.GTEST:
     test_args += generate_gtest_args(test_name=test_name)
+    assert shards
   # Append any additional args specific to an isolate
   test_args += test.get('extra_args', [])
 
@@ -1235,7 +1194,6 @@ def generate_performance_test(tester_config, test):
       'script': '//tools/perf/process_perf_results.py',
   }
 
-  shards = test.get('num_shards')
   result['swarming'] = {
     # Always say this is true regardless of whether the tester
     # supports swarming. It doesn't hurt.
@@ -1260,7 +1218,7 @@ def generate_performance_test(tester_config, test):
   return result
 
 
-def generate_builder_config(condensed_config):
+def generate_builder_config(condensed_config, builder_name):
   config = {}
 
   if 'additional_compile_targets' in condensed_config:
@@ -1273,7 +1231,8 @@ def generate_builder_config(condensed_config):
     telemetry_tests = []
     other_tests = []
     for test in condensed_tests:
-      generated_script = generate_performance_test(condensed_config, test)
+      generated_script = generate_performance_test(
+          condensed_config, test, builder_name)
       test_type = test.get('type', TEST_TYPES.TELEMETRY)
       if test_type == TEST_TYPES.GTEST:
         gtest_tests.append(generated_script)

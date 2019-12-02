@@ -8,8 +8,8 @@
           "-v",
           "--browser=android-chrome",
           "--upload-results",
-          "--output-format=histograms",
-          "--test-shard-map-filename=android-nexus5x-perf-fyi_map.json"
+          "--test-shard-map-filename=android-nexus5x-perf-fyi_map.json",
+          "--output-format=histograms"
         ],
         "isolate_name": "performance_test_suite",
         "merge": {
@@ -54,9 +54,9 @@
           "-v",
           "--browser=exact",
           "--upload-results",
+          "--test-shard-map-filename=android-pixel2-perf-fyi_map.json",
           "--browser-executable=../../out/Release/bin/monochrome_64_32_bundle",
-          "--device=android",
-          "--test-shard-map-filename=android-pixel2-perf-fyi_map.json"
+          "--device=android"
         ],
         "isolate_name": "performance_test_suite",
         "merge": {
@@ -146,9 +146,9 @@
           "-v",
           "--browser=release",
           "--upload-results",
+          "--test-shard-map-filename=linux-perf-fyi_map.json",
           "--output-format=histograms",
-          "--experimental-proto-trace-format",
-          "--test-shard-map-filename=linux-perf-fyi_map.json"
+          "--experimental-proto-trace-format"
         ],
         "isolate_name": "performance_test_suite",
         "merge": {
@@ -192,8 +192,8 @@
           "-v",
           "--browser=release_x64",
           "--upload-results",
-          "--run-ref-build",
-          "--test-shard-map-filename=win-10_laptop_low_end-perf_HP-Candidate_map.json"
+          "--test-shard-map-filename=win-10_laptop_low_end-perf_hp-candidate_map.json",
+          "--run-ref-build"
         ],
         "isolate_name": "performance_test_suite",
         "merge": {

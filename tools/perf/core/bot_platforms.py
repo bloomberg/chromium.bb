@@ -47,8 +47,9 @@ class PerfPlatform(object):
     base_file_name = name.replace(' ', '_').lower()
     self._timing_file_path = os.path.join(
         _SHARD_MAP_DIR, 'timing_data', base_file_name + '_timing.json')
+    self.shards_map_file_name = base_file_name + '_map.json'
     self._shards_map_file_path = os.path.join(
-        _SHARD_MAP_DIR, base_file_name + '_map.json')
+        _SHARD_MAP_DIR, self.shards_map_file_name)
 
   def __lt__(self, other):
     if not isinstance(other, type(self)):
@@ -295,6 +296,7 @@ LINUX_PERF_FYI = PerfPlatform(
 ALL_PLATFORMS = {
     p for p in locals().values() if isinstance(p, PerfPlatform)
 }
+PLATFORMS_BY_NAME = {p.name: p for p in ALL_PLATFORMS}
 FYI_PLATFORMS = {
     p for p in ALL_PLATFORMS if p.is_fyi
 }
