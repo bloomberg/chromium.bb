@@ -338,5 +338,33 @@ IN_PROC_BROWSER_TEST_F(LiveSignInTest, CancelSyncWithWebAccount) {
   EXPECT_FALSE(identity_manager()->HasPrimaryAccount());
 }
 
+// Starts the sign in flow from the settings page, enters credentials on the
+// login page but cancels the Sync confirmation dialog. Checks that Sync is
+// disabled and no account was added to Chrome.
+IN_PROC_BROWSER_TEST_F(LiveSignInTest, CancelSync) {
+  TestAccount test_account;
+  CHECK(GetTestAccountsUtil()->GetAccount("TEST_ACCOUNT_1", test_account));
+  SignInFromSettings(test_account);
+
+  TestIdentityManagerObserver observer(identity_manager());
+  base::RunLoop cookie_update_loop;
+  observer.SetOnAccountsInCookieUpdatedCallback(
+      cookie_update_loop.QuitClosure());
+  SignOutTestObserver sign_out_observer(identity_manager());
+
+  login_ui_test_utils::CancelSyncConfirmationDialog(
+      browser(), base::TimeDelta::FromSeconds(3));
+
+  cookie_update_loop.Run();
+  sign_out_observer.WaitForRefreshTokenRemovedForAccounts(1);
+
+  const AccountsInCookieJarInfo& accounts_in_cookie_jar =
+      identity_manager()->GetAccountsInCookieJar();
+  EXPECT_TRUE(accounts_in_cookie_jar.accounts_are_fresh);
+  EXPECT_TRUE(accounts_in_cookie_jar.signed_in_accounts.empty());
+  EXPECT_TRUE(identity_manager()->GetAccountsWithRefreshTokens().empty());
+  EXPECT_FALSE(identity_manager()->HasPrimaryAccount());
+}
+
 }  // namespace test
 }  // namespace signin
