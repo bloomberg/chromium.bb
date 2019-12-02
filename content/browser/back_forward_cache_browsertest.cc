@@ -96,7 +96,6 @@ class BackForwardCacheBrowserTest : public ContentBrowserTest {
     // TODO(sreejakshetty): Initialize ScopedFeatureLists from test constructor.
     EnableFeatureAndSetParams(features::kBackForwardCache,
                               "TimeToLiveInBackForwardCacheInSeconds", "3600");
-    EnableFeatureAndSetParams(features::kServiceWorkerOnUI, "", "");
     SetupFeaturesAndParameters();
 
     command_line->AppendSwitchASCII(
@@ -116,13 +115,17 @@ class BackForwardCacheBrowserTest : public ContentBrowserTest {
     }
 
     feature_list_.InitWithFeaturesAndParameters(enabled_features,
-                                                /*disabled_features*/ {});
+                                                disabled_features_);
   }
 
   void EnableFeatureAndSetParams(base::Feature feature,
                                  std::string param_name,
                                  std::string param_value) {
     features_with_params_[feature][param_name] = param_value;
+  }
+
+  void DisableFeature(base::Feature feature) {
+    disabled_features_.push_back(feature);
   }
 
   void SetUpOnMainThread() override {
@@ -302,6 +305,7 @@ class BackForwardCacheBrowserTest : public ContentBrowserTest {
                      FeatureHash,
                      FeatureEqualOperator>
       features_with_params_;
+  std::vector<base::Feature> disabled_features_;
 };
 
 // Match RenderFrameHostImpl* that are in the BackForwardCache.
@@ -2631,7 +2635,8 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
 }
 
 class BackForwardCacheBrowserTestWithServiceWorkerEnabled
-    : public BackForwardCacheBrowserTest {
+    : public BackForwardCacheBrowserTest,
+      public testing::WithParamInterface<bool> {
  public:
   BackForwardCacheBrowserTestWithServiceWorkerEnabled() {}
   ~BackForwardCacheBrowserTestWithServiceWorkerEnabled() override {}
@@ -2640,12 +2645,16 @@ class BackForwardCacheBrowserTestWithServiceWorkerEnabled
   void SetUpCommandLine(base::CommandLine* command_line) override {
     EnableFeatureAndSetParams(features::kBackForwardCache,
                               "service_worker_supported", "true");
+    if (GetParam())
+      EnableFeatureAndSetParams(features::kServiceWorkerOnUI, "", "");
+    else
+      DisableFeature(features::kServiceWorkerOnUI);
 
     BackForwardCacheBrowserTest::SetUpCommandLine(command_line);
   }
 };
 
-IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTestWithServiceWorkerEnabled,
+IN_PROC_BROWSER_TEST_P(BackForwardCacheBrowserTestWithServiceWorkerEnabled,
                        CachedPagesWithServiceWorkers) {
   CreateHttpsServer();
   SetupCrossSiteRedirector(https_server());
@@ -2676,7 +2685,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTestWithServiceWorkerEnabled,
   EXPECT_EQ(rfh_a, current_frame_host());
 }
 
-IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTestWithServiceWorkerEnabled,
+IN_PROC_BROWSER_TEST_P(BackForwardCacheBrowserTestWithServiceWorkerEnabled,
                        EvictIfCacheBlocksServiceWorkerVersionActivation) {
   CreateHttpsServer();
   https_server()->RegisterRequestHandler(
@@ -2720,7 +2729,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTestWithServiceWorkerEnabled,
       FROM_HERE);
 }
 
-IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTestWithServiceWorkerEnabled,
+IN_PROC_BROWSER_TEST_P(BackForwardCacheBrowserTestWithServiceWorkerEnabled,
                        EvictWithPostMessageToCachedClient) {
   net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
   https_server.RegisterRequestHandler(
@@ -2780,6 +2789,10 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTestWithServiceWorkerEnabled,
       {BackForwardCacheMetrics::NotRestoredReason::kServiceWorkerPostMessage},
       FROM_HERE);
 }
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         BackForwardCacheBrowserTestWithServiceWorkerEnabled,
+                         testing::Bool());
 
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, CachePagesWithBeacon) {
   constexpr char kKeepalivePath[] = "/keepalive";

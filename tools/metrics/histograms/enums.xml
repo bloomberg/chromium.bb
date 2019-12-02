@@ -4951,6 +4951,7 @@ Unknown properties are collapsed to zero. -->
   <int value="23" label="Session restored"/>
   <int value="24" label="Unknown (should not be happening)"/>
   <int value="25" label="ServiceWorker postMessage"/>
+  <int value="26" label="ServiceWorker added after entering cache"/>
 </enum>
 
 <enum name="BackForwardNavigationType">

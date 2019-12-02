@@ -66,7 +66,8 @@ class BackForwardCacheMetrics
     kSessionRestored = 23,
     kUnknown = 24,
     kServiceWorkerPostMessage = 25,
-    kMaxValue = kServiceWorkerPostMessage,
+    kEnteredBackForwardCacheBeforeServiceWorkerHostAdded = 26,
+    kMaxValue = kEnteredBackForwardCacheBeforeServiceWorkerHostAdded,
   };
 
   using NotRestoredReasons =

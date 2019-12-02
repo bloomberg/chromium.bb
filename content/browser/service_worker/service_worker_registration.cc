@@ -439,8 +439,7 @@ void ServiceWorkerRegistration::ActivateWaitingVersion(bool delay) {
   // "5. If exitingWorker is not null,
   if (exiting_version.get()) {
     // Whenever activation happens, evict bfcached controllees.
-    if (IsBackForwardCacheEnabled() &&
-        ServiceWorkerContext::IsServiceWorkerOnUIEnabled()) {
+    if (IsBackForwardCacheEnabled()) {
       exiting_version->EvictBackForwardCachedControllees(
           BackForwardCacheMetrics::NotRestoredReason::
               kServiceWorkerVersionActivation);

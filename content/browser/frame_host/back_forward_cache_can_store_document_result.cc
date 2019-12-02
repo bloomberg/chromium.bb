@@ -110,6 +110,8 @@ std::string BackForwardCacheCanStoreDocumentResult::NotRestoredReasonToString(
       return "unknown";
     case Reason::kServiceWorkerPostMessage:
       return "postMessage from service worker";
+    case Reason::kEnteredBackForwardCacheBeforeServiceWorkerHostAdded:
+      return "frame already in the cache when service worker host was added";
   }
 }
 
