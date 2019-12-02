@@ -182,6 +182,12 @@ def report_cache_stats_at_exit(func, cache):
       atexit.register(report_caches_state)
 
 
+_CACHED_FUNCS = set()
+
+def clear_cache_all():
+  map(clear_cache, _CACHED_FUNCS)
+
+
 def cached(func):
   """Decorator that permanently caches a result of function invocation.
 
@@ -210,6 +216,7 @@ def cached(func):
     return v
 
   wrapper.__cache__ = cache
+  _CACHED_FUNCS.add(wrapper)
   return wrapper
 
 
