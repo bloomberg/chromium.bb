@@ -661,7 +661,6 @@ TEST_F(SpatialNavigationTest, UseTheFirstFragment) {
       "<!DOCTYPE html>"
       "<style>"
       "  body {font: 10px/10px Ahem; margin: 0; width: 50px;}"
-      "  div {width: 20px; height: 20px;}"
       "</style>"
       "<a href='#' id='a'>12345 12</a>");
   Element* a = GetDocument().getElementById("a");
@@ -690,6 +689,16 @@ TEST_F(SpatialNavigationTest, UseTheFirstFragment) {
   EXPECT_EQ(origin_up.Width(), 20);
   EXPECT_EQ(origin_up.X(), 0);
   EXPECT_EQ(origin_up.Y(), 10);
+
+  // Search from the top fragment.
+  PhysicalRect origin_left = SearchOrigin(RootViewport(&GetFrame()), a,
+                                          SpatialNavigationDirection::kLeft);
+  EXPECT_EQ(origin_left, origin_down);
+
+  // Search from the bottom fragment.
+  PhysicalRect origin_right = SearchOrigin(RootViewport(&GetFrame()), a,
+                                           SpatialNavigationDirection::kRight);
+  EXPECT_EQ(origin_right, origin_up);
 }
 
 TEST_F(SpatialNavigationTest, TopOfPinchedViewport) {

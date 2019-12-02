@@ -771,18 +771,16 @@ PhysicalRect SearchOriginFragment(const PhysicalRect& visible_part,
   fragmented.AbsoluteQuads(
       fragments, kTraverseDocumentBoundaries | kApplyRemoteRootFrameOffset);
   switch (direction) {
+    case SpatialNavigationDirection::kLeft:
     case SpatialNavigationDirection::kDown:
       // Search from the topmost fragment.
       return FirstVisibleFragment(visible_part, fragments.begin(),
                                   fragments.end());
+    case SpatialNavigationDirection::kRight:
     case SpatialNavigationDirection::kUp:
       // Search from the bottommost fragment.
       return FirstVisibleFragment(visible_part, fragments.rbegin(),
                                   fragments.rend());
-    case SpatialNavigationDirection::kLeft:
-      // TODO(crbug.com/1029269): Return the first visible fragment.
-    case SpatialNavigationDirection::kRight:
-      // TODO(crbug.com/1029269): Return the last visible fragment.
     case SpatialNavigationDirection::kNone:
       break;
       // Nothing to do.
