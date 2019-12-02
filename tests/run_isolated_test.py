@@ -350,6 +350,7 @@ class RunIsolatedTest(RunIsolatedTestBase):
         switch_to_account=False,
         install_packages_fn=run_isolated.noop_install_packages,
         use_symlinks=False,
+        use_go_isolated=False,
         env={},
         env_prefix={},
         lower_priority=lower_priority,
@@ -969,6 +970,31 @@ class RunIsolatedTest(RunIsolatedTestBase):
         ],
         self.popen_calls)
 
+  def test_fetch_and_map_with_go(self):
+    # Sanity test for run_isolated._fetch_and_map_with_go(...).
+    _, options, _ = run_isolated.parse_args([])
+    cipd_server = 'https://chrome-infra-packages.appspot.com/'
+    storage = isolate_storage.IsolateServer(
+        isolate_storage.ServerRef(cipd_server, options.namespace))
+    isolate_cache = isolateserver.process_cache_options(options, trim=False)
+
+    def fake_wait(args, **kwargs):  # pylint: disable=unused-argument
+      json_path = args[args.index('-fetch-and-map-result-json') + 1]
+      with open(json_path, 'w') as json_file:
+        json.dump({
+            'isolated': {},
+            'items_cold': '',
+            'items_hot': '',
+        }, json_file)
+      return 0
+
+    self.popen_fakes.append(fake_wait)
+    bundle, stats = run_isolated._fetch_and_map_with_go(
+        'fake_isolated_hash', storage, isolate_cache, 'fake_outdir',
+        'fake/path/to/isolated')
+    self.assertTrue(bundle)
+    self.assertTrue(stats)
+
 
 class RunIsolatedTestRun(RunIsolatedTestBase):
   # Runs the actual command requested.
@@ -1020,6 +1046,7 @@ class RunIsolatedTestRun(RunIsolatedTestBase):
           switch_to_account=False,
           install_packages_fn=run_isolated.noop_install_packages,
           use_symlinks=False,
+          use_go_isolated=False,
           env={},
           env_prefix={},
           lower_priority=False,
@@ -1379,10 +1406,10 @@ class RunIsolatedTestOutputFiles(RunIsolatedTestBase):
           storage=store,
           isolate_cache=local_caching.MemoryContentAddressedCache(),
           outputs=[
-            'foo1',
-            # They must be in OS native path.
-            os.path.join('foodir', 'foo2_sl'),
-            os.path.join('bardir', ''),
+              'foo1',
+              # They must be in OS native path.
+              os.path.join('foodir', 'foo2_sl'),
+              os.path.join('bardir', ''),
           ],
           install_named_caches=init_named_caches_stub,
           leak_temp_dir=False,
@@ -1393,6 +1420,7 @@ class RunIsolatedTestOutputFiles(RunIsolatedTestBase):
           switch_to_account=False,
           install_packages_fn=run_isolated.noop_install_packages,
           use_symlinks=False,
+          use_go_isolated=False,
           env={},
           env_prefix={},
           lower_priority=False,

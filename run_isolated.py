@@ -207,6 +207,8 @@ TaskData = collections.namedtuple(
         'install_packages_fn',
         # Create tree with symlinks instead of hardlinks.
         'use_symlinks',
+        # Use go isolated client.
+        'use_go_isolated',
         # Environment variables to set.
         'env',
         # Environment variables to mutate with relative directories.
@@ -510,6 +512,65 @@ def run_command(
   return exit_code, had_hard_timeout
 
 
+def _fetch_and_map_with_go(isolated_hash, storage, cache, outdir,
+                           isolated_client):
+  """
+  Fetches an isolated tree using go client, create the tree and returns
+  (bundle, stats).
+  """
+  start = time.time()
+  server_ref = storage.server_ref
+  policies = cache.policies
+  result_json_handle, result_json_path = tempfile.mkstemp(
+      prefix=u'fetch-and-map-result-', suffix=u'.json')
+  os.close(result_json_handle)
+  try:
+    subprocess42.check_call([
+        isolated_client,
+        'download',
+        '-isolate-server',
+        server_ref.url,
+        '-namespace',
+        server_ref.namespace,
+        '-isolated',
+        isolated_hash,
+
+        # flags for cache
+        '-cache-dir',
+        cache.cache_dir,
+        '-cache-max-items',
+        policies.max_items,
+        '-cache-max-size',
+        policies.max_cache_size,
+        '-cache-min-free-space',
+        policies.min_free_space,
+
+        # flags for output
+        '-output-dir',
+        outdir,
+        '-fetch-and-map-result-json',
+        result_json_path,
+    ])
+    with open(result_json_path) as json_file:
+      result_json = json.load(json_file)
+
+    isolated = result_json['isolated']
+    bundle = isolateserver.IsolatedBundle(filter_cb=None)
+    # Only following properties are used in caller.
+    bundle.command = isolated.get('command')
+    bundle.read_only = isolated.get('read_only')
+    bundle.relative_cwd = isolated.get('relative_cwd')
+
+    return bundle, {
+        'duration': time.time() - start,
+        'items_cold': result_json['items_cold'],
+        'items_hot': result_json['items_hot'],
+    }
+  finally:
+    fs.remove(result_json_path)
+
+
+# TODO(crbug.com/932396): remove this function.
 def fetch_and_map(isolated_hash, storage, cache, outdir, use_symlinks):
   """Fetches an isolated tree, create the tree and returns (bundle, stats)."""
   start = time.time()
@@ -718,12 +779,21 @@ def map_and_run(data, constant_run_path):
 
       if data.isolated_hash:
         isolated_stats = result['stats'].setdefault('isolated', {})
-        bundle, stats = fetch_and_map(
-            isolated_hash=data.isolated_hash,
-            storage=data.storage,
-            cache=data.isolate_cache,
-            outdir=run_dir,
-            use_symlinks=data.use_symlinks)
+        if data.use_go_isolated:
+          bundle, stats = _fetch_and_map_with_go(
+              isolated_hash=data.isolated_hash,
+              storage=data.storage,
+              cache=data.isolate_cache,
+              outdir=run_dir,
+              isolated_client=os.path.join(isolated_client_dir,
+                                           'isolated' + cipd.EXECUTABLE_SUFFIX))
+        else:
+          bundle, stats = fetch_and_map(
+              isolated_hash=data.isolated_hash,
+              storage=data.storage,
+              cache=data.isolate_cache,
+              outdir=run_dir,
+              use_symlinks=data.use_symlinks)
         isolated_stats['download'].update(stats)
         change_tree_read_only(run_dir, bundle.read_only)
         # Inject the command
@@ -1058,6 +1128,10 @@ def create_option_parser():
   parser.add_option(
       '--use-symlinks', action='store_true',
       help='Use symlinks instead of hardlinks')
+  parser.add_option(
+      '--use-go-isolated',
+      action='store_true',
+      help='Use go isolated instead of python implementation')
   parser.add_option(
       '--json',
       help='dump output metadata to json file. When used, run_isolated returns '
@@ -1423,6 +1497,7 @@ def main(args):
       switch_to_account=options.switch_to_account,
       install_packages_fn=install_packages_fn,
       use_symlinks=bool(options.use_symlinks),
+      use_go_isolated=bool(options.use_go_isolated),
       env=options.env,
       env_prefix=options.env_prefix,
       lower_priority=bool(options.lower_priority),
