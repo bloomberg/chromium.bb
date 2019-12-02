@@ -359,6 +359,9 @@ class CONTENT_EXPORT DownloadManagerImpl
   // disk operations.
   const scoped_refptr<base::SequencedTaskRunner> disk_access_task_runner_;
 
+  // DownloadItem for which a query is queued in the |disk_access_task_runner_|.
+  std::set<uint32_t> pending_disk_access_query_;
+
   base::WeakPtrFactory<DownloadManagerImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DownloadManagerImpl);

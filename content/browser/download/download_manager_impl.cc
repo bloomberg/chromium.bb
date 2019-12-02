@@ -668,6 +668,11 @@ void DownloadManagerImpl::CheckForFileRemoval(
     return;
   }
 
+  // Check whether an task is already queued or running for the current download
+  // and skip this check if it is the case.
+  if (!pending_disk_access_query_.insert(download_item->GetId()).second)
+    return;
+
   base::PostTaskAndReplyWithResult(
       disk_access_task_runner_.get(), FROM_HERE,
       base::BindOnce(&base::PathExists, download_item->GetTargetFilePath()),
@@ -678,6 +683,10 @@ void DownloadManagerImpl::CheckForFileRemoval(
 void DownloadManagerImpl::OnFileExistenceChecked(uint32_t download_id,
                                                  bool result) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  // Remove the pending check flag for this download to allow new requests.
+  pending_disk_access_query_.erase(download_id);
+
   if (!result) {  // File does not exist.
     if (base::Contains(downloads_, download_id))
       downloads_[download_id]->OnDownloadedFileRemoved();
