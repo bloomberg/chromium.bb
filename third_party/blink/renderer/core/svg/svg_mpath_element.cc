@@ -92,7 +92,7 @@ void SVGMPathElement::TargetPathChanged() {
 }
 
 void SVGMPathElement::NotifyParentOfPathChange(ContainerNode* parent) {
-  if (auto* motion = ToSVGAnimateMotionElementOrNull(parent))
+  if (auto* motion = DynamicTo<SVGAnimateMotionElement>(parent))
     motion->UpdateAnimationPath();
 }
 
