@@ -14,7 +14,7 @@ from multiprocessing.pool import ThreadPool
 import base64
 import collections
 import datetime
-import glob
+import fnmatch
 import httplib2
 import itertools
 import json
@@ -764,8 +764,8 @@ def _FindYapfConfigFile(fpath, yapf_config_cache, top_dir=None):
   return ret
 
 
-def _GetYapfIgnoreFilepaths(top_dir):
-  """Returns all filepaths that match the ignored files in the .yapfignore file.
+def _GetYapfIgnorePatterns(top_dir):
+  """Returns all patterns in the .yapfignore file.
 
   yapf is supposed to handle the ignoring of files listed in .yapfignore itself,
   but this functionality appears to break when explicitly passing files to
@@ -778,28 +778,37 @@ def _GetYapfIgnoreFilepaths(top_dir):
     top_dir: The top level directory for the repository being formatted.
 
   Returns:
-    A set of all filepaths that should be ignored by yapf.
+    A set of all fnmatch patterns to be ignored.
   """
   yapfignore_file = os.path.join(top_dir, '.yapfignore')
-  ignore_filepaths = set()
+  ignore_patterns = set()
   if not os.path.exists(yapfignore_file):
-    return ignore_filepaths
+    return ignore_patterns
 
-  # glob works relative to the current working directory, so we need to ensure
-  # that we're at the top level directory.
-  old_cwd = os.getcwd()
-  try:
-    os.chdir(top_dir)
-    with open(yapfignore_file) as f:
-      for line in f.readlines():
-        stripped_line = line.strip()
-        # Comments and blank lines should be ignored.
-        if stripped_line.startswith('#') or stripped_line == '':
-          continue
-        ignore_filepaths |= set(glob.glob(stripped_line))
-    return ignore_filepaths
-  finally:
-    os.chdir(old_cwd)
+  with open(yapfignore_file) as f:
+    for line in f.readlines():
+      stripped_line = line.strip()
+      # Comments and blank lines should be ignored.
+      if stripped_line.startswith('#') or stripped_line == '':
+        continue
+      ignore_patterns.add(stripped_line)
+  return ignore_patterns
+
+
+def _FilterYapfIgnoredFiles(filepaths, patterns):
+  """Filters out any filepaths that match any of the given patterns.
+
+  Args:
+    filepaths: An iterable of strings containing filepaths to filter.
+    patterns: An iterable of strings containing fnmatch patterns to filter on.
+
+  Returns:
+    A list of strings containing all the elements of |filepaths| that did not
+    match any of the patterns in |patterns|.
+  """
+  # Not inlined so that tests can use the same implementation.
+  return [f for f in filepaths
+          if not any(fnmatch.fnmatch(f, p) for p in patterns)]
 
 
 def print_stats(args):
@@ -5240,11 +5249,11 @@ def CMDformat(parser, args):
     if not opts.full and filtered_py_files:
       py_line_diffs = _ComputeDiffLineRanges(filtered_py_files, upstream_commit)
 
-    ignored_yapf_files = _GetYapfIgnoreFilepaths(top_dir)
+    yapfignore_patterns = _GetYapfIgnorePatterns(top_dir)
+    filtered_py_files = _FilterYapfIgnoredFiles(filtered_py_files,
+                                                yapfignore_patterns)
 
     for f in filtered_py_files:
-      if f in ignored_yapf_files:
-        continue
       yapf_config = _FindYapfConfigFile(f, yapf_configs, top_dir)
       if yapf_config is None:
         yapf_config = chromium_default_yapf_style

@@ -3400,76 +3400,108 @@ class CMDFormatTestCase(TestCase):
     with open(os.path.join(self._top_dir, '.yapfignore'), 'w') as yapfignore:
       yapfignore.write('\n'.join(contents))
 
-  def _make_files(self, file_dict):
-    for directory, files in file_dict.items():
-      subdir = os.path.join(self._top_dir, directory)
-      if not os.path.exists(subdir):
-        os.makedirs(subdir)
-      for f in files:
-        with open(os.path.join(subdir, f), 'w'):
-          pass
+  def _check_yapf_filtering(self, files, expected):
+    self.assertEqual(expected, git_cl._FilterYapfIgnoredFiles(
+        files, git_cl._GetYapfIgnorePatterns(self._top_dir)))
 
-  def testYapfignoreBasic(self):
-    self._make_yapfignore(['test.py', '*/bar.py'])
-    self._make_files({
-        '.': ['test.py', 'bar.py'],
-        'foo': ['bar.py'],
-    })
-    self.assertEqual(
-        set(['test.py', 'foo/bar.py']),
-        git_cl._GetYapfIgnoreFilepaths(self._top_dir))
+  def testYapfignoreExplicit(self):
+    self._make_yapfignore(['foo/bar.py', 'foo/bar/baz.py'])
+    files = [
+      'bar.py',
+      'foo/bar.py',
+      'foo/baz.py',
+      'foo/bar/baz.py',
+      'foo/bar/foobar.py',
+    ]
+    expected = [
+      'bar.py',
+      'foo/baz.py',
+      'foo/bar/foobar.py',
+    ]
+    self._check_yapf_filtering(files, expected)
 
-  def testYapfignoreMissingYapfignore(self):
-    self.assertEqual(set(), git_cl._GetYapfIgnoreFilepaths(self._top_dir))
+  def testYapfignoreSingleWildcards(self):
+    self._make_yapfignore(['*bar.py', 'foo*', 'baz*.py'])
+    files = [
+      'bar.py',       # Matched by *bar.py.
+      'bar.txt',
+      'foobar.py',    # Matched by *bar.py, foo*.
+      'foobar.txt',   # Matched by foo*.
+      'bazbar.py',    # Matched by *bar.py, baz*.py.
+      'bazbar.txt',
+      'foo/baz.txt',  # Matched by foo*.
+      'bar/bar.py',   # Matched by *bar.py.
+      'baz/foo.py',   # Matched by baz*.py, foo*.
+      'baz/foo.txt',
+    ]
+    expected = [
+      'bar.txt',
+      'bazbar.txt',
+      'baz/foo.txt',
+    ]
+    self._check_yapf_filtering(files, expected)
 
-  def testYapfignoreMissingFile(self):
-    self._make_yapfignore(['test.py', 'test2.py', 'test3.py'])
-    self._make_files({
-        '.': ['test.py', 'test3.py'],
-    })
-    self.assertEqual(
-        set(['test.py', 'test3.py']),
-        git_cl._GetYapfIgnoreFilepaths(self._top_dir))
+  def testYapfignoreMultiplewildcards(self):
+    self._make_yapfignore(['*bar*', '*foo*baz.txt'])
+    files = [
+      'bar.py',       # Matched by *bar*.
+      'bar.txt',      # Matched by *bar*.
+      'abar.py',      # Matched by *bar*.
+      'foobaz.txt',   # Matched by *foo*baz.txt.
+      'foobaz.py',
+      'afoobaz.txt',  # Matched by *foo*baz.txt.
+    ]
+    expected = [
+      'foobaz.py',
+    ]
+    self._check_yapf_filtering(files, expected)
 
   def testYapfignoreComments(self):
     self._make_yapfignore(['test.py', '#test2.py'])
-    self._make_files({
-        '.': ['test.py', 'test2.py'],
-    })
-    self.assertEqual(
-        set(['test.py']), git_cl._GetYapfIgnoreFilepaths(self._top_dir))
+    files = [
+      'test.py',
+      'test2.py',
+    ]
+    expected = [
+      'test2.py',
+    ]
+    self._check_yapf_filtering(files, expected)
 
   def testYapfignoreBlankLines(self):
     self._make_yapfignore(['test.py', '', '', 'test2.py'])
-    self._make_files({'.': ['test.py', 'test2.py']})
-    self.assertEqual(
-        set(['test.py', 'test2.py']),
-        git_cl._GetYapfIgnoreFilepaths(self._top_dir))
+    files = [
+      'test.py',
+      'test2.py',
+      'test3.py',
+    ]
+    expected = [
+      'test3.py',
+    ]
+    self._check_yapf_filtering(files, expected)
 
   def testYapfignoreWhitespace(self):
     self._make_yapfignore([' test.py '])
-    self._make_files({'.': ['test.py']})
-    self.assertEqual(
-        set(['test.py']), git_cl._GetYapfIgnoreFilepaths(self._top_dir))
+    files = [
+      'test.py',
+      'test2.py',
+    ]
+    expected = [
+      'test2.py',
+    ]
+    self._check_yapf_filtering(files, expected)
 
-  def testYapfignoreMultiWildcard(self):
-    self._make_yapfignore(['*es*.py'])
-    self._make_files({
-        '.': ['test.py', 'test2.py'],
-    })
-    self.assertEqual(
-        set(['test.py', 'test2.py']),
-        git_cl._GetYapfIgnoreFilepaths(self._top_dir))
-
-  def testYapfignoreRestoresDirectory(self):
+  def testYapfignoreNoFiles(self):
     self._make_yapfignore(['test.py'])
-    self._make_files({
-        '.': ['test.py'],
-    })
-    old_cwd = os.getcwd()
-    self.assertEqual(
-        set(['test.py']), git_cl._GetYapfIgnoreFilepaths(self._top_dir))
-    self.assertEqual(old_cwd, os.getcwd())
+    self._check_yapf_filtering([], [])
+
+  def testYapfignoreMissingYapfignore(self):
+    files = [
+      'test.py',
+    ]
+    expected = [
+      'test.py',
+    ]
+    self._check_yapf_filtering(files, expected)
 
 
 if __name__ == '__main__':
