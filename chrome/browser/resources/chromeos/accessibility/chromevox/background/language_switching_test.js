@@ -28,7 +28,6 @@ ChromeVoxLanguageSwitchingTest.prototype = {
 #include "base/callback.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "extensions/common/extension_l10n_util.h"
 
 // The following includes are necessary for this test file.
 #include "base/command_line.h"
