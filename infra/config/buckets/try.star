@@ -147,6 +147,7 @@ android_builder(
     cores = 16,
     goma_jobs = goma.jobs.J300,
     ssd = True,
+    use_java_coverage = True,
     tryjob = tryjob(),
 )
 
