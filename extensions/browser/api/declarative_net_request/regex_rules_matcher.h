@@ -78,7 +78,7 @@ class RegexRulesMatcher final : public RulesetMatcherInterface {
 
   // Returns the highest priority matching rule for the given request |params|
   // and action |type|, or null if no rules match.
-  const url_pattern_index::flat::UrlRule* GetHighestPriorityMatchingRule(
+  const RegexRuleInfo* GetHighestPriorityMatchingRule(
       const RequestParams& params,
       flat::ActionType type) const;
 

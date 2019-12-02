@@ -1007,6 +1007,73 @@ TEST_F(RulesetMatcherTest, RegexAndFilterListRules_RemoveHeaders) {
   }
 }
 
+// Tests that regex substitution works correctly.
+TEST_F(RulesetMatcherTest, RegexSubstitution) {
+  struct {
+    int id;
+    std::string regex_filter;
+    std::string regex_substitution;
+  } rule_info[] = {
+      // "\0" captures the complete matched string.
+      {1, R"(^.*google\.com.*$)", R"(https://redirect.com?original=\0)"},
+      {2, R"(http://((?:abc|def)\.xyz.com.*))", R"(https://www.\1)"},
+      {3, R"((http|https)://example.com.*(\?|&)redirect=(.*?)(?:&|$))",
+       R"(\1://\3)"},
+      {4, R"(reddit\.com)", "https://abc.com"}};
+
+  std::vector<TestRule> rules;
+  for (const auto& info : rule_info) {
+    TestRule rule = CreateGenericRule();
+    rule.id = info.id;
+    rule.priority = kMinValidPriority;
+    rule.condition->url_filter.reset();
+    rule.condition->regex_filter = info.regex_filter;
+    rule.action->type = std::string("redirect");
+    rule.action->redirect.emplace();
+    rule.action->redirect->regex_substitution = info.regex_substitution;
+    rules.push_back(rule);
+  }
+
+  std::unique_ptr<RulesetMatcher> matcher;
+  ASSERT_TRUE(CreateVerifiedMatcher(rules, CreateTemporarySource(), &matcher));
+
+  auto create_redirect_action = [](int rule_id, std::string redirect_url) {
+    RequestAction action =
+        CreateRequestActionForTesting(RequestAction::Type::REDIRECT, rule_id);
+    action.redirect_url.emplace(redirect_url);
+    return action;
+  };
+
+  struct {
+    std::string url;
+    base::Optional<RequestAction> expected_redirect_action;
+  } test_cases[] = {
+      {"http://google.com/path?query",
+       create_redirect_action(
+           1, "https://redirect.com?original=http://google.com/path?query")},
+      {"http://def.xyz.com/path?query",
+       create_redirect_action(2, "https://www.def.xyz.com/path?query")},
+      {"http://example.com/path?q1=1&redirect=facebook.com&q2=2",
+       create_redirect_action(3, "http://facebook.com")},
+      // The redirect url here would have been "http://" which is invalid.
+      {"http://example.com/path?q1=1&redirect=&q2=2", base::nullopt},
+      {"https://reddit.com", create_redirect_action(4, "https://abc.com")},
+      // No match.
+      {"http://example.com", base::nullopt}};
+
+  for (const auto& test_case : test_cases) {
+    SCOPED_TRACE(test_case.url);
+
+    GURL url(test_case.url);
+    CHECK(url.is_valid());
+    RequestParams params;
+    params.url = &url;
+
+    ASSERT_EQ(test_case.expected_redirect_action,
+              matcher->GetRedirectAction(params));
+  }
+}
+
 }  // namespace
 }  // namespace declarative_net_request
 }  // namespace extensions

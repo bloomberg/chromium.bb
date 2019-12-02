@@ -12,6 +12,7 @@
 #include "extensions/common/api/declarative_net_request.h"
 #include "extensions/common/extension_id.h"
 
+class GURL;
 namespace extensions {
 
 namespace declarative_net_request {
@@ -93,13 +94,17 @@ class RulesetMatcherInterface {
       const RequestParams& params,
       const url_pattern_index::flat::UrlRule& rule) const;
 
-  // Helper to create a RequestAction of type |REDIRECT| with the appropriate
+  // Helpers to create a RequestAction of type |REDIRECT| with the appropriate
   // redirect url. Can return base::nullopt if the redirect url is ill-formed or
   // same as the current request url.
-  base::Optional<RequestAction> CreateRedirectAction(
+  base::Optional<RequestAction> CreateRedirectActionFromMetadata(
       const RequestParams& params,
       const url_pattern_index::flat::UrlRule& rule,
       const ExtensionMetadataList& metadata_list) const;
+  base::Optional<RequestAction> CreateRedirectAction(
+      const RequestParams& params,
+      const url_pattern_index::flat::UrlRule& rule,
+      GURL redirect_url) const;
 
   // Helper to create a RequestAction of type |REMOVE_HEADERS|. |mask|
   // corresponds to bitmask of flat::RemoveHeaderType, and must be non-empty.

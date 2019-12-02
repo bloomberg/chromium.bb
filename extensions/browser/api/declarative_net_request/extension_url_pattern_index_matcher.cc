@@ -119,7 +119,8 @@ ExtensionUrlPatternIndexMatcher::GetRedirectAction(
   if (!redirect_rule)
     return base::nullopt;
 
-  return CreateRedirectAction(params, *redirect_rule, *metadata_list_);
+  return CreateRedirectActionFromMetadata(params, *redirect_rule,
+                                          *metadata_list_);
 }
 
 base::Optional<RequestAction> ExtensionUrlPatternIndexMatcher::GetUpgradeAction(

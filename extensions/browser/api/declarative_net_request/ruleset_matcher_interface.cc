@@ -230,7 +230,8 @@ RequestAction RulesetMatcherInterface::CreateUpgradeAction(
   return upgrade_action;
 }
 
-base::Optional<RequestAction> RulesetMatcherInterface::CreateRedirectAction(
+base::Optional<RequestAction>
+RulesetMatcherInterface::CreateRedirectActionFromMetadata(
     const RequestParams& params,
     const url_pattern_index::flat::UrlRule& rule,
     const ExtensionMetadataList& metadata_list) const {
@@ -240,7 +241,7 @@ base::Optional<RequestAction> RulesetMatcherInterface::CreateRedirectAction(
   // sorted by rule id, use LookupByKey which binary searches for fast lookup.
   const flat::UrlRuleMetadata* metadata = metadata_list.LookupByKey(rule.id());
 
-  // There must be a UrlRuleMetadata object corresponding to each redirect rule.
+  // There must be a UrlRuleMetadata object corresponding to the |rule|.
   DCHECK(metadata);
   DCHECK_EQ(metadata->id(), rule.id());
   DCHECK(metadata->redirect_url() || metadata->transform());
@@ -257,6 +258,13 @@ base::Optional<RequestAction> RulesetMatcherInterface::CreateRedirectAction(
   // javascript urls. Hence we should never end up with a javascript url here.
   DCHECK(!redirect_url.SchemeIs(url::kJavaScriptScheme));
 
+  return CreateRedirectAction(params, rule, std::move(redirect_url));
+}
+
+base::Optional<RequestAction> RulesetMatcherInterface::CreateRedirectAction(
+    const RequestParams& params,
+    const url_pattern_index::flat::UrlRule& rule,
+    GURL redirect_url) const {
   // Prevent a redirect loop where a URL continuously redirects to itself.
   if (!redirect_url.is_valid() || *params.url == redirect_url)
     return base::nullopt;
