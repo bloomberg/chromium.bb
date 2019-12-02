@@ -5895,7 +5895,7 @@ crbug.com/1014810 [ Mac ] virtual/threaded/external/wpt/animation-worklet/statef
 crbug.com/1019662 external/wpt/html/dom/idlharness.worker.html [ Pass Timeout ]
 
 # Temporarily disable to land source map changes that log error on failure
-crbug.com/1016772 http/tests/devtools/compiler-script-mapping.js [ Pass Failure ]
+crbug.com/1016772 http/tests/devtools/compiler-script-mapping.js [ Pass Failure Timeout ]
 crbug.com/1016772 http/tests/devtools/sources/debugger-ui/source-url-comment.js [ Pass Failure ]
 
 # Temporarily disabled to a breakpoint non-determinism issue.
