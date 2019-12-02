@@ -1182,16 +1182,8 @@ static void set_bitstream_level_tier(SequenceHeader *seq, AV1_COMMON *cm,
   } else if (does_level_match(oxcf->width, oxcf->height, oxcf->init_framerate,
                               8192, 4352, 120.0, 2)) {
     level = SEQ_LEVEL_6_2;
-  } else if (does_level_match(oxcf->width, oxcf->height, oxcf->init_framerate,
-                              16384, 8704, 30.0, 2)) {
-    level = SEQ_LEVEL_7_0;
-  } else if (does_level_match(oxcf->width, oxcf->height, oxcf->init_framerate,
-                              16384, 8704, 60.0, 2)) {
-    level = SEQ_LEVEL_7_1;
-  } else if (does_level_match(oxcf->width, oxcf->height, oxcf->init_framerate,
-                              16384, 8704, 120.0, 2)) {
-    level = SEQ_LEVEL_7_2;
   }
+
   for (int i = 0; i < MAX_NUM_OPERATING_POINTS; ++i) {
     seq->seq_level_idx[i] = level;
     // Set the maximum parameters for bitrate and buffer size for this profile,
