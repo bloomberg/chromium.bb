@@ -871,13 +871,8 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     }
 
     @Override
-    public int getBaseStatusBarColor() {
+    public int getBaseStatusBarColor(boolean activityHasTab) {
         return StatusBarColorController.UNDEFINED_STATUS_BAR_COLOR;
-    }
-
-    @Override
-    public boolean isStatusBarDefaultThemeColor() {
-        return false;
     }
 
     private void createContextReporterIfNeeded() {
