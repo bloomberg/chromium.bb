@@ -139,12 +139,12 @@ FYI_BUILDERS = {
     'tests': [
       {
         'isolate': 'performance_test_suite',
+        'num_shards': 1,
         'extra_args': [
-            '--benchmarks=%s' % 'power.desktop',
             '--output-format=histograms',
             '--experimental-proto-trace-format',
+            '--test-shard-map-filename=linux-perf-fyi_map.json',
         ],
-        'name': 'power.desktop',
       }
     ],
     'platform': 'linux',

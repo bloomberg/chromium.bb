@@ -207,6 +207,9 @@ _ANDROID_PIXEL2_FYI_BENCHMARK_CONFIGS = frozenset([
     _GetBenchmarkConfig('jetstream')])
 _CHROMEOS_KEVIN_FYI_BENCHMARK_CONFIGS = frozenset([
     _GetBenchmarkConfig('rendering.desktop')])
+_LINUX_PERF_FYI_BENCHMARK_CONFIGS = frozenset([
+    _GetBenchmarkConfig('power.desktop')])
+
 
 # Linux
 LINUX = PerfPlatform(
@@ -285,26 +288,22 @@ CHROMEOS_KEVIN_PERF_FYI = PerfPlatform(
     'chromeos-kevin-perf-fyi', '',
     _CHROMEOS_KEVIN_FYI_BENCHMARK_CONFIGS,
     4, 'chromeos', is_fyi=True)
-
-# TODO(crbug.com/902089): Add linux-perf-fyi once the bot is configured to use
-# the sharding map.
+LINUX_PERF_FYI = PerfPlatform(
+    'linux-perf-fyi', '', _LINUX_PERF_FYI_BENCHMARK_CONFIGS,
+    1, 'linux', is_fyi=True)
 
 ALL_PLATFORMS = {
     p for p in locals().values() if isinstance(p, PerfPlatform)
 }
-
 FYI_PLATFORMS = {
     p for p in ALL_PLATFORMS if p.is_fyi
 }
-
 OFFICIAL_PLATFORMS = {
     p for p in ALL_PLATFORMS if not p.is_fyi
 }
-
 ALL_PLATFORM_NAMES = {
     p.name for p in ALL_PLATFORMS
 }
-
 OFFICIAL_PLATFORM_NAMES = {
     p.name for p in OFFICIAL_PLATFORMS
 }

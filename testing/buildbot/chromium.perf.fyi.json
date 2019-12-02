@@ -146,15 +146,15 @@
           "-v",
           "--browser=release",
           "--upload-results",
-          "--benchmarks=power.desktop",
           "--output-format=histograms",
-          "--experimental-proto-trace-format"
+          "--experimental-proto-trace-format",
+          "--test-shard-map-filename=linux-perf-fyi_map.json"
         ],
         "isolate_name": "performance_test_suite",
         "merge": {
           "script": "//tools/perf/process_perf_results.py"
         },
-        "name": "power.desktop",
+        "name": "performance_test_suite",
         "override_compile_targets": [
           "performance_test_suite"
         ],
@@ -171,7 +171,8 @@
           "expiration": 7200,
           "hard_timeout": 43200,
           "ignore_task_failure": false,
-          "io_timeout": 21600
+          "io_timeout": 21600,
+          "shards": 1
         },
         "trigger_script": {
           "args": [
