@@ -1075,13 +1075,13 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
                 FROM_HERE, ServiceWorkerContext::GetCoreThreadId(),
                 base::BindOnce(
                     [](ServiceWorkerNavigationHandleCore* core) {
-                      base::WeakPtr<ServiceWorkerProviderHost> host =
-                          core->provider_host();
-                      if (host) {
-                        host->container_host()->SetControllerRegistration(
+                      base::WeakPtr<ServiceWorkerContainerHost> container_host =
+                          core->container_host();
+                      if (container_host) {
+                        container_host->SetControllerRegistration(
                             nullptr, false /* notify_controllerchange */);
-                        host->container_host()->UpdateUrls(GURL(), GURL(),
-                                                           base::nullopt);
+                        container_host->UpdateUrls(GURL(), GURL(),
+                                                   base::nullopt);
                       }
                     },
                     // Unretained() is safe because the handle owns the core,

@@ -426,6 +426,10 @@ class CONTENT_EXPORT ServiceWorkerContainerHost final
     return receiver_;
   }
 
+  base::WeakPtr<ServiceWorkerContainerHost> GetWeakPtr() {
+    return weak_factory_.GetWeakPtr();
+  }
+
  private:
   friend class ServiceWorkerProviderHostTest;
   friend class service_worker_object_host_unittest::ServiceWorkerObjectHostTest;

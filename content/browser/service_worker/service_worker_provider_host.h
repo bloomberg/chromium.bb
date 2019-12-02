@@ -121,6 +121,10 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   //
   // The returned host stays alive as long as the corresponding host ptr for
   // |host_request| stays alive.
+  //
+  // TODO(https://crbug.com/931087): ServiceWorkerProviderHost is not necessary
+  // for window clients. We should remove this creation function, and instead
+  // directly create ServiceWorkerContainerHost for the clients.
   static base::WeakPtr<ServiceWorkerProviderHost> PreCreateNavigationHost(
       base::WeakPtr<ServiceWorkerContextCore> context,
       bool are_ancestors_secure,
@@ -145,6 +149,10 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // Used for starting a web worker (dedicated worker or shared worker). Returns
   // a provider host for the worker. The host stays alive as long as the
   // corresponding host for |host_receiver| stays alive.
+  //
+  // TODO(https://crbug.com/931087): ServiceWorkerProviderHost is not necessary
+  // for worker clients. We should remove this creation function, and instead
+  // directly create ServiceWorkerContainerHost for the clients.
   static base::WeakPtr<ServiceWorkerProviderHost> CreateForWebWorker(
       base::WeakPtr<ServiceWorkerContextCore> context,
       int process_id,
