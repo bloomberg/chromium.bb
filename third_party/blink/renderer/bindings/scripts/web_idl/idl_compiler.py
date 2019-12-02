@@ -81,6 +81,7 @@ class IdlCompiler(object):
         self._merge_partial_interface_likes()
         self._merge_partial_dictionaries()
         # Merge mixins.
+        self._set_owner_mixin_of_mixin_members()
         self._merge_interface_mixins()
 
         # Process inheritances.
@@ -220,6 +221,19 @@ class IdlCompiler(object):
                     partial_dictionary.debug_info.all_locations)
                 new_dictionary.own_members.extend(
                     make_copy(partial_dictionary.own_members))
+
+    def _set_owner_mixin_of_mixin_members(self):
+        mixins = self._ir_map.irs_of_kind(IRMap.IR.Kind.INTERFACE_MIXIN)
+
+        self._ir_map.move_to_new_phase()
+
+        for old_ir in mixins:
+            new_ir = make_copy(old_ir)
+            self._ir_map.add(new_ir)
+            ref_to_mixin = self._ref_to_idl_def_factory.create(
+                new_ir.identifier)
+            for member in new_ir.iter_all_members():
+                member.set_owner_mixin(ref_to_mixin)
 
     def _merge_interface_mixins(self):
         interfaces = self._ir_map.find_by_kind(IRMap.IR.Kind.INTERFACE)

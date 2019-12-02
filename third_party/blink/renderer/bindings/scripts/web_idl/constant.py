@@ -10,6 +10,7 @@ from .composition_parts import WithExposure
 from .composition_parts import WithExtendedAttributes
 from .composition_parts import WithIdentifier
 from .composition_parts import WithOwner
+from .composition_parts import WithOwnerMixin
 from .exposure import Exposure
 from .idl_type import IdlType
 from .literal_constant import LiteralConstant
@@ -17,11 +18,12 @@ from .make_copy import make_copy
 
 
 class Constant(WithIdentifier, WithExtendedAttributes, WithCodeGeneratorInfo,
-               WithExposure, WithOwner, WithComponent, WithDebugInfo):
+               WithExposure, WithOwner, WithOwnerMixin, WithComponent,
+               WithDebugInfo):
     """https://heycam.github.io/webidl/#idl-constants"""
 
     class IR(WithIdentifier, WithExtendedAttributes, WithCodeGeneratorInfo,
-             WithExposure, WithComponent, WithDebugInfo):
+             WithExposure, WithOwnerMixin, WithComponent, WithDebugInfo):
         def __init__(self,
                      identifier,
                      idl_type,
@@ -36,6 +38,7 @@ class Constant(WithIdentifier, WithExtendedAttributes, WithCodeGeneratorInfo,
             WithExtendedAttributes.__init__(self, extended_attributes)
             WithCodeGeneratorInfo.__init__(self)
             WithExposure.__init__(self)
+            WithOwnerMixin.__init__(self)
             WithComponent.__init__(self, component)
             WithDebugInfo.__init__(self, debug_info)
 
@@ -51,6 +54,7 @@ class Constant(WithIdentifier, WithExtendedAttributes, WithCodeGeneratorInfo,
         WithCodeGeneratorInfo.__init__(self, ir, readonly=True)
         WithExposure.__init__(self, ir, readonly=True)
         WithOwner.__init__(self, owner)
+        WithOwnerMixin.__init__(self, ir)
         WithComponent.__init__(self, ir, readonly=True)
         WithDebugInfo.__init__(self, ir)
 

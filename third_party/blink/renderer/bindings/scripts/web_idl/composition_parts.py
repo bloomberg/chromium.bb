@@ -218,3 +218,31 @@ class WithOwner(object):
     @property
     def owner(self):
         return self._owner
+
+
+class WithOwnerMixin(object):
+    """Implements |owner_mixin| as a readonly attribute."""
+
+    def __init__(self, owner_mixin=None):
+        if isinstance(owner_mixin, WithOwnerMixin):
+            owner_mixin = owner_mixin._owner_mixin
+        # In Python2, we need to avoid circular imports.
+        from .reference import RefById
+        assert owner_mixin is None or isinstance(owner_mixin, RefById)
+
+        self._owner_mixin = owner_mixin
+
+    @property
+    def owner_mixin(self):
+        """
+        Returns the interface mixin object where this construct was originally
+        defined.
+        """
+        return self._owner_mixin.target_object if self._owner_mixin else None
+
+    def set_owner_mixin(self, mixin):
+        # In Python2, we need to avoid circular imports.
+        from .reference import RefById
+        assert isinstance(mixin, RefById)
+        assert self._owner_mixin is None
+        self._owner_mixin = mixin
