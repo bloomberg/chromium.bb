@@ -92,6 +92,10 @@ def android_builder(*, name, **kwargs):
   )
 
 android_builder(
+    name = 'android-bfcache-debug',
+)
+
+android_builder(
     name = 'android-binary-size',
     executable = luci.recipe(name = 'binary_size_trybot'),
     goma_jobs = goma.jobs.J150,
@@ -1109,6 +1113,10 @@ linux_builder(
 
 linux_builder(
     name = 'linux-annotator-rel',
+)
+
+linux_builder(
+    name = 'linux-bfcache-debug',
 )
 
 linux_builder(
