@@ -389,7 +389,7 @@ static WTF::TextStream& operator<<(WTF::TextStream& ts,
                                 .Points()
                                 ->CurrentValue()
                                 ->ValueAsString());
-  } else if (IsSVGPathElement(*svg_element)) {
+  } else if (IsA<SVGPathElement>(*svg_element)) {
     const StylePath& path =
         svg_style.D() ? *svg_style.D() : *StylePath::EmptyPath();
     WriteNameAndQuotedValue(
