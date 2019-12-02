@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef EXTENSIONS_BROWSER_API_DECLARATIVE_NET_REQUEST_RULESET_MATCHER_INTERFACE_H_
-#define EXTENSIONS_BROWSER_API_DECLARATIVE_NET_REQUEST_RULESET_MATCHER_INTERFACE_H_
+#ifndef EXTENSIONS_BROWSER_API_DECLARATIVE_NET_REQUEST_RULESET_MATCHER_BASE_H_
+#define EXTENSIONS_BROWSER_API_DECLARATIVE_NET_REQUEST_RULESET_MATCHER_BASE_H_
 
 #include <vector>
 
@@ -21,13 +21,12 @@ struct RequestParams;
 
 // An abstract class for rule matchers. Overridden by different kinds of
 // matchers, e.g. filter lists and regex.
-// TODO(karandeepb): This is no longer an interface. Rename this class.
-class RulesetMatcherInterface {
+class RulesetMatcherBase {
  public:
-  RulesetMatcherInterface(const ExtensionId& extension_id,
-                          api::declarative_net_request::SourceType source_type);
+  RulesetMatcherBase(const ExtensionId& extension_id,
+                     api::declarative_net_request::SourceType source_type);
 
-  virtual ~RulesetMatcherInterface();
+  virtual ~RulesetMatcherBase();
 
   // Returns any matching RequestAction with type |BLOCK| or |COLLAPSE|, or
   // base::nullopt if the ruleset has no matching blocking rule.
@@ -116,10 +115,10 @@ class RulesetMatcherInterface {
   const ExtensionId extension_id_;
   const api::declarative_net_request::SourceType source_type_;
 
-  DISALLOW_COPY_AND_ASSIGN(RulesetMatcherInterface);
+  DISALLOW_COPY_AND_ASSIGN(RulesetMatcherBase);
 };
 
 }  // namespace declarative_net_request
 }  // namespace extensions
 
-#endif  // EXTENSIONS_BROWSER_API_DECLARATIVE_NET_REQUEST_RULESET_MATCHER_INTERFACE_H_
+#endif  // EXTENSIONS_BROWSER_API_DECLARATIVE_NET_REQUEST_RULESET_MATCHER_BASE_H_

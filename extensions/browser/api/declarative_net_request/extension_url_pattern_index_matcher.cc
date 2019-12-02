@@ -83,7 +83,7 @@ ExtensionUrlPatternIndexMatcher::ExtensionUrlPatternIndexMatcher(
     api::declarative_net_request::SourceType source_type,
     const ExtensionUrlPatternIndexMatcher::UrlPatternIndexList* index_list,
     const ExtensionMetadataList* metadata_list)
-    : RulesetMatcherInterface(extension_id, source_type),
+    : RulesetMatcherBase(extension_id, source_type),
       metadata_list_(metadata_list),
       matchers_(GetMatchers(index_list)),
       is_extra_headers_matcher_(IsExtraHeadersMatcherInternal(index_list)) {}

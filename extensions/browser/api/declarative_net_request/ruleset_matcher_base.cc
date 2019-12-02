@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "extensions/browser/api/declarative_net_request/ruleset_matcher_interface.h"
+#include "extensions/browser/api/declarative_net_request/ruleset_matcher_base.h"
 
 #include "base/strings/strcat.h"
 #include "components/url_pattern_index/flat/url_pattern_index_generated.h"
@@ -189,20 +189,19 @@ GURL GetTransformedURL(const RequestParams& params,
 
 }  // namespace
 
-RulesetMatcherInterface::RulesetMatcherInterface(
+RulesetMatcherBase::RulesetMatcherBase(
     const ExtensionId& extension_id,
     api::declarative_net_request::SourceType source_type)
     : extension_id_(extension_id), source_type_(source_type) {}
-RulesetMatcherInterface::~RulesetMatcherInterface() = default;
+RulesetMatcherBase::~RulesetMatcherBase() = default;
 
 // static
-bool RulesetMatcherInterface::IsUpgradeableRequest(
-    const RequestParams& params) {
+bool RulesetMatcherBase::IsUpgradeableRequest(const RequestParams& params) {
   return params.url->SchemeIs(url::kHttpScheme) ||
          params.url->SchemeIs(url::kFtpScheme);
 }
 
-RequestAction RulesetMatcherInterface::CreateBlockOrCollapseRequestAction(
+RequestAction RulesetMatcherBase::CreateBlockOrCollapseRequestAction(
     const RequestParams& params,
     const flat_rule::UrlRule& rule) const {
   return ShouldCollapseResourceType(params.element_type)
@@ -212,14 +211,14 @@ RequestAction RulesetMatcherInterface::CreateBlockOrCollapseRequestAction(
                              rule.priority(), source_type(), extension_id());
 }
 
-RequestAction RulesetMatcherInterface::CreateAllowAction(
+RequestAction RulesetMatcherBase::CreateAllowAction(
     const RequestParams& params,
     const url_pattern_index::flat::UrlRule& rule) const {
   return RequestAction(RequestAction::Type::ALLOW, rule.id(), rule.priority(),
                        source_type(), extension_id());
 }
 
-RequestAction RulesetMatcherInterface::CreateUpgradeAction(
+RequestAction RulesetMatcherBase::CreateUpgradeAction(
     const RequestParams& params,
     const url_pattern_index::flat::UrlRule& rule) const {
   DCHECK(IsUpgradeableRequest(params));
@@ -231,7 +230,7 @@ RequestAction RulesetMatcherInterface::CreateUpgradeAction(
 }
 
 base::Optional<RequestAction>
-RulesetMatcherInterface::CreateRedirectActionFromMetadata(
+RulesetMatcherBase::CreateRedirectActionFromMetadata(
     const RequestParams& params,
     const url_pattern_index::flat::UrlRule& rule,
     const ExtensionMetadataList& metadata_list) const {
@@ -261,7 +260,7 @@ RulesetMatcherInterface::CreateRedirectActionFromMetadata(
   return CreateRedirectAction(params, rule, std::move(redirect_url));
 }
 
-base::Optional<RequestAction> RulesetMatcherInterface::CreateRedirectAction(
+base::Optional<RequestAction> RulesetMatcherBase::CreateRedirectAction(
     const RequestParams& params,
     const url_pattern_index::flat::UrlRule& rule,
     GURL redirect_url) const {
@@ -275,7 +274,7 @@ base::Optional<RequestAction> RulesetMatcherInterface::CreateRedirectAction(
   return redirect_action;
 }
 
-RequestAction RulesetMatcherInterface::GetRemoveHeadersActionForMask(
+RequestAction RulesetMatcherBase::GetRemoveHeadersActionForMask(
     const url_pattern_index::flat::UrlRule& rule,
     uint8_t mask) const {
   DCHECK(mask);
