@@ -269,6 +269,7 @@ crbug.com/1017162 [ win nvidia vulkan passthrough ] conformance/ogles/GL/* [ Fai
 crbug.com/1017162 [ win nvidia vulkan passthrough ] conformance/context/context-attribute-preserve-drawing-buffer.html [ Failure ]
 crbug.com/1017162 [ win nvidia vulkan passthrough ] conformance/extensions/oes-fbo-render-mipmap.html [ Failure ]
 crbug.com/1017162 [ win nvidia vulkan passthrough ] conformance/renderbuffers/stencil-renderbuffer-initialization.html [ Failure ]
+crbug.com/1017162 [ win nvidia vulkan passthrough ] conformance/renderbuffers/depth-renderbuffer-initialization.html [ Failure ]
 
 # Vulkan / Win / AMD / Passthrough command decoder
 crbug.com/angleproject/2898 [ win amd vulkan passthrough ] conformance/extensions/oes-texture-float-with-canvas.html [ Failure ]
