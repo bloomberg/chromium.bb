@@ -11,13 +11,7 @@ group("remoting_all") {
   deps = [
     ":remoting_unittests",
     "//remoting/test:chromoting_test_driver",
-    "//remoting/webapp:browser_test_resources",
-    "//remoting/webapp:unit_tests",
   ]
-
-  if ((is_linux && !is_chromeos) || is_win || is_mac) {
-    deps += [ "//remoting/webapp" ]
-  }
 
   if (is_win) {
     deps += [
