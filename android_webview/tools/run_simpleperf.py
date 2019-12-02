@@ -86,13 +86,8 @@ class StackAddressInterpreter(object):
     stack_input_path = os.path.join(self.tmp_dir, 'stack_input.txt')
     with open(stack_input_path, 'w') as f:
       for address in addresses:
-        formatted_address = '0x' + '0' * (16 - len(address)) + address
-        # Pretend that this is Chromium's stack traces output in logcat.
-        # Note that the date, time, pid, tid, frame number, and frame address
-        # are all fake and they are irrelevant.
-        f.write(('11-15 00:00:00.000 11111 11111 '
-                 'E chromium: #00 0x0000001111111111 %s+%s\n') % (
-                     lib_path, formatted_address))
+        f.write(StackAddressInterpreter._ConvertAddressToFakeTraceLine(
+            address, lib_path) + '\n')
 
     stack_output = StackAddressInterpreter.RunStackScript(
         self.args.output_directory, stack_input_path)
