@@ -42,11 +42,6 @@ def BranchFilter(branch, patch):
   return patch.tracking_branch == branch
 
 
-def GitRemoteUrlFilter(url, patch):
-  """Used with FilterFn to isolate a patch based on the url of its remote."""
-  return patch.git_remote_url == url
-
-
 class TrybotPatchPool(object):
   """Represents patches specified by the user to test."""
   def __init__(self, gerrit_patches=(), local_patches=(), remote_patches=()):
@@ -108,11 +103,6 @@ class TrybotPatchPool(object):
   def FilterBranch(self, branch, negate=False):
     """Return a patch pool with only patches based on a particular branch."""
     return self.FilterFn(functools.partial(BranchFilter, branch), negate=negate)
-
-  def FilterGitRemoteUrl(self, url, negate=False):
-    """Return a patch pool where patches have a particular remote url."""
-    return self.FilterFn(functools.partial(GitRemoteUrlFilter, url),
-                         negate=negate)
 
   def __iter__(self):
     for source in [self.local_patches, self.remote_patches,
