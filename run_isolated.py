@@ -1418,6 +1418,8 @@ def main(args):
   options.env_prefix = prefixes
 
   cipd.validate_cipd_options(parser, options)
+  if options.use_go_isolated and not options.cipd_enabled:
+    parser.error('--cipd-enabled should be set if --use-go-isolated is set.')
 
   install_packages_fn = noop_install_packages
   if options.cipd_enabled:
