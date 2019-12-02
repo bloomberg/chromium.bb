@@ -549,7 +549,7 @@ class Sysroot(object):
       local_binhosts = cros_build_lib.run(
           [os.path.join(constants.CHROMITE_BIN_DIR,
                         'cros_generate_local_binhosts'), '--board=%s' % board],
-          print_cmd=False, capture_output=True).output
+          print_cmd=False, capture_output=True, encoding='utf-8').stdout
       return '\n'.join([local_binhosts,
                         'PORTAGE_BINHOST="$LOCAL_BINHOST"'])
 
@@ -715,7 +715,7 @@ PORTAGE_BINHOST="$PORTAGE_BINHOST $POSTSUBMIT_BINHOST"
       cwd = os.path.normpath(self._Path('..'))
       try:
         result = cros_build_lib.sudo_run(['mktemp', '-d', '-p', cwd],
-                                         print_cmd=False,
+                                         print_cmd=False, encoding='utf-8',
                                          redirect_stdout=True, cwd=cwd)
       except cros_build_lib.RunCommandError:
         # Fall back to a synchronous delete just in case.
