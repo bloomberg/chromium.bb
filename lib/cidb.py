@@ -1261,16 +1261,6 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
     return [dict(zip(CIDBConnection.BUILD_STATUS_KEYS, values))
             for values in results]
 
-  @minimum_schema(40)
-  def GetKeyVals(self):
-    """Get key-vals from keyvalTable.
-
-    Returns:
-      A dictionary of {key: value} strings (values may also be None).
-    """
-    results = self._Execute('SELECT k, v FROM keyvalTable').fetchall()
-    return dict(results)
-
   @minimum_schema(42)
   def GetBuildMessages(self, build_id, message_type=None, message_subtype=None):
     """Gets build messages from buildMessageTable.

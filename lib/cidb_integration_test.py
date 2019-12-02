@@ -256,14 +256,6 @@ class CIDBAPITest(CIDBIntegrationTest):
     message_right_type.pop('timestamp')
     self.assertEqual(message_right_type, mm2)
 
-  def testGetKeyVals(self):
-    db = self._PrepareFreshDatabase(40)
-    # In production we would never insert into this table from a bot, but for
-    # testing purposes here this is convenient.
-    db._Execute('INSERT INTO keyvalTable(k, v) VALUES '
-                '("/foo/bar", "baz"), ("/qux/norf", NULL)')
-    self.assertEqual(db.GetKeyVals(), {'/foo/bar': 'baz', '/qux/norf': None})
-
 
 def GetTestDataSeries(test_data_path):
   """Get metadata from json files at |test_data_path|.

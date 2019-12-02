@@ -23,12 +23,11 @@ class FakeCIDBConnection(object):
 
   NUM_RESULTS_NO_LIMIT = -1
 
-  def __init__(self, fake_keyvals=None):
+  def __init__(self):
     self.buildTable = []
     self.buildStageTable = {}
     self.failureTable = {}
     self.fake_time = None
-    self.fake_keyvals = fake_keyvals or {}
     self.buildMessageTable = {}
 
   def _TrimStatus(self, status):
@@ -327,10 +326,6 @@ class FakeCIDBConnection(object):
       return builds[:num_results]
     else:
       return builds
-
-  def GetKeyVals(self):
-    """Gets contents of keyvalTable."""
-    return self.fake_keyvals
 
   def GetBuildStatusesWithBuildbucketIds(self, buildbucket_ids):
     rows = []
