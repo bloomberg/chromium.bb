@@ -327,7 +327,7 @@ void PrimaryAccountManager::OnSignoutDecisionReached(
 
   const CoreAccountInfo account_info = GetAuthenticatedAccountInfo();
   client_->GetPrefs()->ClearPref(prefs::kGoogleServicesHostedDomain);
-  SetPrimaryAccountInternal(account_info, /*consented_to_sync=*/false);
+  SetPrimaryAccountInternal(CoreAccountInfo(), /*consented_to_sync=*/false);
 
   // Revoke all tokens before sending signed_out notification, because there
   // may be components that don't listen for token service events when the
@@ -351,8 +351,10 @@ void PrimaryAccountManager::OnSignoutDecisionReached(
       break;
   }
 
-  for (Observer& observer : observers_)
+  for (Observer& observer : observers_) {
     observer.GoogleSignedOut(account_info);
+    observer.UnconsentedPrimaryAccountChanged(primary_account_info());
+  }
 }
 
 void PrimaryAccountManager::OnRefreshTokensLoaded() {
