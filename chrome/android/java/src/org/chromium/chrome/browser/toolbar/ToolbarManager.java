@@ -47,6 +47,7 @@ import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior.OverviewModeObserver;
+import org.chromium.chrome.browser.compositor.layouts.OverviewModeState;
 import org.chromium.chrome.browser.compositor.layouts.SceneChangeObserver;
 import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.feature_engagement.ScreenshotTabObserver;
@@ -691,7 +692,8 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
             }
 
             @Override
-            public void onOverviewModeStateChanged(boolean showTabSwitcherToolbar) {
+            public void onOverviewModeStateChanged(
+                    @OverviewModeState int overviewModeState, boolean showTabSwitcherToolbar) {
                 mToolbar.updateTabSwitcherToolbarState(showTabSwitcherToolbar);
             }
 
