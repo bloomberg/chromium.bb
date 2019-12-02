@@ -5985,6 +5985,7 @@ crbug.com/1027434 virtual/not-site-per-process/external/wpt/html/browsers/origin
 # Sheriff 2019-12-02
 crbug.com/1029713 external/wpt/cookie-store/cookieStoreManager_getSubscriptions_multiple.tentative.https.any.html [ Pass Failure ]
 crbug.com/1029528 [ Linux ] http/tests/devtools/network/oopif-content.js [ Pass Failure ]
+crbug.com/1028477 [ Mac Win ] http/tests/devtools/appcache/appcache-manifest-with-non-existing-file.js [ Pass Timeout ]
 
 # Temporary suppression to allow Skia change to opaqueness tracking
 crbug.com/1028116 virtual/gpu-rasterization-disable-yuv/images/yuv-decode-eligible/color-profile-border-radius.html [ Pass Failure ]
