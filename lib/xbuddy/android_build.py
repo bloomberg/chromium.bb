@@ -9,7 +9,8 @@ from __future__ import print_function
 
 import io
 
-import apiclient
+import googleapiclient.discovery
+import googleapiclient.http
 import httplib2  # pylint: disable=import-error
 
 from oauth2client.client import SignedJwtAssertionCredentials
@@ -51,7 +52,8 @@ class BuildAccessor(object):
         cls.credential_info['client_email'],
         cls.credential_info['private_key'], CREDENTIAL_SCOPE)
     http_auth = credentials.authorize(httplib2.Http())
-    return apiclient.discovery.build(DEFAULT_BUILDER, 'v1', http=http_auth)
+    return googleapiclient.discovery.build(
+        DEFAULT_BUILDER, 'v1', http=http_auth)
 
   @staticmethod
   def _GetBuildType(build_id):
@@ -155,7 +157,7 @@ class BuildAccessor(object):
         buildType=build_type, buildId=build_id, target=target,
         attemptId='latest', resourceId=resource_id)
     with io.FileIO(dest_file, mode='wb') as fh:
-      downloader = apiclient.http.MediaIoBaseDownload(
+      downloader = googleapiclient.http.MediaIoBaseDownload(
           fh, download_req, chunksize=DEFAULT_CHUNKSIZE)
       done = None
       while not done:

@@ -10,7 +10,8 @@ from __future__ import print_function
 import os
 import pwd
 
-import apiclient
+import googleapiclient.discovery
+import googleapiclient.http
 import httplib2
 import mock
 import oauth2client
@@ -140,7 +141,7 @@ class AndroidBuildTests(cros_test_lib.TestCase):
     """Checks that the correct calls are used to connect the API client."""
     creds = mock.Mock()
     with mock.patch.object(httplib2, 'Http') as mock_http, \
-        mock.patch.object(apiclient.discovery, 'build') as mock_build:
+        mock.patch.object(googleapiclient.discovery, 'build') as mock_build:
 
       # Create the ab_client.
       ab_client = androidbuild.GetApiClient(creds)
@@ -157,7 +158,7 @@ class AndroidBuildTests(cros_test_lib.TestCase):
     """Checks that FetchArtifact makes the correct androidbuild API calls."""
     ab_client = mock.Mock()
 
-    with mock.patch.object(apiclient.http, 'MediaIoBaseDownload') \
+    with mock.patch.object(googleapiclient.http, 'MediaIoBaseDownload') \
         as mock_download, \
         mock.patch.object(builtins, 'open') as mock_open, \
         mock.patch.object(os, 'makedirs') as mock_makedirs:

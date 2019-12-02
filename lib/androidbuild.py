@@ -10,7 +10,8 @@ from __future__ import print_function
 import os
 import pwd
 
-import apiclient
+import googleapiclient.discovery
+import googleapiclient.http
 import httplib2
 import oauth2client.client
 from six.moves import urllib
@@ -94,7 +95,7 @@ def LoadCredentials(json_credentials_path=None, scope_url=None):
   """Load the credentials from a local file.
 
   Returns a scoped credentials object which can be used to .authorize() an
-  httlib2.Http() instance used by an apiclient.
+  httlib2.Http() instance used by a googleapiclient.
 
   This method works both with service accounts (JSON generated from Pantheon's
   API manager under Credentials section), or with authenticated users (using a
@@ -108,7 +109,7 @@ def LoadCredentials(json_credentials_path=None, scope_url=None):
 
   Returns:
     A scoped oauth2client.client.Credentials object that can be used to
-    authorize an Http instance used by an apiclient object.
+    authorize an Http instance used by a googleapiclient object.
   """
   json_credentials_path = FindCredentialsFile(json_credentials_path)
 
@@ -136,7 +137,8 @@ def GetApiClient(creds, api_service_name=None, api_version=None):
         Defaults to 'v2beta1' (from DEFAULT_API_VERSION.)
 
   Returns:
-    An apiclient.discovery.Resource that supports the androidbuild API methods.
+    A googleapiclient.discovery.Resource that supports the androidbuild API
+    methods.
   """
   if api_service_name is None:
     api_service_name = DEFAULT_API_SERVICE_NAME
@@ -145,8 +147,8 @@ def GetApiClient(creds, api_service_name=None, api_version=None):
 
   base_http_client = httplib2.Http()
   auth_http_client = creds.authorize(base_http_client)
-  ab_client = apiclient.discovery.build(api_service_name, api_version,
-                                        http=auth_http_client)
+  ab_client = googleapiclient.discovery.build(api_service_name, api_version,
+                                              http=auth_http_client)
   return ab_client
 
 
@@ -162,7 +164,7 @@ def FetchArtifact(ab_client, branch, target, build_id, filepath, output=None):
     output: Path where to store the artifact. Defaults to filepath.
 
   Raises:
-    apiclient.errors.HttpError: If the requested artifact does not exist.
+    googleapiclient.errors.HttpError: If the requested artifact does not exist.
   """
   # The "branch" is unused, so silent pylint warnings about it:
   _ = branch
@@ -185,7 +187,7 @@ def FetchArtifact(ab_client, branch, target, build_id, filepath, output=None):
     os.makedirs(outdir)
 
   with open(output, 'wb') as f:
-    downloader = apiclient.http.MediaIoBaseDownload(
+    downloader = googleapiclient.http.MediaIoBaseDownload(
         f, media_id, chunksize=DEFAULT_MEDIA_IO_CHUNKSIZE)
     done = False
     while not done:

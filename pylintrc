@@ -383,6 +383,7 @@ max-parents=10
 # Deprecated modules which should not be used, separated by a comma.
 # __builtin__: Use the 'six.moves.builtins' module instead
 #   (or 'builtins' in Python 3).
+# apiclient: Use the 'googleapiclient' module instead.
 # Bastion: Dropped in Python 3.
 # ConfigParser: Use the 'six.moves.configparser' module instead
 #   (or 'configparser' in Python 3).
@@ -409,6 +410,7 @@ max-parents=10
 #   (or 'urllib.parse' in Python 3).
 deprecated-modules=
     __builtin__,
+    apiclient,
     Bastion,
     ConfigParser,
     cookielib,

@@ -33,8 +33,8 @@ from chromite.lib import retry_util
 try:
   # pylint: disable=wrong-import-order
   import httplib2
-  from apiclient.discovery import build as apiclient_build
-  from apiclient import errors as apiclient_errors
+  from googleapiclient.discovery import build as apiclient_build
+  from googleapiclient import errors as apiclient_errors
   from oauth2client import file as oauth_client_fileio
   from oauth2client import client
 except (RuntimeError, ImportError) as e:
