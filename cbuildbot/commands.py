@@ -99,6 +99,7 @@ TAST_SSP_FILES = [
     'chroot/usr/libexec/tast/bundles',  # Dir containing test bundles.
     'chroot/usr/share/tast/data',  # Dir containing test data.
     'src/platform/tast/tools/run_tast.sh',  # Helper script to run SSP tast.
+    'src/platform/tast-tests-private/vars',  # Secret variables tast interprets.
 ]
 
 # =========================== Command Helpers =================================
