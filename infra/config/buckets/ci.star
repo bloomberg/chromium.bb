@@ -316,14 +316,6 @@ android_builder(
 )
 
 android_builder(
-    name = 'android-kitkat-arm-rel',
-)
-
-android_builder(
-    name = 'android-marshmallow-arm64-rel',
-)
-
-android_builder(
     name = 'android-pie-arm64-dbg',
 )
 
@@ -1810,11 +1802,6 @@ def gpu_builder(*, name, **kwargs):
       mastername = 'chromium.gpu',
       **kwargs
   )
-
-gpu_builder(
-    name = 'Android Release (Nexus 5X)',
-    goma_backend = goma.backend.RBE_PROD,
-)
 
 gpu_builder(
     name = 'GPU Linux Builder (dbg)',
