@@ -1889,7 +1889,7 @@ void CheckURLOriginAndNetworkIsolationKey(
   EXPECT_EQ(url, node->current_url());
   EXPECT_EQ(origin, node->current_origin());
   EXPECT_EQ(network_isolation_key,
-            node->current_frame_host()->network_isolation_key());
+            node->current_frame_host()->GetNetworkIsolationKey());
 }
 }  // namespace
 
