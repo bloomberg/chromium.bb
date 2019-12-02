@@ -7,7 +7,8 @@
 
 let _innerWorker = null;
 const urlParams = new URLSearchParams(window.location.search);
-if (urlParams.get('load_url').endsWith('.size')) {
+const loadUrl = urlParams.get('load_url');
+if (loadUrl.endsWith('.size') || loadUrl.endsWith('.sizediff')) {
   console.log('Using WebAssembly web worker');
   _innerWorker = new Worker('tree-worker-wasm.js');
 } else {
