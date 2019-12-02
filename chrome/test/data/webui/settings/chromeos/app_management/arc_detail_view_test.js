@@ -4,7 +4,7 @@
 
 'use strict';
 
-suite('<app-management-arc-permission-view>', () => {
+suite('<app-management-arc-detail-view>', () => {
   let arcPermissionView;
   let fakeHandler;
 
@@ -51,7 +51,7 @@ suite('<app-management-arc-permission-view>', () => {
         app_management.actions.updateSelectedAppId(app.id));
 
     arcPermissionView =
-        document.createElement('app-management-arc-permission-view');
+        document.createElement('app-management-arc-detail-view');
     replaceBody(arcPermissionView);
   });
 

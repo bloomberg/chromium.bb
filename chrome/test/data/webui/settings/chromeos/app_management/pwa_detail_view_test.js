@@ -4,7 +4,7 @@
 
 'use strict';
 
-suite('<app-management-pwa-permission-view>', function() {
+suite('<app-management-pwa-detail-view>', function() {
   let pwaPermissionView;
   let fakeHandler;
 
@@ -33,7 +33,7 @@ suite('<app-management-pwa-permission-view>', function() {
         app_management.actions.updateSelectedAppId(app.id));
 
     pwaPermissionView =
-        document.createElement('app-management-pwa-permission-view');
+        document.createElement('app-management-pwa-detail-view');
     replaceBody(pwaPermissionView);
   });
 

@@ -2,8 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 Polymer({
-  // TODO(crbug.com/999016): change to app-management-arc-detail-view.
-  is: 'app-management-arc-permission-view',
+  is: 'app-management-arc-detail-view',
 
   behaviors: [
     app_management.StoreClient,

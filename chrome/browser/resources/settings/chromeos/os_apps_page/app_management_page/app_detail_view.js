@@ -3,8 +3,7 @@
 // found in the LICENSE file.
 
 Polymer({
-  // TODO(crbug.com/999016): change to app-management-app-detail-view.
-  is: 'app-management-app-permission-view',
+  is: 'app-management-app-detail-view',
 
   behaviors: [
     app_management.StoreClient,
@@ -87,11 +86,11 @@ Polymer({
     const selectedAppType = app.type;
     switch (selectedAppType) {
       case (AppType.kWeb):
-        return 'pwa-permission-view';
+        return 'pwa-detail-view';
       case (AppType.kExtension):
-        return 'chrome-app-permission-view';
+        return 'chrome-app-detail-view';
       case (AppType.kArc):
-        return 'arc-permission-view';
+        return 'arc-detail-view';
       default:
         assertNotReached();
     }
