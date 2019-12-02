@@ -88,29 +88,3 @@ class ConstructorGroup(OverloadGroup, WithCodeGeneratorInfo, WithExposure,
         WithExposure.__init__(self, Exposure(ir.exposure))
         WithOwner.__init__(self, owner)
         WithDebugInfo.__init__(self, ir.debug_info)
-
-
-class NamedConstructor(object):
-    @property
-    def return_type(self):
-        """
-        Returns IDL type to construct.
-        @return IdlInterfaceType
-        """
-        raise exceptions.NotImplementedError()
-
-    @property
-    def name(self):
-        """
-        Returns the name to be visible as.
-        @return Identifier
-        """
-        raise exceptions.NotImplementedError()
-
-    @property
-    def arguments(self):
-        """
-        Returns a list of arguments.
-        @return tuple(Argument)
-        """
-        raise exceptions.NotImplementedError()
