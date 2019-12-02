@@ -43,6 +43,16 @@ issues]].
   Unicode range. These had been especially noticed when
   ~compbrlAtCursor~ mode flag was used. Thanks to André-Abush Clause.
 - Major Improvements to contraction use in UEB thanks to James Bowden.
+- Updates to the Danish Tables thanks to Bue Vester-Andersen:
+  - Added miscelaneous Unicode characters to 8 dots grade 1 and 2
+    (accented letters, punctuation, arrows and some math signs).
+    Most of these characters have not been defined in the Danish
+    Braille standard. This implementation is purely experimental,
+    and the characters may be changed later.
+  - Updated the 6 dots tables with more Unicode characters
+    (no arrows or math signs).
+  - Corrected a bug in 8 dots grade 2, which resulted in the
+    "var" contraction not always being properly applied.
 ** Other changes
 - Make sure the log callback uses the same calling convention as all
   the other exported functions. Thanks to Leonard de Ruijter.
