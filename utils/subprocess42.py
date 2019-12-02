@@ -478,7 +478,7 @@ class Popen(subprocess.Popen):
     # Windows version of subprocess.Popen() really doens't like unicode. In
     # practice we should use the current ANSI code page, but settle for utf-8
     # across all OSes for consistency.
-    to_str = lambda i: i if isinstance(i, str) else i.encode('utf-8')
+    to_str = lambda i: i if isinstance(i, str) else str(i).encode('utf-8')
     args = [to_str(i) for i in args]
     if kwargs.get('cwd') is not None:
       kwargs['cwd'] = to_str(kwargs['cwd'])

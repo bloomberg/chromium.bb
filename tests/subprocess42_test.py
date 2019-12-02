@@ -871,6 +871,11 @@ class Subprocess42Test(unittest.TestCase):
       ('stdout', 'incomplete last stdout'),
     ])
 
+  def test_non_str_arg(self):
+    out = subprocess42.check_output(
+        [sys.executable, '-c', 'import sys; print(sys.argv)', 1, b'b', u'u'])
+    self.assertEqual(out, "['-c', '1', 'b', 'u']\n")
+
 
 if __name__ == '__main__':
   test_env.main()
