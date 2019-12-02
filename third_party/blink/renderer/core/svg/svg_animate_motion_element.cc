@@ -50,7 +50,7 @@ bool TargetCanHaveMotionTransform(const SVGElement& target) {
          IsA<SVGRectElement>(target) || IsSVGCircleElement(target) ||
          IsA<SVGEllipseElement>(target) || IsA<SVGLineElement>(target) ||
          IsA<SVGPolylineElement>(target) || IsA<SVGPolygonElement>(target) ||
-         IsA<SVGTextElement>(target) || IsSVGClipPathElement(target) ||
+         IsA<SVGTextElement>(target) || IsA<SVGClipPathElement>(target) ||
          IsA<SVGMaskElement>(target) || IsSVGAElement(target) ||
          IsSVGForeignObjectElement(target);
 }
