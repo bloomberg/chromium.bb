@@ -194,7 +194,8 @@ class RepoRepository(object):
     failed_to_selfupdate = False
     try:
       cmd_result = cros_build_lib.run(
-          cmd, cwd=self.directory, capture_output=True, log_output=True)
+          cmd, cwd=self.directory, capture_output=True, log_output=True,
+          encoding='utf-8')
 
       if (cmd_result.error is not None and
           SELFUPDATE_WARNING_RE.search(cmd_result.error)):
@@ -660,7 +661,7 @@ class RepoRepository(object):
       cmd += ['-r']
     output = cros_build_lib.run(
         cmd, cwd=self.directory, print_cmd=False, capture_output=True,
-        extra_env={'PAGER': 'cat'}).output
+        encoding='utf-8', extra_env={'PAGER': 'cat'}).stdout
 
     if not mark_revision:
       return output
