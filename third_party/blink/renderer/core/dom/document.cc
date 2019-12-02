@@ -1142,7 +1142,6 @@ Document::Document(const DocumentInit& initializer,
           GetTaskRunner(TaskType::kInternalLoading),
           this,
           &Document::DidAssociateFormControlsTimerFired),
-      timers_(GetTaskRunner(TaskType::kJavascriptTimer)),
       has_viewport_units_(false),
       parser_sync_policy_(kAllowAsynchronousParsing),
       node_count_(0),
@@ -4524,10 +4523,6 @@ void Document::writeln(v8::Isolate* isolate,
   DCHECK(RuntimeEnabledFeatures::TrustedDOMTypesEnabled(this));
   writeln(text->toString(), EnteredDOMWindow(isolate)->document(),
           exception_state);
-}
-
-DOMTimerCoordinator* Document::Timers() {
-  return &timers_;
 }
 
 EventTarget* Document::ErrorEventTarget() {
@@ -8313,7 +8308,6 @@ void Document::Trace(Visitor* visitor) {
   visitor->Trace(custom_element_microtask_run_queue_);
   visitor->Trace(element_data_cache_);
   visitor->Trace(use_elements_needing_update_);
-  visitor->Trace(timers_);
   visitor->Trace(template_document_);
   visitor->Trace(template_document_host_);
   visitor->Trace(user_action_elements_);
