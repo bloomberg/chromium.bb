@@ -3202,6 +3202,24 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
                          .host());
 }
 
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
+                       ComputeSiteForCookiesFileURL) {
+  GURL main_frame_url = GetFileURL(FILE_PATH_LITERAL("page_with_iframe.html"));
+  GURL subframe_url = GetFileURL(FILE_PATH_LITERAL("title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_frame_url));
+
+  WebContentsImpl* wc = static_cast<WebContentsImpl*>(shell()->web_contents());
+  RenderFrameHostImpl* main_frame =
+      static_cast<RenderFrameHostImpl*>(wc->GetMainFrame());
+  EXPECT_EQ(main_frame_url, main_frame->GetLastCommittedURL());
+  EXPECT_EQ(GURL("file:///"), main_frame->ComputeSiteForCookies());
+
+  ASSERT_EQ(1u, main_frame->child_count());
+  RenderFrameHostImpl* child = main_frame->child_at(0)->current_frame_host();
+  EXPECT_EQ(subframe_url, child->GetLastCommittedURL());
+  EXPECT_EQ(GURL("file:///"), child->ComputeSiteForCookies());
+}
+
 // Make sure a local file and its subresources can be reloaded after a crash. In
 // particular, after https://crbug.com/981339, a different RenderFrameHost will
 // be used for reloading the file. File access must be correctly granted.
