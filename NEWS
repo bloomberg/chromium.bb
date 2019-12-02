@@ -59,7 +59,8 @@ issues]].
   no longer be installed by default on a users machine.
 - Remove a hidden feature of ~lou_translate~ that would cause it to
   crash if passed an invalid file name. Thanks to Christian Egli.
-
+- Raise an error if a dot pattern can not be displayed instead of
+  silently ignoring it thanks to Bert Frees.
 ** Deprecation notice
 None
 
