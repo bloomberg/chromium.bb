@@ -61,8 +61,7 @@ This bounding box covers another link. Here we test that SpatNav can reach that 
     ["Right", "short"],           // We searched *inside* #fragmentedB's box.
     ["Down", "end"],              // This avoids an endless loop between #fragmentedB and #short if Down is held.
     ["Up", "fragmentedB"],
-    ["Down", "short"],            // We searched *inside* #fragmentedB's box.
-    ["Right", "now_reachableC"],
+    ["Down", "now_reachableC"],   // We searched *inside* #fragmentedB's box.
     ["Right", "anotherC"],
     ["Left", "fragmentedB"],
     ["Left", "now_reachableC"],   // We searched *inside* #fragmentedB's box.
