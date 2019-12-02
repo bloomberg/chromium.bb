@@ -182,7 +182,7 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
   std::vector<ServiceWorkerVersionInfo> GetAllLiveVersionInfo();
 
   // May be called from any thread, and the callback is called on that thread.
-  void HasMainFrameProviderHost(const GURL& origin,
+  void HasMainFrameWindowClient(const GURL& origin,
                                 BoolCallback callback) const;
 
   // Returns all frame routing ids for the given |origin|. Must be called on the
@@ -482,7 +482,7 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
       bool include_installing_version,
       FindRegistrationCallback callback,
       scoped_refptr<base::TaskRunner> callback_runner);
-  void HasMainFrameProviderHostOnCoreThread(
+  void HasMainFrameWindowClientOnCoreThread(
       const GURL& origin,
       BoolCallback callback,
       scoped_refptr<base::TaskRunner> callback_runner) const;

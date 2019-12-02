@@ -847,18 +847,18 @@ ServiceWorkerContextWrapper::GetAllLiveVersionInfo() {
   return context_core_->GetAllLiveVersionInfo();
 }
 
-void ServiceWorkerContextWrapper::HasMainFrameProviderHost(
+void ServiceWorkerContextWrapper::HasMainFrameWindowClient(
     const GURL& origin,
     BoolCallback callback) const {
   RunOrPostTaskOnCoreThread(
       FROM_HERE,
       base::BindOnce(
-          &ServiceWorkerContextWrapper::HasMainFrameProviderHostOnCoreThread,
+          &ServiceWorkerContextWrapper::HasMainFrameWindowClientOnCoreThread,
           this, origin, std::move(callback),
           base::ThreadTaskRunnerHandle::Get()));
 }
 
-void ServiceWorkerContextWrapper::HasMainFrameProviderHostOnCoreThread(
+void ServiceWorkerContextWrapper::HasMainFrameWindowClientOnCoreThread(
     const GURL& origin,
     BoolCallback callback,
     scoped_refptr<base::TaskRunner> callback_runner) const {
@@ -868,7 +868,7 @@ void ServiceWorkerContextWrapper::HasMainFrameProviderHostOnCoreThread(
                               base::BindOnce(std::move(callback), false));
     return;
   }
-  context_core_->HasMainFrameProviderHost(
+  context_core_->HasMainFrameWindowClient(
       origin,
       base::BindOnce(
           [](BoolCallback callback,
@@ -889,16 +889,15 @@ ServiceWorkerContextWrapper::GetWindowClientFrameRoutingIds(
   if (!context_core_)
     return frame_routing_ids;
 
-  for (std::unique_ptr<ServiceWorkerContextCore::ProviderHostIterator> it =
-           context_core_->GetWindowClientProviderHostIterator(
+  for (std::unique_ptr<ServiceWorkerContextCore::ContainerHostIterator> it =
+           context_core_->GetWindowClientContainerHostIterator(
                origin, /*include_reserved_clients=*/false);
        !it->IsAtEnd(); it->Advance()) {
-    ServiceWorkerProviderHost* provider_host = it->GetProviderHost();
-    DCHECK_EQ(provider_host->provider_type(),
+    ServiceWorkerContainerHost* container_host = it->GetContainerHost();
+    DCHECK_EQ(container_host->type(),
               blink::mojom::ServiceWorkerProviderType::kForWindow);
-    frame_routing_ids->push_back(
-        GlobalFrameRoutingId(provider_host->container_host()->process_id(),
-                             provider_host->container_host()->frame_id()));
+    frame_routing_ids->push_back(GlobalFrameRoutingId(
+        container_host->process_id(), container_host->frame_id()));
   }
 
   return frame_routing_ids;

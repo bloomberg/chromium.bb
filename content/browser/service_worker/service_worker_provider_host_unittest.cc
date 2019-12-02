@@ -268,13 +268,13 @@ class ServiceWorkerProviderHostTest : public testing::Test {
 
   void OnMojoError(const std::string& error) { bad_messages_.push_back(error); }
 
-  bool CanFindClientProviderHost(ServiceWorkerProviderHost* host) {
-    for (std::unique_ptr<ServiceWorkerContextCore::ProviderHostIterator> it =
-             context_->GetClientProviderHostIterator(
-                 host->container_host()->url().GetOrigin(),
+  bool CanFindClientContainerHost(ServiceWorkerContainerHost* container_host) {
+    for (std::unique_ptr<ServiceWorkerContextCore::ContainerHostIterator> it =
+             context_->GetClientContainerHostIterator(
+                 container_host->url().GetOrigin(),
                  false /* include_reserved_clients */);
          !it->IsAtEnd(); it->Advance()) {
-      if (host == it->GetProviderHost())
+      if (container_host == it->GetContainerHost())
         return true;
     }
     return false;
@@ -955,7 +955,7 @@ TEST_F(ServiceWorkerProviderHostTest,
 }
 
 // Test that a "reserved" (i.e., not execution ready) client is not included
-// when iterating over client provider hosts. If it were, it'd be undesirably
+// when iterating over client container hosts. If it were, it'd be undesirably
 // exposed via the Clients API.
 void ServiceWorkerProviderHostTest::TestReservedClientsAreNotExposed(
     blink::mojom::ServiceWorkerProviderType provider_type,
@@ -976,10 +976,10 @@ void ServiceWorkerProviderHostTest::TestReservedClientsAreNotExposed(
             context_->AsWeakPtr(), helper_->mock_render_process_id(),
             provider_type, std::move(host_receiver), std::move(client_remote));
     host->container_host()->UpdateUrls(url, url, url::Origin::Create(url));
-    EXPECT_FALSE(CanFindClientProviderHost(host.get()));
+    EXPECT_FALSE(CanFindClientContainerHost(host->container_host()));
     host->container_host()->CompleteWebWorkerPreparation(
         network::mojom::CrossOriginEmbedderPolicy::kNone);
-    EXPECT_TRUE(CanFindClientProviderHost(host.get()));
+    EXPECT_TRUE(CanFindClientContainerHost(host->container_host()));
   }
 
   {
@@ -992,13 +992,13 @@ void ServiceWorkerProviderHostTest::TestReservedClientsAreNotExposed(
     remote_endpoint.BindForWindow(std::move(host_and_info->info));
 
     FinishNavigation(host->container_host());
-    EXPECT_FALSE(CanFindClientProviderHost(host.get()));
+    EXPECT_FALSE(CanFindClientContainerHost(host->container_host()));
 
     base::RunLoop run_loop;
     host->container_host()->AddExecutionReadyCallback(run_loop.QuitClosure());
     remote_endpoint.host_remote()->get()->OnExecutionReady();
     run_loop.Run();
-    EXPECT_TRUE(CanFindClientProviderHost(host.get()));
+    EXPECT_TRUE(CanFindClientContainerHost(host->container_host()));
   }
 }
 
@@ -1140,17 +1140,17 @@ void ServiceWorkerProviderHostTest::TestBackForwardCachedClientsAreNotExposed(
     remote_endpoint.BindForWindow(std::move(host_and_info->info));
 
     FinishNavigation(host->container_host());
-    EXPECT_FALSE(CanFindClientProviderHost(host.get()));
+    EXPECT_FALSE(CanFindClientContainerHost(host->container_host()));
 
     base::RunLoop run_loop;
     host->container_host()->AddExecutionReadyCallback(run_loop.QuitClosure());
     remote_endpoint.host_remote()->get()->OnExecutionReady();
     run_loop.Run();
-    EXPECT_TRUE(CanFindClientProviderHost(host.get()));
+    EXPECT_TRUE(CanFindClientContainerHost(host->container_host()));
     host->container_host()->EnterBackForwardCacheForTesting();
-    EXPECT_FALSE(CanFindClientProviderHost(host.get()));
+    EXPECT_FALSE(CanFindClientContainerHost(host->container_host()));
     host->container_host()->LeaveBackForwardCacheForTesting();
-    EXPECT_TRUE(CanFindClientProviderHost(host.get()));
+    EXPECT_TRUE(CanFindClientContainerHost(host->container_host()));
   }
 }
 
