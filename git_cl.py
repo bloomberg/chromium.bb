@@ -2830,7 +2830,7 @@ class ChangeDescription(object):
   CHERRY_PICK_LINE = r'^\(cherry picked from commit [a-fA-F0-9]{40}\)$'
   STRIP_HASH_TAG_PREFIX = r'^(\s*(revert|reland)( "|:)?\s*)*'
   BRACKET_HASH_TAG = r'\s*\[([^\[\]]+)\]'
-  COLON_SEPARATED_HASH_TAG = r'^([a-zA-Z0-9_\- ]+):'
+  COLON_SEPARATED_HASH_TAG = r'^([a-zA-Z0-9_\- ]+):($|[^:])'
   BAD_HASH_TAG_CHUNK = r'[^a-zA-Z0-9]+'
 
   def __init__(self, description, bug=None, fixed=None):

@@ -1694,6 +1694,8 @@ class TestGitCl(TestCase):
       ('Revert "Reland: [a] feature"', ['a']),
       ('Foo: feature', ['foo']),
       ('Foo Bar: feature', ['foo-bar']),
+      ('Change Foo::Bar', []),
+      ('Foo: Change Foo::Bar', ['foo']),
       ('Revert "Foo bar: feature"', ['foo-bar']),
       ('Reland "Foo bar: feature"', ['foo-bar']),
     ]
