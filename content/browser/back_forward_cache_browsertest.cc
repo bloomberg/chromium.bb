@@ -4618,4 +4618,28 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, WebLocksNotCached) {
       blink::scheduler::WebSchedulerTrackedFeature::kWebLocks, FROM_HERE);
 }
 
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
+                       CanUseCacheWhenNavigatingAwayToErrorPage) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL error_url(embedded_test_server()->GetURL("b.com", "/empty.html"));
+  auto url_interceptor = URLLoaderInterceptor::SetupRequestFailForURL(
+      error_url, net::ERR_DNS_TIMED_OUT);
+
+  // 1) Navigate to A.
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+  RenderFrameHostImpl* rfh_a = current_frame_host();
+
+  // 2) Navigate to an error page and expect the old page to be stored in
+  // bfcache.
+  EXPECT_FALSE(NavigateToURL(shell(), error_url));
+  EXPECT_TRUE(rfh_a->is_in_back_forward_cache());
+
+  // 3) Navigate back and expect the page to be restored from bfcache.
+  web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  EXPECT_EQ(rfh_a, current_frame_host());
+}
+
 }  // namespace content
