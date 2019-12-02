@@ -1098,6 +1098,7 @@
     },
     {
       name: "NewSystemColors",
+      status: "stable",
     },
     {
       name: "NoIdleEncodingForWebTests",
