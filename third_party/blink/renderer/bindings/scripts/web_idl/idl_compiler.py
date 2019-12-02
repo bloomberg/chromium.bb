@@ -90,6 +90,8 @@ class IdlCompiler(object):
         self._group_overloaded_functions()
         self._calculate_group_exposure()
 
+        self._sort_dictionary_members()
+
         # Updates on IRs are finished.  Create API objects.
         self._create_public_objects()
 
@@ -356,6 +358,18 @@ class IdlCompiler(object):
                             if exposure.only_in_secure_contexts is not True
                         ]))
                     group.exposure.set_only_in_secure_contexts(flag_names)
+
+    def _sort_dictionary_members(self):
+        """Sorts dictionary members in alphabetical order."""
+        old_irs = self._ir_map.irs_of_kind(IRMap.IR.Kind.DICTIONARY)
+
+        self._ir_map.move_to_new_phase()
+
+        for old_ir in old_irs:
+            new_ir = make_copy(old_ir)
+            self._ir_map.add(new_ir)
+
+            new_ir.own_members.sort(key=lambda x: x.identifier)
 
     def _create_public_objects(self):
         """Creates public representations of compiled objects."""

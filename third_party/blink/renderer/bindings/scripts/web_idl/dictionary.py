@@ -85,8 +85,7 @@ class Dictionary(UserDefinedType, WithExtendedAttributes,
         """
         Returns own dictionary members.  Inherited members are not included.
 
-        Note that members are not sorted alphabetically.  The order should be
-        the declaration order.
+        Members are sorted by their identifiers alphabetically.
         """
         return self._own_members
 
@@ -100,9 +99,9 @@ class Dictionary(UserDefinedType, WithExtendedAttributes,
 
         def collect_inherited_members(dictionary):
             if dictionary is None:
-                return []
-            return (collect_inherited_members(dictionary.inherited) + sorted(
-                dictionary.own_members, key=lambda member: member.identifier))
+                return ()
+            return (collect_inherited_members(dictionary.inherited) +
+                    dictionary.own_members)
 
         return tuple(collect_inherited_members(self))
 
