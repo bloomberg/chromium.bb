@@ -192,7 +192,7 @@ android_builder(
     goma_jobs = goma.jobs.J300,
     ssd = True,
     tryjob = tryjob(
-        experiment_percentage = 50,
+        experiment_percentage = 100,
     ),
 )
 
