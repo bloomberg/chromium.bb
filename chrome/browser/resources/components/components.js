@@ -41,9 +41,11 @@ function requestComponentsData() {
  * Called by the WebUI to re-populate the page with data representing the
  * current state of installed components. The componentsData will also be
  * stored in currentComponentsData to be available to JS for testing purposes.
- * @param {Object} componentsData Detailed info about installed components. The
- *     template expects each component's format to match the following
- *     structure to correctly populate the page:
+ * @param {{
+ *   components: !Array<!{name: string, version: string}>
+ * }} componentsData Detailed info about installed components. The template
+ * expects each component's format to match the following structure to correctly
+ *     populate the page:
  *   {
  *     components: [
  *       {

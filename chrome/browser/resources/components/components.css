@@ -13,7 +13,7 @@ a {
 }
 
 #header {
-  background: url(../../../ui/webui/resources/images/extension.svg)
+  background: url(../../../../ui/webui/resources/images/extension.svg)
       left center / 48px no-repeat;
   box-sizing: border-box;
   margin-bottom: 1.05em;
@@ -79,17 +79,6 @@ h1 {
   font-weight: bold;
 }
 
-.vbox-container {
-  -webkit-box-orient: vertical;
-  display: -webkit-box;
-}
-
-.wbox {
-  -webkit-box-align: stretch;
-  -webkit-box-flex: 1;
-  display: -webkit-box;
-}
-
 #top {
   padding-inline-end: 5px;
 }
@@ -118,19 +107,14 @@ body.show-tmi-mode .show-in-tmi-mode {
   transition: all 100ms ease-in;
 }
 
-.wbox-tmi-mode {
-  -webkit-box-align: stretch;
-  -webkit-box-flex: 1;
-}
-
 .tmi-mode-image {
   margin-top: 2px;
-  padding-left: 5px;
-  padding-right: 5px;
+  padding-inline-end: 5px;
+  padding-inline-start: 5px;
 }
 
 .tmi-mode-link {
-  margin-right: 3px;
+  margin-inline-end: 3px;
   white-space: nowrap;
 }
 
