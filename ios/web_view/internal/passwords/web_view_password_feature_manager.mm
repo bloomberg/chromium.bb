@@ -32,4 +32,14 @@ void WebViewPasswordFeatureManager::SetAccountStorageOptIn(bool opt_in) {
   NOTREACHED();
 }
 
+autofill::PasswordForm::Store
+WebViewPasswordFeatureManager::GetDefaultPasswordStore() const {
+  return autofill::PasswordForm::Store::kProfileStore;
+}
+
+void WebViewPasswordFeatureManager::SetDefaultPasswordStore(
+    const autofill::PasswordForm::Store& store) {
+  NOTREACHED();
+}
+
 }  // namespace ios_web_view

@@ -5,7 +5,11 @@
 #include "components/password_manager/core/browser/password_feature_manager_impl.h"
 
 #include "components/password_manager/core/browser/password_manager_util.h"
+#include "components/password_manager/core/common/password_manager_pref_names.h"
+#include "components/prefs/pref_service.h"
 #include "components/sync/driver/sync_service.h"
+
+using autofill::PasswordForm;
 
 namespace password_manager {
 
@@ -52,6 +56,21 @@ bool PasswordFeatureManagerImpl::ShouldShowAccountStorageOptIn() const {
 void PasswordFeatureManagerImpl::SetAccountStorageOptIn(bool opt_in) {
   password_manager_util::SetAccountStorageOptIn(pref_service_, sync_service_,
                                                 opt_in);
+}
+
+void PasswordFeatureManagerImpl::SetDefaultPasswordStore(
+    const PasswordForm::Store& store) {
+  DCHECK(pref_service_);
+  pref_service_->SetBoolean(prefs::kIsAccountStoreDefault,
+                            store == PasswordForm::Store::kAccountStore);
+}
+
+PasswordForm::Store PasswordFeatureManagerImpl::GetDefaultPasswordStore()
+    const {
+  DCHECK(pref_service_);
+  return pref_service_->GetBoolean(prefs::kIsAccountStoreDefault)
+             ? PasswordForm::Store::kAccountStore
+             : PasswordForm::Store::kProfileStore;
 }
 
 }  // namespace password_manager

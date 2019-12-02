@@ -6,6 +6,7 @@
 #define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_FEATURE_MANAGER_H_
 
 #include "base/macros.h"
+#include "components/autofill/core/common/password_form.h"
 
 namespace password_manager {
 
@@ -35,6 +36,15 @@ class PasswordFeatureManager {
   // Sets or clears the opt-in to using account storage for passwords for the
   // current signed-in user (unconsented primary account).
   virtual void SetAccountStorageOptIn(bool opt_in) = 0;
+
+  // Sets the default password store selected by user in prefs. This store is
+  // used for saving new credentials and adding blacking listing entries.
+  virtual void SetDefaultPasswordStore(
+      const autofill::PasswordForm::Store& store) = 0;
+
+  // Reads the default password store from pref that was set using
+  // SetDefaultPasswordStore();
+  virtual autofill::PasswordForm::Store GetDefaultPasswordStore() const = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PasswordFeatureManager);
