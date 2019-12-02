@@ -23,15 +23,22 @@ issues]].
     contractions depend on pronunciation; for example, ui or ie must
     not be contracted in requiem.
   - Corrected contraction errors caused by start or end of input not
-    properly taken into account
+    properly taken into account.
   - Words are no longer contracted into lower word contractions when
-    they are adjacent to lower punctuation, for example: "hier
+    they are adjacent to lower punctuation, for example: "hier.
   - Words are now contracted into their lower contractions when they
-    are adjacent to upper punctuation, for example: (hier
+    are adjacent to upper punctuation, for example: (hier.
 - New draft table for Dutch 8-dot computer braille thanks to Leonard
-  de Ruijter
+  de Ruijter.
 - Updates to the Chinese braille table (~zh-tw.ctb~) thanks to
   Bo-Cheng Jhan, Coscell Kao, 特種兵, 黃偉豪, and Victor Cai.
+- Fixes to Polish grade 1, thanks to Łukasz Golonka
+  - Removes some unneeded ~midnum~ symbols from the Polish Grade 1.
+  - Fixes some symbols which weren't defined according to the
+    specification.
+  - Makes it possible to type dot from a braille keyboard.
+  - Adds Greek letters and some commonly used math operators to both
+    the Grade 1 and the computer braille table.
 ** Other changes
 - Make sure the log callback uses the same calling convention as all
   the other exported functions. Thanks to Leonard de Ruijter.
