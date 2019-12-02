@@ -344,6 +344,8 @@
     },
     {
       name: "ContentIndex",
+      origin_trial_feature_name: "ContentIndex",
+      origin_trial_os: ["android"],
       status: "experimental",
     },
     {
