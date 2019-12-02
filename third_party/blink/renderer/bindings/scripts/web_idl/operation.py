@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import functools
+
 from .argument import Argument
 from .code_generator_info import CodeGeneratorInfo
 from .composition_parts import WithCodeGeneratorInfo
@@ -68,7 +70,7 @@ class Operation(FunctionLike, WithExtendedAttributes, WithCodeGeneratorInfo,
 
 
 class OperationGroup(OverloadGroup, WithCodeGeneratorInfo, WithExposure,
-                     WithOwner, WithDebugInfo):
+                     WithOwner, WithComponent, WithDebugInfo):
     """
     Represents a group of operations with the same identifier.
 
@@ -95,9 +97,14 @@ class OperationGroup(OverloadGroup, WithCodeGeneratorInfo, WithExposure,
         assert all(
             operation.identifier == ir.identifier for operation in operations)
 
+        components = functools.reduce(
+            lambda s, operation: s.union(operation.components), operations,
+            set())
+
         ir = make_copy(ir)
         OverloadGroup.__init__(self, functions=operations)
         WithCodeGeneratorInfo.__init__(self, ir, readonly=True)
         WithExposure.__init__(self, ir, readonly=True)
         WithOwner.__init__(self, owner)
+        WithComponent.__init__(self, sorted(components))
         WithDebugInfo.__init__(self, ir)

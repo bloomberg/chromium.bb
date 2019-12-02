@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import functools
+
 from .code_generator_info import CodeGeneratorInfo
 from .composition_parts import Identifier
 from .composition_parts import WithCodeGeneratorInfo
@@ -56,7 +58,7 @@ class Constructor(FunctionLike, WithExtendedAttributes, WithCodeGeneratorInfo,
 
 
 class ConstructorGroup(OverloadGroup, WithCodeGeneratorInfo, WithExposure,
-                       WithOwner, WithDebugInfo):
+                       WithOwner, WithComponent, WithDebugInfo):
     """
     Represents a group of constructors for an interface.
 
@@ -84,9 +86,14 @@ class ConstructorGroup(OverloadGroup, WithCodeGeneratorInfo, WithExposure,
         assert all(constructor.identifier == ir.identifier
                    for constructor in constructors)
 
+        components = functools.reduce(
+            lambda s, constructor: s.union(constructor.components),
+            constructors, set())
+
         ir = make_copy(ir)
         OverloadGroup.__init__(self, functions=constructors)
         WithCodeGeneratorInfo.__init__(self, ir, readonly=True)
         WithExposure.__init__(self, ir, readonly=True)
         WithOwner.__init__(self, owner)
+        WithComponent.__init__(self, sorted(components))
         WithDebugInfo.__init__(self, ir)
