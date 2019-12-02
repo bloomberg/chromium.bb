@@ -798,7 +798,7 @@ void DownloadManagerImpl::ReportBytesWasted(
 void DownloadManagerImpl::InterceptNavigation(
     std::unique_ptr<network::ResourceRequest> resource_request,
     std::vector<GURL> url_chain,
-    scoped_refptr<network::ResourceResponse> response_head,
+    network::mojom::URLResponseHeadPtr response_head,
     mojo::ScopedDataPipeConsumerHandle response_body,
     network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
     net::CertStatus cert_status,
@@ -1170,7 +1170,7 @@ void DownloadManagerImpl::InterceptNavigationOnChecksComplete(
     std::unique_ptr<network::ResourceRequest> resource_request,
     std::vector<GURL> url_chain,
     net::CertStatus cert_status,
-    scoped_refptr<network::ResourceResponse> response_head,
+    network::mojom::URLResponseHeadPtr response_head,
     mojo::ScopedDataPipeConsumerHandle response_body,
     network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
     bool is_download_allowed) {
