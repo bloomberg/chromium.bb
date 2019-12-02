@@ -245,64 +245,6 @@ class LKGMManagerTest(cros_test_lib.MockTempDirTestCase):
 
     return exists_mock, link_mock
 
-  def testGenerateBlameListSinceLKGM(self):
-    """Tests that we can generate a blamelist from two commit messages.
-
-    This test tests the functionality of generating a blamelist for a git log.
-    Note in this test there are two commit messages, one commited by the
-    Commit Queue and another from Non-Commit Queue.  We test the correct
-    handling in both cases.
-    """
-    fake_git_log = """commit abcd
-Author: Sammy Sosa <fake@fake.com>
-Commit: Chris Sosa <sosa@chromium.org>
-
-    Add in a test for cbuildbot
-
-    TEST=So much testing
-    BUG=chromium-os:99999
-
-    Change-Id: Ib72a742fd2cee3c4a5223b8easwasdgsdgfasdf
-    Reviewed-on: https://chromium-review.googlesource.com/1234
-    Reviewed-by: Fake person <fake@fake.org>
-    Tested-by: Sammy Sosa <fake@fake.com>
-
-commit ef01
-Author: Sammy Sosa <fake@fake.com>
-Commit: Gerrit <chrome-bot@chromium.org>
-
-    Add in a test for cbuildbot
-
-    Random line that says "Author:" in the message:
-    Author: _Not_ Sammy Sosa <veryfake@fake.com>
-
-    TEST=So much testing
-    BUG=chromium-os:99999
-
-    Change-Id: Ib72a742fd2cee3c4a5223b8easwasdgsdgfasdf
-    Reviewed-on: https://chromium-review.googlesource.com/1235
-    Reviewed-by: Fake person <fake@fake.org>
-    Tested-by: Sammy Sosa <fake@fake.com>
-    """
-    project = {
-        'name': 'fake/repo',
-        'path': 'fake/path',
-        'revision': '1234567890',
-    }
-    self.manager.incr_type = 'build'
-    self.PatchObject(cros_build_lib, 'run', side_effect=Exception())
-    exists_mock, link_mock = self._MockParseGitLog(fake_git_log, project)
-    self.manager.GenerateBlameListSinceLKGM()
-
-    exists_mock.assert_called_once_with(
-        os.path.join(self.tmpdir, project['path']))
-    link_mock.assert_has_calls([
-        mock.call('CHUMP | repo | fake | 1234',
-                  'https://chromium-review.googlesource.com/1234'),
-        mock.call('repo | fake | 1235',
-                  'https://chromium-review.googlesource.com/1235'),
-    ])
-
   def testGenerateBlameListHasChumpCL(self):
     """Test GenerateBlameList with chump CLs."""
     fake_git_log = """

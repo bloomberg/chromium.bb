@@ -15,9 +15,7 @@ import mock
 from chromite.cbuildbot import patch_series
 from chromite.lib import config_lib
 from chromite.lib import gerrit
-from chromite.lib import git
 from chromite.lib import cros_test_lib
-from chromite.lib import parallel
 from chromite.lib import parallel_unittest
 from chromite.lib import partial_mock
 from chromite.lib import patch as cros_patch
@@ -552,59 +550,3 @@ class TestPatchSeries(PatchSeriesTestCase):
     apply_mocks = [self.SetPatchApply(x) for x in patches]
     self.assertResults(series, patches, patches)
     self.CheckPatchApply(apply_mocks)
-
-  def testResetCheckouts(self):
-    """Tests resetting git repositories to origin."""
-    series = self.GetPatchSeries()
-
-    repo_path, _, _ = self._CommonGitSetup()
-    self.CommitFile(repo_path, 'aoeu', 'asdf')
-
-    def _GetHeadAndRemote():
-      head = git.RunGit(repo_path, ['log', 'HEAD', '-n1']).output
-      remote = git.RunGit(repo_path, ['log', 'cros', '-n1']).output
-      return head, remote
-
-    head, remote = _GetHeadAndRemote()
-    self.assertNotEqual(head, remote)
-
-    series.manifest = mock.Mock()
-    series.manifest.ListCheckouts.return_value = [mock.Mock(
-        GetPath=mock.Mock(return_value=repo_path),
-        __getitem__=lambda _self, k: {'tracking_branch': 'cros/master'}[k]
-    )]
-
-    def _MapStar(f, argss):
-      return [f(*args) for args in argss]
-
-    with mock.patch.object(parallel, 'RunTasksInProcessPool', new=_MapStar):
-      series.ResetCheckouts('master')
-
-    # verify that the checkout is reset.
-    head, remote = _GetHeadAndRemote()
-    self.assertEqual(head, remote)
-
-  def TestCreateDisjointTransactions(self):
-    """Test CreateDisjointTransactions."""
-    series = self.GetPatchSeries()
-    p = self.GetPatches(6)
-    changes = p[0:5]
-    ex = Exception('error transaction')
-    # A -> B means A depends on B.
-    # p0 -> (p1, p2)
-    # p1 -> (p2)
-    # p2 -> ()
-    # p3 -> ()
-    # p4 -> (p5)
-    transactions = [(p[0], [p[0], p[1], p[2]], None),
-                    (p[1], [p[1], p[2]], None),
-                    (p[2], [p[2]], None),
-                    (p[3], [p[3], p[4]], None),
-                    (p[5], (), ex)]
-    self.PatchObject(patch_series.PatchSeries, 'CreateTransactions',
-                     return_value=transactions)
-    ordered_plans, failed = series.CreateDisjointTransactions(changes)
-    changes_in_plan = [change for plan in ordered_plans for change in plan]
-
-    self.assertCountEqual(changes_in_plan, p[0:5])
-    self.assertCountEqual(failed, [ex])

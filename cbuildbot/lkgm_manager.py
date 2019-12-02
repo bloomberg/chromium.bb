@@ -27,8 +27,6 @@ ANDROID_ELEMENT = 'android'
 ANDROID_VERSION_ATTR = 'version'
 CHROME_ELEMENT = 'chrome'
 CHROME_VERSION_ATTR = 'version'
-LKGM_ELEMENT = 'lkgm'
-LKGM_VERSION_ATTR = 'version'
 
 
 class PromoteCandidateException(Exception):
@@ -369,34 +367,6 @@ class LKGMManager(manifest_version.BuildSpecsManager):
                      retries)
 
     raise PromoteCandidateException(last_error)
-
-  def _ShouldGenerateBlameListSinceLKGM(self):
-    """Returns True if we should generate the blamelist."""
-    # We want to generate the blamelist only for valid pfq types and if we are
-    # building on the master branch i.e. revving the build number.
-    return (self.incr_type == 'build' and
-            config_lib.IsPFQType(self.build_type) and
-            self.build_type != constants.CHROME_PFQ_TYPE and
-            self.build_type != constants.ANDROID_PFQ_TYPE)
-
-  def GenerateBlameListSinceLKGM(self):
-    """Prints out links to all CL's that have been committed since LKGM.
-
-    Add buildbot trappings to print <a href='url'>text</a> in the waterfall for
-    each CL committed since we last had a passing build.
-
-    Returns:
-      A boolean indicating whether the blamelist has chump CLs.
-    """
-    if not self._ShouldGenerateBlameListSinceLKGM():
-      logging.info('Not generating blamelist for lkgm as it is not appropriate '
-                   'for this build type.')
-      return False
-    # Suppress re-printing changes we tried ourselves on paladin
-    # builders since they are redundant.
-    only_print_chumps = self.build_type == constants.PALADIN_TYPE
-    return GenerateBlameList(self.cros_source, self.lkgm_path,
-                             only_print_chumps=only_print_chumps)
 
   def GetLatestPassingSpec(self):
     """Get the last spec file that passed in the current branch."""

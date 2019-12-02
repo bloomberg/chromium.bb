@@ -14,16 +14,11 @@ import sys
 import six
 
 from chromite.lib import config_lib
-from chromite.lib import constants
 from chromite.lib import cros_logging as logging
 from chromite.lib import gerrit
 from chromite.lib import git
 from chromite.lib import parallel
 from chromite.lib import patch as cros_patch
-
-# Third-party libraries bundled with chromite need to be listed after the
-# first chromite import.
-import digraph
 
 
 MAX_PLAN_RECURSION = 150
@@ -42,22 +37,6 @@ class PatchNotEligible(cros_patch.PatchException):
   def ShortExplanation(self):
     return ('was not eligible (wrong manifest branch, wrong labels, or '
             'otherwise filtered from eligible set).')
-
-
-class PatchSeriesTooLong(cros_patch.PatchException):
-  """Exception thrown when a patch series is too long."""
-
-  def __init__(self, patch, max_length):
-    cros_patch.PatchException.__init__(self, patch)
-    self.max_length = max_length
-
-  def ShortExplanation(self):
-    return ('The Pre-CQ cannot handle a patch series longer than %s patches. '
-            'Please wait for some patches to be submitted before marking more '
-            'patches as ready. '  % (self.max_length,))
-
-  def __str__(self):
-    return self.ShortExplanation()
 
 
 # Note: This exception differs slightly in meaning from
@@ -484,77 +463,6 @@ class PatchSeries(object):
       else:
         yield (change, plan, None)
 
-  def CreateDisjointTransactions(self, changes, max_txn_length=None,
-                                 merge_projects=False):
-    """Create a list of disjoint transactions from a list of changes.
-
-    Args:
-      changes: A list of cros_patch.GitRepoPatch instances to generate
-        transactions for.
-      max_txn_length: The maximum length of any given transaction.  By default,
-        do not limit the length of transactions.
-      merge_projects: If set, put all changes to a given project in the same
-        transaction.
-
-    Returns:
-      A list of disjoint transactions and a list of exceptions. Each transaction
-      can be tried independently, without involving patches from other
-      transactions. Each change in the pool will included in exactly one of the
-      transactions, unless the patch does not apply for some reason.
-    """
-    # Gather the dependency graph for the specified changes.
-    deps, edges, failed = {}, {}, []
-    for change, plan, ex in self.CreateTransactions(changes, limit_to=changes):
-      if ex is not None:
-        logging.info('Failed creating transaction for %s: %s', change, ex)
-        failed.append(ex)
-      else:
-        # Save off the ordered dependencies of this change.
-        deps[change] = plan
-
-        # Mark every change in the transaction as bidirectionally connected.
-        for change_dep in plan:
-          edges.setdefault(change_dep, set()).update(plan)
-
-    if merge_projects:
-      projects = {}
-      for change in deps:
-        projects.setdefault(change.project, []).append(change)
-      for project in projects:
-        for change in projects[project]:
-          edges.setdefault(change, set()).update(projects[project])
-
-    # Calculate an unordered group of strongly connected components.
-    unordered_plans = digraph.StronglyConnectedComponents(list(edges), edges)
-
-    # Sort the groups according to our ordered dependency graph.
-    ordered_plans = []
-    for unordered_plan in unordered_plans:
-      ordered_plan, seen = [], set()
-      for change in unordered_plan:
-        # Iterate over the required CLs, adding them to our plan in order.
-        new_changes = list(dep_change for dep_change in deps.get(change, [])
-                           if dep_change not in seen)
-        new_plan_size = len(ordered_plan) + len(new_changes)
-        if not max_txn_length or new_plan_size <= max_txn_length:
-          seen.update(new_changes)
-          ordered_plan.extend(new_changes)
-
-      if ordered_plan:
-        # We found a transaction that is <= max_txn_length. Process the
-        # transaction. Ignore the remaining patches for now; they will be
-        # processed later (once the current transaction has been pushed).
-        ordered_plans.append(ordered_plan)
-      else:
-        # We couldn't find any transactions that were <= max_txn_length.
-        # This should only happen if circular dependencies prevent us from
-        # truncating a long list of patches. Reject the whole set of patches
-        # and complain.
-        for change in unordered_plan:
-          failed.append(PatchSeriesTooLong(change, max_txn_length))
-
-    return ordered_plans, failed
-
   @_PatchWrapException
   def _AddChangeToPlanWithDeps(self, change, plan, gerrit_deps_seen,
                                cq_deps_seen, limit_to=None,
@@ -619,37 +527,6 @@ class PatchSeries(object):
     # patch as part of dependency resolution. If not, apply this patch.
     if change not in plan:
       plan.append(change)
-
-  @_PatchWrapException
-  def GetDepChangesForChange(self, change):
-    """Look up the Gerrit/CQ dependency changes for |change|.
-
-    Returns:
-      (gerrit_deps, cq_deps): The change's Gerrit dependencies and CQ
-      dependencies, as lists of GerritPatch objects.
-
-    Raises:
-      DependencyError: If we could not resolve a dependency.
-      GerritException or GOBError: If there is a failure in querying gerrit.
-    """
-    gerrit_deps, cq_deps = self.GetDepsForChange(change)
-
-    def _DepsToChanges(deps):
-      dep_changes = []
-      unprocessed_deps = []
-      for dep in deps:
-        dep_change = self._committed_cache[dep]
-        if dep_change:
-          dep_changes.append(dep_change)
-        else:
-          unprocessed_deps.append(dep)
-
-      for dep in unprocessed_deps:
-        dep_changes.extend(self._LookupUncommittedChanges(deps))
-
-      return dep_changes
-
-    return _DepsToChanges(gerrit_deps), _DepsToChanges(cq_deps)
 
   @_PatchWrapException
   def GetDepsForChange(self, change):
@@ -733,70 +610,6 @@ class PatchSeries(object):
       parallel.RunTasksInProcessPool(fetch_repo, [[repo] for repo in by_repo])
 
       return [fetched_changes[c.id] for c in changes_to_fetch], not_in_manifest
-
-  def ReapplyChanges(self, by_repo):
-    """Make sure that all of the local changes still apply.
-
-    Syncs all of the repositories in the manifest and reapplies the changes on
-    top of the tracking branch for each repository.
-
-    Args:
-      by_repo: A mapping from repo paths to changes in that repo.
-
-    Returns:
-      a new by_repo dict containing only the patches that apply correctly, and
-      errors, a dict of patches to exceptions encountered while applying them.
-    """
-    self.ResetCheckouts(constants.PATCH_BRANCH, fetch=True)
-    local_changes = functools.reduce(set.union, by_repo.values(), set())
-    applied_changes, failed_tot, failed_inflight = self.Apply(local_changes)
-    errors = {}
-    for exception in failed_tot + failed_inflight:
-      errors[exception.patch] = exception
-
-    # Filter out only the changes that applied.
-    by_repo = dict(by_repo)
-    for repo in by_repo:
-      by_repo[repo] &= set(applied_changes)
-
-    return by_repo, errors
-
-  @_ManifestDecorator
-  def ResetCheckouts(self, branch, fetch=False):
-    """Updates |branch| in all Git checkouts in the manifest to their remotes.
-
-    Args:
-      branch: The branch to update.
-      fetch: Indicates whether to sync the remotes before resetting.
-    """
-    if not self.manifest:
-      logging.info('No manifest, skipping reset.')
-      return
-
-    def _Reset(checkout):
-      path = checkout.GetPath()
-
-      # There is no need to reset the branch if it doesn't exist.
-      if not git.DoesCommitExistInRepo(path, branch):
-        return
-
-      if fetch:
-        git.RunGit(path, ['fetch', '--all'])
-
-      def _LogBranch():
-        branches = git.RunGit(path, ['branch', '-vv']).output.splitlines()
-        branch_line = [b for b in branches if branch in b]
-        logging.info(branch_line)
-
-      _LogBranch()
-      git.RunGit(path, ['checkout', '-f', branch])
-      logging.info('Resetting to %s', checkout['tracking_branch'])
-      git.RunGit(path, ['reset', checkout['tracking_branch'], '--hard'])
-      _LogBranch()
-
-    parallel.RunTasksInProcessPool(
-        _Reset,
-        [[c] for c in self.manifest.ListCheckouts()])
 
   @_ManifestDecorator
   def Apply(self, changes, frozen=True, honor_ordering=False,
