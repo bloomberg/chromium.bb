@@ -142,8 +142,8 @@ To install the debug symbols for all available packages, run:
               '+' + 'sysroot_chromeos-base_chromeos-chrome.tar.xz'
     sysroot = os.path.join(self.sdk_path, sysroot)
     if not os.path.isdir(sysroot):
-      raise GdbMissingSysrootError('Cannot find sysroot for %s at.'
-                                   ' %s' % self.board, sysroot)
+      raise GdbMissingSysrootError('Cannot find sysroot for %s at %s'
+                                   % (self.board, sysroot))
     return sysroot
 
   def GetSimpleChromeBinary(self):
