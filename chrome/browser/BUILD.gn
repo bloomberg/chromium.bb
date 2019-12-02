@@ -5550,6 +5550,8 @@ static_library("test_support") {
     "history/history_test_utils.h",
     "installable/fake_installable_manager.cc",
     "installable/fake_installable_manager.h",
+    "interstitials/security_interstitial_page_test_utils.cc",
+    "interstitials/security_interstitial_page_test_utils.h",
     "media/webrtc/fake_desktop_media_list.cc",
     "media/webrtc/fake_desktop_media_list.h",
     "media/webrtc/fake_desktop_media_picker_factory.cc",
@@ -5586,6 +5588,8 @@ static_library("test_support") {
     "signin/e2e_tests/test_accounts_util.h",
     "signin/identity_test_environment_profile_adaptor.cc",
     "signin/identity_test_environment_profile_adaptor.h",
+    "ssl/ssl_browsertest_util.cc",
+    "ssl/ssl_browsertest_util.h",
     "ssl/ssl_client_auth_requestor_mock.cc",
     "ssl/ssl_client_auth_requestor_mock.h",
     "ssl/tls_deprecation_test_utils.cc",
@@ -5835,10 +5839,14 @@ if (!is_android) {
     visibility = [ "//chrome/test:test_support_ui" ]
 
     sources = [
+      "interstitials/security_interstitial_idn_test.cc",
+      "interstitials/security_interstitial_idn_test.h",
       "password_manager/password_manager_test_base.cc",
       "password_manager/password_manager_test_base.h",
       "signin/token_revoker_test_utils.cc",
       "signin/token_revoker_test_utils.h",
+      "ssl/cert_verifier_platform_browser_test.cc",
+      "ssl/cert_verifier_platform_browser_test.h",
       "ui/webui/signin/login_ui_test_utils.cc",
       "ui/webui/signin/login_ui_test_utils.h",
       "ui/webui/test_data_source.cc",
