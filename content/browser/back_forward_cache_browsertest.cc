@@ -1737,7 +1737,9 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   web_contents()->GetController().GoBack();
   EXPECT_FALSE(WaitForLoadStop(shell()->web_contents()));
   ExpectNotRestored(
-      {BackForwardCacheMetrics::NotRestoredReason::kHTTPStatusNotOK},
+      {BackForwardCacheMetrics::NotRestoredReason::kHTTPStatusNotOK,
+       BackForwardCacheMetrics::NotRestoredReason::
+           kNotMostRecentNavigationEntry},
       FROM_HERE);
 }
 
@@ -2953,25 +2955,23 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
 
   ExpectOutcome(BackForwardCacheMetrics::HistoryNavigationOutcome::kNotRestored,
                 FROM_HERE);
-  // TODO(hajimehoshi): Record kConflictingBrowsingInstance instead of kUnknown
-  // here.
   ExpectNotRestored(
       {
-          BackForwardCacheMetrics::NotRestoredReason::kUnknown,
+          BackForwardCacheMetrics::NotRestoredReason::
+              kRenderFrameHostReused_SameSite,
       },
       FROM_HERE);
 
-  // 5) Go back to B3.
-  web_contents()->GetController().GoToIndex(2);
+  // 5) Go to A2.
+  web_contents()->GetController().GoForward();
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
 
   ExpectOutcome(BackForwardCacheMetrics::HistoryNavigationOutcome::kNotRestored,
                 FROM_HERE);
-  ExpectDisabledWithReason("BackForwardCacheBrowserTest", FROM_HERE);
   ExpectNotRestored(
       {
           BackForwardCacheMetrics::NotRestoredReason::
-              kDisableForRenderFrameHostCalled,
+              kConflictingBrowsingInstance,
       },
       FROM_HERE);
 }
