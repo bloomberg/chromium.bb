@@ -53,7 +53,7 @@ noback uplow \x012a\x012b 5-247,5-24 Latin letter i with macron
 noback uplow \x012c\x012d 5-247,5-24 Latin letter i with breve
 noback uplow \x012e\x012f 5-247,5-24 Latin letter i with ogonek
 noback uplow \x0130\x0131 5-247,5-24 Latin capital letter i with dot above / small dotless i
-uplow \x0132\x0133 24-2457,5-245 Latin ligature ij
+uplow \x0132\x0133 5-2457,5-245 Latin ligature ij
 noback uplow \x0134\x0135 5-2457,5-245 Latin letter j with circumflex
 uplow \x0136\x0137 5-137,5-13 Latin letter k with cedilla
 lowercase \x0138 5-12345 Small latin letter kra (Greenlandic q)
