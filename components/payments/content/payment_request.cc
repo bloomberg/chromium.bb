@@ -599,6 +599,8 @@ bool PaymentRequest::SatisfiesSkipUIConstraints() {
       is_show_user_gesture_ && state()->IsInitialized() &&
       spec()->IsInitialized() && state()->available_apps().size() == 1 &&
       spec()->stringified_method_data().size() == 1 &&
+      // The available app should be preselectable.
+      state()->selected_app() != nullptr &&
       (!spec()->request_shipping() ||
        state()->available_apps().front()->HandlesShippingAddress()) &&
       (!spec()->request_payer_name() ||
