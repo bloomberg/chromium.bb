@@ -55,8 +55,8 @@ constexpr int kFilterIndexShift = 6;
 // is shifted by |kFilterBits| (7) and saturated to uint8_t. This means any
 // value over 255 << 7 (32576 because of rounding) is clamped.
 template <int filter_index, bool negative_outside_taps = false>
-int16x8_t SumVerticalTaps(const uint8x8_t* const src,
-                          const uint8x8_t* const taps) {
+int16x8_t SumOnePassTaps(const uint8x8_t* const src,
+                         const uint8x8_t* const taps) {
   uint16x8_t sum;
   if (filter_index == 0) {
     // 6 taps. + - + + - +
@@ -201,66 +201,42 @@ uint16x8_t SumVerticalTaps8To16(const uint8x8_t* const src,
   return sum;
 }
 
-int8x16_t ConvertToSigned(const uint8x16_t a) {
-  const uint8x16_t c128 = vdupq_n_u8(128);
-  return vreinterpretq_s8_u8(vsubq_u8(a, c128));
-}
-
 // Special case for single pass non-compound.
-template <int num_taps>
+template <int filter_index, bool negative_outside_taps>
 uint8x8_t SumHorizontalTaps(const uint8_t* const src,
-                            const int8x8_t* const v_tap) {
-  int16x8_t v_sum;
-  int8x16_t v_src[8];
-  v_src[0] = ConvertToSigned(vld1q_u8(src));
-  if (num_taps == 8) {
-    v_src[1] = vextq_s8(v_src[0], v_src[0], 1);
-    v_src[2] = vextq_s8(v_src[0], v_src[0], 2);
-    v_src[3] = vextq_s8(v_src[0], v_src[0], 3);
-    v_src[4] = vextq_s8(v_src[0], v_src[0], 4);
-    v_src[5] = vextq_s8(v_src[0], v_src[0], 5);
-    v_src[6] = vextq_s8(v_src[0], v_src[0], 6);
-    v_src[7] = vextq_s8(v_src[0], v_src[0], 7);
+                            const uint8x8_t* const v_tap) {
+  uint8x8_t v_src[8];
+  const uint8x16_t src_long = vld1q_u8(src);
+  int16x8_t sum;
 
-    v_sum = vmull_s8(vget_low_s8(v_src[0]), v_tap[0]);
-    v_sum = vmlal_s8(v_sum, vget_low_s8(v_src[1]), v_tap[1]);
-    v_sum = vmlal_s8(v_sum, vget_low_s8(v_src[2]), v_tap[2]);
-    v_sum = vmlal_s8(v_sum, vget_low_s8(v_src[3]), v_tap[3]);
-    v_sum = vmlal_s8(v_sum, vget_low_s8(v_src[4]), v_tap[4]);
-    v_sum = vmlal_s8(v_sum, vget_low_s8(v_src[5]), v_tap[5]);
-    v_sum = vmlal_s8(v_sum, vget_low_s8(v_src[6]), v_tap[6]);
-    v_sum = vmlal_s8(v_sum, vget_low_s8(v_src[7]), v_tap[7]);
-  } else if (num_taps == 6) {
-    v_src[1] = vextq_s8(v_src[0], v_src[0], 1);
-    v_src[2] = vextq_s8(v_src[0], v_src[0], 2);
-    v_src[3] = vextq_s8(v_src[0], v_src[0], 3);
-    v_src[4] = vextq_s8(v_src[0], v_src[0], 4);
-    v_src[5] = vextq_s8(v_src[0], v_src[0], 5);
-    v_src[6] = vextq_s8(v_src[0], v_src[0], 6);
-
-    v_sum = vmull_s8(vget_low_s8(v_src[1]), v_tap[1]);
-    v_sum = vmlal_s8(v_sum, vget_low_s8(v_src[2]), v_tap[2]);
-    v_sum = vmlal_s8(v_sum, vget_low_s8(v_src[3]), v_tap[3]);
-    v_sum = vmlal_s8(v_sum, vget_low_s8(v_src[4]), v_tap[4]);
-    v_sum = vmlal_s8(v_sum, vget_low_s8(v_src[5]), v_tap[5]);
-    v_sum = vmlal_s8(v_sum, vget_low_s8(v_src[6]), v_tap[6]);
-  } else if (num_taps == 4) {
-    v_src[2] = vextq_s8(v_src[0], v_src[0], 2);
-    v_src[3] = vextq_s8(v_src[0], v_src[0], 3);
-    v_src[4] = vextq_s8(v_src[0], v_src[0], 4);
-    v_src[5] = vextq_s8(v_src[0], v_src[0], 5);
-
-    v_sum = vmull_s8(vget_low_s8(v_src[2]), v_tap[2]);
-    v_sum = vmlal_s8(v_sum, vget_low_s8(v_src[3]), v_tap[3]);
-    v_sum = vmlal_s8(v_sum, vget_low_s8(v_src[4]), v_tap[4]);
-    v_sum = vmlal_s8(v_sum, vget_low_s8(v_src[5]), v_tap[5]);
-  } else {
-    assert(num_taps == 2);
-    v_src[3] = vextq_s8(v_src[0], v_src[0], 3);
-    v_src[4] = vextq_s8(v_src[0], v_src[0], 4);
-
-    v_sum = vmull_s8(vget_low_s8(v_src[3]), v_tap[3]);
-    v_sum = vmlal_s8(v_sum, vget_low_s8(v_src[4]), v_tap[4]);
+  if (filter_index < 2) {
+    v_src[0] = vget_low_u8(vextq_u8(src_long, src_long, 1));
+    v_src[1] = vget_low_u8(vextq_u8(src_long, src_long, 2));
+    v_src[2] = vget_low_u8(vextq_u8(src_long, src_long, 3));
+    v_src[3] = vget_low_u8(vextq_u8(src_long, src_long, 4));
+    v_src[4] = vget_low_u8(vextq_u8(src_long, src_long, 5));
+    v_src[5] = vget_low_u8(vextq_u8(src_long, src_long, 6));
+    sum = SumOnePassTaps<filter_index, negative_outside_taps>(v_src, v_tap + 1);
+  } else if (filter_index == 2) {
+    v_src[0] = vget_low_u8(src_long);
+    v_src[1] = vget_low_u8(vextq_u8(src_long, src_long, 1));
+    v_src[2] = vget_low_u8(vextq_u8(src_long, src_long, 2));
+    v_src[3] = vget_low_u8(vextq_u8(src_long, src_long, 3));
+    v_src[4] = vget_low_u8(vextq_u8(src_long, src_long, 4));
+    v_src[5] = vget_low_u8(vextq_u8(src_long, src_long, 5));
+    v_src[6] = vget_low_u8(vextq_u8(src_long, src_long, 6));
+    v_src[7] = vget_low_u8(vextq_u8(src_long, src_long, 7));
+    sum = SumOnePassTaps<filter_index, negative_outside_taps>(v_src, v_tap);
+  } else if (filter_index == 3) {
+    v_src[0] = vget_low_u8(vextq_u8(src_long, src_long, 3));
+    v_src[1] = vget_low_u8(vextq_u8(src_long, src_long, 4));
+    sum = SumOnePassTaps<filter_index, negative_outside_taps>(v_src, v_tap + 3);
+  } else if (filter_index > 3) {
+    v_src[0] = vget_low_u8(vextq_u8(src_long, src_long, 2));
+    v_src[1] = vget_low_u8(vextq_u8(src_long, src_long, 3));
+    v_src[2] = vget_low_u8(vextq_u8(src_long, src_long, 4));
+    v_src[3] = vget_low_u8(vextq_u8(src_long, src_long, 5));
+    sum = SumOnePassTaps<filter_index, negative_outside_taps>(v_src, v_tap + 2);
   }
 
   // Normally the Horizontal pass does the downshift in two passes:
@@ -268,20 +244,15 @@ uint8x8_t SumHorizontalTaps(const uint8_t* const src,
   // kInterRoundBitsHorizontal). Each one uses a rounding shift. Combining them
   // requires adding the rounding offset from the skipped shift.
   constexpr int first_shift_rounding_bit = 1 << (kInterRoundBitsHorizontal - 1);
-  // The |src| values were converted to signed values by offsetting by 128. The
-  // absolute sum of the |v_taps| is 128. Remove this offset before doing the
-  // final shift.
-  constexpr int sum_of_offsets = (128 << kFilterBits);
-  const int16x8_t compensation =
-      vdupq_n_s16(first_shift_rounding_bit + sum_of_offsets);
+  const int16x8_t compensation = vdupq_n_s16(first_shift_rounding_bit);
 
   // It is safe to saturate this value because
   // (INT16_MAX >> kFilterBits) > UINT8_MAX;
-  v_sum = vqaddq_s16(v_sum, compensation);
-  return vqrshrun_n_s16(v_sum, kFilterBits);
+  sum = vqaddq_s16(sum, compensation);
+  return vqrshrun_n_s16(sum, kFilterBits);
 }
 
-template <int num_taps, int filter_index, bool negative_outside_taps = true>
+template <int num_taps, int filter_index, bool negative_outside_taps>
 uint16x8_t SumHorizontalTaps(const uint8_t* const src,
                              const uint8x8_t* const v_tap) {
   // Start with an offset to guarantee the sum is non negative.
@@ -408,7 +379,6 @@ void FilterHorizontal(const uint8_t* src, const ptrdiff_t src_stride,
                       void* const dest, const ptrdiff_t pred_stride,
                       const int width, const int height,
                       const uint8x8_t* const v_tap,
-                      const int8x8_t* const v_signed_tap,
                       const int inter_round_bits_vertical) {
   const int inter_round_vertical_shift =
       inter_round_bits_vertical - kFilterBits;
@@ -440,7 +410,8 @@ void FilterHorizontal(const uint8_t* src, const ptrdiff_t src_stride,
           vst1q_u16(&dest16[x], v_sum);
         } else {
           const uint8x8_t result =
-              SumHorizontalTaps<num_taps>(&src[x], v_signed_tap);
+              SumHorizontalTaps<filter_index, negative_outside_taps>(&src[x],
+                                                                     v_tap);
           vst1_u8(&dest8[x], result);
         }
         x += step;
@@ -466,7 +437,8 @@ void FilterHorizontal(const uint8_t* src, const ptrdiff_t src_stride,
         }
         vst1_u16(&dest16[0], vget_low_u16(v_sum));
       } else {
-        const uint8x8_t result = SumHorizontalTaps<num_taps>(src, v_signed_tap);
+        const uint8x8_t result =
+            SumHorizontalTaps<filter_index, negative_outside_taps>(src, v_tap);
         StoreLo4(&dest8[0], result);
       }
       src += src_stride;
@@ -947,43 +919,42 @@ LIBGAV1_ALWAYS_INLINE void DoHorizontalPass(
   // Duplicate the absolute value for each tap.  Negative taps are corrected
   // by using the vmlsl_u8 instruction.  Positive taps use vmlal_u8.
   uint8x8_t v_tap[kSubPixelTaps];
-  int8x8_t v_signed_tap[kSubPixelTaps];
   const int filter_id = (subpixel >> 6) & kSubPixelMask;
   for (int k = 0; k < kSubPixelTaps; ++k) {
-    v_signed_tap[k] = vdup_n_s8(kSubPixelFilters[filter_index][filter_id][k]);
-    v_tap[k] = vreinterpret_u8_s8(vabs_s8(v_signed_tap[k]));
+    v_tap[k] = vreinterpret_u8_s8(
+        vabs_s8(vdup_n_s8(kSubPixelFilters[filter_index][filter_id][k])));
   }
 
   if (filter_index == 2) {  // 8 tap.
     FilterHorizontal<8, 8, 2, true, is_2d, is_compound>(
-        src, src_stride, dst, dst_stride, width, height, v_tap, v_signed_tap,
+        src, src_stride, dst, dst_stride, width, height, v_tap,
         inter_round_bits_vertical);
   } else if (filter_index == 1) {  // 6 tap.
     // Check if outside taps are positive.
     if ((filter_id == 1) | (filter_id == 15)) {
       FilterHorizontal<6, 8, 1, false, is_2d, is_compound>(
-          src, src_stride, dst, dst_stride, width, height, v_tap, v_signed_tap,
+          src, src_stride, dst, dst_stride, width, height, v_tap,
           inter_round_bits_vertical);
     } else {
       FilterHorizontal<6, 8, 1, true, is_2d, is_compound>(
-          src, src_stride, dst, dst_stride, width, height, v_tap, v_signed_tap,
+          src, src_stride, dst, dst_stride, width, height, v_tap,
           inter_round_bits_vertical);
     }
   } else if (filter_index == 0) {  // 6 tap.
     FilterHorizontal<6, 8, 0, true, is_2d, is_compound>(
-        src, src_stride, dst, dst_stride, width, height, v_tap, v_signed_tap,
+        src, src_stride, dst, dst_stride, width, height, v_tap,
         inter_round_bits_vertical);
   } else if (filter_index == 4) {  // 4 tap.
     FilterHorizontal<4, 8, 4, true, is_2d, is_compound>(
-        src, src_stride, dst, dst_stride, width, height, v_tap, v_signed_tap,
+        src, src_stride, dst, dst_stride, width, height, v_tap,
         inter_round_bits_vertical);
   } else if (filter_index == 5) {  // 4 tap.
     FilterHorizontal<4, 8, 5, true, is_2d, is_compound>(
-        src, src_stride, dst, dst_stride, width, height, v_tap, v_signed_tap,
+        src, src_stride, dst, dst_stride, width, height, v_tap,
         inter_round_bits_vertical);
   } else {  // 2 tap.
     FilterHorizontal<2, 8, 3, true, is_2d, is_compound>(
-        src, src_stride, dst, dst_stride, width, height, v_tap, v_signed_tap,
+        src, src_stride, dst, dst_stride, width, height, v_tap,
         inter_round_bits_vertical);
   }
 }
@@ -2105,7 +2076,7 @@ void FilterVertical(const uint8_t* src, const ptrdiff_t src_stride,
       src_x += src_stride;
 
       const int16x8_t sums =
-          SumVerticalTaps<filter_index, negative_outside_taps>(srcs, taps);
+          SumOnePassTaps<filter_index, negative_outside_taps>(srcs, taps);
       const uint8x8_t results = vqrshrun_n_s16(sums, kFilterBits);
 
       vst1_u8(dst + x + y * dst_stride, results);
@@ -2152,7 +2123,7 @@ void FilterVertical4xH(const uint8_t* src, const ptrdiff_t src_stride,
       srcs[1] = vext_u8(srcs[0], srcs[2], 4);
 
       const int16x8_t sums =
-          SumVerticalTaps<filter_index, negative_outside_taps>(srcs, taps);
+          SumOnePassTaps<filter_index, negative_outside_taps>(srcs, taps);
       const uint8x8_t results = vqrshrun_n_s16(sums, kFilterBits);
 
       StoreLo4(dst, results);
@@ -2185,7 +2156,7 @@ void FilterVertical4xH(const uint8_t* src, const ptrdiff_t src_stride,
       srcs[3] = vext_u8(srcs[2], srcs[4], 4);
 
       const int16x8_t sums =
-          SumVerticalTaps<filter_index, negative_outside_taps>(srcs, taps);
+          SumOnePassTaps<filter_index, negative_outside_taps>(srcs, taps);
       const uint8x8_t results = vqrshrun_n_s16(sums, kFilterBits);
 
       StoreLo4(dst, results);
@@ -2226,7 +2197,7 @@ void FilterVertical4xH(const uint8_t* src, const ptrdiff_t src_stride,
       srcs[5] = vext_u8(srcs[4], srcs[6], 4);
 
       const int16x8_t sums =
-          SumVerticalTaps<filter_index, negative_outside_taps>(srcs, taps);
+          SumOnePassTaps<filter_index, negative_outside_taps>(srcs, taps);
       const uint8x8_t results = vqrshrun_n_s16(sums, kFilterBits);
 
       StoreLo4(dst, results);
@@ -2275,7 +2246,7 @@ void FilterVertical4xH(const uint8_t* src, const ptrdiff_t src_stride,
       srcs[7] = vext_u8(srcs[6], srcs[8], 4);
 
       const int16x8_t sums =
-          SumVerticalTaps<filter_index, negative_outside_taps>(srcs, taps);
+          SumOnePassTaps<filter_index, negative_outside_taps>(srcs, taps);
       const uint8x8_t results = vqrshrun_n_s16(sums, kFilterBits);
 
       StoreLo4(dst, results);
@@ -2357,7 +2328,7 @@ void FilterVertical2xH(const uint8_t* src, const ptrdiff_t src_stride,
         dst16 += dst_stride;
       } else {
         const int16x8_t sums =
-            SumVerticalTaps<filter_index, negative_outside_taps>(srcs, taps);
+            SumOnePassTaps<filter_index, negative_outside_taps>(srcs, taps);
         const uint8x8_t results = vqrshrun_n_s16(sums, kFilterBits);
 
         Store2<0>(dst8, results);
@@ -2416,7 +2387,7 @@ void FilterVertical2xH(const uint8_t* src, const ptrdiff_t src_stride,
         dst16 += dst_stride;
       } else {
         const int16x8_t sums =
-            SumVerticalTaps<filter_index, negative_outside_taps>(srcs, taps);
+            SumOnePassTaps<filter_index, negative_outside_taps>(srcs, taps);
         const uint8x8_t results = vqrshrun_n_s16(sums, kFilterBits);
 
         Store2<0>(dst8, results);
@@ -2486,7 +2457,7 @@ void FilterVertical2xH(const uint8_t* src, const ptrdiff_t src_stride,
         dst16 += dst_stride;
       } else {
         const int16x8_t sums =
-            SumVerticalTaps<filter_index, negative_outside_taps>(srcs, taps);
+            SumOnePassTaps<filter_index, negative_outside_taps>(srcs, taps);
         const uint8x8_t results = vqrshrun_n_s16(sums, kFilterBits);
 
         Store2<0>(dst8, results);
@@ -2563,7 +2534,7 @@ void FilterVertical2xH(const uint8_t* src, const ptrdiff_t src_stride,
         dst16 += dst_stride;
       } else {
         const int16x8_t sums =
-            SumVerticalTaps<filter_index, negative_outside_taps>(srcs, taps);
+            SumOnePassTaps<filter_index, negative_outside_taps>(srcs, taps);
         const uint8x8_t results = vqrshrun_n_s16(sums, kFilterBits);
 
         Store2<0>(dst8, results);
