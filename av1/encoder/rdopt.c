@@ -9719,7 +9719,7 @@ static int handle_inter_intra_mode(const AV1_COMP *const cpi,
                        cpi->sf.disable_smooth_interintra,
                    best_interintra_mode != II_SMOOTH_PRED));
     rmode = interintra_mode_cost[best_interintra_mode];
-    if (j == 0 || best_interintra_mode != II_SMOOTH_PRED) {
+    if (j == 0 || best_interintra_mode != INTERINTRA_MODES - 1) {
       mbmi->interintra_mode = best_interintra_mode;
       av1_build_intra_predictors_for_interintra(cm, xd, bsize, 0, orig_dst,
                                                 intrapred, bw);
@@ -9758,8 +9758,8 @@ static int handle_inter_intra_mode(const AV1_COMP *const cpi,
       if (!cpi->oxcf.enable_smooth_interintra ||
           cpi->sf.disable_smooth_interintra) {
         if (best_interintra_mode == INTERINTRA_MODES) {
-          mbmi->interintra_mode = II_SMOOTH_PRED;
-          best_interintra_mode = II_SMOOTH_PRED;
+          mbmi->interintra_mode = INTERINTRA_MODES - 1;
+          best_interintra_mode = INTERINTRA_MODES - 1;
           av1_build_intra_predictors_for_interintra(cm, xd, bsize, 0, orig_dst,
                                                     intrapred, bw);
           best_interintra_rd_wedge =
@@ -9784,7 +9784,7 @@ static int handle_inter_intra_mode(const AV1_COMP *const cpi,
           args->inter_intra_mode[mbmi->ref_frame[0]] = best_interintra_mode;
           mbmi->interintra_mode = best_interintra_mode;
 
-          if (best_interintra_mode != II_SMOOTH_PRED) {
+          if (best_interintra_mode != INTERINTRA_MODES - 1) {
             av1_build_intra_predictors_for_interintra(cm, xd, bsize, 0,
                                                       orig_dst, intrapred, bw);
           }
