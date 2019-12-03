@@ -51,6 +51,7 @@
 #include "third_party/skia/include/core/SkString.h"
 #include "third_party/skia/include/effects/SkColorFilterImageFilter.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
+#include "third_party/skia/include/effects/SkImageFilters.h"
 #include "third_party/skia/include/effects/SkOverdrawColorFilter.h"
 #include "third_party/skia/include/effects/SkShaderMaskFilter.h"
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
@@ -1091,19 +1092,54 @@ void SkiaRenderer::PrepareCanvasForRPDQ(const DrawRPDQParams& rpdq_params,
     layer_paint.setImageFilter(rpdq_params.image_filter);
   }
 
+  // Canocalize the backdrop bounds rrect type; if there's no backdrop filter or
+  // filter bounds, this will be empty. If it's a rect or rrect, we must work
+  // around Skia's background filter auto-expansion. If it's an rrect, we must
+  // also clear out the rounded corners after filtering.
+  gfx::RRectF::Type backdrop_bounds_type = gfx::RRectF::Type::kEmpty;
+  if (rpdq_params.backdrop_filter &&
+      rpdq_params.backdrop_filter_bounds.has_value()) {
+    backdrop_bounds_type = rpdq_params.backdrop_filter_bounds->GetType();
+  }
+
+  // Initially the backdrop filter fills the entire rect; if we draw less than
+  // that we need to clear the excess.
+  bool post_backdrop_filter_clear_needed = params->draw_region.has_value();
+
+  // Explicitly crop the input and the output to the backdrop bounds; this is
+  // required for the backdrop-filter spec.
+  sk_sp<SkImageFilter> backdrop_filter = rpdq_params.backdrop_filter;
+  if (backdrop_bounds_type != gfx::RRectF::Type::kEmpty) {
+    DCHECK(backdrop_filter);
+
+    gfx::Rect crop_rect =
+        gfx::ToEnclosingRect(rpdq_params.backdrop_filter_bounds->rect());
+    SkIRect sk_crop_rect = gfx::RectToSkIRect(crop_rect);
+    // Offsetting (0,0) does nothing to the actual image, but is the most
+    // convenient way to embed the crop rect into the filter DAG.
+    // TODO(michaelludwig) - Remove this once Skia doesn't always auto-expand
+    sk_sp<SkImageFilter> crop =
+        SkImageFilters::Offset(0.0f, 0.0f, nullptr, &sk_crop_rect);
+    backdrop_filter = SkImageFilters::Compose(
+        crop, SkImageFilters::Compose(std::move(backdrop_filter), crop));
+    // Update whether or not a post-filter clear is needed (crop didn't
+    // completely match bounds)
+    post_backdrop_filter_clear_needed |=
+        backdrop_bounds_type != gfx::RRectF::Type::kRect ||
+        gfx::RectF(crop_rect) != rpdq_params.backdrop_filter_bounds->rect();
+  }
+
   SkRect bounds = gfx::RectFToSkRect(rpdq_params.bypass_clip.has_value()
                                          ? *rpdq_params.bypass_clip
                                          : params->visible_rect);
   current_canvas_->saveLayer(SkCanvas::SaveLayerRec(
-      &bounds, &layer_paint, rpdq_params.backdrop_filter.get(),
+      &bounds, &layer_paint, backdrop_filter.get(),
       rpdq_params.mask_image.get(), &rpdq_params.mask_to_quad_matrix, 0));
 
   // If we have backdrop filtered content (and not transparent black like with
   // regular render passes), we have to clear out the parts of the layer that
   // shouldn't show the backdrop
-  if (rpdq_params.backdrop_filter &&
-      (rpdq_params.backdrop_filter_bounds.has_value() ||
-       params->draw_region.has_value())) {
+  if (backdrop_filter && post_backdrop_filter_clear_needed) {
     current_canvas_->save();
     if (rpdq_params.backdrop_filter_bounds.has_value()) {
       current_canvas_->clipRRect(SkRRect(*rpdq_params.backdrop_filter_bounds),
