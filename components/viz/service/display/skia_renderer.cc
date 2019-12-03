@@ -787,32 +787,13 @@ void SkiaRenderer::FinishDrawingFrame() {
   if (use_swap_with_bounds_)
     swap_content_bounds_ = current_frame()->root_content_bounds;
 
-#if defined(OS_ANDROID)
-  if (!current_frame()->overlay_list.empty()) {
-    DCHECK_EQ(current_frame()->overlay_list.size(), 1u);
-    overlay_resource_locks_.emplace_back(
-        std::make_unique<DisplayResourceProvider::ScopedReadLockSharedImage>(
-            resource_provider_,
-            current_frame()->overlay_list.front().resource_id));
-    skia_output_surface_->RenderToOverlay(
-        overlay_resource_locks_.back()->sync_token(),
-        overlay_resource_locks_.back()->mailbox(),
-        ToNearestRect(current_frame()->overlay_list.front().display_rect));
-  } else {
-    overlay_resource_locks_.emplace_back(nullptr);
-  }
-#endif
-
   // TODO(weiliangc): Remove this once OverlayProcessor schedules overlays.
   if (current_frame()->output_surface_plane) {
     skia_output_surface_->ScheduleOutputSurfaceAsOverlay(
         current_frame()->output_surface_plane.value());
   }
 
-#if defined(OS_WIN)
-  // Schedule overlay planes to be presented before SwapBuffers().
-  ScheduleDCLayers();
-#endif
+  ScheduleOverlays();
 }
 
 void SkiaRenderer::SwapBuffers(SwapFrameData swap_frame_data) {
@@ -832,17 +813,9 @@ void SkiaRenderer::SwapBuffers(SwapFrameData swap_frame_data) {
     output_frame.sub_buffer_rect = swap_buffer_rect_;
   }
 
-  // Unlock the overlay resource that was swapped last frame.
-  if (overlay_resource_locks_.size() > 1) {
-    overlay_resource_locks_.pop_front();
-  }
-
   switch (draw_mode_) {
     case DrawMode::DDL: {
-      gpu::SyncToken sync_token = skia_output_surface_->SkiaSwapBuffers(
-          std::move(output_frame), has_locked_overlay_resources_);
-      if (has_locked_overlay_resources_)
-        lock_set_for_external_use_->UnlockResources(sync_token);
+      skia_output_surface_->SkiaSwapBuffers(std::move(output_frame));
       break;
     }
     case DrawMode::SKPRECORD: {
@@ -860,6 +833,12 @@ void SkiaRenderer::SwapBuffers(SwapFrameData swap_frame_data) {
   }
 
   swap_buffer_rect_ = gfx::Rect();
+}
+
+void SkiaRenderer::SwapBuffersComplete() {
+  committed_overlay_locks_.clear();
+  std::swap(committed_overlay_locks_, pending_overlay_locks_.front());
+  pending_overlay_locks_.pop_front();
 }
 
 bool SkiaRenderer::FlippedFramebuffer() const {
@@ -2065,11 +2044,23 @@ void SkiaRenderer::DrawUnsupportedQuad(const DrawQuad* quad,
 #endif
 }
 
-#if defined(OS_WIN)
-void SkiaRenderer::ScheduleDCLayers() {
+void SkiaRenderer::ScheduleOverlays() {
+  pending_overlay_locks_.emplace_back();
   if (current_frame()->overlay_list.empty())
     return;
 
+#if defined(OS_ANDROID)
+  auto& locks = pending_overlay_locks_.back();
+  if (!current_frame()->overlay_list.empty()) {
+    DCHECK_EQ(current_frame()->overlay_list.size(), 1u);
+    locks.emplace_back(resource_provider_,
+                       current_frame()->overlay_list.front().resource_id);
+    skia_output_surface_->RenderToOverlay(
+        locks.back().sync_token(), locks.back().mailbox(),
+        ToNearestRect(current_frame()->overlay_list.front().display_rect));
+  }
+#elif defined(OS_WIN)
+  auto& locks = pending_overlay_locks_.back();
   std::vector<gpu::SyncToken> sync_tokens;
   for (auto& dc_layer_overlay : current_frame()->overlay_list) {
     for (size_t i = 0; i < DCLayerOverlay::kNumResources; ++i) {
@@ -2077,25 +2068,30 @@ void SkiaRenderer::ScheduleDCLayers() {
       if (resource_id == kInvalidResourceId)
         break;
 
-      // Resources will be unlocked after the next call to SwapBuffers().
-      auto* image_context =
-          lock_set_for_external_use_->LockResource(resource_id, true);
+      // Resources will be unlocked after the SwapBuffers() is completed.
+      locks.emplace_back(resource_provider_, resource_id);
+      auto& lock = locks.back();
 
       // Sync tokens ensure the texture to be overlaid is available before
       // scheduling it for display.
-      if (image_context->mailbox_holder().sync_token.HasData())
-        sync_tokens.push_back(image_context->mailbox_holder().sync_token);
+      if (lock.sync_token().HasData())
+        sync_tokens.push_back(lock.sync_token());
 
-      dc_layer_overlay.mailbox[i] = image_context->mailbox_holder().mailbox;
+      dc_layer_overlay.mailbox[i] = lock.mailbox();
     }
     DCHECK(!dc_layer_overlay.mailbox[0].IsZero());
   }
 
-  has_locked_overlay_resources_ = true;
   skia_output_surface_->ScheduleDCLayers(
       std::move(current_frame()->overlay_list), std::move(sync_tokens));
-}
+#elif defined(OS_MACOSX) || defined(USE_OZONE)
+  NOTIMPLEMENTED_LOG_ONCE();
+#else
+  // For platforms doesn't support overlays, the current_frame()->overlay_list
+  // should be empty, and here should not be reached.
+  NOTREACHED();
 #endif
+}
 
 sk_sp<SkColorFilter> SkiaRenderer::GetColorFilter(const gfx::ColorSpace& src,
                                                   const gfx::ColorSpace& dst,

@@ -386,34 +386,22 @@ SkiaOutputSurfaceImpl::CreateImageContext(
                                             std::move(color_space));
 }
 
-gpu::SyncToken SkiaOutputSurfaceImpl::SkiaSwapBuffers(OutputSurfaceFrame frame,
-                                                      bool wants_sync_token) {
+void SkiaOutputSurfaceImpl::SkiaSwapBuffers(OutputSurfaceFrame frame) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!current_paint_);
-
-  gpu::SyncToken sync_token;
-  if (wants_sync_token) {
-    sync_token = gpu::SyncToken(
-        gpu::CommandBufferNamespace::VIZ_SKIA_OUTPUT_SURFACE,
-        impl_on_gpu_->command_buffer_id(), ++sync_fence_release_);
-    sync_token.SetVerifyFlush();
-  }
 
   // impl_on_gpu_ is released on the GPU thread by a posted task from
   // SkiaOutputSurfaceImpl::dtor. So it is safe to use base::Unretained.
   auto callback =
       base::BindOnce(&SkiaOutputSurfaceImplOnGpu::SwapBuffers,
                      base::Unretained(impl_on_gpu_.get()), std::move(frame),
-                     std::move(deferred_framebuffer_draw_closure_),
-                     sync_token.release_count());
+                     std::move(deferred_framebuffer_draw_closure_));
   ScheduleGpuTask(std::move(callback), std::move(resource_sync_tokens_));
 
   // Recreate |root_recorder_| after SwapBuffers has been scheduled on GPU
   // thread to save some time in BeginPaintCurrentFrame
   // TODO(vasilyt): reuse root recorder
   RecreateRootRecorder();
-
-  return sync_token;
 }
 
 void SkiaOutputSurfaceImpl::ScheduleOutputSurfaceAsOverlay(

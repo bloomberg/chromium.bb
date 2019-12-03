@@ -77,11 +77,8 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurface : public OutputSurface,
       sk_sp<SkColorSpace> dst_color_space,
       bool has_alpha) = 0;
 
-  // Swaps the current backbuffer to the screen. This method returns a non-empty
-  // sync token which can be waited on to ensure swap is complete if
-  // |wants_sync_token| is true.
-  virtual gpu::SyncToken SkiaSwapBuffers(OutputSurfaceFrame frame,
-                                         bool wants_sync_token) = 0;
+  // Swaps the current backbuffer to the screen.
+  virtual void SkiaSwapBuffers(OutputSurfaceFrame frame) = 0;
 
   // TODO(weiliangc): This API should move to OverlayProcessor.
   // Schedule |output_surface_plane| as an overlay plane to be displayed.

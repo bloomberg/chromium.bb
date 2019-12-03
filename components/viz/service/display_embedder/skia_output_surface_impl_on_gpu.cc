@@ -898,8 +898,7 @@ void SkiaOutputSurfaceImplOnGpu::ScheduleOutputSurfaceAsOverlay(
 
 void SkiaOutputSurfaceImplOnGpu::SwapBuffers(
     OutputSurfaceFrame frame,
-    base::OnceCallback<bool()> deferred_framebuffer_draw_closure,
-    uint64_t sync_fence_release) {
+    base::OnceCallback<bool()> deferred_framebuffer_draw_closure) {
   TRACE_EVENT0("viz", "SkiaOutputSurfaceImplOnGpu::SwapBuffers");
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
@@ -949,9 +948,6 @@ void SkiaOutputSurfaceImplOnGpu::SwapBuffers(
     output_device_->SwapBuffers(buffer_presented_callback_,
                                 std::move(frame.latency_info));
   }
-
-  if (sync_fence_release)
-    ReleaseFenceSyncAndPushTextureUpdates(sync_fence_release);
 
   destroy_after_swap_.clear();
 }
