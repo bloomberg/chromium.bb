@@ -1111,6 +1111,9 @@ extern const char kSharingUseDeviceInfoDescription[];
 extern const char kSharingDeriveVapidKeyName[];
 extern const char kSharingDeriveVapidKeyDescription[];
 
+extern const char kSharingDeviceExpirationName[];
+extern const char kSharingDeviceExpirationDescription[];
+
 extern const char kShelfHotseatName[];
 extern const char kShelfHotseatDescription[];
 

@@ -1887,6 +1887,12 @@ const char kSharingDeriveVapidKeyName[] =
 const char kSharingDeriveVapidKeyDescription[] =
     "Enables Sharing infrastructure to derive VAPID key from sync.";
 
+const char kSharingDeviceExpirationName[] =
+    "Configures sharing device expiration";
+const char kSharingDeviceExpirationDescription[] =
+    "Configures how long after a device was last active that it is eligible "
+    "for use in sharing features.";
+
 const char kShelfHotseatName[] = "Enable a modular design for the shelf.";
 const char kShelfHotseatDescription[] =
     "Shows a modular design for the shelf where the apps are shown separately "

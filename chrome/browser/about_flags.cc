@@ -1352,6 +1352,33 @@ const FeatureEntry::FeatureVariation kBackForwardCacheVariations[] = {
      base::size(kBackForwardCache_ForceCaching), nullptr},
 };
 
+const FeatureEntry::FeatureParam kSharingDeviceExpirationHours_0[] = {
+    {"SharingDeviceExpirationHours", "0"}};
+const FeatureEntry::FeatureParam kSharingDeviceExpirationHours_12[] = {
+    {"SharingDeviceExpirationHours", "12"}};
+const FeatureEntry::FeatureParam kSharingDeviceExpirationHours_24[] = {
+    {"SharingDeviceExpirationHours", "24"}};
+const FeatureEntry::FeatureParam kSharingDeviceExpirationHours_48[] = {
+    {"SharingDeviceExpirationHours", "48"}};
+const FeatureEntry::FeatureParam kSharingDeviceExpirationHours_96[] = {
+    {"SharingDeviceExpirationHours", "96"}};
+const FeatureEntry::FeatureParam kSharingDeviceExpirationHours_240[] = {
+    {"SharingDeviceExpirationHours", "240"}};
+const FeatureEntry::FeatureVariation kSharingDeviceExpirationVariations[] = {
+    {"0 hours", kSharingDeviceExpirationHours_0,
+     base::size(kSharingDeviceExpirationHours_0), nullptr},
+    {"12 hours", kSharingDeviceExpirationHours_12,
+     base::size(kSharingDeviceExpirationHours_12), nullptr},
+    {"1 day", kSharingDeviceExpirationHours_24,
+     base::size(kSharingDeviceExpirationHours_24), nullptr},
+    {"2 days", kSharingDeviceExpirationHours_48,
+     base::size(kSharingDeviceExpirationHours_48), nullptr},
+    {"4 days", kSharingDeviceExpirationHours_96,
+     base::size(kSharingDeviceExpirationHours_96), nullptr},
+    {"10 days", kSharingDeviceExpirationHours_240,
+     base::size(kSharingDeviceExpirationHours_240), nullptr},
+};
+
 #if defined(OS_CHROMEOS)
 const FeatureEntry::Choice kEnableCrOSActionRecorderChoices[] = {
     {flags_ui::kGenericExperimentChoiceDefault, "", ""},
@@ -3808,6 +3835,13 @@ const FeatureEntry kFeatureEntries[] = {
     {"sharing-rename-devices", flag_descriptions::kSharingRenameDevicesName,
      flag_descriptions::kSharingRenameDevicesDescription, kOsAll,
      FEATURE_VALUE_TYPE(send_tab_to_self::kSharingRenameDevices)},
+
+    {"sharing-device-expiration",
+     flag_descriptions::kSharingDeviceExpirationName,
+     flag_descriptions::kSharingDeviceExpirationDescription, kOsAll,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(kSharingDeviceExpiration,
+                                    kSharingDeviceExpirationVariations,
+                                    "SharingDeviceExpiration")},
 
 #if defined(OS_CHROMEOS)
     {"discover-app", flag_descriptions::kEnableDiscoverAppName,
