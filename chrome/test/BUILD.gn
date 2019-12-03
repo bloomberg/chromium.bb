@@ -5227,6 +5227,7 @@ test("unit_tests") {
 
   if (enable_webui_tab_strip) {
     sources += [
+      "../browser/ui/views/frame/webui_tab_strip_container_view_unittest.cc",
       "../browser/ui/webui/tab_strip/tab_strip_ui_layout_unittest.cc",
       "../browser/ui/webui/tab_strip/thumbnail_tracker_unittest.cc",
     ]
