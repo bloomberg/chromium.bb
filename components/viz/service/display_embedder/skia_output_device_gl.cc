@@ -114,10 +114,12 @@ bool SkiaOutputDeviceGL::Reshape(const gfx::Size& size,
   sk_surface_ = SkSurface::MakeFromBackendRenderTarget(
       gr_context_, render_target, origin, color_type,
       color_space.ToSkColorSpace(), &surface_props);
-  CHECK(sk_surface_) << "Couldn't create surface: " << gr_context_->abandoned()
-                     << " " << color_type << " " << framebuffer_info.fFBOID
-                     << " " << framebuffer_info.fFormat << " "
-                     << color_space.ToString() << " " << size.ToString();
+  if (!sk_surface_) {
+    LOG(ERROR) << "Couldn't create surface: " << gr_context_->abandoned() << " "
+               << color_type << " " << framebuffer_info.fFBOID << " "
+               << framebuffer_info.fFormat << " " << color_space.ToString()
+               << " " << size.ToString();
+  }
   return !!sk_surface_;
 }
 
