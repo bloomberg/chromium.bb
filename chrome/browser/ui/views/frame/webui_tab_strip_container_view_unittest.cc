@@ -13,7 +13,9 @@
 
 class WebUITabStripContainerViewTest : public TestWithBrowserView {
  public:
-  WebUITabStripContainerViewTest() : touch_mode_(true) {
+  template <typename... Args>
+  explicit WebUITabStripContainerViewTest(Args... args)
+      : TestWithBrowserView(args...), touch_mode_(true) {
     // Both the switch and |touch_mode_| are necessary since
     // MaterialDesignController::Initialize() gets called at different
     // times on different platforms.
@@ -53,4 +55,20 @@ TEST_F(WebUITabStripContainerViewTest, TouchModeTransition) {
       browser_view()->webui_tab_strip();
   ASSERT_NE(nullptr, container);
   EXPECT_TRUE(container->GetVisible());
+}
+
+class WebUITabStripDevToolsTest : public WebUITabStripContainerViewTest {
+ public:
+  WebUITabStripDevToolsTest()
+      : WebUITabStripContainerViewTest(Browser::TYPE_DEVTOOLS) {}
+  ~WebUITabStripDevToolsTest() override = default;
+};
+
+// Regression test for crbug.com/1010247.
+TEST_F(WebUITabStripDevToolsTest, DevToolsWindowHasNoTabStrip) {
+  EXPECT_EQ(nullptr, browser_view()->webui_tab_strip());
+
+  ui::test::MaterialDesignControllerTestAPI disable_touch_mode(false);
+  ui::test::MaterialDesignControllerTestAPI reenable_touch_mode(true);
+  EXPECT_EQ(nullptr, browser_view()->webui_tab_strip());
 }
