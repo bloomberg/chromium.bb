@@ -674,21 +674,6 @@
         'use_swarming': True,
         'os_type': 'android',
       },
-      'Memory Infra Tester': {
-        'mixins': [
-          'kitkat',
-          'hammerhead',
-        ],
-        'swarming': {
-          'expiration': 36000,
-          'hard_timeout': 10800,
-          'ignore_task_failure': False,
-          'io_timeout': 3600,
-        },
-        'test_suites': {
-          'isolated_scripts': 'memory_infra_isolated_scripts',
-        },
-      },
       'android-bfcache-debug': {
         'mixins': [
           'kitkat',

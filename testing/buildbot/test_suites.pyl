@@ -4328,25 +4328,6 @@
       'mac_signing_tests': {},
     },
 
-    'memory_infra_isolated_scripts': {
-      'heap_profiling.mobile': {
-        'args': [
-          '--pageset-repeat=1',
-          '--benchmarks=heap_profiling.mobile.disabled,heap_profiling.mobile.native,heap_profiling.mobile.pseudo',
-          '-v',
-          '--output-format=chartjson',
-          '--browser=android-chromium',
-        ],
-        'isolate_name': 'performance_test_suite',
-        'merge': {
-          'args': [
-            '--smoke-test-mode',
-          ],
-          'script': '//tools/perf/process_perf_results.py',
-        },
-      },
-    },
-
     'mojo_chromiumos_specific_gtests': {
       'wayland_client_perftests': {},
     },

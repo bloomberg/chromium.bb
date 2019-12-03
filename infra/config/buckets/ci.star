@@ -352,11 +352,6 @@ android_fyi_builder(
     name = 'android-pie-x86-fyi-rel',
 )
 
-android_fyi_builder(
-    name = 'Memory Infra Tester',
-    notifies = ['chrome-memory-sheriffs'],
-)
-
 
 def chromium_builder(*, name, **kwargs):
   return builder(
