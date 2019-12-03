@@ -8,6 +8,7 @@
 #include "base/base64.h"
 #include "chromeos/services/assistant/public/features.h"
 #include "ui/aura/window.h"
+#include "ui/views/event_monitor.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/widget/widget.h"
 
@@ -124,6 +125,50 @@ void ProactiveSuggestionsRichView::InitLayout() {
   // Navigate to the data URL representing our encoded HTML.
   constexpr char kDataUriPrefix[] = "data:text/html;base64,";
   contents_->Navigate(GURL(kDataUriPrefix + encoded_html));
+}
+
+void ProactiveSuggestionsRichView::AddedToWidget() {
+  // Our embedded web contents will consume events that would otherwise reach
+  // our view so we need to use an EventMonitor to still receive them.
+  event_monitor_ = views::EventMonitor::CreateWindowMonitor(
+      this, GetWidget()->GetNativeWindow(),
+      {ui::ET_GESTURE_TAP, ui::ET_GESTURE_TAP_CANCEL, ui::ET_GESTURE_TAP_DOWN,
+       ui::ET_MOUSE_ENTERED, ui::ET_MOUSE_MOVED, ui::ET_MOUSE_EXITED});
+}
+
+void ProactiveSuggestionsRichView::OnMouseEntered(const ui::MouseEvent& event) {
+  // Our embedded web contents is expected to consume events that would
+  // otherwise reach our view. We instead handle these events in OnEvent().
+  NOTREACHED();
+}
+
+void ProactiveSuggestionsRichView::OnMouseExited(const ui::MouseEvent& event) {
+  // Our embedded web contents is expected to consume events that would
+  // otherwise reach our view. We instead handle these events in OnEvent().
+  NOTREACHED();
+}
+
+void ProactiveSuggestionsRichView::OnGestureEvent(ui::GestureEvent* event) {
+  // Our embedded web contents is expected to consume events that would
+  // otherwise reach our view. We instead handle these events in OnEvent().
+  NOTREACHED();
+}
+
+void ProactiveSuggestionsRichView::OnEvent(const ui::Event& event) {
+  switch (event.type()) {
+    case ui::ET_GESTURE_TAP:
+    case ui::ET_GESTURE_TAP_CANCEL:
+    case ui::ET_MOUSE_EXITED:
+      delegate()->OnProactiveSuggestionsViewHoverChanged(/*is_hovering=*/false);
+      break;
+    case ui::ET_GESTURE_TAP_DOWN:
+    case ui::ET_MOUSE_ENTERED:
+      delegate()->OnProactiveSuggestionsViewHoverChanged(/*is_hovering=*/true);
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
 }
 
 void ProactiveSuggestionsRichView::ShowWhenReady() {
