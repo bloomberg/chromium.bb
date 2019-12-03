@@ -2946,6 +2946,16 @@ Unknown properties are collapsed to zero. -->
   <int value="5" label="INSUFFICIENT_RESOURCES"/>
 </enum>
 
+<enum name="AshAutoNightLightNotificationState">
+  <summary>
+    Defines the possible states of the Auto Night Light notification as a result
+    of a user's interaction with it.
+  </summary>
+  <int value="0" label="Closed by user"/>
+  <int value="1" label="Notification's body clicked"/>
+  <int value="2" label="Notification's button clicked"/>
+</enum>
+
 <enum name="AshGestureActionType">
   <int value="0" label="Unknown"/>
   <int value="1" label="Omnibox pinch (deprecated, see crbug.com/826476)"/>
