@@ -33,8 +33,10 @@
 #include "content/browser/bad_message.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/histogram_controller.h"
+#include "content/browser/service_manager/service_manager_context.h"
 #include "content/browser/tracing/background_tracing_manager_impl.h"
 #include "content/common/child_process_host_impl.h"
+#include "content/common/service_manager/child_connection.h"
 #include "content/public/browser/browser_child_process_host_delegate.h"
 #include "content/public/browser/browser_child_process_observer.h"
 #include "content/public/browser/browser_message_filter.h"
@@ -50,10 +52,12 @@
 #include "content/public/common/process_type.h"
 #include "content/public/common/result_codes.h"
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
+#include "content/public/common/service_manager_connection.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "net/websockets/websocket_basic_stream.h"
 #include "net/websockets/websocket_channel.h"
 #include "services/service_manager/embedder/switches.h"
+#include "services/service_manager/public/cpp/constants.h"
 #include "services/tracing/public/cpp/trace_startup.h"
 
 #if defined(OS_MACOSX)
@@ -213,6 +217,24 @@ BrowserChildProcessHostImpl::BrowserChildProcessHostImpl(
   CreateMetricsAllocator();
 }
 
+BrowserChildProcessHostImpl::BrowserChildProcessHostImpl(
+    content::ProcessType process_type,
+    BrowserChildProcessHostDelegate* delegate,
+    const std::string& service_name)
+    : BrowserChildProcessHostImpl(process_type,
+                                  delegate,
+                                  ChildProcessHost::IpcMode::kServiceManager) {
+  DCHECK(!service_name.empty());
+  child_connection_ = std::make_unique<ChildConnection>(
+      service_manager::Identity(
+          service_name, service_manager::kSystemInstanceGroup,
+          base::Token::CreateRandom(), base::Token::CreateRandom()),
+      &child_process_host_->GetMojoInvitation().value(),
+      ServiceManagerContext::GetConnectorForIOThread(),
+      base::ThreadTaskRunnerHandle::Get());
+  data_.metrics_name = service_name;
+}
+
 BrowserChildProcessHostImpl::~BrowserChildProcessHostImpl() {
   g_child_process_list.Get().remove(this);
 
@@ -310,6 +332,15 @@ void BrowserChildProcessHostImpl::SetProcess(base::Process process) {
   data_.SetProcess(std::move(process));
 }
 
+service_manager::mojom::ServiceRequest
+BrowserChildProcessHostImpl::TakeInProcessServiceRequest() {
+  base::Optional<mojo::OutgoingInvitation> invitation =
+      std::move(child_process_host_->GetMojoInvitation());
+  DCHECK(invitation);
+  return service_manager::mojom::ServiceRequest(
+      invitation->ExtractMessagePipe(child_connection_->service_token()));
+}
+
 void BrowserChildProcessHostImpl::ForceShutdown() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   g_child_process_list.Get().remove(this);
@@ -347,6 +378,21 @@ void BrowserChildProcessHostImpl::LaunchWithoutExtraCommandLineSwitches(
   cmd_line->CopySwitchesFrom(browser_command_line, kForwardSwitches,
                              base::size(kForwardSwitches));
 
+  if (child_connection_) {
+    cmd_line->AppendSwitchASCII(
+        service_manager::switches::kServiceRequestChannelToken,
+        child_connection_->service_token());
+
+    // Tracing adds too much overhead to the profiling service.
+    if (service_manager::SandboxTypeFromCommandLine(*cmd_line) !=
+        service_manager::SANDBOX_TYPE_PROFILING) {
+      BackgroundTracingManagerImpl::ActivateForProcess(
+          data_.id,
+          static_cast<ChildProcessHostImpl*>(child_process_host_.get())
+              ->child_process());
+    }
+  }
+
   // All processes should have a non-empty metrics name.
   if (data_.metrics_name.empty())
     data_.metrics_name = GetProcessTypeNameInEnglish(data_.process_type);
@@ -360,6 +406,16 @@ void BrowserChildProcessHostImpl::LaunchWithoutExtraCommandLineSwitches(
                           base::ThreadTaskRunnerHandle::Get()),
       std::move(files_to_preload), terminate_on_shutdown));
   ShareMetricsAllocatorToProcess();
+}
+
+void BrowserChildProcessHostImpl::BindInterface(
+    const std::string& interface_name,
+    mojo::ScopedMessagePipeHandle interface_pipe) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (!child_connection_)
+    return;
+
+  child_connection_->BindInterface(interface_name, std::move(interface_pipe));
 }
 
 void BrowserChildProcessHostImpl::HistogramBadMessageTerminated(
@@ -620,6 +676,9 @@ void BrowserChildProcessHostImpl::OnProcessLaunched() {
 
   const base::Process& process = child_process_->GetProcess();
   DCHECK(process.IsValid());
+
+  if (child_connection_)
+    child_connection_->SetProcess(process.Duplicate());
 
 #if defined(OS_WIN)
   // Start a WaitableEventWatcher that will invoke OnProcessExitedEarly if the

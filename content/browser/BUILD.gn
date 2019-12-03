@@ -303,6 +303,8 @@ jumbo_source_set("browser") {
     "$target_gen_dir/devtools/protocol/tracing.h",
     "../app_shim_remote_cocoa/web_drag_source_mac.h",
     "../app_shim_remote_cocoa/web_drag_source_mac.mm",
+    "../common/service_manager/child_connection.cc",
+    "../common/service_manager/child_connection.h",
     "about_url_loader_factory.cc",
     "about_url_loader_factory.h",
     "accessibility/accessibility_event_recorder.cc",
