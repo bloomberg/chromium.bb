@@ -1543,12 +1543,6 @@ config("default_warnings") {
             "-Wno-c99-designator",
           ]
         }
-        if (is_chromeos) {
-          cflags += [
-            # TODO(https://crbug.com/1024203): Clean up, enable.
-            "-Wno-tautological-bitwise-compare",
-          ]
-        }
         if (is_win) {
           cflags += [
             # TODO(https://crbug.com/1002945): Clean up, enable.
