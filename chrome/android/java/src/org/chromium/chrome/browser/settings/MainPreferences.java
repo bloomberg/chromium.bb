@@ -127,7 +127,7 @@ public class MainPreferences extends PreferenceFragmentCompat
     }
 
     private void createPreferences() {
-        PreferenceUtils.addPreferencesFromResource(this, R.xml.main_preferences);
+        SettingsUtils.addPreferencesFromResource(this, R.xml.main_preferences);
         cachePreferences();
 
         mSignInPreference.setOnStateChangedCallback(this::onSignInPreferenceStateChanged);

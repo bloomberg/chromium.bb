@@ -25,9 +25,9 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 
 /**
- * A helper class for Preferences.
+ * A helper class for Settings.
  */
-public class PreferenceUtils {
+public class SettingsUtils {
     /**
      * A helper that is used to load preferences from XML resources without causing a
      * StrictModeViolation. See http://crbug.com/692125.
