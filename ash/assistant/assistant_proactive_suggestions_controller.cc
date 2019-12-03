@@ -302,9 +302,11 @@ void AssistantProactiveSuggestionsController::MaybeShowUi() {
   }
 
   // Depending on which is enabled, we'll either use a rich, content-forward UI
-  // affordance or a simple UI affordance as the feature entry point.
+  // affordance or a simple UI affordance as the feature entry point. If we
+  // have no cached |rich_entry_point_html|, we have to fall back to simple UI.
   if (chromeos::assistant::features::
-          IsProactiveSuggestionsShowRichEntryPointEnabled()) {
+          IsProactiveSuggestionsShowRichEntryPointEnabled() &&
+      !proactive_suggestions->rich_entry_point_html().empty()) {
     view_ = new ProactiveSuggestionsRichView(
         assistant_controller_->view_delegate());
   } else {
