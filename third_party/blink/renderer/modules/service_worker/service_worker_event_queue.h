@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_SERVICE_WORKER_SERVICE_WORKER_TIMEOUT_TIMER_H_
-#define THIRD_PARTY_BLINK_RENDERER_MODULES_SERVICE_WORKER_SERVICE_WORKER_TIMEOUT_TIMER_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_SERVICE_WORKER_SERVICE_WORKER_EVENT_QUEUE_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_SERVICE_WORKER_SERVICE_WORKER_EVENT_QUEUE_H_
 
 #include <set>
 
@@ -24,7 +24,7 @@ class TickClock;
 
 namespace blink {
 
-// ServiceWorkerTimeoutTimer manages two types of timeouts: the long standing
+// ServiceWorkerEventQueue manages two types of timeouts: the long standing
 // event timeout and the idle timeout.
 //
 // 1) Event timeout: when an event starts, StartEvent() records the expiration
@@ -33,39 +33,39 @@ namespace blink {
 // status TIMEOUT. Also, |zero_idle_timer_delay_| is set to true to shut down
 // the worker as soon as possible since the worker may have gone into bad state.
 // 2) Idle timeout: when a certain time has passed (kIdleDelay) since all of
-// events have ended, ServiceWorkerTimeoutTimer calls the |idle_callback|.
+// events have ended, ServiceWorkerEventQueue calls the |idle_callback|.
 // |idle_callback| will be continuously called at a certain interval
 // (kUpdateInterval) until the next event starts.
 //
-// The lifetime of ServiceWorkerTimeoutTimer is the same with the worker
-// thread. If ServiceWorkerTimeoutTimer is destructed while there are inflight
+// The lifetime of ServiceWorkerEventQueue is the same with the worker
+// thread. If ServiceWorkerEventQueue is destructed while there are inflight
 // events, all |abort_callback|s will be immediately called with status ABORTED.
-class MODULES_EXPORT ServiceWorkerTimeoutTimer {
+class MODULES_EXPORT ServiceWorkerEventQueue {
  public:
-  // A token to keep the timeout timer from going into the idle state if any of
+  // A token to keep the event queue from going into the idle state if any of
   // them are alive.
   class MODULES_EXPORT StayAwakeToken {
    public:
-    explicit StayAwakeToken(base::WeakPtr<ServiceWorkerTimeoutTimer> timer);
+    explicit StayAwakeToken(base::WeakPtr<ServiceWorkerEventQueue> event_queue);
     ~StayAwakeToken();
 
    private:
-    base::WeakPtr<ServiceWorkerTimeoutTimer> timer_;
+    base::WeakPtr<ServiceWorkerEventQueue> event_queue_;
   };
 
   using AbortCallback =
       base::OnceCallback<void(int /* event_id */,
                               mojom::blink::ServiceWorkerEventStatus)>;
 
-  explicit ServiceWorkerTimeoutTimer(base::RepeatingClosure idle_callback);
+  explicit ServiceWorkerEventQueue(base::RepeatingClosure idle_callback);
   // For testing.
-  ServiceWorkerTimeoutTimer(base::RepeatingClosure idle_callback,
-                            const base::TickClock* tick_clock);
-  ~ServiceWorkerTimeoutTimer();
+  ServiceWorkerEventQueue(base::RepeatingClosure idle_callback,
+                          const base::TickClock* tick_clock);
+  ~ServiceWorkerEventQueue();
 
-  // Starts the timer. This may also update |idle_time_| if there was no
+  // Starts the event_queue. This may also update |idle_time_| if there was no
   // activities (i.e., StartEvent()/EndEvent() or StayAwakeToken creation)
-  // on the timer before.
+  // on the event_queue before.
   void Start();
 
   using StartCallback = base::OnceCallback<void(int /* event_id */)>;
@@ -93,12 +93,12 @@ class MODULES_EXPORT ServiceWorkerTimeoutTimer {
          base::Optional<base::TimeDelta> custom_timeout);
     ~Task();
     Type type;
-    // Callback which is run when the timer starts this task. The
+    // Callback which is run when the event_queue starts this task. The
     // callback receives |event_id|, which is the result of
     // StartEvent(). When an event finishes, EndEvent() should be
     // called with the given |event_id|.
     StartCallback start_callback;
-    // Callback which is run when the timer aborts a started task.
+    // Callback which is run when the event_queue aborts a started task.
     AbortCallback abort_callback;
     // The custom timeout value.
     base::Optional<base::TimeDelta> custom_timeout;
@@ -106,8 +106,8 @@ class MODULES_EXPORT ServiceWorkerTimeoutTimer {
 
   void EndEvent(int event_id);
 
-  // Push the task to the task queue in the timer and tasks in the queue can run
-  // synchronously. See also Task's comment.
+  // Push the task to the queue, and tasks in the queue can run synchronously.
+  // See also Task's comment.
   void PushTask(std::unique_ptr<Task> task);
 
   // Returns true if |event_id| was started and hasn't ended.
@@ -134,7 +134,7 @@ class MODULES_EXPORT ServiceWorkerTimeoutTimer {
   // called.
   static constexpr base::TimeDelta kEventTimeout =
       base::TimeDelta::FromMinutes(5);
-  // ServiceWorkerTimeoutTimer periodically updates the timeout state by
+  // ServiceWorkerEventQueue periodically updates the timeout state by
   // kUpdateInterval.
   static constexpr base::TimeDelta kUpdateInterval =
       base::TimeDelta::FromSeconds(30);
@@ -214,9 +214,9 @@ class MODULES_EXPORT ServiceWorkerTimeoutTimer {
 
   bool in_dtor_ = false;
 
-  base::WeakPtrFactory<ServiceWorkerTimeoutTimer> weak_factory_{this};
+  base::WeakPtrFactory<ServiceWorkerEventQueue> weak_factory_{this};
 };
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_SERVICE_WORKER_SERVICE_WORKER_TIMEOUT_TIMER_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_SERVICE_WORKER_SERVICE_WORKER_EVENT_QUEUE_H_
