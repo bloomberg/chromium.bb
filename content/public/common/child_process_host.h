@@ -14,6 +14,7 @@
 #include "base/optional.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
+#include "content/public/common/bind_interface_helpers.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "mojo/public/cpp/bindings/generic_pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"

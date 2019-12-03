@@ -114,6 +114,7 @@ jumbo_source_set("common_sources") {
   visibility = [ "//content/*" ]
 
   sources = [
+    "bind_interface_helpers.h",
     "bindings_policy.h",
     "browser_controls_state.h",
     "cdm_info.h",

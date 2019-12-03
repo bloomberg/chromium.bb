@@ -169,6 +169,7 @@
 #include "content/public/browser/site_isolation_policy.h"
 #include "content/public/browser/system_connector.h"
 #include "content/public/browser/webrtc_log.h"
+#include "content/public/common/bind_interface_helpers.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_constants.h"

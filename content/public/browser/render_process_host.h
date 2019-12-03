@@ -19,6 +19,7 @@
 #include "base/supports_user_data.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
+#include "content/public/common/bind_interface_helpers.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_sender.h"
 #include "media/media_buildflags.h"
