@@ -671,7 +671,14 @@ IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest,
 
 // Verify correct keepalive count behavior on network request events.
 // Regression test for http://crbug.com/535716.
-IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest, KeepaliveOnNetworkRequest) {
+// Disabled on Linux for flakiness: http://crbug.com/1030435.
+#if defined(OS_LINUX)
+#define MAYBE_KeepaliveOnNetworkRequest DISABLED_KeepaliveOnNetworkRequest
+#else
+#define MAYBE_KeepaliveOnNetworkRequest KeepaliveOnNetworkRequest
+#endif
+IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest,
+                       MAYBE_KeepaliveOnNetworkRequest) {
   // Load an extension with a lazy background page.
   scoped_refptr<const Extension> extension =
       LoadExtension(test_data_dir_.AppendASCII("api_test")
