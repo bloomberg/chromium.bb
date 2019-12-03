@@ -104,7 +104,7 @@ static int mvsad_err_cost(const MACROBLOCK *x, const MV *mv, const MV *ref,
 }
 
 void av1_init_dsmotion_compensation(search_site_config *cfg, int stride) {
-  int len, ss_count = 1;
+  int len, ss_count = 0;
   int stage_index = MAX_MVSEARCH_STEPS - 1;
 
   cfg->ss[stage_index][0].mv.col = cfg->ss[stage_index][0].mv.row = 0;
@@ -124,13 +124,14 @@ void av1_init_dsmotion_compensation(search_site_config *cfg, int stride) {
     }
     cfg->searches_per_step[stage_index] = 4;
     --stage_index;
+    ++ss_count;
   }
 
   cfg->ss_count = ss_count;
 }
 
 void av1_init3smotion_compensation(search_site_config *cfg, int stride) {
-  int ss_count = 1;
+  int ss_count = 0;
   int stage_index = MAX_MVSEARCH_STEPS - 1;
 
   cfg->ss[stage_index][0].mv.col = cfg->ss[stage_index][0].mv.row = 0;
@@ -167,6 +168,7 @@ void av1_init3smotion_compensation(search_site_config *cfg, int stride) {
     }
     cfg->searches_per_step[stage_index] = num_search_pts;
     --stage_index;
+    ++ss_count;
   }
   cfg->ss_count = ss_count;
 }
@@ -1716,7 +1718,7 @@ int av1_diamond_search_sad_c(MACROBLOCK *x, const search_site_config *cfg,
 
   // search_param determines the length of the initial step and hence the number
   // of iterations.
-  const int tot_steps = MAX_MVSEARCH_STEPS - 1 - search_param;
+  const int tot_steps = cfg->ss_count - search_param;
 
   const MV fcenter_mv = { center_mv->row >> 3, center_mv->col >> 3 };
   clamp_mv(ref_mv, x->mv_limits.col_min, x->mv_limits.col_max,
@@ -1745,7 +1747,7 @@ int av1_diamond_search_sad_c(MACROBLOCK *x, const search_site_config *cfg,
 
   bestsad += mvsad_err_cost(x, best_mv, &fcenter_mv, sad_per_bit);
 
-  for (int step = tot_steps; step >= 0; --step) {
+  for (int step = tot_steps - 1; step >= 0; --step) {
     const search_site *ss = cfg->ss[step];
     best_site = 0;
 
