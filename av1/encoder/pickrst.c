@@ -98,6 +98,10 @@ typedef struct {
   // The rtype to use for this unit given a frame rtype as
   // index. Indices: WIENER, SGRPROJ, SWITCHABLE.
   RestorationType best_rtype[RESTORE_TYPES - 1];
+
+  // This flag will be set based on the speed feature
+  // 'prune_sgr_based_on_wiener'. 0 implies no pruning and 1 implies pruning.
+  uint8_t skip_sgr_eval;
 } RestUnitSearchInfo;
 
 typedef struct {
@@ -860,8 +864,7 @@ static AOM_INLINE void search_sgrproj(const RestorationTileLimits *limits,
   const int64_t bits_none = x->sgrproj_restore_cost[0];
   // Prune evaluation of RESTORE_SGRPROJ if RESTORE_NONE was the winner (no loop
   // restoration)
-  if (rsc->sf->prune_sgr_based_on_wiener &&
-      rusi->best_rtype[RESTORE_WIENER - 1] == RESTORE_NONE) {
+  if (rusi->skip_sgr_eval) {
     rsc->bits += bits_none;
     rsc->sse += rusi->sse[RESTORE_NONE];
     rusi->best_rtype[RESTORE_SGRPROJ - 1] = RESTORE_NONE;
@@ -1475,6 +1478,7 @@ static AOM_INLINE void search_wiener(const RestorationTileLimits *limits,
     rsc->sse += rusi->sse[RESTORE_NONE];
     rusi->best_rtype[RESTORE_WIENER - 1] = RESTORE_NONE;
     rusi->sse[RESTORE_WIENER] = INT64_MAX;
+    if (rsc->sf->prune_sgr_based_on_wiener) rusi->skip_sgr_eval = 1;
     return;
   }
 
@@ -1493,6 +1497,7 @@ static AOM_INLINE void search_wiener(const RestorationTileLimits *limits,
     rsc->sse += rusi->sse[RESTORE_NONE];
     rusi->best_rtype[RESTORE_WIENER - 1] = RESTORE_NONE;
     rusi->sse[RESTORE_WIENER] = INT64_MAX;
+    if (rsc->sf->prune_sgr_based_on_wiener) rusi->skip_sgr_eval = 1;
     return;
   }
 
@@ -1522,6 +1527,10 @@ static AOM_INLINE void search_wiener(const RestorationTileLimits *limits,
   RestorationType rtype =
       (cost_wiener < cost_none) ? RESTORE_WIENER : RESTORE_NONE;
   rusi->best_rtype[RESTORE_WIENER - 1] = rtype;
+
+  if (rsc->sf->prune_sgr_based_on_wiener) {
+    rusi->skip_sgr_eval = rusi->best_rtype[RESTORE_WIENER - 1] == RESTORE_NONE;
+  }
 
   rsc->sse += rusi->sse[rtype];
   rsc->bits += (cost_wiener < cost_none) ? bits_wiener : bits_none;
