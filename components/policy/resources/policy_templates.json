@@ -16413,7 +16413,7 @@
       'tags': ['admin-sharing', 'google-sharing'],
       'features': {
         'dynamic_refresh': True,
-        'per_profile': True,
+        'per_profile': False,
       },
       'supported_on': ['chrome.*:72-', 'chrome_os:81-'],
       'future': True,
