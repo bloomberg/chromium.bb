@@ -3233,10 +3233,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kQueryInOmniboxDescription, kOsAll,
      FEATURE_VALUE_TYPE(omnibox::kQueryInOmnibox)},
 
-    {"enable-viz-hit-test-surface-layer", flag_descriptions::kVizHitTestName,
-     flag_descriptions::kVizHitTestDescription, kOsAll,
-     FEATURE_VALUE_TYPE(features::kEnableVizHitTestSurfaceLayer)},
-
 #if BUILDFLAG(ENABLE_PDF)
 #if defined(OS_CHROMEOS)
     {"pdf-annotations", flag_descriptions::kPdfAnnotations,

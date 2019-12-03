@@ -484,9 +484,6 @@ extern const char kDisableKeepaliveFetchDescription[];
 extern const char kVizDisplayCompositorName[];
 extern const char kVizDisplayCompositorDescription[];
 
-extern const char kVizHitTestName[];
-extern const char kVizHitTestDescription[];
-
 extern const char kMemlogName[];
 extern const char kMemlogDescription[];
 extern const char kMemlogModeMinimal[];

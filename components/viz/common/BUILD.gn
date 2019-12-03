@@ -191,8 +191,6 @@ viz_component("common") {
     "gpu/raster_context_provider.cc",
     "gpu/raster_context_provider.h",
     "hit_test/aggregated_hit_test_region.h",
-    "hit_test/hit_test_data_builder.cc",
-    "hit_test/hit_test_data_builder.h",
     "hit_test/hit_test_region_list.cc",
     "hit_test/hit_test_region_list.h",
     "quads/compositor_frame.cc",

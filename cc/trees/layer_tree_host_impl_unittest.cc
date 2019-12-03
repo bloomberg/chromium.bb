@@ -12985,36 +12985,10 @@ class HitTestRegionListGeneratingLayerTreeHostImplTest
       std::unique_ptr<LayerTreeFrameSink> layer_tree_frame_sink) override {
     // Enable hit test data generation with the CompositorFrame.
     LayerTreeSettings new_settings = settings;
-    new_settings.build_hit_test_data = true;
     return LayerTreeHostImplTest::CreateHostImpl(
         new_settings, std::move(layer_tree_frame_sink));
   }
 };
-
-// When disabled, no HitTestRegionList should be generated.
-// Test to ensure that hit test data is created correctly from the active layer
-// tree.
-TEST_F(LayerTreeHostImplTest, DisabledBuildHitTestData) {
-  // Setup surface layers in LayerTreeHostImpl.
-  host_impl_->CreatePendingTree();
-  host_impl_->ActivateSyncTree();
-
-  auto* root = SetupDefaultRootLayer(gfx::Size(1024, 768));
-  auto* surface_child = AddLayer<SurfaceLayerImpl>(host_impl_->active_tree());
-
-  surface_child->SetBounds(gfx::Size(100, 100));
-  surface_child->SetDrawsContent(true);
-  surface_child->SetSurfaceHitTestable(true);
-
-  CopyProperties(root, surface_child);
-  surface_child->SetOffsetToTransformParent(gfx::Vector2dF(50, 50));
-
-  UpdateDrawProperties(host_impl_->active_tree());
-
-  base::Optional<viz::HitTestRegionList> hit_test_region_list =
-      host_impl_->BuildHitTestData();
-  EXPECT_FALSE(hit_test_region_list);
-}
 
 // Test to ensure that hit test data is created correctly from the active layer
 // tree.

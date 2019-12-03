@@ -2777,9 +2777,6 @@ static void PopulateHitTestRegion(viz::HitTestRegion* hit_test_region,
 base::Optional<viz::HitTestRegionList> LayerTreeHostImpl::BuildHitTestData() {
   TRACE_EVENT0("cc", "LayerTreeHostImpl::BuildHitTestData");
 
-  if (!settings_.build_hit_test_data)
-    return {};
-
   base::Optional<viz::HitTestRegionList> hit_test_region_list(base::in_place);
   hit_test_region_list->flags = viz::HitTestRegionFlags::kHitTestMine |
                                 viz::HitTestRegionFlags::kHitTestMouse |
