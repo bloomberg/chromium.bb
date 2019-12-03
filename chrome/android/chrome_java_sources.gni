@@ -1462,7 +1462,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/share/ShareParams.java",
   "java/src/org/chromium/chrome/browser/share/ShareSheetBottomSheetContent.java",
   "java/src/org/chromium/chrome/browser/share/ShareSheetCoordinator.java",
-  "java/src/org/chromium/chrome/browser/share/ShareSheetMediator.java",
+  "java/src/org/chromium/chrome/browser/share/ShareSheetItemViewProperties.java",
   "java/src/org/chromium/chrome/browser/sharing/SharingAdapter.java",
   "java/src/org/chromium/chrome/browser/sharing/SharingNotificationUtil.java",
   "java/src/org/chromium/chrome/browser/sharing/click_to_call/ClickToCallMessageHandler.java",

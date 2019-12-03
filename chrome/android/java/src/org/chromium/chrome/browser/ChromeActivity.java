@@ -434,7 +434,8 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
                     this, getStatusBarColorController().getStatusBarScrimDelegate(), coordinator);
 
             initializeBottomSheetController();
-            mShareDelegate = new ShareDelegateImpl(mBottomSheetController);
+            mShareDelegate = new ShareDelegateImpl(
+                    mBottomSheetController, new ShareDelegateImpl.ShareSheetDelegate());
             mShareDelegateSupplier.set(mShareDelegate);
 
             Intent intent = getIntent();

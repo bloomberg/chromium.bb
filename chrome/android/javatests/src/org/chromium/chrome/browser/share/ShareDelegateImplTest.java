@@ -23,10 +23,10 @@ import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import java.util.concurrent.ExecutionException;
 
 /**
- * Tests (requiring native) of the ShareSheetMediator.
+ * Tests (requiring native) of the ShareDelegateImpl.
  */
 @RunWith(BaseJUnit4ClassRunner.class)
-public class ShareSheetMediatorTest {
+public class ShareDelegateImplTest {
     @Rule
     public final ChromeBrowserTestRule mBrowserTestRule = new ChromeBrowserTestRule();
 
@@ -43,37 +43,37 @@ public class ShareSheetMediatorTest {
         mSadTabRule.setTab(mockTab);
 
         // Null webContents:
-        Assert.assertFalse(ShareSheetMediator.shouldFetchCanonicalUrl(mockTab));
+        Assert.assertFalse(ShareDelegateImpl.shouldFetchCanonicalUrl(mockTab));
 
         // Null render frame:
         mockTab.webContents = mockWebContents;
-        Assert.assertFalse(ShareSheetMediator.shouldFetchCanonicalUrl(mockTab));
+        Assert.assertFalse(ShareDelegateImpl.shouldFetchCanonicalUrl(mockTab));
 
         // Invalid/empty URL:
         mockWebContents.renderFrameHost = mockRenderFrameHost;
-        Assert.assertFalse(ShareSheetMediator.shouldFetchCanonicalUrl(mockTab));
+        Assert.assertFalse(ShareDelegateImpl.shouldFetchCanonicalUrl(mockTab));
 
         // Disabled if showing error page.
         mockTab.isShowingErrorPage = true;
-        Assert.assertFalse(ShareSheetMediator.shouldFetchCanonicalUrl(mockTab));
+        Assert.assertFalse(ShareDelegateImpl.shouldFetchCanonicalUrl(mockTab));
         mockTab.isShowingErrorPage = false;
 
         // Disabled if showing interstitial page.
         mockTab.isShowingInterstitialPage = true;
-        Assert.assertFalse(ShareSheetMediator.shouldFetchCanonicalUrl(mockTab));
+        Assert.assertFalse(ShareDelegateImpl.shouldFetchCanonicalUrl(mockTab));
         mockTab.isShowingInterstitialPage = false;
 
         // Disabled if showing sad tab page.
         mSadTabRule.show(true);
-        Assert.assertFalse(ShareSheetMediator.shouldFetchCanonicalUrl(mockTab));
+        Assert.assertFalse(ShareDelegateImpl.shouldFetchCanonicalUrl(mockTab));
         mSadTabRule.show(false);
     }
 
     @Test
     @SmallTest
     public void testGetUrlToShare() {
-        Assert.assertNull(ShareSheetMediator.getUrlToShare(null, null));
-        Assert.assertEquals("", ShareSheetMediator.getUrlToShare("", null));
+        Assert.assertNull(ShareDelegateImpl.getUrlToShare(null, null));
+        Assert.assertEquals("", ShareDelegateImpl.getUrlToShare("", null));
 
         final String httpUrl = "http://blah.com";
         final String otherHttpUrl = "http://eek.com";
@@ -83,21 +83,21 @@ public class ShareSheetMediatorTest {
         final String contentUrl = "content://eek.com";
 
         // HTTP Display URL, HTTP Canonical URL -> HTTP Display URL
-        Assert.assertEquals(httpUrl, ShareSheetMediator.getUrlToShare(httpUrl, otherHttpUrl));
+        Assert.assertEquals(httpUrl, ShareDelegateImpl.getUrlToShare(httpUrl, otherHttpUrl));
         // HTTP Display URL, HTTPS Canonical URL -> HTTP Display URL
-        Assert.assertEquals(httpUrl, ShareSheetMediator.getUrlToShare(httpUrl, httpsUrl));
+        Assert.assertEquals(httpUrl, ShareDelegateImpl.getUrlToShare(httpUrl, httpsUrl));
         // HTTPS Display URL, HTTP Canonical URL -> HTTP Canonical URL
-        Assert.assertEquals(httpUrl, ShareSheetMediator.getUrlToShare(httpsUrl, httpUrl));
+        Assert.assertEquals(httpUrl, ShareDelegateImpl.getUrlToShare(httpsUrl, httpUrl));
 
         // HTTPS Display URL, HTTPS Canonical URL -> HTTPS Canonical URL
-        Assert.assertEquals(httpsUrl, ShareSheetMediator.getUrlToShare(httpsUrl, httpsUrl));
+        Assert.assertEquals(httpsUrl, ShareDelegateImpl.getUrlToShare(httpsUrl, httpsUrl));
         Assert.assertEquals(
-                otherHttpsUrl, ShareSheetMediator.getUrlToShare(httpsUrl, otherHttpsUrl));
+                otherHttpsUrl, ShareDelegateImpl.getUrlToShare(httpsUrl, otherHttpsUrl));
 
         // HTTPS Display URL, FTP URL -> HTTPS Display URL
-        Assert.assertEquals(httpsUrl, ShareSheetMediator.getUrlToShare(httpsUrl, ftpUrl));
+        Assert.assertEquals(httpsUrl, ShareDelegateImpl.getUrlToShare(httpsUrl, ftpUrl));
         // HTTPS Display URL, Content URL -> HTTPS Display URL
-        Assert.assertEquals(httpsUrl, ShareSheetMediator.getUrlToShare(httpsUrl, contentUrl));
+        Assert.assertEquals(httpsUrl, ShareDelegateImpl.getUrlToShare(httpsUrl, contentUrl));
     }
 
     private static class MockUrlTab extends MockTab {

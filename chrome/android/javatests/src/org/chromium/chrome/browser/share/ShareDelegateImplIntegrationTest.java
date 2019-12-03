@@ -18,7 +18,7 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.MetricsUtils.HistogramDelta;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
-import org.chromium.chrome.browser.share.ShareSheetMediator.ShareSheetDelegate;
+import org.chromium.chrome.browser.share.ShareDelegateImpl.ShareSheetDelegate;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -35,7 +35,7 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
-public class ShareSheetMediatorIntegrationTest {
+public class ShareDelegateImplIntegrationTest {
     private static final String PAGE_WITH_HTTPS_CANONICAL_URL =
             "/chrome/test/data/android/share/link_share_https_canonical.html";
     private static final String PAGE_WITH_HTTP_CANONICAL_URL =
@@ -100,7 +100,7 @@ public class ShareSheetMediatorIntegrationTest {
             throws IllegalArgumentException, TimeoutException {
         mActivityTestRule.loadUrl(pageUrl);
         HistogramDelta urlResultDelta = new HistogramDelta(
-                ShareSheetMediator.CANONICAL_URL_RESULT_HISTOGRAM, expectedUrlResult);
+                ShareDelegateImpl.CANONICAL_URL_RESULT_HISTOGRAM, expectedUrlResult);
         ShareParams params = triggerShare();
         Assert.assertEquals(expectedShareUrl, params.getUrl());
         Assert.assertEquals(1, urlResultDelta.getDelta());
@@ -118,10 +118,9 @@ public class ShareSheetMediatorIntegrationTest {
                 }
             };
 
-            new ShareSheetMediator(
-                    delegate, mActivityTestRule.getActivity().getBottomSheetController())
-                    .onShareSelected(mActivityTestRule.getActivity(),
-                            mActivityTestRule.getActivity().getActivityTab(), false, false);
+            new ShareDelegateImpl(
+                    mActivityTestRule.getActivity().getBottomSheetController(), delegate)
+                    .share(mActivityTestRule.getActivity().getActivityTab(), false);
         });
         helper.waitForCallback(0);
         return paramsRef.get();
