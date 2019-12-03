@@ -97,6 +97,12 @@ deps = {
             '@' + '20de2db748ca0471cfb61cb53e813dd12938c12b',
         'condition': 'not build_with_chromium',
     },
+    'third_party/libfuzzer/src': {
+        'url': Var('chromium_git') +
+            '/chromium/llvm-project/compiler-rt/lib/fuzzer.git' +
+            '@' + 'debe7d2d1982e540fbd6bd78604bf001753f9e74',
+        'condition': 'not build_with_chromium',
+    },
 }
 
 recursedeps = [
