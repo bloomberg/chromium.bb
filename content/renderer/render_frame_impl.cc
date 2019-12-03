@@ -5480,7 +5480,7 @@ RenderFrameImpl::MakeDidCommitProvisionalLoadParams(
       frame_->GetInsecureRequestToUpgrade().ReleaseVector();
 
   params->has_potentially_trustworthy_unique_origin =
-      frame_origin.IsUnique() && frame_origin.IsPotentiallyTrustworthy();
+      frame_origin.IsOpaque() && frame_origin.IsPotentiallyTrustworthy();
 
   // Set the URL to be displayed in the browser UI to the user.
   params->url = GetLoadingUrl();
