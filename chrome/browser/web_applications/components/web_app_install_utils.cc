@@ -25,15 +25,15 @@ namespace web_app {
 namespace {
 
 constexpr int kMaxIcons = 20;
-constexpr int kMaxIconSize = 1024;
+constexpr SquareSizePx kMaxIconSize = 1024;
 
 // Get a list of non-empty square icons from |icons_map|.
 void FilterSquareIconsFromMap(const IconsMap& icons_map,
-                              std::vector<BitmapAndSource>* square_icons) {
+                              std::vector<SkBitmap>* square_icons) {
   for (const std::pair<GURL, std::vector<SkBitmap>>& url_icon : icons_map) {
     for (const SkBitmap& icon : url_icon.second) {
       if (!icon.empty() && icon.width() == icon.height())
-        square_icons->push_back(BitmapAndSource(url_icon.first, icon));
+        square_icons->push_back(icon);
     }
   }
 }
@@ -41,12 +41,12 @@ void FilterSquareIconsFromMap(const IconsMap& icons_map,
 // Get all non-empty square icons from |icons_map|.
 void FilterSquareIconsFromBitmaps(
     const std::map<SquareSizePx, SkBitmap> bitmaps,
-    std::vector<BitmapAndSource>* square_icons) {
+    std::vector<SkBitmap>* square_icons) {
   for (const std::pair<SquareSizePx, SkBitmap>& icon : bitmaps) {
     DCHECK_EQ(icon.first, icon.second.width());
     DCHECK_EQ(icon.first, icon.second.height());
     if (!icon.second.empty())
-      square_icons->push_back(BitmapAndSource(GURL(), icon.second));
+      square_icons->push_back(icon.second);
   }
 }
 
@@ -142,13 +142,13 @@ void FilterAndResizeIconsGenerateMissing(WebApplicationInfo* web_app_info,
   // icons for any sizes which have failed to download. This ensures that the
   // created manifest for the web app does not contain links to icons
   // which are not actually created and linked on disk.
-  std::vector<BitmapAndSource> square_icons;
+  std::vector<SkBitmap> square_icons;
   if (icons_map)
     FilterSquareIconsFromMap(*icons_map, &square_icons);
   if (!is_for_sync)
     FilterSquareIconsFromBitmaps(web_app_info->icon_bitmaps, &square_icons);
 
-  std::set<int> sizes_to_generate = SizesToGenerate();
+  std::set<SquareSizePx> sizes_to_generate = SizesToGenerate();
   if (is_for_sync) {
     // Ensure that all icon widths in the web app info icon array are present in
     // the sizes to generate set. This ensures that we will have all of the
@@ -161,14 +161,14 @@ void FilterAndResizeIconsGenerateMissing(WebApplicationInfo* web_app_info,
   web_app_info->generated_icon_color = SK_ColorTRANSPARENT;
   // TODO(https://crbug.com/1029223): Don't resize before writing to disk, it's
   // not necessary and would simplify this code path to remove.
-  std::map<int, BitmapAndSource> size_to_icon = ResizeIconsAndGenerateMissing(
+  std::map<SquareSizePx, SkBitmap> size_to_icon = ResizeIconsAndGenerateMissing(
       square_icons, sizes_to_generate, web_app_info->app_url,
       &web_app_info->generated_icon_color);
 
-  for (std::pair<const int, BitmapAndSource>& item : size_to_icon) {
+  for (std::pair<const SquareSizePx, SkBitmap>& item : size_to_icon) {
     // Retain any bitmaps provided as input to the installation.
     if (web_app_info->icon_bitmaps.count(item.first) == 0) {
-      web_app_info->icon_bitmaps[item.first] = std::move(item.second.bitmap);
+      web_app_info->icon_bitmaps[item.first] = std::move(item.second);
     }
   }
 }
