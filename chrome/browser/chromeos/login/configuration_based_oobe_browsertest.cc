@@ -50,6 +50,7 @@
 // Disabled due to flakiness: https://crbug.com/997685.
 #define MAYBE_TestDemoModeAcceptEula DISABLED_TestDemoModeAcceptEula
 #define MAYBE_TestDemoModeOfflineNetwork DISABLED_TestDemoModeOfflineNetwork
+
 // Disabled on debug build due to flakiness: https://crbug.com/997685.
 #if !defined(NDEBUG)
 #define MAYBE_TestAcceptEula DISABLED_TestAcceptEula
@@ -60,6 +61,7 @@
 #define MAYBE_TestSwitchLanguageIME DISABLED_TestSwitchLanguageIME
 #define MAYBE_TestLeaveWelcomeScreen DISABLED_TestLeaveWelcomeScreen
 #define MAYBE_TestSkipHIDDetection DISABLED_TestSkipHIDDetection
+#define MAYBE_TestEnrollUsingToken DISABLED_TestEnrollUsingToken
 #else
 #define MAYBE_TestAcceptEula TestAcceptEula
 #define MAYBE_TestDemoModeAcceptArcTos TestDemoModeAcceptArcTos
@@ -69,6 +71,7 @@
 #define MAYBE_TestSwitchLanguageIME TestSwitchLanguageIME
 #define MAYBE_TestLeaveWelcomeScreen TestLeaveWelcomeScreen
 #define MAYBE_TestSkipHIDDetection TestSkipHIDDetection
+#define MAYBE_TestEnrollUsingToken TestEnrollUsingToken
 #endif
 
 namespace chromeos {
@@ -336,7 +339,8 @@ IN_PROC_BROWSER_TEST_F(OobeConfigurationEnrollmentTest, TestSkipUpdate) {
   enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepSignin);
 }
 
-IN_PROC_BROWSER_TEST_F(OobeConfigurationEnrollmentTest, TestEnrollUsingToken) {
+IN_PROC_BROWSER_TEST_F(OobeConfigurationEnrollmentTest,
+                       MAYBE_TestEnrollUsingToken) {
   policy_server_.SetUpdateDeviceAttributesPermission(false);
   policy_server_.SetFakeAttestationFlow();
 
