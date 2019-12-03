@@ -9,7 +9,7 @@ import {isChromeOS} from 'chrome://resources/js/cr.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 
 // <if expr="chromeos">
-import {BackgroundGraphicsModeRestriction, ColorModeRestriction, DestinationPolicies, DuplexModeRestriction, PinModeRestriction} from './destination_policies.js';
+import {ColorModeRestriction, DestinationPolicies, DuplexModeRestriction, PinModeRestriction} from './destination_policies.js';
 // </if>
 
 /**
@@ -787,15 +787,6 @@ export class Destination {
         null;
   }
 
-  /**
-   * @return {?BackgroundGraphicsModeRestriction} Background
-   *     graphics mode allowed by policy.
-   */
-  get backgroundGraphicsPolicy() {
-    return this.policies && this.policies.allowedBackgroundGraphicsModes ?
-        this.policies.allowedBackgroundGraphicsModes :
-        null;
-  }
   // </if>
 
   /**
@@ -841,14 +832,6 @@ export class Destination {
    */
   get defaultPinPolicy() {
     return this.policies && this.policies.defaultPinMode;
-  }
-
-  /**
-   * @return {?BackgroundGraphicsModeRestriction} Value of
-   *     default background graphics setting given by policy.
-   */
-  get defaultBackgroundGraphicsPolicy() {
-    return this.policies && this.policies.defaultBackgroundGraphicsMode;
   }
   // </if>
 

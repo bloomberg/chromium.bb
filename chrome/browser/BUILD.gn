@@ -4298,6 +4298,8 @@ jumbo_static_library("browser") {
   if (enable_basic_printing) {
     # Some form of printing support.
     sources += [
+      "policy/printing_restrictions_policy_handler.cc",
+      "policy/printing_restrictions_policy_handler.h",
       "printing/print_job.cc",
       "printing/print_job.h",
       "printing/print_job_manager.cc",
@@ -4326,12 +4328,6 @@ jumbo_static_library("browser") {
       "//printing",
     ]
 
-    if (is_chromeos) {
-      sources += [
-        "policy/printing_restrictions_policy_handler.cc",
-        "policy/printing_restrictions_policy_handler.h",
-      ]
-    }
     if (is_win) {
       sources += [
         "printing/pdf_to_emf_converter.cc",
