@@ -43,6 +43,7 @@
 #include "chrome/browser/ui/views/tabs/tab_drag_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_group_header.h"
 #include "chrome/browser/ui/views/tabs/tab_group_underline.h"
+#include "chrome/browser/ui/views/tabs/tab_group_views.h"
 #include "chrome/browser/ui/views/tabs/tab_hover_card_bubble_view.h"
 #include "chrome/browser/ui/views/tabs/tab_slot_view.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_controller.h"
@@ -1242,44 +1243,31 @@ void TabStrip::AddTabToGroup(base::Optional<TabGroupId> group,
 }
 
 void TabStrip::OnGroupCreated(TabGroupId group) {
-  auto header = std::make_unique<TabGroupHeader>(this, group);
-  header->set_owned_by_client();
-  AddChildView(header.get());
+  std::unique_ptr<TabGroupViews> group_view =
+      std::make_unique<TabGroupViews>(this, group);
+  AddChildView(group_view->header());
+  AddChildView(group_view->underline());
   layout_helper_->InsertGroupHeader(
-      group, header.get(),
+      group, group_view->header(),
       base::BindOnce(&TabStrip::OnGroupCloseAnimationCompleted,
                      base::Unretained(this), group));
-  group_headers_[group] = std::move(header);
-
-  auto underline = std::make_unique<TabGroupUnderline>(this, group);
-  underline->set_owned_by_client();
-  AddChildView(underline.get());
-  group_underlines_[group] = std::move(underline);
+  group_views_[group] = std::move(group_view);
 }
 
 void TabStrip::OnGroupContentsChanged(TabGroupId group) {
-  DCHECK(group_headers_[group]);
-  DCHECK(group_underlines_[group]);
+  DCHECK(group_views_[group]);
   // The group header may be in the wrong place if the tab didn't actually
   // move in terms of model indices.
   layout_helper_->UpdateGroupHeaderIndex(group);
-  group_underlines_[group]->SchedulePaint();
-  const int active_index = controller_->GetActiveIndex();
-  if (active_index != ui::ListSelectionModel::kUnselectedIndex)
-    tab_at(active_index)->SchedulePaint();
+  group_views_[group]->UpdateVisuals();
   UpdateIdealBounds();
   AnimateToIdealBounds();
 }
 
 void TabStrip::OnGroupVisualsChanged(TabGroupId group) {
-  DCHECK(group_headers_[group]);
-  DCHECK(group_underlines_[group]);
-  group_headers_[group]->VisualsChanged();
-  group_underlines_[group]->SchedulePaint();
-  const int active_index = controller_->GetActiveIndex();
-  if (active_index != ui::ListSelectionModel::kUnselectedIndex)
-    tab_at(active_index)->SchedulePaint();
-  // The group title may have changed size.
+  DCHECK(group_views_[group]);
+  group_views_[group]->UpdateVisuals();
+  // The group title may have changed size, so update bounds.
   UpdateIdealBounds();
   AnimateToIdealBounds();
 }
@@ -1288,6 +1276,7 @@ void TabStrip::OnGroupDeleted(TabGroupId group) {
   layout_helper_->RemoveGroupHeader(group);
   UpdateIdealBounds();
   AnimateToIdealBounds();
+  // The group_views_ mapping is erased in OnGroupCloseAnimationCompleted().
 }
 
 bool TabStrip::ShouldTabBeVisible(const Tab* tab) const {
@@ -2033,13 +2022,11 @@ void TabStrip::PaintChildren(const views::PaintInfo& paint_info) {
   for (Tab* tab : selected_and_hovered_tabs)
     tab->Paint(paint_info);
 
-  // Paint group headers.
-  for (const auto& header_pair : group_headers_)
-    header_pair.second->Paint(paint_info);
-
-  // Paint group underlines.
-  for (const auto& underline_pair : group_underlines_)
-    underline_pair.second->Paint(paint_info);
+  // Paint group headers and underlines.
+  for (const auto& group_view_pair : group_views_) {
+    group_view_pair.second->header()->Paint(paint_info);
+    group_view_pair.second->underline()->Paint(paint_info);
+  }
 
   // Always paint the active tab over all the inactive tabs.
   if (active_tab && !is_dragging)
@@ -2059,7 +2046,7 @@ void TabStrip::PaintChildren(const views::PaintInfo& paint_info) {
   if (tabs_dragging.size() > 0) {
     const base::Optional<TabGroupId> dragged_group = tabs_dragging[0]->group();
     if (dragged_group.has_value())
-      group_underlines_[dragged_group.value()]->Paint(paint_info);
+      group_views_[dragged_group.value()]->underline()->Paint(paint_info);
   }
 
   // If the active tab is being dragged, it goes last.
@@ -2232,11 +2219,10 @@ void TabStrip::Init() {
 }
 
 std::map<TabGroupId, TabGroupHeader*> TabStrip::GetGroupHeaders() {
-  // Transform |group_headers_| to raw pointers to avoid exposing unique_ptrs.
   std::map<TabGroupId, TabGroupHeader*> group_headers;
-  for (const auto& header_pair : group_headers_) {
-    group_headers.insert(
-        std::make_pair(header_pair.first, header_pair.second.get()));
+  for (const auto& group_view_pair : group_views_) {
+    group_headers.insert(std::make_pair(group_view_pair.first,
+                                        group_view_pair.second->header()));
   }
   return group_headers;
 }
@@ -2634,8 +2620,7 @@ void TabStrip::OnTabCloseAnimationCompleted(Tab* tab) {
 }
 
 void TabStrip::OnGroupCloseAnimationCompleted(TabGroupId group) {
-  group_headers_.erase(group);
-  group_underlines_.erase(group);
+  group_views_.erase(group);
   // TODO(crbug.com/905491): We might want to simulate a mouse move here, like
   // we do in OnTabCloseAnimationCompleted.
 }

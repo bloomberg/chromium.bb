@@ -27,6 +27,7 @@
 #include "chrome/browser/ui/views/tabs/tab_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_drag_context.h"
 #include "chrome/browser/ui/views/tabs/tab_group_header.h"
+#include "chrome/browser/ui/views/tabs/tab_group_views.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/material_design/material_design_controller_observer.h"
@@ -46,7 +47,6 @@ class Browser;
 class NewTabButton;
 class StackedTabStripLayout;
 class Tab;
-class TabGroupUnderline;
 class TabGroupId;
 class TabHoverCardBubbleView;
 class TabStripController;
@@ -210,7 +210,7 @@ class TabStrip : public views::AccessiblePaneView,
 
   // Returns the TabGroupHeader with ID |id|.
   TabGroupHeader* group_header(TabGroupId id) {
-    return group_headers_[id].get();
+    return group_views_[id].get()->header();
   }
 
   // Returns the NewTabButton.
@@ -640,11 +640,7 @@ class TabStrip : public views::AccessiblePaneView,
   // in |layout_helper_| until the remove animation completes.
   views::ViewModelT<Tab> tabs_;
 
-  // Map associating each group to its TabGroupHeader instance.
-  std::map<TabGroupId, std::unique_ptr<TabGroupHeader>> group_headers_;
-
-  // Map associating each group to its TabGroupUnderline instance.
-  std::map<TabGroupId, std::unique_ptr<TabGroupUnderline>> group_underlines_;
+  std::map<TabGroupId, std::unique_ptr<TabGroupViews>> group_views_;
 
   // The view tracker is used to keep track of if the hover card has been
   // destroyed by its widget.

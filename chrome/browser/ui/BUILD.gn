@@ -3193,6 +3193,8 @@ jumbo_static_library("ui") {
       "views/tabs/tab_group_header.h",
       "views/tabs/tab_group_underline.cc",
       "views/tabs/tab_group_underline.h",
+      "views/tabs/tab_group_views.cc",
+      "views/tabs/tab_group_views.h",
       "views/tabs/tab_hover_card_bubble_view.cc",
       "views/tabs/tab_hover_card_bubble_view.h",
       "views/tabs/tab_icon.cc",
