@@ -4280,11 +4280,15 @@ IN_PROC_BROWSER_TEST_F(SensorBackForwardCacheBrowserTest,
       }
     }
 
-    // Returns a promise that will resolve when an event is handled.
-    function waitForOneEventPromise() {
+    // Returns a promise that will resolve when the events array has at least
+    // |eventCountMin| elements. Returns the number of elements.
+    function waitForEventsPromise(eventCountMin) {
+      if (events.length >= eventCountMin) {
+        return Promise.resolve(events.length);
+      }
       return new Promise(resolve => {
         pendingResolve = resolve;
-      });
+      }).then(() => waitForEventsPromise(eventCountMin));
     }
 
     // Pretty print an orientation event.
@@ -4292,9 +4296,8 @@ IN_PROC_BROWSER_TEST_F(SensorBackForwardCacheBrowserTest,
       return `${event.alpha} ${event.beta} ${event.gamma}`;
     }
 
-    // Ensure that we have at least |expectedEventMin| events in |events| and
-    // if set, that |expectedAlpha| matches the alpha of all of those events.
-    function validateEvents(expectedEventMin, expectedAlpha = null) {
+    // Ensure that that |expectedAlpha| matches the alpha of all events.
+    function validateEvents(expectedAlpha = null) {
       if (expectedAlpha !== null) {
         let count = 0;
         for (event of events) {
@@ -4304,9 +4307,6 @@ IN_PROC_BROWSER_TEST_F(SensorBackForwardCacheBrowserTest,
                 `${expectedAlpha} != ${event.alpha} (${eventToString(event)})`;
           }
         }
-      }
-      if (events.length < expectedEventMin) {
-        return `fail - ${events.length} < ${expectedEventMin}`;
       }
       return 'pass';
     }
@@ -4323,13 +4323,13 @@ IN_PROC_BROWSER_TEST_F(SensorBackForwardCacheBrowserTest,
   ASSERT_TRUE(ExecJs(rfh_a, sensor_js));
 
   // Collect 3 orientation events.
-  ASSERT_EQ("event", EvalJs(rfh_a, "waitForOneEventPromise()"));
+  ASSERT_EQ(1, EvalJs(rfh_a, "waitForEventsPromise(1)"));
   provider_->UpdateRelativeOrientationSensorData(0, 0, 0.2);
-  ASSERT_EQ("event", EvalJs(rfh_a, "waitForOneEventPromise()"));
+  ASSERT_EQ(2, EvalJs(rfh_a, "waitForEventsPromise(2)"));
   provider_->UpdateRelativeOrientationSensorData(0, 0, 0.4);
-  ASSERT_EQ("event", EvalJs(rfh_a, "waitForOneEventPromise()"));
+  ASSERT_EQ(3, EvalJs(rfh_a, "waitForEventsPromise(3)"));
   // We should have 3 events with alpha=0.
-  ASSERT_EQ("pass", EvalJs(rfh_a, "validateEvents(3, 0)"));
+  ASSERT_EQ("pass", EvalJs(rfh_a, "validateEvents(0)"));
 
   // 2) Navigate to B.
   ASSERT_TRUE(NavigateToURL(shell(), url_b));
@@ -4344,13 +4344,13 @@ IN_PROC_BROWSER_TEST_F(SensorBackForwardCacheBrowserTest,
 
   // Collect 3 orientation events.
   provider_->SetRelativeOrientationSensorData(1, 0, 0);
-  ASSERT_EQ("event", EvalJs(rfh_b, "waitForOneEventPromise()"));
+  ASSERT_EQ(1, EvalJs(rfh_b, "waitForEventsPromise(1)"));
   provider_->UpdateRelativeOrientationSensorData(1, 0, 0.2);
-  ASSERT_EQ("event", EvalJs(rfh_b, "waitForOneEventPromise()"));
+  ASSERT_EQ(2, EvalJs(rfh_b, "waitForEventsPromise(2)"));
   provider_->UpdateRelativeOrientationSensorData(1, 0, 0.4);
-  ASSERT_EQ("event", EvalJs(rfh_b, "waitForOneEventPromise()"));
+  ASSERT_EQ(3, EvalJs(rfh_b, "waitForEventsPromise(3)"));
   // We should have 3 events with alpha=1.
-  ASSERT_EQ("pass", EvalJs(rfh_b, "validateEvents(3)"));
+  ASSERT_EQ("pass", EvalJs(rfh_b, "validateEvents()"));
 
   // 3) Go back to A.
   provider_->UpdateRelativeOrientationSensorData(0, 0, 0);
@@ -4360,14 +4360,21 @@ IN_PROC_BROWSER_TEST_F(SensorBackForwardCacheBrowserTest,
 
   // Collect 3 orientation events.
   provider_->UpdateRelativeOrientationSensorData(0, 0, 0);
-  ASSERT_EQ("event", EvalJs(rfh_a, "waitForOneEventPromise()"));
+  // There are 2 processes so, it's possible that more events crept in. So we
+  // capture how many there are at this point and uses to wait for at least 3
+  // more.
+  int count = EvalJs(rfh_a, "waitForEventsPromise(4)").ExtractInt();
   provider_->UpdateRelativeOrientationSensorData(0, 0, 0.2);
-  ASSERT_EQ("event", EvalJs(rfh_a, "waitForOneEventPromise()"));
+  count++;
+  ASSERT_EQ(count, EvalJs(rfh_a, base::StringPrintf("waitForEventsPromise(%d)",
+                                                    count)));
   provider_->UpdateRelativeOrientationSensorData(0, 0, 0.4);
-  ASSERT_EQ("event", EvalJs(rfh_a, "waitForOneEventPromise()"));
+  count++;
+  ASSERT_EQ(count, EvalJs(rfh_a, base::StringPrintf("waitForEventsPromise(%d)",
+                                                    count)));
 
   // We should have the earlier 3 plus another 3 events with alpha=0.
-  ASSERT_EQ("pass", EvalJs(rfh_a, "validateEvents(6, 0)"));
+  ASSERT_EQ("pass", EvalJs(rfh_a, "validateEvents(0)"));
 }
 
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
