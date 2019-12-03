@@ -2041,7 +2041,6 @@ if (!is_android) {
 
     if (is_chromeos) {
       sources += [
-        "../browser/apps/app_service/instance_registry_browsertest.cc",
         "../browser/apps/platform_apps/app_window_interactive_uitest_base.cc",
         "../browser/apps/platform_apps/app_window_interactive_uitest_base.h",
         "../browser/chromeos/accessibility/accessibility_manager_browsertest.cc",
@@ -2354,6 +2353,7 @@ if (!is_android) {
         "../browser/ui/ash/chrome_screenshot_grabber_browsertest.cc",
         "../browser/ui/ash/keyboard/keyboard_controller_browsertest.cc",
         "../browser/ui/ash/keyboard/keyboard_end_to_end_browsertest.cc",
+        "../browser/ui/ash/launcher/app_service_app_window_browsertest.cc",
         "../browser/ui/ash/launcher/arc_app_launcher_browsertest.cc",
         "../browser/ui/ash/launcher/browser_shortcut_launcher_item_controller_browsertest.cc",
         "../browser/ui/ash/launcher/chrome_launcher_controller_browsertest.cc",
