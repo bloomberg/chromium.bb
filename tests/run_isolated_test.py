@@ -979,6 +979,10 @@ class RunIsolatedTest(RunIsolatedTestBase):
     isolate_cache = isolateserver.process_cache_options(options, trim=False)
 
     def fake_wait(args, **kwargs):  # pylint: disable=unused-argument
+      for arg in args:
+        self.assertTrue(
+            isinstance(arg, str) or isinstance(arg.encode('utf-8'), str), arg)
+
       json_path = args[args.index('-fetch-and-map-result-json') + 1]
       with open(json_path, 'w') as json_file:
         json.dump({
