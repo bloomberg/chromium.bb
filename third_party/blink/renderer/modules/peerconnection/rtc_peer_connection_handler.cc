@@ -2006,7 +2006,8 @@ void RTCPeerConnectionHandler::StartEventLog(int output_period_ms) {
   // or find a way to be able to use it.
   // https://crbug.com/775415
   native_peer_connection_->StartRtcEventLog(
-      blink::CreateRtcEventLogOutputSinkProxy(peer_connection_observer_.get()),
+      std::make_unique<RtcEventLogOutputSinkProxy>(
+          peer_connection_observer_.get()),
       output_period_ms);
 }
 
