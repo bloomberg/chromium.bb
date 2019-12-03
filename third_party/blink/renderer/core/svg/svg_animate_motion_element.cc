@@ -46,7 +46,7 @@ bool TargetCanHaveMotionTransform(const SVGElement& target) {
   // cause problems.
   return IsA<SVGGElement>(target) || IsA<SVGDefsElement>(target) ||
          IsA<SVGUseElement>(target) || IsA<SVGImageElement>(target) ||
-         IsSVGSwitchElement(target) || IsA<SVGPathElement>(target) ||
+         IsA<SVGSwitchElement>(target) || IsA<SVGPathElement>(target) ||
          IsA<SVGRectElement>(target) || IsA<SVGCircleElement>(target) ||
          IsA<SVGEllipseElement>(target) || IsA<SVGLineElement>(target) ||
          IsA<SVGPolylineElement>(target) || IsA<SVGPolygonElement>(target) ||

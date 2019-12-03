@@ -47,7 +47,7 @@ bool LayoutSVGTransformableContainer::IsChildAllowed(
     const ComputedStyle& style) const {
   DCHECK(GetElement());
   Node* child_node = child->GetNode();
-  if (IsSVGSwitchElement(*GetElement())) {
+  if (IsA<SVGSwitchElement>(*GetElement())) {
     // Reject non-SVG/non-valid elements.
     auto* svg_element = DynamicTo<SVGElement>(child_node);
     if (!svg_element || !svg_element->IsValid()) {
