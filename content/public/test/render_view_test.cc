@@ -768,6 +768,10 @@ void RenderViewTest::OnSameDocumentNavigation(blink::WebLocalFrame* frame,
       false /* content_initiated */);
 }
 
+void RenderViewTest::SetUseZoomForDSFEnabled(bool enabled) {
+  render_thread_->SetUseZoomForDSFEnabled(enabled);
+}
+
 blink::WebWidget* RenderViewTest::GetWebWidget() {
   RenderViewImpl* impl = static_cast<RenderViewImpl*>(view_);
   return impl->GetWidget()->GetWebWidget();
