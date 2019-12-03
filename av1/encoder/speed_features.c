@@ -689,11 +689,8 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->use_inter_txb_hash = 0;
     sf->skip_interp_filter_search = 1;
     sf->adaptive_mode_search = 2;
-#if 0
-    // Turning this off until we agree that tradeoff qualuty vs speed is good.
     sf->force_tx_search_off = 1;
-    sf->num_inter_modes_for_tx_search = 2;
-#endif
+    sf->num_inter_modes_for_tx_search = 5;
   }
   if (speed >= 7) {
     sf->lpf_pick = LPF_PICK_FROM_Q;
