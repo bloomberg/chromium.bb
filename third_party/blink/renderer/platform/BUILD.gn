@@ -1420,6 +1420,7 @@ jumbo_component("platform") {
     "webrtc/peer_connection_remote_audio_source.cc",
     "webrtc/peer_connection_remote_audio_source.h",
     "webrtc/track_observer.cc",
+    "webrtc/track_observer.h",
     "webrtc/webrtc_logging.cc",
     "webrtc/webrtc_video_frame_adapter.cc",
     "webrtc/webrtc_video_frame_adapter.h",
