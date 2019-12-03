@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_DOM_STORAGE_DOM_STORAGE_DATABASE_H_
-#define CONTENT_BROWSER_DOM_STORAGE_DOM_STORAGE_DATABASE_H_
+#ifndef COMPONENTS_SERVICES_STORAGE_DOM_STORAGE_LEGACY_DOM_STORAGE_DATABASE_H_
+#define COMPONENTS_SERVICES_STORAGE_DOM_STORAGE_LEGACY_DOM_STORAGE_DATABASE_H_
 
 #include <map>
 #include <memory>
@@ -13,37 +13,39 @@
 #include "base/gtest_prod_util.h"
 #include "base/strings/nullable_string16.h"
 #include "base/strings/string16.h"
-#include "content/browser/dom_storage/dom_storage_types.h"
-#include "content/common/content_export.h"
 #include "sql/database.h"
 
 namespace base {
 namespace trace_event {
 class ProcessMemoryDump;
 }
-}
+}  // namespace base
 
-namespace content {
+namespace storage {
+
+using LegacyDomStorageValuesMap =
+    std::map<base::string16, base::NullableString16>;
 
 // Represents a SQLite based backing for DOM storage data. This
 // class is designed to be used on a single thread.
-class CONTENT_EXPORT DOMStorageDatabase {
+class LegacyDomStorageDatabase {
  public:
-  explicit DOMStorageDatabase(const base::FilePath& file_path);
-  virtual ~DOMStorageDatabase();  // virtual for unit testing
+  explicit LegacyDomStorageDatabase(const base::FilePath& file_path);
+  virtual ~LegacyDomStorageDatabase();  // virtual for unit testing
 
   // Reads all the key, value pairs stored in the database and returns
   // them. |result| is assumed to be empty and any duplicate keys will
   // be overwritten. If the database exists on disk then it will be
   // opened. If it does not exist then it will not be created and
   // |result| will be unmodified.
-  void ReadAllValues(DOMStorageValuesMap* result);
+  void ReadAllValues(LegacyDomStorageValuesMap* result);
 
   // Updates the backing database. Will remove all keys before updating
   // the database if |clear_all_first| is set. Then all entries in
   // |changes| will be examined - keys mapped to a null NullableString16
   // will be removed and all others will be inserted/updated as appropriate.
-  bool CommitChanges(bool clear_all_first, const DOMStorageValuesMap& changes);
+  bool CommitChanges(bool clear_all_first,
+                     const LegacyDomStorageValuesMap& changes);
 
   // Adds memory statistics of the database to |pmd| for tracing.
   void ReportMemoryUsage(base::trace_event::ProcessMemoryDump* pmd,
@@ -54,29 +56,34 @@ class CONTENT_EXPORT DOMStorageDatabase {
 
  protected:
   // Constructor that uses an in-memory sqlite database, for testing.
-  DOMStorageDatabase();
+  LegacyDomStorageDatabase();
 
  private:
   friend class LocalStorageDatabaseAdapter;
-  FRIEND_TEST_ALL_PREFIXES(DOMStorageDatabaseTest, SimpleOpenAndClose);
-  FRIEND_TEST_ALL_PREFIXES(DOMStorageDatabaseTest, TestLazyOpenIsLazy);
-  FRIEND_TEST_ALL_PREFIXES(DOMStorageDatabaseTest, TestDetectSchemaVersion);
-  FRIEND_TEST_ALL_PREFIXES(DOMStorageDatabaseTest,
+  FRIEND_TEST_ALL_PREFIXES(LegacyDomStorageDatabaseTest, SimpleOpenAndClose);
+  FRIEND_TEST_ALL_PREFIXES(LegacyDomStorageDatabaseTest, TestLazyOpenIsLazy);
+  FRIEND_TEST_ALL_PREFIXES(LegacyDomStorageDatabaseTest,
+                           TestDetectSchemaVersion);
+  FRIEND_TEST_ALL_PREFIXES(LegacyDomStorageDatabaseTest,
                            TestLazyOpenUpgradesDatabase);
-  FRIEND_TEST_ALL_PREFIXES(DOMStorageDatabaseTest, SimpleWriteAndReadBack);
-  FRIEND_TEST_ALL_PREFIXES(DOMStorageDatabaseTest, WriteWithClear);
-  FRIEND_TEST_ALL_PREFIXES(DOMStorageDatabaseTest,
+  FRIEND_TEST_ALL_PREFIXES(LegacyDomStorageDatabaseTest,
+                           SimpleWriteAndReadBack);
+  FRIEND_TEST_ALL_PREFIXES(LegacyDomStorageDatabaseTest, WriteWithClear);
+  FRIEND_TEST_ALL_PREFIXES(LegacyDomStorageDatabaseTest,
                            UpgradeFromV1ToV2WithData);
-  FRIEND_TEST_ALL_PREFIXES(DOMStorageDatabaseTest, TestSimpleRemoveOneValue);
-  FRIEND_TEST_ALL_PREFIXES(DOMStorageDatabaseTest,
+  FRIEND_TEST_ALL_PREFIXES(LegacyDomStorageDatabaseTest,
+                           TestSimpleRemoveOneValue);
+  FRIEND_TEST_ALL_PREFIXES(LegacyDomStorageDatabaseTest,
                            TestCanOpenAndReadWebCoreDatabase);
-  FRIEND_TEST_ALL_PREFIXES(DOMStorageDatabaseTest,
+  FRIEND_TEST_ALL_PREFIXES(LegacyDomStorageDatabaseTest,
                            TestCanOpenFileThatIsNotADatabase);
-  FRIEND_TEST_ALL_PREFIXES(DOMStorageAreaTest, BackingDatabaseOpened);
-  FRIEND_TEST_ALL_PREFIXES(DOMStorageAreaParamTest, ShallowCopyWithBacking);
-  FRIEND_TEST_ALL_PREFIXES(DOMStorageAreaTest, EnableDisableCachingWithBacking);
-  FRIEND_TEST_ALL_PREFIXES(DOMStorageAreaTest, CommitTasks);
-  FRIEND_TEST_ALL_PREFIXES(DOMStorageAreaTest, PurgeMemory);
+  FRIEND_TEST_ALL_PREFIXES(LegacyDomStorageAreaTest, BackingDatabaseOpened);
+  FRIEND_TEST_ALL_PREFIXES(LegacyDomStorageAreaParamTest,
+                           ShallowCopyWithBacking);
+  FRIEND_TEST_ALL_PREFIXES(LegacyDomStorageAreaTest,
+                           EnableDisableCachingWithBacking);
+  FRIEND_TEST_ALL_PREFIXES(LegacyDomStorageAreaTest, CommitTasks);
+  FRIEND_TEST_ALL_PREFIXES(LegacyDomStorageAreaTest, PurgeMemory);
 
   enum SchemaVersion {
     INVALID,
@@ -121,9 +128,9 @@ class CONTENT_EXPORT DOMStorageDatabase {
   bool tried_to_recreate_;
   bool known_to_be_empty_;
 
-  DISALLOW_COPY_AND_ASSIGN(DOMStorageDatabase);
+  DISALLOW_COPY_AND_ASSIGN(LegacyDomStorageDatabase);
 };
 
-}  // namespace content
+}  // namespace storage
 
-#endif  // CONTENT_BROWSER_DOM_STORAGE_DOM_STORAGE_DATABASE_H_
+#endif  // COMPONENTS_SERVICES_STORAGE_DOM_STORAGE_LEGACY_DOM_STORAGE_DATABASE_H_

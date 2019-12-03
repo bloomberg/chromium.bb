@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/dom_storage/dom_storage_database.h"
+#include "components/services/storage/dom_storage/legacy_dom_storage_database.h"
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
@@ -11,9 +11,10 @@
 #include "sql/transaction.h"
 #include "third_party/sqlite/sqlite3.h"
 
-namespace content {
+namespace storage {
 
-DOMStorageDatabase::DOMStorageDatabase(const base::FilePath& file_path)
+LegacyDomStorageDatabase::LegacyDomStorageDatabase(
+    const base::FilePath& file_path)
     : file_path_(file_path) {
   // Note: in normal use we should never get an empty backing path here.
   // However, the unit test for this class can contruct an instance
@@ -21,17 +22,17 @@ DOMStorageDatabase::DOMStorageDatabase(const base::FilePath& file_path)
   Init();
 }
 
-DOMStorageDatabase::DOMStorageDatabase() {
+LegacyDomStorageDatabase::LegacyDomStorageDatabase() {
   Init();
 }
 
-void DOMStorageDatabase::Init() {
+void LegacyDomStorageDatabase::Init() {
   failed_to_open_ = false;
   tried_to_recreate_ = false;
   known_to_be_empty_ = false;
 }
 
-DOMStorageDatabase::~DOMStorageDatabase() {
+LegacyDomStorageDatabase::~LegacyDomStorageDatabase() {
   if (known_to_be_empty_ && !file_path_.empty()) {
     // Delete the db and any lingering journal file from disk.
     Close();
@@ -39,12 +40,13 @@ DOMStorageDatabase::~DOMStorageDatabase() {
   }
 }
 
-void DOMStorageDatabase::ReadAllValues(DOMStorageValuesMap* result) {
+void LegacyDomStorageDatabase::ReadAllValues(
+    LegacyDomStorageValuesMap* result) {
   if (!LazyOpen(false))
     return;
 
-  sql::Statement statement(db_->GetCachedStatement(SQL_FROM_HERE,
-                                                   "SELECT * from ItemTable"));
+  sql::Statement statement(
+      db_->GetCachedStatement(SQL_FROM_HERE, "SELECT * from ItemTable"));
   DCHECK(statement.is_valid());
 
   while (statement.Step()) {
@@ -59,13 +61,13 @@ void DOMStorageDatabase::ReadAllValues(DOMStorageValuesMap* result) {
   db_->TrimMemory();
 }
 
-bool DOMStorageDatabase::CommitChanges(bool clear_all_first,
-                                       const DOMStorageValuesMap& changes) {
+bool LegacyDomStorageDatabase::CommitChanges(
+    bool clear_all_first,
+    const LegacyDomStorageValuesMap& changes) {
   if (!LazyOpen(!changes.empty())) {
     // If we're being asked to commit changes that will result in an
     // empty database, we return true if the database file doesn't exist.
-    return clear_all_first && changes.empty() &&
-           !base::PathExists(file_path_);
+    return clear_all_first && changes.empty() && !base::PathExists(file_path_);
   }
 
   bool old_known_to_be_empty = known_to_be_empty_;
@@ -82,18 +84,18 @@ bool DOMStorageDatabase::CommitChanges(bool clear_all_first,
   bool did_delete = false;
   bool did_insert = false;
   auto it = changes.begin();
-  for(; it != changes.end(); ++it) {
+  for (; it != changes.end(); ++it) {
     sql::Statement statement;
     base::string16 key = it->first;
     base::NullableString16 value = it->second;
     if (value.is_null()) {
-      statement.Assign(db_->GetCachedStatement(SQL_FROM_HERE,
-         "DELETE FROM ItemTable WHERE key=?"));
+      statement.Assign(db_->GetCachedStatement(
+          SQL_FROM_HERE, "DELETE FROM ItemTable WHERE key=?"));
       statement.BindString16(0, key);
       did_delete = true;
     } else {
-      statement.Assign(db_->GetCachedStatement(SQL_FROM_HERE,
-          "INSERT INTO ItemTable VALUES (?,?)"));
+      statement.Assign(db_->GetCachedStatement(
+          SQL_FROM_HERE, "INSERT INTO ItemTable VALUES (?,?)"));
       statement.BindString16(0, key);
       statement.BindBlob(1, value.string().data(),
                          value.string().length() * sizeof(base::char16));
@@ -105,8 +107,8 @@ bool DOMStorageDatabase::CommitChanges(bool clear_all_first,
   }
 
   if (!known_to_be_empty_ && did_delete && !did_insert) {
-    sql::Statement statement(db_->GetCachedStatement(SQL_FROM_HERE,
-        "SELECT count(key) from ItemTable"));
+    sql::Statement statement(db_->GetCachedStatement(
+        SQL_FROM_HERE, "SELECT count(key) from ItemTable"));
     if (statement.Step())
       known_to_be_empty_ = statement.ColumnInt(0) == 0;
   }
@@ -121,14 +123,14 @@ bool DOMStorageDatabase::CommitChanges(bool clear_all_first,
   return success;
 }
 
-void DOMStorageDatabase::ReportMemoryUsage(
+void LegacyDomStorageDatabase::ReportMemoryUsage(
     base::trace_event::ProcessMemoryDump* pmd,
     const std::string& name) {
   if (IsOpen())
     db_->ReportMemoryUsage(pmd, name);
 }
 
-bool DOMStorageDatabase::LazyOpen(bool create_if_needed) {
+bool LegacyDomStorageDatabase::LazyOpen(bool create_if_needed) {
   if (failed_to_open_) {
     // Don't try to open a database that we know has failed
     // already.
@@ -164,8 +166,7 @@ bool DOMStorageDatabase::LazyOpen(bool create_if_needed) {
   } else {
     if (!db_->Open(file_path_)) {
       LOG(ERROR) << "Unable to open DOM storage database at "
-                 << file_path_.value()
-                 << " error: " << db_->GetErrorMessage();
+                 << file_path_.value() << " error: " << db_->GetErrorMessage();
       if (database_exists && !tried_to_recreate_)
         return DeleteFileAndRecreate();
       failed_to_open_ = true;
@@ -196,7 +197,8 @@ bool DOMStorageDatabase::LazyOpen(bool create_if_needed) {
   return DeleteFileAndRecreate();
 }
 
-DOMStorageDatabase::SchemaVersion DOMStorageDatabase::DetectSchemaVersion() {
+LegacyDomStorageDatabase::SchemaVersion
+LegacyDomStorageDatabase::DetectSchemaVersion() {
   DCHECK(IsOpen());
 
   // Connection::Open() may succeed even if the file we try and open is not a
@@ -217,7 +219,7 @@ DOMStorageDatabase::SchemaVersion DOMStorageDatabase::DetectSchemaVersion() {
   return V2;
 }
 
-bool DOMStorageDatabase::CreateTableV2() {
+bool LegacyDomStorageDatabase::CreateTableV2() {
   DCHECK(IsOpen());
 
   return db_->Execute(
@@ -226,7 +228,7 @@ bool DOMStorageDatabase::CreateTableV2() {
       "value BLOB NOT NULL ON CONFLICT FAIL)");
 }
 
-bool DOMStorageDatabase::DeleteFileAndRecreate() {
+bool LegacyDomStorageDatabase::DeleteFileAndRecreate() {
   DCHECK(!IsOpen());
   DCHECK(base::PathExists(file_path_));
 
@@ -245,8 +247,8 @@ bool DOMStorageDatabase::DeleteFileAndRecreate() {
   return false;
 }
 
-void DOMStorageDatabase::Close() {
+void LegacyDomStorageDatabase::Close() {
   db_.reset(nullptr);
 }
 
-}  // namespace content
+}  // namespace storage

@@ -30,11 +30,11 @@
 #include "base/trace_event/memory_dump_manager.h"
 #include "build/build_config.h"
 #include "components/services/storage/dom_storage/async_dom_storage_database.h"
+#include "components/services/storage/dom_storage/dom_storage_constants.h"
 #include "components/services/storage/dom_storage/dom_storage_database.h"
+#include "components/services/storage/dom_storage/legacy_dom_storage_database.h"
 #include "components/services/storage/dom_storage/storage_area_impl.h"
 #include "components/services/storage/public/cpp/constants.h"
-#include "content/browser/dom_storage/dom_storage_database.h"
-#include "content/browser/dom_storage/dom_storage_types.h"
 #include "content/browser/dom_storage/local_storage_database.pb.h"
 #include "content/public/browser/storage_usage_info.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
@@ -120,8 +120,8 @@ void MigrateStorageHelper(
     const scoped_refptr<base::SingleThreadTaskRunner> reply_task_runner,
     base::OnceCallback<void(std::unique_ptr<StorageAreaImpl::ValueMap>)>
         callback) {
-  DOMStorageDatabase db(db_path);
-  DOMStorageValuesMap map;
+  storage::LegacyDomStorageDatabase db(db_path);
+  storage::LegacyDomStorageValuesMap map;
   db.ReadAllValues(&map);
   auto values = std::make_unique<StorageAreaImpl::ValueMap>();
   for (const auto& it : map) {
@@ -260,11 +260,12 @@ class LocalStorageContextMojo::StorageAreaHolder final
 
     // To avoid excessive IO we apply limits to the amount of data being written
     // and the frequency of writes.
-    static constexpr int kMaxBytesPerHour = kPerStorageAreaQuota;
+    static const size_t kMaxBytesPerHour = storage::kPerStorageAreaQuota;
     static constexpr int kMaxCommitsPerHour = 60;
 
     StorageAreaImpl::Options options;
-    options.max_size = kPerStorageAreaQuota + kPerStorageAreaOverQuotaAllowance;
+    options.max_size = storage::kPerStorageAreaQuota +
+                       storage::kPerStorageAreaOverQuotaAllowance;
     options.default_commit_delay = kCommitDefaultDelaySecs;
     options.max_bytes_per_hour = kMaxBytesPerHour;
     options.max_commits_per_hour = kMaxCommitsPerHour;
