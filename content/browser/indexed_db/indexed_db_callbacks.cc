@@ -11,7 +11,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/guid.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
@@ -25,15 +24,11 @@
 #include "content/browser/indexed_db/indexed_db_cursor.h"
 #include "content/browser/indexed_db/indexed_db_database_error.h"
 #include "content/browser/indexed_db/indexed_db_return_value.h"
-#include "content/browser/indexed_db/indexed_db_tracing.h"
 #include "content/browser/indexed_db/indexed_db_transaction.h"
 #include "content/browser/indexed_db/indexed_db_value.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/common/content_features.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
-#include "storage/browser/blob/blob_data_builder.h"
-#include "storage/browser/blob/blob_impl.h"
-#include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/quota/quota_manager.h"
 #include "third_party/blink/public/common/indexeddb/indexeddb_metadata.h"
 
@@ -91,89 +86,6 @@ class SafeCursorWrapper {
 };
 
 }  // namespace
-
-IndexedDBCallbacks::IndexedDBValueBlob::IndexedDBValueBlob(
-    const IndexedDBBlobInfo& blob_info,
-    blink::mojom::IDBBlobInfoPtr* blob_or_file_info)
-    : blob_info_(blob_info) {
-  if (blob_info_.is_remote_valid()) {
-    // TODO(enne): when blob handle gets removed entirely, there's no
-    // need for uuid to be stored here in IDBBlobInfoPtr.  For now,
-    // this needs to stay, unfortunately.
-    DCHECK(blob_info_.blob_handle());
-    uuid_ = blob_info_.blob_handle()->uuid();
-  } else {
-    uuid_ = base::GenerateGUID();
-  }
-  (*blob_or_file_info)->uuid = uuid_;
-  receiver_ = (*blob_or_file_info)->blob.InitWithNewPipeAndPassReceiver();
-}
-IndexedDBCallbacks::IndexedDBValueBlob::IndexedDBValueBlob(
-    IndexedDBValueBlob&& other) = default;
-IndexedDBCallbacks::IndexedDBValueBlob::~IndexedDBValueBlob() = default;
-
-// static
-void IndexedDBCallbacks::IndexedDBValueBlob::GetIndexedDBValueBlobs(
-    std::vector<IndexedDBValueBlob>* value_blobs,
-    const std::vector<IndexedDBBlobInfo>& blob_info,
-    std::vector<blink::mojom::IDBBlobInfoPtr>* blob_or_file_info) {
-  DCHECK(value_blobs);
-  DCHECK(blob_or_file_info);
-  DCHECK_EQ(blob_info.size(), blob_or_file_info->size());
-  value_blobs->reserve(value_blobs->size() + blob_info.size());
-  for (size_t i = 0; i < blob_info.size(); i++) {
-    value_blobs->push_back(
-        IndexedDBValueBlob(blob_info[i], &(*blob_or_file_info)[i]));
-  }
-}
-
-// static
-std::vector<IndexedDBCallbacks::IndexedDBValueBlob>
-IndexedDBCallbacks::IndexedDBValueBlob::GetIndexedDBValueBlobs(
-    const std::vector<IndexedDBBlobInfo>& blob_info,
-    std::vector<blink::mojom::IDBBlobInfoPtr>* blob_or_file_info) {
-  std::vector<IndexedDBValueBlob> value_blobs;
-  IndexedDBValueBlob::GetIndexedDBValueBlobs(&value_blobs, blob_info,
-                                             blob_or_file_info);
-  return value_blobs;
-}
-
-// static
-void IndexedDBCallbacks::CreateAllBlobs(
-    IndexedDBDispatcherHost* dispatcher_host,
-    std::vector<IndexedDBValueBlob> value_blobs) {
-  IDB_TRACE("IndexedDBCallbacks::CreateAllBlobs");
-
-  DCHECK(dispatcher_host);
-
-  if (value_blobs.empty())
-    return;
-
-  for (auto& blob : value_blobs) {
-    DCHECK(blob.receiver_.is_valid());
-
-    auto& blob_info = blob.blob_info_;
-    if (blob_info.is_remote_valid()) {
-      blob_info.Clone(std::move(blob.receiver_));
-      continue;
-    }
-
-    auto element = storage::mojom::BlobDataItem::New();
-    // TODO(enne): do we have to handle unknown size here??
-    element->size = blob_info.size();
-    element->side_data_size = 0;
-    element->content_type = base::UTF16ToUTF8(blob_info.type());
-    element->type = storage::mojom::BlobDataItemType::kIndexedDB;
-
-    dispatcher_host->BindFileReader(
-        blob_info.file_path(), blob_info.last_modified(),
-        blob_info.release_callback(),
-        element->reader.InitWithNewPipeAndPassReceiver());
-
-    dispatcher_host->mojo_blob_storage_context()->RegisterFromDataItem(
-        std::move(blob.receiver_), blob.uuid_, std::move(element));
-  }
-}
 
 IndexedDBCallbacks::IndexedDBCallbacks(
     base::WeakPtr<IndexedDBDispatcherHost> dispatcher_host,
