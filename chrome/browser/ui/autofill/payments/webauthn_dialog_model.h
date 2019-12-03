@@ -35,6 +35,7 @@ class WebauthnDialogModel : public AuthenticatorRequestSheetModel {
   bool IsActivityIndicatorVisible() const override;
   bool IsBackButtonVisible() const override;
   bool IsCancelButtonVisible() const override;
+  bool IsCancelButtonEnabled() const override;
   base::string16 GetCancelButtonLabel() const override;
   bool IsAcceptButtonVisible() const override;
   bool IsAcceptButtonEnabled() const override;

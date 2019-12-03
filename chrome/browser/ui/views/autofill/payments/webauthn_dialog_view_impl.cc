@@ -69,6 +69,7 @@ void WebauthnDialogViewImpl::OnDialogStateChanged() {
     case WebauthnDialogState::kOfferPending:
     case WebauthnDialogState::kOfferError:
     case WebauthnDialogState::kVerifyPending:
+    case WebauthnDialogState::kVerifyPendingButtonDisabled:
       RefreshContent();
       break;
     case WebauthnDialogState::kUnknown:
@@ -110,7 +111,7 @@ int WebauthnDialogViewImpl::GetDialogButtons() const {
 bool WebauthnDialogViewImpl::IsDialogButtonEnabled(
     ui::DialogButton button) const {
   return button == ui::DIALOG_BUTTON_OK ? model_->IsAcceptButtonEnabled()
-                                        : true;
+                                        : model_->IsCancelButtonEnabled();
 }
 
 ui::ModalType WebauthnDialogViewImpl::GetModalType() const {

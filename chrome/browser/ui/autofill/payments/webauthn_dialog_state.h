@@ -22,8 +22,8 @@ enum class WebauthnDialogState {
   // Indicating the card verification is in progress. Shown only for opted-in
   // users.
   kVerifyPending,
-  // TODO(crbug.com/991037): Add an extra state for case when the cancel button
-  // in the verify pending dialog should be disabled.
+  // Same as above but the cancel button should be disabled.
+  kVerifyPendingButtonDisabled,
 };
 
 }  // namespace autofill
