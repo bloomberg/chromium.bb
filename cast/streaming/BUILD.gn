@@ -52,6 +52,8 @@ source_set("common") {
 
 source_set("receiver") {
   sources = [
+    "answer_messages.cc",
+    "answer_messages.h",
     "compound_rtcp_builder.cc",
     "compound_rtcp_builder.h",
     "frame_collector.cc",
@@ -100,6 +102,7 @@ source_set("unittests") {
   testonly = true
 
   sources = [
+    "answer_messages_unittest.cc",
     "compound_rtcp_builder_unittest.cc",
     "compound_rtcp_parser_unittest.cc",
     "expanded_value_base_unittest.cc",
