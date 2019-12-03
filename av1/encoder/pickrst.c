@@ -862,8 +862,7 @@ static AOM_INLINE void search_sgrproj(const RestorationTileLimits *limits,
   const int bit_depth = cm->seq_params.bit_depth;
 
   const int64_t bits_none = x->sgrproj_restore_cost[0];
-  // Prune evaluation of RESTORE_SGRPROJ if RESTORE_NONE was the winner (no loop
-  // restoration)
+  // Prune evaluation of RESTORE_SGRPROJ if 'skip_sgr_eval' is set
   if (rusi->skip_sgr_eval) {
     rsc->bits += bits_none;
     rsc->sse += rusi->sse[RESTORE_NONE];
@@ -1478,7 +1477,7 @@ static AOM_INLINE void search_wiener(const RestorationTileLimits *limits,
     rsc->sse += rusi->sse[RESTORE_NONE];
     rusi->best_rtype[RESTORE_WIENER - 1] = RESTORE_NONE;
     rusi->sse[RESTORE_WIENER] = INT64_MAX;
-    if (rsc->sf->prune_sgr_based_on_wiener) rusi->skip_sgr_eval = 1;
+    if (rsc->sf->prune_sgr_based_on_wiener == 2) rusi->skip_sgr_eval = 1;
     return;
   }
 
@@ -1497,7 +1496,7 @@ static AOM_INLINE void search_wiener(const RestorationTileLimits *limits,
     rsc->sse += rusi->sse[RESTORE_NONE];
     rusi->best_rtype[RESTORE_WIENER - 1] = RESTORE_NONE;
     rusi->sse[RESTORE_WIENER] = INT64_MAX;
-    if (rsc->sf->prune_sgr_based_on_wiener) rusi->skip_sgr_eval = 1;
+    if (rsc->sf->prune_sgr_based_on_wiener == 2) rusi->skip_sgr_eval = 1;
     return;
   }
 
@@ -1528,7 +1527,11 @@ static AOM_INLINE void search_wiener(const RestorationTileLimits *limits,
       (cost_wiener < cost_none) ? RESTORE_WIENER : RESTORE_NONE;
   rusi->best_rtype[RESTORE_WIENER - 1] = rtype;
 
-  if (rsc->sf->prune_sgr_based_on_wiener) {
+  // Set 'skip_sgr_eval' based on rdcost ratio of RESTORE_WIENER and
+  // RESTORE_NONE or based on best_rtype
+  if (rsc->sf->prune_sgr_based_on_wiener == 1) {
+    rusi->skip_sgr_eval = cost_wiener > (1.01 * cost_none);
+  } else if (rsc->sf->prune_sgr_based_on_wiener == 2) {
     rusi->skip_sgr_eval = rusi->best_rtype[RESTORE_WIENER - 1] == RESTORE_NONE;
   }
 

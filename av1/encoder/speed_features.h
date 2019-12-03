@@ -804,6 +804,10 @@ typedef struct SPEED_FEATURES {
   int disable_loop_restoration_chroma;
 
   // Prune self-guided loop restoration based on wiener search results
+  // 0 : no pruning
+  // 1 : pruning based on rdcost ratio of RESTORE_WIENER and RESTORE_NONE
+  // 2 : pruning based on winner restoration type among RESTORE_WIENER and
+  // RESTORE_NONE
   int prune_sgr_based_on_wiener;
 
   // Reduce the wiener filter win size for luma

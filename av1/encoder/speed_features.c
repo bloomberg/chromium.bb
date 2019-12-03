@@ -349,6 +349,7 @@ static void set_good_speed_features_framesize_independent(
     sf->gm_erroradv_type = GM_ERRORADV_TR_2;
 
     sf->selective_ref_frame = 3;
+    sf->prune_sgr_based_on_wiener = cm->allow_screen_content_tools ? 0 : 1;
 
     // TODO(chiyotsai@google.com): We can get 10% speed up if we move
     // adaptive_rd_thresh to speed 1. But currently it performs poorly on some
@@ -405,7 +406,7 @@ static void set_good_speed_features_framesize_independent(
     sf->enable_winner_mode_for_use_tx_domain_dist =
         cm->allow_screen_content_tools ? 0 : 1;
     sf->reduce_wiener_window_size = is_boosted_arf2_bwd_type ? 0 : 1;
-    sf->prune_sgr_based_on_wiener = cm->allow_screen_content_tools ? 0 : 1;
+    sf->prune_sgr_based_on_wiener = cm->allow_screen_content_tools ? 0 : 2;
     sf->mv.subpel_search_method = SUBPEL_TREE_PRUNED;
     sf->simple_motion_search_prune_agg = 1;
     sf->disable_sb_level_mv_cost_upd = 1;
