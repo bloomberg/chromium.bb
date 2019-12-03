@@ -305,7 +305,7 @@ ContentBrowserClientImpl::CreateThrottlesForNavigation(
   std::vector<std::unique_ptr<content::NavigationThrottle>> throttles;
   throttles.push_back(std::make_unique<SSLErrorNavigationThrottle>(
       handle, std::make_unique<SSLCertReporterImpl>(),
-      base::Bind(&HandleSSLError), base::Bind(&IsInHostedApp)));
+      base::BindOnce(&HandleSSLError), base::BindOnce(&IsInHostedApp)));
   return throttles;
 }
 

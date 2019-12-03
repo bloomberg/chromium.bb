@@ -293,8 +293,9 @@ ProfileImpl::ProfileImpl(const std::string& name) : name_(name) {
 
   browser_context_ = std::make_unique<BrowserContextImpl>(this, data_path_);
 
-  locale_change_subscription_ = i18n::RegisterLocaleChangeCallback(
-      base::Bind(&ProfileImpl::OnLocaleChanged, base::Unretained(this)));
+  locale_change_subscription_ =
+      i18n::RegisterLocaleChangeCallback(base::BindRepeating(
+          &ProfileImpl::OnLocaleChanged, base::Unretained(this)));
 }
 
 ProfileImpl::~ProfileImpl() {
