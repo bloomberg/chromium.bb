@@ -163,16 +163,24 @@ class TabStrip : public views::AccessiblePaneView,
   // Sets the tab data at the specified model index.
   void SetTabData(int model_index, TabRendererData data);
 
-  // Changes the group of the tab at |model_index| from |old_group| to
-  // |new_group|.
-  void ChangeTabGroup(int model_index,
-                      base::Optional<TabGroupId> old_group,
-                      base::Optional<TabGroupId> new_group);
+  // Sets the tab group at the specified model index.
+  void AddTabToGroup(base::Optional<TabGroupId> group, int model_index);
+
+  // Creates the views associated with a newly-created tab group.
+  void OnGroupCreated(TabGroupId group);
+
+  // Updates the group's contents and metadata when its tab membership changes.
+  // This should be called when a tab is added to or removed from a group.
+  void OnGroupContentsChanged(TabGroupId group);
 
   // Updates the group's tabs and header when its associated TabGroupVisualData
   // changes. This should be called when the result of
   // |TabStripController::GetVisualDataForGroup(group)| changes.
-  void GroupVisualsChanged(TabGroupId group);
+  void OnGroupVisualsChanged(TabGroupId group);
+
+  // Destroys the views associated with a recently deleted tab group. The
+  // associated view mappings are erased in OnGroupCloseAnimationCompleted().
+  void OnGroupDeleted(TabGroupId group);
 
   // Returns true if the tab is not partly or fully clipped (due to overflow),
   // and the tab couldn't become partly clipped due to changing the selected tab

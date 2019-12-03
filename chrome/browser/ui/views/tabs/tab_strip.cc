@@ -1236,56 +1236,56 @@ void TabStrip::SetTabData(int model_index, TabRendererData data) {
   SwapLayoutIfNecessary();
 }
 
-void TabStrip::ChangeTabGroup(int model_index,
-                              base::Optional<TabGroupId> old_group,
-                              base::Optional<TabGroupId> new_group) {
-  tab_at(model_index)->set_group(new_group);
-  if (new_group.has_value()) {
-    if (!group_headers_[new_group.value()]) {
-      auto header = std::make_unique<TabGroupHeader>(this, new_group.value());
-      header->set_owned_by_client();
-      AddChildView(header.get());
-      layout_helper_->InsertGroupHeader(
-          new_group.value(), header.get(),
-          base::BindOnce(&TabStrip::OnGroupCloseAnimationCompleted,
-                         base::Unretained(this), new_group.value()));
-      group_headers_[new_group.value()] = std::move(header);
-    }
-    if (!group_underlines_[new_group.value()]) {
-      auto underline =
-          std::make_unique<TabGroupUnderline>(this, new_group.value());
-      underline->set_owned_by_client();
-      AddChildView(underline.get());
-      group_underlines_[new_group.value()] = std::move(underline);
-    }
-    // The group header may be in the wrong place if the tab didn't actually
-    // move in terms of model indices.
-    layout_helper_->UpdateGroupHeaderIndex(new_group.value());
-    group_underlines_[new_group.value()]->SchedulePaint();
-    const int active_index = controller_->GetActiveIndex();
-    if (active_index != ui::ListSelectionModel::kUnselectedIndex)
-      tab_at(active_index)->SchedulePaint();
-  }
-  if (old_group.has_value()) {
-    if (controller_->ListTabsInGroup(old_group.value()).size() == 0) {
-      layout_helper_->RemoveGroupHeader(old_group.value());
-    } else {
-      // As above, ensure the header is in the right place.
-      layout_helper_->UpdateGroupHeaderIndex(old_group.value());
-      group_underlines_[old_group.value()]->SchedulePaint();
-    }
-  }
+void TabStrip::AddTabToGroup(base::Optional<TabGroupId> group,
+                             int model_index) {
+  tab_at(model_index)->set_group(group);
+}
+
+void TabStrip::OnGroupCreated(TabGroupId group) {
+  auto header = std::make_unique<TabGroupHeader>(this, group);
+  header->set_owned_by_client();
+  AddChildView(header.get());
+  layout_helper_->InsertGroupHeader(
+      group, header.get(),
+      base::BindOnce(&TabStrip::OnGroupCloseAnimationCompleted,
+                     base::Unretained(this), group));
+  group_headers_[group] = std::move(header);
+
+  auto underline = std::make_unique<TabGroupUnderline>(this, group);
+  underline->set_owned_by_client();
+  AddChildView(underline.get());
+  group_underlines_[group] = std::move(underline);
+}
+
+void TabStrip::OnGroupContentsChanged(TabGroupId group) {
+  DCHECK(group_headers_[group]);
+  DCHECK(group_underlines_[group]);
+  // The group header may be in the wrong place if the tab didn't actually
+  // move in terms of model indices.
+  layout_helper_->UpdateGroupHeaderIndex(group);
+  group_underlines_[group]->SchedulePaint();
+  const int active_index = controller_->GetActiveIndex();
+  if (active_index != ui::ListSelectionModel::kUnselectedIndex)
+    tab_at(active_index)->SchedulePaint();
   UpdateIdealBounds();
   AnimateToIdealBounds();
 }
 
-void TabStrip::GroupVisualsChanged(TabGroupId group) {
+void TabStrip::OnGroupVisualsChanged(TabGroupId group) {
+  DCHECK(group_headers_[group]);
+  DCHECK(group_underlines_[group]);
   group_headers_[group]->VisualsChanged();
   group_underlines_[group]->SchedulePaint();
   const int active_index = controller_->GetActiveIndex();
   if (active_index != ui::ListSelectionModel::kUnselectedIndex)
     tab_at(active_index)->SchedulePaint();
   // The group title may have changed size.
+  UpdateIdealBounds();
+  AnimateToIdealBounds();
+}
+
+void TabStrip::OnGroupDeleted(TabGroupId group) {
+  layout_helper_->RemoveGroupHeader(group);
   UpdateIdealBounds();
   AnimateToIdealBounds();
 }

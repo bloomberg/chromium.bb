@@ -281,10 +281,6 @@ class TabStripUIHandler : public content::WebUIMessageHandler,
                               replace->new_contents)));
         break;
       }
-      case TabStripModelChange::kGroupChanged: {
-        // Not yet implmented.
-        break;
-      }
       case TabStripModelChange::kSelectionOnly:
         // Multi-selection is not supported for touch.
         break;
