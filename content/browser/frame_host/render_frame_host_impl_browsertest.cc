@@ -1265,7 +1265,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
       static_cast<RenderFrameHostImpl*>(wc->GetMainFrame());
 
   EXPECT_TRUE(main_rfh1->GetSuddenTerminationDisablerState(
-      blink::kBeforeUnloadHandler));
+      blink::mojom::SuddenTerminationDisablerType::kBeforeUnloadHandler));
 
   // Make the renderer crash.
   RenderProcessHost* renderer_process = main_rfh1->GetProcess();
@@ -1275,7 +1275,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   crash_observer.Wait();
 
   EXPECT_FALSE(main_rfh1->GetSuddenTerminationDisablerState(
-      blink::kBeforeUnloadHandler));
+      blink::mojom::SuddenTerminationDisablerType::kBeforeUnloadHandler));
 
   // This should not trigger a DCHECK once the renderer sends up the termination
   // disabler flags.
@@ -1285,7 +1285,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   RenderFrameHostImpl* main_rfh2 =
       static_cast<RenderFrameHostImpl*>(wc->GetMainFrame());
   EXPECT_TRUE(main_rfh2->GetSuddenTerminationDisablerState(
-      blink::kBeforeUnloadHandler));
+      blink::mojom::SuddenTerminationDisablerType::kBeforeUnloadHandler));
 }
 
 // Aborted renderer-initiated navigations that don't destroy the current

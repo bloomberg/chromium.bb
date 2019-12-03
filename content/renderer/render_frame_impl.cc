@@ -5334,13 +5334,6 @@ void RenderFrameImpl::HandleAccessibilityFindInPageTermination() {
     render_accessibility_->HandleAccessibilityFindInPageTermination();
 }
 
-void RenderFrameImpl::SuddenTerminationDisablerChanged(
-    bool present,
-    blink::SuddenTerminationDisablerType disabler_type) {
-  Send(new FrameHostMsg_SuddenTerminationDisablerChanged(routing_id_, present,
-                                                         disabler_type));
-}
-
 void RenderFrameImpl::DidSerializeDataForFrame(
     const WebVector<char>& data,
     WebFrameSerializerClient::FrameSerializationStatus status) {

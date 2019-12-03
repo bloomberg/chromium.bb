@@ -37,6 +37,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
+#include "third_party/blink/public/mojom/frame/sudden_termination_disabler_type.mojom.h"
 #include "url/gurl.h"
 
 namespace resource_coordinator {
@@ -865,7 +866,8 @@ void TabLifecycleUnitSource::TabLifecycleUnit::FinishDiscard(
     // frame, as that is often an indication of unsaved user state.
     DCHECK(main_frame);
     if (!main_frame->GetSuddenTerminationDisablerState(
-            blink::kBeforeUnloadHandler)) {
+            blink::mojom::SuddenTerminationDisablerType::
+                kBeforeUnloadHandler)) {
       fast_shutdown_success = GetRenderProcessHost()->FastShutdownIfPossible(
           1u, /* skip_unload_handlers */ true);
     }

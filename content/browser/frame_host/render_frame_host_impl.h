@@ -81,7 +81,6 @@
 #include "third_party/blink/public/common/frame/blocked_navigation_types.h"
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/common/frame/user_activation_update_type.h"
-#include "third_party/blink/public/common/sudden_termination_disabler_type.h"
 #include "third_party/blink/public/mojom/bluetooth/web_bluetooth.mojom.h"
 #include "third_party/blink/public/mojom/choosers/file_chooser.mojom.h"
 #include "third_party/blink/public/mojom/commit_result/commit_result.mojom.h"
@@ -306,7 +305,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void DisableBeforeUnloadHangMonitorForTesting() override;
   bool IsBeforeUnloadHangMonitorDisabledForTesting() override;
   bool GetSuddenTerminationDisablerState(
-      blink::SuddenTerminationDisablerType disabler_type) override;
+      blink::mojom::SuddenTerminationDisablerType disabler_type) override;
   bool IsFeatureEnabled(blink::mojom::FeaturePolicyFeature feature) override;
   bool IsFeatureEnabled(blink::mojom::FeaturePolicyFeature feature,
                         blink::PolicyValue threshold_value) override;
@@ -1267,6 +1266,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
       blink::WebInsecureRequestPolicy policy) override;
   void EnforceInsecureNavigationsSet(const std::vector<uint32_t>& set) override;
   void DidChangeActiveSchedulerTrackedFeatures(uint64_t features_mask) override;
+  void SuddenTerminationDisablerChanged(
+      bool present,
+      blink::mojom::SuddenTerminationDisablerType disabler_type) override;
 
  protected:
   friend class RenderFrameHostFactory;
@@ -1454,9 +1456,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
       ax::mojom::Event event_to_fire);
   void OnAccessibilitySnapshotResponse(int callback_id,
                                        const AXContentTreeUpdate& snapshot);
-  void OnSuddenTerminationDisablerChanged(
-      bool present,
-      blink::SuddenTerminationDisablerType disabler_type);
   void OnDidFinishDocumentLoad();
   void OnDidStopLoading();
   void OnDidChangeLoadProgress(double load_progress);
@@ -2275,9 +2274,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   ContentBrowserClient::NonNetworkURLLoaderFactoryMap
       non_network_url_loader_factories_;
 
-  // Bitfield for renderer-side state that blocks fast shutdown of the frame.
-  blink::SuddenTerminationDisablerType
-      sudden_termination_disabler_types_enabled_ = 0;
+  // Renderer-side states that blocks fast shutdown of the frame.
+  bool has_before_unload_handler_ = false;
+  bool has_unload_handler_ = false;
 
   base::Optional<RenderFrameAudioOutputStreamFactory>
       audio_service_audio_output_stream_factory_;
