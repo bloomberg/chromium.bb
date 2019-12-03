@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_INFOBARS_INFOBAR_H_
-#define IOS_CHROME_BROWSER_INFOBARS_INFOBAR_H_
+#ifndef IOS_CHROME_BROWSER_INFOBARS_INFOBAR_IOS_H_
+#define IOS_CHROME_BROWSER_INFOBARS_INFOBAR_IOS_H_
 
 #import <UIKit/UIKit.h>
 #include <memory>
@@ -39,4 +39,4 @@ class InfoBarIOS : public infobars::InfoBar, public InfoBarControllerDelegate {
   DISALLOW_COPY_AND_ASSIGN(InfoBarIOS);
 };
 
-#endif  // IOS_CHROME_BROWSER_INFOBARS_INFOBAR_H_
+#endif  // IOS_CHROME_BROWSER_INFOBARS_INFOBAR_IOS_H_
