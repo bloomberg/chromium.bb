@@ -839,14 +839,24 @@ void SVGSMILElement::InstanceListChanged() {
   // care of updating the active state and send events as needed.
   SMILTime previous_presentation_time =
       current_presentation_time - SMILTime::Epsilon();
-  if (was_active && interval_.BeginsAfter(previous_presentation_time)) {
-    active_state_ = DetermineActiveState(previous_presentation_time);
+  if (was_active) {
+    const SMILInterval& active_interval =
+        GetActiveInterval(previous_presentation_time);
+    active_state_ =
+        DetermineActiveState(active_interval, previous_presentation_time);
     if (GetActiveState() != kActive)
       EndedActiveInterval();
   }
   if (time_container_) {
-    time_container_->Reschedule(
-        this, ComputeNextIntervalTime(previous_presentation_time));
+    SMILTime next_interval_time;
+    // If we switched interval and the previous interval did not end yet, we
+    // need to consider it when computing the next interval time.
+    if (previous_interval_.IsResolved() &&
+        previous_interval_.EndsAfter(previous_presentation_time))
+      next_interval_time = previous_interval_.end;
+    else
+      next_interval_time = ComputeNextIntervalTime(previous_presentation_time);
+    time_container_->Reschedule(this, next_interval_time);
   }
 }
 
@@ -931,7 +941,7 @@ void SVGSMILElement::AddedToTimeContainer() {
   // care of updating the active state and send events as needed.
   SMILTime previous_presentation_time =
       current_presentation_time - SMILTime::Epsilon();
-  active_state_ = DetermineActiveState(previous_presentation_time);
+  active_state_ = DetermineActiveState(interval_, previous_presentation_time);
   time_container_->Reschedule(
       this, ComputeNextIntervalTime(previous_presentation_time));
 
@@ -1028,8 +1038,9 @@ SMILTime SVGSMILElement::NextProgressTime(SMILTime presentation_time) const {
 }
 
 SVGSMILElement::ActiveState SVGSMILElement::DetermineActiveState(
+    const SMILInterval& interval,
     SMILTime elapsed) const {
-  if (interval_.Contains(elapsed))
+  if (interval.Contains(elapsed))
     return kActive;
   if (is_waiting_for_first_interval_)
     return kInactive;
@@ -1047,7 +1058,7 @@ bool SVGSMILElement::IsContributing(SMILTime elapsed) const {
 
 void SVGSMILElement::UpdateActiveState(SMILTime elapsed) {
   const bool was_active = GetActiveState() == kActive;
-  active_state_ = DetermineActiveState(elapsed);
+  active_state_ = DetermineActiveState(interval_, elapsed);
   const bool is_active = GetActiveState() == kActive;
   const bool interval_restart =
       interval_has_changed_ && previous_interval_.end == interval_.begin;
