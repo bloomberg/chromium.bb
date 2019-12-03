@@ -65,21 +65,21 @@ import java.util.concurrent.ExecutionException;
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @EnableFeatures(ChromeFeatureList.CAPTION_SETTINGS)
-public class PreferencesTest {
+public class SettingsActivityTest {
     @Rule
     public final ChromeBrowserTestRule mBrowserTestRule = new ChromeBrowserTestRule();
 
     /**
-     * Launches the preferences menu and starts the preferences activity named fragmentName.
+     * Launches the settings activity with the specified fragment.
      * Returns the activity that was started.
      */
-    public static Preferences startPreferences(Instrumentation instrumentation,
-            String fragmentName) {
+    public static SettingsActivity startSettingsActivity(
+            Instrumentation instrumentation, String fragmentName) {
         Context context = instrumentation.getTargetContext();
         Intent intent = PreferencesLauncher.createIntentForSettingsPage(context, fragmentName);
         Activity activity = instrumentation.startActivitySync(intent);
-        Assert.assertTrue(activity instanceof Preferences);
-        return (Preferences) activity;
+        Assert.assertTrue(activity instanceof SettingsActivity);
+        return (SettingsActivity) activity;
     }
 
     /**
@@ -93,13 +93,14 @@ public class PreferencesTest {
     public void testSearchEnginePreference() throws Exception {
         ensureTemplateUrlServiceLoaded();
 
-        final Preferences prefActivity =
-                startPreferences(InstrumentationRegistry.getInstrumentation(),
+        final SettingsActivity settingsActivity =
+                startSettingsActivity(InstrumentationRegistry.getInstrumentation(),
                         SearchEnginePreference.class.getName());
 
         // Set the second search engine as the default using TemplateUrlService.
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            SearchEnginePreference pref = (SearchEnginePreference) prefActivity.getMainFragment();
+            SearchEnginePreference pref =
+                    (SearchEnginePreference) settingsActivity.getMainFragment();
             pref.setValueForTesting("1");
 
             // Ensure that the second search engine in the list is selected.
@@ -174,11 +175,11 @@ public class PreferencesTest {
             }
         }));
 
-        Preferences preferenceActivity = ActivityUtils.waitForActivity(
-                InstrumentationRegistry.getInstrumentation(), Preferences.class);
+        SettingsActivity settingsActivity = ActivityUtils.waitForActivity(
+                InstrumentationRegistry.getInstrumentation(), SettingsActivity.class);
 
         final MainPreferences mainPreferences =
-                ActivityUtils.waitForFragmentToAttach(preferenceActivity, MainPreferences.class);
+                ActivityUtils.waitForFragmentToAttach(settingsActivity, MainPreferences.class);
 
         final android.support.v7.preference.Preference searchEnginePref =
                 waitForPreference(mainPreferences, MainPreferences.PREF_SEARCH_ENGINE);
@@ -211,19 +212,21 @@ public class PreferencesTest {
     public void testSearchEnginePreferenceHttp() throws Exception {
         ensureTemplateUrlServiceLoaded();
 
-        final Preferences prefActivity =
-                startPreferences(InstrumentationRegistry.getInstrumentation(),
+        final SettingsActivity settingsActivity =
+                startSettingsActivity(InstrumentationRegistry.getInstrumentation(),
                         SearchEnginePreference.class.getName());
 
         // Set the first search engine as the default using TemplateUrlService.
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            SearchEnginePreference pref = (SearchEnginePreference) prefActivity.getMainFragment();
+            SearchEnginePreference pref =
+                    (SearchEnginePreference) settingsActivity.getMainFragment();
             pref.setValueForTesting("0");
         });
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             // Ensure that the first search engine in the list is selected.
-            SearchEnginePreference pref = (SearchEnginePreference) prefActivity.getMainFragment();
+            SearchEnginePreference pref =
+                    (SearchEnginePreference) settingsActivity.getMainFragment();
             Assert.assertNotNull(pref);
             Assert.assertEquals("0", pref.getValueForTesting());
 
@@ -291,9 +294,10 @@ public class PreferencesTest {
     @Feature({"Accessibility"})
     public void testAccessibilityPreferences() throws Exception {
         String accessibilityPrefClassname = AccessibilityPreferences.class.getName();
-        AccessibilityPreferences accessibilityPref = (AccessibilityPreferences) startPreferences(
-                InstrumentationRegistry.getInstrumentation(), accessibilityPrefClassname)
-                                                             .getMainFragment();
+        AccessibilityPreferences accessibilityPref =
+                (AccessibilityPreferences) startSettingsActivity(
+                        InstrumentationRegistry.getInstrumentation(), accessibilityPrefClassname)
+                        .getMainFragment();
         SeekBarPreference textScalePref = (SeekBarPreference) accessibilityPref.findPreference(
                 AccessibilityPreferences.PREF_TEXT_SCALE);
         ChromeBaseCheckBoxPreference forceEnableZoomPref =
@@ -303,8 +307,7 @@ public class PreferencesTest {
         // Arbitrary value 0.4f to be larger and smaller than threshold.
         float fontSmallerThanThreshold =
                 FontSizePrefs.FORCE_ENABLE_ZOOM_THRESHOLD_MULTIPLIER - 0.4f;
-        float fontBiggerThanThreshold =
-                FontSizePrefs.FORCE_ENABLE_ZOOM_THRESHOLD_MULTIPLIER + 0.4f;
+        float fontBiggerThanThreshold = FontSizePrefs.FORCE_ENABLE_ZOOM_THRESHOLD_MULTIPLIER + 0.4f;
 
         // Set the textScaleFactor above the threshold.
         userSetTextScale(accessibilityPref, textScalePref, fontBiggerThanThreshold);
@@ -341,9 +344,10 @@ public class PreferencesTest {
     @Feature({"Accessibility"})
     public void testCaptionPreferences() {
         String accessibilityPrefClassname = AccessibilityPreferences.class.getName();
-        AccessibilityPreferences accessibilityPref = (AccessibilityPreferences) startPreferences(
-                InstrumentationRegistry.getInstrumentation(), accessibilityPrefClassname)
-                                                             .getMainFragment();
+        AccessibilityPreferences accessibilityPref =
+                (AccessibilityPreferences) startSettingsActivity(
+                        InstrumentationRegistry.getInstrumentation(), accessibilityPrefClassname)
+                        .getMainFragment();
         android.support.v7.preference.Preference captionsPref =
                 accessibilityPref.findPreference(AccessibilityPreferences.PREF_CAPTIONS);
         Assert.assertNotNull(captionsPref);
@@ -374,15 +378,15 @@ public class PreferencesTest {
             }
         });
 
-        PreferencesTest.startPreferences(
+        SettingsActivityTest.startSettingsActivity(
                 InstrumentationRegistry.getInstrumentation(), MainPreferences.class.getName());
 
         onView(withText(R.string.prefs_saved_passwords_title)).perform(click());
         onView(withText(R.string.prefs_saved_passwords)).check(matches(isDisplayed()));
     }
 
-    private void assertFontSizePrefs(final boolean expectedForceEnableZoom,
-            final float expectedFontScale) {
+    private void assertFontSizePrefs(
+            final boolean expectedForceEnableZoom, final float expectedFontScale) {
         final Context targetContext = InstrumentationRegistry.getTargetContext();
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             FontSizePrefs fontSizePrefs = FontSizePrefs.getInstance();

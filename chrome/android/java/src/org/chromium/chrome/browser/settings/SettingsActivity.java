@@ -42,7 +42,7 @@ import org.chromium.ui.UiUtils;
  * The Chrome settings activity.
  *
  * This activity displays a single {@link Fragment}, typically a {@link PreferenceFragmentCompat}.
- * As the user navigates through settings, a separate Preferences activity is created for each
+ * As the user navigates through settings, a separate Settings activity is created for each
  * screen. Thus each fragment may freely modify its activity's action bar or title. This mimics the
  * behavior of {@link android.preference.PreferenceActivity}.
  *
@@ -52,7 +52,7 @@ import org.chromium.ui.UiUtils;
  * 2) an OnScrollChangedListener to the main content's view's view tree observer via
  *    PreferenceUtils.getShowShadowOnScrollListener(...).
  */
-public class Preferences extends ChromeBaseAppCompatActivity
+public class SettingsActivity extends ChromeBaseAppCompatActivity
         implements PreferenceFragmentCompat.OnPreferenceStartFragmentCallback {
     /**
      * Preference fragments may implement this interface to intercept "Back" button taps in this
@@ -70,10 +70,8 @@ public class Preferences extends ChromeBaseAppCompatActivity
     static final String EXTRA_SHOW_FRAGMENT = "show_fragment";
     static final String EXTRA_SHOW_FRAGMENT_ARGUMENTS = "show_fragment_args";
 
-    private static final String TAG = "Preferences";
-
-    /** The current instance of Preferences in the resumed state, if any. */
-    private static Preferences sResumedInstance;
+    /** The current instance of SettingsActivity in the resumed state, if any. */
+    private static SettingsActivity sResumedInstance;
 
     /** Whether this activity has been created for the first time but not yet resumed. */
     private boolean mIsNewlyCreated;
@@ -86,7 +84,7 @@ public class Preferences extends ChromeBaseAppCompatActivity
         ensureActivityNotExported();
 
         // The browser process must be started here because this Activity may be started explicitly
-        // from Android notifications, when Android is restoring Preferences after Chrome was
+        // from Android notifications, when Android is restoring Settings after Chrome was
         // killed, or for tests. This should happen before super.onCreate() because it might
         // recreate a fragment, and a fragment might depend on the native library.
         ChromeBrowserInitializer.getInstance(this).handleSynchronousStartup();
@@ -114,7 +112,7 @@ public class Preferences extends ChromeBaseAppCompatActivity
         }
 
         if (ApiCompatibilityUtils.checkPermission(
-                this, Manifest.permission.NFC, Process.myPid(), Process.myUid())
+                    this, Manifest.permission.NFC, Process.myPid(), Process.myUid())
                 == PackageManager.PERMISSION_GRANTED) {
             // Disable Android Beam on JB and later devices.
             // In ICS it does nothing - i.e. we will send a Play Store link if NFC is used.
@@ -140,7 +138,7 @@ public class Preferences extends ChromeBaseAppCompatActivity
     }
 
     /**
-     * Starts a new Preferences activity showing the desired fragment.
+     * Starts a new Settings activity showing the desired fragment.
      *
      * @param fragmentClass The Class of the fragment to show.
      * @param args Arguments to pass to Fragment.instantiate(), or null.
@@ -181,12 +179,12 @@ public class Preferences extends ChromeBaseAppCompatActivity
     protected void onResume() {
         super.onResume();
 
-        // Prevent the user from interacting with multiple instances of Preferences at the same time
-        // (e.g. in multi-instance mode on a Samsung device), which would cause many fun bugs.
+        // Prevent the user from interacting with multiple instances of SettingsActivity at the same
+        // time (e.g. in multi-instance mode on a Samsung device), which would cause many fun bugs.
         if (sResumedInstance != null && sResumedInstance.getTaskId() != getTaskId()
                 && !mIsNewlyCreated) {
-            // This activity was unpaused or recreated while another instance of Preferences was
-            // already showing. The existing instance takes precedence.
+            // This activity was unpaused or recreated while another instance of SettingsActivity
+            // was already showing. The existing instance takes precedence.
             finish();
         } else {
             // This activity was newly created and takes precedence over sResumedInstance.
@@ -278,10 +276,11 @@ public class Preferences extends ChromeBaseAppCompatActivity
         sActivityNotExportedChecked = true;
         try {
             ActivityInfo activityInfo = getPackageManager().getActivityInfo(getComponentName(), 0);
-            // If Preferences is exported, then it's vulnerable to a fragment injection exploit:
+            // If SettingsActivity is exported, then it's vulnerable to a fragment injection
+            // exploit:
             // http://securityintelligence.com/new-vulnerability-android-framework-fragment-injection
             if (activityInfo.exported) {
-                throw new IllegalStateException("Preferences must not be exported.");
+                throw new IllegalStateException("SettingsActivity must not be exported.");
             }
         } catch (NameNotFoundException ex) {
             // Something terribly wrong has happened.
