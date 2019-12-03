@@ -25728,6 +25728,7 @@
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
+        "isolate_coverage_data": true,
         "merge": {
           "args": [
             "--bucket",
@@ -25772,6 +25773,7 @@
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
+        "isolate_coverage_data": true,
         "merge": {
           "args": [
             "--bucket",
@@ -25816,6 +25818,7 @@
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
+        "isolate_coverage_data": true,
         "merge": {
           "args": [
             "--bucket",
@@ -25860,6 +25863,7 @@
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
+        "isolate_coverage_data": true,
         "merge": {
           "args": [
             "--bucket",
@@ -25904,6 +25908,7 @@
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
+        "isolate_coverage_data": true,
         "merge": {
           "args": [
             "--bucket",
@@ -25948,6 +25953,7 @@
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
+        "isolate_coverage_data": true,
         "merge": {
           "args": [
             "--bucket",
@@ -25992,6 +25998,7 @@
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
+        "isolate_coverage_data": true,
         "merge": {
           "args": [
             "--bucket",
@@ -26036,6 +26043,7 @@
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
+        "isolate_coverage_data": true,
         "merge": {
           "args": [
             "--bucket",
@@ -26080,6 +26088,7 @@
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
+        "isolate_coverage_data": true,
         "merge": {
           "args": [
             "--bucket",
@@ -26126,6 +26135,7 @@
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
+        "isolate_coverage_data": true,
         "merge": {
           "args": [
             "--bucket",
@@ -26170,6 +26180,7 @@
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
+        "isolate_coverage_data": true,
         "merge": {
           "args": [
             "--bucket",
@@ -26214,6 +26225,7 @@
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
+        "isolate_coverage_data": true,
         "merge": {
           "args": [
             "--bucket",
@@ -26258,6 +26270,7 @@
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
+        "isolate_coverage_data": true,
         "merge": {
           "args": [
             "--bucket",
@@ -26303,6 +26316,7 @@
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
+        "isolate_coverage_data": true,
         "merge": {
           "args": [
             "--bucket",
@@ -26347,6 +26361,7 @@
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
+        "isolate_coverage_data": true,
         "merge": {
           "args": [
             "--bucket",
@@ -26391,6 +26406,7 @@
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
+        "isolate_coverage_data": true,
         "merge": {
           "args": [
             "--bucket",
@@ -26435,6 +26451,7 @@
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
+        "isolate_coverage_data": true,
         "merge": {
           "args": [
             "--bucket",
@@ -26479,6 +26496,7 @@
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
+        "isolate_coverage_data": true,
         "merge": {
           "args": [
             "--bucket",
@@ -26523,6 +26541,7 @@
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
+        "isolate_coverage_data": true,
         "merge": {
           "args": [
             "--bucket",
@@ -26567,6 +26586,7 @@
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
+        "isolate_coverage_data": true,
         "merge": {
           "args": [
             "--bucket",
@@ -26611,6 +26631,7 @@
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
+        "isolate_coverage_data": true,
         "merge": {
           "args": [
             "--bucket",
@@ -26658,6 +26679,7 @@
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
+        "isolate_coverage_data": true,
         "merge": {
           "args": [
             "--bucket",
@@ -26703,6 +26725,7 @@
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
+        "isolate_coverage_data": true,
         "merge": {
           "args": [
             "--bucket",
@@ -26747,6 +26770,7 @@
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
+        "isolate_coverage_data": true,
         "merge": {
           "args": [
             "--bucket",
@@ -26792,6 +26816,7 @@
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
+        "isolate_coverage_data": true,
         "merge": {
           "args": [
             "--bucket",
@@ -26837,6 +26862,7 @@
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
+        "isolate_coverage_data": true,
         "merge": {
           "args": [
             "--bucket",
@@ -26882,6 +26908,7 @@
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
+        "isolate_coverage_data": true,
         "merge": {
           "args": [
             "--bucket",
@@ -26927,6 +26954,7 @@
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
+        "isolate_coverage_data": true,
         "merge": {
           "args": [
             "--bucket",
@@ -26971,6 +26999,7 @@
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
+        "isolate_coverage_data": true,
         "merge": {
           "args": [
             "--bucket",
@@ -27015,6 +27044,7 @@
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
+        "isolate_coverage_data": true,
         "merge": {
           "args": [
             "--bucket",
@@ -27059,6 +27089,7 @@
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
+        "isolate_coverage_data": true,
         "merge": {
           "args": [
             "--bucket",
@@ -27103,6 +27134,7 @@
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
+        "isolate_coverage_data": true,
         "merge": {
           "args": [
             "--bucket",
@@ -27147,6 +27179,7 @@
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
+        "isolate_coverage_data": true,
         "merge": {
           "args": [
             "--bucket",
@@ -27191,6 +27224,7 @@
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
+        "isolate_coverage_data": true,
         "merge": {
           "args": [
             "--bucket",
@@ -27235,6 +27269,7 @@
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
+        "isolate_coverage_data": true,
         "merge": {
           "args": [
             "--bucket",
@@ -27279,6 +27314,7 @@
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
+        "isolate_coverage_data": true,
         "merge": {
           "args": [
             "--bucket",
@@ -27323,6 +27359,7 @@
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
+        "isolate_coverage_data": true,
         "merge": {
           "args": [
             "--bucket",
@@ -27367,6 +27404,7 @@
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
+        "isolate_coverage_data": true,
         "merge": {
           "args": [
             "--bucket",
@@ -27411,6 +27449,7 @@
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
+        "isolate_coverage_data": true,
         "merge": {
           "args": [
             "--bucket",
@@ -27455,6 +27494,7 @@
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
+        "isolate_coverage_data": true,
         "merge": {
           "args": [
             "--bucket",
@@ -27499,6 +27539,7 @@
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
+        "isolate_coverage_data": true,
         "merge": {
           "args": [
             "--bucket",
@@ -27543,6 +27584,7 @@
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
+        "isolate_coverage_data": true,
         "merge": {
           "args": [
             "--bucket",
@@ -27587,6 +27629,7 @@
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
+        "isolate_coverage_data": true,
         "merge": {
           "args": [
             "--bucket",
@@ -27631,6 +27674,7 @@
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
+        "isolate_coverage_data": true,
         "merge": {
           "args": [
             "--bucket",
@@ -27675,6 +27719,7 @@
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
+        "isolate_coverage_data": true,
         "merge": {
           "args": [
             "--bucket",
@@ -27719,6 +27764,7 @@
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
+        "isolate_coverage_data": true,
         "merge": {
           "args": [
             "--bucket",
@@ -27763,6 +27809,7 @@
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
+        "isolate_coverage_data": true,
         "merge": {
           "args": [
             "--bucket",
@@ -27807,6 +27854,7 @@
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
+        "isolate_coverage_data": true,
         "merge": {
           "args": [
             "--bucket",
@@ -27851,6 +27899,7 @@
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
+        "isolate_coverage_data": true,
         "merge": {
           "args": [
             "--bucket",
@@ -27895,6 +27944,7 @@
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
+        "isolate_coverage_data": true,
         "merge": {
           "args": [
             "--bucket",
@@ -27940,6 +27990,7 @@
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
+        "isolate_coverage_data": true,
         "merge": {
           "args": [
             "--bucket",
@@ -27984,6 +28035,7 @@
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
+        "isolate_coverage_data": true,
         "merge": {
           "args": [
             "--bucket",
@@ -28028,6 +28080,7 @@
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
+        "isolate_coverage_data": true,
         "merge": {
           "args": [
             "--bucket",
@@ -28072,6 +28125,7 @@
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
+        "isolate_coverage_data": true,
         "merge": {
           "args": [
             "--bucket",
@@ -28116,6 +28170,7 @@
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
+        "isolate_coverage_data": true,
         "merge": {
           "args": [
             "--bucket",
@@ -28160,6 +28215,7 @@
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
+        "isolate_coverage_data": true,
         "merge": {
           "args": [
             "--bucket",
@@ -28204,6 +28260,7 @@
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
+        "isolate_coverage_data": true,
         "merge": {
           "args": [
             "--bucket",
@@ -28248,6 +28305,7 @@
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
+        "isolate_coverage_data": true,
         "merge": {
           "args": [
             "--bucket",
@@ -28292,6 +28350,7 @@
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
+        "isolate_coverage_data": true,
         "merge": {
           "args": [
             "--bucket",
@@ -28336,6 +28395,7 @@
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
+        "isolate_coverage_data": true,
         "merge": {
           "args": [
             "--bucket",
@@ -28380,6 +28440,7 @@
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
+        "isolate_coverage_data": true,
         "merge": {
           "args": [
             "--bucket",
@@ -28424,6 +28485,7 @@
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
+        "isolate_coverage_data": true,
         "merge": {
           "args": [
             "--bucket",
@@ -28468,6 +28530,7 @@
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
+        "isolate_coverage_data": true,
         "merge": {
           "args": [
             "--bucket",
@@ -28512,6 +28575,7 @@
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
+        "isolate_coverage_data": true,
         "merge": {
           "args": [
             "--bucket",
@@ -28556,6 +28620,7 @@
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
+        "isolate_coverage_data": true,
         "merge": {
           "args": [
             "--bucket",
@@ -28600,6 +28665,7 @@
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
+        "isolate_coverage_data": true,
         "merge": {
           "args": [
             "--bucket",
@@ -28644,6 +28710,7 @@
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
+        "isolate_coverage_data": true,
         "merge": {
           "args": [
             "--bucket",
@@ -28689,6 +28756,7 @@
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
+        "isolate_coverage_data": true,
         "merge": {
           "args": [
             "--bucket",
@@ -28734,6 +28802,7 @@
         "args": [
           "--gtest-benchmark-name=components_perftests"
         ],
+        "isolate_coverage_data": true,
         "isolate_name": "components_perftests",
         "merge": {
           "args": [
@@ -28758,6 +28827,7 @@
         "args": [
           "--platform=android"
         ],
+        "isolate_coverage_data": true,
         "isolate_name": "content_shell_crash_test",
         "merge": {
           "args": [],
@@ -28779,126 +28849,151 @@
     ],
     "junit_tests": [
       {
+        "isolate_coverage_data": true,
         "name": "android_webview_junit_tests",
         "swarming": {},
         "test": "android_webview_junit_tests"
       },
       {
+        "isolate_coverage_data": true,
         "name": "base_junit_tests",
         "swarming": {},
         "test": "base_junit_tests"
       },
       {
+        "isolate_coverage_data": true,
         "name": "chrome_java_test_pagecontroller_junit_tests",
         "swarming": {},
         "test": "chrome_java_test_pagecontroller_junit_tests"
       },
       {
+        "isolate_coverage_data": true,
         "name": "chrome_junit_tests",
         "swarming": {},
         "test": "chrome_junit_tests"
       },
       {
+        "isolate_coverage_data": true,
         "name": "components_background_task_scheduler_junit_tests",
         "swarming": {},
         "test": "components_background_task_scheduler_junit_tests"
       },
       {
+        "isolate_coverage_data": true,
         "name": "components_gcm_driver_junit_tests",
         "swarming": {},
         "test": "components_gcm_driver_junit_tests"
       },
       {
+        "isolate_coverage_data": true,
         "name": "components_invalidation_impl_junit_tests",
         "swarming": {},
         "test": "components_invalidation_impl_junit_tests"
       },
       {
+        "isolate_coverage_data": true,
         "name": "components_policy_junit_tests",
         "swarming": {},
         "test": "components_policy_junit_tests"
       },
       {
+        "isolate_coverage_data": true,
         "name": "components_signin_junit_tests",
         "swarming": {},
         "test": "components_signin_junit_tests"
       },
       {
+        "isolate_coverage_data": true,
         "name": "components_variations_junit_tests",
         "swarming": {},
         "test": "components_variations_junit_tests"
       },
       {
+        "isolate_coverage_data": true,
         "name": "content_junit_tests",
         "swarming": {},
         "test": "content_junit_tests"
       },
       {
+        "isolate_coverage_data": true,
         "name": "device_junit_tests",
         "swarming": {},
         "test": "device_junit_tests"
       },
       {
+        "isolate_coverage_data": true,
         "name": "junit_unit_tests",
         "swarming": {},
         "test": "junit_unit_tests"
       },
       {
+        "isolate_coverage_data": true,
         "name": "keyboard_accessory_junit_tests",
         "swarming": {},
         "test": "keyboard_accessory_junit_tests"
       },
       {
+        "isolate_coverage_data": true,
         "name": "media_base_junit_tests",
         "swarming": {},
         "test": "media_base_junit_tests"
       },
       {
+        "isolate_coverage_data": true,
         "name": "media_router_junit_tests",
         "swarming": {},
         "test": "media_router_junit_tests"
       },
       {
+        "isolate_coverage_data": true,
         "name": "module_installer_junit_tests",
         "swarming": {},
         "test": "module_installer_junit_tests"
       },
       {
+        "isolate_coverage_data": true,
         "name": "net_junit_tests",
         "swarming": {},
         "test": "net_junit_tests"
       },
       {
+        "isolate_coverage_data": true,
         "name": "paint_preview_junit_tests",
         "swarming": {},
         "test": "paint_preview_junit_tests"
       },
       {
+        "isolate_coverage_data": true,
         "name": "service_junit_tests",
         "swarming": {},
         "test": "service_junit_tests"
       },
       {
+        "isolate_coverage_data": true,
         "name": "touch_to_fill_junit_tests",
         "swarming": {},
         "test": "touch_to_fill_junit_tests"
       },
       {
+        "isolate_coverage_data": true,
         "name": "ui_junit_tests",
         "swarming": {},
         "test": "ui_junit_tests"
       },
       {
+        "isolate_coverage_data": true,
         "name": "webapk_client_junit_tests",
         "swarming": {},
         "test": "webapk_client_junit_tests"
       },
       {
+        "isolate_coverage_data": true,
         "name": "webapk_shell_apk_h2o_junit_tests",
         "swarming": {},
         "test": "webapk_shell_apk_h2o_junit_tests"
       },
       {
+        "isolate_coverage_data": true,
         "name": "webapk_shell_apk_junit_tests",
         "swarming": {},
         "test": "webapk_shell_apk_junit_tests"

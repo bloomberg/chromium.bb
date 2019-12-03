@@ -603,6 +603,7 @@
       },
       'android-marshmallow-arm64-rel': {
         'mixins': [
+          'code-coverage',
           'marshmallow',
           'bullhead',
         ],

@@ -141,9 +141,6 @@ android_builder(
     goma_jobs = goma.jobs.J300,
     ssd = True,
     use_java_coverage = True,
-    tryjob = tryjob(
-        experiment_percentage = 10,
-    ),
 )
 
 android_builder(
