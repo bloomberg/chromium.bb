@@ -373,38 +373,37 @@ TEST_F(WebAppIconGeneratorTest, GenerateIcons) {
 
   // The |+| character guarantees that there is some letter_color area at the
   // center of the generated icon.
-  const std::vector<WebApplicationIconInfo> icon_infos =
+  const std::map<SquareSizePx, SkBitmap> icon_bitmaps =
       GenerateIcons("+", bg_color);
-  EXPECT_EQ(sizes.size(), icon_infos.size());
+  EXPECT_EQ(sizes.size(), icon_bitmaps.size());
 
-  for (const auto& icon_info : icon_infos) {
-    EXPECT_EQ(icon_info.width, icon_info.height);
-    EXPECT_EQ(icon_info.width, icon_info.data.width());
-    EXPECT_EQ(icon_info.height, icon_info.data.height());
+  for (const std::pair<SquareSizePx, SkBitmap>& icon : icon_bitmaps) {
+    SquareSizePx size = icon.first;
+    const SkBitmap& bitmap = icon.second;
+    EXPECT_EQ(size, bitmap.width());
+    EXPECT_EQ(size, bitmap.height());
 
-    EXPECT_TRUE(icon_info.url.is_empty());
-
-    const int border_radius = icon_info.height / 16;
-    const int center_x = icon_info.width / 2;
-    const int center_y = icon_info.height / 2;
+    const int border_radius = size / 16;
+    const int center_x = size / 2;
+    const int center_y = size / 2;
 
     // We don't check corner colors here: the icon is rounded by border_radius.
-    EXPECT_EQ(bg_color, icon_info.data.getColor(border_radius * 2, center_y));
-    EXPECT_EQ(bg_color, icon_info.data.getColor(center_x, border_radius * 2));
+    EXPECT_EQ(bg_color, bitmap.getColor(border_radius * 2, center_y));
+    EXPECT_EQ(bg_color, bitmap.getColor(center_x, border_radius * 2));
 
     // Only for large icons with a sharp letter: Peek a pixel at the center of
     // icon. This is tested on Linux and ChromeOS only because different OSes
     // use different text shaping engines.
 #if defined(OS_LINUX)
     const SkColor letter_color = color_utils::GetColorWithMaxContrast(bg_color);
-    if (icon_info.width >= icon_size::k256) {
-      SkColor center_color = icon_info.data.getColor(center_x, center_y);
+    if (size >= icon_size::k256) {
+      SkColor center_color = bitmap.getColor(center_x, center_y);
       SCOPED_TRACE(letter_color);
       SCOPED_TRACE(center_color);
       EXPECT_TRUE(AreColorsEqual(letter_color, center_color, /*threshold=*/50));
     }
 #endif  // defined(OS_LINUX)
-    sizes.erase(icon_info.width);
+    sizes.erase(size);
   }
 
   EXPECT_TRUE(sizes.empty());

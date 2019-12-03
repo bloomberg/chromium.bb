@@ -11,11 +11,10 @@
 #include <vector>
 
 #include "base/strings/string16.h"
+#include "chrome/common/web_application_info.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "url/gurl.h"
-
-struct WebApplicationIconInfo;
 
 namespace web_app {
 
@@ -41,6 +40,8 @@ enum {
 // Returns icon sizes to be generated from downloaded icons.
 std::set<int> SizesToGenerate();
 
+// TODO(https://crbug.com/926083): Replace all occurrences of this with
+// SkBitmap. We now record the URL in WebApplicationIconInfo instead.
 struct BitmapAndSource {
   BitmapAndSource();
   BitmapAndSource(const GURL& source_url_p, const SkBitmap& bitmap_p);
@@ -77,9 +78,8 @@ std::map<int, BitmapAndSource> ResizeIconsAndGenerateMissing(
 
 // Generate icons for default sizes, using the first letter of the application
 // name and some background color. |app_name| is encoded as UTF8.
-std::vector<WebApplicationIconInfo> GenerateIcons(
-    const std::string& app_name,
-    SkColor background_icon_color);
+std::map<SquareSizePx, SkBitmap> GenerateIcons(const std::string& app_name,
+                                               SkColor background_icon_color);
 
 }  // namespace web_app
 
