@@ -1787,7 +1787,15 @@
         }
       },
       'ios-simulator-cr-recipe': {
-        'test_suites': {}
+        'mixins': [
+          'chrome-swarming-pool',
+          'host_mac_10.14',
+          'xcode_11b53',
+          'xcode_parallelization',
+        ],
+        'test_suites': {
+          'gtest_tests': 'ios_simulator_cr_recipe_gtests'
+        }
       },
       'linux-annotator-rel': {
         'test_suites': {
