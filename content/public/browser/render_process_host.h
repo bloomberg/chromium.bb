@@ -56,6 +56,10 @@ class TimeDelta;
 class Token;
 }
 
+namespace service_manager {
+class Identity;
+}
+
 namespace url {
 class Origin;
 }
@@ -346,6 +350,12 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   virtual void EnableWebRtcEventLogOutput(int lid, int output_period_ms) = 0;
   virtual void DisableWebRtcEventLogOutput(int lid) = 0;
 
+  // Binds interfaces exposed to the browser process from the renderer.
+  //
+  // DEPRECATED: Use |BindReceiver()| instead.
+  virtual void BindInterface(const std::string& interface_name,
+                             mojo::ScopedMessagePipeHandle interface_pipe) = 0;
+
   // Asks the renderer process to bind |receiver|. |receiver| arrives in the
   // renderer process and is carried through the following flow, stopping if any
   // step decides to bind it:
@@ -355,6 +365,9 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   //   3. Main thread, |ChildThreadImpl::OnBindReceiver()| (virtual)
   //   4. Possibly more stpes, depending on the ChildThreadImpl subclass.
   virtual void BindReceiver(mojo::GenericPendingReceiver receiver) = 0;
+
+  // Can only be called when IsInitializedAndNotDead() is true.
+  virtual const service_manager::Identity& GetChildIdentity() = 0;
 
   // Extracts any persistent-memory-allocator used for renderer metrics.
   // Ownership is passed to the caller. To support sharing of histogram data

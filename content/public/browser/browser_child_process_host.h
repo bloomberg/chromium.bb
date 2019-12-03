@@ -5,9 +5,7 @@
 #ifndef CONTENT_PUBLIC_BROWSER_BROWSER_CHILD_PROCESS_HOST_H_
 #define CONTENT_PUBLIC_BROWSER_BROWSER_CHILD_PROCESS_HOST_H_
 
-#include <map>
 #include <memory>
-#include <string>
 
 #include "base/callback.h"
 #include "base/environment.h"
@@ -61,16 +59,6 @@ class CONTENT_EXPORT BrowserChildProcessHost : public IPC::Sender {
   virtual void Launch(
       std::unique_ptr<SandboxedProcessLauncherDelegate> delegate,
       std::unique_ptr<base::CommandLine> cmd_line,
-      bool terminate_on_shutdown) = 0;
-
-  // Same as above, but the process is launched with preloaded files from
-  // |files_to_preload| opened by the browser and passed as corresponding file
-  // descriptors in the child process. |files_to_preload| is currently ignored
-  // on platforms other than Linux and Android.
-  virtual void LaunchWithPreloadedFiles(
-      std::unique_ptr<SandboxedProcessLauncherDelegate> delegate,
-      std::unique_ptr<base::CommandLine> cmd_line,
-      std::map<std::string, base::FilePath> files_to_preload,
       bool terminate_on_shutdown) = 0;
 
   virtual const ChildProcessData& GetData() = 0;
