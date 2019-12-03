@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_WEBRTC_WEBRTC_SOURCE_H_
-#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_WEBRTC_WEBRTC_SOURCE_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WEBRTC_WEBRTC_SOURCE_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WEBRTC_WEBRTC_SOURCE_H_
 
-#include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
 
 namespace base {
 class UnguessableToken;
@@ -21,10 +21,7 @@ class WebRtcAudioRenderer;
 
 // TODO(xians): Move the following two interfaces to webrtc so that
 // libjingle can own references to the renderer and capturer.
-//
-// TODO(crbug.com/704136): Move the classes below out of the Blink exposed
-// API when all users of it have been Onion souped.
-class BLINK_PLATFORM_EXPORT WebRtcAudioRendererSource {
+class PLATFORM_EXPORT WebRtcAudioRendererSource {
  public:
   // Callback to get the rendered data.
   // |audio_bus| must have buffer size |sample_rate/100| and 1-2 channels.
@@ -56,7 +53,7 @@ class BLINK_PLATFORM_EXPORT WebRtcAudioRendererSource {
 // The reason why we could not do it today is that WebRtcAudioRendererSource
 // gets the data by pulling, while the data is pushed into
 // WebRtcPlayoutDataSource::Sink.
-class BLINK_PLATFORM_EXPORT WebRtcPlayoutDataSource {
+class PLATFORM_EXPORT WebRtcPlayoutDataSource {
  public:
   class Sink {
    public:
@@ -92,4 +89,4 @@ class BLINK_PLATFORM_EXPORT WebRtcPlayoutDataSource {
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_WEBRTC_WEBRTC_SOURCE_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WEBRTC_WEBRTC_SOURCE_H_
