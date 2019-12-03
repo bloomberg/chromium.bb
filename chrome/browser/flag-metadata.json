@@ -1127,7 +1127,7 @@
   },
   {
     "name": "enable-clipboard-provider-text-suggestions",
-    "owners": [ "gangwu", "chromium-omnibox-team"],
+    "owners": [ "gangwu", "chrome-omnibox-team@google.com"],
     "expiry_milestone": 84
   },
   {
@@ -2753,7 +2753,7 @@
   {
     "name": "omnibox-disable-instant-extended-limit",
     "owners": [ "pnoland", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 80
+    "expiry_milestone": 85
   },
   {
     "name": "omnibox-display-title-for-current-url",
@@ -2792,12 +2792,12 @@
   },
   {
     "name": "omnibox-material-design-weather-icons",
-    "owners": [ "manukh", "ender", "chromium-omnibox-team" ],
+    "owners": [ "manukh", "ender", "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 85
   },
   {
     "name": "omnibox-max-url-matches",
-    "owners": [ "krb", "chromium-omnibox-team" ],
+    "owners": [ "krb", "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 82
   },
   {
@@ -2907,8 +2907,8 @@
   },
   {
     "name": "omnibox-zero-suggestions-on-ntp",
-    "owners": [ "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 81
+    "owners": [ "tommycli", "chrome-omnibox-team@google.com" ],
+    "expiry_milestone": 85
   },
   {
     "name": "omnibox-zero-suggestions-on-ntp-realbox",
