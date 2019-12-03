@@ -841,6 +841,16 @@ void BluetoothTestWinrt::SimulateGattNameChange(BluetoothDevice* device,
   ble_device->SimulateGattNameChange(new_name);
 }
 
+void BluetoothTestWinrt::SimulateStatusChangeToDisconnect(
+    BluetoothDevice* device) {
+  // Spin the message loop to make sure a device instance was obtained.
+  base::RunLoop().RunUntilIdle();
+  auto* const ble_device =
+      static_cast<TestBluetoothDeviceWinrt*>(device)->ble_device();
+  DCHECK(ble_device);
+  ble_device->SimulateStatusChangeToDisconnect();
+}
+
 void BluetoothTestWinrt::SimulateGattConnectionError(
     BluetoothDevice* device,
     BluetoothDevice::ConnectErrorCode error_code) {
