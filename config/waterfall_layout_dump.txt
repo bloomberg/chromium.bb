@@ -267,6 +267,7 @@
     candy-release
     capri-release
     caroline-arc64-release
+    caroline-kernelnext-release
     caroline-ndktranslation-release
     caroline-release
     caroline-userdebug-release
@@ -682,6 +683,11 @@
   caroline-arc64-unittest-stress
   caroline-factory-glados-7828.B-factorybranch-tryjob
   caroline-full-tryjob
+  caroline-kernelnext-full-tryjob
+  caroline-kernelnext-llvm-next-toolchain-tryjob
+  caroline-kernelnext-llvm-toolchain-tryjob
+  caroline-kernelnext-release-tryjob
+  caroline-kernelnext-unittest-stress
   caroline-llvm-next-toolchain-tryjob
   caroline-llvm-toolchain-tryjob
   caroline-ndktranslation-full-tryjob
@@ -1591,6 +1597,7 @@
     candy-release-tryjob
     capri-release-tryjob
     caroline-arc64-release-tryjob
+    caroline-kernelnext-release-tryjob
     caroline-ndktranslation-release-tryjob
     caroline-release-tryjob
     caroline-userdebug-release-tryjob
