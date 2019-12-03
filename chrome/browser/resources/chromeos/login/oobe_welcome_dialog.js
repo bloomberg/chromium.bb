@@ -387,10 +387,7 @@
      */
     show: function() {
       this.focus();
-
-      // TODO(https://crbug.com/1028852): Investigate why this can be null.
-      if (this.welcomeVideoController_)
-        this.welcomeVideoController_.play();
+      this.welcomeVideoController_.play();
     },
 
     /**
