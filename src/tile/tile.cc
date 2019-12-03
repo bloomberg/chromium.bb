@@ -460,7 +460,6 @@ bool Tile::DecodeSuperBlockRow(int row4x4,
        column4x4 += block_width4x4) {
     if (!ProcessSuperBlock(row4x4, column4x4, block_width4x4, scratch_buffer,
                            kProcessingModeParseAndDecode)) {
-      pending_tiles_->Decrement(false);
       LIBGAV1_DLOG(ERROR, "Error decoding super block row: %d column: %d",
                    row4x4, column4x4);
       return false;
@@ -499,7 +498,10 @@ bool Tile::Decode(bool is_main_thread) {
     }
     for (int row4x4 = row4x4_start_; row4x4 < row4x4_end_;
          row4x4 += block_width4x4) {
-      if (!DecodeSuperBlockRow(row4x4, scratch_buffer.get())) return false;
+      if (!DecodeSuperBlockRow(row4x4, scratch_buffer.get())) {
+        pending_tiles_->Decrement(false);
+        return false;
+      }
     }
     decoder_scratch_buffer_pool_->Release(std::move(scratch_buffer));
   }

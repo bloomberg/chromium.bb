@@ -659,8 +659,10 @@ StatusCode DecoderImpl::DecodeTiles(const ObuParser* obu) {
                                                       block_width4x4, false);
       }
       // Apply post filters for the last row.
-      post_filter.ApplyFilteringForOneSuperBlockRow(row4x4 - block_width4x4,
-                                                    block_width4x4, true);
+      if (ok) {
+        post_filter.ApplyFilteringForOneSuperBlockRow(row4x4 - block_width4x4,
+                                                      block_width4x4, true);
+      }
       decoder_scratch_buffer_pool_.Release(std::move(scratch_buffer));
     } else {
       ok = false;
