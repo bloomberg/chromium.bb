@@ -33,10 +33,9 @@
 #include "components/services/storage/dom_storage/dom_storage_constants.h"
 #include "components/services/storage/dom_storage/dom_storage_database.h"
 #include "components/services/storage/dom_storage/legacy_dom_storage_database.h"
+#include "components/services/storage/dom_storage/local_storage_database.pb.h"
 #include "components/services/storage/dom_storage/storage_area_impl.h"
 #include "components/services/storage/public/cpp/constants.h"
-#include "content/browser/dom_storage/local_storage_database.pb.h"
-#include "content/public/browser/storage_usage_info.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "sql/database.h"
 #include "storage/browser/quota/special_storage_policy.h"
@@ -311,7 +310,7 @@ class LocalStorageContextMojo::StorageAreaHolder final
     if (storage_area()->empty()) {
       extra_keys_to_delete->push_back(std::move(metadata_key));
     } else {
-      LocalStorageOriginMetaData data;
+      storage::LocalStorageOriginMetaData data;
       data.set_last_modified(base::Time::Now().ToInternalValue());
       data.set_size_bytes(storage_area()->storage_used());
       std::string serialized_data = data.SerializeAsString();
@@ -1034,7 +1033,7 @@ void LocalStorageContextMojo::OnGotMetaData(
       continue;
     }
 
-    LocalStorageOriginMetaData row_data;
+    storage::LocalStorageOriginMetaData row_data;
     if (!row_data.ParseFromArray(row.value.data(), row.value.size())) {
       // TODO(mek): Deal with database corruption.
       continue;

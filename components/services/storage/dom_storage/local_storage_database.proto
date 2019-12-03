@@ -6,7 +6,7 @@ syntax = "proto2";
 
 option optimize_for = LITE_RUNTIME;
 
-package content;
+package storage;
 
 message LocalStorageOriginMetaData {
   // Serialized by base::Time::ToInternalValue().
