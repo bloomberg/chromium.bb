@@ -370,11 +370,4 @@ void FakeSkiaOutputSurface::SendOverlayPromotionNotification(
   NOTIMPLEMENTED();
 }
 
-void FakeSkiaOutputSurface::RenderToOverlay(
-    gpu::SyncToken sync_token,
-    gpu::Mailbox overlay_candidate_mailbox,
-    const gfx::Rect& bounds) {
-  NOTIMPLEMENTED();
-}
-
 }  // namespace viz

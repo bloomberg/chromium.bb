@@ -167,9 +167,10 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate,
   void ReleaseImageContexts(
       std::vector<std::unique_ptr<ExternalUseClient::ImageContext>>
           image_contexts);
+  void ScheduleOverlays(SkiaOutputSurface::OverlayList overlays);
+
 #if defined(OS_WIN)
   void SetEnableDCLayers(bool enable);
-  void ScheduleDCLayers(std::vector<DCLayerOverlay> dc_layers);
 #endif
   void SetGpuVSyncEnabled(bool enabled);
 
@@ -197,8 +198,9 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate,
       base::flat_set<gpu::Mailbox> promotion_denied,
       base::flat_map<gpu::Mailbox, gfx::Rect> possible_promotions);
 
-  void RenderToOverlay(gpu::Mailbox overlay_candidate_mailbox,
-                       const gfx::Rect& bounds);
+#if defined(OS_ANDROID)
+  void RenderToOverlay(const OverlayCandidate& overlay);
+#endif
 
   // gpu::DisplayContext implementation:
   void MarkContextLost() override;

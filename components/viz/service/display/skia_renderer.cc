@@ -680,7 +680,7 @@ SkiaRenderer::SkiaRenderer(const RendererSettings* settings,
     case DrawMode::DDL: {
       DCHECK(skia_output_surface_);
       lock_set_for_external_use_.emplace(resource_provider,
-                                         skia_output_surface);
+                                         skia_output_surface_);
       break;
     }
     case DrawMode::SKPRECORD: {
@@ -792,7 +792,6 @@ void SkiaRenderer::FinishDrawingFrame() {
     skia_output_surface_->ScheduleOutputSurfaceAsOverlay(
         current_frame()->output_surface_plane.value());
   }
-
   ScheduleOverlays();
 }
 
@@ -2050,15 +2049,27 @@ void SkiaRenderer::ScheduleOverlays() {
     return;
 
 #if defined(OS_ANDROID)
-  auto& locks = pending_overlay_locks_.back();
-  if (!current_frame()->overlay_list.empty()) {
+#if DCHECK_IS_ON()
+  if (!output_surface_->capabilities().supports_surfaceless)
     DCHECK_EQ(current_frame()->overlay_list.size(), 1u);
-    locks.emplace_back(resource_provider_,
-                       current_frame()->overlay_list.front().resource_id);
-    skia_output_surface_->RenderToOverlay(
-        locks.back().sync_token(), locks.back().mailbox(),
-        ToNearestRect(current_frame()->overlay_list.front().display_rect));
+#endif
+  auto& locks = pending_overlay_locks_.back();
+  std::vector<gpu::SyncToken> sync_tokens;
+  for (auto& overlay : current_frame()->overlay_list) {
+    // Resources will be unlocked after the next SwapBuffers() is completed.
+    locks.emplace_back(resource_provider_, overlay.resource_id);
+    auto& lock = locks.back();
+
+    // Sync tokens ensure the texture to be overlaid is available before
+    // scheduling it for display.
+    if (lock.sync_token().HasData())
+      sync_tokens.push_back(lock.sync_token());
+
+    overlay.mailbox = lock.mailbox();
+    DCHECK(!overlay.mailbox.IsZero());
   }
+  skia_output_surface_->ScheduleOverlays(
+      std::move(current_frame()->overlay_list), std::move(sync_tokens));
 #elif defined(OS_WIN)
   auto& locks = pending_overlay_locks_.back();
   std::vector<gpu::SyncToken> sync_tokens;
@@ -2068,7 +2079,7 @@ void SkiaRenderer::ScheduleOverlays() {
       if (resource_id == kInvalidResourceId)
         break;
 
-      // Resources will be unlocked after the SwapBuffers() is completed.
+      // Resources will be unlocked after the next SwapBuffers() is completed.
       locks.emplace_back(resource_provider_, resource_id);
       auto& lock = locks.back();
 
@@ -2081,8 +2092,7 @@ void SkiaRenderer::ScheduleOverlays() {
     }
     DCHECK(!dc_layer_overlay.mailbox[0].IsZero());
   }
-
-  skia_output_surface_->ScheduleDCLayers(
+  skia_output_surface_->ScheduleOverlays(
       std::move(current_frame()->overlay_list), std::move(sync_tokens));
 #elif defined(OS_MACOSX) || defined(USE_OZONE)
   NOTIMPLEMENTED_LOG_ONCE();

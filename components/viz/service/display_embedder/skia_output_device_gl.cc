@@ -189,9 +189,9 @@ void SkiaOutputDeviceGL::SetEnableDCLayers(bool enable) {
   gl_surface_->SetEnableDCLayers(enable);
 }
 
-void SkiaOutputDeviceGL::ScheduleDCLayers(
-    std::vector<DCLayerOverlay> dc_layers) {
-  for (auto& dc_layer : dc_layers) {
+void SkiaOutputDeviceGL::ScheduleOverlays(
+    SkiaOutputSurface::OverlayList overlays) {
+  for (auto& dc_layer : overlays) {
     ui::DCRendererLayerParams params;
 
     // Get GLImages for DC layer textures.

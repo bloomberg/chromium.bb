@@ -114,10 +114,11 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
       sk_sp<SkColorSpace> color_space) override;
 
   void RemoveRenderPassResource(std::vector<RenderPassId> ids) override;
+  void ScheduleOverlays(OverlayList overlays,
+                        std::vector<gpu::SyncToken> sync_tokens) override;
+
 #if defined(OS_WIN)
   void SetEnableDCLayers(bool enable) override;
-  void ScheduleDCLayers(std::vector<DCLayerOverlay> overlays,
-                        std::vector<gpu::SyncToken> sync_tokens) override;
 #endif
   void CopyOutput(RenderPassId id,
                   const copy_output::RenderPassGeometry& geometry,
@@ -152,11 +153,6 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
       std::vector<gpu::SyncToken> sync_tokens,
       base::flat_set<gpu::Mailbox> promotion_denied,
       base::flat_map<gpu::Mailbox, gfx::Rect> possible_promotions) override;
-
-  // Notify the overlay candidate to render.
-  void RenderToOverlay(gpu::SyncToken sync_token,
-                       gpu::Mailbox overlay_candidate_mailbox,
-                       const gfx::Rect& bounds) override;
 
  private:
   bool Initialize();

@@ -212,6 +212,7 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
                            const DrawRPDQParams* rpdq_params,
                            DrawQuadParams* params);
 
+  // Schedule overlay candidates for presentation at next SwapBuffers().
   void ScheduleOverlays();
 
   // skia_renderer can draw most single-quad passes directly, regardless of
