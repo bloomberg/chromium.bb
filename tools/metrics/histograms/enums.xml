@@ -7938,6 +7938,14 @@ histogram as enum -->
   <int value="10" label="Image was not required for activation."/>
 </enum>
 
+<enum name="ChromeActivityType">
+  <int value="0" label="Tabbed Chrome"/>
+  <int value="1" label="Custom Tab"/>
+  <int value="2" label="Trusted Web Activity"/>
+  <int value="3" label="WebAPK"/>
+  <int value="4" label="Webapp (not WebAPK)"/>
+</enum>
+
 <enum name="ChromeBrowsingDataRemoverTasks">
   <int value="1" label="kSynchronous"/>
   <int value="2" label="kHistory"/>
