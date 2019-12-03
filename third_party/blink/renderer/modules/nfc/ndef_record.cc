@@ -255,19 +255,21 @@ NDEFRecord* NDEFRecord::Create(const ExecutionContext* execution_context,
     return nullptr;
   }
 
+  NDEFRecord* instance = nullptr;
   if (record_type == "empty") {
     // https://w3c.github.io/web-nfc/#mapping-empty-record-to-ndef
-    return MakeGarbageCollected<NDEFRecord>(record_type,
-                                            WTF::Vector<uint8_t>());
+    instance =
+        MakeGarbageCollected<NDEFRecord>(record_type, WTF::Vector<uint8_t>());
   } else if (record_type == "text") {
-    return CreateTextRecord(execution_context, init->encoding(), init->lang(),
-                            init->data(), exception_state);
+    instance = CreateTextRecord(execution_context, init->encoding(),
+                                init->lang(), init->data(), exception_state);
   } else if (record_type == "url" || record_type == "absolute-url") {
-    return CreateUrlRecord(record_type, init->data(), exception_state);
+    instance = CreateUrlRecord(record_type, init->data(), exception_state);
   } else if (record_type == "mime") {
-    return CreateMimeRecord(init->data(), init->mediaType(), exception_state);
+    instance =
+        CreateMimeRecord(init->data(), init->mediaType(), exception_state);
   } else if (record_type == "unknown") {
-    return CreateUnknownRecord(init->data(), exception_state);
+    instance = CreateUnknownRecord(init->data(), exception_state);
   } else if (record_type == "smart-poster") {
     // TODO(https://crbug.com/520391): Support creating smart-poster records.
     exception_state.ThrowTypeError("smart-poster type is not supported yet");
@@ -279,12 +281,18 @@ NDEFRecord* NDEFRecord::Create(const ExecutionContext* execution_context,
     // in either case we should try to create an external type record from
     // |data|.
     String formated_type = ValidateCustomRecordType(record_type);
-    if (!formated_type.IsNull())
-      return CreateExternalRecord(formated_type, init->data(), exception_state);
+    if (formated_type.IsNull()) {
+      exception_state.ThrowTypeError("Invalid NDEFRecord type.");
+      return nullptr;
+    }
+    instance =
+        CreateExternalRecord(formated_type, init->data(), exception_state);
   }
 
-  exception_state.ThrowTypeError("Invalid NDEFRecord type.");
-  return nullptr;
+  if (instance && init->hasId()) {
+    instance->id_ = init->id();
+  }
+  return instance;
 }
 
 NDEFRecord::NDEFRecord(const String& record_type,
