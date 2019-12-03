@@ -49552,6 +49552,13 @@ Called by update_net_trust_anchors.py.-->
   <int value="6" label="Could Not Create Upload Directory"/>
 </enum>
 
+<enum name="PhoneNumberRegexVariantResult">
+  <int value="0" label="None match"/>
+  <int value="1" label="Only simple matches"/>
+  <int value="2" label="Only variant matches"/>
+  <int value="3" label="Both match"/>
+</enum>
+
 <enum name="PhotoEditorFileType">
   <int value="0" label="jpg"/>
   <int value="1" label="png"/>
