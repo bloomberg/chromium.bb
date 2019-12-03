@@ -5231,14 +5231,6 @@ test("unit_tests") {
       "../browser/ui/webui/tab_strip/thumbnail_tracker_unittest.cc",
     ]
   }
-
-  if (is_win && is_chrome_branded) {
-    sources += [
-      "../browser/component_updater/recovery_improved_component_unittest.cc",
-    ]
-    data_deps +=
-        [ "//components/update_client:recovery_component_tests_bundle_data" ]
-  }
 }
 
 static_library("test_support_unit") {
