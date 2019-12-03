@@ -3351,7 +3351,7 @@ bool WebMediaPlayerImpl::IsBackgroundOptimizationCandidate() const {
 }
 
 void WebMediaPlayerImpl::UpdateBackgroundVideoOptimizationState() {
-  if (IsHidden()) {
+  if (IsHidden() && !IsInPictureInPicture()) {
     if (ShouldPausePlaybackWhenHidden()) {
       PauseVideoIfNeeded();
     } else if (update_background_status_cb_.IsCancelled()) {
