@@ -12,6 +12,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
 #include "base/no_destructor.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
@@ -476,8 +477,9 @@ void DeepScanningDialogDelegate::CompleteFileRequestCallback(
   MaybeReportDeepScanningVerdict(
       Profile::FromBrowserContext(web_contents_->GetBrowserContext()),
       web_contents_->GetLastCommittedURL(), path.AsUTF8Unsafe(),
-      file_info_[index].sha256, mime_type,
-      extensions::SafeBrowsingPrivateEventRouter::kTriggerFileUpload,
+      base::HexEncode(file_info_[index].sha256.data(),
+                      file_info_[index].sha256.size()),
+      mime_type, extensions::SafeBrowsingPrivateEventRouter::kTriggerFileUpload,
       file_info_[index].size, result, response);
 
   bool dlp_ok = DlpTriggeredRulesOK(response.dlp_scan_verdict());
