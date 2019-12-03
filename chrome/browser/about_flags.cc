@@ -1310,36 +1310,20 @@ const FeatureEntry::FeatureVariation
          nullptr}};
 #endif  // OS_ANDROID
 
-#if defined(OS_ANDROID)
-const FeatureEntry::FeatureParam kQuietNotificationPromptsForceMiniInfobars[] =
-    {
-        {kQuietNotificationPromptsActivationParameterName,
-         kQuietNotificationPromptsActivationAlways},
-};
-
-// The default "Enabled" option has the semantics of showing "mini-infobars"
-// adaptively after 3 consecutive denies (or when enabled in settings). In
-// addition to that, expose an option to force-enable "mini-infobars".
-const FeatureEntry::FeatureVariation kQuietNotificationPromptsVariations[] = {
-    {"(forced)", kQuietNotificationPromptsForceMiniInfobars,
-     base::size(kQuietNotificationPromptsForceMiniInfobars), nullptr},
-};
-#else   // OS_ANDROID
 const FeatureEntry::FeatureParam
-    kQuietNotificationPromptsForceAnimatedIconNotificationsPrompt[] = {
-        {kQuietNotificationPromptsActivationParameterName,
-         kQuietNotificationPromptsActivationAlways},
-};
+    kQuietNotificationPromptsWithAdaptiveActivation[] = {
+        {QuietNotificationsPromptConfig::kEnableAdaptiveActivation, "true"}};
 
-// The default "Enabled" option has the semantics of showing "animated icon"
-// adaptively after 3 consecutive denies (or when enabled in settings). In
-// addition to that, expose an option to force-enable "animated icons".
+// The default "Enabled" option has the semantics of showing the quiet UI
+// (animated location bar indicator on Desktop, and mini-infobars on Android),
+// but only when the user directly turns it on in Settings. In addition to that,
+// expose an option to also enable adaptively turning on the quiet UI after
+// three consecutive denies.
 const FeatureEntry::FeatureVariation kQuietNotificationPromptsVariations[] = {
-    {"(forced)", kQuietNotificationPromptsForceAnimatedIconNotificationsPrompt,
-     base::size(kQuietNotificationPromptsForceAnimatedIconNotificationsPrompt),
-     nullptr},
+    {"(with adaptive activation)",
+     kQuietNotificationPromptsWithAdaptiveActivation,
+     base::size(kQuietNotificationPromptsWithAdaptiveActivation), nullptr},
 };
-#endif  // !OS_ANDROID
 
 // TODO(crbug.com/991082,1015377): Remove after proper support for back-forward
 // cache is implemented.
