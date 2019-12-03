@@ -1699,6 +1699,11 @@
       name: "VideoFullscreenOrientationLock",
     },
     {
+      // See https://crbug.com/1012063
+      name: "VideoRequestAnimationFrame",
+      status: "experimental",
+    },
+    {
       name: "VideoRotateToFullscreen",
     },
     {
