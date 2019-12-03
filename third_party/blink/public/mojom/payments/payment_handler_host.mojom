@@ -39,6 +39,10 @@ struct PaymentRequestDetailsUpdate {
   AddressErrors? shipping_address_errors;
 };
 
+// TODO(sahel): remove this stub after updating clank code. crbug.com/984694
+struct PaymentMethodChangeResponse {
+};
+
 // The interface for a PaymentRequest object in the browser, so a PaymentHandler
 // renderer can talk to it.
 //
