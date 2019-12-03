@@ -127,12 +127,15 @@ class TrayBackgroundView::HighlightPathGenerator
 
   // HighlightPathGenerator:
   SkPath GetHighlightPath(const views::View* view) override {
+    const int focus_ring_padding = 1;
     const int border_radius = ShelfConfig::Get()->control_border_radius();
     SkPath path;
-    path.addRoundRect(
-        gfx::RectToSkRect(static_cast<const TrayBackgroundView*>(view)
-                              ->GetBackgroundBounds()),
-        border_radius, border_radius);
+
+    gfx::Rect bounds =
+        static_cast<const TrayBackgroundView*>(view)->GetBackgroundBounds();
+    bounds.Inset(gfx::Insets(focus_ring_padding));
+
+    path.addRoundRect(gfx::RectToSkRect(bounds), border_radius, border_radius);
     return path;
   }
 
