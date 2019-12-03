@@ -530,6 +530,12 @@ void ConvolveCompoundHorizontal_C(
       (1 << (bitdepth + 4)) + (1 << (bitdepth + 3));
   const int inter_round_vertical_shift =
       inter_round_bits_vertical - kFilterBits;
+  // Shift for horizontal and vertical.
+  const int right_shift = inter_round_vertical_shift + kRoundBitsHorizontal;
+  // Rounding for horizontal and vertical.
+  const int rounding =
+      (1 << (right_shift - 1)) +
+      (((right_shift != kRoundBitsHorizontal)) << (kRoundBitsHorizontal - 1));
   int y = 0;
   do {
     int x = 0;
@@ -538,8 +544,7 @@ void ConvolveCompoundHorizontal_C(
       for (int k = 0; k < kSubPixelTaps; ++k) {
         sum += kSubPixelFilters[filter_index][filter_id][k] * src[x + k];
       }
-      sum = RightShiftWithRounding(sum, kRoundBitsHorizontal);
-      sum = RightShiftWithRounding(sum, inter_round_vertical_shift);
+      sum = (sum + rounding) >> right_shift;
       dest[x] = sum + (compound_round_offset >> inter_round_vertical_shift);
     } while (++x < width);
 
