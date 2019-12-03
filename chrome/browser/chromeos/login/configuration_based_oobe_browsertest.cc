@@ -62,6 +62,7 @@
 #define MAYBE_TestLeaveWelcomeScreen DISABLED_TestLeaveWelcomeScreen
 #define MAYBE_TestSkipHIDDetection DISABLED_TestSkipHIDDetection
 #define MAYBE_TestEnrollUsingToken DISABLED_TestEnrollUsingToken
+#define MAYBE_TestSkipUpdate DISABLED_TestSkipUpdate
 #else
 #define MAYBE_TestAcceptEula TestAcceptEula
 #define MAYBE_TestDemoModeAcceptArcTos TestDemoModeAcceptArcTos
@@ -72,6 +73,7 @@
 #define MAYBE_TestLeaveWelcomeScreen TestLeaveWelcomeScreen
 #define MAYBE_TestSkipHIDDetection TestSkipHIDDetection
 #define MAYBE_TestEnrollUsingToken TestEnrollUsingToken
+#define MAYBE_TestSkipUpdate TestSkipUpdate
 #endif
 
 namespace chromeos {
@@ -333,7 +335,7 @@ IN_PROC_BROWSER_TEST_F(OobeConfigurationTest, MAYBE_TestDeviceRequisition) {
 
 // Check that configuration allows to skip Update screen and get to Enrollment
 // screen.
-IN_PROC_BROWSER_TEST_F(OobeConfigurationEnrollmentTest, TestSkipUpdate) {
+IN_PROC_BROWSER_TEST_F(OobeConfigurationEnrollmentTest, MAYBE_TestSkipUpdate) {
   LoadConfiguration();
   OobeScreenWaiter(EnrollmentScreenView::kScreenId).Wait();
   enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepSignin);
