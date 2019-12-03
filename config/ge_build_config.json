@@ -1793,6 +1793,22 @@
           "release_builder_test_pool": "bvt",
           "board_id": 402,
           "is_active": true
+        },
+        {
+          "board_name": "drallion",
+          "name": "drallion360_signed",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt",
+          "board_id": 402,
+          "is_active": true
+        },
+        {
+          "board_name": "drallion",
+          "name": "drallion_signed",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt",
+          "board_id": 402,
+          "is_active": true
         }
       ]
     },

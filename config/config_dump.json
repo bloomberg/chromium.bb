@@ -11827,7 +11827,9 @@
         ],
         "models": [
             "{\n    \"enable_skylab\": true,\n    \"lab_board_name\": \"drallion\",\n    \"name\": \"drallion\",\n    \"test_suites\": []\n}",
-            "{\n    \"enable_skylab\": true,\n    \"lab_board_name\": \"drallion\",\n    \"name\": \"drallion360\",\n    \"test_suites\": []\n}"
+            "{\n    \"enable_skylab\": true,\n    \"lab_board_name\": \"drallion\",\n    \"name\": \"drallion360\",\n    \"test_suites\": []\n}",
+            "{\n    \"enable_skylab\": true,\n    \"lab_board_name\": \"drallion\",\n    \"name\": \"drallion360_signed\",\n    \"test_suites\": []\n}",
+            "{\n    \"enable_skylab\": true,\n    \"lab_board_name\": \"drallion\",\n    \"name\": \"drallion_signed\",\n    \"test_suites\": []\n}"
         ],
         "sign_types": [
             "recovery",
@@ -11975,7 +11977,9 @@
         "luci_builder": "Try",
         "models": [
             "{\n    \"enable_skylab\": true,\n    \"lab_board_name\": \"drallion\",\n    \"name\": \"drallion\",\n    \"test_suites\": []\n}",
-            "{\n    \"enable_skylab\": true,\n    \"lab_board_name\": \"drallion\",\n    \"name\": \"drallion360\",\n    \"test_suites\": []\n}"
+            "{\n    \"enable_skylab\": true,\n    \"lab_board_name\": \"drallion\",\n    \"name\": \"drallion360\",\n    \"test_suites\": []\n}",
+            "{\n    \"enable_skylab\": true,\n    \"lab_board_name\": \"drallion\",\n    \"name\": \"drallion360_signed\",\n    \"test_suites\": []\n}",
+            "{\n    \"enable_skylab\": true,\n    \"lab_board_name\": \"drallion\",\n    \"name\": \"drallion_signed\",\n    \"test_suites\": []\n}"
         ],
         "paygen": false,
         "push_image": false,
