@@ -208,7 +208,7 @@ class CodeNode(object):
         """
         if self.prev is not None:
             prev = self.prev
-            while isinstance(prev, SymbolScopeNode) and prev:
+            while isinstance(prev, SequenceNode) and prev:
                 prev = prev[-1]
             return prev
         else:
@@ -458,12 +458,10 @@ ${node}\\
         node.reset_prev(None)
 
 
-class SymbolScopeNode(ListNode):
+class SequenceNode(ListNode):
     """
-    Represents a sequence of nodes.
-
-    If SymbolNodes are rendered inside this node, this node will attempt to
-    insert corresponding SymbolDefinitionNodes appropriately.
+    Represents a sequence of generated code without introducing any new scope,
+    and provides the points where SymbolDefinitionNodes can be inserted.
     """
 
     def __init__(self, code_nodes=None, separator="\n", separator_last=""):
@@ -472,8 +470,6 @@ class SymbolScopeNode(ListNode):
             code_nodes=code_nodes,
             separator=separator,
             separator_last=separator_last)
-
-        self._registered_code_symbols = set()
 
     def _render(self, renderer, last_render_state):
         duplicates = []
@@ -484,6 +480,28 @@ class SymbolScopeNode(ListNode):
         for element_node in duplicates:
             self.remove(element_node)
 
+        return super(SequenceNode, self)._render(
+            renderer=renderer, last_render_state=last_render_state)
+
+
+class SymbolScopeNode(SequenceNode):
+    """
+    Represents a scope of generated code.
+
+    If SymbolNodes are rendered inside this node, this node will attempt to
+    insert corresponding SymbolDefinitionNodes appropriately.
+    """
+
+    def __init__(self, code_nodes=None, separator="\n", separator_last=""):
+        SequenceNode.__init__(
+            self,
+            code_nodes=code_nodes,
+            separator=separator,
+            separator_last=separator_last)
+
+        self._registered_code_symbols = set()
+
+    def _render(self, renderer, last_render_state):
         for symbol_node in last_render_state.undefined_code_symbols:
             if (self.is_code_symbol_registered(symbol_node)
                     and not self.is_code_symbol_defined(symbol_node)):
@@ -525,7 +543,7 @@ class SymbolScopeNode(ListNode):
 
         def insert_right_before_first_use(symbol_scope_node):
             for index, node in enumerate(symbol_scope_node):
-                if isinstance(node, SymbolScopeNode):
+                if isinstance(node, SequenceNode):
                     did_insert = insert_right_before_first_use(node)
                     if did_insert:
                         return True
@@ -634,7 +652,7 @@ class SymbolNode(CodeNode):
         return node
 
 
-class SymbolDefinitionNode(SymbolScopeNode):
+class SymbolDefinitionNode(SequenceNode):
     """
     Represents a definition of a code symbol.
 
@@ -645,7 +663,7 @@ class SymbolDefinitionNode(SymbolScopeNode):
     def __init__(self, symbol_node, code_nodes=None):
         assert isinstance(symbol_node, SymbolNode)
 
-        SymbolScopeNode.__init__(self, code_nodes)
+        SequenceNode.__init__(self, code_nodes)
 
         self._symbol_node = symbol_node
 

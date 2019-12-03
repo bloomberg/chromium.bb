@@ -15,6 +15,7 @@ from .blink_v8_bridge import make_v8_to_blink_value_variadic
 from .code_node import CodeNode
 from .code_node import FunctionDefinitionNode
 from .code_node import LiteralNode
+from .code_node import SequenceNode
 from .code_node import SymbolDefinitionNode
 from .code_node import SymbolNode
 from .code_node import SymbolScopeNode
@@ -264,7 +265,7 @@ def make_check_receiver(cg_context):
 
     if (cg_context.attribute
             and "LenientThis" in cg_context.attribute.extended_attributes):
-        return SymbolScopeNode([
+        return SequenceNode([
             T("// [LenientThis]"),
             UnlikelyExitNode(
                 cond=T("!${v8_class}::HasInstance(${receiver}, ${isolate})"),
@@ -272,7 +273,7 @@ def make_check_receiver(cg_context):
         ])
 
     if cg_context.return_type.unwrap().is_promise:
-        return SymbolScopeNode([
+        return SequenceNode([
             T("// Promise returning function: "
               "Convert a TypeError to a reject promise."),
             UnlikelyExitNode(
@@ -311,7 +312,7 @@ def make_check_security_of_return_value(cg_context):
         T("V8SetReturnValueNull(${info});\n"
           "return;"),
     ])
-    return SymbolScopeNode([
+    return SequenceNode([
         T("// [CheckSecurity=ReturnValue]"),
         UnlikelyExitNode(cond=cond, body=body),
     ])
@@ -392,7 +393,7 @@ def _make_overload_dispatcher_per_arg_size(items):
     else:
         arg_index = None
     func_like = None
-    dispatcher_nodes = SymbolScopeNode()
+    dispatcher_nodes = SequenceNode()
 
     # True if there exists a case that overload resolution will fail.
     can_fail = True
@@ -580,7 +581,7 @@ def make_overload_dispatcher(cg_context):
     items_grouped_by_arg_size = itertools.groupby(
         sorted(items, key=args_size, reverse=True), key=args_size)
 
-    branches = SymbolScopeNode()
+    branches = SequenceNode()
     did_use_break = False
     for arg_size, items in items_grouped_by_arg_size:
         items = list(items)
@@ -622,7 +623,7 @@ def make_overload_dispatcher(cg_context):
     if not did_use_break and arg_size == 0 and conditional.is_always_true:
         return branches
 
-    return SymbolScopeNode([
+    return SequenceNode([
         branches,
         T(""),
         T("${exception_state}.ThrowTypeError"
@@ -681,7 +682,7 @@ def make_report_measure_as(cg_context):
             name_style.raw.upper_camel_case(cg_context.member_like.identifier),
             suffix)
 
-    node = SymbolScopeNode()
+    node = SequenceNode()
 
     pattern = ("// [Measure], [MeasureAs]\n"
                "UseCounter::Count(${execution_context}, WebFeature::{_1});")
@@ -893,7 +894,7 @@ def make_operation_callback_def(cg_context, function_name):
         return make_operation_function_def(
             cg_context.make_copy(operation=operation_group[0]), function_name)
 
-    node = SymbolScopeNode()
+    node = SequenceNode()
     for operation in operation_group:
         node.append(
             make_operation_function_def(
@@ -997,7 +998,7 @@ def generate_interfaces(web_idl_database, output_dirs):
     root_node.accumulator.add_include_headers(
         collect_include_headers(interface))
 
-    code_node = SymbolScopeNode()
+    code_node = SequenceNode()
 
     for attribute in interface.attributes:
         func_name = name_style.func(attribute.identifier,
