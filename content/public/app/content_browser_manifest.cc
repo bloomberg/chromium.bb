@@ -183,7 +183,6 @@ const service_manager::Manifest& GetContentBrowserManifest() {
                   "blink.mojom.DisplayCutoutHost",
                   "blink.mojom.Portal",
                   "blink.mojom.QuotaDispatcherHost",
-                  "content.mojom.InputInjector",
                   "content.mojom.RendererAudioInputStreamFactory",
                   "content.mojom.RendererAudioOutputStreamFactory",
                   "discardable_memory.mojom.DiscardableSharedMemoryManager",

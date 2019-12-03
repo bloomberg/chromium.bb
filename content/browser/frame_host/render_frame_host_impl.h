@@ -48,6 +48,7 @@
 #include "content/common/frame_delete_intention.h"
 #include "content/common/frame_replication_state.h"
 #include "content/common/input/input_handler.mojom.h"
+#include "content/common/input/input_injector.mojom-forward.h"
 #include "content/common/navigation_params.mojom.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
@@ -1160,6 +1161,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   void BindCacheStorage(
       mojo::PendingReceiver<blink::mojom::CacheStorage> receiver);
+
+  void BindInputInjectorReceiver(
+      mojo::PendingReceiver<mojom::InputInjector> receiver);
 
   void BindSmsReceiverReceiver(
       mojo::PendingReceiver<blink::mojom::SmsReceiver> receiver);

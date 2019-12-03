@@ -33,7 +33,6 @@
 #include "base/time/time.h"
 #include "base/trace_event/traced_value.h"
 #include "build/build_config.h"
-#include "cc/base/switches.h"
 #include "components/download/public/common/download_url_parameters.h"
 #include "content/browser/about_url_loader_factory.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
@@ -4646,8 +4645,6 @@ void RenderFrameHostImpl::ResourceLoadComplete(
 }
 
 void RenderFrameHostImpl::RegisterMojoInterfaces() {
-  auto* command_line = base::CommandLine::ForCurrentProcess();
-
   registry_->AddInterface(
       base::BindRepeating(&RenderFrameHostImpl::CreateAudioInputStreamFactory,
                           base::Unretained(this)));
@@ -4655,11 +4652,6 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
   registry_->AddInterface(
       base::BindRepeating(&RenderFrameHostImpl::CreateAudioOutputStreamFactory,
                           base::Unretained(this)));
-
-  if (command_line->HasSwitch(cc::switches::kEnableGpuBenchmarking)) {
-    registry_->AddInterface(base::BindRepeating(
-        &InputInjectorImpl::Create, weak_ptr_factory_.GetWeakPtr()));
-  }
 
   // TODO(crbug.com/775792): Move to RendererInterfaceBinders.
   registry_->AddInterface(base::BindRepeating(
@@ -6601,6 +6593,12 @@ RenderFrameHostImpl::BindFileChooserForTesting() {
 void RenderFrameHostImpl::BindCacheStorage(
     mojo::PendingReceiver<blink::mojom::CacheStorage> receiver) {
   GetProcess()->BindCacheStorage(GetLastCommittedOrigin(), std::move(receiver));
+}
+
+void RenderFrameHostImpl::BindInputInjectorReceiver(
+    mojo::PendingReceiver<mojom::InputInjector> receiver) {
+  InputInjectorImpl::Create(weak_ptr_factory_.GetWeakPtr(),
+                            std::move(receiver));
 }
 
 void RenderFrameHostImpl::BindSmsReceiverReceiver(

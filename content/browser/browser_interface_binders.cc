@@ -5,8 +5,10 @@
 #include "content/browser/browser_interface_binders.h"
 
 #include "base/callback.h"
+#include "base/command_line.h"
 #include "base/feature_list.h"
 #include "build/build_config.h"
+#include "cc/base/switches.h"
 #include "content/browser/background_fetch/background_fetch_service_impl.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/content_index/content_index_service_impl.h"
@@ -30,6 +32,7 @@
 #include "content/browser/worker_host/dedicated_worker_host.h"
 #include "content/browser/worker_host/shared_worker_connector_impl.h"
 #include "content/browser/worker_host/shared_worker_host.h"
+#include "content/common/input/input_injector.mojom.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/service_worker_context.h"
@@ -93,7 +96,6 @@
 #include "third_party/blink/public/mojom/worker/shared_worker_connector.mojom.h"
 
 #if !defined(OS_ANDROID)
-#include "base/command_line.h"
 #include "content/browser/installedapp/installed_app_provider_impl_default.h"
 #include "content/public/common/content_switches.h"
 #include "third_party/blink/public/mojom/hid/hid.mojom.h"
@@ -605,6 +607,13 @@ void PopulateFrameBinders(RenderFrameHostImpl* host,
 
   map->Add<shape_detection::mojom::TextDetection>(
       base::BindRepeating(&BindTextDetection));
+
+  auto* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(cc::switches::kEnableGpuBenchmarking)) {
+    map->Add<mojom::InputInjector>(
+        base::BindRepeating(&RenderFrameHostImpl::BindInputInjectorReceiver,
+                            base::Unretained(host)));
+  }
 
 #if defined(OS_ANDROID)
   if (base::FeatureList::IsEnabled(features::kWebNfc)) {
