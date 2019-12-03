@@ -56,11 +56,11 @@ bool LayoutSVGTransformableContainer::IsChildAllowed(
     // Reject this child if it isn't the first valid node.
     if (HasValidPredecessor(child_node))
       return false;
-  } else if (IsSVGAElement(*GetElement())) {
+  } else if (IsA<SVGAElement>(*GetElement())) {
     // http://www.w3.org/2003/01/REC-SVG11-20030114-errata#linking-text-environment
     // The 'a' element may contain any element that its parent may contain,
     // except itself.
-    if (child_node && IsSVGAElement(*child_node))
+    if (child_node && IsA<SVGAElement>(*child_node))
       return false;
     if (Parent() && Parent()->IsSVG())
       return Parent()->IsChildAllowed(child, style);
