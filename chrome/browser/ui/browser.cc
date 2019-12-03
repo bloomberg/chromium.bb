@@ -818,12 +818,12 @@ void Browser::OnWindowClosing() {
   sessions::TabRestoreService* tab_restore_service =
       TabRestoreServiceFactory::GetForProfile(profile());
 
-#if defined(USE_AURA)
-  if (tab_restore_service && is_type_app())
-    tab_restore_service->BrowserClosing(live_tab_context());
+  bool notify_restore_service = is_type_normal() && tab_strip_model_->count();
+#if defined(USE_AURA) || defined(OS_MACOSX)
+  notify_restore_service |= is_type_app();
 #endif
 
-  if (tab_restore_service && is_type_normal() && tab_strip_model_->count())
+  if (tab_restore_service && notify_restore_service)
     tab_restore_service->BrowserClosing(live_tab_context());
 
   BrowserList::NotifyBrowserCloseStarted(this);
