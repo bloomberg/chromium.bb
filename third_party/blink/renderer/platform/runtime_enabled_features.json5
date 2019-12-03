@@ -945,6 +945,10 @@
       status: "stable",
     },
     {
+      name: "MediaCapabilitiesSpatialAudio",
+      status: "test",
+    },
+    {
       name: "MediaCapture",
       status: {"Android": "stable"},
     },
