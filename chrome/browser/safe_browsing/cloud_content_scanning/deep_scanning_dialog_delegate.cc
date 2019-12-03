@@ -27,6 +27,7 @@
 #include "components/policy/core/browser/url_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
+#include "components/safe_browsing/proto/webprotect.pb.h"
 #include "components/url_matcher/url_matcher.h"
 #include "content/public/browser/web_contents.h"
 #include "crypto/sha2.h"
@@ -480,10 +481,16 @@ void DeepScanningDialogDelegate::CompleteFileRequestCallback(
       file_info_[index].size, result, response);
 
   bool dlp_ok = DlpTriggeredRulesOK(response.dlp_scan_verdict());
-  bool malware_ok = response.malware_scan_verdict().verdict() !=
-                        MalwareDeepScanningVerdict::UWS &&
-                    response.malware_scan_verdict().verdict() !=
-                        MalwareDeepScanningVerdict::MALWARE;
+  bool malware_ok = true;
+  if (response.has_malware_scan_verdict()) {
+    malware_ok = response.malware_scan_verdict().status() ==
+                     MalwareDeepScanningVerdict::SUCCESS &&
+                 response.malware_scan_verdict().verdict() !=
+                     MalwareDeepScanningVerdict::UWS &&
+                 response.malware_scan_verdict().verdict() !=
+                     MalwareDeepScanningVerdict::MALWARE;
+  }
+
   bool file_complies =
       (result == BinaryUploadService::Result::SUCCESS) && dlp_ok && malware_ok;
 
