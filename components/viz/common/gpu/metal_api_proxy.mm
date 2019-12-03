@@ -64,7 +64,7 @@ id<MTLLibrary> API_AVAILABLE(macos(10.11))
 
   auto state = base::MakeRefCounted<AsyncMetalState>();
   for (size_t attempt = 0;; ++attempt) {
-    if (base::TimeTicks::Now() - start_time < kTimeout)
+    if (base::TimeTicks::Now() - start_time < kTimeout && progress_reporter)
       progress_reporter->ReportProgress();
 
     // The completion handler will signal the condition variable we will wait
@@ -118,7 +118,7 @@ id<MTLRenderPipelineState> API_AVAILABLE(macos(10.11))
   const base::TimeTicks start_time = base::TimeTicks::Now();
   auto state = base::MakeRefCounted<AsyncMetalState>();
   for (size_t attempt = 0;; ++attempt) {
-    if (base::TimeTicks::Now() - start_time < kTimeout)
+    if (base::TimeTicks::Now() - start_time < kTimeout && progress_reporter)
       progress_reporter->ReportProgress();
     MTLNewRenderPipelineStateCompletionHandler completionHandler =
         ^(id<MTLRenderPipelineState> render_pipeline_state, NSError* error) {
