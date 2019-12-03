@@ -402,8 +402,14 @@ class TestCalculateRootfsHash(cros_test_lib.RunCommandTempDirTestCase):
     # We don't actually care about the return, it's checked elsewhere.
     file_name = rootfs_hash.hashtree_filename
     self.assertExists(file_name)
-    del rootfs_hash
+    # We poke __del__ directly because Python does not guarantee when it will
+    # be called relative to a del statement.  The only thing del guarantees is
+    # decrementing the object ref counter, not when the GC runs and clears it.
+    rootfs_hash.__del__()
     self.assertNotExists(file_name)
+    # Call it explicitly for fun.  This makes sure the func can be called more
+    # than once which is how the code is written.
+    del rootfs_hash
 
   def testSaltOptional(self):
     """Test that salt= is properly optional."""
