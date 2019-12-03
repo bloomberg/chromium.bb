@@ -13,29 +13,20 @@
 namespace autofill {
 
 class WebauthnDialogModelObserver;
+enum class WebauthnDialogState;
 
 // The model for WebauthnDialogView determining what content is shown.
 // Owned by the AuthenticatorRequestSheetView.
 class WebauthnDialogModel : public AuthenticatorRequestSheetModel {
  public:
-  enum DialogState {
-    kUnknown,
-    // The dialog is about to be closed automatically. This happens only after
-    // authentication challenge is successfully fetched.
-    kInactive,
-    // The option of using platform authenticator is being offered.
-    kOffer,
-    // Offer was accepted, fetching authentication challenge.
-    kPending,
-    // Fetching authentication challenge failed.
-    kError,
-  };
-
-  WebauthnDialogModel();
+  explicit WebauthnDialogModel(WebauthnDialogState dialog_state);
   ~WebauthnDialogModel() override;
 
-  void SetDialogState(DialogState state);
-  DialogState dialog_state() { return state_; }
+  // Update the current state the dialog should be. When the state is changed,
+  // the view's contents should be re-initialized. This should not be used
+  // before the view is created.
+  void SetDialogState(WebauthnDialogState state);
+  WebauthnDialogState dialog_state() { return state_; }
 
   void AddObserver(WebauthnDialogModelObserver* observer);
   void RemoveObserver(WebauthnDialogModelObserver* observer);
@@ -60,7 +51,7 @@ class WebauthnDialogModel : public AuthenticatorRequestSheetModel {
   void OnCancel() override {}
 
  private:
-  DialogState state_ = DialogState::kUnknown;
+  WebauthnDialogState state_;
 
   base::ObserverList<WebauthnDialogModelObserver> observers_;
 

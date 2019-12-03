@@ -88,12 +88,11 @@ class ChromeAutofillClient
       MigrationDeleteCardCallback delete_local_card_callback) override;
 #if !defined(OS_ANDROID)
   void ShowWebauthnOfferDialog(
-      WebauthnOfferDialogCallback offer_dialog_callback) override;
-  void UpdateWebauthnOfferDialogWithError() override;
-  bool CloseWebauthnOfferDialog() override;
+      WebauthnDialogCallback offer_dialog_callback) override;
   void ShowWebauthnVerifyPendingDialog(
-      base::OnceClosure cancel_card_verification_callback) override;
-  void CloseWebauthnVerifyPendingDialog() override;
+      WebauthnDialogCallback verify_pending_dialog_callback) override;
+  void UpdateWebauthnOfferDialogWithError() override;
+  bool CloseWebauthnDialog() override;
 #endif  // !defined(OS_ANDROID)
   void ConfirmSaveAutofillProfile(const AutofillProfile& profile,
                                   base::OnceClosure callback) override;
