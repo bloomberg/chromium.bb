@@ -288,6 +288,7 @@ jumbo_static_library("weblayer_lib") {
       "//android_webview:generate_aw_strings",
       "//components/crash/android:crashpad_main",
       "//components/metrics",
+      "//components/minidump_uploader",
       "//components/safe_browsing",
       "//components/safe_browsing/android:remote_database_manager",
       "//components/safe_browsing/android:safe_browsing_api_handler",
