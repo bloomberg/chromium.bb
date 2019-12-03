@@ -58,6 +58,7 @@
 #include "content/public/common/previews_state.h"
 #include "content/public/common/transferrable_url_loader.mojom.h"
 #include "media/mojo/mojom/interface_factory.mojom-forward.h"
+#include "media/mojo/mojom/media_metrics_provider.mojom-forward.h"
 #include "media/mojo/services/media_metrics_provider.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
@@ -1172,6 +1173,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   void BindMediaInterfaceFactoryReceiver(
       mojo::PendingReceiver<media::mojom::InterfaceFactory> receiver);
+
+  void BindMediaMetricsProviderReceiver(
+      mojo::PendingReceiver<media::mojom::MediaMetricsProvider> receiver);
 
 #if BUILDFLAG(ENABLE_MEDIA_REMOTING)
   void BindMediaRemoterFactoryReceiver(

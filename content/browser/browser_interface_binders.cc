@@ -43,6 +43,7 @@
 #include "device/vr/public/mojom/vr_service.mojom.h"
 #include "media/capture/mojom/image_capture.mojom.h"
 #include "media/mojo/mojom/interface_factory.mojom-forward.h"
+#include "media/mojo/mojom/media_metrics_provider.mojom.h"
 #include "media/mojo/mojom/video_decode_perf_history.mojom.h"
 #include "media/mojo/services/video_decode_perf_history.h"
 #include "services/device/public/mojom/constants.mojom.h"
@@ -575,6 +576,10 @@ void PopulateFrameBinders(RenderFrameHostImpl* host,
 
   map->Add<media::mojom::InterfaceFactory>(base::BindRepeating(
       &RenderFrameHostImpl::BindMediaInterfaceFactoryReceiver,
+      base::Unretained(host)));
+
+  map->Add<media::mojom::MediaMetricsProvider>(base::BindRepeating(
+      &RenderFrameHostImpl::BindMediaMetricsProviderReceiver,
       base::Unretained(host)));
 
 #if BUILDFLAG(ENABLE_MEDIA_REMOTING)
