@@ -16517,7 +16517,7 @@ Called by update_net_error_codes.py.-->
   <int value="10" label="Password entry: Phone locked"/>
   <int value="11" label="Password entry: Phone not lockable"/>
   <int value="12" label="Password entry: RSSI too low"/>
-  <int value="13" label="Password entry: Phone not supported"/>
+  <int value="13" label="(Deprecated) Password entry: Phone not supported"/>
   <int value="14" label="Password entry: Phone authenticated"/>
   <int value="15" label="Password entry: Tx power too high"/>
   <int value="16" label="Password entry: Easy sign-in failed"/>
