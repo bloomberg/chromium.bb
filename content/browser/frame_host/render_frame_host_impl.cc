@@ -528,20 +528,6 @@ std::unique_ptr<blink::URLLoaderFactoryBundleInfo> CloneFactoryBundle(
       bundle->Clone().release()));
 }
 
-void GetRestrictedCookieManager(
-    RenderFrameHostImpl* frame_host,
-    int process_id,
-    int frame_id,
-    StoragePartition* storage_partition,
-    mojo::PendingReceiver<network::mojom::RestrictedCookieManager> receiver) {
-  storage_partition->CreateRestrictedCookieManager(
-      network::mojom::RestrictedCookieManagerRole::SCRIPT,
-      frame_host->GetLastCommittedOrigin(), frame_host->ComputeSiteForCookies(),
-      frame_host->ComputeTopFrameOrigin(frame_host->GetLastCommittedOrigin()),
-      /* is_service_worker = */ false, process_id, frame_id,
-      std::move(receiver));
-}
-
 // Helper method to download a URL on UI thread.
 void StartDownload(
     std::unique_ptr<download::DownloadUrlParameters> parameters,
@@ -4683,10 +4669,6 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
       GetProcess()->GetID(),
       GetProcess()->GetStoragePartition()->GetFileSystemContext(),
       ChromeBlobStorageContext::GetFor(GetProcess()->GetBrowserContext())));
-
-  registry_->AddInterface(base::BindRepeating(
-      &GetRestrictedCookieManager, base::Unretained(this),
-      GetProcess()->GetID(), routing_id_, GetProcess()->GetStoragePartition()));
 }
 
 media::MediaMetricsProvider::RecordAggregateWatchTimeCallback
@@ -6632,6 +6614,16 @@ void RenderFrameHostImpl::BindSmsReceiverReceiver(
   }
   auto* fetcher = SmsFetcher::Get(GetProcess()->GetBrowserContext());
   SmsService::Create(fetcher, this, std::move(receiver));
+}
+
+void RenderFrameHostImpl::BindRestrictedCookieManager(
+    mojo::PendingReceiver<network::mojom::RestrictedCookieManager> receiver) {
+  GetProcess()->GetStoragePartition()->CreateRestrictedCookieManager(
+      network::mojom::RestrictedCookieManagerRole::SCRIPT,
+      GetLastCommittedOrigin(), ComputeSiteForCookies(),
+      ComputeTopFrameOrigin(GetLastCommittedOrigin()),
+      /* is_service_worker = */ false, GetProcess()->GetID(), routing_id(),
+      std::move(receiver));
 }
 
 void RenderFrameHostImpl::GetInterface(

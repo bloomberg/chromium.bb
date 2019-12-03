@@ -49,6 +49,7 @@
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/sensor_provider.mojom.h"
 #include "services/device/public/mojom/vibration_manager.mojom.h"
+#include "services/network/public/mojom/restricted_cookie_manager.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/shape_detection/public/mojom/barcodedetection_provider.mojom.h"
 #include "services/shape_detection/public/mojom/facedetection_provider.mojom.h"
@@ -592,6 +593,10 @@ void PopulateFrameBinders(RenderFrameHostImpl* host,
       base::BindRepeating(&RenderProcessHost::BindVideoDecodePerfHistory,
                           base::Unretained(host->GetProcess())));
 
+  map->Add<network::mojom::RestrictedCookieManager>(
+      base::BindRepeating(&RenderFrameHostImpl::BindRestrictedCookieManager,
+                          base::Unretained(host)));
+
   map->Add<shape_detection::mojom::BarcodeDetectionProvider>(
       base::BindRepeating(&BindBarcodeDetectionProvider));
 
@@ -888,6 +893,10 @@ void PopulateBinderMapWithContext(
           &RenderProcessHost::CreateNotificationService, host));
   map->Add<blink::mojom::WebSocketConnector>(BindServiceWorkerReceiverForOrigin(
       &RenderProcessHost::CreateWebSocketConnector, host));
+  map->Add<network::mojom::RestrictedCookieManager>(
+      BindServiceWorkerReceiverForOrigin(
+          &RenderProcessHost::BindRestrictedCookieManagerForServiceWorker,
+          host));
 
   // render process host binders taking a frame id and an origin
   map->Add<blink::mojom::IDBFactory>(

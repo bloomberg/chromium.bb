@@ -174,8 +174,7 @@ const service_manager::Manifest& GetContentBrowserManifest() {
           .ExposeInterfaceFilterCapability_Deprecated(
               "navigation:service_worker", "renderer",
               std::set<const char*>{
-                  "blink.mojom.QuotaDispatcherHost",
-                  "network.mojom.RestrictedCookieManager"})
+                  "blink.mojom.QuotaDispatcherHost"})
           .ExposeInterfaceFilterCapability_Deprecated(
               "navigation:frame", "renderer",
               std::set<const char*>{
@@ -188,7 +187,6 @@ const service_manager::Manifest& GetContentBrowserManifest() {
                   "content.mojom.RendererAudioInputStreamFactory",
                   "content.mojom.RendererAudioOutputStreamFactory",
                   "discardable_memory.mojom.DiscardableSharedMemoryManager",
-                  "network.mojom.RestrictedCookieManager",
                   "viz.mojom.Gpu"})
           .PackageService(content::GetManifest())
           .Build()};

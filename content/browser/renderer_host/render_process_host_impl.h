@@ -559,6 +559,15 @@ class CONTENT_EXPORT RenderProcessHostImpl
     return file_system_manager_impl_.get();
   }
 
+  // Binds |receiver| to the RestrictedCookieManager instance owned by
+  // |storage_partition_impl_|, and is used by a service worker via
+  // BrowserInterfaceBroker. |receiver| belongs to the service worker at
+  // |origin| hosted by this process,
+  void BindRestrictedCookieManagerForServiceWorker(
+      const url::Origin& origin,
+      mojo::PendingReceiver<network::mojom::RestrictedCookieManager> receiver)
+      override;
+
   // Binds |receiver| to the VideoDecodePerfHistory instance owned by the render
   // process host, and is used by workers via BrowserInterfaceBroker.
   void BindVideoDecodePerfHistory(
