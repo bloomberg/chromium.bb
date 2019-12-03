@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {BackgroundGraphicsModeRestriction, NativeLayer, PluginProxy} from 'chrome://print/print_preview.js';
+import {NativeLayer, PluginProxy} from 'chrome://print/print_preview.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {NativeLayerStub} from 'chrome://test/print_preview/native_layer_stub.js';
@@ -14,7 +14,6 @@ policy_tests.suiteName = 'PolicyTest';
 /** @enum {string} */
 policy_tests.TestNames = {
   HeaderFooterPolicy: 'header/footer policy',
-  CssBackgroundPolicy: 'css background policy',
 };
 
 suite(policy_tests.suiteName, function() {
@@ -53,32 +52,31 @@ suite(policy_tests.suiteName, function() {
 
   /**
    * Sets up the Print Preview app, and loads initial settings with the given
-   * policy.
-   * @param {string} settingName Name of the setting to set up.
-   * @param {string} serializedSettingName Name of the serialized setting.
-   * @param {*} allowedMode Allowed value for the given setting.
-   * @param {*} defaultMode Default value for the given setting.
+   * policies.
+   * @param {boolean|undefined} allowedMode Allowed value for the header/footer
+   *     setting.
+   * @param {boolean|undefined} defaultMode Default value for the header/footer
+   *     setting.
    * @return {!Promise} A Promise that resolves once initial settings are done
    *     loading.
    */
-  function doPolicySetup(
-      settingName, serializedSettingName, allowedMode, defaultMode) {
+  function doHeaderFooterSetup(allowedMode, defaultMode) {
     const initialSettings = getDefaultInitialSettings();
 
     if (allowedMode !== undefined || defaultMode !== undefined) {
-      const policy = {};
+      const headerFooterPolicy = {};
       if (allowedMode !== undefined) {
-        policy.allowedMode = allowedMode;
+        headerFooterPolicy.allowedMode = allowedMode;
       }
       if (defaultMode !== undefined) {
-        policy.defaultMode = defaultMode;
+        headerFooterPolicy.defaultMode = defaultMode;
       }
-      initialSettings.policies = {[settingName]: policy};
+      initialSettings.policies = {headerFooter: headerFooterPolicy};
     }
     // We want to make sure sticky settings get overridden.
     initialSettings.serializedAppStateStr = JSON.stringify({
       version: 2,
-      [serializedSettingName]: !defaultMode,
+      isHeaderFooterEnabled: !defaultMode,
     });
     return loadInitialSettings(initialSettings);
   }
@@ -89,13 +87,15 @@ suite(policy_tests.suiteName, function() {
     moreSettingsElement.$.label.click();
   }
 
-  function getCheckbox(settingName) {
+  function getHeaderFooterCheckbox() {
     return page.$$('print-preview-sidebar')
         .$$('print-preview-other-options-settings')
-        .$$(`#${settingName}`);
+        .$$('#headerFooter');
   }
 
-  /** Tests different scenarios of applying header/footer policy. */
+  /**
+   * Tests different scenarios of applying header/footer policy.
+   */
   test(assert(policy_tests.TestNames.HeaderFooterPolicy), function() {
     [{
       // No policies.
@@ -132,63 +132,10 @@ suite(policy_tests.suiteName, function() {
        expectedDisabled: false,
        expectedChecked: false,
      }].forEach(subtestParams => {
-      doPolicySetup(
-          'headerFooter', 'isHeaderFooterEnabled', subtestParams.allowedMode,
-          subtestParams.defaultMode)
+      doHeaderFooterSetup(subtestParams.allowedMode, subtestParams.defaultMode)
           .then(function() {
             toggleMoreSettings();
-            const checkbox = getCheckbox('headerFooter');
-            assertEquals(subtestParams.expectedDisabled, checkbox.disabled);
-            assertEquals(subtestParams.expectedChecked, checkbox.checked);
-          });
-    });
-  });
-
-  /** Tests different scenarios of applying background graphics policy. */
-  test(assert(policy_tests.TestNames.CssBackgroundPolicy), function() {
-    [{
-      // No policies.
-      allowedMode: undefined,
-      defaultMode: undefined,
-      expectedDisabled: false,
-      expectedChecked: true,
-    },
-     {
-       // Restrict background graphics to be enabled.
-       // Check that checkbox value default mode is not applied if it
-       // contradicts allowed mode.
-       allowedMode: BackgroundGraphicsModeRestriction.ENABLED,
-       defaultMode: BackgroundGraphicsModeRestriction.DISABLED,
-       expectedDisabled: true,
-       expectedChecked: true,
-     },
-     {
-       // Restrict background graphics to be disabled.
-       allowedMode: BackgroundGraphicsModeRestriction.DISABLED,
-       defaultMode: undefined,
-       expectedDisabled: true,
-       expectedChecked: false,
-     },
-     {
-       // Check background graphics checkbox.
-       allowedMode: undefined,
-       defaultMode: BackgroundGraphicsModeRestriction.ENABLED,
-       expectedDisabled: false,
-       expectedChecked: true,
-     },
-     {
-       // Uncheck background graphics checkbox.
-       allowedMode: BackgroundGraphicsModeRestriction.UNSET,
-       defaultMode: BackgroundGraphicsModeRestriction.DISABLED,
-       expectedDisabled: false,
-       expectedChecked: false,
-     }].forEach(subtestParams => {
-      doPolicySetup(
-          'cssBackground', 'isCssBackgroundEnabled', subtestParams.allowedMode,
-          subtestParams.defaultMode)
-          .then(function() {
-            toggleMoreSettings();
-            const checkbox = getCheckbox('cssBackground');
+            const checkbox = getHeaderFooterCheckbox();
             assertEquals(subtestParams.expectedDisabled, checkbox.disabled);
             assertEquals(subtestParams.expectedChecked, checkbox.checked);
           });
