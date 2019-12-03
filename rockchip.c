@@ -129,13 +129,6 @@ static int rockchip_init(struct driver *drv)
 	drv_modify_combination(drv, DRM_FORMAT_YVU420, &metadata, BO_USE_HW_VIDEO_ENCODER);
 	drv_modify_combination(drv, DRM_FORMAT_NV12, &metadata, BO_USE_HW_VIDEO_ENCODER);
 
-	/*
-	 * Camera buffers are allocated with GRALLOC_USAGE_HW_VIDEO_ENCODER, and the camera stack
-	 * selects XBGR8888 in ARC++ video recording if the camera HAL is V1. So we need to be able
-	 * to allocate this format.
-	 */
-	drv_modify_combination(drv, DRM_FORMAT_XBGR8888, &metadata, BO_USE_HW_VIDEO_ENCODER);
-
 	drv_modify_combination(drv, DRM_FORMAT_XRGB8888, &metadata, BO_USE_CURSOR | BO_USE_SCANOUT);
 	drv_modify_combination(drv, DRM_FORMAT_ARGB8888, &metadata, BO_USE_CURSOR | BO_USE_SCANOUT);
 
