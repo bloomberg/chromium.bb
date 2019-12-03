@@ -2890,6 +2890,7 @@ source_set("unit_tests") {
     "preferences_unittest.cc",
     "printing/automatic_usb_printer_configurer_unittest.cc",
     "printing/bulk_printers_calculator_unittest.cc",
+    "printing/calculators_policies_binder_unittest.cc",
     "printing/cups_printers_manager_unittest.cc",
     "printing/history/mock_print_job_history_service.cc",
     "printing/history/mock_print_job_history_service.h",
