@@ -28,6 +28,8 @@ namespace blink {
 
 enum SVGMarkerType { kStartMarker, kMidMarker, kEndMarker };
 
+class LayoutSVGResourceMarker;
+
 struct MarkerPosition {
   DISALLOW_NEW();
   MarkerPosition(SVGMarkerType use_type,
@@ -35,34 +37,10 @@ struct MarkerPosition {
                  float use_angle)
       : type(use_type), origin(use_origin), angle(use_angle) {}
 
-  SVGMarkerType type;
-  FloatPoint origin;
-  float angle;
-};
-
-class LayoutSVGResourceMarker;
-
-class SVGMarkerData {
-  STACK_ALLOCATED();
-
- public:
-  SVGMarkerData(Vector<MarkerPosition>& positions)
-      : positions_(positions), element_index_(0) {}
-
-  static void UpdateFromPathElement(void* info, const PathElement* element) {
-    static_cast<SVGMarkerData*>(info)->UpdateFromPathElement(*element);
-  }
-
-  void PathIsDone() {
-    float angle = clampTo<float>(CurrentAngle(kEndMarker));
-    positions_.push_back(MarkerPosition(kEndMarker, origin_, angle));
-  }
-
-  static inline LayoutSVGResourceMarker* MarkerForType(
-      const SVGMarkerType& type,
+  LayoutSVGResourceMarker* SelectMarker(
       LayoutSVGResourceMarker* marker_start,
       LayoutSVGResourceMarker* marker_mid,
-      LayoutSVGResourceMarker* marker_end) {
+      LayoutSVGResourceMarker* marker_end) const {
     switch (type) {
       case kStartMarker:
         return marker_start;
@@ -71,12 +49,37 @@ class SVGMarkerData {
       case kEndMarker:
         return marker_end;
     }
-
     NOTREACHED();
     return nullptr;
   }
 
+  SVGMarkerType type;
+  FloatPoint origin;
+  float angle;
+};
+
+class SVGMarkerDataBuilder {
+  STACK_ALLOCATED();
+
+ public:
+  SVGMarkerDataBuilder(Vector<MarkerPosition>& positions)
+      : positions_(positions), element_index_(0) {}
+
+  void Build(const Path& path) {
+    path.Apply(this, SVGMarkerDataBuilder::UpdateFromPathElement);
+    PathIsDone();
+  }
+
  private:
+  static void UpdateFromPathElement(void* info, const PathElement* element) {
+    static_cast<SVGMarkerDataBuilder*>(info)->UpdateFromPathElement(*element);
+  }
+
+  void PathIsDone() {
+    float angle = clampTo<float>(CurrentAngle(kEndMarker));
+    positions_.push_back(MarkerPosition(kEndMarker, origin_, angle));
+  }
+
   static double BisectingAngle(double in_angle, double out_angle) {
     // WK193015: Prevent bugs due to angles being non-continuous.
     if (fabs(in_angle - out_angle) > 180)
