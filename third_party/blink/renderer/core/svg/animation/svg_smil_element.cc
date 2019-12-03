@@ -764,17 +764,16 @@ SMILTime SVGSMILElement::ResolveActiveEnd(SMILTime resolved_begin) const {
 
 SMILInterval SVGSMILElement::ResolveInterval(SMILTime begin_after,
                                              SMILTime end_after) const {
-  if (begin_times_.IsEmpty())
-    return SMILInterval::Unresolved();
   // Simplified version of the pseudocode in
   // http://www.w3.org/TR/SMIL3/smil-timing.html#q90.
   const size_t kMaxIterations = std::max(begin_times_.size() * 4, 1000000u);
   size_t current_iteration = 0;
-  while (true) {
+  for (auto* search_start = begin_times_.begin();
+       search_start != begin_times_.end(); ++search_start) {
     // Find the (next) instance time in the 'begin' list that is greater or
     // equal to |begin_after|.
     auto* begin_item = std::lower_bound(
-        begin_times_.begin(), begin_times_.end(), begin_after,
+        search_start, begin_times_.end(), begin_after,
         [](const SMILTimeWithOrigin& instance_time, const SMILTime& time) {
           return instance_time.Time() < time;
         });
@@ -789,9 +788,9 @@ SMILInterval SVGSMILElement::ResolveInterval(SMILTime begin_after,
     // Don't allow the interval to end in the past.
     if (temp_end > end_after)
       return SMILInterval(begin_item->Time(), temp_end);
-    // Ensure forward progress.
-    if (begin_after == temp_end)
-      temp_end = begin_after + SMILTime::Epsilon();
+    // Ensure forward progress by only considering the part of the 'begin' list
+    // after |begin_item| for the next iteration.
+    search_start = begin_item;
     begin_after = temp_end;
     // Debugging signal for crbug.com/1021630.
     CHECK_LT(current_iteration++, kMaxIterations);
