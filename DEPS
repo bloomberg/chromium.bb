@@ -1254,7 +1254,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/objenesis',
-              'version': '9e367f55e5a65781ee77bfcbaa88fb82b30e75c0',
+              'version': 'tknDblENYi8IaJYyD6tUahUyHYZlzJ_Y74_QZSz4DpIC',
           },
       ],
       'condition': 'checkout_android',
