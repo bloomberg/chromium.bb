@@ -591,10 +591,6 @@ class WebMediaPlayerImplTest : public testing::Test {
     testing::Mock::VerifyAndClearExpectations(compositor_);
   }
 
-  void UpdateBackgroundVideoOptimizationState() {
-    wmpi_->UpdateBackgroundVideoOptimizationState();
-  }
-
   void Play() { wmpi_->Play(); }
 
   void Pause() { wmpi_->Pause(); }
@@ -2188,22 +2184,6 @@ TEST_P(WebMediaPlayerImplBackgroundBehaviorTest, AudioVideo) {
     // should be a 10 minutes delay until it happens. Given that it doesn't
     // provides much of a benefit at the moment, this is being ignored.
     EXPECT_TRUE(IsDisableVideoTrackPending());
-  }
-
-  // If the video wasn't in Picture-in-Picture and didn't pause, trigger
-  // Picture-in-Picture. It should disable optimizations.
-  if (!IsPictureInPictureOn() && IsDisableVideoTrackPending()) {
-    EXPECT_CALL(client_, DisplayType())
-        .WillRepeatedly(
-            Return(blink::WebMediaPlayer::DisplayType::kPictureInPicture));
-
-    EXPECT_CALL(client_, OnPictureInPictureStateChange()).Times(1);
-    wmpi_->OnSurfaceIdUpdated(surface_id_);
-
-    UpdateBackgroundVideoOptimizationState();
-
-    EXPECT_FALSE(IsVideoTrackDisabled());
-    EXPECT_FALSE(IsDisableVideoTrackPending());
   }
 }
 
