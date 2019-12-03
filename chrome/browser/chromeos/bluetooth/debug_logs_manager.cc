@@ -39,10 +39,11 @@ DebugLogsManager::DebugLogsState DebugLogsManager::GetDebugLogsState() const {
              : DebugLogsState::kSupportedButDisabled;
 }
 
-mojom::DebugLogsChangeHandlerPtr DebugLogsManager::GenerateInterfacePtr() {
-  mojom::DebugLogsChangeHandlerPtr interface_ptr;
-  bindings_.AddBinding(this, mojo::MakeRequest(&interface_ptr));
-  return interface_ptr;
+mojo::PendingRemote<mojom::DebugLogsChangeHandler>
+DebugLogsManager::GenerateRemote() {
+  mojo::PendingRemote<mojom::DebugLogsChangeHandler> remote;
+  receivers_.Add(this, remote.InitWithNewPipeAndPassReceiver());
+  return remote;
 }
 
 void DebugLogsManager::ChangeDebugLogsState(bool should_debug_logs_be_enabled) {

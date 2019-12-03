@@ -7,7 +7,8 @@
 
 #include "base/macros.h"
 #include "chrome/browser/ui/webui/bluetooth_internals/bluetooth_internals.mojom.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 
 class PrefService;
 class PrefRegistrySimple;
@@ -44,15 +45,15 @@ class DebugLogsManager : public mojom::DebugLogsChangeHandler {
   // mojom::DebugLogsManager:
   void ChangeDebugLogsState(bool should_debug_logs_be_enabled) override;
 
-  // Generates an InterfacePtr bound to this object.
-  mojom::DebugLogsChangeHandlerPtr GenerateInterfacePtr();
+  // Generates an PendingRemote bound to this object.
+  mojo::PendingRemote<mojom::DebugLogsChangeHandler> GenerateRemote();
 
  private:
   bool AreDebugLogsSupported() const;
 
   const std::string primary_user_email_;
   PrefService* pref_service_ = nullptr;
-  mojo::BindingSet<mojom::DebugLogsChangeHandler> bindings_;
+  mojo::ReceiverSet<mojom::DebugLogsChangeHandler> receivers_;
 
   DISALLOW_COPY_AND_ASSIGN(DebugLogsManager);
 };
