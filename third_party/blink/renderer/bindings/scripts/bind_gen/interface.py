@@ -58,58 +58,8 @@ def bind_blink_api_arguments(code_node, cg_context):
         else:
             v8_value = "${{info}}[{}]".format(argument.index)
             code_node.register_code_symbol(
-                make_v8_to_blink_value(name, v8_value, argument.idl_type))
-
-
-def bind_blink_api_call(code_node, cg_context):
-    assert isinstance(code_node, SymbolScopeNode)
-    assert isinstance(cg_context, CodeGenContext)
-
-    property_implemented_as = (
-        cg_context.member_like.code_generator_info.property_implemented_as)
-    func_name = (property_implemented_as
-                 or name_style.api_func(cg_context.member_like.identifier))
-    if cg_context.attribute_set:
-        func_name = name_style.api_func("set", func_name)
-
-    if cg_context.member_like.is_static:
-        receiver_implemented_as = (
-            cg_context.member_like.code_generator_info.receiver_implemented_as)
-        class_name = (receiver_implemented_as
-                      or name_style.class_(cg_context.class_like.identifier))
-        func_name = "{}::{}".format(class_name, func_name)
-
-    arguments = []
-    ext_attrs = cg_context.member_like.extended_attributes
-
-    values = ext_attrs.values_of("CallWith") + (
-        ext_attrs.values_of("SetterCallWith") if cg_context.attribute_set else
-        ())
-    if "Isolate" in values:
-        arguments.append("${isolate}")
-    if "ScriptState" in values:
-        arguments.append("${script_state}")
-    if "ExecutionContext" in values:
-        arguments.append("${execution_context}")
-
-    if cg_context.attribute_get:
-        pass
-    elif cg_context.attribute_set:
-        arguments.append("${arg1_value}")
-    else:
-        for index, argument in enumerate(cg_context.function_like.arguments,
-                                         1):
-            name = name_style.arg_f("arg{}_{}", index, argument.identifier)
-            arguments.append(_format("${{{}}}", name))
-
-    if cg_context.is_return_by_argument:
-        arguments.append("${return_value}")
-
-    if cg_context.may_throw_exception:
-        arguments.append("${exception_state}")
-
-    text = _format("{_1}({_2})", _1=func_name, _2=", ".join(arguments))
-    code_node.add_template_var("blink_api_call", TextNode(text))
+                make_v8_to_blink_value(name, v8_value, argument.idl_type,
+                                       argument.default_value))
 
 
 def bind_callback_local_vars(code_node, cg_context):
@@ -141,9 +91,10 @@ def bind_callback_local_vars(code_node, cg_context):
                                "V8PerIsolateData::From(${isolate});")),
         S("property_name",
           "const char* const ${property_name} = \"${property.identifier}\";"),
-        S("receiver", "v8::Local<v8::Object> ${receiver} = ${info}.This();"),
+        S("v8_receiver",
+          "v8::Local<v8::Object> ${v8_receiver} = ${info}.This();"),
         S("receiver_context", ("v8::Local<v8::Context> ${receiver_context} = "
-                               "${receiver}->CreationContext();")),
+                               "${v8_receiver}->CreationContext();")),
         S("receiver_script_state",
           ("ScriptState* ${receiver_script_state} = "
            "ScriptState::From(${receiver_context});")),
@@ -158,7 +109,7 @@ def bind_callback_local_vars(code_node, cg_context):
     local_vars.append(S("creation_context", _format(pattern, _1=_1)))
 
     # creation_context_object
-    text = ("${receiver}"
+    text = ("${v8_receiver}"
             if is_receiver_context else "${current_context}->Global()")
     template_vars["creation_context_object"] = T(text)
 
@@ -197,30 +148,145 @@ def bind_callback_local_vars(code_node, cg_context):
     local_vars.append(
         S("exception_state", _format(pattern, _1=", ".join(_1), _2=_2)))
 
+    # blink_receiver
+    if cg_context.class_like.identifier == "Window":
+        # TODO(yukishiino): Window interface should be
+        # [ImplementedAs=LocalDOMWindow] instead of [ImplementedAs=DOMWindow],
+        # and [CrossOrigin] properties should be implemented specifically with
+        # DOMWindow class.  Then, we'll have less hacks.
+        if "CrossOrigin" in cg_context.member_like.extended_attributes:
+            text = ("DOMWindow* ${blink_receiver} = "
+                    "${v8_class}::ToBlinkUnsafe(${v8_receiver});")
+        else:
+            text = ("LocalDOMWindow* ${blink_receiver} = To<LocalDOMWindow>("
+                    "${v8_class}::ToBlinkUnsafe(${v8_receiver}));")
+    else:
+        pattern = ("{_1}* ${blink_receiver} = "
+                   "${v8_class}::ToBlinkUnsafe(${v8_receiver});")
+        _1 = blink_class_name(cg_context.class_like)
+        text = _format(pattern, _1=_1)
+    local_vars.append(S("blink_receiver", text))
+
     code_node.register_code_symbols(local_vars)
     code_node.add_template_vars(template_vars)
+
+
+def _make_blink_api_call(cg_context, num_of_args=None):
+    assert isinstance(cg_context, CodeGenContext)
+    assert num_of_args is None or isinstance(num_of_args, (int, long))
+
+    arguments = []
+    ext_attrs = cg_context.member_like.extended_attributes
+
+    values = ext_attrs.values_of("CallWith") + (
+        ext_attrs.values_of("SetterCallWith") if cg_context.attribute_set else
+        ())
+    if "Isolate" in values:
+        arguments.append("${isolate}")
+    if "ScriptState" in values:
+        arguments.append("${script_state}")
+    if "ExecutionContext" in values:
+        arguments.append("${execution_context}")
+
+    if cg_context.attribute_get:
+        pass
+    elif cg_context.attribute_set:
+        arguments.append("${arg1_value}")
+    else:
+        for index, argument in enumerate(cg_context.function_like.arguments):
+            if num_of_args is not None and index == num_of_args:
+                break
+            name = name_style.arg_f("arg{}_{}", index + 1, argument.identifier)
+            arguments.append(_format("${{{}}}", name))
+
+    if cg_context.is_return_by_argument:
+        arguments.append("${return_value}")
+
+    if cg_context.may_throw_exception:
+        arguments.append("${exception_state}")
+
+    code_generator_info = cg_context.member_like.code_generator_info
+
+    func_name = (code_generator_info.property_implemented_as
+                 or name_style.api_func(cg_context.member_like.identifier))
+    if cg_context.attribute_set:
+        func_name = name_style.api_func("set", func_name)
+
+    is_partial_or_mixin = (code_generator_info.defined_in_partial
+                           or code_generator_info.defined_in_mixin)
+    if cg_context.member_like.is_static or is_partial_or_mixin:
+        class_like = cg_context.member_like.owner_mixin or cg_context.class_like
+        class_name = (code_generator_info.receiver_implemented_as
+                      or name_style.class_(class_like.identifier))
+        func_designator = "{}::{}".format(class_name, func_name)
+        if not cg_context.member_like.is_static:
+            arguments.insert(0, "*${blink_receiver}")
+    else:
+        func_designator = _format("${blink_receiver}->{}", func_name)
+
+    return _format("{_1}({_2})", _1=func_designator, _2=", ".join(arguments))
 
 
 def bind_return_value(code_node, cg_context):
     assert isinstance(code_node, SymbolScopeNode)
     assert isinstance(cg_context, CodeGenContext)
 
+    T = TextNode
+
     def create_definition(symbol_node):
-        if cg_context.return_type.unwrap().is_void:
-            text = "${blink_api_call};"
-        elif cg_context.is_return_by_argument:
-            pattern = "{_1} ${return_value};\n${blink_api_call};"
-            _1 = blink_type_info(cg_context.return_type).value_t
-            text = _format(pattern, _1=_1)
+        api_calls = []
+        arguments = (cg_context.function_like.arguments
+                     if cg_context.function_like else [])
+        for index, arg in enumerate(arguments):
+            if arg.is_optional and not arg.default_value:
+                api_calls.append((index, _make_blink_api_call(
+                    cg_context, index)))
+        api_calls.append((None, _make_blink_api_call(cg_context)))
+
+        nodes = []
+        is_return_type_void = cg_context.return_type.unwrap().is_void
+        if not is_return_type_void:
+            return_type = blink_type_info(cg_context.return_type).value_t
+        if len(api_calls) == 1:
+            _, api_call = api_calls[0]
+            if is_return_type_void:
+                nodes.append(T(_format("{};", api_call)))
+            elif cg_context.is_return_by_argument:
+                nodes.append(T(_format("{} ${return_value};", return_type)))
+                nodes.append(T(_format("{};", api_call)))
+            else:
+                nodes.append(
+                    T(_format("const auto& ${return_value} = {};", api_call)))
         else:
-            text = "const auto& ${return_value} = ${blink_api_call};"
-        node = SymbolDefinitionNode(symbol_node, [TextNode(text)])
+            branches = SymbolScopeNode()
+            for index, api_call in api_calls:
+                if is_return_type_void or cg_context.is_return_by_argument:
+                    assignment = api_call
+                else:
+                    assignment = _format("${return_value} = {}", api_call)
+                if index is not None:
+                    pattern = ("if (${info}[{index}]->IsUndefined()) {{\n"
+                               "  {assignment};\n"
+                               "  break;\n"
+                               "}}")
+                else:
+                    pattern = "{assignment};"
+                text = _format(pattern, index=index, assignment=assignment)
+                branches.append(T(text))
+
+            if not is_return_type_void:
+                nodes.append(T(_format("{} ${return_value};", return_type)))
+            nodes.append(T("do {  // Dummy loop for use of 'break'"))
+            nodes.append(branches)
+            nodes.append(T("} while (false);"))
+
         if cg_context.may_throw_exception:
-            node.append(
+            nodes.append(
                 UnlikelyExitNode(
-                    cond=TextNode("${exception_state}.HadException()"),
-                    body=SymbolScopeNode([TextNode("return;")])))
-        return node
+                    cond=T("${exception_state}.HadException()"),
+                    body=SymbolScopeNode([T("return;")])))
+
+        return SymbolDefinitionNode(symbol_node, nodes)
 
     code_node.register_code_symbol(
         SymbolNode("return_value", definition_constructor=create_definition))
@@ -251,7 +317,6 @@ def bind_v8_set_return_value(code_node, cg_context):
 
 _callback_common_binders = (
     bind_blink_api_arguments,
-    bind_blink_api_call,
     bind_callback_local_vars,
     bind_return_value,
     bind_v8_set_return_value,
@@ -268,7 +333,8 @@ def make_check_receiver(cg_context):
         return SequenceNode([
             T("// [LenientThis]"),
             UnlikelyExitNode(
-                cond=T("!${v8_class}::HasInstance(${receiver}, ${isolate})"),
+                cond=T(
+                    "!${v8_class}::HasInstance(${v8_receiver}, ${isolate})"),
                 body=SymbolScopeNode([T("return;")])),
         ])
 
@@ -277,7 +343,8 @@ def make_check_receiver(cg_context):
             T("// Promise returning function: "
               "Convert a TypeError to a reject promise."),
             UnlikelyExitNode(
-                cond=T("!${v8_class}::HasInstance(${receiver}, ${isolate})"),
+                cond=T(
+                    "!${v8_class}::HasInstance(${v8_receiver}, ${isolate})"),
                 body=SymbolScopeNode([
                     T("${exception_state}.ThrowTypeError("
                       "\"Illegal invocation\");"),
@@ -723,8 +790,8 @@ auto v8_private_cached_attribute =
     V8PrivateProperty::GetSymbol(${isolate}, kPrivatePropertyCachedAttribute);
 if (!impl->""" + pred + """()) {
   v8::Local<v8::Value> v8_value;
-  if (v8_private_cached_attribute.GetOrUndefined(${receiver}).ToLocal(&v8_value)
-          && !v8_value->IsUndefined()) {
+  if (v8_private_cached_attribute.GetOrUndefined(${v8_receiver})
+          .ToLocal(&v8_value) && !v8_value->IsUndefined()) {
     V8SetReturnValue(${info}, v8_value);
     return;
   }
@@ -738,8 +805,8 @@ auto v8_private_save_same_object =
     V8PrivateProperty::GetSymbol(${isolate}, kPrivatePropertySaveSameObject);
 {
   v8::Local<v8::Value> v8_value;
-  if (v8_private_save_same_object.GetOrUndefined(${receiver}).ToLocal(&v8_value)
-          && !v8_value->IsUndefined()) {
+  if (v8_private_save_same_object.GetOrUndefined(${v8_receiver})
+          .ToLocal(&v8_value) && !v8_value->IsUndefined()) {
     V8SetReturnValue(${info}, v8_value);
     return;
   }
@@ -752,12 +819,12 @@ def make_return_value_cache_update_value(cg_context):
     if "CachedAttribute" in cg_context.member_like.extended_attributes:
         return TextNode("// [CachedAttribute]\n"
                         "v8_private_cached_attribute.Set"
-                        "(${receiver}, ${info}.GetReturnValue().Get());")
+                        "(${v8_receiver}, ${info}.GetReturnValue().Get());")
 
     if "SaveSameObject" in cg_context.member_like.extended_attributes:
         return TextNode("// [SaveSameObject]\n"
                         "v8_private_save_same_object.Set"
-                        "(${receiver}, ${info}.GetReturnValue().Get());")
+                        "(${v8_receiver}, ${info}.GetReturnValue().Get());")
 
 
 def make_runtime_call_timer_scope(cg_context):
