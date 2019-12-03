@@ -58,7 +58,7 @@ class VirtualConnectionRouter final : public CastSocket::Client {
                   std::unique_ptr<CastSocket> socket);
   void CloseSocket(uint32_t id);
 
-  Error SendMessage(VirtualConnection vconn, CastMessage&& message);
+  Error SendMessage(VirtualConnection virtual_conn, CastMessage&& message);
 
   // CastSocket::Client overrides.
   void OnError(CastSocket* socket, Error error) override;

@@ -6,7 +6,6 @@
 
 #include <string>
 
-#include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "platform/base/error.h"
 

@@ -34,13 +34,21 @@ class MockCastSocketClient final : public CastSocket::Client {
 };
 
 struct FakeCastSocket {
-  IPEndpoint local{{10, 0, 1, 7}, 1234};
-  IPEndpoint remote{{10, 0, 1, 9}, 4321};
-  std::unique_ptr<MockTlsConnection> moved_connection{
-      new MockTlsConnection(local, remote)};
-  MockTlsConnection* connection{moved_connection.get()};
+  FakeCastSocket()
+      : FakeCastSocket({{10, 0, 1, 7}, 1234}, {{10, 0, 1, 9}, 4321}) {}
+  FakeCastSocket(const IPEndpoint& local, const IPEndpoint& remote)
+      : local(local),
+        remote(remote),
+        moved_connection(new MockTlsConnection(local, remote)),
+        connection(moved_connection.get()),
+        socket(std::move(moved_connection), &mock_client, 1) {}
+
+  IPEndpoint local;
+  IPEndpoint remote;
+  std::unique_ptr<MockTlsConnection> moved_connection;
+  MockTlsConnection* connection;
   MockCastSocketClient mock_client;
-  CastSocket socket{std::move(moved_connection), &mock_client, 1};
+  CastSocket socket;
 };
 
 // Two FakeCastSockets that are piped together via their MockTlsConnection

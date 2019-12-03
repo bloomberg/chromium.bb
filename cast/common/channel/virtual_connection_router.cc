@@ -50,19 +50,19 @@ void VirtualConnectionRouter::CloseSocket(uint32_t id) {
   }
 }
 
-Error VirtualConnectionRouter::SendMessage(VirtualConnection vconn,
+Error VirtualConnectionRouter::SendMessage(VirtualConnection virtual_conn,
                                            CastMessage&& message) {
   // TODO(btolsch): Check for broadcast message.
   if (!IsTransportNamespace(message.namespace_()) &&
-      !vc_manager_->GetConnectionData(vconn)) {
+      !vc_manager_->GetConnectionData(virtual_conn)) {
     return Error::Code::kUnknownError;
   }
-  auto it = sockets_.find(vconn.socket_id);
+  auto it = sockets_.find(virtual_conn.socket_id);
   if (it == sockets_.end()) {
     return Error::Code::kUnknownError;
   }
-  message.set_source_id(std::move(vconn.local_id));
-  message.set_destination_id(std::move(vconn.peer_id));
+  message.set_source_id(std::move(virtual_conn.local_id));
+  message.set_destination_id(std::move(virtual_conn.peer_id));
   return it->second.socket->SendMessage(message);
 }
 
@@ -80,10 +80,10 @@ void VirtualConnectionRouter::OnError(CastSocket* socket, Error error) {
 void VirtualConnectionRouter::OnMessage(CastSocket* socket,
                                         CastMessage message) {
   // TODO(btolsch): Check for broadcast message.
-  VirtualConnection vconn{message.destination_id(), message.source_id(),
-                          socket->socket_id()};
+  VirtualConnection virtual_conn{message.destination_id(), message.source_id(),
+                                 socket->socket_id()};
   if (!IsTransportNamespace(message.namespace_()) &&
-      !vc_manager_->GetConnectionData(vconn)) {
+      !vc_manager_->GetConnectionData(virtual_conn)) {
     return;
   }
   const std::string& local_id = message.destination_id();

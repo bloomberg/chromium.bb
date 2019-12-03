@@ -4,7 +4,6 @@
 
 #include "util/json/json_writer.h"
 
-#include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "platform/base/error.h"
 

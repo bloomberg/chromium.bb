@@ -5,6 +5,7 @@
 #ifndef CAST_COMMON_CHANNEL_CAST_SOCKET_H_
 #define CAST_COMMON_CHANNEL_CAST_SOCKET_H_
 
+#include <array>
 #include <vector>
 
 #include "platform/api/tls_connection.h"
@@ -46,6 +47,8 @@ class CastSocket : public TlsConnection::Client {
   Error SendMessage(const CastMessage& message);
 
   void SetClient(Client* client);
+
+  std::array<uint8_t, 2> GetSanitizedIpAddress();
 
   uint32_t socket_id() const { return socket_id_; }
 

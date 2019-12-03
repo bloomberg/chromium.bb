@@ -32,9 +32,14 @@ source_set("channel") {
   sources = [
     "channel/cast_socket.cc",
     "channel/cast_socket.h",
+    "channel/connection_namespace_handler.cc",
+    "channel/connection_namespace_handler.h",
     "channel/message_framer.cc",
     "channel/message_framer.h",
+    "channel/message_util.cc",
     "channel/message_util.h",
+    "channel/namespace_router.cc",
+    "channel/namespace_router.h",
     "channel/virtual_connection.h",
     "channel/virtual_connection_manager.cc",
     "channel/virtual_connection_manager.h",
@@ -43,7 +48,6 @@ source_set("channel") {
   ]
 
   deps = [
-    "../../util",
     "certificate/proto:certificate_proto",
     "channel/proto:channel_proto",
   ]
@@ -51,6 +55,7 @@ source_set("channel") {
   public_deps = [
     "../../platform",
     "../../third_party/abseil",
+    "../../util",
   ]
 }
 
@@ -81,7 +86,9 @@ source_set("unittests") {
     "certificate/cast_cert_validator_unittest.cc",
     "certificate/cast_crl_unittest.cc",
     "channel/cast_socket_unittest.cc",
+    "channel/connection_namespace_handler_unittest.cc",
     "channel/message_framer_unittest.cc",
+    "channel/namespace_router_unittest.cc",
     "channel/virtual_connection_manager_unittest.cc",
     "channel/virtual_connection_router_unittest.cc",
   ]

@@ -9,6 +9,7 @@
 
 #include "absl/strings/string_view.h"
 #include "json/reader.h"
+#include "platform/base/error.h"
 
 namespace Json {
 class Value;

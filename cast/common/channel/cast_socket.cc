@@ -60,6 +60,22 @@ void CastSocket::SetClient(Client* client) {
   client_ = client;
 }
 
+std::array<uint8_t, 2> CastSocket::GetSanitizedIpAddress() {
+  openscreen::IPEndpoint remote = connection_->GetRemoteEndpoint();
+  std::array<uint8_t, 2> result;
+  uint8_t bytes[16];
+  if (remote.address.IsV4()) {
+    remote.address.CopyToV4(bytes);
+    result[0] = bytes[2];
+    result[1] = bytes[3];
+  } else {
+    remote.address.CopyToV6(bytes);
+    result[0] = bytes[14];
+    result[1] = bytes[15];
+  }
+  return result;
+}
+
 void CastSocket::OnWriteBlocked(TlsConnection* connection) {
   if (state_ == State::kOpen) {
     state_ = State::kBlocked;
