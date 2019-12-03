@@ -2792,14 +2792,6 @@ public class PaymentRequestImpl
                 methodName, stringifiedDetails, payerData);
     }
 
-    /**
-     * Called after retrieving instrument details.
-     */
-    @Override
-    public void onInstrumentDetailsReady(String methodName, String stringifiedDetails) {
-        onInstrumentDetailsReady(methodName, stringifiedDetails, new PayerData());
-    }
-
     @Override
     public void onPaymentResponseReady(PaymentResponse response) {
         if (mSkipToGPayHelper != null && !mSkipToGPayHelper.patchPaymentResponse(response)) {
