@@ -2233,20 +2233,4 @@ TEST_F(BluetoothTest, DISABLED_GattConnectedNameChange) {
   EXPECT_EQ(base::UTF8ToUTF16(kTestDeviceName), device->GetNameForDisplay());
 }
 
-#if defined(OS_WIN)
-// WinRT sometimes calls OnConnectionStatusChanged when the status is
-// initialized and not when changed.
-TEST_P(BluetoothTestWinrtOnly, FalseStatusChangedTest) {
-  InitWithFakeAdapter();
-  StartLowEnergyDiscoverySession();
-  BluetoothDevice* device = SimulateLowEnergyDevice(3);
-  EXPECT_FALSE(device->IsConnected());
-  device->CreateGattConnection(GetGattConnectionCallback(Call::NOT_EXPECTED),
-                               GetConnectErrorCallback(Call::NOT_EXPECTED));
-  SimulateStatusChangeToDisconnect(device);
-
-  base::RunLoop().RunUntilIdle();
-}
-#endif
-
 }  // namespace device
