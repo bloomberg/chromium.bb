@@ -173,6 +173,13 @@ void AssistantProactiveSuggestionsController::
 
 void AssistantProactiveSuggestionsController::
     OnProactiveSuggestionsViewHoverChanged(bool is_hovering) {
+  // If no timeout threshold is specified, we don't need to handle hover change
+  // events as such events are only used to pause/resume timeout.
+  if (chromeos::assistant::features::GetProactiveSuggestionsTimeoutThreshold()
+          .is_zero()) {
+    return;
+  }
+
   // Hover changed events may occur during the proactive suggestion view's
   // closing sequence. When this occurs, no further action is necessary.
   if (!view_ || !view_->GetWidget() || view_->GetWidget()->IsClosed())
@@ -320,14 +327,18 @@ void AssistantProactiveSuggestionsController::MaybeShowUi() {
         view_->proactive_suggestions()->hash());
   }
 
-  // The proactive suggestions view will automatically be closed if the user
-  // doesn't interact with it within a fixed time interval.
-  auto_close_timer_.Start(
-      FROM_HERE,
-      chromeos::assistant::features::GetProactiveSuggestionsTimeoutThreshold(),
-      base::BindRepeating(&AssistantProactiveSuggestionsController::CloseUi,
-                          weak_factory_.GetWeakPtr(),
-                          ProactiveSuggestionsShowResult::kCloseByTimeout));
+  // When a |timeout_threshold| is specified, the proactive suggestions view
+  // will automatically be closed if the user doesn't interact with it within a
+  // fixed time interval.
+  const base::TimeDelta timeout_threshold =
+      chromeos::assistant::features::GetProactiveSuggestionsTimeoutThreshold();
+  if (!timeout_threshold.is_zero()) {
+    auto_close_timer_.Start(
+        FROM_HERE, timeout_threshold,
+        base::BindRepeating(&AssistantProactiveSuggestionsController::CloseUi,
+                            weak_factory_.GetWeakPtr(),
+                            ProactiveSuggestionsShowResult::kCloseByTimeout));
+  }
 }
 
 void AssistantProactiveSuggestionsController::CloseUi(
