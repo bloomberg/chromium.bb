@@ -989,6 +989,8 @@ jumbo_static_library("browser") {
     "optimization_guide/optimization_guide_session_statistic.h",
     "optimization_guide/optimization_guide_top_host_provider.cc",
     "optimization_guide/optimization_guide_top_host_provider.h",
+    "optimization_guide/optimization_guide_util.cc",
+    "optimization_guide/optimization_guide_util.h",
     "optimization_guide/optimization_guide_web_contents_observer.cc",
     "optimization_guide/optimization_guide_web_contents_observer.h",
     "optimization_guide/prediction/decision_tree_prediction_model.cc",
