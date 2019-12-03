@@ -1471,13 +1471,13 @@ deps = {
 
   # Display server protocol for Linux.
   'src/third_party/wayland/src': {
-      'url': Var('chromium_git') + '/external/anongit.freedesktop.org/git/wayland/wayland.git' + '@' + '1361da9cd5a719b32d978485a29920429a31ed25',
+      'url': Var('chromium_git') + '/external/anongit.freedesktop.org/git/wayland/wayland.git' + '@' + 'e091839dd08354289e501a47219e0c7a6472dff3',
       'condition': 'checkout_linux',
   },
 
   # Wayland protocols that add functionality not available in the core protocol.
   'src/third_party/wayland-protocols/src': {
-      'url': Var('chromium_git') + '/external/anongit.freedesktop.org/git/wayland/wayland-protocols.git' + '@' + '57423eac60cc234ebfad15f394488a47f69afe16',
+      'url': Var('chromium_git') + '/external/anongit.freedesktop.org/git/wayland/wayland-protocols.git' + '@' + '630fb089103a1d0eab1a684b853ab5c4d2b252aa',
       'condition': 'checkout_linux',
   },
 
