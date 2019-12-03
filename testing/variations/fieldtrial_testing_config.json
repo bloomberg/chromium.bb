@@ -1360,6 +1360,28 @@
             ]
         }
     ],
+    "BlinkSchedulerVeryHighPriorityForCompositingExperiments": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "VeryHighPriorityForCompositingAfterDelay100",
+                    "params": {
+                        "CompositingDelayLength": "100"
+                    },
+                    "enable_features": [
+                        "BlinkSchedulerVeryHighPriorityForCompositingAfterDelay"
+                    ]
+                }
+            ]
+        }
+    ],
     "BlockPromptsIfIgnoredOften": [
         {
             "platforms": [
