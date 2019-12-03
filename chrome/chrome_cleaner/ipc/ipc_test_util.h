@@ -14,9 +14,9 @@
 #include "base/process/launch.h"
 #include "base/process/process.h"
 #include "base/time/time.h"
+#include "base/win/scoped_handle.h"
 #include "chrome/chrome_cleaner/ipc/chrome_prompt_ipc.h"
 #include "chrome/chrome_cleaner/ipc/mojo_task_runner.h"
-#include "chrome/chrome_cleaner/logging/scoped_logging.h"
 #include "mojo/public/cpp/platform/platform_channel.h"
 #include "mojo/public/cpp/system/invitation.h"
 #include "mojo/public/cpp/system/message_pipe.h"
@@ -70,7 +70,8 @@ class ParentProcess : public base::RefCountedThreadSafe<ParentProcess> {
   // as in the sandbox. Subclasses should call CreateMojoPipe before the
   // subprocess is spawned and ConnectMojoPipe afterward.
   virtual bool PrepareAndLaunchTestChildProcess(
-      const std::string& child_main_function);
+      const std::string& child_main_function,
+      base::win::ScopedHandle child_stdout_write_handle);
 
   scoped_refptr<MojoTaskRunner> mojo_task_runner();
 
@@ -95,7 +96,8 @@ class SandboxedParentProcess : public ParentProcess {
   ~SandboxedParentProcess() override;
 
   bool PrepareAndLaunchTestChildProcess(
-      const std::string& child_main_function) override;
+      const std::string& child_main_function,
+      base::win::ScopedHandle child_stdout_write_handle) override;
 };
 
 class ChildProcess : public base::RefCountedThreadSafe<ChildProcess> {
@@ -120,7 +122,6 @@ class ChildProcess : public base::RefCountedThreadSafe<ChildProcess> {
 
  private:
   base::CommandLine* command_line_;
-  std::unique_ptr<ScopedLogging> scopped_logging_;
 
   // This will be true iff the process is running in a sandbox and
   // TargetServices was initialized successfully.
@@ -143,9 +144,7 @@ class ChromePromptIPCTestErrorHandler : public ChromePromptIPC::ErrorHandler {
 };
 
 namespace internal {
-base::FilePath::StringPieceType GetLogPathSuffix();
-bool DeleteChildProcessLogs();
-void PrintChildProcessLogs();
+void PrintChildProcessLogs(const base::FilePath& log_file);
 }  // namespace internal
 
 }  // namespace chrome_cleaner

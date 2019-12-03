@@ -5,6 +5,7 @@
 #include <windows.h>
 
 #include "base/command_line.h"
+#include "base/files/file_util.h"
 #include "base/process/process.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
@@ -39,8 +40,9 @@ constexpr char kExpectedPromptResultSwitch[] = "expected-prompt-result";
 constexpr char kExpectedChromeDisconnectPointSwitch[] =
     "expected-parent-disconnected";
 
-const base::char16 kInvalidUTF16String[] = {0xDC00, 0xD800, 0xD800, 0xDFFF,
-                                            0xDFFF, 0xDBFF, 0};
+constexpr base::char16 kLogSuffix[] = L"prompt-ipc-test";
+constexpr base::char16 kInvalidUTF16String[] = {0xDC00, 0xD800, 0xD800, 0xDFFF,
+                                                0xDFFF, 0xDBFF, 0};
 const base::FilePath kInvalidFilePath(kInvalidUTF16String);
 const base::FilePath kNonASCIIFilePath(L"ééààçç");
 const base::string16 kInvalidRegistryKey(kInvalidUTF16String);
@@ -394,8 +396,7 @@ class MockChrome {
 class ChildProcess {
  public:
   ChildProcess()
-      : scopped_logging_(
-            std::make_unique<ScopedLogging>(internal::GetLogPathSuffix())) {
+      : scopped_logging_(std::make_unique<ScopedLogging>(kLogSuffix)) {
     mock_chrome_ = std::make_unique<MockChrome>(
         ExtractHandleFromCommandLine(chrome_cleaner::kChromeReadHandleSwitch),
         ExtractHandleFromCommandLine(chrome_cleaner::kChromeWriteHandleSwitch));
@@ -610,7 +611,10 @@ class ParentProcess {
   }
 
   void Run() {
-    ASSERT_TRUE(internal::DeleteChildProcessLogs());
+    // Delete the child process log file if existing.
+    const base::FilePath log_path = ScopedLogging::GetLogFilePath(kLogSuffix);
+    ASSERT_TRUE(base::DeleteFile(log_path, false))
+        << "Can't delete log file from previous run: " << log_path.value();
 
     // Pass the command to the child process and launch the child process.
     base::Process child_process = base::SpawnMultiProcessTestChild(
@@ -679,7 +683,8 @@ class ParentProcess {
     EXPECT_EQ(expected_exit_code, rv);
 
     if (!success || rv != 0) {
-      internal::PrintChildProcessLogs();
+      internal::PrintChildProcessLogs(
+          ScopedLogging::GetLogFilePath(kLogSuffix));
     }
   }
 
