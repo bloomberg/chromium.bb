@@ -27145,6 +27145,30 @@ Called by update_net_error_codes.py.-->
   <int value="4" label="Name string is invalid unicode"/>
 </enum>
 
+<enum name="ForbiddenResponseBody">
+  <int value="0" label="Body missing"/>
+  <int value="1" label="Unknown body"/>
+  <int value="2" label="Sender not authenticated"/>
+  <int value="3" label="Invalid public key encoding"/>
+  <int value="4" label="Invalid public key length"/>
+  <int value="5" label="Invalid public key format"/>
+  <int value="6" label="Invalid public key curve"/>
+  <int value="7" label="Invalid JWT"/>
+  <int value="8" label="Invalid aud claim"/>
+  <int value="9" label="Aud claim missing origin"/>
+  <int value="10" label="Exp cliam period too long"/>
+  <int value="11" label="Exp cliam expired"/>
+  <int value="12" label="Exp claim missing"/>
+  <int value="13" label="P256 ECDSA missing"/>
+  <int value="14" label="K missing"/>
+  <int value="15" label="Base64 P256 ECDSA"/>
+  <int value="16" label="Base64 K"/>
+  <int value="17" label="Empty P256 ECDSA"/>
+  <int value="18" label="Empty K"/>
+  <int value="19" label="Invalid P256 ECDSA"/>
+  <int value="20" label="Invalid K"/>
+</enum>
+
 <enum name="FormDataDeserializationStatus">
   <int value="0" label="Login database success"/>
   <int value="1" label="Login database failure"/>
