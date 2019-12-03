@@ -223,8 +223,6 @@ void TabManager::Start() {
                            weak_ptr_factory_.GetWeakPtr())));
   }
 
-  LocalSiteCharacteristicsWebContentsObserver::MaybeCreateGraphObserver();
-
   g_browser_process->resource_coordinator_parts()
       ->tab_lifecycle_unit_source()
       ->Start();

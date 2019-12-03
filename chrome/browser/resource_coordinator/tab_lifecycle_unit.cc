@@ -190,13 +190,10 @@ struct FeatureUsageEntry {
 
 void CheckFeatureUsage(const SiteCharacteristicsDataReader* reader,
                        DecisionDetails* details) {
-  // TODO(sebmarchand): Remove the notification heuristic from this list.
   const FeatureUsageEntry features[] = {
       {reader->UsesAudioInBackground(), DecisionFailureReason::HEURISTIC_AUDIO},
       {reader->UpdatesFaviconInBackground(),
        DecisionFailureReason::HEURISTIC_FAVICON},
-      {reader->UsesNotificationsInBackground(),
-       DecisionFailureReason::HEURISTIC_NOTIFICATIONS},
       {reader->UpdatesTitleInBackground(),
        DecisionFailureReason::HEURISTIC_TITLE}};
 
