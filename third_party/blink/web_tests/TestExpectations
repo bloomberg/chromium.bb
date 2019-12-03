@@ -2728,6 +2728,9 @@ crbug.com/785230 external/wpt/css/css-text-decor/text-decoration-thickness-linet
 crbug.com/785230 external/wpt/css/css-text-decor/text-decoration-thickness-underline-001.html [ Failure ]
 crbug.com/785230 external/wpt/css/css-text-decor/text-decoration-thickness-vertical-002.html [ Failure ]
 
+# Implement support for percentage values in scale
+crbug.com/1029997 external/wpt/css/css-transforms/transform-scale-percent-001.html [ Failure ]
+
 crbug.com/1002514 external/wpt/web-share/share-sharePromise-internal-slot.https.html [ Failure Crash ]
 
 crbug.com/1012627 [ Win7 ] external/wpt/css/css-text/line-breaking/line-breaking-021.html [ Failure ]
@@ -2736,9 +2739,6 @@ crbug.com/1029514 external/wpt/html/semantics/embedded-content/the-video-element
 
 # ====== New tests from wpt-importer added here ======
 crbug.com/626703 [ Win7 ] external/wpt/pointerevents/pointerevent_touch-action-pan-left-css_touch.html [ Timeout ]
-crbug.com/626703 [ Linux ] external/wpt/css/css-transforms/transform-scale-percent-001.html [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/css/css-transforms/transform-scale-percent-001.html [ Failure ]
-crbug.com/626703 [ Win ] external/wpt/css/css-transforms/transform-scale-percent-001.html [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/css/css-text/word-boundary/word-boundary-124.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/css-text/word-boundary/word-boundary-124.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/css-text/word-boundary/word-boundary-124.html [ Failure ]
