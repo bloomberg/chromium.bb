@@ -477,6 +477,8 @@ def chromiumos_builder(*, name, **kwargs):
 
 chromiumos_builder(
     name = 'chromeos-amd64-generic-dbg',
+    goma_backend = goma.backend.RBE_PROD,
+    goma_enable_ats = True,
     tryjob = tryjob(
         location_regexp = [
             '.+/[+]/content/gpu/.+',
@@ -487,24 +489,34 @@ chromiumos_builder(
 
 chromiumos_builder(
     name = 'chromeos-amd64-generic-cfi-thin-lto-rel',
+    goma_backend = goma.backend.RBE_PROD,
+    goma_enable_ats = True,
 )
 
 chromiumos_builder(
     name = 'chromeos-amd64-generic-rel',
+    goma_backend = goma.backend.RBE_PROD,
+    goma_enable_ats = True,
     tryjob = tryjob(),
 )
 
 chromiumos_builder(
     name = 'chromeos-arm-generic-dbg',
+    goma_backend = goma.backend.RBE_PROD,
+    goma_enable_ats = True,
 )
 
 chromiumos_builder(
     name = 'chromeos-arm-generic-rel',
+    goma_backend = goma.backend.RBE_PROD,
+    goma_enable_ats = True,
     tryjob = tryjob(),
 )
 
 chromiumos_builder(
     name = 'chromeos-kevin-compile-rel',
+    goma_backend = goma.backend.RBE_PROD,
+    goma_enable_ats = True,
     tryjob = tryjob(
         location_regexp = [
             '.+/[+]/chromeos/CHROMEOS_LKGM',
@@ -514,6 +526,8 @@ chromiumos_builder(
 
 chromiumos_builder(
     name = 'chromeos-kevin-rel',
+    goma_backend = goma.backend.RBE_PROD,
+    goma_enable_ats = True,
     tryjob = tryjob(
         location_regexp = [
             '.+/[+]/build/chromeos/.+',

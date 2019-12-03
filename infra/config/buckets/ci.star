@@ -444,30 +444,44 @@ chromiumos_builder(
 
 chromiumos_builder(
     name = 'chromeos-amd64-generic-asan-rel',
+    goma_backend = goma.backend.RBE_PROD,
+    goma_enable_ats = True,
 )
 
 chromiumos_builder(
     name = 'chromeos-amd64-generic-cfi-thin-lto-rel',
+    goma_backend = goma.backend.RBE_PROD,
+    goma_enable_ats = True,
 )
 
 chromiumos_builder(
     name = 'chromeos-amd64-generic-dbg',
+    goma_backend = goma.backend.RBE_PROD,
+    goma_enable_ats = True,
 )
 
 chromiumos_builder(
     name = 'chromeos-amd64-generic-rel',
+    goma_backend = goma.backend.RBE_PROD,
+    goma_enable_ats = True,
 )
 
 chromiumos_builder(
     name = 'chromeos-arm-generic-dbg',
+    goma_backend = goma.backend.RBE_PROD,
+    goma_enable_ats = True,
 )
 
 chromiumos_builder(
     name = 'chromeos-arm-generic-rel',
+    goma_backend = goma.backend.RBE_PROD,
+    goma_enable_ats = True,
 )
 
 chromiumos_builder(
     name = 'chromeos-kevin-rel',
+    goma_backend = goma.backend.RBE_PROD,
+    goma_enable_ats = True,
 )
 
 chromiumos_builder(
@@ -1090,10 +1104,14 @@ fyi_builder(
 
 fyi_builder(
     name = 'chromeos-amd64-generic-rel-vm-tests',
+    goma_backend = goma.backend.RBE_PROD,
+    goma_enable_ats = True,
 )
 
 fyi_builder(
     name = 'chromeos-kevin-rel-hw-tests',
+    goma_backend = goma.backend.RBE_PROD,
+    goma_enable_ats = True,
 )
 
 fyi_builder(
