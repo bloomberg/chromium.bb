@@ -61,7 +61,6 @@
 #include "chrome/browser/font_family_cache.h"
 #include "chrome/browser/gpu/chrome_browser_main_extra_parts_gpu.h"
 #include "chrome/browser/hid/chrome_hid_delegate.h"
-#include "chrome/browser/language/translate_frame_binder.h"
 #include "chrome/browser/lifetime/browser_shutdown.h"
 #include "chrome/browser/lookalikes/lookalike_url_navigation_throttle.h"
 #include "chrome/browser/media/router/media_router_feature.h"
@@ -4106,10 +4105,6 @@ void ChromeContentBrowserClient::InitWebContextInterfaces() {
   worker_interfaces_parameterized_ =
       std::make_unique<service_manager::BinderRegistryWithArgs<
           content::RenderProcessHost*, const url::Origin&>>();
-
-  // Register mojo ContentTranslateDriver interface only for main frame.
-  frame_interfaces_parameterized_->AddInterface(
-      base::BindRepeating(&language::BindContentTranslateDriver));
 }
 
 void ChromeContentBrowserClient::InitNetworkContextsParentDirectory() {
