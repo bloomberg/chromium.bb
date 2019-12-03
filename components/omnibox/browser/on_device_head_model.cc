@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/omnibox/browser/on_device_head_serving.h"
+#include "components/omnibox/browser/on_device_head_model.h"
 
 #include <algorithm>
 
@@ -27,63 +27,63 @@ uint32_t ConvertByteArrayToInt(char byte_array[], uint32_t num_bytes) {
 }  // namespace
 
 // static
-std::unique_ptr<OnDeviceHeadServing> OnDeviceHeadServing::Create(
+std::unique_ptr<OnDeviceHeadModel> OnDeviceHeadModel::Create(
     const std::string& model_filename,
     int max_num_matches_to_return) {
-  std::unique_ptr<OnDeviceHeadServing> serving = base::WrapUnique(
-      new OnDeviceHeadServing(model_filename, max_num_matches_to_return));
+  std::unique_ptr<OnDeviceHeadModel> model = base::WrapUnique(
+      new OnDeviceHeadModel(model_filename, max_num_matches_to_return));
 
   // TODO(crbug.com/925072): Add DCHECK and code to report failures to UMA
   // histogram.
-  if (!serving->OpenModelFileStream(0)) {
-    DVLOG(1) << "On Device Head Serving: cannot create on device head "
-             << "serving instance because model file cannot be opened";
+  if (!model->OpenModelFileStream(0)) {
+    DVLOG(1) << "On Device Head model: cannot create on device head "
+             << "model instance because model file cannot be opened";
     return nullptr;
   }
 
   char sizes[2];
-  if (!serving->ReadNextNumBytes(2, sizes)) {
-    DVLOG(1) << "On Device Head Serving: failed to read size information "
+  if (!model->ReadNextNumBytes(2, sizes)) {
+    DVLOG(1) << "On Device Head model: failed to read size information "
              << "in the first 2 bytes of the model file: " << model_filename;
-    serving->MaybeCloseModelFileStream();
+    model->MaybeCloseModelFileStream();
     return nullptr;
   }
-  serving->MaybeCloseModelFileStream();
+  model->MaybeCloseModelFileStream();
 
-  serving->address_size_ = sizes[0];
-  serving->score_size_ = sizes[1];
-  if (!serving->AreSizesValid()) {
+  model->address_size_ = sizes[0];
+  model->score_size_ = sizes[1];
+  if (!model->AreSizesValid()) {
     return nullptr;
   }
 
-  return serving;
+  return model;
 }
 
-OnDeviceHeadServing::OnDeviceHeadServing(const std::string& model_filename,
-                                         uint32_t max_num_matches_to_return)
+OnDeviceHeadModel::OnDeviceHeadModel(const std::string& model_filename,
+                                     uint32_t max_num_matches_to_return)
     : model_filename_(model_filename),
       max_num_matches_to_return_(max_num_matches_to_return) {}
 
-OnDeviceHeadServing::~OnDeviceHeadServing() {
+OnDeviceHeadModel::~OnDeviceHeadModel() {
   MaybeCloseModelFileStream();
 }
 
-bool OnDeviceHeadServing::AreSizesValid() {
+bool OnDeviceHeadModel::AreSizesValid() {
   bool is_score_size_valid = (score_size_ >= 2 && score_size_ <= 4);
   bool is_address_size_valid = (address_size_ >= 3 && address_size_ <= 4);
   if (!is_score_size_valid) {
-    DVLOG(1) << "On Device Head Serving: score size [" << score_size_
+    DVLOG(1) << "On Device Head model: score size [" << score_size_
              << "] is not valid; valid size should 2, 3 or 4 bytes.";
   }
   if (!is_address_size_valid) {
-    DVLOG(1) << "On Device Head Serving: address size [" << address_size_
+    DVLOG(1) << "On Device Head model: address size [" << address_size_
              << "] is not valid; valid size should be 3 or 4 bytes.";
   }
   return is_score_size_valid && is_address_size_valid;
 }
 
 std::vector<std::pair<std::string, uint32_t>>
-OnDeviceHeadServing::GetSuggestionsForPrefix(const std::string& prefix) {
+OnDeviceHeadModel::GetSuggestionsForPrefix(const std::string& prefix) {
   std::vector<std::pair<std::string, uint32_t>> suggestions;
   if (prefix.empty()) {
     return suggestions;
@@ -99,7 +99,7 @@ OnDeviceHeadServing::GetSuggestionsForPrefix(const std::string& prefix) {
   return suggestions;
 }
 
-std::vector<std::pair<std::string, uint32_t>> OnDeviceHeadServing::DoSearch(
+std::vector<std::pair<std::string, uint32_t>> OnDeviceHeadModel::DoSearch(
     const MatchCandidate& start_match) {
   std::vector<std::pair<std::string, uint32_t>> suggestions;
 
@@ -147,10 +147,9 @@ std::vector<std::pair<std::string, uint32_t>> OnDeviceHeadServing::DoSearch(
   return suggestions;
 }
 
-void OnDeviceHeadServing::InsertCandidateToQueue(
-    const MatchCandidate& candidate,
-    CandidateQueue* leaf_queue,
-    CandidateQueue* non_leaf_queue) {
+void OnDeviceHeadModel::InsertCandidateToQueue(const MatchCandidate& candidate,
+                                               CandidateQueue* leaf_queue,
+                                               CandidateQueue* non_leaf_queue) {
   CandidateQueue* queue_ptr =
       candidate.is_complete_suggestion ? leaf_queue : non_leaf_queue;
 
@@ -164,7 +163,7 @@ void OnDeviceHeadServing::InsertCandidateToQueue(
   }
 }
 
-uint32_t OnDeviceHeadServing::GetMinScoreFromQueues(
+uint32_t OnDeviceHeadModel::GetMinScoreFromQueues(
     const CandidateQueue& queue_1,
     const CandidateQueue& queue_2) {
   uint32_t min_score = 0x1 << (score_size_ * 8 - 1);
@@ -177,8 +176,8 @@ uint32_t OnDeviceHeadServing::GetMinScoreFromQueues(
   return min_score;
 }
 
-bool OnDeviceHeadServing::FindStartNode(const std::string& prefix,
-                                        MatchCandidate* start_match) {
+bool OnDeviceHeadModel::FindStartNode(const std::string& prefix,
+                                      MatchCandidate* start_match) {
   if (start_match == nullptr) {
     return false;
   }
@@ -219,11 +218,11 @@ bool OnDeviceHeadServing::FindStartNode(const std::string& prefix,
   return start_match->text.size() >= prefix.size();
 }
 
-uint32_t OnDeviceHeadServing::ReadMaxScoreAsRoot(uint32_t address,
-                                                 MatchCandidate* leaf_candidate,
-                                                 bool* is_successful) {
+uint32_t OnDeviceHeadModel::ReadMaxScoreAsRoot(uint32_t address,
+                                               MatchCandidate* leaf_candidate,
+                                               bool* is_successful) {
   if (is_successful == nullptr) {
-    DVLOG(1) << "On Device Head Serving: a boolean var is_successful "
+    DVLOG(1) << "On Device Head model: a boolean var is_successful "
              << "is required when calling function ReadMaxScoreAsRoot";
     return 0;
   }
@@ -250,7 +249,7 @@ uint32_t OnDeviceHeadServing::ReadMaxScoreAsRoot(uint32_t address,
   return max_score;
 }
 
-bool OnDeviceHeadServing::ReadNextChild(MatchCandidate* candidate) {
+bool OnDeviceHeadModel::ReadNextChild(MatchCandidate* candidate) {
   if (candidate == nullptr) {
     return false;
   }
@@ -318,8 +317,8 @@ bool OnDeviceHeadServing::ReadNextChild(MatchCandidate* candidate) {
   return is_successful;
 }
 
-std::vector<OnDeviceHeadServing::MatchCandidate>
-OnDeviceHeadServing::ReadTreeNode(const MatchCandidate& current) {
+std::vector<OnDeviceHeadModel::MatchCandidate> OnDeviceHeadModel::ReadTreeNode(
+    const MatchCandidate& current) {
   std::vector<MatchCandidate> candidates;
   // The current candidate passed in is a leaf node and we shall stop here.
   if (current.is_complete_suggestion) {
@@ -333,7 +332,7 @@ OnDeviceHeadServing::ReadTreeNode(const MatchCandidate& current) {
   uint32_t max_score_as_root =
       ReadMaxScoreAsRoot(current.address, &leaf_candidate, &is_successful);
   if (!is_successful) {
-    DVLOG(1) << "On Device Head Serving: read max_score_as_root failed at "
+    DVLOG(1) << "On Device Head model: read max_score_as_root failed at "
              << "address [" << current.address << "]";
     return candidates;
   }
@@ -358,19 +357,19 @@ OnDeviceHeadServing::ReadTreeNode(const MatchCandidate& current) {
   return candidates;
 }
 
-bool OnDeviceHeadServing::ReadNextNumBytes(uint32_t num_bytes, char* buf) {
+bool OnDeviceHeadModel::ReadNextNumBytes(uint32_t num_bytes, char* buf) {
   uint32_t address = model_filestream_.tellg();
   model_filestream_.read(buf, num_bytes);
   if (model_filestream_.fail()) {
-    DVLOG(1) << "On Device Head Serving: ifstream read error at address ["
+    DVLOG(1) << "On Device Head model: ifstream read error at address ["
              << address << "], when trying to read [" << num_bytes << "] bytes";
     return false;
   }
   return true;
 }
 
-uint32_t OnDeviceHeadServing::ReadNextNumBytesAsInt(uint32_t num_bytes,
-                                                    bool* is_successful) {
+uint32_t OnDeviceHeadModel::ReadNextNumBytesAsInt(uint32_t num_bytes,
+                                                  bool* is_successful) {
   char* buf = new char[num_bytes];
   *is_successful = ReadNextNumBytes(num_bytes, buf);
   if (!*is_successful) {
@@ -384,7 +383,7 @@ uint32_t OnDeviceHeadServing::ReadNextNumBytesAsInt(uint32_t num_bytes,
   return result;
 }
 
-bool OnDeviceHeadServing::OpenModelFileStream(const uint32_t start_address) {
+bool OnDeviceHeadModel::OpenModelFileStream(const uint32_t start_address) {
   // First close the file if it's still open.
   if (model_filestream_.is_open()) {
     LOG(WARNING) << "Previous file is still open";
@@ -403,7 +402,7 @@ bool OnDeviceHeadServing::OpenModelFileStream(const uint32_t start_address) {
   return true;
 }
 
-void OnDeviceHeadServing::MaybeCloseModelFileStream() {
+void OnDeviceHeadModel::MaybeCloseModelFileStream() {
   if (model_filestream_.is_open()) {
     model_filestream_.close();
   }

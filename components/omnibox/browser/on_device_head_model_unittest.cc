@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/omnibox/browser/on_device_head_serving.h"
+#include "components/omnibox/browser/on_device_head_model.h"
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -59,91 +59,90 @@ base::FilePath GetTestModelPath() {
 
 }  // namespace
 
-class OnDeviceHeadServingTest : public testing::Test {
+class OnDeviceHeadModelTest : public testing::Test {
  protected:
   void SetUp() override {
     base::FilePath file_path = GetTestModelPath();
     ASSERT_TRUE(base::PathExists(file_path));
 #if defined(OS_WIN)
-    serving_ =
-        OnDeviceHeadServing::Create(base::WideToUTF8(file_path.value()), 4);
+    model_ = OnDeviceHeadModel::Create(base::WideToUTF8(file_path.value()), 4);
 #else
-    serving_ = OnDeviceHeadServing::Create(file_path.value(), 4);
+    model_ = OnDeviceHeadModel::Create(file_path.value(), 4);
 #endif
-    ASSERT_TRUE(serving_);
+    ASSERT_TRUE(model_);
   }
 
-  void TearDown() override { serving_.reset(); }
+  void TearDown() override { model_.reset(); }
 
-  std::unique_ptr<OnDeviceHeadServing> serving_;
+  std::unique_ptr<OnDeviceHeadModel> model_;
 };
 
-TEST_F(OnDeviceHeadServingTest, SizeOfScoreAndAddress) {
-  EXPECT_EQ((int)serving_->num_bytes_of_score(), 2);
-  EXPECT_EQ((int)serving_->num_bytes_of_address(), 3);
+TEST_F(OnDeviceHeadModelTest, SizeOfScoreAndAddress) {
+  EXPECT_EQ((int)model_->num_bytes_of_score(), 2);
+  EXPECT_EQ((int)model_->num_bytes_of_address(), 3);
 }
 
-TEST_F(OnDeviceHeadServingTest, GetSuggestions) {
-  auto suggestions = serving_->GetSuggestionsForPrefix("go");
+TEST_F(OnDeviceHeadModelTest, GetSuggestions) {
+  auto suggestions = model_->GetSuggestionsForPrefix("go");
   EXPECT_THAT(suggestions,
               ElementsAre(Pair("google maps", 32765), Pair("google", 32764),
                           Pair("googler", 32762)));
 
-  suggestions = serving_->GetSuggestionsForPrefix("ge");
+  suggestions = model_->GetSuggestionsForPrefix("ge");
   EXPECT_THAT(suggestions, ElementsAre(Pair("get out", 32763)));
 
-  suggestions = serving_->GetSuggestionsForPrefix("ga");
+  suggestions = model_->GetSuggestionsForPrefix("ga");
   EXPECT_THAT(suggestions, ElementsAre(Pair("gamestop", 32761)));
 }
 
-TEST_F(OnDeviceHeadServingTest, NoMatch) {
-  auto suggestions = serving_->GetSuggestionsForPrefix("x");
+TEST_F(OnDeviceHeadModelTest, NoMatch) {
+  auto suggestions = model_->GetSuggestionsForPrefix("x");
   EXPECT_TRUE(suggestions.empty());
 }
 
-TEST_F(OnDeviceHeadServingTest, MatchTheEndOfSuggestion) {
-  auto suggestions = serving_->GetSuggestionsForPrefix("ap");
+TEST_F(OnDeviceHeadModelTest, MatchTheEndOfSuggestion) {
+  auto suggestions = model_->GetSuggestionsForPrefix("ap");
   EXPECT_TRUE(suggestions.empty());
 }
 
-TEST_F(OnDeviceHeadServingTest, MatchAtTheMiddleOfSuggestion) {
-  auto suggestions = serving_->GetSuggestionsForPrefix("st");
+TEST_F(OnDeviceHeadModelTest, MatchAtTheMiddleOfSuggestion) {
+  auto suggestions = model_->GetSuggestionsForPrefix("st");
   EXPECT_TRUE(suggestions.empty());
 }
 
-TEST_F(OnDeviceHeadServingTest, EmptyInput) {
-  auto suggestions = serving_->GetSuggestionsForPrefix("");
+TEST_F(OnDeviceHeadModelTest, EmptyInput) {
+  auto suggestions = model_->GetSuggestionsForPrefix("");
   EXPECT_TRUE(suggestions.empty());
 }
 
-TEST_F(OnDeviceHeadServingTest, SetMaxSuggestionsToReturn) {
-  serving_->set_max_num_matches_to_return(5);
-  auto suggestions = serving_->GetSuggestionsForPrefix("g");
+TEST_F(OnDeviceHeadModelTest, SetMaxSuggestionsToReturn) {
+  model_->set_max_num_matches_to_return(5);
+  auto suggestions = model_->GetSuggestionsForPrefix("g");
   EXPECT_THAT(suggestions,
               ElementsAre(Pair("g", 32767), Pair("gmail", 32766),
                           Pair("google maps", 32765), Pair("google", 32764),
                           Pair("get out", 32763)));
 
-  serving_->set_max_num_matches_to_return(2);
-  suggestions = serving_->GetSuggestionsForPrefix("ma");
+  model_->set_max_num_matches_to_return(2);
+  suggestions = model_->GetSuggestionsForPrefix("ma");
   EXPECT_THAT(suggestions,
               ElementsAre(Pair("maps", 32761), Pair("mail", 32760)));
 }
 
-TEST_F(OnDeviceHeadServingTest, NonEnglishLanguage) {
+TEST_F(OnDeviceHeadModelTest, NonEnglishLanguage) {
   // Chinese.
-  auto suggestions = serving_->GetSuggestionsForPrefix("谷");
+  auto suggestions = model_->GetSuggestionsForPrefix("谷");
   EXPECT_THAT(suggestions, ElementsAre(Pair("谷歌", 32759)));
 
   // Japanese.
-  suggestions = serving_->GetSuggestionsForPrefix("ガツガツ");
+  suggestions = model_->GetSuggestionsForPrefix("ガツガツ");
   EXPECT_THAT(suggestions, ElementsAre(Pair("ガツガツしてる人", 32759)));
 
   // Korean.
-  suggestions = serving_->GetSuggestionsForPrefix("비데 ");
+  suggestions = model_->GetSuggestionsForPrefix("비데 ");
   EXPECT_THAT(suggestions, ElementsAre(Pair("비데 두꺼비", 32759)));
 
   // Russian.
-  suggestions = serving_->GetSuggestionsForPrefix("пере");
+  suggestions = model_->GetSuggestionsForPrefix("пере");
   EXPECT_THAT(suggestions, ElementsAre(Pair("переводчик", 32759)));
 }

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_OMNIBOX_BROWSER_ON_DEVICE_HEAD_SERVING_H_
-#define COMPONENTS_OMNIBOX_BROWSER_ON_DEVICE_HEAD_SERVING_H_
+#ifndef COMPONENTS_OMNIBOX_BROWSER_ON_DEVICE_HEAD_MODEL_H_
+#define COMPONENTS_OMNIBOX_BROWSER_ON_DEVICE_HEAD_MODEL_H_
 
 #include <fstream>
 #include <list>
@@ -12,7 +12,7 @@
 #include <utility>
 #include <vector>
 
-// On device head serving feature uses an on device model which encodes some
+// On device head suggest feature uses an on device model which encodes some
 // top queries into a radix tree (https://en.wikipedia.org/wiki/Radix_tree), to
 // help users quickly get head suggestions when they are under poor network
 // condition. When serving, it performs a search in the tree similar as BFS but
@@ -20,7 +20,7 @@
 // the given prefix.
 //
 // Each node in the tree is encoded using following format to optimize storage
-// (see on_device_head_serving_unittest.cc for an example tree model):
+// (see on_device_head_model_unittest.cc for an example tree model):
 // ------------------------------------------------------------------------
 // | max_score_as_root | child_0 | child_1 | ... | child_n-1 | 0 (1 byte) |
 // ------------------------------------------------------------------------
@@ -66,11 +66,10 @@
 // The size of score and address will be given in the first two bytes of the
 // model file.
 
-// TODO(crbug.com/925072): rename OnDeviceHeadServing to *Model.
-class OnDeviceHeadServing {
+class OnDeviceHeadModel {
  public:
-  // Creates and returns an instance for serving on device head model.
-  static std::unique_ptr<OnDeviceHeadServing> Create(
+  // Creates and returns an on device head model instance.
+  static std::unique_ptr<OnDeviceHeadModel> Create(
       const std::string& model_filename,
       int max_num_matches_to_return);
 
@@ -91,11 +90,11 @@ class OnDeviceHeadServing {
   std::vector<std::pair<std::string, uint32_t>> GetSuggestionsForPrefix(
       const std::string& prefix);
 
-  ~OnDeviceHeadServing();
+  ~OnDeviceHeadModel();
 
  private:
-  OnDeviceHeadServing(const std::string& model_filename,
-                      uint32_t max_num_matches_to_return);
+  OnDeviceHeadModel(const std::string& model_filename,
+                    uint32_t max_num_matches_to_return);
 
   // A useful data structure to keep track of the tree nodes should be and have
   // been visited during tree traversal.
@@ -182,4 +181,4 @@ class OnDeviceHeadServing {
   uint32_t max_num_matches_to_return_;
 };
 
-#endif  // COMPONENTS_OMNIBOX_BROWSER_ON_DEVICE_HEAD_SERVING_H_
+#endif  // COMPONENTS_OMNIBOX_BROWSER_ON_DEVICE_HEAD_MODEL_H_
