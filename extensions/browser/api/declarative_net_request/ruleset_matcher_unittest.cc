@@ -196,8 +196,9 @@ TEST_F(RulesetMatcherTest, RemoveHeaders) {
   params.url = &example_url;
   params.element_type = url_pattern_index::flat::ElementType_SUBDOCUMENT;
   params.is_third_party = true;
-  EXPECT_EQ(0u, matcher->GetRemoveHeadersMask(params, 0u /* ignored_mask */,
-                                              &remove_header_actions));
+  EXPECT_EQ(0u, matcher->GetRemoveHeadersMask(
+                    params, 0u /* excluded_remove_headers_mask */,
+                    &remove_header_actions));
   EXPECT_TRUE(remove_header_actions.empty());
 
   rule.action->type = std::string("removeHeaders");
@@ -209,9 +210,9 @@ TEST_F(RulesetMatcherTest, RemoveHeaders) {
                                 flat::RemoveHeaderType_cookie |
                                 flat::RemoveHeaderType_set_cookie;
 
-  EXPECT_EQ(expected_mask,
-            matcher->GetRemoveHeadersMask(params, 0u /* ignored_mask */,
-                                          &remove_header_actions));
+  EXPECT_EQ(expected_mask, matcher->GetRemoveHeadersMask(
+                               params, 0u /* excluded_remove_headers_mask */,
+                               &remove_header_actions));
 
   RequestAction expected_action =
       CreateRequestActionForTesting(RequestAction::Type::REMOVE_HEADERS);
@@ -228,21 +229,23 @@ TEST_F(RulesetMatcherTest, RemoveHeaders) {
 
   GURL google_url("http://google.com");
   params.url = &google_url;
-  EXPECT_EQ(0u, matcher->GetRemoveHeadersMask(params, 0u /* ignored_mask */,
-                                              &remove_header_actions));
+  EXPECT_EQ(0u, matcher->GetRemoveHeadersMask(
+                    params, 0u /* excluded_remove_headers_mask */,
+                    &remove_header_actions));
   EXPECT_TRUE(remove_header_actions.empty());
 
-  uint8_t ignored_mask =
+  uint8_t excluded_remove_headers_mask =
       flat::RemoveHeaderType_referer | flat::RemoveHeaderType_set_cookie;
-  EXPECT_EQ(0u, matcher->GetRemoveHeadersMask(params, ignored_mask,
-                                              &remove_header_actions));
+  EXPECT_EQ(0u,
+            matcher->GetRemoveHeadersMask(params, excluded_remove_headers_mask,
+                                          &remove_header_actions));
   EXPECT_TRUE(remove_header_actions.empty());
 
   // The current mask is ignored while matching and is not returned as part of
   // the result.
   params.url = &example_url;
   EXPECT_EQ(flat::RemoveHeaderType_cookie,
-            matcher->GetRemoveHeadersMask(params, ignored_mask,
+            matcher->GetRemoveHeadersMask(params, excluded_remove_headers_mask,
                                           &remove_header_actions));
 
   expected_action.request_headers_to_remove.clear();
@@ -291,7 +294,8 @@ TEST_F(RulesetMatcherTest, RemoveHeadersMultipleRules) {
 
   std::vector<RequestAction> remove_header_actions;
   EXPECT_EQ(flat::RemoveHeaderType_cookie | flat::RemoveHeaderType_referer,
-            matcher->GetRemoveHeadersMask(params, 0u /* ignored_mask */,
+            matcher->GetRemoveHeadersMask(params,
+                                          0u /* excluded_remove_headers_mask */,
                                           &remove_header_actions));
 
   EXPECT_THAT(remove_header_actions,
@@ -644,8 +648,9 @@ TEST_F(RulesetMatcherTest, RegexRules) {
 
     std::vector<RequestAction> remove_header_actions;
     EXPECT_EQ(test_case.expected_remove_headers_mask,
-              matcher->GetRemoveHeadersMask(params, 0u /* ignored_mask */,
-                                            &remove_header_actions));
+              matcher->GetRemoveHeadersMask(
+                  params, 0u /* excluded_remove_headers_mask */,
+                  &remove_header_actions));
     if (test_case.expected_remove_header_action) {
       EXPECT_THAT(remove_header_actions,
                   testing::ElementsAre(testing::Eq(testing::ByRef(
@@ -966,9 +971,9 @@ TEST_F(RulesetMatcherTest, RegexAndFilterListRules_RemoveHeaders) {
     RequestParams params;
     params.url = &url;
     std::vector<RequestAction> actions;
-    EXPECT_EQ(
-        flat::RemoveHeaderType_cookie,
-        matcher->GetRemoveHeadersMask(params, 0 /* ignored_mask */, &actions));
+    EXPECT_EQ(flat::RemoveHeaderType_cookie,
+              matcher->GetRemoveHeadersMask(
+                  params, 0 /* excluded_remove_headers_mask */, &actions));
     EXPECT_THAT(actions, testing::UnorderedElementsAre(
                              testing::Eq(testing::ByRef(action_1))));
   }
@@ -979,9 +984,9 @@ TEST_F(RulesetMatcherTest, RegexAndFilterListRules_RemoveHeaders) {
     RequestParams params;
     params.url = &url;
     std::vector<RequestAction> actions;
-    EXPECT_EQ(
-        flat::RemoveHeaderType_cookie | flat::RemoveHeaderType_set_cookie,
-        matcher->GetRemoveHeadersMask(params, 0 /* ignored_mask */, &actions));
+    EXPECT_EQ(flat::RemoveHeaderType_cookie | flat::RemoveHeaderType_set_cookie,
+              matcher->GetRemoveHeadersMask(
+                  params, 0 /* excluded_remove_headers_mask */, &actions));
     EXPECT_THAT(actions, testing::UnorderedElementsAre(
                              testing::Eq(testing::ByRef(action_2))));
   }
@@ -992,9 +997,9 @@ TEST_F(RulesetMatcherTest, RegexAndFilterListRules_RemoveHeaders) {
     RequestParams params;
     params.url = &url;
     std::vector<RequestAction> actions;
-    EXPECT_EQ(
-        flat::RemoveHeaderType_cookie | flat::RemoveHeaderType_set_cookie,
-        matcher->GetRemoveHeadersMask(params, 0 /* ignored_mask */, &actions));
+    EXPECT_EQ(flat::RemoveHeaderType_cookie | flat::RemoveHeaderType_set_cookie,
+              matcher->GetRemoveHeadersMask(
+                  params, 0 /* excluded_remove_headers_mask */, &actions));
 
     // Removal of the cookie header will be attributed to rule 1 since filter
     // list style rules are evaluated first for efficiency reasons. (Note this

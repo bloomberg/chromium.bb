@@ -163,7 +163,7 @@ base::Optional<RequestAction> RegexRulesMatcher::GetUpgradeAction(
 
 uint8_t RegexRulesMatcher::GetRemoveHeadersMask(
     const RequestParams& params,
-    uint8_t ignored_mask,
+    uint8_t excluded_remove_headers_mask,
     std::vector<RequestAction>* remove_headers_actions) const {
   DCHECK(remove_headers_actions);
 
@@ -181,9 +181,10 @@ uint8_t RegexRulesMatcher::GetRemoveHeadersMask(
       continue;
 
     // The current rule won't be responsible for any headers already removed (in
-    // |mask|) or any headers to be ignored (in |ignored_mask|).
-    uint8_t effective_mask_for_rule = subtract_mask(
-        info.regex_rule->remove_headers_mask(), ignored_mask | mask);
+    // |mask|) or any headers to be ignored (in |excluded_remove_headers_mask|).
+    uint8_t effective_mask_for_rule =
+        subtract_mask(info.regex_rule->remove_headers_mask(),
+                      excluded_remove_headers_mask | mask);
     if (!effective_mask_for_rule)
       continue;
 
@@ -195,7 +196,7 @@ uint8_t RegexRulesMatcher::GetRemoveHeadersMask(
         *info.regex_rule->url_rule(), effective_mask_for_rule));
   }
 
-  DCHECK(!(mask & ignored_mask));
+  DCHECK(!(mask & excluded_remove_headers_mask));
   return mask;
 }
 
