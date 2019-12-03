@@ -290,6 +290,8 @@ void TabImpl::RunFileChooser(
 }
 
 int TabImpl::GetTopControlsHeight() {
+  if (is_fullscreen_)
+    return 0;
 #if defined(OS_ANDROID)
   return top_controls_container_view_
              ? top_controls_container_view_->GetTopControlsHeight()
