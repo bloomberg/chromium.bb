@@ -197,22 +197,23 @@ class CodeNode(object):
         self._prev = prev
 
     @property
-    def upstream(self):
+    def upstream_of_scope(self):
         """
-        Returns the upstream CodeNode in terms of code flow.
-
-        The upstream CodeNode is defined as:
-        1. the previous CodeNode, or
-        2. the outer CodeNode, or
-        3. None (as this is a top-level node)
+        Returns the upstream CodeNode in the same or outer scope.  Only the set
+        of recursively-collected |upstream_of_scope|s can bring symbol
+        definitions effective to this node.
         """
-        if self.prev is not None:
-            prev = self.prev
-            while isinstance(prev, SequenceNode) and prev:
-                prev = prev[-1]
-            return prev
-        else:
+        if self.prev is None:
             return self.outer
+
+        node = self.prev
+        while isinstance(node, SequenceNode):
+            if isinstance(node, SymbolScopeNode):
+                return node.upstream_of_scope
+            if not node:
+                break
+            node = node[-1]
+        return node
 
     @property
     def template_vars(self):
@@ -295,8 +296,8 @@ class CodeNode(object):
         """
         Returns True if |symbol_node| is defined at this point or upstream.
         """
-        if self.upstream:
-            return self.upstream.is_code_symbol_defined(symbol_node)
+        if self.outer:
+            return self.upstream_of_scope.is_code_symbol_defined(symbol_node)
         return False
 
     def is_code_symbol_registered(self, symbol_node):
@@ -681,8 +682,7 @@ class SymbolDefinitionNode(SequenceNode):
                      self).is_code_symbol_defined(symbol_node)
 
     def is_duplicated(self):
-        return (self.upstream is not None
-                and self.upstream.is_code_symbol_defined(self._symbol_node))
+        return self.upstream_of_scope.is_code_symbol_defined(self._symbol_node)
 
 
 class ConditionalNode(CodeNode):
