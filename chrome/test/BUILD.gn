@@ -1146,6 +1146,8 @@ if (!is_android) {
       "../browser/signin/e2e_tests/live_test.cc",
       "../browser/signin/e2e_tests/live_test.h",
       "../browser/site_isolation/chrome_site_per_process_browsertest.cc",
+      "../browser/site_isolation/chrome_site_per_process_test.cc",
+      "../browser/site_isolation/chrome_site_per_process_test.h",
       "../browser/site_isolation/site_details_browsertest.cc",
       "../browser/ssl/known_interception_disclosure_ui_browsertest.cc",
       "../browser/ui/blocked_content/popup_tracker_browsertest.cc",
@@ -2709,6 +2711,11 @@ if (!is_android) {
 
     if (enable_webui_tab_strip) {
       sources += [ "../browser/ui/webui/tab_strip/tab_strip_ui_browsertest.cc" ]
+    }
+
+    if (enable_spellcheck) {
+      sources +=
+          [ "../browser/site_isolation/spellcheck_per_process_browsertest.cc" ]
     }
   }
 }
