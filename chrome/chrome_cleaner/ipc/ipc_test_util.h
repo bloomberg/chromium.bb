@@ -14,9 +14,9 @@
 #include "base/process/launch.h"
 #include "base/process/process.h"
 #include "base/time/time.h"
-#include "base/win/scoped_handle.h"
 #include "chrome/chrome_cleaner/ipc/chrome_prompt_ipc.h"
 #include "chrome/chrome_cleaner/ipc/mojo_task_runner.h"
+#include "chrome/chrome_cleaner/test/child_process_logger.h"
 #include "mojo/public/cpp/platform/platform_channel.h"
 #include "mojo/public/cpp/system/invitation.h"
 #include "mojo/public/cpp/system/message_pipe.h"
@@ -58,6 +58,10 @@ class ParentProcess : public base::RefCountedThreadSafe<ParentProcess> {
     return extra_handles_to_inherit_;
   }
 
+  const ChildProcessLogger& child_process_logger() const {
+    return child_process_logger_;
+  }
+
  protected:
   friend base::RefCountedThreadSafe<ParentProcess>;
   virtual ~ParentProcess();
@@ -70,13 +74,13 @@ class ParentProcess : public base::RefCountedThreadSafe<ParentProcess> {
   // as in the sandbox. Subclasses should call CreateMojoPipe before the
   // subprocess is spawned and ConnectMojoPipe afterward.
   virtual bool PrepareAndLaunchTestChildProcess(
-      const std::string& child_main_function,
-      base::win::ScopedHandle child_stdout_write_handle);
+      const std::string& child_main_function);
 
   scoped_refptr<MojoTaskRunner> mojo_task_runner();
 
   base::CommandLine command_line_;
   base::HandlesToInheritVector extra_handles_to_inherit_;
+  ChildProcessLogger child_process_logger_;
 
  private:
   scoped_refptr<MojoTaskRunner> mojo_task_runner_;
@@ -96,8 +100,7 @@ class SandboxedParentProcess : public ParentProcess {
   ~SandboxedParentProcess() override;
 
   bool PrepareAndLaunchTestChildProcess(
-      const std::string& child_main_function,
-      base::win::ScopedHandle child_stdout_write_handle) override;
+      const std::string& child_main_function) override;
 };
 
 class ChildProcess : public base::RefCountedThreadSafe<ChildProcess> {
@@ -142,10 +145,6 @@ class ChromePromptIPCTestErrorHandler : public ChromePromptIPC::ErrorHandler {
   base::OnceClosure on_closed_;
   base::OnceClosure on_closed_after_done_;
 };
-
-namespace internal {
-void PrintChildProcessLogs(const base::FilePath& log_file);
-}  // namespace internal
 
 }  // namespace chrome_cleaner
 

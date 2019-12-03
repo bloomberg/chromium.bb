@@ -5,7 +5,6 @@
 #include <windows.h>
 
 #include "base/command_line.h"
-#include "base/files/file_util.h"
 #include "base/process/process.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
@@ -19,7 +18,7 @@
 #include "base/win/win_util.h"
 #include "chrome/chrome_cleaner/ipc/ipc_test_util.h"
 #include "chrome/chrome_cleaner/ipc/proto_chrome_prompt_ipc.h"
-#include "chrome/chrome_cleaner/logging/scoped_logging.h"
+#include "chrome/chrome_cleaner/test/child_process_logger.h"
 #include "components/chrome_cleaner/public/constants/constants.h"
 #include "components/chrome_cleaner/public/proto/chrome_prompt.pb.h"
 #include "components/chrome_cleaner/public/proto/chrome_prompt_for_tests.pb.h"
@@ -40,7 +39,6 @@ constexpr char kExpectedPromptResultSwitch[] = "expected-prompt-result";
 constexpr char kExpectedChromeDisconnectPointSwitch[] =
     "expected-parent-disconnected";
 
-constexpr base::char16 kLogSuffix[] = L"prompt-ipc-test";
 constexpr base::char16 kInvalidUTF16String[] = {0xDC00, 0xD800, 0xD800, 0xDFFF,
                                                 0xDFFF, 0xDBFF, 0};
 const base::FilePath kInvalidFilePath(kInvalidUTF16String);
@@ -395,8 +393,7 @@ class MockChrome {
 // Gtest to log.
 class ChildProcess {
  public:
-  ChildProcess()
-      : scopped_logging_(std::make_unique<ScopedLogging>(kLogSuffix)) {
+  ChildProcess() {
     mock_chrome_ = std::make_unique<MockChrome>(
         ExtractHandleFromCommandLine(chrome_cleaner::kChromeReadHandleSwitch),
         ExtractHandleFromCommandLine(chrome_cleaner::kChromeWriteHandleSwitch));
@@ -547,7 +544,6 @@ class ChildProcess {
 
  private:
   std::unique_ptr<MockChrome> mock_chrome_;
-  std::unique_ptr<ScopedLogging> scopped_logging_;
 
   ChromeDisconnectPoint expected_disconnect_point_ =
       ChromeDisconnectPoint::kUnspecified;
@@ -582,6 +578,9 @@ class ProtoChromePromptIPCTest
 class ParentProcess {
  public:
   bool Initialize() {
+    if (!child_process_logger_.Initialize())
+      return false;
+
     // Inject the flags related to the the config in the command line.
     test_config_.EnhanceCommandLine(&command_line_);
 
@@ -611,14 +610,13 @@ class ParentProcess {
   }
 
   void Run() {
-    // Delete the child process log file if existing.
-    const base::FilePath log_path = ScopedLogging::GetLogFilePath(kLogSuffix);
-    ASSERT_TRUE(base::DeleteFile(log_path, false))
-        << "Can't delete log file from previous run: " << log_path.value();
+    child_process_logger_.UpdateLaunchOptions(&launch_options_);
 
     // Pass the command to the child process and launch the child process.
     base::Process child_process = base::SpawnMultiProcessTestChild(
         "ProtoChromePromptIPCClientMain", command_line_, launch_options_);
+    if (!child_process.IsRunning())
+      child_process_logger_.DumpLogs();
     ASSERT_TRUE(child_process.IsRunning());
 
     // Close our references to the handles as they are now handled by the child
@@ -682,10 +680,8 @@ class ParentProcess {
 
     EXPECT_EQ(expected_exit_code, rv);
 
-    if (!success || rv != 0) {
-      internal::PrintChildProcessLogs(
-          ScopedLogging::GetLogFilePath(kLogSuffix));
-    }
+    if (!success || rv != 0)
+      child_process_logger_.DumpLogs();
   }
 
   TestConfig& GetTestConfig() { return test_config_; }
@@ -709,6 +705,8 @@ class ParentProcess {
   // Blocks until we receive the response from Chrome or an error occurs.
   base::RunLoop main_runloop_;
   bool error_occurred_ = false;
+
+  ChildProcessLogger child_process_logger_;
 };
 
 // This contains calls to the chrome_cleaner_ipc implementation.

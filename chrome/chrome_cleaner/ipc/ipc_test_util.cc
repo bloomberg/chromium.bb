@@ -12,14 +12,10 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
-#include "base/files/file_util.h"
-#include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
 #include "base/process/launch.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/string_piece.h"
-#include "base/strings/string_split.h"
 #include "base/test/multiprocess_test.h"
 #include "base/test/test_timeouts.h"
 #include "base/win/win_util.h"
@@ -34,11 +30,8 @@ constexpr char kMojoPipeTokenSwitch[] = "mojo-pipe-token";
 
 class MojoSandboxSetupHooks : public SandboxSetupHooks {
  public:
-  explicit MojoSandboxSetupHooks(
-      SandboxedParentProcess* parent_process,
-      base::win::ScopedHandle child_stdout_write_handle)
-      : parent_process_(parent_process),
-        child_stdout_write_handle_(std::move(child_stdout_write_handle)) {}
+  explicit MojoSandboxSetupHooks(SandboxedParentProcess* parent_process)
+      : parent_process_(parent_process) {}
   ~MojoSandboxSetupHooks() override = default;
 
   // SandboxSetupHooks
@@ -50,8 +43,7 @@ class MojoSandboxSetupHooks : public SandboxSetupHooks {
     parent_process_->CreateMojoPipe(command_line, &handles_to_inherit);
     for (HANDLE handle : handles_to_inherit)
       policy->AddHandleToShare(handle);
-    policy->SetStdoutHandle(child_stdout_write_handle_.Get());
-    policy->SetStderrHandle(child_stdout_write_handle_.Get());
+    parent_process_->child_process_logger().UpdateSandboxPolicy(policy);
     return RESULT_CODE_SUCCESS;
   }
 
@@ -68,38 +60,6 @@ class MojoSandboxSetupHooks : public SandboxSetupHooks {
 };
 
 }  // namespace
-
-namespace internal {
-
-void PrintChildProcessLogs(const base::FilePath& log_path) {
-  if (log_path.empty()) {
-    LOG(ERROR) << "Child process log path is empty";
-    return;
-  }
-
-  if (!base::PathExists(log_path)) {
-    LOG(ERROR) << "Child process log file doesn't exist";
-    return;
-  }
-
-  // Collect the child process log file, and dump the contents, to help
-  // debugging failures.
-  std::string log_file_contents;
-  if (!base::ReadFileToString(log_path, &log_file_contents)) {
-    LOG(ERROR) << "Failed to read child process log file";
-    return;
-  }
-
-  std::vector<base::StringPiece> lines =
-      base::SplitStringPiece(log_file_contents, "\n", base::TRIM_WHITESPACE,
-                             base::SPLIT_WANT_NONEMPTY);
-  LOG(ERROR) << "Dumping child process logs";
-  for (const auto& line : lines) {
-    LOG(ERROR) << "Child process: " << line;
-  }
-}
-
-}  // namespace internal
 
 ParentProcess::ParentProcess(scoped_refptr<MojoTaskRunner> mojo_task_runner)
     : command_line_(base::GetMultiProcessTestChildBaseCommandLine()),
@@ -158,36 +118,10 @@ bool ParentProcess::LaunchConnectedChildProcess(
     const std::string& child_main_function,
     base::TimeDelta timeout,
     int32_t* exit_code) {
-  // Adapted from
-  // https://cs.chromium.org/chromium/src/sandbox/win/src/handle_inheritance_test.cc
-  base::ScopedTempDir temp_dir;
-  if (!temp_dir.CreateUniqueTempDir()) {
-    PLOG(ERROR) << "Could not create temp dir for child stdout";
+  if (!child_process_logger_.Initialize())
     return false;
-  }
-
-  base::FilePath temp_file_name;
-  if (!CreateTemporaryFileInDir(temp_dir.GetPath(), &temp_file_name)) {
-    PLOG(ERROR) << "Could not create temp file for child stdout";
-    return false;
-  }
-
-  SECURITY_ATTRIBUTES attrs = {};
-  attrs.nLength = sizeof(attrs);
-  attrs.bInheritHandle = true;
-
-  base::win::ScopedHandle child_stdout_write_handle(
-      ::CreateFile(temp_file_name.value().c_str(), GENERIC_WRITE,
-                   FILE_SHARE_WRITE | FILE_SHARE_READ | FILE_SHARE_DELETE,
-                   &attrs, OPEN_EXISTING, 0, nullptr));
-  if (!child_stdout_write_handle.IsValid()) {
-    PLOG(ERROR) << "Could not open child stdout file";
-    return false;
-  }
-
-  if (!PrepareAndLaunchTestChildProcess(child_main_function,
-                                        std::move(child_stdout_write_handle))) {
-    internal::PrintChildProcessLogs(temp_file_name);
+  if (!PrepareAndLaunchTestChildProcess(child_main_function)) {
+    child_process_logger_.DumpLogs();
     return false;
   }
 
@@ -201,30 +135,21 @@ bool ParentProcess::LaunchConnectedChildProcess(
   DestroyImplOnIPCThread();
 
   if (!success || *exit_code != 0) {
-    internal::PrintChildProcessLogs(temp_file_name);
+    child_process_logger_.DumpLogs();
   }
 
   return success;
 }
 
 bool ParentProcess::PrepareAndLaunchTestChildProcess(
-    const std::string& child_main_function,
-    base::win::ScopedHandle child_stdout_write_handle) {
+    const std::string& child_main_function) {
   base::LaunchOptions launch_options;
   launch_options.handles_to_inherit = extra_handles_to_inherit_;
-  launch_options.handles_to_inherit.push_back(child_stdout_write_handle.Get());
-  launch_options.stdin_handle = INVALID_HANDLE_VALUE;
-  launch_options.stdout_handle = child_stdout_write_handle.Get();
-  launch_options.stderr_handle = child_stdout_write_handle.Get();
-
+  child_process_logger_.UpdateLaunchOptions(&launch_options);
   CreateMojoPipe(&command_line_, &launch_options.handles_to_inherit);
 
   base::Process child_process = base::SpawnMultiProcessTestChild(
       child_main_function, command_line_, launch_options);
-
-  // Now that it's been passed to the child process,
-  // |child_stdout_write_handle| can be closed in this process as it goes out
-  // of scope.
 
   ConnectMojoPipe(std::move(child_process));
   return true;
@@ -257,9 +182,8 @@ SandboxedParentProcess::SandboxedParentProcess(
 SandboxedParentProcess::~SandboxedParentProcess() {}
 
 bool SandboxedParentProcess::PrepareAndLaunchTestChildProcess(
-    const std::string& child_main_function,
-    base::win::ScopedHandle child_stdout_write_handle) {
-  MojoSandboxSetupHooks hooks(this, std::move(child_stdout_write_handle));
+    const std::string& child_main_function) {
+  MojoSandboxSetupHooks hooks(this);
 
   // This switch usage is copied from SpawnMultiProcessTestChild.
   //
