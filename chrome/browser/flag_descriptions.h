@@ -2150,6 +2150,9 @@ extern const char kHideArcMediaNotificationsDescription[];
 extern const char kImeInputLogicFstName[];
 extern const char kImeInputLogicFstDescription[];
 
+extern const char kImeInputLogicHmmName[];
+extern const char kImeInputLogicHmmDescription[];
+
 extern const char kImeNativeDecoderName[];
 extern const char kImeNativeDecoderDescription[];
 

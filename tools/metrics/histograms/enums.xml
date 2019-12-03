@@ -36001,6 +36001,7 @@ from previous Chrome versions.
   <int value="-1927080237" label="Vulkan:enabled"/>
   <int value="-1925117279" label="disable-quic-https"/>
   <int value="-1925106340" label="CameraSystemWebApp:disabled"/>
+  <int value="-1921593903" label="ImeInputLogicHmm:disabled"/>
   <int value="-1919199528"
       label="AlwaysShowServerCardsInSyncTransport:disabled"/>
   <int value="-1916060206" label="enable-display-zoom-setting"/>
@@ -38137,6 +38138,7 @@ from previous Chrome versions.
   <int value="773563826" label="CrostiniUsbSupport:disabled"/>
   <int value="773743944" label="show-android-files-in-files-app"/>
   <int value="773919225" label="disable-office-editing-component-extension"/>
+  <int value="775075949" label="ImeInputLogicHmm:enabled"/>
   <int value="777667507" label="DesktopPWAsLinkCapturing:enabled"/>
   <int value="779086132" label="enable-data-reduction-proxy-alt"/>
   <int value="779849093" label="OfflinePagesCTSuppressNotifications:disabled"/>
