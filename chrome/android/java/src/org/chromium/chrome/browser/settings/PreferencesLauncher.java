@@ -16,8 +16,6 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.settings.autofill.AutofillPaymentMethodsFragment;
 import org.chromium.chrome.browser.settings.autofill.AutofillProfilesFragment;
-import org.chromium.chrome.browser.settings.website.SettingsNavigationSource;
-import org.chromium.chrome.browser.settings.website.SingleWebsitePreferences;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.content_public.browser.WebContents;
 
@@ -87,16 +85,6 @@ public class PreferencesLauncher {
             intent.putExtra(SettingsActivity.EXTRA_SHOW_FRAGMENT_ARGUMENTS, fragmentArgs);
         }
         return intent;
-    }
-
-    /**
-     * Creates an intent to launch single website preferences for the specified {@param url}.
-     */
-    public static Intent createIntentForSingleWebsitePreferences(
-            Context context, String url, @SettingsNavigationSource int navigationSource) {
-        Bundle args = SingleWebsitePreferences.createFragmentArgsForSite(url);
-        args.putInt(SettingsNavigationSource.EXTRA_KEY, navigationSource);
-        return createIntentForSettingsPage(context, SingleWebsitePreferences.class.getName(), args);
     }
 
     @CalledByNative
