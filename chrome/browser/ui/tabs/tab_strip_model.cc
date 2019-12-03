@@ -313,6 +313,8 @@ struct TabStripModel::DetachNotifications {
 ///////////////////////////////////////////////////////////////////////////////
 // TabStripModel, public:
 
+constexpr int TabStripModel::kNoTab;
+
 TabStripModel::TabStripModel(TabStripModelDelegate* delegate, Profile* profile)
     : delegate_(delegate), profile_(profile) {
   DCHECK(delegate_);

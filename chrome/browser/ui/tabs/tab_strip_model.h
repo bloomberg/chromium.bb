@@ -130,7 +130,7 @@ class TabStripModel {
     NEW_TAB_ENUM_COUNT = 3,
   };
 
-  static const int kNoTab = -1;
+  static constexpr int kNoTab = -1;
 
   // Construct a TabStripModel with a delegate to help it do certain things
   // (see the TabStripModelDelegate documentation). |delegate| cannot be NULL.
