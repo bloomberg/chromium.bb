@@ -218,7 +218,14 @@ void WebUITabStripContainerView::SetContainerTargetVisibility(
     animation_.SetSlideDuration(base::TimeDelta::FromMilliseconds(250));
     animation_.Show();
     web_view_->SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
+    time_at_open_ = base::TimeTicks::Now();
   } else {
+    if (time_at_open_) {
+      RecordTabStripUIOpenDurationHistogram(base::TimeTicks::Now() -
+                                            time_at_open_.value());
+      time_at_open_ = base::nullopt;
+    }
+
     animation_.SetSlideDuration(base::TimeDelta::FromMilliseconds(200));
     animation_.Hide();
     web_view_->SetFocusBehavior(FocusBehavior::NEVER);
