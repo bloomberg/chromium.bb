@@ -413,8 +413,8 @@ views::View* TrayBackgroundView::GetBubbleAnchor() const {
 gfx::Insets TrayBackgroundView::GetBubbleAnchorInsets() const {
   gfx::Insets anchor_insets = GetBubbleAnchor()->GetInsets();
   gfx::Insets tray_bg_insets = GetInsets();
-  if (shelf_->alignment() == SHELF_ALIGNMENT_BOTTOM ||
-      shelf_->alignment() == SHELF_ALIGNMENT_BOTTOM_LOCKED) {
+  if (shelf_->alignment() == ShelfAlignment::kBottom ||
+      shelf_->alignment() == ShelfAlignment::kBottomLocked) {
     return gfx::Insets(-tray_bg_insets.top(), anchor_insets.left(),
                        -tray_bg_insets.bottom(), anchor_insets.right());
   } else {

@@ -264,12 +264,12 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
   template <typename T>
   T SelectValueForShelfAlignment(T bottom, T left, T right) const {
     switch (shelf_->alignment()) {
-      case SHELF_ALIGNMENT_BOTTOM:
-      case SHELF_ALIGNMENT_BOTTOM_LOCKED:
+      case ShelfAlignment::kBottom:
+      case ShelfAlignment::kBottomLocked:
         return bottom;
-      case SHELF_ALIGNMENT_LEFT:
+      case ShelfAlignment::kLeft:
         return left;
-      case SHELF_ALIGNMENT_RIGHT:
+      case ShelfAlignment::kRight:
         return right;
     }
     NOTREACHED();

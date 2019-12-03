@@ -1474,7 +1474,7 @@ void ShelfLayoutManager::UpdateBoundsAndOpacity(
       bool in_overview =
           Shell::Get()->overview_controller()->InOverviewSession();
       if (!in_overview && !state_.IsScreenLocked() &&
-          (shelf_->alignment() != SHELF_ALIGNMENT_BOTTOM_LOCKED ||
+          (shelf_->alignment() != ShelfAlignment::kBottomLocked ||
            display_.work_area() == display_.bounds())) {
         gfx::Insets insets;
         // If user session is blocked (login to new user session or add user to
@@ -1939,9 +1939,9 @@ ShelfAutoHideState ShelfLayoutManager::CalculateAutoHideState(
     // when the mouse is over the bubble gap.
     ShelfAlignment alignment = shelf_->alignment();
     shelf_region.Inset(
-        alignment == SHELF_ALIGNMENT_RIGHT ? -kNotificationBubbleGapHeight : 0,
+        alignment == ShelfAlignment::kRight ? -kNotificationBubbleGapHeight : 0,
         shelf_->IsHorizontalAlignment() ? -kNotificationBubbleGapHeight : 0,
-        alignment == SHELF_ALIGNMENT_LEFT ? -kNotificationBubbleGapHeight : 0,
+        alignment == ShelfAlignment::kLeft ? -kNotificationBubbleGapHeight : 0,
         0);
   }
 
@@ -2513,13 +2513,13 @@ float ShelfLayoutManager::GetAppListBackgroundOpacityOnShelfOpacity() {
 
 bool ShelfLayoutManager::IsSwipingCorrectDirection() {
   switch (shelf_->alignment()) {
-    case SHELF_ALIGNMENT_BOTTOM:
-    case SHELF_ALIGNMENT_BOTTOM_LOCKED:
-    case SHELF_ALIGNMENT_RIGHT:
+    case ShelfAlignment::kBottom:
+    case ShelfAlignment::kBottomLocked:
+    case ShelfAlignment::kRight:
       if (drag_auto_hide_state_ == SHELF_AUTO_HIDE_SHOWN)
         return drag_amount_ > 0;
       return drag_amount_ < 0;
-    case SHELF_ALIGNMENT_LEFT:
+    case ShelfAlignment::kLeft:
       if (drag_auto_hide_state_ == SHELF_AUTO_HIDE_SHOWN)
         return drag_amount_ < 0;
       return drag_amount_ > 0;
