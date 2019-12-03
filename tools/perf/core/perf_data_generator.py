@@ -1110,7 +1110,7 @@ def update_system_health_stories(filepath):
         }
       else:
         stories[story.name]['platforms'].add(platform)
-        stories[story.name]['platforms'].update(story.tags)
+        stories[story.name]['tags'].update(story.tags)
 
   with open(filepath, 'wb') as f:
     writer = csv.writer(f, lineterminator='\n')
