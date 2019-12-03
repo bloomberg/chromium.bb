@@ -2855,6 +2855,8 @@ jumbo_static_library("browser") {
       "password_manager/password_generation_dialog_view_interface.h",
       "password_manager/password_manager_infobar_delegate_android.cc",
       "password_manager/password_manager_infobar_delegate_android.h",
+      "password_manager/password_manager_launcher_android.cc",
+      "password_manager/password_manager_launcher_android.h",
       "password_manager/save_password_infobar_delegate_android.cc",
       "password_manager/save_password_infobar_delegate_android.h",
       "password_manager/touch_to_fill_controller.cc",
