@@ -1407,6 +1407,24 @@ TEST_P(TabletModeControllerTest, StartTabletActiveLeftSnapPreviousLeftSnap) {
   EXPECT_EQ(window1.get(), window_util::GetActiveWindow());
 }
 
+// Like TabletModeControllerTest.StartTabletActiveLeftSnap, but with an extra
+// display which has no relevant windows on it.
+TEST_P(TabletModeControllerTest,
+       StartTabletActiveLeftSnapPlusExtraneousDisplay) {
+  UpdateDisplay("800x600,800x600");
+  std::unique_ptr<aura::Window> window = CreateDesktopWindowSnappedLeft();
+  tablet_mode_controller()->SetEnabledForTest(true);
+  EXPECT_EQ(2u, Shell::GetAllRootWindows().size());
+  // Make sure display mirroring triggers without any crashes.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1u, Shell::GetAllRootWindows().size());
+  EXPECT_EQ(SplitViewController::State::kLeftSnapped,
+            split_view_controller()->state());
+  EXPECT_EQ(window.get(), split_view_controller()->left_window());
+  EXPECT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
+  EXPECT_EQ(window.get(), window_util::GetActiveWindow());
+}
+
 TEST_P(TabletModeControllerTest, StartTabletActiveLeftSnapOnSecondaryDisplay) {
   UpdateDisplay("800x600,800x600");
   std::unique_ptr<aura::Window> window =
