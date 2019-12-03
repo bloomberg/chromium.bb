@@ -2400,7 +2400,7 @@
       'gfx_unittests': {},
       'unit_tests': {
         'android_swarming': {
-          'shards': 10,
+          'shards': 2,
         },
       },
       'viz_unittests': {},
