@@ -1527,6 +1527,7 @@ class CORE_EXPORT Document : public ContainerNode,
   LazyLoadImageObserver& EnsureLazyLoadImageObserver();
 
   WindowAgent& GetWindowAgent();
+  WindowAgentFactory* GetWindowAgentFactory() { return window_agent_factory_; }
 
   void CountPotentialFeaturePolicyViolation(
       mojom::FeaturePolicyFeature) const override;

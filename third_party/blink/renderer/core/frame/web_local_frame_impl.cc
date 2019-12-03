@@ -1880,9 +1880,11 @@ LocalFrame* WebLocalFrameImpl::CreateChildFrame(
   if (!webframe_child)
     return nullptr;
 
-  webframe_child->InitializeCoreFrame(*GetFrame()->GetPage(), owner_element,
-                                      name,
-                                      &GetFrame()->window_agent_factory());
+  webframe_child->InitializeCoreFrame(
+      *GetFrame()->GetPage(), owner_element, name,
+      owner_element->DisallowDocumentAccess()
+          ? nullptr
+          : &GetFrame()->window_agent_factory());
 
   DCHECK(webframe_child->Parent());
   return webframe_child->GetFrame();

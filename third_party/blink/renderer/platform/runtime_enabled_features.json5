@@ -555,6 +555,10 @@
       status: "experimental",
     },
     {
+      name: "DisallowDocumentAccess",
+      status: "experimental",
+    },
+    {
       name: "DiscardInputToMovingIframes",
       status: "stable",
     },
