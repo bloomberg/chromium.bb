@@ -102,6 +102,7 @@ class SettingsBinder : public CalculatorsPoliciesBinder {
     if (!settings_->GetInteger(kDeviceNativePrintersAccessMode, &mode_val)) {
       mode_val = BulkPrintersCalculator::AccessMode::UNSET;
     }
+    DVLOG(1) << "Device access mode: " << mode_val;
     return mode_val;
   }
 
@@ -173,6 +174,7 @@ CalculatorsPoliciesBinder::GetWeakPtr() {
 }
 
 void CalculatorsPoliciesBinder::Init() {
+  // Register for future updates.
   Bind(access_mode_name_,
        base::BindRepeating(&CalculatorsPoliciesBinder::UpdateAccessMode,
                            GetWeakPtr()));
@@ -182,6 +184,11 @@ void CalculatorsPoliciesBinder::Init() {
   Bind(whitelist_name_,
        base::BindRepeating(&CalculatorsPoliciesBinder::UpdateWhitelist,
                            GetWeakPtr()));
+
+  // Retrieve initial values for all policy fields.
+  UpdateAccessMode();
+  UpdateBlacklist();
+  UpdateWhitelist();
 }
 
 void CalculatorsPoliciesBinder::UpdateAccessMode() {
