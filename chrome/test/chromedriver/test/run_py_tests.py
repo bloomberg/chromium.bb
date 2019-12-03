@@ -962,6 +962,7 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
               {type: event.type});
         });
         ''')
+    time.sleep(0.1)
 
     actions = ({"actions": [{
       "type":"pointer",
