@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_RTC_API_NAME_H_
-#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_RTC_API_NAME_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_PEERCONNECTION_RTC_API_NAME_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_PEERCONNECTION_RTC_API_NAME_H_
 
 namespace blink {
 
 // Helper enum used for histogramming calls to WebRTC APIs from JavaScript.
 // The entries are linked to UMA values in //tools/metrics/histograms/enums.xml
 // and shouldn't be renumbered or removed.
-enum class WebRTCAPIName {
+enum class RTCAPIName {
   kGetUserMedia,
   kPeerConnection,
   kDeprecatedPeerConnection,
@@ -25,4 +25,4 @@ enum class WebRTCAPIName {
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_RTC_API_NAME_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_PEERCONNECTION_RTC_API_NAME_H_

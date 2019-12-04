@@ -54804,6 +54804,18 @@ Called by update_net_trust_anchors.py.-->
   <int value="7" label="Error parsing certificate"/>
 </enum>
 
+<enum name="RTCAPIName">
+  <int value="0" label="GetUserMedia"/>
+  <int value="1" label="PeerConnection00"/>
+  <int value="2" label="DeprecatedPeerConnection"/>
+  <int value="3" label="RTCPeerConnection"/>
+  <int value="4" label="GetMediaDevices"/>
+  <int value="5" label="MediaStreamRecorder"/>
+  <int value="6" label="CanvasCaptureStream"/>
+  <int value="7" label="VideoCaptureStream"/>
+  <int value="8" label="GetDisplayMedia"/>
+</enum>
+
 <enum name="RTCQuicStreamReadIntoResult">
   <int value="0" label="SomeDataWithFin"/>
   <int value="1" label="SomeDataNoFin"/>
@@ -65725,18 +65737,6 @@ Full version information for the fingerprint enum values:
   <int value="2" label="Medium."/>
   <int value="3" label="Good."/>
   <int value="4" label="Excellent."/>
-</enum>
-
-<enum name="WebRTCAPIName">
-  <int value="0" label="GetUserMedia"/>
-  <int value="1" label="PeerConnection00"/>
-  <int value="2" label="DeprecatedPeerConnection"/>
-  <int value="3" label="RTCPeerConnection"/>
-  <int value="4" label="GetMediaDevices"/>
-  <int value="5" label="MediaStreamRecorder"/>
-  <int value="6" label="CanvasCaptureStream"/>
-  <int value="7" label="VideoCaptureStream"/>
-  <int value="8" label="GetDisplayMedia"/>
 </enum>
 
 <enum name="WebRtcAudioCodecs">
