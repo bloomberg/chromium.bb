@@ -2060,85 +2060,87 @@ def FirmwareBuilders(site_config, _boards_dict, _ge_build_config):
     boards_dict: A dict mapping board types to board name collections.
     ge_build_config: Dictionary containing the decoded GE configuration file.
   """
+  # pylint: disable=unused-variable
   # Defines "interval", "branch", "boards", "kwargs" for firmwarebranch builds.
   #
   # Intervals:
   # NONE = ''  # Do not schedule automatically.
-  ACTIVE = 'with 168h interval'  # 1 week interval
-  INACTIVE = 'with 720h interval'  # 30 day interval
+  DAILY = 'with 24h interval'  # 1 day interval
+  WEEKLY = 'with 168h interval'  # 1 week interval
+  MONTHLY = 'with 720h interval'  # 30 day interval
   # Override these template variables via kwargs.
   CR50 = {'sign_types': ['cr50_firmware']}
   firmware_branch_builders = [
-      (INACTIVE, 'firmware-monroe-4921.B', ['monroe'], {}),
-      (INACTIVE, 'firmware-enguarde-5216.201.B', ['enguarde'], {}),
-      (INACTIVE, 'firmware-expresso-5216.223.B', ['expresso'], {}),
-      (INACTIVE, 'firmware-kip-5216.227.B', ['kip'], {}),
-      (INACTIVE, 'firmware-swanky-5216.238.B', ['swanky'], {}),
-      (INACTIVE, 'firmware-gnawty-5216.239.B', ['gnawty'], {}),
-      (INACTIVE, 'firmware-winky-5216.265.B', ['winky'], {}),
-      (INACTIVE, 'firmware-candy-5216.310.B', ['candy'], {}),
-      (INACTIVE, 'firmware-cr50-9308.B', ['reef'], CR50),
-      (INACTIVE, 'firmware-cr50-guc-factory-9308.26.B', ['reef'], CR50),
-      (INACTIVE, 'firmware-cr50-mp-release-9308.87.B', ['reef'], CR50),
-      (INACTIVE, 'firmware-banjo-5216.334.B', ['banjo'], {}),
-      (INACTIVE, 'firmware-orco-5216.362.B', ['orco'], {}),
-      (INACTIVE, 'firmware-sumo-5216.382.B', ['sumo'], {}),
-      (INACTIVE, 'firmware-ninja-5216.383.B', ['ninja'], {}),
-      (INACTIVE, 'firmware-heli-5216.392.B', ['heli'], {}),
-      (INACTIVE, 'firmware-nyan-5771.B', ['nyan_big', 'nyan_blaze'], {}),
-      (INACTIVE, 'firmware-kitty-5771.61.B', ['nyan_kitty'], {}),
-      (INACTIVE, 'firmware-samus-6300.B', ['samus'], {}),
-      (INACTIVE, 'firmware-paine-6301.58.B', ['auron_paine'], {}),
-      (INACTIVE, 'firmware-yuna-6301.59.B', ['auron_yuna'], {}),
-      (INACTIVE, 'firmware-guado-6301.108.B', ['guado'], {}),
-      (INACTIVE, 'firmware-tidus-6301.109.B', ['tidus'], {}),
-      (INACTIVE, 'firmware-rikku-6301.110.B', ['rikku'], {}),
-      (INACTIVE, 'firmware-lulu-6301.136.B', ['lulu'], {}),
-      (INACTIVE, 'firmware-gandof-6301.155.B', ['gandof'], {}),
-      (INACTIVE, 'firmware-buddy-6301.202.B', ['buddy'], {}),
-      (INACTIVE, 'firmware-veyron-6588.B', [
+      (MONTHLY, 'firmware-monroe-4921.B', ['monroe'], {}),
+      (MONTHLY, 'firmware-enguarde-5216.201.B', ['enguarde'], {}),
+      (MONTHLY, 'firmware-expresso-5216.223.B', ['expresso'], {}),
+      (MONTHLY, 'firmware-kip-5216.227.B', ['kip'], {}),
+      (MONTHLY, 'firmware-swanky-5216.238.B', ['swanky'], {}),
+      (MONTHLY, 'firmware-gnawty-5216.239.B', ['gnawty'], {}),
+      (MONTHLY, 'firmware-winky-5216.265.B', ['winky'], {}),
+      (MONTHLY, 'firmware-candy-5216.310.B', ['candy'], {}),
+      (MONTHLY, 'firmware-cr50-9308.B', ['reef'], CR50),
+      (MONTHLY, 'firmware-cr50-guc-factory-9308.26.B', ['reef'], CR50),
+      (MONTHLY, 'firmware-cr50-mp-release-9308.87.B', ['reef'], CR50),
+      (MONTHLY, 'firmware-banjo-5216.334.B', ['banjo'], {}),
+      (MONTHLY, 'firmware-orco-5216.362.B', ['orco'], {}),
+      (MONTHLY, 'firmware-sumo-5216.382.B', ['sumo'], {}),
+      (MONTHLY, 'firmware-ninja-5216.383.B', ['ninja'], {}),
+      (MONTHLY, 'firmware-heli-5216.392.B', ['heli'], {}),
+      (MONTHLY, 'firmware-nyan-5771.B', ['nyan_big', 'nyan_blaze'], {}),
+      (MONTHLY, 'firmware-kitty-5771.61.B', ['nyan_kitty'], {}),
+      (MONTHLY, 'firmware-samus-6300.B', ['samus'], {}),
+      (MONTHLY, 'firmware-paine-6301.58.B', ['auron_paine'], {}),
+      (MONTHLY, 'firmware-yuna-6301.59.B', ['auron_yuna'], {}),
+      (MONTHLY, 'firmware-guado-6301.108.B', ['guado'], {}),
+      (MONTHLY, 'firmware-tidus-6301.109.B', ['tidus'], {}),
+      (MONTHLY, 'firmware-rikku-6301.110.B', ['rikku'], {}),
+      (MONTHLY, 'firmware-lulu-6301.136.B', ['lulu'], {}),
+      (MONTHLY, 'firmware-gandof-6301.155.B', ['gandof'], {}),
+      (MONTHLY, 'firmware-buddy-6301.202.B', ['buddy'], {}),
+      (MONTHLY, 'firmware-veyron-6588.B', [
           'veyron_jerry', 'veyron_mighty',
           'veyron_speedy', 'veyron_jaq',
           'veyron_minnie',
           'veyron_mickey', 'veyron_rialto', 'veyron_tiger',
           'veyron_fievel'], {}),
-      (INACTIVE, 'firmware-glados-7820.B', [
+      (MONTHLY, 'firmware-glados-7820.B', [
           'glados', 'chell', 'lars',
           'sentry', 'cave', 'asuka', 'caroline'], {}),
-      (INACTIVE, 'firmware-strago-7287.B', [
+      (MONTHLY, 'firmware-strago-7287.B', [
           'wizpig', 'setzer', 'banon', 'kefka', 'relm'], {}),
-      (INACTIVE, 'firmware-cyan-7287.57.B', ['cyan'], {}),
-      (INACTIVE, 'firmware-celes-7287.92.B', ['celes'], {}),
-      (INACTIVE, 'firmware-ultima-7287.131.B', ['ultima'], {}),
-      (INACTIVE, 'firmware-reks-7287.133.B', ['reks'], {}),
-      (INACTIVE, 'firmware-terra-7287.154.B', ['terra'], {}),
-      (INACTIVE, 'firmware-edgar-7287.167.B', ['edgar'], {}),
-      (INACTIVE, 'firmware-smaug-7900.B', ['smaug'], {}),
-      (INACTIVE, 'firmware-gale-8281.B', ['gale'], {}),
-      (INACTIVE, 'firmware-oak-8438.B', ['oak', 'elm', 'hana'], {}),
-      (INACTIVE, 'firmware-gru-8785.B', ['gru', 'kevin', 'bob'], {}),
-      (INACTIVE, 'firmware-reef-9042.B', [
+      (MONTHLY, 'firmware-cyan-7287.57.B', ['cyan'], {}),
+      (MONTHLY, 'firmware-celes-7287.92.B', ['celes'], {}),
+      (MONTHLY, 'firmware-ultima-7287.131.B', ['ultima'], {}),
+      (MONTHLY, 'firmware-reks-7287.133.B', ['reks'], {}),
+      (MONTHLY, 'firmware-terra-7287.154.B', ['terra'], {}),
+      (MONTHLY, 'firmware-edgar-7287.167.B', ['edgar'], {}),
+      (MONTHLY, 'firmware-smaug-7900.B', ['smaug'], {}),
+      (MONTHLY, 'firmware-gale-8281.B', ['gale'], {}),
+      (MONTHLY, 'firmware-oak-8438.B', ['oak', 'elm', 'hana'], {}),
+      (MONTHLY, 'firmware-gru-8785.B', ['gru', 'kevin', 'bob'], {}),
+      (MONTHLY, 'firmware-reef-9042.B', [
           'reef', 'pyro', 'sand', 'snappy'], {}),
-      (INACTIVE, 'firmware-eve-9584.B', ['eve'], {}),
-      (INACTIVE, 'firmware-coral-10068.B', ['coral'], {}),
-      (INACTIVE, 'firmware-fizz-10139.B', ['fizz'], {}),
-      (INACTIVE, 'firmware-fizz-10139.94.B', ['fizz'], {}),
-      (INACTIVE, 'firmware-scarlet-10388.B', ['scarlet'], {}),
-      (INACTIVE, 'firmware-poppy-10431.B', ['poppy', 'soraka', 'nautilus'], {}),
-      (INACTIVE, 'firmware-nami-10775.B', ['nami'], {}),
-      (INACTIVE, 'firmware-nocturne-10984.B', ['nocturne'], {}),
-      (INACTIVE, 'firmware-servo-11011.B', ['oak'], {}),
-      (INACTIVE, 'firmware-grunt-11031.B', ['grunt'], {}),
-      (INACTIVE, 'firmware-nami-10775.108.B', ['nami'], {}),
-      (ACTIVE, 'firmware-rammus-11275.B', ['rammus'], {}),
-      (ACTIVE, 'firmware-octopus-11297.B', ['octopus'], {}),
-      (ACTIVE, 'firmware-octopus-11297.83.B', ['octopus'], {}),
-      (ACTIVE, 'firmware-kalista-11343.B', ['kalista'], {}),
-      (ACTIVE, 'firmware-atlas-11827.B', ['atlas'], {}),
-      (ACTIVE, 'firmware-sarien-12200.B', ['sarien'], {}),
-      (ACTIVE, 'firmware-mistral-12422.B', ['mistral'], {}),
-      (ACTIVE, 'firmware-kukui-12573.B', ['kukui'], {}),
-      (ACTIVE, 'firmware-hatch-12672.B', ['hatch'], {}),
+      (MONTHLY, 'firmware-eve-9584.B', ['eve'], {}),
+      (MONTHLY, 'firmware-coral-10068.B', ['coral'], {}),
+      (MONTHLY, 'firmware-fizz-10139.B', ['fizz'], {}),
+      (MONTHLY, 'firmware-fizz-10139.94.B', ['fizz'], {}),
+      (MONTHLY, 'firmware-scarlet-10388.B', ['scarlet'], {}),
+      (MONTHLY, 'firmware-poppy-10431.B', ['poppy', 'soraka', 'nautilus'], {}),
+      (MONTHLY, 'firmware-nami-10775.B', ['nami'], {}),
+      (MONTHLY, 'firmware-nocturne-10984.B', ['nocturne'], {}),
+      (MONTHLY, 'firmware-servo-11011.B', ['oak'], {}),
+      (MONTHLY, 'firmware-grunt-11031.B', ['grunt'], {}),
+      (MONTHLY, 'firmware-nami-10775.108.B', ['nami'], {}),
+      (WEEKLY, 'firmware-rammus-11275.B', ['rammus'], {}),
+      (WEEKLY, 'firmware-octopus-11297.B', ['octopus'], {}),
+      (WEEKLY, 'firmware-octopus-11297.83.B', ['octopus'], {}),
+      (WEEKLY, 'firmware-kalista-11343.B', ['kalista'], {}),
+      (WEEKLY, 'firmware-atlas-11827.B', ['atlas'], {}),
+      (WEEKLY, 'firmware-sarien-12200.B', ['sarien'], {}),
+      (WEEKLY, 'firmware-mistral-12422.B', ['mistral'], {}),
+      (WEEKLY, 'firmware-kukui-12573.B', ['kukui'], {}),
+      (WEEKLY, 'firmware-hatch-12672.B', ['hatch'], {}),
   ]
 
   for interval, branch, boards, kwargs in firmware_branch_builders:
@@ -2160,59 +2162,61 @@ def FactoryBuilders(site_config, _boards_dict, _ge_build_config):
     boards_dict: A dict mapping board types to board name collections.
     ge_build_config: Dictionary containing the decoded GE configuration file.
   """
+  # pylint: disable=unused-variable
   # Intervals:
   # None: Do not schedule automatically.
-  ACTIVE = 'with 168h interval'  # 1 week interval
-  INACTIVE = 'with 720h interval'  # 30 day interval
+  DAILY = 'with 24h interval'  # 1 day interval
+  WEEKLY = 'with 168h interval'  # 1 week interval
+  MONTHLY = 'with 720h interval'  # 30 day interval
   branch_builders = [
-      (INACTIVE, 'factory-rambi-5517.B', [
+      (MONTHLY, 'factory-rambi-5517.B', [
           'enguarde', 'expresso', 'kip', 'swanky', 'winky']),
-      (INACTIVE, 'factory-nyan-5772.B', [
+      (MONTHLY, 'factory-nyan-5772.B', [
           'nyan_big', 'nyan_blaze', 'nyan_kitty']),
-      (INACTIVE, 'factory-rambi-6420.B', [
+      (MONTHLY, 'factory-rambi-6420.B', [
           'enguarde', 'candy', 'banjo',
           'ninja', 'sumo', 'orco', 'heli', 'gnawty']),
-      (INACTIVE, 'factory-auron-6459.B', [
+      (MONTHLY, 'factory-auron-6459.B', [
           'auron_paine', 'auron_yuna', 'lulu',
           'gandof', 'buddy']),
-      (INACTIVE, 'factory-whirlwind-6509.B', ['whirlwind']),
-      (INACTIVE, 'factory-veyron-6591.B', [
+      (MONTHLY, 'factory-whirlwind-6509.B', ['whirlwind']),
+      (MONTHLY, 'factory-veyron-6591.B', [
           'veyron_jerry', 'veyron_mighty',
           'veyron_speedy', 'veyron_jaq',
           'veyron_minnie', 'veyron_mickey']),
-      (INACTIVE, 'factory-auron-6772.B', [
+      (MONTHLY, 'factory-auron-6772.B', [
           'guado', 'tidus', 'rikku', 'buddy']),
-      (INACTIVE, 'factory-whirlwind-6812.41.B', ['whirlwind']),
-      (INACTIVE, 'factory-strago-7458.B', [
+      (MONTHLY, 'factory-whirlwind-6812.41.B', ['whirlwind']),
+      (MONTHLY, 'factory-strago-7458.B', [
           'cyan', 'celes', 'ultima', 'reks', 'terra', 'edgar',
           'wizpig', 'setzer', 'banon', 'kefka', 'relm', 'kip']),
-      (INACTIVE, 'factory-veyron-7505.B', [
+      (MONTHLY, 'factory-veyron-7505.B', [
           'veyron_mickey', 'veyron_tiger', 'veyron_fievel', 'veyron_rialto']),
-      (INACTIVE, 'factory-glados-7657.B', ['glados', 'chell']),
-      (INACTIVE, 'factory-glados-7828.B', [
+      (MONTHLY, 'factory-glados-7657.B', ['glados', 'chell']),
+      (MONTHLY, 'factory-glados-7828.B', [
           'glados', 'chell', 'lars',
           'sentry', 'cave', 'asuka', 'caroline']),
-      (INACTIVE, 'factory-oak-8182.B', ['elm', 'hana']),
-      (INACTIVE, 'factory-gru-8652.B', ['kevin']),
-      (INACTIVE, 'factory-gale-8743.19.B', ['gale']),
-      (INACTIVE, 'factory-reef-8811.B', ['reef', 'pyro', 'sand', 'snappy']),
-      (INACTIVE, 'factory-gru-9017.B', ['gru', 'bob']),
-      (INACTIVE, 'factory-eve-9667.B', ['eve']),
-      (INACTIVE, 'factory-coral-10122.B', ['coral']),
-      (INACTIVE, 'factory-fizz-10167.B', ['fizz', 'fizz-accelerator']),
-      (INACTIVE, 'factory-scarlet-10211.B', ['scarlet']),
-      (INACTIVE, 'factory-soraka-10323.39.B', ['soraka']),
-      (INACTIVE, 'factory-poppy-10504.B', ['nautilus']),
-      (INACTIVE, 'factory-nami-10715.B', ['nami', 'kalista']),
-      (INACTIVE, 'factory-nocturne-11066.B', ['nocturne']),
-      (INACTIVE, 'factory-grunt-11164.B', ['grunt']),
-      (INACTIVE, 'factory-rammus-11289.B', ['rammus']),
-      (ACTIVE, 'factory-octopus-11512.B', ['octopus']),
-      (ACTIVE, 'factory-atlas-11907.B', ['atlas']),
-      (ACTIVE, 'factory-sarien-12033.B', ['sarien']),
-      (ACTIVE, 'factory-mistral-12361.B', ['mistral']),
-      (ACTIVE, 'factory-kukui-12587.B', ['kukui']),
-      (ACTIVE, 'factory-hatch-12692.B', ['hatch']),
+      (MONTHLY, 'factory-oak-8182.B', ['elm', 'hana']),
+      (MONTHLY, 'factory-gru-8652.B', ['kevin']),
+      (MONTHLY, 'factory-gale-8743.19.B', ['gale']),
+      (MONTHLY, 'factory-reef-8811.B', ['reef', 'pyro', 'sand', 'snappy']),
+      (MONTHLY, 'factory-gru-9017.B', ['gru', 'bob']),
+      (MONTHLY, 'factory-eve-9667.B', ['eve']),
+      (MONTHLY, 'factory-coral-10122.B', ['coral']),
+      (MONTHLY, 'factory-fizz-10167.B', ['fizz', 'fizz-accelerator']),
+      (MONTHLY, 'factory-scarlet-10211.B', ['scarlet']),
+      (MONTHLY, 'factory-soraka-10323.39.B', ['soraka']),
+      (MONTHLY, 'factory-poppy-10504.B', ['nautilus']),
+      (MONTHLY, 'factory-nami-10715.B', ['nami', 'kalista']),
+      (MONTHLY, 'factory-nocturne-11066.B', ['nocturne']),
+      (MONTHLY, 'factory-grunt-11164.B', ['grunt']),
+      (MONTHLY, 'factory-rammus-11289.B', ['rammus']),
+      (WEEKLY, 'factory-octopus-11512.B', ['octopus']),
+      (WEEKLY, 'factory-atlas-11907.B', ['atlas']),
+      (WEEKLY, 'factory-sarien-12033.B', ['sarien']),
+      (WEEKLY, 'factory-mistral-12361.B', ['mistral']),
+      (WEEKLY, 'factory-kukui-12587.B', ['kukui']),
+      (WEEKLY, 'factory-hatch-12692.B', ['hatch']),
       # This is intended to create master branch tryjobs, NOT for production
       # builds. Update the associated list of boards as needed.
       (None, 'master', ['atlas', 'octopus', 'rammus', 'coral', 'eve',
