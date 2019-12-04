@@ -176,6 +176,12 @@ LICENCES_IGNORE = [
     '||',
 ]
 
+# The full names of packages which we want to generate license information for
+# even though they have an empty installation size.
+SIZE_EXEMPT_PACKAGES = [
+    'net-print/xerox-printing-license',
+]
+
 # Find the directory of this script.
 SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
 
@@ -610,8 +616,11 @@ being scraped currently).""",
     """
     # If the total size installed is zero, we installed no content to license.
     if _BuildInfo(build_info_dir, 'SIZE').strip() == '0':
-      self.skip = True
-      return
+      # Allow for license generation for the whitelisted empty packages.
+      if self.fullname not in SIZE_EXEMPT_PACKAGES:
+        logging.debug('Build directory is empty')
+        self.skip = True
+        return
 
     self.homepages = _BuildInfo(build_info_dir, 'HOMEPAGE').split()
     ebuild_license_names = _BuildInfo(build_info_dir, 'LICENSE').split()
