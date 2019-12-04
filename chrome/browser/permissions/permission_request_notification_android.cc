@@ -9,10 +9,10 @@
 #include "build/build_config.h"
 #include "chrome/browser/notifications/notification_display_service_impl.h"
 #include "chrome/browser/notifications/notification_handler.h"
-#include "chrome/browser/permissions/adaptive_notification_permission_ui_selector.h"
-#include "chrome/browser/permissions/permission_features.h"
 #include "chrome/browser/permissions/permission_request.h"
 #include "chrome/browser/permissions/permission_request_notification_handler.h"
+#include "chrome/browser/permissions/quiet_notification_permission_ui_config.h"
+#include "chrome/browser/permissions/quiet_notification_permission_ui_state.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
@@ -58,14 +58,15 @@ PermissionRequestNotificationAndroid::Create(
 bool PermissionRequestNotificationAndroid::ShouldShowAsNotification(
     Profile* profile,
     ContentSettingsType type) {
-  auto* permission_ui_selector =
-      AdaptiveNotificationPermissionUiSelector::GetForProfile(profile);
   return type == ContentSettingsType::NOTIFICATIONS &&
-         permission_ui_selector->ShouldShowQuietUi() &&
-         (QuietNotificationsPromptConfig::UIFlavorToUse() ==
-              QuietNotificationsPromptConfig::UIFlavor::HEADS_UP_NOTIFICATION ||
-          QuietNotificationsPromptConfig::UIFlavorToUse() ==
-              QuietNotificationsPromptConfig::UIFlavor::QUIET_NOTIFICATION);
+         // TODO(crbug.com/1030633): Consult PermissionRequestManager here.
+         QuietNotificationPermissionUiState::IsQuietUiEnabledInPrefs(profile) &&
+         (QuietNotificationPermissionUiConfig::UiFlavorToUse() ==
+              QuietNotificationPermissionUiConfig::UiFlavor::
+                  HEADS_UP_NOTIFICATION ||
+          QuietNotificationPermissionUiConfig::UiFlavorToUse() ==
+              QuietNotificationPermissionUiConfig::UiFlavor::
+                  QUIET_NOTIFICATION);
 }
 
 // static
@@ -77,15 +78,16 @@ std::string PermissionRequestNotificationAndroid::NotificationIdForOrigin(
 // static
 PermissionPrompt::TabSwitchingBehavior
 PermissionRequestNotificationAndroid::GetTabSwitchingBehavior() {
-  if (QuietNotificationsPromptConfig::UIFlavorToUse() ==
-      QuietNotificationsPromptConfig::UIFlavor::QUIET_NOTIFICATION) {
+  if (QuietNotificationPermissionUiConfig::UiFlavorToUse() ==
+      QuietNotificationPermissionUiConfig::UiFlavor::QUIET_NOTIFICATION) {
     return PermissionPrompt::TabSwitchingBehavior::
         kDestroyPromptButKeepRequestPending;
   } else {
     // For heads-up notifications finalize the request as "ignored" on tab
     // switching.
-    DCHECK_EQ(QuietNotificationsPromptConfig::UIFlavor::HEADS_UP_NOTIFICATION,
-              QuietNotificationsPromptConfig::UIFlavorToUse());
+    DCHECK_EQ(
+        QuietNotificationPermissionUiConfig::UiFlavor::HEADS_UP_NOTIFICATION,
+        QuietNotificationPermissionUiConfig::UiFlavorToUse());
     return PermissionPrompt::TabSwitchingBehavior::
         kDestroyPromptAndIgnoreRequest;
   }

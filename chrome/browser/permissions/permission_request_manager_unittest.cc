@@ -15,16 +15,18 @@
 #include "base/util/values/values_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
-#include "chrome/browser/permissions/adaptive_notification_permission_ui_selector.h"
+#include "chrome/browser/permissions/adaptive_quiet_notification_permission_ui_enabler.h"
 #include "chrome/browser/permissions/mock_permission_request.h"
-#include "chrome/browser/permissions/permission_features.h"
 #include "chrome/browser/permissions/permission_request.h"
 #include "chrome/browser/permissions/permission_request_auto_blocker.h"
 #include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/permissions/permission_uma_util.h"
+#include "chrome/browser/permissions/quiet_notification_permission_ui_config.h"
+#include "chrome/browser/permissions/quiet_notification_permission_ui_state.h"
 #include "chrome/browser/ui/permission_bubble/mock_permission_prompt_factory.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -615,15 +617,15 @@ TEST_F(PermissionRequestManagerTest,
   base::test::ScopedFeatureList feature_list;
   feature_list.InitWithFeaturesAndParameters(
       {{features::kQuietNotificationPrompts,
-        {{QuietNotificationsPromptConfig::kEnableAdaptiveActivation, "true"}}}},
+        {{QuietNotificationPermissionUiConfig::kEnableAdaptiveActivation,
+          "true"}}}},
       {features::kBlockRepeatedNotificationPermissionPrompts});
 
-  auto* permission_ui_selector =
-      AdaptiveNotificationPermissionUiSelector::GetForProfile(profile());
+  auto* permission_ui_enabler =
+      AdaptiveQuietNotificationPermissionUiEnabler::GetForProfile(profile());
 
   EXPECT_FALSE(
-      permission_ui_selector
-          ->AdaptiveNotificationPermissionUiSelector::ShouldShowQuietUi());
+      QuietNotificationPermissionUiState::IsQuietUiEnabledInPrefs(profile()));
   // TODO(hkamila): Collapse the below blocks into a single for statement.
   GURL notification1("http://www.notification1.com/");
   NavigateAndCommit(notification1);
@@ -693,20 +695,17 @@ TEST_F(PermissionRequestManagerTest,
       "request7", PermissionRequestType::PERMISSION_NOTIFICATIONS,
       notification7);
   // For the first quiet permission prompt, show a promo.
-  EXPECT_TRUE(
-      permission_ui_selector
-          ->AdaptiveNotificationPermissionUiSelector::ShouldShowPromo());
+  EXPECT_TRUE(QuietNotificationPermissionUiState::ShouldShowPromo(profile()));
   manager_->AddRequest(&notification7_request);
   WaitForBubbleToBeShown();
   EXPECT_TRUE(manager_->ShouldCurrentRequestUseQuietUI());
   EXPECT_TRUE(
-      permission_ui_selector
-          ->AdaptiveNotificationPermissionUiSelector::ShouldShowQuietUi());
+      QuietNotificationPermissionUiState::IsQuietUiEnabledInPrefs(profile()));
   Accept();
 
   base::SimpleTestClock clock_;
   clock_.SetNow(base::Time::Now());
-  permission_ui_selector->set_clock_for_testing(&clock_);
+  permission_ui_enabler->set_clock_for_testing(&clock_);
 
   // One accept through the quiet UI, doesn't switch the user back to the
   // disabled state once the permission is set.
@@ -716,26 +715,24 @@ TEST_F(PermissionRequestManagerTest,
       "request8", PermissionRequestType::PERMISSION_NOTIFICATIONS,
       notification8);
   // For the rest of the quiet permission prompts, do not show promo.
-  EXPECT_TRUE(
-      permission_ui_selector
-          ->AdaptiveNotificationPermissionUiSelector::ShouldShowPromo());
+  EXPECT_TRUE(QuietNotificationPermissionUiState::ShouldShowPromo(profile()));
   manager_->AddRequest(&notification8_request);
   WaitForBubbleToBeShown();
   EXPECT_TRUE(manager_->ShouldCurrentRequestUseQuietUI());
 
   // Clearing interaction history does not change the state for the enabled
   // quiet UI.
-  permission_ui_selector->ClearInteractionHistory(base::Time(),
-                                                  base::Time::Max());
+  permission_ui_enabler->ClearInteractionHistory(base::Time(),
+                                                 base::Time::Max());
   EXPECT_TRUE(manager_->ShouldCurrentRequestUseQuietUI());
-  permission_ui_selector->DisableQuietUi();
+  QuietNotificationPermissionUiState::DisableQuietUiInPrefs(profile());
   EXPECT_FALSE(manager_->ShouldCurrentRequestUseQuietUI());
   Deny();
 
   base::Time recorded_time = clock_.Now();
   clock_.Advance(base::TimeDelta::FromDays(1));
   base::Time from_time = clock_.Now();
-  permission_ui_selector->set_clock_for_testing(&clock_);
+  permission_ui_enabler->set_clock_for_testing(&clock_);
   GURL notification9("http://www.notification9.com/");
   NavigateAndCommit(notification9);
   MockPermissionRequest notification9_request(
@@ -747,7 +744,7 @@ TEST_F(PermissionRequestManagerTest,
 
   clock_.Advance(base::TimeDelta::FromDays(1));
   base::Time to_time = clock_.Now();
-  permission_ui_selector->set_clock_for_testing(&clock_);
+  permission_ui_enabler->set_clock_for_testing(&clock_);
   GURL notification10("http://www.notification10.com/");
   NavigateAndCommit(notification10);
   MockPermissionRequest notification10_request(
@@ -759,7 +756,7 @@ TEST_F(PermissionRequestManagerTest,
   Deny();
 
   clock_.Advance(base::TimeDelta::FromDays(1));
-  permission_ui_selector->set_clock_for_testing(&clock_);
+  permission_ui_enabler->set_clock_for_testing(&clock_);
   GURL notification11("http://www.notification11.com/");
   NavigateAndCommit(notification11);
   MockPermissionRequest notification11_request(
@@ -769,11 +766,10 @@ TEST_F(PermissionRequestManagerTest,
   WaitForBubbleToBeShown();
   Deny();
 
-  ListPrefUpdate update(
-      profile()->GetPrefs(),
-      "profile.content_settings.permission_actions.notifications");
+  ListPrefUpdate update(profile()->GetPrefs(),
+                        prefs::kNotificationPermissionActions);
   base::Value::ListStorage& permission_actions = update.Get()->GetList();
-  permission_ui_selector->ClearInteractionHistory(from_time, to_time);
+  permission_ui_enabler->ClearInteractionHistory(from_time, to_time);
 
   // Check that we have cleared all entries >= |from_time| and <|end_time|.
   EXPECT_EQ(permission_actions.size(), 3u);

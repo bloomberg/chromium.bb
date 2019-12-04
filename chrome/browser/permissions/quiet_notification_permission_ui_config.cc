@@ -2,30 +2,29 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/permissions/permission_features.h"
-
-#include <string>
+#include "chrome/browser/permissions/quiet_notification_permission_ui_config.h"
 
 #include "base/metrics/field_trial_params.h"
 #include "chrome/common/chrome_features.h"
 
-const char QuietNotificationsPromptConfig::kEnableAdaptiveActivation[] =
+// static
+const char QuietNotificationPermissionUiConfig::kEnableAdaptiveActivation[] =
     "enable_adaptive_activation";
 
-QuietNotificationsPromptConfig::UIFlavor
-QuietNotificationsPromptConfig::UIFlavorToUse() {
+QuietNotificationPermissionUiConfig::UiFlavor
+QuietNotificationPermissionUiConfig::UiFlavorToUse() {
   if (!base::FeatureList::IsEnabled(features::kQuietNotificationPrompts))
-    return UIFlavor::NONE;
+    return UiFlavor::NONE;
 
 #if defined(OS_ANDROID)
-  return UIFlavor::MINI_INFOBAR;
+  return UiFlavor::MINI_INFOBAR;
 #else   // OS_ANDROID
-  return UIFlavor::ANIMATED_ICON;
+  return UiFlavor::ANIMATED_ICON;
 #endif  // !OS_ANDROID
 }
 
 // static
-bool QuietNotificationsPromptConfig::IsAdaptiveActivationEnabled() {
+bool QuietNotificationPermissionUiConfig::IsAdaptiveActivationEnabled() {
   if (!base::FeatureList::IsEnabled(features::kQuietNotificationPrompts))
     return false;
 
