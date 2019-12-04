@@ -104,7 +104,7 @@ class UprevsVersionedPackageTest(cros_test_lib.MockTestCase):
       packages.uprev_versioned_package(cpv, [], [], Chroot())
 
 
-class ReplicatePrivateConfigTest(cros_test_lib.MockTempDirTestCase):
+class ReplicatePrivateConfigTest(cros_test_lib.RunCommandTempDirTestCase):
   """replicate_private_config tests."""
 
   def setUp(self):
@@ -124,10 +124,10 @@ class ReplicatePrivateConfigTest(cros_test_lib.MockTempDirTestCase):
     cros_test_lib.CreateOnDiskHierarchy(self.tempdir, file_layout)
 
     # Private config contains 'a' and 'b' fields.
-    private_config_path = os.path.join(private_package_root, 'files',
-                                       'build_config.json')
+    self.private_config_path = os.path.join(private_package_root, 'files',
+                                            'build_config.json')
     self.WriteTempFile(
-        private_config_path,
+        self.private_config_path,
         json.dumps({'chromeos': {
             'configs': [{
                 'a': 3,
@@ -154,7 +154,7 @@ class ReplicatePrivateConfigTest(cros_test_lib.MockTempDirTestCase):
                                                 'replication_config.jsonpb')
     replication_config = ReplicationConfig(file_replication_rules=[
         FileReplicationRule(
-            source_path=private_config_path,
+            source_path=self.private_config_path,
             destination_path=self.public_config_path,
             file_type=FILE_TYPE_JSON,
             replication_type=REPLICATION_TYPE_FILTER,
@@ -165,15 +165,55 @@ class ReplicatePrivateConfigTest(cros_test_lib.MockTempDirTestCase):
                       json_format.MessageToJson(replication_config))
     self.PatchObject(constants, 'SOURCE_ROOT', new=self.tempdir)
 
+    self.rc.SetDefaultCmdResult(side_effect=self._write_generated_c_files)
+
+  def _write_generated_c_files(self, *_args, **_kwargs):
+    """Write fake generated C files to the public output dir.
+
+    Note that this function accepts args and kwargs so it can be used as a side
+    effect.
+    """
+    output_dir = os.path.join(self.public_package_root, 'files')
+    self.WriteTempFile(os.path.join(output_dir, 'config.c'), '')
+    self.WriteTempFile(os.path.join(output_dir, 'ec_config.c'), '')
+    self.WriteTempFile(os.path.join(output_dir, 'ec_config.h'), '')
+
+  def _write_incorrect_generated_c_files(self, *_args, **_kwargs):
+    """Similar to _write_generated_c_files, with an expected file missing.
+
+    Note that this function accepts args and kwargs so it can be used as a side
+    effect.
+    """
+    output_dir = os.path.join(self.public_package_root, 'files')
+    self.WriteTempFile(os.path.join(output_dir, 'config.c'), '')
+    self.WriteTempFile(os.path.join(output_dir, 'ec_config.c'), '')
+
   def test_replicate_private_config(self):
     """Basic replication test."""
     refs = [GitRef(path='overlay-coral-private', ref='master', revision='123')]
+    chroot = Chroot()
     result = packages.replicate_private_config(
-        _build_targets=None, refs=refs, _chroot=None)
+        _build_targets=None, refs=refs, chroot=chroot)
+
+    self.assertCommandContains([
+        'cros_config_schema', '-m',
+        os.path.join(constants.CHROOT_SOURCE_ROOT, self.public_config_path),
+        '-g',
+        os.path.join(constants.CHROOT_SOURCE_ROOT, self.public_package_root,
+                     'files'), '-f', '"TRUE"'
+    ],
+                               enter_chroot=True,
+                               chroot_args=chroot.get_enter_args())
 
     self.assertEqual(len(result.modified), 1)
-    # The public build_config.json was modified.
-    self.assertEqual(result.modified[0].files, [self.public_config_path])
+    # The public build_config.json and generated C files were modified.
+    expected_modified_files = [
+        self.public_config_path,
+        os.path.join(self.public_package_root, 'files', 'config.c'),
+        os.path.join(self.public_package_root, 'files', 'ec_config.c'),
+        os.path.join(self.public_package_root, 'files', 'ec_config.h'),
+    ]
+    self.assertEqual(result.modified[0].files, expected_modified_files)
     self.assertEqual(result.modified[0].new_version, '123')
 
     # The update from the private build_config.json was copied to the public.
@@ -186,11 +226,74 @@ class ReplicatePrivateConfigTest(cros_test_lib.MockTempDirTestCase):
             }]
         }})
 
+  def test_replicate_private_config_no_build_config(self):
+    """If there is no build config, don't generate C files."""
+    # Modify the replication config to write to "other_config.json" instead of
+    # "build_config.json"
+    modified_destination_path = self.public_config_path.replace(
+        'build_config', 'other_config')
+    replication_config = ReplicationConfig(file_replication_rules=[
+        FileReplicationRule(
+            source_path=self.private_config_path,
+            destination_path=modified_destination_path,
+            file_type=FILE_TYPE_JSON,
+            replication_type=REPLICATION_TYPE_FILTER,
+            destination_fields=FieldMask(paths=['a']))
+    ])
+    osutils.WriteFile(self.replication_config_path,
+                      json_format.MessageToJson(replication_config))
+
+    refs = [GitRef(path='overlay-coral-private', ref='master', revision='123')]
+    result = packages.replicate_private_config(
+        _build_targets=None, refs=refs, chroot=Chroot())
+
+    self.assertEqual(len(result.modified), 1)
+    self.assertEqual(result.modified[0].files, [modified_destination_path])
+
+  def test_replicate_private_config_multiple_build_configs(self):
+    """An error is thrown if there is more than one build config."""
+    replication_config = ReplicationConfig(file_replication_rules=[
+        FileReplicationRule(
+            source_path=self.private_config_path,
+            destination_path=self.public_config_path,
+            file_type=FILE_TYPE_JSON,
+            replication_type=REPLICATION_TYPE_FILTER,
+            destination_fields=FieldMask(paths=['a'])),
+        FileReplicationRule(
+            source_path=self.private_config_path,
+            destination_path=self.public_config_path,
+            file_type=FILE_TYPE_JSON,
+            replication_type=REPLICATION_TYPE_FILTER,
+            destination_fields=FieldMask(paths=['a']))
+    ])
+
+    osutils.WriteFile(self.replication_config_path,
+                      json_format.MessageToJson(replication_config))
+
+    refs = [GitRef(path='overlay-coral-private', ref='master', revision='123')]
+    with self.assertRaisesRegex(
+        ValueError, 'Expected at most one build_config.json destination path.'):
+      packages.replicate_private_config(
+          _build_targets=None, refs=refs, chroot=Chroot())
+
+  def test_replicate_private_config_generated_files_incorrect(self):
+    """An error is thrown if generated C files are missing."""
+    self.rc.SetDefaultCmdResult(
+        side_effect=self._write_incorrect_generated_c_files)
+
+    refs = [GitRef(path='overlay-coral-private', ref='master', revision='123')]
+    chroot = Chroot()
+
+    with self.assertRaisesRegex(packages.GeneratedCrosConfigFilesError,
+                                'Expected to find generated C files'):
+      packages.replicate_private_config(
+          _build_targets=None, refs=refs, chroot=chroot)
+
   def test_replicate_private_config_wrong_number_of_refs(self):
     """An error is thrown if there is not exactly one ref."""
     with self.assertRaisesRegex(ValueError, 'Expected exactly one ref'):
       packages.replicate_private_config(
-          _build_targets=None, refs=[], _chroot=None)
+          _build_targets=None, refs=[], chroot=None)
 
     with self.assertRaisesRegex(ValueError, 'Expected exactly one ref'):
       refs = [
@@ -198,7 +301,7 @@ class ReplicatePrivateConfigTest(cros_test_lib.MockTempDirTestCase):
           GitRef(path='a', ref='master', revision='2')
       ]
       packages.replicate_private_config(
-          _build_targets=None, refs=refs, _chroot=None)
+          _build_targets=None, refs=refs, chroot=None)
 
   def test_replicate_private_config_replication_config_missing(self):
     """An error is thrown if there is not a replication config."""
@@ -210,7 +313,7 @@ class ReplicatePrivateConfigTest(cros_test_lib.MockTempDirTestCase):
           GitRef(path='overlay-coral-private', ref='master', revision='123')
       ]
       packages.replicate_private_config(
-          _build_targets=None, refs=refs, _chroot=None)
+          _build_targets=None, refs=refs, chroot=None)
 
 
 class GetBestVisibleTest(cros_test_lib.TestCase):

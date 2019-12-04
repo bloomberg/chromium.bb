@@ -80,6 +80,14 @@ class EbuildManifestError(Error):
   """Error when running ebuild manifest."""
 
 
+class GeneratedCrosConfigFilesError(Error):
+  """Error when cros_config_schema does not produce expected files"""
+
+  def __init__(self, expected_files, found_files):
+    msg = ('Expected to find generated C files: %s. Actually found: %s' %
+           (expected_files, found_files))
+    super(GeneratedCrosConfigFilesError, self).__init__(msg)
+
 UprevVersionedPackageModifications = collections.namedtuple(
     'UprevVersionedPackageModifications', ('new_version', 'files'))
 
@@ -361,8 +369,75 @@ def uprev_chrome(build_targets, refs, chroot):
   return result.add_result(chrome_version, uprev_manager.modified_ebuilds)
 
 
+def _generate_platform_c_files(replication_config, chroot):
+  """Generates platform C files from a platform JSON payload.
+
+  Args:
+    replication_config (replication_config_pb2.ReplicationConfig): A
+      ReplicationConfig that has already been run. If it produced a
+      build_config.json file, that file will be used to generate platform C
+      files. Otherwise, nothing will be generated.
+    chroot (chroot_lib.Chroot): The chroot to use to generate.
+
+  Returns:
+    A list of generated files.
+  """
+  # Generate the platform C files from the build config. Note that it would be
+  # more intuitive to generate the platform C files from the platform config;
+  # however, cros_config_schema does not allow this, because the platform config
+  # payload is not always valid input. For example, if a property is both
+  # 'required' and 'build-only', it will fail schema validation. Thus, use the
+  # build config, and use '-f' to filter.
+  build_config_path = [
+      rule.destination_path
+      for rule in replication_config.file_replication_rules
+      if rule.destination_path.endswith('build_config.json')
+  ]
+
+  if not build_config_path:
+    logging.info(
+        'No build_config.json found, will not generate platform C files.'
+        ' Replication config: %s', replication_config)
+    return []
+
+  if len(build_config_path) > 1:
+    raise ValueError('Expected at most one build_config.json destination path.'
+                     ' Replication config: %s' % replication_config)
+
+  build_config_path = build_config_path[0]
+
+  # Paths to the build_config.json and dir to output C files to, in the
+  # chroot.
+  build_config_chroot_path = os.path.join(constants.CHROOT_SOURCE_ROOT,
+                                          build_config_path)
+  generated_output_chroot_dir = os.path.join(constants.CHROOT_SOURCE_ROOT,
+                                             os.path.dirname(build_config_path))
+
+  command = [
+      'cros_config_schema', '-m', build_config_chroot_path, '-g',
+      generated_output_chroot_dir, '-f', '"TRUE"'
+  ]
+
+  cros_build_lib.run(
+      command, enter_chroot=True, chroot_args=chroot.get_enter_args())
+
+  # A relative (to the source root) path to the generated C files.
+  generated_output_dir = os.path.dirname(build_config_path)
+  generated_files = []
+  expected_c_files = ['config.c', 'ec_config.c', 'ec_config.h']
+  for f in expected_c_files:
+    if os.path.exists(
+        os.path.join(constants.SOURCE_ROOT, generated_output_dir, f)):
+      generated_files.append(os.path.join(generated_output_dir, f))
+
+  if len(expected_c_files) != len(generated_files):
+    raise GeneratedCrosConfigFilesError(expected_c_files, generated_files)
+
+  return generated_files
+
+
 @uprevs_versioned_package('chromeos-base/chromeos-config-bsp-coral-private')
-def replicate_private_config(_build_targets, refs, _chroot):
+def replicate_private_config(_build_targets, refs, chroot):
   """Replicate a private cros_config change to the corresponding public config.
 
     See uprev_versioned_package for args
@@ -393,8 +468,11 @@ def replicate_private_config(_build_targets, refs, _chroot):
       for rule in replication_config.file_replication_rules
   ]
 
-  # TODO(crbug.com/1021241): Use cros_config_schema to generate platform JSON
-  # and C files.
+  # The generated platform C files are not easily filtered by replication rules,
+  # i.e. JSON / proto filtering can be described by a FieldMask, arbitrary C
+  # files cannot. Therefore, replicate and filter the JSON payloads, and then
+  # generate filtered C files from the JSON payload.
+  modified_files.extend(_generate_platform_c_files(replication_config, chroot))
 
   # Use the private repo's commit hash as the new version.
   new_private_version = refs[0].revision
