@@ -1,19 +1,19 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/public/cpp/app_list/tokenized_string.h"
+#include "chrome/common/string_matching/tokenized_string.h"
 
 #include <stddef.h>
 
-#include "ash/public/cpp/app_list/term_break_iterator.h"
 #include "base/i18n/break_iterator.h"
 #include "base/i18n/case_conversion.h"
 #include "base/logging.h"
+#include "chrome/common/string_matching/term_break_iterator.h"
 
 using base::i18n::BreakIterator;
 
-namespace ash {
+namespace string_matching {
 
 TokenizedString::TokenizedString(const base::string16& text) : text_(text) {
   Tokenize();
@@ -44,4 +44,4 @@ void TokenizedString::Tokenize() {
   }
 }
 
-}  // namespace ash
+}  // namespace string_matching

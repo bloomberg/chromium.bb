@@ -1,15 +1,15 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/public/cpp/app_list/term_break_iterator.h"
+#include "chrome/common/string_matching/term_break_iterator.h"
 
 #include "base/i18n/char_iterator.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "third_party/icu/source/common/unicode/uchar.h"
 
-namespace ash {
+namespace string_matching {
 
 TermBreakIterator::TermBreakIterator(const base::string16& word)
     : word_(word),
@@ -72,4 +72,4 @@ TermBreakIterator::State TermBreakIterator::GetNewState(base::char16 ch) {
   return STATE_CHAR;
 }
 
-}  // namespace ash
+}  // namespace string_matching

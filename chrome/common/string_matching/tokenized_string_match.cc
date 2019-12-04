@@ -1,19 +1,19 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/public/cpp/app_list/tokenized_string_match.h"
+#include "chrome/common/string_matching/tokenized_string_match.h"
 
 #include <stddef.h>
 
 #include <cmath>
 
-#include "ash/public/cpp/app_list/tokenized_string_char_iterator.h"
 #include "base/i18n/string_search.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "chrome/common/string_matching/tokenized_string_char_iterator.h"
 
-namespace ash {
+namespace string_matching {
 
 namespace {
 
@@ -235,4 +235,4 @@ bool TokenizedStringMatch::Calculate(const base::string16& query,
   return Calculate(tokenized_query, tokenized_text);
 }
 
-}  // namespace ash
+}  // namespace string_matching

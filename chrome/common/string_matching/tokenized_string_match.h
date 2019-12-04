@@ -1,18 +1,17 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_PUBLIC_CPP_APP_LIST_TOKENIZED_STRING_MATCH_H_
-#define ASH_PUBLIC_CPP_APP_LIST_TOKENIZED_STRING_MATCH_H_
+#ifndef CHROME_COMMON_STRING_MATCHING_TOKENIZED_STRING_MATCH_H_
+#define CHROME_COMMON_STRING_MATCHING_TOKENIZED_STRING_MATCH_H_
 
 #include <vector>
 
-#include "ash/public/cpp/ash_public_export.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "ui/gfx/range/range.h"
 
-namespace ash {
+namespace string_matching {
 
 class TokenizedString;
 
@@ -22,7 +21,7 @@ class TokenizedString;
 // of text. A relevance of zero means the two are completely different to each
 // other. The higher the relevance score, the better the two strings are
 // matched. Matched portions of text are stored as index ranges.
-class ASH_PUBLIC_EXPORT TokenizedStringMatch {
+class TokenizedStringMatch {
  public:
   typedef std::vector<gfx::Range> Hits;
 
@@ -49,6 +48,6 @@ class ASH_PUBLIC_EXPORT TokenizedStringMatch {
   DISALLOW_COPY_AND_ASSIGN(TokenizedStringMatch);
 };
 
-}  // namespace ash
+}  // namespace string_matching
 
-#endif  // ASH_PUBLIC_CPP_APP_LIST_TOKENIZED_STRING_MATCH_H_
+#endif  // CHROME_COMMON_STRING_MATCHING_TOKENIZED_STRING_MATCH_H_

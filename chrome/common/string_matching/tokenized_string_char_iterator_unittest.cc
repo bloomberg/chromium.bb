@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/public/cpp/app_list/tokenized_string_char_iterator.h"
+#include "chrome/common/string_matching/tokenized_string_char_iterator.h"
 
 #include <string>
 #include <vector>
@@ -12,7 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace app_list {
+namespace string_matching {
 namespace test {
 
 namespace {
@@ -21,13 +21,13 @@ namespace {
 // has three fields. The first is the current char. The second is the offset of
 // the current char in terms of the original text of the TokenizedString. The
 // last one is optional and only shows up when IsFirstCharOfToken returns true.
-std::string GetIterateState(const ash::TokenizedStringCharIterator& iter) {
+std::string GetIterateState(const TokenizedStringCharIterator& iter) {
   return base::StringPrintf(
       "%s%d%s", base::UTF16ToUTF8(base::string16(1, iter.Get())).c_str(),
       iter.GetArrayPos(), iter.IsFirstCharOfToken() ? "!" : "");
 }
 
-void TestBeyondTheEnd(ash::TokenizedStringCharIterator* iter) {
+void TestBeyondTheEnd(TokenizedStringCharIterator* iter) {
   ASSERT_TRUE(iter->end());
   ASSERT_FALSE(iter->NextChar());
   ASSERT_FALSE(iter->NextToken());
@@ -37,8 +37,8 @@ void TestBeyondTheEnd(ash::TokenizedStringCharIterator* iter) {
 }
 
 void TestEveryChar(const std::string& text, const std::string& expects) {
-  ash::TokenizedString tokens(base::UTF8ToUTF16(text));
-  ash::TokenizedStringCharIterator iter(tokens);
+  TokenizedString tokens(base::UTF8ToUTF16(text));
+  TokenizedStringCharIterator iter(tokens);
 
   std::vector<std::string> results;
   while (!iter.end()) {
@@ -51,8 +51,8 @@ void TestEveryChar(const std::string& text, const std::string& expects) {
 }
 
 void TestNextToken(const std::string& text, const std::string& expects) {
-  ash::TokenizedString tokens(base::UTF8ToUTF16(text));
-  ash::TokenizedStringCharIterator iter(tokens);
+  TokenizedString tokens(base::UTF8ToUTF16(text));
+  TokenizedStringCharIterator iter(tokens);
 
   std::vector<std::string> results;
   while (!iter.end()) {
@@ -66,8 +66,8 @@ void TestNextToken(const std::string& text, const std::string& expects) {
 
 void TestFirstTwoCharInEveryToken(const std::string& text,
                                   const std::string& expects) {
-  ash::TokenizedString tokens(base::UTF8ToUTF16(text));
-  ash::TokenizedStringCharIterator iter(tokens);
+  TokenizedString tokens(base::UTF8ToUTF16(text));
+  TokenizedStringCharIterator iter(tokens);
 
   std::vector<std::string> results;
   while (!iter.end()) {
@@ -148,4 +148,4 @@ TEST(TokenizedStringCharIteratorTest, Basic) {
 }
 
 }  // namespace test
-}  // namespace app_list
+}  // namespace string_matching

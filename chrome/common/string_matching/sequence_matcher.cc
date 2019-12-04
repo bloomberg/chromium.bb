@@ -2,18 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/app_list/search/search_utils/sequence_matcher.h"
+#include "chrome/common/string_matching/sequence_matcher.h"
 
 #include <algorithm>
 #include <queue>
 
-#include "ash/public/cpp/app_list/app_list_features.h"
-#include "base/metrics/field_trial_params.h"
-
-namespace app_list {
+namespace string_matching {
 
 namespace {
-constexpr bool kDefaultUseEditDistance = false;
 using Match = SequenceMatcher::Match;
 using Matches = std::vector<Match>;
 
@@ -31,7 +27,8 @@ SequenceMatcher::Match::Match(int pos_first, int pos_second, int len)
 }
 
 SequenceMatcher::SequenceMatcher(const base::string16& first_string,
-                                 const base::string16& second_string)
+                                 const base::string16& second_string,
+                                 bool use_edit_distance)
     : first_string_(first_string),
       second_string_(second_string),
       dp_common_string_(second_string.size() + 1, 0) {
@@ -40,9 +37,7 @@ SequenceMatcher::SequenceMatcher(const base::string16& first_string,
   for (size_t i = 0; i < second_string_.size(); i++) {
     char_to_positions_[second_string_[i]].emplace_back(i);
   }
-  use_edit_distance_ = base::GetFieldTrialParamByFeatureAsBool(
-      app_list_features::kEnableFuzzyAppSearch, "use_edit_distance",
-      kDefaultUseEditDistance);
+  use_edit_distance_ = use_edit_distance;
 }
 
 Match SequenceMatcher::FindLongestMatch(int first_start,
@@ -202,4 +197,4 @@ double SequenceMatcher::Ratio() {
   return block_matching_ratio_;
 }
 
-}  // namespace app_list
+}  // namespace string_matching

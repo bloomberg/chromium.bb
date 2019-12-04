@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_APP_LIST_SEARCH_SEARCH_UTILS_SEQUENCE_MATCHER_H_
-#define CHROME_BROWSER_UI_APP_LIST_SEARCH_SEARCH_UTILS_SEQUENCE_MATCHER_H_
+#ifndef CHROME_COMMON_STRING_MATCHING_SEQUENCE_MATCHER_H_
+#define CHROME_COMMON_STRING_MATCHING_SEQUENCE_MATCHER_H_
 
 #include <string>
 #include <unordered_map>
@@ -12,7 +12,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 
-namespace app_list {
+namespace string_matching {
 
 // Performs the calculation of similarity level between 2 strings. This class's
 // functionality is inspired by python's difflib.SequenceMatcher library.
@@ -32,7 +32,8 @@ class SequenceMatcher {
     int length;
   };
   SequenceMatcher(const base::string16& first_string,
-                  const base::string16& second_string);
+                  const base::string16& second_string,
+                  bool use_edit_distance);
 
   ~SequenceMatcher() = default;
 
@@ -75,6 +76,6 @@ class SequenceMatcher {
   DISALLOW_COPY_AND_ASSIGN(SequenceMatcher);
 };
 
-}  // namespace app_list
+}  // namespace string_matching
 
-#endif  // CHROME_BROWSER_UI_APP_LIST_SEARCH_SEARCH_UTILS_SEQUENCE_MATCHER_H_
+#endif  // CHROME_COMMON_STRING_MATCHING_SEQUENCE_MATCHER_H_

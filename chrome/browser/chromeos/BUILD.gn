@@ -82,6 +82,7 @@ source_set("chromeos") {
     "//chrome/browser/web_applications/extensions:extensions",
     "//chrome/common",
     "//chrome/common/extensions/api",
+    "//chrome/common/string_matching",
     "//chrome/services/app_service:lib",
     "//chrome/services/app_service/public/cpp:app_update",
     "//chrome/services/file_util/public/cpp",

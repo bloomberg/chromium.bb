@@ -1,15 +1,14 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_PUBLIC_CPP_APP_LIST_TERM_BREAK_ITERATOR_H_
-#define ASH_PUBLIC_CPP_APP_LIST_TERM_BREAK_ITERATOR_H_
+#ifndef CHROME_COMMON_STRING_MATCHING_TERM_BREAK_ITERATOR_H_
+#define CHROME_COMMON_STRING_MATCHING_TERM_BREAK_ITERATOR_H_
 
 #include <stddef.h>
 
 #include <memory>
 
-#include "ash/public/cpp/ash_public_export.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
 
@@ -19,7 +18,7 @@ class UTF16CharIterator;
 }
 }  // namespace base
 
-namespace ash {
+namespace string_matching {
 
 // TermBreakIterator breaks terms out of a word. Terms are broken on
 // camel case boundaries and alpha/number boundaries. Numbers are defined
@@ -27,7 +26,7 @@ namespace ash {
 //  e.g.
 //   CamelCase -> Camel, Case
 //   Python2.7 -> Python, 2.7
-class ASH_PUBLIC_EXPORT TermBreakIterator {
+class TermBreakIterator {
  public:
   // Note that |word| must out live this iterator.
   explicit TermBreakIterator(const base::string16& word);
@@ -68,6 +67,6 @@ class ASH_PUBLIC_EXPORT TermBreakIterator {
   DISALLOW_COPY_AND_ASSIGN(TermBreakIterator);
 };
 
-}  // namespace ash
+}  // namespace string_matching
 
-#endif  // ASH_PUBLIC_CPP_APP_LIST_TERM_BREAK_ITERATOR_H_
+#endif  // CHROME_COMMON_STRING_MATCHING_TERM_BREAK_ITERATOR_H_
