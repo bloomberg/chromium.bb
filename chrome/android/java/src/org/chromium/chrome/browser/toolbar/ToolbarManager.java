@@ -1819,13 +1819,6 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
     }
 
     /**
-     * See {@link LocationBar#updateVisualsForState()}
-     */
-    public void updateLocationBarVisualsForState() {
-        mLocationBar.updateVisualsForState();
-    }
-
-    /**
      * Updates the current button states and calls appropriate abstract visibility methods, giving
      * inheriting classes the chance to update the button visuals as well.
      */
