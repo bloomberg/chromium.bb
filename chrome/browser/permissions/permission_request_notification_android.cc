@@ -10,6 +10,7 @@
 #include "chrome/browser/notifications/notification_display_service_impl.h"
 #include "chrome/browser/notifications/notification_handler.h"
 #include "chrome/browser/permissions/permission_request.h"
+#include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/permissions/permission_request_notification_handler.h"
 #include "chrome/browser/permissions/quiet_notification_permission_ui_config.h"
 #include "chrome/browser/permissions/quiet_notification_permission_ui_state.h"
@@ -56,11 +57,11 @@ PermissionRequestNotificationAndroid::Create(
 
 // static
 bool PermissionRequestNotificationAndroid::ShouldShowAsNotification(
-    Profile* profile,
+    content::WebContents* web_contents,
     ContentSettingsType type) {
+  auto* manager = PermissionRequestManager::FromWebContents(web_contents);
   return type == ContentSettingsType::NOTIFICATIONS &&
-         // TODO(crbug.com/1030633): Consult PermissionRequestManager here.
-         QuietNotificationPermissionUiState::IsQuietUiEnabledInPrefs(profile) &&
+         manager->ShouldCurrentRequestUseQuietUI() &&
          (QuietNotificationPermissionUiConfig::UiFlavorToUse() ==
               QuietNotificationPermissionUiConfig::UiFlavor::
                   HEADS_UP_NOTIFICATION ||

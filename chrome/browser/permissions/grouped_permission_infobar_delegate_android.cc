@@ -9,6 +9,7 @@
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/permissions/permission_prompt_android.h"
 #include "chrome/browser/permissions/permission_request.h"
+#include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/permissions/permission_uma_util.h"
 #include "chrome/browser/permissions/permission_util.h"
 #include "chrome/browser/permissions/quiet_notification_permission_ui_config.h"
@@ -17,6 +18,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/infobars/core/infobar.h"
 #include "components/url_formatter/elide_url.h"
+#include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/strings/grit/ui_strings.h"
 
@@ -91,11 +93,11 @@ bool GroupedPermissionInfoBarDelegate::LinkClicked(
 
 // static
 bool GroupedPermissionInfoBarDelegate::ShouldShowMiniInfobar(
-    Profile* profile,
+    content::WebContents* web_contents,
     ContentSettingsType type) {
+  auto* manager = PermissionRequestManager::FromWebContents(web_contents);
   return type == ContentSettingsType::NOTIFICATIONS &&
-         // TODO(crbug.com/1030633): Consult PermissionRequestManager here.
-         QuietNotificationPermissionUiState::IsQuietUiEnabledInPrefs(profile) &&
+         manager->ShouldCurrentRequestUseQuietUI() &&
          QuietNotificationPermissionUiConfig::UiFlavorToUse() ==
              QuietNotificationPermissionUiConfig::UiFlavor::MINI_INFOBAR;
 }

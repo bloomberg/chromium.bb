@@ -16,6 +16,7 @@
 #include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "chrome/browser/permissions/adaptive_quiet_notification_permission_ui_enabler.h"
+#include "chrome/browser/permissions/notification_permission_ui_selector.h"
 #include "chrome/browser/permissions/permission_decision_auto_blocker.h"
 #include "chrome/browser/permissions/permission_request.h"
 #include "chrome/browser/permissions/permission_uma_util.h"
@@ -39,6 +40,35 @@
 #endif
 
 namespace {
+
+class NotificationPermissionUiSelectorBasedOnPrefs
+    : public NotificationPermissionUiSelector {
+ public:
+  explicit NotificationPermissionUiSelectorBasedOnPrefs(Profile* profile)
+      : profile_(profile) {}
+  ~NotificationPermissionUiSelectorBasedOnPrefs() override = default;
+
+  // NotificationPermissionUiSelector:
+  void SelectUiToUse(PermissionRequest* request,
+                     DecisionMadeCallback callback) override {
+    if (QuietNotificationPermissionUiConfig::UiFlavorToUse() !=
+            QuietNotificationPermissionUiConfig::NONE &&
+        QuietNotificationPermissionUiState::IsQuietUiEnabledInPrefs(profile_)) {
+      std::move(callback).Run(UiToUse::kQuietUi,
+                              QuietUiReason::kEnabledInPrefs);
+    } else {
+      std::move(callback).Run(UiToUse::kNormalUi, base::nullopt);
+    }
+  }
+
+ private:
+  NotificationPermissionUiSelectorBasedOnPrefs(
+      const NotificationPermissionUiSelectorBasedOnPrefs&) = delete;
+  const NotificationPermissionUiSelectorBasedOnPrefs& operator=(
+      NotificationPermissionUiSelectorBasedOnPrefs&) = delete;
+
+  Profile* profile_;
+};
 
 bool IsMessageTextEqual(PermissionRequest* a,
                         PermissionRequest* b) {
@@ -270,7 +300,7 @@ void PermissionRequestManager::OnVisibilityChanged(
     // We switched tabs away and back while a prompt was active.
     DCHECK_EQ(view_->GetTabSwitchingBehavior(),
               PermissionPrompt::TabSwitchingBehavior::kKeepPromptAlive);
-  } else if (current_request_autoblocker_response_.has_value()) {
+  } else if (current_request_ui_to_use_.has_value()) {
     ShowBubble();
   }
 }
@@ -353,9 +383,11 @@ PermissionRequestManager::PermissionRequestManager(
       view_(nullptr),
       tab_is_hidden_(web_contents->GetVisibility() ==
                      content::Visibility::HIDDEN),
-      auto_response_for_test_(NONE),
-      blocker_(nullptr),
-      current_request_autoblocker_response_(base::nullopt) {}
+      auto_response_for_test_(NONE) {
+  notification_permission_ui_selector_ =
+      std::make_unique<NotificationPermissionUiSelectorBasedOnPrefs>(
+          Profile::FromBrowserContext(web_contents->GetBrowserContext()));
+}
 
 void PermissionRequestManager::ScheduleShowBubble() {
   base::RecordAction(base::UserMetricsAction("PermissionBubbleRequest"));
@@ -379,7 +411,17 @@ void PermissionRequestManager::DequeueRequestIfNeeded() {
     queued_requests_.pop_front();
   }
 
-  QueryAutoBlockerAndShowOrReject();
+  if (requests_.front()->GetPermissionRequestType() ==
+      PermissionRequestType::PERMISSION_NOTIFICATIONS) {
+    notification_permission_ui_selector_->SelectUiToUse(
+        requests_.front(),
+        base::BindOnce(
+            &PermissionRequestManager::OnSelectedUiToUseForNotifications,
+            weak_factory_.GetWeakPtr()));
+  } else {
+    current_request_ui_to_use_ = UiToUse::kNormalUi;
+    ScheduleShowBubble();
+  }
 }
 
 void PermissionRequestManager::ScheduleDequeueRequestIfNeeded() {
@@ -393,6 +435,7 @@ void PermissionRequestManager::ShowBubble() {
   DCHECK(!view_);
   DCHECK(IsRequestInProgress());
   DCHECK(web_contents()->IsDocumentOnLoadCompletedInMainFrame());
+  DCHECK(current_request_ui_to_use_);
 
   if (tab_is_hidden_)
     return;
@@ -469,6 +512,12 @@ void PermissionRequestManager::FinalizeBubble(
     RequestFinishedIncludingDuplicates(*requests_iter);
   }
   requests_.clear();
+
+  notification_permission_ui_selector_->Cancel();
+
+  current_request_view_shown_to_user_ = false;
+  current_request_ui_to_use_.reset();
+  current_request_quiet_ui_reason_.reset();
 
   if (view_)
     DeleteBubble();
@@ -557,35 +606,15 @@ bool PermissionRequestManager::ShouldCurrentRequestUseQuietUI() {
   if (!IsRequestInProgress())
     return false;
 
-  // The autoblocker has enforced a quiet UI on this request.
-  if (current_request_autoblocker_response_.has_value() &&
-      current_request_autoblocker_response_ ==
-          PermissionRequestAutoBlocker::USE_QUIET_UI)
-    return true;
+  // ContentSettingImageModel might call into this method if the user switches
+  // between tabs while the |notification_permission_ui_selector_| is pending.
+  return current_request_ui_to_use_ &&
+         *current_request_ui_to_use_ == UiToUse::kQuietUi;
+}
 
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
-
-  bool not_a_notifications_request =
-      requests_.front()->GetPermissionRequestType() !=
-      PermissionRequestType::PERMISSION_NOTIFICATIONS;
-  bool should_show_loud_ui =
-      !QuietNotificationPermissionUiState::IsQuietUiEnabledInPrefs(profile);
-
-  if (not_a_notifications_request || should_show_loud_ui)
-    return false;
-
-  const auto ui_flavor = QuietNotificationPermissionUiConfig::UiFlavorToUse();
-
-#if !defined(OS_ANDROID)
-  return (ui_flavor == QuietNotificationPermissionUiConfig::STATIC_ICON ||
-          ui_flavor == QuietNotificationPermissionUiConfig::ANIMATED_ICON);
-#else   // OS_ANDROID
-  return (
-      ui_flavor == QuietNotificationPermissionUiConfig::QUIET_NOTIFICATION ||
-      ui_flavor == QuietNotificationPermissionUiConfig::HEADS_UP_NOTIFICATION ||
-      ui_flavor == QuietNotificationPermissionUiConfig::MINI_INFOBAR);
-#endif  // OS_ANDROID
+PermissionRequestManager::QuietUiReason
+PermissionRequestManager::ReasonForUsingQuietUi() {
+  return *current_request_quiet_ui_reason_;
 }
 
 bool PermissionRequestManager::IsRequestInProgress() {
@@ -602,25 +631,11 @@ void PermissionRequestManager::NotifyBubbleRemoved() {
     observer.OnBubbleRemoved();
 }
 
-void PermissionRequestManager::QueryAutoBlockerAndShowOrReject() {
-  current_request_view_shown_to_user_ = false;
-  current_request_autoblocker_response_.reset();
-
-  if (blocker_) {
-    blocker_->MakeDecision(
-        requests_.front(),
-        base::BindOnce(&PermissionRequestManager::AutoBlockerDecisionMade,
-                       weak_factory_.GetWeakPtr()));
-  } else {
-    // This simply simulates an auto-blocker decision of "allow".
-    AutoBlockerDecisionMade(
-        PermissionRequestAutoBlocker::Response::USE_NORMAL_UI);
-  }
-}
-
-void PermissionRequestManager::AutoBlockerDecisionMade(
-    PermissionRequestAutoBlocker::Response response) {
-  current_request_autoblocker_response_ = response;
+void PermissionRequestManager::OnSelectedUiToUseForNotifications(
+    UiToUse ui_to_use,
+    base::Optional<QuietUiReason> quiet_ui_reason) {
+  current_request_ui_to_use_ = ui_to_use;
+  current_request_quiet_ui_reason_ = quiet_ui_reason;
   ScheduleShowBubble();
 }
 

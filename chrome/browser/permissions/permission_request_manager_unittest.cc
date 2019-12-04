@@ -17,8 +17,8 @@
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/permissions/adaptive_quiet_notification_permission_ui_enabler.h"
 #include "chrome/browser/permissions/mock_permission_request.h"
+#include "chrome/browser/permissions/notification_permission_ui_selector.h"
 #include "chrome/browser/permissions/permission_request.h"
-#include "chrome/browser/permissions/permission_request_auto_blocker.h"
 #include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/permissions/permission_uma_util.h"
 #include "chrome/browser/permissions/quiet_notification_permission_ui_config.h"
@@ -720,13 +720,12 @@ TEST_F(PermissionRequestManagerTest,
   WaitForBubbleToBeShown();
   EXPECT_TRUE(manager_->ShouldCurrentRequestUseQuietUI());
 
-  // Clearing interaction history does not change the state for the enabled
-  // quiet UI.
+  // Clearing interaction history, or turning off quiet mode in preferences does
+  // not change the state of the currently showing quiet UI.
   permission_ui_enabler->ClearInteractionHistory(base::Time(),
                                                  base::Time::Max());
-  EXPECT_TRUE(manager_->ShouldCurrentRequestUseQuietUI());
   QuietNotificationPermissionUiState::DisableQuietUiInPrefs(profile());
-  EXPECT_FALSE(manager_->ShouldCurrentRequestUseQuietUI());
+  EXPECT_TRUE(manager_->ShouldCurrentRequestUseQuietUI());
   Deny();
 
   base::Time recorded_time = clock_.Now();
@@ -740,6 +739,7 @@ TEST_F(PermissionRequestManagerTest,
       notification9);
   manager_->AddRequest(&notification9_request);
   WaitForBubbleToBeShown();
+  EXPECT_FALSE(manager_->ShouldCurrentRequestUseQuietUI());
   Deny();
 
   clock_.Advance(base::TimeDelta::FromDays(1));
@@ -778,86 +778,114 @@ TEST_F(PermissionRequestManagerTest,
             recorded_time);
 }
 
-// Will simulate an autoblocker that simply returns a predefined response every
-// time.
-class MockPermissionRequestAutoBlocker : public PermissionRequestAutoBlocker {
+// Simulate a NotificationPermissionUiSelector that simply returns a
+// predefined |ui_to_use| every time.
+class MockNotificationPermissionUiSelector
+    : public NotificationPermissionUiSelector {
  public:
-  explicit MockPermissionRequestAutoBlocker(Response response, bool async) {
-    response_ = response;
+  explicit MockNotificationPermissionUiSelector(UiToUse ui_to_use, bool async) {
+    ui_to_use_ = ui_to_use;
     async_ = async;
   }
 
-  void MakeDecision(PermissionRequest* request,
-                    DecisionMadeCallback callback) override {
+  void SelectUiToUse(PermissionRequest* request,
+                     DecisionMadeCallback callback) override {
     if (async_) {
-      base::PostTask(FROM_HERE, {base::CurrentThread()},
-                     base::BindOnce(std::move(callback), response_));
+      base::PostTask(
+          FROM_HERE, {base::CurrentThread()},
+          base::BindOnce(std::move(callback), ui_to_use_, base::nullopt));
     } else {
-      std::move(callback).Run(response_);
+      std::move(callback).Run(ui_to_use_, base::nullopt);
     }
   }
 
   static void CreateForManager(PermissionRequestManager* manager,
-                               Response response,
+                               UiToUse ui_to_use,
                                bool async) {
-    manager->set_autoblocker_for_testing(
-        std::make_unique<MockPermissionRequestAutoBlocker>(response, async));
+    manager->set_notification_permission_ui_selector_for_testing(
+        std::make_unique<MockNotificationPermissionUiSelector>(ui_to_use,
+                                                               async));
   }
 
  private:
-  Response response_;
+  UiToUse ui_to_use_;
   bool async_;
 };
 
-TEST_F(PermissionRequestManagerTest, AutoBlocker) {
-  struct {
-    MockPermissionRequest* request;
-    PermissionRequestAutoBlocker::Response auto_blocker_set_response;
+TEST_F(PermissionRequestManagerTest,
+       UiSelectorNotUsedForPermissionsOtherThanNotification) {
+  for (auto* request : {&request_mic_, &request_camera_}) {
+    MockNotificationPermissionUiSelector::CreateForManager(
+        manager_, NotificationPermissionUiSelector::UiToUse::kQuietUi,
+        false /* async */);
+
+    manager_->AddRequest(request);
+    WaitForBubbleToBeShown();
+
+    ASSERT_TRUE(prompt_factory_->is_visible());
+    ASSERT_TRUE(
+        prompt_factory_->RequestTypeSeen(request->GetPermissionRequestType()));
+    EXPECT_FALSE(manager_->ShouldCurrentRequestUseQuietUI());
+    Accept();
+
+    EXPECT_TRUE(request->granted());
+  }
+}
+
+TEST_F(PermissionRequestManagerTest, UiSelectorUsedForNotifications) {
+  using UiToUse = NotificationPermissionUiSelector::UiToUse;
+  const struct {
+    NotificationPermissionUiSelector::UiToUse ui_to_use;
     bool async;
-  } tests[] = {
-      {&request1_, PermissionRequestAutoBlocker::Response::USE_NORMAL_UI, true},
-      {&request2_, PermissionRequestAutoBlocker::Response::TIMEOUT, true},
-      {&request_mic_, PermissionRequestAutoBlocker::Response::USE_QUIET_UI,
-       true},
-      {&request_camera_, PermissionRequestAutoBlocker::Response::USE_QUIET_UI,
-       false},
+  } kTests[] = {
+      {UiToUse::kQuietUi, true},
+      {UiToUse::kNormalUi, true},
+      {UiToUse::kQuietUi, false},
+      {UiToUse::kNormalUi, false},
   };
 
-  for (const auto& test : tests) {
-    MockPermissionRequestAutoBlocker::CreateForManager(
-        manager_, test.auto_blocker_set_response, test.async);
+  for (const auto& test : kTests) {
+    MockNotificationPermissionUiSelector::CreateForManager(
+        manager_, test.ui_to_use, test.async);
 
-    manager_->AddRequest(test.request);
+    MockPermissionRequest request(
+        "foo", PermissionRequestType::PERMISSION_NOTIFICATIONS,
+        PermissionRequestGestureType::GESTURE);
+
+    manager_->AddRequest(&request);
     WaitForBubbleToBeShown();
 
     EXPECT_TRUE(prompt_factory_->is_visible());
-    EXPECT_TRUE(prompt_factory_->RequestTypeSeen(
-        test.request->GetPermissionRequestType()));
+    EXPECT_TRUE(
+        prompt_factory_->RequestTypeSeen(request.GetPermissionRequestType()));
+    EXPECT_EQ(test.ui_to_use == UiToUse::kQuietUi,
+              manager_->ShouldCurrentRequestUseQuietUI());
     Accept();
 
-    EXPECT_TRUE(test.request->granted());
-    EXPECT_EQ(manager_->current_request_autoblocker_response_for_testing(),
-              test.auto_blocker_set_response);
+    EXPECT_TRUE(request.granted());
   }
 }
 
 TEST_F(PermissionRequestManagerTest,
-       ShouldCurrentRequestUseQuietUIAffectedByAutoblocker) {
+       UiSelectionHappensSeparatelyForEachRequest) {
+  using UiToUse = NotificationPermissionUiSelector::UiToUse;
+  MockNotificationPermissionUiSelector::CreateForManager(
+      manager_, UiToUse::kQuietUi, true);
   MockPermissionRequest request1(
       "request1", PermissionRequestType::PERMISSION_NOTIFICATIONS,
       PermissionRequestGestureType::GESTURE);
   manager_->AddRequest(&request1);
   WaitForBubbleToBeShown();
-  EXPECT_FALSE(manager_->ShouldCurrentRequestUseQuietUI());
+  EXPECT_TRUE(manager_->ShouldCurrentRequestUseQuietUI());
   Accept();
 
   MockPermissionRequest request2(
       "request2", PermissionRequestType::PERMISSION_NOTIFICATIONS,
       PermissionRequestGestureType::GESTURE);
-  MockPermissionRequestAutoBlocker::CreateForManager(
-      manager_, PermissionRequestAutoBlocker::Response::USE_QUIET_UI, true);
+  MockNotificationPermissionUiSelector::CreateForManager(
+      manager_, UiToUse::kNormalUi, true);
   manager_->AddRequest(&request2);
   WaitForBubbleToBeShown();
-  EXPECT_TRUE(manager_->ShouldCurrentRequestUseQuietUI());
+  EXPECT_FALSE(manager_->ShouldCurrentRequestUseQuietUI());
   Accept();
 }
