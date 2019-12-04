@@ -550,8 +550,8 @@ void BluetoothDevice::SetAsExpiredForTesting() {
 }
 
 void BluetoothDevice::Pair(PairingDelegate* pairing_delegate,
-                           const base::Closure& callback,
-                           const ConnectErrorCallback& error_callback) {
+                           base::OnceClosure callback,
+                           ConnectErrorCallback error_callback) {
   NOTREACHED();
 }
 

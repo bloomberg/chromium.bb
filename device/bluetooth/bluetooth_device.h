@@ -371,7 +371,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
   // The ConnectErrorCallback is used for methods that can fail with an error,
   // passed back as an error code argument to this callback.
   // In the success case this callback is not called.
-  typedef base::Callback<void(enum ConnectErrorCode)> ConnectErrorCallback;
+  using ConnectErrorCallback = base::OnceCallback<void(enum ConnectErrorCode)>;
 
   typedef base::Callback<void(const ConnectionInfo&)> ConnectionInfoCallback;
 
@@ -433,8 +433,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
   // implemented on ChromeOS, Linux and Windows 10. On Windows, only pairing
   // with a pin code is currently supported.
   virtual void Pair(PairingDelegate* pairing_delegate,
-                    const base::Closure& callback,
-                    const ConnectErrorCallback& error_callback);
+                    base::OnceClosure callback,
+                    ConnectErrorCallback error_callback);
 
   // Sends the PIN code |pincode| to the remote device during pairing.
   //

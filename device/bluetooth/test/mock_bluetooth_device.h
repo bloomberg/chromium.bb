@@ -72,11 +72,15 @@ class MockBluetoothDevice : public BluetoothDevice {
                void(BluetoothDevice::PairingDelegate* pairing_delegate,
                     base::OnceClosure& callback,
                     BluetoothDevice::ConnectErrorCallback& error_callback));
-  MOCK_METHOD3(
-      Pair,
-      void(BluetoothDevice::PairingDelegate* pairing_delegate,
-           const base::Closure& callback,
-           const BluetoothDevice::ConnectErrorCallback& error_callback));
+  void Pair(BluetoothDevice::PairingDelegate* pairing_delegate,
+            base::OnceClosure callback,
+            BluetoothDevice::ConnectErrorCallback error_callback) override {
+    Pair_(pairing_delegate, callback, error_callback);
+  }
+  MOCK_METHOD3(Pair_,
+               void(BluetoothDevice::PairingDelegate* pairing_delegate,
+                    base::OnceClosure& callback,
+                    BluetoothDevice::ConnectErrorCallback& error_callback));
   MOCK_METHOD1(SetPinCode, void(const std::string&));
   MOCK_METHOD1(SetPasskey, void(uint32_t));
   MOCK_METHOD0(ConfirmPairing, void());

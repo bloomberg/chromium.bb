@@ -101,8 +101,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceBlueZ
   void SetGattServicesDiscoveryComplete(bool complete) override;
   bool IsGattServicesDiscoveryComplete() const override;
   void Pair(device::BluetoothDevice::PairingDelegate* pairing_delegate,
-            const base::Closure& callback,
-            const ConnectErrorCallback& error_callback) override;
+            base::OnceClosure callback,
+            ConnectErrorCallback error_callback) override;
 #if defined(OS_CHROMEOS)
   void ExecuteWrite(const base::Closure& callback,
                     const ExecuteWriteErrorCallback& error_callback) override;
@@ -232,16 +232,16 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceBlueZ
 
   // Called by dbus:: on completion of the D-Bus method call to pair the device,
   // made inside |Connect()|.
-  void OnPairDuringConnect(const base::Closure& callback,
-                           const ConnectErrorCallback& error_callback);
-  void OnPairDuringConnectError(const ConnectErrorCallback& error_callback,
+  void OnPairDuringConnect(base::OnceClosure callback,
+                           ConnectErrorCallback error_callback);
+  void OnPairDuringConnectError(ConnectErrorCallback error_callback,
                                 const std::string& error_name,
                                 const std::string& error_message);
 
   // Called by dbus: on completion of the D-Bus method call to pair the device,
   // made inside |Pair()|.
-  void OnPair(const base::Closure& callback);
-  void OnPairError(const ConnectErrorCallback& error_callback,
+  void OnPair(base::OnceClosure callback);
+  void OnPairError(ConnectErrorCallback error_callback,
                    const std::string& error_name,
                    const std::string& error_message);
 

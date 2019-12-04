@@ -65,8 +65,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceWinrt : public BluetoothDevice {
                base::OnceClosure callback,
                ConnectErrorCallback error_callback) override;
   void Pair(PairingDelegate* pairing_delegate,
-            const base::Closure& callback,
-            const ConnectErrorCallback& error_callback) override;
+            base::OnceClosure callback,
+            ConnectErrorCallback error_callback) override;
   void SetPinCode(const std::string& pincode) override;
   void SetPasskey(uint32_t passkey) override;
   void ConfirmPairing() override;

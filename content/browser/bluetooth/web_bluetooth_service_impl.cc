@@ -735,9 +735,9 @@ void WebBluetoothServiceImpl::RemoteServerConnect(
                      weak_ptr_factory_.GetWeakPtr(), device_id, start_time,
                      base::Passed(&web_bluetooth_server_client),
                      copyable_callback),
-      base::Bind(&WebBluetoothServiceImpl::OnCreateGATTConnectionFailed,
-                 weak_ptr_factory_.GetWeakPtr(), start_time,
-                 copyable_callback));
+      base::BindOnce(&WebBluetoothServiceImpl::OnCreateGATTConnectionFailed,
+                     weak_ptr_factory_.GetWeakPtr(), start_time,
+                     copyable_callback));
 }
 
 void WebBluetoothServiceImpl::RemoteServerDisconnect(
