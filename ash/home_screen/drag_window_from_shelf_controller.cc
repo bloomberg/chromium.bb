@@ -217,7 +217,7 @@ DragWindowFromShelfController::EndDrag(const gfx::Point& location_in_screen,
     DCHECK(!in_splitview);
     if (in_overview) {
       overview_controller->EndOverview(
-          OverviewSession::EnterExitOverviewType::kImmediateExit);
+          OverviewSession::EnterExitOverviewType::kFadeOutExit);
     }
     ScaleDownWindowAfterDrag();
     window_drag_result = ShelfWindowDragResult::kGoToHomeScreen;
@@ -229,7 +229,6 @@ DragWindowFromShelfController::EndDrag(const gfx::Point& location_in_screen,
     // dragged window to go to home screen.
     ScaleDownWindowAfterDrag();
     window_drag_result = ShelfWindowDragResult::kGoToHomeScreen;
-
   } else {
     window_drag_result = ShelfWindowDragResult::kGoToOverviewMode;
   }
@@ -350,7 +349,9 @@ void DragWindowFromShelfController::OnDragEnded(
                                              location_in_screen);
   }
 
-  Shell::Get()->home_screen_controller()->OnWindowDragEnded();
+  // Scale-in-to-show home screen if home screen should be shown after drag
+  // ends.
+  Shell::Get()->home_screen_controller()->OnWindowDragEnded(/*animate=*/true);
 
   // Clear the wallpaper dim and blur if not in overview after drag ends.
   // If in overview, the dim and blur will be cleared after overview ends.
