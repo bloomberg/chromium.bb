@@ -16,7 +16,6 @@
 #import "ios/chrome/browser/ui/infobars/coordinators/infobar_translate_mediator.h"
 #import "ios/chrome/browser/ui/infobars/infobar_badge_ui_delegate.h"
 #import "ios/chrome/browser/ui/infobars/infobar_container.h"
-#import "ios/chrome/browser/ui/infobars/modals/infobar_translate_language_selection_delegate.h"
 #import "ios/chrome/browser/ui/infobars/modals/infobar_translate_language_selection_table_view_controller.h"
 #import "ios/chrome/browser/ui/infobars/modals/infobar_translate_modal_delegate.h"
 #import "ios/chrome/browser/ui/infobars/modals/infobar_translate_table_view_controller.h"
@@ -27,11 +26,9 @@
 #error "This file requires ARC support."
 #endif
 
-@interface TranslateInfobarCoordinator () <
-    InfobarCoordinatorImplementation,
-    TranslateInfobarDelegateObserving,
-    InfobarTranslateModalDelegate,
-    InfobarTranslateLanguageSelectionDelegate> {
+@interface TranslateInfobarCoordinator () <InfobarCoordinatorImplementation,
+                                           TranslateInfobarDelegateObserving,
+                                           InfobarTranslateModalDelegate> {
   // Observer to listen for changes to the TranslateStep.
   std::unique_ptr<TranslateInfobarDelegateObserverBridge>
       _translateInfobarDelegateObserver;
@@ -290,7 +287,7 @@
 - (void)showChangeSourceLanguageOptions {
   InfobarTranslateLanguageSelectionTableViewController* languageSelectionTVC =
       [[InfobarTranslateLanguageSelectionTableViewController alloc]
-                 initWithDelegate:self
+                 initWithDelegate:self.mediator
           selectingSourceLanguage:YES];
   languageSelectionTVC.title = l10n_util::GetNSString(
       IDS_IOS_TRANSLATE_INFOBAR_SELECT_LANGUAGE_MODAL_TITLE);
@@ -304,7 +301,7 @@
 - (void)showChangeTargetLanguageOptions {
   InfobarTranslateLanguageSelectionTableViewController* languageSelectionTVC =
       [[InfobarTranslateLanguageSelectionTableViewController alloc]
-                 initWithDelegate:self
+                 initWithDelegate:self.mediator
           selectingSourceLanguage:NO];
   languageSelectionTVC.title = l10n_util::GetNSString(
       IDS_IOS_TRANSLATE_INFOBAR_SELECT_LANGUAGE_MODAL_TITLE);
