@@ -972,7 +972,9 @@ def _GetFilesForTarget(target, root='/'):
       if ptype == 'obj':
         # For native ELFs, we need to pull in their dependencies too.
         if FileIsCrosSdkElf(obj):
+          logging.debug('Adding ELF %s', obj)
           elfs.add(obj)
+      logging.debug('Adding path %s', obj)
       paths.add(obj)
 
   return paths, elfs
@@ -996,6 +998,7 @@ def _BuildInitialPackageRoot(output_dir, paths, elfs, ldpaths,
   sym_paths = {}
   for path in paths:
     new_path = path_rewrite_func(path)
+    logging.debug('Transformed %s to %s', path, new_path)
     dst = output_dir + new_path
     osutils.SafeMakedirs(os.path.dirname(dst))
 
@@ -1014,6 +1017,7 @@ def _BuildInitialPackageRoot(output_dir, paths, elfs, ldpaths,
           os.symlink(tgt, dst)
           continue
 
+    logging.debug('Linking path %s -> %s', src, dst)
     os.link(src, dst)
 
   # Locate all the dependencies for all the ELFs.  Stick them all in the
@@ -1026,6 +1030,7 @@ def _BuildInitialPackageRoot(output_dir, paths, elfs, ldpaths,
   glibc_re = re.compile(r'/lib(c|pthread)-[0-9.]+\.so$')
   for elf in elfs:
     e = lddtree.ParseELF(elf, root=root, ldpaths=ldpaths)
+    logging.debug('Parsed elf %s data: %s', elf, e)
     interp = e['interp']
     # Do not create wrapper for libc. crbug.com/766827
     if interp and not glibc_re.search(elf):
@@ -1058,6 +1063,7 @@ def _BuildInitialPackageRoot(output_dir, paths, elfs, ldpaths,
       dst = os.path.join(libdir, os.path.basename(path))
       src = ReadlinkRoot(src, root)
 
+      logging.debug('Linking lib %s -> %s', root + src, dst)
       os.link(root + src, dst)
 
 

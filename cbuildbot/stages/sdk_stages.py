@@ -114,6 +114,8 @@ class SDKBuildToolchainsStage(generic_stages.BuilderStage,
     #  /proc/sys/kernel/yama/protected_nonaccess_hardlinks
     #  /proc/sys/fs/protected_hardlinks
     self.CrosSetupToolchains([
+        # TODO(crbug.com/917193): Enable debugging for now.
+        '--debug',
         '--create-packages',
         '--output-dir',
         os.path.join('/', constants.SDK_TOOLCHAINS_OUTPUT),
