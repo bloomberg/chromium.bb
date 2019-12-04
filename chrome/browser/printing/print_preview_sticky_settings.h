@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_WEBUI_PRINT_PREVIEW_STICKY_SETTINGS_H_
-#define CHROME_BROWSER_UI_WEBUI_PRINT_PREVIEW_STICKY_SETTINGS_H_
+#ifndef CHROME_BROWSER_PRINTING_PRINT_PREVIEW_STICKY_SETTINGS_H_
+#define CHROME_BROWSER_PRINTING_PRINT_PREVIEW_STICKY_SETTINGS_H_
 
 #include <string>
 
@@ -21,10 +21,12 @@ namespace printing {
 // Holds all the settings that should be remembered (sticky) in print preview.
 // A sticky setting will be restored next time the user launches print preview.
 // Only one instance of this class is instantiated.
-class StickySettings {
+class PrintPreviewStickySettings {
  public:
-  StickySettings();
-  ~StickySettings();
+  static PrintPreviewStickySettings* GetInstance();
+
+  PrintPreviewStickySettings();
+  ~PrintPreviewStickySettings();
 
   const std::string* printer_app_state() const;
 
@@ -42,4 +44,4 @@ class StickySettings {
 
 }  // namespace printing
 
-#endif  // CHROME_BROWSER_UI_WEBUI_PRINT_PREVIEW_STICKY_SETTINGS_H_
+#endif  // CHROME_BROWSER_PRINTING_PRINT_PREVIEW_STICKY_SETTINGS_H_
