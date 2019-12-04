@@ -570,12 +570,6 @@ const char kEnableAutofillNativeDropdownViewsDescription[] =
     "If enabled, the Autofill Dropdown will be built natively using Views, "
     "rather than painted directly to a canvas.";
 
-const char kEnableAutofillUpdatedCardUnmaskPromptUiName[] =
-    "Enable new card unmask prompt UI";
-const char kEnableAutofillUpdatedCardUnmaskPromptUiDescription[] =
-    "If enabled, shows the updated card unmask prompt when performing CVC "
-    "verification.";
-
 const char kEnableDeferAllScriptName[] = "DeferAllScript previews";
 const char kEnableDeferAllScriptDescription[] =
     "Enable deferring synchronous script on slow pages.";

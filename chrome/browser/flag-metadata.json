@@ -1061,11 +1061,6 @@
     "expiry_milestone": 82
   },
   {
-    "name": "enable-autofill-updated-card-unmask-prompt-ui",
-    "owners": ["siyua", "payments-autofill-team@google.com"],
-    "expiry_milestone": 87
-  },
-  {
     "name": "enable-autofill-upi-vpa",
     "owners": ["cfroussios"],
     "expiry_milestone": 82

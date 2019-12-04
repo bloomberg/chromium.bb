@@ -352,9 +352,6 @@ extern const char kEnableAutofillToolkitViewsCreditCardDialogsMacDescription[];
 extern const char kEnableAutofillNativeDropdownViewsName[];
 extern const char kEnableAutofillNativeDropdownViewsDescription[];
 
-extern const char kEnableAutofillUpdatedCardUnmaskPromptUiName[];
-extern const char kEnableAutofillUpdatedCardUnmaskPromptUiDescription[];
-
 extern const char kEnableDeferAllScriptName[];
 extern const char kEnableDeferAllScriptDescription[];
 

@@ -4471,13 +4471,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kPolicyAtomicGroupsEnabledDescription, kOsAll,
      FEATURE_VALUE_TYPE(policy::features::kPolicyAtomicGroup)},
 
-    {"enable-autofill-updated-card-unmask-prompt-ui",
-     flag_descriptions::kEnableAutofillUpdatedCardUnmaskPromptUiName,
-     flag_descriptions::kEnableAutofillUpdatedCardUnmaskPromptUiDescription,
-     kOsDesktop,
-     FEATURE_VALUE_TYPE(
-         autofill::features::kAutofillUpdatedCardUnmaskPromptUi)},
-
     {"decode-jpeg-images-to-yuv",
      flag_descriptions::kDecodeJpeg420ImagesToYUVName,
      flag_descriptions::kDecodeJpeg420ImagesToYUVDescription, kOsAll,
