@@ -26,8 +26,7 @@ namespace {
 
 const char kInspectorDefaultContextError[] =
     "Cannot find default execution context";
-const char kInspectorContextError[] =
-    "Cannot find execution context with given id";
+const char kInspectorContextError[] = "Cannot find context with specified id";
 const char kInspectorInvalidURL[] = "Cannot navigate to invalid URL";
 const char kInspectorInsecureContext[] =
     "Permission can't be granted in current context.";
@@ -667,7 +666,7 @@ Status ParseInspectorError(const std::string& error_json) {
   if (error_found) {
     if (error_message == kInspectorDefaultContextError ||
         error_message == kInspectorContextError) {
-      return Status(kNoSuchExecutionContext);
+      return Status(kNoSuchWindow);
     } else if (error_message == kInspectorInvalidURL) {
       return Status(kInvalidArgument);
     } else if (error_message == kInspectorInsecureContext) {
