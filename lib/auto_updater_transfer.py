@@ -387,10 +387,19 @@ class LabTransfer(Transfer):
     super(LabTransfer, self).__init__(*args, **kwargs)
 
   def _CheckPayloads(self, payload_name):
+    """Runs the curl command that checks if payloads have been staged."""
     payload_url = self._GetStagedUrl(staged_filename=payload_name,
                                      build_id=self._payload_dir)
     try:
-      retry_util.RunCurl(['-I', payload_url, '--fail'])
+      # TODO(crbug.com/1033187): Remove log_output parameter passed to
+      # retry_util.RunCurl after the bug is fixed. The log_output=True option
+      # has been added to correct what seems to be a timing issue in
+      # retry_util.RunCurl. The error ((23) Failed writing body) is usually
+      # observed when a piped program closes the read pipe before the curl
+      # command has finished writing. log_output forces the read pipe to stay
+      # open, thus avoiding the failure.
+      retry_util.RunCurl(curl_args=['-I', payload_url, '--fail'],
+                         log_output=True)
     except retry_util.DownloadError as e:
       raise ChromiumOSTransferError('Payload %s does not exist at %s: %s' %
                                     (payload_name, payload_url, e))

@@ -746,16 +746,20 @@ class CrosLabTransferTest(cros_test_lib.MockTempDirTestCase):
                        'test_stateful.tgz')
       self.PatchObject(retry_util, 'RunCurl')
 
-      expected = [['-I', 'http://0.0.0.0:8000/static/board-release/12345.6.7/'
-                   'test_update.gz', '--fail'],
-                  ['-I', 'http://0.0.0.0:8000/static/board-release/12345.6.7/'
-                   'test_update.gz.json', '--fail'],
-                  ['-I', 'http://0.0.0.0:8000/static/board-release/12345.6.7/'
-                   'test_stateful.tgz', '--fail']]
+      expected = [
+          {'curl_args': ['-I', 'http://0.0.0.0:8000/static/board-release/'
+                               '12345.6.7/test_update.gz', '--fail'],
+           'log_output': True},
+          {'curl_args': ['-I', 'http://0.0.0.0:8000/static/board-release/'
+                               '12345.6.7/test_update.gz.json', '--fail'],
+           'log_output': True},
+          {'curl_args': ['-I', 'http://0.0.0.0:8000/static/board-release/'
+                               '12345.6.7/test_stateful.tgz', '--fail'],
+           'log_output': True}]
 
       CrOS_LabTransfer.CheckPayloads()
       self.assertListEqual(retry_util.RunCurl.call_args_list,
-                           [mock.call(x) for x in expected])
+                           [mock.call(**x) for x in expected])
 
   def testCheckPayloadsNoStatefulTransfer(self):
     """Test auto_updater_transfer.CheckPayloads.
@@ -770,14 +774,17 @@ class CrosLabTransferTest(cros_test_lib.MockTempDirTestCase):
           transfer_stateful_update=False)
       self.PatchObject(retry_util, 'RunCurl')
 
-      expected = [['-I', 'http://0.0.0.0:8000/static/board-release/12345.6.7/'
-                   'test_update.gz', '--fail'],
-                  ['-I', 'http://0.0.0.0:8000/static/board-release/12345.6.7/'
-                   'test_update.gz.json', '--fail']]
+      expected = [
+          {'curl_args': ['-I', 'http://0.0.0.0:8000/static/board-release/'
+                               '12345.6.7/test_update.gz', '--fail'],
+           'log_output': True},
+          {'curl_args': ['-I', 'http://0.0.0.0:8000/static/board-release/'
+                               '12345.6.7/test_update.gz.json', '--fail'],
+           'log_output': True}]
 
       CrOS_LabTransfer.CheckPayloads()
       self.assertListEqual(retry_util.RunCurl.call_args_list,
-                           [mock.call(x) for x in expected])
+                           [mock.call(**x) for x in expected])
 
   def testCheckPayloadsNoRootfsTransfer(self):
     """Test auto_updater_transfer.CheckPayloads.
@@ -793,12 +800,14 @@ class CrosLabTransferTest(cros_test_lib.MockTempDirTestCase):
                        'test_stateful.tgz')
       self.PatchObject(retry_util, 'RunCurl')
 
-      expected = [['-I', 'http://0.0.0.0:8000/static/board-release/12345.6.7/'
-                   'test_stateful.tgz', '--fail']]
+      expected = [
+          {'curl_args': ['-I', 'http://0.0.0.0:8000/static/board-release/'
+                               '12345.6.7/test_stateful.tgz', '--fail'],
+           'log_output': True}]
 
       CrOS_LabTransfer.CheckPayloads()
       self.assertListEqual(retry_util.RunCurl.call_args_list,
-                           [mock.call(x) for x in expected])
+                           [mock.call(**x) for x in expected])
 
   def testCheckPayloadsDownloadError(self):
     """Test auto_updater_transfer.CheckPayloads.
