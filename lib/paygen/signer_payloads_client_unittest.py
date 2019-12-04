@@ -294,7 +294,6 @@ input_files = %s
 output_names = @BASENAME@.@KEYSET@.signed
 
 [general]
-archive = metadata-disable.instructions
 type = update_payload
 board = foo-board
 
