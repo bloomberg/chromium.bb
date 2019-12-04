@@ -12554,7 +12554,8 @@ static int64_t handle_intra_mode(InterModeSearchState *search_state,
   MB_MODE_INFO *const mbmi = xd->mi[0];
   assert(mbmi->ref_frame[0] == INTRA_FRAME);
   const PREDICTION_MODE mode = mbmi->mode;
-  const int mode_cost = x->mbmode_cost[size_group_lookup[bsize]][mode];
+  const int mode_cost =
+      x->mbmode_cost[size_group_lookup[bsize]][mode] + ref_frame_cost;
   const int intra_cost_penalty = av1_get_intra_cost_penalty(
       cm->base_qindex, cm->y_dc_delta_q, cm->seq_params.bit_depth);
   const int skip_ctx = av1_get_skip_context(xd);
@@ -12727,10 +12728,6 @@ static int64_t handle_intra_mode(InterModeSearchState *search_state,
   if (mode != DC_PRED && mode != PAETH_PRED) {
     rd_stats->rate += intra_cost_penalty;
   }
-
-  // Estimate the reference frame signaling cost and add it
-  // to the rolling cost variable.
-  rd_stats->rate += ref_frame_cost;
 
   // Intra block is always coded as non-skip
   rd_stats->skip = 0;
