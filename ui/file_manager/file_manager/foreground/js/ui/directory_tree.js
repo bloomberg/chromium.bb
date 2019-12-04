@@ -1116,19 +1116,19 @@ class VolumeItem extends DirectoryItem {
    */
   setupIcon_(icon, volumeInfo) {
     icon.classList.add('item-icon');
+
     const backgroundImage =
         util.iconSetToCSSBackgroundImageValue(volumeInfo.iconSet);
     if (backgroundImage !== 'none') {
-      // The icon div is not yet added to DOM, therefore it is impossible to
-      // use style.backgroundImage.
       icon.setAttribute('style', 'background-image: ' + backgroundImage);
     }
+
     icon.setAttribute('volume-type-icon', volumeInfo.volumeType);
+
     if (volumeInfo.volumeType === VolumeManagerCommon.VolumeType.MEDIA_VIEW) {
-      icon.setAttribute(
-          'volume-subtype',
-          VolumeManagerCommon.getMediaViewRootTypeFromVolumeId(
-              volumeInfo.volumeId));
+      const subtype = VolumeManagerCommon.getMediaViewRootTypeFromVolumeId(
+          volumeInfo.volumeId);
+      icon.setAttribute('volume-subtype', subtype);
     } else {
       icon.setAttribute('volume-subtype', volumeInfo.deviceType || '');
     }
@@ -1674,6 +1674,10 @@ class AndroidAppItem extends TreeItem {
       if (backgroundImage !== 'none') {
         icon.setAttribute('style', 'background-image: ' + backgroundImage);
       }
+    }
+
+    if (directorytree.FILES_NG_ENABLED && !icon.hasAttribute('style')) {
+      icon.setAttribute('use-generic-provided-icon', '');
     }
 
     // Create an external link icon. TODO(crbug.com/986169) does this icon
