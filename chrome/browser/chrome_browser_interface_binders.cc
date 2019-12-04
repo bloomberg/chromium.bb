@@ -44,9 +44,12 @@
 #endif  // BUILDFLAG(ENABLE_UNHANDLED_TAP)
 
 #if defined(OS_ANDROID)
+#include "chrome/browser/android/contextualsearch/contextual_search_observer.h"
 #include "chrome/browser/android/dom_distiller/distiller_ui_handle_android.h"
 #include "chrome/browser/offline_pages/android/offline_page_auto_fetcher.h"
 #include "chrome/common/offline_page_auto_fetcher.mojom.h"
+#include "components/contextual_search/content/browser/contextual_search_js_api_service_impl.h"
+#include "components/contextual_search/content/common/mojom/contextual_search_js_api_service.mojom.h"
 #include "content/public/browser/web_contents.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/mojom/installedapp/installed_app_provider.mojom.h"
@@ -84,6 +87,26 @@ void BindUnhandledTapWebContentsObserver(
   }
 }
 #endif  // BUILDFLAG(ENABLE_UNHANDLED_TAP)
+
+#if defined(OS_ANDROID)
+void BindContextualSearchObserver(
+    content::RenderFrameHost* const host,
+    mojo::PendingReceiver<
+        contextual_search::mojom::ContextualSearchJsApiService> receiver) {
+  // Early return if the RenderFrameHost's delegate is not a WebContents.
+  auto* web_contents = content::WebContents::FromRenderFrameHost(host);
+  if (!web_contents)
+    return;
+
+  auto* contextual_search_observer =
+      contextual_search::ContextualSearchObserver::FromWebContents(
+          web_contents);
+  if (contextual_search_observer) {
+    contextual_search::CreateContextualSearchJsApiService(
+        contextual_search_observer->api_handler(), std::move(receiver));
+  }
+}
+#endif
 
 // Forward image Annotator requests to the profile's AccessibilityLabelsService.
 void BindImageAnnotator(
@@ -258,6 +281,12 @@ void PopulateChromeFrameBinders(
         base::BindRepeating(&payments::CreatePaymentRequest));
   }
 #endif
+
+#if defined(OS_ANDROID)
+  map->Add<contextual_search::mojom::ContextualSearchJsApiService>(
+      base::BindRepeating(&BindContextualSearchObserver));
+#endif
+
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   map->Add<extensions::mime_handler::MimeHandlerService>(
       base::BindRepeating(&BindMimeHandlerService));
