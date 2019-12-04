@@ -1793,7 +1793,11 @@ void DocumentLoader::ParseAndPersistClientHints(
   // do the same thing.
 
   if (RuntimeEnabledFeatures::FeaturePolicyForClientHintsEnabled()) {
-    persist_duration = base::TimeDelta::Max();
+    // JSON cannot store "non-finite" values (i.e. NaN or infinite) so
+    // base::TimeDelta::Max cannot be used. As this will be removed once
+    // the FeaturePolicyForClientHints feature is shipped, a reasonably
+    // large was chosen instead
+    persist_duration = base::TimeDelta::FromDays(1000000);
   } else {
     persist_duration = client_hints_preferences_.GetPersistDuration();
   }
