@@ -16,23 +16,14 @@
 
 namespace base {
 
-File::Info::Info()
-    : size(0),
-      is_directory(false),
-      is_symbolic_link(false) {
-}
+File::Info::Info() = default;
 
 File::Info::~Info() = default;
 
-File::File()
-    : error_details_(FILE_ERROR_FAILED),
-      created_(false),
-      async_(false) {
-}
+File::File() = default;
 
 #if !defined(OS_NACL)
-File::File(const FilePath& path, uint32_t flags)
-    : error_details_(FILE_OK), created_(false), async_(false) {
+File::File(const FilePath& path, uint32_t flags) : error_details_(FILE_OK) {
   Initialize(path, flags);
 }
 #endif
@@ -42,18 +33,13 @@ File::File(PlatformFile platform_file) : File(platform_file, false) {}
 File::File(PlatformFile platform_file, bool async)
     : file_(platform_file),
       error_details_(FILE_OK),
-      created_(false),
       async_(async) {
 #if defined(OS_POSIX) || defined(OS_FUCHSIA)
   DCHECK_GE(platform_file, -1);
 #endif
 }
 
-File::File(Error error_details)
-    : error_details_(error_details),
-      created_(false),
-      async_(false) {
-}
+File::File(Error error_details) : error_details_(error_details) {}
 
 File::File(File&& other)
     : file_(other.TakePlatformFile()),

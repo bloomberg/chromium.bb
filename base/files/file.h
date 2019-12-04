@@ -128,14 +128,14 @@ class BASE_EXPORT File {
 #endif
 
     // The size of the file in bytes.  Undefined when is_directory is true.
-    int64_t size;
+    int64_t size = 0;
 
     // True if the file corresponds to a directory.
-    bool is_directory;
+    bool is_directory = false;
 
     // True if the file corresponds to a symbolic link.  For Windows currently
     // not supported and thus always false.
-    bool is_symbolic_link;
+    bool is_symbolic_link = false;
 
     // The last modified time of a file.
     Time last_modified;
@@ -381,9 +381,9 @@ class BASE_EXPORT File {
   // Object tied to the lifetime of |this| that enables/disables tracing.
   FileTracing::ScopedEnabler trace_enabler_;
 
-  Error error_details_;
-  bool created_;
-  bool async_;
+  Error error_details_ = FILE_ERROR_FAILED;
+  bool created_ = false;
+  bool async_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(File);
 };
