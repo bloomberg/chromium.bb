@@ -148,7 +148,7 @@ GpuServiceImpl::GpuServiceImpl(
         gpu_feature_info_for_hardware_gpu,
     const gpu::GpuExtraInfo& gpu_extra_info,
     gpu::VulkanImplementation* vulkan_implementation,
-    base::OnceClosure exit_callback)
+    base::OnceCallback<void(bool /*immediately*/)> exit_callback)
     : main_runner_(base::ThreadTaskRunnerHandle::Get()),
       io_runner_(std::move(io_runner)),
       watchdog_thread_(std::move(watchdog_thread)),
@@ -950,7 +950,10 @@ void GpuServiceImpl::MaybeExit(bool for_context_loss) {
                   "from errors. GPU process will restart shortly.";
   }
   is_exiting_.Set();
-  std::move(exit_callback_).Run();
+  // For the unsandboxed GPU process used for info collection, if we exit
+  // immediately, then the reply message could be lost. That's why the
+  // |exit_callback_| takes the boolean argument.
+  std::move(exit_callback_).Run(/*immediately=*/for_context_loss);
 }
 
 gpu::Scheduler* GpuServiceImpl::GetGpuScheduler() {
