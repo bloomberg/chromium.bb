@@ -343,7 +343,6 @@ def CopyAllDlcs(sysroot, install_root_dir):
         e.g. src/build/images/<board>/<version>.
   """
   build_dir = os.path.join(sysroot, DLC_IMAGE_DIR)
-  output_dir = os.path.join(install_root_dir, 'dlc')
 
   if not os.path.exists(build_dir):
     logging.info('DLC build directory (%s) does not exist, ignoring.',
@@ -354,12 +353,12 @@ def CopyAllDlcs(sysroot, install_root_dir):
     logging.info('There are no DLC(s) to copy to output, ignoring.')
     return
 
-  logging.info('Copying all DLC images from %s to %s.', build_dir, output_dir)
   logging.info('Detected the following DLCs: %s',
                ', '.join(os.listdir(build_dir)))
-
-  osutils.SafeMakedirs(output_dir)
-  osutils.CopyDirContents(build_dir, output_dir)
+  logging.info('Copying all DLC images from %s to %s.', build_dir,
+               install_root_dir)
+  osutils.SafeMakedirs(install_root_dir)
+  osutils.CopyDirContents(build_dir, install_root_dir)
 
   logging.info('Done copying the DLCs to their destination.')
 

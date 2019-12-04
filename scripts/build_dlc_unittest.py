@@ -202,13 +202,12 @@ class FinalizeDlcsTest(cros_test_lib.MockTempDirTestCase):
 
   def testCopyAllDlcs(self):
     """Tests CopyAllDlcs to make sure all DLCs are copied correctly"""
-    # copy_contents_mock = self.PatchObject(osutils, 'CopyDirContents')
     sysroot = os.path.join(self.tempdir, 'sysroot')
     osutils.WriteFile(os.path.join(sysroot, _IMAGE_DIR, _ID, 'dlc.img'),
                       'content', makedirs=True)
     output = os.path.join(self.tempdir, 'output')
     build_dlc.CopyAllDlcs(sysroot, output)
-    self.assertExists(os.path.join(output, 'dlc', _ID, 'dlc.img'))
+    self.assertExists(os.path.join(output, _ID, 'dlc.img'))
 
   def testCopyAllDlcsNoDlc(self):
     copy_contents_mock = self.PatchObject(osutils, 'CopyDirContents')
