@@ -406,15 +406,12 @@ fetchNonPasswordSuggestionsForFormWithName:(NSString*)formName
                     delegate {
   // frontend_id is > 0 for Autofill suggestions, == 0 for Autocomplete
   // suggestions, and < 0 for special suggestions such as clear form.
+  // We only want Autofill suggestions.
   std::vector<autofill::Suggestion> filtered_suggestions;
   std::copy_if(suggestions.begin(), suggestions.end(),
                std::back_inserter(filtered_suggestions),
                [](autofill::Suggestion suggestion) {
-                 return suggestion.frontend_id > 0 ||
-                        suggestion.frontend_id ==
-                            autofill::POPUP_ITEM_ID_SHOW_ACCOUNT_CARDS ||
-                        suggestion.frontend_id ==
-                            autofill::POPUP_ITEM_ID_CLEAR_FORM;
+                 return suggestion.frontend_id > 0;
                });
   [_autofillAgent showAutofillPopup:filtered_suggestions
                       popupDelegate:delegate];
