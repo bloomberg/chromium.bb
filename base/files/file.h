@@ -363,6 +363,13 @@ class BASE_EXPORT File {
   // Converts an error value to a human-readable form. Used for logging.
   static std::string ErrorToString(Error error);
 
+#if defined(OS_POSIX) || defined(OS_FUCHSIA)
+  // Wrapper for stat() or stat64().
+  static int Stat(const char* path, stat_wrapper_t* sb);
+  static int Fstat(int fd, stat_wrapper_t* sb);
+  static int Lstat(const char* path, stat_wrapper_t* sb);
+#endif
+
  private:
   friend class FileTracing::ScopedTrace;
 
