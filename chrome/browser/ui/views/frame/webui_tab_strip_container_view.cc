@@ -168,6 +168,10 @@ WebUITabStripContainerView::CreateNewTabButton() {
   new_tab_button->SetTooltipText(
       l10n_util::GetStringUTF16(IDS_TOOLTIP_NEW_TAB));
 
+  const int button_height = GetLayoutConstant(TOOLBAR_BUTTON_HEIGHT);
+  new_tab_button->SetPreferredSize(gfx::Size(button_height, button_height));
+  new_tab_button->SetHorizontalAlignment(gfx::ALIGN_CENTER);
+
   new_tab_button_ = new_tab_button.get();
   view_observer_.Add(new_tab_button_);
 
