@@ -233,13 +233,6 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   virtual InputEventAckState FilterInputEvent(
       const blink::WebInputEvent& input_event);
 
-  // Allows a root RWHV to filter gesture events in a child.
-  // TODO(mcnee): Remove once both callers are removed, following
-  // scroll-latching being enabled and BrowserPlugin being removed.
-  // crbug.com/751782
-  virtual InputEventAckState FilterChildGestureEvent(
-      const blink::WebGestureEvent& gesture_event);
-
   virtual void WheelEventAck(const blink::WebMouseWheelEvent& event,
                              InputEventAckState ack_result);
 

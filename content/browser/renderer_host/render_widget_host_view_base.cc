@@ -360,12 +360,6 @@ InputEventAckState RenderWidgetHostViewBase::FilterInputEvent(
   return INPUT_EVENT_ACK_STATE_NOT_CONSUMED;
 }
 
-InputEventAckState RenderWidgetHostViewBase::FilterChildGestureEvent(
-    const blink::WebGestureEvent& gesture_event) {
-  // By default, do nothing with the child's gesture events.
-  return INPUT_EVENT_ACK_STATE_NOT_CONSUMED;
-}
-
 void RenderWidgetHostViewBase::WheelEventAck(
     const blink::WebMouseWheelEvent& event,
     InputEventAckState ack_result) {
