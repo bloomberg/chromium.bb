@@ -1737,9 +1737,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   web_contents()->GetController().GoBack();
   EXPECT_FALSE(WaitForLoadStop(shell()->web_contents()));
   ExpectNotRestored(
-      {BackForwardCacheMetrics::NotRestoredReason::kHTTPStatusNotOK,
-       BackForwardCacheMetrics::NotRestoredReason::
-           kNotMostRecentNavigationEntry},
+      {BackForwardCacheMetrics::NotRestoredReason::kHTTPStatusNotOK},
       FROM_HERE);
 }
 
