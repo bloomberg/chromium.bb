@@ -2262,7 +2262,7 @@ int av1_full_pixel_search(const AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
       break;
     case NSTEP:
       var = full_pixel_diamond(x, mvp_full, step_param, error_per_bit,
-                               MAX_MVSEARCH_STEPS - 1 - step_param, cost_list,
+                               cfg->ss_count - 1 - step_param, cost_list,
                                fn_ptr, ref_mv, cfg, NULL, NULL, 0, 0);
       break;
     default: assert(0 && "Invalid search method.");
