@@ -1406,6 +1406,7 @@ jumbo_static_library("ui") {
       "//components/web_modal",
       "//components/zoom",
       "//device/bluetooth",
+      "//device/bluetooth/strings:strings_grit",
       "//device/fido",
       "//services/device/public/mojom",
       "//services/metrics/public/cpp:metrics_cpp",

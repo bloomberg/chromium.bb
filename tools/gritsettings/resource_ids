@@ -460,16 +460,16 @@
   },
 
   "cloud_print/virtual_driver/win/install/virtual_driver_setup_resources.grd": {
-    "includes": [16330],
-    "messages": [16340],
+    "includes": [16230],
+    "messages": [16235],
   },
 
   "device/bluetooth/bluetooth_strings.grd": {
-    "messages": [16350],
+    "messages": [16240],
   },
 
   "device/fido/fido_strings.grd": {
-    "messages": [16370],
+    "messages": [16275],
   },
 
   "extensions/browser/resources/extensions_browser_resources.grd": {
