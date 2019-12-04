@@ -47,8 +47,6 @@
 #include "content/test/did_commit_navigation_interceptor.h"
 #include "content/test/frame_host_test_interface.mojom.h"
 #include "content/test/test_content_browser_client.h"
-#include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/features.h"
 #include "net/base/net_errors.h"
 #include "net/cookies/cookie_constants.h"
@@ -1524,7 +1522,7 @@ class ScopedFakeInterfaceProviderRequestInjector
   DISALLOW_COPY_AND_ASSIGN(ScopedFakeInterfaceProviderRequestInjector);
 };
 
-// Monitors the |document_scoped_interface_provider_binding_| of the given
+// Monitors the |document_scoped_interface_provider_receiver_| of the given
 // |render_frame_host| for incoming interface requests for |interface_name|, and
 // invokes |callback| synchronously just before such a request would be
 // dispatched.
@@ -1535,12 +1533,12 @@ class ScopedInterfaceRequestMonitor
                                 base::StringPiece interface_name,
                                 base::RepeatingClosure callback)
       : rfhi_(static_cast<RenderFrameHostImpl*>(render_frame_host)),
-        impl_(binding().SwapImplForTesting(this)),
+        impl_(receiver().SwapImplForTesting(this)),
         interface_name_(interface_name),
         request_callback_(callback) {}
 
   ~ScopedInterfaceRequestMonitor() override {
-    auto* old_impl = binding().SwapImplForTesting(impl_);
+    auto* old_impl = receiver().SwapImplForTesting(impl_);
     DCHECK_EQ(old_impl, this);
   }
 
@@ -1558,8 +1556,8 @@ class ScopedInterfaceRequestMonitor
   }
 
  private:
-  mojo::Binding<service_manager::mojom::InterfaceProvider>& binding() {
-    return rfhi_->document_scoped_interface_provider_binding_for_testing();
+  mojo::Receiver<service_manager::mojom::InterfaceProvider>& receiver() {
+    return rfhi_->document_scoped_interface_provider_receiver_for_testing();
   }
 
   RenderFrameHostImpl* rfhi_;
@@ -1679,7 +1677,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   const GURL first_url(embedded_test_server()->GetURL("/title1.html"));
   const GURL second_url(embedded_test_server()->GetURL("/title2.html"));
 
-  // Prepare an InterfaceProviderRequest with no pending requests.
+  // Prepare an PendingReceiver<InterfaceProvider> with no pending requests.
   mojo::Remote<service_manager::mojom::InterfaceProvider> interface_provider;
   mojo::PendingReceiver<service_manager::mojom::InterfaceProvider>
       interface_provider_receiver =

@@ -857,7 +857,9 @@ void EmbeddedWorkerInstance::SendStartWorker(
 
   // The host must be alive as long as |params->provider_info| is alive.
   owner_version_->provider_host()->CompleteStartWorkerPreparation(
-      process_id(), MakeRequest(&params->provider_info->interface_provider),
+      process_id(),
+      params->provider_info->interface_provider
+          .InitWithNewPipeAndPassReceiver(),
       params->provider_info->browser_interface_broker
           .InitWithNewPipeAndPassReceiver());
 

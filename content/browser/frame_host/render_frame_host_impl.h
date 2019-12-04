@@ -66,6 +66,7 @@
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "net/base/network_isolation_key.h"
@@ -900,9 +901,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
     return frame_host_associated_receiver_;
   }
 
-  mojo::Binding<service_manager::mojom::InterfaceProvider>&
-  document_scoped_interface_provider_binding_for_testing() {
-    return document_scoped_interface_provider_binding_;
+  mojo::Receiver<service_manager::mojom::InterfaceProvider>&
+  document_scoped_interface_provider_receiver_for_testing() {
+    return document_scoped_interface_provider_receiver_;
   }
   void SetKeepAliveTimeoutForTesting(base::TimeDelta timeout);
 
@@ -2372,8 +2373,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // wrong document in the RenderFrame. The benefit of the approach taken is
   // that it does not necessitate using channel-associated InterfaceProvider
   // interfaces.
-  mojo::Binding<service_manager::mojom::InterfaceProvider>
-      document_scoped_interface_provider_binding_;
+  mojo::Receiver<service_manager::mojom::InterfaceProvider>
+      document_scoped_interface_provider_receiver_{this};
 
   // BrowserInterfaceBroker implementation through which this
   // RenderFrameHostImpl exposes document-scoped Mojo services to the currently
@@ -2385,9 +2386,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // Logs interface requests that arrive after the frame has already committed a
   // non-same-document navigation, and has already unbound
-  // |document_scoped_interface_provider_binding_| from the interface connection
-  // that had been used to service RenderFrame::GetRemoteInterface for the
-  // previously active document in the frame.
+  // |document_scoped_interface_provider_receiver_| from the interface
+  // connection that had been used to service RenderFrame::GetRemoteInterface
+  // for the previously active document in the frame.
   std::unique_ptr<DroppedInterfaceRequestLogger>
       dropped_interface_request_logger_;
 
