@@ -124,8 +124,7 @@ class Receiver {
   // is started).
   Receiver(Environment* environment,
            ReceiverPacketRouter* packet_router,
-           const cast::streaming::SessionConfig& config,
-           std::chrono::milliseconds initial_target_playout_delay);
+           const cast::streaming::SessionConfig& config);
   ~Receiver();
 
   Ssrc ssrc() const { return rtcp_session_.receiver_ssrc(); }

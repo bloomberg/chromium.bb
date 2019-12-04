@@ -294,9 +294,9 @@ class ReceiverTest : public testing::Test {
                    /* .receiver_ssrc = */ kReceiverSsrc,
                    /* .rtp_timebase = */ kRtpTimebase,
                    /* .channels = */ 2,
+                   /* .target_playout_delay = */ kTargetPlayoutDelay,
                    /* .aes_secret_key = */ kAesKey,
-                   /* .aes_iv_mask = */ kCastIvMask},
-                  kTargetPlayoutDelay),
+                   /* .aes_iv_mask = */ kCastIvMask}),
         sender_(&task_runner_, &env_) {
     env_.set_socket_error_handler(
         [](Error error) { ASSERT_TRUE(error.ok()) << error; });

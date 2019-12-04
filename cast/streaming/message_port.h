@@ -23,14 +23,16 @@ class MessagePort {
   class Client {
    public:
     virtual void OnMessage(absl::string_view sender_id,
-                           absl::string_view namespace_,
+                           absl::string_view message_namespace,
                            absl::string_view message) = 0;
     virtual void OnError(openscreen::Error error) = 0;
   };
 
   virtual ~MessagePort() = default;
   virtual void SetClient(Client* client) = 0;
-  virtual void PostMessage(absl::string_view message) = 0;
+  virtual void PostMessage(absl::string_view sender_id,
+                           absl::string_view message_namespace,
+                           absl::string_view message) = 0;
 };
 
 }  // namespace streaming

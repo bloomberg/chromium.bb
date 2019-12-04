@@ -4,6 +4,8 @@
 
 #include "cast/streaming/offer_messages.h"
 
+#include <utility>
+
 #include "cast/streaming/rtp_defines.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -16,7 +18,7 @@ namespace streaming {
 
 namespace {
 
-const std::string kValidOffer = R"({
+constexpr char kValidOffer[] = R"({
   "castMode": "mirroring",
   "receiverGetStatus": true,
   "supportedStreams": [
@@ -96,10 +98,8 @@ TEST(OfferTest, ErrorOnEmptyOffer) {
 }
 
 TEST(OfferTest, ErrorOnMissingMandatoryFields) {
-  ExpectFailureOnParse(R"({
-    "supportedStreams": []
-  })");
-
+  // It's okay if castMode is omitted, but if supportedStreams isanne  //
+  // omitted we should fail here.
   ExpectFailureOnParse(R"({
     "castMode": "mirroring"
   })");
@@ -266,13 +266,15 @@ TEST(OfferTest, CanParseValidOffer) {
   ASSERT_TRUE(root.is_value());
   openscreen::ErrorOr<Offer> offer = Offer::Parse(std::move(root.value()));
 
-  EXPECT_EQ(Offer::CastMode::kMirroring, offer.value().cast_mode);
+  EXPECT_EQ(CastMode::Type::kMirroring, offer.value().cast_mode.type);
+  EXPECT_EQ(true, offer.value().supports_wifi_status_reporting);
 
   // Verify list of video streams.
   EXPECT_EQ(2u, offer.value().video_streams.size());
   auto video_streams = offer.value().video_streams;
   VideoStream vs_one = video_streams[0];
   EXPECT_EQ(0, vs_one.stream.index);
+  EXPECT_EQ(1, vs_one.stream.channels);
   EXPECT_EQ(Stream::Type::kVideoSource, vs_one.stream.type);
   EXPECT_EQ("h264", vs_one.stream.codec_name);
   EXPECT_EQ(RtpPayloadType::kVideoH264, vs_one.stream.rtp_payload_type);
@@ -305,6 +307,7 @@ TEST(OfferTest, CanParseValidOffer) {
 
   VideoStream vs_two = video_streams[1];
   EXPECT_EQ(1, vs_two.stream.index);
+  EXPECT_EQ(1, vs_two.stream.channels);
   EXPECT_EQ(Stream::Type::kVideoSource, vs_two.stream.type);
   EXPECT_EQ("vp8", vs_two.stream.codec_name);
   EXPECT_EQ(RtpPayloadType::kVideoVp8, vs_two.stream.rtp_payload_type);
@@ -333,7 +336,7 @@ TEST(OfferTest, CanParseValidOffer) {
   EXPECT_EQ(RtpPayloadType::kAudioOpus, as.stream.rtp_payload_type);
   EXPECT_EQ(19088743u, as.stream.ssrc);
   EXPECT_EQ(124000, as.bit_rate);
-  EXPECT_EQ(2, as.channels);
+  EXPECT_EQ(2, as.stream.channels);
 
   EXPECT_THAT(as.stream.aes_key,
               ElementsAre(0x51, 0x02, 0x7e, 0x4e, 0x23, 0x47, 0xcb, 0xcb, 0x49,

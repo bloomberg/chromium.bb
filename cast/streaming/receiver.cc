@@ -33,8 +33,7 @@ namespace streaming {
 
 Receiver::Receiver(Environment* environment,
                    ReceiverPacketRouter* packet_router,
-                   const cast::streaming::SessionConfig& config,
-                   std::chrono::milliseconds initial_target_playout_delay)
+                   const cast::streaming::SessionConfig& config)
     : now_(environment->now_function()),
       packet_router_(packet_router),
       rtcp_session_(config.sender_ssrc, config.receiver_ssrc, now_()),
@@ -55,9 +54,9 @@ Receiver::Receiver(Environment* environment,
   OSP_CHECK_GT(rtcp_buffer_capacity_, 0);
   OSP_CHECK(rtcp_buffer_);
 
-  rtcp_builder_.SetPlayoutDelay(initial_target_playout_delay);
+  rtcp_builder_.SetPlayoutDelay(config.target_playout_delay);
   playout_delay_changes_.emplace_back(FrameId::first() - 1,
-                                      initial_target_playout_delay);
+                                      config.target_playout_delay);
 
   packet_router_->OnReceiverCreated(rtcp_session_.sender_ssrc(), this);
 }

@@ -43,6 +43,13 @@ namespace {
 // In a production environment, these should ABSOLUTELY NOT be fixed! Instead a
 // sender↔receiver OFFER/ANSWER exchange should establish them.
 
+// In a production environment, this would start-out at some initial value
+// appropriate to the networking environment, and then be adjusted by the
+// application as: 1) the TYPE of the content changes (interactive, low-latency
+// versus smooth, higher-latency buffered video watching); and 2) the networking
+// environment reliability changes.
+constexpr std::chrono::milliseconds kDemoTargetPlayoutDelay{400};
+
 const cast::streaming::SessionConfig kSampleAudioAnswerConfig{
     /* .sender_ssrc = */ 1,
     /* .receiver_ssrc = */ 2,
@@ -51,6 +58,7 @@ const cast::streaming::SessionConfig kSampleAudioAnswerConfig{
     // the audio capture.
     /* .rtp_timebase = */ 48000,
     /* .channels = */ 2,
+    /* .target_playout_delay */ kDemoTargetPlayoutDelay,
     /* .aes_secret_key = */
     {0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b,
      0x0c, 0x0d, 0x0e, 0x0f},
@@ -64,6 +72,7 @@ const cast::streaming::SessionConfig kSampleVideoAnswerConfig{
     /* .receiver_ssrc = */ 50002,
     /* .rtp_timebase = */ static_cast<int>(kVideoTimebase::den),
     /* .channels = */ 1,
+    /* .target_playout_delay */ kDemoTargetPlayoutDelay,
     /* .aes_secret_key = */
     {0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19, 0x1a, 0x1b,
      0x1c, 0x1d, 0x1e, 0x1f},
@@ -71,13 +80,6 @@ const cast::streaming::SessionConfig kSampleVideoAnswerConfig{
     {0xf1, 0xe1, 0xd1, 0xc1, 0xb1, 0xa1, 0x91, 0x81, 0x71, 0x61, 0x51, 0x41,
      0x31, 0x21, 0x11, 0x01},
 };
-
-// In a production environment, this would start-out at some initial value
-// appropriate to the networking environment, and then be adjusted by the
-// application as: 1) the TYPE of the content changes (interactive, low-latency
-// versus smooth, higher-latency buffered video watching); and 2) the networking
-// environment reliability changes.
-constexpr std::chrono::milliseconds kDemoTargetPlayoutDelay{400};
 
 // The UDP socket port receiving packets from the Sender.
 constexpr int kCastStreamingPort = 2344;
@@ -98,10 +100,8 @@ void DemoMain(TaskRunnerImpl* task_runner) {
   ReceiverPacketRouter packet_router(&env);
 
   // Create the two Receivers.
-  Receiver audio_receiver(&env, &packet_router, kSampleAudioAnswerConfig,
-                          kDemoTargetPlayoutDelay);
-  Receiver video_receiver(&env, &packet_router, kSampleVideoAnswerConfig,
-                          kDemoTargetPlayoutDelay);
+  Receiver audio_receiver(&env, &packet_router, kSampleAudioAnswerConfig);
+  Receiver video_receiver(&env, &packet_router, kSampleVideoAnswerConfig);
 
   OSP_LOG_INFO << "Awaiting first Cast Streaming packet at "
                << env.GetBoundLocalEndpoint() << "...";

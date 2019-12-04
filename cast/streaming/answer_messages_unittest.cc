@@ -4,6 +4,8 @@
 
 #include "cast/streaming/answer_messages.h"
 
+#include <utility>
+
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "util/json/json_serialization.h"
@@ -14,6 +16,7 @@ namespace streaming {
 namespace {
 
 const Answer kValidAnswer{
+    CastMode{CastMode::Type::kMirroring},
     1234,                         // udp_port
     std::vector<int>{1, 2, 3},    // send_indexes
     std::vector<Ssrc>{123, 456},  // ssrcs
@@ -48,8 +51,8 @@ const Answer kValidAnswer{
             480,   // height
             30, 1  // frame_rate
         },
-        "16:9",            // aspect_ratio
-        Scaling::kSender,  // scaling
+        AspectRatio{16, 9},             // aspect_ratio
+        AspectRatioConstraint::kFixed,  // scaling
     },
     std::vector<int>{7, 8, 9},              // receiver_rtcp_event_log
     std::vector<int>{11, 12, 13},           // receiver_rtcp_dscp
@@ -57,13 +60,14 @@ const Answer kValidAnswer{
     std::vector<std::string>{"foo", "bar"}  // rtp_extensions
 };
 
-}
+}  // anonymous namespace
 
 TEST(AnswerMessagesTest, ProperlyPopulatedAnswerSerializesProperly) {
   auto value_or_error = kValidAnswer.ToJson();
   EXPECT_TRUE(value_or_error.is_value());
 
   Json::Value root = std::move(value_or_error.value());
+  EXPECT_EQ(root["castMode"], "mirroring");
   EXPECT_EQ(root["udpPort"], 1234);
 
   Json::Value sendIndexes = std::move(root["sendIndexes"]);
@@ -138,29 +142,29 @@ TEST(AnswerMessagesTest, ProperlyPopulatedAnswerSerializesProperly) {
 
 TEST(AnswerMessagesTest, InvalidDimensionsCauseError) {
   Answer invalid_dimensions = kValidAnswer;
-  invalid_dimensions.display.dimensions.width = -1;
+  invalid_dimensions.display.value().dimensions.width = -1;
   auto value_or_error = invalid_dimensions.ToJson();
   EXPECT_TRUE(value_or_error.is_error());
 }
 
 TEST(AnswerMessagesTest, InvalidAudioConstraintsCauseError) {
   Answer invalid_audio = kValidAnswer;
-  invalid_audio.constraints.audio.max_bit_rate =
-      invalid_audio.constraints.audio.min_bit_rate - 1;
+  invalid_audio.constraints.value().audio.max_bit_rate =
+      invalid_audio.constraints.value().audio.min_bit_rate - 1;
   auto value_or_error = invalid_audio.ToJson();
   EXPECT_TRUE(value_or_error.is_error());
 }
 
 TEST(AnswerMessagesTest, InvalidVideoConstraintsCauseError) {
   Answer invalid_video = kValidAnswer;
-  invalid_video.constraints.video.max_pixels_per_second = -1.0;
+  invalid_video.constraints.value().video.max_pixels_per_second = -1.0;
   auto value_or_error = invalid_video.ToJson();
   EXPECT_TRUE(value_or_error.is_error());
 }
 
 TEST(AnswerMessagesTest, InvalidDisplayDescriptionsCauseError) {
   Answer invalid_display = kValidAnswer;
-  invalid_display.display.aspect_ratio = "";
+  invalid_display.display.value().aspect_ratio = {0, 0};
   auto value_or_error = invalid_display.ToJson();
   EXPECT_TRUE(value_or_error.is_error());
 }

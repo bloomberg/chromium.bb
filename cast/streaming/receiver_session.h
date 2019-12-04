@@ -6,8 +6,10 @@
 #define CAST_STREAMING_RECEIVER_SESSION_H_
 
 #include <memory>
+#include <string>
 #include <vector>
 
+#include "cast/streaming/answer_messages.h"
 #include "cast/streaming/environment.h"
 #include "cast/streaming/message_port.h"
 #include "cast/streaming/offer_messages.h"
@@ -86,19 +88,29 @@ class ReceiverSession final : public MessagePort::Client {
     Preferences();
     Preferences(std::vector<VideoCodec> video_codecs,
                 std::vector<AudioCodec> audio_codecs);
+    Preferences(std::vector<VideoCodec> video_codecs,
+                std::vector<AudioCodec> audio_codecs,
+                std::unique_ptr<Constraints> constraints,
+                std::unique_ptr<DisplayDescription> description);
 
     Preferences(Preferences&&) noexcept;
-    Preferences(const Preferences&);
+    Preferences(const Preferences&) = delete;
     Preferences& operator=(Preferences&&) noexcept;
-    Preferences& operator=(const Preferences&);
+    Preferences& operator=(const Preferences&) = delete;
 
     std::vector<VideoCodec> video_codecs{VideoCodec::kVp8, VideoCodec::kH264};
     std::vector<AudioCodec> audio_codecs{AudioCodec::kOpus, AudioCodec::kAac};
+
+    // The embedder has the option of directly specifying the display
+    // information and video/audio constraints that will be passed along to
+    // senders during the offer/answer exchange. If nullptr, these are ignored.
+    std::unique_ptr<Constraints> constraints;
+    std::unique_ptr<DisplayDescription> display_description;
   };
 
   ReceiverSession(Client* const client,
-                  std::unique_ptr<MessagePort> message_port,
                   std::unique_ptr<Environment> environment,
+                  std::unique_ptr<MessagePort> message_port,
                   Preferences preferences);
   ReceiverSession(const ReceiverSession&) = delete;
   ReceiverSession(ReceiverSession&&) = delete;
@@ -108,23 +120,44 @@ class ReceiverSession final : public MessagePort::Client {
 
   // MessagePort::Client overrides
   void OnMessage(absl::string_view sender_id,
-                 absl::string_view namespace_,
+                 absl::string_view message_namespace,
                  absl::string_view message) override;
   void OnError(openscreen::Error error) override;
 
  private:
-  // Message handlers
-  void OnOffer(Json::Value root, int sequence_number);
+  struct Message {
+    const std::string sender_id = {};
+    const std::string message_namespace = {};
+    const int sequence_number = 0;
+    Json::Value body;
+  };
 
-  void SelectStreams(const AudioStream* audio,
-                     const VideoStream* video,
-                     Offer&& offer);
+  // Message handlers
+  void OnOffer(Message* message);
+
+  std::pair<SessionConfig, std::unique_ptr<Receiver>> ConstructReceiver(
+      const Stream& stream);
+
+  // Either stream input to this method may be null, however if both
+  // are null this method returns error.
+  openscreen::ErrorOr<ConfiguredReceivers> TrySpawningReceivers(
+      const AudioStream* audio,
+      const VideoStream* video);
+
+  // Callers of this method should ensure at least one stream is non-null.
+  Answer ConstructAnswer(Message* message,
+                         const AudioStream* audio,
+                         const VideoStream* video);
+
+  void SendMessage(Message* message);
 
   Client* const client_;
-  const std::unique_ptr<MessagePort> message_port_;
   const std::unique_ptr<Environment> environment_;
+  const std::unique_ptr<MessagePort> message_port_;
   const Preferences preferences_;
 
+  CastMode cast_mode_;
+  bool supports_wifi_status_reporting_ = false;
   ReceiverPacketRouter packet_router_;
 };
 
