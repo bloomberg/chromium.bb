@@ -1837,6 +1837,21 @@
             ]
         }
     ],
+    "CryptAuthV2Enrollment": [
+        {
+            "platforms": [
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "CryptAuthV2Enrollment"
+                    ]
+                }
+            ]
+        }
+    ],
     "D3D11VideoDecoder": [
         {
             "platforms": [
