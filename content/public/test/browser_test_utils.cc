@@ -138,7 +138,6 @@
 
 #if defined(USE_AURA)
 #include "content/browser/renderer_host/delegated_frame_host.h"
-#include "content/browser/renderer_host/overscroll_controller.h"
 #include "content/browser/renderer_host/render_widget_host_view_aura.h"
 #include "ui/aura/test/window_event_dispatcher_test_api.h"
 #include "ui/aura/window.h"
@@ -3103,60 +3102,6 @@ void PwnMessageHelper::LockMouse(RenderProcessHost* process,
 }
 
 #if defined(USE_AURA)
-namespace {
-class MockOverscrollControllerImpl : public OverscrollController,
-                                     public MockOverscrollController {
- public:
-  MockOverscrollControllerImpl() : content_scrolling_(false) {}
-  ~MockOverscrollControllerImpl() override {}
-
-  // OverscrollController:
-  void ReceivedEventACK(const blink::WebInputEvent& event,
-                        bool processed) override {
-    // Since we're only mocking this one method of OverscrollController and its
-    // other methods are non-virtual, we'll delegate to it so that it doesn't
-    // get into an inconsistent state.
-    OverscrollController::ReceivedEventACK(event, processed);
-
-    if (event.GetType() == blink::WebInputEvent::kGestureScrollUpdate &&
-        processed) {
-      content_scrolling_ = true;
-      if (quit_closure_)
-        std::move(quit_closure_).Run();
-    }
-  }
-
-  // MockOverscrollController:
-  void WaitForConsumedScroll() override {
-    if (!content_scrolling_) {
-      base::RunLoop run_loop;
-      quit_closure_ = run_loop.QuitClosure();
-      run_loop.Run();
-    }
-  }
-
- private:
-  bool content_scrolling_;
-  base::OnceClosure quit_closure_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockOverscrollControllerImpl);
-};
-}  // namespace
-
-// static
-MockOverscrollController* MockOverscrollController::Create(
-    RenderWidgetHostView* rwhv) {
-  std::unique_ptr<MockOverscrollControllerImpl> mock =
-      std::make_unique<MockOverscrollControllerImpl>();
-  MockOverscrollController* raw_mock = mock.get();
-
-  RenderWidgetHostViewAura* rwhva =
-      static_cast<RenderWidgetHostViewAura*>(rwhv);
-  rwhva->SetOverscrollControllerForTesting(std::move(mock));
-
-  return raw_mock;
-}
-
 namespace {
 
 // This class interacts with the internals of the DelegatedFrameHost without

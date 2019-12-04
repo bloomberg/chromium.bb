@@ -1608,22 +1608,6 @@ class PwnMessageHelper {
 };
 
 #if defined(USE_AURA)
-// Mock of an OverscrollController so we can inspect the scroll events that it
-// receives. Note that this is only a partial mock as the methods of a real
-// OverscrollController are being invoked.
-// TODO(mcnee): Tests needing this are BrowserPlugin specific. Remove after
-// removing BrowserPlugin (crbug.com/533069).
-class MockOverscrollController {
- public:
-  // Creates a mock and installs it on the given RenderWidgetHostViewAura.
-  // The returned mock is owned by the RWHVA.
-  static MockOverscrollController* Create(RenderWidgetHostView* rwhv);
-
-  virtual ~MockOverscrollController() {}
-
-  // Waits until the mock receives a consumed GestureScrollUpdate.
-  virtual void WaitForConsumedScroll() = 0;
-};
 
 // Tests that a |render_widget_host_view| stores a stale content when its frame
 // gets evicted. |render_widget_host_view| has to be a RenderWidgetHostViewAura.
