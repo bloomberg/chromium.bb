@@ -4,6 +4,10 @@
 
 #include "content/browser/web_package/web_bundle_handle.h"
 
+#include <string>
+#include <utility>
+#include <vector>
+
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
@@ -193,7 +197,7 @@ class InterceptorForFile final : public NavigationLoaderInterceptor {
       bool* skip_other_interceptors,
       bool* will_return_unsafe_redirect) override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    DCHECK(web_bundle_utils::IsSupprtedFileScheme(request.url));
+    DCHECK(web_bundle_utils::IsSupportedFileScheme(request.url));
     if ((*response_head)->mime_type !=
         web_bundle_utils::kWebBundleFileMimeTypeWithoutParameters) {
       return false;
