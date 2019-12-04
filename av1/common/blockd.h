@@ -799,7 +799,7 @@ static INLINE TX_TYPE get_default_tx_type(PLANE_TYPE plane_type,
 static INLINE BLOCK_SIZE get_plane_block_size(BLOCK_SIZE bsize,
                                               int subsampling_x,
                                               int subsampling_y) {
-  if (bsize == BLOCK_INVALID) return BLOCK_INVALID;
+  assert(bsize < BLOCK_SIZES_ALL);
   assert(subsampling_x >= 0 && subsampling_x < 2);
   assert(subsampling_y >= 0 && subsampling_y < 2);
   return ss_size_lookup[bsize][subsampling_x][subsampling_y];
