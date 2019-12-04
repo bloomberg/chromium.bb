@@ -1260,6 +1260,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/permissions/PermissionDialogController.java",
   "java/src/org/chromium/chrome/browser/permissions/PermissionDialogDelegate.java",
   "java/src/org/chromium/chrome/browser/permissions/PermissionFieldTrial.java",
+  "java/src/org/chromium/chrome/browser/permissions/PermissionSettingsBridge.java",
   "java/src/org/chromium/chrome/browser/permissions/PermissionUmaUtil.java",
   "java/src/org/chromium/chrome/browser/photo_picker/BitmapScalerTask.java",
   "java/src/org/chromium/chrome/browser/photo_picker/BitmapUtils.java",
