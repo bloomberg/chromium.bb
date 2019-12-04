@@ -4,6 +4,8 @@ endif() # LIBGAV1_CMAKE_LIBGAV1_BUILD_DEFINITIONS_CMAKE_
 set(LIBGAV1_CMAKE_LIBGAV1_BUILD_DEFINITIONS_CMAKE_ 1)
 
 macro(libgav1_set_build_definitions)
+  string(TOLOWER "${CMAKE_BUILD_TYPE}" build_type_lowercase)
+
   # TODO(tomfinegan): Neither LIBGAV1_VERSION nor LIBGAV1_SOVERSION should be
   # defined here. This data should come from outside the build system and be
   # loaded by the build system when needed.
@@ -31,7 +33,7 @@ macro(libgav1_set_build_definitions)
       set(CMAKE_ANDROID_ARM_MODE ON)
     endif()
 
-    if(CMAKE_BUILD_TYPE MATCHES "Rel|REL")
+    if(build_type_lowercase MATCHES "rel")
       list(APPEND libgav1_base_cxx_flags "-fno-stack-protector")
     endif()
   endif()
@@ -61,7 +63,7 @@ macro(libgav1_set_build_definitions)
     endif()
   endif()
 
-  if(CMAKE_BUILD_TYPE MATCHES "Rel|REL")
+  if(build_type_lowercase MATCHES "rel")
     # TODO(tomfinegan): this value is only a concern for the core library and
     # can be made smaller if the test targets are avoided.
     list(APPEND libgav1_base_cxx_flags "-Wstack-usage=196608")
