@@ -34,7 +34,7 @@ void EmbeddedWorkerInstanceClientImpl::Create(
         receiver) {
   // This won't be leaked because the lifetime will be managed internally.
   // See the class documentation for detail.
-  // We can't use MakeStrongBinding because must give the worker thread
+  // We can't use MakeSelfOwnedReceiver because must give the worker thread
   // a chance to stop by calling TerminateWorkerContext() and waiting
   // before destructing.
   new EmbeddedWorkerInstanceClientImpl(std::move(receiver),
