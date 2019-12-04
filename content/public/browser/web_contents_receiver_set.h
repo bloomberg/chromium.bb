@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_PUBLIC_BROWSER_WEB_CONTENTS_BINDING_SET_H_
-#define CONTENT_PUBLIC_BROWSER_WEB_CONTENTS_BINDING_SET_H_
+#ifndef CONTENT_PUBLIC_BROWSER_WEB_CONTENTS_RECEIVER_SET_H_
+#define CONTENT_PUBLIC_BROWSER_WEB_CONTENTS_RECEIVER_SET_H_
 
 #include <memory>
 #include <string>
@@ -14,8 +14,8 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "mojo/public/cpp/bindings/associated_binding_set.h"
-#include "mojo/public/cpp/bindings/associated_interface_request.h"
+#include "mojo/public/cpp/bindings/associated_receiver_set.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
 
 namespace content {
@@ -23,54 +23,53 @@ namespace content {
 class RenderFrameHost;
 class WebContentsImpl;
 
-// Base class for something which owns a mojo::AssociatedBindingSet on behalf
-// of a WebContents. See WebContentsFrameBindingSet<T> below.
-class CONTENT_EXPORT WebContentsBindingSet {
+// Base class for something which owns a mojo::AssociatedReceiverSet on behalf
+// of a WebContents. See WebContentsFrameReceiverSet<T> below.
+class CONTENT_EXPORT WebContentsReceiverSet {
  public:
   class CONTENT_EXPORT Binder {
    public:
     virtual ~Binder() = default;
 
-    virtual void OnRequestForFrame(
-        RenderFrameHost* render_frame_host,
-        mojo::ScopedInterfaceEndpointHandle handle);
-    virtual void CloseAllBindings();
+    virtual void OnReceiverForFrame(RenderFrameHost* render_frame_host,
+                                    mojo::ScopedInterfaceEndpointHandle handle);
+    virtual void CloseAllReceivers();
   };
 
   // |binder| must outlive |this| or be reset to null before being destroyed.
   void SetBinder(Binder* binder) { binder_ = binder; }
 
   template <typename Interface>
-  static WebContentsBindingSet* GetForWebContents(WebContents* web_contents) {
+  static WebContentsReceiverSet* GetForWebContents(WebContents* web_contents) {
     return GetForWebContents(web_contents, Interface::Name_);
   }
 
  protected:
-  WebContentsBindingSet(WebContents* web_contents,
-                        const std::string& interface_name);
-  ~WebContentsBindingSet();
+  WebContentsReceiverSet(WebContents* web_contents,
+                         const std::string& interface_name);
+  ~WebContentsReceiverSet();
 
  private:
   friend class WebContentsImpl;
 
-  static WebContentsBindingSet* GetForWebContents(WebContents* web_contents,
-                                                  const char* interface_name);
+  static WebContentsReceiverSet* GetForWebContents(WebContents* web_contents,
+                                                   const char* interface_name);
 
-  void CloseAllBindings();
-  void OnRequestForFrame(RenderFrameHost* render_frame_host,
-                         mojo::ScopedInterfaceEndpointHandle handle);
+  void CloseAllReceivers();
+  void OnReceiverForFrame(RenderFrameHost* render_frame_host,
+                          mojo::ScopedInterfaceEndpointHandle handle);
 
   base::OnceClosure remove_callback_;
   Binder* binder_ = nullptr;
 
-  DISALLOW_COPY_AND_ASSIGN(WebContentsBindingSet);
+  DISALLOW_COPY_AND_ASSIGN(WebContentsReceiverSet);
 };
 
-// Owns a set of Channel-associated interface bindings with frame context on
+// Owns a set of Channel-associated interface receivers with frame context on
 // message dispatch.
 //
 // To use this, a |mojom::Foo| implementation need only own an instance of
-// WebContentsFrameBindingSet<mojom::Foo>. This allows remote RenderFrames to
+// WebContentsFrameReceiverSet<mojom::Foo>. This allows remote RenderFrames to
 // acquire handles to the |mojom::Foo| interface via
 // RenderFrame::GetRemoteAssociatedInterfaces() and send messages here. When
 // messages are dispatched to the implementation, the implementation can call
@@ -82,40 +81,41 @@ class CONTENT_EXPORT WebContentsBindingSet {
 //   class FooImpl : public mojom::Foo {
 //    public:
 //     explicit FooImpl(WebContents* web_contents)
-//         : web_contents_(web_contents), bindings_(web_contents, this) {}
+//         : web_contents_(web_contents), receivers_(web_contents, this) {}
 //
 //     // mojom::Foo:
 //     void DoFoo() override {
-//       if (bindings_.GetCurrentTargetFrame() == web_contents_->GetMainFrame())
+//       if (receivers_.GetCurrentTargetFrame() ==
+//           web_contents_->GetMainFrame())
 //           ; // Do something interesting
 //     }
 //
 //    private:
 //     WebContents* web_contents_;
-//     WebContentsFrameBindingSet<mojom::Foo> bindings_;
+//     WebContentsFrameReceiverSet<mojom::Foo> receivers_;
 //   };
 //
 // When an instance of FooImpl is constructed over a WebContents, the mojom::Foo
 // interface will be exposed to all remote RenderFrame objects. If the
-// WebContents is destroyed at any point, the bindings will automatically reset
+// WebContents is destroyed at any point, the receivers will automatically reset
 // and will cease to dispatch further incoming messages.
 //
-// If FooImpl is destroyed first, the bindings are automatically removed and
-// future incoming interface requests for mojom::Foo will be rejected.
+// If FooImpl is destroyed first, the receivers are automatically removed and
+// future incoming pending receivers for mojom::Foo will be rejected.
 //
-// Because this object uses Channel-associated interface bindings, all messages
+// Because this object uses Channel-associated interface receivers, all messages
 // sent via these interfaces are ordered with respect to legacy Chrome IPC
 // messages on the relevant IPC::Channel (i.e. the Channel between the browser
 // and whatever render process hosts the sending frame.)
 template <typename Interface>
-class WebContentsFrameBindingSet : public WebContentsBindingSet {
+class WebContentsFrameReceiverSet : public WebContentsReceiverSet {
  public:
-  WebContentsFrameBindingSet(WebContents* web_contents, Interface* impl)
-      : WebContentsBindingSet(web_contents, Interface::Name_),
+  WebContentsFrameReceiverSet(WebContents* web_contents, Interface* impl)
+      : WebContentsReceiverSet(web_contents, Interface::Name_),
         binder_(this, web_contents, impl) {
     SetBinder(&binder_);
   }
-  ~WebContentsFrameBindingSet() = default;
+  ~WebContentsFrameReceiverSet() = default;
 
   // Returns the RenderFrameHost currently targeted by a message dispatch to
   // this interface. Must only be called during the extent of a message dispatch
@@ -133,7 +133,7 @@ class WebContentsFrameBindingSet : public WebContentsBindingSet {
  private:
   class FrameInterfaceBinder : public Binder, public WebContentsObserver {
    public:
-    FrameInterfaceBinder(WebContentsFrameBindingSet* binding_set,
+    FrameInterfaceBinder(WebContentsFrameReceiverSet* receiver_set,
                          WebContents* web_contents,
                          Interface* impl)
         : WebContentsObserver(web_contents), impl_(impl) {}
@@ -141,36 +141,36 @@ class WebContentsFrameBindingSet : public WebContentsBindingSet {
     ~FrameInterfaceBinder() override = default;
 
     RenderFrameHost* GetCurrentTargetFrame() {
-      return bindings_.dispatch_context();
+      return receivers_.current_context();
     }
 
    private:
     // Binder:
-    void OnRequestForFrame(
+    void OnReceiverForFrame(
         RenderFrameHost* render_frame_host,
         mojo::ScopedInterfaceEndpointHandle handle) override {
-      auto id = bindings_.AddBinding(
-          impl_, mojo::AssociatedInterfaceRequest<Interface>(std::move(handle)),
+      auto id = receivers_.Add(
+          impl_, mojo::PendingAssociatedReceiver<Interface>(std::move(handle)),
           render_frame_host);
-      frame_to_bindings_map_[render_frame_host].push_back(id);
+      frame_to_receivers_map_[render_frame_host].push_back(id);
     }
 
-    void CloseAllBindings() override { bindings_.CloseAllBindings(); }
+    void CloseAllReceivers() override { receivers_.Clear(); }
 
     // WebContentsObserver:
     void RenderFrameDeleted(RenderFrameHost* render_frame_host) override {
-      auto it = frame_to_bindings_map_.find(render_frame_host);
-      if (it == frame_to_bindings_map_.end())
+      auto it = frame_to_receivers_map_.find(render_frame_host);
+      if (it == frame_to_receivers_map_.end())
         return;
       for (auto id : it->second)
-        bindings_.RemoveBinding(id);
-      frame_to_bindings_map_.erase(it);
+        receivers_.Remove(id);
+      frame_to_receivers_map_.erase(it);
     }
 
     Interface* const impl_;
-    mojo::AssociatedBindingSet<Interface, RenderFrameHost*> bindings_;
-    std::map<RenderFrameHost*, std::vector<mojo::BindingId>>
-        frame_to_bindings_map_;
+    mojo::AssociatedReceiverSet<Interface, RenderFrameHost*> receivers_;
+    std::map<RenderFrameHost*, std::vector<mojo::ReceiverId>>
+        frame_to_receivers_map_;
 
     DISALLOW_COPY_AND_ASSIGN(FrameInterfaceBinder);
   };
@@ -178,9 +178,9 @@ class WebContentsFrameBindingSet : public WebContentsBindingSet {
   FrameInterfaceBinder binder_;
   RenderFrameHost* current_target_frame_for_testing_ = nullptr;
 
-  DISALLOW_COPY_AND_ASSIGN(WebContentsFrameBindingSet);
+  DISALLOW_COPY_AND_ASSIGN(WebContentsFrameReceiverSet);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_PUBLIC_BROWSER_WEB_CONTENTS_BINDING_SET_H_
+#endif  // CONTENT_PUBLIC_BROWSER_WEB_CONTENTS_RECEIVER_SET_H_

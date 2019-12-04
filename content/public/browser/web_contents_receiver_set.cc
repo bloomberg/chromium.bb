@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/public/browser/web_contents_binding_set.h"
+#include "content/public/browser/web_contents_receiver_set.h"
 
 #include <utility>
 
@@ -11,43 +11,44 @@
 
 namespace content {
 
-void WebContentsBindingSet::Binder::OnRequestForFrame(
+void WebContentsReceiverSet::Binder::OnReceiverForFrame(
     RenderFrameHost* render_frame_host,
     mojo::ScopedInterfaceEndpointHandle handle) {
   NOTREACHED();
 }
 
-void WebContentsBindingSet::Binder::CloseAllBindings() {
+void WebContentsReceiverSet::Binder::CloseAllReceivers() {
   NOTREACHED();
 }
 
-WebContentsBindingSet::WebContentsBindingSet(WebContents* web_contents,
-                                             const std::string& interface_name)
+WebContentsReceiverSet::WebContentsReceiverSet(
+    WebContents* web_contents,
+    const std::string& interface_name)
     : remove_callback_(static_cast<WebContentsImpl*>(web_contents)
-                           ->AddBindingSet(interface_name, this)) {}
+                           ->AddReceiverSet(interface_name, this)) {}
 
-WebContentsBindingSet::~WebContentsBindingSet() {
+WebContentsReceiverSet::~WebContentsReceiverSet() {
   std::move(remove_callback_).Run();
 }
 
 // static
-WebContentsBindingSet* WebContentsBindingSet::GetForWebContents(
+WebContentsReceiverSet* WebContentsReceiverSet::GetForWebContents(
     WebContents* web_contents,
     const char* interface_name) {
   return static_cast<WebContentsImpl*>(web_contents)
-      ->GetBindingSet(interface_name);
+      ->GetReceiverSet(interface_name);
 }
 
-void WebContentsBindingSet::CloseAllBindings() {
-  binder_->CloseAllBindings();
+void WebContentsReceiverSet::CloseAllReceivers() {
+  binder_->CloseAllReceivers();
   binder_ = nullptr;
 }
 
-void WebContentsBindingSet::OnRequestForFrame(
+void WebContentsReceiverSet::OnReceiverForFrame(
     RenderFrameHost* render_frame_host,
     mojo::ScopedInterfaceEndpointHandle handle) {
   if (binder_)
-    binder_->OnRequestForFrame(render_frame_host, std::move(handle));
+    binder_->OnReceiverForFrame(render_frame_host, std::move(handle));
 }
 
 }  // namespace content

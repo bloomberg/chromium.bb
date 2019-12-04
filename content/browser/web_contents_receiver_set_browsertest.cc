@@ -6,12 +6,12 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "content/browser/web_contents/web_contents_impl.h"
-#include "content/public/browser/web_contents_binding_set.h"
+#include "content/public/browser/web_contents_receiver_set.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/test_utils.h"
-#include "content/public/test/web_contents_binding_set_test_binder.h"
+#include "content/public/test/web_contents_receiver_set_test_binder.h"
 #include "content/shell/browser/shell.h"
 #include "content/test/test_browser_associated_interfaces.mojom.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
@@ -25,7 +25,7 @@ namespace {
 const char kTestHost1[] = "foo.com";
 const char kTestHost2[] = "bar.com";
 
-class WebContentsBindingSetBrowserTest : public ContentBrowserTest {
+class WebContentsReceiverSetBrowserTest : public ContentBrowserTest {
  public:
   void SetUpOnMainThread() override {
     host_resolver()->AddRule(kTestHost1, "127.0.0.1");
@@ -33,7 +33,7 @@ class WebContentsBindingSetBrowserTest : public ContentBrowserTest {
   }
 };
 
-class TestInterfaceBinder : public WebContentsBindingSetTestBinder<
+class TestInterfaceBinder : public WebContentsReceiverSetTestBinder<
                                 mojom::BrowserAssociatedInterfaceTestDriver> {
  public:
   explicit TestInterfaceBinder(const base::Closure& bind_callback)
@@ -53,38 +53,39 @@ class TestInterfaceBinder : public WebContentsBindingSetTestBinder<
   DISALLOW_COPY_AND_ASSIGN(TestInterfaceBinder);
 };
 
-class TestFrameInterfaceBinder : public mojom::WebContentsFrameBindingSetTest {
+class TestFrameInterfaceBinder : public mojom::WebContentsFrameReceiverSetTest {
  public:
   explicit TestFrameInterfaceBinder(WebContents* web_contents)
-      : bindings_(web_contents, this) {}
+      : receivers_(web_contents, this) {}
   ~TestFrameInterfaceBinder() override {}
 
  private:
-  // mojom::WebContentsFrameBindingSetTest:
+  // mojom::WebContentsFrameReceiverSetTest:
   void Ping(PingCallback callback) override { NOTREACHED(); }
 
-  WebContentsFrameBindingSet<mojom::WebContentsFrameBindingSetTest> bindings_;
+  WebContentsFrameReceiverSet<mojom::WebContentsFrameReceiverSetTest>
+      receivers_;
 };
 
 }  // namespace
 
-IN_PROC_BROWSER_TEST_F(WebContentsBindingSetBrowserTest, OverrideForTesting) {
+IN_PROC_BROWSER_TEST_F(WebContentsReceiverSetBrowserTest, OverrideForTesting) {
   EXPECT_TRUE(NavigateToURL(shell(), GURL("data:text/html,ho hum")));
 
-  // Ensure that we can add a WebContentsFrameBindingSet and then override its
+  // Ensure that we can add a WebContentsFrameReceiverSet and then override its
   // request handler.
   auto* web_contents = shell()->web_contents();
-  WebContentsFrameBindingSet<mojom::BrowserAssociatedInterfaceTestDriver>
-      frame_bindings(web_contents, nullptr);
+  WebContentsFrameReceiverSet<mojom::BrowserAssociatedInterfaceTestDriver>
+      frame_receivers(web_contents, nullptr);
 
   // Now override the binder for this interface. It quits |run_loop| whenever
-  // an incoming interface request is received.
+  // an incoming pending receiver is received.
   base::RunLoop run_loop;
-  auto* binding_set = WebContentsBindingSet::GetForWebContents<
+  auto* receiver_set = WebContentsReceiverSet::GetForWebContents<
       mojom::BrowserAssociatedInterfaceTestDriver>(web_contents);
 
   TestInterfaceBinder test_binder(run_loop.QuitClosure());
-  binding_set->SetBinder(&test_binder);
+  receiver_set->SetBinder(&test_binder);
 
   // Simulate an inbound receiver for the test interface. This should get routed
   // to the overriding binder and allow the test to complete.
@@ -98,10 +99,11 @@ IN_PROC_BROWSER_TEST_F(WebContentsBindingSetBrowserTest, OverrideForTesting) {
               .PassHandle());
   run_loop.Run();
 
-  binding_set->SetBinder(nullptr);
+  receiver_set->SetBinder(nullptr);
 }
 
-IN_PROC_BROWSER_TEST_F(WebContentsBindingSetBrowserTest, CloseOnFrameDeletion) {
+IN_PROC_BROWSER_TEST_F(WebContentsReceiverSetBrowserTest,
+                       CloseOnFrameDeletion) {
   EXPECT_TRUE(embedded_test_server()->Start());
   EXPECT_TRUE(NavigateToURL(
       shell(), embedded_test_server()->GetURL(kTestHost1, "/hello.html")));
@@ -109,11 +111,12 @@ IN_PROC_BROWSER_TEST_F(WebContentsBindingSetBrowserTest, CloseOnFrameDeletion) {
   // Simulate an inbound receiver on the navigated main frame.
   auto* web_contents = shell()->web_contents();
   TestFrameInterfaceBinder binder(web_contents);
-  mojo::AssociatedRemote<mojom::WebContentsFrameBindingSetTest> override_client;
+  mojo::AssociatedRemote<mojom::WebContentsFrameReceiverSetTest>
+      override_client;
   static_cast<WebContentsImpl*>(web_contents)
       ->OnAssociatedInterfaceRequest(
           web_contents->GetMainFrame(),
-          mojom::WebContentsFrameBindingSetTest::Name_,
+          mojom::WebContentsFrameReceiverSetTest::Name_,
           override_client.BindNewEndpointAndPassDedicatedReceiverForTesting()
               .PassHandle());
 
