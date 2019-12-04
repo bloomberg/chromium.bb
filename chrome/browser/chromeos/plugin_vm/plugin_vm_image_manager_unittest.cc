@@ -23,6 +23,7 @@
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/dlcservice/fake_dlcservice_client.h"
 #include "chromeos/dbus/fake_concierge_client.h"
 #include "components/account_id/account_id.h"
 #include "components/download/public/background_service/test/test_download_service.h"
@@ -55,6 +56,13 @@ const int kDownloadedPluginVmImageSizeInMb = 123456789u / (1024 * 1024);
 
 class MockObserver : public PluginVmImageManager::Observer {
  public:
+  MOCK_METHOD0(OnDlcDownloadStarted, void());
+  MOCK_METHOD2(OnDlcDownloadProgressUpdated,
+               void(double progress, base::TimeDelta elapsed_time));
+  MOCK_METHOD0(OnDlcDownloadCompleted, void());
+  MOCK_METHOD0(OnDlcDownloadCancelled, void());
+  MOCK_METHOD1(OnDlcDownloadFailed,
+               void(plugin_vm::PluginVmImageManager::FailureReason));
   MOCK_METHOD0(OnDownloadStarted, void());
   MOCK_METHOD3(OnDownloadProgressUpdated,
                void(uint64_t bytes_downloaded,
@@ -103,6 +111,10 @@ class PluginVmImageManagerTest : public testing::Test {
     histogram_tester_ = std::make_unique<base::HistogramTester>();
     fake_concierge_client_ = static_cast<chromeos::FakeConciergeClient*>(
         chromeos::DBusThreadManager::Get()->GetConciergeClient());
+
+    chromeos::DlcserviceClient::InitializeFake();
+    fake_dlcservice_client_ = static_cast<chromeos::FakeDlcserviceClient*>(
+        chromeos::DlcserviceClient::Get());
   }
 
   void TearDown() override {
@@ -115,6 +127,7 @@ class PluginVmImageManagerTest : public testing::Test {
     observer_.reset();
 
     chromeos::DBusThreadManager::Shutdown();
+    chromeos::DlcserviceClient::Shutdown();
   }
 
   void SetPluginVmImagePref(std::string url, std::string hash) {
@@ -126,6 +139,8 @@ class PluginVmImageManagerTest : public testing::Test {
   }
 
   void ProcessImageUntilImporting() {
+    manager_->StartDlcDownload();
+    task_environment_.RunUntilIdle();
     manager_->StartDownload();
     task_environment_.RunUntilIdle();
   }
@@ -157,6 +172,7 @@ class PluginVmImageManagerTest : public testing::Test {
   std::unique_ptr<base::HistogramTester> histogram_tester_;
   // Owned by chromeos::DBusThreadManager
   chromeos::FakeConciergeClient* fake_concierge_client_;
+  chromeos::FakeDlcserviceClient* fake_dlcservice_client_;
 
  private:
   void CreateProfile() {
@@ -183,6 +199,7 @@ TEST_F(PluginVmImageManagerTest, DownloadPluginVmImageParamsTest) {
   EXPECT_CALL(*observer_, OnImportProgressUpdated(50.0, _));
   EXPECT_CALL(*observer_, OnImported());
 
+  manager_->StartDlcDownload();
   manager_->StartDownload();
 
   std::string guid = manager_->GetCurrentDownloadGuidForTesting();
@@ -209,24 +226,25 @@ TEST_F(PluginVmImageManagerTest, OnlyOneImageIsProcessedTest) {
   EXPECT_CALL(*observer_, OnImportProgressUpdated(50.0, _));
   EXPECT_CALL(*observer_, OnImported());
 
+  manager_->StartDlcDownload();
   manager_->StartDownload();
 
-  EXPECT_TRUE(manager_->IsProcessingImage());
+  EXPECT_TRUE(manager_->IsProcessing());
 
   task_environment_.RunUntilIdle();
   // Faking downloaded file for testing.
   manager_->SetDownloadedPluginVmImageArchiveForTesting(
       fake_downloaded_plugin_vm_image_archive_);
 
-  EXPECT_TRUE(manager_->IsProcessingImage());
+  EXPECT_TRUE(manager_->IsProcessing());
 
   manager_->StartImport();
 
-  EXPECT_TRUE(manager_->IsProcessingImage());
+  EXPECT_TRUE(manager_->IsProcessing());
 
   task_environment_.RunUntilIdle();
 
-  EXPECT_FALSE(manager_->IsProcessingImage());
+  EXPECT_FALSE(manager_->IsProcessing());
 
   histogram_tester_->ExpectUniqueSample(kPluginVmImageDownloadedSizeHistogram,
                                         kDownloadedPluginVmImageSizeInMb, 1);
@@ -241,7 +259,7 @@ TEST_F(PluginVmImageManagerTest, CanProceedWithANewImageWhenSucceededTest) {
 
   ProcessImageUntilConfigured();
 
-  EXPECT_FALSE(manager_->IsProcessingImage());
+  EXPECT_FALSE(manager_->IsProcessing());
 
   // As it is deleted after successful importing.
   fake_downloaded_plugin_vm_image_archive_ = CreateZipFile();
@@ -262,12 +280,13 @@ TEST_F(PluginVmImageManagerTest, CanProceedWithANewImageWhenFailedTest) {
   EXPECT_CALL(*observer_, OnImportProgressUpdated(50.0, _));
   EXPECT_CALL(*observer_, OnImported());
 
+  manager_->StartDlcDownload();
   manager_->StartDownload();
   std::string guid = manager_->GetCurrentDownloadGuidForTesting();
   download_service_->SetFailedDownload(guid, false);
   task_environment_.RunUntilIdle();
 
-  EXPECT_FALSE(manager_->IsProcessingImage());
+  EXPECT_FALSE(manager_->IsProcessing());
 
   ProcessImageUntilConfigured();
 
@@ -340,13 +359,21 @@ TEST_F(PluginVmImageManagerTest, VerifyDownloadTest) {
   EXPECT_FALSE(manager_->VerifyDownload(std::string()));
 }
 
-TEST_F(PluginVmImageManagerTest, CannotStartDownloadIfPluginVmGetsDisabled) {
+TEST_F(PluginVmImageManagerTest, CannotStartDownloadIfDlcDownloadNotRun) {
+  EXPECT_CALL(
+      *observer_,
+      OnDownloadFailed(
+          PluginVmImageManager::FailureReason::DLC_DOWNLOAD_NOT_STARTED));
+  manager_->StartDownload();
+}
+
+TEST_F(PluginVmImageManagerTest, CannotStartDlcDownloadIfPluginVmGetsDisabled) {
   profile_->ScopedCrosSettingsTestHelper()->SetBoolean(
       chromeos::kPluginVmAllowed, false);
   EXPECT_CALL(
       *observer_,
       OnDownloadFailed(PluginVmImageManager::FailureReason::NOT_ALLOWED));
-  ProcessImageUntilImporting();
+  manager_->StartDlcDownload();
 }
 
 }  // namespace plugin_vm
