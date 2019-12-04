@@ -148,7 +148,9 @@ ServiceWorkerProviderHost::ServiceWorkerProviderHost(
           frame_tree_node_id,
           std::move(host_receiver),
           std::move(container_remote),
-          this,
+          type == blink::mojom::ServiceWorkerProviderType::kForServiceWorker
+              ? this
+              : nullptr,
           context)) {
   DCHECK_NE(blink::mojom::ServiceWorkerProviderType::kUnknown, type);
   if (type == blink::mojom::ServiceWorkerProviderType::kForServiceWorker) {
@@ -177,11 +179,6 @@ ServiceWorkerVersion* ServiceWorkerProviderHost::running_hosted_version()
   DCHECK(!running_hosted_version_ ||
          container_host_->IsContainerForServiceWorker());
   return running_hosted_version_.get();
-}
-
-blink::mojom::ServiceWorkerProviderType
-ServiceWorkerProviderHost::provider_type() const {
-  return container_host_->type();
 }
 
 bool ServiceWorkerProviderHost::IsProviderForServiceWorker() const {
