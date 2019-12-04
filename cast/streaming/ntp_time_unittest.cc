@@ -6,7 +6,7 @@
 
 #include "gtest/gtest.h"
 
-using openscreen::platform::Clock;
+using openscreen::Clock;
 using std::chrono::duration_cast;
 using std::chrono::microseconds;
 using std::chrono::milliseconds;
@@ -74,7 +74,7 @@ TEST(NtpTimeConverterTest, ConvertsToNtpTimeAndBack) {
   // should be looked into!
   const Clock::time_point steady_clock_start = Clock::now();
   const std::chrono::seconds wall_clock_start =
-      openscreen::platform::GetWallTimeSinceUnixEpoch();
+      openscreen::GetWallTimeSinceUnixEpoch();
   SCOPED_TRACE(::testing::Message()
                << "steady_clock_start.time_since_epoch().count() is "
                << steady_clock_start.time_since_epoch().count()

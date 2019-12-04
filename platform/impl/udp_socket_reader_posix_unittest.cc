@@ -14,7 +14,6 @@
 #include "platform/test/fake_udp_socket.h"
 
 namespace openscreen {
-namespace platform {
 
 using namespace ::testing;
 using ::testing::_;
@@ -129,5 +128,4 @@ TEST(UdpSocketReaderTest, UnwatchReadableSucceeds) {
   EXPECT_FALSE(network_waiter.IsMappedRead(socket.get()));
 }
 
-}  // namespace platform
 }  // namespace openscreen

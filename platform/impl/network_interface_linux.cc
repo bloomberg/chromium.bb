@@ -29,7 +29,6 @@
 #include "util/logging.h"
 
 namespace openscreen {
-namespace platform {
 namespace {
 
 constexpr int kNetlinkRecvmsgBufSize = 8192;
@@ -357,5 +356,4 @@ std::vector<InterfaceInfo> GetNetworkInterfaces() {
   return interfaces;
 }
 
-}  // namespace platform
 }  // namespace openscreen

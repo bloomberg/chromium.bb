@@ -14,13 +14,10 @@
 #include "util/logging.h"
 #include "util/trace_logging.h"
 
-using openscreen::platform::TraceCategory;
-
 namespace openscreen {
 namespace osp {
 
-UdpTransport::UdpTransport(platform::UdpSocket* socket,
-                           const IPEndpoint& destination)
+UdpTransport::UdpTransport(UdpSocket* socket, const IPEndpoint& destination)
     : socket_(socket), destination_(destination) {
   OSP_DCHECK(socket_);
 }
@@ -79,8 +76,7 @@ void QuicStreamImpl::OnBufferChanged(::quic::QuartcStream* stream) {}
 // Passes a received UDP packet to the QUIC implementation.  If this contains
 // any stream data, it will be passed automatically to the relevant
 // QuicStream::Delegate objects.
-void QuicConnectionImpl::OnRead(platform::UdpSocket* socket,
-                                ErrorOr<platform::UdpPacket> data) {
+void QuicConnectionImpl::OnRead(UdpSocket* socket, ErrorOr<UdpPacket> data) {
   TRACE_SCOPED(TraceCategory::Quic, "QuicConnectionImpl::OnRead");
   if (data.is_error()) {
     TRACE_SET_RESULT(data.error());
@@ -91,12 +87,12 @@ void QuicConnectionImpl::OnRead(platform::UdpSocket* socket,
       reinterpret_cast<const char*>(data.value().data()), data.value().size());
 }
 
-void QuicConnectionImpl::OnSendError(platform::UdpSocket* socket, Error error) {
+void QuicConnectionImpl::OnSendError(UdpSocket* socket, Error error) {
   // TODO(crbug.com/openscreen/67): Implement this method.
   OSP_UNIMPLEMENTED();
 }
 
-void QuicConnectionImpl::OnError(platform::UdpSocket* socket, Error error) {
+void QuicConnectionImpl::OnError(UdpSocket* socket, Error error) {
   // TODO(crbug.com/openscreen/67): Implement this method.
   OSP_UNIMPLEMENTED();
 }

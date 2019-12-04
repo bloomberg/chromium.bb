@@ -116,7 +116,7 @@ MessageDemuxer::MessageWatch& MessageDemuxer::MessageWatch::operator=(
   return *this;
 }
 
-MessageDemuxer::MessageDemuxer(platform::ClockNowFunctionPtr now_function,
+MessageDemuxer::MessageDemuxer(ClockNowFunctionPtr now_function,
                                size_t buffer_limit = kDefaultBufferLimit)
     : now_function_(now_function), buffer_limit_(buffer_limit) {
   OSP_DCHECK(now_function_);

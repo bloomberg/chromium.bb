@@ -160,7 +160,7 @@ class RequestResponseHandler : public MessageDemuxer::MessageCallback {
                                   msgs::Type message_type,
                                   const uint8_t* buffer,
                                   size_t buffer_size,
-                                  platform::Clock::time_point now) override {
+                                  Clock::time_point now) override {
     if (message_type != RequestT::kResponseType) {
       return 0;
     }

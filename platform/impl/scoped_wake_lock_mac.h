@@ -10,7 +10,6 @@
 #include "platform/api/scoped_wake_lock.h"
 
 namespace openscreen {
-namespace platform {
 
 class ScopedWakeLockMac : public ScopedWakeLock {
  public:
@@ -29,7 +28,6 @@ class ScopedWakeLockMac : public ScopedWakeLock {
   static LockState lock_state_;
 };
 
-}  // namespace platform
 }  // namespace openscreen
 
 #endif  // PLATFORM_IMPL_SCOPED_WAKE_LOCK_MAC_H_

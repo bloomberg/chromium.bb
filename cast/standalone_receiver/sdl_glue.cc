@@ -8,8 +8,8 @@
 #include "platform/api/time.h"
 #include "util/logging.h"
 
-using openscreen::platform::Clock;
-using openscreen::platform::TaskRunner;
+using openscreen::Clock;
+using openscreen::TaskRunner;
 
 namespace cast {
 namespace streaming {

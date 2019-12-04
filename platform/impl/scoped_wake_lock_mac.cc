@@ -11,7 +11,6 @@
 #include "util/logging.h"
 
 namespace openscreen {
-namespace platform {
 
 ScopedWakeLockMac::LockState ScopedWakeLockMac::lock_state_{};
 
@@ -70,5 +69,4 @@ void ScopedWakeLockMac::ReleaseWakeLock() {
   OSP_DCHECK_EQ(result, kIOReturnSuccess);
 }
 
-}  // namespace platform
 }  // namespace openscreen

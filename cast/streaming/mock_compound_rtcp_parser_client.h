@@ -14,7 +14,7 @@ namespace streaming {
 class MockCompoundRtcpParserClient : public CompoundRtcpParser::Client {
  public:
   MOCK_METHOD1(OnReceiverReferenceTimeAdvanced,
-               void(openscreen::platform::Clock::time_point reference_time));
+               void(openscreen::Clock::time_point reference_time));
   MOCK_METHOD1(OnReceiverReport, void(const RtcpReportBlock& receiver_report));
   MOCK_METHOD0(OnReceiverIndicatesPictureLoss, void());
   MOCK_METHOD2(OnReceiverCheckpoint,

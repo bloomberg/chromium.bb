@@ -10,7 +10,6 @@
 #include "gtest/gtest.h"
 
 namespace openscreen {
-namespace platform {
 namespace {
 
 class MockObserver : public TlsWriteBuffer::Observer {
@@ -80,5 +79,4 @@ TEST(TlsWriteBufferTest, TestWrapAround) {
   buffer.Consume(write_size / 4);
 }
 
-}  // namespace platform
 }  // namespace openscreen

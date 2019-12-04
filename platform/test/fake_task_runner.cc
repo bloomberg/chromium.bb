@@ -7,7 +7,6 @@
 #include "util/logging.h"
 
 namespace openscreen {
-namespace platform {
 
 FakeTaskRunner::FakeTaskRunner(FakeClock* clock) : clock_(clock) {
   OSP_CHECK(clock_);
@@ -62,5 +61,4 @@ bool FakeTaskRunner::IsRunningOnTaskRunner() {
   return true;
 }
 
-}  // namespace platform
 }  // namespace openscreen

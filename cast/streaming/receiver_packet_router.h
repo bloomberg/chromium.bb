@@ -48,7 +48,7 @@ class ReceiverPacketRouter final : public Environment::PacketConsumer {
 
   // Environment::PacketConsumer implementation.
   void OnReceivedPacket(const openscreen::IPEndpoint& source,
-                        openscreen::platform::Clock::time_point arrival_time,
+                        openscreen::Clock::time_point arrival_time,
                         std::vector<uint8_t> packet) final;
 
   // Helper to return an iterator pointing to the entry corresponding to the

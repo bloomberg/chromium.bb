@@ -11,8 +11,8 @@
 #include "cast/streaming/receiver.h"
 #include "util/logging.h"
 
+using openscreen::Clock;
 using openscreen::IPEndpoint;
-using openscreen::platform::Clock;
 
 namespace cast {
 namespace streaming {

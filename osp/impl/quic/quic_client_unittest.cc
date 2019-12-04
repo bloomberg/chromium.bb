@@ -60,12 +60,11 @@ class ConnectionCallback final
 class QuicClientTest : public ::testing::Test {
  public:
   QuicClientTest() {
-    fake_clock_ = std::make_unique<platform::FakeClock>(
-        platform::Clock::time_point(std::chrono::milliseconds(1298424)));
-    task_runner_ =
-        std::make_unique<platform::FakeTaskRunner>(fake_clock_.get());
-    quic_bridge_ = std::make_unique<FakeQuicBridge>(task_runner_.get(),
-                                                    platform::FakeClock::now);
+    fake_clock_ = std::make_unique<FakeClock>(
+        Clock::time_point(std::chrono::milliseconds(1298424)));
+    task_runner_ = std::make_unique<FakeTaskRunner>(fake_clock_.get());
+    quic_bridge_ =
+        std::make_unique<FakeQuicBridge>(task_runner_.get(), FakeClock::now);
   }
 
  protected:
@@ -100,17 +99,16 @@ class QuicClientTest : public ::testing::Test {
         mock_message_callback,
         OnStreamMessage(0, connection->id(),
                         msgs::Type::kPresentationConnectionMessage, _, _, _))
-        .WillOnce(
-            Invoke([&decode_result, &received_message](
-                       uint64_t endpoint_id, uint64_t connection_id,
-                       msgs::Type message_type, const uint8_t* buffer,
-                       size_t buffer_size, platform::Clock::time_point now) {
-              decode_result = msgs::DecodePresentationConnectionMessage(
-                  buffer, buffer_size, &received_message);
-              if (decode_result < 0)
-                return ErrorOr<size_t>(Error::Code::kCborParsing);
-              return ErrorOr<size_t>(decode_result);
-            }));
+        .WillOnce(Invoke([&decode_result, &received_message](
+                             uint64_t endpoint_id, uint64_t connection_id,
+                             msgs::Type message_type, const uint8_t* buffer,
+                             size_t buffer_size, Clock::time_point now) {
+          decode_result = msgs::DecodePresentationConnectionMessage(
+              buffer, buffer_size, &received_message);
+          if (decode_result < 0)
+            return ErrorOr<size_t>(Error::Code::kCborParsing);
+          return ErrorOr<size_t>(decode_result);
+        }));
     quic_bridge_->RunTasksUntilIdle();
 
     ASSERT_GT(decode_result, 0);
@@ -121,8 +119,8 @@ class QuicClientTest : public ::testing::Test {
     EXPECT_EQ(received_message.message.str, message.message.str);
   }
 
-  std::unique_ptr<platform::FakeClock> fake_clock_;
-  std::unique_ptr<platform::FakeTaskRunner> task_runner_;
+  std::unique_ptr<FakeClock> fake_clock_;
+  std::unique_ptr<FakeTaskRunner> task_runner_;
   std::unique_ptr<FakeQuicBridge> quic_bridge_;
   QuicClient* client_;
 };

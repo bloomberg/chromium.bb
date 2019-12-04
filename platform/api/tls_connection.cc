@@ -5,10 +5,8 @@
 #include "platform/api/tls_connection.h"
 
 namespace openscreen {
-namespace platform {
 
 TlsConnection::TlsConnection() = default;
 TlsConnection::~TlsConnection() = default;
 
-}  // namespace platform
 }  // namespace openscreen

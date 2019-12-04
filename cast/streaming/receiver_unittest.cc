@@ -35,17 +35,17 @@
 #include "platform/test/fake_task_runner.h"
 #include "util/logging.h"
 
+using openscreen::Clock;
+using openscreen::ClockNowFunctionPtr;
 using openscreen::Error;
 using openscreen::ErrorOr;
+using openscreen::FakeClock;
+using openscreen::FakeTaskRunner;
 using openscreen::IPAddress;
 using openscreen::IPEndpoint;
-using openscreen::platform::Clock;
-using openscreen::platform::ClockNowFunctionPtr;
-using openscreen::platform::FakeClock;
-using openscreen::platform::FakeTaskRunner;
-using openscreen::platform::TaskRunner;
-using openscreen::platform::UdpPacket;
-using openscreen::platform::UdpSocket;
+using openscreen::TaskRunner;
+using openscreen::UdpPacket;
+using openscreen::UdpSocket;
 
 using std::chrono::duration_cast;
 using std::chrono::microseconds;

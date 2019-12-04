@@ -8,15 +8,15 @@
 #include "platform/api/task_runner.h"
 #include "util/logging.h"
 
+using openscreen::Clock;
+using openscreen::ClockNowFunctionPtr;
 using openscreen::Error;
 using openscreen::ErrorOr;
 using openscreen::IPAddress;
 using openscreen::IPEndpoint;
-using openscreen::platform::Clock;
-using openscreen::platform::ClockNowFunctionPtr;
-using openscreen::platform::TaskRunner;
-using openscreen::platform::UdpPacket;
-using openscreen::platform::UdpSocket;
+using openscreen::TaskRunner;
+using openscreen::UdpPacket;
+using openscreen::UdpSocket;
 
 namespace cast {
 namespace streaming {
@@ -124,10 +124,10 @@ void Environment::OnRead(UdpSocket* socket,
   // Ideally, the arrival time would come from the operating system's network
   // stack (e.g., by using the SO_TIMESTAMP sockopt on POSIX systems). However,
   // there would still be the problem of mapping the timestamp to a value in
-  // terms of platform::Clock. So, just sample the Clock here and call that the
-  // "arrival time." While this can add variance within the system, it should be
-  // minimal, assuming not too much time has elapsed between the actual packet
-  // receive event and the when this code here is executing.
+  // terms of Clock::time_point. So, just sample the Clock here and call that
+  // the "arrival time." While this can add variance within the system, it
+  // should be minimal, assuming not too much time has elapsed between the
+  // actual packet receive event and the when this code here is executing.
   const Clock::time_point arrival_time = now_function_();
 
   UdpPacket packet = std::move(packet_or_error.value());

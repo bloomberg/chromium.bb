@@ -10,10 +10,6 @@
 
 namespace openscreen {
 
-using openscreen::platform::Clock;
-using openscreen::platform::FakeClock;
-using openscreen::platform::FakeTaskRunner;
-
 class SerialDeletePtrTest : public ::testing::Test {
  public:
   SerialDeletePtrTest() : clock_(Clock::now()), task_runner_(&clock_) {}

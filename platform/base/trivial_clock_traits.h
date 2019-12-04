@@ -9,7 +9,6 @@
 #include <ostream>
 
 namespace openscreen {
-namespace platform {
 
 // The Open Screen monotonic clock traits description, providing all the C++14
 // requirements of a TrivialClock, for use with STL <chrono>.
@@ -44,16 +43,14 @@ class TrivialClockTraits {
 // &Clock::now versus something else for testing).
 using ClockNowFunctionPtr = TrivialClockTraits::time_point (*)();
 
-}  // namespace platform
-
 // Logging convenience for durations. Outputs a string of the form "123µs".
 std::ostream& operator<<(std::ostream& os,
-                         const platform::TrivialClockTraits::duration& d);
+                         const TrivialClockTraits::duration& d);
 
 // Logging convenience for time points. Outputs a string of the form
 // "123µs-ticks".
 std::ostream& operator<<(std::ostream& os,
-                         const platform::TrivialClockTraits::time_point& tp);
+                         const TrivialClockTraits::time_point& tp);
 
 }  // namespace openscreen
 

@@ -31,8 +31,7 @@ namespace openscreen {
 // running the client's Task later; or c) runs the client's Task.
 class Alarm {
  public:
-  Alarm(platform::ClockNowFunctionPtr now_function,
-        platform::TaskRunner* task_runner);
+  Alarm(ClockNowFunctionPtr now_function, TaskRunner* task_runner);
   ~Alarm();
 
   // The design requires that Alarm instances not be copied or moved.
@@ -46,18 +45,15 @@ class Alarm {
   // callable target (e.g., function, lambda-expression, std::bind result,
   // etc.).
   template <typename Functor>
-  inline void Schedule(Functor functor,
-                       platform::Clock::time_point alarm_time) {
-    ScheduleWithTask(platform::TaskRunner::Task(std::move(functor)),
-                     alarm_time);
+  inline void Schedule(Functor functor, Clock::time_point alarm_time) {
+    ScheduleWithTask(TaskRunner::Task(std::move(functor)), alarm_time);
   }
 
   // Same as Schedule(), but invoke the functor at the given |delay| after right
   // now.
   template <typename Functor>
-  inline void ScheduleFromNow(Functor functor,
-                              platform::Clock::duration delay) {
-    ScheduleWithTask(platform::TaskRunner::Task(std::move(functor)),
+  inline void ScheduleFromNow(Functor functor, Clock::duration delay) {
+    ScheduleWithTask(TaskRunner::Task(std::move(functor)),
                      now_function_() + delay);
   }
 
@@ -67,8 +63,7 @@ class Alarm {
   // See comments for Schedule(). Generally, callers will want to call
   // Schedule() instead of this, for more-convenient caller-side syntax, unless
   // they already have a Task to pass-in.
-  void ScheduleWithTask(platform::TaskRunner::Task task,
-                        platform::Clock::time_point alarm_time);
+  void ScheduleWithTask(TaskRunner::Task task, Clock::time_point alarm_time);
 
  private:
   // A move-only functor that holds a raw pointer back to |this| and can be
@@ -77,20 +72,19 @@ class Alarm {
   class CancelableFunctor;
 
   // Posts a delayed call to TryInvoke() to the TaskRunner.
-  void InvokeLater(platform::Clock::time_point now,
-                   platform::Clock::time_point fire_time);
+  void InvokeLater(Clock::time_point now, Clock::time_point fire_time);
 
   // Examines whether to invoke the client's Task now; or try again later; or
   // just do nothing. See class-level design comments.
   void TryInvoke();
 
-  const platform::ClockNowFunctionPtr now_function_;
-  platform::TaskRunner* const task_runner_;
+  const ClockNowFunctionPtr now_function_;
+  TaskRunner* const task_runner_;
 
   // This is the task the client wants to have run at a specific point-in-time.
   // This is NOT the task that Alarm provides to the TaskRunner.
-  platform::TaskRunner::Task scheduled_task_;
-  platform::Clock::time_point alarm_time_{};
+  TaskRunner::Task scheduled_task_;
+  Clock::time_point alarm_time_{};
 
   // When non-null, there is a task in the TaskRunner's queue that will call
   // TryInvoke() some time in the future. This member is exclusively maintained
@@ -99,7 +93,7 @@ class Alarm {
 
   // When the CancelableFunctor is scheduled to run. It may possibly execute
   // later than this, if the TaskRunner is falling behind.
-  platform::Clock::time_point next_fire_time_{};
+  Clock::time_point next_fire_time_{};
 };
 
 }  // namespace openscreen

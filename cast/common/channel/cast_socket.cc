@@ -13,8 +13,9 @@ namespace cast {
 namespace channel {
 
 using message_serialization::DeserializeResult;
+using openscreen::Error;
 using openscreen::ErrorOr;
-using openscreen::platform::TlsConnection;
+using openscreen::TlsConnection;
 
 uint32_t GetNextSocketId() {
   static std::atomic<uint32_t> id(1);

@@ -43,7 +43,7 @@ class SDLPlayerBase : public Receiver::Consumer, public Decoder::Client {
 
   // A decoded frame and its target presentation time.
   struct PresentableFrame {
-    openscreen::platform::Clock::time_point presentation_time;
+    openscreen::Clock::time_point presentation_time;
     AVFrameUniquePtr decoded_frame;
 
     PresentableFrame();
@@ -55,8 +55,8 @@ class SDLPlayerBase : public Receiver::Consumer, public Decoder::Client {
   // |error_callback| is run only if a fatal error occurs, at which point the
   // player has halted and set |error_status()|. |media_type| should be "audio"
   // or "video" (only used when logging).
-  SDLPlayerBase(openscreen::platform::ClockNowFunctionPtr now_function,
-                openscreen::platform::TaskRunner* task_runner,
+  SDLPlayerBase(openscreen::ClockNowFunctionPtr now_function,
+                openscreen::TaskRunner* task_runner,
                 Receiver* receiver,
                 std::function<void()> error_callback,
                 const char* media_type);
@@ -68,8 +68,8 @@ class SDLPlayerBase : public Receiver::Consumer, public Decoder::Client {
   void OnFatalError(std::string message) final;
 
   // Renders the |frame| and returns its [possibly adjusted] presentation time.
-  virtual openscreen::ErrorOr<openscreen::platform::Clock::time_point>
-  RenderNextFrame(const PresentableFrame& frame) = 0;
+  virtual openscreen::ErrorOr<openscreen::Clock::time_point> RenderNextFrame(
+      const PresentableFrame& frame) = 0;
 
   // Called to render when the player has no new content, and returns true if a
   // Present() is necessary. |frame| may be null, if it is not available. This
@@ -108,7 +108,7 @@ class SDLPlayerBase : public Receiver::Consumer, public Decoder::Client {
   // require rendering/presenting a different output.
   void ResumeRendering();
 
-  const openscreen::platform::ClockNowFunctionPtr now_;
+  const openscreen::ClockNowFunctionPtr now_;
   Receiver* const receiver_;
   std::function<void()> error_callback_;  // Run once by OnFatalError().
   const char* const media_type_;          // For logging only.
@@ -123,7 +123,7 @@ class SDLPlayerBase : public Receiver::Consumer, public Decoder::Client {
   // Queue of frames currently being decoded and decoded frames awaiting
   // rendering.
   struct PendingFrame : public PresentableFrame {
-    openscreen::platform::Clock::time_point start_time;
+    openscreen::Clock::time_point start_time;
 
     PendingFrame();
     ~PendingFrame();
@@ -139,7 +139,7 @@ class SDLPlayerBase : public Receiver::Consumer, public Decoder::Client {
   // whenever the media (RTP) timestamps drift too much away from the rate at
   // which the local clock ticks. This is important for A/V synchronization.
   RtpTimeTicks last_sync_rtp_timestamp_{};
-  openscreen::platform::Clock::time_point last_sync_reference_time_{};
+  openscreen::Clock::time_point last_sync_reference_time_{};
 
   Decoder decoder_;
 
@@ -149,7 +149,7 @@ class SDLPlayerBase : public Receiver::Consumer, public Decoder::Client {
   // A cumulative moving average of recent single-frame processing times
   // (consume + decode + render). This is passed to the Cast Receiver so that it
   // can determine when to drop late frames.
-  openscreen::platform::Clock::duration recent_processing_time_{};
+  openscreen::Clock::duration recent_processing_time_{};
 
   // Alarms that execute the various stages of the player pipeline at certain
   // times.

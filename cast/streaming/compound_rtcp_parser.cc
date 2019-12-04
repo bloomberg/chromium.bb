@@ -11,7 +11,7 @@
 #include "util/logging.h"
 #include "util/std_util.h"
 
-using openscreen::platform::Clock;
+using openscreen::Clock;
 
 namespace cast {
 namespace streaming {

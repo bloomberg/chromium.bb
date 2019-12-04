@@ -25,9 +25,7 @@
 
 namespace openscreen {
 
-namespace platform {
 class TaskRunner;
-}  // namespace platform
 
 namespace osp {
 
@@ -36,22 +34,21 @@ namespace osp {
 // event loop.
 // TODO(btolsch): This may be renamed and/or split up once QUIC code lands and
 // this use case is more concrete.
-class InternalServices : platform::UdpSocket::Client {
+class InternalServices : UdpSocket::Client {
  public:
   static std::unique_ptr<ServiceListener> CreateListener(
       const MdnsServiceListenerConfig& config,
       ServiceListener::Observer* observer,
-      platform::TaskRunner* task_runner);
+      TaskRunner* task_runner);
   static std::unique_ptr<ServicePublisher> CreatePublisher(
       const ServicePublisher::Config& config,
       ServicePublisher::Observer* observer,
-      platform::TaskRunner* task_runner);
+      TaskRunner* task_runner);
 
   // UdpSocket::Client overrides.
-  void OnError(platform::UdpSocket* socket, Error error) override;
-  void OnSendError(platform::UdpSocket* socket, Error error) override;
-  void OnRead(platform::UdpSocket* socket,
-              ErrorOr<platform::UdpPacket> packet) override;
+  void OnError(UdpSocket* socket, Error error) override;
+  void OnSendError(UdpSocket* socket, Error error) override;
+  void OnRead(UdpSocket* socket, ErrorOr<UdpPacket> packet) override;
 
  private:
   class InternalPlatformLinkage final : public MdnsPlatformService {
@@ -60,31 +57,29 @@ class InternalServices : platform::UdpSocket::Client {
     ~InternalPlatformLinkage() override;
 
     std::vector<BoundInterface> RegisterInterfaces(
-        const std::vector<platform::NetworkInterfaceIndex>& whitelist) override;
+        const std::vector<NetworkInterfaceIndex>& whitelist) override;
     void DeregisterInterfaces(
         const std::vector<BoundInterface>& registered_interfaces) override;
 
    private:
     InternalServices* const parent_;
-    std::vector<platform::UdpSocketUniquePtr> open_sockets_;
+    std::vector<std::unique_ptr<UdpSocket>> open_sockets_;
   };
 
   // The TaskRunner provided here should live for the duration of this
   // InternalService object's lifetime.
-  InternalServices(platform::ClockNowFunctionPtr now_function,
-                   platform::TaskRunner* task_runner);
+  InternalServices(ClockNowFunctionPtr now_function, TaskRunner* task_runner);
   ~InternalServices() override;
 
-  void RegisterMdnsSocket(platform::UdpSocket* socket);
-  void DeregisterMdnsSocket(platform::UdpSocket* socket);
+  void RegisterMdnsSocket(UdpSocket* socket);
+  void DeregisterMdnsSocket(UdpSocket* socket);
 
-  static InternalServices* ReferenceSingleton(
-      platform::TaskRunner* task_runner);
+  static InternalServices* ReferenceSingleton(TaskRunner* task_runner);
   static void DereferenceSingleton(void* instance);
 
   MdnsResponderService mdns_service_;
 
-  platform::TaskRunner* const task_runner_;
+  TaskRunner* const task_runner_;
 
   OSP_DISALLOW_COPY_AND_ASSIGN(InternalServices);
 };

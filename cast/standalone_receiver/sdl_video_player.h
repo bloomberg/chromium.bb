@@ -16,8 +16,8 @@ class SDLVideoPlayer : public SDLPlayerBase {
  public:
   // |error_callback| is run only if a fatal error occurs, at which point the
   // player has halted and set |error_status()|.
-  SDLVideoPlayer(openscreen::platform::ClockNowFunctionPtr now_function,
-                 openscreen::platform::TaskRunner* task_runner,
+  SDLVideoPlayer(openscreen::ClockNowFunctionPtr now_function,
+                 openscreen::TaskRunner* task_runner,
                  Receiver* receiver,
                  SDL_Renderer* renderer,
                  std::function<void()> error_callback);
@@ -32,7 +32,7 @@ class SDLVideoPlayer : public SDLPlayerBase {
 
   // Uploads the decoded picture in |frame| to a SDL texture and draws it using
   // the SDL |renderer_|.
-  openscreen::ErrorOr<openscreen::platform::Clock::time_point> RenderNextFrame(
+  openscreen::ErrorOr<openscreen::Clock::time_point> RenderNextFrame(
       const SDLPlayerBase::PresentableFrame& frame) final;
 
   // Makes whatever is currently drawn to the SDL |renderer_| be presented

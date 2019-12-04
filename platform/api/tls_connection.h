@@ -12,7 +12,6 @@
 #include "platform/base/ip_address.h"
 
 namespace openscreen {
-namespace platform {
 
 class TlsConnection {
  public:
@@ -58,7 +57,6 @@ class TlsConnection {
   TlsConnection();
 };
 
-}  // namespace platform
 }  // namespace openscreen
 
 #endif  // PLATFORM_API_TLS_CONNECTION_H_

@@ -18,7 +18,6 @@
 #include "platform/impl/weak_ptr.h"
 
 namespace openscreen {
-namespace platform {
 
 class StreamSocketPosix : public StreamSocket {
  public:
@@ -81,7 +80,6 @@ class StreamSocketPosix : public StreamSocket {
   WeakPtrFactory<StreamSocketPosix> weak_factory_{this};
 };
 
-}  // namespace platform
 }  // namespace openscreen
 
 #endif  // PLATFORM_IMPL_STREAM_SOCKET_POSIX_H_

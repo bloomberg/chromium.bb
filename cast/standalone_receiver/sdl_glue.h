@@ -18,9 +18,7 @@
 #include "util/alarm.h"
 
 namespace openscreen {
-namespace platform {
 class TaskRunner;
-}  // namespace platform
 }  // namespace openscreen
 
 namespace cast {
@@ -65,7 +63,7 @@ DEFINE_SDL_UNIQUE_PTR(Texture);
 // event is received.
 class SDLEventLoopProcessor {
  public:
-  SDLEventLoopProcessor(openscreen::platform::TaskRunner* task_runner,
+  SDLEventLoopProcessor(openscreen::TaskRunner* task_runner,
                         std::function<void()> quit_callback);
   ~SDLEventLoopProcessor();
 

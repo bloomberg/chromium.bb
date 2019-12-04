@@ -9,8 +9,8 @@
 #include "cast/streaming/packet_util.h"
 #include "util/saturate_cast.h"
 
+using openscreen::Clock;
 using openscreen::saturate_cast;
-using openscreen::platform::Clock;
 
 namespace cast {
 namespace streaming {

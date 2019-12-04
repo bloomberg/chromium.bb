@@ -84,11 +84,11 @@ class CastNonce {
     OSP_CHECK_EQ(
         RAND_bytes(reinterpret_cast<uint8_t*>(&nonce_[0]), kNonceSizeInBytes),
         1);
-    nonce_generation_time_ = openscreen::platform::GetWallTimeSinceUnixEpoch();
+    nonce_generation_time_ = openscreen::GetWallTimeSinceUnixEpoch();
   }
 
   void EnsureNonceTimely() {
-    if (openscreen::platform::GetWallTimeSinceUnixEpoch() >
+    if (openscreen::GetWallTimeSinceUnixEpoch() >
         (nonce_generation_time_ +
          std::chrono::hours(kNonceExpirationTimeInHours))) {
       GenerateNonce();
@@ -233,7 +233,7 @@ ErrorOr<CastDeviceCertPolicy> AuthenticateChallengeReply(
   }
 
   result = VerifyTLSCertificateValidity(
-      peer_cert, openscreen::platform::GetWallTimeSinceUnixEpoch());
+      peer_cert, openscreen::GetWallTimeSinceUnixEpoch());
   if (!result.ok()) {
     return result;
   }
@@ -354,7 +354,7 @@ ErrorOr<CastDeviceCertPolicy> VerifyCredentials(
     bool enforce_sha256_checking) {
   certificate::DateTime now = {};
   OSP_CHECK(certificate::DateTimeFromSeconds(
-      openscreen::platform::GetWallTimeSinceUnixEpoch().count(), &now));
+      openscreen::GetWallTimeSinceUnixEpoch().count(), &now));
   certificate::CRLPolicy policy = (enforce_revocation_checking)
                                       ? certificate::CRLPolicy::kCrlRequired
                                       : certificate::CRLPolicy::kCrlOptional;

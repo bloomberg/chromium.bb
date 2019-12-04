@@ -16,7 +16,6 @@
 #include "platform/impl/udp_socket_posix.h"
 
 namespace openscreen {
-namespace platform {
 
 // This is the class responsible for watching sockets for readable data, then
 // calling the function associated with these sockets once that data is read.
@@ -72,7 +71,6 @@ class UdpSocketReaderPosix : public SocketHandleWaiter::Subscriber {
   friend class TestingUdpSocketReader;
 };
 
-}  // namespace platform
 }  // namespace openscreen
 
 #endif  // PLATFORM_IMPL_UDP_SOCKET_READER_POSIX_H_

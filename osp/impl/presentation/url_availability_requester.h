@@ -29,7 +29,7 @@ namespace osp {
 // given URL.
 class UrlAvailabilityRequester {
  public:
-  explicit UrlAvailabilityRequester(platform::ClockNowFunctionPtr now_function);
+  explicit UrlAvailabilityRequester(ClockNowFunctionPtr now_function);
   ~UrlAvailabilityRequester();
 
   // Adds a persistent availability request for |urls| to all known receivers.
@@ -63,7 +63,7 @@ class UrlAvailabilityRequester {
   // Ensures that all open availability watches (to all receivers) that are
   // about to expire are refreshed by sending a new request with the same URLs.
   // Returns the time point at which this should next be scheduled to run.
-  platform::Clock::time_point RefreshWatches();
+  Clock::time_point RefreshWatches();
 
  private:
   // Handles Presentation API URL availability requests and watches for one
@@ -82,7 +82,7 @@ class UrlAvailabilityRequester {
     };
 
     struct Watch {
-      platform::Clock::time_point deadline;
+      Clock::time_point deadline;
       std::vector<std::string> urls;
     };
 
@@ -97,7 +97,7 @@ class UrlAvailabilityRequester {
     void RequestUrlAvailabilities(std::vector<std::string> urls);
     ErrorOr<uint64_t> SendRequest(uint64_t request_id,
                                   const std::vector<std::string>& urls);
-    platform::Clock::time_point RefreshWatches(platform::Clock::time_point now);
+    Clock::time_point RefreshWatches(Clock::time_point now);
     Error::Code UpdateAvailabilities(
         const std::vector<std::string>& urls,
         const std::vector<msgs::UrlAvailability>& availabilities);
@@ -117,7 +117,7 @@ class UrlAvailabilityRequester {
                                     msgs::Type message_type,
                                     const uint8_t* buffer,
                                     size_t buffer_size,
-                                    platform::Clock::time_point now) override;
+                                    Clock::time_point now) override;
 
     UrlAvailabilityRequester* const listener;
 
@@ -138,7 +138,7 @@ class UrlAvailabilityRequester {
     std::map<std::string, msgs::UrlAvailability> known_availability_by_url;
   };
 
-  const platform::ClockNowFunctionPtr now_function_;
+  const ClockNowFunctionPtr now_function_;
 
   std::map<std::string, std::vector<ReceiverObserver*>> observers_by_url_;
 

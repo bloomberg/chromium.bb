@@ -11,7 +11,6 @@
 #include "platform/api/time.h"
 
 namespace openscreen {
-namespace platform {
 
 class FakeTaskRunner;
 
@@ -36,7 +35,6 @@ class FakeClock {
   static std::atomic<Clock::time_point> now_;
 };
 
-}  // namespace platform
 }  // namespace openscreen
 
 #endif  // PLATFORM_TEST_FAKE_CLOCK_H_

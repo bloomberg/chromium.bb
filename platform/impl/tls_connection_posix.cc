@@ -27,7 +27,6 @@
 #include "util/logging.h"
 
 namespace openscreen {
-namespace platform {
 
 // TODO(jophba, rwkeane): implement write blocking/unblocking
 TlsConnectionPosix::TlsConnectionPosix(IPEndpoint local_address,
@@ -222,5 +221,4 @@ void TlsConnectionPosix::NotifyClientOfWriteBlockStatusSequentially(
   }
 }
 
-}  // namespace platform
 }  // namespace openscreen

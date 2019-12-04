@@ -14,11 +14,8 @@ namespace discovery {
 
 class MdnsMessage;
 
-class MdnsReceiver : openscreen::platform::UdpSocket::Client {
+class MdnsReceiver : UdpSocket::Client {
  public:
-  using UdpPacket = openscreen::platform::UdpPacket;
-  using UdpSocket = openscreen::platform::UdpSocket;
-
   // MdnsReceiver does not own |socket| and |delegate|
   // and expects that the lifetime of these objects exceeds the lifetime of
   // MdnsReceiver.

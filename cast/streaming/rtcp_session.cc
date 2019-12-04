@@ -11,7 +11,7 @@ namespace streaming {
 
 RtcpSession::RtcpSession(Ssrc sender_ssrc,
                          Ssrc receiver_ssrc,
-                         openscreen::platform::Clock::time_point start_time)
+                         openscreen::Clock::time_point start_time)
     : sender_ssrc_(sender_ssrc),
       receiver_ssrc_(receiver_ssrc),
       ntp_converter_(start_time) {

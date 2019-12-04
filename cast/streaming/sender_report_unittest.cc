@@ -25,8 +25,7 @@ class SenderReportTest : public testing::Test {
   }
 
  private:
-  RtcpSession session_{kSenderSsrc, kReceiverSsrc,
-                       openscreen::platform::Clock::now()};
+  RtcpSession session_{kSenderSsrc, kReceiverSsrc, openscreen::Clock::now()};
   SenderReportBuilder builder_{&session_};
   SenderReportParser parser_{&session_};
 };
@@ -120,7 +119,7 @@ TEST_F(SenderReportTest, BuildPackets) {
     const bool with_report_block = (i == 1);
 
     RtcpSenderReport original;
-    original.reference_time = openscreen::platform::Clock::now();
+    original.reference_time = openscreen::Clock::now();
     original.rtp_timestamp = RtpTimeTicks() + RtpTimeDelta::FromTicks(5);
     original.send_packet_count = 55;
     original.send_octet_count = 20044;

@@ -25,7 +25,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wexit-time-destructors"
   static RtcpSession session(kSenderSsrcInSeedCorpus, kReceiverSsrcInSeedCorpus,
-                             openscreen::platform::Clock::time_point{});
+                             openscreen::Clock::time_point{});
   static CompoundRtcpParser::Client client_that_ignores_everything;
   static CompoundRtcpParser parser(&session, &client_that_ignores_everything);
 #pragma clang diagnostic pop

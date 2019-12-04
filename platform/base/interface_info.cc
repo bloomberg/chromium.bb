@@ -5,7 +5,6 @@
 #include "platform/base/interface_info.h"
 
 namespace openscreen {
-namespace platform {
 
 InterfaceInfo::InterfaceInfo() = default;
 InterfaceInfo::InterfaceInfo(NetworkInterfaceIndex index,
@@ -63,5 +62,4 @@ std::ostream& operator<<(std::ostream& out, const InterfaceInfo& info) {
   return out << '}';
 }
 
-}  // namespace platform
 }  // namespace openscreen

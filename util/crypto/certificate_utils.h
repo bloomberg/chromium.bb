@@ -25,8 +25,7 @@ ErrorOr<bssl::UniquePtr<X509>> CreateCertificate(
     absl::string_view name,
     std::chrono::seconds duration,
     const EVP_PKEY& key_pair,
-    std::chrono::seconds time_since_unix_epoch =
-        platform::GetWallTimeSinceUnixEpoch());
+    std::chrono::seconds time_since_unix_epoch = GetWallTimeSinceUnixEpoch());
 
 // Exports the given X509 certificate as its DER-encoded binary form.
 ErrorOr<std::vector<uint8_t>> ExportCertificate(const X509& certificate);

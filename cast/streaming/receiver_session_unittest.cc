@@ -9,9 +9,9 @@
 #include "platform/test/fake_clock.h"
 #include "platform/test/fake_task_runner.h"
 
-using openscreen::platform::Clock;
-using openscreen::platform::FakeClock;
-using openscreen::platform::FakeTaskRunner;
+using openscreen::Clock;
+using openscreen::FakeClock;
+using openscreen::FakeTaskRunner;
 
 using ::testing::_;
 using ::testing::Invoke;

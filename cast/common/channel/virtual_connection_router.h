@@ -43,7 +43,7 @@ class VirtualConnectionRouter final : public CastSocket::Client {
   class SocketErrorHandler {
    public:
     virtual void OnClose(CastSocket* socket) = 0;
-    virtual void OnError(CastSocket* socket, Error error) = 0;
+    virtual void OnError(CastSocket* socket, openscreen::Error error) = 0;
   };
 
   explicit VirtualConnectionRouter(VirtualConnectionManager* vc_manager);
@@ -58,10 +58,11 @@ class VirtualConnectionRouter final : public CastSocket::Client {
                   std::unique_ptr<CastSocket> socket);
   void CloseSocket(uint32_t id);
 
-  Error SendMessage(VirtualConnection virtual_conn, CastMessage&& message);
+  openscreen::Error SendMessage(VirtualConnection virtual_conn,
+                                CastMessage&& message);
 
   // CastSocket::Client overrides.
-  void OnError(CastSocket* socket, Error error) override;
+  void OnError(CastSocket* socket, openscreen::Error error) override;
   void OnMessage(CastSocket* socket, CastMessage message) override;
 
  private:

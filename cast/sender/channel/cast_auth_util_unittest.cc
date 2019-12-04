@@ -157,7 +157,7 @@ TEST_F(CastAuthUtilTest, VerifySuccess) {
   AuthResponse auth_response = CreateAuthResponse(&signed_data, SHA256);
   certificate::DateTime now = {};
   ASSERT_TRUE(certificate::DateTimeFromSeconds(
-      openscreen::platform::GetWallTimeSinceUnixEpoch().count(), &now));
+      openscreen::GetWallTimeSinceUnixEpoch().count(), &now));
   ErrorOr<CastDeviceCertPolicy> result = VerifyCredentialsForTest(
       auth_response, signed_data, certificate::CRLPolicy::kCrlOptional, nullptr,
       nullptr, now);
@@ -210,7 +210,7 @@ TEST_F(CastAuthUtilTest, VerifyUnsupportedDigest) {
   AuthResponse auth_response = CreateAuthResponse(&signed_data, SHA1);
   certificate::DateTime now = {};
   ASSERT_TRUE(certificate::DateTimeFromSeconds(
-      openscreen::platform::GetWallTimeSinceUnixEpoch().count(), &now));
+      openscreen::GetWallTimeSinceUnixEpoch().count(), &now));
   ErrorOr<CastDeviceCertPolicy> result = VerifyCredentialsForTest(
       auth_response, signed_data, certificate::CRLPolicy::kCrlOptional, nullptr,
       nullptr, now, true);
@@ -223,7 +223,7 @@ TEST_F(CastAuthUtilTest, VerifyBackwardsCompatibleDigest) {
   AuthResponse auth_response = CreateAuthResponse(&signed_data, SHA1);
   certificate::DateTime now = {};
   ASSERT_TRUE(certificate::DateTimeFromSeconds(
-      openscreen::platform::GetWallTimeSinceUnixEpoch().count(), &now));
+      openscreen::GetWallTimeSinceUnixEpoch().count(), &now));
   ErrorOr<CastDeviceCertPolicy> result = VerifyCredentialsForTest(
       auth_response, signed_data, certificate::CRLPolicy::kCrlOptional, nullptr,
       nullptr, now);

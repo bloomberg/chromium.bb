@@ -12,7 +12,6 @@
 #include "platform/base/macros.h"
 
 namespace openscreen {
-namespace platform {
 
 // This class is responsible for buffering TLS Write data. The approach taken by
 // this class is to allow for a single thread to act as a publisher of data and
@@ -68,7 +67,6 @@ class TlsWriteBuffer {
   OSP_DISALLOW_COPY_AND_ASSIGN(TlsWriteBuffer);
 };
 
-}  // namespace platform
 }  // namespace openscreen
 
 #endif  // PLATFORM_IMPL_TLS_WRITE_BUFFER_H_

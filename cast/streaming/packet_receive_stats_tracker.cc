@@ -6,7 +6,7 @@
 
 #include <algorithm>
 
-using openscreen::platform::Clock;
+using openscreen::Clock;
 
 namespace cast {
 namespace streaming {

@@ -16,8 +16,6 @@ class MdnsMessage;
 
 class MdnsSender {
  public:
-  using UdpSocket = openscreen::platform::UdpSocket;
-
   // MdnsSender does not own |socket| and expects that its lifetime exceeds the
   // lifetime of MdnsSender.
   explicit MdnsSender(UdpSocket* socket);

@@ -29,10 +29,9 @@ class PacketReceiveStatsTracker {
   // RtpPacketParser::ParseResult. |arrival_time| is when the packet was
   // received (i.e., right-off the network socket, before any
   // processing/parsing).
-  void OnReceivedValidRtpPacket(
-      uint16_t sequence_number,
-      RtpTimeTicks rtp_timestamp,
-      openscreen::platform::Clock::time_point arrival_time);
+  void OnReceivedValidRtpPacket(uint16_t sequence_number,
+                                RtpTimeTicks rtp_timestamp,
+                                openscreen::Clock::time_point arrival_time);
 
   // Populates *only* those fields in the given |report| that pertain to packet
   // loss, jitter, and the latest-known RTP packet sequence number.
@@ -89,7 +88,7 @@ class PacketReceiveStatsTracker {
 
   // The time the last RTP packet was received. This is used in the computation
   // that updates |jitter_|.
-  openscreen::platform::Clock::time_point last_rtp_packet_arrival_time_;
+  openscreen::Clock::time_point last_rtp_packet_arrival_time_;
 
   // The RTP timestamp of the last RTP packet received. This is used in the
   // computation that updates |jitter_|.
@@ -98,7 +97,7 @@ class PacketReceiveStatsTracker {
   // The interarrival jitter. See RFC 3550 spec, section 6.4.1. The Cast
   // Streaming spec diverges from the algorithm in the RFC spec in that it uses
   // different pieces of timing data to calculate this metric.
-  openscreen::platform::Clock::duration jitter_;
+  openscreen::Clock::duration jitter_;
 };
 
 }  // namespace streaming

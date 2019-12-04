@@ -16,8 +16,6 @@
 #include "util/logging.h"
 #include "util/trace_logging.h"
 
-using openscreen::platform::TraceCategory;
-
 namespace openscreen {
 namespace osp {
 namespace {
@@ -107,7 +105,7 @@ ErrorOr<size_t> Receiver::OnStreamMessage(uint64_t endpoint_id,
                                           msgs::Type message_type,
                                           const uint8_t* buffer,
                                           size_t buffer_size,
-                                          platform::Clock::time_point now) {
+                                          Clock::time_point now) {
   TRACE_SCOPED(TraceCategory::Presentation, "Receiver::OnStreamMessage");
   switch (message_type) {
     case msgs::Type::kPresentationUrlAvailabilityRequest: {

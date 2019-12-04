@@ -97,9 +97,8 @@ class CompoundRtcpBuilder {
   // should be monotonically increasing so the consuming side (the Sender) can
   // determine the chronological ordering of RTCP packets. The Sender might also
   // use this to estimate round-trip times over the network.
-  absl::Span<uint8_t> BuildPacket(
-      openscreen::platform::Clock::time_point send_time,
-      absl::Span<uint8_t> buffer);
+  absl::Span<uint8_t> BuildPacket(openscreen::Clock::time_point send_time,
+                                  absl::Span<uint8_t> buffer);
 
   // The required buffer size to be provided to BuildPacket(). This accounts for
   // all the possible headers and report structures that might be included,
@@ -112,7 +111,7 @@ class CompoundRtcpBuilder {
   // |buffer| that will ultimately contain a "compound RTCP packet."
   void AppendReceiverReportPacket(absl::Span<uint8_t>* buffer);
   void AppendReceiverReferenceTimeReportPacket(
-      openscreen::platform::Clock::time_point send_time,
+      openscreen::Clock::time_point send_time,
       absl::Span<uint8_t>* buffer);
   void AppendPictureLossIndicatorPacket(absl::Span<uint8_t>* buffer);
   void AppendCastFeedbackPacket(absl::Span<uint8_t>* buffer);

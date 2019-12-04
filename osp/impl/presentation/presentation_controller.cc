@@ -418,7 +418,7 @@ void swap(Controller::ConnectRequest& a, Controller::ConnectRequest& b) {
   swap(a.controller_, b.controller_);
 }
 
-Controller::Controller(platform::ClockNowFunctionPtr now_function) {
+Controller::Controller(ClockNowFunctionPtr now_function) {
   availability_requester_ =
       std::make_unique<UrlAvailabilityRequester>(now_function);
   connection_manager_ =
@@ -621,7 +621,7 @@ class Controller::TerminationListener final
                                   msgs::Type message_type,
                                   const uint8_t* buffer,
                                   size_t buffer_size,
-                                  platform::Clock::time_point now) override;
+                                  Clock::time_point now) override;
 
  private:
   Controller* const controller_;
@@ -650,7 +650,7 @@ ErrorOr<size_t> Controller::TerminationListener::OnStreamMessage(
     msgs::Type message_type,
     const uint8_t* buffer,
     size_t buffer_size,
-    platform::Clock::time_point now) {
+    Clock::time_point now) {
   OSP_CHECK_EQ(static_cast<int>(msgs::Type::kPresentationTerminationEvent),
                static_cast<int>(message_type));
   msgs::PresentationTerminationEvent event;

@@ -49,7 +49,7 @@ TEST(MdnsResponderAdapterImplTest, ExampleData) {
                                        'p', 5,   'l', 'o', 'c', 'a', 'l', 0}};
   const IPEndpoint mdns_endpoint{{224, 0, 0, 251}, 5353};
 
-  platform::UdpPacket packet(std::begin(data), std::end(data));
+  UdpPacket packet(std::begin(data), std::end(data));
   packet.set_source({{192, 168, 0, 2}, 6556});
   packet.set_destination(mdns_endpoint);
   packet.set_socket(nullptr);

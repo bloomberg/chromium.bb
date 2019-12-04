@@ -20,23 +20,18 @@
 namespace cast {
 namespace channel {
 
-using openscreen::Error;
-using openscreen::IPEndpoint;
-using openscreen::IPEndpointComparator;
-using openscreen::platform::TlsConnection;
-using openscreen::platform::TlsConnectionFactory;
-
-class SenderSocketFactory final : public TlsConnectionFactory::Client,
-                                  public CastSocket::Client {
+class SenderSocketFactory final
+    : public openscreen::TlsConnectionFactory::Client,
+      public CastSocket::Client {
  public:
   class Client {
    public:
     virtual void OnConnected(SenderSocketFactory* factory,
-                             const IPEndpoint& endpoint,
+                             const openscreen::IPEndpoint& endpoint,
                              std::unique_ptr<CastSocket> socket) = 0;
     virtual void OnError(SenderSocketFactory* factory,
-                         const IPEndpoint& endpoint,
-                         Error error) = 0;
+                         const openscreen::IPEndpoint& endpoint,
+                         openscreen::Error error) = 0;
   };
 
   enum class DeviceMediaPolicy {
@@ -48,35 +43,39 @@ class SenderSocketFactory final : public TlsConnectionFactory::Client,
   explicit SenderSocketFactory(Client* client);
   ~SenderSocketFactory();
 
-  void set_factory(TlsConnectionFactory* factory) {
+  void set_factory(openscreen::TlsConnectionFactory* factory) {
     OSP_DCHECK(factory);
     factory_ = factory;
   }
 
-  void Connect(const IPEndpoint& endpoint,
+  void Connect(const openscreen::IPEndpoint& endpoint,
                DeviceMediaPolicy media_policy,
                CastSocket::Client* client);
 
-  // TlsConnectionFactory::Client overrides.
-  void OnAccepted(TlsConnectionFactory* factory,
-                  std::vector<uint8_t> der_x509_peer_cert,
-                  std::unique_ptr<TlsConnection> connection) override;
-  void OnConnected(TlsConnectionFactory* factory,
-                   std::vector<uint8_t> der_x509_peer_cert,
-                   std::unique_ptr<TlsConnection> connection) override;
-  void OnConnectionFailed(TlsConnectionFactory* factory,
-                          const IPEndpoint& remote_address) override;
-  void OnError(TlsConnectionFactory* factory, Error error) override;
+  // openscreen::TlsConnectionFactory::Client overrides.
+  void OnAccepted(
+      openscreen::TlsConnectionFactory* factory,
+      std::vector<uint8_t> der_x509_peer_cert,
+      std::unique_ptr<openscreen::TlsConnection> connection) override;
+  void OnConnected(
+      openscreen::TlsConnectionFactory* factory,
+      std::vector<uint8_t> der_x509_peer_cert,
+      std::unique_ptr<openscreen::TlsConnection> connection) override;
+  void OnConnectionFailed(
+      openscreen::TlsConnectionFactory* factory,
+      const openscreen::IPEndpoint& remote_address) override;
+  void OnError(openscreen::TlsConnectionFactory* factory,
+               openscreen::Error error) override;
 
  private:
   struct PendingConnection {
-    IPEndpoint endpoint;
+    openscreen::IPEndpoint endpoint;
     DeviceMediaPolicy media_policy;
     CastSocket::Client* client;
   };
 
   struct PendingAuth {
-    IPEndpoint endpoint;
+    openscreen::IPEndpoint endpoint;
     DeviceMediaPolicy media_policy;
     std::unique_ptr<CastSocket> socket;
     CastSocket::Client* client;
@@ -88,14 +87,14 @@ class SenderSocketFactory final : public TlsConnectionFactory::Client,
   friend bool operator<(uint32_t a, const std::unique_ptr<PendingAuth>& b);
 
   std::vector<PendingConnection>::iterator FindPendingConnection(
-      const IPEndpoint& endpoint);
+      const openscreen::IPEndpoint& endpoint);
 
   // CastSocket::Client overrides.
-  void OnError(CastSocket* socket, Error error) override;
+  void OnError(CastSocket* socket, openscreen::Error error) override;
   void OnMessage(CastSocket* socket, CastMessage message) override;
 
   Client* const client_;
-  TlsConnectionFactory* factory_ = nullptr;
+  openscreen::TlsConnectionFactory* factory_ = nullptr;
   std::vector<PendingConnection> pending_connections_;
   std::vector<std::unique_ptr<PendingAuth>> pending_auth_;
 };

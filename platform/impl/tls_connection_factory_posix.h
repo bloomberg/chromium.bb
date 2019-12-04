@@ -17,7 +17,6 @@
 #include "platform/impl/weak_ptr.h"
 
 namespace openscreen {
-namespace platform {
 
 class StreamSocket;
 
@@ -86,7 +85,6 @@ class TlsConnectionFactoryPosix : public TlsConnectionFactory,
   OSP_DISALLOW_COPY_AND_ASSIGN(TlsConnectionFactoryPosix);
 };
 
-}  // namespace platform
 }  // namespace openscreen
 
 #endif  // PLATFORM_IMPL_TLS_CONNECTION_FACTORY_POSIX_H_

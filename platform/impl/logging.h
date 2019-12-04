@@ -8,7 +8,6 @@
 #include "util/logging.h"
 
 namespace openscreen {
-namespace platform {
 
 // Direct all logging output to a named FIFO having the given |filename|. If the
 // file does not exist, an attempt is made to auto-create it. If unsuccessful,
@@ -20,7 +19,6 @@ void SetLogFifoOrDie(const char* filename);
 // default.
 void SetLogLevel(LogLevel level);
 
-}  // namespace platform
 }  // namespace openscreen
 
 #endif  // PLATFORM_IMPL_LOGGING_H_

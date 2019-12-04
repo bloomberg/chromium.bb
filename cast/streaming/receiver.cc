@@ -13,7 +13,7 @@
 #include "util/logging.h"
 #include "util/std_util.h"
 
-using openscreen::platform::Clock;
+using openscreen::Clock;
 
 using std::chrono::duration_cast;
 using std::chrono::microseconds;

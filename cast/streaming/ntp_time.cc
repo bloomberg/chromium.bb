@@ -6,7 +6,7 @@
 
 #include "util/logging.h"
 
-using openscreen::platform::Clock;
+using openscreen::Clock;
 using std::chrono::duration_cast;
 
 namespace cast {

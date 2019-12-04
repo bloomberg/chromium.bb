@@ -14,8 +14,6 @@ namespace discovery {
 
 class MdnsRandom {
  public:
-  using Clock = openscreen::platform::Clock;
-
   // RFC 6762 Section 5.2
   // https://tools.ietf.org/html/rfc6762#section-5.2
 

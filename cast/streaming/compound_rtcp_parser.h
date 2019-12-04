@@ -41,7 +41,7 @@ class CompoundRtcpParser {
 
     // Called when a Receiver Reference Time Report has been parsed.
     virtual void OnReceiverReferenceTimeAdvanced(
-        openscreen::platform::Clock::time_point reference_time);
+        openscreen::Clock::time_point reference_time);
 
     // Called when a Receiver Report with a Report Block has been parsed.
     virtual void OnReceiverReport(const RtcpReportBlock& receiver_report);
@@ -103,7 +103,7 @@ class CompoundRtcpParser {
                      std::vector<PacketNack>* packet_nacks);
   bool ParseExtendedReports(
       absl::Span<const uint8_t> in,
-      openscreen::platform::Clock::time_point* receiver_reference_time);
+      openscreen::Clock::time_point* receiver_reference_time);
   bool ParsePictureLossIndicator(absl::Span<const uint8_t> in,
                                  bool* picture_loss_indicator);
 
@@ -113,7 +113,7 @@ class CompoundRtcpParser {
   // Tracks the latest timestamp seen from any Receiver Reference Time Report,
   // and uses this to ignore stale RTCP packets that arrived out-of-order and/or
   // late from the network.
-  openscreen::platform::Clock::time_point latest_receiver_timestamp_;
+  openscreen::Clock::time_point latest_receiver_timestamp_;
 };
 
 }  // namespace streaming

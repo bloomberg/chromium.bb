@@ -12,7 +12,11 @@
 namespace cast {
 namespace channel {
 
-using openscreen::platform::TlsConnectOptions;
+using openscreen::Error;
+using openscreen::IPEndpoint;
+using openscreen::TlsConnection;
+using openscreen::TlsConnectionFactory;
+using openscreen::TlsConnectOptions;
 
 bool operator<(const std::unique_ptr<SenderSocketFactory::PendingAuth>& a,
                uint32_t b) {

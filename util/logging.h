@@ -11,7 +11,6 @@
 #include "platform/api/logging.h"
 
 namespace openscreen {
-namespace platform {
 namespace internal {
 
 // The stream-based logging macros below are adapted from Chromium's
@@ -49,17 +48,15 @@ class Voidify {
 };
 
 }  // namespace internal
-}  // namespace platform
 }  // namespace openscreen
 
 #define OSP_LAZY_STREAM(condition, stream) \
-  !(condition) ? (void)0 : openscreen::platform::internal::Voidify() & (stream)
-#define OSP_LOG_IS_ON(level_enum)    \
-  openscreen::platform::IsLoggingOn( \
-      openscreen::platform::LogLevel::level_enum, __FILE__)
-#define OSP_LOG_STREAM(level_enum)                                    \
-  openscreen::platform::internal::LogMessage(                         \
-      openscreen::platform::LogLevel::level_enum, __FILE__, __LINE__) \
+  !(condition) ? (void)0 : openscreen::internal::Voidify() & (stream)
+#define OSP_LOG_IS_ON(level_enum) \
+  openscreen::IsLoggingOn(openscreen::LogLevel::level_enum, __FILE__)
+#define OSP_LOG_STREAM(level_enum)                                             \
+  openscreen::internal::LogMessage(openscreen::LogLevel::level_enum, __FILE__, \
+                                   __LINE__)                                   \
       .stream()
 
 #define OSP_VLOG \

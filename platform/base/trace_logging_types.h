@@ -10,7 +10,6 @@
 #include <limits>
 
 namespace openscreen {
-namespace platform {
 
 // Define TraceId type here since other TraceLogging files import it.
 using TraceId = uint64_t;
@@ -64,7 +63,6 @@ struct TraceCategory {
   };
 };
 
-}  // namespace platform
 }  // namespace openscreen
 
 #endif  // PLATFORM_BASE_TRACE_LOGGING_TYPES_H_

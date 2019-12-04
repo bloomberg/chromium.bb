@@ -28,24 +28,24 @@
 #include "util/trace_logging/macro_support.h"
 #undef INCLUDING_FROM_UTIL_TRACE_LOGGING_H_
 
-#define TRACE_SET_RESULT(result)                                             \
-  do {                                                                       \
-    if (TRACE_IS_ENABLED(openscreen::platform::TraceCategory::Value::Any)) { \
-      openscreen::internal::ScopedTraceOperation::set_result(result);        \
-    }                                                                        \
+#define TRACE_SET_RESULT(result)                                      \
+  do {                                                                \
+    if (TRACE_IS_ENABLED(openscreen::TraceCategory::Value::Any)) {    \
+      openscreen::internal::ScopedTraceOperation::set_result(result); \
+    }                                                                 \
   } while (false)
 #define TRACE_SET_HIERARCHY(ids) TRACE_SET_HIERARCHY_INTERNAL(__LINE__, ids)
-#define TRACE_HIERARCHY                                              \
-  (TRACE_IS_ENABLED(openscreen::platform::TraceCategory::Value::Any) \
-       ? openscreen::internal::ScopedTraceOperation::hierarchy()     \
-       : openscreen::platform::TraceIdHierarchy::Empty())
-#define TRACE_CURRENT_ID                                             \
-  (TRACE_IS_ENABLED(openscreen::platform::TraceCategory::Value::Any) \
-       ? openscreen::internal::ScopedTraceOperation::current_id()    \
+#define TRACE_HIERARCHY                                          \
+  (TRACE_IS_ENABLED(openscreen::TraceCategory::Value::Any)       \
+       ? openscreen::internal::ScopedTraceOperation::hierarchy() \
+       : openscreen::TraceIdHierarchy::Empty())
+#define TRACE_CURRENT_ID                                          \
+  (TRACE_IS_ENABLED(openscreen::TraceCategory::Value::Any)        \
+       ? openscreen::internal::ScopedTraceOperation::current_id() \
        : kEmptyTraceId)
-#define TRACE_ROOT_ID                                                \
-  (TRACE_IS_ENABLED(openscreen::platform::TraceCategory::Value::Any) \
-       ? openscreen::internal::ScopedTraceOperation::root_id()       \
+#define TRACE_ROOT_ID                                          \
+  (TRACE_IS_ENABLED(openscreen::TraceCategory::Value::Any)     \
+       ? openscreen::internal::ScopedTraceOperation::root_id() \
        : kEmptyTraceId)
 
 // Synchronous Trace Macro.
@@ -76,9 +76,9 @@ inline void DoNothingForTracing(Args... args) {}
 #define TRACE_SET_RESULT(result) \
   openscreen::internal::DoNothingForTracing(result)
 #define TRACE_SET_HIERARCHY(ids) openscreen::internal::DoNothingForTracing(ids)
-#define TRACE_HIERARCHY openscreen::platform::TraceIdHierarchy::Empty()
-#define TRACE_CURRENT_ID openscreen::platform::kEmptyTraceId
-#define TRACE_ROOT_ID openscreen::platform::kEmptyTraceId
+#define TRACE_HIERARCHY openscreen::TraceIdHierarchy::Empty()
+#define TRACE_CURRENT_ID openscreen::kEmptyTraceId
+#define TRACE_ROOT_ID openscreen::kEmptyTraceId
 #define TRACE_SCOPED(category, name, ...) \
   openscreen::internal::DoNothingForTracing(category, name, ##__VA_ARGS__)
 #define TRACE_ASYNC_START(category, name, ...) \

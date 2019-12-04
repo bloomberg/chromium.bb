@@ -43,8 +43,8 @@ class QuicClient final : public ProtocolConnectionClient,
   QuicClient(MessageDemuxer* demuxer,
              std::unique_ptr<QuicConnectionFactory> connection_factory,
              ProtocolConnectionServiceObserver* observer,
-             platform::ClockNowFunctionPtr now_function,
-             platform::TaskRunner* task_runner);
+             ClockNowFunctionPtr now_function,
+             TaskRunner* task_runner);
   ~QuicClient() override;
 
   // ProtocolConnectionClient overrides.

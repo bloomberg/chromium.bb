@@ -11,7 +11,6 @@
 #include "util/logging.h"
 
 namespace openscreen {
-namespace platform {
 
 void SocketHandleWaiter::Subscribe(Subscriber* subscriber,
                                    SocketHandleRef handle) {
@@ -107,5 +106,4 @@ Error SocketHandleWaiter::ProcessHandles(Clock::duration timeout) {
   return Error::None();
 }
 
-}  // namespace platform
 }  // namespace openscreen

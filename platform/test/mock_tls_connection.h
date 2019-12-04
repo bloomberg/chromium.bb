@@ -9,7 +9,6 @@
 #include "platform/api/tls_connection.h"
 
 namespace openscreen {
-namespace platform {
 
 class TaskRunner;
 
@@ -55,7 +54,6 @@ class MockTlsConnection : public TlsConnection {
   const IPEndpoint remote_address_;
 };
 
-}  // namespace platform
 }  // namespace openscreen
 
 #endif  // PLATFORM_TEST_MOCK_TLS_CONNECTION_H_

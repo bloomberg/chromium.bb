@@ -19,8 +19,8 @@ QuicClient::QuicClient(
     MessageDemuxer* demuxer,
     std::unique_ptr<QuicConnectionFactory> connection_factory,
     ProtocolConnectionServiceObserver* observer,
-    platform::ClockNowFunctionPtr now_function,
-    platform::TaskRunner* task_runner)
+    ClockNowFunctionPtr now_function,
+    TaskRunner* task_runner)
     : ProtocolConnectionClient(demuxer, observer),
       connection_factory_(std::move(connection_factory)),
       cleanup_alarm_(now_function, task_runner) {}
@@ -63,8 +63,7 @@ void QuicClient::Cleanup() {
   }
   delete_connections_.clear();
 
-  constexpr platform::Clock::duration kQuicCleanupPeriod =
-      std::chrono::milliseconds(500);
+  constexpr Clock::duration kQuicCleanupPeriod = std::chrono::milliseconds(500);
   if (state_ != State::kStopped) {
     cleanup_alarm_.ScheduleFromNow([this] { Cleanup(); }, kQuicCleanupPeriod);
   }

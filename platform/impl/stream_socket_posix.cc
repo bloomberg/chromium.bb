@@ -12,7 +12,6 @@
 #include <unistd.h>
 
 namespace openscreen {
-namespace platform {
 
 namespace {
 constexpr int kDefaultMaxBacklogSize = 64;
@@ -251,5 +250,4 @@ Error StreamSocketPosix::ReportSocketClosedError() {
   last_error_code_ = Error::Code::kSocketClosedFailure;
   return Error::Code::kSocketClosedFailure;
 }
-}  // namespace platform
 }  // namespace openscreen

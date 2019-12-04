@@ -167,19 +167,17 @@ std::unique_ptr<QuicConnection> FakeClientQuicConnectionFactory::Connect(
   return bridge_->Connect(endpoint, connection_delegate);
 }
 
-void FakeClientQuicConnectionFactory::OnError(platform::UdpSocket* socket,
-                                              Error error) {
+void FakeClientQuicConnectionFactory::OnError(UdpSocket* socket, Error error) {
   OSP_UNIMPLEMENTED();
 }
 
-void FakeClientQuicConnectionFactory::OnSendError(platform::UdpSocket* socket,
+void FakeClientQuicConnectionFactory::OnSendError(UdpSocket* socket,
                                                   Error error) {
   OSP_UNIMPLEMENTED();
 }
 
-void FakeClientQuicConnectionFactory::OnRead(
-    platform::UdpSocket* socket,
-    ErrorOr<platform::UdpPacket> packet) {
+void FakeClientQuicConnectionFactory::OnRead(UdpSocket* socket,
+                                             ErrorOr<UdpPacket> packet) {
   bridge_->RunTasks(true);
   idle_ = bridge_->client_idle();
 }
@@ -207,19 +205,17 @@ std::unique_ptr<QuicConnection> FakeServerQuicConnectionFactory::Connect(
   return nullptr;
 }
 
-void FakeServerQuicConnectionFactory::OnError(platform::UdpSocket* socket,
-                                              Error error) {
+void FakeServerQuicConnectionFactory::OnError(UdpSocket* socket, Error error) {
   OSP_UNIMPLEMENTED();
 }
 
-void FakeServerQuicConnectionFactory::OnSendError(platform::UdpSocket* socket,
+void FakeServerQuicConnectionFactory::OnSendError(UdpSocket* socket,
                                                   Error error) {
   OSP_UNIMPLEMENTED();
 }
 
-void FakeServerQuicConnectionFactory::OnRead(
-    platform::UdpSocket* socket,
-    ErrorOr<platform::UdpPacket> packet) {
+void FakeServerQuicConnectionFactory::OnRead(UdpSocket* socket,
+                                             ErrorOr<UdpPacket> packet) {
   bridge_->RunTasks(false);
   idle_ = bridge_->server_idle();
 }

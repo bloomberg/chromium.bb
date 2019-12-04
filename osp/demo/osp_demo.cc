@@ -36,9 +36,6 @@
 #include "third_party/tinycbor/src/src/cbor.h"
 #include "util/trace_logging.h"
 
-using openscreen::platform::Clock;
-using openscreen::platform::PlatformClientPosix;
-
 namespace {
 
 const char* kReceiverLogFilename = "_recv_fifo";
@@ -431,8 +428,7 @@ void ListenerDemo() {
       listener_config, &listener_observer,
       PlatformClientPosix::GetInstance()->GetTaskRunner());
 
-  MessageDemuxer demuxer(platform::Clock::now,
-                         MessageDemuxer::kDefaultBufferLimit);
+  MessageDemuxer demuxer(Clock::now, MessageDemuxer::kDefaultBufferLimit);
   DemoConnectionClientObserver client_observer;
   auto connection_client = ProtocolConnectionClientFactory::Create(
       &demuxer, &client_observer,
@@ -440,7 +436,7 @@ void ListenerDemo() {
 
   auto* network_service = NetworkServiceManager::Create(
       std::move(mdns_listener), nullptr, std::move(connection_client), nullptr);
-  auto controller = std::make_unique<Controller>(platform::Clock::now);
+  auto controller = std::make_unique<Controller>(Clock::now);
 
   network_service->GetMdnsServiceListener()->Start();
   network_service->GetProtocolConnectionClient()->Start();
@@ -524,8 +520,7 @@ void PublisherDemo(absl::string_view friendly_name) {
       PlatformClientPosix::GetInstance()->GetTaskRunner());
 
   ServerConfig server_config;
-  for (const platform::InterfaceInfo& interface :
-       platform::GetNetworkInterfaces()) {
+  for (const InterfaceInfo& interface : GetNetworkInterfaces()) {
     OSP_VLOG << "Found interface: " << interface;
     if (!interface.addresses.empty()) {
       server_config.connection_endpoints.push_back(
@@ -535,8 +530,7 @@ void PublisherDemo(absl::string_view friendly_name) {
   OSP_LOG_IF(WARN, server_config.connection_endpoints.empty())
       << "No network interfaces had usable addresses for mDNS publishing.";
 
-  MessageDemuxer demuxer(platform::Clock::now,
-                         MessageDemuxer::kDefaultBufferLimit);
+  MessageDemuxer demuxer(Clock::now, MessageDemuxer::kDefaultBufferLimit);
   DemoConnectionServerObserver server_observer;
   auto connection_server = ProtocolConnectionServerFactory::Create(
       server_config, &demuxer, &server_observer,
@@ -588,7 +582,9 @@ InputArgs GetInputArgs(int argc, char** argv) {
 }
 
 int main(int argc, char** argv) {
-  using openscreen::platform::LogLevel;
+  using openscreen::Clock;
+  using openscreen::LogLevel;
+  using openscreen::PlatformClientPosix;
 
   std::cout << "Usage: osp_demo [-v] [friendly_name]" << std::endl
             << "-v: enable more verbose logging" << std::endl
@@ -602,11 +598,11 @@ int main(int argc, char** argv) {
   const bool is_receiver_demo = !args.friendly_server_name.empty();
   const char* log_filename =
       is_receiver_demo ? kReceiverLogFilename : kControllerLogFilename;
-  openscreen::platform::SetLogFifoOrDie(log_filename);
+  openscreen::SetLogFifoOrDie(log_filename);
 
   LogLevel level = args.is_verbose ? LogLevel::kVerbose : LogLevel::kInfo;
-  openscreen::platform::SetLogLevel(level);
-  openscreen::platform::TextTraceLoggingPlatform text_logging_platform;
+  openscreen::SetLogLevel(level);
+  openscreen::TextTraceLoggingPlatform text_logging_platform;
 
   PlatformClientPosix::Create(Clock::duration{50}, Clock::duration{50});
 

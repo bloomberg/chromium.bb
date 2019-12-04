@@ -13,7 +13,6 @@
 #include "platform/base/ip_address.h"
 
 namespace openscreen {
-namespace platform {
 
 class TaskRunner;
 class TlsConnection;
@@ -75,7 +74,6 @@ class TlsConnectionFactory {
   TlsConnectionFactory();
 };
 
-}  // namespace platform
 }  // namespace openscreen
 
 #endif  // PLATFORM_API_TLS_CONNECTION_FACTORY_H_

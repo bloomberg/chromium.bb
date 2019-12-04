@@ -28,7 +28,7 @@ Ssrc GenerateSsrc(bool higher_priority) {
   // it is light-weight and does not need to produce unguessable (nor
   // crypto-secure) values.
   static std::minstd_rand generator(static_cast<std::minstd_rand::result_type>(
-      openscreen::platform::Clock::now().time_since_epoch().count()));
+      openscreen::Clock::now().time_since_epoch().count()));
 
   std::uniform_int_distribution<int> distribution(
       higher_priority ? kHigherPriorityMin : kNormalPriorityMin,

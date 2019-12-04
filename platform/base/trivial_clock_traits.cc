@@ -7,13 +7,13 @@
 namespace openscreen {
 
 std::ostream& operator<<(std::ostream& os,
-                         const platform::TrivialClockTraits::duration& d) {
+                         const TrivialClockTraits::duration& d) {
   constexpr char kUnits[] = "\u03BCs";  // Greek Mu + "s"
   return os << d.count() << kUnits;
 }
 
 std::ostream& operator<<(std::ostream& os,
-                         const platform::TrivialClockTraits::time_point& tp) {
+                         const TrivialClockTraits::time_point& tp) {
   constexpr char kUnits[] = "\u03BCs-ticks";  // Greek Mu + "s-ticks"
   return os << tp.time_since_epoch().count() << kUnits;
 }

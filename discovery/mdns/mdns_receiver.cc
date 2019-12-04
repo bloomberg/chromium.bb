@@ -7,8 +7,6 @@
 #include "discovery/mdns/mdns_reader.h"
 #include "util/trace_logging.h"
 
-using openscreen::platform::TraceCategory;
-
 namespace openscreen {
 namespace discovery {
 

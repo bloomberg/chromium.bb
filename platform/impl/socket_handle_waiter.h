@@ -18,7 +18,6 @@
 #include "platform/impl/socket_handle.h"
 
 namespace openscreen {
-namespace platform {
 
 // The class responsible for calling platform-level method to watch UDP sockets
 // for available read data. Reading from these sockets is handled at a higher
@@ -92,7 +91,6 @@ class SocketHandleWaiter {
       handle_mappings_;
 };
 
-}  // namespace platform
 }  // namespace openscreen
 
 #endif  // PLATFORM_IMPL_SOCKET_HANDLE_WAITER_H_

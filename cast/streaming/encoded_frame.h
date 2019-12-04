@@ -78,7 +78,7 @@ struct EncodedFrame {
   // (see |rtp_timestamp|, above). It is also meant to be used to synchronize
   // the presentation of multiple streams (e.g., audio and video), commonly
   // known as "lip-sync." It is NOT meant to be a mandatory/exact playout time.
-  openscreen::platform::Clock::time_point reference_time;
+  openscreen::Clock::time_point reference_time;
 
   // Playout delay for this and all future frames. Used by the Adaptive
   // Playout delay extension. Non-positive values means no change.

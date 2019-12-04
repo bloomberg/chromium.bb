@@ -8,7 +8,6 @@
 #include "gtest/gtest.h"
 
 namespace openscreen {
-namespace platform {
 
 TEST(SocketAddressPosixTest, IPv4SocketAddressConvertsSuccessfully) {
   const SocketAddressPosix address(IPEndpoint{{1, 2, 3, 4}, 80});
@@ -89,5 +88,4 @@ TEST(SocketAddressPosixTest, IPv6ConvertsSuccessfully) {
   EXPECT_EQ(address_posix.endpoint(), expected_address);
 }
 
-}  // namespace platform
 }  // namespace openscreen

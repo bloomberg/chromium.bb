@@ -9,7 +9,7 @@
 #include "cast/streaming/constants.h"
 #include "gtest/gtest.h"
 
-using openscreen::platform::Clock;
+using openscreen::Clock;
 
 namespace cast {
 namespace streaming {

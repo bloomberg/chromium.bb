@@ -14,19 +14,14 @@
 namespace cast {
 namespace channel {
 
-using ::testing::_;
-using ::testing::Invoke;
-using ::testing::NiceMock;
-
-using openscreen::IPEndpoint;
-using openscreen::platform::MockTlsConnection;
-using openscreen::platform::TlsConnection;
-
 class MockCastSocketClient final : public CastSocket::Client {
  public:
   ~MockCastSocketClient() override = default;
 
-  MOCK_METHOD(void, OnError, (CastSocket * socket, Error error), (override));
+  MOCK_METHOD(void,
+              OnError,
+              (CastSocket * socket, openscreen::Error error),
+              (override));
   MOCK_METHOD(void,
               OnMessage,
               (CastSocket * socket, CastMessage message),
@@ -36,17 +31,19 @@ class MockCastSocketClient final : public CastSocket::Client {
 struct FakeCastSocket {
   FakeCastSocket()
       : FakeCastSocket({{10, 0, 1, 7}, 1234}, {{10, 0, 1, 9}, 4321}) {}
-  FakeCastSocket(const IPEndpoint& local, const IPEndpoint& remote)
+  FakeCastSocket(const openscreen::IPEndpoint& local,
+                 const openscreen::IPEndpoint& remote)
       : local(local),
         remote(remote),
-        moved_connection(new MockTlsConnection(local, remote)),
+        moved_connection(
+            std::make_unique<openscreen::MockTlsConnection>(local, remote)),
         connection(moved_connection.get()),
         socket(std::move(moved_connection), &mock_client, 1) {}
 
-  IPEndpoint local;
-  IPEndpoint remote;
-  std::unique_ptr<MockTlsConnection> moved_connection;
-  MockTlsConnection* connection;
+  openscreen::IPEndpoint local;
+  openscreen::IPEndpoint remote;
+  std::unique_ptr<openscreen::MockTlsConnection> moved_connection;
+  openscreen::MockTlsConnection* connection;
   MockCastSocketClient mock_client;
   CastSocket socket;
 };
@@ -57,16 +54,22 @@ struct FakeCastSocket {
 // |mock_client|.
 struct FakeCastSocketPair {
   FakeCastSocketPair() {
-    std::unique_ptr<NiceMock<MockTlsConnection>> moved_connection{
-        new NiceMock<MockTlsConnection>(local, remote)};
-    connection = moved_connection.get();
-    socket.reset(new CastSocket(std::move(moved_connection), &mock_client, 1));
+    using ::testing::_;
+    using ::testing::Invoke;
 
-    std::unique_ptr<NiceMock<MockTlsConnection>> moved_peer{
-        new NiceMock<MockTlsConnection>(remote, local)};
+    auto moved_connection =
+        std::make_unique<::testing::NiceMock<openscreen::MockTlsConnection>>(
+            local, remote);
+    connection = moved_connection.get();
+    socket = std::make_unique<CastSocket>(std::move(moved_connection),
+                                          &mock_client, 1);
+
+    auto moved_peer =
+        std::make_unique<::testing::NiceMock<openscreen::MockTlsConnection>>(
+            remote, local);
     peer_connection = moved_peer.get();
-    peer_socket.reset(
-        new CastSocket(std::move(moved_peer), &mock_peer_client, 2));
+    peer_socket = std::make_unique<CastSocket>(std::move(moved_peer),
+                                               &mock_peer_client, 2);
 
     ON_CALL(*connection, Write(_, _))
         .WillByDefault(Invoke([this](const void* data, size_t len) {
@@ -83,14 +86,14 @@ struct FakeCastSocketPair {
   }
   ~FakeCastSocketPair() = default;
 
-  IPEndpoint local{{10, 0, 1, 7}, 1234};
-  IPEndpoint remote{{10, 0, 1, 9}, 4321};
+  openscreen::IPEndpoint local{{10, 0, 1, 7}, 1234};
+  openscreen::IPEndpoint remote{{10, 0, 1, 9}, 4321};
 
-  NiceMock<MockTlsConnection>* connection;
+  ::testing::NiceMock<openscreen::MockTlsConnection>* connection;
   MockCastSocketClient mock_client;
   std::unique_ptr<CastSocket> socket;
 
-  NiceMock<MockTlsConnection>* peer_connection;
+  ::testing::NiceMock<openscreen::MockTlsConnection>* peer_connection;
   MockCastSocketClient mock_peer_client;
   std::unique_ptr<CastSocket> peer_socket;
 };

@@ -14,7 +14,6 @@
 #include "util/logging.h"
 
 namespace openscreen {
-namespace platform {
 
 class StreamSocketPosix;
 class TlsConnectionPosix;
@@ -132,7 +131,6 @@ class TlsDataRouterPosix : public SocketHandleWaiter::Subscriber {
       GUARDED_BY(connections_mutex_);
 };
 
-}  // namespace platform
 }  // namespace openscreen
 
 #endif  // PLATFORM_IMPL_TLS_DATA_ROUTER_POSIX_H_

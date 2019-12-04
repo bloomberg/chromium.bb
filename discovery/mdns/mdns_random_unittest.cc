@@ -10,8 +10,6 @@
 namespace openscreen {
 namespace discovery {
 
-using openscreen::platform::Clock;
-
 namespace {
 constexpr int kIterationCount = 100;
 }

@@ -17,7 +17,7 @@ constexpr char kLocalDomain[] = "local";
 PtrEvent MakePtrEvent(const std::string& service_instance,
                       const std::string& service_type,
                       const std::string& service_protocol,
-                      platform::UdpSocket* socket) {
+                      UdpSocket* socket) {
   const auto labels = std::vector<std::string>{service_instance, service_type,
                                                service_protocol, kLocalDomain};
   ErrorOr<DomainName> full_instance_name =
@@ -33,7 +33,7 @@ SrvEvent MakeSrvEvent(const std::string& service_instance,
                       const std::string& service_protocol,
                       const std::string& hostname,
                       uint16_t port,
-                      platform::UdpSocket* socket) {
+                      UdpSocket* socket) {
   const auto instance_labels = std::vector<std::string>{
       service_instance, service_type, service_protocol, kLocalDomain};
   ErrorOr<DomainName> full_instance_name =
@@ -54,7 +54,7 @@ TxtEvent MakeTxtEvent(const std::string& service_instance,
                       const std::string& service_type,
                       const std::string& service_protocol,
                       const std::vector<std::string>& txt_lines,
-                      platform::UdpSocket* socket) {
+                      UdpSocket* socket) {
   const auto labels = std::vector<std::string>{service_instance, service_type,
                                                service_protocol, kLocalDomain};
   ErrorOr<DomainName> domain_name =
@@ -67,7 +67,7 @@ TxtEvent MakeTxtEvent(const std::string& service_instance,
 
 AEvent MakeAEvent(const std::string& hostname,
                   IPAddress address,
-                  platform::UdpSocket* socket) {
+                  UdpSocket* socket) {
   const auto labels = std::vector<std::string>{hostname, kLocalDomain};
   ErrorOr<DomainName> domain_name =
       DomainName::FromLabels(labels.begin(), labels.end());
@@ -79,7 +79,7 @@ AEvent MakeAEvent(const std::string& hostname,
 
 AaaaEvent MakeAaaaEvent(const std::string& hostname,
                         IPAddress address,
-                        platform::UdpSocket* socket) {
+                        UdpSocket* socket) {
   const auto labels = std::vector<std::string>{hostname, kLocalDomain};
   ErrorOr<DomainName> domain_name =
       DomainName::FromLabels(labels.begin(), labels.end());
@@ -97,7 +97,7 @@ void AddEventsForNewService(FakeMdnsResponderAdapter* mdns_responder,
                             uint16_t port,
                             const std::vector<std::string>& txt_lines,
                             const IPAddress& address,
-                            platform::UdpSocket* socket) {
+                            UdpSocket* socket) {
   mdns_responder->AddPtrEvent(
       MakePtrEvent(service_instance, service_name, service_protocol, socket));
   mdns_responder->AddSrvEvent(MakeSrvEvent(service_instance, service_name,
@@ -202,9 +202,9 @@ Error FakeMdnsResponderAdapter::SetHostLabel(const std::string& host_label) {
 }
 
 Error FakeMdnsResponderAdapter::RegisterInterface(
-    const platform::InterfaceInfo& interface_info,
-    const platform::IPSubnet& interface_address,
-    platform::UdpSocket* socket) {
+    const InterfaceInfo& interface_info,
+    const IPSubnet& interface_address,
+    UdpSocket* socket) {
   if (!running_)
     return Error::Code::kOperationInvalid;
 
@@ -218,8 +218,7 @@ Error FakeMdnsResponderAdapter::RegisterInterface(
   return Error::None();
 }
 
-Error FakeMdnsResponderAdapter::DeregisterInterface(
-    platform::UdpSocket* socket) {
+Error FakeMdnsResponderAdapter::DeregisterInterface(UdpSocket* socket) {
   auto it =
       std::find_if(registered_interfaces_.begin(), registered_interfaces_.end(),
                    [&socket](const RegisteredInterface& interface) {
@@ -232,22 +231,20 @@ Error FakeMdnsResponderAdapter::DeregisterInterface(
   return Error::None();
 }
 
-void FakeMdnsResponderAdapter::OnRead(platform::UdpSocket* socket,
-                                      ErrorOr<platform::UdpPacket> packet) {
+void FakeMdnsResponderAdapter::OnRead(UdpSocket* socket,
+                                      ErrorOr<UdpPacket> packet) {
   OSP_NOTREACHED() << "Tests should not drive this class with packets";
 }
 
-void FakeMdnsResponderAdapter::OnSendError(platform::UdpSocket* socket,
-                                           Error error) {
+void FakeMdnsResponderAdapter::OnSendError(UdpSocket* socket, Error error) {
   OSP_NOTREACHED() << "Tests should not drive this class with packets";
 }
 
-void FakeMdnsResponderAdapter::OnError(platform::UdpSocket* socket,
-                                       Error error) {
+void FakeMdnsResponderAdapter::OnError(UdpSocket* socket, Error error) {
   OSP_NOTREACHED() << "Tests should not drive this class with packets";
 }
 
-platform::Clock::duration FakeMdnsResponderAdapter::RunTasks() {
+Clock::duration FakeMdnsResponderAdapter::RunTasks() {
   return std::chrono::seconds(1);
 }
 
@@ -369,7 +366,7 @@ std::vector<AaaaEvent> FakeMdnsResponderAdapter::TakeAaaaResponses() {
 }
 
 MdnsResponderErrorCode FakeMdnsResponderAdapter::StartPtrQuery(
-    platform::UdpSocket* socket,
+    UdpSocket* socket,
     const DomainName& service_type) {
   if (!running_)
     return MdnsResponderErrorCode::kUnknownError;
@@ -388,7 +385,7 @@ MdnsResponderErrorCode FakeMdnsResponderAdapter::StartPtrQuery(
 }
 
 MdnsResponderErrorCode FakeMdnsResponderAdapter::StartSrvQuery(
-    platform::UdpSocket* socket,
+    UdpSocket* socket,
     const DomainName& service_instance) {
   if (!running_)
     return MdnsResponderErrorCode::kUnknownError;
@@ -402,7 +399,7 @@ MdnsResponderErrorCode FakeMdnsResponderAdapter::StartSrvQuery(
 }
 
 MdnsResponderErrorCode FakeMdnsResponderAdapter::StartTxtQuery(
-    platform::UdpSocket* socket,
+    UdpSocket* socket,
     const DomainName& service_instance) {
   if (!running_)
     return MdnsResponderErrorCode::kUnknownError;
@@ -416,7 +413,7 @@ MdnsResponderErrorCode FakeMdnsResponderAdapter::StartTxtQuery(
 }
 
 MdnsResponderErrorCode FakeMdnsResponderAdapter::StartAQuery(
-    platform::UdpSocket* socket,
+    UdpSocket* socket,
     const DomainName& domain_name) {
   if (!running_)
     return MdnsResponderErrorCode::kUnknownError;
@@ -430,7 +427,7 @@ MdnsResponderErrorCode FakeMdnsResponderAdapter::StartAQuery(
 }
 
 MdnsResponderErrorCode FakeMdnsResponderAdapter::StartAaaaQuery(
-    platform::UdpSocket* socket,
+    UdpSocket* socket,
     const DomainName& domain_name) {
   if (!running_)
     return MdnsResponderErrorCode::kUnknownError;
@@ -444,7 +441,7 @@ MdnsResponderErrorCode FakeMdnsResponderAdapter::StartAaaaQuery(
 }
 
 MdnsResponderErrorCode FakeMdnsResponderAdapter::StopPtrQuery(
-    platform::UdpSocket* socket,
+    UdpSocket* socket,
     const DomainName& service_type) {
   auto interface_entry = queries_.find(socket);
   if (interface_entry == queries_.end())
@@ -463,7 +460,7 @@ MdnsResponderErrorCode FakeMdnsResponderAdapter::StopPtrQuery(
 }
 
 MdnsResponderErrorCode FakeMdnsResponderAdapter::StopSrvQuery(
-    platform::UdpSocket* socket,
+    UdpSocket* socket,
     const DomainName& service_instance) {
   auto interface_entry = queries_.find(socket);
   if (interface_entry == queries_.end())
@@ -478,7 +475,7 @@ MdnsResponderErrorCode FakeMdnsResponderAdapter::StopSrvQuery(
 }
 
 MdnsResponderErrorCode FakeMdnsResponderAdapter::StopTxtQuery(
-    platform::UdpSocket* socket,
+    UdpSocket* socket,
     const DomainName& service_instance) {
   auto interface_entry = queries_.find(socket);
   if (interface_entry == queries_.end())
@@ -493,7 +490,7 @@ MdnsResponderErrorCode FakeMdnsResponderAdapter::StopTxtQuery(
 }
 
 MdnsResponderErrorCode FakeMdnsResponderAdapter::StopAQuery(
-    platform::UdpSocket* socket,
+    UdpSocket* socket,
     const DomainName& domain_name) {
   auto interface_entry = queries_.find(socket);
   if (interface_entry == queries_.end())
@@ -508,7 +505,7 @@ MdnsResponderErrorCode FakeMdnsResponderAdapter::StopAQuery(
 }
 
 MdnsResponderErrorCode FakeMdnsResponderAdapter::StopAaaaQuery(
-    platform::UdpSocket* socket,
+    UdpSocket* socket,
     const DomainName& domain_name) {
   auto interface_entry = queries_.find(socket);
   if (interface_entry == queries_.end())

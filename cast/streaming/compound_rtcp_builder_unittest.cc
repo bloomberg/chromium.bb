@@ -15,7 +15,7 @@
 #include "gtest/gtest.h"
 #include "platform/api/time.h"
 
-using openscreen::platform::Clock;
+using openscreen::Clock;
 
 using testing::_;
 using testing::Invoke;

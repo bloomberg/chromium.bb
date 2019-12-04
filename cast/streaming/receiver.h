@@ -143,8 +143,7 @@ class Receiver {
   // based on changing environmental conditions.
   //
   // Default setting: kDefaultPlayerProcessingTime
-  void SetPlayerProcessingTime(
-      openscreen::platform::Clock::duration needed_time);
+  void SetPlayerProcessingTime(openscreen::Clock::duration needed_time);
 
   // Propagates a "picture loss indicator" notification to the Sender,
   // requesting a key frame so that decode/playout can recover. It is safe to
@@ -185,11 +184,10 @@ class Receiver {
 
   // Called by ReceiverPacketRouter to provide this Receiver with what looks
   // like a RTP/RTCP packet meant for it specifically (among other Receivers).
-  void OnReceivedRtpPacket(openscreen::platform::Clock::time_point arrival_time,
+  void OnReceivedRtpPacket(openscreen::Clock::time_point arrival_time,
                            std::vector<uint8_t> packet);
-  void OnReceivedRtcpPacket(
-      openscreen::platform::Clock::time_point arrival_time,
-      std::vector<uint8_t> packet);
+  void OnReceivedRtcpPacket(openscreen::Clock::time_point arrival_time,
+                            std::vector<uint8_t> packet);
 
  private:
   // An entry in the circular queue (see |pending_frames_|).
@@ -200,8 +198,7 @@ class Receiver {
     // at the Sender. This is computed and assigned when the RTP packet with ID
     // 0 is processed. Add the target playout delay to this to get the target
     // playout time.
-    absl::optional<openscreen::platform::Clock::time_point>
-        estimated_capture_time;
+    absl::optional<openscreen::Clock::time_point> estimated_capture_time;
 
     PendingFrame();
     ~PendingFrame();
@@ -256,10 +253,9 @@ class Receiver {
   // Sets the |consumption_alarm_| to check whether any frames are ready,
   // including possibly skipping over late frames in order to make not-yet-late
   // frames become ready. The default argument value means "without delay."
-  void ScheduleFrameReadyCheck(
-      openscreen::platform::Clock::time_point when = {});
+  void ScheduleFrameReadyCheck(openscreen::Clock::time_point when = {});
 
-  const openscreen::platform::ClockNowFunctionPtr now_;
+  const openscreen::ClockNowFunctionPtr now_;
   ReceiverPacketRouter* const packet_router_;
   RtcpSession rtcp_session_;
   SenderReportParser rtcp_parser_;
@@ -277,8 +273,8 @@ class Receiver {
   // Not scheduled until after this Receiver has processed the first packet from
   // the Sender.
   openscreen::Alarm rtcp_alarm_;
-  openscreen::platform::Clock::time_point last_rtcp_send_time_ =
-      openscreen::platform::Clock::time_point::min();
+  openscreen::Clock::time_point last_rtcp_send_time_ =
+      openscreen::Clock::time_point::min();
 
   // The last Sender Report received and when the packet containing it had
   // arrived. This contains lip-sync timestamps used as part of the calculation
@@ -286,7 +282,7 @@ class Receiver {
   // back to the Sender in the Receiver Reports. It is nullopt until the first
   // parseable Sender Report is received.
   absl::optional<SenderReportParser::SenderReportWithId> last_sender_report_;
-  openscreen::platform::Clock::time_point last_sender_report_arrival_time_;
+  openscreen::Clock::time_point last_sender_report_arrival_time_;
 
   // Tracks the offset between the Receiver's [local] clock and the Sender's
   // clock. This is invalid until the first Sender Report has been successfully
@@ -333,7 +329,7 @@ class Receiver {
 
   // The additional time needed to decode/play-out each frame after being
   // consumed from this Receiver.
-  openscreen::platform::Clock::duration player_processing_time_ =
+  openscreen::Clock::duration player_processing_time_ =
       kDefaultPlayerProcessingTime;
 
   // Scheduled to check whether there are frames ready and, if there are, to

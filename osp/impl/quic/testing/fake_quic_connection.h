@@ -58,10 +58,9 @@ class FakeQuicConnection final : public QuicConnection {
   std::unique_ptr<FakeQuicStream> MakeIncomingStream();
 
   // UdpSocket::Client overrides.
-  void OnRead(platform::UdpSocket* socket,
-              ErrorOr<platform::UdpPacket> data) override;
-  void OnSendError(platform::UdpSocket* socket, Error error) override;
-  void OnError(platform::UdpSocket* socket, Error error) override;
+  void OnRead(UdpSocket* socket, ErrorOr<UdpPacket> data) override;
+  void OnSendError(UdpSocket* socket, Error error) override;
+  void OnError(UdpSocket* socket, Error error) override;
 
   // QuicConnection overrides.
   std::unique_ptr<QuicStream> MakeOutgoingStream(

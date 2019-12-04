@@ -10,9 +10,7 @@
 
 namespace openscreen {
 
-namespace platform {
 class TaskRunner;
-}  // namespace platform
 
 namespace discovery {
 
@@ -24,7 +22,7 @@ class MdnsPublisher : public MdnsResponder::RecordHandler {
   // the duration of this object's lifetime
   MdnsPublisher(MdnsQuerier* querier,
                 MdnsSender* sender,
-                platform::TaskRunner* task_runner,
+                TaskRunner* task_runner,
                 MdnsRandom* random_delay);
   ~MdnsPublisher();
 
@@ -57,7 +55,7 @@ class MdnsPublisher : public MdnsResponder::RecordHandler {
 
   MdnsQuerier* const querier_;
   MdnsSender* const sender_;
-  platform::TaskRunner* const task_runner_;
+  TaskRunner* const task_runner_;
   MdnsRandom* const random_delay_;
 };
 

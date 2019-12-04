@@ -21,7 +21,7 @@ class RtcpSession {
   // world" wall time.
   RtcpSession(Ssrc sender_ssrc,
               Ssrc receiver_ssrc,
-              openscreen::platform::Clock::time_point start_time);
+              openscreen::Clock::time_point start_time);
   ~RtcpSession();
 
   Ssrc sender_ssrc() const { return sender_ssrc_; }

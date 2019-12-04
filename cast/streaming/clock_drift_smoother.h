@@ -17,7 +17,7 @@ namespace streaming {
 // moves at a rate based on the passage of time.
 class ClockDriftSmoother {
  public:
-  using Clock = openscreen::platform::Clock;
+  using Clock = openscreen::Clock;
 
   // |time_constant| is the amount of time an impulse signal takes to decay by
   // ~62.6%.  Interpretation: If the value passed to several Update() calls is

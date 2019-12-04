@@ -6,7 +6,6 @@
 #define PLATFORM_BASE_TRACE_LOGGING_ACTIVATION_H_
 
 namespace openscreen {
-namespace platform {
 
 class TraceLoggingPlatform;
 
@@ -19,7 +18,6 @@ void StopTracing();
 // nullptr.
 TraceLoggingPlatform* GetTracingDestination();
 
-}  // namespace platform
 }  // namespace openscreen
 
 #endif  // PLATFORM_BASE_TRACE_LOGGING_ACTIVATION_H_

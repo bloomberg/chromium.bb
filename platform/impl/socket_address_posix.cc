@@ -10,7 +10,6 @@
 #include "util/logging.h"
 
 namespace openscreen {
-namespace platform {
 
 SocketAddressPosix::SocketAddressPosix(const struct sockaddr& address) {
   if (address.sa_family == AF_INET) {
@@ -83,5 +82,4 @@ socklen_t SocketAddressPosix::size() const {
       return 0;
   }
 }
-}  // namespace platform
 }  // namespace openscreen

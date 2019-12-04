@@ -23,7 +23,6 @@
 #include "util/logging.h"
 
 namespace openscreen {
-namespace platform {
 
 namespace {
 
@@ -173,5 +172,4 @@ std::vector<InterfaceInfo> GetNetworkInterfaces() {
   return results;
 }
 
-}  // namespace platform
 }  // namespace openscreen

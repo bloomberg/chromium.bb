@@ -16,8 +16,8 @@ class SDLAudioPlayer : public SDLPlayerBase {
  public:
   // |error_callback| is run only if a fatal error occurs, at which point the
   // player has halted and set |error_status()|.
-  SDLAudioPlayer(openscreen::platform::ClockNowFunctionPtr now_function,
-                 openscreen::platform::TaskRunner* task_runner,
+  SDLAudioPlayer(openscreen::ClockNowFunctionPtr now_function,
+                 openscreen::TaskRunner* task_runner,
                  Receiver* receiver,
                  std::function<void()> error_callback);
 
@@ -25,7 +25,7 @@ class SDLAudioPlayer : public SDLPlayerBase {
 
  private:
   // SDLPlayerBase implementation.
-  openscreen::ErrorOr<openscreen::platform::Clock::time_point> RenderNextFrame(
+  openscreen::ErrorOr<openscreen::Clock::time_point> RenderNextFrame(
       const SDLPlayerBase::PresentableFrame& frame) final;
   bool RenderWhileIdle(const SDLPlayerBase::PresentableFrame* frame) final;
   void Present() final;
@@ -38,7 +38,7 @@ class SDLAudioPlayer : public SDLPlayerBase {
 
   // The amount of time before a target presentation time to call Present(), to
   // account for audio buffering (the latency until samples reach the hardware).
-  openscreen::platform::Clock::duration approximate_lead_time_{};
+  openscreen::Clock::duration approximate_lead_time_{};
 
   // When the decoder provides planar data, this buffer is used for storing the
   // interleaved conversion.

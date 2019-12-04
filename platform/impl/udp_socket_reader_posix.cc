@@ -12,7 +12,6 @@
 #include "util/logging.h"
 
 namespace openscreen {
-namespace platform {
 
 UdpSocketReaderPosix::UdpSocketReaderPosix(SocketHandleWaiter* waiter)
     : waiter_(waiter) {}
@@ -64,5 +63,4 @@ bool UdpSocketReaderPosix::IsMappedReadForTesting(
   return std::find(sockets_.begin(), sockets_.end(), socket) != sockets_.end();
 }
 
-}  // namespace platform
 }  // namespace openscreen

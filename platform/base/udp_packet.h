@@ -14,7 +14,6 @@
 #include "platform/base/ip_address.h"
 
 namespace openscreen {
-namespace platform {
 
 class UdpSocket;
 
@@ -60,7 +59,6 @@ class UdpPacket : public std::vector<uint8_t> {
   OSP_DISALLOW_COPY_AND_ASSIGN(UdpPacket);
 };
 
-}  // namespace platform
 }  // namespace openscreen
 
 #endif  // PLATFORM_BASE_UDP_PACKET_H_

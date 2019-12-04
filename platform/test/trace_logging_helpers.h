@@ -12,7 +12,6 @@
 #include "util/logging.h"
 
 namespace openscreen {
-namespace platform {
 
 enum TraceHierarchyParts { kRoot = 0x1, kParent = 0x2, kCurrent = 0x4 };
 
@@ -123,7 +122,6 @@ void ValidateTraceIdHierarchyOnAsyncTrace(const char* name,
   }
 }
 
-}  // namespace platform
 }  // namespace openscreen
 
 #endif  // PLATFORM_TEST_TRACE_LOGGING_HELPERS_H_

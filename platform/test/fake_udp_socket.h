@@ -17,7 +17,6 @@
 #include "util/logging.h"
 
 namespace openscreen {
-namespace platform {
 
 class FakeUdpSocket : public UdpSocket {
  public:
@@ -101,7 +100,6 @@ class FakeUdpSocket : public UdpSocket {
   std::unique_ptr<FakeClock> fake_clock_;
 };
 
-}  // namespace platform
 }  // namespace openscreen
 
 #endif  // PLATFORM_TEST_FAKE_UDP_SOCKET_H_

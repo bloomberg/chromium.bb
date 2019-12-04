@@ -5,7 +5,6 @@
 #include "platform/test/fake_udp_socket.h"
 
 namespace openscreen {
-namespace platform {
 
 FakeUdpSocket::FakeUdpSocket(TaskRunner* task_runner,
                              Client* client,
@@ -97,5 +96,4 @@ std::unique_ptr<FakeUdpSocket> FakeUdpSocket::CreateDefault(
   return socket;
 }
 
-}  // namespace platform
 }  // namespace openscreen

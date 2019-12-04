@@ -14,6 +14,8 @@
 namespace cast {
 namespace channel {
 
+using openscreen::Error;
+
 VirtualConnectionRouter::VirtualConnectionRouter(
     VirtualConnectionManager* vc_manager)
     : vc_manager_(vc_manager) {

@@ -25,9 +25,6 @@ class MdnsSender;
 // the purposes of common code sharing only
 class MdnsTracker {
  public:
-  using ClockNowFunctionPtr = openscreen::platform::ClockNowFunctionPtr;
-  using TaskRunner = openscreen::platform::TaskRunner;
-
   // MdnsTracker does not own |sender|, |task_runner| and |random_delay|
   // and expects that the lifetime of these objects exceeds the lifetime of
   // MdnsTracker.
@@ -53,8 +50,6 @@ class MdnsTracker {
 // refreshing records as they reach their expiration time.
 class MdnsRecordTracker : public MdnsTracker {
  public:
-  using Clock = openscreen::platform::Clock;
-
   MdnsRecordTracker(
       MdnsRecord record,
       MdnsSender* sender,
@@ -100,8 +95,6 @@ class MdnsRecordTracker : public MdnsTracker {
 // continuous monitoring with exponential back-off as described in RFC 6762
 class MdnsQuestionTracker : public MdnsTracker {
  public:
-  using Clock = openscreen::platform::Clock;
-
   MdnsQuestionTracker(MdnsQuestion question,
                       MdnsSender* sender,
                       TaskRunner* task_runner,

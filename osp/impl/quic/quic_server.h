@@ -37,8 +37,8 @@ class QuicServer final : public ProtocolConnectionServer,
              MessageDemuxer* demuxer,
              std::unique_ptr<QuicConnectionFactory> connection_factory,
              ProtocolConnectionServer::Observer* observer,
-             platform::ClockNowFunctionPtr now_function,
-             platform::TaskRunner* task_runner);
+             ClockNowFunctionPtr now_function,
+             TaskRunner* task_runner);
   ~QuicServer() override;
 
   // ProtocolConnectionServer overrides.

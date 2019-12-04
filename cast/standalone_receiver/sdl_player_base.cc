@@ -16,11 +16,11 @@
 using std::chrono::duration_cast;
 using std::chrono::milliseconds;
 
+using openscreen::Clock;
+using openscreen::ClockNowFunctionPtr;
 using openscreen::Error;
 using openscreen::ErrorOr;
-using openscreen::platform::Clock;
-using openscreen::platform::ClockNowFunctionPtr;
-using openscreen::platform::TaskRunner;
+using openscreen::TaskRunner;
 
 namespace cast {
 namespace streaming {

@@ -9,9 +9,8 @@
 #include "util/logging.h"
 
 namespace openscreen {
-namespace platform {
 
-TaskRunnerImpl::TaskRunnerImpl(platform::ClockNowFunctionPtr now_function,
+TaskRunnerImpl::TaskRunnerImpl(ClockNowFunctionPtr now_function,
                                TaskWaiter* event_waiter,
                                Clock::duration waiter_timeout)
     : now_function_(now_function),
@@ -143,5 +142,4 @@ bool TaskRunnerImpl::GrabMoreRunnableTasks() {
   return false;
 }
 
-}  // namespace platform
 }  // namespace openscreen

@@ -14,7 +14,7 @@
 #include "util/integer_division.h"
 #include "util/logging.h"
 
-using openscreen::platform::Clock;
+using openscreen::Clock;
 
 namespace cast {
 namespace streaming {

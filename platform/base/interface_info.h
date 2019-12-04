@@ -13,7 +13,6 @@
 #include "platform/base/ip_address.h"
 
 namespace openscreen {
-namespace platform {
 
 // Unique identifier, usually provided by the operating system, for identifying
 // a specific network interface. This value is used with UdpSocket to join
@@ -75,7 +74,6 @@ struct InterfaceInfo {
 std::ostream& operator<<(std::ostream& out, const IPSubnet& subnet);
 std::ostream& operator<<(std::ostream& out, const InterfaceInfo& info);
 
-}  // namespace platform
 }  // namespace openscreen
 
 #endif  // PLATFORM_BASE_INTERFACE_INFO_H_

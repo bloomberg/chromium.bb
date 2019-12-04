@@ -16,7 +16,6 @@
 #include "util/trace_logging.h"
 
 namespace openscreen {
-namespace platform {
 namespace {
 
 int g_log_fd = STDERR_FILENO;
@@ -109,5 +108,4 @@ void Break() {
 #endif
 }
 
-}  // namespace platform
 }  // namespace openscreen

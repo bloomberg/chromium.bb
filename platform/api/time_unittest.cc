@@ -12,7 +12,6 @@ using std::chrono::microseconds;
 using std::chrono::milliseconds;
 
 namespace openscreen {
-namespace platform {
 namespace {
 
 // Tests that the clock always seems to tick forward. If this test is broken, or
@@ -56,5 +55,4 @@ TEST(TimeTest, PlatformClockHasSufficientResolution) {
 }
 
 }  // namespace
-}  // namespace platform
 }  // namespace openscreen

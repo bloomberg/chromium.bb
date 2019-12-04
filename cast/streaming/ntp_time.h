@@ -41,8 +41,8 @@ constexpr NtpTimestamp AssembleNtpTimestamp(NtpSeconds seconds,
          static_cast<uint32_t>(fraction.count());
 }
 
-// Converts between openscreen::platform::Clock::time_points and NtpTimestamps.
-// The class is instantiated with the current openscreen::platform::Clock time
+// Converts between openscreen::Clock::time_points and NtpTimestamps.
+// The class is instantiated with the current openscreen::Clock time
 // and the current wall clock time, and these are used to determine a fixed
 // origin reference point for all conversions. Thus, to avoid introducing
 // unintended timing-related behaviors, only one NtpTimeConverter instance
@@ -50,15 +50,13 @@ constexpr NtpTimestamp AssembleNtpTimestamp(NtpSeconds seconds,
 // session.
 class NtpTimeConverter {
  public:
-  NtpTimeConverter(openscreen::platform::Clock::time_point now,
+  NtpTimeConverter(openscreen::Clock::time_point now,
                    std::chrono::seconds since_unix_epoch =
-                       openscreen::platform::GetWallTimeSinceUnixEpoch());
+                       openscreen::GetWallTimeSinceUnixEpoch());
   ~NtpTimeConverter();
 
-  NtpTimestamp ToNtpTimestamp(
-      openscreen::platform::Clock::time_point time_point) const;
-  openscreen::platform::Clock::time_point ToLocalTime(
-      NtpTimestamp timestamp) const;
+  NtpTimestamp ToNtpTimestamp(openscreen::Clock::time_point time_point) const;
+  openscreen::Clock::time_point ToLocalTime(NtpTimestamp timestamp) const;
 
  private:
   // The time point on the platform clock's timeline that corresponds to
@@ -68,7 +66,7 @@ class NtpTimeConverter {
   // can be off (with respect to each other) by even a large amount; and all
   // that matters is that time ticks forward at a reasonable pace from some
   // initial point.
-  const openscreen::platform::Clock::time_point start_time_;
+  const openscreen::Clock::time_point start_time_;
   const NtpSeconds since_ntp_epoch_;
 };
 

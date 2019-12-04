@@ -13,7 +13,6 @@
 #include "platform/impl/socket_handle_waiter.h"
 
 namespace openscreen {
-namespace platform {
 
 class SocketHandleWaiterPosix : public SocketHandleWaiter {
  public:
@@ -41,7 +40,6 @@ class SocketHandleWaiterPosix : public SocketHandleWaiter {
   std::atomic_bool is_running_;
 };
 
-}  // namespace platform
 }  // namespace openscreen
 
 #endif  // PLATFORM_IMPL_SOCKET_HANDLE_WAITER_POSIX_H_

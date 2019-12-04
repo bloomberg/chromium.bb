@@ -9,7 +9,6 @@
 #include "util/logging.h"
 
 namespace openscreen {
-namespace platform {
 
 TlsDataRouterPosix::TlsDataRouterPosix(
     SocketHandleWaiter* waiter,
@@ -171,5 +170,4 @@ std::vector<TlsConnectionPosix*>::iterator TlsDataRouterPosix::GetConnection(
   return current_pos;
 }
 
-}  // namespace platform
 }  // namespace openscreen

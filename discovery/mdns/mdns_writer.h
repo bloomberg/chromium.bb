@@ -13,7 +13,7 @@
 namespace openscreen {
 namespace discovery {
 
-class MdnsWriter : public openscreen::BigEndianWriter {
+class MdnsWriter : public BigEndianWriter {
  public:
   using BigEndianWriter::BigEndianWriter;
   using BigEndianWriter::Write;

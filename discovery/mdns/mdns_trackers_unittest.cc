@@ -15,12 +15,6 @@
 namespace openscreen {
 namespace discovery {
 
-using openscreen::platform::Clock;
-using openscreen::platform::FakeClock;
-using openscreen::platform::FakeTaskRunner;
-using openscreen::platform::NetworkInterfaceIndex;
-using openscreen::platform::TaskRunner;
-using openscreen::platform::UdpSocket;
 using testing::_;
 using testing::Args;
 using testing::Invoke;

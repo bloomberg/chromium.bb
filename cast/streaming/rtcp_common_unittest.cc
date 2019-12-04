@@ -11,7 +11,7 @@
 #include "gtest/gtest.h"
 #include "platform/api/time.h"
 
-using openscreen::platform::Clock;
+using openscreen::Clock;
 
 namespace cast {
 namespace streaming {

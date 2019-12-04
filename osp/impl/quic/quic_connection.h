@@ -37,7 +37,7 @@ class QuicStream {
   uint64_t id_;
 };
 
-class QuicConnection : public platform::UdpSocket::Client {
+class QuicConnection : public UdpSocket::Client {
  public:
   class Delegate {
    public:

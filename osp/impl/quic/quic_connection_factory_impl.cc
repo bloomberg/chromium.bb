@@ -18,13 +18,12 @@
 #include "util/logging.h"
 #include "util/trace_logging.h"
 
-using openscreen::platform::TraceCategory;
-
 namespace openscreen {
 namespace osp {
+
 class QuicTaskRunner final : public ::base::TaskRunner {
  public:
-  explicit QuicTaskRunner(platform::TaskRunner* task_runner);
+  explicit QuicTaskRunner(openscreen::TaskRunner* task_runner);
   ~QuicTaskRunner() override;
 
   void RunTasks();
@@ -37,11 +36,12 @@ class QuicTaskRunner final : public ::base::TaskRunner {
   bool RunsTasksInCurrentSequence() const override;
 
  private:
-  platform::TaskRunner* const task_runner_;
+  openscreen::TaskRunner* const task_runner_;
 };
 
-QuicTaskRunner::QuicTaskRunner(platform::TaskRunner* task_runner)
+QuicTaskRunner::QuicTaskRunner(openscreen::TaskRunner* task_runner)
     : task_runner_(task_runner) {}
+
 QuicTaskRunner::~QuicTaskRunner() = default;
 
 void QuicTaskRunner::RunTasks() {}
@@ -49,8 +49,7 @@ void QuicTaskRunner::RunTasks() {}
 bool QuicTaskRunner::PostDelayedTask(const ::base::Location& whence,
                                      ::base::OnceClosure task,
                                      ::base::TimeDelta delay) {
-  platform::Clock::duration wait =
-      platform::Clock::duration(delay.InMilliseconds());
+  Clock::duration wait = Clock::duration(delay.InMilliseconds());
   task_runner_->PostTaskWithDelay(
       [closure = std::move(task)]() mutable { std::move(closure).Run(); },
       wait);
@@ -61,8 +60,7 @@ bool QuicTaskRunner::RunsTasksInCurrentSequence() const {
   return true;
 }
 
-QuicConnectionFactoryImpl::QuicConnectionFactoryImpl(
-    platform::TaskRunner* task_runner)
+QuicConnectionFactoryImpl::QuicConnectionFactoryImpl(TaskRunner* task_runner)
     : task_runner_(task_runner) {
   quic_task_runner_ = ::base::MakeRefCounted<QuicTaskRunner>(task_runner);
   alarm_factory_ = std::make_unique<::net::QuicChromiumAlarmFactory>(
@@ -90,34 +88,31 @@ void QuicConnectionFactoryImpl::SetServerDelegate(
     // create/bind errors occur. Maybe return an Error immediately, and undo
     // partial progress (i.e. "unwatch" all the sockets and call
     // sockets_.clear() to close the sockets)?
-    auto create_result =
-        platform::UdpSocket::Create(task_runner_, this, endpoint);
+    auto create_result = UdpSocket::Create(task_runner_, this, endpoint);
     if (!create_result) {
       OSP_LOG_ERROR << "failed to create socket (for " << endpoint
                     << "): " << create_result.error().message();
       continue;
     }
-    platform::UdpSocketUniquePtr server_socket =
-        std::move(create_result.value());
+    std::unique_ptr<UdpSocket> server_socket = std::move(create_result.value());
     server_socket->Bind();
     sockets_.emplace_back(std::move(server_socket));
   }
 }
 
-void QuicConnectionFactoryImpl::OnRead(
-    platform::UdpSocket* socket,
-    ErrorOr<platform::UdpPacket> packet_or_error) {
+void QuicConnectionFactoryImpl::OnRead(UdpSocket* socket,
+                                       ErrorOr<UdpPacket> packet_or_error) {
   TRACE_SCOPED(TraceCategory::Quic, "QuicConnectionFactoryImpl::OnRead");
   if (packet_or_error.is_error()) {
     return;
   }
 
-  platform::UdpPacket packet = std::move(packet_or_error.value());
+  UdpPacket packet = std::move(packet_or_error.value());
   // Ensure that |packet.socket| is one of the instances owned by
   // QuicConnectionFactoryImpl.
   auto packet_ptr = &packet;
   OSP_DCHECK(std::find_if(sockets_.begin(), sockets_.end(),
-                          [packet_ptr](const platform::UdpSocketUniquePtr& s) {
+                          [packet_ptr](const std::unique_ptr<UdpSocket>& s) {
                             return s.get() == packet_ptr->socket();
                           }) != sockets_.end());
 
@@ -153,15 +148,14 @@ void QuicConnectionFactoryImpl::OnRead(
 std::unique_ptr<QuicConnection> QuicConnectionFactoryImpl::Connect(
     const IPEndpoint& endpoint,
     QuicConnection::Delegate* connection_delegate) {
-  auto create_result =
-      platform::UdpSocket::Create(task_runner_, this, endpoint);
+  auto create_result = UdpSocket::Create(task_runner_, this, endpoint);
   if (!create_result) {
     OSP_LOG_ERROR << "failed to create socket: "
                   << create_result.error().message();
     // TODO(mfoltz): This method should return ErrorOr<uni_ptr<QuicConnection>>.
     return nullptr;
   }
-  platform::UdpSocketUniquePtr socket = std::move(create_result.value());
+  std::unique_ptr<UdpSocket> socket = std::move(create_result.value());
   auto transport = std::make_unique<UdpTransport>(socket.get(), endpoint);
 
   ::quic::QuartcSessionConfig session_config;
@@ -192,7 +186,7 @@ void QuicConnectionFactoryImpl::OnConnectionClosed(QuicConnection* connection) {
         return entry.second.connection == connection;
       });
   OSP_DCHECK(entry != connections_.end());
-  platform::UdpSocket* const socket = entry->second.socket;
+  UdpSocket* const socket = entry->second.socket;
   connections_.erase(entry);
 
   // If none of the remaining |connections_| reference the socket, close/destroy
@@ -203,7 +197,7 @@ void QuicConnectionFactoryImpl::OnConnectionClosed(QuicConnection* connection) {
                    }) == connections_.end()) {
     auto socket_it =
         std::find_if(sockets_.begin(), sockets_.end(),
-                     [socket](const platform::UdpSocketUniquePtr& s) {
+                     [socket](const std::unique_ptr<UdpSocket>& s) {
                        return s.get() == socket;
                      });
     OSP_DCHECK(socket_it != sockets_.end());
@@ -211,13 +205,11 @@ void QuicConnectionFactoryImpl::OnConnectionClosed(QuicConnection* connection) {
   }
 }
 
-void QuicConnectionFactoryImpl::OnError(platform::UdpSocket* socket,
-                                        Error error) {
+void QuicConnectionFactoryImpl::OnError(UdpSocket* socket, Error error) {
   OSP_LOG_ERROR << "failed to configure socket " << error.message();
 }
 
-void QuicConnectionFactoryImpl::OnSendError(platform::UdpSocket* socket,
-                                            Error error) {
+void QuicConnectionFactoryImpl::OnSendError(UdpSocket* socket, Error error) {
   // TODO(crbug.com/openscreen/67): Implement this method.
   OSP_UNIMPLEMENTED();
 }

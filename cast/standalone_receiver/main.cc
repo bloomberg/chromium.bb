@@ -27,10 +27,10 @@
 #include "cast/standalone_receiver/dummy_player.h"
 #endif  // defined(CAST_STREAMING_HAVE_EXTERNAL_LIBS_FOR_DEMO_APPS)
 
+using openscreen::Clock;
 using openscreen::IPEndpoint;
-using openscreen::platform::Clock;
-using openscreen::platform::TaskRunner;
-using openscreen::platform::TaskRunnerImpl;
+using openscreen::TaskRunner;
+using openscreen::TaskRunnerImpl;
 
 namespace cast {
 namespace streaming {
@@ -157,9 +157,8 @@ void DemoMain(TaskRunnerImpl* task_runner) {
 }  // namespace cast
 
 int main(int argc, const char* argv[]) {
-  using openscreen::platform::PlatformClientPosix;
-
-  class PlatformClientExposingTaskRunner : public PlatformClientPosix {
+  class PlatformClientExposingTaskRunner
+      : public openscreen::PlatformClientPosix {
    public:
     explicit PlatformClientExposingTaskRunner(
         std::unique_ptr<TaskRunner> task_runner)
@@ -170,12 +169,12 @@ int main(int argc, const char* argv[]) {
     }
   };
 
-  openscreen::platform::SetLogLevel(openscreen::platform::LogLevel::kInfo);
+  openscreen::SetLogLevel(openscreen::LogLevel::kInfo);
   auto* const platform_client = new PlatformClientExposingTaskRunner(
       std::make_unique<TaskRunnerImpl>(&Clock::now));
 
   cast::streaming::DemoMain(static_cast<TaskRunnerImpl*>(
-      PlatformClientPosix::GetInstance()->GetTaskRunner()));
+      openscreen::PlatformClientPosix::GetInstance()->GetTaskRunner()));
 
   platform_client->ShutDown();  // Deletes |platform_client|.
   return 0;

@@ -15,7 +15,7 @@
 #include "util/std_util.h"
 
 using openscreen::AreElementsSortedAndUnique;
-using openscreen::platform::Clock;
+using openscreen::Clock;
 
 namespace cast {
 namespace streaming {

@@ -8,7 +8,6 @@
 #include <sstream>
 
 namespace openscreen {
-namespace platform {
 
 enum class LogLevel {
   // Very detailed information, often used for evaluating performance or
@@ -58,7 +57,6 @@ void LogWithLevel(LogLevel level,
 // aborting the process.
 void Break();
 
-}  // namespace platform
 }  // namespace openscreen
 
 #endif  // PLATFORM_API_LOGGING_H_

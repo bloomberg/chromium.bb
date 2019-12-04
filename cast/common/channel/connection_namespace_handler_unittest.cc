@@ -30,7 +30,10 @@ class MockSocketErrorHandler
     : public VirtualConnectionRouter::SocketErrorHandler {
  public:
   MOCK_METHOD(void, OnClose, (CastSocket * socket), (override));
-  MOCK_METHOD(void, OnError, (CastSocket * socket, Error error), (override));
+  MOCK_METHOD(void,
+              OnError,
+              (CastSocket * socket, openscreen::Error error),
+              (override));
 };
 
 class MockVirtualConnectionPolicy

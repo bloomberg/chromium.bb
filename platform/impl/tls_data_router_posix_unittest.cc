@@ -13,7 +13,6 @@
 #include "platform/test/fake_task_runner.h"
 
 namespace openscreen {
-namespace platform {
 
 using testing::_;
 using testing::Return;
@@ -192,5 +191,4 @@ TEST(TlsNetworkingManagerPosixTest, HitsAllCallsOnceStartedInMiddle) {
   network_manager.PerformNetworkingOperations(Clock::duration{0});
 }
 
-}  // namespace platform
 }  // namespace openscreen

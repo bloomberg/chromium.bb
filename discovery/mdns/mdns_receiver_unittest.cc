@@ -17,9 +17,6 @@
 namespace openscreen {
 namespace discovery {
 
-using openscreen::platform::FakeUdpSocket;
-using openscreen::platform::TaskRunner;
-using openscreen::platform::UdpPacket;
 using testing::_;
 using testing::Return;
 

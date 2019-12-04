@@ -7,7 +7,6 @@
 #include <cassert>
 
 namespace openscreen {
-namespace platform {
 
 UdpPacket::UdpPacket() : std::vector<uint8_t>() {}
 
@@ -31,5 +30,4 @@ UdpPacket::~UdpPacket() = default;
 
 UdpPacket& UdpPacket::operator=(UdpPacket&& other) = default;
 
-}  // namespace platform
 }  // namespace openscreen

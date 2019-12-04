@@ -27,7 +27,6 @@
 #include "util/logging.h"
 
 namespace openscreen {
-namespace platform {
 namespace {
 
 constexpr bool IsPowerOf2(uint32_t x) {
@@ -85,9 +84,10 @@ const SocketHandle& UdpSocketPosix::GetHandle() const {
 }
 
 // static
-ErrorOr<UdpSocketUniquePtr> UdpSocket::Create(TaskRunner* task_runner,
-                                              Client* client,
-                                              const IPEndpoint& endpoint) {
+ErrorOr<std::unique_ptr<UdpSocket>> UdpSocket::Create(
+    TaskRunner* task_runner,
+    Client* client,
+    const IPEndpoint& endpoint) {
   static std::atomic_bool in_create{false};
   const bool in_create_local = in_create.exchange(true);
   OSP_DCHECK_EQ(in_create_local, false)
@@ -113,8 +113,8 @@ ErrorOr<UdpSocketUniquePtr> UdpSocket::Create(TaskRunner* task_runner,
     return fd.error();
   }
 
-  auto socket = UdpSocketUniquePtr(static_cast<UdpSocket*>(new UdpSocketPosix(
-      task_runner, client, SocketHandle(fd.value()), endpoint)));
+  std::unique_ptr<UdpSocket> socket = std::make_unique<UdpSocketPosix>(
+      task_runner, client, SocketHandle(fd.value()), endpoint);
   in_create = false;
   return socket;
 }
@@ -619,5 +619,4 @@ void UdpSocketPosix::Close() {
   handle_.fd = -1;
 }
 
-}  // namespace platform
 }  // namespace openscreen

@@ -22,7 +22,6 @@
 #include "util/trace_logging.h"
 
 namespace openscreen {
-namespace platform {
 
 class TaskRunnerImpl final : public TaskRunner {
  public:
@@ -49,7 +48,7 @@ class TaskRunnerImpl final : public TaskRunner {
   };
 
   explicit TaskRunnerImpl(
-      platform::ClockNowFunctionPtr now_function,
+      ClockNowFunctionPtr now_function,
       TaskWaiter* event_waiter = nullptr,
       Clock::duration waiter_timeout = std::chrono::milliseconds(100));
 
@@ -111,7 +110,7 @@ class TaskRunnerImpl final : public TaskRunner {
   // transferred.
   bool GrabMoreRunnableTasks();
 
-  const platform::ClockNowFunctionPtr now_function_;
+  const ClockNowFunctionPtr now_function_;
 
   // Flag that indicates whether the task runner loop should continue. This is
   // only meant to be read/written on the thread executing RunUntilStopped().
@@ -141,7 +140,6 @@ class TaskRunnerImpl final : public TaskRunner {
 
   OSP_DISALLOW_COPY_AND_ASSIGN(TaskRunnerImpl);
 };
-}  // namespace platform
 }  // namespace openscreen
 
 #endif  // PLATFORM_IMPL_TASK_RUNNER_H_

@@ -18,28 +18,28 @@ class FakeMdnsResponderAdapter;
 PtrEvent MakePtrEvent(const std::string& service_instance,
                       const std::string& service_type,
                       const std::string& service_protocol,
-                      platform::UdpSocket* socket);
+                      UdpSocket* socket);
 
 SrvEvent MakeSrvEvent(const std::string& service_instance,
                       const std::string& service_type,
                       const std::string& service_protocol,
                       const std::string& hostname,
                       uint16_t port,
-                      platform::UdpSocket* socket);
+                      UdpSocket* socket);
 
 TxtEvent MakeTxtEvent(const std::string& service_instance,
                       const std::string& service_type,
                       const std::string& service_protocol,
                       const std::vector<std::string>& txt_lines,
-                      platform::UdpSocket* socket);
+                      UdpSocket* socket);
 
 AEvent MakeAEvent(const std::string& hostname,
                   IPAddress address,
-                  platform::UdpSocket* socket);
+                  UdpSocket* socket);
 
 AaaaEvent MakeAaaaEvent(const std::string& hostname,
                         IPAddress address,
-                        platform::UdpSocket* socket);
+                        UdpSocket* socket);
 
 void AddEventsForNewService(FakeMdnsResponderAdapter* mdns_responder,
                             const std::string& service_instance,
@@ -49,14 +49,14 @@ void AddEventsForNewService(FakeMdnsResponderAdapter* mdns_responder,
                             uint16_t port,
                             const std::vector<std::string>& txt_lines,
                             const IPAddress& address,
-                            platform::UdpSocket* socket);
+                            UdpSocket* socket);
 
 class FakeMdnsResponderAdapter final : public MdnsResponderAdapter {
  public:
   struct RegisteredInterface {
-    platform::InterfaceInfo interface_info;
-    platform::IPSubnet interface_address;
-    platform::UdpSocket* socket;
+    InterfaceInfo interface_info;
+    IPSubnet interface_address;
+    UdpSocket* socket;
   };
 
   struct RegisteredService {
@@ -99,10 +99,9 @@ class FakeMdnsResponderAdapter final : public MdnsResponderAdapter {
   bool running() const { return running_; }
 
   // UdpSocket::Client overrides.
-  void OnRead(platform::UdpSocket* socket,
-              ErrorOr<platform::UdpPacket> packet) override;
-  void OnSendError(platform::UdpSocket* socket, Error error) override;
-  void OnError(platform::UdpSocket* socket, Error error) override;
+  void OnRead(UdpSocket* socket, ErrorOr<UdpPacket> packet) override;
+  void OnSendError(UdpSocket* socket, Error error) override;
+  void OnError(UdpSocket* socket, Error error) override;
 
   // MdnsResponderAdapter overrides.
   Error Init() override;
@@ -112,12 +111,12 @@ class FakeMdnsResponderAdapter final : public MdnsResponderAdapter {
 
   // TODO(btolsch): Reject/OSP_CHECK events that don't match any registered
   // interface?
-  Error RegisterInterface(const platform::InterfaceInfo& interface_info,
-                          const platform::IPSubnet& interface_address,
-                          platform::UdpSocket* socket) override;
-  Error DeregisterInterface(platform::UdpSocket* socket) override;
+  Error RegisterInterface(const InterfaceInfo& interface_info,
+                          const IPSubnet& interface_address,
+                          UdpSocket* socket) override;
+  Error DeregisterInterface(UdpSocket* socket) override;
 
-  platform::Clock::duration RunTasks() override;
+  Clock::duration RunTasks() override;
 
   std::vector<PtrEvent> TakePtrResponses() override;
   std::vector<SrvEvent> TakeSrvResponses() override;
@@ -125,30 +124,30 @@ class FakeMdnsResponderAdapter final : public MdnsResponderAdapter {
   std::vector<AEvent> TakeAResponses() override;
   std::vector<AaaaEvent> TakeAaaaResponses() override;
 
-  MdnsResponderErrorCode StartPtrQuery(platform::UdpSocket* socket,
+  MdnsResponderErrorCode StartPtrQuery(UdpSocket* socket,
                                        const DomainName& service_type) override;
   MdnsResponderErrorCode StartSrvQuery(
-      platform::UdpSocket* socket,
+      UdpSocket* socket,
       const DomainName& service_instance) override;
   MdnsResponderErrorCode StartTxtQuery(
-      platform::UdpSocket* socket,
+      UdpSocket* socket,
       const DomainName& service_instance) override;
-  MdnsResponderErrorCode StartAQuery(platform::UdpSocket* socket,
+  MdnsResponderErrorCode StartAQuery(UdpSocket* socket,
                                      const DomainName& domain_name) override;
-  MdnsResponderErrorCode StartAaaaQuery(platform::UdpSocket* socket,
+  MdnsResponderErrorCode StartAaaaQuery(UdpSocket* socket,
                                         const DomainName& domain_name) override;
 
-  MdnsResponderErrorCode StopPtrQuery(platform::UdpSocket* socket,
+  MdnsResponderErrorCode StopPtrQuery(UdpSocket* socket,
                                       const DomainName& service_type) override;
   MdnsResponderErrorCode StopSrvQuery(
-      platform::UdpSocket* socket,
+      UdpSocket* socket,
       const DomainName& service_instance) override;
   MdnsResponderErrorCode StopTxtQuery(
-      platform::UdpSocket* socket,
+      UdpSocket* socket,
       const DomainName& service_instance) override;
-  MdnsResponderErrorCode StopAQuery(platform::UdpSocket* socket,
+  MdnsResponderErrorCode StopAQuery(UdpSocket* socket,
                                     const DomainName& domain_name) override;
-  MdnsResponderErrorCode StopAaaaQuery(platform::UdpSocket* socket,
+  MdnsResponderErrorCode StopAaaaQuery(UdpSocket* socket,
                                        const DomainName& domain_name) override;
 
   MdnsResponderErrorCode RegisterService(
@@ -180,7 +179,7 @@ class FakeMdnsResponderAdapter final : public MdnsResponderAdapter {
   bool running_ = false;
   LifetimeObserver* observer_ = nullptr;
 
-  std::map<platform::UdpSocket*, InterfaceQueries> queries_;
+  std::map<UdpSocket*, InterfaceQueries> queries_;
   // NOTE: One of many simplifications here is that there is no cache.  This
   // means that calling StartQuery, StopQuery, StartQuery will only return an
   // event the first time, unless the test also adds the event a second time.

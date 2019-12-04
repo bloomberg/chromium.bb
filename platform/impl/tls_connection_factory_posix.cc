@@ -29,7 +29,6 @@
 #include "util/trace_logging.h"
 
 namespace openscreen {
-namespace platform {
 
 namespace {
 
@@ -277,5 +276,4 @@ void TlsConnectionFactoryPosix::DispatchError(Error error) {
   });
 }
 
-}  // namespace platform
 }  // namespace openscreen

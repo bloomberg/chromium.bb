@@ -18,7 +18,6 @@
 #include "util/operation_loop.h"
 
 namespace openscreen {
-namespace platform {
 
 class UdpSocketReaderPosix;
 
@@ -125,7 +124,6 @@ class PlatformClientPosix {
   OSP_DISALLOW_COPY_AND_ASSIGN(PlatformClientPosix);
 };
 
-}  // namespace platform
 }  // namespace openscreen
 
 #endif  // PLATFORM_IMPL_PLATFORM_CLIENT_POSIX_H_

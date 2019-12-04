@@ -42,7 +42,7 @@ class RtpPacketizerTest : public testing::Test {
     frame.frame_id = frame_id;
     frame.referenced_frame_id = is_key_frame ? frame_id : (frame_id - 1);
     frame.rtp_timestamp = RtpTimeTicks() + RtpTimeDelta::FromTicks(987);
-    frame.reference_time = openscreen::platform::Clock::now();
+    frame.reference_time = openscreen::Clock::now();
     frame.new_playout_delay = new_playout_delay;
 
     std::unique_ptr<uint8_t[]> buffer(new uint8_t[payload_size]);

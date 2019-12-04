@@ -12,7 +12,7 @@ namespace discovery {
 
 MdnsPublisher::MdnsPublisher(MdnsQuerier* querier,
                              MdnsSender* sender,
-                             platform::TaskRunner* task_runner,
+                             TaskRunner* task_runner,
                              MdnsRandom* random_delay)
     : querier_(querier),
       sender_(sender),

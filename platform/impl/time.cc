@@ -17,7 +17,6 @@ using std::chrono::steady_clock;
 using std::chrono::system_clock;
 
 namespace openscreen {
-namespace platform {
 
 Clock::time_point Clock::now() noexcept {
   constexpr bool can_use_steady_clock =
@@ -66,5 +65,4 @@ std::chrono::seconds GetWallTimeSinceUnixEpoch() noexcept {
   return std::chrono::seconds(since_epoch);
 }
 
-}  // namespace platform
 }  // namespace openscreen

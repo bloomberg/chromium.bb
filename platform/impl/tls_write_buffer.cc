@@ -11,7 +11,6 @@
 #include "util/logging.h"
 
 namespace openscreen {
-namespace platform {
 
 TlsWriteBuffer::~TlsWriteBuffer() = default;
 
@@ -96,5 +95,4 @@ void TlsWriteBuffer::NotifyWriteBufferFill(size_t write_index,
   observer_->NotifyWriteBufferFill(fraction);
 }
 
-}  // namespace platform
 }  // namespace openscreen

@@ -229,7 +229,7 @@ For an embedder to create a custom TraceLogging implementation:
   called frequently (especially `IsLoggingEnabled(TraceCategory)`) and are often
   in the critical execution path of the library's code.
 
-2. *Call `openscreen::platform::StartTracing()` and `StopTracing()`*
+2. *Call `openscreen::StartTracing()` and `StopTracing()`*
   These activate/deactivate tracing by providing the TraceLoggingPlatform
   instance and later clearing references to it.
 

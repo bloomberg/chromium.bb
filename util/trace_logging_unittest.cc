@@ -13,7 +13,6 @@
 #include "platform/test/trace_logging_helpers.h"
 
 namespace openscreen {
-namespace platform {
 namespace {
 
 #if defined(ENABLE_TRACE_LOGGING)
@@ -368,5 +367,4 @@ TEST(TraceLoggingTest, CheckTraceAsyncEndLogsCorrectly) {
 }
 
 }  // namespace
-}  // namespace platform
 }  // namespace openscreen

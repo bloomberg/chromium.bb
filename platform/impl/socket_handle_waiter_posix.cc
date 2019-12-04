@@ -16,7 +16,6 @@
 #include "util/logging.h"
 
 namespace openscreen {
-namespace platform {
 
 SocketHandleWaiterPosix::SocketHandleWaiterPosix() = default;
 
@@ -74,5 +73,4 @@ void SocketHandleWaiterPosix::RequestStopSoon() {
   is_running_.store(false);
 }
 
-}  // namespace platform
 }  // namespace openscreen

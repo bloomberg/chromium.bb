@@ -9,7 +9,6 @@
 #include "util/logging.h"
 
 namespace openscreen {
-namespace platform {
 
 bool TextTraceLoggingPlatform::IsTraceLoggingEnabled(
     TraceCategory::Value category) {
@@ -69,5 +68,4 @@ void TextTraceLoggingPlatform::LogAsyncEnd(const uint32_t line,
           << timestamp << ") " << error;
 }
 
-}  // namespace platform
 }  // namespace openscreen

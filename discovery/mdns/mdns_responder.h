@@ -12,11 +12,9 @@
 #include "platform/base/macros.h"
 
 namespace openscreen {
-struct IPEndpoint;
 
-namespace platform {
+struct IPEndpoint;
 class TaskRunner;
-}  // namespace platform
 
 namespace discovery {
 
@@ -54,8 +52,8 @@ class MdnsResponder {
                 MdnsSender* sender,
                 MdnsReceiver* receiver,
                 MdnsQuerier* querier,
-                platform::TaskRunner* task_runner,
-                platform::ClockNowFunctionPtr now_function,
+                TaskRunner* task_runner,
+                ClockNowFunctionPtr now_function,
                 MdnsRandom* random_delay);
   ~MdnsResponder();
 
@@ -68,8 +66,8 @@ class MdnsResponder {
   MdnsSender* const sender_;
   MdnsReceiver* const receiver_;
   MdnsQuerier* const querier_;
-  platform::TaskRunner* const task_runner_;
-  const platform::ClockNowFunctionPtr now_function_;
+  TaskRunner* const task_runner_;
+  const ClockNowFunctionPtr now_function_;
   MdnsRandom* const random_delay_;
 };
 

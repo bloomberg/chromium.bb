@@ -12,11 +12,8 @@
 #include "discovery/dnssd/public/dns_sd_service.h"
 
 namespace openscreen {
-namespace platform {
 
 class TaskRunner;
-
-}
 
 namespace discovery {
 

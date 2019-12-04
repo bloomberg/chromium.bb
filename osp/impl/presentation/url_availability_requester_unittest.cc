@@ -46,12 +46,11 @@ class MockReceiverObserver : public ReceiverObserver {
 class UrlAvailabilityRequesterTest : public Test {
  public:
   UrlAvailabilityRequesterTest() {
-    fake_clock_ = std::make_unique<platform::FakeClock>(
-        platform::Clock::time_point(milliseconds(1298424)));
-    task_runner_ =
-        std::make_unique<platform::FakeTaskRunner>(fake_clock_.get());
-    quic_bridge_ = std::make_unique<FakeQuicBridge>(task_runner_.get(),
-                                                    platform::FakeClock::now);
+    fake_clock_ =
+        std::make_unique<FakeClock>(Clock::time_point(milliseconds(1298424)));
+    task_runner_ = std::make_unique<FakeTaskRunner>(fake_clock_.get());
+    quic_bridge_ =
+        std::make_unique<FakeQuicBridge>(task_runner_.get(), FakeClock::now);
     info1_ = {service_id_, friendly_name_, 1, quic_bridge_->kReceiverEndpoint};
   }
 
@@ -86,16 +85,16 @@ class UrlAvailabilityRequesterTest : public Test {
   void ExpectStreamMessage(MockMessageCallback* mock_callback,
                            msgs::PresentationUrlAvailabilityRequest* request) {
     EXPECT_CALL(*mock_callback, OnStreamMessage(_, _, _, _, _, _))
-        .WillOnce(Invoke([request](uint64_t endpoint_id, uint64_t cid,
-                                   msgs::Type message_type,
-                                   const uint8_t* buffer, size_t buffer_size,
-                                   platform::Clock::time_point now) {
-          ssize_t request_result_size =
-              msgs::DecodePresentationUrlAvailabilityRequest(
-                  buffer, buffer_size, request);
-          OSP_DCHECK_GT(request_result_size, 0);
-          return request_result_size;
-        }));
+        .WillOnce(
+            Invoke([request](uint64_t endpoint_id, uint64_t cid,
+                             msgs::Type message_type, const uint8_t* buffer,
+                             size_t buffer_size, Clock::time_point now) {
+              ssize_t request_result_size =
+                  msgs::DecodePresentationUrlAvailabilityRequest(
+                      buffer, buffer_size, request);
+              OSP_DCHECK_GT(request_result_size, 0);
+              return request_result_size;
+            }));
   }
 
   void SendAvailabilityResponse(
@@ -126,12 +125,12 @@ class UrlAvailabilityRequesterTest : public Test {
     stream->Write(buffer.data(), buffer.size());
   }
 
-  std::unique_ptr<platform::FakeClock> fake_clock_;
-  std::unique_ptr<platform::FakeTaskRunner> task_runner_;
+  std::unique_ptr<FakeClock> fake_clock_;
+  std::unique_ptr<FakeTaskRunner> task_runner_;
   MockMessageCallback mock_callback_;
   MessageDemuxer::MessageWatch availability_watch_;
   std::unique_ptr<FakeQuicBridge> quic_bridge_;
-  UrlAvailabilityRequester listener_{platform::FakeClock::now};
+  UrlAvailabilityRequester listener_{FakeClock::now};
 
   std::string url1_{"https://example.com/foo.html"};
   std::string url2_{"https://example.com/bar.html"};

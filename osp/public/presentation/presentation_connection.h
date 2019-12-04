@@ -196,7 +196,7 @@ class ConnectionManager final : public MessageDemuxer::MessageCallback {
                                   msgs::Type message_type,
                                   const uint8_t* buffer,
                                   size_t buffer_size,
-                                  platform::Clock::time_point now) override;
+                                  Clock::time_point now) override;
 
   Connection* GetConnection(uint64_t connection_id);
 

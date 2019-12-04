@@ -8,7 +8,6 @@
 #include "util/logging.h"
 
 namespace openscreen {
-namespace platform {
 
 FakeClock::FakeClock(Clock::time_point start_time) {
   now_ = start_time;
@@ -48,5 +47,4 @@ void FakeClock::UnsubscribeFromTimeChanges(FakeTaskRunner* task_runner) {
 // static
 std::atomic<Clock::time_point> FakeClock::now_{Clock::time_point{}};
 
-}  // namespace platform
 }  // namespace openscreen

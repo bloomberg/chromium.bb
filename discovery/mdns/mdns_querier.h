@@ -22,9 +22,6 @@ class MdnsRecordTracker;
 
 class MdnsQuerier {
  public:
-  using ClockNowFunctionPtr = openscreen::platform::ClockNowFunctionPtr;
-  using TaskRunner = openscreen::platform::TaskRunner;
-
   MdnsQuerier(MdnsSender* sender,
               MdnsReceiver* receiver,
               TaskRunner* task_runner,

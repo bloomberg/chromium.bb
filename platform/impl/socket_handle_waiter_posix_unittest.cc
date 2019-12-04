@@ -16,7 +16,6 @@
 #include "platform/impl/timeval_posix.h"
 
 namespace openscreen {
-namespace platform {
 namespace {
 
 using namespace ::testing;
@@ -88,5 +87,4 @@ TEST(SocketHandleWaiterTest, WatchedSocketsReturnedToCorrectSubscribers) {
   waiter.ProcessHandles(Clock::duration{0});
 }
 
-}  // namespace platform
 }  // namespace openscreen

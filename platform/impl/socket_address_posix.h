@@ -17,7 +17,6 @@
 #include "platform/base/ip_address.h"
 
 namespace openscreen {
-namespace platform {
 
 class SocketAddressPosix {
  public:
@@ -50,7 +49,6 @@ class SocketAddressPosix {
   IPEndpoint endpoint_;
 };
 
-}  // namespace platform
 }  // namespace openscreen
 
 #endif  // PLATFORM_IMPL_SOCKET_ADDRESS_POSIX_H_

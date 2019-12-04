@@ -12,11 +12,6 @@
 
 #if defined(ENABLE_TRACE_LOGGING)
 
-using openscreen::platform::kUnsetTraceId;
-using openscreen::platform::TraceCategory;
-using openscreen::platform::TraceId;
-using openscreen::platform::TraceIdHierarchy;
-
 namespace openscreen {
 namespace internal {
 
@@ -25,8 +20,8 @@ bool ScopedTraceOperation::TraceAsyncEnd(const uint32_t line,
                                          const char* file,
                                          TraceId id,
                                          Error::Code e) {
-  auto end_time = platform::Clock::now();
-  auto* const current_platform = platform::GetTracingDestination();
+  auto end_time = Clock::now();
+  auto* const current_platform = GetTracingDestination();
   if (current_platform == nullptr) {
     return false;
   }
@@ -95,7 +90,7 @@ TraceLoggerBase::TraceLoggerBase(TraceCategory::Value category,
                                  TraceId parent,
                                  TraceId root)
     : ScopedTraceOperation(current, parent, root),
-      start_time_(platform::Clock::now()),
+      start_time_(Clock::now()),
       result_(Error::Code::kNone),
       name_(name),
       file_name_(file),
@@ -116,18 +111,18 @@ TraceLoggerBase::TraceLoggerBase(TraceCategory::Value category,
                       ids.root) {}
 
 SynchronousTraceLogger::~SynchronousTraceLogger() {
-  auto* const current_platform = platform::GetTracingDestination();
+  auto* const current_platform = GetTracingDestination();
   if (current_platform == nullptr) {
     return;
   }
-  auto end_time = platform::Clock::now();
+  auto end_time = Clock::now();
   current_platform->LogTrace(this->name_, this->line_number_, this->file_name_,
                              this->start_time_, end_time, this->to_hierarchy(),
                              this->result_);
 }
 
 AsynchronousTraceLogger::~AsynchronousTraceLogger() {
-  auto* const current_platform = platform::GetTracingDestination();
+  auto* const current_platform = GetTracingDestination();
   if (current_platform == nullptr) {
     return;
   }

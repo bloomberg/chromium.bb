@@ -69,12 +69,11 @@ class MockReceiverDelegate final : public ReceiverDelegate {
 class PresentationReceiverTest : public ::testing::Test {
  public:
   PresentationReceiverTest() {
-    fake_clock_ = std::make_unique<platform::FakeClock>(
-        platform::Clock::time_point(std::chrono::milliseconds(1298424)));
-    task_runner_ =
-        std::make_unique<platform::FakeTaskRunner>(fake_clock_.get());
-    quic_bridge_ = std::make_unique<FakeQuicBridge>(task_runner_.get(),
-                                                    platform::FakeClock::now);
+    fake_clock_ = std::make_unique<FakeClock>(
+        Clock::time_point(std::chrono::milliseconds(1298424)));
+    task_runner_ = std::make_unique<FakeTaskRunner>(fake_clock_.get());
+    quic_bridge_ =
+        std::make_unique<FakeQuicBridge>(task_runner_.get(), FakeClock::now);
   }
 
  protected:
@@ -103,8 +102,8 @@ class PresentationReceiverTest : public ::testing::Test {
     NetworkServiceManager::Dispose();
   }
 
-  std::unique_ptr<platform::FakeClock> fake_clock_;
-  std::unique_ptr<platform::FakeTaskRunner> task_runner_;
+  std::unique_ptr<FakeClock> fake_clock_;
+  std::unique_ptr<FakeTaskRunner> task_runner_;
   const std::string url1_{"https://www.example.com/receiver.html"};
   std::unique_ptr<FakeQuicBridge> quic_bridge_;
   MockReceiverDelegate mock_receiver_delegate_;
@@ -142,14 +141,14 @@ TEST_F(PresentationReceiverTest, QueryAvailability) {
 
   msgs::PresentationUrlAvailabilityResponse response;
   EXPECT_CALL(mock_callback, OnStreamMessage(_, _, _, _, _, _))
-      .WillOnce(Invoke([&response](uint64_t endpoint_id, uint64_t cid,
-                                   msgs::Type message_type,
-                                   const uint8_t* buffer, size_t buffer_size,
-                                   platform::Clock::time_point now) {
-        ssize_t result = msgs::DecodePresentationUrlAvailabilityResponse(
-            buffer, buffer_size, &response);
-        return result;
-      }));
+      .WillOnce(
+          Invoke([&response](uint64_t endpoint_id, uint64_t cid,
+                             msgs::Type message_type, const uint8_t* buffer,
+                             size_t buffer_size, Clock::time_point now) {
+            ssize_t result = msgs::DecodePresentationUrlAvailabilityResponse(
+                buffer, buffer_size, &response);
+            return result;
+          }));
   quic_bridge_->RunTasksUntilIdle();
   EXPECT_EQ(request.request_id, response.request_id);
   EXPECT_EQ(
@@ -190,14 +189,14 @@ TEST_F(PresentationReceiverTest, StartPresentation) {
                                          ResponseResult::kSuccess);
   msgs::PresentationStartResponse response;
   EXPECT_CALL(mock_callback, OnStreamMessage(_, _, _, _, _, _))
-      .WillOnce(Invoke([&response](uint64_t endpoint_id, uint64_t cid,
-                                   msgs::Type message_type,
-                                   const uint8_t* buffer, size_t buffer_size,
-                                   platform::Clock::time_point now) {
-        ssize_t result = msgs::DecodePresentationStartResponse(
-            buffer, buffer_size, &response);
-        return result;
-      }));
+      .WillOnce(
+          Invoke([&response](uint64_t endpoint_id, uint64_t cid,
+                             msgs::Type message_type, const uint8_t* buffer,
+                             size_t buffer_size, Clock::time_point now) {
+            ssize_t result = msgs::DecodePresentationStartResponse(
+                buffer, buffer_size, &response);
+            return result;
+          }));
   quic_bridge_->RunTasksUntilIdle();
   EXPECT_EQ(msgs::Result::kSuccess, response.result);
   EXPECT_EQ(connection.connection_id(), response.connection_id);

@@ -7,7 +7,6 @@
 #include <cassert>
 
 namespace openscreen {
-namespace platform {
 
 namespace {
 TraceLoggingPlatform* g_current_destination = nullptr;
@@ -28,5 +27,4 @@ void StopTracing() {
   g_current_destination = nullptr;
 }
 
-}  // namespace platform
 }  // namespace openscreen

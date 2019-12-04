@@ -17,7 +17,6 @@
 #include "platform/impl/weak_ptr.h"
 
 namespace openscreen {
-namespace platform {
 
 class TaskRunner;
 class TlsConnectionFactoryPosix;
@@ -86,7 +85,6 @@ class TlsConnectionPosix : public TlsConnection,
   OSP_DISALLOW_COPY_AND_ASSIGN(TlsConnectionPosix);
 };
 
-}  // namespace platform
 }  // namespace openscreen
 
 #endif  // PLATFORM_IMPL_TLS_CONNECTION_POSIX_H_

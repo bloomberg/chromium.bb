@@ -101,7 +101,7 @@ ErrorOr<MdnsRecordTracker::UpdateType> MdnsRecordTracker::Update(
 
     // Goodbye records do not need to be requeried, set the attempt count to the
     // last item, which is 100% of TTL, i.e. record expiration.
-    attempt_count_ = openscreen::countof(kTtlFractions) - 1;
+    attempt_count_ = countof(kTtlFractions) - 1;
   } else {
     record_ = new_record;
     attempt_count_ = 0;
@@ -123,7 +123,7 @@ void MdnsRecordTracker::ExpireSoon() {
 
   // Set the attempt count to the last item, which is 100% of TTL, i.e. record
   // expiration, to prevent any requeries
-  attempt_count_ = openscreen::countof(kTtlFractions) - 1;
+  attempt_count_ = countof(kTtlFractions) - 1;
   start_time_ = now_function_();
   send_alarm_.Schedule([this] { SendQuery(); }, GetNextSendTime());
 }
@@ -144,13 +144,13 @@ void MdnsRecordTracker::SendQuery() {
   }
 }
 
-openscreen::platform::Clock::time_point MdnsRecordTracker::GetNextSendTime() {
-  OSP_DCHECK(attempt_count_ < openscreen::countof(kTtlFractions));
+Clock::time_point MdnsRecordTracker::GetNextSendTime() {
+  OSP_DCHECK(attempt_count_ < countof(kTtlFractions));
 
   double ttl_fraction = kTtlFractions[attempt_count_++];
 
   // Do not add random variation to the expiration time (last fraction of TTL)
-  if (attempt_count_ != openscreen::countof(kTtlFractions)) {
+  if (attempt_count_ != countof(kTtlFractions)) {
     ttl_fraction += random_delay_->GetRecordTtlVariation();
   }
 

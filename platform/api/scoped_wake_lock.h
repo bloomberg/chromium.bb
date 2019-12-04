@@ -8,7 +8,6 @@
 #include <memory>
 
 namespace openscreen {
-namespace platform {
 
 // Ensures that the device does not got to sleep. This is used, for example,
 // while Open Screen is communicating with peers over the network for things
@@ -33,7 +32,6 @@ class ScopedWakeLock {
   virtual ~ScopedWakeLock();
 };
 
-}  // namespace platform
 }  // namespace openscreen
 
 #endif  // PLATFORM_API_SCOPED_WAKE_LOCK_H_

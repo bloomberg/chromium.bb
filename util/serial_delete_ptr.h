@@ -19,13 +19,13 @@ namespace openscreen {
 template <typename Type, typename DeleterType>
 class SerialDelete {
  public:
-  explicit SerialDelete(platform::TaskRunner* task_runner)
+  explicit SerialDelete(TaskRunner* task_runner)
       : task_runner_(task_runner), deleter_() {
     assert(task_runner);
   }
 
   template <typename DT>
-  SerialDelete(platform::TaskRunner* task_runner, DT&& deleter)
+  SerialDelete(TaskRunner* task_runner, DT&& deleter)
       : task_runner_(task_runner), deleter_(std::forward<DT>(deleter)) {
     assert(task_runner);
   }
@@ -36,7 +36,7 @@ class SerialDelete {
   }
 
  private:
-  platform::TaskRunner* task_runner_;
+  TaskRunner* task_runner_;
   DeleterType deleter_;
 };
 
@@ -46,21 +46,21 @@ template <typename Type, typename DeleterType = std::default_delete<Type>>
 class SerialDeletePtr
     : public std::unique_ptr<Type, SerialDelete<Type, DeleterType>> {
  public:
-  explicit SerialDeletePtr(platform::TaskRunner* task_runner) noexcept
+  explicit SerialDeletePtr(TaskRunner* task_runner) noexcept
       : std::unique_ptr<Type, SerialDelete<Type, DeleterType>>(
             nullptr,
             SerialDelete<Type, DeleterType>(task_runner)) {
     assert(task_runner);
   }
 
-  SerialDeletePtr(platform::TaskRunner* task_runner, std::nullptr_t) noexcept
+  SerialDeletePtr(TaskRunner* task_runner, std::nullptr_t) noexcept
       : std::unique_ptr<Type, SerialDelete<Type, DeleterType>>(
             nullptr,
             SerialDelete<Type, DeleterType>(task_runner)) {
     assert(task_runner);
   }
 
-  SerialDeletePtr(platform::TaskRunner* task_runner, Type* pointer) noexcept
+  SerialDeletePtr(TaskRunner* task_runner, Type* pointer) noexcept
       : std::unique_ptr<Type, SerialDelete<Type, DeleterType>>(
             pointer,
             SerialDelete<Type, DeleterType>(task_runner)) {
@@ -68,7 +68,7 @@ class SerialDeletePtr
   }
 
   SerialDeletePtr(
-      platform::TaskRunner* task_runner,
+      TaskRunner* task_runner,
       Type* pointer,
       typename std::conditional<std::is_reference<DeleterType>::value,
                                 DeleterType,
@@ -80,7 +80,7 @@ class SerialDeletePtr
   }
 
   SerialDeletePtr(
-      platform::TaskRunner* task_runner,
+      TaskRunner* task_runner,
       Type* pointer,
       typename std::remove_reference<DeleterType>::type&& deleter) noexcept
       : std::unique_ptr<Type, SerialDelete<Type, DeleterType>>(
@@ -91,7 +91,7 @@ class SerialDeletePtr
 };
 
 template <typename Type, typename... Args>
-SerialDeletePtr<Type> MakeSerialDelete(platform::TaskRunner* task_runner,
+SerialDeletePtr<Type> MakeSerialDelete(TaskRunner* task_runner,
                                        Args&&... args) {
   return SerialDeletePtr<Type>(task_runner,
                                new Type(std::forward<Args>(args)...));
