@@ -10,7 +10,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/accessibility/accessibility_labels_service.h"
 #include "chrome/browser/accessibility/accessibility_labels_service_factory.h"
-#include "chrome/browser/content_settings/content_settings_manager_impl.h"
 #include "chrome/browser/dom_distiller/dom_distiller_service_factory.h"
 #include "chrome/browser/language/translate_frame_binder.h"
 #include "chrome/browser/navigation_predictor/navigation_predictor.h"
@@ -202,9 +201,6 @@ void BindBeforeUnloadControl(
 
 void PopulateChromeFrameBinders(
     service_manager::BinderMapWithContext<content::RenderFrameHost*>* map) {
-  map->Add<mojom::ContentSettingsManager>(
-      base::BindRepeating(&ContentSettingsManagerImpl::Create));
-
   map->Add<image_annotation::mojom::Annotator>(
       base::BindRepeating(&BindImageAnnotator));
 

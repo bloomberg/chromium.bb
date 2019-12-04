@@ -13,6 +13,7 @@
 #include "chrome/browser/cache_stats_recorder.h"
 #include "chrome/browser/chrome_browser_interface_binders.h"
 #include "chrome/browser/chrome_content_browser_client_parts.h"
+#include "chrome/browser/content_settings/content_settings_manager_impl.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
@@ -250,6 +251,13 @@ void ChromeContentBrowserClient::BindGpuHostReceiver(
 void ChromeContentBrowserClient::BindHostReceiverForRenderer(
     content::RenderProcessHost* render_process_host,
     mojo::GenericPendingReceiver receiver) {
+  if (auto host_receiver =
+          receiver.As<chrome::mojom::ContentSettingsManager>()) {
+    chrome::ContentSettingsManagerImpl::Create(render_process_host,
+                                               std::move(host_receiver));
+    return;
+  }
+
   if (auto host_receiver =
           receiver.As<network_hints::mojom::NetworkHintsHandler>()) {
     predictors::NetworkHintsHandlerImpl::Create(render_process_host->GetID(),
