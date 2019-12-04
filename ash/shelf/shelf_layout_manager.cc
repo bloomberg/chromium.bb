@@ -1033,6 +1033,13 @@ void ShelfLayoutManager::OnDeskSwitchAnimationFinished() {
     UpdateVisibilityState();
 }
 
+gfx::Rect ShelfLayoutManager::GetNavigationBounds() const {
+  gfx::Vector2d nav_offset = target_bounds_.shelf_bounds.OffsetFromOrigin();
+  gfx::Rect nav_bounds = target_bounds_.nav_bounds_in_shelf;
+  nav_bounds.Offset(nav_offset);
+  return nav_bounds;
+}
+
 int ShelfLayoutManager::CalculateHotseatYInShelf(
     HotseatState hotseat_target_state) const {
   DCHECK(shelf_->IsHorizontalAlignment());
@@ -1451,10 +1458,8 @@ void ShelfLayoutManager::UpdateBoundsAndOpacity(
     status_bounds.Offset(target_bounds_.shelf_bounds.OffsetFromOrigin());
     status_widget->SetBounds(status_bounds);
 
-    gfx::Vector2d nav_offset = target_bounds_.shelf_bounds.OffsetFromOrigin();
-    gfx::Rect nav_bounds = target_bounds_.nav_bounds_in_shelf;
-    nav_bounds.Offset(nav_offset);
-    nav_widget->SetBounds(nav_bounds);
+    // Let the navigation widget handle its own layout changes.
+    nav_widget->UpdateLayout();
 
     gfx::Vector2d hotseat_offset =
         target_bounds_.shelf_bounds.OffsetFromOrigin();
