@@ -3984,11 +3984,11 @@ crbug.com/829028 external/wpt/css/css-multicol/nested-with-too-tall-line.html [ 
 
 crbug.com/796961 external/wpt/css/css-pseudo/marker-content-002.html [ Failure ]
 crbug.com/796961 external/wpt/css/css-pseudo/marker-content-005.html [ Failure ]
-crbug.com/457718 external/wpt/css/css-pseudo/marker-content-007.html [ Failure ]
-crbug.com/457718 external/wpt/css/css-pseudo/marker-content-008.html [ Failure ]
-crbug.com/457718 external/wpt/css/css-pseudo/marker-content-009.html [ Failure ]
+crbug.com/457718 external/wpt/css/css-pseudo/marker-content-007.tentative.html [ Failure ]
+crbug.com/457718 external/wpt/css/css-pseudo/marker-content-008.tentative.html [ Failure ]
+crbug.com/457718 external/wpt/css/css-pseudo/marker-content-009.tentative.html [ Failure ]
 crbug.com/457718 external/wpt/css/css-pseudo/marker-content-010.html [ Failure ]
-crbug.com/457718 external/wpt/css/css-pseudo/marker-content-011.html [ Failure ]
+crbug.com/457718 external/wpt/css/css-pseudo/marker-content-011.tentative.html [ Failure ]
 crbug.com/457718 external/wpt/css/css-pseudo/marker-font-variant-numeric-normal.html [ Failure ]
 crbug.com/457718 external/wpt/css/css-pseudo/marker-list-style-position.html [ Failure ]
 

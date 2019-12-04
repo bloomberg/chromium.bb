@@ -1171,7 +1171,7 @@ crbug.com/982194 external/wpt/css/css-position/static-position/vrl-rtl-rtl.html 
 crbug.com/982194 external/wpt/css/css-pseudo/first-letter-exclude-inline-marker.html [ Failure ]
 crbug.com/982194 external/wpt/css/css-pseudo/marker-content-002.html [ Failure ]
 crbug.com/982194 external/wpt/css/css-pseudo/marker-content-005.html [ Failure ]
-crbug.com/982194 external/wpt/css/css-pseudo/marker-content-008.html [ Failure ]
+crbug.com/982194 external/wpt/css/css-pseudo/marker-content-008.tentative.html [ Failure ]
 crbug.com/982194 external/wpt/css/css-pseudo/marker-list-style-position.html [ Failure ]
 crbug.com/982194 external/wpt/css/css-text/hyphens/hyphens-span-001.html [ Failure ]
 crbug.com/982194 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/symbols-function-invalid.html [ Pass ]
