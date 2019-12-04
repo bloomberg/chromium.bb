@@ -24,14 +24,13 @@
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/frame_host/render_frame_proxy_host.h"
-#include "content/browser/frame_host/render_widget_host_view_guest.h"
 #include "content/browser/renderer_host/cursor_manager.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/renderer_host/render_widget_host_view_child_frame.h"
 #include "content/browser/web_contents/web_contents_impl.h"
-#include "content/browser/web_contents/web_contents_view_guest.h"
+#include "content/browser/web_contents/web_contents_view.h"
 #include "content/common/browser_plugin/browser_plugin_constants.h"
 #include "content/common/browser_plugin/browser_plugin_messages.h"
 #include "content/common/content_constants_internal.h"
@@ -161,6 +160,7 @@ void BrowserPluginGuest::DidUpdateVisualProperties(
 }
 
 void BrowserPluginGuest::SizeContents(const gfx::Size& new_size) {
+  // TODO(wjmaclean): Verify whether this is used via WebContentsViewChildFrame.
   GetWebContents()->GetView()->SizeContents(new_size);
 }
 
@@ -289,20 +289,9 @@ void BrowserPluginGuest::InitInternal(
   frame_rect_ = params.frame_rect;
 
   if (owner_web_contents_ != owner_web_contents) {
-    WebContentsViewGuest* new_view = nullptr;
-    if (!GuestMode::IsCrossProcessFrameGuest(GetWebContents())) {
-      new_view =
-          static_cast<WebContentsViewGuest*>(GetWebContents()->GetView());
-    }
-
-    if (owner_web_contents_ && new_view)
-      new_view->OnGuestDetached(owner_web_contents_->GetView());
-
     // Once a BrowserPluginGuest has an embedder WebContents, it's considered to
     // be attached.
     owner_web_contents_ = owner_web_contents;
-    if (new_view)
-      new_view->OnGuestAttached(owner_web_contents_->GetView());
   }
 
   blink::mojom::RendererPreferences* renderer_prefs =
@@ -643,18 +632,6 @@ void BrowserPluginGuest::RenderViewReady() {
       ->SetFocus(focused_);
   UpdateVisibility();
 
-  // In case we've created a new guest render process after a crash, let the
-  // associated BrowserPlugin know. We only need to send this if we're attached,
-  // as guest_crashed_ is cleared automatically on attach anyways.
-  if (attached()) {
-    RenderWidgetHostViewGuest* rwhv = static_cast<RenderWidgetHostViewGuest*>(
-        web_contents()->GetRenderWidgetHostView());
-    if (rwhv) {
-      SendMessageToEmbedder(std::make_unique<BrowserPluginMsg_GuestReady>(
-          browser_plugin_instance_id(), rwhv->GetFrameSinkId()));
-    }
-  }
-
   RenderWidgetHostImpl::From(rvh->GetWidget())
       ->set_hung_renderer_delay(
           base::TimeDelta::FromMilliseconds(kHungRendererDelayMs));
@@ -776,58 +753,6 @@ bool BrowserPluginGuest::OnMessageReceived(const IPC::Message& message,
 #endif
 }
 
-void BrowserPluginGuest::Attach(
-    int browser_plugin_instance_id,
-    WebContentsImpl* embedder_web_contents,
-    const BrowserPluginHostMsg_Attach_Params& params) {
-  browser_plugin_instance_id_ = browser_plugin_instance_id;
-  // The guest is owned by the embedder. Attach is queued up so we cannot
-  // change embedders before attach completes. If the embedder goes away,
-  // so does the guest and so we will never call WillAttachComplete because
-  // we have a weak ptr.
-  delegate_->WillAttach(
-      embedder_web_contents, browser_plugin_instance_id,
-      params.is_full_page_plugin,
-      base::BindOnce(&BrowserPluginGuest::OnWillAttachComplete,
-                     weak_ptr_factory_.GetWeakPtr(), embedder_web_contents,
-                     params));
-}
-
-void BrowserPluginGuest::OnWillAttachComplete(
-    WebContentsImpl* embedder_web_contents,
-    const BrowserPluginHostMsg_Attach_Params& params) {
-  // If a RenderView has already been created for this new window, then we need
-  // to initialize the browser-side state now so that the RenderFrameHostManager
-  // does not create a new RenderView on navigation.
-  if (has_render_view_) {
-    // This will trigger a callback to RenderViewReady after a round-trip IPC.
-    static_cast<RenderViewHostImpl*>(GetWebContents()->GetRenderViewHost())
-        ->GetWidget()
-        ->Init();
-    GetWebContents()->GetMainFrame()->Init();
-    WebContentsViewGuest* web_contents_view =
-        static_cast<WebContentsViewGuest*>(GetWebContents()->GetView());
-    if (!web_contents()->GetRenderViewHost()->GetWidget()->GetView()) {
-      web_contents_view->CreateViewForWidget(
-          web_contents()->GetRenderViewHost()->GetWidget(), true);
-    }
-  }
-
-  InitInternal(params, embedder_web_contents);
-
-  attached_ = true;
-  SendQueuedMessages();
-
-  delegate_->DidAttach(GetGuestRenderViewRoutingID());
-  RenderWidgetHostViewGuest* rwhv = static_cast<RenderWidgetHostViewGuest*>(
-      web_contents()->GetRenderWidgetHostView());
-  if (rwhv)
-    rwhv->OnAttached();
-  has_render_view_ = true;
-
-  RecordAction(base::UserMetricsAction("BrowserPlugin.Guest.Attached"));
-}
-
 void BrowserPluginGuest::OnDetach(int browser_plugin_instance_id) {
   if (!attached())
     return;
@@ -845,10 +770,6 @@ void BrowserPluginGuest::OnDetach(int browser_plugin_instance_id) {
   // If the guest is terminated, our host may already be gone.
   if (rwhv) {
     rwhv->UnregisterFrameSinkId();
-    RenderWidgetHostViewBase* root_view =
-        RenderWidgetHostViewGuest::GetRootView(rwhv);
-    if (root_view)
-      root_view->GetCursorManager()->ViewBeingDestroyed(rwhv);
   }
 
   delegate_->DidDetach();

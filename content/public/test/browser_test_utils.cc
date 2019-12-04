@@ -43,7 +43,6 @@
 #include "content/browser/frame_host/interstitial_page_impl.h"
 #include "content/browser/frame_host/navigation_request.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
-#include "content/browser/frame_host/render_widget_host_view_guest.h"
 #include "content/browser/renderer_host/input/synthetic_touchscreen_pinch_gesture.h"
 #include "content/browser/renderer_host/render_frame_metadata_provider_impl.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
@@ -686,15 +685,6 @@ void ResendGestureScrollUpdateToEmbedder(WebContents* guest_web_contents,
   DCHECK(guest_web_contents_impl->GetBrowserPluginGuest());
   guest_web_contents_impl->GetBrowserPluginGuest()->ResendEventToEmbedder(
       event);
-}
-
-void MaybeSendSyntheticTapGesture(WebContents* guest_web_contents) {
-  content::RenderWidgetHostViewGuest* rwhv =
-      static_cast<content::RenderWidgetHostViewGuest*>(
-          guest_web_contents->GetRenderWidgetHostView());
-  DCHECK(rwhv);
-  rwhv->MaybeSendSyntheticTapGestureForTest(blink::WebFloatPoint(1, 1),
-                                            blink::WebFloatPoint(1, 1));
 }
 
 void RunUntilInputProcessed(RenderWidgetHost* host) {
