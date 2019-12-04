@@ -8,7 +8,6 @@
 #include "base/no_destructor.h"
 #include "build/build_config.h"
 #include "content/public/app/content_browser_manifest.h"
-#include "content/public/app/content_renderer_manifest.h"
 #include "content/public/app/content_utility_manifest.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_client.h"
@@ -43,7 +42,6 @@ const std::vector<service_manager::Manifest>& GetBuiltinServiceManifests() {
           // browser process, but the distinction between "in-process" and
           // "out-of-process" manifests is temporary. For now, this is the right
           // place for these manifests.
-          GetContentRendererManifest(),
           GetContentUtilityManifest(),
 
           audio::GetManifest(IsAudioServiceOutOfProcess()

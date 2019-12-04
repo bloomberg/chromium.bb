@@ -20,6 +20,7 @@
 #include "content/browser/browser_child_process_host_impl.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/service_manager/service_manager_context.h"
+#include "content/browser/v8_snapshot_files.h"
 #include "content/common/child_process_host_impl.h"
 #include "content/common/in_process_child_thread_params.h"
 #include "content/common/service_manager/child_connection.h"
@@ -458,7 +459,8 @@ bool UtilityProcessHost::StartProcess() {
     std::unique_ptr<UtilitySandboxedProcessLauncherDelegate> delegate =
         std::make_unique<UtilitySandboxedProcessLauncherDelegate>(
             sandbox_type_, env_, *cmd_line);
-    process_->Launch(std::move(delegate), std::move(cmd_line), true);
+    process_->LaunchWithPreloadedFiles(std::move(delegate), std::move(cmd_line),
+                                       GetV8SnapshotFilesToPreload(), true);
   }
 
   return true;
