@@ -46,6 +46,8 @@
 #include "components/autofill_assistant/browser/features.h"
 #include "components/autofill_assistant/browser/metrics.h"
 #include "components/autofill_assistant/browser/rectf.h"
+#include "components/autofill_assistant/browser/user_data.h"
+#include "components/autofill_assistant/browser/user_data_util.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/strings/grit/components_strings.h"
@@ -412,7 +414,6 @@ base::android::ScopedJavaLocalRef<jobject> CreateJavaAdditionalSections(
   }
   return jsection_list;
 }
-
 }  // namespace
 
 // static
@@ -1201,13 +1202,18 @@ void UiControllerAndroid::OnUserDataChanged(
 
   if (field_change == UserData::FieldChange::ALL ||
       field_change == UserData::FieldChange::AVAILABLE_PROFILES) {
+    DCHECK(ui_delegate_ != nullptr);
+    const CollectUserDataOptions* collect_user_data_options =
+        ui_delegate_->GetCollectUserDataOptions();
     auto jlist =
         Java_AssistantCollectUserDataModel_createAutofillProfileList(env);
-    for (const auto& profile : state->available_profiles) {
+    auto profile_indices = SortByCompleteness(*collect_user_data_options,
+                                              state->available_profiles);
+    for (int index : profile_indices) {
       Java_AssistantCollectUserDataModel_addAutofillProfile(
           env, jlist,
           autofill::PersonalDataManagerAndroid::CreateJavaProfileFromNative(
-              env, *profile));
+              env, *state->available_profiles[index]));
     }
     Java_AssistantCollectUserDataModel_setAutofillProfiles(env, jmodel, jlist);
   }
