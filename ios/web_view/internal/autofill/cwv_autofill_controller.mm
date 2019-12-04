@@ -539,6 +539,11 @@ showUnmaskPromptForCard:(const autofill::CreditCard&)creditCard
   [_autofillAgent fillFormData:form inFrame:frame];
 }
 
+- (void)handleParsedForms:(const std::vector<autofill::FormStructure*>&)forms
+                  inFrame:(web::WebFrame*)frame {
+  // TODO(crbug.com/1030451): Pass through in CVWAutofillControllerDelegate.
+}
+
 - (void)fillFormDataPredictions:
             (const std::vector<autofill::FormDataPredictions>&)forms
                         inFrame:(web::WebFrame*)frame {
