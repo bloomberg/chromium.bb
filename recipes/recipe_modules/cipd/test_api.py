@@ -19,7 +19,7 @@ class CIPDTestApi(recipe_test_api.RecipeTestApi):
 
   def make_pin(self, package_name, version=None):
     return {
-        'package': package_name,
+        'package': package_name.replace('${platform}', 'resolved-platform'),
         'instance_id': self.make_resolved_version(version),
     }
 
