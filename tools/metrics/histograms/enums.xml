@@ -49986,8 +49986,6 @@ Called by update_net_trust_anchors.py.-->
   <int value="4"
       label="User cancelled setup while downloading Plugin VM image"/>
   <int value="5" label="User cancelled setup while importing Plugin VM image"/>
-  <int value="6" label="Error while downloading Plugin VM DLC"/>
-  <int value="7" label="User cancelled setup while downloading Plugin VM DLC"/>
 </enum>
 
 <enum name="PNaClOptionsOptLevelEnum">
