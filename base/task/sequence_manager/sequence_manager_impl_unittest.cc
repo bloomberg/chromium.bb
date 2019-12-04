@@ -4918,6 +4918,52 @@ TEST_P(SequenceManagerTest, OnTaskReady) {
   EXPECT_EQ(2, task_ready_count);
 }
 
+namespace {
+
+class TaskObserverExpectingNoDelayedRunTime : public TaskObserver {
+ public:
+  TaskObserverExpectingNoDelayedRunTime() = default;
+  ~TaskObserverExpectingNoDelayedRunTime() override = default;
+
+  int num_will_process_task() const { return num_will_process_task_; }
+  int num_did_process_task() const { return num_did_process_task_; }
+
+ private:
+  void WillProcessTask(const base::PendingTask& pending_task) override {
+    EXPECT_TRUE(pending_task.delayed_run_time.is_null());
+    ++num_will_process_task_;
+  }
+  void DidProcessTask(const base::PendingTask& pending_task) override {
+    EXPECT_TRUE(pending_task.delayed_run_time.is_null());
+    ++num_did_process_task_;
+  }
+
+  int num_will_process_task_ = 0;
+  int num_did_process_task_ = 0;
+};
+
+}  // namespace
+
+// The |delayed_run_time| must not be set for immediate tasks as that prevents
+// external observers from correctly identifying delayed tasks.
+// https://crbug.com/1029137
+TEST_P(SequenceManagerTest, NoDelayedRunTimeForImmediateTask) {
+  TaskObserverExpectingNoDelayedRunTime task_observer;
+  sequence_manager()->SetAddQueueTimeToTasks(true);
+  sequence_manager()->AddTaskObserver(&task_observer);
+  auto queue = CreateTaskQueue();
+
+  base::RunLoop run_loop;
+  queue->task_runner()->PostTask(
+      FROM_HERE, BindLambdaForTesting([&]() { run_loop.Quit(); }));
+  run_loop.Run();
+
+  EXPECT_EQ(1, task_observer.num_will_process_task());
+  EXPECT_EQ(1, task_observer.num_did_process_task());
+
+  sequence_manager()->RemoveTaskObserver(&task_observer);
+}
+
 }  // namespace sequence_manager_impl_unittest
 }  // namespace internal
 }  // namespace sequence_manager

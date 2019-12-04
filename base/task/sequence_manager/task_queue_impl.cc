@@ -22,6 +22,18 @@
 namespace base {
 namespace sequence_manager {
 
+namespace {
+
+base::TimeTicks GetTaskDesiredExecutionTime(const Task& task) {
+  if (!task.delayed_run_time.is_null())
+    return task.delayed_run_time;
+  // The desired run time for a non-delayed task is the queue time.
+  DCHECK(!task.queue_time.is_null());
+  return task.queue_time;
+}
+
+}  // namespace
+
 // static
 const char* TaskQueue::PriorityToString(TaskQueue::QueuePriority priority) {
   switch (priority) {
@@ -270,7 +282,7 @@ void TaskQueueImpl::PostImmediateTaskImpl(PostedTask task,
     if (any_thread_.task_queue_observer)
       any_thread_.task_queue_observer->OnPostTask(task.location, TimeDelta());
     bool add_queue_time_to_tasks = sequence_manager_->GetAddQueueTimeToTasks();
-    if (add_queue_time_to_tasks)
+    if (add_queue_time_to_tasks || delayed_fence_allowed_)
       task.queue_time = lazy_now.Now();
 
     // The sequence number must be incremented atomically with pushing onto the
@@ -280,17 +292,8 @@ void TaskQueueImpl::PostImmediateTaskImpl(PostedTask task,
     EnqueueOrder sequence_number = sequence_manager_->GetNextSequenceNumber();
     bool was_immediate_incoming_queue_empty =
         any_thread_.immediate_incoming_queue.empty();
+    // Delayed run time is null for an immediate task.
     base::TimeTicks delayed_run_time;
-    // The desired run time is only required when delayed fence is allowed.
-    // Avoid evaluating it when not required.
-    //
-    // TODO(https://crbug.com/997203) The code that records jank metrics depends
-    // on the delayed run time to be set when |add_queue_time_to_tasks| is true.
-    // We should remove that dependency and only set the delayed run time here
-    // when |delayed_fence_allowed_| is true. See https://crbug.com/997203#c22
-    // for details about the dependency.
-    if (delayed_fence_allowed_ || add_queue_time_to_tasks)
-      delayed_run_time = lazy_now.Now();
     any_thread_.immediate_incoming_queue.push_back(Task(
         std::move(task), delayed_run_time, sequence_number, sequence_number));
 
@@ -484,7 +487,9 @@ void TaskQueueImpl::TakeImmediateIncomingQueueTasks(TaskDeque* queue) {
   // a fence.
   if (main_thread_only().delayed_fence) {
     for (const Task& task : *queue) {
-      if (task.delayed_run_time >= main_thread_only().delayed_fence.value()) {
+      DCHECK(!task.queue_time.is_null());
+      DCHECK(task.delayed_run_time.is_null());
+      if (task.queue_time >= main_thread_only().delayed_fence.value()) {
         main_thread_only().delayed_fence = nullopt;
         DCHECK(!main_thread_only().current_fence);
         main_thread_only().current_fence = task.enqueue_order();
@@ -581,7 +586,7 @@ void TaskQueueImpl::MoveReadyDelayedTasksToWorkQueue(LazyNow* lazy_now) {
       VLOG(0) << name_ << " Delay expired for " << task->posted_from.ToString();
 #endif  // DCHECK_IS_ON()
 
-    ActivateDelayedFenceIfNeeded(task->delayed_run_time);
+    ActivateDelayedFenceIfNeeded(GetTaskDesiredExecutionTime(*task));
     DCHECK(!task->enqueue_order_set());
     task->set_enqueue_order(sequence_manager_->GetNextSequenceNumber());
 
