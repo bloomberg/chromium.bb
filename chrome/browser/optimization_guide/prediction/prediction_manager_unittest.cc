@@ -233,10 +233,6 @@ class TestOptimizationGuideStore : public OptimizationGuideStore {
 
   void RunInitCallback() { std::move(init_callback_).Run(); }
 
-  void RunUpdateHostModelFeaturesCallback() {
-    std::move(update_host_models_callback_).Run();
-  }
-
   void LoadPredictionModel(const EntryKey& prediction_model_entry_key,
                            PredictionModelLoadedCallback callback) override {
     model_loaded_ = true;
@@ -273,7 +269,7 @@ class TestOptimizationGuideStore : public OptimizationGuideStore {
       base::OnceClosure callback) override {
     host_model_features_update_time_ =
         *host_model_features_update_data->update_time();
-    update_host_models_callback_ = std::move(callback);
+    std::move(callback).Run();
   }
 
   void UpdatePredictionModels(
@@ -288,7 +284,6 @@ class TestOptimizationGuideStore : public OptimizationGuideStore {
   }
  private:
   base::OnceClosure init_callback_;
-  base::OnceClosure update_host_models_callback_;
   bool model_loaded_ = false;
   bool host_model_features_loaded_ = false;
 };
@@ -431,8 +426,6 @@ class PredictionManagerTest
   void SetStoreInitialized() {
     models_and_features_store()->RunInitCallback();
     RunUntilIdle();
-    // Move clock forward for any short delays added for the fetcher.
-    MoveClockForwardBy(base::TimeDelta::FromSeconds(2));
   }
 
   void MoveClockForwardBy(base::TimeDelta time_delta) {
@@ -771,8 +764,6 @@ TEST_F(PredictionManagerTest, EvaluatePredictionModelPopulatesNavData) {
 
   SetStoreInitialized();
   EXPECT_TRUE(prediction_model_fetcher()->models_fetched());
-
-  models_and_features_store()->RunUpdateHostModelFeaturesCallback();
   histogram_tester.ExpectUniqueSample(
       "OptimizationGuide.PredictionManager.HostModelFeaturesStored", true, 1);
   histogram_tester.ExpectUniqueSample(
@@ -829,7 +820,6 @@ TEST_F(PredictionManagerTest,
 
   SetStoreInitialized();
   EXPECT_TRUE(prediction_model_fetcher()->models_fetched());
-  models_and_features_store()->RunUpdateHostModelFeaturesCallback();
 
   EXPECT_EQ(OptimizationTargetDecision::kModelPredictionHoldback,
             prediction_manager()->ShouldTargetNavigation(

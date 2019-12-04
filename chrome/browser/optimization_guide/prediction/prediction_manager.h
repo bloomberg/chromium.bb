@@ -295,10 +295,6 @@ class PredictionManager
   // model features from the remote Optimization Guide Service.
   std::unique_ptr<OptimizationGuideStore> model_and_features_store_;
 
-  // A stored response from a model and host model features fetch used to hold
-  // models to be stored once host model features are processed and stored.
-  std::unique_ptr<proto::GetModelsResponse> get_models_response_data_to_store_;
-
   // The URL loader factory used for fetching model and host feature updates
   // from the remote Optimization Guide Service.
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
