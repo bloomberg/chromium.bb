@@ -86,7 +86,7 @@ void EmbeddedWorkerInstanceClientImpl::StartWorker(
       std::move(params->service_worker_receiver),
       std::move(params->controller_receiver), std::move(params->instance_host),
       std::move(params->provider_info), this, std::move(start_timing),
-      std::move(params->preference_watcher_request),
+      std::move(params->preference_watcher_receiver),
       std::move(params->subresource_loader_factories),
       std::move(params->subresource_loader_updater),
       params->script_url_to_skip_throttling, initiator_thread_task_runner_,

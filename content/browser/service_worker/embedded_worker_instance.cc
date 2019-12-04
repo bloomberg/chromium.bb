@@ -256,7 +256,7 @@ void SetupOnUIThread(
 
   // Create a RendererPreferenceWatcher to observe updates in the preferences.
   mojo::PendingRemote<blink::mojom::RendererPreferenceWatcher> watcher_remote;
-  params->preference_watcher_request =
+  params->preference_watcher_receiver =
       watcher_remote.InitWithNewPipeAndPassReceiver();
   GetContentClient()->browser()->RegisterRendererPreferenceWatcher(
       process_manager->browser_context(), std::move(watcher_remote));
