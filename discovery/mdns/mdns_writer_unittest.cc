@@ -5,6 +5,7 @@
 #include "discovery/mdns/mdns_writer.h"
 
 #include <memory>
+#include <vector>
 
 #include "discovery/mdns/testing/mdns_test_util.h"
 #include "gmock/gmock.h"
@@ -244,10 +245,10 @@ TEST(MdnsWriterTest, WriteAAAARecordRdata) {
 
 TEST(MdnsWriterTest, WriteAAAARecordRdata_InsufficientBuffer) {
   // clang-format off
-  constexpr uint8_t kAAAARdata[] = {
+  constexpr uint16_t kAAAARdata[] = {
       // ADDRESS = FE80:0000:0000:0000:0202:B3FF:FE1E:8329
-      0xfe, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-      0x02, 0x02, 0xb3, 0xff, 0xfe, 0x1e, 0x83, 0x29,
+      0xfe80, 0x0000, 0x0000, 0x0000,
+      0x0202, 0xb3ff, 0xfe1e, 0x8329,
   };
   // clang-format on
   TestWriteEntryInsufficientBuffer(AAAARecordRdata(IPAddress(kAAAARdata)));

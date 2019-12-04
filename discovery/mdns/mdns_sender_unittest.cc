@@ -4,6 +4,9 @@
 
 #include "discovery/mdns/mdns_sender.h"
 
+#include <memory>
+#include <vector>
+
 #include "discovery/mdns/mdns_records.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -137,11 +140,10 @@ TEST_F(MdnsSenderTest, SendUnicastIPv4) {
 }
 
 TEST_F(MdnsSenderTest, SendUnicastIPv6) {
-  constexpr uint8_t kIPv6AddressBytes[] = {
-      0xfe, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-      0x02, 0x02, 0xb3, 0xff, 0xfe, 0x1e, 0x83, 0x29,
+  constexpr uint16_t kIPv6AddressHextets[] = {
+      0xfe80, 0x0000, 0x0000, 0x0000, 0x0202, 0xb3ff, 0xfe1e, 0x8329,
   };
-  IPEndpoint endpoint{.address = IPAddress(kIPv6AddressBytes), .port = 31337};
+  IPEndpoint endpoint{.address = IPAddress(kIPv6AddressHextets), .port = 31337};
 
   std::unique_ptr<FakeUdpSocket> socket_info =
       FakeUdpSocket::CreateDefault(IPAddress::Version::kV6);

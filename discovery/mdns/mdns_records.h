@@ -5,10 +5,11 @@
 #ifndef DISCOVERY_MDNS_MDNS_RECORDS_H_
 #define DISCOVERY_MDNS_MDNS_RECORDS_H_
 
-#include <chrono>
+#include <chrono>  // NOLINT
 #include <functional>
 #include <initializer_list>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "absl/strings/string_view.h"
@@ -192,7 +193,8 @@ class AAAARecordRdata {
   }
 
  private:
-  IPAddress ipv6_address_{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+  IPAddress ipv6_address_{0x0000, 0x0000, 0x0000, 0x0000,
+                          0x0000, 0x0000, 0x0000, 0x0000};
 };
 
 // PTR record format (http://www.ietf.org/rfc/rfc1035.txt):

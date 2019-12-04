@@ -5,6 +5,7 @@
 #include "osp/impl/internal_services.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "osp/impl/discovery/mdns/mdns_responder_adapter_impl.h"
 #include "osp/impl/mdns_responder_service.h"
@@ -21,8 +22,7 @@ constexpr char kServiceProtocol[] = "_udp";
 const IPAddress kMulticastAddress{224, 0, 0, 251};
 const IPAddress kMulticastIPv6Address{
     // ff02::fb
-    0xff, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xfb,
+    0xff02, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x00fb,
 };
 const uint16_t kMulticastListeningPort = 5353;
 

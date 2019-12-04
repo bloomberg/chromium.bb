@@ -5,11 +5,11 @@
 #ifndef PLATFORM_BASE_ERROR_H_
 #define PLATFORM_BASE_ERROR_H_
 
+#include <cassert>
 #include <ostream>
 #include <string>
 #include <utility>
 
-#include "absl/types/variant.h"
 #include "platform/base/macros.h"
 
 namespace openscreen {
@@ -186,6 +186,7 @@ class Error {
 
   Code code() const { return code_; }
   const std::string& message() const { return message_; }
+  std::string& message() { return message_; }
 
   static const Error& None();
 
@@ -222,35 +223,89 @@ class ErrorOr {
     return error;
   }
 
-  ErrorOr(ErrorOr&& other) = default;
-  ErrorOr& operator=(ErrorOr&& other) = default;
+  ErrorOr(const ValueType& value) : value_(value), is_value_(true) {}  // NOLINT
+  ErrorOr(ValueType&& value) noexcept                                  // NOLINT
+      : value_(std::move(value)), is_value_(true) {}
 
-  ErrorOr(const ValueType& value) : variant_{value} {}  // NOLINT
-  ErrorOr(ValueType&& value) noexcept                   // NOLINT
-      : variant_{std::move(value)} {}
-
-  ErrorOr(Error error) : variant_{std::move(error)} {}  // NOLINT
-  ErrorOr(Error::Code code) : variant_{code} {}         // NOLINT
+  ErrorOr(const Error& error) : error_(error), is_value_(false) {  // NOLINT
+    assert(error_.code() != Error::Code::kNone);
+  }
+  ErrorOr(Error&& error) noexcept  // NOLINT
+      : error_(std::move(error)), is_value_(false) {
+    assert(error_.code() != Error::Code::kNone);
+  }
+  ErrorOr(Error::Code code) : error_(code), is_value_(false) {  // NOLINT
+    assert(error_.code() != Error::Code::kNone);
+  }
   ErrorOr(Error::Code code, std::string message)
-      : variant_{Error{code, std::move(message)}} {}
+      : error_(code, std::move(message)), is_value_(false) {
+    assert(error_.code() != Error::Code::kNone);
+  }
 
-  ~ErrorOr() = default;
+  ErrorOr(ErrorOr&& other) noexcept : is_value_(other.is_value_) {
+    // NB: Both |value_| and |error_| are uninitialized memory at this point!
+    // Unlike the other constructors, the compiler will not auto-generate
+    // constructor calls for either union member because neither appeared in
+    // this constructor's initializer list.
+    if (other.is_value_) {
+      new (&value_) ValueType(std::move(other.value_));
+    } else {
+      new (&error_) Error(std::move(other.error_));
+    }
+  }
 
-  bool is_error() const { return absl::holds_alternative<Error>(variant_); }
-  bool is_value() const { return !is_error(); }
+  ErrorOr& operator=(ErrorOr&& other) noexcept {
+    this->~ErrorOr<ValueType>();
+    new (this) ErrorOr<ValueType>(std::move(other));
+    return *this;
+  }
+
+  ~ErrorOr() {
+    // NB: |value_| or |error_| must be explicitly destroyed since the compiler
+    // will not auto-generate the destructor calls for union members.
+    if (is_value_) {
+      value_.~ValueType();
+    } else {
+      error_.~Error();
+    }
+  }
+
+  bool is_error() const { return !is_value_; }
+  bool is_value() const { return is_value_; }
 
   // Unlike Error, we CAN provide an operator bool here, since it is
   // more obvious to callers that ErrorOr<Foo> will be true if it's Foo.
-  operator bool() const { return is_value(); }
+  operator bool() const { return is_value_; }
 
-  const Error& error() const { return absl::get<Error>(variant_); }
-  Error& error() { return absl::get<Error>(variant_); }
+  const Error& error() const {
+    assert(!is_value_);
+    return error_;
+  }
+  Error& error() {
+    assert(!is_value_);
+    return error_;
+  }
 
-  const ValueType& value() const { return absl::get<ValueType>(variant_); }
-  ValueType& value() { return absl::get<ValueType>(variant_); }
+  const ValueType& value() const {
+    assert(is_value_);
+    return value_;
+  }
+  ValueType& value() {
+    assert(is_value_);
+    return value_;
+  }
 
  private:
-  absl::variant<Error, ValueType> variant_;
+  // Only one of these is an active member, determined by |is_value_|. Since
+  // they are union'ed, they must be explicitly constructed and destroyed.
+  union {
+    ValueType value_;
+    Error error_;
+  };
+
+  // If true, |value_| is initialized and active. Otherwise, |error_| is
+  // initialized and active.
+  const bool is_value_;
 };
 
 }  // namespace openscreen

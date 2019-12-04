@@ -5,7 +5,9 @@
 #ifndef PLATFORM_BASE_TRACE_LOGGING_TYPES_H_
 #define PLATFORM_BASE_TRACE_LOGGING_TYPES_H_
 
-#include "absl/types/optional.h"
+#include <stdint.h>
+
+#include <limits>
 
 namespace openscreen {
 namespace platform {

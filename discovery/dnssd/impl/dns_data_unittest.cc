@@ -4,7 +4,7 @@
 
 #include "discovery/dnssd/impl/dns_data.h"
 
-#include <chrono>
+#include <chrono>  // NOLINT
 
 #include "discovery/mdns/testing/mdns_test_util.h"
 #include "gmock/gmock.h"
@@ -66,24 +66,26 @@ class DnsDataTesting : public DnsData {
   }
 };
 
-static const IPAddress v4_address =
-    IPAddress(std::array<uint8_t, 4>{{192, 168, 0, 0}});
-static const IPAddress v6_address = IPAddress(std::array<uint8_t, 16>{
-    {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16}});
-static const std::string instance_name = "instance";
-static const std::string service_name = "_srv-name._udp";
-static const std::string domain_name = "local";
-static const InstanceKey key = {instance_name, service_name, domain_name};
-static constexpr uint16_t port_num = uint16_t{80};
+namespace {
+
+const uint8_t kV4AddressOctets[4] = {192, 168, 0, 0};
+const uint16_t kV6AddressHextets[8] = {0x0102, 0x0304, 0x0506, 0x0708,
+                                       0x090a, 0x0b0c, 0x0d0e, 0x0f10};
+const char kInstanceName[] = "instance";
+const char kServiceName[] = "_srv-name._udp";
+const char kDomainName[] = "local";
+constexpr uint16_t kServicePort = uint16_t{80};
+
+}  // namespace
 
 DnsDataTesting CreateFullyPopulatedData() {
-  InstanceKey instance{instance_name, service_name, domain_name};
+  InstanceKey instance{kInstanceName, kServiceName, kDomainName};
   DnsDataTesting data(instance);
-  DomainName target{instance_name, "_srv-name", "_udp", domain_name};
-  SrvRecordRdata srv(0, 0, port_num, target);
+  DomainName target{kInstanceName, "_srv-name", "_udp", kDomainName};
+  SrvRecordRdata srv(0, 0, kServicePort, target);
   TxtRecordRdata txt = MakeTxtRecord({"name=value", "boolValue"});
-  ARecordRdata a(v4_address);
-  AAAARecordRdata aaaa(v6_address);
+  ARecordRdata a{IPAddress(kV4AddressOctets)};
+  AAAARecordRdata aaaa{IPAddress(kV6AddressHextets)};
 
   data.set_srv(srv);
   data.set_txt(txt);
@@ -93,8 +95,8 @@ DnsDataTesting CreateFullyPopulatedData() {
   return data;
 }
 
-MdnsRecord CreateFullyPopulatedRecord(uint16_t port = port_num) {
-  DomainName target{instance_name, "_srv-name", "_udp", domain_name};
+MdnsRecord CreateFullyPopulatedRecord(uint16_t port = kServicePort) {
+  DomainName target{kInstanceName, "_srv-name", "_udp", kDomainName};
   auto type = DnsType::kSRV;
   auto clazz = DnsClass::kIN;
   auto record_type = RecordType::kShared;
@@ -112,13 +114,13 @@ TEST(DnsSdDnsDataTests, TestConvertDnsDataCorrectly) {
   DnsSdInstanceRecord record = result.value();
   ASSERT_TRUE(record.address_v4().has_value());
   ASSERT_TRUE(record.address_v6().has_value());
-  EXPECT_EQ(record.instance_id(), instance_name);
-  EXPECT_EQ(record.service_id(), service_name);
-  EXPECT_EQ(record.domain_id(), domain_name);
-  EXPECT_EQ(record.address_v4().value().port, port_num);
-  EXPECT_EQ(record.address_v4().value().address, v4_address);
-  EXPECT_EQ(record.address_v6().value().port, port_num);
-  EXPECT_EQ(record.address_v6().value().address, v6_address);
+  EXPECT_EQ(record.instance_id(), kInstanceName);
+  EXPECT_EQ(record.service_id(), kServiceName);
+  EXPECT_EQ(record.domain_id(), kDomainName);
+  EXPECT_EQ(record.address_v4().value().port, kServicePort);
+  EXPECT_EQ(record.address_v4().value().address, IPAddress(kV4AddressOctets));
+  EXPECT_EQ(record.address_v6().value().port, kServicePort);
+  EXPECT_EQ(record.address_v6().value().address, IPAddress(kV6AddressHextets));
   EXPECT_FALSE(record.txt().IsEmpty());
 }
 
@@ -158,8 +160,8 @@ TEST(DnsSdDnsDataTests, TestConvertDnsDataOneAddress) {
   DnsSdInstanceRecord record = result.value();
   EXPECT_FALSE(record.address_v6().has_value());
   ASSERT_TRUE(record.address_v4().has_value());
-  EXPECT_EQ(record.address_v4().value().port, port_num);
-  EXPECT_EQ(record.address_v4().value().address, v4_address);
+  EXPECT_EQ(record.address_v4().value().port, kServicePort);
+  EXPECT_EQ(record.address_v4().value().address, IPAddress(kV4AddressOctets));
 
   // Address v6.
   data = CreateFullyPopulatedData();
@@ -170,8 +172,8 @@ TEST(DnsSdDnsDataTests, TestConvertDnsDataOneAddress) {
   record = result.value();
   EXPECT_FALSE(record.address_v4().has_value());
   ASSERT_TRUE(record.address_v6().has_value());
-  EXPECT_EQ(record.address_v6().value().port, port_num);
-  EXPECT_EQ(record.address_v6().value().address, v6_address);
+  EXPECT_EQ(record.address_v6().value().port, kServicePort);
+  EXPECT_EQ(record.address_v6().value().address, IPAddress(kV6AddressHextets));
 }
 
 TEST(DnsSdDnsDataTests, TestConvertDnsDataBadTxt) {
@@ -183,19 +185,19 @@ TEST(DnsSdDnsDataTests, TestConvertDnsDataBadTxt) {
 
 // ApplyDataRecordChange tests.
 TEST(DnsSdDnsDataTests, TestApplyRecordChanges) {
-  MdnsRecord record = CreateFullyPopulatedRecord(port_num);
-  InstanceKey instance{instance_name, service_name, domain_name};
+  MdnsRecord record = CreateFullyPopulatedRecord(kServicePort);
+  InstanceKey instance{kInstanceName, kServiceName, kDomainName};
   DnsDataTesting data(instance);
   EXPECT_TRUE(
       data.ApplyDataRecordChange(record, RecordChangedEvent::kCreated).ok());
   ASSERT_TRUE(data.srv().has_value());
-  EXPECT_EQ(data.srv().value().port(), port_num);
+  EXPECT_EQ(data.srv().value().port(), kServicePort);
 
   record = CreateFullyPopulatedRecord(234);
   EXPECT_FALSE(
       data.ApplyDataRecordChange(record, RecordChangedEvent::kCreated).ok());
   ASSERT_TRUE(data.srv().has_value());
-  EXPECT_EQ(data.srv().value().port(), port_num);
+  EXPECT_EQ(data.srv().value().port(), kServicePort);
 
   record = CreateFullyPopulatedRecord(345);
   EXPECT_TRUE(

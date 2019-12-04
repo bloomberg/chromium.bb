@@ -35,7 +35,7 @@ TEST(SocketIntegrationTest, ResolvesLocalEndpoint_IPv4) {
 // successfully Bind(), and that the operating system will return the
 // auto-assigned socket name (i.e., the local endpoint's port will not be zero).
 TEST(SocketIntegrationTest, ResolvesLocalEndpoint_IPv6) {
-  const uint8_t kIpV6AddrAny[16] = {};
+  const uint16_t kIpV6AddrAny[8] = {};
   FakeClock clock(Clock::now());
   FakeTaskRunner task_runner(&clock);
   FakeUdpSocket::MockClient client;

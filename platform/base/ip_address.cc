@@ -4,11 +4,16 @@
 
 #include "platform/base/ip_address.h"
 
+#include <algorithm>
 #include <cassert>
+#include <cctype>
+#include <cinttypes>
+#include <cstdio>
 #include <cstring>
 #include <iomanip>
-
-#include "absl/types/optional.h"
+#include <iterator>
+#include <sstream>
+#include <utility>
 
 namespace openscreen {
 
@@ -35,31 +40,55 @@ IPAddress::IPAddress(Version version, const uint8_t* b) : version_(version) {
 }
 IPAddress::IPAddress(uint8_t b1, uint8_t b2, uint8_t b3, uint8_t b4)
     : version_(Version::kV4), bytes_{{b1, b2, b3, b4}} {}
-IPAddress::IPAddress(const std::array<uint8_t, 16>& bytes)
-    : version_(Version::kV6), bytes_(bytes) {}
-IPAddress::IPAddress(const uint8_t (&b)[16])
+
+IPAddress::IPAddress(const std::array<uint16_t, 8>& hextets)
+    : IPAddress(hextets[0],
+                hextets[1],
+                hextets[2],
+                hextets[3],
+                hextets[4],
+                hextets[5],
+                hextets[6],
+                hextets[7]) {}
+
+IPAddress::IPAddress(const uint16_t (&hextets)[8])
+    : IPAddress(hextets[0],
+                hextets[1],
+                hextets[2],
+                hextets[3],
+                hextets[4],
+                hextets[5],
+                hextets[6],
+                hextets[7]) {}
+
+IPAddress::IPAddress(uint16_t h0,
+                     uint16_t h1,
+                     uint16_t h2,
+                     uint16_t h3,
+                     uint16_t h4,
+                     uint16_t h5,
+                     uint16_t h6,
+                     uint16_t h7)
     : version_(Version::kV6),
-      bytes_{{b[0], b[1], b[2], b[3], b[4], b[5], b[6], b[7], b[8], b[9], b[10],
-              b[11], b[12], b[13], b[14], b[15]}} {}
-IPAddress::IPAddress(uint8_t b1,
-                     uint8_t b2,
-                     uint8_t b3,
-                     uint8_t b4,
-                     uint8_t b5,
-                     uint8_t b6,
-                     uint8_t b7,
-                     uint8_t b8,
-                     uint8_t b9,
-                     uint8_t b10,
-                     uint8_t b11,
-                     uint8_t b12,
-                     uint8_t b13,
-                     uint8_t b14,
-                     uint8_t b15,
-                     uint8_t b16)
-    : version_(Version::kV6),
-      bytes_{{b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11, b12, b13, b14, b15,
-              b16}} {}
+      bytes_{{
+          static_cast<uint8_t>(h0 >> 8),
+          static_cast<uint8_t>(h0),
+          static_cast<uint8_t>(h1 >> 8),
+          static_cast<uint8_t>(h1),
+          static_cast<uint8_t>(h2 >> 8),
+          static_cast<uint8_t>(h2),
+          static_cast<uint8_t>(h3 >> 8),
+          static_cast<uint8_t>(h3),
+          static_cast<uint8_t>(h4 >> 8),
+          static_cast<uint8_t>(h4),
+          static_cast<uint8_t>(h5 >> 8),
+          static_cast<uint8_t>(h5),
+          static_cast<uint8_t>(h6 >> 8),
+          static_cast<uint8_t>(h6),
+          static_cast<uint8_t>(h7 >> 8),
+          static_cast<uint8_t>(h7),
+      }} {}
+
 IPAddress::IPAddress(const IPAddress& o) noexcept = default;
 IPAddress::IPAddress(IPAddress&& o) noexcept = default;
 IPAddress& IPAddress::operator=(const IPAddress& o) noexcept = default;
@@ -103,113 +132,75 @@ void IPAddress::CopyToV6(uint8_t x[16]) const {
 
 // static
 ErrorOr<IPAddress> IPAddress::ParseV4(const std::string& s) {
-  if (s.size() > 0 && s[0] == '.')
+  int octets[4];
+  int chars_scanned;
+  if (sscanf(s.c_str(), "%3d.%3d.%3d.%3d%n", &octets[0], &octets[1], &octets[2],
+             &octets[3], &chars_scanned) != 4 ||
+      chars_scanned != static_cast<int>(s.size()) ||
+      std::any_of(s.begin(), s.end(), [](char c) { return std::isspace(c); }) ||
+      std::any_of(std::begin(octets), std::end(octets),
+                  [](int octet) { return octet < 0 || octet > 255; })) {
     return Error::Code::kInvalidIPV4Address;
-
-  IPAddress address;
-  uint16_t next_octet = 0;
-  int i = 0;
-  bool previous_dot = false;
-  for (auto c : s) {
-    if (c == '.') {
-      if (previous_dot) {
-        return Error::Code::kInvalidIPV4Address;
-      }
-      address.bytes_[i++] = static_cast<uint8_t>(next_octet);
-      next_octet = 0;
-      previous_dot = true;
-      if (i > 3)
-        return Error::Code::kInvalidIPV4Address;
-
-      continue;
-    }
-    previous_dot = false;
-    if (!std::isdigit(c))
-      return Error::Code::kInvalidIPV4Address;
-
-    next_octet = next_octet * 10 + (c - '0');
-    if (next_octet > 255)
-      return Error::Code::kInvalidIPV4Address;
   }
-  if (previous_dot)
-    return Error::Code::kInvalidIPV4Address;
-
-  if (i != 3)
-    return Error::Code::kInvalidIPV4Address;
-
-  address.bytes_[i] = static_cast<uint8_t>(next_octet);
-  address.version_ = Version::kV4;
-  return address;
+  return IPAddress(octets[0], octets[1], octets[2], octets[3]);
 }
+
+namespace {
+
+// Returns the zero-expansion of a double-colon in |s| if |s| is a
+// well-formatted IPv6 address. If |s| is ill-formatted, returns *any* string
+// that is ill-formatted.
+std::string ExpandIPv6DoubleColon(const std::string& s) {
+  constexpr char kDoubleColon[] = "::";
+  const size_t double_colon_position = s.find(kDoubleColon);
+  if (double_colon_position == std::string::npos) {
+    return s;  // Nothing to expand.
+  }
+  if (double_colon_position != s.rfind(kDoubleColon)) {
+    return {};  // More than one occurrence of double colons is illegal.
+  }
+
+  std::ostringstream expanded;
+  const int num_single_colons = std::count(s.begin(), s.end(), ':') - 2;
+  int num_zero_groups_to_insert = 8 - num_single_colons;
+  if (double_colon_position != 0) {
+    // abcd:0123:4567::f000:1
+    // ^^^^^^^^^^^^^^^
+    expanded << s.substr(0, double_colon_position + 1);
+    --num_zero_groups_to_insert;
+  }
+  if (double_colon_position != (s.size() - 2)) {
+    --num_zero_groups_to_insert;
+  }
+  while (--num_zero_groups_to_insert > 0) {
+    expanded << "0:";
+  }
+  expanded << '0';
+  if (double_colon_position != (s.size() - 2)) {
+    // abcd:0123:4567::f000:1
+    //                ^^^^^^^
+    expanded << s.substr(double_colon_position + 1);
+  }
+  return expanded.str();
+}
+
+}  // namespace
 
 // static
 ErrorOr<IPAddress> IPAddress::ParseV6(const std::string& s) {
-  if (s.size() > 1 && s[0] == ':' && s[1] != ':')
-    return Error::Code::kInvalidIPV6Address;
-
-  uint16_t next_value = 0;
-  uint8_t values[16];
-  int i = 0;
-  int num_previous_colons = 0;
-  absl::optional<int> double_colon_index = absl::nullopt;
-  for (auto c : s) {
-    if (c == ':') {
-      ++num_previous_colons;
-      if (num_previous_colons == 2) {
-        if (double_colon_index) {
-          return Error::Code::kInvalidIPV6Address;
-        }
-        double_colon_index = i;
-      } else if (i >= 15 || num_previous_colons > 2) {
-        return Error::Code::kInvalidIPV6Address;
-      } else {
-        values[i++] = static_cast<uint8_t>(next_value >> 8);
-        values[i++] = static_cast<uint8_t>(next_value & 0xff);
-        next_value = 0;
-      }
-    } else {
-      num_previous_colons = 0;
-      uint8_t x = 0;
-      if (c >= '0' && c <= '9') {
-        x = c - '0';
-      } else if (c >= 'a' && c <= 'f') {
-        x = c - 'a' + 10;
-      } else if (c >= 'A' && c <= 'F') {
-        x = c - 'A' + 10;
-      } else {
-        return Error::Code::kInvalidIPV6Address;
-      }
-      if (next_value & 0xf000) {
-        return Error::Code::kInvalidIPV6Address;
-      } else {
-        next_value = static_cast<uint16_t>(next_value * 16 + x);
-      }
-    }
-  }
-  if (num_previous_colons == 1)
-    return Error::Code::kInvalidIPV6Address;
-
-  if (i >= 15)
-    return Error::Code::kInvalidIPV6Address;
-
-  values[i++] = static_cast<uint8_t>(next_value >> 8);
-  values[i] = static_cast<uint8_t>(next_value & 0xff);
-  if (!((i == 15 && !double_colon_index) || (i < 14 && double_colon_index))) {
+  const std::string scan_input = ExpandIPv6DoubleColon(s);
+  uint16_t hextets[8];
+  int chars_scanned;
+  if (sscanf(scan_input.c_str(),
+             "%4" SCNx16 ":%4" SCNx16 ":%4" SCNx16 ":%4" SCNx16 ":%4" SCNx16
+             ":%4" SCNx16 ":%4" SCNx16 ":%4" SCNx16 "%n",
+             &hextets[0], &hextets[1], &hextets[2], &hextets[3], &hextets[4],
+             &hextets[5], &hextets[6], &hextets[7], &chars_scanned) != 8 ||
+      chars_scanned != static_cast<int>(scan_input.size()) ||
+      std::any_of(s.begin(), s.end(), [](char c) { return std::isspace(c); })) {
     return Error::Code::kInvalidIPV6Address;
   }
-
-  IPAddress address;
-  for (int j = 15; j >= 0;) {
-    if (double_colon_index && (i == double_colon_index)) {
-      address.bytes_[j--] = values[i--];
-      while (j > i)
-        address.bytes_[j--] = 0;
-    } else {
-      address.bytes_[j--] = values[i--];
-    }
-  }
-  address.version_ = Version::kV6;
-  return address;
+  return IPAddress(hextets);
 }
 
 bool operator==(const IPEndpoint& a, const IPEndpoint& b) {

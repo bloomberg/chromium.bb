@@ -4,6 +4,8 @@
 
 #include "osp/impl/service_listener_impl.h"
 
+#include <algorithm>
+
 #include "platform/base/error.h"
 #include "util/logging.h"
 

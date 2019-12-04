@@ -4,6 +4,8 @@
 
 #include "discovery/dnssd/testing/fake_dns_record_factory.h"
 
+#include <utility>
+
 namespace openscreen {
 namespace discovery {
 
@@ -19,38 +21,29 @@ MdnsRecord FakeDnsRecordFactory::CreateFullyPopulatedSrvRecord(uint16_t port) {
 }
 
 // static
-const IPAddress FakeDnsRecordFactory::kV4Address = IPAddress(192, 168, 0, 0);
+constexpr uint16_t FakeDnsRecordFactory::kPortNum;
 
 // static
-const IPAddress FakeDnsRecordFactory::kV6Address =
-    IPAddress(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16);
+const uint8_t FakeDnsRecordFactory::kV4AddressOctets[4] = {192, 168, 0, 0};
 
 // static
-const IPEndpoint FakeDnsRecordFactory::kV4Endpoint{
-    FakeDnsRecordFactory::kV4Address, FakeDnsRecordFactory::kPortNum};
+const uint16_t FakeDnsRecordFactory::kV6AddressHextets[8] = {
+    0x0102, 0x0304, 0x0506, 0x0708, 0x090a, 0x0b0c, 0x0d0e, 0x0f10};
 
 // static
-const IPEndpoint FakeDnsRecordFactory::kV6Endpoint{
-    FakeDnsRecordFactory::kV6Address, FakeDnsRecordFactory::kPortNum};
+const char FakeDnsRecordFactory::kInstanceName[] = "instance";
 
 // static
-const std::string FakeDnsRecordFactory::kInstanceName = "instance";
+const char FakeDnsRecordFactory::kServiceName[] = "_srv-name._udp";
 
 // static
-const std::string FakeDnsRecordFactory::kServiceName = "_srv-name._udp";
+const char FakeDnsRecordFactory::kServiceNameProtocolPart[] = "_udp";
 
 // static
-const std::string FakeDnsRecordFactory::kServiceNameProtocolPart = "_udp";
+const char FakeDnsRecordFactory::kServiceNameServicePart[] = "_srv-name";
 
 // static
-const std::string FakeDnsRecordFactory::kServiceNameServicePart = "_srv-name";
-
-// static
-const std::string FakeDnsRecordFactory::kDomainName = "local";
-
-// static
-const InstanceKey FakeDnsRecordFactory::kKey =
-    InstanceKey(kInstanceName, kServiceName, kDomainName);
+const char FakeDnsRecordFactory::kDomainName[] = "local";
 
 }  // namespace discovery
 }  // namespace openscreen

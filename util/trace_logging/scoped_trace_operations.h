@@ -7,7 +7,9 @@
 
 #include <atomic>
 #include <cstring>
+#include <memory>
 #include <stack>
+#include <utility>
 #include <vector>
 
 #include "build/config/features.h"

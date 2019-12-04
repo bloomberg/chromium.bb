@@ -5,6 +5,8 @@
 #include "discovery/dnssd/impl/querier_impl.h"
 
 #include <memory>
+#include <string>
+#include <utility>
 
 #include "absl/strings/str_join.h"
 #include "absl/strings/str_split.h"
@@ -52,8 +54,8 @@ ARecordRdata CreateARecord() {
 }
 
 AAAARecordRdata CreateAAAARecord() {
-  return AAAARecordRdata(
-      IPAddress{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16});
+  return AAAARecordRdata(IPAddress(0x0102, 0x0304, 0x0506, 0x0708, 0x090a,
+                                   0x0b0c, 0x0d0e, 0x0f10));
 }
 
 MdnsRecord CreatePtrRecord(const std::string& instance,
@@ -94,7 +96,7 @@ using testing::StrictMock;
 
 class DnsDataAccessor {
  public:
-  DnsDataAccessor(DnsData* data) : data_(data) {}
+  explicit DnsDataAccessor(DnsData* data) : data_(data) {}
 
   void set_srv(absl::optional<SrvRecordRdata> record) { data_->srv_ = record; }
   void set_txt(absl::optional<TxtRecordRdata> record) { data_->txt_ = record; }

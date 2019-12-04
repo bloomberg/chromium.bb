@@ -143,8 +143,8 @@ TEST_F(CastSocketTest, SanitizedAddress) {
   EXPECT_EQ(result1[1], 9u);
 
   FakeCastSocket v6_socket(IPEndpoint{{1, 2, 3, 4}, 1025},
-                           IPEndpoint{{24, 25, 26, 27, 28, 29, 30, 31, 32, 123,
-                                       124, 125, 126, 127, 128, 129},
+                           IPEndpoint{{0x1819, 0x1a1b, 0x1c1d, 0x1e1f, 0x207b,
+                                       0x7c7d, 0x7e7f, 0x8081},
                                       4321});
   std::array<uint8_t, 2> result2 = v6_socket.socket.GetSanitizedIpAddress();
   EXPECT_EQ(result2[0], 128);

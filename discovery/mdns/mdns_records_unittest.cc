@@ -215,38 +215,34 @@ TEST(MdnsARecordRdataTest, CopyAndMove) {
 }
 
 TEST(MdnsAAAARecordRdataTest, Construct) {
-  constexpr uint8_t kIPv6AddressBytes1[] = {
-      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+  constexpr uint16_t kIPv6AddressHextets1[] = {
+      0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
   };
-  constexpr uint8_t kIPv6AddressBytes2[] = {
-      0xfe, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-      0x02, 0x02, 0xb3, 0xff, 0xfe, 0x1e, 0x83, 0x29,
+  constexpr uint16_t kIPv6AddressHextets2[] = {
+      0xfe80, 0x0000, 0x0000, 0x0000, 0x0202, 0xb3ff, 0xfe1e, 0x8329,
   };
 
-  IPAddress address1(kIPv6AddressBytes1);
+  IPAddress address1(kIPv6AddressHextets1);
   AAAARecordRdata rdata1;
   EXPECT_EQ(rdata1.MaxWireSize(), UINT64_C(18));
   EXPECT_EQ(rdata1.ipv6_address(), address1);
 
-  IPAddress address2(kIPv6AddressBytes2);
+  IPAddress address2(kIPv6AddressHextets2);
   AAAARecordRdata rdata2(address2);
   EXPECT_EQ(rdata2.MaxWireSize(), UINT64_C(18));
   EXPECT_EQ(rdata2.ipv6_address(), address2);
 }
 
 TEST(MdnsAAAARecordRdataTest, Compare) {
-  constexpr uint8_t kIPv6AddressBytes1[] = {
-      0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
-      0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F,
+  constexpr uint16_t kIPv6AddressHextets1[] = {
+      0x0001, 0x0203, 0x0405, 0x0607, 0x0809, 0x0A0B, 0x0C0D, 0x0E0F,
   };
-  constexpr uint8_t kIPv6AddressBytes2[] = {
-      0xfe, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-      0x02, 0x02, 0xb3, 0xff, 0xfe, 0x1e, 0x83, 0x29,
+  constexpr uint16_t kIPv6AddressHextets2[] = {
+      0xfe80, 0x0000, 0x0000, 0x0000, 0x0202, 0xb3ff, 0xfe1e, 0x8329,
   };
 
-  IPAddress address1(kIPv6AddressBytes1);
-  IPAddress address2(kIPv6AddressBytes2);
+  IPAddress address1(kIPv6AddressHextets1);
+  IPAddress address2(kIPv6AddressHextets2);
   AAAARecordRdata rdata1(address1);
   AAAARecordRdata rdata2(address1);
   AAAARecordRdata rdata3(address2);
@@ -256,11 +252,10 @@ TEST(MdnsAAAARecordRdataTest, Compare) {
 }
 
 TEST(MdnsAAAARecordRdataTest, CopyAndMove) {
-  constexpr uint8_t kIPv6AddressBytes[] = {
-      0xfe, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-      0x02, 0x02, 0xb3, 0xff, 0xfe, 0x1e, 0x83, 0x29,
+  constexpr uint16_t kIPv6AddressHextets[] = {
+      0xfe80, 0x0000, 0x0000, 0x0000, 0x0202, 0xb3ff, 0xfe1e, 0x8329,
   };
-  TestCopyAndMove(AAAARecordRdata(IPAddress(kIPv6AddressBytes)));
+  TestCopyAndMove(AAAARecordRdata(IPAddress(kIPv6AddressHextets)));
 }
 
 TEST(MdnsPtrRecordRdataTest, Construct) {

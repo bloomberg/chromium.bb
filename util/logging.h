@@ -6,6 +6,7 @@
 #define UTIL_LOGGING_H_
 
 #include <sstream>
+#include <utility>
 
 #include "platform/api/logging.h"
 
@@ -21,7 +22,7 @@ class LogMessage {
       : level_(level), file_(file), line_(line) {}
 
   ~LogMessage() {
-    LogWithLevel(level_, file_, line_, stream_.str());
+    LogWithLevel(level_, file_, line_, std::move(stream_));
     if (level_ == LogLevel::kFatal) {
       Break();
     }
@@ -37,7 +38,7 @@ class LogMessage {
   // creating a copy should be safe.
   const char* const file_;
   const int line_;
-  std::ostringstream stream_;
+  std::stringstream stream_;
 };
 
 // Used by the OSP_LAZY_STREAM macro to return void after evaluating an ostream

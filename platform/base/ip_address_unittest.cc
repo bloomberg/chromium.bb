@@ -103,14 +103,16 @@ TEST(IPAddressTest, V4ParseFailures) {
 
 TEST(IPAddressTest, V6Constructors) {
   uint8_t bytes[16] = {};
-  IPAddress address1(std::array<uint8_t, 16>{
-      {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16}});
+  IPAddress address1(std::array<uint16_t, 8>{
+      {0x0102, 0x0304, 0x0506, 0x0708, 0x090a, 0x0b0c, 0x0d0e, 0x0f10}});
   address1.CopyToV6(bytes);
   EXPECT_THAT(bytes, ElementsAreArray({1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12,
                                        13, 14, 15, 16}));
 
   const uint8_t x[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
-  IPAddress address2(x);
+  const uint16_t hextets[] = {0x0102, 0x0304, 0x0506, 0x0708,
+                              0x090a, 0x0b0c, 0x0d0e, 0x0f10};
+  IPAddress address2(hextets);
   address2.CopyToV6(bytes);
   EXPECT_THAT(bytes, ElementsAreArray(x));
 
@@ -118,7 +120,8 @@ TEST(IPAddressTest, V6Constructors) {
   address3.CopyToV6(bytes);
   EXPECT_THAT(bytes, ElementsAreArray(x));
 
-  IPAddress address4(16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1);
+  IPAddress address4(0x100f, 0x0e0d, 0x0c0b, 0x0a09, 0x0807, 0x0605, 0x0403,
+                     0x0201);
   address4.CopyToV6(bytes);
   EXPECT_THAT(bytes, ElementsAreArray({16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6,
                                        5, 4, 3, 2, 1}));
@@ -135,11 +138,11 @@ TEST(IPAddressTest, V6ComparisonAndBoolean) {
   EXPECT_FALSE(address1);
 
   uint8_t x[] = {16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1};
-  IPAddress address2(x);
+  IPAddress address2(IPAddress::Version::kV6, x);
   EXPECT_NE(address1, address2);
   EXPECT_TRUE(address2);
 
-  IPAddress address3(x);
+  IPAddress address3(IPAddress::Version::kV6, x);
   EXPECT_EQ(address2, address3);
   EXPECT_TRUE(address3);
 
@@ -225,6 +228,12 @@ TEST(IPAddressTest, V6ParseFailures) {
       << "too few values should fail to parse";
   EXPECT_FALSE(IPAddress::Parse("a:b:c:d:e:f:0:1:2:3:4:5:6:7:8:9:a"))
       << "too many values should fail to parse";
+  EXPECT_FALSE(IPAddress::Parse("1:2:3:4:5:6:7::8"))
+      << "too many values around double-colon should fail to parse";
+  EXPECT_FALSE(IPAddress::Parse("1:2:3:4:5:6:7:8::"))
+      << "too many values before double-colon should fail to parse";
+  EXPECT_FALSE(IPAddress::Parse("::1:2:3:4:5:6:7:8"))
+      << "too many values after double-colon should fail to parse";
   EXPECT_FALSE(IPAddress::Parse("abcd1::dbca"))
       << "value > 0xffff should fail to parse";
   EXPECT_FALSE(IPAddress::Parse("::abcd::dbca"))

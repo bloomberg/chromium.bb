@@ -33,12 +33,11 @@ namespace discovery {
 // be forwarded outside local network. See RFC 6762, section 3.
 constexpr uint8_t kDefaultMulticastGroupIPv4[4] = {224, 0, 0, 251};
 
-// IPv6 group address for joining mDNS multicast group, given as byte array in
-// network-order. This is a link-local multicast address, so messages will not
-// be forwarded outside local network. See RFC 6762, section 3.
-constexpr uint8_t kDefaultMulticastGroupIPv6[16] = {
-    0xFF, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFB,
+// IPv6 group address for joining mDNS multicast group. This is a link-local
+// multicast address, so messages will not be forwarded outside local network.
+// See RFC 6762, section 3.
+constexpr uint16_t kDefaultMulticastGroupIPv6[8] = {
+    0xFF02, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x00FB,
 };
 
 // IPv4 group address for joining cast-specific site-local mDNS multicast group,
