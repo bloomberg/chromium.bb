@@ -12478,6 +12478,10 @@ Called by update_net_error_codes.py.-->
   <int value="32" label="Error: ClientAppMetadata fetch failed"/>
   <int value="33" label="Error: Timeout waiting for GCM registration"/>
   <int value="34" label="Error: Timeout waiting for ClientAppMetadata"/>
+  <int value="35" label="Error: Failed to create user key pair"/>
+  <int value="36" label="Error: Failed to create legacy master key"/>
+  <int value="37"
+      label="Error: Failed to create DeviceSync:BetterTogether key"/>
 </enum>
 
 <enum name="CryptAuthV2EnrollmentUserKeyPairState">
