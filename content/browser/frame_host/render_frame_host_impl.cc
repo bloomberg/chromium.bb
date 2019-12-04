@@ -82,7 +82,6 @@
 #include "content/browser/portal/portal.h"
 #include "content/browser/presentation/presentation_service_impl.h"
 #include "content/browser/push_messaging/push_messaging_manager.h"
-#include "content/browser/quota_dispatcher_host.h"
 #include "content/browser/renderer_host/dip_util.h"
 #include "content/browser/renderer_host/input/input_router.h"
 #include "content/browser/renderer_host/input/timeout_monitor.h"
@@ -4660,10 +4659,6 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
       base::BindRepeating(&RenderFrameHostImpl::CreateAudioOutputStreamFactory,
                           base::Unretained(this)));
 
-  // TODO(crbug.com/775792): Move to RendererInterfaceBinders.
-  registry_->AddInterface(base::BindRepeating(
-      &QuotaDispatcherHost::CreateForFrame, GetProcess(), routing_id_));
-
   file_system_manager_.reset(new FileSystemManagerImpl(
       GetProcess()->GetID(),
       GetProcess()->GetStoragePartition()->GetFileSystemContext(),
@@ -6638,8 +6633,7 @@ void RenderFrameHostImpl::GetInterface(
   if (!registry_ ||
       !registry_->TryBindInterface(interface_name, &interface_pipe)) {
     delegate_->OnInterfaceRequest(this, interface_name, &interface_pipe);
-    if (interface_pipe.is_valid() &&
-        !TryBindFrameInterface(interface_name, &interface_pipe, this)) {
+    if (interface_pipe.is_valid()) {
       GetContentClient()->browser()->BindInterfaceRequestFromFrame(
           this, interface_name, std::move(interface_pipe));
     }

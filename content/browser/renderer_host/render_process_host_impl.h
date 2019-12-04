@@ -577,6 +577,14 @@ class CONTENT_EXPORT RenderProcessHostImpl
       mojo::PendingReceiver<media::mojom::VideoDecodePerfHistory> receiver)
       override;
 
+  // Binds |receiver| to the VideoDecodePerfHistory instance owned by the render
+  // process host, and is used by frames and workers via BrowserInterfaceBroker.
+  void BindQuotaDispatcherHost(
+      int render_frame_id,
+      const url::Origin& origin,
+      mojo::PendingReceiver<blink::mojom::QuotaDispatcherHost> receiver)
+      override;
+
   // Binds |receiver| to the LockManager owned by |storage_partition_impl_|.
   // |receiver| belongs to a frame or worker at |origin| hosted by this process.
   // If it belongs to a frame, |render_frame_id| identifies it, otherwise it is
