@@ -1174,7 +1174,8 @@ after fixing the license.""" % (license_name, '\n'.join(set(stock + custom))))
                            pkg.fullnamerev)
 
     env = {
-        'name': '%s-%s' % (pkg.name, pkg.version),
+        'name': pkg.name,
+        'namerev': '%s-%s' % (pkg.name, pkg.version),
         'url': cgi.escape(pkg.homepages[0]) if pkg.homepages else '',
         'licenses_txt': cgi.escape('\n'.join(license_text)) or '',
         'licenses_ptr': '\n'.join(license_pointers) or '',
