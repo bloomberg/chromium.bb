@@ -2305,6 +2305,7 @@
           '--additional-driver-flag=--no-sandbox',
           '--additional-env-var=LLVM_PROFILE_FILE=${ISOLATED_OUTDIR}/profraw/default-%2m.profraw',
         ],
+        'linux_args': [ '--fuzzy-diff', ],
         'isolate_name': 'blink_web_tests_exparchive',
         'merge': {
           'args': [
@@ -2612,6 +2613,7 @@
         'args': [
           '--num-retries=3',
         ],
+        'linux_args': [ '--fuzzy-diff', ],
         'isolate_name': 'blink_web_tests_exparchive',
         'merge': {
           'args': [
@@ -2646,6 +2648,7 @@
         'args': [
           '--num-retries=3',
         ],
+        'linux_args': [ '--fuzzy-diff', ],
         'isolate_name': 'blink_web_tests_exparchive',
         'merge': {
           'args': [
@@ -2832,6 +2835,7 @@
         'args': [
           '--num-retries=3',
         ],
+        'linux_args': [ '--fuzzy-diff', ],
         'isolate_name': 'blink_web_tests_exparchive',
         'merge': {
           'args': [
@@ -4158,6 +4162,7 @@
         'linux_args': [
           '--no-xvfb',
           '--additional-driver-flag=--disable-gpu-sandbox',
+          '--fuzzy-diff',
         ],
         'merge': {
           'args': [
@@ -4310,6 +4315,7 @@
           # passed, but 0 times when '--test-list' is passed. We want to always
           # retry 3 times, so we explicitly specify it.
           '--num-retries=3',
+          '--fuzzy-diff',
         ],
         'isolate_name': 'blink_web_tests_exparchive',
         'merge': {
@@ -4784,23 +4790,15 @@
     },
 
     'skia_renderer_isolated_scripts': {
-      'skia_renderer_swiftshader_blink_web_tests': {
+      'non_skia_renderer_swiftshader_blink_web_tests': {
         # layout test failures are retried 3 times when '--test-list' is not
         # passed, but 0 times when '--test-list' is passed. We want to always
         # retry 3 times, so we explicitly specify it.
         'args': [
           '--num-retries=3',
-          '--additional-driver-flag=--enable-gpu-rasterization',
-          '--additional-driver-flag=--enable-features=UseSkiaRenderer',
-          '--additional-driver-flag=--use-gl=swiftshader',
-          '--additional-driver-flag=--force-gpu-rasterization',
-          '--additional-driver-flag=--enable-oop-rasterization',
-          '--fuzzy-diff',
+          '--additional-driver-flag=--disable-features=UseSkiaRenderer',
           '--skipped=always',
           '--test-list=../../testing/buildbot/filters/gpu.skiarenderer_vulkan_blink_web_tests.filter',
-          '--additional-expectations=../../third_party/blink/web_tests/FlagExpectations/enable-features=UseSkiaRenderer',
-          '--additional-expectations=../../third_party/blink/web_tests/FlagExpectations/enable-gpu-rasterization',
-          '--additional-expectations=../../third_party/blink/web_tests/FlagExpectations/use-gl=swiftshader',
         ],
         'isolate_name': 'blink_web_tests_exparchive',
         'merge': {

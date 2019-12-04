@@ -2035,6 +2035,7 @@
       'Linux Tests': {
         "args": [
           "--additional-env-var=LLVM_PROFILE_FILE=${ISOLATED_OUTDIR}/profraw/default-%2m.profraw",
+          "--fuzzy-diff",
         ],
       },
       'Linux Tests (dbg)(1)': {

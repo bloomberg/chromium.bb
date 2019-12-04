@@ -6020,6 +6020,22 @@ crbug.com/1006759 http/tests/devtools/sources/debugger-ui/continue-to-location-m
 crbug.com/1006759 http/tests/devtools/sources/debugger-ui/popover-for-spread-operator.js [ Pass Failure ]
 crbug.com/1006759 http/tests/devtools/editor/php-highlighter.js [ Pass Failure ]
 
+# Temporary SkiaRenderer regressions
+crbug.com/1029941 [ Linux ] css3/filters/backdrop-filter-boundary.html [ Failure ]
+crbug.com/1029941 [ Linux ] css3/filters/backdrop-filter-edge-clipping-2.html [ Failure ]
+crbug.com/1029941 [ Linux ] css3/filters/backdrop-filter-edge-pixels.html [ Failure ]
+crbug.com/1029941 [ Linux ] external/wpt/css/css-paint-api/background-image-alpha.https.html [ Failure ]
+crbug.com/1029941 [ Linux ] external/wpt/css/filter-effects/backdrop-filter-edge-clipping.html [ Failure ]
+crbug.com/1029941 [ Linux ] transforms/3d/point-mapping/3d-point-mapping-deep.html [ Failure ]
+crbug.com/1029941 [ Linux ] virtual/cascade/external/wpt/css/css-paint-api/background-image-alpha.https.html [ Failure ]
+crbug.com/1029941 [ Linux ] virtual/disable-deferred-rendering/fast/canvas/imagebitmap/transferFromImageBitmap-no-alpha.html [ Failure ]
+crbug.com/1029941 [ Linux ] virtual/exotic-color-space/images/yuv-decode-eligible/color-profile-layer-filter.html [ Failure ]
+crbug.com/1029941 [ Linux ] virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/background-image-alpha.https.html [ Failure ]
+crbug.com/1029941 [ Linux ] virtual/scalefactor200/css3/filters/backdrop-filter-boundary.html [ Failure ]
+crbug.com/1029941 [ Linux ] virtual/scalefactor200/css3/filters/backdrop-filter-edge-clipping-2.html [ Failure ]
+crbug.com/1029941 [ Linux ] virtual/scalefactor200/css3/filters/backdrop-filter-edge-pixels.html [ Failure ]
+crbug.com/1029941 [ Linux ] virtual/scalefactor200/external/wpt/css/filter-effects/backdrop-filter-edge-clipping.html [ Failure ]
+
 # Disabled for three-way merge after https://crrev.com/c/devtools/devtools-frontend/+/1934218 is submitted
 crbug.com/1006759 http/tests/devtools/modules-load-network.js [ Pass Failure ]
 crbug.com/1006759 http/tests/devtools/modules-load-source.js [ Pass Failure ]
