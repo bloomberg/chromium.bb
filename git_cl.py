@@ -3727,6 +3727,22 @@ def upload_branch_deps(cl, args):
   return 0
 
 
+def GetArchiveTagForBranch(issue_num, branch_name, existing_tags):
+  """Given a proposed tag name, returns a tag name that is guaranteed to be
+  unique. If 'foo' is proposed but already exists, then 'foo-2' is used,
+  or 'foo-3', and so on."""
+
+  proposed_tag = 'git-cl-archived-%s-%s' % (issue_num, branch_name)
+  for suffix_num in itertools.count(1):
+    if suffix_num == 1:
+      to_check = proposed_tag
+    else:
+      to_check = '%s-%d' % (proposed_tag, suffix_num)
+
+    if to_check not in existing_tags:
+      return to_check
+
+
 @metrics.collector.collect_metrics('git cl archive')
 def CMDarchive(parser, args):
   """Archives and deletes branches associated with closed changelists."""
@@ -3752,6 +3768,10 @@ def CMDarchive(parser, args):
   if not branches:
     return 0
 
+  tags = RunGit(['for-each-ref', '--format=%(refname)',
+                 'refs/tags']).splitlines() or []
+  tags = [t.split('/')[-1] for t in tags]
+
   print('Finding all branches associated with closed issues...')
   changes = [Changelist(branchref=b)
              for b in branches.splitlines()]
@@ -3760,7 +3780,8 @@ def CMDarchive(parser, args):
                              fine_grained=True,
                              max_processes=options.maxjobs)
   proposal = [(cl.GetBranch(),
-               'git-cl-archived-%s-%s' % (cl.GetIssue(), cl.GetBranch()))
+               GetArchiveTagForBranch(cl.GetIssue(), cl.GetBranch(),
+                                      tags))
               for cl, status in statuses
               if status in ('closed', 'rietveld-not-supported')]
   proposal.sort()
@@ -3800,7 +3821,10 @@ def CMDarchive(parser, args):
   for branch, tagname in proposal:
     if not options.notags:
       RunGit(['tag', tagname, branch])
-    RunGit(['branch', '-D', branch])
+
+    if RunGitWithCode(['branch', '-D', branch])[0] != 0:
+      # Clean up the tag if we failed to delete the branch.
+      RunGit(['tag', '-d', tagname])
 
   print('\nJob\'s done!')
 

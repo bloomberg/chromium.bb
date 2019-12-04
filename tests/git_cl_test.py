@@ -2274,8 +2274,30 @@ class TestGitCl(TestCase):
     self.calls = [
       ((['git', 'for-each-ref', '--format=%(refname)', 'refs/heads'],),
        'refs/heads/master\nrefs/heads/foo\nrefs/heads/bar'),
+      ((['git', 'for-each-ref', '--format=%(refname)', 'refs/tags'],), ''),
       ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
       ((['git', 'tag', 'git-cl-archived-456-foo', 'foo'],), ''),
+      ((['git', 'branch', '-D', 'foo'],), '')
+    ]
+
+    self.mock(git_cl, 'get_cl_statuses',
+              lambda branches, fine_grained, max_processes:
+              [(MockChangelistWithBranchAndIssue('master', 1), 'open'),
+               (MockChangelistWithBranchAndIssue('foo', 456), 'closed'),
+               (MockChangelistWithBranchAndIssue('bar', 789), 'open')])
+
+    self.assertEqual(0, git_cl.main(['archive', '-f']))
+
+  def test_archive_tag_collision(self):
+    self.mock(git_cl.sys, 'stdout', StringIO())
+
+    self.calls = [
+      ((['git', 'for-each-ref', '--format=%(refname)', 'refs/heads'],),
+       'refs/heads/master\nrefs/heads/foo\nrefs/heads/bar'),
+      ((['git', 'for-each-ref', '--format=%(refname)', 'refs/tags'],),
+       'refs/tags/git-cl-archived-456-foo'),
+      ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
+      ((['git', 'tag', 'git-cl-archived-456-foo-2', 'foo'],), ''),
       ((['git', 'branch', '-D', 'foo'],), '')
     ]
 
@@ -2292,6 +2314,7 @@ class TestGitCl(TestCase):
     self.calls = [
       ((['git', 'for-each-ref', '--format=%(refname)', 'refs/heads'],),
          'refs/heads/master'),
+      ((['git', 'for-each-ref', '--format=%(refname)', 'refs/tags'],), ''),
       ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
     ]
 
@@ -2307,6 +2330,7 @@ class TestGitCl(TestCase):
     self.calls = [
       ((['git', 'for-each-ref', '--format=%(refname)', 'refs/heads'],),
          'refs/heads/master\nrefs/heads/foo\nrefs/heads/bar'),
+      ((['git', 'for-each-ref', '--format=%(refname)', 'refs/tags'],), ''),
       ((['git', 'symbolic-ref', 'HEAD'],), 'master')
     ]
 
@@ -2324,6 +2348,7 @@ class TestGitCl(TestCase):
     self.calls = [
       ((['git', 'for-each-ref', '--format=%(refname)', 'refs/heads'],),
          'refs/heads/master\nrefs/heads/foo\nrefs/heads/bar'),
+      ((['git', 'for-each-ref', '--format=%(refname)', 'refs/tags'],), ''),
       ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
       ((['git', 'branch', '-D', 'foo'],), '')
     ]
@@ -2335,6 +2360,29 @@ class TestGitCl(TestCase):
                (MockChangelistWithBranchAndIssue('bar', 789), 'open')])
 
     self.assertEqual(0, git_cl.main(['archive', '-f', '--notags']))
+
+  def test_archive_tag_cleanup_on_branch_deletion_error(self):
+    self.mock(git_cl.sys, 'stdout', StringIO())
+
+    self.calls = [
+      ((['git', 'for-each-ref', '--format=%(refname)', 'refs/heads'],),
+         'refs/heads/master\nrefs/heads/foo\nrefs/heads/bar'),
+      ((['git', 'for-each-ref', '--format=%(refname)', 'refs/tags'],), ''),
+      ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
+      ((['git', 'tag', 'git-cl-archived-456-foo', 'foo'],),
+        'refs/tags/git-cl-archived-456-foo'),
+      ((['git', 'branch', '-D', 'foo'],), CERR1),
+      ((['git', 'tag', '-d', 'git-cl-archived-456-foo'],),
+       'refs/tags/git-cl-archived-456-foo'),
+    ]
+
+    self.mock(git_cl, 'get_cl_statuses',
+              lambda branches, fine_grained, max_processes:
+              [(MockChangelistWithBranchAndIssue('master', 1), 'open'),
+               (MockChangelistWithBranchAndIssue('foo', 456), 'closed'),
+               (MockChangelistWithBranchAndIssue('bar', 789), 'open')])
+
+    self.assertEqual(0, git_cl.main(['archive', '-f']))
 
   def test_cmd_issue_erase_existing(self):
     out = StringIO()
