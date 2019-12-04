@@ -18866,12 +18866,12 @@ Called by update_net_error_codes.py.-->
   <int value="643" label="GloballyScopeHTTPAuthCacheEnabled"/>
   <int value="644" label="WebComponentsV0Enabled"/>
   <int value="645" label="ClickToCallEnabled"/>
-  <int value="646"
-      label="DeviceLoginScreenShowAccessibilityOptionsInSystemTrayMenu"/>
+  <int value="646" label="DeviceLoginScreenShowOptionsInSystemTrayMenu"/>
   <int value="647" label="PrinterTypeDenyList"/>
   <int value="648" label="ForceLegacyDefaultReferrerPolicy"/>
-  <int value="649" label="DisabledSyncTypesList"/>
+  <int value="649" label="SyncTypesListDisabled"/>
   <int value="650" label="AmbientAuthenticationInPrivateModesEnabled"/>
+  <int value="651" label="PaymentMethodQueryEnabled"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
