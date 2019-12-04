@@ -6,7 +6,8 @@
       {
         "args": [
           "--num-retries=3",
-          "http/tests/devtools"
+          "http/tests/devtools",
+          "--fuzzy-diff"
         ],
         "isolate_name": "blink_web_tests_exparchive",
         "merge": {

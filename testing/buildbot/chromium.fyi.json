@@ -2535,7 +2535,8 @@
       {
         "args": [
           "--num-retries=3",
-          "--additional-driver-flag=--enable-blink-features=CompositeAfterPaint"
+          "--additional-driver-flag=--enable-blink-features=CompositeAfterPaint",
+          "--fuzzy-diff"
         ],
         "isolate_name": "blink_web_tests_exparchive",
         "merge": {
@@ -2586,7 +2587,8 @@
       {
         "args": [
           "--num-retries=3",
-          "--additional-driver-flag=--disable-blink-features=LayoutNG"
+          "--additional-driver-flag=--disable-blink-features=LayoutNG",
+          "--fuzzy-diff"
         ],
         "isolate_name": "blink_web_tests_exparchive",
         "merge": {
@@ -14750,7 +14752,8 @@
           "--num-retries=3",
           "--debug",
           "--additional-driver-flag=--enable-features=BackForwardCache",
-          "--additional-expectations=../../third_party/blink/web_tests/FlagExpectations/enable-features=BackForwardCache"
+          "--additional-expectations=../../third_party/blink/web_tests/FlagExpectations/enable-features=BackForwardCache",
+          "--fuzzy-diff"
         ],
         "isolate_name": "blink_web_tests_exparchive",
         "merge": {
@@ -15433,7 +15436,8 @@
       {
         "args": [
           "--num-retries=3",
-          "--debug"
+          "--debug",
+          "--fuzzy-diff"
         ],
         "isolate_name": "blink_web_tests_exparchive",
         "merge": {
@@ -25804,7 +25808,7 @@
         "args": [
           "--num-retries=3",
           "--additional-driver-flag=--enable-features=OutOfBlinkCors",
-          "--additional-expectations=../../third_party/blink/web_tests/FlagExpectations/enable-features=OutOfBlinkCors"
+          "--additional-expectations=../../third_party/blink/web_tests/FlagExpectations/enable-features=OutOfBlinkCors--fuzzy-diff"
         ],
         "isolate_name": "blink_web_tests_exparchive",
         "merge": {

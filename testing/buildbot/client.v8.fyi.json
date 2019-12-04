@@ -1348,7 +1348,8 @@
       {
         "args": [
           "--num-retries=3",
-          "--debug"
+          "--debug",
+          "--fuzzy-diff"
         ],
         "isolate_name": "blink_web_tests_exparchive",
         "merge": {
@@ -1397,7 +1398,8 @@
       {
         "args": [
           "--num-retries=3",
-          "--additional-driver-flag=--js-flags=--future"
+          "--additional-driver-flag=--js-flags=--future",
+          "--fuzzy-diff"
         ],
         "isolate_name": "blink_web_tests_exparchive",
         "merge": {

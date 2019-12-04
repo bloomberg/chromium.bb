@@ -3826,7 +3826,8 @@
           "src/third_party/blink/web_tests/FlagExpectations/disable-site-isolation-trials",
           "--num-retries=3",
           "--fuzzy-diff",
-          "--additional-env-var=LLVM_PROFILE_FILE=${ISOLATED_OUTDIR}/profraw/default-%2m.profraw"
+          "--additional-env-var=LLVM_PROFILE_FILE=${ISOLATED_OUTDIR}/profraw/default-%2m.profraw",
+          "--fuzzy-diff"
         ],
         "isolate_coverage_data": true,
         "isolate_name": "blink_web_tests_exparchive",
@@ -5584,7 +5585,8 @@
       {
         "args": [
           "--num-retries=3",
-          "--debug"
+          "--debug",
+          "--fuzzy-diff"
         ],
         "isolate_name": "blink_web_tests_exparchive",
         "merge": {
@@ -7433,7 +7435,8 @@
       },
       {
         "args": [
-          "--num-retries=3"
+          "--num-retries=3",
+          "--fuzzy-diff"
         ],
         "isolate_name": "blink_web_tests_exparchive",
         "merge": {
