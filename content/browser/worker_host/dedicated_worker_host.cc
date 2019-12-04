@@ -14,7 +14,6 @@
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/interface_provider_filtering.h"
-#include "content/browser/renderer_interface_binders.h"
 #include "content/browser/service_worker/service_worker_navigation_handle.h"
 #include "content/browser/service_worker/service_worker_object_host.h"
 #include "content/browser/storage_partition_impl.h"
@@ -57,12 +56,6 @@ void DedicatedWorkerHost::GetInterface(
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle interface_pipe) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  auto* worker_process_host = RenderProcessHost::FromID(worker_process_id_);
-  if (!worker_process_host)
-    return;
-
-  BindWorkerInterface(interface_name, std::move(interface_pipe),
-                      worker_process_host, origin_);
 }
 
 void DedicatedWorkerHost::BindBrowserInterfaceBrokerReceiver(

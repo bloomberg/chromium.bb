@@ -1012,15 +1012,6 @@ class CONTENT_EXPORT ContentBrowserClient {
       const std::string& interface_name,
       mojo::ScopedInterfaceEndpointHandle* handle);
 
-  // Content was unable to bind a request for this interface, so the embedder
-  // should try. This is called for interface requests from dedicated, shared
-  // and service workers.
-  virtual void BindInterfaceRequestFromWorker(
-      RenderProcessHost* render_process_host,
-      const url::Origin& origin,
-      const std::string& interface_name,
-      mojo::ScopedMessagePipeHandle interface_pipe) {}
-
   // Handles an unhandled incoming interface binding request from the GPU
   // process. Called on the IO thread.
   virtual void BindGpuHostReceiver(mojo::GenericPendingReceiver receiver) {}

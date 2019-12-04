@@ -4095,9 +4095,6 @@ void ChromeContentBrowserClient::InitWebContextInterfaces() {
   frame_interfaces_ = std::make_unique<service_manager::BinderRegistry>();
   frame_interfaces_parameterized_ = std::make_unique<
       service_manager::BinderRegistryWithArgs<content::RenderFrameHost*>>();
-  worker_interfaces_parameterized_ =
-      std::make_unique<service_manager::BinderRegistryWithArgs<
-          content::RenderProcessHost*, const url::Origin&>>();
 }
 
 void ChromeContentBrowserClient::InitNetworkContextsParentDirectory() {

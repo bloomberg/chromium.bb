@@ -1568,8 +1568,6 @@ jumbo_source_set("browser") {
     "renderer_host/web_database_host_impl.h",
     "renderer_host/webmenurunner_mac.h",
     "renderer_host/webmenurunner_mac.mm",
-    "renderer_interface_binders.cc",
-    "renderer_interface_binders.h",
     "resolve_proxy_msg_helper.cc",
     "resolve_proxy_msg_helper.h",
     "resource_context_impl.cc",
