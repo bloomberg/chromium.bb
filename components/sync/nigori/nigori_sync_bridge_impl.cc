@@ -9,6 +9,7 @@
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/feature_list.h"
+#include "base/json/json_string_value_serializer.h"
 #include "base/location.h"
 #include "base/metrics/histogram_macros.h"
 #include "components/sync/base/encryptor.h"
@@ -302,6 +303,44 @@ sync_pb::NigoriKey UnpackExplicitPassphraseKey(const Encryptor& encryptor,
   return key;
 }
 
+// Returns Base64 encoded keystore keys or empty vector if errors occur. Should
+// be aligned with Directory implementation (UnpackKeystoreBootstrapToken())
+// unless it is removed.
+std::vector<std::string> UnpackKeystoreKeys(
+    const std::string& packed_keystore_keys,
+    const Encryptor& encryptor) {
+  DCHECK(!packed_keystore_keys.empty());
+
+  std::string base64_decoded_packed_keys;
+  if (!base::Base64Decode(packed_keystore_keys, &base64_decoded_packed_keys)) {
+    return std::vector<std::string>();
+  }
+  std::string decrypted_packed_keys;
+  if (!encryptor.DecryptString(base64_decoded_packed_keys,
+                               &decrypted_packed_keys)) {
+    return std::vector<std::string>();
+  }
+
+  JSONStringValueDeserializer json_deserializer(decrypted_packed_keys);
+  std::unique_ptr<base::Value> deserialized_keys(json_deserializer.Deserialize(
+      /*error_code=*/nullptr, /*error_message=*/nullptr));
+  if (!deserialized_keys) {
+    return std::vector<std::string>();
+  }
+  base::ListValue* list_value = nullptr;
+  if (!deserialized_keys->GetAsList(&list_value)) {
+    return std::vector<std::string>();
+  }
+
+  std::vector<std::string> keystore_keys(list_value->GetSize());
+  for (size_t i = 0; i < keystore_keys.size(); ++i) {
+    if (!list_value->GetString(i, &keystore_keys[i])) {
+      return std::vector<std::string>();
+    }
+  }
+  return keystore_keys;
+}
+
 ModelTypeSet GetEncryptedTypes(bool encrypt_everything) {
   if (encrypt_everything) {
     return EncryptableUserTypes();
@@ -408,7 +447,8 @@ NigoriSyncBridgeImpl::NigoriSyncBridgeImpl(
     std::unique_ptr<NigoriStorage> storage,
     const Encryptor* encryptor,
     const base::RepeatingCallback<std::string()>& random_salt_generator,
-    const std::string& packed_explicit_passphrase_key)
+    const std::string& packed_explicit_passphrase_key,
+    const std::string& packed_keystore_keys)
     : encryptor_(encryptor),
       processor_(std::move(processor)),
       storage_(std::move(storage)),
@@ -437,6 +477,8 @@ NigoriSyncBridgeImpl::NigoriSyncBridgeImpl(
            switches::kSyncSupportTrustedVaultPassphrase))) {
     // We either have no Nigori node stored locally or it was corrupted.
     processor_->ModelReadyToSync(this, NigoriMetadataBatch());
+    // Keystore keys needs migration independently of having local Nigori node.
+    MaybeMigrateKeystoreKeys(packed_keystore_keys);
     return;
   }
 
@@ -449,6 +491,10 @@ NigoriSyncBridgeImpl::NigoriSyncBridgeImpl(
   metadata_batch.model_type_state = deserialized_data->model_type_state();
   metadata_batch.entity_metadata = deserialized_data->entity_metadata();
   processor_->ModelReadyToSync(this, std::move(metadata_batch));
+
+  // Attempt migration of keystore keys after deserialization to not overwrite
+  // newer keys.
+  MaybeMigrateKeystoreKeys(packed_keystore_keys);
 
   if (state_.passphrase_type == NigoriSpecifics::UNKNOWN) {
     // Commit with keystore initialization wasn't successfully completed before
@@ -1153,6 +1199,28 @@ sync_pb::NigoriLocalData NigoriSyncBridgeImpl::SerializeAsNigoriLocalData()
 void NigoriSyncBridgeImpl::MaybeTriggerKeystoreKeyRotation() {
   if (state_.NeedsKeystoreKeyRotation()) {
     QueuePendingLocalCommit(PendingLocalNigoriCommit::ForKeystoreKeyRotation());
+  }
+}
+
+void NigoriSyncBridgeImpl::MaybeMigrateKeystoreKeys(
+    const std::string& packed_keystore_keys) {
+  if (!state_.keystore_keys_cryptographer->IsEmpty() ||
+      packed_keystore_keys.empty()) {
+    return;
+  }
+  std::vector<std::string> keystore_keys =
+      UnpackKeystoreKeys(packed_keystore_keys, *encryptor_);
+  if (keystore_keys.empty()) {
+    // Error occurred during unpacking.
+    return;
+  }
+
+  state_.keystore_keys_cryptographer =
+      KeystoreKeysCryptographer::FromKeystoreKeys(keystore_keys);
+  if (!state_.keystore_keys_cryptographer) {
+    // Crypto error occurred during cryptographer creation.
+    state_.keystore_keys_cryptographer =
+        KeystoreKeysCryptographer::CreateEmpty();
   }
 }
 

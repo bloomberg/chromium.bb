@@ -355,7 +355,8 @@ class NigoriSyncBridgeImplTest : public testing::Test {
     bridge_ = std::make_unique<NigoriSyncBridgeImpl>(
         std::move(processor), std::move(storage), &encryptor_,
         base::BindRepeating(&Nigori::GenerateScryptSalt),
-        /*packed_explicit_passphrase_key=*/std::string());
+        /*packed_explicit_passphrase_key=*/std::string(),
+        /*packed_keystore_keys=*/std::string());
     bridge_->AddObserver(&observer_);
   }
 
@@ -1111,7 +1112,8 @@ TEST(NigoriSyncBridgeImplTestWithPackedExplicitPassphrase,
       std::move(processor),
       std::make_unique<testing::NiceMock<MockNigoriStorage>>(), &encryptor,
       base::BindRepeating(&Nigori::GenerateScryptSalt),
-      PackKeyAsExplicitPassphrase(kKeyParams, encryptor));
+      PackKeyAsExplicitPassphrase(kKeyParams, encryptor),
+      /*packed_keystore_keys=*/std::string());
   testing::NiceMock<MockObserver> observer;
   bridge->AddObserver(&observer);
 
@@ -1155,7 +1157,8 @@ TEST(NigoriSyncBridgeImplPersistenceTest, ShouldRestoreKeystoreNigori) {
   auto bridge1 = std::make_unique<NigoriSyncBridgeImpl>(
       std::move(processor1), std::move(storage1), &kEncryptor,
       base::BindRepeating(&Nigori::GenerateScryptSalt),
-      /*packed_explicit_passphrase_key=*/std::string());
+      /*packed_explicit_passphrase_key=*/std::string(),
+      /*packed_keystore_keys=*/std::string());
 
   // Perform initial sync with simple keystore Nigori.
   const std::string kRawKeystoreKey = "raw_keystore_key";
@@ -1191,7 +1194,8 @@ TEST(NigoriSyncBridgeImplPersistenceTest, ShouldRestoreKeystoreNigori) {
   auto bridge2 = std::make_unique<NigoriSyncBridgeImpl>(
       std::move(processor2), std::move(storage2), &kEncryptor,
       base::BindRepeating(&Nigori::GenerateScryptSalt),
-      /*packed_explicit_passphrase_key=*/std::string());
+      /*packed_explicit_passphrase_key=*/std::string(),
+      /*packed_keystore_keys=*/std::string());
 
   // Verify that we restored Cryptographer state.
   const Cryptographer& cryptographer = bridge2->GetCryptographerForTesting();
@@ -1230,7 +1234,8 @@ TEST(NigoriSyncBridgeImplPersistenceTest,
   auto bridge = std::make_unique<NigoriSyncBridgeImpl>(
       std::move(processor), std::move(storage), &kEncryptor,
       base::BindRepeating(&Nigori::GenerateScryptSalt),
-      /*packed_explicit_passphrase_key=*/std::string());
+      /*packed_explicit_passphrase_key=*/std::string(),
+      /*packed_keystore_keys=*/std::string());
   EXPECT_THAT(bridge->GetData(), HasKeystoreNigori());
 
   // Emulate commit completeness.

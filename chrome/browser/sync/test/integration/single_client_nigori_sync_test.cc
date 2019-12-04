@@ -28,6 +28,7 @@
 #include "components/sync/engine/sync_engine_switches.h"
 #include "components/sync/nigori/cryptographer_impl.h"
 #include "components/sync/nigori/nigori.h"
+#include "content/public/test/test_launcher.h"
 #include "crypto/ec_private_key.h"
 #include "google_apis/gaia/gaia_switches.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -269,6 +270,25 @@ class SingleClientNigoriSyncTestWithNotAwaitQuiescence
   DISALLOW_COPY_AND_ASSIGN(SingleClientNigoriSyncTestWithNotAwaitQuiescence);
 };
 
+class SingleClientKeystoreKeysMigrationSyncTest : public SyncTest {
+ public:
+  SingleClientKeystoreKeysMigrationSyncTest() : SyncTest(SINGLE_CLIENT) {
+    if (content::IsPreTest()) {
+      override_features_.InitAndDisableFeature(switches::kSyncUSSNigori);
+    } else {
+      override_features_.InitWithFeatures(
+          /*enabled_features=*/{switches::kSyncUSSPasswords,
+                                switches::kSyncUSSNigori},
+          /*disabled_features=*/{});
+    }
+  }
+
+  ~SingleClientKeystoreKeysMigrationSyncTest() override = default;
+
+ private:
+  base::test::ScopedFeatureList override_features_;
+};
+
 IN_PROC_BROWSER_TEST_P(SingleClientNigoriSyncTestWithUssTests,
                        ShouldCommitKeystoreNigoriWhenReceivedDefault) {
   // SetupSync() should make FakeServer send default NigoriSpecifics.
@@ -450,6 +470,33 @@ IN_PROC_BROWSER_TEST_P(SingleClientNigoriSyncTestWithNotAwaitQuiescence,
 INSTANTIATE_TEST_SUITE_P(USS,
                          SingleClientNigoriSyncTestWithNotAwaitQuiescence,
                          ::testing::Values(false, true));
+
+// Setups Sync with Directory Nigori, so keystore keys are persisted in prefs.
+IN_PROC_BROWSER_TEST_F(SingleClientKeystoreKeysMigrationSyncTest,
+                       PRE_ShouldMigrateKeystoreKeysFromPrefs) {
+  ASSERT_TRUE(SetupSync());
+}
+
+// Disallows population of keystore keys from the server, so preferences are
+// the only source for keystore keys.
+IN_PROC_BROWSER_TEST_F(SingleClientKeystoreKeysMigrationSyncTest,
+                       ShouldMigrateKeystoreKeysFromPrefs) {
+  GetFakeServer()->DisallowSendingEncryptionKeys();
+  EXPECT_TRUE(SetupClients());
+
+  // Ensure that client can decrypt with keystore keys.
+  const std::vector<std::string>& keystore_keys =
+      GetFakeServer()->GetKeystoreKeys();
+  ASSERT_THAT(keystore_keys, SizeIs(1));
+  const KeyParams kKeystoreKeyParams = KeystoreKeyParams(keystore_keys.back());
+
+  const autofill::PasswordForm password_form =
+      passwords_helper::CreateTestPasswordForm(0);
+  passwords_helper::InjectEncryptedServerPassword(
+      password_form, kKeystoreKeyParams.password,
+      kKeystoreKeyParams.derivation_params, GetFakeServer());
+  EXPECT_TRUE(PasswordFormsChecker(0, {password_form}).Wait());
+}
 
 class SingleClientNigoriWithWebApiTest : public SyncTest {
  public:
