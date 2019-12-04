@@ -117,7 +117,7 @@ void EmbeddedWorkerInstanceClientImpl::StartWorker(
   service_worker_context_client_->StartWorkerContextOnInitiatorThread(
       std::move(worker), std::move(start_data),
       std::move(installed_scripts_manager_params),
-      params->content_settings_proxy.PassHandle(), cache_storage.PassPipe(),
+      params->content_settings_proxy.PassPipe(), cache_storage.PassPipe(),
       interface_provider.PassPipe(), browser_interface_broker.PassPipe());
 }
 

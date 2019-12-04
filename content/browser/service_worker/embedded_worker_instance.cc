@@ -850,7 +850,7 @@ void EmbeddedWorkerInstance::SendStartWorker(
           base::CreateSequencedTaskRunner({BrowserThread::UI}),
           params->script_url,
           scoped_refptr<ServiceWorkerContextWrapper>(context_->wrapper()),
-          mojo::MakeRequest(&params->content_settings_proxy));
+          params->content_settings_proxy.InitWithNewPipeAndPassReceiver());
 
   const bool is_script_streaming = !params->installed_scripts_info.is_null();
   inflight_start_task_->set_start_worker_sent_time(base::TimeTicks::Now());
