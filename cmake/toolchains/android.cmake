@@ -16,6 +16,12 @@ if(NOT ANDROID_ABI)
   set(ANDROID_ABI arm64-v8a)
 endif()
 
+# Force arm mode for 32-bit targets (instead of the default thumb) to improve
+# performance.
+if(NOT ANDROID_ARM_MODE)
+  set(ANDROID_ARM_MODE arm)
+endif()
+
 # Toolchain files don't have access to cached variables:
 # https://gitlab.kitware.com/cmake/cmake/issues/16170. Set an intermediate
 # environment variable when loaded the first time.
