@@ -851,13 +851,13 @@ def FileIsCrosSdkElf(elf):
   Returns:
     True if we think |elf| is a native ELF
   """
-  with open(elf) as f:
+  with open(elf, 'rb') as f:
     data = f.read(20)
     # Check the magic number, EI_CLASS, EI_DATA, and e_machine.
-    return (data[0:4] == '\x7fELF' and
-            data[4] == '\x02' and
-            data[5] == '\x01' and
-            data[18] == '\x3e')
+    return (data[0:4] == b'\x7fELF' and
+            data[4] == b'\x02' and
+            data[5] == b'\x01' and
+            data[18] == b'\x3e')
 
 
 def IsPathPackagable(ptype, path):
