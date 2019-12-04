@@ -176,13 +176,26 @@ directorytree.createRowElementContentFilesNG = (id, label) => {
 /**
  * An optional rowElement depth (indent) style handler where undefined uses the
  * default cr.ui.TreeItem indent styling.
- *
- * TODO(crbug.com/992819): add an implementation for the FILES_NG_ENABLED case,
- * where a rowElement child needs the indent, not the rowElement itself.
- *
  * @type {function(!cr.ui.TreeItem,number)|undefined}
  */
 directorytree.styleRowElementDepth = undefined;
+
+/**
+ * Custom tree row style handler: called when the item's |rowElement| should be
+ * styled to indent |depth| in the tree for FILES_NG_ENABLED case.
+ * @param {!cr.ui.TreeItem} item cr.ui.TreeItem.
+ * @param {number} depth Indent depth (>=0).
+ */
+directorytree.styleRowElementDepthFilesNG = (item, depth) => {
+  const fileRowElement = item.rowElement.firstElementChild;
+
+  const indent = depth * 22;
+  let style = 'padding-inline-start: ' + indent + 'px';
+  const width = indent + 60;
+  style += '; min-width: ' + width + 'px;';
+
+  fileRowElement.setAttribute('style', style);
+};
 
 /**
  * The iron-icon-set prefix for tree rows that have an .align-right-icon class
