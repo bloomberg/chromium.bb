@@ -5722,8 +5722,6 @@ crbug.com/979298 [ Mac ] virtual/audio-service/media/controls/volumechange-muted
 crbug.com/988248 [ Mac Linux ] virtual/audio-service/media/video-persistence.html [ Pass Failure ]
 crbug.com/979298 [ Mac ] virtual/audio-service/media/video-zoom.html [ Pass Failure ]
 
-crbug.com/986019 virtual/threaded-no-composited-antialiasing/animations/play-state.html [ Pass Failure ]
-
 crbug.com/996219 [ Win ] virtual/text-antialias/emoji-vertical-origin-visual.html [ Failure ]
 
 crbug.com/996597 [ Win ] css2.1/t0905-c5525-flthw-00-c-g.html [ Failure ]
