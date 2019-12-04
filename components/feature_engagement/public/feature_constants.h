@@ -62,7 +62,6 @@ extern const base::Feature kIPHKeyboardAccessoryPasswordFillingFeature;
 extern const base::Feature kIPHKeyboardAccessoryPaymentFillingFeature;
 extern const base::Feature kIPHNewTabPageButtonFeature;
 extern const base::Feature kIPHPreviewsOmniboxUIFeature;
-extern const base::Feature kIPHQuietNotificationPromptsFeature;
 extern const base::Feature kIPHTabGroupsQuicklyComparePagesFeature;
 extern const base::Feature kIPHTabGroupsTapToSeeAnotherTabFeature;
 extern const base::Feature kIPHTabGroupsYourTabsAreTogetherFeature;
