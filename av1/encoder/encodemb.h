@@ -49,7 +49,7 @@ void av1_encode_sb(const struct AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
                    int mi_row, int mi_col, RUN_TYPE dry_run);
 
 void av1_foreach_transformed_block_in_plane(
-    const MACROBLOCKD *const xd, BLOCK_SIZE bsize, int plane,
+    const MACROBLOCKD *const xd, BLOCK_SIZE plane_bsize, int plane,
     foreach_transformed_block_visitor visit, void *arg);
 
 void av1_foreach_transformed_block(const MACROBLOCKD *const xd,
@@ -82,7 +82,7 @@ void av1_subtract_block(const MACROBLOCKD *xd, int rows, int cols,
 void av1_subtract_txb(MACROBLOCK *x, int plane, BLOCK_SIZE plane_bsize,
                       int blk_col, int blk_row, TX_SIZE tx_size);
 
-void av1_subtract_plane(MACROBLOCK *x, BLOCK_SIZE bsize, int plane);
+void av1_subtract_plane(MACROBLOCK *x, BLOCK_SIZE plane_bsize, int plane);
 
 static INLINE void av1_set_txb_context(MACROBLOCK *x, int plane, int block,
                                        TX_SIZE tx_size, ENTROPY_CONTEXT *a,

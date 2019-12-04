@@ -73,9 +73,9 @@ static INLINE void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
     // block size
     const int b4_w = block_size_wide[bsize] >> ss_x;
     const int b4_h = block_size_high[bsize] >> ss_y;
-    const BLOCK_SIZE plane_bsize = scale_chroma_bsize(bsize, ss_x, ss_y);
-    const int b8_w = block_size_wide[plane_bsize] >> ss_x;
-    const int b8_h = block_size_high[plane_bsize] >> ss_y;
+    const BLOCK_SIZE plane_bsize = get_scaled_plane_bsize(bsize, ss_x, ss_y);
+    const int b8_w = block_size_wide[plane_bsize];
+    const int b8_h = block_size_high[plane_bsize];
     assert(!is_compound);
 
     int row = row_start;

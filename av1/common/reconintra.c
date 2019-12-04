@@ -1506,6 +1506,57 @@ static void build_intra_predictors(const MACROBLOCKD *xd, const uint8_t *ref,
   }
 }
 
+static INLINE BLOCK_SIZE scale_chroma_bsize(BLOCK_SIZE bsize, int subsampling_x,
+                                            int subsampling_y) {
+  assert(subsampling_x >= 0 && subsampling_x < 2);
+  assert(subsampling_y >= 0 && subsampling_y < 2);
+  BLOCK_SIZE bs = bsize;
+  switch (bsize) {
+    case BLOCK_4X4:
+      if (subsampling_x == 1 && subsampling_y == 1)
+        bs = BLOCK_8X8;
+      else if (subsampling_x == 1)
+        bs = BLOCK_8X4;
+      else if (subsampling_y == 1)
+        bs = BLOCK_4X8;
+      break;
+    case BLOCK_4X8:
+      if (subsampling_x == 1 && subsampling_y == 1)
+        bs = BLOCK_8X8;
+      else if (subsampling_x == 1)
+        bs = BLOCK_8X8;
+      else if (subsampling_y == 1)
+        bs = BLOCK_4X8;
+      break;
+    case BLOCK_8X4:
+      if (subsampling_x == 1 && subsampling_y == 1)
+        bs = BLOCK_8X8;
+      else if (subsampling_x == 1)
+        bs = BLOCK_8X4;
+      else if (subsampling_y == 1)
+        bs = BLOCK_8X8;
+      break;
+    case BLOCK_4X16:
+      if (subsampling_x == 1 && subsampling_y == 1)
+        bs = BLOCK_8X16;
+      else if (subsampling_x == 1)
+        bs = BLOCK_8X16;
+      else if (subsampling_y == 1)
+        bs = BLOCK_4X16;
+      break;
+    case BLOCK_16X4:
+      if (subsampling_x == 1 && subsampling_y == 1)
+        bs = BLOCK_16X8;
+      else if (subsampling_x == 1)
+        bs = BLOCK_16X4;
+      else if (subsampling_y == 1)
+        bs = BLOCK_16X8;
+      break;
+    default: break;
+  }
+  return bs;
+}
+
 void av1_predict_intra_block(
     const AV1_COMMON *cm, const MACROBLOCKD *xd, int wpx, int hpx,
     TX_SIZE tx_size, PREDICTION_MODE mode, int angle_delta, int use_palette,
@@ -1541,15 +1592,15 @@ void av1_predict_intra_block(
     return;
   }
 
-  BLOCK_SIZE bsize = mbmi->sb_type;
   const struct macroblockd_plane *const pd = &xd->plane[plane];
   const int txw = tx_size_wide_unit[tx_size];
   const int txh = tx_size_high_unit[tx_size];
-  const int have_top = row_off || (pd->subsampling_y ? xd->chroma_up_available
-                                                     : xd->up_available);
+  const int ss_x = pd->subsampling_x;
+  const int ss_y = pd->subsampling_y;
+  const int have_top =
+      row_off || (ss_y ? xd->chroma_up_available : xd->up_available);
   const int have_left =
-      col_off ||
-      (pd->subsampling_x ? xd->chroma_left_available : xd->left_available);
+      col_off || (ss_x ? xd->chroma_left_available : xd->left_available);
   const int mi_row = -xd->mb_to_top_edge >> (3 + MI_SIZE_LOG2);
   const int mi_col = -xd->mb_to_left_edge >> (3 + MI_SIZE_LOG2);
   const int xr_chr_offset = 0;
@@ -1557,29 +1608,31 @@ void av1_predict_intra_block(
 
   // Distance between the right edge of this prediction block to
   // the frame right edge
-  const int xr = (xd->mb_to_right_edge >> (3 + pd->subsampling_x)) +
-                 (wpx - x - txwpx) - xr_chr_offset;
+  const int xr =
+      (xd->mb_to_right_edge >> (3 + ss_x)) + (wpx - x - txwpx) - xr_chr_offset;
   // Distance between the bottom edge of this prediction block to
   // the frame bottom edge
-  const int yd = (xd->mb_to_bottom_edge >> (3 + pd->subsampling_y)) +
-                 (hpx - y - txhpx) - yd_chr_offset;
+  const int yd =
+      (xd->mb_to_bottom_edge >> (3 + ss_y)) + (hpx - y - txhpx) - yd_chr_offset;
   const int right_available =
-      mi_col + ((col_off + txw) << pd->subsampling_x) < xd->tile.mi_col_end;
+      mi_col + ((col_off + txw) << ss_x) < xd->tile.mi_col_end;
   const int bottom_available =
-      (yd > 0) &&
-      (mi_row + ((row_off + txh) << pd->subsampling_y) < xd->tile.mi_row_end);
+      (yd > 0) && (mi_row + ((row_off + txh) << ss_y) < xd->tile.mi_row_end);
 
   const PARTITION_TYPE partition = mbmi->partition;
 
+  BLOCK_SIZE bsize = mbmi->sb_type;
   // force 4x4 chroma component block size.
-  bsize = scale_chroma_bsize(bsize, pd->subsampling_x, pd->subsampling_y);
+  if (ss_x || ss_y) {
+    bsize = scale_chroma_bsize(bsize, ss_x, ss_y);
+  }
 
-  const int have_top_right = has_top_right(
-      cm, bsize, mi_row, mi_col, have_top, right_available, partition, tx_size,
-      row_off, col_off, pd->subsampling_x, pd->subsampling_y);
-  const int have_bottom_left = has_bottom_left(
-      cm, bsize, mi_row, mi_col, bottom_available, have_left, partition,
-      tx_size, row_off, col_off, pd->subsampling_x, pd->subsampling_y);
+  const int have_top_right =
+      has_top_right(cm, bsize, mi_row, mi_col, have_top, right_available,
+                    partition, tx_size, row_off, col_off, ss_x, ss_y);
+  const int have_bottom_left =
+      has_bottom_left(cm, bsize, mi_row, mi_col, bottom_available, have_left,
+                      partition, tx_size, row_off, col_off, ss_x, ss_y);
 
   const int disable_edge_filter = !cm->seq_params.enable_intra_edge_filter;
 #if CONFIG_AV1_HIGHBITDEPTH

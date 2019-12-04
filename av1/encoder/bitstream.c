@@ -1390,37 +1390,27 @@ static AOM_INLINE void write_inter_txb_coeff(
   const struct macroblockd_plane *const pd = &xd->plane[plane];
   const BLOCK_SIZE bsize = mbmi->sb_type;
   assert(bsize < BLOCK_SIZES_ALL);
-  const BLOCK_SIZE bsizec =
-      scale_chroma_bsize(bsize, pd->subsampling_x, pd->subsampling_y);
-
-  const BLOCK_SIZE plane_bsize =
-      get_plane_block_size(bsizec, pd->subsampling_x, pd->subsampling_y);
-
+  const int ss_x = pd->subsampling_x;
+  const int ss_y = pd->subsampling_y;
+  const BLOCK_SIZE plane_bsize = get_scaled_plane_bsize(bsize, ss_x, ss_y);
+  assert(plane_bsize < BLOCK_SIZES_ALL);
   const TX_SIZE max_tx_size = get_vartx_max_txsize(xd, plane_bsize, plane);
   const int step =
       tx_size_wide_unit[max_tx_size] * tx_size_high_unit[max_tx_size];
   const int bkw = tx_size_wide_unit[max_tx_size];
   const int bkh = tx_size_high_unit[max_tx_size];
-
   const BLOCK_SIZE max_unit_bsize =
-      get_plane_block_size(BLOCK_64X64, pd->subsampling_x, pd->subsampling_y);
-  int mu_blocks_wide = block_size_wide[max_unit_bsize] >> tx_size_wide_log2[0];
-  int mu_blocks_high = block_size_high[max_unit_bsize] >> tx_size_high_log2[0];
-
-  int blk_row, blk_col;
-
-  assert(plane_bsize < BLOCK_SIZES_ALL);
+      get_plane_block_size(BLOCK_64X64, ss_x, ss_y);
   const int num_4x4_w = block_size_wide[plane_bsize] >> tx_size_wide_log2[0];
   const int num_4x4_h = block_size_high[plane_bsize] >> tx_size_high_log2[0];
-
-  const int unit_height =
-      AOMMIN(mu_blocks_high + (row >> pd->subsampling_y), num_4x4_h);
-  const int unit_width =
-      AOMMIN(mu_blocks_wide + (col >> pd->subsampling_x), num_4x4_w);
-  for (blk_row = row >> pd->subsampling_y; blk_row < unit_height;
-       blk_row += bkh) {
-    for (blk_col = col >> pd->subsampling_x; blk_col < unit_width;
-         blk_col += bkw) {
+  const int mu_blocks_wide =
+      block_size_wide[max_unit_bsize] >> tx_size_wide_log2[0];
+  const int mu_blocks_high =
+      block_size_high[max_unit_bsize] >> tx_size_high_log2[0];
+  const int unit_height = AOMMIN(mu_blocks_high + (row >> ss_y), num_4x4_h);
+  const int unit_width = AOMMIN(mu_blocks_wide + (col >> ss_x), num_4x4_w);
+  for (int blk_row = row >> ss_y; blk_row < unit_height; blk_row += bkh) {
+    for (int blk_col = col >> ss_x; blk_col < unit_width; blk_col += bkw) {
       pack_txb_tokens(w, cm, x, tok, tok_end, xd, mbmi, plane, plane_bsize,
                       cm->seq_params.bit_depth, *block, blk_row, blk_col,
                       max_tx_size, token_stats);

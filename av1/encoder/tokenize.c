@@ -205,29 +205,26 @@ void av1_tokenize_sb_vartx(const AV1_COMP *cpi, ThreadData *td,
   }
 
   for (int plane = 0; plane < num_planes; ++plane) {
-    if (!is_chroma_reference(mi_row, mi_col, bsize,
-                             xd->plane[plane].subsampling_x,
-                             xd->plane[plane].subsampling_y)) {
+    const struct macroblockd_plane *const pd = &xd->plane[plane];
+    const int ss_x = pd->subsampling_x;
+    const int ss_y = pd->subsampling_y;
+    if (!is_chroma_reference(mi_row, mi_col, bsize, ss_x, ss_y)) {
       continue;
     }
-    const struct macroblockd_plane *const pd = &xd->plane[plane];
-    const BLOCK_SIZE bsizec =
-        scale_chroma_bsize(bsize, pd->subsampling_x, pd->subsampling_y);
-    const BLOCK_SIZE plane_bsize =
-        get_plane_block_size(bsizec, pd->subsampling_x, pd->subsampling_y);
+    const BLOCK_SIZE plane_bsize = get_scaled_plane_bsize(bsize, ss_x, ss_y);
     assert(plane_bsize < BLOCK_SIZES_ALL);
     const int mi_width = block_size_wide[plane_bsize] >> tx_size_wide_log2[0];
     const int mi_height = block_size_high[plane_bsize] >> tx_size_high_log2[0];
     const TX_SIZE max_tx_size = get_vartx_max_txsize(xd, plane_bsize, plane);
     const BLOCK_SIZE txb_size = txsize_to_bsize[max_tx_size];
-    int bw = block_size_wide[txb_size] >> tx_size_wide_log2[0];
-    int bh = block_size_high[txb_size] >> tx_size_high_log2[0];
-    int idx, idy;
+    const int bw = block_size_wide[txb_size] >> tx_size_wide_log2[0];
+    const int bh = block_size_high[txb_size] >> tx_size_high_log2[0];
     int block = 0;
-    int step = tx_size_wide_unit[max_tx_size] * tx_size_high_unit[max_tx_size];
+    const int step =
+        tx_size_wide_unit[max_tx_size] * tx_size_high_unit[max_tx_size];
 
     const BLOCK_SIZE max_unit_bsize =
-        get_plane_block_size(BLOCK_64X64, pd->subsampling_x, pd->subsampling_y);
+        get_plane_block_size(BLOCK_64X64, ss_x, ss_y);
     int mu_blocks_wide =
         block_size_wide[max_unit_bsize] >> tx_size_wide_log2[0];
     int mu_blocks_high =
@@ -236,13 +233,12 @@ void av1_tokenize_sb_vartx(const AV1_COMP *cpi, ThreadData *td,
     mu_blocks_wide = AOMMIN(mi_width, mu_blocks_wide);
     mu_blocks_high = AOMMIN(mi_height, mu_blocks_high);
 
-    for (idy = 0; idy < mi_height; idy += mu_blocks_high) {
-      for (idx = 0; idx < mi_width; idx += mu_blocks_wide) {
-        int blk_row, blk_col;
+    for (int idy = 0; idy < mi_height; idy += mu_blocks_high) {
+      for (int idx = 0; idx < mi_width; idx += mu_blocks_wide) {
         const int unit_height = AOMMIN(mu_blocks_high + idy, mi_height);
         const int unit_width = AOMMIN(mu_blocks_wide + idx, mi_width);
-        for (blk_row = idy; blk_row < unit_height; blk_row += bh) {
-          for (blk_col = idx; blk_col < unit_width; blk_col += bw) {
+        for (int blk_row = idy; blk_row < unit_height; blk_row += bh) {
+          for (int blk_col = idx; blk_col < unit_width; blk_col += bw) {
             tokenize_vartx(td, dry_run, max_tx_size, plane_bsize, blk_row,
                            blk_col, block, plane, &arg);
             block += step;

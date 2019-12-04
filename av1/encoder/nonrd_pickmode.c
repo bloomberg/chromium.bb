@@ -1948,12 +1948,14 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
       block_yrd(cpi, x, mi_row, mi_col, &this_rdc, &args.skippable, &this_sse,
                 bsize, mi->tx_size);
       // TODO(kyslov@) Need to account for skippable
-      if (x->color_sensitivity[0])
+      if (x->color_sensitivity[0]) {
         av1_foreach_transformed_block_in_plane(xd, uv_bsize, 1,
                                                estimate_block_intra, &args);
-      if (x->color_sensitivity[1])
+      }
+      if (x->color_sensitivity[1]) {
         av1_foreach_transformed_block_in_plane(xd, uv_bsize, 2,
                                                estimate_block_intra, &args);
+      }
 
       int mode_cost = 0;
       if (av1_is_directional_mode(this_mode) && av1_use_angle_delta(bsize)) {
