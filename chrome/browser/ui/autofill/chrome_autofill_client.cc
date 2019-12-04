@@ -517,7 +517,7 @@ bool ChromeAutofillClient::IsContextSecure() {
   //
   // TODO(crbug.com/701018): Once passive mixed content and legacy TLS are less
   // common, just use IsSslCertificateValid().
-  return entry->GetURL().SchemeIsCryptographic() &&
+  return entry && entry->GetURL().SchemeIsCryptographic() &&
          security_level != security_state::DANGEROUS;
 }
 
