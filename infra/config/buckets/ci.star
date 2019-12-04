@@ -453,6 +453,11 @@ chromiumos_builder(
 )
 
 chromiumos_builder(
+    name = 'chromeos-amd64-generic-rel',
+    goma_enable_ats = True,
+)
+
+chromiumos_builder(
     name = 'chromeos-arm-generic-dbg',
     goma_enable_ats = True,
 )
@@ -469,6 +474,10 @@ chromiumos_builder(
 
 chromiumos_builder(
     name = 'linux-chromeos-dbg',
+)
+
+chromiumos_builder(
+    name = 'linux-chromeos-rel',
 )
 
 
@@ -1804,10 +1813,23 @@ gpu_builder(
 )
 
 gpu_builder(
+    name = 'GPU Mac Builder',
+    cores = None,
+    goma_backend = goma.backend.RBE_PROD,
+    os = os.MAC_ANY,
+)
+
+gpu_builder(
     name = 'GPU Mac Builder (dbg)',
     cores = None,
     goma_backend = goma.backend.RBE_PROD,
     os = os.MAC_ANY,
+)
+
+gpu_builder(
+    name = 'GPU Win x64 Builder',
+    builderless = True,
+    os = os.WINDOWS_ANY,
 )
 
 gpu_builder(
@@ -1836,11 +1858,23 @@ gpu_linux_ci_tester(
 )
 
 gpu_linux_ci_tester(
+    name = 'Mac Release (Intel)',
+)
+
+gpu_linux_ci_tester(
     name = 'Mac Retina Debug (AMD)',
 )
 
 gpu_linux_ci_tester(
+    name = 'Mac Retina Release (AMD)',
+)
+
+gpu_linux_ci_tester(
     name = 'Win10 x64 Debug (NVIDIA)',
+)
+
+gpu_linux_ci_tester(
+    name = 'Win10 x64 Release (NVIDIA)',
 )
 
 
@@ -1967,6 +2001,10 @@ def mac_builder(
   )
 
 mac_builder(
+    name = 'Mac Builder',
+)
+
+mac_builder(
     name = 'Mac Builder (dbg)',
     os = os.MAC_ANY,
 )
@@ -1984,6 +2022,11 @@ mac_builder(
 mac_builder(
     name = 'Mac10.12 Tests',
     os = os.MAC_10_12,
+)
+
+mac_builder(
+    name = 'Mac10.13 Tests',
+    os = os.MAC_10_13,
 )
 
 mac_builder(
@@ -2012,6 +2055,10 @@ mac_ios_builder(
 
 mac_ios_builder(
     name = 'ios-device-xcode-clang',
+)
+
+mac_ios_builder(
+    name = 'ios-simulator',
 )
 
 mac_ios_builder(
@@ -2262,9 +2309,19 @@ win_builder(
 )
 
 win_builder(
+    name = 'Win x64 Builder',
+    cores = 32,
+    os = os.WINDOWS_ANY,
+)
+
+win_builder(
     name = 'Win x64 Builder (dbg)',
     cores = 32,
     os = os.WINDOWS_ANY,
+)
+
+win_builder(
+    name = 'Win10 Tests x64',
 )
 
 win_builder(
