@@ -476,10 +476,6 @@ static const arg_def_t enable_order_hint =
 static const arg_def_t enable_tx64 =
     ARG_DEF(NULL, "enable-tx64", 1,
             "Enable 64-pt transform (0: false, 1: true (default))");
-static const arg_def_t tx_size_search_method =
-    ARG_DEF(NULL, "tx-size-search-method", 1,
-            "Set transform block size search method "
-            "(0: Full RD (default), 1: Fast RD, 2: use largest allowed)");
 static const arg_def_t enable_flip_idtx =
     ARG_DEF(NULL, "enable-flip-idtx", 1,
             "Enable extended transform type (0: false, 1: true (default)) "
@@ -829,7 +825,6 @@ static const arg_def_t *av1_args[] = { &cpu_used_av1,
                                        &enable_intra_edge_filter,
                                        &enable_order_hint,
                                        &enable_tx64,
-                                       &tx_size_search_method,
                                        &enable_flip_idtx,
                                        &enable_dist_wtd_comp,
                                        &enable_masked_comp,
@@ -935,7 +930,6 @@ static const int av1_arg_ctrl_map[] = { AOME_SET_CPUUSED,
                                         AV1E_SET_ENABLE_INTRA_EDGE_FILTER,
                                         AV1E_SET_ENABLE_ORDER_HINT,
                                         AV1E_SET_ENABLE_TX64,
-                                        AV1E_SET_TX_SIZE_SEARCH_METHOD,
                                         AV1E_SET_ENABLE_FLIP_IDTX,
                                         AV1E_SET_ENABLE_DIST_WTD_COMP,
                                         AV1E_SET_ENABLE_MASKED_COMP,
@@ -1761,7 +1755,6 @@ static void show_stream_config(struct stream_state *stream,
   SHOW_PARAMS(disable_filter_intra);
   SHOW_PARAMS(disable_dual_filter);
   SHOW_PARAMS(disable_intra_angle_delta);
-  SHOW_PARAMS(tx_size_search_method);
   SHOW_PARAMS(disable_intra_edge_filter);
   SHOW_PARAMS(disable_tx_64x64);
   SHOW_PARAMS(disable_smooth_inter_intra);

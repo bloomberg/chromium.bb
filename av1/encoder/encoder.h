@@ -377,7 +377,6 @@ typedef struct AV1EncoderConfig {
   int max_partition_size;
   int enable_intra_edge_filter;
   int enable_tx64;
-  int tx_size_search_method;
   int enable_flip_idtx;
   int enable_order_hint;
   int enable_dist_wtd_comp;

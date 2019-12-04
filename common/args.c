@@ -110,7 +110,6 @@ int parse_cfg(const char *file, cfg_options_t *config) {
     GET_PARAMS(disable_filter_intra);
     GET_PARAMS(disable_dual_filter);
     GET_PARAMS(disable_intra_angle_delta);
-    GET_PARAMS(tx_size_search_method);
     GET_PARAMS(disable_intra_edge_filter);
     GET_PARAMS(disable_tx_64x64);
     GET_PARAMS(disable_smooth_inter_intra);

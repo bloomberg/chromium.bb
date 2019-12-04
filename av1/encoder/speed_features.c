@@ -898,7 +898,7 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
   sf->intra_cnn_split = 0;
 
   // Set this at the appropriate speed levels
-  sf->tx_size_search_level = cpi->oxcf.tx_size_search_method;
+  sf->tx_size_search_level = USE_FULL_RD;
   sf->tx_domain_dist_level = 0;
   sf->tx_domain_dist_thres_level = 0;
   sf->gm_search_type = GM_FULL_SEARCH;
@@ -1052,11 +1052,6 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
          predict_skip_levels[cpi->sf.tx_type_search.use_skip_flag_prediction],
          sizeof(cpi->predict_skip_level));
 
-  // Override speed feature setting for user config
-  if (cpi->oxcf.tx_size_search_method != USE_FULL_RD) {
-    cpi->sf.enable_winner_mode_for_tx_size_srch = 0;
-    cpi->sf.tx_size_search_level = cpi->oxcf.tx_size_search_method;
-  }
   // assert ensures that tx_size_search_level is accessed correctly
   assert(cpi->sf.tx_size_search_level >= 0 && cpi->sf.tx_size_search_level < 3);
   memcpy(cpi->tx_size_search_methods,
