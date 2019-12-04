@@ -168,7 +168,11 @@ class TabListElement extends CustomElement {
         layout => this.applyCSSDictionary_(layout));
     this.fetchAndUpdateColors_();
 
+    const getTabsStartTimestamp = Date.now();
     this.tabsApi_.getTabs().then(tabs => {
+      this.tabStripEmbedderProxy_.reportTabDataReceivedDuration(
+          tabs.length, Date.now() - getTabsStartTimestamp);
+
       tabs.forEach(tab => this.onTabCreated_(tab));
       addWebUIListener('tab-created', tab => this.onTabCreated_(tab));
       addWebUIListener(
