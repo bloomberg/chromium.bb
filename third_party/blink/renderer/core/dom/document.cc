@@ -3368,6 +3368,9 @@ void Document::Shutdown() {
 
   probe::DocumentDetached(this);
 
+  // FIXME: consider using ContextLifecycleStateObserver.
+  if (scripted_animation_controller_)
+    scripted_animation_controller_->ClearDocumentPointer();
   scripted_animation_controller_.Clear();
 
   scripted_idle_task_controller_.Clear();
@@ -7308,10 +7311,16 @@ void Document::AddConsoleMessageImpl(ConsoleMessage* console_message,
 
 void Document::TasksWerePaused() {
   GetScriptRunner()->Suspend();
+
+  if (scripted_animation_controller_)
+    scripted_animation_controller_->Pause();
 }
 
 void Document::TasksWereUnpaused() {
   GetScriptRunner()->Resume();
+
+  if (scripted_animation_controller_)
+    scripted_animation_controller_->Unpause();
 
   MutationObserver::ResumeSuspendedObservers();
   if (dom_window_)
@@ -7431,9 +7440,9 @@ ScriptedAnimationController& Document::EnsureScriptedAnimationController() {
     scripted_animation_controller_ =
         MakeGarbageCollected<ScriptedAnimationController>(this);
     // We need to make sure that we don't start up the animation controller on a
-    // detached document.
+    // background tab, for example.
     if (!GetPage())
-      scripted_animation_controller_->Disable();
+      scripted_animation_controller_->Pause();
   }
   return *scripted_animation_controller_;
 }
