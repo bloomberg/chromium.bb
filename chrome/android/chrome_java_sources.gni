@@ -1189,6 +1189,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/password_manager/PasswordGenerationDialogViewBinder.java",
   "java/src/org/chromium/chrome/browser/password_manager/PasswordGenerationPopupAdapter.java",
   "java/src/org/chromium/chrome/browser/password_manager/PasswordGenerationPopupBridge.java",
+  "java/src/org/chromium/chrome/browser/password_manager/PasswordManagerDialogContents.java",
   "java/src/org/chromium/chrome/browser/password_manager/PasswordManagerDialogCoordinator.java",
   "java/src/org/chromium/chrome/browser/password_manager/PasswordManagerDialogMediator.java",
   "java/src/org/chromium/chrome/browser/password_manager/PasswordManagerDialogProperties.java",
