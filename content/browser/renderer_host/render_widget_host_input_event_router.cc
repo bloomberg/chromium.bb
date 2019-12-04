@@ -626,16 +626,21 @@ void RenderWidgetHostInputEventRouter::DispatchMouseEvent(
     // CursorManager might need to be notified that the view underneath the
     // cursor has changed, which could cause the display cursor to update.
     gfx::PointF transformed_point;
-    auto* hit_test_result =
+    auto hit_test_result =
         FindViewAtLocation(root_view, mouse_event.PositionInWidget(),
-                           viz::EventSource::MOUSE, &transformed_point)
-            .view;
-    if (hit_test_result != target) {
+                           viz::EventSource::MOUSE, &transformed_point);
+    // TODO(kenrb, yigu): This is skipped if the HitTestResult is requiring an
+    // asynchronous hit test to the renderer process, because it might mean
+    // sending extra MouseMoves to renderers that don't need the event updates
+    // which is a worse outcome than the cursor being delayed in updating.
+    // An asynchronous hit test can be added here to fix the problem.
+    if (hit_test_result.view != target && !hit_test_result.should_query_view) {
       SendMouseEnterOrLeaveEvents(
-          mouse_event, hit_test_result, root_view,
+          mouse_event, hit_test_result.view, root_view,
           blink::WebInputEvent::Modifiers::kRelativeMotionEvent, true);
       if (root_view->GetCursorManager())
-        root_view->GetCursorManager()->UpdateViewUnderCursor(hit_test_result);
+        root_view->GetCursorManager()->UpdateViewUnderCursor(
+            hit_test_result.view);
     }
   }
 
