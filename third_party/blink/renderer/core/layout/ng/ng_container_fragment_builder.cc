@@ -193,24 +193,28 @@ LogicalOffset NGContainerFragmentBuilder::GetChildOffset(
 void NGContainerFragmentBuilder::AddOutOfFlowChildCandidate(
     NGBlockNode child,
     const LogicalOffset& child_offset,
-    base::Optional<TextDirection> container_direction) {
+    NGLogicalStaticPosition::InlineEdge inline_edge,
+    NGLogicalStaticPosition::BlockEdge block_edge) {
   DCHECK(child);
-  DCHECK(layout_object_ && !layout_object_->IsLayoutInline() ||
-         container_direction)
-      << "container_direction must only be set for inline-level OOF children.";
+
+  oof_positioned_candidates_.emplace_back(
+      child, NGLogicalStaticPosition{child_offset, inline_edge, block_edge});
+}
+
+void NGContainerFragmentBuilder::AddOutOfFlowInlineChildCandidate(
+    NGBlockNode child,
+    const LogicalOffset& child_offset,
+    TextDirection inline_container_direction) {
+  DCHECK(node_.IsInline() || layout_object_->IsLayoutInline());
 
   // As all inline-level fragments are built in the line-logical coordinate
   // system (Direction() is kLtr), we need to know the direction of the
   // parent element to correctly determine an OOF childs static position.
-  TextDirection direction = container_direction.value_or(TextDirection::kLtr);
-
-  oof_positioned_candidates_.emplace_back(
-      child,
-      NGLogicalStaticPosition{
-          child_offset,
-          IsLtr(direction) ? NGLogicalStaticPosition::InlineEdge::kInlineStart
-                           : NGLogicalStaticPosition::InlineEdge::kInlineEnd,
-          NGLogicalStaticPosition::BlockEdge::kBlockStart});
+  AddOutOfFlowChildCandidate(child, child_offset,
+                             IsLtr(inline_container_direction)
+                                 ? NGLogicalStaticPosition::kInlineStart
+                                 : NGLogicalStaticPosition::kInlineEnd,
+                             NGLogicalStaticPosition::kBlockStart);
 }
 
 void NGContainerFragmentBuilder::AddOutOfFlowDescendant(

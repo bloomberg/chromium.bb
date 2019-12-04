@@ -114,13 +114,20 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
   // NGOutOfFlowLayoutPart(container_style, builder).Run();
   //
   // See layout part for builder interaction.
-  //
-  // @param direction: default candidate direction is builder's direction.
-  // Pass in direction if candidates direction does not match.
-  void AddOutOfFlowChildCandidate(
+  void AddOutOfFlowChildCandidate(NGBlockNode,
+                                  const LogicalOffset& child_offset,
+                                  NGLogicalStaticPosition::InlineEdge =
+                                      NGLogicalStaticPosition::kInlineStart,
+                                  NGLogicalStaticPosition::BlockEdge =
+                                      NGLogicalStaticPosition::kBlockStart);
+
+  // This should only be used for inline-level OOF-positioned nodes.
+  // |inline_container_direction| is the current text direction for determining
+  // the correct static-position.
+  void AddOutOfFlowInlineChildCandidate(
       NGBlockNode,
       const LogicalOffset& child_offset,
-      base::Optional<TextDirection> container_direction = base::nullopt);
+      TextDirection inline_container_direction);
 
   void AddOutOfFlowDescendant(
       const NGLogicalOutOfFlowPositionedNode& descendant);
