@@ -10,6 +10,7 @@
 #import "ios/chrome/browser/infobars/infobar_type.h"
 #import "ios/chrome/browser/translate/translate_constants.h"
 #import "ios/chrome/browser/translate/translate_infobar_delegate_observer_bridge.h"
+#import "ios/chrome/browser/ui/infobars/banners/infobar_banner_presentation_state.h"
 #import "ios/chrome/browser/ui/infobars/banners/infobar_banner_view_controller.h"
 #import "ios/chrome/browser/ui/infobars/coordinators/infobar_coordinator_implementation.h"
 #import "ios/chrome/browser/ui/infobars/coordinators/infobar_translate_mediator.h"
@@ -59,6 +60,12 @@
 // YES if translate is currently in progress
 @property(nonatomic, assign) BOOL translateInProgress;
 
+// YES if the Infobar has been accepted (translated the page).
+@property(nonatomic, assign) BOOL infobarAccepted;
+
+// YES if a "Show Original" banner can be presented.
+@property(nonatomic, assign) BOOL displayShowOriginalBanner;
+
 @end
 
 @implementation TranslateInfobarCoordinator
@@ -98,19 +105,27 @@
       self.translateInProgress = YES;
       break;
     case translate::TranslateStep::TRANSLATE_STEP_AFTER_TRANSLATE: {
+      self.displayShowOriginalBanner = YES;
       [self.badgeDelegate infobarWasAccepted:self.infobarType
                                  forWebState:self.webState];
-      ProceduralBlock completionBlock = ^{
-        // Mark as not in progress after banner dismisses so that
-        // InfobarCoordinator doesn't tell the ContainerViewController that
-        // banner presentation is finished until after the "Page Translated"
-        // banner is presented.
-        self.translateInProgress = NO;
-        [self createBannerViewController];
-        // Present the "Show original" banner.
-        [self presentInfobarBannerAnimated:YES completion:nil];
-      };
-      [self dismissInfobarBannerAnimated:YES completion:completionBlock];
+
+      // If the Infobar hasn't been accepted but |step| changed to
+      // TRANSLATE_STEP_AFTER_TRANSLATE it means that this was triggered by auto
+      // translate.
+      if (!self.infobarAccepted) {
+        self.infobarAccepted = YES;
+        if (!(self.infobarBannerState ==
+              InfobarBannerPresentationState::NotPresented)) {
+          [self dismissInfobarBannerAnimated:NO completion:nil];
+        }
+      }
+
+      // If nothing is being presented present the "Show Original" banner, if
+      // not it will be presented once the Banner or Modal is dismissed.
+      if (!self.bannerViewController && !self.modalViewController) {
+        [self presentShowOriginalBanner];
+      }
+
       break;
     }
     case translate::TranslateStep::TRANSLATE_STEP_BEFORE_TRANSLATE:
@@ -118,7 +133,6 @@
     case translate::TranslateStep::TRANSLATE_STEP_TRANSLATE_ERROR:
       break;
   }
-  [self updateBannerTextForCurrentTranslateStep];
 }
 
 - (BOOL)translateInfoBarDelegateDidDismissWithoutInteraction:
@@ -153,8 +167,7 @@
 #pragma mark - InfobarCoordinatorImplementation
 
 - (BOOL)isInfobarAccepted {
-  return self.currentStep ==
-         translate::TranslateStep::TRANSLATE_STEP_AFTER_TRANSLATE;
+  return self.infobarAccepted;
 }
 
 - (void)performInfobarAction {
@@ -169,6 +182,7 @@
         self.translateInfobarDelegate->ToggleAlwaysTranslate();
       }
       self.translateInfobarDelegate->Translate();
+      self.infobarAccepted = YES;
       break;
     }
     case translate::TranslateStep::TRANSLATE_STEP_AFTER_TRANSLATE: {
@@ -177,6 +191,7 @@
       // TODO(crbug.com/1014959): Add metrics
 
       self.translateInfobarDelegate->RevertWithoutClosingInfobar();
+      self.infobarAccepted = NO;
       // There is no completion signal (i.e. change of TranslateStep) in
       // translateInfoBarDelegate:didChangeTranslateStep:withErrorType: in
       // response to RevertWithoutClosingInfobar(), so revert Infobar badge
@@ -200,6 +215,10 @@
 - (void)infobarWasDismissed {
   self.bannerViewController = nil;
   self.modalViewController = nil;
+
+  // After any Modal or Banner has been dismissed try to present the "Show
+  // Original" banner.
+  [self presentShowOriginalBanner];
 }
 
 #pragma mark - Banner
@@ -209,10 +228,7 @@
 }
 
 - (void)dismissBannerIfReady {
-  if (!self.translateInProgress) {
-    // Only attempt to dismiss banner if Translate is not in progress.
-    [self.bannerViewController dismissWhenInteractionIsFinished];
-  }
+  [self.bannerViewController dismissWhenInteractionIsFinished];
 }
 
 - (BOOL)infobarActionInProgress {
@@ -305,11 +321,7 @@
   // TODO(crbug.com/1014959): Add metrics
   self.translateInfobarDelegate->ToggleAlwaysTranslate();
   // Since toggle turned on always translate, translate now.
-  // This doesn't call performInfobarAction, because its implementation checks
-  // ShouldAutoAlwaysTranslate(), which modifies the Translate state. There is
-  // also no need update the badge state since it will be updated by
-  // translateInfoBarDelegate:didChangeTranslateStep:
-  self.translateInfobarDelegate->Translate();
+  [self performInfobarAction];
   [self dismissInfobarModal:self animated:YES completion:nil];
 }
 
@@ -376,6 +388,19 @@
 
 #pragma mark - Private
 
+// Presents the "Show Original" banner only if |self.displayShowOriginalBanner|
+// is YES, meaning a translate event took place.
+- (void)presentShowOriginalBanner {
+  if (self.displayShowOriginalBanner) {
+    self.displayShowOriginalBanner = NO;
+    [self createBannerViewController];
+    [self presentInfobarBannerAnimated:YES
+                            completion:^{
+                              self.translateInProgress = NO;
+                            }];
+  }
+}
+
 // Initialize and setup the banner.
 - (void)createBannerViewController {
   self.bannerViewController = [[InfobarBannerViewController alloc]
@@ -402,12 +427,10 @@
     case translate::TranslateStep::TRANSLATE_STEP_BEFORE_TRANSLATE:
       return l10n_util::GetNSString(
           IDS_IOS_TRANSLATE_INFOBAR_BEFORE_TRANSLATE_BANNER_TITLE);
-    case translate::TranslateStep::TRANSLATE_STEP_TRANSLATING:
-      return l10n_util::GetNSString(
-          IDS_IOS_TRANSLATE_INFOBAR_TRANSLATING_BANNER_TITLE);
     case translate::TranslateStep::TRANSLATE_STEP_AFTER_TRANSLATE:
       return l10n_util::GetNSString(
           IDS_IOS_TRANSLATE_INFOBAR_AFTER_TRANSLATE_BANNER_TITLE);
+    case translate::TranslateStep::TRANSLATE_STEP_TRANSLATING:
     case translate::TranslateStep::TRANSLATE_STEP_NEVER_TRANSLATE:
     case translate::TranslateStep::TRANSLATE_STEP_TRANSLATE_ERROR:
       NOTREACHED() << "Should not be presenting Banner in this TranslateStep";
@@ -435,7 +458,6 @@
       return l10n_util::GetNSString(
           IDS_IOS_TRANSLATE_INFOBAR_TRANSLATE_UNDO_ACTION);
     case translate::TranslateStep::TRANSLATE_STEP_TRANSLATING:
-      return nil;
     case translate::TranslateStep::TRANSLATE_STEP_NEVER_TRANSLATE:
     case translate::TranslateStep::TRANSLATE_STEP_TRANSLATE_ERROR:
       NOTREACHED() << "Translate infobar should not be presenting anything in "
