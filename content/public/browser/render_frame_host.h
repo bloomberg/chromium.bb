@@ -451,6 +451,9 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // it to finish.
   virtual void Reload() = 0;
 
+  // Returns true if this frame has fired DOMContentLoaded.
+  virtual bool IsDOMContentLoaded() = 0;
+
  private:
   // This interface should only be implemented inside content.
   friend class RenderFrameHostImpl;

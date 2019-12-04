@@ -7983,4 +7983,8 @@ bool RenderFrameHostImpl::IsBackForwardCacheDisabled() const {
   return back_forward_cache_disabled_reasons_.size();
 }
 
+bool RenderFrameHostImpl::IsDOMContentLoaded() {
+  return dom_content_loaded_;
+}
+
 }  // namespace content

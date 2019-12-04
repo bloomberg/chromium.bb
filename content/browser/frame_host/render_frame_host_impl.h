@@ -333,6 +333,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
                                   BrowserControlsState current,
                                   bool animate) override;
   void Reload() override;
+  bool IsDOMContentLoaded() override;
 
   void SendAccessibilityEventsToManager(
       const AXEventNotificationDetails& details);
@@ -523,9 +524,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // FrameTreeNode. The proper way to check whether a frame is loading is to
   // call FrameTreeNode::IsLoading.
   bool is_loading() const { return is_loading_; }
-
-  // Returns true if this frame has fired DOMContentLoaded.
-  bool dom_content_loaded() const { return dom_content_loaded_; }
 
   // Returns true if this is a top-level frame, or if this frame's RenderFrame
   // is in a different process from its parent frame. Local roots are
