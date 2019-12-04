@@ -89,8 +89,6 @@ GURL GetTrustedVaultRetrievalURL(
 }
 
 KeyParams KeystoreKeyParams(const std::string& key) {
-  // Due to mis-encode of keystore keys to base64 we have to always encode such
-  // keys to provide backward compatibility.
   std::string encoded_key;
   base::Base64Encode(key, &encoded_key);
   return {syncer::KeyDerivationParams::CreateForPbkdf2(),
@@ -159,8 +157,11 @@ sync_pb::NigoriSpecifics BuildTrustedVaultNigoriSpecifics(
   std::unique_ptr<syncer::CryptographerImpl> cryptographer =
       syncer::CryptographerImpl::CreateEmpty();
   for (const std::string& trusted_vault_key : trusted_vault_keys) {
+    std::string encoded_key;
+    base::Base64Encode(trusted_vault_key, &encoded_key);
+
     const std::string key_name = cryptographer->EmplaceKey(
-        trusted_vault_key, syncer::KeyDerivationParams::CreateForPbkdf2());
+        encoded_key, syncer::KeyDerivationParams::CreateForPbkdf2());
     cryptographer->SelectDefaultEncryptionKey(key_name);
   }
 

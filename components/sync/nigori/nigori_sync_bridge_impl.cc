@@ -93,6 +93,20 @@ KeyDerivationParams GetKeyDerivationParamsFromSpecifics(
   return KeyDerivationParams::CreateWithUnsupportedMethod();
 }
 
+// We need to apply base64 encoding before deriving Nigori keys because the
+// underlying crypto libraries (in particular the Java counterparts in JDK's
+// implementation for PBKDF2) assume the keys are utf8.
+std::vector<std::string> Base64EncodeKeys(
+    const std::vector<std::string>& keys) {
+  std::vector<std::string> encoded_keystore_keys;
+  for (const std::string& key : keys) {
+    std::string encoded_key;
+    base::Base64Encode(key, &encoded_key);
+    encoded_keystore_keys.push_back(std::move(encoded_key));
+  }
+  return encoded_keystore_keys;
+}
+
 bool SpecificsHasValidKeyDerivationParams(const NigoriSpecifics& specifics) {
   switch (GetKeyDerivationMethodFromSpecifics(specifics)) {
     case KeyDerivationMethod::UNSUPPORTED:
@@ -578,12 +592,11 @@ void NigoriSyncBridgeImpl::AddTrustedVaultDecryptionKeys(
     return;
   }
 
+  const std::vector<std::string> encoded_keys = Base64EncodeKeys(keys);
   NigoriKeyBag tmp_key_bag = NigoriKeyBag::CreateEmpty();
-  for (const std::string& key : keys) {
-    if (!key.empty()) {
-      tmp_key_bag.AddKey(Nigori::CreateByDerivation(
-          GetKeyDerivationParamsForPendingKeys(), key));
-    }
+  for (const std::string& encoded_key : encoded_keys) {
+    tmp_key_bag.AddKey(Nigori::CreateByDerivation(
+        GetKeyDerivationParamsForPendingKeys(), encoded_key));
   }
 
   base::Optional<ModelError> error = TryDecryptPendingKeysWith(tmp_key_bag);
@@ -652,17 +665,8 @@ bool NigoriSyncBridgeImpl::SetKeystoreKeys(
     return false;
   }
 
-  std::vector<std::string> encoded_keystore_keys(keys.size());
-  for (size_t i = 0; i < keys.size(); ++i) {
-    // We need to apply base64 encoding before using the keys to provide
-    // backward compatibility with non-USS implementation. It's actually needed
-    // only for the keys persisting, but was applied before passing keys to
-    // cryptographer, so we have to do the same.
-    base::Base64Encode(keys[i], &encoded_keystore_keys[i]);
-  }
-
   state_.keystore_keys_cryptographer =
-      KeystoreKeysCryptographer::FromKeystoreKeys(encoded_keystore_keys);
+      KeystoreKeysCryptographer::FromKeystoreKeys(Base64EncodeKeys(keys));
   if (!state_.keystore_keys_cryptographer) {
     state_.keystore_keys_cryptographer =
         KeystoreKeysCryptographer::CreateEmpty();
