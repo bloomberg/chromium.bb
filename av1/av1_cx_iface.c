@@ -1720,6 +1720,28 @@ static aom_codec_err_t ctrl_set_min_cr(aom_codec_alg_priv_t *ctx,
   return update_extra_cfg(ctx, &extra_cfg);
 }
 
+static aom_codec_err_t create_context_and_bufferpool(
+    AV1_COMP **p_cpi, BufferPool **p_buffer_pool, AV1EncoderConfig *oxcf,
+    struct aom_codec_pkt_list *pkt_list_head) {
+  aom_codec_err_t res = AOM_CODEC_OK;
+
+  *p_buffer_pool = (BufferPool *)aom_calloc(1, sizeof(BufferPool));
+  if (*p_buffer_pool == NULL) return AOM_CODEC_MEM_ERROR;
+
+#if CONFIG_MULTITHREAD
+  if (pthread_mutex_init(&((*p_buffer_pool)->pool_mutex), NULL)) {
+    return AOM_CODEC_MEM_ERROR;
+  }
+#endif
+  *p_cpi = av1_create_compressor(oxcf, *p_buffer_pool);
+  if (*p_cpi == NULL)
+    res = AOM_CODEC_MEM_ERROR;
+  else
+    (*p_cpi)->output_pkt_list = pkt_list_head;
+
+  return res;
+}
+
 static aom_codec_err_t encoder_init(aom_codec_ctx_t *ctx,
                                     aom_codec_priv_enc_mr_cfg_t *data) {
   aom_codec_err_t res = AOM_CODEC_OK;
@@ -1732,14 +1754,6 @@ static aom_codec_err_t encoder_init(aom_codec_ctx_t *ctx,
     ctx->priv = (aom_codec_priv_t *)priv;
     ctx->priv->init_flags = ctx->init_flags;
     ctx->priv->enc.total_encoders = 1;
-    priv->buffer_pool = (BufferPool *)aom_calloc(1, sizeof(BufferPool));
-    if (priv->buffer_pool == NULL) return AOM_CODEC_MEM_ERROR;
-
-#if CONFIG_MULTITHREAD
-    if (pthread_mutex_init(&priv->buffer_pool->pool_mutex, NULL)) {
-      return AOM_CODEC_MEM_ERROR;
-    }
-#endif
 
     if (ctx->config.enc) {
       // Update the reference to the config structure to an internal copy.
@@ -1761,24 +1775,27 @@ static aom_codec_err_t encoder_init(aom_codec_ctx_t *ctx,
       set_encoder_config(&priv->oxcf, &priv->cfg, &priv->extra_cfg);
       priv->oxcf.use_highbitdepth =
           (ctx->init_flags & AOM_CODEC_USE_HIGHBITDEPTH) ? 1 : 0;
-      priv->cpi = av1_create_compressor(&priv->oxcf, priv->buffer_pool);
-      if (priv->cpi == NULL)
-        res = AOM_CODEC_MEM_ERROR;
-      else
-        priv->cpi->output_pkt_list = &priv->pkt_list.head;
+
+      res = create_context_and_bufferpool(&priv->cpi, &priv->buffer_pool,
+                                          &priv->oxcf, &priv->pkt_list.head);
     }
   }
 
   return res;
 }
 
+static void destroy_context_and_bufferpool(AV1_COMP *cpi,
+                                           BufferPool *buffer_pool) {
+  av1_remove_compressor(cpi);
+#if CONFIG_MULTITHREAD
+  pthread_mutex_destroy(&buffer_pool->pool_mutex);
+#endif
+  aom_free(buffer_pool);
+}
+
 static aom_codec_err_t encoder_destroy(aom_codec_alg_priv_t *ctx) {
   free(ctx->cx_data);
-  av1_remove_compressor(ctx->cpi);
-#if CONFIG_MULTITHREAD
-  pthread_mutex_destroy(&ctx->buffer_pool->pool_mutex);
-#endif
-  aom_free(ctx->buffer_pool);
+  destroy_context_and_bufferpool(ctx->cpi, ctx->buffer_pool);
   aom_free(ctx);
   return AOM_CODEC_OK;
 }
