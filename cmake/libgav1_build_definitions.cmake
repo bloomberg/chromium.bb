@@ -30,6 +30,10 @@ macro(libgav1_set_build_definitions)
     if(CMAKE_ANDROID_ARCH_ABI STREQUAL "armeabi-v7a")
       set(CMAKE_ANDROID_ARM_MODE ON)
     endif()
+
+    if(CMAKE_BUILD_TYPE MATCHES "Rel|REL")
+      list(APPEND libgav1_base_cxx_flags "-fno-stack-protector")
+    endif()
   endif()
 
   list(APPEND libgav1_base_cxx_flags "-Wall" "-Wextra" "-Wmissing-declarations"
