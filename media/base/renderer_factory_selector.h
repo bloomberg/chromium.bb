@@ -40,13 +40,14 @@ class MEDIA_EXPORT RendererFactorySelector {
   // These values are persisted to logs. Entries should not be renumbered and
   // numeric values should never be reused.
   enum FactoryType {
-    DEFAULT = 0,       // DefaultRendererFactory.
-    MOJO = 1,          // MojoRendererFactory.
-    MEDIA_PLAYER = 2,  // MediaPlayerRendererClientFactory.
-    COURIER = 3,       // CourierRendererFactory.
-    FLINGING = 4,      // FlingingRendererClientFactory.
-    CAST = 5,          // CastRendererClientFactory.
-    FACTORY_TYPE_MAX = CAST,
+    DEFAULT = 0,           // DefaultRendererFactory
+    MOJO = 1,              // MojoRendererFactory
+    MEDIA_PLAYER = 2,      // MediaPlayerRendererClientFactory
+    COURIER = 3,           // CourierRendererFactory
+    FLINGING = 4,          // FlingingRendererClientFactory
+    CAST = 5,              // CastRendererClientFactory
+    MEDIA_FOUNDATION = 6,  // MediaFoundationRendererClientFactory
+    FACTORY_TYPE_MAX = MEDIA_FOUNDATION,
   };
 
   RendererFactorySelector();

@@ -377,8 +377,11 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
       bool decoder_requires_restart_for_overlay,
       const ProvideOverlayInfoCB& provide_overlay_info_cb);
 
-  // Creates a Renderer via the |renderer_factory_selector_|.
-  std::unique_ptr<Renderer> CreateRenderer();
+  // Creates a Renderer via the |renderer_factory_selector_|. If the
+  // |factory_type| is base::nullopt, create the base Renderer. Otherwise, set
+  // the base type to be |factory_type| and create a Renderer of that type.
+  std::unique_ptr<Renderer> CreateRenderer(
+      base::Optional<RendererFactorySelector::FactoryType> factory_type);
 
   // Finishes starting the pipeline due to a call to load().
   void StartPipeline();

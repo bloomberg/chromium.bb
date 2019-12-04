@@ -2590,7 +2590,8 @@ void WebMediaPlayerImpl::MaybeSendOverlayInfoToDecoder() {
   }
 }
 
-std::unique_ptr<Renderer> WebMediaPlayerImpl::CreateRenderer() {
+std::unique_ptr<Renderer> WebMediaPlayerImpl::CreateRenderer(
+    base::Optional<RendererFactorySelector::FactoryType> factory_type) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
   // Make sure that overlays are enabled if they're always allowed.
@@ -2602,6 +2603,12 @@ std::unique_ptr<Renderer> WebMediaPlayerImpl::CreateRenderer() {
   request_overlay_info_cb = BindToCurrentLoop(
       base::Bind(&WebMediaPlayerImpl::OnOverlayInfoRequested, weak_this_));
 #endif
+
+  if (factory_type) {
+    DVLOG(1) << __func__ << ": factory_type=" << factory_type.value();
+    renderer_factory_selector_->SetBaseFactoryType(factory_type.value());
+  }
+
   reported_renderer_type_ = renderer_factory_selector_->GetCurrentFactoryType();
 
   return renderer_factory_selector_->GetCurrentFactory()->CreateRenderer(
