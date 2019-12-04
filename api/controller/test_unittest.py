@@ -251,6 +251,26 @@ class ChromiteUnitTestTest(cros_test_lib.MockTestCase,
                                      self.validate_only_config)
     patch.assert_not_called()
 
+  def testMockError(self):
+    """Test mock error call does not execute any logic, returns error."""
+    patch = self.PatchObject(cros_build_lib, 'run')
+
+    input_msg = self._GetInput(chroot_path=self.chroot_path)
+    rc = test_controller.ChromiteUnitTest(input_msg, self._GetOutput(),
+                                          self.mock_error_config)
+    patch.assert_not_called()
+    self.assertEqual(controller.RETURN_CODE_COMPLETED_UNSUCCESSFULLY, rc)
+
+  def testMockCall(self):
+    """Test mock call does not execute any logic, returns success."""
+    patch = self.PatchObject(cros_build_lib, 'run')
+
+    input_msg = self._GetInput(chroot_path=self.chroot_path)
+    rc = test_controller.ChromiteUnitTest(input_msg, self._GetOutput(),
+                                          self.mock_call_config)
+    patch.assert_not_called()
+    self.assertEqual(controller.RETURN_CODE_SUCCESS, rc)
+
   def testChromiteUnitTest(self):
     """Call ChromiteUnitTest with mocked cros_build_lib.run."""
     request = self._GetInput(chroot_path=self.chroot_path)

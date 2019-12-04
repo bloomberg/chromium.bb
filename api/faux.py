@@ -105,3 +105,14 @@ def empty_error(func):
     return func(input_proto, output_proto, config, *args, **kwargs)
 
   return _empty_error
+
+def empty_completed_unsuccessfully_error(func):
+  """A decorator to handle mock unsuccessful response with empty outputs."""
+  @functools.wraps(func)
+  def _empty_error(input_proto, output_proto, config, *args, **kwargs):
+    if config.mock_error:
+      return controller.RETURN_CODE_COMPLETED_UNSUCCESSFULLY
+
+    return func(input_proto, output_proto, config, *args, **kwargs)
+
+  return _empty_error

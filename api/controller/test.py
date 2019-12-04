@@ -121,7 +121,8 @@ def BuildTargetUnitTest(input_proto, output_proto, _config):
   deserialize_metrics_log(output_proto.events, prefix=build_target.name)
 
 
-@faux.all_empty
+@faux.empty_success
+@faux.empty_completed_unsuccessfully_error
 @validate.validation_complete
 def ChromiteUnitTest(_input_proto, _output_proto, _config):
   """Run the chromite unit tests."""
