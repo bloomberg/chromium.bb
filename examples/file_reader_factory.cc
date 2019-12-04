@@ -16,14 +16,10 @@
 
 #include <new>
 
+#include "examples/logging.h"
+
 namespace libgav1 {
 namespace {
-
-#define FILEREADER_LOG_ERROR(error_string)                             \
-  do {                                                                 \
-    fprintf(stderr, "%s:%d (%s): %s.\n", __FILE__, __LINE__, __func__, \
-            error_string);                                             \
-  } while (false)
 
 std::vector<FileReaderFactory::OpenFunction>* GetFileReaderOpenFunctions() {
   static auto* open_functions =
@@ -48,7 +44,7 @@ std::unique_ptr<FileReaderInterface> FileReaderFactory::OpenReader(
     if (reader == nullptr) continue;
     return reader;
   }
-  FILEREADER_LOG_ERROR("No file reader able to open input");
+  LIBGAV1_EXAMPLES_LOG_ERROR("No file reader able to open input");
   return nullptr;
 }
 

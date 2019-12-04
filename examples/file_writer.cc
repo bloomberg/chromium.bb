@@ -27,6 +27,7 @@
 
 #include "absl/memory/memory.h"
 #include "absl/strings/str_format.h"
+#include "examples/logging.h"
 
 namespace libgav1 {
 namespace {
@@ -81,12 +82,6 @@ std::string GetY4mColorSpaceString(
 
 }  // namespace
 
-#define FILEWRITER_LOG_ERROR(error_string)                             \
-  do {                                                                 \
-    fprintf(stderr, "%s:%d (%s): %s.\n", __FILE__, __LINE__, __func__, \
-            error_string);                                             \
-  } while (false)
-
 FileWriter::~FileWriter() { fclose(file_); }
 
 std::unique_ptr<FileWriter> FileWriter::Open(
@@ -95,7 +90,7 @@ std::unique_ptr<FileWriter> FileWriter::Open(
   if (file_name.empty() ||
       (file_type == kFileTypeY4m && y4m_parameters == nullptr) ||
       (file_type != kFileTypeRaw && file_type != kFileTypeY4m)) {
-    FILEWRITER_LOG_ERROR("Invalid parameters");
+    LIBGAV1_EXAMPLES_LOG_ERROR("Invalid parameters");
     return nullptr;
   }
 
@@ -109,19 +104,19 @@ std::unique_ptr<FileWriter> FileWriter::Open(
   }
 
   if (raw_file_ptr == nullptr) {
-    FILEWRITER_LOG_ERROR("Unable to open output file");
+    LIBGAV1_EXAMPLES_LOG_ERROR("Unable to open output file");
     return nullptr;
   }
 
   auto file = absl::WrapUnique(new (std::nothrow) FileWriter(raw_file_ptr));
   if (file == nullptr) {
-    FILEWRITER_LOG_ERROR("Out of memory");
+    LIBGAV1_EXAMPLES_LOG_ERROR("Out of memory");
     fclose(raw_file_ptr);
     return nullptr;
   }
 
   if (file_type == kFileTypeY4m && !file->WriteY4mFileHeader(*y4m_parameters)) {
-    FILEWRITER_LOG_ERROR("Error writing Y4M file header");
+    LIBGAV1_EXAMPLES_LOG_ERROR("Error writing Y4M file header");
     return nullptr;
   }
 
@@ -134,7 +129,7 @@ bool FileWriter::WriteFrame(const DecoderBuffer& frame_buffer) {
     const char kY4mFrameHeader[] = "FRAME\n";
     if (fwrite(kY4mFrameHeader, 1, strlen(kY4mFrameHeader), file_) !=
         strlen(kY4mFrameHeader)) {
-      FILEWRITER_LOG_ERROR("Error writing Y4M frame header");
+      LIBGAV1_EXAMPLES_LOG_ERROR("Error writing Y4M frame header");
       return false;
     }
   }
@@ -154,7 +149,7 @@ bool FileWriter::WriteFrame(const DecoderBuffer& frame_buffer) {
         char error_string[256];
         snprintf(error_string, sizeof(error_string),
                  "File write failed: %s (errno=%d)", strerror(errno), errno);
-        FILEWRITER_LOG_ERROR(error_string);
+        LIBGAV1_EXAMPLES_LOG_ERROR(error_string);
         return false;
       }
     }

@@ -11,10 +11,12 @@ set(libgav1_file_reader_sources "${libgav1_examples}/file_reader.cc"
                                 "${libgav1_examples}/file_reader_factory.h"
                                 "${libgav1_examples}/file_reader_interface.h"
                                 "${libgav1_examples}/ivf_parser.cc"
-                                "${libgav1_examples}/ivf_parser.h")
+                                "${libgav1_examples}/ivf_parser.h"
+                                "${libgav1_examples}/logging.h")
 
 set(libgav1_file_writer_sources "${libgav1_examples}/file_writer.cc"
-                                "${libgav1_examples}/file_writer.h")
+                                "${libgav1_examples}/file_writer.h"
+                                "${libgav1_examples}/logging.h")
 
 set(libgav1_decode_sources "${libgav1_examples}/gav1_decode.cc")
 

@@ -45,6 +45,8 @@ Configuration options:
     optimizations. Automatically defined in `src/dsp/dsp.h` if unset.
 *   `LIBGAV1_ENABLE_LOGGING`: define to 0/1 to control debug logging.
     Automatically defined in `src/utils/logging.h` if unset.
+*   `LIBGAV1_EXAMPLES_ENABLE_LOGGING`: define to 0/1 to control error logging in
+    the examples. Automatically defined in `examples/logging.h` if unset.
 *   `LIBGAV1_ENABLE_TRANSFORM_RANGE_CHECK`: define to 1 to enable transform
     coefficient range checks.
 *   `LIBGAV1_LOG_LEVEL`: controls the maximum allowed log level, see `enum

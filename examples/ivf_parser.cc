@@ -18,15 +18,10 @@
 #include <cstring>
 
 #include "examples/file_reader_constants.h"
+#include "examples/logging.h"
 
 namespace libgav1 {
 namespace {
-
-#define IVFPARSER_LOG_ERROR(error_string)                              \
-  do {                                                                 \
-    fprintf(stderr, "%s:%d (%s): %s.\n", __FILE__, __LINE__, __func__, \
-            error_string);                                             \
-  } while (false)
 
 size_t ReadLittleEndian16(const uint8_t* const buffer) {
   size_t value = buffer[1] << 8;
@@ -55,18 +50,18 @@ bool ParseIvfFileHeader(const uint8_t* const header_buffer,
   // Verify header version and length.
   const size_t ivf_header_version = ReadLittleEndian16(&header_buffer[4]);
   if (ivf_header_version != kIvfHeaderVersion) {
-    IVFPARSER_LOG_ERROR("Unexpected IVF version");
+    LIBGAV1_EXAMPLES_LOG_ERROR("Unexpected IVF version");
   }
 
   const size_t ivf_header_size = ReadLittleEndian16(&header_buffer[6]);
   if (ivf_header_size != kIvfFileHeaderSize) {
-    IVFPARSER_LOG_ERROR("Invalid IVF file header size");
+    LIBGAV1_EXAMPLES_LOG_ERROR("Invalid IVF file header size");
     return false;
   }
 
   if (memcmp(kAv1FourCcLower, &header_buffer[8], 4) != 0 &&
       memcmp(kAv1FourCcUpper, &header_buffer[8], 4) != 0) {
-    IVFPARSER_LOG_ERROR("Unsupported codec 4CC");
+    LIBGAV1_EXAMPLES_LOG_ERROR("Unsupported codec 4CC");
     return false;
   }
 
@@ -86,7 +81,7 @@ bool ParseIvfFrameHeader(const uint8_t* const header_buffer,
 
   ivf_frame_header->frame_size = ReadLittleEndian32(header_buffer);
   if (ivf_frame_header->frame_size > kMaxTemporalUnitSize) {
-    IVFPARSER_LOG_ERROR("Temporal Unit size exceeds maximum");
+    LIBGAV1_EXAMPLES_LOG_ERROR("Temporal Unit size exceeds maximum");
     return false;
   }
 

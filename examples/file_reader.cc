@@ -31,6 +31,7 @@
 #include "examples/file_reader_factory.h"
 #include "examples/file_reader_interface.h"
 #include "examples/ivf_parser.h"
+#include "examples/logging.h"
 
 namespace libgav1 {
 namespace {
@@ -43,12 +44,6 @@ FILE* SetBinaryMode(FILE* stream) {
 }
 
 }  // namespace
-
-#define FILEREADER_LOG_ERROR(error_string)                             \
-  do {                                                                 \
-    fprintf(stderr, "%s:%d (%s): %s.\n", __FILE__, __LINE__, __func__, \
-            error_string);                                             \
-  } while (false)
 
 bool FileReader::registered_in_factory_ =
     FileReaderFactory::RegisterReader(FileReader::Open);
@@ -79,13 +74,13 @@ std::unique_ptr<FileReaderInterface> FileReader::Open(
   auto file = absl::WrapUnique(
       new (std::nothrow) FileReader(raw_file_ptr, owns_file, error_tolerant));
   if (file == nullptr) {
-    FILEREADER_LOG_ERROR("Out of memory");
+    LIBGAV1_EXAMPLES_LOG_ERROR("Out of memory");
     if (owns_file) fclose(raw_file_ptr);
     return nullptr;
   }
 
   if (!file->ReadIvfFileHeader()) {
-    FILEREADER_LOG_ERROR("Unsupported file type");
+    LIBGAV1_EXAMPLES_LOG_ERROR("Unsupported file type");
     return nullptr;
   }
 
@@ -106,7 +101,7 @@ bool FileReader::ReadTemporalUnit(std::vector<uint8_t>* const tu_data,
 
   if (IsEndOfFile()) {
     if (num_read != 0) {
-      FILEREADER_LOG_ERROR(
+      LIBGAV1_EXAMPLES_LOG_ERROR(
           "Cannot read IVF frame header: Not enough data available");
       return false;
     }
@@ -116,7 +111,7 @@ bool FileReader::ReadTemporalUnit(std::vector<uint8_t>* const tu_data,
 
   IvfFrameHeader ivf_frame_header;
   if (!ParseIvfFrameHeader(header_buffer, &ivf_frame_header)) {
-    FILEREADER_LOG_ERROR("Could not parse IVF frame header");
+    LIBGAV1_EXAMPLES_LOG_ERROR("Could not parse IVF frame header");
     if (error_tolerant_) {
       ivf_frame_header.frame_size =
           std::min(ivf_frame_header.frame_size, size_t{kMaxTemporalUnitSize});
@@ -131,7 +126,8 @@ bool FileReader::ReadTemporalUnit(std::vector<uint8_t>* const tu_data,
   const size_t size_read =
       fread(tu_data->data(), 1, ivf_frame_header.frame_size, file_);
   if (size_read != ivf_frame_header.frame_size) {
-    FILEREADER_LOG_ERROR("Unexpected EOF or I/O error reading frame data");
+    LIBGAV1_EXAMPLES_LOG_ERROR(
+        "Unexpected EOF or I/O error reading frame data");
     if (error_tolerant_) {
       tu_data->resize(size_read);
     } else {
@@ -165,13 +161,14 @@ bool FileReader::ReadIvfFileHeader() {
   uint8_t header_buffer[kIvfFileHeaderSize];
   const size_t num_read = fread(header_buffer, 1, kIvfFileHeaderSize, file_);
   if (num_read != kIvfFileHeaderSize) {
-    FILEREADER_LOG_ERROR("Cannot read IVF header: Not enough data available");
+    LIBGAV1_EXAMPLES_LOG_ERROR(
+        "Cannot read IVF header: Not enough data available");
     return false;
   }
 
   IvfFileHeader ivf_file_header;
   if (!ParseIvfFileHeader(header_buffer, &ivf_file_header)) {
-    FILEREADER_LOG_ERROR("Could not parse IVF file header");
+    LIBGAV1_EXAMPLES_LOG_ERROR("Could not parse IVF file header");
     if (error_tolerant_) {
       ivf_file_header = {};
     } else {
