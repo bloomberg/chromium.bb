@@ -9848,6 +9848,13 @@ Called by update_net_error_codes.py.-->
   <int value="1" label="deflate"/>
 </enum>
 
+<enum name="CompromiseType">
+  <int value="0"
+      label="Leaked - If the credentials was leaked by a data breach."/>
+  <int value="1"
+      label="Phished - If the credentials was reused on a phishing site."/>
+</enum>
+
 <enum name="ComputeCurrentSigninStatus">
   <obsolete>
     Deprecated as of Jun 2016. The enum was added for debugging purpose and is
