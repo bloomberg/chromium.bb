@@ -3,6 +3,9 @@
 // found in the LICENSE file.
 
 #include "base/files/file.h"
+
+#include <utility>
+
 #include "base/files/file_path.h"
 #include "base/files/file_tracing.h"
 #include "base/metrics/histogram.h"
@@ -28,7 +31,17 @@ File::File(const FilePath& path, uint32_t flags) : error_details_(FILE_OK) {
 }
 #endif
 
+File::File(ScopedPlatformFile platform_file)
+    : File(std::move(platform_file), false) {}
+
 File::File(PlatformFile platform_file) : File(platform_file, false) {}
+
+File::File(ScopedPlatformFile platform_file, bool async)
+    : file_(std::move(platform_file)), error_details_(FILE_OK), async_(async) {
+#if defined(OS_POSIX) || defined(OS_FUCHSIA)
+  DCHECK_GE(file_.get(), -1);
+#endif
+}
 
 File::File(PlatformFile platform_file, bool async)
     : file_(platform_file),

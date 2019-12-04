@@ -154,11 +154,13 @@ class BASE_EXPORT File {
   File(const FilePath& path, uint32_t flags);
 
   // Takes ownership of |platform_file| and sets async to false.
+  explicit File(ScopedPlatformFile platform_file);
   explicit File(PlatformFile platform_file);
 
   // Takes ownership of |platform_file| and sets async to the given value.
   // This constructor exists because on Windows you can't check if platform_file
   // is async or not.
+  File(ScopedPlatformFile platform_file, bool async);
   File(PlatformFile platform_file, bool async);
 
   // Creates an object with a specific error_details code.
