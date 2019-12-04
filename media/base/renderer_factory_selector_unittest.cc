@@ -50,8 +50,8 @@ class RendererFactorySelectorTest : public testing::Test {
     condition_met_map_[type] = false;
     selector_.AddConditionalFactory(
         type, std::make_unique<FakeFactory>(type),
-        base::Bind(&RendererFactorySelectorTest::IsConditionMet,
-                   base::Unretained(this), type));
+        base::BindRepeating(&RendererFactorySelectorTest::IsConditionMet,
+                            base::Unretained(this), type));
   }
 
   FactoryType GetCurrentlySelectedFactoryType() {
