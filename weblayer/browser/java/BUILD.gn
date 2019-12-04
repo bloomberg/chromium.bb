@@ -67,6 +67,7 @@ android_library("java") {
     "//components/embedder_support/android:application_java",
     "//components/embedder_support/android:web_contents_delegate_java",
     "//components/minidump_uploader:minidump_uploader_java",
+    "//components/spellcheck/browser/android:java",
     "//components/version_info/android:version_constants_java",
     "//content/public/android:content_java",
     "//third_party/android_deps:com_android_support_support_compat_java",
