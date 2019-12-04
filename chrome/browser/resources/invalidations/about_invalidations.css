@@ -17,8 +17,8 @@ body {
 
 #invalidations-info .section {
   display: inline-block;
-  margin-left: auto;
-  margin-right: auto;
+  margin-inline-end: auto;
+  margin-inline-start: auto;
   width: 100%;
 }
 
