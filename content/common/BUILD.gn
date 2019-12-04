@@ -501,6 +501,7 @@ mojom("mojo_bindings") {
     "//components/tracing/common:interfaces",
     "//content/public/common:interfaces",
     "//content/public/common:resource_type_bindings",
+    "//ipc:mojom",
     "//ipc:mojom_constants",
     "//media/capture/mojom:video_capture",
     "//media/mojo/mojom",
