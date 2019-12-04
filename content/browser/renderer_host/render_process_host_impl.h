@@ -473,9 +473,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
     return render_frame_message_filter_.get();
   }
 
-  void SetBrowserPluginMessageFilterSubFilterForTesting(
-      scoped_refptr<BrowserMessageFilter> message_filter) const;
-
   void set_is_for_guests_only_for_testing(bool is_for_guests_only) {
     is_for_guests_only_ = is_for_guests_only;
   }

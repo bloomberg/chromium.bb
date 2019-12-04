@@ -4911,11 +4911,6 @@ void RenderProcessHostImpl::GetBrowserHistogram(
   std::move(callback).Run(histogram_json);
 }
 
-void RenderProcessHostImpl::SetBrowserPluginMessageFilterSubFilterForTesting(
-    scoped_refptr<BrowserMessageFilter> message_filter) const {
-  bp_message_filter_->SetSubFilterForTesting(std::move(message_filter));
-}
-
 void RenderProcessHostImpl::BindTracedProcess(
     mojo::PendingReceiver<tracing::mojom::TracedProcess> receiver) {
   BindReceiver(std::move(receiver));

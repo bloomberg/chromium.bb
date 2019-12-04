@@ -1693,16 +1693,13 @@ bool HasValidProcessForProcessGroup(const std::string& process_group_name);
 
 // Performs a simple auto-resize flow and ensures that the embedder gets a
 // single response messages back from the guest, with the expected values.
-bool TestChildOrGuestAutoresize(bool is_guest,
-                                RenderProcessHost* embedder_rph,
-                                RenderWidgetHost* guest_rwh);
+bool TestGuestAutoresize(RenderProcessHost* embedder_rph,
+                         RenderWidgetHost* guest_rwh);
 
-// Class to sniff incoming IPCs for either
-// FrameHostMsg_SynchronizeVisualProperties or
-// BrowserPluginHostMsg_SynchronizeVisualProperties messages. This allows the
-// message to continue to the target child so that processing can be verified by
-// tests.
-// It also monitors for GesturePinchBegin/End events.
+// Class to sniff incoming IPCs for FrameHostMsg_SynchronizeVisualProperties
+// messages. This allows the message to continue to the target child so that
+// processing can be verified by tests. It also monitors for
+// GesturePinchBegin/End events.
 class SynchronizeVisualPropertiesMessageFilter
     : public content::BrowserMessageFilter {
  public:
@@ -1733,9 +1730,6 @@ class SynchronizeVisualPropertiesMessageFilter
   void OnSynchronizeFrameHostVisualProperties(
       const viz::FrameSinkId& frame_sink_id,
       const FrameVisualProperties& visual_properties);
-  void OnSynchronizeBrowserPluginVisualProperties(
-      int browser_plugin_guest_instance_id,
-      FrameVisualProperties visual_properties);
   void OnSynchronizeVisualProperties(
       const viz::FrameSinkId& frame_sink_id,
       const FrameVisualProperties& visual_properties);
@@ -1746,7 +1740,6 @@ class SynchronizeVisualPropertiesMessageFilter
 
   bool OnMessageReceived(const IPC::Message& message) override;
 
-  static const uint32_t kMessageClassesToFilter[2];
   viz::FrameSinkId frame_sink_id_;
   base::RunLoop frame_sink_id_run_loop_;
 

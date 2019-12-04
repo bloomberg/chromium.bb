@@ -36,7 +36,6 @@
 #include "content/browser/accessibility/browser_accessibility.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/browser_plugin/browser_plugin_guest.h"
-#include "content/browser/browser_plugin/browser_plugin_message_filter.h"
 #include "content/browser/compositor/surface_utils.h"
 #include "content/browser/file_system/file_system_manager_impl.h"
 #include "content/browser/frame_host/cross_process_frame_connector.h"
@@ -55,7 +54,6 @@
 #include "content/browser/service_manager/service_manager_context.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/web_contents/web_contents_view.h"
-#include "content/common/browser_plugin/browser_plugin_messages.h"
 #include "content/common/frame_messages.h"
 #include "content/common/frame_visual_properties.h"
 #include "content/common/input/synthetic_web_input_event_builders.h"
@@ -3346,9 +3344,8 @@ bool HasValidProcessForProcessGroup(const std::string& process_group_name) {
       process_group_name);
 }
 
-bool TestChildOrGuestAutoresize(bool is_guest,
-                                RenderProcessHost* embedder_rph,
-                                RenderWidgetHost* guest_rwh) {
+bool TestGuestAutoresize(RenderProcessHost* embedder_rph,
+                         RenderWidgetHost* guest_rwh) {
   RenderProcessHostImpl* embedder_rph_impl =
       static_cast<RenderProcessHostImpl*>(embedder_rph);
   RenderWidgetHostImpl* guest_rwh_impl =
@@ -3357,15 +3354,7 @@ bool TestChildOrGuestAutoresize(bool is_guest,
   auto filter =
       base::MakeRefCounted<SynchronizeVisualPropertiesMessageFilter>();
 
-  // Register the message filter for the guest or child. For guest, we must use
-  // a special hook, as there are already message filters installed which will
-  // supercede us.
-  if (is_guest) {
-    embedder_rph_impl->SetBrowserPluginMessageFilterSubFilterForTesting(
-        filter.get());
-  } else {
-    embedder_rph_impl->AddFilter(filter.get());
-  }
+  embedder_rph_impl->AddFilter(filter.get());
 
   viz::LocalSurfaceId current_id = guest_rwh_impl->GetView()
                                        ->GetLocalSurfaceIdAllocation()
@@ -3406,14 +3395,9 @@ bool TestChildOrGuestAutoresize(bool is_guest,
                              current_id.embed_token());
 }
 
-const uint32_t
-    SynchronizeVisualPropertiesMessageFilter::kMessageClassesToFilter[2] = {
-        FrameMsgStart, BrowserPluginMsgStart};
-
 SynchronizeVisualPropertiesMessageFilter::
     SynchronizeVisualPropertiesMessageFilter()
-    : content::BrowserMessageFilter(kMessageClassesToFilter,
-                                    base::size(kMessageClassesToFilter)),
+    : content::BrowserMessageFilter(FrameMsgStart),
       screen_space_rect_run_loop_(std::make_unique<base::RunLoop>()),
       screen_space_rect_received_(false),
       pinch_gesture_active_set_(false),
@@ -3451,13 +3435,6 @@ void SynchronizeVisualPropertiesMessageFilter::
         const viz::FrameSinkId& frame_sink_id,
         const FrameVisualProperties& visual_properties) {
   OnSynchronizeVisualProperties(frame_sink_id, visual_properties);
-}
-
-void SynchronizeVisualPropertiesMessageFilter::
-    OnSynchronizeBrowserPluginVisualProperties(
-        int browser_plugin_guest_instance_id,
-        FrameVisualProperties visual_properties) {
-  OnSynchronizeVisualProperties(viz::FrameSinkId(), visual_properties);
 }
 
 void SynchronizeVisualPropertiesMessageFilter::OnSynchronizeVisualProperties(
@@ -3549,8 +3526,6 @@ bool SynchronizeVisualPropertiesMessageFilter::OnMessageReceived(
   IPC_BEGIN_MESSAGE_MAP(SynchronizeVisualPropertiesMessageFilter, message)
     IPC_MESSAGE_HANDLER(FrameHostMsg_SynchronizeVisualProperties,
                         OnSynchronizeFrameHostVisualProperties)
-    IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_SynchronizeVisualProperties,
-                        OnSynchronizeBrowserPluginVisualProperties)
   IPC_END_MESSAGE_MAP()
 
   // We do not consume the message, so that we can verify the effects of it
