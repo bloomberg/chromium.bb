@@ -1368,6 +1368,7 @@ component("ash") {
     "//components/discardable_memory/public/mojom",
     "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/system",
+    "//services/content/public/mojom",
     "//services/data_decoder/public/mojom",
     "//services/device/public/cpp/bluetooth",
     "//services/device/public/mojom",
