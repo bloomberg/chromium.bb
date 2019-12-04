@@ -49,7 +49,7 @@ public class ShareSheetCoordinator {
         PropertyModel qrcodePropertyModel =
                 new PropertyModel.Builder(ShareSheetItemViewProperties.ALL_KEYS)
                         .with(ShareSheetItemViewProperties.ICON,
-                                AppCompatResources.getDrawable(context, R.drawable.ic_launcher))
+                                AppCompatResources.getDrawable(context, R.drawable.qr_code))
                         .with(ShareSheetItemViewProperties.LABEL,
                                 context.getResources().getString(R.string.qr_code_share_icon_label))
                         .with(ShareSheetItemViewProperties.CLICK_LISTENER,
@@ -64,7 +64,7 @@ public class ShareSheetCoordinator {
         PropertyModel sttsPropertyModel =
                 new PropertyModel.Builder(ShareSheetItemViewProperties.ALL_KEYS)
                         .with(ShareSheetItemViewProperties.ICON,
-                                AppCompatResources.getDrawable(context, R.drawable.ic_launcher))
+                                AppCompatResources.getDrawable(context, R.drawable.send_tab))
                         .with(ShareSheetItemViewProperties.LABEL,
                                 context.getResources().getString(
                                         R.string.send_tab_to_self_share_activity_title))
