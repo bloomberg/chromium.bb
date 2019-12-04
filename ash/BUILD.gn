@@ -1003,6 +1003,8 @@ component("ash") {
     "system/tray/tray_utils.h",
     "system/tray/tri_view.cc",
     "system/tray/tri_view.h",
+    "system/tray/unfocusable_label.cc",
+    "system/tray/unfocusable_label.h",
     "system/tray/view_click_listener.h",
     "system/unified/collapse_button.cc",
     "system/unified/collapse_button.h",
