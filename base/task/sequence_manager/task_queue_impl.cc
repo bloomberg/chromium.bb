@@ -625,10 +625,31 @@ void TaskQueueImpl::TraceQueueSize() const {
 }
 
 void TaskQueueImpl::SetQueuePriority(TaskQueue::QueuePriority priority) {
-  if (priority == GetQueuePriority())
+  const TaskQueue::QueuePriority previous_priority = GetQueuePriority();
+  if (priority == previous_priority)
     return;
   sequence_manager_->main_thread_only().selector.SetQueuePriority(this,
                                                                   priority);
+
+  static_assert(TaskQueue::QueuePriority::kLowPriority >
+                    TaskQueue::QueuePriority::kNormalPriority,
+                "Priorities are not ordered as expected");
+  if (priority > TaskQueue::QueuePriority::kNormalPriority) {
+    // |priority| is now kLowPriority or less important so update accordingly.
+    main_thread_only()
+        .enqueue_order_at_which_we_became_unblocked_with_normal_priority =
+        EnqueueOrder::max();
+  } else if (previous_priority > TaskQueue::QueuePriority::kNormalPriority) {
+    // |priority| is no longer kLowPriority or less important so record current
+    // sequence number.
+    DCHECK_EQ(
+        main_thread_only()
+            .enqueue_order_at_which_we_became_unblocked_with_normal_priority,
+        EnqueueOrder::max());
+    main_thread_only()
+        .enqueue_order_at_which_we_became_unblocked_with_normal_priority =
+        sequence_manager_->GetNextSequenceNumber();
+  }
 }
 
 TaskQueue::QueuePriority TaskQueueImpl::GetQueuePriority() const {
@@ -721,18 +742,21 @@ void TaskQueueImpl::RemoveTaskObserver(TaskObserver* task_observer) {
   main_thread_only().task_observers.RemoveObserver(task_observer);
 }
 
-void TaskQueueImpl::NotifyWillProcessTask(const PendingTask& pending_task) {
+void TaskQueueImpl::NotifyWillProcessTask(const Task& task,
+                                          bool was_blocked_or_low_priority) {
   DCHECK(should_notify_observers_);
+
   if (main_thread_only().blame_context)
     main_thread_only().blame_context->Enter();
+
   for (auto& observer : main_thread_only().task_observers)
-    observer.WillProcessTask(pending_task);
+    observer.WillProcessTask(task, was_blocked_or_low_priority);
 }
 
-void TaskQueueImpl::NotifyDidProcessTask(const PendingTask& pending_task) {
+void TaskQueueImpl::NotifyDidProcessTask(const Task& task) {
   DCHECK(should_notify_observers_);
   for (auto& observer : main_thread_only().task_observers)
-    observer.DidProcessTask(pending_task);
+    observer.DidProcessTask(task);
   if (main_thread_only().blame_context)
     main_thread_only().blame_context->Leave();
 }
@@ -807,8 +831,7 @@ void TaskQueueImpl::InsertFence(TaskQueue::InsertFencePosition position) {
   }
 
   if (IsQueueEnabled() && front_task_unblocked) {
-    main_thread_only().last_unblocked_enqueue_order =
-        sequence_manager_->GetNextSequenceNumber();
+    OnQueueUnblocked();
     sequence_manager_->ScheduleWork();
   }
 }
@@ -846,8 +869,7 @@ void TaskQueueImpl::RemoveFence() {
   }
 
   if (IsQueueEnabled() && front_task_unblocked) {
-    main_thread_only().last_unblocked_enqueue_order =
-        sequence_manager_->GetNextSequenceNumber();
+    OnQueueUnblocked();
     sequence_manager_->ScheduleWork();
   }
 }
@@ -878,8 +900,8 @@ bool TaskQueueImpl::HasActiveFence() {
   return !!main_thread_only().current_fence;
 }
 
-EnqueueOrder TaskQueueImpl::GetLastUnblockEnqueueOrder() const {
-  return main_thread_only().last_unblocked_enqueue_order;
+EnqueueOrder TaskQueueImpl::GetEnqueueOrderAtWhichWeBecameUnblocked() const {
+  return main_thread_only().enqueue_order_at_which_we_became_unblocked;
 }
 
 bool TaskQueueImpl::CouldTaskRun(EnqueueOrder enqueue_order) const {
@@ -890,6 +912,12 @@ bool TaskQueueImpl::CouldTaskRun(EnqueueOrder enqueue_order) const {
     return true;
 
   return enqueue_order < main_thread_only().current_fence;
+}
+
+bool TaskQueueImpl::WasBlockedOrLowPriority(EnqueueOrder enqueue_order) const {
+  return enqueue_order <
+         main_thread_only()
+             .enqueue_order_at_which_we_became_unblocked_with_normal_priority;
 }
 
 // static
@@ -977,10 +1005,8 @@ void TaskQueueImpl::SetQueueEnabled(bool enabled) {
     // a DoWork if needed.
     sequence_manager_->main_thread_only().selector.EnableQueue(this);
 
-    if (!BlockedByFence()) {
-      main_thread_only().last_unblocked_enqueue_order =
-          sequence_manager_->GetNextSequenceNumber();
-    }
+    if (!BlockedByFence())
+      OnQueueUnblocked();
   } else {
     sequence_manager_->main_thread_only().selector.DisableQueue(this);
   }
@@ -1341,6 +1367,25 @@ void TaskQueueImpl::ReportIpcTaskQueued(
                    "task_posted_to_disabled_queue", "ipc_hash",
                    pending_task->ipc_hash, "location",
                    pending_task->posted_from.program_counter());
+}
+
+void TaskQueueImpl::OnQueueUnblocked() {
+  DCHECK(IsQueueEnabled());
+  DCHECK(!BlockedByFence());
+
+  main_thread_only().enqueue_order_at_which_we_became_unblocked =
+      sequence_manager_->GetNextSequenceNumber();
+
+  static_assert(TaskQueue::QueuePriority::kLowPriority >
+                    TaskQueue::QueuePriority::kNormalPriority,
+                "Priorities are not ordered as expected");
+  if (GetQueuePriority() <= TaskQueue::QueuePriority::kNormalPriority) {
+    // We are kNormalPriority or more important so update
+    // |enqueue_order_at_which_we_became_unblocked_with_normal_priority|.
+    main_thread_only()
+        .enqueue_order_at_which_we_became_unblocked_with_normal_priority =
+        main_thread_only().enqueue_order_at_which_we_became_unblocked;
+  }
 }
 
 TaskQueueImpl::DelayedIncomingQueue::DelayedIncomingQueue() = default;
