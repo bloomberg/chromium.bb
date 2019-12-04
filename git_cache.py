@@ -486,11 +486,12 @@ class Mirror(object):
     pack_files = []
     if os.path.isdir(pack_dir):
       pack_files = [f for f in os.listdir(pack_dir) if f.endswith('.pack')]
-      self.print('%s has %d .pack files, re-bootstrapping if >%d' %
+      self.print('%s has %d .pack files, re-bootstrapping if ==0 or >%d' %
                 (self.mirror_path, len(pack_files), GC_AUTOPACKLIMIT))
 
     should_bootstrap = (force or
                         not self.exists() or
+                        len(pack_files) == 0 or
                         len(pack_files) > GC_AUTOPACKLIMIT)
 
     if not should_bootstrap:
