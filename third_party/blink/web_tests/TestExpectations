@@ -1030,6 +1030,7 @@ crbug.com/714962 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/mult
 crbug.com/714962 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-width-large-002.xht [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-width-small-001.xht [ Failure ]
 crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-zero-height-001.xht [ Failure ]
+crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/nested-with-too-tall-line.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/abspos-after-break-after.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/abspos-new-width-rebalance.html [ Crash Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/balance-float-after-forced-break.html [ Failure ]
@@ -3979,6 +3980,7 @@ crbug.com/636055 external/wpt/css/css-multicol/multicol-span-all-margin-nested-0
 crbug.com/990240 external/wpt/css/css-multicol/multicol-span-all-rule-001.html [ Failure ]
 crbug.com/792446 external/wpt/css/css-multicol/multicol-span-float-001.xht [ Failure ]
 crbug.com/964183 external/wpt/css/css-multicol/multicol-width-005.html [ Failure ]
+crbug.com/829028 external/wpt/css/css-multicol/nested-with-too-tall-line.html [ Failure ]
 
 crbug.com/796961 external/wpt/css/css-pseudo/marker-content-002.html [ Failure ]
 crbug.com/796961 external/wpt/css/css-pseudo/marker-content-005.html [ Failure ]

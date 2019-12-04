@@ -1459,7 +1459,6 @@ crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/pushed-line-affected
 crbug.com/797591 virtual/layout_ng_block_frag/fast/multicol/regular-block-becomes-multicol.html [ Pass ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/relayout-and-push-float.html [ Failure ]
 crbug.com/982194 virtual/layout_ng_block_frag/fast/multicol/relpos-inside-inline-block.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/rule-in-nested-with-too-tall-line.html [ Failure ]
 crbug.com/714962 virtual/layout_ng_block_frag/fast/multicol/scale-transform-text.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/shadow-breaking.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/span/as-inner-multicol.html [ Failure ]
