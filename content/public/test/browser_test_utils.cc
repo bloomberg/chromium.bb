@@ -678,15 +678,6 @@ void ResetTouchAction(RenderWidgetHost* host) {
       ->ForceResetTouchActionForTest();
 }
 
-void ResendGestureScrollUpdateToEmbedder(WebContents* guest_web_contents,
-                                         const blink::WebInputEvent& event) {
-  auto* guest_web_contents_impl =
-      static_cast<WebContentsImpl*>(guest_web_contents);
-  DCHECK(guest_web_contents_impl->GetBrowserPluginGuest());
-  guest_web_contents_impl->GetBrowserPluginGuest()->ResendEventToEmbedder(
-      event);
-}
-
 void RunUntilInputProcessed(RenderWidgetHost* host) {
   base::RunLoop run_loop;
   RenderWidgetHostImpl::From(host)->WaitForInputProcessed(

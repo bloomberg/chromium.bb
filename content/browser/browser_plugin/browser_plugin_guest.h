@@ -249,8 +249,6 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
 
   void PointerLockPermissionResponse(bool allow);
 
-  void ResendEventToEmbedder(const blink::WebInputEvent& event);
-
   gfx::Point GetCoordinatesInEmbedderWebContents(
       const gfx::Point& relative_point);
 

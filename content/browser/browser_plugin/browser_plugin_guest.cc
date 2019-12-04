@@ -377,48 +377,6 @@ void BrowserPluginGuest::PointerLockPermissionResponse(bool allow) {
       browser_plugin_instance_id(), allow));
 }
 
-void BrowserPluginGuest::ResendEventToEmbedder(
-    const blink::WebInputEvent& event) {
-  if (!attached() || !owner_web_contents_)
-    return;
-
-  DCHECK(browser_plugin_instance_id_);
-  RenderWidgetHostViewBase* view =
-      static_cast<RenderWidgetHostViewBase*>(GetOwnerRenderWidgetHostView());
-
-  gfx::Vector2d offset_from_embedder = frame_rect_.OffsetFromOrigin();
-  if (event.GetType() == blink::WebInputEvent::kGestureScrollUpdate) {
-    blink::WebGestureEvent resent_gesture_event;
-    memcpy(&resent_gesture_event, &event, sizeof(blink::WebGestureEvent));
-    resent_gesture_event.SetPositionInWidget(
-        resent_gesture_event.PositionInWidget() + offset_from_embedder);
-    // Mark the resend source with the browser plugin's instance id, so the
-    // correct browser_plugin will know to ignore the event.
-    resent_gesture_event.resending_plugin_id = browser_plugin_instance_id_;
-    ui::LatencyInfo latency_info =
-        ui::WebInputEventTraits::CreateLatencyInfoForWebGestureEvent(
-            resent_gesture_event);
-    // The touch action may not be set for the embedder because the
-    // GestureScrollBegin is sent to the guest view. In this case, set the touch
-    // action of the embedder to Auto to prevent crash.
-    GetOwnerRenderWidgetHost()->input_router()->ForceSetTouchActionAuto();
-    view->ProcessGestureEvent(resent_gesture_event, latency_info);
-  } else if (event.GetType() == blink::WebInputEvent::kMouseWheel) {
-    blink::WebMouseWheelEvent resent_wheel_event;
-    memcpy(&resent_wheel_event, &event, sizeof(blink::WebMouseWheelEvent));
-    resent_wheel_event.SetPositionInWidget(
-        resent_wheel_event.PositionInWidget().x + offset_from_embedder.x(),
-        resent_wheel_event.PositionInWidget().y + offset_from_embedder.y());
-    resent_wheel_event.resending_plugin_id = browser_plugin_instance_id_;
-    // TODO(wjmaclean): Initialize latency info correctly for OOPIFs.
-    // https://crbug.com/613628
-    ui::LatencyInfo latency_info(ui::SourceEventType::WHEEL);
-    view->ProcessMouseWheelEvent(resent_wheel_event, latency_info);
-  } else {
-    NOTIMPLEMENTED();
-  }
-}
-
 gfx::Point BrowserPluginGuest::GetCoordinatesInEmbedderWebContents(
     const gfx::Point& relative_point) {
   RenderWidgetHostView* owner_rwhv = GetOwnerRenderWidgetHostView();

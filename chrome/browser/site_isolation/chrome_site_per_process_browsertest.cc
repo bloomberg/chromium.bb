@@ -352,16 +352,6 @@ class ChromeSitePerProcessPDFTest : public ChromeSitePerProcessTest {
     return test_guest_view_manager_;
   }
 
-  void ResendGestureToEmbedder(const std::string& host_name) {
-    content::WebContents* guest_web_contents = SetupGuestWebContents(host_name);
-    blink::WebGestureEvent event(blink::WebInputEvent::kGestureScrollUpdate,
-                                 blink::WebInputEvent::kNoModifiers,
-                                 ui::EventTimeForNow(),
-                                 blink::WebGestureDevice::kTouchscreen);
-    // This should not crash.
-    content::ResendGestureScrollUpdateToEmbedder(guest_web_contents, event);
-  }
-
  private:
   content::WebContents* SetupGuestWebContents(const std::string& host_name) {
     // Navigate to a page with an <iframe>.
