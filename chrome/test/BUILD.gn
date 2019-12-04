@@ -2530,6 +2530,7 @@ if (!is_android) {
         "../browser/ui/cocoa/touchbar/browser_window_touch_bar_controller_browsertest.mm",
         "../browser/ui/views/certificate_viewer_mac_browsertest.mm",
         "../browser/ui/views/ssl_client_certificate_selector_mac_browsertest.mm",
+        "../common/profiler/stack_sampling_browsertest.cc",
 
         # TODO(crbug/845389): Re-Enable the following, which were temporarily
         # omitted from the build, but are still in use.
@@ -2564,6 +2565,10 @@ if (!is_android) {
         "../browser/ui/views/settings_reset_prompt_dialog_browsertest.cc",
         "../browser/ui/views/uninstall_view_browsertest.cc",
       ]
+
+      if (target_cpu == "x64") {
+        sources += [ "../common/profiler/stack_sampling_browsertest.cc" ]
+      }
 
       configs += [ "//build/config/win:delayloads" ]
 
