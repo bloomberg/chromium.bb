@@ -81,20 +81,20 @@ class BookmarkBrowsertest : public InProcessBrowserTest {
     return browser()->bookmark_bar_state() == BookmarkBar::SHOW;
   }
 
-  static void CheckAnimation(Browser* browser, base::RepeatingClosure quit) {
+  static void CheckAnimation(Browser* browser, base::RunLoop* loop) {
     if (!browser->window()->IsBookmarkBarAnimating())
-      quit.Run();
+      loop->Quit();
   }
 
   base::TimeDelta WaitForBookmarkBarAnimationToFinish() {
     base::Time start(base::Time::Now());
-    base::RunLoop loop;
-
-    base::RepeatingTimer timer;
-    timer.Start(
-        FROM_HERE, base::TimeDelta::FromMilliseconds(15),
-        base::BindRepeating(&CheckAnimation, browser(), loop.QuitClosure()));
-    loop.Run();
+    {
+      base::RunLoop loop;
+      base::RepeatingTimer timer;
+      timer.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(15),
+                  base::BindRepeating(&CheckAnimation, browser(), &loop));
+      loop.Run();
+    }
     return base::Time::Now() - start;
   }
 
