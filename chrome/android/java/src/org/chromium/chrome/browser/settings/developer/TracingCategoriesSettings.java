@@ -25,7 +25,7 @@ import java.util.Set;
  * Settings fragment that configures chrome tracing categories of a specific type. The type is
  * passed to the fragment via an extra (EXTRA_CATEGORY_TYPE).
  */
-public class TracingCategoriesPreferences
+public class TracingCategoriesSettings
         extends PreferenceFragmentCompat implements Preference.OnPreferenceChangeListener {
     public static final String EXTRA_CATEGORY_TYPE = "type";
 
@@ -35,7 +35,7 @@ public class TracingCategoriesPreferences
     private static final String SELECT_ALL_KEY = "select-all";
     private static final String SELECT_ALL_TITLE = "Select all";
 
-    private @TracingPreferences.CategoryType int mType;
+    private @TracingSettings.CategoryType int mType;
     private Set<String> mEnabledCategories;
     private List<CheckBoxPreference> mAllPreferences;
     private CheckBoxPreference mSelectAllPreference;
@@ -48,7 +48,7 @@ public class TracingCategoriesPreferences
         preferenceScreen.setOrderingAsAdded(true);
 
         mType = getArguments().getInt(EXTRA_CATEGORY_TYPE);
-        mEnabledCategories = new HashSet<>(TracingPreferences.getEnabledCategories(mType));
+        mEnabledCategories = new HashSet<>(TracingSettings.getEnabledCategories(mType));
         mAllPreferences = new ArrayList<>();
 
         List<String> sortedCategories =
@@ -64,7 +64,7 @@ public class TracingCategoriesPreferences
         preferenceScreen.addPreference(mSelectAllPreference);
 
         for (String category : sortedCategories) {
-            if (TracingPreferences.getCategoryType(category) == mType) {
+            if (TracingSettings.getCategoryType(category) == mType) {
                 CheckBoxPreference pref = createPreference(category);
                 mAllPreferences.add(pref);
                 preferenceScreen.addPreference(pref);
@@ -77,9 +77,8 @@ public class TracingCategoriesPreferences
     private CheckBoxPreference createPreference(String category) {
         CheckBoxPreference preference = new ChromeBaseCheckBoxPreference(getStyledContext(), null);
         preference.setKey(category);
-        preference.setTitle(category.startsWith(TracingPreferences.NON_DEFAULT_CATEGORY_PREFIX)
-                        ? category.substring(
-                                  TracingPreferences.NON_DEFAULT_CATEGORY_PREFIX.length())
+        preference.setTitle(category.startsWith(TracingSettings.NON_DEFAULT_CATEGORY_PREFIX)
+                        ? category.substring(TracingSettings.NON_DEFAULT_CATEGORY_PREFIX.length())
                         : category);
         preference.setChecked(mEnabledCategories.contains(category));
         preference.setPersistent(false); // We persist the preference value ourselves.
@@ -101,7 +100,7 @@ public class TracingCategoriesPreferences
             mEnabledCategories.remove(preference.getKey());
         }
         mSelectAllPreference.setChecked(mEnabledCategories.size() == mAllPreferences.size());
-        TracingPreferences.setEnabledCategories(mType, mEnabledCategories);
+        TracingSettings.setEnabledCategories(mType, mEnabledCategories);
         return true;
     }
 

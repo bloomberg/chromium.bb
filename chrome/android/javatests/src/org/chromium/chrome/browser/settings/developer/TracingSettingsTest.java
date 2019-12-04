@@ -56,7 +56,7 @@ import java.util.concurrent.TimeUnit;
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
-public class TracingPreferencesTest {
+public class TracingSettingsTest {
     @Rule
     public final ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
             new ChromeActivityTestRule<>(ChromeActivity.class);
@@ -104,12 +104,12 @@ public class TracingPreferencesTest {
     private void waitForTracingControllerInitialization(PreferenceFragmentCompat fragment)
             throws Exception {
         final Preference defaultCategoriesPref =
-                fragment.findPreference(TracingPreferences.UI_PREF_DEFAULT_CATEGORIES);
+                fragment.findPreference(TracingSettings.UI_PREF_DEFAULT_CATEGORIES);
         final Preference nonDefaultCategoriesPref =
-                fragment.findPreference(TracingPreferences.UI_PREF_NON_DEFAULT_CATEGORIES);
-        final Preference modePref = fragment.findPreference(TracingPreferences.UI_PREF_MODE);
+                fragment.findPreference(TracingSettings.UI_PREF_NON_DEFAULT_CATEGORIES);
+        final Preference modePref = fragment.findPreference(TracingSettings.UI_PREF_MODE);
         final Preference startTracingButton =
-                fragment.findPreference(TracingPreferences.UI_PREF_START_RECORDING);
+                fragment.findPreference(TracingSettings.UI_PREF_START_RECORDING);
 
         CallbackHelper callbackHelper = new CallbackHelper();
         TestThreadUtils.runOnUiThreadBlocking(() -> {
@@ -143,11 +143,11 @@ public class TracingPreferencesTest {
     public void testRecordTrace() throws Exception {
         mActivityTestRule.startMainActivityOnBlankPage();
         SettingsActivity activity =
-                mActivityTestRule.startSettingsActivity(TracingPreferences.class.getName());
+                mActivityTestRule.startSettingsActivity(TracingSettings.class.getName());
         final PreferenceFragmentCompat fragment =
                 (PreferenceFragmentCompat) activity.getMainFragment();
-        final ButtonPreference startTracingButton = (ButtonPreference) fragment.findPreference(
-                TracingPreferences.UI_PREF_START_RECORDING);
+        final ButtonPreference startTracingButton =
+                (ButtonPreference) fragment.findPreference(TracingSettings.UI_PREF_START_RECORDING);
 
         waitForTracingControllerInitialization(fragment);
 
@@ -160,7 +160,7 @@ public class TracingPreferencesTest {
             Assert.assertEquals(
                     TracingController.State.IDLE, TracingController.getInstance().getState());
             Assert.assertTrue(startTracingButton.isEnabled());
-            Assert.assertEquals(TracingPreferences.MSG_START, startTracingButton.getTitle());
+            Assert.assertEquals(TracingSettings.MSG_START, startTracingButton.getTitle());
 
             // Tap the button to start recording a trace.
             startTracingButton.performClick();
@@ -168,7 +168,7 @@ public class TracingPreferencesTest {
             Assert.assertEquals(
                     TracingController.State.STARTING, TracingController.getInstance().getState());
             Assert.assertFalse(startTracingButton.isEnabled());
-            Assert.assertEquals(TracingPreferences.MSG_ACTIVE, startTracingButton.getTitle());
+            Assert.assertEquals(TracingSettings.MSG_ACTIVE, startTracingButton.getTitle());
 
             // Observe state changes to RECORDING, STOPPING, STOPPED, and IDLE.
             TracingController.getInstance().addObserver(new TracingController.Observer() {
@@ -243,20 +243,20 @@ public class TracingPreferencesTest {
         mMockNotificationManager.setNotificationsEnabled(false);
 
         SettingsActivity activity =
-                mActivityTestRule.startSettingsActivity(TracingPreferences.class.getName());
+                mActivityTestRule.startSettingsActivity(TracingSettings.class.getName());
         final PreferenceFragmentCompat fragment =
                 (PreferenceFragmentCompat) activity.getMainFragment();
-        final ButtonPreference startTracingButton = (ButtonPreference) fragment.findPreference(
-                TracingPreferences.UI_PREF_START_RECORDING);
+        final ButtonPreference startTracingButton =
+                (ButtonPreference) fragment.findPreference(TracingSettings.UI_PREF_START_RECORDING);
         final TextMessagePreference statusPreference =
                 (TextMessagePreference) fragment.findPreference(
-                        TracingPreferences.UI_PREF_TRACING_STATUS);
+                        TracingSettings.UI_PREF_TRACING_STATUS);
 
         waitForTracingControllerInitialization(fragment);
 
         Assert.assertFalse(startTracingButton.isEnabled());
         Assert.assertEquals(
-                TracingPreferences.MSG_NOTIFICATIONS_DISABLED, statusPreference.getTitle());
+                TracingSettings.MSG_NOTIFICATIONS_DISABLED, statusPreference.getTitle());
 
         mMockNotificationManager.setNotificationsEnabled(true);
     }
@@ -268,13 +268,13 @@ public class TracingPreferencesTest {
         // We need a renderer so that its tracing categories will be populated.
         mActivityTestRule.startMainActivityOnBlankPage();
         SettingsActivity activity =
-                mActivityTestRule.startSettingsActivity(TracingPreferences.class.getName());
+                mActivityTestRule.startSettingsActivity(TracingSettings.class.getName());
         final PreferenceFragmentCompat fragment =
                 (PreferenceFragmentCompat) activity.getMainFragment();
         final Preference defaultCategoriesPref =
-                fragment.findPreference(TracingPreferences.UI_PREF_DEFAULT_CATEGORIES);
+                fragment.findPreference(TracingSettings.UI_PREF_DEFAULT_CATEGORIES);
         final Preference nonDefaultCategoriesPref =
-                fragment.findPreference(TracingPreferences.UI_PREF_NON_DEFAULT_CATEGORIES);
+                fragment.findPreference(TracingSettings.UI_PREF_NON_DEFAULT_CATEGORIES);
 
         waitForTracingControllerInitialization(fragment);
 
@@ -296,29 +296,29 @@ public class TracingPreferencesTest {
             Context context = InstrumentationRegistry.getTargetContext();
             Assert.assertNotNull(categoriesPref.getExtras());
             Assert.assertFalse(categoriesPref.getExtras().isEmpty());
-            Intent intent = PreferencesLauncher.createIntentForSettingsPage(context,
-                    TracingCategoriesPreferences.class.getName(), categoriesPref.getExtras());
+            Intent intent = PreferencesLauncher.createIntentForSettingsPage(
+                    context, TracingCategoriesSettings.class.getName(), categoriesPref.getExtras());
             SettingsActivity categoriesActivity =
                     (SettingsActivity) InstrumentationRegistry.getInstrumentation()
                             .startActivitySync(intent);
 
             PreferenceFragmentCompat categoriesFragment =
                     (PreferenceFragmentCompat) categoriesActivity.getMainFragment();
-            Assert.assertEquals(TracingCategoriesPreferences.class, categoriesFragment.getClass());
+            Assert.assertEquals(TracingCategoriesSettings.class, categoriesFragment.getClass());
 
             CheckBoxPreference sampleCategoryPref =
                     (CheckBoxPreference) categoriesFragment.findPreference(sampleCategoryName);
             Assert.assertNotNull(sampleCategoryPref);
 
             boolean originallyEnabled =
-                    TracingPreferences.getEnabledCategories().contains(sampleCategoryName);
+                    TracingSettings.getEnabledCategories().contains(sampleCategoryName);
             Assert.assertEquals(originallyEnabled, sampleCategoryPref.isChecked());
 
             // Simulate selecting / deselecting the category.
             TestThreadUtils.runOnUiThreadBlocking(sampleCategoryPref::performClick);
             Assert.assertNotEquals(originallyEnabled, sampleCategoryPref.isChecked());
             boolean finallyEnabled =
-                    TracingPreferences.getEnabledCategories().contains(sampleCategoryName);
+                    TracingSettings.getEnabledCategories().contains(sampleCategoryName);
             Assert.assertNotEquals(originallyEnabled, finallyEnabled);
         }
     }
@@ -328,11 +328,11 @@ public class TracingPreferencesTest {
     @Feature({"Preferences"})
     public void testSelectMode() throws Exception {
         SettingsActivity activity =
-                mActivityTestRule.startSettingsActivity(TracingPreferences.class.getName());
+                mActivityTestRule.startSettingsActivity(TracingSettings.class.getName());
         final PreferenceFragmentCompat fragment =
                 (PreferenceFragmentCompat) activity.getMainFragment();
         final ListPreference modePref =
-                (ListPreference) fragment.findPreference(TracingPreferences.UI_PREF_MODE);
+                (ListPreference) fragment.findPreference(TracingSettings.UI_PREF_MODE);
 
         waitForTracingControllerInitialization(fragment);
 
@@ -340,7 +340,7 @@ public class TracingPreferencesTest {
             Assert.assertTrue(modePref.isEnabled());
 
             // By default, the "record-until-full" mode is selected.
-            Assert.assertEquals("record-until-full", TracingPreferences.getSelectedTracingMode());
+            Assert.assertEquals("record-until-full", TracingSettings.getSelectedTracingMode());
 
             // Dialog should contain 3 entries.
             Assert.assertEquals(3, modePref.getEntries().length);
@@ -348,7 +348,7 @@ public class TracingPreferencesTest {
             // Simulate changing the mode.
             modePref.getOnPreferenceChangeListener().onPreferenceChange(
                     modePref, "record-continuously");
-            Assert.assertEquals("record-continuously", TracingPreferences.getSelectedTracingMode());
+            Assert.assertEquals("record-continuously", TracingSettings.getSelectedTracingMode());
         });
     }
 }

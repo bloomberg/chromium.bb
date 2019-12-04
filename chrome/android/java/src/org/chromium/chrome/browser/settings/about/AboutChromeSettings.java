@@ -15,7 +15,7 @@ import android.text.format.DateUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.settings.SettingsUtils;
-import org.chromium.chrome.browser.settings.developer.DeveloperPreferences;
+import org.chromium.chrome.browser.settings.developer.DeveloperSettings;
 import org.chromium.ui.widget.Toast;
 
 import java.util.Calendar;
@@ -23,9 +23,9 @@ import java.util.Calendar;
 /**
  * Settings fragment that displays information about Chrome.
  */
-public class AboutChromePreferences
+public class AboutChromeSettings
         extends PreferenceFragmentCompat implements Preference.OnPreferenceClickListener {
-    private static final int TAPS_FOR_DEVELOPER_PREFERENCES = 7;
+    private static final int TAPS_FOR_DEVELOPER_SETTINGS = 7;
 
     private static final String PREF_APPLICATION_VERSION = "application_version";
     private static final String PREF_OS_VERSION = "os_version";
@@ -40,9 +40,8 @@ public class AboutChromePreferences
     private static final String MSG_DEVELOPER_ALREADY_ENABLED =
             "Developer options are already enabled.";
 
-    private int mDeveloperHitCountdown = DeveloperPreferences.shouldShowDeveloperPreferences()
-            ? -1
-            : TAPS_FOR_DEVELOPER_PREFERENCES;
+    private int mDeveloperHitCountdown =
+            DeveloperSettings.shouldShowDeveloperSettings() ? -1 : TAPS_FOR_DEVELOPER_SETTINGS;
     private Toast mToast;
 
     @Override
@@ -88,16 +87,16 @@ public class AboutChromePreferences
             mDeveloperHitCountdown--;
 
             if (mDeveloperHitCountdown == 0) {
-                DeveloperPreferences.setDeveloperPreferencesEnabled();
+                DeveloperSettings.setDeveloperSettingsEnabled();
 
-                // Show a toast that the developer preferences were enabled.
+                // Show a toast that the developer settings were enabled.
                 if (mToast != null) {
                     mToast.cancel();
                 }
                 mToast = Toast.makeText(getActivity(), MSG_DEVELOPER_ENABLED, Toast.LENGTH_LONG);
                 mToast.show();
             } else if (mDeveloperHitCountdown > 0
-                    && mDeveloperHitCountdown < (TAPS_FOR_DEVELOPER_PREFERENCES - 2)) {
+                    && mDeveloperHitCountdown < (TAPS_FOR_DEVELOPER_SETTINGS - 2)) {
                 // Show a countdown toast.
                 if (mToast != null) {
                     mToast.cancel();
@@ -112,7 +111,7 @@ public class AboutChromePreferences
                 mToast.show();
             }
         } else if (mDeveloperHitCountdown < 0) {
-            // Show a toast that the developer preferences are already enabled.
+            // Show a toast that the developer settings are already enabled.
             if (mToast != null) {
                 mToast.cancel();
             }

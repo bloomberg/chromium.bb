@@ -28,7 +28,7 @@ import java.util.Set;
 /**
  * Settings fragment that shows options for recording a performance trace.
  */
-public class TracingPreferences
+public class TracingSettings
         extends PreferenceFragmentCompat implements TracingController.Observer {
     static final String NON_DEFAULT_CATEGORY_PREFIX = "disabled-by-default-";
 
@@ -190,10 +190,10 @@ public class TracingPreferences
         mPrefTracingStatus = findPreference(UI_PREF_TRACING_STATUS);
 
         mPrefDefaultCategories.getExtras().putInt(
-                TracingCategoriesPreferences.EXTRA_CATEGORY_TYPE, CategoryType.DEFAULT);
+                TracingCategoriesSettings.EXTRA_CATEGORY_TYPE, CategoryType.DEFAULT);
 
         mPrefNondefaultCategories.getExtras().putInt(
-                TracingCategoriesPreferences.EXTRA_CATEGORY_TYPE, CategoryType.NON_DEFAULT);
+                TracingCategoriesSettings.EXTRA_CATEGORY_TYPE, CategoryType.NON_DEFAULT);
 
         mPrefMode.setEntryValues(TRACING_MODES.keySet().toArray(new String[TRACING_MODES.size()]));
         String[] descriptions =

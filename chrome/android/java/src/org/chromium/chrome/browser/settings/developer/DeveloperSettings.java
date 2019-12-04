@@ -17,21 +17,21 @@ import org.chromium.components.version_info.VersionConstants;
 /**
  * Settings fragment containing preferences aimed at Chrome and web developers.
  */
-public class DeveloperPreferences extends PreferenceFragmentCompat {
+public class DeveloperSettings extends PreferenceFragmentCompat {
     private static final String UI_PREF_BETA_STABLE_HINT = "beta_stable_hint";
     private static final String PREF_DEVELOPER_ENABLED = "developer";
 
     // Non-translated strings:
     private static final String MSG_DEVELOPER_OPTIONS_TITLE = "Developer options";
 
-    public static boolean shouldShowDeveloperPreferences() {
+    public static boolean shouldShowDeveloperSettings() {
         // Always enabled on canary, dev and local builds, otherwise can be enabled by tapping the
         // Chrome version in Settings>About multiple times.
         if (VersionConstants.CHANNEL <= Channel.DEV) return true;
         return ContextUtils.getAppSharedPreferences().getBoolean(PREF_DEVELOPER_ENABLED, false);
     }
 
-    public static void setDeveloperPreferencesEnabled() {
+    public static void setDeveloperSettingsEnabled() {
         ContextUtils.getAppSharedPreferences()
                 .edit()
                 .putBoolean(PREF_DEVELOPER_ENABLED, true)

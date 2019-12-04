@@ -13,7 +13,7 @@ import org.chromium.chrome.browser.settings.SettingsUtils;
 /**
  * Fragment to display legal information about Chrome.
  */
-public class LegalInformationPreferences extends PreferenceFragmentCompat {
+public class LegalInformationSettings extends PreferenceFragmentCompat {
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String s) {
         SettingsUtils.addPreferencesFromResource(this, R.xml.legal_information_preferences);
