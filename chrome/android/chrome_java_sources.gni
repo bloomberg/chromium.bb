@@ -1554,6 +1554,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/sync/SyncController.java",
   "java/src/org/chromium/chrome/browser/sync/SyncNotificationController.java",
   "java/src/org/chromium/chrome/browser/sync/SyncUserDataWiper.java",
+  "java/src/org/chromium/chrome/browser/sync/TrustedVaultClient.java",
   "java/src/org/chromium/chrome/browser/sync/ui/PassphraseActivity.java",
   "java/src/org/chromium/chrome/browser/sync/ui/PassphraseCreationDialogFragment.java",
   "java/src/org/chromium/chrome/browser/sync/ui/PassphraseDialogFragment.java",
