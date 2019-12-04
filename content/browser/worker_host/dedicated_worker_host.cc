@@ -295,12 +295,13 @@ DedicatedWorkerHost::CreateNetworkFactoryForSubresources(
 
   mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>
       default_header_client;
+  network::mojom::URLLoaderFactoryOverridePtr factory_override;
   GetContentClient()->browser()->WillCreateURLLoaderFactory(
       storage_partition_impl->browser_context(),
       /*frame=*/nullptr, worker_process_id_,
       ContentBrowserClient::URLLoaderFactoryType::kWorkerSubResource, origin_,
-      &default_factory_receiver, &default_header_client,
-      bypass_redirect_checks);
+      &default_factory_receiver, &default_header_client, bypass_redirect_checks,
+      &factory_override);
 
   // TODO(nhiroki): Call devtools_instrumentation::WillCreateURLLoaderFactory()
   // here.
@@ -309,7 +310,8 @@ DedicatedWorkerHost::CreateNetworkFactoryForSubresources(
       origin_, origin_,
       ancestor_render_frame_host->cross_origin_embedder_policy(),
       /*preferences=*/nullptr, network_isolation_key_,
-      std::move(default_header_client), std::move(default_factory_receiver));
+      std::move(default_header_client), std::move(default_factory_receiver),
+      std::move(factory_override));
 
   return pending_default_factory;
 }

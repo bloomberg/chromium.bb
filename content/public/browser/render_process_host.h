@@ -450,6 +450,10 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // creating the factory. All resource requests through this factory will
   // propagate the key to the network stack so that resources with different
   // keys do not share network resources like the http cache.
+  //
+  // |factory_override|, when non-null, replaces the lower level network
+  // URLLoaderFactory used by security features (e.g., CORS) in the network
+  // service.
   virtual void CreateURLLoaderFactory(
       const url::Origin& origin,
       const url::Origin& main_world_origin,
@@ -458,7 +462,8 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
       const net::NetworkIsolationKey& network_isolation_key,
       mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>
           header_client,
-      mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver) = 0;
+      mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver,
+      network::mojom::URLLoaderFactoryOverridePtr factory_override) = 0;
 
   // Whether this process is locked out from ever being reused for sites other
   // than the ones it currently has.

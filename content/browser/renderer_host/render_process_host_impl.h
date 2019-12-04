@@ -246,8 +246,8 @@ class CONTENT_EXPORT RenderProcessHostImpl
       const net::NetworkIsolationKey& network_isolation_key,
       mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>
           header_client,
-      mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver)
-      override;
+      mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver,
+      network::mojom::URLLoaderFactoryOverridePtr factory_override) override;
 
   bool MayReuseHost() override;
   bool IsUnused() override;
@@ -293,7 +293,8 @@ class CONTENT_EXPORT RenderProcessHostImpl
       const WebPreferences* preferences,
       mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>
           header_client,
-      mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver);
+      mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver,
+      network::mojom::URLLoaderFactoryOverridePtr factory_override);
 
   // Update the total and low priority count as indicated by the previous and
   // new priorities of the underlying document.  The nullopt option is used when
@@ -905,7 +906,8 @@ class CONTENT_EXPORT RenderProcessHostImpl
       mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>
           header_client,
       mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver,
-      bool is_trusted);
+      bool is_trusted,
+      network::mojom::URLLoaderFactoryOverridePtr factory_override);
 
   // Binds a TracedProcess interface in the renderer process. This is used to
   // communicate with the Tracing service.

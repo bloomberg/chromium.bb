@@ -2556,7 +2556,7 @@ void RenderProcessHostImpl::CreateURLLoaderFactoryForRendererProcess(
       network::mojom::CrossOriginEmbedderPolicy::kNone,
       nullptr /* preferences */, net::NetworkIsolationKey(),
       mojo::NullRemote() /* header_client */, std::move(receiver),
-      false /* is_trusted */);
+      false /* is_trusted */, network::mojom::URLLoaderFactoryOverridePtr());
 }
 
 void RenderProcessHostImpl::CreateURLLoaderFactory(
@@ -2567,11 +2567,12 @@ void RenderProcessHostImpl::CreateURLLoaderFactory(
     const net::NetworkIsolationKey& network_isolation_key,
     mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>
         header_client,
-    mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver) {
-  CreateURLLoaderFactoryInternal(origin, main_world_origin, embedder_policy,
-                                 preferences, network_isolation_key,
-                                 std::move(header_client), std::move(receiver),
-                                 false /* is_trusted */);
+    mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver,
+    network::mojom::URLLoaderFactoryOverridePtr factory_override) {
+  CreateURLLoaderFactoryInternal(
+      origin, main_world_origin, embedder_policy, preferences,
+      network_isolation_key, std::move(header_client), std::move(receiver),
+      false /* is_trusted */, std::move(factory_override));
 }
 
 void RenderProcessHostImpl::CreateTrustedURLLoaderFactory(
@@ -2581,10 +2582,12 @@ void RenderProcessHostImpl::CreateTrustedURLLoaderFactory(
     const WebPreferences* preferences,
     mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>
         header_client,
-    mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver) {
+    mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver,
+    network::mojom::URLLoaderFactoryOverridePtr factory_override) {
   CreateURLLoaderFactoryInternal(
       origin, main_world_origin, embedder_policy, preferences, base::nullopt,
-      std::move(header_client), std::move(receiver), true /* is_trusted */);
+      std::move(header_client), std::move(receiver), true /* is_trusted */,
+      std::move(factory_override));
 }
 
 void RenderProcessHostImpl::CreateURLLoaderFactoryInternal(
@@ -2596,7 +2599,8 @@ void RenderProcessHostImpl::CreateURLLoaderFactoryInternal(
     mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>
         header_client,
     mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver,
-    bool is_trusted) {
+    bool is_trusted,
+    network::mojom::URLLoaderFactoryOverridePtr factory_override) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // "chrome-guest://..." is never used as a main or isolated world origin.
@@ -2636,6 +2640,7 @@ void RenderProcessHostImpl::CreateURLLoaderFactoryInternal(
   } else {
     params->is_corb_enabled = true;
   }
+  params->factory_override = std::move(factory_override);
 
   GetContentClient()->browser()->OverrideURLLoaderFactoryParams(this, origin,
                                                                 params.get());

@@ -36,6 +36,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/test/not_implemented_network_url_loader_factory.h"
 #include "media/media_buildflags.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 
 namespace content {
@@ -409,7 +410,8 @@ void MockRenderProcessHost::CreateURLLoaderFactory(
     const net::NetworkIsolationKey& network_isolation_key,
     mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>
         header_client,
-    mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver) {
+    mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver,
+    network::mojom::URLLoaderFactoryOverridePtr factory_override) {
   if (GetNetworkFactoryCallback().is_null()) {
     url_loader_factory_->Clone(std::move(receiver));
     return;

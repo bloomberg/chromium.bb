@@ -278,12 +278,13 @@ SharedWorkerHost::CreateNetworkFactoryForSubresources(
 
   mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>
       default_header_client;
+  network::mojom::URLLoaderFactoryOverridePtr factory_override;
   GetContentClient()->browser()->WillCreateURLLoaderFactory(
       storage_partition_impl->browser_context(),
       /*frame=*/nullptr, worker_process_id_,
       ContentBrowserClient::URLLoaderFactoryType::kWorkerSubResource, origin,
-      &default_factory_receiver, &default_header_client,
-      bypass_redirect_checks);
+      &default_factory_receiver, &default_header_client, bypass_redirect_checks,
+      &factory_override);
 
   // TODO(nhiroki): Call devtools_instrumentation::WillCreateURLLoaderFactory()
   // here.
@@ -293,14 +294,16 @@ SharedWorkerHost::CreateNetworkFactoryForSubresources(
     worker_process_host->CreateURLLoaderFactory(
         origin, origin, network::mojom::CrossOriginEmbedderPolicy::kNone,
         nullptr /* preferences */, net::NetworkIsolationKey(origin, origin),
-        std::move(default_header_client), std::move(default_factory_receiver));
+        std::move(default_header_client), std::move(default_factory_receiver),
+        std::move(factory_override));
   } else {
     mojo::PendingRemote<network::mojom::URLLoaderFactory> original_factory;
     worker_process_host->CreateURLLoaderFactory(
         origin, origin, network::mojom::CrossOriginEmbedderPolicy::kNone,
         nullptr /* preferences */, net::NetworkIsolationKey(origin, origin),
         std::move(default_header_client),
-        original_factory.InitWithNewPipeAndPassReceiver());
+        original_factory.InitWithNewPipeAndPassReceiver(),
+        std::move(factory_override));
     GetCreateNetworkFactoryCallbackForSharedWorker().Run(
         std::move(default_factory_receiver), worker_process_id_,
         std::move(original_factory));
