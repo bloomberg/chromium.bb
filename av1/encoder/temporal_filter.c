@@ -36,11 +36,6 @@
 #include "aom_ports/system_state.h"
 #include "aom_scale/aom_scale.h"
 
-#define EXPERIMENT_TEMPORAL_FILTER 1
-#define WINDOW_LENGTH 2
-#define WINDOW_SIZE 25
-#define SCALE 1000
-
 static unsigned int index_mult[14] = { 0,     0,     0,     0,     49152,
                                        39322, 32768, 28087, 24576, 21846,
                                        19661, 17874, 0,     15124 };
@@ -849,17 +844,17 @@ void apply_temporal_filter_block(YV12_BUFFER_CONFIG *frame, MACROBLOCKD *mbd,
     } else {
       decay_control = 3;
     }
-    av1_temporal_filter_plane_c(frame->y_buffer + mb_y_src_offset,
-                                frame->y_stride, predictor, BW, BW, BH,
-                                strength, sigma, decay_control, blk_fw,
-                                use_32x32, accumulator, count);
+    av1_temporal_filter_plane(frame->y_buffer + mb_y_src_offset,
+                              frame->y_stride, predictor, BW, BW, BH, strength,
+                              sigma, decay_control, blk_fw, use_32x32,
+                              accumulator, count);
     if (num_planes > 1) {
-      av1_temporal_filter_plane_c(
+      av1_temporal_filter_plane(
           frame->u_buffer + mb_uv_src_offset, frame->uv_stride,
           predictor + BLK_PELS, mb_uv_width, mb_uv_width, mb_uv_height,
           strength, sigma, decay_control, blk_fw, use_32x32,
           accumulator + BLK_PELS, count + BLK_PELS);
-      av1_temporal_filter_plane_c(
+      av1_temporal_filter_plane(
           frame->v_buffer + mb_uv_src_offset, frame->uv_stride,
           predictor + (BLK_PELS << 1), mb_uv_width, mb_uv_width, mb_uv_height,
           strength, sigma, decay_control, blk_fw, use_32x32,
