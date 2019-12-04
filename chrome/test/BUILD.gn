@@ -324,7 +324,6 @@ static_library("test_support") {
       "//ash",
       "//ash:test_support",
       "//ash/public/cpp:manifest",
-      "//ash/public/cpp:manifest_for_tests",
       "//components/ownership",
       "//components/user_manager:test_support",
       "//ui/aura",
@@ -1446,7 +1445,6 @@ if (!is_android) {
       deps += [
         "//ash:test_support",
         "//ash/keyboard/ui:test_support",
-        "//ash/public/mojom:test_interfaces",
         "//chrome/browser/chromeos:arc_test_support",
         "//chrome/browser/chromeos:test_support",
         "//chrome/browser/media/router:test_support",

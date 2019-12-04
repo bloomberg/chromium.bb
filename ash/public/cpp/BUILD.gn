@@ -282,23 +282,6 @@ source_set("manifest") {
   ]
 }
 
-source_set("manifest_for_tests") {
-  testonly = true
-
-  sources = [
-    "test_manifest.cc",
-    "test_manifest.h",
-  ]
-
-  deps = [
-    ":manifest",
-    "//ash/public/mojom:test_interfaces",
-    "//base",
-    "//services/service_manager/public/cpp",
-    "//services/service_manager/public/mojom",
-  ]
-}
-
 source_set("unit_tests") {
   testonly = true
   sources = [
