@@ -79,6 +79,8 @@ OmniboxResultView::OmniboxResultView(
   views::SetImageFromVectorIcon(remove_suggestion_button_,
                                 vector_icons::kCloseRoundedIcon, icon_size,
                                 GetColor(OmniboxPart::RESULTS_ICON));
+  remove_suggestion_button_->SetTooltipText(
+      l10n_util::GetStringUTF16(IDS_OMNIBOX_REMOVE_SUGGESTION));
   remove_suggestion_focus_ring_ =
       views::FocusRing::Install(remove_suggestion_button_);
   remove_suggestion_focus_ring_->SetHasFocusPredicate([&](View* view) {
@@ -461,7 +463,12 @@ void OmniboxResultView::OnThemeChanged() {
 }
 
 void OmniboxResultView::ProvideButtonFocusHint() {
-  suggestion_tab_switch_button_->ProvideFocusHint();
+  if (suggestion_tab_switch_button_->GetVisible()) {
+    suggestion_tab_switch_button_->ProvideFocusHint();
+  } else if (remove_suggestion_button_->GetVisible()) {
+    remove_suggestion_button_->NotifyAccessibilityEvent(
+        ax::mojom::Event::kSelection, true);
+  }
 }
 
 void OmniboxResultView::RemoveSuggestion() const {
