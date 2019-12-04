@@ -18,7 +18,9 @@ import os
 import sys
 import tempfile
 
+from chromite.cli.cros import cros_chrome_sdk
 from chromite.lib import commandline
+from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import namespaces
@@ -127,23 +129,22 @@ To install the debug symbols for all available packages, run:
 
   def SimpleChromeGdb(self):
     """Get the name of the cross gdb based on board name."""
-    bin_path = self.board + '+' + os.environ['SDK_VERSION'] + '+' + \
-               'target_toolchain'
-    bin_path = os.path.join(self.sdk_path, bin_path, 'bin')
+    bin_path = cros_chrome_sdk.SDKFetcher.GetCachePath(
+        cros_chrome_sdk.SDKFetcher.TARGET_TOOLCHAIN_KEY,
+        self.sdk_path, self.board)
+    bin_path = os.path.join(bin_path, 'bin')
     for f in os.listdir(bin_path):
       if f.endswith('gdb'):
         return os.path.join(bin_path, f)
-    raise GdbMissingDebuggerError('Cannot find cros gdb for %s.'
-                                  % self.board)
+    raise GdbMissingDebuggerError('Cannot find cross gdb for %s.' % self.board)
 
   def SimpleChromeSysroot(self):
     """Get the sysroot in simple chrome."""
-    sysroot = self.board + '+' + os.environ['SDK_VERSION'] + \
-              '+' + 'sysroot_chromeos-base_chromeos-chrome.tar.xz'
-    sysroot = os.path.join(self.sdk_path, sysroot)
-    if not os.path.isdir(sysroot):
+    sysroot = cros_chrome_sdk.SDKFetcher.GetCachePath(
+        constants.CHROME_SYSROOT_TAR, self.sdk_path, self.board)
+    if not sysroot:
       raise GdbMissingSysrootError('Cannot find sysroot for %s at %s'
-                                   % (self.board, sysroot))
+                                   % (self.board, self.sdk_path))
     return sysroot
 
   def GetSimpleChromeBinary(self):
@@ -166,7 +167,7 @@ To install the debug symbols for all available packages, run:
                 'the binary via --binary'% binary_name, output_dir)
     if target_binary is None:
       raise GdbSimpleChromeBinaryError('There is no %s under %s.'
-                                       % binary_name, output_dir)
+                                       % (binary_name, output_dir))
     return target_binary
 
   def VerifyAndFinishInitialization(self, device):
@@ -188,8 +189,7 @@ To install the debug symbols for all available packages, run:
     else:
       self.chrome_path = os.path.realpath(os.path.join(os.path.dirname(
           os.path.realpath(__file__)), '../../../..'))
-      self.sdk_path = os.path.join(
-          path_util.FindCacheDir(), 'chrome-sdk/tarballs/')
+      self.sdk_path = path_util.FindCacheDir()
       self.sysroot = self.SimpleChromeSysroot()
       self.cross_gdb = self.SimpleChromeGdb()
 
