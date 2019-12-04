@@ -13,6 +13,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chrome/test/chromedriver/chrome/devtools_event_listener.h"
+#include "chrome/test/chromedriver/chrome/javascript_dialog_manager.h"
 #include "chrome/test/chromedriver/chrome/log.h"
 #include "chrome/test/chromedriver/chrome/status.h"
 #include "chrome/test/chromedriver/chrome/util.h"
@@ -361,6 +362,15 @@ Status DevToolsClientImpl::SendCommandInternal(
       }
       if (response_info->state == kBlocked) {
         response_info->state = kIgnored;
+        if (owner_) {
+          std::string alert_text;
+          Status status =
+              owner_->GetJavaScriptDialogManager()->GetDialogMessage(
+                  &alert_text);
+          if (status.IsOk())
+            return Status(kUnexpectedAlertOpen,
+                          "{Alert text : " + alert_text + "}");
+        }
         return Status(kUnexpectedAlertOpen);
       }
       CHECK_EQ(response_info->state, kReceived);
