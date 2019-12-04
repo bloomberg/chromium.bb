@@ -59,21 +59,12 @@ class CONTENT_EXPORT ChildProcessHost : public IPC::Sender {
     // process hosts should prefer to use this mode.
     kNormal,
 
-    // In this mode, the primordial pipe is a service_manager.mojom.Service
-    // pipe, and the owner of the ChildProcessHost is expected to pass the
-    // Mojo invitation along to a content::ChildProcessConnection.
-    //
-    // In this mode, the ChildProcessHost is fully functional.
-    //
-    // DEPRECATED: Do not introduce new uses of this mode.
-    kServiceManager,
-
     // In this mode, the primordial pipe is a legacy IPC Channel bootstrapping
     // pipe (IPC.mojom.ChannelBootstrap). This should be used when the child
     // process only uses legacy Chrome IPC (e.g. Chrome's NaCl processes.)
     //
-    // In this mode, ChildProcessHost methods like |BindInterface()| or
-    // |BindReceiver()| are not functional.
+    // In this mode, ChildProcessHost methods like |BindReceiver()| are not
+    // functional.
     //
     // DEPRECATED: Do not introduce new uses of this mode.
     kLegacy,
@@ -160,14 +151,6 @@ class CONTENT_EXPORT ChildProcessHost : public IPC::Sender {
 
   // Adds an IPC message filter.  A reference will be kept to the filter.
   virtual void AddFilter(IPC::MessageFilter* filter) = 0;
-
-  // Bind an interface exposed by the child process. Requests sent to the child
-  // process via this call are routed through the a ConnectionFilter on the
-  // corresponding ChildThreadImpl.
-  //
-  // DEPRECATED: Use |BindReceiver()| instead.
-  virtual void BindInterface(const std::string& interface_name,
-                             mojo::ScopedMessagePipeHandle interface_pipe) = 0;
 
   // Bind an interface exposed by the child process. Whether or not the
   // interface in |receiver| can be bound depends on the process type and
