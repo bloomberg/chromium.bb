@@ -4895,8 +4895,10 @@ bool LayerTreeHostImpl::FindSnapPositionAndSetTarget(
 
   // Even if a target was not found we still need to invalidate the target snap
   // area element ids.
-  data.SetTargetSnapAreaElementIds(
-      did_find_target ? snap_targets : TargetSnapAreaElementIds());
+  if (data.SetTargetSnapAreaElementIds(
+          did_find_target ? snap_targets : TargetSnapAreaElementIds())) {
+    client_->SetNeedsCommitOnImplThread();
+  }
 
   return did_find_target;
 }
