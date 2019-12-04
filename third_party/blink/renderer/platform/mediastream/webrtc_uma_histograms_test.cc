@@ -17,12 +17,12 @@ class MockPerSessionWebRTCAPIMetrics : public PerSessionWebRTCAPIMetrics {
 
   using PerSessionWebRTCAPIMetrics::LogUsageOnlyOnce;
 
-  MOCK_METHOD1(LogUsage, void(RTCAPIName));
+  MOCK_METHOD1(LogUsage, void(WebRTCAPIName));
 };
 
 class PerSessionWebRTCAPIMetricsTest
     : public testing::Test,
-      public testing::WithParamInterface<RTCAPIName> {
+      public testing::WithParamInterface<WebRTCAPIName> {
  public:
   PerSessionWebRTCAPIMetricsTest() = default;
   ~PerSessionWebRTCAPIMetricsTest() override = default;
@@ -32,47 +32,48 @@ class PerSessionWebRTCAPIMetricsTest
 };
 
 TEST_P(PerSessionWebRTCAPIMetricsTest, NoCallOngoing) {
-  RTCAPIName api_name = GetParam();
+  WebRTCAPIName api_name = GetParam();
   EXPECT_CALL(metrics, LogUsage(api_name)).Times(1);
   metrics.LogUsageOnlyOnce(api_name);
 }
 
 TEST_P(PerSessionWebRTCAPIMetricsTest, CallOngoing) {
-  RTCAPIName api_name = GetParam();
+  WebRTCAPIName api_name = GetParam();
   metrics.IncrementStreamCounter();
   EXPECT_CALL(metrics, LogUsage(api_name)).Times(1);
   metrics.LogUsageOnlyOnce(api_name);
 }
 
-INSTANTIATE_TEST_SUITE_P(PerSessionWebRTCAPIMetricsTest,
-                         PerSessionWebRTCAPIMetricsTest,
-                         ::testing::ValuesIn({RTCAPIName::kGetUserMedia,
-                                              RTCAPIName::kGetDisplayMedia,
-                                              RTCAPIName::kEnumerateDevices,
-                                              RTCAPIName::kRTCPeerConnection}));
+INSTANTIATE_TEST_SUITE_P(
+    PerSessionWebRTCAPIMetricsTest,
+    PerSessionWebRTCAPIMetricsTest,
+    ::testing::ValuesIn({WebRTCAPIName::kGetUserMedia,
+                         WebRTCAPIName::kGetDisplayMedia,
+                         WebRTCAPIName::kEnumerateDevices,
+                         WebRTCAPIName::kRTCPeerConnection}));
 
 TEST(PerSessionWebRTCAPIMetrics, NoCallOngoingMultiplePC) {
   MockPerSessionWebRTCAPIMetrics metrics;
-  EXPECT_CALL(metrics, LogUsage(RTCAPIName::kRTCPeerConnection)).Times(1);
-  metrics.LogUsageOnlyOnce(RTCAPIName::kRTCPeerConnection);
-  metrics.LogUsageOnlyOnce(RTCAPIName::kRTCPeerConnection);
-  metrics.LogUsageOnlyOnce(RTCAPIName::kRTCPeerConnection);
+  EXPECT_CALL(metrics, LogUsage(WebRTCAPIName::kRTCPeerConnection)).Times(1);
+  metrics.LogUsageOnlyOnce(WebRTCAPIName::kRTCPeerConnection);
+  metrics.LogUsageOnlyOnce(WebRTCAPIName::kRTCPeerConnection);
+  metrics.LogUsageOnlyOnce(WebRTCAPIName::kRTCPeerConnection);
 }
 
 TEST(PerSessionWebRTCAPIMetrics, BeforeAfterCallMultiplePC) {
   MockPerSessionWebRTCAPIMetrics metrics;
-  EXPECT_CALL(metrics, LogUsage(RTCAPIName::kRTCPeerConnection)).Times(1);
-  metrics.LogUsageOnlyOnce(RTCAPIName::kRTCPeerConnection);
-  metrics.LogUsageOnlyOnce(RTCAPIName::kRTCPeerConnection);
+  EXPECT_CALL(metrics, LogUsage(WebRTCAPIName::kRTCPeerConnection)).Times(1);
+  metrics.LogUsageOnlyOnce(WebRTCAPIName::kRTCPeerConnection);
+  metrics.LogUsageOnlyOnce(WebRTCAPIName::kRTCPeerConnection);
   metrics.IncrementStreamCounter();
   metrics.IncrementStreamCounter();
-  metrics.LogUsageOnlyOnce(RTCAPIName::kRTCPeerConnection);
+  metrics.LogUsageOnlyOnce(WebRTCAPIName::kRTCPeerConnection);
   metrics.DecrementStreamCounter();
-  metrics.LogUsageOnlyOnce(RTCAPIName::kRTCPeerConnection);
+  metrics.LogUsageOnlyOnce(WebRTCAPIName::kRTCPeerConnection);
   metrics.DecrementStreamCounter();
-  EXPECT_CALL(metrics, LogUsage(RTCAPIName::kRTCPeerConnection)).Times(1);
-  metrics.LogUsageOnlyOnce(RTCAPIName::kRTCPeerConnection);
-  metrics.LogUsageOnlyOnce(RTCAPIName::kRTCPeerConnection);
+  EXPECT_CALL(metrics, LogUsage(WebRTCAPIName::kRTCPeerConnection)).Times(1);
+  metrics.LogUsageOnlyOnce(WebRTCAPIName::kRTCPeerConnection);
+  metrics.LogUsageOnlyOnce(WebRTCAPIName::kRTCPeerConnection);
 }
 
 }  // namespace blink

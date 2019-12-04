@@ -35,13 +35,13 @@ static int g_next_request_id = 0;
 // The histogram counts the number of calls to the JS API
 // getUserMedia or getDisplayMedia().
 void UpdateAPICount(blink::WebUserMediaRequest::MediaType media_type) {
-  RTCAPIName api_name = RTCAPIName::kGetUserMedia;
+  blink::WebRTCAPIName api_name = blink::WebRTCAPIName::kGetUserMedia;
   switch (media_type) {
     case blink::WebUserMediaRequest::MediaType::kUserMedia:
-      api_name = RTCAPIName::kGetUserMedia;
+      api_name = blink::WebRTCAPIName::kGetUserMedia;
       break;
     case blink::WebUserMediaRequest::MediaType::kDisplayMedia:
-      api_name = RTCAPIName::kGetDisplayMedia;
+      api_name = blink::WebRTCAPIName::kGetDisplayMedia;
       break;
   }
   UpdateWebRTCMethodCount(api_name);

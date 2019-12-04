@@ -164,7 +164,7 @@ CanvasCaptureHandler::CreateCanvasCaptureHandler(
     blink::WebMediaStreamTrack* track) {
   // Save histogram data so we can see how much CanvasCapture is used.
   // The histogram counts the number of calls to the JS API.
-  UpdateWebRTCMethodCount(RTCAPIName::kCanvasCaptureStream);
+  UpdateWebRTCMethodCount(blink::WebRTCAPIName::kCanvasCaptureStream);
 
   return std::unique_ptr<CanvasCaptureHandler>(new CanvasCaptureHandler(
       frame, size, frame_rate, std::move(io_task_runner), track));

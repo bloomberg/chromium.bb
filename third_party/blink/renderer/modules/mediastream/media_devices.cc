@@ -64,7 +64,7 @@ MediaDevices::MediaDevices(ExecutionContext* context)
 MediaDevices::~MediaDevices() = default;
 
 ScriptPromise MediaDevices::enumerateDevices(ScriptState* script_state) {
-  UpdateWebRTCMethodCount(RTCAPIName::kEnumerateDevices);
+  UpdateWebRTCMethodCount(WebRTCAPIName::kEnumerateDevices);
   LocalFrame* frame =
       To<Document>(ExecutionContext::From(script_state))->GetFrame();
   if (!frame) {
