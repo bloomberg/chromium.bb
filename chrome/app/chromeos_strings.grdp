@@ -3925,7 +3925,7 @@
     Finding your phone
   </message>
   <message name="IDS_SMART_LOCK_SCREENLOCK_AUTHENTICATED_LABEL" desc="Label for the Smart Lock icon used for accessibility purposes. Describes when a phone eligible to unlock the Chromebook is detected and authenticated.">
-    Your device is unlocked with Smart Lock. Press Enter to unlock.
+    Your device can be unlocked with Smart Lock. Press Enter to unlock.
   </message>
 
   <!-- User Image Selection Dialog -->
