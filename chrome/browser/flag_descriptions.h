@@ -131,6 +131,9 @@ extern const char kAutofillEnableLocalCardMigrationForNonSyncUserDescription[];
 extern const char kAutofillEnableToolbarStatusChipName[];
 extern const char kAutofillEnableToolbarStatusChipDescription[];
 
+extern const char kAutofillEnableVirtualCardName[];
+extern const char kAutofillEnableVirtualCardDescription[];
+
 // Enforcing restrictions to enable/disable autofill small form support.
 extern const char kAutofillEnforceMinRequiredFieldsForHeuristicsName[];
 extern const char kAutofillEnforceMinRequiredFieldsForHeuristicsDescription[];

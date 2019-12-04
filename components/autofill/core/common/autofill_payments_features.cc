@@ -53,6 +53,11 @@ const base::Feature kAutofillEnableLocalCardMigrationForNonSyncUser{
 const base::Feature kAutofillEnableToolbarStatusChip{
     "AutofillEnableToolbarStatusChip", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// When enabled, the option of using cloud token virtual card will be offered
+// when all requirements are met.
+const base::Feature kAutofillEnableVirtualCard{
+    "AutofillEnableVirtualCard", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // When enabled, will remove the option to save unmasked server cards as
 // FULL_SERVER_CARDs upon successful unmask.
 const base::Feature kAutofillNoLocalSaveOnUnmaskSuccess{

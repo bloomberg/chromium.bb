@@ -4748,6 +4748,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kPassiveMixedContentWarningDescription, kOsAll,
      FEATURE_VALUE_TYPE(security_state::features::kPassiveMixedContentWarning)},
 
+    {"autofill-enable-virtual-card",
+     flag_descriptions::kAutofillEnableVirtualCardName,
+     flag_descriptions::kAutofillEnableVirtualCardDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(autofill::features::kAutofillEnableVirtualCard)},
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the
