@@ -1561,6 +1561,8 @@ void LayerTreeHost::PushLayerTreePropertiesTo(LayerTreeImpl* tree_impl) {
   if (top_controls_shown_ratio_ > 0.0f && top_controls_shown_ratio_ < 1.0f) {
     tree_impl->UpdateViewportContainerSizes();
   }
+
+  tree_impl->set_display_transform_hint(display_transform_hint_);
 }
 
 void LayerTreeHost::PushSurfaceRangesTo(LayerTreeImpl* tree_impl) {

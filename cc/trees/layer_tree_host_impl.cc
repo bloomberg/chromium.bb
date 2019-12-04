@@ -2165,6 +2165,8 @@ viz::CompositorFrameMetadata LayerTreeHostImpl::MakeCompositorFrameMetadata() {
         gfx::ScrollOffsetToVector2dF(active_tree_->TotalScrollOffset());
   }
 
+  metadata.display_transform_hint = active_tree_->display_transform_hint();
+
   return metadata;
 }
 
