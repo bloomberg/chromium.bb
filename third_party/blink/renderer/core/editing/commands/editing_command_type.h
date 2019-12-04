@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_EDITING_COMMAND_TYPE_H_
-#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_EDITING_COMMAND_TYPE_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_COMMANDS_EDITING_COMMAND_TYPE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_COMMANDS_EDITING_COMMAND_TYPE_H_
 
 namespace blink {
 
@@ -11,7 +11,7 @@ namespace blink {
 // you should assign new values and update MappedEditingCommands
 // in tools/metrics/histograms/histograms.xml, and add the new command to
 // EditorCommand.cpp.
-enum class WebEditingCommandType {
+enum class EditingCommandType {
   kInvalid = 0,
   kAlignJustified = 1,
   kAlignLeft = 2,
@@ -206,4 +206,4 @@ enum class WebEditingCommandType {
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_EDITING_COMMAND_TYPE_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_COMMANDS_EDITING_COMMAND_TYPE_H_
