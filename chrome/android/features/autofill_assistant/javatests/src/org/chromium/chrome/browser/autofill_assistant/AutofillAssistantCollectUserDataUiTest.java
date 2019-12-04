@@ -54,7 +54,6 @@ import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantCollect
 import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantCollectUserDataModel;
 import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantDateChoiceOptions;
 import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantDateTime;
-import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantInfoPopup;
 import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantLoginChoice;
 import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantTermsAndConditionsState;
 import org.chromium.chrome.browser.autofill_assistant.user_data.additional_sections.AssistantAdditionalSectionFactory;
@@ -1224,8 +1223,8 @@ public class AutofillAssistantCollectUserDataUiTest {
         AutofillAssistantCollectUserDataTestHelper.MockDelegate delegate =
                 new AutofillAssistantCollectUserDataTestHelper.MockDelegate();
 
-        AssistantInfoPopup infoPopup =
-                new AssistantInfoPopup("Guest checkout", "Text explanation.");
+        AssistantInfoPopup infoPopup = new AssistantInfoPopup("Guest checkout", "Text explanation.",
+                new AssistantDialogButton("Close", null), null, null);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             model.set(AssistantCollectUserDataModel.DELEGATE, delegate);
             model.set(AssistantCollectUserDataModel.VISIBLE, true);
