@@ -2959,7 +2959,7 @@ AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf,
 #endif
 
 #if !CONFIG_REALTIME_ONLY
-  if (oxcf->pass == 1) {
+  if (is_stat_generation_stage(cpi)) {
     av1_init_first_pass(cpi);
   } else if (oxcf->pass == 2) {
     const size_t packet_sz = sizeof(FIRSTPASS_STATS);
@@ -3312,7 +3312,7 @@ void av1_remove_compressor(AV1_COMP *cpi) {
 
   if (cm->current_frame.frame_number > 0) {
 #if CONFIG_ENTROPY_STATS
-    if (cpi->oxcf.pass != 1) {
+    if (!is_stat_generation_stage(cpi)) {
       fprintf(stderr, "Writing counts.stt\n");
       FILE *f = fopen("counts.stt", "wb");
       fwrite(&aggregate_fc, sizeof(aggregate_fc), 1, f);
@@ -3322,7 +3322,7 @@ void av1_remove_compressor(AV1_COMP *cpi) {
 #if CONFIG_INTERNAL_STATS
     aom_clear_system_state();
 
-    if (cpi->oxcf.pass != 1) {
+    if (!is_stat_generation_stage(cpi)) {
       char headings[512] = { 0 };
       char results[512] = { 0 };
       FILE *f = fopen("opsnr.stt", "a");
@@ -3393,13 +3393,13 @@ void av1_remove_compressor(AV1_COMP *cpi) {
     }
 #endif  // CONFIG_INTERNAL_STATS
 #if CONFIG_SPEED_STATS
-    if (cpi->oxcf.pass != 1) {
+    if (!is_stat_generation_stage(cpi)) {
       fprintf(stdout, "tx_search_count = %d\n", cpi->tx_search_count);
     }
 #endif  // CONFIG_SPEED_STATS
 
 #if CONFIG_COLLECT_PARTITION_STATS == 2
-    if (cpi->oxcf.pass != 1) {
+    if (!is_stat_generation_stage(cpi)) {
       av1_print_partition_stats(&cpi->partition_stats);
     }
 #endif
@@ -4229,7 +4229,7 @@ static uint8_t calculate_next_resize_scale(const AV1_COMP *cpi) {
   // Choose an arbitrary random number
   static unsigned int seed = 56789;
   const AV1EncoderConfig *oxcf = &cpi->oxcf;
-  if (oxcf->pass == 1) return SCALE_NUMERATOR;
+  if (is_stat_generation_stage(cpi)) return SCALE_NUMERATOR;
   uint8_t new_denom = SCALE_NUMERATOR;
 
   if (cpi->common.seq_params.reduced_still_picture_hdr) return SCALE_NUMERATOR;
@@ -4343,7 +4343,7 @@ static uint8_t calculate_next_superres_scale(AV1_COMP *cpi) {
   // Choose an arbitrary random number
   static unsigned int seed = 34567;
   const AV1EncoderConfig *oxcf = &cpi->oxcf;
-  if (oxcf->pass == 1) return SCALE_NUMERATOR;
+  if (is_stat_generation_stage(cpi)) return SCALE_NUMERATOR;
   uint8_t new_denom = SCALE_NUMERATOR;
 
   // Make sure that superres mode of the frame is consistent with the
@@ -4494,7 +4494,7 @@ static size_params_type calculate_next_size_params(AV1_COMP *cpi) {
     rsz.resize_height = cpi->common.height;
     return rsz;
   }
-  if (oxcf->pass == 1) return rsz;
+  if (is_stat_generation_stage(cpi)) return rsz;
   if (cpi->resize_pending_width && cpi->resize_pending_height) {
     rsz.resize_width = cpi->resize_pending_width;
     rsz.resize_height = cpi->resize_pending_height;
@@ -5895,8 +5895,8 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
   }
 
   // Work out whether to force_integer_mv this frame
-  if (oxcf->pass != 1 && cpi->common.allow_screen_content_tools &&
-      !frame_is_intra_only(cm)) {
+  if (!is_stat_generation_stage(cpi) &&
+      cpi->common.allow_screen_content_tools && !frame_is_intra_only(cm)) {
     if (cpi->common.seq_params.force_integer_mv == 2) {
       // Adaptive mode: see what previous frame encoded did
       if (cpi->unscaled_last_source != NULL) {
@@ -5919,7 +5919,7 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
          "Hash-me is leaking memory!");
 #endif
 
-  if (cpi->oxcf.pass != 1 && cpi->need_to_clear_prev_hash_table) {
+  if (!is_stat_generation_stage(cpi) && cpi->need_to_clear_prev_hash_table) {
     av1_hash_table_clear_all(cpi->previous_hash_table);
     cpi->need_to_clear_prev_hash_table = 0;
   }
@@ -6125,7 +6125,7 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
   // Store encoded frame's hash table for in_integer_mv() next time.
   // Beware! If we don't update previous_hash_table here we will leak the
   // items stored in cur_frame's hash_table!
-  if (oxcf->pass != 1 && av1_use_hash_me(cpi)) {
+  if (!is_stat_generation_stage(cpi) && av1_use_hash_me(cpi)) {
     cpi->previous_hash_table = &cm->cur_frame->hash_table;
     cpi->need_to_clear_prev_hash_table = 1;
   }
@@ -6192,7 +6192,7 @@ int av1_encode(AV1_COMP *const cpi, uint8_t *const dest,
         (1 << (cm->seq_params.order_hint_info.order_hint_bits_minus_1 + 1));
   }
 
-  if (cpi->oxcf.pass == 1) {
+  if (is_stat_generation_stage(cpi)) {
 #if !CONFIG_REALTIME_ONLY
     av1_first_pass(cpi, frame_input->ts_duration);
 #endif
@@ -6463,12 +6463,13 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
   cpi->time_compress_data += aom_usec_timer_elapsed(&cmptimer);
 #endif  // CONFIG_INTERNAL_STATS
   if (cpi->b_calculate_psnr) {
-    if (cm->show_existing_frame || (oxcf->pass != 1 && cm->show_frame)) {
+    if (cm->show_existing_frame ||
+        (!is_stat_generation_stage(cpi) && cm->show_frame)) {
       generate_psnr_packet(cpi);
     }
   }
 
-  if (cpi->keep_level_stats && oxcf->pass != 1) {
+  if (cpi->keep_level_stats && !is_stat_generation_stage(cpi)) {
     // Initialize level info. at the beginning of each sequence.
     if (cm->current_frame.frame_type == KEY_FRAME && cm->show_frame) {
       av1_init_level_info(cpi);
@@ -6477,12 +6478,12 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
   }
 
 #if CONFIG_INTERNAL_STATS
-  if (oxcf->pass != 1) {
+  if (!is_stat_generation_stage(cpi)) {
     compute_internal_stats(cpi, (int)(*size));
   }
 #endif  // CONFIG_INTERNAL_STATS
 #if CONFIG_SPEED_STATS
-  if (cpi->oxcf.pass != 1 && !cm->show_existing_frame) {
+  if (!is_stat_generation_stage(cpi) && !cm->show_existing_frame) {
     cpi->tx_search_count += cpi->td.mb.tx_search_count;
     cpi->td.mb.tx_search_count = 0;
   }

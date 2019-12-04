@@ -992,7 +992,7 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
 
   // Slow quant, dct and trellis not worthwhile for first pass
   // so make sure they are always turned off.
-  if (oxcf->pass == 1) sf->optimize_coefficients = NO_TRELLIS_OPT;
+  if (is_stat_generation_stage(cpi)) sf->optimize_coefficients = NO_TRELLIS_OPT;
 
   // No recode or trellis for 1 pass.
   if (oxcf->pass == 0) sf->recode_loop = DISALLOW_RECODE;

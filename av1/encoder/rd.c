@@ -618,13 +618,13 @@ void av1_initialize_rd_consts(AV1_COMP *cpi) {
                       cm->allow_high_precision_mv, x);
 
   if (frame_is_intra_only(cm) && cm->allow_screen_content_tools &&
-      cpi->oxcf.pass != 1) {
+      !is_stat_generation_stage(cpi)) {
     int *dvcost[2] = { &cpi->dv_cost[0][MV_MAX], &cpi->dv_cost[1][MV_MAX] };
     av1_build_nmv_cost_table(cpi->dv_joint_cost, dvcost, &cm->fc->ndvc,
                              MV_SUBPEL_NONE);
   }
 
-  if (cpi->oxcf.pass != 1) {
+  if (!is_stat_generation_stage(cpi)) {
     for (int i = 0; i < TRANS_TYPES; ++i)
       // IDENTITY: 1 bit
       // TRANSLATION: 3 bits

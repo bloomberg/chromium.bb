@@ -5092,7 +5092,7 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
 
   cm->allow_intrabc &= (cpi->oxcf.enable_intrabc);
 
-  if (cpi->oxcf.pass != 1 && av1_use_hash_me(cpi) &&
+  if (!is_stat_generation_stage(cpi) && av1_use_hash_me(cpi) &&
       !cpi->sf.use_nonrd_pick_mode) {
     // add to hash table
     const int pic_width = cpi->source->y_crop_width;
