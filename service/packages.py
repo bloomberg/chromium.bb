@@ -346,6 +346,53 @@ def uprev_kernel_afdo(*_args, **_kwargs):
   return result
 
 
+@uprevs_versioned_package('chromeos-base/chromeos-dtc-vm')
+def uprev_sludge(*_args, **_kwargs):
+  """Updates sludge VM - chromeos-base/chromeos-dtc-vm.
+
+  See: uprev_versioned_package.
+  """
+  package = 'chromeos-dtc-vm'
+  path = os.path.join('src', 'private-overlays', 'project-wilco-private',
+                      'chromeos-base', package)
+  package_path = os.path.join(constants.SOURCE_ROOT, path)
+  version_pin_path = os.path.join(constants.SOURCE_ROOT, path, 'VERSION-PIN')
+
+  return uprev_ebuild_from_pin(package_path, version_pin_path)
+
+
+def uprev_ebuild_from_pin(package_path, version_pin_path):
+  """Changes the package ebuild's version to match the version pin file.
+
+  Args:
+    package_path: The path of the package relative to the src root. This path
+      should contain a single ebuild with the same name as the package.
+    version_pin_path: The path of the version_pin file that contains only only
+      a version string. The ebuild's version will be directly set to this
+      number.
+
+  Returns:
+    UprevVersionedPackageResult: The result.
+  """
+  package = os.path.basename(package_path)
+  ebuild_paths = list(portage_util.EBuild.List(package_path))
+  if not ebuild_paths:
+    raise UprevError('No ebuilds found for %s' % package)
+  elif len(ebuild_paths) > 1:
+    raise UprevError('Multiple ebuilds found for %s' % package)
+  else:
+    ebuild_path = ebuild_paths[0]
+
+  version = osutils.ReadFile(version_pin_path).strip()
+  new_ebuild_path = os.path.join(package_path,
+                                 '%s-%s-r1.ebuild' % (package, version))
+  os.rename(ebuild_path, new_ebuild_path)
+
+  result = UprevVersionedPackageResult()
+  result.add_result(version, [new_ebuild_path])
+  return result
+
+
 @uprevs_versioned_package(constants.CHROME_CP)
 def uprev_chrome(build_targets, refs, chroot):
   """Uprev chrome and its related packages.
