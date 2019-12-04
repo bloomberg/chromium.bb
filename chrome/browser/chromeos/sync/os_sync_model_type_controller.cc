@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/printing/printers_model_type_controller.h"
+#include "chrome/browser/chromeos/sync/os_sync_model_type_controller.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -15,11 +16,12 @@
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/model/model_type_controller_delegate.h"
 
-PrintersModelTypeController::PrintersModelTypeController(
+OsSyncModelTypeController::OsSyncModelTypeController(
+    syncer::ModelType type,
     std::unique_ptr<syncer::ModelTypeControllerDelegate> delegate,
     PrefService* pref_service,
     syncer::SyncService* sync_service)
-    : syncer::ModelTypeController(syncer::PRINTERS, std::move(delegate)),
+    : syncer::ModelTypeController(type, std::move(delegate)),
       pref_service_(pref_service),
       sync_service_(sync_service) {
   DCHECK(chromeos::features::IsSplitSettingsSyncEnabled());
@@ -28,21 +30,21 @@ PrintersModelTypeController::PrintersModelTypeController(
   pref_registrar_.Init(pref_service_);
   pref_registrar_.Add(
       syncer::prefs::kOsSyncFeatureEnabled,
-      base::BindRepeating(&PrintersModelTypeController::OnUserPrefChanged,
+      base::BindRepeating(&OsSyncModelTypeController::OnUserPrefChanged,
                           base::Unretained(this)));
 }
 
-PrintersModelTypeController::~PrintersModelTypeController() = default;
+OsSyncModelTypeController::~OsSyncModelTypeController() = default;
 
 syncer::DataTypeController::PreconditionState
-PrintersModelTypeController::GetPreconditionState() const {
+OsSyncModelTypeController::GetPreconditionState() const {
   DCHECK(CalledOnValidThread());
   return pref_service_->GetBoolean(syncer::prefs::kOsSyncFeatureEnabled)
              ? PreconditionState::kPreconditionsMet
              : PreconditionState::kMustStopAndClearData;
 }
 
-void PrintersModelTypeController::OnUserPrefChanged() {
+void OsSyncModelTypeController::OnUserPrefChanged() {
   DCHECK(CalledOnValidThread());
   sync_service_->DataTypePreconditionChanged(type());
 }

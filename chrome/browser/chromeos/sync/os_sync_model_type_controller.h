@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_PRINTING_PRINTERS_MODEL_TYPE_CONTROLLER_H_
-#define CHROME_BROWSER_CHROMEOS_PRINTING_PRINTERS_MODEL_TYPE_CONTROLLER_H_
+#ifndef CHROME_BROWSER_CHROMEOS_SYNC_OS_SYNC_MODEL_TYPE_CONTROLLER_H_
+#define CHROME_BROWSER_CHROMEOS_SYNC_OS_SYNC_MODEL_TYPE_CONTROLLER_H_
+
+#include <memory>
 
 #include "components/prefs/pref_change_registrar.h"
 #include "components/sync/driver/model_type_controller.h"
@@ -15,17 +17,19 @@ class ModelTypeControllerDelegate;
 class SyncService;
 }  // namespace syncer
 
-// Controls syncing of ModelType PRINTERS.
-class PrintersModelTypeController : public syncer::ModelTypeController {
+// Controls sync of Chrome OS ModelTypes that depend on the system-wide
+// kOsSyncFeatureEnabled preference.
+class OsSyncModelTypeController : public syncer::ModelTypeController {
  public:
-  PrintersModelTypeController(
+  OsSyncModelTypeController(
+      syncer::ModelType type,
       std::unique_ptr<syncer::ModelTypeControllerDelegate> delegate,
       PrefService* pref_service,
       syncer::SyncService* sync_service);
-  ~PrintersModelTypeController() override;
+  ~OsSyncModelTypeController() override;
 
-  PrintersModelTypeController(const PrintersModelTypeController&) = delete;
-  PrintersModelTypeController& operator=(const PrintersModelTypeController&) =
+  OsSyncModelTypeController(const OsSyncModelTypeController&) = delete;
+  OsSyncModelTypeController& operator=(const OsSyncModelTypeController&) =
       delete;
 
   // DataTypeController:
@@ -41,4 +45,4 @@ class PrintersModelTypeController : public syncer::ModelTypeController {
   PrefChangeRegistrar pref_registrar_;
 };
 
-#endif  // CHROME_BROWSER_CHROMEOS_PRINTING_PRINTERS_MODEL_TYPE_CONTROLLER_H_
+#endif  // CHROME_BROWSER_CHROMEOS_SYNC_OS_SYNC_MODEL_TYPE_CONTROLLER_H_
