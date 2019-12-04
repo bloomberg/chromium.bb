@@ -489,11 +489,6 @@ extern const char kNaviOnboardGroup[];
 extern const char kCrashReportingEnabled[];
 #endif  // defined(OS_ANDROID)
 
-extern const char kEnableQuietNotificationPermissionUi[];
-extern const char kQuietNotificationPermissionShouldShowPromo[];
-extern const char kQuietNotificationPermissionPromoWasShown[];
-extern const char kNotificationPermissionActions[];
-
 extern const char kProfileLastUsed[];
 extern const char kProfilesLastActive[];
 extern const char kProfilesNumCreated[];

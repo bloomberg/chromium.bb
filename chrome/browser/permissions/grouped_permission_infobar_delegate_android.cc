@@ -7,12 +7,12 @@
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/android/android_theme_resources.h"
 #include "chrome/browser/infobars/infobar_service.h"
+#include "chrome/browser/permissions/adaptive_notification_permission_ui_selector.h"
+#include "chrome/browser/permissions/permission_features.h"
 #include "chrome/browser/permissions/permission_prompt_android.h"
 #include "chrome/browser/permissions/permission_request.h"
 #include "chrome/browser/permissions/permission_uma_util.h"
 #include "chrome/browser/permissions/permission_util.h"
-#include "chrome/browser/permissions/quiet_notification_permission_ui_config.h"
-#include "chrome/browser/permissions/quiet_notification_permission_ui_state.h"
 #include "chrome/browser/ui/android/infobars/grouped_permission_infobar.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/infobars/core/infobar.h"
@@ -93,11 +93,12 @@ bool GroupedPermissionInfoBarDelegate::LinkClicked(
 bool GroupedPermissionInfoBarDelegate::ShouldShowMiniInfobar(
     Profile* profile,
     ContentSettingsType type) {
+  auto* permission_ui_selector =
+      AdaptiveNotificationPermissionUiSelector::GetForProfile(profile);
   return type == ContentSettingsType::NOTIFICATIONS &&
-         // TODO(crbug.com/1030633): Consult PermissionRequestManager here.
-         QuietNotificationPermissionUiState::IsQuietUiEnabledInPrefs(profile) &&
-         QuietNotificationPermissionUiConfig::UiFlavorToUse() ==
-             QuietNotificationPermissionUiConfig::UiFlavor::MINI_INFOBAR;
+         permission_ui_selector->ShouldShowQuietUi() &&
+         QuietNotificationsPromptConfig::UIFlavorToUse() ==
+             QuietNotificationsPromptConfig::UIFlavor::MINI_INFOBAR;
 }
 
 GroupedPermissionInfoBarDelegate::GroupedPermissionInfoBarDelegate(

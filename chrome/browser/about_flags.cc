@@ -35,7 +35,7 @@
 #include "chrome/browser/net/dns_util.h"
 #include "chrome/browser/notifications/scheduler/public/features.h"
 #include "chrome/browser/performance_manager/graph/policies/policy_features.h"
-#include "chrome/browser/permissions/quiet_notification_permission_ui_config.h"
+#include "chrome/browser/permissions/permission_features.h"
 #include "chrome/browser/predictors/loading_predictor_config.h"
 #include "chrome/browser/prerender/prerender_field_trial.h"
 #include "chrome/browser/resource_coordinator/tab_manager_features.h"
@@ -1312,8 +1312,7 @@ const FeatureEntry::FeatureVariation
 
 const FeatureEntry::FeatureParam
     kQuietNotificationPromptsWithAdaptiveActivation[] = {
-        {QuietNotificationPermissionUiConfig::kEnableAdaptiveActivation,
-         "true"}};
+        {QuietNotificationsPromptConfig::kEnableAdaptiveActivation, "true"}};
 
 // The default "Enabled" option has the semantics of showing the quiet UI
 // (animated location bar indicator on Desktop, and mini-infobars on Android),

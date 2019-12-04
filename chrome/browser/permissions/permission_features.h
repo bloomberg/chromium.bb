@@ -2,15 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PERMISSIONS_QUIET_NOTIFICATION_PERMISSION_UI_CONFIG_H_
-#define CHROME_BROWSER_PERMISSIONS_QUIET_NOTIFICATION_PERMISSION_UI_CONFIG_H_
+#ifndef CHROME_BROWSER_PERMISSIONS_PERMISSION_FEATURES_H_
+#define CHROME_BROWSER_PERMISSIONS_PERMISSION_FEATURES_H_
 
 #include "build/build_config.h"
 
-// Field trial configuration for the quiet notificaiton permission request UI.
-class QuietNotificationPermissionUiConfig {
+class QuietNotificationsPromptConfig {
  public:
-  enum UiFlavor {
+  enum UIFlavor {
     NONE,
 #if defined(OS_ANDROID)
     QUIET_NOTIFICATION,
@@ -27,11 +26,7 @@ class QuietNotificationPermissionUiConfig {
   // consecutive prompt denies.
   static const char kEnableAdaptiveActivation[];
 
-  // Which flavor of the quiet UI to use.
-  //
-  // Deprecated: The UI flavor is now hardcoded on each platform and no longer
-  // controlled by field trials.
-  static UiFlavor UiFlavorToUse();
+  static UIFlavor UIFlavorToUse();
 
   // Whether or not adaptive activation is enabled. Adaptive activation means
   // that quiet notifications permission prompts will be turned on after three
@@ -39,4 +34,4 @@ class QuietNotificationPermissionUiConfig {
   static bool IsAdaptiveActivationEnabled();
 };
 
-#endif  // CHROME_BROWSER_PERMISSIONS_QUIET_NOTIFICATION_PERMISSION_UI_CONFIG_H_
+#endif  // CHROME_BROWSER_PERMISSIONS_PERMISSION_FEATURES_H_

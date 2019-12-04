@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PERMISSIONS_ADAPTIVE_QUIET_NOTIFICATION_PERMISSION_UI_ENABLER_H_
-#define CHROME_BROWSER_PERMISSIONS_ADAPTIVE_QUIET_NOTIFICATION_PERMISSION_UI_ENABLER_H_
+#ifndef CHROME_BROWSER_PERMISSIONS_ADAPTIVE_NOTIFICATION_PERMISSION_UI_SELECTOR_H_
+#define CHROME_BROWSER_PERMISSIONS_ADAPTIVE_NOTIFICATION_PERMISSION_UI_SELECTOR_H_
 
 #include "base/callback.h"
 #include "base/macros.h"
@@ -13,7 +13,6 @@
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "components/keyed_service/core/keyed_service.h"
 
-class PrefChangeRegistrar;
 class Profile;
 
 namespace base {
@@ -24,10 +23,27 @@ class Clock;
 // and adaptively enables the quiet permission UX if various heuristics estimate
 // the a posteriori probability of the user accepting the subsequent permission
 // prompts to be low.
-class AdaptiveQuietNotificationPermissionUiEnabler : public KeyedService {
+class AdaptiveNotificationPermissionUiSelector : public KeyedService {
  public:
-  static AdaptiveQuietNotificationPermissionUiEnabler* GetForProfile(
+  static AdaptiveNotificationPermissionUiSelector* GetForProfile(
       Profile* profile);
+
+  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
+
+  // Whether to display subsequent notification permission requests quietly.
+  bool ShouldShowQuietUi();
+
+  // Turns off the quiet UI, as per user request.
+  void DisableQuietUi();
+
+  // Turns on the quiet UI.
+  void EnableQuietUi();
+
+  // Whether to show a promo for the prompt indicator
+  bool ShouldShowPromo();
+
+  // Records that the promo was shown.
+  void PromoWasShown();
 
   // Records the outcome of a notification permission prompt, i.e. how the user
   // interacted with it, to be called once a permission request finishes.
@@ -44,11 +60,11 @@ class AdaptiveQuietNotificationPermissionUiEnabler : public KeyedService {
  private:
   class Factory : public BrowserContextKeyedServiceFactory {
    public:
-    static AdaptiveQuietNotificationPermissionUiEnabler* GetForProfile(
+    static AdaptiveNotificationPermissionUiSelector* GetForProfile(
         Profile* profile);
 
    private:
-    static AdaptiveQuietNotificationPermissionUiEnabler::Factory* GetInstance();
+    static AdaptiveNotificationPermissionUiSelector::Factory* GetInstance();
     friend struct base::DefaultSingletonTraits<Factory>;
 
     Factory();
@@ -62,20 +78,22 @@ class AdaptiveQuietNotificationPermissionUiEnabler : public KeyedService {
         content::BrowserContext* context) const override;
   };
 
-  explicit AdaptiveQuietNotificationPermissionUiEnabler(Profile* profile);
-  ~AdaptiveQuietNotificationPermissionUiEnabler() override;
+  // Turns off showing a promo for the prompt indicator.
+  void DisableShowingPromo();
 
-  // Called when the quiet UI state is updated in preferences.
-  void OnQuietUiStateChanged();
+  // Turns on showing a promo for the prompt indicator.
+  void EnableShowingPromo();
+
+  explicit AdaptiveNotificationPermissionUiSelector(Profile* profile);
+  ~AdaptiveNotificationPermissionUiSelector() override;
 
   Profile* profile_;
-  std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
 
   // The clock to use as a source of time, materialized so that a mock clock can
   // be injected for tests.
   base::Clock* clock_;
 
-  DISALLOW_IMPLICIT_CONSTRUCTORS(AdaptiveQuietNotificationPermissionUiEnabler);
+  DISALLOW_IMPLICIT_CONSTRUCTORS(AdaptiveNotificationPermissionUiSelector);
 };
 
-#endif  // CHROME_BROWSER_PERMISSIONS_ADAPTIVE_QUIET_NOTIFICATION_PERMISSION_UI_ENABLER_H_
+#endif  // CHROME_BROWSER_PERMISSIONS_ADAPTIVE_NOTIFICATION_PERMISSION_UI_SELECTOR_H_

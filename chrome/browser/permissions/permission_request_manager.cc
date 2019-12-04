@@ -15,12 +15,11 @@
 #include "base/strings/string16.h"
 #include "base/task/post_task.h"
 #include "build/build_config.h"
-#include "chrome/browser/permissions/adaptive_quiet_notification_permission_ui_enabler.h"
+#include "chrome/browser/permissions/adaptive_notification_permission_ui_selector.h"
 #include "chrome/browser/permissions/permission_decision_auto_blocker.h"
+#include "chrome/browser/permissions/permission_features.h"
 #include "chrome/browser/permissions/permission_request.h"
 #include "chrome/browser/permissions/permission_uma_util.h"
-#include "chrome/browser/permissions/quiet_notification_permission_ui_config.h"
-#include "chrome/browser/permissions/quiet_notification_permission_ui_state.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/permission_bubble/permission_prompt.h"
 #include "chrome/common/chrome_features.h"
@@ -436,9 +435,9 @@ void PermissionRequestManager::FinalizeBubble(
   PermissionDecisionAutoBlocker* autoblocker =
       PermissionDecisionAutoBlocker::GetForProfile(profile);
 
-  auto* adaptive_notification_permission_ui_enabler =
-      AdaptiveQuietNotificationPermissionUiEnabler::GetForProfile(profile);
-  adaptive_notification_permission_ui_enabler->RecordPermissionPromptOutcome(
+  auto* adaptive_notification_permission_ui_selector =
+      AdaptiveNotificationPermissionUiSelector::GetForProfile(profile);
+  adaptive_notification_permission_ui_selector->RecordPermissionPromptOutcome(
       permission_action);
   for (PermissionRequest* request : requests_) {
     // TODO(timloh): We only support dismiss and ignore embargo for permissions
@@ -565,26 +564,28 @@ bool PermissionRequestManager::ShouldCurrentRequestUseQuietUI() {
 
   Profile* profile =
       Profile::FromBrowserContext(web_contents()->GetBrowserContext());
+  auto* permission_ui_selector =
+      AdaptiveNotificationPermissionUiSelector::GetForProfile(profile);
 
   bool not_a_notifications_request =
       requests_.front()->GetPermissionRequestType() !=
       PermissionRequestType::PERMISSION_NOTIFICATIONS;
   bool should_show_loud_ui =
-      !QuietNotificationPermissionUiState::IsQuietUiEnabledInPrefs(profile);
+      !permission_ui_selector
+           ->AdaptiveNotificationPermissionUiSelector::ShouldShowQuietUi();
 
   if (not_a_notifications_request || should_show_loud_ui)
     return false;
 
-  const auto ui_flavor = QuietNotificationPermissionUiConfig::UiFlavorToUse();
+  const auto ui_flavor = QuietNotificationsPromptConfig::UIFlavorToUse();
 
 #if !defined(OS_ANDROID)
-  return (ui_flavor == QuietNotificationPermissionUiConfig::STATIC_ICON ||
-          ui_flavor == QuietNotificationPermissionUiConfig::ANIMATED_ICON);
+  return (ui_flavor == QuietNotificationsPromptConfig::STATIC_ICON ||
+          ui_flavor == QuietNotificationsPromptConfig::ANIMATED_ICON);
 #else   // OS_ANDROID
-  return (
-      ui_flavor == QuietNotificationPermissionUiConfig::QUIET_NOTIFICATION ||
-      ui_flavor == QuietNotificationPermissionUiConfig::HEADS_UP_NOTIFICATION ||
-      ui_flavor == QuietNotificationPermissionUiConfig::MINI_INFOBAR);
+  return (ui_flavor == QuietNotificationsPromptConfig::QUIET_NOTIFICATION ||
+          ui_flavor == QuietNotificationsPromptConfig::HEADS_UP_NOTIFICATION ||
+          ui_flavor == QuietNotificationsPromptConfig::MINI_INFOBAR);
 #endif  // OS_ANDROID
 }
 
@@ -633,8 +634,8 @@ PermissionRequestManager::DetermineCurrentRequestUIDispositionForUMA() {
 #else
   return !ShouldCurrentRequestUseQuietUI()
              ? PermissionPromptDisposition::ANCHORED_BUBBLE
-             : QuietNotificationPermissionUiConfig::UiFlavorToUse() ==
-                       QuietNotificationPermissionUiConfig::STATIC_ICON
+             : QuietNotificationsPromptConfig::UIFlavorToUse() ==
+                       QuietNotificationsPromptConfig::STATIC_ICON
                    ? PermissionPromptDisposition::LOCATION_BAR_RIGHT_STATIC_ICON
                    : PermissionPromptDisposition::
                          LOCATION_BAR_RIGHT_ANIMATED_ICON;
