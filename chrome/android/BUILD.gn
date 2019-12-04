@@ -2682,6 +2682,7 @@ generate_jni("chrome_jni_headers") {
     "java/src/org/chromium/chrome/browser/payments/SslValidityChecker.java",
     "java/src/org/chromium/chrome/browser/permissions/PermissionDialogController.java",
     "java/src/org/chromium/chrome/browser/permissions/PermissionDialogDelegate.java",
+    "java/src/org/chromium/chrome/browser/permissions/PermissionSettingsBridge.java",
     "java/src/org/chromium/chrome/browser/permissions/PermissionUmaUtil.java",
     "java/src/org/chromium/chrome/browser/photo_picker/DecoderService.java",
     "java/src/org/chromium/chrome/browser/policy/PolicyAuditor.java",
