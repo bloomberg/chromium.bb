@@ -219,17 +219,20 @@ void NGContainerFragmentBuilder::AddOutOfFlowDescendant(
 }
 
 void NGContainerFragmentBuilder::SwapOutOfFlowPositionedCandidates(
-    Vector<NGLogicalOutOfFlowPositionedNode>* candidates,
-    const LayoutObject* current_container) {
+    Vector<NGLogicalOutOfFlowPositionedNode>* candidates) {
   DCHECK(candidates->IsEmpty());
-
-  // The |oof_positioned_candidates_| list may get additional candidates, in the
-  // following case:
-  //  - If an absolute-positioned element gets added to the builder, and it has
-  //    a fixed-positioned descendant.
   std::swap(oof_positioned_candidates_, *candidates);
+}
 
-  for (auto& candidate : *candidates) {
+void NGContainerFragmentBuilder::
+    MoveOutOfFlowDescendantCandidatesToDescendants() {
+  DCHECK(oof_positioned_descendants_.IsEmpty());
+  std::swap(oof_positioned_candidates_, oof_positioned_descendants_);
+
+  if (!layout_object_->IsInline())
+    return;
+
+  for (auto& candidate : oof_positioned_descendants_) {
     // If we are inside the inline algorithm, (and creating a fragment for a
     // <span> or similar), we may add a child (e.g. an atomic-inline) which has
     // OOF descandants.
@@ -245,13 +248,7 @@ void NGContainerFragmentBuilder::SwapOutOfFlowPositionedCandidates(
       candidate.inline_container =
           ToLayoutInline(candidate.inline_container->ContinuationRoot());
     }
-
-    // Copy-back the static-position for legacy.
-    candidate.node.SaveStaticOffsetForLegacy(candidate.static_position.offset,
-                                             current_container);
   }
-
-  DCHECK(oof_positioned_candidates_.IsEmpty());
 }
 
 #if DCHECK_IS_ON()

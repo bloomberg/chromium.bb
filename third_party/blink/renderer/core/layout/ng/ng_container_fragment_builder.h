@@ -126,8 +126,7 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
       const NGLogicalOutOfFlowPositionedNode& descendant);
 
   void SwapOutOfFlowPositionedCandidates(
-      Vector<NGLogicalOutOfFlowPositionedNode>* candidates,
-      const LayoutObject* current_container);
+      Vector<NGLogicalOutOfFlowPositionedNode>* candidates);
 
   bool HasOutOfFlowPositionedCandidates() const {
     return !oof_positioned_candidates_.IsEmpty();
@@ -140,9 +139,7 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
   // position OOF candidates yet, (as a containing box may be split over
   // multiple lines), instead we bubble all the descendants up to the parent
   // block layout algorithm, to perform the final OOF layout and positioning.
-  void MoveOutOfFlowDescendantCandidatesToDescendants() {
-    SwapOutOfFlowPositionedCandidates(&oof_positioned_descendants_, nullptr);
-  }
+  void MoveOutOfFlowDescendantCandidatesToDescendants();
 
   void SetIsSelfCollapsing() { is_self_collapsing_ = true; }
 
