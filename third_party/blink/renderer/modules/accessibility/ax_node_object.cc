@@ -3045,9 +3045,6 @@ void AXNodeObject::ComputeAriaOwnsChildren(
     return;
   }
 
-  if (!HasAttribute(html_names::kAriaOwnsAttr))
-    return;
-
   // Case 2: aria-owns attribute
   TokenVectorFromAttribute(id_vector, html_names::kAriaOwnsAttr);
   AXObjectCache().UpdateAriaOwns(this, id_vector, owned_children);
