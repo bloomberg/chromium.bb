@@ -124,28 +124,28 @@ class ReplicatePrivateConfigTest(cros_test_lib.MockTempDirTestCase):
     cros_test_lib.CreateOnDiskHierarchy(self.tempdir, file_layout)
 
     # Private config contains 'a' and 'b' fields.
-    private_config_path = os.path.join(self.tempdir, private_package_root,
-                                       'files', 'build_config.json')
-    osutils.WriteFile(private_config_path,
-                      json.dumps({'chromeos': {
-                          'configs': [{
-                              'a': 3,
-                              'b': 2
-                          }]
-                      }}))
+    private_config_path = os.path.join(private_package_root, 'files',
+                                       'build_config.json')
+    self.WriteTempFile(
+        private_config_path,
+        json.dumps({'chromeos': {
+            'configs': [{
+                'a': 3,
+                'b': 2
+            }]
+        }}))
 
     # Public config only contains the 'a' field. Note that the value of 'a' is
     # 1 in the public config; it will get updated to 3 when the private config
     # is replicated.
-    self.public_config_path = os.path.join(self.tempdir,
-                                           self.public_package_root, 'files',
+    self.public_config_path = os.path.join(self.public_package_root, 'files',
                                            'build_config.json')
-    osutils.WriteFile(self.public_config_path,
-                      json.dumps({'chromeos': {
-                          'configs': [{
-                              'a': 1
-                          }]
-                      }}))
+    self.WriteTempFile(self.public_config_path,
+                       json.dumps({'chromeos': {
+                           'configs': [{
+                               'a': 1
+                           }]
+                       }}))
 
     # Put a ReplicationConfig JSONPB in the private package. Note that it
     # specifies only the 'a' field is replicated.
@@ -178,8 +178,13 @@ class ReplicatePrivateConfigTest(cros_test_lib.MockTempDirTestCase):
 
     # The update from the private build_config.json was copied to the public.
     # Note that only the 'a' field is present, as per destination_fields.
-    with open(self.public_config_path, 'r') as f:
-      self.assertEqual(json.load(f), {'chromeos': {'configs': [{'a': 3}]}})
+    self.assertEqual(
+        json.loads(self.ReadTempFile(self.public_config_path)),
+        {'chromeos': {
+            'configs': [{
+                'a': 3
+            }]
+        }})
 
   def test_replicate_private_config_wrong_number_of_refs(self):
     """An error is thrown if there is not exactly one ref."""

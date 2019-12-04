@@ -1066,6 +1066,28 @@ class TempDirTestCase(TestCase):
     read_content = osutils.ReadFile(file_path)
     self.assertEqual(read_content, content)
 
+  def assertTempFileContents(self, file_path, content):
+    """Assert that a file in the temp directory contains the given content."""
+    self.assertFileContents(os.path.join(self.tempdir, file_path), content)
+
+  def ReadTempFile(self, path):
+    """Read a given file from the temp directory.
+
+    Args:
+      path: The path relative to the temp directory to read.
+    """
+    return osutils.ReadFile(os.path.join(self.tempdir, path))
+
+  def WriteTempFile(self, path, content, **kwargs):
+    """Write the given content to the temp directory
+
+    Args:
+      path: The path relative to the temp directory to write to.
+      content: Content to write. May be either an iterable, or a string.
+      kwargs: Additional args to pass to osutils.WriteFile.
+    """
+    osutils.WriteFile(os.path.join(self.tempdir, path), content, **kwargs)
+
 
 class LocalSqlServerTestCase(TempDirTestCase):
   """A TestCase that launches a local mysqld server in the background.
