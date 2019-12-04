@@ -2124,6 +2124,9 @@ memory_builder(
 
 memory_builder(
     name = 'Linux Chromium OS ASan LSan Builder',
+    # TODO(crbug.com/1030593): Builds take more than 3 hours sometimes. Remove
+    # once the builds are faster.
+    execution_timeout = 4 * time.hour,
     goma_backend = goma.backend.RBE_PROD,
 )
 
