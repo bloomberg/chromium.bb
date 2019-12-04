@@ -279,6 +279,7 @@ video::-webkit-media-controls-fullscreen-button {
 #mainContent {
   flex: 1 1 auto;
   margin: 0 auto;
+  max-width: 35em;
   width: 100%;
 }
 
@@ -392,3 +393,9 @@ body .hidden {
   top: 0;
   width: 100%;
 }
+
+<if expr="is_ios or is_android">
+.desktopOnly {
+  display: none;
+}
+</if>
