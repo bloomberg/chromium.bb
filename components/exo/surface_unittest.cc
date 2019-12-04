@@ -102,7 +102,7 @@ void ReleaseBuffer(int* release_buffer_call_count) {
 
 // Instantiate the Boolean which is used to toggle mouse and touch events in
 // the parameterized tests.
-INSTANTIATE_TEST_SUITE_P(, SurfaceTest, testing::Values(1.0f, 1.25f, 2.0f));
+INSTANTIATE_TEST_SUITE_P(All, SurfaceTest, testing::Values(1.0f, 1.25f, 2.0f));
 
 TEST_P(SurfaceTest, Attach) {
   gfx::Size buffer_size(256, 256);
