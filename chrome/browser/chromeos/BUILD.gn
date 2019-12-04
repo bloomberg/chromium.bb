@@ -2437,6 +2437,8 @@ static_library("test_support") {
     "android_sms/fake_connection_establisher.h",
     "app_mode/test_kiosk_extension_builder.cc",
     "app_mode/test_kiosk_extension_builder.h",
+    "app_mode/web_app/mock_web_kiosk_app_launcher.cc",
+    "app_mode/web_app/mock_web_kiosk_app_launcher.h",
     "attestation/mock_enrollment_certificate_uploader.cc",
     "attestation/mock_enrollment_certificate_uploader.h",
     "attestation/mock_machine_certificate_uploader.cc",
