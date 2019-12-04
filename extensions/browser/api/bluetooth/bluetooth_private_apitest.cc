@@ -286,7 +286,7 @@ IN_PROC_BROWSER_TEST_F(BluetoothPrivateApiTest, Connect) {
       .Times(2)
       .WillOnce(Return(false))
       .WillOnce(Return(true));
-  EXPECT_CALL(*mock_device_, Connect(_, _, _))
+  EXPECT_CALL(*mock_device_, Connect_(_, _, _))
       .WillOnce(InvokeCallbackArgument<1>());
   ASSERT_TRUE(RunComponentExtensionTest("bluetooth_private/connect"))
       << message_;

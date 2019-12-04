@@ -61,8 +61,8 @@ class BluetoothDeviceCast : public BluetoothDevice {
                             const base::Closure& callback,
                             const ErrorCallback& error_callback) override;
   void Connect(PairingDelegate* pairing_delegate,
-               const base::Closure& callback,
-               const ConnectErrorCallback& error_callback) override;
+               base::OnceClosure callback,
+               ConnectErrorCallback error_callback) override;
   void Pair(PairingDelegate* pairing_delegate,
             const base::Closure& callback,
             const ConnectErrorCallback& error_callback) override;

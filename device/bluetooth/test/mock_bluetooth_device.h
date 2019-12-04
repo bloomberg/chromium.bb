@@ -63,11 +63,15 @@ class MockBluetoothDevice : public BluetoothDevice {
                void(ConnectionLatency connection_latency,
                     const base::Closure& callback,
                     const ErrorCallback& error_callback));
-  MOCK_METHOD3(Connect,
+  void Connect(BluetoothDevice::PairingDelegate* pairing_delegate,
+               base::OnceClosure callback,
+               BluetoothDevice::ConnectErrorCallback error_callback) override {
+    Connect_(pairing_delegate, callback, error_callback);
+  }
+  MOCK_METHOD3(Connect_,
                void(BluetoothDevice::PairingDelegate* pairing_delegate,
-                    const base::Closure& callback,
-                    const BluetoothDevice::ConnectErrorCallback&
-                        error_callback));
+                    base::OnceClosure& callback,
+                    BluetoothDevice::ConnectErrorCallback& error_callback));
   MOCK_METHOD3(
       Pair,
       void(BluetoothDevice::PairingDelegate* pairing_delegate,
@@ -92,9 +96,13 @@ class MockBluetoothDevice : public BluetoothDevice {
                void(const BluetoothUUID& uuid,
                     const ConnectToServiceCallback& callback,
                     const ConnectToServiceErrorCallback& error_callback));
-  MOCK_METHOD2(CreateGattConnection,
-               void(const GattConnectionCallback& callback,
-                    const ConnectErrorCallback& error_callback));
+  void CreateGattConnection(GattConnectionCallback callback,
+                            ConnectErrorCallback error_callback) override {
+    CreateGattConnection_(callback, error_callback);
+  }
+  MOCK_METHOD2(CreateGattConnection_,
+               void(GattConnectionCallback& callback,
+                    ConnectErrorCallback& error_callback));
 
   MOCK_METHOD1(SetGattServicesDiscoveryComplete, void(bool));
   MOCK_CONST_METHOD0(IsGattServicesDiscoveryComplete, bool());

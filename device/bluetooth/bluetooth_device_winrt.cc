@@ -293,8 +293,8 @@ void BluetoothDeviceWinrt::SetConnectionLatency(
 }
 
 void BluetoothDeviceWinrt::Connect(PairingDelegate* pairing_delegate,
-                                   const base::Closure& callback,
-                                   const ConnectErrorCallback& error_callback) {
+                                   base::OnceClosure callback,
+                                   ConnectErrorCallback error_callback) {
   NOTIMPLEMENTED();
 }
 
