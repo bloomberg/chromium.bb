@@ -92,6 +92,10 @@ def android_builder(*, name, **kwargs):
   )
 
 android_builder(
+    name = 'android-asan',
+)
+
+android_builder(
     name = 'android-bfcache-debug',
 )
 
