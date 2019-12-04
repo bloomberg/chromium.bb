@@ -4066,7 +4066,7 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollAnimatedBegin(
   InputHandler::ScrollStatus scroll_status;
   scroll_status.main_thread_scrolling_reasons =
       MainThreadScrollingReason::kNotScrollingOnMain;
-  deferred_scroll_end_state_.reset();
+  deferred_scroll_end_ = false;
   ScrollTree& scroll_tree = active_tree_->property_trees()->scroll_tree;
   ScrollNode* scroll_node = scroll_tree.CurrentlyScrollingNode();
   if (scroll_node) {
@@ -4092,10 +4092,7 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollAnimatedBegin(
   if (scroll_status.thread == SCROLL_ON_IMPL_THREAD) {
     scroll_animating_latched_element_id_ = ElementId();
     scroll_animating_overscroll_target_element_id_ = ElementId();
-    ScrollStateData scroll_state_end_data;
-    scroll_state_end_data.is_ending = true;
-    ScrollState scroll_state_end(scroll_state_end_data);
-    ScrollEndImpl(&scroll_state_end);
+    ScrollEndImpl();
   }
   return scroll_status;
 }
@@ -4342,8 +4339,7 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollAnimated(
     client_->SetNeedsCommitOnImplThread();
   }
 
-  scroll_state.set_is_ending(true);
-  ScrollEndImpl(&scroll_state);
+  ScrollEndImpl();
   if (scroll_status.thread == SCROLL_ON_IMPL_THREAD) {
     // Update scroll_status.thread to SCROLL_IGNORED when there is no ongoing
     // scroll animation, we can scroll on impl thread and yet, we couldn't
@@ -4951,10 +4947,7 @@ void LayerTreeHostImpl::ClearCurrentlyScrollingNode() {
   is_animating_for_snap_ = false;
 }
 
-void LayerTreeHostImpl::ScrollEndImpl(ScrollState* scroll_state) {
-  DCHECK(scroll_state);
-  DCHECK(scroll_state->delta_x() == 0 && scroll_state->delta_y() == 0);
-
+void LayerTreeHostImpl::ScrollEndImpl() {
   // In smooth-scrolling path when the GSE arrives after scroll animation
   // completion, CurrentlyScrollingNode() is already cleared due to
   // ScrollEndImpl call inside ScrollOffsetAnimationFinished. In this case
@@ -4970,15 +4963,15 @@ void LayerTreeHostImpl::ScrollEndImpl(ScrollState* scroll_state) {
                                    : FrameSequenceTrackerType::kTouchScroll);
 }
 
-void LayerTreeHostImpl::ScrollEnd(ScrollState* scroll_state, bool should_snap) {
+void LayerTreeHostImpl::ScrollEnd(bool should_snap) {
   if ((should_snap && SnapAtScrollEnd()) ||
       mutator_host_->IsImplOnlyScrollAnimating()) {
-    DCHECK(!deferred_scroll_end_state_.has_value());
-    deferred_scroll_end_state_ = *scroll_state;
+    DCHECK(!deferred_scroll_end_);
+    deferred_scroll_end_ = true;
     return;
   }
-  ScrollEndImpl(scroll_state);
-  deferred_scroll_end_state_.reset();
+  ScrollEndImpl();
+  deferred_scroll_end_ = false;
   scroll_gesture_did_end_ = true;
   client_->SetNeedsCommitOnImplThread();
 }
@@ -6080,15 +6073,12 @@ void LayerTreeHostImpl::ScrollOffsetAnimationFinished() {
 
   // Call scrollEnd with the deferred scroll end state when the scroll animation
   // completes after GSE arrival.
-  if (deferred_scroll_end_state_.has_value()) {
-    ScrollEnd(&deferred_scroll_end_state_.value(), false);
+  if (deferred_scroll_end_) {
+    ScrollEnd(/*should_snap=*/false);
     return;
   }
 
-  // TODO(majidvp): We should pass in the original starting scroll position here
-  ScrollStateData scroll_state_data;
-  ScrollState scroll_state(scroll_state_data);
-  ScrollEndImpl(&scroll_state);
+  ScrollEndImpl();
 }
 
 void LayerTreeHostImpl::NotifyAnimationWorkletStateChange(

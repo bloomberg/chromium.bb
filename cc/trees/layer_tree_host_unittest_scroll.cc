@@ -61,13 +61,6 @@ std::unique_ptr<ScrollState> UpdateState(const gfx::Point& point,
   return scroll_state;
 }
 
-std::unique_ptr<ScrollState> EndState() {
-  ScrollStateData scroll_state_data;
-  scroll_state_data.is_ending = true;
-  std::unique_ptr<ScrollState> scroll_state(new ScrollState(scroll_state_data));
-  return scroll_state;
-}
-
 static ScrollTree* ScrollTreeForLayer(LayerImpl* layer_impl) {
   return &layer_impl->layer_tree_impl()->property_trees()->scroll_tree;
 }
@@ -726,7 +719,7 @@ class LayerTreeHostScrollTestCaseWithChild : public LayerTreeHostScrollTest {
         impl->ScrollBy(UpdateState(gfx::Point(), scroll_amount_).get());
         auto* scrolling_node = impl->CurrentlyScrollingNode();
         CHECK(scrolling_node);
-        impl->ScrollEnd(EndState().get());
+        impl->ScrollEnd();
         CHECK(!impl->CurrentlyScrollingNode());
         EXPECT_EQ(scrolling_node->id,
                   impl->active_tree()->LastScrolledScrollNodeIndex());
@@ -749,7 +742,7 @@ class LayerTreeHostScrollTestCaseWithChild : public LayerTreeHostScrollTest {
             BeginState(scroll_point).get(), InputHandler::WHEEL);
         EXPECT_EQ(InputHandler::SCROLL_ON_IMPL_THREAD, status.thread);
         impl->ScrollBy(UpdateState(gfx::Point(), scroll_amount_).get());
-        impl->ScrollEnd(EndState().get());
+        impl->ScrollEnd();
 
         // Check the scroll is applied as a delta.
         EXPECT_VECTOR_EQ(javascript_scroll_,
@@ -1149,7 +1142,7 @@ void DoGestureScroll(LayerTreeHostImpl* host_impl,
       scroller->element_id());
   std::unique_ptr<ScrollState> end_scroll_state(
       new ScrollState(end_scroll_state_data));
-  host_impl->ScrollEnd(end_scroll_state.get(), true /* should_snap */);
+  host_impl->ScrollEnd(true /* should_snap */);
 }
 
 // This test simulates scrolling on the impl thread such that snapping occurs
