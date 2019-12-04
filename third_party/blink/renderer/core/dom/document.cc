@@ -7312,8 +7312,6 @@ void Document::AddConsoleMessageImpl(ConsoleMessage* console_message,
 void Document::TasksWerePaused() {
   GetScriptRunner()->Suspend();
 
-  if (parser_)
-    parser_->PauseScheduledTasks();
   if (scripted_animation_controller_)
     scripted_animation_controller_->Pause();
 }
@@ -7321,8 +7319,6 @@ void Document::TasksWerePaused() {
 void Document::TasksWereUnpaused() {
   GetScriptRunner()->Resume();
 
-  if (parser_)
-    parser_->UnpauseScheduledTasks();
   if (scripted_animation_controller_)
     scripted_animation_controller_->Unpause();
 
