@@ -171,8 +171,6 @@ const service_manager::Manifest& GetContentBrowserManifest() {
                   "autofill.mojom.PasswordManagerDriver",
                   "blink.mojom.DisplayCutoutHost",
                   "blink.mojom.Portal",
-                  "content.mojom.RendererAudioInputStreamFactory",
-                  "content.mojom.RendererAudioOutputStreamFactory",
                   "discardable_memory.mojom.DiscardableSharedMemoryManager",
                   "viz.mojom.Gpu"})
           .RequireInterfaceFilterCapability_Deprecated(
