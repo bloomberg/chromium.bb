@@ -2427,10 +2427,7 @@
     },
 
     'ozone_linux': {
-      'gn_args': ('ozone_auto_platforms=false ozone_platform_wayland=true '
-                  'ozone_platform_headless=true ozone_platform_x11=true '
-                  'ozone_platform_gbm=true '
-                  'use_xkbcommon=true use_ozone=true'),
+      'gn_args': 'use_ozone=true ozone_platform="headless"',
     },
 
     # Used to pass the list of files to instrument for coverage to the compile
