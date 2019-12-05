@@ -7793,7 +7793,7 @@ static AOM_INLINE void single_motion_search(const AV1_COMP *const cpi,
   switch (mbmi->motion_mode) {
     case SIMPLE_TRANSLATION:
       bestsme = av1_full_pixel_search(
-          cpi, x, bsize, &mvp_full, step_param, cpi->sf.mv.search_method, 0,
+          cpi, x, bsize, &mvp_full, step_param, 1, cpi->sf.mv.search_method, 0,
           sadpb, cond_cost_list(cpi, cost_list), &ref_mv, INT_MAX, 1,
           (MI_SIZE * mi_col), (MI_SIZE * mi_row), 0, &cpi->ss_cfg[SS_CFG_SRC],
           0);
@@ -11628,7 +11628,7 @@ static int64_t rd_pick_intrabc_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
     const int sadpb = x->sadperbit16;
     int cost_list[5];
     const int bestsme = av1_full_pixel_search(
-        cpi, x, bsize, &mvp_full, step_param, cpi->sf.mv.search_method, 0,
+        cpi, x, bsize, &mvp_full, step_param, 1, cpi->sf.mv.search_method, 0,
         sadpb, cond_cost_list(cpi, cost_list), &dv_ref.as_mv, INT_MAX, 1,
         (MI_SIZE * mi_col), (MI_SIZE * mi_row), 1,
         &cpi->ss_cfg[SS_CFG_LOOKAHEAD], 1);

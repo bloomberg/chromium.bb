@@ -139,7 +139,7 @@ static uint32_t motion_estimation(AV1_COMP *cpi, MACROBLOCK *x,
   av1_set_mv_search_range(&x->mv_limits, &best_ref_mv1);
 
   av1_init3smotion_compensation(&ss_cfg, stride_ref);
-  av1_full_pixel_search(cpi, x, bsize, &best_ref_mv1_full, step_param,
+  av1_full_pixel_search(cpi, x, bsize, &best_ref_mv1_full, step_param, 1,
                         search_method, 0, sadpb, cond_cost_list(cpi, cost_list),
                         &best_ref_mv1, INT_MAX, 0, (MI_SIZE * mi_col),
                         (MI_SIZE * mi_row), 0, &ss_cfg, 0);

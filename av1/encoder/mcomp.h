@@ -66,7 +66,7 @@ int av1_mv_bit_cost(const MV *mv, const MV *ref, const int *mvjcost,
 // Utility to compute variance + MV rate cost for a given MV
 int av1_get_mvpred_var(const MACROBLOCK *x, const MV *best_mv,
                        const MV *center_mv, const aom_variance_fn_ptr_t *vfp,
-                       int use_mvcost);
+                       int use_var);
 int av1_get_mvpred_av_var(const MACROBLOCK *x, const MV *best_mv,
                           const MV *center_mv, const uint8_t *second_pred,
                           const aom_variance_fn_ptr_t *vfp,
@@ -135,9 +135,9 @@ int av1_diamond_search_sad_c(MACROBLOCK *x, const search_site_config *cfg,
 
 int av1_full_pixel_search(const struct AV1_COMP *cpi, MACROBLOCK *x,
                           BLOCK_SIZE bsize, MV *mvp_full, int step_param,
-                          int method, int run_mesh_search, int error_per_bit,
-                          int *cost_list, const MV *ref_mv, int var_max, int rd,
-                          int x_pos, int y_pos, int intra,
+                          int use_var, int method, int run_mesh_search,
+                          int error_per_bit, int *cost_list, const MV *ref_mv,
+                          int var_max, int rd, int x_pos, int y_pos, int intra,
                           const search_site_config *cfg,
                           int use_intrabc_mesh_pattern);
 

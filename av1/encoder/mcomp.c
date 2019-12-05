@@ -1416,18 +1416,20 @@ static int pattern_search(
 
 int av1_get_mvpred_var(const MACROBLOCK *x, const MV *best_mv,
                        const MV *center_mv, const aom_variance_fn_ptr_t *vfp,
-                       int use_mvcost) {
+                       int use_var) {
   const MACROBLOCKD *const xd = &x->e_mbd;
   const struct buf_2d *const what = &x->plane[0].src;
   const struct buf_2d *const in_what = &xd->plane[0].pre[0];
   const MV mv = { best_mv->row * 8, best_mv->col * 8 };
-  unsigned int unused;
+  unsigned int sse, var;
 
-  return vfp->vf(what->buf, what->stride, get_buf_from_mv(in_what, best_mv),
-                 in_what->stride, &unused) +
-         (use_mvcost ? mv_err_cost(&mv, center_mv, x->nmv_vec_cost,
-                                   x->mv_cost_stack, x->errorperbit)
-                     : 0);
+  var = vfp->vf(what->buf, what->stride, get_buf_from_mv(in_what, best_mv),
+                in_what->stride, &sse);
+
+  if (!use_var) var = sse;
+
+  return var + mv_err_cost(&mv, center_mv, x->nmv_vec_cost, x->mv_cost_stack,
+                           x->errorperbit);
 }
 
 int av1_get_mvpred_av_var(const MACROBLOCK *x, const MV *best_mv,
@@ -1798,7 +1800,8 @@ int av1_diamond_search_sad_c(MACROBLOCK *x, const search_site_config *cfg,
               point as the best match, we will do a final 1-away diamond
               refining search  */
 static int full_pixel_diamond(MACROBLOCK *x, MV *mvp_full, int step_param,
-                              int sadpb, int further_steps, int *cost_list,
+                              int use_var, int sadpb, int further_steps,
+                              int *cost_list,
                               const aom_variance_fn_ptr_t *fn_ptr,
                               const MV *ref_mv, const search_site_config *cfg,
                               uint8_t *second_pred, uint8_t *mask,
@@ -1809,7 +1812,7 @@ static int full_pixel_diamond(MACROBLOCK *x, MV *mvp_full, int step_param,
                                          sadpb, &n, fn_ptr, ref_mv, second_pred,
                                          mask, mask_stride, inv_mask);
   if (bestsme < INT_MAX)
-    bestsme = av1_get_mvpred_var(x, &temp_mv, ref_mv, fn_ptr, 1);
+    bestsme = av1_get_mvpred_var(x, &temp_mv, ref_mv, fn_ptr, use_var);
   x->best_mv.as_mv = temp_mv;
 
   // If there won't be more n-step search, check to see if refining search is
@@ -1824,7 +1827,7 @@ static int full_pixel_diamond(MACROBLOCK *x, MV *mvp_full, int step_param,
           x, cfg, mvp_full, &temp_mv, step_param + n, sadpb, &num00, fn_ptr,
           ref_mv, second_pred, mask, mask_stride, inv_mask);
       if (thissme < INT_MAX)
-        thissme = av1_get_mvpred_var(x, &temp_mv, ref_mv, fn_ptr, 1);
+        thissme = av1_get_mvpred_var(x, &temp_mv, ref_mv, fn_ptr, use_var);
 
       if (thissme < bestsme) {
         bestsme = thissme;
@@ -2218,7 +2221,7 @@ unsigned int av1_int_pro_motion_estimation(const AV1_COMP *cpi, MACROBLOCK *x,
 }
 
 int av1_full_pixel_search(const AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
-                          MV *mvp_full, int step_param, int method,
+                          MV *mvp_full, int step_param, int use_var, int method,
                           int run_mesh_search, int error_per_bit,
                           int *cost_list, const MV *ref_mv, int var_max, int rd,
                           int x_pos, int y_pos, int intra,
@@ -2261,7 +2264,7 @@ int av1_full_pixel_search(const AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
                           fn_ptr, 1, ref_mv);
       break;
     case NSTEP:
-      var = full_pixel_diamond(x, mvp_full, step_param, error_per_bit,
+      var = full_pixel_diamond(x, mvp_full, step_param, use_var, error_per_bit,
                                cfg->ss_count - 1 - step_param, cost_list,
                                fn_ptr, ref_mv, cfg, NULL, NULL, 0, 0);
       break;
@@ -2274,7 +2277,7 @@ int av1_full_pixel_search(const AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
   const int max_exhaustive_pct = use_intrabc_mesh_pattern
                                      ? sf->intrabc_max_exhaustive_pct
                                      : sf->max_exhaustive_pct;
-  if (!run_mesh_search && method == NSTEP &&
+  if (!run_mesh_search && method == NSTEP && use_var &&
       is_exhaustive_allowed(cpi, x, max_exhaustive_pct)) {
     int exhuastive_thr = sf->exhaustive_searches_thresh;
     exhuastive_thr >>=
@@ -2993,9 +2996,9 @@ void av1_simple_motion_search(AV1_COMP *const cpi, MACROBLOCK *x, int mi_row,
   // This overwrites the mv_limits so we will need to restore it later.
   av1_set_mv_search_range(&x->mv_limits, &ref_mv);
   var = av1_full_pixel_search(
-      cpi, x, bsize, &ref_mv_full, step_param, search_methods, do_mesh_search,
-      sadpb, cond_cost_list(cpi, cost_list), &ref_mv, INT_MAX, 1,
-      mi_col * MI_SIZE, mi_row * MI_SIZE, 0, &cpi->ss_cfg[SS_CFG_SRC], 0);
+      cpi, x, bsize, &ref_mv_full, step_param, 1, search_methods,
+      do_mesh_search, sadpb, cond_cost_list(cpi, cost_list), &ref_mv, INT_MAX,
+      1, mi_col * MI_SIZE, mi_row * MI_SIZE, 0, &cpi->ss_cfg[SS_CFG_SRC], 0);
   // Restore
   x->mv_limits = tmp_mv_limits;
 
