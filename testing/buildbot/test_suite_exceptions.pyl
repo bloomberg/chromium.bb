@@ -265,6 +265,13 @@
           'shards': 15,
         }
       },
+      'win-asan': {
+        # browser_tests shards were reaching a timeout limit of 60 minutes on win-asan
+	# (https://crbug.com/1031096).
+        'swarming': {
+          'shards': 20,
+        },
+      },
       # client.v8.chromium
       'Linux - Future (dbg)': {
         'swarming': {
