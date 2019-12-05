@@ -559,20 +559,36 @@ class PartialCmdMock(PartialMock):
 
   DEFAULT_ATTR = None
 
+  # TODO(crbug.com/1006587): Drop redundant arguments & backwards compat APIs.
   @CheckAttr
-  def SetDefaultCmdResult(self, returncode=0, output='', error='',
+  def SetDefaultCmdResult(self, returncode=0, output=None, error=None,
+                          stdout=None, stderr=None,
                           side_effect=None, mock_attr=None):
     """Specify the default command result if no command is matched.
 
     Args:
       returncode: See AddCmdResult.
-      output: See AddCmdResult.
-      error: See AddCmdResult.
+      output: (Deprecated) Alias to stdout.
+      error: (Deprecated) Alias to stderr.
+      stdout: See AddCmdResult.
+      stderr: See AddCmdResult.
       side_effect: See MockedCallResults.AddResultForParams
       mock_attr: Which attributes's mock is being referenced.
     """
+    if stdout is None:
+      stdout = output
+    elif output is not None:
+      raise ValueError('Only specify |stdout|, not |output|')
+    if stdout is None:
+      stdout = ''
+    if stderr is None:
+      stderr = error
+    elif error is not None:
+      raise ValueError('Only specify |stderr|, not |error|')
+    if stderr is None:
+      stderr = ''
     result = cros_build_lib.CommandResult(
-        returncode=returncode, output=output, error=error)
+        returncode=returncode, stdout=stdout, stderr=stderr)
     self._results[mock_attr].SetDefaultResult(result, side_effect)
 
   # TODO(crbug.com/1006587): Drop redundant arguments & backwards compat APIs.
@@ -597,13 +613,13 @@ class PartialCmdMock(PartialMock):
     if stdout is None:
       stdout = output
     elif output is not None:
-      raise TypeError('Only specify |stdout|, not |output|')
+      raise ValueError('Only specify |stdout|, not |output|')
     if stdout is None:
       stdout = ''
     if stderr is None:
       stderr = error
     elif error is not None:
-      raise TypeError('Only specify |stderr|, not |error|')
+      raise ValueError('Only specify |stderr|, not |error|')
     if stderr is None:
       stderr = ''
     result = cros_build_lib.CommandResult(
