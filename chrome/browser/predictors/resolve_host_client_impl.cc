@@ -23,6 +23,7 @@ namespace predictors {
 
 ResolveHostClientImpl::ResolveHostClientImpl(
     const GURL& url,
+    const net::NetworkIsolationKey& network_isolation_key,
     ResolveHostCallback callback,
     network::mojom::NetworkContext* network_context)
     : callback_(std::move(callback)) {
@@ -32,9 +33,8 @@ ResolveHostClientImpl::ResolveHostClientImpl(
       network::mojom::ResolveHostParameters::New();
   parameters->initial_priority = net::RequestPriority::IDLE;
   parameters->is_speculative = true;
-  // TODO(https://crbug.com/997049):  Pass in a NetworkIsolationKey.
   network_context->ResolveHost(
-      net::HostPortPair::FromURL(url), net::NetworkIsolationKey::Todo(),
+      net::HostPortPair::FromURL(url), network_isolation_key,
       std::move(parameters),
       receiver_.BindNewPipeAndPassRemote(base::CreateSingleThreadTaskRunner(
           {content::BrowserThread::UI,
