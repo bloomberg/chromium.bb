@@ -10,6 +10,7 @@
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "chrome/updater/action_handler.h"
 #include "chrome/updater/updater_constants.h"
 #include "chrome/updater/util.h"
 #include "components/crx_file/crx_verifier.h"
@@ -47,6 +48,7 @@ Installer::~Installer() = default;
 update_client::CrxComponent Installer::MakeCrxComponent() {
   update_client::CrxComponent component;
   component.installer = scoped_refptr<Installer>(this);
+  component.action_handler = MakeActionHandler();
   component.requires_network_encryption = false;
   component.crx_format_requirement =
       crx_file::VerifierFormat::CRX3_WITH_PUBLISHER_PROOF;
@@ -192,7 +194,11 @@ void Installer::Install(const base::FilePath& unpack_path,
 
 bool Installer::GetInstalledFile(const std::string& file,
                                  base::FilePath* installed_file) {
-  return false;
+  if (install_info_->version == base::Version(kNullVersion))
+    return false;  // No component has been installed yet.
+
+  *installed_file = install_info_->install_dir.AppendASCII(file);
+  return true;
 }
 
 bool Installer::Uninstall() {
