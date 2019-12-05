@@ -49101,6 +49101,12 @@ Called by update_net_trust_anchors.py.-->
   <int value="1" label="Has password field"/>
 </enum>
 
+<enum name="PasswordStoreChange">
+  <int value="0" label="Add - If the PasswordForm login was added."/>
+  <int value="1" label="Update - If the PasswordForm login was updated."/>
+  <int value="2" label="Remove - If the PasswordForm login was removed."/>
+</enum>
+
 <enum name="PasswordSubmissionEvent">
   <int value="0" label="Password submission succeeded"/>
   <int value="1" label="Password submission failed"/>
