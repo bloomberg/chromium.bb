@@ -658,8 +658,8 @@ TEST_F(WebAppInstallTaskTest, WriteDataToDisk) {
   const int original_icon_size_px = icon_size::k512;
 
   // Generate one icon as if it was fetched from renderer.
-  AddGeneratedIcon(&data_retriever_->web_app_info(), original_icon_size_px,
-                   color);
+  AddGeneratedIcon(&data_retriever_->web_app_info().icon_bitmaps,
+                   original_icon_size_px, color);
 
   const AppId app_id = InstallWebAppFromManifestWithFallback();
 
@@ -880,7 +880,8 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppFromInfo_GenerateIcons) {
   web_app_info->open_as_window = false;
 
   // Add square yellow icon.
-  AddGeneratedIcon(web_app_info.get(), icon_size::k256, SK_ColorYELLOW);
+  AddGeneratedIcon(&web_app_info->icon_bitmaps, icon_size::k256,
+                   SK_ColorYELLOW);
 
   base::RunLoop run_loop;
 
