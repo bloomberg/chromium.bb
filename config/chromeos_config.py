@@ -2140,7 +2140,7 @@ def FirmwareBuilders(site_config, _boards_dict, _ge_build_config):
       (WEEKLY, 'firmware-sarien-12200.B', ['sarien'], {}),
       (WEEKLY, 'firmware-mistral-12422.B', ['mistral'], {}),
       (WEEKLY, 'firmware-kukui-12573.B', ['kukui'], {}),
-      (WEEKLY, 'firmware-hatch-12672.B', ['hatch'], {}),
+      (DAILY, 'firmware-hatch-12672.B', ['hatch'], {}),
   ]
 
   for interval, branch, boards, kwargs in firmware_branch_builders:
