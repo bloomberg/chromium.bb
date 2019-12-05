@@ -5,7 +5,7 @@ luci.console_view(
     repo = 'https://chromium.googlesource.com/chromium/src',
     # TODO(gbeaty) Define the main consoles inside the respective versioned
     # directories once their contents are stablilized
-    refs = ['refs/branch-heads/3985'],
+    refs = ['refs/branch-heads/3904'],
     title = 'Chromium Stable Console',
     entries = [
         luci.console_view_entry(
