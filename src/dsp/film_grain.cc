@@ -873,6 +873,22 @@ bool FilmGrain<bitdepth>::AllocateNoiseImage() {
 }
 
 template <int bitdepth, typename GrainType>
+inline void WriteOverlapLine(const GrainType* noise_stripe_row,
+                             const GrainType* noise_stripe_row_prev,
+                             int plane_width, int grain_coeff, int old_coeff,
+                             GrainType* noise_image_row) {
+  int x = 0;
+  do {
+    int grain = noise_stripe_row[x];
+    const int old = noise_stripe_row_prev[x];
+    grain = old * old_coeff + grain * grain_coeff;
+    grain = Clip3(RightShiftWithRounding(grain, 5), GetGrainMin<bitdepth>(),
+                  GetGrainMax<bitdepth>());
+    noise_image_row[x] = grain;
+  } while (++x < plane_width);
+}
+
+template <int bitdepth, typename GrainType>
 void ConstructNoiseImageOverlap_C(const void* noise_stripes_buffer, int width,
                                   int height, int subsampling_x,
                                   int subsampling_y, void* noise_image_buffer) {
@@ -891,27 +907,14 @@ void ConstructNoiseImageOverlap_C(const void* noise_stripes_buffer, int width,
     for (; y < (plane_height & ~stripe_mask); ++luma_num, y += stripe_height) {
       const GrainType* noise_stripe = (*noise_stripes)[luma_num];
       const GrainType* noise_stripe_prev = (*noise_stripes)[luma_num - 1];
-      int x = 0;
       // First overlap row.
-      do {
-        int grain = noise_stripe[x];
-        const int old = noise_stripe_prev[32 * plane_width + x];
-        grain = old * 27 + grain * 17;
-        grain = Clip3(RightShiftWithRounding(grain, 5), GetGrainMin<bitdepth>(),
-                      GetGrainMax<bitdepth>());
-        (*noise_image)[y][x] = grain;
-      } while (++x < plane_width);
-
+      WriteOverlapLine<bitdepth>(noise_stripe,
+                                 &noise_stripe_prev[32 * plane_width],
+                                 plane_width, 17, 27, (*noise_image)[y]);
       // Second overlap row.
-      x = 0;
-      do {
-        int grain = noise_stripe[plane_width + x];
-        const int old = noise_stripe_prev[(32 + 1) * plane_width + x];
-        grain = old * 17 + grain * 27;
-        grain = Clip3(RightShiftWithRounding(grain, 5), GetGrainMin<bitdepth>(),
-                      GetGrainMax<bitdepth>());
-        (*noise_image)[y + 1][x] = grain;
-      } while (++x < plane_width);
+      WriteOverlapLine<bitdepth>(&noise_stripe[plane_width],
+                                 &noise_stripe_prev[(32 + 1) * plane_width],
+                                 plane_width, 27, 17, (*noise_image)[y + 1]);
     }
     // End complete stripes section.
 
@@ -924,27 +927,15 @@ void ConstructNoiseImageOverlap_C(const void* noise_stripes_buffer, int width,
     }
     const GrainType* noise_stripe = (*noise_stripes)[luma_num];
     const GrainType* noise_stripe_prev = (*noise_stripes)[luma_num - 1];
-    int x = 0;
-    do {
-      int grain = noise_stripe[x];
-      const int old = noise_stripe_prev[32 * plane_width + x];
-      grain = old * 27 + grain * 17;
-      grain = Clip3(RightShiftWithRounding(grain, 5), GetGrainMin<bitdepth>(),
-                    GetGrainMax<bitdepth>());
-      (*noise_image)[y][x] = grain;
-    } while (++x < plane_width);
+    WriteOverlapLine<bitdepth>(noise_stripe,
+                               &noise_stripe_prev[32 * plane_width],
+                               plane_width, 17, 27, (*noise_image)[y]);
 
     // Check if second overlap row is in the image.
     if (remaining_height > 1) {
-      x = 0;
-      do {
-        int grain = noise_stripe[plane_width + x];
-        const int old = noise_stripe_prev[(32 + 1) * plane_width + x];
-        grain = old * 17 + grain * 27;
-        grain = Clip3(RightShiftWithRounding(grain, 5), GetGrainMin<bitdepth>(),
-                      GetGrainMax<bitdepth>());
-        (*noise_image)[y + 1][x] = grain;
-      } while (++x < plane_width);
+      WriteOverlapLine<bitdepth>(&noise_stripe[plane_width],
+                                 &noise_stripe_prev[(32 + 1) * plane_width],
+                                 plane_width, 27, 17, (*noise_image)[y + 1]);
     }
   } else {  // |subsampling_y| == 1
     // No special checks needed for partial stripes, because if one exists, the
@@ -952,15 +943,9 @@ void ConstructNoiseImageOverlap_C(const void* noise_stripes_buffer, int width,
     for (; y < plane_height; ++luma_num, y += stripe_height) {
       const GrainType* noise_stripe = (*noise_stripes)[luma_num];
       const GrainType* noise_stripe_prev = (*noise_stripes)[luma_num - 1];
-      int x = 0;
-      do {
-        int grain = noise_stripe[x];
-        const int old = noise_stripe_prev[16 * plane_width + x];
-        grain = old * 23 + grain * 22;
-        grain = Clip3(RightShiftWithRounding(grain, 5), GetGrainMin<bitdepth>(),
-                      GetGrainMax<bitdepth>());
-        (*noise_image)[y][x] = grain;
-      } while (++x < plane_width);
+      WriteOverlapLine<bitdepth>(noise_stripe,
+                                 &noise_stripe_prev[16 * plane_width],
+                                 plane_width, 22, 23, (*noise_image)[y]);
     }
   }
 }
