@@ -57,7 +57,10 @@ enum {
   kMaxTileArea = 4096 * 2304,
   kMaxTileColumns = 64,
   kMaxTileRows = 64,
-  kPrimaryReferenceNone = 7
+  kPrimaryReferenceNone = 7,
+  // A special value of the scalability_mode_idc syntax element that indicates
+  // the picture prediction structure is specified in scalability_structure().
+  kScalabilitySS = 14
 };  // anonymous enum
 
 struct ObuHeader {
@@ -491,6 +494,8 @@ class ObuParser : public Allocable {
   bool ParseFilmGrainParameters();     // 5.9.30.
   bool ParseTileInfoSyntax();          // 5.9.15.
   bool ParseFrameHeader();             // 5.9.
+  bool ParseMetadataScalability();     // 5.8.5 and 5.8.6.
+  bool ParseMetadataTimecode();        // 5.8.7.
   // |data| and |size| specify the payload data of the metadata OBU.
   // NOTE: Although the payload data is available in the bit_reader_ member,
   // it is also passed to ParseMetadata() as function parameters so that

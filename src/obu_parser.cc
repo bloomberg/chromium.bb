@@ -2091,6 +2091,158 @@ bool ObuParser::ParseFrameHeader() {
   return true;
 }
 
+bool ObuParser::ParseMetadataScalability() {
+  int64_t scratch;
+  // scalability_mode_idc
+  OBU_READ_LITERAL_OR_FAIL(8);
+  const auto scalability_mode_idc = static_cast<int>(scratch);
+  if (scalability_mode_idc == kScalabilitySS) {
+    // Parse scalability_structure().
+    // spatial_layers_cnt_minus_1
+    OBU_READ_LITERAL_OR_FAIL(2);
+    const auto spatial_layers_count = static_cast<int>(scratch) + 1;
+    // spatial_layer_dimensions_present_flag
+    OBU_READ_BIT_OR_FAIL;
+    const auto spatial_layer_dimensions_present_flag =
+        static_cast<bool>(scratch);
+    // spatial_layer_description_present_flag
+    OBU_READ_BIT_OR_FAIL;
+    const auto spatial_layer_description_present_flag =
+        static_cast<bool>(scratch);
+    // temporal_group_description_present_flag
+    OBU_READ_BIT_OR_FAIL;
+    const auto temporal_group_description_present_flag =
+        static_cast<bool>(scratch);
+    // scalability_structure_reserved_3bits
+    OBU_READ_LITERAL_OR_FAIL(3);
+    if (spatial_layer_dimensions_present_flag) {
+      for (int i = 0; i < spatial_layers_count; ++i) {
+        // spatial_layer_max_width[i]
+        OBU_READ_LITERAL_OR_FAIL(16);
+        // spatial_layer_max_height[i]
+        OBU_READ_LITERAL_OR_FAIL(16);
+      }
+    }
+    if (spatial_layer_description_present_flag) {
+      for (int i = 0; i < spatial_layers_count; ++i) {
+        // spatial_layer_ref_id[i]
+        OBU_READ_LITERAL_OR_FAIL(8);
+      }
+    }
+    if (temporal_group_description_present_flag) {
+      // temporal_group_size
+      OBU_READ_LITERAL_OR_FAIL(8);
+      const auto temporal_group_size = static_cast<int>(scratch);
+      for (int i = 0; i < temporal_group_size; ++i) {
+        // temporal_group_temporal_id[i]
+        OBU_READ_LITERAL_OR_FAIL(3);
+        // temporal_group_temporal_switching_up_point_flag[i]
+        OBU_READ_BIT_OR_FAIL;
+        // temporal_group_spatial_switching_up_point_flag[i]
+        OBU_READ_BIT_OR_FAIL;
+        // temporal_group_ref_cnt[i]
+        OBU_READ_LITERAL_OR_FAIL(3);
+        const auto temporal_group_ref_count = static_cast<int>(scratch);
+        for (int j = 0; j < temporal_group_ref_count; ++j) {
+          // temporal_group_ref_pic_diff[i][j]
+          OBU_READ_LITERAL_OR_FAIL(8);
+        }
+      }
+    }
+  }
+  return true;
+}
+
+bool ObuParser::ParseMetadataTimecode() {
+  int64_t scratch;
+  // counting_type: should be the same for all pictures in the coded video
+  // sequence. 7..31 are reserved.
+  OBU_READ_LITERAL_OR_FAIL(5);
+  // full_timestamp_flag
+  OBU_READ_BIT_OR_FAIL;
+  const auto full_timestamp_flag = static_cast<bool>(scratch);
+  // discontinuity_flag
+  OBU_READ_BIT_OR_FAIL;
+  // cnt_dropped_flag
+  OBU_READ_BIT_OR_FAIL;
+  // n_frames
+  OBU_READ_LITERAL_OR_FAIL(9);
+  if (full_timestamp_flag) {
+    // seconds_value
+    OBU_READ_LITERAL_OR_FAIL(6);
+    const auto seconds_value = static_cast<int>(scratch);
+    if (seconds_value > 59) {
+      LIBGAV1_DLOG(ERROR, "Invalid seconds_value %d.", seconds_value);
+      return false;
+    }
+    // minutes_value
+    OBU_READ_LITERAL_OR_FAIL(6);
+    const auto minutes_value = static_cast<int>(scratch);
+    if (minutes_value > 59) {
+      LIBGAV1_DLOG(ERROR, "Invalid minutes_value %d.", minutes_value);
+      return false;
+    }
+    // hours_value
+    OBU_READ_LITERAL_OR_FAIL(5);
+    const auto hours_value = static_cast<int>(scratch);
+    if (hours_value > 23) {
+      LIBGAV1_DLOG(ERROR, "Invalid hours_value %d.", hours_value);
+      return false;
+    }
+  } else {
+    // seconds_flag
+    OBU_READ_BIT_OR_FAIL;
+    const auto seconds_flag = static_cast<bool>(scratch);
+    if (seconds_flag) {
+      // seconds_value
+      OBU_READ_LITERAL_OR_FAIL(6);
+      const auto seconds_value = static_cast<int>(scratch);
+      if (seconds_value > 59) {
+        LIBGAV1_DLOG(ERROR, "Invalid seconds_value %d.", seconds_value);
+        return false;
+      }
+      // minutes_flag
+      OBU_READ_BIT_OR_FAIL;
+      const auto minutes_flag = static_cast<bool>(scratch);
+      if (minutes_flag) {
+        // minutes_value
+        OBU_READ_LITERAL_OR_FAIL(6);
+        const auto minutes_value = static_cast<int>(scratch);
+        if (minutes_value > 59) {
+          LIBGAV1_DLOG(ERROR, "Invalid minutes_value %d.", minutes_value);
+          return false;
+        }
+        // hours_flag
+        OBU_READ_BIT_OR_FAIL;
+        const auto hours_flag = static_cast<bool>(scratch);
+        if (hours_flag) {
+          // hours_value
+          OBU_READ_LITERAL_OR_FAIL(5);
+          const auto hours_value = static_cast<int>(scratch);
+          if (hours_value > 23) {
+            LIBGAV1_DLOG(ERROR, "Invalid hours_value %d.", hours_value);
+            return false;
+          }
+        }
+      }
+    }
+  }
+  // time_offset_length: should be the same for all pictures in the coded
+  // video sequence.
+  OBU_READ_LITERAL_OR_FAIL(5);
+  const auto time_offset_length = static_cast<int>(scratch);
+  if (time_offset_length > 0) {
+    // time_offset_value
+    OBU_READ_LITERAL_OR_FAIL(time_offset_length);
+  }
+  // Compute clockTimestamp. Section 6.7.7:
+  //   When timing_info_present_flag is equal to 1 and discontinuity_flag is
+  //   equal to 0, the value of clockTimestamp shall be greater than or equal
+  //   to the value of clockTimestamp for the previous set of clock timestamp
+  //   syntax elements in output order.
+  return true;
+}
+
 bool ObuParser::ParseMetadata(const uint8_t* data, size_t size) {
   const size_t start_offset = bit_reader_->byte_offset();
   size_t metadata_type;
@@ -2130,6 +2282,9 @@ bool ObuParser::ParseMetadata(const uint8_t* data, size_t size) {
       metadata_.luminance_max = static_cast<uint32_t>(scratch);
       OBU_READ_LITERAL_OR_FAIL(32);
       metadata_.luminance_min = static_cast<uint32_t>(scratch);
+      break;
+    case kMetadataTypeScalability:
+      if (!ParseMetadataScalability()) return false;
       break;
     case kMetadataTypeItutT35: {
       OBU_READ_LITERAL_OR_FAIL(8);
@@ -2177,11 +2332,13 @@ bool ObuParser::ParseMetadata(const uint8_t* data, size_t size) {
       bit_reader_->SkipBytes(i);
       break;
     }
-    case kMetadataTypeScalability:
-      // TODO(b/120903866)
     case kMetadataTypeTimecode:
-      // TODO(b/120903866)
+      if (!ParseMetadataTimecode()) return false;
+      break;
     default: {
+      // metadata_type is equal to a value reserved for future use or a user
+      // private value.
+      //
       // The Note in Section 5.8.1 says "Decoders should ignore the entire OBU
       // if they do not understand the metadata_type." Find the trailing bit
       // and skip all bits before the trailing bit.
