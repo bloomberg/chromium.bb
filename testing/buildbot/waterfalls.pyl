@@ -449,6 +449,11 @@
           'gtest_tests': 'android_oreo_gtests',
         },
       },
+      'android-arm64-proguard-rel': {
+        'additional_compile_targets': [
+          'all',
+        ],
+      },
       'android-cronet-arm-dbg': {
         'mixins': [
           'kitkat',
