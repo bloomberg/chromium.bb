@@ -192,38 +192,6 @@ class RenderWidgetHostIteratorImpl : public RenderWidgetHostIterator {
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostIteratorImpl);
 };
 
-inline blink::WebGestureEvent CreateScrollBeginForWrapping(
-    const blink::WebGestureEvent& gesture_event) {
-  DCHECK(gesture_event.GetType() == blink::WebInputEvent::kGestureScrollUpdate);
-
-  blink::WebGestureEvent wrap_gesture_scroll_begin(
-      blink::WebInputEvent::kGestureScrollBegin, gesture_event.GetModifiers(),
-      gesture_event.TimeStamp(), gesture_event.SourceDevice());
-  wrap_gesture_scroll_begin.data.scroll_begin.delta_x_hint = 0;
-  wrap_gesture_scroll_begin.data.scroll_begin.delta_y_hint = 0;
-  wrap_gesture_scroll_begin.resending_plugin_id =
-      gesture_event.resending_plugin_id;
-  wrap_gesture_scroll_begin.data.scroll_begin.delta_hint_units =
-      gesture_event.data.scroll_update.delta_units;
-
-  return wrap_gesture_scroll_begin;
-}
-
-inline blink::WebGestureEvent CreateScrollEndForWrapping(
-    const blink::WebGestureEvent& gesture_event) {
-  DCHECK(gesture_event.GetType() == blink::WebInputEvent::kGestureScrollUpdate);
-
-  blink::WebGestureEvent wrap_gesture_scroll_end(
-      blink::WebInputEvent::kGestureScrollEnd, gesture_event.GetModifiers(),
-      gesture_event.TimeStamp(), gesture_event.SourceDevice());
-  wrap_gesture_scroll_end.resending_plugin_id =
-      gesture_event.resending_plugin_id;
-  wrap_gesture_scroll_end.data.scroll_end.delta_units =
-      gesture_event.data.scroll_update.delta_units;
-
-  return wrap_gesture_scroll_end;
-}
-
 std::vector<DropData::Metadata> DropDataToMetaData(const DropData& drop_data) {
   std::vector<DropData::Metadata> metadata;
   if (!drop_data.text.is_null()) {
@@ -1257,7 +1225,6 @@ void RenderWidgetHostImpl::ForwardGestureEventWithLatencyInfo(
   DCHECK_NE(gesture_event.SourceDevice(),
             blink::WebGestureDevice::kUninitialized);
 
-  bool scroll_update_needs_wrapping = false;
   if (gesture_event.GetType() == blink::WebInputEvent::kGestureScrollBegin) {
     DCHECK(
         !is_in_gesture_scroll_[static_cast<int>(gesture_event.SourceDevice())]);
@@ -1331,23 +1298,6 @@ void RenderWidgetHostImpl::ForwardGestureEventWithLatencyInfo(
     }
   }
 
-  // TODO(wjmaclean) Remove the code for supporting resending gesture events
-  // when WebView transitions to OOPIF and BrowserPlugin is removed.
-  // http://crbug.com/533069
-  scroll_update_needs_wrapping =
-      gesture_event.GetType() == blink::WebInputEvent::kGestureScrollUpdate &&
-      gesture_event.resending_plugin_id != -1 &&
-      !is_in_gesture_scroll_[static_cast<int>(gesture_event.SourceDevice())];
-
-  // TODO(crbug.com/544782): Fix WebViewGuestScrollTest.TestGuestWheelScrolls-
-  // Bubble to test the resending logic of gesture events.
-  if (scroll_update_needs_wrapping) {
-    ForwardGestureEventWithLatencyInfo(
-        CreateScrollBeginForWrapping(gesture_event),
-        ui::WebInputEventTraits::CreateLatencyInfoForWebGestureEvent(
-            gesture_event));
-  }
-
   // Delegate must be non-null, due to |IsIgnoringInputEvents()| test.
   if (delegate_->PreHandleGestureEvent(gesture_event))
     return;
@@ -1356,13 +1306,6 @@ void RenderWidgetHostImpl::ForwardGestureEventWithLatencyInfo(
   DispatchInputEventWithLatencyInfo(gesture_event,
                                     &gesture_with_latency.latency);
   input_router_->SendGestureEvent(gesture_with_latency);
-
-  if (scroll_update_needs_wrapping) {
-    ForwardGestureEventWithLatencyInfo(
-        CreateScrollEndForWrapping(gesture_event),
-        ui::WebInputEventTraits::CreateLatencyInfoForWebGestureEvent(
-            gesture_event));
-  }
 }
 
 void RenderWidgetHostImpl::ForwardTouchEventWithLatencyInfo(
