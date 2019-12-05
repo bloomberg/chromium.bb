@@ -1513,12 +1513,10 @@ LocalFrame::GetReportingService() const {
 }
 
 // static
-std::unique_ptr<UserGestureIndicator> LocalFrame::NotifyUserActivation(
-    LocalFrame* frame,
-    bool need_browser_verification) {
+void LocalFrame::NotifyUserActivation(LocalFrame* frame,
+                                      bool need_browser_verification) {
   if (frame)
     frame->NotifyUserActivation(need_browser_verification);
-  return std::make_unique<UserGestureIndicator>();
 }
 
 // static

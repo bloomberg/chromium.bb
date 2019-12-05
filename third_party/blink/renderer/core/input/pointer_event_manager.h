@@ -269,14 +269,6 @@ class CORE_EXPORT PointerEventManager final
   Member<TouchEventManager> touch_event_manager_;
   Member<MouseEventManager> mouse_event_manager_;
 
-  // TODO(crbug.com/789643): If we go with one token for pointerevent and one
-  // for touch events then we can remove this class field.
-  // It keeps the shared user gesture token between DOM touch events and
-  // pointerevents. It gets created at first when this class gets notified of
-  // the appropriate pointerevent and it must be cleared after the corresponding
-  // touch event is sent (i.e. after FlushEvents).
-  std::unique_ptr<UserGestureIndicator> user_gesture_holder_;
-
   // The pointerId of the PointerEvent currently being dispatched within this
   // frame or 0 if none.
   PointerId dispatching_pointer_id_;
