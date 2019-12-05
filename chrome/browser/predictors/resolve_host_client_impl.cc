@@ -13,6 +13,7 @@
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
+#include "net/base/network_isolation_key.h"
 #include "net/base/request_priority.h"
 #include "net/dns/public/resolve_error_info.h"
 #include "services/network/public/mojom/network_context.mojom.h"
@@ -31,8 +32,10 @@ ResolveHostClientImpl::ResolveHostClientImpl(
       network::mojom::ResolveHostParameters::New();
   parameters->initial_priority = net::RequestPriority::IDLE;
   parameters->is_speculative = true;
+  // TODO(https://crbug.com/997049):  Pass in a NetworkIsolationKey.
   network_context->ResolveHost(
-      net::HostPortPair::FromURL(url), std::move(parameters),
+      net::HostPortPair::FromURL(url), net::NetworkIsolationKey::Todo(),
+      std::move(parameters),
       receiver_.BindNewPipeAndPassRemote(base::CreateSingleThreadTaskRunner(
           {content::BrowserThread::UI,
            content::BrowserTaskType::kPreconnect})));

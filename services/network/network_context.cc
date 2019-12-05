@@ -1163,6 +1163,7 @@ void NetworkContext::CreateNetLogExporter(
 
 void NetworkContext::ResolveHost(
     const net::HostPortPair& host,
+    const net::NetworkIsolationKey& network_isolation_key,
     mojom::ResolveHostParametersPtr optional_parameters,
     mojo::PendingRemote<mojom::ResolveHostClient> response_client) {
   if (!internal_host_resolver_) {
@@ -1170,7 +1171,8 @@ void NetworkContext::ResolveHost(
         url_request_context_->host_resolver(), url_request_context_->net_log());
   }
 
-  internal_host_resolver_->ResolveHost(host, std::move(optional_parameters),
+  internal_host_resolver_->ResolveHost(host, network_isolation_key,
+                                       std::move(optional_parameters),
                                        std::move(response_client));
 }
 
