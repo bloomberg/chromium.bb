@@ -100,9 +100,6 @@ cca.views.MasterSettings = function() {
 
   // End of properties, seal the object.
   Object.seal(this);
-
-  document.querySelector('#settings-feedback').hidden =
-      !cca.util.isChromeVersionAbove(72);  // Feedback available since M72.
 };
 
 cca.views.MasterSettings.prototype = {
