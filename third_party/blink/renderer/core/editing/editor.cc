@@ -559,7 +559,7 @@ static void CountEditingEvent(ExecutionContext* execution_context,
     return;
   }
 
-  if (IsHTMLTextAreaElement(node)) {
+  if (IsA<HTMLTextAreaElement>(node)) {
     UseCounter::Count(execution_context, feature_on_text_area);
     return;
   }
@@ -570,7 +570,7 @@ static void CountEditingEvent(ExecutionContext* execution_context,
     return;
   }
 
-  if (IsHTMLTextAreaElement(control)) {
+  if (IsA<HTMLTextAreaElement>(control)) {
     UseCounter::Count(execution_context, feature_on_text_area);
     return;
   }

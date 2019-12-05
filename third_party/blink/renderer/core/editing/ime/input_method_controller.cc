@@ -198,7 +198,7 @@ AtomicString GetInputModeAttribute(Element* element) {
   bool query_attribute = false;
   if (auto* input = DynamicTo<HTMLInputElement>(*element)) {
     query_attribute = input->SupportsInputModeAttribute();
-  } else if (IsHTMLTextAreaElement(*element)) {
+  } else if (IsA<HTMLTextAreaElement>(*element)) {
     query_attribute = true;
   } else {
     element->GetDocument().UpdateStyleAndLayoutTree();
@@ -221,7 +221,7 @@ AtomicString GetEnterKeyHintAttribute(Element* element) {
   bool query_attribute = false;
   if (auto* input = DynamicTo<HTMLInputElement>(*element)) {
     query_attribute = input->SupportsInputModeAttribute();
-  } else if (IsHTMLTextAreaElement(*element)) {
+  } else if (IsA<HTMLTextAreaElement>(*element)) {
     query_attribute = true;
   } else {
     element->GetDocument().UpdateStyleAndLayoutTree();
@@ -456,7 +456,7 @@ bool IsTextTooLongAt(const Position& position) {
     return false;
   if (auto* input = DynamicTo<HTMLInputElement>(element))
     return input->TooLong();
-  if (auto* textarea = ToHTMLTextAreaElementOrNull(element))
+  if (auto* textarea = DynamicTo<HTMLTextAreaElement>(element))
     return textarea->TooLong();
   return false;
 }
@@ -1531,7 +1531,7 @@ WebTextInputType InputMethodController::TextInputType() const {
     return kWebTextInputTypeNone;
   }
 
-  if (auto* textarea = ToHTMLTextAreaElementOrNull(*element)) {
+  if (auto* textarea = DynamicTo<HTMLTextAreaElement>(*element)) {
     if (textarea->IsDisabledOrReadOnly())
       return kWebTextInputTypeNone;
     return kWebTextInputTypeTextArea;

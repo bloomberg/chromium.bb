@@ -1326,7 +1326,7 @@ String Internals::suggestedValue(Element* element,
   if (auto* input = DynamicTo<HTMLInputElement>(*element))
     return input->SuggestedValue();
 
-  if (auto* textarea = ToHTMLTextAreaElementOrNull(*element))
+  if (auto* textarea = DynamicTo<HTMLTextAreaElement>(*element))
     return textarea->SuggestedValue();
 
   if (auto* select = DynamicTo<HTMLSelectElement>(*element))
@@ -1349,7 +1349,7 @@ void Internals::setSuggestedValue(Element* element,
   if (auto* input = DynamicTo<HTMLInputElement>(*element))
     input->SetSuggestedValue(value);
 
-  if (auto* textarea = ToHTMLTextAreaElementOrNull(*element))
+  if (auto* textarea = DynamicTo<HTMLTextAreaElement>(*element))
     textarea->SetSuggestedValue(value);
 
   if (auto* select = DynamicTo<HTMLSelectElement>(*element))
@@ -1374,7 +1374,7 @@ void Internals::setAutofilledValue(Element* element,
     input->DispatchScopedEvent(*Event::CreateBubble(event_type_names::kKeyup));
   }
 
-  if (auto* textarea = ToHTMLTextAreaElementOrNull(*element)) {
+  if (auto* textarea = DynamicTo<HTMLTextAreaElement>(*element)) {
     textarea->DispatchScopedEvent(
         *Event::CreateBubble(event_type_names::kKeydown));
     textarea->SetAutofillValue(value);

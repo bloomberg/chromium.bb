@@ -1512,8 +1512,8 @@ TEST_F(InputMethodControllerTest, SelectionWhenFocusChangeFinishesComposition) {
 }
 
 TEST_F(InputMethodControllerTest, SetEmptyCompositionShouldNotMoveCaret) {
-  HTMLTextAreaElement* textarea =
-      ToHTMLTextAreaElement(InsertHTMLElement("<textarea id='txt'>", "txt"));
+  auto* textarea =
+      To<HTMLTextAreaElement>(InsertHTMLElement("<textarea id='txt'>", "txt"));
 
   textarea->setValue("abc\n");
   GetDocument().UpdateStyleAndLayout();

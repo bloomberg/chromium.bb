@@ -3005,10 +3005,9 @@ TEST_F(WebViewTest, TouchDoesntSelectEmptyTextarea) {
   web_view->MainFrameWidget()->HandleInputEvent(WebCoalescedInputEvent(event));
   EXPECT_TRUE(frame->SelectionAsText().IsEmpty());
 
-  HTMLTextAreaElement* text_area_element =
-      ToHTMLTextAreaElement(static_cast<Node*>(
-          web_view->MainFrameImpl()->GetDocument().GetElementById(
-              blanklinestextbox)));
+  auto* text_area_element = To<HTMLTextAreaElement>(static_cast<Node*>(
+      web_view->MainFrameImpl()->GetDocument().GetElementById(
+          blanklinestextbox)));
   text_area_element->setValue("hello");
 
   // Long-press past last word of textbox.
@@ -4099,8 +4098,8 @@ TEST_F(WebViewTest, TextInputFlags) {
 
   // (B) <textarea> Verifies the default text input flags are
   // WebTextInputFlagAutocapitalizeSentences.
-  HTMLTextAreaElement* text_area_element =
-      ToHTMLTextAreaElement(document->getElementById("textarea"));
+  auto* text_area_element =
+      To<HTMLTextAreaElement>(document->getElementById("textarea"));
   document->SetFocusedElement(
       text_area_element,
       FocusParams(SelectionBehaviorOnFocus::kNone, kWebFocusTypeNone, nullptr));

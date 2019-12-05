@@ -2247,9 +2247,10 @@ bool AXLayoutObject::OnNativeSetValueAction(const String& string) {
     return true;
   }
 
-  if (layout_object->IsTextArea() && IsHTMLTextAreaElement(*GetNode())) {
-    ToHTMLTextAreaElement(*GetNode())
-        .setValue(string, TextFieldEventBehavior::kDispatchInputAndChangeEvent);
+  if (auto* text_area_element = DynamicTo<HTMLTextAreaElement>(*GetNode())) {
+    DCHECK(layout_object->IsTextArea());
+    text_area_element->setValue(
+        string, TextFieldEventBehavior::kDispatchInputAndChangeEvent);
     return true;
   }
 

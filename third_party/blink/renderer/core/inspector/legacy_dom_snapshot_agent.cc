@@ -241,7 +241,7 @@ int LegacyDOMSnapshotAgent::VisitNode(Node* node,
         value->setFrameId(IdentifiersFactory::FrameId(frame));
     }
 
-    if (auto* textarea_element = ToHTMLTextAreaElementOrNull(*element))
+    if (auto* textarea_element = DynamicTo<HTMLTextAreaElement>(*element))
       value->setTextValue(textarea_element->value());
 
     if (auto* input_element = DynamicTo<HTMLInputElement>(*element)) {

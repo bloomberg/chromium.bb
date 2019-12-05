@@ -290,7 +290,7 @@ bool ThemePainter::Paint(const LayoutObject& o,
       if (node) {
         const auto& doc = node->GetDocument();
         COUNT_APPEARANCE(doc, TextArea);
-        if (!IsHTMLTextAreaElement(node))
+        if (!IsA<HTMLTextAreaElement>(node))
           DEPRECATE_APPEARANCE(doc, TextAreaForOthers);
       }
       return PaintTextArea(node, style, paint_info, r);
@@ -354,7 +354,7 @@ bool ThemePainter::PaintBorderOnly(const Node* node,
       if (node) {
         const auto& doc = node->GetDocument();
         COUNT_APPEARANCE(doc, TextArea);
-        if (!IsHTMLTextAreaElement(node))
+        if (!IsA<HTMLTextAreaElement>(node))
           DEPRECATE_APPEARANCE(doc, TextAreaForOthers);
       }
       return PaintTextArea(node, style, paint_info, r);

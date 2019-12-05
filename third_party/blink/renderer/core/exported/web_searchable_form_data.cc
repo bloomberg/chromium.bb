@@ -145,7 +145,7 @@ HTMLInputElement* FindSuitableSearchInputElement(const HTMLFormElement& form) {
     if (control->IsDisabledFormControl() || control->GetName().IsNull())
       continue;
 
-    if (!IsInDefaultState(*control) || IsHTMLTextAreaElement(*control))
+    if (!IsInDefaultState(*control) || IsA<HTMLTextAreaElement>(*control))
       return nullptr;
 
     auto* input = DynamicTo<HTMLInputElement>(control);

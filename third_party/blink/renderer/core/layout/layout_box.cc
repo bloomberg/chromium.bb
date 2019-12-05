@@ -3358,10 +3358,11 @@ bool LayoutBox::SizesLogicalWidthToFitContent(
 }
 
 bool LayoutBox::AutoWidthShouldFitContent() const {
-  return GetNode() && (IsHTMLInputElement(*GetNode()) ||
-                       IsA<HTMLSelectElement>(*GetNode()) ||
-                       IsA<HTMLButtonElement>(*GetNode()) ||
-                       IsHTMLTextAreaElement(*GetNode()) || IsRenderedLegend());
+  return GetNode() &&
+         (IsHTMLInputElement(*GetNode()) ||
+          IsA<HTMLSelectElement>(*GetNode()) ||
+          IsA<HTMLButtonElement>(*GetNode()) ||
+          IsA<HTMLTextAreaElement>(*GetNode()) || IsRenderedLegend());
 }
 
 void LayoutBox::ComputeMarginsForDirection(MarginDirection flow_direction,

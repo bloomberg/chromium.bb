@@ -408,7 +408,7 @@ bool HitTestResult::IsContentEditable() const {
   if (!inner_node_)
     return false;
 
-  if (auto* textarea = ToHTMLTextAreaElementOrNull(*inner_node_))
+  if (auto* textarea = DynamicTo<HTMLTextAreaElement>(*inner_node_))
     return !textarea->IsDisabledOrReadOnly();
 
   if (auto* input = DynamicTo<HTMLInputElement>(*inner_node_))
