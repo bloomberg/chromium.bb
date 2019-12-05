@@ -233,6 +233,8 @@ class DateOrderedListMediator {
                 mUiConfig.isRenameEnabled ? this::onRenameItem : null);
         mModel.getProperties().set(
                 ListProperties.CALLBACK_PAGINATION_CLICK, mListMutator::loadMorePages);
+        mModel.getProperties().set(
+                ListProperties.CALLBACK_GROUP_PAGINATION_CLICK, this::loadMoreItemsOnCard);
     }
 
     /** Tears down this mediator. */

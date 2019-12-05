@@ -18,6 +18,7 @@ import org.chromium.chrome.browser.download.home.filter.Filters;
 import org.chromium.chrome.browser.download.home.list.view.CircularProgressView;
 import org.chromium.chrome.browser.download.home.list.view.CircularProgressView.UiState;
 import org.chromium.chrome.browser.util.MathUtils;
+import org.chromium.components.offline_items_collection.LegacyHelpers;
 import org.chromium.components.offline_items_collection.OfflineItem;
 import org.chromium.components.offline_items_collection.OfflineItem.Progress;
 import org.chromium.components.offline_items_collection.OfflineItemFilter;
@@ -356,6 +357,18 @@ public final class UiUtils {
                 assert false;
                 return "";
         }
+    }
+
+    /** @return Whether the given {@link OfflineItem} can be played as a media. */
+    public static boolean isMedia(OfflineItem offlineItem) {
+        return offlineItem.filter == OfflineItemFilter.AUDIO
+                || offlineItem.filter == OfflineItemFilter.VIDEO;
+    }
+
+    /** @return Whether the given {@link OfflineItem} can be shared. */
+    public static boolean canShare(OfflineItem item) {
+        return LegacyHelpers.isLegacyDownload(item.id)
+                || LegacyHelpers.isLegacyOfflinePage(item.id);
     }
 
     /** @return The domain associated with the given {@link OfflineItem}. */

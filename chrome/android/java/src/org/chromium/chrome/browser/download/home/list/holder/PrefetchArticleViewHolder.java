@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,23 +15,23 @@ import org.chromium.chrome.download.R;
 import org.chromium.ui.modelutil.PropertyModel;
 
 /**
- * A {@link RecyclerView.ViewHolder} specifically meant to display a prefetch item.
+ * A {@link RecyclerView.ViewHolder} specifically meant to display a prefetch article.
  */
-public class PrefetchViewHolder extends OfflineItemViewHolder {
+public class PrefetchArticleViewHolder extends OfflineItemViewHolder {
     private final TextView mTitle;
     private final TextView mCaption;
     private final TextView mTimestamp;
 
     /**
-     * Creates a new instance of a {@link PrefetchViewHolder}.
+     * Creates a new instance of a {@link PrefetchArticleViewHolder}.
      */
-    public static PrefetchViewHolder create(ViewGroup parent) {
+    public static PrefetchArticleViewHolder create(ViewGroup parent) {
         View view = LayoutInflater.from(parent.getContext())
-                            .inflate(R.layout.download_manager_prefetch_item, null);
-        return new PrefetchViewHolder(view);
+                            .inflate(R.layout.download_manager_prefetch_article, null);
+        return new PrefetchArticleViewHolder(view);
     }
 
-    private PrefetchViewHolder(View view) {
+    private PrefetchArticleViewHolder(View view) {
         super(view);
         mTitle = (TextView) itemView.findViewById(R.id.title);
         mCaption = (TextView) itemView.findViewById(R.id.caption);
