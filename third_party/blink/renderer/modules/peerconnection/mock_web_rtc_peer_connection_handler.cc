@@ -92,12 +92,12 @@ class DummyRTCRtpSenderPlatform : public RTCRtpSenderPlatform {
   scoped_refptr<DummyRtpSenderInternal> internal_;
 };
 
-class DummyWebRTCRtpReceiver : public WebRTCRtpReceiver {
+class DummyRTCRtpReceiverPlatform : public RTCRtpReceiverPlatform {
  private:
   static uintptr_t last_id_;
 
  public:
-  explicit DummyWebRTCRtpReceiver(WebMediaStreamSource::Type type)
+  explicit DummyRTCRtpReceiverPlatform(WebMediaStreamSource::Type type)
       : id_(++last_id_), track_() {
     if (type == WebMediaStreamSource::Type::kTypeAudio) {
       WebMediaStreamSource web_source;
@@ -116,11 +116,11 @@ class DummyWebRTCRtpReceiver : public WebRTCRtpReceiver {
       track_.Initialize(web_source.Id(), web_source);
     }
   }
-  DummyWebRTCRtpReceiver(const DummyWebRTCRtpReceiver& other)
+  DummyRTCRtpReceiverPlatform(const DummyRTCRtpReceiverPlatform& other)
       : id_(other.id_), track_(other.track_) {}
-  ~DummyWebRTCRtpReceiver() override {}
+  ~DummyRTCRtpReceiverPlatform() override {}
 
-  std::unique_ptr<WebRTCRtpReceiver> ShallowCopy() const override {
+  std::unique_ptr<RTCRtpReceiverPlatform> ShallowCopy() const override {
     return nullptr;
   }
   uintptr_t Id() const override { return id_; }
@@ -153,7 +153,7 @@ class DummyWebRTCRtpReceiver : public WebRTCRtpReceiver {
   WebMediaStreamTrack track_;
 };
 
-uintptr_t DummyWebRTCRtpReceiver::last_id_ = 0;
+uintptr_t DummyRTCRtpReceiverPlatform::last_id_ = 0;
 
 // Having a refcounted helper class allows multiple
 // DummyRTCRtpTransceiverPlatforms to share the same internal states.
@@ -178,9 +178,9 @@ class DummyTransceiverInternal
   std::unique_ptr<DummyRTCRtpSenderPlatform> Sender() const {
     return std::make_unique<DummyRTCRtpSenderPlatform>(sender_);
   }
-  DummyWebRTCRtpReceiver* receiver() { return &receiver_; }
-  std::unique_ptr<DummyWebRTCRtpReceiver> Receiver() const {
-    return std::make_unique<DummyWebRTCRtpReceiver>(receiver_);
+  DummyRTCRtpReceiverPlatform* receiver() { return &receiver_; }
+  std::unique_ptr<DummyRTCRtpReceiverPlatform> Receiver() const {
+    return std::make_unique<DummyRTCRtpReceiverPlatform>(receiver_);
   }
   webrtc::RtpTransceiverDirection direction() const { return direction_; }
   void set_direction(webrtc::RtpTransceiverDirection direction) {
@@ -190,7 +190,7 @@ class DummyTransceiverInternal
  private:
   const uintptr_t id_;
   DummyRTCRtpSenderPlatform sender_;
-  DummyWebRTCRtpReceiver receiver_;
+  DummyRTCRtpReceiverPlatform receiver_;
   webrtc::RtpTransceiverDirection direction_;
 };
 
@@ -220,7 +220,7 @@ class MockWebRTCPeerConnectionHandler::DummyRTCRtpTransceiverPlatform
   std::unique_ptr<RTCRtpSenderPlatform> Sender() const override {
     return internal_->Sender();
   }
-  std::unique_ptr<WebRTCRtpReceiver> Receiver() const override {
+  std::unique_ptr<RTCRtpReceiverPlatform> Receiver() const override {
     return internal_->Receiver();
   }
   bool Stopped() const override { return true; }

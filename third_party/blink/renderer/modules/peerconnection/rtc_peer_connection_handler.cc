@@ -2516,9 +2516,9 @@ size_t RTCPeerConnectionHandler::GetTransceiverIndex(
   } else {
     RTC_DCHECK(platform_transceiver.ImplementationType() ==
                RTCRtpTransceiverPlatformImplementationType::kPlanBReceiverOnly);
-    const auto web_receiver = platform_transceiver.Receiver();
+    const auto platform_receiver = platform_transceiver.Receiver();
     for (size_t i = 0; i < rtp_receivers_.size(); ++i) {
-      if (web_receiver->Id() == rtp_receivers_[i]->Id())
+      if (platform_receiver->Id() == rtp_receivers_[i]->Id())
         return i;
     }
   }

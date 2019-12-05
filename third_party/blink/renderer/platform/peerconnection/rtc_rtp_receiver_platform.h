@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_RTC_RTP_RECEIVER_H_
-#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_RTC_RTP_RECEIVER_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_PEERCONNECTION_RTC_RTP_RECEIVER_PLATFORM_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_PEERCONNECTION_RTC_RTP_RECEIVER_PLATFORM_H_
 
 #include <memory>
 
@@ -22,16 +22,16 @@ class RTCRtpSource;
 class WebMediaStreamTrack;
 
 // Implementations of this interface keep the corresponding WebRTC-layer
-// receiver alive through reference counting. Multiple |WebRTCRtpReceiver|s
+// receiver alive through reference counting. Multiple |RTCRtpReceiverPlatform|s
 // could reference the same receiver, see |id|.
 // https://w3c.github.io/webrtc-pc/#rtcrtpreceiver-interface
-class BLINK_PLATFORM_EXPORT WebRTCRtpReceiver {
+class BLINK_PLATFORM_EXPORT RTCRtpReceiverPlatform {
  public:
-  virtual ~WebRTCRtpReceiver();
+  virtual ~RTCRtpReceiverPlatform();
 
-  virtual std::unique_ptr<WebRTCRtpReceiver> ShallowCopy() const = 0;
-  // Two |WebRTCRtpReceiver|s referencing the same WebRTC-layer receiver have
-  // the same |id|.
+  virtual std::unique_ptr<RTCRtpReceiverPlatform> ShallowCopy() const = 0;
+  // Two |RTCRtpReceiverPlatform|s referencing the same WebRTC-layer receiver
+  // have the same |id|.
   virtual uintptr_t Id() const = 0;
   virtual rtc::scoped_refptr<webrtc::DtlsTransportInterface>
   DtlsTransport() = 0;
@@ -50,4 +50,4 @@ class BLINK_PLATFORM_EXPORT WebRTCRtpReceiver {
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_RTC_RTP_RECEIVER_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_PEERCONNECTION_RTC_RTP_RECEIVER_PLATFORM_H_

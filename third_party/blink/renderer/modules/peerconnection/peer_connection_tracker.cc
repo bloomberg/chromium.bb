@@ -155,7 +155,7 @@ static String SerializeSender(const String& indent,
 }
 
 static String SerializeReceiver(const String& indent,
-                                const blink::WebRTCRtpReceiver& receiver) {
+                                const RTCRtpReceiverPlatform& receiver) {
   StringBuilder result;
   result.Append("{\n");
   // track:'id',

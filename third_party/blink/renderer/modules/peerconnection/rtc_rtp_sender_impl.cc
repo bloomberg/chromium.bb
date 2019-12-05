@@ -526,8 +526,8 @@ RTCRtpSenderOnlyTransceiver::Sender() const {
   return sender_->ShallowCopy();
 }
 
-std::unique_ptr<blink::WebRTCRtpReceiver>
-RTCRtpSenderOnlyTransceiver::Receiver() const {
+std::unique_ptr<RTCRtpReceiverPlatform> RTCRtpSenderOnlyTransceiver::Receiver()
+    const {
   NOTIMPLEMENTED();
   return nullptr;
 }

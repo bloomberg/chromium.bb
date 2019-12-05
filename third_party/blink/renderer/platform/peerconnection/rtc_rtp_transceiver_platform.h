@@ -8,13 +8,14 @@
 #include <memory>
 
 #include "base/optional.h"
-#include "third_party/blink/public/platform/web_rtc_rtp_receiver.h"
 #include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/renderer/platform/peerconnection/rtc_rtp_receiver_platform.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/webrtc/api/rtp_transceiver_interface.h"
 
 namespace blink {
 
+class RTCRtpReceiverPlatform;
 class RTCRtpSenderPlatform;
 
 // In Unified Plan transceivers exist and a full implementation of
@@ -53,7 +54,7 @@ class PLATFORM_EXPORT RTCRtpTransceiverPlatform {
   virtual WebString Mid() const = 0;
   virtual void SetMid(base::Optional<WebString>) {}
   virtual std::unique_ptr<RTCRtpSenderPlatform> Sender() const = 0;
-  virtual std::unique_ptr<WebRTCRtpReceiver> Receiver() const = 0;
+  virtual std::unique_ptr<RTCRtpReceiverPlatform> Receiver() const = 0;
   virtual bool Stopped() const = 0;
   virtual webrtc::RtpTransceiverDirection Direction() const = 0;
   virtual void SetDirection(webrtc::RtpTransceiverDirection) = 0;
