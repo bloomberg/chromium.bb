@@ -566,15 +566,6 @@ void CookieMonster::DumpMemoryStats(
 
 CookieMonster::~CookieMonster() {
   DCHECK(thread_checker_.CalledOnValidThread());
-
-  // TODO(mmenke): Does it really make sense to run
-  // CookieChanged callbacks when the CookieStore is destroyed?
-  for (auto cookie_it = cookies_.begin(); cookie_it != cookies_.end();) {
-    auto current_cookie_it = cookie_it;
-    ++cookie_it;
-    InternalDeleteCookie(current_cookie_it, false /* sync_to_store */,
-                         DELETE_COOKIE_DONT_RECORD);
-  }
   net_log_.EndEvent(NetLogEventType::COOKIE_STORE_ALIVE);
 }
 
