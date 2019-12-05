@@ -145,7 +145,8 @@ def _GetProjects(repo_root):
   data = cros_build_lib.run(
       ['find', './', '-type', 'd', '-name', '*.git', '-a',
        '!', '-wholename', '*/*.git/*', '-prune'],
-      cwd=os.path.join(repo_root, 'project-objects'), capture_output=True)
+      cwd=os.path.join(repo_root, 'project-objects'), capture_output=True,
+      encoding='utf-8')
 
   # Drop the leading ./ and the trailing .git
   data = [x[2:-4] for x in data.output.splitlines() if x]
