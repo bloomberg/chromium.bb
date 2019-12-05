@@ -13,6 +13,7 @@
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/audio/public/mojom/device_notifications.mojom.h"
+#include "services/audio/traced_service_ref.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -28,7 +29,8 @@ class DeviceNotifier final : public base::SystemMonitor::DevicesChangedObserver,
   DeviceNotifier();
   ~DeviceNotifier() final;
 
-  void Bind(mojo::PendingReceiver<mojom::DeviceNotifier> receiver);
+  void Bind(mojo::PendingReceiver<mojom::DeviceNotifier> receiver,
+            TracedServiceRef context_ref);
 
   // mojom::DeviceNotifier implementation.
   void RegisterListener(
@@ -43,7 +45,7 @@ class DeviceNotifier final : public base::SystemMonitor::DevicesChangedObserver,
 
   int next_listener_id_ = 0;
   base::flat_map<int, mojo::Remote<mojom::DeviceListener>> listeners_;
-  mojo::ReceiverSet<mojom::DeviceNotifier> receivers_;
+  mojo::ReceiverSet<mojom::DeviceNotifier, TracedServiceRef> receivers_;
   const scoped_refptr<base::SequencedTaskRunner> task_runner_;
   base::WeakPtrFactory<DeviceNotifier> weak_factory_{this};
 

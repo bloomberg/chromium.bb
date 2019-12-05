@@ -41,13 +41,10 @@ void BindInProcessInstance(
 }
 
 mojo::Remote<video_capture::mojom::VideoCaptureService>& GetUIThreadRemote() {
-  // NOTE: This use of sequence-local storage is only to ensure that the Remote
-  // only lives as long as the UI-thread sequence, since the UI-thread sequence
-  // may be torn down and reinitialized e.g. between unit tests.
-  static base::NoDestructor<base::SequenceLocalStorageSlot<
-      mojo::Remote<video_capture::mojom::VideoCaptureService>>>
-      remote_slot;
-  return remote_slot->GetOrCreateValue();
+  static base::NoDestructor<
+      mojo::Remote<video_capture::mojom::VideoCaptureService>>
+      remote;
+  return *remote;
 }
 
 // This is a custom traits type we use in conjunction with mojo::ReceiverSetBase

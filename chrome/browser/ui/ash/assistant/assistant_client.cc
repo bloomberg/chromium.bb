@@ -21,12 +21,12 @@
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/services/assistant/public/features.h"
 #include "components/session_manager/core/session_manager.h"
-#include "content/public/browser/audio_service.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/service_process_host.h"
 #include "content/public/browser/system_connector.h"
 #include "content/public/common/content_switches.h"
+#include "services/audio/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/identity/public/mojom/identity_service.mojom.h"
 #include "services/media_session/public/mojom/constants.mojom.h"
@@ -183,7 +183,8 @@ void AssistantClient::RequestWakeLockProvider(
 
 void AssistantClient::RequestAudioStreamFactory(
     mojo::PendingReceiver<audio::mojom::StreamFactory> receiver) {
-  content::GetAudioService().BindStreamFactory(std::move(receiver));
+  content::GetSystemConnector()->Connect(audio::mojom::kServiceName,
+                                         std::move(receiver));
 }
 
 void AssistantClient::RequestAudioDecoderFactory(

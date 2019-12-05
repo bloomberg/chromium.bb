@@ -20,6 +20,7 @@
 #include "media/base/channel_layout.h"
 #include "media/mojo/mojom/audio_output_stream.mojom.h"
 #include "services/audio/public/cpp/output_device.h"
+#include "services/audio/public/mojom/constants.mojom.h"
 #include "services/audio/public/mojom/stream_factory.mojom.h"
 
 namespace audio {
@@ -43,10 +44,10 @@ class AudioStreamHandler::AudioStreamContainer
     : public media::AudioRendererSink::RenderCallback {
  public:
   explicit AudioStreamContainer(
-      SoundsManager::StreamFactoryBinder stream_factory_binder,
+      std::unique_ptr<service_manager::Connector> connector,
       std::unique_ptr<media::WavAudioHandler> wav_audio)
       : started_(false),
-        stream_factory_binder_(std::move(stream_factory_binder)),
+        connector_(std::move(connector)),
         cursor_(0),
         delayed_stop_posted_(false),
         wav_audio_(std::move(wav_audio)) {
@@ -71,8 +72,8 @@ class AudioStreamHandler::AudioStreamContainer
         g_observer_for_testing->Initialize(this, params);
       } else {
         mojo::PendingRemote<audio::mojom::StreamFactory> stream_factory;
-        stream_factory_binder_.Run(
-            stream_factory.InitWithNewPipeAndPassReceiver());
+        connector_->Connect(audio::mojom::kServiceName,
+                            stream_factory.InitWithNewPipeAndPassReceiver());
         device_ = std::make_unique<audio::OutputDevice>(
             std::move(stream_factory), params, this, std::string());
       }
@@ -155,7 +156,7 @@ class AudioStreamHandler::AudioStreamContainer
   }
 
   bool started_;
-  const SoundsManager::StreamFactoryBinder stream_factory_binder_;
+  std::unique_ptr<service_manager::Connector> connector_;
   std::unique_ptr<audio::OutputDevice> device_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
@@ -170,7 +171,7 @@ class AudioStreamHandler::AudioStreamContainer
 };
 
 AudioStreamHandler::AudioStreamHandler(
-    SoundsManager::StreamFactoryBinder stream_factory_binder,
+    std::unique_ptr<service_manager::Connector> connector,
     const base::StringPiece& wav_data) {
   task_runner_ = base::SequencedTaskRunnerHandle::Get();
   std::unique_ptr<media::WavAudioHandler> wav_audio =
@@ -191,8 +192,8 @@ AudioStreamHandler::AudioStreamHandler(
 
   // Store the duration of the WAV data then pass the handler to |stream_|.
   duration_ = wav_audio->GetDuration();
-  stream_.reset(new AudioStreamContainer(std::move(stream_factory_binder),
-                                         std::move(wav_audio)));
+  stream_.reset(
+      new AudioStreamContainer(std::move(connector), std::move(wav_audio)));
 }
 
 AudioStreamHandler::~AudioStreamHandler() {

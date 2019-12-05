@@ -32,9 +32,16 @@ class AudioStreamHandlerTest : public testing::Test {
   AudioStreamHandlerTest() = default;
   ~AudioStreamHandlerTest() override = default;
 
+  void SetUp() override {
+    mojo::PendingReceiver<service_manager::mojom::Connector> connector_receiver;
+    connector_ = service_manager::Connector::Create(&connector_receiver);
+  }
+
   void SetObserverForTesting(AudioStreamHandler::TestObserver* observer) {
     AudioStreamHandler::SetObserverForTesting(observer);
   }
+
+  std::unique_ptr<service_manager::Connector> connector_;
 
  private:
   base::TestMessageLoop message_loop_;
@@ -47,7 +54,8 @@ TEST_F(AudioStreamHandlerTest, Play) {
   std::unique_ptr<AudioStreamHandler> audio_stream_handler;
 
   SetObserverForTesting(&observer);
-  audio_stream_handler.reset(new AudioStreamHandler(base::DoNothing(), data));
+  audio_stream_handler.reset(
+      new AudioStreamHandler(std::move(connector_), data));
 
   ASSERT_TRUE(audio_stream_handler->IsInitialized());
   EXPECT_EQ(base::TimeDelta::FromMicroseconds(20u),
@@ -71,7 +79,8 @@ TEST_F(AudioStreamHandlerTest, ConsecutivePlayRequests) {
   std::unique_ptr<AudioStreamHandler> audio_stream_handler;
 
   SetObserverForTesting(&observer);
-  audio_stream_handler.reset(new AudioStreamHandler(base::DoNothing(), data));
+  audio_stream_handler.reset(
+      new AudioStreamHandler(std::move(connector_), data));
 
   ASSERT_TRUE(audio_stream_handler->IsInitialized());
   EXPECT_EQ(base::TimeDelta::FromMicroseconds(20u),
@@ -100,7 +109,8 @@ TEST_F(AudioStreamHandlerTest, ConsecutivePlayRequests) {
 TEST_F(AudioStreamHandlerTest, BadWavDataDoesNotInitialize) {
   // The class members and SetUp() will be ignored for this test. Create a
   // handler on the stack with some bad WAV data.
-  AudioStreamHandler handler(base::DoNothing(), "RIFF1234WAVEjunkjunkjunkjunk");
+  AudioStreamHandler handler(std::move(connector_),
+                             "RIFF1234WAVEjunkjunkjunkjunk");
   EXPECT_FALSE(handler.IsInitialized());
   EXPECT_FALSE(handler.Play());
   EXPECT_EQ(base::TimeDelta(), handler.duration());

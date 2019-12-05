@@ -23,10 +23,10 @@ DeviceNotifier::~DeviceNotifier() {
   base::SystemMonitor::Get()->RemoveDevicesChangedObserver(this);
 }
 
-void DeviceNotifier::Bind(
-    mojo::PendingReceiver<mojom::DeviceNotifier> receiver) {
+void DeviceNotifier::Bind(mojo::PendingReceiver<mojom::DeviceNotifier> receiver,
+                          TracedServiceRef context_ref) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
-  receivers_.Add(this, std::move(receiver));
+  receivers_.Add(this, std::move(receiver), std::move(context_ref));
 }
 
 void DeviceNotifier::RegisterListener(

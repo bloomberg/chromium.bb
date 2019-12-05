@@ -10,6 +10,7 @@
 #include "ash/public/mojom/assistant_state_controller.mojom.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "services/service_manager/public/cpp/connector.h"
 
 namespace chromeos {
 namespace assistant {

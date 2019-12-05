@@ -34,10 +34,11 @@ StreamFactory::~StreamFactory() {
   magic_bytes_ = 0xDEADBEEFu;
 }
 
-void StreamFactory::Bind(mojo::PendingReceiver<mojom::StreamFactory> receiver) {
+void StreamFactory::Bind(mojo::PendingReceiver<mojom::StreamFactory> receiver,
+                         TracedServiceRef context_ref) {
   CHECK_EQ(magic_bytes_, 0x600DC0DEu);
   DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
-  receivers_.Add(this, std::move(receiver));
+  receivers_.Add(this, std::move(receiver), std::move(context_ref));
 }
 
 void StreamFactory::CreateInputStream(
@@ -55,9 +56,9 @@ void StreamFactory::CreateInputStream(
   CHECK_EQ(magic_bytes_, 0x600DC0DEu);
   DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
   SetStateForCrashing("creating input stream");
-  TRACE_EVENT_NESTABLE_ASYNC_INSTANT2("audio", "CreateInputStream", this,
-                                      "device id", device_id, "params",
-                                      params.AsHumanReadableString());
+  TRACE_EVENT_NESTABLE_ASYNC_INSTANT2(
+      "audio", "CreateInputStream", receivers_.current_context().id_for_trace(),
+      "device id", device_id, "params", params.AsHumanReadableString());
 
   if (processing_config && processing_config->settings.requires_apm() &&
       params.GetBufferDuration() != base::TimeDelta::FromMilliseconds(10)) {
@@ -115,9 +116,10 @@ void StreamFactory::CreateOutputStream(
   CHECK_EQ(magic_bytes_, 0x600DC0DEu);
   DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
   SetStateForCrashing("creating output stream");
-  TRACE_EVENT_NESTABLE_ASYNC_INSTANT2("audio", "CreateOutputStream", this,
-                                      "device id", output_device_id, "params",
-                                      params.AsHumanReadableString());
+  TRACE_EVENT_NESTABLE_ASYNC_INSTANT2(
+      "audio", "CreateOutputStream",
+      receivers_.current_context().id_for_trace(), "device id",
+      output_device_id, "params", params.AsHumanReadableString());
 
   // Unretained is safe since |this| indirectly owns the OutputStream.
   auto deleter_callback = base::BindOnce(&StreamFactory::DestroyOutputStream,
@@ -151,8 +153,9 @@ void StreamFactory::BindMuter(
   CHECK_EQ(magic_bytes_, 0x600DC0DEu);
   DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
   SetStateForCrashing("binding muter");
-  TRACE_EVENT_NESTABLE_ASYNC_INSTANT1("audio", "BindMuter", this, "group id",
-                                      group_id.GetLowForSerialization());
+  TRACE_EVENT_NESTABLE_ASYNC_INSTANT1(
+      "audio", "BindMuter", receivers_.current_context().id_for_trace(),
+      "group id", group_id.GetLowForSerialization());
 
   // Find the existing LocalMuter for this group, or create one on-demand.
   auto it = std::find_if(muters_.begin(), muters_.end(),
@@ -186,10 +189,11 @@ void StreamFactory::CreateLoopbackStream(
   CHECK_EQ(magic_bytes_, 0x600DC0DEu);
   DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
   SetStateForCrashing("creating loopback stream");
-  TRACE_EVENT_NESTABLE_ASYNC_INSTANT2("audio", "CreateLoopbackStream", this,
-                                      "group id",
-                                      group_id.GetLowForSerialization(),
-                                      "params", params.AsHumanReadableString());
+  TRACE_EVENT_NESTABLE_ASYNC_INSTANT2(
+      "audio", "CreateLoopbackStream",
+      receivers_.current_context().id_for_trace(), "group id",
+      group_id.GetLowForSerialization(), "params",
+      params.AsHumanReadableString());
 
   // All LoopbackStreams share a single realtime worker thread. This is because
   // the execution timing of scheduled tasks must be precise, and top priority

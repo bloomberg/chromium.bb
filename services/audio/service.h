@@ -14,14 +14,17 @@
 #include "base/threading/thread_checker.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "services/audio/public/mojom/audio_service.mojom.h"
 #include "services/audio/public/mojom/debug_recording.mojom.h"
 #include "services/audio/public/mojom/device_notifications.mojom.h"
 #include "services/audio/public/mojom/log_factory_manager.mojom.h"
 #include "services/audio/public/mojom/stream_factory.mojom.h"
 #include "services/audio/public/mojom/system_info.mojom.h"
-#include "services/audio/public/mojom/testing_api.mojom.h"
 #include "services/audio/stream_factory.h"
+#include "services/service_manager/public/cpp/binder_map.h"
+#include "services/service_manager/public/cpp/service.h"
+#include "services/service_manager/public/cpp/service_binding.h"
+#include "services/service_manager/public/cpp/service_keepalive.h"
+#include "services/service_manager/public/mojom/service.mojom.h"
 
 namespace base {
 class DeferredSequencedTaskRunner;
@@ -41,7 +44,7 @@ class LogFactoryManager;
 class ServiceMetrics;
 class SystemInfo;
 
-class Service : public mojom::AudioService {
+class Service : public service_manager::Service {
  public:
   // Abstracts AudioManager ownership. Lives and must be accessed on a thread
   // its created on, and that thread must be AudioManager main thread.
@@ -62,45 +65,41 @@ class Service : public mojom::AudioService {
     virtual void SetAudioLogFactory(media::AudioLogFactory* factory) = 0;
   };
 
-  // If |enable_remote_client_support| is true, the service will make available
-  // a DeviceNotifier object that allows clients to/ subscribe to notifications
-  // about device changes and a LogFactoryManager object that allows clients to
-  // set a factory for audio logs.
+  // Service will attempt to quit if there are no connections to it within
+  // |quit_timeout| interval. If |quit_timeout| is null the
+  // service never quits. If |enable_remote_client_support| is true, the service
+  // will make available a DeviceNotifier object that allows clients to
+  // subscribe to notifications about device changes and a LogFactoryManager
+  // object that allows clients to set a factory for audio logs.
   Service(std::unique_ptr<AudioManagerAccessor> audio_manager_accessor,
+          base::Optional<base::TimeDelta> quit_timeout,
           bool enable_remote_client_support,
-          mojo::PendingReceiver<mojom::AudioService> receiver);
+          std::unique_ptr<service_manager::BinderMap> extra_binders,
+          mojo::PendingReceiver<service_manager::mojom::Service> receiver);
   ~Service() final;
 
   // Returns a DeferredSequencedTaskRunner to be used to run the audio service
   // when launched in the browser process.
   static base::DeferredSequencedTaskRunner* GetInProcessTaskRunner();
 
-  // Allows tests to override how SystemInfo interface receivers are bound.
-  // Used by FakeSystemInfo.
-  using SystemInfoBinder =
-      base::RepeatingCallback<void(mojo::PendingReceiver<mojom::SystemInfo>)>;
-  static void SetSystemInfoBinderForTesting(SystemInfoBinder binder);
-
-  // Allows tests to inject support for TestingApi binding, which is normally
-  // unsupported by the service.
-  using TestingApiBinder =
-      base::RepeatingCallback<void(mojo::PendingReceiver<mojom::TestingApi>)>;
-  static void SetTestingApiBinderForTesting(TestingApiBinder binder);
+  // service_manager::Service implementation.
+  void OnStart() final;
+  void OnBindInterface(const service_manager::BindSourceInfo& source_info,
+                       const std::string& interface_name,
+                       mojo::ScopedMessagePipeHandle receiver_pipe) final;
+  void OnDisconnected() final;
 
  private:
-  // mojom::AudioService implementation:
-  void BindSystemInfo(
-      mojo::PendingReceiver<mojom::SystemInfo> receiver) override;
-  void BindDebugRecording(
-      mojo::PendingReceiver<mojom::DebugRecording> receiver) override;
-  void BindStreamFactory(
-      mojo::PendingReceiver<mojom::StreamFactory> receiver) override;
-  void BindDeviceNotifier(
-      mojo::PendingReceiver<mojom::DeviceNotifier> receiver) override;
-  void BindLogFactoryManager(
-      mojo::PendingReceiver<mojom::LogFactoryManager> receiver) override;
-  void BindTestingApi(
-      mojo::PendingReceiver<mojom::TestingApi> receiver) override;
+  void BindSystemInfoReceiver(
+      mojo::PendingReceiver<mojom::SystemInfo> receiver);
+  void BindDebugRecordingReceiver(
+      mojo::PendingReceiver<mojom::DebugRecording> receiver);
+  void BindStreamFactoryReceiver(
+      mojo::PendingReceiver<mojom::StreamFactory> receiver);
+  void BindDeviceNotifierReceiver(
+      mojo::PendingReceiver<mojom::DeviceNotifier> receiver);
+  void BindLogFactoryManagerReceiver(
+      mojo::PendingReceiver<mojom::LogFactoryManager> receiver);
 
   // Initializes a platform-specific device monitor for device-change
   // notifications. If the client uses the DeviceNotifier interface to get
@@ -113,9 +112,11 @@ class Service : public mojom::AudioService {
   // AudioManager provided by AudioManagerAccessor.
   THREAD_CHECKER(thread_checker_);
 
+  service_manager::ServiceBinding service_binding_;
+  service_manager::ServiceKeepalive keepalive_;
+
   base::RepeatingClosure quit_closure_;
 
-  mojo::Receiver<mojom::AudioService> receiver_;
   std::unique_ptr<AudioManagerAccessor> audio_manager_accessor_;
   const bool enable_remote_client_support_;
   std::unique_ptr<base::SystemMonitor> system_monitor_;
@@ -128,6 +129,8 @@ class Service : public mojom::AudioService {
   std::unique_ptr<DeviceNotifier> device_notifier_;
   std::unique_ptr<LogFactoryManager> log_factory_manager_;
   std::unique_ptr<ServiceMetrics> metrics_;
+
+  std::unique_ptr<service_manager::BinderMap> binders_;
 
   // TODO(crbug.com/888478): Remove this after diagnosis.
   volatile uint32_t magic_bytes_;

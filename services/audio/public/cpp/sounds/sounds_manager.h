@@ -7,14 +7,12 @@
 
 #include <memory>
 
-#include "base/callback.h"
 #include "base/macros.h"
 #include "base/sequence_checker.h"
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
 #include "media/base/media_export.h"
-#include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "services/audio/public/mojom/stream_factory.mojom.h"
+#include "services/service_manager/public/cpp/connector.h"
 
 namespace audio {
 
@@ -25,9 +23,7 @@ class SoundsManager {
   typedef int SoundKey;
 
   // Creates a singleton instance of the SoundsManager.
-  using StreamFactoryBinder = base::RepeatingCallback<void(
-      mojo::PendingReceiver<mojom::StreamFactory>)>;
-  static void Create(StreamFactoryBinder stream_factory_binder);
+  static void Create(std::unique_ptr<service_manager::Connector> connector);
 
   // Removes a singleton instance of the SoundsManager.
   static void Shutdown();

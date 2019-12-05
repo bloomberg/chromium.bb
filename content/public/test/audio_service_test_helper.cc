@@ -12,7 +12,6 @@
 #include "base/process/process.h"
 #include "content/public/common/content_features.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
-#include "services/audio/service.h"
 
 namespace content {
 
@@ -40,17 +39,17 @@ class AudioServiceTestHelper::TestingApi : public audio::mojom::TestingApi {
 };
 
 AudioServiceTestHelper::AudioServiceTestHelper()
-    : testing_api_(new TestingApi) {
-  if (base::FeatureList::IsEnabled(features::kAudioServiceOutOfProcess)) {
-    audio::Service::SetTestingApiBinderForTesting(
-        base::BindRepeating(&AudioServiceTestHelper::BindTestingApiReceiver,
-                            base::Unretained(this)));
-  }
-}
+    : testing_api_(new TestingApi) {}
 
-AudioServiceTestHelper::~AudioServiceTestHelper() {
-  if (base::FeatureList::IsEnabled(features::kAudioServiceOutOfProcess))
-    audio::Service::SetTestingApiBinderForTesting(base::NullCallback());
+AudioServiceTestHelper::~AudioServiceTestHelper() = default;
+
+void AudioServiceTestHelper::RegisterAudioBinders(
+    service_manager::BinderMap* binders) {
+  if (!base::FeatureList::IsEnabled(features::kAudioServiceOutOfProcess))
+    return;
+
+  binders->Add(base::BindRepeating(
+      &AudioServiceTestHelper::BindTestingApiReceiver, base::Unretained(this)));
 }
 
 void AudioServiceTestHelper::BindTestingApiReceiver(

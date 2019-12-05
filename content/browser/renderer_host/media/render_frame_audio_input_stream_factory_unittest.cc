@@ -39,7 +39,9 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/audio/public/cpp/fake_stream_factory.h"
+#include "services/audio/public/mojom/constants.mojom.h"
 #include "services/audio/public/mojom/stream_factory.mojom.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -75,7 +77,13 @@ class MAYBE_RenderFrameAudioInputStreamFactoryTest
     RenderFrameHostTester::For(main_rfh())->InitializeRenderFrameIfNeeded();
 
     // Set up the ForwardingAudioStreamFactory.
-    ForwardingAudioStreamFactory::OverrideStreamFactoryBinderForTesting(
+    service_manager::Connector* connector =
+        ForwardingAudioStreamFactory::ForFrame(main_rfh())
+            ->core()
+            ->get_connector_for_testing();
+    connector->OverrideBinderForTesting(
+        service_manager::ServiceFilter::ByName(audio::mojom::kServiceName),
+        audio::mojom::StreamFactory::Name_,
         base::BindRepeating(
             &MAYBE_RenderFrameAudioInputStreamFactoryTest::BindFactory,
             base::Unretained(this)));
@@ -84,16 +92,15 @@ class MAYBE_RenderFrameAudioInputStreamFactoryTest
   }
 
   void TearDown() override {
-    ForwardingAudioStreamFactory::OverrideStreamFactoryBinderForTesting(
-        base::NullCallback());
     audio_manager_.Shutdown();
     test_service_manager_context_.reset();
     RenderViewHostTestHarness::TearDown();
   }
 
-  void BindFactory(
-      mojo::PendingReceiver<audio::mojom::StreamFactory> receiver) {
-    audio_service_stream_factory_.receiver_.Bind(std::move(receiver));
+  void BindFactory(mojo::ScopedMessagePipeHandle factory_receiver) {
+    audio_service_stream_factory_.receiver_.Bind(
+        mojo::PendingReceiver<audio::mojom::StreamFactory>(
+            std::move(factory_receiver)));
   }
 
   class MockStreamFactory : public audio::FakeStreamFactory {

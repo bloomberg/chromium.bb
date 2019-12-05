@@ -15,6 +15,7 @@
 #include "media/mojo/buildflags.h"
 #include "media/mojo/services/cdm_manifest.h"
 #include "media/mojo/services/media_manifest.h"
+#include "services/audio/public/cpp/manifest.h"
 #include "services/device/public/cpp/manifest.h"
 #include "services/media_session/public/cpp/manifest.h"
 #include "services/metrics/public/cpp/manifest.h"
@@ -22,10 +23,25 @@
 
 namespace content {
 
+namespace {
+
+bool IsAudioServiceOutOfProcess() {
+  return base::FeatureList::IsEnabled(features::kAudioServiceOutOfProcess) &&
+         !GetContentClient()->browser()->OverridesAudioManager();
+}
+
+}  // namespace
+
 const std::vector<service_manager::Manifest>& GetBuiltinServiceManifests() {
   static base::NoDestructor<std::vector<service_manager::Manifest>> manifests{
       std::vector<service_manager::Manifest>{
           GetContentBrowserManifest(),
+
+          audio::GetManifest(IsAudioServiceOutOfProcess()
+                                 ? service_manager::Manifest::ExecutionMode::
+                                       kOutOfProcessBuiltin
+                                 : service_manager::Manifest::ExecutionMode::
+                                       kInProcessBuiltin),
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
           media::GetCdmManifest(),

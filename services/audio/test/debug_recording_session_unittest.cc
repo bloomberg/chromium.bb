@@ -19,8 +19,10 @@
 #include "media/audio/mock_audio_debug_recording_manager.h"
 #include "media/audio/mock_audio_manager.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "services/audio/public/mojom/constants.mojom.h"
 #include "services/audio/service.h"
 #include "services/audio/service_factory.h"
+#include "services/service_manager/public/cpp/test/test_connector_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -91,7 +93,7 @@ class DebugRecordingSessionTest : public media::AudioDebugRecordingTest {
 
     service_ = CreateEmbeddedService(
         static_cast<media::AudioManager*>(mock_audio_manager_.get()),
-        service_remote_.BindNewPipeAndPassReceiver());
+        connector_factory_.RegisterInstance(audio::mojom::kServiceName));
 
     task_environment_.RunUntilIdle();
   }
@@ -100,12 +102,10 @@ class DebugRecordingSessionTest : public media::AudioDebugRecordingTest {
 
  protected:
   std::unique_ptr<DebugRecordingSession> CreateDebugRecordingSession() {
-    mojo::PendingRemote<mojom::DebugRecording> debug_recording;
-    service_remote_->BindDebugRecording(
-        debug_recording.InitWithNewPipeAndPassReceiver());
     std::unique_ptr<DebugRecordingSession> session(
-        std::make_unique<DebugRecordingSession>(base::FilePath(kBaseFileName),
-                                                std::move(debug_recording)));
+        std::make_unique<DebugRecordingSession>(
+            base::FilePath(kBaseFileName),
+            connector_factory_.CreateConnector()));
     task_environment_.RunUntilIdle();
     return session;
   }
@@ -117,7 +117,7 @@ class DebugRecordingSessionTest : public media::AudioDebugRecordingTest {
   }
 
  private:
-  mojo::Remote<mojom::AudioService> service_remote_;
+  service_manager::TestConnectorFactory connector_factory_;
   std::unique_ptr<Service> service_;
 
   DISALLOW_COPY_AND_ASSIGN(DebugRecordingSessionTest);

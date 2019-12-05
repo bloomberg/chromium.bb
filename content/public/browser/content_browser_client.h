@@ -534,6 +534,13 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual void AppendExtraCommandLineSwitches(base::CommandLine* command_line,
                                               int child_process_id) {}
 
+  // Allows the content embedder to adjust the command line arguments for
+  // a utility process started to run a service. This is called on a background
+  // thread.
+  virtual void AdjustUtilityServiceProcessCommandLine(
+      const service_manager::Identity& identity,
+      base::CommandLine* command_line) {}
+
   // Returns a client GUID used for virus scanning.
   virtual std::string GetApplicationClientGUIDForQuarantineCheck();
 

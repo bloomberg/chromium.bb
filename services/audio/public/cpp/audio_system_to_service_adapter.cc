@@ -12,6 +12,8 @@
 #include "base/trace_event/trace_event.h"
 #include "media/audio/audio_device_description.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
+#include "services/audio/public/mojom/constants.mojom.h"
+#include "services/service_manager/public/cpp/connector.h"
 
 namespace audio {
 
@@ -223,22 +225,21 @@ OnInputDeviceInfoCallback WrapGetInputDeviceInfoReply(
 }  // namespace
 
 AudioSystemToServiceAdapter::AudioSystemToServiceAdapter(
-    SystemInfoBinder system_info_binder,
+    std::unique_ptr<service_manager::Connector> connector,
     base::TimeDelta disconnect_timeout)
-    : system_info_binder_(std::move(system_info_binder)),
+    : connector_(std::move(connector)),
       disconnect_timeout_(disconnect_timeout) {
-  DCHECK(system_info_binder_);
+  DCHECK(connector_);
   DETACH_FROM_THREAD(thread_checker_);
 }
 
 AudioSystemToServiceAdapter::AudioSystemToServiceAdapter(
-    SystemInfoBinder system_info_binder)
-    : AudioSystemToServiceAdapter(std::move(system_info_binder),
-                                  base::TimeDelta()) {}
+    std::unique_ptr<service_manager::Connector> connector)
+    : AudioSystemToServiceAdapter(std::move(connector), base::TimeDelta()) {}
 
 AudioSystemToServiceAdapter::~AudioSystemToServiceAdapter() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  if (system_info_.is_bound()) {
+  if (!!system_info_) {
     TRACE_EVENT_NESTABLE_ASYNC_END1("audio",
                                     "AudioSystemToServiceAdapter bound", this,
                                     "disconnect reason", "destroyed");
@@ -319,12 +320,14 @@ mojom::SystemInfo* AudioSystemToServiceAdapter::GetSystemInfo() {
   if (!system_info_) {
     TRACE_EVENT_NESTABLE_ASYNC_BEGIN0(
         "audio", "AudioSystemToServiceAdapter bound", this);
-    system_info_binder_.Run(system_info_.BindNewPipeAndPassReceiver());
+    connector_->Connect(mojom::kServiceName,
+                        system_info_.BindNewPipeAndPassReceiver());
     system_info_.set_disconnect_handler(
         base::BindOnce(&AudioSystemToServiceAdapter::OnConnectionError,
                        base::Unretained(this)));
     if (!disconnect_timeout_.is_zero())
       system_info_.reset_on_idle_timeout(disconnect_timeout_);
+    DCHECK(system_info_);
   }
 
   return system_info_.get();

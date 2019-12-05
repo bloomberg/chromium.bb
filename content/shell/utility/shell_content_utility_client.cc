@@ -139,4 +139,9 @@ void ShellContentUtilityClient::RegisterNetworkBinders(
   network_service_test_helper_->RegisterNetworkBinders(registry);
 }
 
+void ShellContentUtilityClient::RegisterAudioBinders(
+    service_manager::BinderMap* binders) {
+  audio_service_test_helper_->RegisterAudioBinders(binders);
+}
+
 }  // namespace content

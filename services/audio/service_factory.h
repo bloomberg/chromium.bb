@@ -8,8 +8,9 @@
 #include <memory>
 
 #include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "services/audio/public/mojom/audio_service.mojom.h"
 #include "services/audio/service.h"
+#include "services/service_manager/public/cpp/binder_map.h"
+#include "services/service_manager/public/mojom/service.mojom.h"
 
 namespace media {
 class AudioManager;
@@ -22,14 +23,15 @@ namespace audio {
 // the device thread of AudioManager.
 std::unique_ptr<Service> CreateEmbeddedService(
     media::AudioManager* audio_manager,
-    mojo::PendingReceiver<mojom::AudioService> receiver);
+    mojo::PendingReceiver<service_manager::mojom::Service> receiver);
 
 // Creates an instance of Audio service which will live in the current process
 // and will create and own an AudioManager instance. |extra_binders| can provide
 // additional interface binders for the service to include. Useful for e.g.
 // test-only environments.
 std::unique_ptr<Service> CreateStandaloneService(
-    mojo::PendingReceiver<mojom::AudioService> receiver);
+    std::unique_ptr<service_manager::BinderMap> extra_binders,
+    mojo::PendingReceiver<service_manager::mojom::Service> receiver);
 
 }  // namespace audio
 

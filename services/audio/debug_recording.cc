@@ -15,8 +15,11 @@ namespace audio {
 
 DebugRecording::DebugRecording(
     mojo::PendingReceiver<mojom::DebugRecording> receiver,
-    media::AudioManager* audio_manager)
-    : audio_manager_(audio_manager), receiver_(this, std::move(receiver)) {
+    media::AudioManager* audio_manager,
+    TracedServiceRef service_ref)
+    : audio_manager_(audio_manager),
+      receiver_(this, std::move(receiver)),
+      service_ref_(std::move(service_ref)) {
   DCHECK(audio_manager_ != nullptr);
   DCHECK(audio_manager_->GetTaskRunner()->BelongsToCurrentThread());
 
@@ -47,6 +50,8 @@ void DebugRecording::Enable(
 
 void DebugRecording::Disable() {
   DCHECK(audio_manager_->GetTaskRunner()->BelongsToCurrentThread());
+  // Client connection is lost, resetting the reference.
+  service_ref_ = TracedServiceRef();
   if (!IsEnabled())
     return;
   file_provider_.reset();

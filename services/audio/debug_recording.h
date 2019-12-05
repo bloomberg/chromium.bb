@@ -13,6 +13,7 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/audio/public/mojom/debug_recording.mojom.h"
+#include "services/audio/traced_service_ref.h"
 
 namespace media {
 class AudioManager;
@@ -25,7 +26,8 @@ namespace audio {
 class DebugRecording : public mojom::DebugRecording {
  public:
   DebugRecording(mojo::PendingReceiver<mojom::DebugRecording> receiver,
-                 media::AudioManager* audio_manager);
+                 media::AudioManager* audio_manager,
+                 TracedServiceRef service_ref);
 
   // Disables audio debug recording if Enable() was called before.
   ~DebugRecording() override;
@@ -49,6 +51,7 @@ class DebugRecording : public mojom::DebugRecording {
   media::AudioManager* const audio_manager_;
   mojo::Receiver<mojom::DebugRecording> receiver_;
   mojo::Remote<mojom::DebugRecordingFileProvider> file_provider_;
+  TracedServiceRef service_ref_;
 
   base::WeakPtrFactory<DebugRecording> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(DebugRecording);
