@@ -321,7 +321,7 @@ bool ContextMenuController::ShowContextMenu(LocalFrame* frame,
     if (media_element->ShouldShowControls())
       data.media_flags |= WebContextMenuData::kMediaControls;
   } else if (IsA<HTMLObjectElement>(*result.InnerNode()) ||
-             IsHTMLEmbedElement(*result.InnerNode())) {
+             IsA<HTMLEmbedElement>(*result.InnerNode())) {
     LayoutObject* object = result.InnerNode()->GetLayoutObject();
     if (object && object->IsLayoutEmbeddedContent()) {
       WebPluginContainerImpl* plugin_view =
