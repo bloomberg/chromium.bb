@@ -1262,14 +1262,22 @@ void RenderFrameHostImpl::OnGrantedMediaStreamAccess() {
 }
 
 void RenderFrameHostImpl::OnPortalActivated(
-    const base::UnguessableToken& portal_token,
-    mojo::PendingAssociatedRemote<blink::mojom::Portal> portal,
-    mojo::PendingAssociatedReceiver<blink::mojom::PortalClient> portal_client,
+    std::unique_ptr<WebContents> predecessor_web_contents,
     blink::TransferableMessage data,
     base::OnceCallback<void(blink::mojom::PortalActivateResult)> callback) {
+  mojo::PendingAssociatedRemote<blink::mojom::Portal> pending_portal;
+  auto portal_receiver = pending_portal.InitWithNewEndpointAndPassReceiver();
+  mojo::PendingAssociatedRemote<blink::mojom::PortalClient> pending_client;
+  auto client_receiver = pending_client.InitWithNewEndpointAndPassReceiver();
+
+  auto predecessor =
+      std::make_unique<Portal>(this, std::move(predecessor_web_contents));
+  predecessor->Bind(std::move(portal_receiver), std::move(pending_client));
+  auto it = portals_.insert(std::move(predecessor)).first;
+
   GetNavigationControl()->OnPortalActivated(
-      portal_token, std::move(portal), std::move(portal_client),
-      std::move(data),
+      (*it)->portal_token(), std::move(pending_portal),
+      std::move(client_receiver), std::move(data),
       base::BindOnce(
           [](base::OnceCallback<void(blink::mojom::PortalActivateResult)>
                  callback,
@@ -1291,6 +1299,19 @@ void RenderFrameHostImpl::OnPortalActivated(
             std::move(callback).Run(result);
           },
           std::move(callback)));
+}
+
+void RenderFrameHostImpl::OnPortalCreatedForTesting(
+    std::unique_ptr<Portal> portal) {
+  portals_.insert(std::move(portal));
+}
+
+void RenderFrameHostImpl::DestroyPortal(Portal* portal) {
+  auto it = portals_.find(portal);
+  CHECK(it != portals_.end());
+  std::unique_ptr<Portal> owned_portal(std::move(*it));
+  portals_.erase(it);
+  // |owned_portal| is deleted as it goes out of scope.
 }
 
 void RenderFrameHostImpl::ForwardMessageFromHost(
@@ -4466,6 +4487,14 @@ void RenderFrameHostImpl::CreatePortal(
     mojo::PendingAssociatedReceiver<blink::mojom::Portal> pending_receiver,
     mojo::PendingAssociatedRemote<blink::mojom::PortalClient> client,
     CreatePortalCallback callback) {
+  if (!Portal::IsEnabled()) {
+    mojo::ReportBadMessage(
+        "blink.mojom.Portal can only be used if the Portals feature is "
+        "enabled.");
+    frame_host_associated_receiver_.reset();
+    return;
+  }
+
   // We don't support attaching a portal inside a nested browsing context.
   if (frame_tree_node()->parent()) {
     mojo::ReportBadMessage(
@@ -4484,20 +4513,13 @@ void RenderFrameHostImpl::CreatePortal(
     return;
   }
 
-  Portal* portal =
-      Portal::Create(this, std::move(pending_receiver), std::move(client));
-  if (!portal) {
-    // |portal| is null when |Portal::Create| reports a bad message, so we need
-    // to close the receiver.
-    // TODO(1027302): Remove these manual calls to reset once we have a cleaner
-    // way of reporting a bad message for an AssociatedReceiver.
-    frame_host_associated_receiver_.reset();
-    return;
-  }
+  auto portal = std::make_unique<Portal>(this);
+  portal->Bind(std::move(pending_receiver), std::move(client));
+  auto it = portals_.insert(std::move(portal)).first;
 
-  RenderFrameProxyHost* proxy_host = portal->CreateProxyAndAttachPortal();
-  std::move(callback).Run(proxy_host->GetRoutingID(), portal->portal_token(),
-                          portal->GetDevToolsFrameToken());
+  RenderFrameProxyHost* proxy_host = (*it)->CreateProxyAndAttachPortal();
+  std::move(callback).Run(proxy_host->GetRoutingID(), (*it)->portal_token(),
+                          (*it)->GetDevToolsFrameToken());
 }
 
 void RenderFrameHostImpl::AdoptPortal(
@@ -4514,6 +4536,7 @@ void RenderFrameHostImpl::AdoptPortal(
     frame_host_associated_receiver_.reset();
     return;
   }
+  DCHECK(portals_.contains(portal));
   RenderFrameProxyHost* proxy_host = portal->CreateProxyAndAttachPortal();
   std::move(callback).Run(
       proxy_host->GetRoutingID(),
