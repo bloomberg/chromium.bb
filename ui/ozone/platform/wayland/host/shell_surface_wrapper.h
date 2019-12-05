@@ -1,9 +1,9 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_OZONE_PLATFORM_WAYLAND_HOST_XDG_SURFACE_WRAPPER_H_
-#define UI_OZONE_PLATFORM_WAYLAND_HOST_XDG_SURFACE_WRAPPER_H_
+#ifndef UI_OZONE_PLATFORM_WAYLAND_HOST_SHELL_SURFACE_WRAPPER_H_
+#define UI_OZONE_PLATFORM_WAYLAND_HOST_SHELL_SURFACE_WRAPPER_H_
 
 #include "base/strings/string16.h"
 #include "ui/ozone/platform/wayland/common/wayland_object.h"
@@ -16,18 +16,10 @@ namespace ui {
 
 class WaylandConnection;
 
-// Wrapper interface for different xdg shell versions.
-class XDGSurfaceWrapper {
+// Wrapper interface for different wayland shells shell versions.
+class ShellSurfaceWrapper {
  public:
-  virtual ~XDGSurfaceWrapper() {}
-
-  // Initializes the surface. If |with_toplevel| is true, the surface is
-  // assigned a top level role, which results in a normal native window.
-  // |with_toplevel| is set by default so that XDGSurface is created with
-  // a toplevel role (makes some callers not care about this then).
-  virtual bool Initialize(WaylandConnection* connection,
-                          wl_surface* surface,
-                          bool with_toplevel = true) = 0;
+  virtual ~ShellSurfaceWrapper() {}
 
   // Sets a native window to maximized state.
   virtual void SetMaximized() = 0;
@@ -77,4 +69,4 @@ bool CheckIfWlArrayHasValue(struct wl_array* wl_array, uint32_t value);
 
 }  // namespace ui
 
-#endif  // UI_OZONE_PLATFORM_WAYLAND_HOST_XDG_SURFACE_WRAPPER_H_
+#endif  // UI_OZONE_PLATFORM_WAYLAND_HOST_SHELL_SURFACE_WRAPPER_H_
