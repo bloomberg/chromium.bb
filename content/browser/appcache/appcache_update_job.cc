@@ -548,7 +548,7 @@ void AppCacheUpdateJob::ContinueHandleManifestFetchCompleted(bool changed) {
   }
 
   // Ensure the manifest parser version matches what we configured.
-  DCHECK_EQ(manifest.parser_version, 0);
+  DCHECK_EQ(manifest.parser_version, 1);
   fetched_manifest_parser_version_ = manifest.parser_version;
 
   // Ensure the manifest scope matches what we configured.
