@@ -2146,6 +2146,7 @@ def swangle_linux_builder(
     **kwargs):
   return swangle_builder(
       name = name,
+      goma_backend = goma.backend.RBE_PROD,
       os = os.LINUX_DEFAULT,
       **kwargs
   )
