@@ -1274,7 +1274,7 @@ void TabStrip::OnGroupVisualsChanged(TabGroupId group) {
   AnimateToIdealBounds();
 }
 
-void TabStrip::OnGroupDeleted(TabGroupId group) {
+void TabStrip::OnGroupClosed(TabGroupId group) {
   layout_helper_->RemoveGroupHeader(group);
   UpdateIdealBounds();
   AnimateToIdealBounds();

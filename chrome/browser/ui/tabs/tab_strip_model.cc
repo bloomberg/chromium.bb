@@ -1852,24 +1852,27 @@ void TabStripModel::GroupTab(int index, TabGroupId group) {
 }
 
 void TabStripModel::CreateTabGroup(TabGroupId group) {
+  TabGroupChange change(group, TabGroupChange::kCreated);
   for (auto& observer : observers_)
-    observer.OnTabGroupCreated(group);
+    observer.OnTabGroupChanged(change);
 }
 
 void TabStripModel::ChangeTabGroupContents(TabGroupId group) {
+  TabGroupChange change(group, TabGroupChange::kContentsChanged);
   for (auto& observer : observers_)
-    observer.OnTabGroupContentsChanged(group);
+    observer.OnTabGroupChanged(change);
 }
 
-void TabStripModel::ChangeTabGroupVisuals(TabGroupId group,
-                                          TabGroupVisualData* visual_data) {
+void TabStripModel::ChangeTabGroupVisuals(TabGroupId group) {
+  TabGroupChange change(group, TabGroupChange::kVisualsChanged);
   for (auto& observer : observers_)
-    observer.OnTabGroupVisualsChanged(group, visual_data);
+    observer.OnTabGroupChanged(change);
 }
 
 void TabStripModel::CloseTabGroup(TabGroupId group) {
+  TabGroupChange change(group, TabGroupChange::kClosed);
   for (auto& observer : observers_)
-    observer.OnTabGroupClosed(group);
+    observer.OnTabGroupChanged(change);
 }
 
 int TabStripModel::GetTabCount() const {
