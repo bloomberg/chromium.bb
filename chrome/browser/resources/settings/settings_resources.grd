@@ -1090,6 +1090,13 @@
                  file="privacy_page/personalization_options.js"
                  preprocess="true"
                  type="chrome_html" />
+      <structure name="IDR_SETTINGS_PASSWORDS_LEAK_DETECTION_TOGGLE_HTML"
+                 file="privacy_page/passwords_leak_detection_toggle.html"
+                 type="chrome_html" />
+      <structure name="IDR_SETTINGS_PASSWORDS_LEAK_DETECTION_TOGGLE_JS"
+                 file="privacy_page/passwords_leak_detection_toggle.js"
+                 type="chrome_html"
+                 preprocess="true" />
       <structure name="IDR_SETTINGS_PRIVACY_PAGE_HTML"
                  file="privacy_page/privacy_page.html"
                  type="chrome_html"

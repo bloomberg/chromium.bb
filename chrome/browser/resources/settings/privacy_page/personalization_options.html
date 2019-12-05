@@ -2,7 +2,6 @@
 
 <link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_toggle/cr_toggle.html">
-<link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <link rel="import" href="../controls/settings_toggle_button.html">
 <link rel="import" href="../lifetime_browser_proxy.html">
@@ -12,6 +11,7 @@
 <link rel="import" href="../prefs/prefs_behavior.html">
 <link rel="import" href="../route.html">
 <link rel="import" href="../settings_shared_css.html">
+<link rel="import" href="passwords_leak_detection_toggle.html">
 <link rel="import" href="privacy_page_browser_proxy.html">
 
 <if expr="not chromeos">
@@ -65,17 +65,11 @@
           sub-label="$i18n{safeBrowsingEnableProtectionDesc}">
       </settings-toggle-button>
     </template>
-    <settings-toggle-button id="passwordsLeakDetectionCheckbox"
-        pref="{{prefs.profile.password_manager_leak_detection}}"
-        checked="[[getCheckedLeakDetection_(
-            userSignedIn_, passwordsLeakDetectionAvailable_)]]"
-        label="$i18n{passwordsLeakDetectionLabel}"
-        sub-label="[[getPasswordsLeakDetectionSubLabel_(
-            userSignedIn_, passwordsLeakDetectionAvailable_)]]"
-        hidden$="[[!passwordsLeakDetectionEnabled_]]"
-        disabled="[[getDisabledLeakDetection_(
-            userSignedIn_, prefs.*)]]">
-    </settings-toggle-button>
+    <template is="dom-if" if="[[passwordsLeakDetectionEnabled_]]">
+      <settings-passwords-leak-detection-toggle prefs="{{prefs}}"
+          sync-status="[[syncStatus]]">
+      </settings-passwords-leak-detection-toggle>
+    </template>
     <template is="dom-if" if="[[!privacySettingsRedesignEnabled_]]">
       <settings-toggle-button id="safeBrowsingReportingToggle"
           pref="{{prefs.safebrowsing.scout_reporting_enabled}}"

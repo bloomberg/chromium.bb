@@ -66,29 +66,6 @@ cr.define('settings_personalization_options', function() {
       assertFalse(!!testElement.$$('#driveSuggestControl'));
     });
 
-    test('leakDetectionToggleSignedOutWithFalsePref', function() {
-      testElement.set(
-          'prefs.profile.password_manager_leak_detection.value', false);
-      testElement.syncStatus = {signedIn: false};
-      Polymer.dom.flush();
-
-      assertTrue(testElement.$.passwordsLeakDetectionCheckbox.disabled);
-      assertFalse(testElement.$.passwordsLeakDetectionCheckbox.checked);
-      assertEquals('', testElement.$.passwordsLeakDetectionCheckbox.subLabel);
-    });
-
-    test('leakDetectionToggleSignedOutWithTruePref', function() {
-      testElement.syncStatus = {signedIn: false};
-      Polymer.dom.flush();
-
-      assertTrue(testElement.$.passwordsLeakDetectionCheckbox.disabled);
-      assertFalse(testElement.$.passwordsLeakDetectionCheckbox.checked);
-      assertEquals(
-          loadTimeData.getString(
-              'passwordsLeakDetectionSignedOutEnabledDescription'),
-          testElement.$.passwordsLeakDetectionCheckbox.subLabel);
-    });
-
     test('PrivacySettingsRedesignEnabled_False', function() {
       // Ensure that elements hidden by the updated privacy settings
       // flag remain visible when the flag is in the default state
@@ -97,62 +74,6 @@ cr.define('settings_personalization_options', function() {
       assertVisible(testElement.$$('#safeBrowsingReportingToggle'), true);
 
       assertFalse(!!testElement.$$('#signinAllowedToggle'));
-    });
-
-    if (!cr.isChromeOS) {
-      test('leakDetectionToggleSignedInNotSyncingWithFalsePref', function() {
-        testElement.set(
-            'prefs.profile.password_manager_leak_detection.value', false);
-        testElement.syncStatus = {signedIn: false};
-        sync_test_util.simulateStoredAccounts([
-          {
-            fullName: 'testName',
-            givenName: 'test',
-            email: 'test@test.com',
-          },
-        ]);
-        Polymer.dom.flush();
-
-        assertFalse(testElement.$.passwordsLeakDetectionCheckbox.disabled);
-        assertFalse(testElement.$.passwordsLeakDetectionCheckbox.checked);
-        assertEquals('', testElement.$.passwordsLeakDetectionCheckbox.subLabel);
-      });
-
-      test('leakDetectionToggleSignedInNotSyncingWithTruePref', function() {
-        testElement.syncStatus = {signedIn: false};
-        sync_test_util.simulateStoredAccounts([
-          {
-            fullName: 'testName',
-            givenName: 'test',
-            email: 'test@test.com',
-          },
-        ]);
-        Polymer.dom.flush();
-
-        assertFalse(testElement.$.passwordsLeakDetectionCheckbox.disabled);
-        assertTrue(testElement.$.passwordsLeakDetectionCheckbox.checked);
-        assertEquals('', testElement.$.passwordsLeakDetectionCheckbox.subLabel);
-      });
-    }
-
-    test('leakDetectionToggleSignedInAndSyncingWithFalsePref', function() {
-      testElement.set(
-          'prefs.profile.password_manager_leak_detection.value', false);
-      testElement.syncStatus = {signedIn: true};
-      Polymer.dom.flush();
-
-      assertFalse(testElement.$.passwordsLeakDetectionCheckbox.disabled);
-      assertFalse(testElement.$.passwordsLeakDetectionCheckbox.checked);
-      assertEquals('', testElement.$.passwordsLeakDetectionCheckbox.subLabel);
-    });
-
-    test('leakDetectionToggleSignedInAndSyncingWithTruePref', function() {
-      testElement.syncStatus = {signedIn: true};
-      Polymer.dom.flush();
-
-      assertFalse(testElement.$.passwordsLeakDetectionCheckbox.disabled);
-      assertTrue(testElement.$.passwordsLeakDetectionCheckbox.checked);
-      assertEquals('', testElement.$.passwordsLeakDetectionCheckbox.subLabel);
     });
   });
 
