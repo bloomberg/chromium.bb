@@ -1382,7 +1382,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/settings/autofill/AutofillProfileEditorPreference.java",
   "java/src/org/chromium/chrome/browser/settings/autofill/AutofillProfilesFragment.java",
   "java/src/org/chromium/chrome/browser/settings/autofill/AutofillServerCardEditor.java",
-  "java/src/org/chromium/chrome/browser/settings/autofill/AutofillServerProfilePreferences.java",
+  "java/src/org/chromium/chrome/browser/settings/autofill/AutofillServerProfileFragment.java",
   "java/src/org/chromium/chrome/browser/settings/autofill/CreditCardNumberFormattingTextWatcher.java",
   "java/src/org/chromium/chrome/browser/settings/autofill_assistant/AutofillAssistantPreferences.java",
   "java/src/org/chromium/chrome/browser/settings/datareduction/DataReductionDataUseItem.java",

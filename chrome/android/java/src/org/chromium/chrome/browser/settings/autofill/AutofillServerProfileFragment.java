@@ -20,7 +20,7 @@ import org.chromium.chrome.browser.settings.SettingsUtils;
 /**
  * Fragment for settings page that allows user to view and edit a single server-provided address.
  */
-public class AutofillServerProfilePreferences
+public class AutofillServerProfileFragment
         extends PreferenceFragmentCompat implements Preference.OnPreferenceClickListener {
     private String mGUID;
 
