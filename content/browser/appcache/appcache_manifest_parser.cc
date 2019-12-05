@@ -218,9 +218,8 @@ GURL ParseUrlToken(base::StringPiece url_token, const GURL& manifest_url) {
   return url;
 }
 
-bool ScopeMatches(const GURL& manifest_url, const GURL& namespace_url) {
-  return base::StartsWith(namespace_url.spec(),
-                          manifest_url.GetWithoutFilename().spec(),
+bool IsUrlWithinScope(const GURL& url, const GURL& scope) {
+  return base::StartsWith(url.spec(), scope.spec(),
                           base::CompareCase::SENSITIVE);
 }
 
@@ -547,7 +546,8 @@ bool ParseManifest(const GURL& manifest_url,
         continue;
 
       if (parse_mode != PARSE_MANIFEST_ALLOWING_DANGEROUS_FEATURES) {
-        if (!ScopeMatches(manifest_url, namespace_url)) {
+        if (!IsUrlWithinScope(namespace_url,
+                              manifest_url.GetWithoutFilename())) {
           manifest.did_ignore_fallback_namespaces = true;
           continue;
         }
