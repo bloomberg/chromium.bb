@@ -71,7 +71,13 @@ Polymer({
 
     /** @private */
     showRestart_: Boolean,
+
+    /** @private */
+    showRestartToast_: Boolean,
     // </if>
+
+    /** @private */
+    showSignoutDialog_: Boolean,
 
     /** @private */
     privacySettingsRedesignEnabled_: {
@@ -80,6 +86,21 @@ Polymer({
         return loadTimeData.getBoolean('privacySettingsRedesignEnabled');
       },
     },
+
+    /** @private */
+    syncFirstSetupInProgress_: {
+      type: Boolean,
+      value: false,
+      computed: 'computeSyncFirstSetupInProgress_(syncStatus)',
+    },
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  computeSyncFirstSetupInProgress_: function() {
+    return !!this.syncStatus && !!this.syncStatus.firstSetupInProgress;
   },
 
   /** @override */
@@ -206,14 +227,6 @@ Polymer({
     }
   },
 
-  /**
-   * @param {!Event} e
-   * @private
-   */
-  onRestartTap_: function(e) {
-    e.stopPropagation();
-    settings.LifetimeBrowserProxyImpl.getInstance().restart();
-  },
   // </if>
 
   // <if expr="_google_chrome">
@@ -249,6 +262,46 @@ Polymer({
     return loadTimeData.getBoolean('driveSuggestAvailable') &&
         !!this.syncStatus && !!this.syncStatus.signedIn &&
         this.syncStatus.statusAction !== settings.StatusAction.REAUTHENTICATE;
+  },
+
+  /** @private */
+  onSigninAllowedChange_: function() {
+    if (this.syncStatus.signedIn && !this.$$('#signinAllowedToggle').checked) {
+      // Switch the toggle back on and show the signout dialog.
+      this.$$('#signinAllowedToggle').checked = true;
+      this.showSignoutDialog_ = true;
+    } else {
+      /** @type {!SettingsToggleButtonElement} */ (
+          this.$$('#signinAllowedToggle'))
+          .sendPrefChange();
+      this.showRestartToast_ = true;
+    }
+
+    this.browserProxy_.recordSettingsPageHistogram(
+        settings.SettingsPageInteractions.PRIVACY_CHROME_SIGN_IN);
+  },
+
+  /** @private */
+  onSignoutDialogClosed_: function() {
+    if (/** @type {!SettingsSignoutDialogElement} */ (
+            this.$$('settings-signout-dialog'))
+            .wasConfirmed()) {
+      this.$$('#signinAllowedToggle').checked = false;
+      /** @type {!SettingsToggleButtonElement} */ (
+          this.$$('#signinAllowedToggle'))
+          .sendPrefChange();
+      this.showRestartToast_ = true;
+    }
+    this.showSignoutDialog_ = false;
+  },
+
+  /**
+   * @param {!Event} e
+   * @private
+   */
+  onRestartTap_: function(e) {
+    e.stopPropagation();
+    settings.LifetimeBrowserProxyImpl.getInstance().restart();
   },
 });
 })();
