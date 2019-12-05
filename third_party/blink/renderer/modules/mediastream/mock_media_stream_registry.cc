@@ -55,7 +55,7 @@ void MockMediaStreamRegistry::Init() {
   test_stream_.Initialize(label, webkit_audio_tracks, webkit_video_tracks);
 }
 
-MockMediaStreamVideoSource* MockMediaStreamRegistry::AddVideoTrack(
+void MockMediaStreamRegistry::AddVideoTrack(
     const std::string& track_id,
     const VideoTrackAdapterSettings& adapter_settings,
     const base::Optional<bool>& noise_reduction,
@@ -75,14 +75,11 @@ MockMediaStreamVideoSource* MockMediaStreamRegistry::AddVideoTrack(
       min_frame_rate, MediaStreamVideoSource::ConstraintsOnceCallback(),
       true /* enabled */));
   test_stream_.AddTrack(blink_track);
-  return native_source;
 }
 
-MockMediaStreamVideoSource* MockMediaStreamRegistry::AddVideoTrack(
-    const std::string& track_id) {
-  return AddVideoTrack(track_id, VideoTrackAdapterSettings(),
-                       base::Optional<bool>(), false /* is_screncast */,
-                       0.0 /* min_frame_rate */);
+void MockMediaStreamRegistry::AddVideoTrack(const std::string& track_id) {
+  AddVideoTrack(track_id, VideoTrackAdapterSettings(), base::Optional<bool>(),
+                false /* is_screncast */, 0.0 /* min_frame_rate */);
 }
 
 void MockMediaStreamRegistry::AddAudioTrack(const std::string& track_id) {
