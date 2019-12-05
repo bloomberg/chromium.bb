@@ -287,14 +287,14 @@ SharedWorkerHost::CreateNetworkFactoryForSubresources(
     worker_process_host->CreateURLLoaderFactory(
         origin, origin, network::mojom::CrossOriginEmbedderPolicy::kNone,
         nullptr /* preferences */, net::NetworkIsolationKey(origin, origin),
-        std::move(default_header_client), std::move(default_factory_receiver),
-        std::move(factory_override));
+        std::move(default_header_client), base::nullopt /* top_frame_token */,
+        std::move(default_factory_receiver), std::move(factory_override));
   } else {
     mojo::PendingRemote<network::mojom::URLLoaderFactory> original_factory;
     worker_process_host->CreateURLLoaderFactory(
         origin, origin, network::mojom::CrossOriginEmbedderPolicy::kNone,
         nullptr /* preferences */, net::NetworkIsolationKey(origin, origin),
-        std::move(default_header_client),
+        std::move(default_header_client), base::nullopt /* top_frame_token */,
         original_factory.InitWithNewPipeAndPassReceiver(),
         std::move(factory_override));
     GetCreateNetworkFactoryCallbackForSharedWorker().Run(

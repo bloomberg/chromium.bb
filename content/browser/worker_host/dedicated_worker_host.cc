@@ -310,8 +310,9 @@ DedicatedWorkerHost::CreateNetworkFactoryForSubresources(
       origin_, origin_,
       ancestor_render_frame_host->cross_origin_embedder_policy(),
       /*preferences=*/nullptr, network_isolation_key_,
-      std::move(default_header_client), std::move(default_factory_receiver),
-      std::move(factory_override));
+      std::move(default_header_client),
+      ancestor_render_frame_host->GetTopFrameToken(),
+      std::move(default_factory_receiver), std::move(factory_override));
 
   return pending_default_factory;
 }

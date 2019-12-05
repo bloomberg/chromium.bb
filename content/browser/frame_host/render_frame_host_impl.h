@@ -870,13 +870,18 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // or speculative RenderFrameHost (that has not committed) should be avoided.
   void SetVisibilityForChildViews(bool visible);
 
+  const base::UnguessableToken& frame_token() const { return frame_token_; }
+  const base::UnguessableToken& GetTopFrameToken() const;
+
   // Returns an unguessable token for this RFHI.  This provides a temporary way
   // to identify a RenderFrameHost that's compatible with IPC.  Else, one needs
   // to send pid + RoutingID, but one cannot send pid.  One can get it from the
   // channel, but this makes it much harder to get wrong.
   // Once media switches to mojo, we should be able to remove this in favor of
   // sending a mojo overlay factory.
-  const base::UnguessableToken& GetOverlayRoutingToken();
+  const base::UnguessableToken& GetOverlayRoutingToken() const {
+    return frame_token_;
+  }
 
   // Binds the receiver end of the InterfaceProvider interface through which
   // services provided by this RenderFrameHost are exposed to the corresponding
@@ -2391,9 +2396,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   std::unique_ptr<DroppedInterfaceRequestLogger>
       dropped_interface_request_logger_;
 
-  // IPC-friendly token that represents this host for AndroidOverlays, if we
-  // have created one yet.
-  base::Optional<base::UnguessableToken> overlay_routing_token_;
+  // IPC-friendly token that represents this host.
+  const base::UnguessableToken frame_token_ = base::UnguessableToken::Create();
 
   viz::mojom::InputTargetClient* input_target_client_ = nullptr;
   mojo::Remote<mojom::FrameInputHandler> frame_input_handler_;

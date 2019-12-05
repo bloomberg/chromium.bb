@@ -485,8 +485,8 @@ URLLoader::URLLoader(
   }
 
   if (keepalive_ && keepalive_statistics_recorder_) {
-    keepalive_statistics_recorder_->OnLoadStarted(factory_params_->process_id,
-                                                  keepalive_request_size_);
+    keepalive_statistics_recorder_->OnLoadStarted(
+        *factory_params_->top_frame_id, keepalive_request_size_);
   }
 
   // Resolve elements from request_body and prepare upload data.
@@ -676,8 +676,8 @@ void URLLoader::ScheduleStart() {
 URLLoader::~URLLoader() {
   RecordBodyReadFromNetBeforePausedIfNeeded();
   if (keepalive_ && keepalive_statistics_recorder_) {
-    keepalive_statistics_recorder_->OnLoadFinished(factory_params_->process_id,
-                                                   keepalive_request_size_);
+    keepalive_statistics_recorder_->OnLoadFinished(
+        *factory_params_->top_frame_id, keepalive_request_size_);
   }
 }
 

@@ -925,6 +925,7 @@ RenderFrameHostImpl::RenderFrameHostImpl(
   GetProcess()->AddRoute(routing_id_, this);
   g_routing_id_frame_map.Get().emplace(
       GlobalFrameRoutingId(GetProcess()->GetID(), routing_id_), this);
+  g_token_frame_map.Get().insert(std::make_pair(frame_token_, this));
   site_instance_->AddObserver(this);
   process_->AddObserver(this);
   GetSiteInstance()->IncrementActiveFrameCount();
@@ -1032,8 +1033,7 @@ RenderFrameHostImpl::~RenderFrameHostImpl() {
                                           base::nullopt);
   }
 
-  if (overlay_routing_token_)
-    g_token_frame_map.Get().erase(*overlay_routing_token_);
+  g_token_frame_map.Get().erase(frame_token_);
 
   site_instance_->RemoveObserver(this);
   process_->RemoveObserver(this);
@@ -1157,13 +1157,12 @@ ui::AXTreeID RenderFrameHostImpl::GetAXTreeID() {
   return ax_tree_id();
 }
 
-const base::UnguessableToken& RenderFrameHostImpl::GetOverlayRoutingToken() {
-  if (!overlay_routing_token_) {
-    overlay_routing_token_ = base::UnguessableToken::Create();
-    g_token_frame_map.Get().emplace(*overlay_routing_token_, this);
+const base::UnguessableToken& RenderFrameHostImpl::GetTopFrameToken() const {
+  const RenderFrameHostImpl* frame = this;
+  while (frame->parent_) {
+    frame = frame->parent_;
   }
-
-  return *overlay_routing_token_;
+  return frame->frame_token();
 }
 
 void RenderFrameHostImpl::AudioContextPlaybackStarted(int audio_context_id) {
@@ -4244,8 +4243,7 @@ void RenderFrameHostImpl::OnRequestOverlayRoutingToken() {
   // Make sure that we have a token.
   GetOverlayRoutingToken();
 
-  Send(new FrameMsg_SetOverlayRoutingToken(routing_id_,
-                                           *overlay_routing_token_));
+  Send(new FrameMsg_SetOverlayRoutingToken(routing_id_, frame_token_));
 }
 
 void RenderFrameHostImpl::BindInterfaceProviderReceiver(
@@ -6104,6 +6102,7 @@ bool RenderFrameHostImpl::CreateNetworkServiceDefaultFactoryAndObserve(
     network::mojom::URLLoaderFactoryParamsPtr params =
         network::mojom::URLLoaderFactoryParams::New();
     params->process_id = GetProcess()->GetID();
+    params->top_frame_id = GetTopFrameToken();
     storage_partition->GetNetworkContext()->CreateURLLoaderFactory(
         network_service_disconnect_handler_holder_.BindNewPipeAndPassReceiver(),
         std::move(params));
@@ -6155,15 +6154,16 @@ bool RenderFrameHostImpl::CreateNetworkServiceDefaultFactoryInternal(
     GetProcess()->CreateURLLoaderFactory(
         origin, main_world_origin, cross_origin_embedder_policy_, &preferences,
         network_isolation_key.value(), std::move(header_client),
-        std::move(factory_receiver), std::move(factory_override));
+        GetTopFrameToken(), std::move(factory_receiver),
+        std::move(factory_override));
   } else {
     // The ability to create a trusted URLLoaderFactory is not exposed on
     // RenderProcessHost's public API.
     static_cast<RenderProcessHostImpl*>(GetProcess())
         ->CreateTrustedURLLoaderFactory(
             origin, main_world_origin, cross_origin_embedder_policy_,
-            &preferences, std::move(header_client), std::move(factory_receiver),
-            std::move(factory_override));
+            &preferences, std::move(header_client), GetTopFrameToken(),
+            std::move(factory_receiver), std::move(factory_override));
   }
 
   if (!factory_callback_is_null) {
