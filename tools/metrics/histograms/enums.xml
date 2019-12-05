@@ -34318,6 +34318,14 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
              exceeds 256kb"/>
 </enum>
 
+<enum name="KeepaliveRequestResult">
+  <int value="0" label="OK"/>
+  <int value="1" label="Mojo connection is lost before response arrival"/>
+  <int value="2" label="Mojo connection is lost after response arrival"/>
+  <int value="3" label="Error before response arrival"/>
+  <int value="4" label="Error after response arrival"/>
+</enum>
+
 <enum name="KerberosConfigErrorCode">
   <int value="0" label="Valid"/>
   <int value="1" label="Section nested in group"/>
