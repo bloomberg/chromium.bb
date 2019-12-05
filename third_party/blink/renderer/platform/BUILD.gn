@@ -1227,7 +1227,9 @@ jumbo_component("platform") {
     "mojo/bluetooth_mojom_traits.cc",
     "mojo/bluetooth_mojom_traits.h",
     "mojo/fetch_api_request_headers_mojom_traits.h",
+    "mojo/kurl_mojom_traits.h",
     "mojo/mojo_helper.h",
+    "mojo/security_origin_mojom_traits.h",
     "mojo/string16_mojom_traits.cc",
     "mojo/string16_mojom_traits.h",
     "p2p/empty_network_manager.cc",
@@ -1595,6 +1597,20 @@ jumbo_component("platform") {
 
   configs -= [ "//build/config/compiler:default_symbols" ]
   configs += blink_symbols_config
+}
+
+source_set("geometry_mojom_traits") {
+  visibility += [ "//ui/gfx/geometry/mojom:mojom_blink" ]
+
+  sources = [
+    "mojo/geometry_mojom_traits.cc",
+    "mojo/geometry_mojom_traits.h",
+  ]
+
+  public_deps = [
+    "//third_party/blink/public:blink_headers",
+    "//ui/gfx/geometry/mojom:mojom_blink_headers",
+  ]
 }
 
 jumbo_static_library("test_support") {
