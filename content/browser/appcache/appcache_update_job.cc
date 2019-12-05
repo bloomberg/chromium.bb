@@ -918,13 +918,11 @@ void AppCacheUpdateJob::StoreGroupAndCache() {
   DCHECK_EQ(fetched_manifest_scope_, newest_cache->manifest_scope());
 
   // Verify fetched manifest parser version and scope:
-  // TODO(cmp) -- Enable (1) when values are persisted since at that time we
-  // will be initializing values from the DB that will get version 0.
   // 1. Values must be initialized and valid:
   //    - For parser version, the version must not be -1.
   //    - For scope, the the value must not be the empty string.
-  // DCHECK_NE(fetched_manifest_parser_version_, -1);
-  // DCHECK_NE(fetched_manifest_scope_, "");
+  DCHECK_NE(fetched_manifest_parser_version_, -1);
+  DCHECK_NE(fetched_manifest_scope_, "");
 
   // 2. Check that the UpdateJob value state is correct:
   //    - For parser version, the newly fetched parser version must be greater

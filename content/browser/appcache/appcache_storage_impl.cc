@@ -366,9 +366,8 @@ void AppCacheStorageImpl::GetAllInfoTask::Run() {
       info.cache_id = cache_record.cache_id;
       info.group_id = group.group_id;
       info.is_complete = true;
-      // These will be added when the fields are added to the group record.
-      // info.manifest_parser_version = cache_record.manifest_parser_version;
-      // info.manifest_scope = cache_record.manifest_scope;
+      info.manifest_parser_version = cache_record.manifest_parser_version;
+      info.manifest_scope = cache_record.manifest_scope;
       infos.push_back(info);
     }
   }
