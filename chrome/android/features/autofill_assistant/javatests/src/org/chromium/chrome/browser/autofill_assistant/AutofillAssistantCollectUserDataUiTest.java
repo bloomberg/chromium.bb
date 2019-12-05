@@ -45,6 +45,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.LocaleUtils;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.autofill.CardType;
@@ -551,6 +552,7 @@ public class AutofillAssistantCollectUserDataUiTest {
      */
     @Test
     @MediumTest
+    @DisabledTest(message = "Flaky. crbug.com/1030217")
     public void testNonEmptyPaymentRequest() throws Exception {
         /* Add complete profile and credit card to the personal data manager. */
         PersonalDataManager.AutofillProfile profile =
