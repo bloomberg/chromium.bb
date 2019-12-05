@@ -489,6 +489,12 @@ fate-filter-scalechroma: CMD = framecrc -flags bitexact -s 352x288 -pix_fmt yuv4
 FATE_FILTER_VSYNTH-$(CONFIG_VFLIP_FILTER) += fate-filter-vflip
 fate-filter-vflip: CMD = video_filter "vflip"
 
+FATE_FILTER_VSYNTH-$(CONFIG_COLORLEVELS_FILTER) += fate-filter-colorlevels
+fate-filter-colorlevels: CMD = framecrc -c:v pgmyuv -i $(SRC) -vf format=rgb24,colorlevels -flags +bitexact -sws_flags +accurate_rnd+bitexact
+
+FATE_FILTER_VSYNTH-$(CONFIG_COLORLEVELS_FILTER) += fate-filter-colorlevels-16
+fate-filter-colorlevels-16: CMD = framecrc -c:v pgmyuv -i $(SRC) -vf format=rgb48,colorlevels -pix_fmt rgb48le -flags +bitexact -sws_flags +accurate_rnd+bitexact
+
 FATE_FILTER_VSYNTH-$(CONFIG_COLORMATRIX_FILTER) += fate-filter-colormatrix1
 fate-filter-colormatrix1: CMD = video_filter "colormatrix=bt601:smpte240m,colormatrix=smpte240m:fcc,colormatrix=fcc:bt601,colormatrix=bt601:fcc,colormatrix=fcc:smpte240m,colormatrix=smpte240m:bt709"
 
@@ -743,6 +749,10 @@ CROPDETECT_DEPS = FFPROBE LAVFI_INDEV MOVIE_FILTER CROPDETECT_FILTER SCALE_FILTE
 FATE_METADATA_FILTER-$(call ALLYES, $(CROPDETECT_DEPS)) += fate-filter-metadata-cropdetect
 fate-filter-metadata-cropdetect: SRC = $(TARGET_SAMPLES)/filter/cropdetect.mp4
 fate-filter-metadata-cropdetect: CMD = run $(FILTER_METADATA_COMMAND) "sws_flags=+accurate_rnd+bitexact;movie='$(SRC)',cropdetect=max_outliers=3"
+
+FREEZEDETECT_DEPS = FFPROBE AVDEVICE LAVFI_INDEV MPTESTSRC_FILTER SCALE_FILTER FREEZEDETECT_FILTER
+FATE_METADATA_FILTER-$(call ALLYES, $(FREEZEDETECT_DEPS)) += fate-filter-metadata-freezedetect
+fate-filter-metadata-freezedetect: CMD = run $(FILTER_METADATA_COMMAND) "sws_flags=+accurate_rnd+bitexact;mptestsrc=r=25:d=10:m=51,freezedetect"
 
 SILENCEDETECT_DEPS = FFPROBE AVDEVICE LAVFI_INDEV AMOVIE_FILTER TTA_DEMUXER TTA_DECODER SILENCEDETECT_FILTER
 FATE_METADATA_FILTER-$(call ALLYES, $(SILENCEDETECT_DEPS)) += fate-filter-metadata-silencedetect

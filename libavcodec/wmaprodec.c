@@ -1565,9 +1565,9 @@ static void save_bits(WMAProDecodeCtx *s, GetBitContext* gb, int len,
         s->frame_offset = get_bits_count(gb) & 7;
         s->num_saved_bits = s->frame_offset;
         init_put_bits(&s->pb, s->frame_data, MAX_FRAMESIZE);
-    }
-
-    buflen = (put_bits_count(&s->pb) + len + 8) >> 3;
+        buflen = (s->num_saved_bits      + len + 7) >> 3;
+    } else
+        buflen = (put_bits_count(&s->pb) + len + 7) >> 3;
 
     if (len <= 0 || buflen > MAX_FRAMESIZE) {
         avpriv_request_sample(s->avctx, "Too small input buffer");
@@ -1793,6 +1793,12 @@ static int xma_decode_packet(AVCodecContext *avctx, void *data,
     AVFrame *frame = data;
     int i, ret, offset = INT_MAX;
 
+    if (!s->frames[s->current_stream]->data[0]) {
+        s->frames[s->current_stream]->nb_samples = 512;
+        if ((ret = ff_get_buffer(avctx, s->frames[s->current_stream], 0)) < 0) {
+            return ret;
+        }
+    }
     /* decode current stream packet */
     ret = decode_packet(avctx, &s->xma[s->current_stream], s->frames[s->current_stream],
                         &got_stream_frame_ptr, avpkt);
@@ -1920,10 +1926,6 @@ static av_cold int xma_decode_init(AVCodecContext *avctx)
         s->frames[i] = av_frame_alloc();
         if (!s->frames[i])
             return AVERROR(ENOMEM);
-        s->frames[i]->nb_samples = 512;
-        if ((ret = ff_get_buffer(avctx, s->frames[i], 0)) < 0) {
-            return AVERROR(ENOMEM);
-        }
 
         s->start_channel[i] = start_channels;
         start_channels += s->xma[i].nb_channels;
