@@ -79,14 +79,15 @@ def _ParseAndInsertNewSuppressions(result_path, config_path):
     # of path. Doesn't use re.escape() as it is a bit too aggressive and
     # escapes '_', causing trouble with PRODUCT_DIR.
     regexp = path.replace('$', r'\$')
-    issue = issues_dict[issue_id]
-    if not issue:
+    if issue_id not in issues_dict:
       element = config_dom.createElement('issue')
+      element.attributes['id'] = issue_id
       element.attributes['severity'] = severity
       config_dom.documentElement.appendChild(element)
       issue = _Issue(element)
       issues_dict[issue_id] = issue
     else:
+      issue = issues_dict[issue_id]
       if issue.dom_element.getAttribute('severity') == 'ignore':
         continue
 
