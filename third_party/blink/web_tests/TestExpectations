@@ -356,9 +356,7 @@ crbug.com/1018273 [ Mac ] paint/overflow/composited-scroll-vertical-rl.html [ Fa
 crbug.com/1025019 compositing/overflow/scroller-with-border-radius.html [ Crash ]
 crbug.com/1025019 virtual/prefer_compositing_to_lcd_text/compositing/overflow/scroller-with-border-radius.html [ Crash ]
 
-crbug.com/583097 crbug.com/633012 [ Linux ] external/wpt/svg/painting/marker-orient-001.svg [ Failure ]
-crbug.com/583097 crbug.com/633012 [ Mac ] external/wpt/svg/painting/marker-orient-001.svg [ Failure ]
-crbug.com/583097 crbug.com/633012 [ Win ] external/wpt/svg/painting/marker-orient-001.svg [ Failure ]
+crbug.com/583097 external/wpt/svg/painting/marker-orient-001.svg [ Failure ]
 
 # ====== Paint team owned tests to here ======
 
