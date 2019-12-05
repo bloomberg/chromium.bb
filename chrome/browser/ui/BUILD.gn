@@ -3197,8 +3197,6 @@ jumbo_static_library("ui") {
       "views/tabs/tab_group_editor_bubble_view.h",
       "views/tabs/tab_group_header.cc",
       "views/tabs/tab_group_header.h",
-      "views/tabs/tab_group_highlight.cc",
-      "views/tabs/tab_group_highlight.h",
       "views/tabs/tab_group_underline.cc",
       "views/tabs/tab_group_underline.h",
       "views/tabs/tab_group_views.cc",

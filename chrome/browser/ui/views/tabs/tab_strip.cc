@@ -42,7 +42,6 @@
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_drag_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_group_header.h"
-#include "chrome/browser/ui/views/tabs/tab_group_highlight.h"
 #include "chrome/browser/ui/views/tabs/tab_group_underline.h"
 #include "chrome/browser/ui/views/tabs/tab_group_views.h"
 #include "chrome/browser/ui/views/tabs/tab_hover_card_bubble_view.h"
@@ -1247,7 +1246,6 @@ void TabStrip::OnGroupCreated(TabGroupId group) {
   std::unique_ptr<TabGroupViews> group_view =
       std::make_unique<TabGroupViews>(this, group);
   AddChildView(group_view->header());
-  AddChildView(group_view->highlight());
   AddChildView(group_view->underline());
   layout_helper_->InsertGroupHeader(
       group, group_view->header(),
@@ -2025,11 +2023,8 @@ void TabStrip::PaintChildren(const views::PaintInfo& paint_info) {
   for (Tab* tab : selected_and_hovered_tabs)
     tab->Paint(paint_info);
 
-  // Paint group headers, highlights, and underlines. The highlight is painted
-  // here because it only shows during group drag, so it should appear above
-  // normal tabs but below dragging ones.
+  // Paint group headers and underlines.
   for (const auto& group_view_pair : group_views_) {
-    group_view_pair.second->highlight()->Paint(paint_info);
     group_view_pair.second->header()->Paint(paint_info);
     group_view_pair.second->underline()->Paint(paint_info);
   }
