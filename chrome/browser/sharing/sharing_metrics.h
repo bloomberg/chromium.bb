@@ -118,6 +118,7 @@ void LogSendSharingMessageResult(
 // Logs to UMA result of sendin an ack of a SharingMessage.
 void LogSendSharingAckMessageResult(
     chrome_browser_sharing::MessageType message_type,
+    SharingDevicePlatform ack_receiver_device_type,
     SharingSendMessageResult result);
 
 // Logs to UMA the size of the selected text for Shared Clipboard.

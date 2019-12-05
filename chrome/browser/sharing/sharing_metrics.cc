@@ -240,10 +240,23 @@ void LogSendSharingMessageResult(
 
 void LogSendSharingAckMessageResult(
     chrome_browser_sharing::MessageType message_type,
+    SharingDevicePlatform ack_receiver_device_type,
     SharingSendMessageResult result) {
-  base::UmaHistogramEnumeration("Sharing.SendAckMessageResult", result);
+  const std::string metric_prefix = "Sharing.SendAckMessageResult";
+
+  base::UmaHistogramEnumeration(metric_prefix, result);
   base::UmaHistogramEnumeration(
-      base::StrCat({"Sharing.SendAckMessageResult.",
+      base::StrCat(
+          {metric_prefix, ".", MessageTypeToMessageSuffix(message_type)}),
+      result);
+
+  base::UmaHistogramEnumeration(
+      base::StrCat({metric_prefix, ".",
+                    DevicePlatformToString(ack_receiver_device_type)}),
+      result);
+  base::UmaHistogramEnumeration(
+      base::StrCat({metric_prefix, ".",
+                    DevicePlatformToString(ack_receiver_device_type), ".",
                     MessageTypeToMessageSuffix(message_type)}),
       result);
 }
