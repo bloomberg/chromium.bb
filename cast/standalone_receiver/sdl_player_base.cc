@@ -159,12 +159,12 @@ void SDLPlayerBase::RenderAndSchedulePresentation() {
       // The interval here, is "lengthy" from the program's perspective, but
       // reasonably "snappy" from the user's perspective.
       constexpr auto kIdlePresentInterval = milliseconds(250);
-      presentation_alarm_.Schedule(
+      presentation_alarm_.ScheduleFromNow(
           [this] {
             Present();
             ResumeRendering();
           },
-          now_() + kIdlePresentInterval);
+          kIdlePresentInterval);
     }
     return;
   }

@@ -169,9 +169,8 @@ MdnsQuestionTracker::MdnsQuestionTracker(MdnsQuestion question,
       send_delay_(kMinimumQueryInterval) {
   // The initial query has to be sent after a random delay of 20-120
   // milliseconds.
-  const Clock::duration delay = random_delay_->GetInitialQueryDelay();
-  send_alarm_.Schedule([this] { MdnsQuestionTracker::SendQuery(); },
-                       now_function_() + delay);
+  send_alarm_.ScheduleFromNow([this] { MdnsQuestionTracker::SendQuery(); },
+                              random_delay_->GetInitialQueryDelay());
 }
 
 void MdnsQuestionTracker::SendQuery() {
@@ -180,8 +179,8 @@ void MdnsQuestionTracker::SendQuery() {
   // TODO(yakimakha): Implement known-answer suppression by adding known
   // answers to the question
   sender_->SendMulticast(message);
-  send_alarm_.Schedule([this] { MdnsQuestionTracker::SendQuery(); },
-                       now_function_() + send_delay_);
+  send_alarm_.ScheduleFromNow([this] { MdnsQuestionTracker::SendQuery(); },
+                              send_delay_);
   send_delay_ = send_delay_ * kIntervalIncreaseFactor;
   if (send_delay_ > kMaximumQueryInterval) {
     send_delay_ = kMaximumQueryInterval;

@@ -38,8 +38,7 @@ void SDLEventLoopProcessor::ProcessPendingEvents() {
 
   // Schedule a task to come back and process more pending events.
   constexpr auto kEventPollPeriod = std::chrono::milliseconds(10);
-  alarm_.Schedule([this] { ProcessPendingEvents(); },
-                  Clock::now() + kEventPollPeriod);
+  alarm_.ScheduleFromNow([this] { ProcessPendingEvents(); }, kEventPollPeriod);
 }
 
 }  // namespace streaming
