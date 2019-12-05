@@ -42547,6 +42547,15 @@ Called by update_use_counter_css.py.-->
   <int value="6" label="Unknown"/>
 </enum>
 
+<enum name="NaClAppTypeEnum">
+  <int value="0" label="PNaCl Open Web"/>
+  <int value="1" label="PNaCl Hosted App"/>
+  <int value="2" label="PNaCl Packaged App"/>
+  <int value="3" label="NaCl Open Web"/>
+  <int value="4" label="NaCl Hosted App"/>
+  <int value="5" label="NaCl Packaged App"/>
+</enum>
+
 <enum name="NaClHelperStatus">
   <int value="0" label="Helper not initialized"/>
   <int value="1" label="Helper executable missing"/>
