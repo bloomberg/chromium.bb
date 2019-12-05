@@ -2139,9 +2139,6 @@ void NavigationRequest::OnStartChecksComplete(
   if (navigation_ui_data_)
     navigation_ui_data = navigation_ui_data_->Clone();
 
-  bool is_for_guests_only =
-      starting_site_instance_->GetSiteURL().SchemeIs(kGuestScheme);
-
   // Give DevTools a chance to override begin params (headers, skip SW)
   // before actually loading resource.
   bool report_raw_headers = false;
@@ -2166,8 +2163,8 @@ void NavigationRequest::OnStartChecksComplete(
           common_params_->Clone(), begin_params_.Clone(), site_for_cookies,
           GetNetworkIsolationKey(), frame_tree_node_->IsMainFrame(),
           parent_is_main_frame, IsSecureFrame(frame_tree_node_->parent()),
-          frame_tree_node_->frame_tree_node_id(), is_for_guests_only,
-          report_raw_headers,
+          frame_tree_node_->frame_tree_node_id(),
+          starting_site_instance_->IsGuest(), report_raw_headers,
           navigating_frame_host->GetVisibilityState() ==
               PageVisibilityState::kHiddenButPainting,
           upgrade_if_insecure_,
