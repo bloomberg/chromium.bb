@@ -139,7 +139,7 @@ void HTMLDetailsElement::ParseAttribute(
     Element* summary = FindMainSummary();
     DCHECK(summary);
 
-    Element* control = ToHTMLSummaryElement(summary)->MarkerControl();
+    auto* control = To<HTMLSummaryElement>(summary)->MarkerControl();
     if (control && control->GetLayoutObject())
       control->GetLayoutObject()->SetShouldDoFullPaintInvalidation();
 

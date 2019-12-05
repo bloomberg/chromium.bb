@@ -43,13 +43,6 @@ inline bool IsElementOfType<const {{tag.interface}}>(const {{namespace}}Element&
   return Is{{tag.interface}}(element);
 }
 
-{% endfor %}
-// Using macros because the types are forward-declared and we don't want to use
-// reinterpret_cast in the casting functions above. reinterpret_cast would be
-// unsafe due to multiple inheritence.
-
-// TODO(abhijeet@igalia.com): Remove below type casting macros.
-{% for tag in tags|sort if not tag.multipleTagNames and not tag.noTypeHelpers %}
 template <>
 struct DowncastTraits<{{tag.interface}}> {
   static bool AllowFrom(const Element& element) {
@@ -63,8 +56,6 @@ struct DowncastTraits<{{tag.interface}}> {
     return node.Is{{namespace}}Element() && IsA<{{tag.interface}}>(To<{{namespace}}Element>(node));
   }
 };
-#define To{{tag.interface}}(x) blink::To<blink::{{tag.interface}}>(x)
-#define To{{tag.interface}}OrNull(x) blink::DynamicTo<blink::{{tag.interface}}>(x)
 
 {% endfor %}
 
