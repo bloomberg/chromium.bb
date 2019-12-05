@@ -498,6 +498,11 @@ public class PaymentRequestImpl
     private PaymentHandlerHost mPaymentHandlerHost;
 
     /**
+     * True when at least one url payment method identifier is specified in payment request.
+     */
+    private boolean mURLPaymentMethodIdentifiersSupported;
+
+    /**
      * A mapping of the payment method names to the corresponding payment method specific data. If
      * STRICT_HAS_ENROLLED_AUTOFILL_INSTRUMENT is enabled, then the key "basic-card-payment-options"
      * also maps to the following payment options:
@@ -763,11 +768,14 @@ public class PaymentRequestImpl
         // Log the various types of payment methods that were requested by the merchant.
         boolean requestedMethodGoogle = false;
         boolean requestedMethodOther = false;
+        mURLPaymentMethodIdentifiersSupported = false;
         for (String methodName : mMethodData.keySet()) {
             if (methodName.equals(MethodStrings.ANDROID_PAY)
                     || methodName.equals(MethodStrings.GOOGLE_PAY)) {
+                mURLPaymentMethodIdentifiersSupported = true;
                 requestedMethodGoogle = true;
             } else if (methodName.startsWith(UrlConstants.HTTPS_URL_PREFIX)) {
+                mURLPaymentMethodIdentifiersSupported = true;
                 // Any method that starts with https and is not Android pay or Google pay is in the
                 // "other" category.
                 requestedMethodOther = true;
@@ -790,26 +798,54 @@ public class PaymentRequestImpl
         PaymentInstrument selectedInstrument =
                 (PaymentInstrument) mPaymentMethodsSection.getSelectedItem();
 
-        // If there is a single payment method and the merchant has not requested any other
-        // information, we can safely go directly to the payment app instead of showing
-        // Payment Request UI.
+        // If there is only a single payment app which can provide all merchant requested
+        // information, we can safely go directly to the payment app instead of showing Payment
+        // Request UI.
         mShouldSkipShowingPaymentRequestUi =
                 ChromeFeatureList.isEnabled(ChromeFeatureList.WEB_PAYMENTS_SINGLE_APP_UI_SKIP)
-                && mMethodData.size() == 1 && !shouldShowShippingSection()
-                && !shouldShowContactSection()
                 // Only allowing payment apps that own their own UIs.
                 // This excludes AutofillPaymentApp as its UI is rendered inline in
                 // the payment request UI, thus can't be skipped.
-                && mMethodData.keySet().iterator().next() != null
-                && (mMethodData.keySet().iterator().next().startsWith(UrlConstants.HTTPS_URL_PREFIX)
+                && (mURLPaymentMethodIdentifiersSupported
                         || mSkipUiForNonUrlPaymentMethodIdentifiers)
-                // Skip to payment app only if it is the only available payment instrument, and it
-                // can be pre-selected.
-                && mPaymentMethodsSection.getSize() == 1
+                && mPaymentMethodsSection.getSize() >= 1
+                && onlySingleAppCanProvideAllRequiredInformation()
+                // Skip to payment app only if it can be pre-selected.
                 && selectedInstrument != null
                 // Skip to payment app only if user gesture is provided when it is required to
                 // skip-UI.
                 && (mIsUserGestureShow || !selectedInstrument.isUserGestureRequiredToSkipUi());
+    }
+
+    /**
+     * @return true when there is exactly one available payment app which can provide all requested
+     * information including shipping address and payer's contact information whenever needed.
+     */
+    private boolean onlySingleAppCanProvideAllRequiredInformation() {
+        assert mPaymentMethodsSection != null;
+
+        if (!mRequestShipping && !mRequestPayerName && !mRequestPayerPhone && !mRequestPayerEmail) {
+            return mPaymentMethodsSection.getSize() == 1
+                    && !((PaymentInstrument) mPaymentMethodsSection.getItem(0))
+                                .isAutofillInstrument();
+        }
+
+        boolean anAppCanProvideAllInfo = false;
+        int sectionSize = mPaymentMethodsSection.getSize();
+        for (int i = 0; i < sectionSize; i++) {
+            PaymentInstrument instrument = (PaymentInstrument) mPaymentMethodsSection.getItem(i);
+            if ((!mRequestShipping || instrument.handlesShippingAddress())
+                    && (!mRequestPayerName || instrument.handlesPayerName())
+                    && (!mRequestPayerPhone || instrument.handlesPayerPhone())
+                    && (!mRequestPayerEmail || instrument.handlesPayerEmail())) {
+                // There is more than one available app that can provide all merchant requested
+                // information information.
+                if (anAppCanProvideAllInfo) return false;
+
+                anAppCanProvideAllInfo = true;
+            }
+        }
+        return anAppCanProvideAllInfo;
     }
 
     /** @return Whether the UI was built. */
