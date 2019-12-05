@@ -46,6 +46,14 @@ SaveCardManageCardsBubbleViews::SaveCardManageCardsBubbleViews(
 }
 
 std::unique_ptr<views::View>
+SaveCardManageCardsBubbleViews::CreateMainContentView() {
+  std::unique_ptr<views::View> view =
+      SaveCardBubbleViews::CreateMainContentView();
+  view->SetID(DialogViewId::MANAGE_CARDS_VIEW);
+  return view;
+}
+
+std::unique_ptr<views::View>
 SaveCardManageCardsBubbleViews::CreateSigninPromoView() {
 #if defined(OS_CHROMEOS)
   // ChromeOS does not show the signin promo.
@@ -70,16 +78,6 @@ SaveCardManageCardsBubbleViews::CreateSigninPromoView() {
 #endif
 }
 
-SaveCardManageCardsBubbleViews::~SaveCardManageCardsBubbleViews() {}
-
-std::unique_ptr<views::View>
-SaveCardManageCardsBubbleViews::CreateMainContentView() {
-  std::unique_ptr<views::View> view =
-      SaveCardBubbleViews::CreateMainContentView();
-  view->SetID(DialogViewId::MANAGE_CARDS_VIEW);
-  return view;
-}
-
 void SaveCardManageCardsBubbleViews::ButtonPressed(views::Button* sender,
                                                    const ui::Event& event) {
   if (sender->GetViewByID(DialogViewId::MANAGE_CARDS_BUTTON)) {
@@ -87,5 +85,7 @@ void SaveCardManageCardsBubbleViews::ButtonPressed(views::Button* sender,
     CloseBubble();
   }
 }
+
+SaveCardManageCardsBubbleViews::~SaveCardManageCardsBubbleViews() = default;
 
 }  // namespace autofill
