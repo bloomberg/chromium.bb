@@ -98,8 +98,10 @@ typedef NS_ENUM(NSInteger, ItemType) {
 }
 
 - (void)viewDidDisappear:(BOOL)animated {
-  if ([self isMovingFromParentViewController]) {
-    // Only call delegate method if the modal is being dismissed.
+  // Only call delegate method if the modal is being dismissed, if this VC is
+  // inside a NavigationController we need to check if the NavigationController
+  // is being dismissed.
+  if ([self.navigationController isBeingDismissed] || [self isBeingDismissed]) {
     [self.infobarModalDelegate modalInfobarWasDismissed:self];
   }
   [super viewDidDisappear:animated];

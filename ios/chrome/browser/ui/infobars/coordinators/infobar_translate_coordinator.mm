@@ -317,8 +317,13 @@
   self.userAction |= UserActionAlwaysTranslate;
   // TODO(crbug.com/1014959): Add metrics
   self.translateInfobarDelegate->ToggleAlwaysTranslate();
-  // Since toggle turned on always translate, translate now.
-  [self performInfobarAction];
+
+  // Since toggle turned on always translate, translate now if not already
+  // translated.
+  if (self.currentStep ==
+      translate::TranslateStep::TRANSLATE_STEP_BEFORE_TRANSLATE)
+    [self performInfobarAction];
+
   [self dismissInfobarModal:self animated:YES completion:nil];
 }
 
