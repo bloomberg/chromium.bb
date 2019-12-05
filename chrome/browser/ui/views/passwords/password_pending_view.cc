@@ -313,8 +313,6 @@ views::View* PasswordPendingView::GetUsernameTextfieldForTest() const {
 PasswordPendingView::~PasswordPendingView() = default;
 
 bool PasswordPendingView::Accept() {
-  if (sign_in_promo_)
-    return sign_in_promo_->Accept();
   UpdateUsernameAndPasswordInModel();
   model()->OnSaveClicked();
   if (model()->ReplaceToShowPromotionIfNeeded()) {
@@ -325,8 +323,6 @@ bool PasswordPendingView::Accept() {
 }
 
 bool PasswordPendingView::Cancel() {
-  if (sign_in_promo_)
-    return sign_in_promo_->Cancel();
   UpdateUsernameAndPasswordInModel();
   if (is_update_bubble_) {
     model()->OnNopeUpdateClicked();
@@ -403,18 +399,13 @@ views::View* PasswordPendingView::GetInitiallyFocusedView() {
 
 int PasswordPendingView::GetDialogButtons() const {
   if (sign_in_promo_)
-    return sign_in_promo_->GetDialogButtons();
+    return ui::DIALOG_BUTTON_NONE;
 
   return PasswordBubbleViewBase::GetDialogButtons();
 }
 
 base::string16 PasswordPendingView::GetDialogButtonLabel(
     ui::DialogButton button) const {
-  // TODO(pbos): Generalize the different promotion classes to not store and
-  // ask each different possible promo.
-  if (sign_in_promo_)
-    return sign_in_promo_->GetDialogButtonLabel(button);
-
   int message = 0;
   if (button == ui::DIALOG_BUTTON_OK) {
     message = model()->IsCurrentStateUpdate()
@@ -483,6 +474,9 @@ void PasswordPendingView::UpdateUsernameAndPasswordInModel() {
 }
 
 void PasswordPendingView::ReplaceWithPromo() {
+#if defined(OS_CHROMEOS)
+  NOTREACHED();
+#else
   RemoveAllChildViews(true);
   username_dropdown_ = nullptr;
   password_dropdown_ = nullptr;
@@ -504,4 +498,5 @@ void PasswordPendingView::ReplaceWithPromo() {
   DialogModelChanged();
 
   SizeToContents();
+#endif  // defined(OS_CHROMEOS)
 }
