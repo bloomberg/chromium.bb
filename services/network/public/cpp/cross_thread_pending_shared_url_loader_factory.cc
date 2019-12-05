@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/network/public/cpp/cross_thread_shared_url_loader_factory_info.h"
+#include "services/network/public/cpp/cross_thread_pending_shared_url_loader_factory.h"
 
 #include <utility>
 
@@ -22,11 +22,11 @@ namespace network {
 // State and methods that need to live on the same sequence |task_runner_|
 // as the wrapped SharedURLLoaderFactory |base_factory_|.
 //
-// Used by both CrossThreadSharedURLLoaderFactoryInfo and
+// Used by both CrossThreadPendingSharedURLLoaderFactory and
 // CrossThreadSharedURLLoaderFactory, and shared across chains of
 // CreateFactory() and Clone() calls. Ref count accommodates both this sharing,
 // as well as lifetime management for cross-thread calls into the object.
-class CrossThreadSharedURLLoaderFactoryInfo::State
+class CrossThreadPendingSharedURLLoaderFactory::State
     : public base::RefCountedThreadSafe<State, StateDeleterTraits> {
  public:
   explicit State(scoped_refptr<SharedURLLoaderFactory> base_factory);
@@ -61,22 +61,23 @@ class CrossThreadSharedURLLoaderFactoryInfo::State
   SEQUENCE_CHECKER(sequence_checker_);
 };
 
-struct CrossThreadSharedURLLoaderFactoryInfo::StateDeleterTraits {
+struct CrossThreadPendingSharedURLLoaderFactory::StateDeleterTraits {
   static void Destruct(const State* state) { state->DeleteOnCorrectThread(); }
 };
 
 // The implementation of SharedURLLoaderFactory provided by
-// CrossThreadSharedURLLoaderFactoryInfo::CreateFactory(). Uses the exact same
-// State object, and posts URLLoaderFactory API calls to it on the appropriate
-// thread.
+// CrossThreadPendingSharedURLLoaderFactory::CreateFactory(). Uses the exact
+// same State object, and posts URLLoaderFactory API calls to it on the
+// appropriate thread.
 class CrossThreadSharedURLLoaderFactory : public SharedURLLoaderFactory {
  public:
-  using State = CrossThreadSharedURLLoaderFactoryInfo::State;
+  using State = CrossThreadPendingSharedURLLoaderFactory::State;
 
   // |state| contains information on the SharedURLLoaderFactory to wrap, and
   // what thread it runs on, and may be shared with other
-  // CrossThreadSharedURLLoaderFactory and CrossThreadSharedURLLoaderFactoryInfo
-  // objects wrapping the same SharedURLLoaderFactory.
+  // CrossThreadSharedURLLoaderFactory and
+  // CrossThreadPendingSharedURLLoaderFactory objects wrapping the same
+  // SharedURLLoaderFactory.
   explicit CrossThreadSharedURLLoaderFactory(scoped_refptr<State> state);
 
   // mojom::URLLoaderFactory implementation:
@@ -91,7 +92,7 @@ class CrossThreadSharedURLLoaderFactory : public SharedURLLoaderFactory {
   void Clone(mojo::PendingReceiver<mojom::URLLoaderFactory> receiver) override;
 
   // SharedURLLoaderFactory implementation:
-  std::unique_ptr<SharedURLLoaderFactoryInfo> Clone() override;
+  std::unique_ptr<PendingSharedURLLoaderFactory> Clone() override;
 
  private:
   ~CrossThreadSharedURLLoaderFactory() override;
@@ -103,7 +104,7 @@ class CrossThreadSharedURLLoaderFactory : public SharedURLLoaderFactory {
 };
 
 CrossThreadSharedURLLoaderFactory::CrossThreadSharedURLLoaderFactory(
-    scoped_refptr<CrossThreadSharedURLLoaderFactoryInfo::State> state)
+    scoped_refptr<CrossThreadPendingSharedURLLoaderFactory::State> state)
     : state_(std::move(state)) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
@@ -147,39 +148,40 @@ void CrossThreadSharedURLLoaderFactory::Clone(
   }
 }
 
-std::unique_ptr<SharedURLLoaderFactoryInfo>
+std::unique_ptr<PendingSharedURLLoaderFactory>
 CrossThreadSharedURLLoaderFactory::Clone() {
-  return base::WrapUnique(new CrossThreadSharedURLLoaderFactoryInfo(state_));
+  return base::WrapUnique(new CrossThreadPendingSharedURLLoaderFactory(state_));
 }
 
-CrossThreadSharedURLLoaderFactoryInfo::CrossThreadSharedURLLoaderFactoryInfo(
-    scoped_refptr<SharedURLLoaderFactory> url_loader_factory)
+CrossThreadPendingSharedURLLoaderFactory::
+    CrossThreadPendingSharedURLLoaderFactory(
+        scoped_refptr<SharedURLLoaderFactory> url_loader_factory)
     : state_(base::MakeRefCounted<State>(std::move(url_loader_factory))) {}
 
-CrossThreadSharedURLLoaderFactoryInfo::
-    ~CrossThreadSharedURLLoaderFactoryInfo() = default;
+CrossThreadPendingSharedURLLoaderFactory::
+    ~CrossThreadPendingSharedURLLoaderFactory() = default;
 
 scoped_refptr<SharedURLLoaderFactory>
-CrossThreadSharedURLLoaderFactoryInfo::CreateFactory() {
+CrossThreadPendingSharedURLLoaderFactory::CreateFactory() {
   return base::MakeRefCounted<CrossThreadSharedURLLoaderFactory>(state_);
 }
 
-CrossThreadSharedURLLoaderFactoryInfo::CrossThreadSharedURLLoaderFactoryInfo(
-    scoped_refptr<State> state)
+CrossThreadPendingSharedURLLoaderFactory::
+    CrossThreadPendingSharedURLLoaderFactory(scoped_refptr<State> state)
     : state_(std::move(state)) {}
 
-CrossThreadSharedURLLoaderFactoryInfo::State::State(
+CrossThreadPendingSharedURLLoaderFactory::State::State(
     scoped_refptr<SharedURLLoaderFactory> base_factory)
     : base_factory_(std::move(base_factory)),
       task_runner_(base::SequencedTaskRunnerHandle::Get()) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
-CrossThreadSharedURLLoaderFactoryInfo::State::~State() {
+CrossThreadPendingSharedURLLoaderFactory::State::~State() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
-void CrossThreadSharedURLLoaderFactoryInfo::State::DeleteOnCorrectThread()
+void CrossThreadPendingSharedURLLoaderFactory::State::DeleteOnCorrectThread()
     const {
   if (task_runner_->RunsTasksInCurrentSequence())
     delete this;
@@ -187,7 +189,7 @@ void CrossThreadSharedURLLoaderFactoryInfo::State::DeleteOnCorrectThread()
     task_runner_->DeleteSoon(FROM_HERE, this);
 }
 
-void CrossThreadSharedURLLoaderFactoryInfo::State::CreateLoaderAndStart(
+void CrossThreadPendingSharedURLLoaderFactory::State::CreateLoaderAndStart(
     mojo::PendingReceiver<mojom::URLLoader> loader,
     int32_t routing_id,
     int32_t request_id,
@@ -201,7 +203,7 @@ void CrossThreadSharedURLLoaderFactoryInfo::State::CreateLoaderAndStart(
                                       traffic_annotation);
 }
 
-void CrossThreadSharedURLLoaderFactoryInfo::State::Clone(
+void CrossThreadPendingSharedURLLoaderFactory::State::Clone(
     mojo::PendingReceiver<mojom::URLLoaderFactory> receiver) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   base_factory_->Clone(std::move(receiver));

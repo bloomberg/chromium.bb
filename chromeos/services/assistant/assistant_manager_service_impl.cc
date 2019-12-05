@@ -146,8 +146,8 @@ AssistantManagerServiceImpl::AssistantManagerServiceImpl(
     mojom::Client* client,
     ServiceContext* context,
     std::unique_ptr<AssistantManagerServiceDelegate> delegate,
-    std::unique_ptr<network::SharedURLLoaderFactoryInfo>
-        url_loader_factory_info,
+    std::unique_ptr<network::PendingSharedURLLoaderFactory>
+        pending_url_loader_factory,
     bool is_signed_out_mode)
     : client_(client),
       media_session_(std::make_unique<AssistantMediaSession>(client_, this)),
@@ -155,7 +155,7 @@ AssistantManagerServiceImpl::AssistantManagerServiceImpl(
           this,
           assistant::features::IsAppSupportEnabled(),
           assistant::features::IsRoutinesEnabled())),
-      chromium_api_delegate_(std::move(url_loader_factory_info)),
+      chromium_api_delegate_(std::move(pending_url_loader_factory)),
       assistant_settings_manager_(
           std::make_unique<AssistantSettingsManagerImpl>(context, this)),
       context_(context),

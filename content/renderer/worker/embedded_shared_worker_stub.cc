@@ -39,8 +39,8 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
         service_worker_provider_info,
     const base::UnguessableToken& appcache_host_id,
     blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params,
-    std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
-        subresource_loader_factory_bundle_info,
+    std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
+        pending_subresource_loader_factory_bundle,
     blink::mojom::ControllerServiceWorkerInfoPtr controller_info,
     mojo::PendingRemote<blink::mojom::SharedWorkerHost> host,
     mojo::PendingReceiver<blink::mojom::SharedWorker> receiver,
@@ -54,7 +54,7 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
       renderer_preferences_(renderer_preferences),
       preference_watcher_receiver_(std::move(preference_watcher_receiver)) {
   DCHECK(main_script_load_params);
-  DCHECK(subresource_loader_factory_bundle_info);
+  DCHECK(pending_subresource_loader_factory_bundle);
 
   // Initialize the response override for the main worker script loaded by the
   // browser process.
@@ -74,9 +74,9 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
   // the same as the worker's process crashing.
   if (IsOutOfProcessNetworkService()) {
     default_factory_disconnect_handler_holder_.Bind(std::move(
-        subresource_loader_factory_bundle_info->pending_default_factory()));
+        pending_subresource_loader_factory_bundle->pending_default_factory()));
     default_factory_disconnect_handler_holder_->Clone(
-        subresource_loader_factory_bundle_info->pending_default_factory()
+        pending_subresource_loader_factory_bundle->pending_default_factory()
             .InitWithNewPipeAndPassReceiver());
     default_factory_disconnect_handler_holder_.set_disconnect_handler(
         base::BindOnce(&EmbeddedSharedWorkerStub::Terminate,
@@ -87,8 +87,8 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
   // process.
   subresource_loader_factory_bundle_ =
       base::MakeRefCounted<ChildURLLoaderFactoryBundle>(
-          std::make_unique<ChildURLLoaderFactoryBundleInfo>(
-              std::move(subresource_loader_factory_bundle_info)));
+          std::make_unique<ChildPendingURLLoaderFactoryBundle>(
+              std::move(pending_subresource_loader_factory_bundle)));
 
   if (service_worker_provider_info) {
     service_worker_provider_context_ =
@@ -160,7 +160,7 @@ scoped_refptr<blink::WebWorkerFetchContext>
 EmbeddedSharedWorkerStub::CreateWorkerFetchContext() {
   // Make the factory used for service worker network fallback (that should
   // skip AppCache if it is provided).
-  std::unique_ptr<network::SharedURLLoaderFactoryInfo> fallback_factory =
+  std::unique_ptr<network::PendingSharedURLLoaderFactory> fallback_factory =
       subresource_loader_factory_bundle_->CloneWithoutAppCacheFactory();
 
   // |pending_subresource_loader_updater| is not used for shared workers.

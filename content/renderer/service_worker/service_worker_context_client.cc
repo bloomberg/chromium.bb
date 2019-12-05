@@ -107,7 +107,7 @@ ServiceWorkerContextClient::ServiceWorkerContextClient(
     blink::mojom::EmbeddedWorkerStartTimingPtr start_timing,
     mojo::PendingReceiver<blink::mojom::RendererPreferenceWatcher>
         preference_watcher_receiver,
-    std::unique_ptr<blink::URLLoaderFactoryBundleInfo> subresource_loaders,
+    std::unique_ptr<blink::PendingURLLoaderFactoryBundle> subresource_loaders,
     mojo::PendingReceiver<blink::mojom::SubresourceLoaderUpdater>
         subresource_loader_updater,
     const GURL& script_url_to_skip_throttling,
@@ -153,7 +153,7 @@ ServiceWorkerContextClient::ServiceWorkerContextClient(
   }
 
   loader_factories_ = base::MakeRefCounted<ChildURLLoaderFactoryBundle>(
-      std::make_unique<ChildURLLoaderFactoryBundleInfo>(
+      std::make_unique<ChildPendingURLLoaderFactoryBundle>(
           std::move(subresource_loaders)));
 
   service_worker_provider_info_ = std::move(provider_info);
@@ -375,13 +375,13 @@ ServiceWorkerContextClient::CreateWorkerFetchContextOnInitiatorThread() {
 
   // TODO(bashi): Consider changing ServiceWorkerFetchContextImpl to take
   // URLLoaderFactoryInfo.
-  auto script_loader_factory_info =
-      std::make_unique<network::WrapperSharedURLLoaderFactoryInfo>(std::move(
+  auto pending_script_loader_factory =
+      std::make_unique<network::WrapperPendingSharedURLLoaderFactory>(std::move(
           service_worker_provider_info_->script_loader_factory_remote));
 
   return base::MakeRefCounted<ServiceWorkerFetchContextImpl>(
       *renderer_preferences_, script_url_, loader_factories_->PassInterface(),
-      std::move(script_loader_factory_info), script_url_to_skip_throttling_,
+      std::move(pending_script_loader_factory), script_url_to_skip_throttling_,
       GetContentClient()->renderer()->CreateURLLoaderThrottleProvider(
           URLLoaderThrottleProviderType::kWorker),
       GetContentClient()

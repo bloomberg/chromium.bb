@@ -129,21 +129,21 @@ void DedicatedWorkerHostFactoryClient::OnScriptLoadStarted(
     blink::mojom::ServiceWorkerProviderInfoForClientPtr
         service_worker_provider_info,
     blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params,
-    std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
-        subresource_loader_factory_bundle_info,
+    std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
+        pending_subresource_loader_factory_bundle,
     mojo::PendingReceiver<blink::mojom::SubresourceLoaderUpdater>
         subresource_loader_updater,
     blink::mojom::ControllerServiceWorkerInfoPtr controller_info) {
   DCHECK(base::FeatureList::IsEnabled(blink::features::kPlzDedicatedWorker));
   DCHECK(main_script_load_params);
-  DCHECK(subresource_loader_factory_bundle_info);
+  DCHECK(pending_subresource_loader_factory_bundle);
 
   // Initialize the loader factory bundle passed by the browser process.
   DCHECK(!subresource_loader_factory_bundle_);
   subresource_loader_factory_bundle_ =
       base::MakeRefCounted<ChildURLLoaderFactoryBundle>(
-          std::make_unique<ChildURLLoaderFactoryBundleInfo>(
-              std::move(subresource_loader_factory_bundle_info)));
+          std::make_unique<ChildPendingURLLoaderFactoryBundle>(
+              std::move(pending_subresource_loader_factory_bundle)));
 
   DCHECK(!pending_subresource_loader_updater_);
   pending_subresource_loader_updater_ = std::move(subresource_loader_updater);

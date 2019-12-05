@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/network/public/cpp/cross_thread_shared_url_loader_factory_info.h"
+#include "services/network/public/cpp/cross_thread_pending_shared_url_loader_factory.h"
 
 #include <string>
 #include <utility>
@@ -51,7 +51,7 @@ class CloneCheckingURLLoaderFactory : public TestURLLoaderFactory {
 }  // namespace
 
 // Base class with shared setup logic.
-class CrossThreadSharedURLLoaderFactoryInfoTest : public ::testing::Test {
+class CrossThreadPendingSharedURLLoaderFactoryTest : public ::testing::Test {
  protected:
   void SetUp() override {
     main_thread_ = base::SequencedTaskRunnerHandle::Get();
@@ -61,7 +61,7 @@ class CrossThreadSharedURLLoaderFactoryInfoTest : public ::testing::Test {
     test_url_loader_factory_ =
         std::make_unique<CloneCheckingURLLoaderFactory>(loader_thread_);
     test_url_loader_factory_->SetInterceptor(base::BindRepeating(
-        &CrossThreadSharedURLLoaderFactoryInfoTest::CheckLoaderThread,
+        &CrossThreadPendingSharedURLLoaderFactoryTest::CheckLoaderThread,
         base::Unretained(this)));
     test_url_loader_factory_->AddResponse(kUrl, kData);
 
@@ -71,7 +71,7 @@ class CrossThreadSharedURLLoaderFactoryInfoTest : public ::testing::Test {
     base::RunLoop run_loop;
     loader_thread_->PostTaskAndReply(
         FROM_HERE,
-        base::BindOnce(&CrossThreadSharedURLLoaderFactoryInfoTest::
+        base::BindOnce(&CrossThreadPendingSharedURLLoaderFactoryTest::
                            SetupFactoryInfoOnLoaderThread,
                        base::Unretained(this)),
         run_loop.QuitClosure());
@@ -85,7 +85,7 @@ class CrossThreadSharedURLLoaderFactoryInfoTest : public ::testing::Test {
     base::RunLoop run_loop;
     loader_thread_->PostTaskAndReply(
         FROM_HERE,
-        base::BindOnce(&CrossThreadSharedURLLoaderFactoryInfoTest::
+        base::BindOnce(&CrossThreadPendingSharedURLLoaderFactoryTest::
                            ReleaseSharedFactoryOnLoaderThread,
                        base::Unretained(this)),
         run_loop.QuitClosure());
@@ -98,8 +98,9 @@ class CrossThreadSharedURLLoaderFactoryInfoTest : public ::testing::Test {
 
   void SetupFactoryInfoOnLoaderThread() {
     DCHECK(loader_thread_->RunsTasksInCurrentSequence());
-    factory_info_ = std::make_unique<CrossThreadSharedURLLoaderFactoryInfo>(
-        shared_factory_);
+    pending_factory_ =
+        std::make_unique<CrossThreadPendingSharedURLLoaderFactory>(
+            shared_factory_);
   }
 
   void ReleaseSharedFactoryOnLoaderThread() {
@@ -155,21 +156,21 @@ class CrossThreadSharedURLLoaderFactoryInfoTest : public ::testing::Test {
   scoped_refptr<base::SequencedTaskRunner> loader_thread_;
   scoped_refptr<base::SequencedTaskRunner> main_thread_;
 
-  std::unique_ptr<CrossThreadSharedURLLoaderFactoryInfo> factory_info_;
+  std::unique_ptr<CrossThreadPendingSharedURLLoaderFactory> pending_factory_;
 };
 
-TEST_F(CrossThreadSharedURLLoaderFactoryInfoTest, Basic) {
-  // Test with things created from |factory_info_|.
+TEST_F(CrossThreadPendingSharedURLLoaderFactoryTest, Basic) {
+  // Test with things created from |pending_factory_|.
   scoped_refptr<SharedURLLoaderFactory> main_thread_factory =
-      SharedURLLoaderFactory::Create(std::move(factory_info_));
+      SharedURLLoaderFactory::Create(std::move(pending_factory_));
   TestLoadOnMainThread(main_thread_factory);
   TestClone(main_thread_factory);
 }
 
-TEST_F(CrossThreadSharedURLLoaderFactoryInfoTest, FurtherClone) {
+TEST_F(CrossThreadPendingSharedURLLoaderFactoryTest, FurtherClone) {
   // Test load with result of a further clone.
   scoped_refptr<SharedURLLoaderFactory> main_thread_factory =
-      SharedURLLoaderFactory::Create(std::move(factory_info_));
+      SharedURLLoaderFactory::Create(std::move(pending_factory_));
   scoped_refptr<SharedURLLoaderFactory> main_thread_factory_clone =
       SharedURLLoaderFactory::Create(main_thread_factory->Clone());
 
@@ -179,15 +180,15 @@ TEST_F(CrossThreadSharedURLLoaderFactoryInfoTest, FurtherClone) {
   TestClone(main_thread_factory);
 }
 
-TEST_F(CrossThreadSharedURLLoaderFactoryInfoTest, CloneThirdThread) {
+TEST_F(CrossThreadPendingSharedURLLoaderFactoryTest, CloneThirdThread) {
   // Clone to a third thread.
   scoped_refptr<base::SequencedTaskRunner> third_thread =
       base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
                                        base::WithBaseSyncPrimitives()});
 
   scoped_refptr<SharedURLLoaderFactory> main_thread_factory =
-      SharedURLLoaderFactory::Create(std::move(factory_info_));
-  std::unique_ptr<SharedURLLoaderFactoryInfo> new_info =
+      SharedURLLoaderFactory::Create(std::move(pending_factory_));
+  std::unique_ptr<PendingSharedURLLoaderFactory> new_pending_factory =
       main_thread_factory->Clone();
 
   base::RunLoop run_loop;
@@ -195,18 +196,18 @@ TEST_F(CrossThreadSharedURLLoaderFactoryInfoTest, CloneThirdThread) {
   third_thread->PostTask(
       FROM_HERE, base::BindLambdaForTesting([&]() {
         scoped_refptr<SharedURLLoaderFactory> third_thread_factory =
-            SharedURLLoaderFactory::Create(std::move(new_info));
+            SharedURLLoaderFactory::Create(std::move(new_pending_factory));
         TestLoad(third_thread_factory, third_thread, std::move(run_loop_quit));
         TestClone(third_thread_factory);
       }));
   run_loop.Run();
 }
 
-TEST_F(CrossThreadSharedURLLoaderFactoryInfoTest, CloneLoaderThread) {
+TEST_F(CrossThreadPendingSharedURLLoaderFactoryTest, CloneLoaderThread) {
   // Clone back to the loader thread.
   scoped_refptr<SharedURLLoaderFactory> main_thread_factory =
-      SharedURLLoaderFactory::Create(std::move(factory_info_));
-  std::unique_ptr<SharedURLLoaderFactoryInfo> new_info =
+      SharedURLLoaderFactory::Create(std::move(pending_factory_));
+  std::unique_ptr<PendingSharedURLLoaderFactory> new_pending_factory =
       main_thread_factory->Clone();
 
   base::RunLoop run_loop;
@@ -214,7 +215,7 @@ TEST_F(CrossThreadSharedURLLoaderFactoryInfoTest, CloneLoaderThread) {
   loader_thread_->PostTask(
       FROM_HERE, base::BindLambdaForTesting([&]() {
         scoped_refptr<SharedURLLoaderFactory> load_thread_factory =
-            SharedURLLoaderFactory::Create(std::move(new_info));
+            SharedURLLoaderFactory::Create(std::move(new_pending_factory));
         TestLoad(load_thread_factory, loader_thread_, std::move(run_loop_quit));
         TestClone(load_thread_factory);
       }));

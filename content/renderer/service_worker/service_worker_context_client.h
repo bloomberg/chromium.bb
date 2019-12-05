@@ -105,7 +105,7 @@ class CONTENT_EXPORT ServiceWorkerContextClient
       blink::mojom::EmbeddedWorkerStartTimingPtr start_timing,
       mojo::PendingReceiver<blink::mojom::RendererPreferenceWatcher>
           preference_watcher_receiver,
-      std::unique_ptr<blink::URLLoaderFactoryBundleInfo> subresource_loaders,
+      std::unique_ptr<blink::PendingURLLoaderFactoryBundle> subresource_loaders,
       mojo::PendingReceiver<blink::mojom::SubresourceLoaderUpdater>
           subresource_loader_updater,
       const GURL& script_url_to_skip_throttling,

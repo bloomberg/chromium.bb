@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/download/network_download_url_loader_factory_info.h"
+#include "content/browser/download/network_download_pending_url_loader_factory.h"
 
 #include "components/download/public/common/download_task_runner.h"
 #include "content/browser/url_loader_factory_getter.h"
@@ -11,7 +11,7 @@
 
 namespace content {
 
-NetworkDownloadURLLoaderFactoryInfo::NetworkDownloadURLLoaderFactoryInfo(
+NetworkDownloadPendingURLLoaderFactory::NetworkDownloadPendingURLLoaderFactory(
     scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter,
     mojo::PendingRemote<network::mojom::URLLoaderFactory> proxy_factory_remote,
     mojo::PendingReceiver<network::mojom::URLLoaderFactory>
@@ -20,11 +20,11 @@ NetworkDownloadURLLoaderFactoryInfo::NetworkDownloadURLLoaderFactoryInfo(
       proxy_factory_remote_(std::move(proxy_factory_remote)),
       proxy_factory_receiver_(std::move(proxy_factory_receiver)) {}
 
-NetworkDownloadURLLoaderFactoryInfo::~NetworkDownloadURLLoaderFactoryInfo() =
-    default;
+NetworkDownloadPendingURLLoaderFactory::
+    ~NetworkDownloadPendingURLLoaderFactory() = default;
 
 scoped_refptr<network::SharedURLLoaderFactory>
-NetworkDownloadURLLoaderFactoryInfo::CreateFactory() {
+NetworkDownloadPendingURLLoaderFactory::CreateFactory() {
   DCHECK(download::GetIOTaskRunner());
   DCHECK(download::GetIOTaskRunner()->BelongsToCurrentThread());
   if (lazy_factory_)

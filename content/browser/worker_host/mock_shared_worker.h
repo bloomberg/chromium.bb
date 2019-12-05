@@ -30,7 +30,7 @@
 class GURL;
 
 namespace blink {
-class URLLoaderFactoryBundleInfo;
+class PendingURLLoaderFactoryBundle;
 }  // namespace blink
 
 namespace content {
@@ -89,7 +89,7 @@ class MockSharedWorkerFactory : public blink::mojom::SharedWorkerFactory {
           service_worker_provider_info,
       const base::Optional<base::UnguessableToken>& appcache_host_id,
       blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params,
-      std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
+      std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
           subresource_loader_factories,
       blink::mojom::ControllerServiceWorkerInfoPtr controller_info,
       mojo::PendingRemote<blink::mojom::SharedWorkerHost> host,

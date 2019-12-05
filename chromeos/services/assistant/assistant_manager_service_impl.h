@@ -46,7 +46,7 @@ class AssistantManagerInternal;
 }  // namespace assistant_client
 
 namespace network {
-class SharedURLLoaderFactoryInfo;
+class PendingSharedURLLoaderFactory;
 }  // namespace network
 
 namespace chromeos {
@@ -101,8 +101,8 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantManagerServiceImpl
       mojom::Client* client,
       ServiceContext* context,
       std::unique_ptr<AssistantManagerServiceDelegate> delegate,
-      std::unique_ptr<network::SharedURLLoaderFactoryInfo>
-          url_loader_factory_info,
+      std::unique_ptr<network::PendingSharedURLLoaderFactory>
+          pending_url_loader_factory,
       bool is_signed_out_mode);
 
   ~AssistantManagerServiceImpl() override;

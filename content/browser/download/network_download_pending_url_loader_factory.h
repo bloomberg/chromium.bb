@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_DOWNLOAD_NETWORK_DOWNLOAD_URL_LOADER_FACTORY_INFO_H_
-#define CONTENT_BROWSER_DOWNLOAD_NETWORK_DOWNLOAD_URL_LOADER_FACTORY_INFO_H_
+#ifndef CONTENT_BROWSER_DOWNLOAD_NETWORK_DOWNLOAD_PENDING_URL_LOADER_FACTORY_H_
+#define CONTENT_BROWSER_DOWNLOAD_NETWORK_DOWNLOAD_PENDING_URL_LOADER_FACTORY_H_
 
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -16,19 +16,19 @@ class URLLoaderFactoryGetter;
 
 // Wrapper of a URLLoaderFactoryGetter that can be passed to another thread
 // to retrieve URLLoaderFactory.
-class NetworkDownloadURLLoaderFactoryInfo
-    : public network::SharedURLLoaderFactoryInfo {
+class NetworkDownloadPendingURLLoaderFactory
+    : public network::PendingSharedURLLoaderFactory {
  public:
-  NetworkDownloadURLLoaderFactoryInfo(
+  NetworkDownloadPendingURLLoaderFactory(
       scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter,
       mojo::PendingRemote<network::mojom::URLLoaderFactory>
           proxy_factory_remote,
       mojo::PendingReceiver<network::mojom::URLLoaderFactory>
           proxy_factory_receiver);
-  ~NetworkDownloadURLLoaderFactoryInfo() override;
+  ~NetworkDownloadPendingURLLoaderFactory() override;
 
  protected:
-  // SharedURLLoaderFactoryInfo implementation.
+  // PendingSharedURLLoaderFactory implementation.
   scoped_refptr<network::SharedURLLoaderFactory> CreateFactory() override;
 
  private:
@@ -38,9 +38,9 @@ class NetworkDownloadURLLoaderFactoryInfo
   mojo::PendingReceiver<network::mojom::URLLoaderFactory>
       proxy_factory_receiver_;
 
-  DISALLOW_COPY_AND_ASSIGN(NetworkDownloadURLLoaderFactoryInfo);
+  DISALLOW_COPY_AND_ASSIGN(NetworkDownloadPendingURLLoaderFactory);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_DOWNLOAD_NETWORK_DOWNLOAD_URL_LOADER_FACTORY_INFO_H_
+#endif  // CONTENT_BROWSER_DOWNLOAD_NETWORK_DOWNLOAD_PENDING_URL_LOADER_FACTORY_H_

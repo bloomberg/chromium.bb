@@ -336,7 +336,7 @@ void CertificateReportingServiceTestHelper::Clone(
   NOTREACHED();
 }
 
-std::unique_ptr<network::SharedURLLoaderFactoryInfo>
+std::unique_ptr<network::PendingSharedURLLoaderFactory>
 CertificateReportingServiceTestHelper::Clone() {
   NOTREACHED();
   return nullptr;

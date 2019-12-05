@@ -195,7 +195,7 @@ void DedicatedWorkerHost::StartScriptLoad(
 }
 
 void DedicatedWorkerHost::DidStartScriptLoad(
-    std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
+    std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
         subresource_loader_factories,
     blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params,
     blink::mojom::ControllerServiceWorkerInfoPtr controller,
@@ -466,7 +466,7 @@ void DedicatedWorkerHost::UpdateSubresourceLoaderFactories() {
 
   // Recreate the default URLLoaderFactory. This doesn't support
   // AppCache-specific factory.
-  std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
+  std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
       subresource_loader_factories =
           WorkerScriptFetchInitiator::CreateFactoryBundle(
               WorkerScriptFetchInitiator::LoaderType::kSubResource,

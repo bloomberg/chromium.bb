@@ -107,9 +107,11 @@ using SetupProcessCallback = base::OnceCallback<void(
     std::unique_ptr<ServiceWorkerProcessManager::AllocatedProcessInfo>,
     std::unique_ptr<EmbeddedWorkerInstance::DevToolsProxy>,
     std::unique_ptr<
-        blink::URLLoaderFactoryBundleInfo> /* factory_bundle_for_new_scripts */,
+        blink::PendingURLLoaderFactoryBundle> /* factory_bundle_for_new_scripts
+                                               */
+    ,
     std::unique_ptr<
-        blink::URLLoaderFactoryBundleInfo> /* factory_bundle_for_renderer */,
+        blink::PendingURLLoaderFactoryBundle> /* factory_bundle_for_renderer */,
     mojo::PendingRemote<blink::mojom::CacheStorage>,
     const base::Optional<base::TimeDelta>& thread_hop_time,
     const base::Optional<base::Time>& ui_post_time)>;
@@ -141,9 +143,9 @@ void SetupOnUIThread(
   auto process_info =
       std::make_unique<ServiceWorkerProcessManager::AllocatedProcessInfo>();
   std::unique_ptr<EmbeddedWorkerInstance::DevToolsProxy> devtools_proxy;
-  std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
+  std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
       factory_bundle_for_new_scripts;
-  std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
+  std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
       factory_bundle_for_renderer;
 
   if (!process_manager) {
@@ -587,9 +589,9 @@ class EmbeddedWorkerInstance::StartTask {
       std::unique_ptr<ServiceWorkerProcessManager::AllocatedProcessInfo>
           process_info,
       std::unique_ptr<EmbeddedWorkerInstance::DevToolsProxy> devtools_proxy,
-      std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
+      std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
           factory_bundle_for_new_scripts,
-      std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
+      std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
           factory_bundle_for_renderer,
       mojo::PendingRemote<blink::mojom::CacheStorage> cache_storage,
       const base::Optional<base::TimeDelta>& thread_hop_time,
@@ -1016,8 +1018,8 @@ void EmbeddedWorkerInstance::UpdateForegroundPriority() {
 }
 
 void EmbeddedWorkerInstance::UpdateLoaderFactories(
-    std::unique_ptr<blink::URLLoaderFactoryBundleInfo> script_bundle,
-    std::unique_ptr<blink::URLLoaderFactoryBundleInfo> subresource_bundle) {
+    std::unique_ptr<blink::PendingURLLoaderFactoryBundle> script_bundle,
+    std::unique_ptr<blink::PendingURLLoaderFactoryBundle> subresource_bundle) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   DCHECK(subresource_loader_updater_.is_bound());
 
@@ -1041,14 +1043,15 @@ base::WeakPtr<EmbeddedWorkerInstance> EmbeddedWorkerInstance::AsWeakPtr() {
 // it may also include scheme-specific factories that don't go to network.
 //
 // The network factory does not support reconnection to the network service.
-std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
+std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
 EmbeddedWorkerInstance::CreateFactoryBundleOnUI(
     RenderProcessHost* rph,
     int routing_id,
     const url::Origin& origin,
     ContentBrowserClient::URLLoaderFactoryType factory_type) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  auto factory_bundle = std::make_unique<blink::URLLoaderFactoryBundleInfo>();
+  auto factory_bundle =
+      std::make_unique<blink::PendingURLLoaderFactoryBundle>();
   mojo::PendingReceiver<network::mojom::URLLoaderFactory>
       default_factory_receiver = factory_bundle->pending_default_factory()
                                      .InitWithNewPipeAndPassReceiver();
@@ -1296,7 +1299,7 @@ void EmbeddedWorkerInstance::NotifyForegroundServiceWorkerRemoved() {
 
 mojo::PendingRemote<network::mojom::URLLoaderFactory>
 EmbeddedWorkerInstance::MakeScriptLoaderFactoryRemote(
-    std::unique_ptr<blink::URLLoaderFactoryBundleInfo> script_bundle) {
+    std::unique_ptr<blink::PendingURLLoaderFactoryBundle> script_bundle) {
   mojo::PendingRemote<network::mojom::URLLoaderFactory>
       script_loader_factory_remote;
 

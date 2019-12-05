@@ -51,8 +51,8 @@ std::unique_ptr<
     ServiceWorkerUpdatedScriptLoader::ThrottlingURLLoaderCoreWrapper>
 ServiceWorkerUpdatedScriptLoader::ThrottlingURLLoaderCoreWrapper::
     CreateLoaderAndStart(
-        std::unique_ptr<network::SharedURLLoaderFactoryInfo>
-            loader_factory_info,
+        std::unique_ptr<network::PendingSharedURLLoaderFactory>
+            pending_loader_factory,
         BrowserContextGetter browser_context_getter,
         int32_t routing_id,
         int32_t request_id,
@@ -66,7 +66,7 @@ ServiceWorkerUpdatedScriptLoader::ThrottlingURLLoaderCoreWrapper::
   RunOrPostTaskOnThread(
       FROM_HERE, BrowserThread::UI,
       base::BindOnce(&ThrottlingURLLoaderCoreWrapper::StartInternalOnUI,
-                     std::move(loader_factory_info),
+                     std::move(pending_loader_factory),
                      std::move(browser_context_getter), routing_id, request_id,
                      options, network::ResourceRequest(resource_request),
                      std::move(client),
@@ -78,8 +78,8 @@ ServiceWorkerUpdatedScriptLoader::ThrottlingURLLoaderCoreWrapper::
 // static
 void ServiceWorkerUpdatedScriptLoader::ThrottlingURLLoaderCoreWrapper::
     StartInternalOnUI(
-        std::unique_ptr<network::SharedURLLoaderFactoryInfo>
-            loader_factory_info,
+        std::unique_ptr<network::PendingSharedURLLoaderFactory>
+            pending_loader_factory,
         BrowserContextGetter browser_context_getter,
         int32_t routing_id,
         int32_t request_id,
@@ -106,7 +106,8 @@ void ServiceWorkerUpdatedScriptLoader::ThrottlingURLLoaderCoreWrapper::
   mojo::Remote<network::mojom::URLLoaderClient> client(
       std::move(client_remote));
   auto loader = blink::ThrottlingURLLoader::CreateLoaderAndStart(
-      network::SharedURLLoaderFactory::Create(std::move(loader_factory_info)),
+      network::SharedURLLoaderFactory::Create(
+          std::move(pending_loader_factory)),
       std::move(throttles), routing_id, request_id, options, &resource_request,
       client.get(), traffic_annotation, base::ThreadTaskRunnerHandle::Get());
   loader_on_ui->loader = std::move(loader);

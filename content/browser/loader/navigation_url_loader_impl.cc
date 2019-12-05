@@ -380,8 +380,8 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
   }
 
   void Start(
-      std::unique_ptr<network::SharedURLLoaderFactoryInfo>
-          network_loader_factory_info,
+      std::unique_ptr<network::PendingSharedURLLoaderFactory>
+          pending_network_loader_factory,
       ServiceWorkerNavigationHandle*
           service_worker_navigation_handle /* for UI thread only */,
       ServiceWorkerNavigationHandleCore*
@@ -412,9 +412,9 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
                    base::BindOnce(&NavigationURLLoaderImpl::OnRequestStarted,
                                   owner_, base::TimeTicks::Now()));
 
-    DCHECK(network_loader_factory_info);
+    DCHECK(pending_network_loader_factory);
     network_loader_factory_ = network::SharedURLLoaderFactory::Create(
-        std::move(network_loader_factory_info));
+        std::move(pending_network_loader_factory));
     if (needs_loader_factory_interceptor &&
         g_loader_factory_interceptor.Get()) {
       mojo::PendingRemote<network::mojom::URLLoaderFactory> factory;
@@ -1394,16 +1394,17 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
     known_schemes.insert(iter.first);
 
   bool needs_loader_factory_interceptor = false;
-  std::unique_ptr<network::SharedURLLoaderFactoryInfo> network_factory_info =
-      partition->GetURLLoaderFactoryForBrowserProcess()->Clone();
+  std::unique_ptr<network::PendingSharedURLLoaderFactory>
+      pending_network_factory =
+          partition->GetURLLoaderFactoryForBrowserProcess()->Clone();
   if (header_client) {
     needs_loader_factory_interceptor = true;
     mojo::PendingRemote<network::mojom::URLLoaderFactory> factory_remote;
     CreateURLLoaderFactoryWithHeaderClient(
         std::move(header_client),
         factory_remote.InitWithNewPipeAndPassReceiver(), partition);
-    network_factory_info =
-        std::make_unique<network::WrapperSharedURLLoaderFactoryInfo>(
+    pending_network_factory =
+        std::make_unique<network::WrapperPendingSharedURLLoaderFactory>(
             std::move(factory_remote));
   }
 
@@ -1415,7 +1416,7 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
       std::move(known_schemes), bypass_redirect_checks,
       weak_factory_.GetWeakPtr());
   request_controller_->Start(
-      std::move(network_factory_info), service_worker_navigation_handle,
+      std::move(pending_network_factory), service_worker_navigation_handle,
       service_worker_navigation_handle_core, appcache_handle,
       std::move(prefetched_signed_exchange_cache),
       std::move(signed_exchange_prefetch_metric_recorder),
