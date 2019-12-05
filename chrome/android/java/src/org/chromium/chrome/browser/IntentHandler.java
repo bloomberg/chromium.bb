@@ -785,9 +785,9 @@ public class IntentHandler {
             // Strip the custom header that can only be added by ourselves.
             if ("x-chrome-intent-type".equals(key.toLowerCase(Locale.US))) continue;
 
-            if (shouldLogHeaders) recorder.recordHeader(key, value, firstParty);
-
             if (!HttpUtil.isAllowedHeader(key, value)) continue;
+
+            if (shouldLogHeaders) recorder.recordHeader(key, value, firstParty);
 
             if (extraHeaders.length() != 0) extraHeaders.append("\n");
             extraHeaders.append(key);
