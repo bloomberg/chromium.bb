@@ -969,7 +969,7 @@ IN_PROC_BROWSER_TEST_F(SamlTest, MAYBE_PasswordConfirmFlow) {
   OobeScreenWaiter(OobeScreen::SCREEN_CONFIRM_PASSWORD).Wait();
   test::OobeJS().ExpectTrue("!$('saml-confirm-password').manualInput");
   test::OobeJS().ExpectTrue(
-      "!$('saml-confirm-password').$.passwordInput.isInvalid");
+      "!$('saml-confirm-password').$.passwordInput.invalid");
 
   // Enter an unknown password for the first time should go back to confirm
   // password screen with error message.
@@ -977,7 +977,7 @@ IN_PROC_BROWSER_TEST_F(SamlTest, MAYBE_PasswordConfirmFlow) {
   OobeScreenWaiter(OobeScreen::SCREEN_CONFIRM_PASSWORD).Wait();
   test::OobeJS().ExpectTrue("!$('saml-confirm-password').manualInput");
   test::OobeJS().ExpectTrue(
-      "$('saml-confirm-password').$.passwordInput.isInvalid");
+      "$('saml-confirm-password').$.passwordInput.invalid");
 
   // Enter an unknown password 2nd time should go back fatal error message.
   SendConfirmPassword("wrong_password");
