@@ -6007,7 +6007,6 @@ crbug.com/993790 external/wpt/document-policy/required-policy/required-document-
 crbug.com/993790 external/wpt/document-policy/required-policy/required-document-policy.html [ Failure ]
 
 # Temporary suppression to allow devtools-frontend changes
-crbug.com/1025667 http/tests/devtools/inspector-backend-commands.js [ Pass Failure ]
 crbug.com/1029489 http/tests/devtools/elements/elements-linkify-attributes.js [ Pass Failure ]
 crbug.com/1030258 http/tests/devtools/resource-har-conversion.js [ Pass Failure ]
 
