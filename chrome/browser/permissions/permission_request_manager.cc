@@ -466,12 +466,14 @@ void PermissionRequestManager::FinalizeBubble(
         PermissionEmbargoStatus::NOT_EMBARGOED;
     if (permission_action == PermissionAction::DISMISSED) {
       if (autoblocker->RecordDismissAndEmbargo(
-              request->GetOrigin(), request->GetContentSettingsType())) {
+              request->GetOrigin(), request->GetContentSettingsType(),
+              ShouldCurrentRequestUseQuietUI())) {
         embargo_status = PermissionEmbargoStatus::REPEATED_DISMISSALS;
       }
     } else if (permission_action == PermissionAction::IGNORED) {
       if (autoblocker->RecordIgnoreAndEmbargo(
-              request->GetOrigin(), request->GetContentSettingsType())) {
+              request->GetOrigin(), request->GetContentSettingsType(),
+              ShouldCurrentRequestUseQuietUI())) {
         embargo_status = PermissionEmbargoStatus::REPEATED_IGNORES;
       }
     }
