@@ -58410,6 +58410,15 @@ Called by update_net_trust_anchors.py.-->
   <int value="2" label="Other fragment navigation"/>
 </enum>
 
+<enum name="SiteEngagementLevel">
+  <int value="0" label="None"/>
+  <int value="1" label="Minimal"/>
+  <int value="2" label="Low"/>
+  <int value="3" label="Medium"/>
+  <int value="4" label="High"/>
+  <int value="5" label="Max"/>
+</enum>
+
 <enum name="SiteEngagementServiceEngagementType">
   <int value="0" label="Navigation"/>
   <int value="1" label="Keypress"/>
