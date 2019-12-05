@@ -4205,9 +4205,9 @@ void RenderFrameHostImpl::DownloadUrl(
           }
         })");
   std::unique_ptr<download::DownloadUrlParameters> parameters(
-      new download::DownloadUrlParameters(url, GetProcess()->GetID(),
-                                          GetRenderViewHost()->GetRoutingID(),
-                                          GetRoutingID(), traffic_annotation));
+      new download::DownloadUrlParameters(
+          url, GetProcess()->GetID(), GetRenderViewHost()->GetRoutingID(),
+          GetRoutingID(), traffic_annotation, network_isolation_key_));
   parameters->set_content_initiated(true);
   parameters->set_suggested_name(suggested_name);
   parameters->set_prompt(use_prompt);

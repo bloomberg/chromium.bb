@@ -2290,6 +2290,10 @@ void NavigationRequest::OnWillProcessResponseChecksComplete(
       resource_request->has_user_gesture = common_params_->has_user_gesture;
       resource_request->mode = network::mojom::RequestMode::kNavigate;
       resource_request->transition_type = common_params_->transition;
+      resource_request->trusted_params =
+          network::ResourceRequest::TrustedParams();
+      resource_request->trusted_params->network_isolation_key =
+          GetNetworkIsolationKey();
 
       BrowserContext* browser_context =
           frame_tree_node_->navigator()->GetController()->GetBrowserContext();
