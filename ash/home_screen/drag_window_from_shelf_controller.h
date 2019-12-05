@@ -160,6 +160,10 @@ class ASH_EXPORT DragWindowFromShelfController : public aura::WindowObserver {
   // screen after drag ends.
   void ScaleDownWindowAfterDrag();
 
+  // Callback function to be called after the window has been scaled down and
+  // faded out after drag ends.
+  void OnWindowScaledDownAfterDrag();
+
   // Called when the dragged window should scale up to restore to its original
   // bounds after drag ends.
   void ScaleUpToRestoreWindowAfterDrag();

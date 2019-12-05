@@ -1282,6 +1282,12 @@ HotseatState ShelfLayoutManager::CalculateHotseatState(
       if (!hotseat_is_in_drag_)
         return hotseat_state();
 
+      if (app_list_visible)
+        return HotseatState::kShown;
+
+      if (in_overview && !in_split_view)
+        return HotseatState::kExtended;
+
       if (shelf_widget_->hotseat_widget()->IsExtended())
         return HotseatState::kExtended;
       // |drag_amount_| is relative to the top of the hotseat when the drag

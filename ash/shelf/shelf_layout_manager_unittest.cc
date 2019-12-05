@@ -4202,7 +4202,11 @@ TEST_P(HotseatShelfLayoutManagerTest, InAppToHomeChangesStateOnce) {
         ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
     HotseatStateWatcher watcher(GetShelfLayoutManager());
     FlingUpOnShelf();
-    watcher.WaitUntilStateChanged();
+    watcher.CheckEqual({HotseatState::kShown});
+
+    // Wait for the window animation to complete, and verify the hotseat state
+    // remained kShown.
+    ShellTestApi().WaitForWindowFinishAnimating(window.get());
     watcher.CheckEqual({HotseatState::kShown});
   }
 
