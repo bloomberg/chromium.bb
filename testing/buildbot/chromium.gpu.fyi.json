@@ -4754,7 +4754,6 @@
           "--benchmarks=rendering.mobile",
           "--browser=android-chromium"
         ],
-        "experiment_percentage": 100,
         "isolate_name": "rendering_representative_perf_tests",
         "merge": {
           "args": [],
@@ -12874,7 +12873,6 @@
           "../../tools/perf/run_benchmark",
           "--benchmarks=rendering.desktop"
         ],
-        "experiment_percentage": 100,
         "isolate_name": "rendering_representative_perf_tests",
         "merge": {
           "args": [],
@@ -14528,7 +14526,6 @@
           "../../tools/perf/run_benchmark",
           "--benchmarks=rendering.desktop"
         ],
-        "experiment_percentage": 100,
         "isolate_name": "rendering_representative_perf_tests",
         "merge": {
           "args": [],
@@ -19718,7 +19715,6 @@
           "--benchmarks=rendering.desktop",
           "--browser=release_x64"
         ],
-        "experiment_percentage": 100,
         "isolate_name": "rendering_representative_perf_tests",
         "merge": {
           "args": [],
@@ -21340,7 +21336,6 @@
           "--benchmarks=rendering.desktop",
           "--browser=release_x64"
         ],
-        "experiment_percentage": 100,
         "isolate_name": "rendering_representative_perf_tests",
         "merge": {
           "args": [],
@@ -22234,7 +22229,6 @@
           "--benchmarks=rendering.desktop",
           "--browser=release_x64"
         ],
-        "experiment_percentage": 100,
         "isolate_name": "rendering_representative_perf_tests",
         "merge": {
           "args": [],
@@ -24239,7 +24233,6 @@
           "--benchmarks=rendering.desktop",
           "--browser=release_x64"
         ],
-        "experiment_percentage": 100,
         "isolate_name": "rendering_representative_perf_tests",
         "merge": {
           "args": [],
