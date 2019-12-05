@@ -57,11 +57,11 @@ Error VirtualConnectionRouter::SendMessage(VirtualConnection virtual_conn,
   // TODO(btolsch): Check for broadcast message.
   if (!IsTransportNamespace(message.namespace_()) &&
       !vc_manager_->GetConnectionData(virtual_conn)) {
-    return Error::Code::kUnknownError;
+    return Error::Code::kNoActiveConnection;
   }
   auto it = sockets_.find(virtual_conn.socket_id);
   if (it == sockets_.end()) {
-    return Error::Code::kUnknownError;
+    return Error::Code::kItemNotFound;
   }
   message.set_source_id(std::move(virtual_conn.local_id));
   message.set_destination_id(std::move(virtual_conn.peer_id));
