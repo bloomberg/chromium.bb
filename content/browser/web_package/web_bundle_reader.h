@@ -82,6 +82,10 @@ class CONTENT_EXPORT WebBundleReader final
   // Returns the WebBundleSource.
   const WebBundleSource& source() const;
 
+  base::WeakPtr<WebBundleReader> GetWeakPtr() {
+    return weak_ptr_factory_.GetWeakPtr();
+  }
+
  private:
   friend class base::RefCounted<WebBundleReader>;
 
@@ -143,6 +147,8 @@ class CONTENT_EXPORT WebBundleReader final
   base::flat_map<GURL, data_decoder::mojom::BundleIndexValuePtr> entries_;
   // Accumulates ReadResponse() requests while the parser is disconnected.
   std::vector<std::pair<GURL, ResponseCallback>> pending_read_responses_;
+
+  base::WeakPtrFactory<WebBundleReader> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(WebBundleReader);
 };
