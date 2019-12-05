@@ -107,38 +107,6 @@ class InterstitialHTMLSource : public content::URLDataSource {
   DISALLOW_COPY_AND_ASSIGN(InterstitialHTMLSource);
 };
 
-#if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
-// Provides fake connection information to the captive portal blocking page so
-// that both Wi-Fi and non Wi-Fi blocking pages can be displayed.
-class CaptivePortalBlockingPageWithNetInfo : public CaptivePortalBlockingPage {
- public:
-  CaptivePortalBlockingPageWithNetInfo(content::WebContents* web_contents,
-                                       const GURL& request_url,
-                                       const GURL& login_url,
-                                       const net::SSLInfo& ssl_info,
-                                       bool is_wifi,
-                                       const std::string& wifi_ssid)
-      : CaptivePortalBlockingPage(web_contents,
-                                  request_url,
-                                  login_url,
-                                  nullptr,
-                                  ssl_info,
-                                  net::ERR_CERT_COMMON_NAME_INVALID),
-        is_wifi_(is_wifi),
-        wifi_ssid_(wifi_ssid) {}
-
- private:
-  // CaptivePortalBlockingPage methods:
-  bool IsWifiConnection() const override { return is_wifi_; }
-  std::string GetWiFiSSID() const override { return wifi_ssid_; }
-
-  const bool is_wifi_;
-  const std::string wifi_ssid_;
-
-  DISALLOW_COPY_AND_ASSIGN(CaptivePortalBlockingPageWithNetInfo);
-};
-#endif
-
 SSLBlockingPage* CreateSslBlockingPage(content::WebContents* web_contents) {
   // Random parameters for SSL blocking page.
   int cert_error = net::ERR_CERT_CONTAINS_ERRORS;
@@ -427,10 +395,10 @@ CaptivePortalBlockingPage* CreateCaptivePortalBlockingPage(
   }
   net::SSLInfo ssl_info;
   ssl_info.cert = ssl_info.unverified_cert = CreateFakeCert();
-  CaptivePortalBlockingPage* blocking_page =
-      new CaptivePortalBlockingPageWithNetInfo(
-          web_contents, request_url, landing_url, ssl_info,
-          is_wifi_connection, wifi_ssid);
+  CaptivePortalBlockingPage* blocking_page = new CaptivePortalBlockingPage(
+      web_contents, request_url, landing_url, nullptr, ssl_info,
+      net::ERR_CERT_COMMON_NAME_INVALID);
+  blocking_page->OverrideWifiInfoForTesting(is_wifi_connection, wifi_ssid);
   return blocking_page;
 }
 #endif

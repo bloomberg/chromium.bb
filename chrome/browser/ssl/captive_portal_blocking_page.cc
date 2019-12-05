@@ -100,7 +100,18 @@ const void* CaptivePortalBlockingPage::GetTypeForTesting() {
   return CaptivePortalBlockingPage::kTypeForTesting;
 }
 
+void CaptivePortalBlockingPage::OverrideWifiInfoForTesting(
+    bool is_wifi_connection,
+    const std::string& wifi_ssid) {
+  is_wifi_info_overridden_for_testing_ = true;
+  is_wifi_connection_for_testing_ = is_wifi_connection;
+  wifi_ssid_for_testing_ = wifi_ssid;
+}
+
 bool CaptivePortalBlockingPage::IsWifiConnection() const {
+  if (is_wifi_info_overridden_for_testing_)
+    return is_wifi_connection_for_testing_;
+
   // |net::NetworkChangeNotifier::GetConnectionType| isn't accurate on Linux
   // and Windows. See https://crbug.com/160537 for details.
   // TODO(meacer): Add heuristics to get a more accurate connection type on
@@ -110,6 +121,9 @@ bool CaptivePortalBlockingPage::IsWifiConnection() const {
 }
 
 std::string CaptivePortalBlockingPage::GetWiFiSSID() const {
+  if (is_wifi_info_overridden_for_testing_)
+    return wifi_ssid_for_testing_;
+
   // On Windows and Mac, |WiFiService| provides an easy to use API to get the
   // currently associated WiFi access point. |WiFiService| isn't available on
   // Linux so |net::GetWifiSSID| is used instead.

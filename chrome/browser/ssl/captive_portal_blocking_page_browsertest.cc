@@ -73,32 +73,6 @@ enum ExpectLoginURL {
   EXPECT_LOGIN_URL_YES
 };
 
-class CaptivePortalBlockingPageForTesting : public CaptivePortalBlockingPage {
- public:
-  CaptivePortalBlockingPageForTesting(
-      content::WebContents* web_contents,
-      const GURL& request_url,
-      const GURL& login_url,
-      std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
-      const net::SSLInfo& ssl_info,
-      bool is_wifi,
-      const std::string& wifi_ssid)
-      : CaptivePortalBlockingPage(web_contents,
-                                  request_url,
-                                  login_url,
-                                  std::move(ssl_cert_reporter),
-                                  ssl_info,
-                                  net::ERR_CERT_COMMON_NAME_INVALID),
-        is_wifi_(is_wifi),
-        wifi_ssid_(wifi_ssid) {}
-
- private:
-  bool IsWifiConnection() const override { return is_wifi_; }
-  std::string GetWiFiSSID() const override { return wifi_ssid_; }
-  const bool is_wifi_;
-  const std::string wifi_ssid_;
-};
-
 // A NavigationThrottle that observes failed requests and shows a captive portal
 // interstitial.
 class CaptivePortalTestingNavigationThrottle
@@ -145,11 +119,11 @@ CaptivePortalTestingNavigationThrottle::WillFailRequest() {
   ssl_info.cert =
       net::ImportCertFromFile(net::GetTestCertsDirectory(), "ok_cert.pem");
   ssl_info.cert_status = net::CERT_STATUS_COMMON_NAME_INVALID;
-  CaptivePortalBlockingPage* blocking_page =
-      new CaptivePortalBlockingPageForTesting(
-          navigation_handle()->GetWebContents(), GURL(kBrokenSSL), login_url_,
-          std::move(ssl_cert_reporter_), ssl_info,
-          is_wifi_connection_, wifi_ssid_);
+  CaptivePortalBlockingPage* blocking_page = new CaptivePortalBlockingPage(
+      navigation_handle()->GetWebContents(), GURL(kBrokenSSL), login_url_,
+      std::move(ssl_cert_reporter_), ssl_info,
+      net::ERR_CERT_COMMON_NAME_INVALID);
+  blocking_page->OverrideWifiInfoForTesting(is_wifi_connection_, wifi_ssid_);
 
   std::string html = blocking_page->GetHTMLContents();
   // Hand the blocking page back to the WebContents's
@@ -447,10 +421,10 @@ class CaptivePortalBlockingPageIDNTest : public SecurityInterstitialIDNTest {
       const GURL& request_url) const override {
     net::SSLInfo empty_ssl_info;
     // Blocking page is owned by the interstitial.
-    CaptivePortalBlockingPage* blocking_page =
-        new CaptivePortalBlockingPageForTesting(
-            contents, GURL(kBrokenSSL), request_url, nullptr, empty_ssl_info,
-            false, "");
+    CaptivePortalBlockingPage* blocking_page = new CaptivePortalBlockingPage(
+        contents, GURL(kBrokenSSL), request_url, nullptr, empty_ssl_info,
+        net::ERR_CERT_COMMON_NAME_INVALID);
+    blocking_page->OverrideWifiInfoForTesting(false, "");
     return blocking_page;
   }
 };
