@@ -306,9 +306,27 @@ public class ActivityTabWebContentsDelegateAndroid extends TabWebContentsDelegat
     }
 
     @Override
+    public int getTopControlsMinHeight() {
+        FullscreenManager manager = getFullscreenManager();
+        return manager != null ? manager.getTopControlsMinHeight() : 0;
+    }
+
+    @Override
     public int getBottomControlsHeight() {
         FullscreenManager manager = getFullscreenManager();
         return manager != null ? manager.getBottomControlsHeight() : 0;
+    }
+
+    @Override
+    public int getBottomControlsMinHeight() {
+        FullscreenManager manager = getFullscreenManager();
+        return manager != null ? manager.getBottomControlsMinHeight() : 0;
+    }
+
+    @Override
+    public boolean shouldAnimateBrowserControlsHeightChanges() {
+        FullscreenManager manager = getFullscreenManager();
+        return manager != null && manager.shouldAnimateBrowserControlsHeightChanges();
     }
 
     @Override

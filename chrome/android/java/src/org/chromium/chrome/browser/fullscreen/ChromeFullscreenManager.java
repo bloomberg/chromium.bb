@@ -83,7 +83,10 @@ public class ChromeFullscreenManager extends FullscreenManager
     private TabModelSelectorTabObserver mTabFullscreenObserver;
     @Nullable private ControlContainer mControlContainer;
     private int mTopControlContainerHeight;
+    private int mTopControlsMinHeight;
     private int mBottomControlContainerHeight;
+    private int mBottomControlsMinHeight;
+    private boolean mAnimateBrowserControlsHeightChanges;
     private boolean mControlsResizeView;
     private TabModelSelectorTabModelObserver mTabModelObserver;
 
@@ -151,13 +154,14 @@ public class ChromeFullscreenManager extends FullscreenManager
         /**
          * Called when the height of the bottom controls are changed.
          */
-        default void onBottomControlsHeightChanged(int bottomControlsHeight) {}
+        default void onBottomControlsHeightChanged(
+                int bottomControlsHeight, int bottomControlsMinHeight) {}
 
         /**
          * Called when the height of the top controls are changed.
          */
-        default void onTopControlsHeightChanged(int topControlsHeight, boolean controlsResizeView) {
-        }
+        default void onTopControlsHeightChanged(
+                int topControlsHeight, int topControlsMinHeight, boolean controlsResizeView) {}
 
         /**
          * Called when the viewport size of the active content is updated.
@@ -522,24 +526,42 @@ public class ChromeFullscreenManager extends FullscreenManager
     /**
      * Sets the height of the bottom controls.
      */
-    public void setBottomControlsHeight(int bottomControlsHeight) {
-        if (mBottomControlContainerHeight == bottomControlsHeight) return;
+    public void setBottomControlsHeight(int bottomControlsHeight, int bottomControlsMinHeight) {
+        if (mBottomControlContainerHeight == bottomControlsHeight
+                && mBottomControlsMinHeight == bottomControlsMinHeight) {
+            return;
+        }
         mBottomControlContainerHeight = bottomControlsHeight;
+        mBottomControlsMinHeight = bottomControlsMinHeight;
         for (int i = 0; i < mListeners.size(); i++) {
-            mListeners.get(i).onBottomControlsHeightChanged(mBottomControlContainerHeight);
+            mListeners.get(i).onBottomControlsHeightChanged(
+                    mBottomControlContainerHeight, mBottomControlsMinHeight);
         }
     }
 
     /**
      * Sets the height of the top controls.
      */
-    public void setTopControlsHeight(int topControlsHeight) {
-        if (mTopControlContainerHeight == topControlsHeight) return;
+    public void setTopControlsHeight(int topControlsHeight, int topControlsMinHeight) {
+        if (mTopControlContainerHeight == topControlsHeight
+                && mTopControlsMinHeight == topControlsMinHeight) {
+            return;
+        }
         mTopControlContainerHeight = topControlsHeight;
+        mTopControlsMinHeight = topControlsMinHeight;
         for (int i = 0; i < mListeners.size(); i++) {
             mListeners.get(i).onTopControlsHeightChanged(
-                    mTopControlContainerHeight, mControlsResizeView);
+                    mTopControlContainerHeight, mTopControlsMinHeight, mControlsResizeView);
         }
+    }
+
+    /**
+     * Sets whether the changes to the browser controls heights should be animated.
+     * @param animateBrowserControlsHeightChanges True if the height changes should be animated.
+     */
+    public void setAnimateBrowserControlsHeightChanges(
+            boolean animateBrowserControlsHeightChanges) {
+        mAnimateBrowserControlsHeightChanges = animateBrowserControlsHeightChanges;
     }
 
     @Override
@@ -548,13 +570,25 @@ public class ChromeFullscreenManager extends FullscreenManager
     }
 
     @Override
+    public int getTopControlsMinHeight() {
+        return mTopControlsMinHeight;
+    }
+
+    @Override
     public int getBottomControlsHeight() {
         return mBottomControlContainerHeight;
     }
 
-    /**
-     * @return The height of the bottom controls in pixels.
-     */
+    @Override
+    public int getBottomControlsMinHeight() {
+        return mBottomControlsMinHeight;
+    }
+
+    @Override
+    public boolean shouldAnimateBrowserControlsHeightChanges() {
+        return mAnimateBrowserControlsHeightChanges;
+    }
+
     public boolean controlsResizeView() {
         return mControlsResizeView;
     }

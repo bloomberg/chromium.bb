@@ -108,7 +108,8 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
                 public void onToggleOverlayVideoMode(boolean enabled) {}
 
                 @Override
-                public void onBottomControlsHeightChanged(int bottomControlsHeight) {
+                public void onBottomControlsHeightChanged(
+                        int bottomControlsHeight, int bottomControlsMinHeight) {
                     mContainerViewModel.set(BOTTOM_CONTROLS_HEIGHT, bottomControlsHeight);
                 }
             };

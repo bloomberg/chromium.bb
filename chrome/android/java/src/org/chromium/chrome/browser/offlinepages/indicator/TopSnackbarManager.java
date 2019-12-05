@@ -60,7 +60,8 @@ public class TopSnackbarManager
     }
 
     @Override
-    public void onBottomControlsHeightChanged(int bottomControlsHeight) {}
+    public void onBottomControlsHeightChanged(
+            int bottomControlsHeight, int bottomControlsMinHeight) {}
 
     @Override
     public void onContentOffsetChanged(int offset) {}

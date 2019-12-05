@@ -33,6 +33,7 @@
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "cc/base/switches.h"
+#include "cc/trees/browser_controls_params.h"
 #include "cc/trees/render_frame_metadata.h"
 #include "components/viz/common/features.h"
 #include "components/viz/common/quads/compositor_frame.h"
@@ -767,11 +768,17 @@ VisualProperties RenderWidgetHostImpl::GetVisualProperties() {
   RenderViewHostDelegateView* rvh_delegate_view = delegate_->GetDelegateView();
   DCHECK(rvh_delegate_view);
 
-  visual_properties.browser_controls_shrink_blink_size =
+  visual_properties.browser_controls_params.browser_controls_shrink_blink_size =
       rvh_delegate_view->DoBrowserControlsShrinkRendererSize();
+  visual_properties.browser_controls_params
+      .animate_browser_controls_height_changes =
+      rvh_delegate_view->ShouldAnimateBrowserControlsHeightChanges();
 
   float top_controls_height = rvh_delegate_view->GetTopControlsHeight();
+  float top_controls_min_height = rvh_delegate_view->GetTopControlsMinHeight();
   float bottom_controls_height = rvh_delegate_view->GetBottomControlsHeight();
+  float bottom_controls_min_height =
+      rvh_delegate_view->GetBottomControlsMinHeight();
   float browser_controls_dsf_multiplier = 1.f;
   // The top and bottom control sizes are physical pixels but the IPC wants
   // DIPs *when not using page zoom for DSF* because blink layout is working
@@ -780,10 +787,14 @@ VisualProperties RenderWidgetHostImpl::GetVisualProperties() {
     browser_controls_dsf_multiplier =
         visual_properties.screen_info.device_scale_factor;
   }
-  visual_properties.top_controls_height =
+  visual_properties.browser_controls_params.top_controls_height =
       top_controls_height / browser_controls_dsf_multiplier;
-  visual_properties.bottom_controls_height =
+  visual_properties.browser_controls_params.top_controls_min_height =
+      top_controls_min_height / browser_controls_dsf_multiplier;
+  visual_properties.browser_controls_params.bottom_controls_height =
       bottom_controls_height / browser_controls_dsf_multiplier;
+  visual_properties.browser_controls_params.bottom_controls_min_height =
+      bottom_controls_min_height / browser_controls_dsf_multiplier;
 
   visual_properties.auto_resize_enabled = auto_resize_enabled_;
   visual_properties.min_size_for_auto_resize = min_size_for_auto_resize_;
@@ -2336,12 +2347,8 @@ bool RenderWidgetHostImpl::StoredVisualPropertiesNeedsUpdate(
              new_visual_properties.is_fullscreen_granted ||
          old_visual_properties->display_mode !=
              new_visual_properties.display_mode ||
-         old_visual_properties->top_controls_height !=
-             new_visual_properties.top_controls_height ||
-         old_visual_properties->browser_controls_shrink_blink_size !=
-             new_visual_properties.browser_controls_shrink_blink_size ||
-         old_visual_properties->bottom_controls_height !=
-             new_visual_properties.bottom_controls_height ||
+         old_visual_properties->browser_controls_params !=
+             new_visual_properties.browser_controls_params ||
          old_visual_properties->visible_viewport_size !=
              new_visual_properties.visible_viewport_size ||
          old_visual_properties->capture_sequence_number !=

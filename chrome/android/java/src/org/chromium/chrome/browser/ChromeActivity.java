@@ -1458,7 +1458,8 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
                     }
 
                     @Override
-                    public void onBottomControlsHeightChanged(int bottomControlsHeight) {}
+                    public void onBottomControlsHeightChanged(
+                            int bottomControlsHeight, int bottomControlsMinHeight) {}
                 };
         getFullscreenManager().addListener(fullscreenListener);
 

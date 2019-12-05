@@ -732,11 +732,9 @@ void TestWebWidgetClient::SetBrowserControlsShownRatio(float top_ratio,
   layer_tree_host()->SetBrowserControlsShownRatio(top_ratio, bottom_ratio);
 }
 
-void TestWebWidgetClient::SetBrowserControlsHeight(float top_height,
-                                                   float bottom_height,
-                                                   bool shrink_viewport) {
-  layer_tree_host()->SetBrowserControlsHeight(top_height, bottom_height,
-                                              shrink_viewport);
+void TestWebWidgetClient::SetBrowserControlsParams(
+    cc::BrowserControlsParams params) {
+  layer_tree_host()->SetBrowserControlsParams(params);
 }
 
 viz::FrameSinkId TestWebWidgetClient::GetFrameSinkId() {

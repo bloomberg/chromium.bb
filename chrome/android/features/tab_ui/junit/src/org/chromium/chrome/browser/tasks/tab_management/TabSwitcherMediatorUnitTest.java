@@ -410,7 +410,8 @@ public class TabSwitcherMediatorUnitTest {
         assertThat(mModel.get(TabListContainerProperties.BOTTOM_CONTROLS_HEIGHT),
                 equalTo(CONTROL_HEIGHT_DEFAULT));
 
-        mFullscreenListenerCaptor.getValue().onBottomControlsHeightChanged(CONTROL_HEIGHT_MODIFIED);
+        mFullscreenListenerCaptor.getValue().onBottomControlsHeightChanged(
+                CONTROL_HEIGHT_MODIFIED, 0);
         assertThat(mModel.get(TabListContainerProperties.BOTTOM_CONTROLS_HEIGHT),
                 equalTo(CONTROL_HEIGHT_MODIFIED));
     }
