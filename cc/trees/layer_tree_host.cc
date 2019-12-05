@@ -903,6 +903,7 @@ void LayerTreeHost::SendOverscrollAndScrollEndEventsFromImplSide(
 
 void LayerTreeHost::ApplyScrollAndScale(ScrollAndScaleSet* info) {
   DCHECK(info);
+  TRACE_EVENT0("cc", "LayerTreeHost::ApplyScrollAndScale");
   for (auto& swap_promise : info->swap_promises) {
     TRACE_EVENT_WITH_FLOW1("input,benchmark", "LatencyInfo.Flow",
                            TRACE_ID_DONT_MANGLE(swap_promise->TraceId()),
@@ -920,6 +921,10 @@ void LayerTreeHost::ApplyScrollAndScale(ScrollAndScaleSet* info) {
         SetNeedsUpdateLayers();
       }
       if (IsUsingLayerLists()) {
+        TRACE_EVENT_INSTANT2(
+            "cc", "NotifyDidScroll", TRACE_EVENT_SCOPE_THREAD, "cur_y",
+            scroll_tree.current_scroll_offset(scroll.element_id).y(), "delta",
+            scroll.scroll_delta.y());
         scroll_tree.NotifyDidScroll(
             scroll.element_id,
             scroll_tree.current_scroll_offset(scroll.element_id) +

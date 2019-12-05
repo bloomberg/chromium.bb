@@ -907,6 +907,9 @@ InputHandlerProxy::HandleGestureScrollUpdate(
   in_inertial_scrolling_ = scroll_state.is_in_inertial_phase();
   gfx::PointF scroll_point(gesture_event.PositionInWidget());
 
+  TRACE_EVENT_INSTANT1(
+      "input", "DeltaUnits", TRACE_EVENT_SCOPE_THREAD, "unit",
+      static_cast<int>(gesture_event.data.scroll_update.delta_units));
   if (ShouldAnimate(gesture_event.SourceDevice(),
                     gesture_event.data.scroll_update.delta_units !=
                         ui::input_types::ScrollGranularity::kScrollByPixel)) {

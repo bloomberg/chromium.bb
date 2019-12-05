@@ -1422,6 +1422,7 @@ void ScrollTree::CollectScrollDeltas(ScrollAndScaleSet* scroll_info,
                                      ElementId inner_viewport_scroll_element_id,
                                      bool use_fractional_deltas) {
   DCHECK(!property_trees()->is_main_thread);
+  TRACE_EVENT0("cc", "ScrollTree::CollectScrollDeltas");
   for (auto map_entry : synced_scroll_offset_map_) {
     gfx::ScrollOffset scroll_delta =
         PullDeltaForMainThread(map_entry.second.get(), use_fractional_deltas);
@@ -1429,6 +1430,9 @@ void ScrollTree::CollectScrollDeltas(ScrollAndScaleSet* scroll_info,
     ElementId id = map_entry.first;
 
     if (!scroll_delta.IsZero()) {
+      TRACE_EVENT_INSTANT2("cc", "CollectScrollDeltas",
+                           TRACE_EVENT_SCOPE_THREAD, "x", scroll_delta.x(), "y",
+                           scroll_delta.y());
       // The snap targets will change on cc only if the node was scrolled, so it
       // is safe to update the snap targets only when the scroll delta is not
       // zero.

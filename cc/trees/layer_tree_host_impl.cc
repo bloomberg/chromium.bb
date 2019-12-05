@@ -4415,6 +4415,10 @@ gfx::Vector2dF LayerTreeHostImpl::ScrollNodeWithViewportSpaceDelta(
     return gfx::Vector2dF();
   }
 
+  bool scrolls_outer_viewport = scroll_node->scrolls_outer_viewport;
+  TRACE_EVENT2("cc", "ScrollNodeWithViewportSpaceDelta", "delta_y",
+               local_scroll_delta.y(), "is_outer", scrolls_outer_viewport);
+
   // Apply the scroll delta.
   gfx::ScrollOffset previous_offset =
       scroll_tree->current_scroll_offset(scroll_node->element_id);
@@ -4422,6 +4426,9 @@ gfx::Vector2dF LayerTreeHostImpl::ScrollNodeWithViewportSpaceDelta(
   gfx::ScrollOffset scrolled =
       scroll_tree->current_scroll_offset(scroll_node->element_id) -
       previous_offset;
+
+  TRACE_EVENT_INSTANT1("cc", "ConsumedDelta", TRACE_EVENT_SCOPE_THREAD, "y",
+                       scrolled.y());
 
   // Get the end point in the layer's content space so we can apply its
   // ScreenSpaceTransform.
@@ -4450,6 +4457,10 @@ static gfx::Vector2dF ScrollNodeWithLocalDelta(
     const gfx::Vector2dF& local_delta,
     float page_scale_factor,
     LayerTreeImpl* layer_tree_impl) {
+  bool scrolls_outer_viewport = scroll_node->scrolls_outer_viewport;
+  TRACE_EVENT2("cc", "ScrollNodeWithLocalDelta", "delta_y", local_delta.y(),
+               "is_outer", scrolls_outer_viewport);
+
   ScrollTree& scroll_tree = layer_tree_impl->property_trees()->scroll_tree;
   gfx::ScrollOffset previous_offset =
       scroll_tree.current_scroll_offset(scroll_node->element_id);
@@ -4461,6 +4472,8 @@ static gfx::Vector2dF ScrollNodeWithLocalDelta(
       previous_offset;
   gfx::Vector2dF consumed_scroll(scrolled.x(), scrolled.y());
   consumed_scroll.Scale(page_scale_factor);
+  TRACE_EVENT_INSTANT1("cc", "ConsumedDelta", TRACE_EVENT_SCOPE_THREAD, "y",
+                       consumed_scroll.y());
 
   return consumed_scroll;
 }
@@ -4499,6 +4512,8 @@ void LayerTreeHostImpl::ScrollLatchedScroller(ScrollState* scroll_state) {
   gfx::Point viewport_point(scroll_state->position_x(),
                             scroll_state->position_y());
   const gfx::Vector2dF delta(scroll_state->delta_x(), scroll_state->delta_y());
+  TRACE_EVENT2("cc", "LayerTreeHostImpl::ScrollLatchedScroller", "delta_x",
+               delta.x(), "delta_y", delta.y());
   gfx::Vector2dF applied_delta;
   gfx::Vector2dF delta_applied_to_content;
   // TODO(tdresser): Use a more rational epsilon. See crbug.com/510550 for
