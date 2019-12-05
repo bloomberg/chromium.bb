@@ -718,11 +718,9 @@ void URLLoader::FollowRedirect(const std::vector<std::string>& removed_headers,
           new_origin /* top frame origin */, new_origin /* frame origin */));
     } else if (update_network_isolation_key_on_redirect_ ==
                mojom::UpdateNetworkIsolationKeyOnRedirect::kUpdateFrameOrigin) {
-      base::Optional<url::Origin> top_frame_origin =
-          url_request_->network_isolation_key().GetTopFrameOrigin();
-      DCHECK(top_frame_origin);
       url_request_->set_network_isolation_key(
-          net::NetworkIsolationKey(top_frame_origin.value(), new_origin));
+          url_request_->network_isolation_key().CreateWithNewFrameOrigin(
+              new_origin));
     }
   }
 
