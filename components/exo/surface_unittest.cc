@@ -862,6 +862,38 @@ TEST_P(SurfaceTest, SetAlpha) {
   }
 }
 
+TEST_P(SurfaceTest, SurfaceQuad) {
+  gfx::Size buffer_size(1, 1);
+  auto buffer = std::make_unique<Buffer>(
+      exo_test_helper()->CreateGpuMemoryBuffer(buffer_size), GL_TEXTURE_2D, 0,
+      true, true, false);
+  auto surface = std::make_unique<Surface>();
+  auto shell_surface = std::make_unique<ShellSurface>(surface.get());
+  surface->Attach(buffer.get());
+  surface->SetAlpha(1.0f);
+
+  surface->SetEmbeddedSurfaceId(base::BindRepeating([]() -> viz::SurfaceId {
+    return viz::SurfaceId(
+        viz::FrameSinkId(1, 1),
+        viz::LocalSurfaceId(1, 1, base::UnguessableToken::Create()));
+  }));
+
+  {
+    surface->Commit();
+    base::RunLoop().RunUntilIdle();
+
+    const viz::CompositorFrame& frame =
+        GetFrameFromSurface(shell_surface.get());
+    EXPECT_EQ(1u, frame.render_pass_list.size());
+    EXPECT_EQ(1u, frame.render_pass_list.back()->quad_list.size());
+    EXPECT_EQ(1u, frame.resource_list.size());
+    // Ensure that the quad is correct and the resource is included.
+    EXPECT_EQ(1u, frame.resource_list.back().id);
+    EXPECT_EQ(viz::DrawQuad::Material::kSurfaceContent,
+              frame.render_pass_list.back()->quad_list.back()->material);
+  }
+}
+
 TEST_P(SurfaceTest, Commit) {
   std::unique_ptr<Surface> surface(new Surface);
 
