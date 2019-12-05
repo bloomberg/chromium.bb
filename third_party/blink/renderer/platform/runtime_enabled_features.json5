@@ -1242,7 +1242,7 @@
     },
     {
       name: "PaymentHandlerHandlesShippingAndContact",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "PaymentMethodChangeEvent",
