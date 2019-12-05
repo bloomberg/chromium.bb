@@ -21482,6 +21482,7 @@ Called by update_net_error_codes.py.-->
   <int value="1422" label="ENTERPRISEREPORTINGPRIVATE_GETDEVICEDATA"/>
   <int value="1423" label="ENTERPRISEREPORTINGPRIVATE_SETDEVICEDATA"/>
   <int value="1424" label="ENTERPRISEREPORTINGPRIVATE_GETDEVICEINFO"/>
+  <int value="1425" label="PRINTING_GETPRINTERS"/>
 </enum>
 
 <enum name="ExtensionIconState">
