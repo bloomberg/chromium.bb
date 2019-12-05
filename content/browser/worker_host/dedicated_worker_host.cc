@@ -52,17 +52,17 @@ DedicatedWorkerHost::DedicatedWorkerHost(
 
 DedicatedWorkerHost::~DedicatedWorkerHost() = default;
 
-void DedicatedWorkerHost::GetInterface(
-    const std::string& interface_name,
-    mojo::ScopedMessagePipeHandle interface_pipe) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-}
-
 void DedicatedWorkerHost::BindBrowserInterfaceBrokerReceiver(
     mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker> receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(receiver.is_valid());
   broker_receiver_.Bind(std::move(receiver));
+  broker_receiver_.set_disconnect_handler(base::BindOnce(
+      &DedicatedWorkerHost::OnMojoDisconnect, base::Unretained(this)));
+}
+
+void DedicatedWorkerHost::OnMojoDisconnect() {
+  delete this;
 }
 
 void DedicatedWorkerHost::LifecycleStateChanged(
@@ -514,7 +514,6 @@ class DedicatedWorkerHostFactoryImpl final
   // blink::mojom::DedicatedWorkerHostFactory:
   void CreateWorkerHost(
       const url::Origin& origin,
-      mojo::PendingReceiver<service_manager::mojom::InterfaceProvider> receiver,
       mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>
           broker_receiver,
       mojo::PendingReceiver<blink::mojom::DedicatedWorkerHost> host_receiver)
@@ -529,14 +528,11 @@ class DedicatedWorkerHostFactoryImpl final
     // with the request for |DedicatedWorkerHostFactory|, enforce that
     // the worker's origin either matches the origin of the creating context
     // (Document or DedicatedWorkerGlobalScope), or is unique.
-    auto host = std::make_unique<DedicatedWorkerHost>(
+    // Deletes itself on Mojo disconnection.
+    auto* host = new DedicatedWorkerHost(
         creator_process_id_, ancestor_render_frame_id_,
         creator_render_frame_id_, origin, std::move(host_receiver));
     host->BindBrowserInterfaceBrokerReceiver(std::move(broker_receiver));
-    mojo::MakeSelfOwnedReceiver(
-        std::move(host), FilterRendererExposedInterfaces(
-                             blink::mojom::kNavigation_DedicatedWorkerSpec,
-                             creator_process_id_, std::move(receiver)));
   }
 
   // PlzDedicatedWorker:
@@ -564,30 +560,21 @@ class DedicatedWorkerHostFactoryImpl final
     // with the request for |DedicatedWorkerHostFactory|, enforce that
     // the worker's origin either matches the origin of the creating context
     // (Document or DedicatedWorkerGlobalScope), or is unique.
-    auto host = std::make_unique<DedicatedWorkerHost>(
+    // Deletes itself on Mojo disconnection.
+    auto* host = new DedicatedWorkerHost(
         creator_process_id_, ancestor_render_frame_id_,
         creator_render_frame_id_, request_initiator_origin,
         std::move(host_receiver));
     mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker> broker;
     host->BindBrowserInterfaceBrokerReceiver(
         broker.InitWithNewPipeAndPassReceiver());
-    auto* host_raw = host.get();
-    mojo::PendingRemote<service_manager::mojom::InterfaceProvider>
-        interface_provider;
-    mojo::MakeSelfOwnedReceiver(
-        std::move(host),
-        FilterRendererExposedInterfaces(
-            blink::mojom::kNavigation_DedicatedWorkerSpec, creator_process_id_,
-            interface_provider.InitWithNewPipeAndPassReceiver()));
-
     mojo::Remote<blink::mojom::DedicatedWorkerHostFactoryClient> remote_client(
         std::move(client));
-    remote_client->OnWorkerHostCreated(std::move(interface_provider),
-                                       std::move(broker));
-    host_raw->StartScriptLoad(
-        script_url, request_initiator_origin, credentials_mode,
-        std::move(outside_fetch_client_settings_object),
-        std::move(blob_url_token), std::move(remote_client));
+    remote_client->OnWorkerHostCreated(std::move(broker));
+    host->StartScriptLoad(script_url, request_initiator_origin,
+                          credentials_mode,
+                          std::move(outside_fetch_client_settings_object),
+                          std::move(blob_url_token), std::move(remote_client));
   }
 
  private:

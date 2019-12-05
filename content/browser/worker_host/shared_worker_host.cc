@@ -180,13 +180,6 @@ void SharedWorkerHost::Start(
   content_settings_ = std::make_unique<SharedWorkerContentSettingsProxyImpl>(
       instance_.url(), this, content_settings.InitWithNewPipeAndPassReceiver());
 
-  // Set up interface provider interface.
-  mojo::PendingRemote<service_manager::mojom::InterfaceProvider>
-      interface_provider;
-  interface_provider_receiver_.Bind(FilterRendererExposedInterfaces(
-      blink::mojom::kNavigation_SharedWorkerSpec, worker_process_id_,
-      interface_provider.InitWithNewPipeAndPassReceiver()));
-
   // Set up BrowserInterfaceBroker interface
   mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
       browser_interface_broker;
@@ -226,7 +219,7 @@ void SharedWorkerHost::Start(
       std::move(main_script_load_params),
       std::move(subresource_loader_factories), std::move(controller),
       receiver_.BindNewPipeAndPassRemote(), std::move(worker_receiver_),
-      std::move(interface_provider), std::move(browser_interface_broker));
+      std::move(browser_interface_broker));
 
   // |service_worker_remote_object| is an associated interface ptr, so calls
   // can't be made on it until its request endpoint is sent. Now that the
@@ -527,12 +520,6 @@ void SharedWorkerHost::OnWorkerConnectionLost() {
   // This will destroy |this| resulting in client's observing their mojo
   // connection being dropped.
   Destruct();
-}
-
-void SharedWorkerHost::GetInterface(
-    const std::string& interface_name,
-    mojo::ScopedMessagePipeHandle interface_pipe) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
 }  // namespace content

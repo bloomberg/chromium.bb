@@ -121,7 +121,6 @@ class CONTENT_EXPORT ServiceWorkerContextClient
       std::unique_ptr<blink::WebServiceWorkerInstalledScriptsManagerParams>,
       mojo::ScopedMessagePipeHandle content_settings_handle,
       mojo::ScopedMessagePipeHandle cache_storage,
-      mojo::ScopedMessagePipeHandle interface_provider,
       mojo::ScopedMessagePipeHandle browser_interface_broker);
   // Called on the initiator thread.
   blink::WebEmbeddedWorker& worker();

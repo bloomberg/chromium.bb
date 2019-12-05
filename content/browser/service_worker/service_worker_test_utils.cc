@@ -340,7 +340,6 @@ CreateProviderHostForServiceWorkerContext(
 
   host->CompleteStartWorkerPreparation(
       process_id,
-      provider_info->interface_provider.InitWithNewPipeAndPassReceiver(),
       provider_info->browser_interface_broker.InitWithNewPipeAndPassReceiver());
   output_endpoint->BindForServiceWorker(std::move(provider_info));
   return host;

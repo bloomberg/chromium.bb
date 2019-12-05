@@ -18,7 +18,6 @@
 #include "third_party/blink/public/common/loader/url_loader_factory_bundle.h"
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
-#include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/web/web_shared_worker.h"
 #include "url/origin.h"
@@ -44,8 +43,6 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
     blink::mojom::ControllerServiceWorkerInfoPtr controller_info,
     mojo::PendingRemote<blink::mojom::SharedWorkerHost> host,
     mojo::PendingReceiver<blink::mojom::SharedWorker> receiver,
-    mojo::PendingRemote<service_manager::mojom::InterfaceProvider>
-        interface_provider,
     mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
         browser_interface_broker)
     : receiver_(this, std::move(receiver)),
@@ -106,8 +103,7 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
       blink::WebString::FromUTF8(info->content_security_policy),
       info->content_security_policy_type, info->creation_address_space,
       appcache_host_id, devtools_worker_token, content_settings.PassPipe(),
-      interface_provider.PassPipe(), browser_interface_broker.PassPipe(),
-      pause_on_start);
+      browser_interface_broker.PassPipe(), pause_on_start);
 
   // If the host drops its connection, then self-destruct.
   receiver_.set_disconnect_handler(base::BindOnce(

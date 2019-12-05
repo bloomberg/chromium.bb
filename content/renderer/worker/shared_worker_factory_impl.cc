@@ -40,8 +40,6 @@ void SharedWorkerFactoryImpl::CreateSharedWorker(
     blink::mojom::ControllerServiceWorkerInfoPtr controller_info,
     mojo::PendingRemote<blink::mojom::SharedWorkerHost> host,
     mojo::PendingReceiver<blink::mojom::SharedWorker> receiver,
-    mojo::PendingRemote<service_manager::mojom::InterfaceProvider>
-        interface_provider,
     mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
         browser_interface_broker) {
   // Bound to the lifetime of the underlying blink::WebSharedWorker instance.
@@ -52,7 +50,7 @@ void SharedWorkerFactoryImpl::CreateSharedWorker(
       appcache_host_id.value_or(base::UnguessableToken()),
       std::move(main_script_load_params),
       std::move(subresource_loader_factories), std::move(controller_info),
-      std::move(host), std::move(receiver), std::move(interface_provider),
+      std::move(host), std::move(receiver),
       std::move(browser_interface_broker));
 }
 

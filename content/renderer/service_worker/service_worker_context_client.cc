@@ -178,15 +178,13 @@ void ServiceWorkerContextClient::StartWorkerContextOnInitiatorThread(
         installed_scripts_manager_params,
     mojo::ScopedMessagePipeHandle content_settings_handle,
     mojo::ScopedMessagePipeHandle cache_storage,
-    mojo::ScopedMessagePipeHandle interface_provider,
     mojo::ScopedMessagePipeHandle browser_interface_broker) {
   DCHECK(initiator_thread_task_runner_->RunsTasksInCurrentSequence());
   worker_ = std::move(worker);
   worker_->StartWorkerContext(
       std::move(start_data), std::move(installed_scripts_manager_params),
       std::move(content_settings_handle), std::move(cache_storage),
-      std::move(interface_provider), std::move(browser_interface_broker),
-      initiator_thread_task_runner_);
+      std::move(browser_interface_broker), initiator_thread_task_runner_);
 }
 
 blink::WebEmbeddedWorker& ServiceWorkerContextClient::worker() {

@@ -11,7 +11,6 @@
 #include "content/renderer/service_worker/service_worker_provider_context.h"
 #include "content/renderer/worker/fetch_client_settings_object_helpers.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
-#include "services/service_manager/public/mojom/interface_provider.mojom.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/blob/blob_url_store.mojom.h"
 #include "third_party/blink/public/mojom/loader/fetch_client_settings_object.mojom.h"
@@ -36,16 +35,12 @@ DedicatedWorkerHostFactoryClient::~DedicatedWorkerHostFactoryClient() = default;
 void DedicatedWorkerHostFactoryClient::CreateWorkerHostDeprecated(
     const blink::WebSecurityOrigin& script_origin) {
   DCHECK(!base::FeatureList::IsEnabled(blink::features::kPlzDedicatedWorker));
-  mojo::PendingRemote<service_manager::mojom::InterfaceProvider>
-      interface_provider;
   mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
       browser_interface_broker;
   factory_->CreateWorkerHost(
-      script_origin, interface_provider.InitWithNewPipeAndPassReceiver(),
-      browser_interface_broker.InitWithNewPipeAndPassReceiver(),
+      script_origin, browser_interface_broker.InitWithNewPipeAndPassReceiver(),
       remote_host_.BindNewPipeAndPassReceiver());
-  OnWorkerHostCreated(std::move(interface_provider),
-                      std::move(browser_interface_broker));
+  OnWorkerHostCreated(std::move(browser_interface_broker));
 }
 
 void DedicatedWorkerHostFactoryClient::CreateWorkerHost(
@@ -117,12 +112,9 @@ DedicatedWorkerHostFactoryClient::CreateWorkerFetchContext(
 }
 
 void DedicatedWorkerHostFactoryClient::OnWorkerHostCreated(
-    mojo::PendingRemote<service_manager::mojom::InterfaceProvider>
-        interface_provider,
     mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
         browser_interface_broker) {
-  worker_->OnWorkerHostCreated(interface_provider.PassPipe(),
-                               browser_interface_broker.PassPipe());
+  worker_->OnWorkerHostCreated(browser_interface_broker.PassPipe());
 }
 
 void DedicatedWorkerHostFactoryClient::OnScriptLoadStarted(
