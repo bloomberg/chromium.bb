@@ -2812,6 +2812,12 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
     {"siteSettingsMicrophoneLabel", IDS_SETTINGS_SITE_SETTINGS_MIC_LABEL},
     {"siteSettingsCategoryNotifications",
      IDS_SETTINGS_SITE_SETTINGS_NOTIFICATIONS},
+    {"siteSettingsNotificationsAsk",
+     IDS_SETTINGS_SITE_SETTINGS_NOTIFICATIONS_ASK},
+    {"siteSettingsNotificationsBlock",
+     IDS_SETTINGS_SITE_SETTINGS_NOTIFICATIONS_BLOCK},
+    {"siteSettingsEnableQuietNotificationPrompts",
+     IDS_SETTINGS_SITE_SETTINGS_ENABLE_QUIET_NOTIFICATION_PROMPTS},
     {"siteSettingsCategoryPopups", IDS_SETTINGS_SITE_SETTINGS_POPUPS},
     {"siteSettingsCategoryZoomLevels", IDS_SETTINGS_SITE_SETTINGS_ZOOM_LEVELS},
     {"siteSettingsAllSites", IDS_SETTINGS_SITE_SETTINGS_ALL_SITES},
@@ -3168,6 +3174,10 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
   html_source->AddBoolean(
       "enableStoragePressureUI",
       base::FeatureList::IsEnabled(features::kStoragePressureUI));
+
+  html_source->AddBoolean(
+      "enableQuietNotificationPromptsSetting",
+      base::FeatureList::IsEnabled(features::kQuietNotificationPrompts));
 }
 
 #if defined(OS_CHROMEOS)
