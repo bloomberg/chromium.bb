@@ -3200,6 +3200,11 @@
     "expiry_milestone": 83
   },
   {
+    "name": "sharing-qr-code-generator",
+    "owners": [ "//components/send_tab_to_self/OWNERS" ],
+    "expiry_milestone": 82
+  },
+  {
     "name": "sharing-rename-devices",
     "owners": [ "//chrome/browser/sharing/OWNERS" ],
     "expiry_milestone": 83

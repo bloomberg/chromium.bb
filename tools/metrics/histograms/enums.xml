@@ -37661,6 +37661,7 @@ from previous Chrome versions.
   <int value="42844603" label="AndroidSurfaceControl:disabled"/>
   <int value="43951968" label="DesktopPWAsCustomTabUI:enabled"/>
   <int value="44088203" label="ExpensiveBackgroundTimerThrottling:enabled"/>
+  <int value="44240181" label="SharingQRCodeGenerator:disabled"/>
   <int value="48159177" label="reduced-referrer-granularity"/>
   <int value="49113130" label="OmniboxOnDeviceHeadProvider:disabled"/>
   <int value="51793504" label="protect-sync-credential-on-reauth:disabled"/>
@@ -37876,6 +37877,7 @@ from previous Chrome versions.
   <int value="339671131" label="disable-per-user-timezone"/>
   <int value="341152650" label="SoundContentSetting:enabled"/>
   <int value="341851350" label="EnableDbusAndX11StatusIcons:enabled"/>
+  <int value="342960463" label="SharingQRCodeGenerator:enabled"/>
   <int value="345664265" label="BlinkHeapIncrementalMarking:disabled"/>
   <int value="346711293" label="enable-save-password-bubble"/>
   <int value="347981012" label="TabToGTSAnimation:disabled"/>

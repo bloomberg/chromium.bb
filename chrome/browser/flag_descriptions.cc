@@ -1867,6 +1867,10 @@ const char kSharingPeerConnectionSenderDescription[] =
     "Enables the sender devices to connect with chosen device using a peer to "
     "peer connection for transferring data.";
 
+const char kSharingQRCodeGeneratorName[] = "Enable sharing page via QR Code";
+const char kSharingQRCodeGeneratorDescription[] =
+    "Enables right-click UI to share the page's URL via a generated QR Code.";
+
 const char kSharingRenameDevicesName[] =
     "Enable device renaming in Sharing features.";
 const char kSharingRenameDevicesDescription[] =
