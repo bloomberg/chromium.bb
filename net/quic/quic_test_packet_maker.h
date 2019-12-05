@@ -52,6 +52,8 @@ class QuicTestPacketMaker {
   ~QuicTestPacketMaker();
 
   void set_hostname(const std::string& host);
+  void set_max_allowed_push_id(quic::QuicStreamId push_id);
+
   std::unique_ptr<quic::QuicReceivedPacket> MakeConnectivityProbingPacket(
       uint64_t num,
       bool include_version);
@@ -408,6 +410,7 @@ class QuicTestPacketMaker {
   quic::QuicStreamId GetHeadersStreamId() const;
 
   std::string GenerateHttp3SettingsData();
+  std::string GenerateHttp3MaxPushIdData();
   std::string GenerateHttp3PriorityData(spdy::SpdyPriority priority,
                                         quic::QuicStreamId stream_id);
 
@@ -417,6 +420,7 @@ class QuicTestPacketMaker {
   quic::QuicConnectionId connection_id_;
   const quic::QuicClock* clock_;  // Not owned.
   std::string host_;
+  quic::QuicStreamId max_allowed_push_id_;
   spdy::SpdyFramer spdy_request_framer_;
   spdy::SpdyFramer spdy_response_framer_;
   bool coalesce_http_frames_;

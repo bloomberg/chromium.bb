@@ -128,6 +128,7 @@ QuicTestPacketMaker::QuicTestPacketMaker(
       connection_id_(connection_id),
       clock_(clock),
       host_(host),
+      max_allowed_push_id_(0),
       spdy_request_framer_(spdy::SpdyFramer::ENABLE_COMPRESSION),
       spdy_response_framer_(spdy::SpdyFramer::ENABLE_COMPRESSION),
       coalesce_http_frames_(false),
@@ -154,6 +155,10 @@ QuicTestPacketMaker::~QuicTestPacketMaker() {
 
 void QuicTestPacketMaker::set_hostname(const std::string& host) {
   host_.assign(host);
+}
+
+void QuicTestPacketMaker::set_max_allowed_push_id(quic::QuicStreamId push_id) {
+  max_allowed_push_id_ = push_id;
 }
 
 std::unique_ptr<quic::QuicReceivedPacket>
@@ -1534,6 +1539,15 @@ std::string QuicTestPacketMaker::GenerateHttp3SettingsData() {
   return std::string(buffer.get(), frame_length);
 }
 
+std::string QuicTestPacketMaker::GenerateHttp3MaxPushIdData() {
+  quic::MaxPushIdFrame max_push_id;
+  max_push_id.push_id = max_allowed_push_id_;
+  std::unique_ptr<char[]> buffer;
+  quic::QuicByteCount frame_length =
+      quic::HttpEncoder::SerializeMaxPushIdFrame(max_push_id, &buffer);
+  return std::string(buffer.get(), frame_length);
+}
+
 std::string QuicTestPacketMaker::GenerateHttp3PriorityData(
     spdy::SpdyPriority priority,
     quic::QuicStreamId stream_id) {
@@ -1564,14 +1578,15 @@ void QuicTestPacketMaker::MaybeAddHttp3SettingsFrames(
   // stream first.
   std::string type(1, 0x00);
   std::string settings_data = GenerateHttp3SettingsData();
+  std::string max_push_id_data = GenerateHttp3MaxPushIdData();
 
   // The type and the SETTINGS frame may be sent in multiple QUIC STREAM
   // frames.
   std::vector<std::string> data;
   if (coalesce_http_frames_) {
-    data = {type + settings_data};
+    data = {type + settings_data + max_push_id_data};
   } else {
-    data = {type, settings_data};
+    data = {type, settings_data, max_push_id_data};
   }
 
   for (const auto& frame : GenerateNextStreamFrames(stream_id, false, data))

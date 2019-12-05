@@ -378,4 +378,4 @@ QUIC_FLAG(bool,
 // frame is sent in HTTP/3.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_send_max_push_id_with_settings,
-          false)
+          true)
