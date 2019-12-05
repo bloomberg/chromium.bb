@@ -304,6 +304,8 @@ PasswordPendingView::PasswordPendingView(content::WebContents* web_contents,
         password_dropdown_->GetPreferredSize().height(), this);
 #endif  // defined(PASSWORD_STORE_SELECT_ENABLED)
   }
+
+  DialogDelegate::SetFootnoteView(CreateFooterView());
 }
 
 views::View* PasswordPendingView::GetUsernameTextfieldForTest() const {
@@ -364,18 +366,6 @@ void PasswordPendingView::OnContentChanged(
     // implies a re-layout of the dialog.
     GetWidget()->GetRootView()->Layout();
   }
-}
-
-std::unique_ptr<views::View> PasswordPendingView::CreateFootnoteView() {
-  if (sign_in_promo_ || !model()->ShouldShowFooter())
-    return nullptr;
-  auto label = std::make_unique<views::Label>(
-      l10n_util::GetStringUTF16(IDS_SAVE_PASSWORD_FOOTER),
-      ChromeTextContext::CONTEXT_BODY_TEXT_SMALL,
-      views::style::STYLE_SECONDARY);
-  label->SetMultiLine(true);
-  label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  return label;
 }
 
 gfx::Size PasswordPendingView::CalculatePreferredSize() const {
@@ -499,4 +489,16 @@ void PasswordPendingView::ReplaceWithPromo() {
 
   SizeToContents();
 #endif  // defined(OS_CHROMEOS)
+}
+
+std::unique_ptr<views::View> PasswordPendingView::CreateFooterView() {
+  if (!model()->ShouldShowFooter())
+    return nullptr;
+  auto label = std::make_unique<views::Label>(
+      l10n_util::GetStringUTF16(IDS_SAVE_PASSWORD_FOOTER),
+      ChromeTextContext::CONTEXT_BODY_TEXT_SMALL,
+      views::style::STYLE_SECONDARY);
+  label->SetMultiLine(true);
+  label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  return label;
 }
