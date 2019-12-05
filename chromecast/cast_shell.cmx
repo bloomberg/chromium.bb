@@ -15,7 +15,6 @@
       "fuchsia.accessibility.semantics.SemanticsManager",
       "fuchsia.bluetooth.gatt.Server",
       "fuchsia.bluetooth.le.Peripheral",
-      "fuchsia.deprecatedtimezone.Timezone",
       "fuchsia.device.NameProvider",
       "fuchsia.fonts.Provider",
       "fuchsia.intl.PropertyProvider",

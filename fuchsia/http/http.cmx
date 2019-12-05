@@ -5,7 +5,6 @@
       "deprecated-ambient-replace-as-executable"
     ],
     "services": [
-      "fuchsia.deprecatedtimezone.Timezone",
       "fuchsia.device.NameProvider",
       "fuchsia.intl.PropertyProvider",
       "fuchsia.logger.LogSink",

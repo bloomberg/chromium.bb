@@ -1594,7 +1594,7 @@ jumbo_component("base") {
       "threading/platform_thread_posix.cc",
       "threading/thread_local_storage_posix.cc",
       "time/time_conversion_posix.cc",
-      "time/time_exploded_posix.cc",
+      "time/time_exploded_icu.cc",
       "time/time_fuchsia.cc",
       "timer/hi_res_timer_manager_posix.cc",
     ]
@@ -1616,11 +1616,11 @@ jumbo_component("base") {
       "//third_party/fuchsia-sdk/sdk:async-loop-cpp",
       "//third_party/fuchsia-sdk/sdk:async-loop-default",
       "//third_party/fuchsia-sdk/sdk:fidl",
-      "//third_party/fuchsia-sdk/sdk:fuchsia-deprecatedtimezone",
       "//third_party/fuchsia-sdk/sdk:fuchsia-intl",
       "//third_party/fuchsia-sdk/sdk:fuchsia-sys",
       "//third_party/fuchsia-sdk/sdk:syslog",
       "//third_party/fuchsia-sdk/sdk:vfs_cpp",
+      "//third_party/icu",
     ]
   }
 
