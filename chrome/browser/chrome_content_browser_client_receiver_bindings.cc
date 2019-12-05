@@ -50,6 +50,12 @@
 #include "chrome/browser/win/conflicts/module_event_sink_impl.h"
 #endif
 
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+#include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
+#include "chrome/browser/extensions/chrome_extensions_browser_client.h"
+#include "extensions/browser/extensions_browser_client.h"
+#endif
+
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
 #include "chrome/browser/media/output_protection_impl.h"
 #include "chrome/browser/media/platform_verification_impl.h"
@@ -195,8 +201,26 @@ void ChromeContentBrowserClient::ExposeInterfacesToMediaService(
 }
 
 void ChromeContentBrowserClient::RegisterBrowserInterfaceBindersForFrame(
+    content::RenderFrameHost* render_frame_host,
     service_manager::BinderMapWithContext<content::RenderFrameHost*>* map) {
   chrome::internal::PopulateChromeFrameBinders(map);
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  content::WebContents* web_contents =
+      content::WebContents::FromRenderFrameHost(render_frame_host);
+  if (!web_contents)
+    return;
+  auto* client = extensions::ExtensionsBrowserClient::Get();
+  auto* web_observer = client->GetExtensionWebContentsObserver(web_contents);
+  if (!web_observer)
+    return;
+  const extensions::Extension* extension =
+      web_observer->GetExtensionFromFrame(render_frame_host, false);
+  if (!extension)
+    return;
+  client->RegisterBrowserInterfaceBindersForFrame(map, render_frame_host,
+                                                  extension);
+#endif
 }
 
 void ChromeContentBrowserClient::BindInterfaceRequestFromFrame(

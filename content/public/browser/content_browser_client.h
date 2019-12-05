@@ -982,6 +982,7 @@ class CONTENT_EXPORT ContentBrowserClient {
   // This mechanism will replace interface registries and binders used for
   // handling InterfaceProvider's GetInterface() calls (see crbug.com/718652).
   virtual void RegisterBrowserInterfaceBindersForFrame(
+      RenderFrameHost* render_frame_host,
       service_manager::BinderMapWithContext<RenderFrameHost*>* map) {}
 
   // Content was unable to bind a request for this interface, so the embedder

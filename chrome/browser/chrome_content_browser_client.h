@@ -388,6 +388,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       service_manager::BinderRegistry* registry,
       content::RenderFrameHost* render_frame_host) override;
   void RegisterBrowserInterfaceBindersForFrame(
+      content::RenderFrameHost* render_frame_host,
       service_manager::BinderMapWithContext<content::RenderFrameHost*>* map)
       override;
   void BindInterfaceRequestFromFrame(
