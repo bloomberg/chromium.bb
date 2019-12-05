@@ -9,6 +9,14 @@ server-based spellcheck service.
 ## use_renderer_spellchecker
 Use hunspell spellchecker rather than the operating system's spellchecker.
 
+## use_windows_preferred_languages_for_spellcheck
+TODO(https://crbug.com/1000443): Use Windows preferred languages to help populate spellcheck settings.
+
+Use union of Chromium preferred languages (from Language settings) and
+the Windows preferred languages (from system language settings) as the
+source of the spellcheck languages in the "Spell check" section of the
+Chromium language settings, provided they are supported for spellcheck.
+
 ## Note:
 
 For most operating system except Windows, the decision to use the platform

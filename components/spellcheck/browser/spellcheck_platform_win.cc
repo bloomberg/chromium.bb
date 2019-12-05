@@ -6,6 +6,10 @@
 
 #include <objidl.h>
 #include <spellcheck.h>
+#include <windows.foundation.collections.h>
+#include <windows.globalization.h>
+#include <windows.system.userprofile.h>
+#include <winnls.h>  // ResolveLocaleName
 #include <wrl/client.h>
 
 #include <codecvt>
@@ -16,10 +20,14 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/no_destructor.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/win/com_init_util.h"
+#include "base/win/core_winrt_util.h"
+#include "base/win/scoped_co_mem.h"
+#include "base/win/scoped_hstring.h"
 #include "base/win/windows_types.h"
 #include "base/win/windows_version.h"
 #include "components/spellcheck/common/spellcheck_common.h"
@@ -57,6 +65,13 @@ class WindowsSpellChecker {
   void RecordMissingLanguagePacksCount(
       const std::vector<std::string> spellcheck_locales,
       SpellCheckHostMetrics* metrics);
+
+#if BUILDFLAG(USE_WINDOWS_PREFERRED_LANGUAGES_FOR_SPELLCHECK)
+  // Retrieve language tags for installed Windows language packs that also have
+  // spellchecking support.
+  void RetrieveSupportedWindowsPreferredLanguages(
+      RetrieveSupportedLanguagesCompleteCallback callback);
+#endif  // BUILDFLAG(USE_WINDOWS_PREFERRED_LANGUAGES_FOR_SPELLCHECK)
 
  private:
   void CreateSpellCheckerFactoryInBackgroundThread();
@@ -115,6 +130,12 @@ class WindowsSpellChecker {
   void RecordMissingLanguagePacksCountInBackgroundThread(
       const std::vector<std::string> spellcheck_locales,
       SpellCheckHostMetrics* metrics);
+
+#if BUILDFLAG(USE_WINDOWS_PREFERRED_LANGUAGES_FOR_SPELLCHECK)
+  // Async retrieval of supported preferred languages.
+  void RetrieveSupportedWindowsPreferredLanguagesInBackgroundThread(
+      RetrieveSupportedLanguagesCompleteCallback callback);
+#endif  // BUILDFLAG(USE_WINDOWS_PREFERRED_LANGUAGES_FOR_SPELLCHECK)
 
   // Spellchecker objects are owned by WindowsSpellChecker class.
   Microsoft::WRL::ComPtr<ISpellCheckerFactory> spell_checker_factory_;
@@ -211,6 +232,18 @@ void WindowsSpellChecker::RecordMissingLanguagePacksCount(
                      weak_ptr_factory_.GetWeakPtr(),
                      std::move(spellcheck_locales), metrics));
 }
+
+#if BUILDFLAG(USE_WINDOWS_PREFERRED_LANGUAGES_FOR_SPELLCHECK)
+void WindowsSpellChecker::RetrieveSupportedWindowsPreferredLanguages(
+    RetrieveSupportedLanguagesCompleteCallback callback) {
+  background_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          &WindowsSpellChecker::
+              RetrieveSupportedWindowsPreferredLanguagesInBackgroundThread,
+          weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+#endif  // BUILDFLAG(USE_WINDOWS_PREFERRED_LANGUAGES_FOR_SPELLCHECK
 
 void WindowsSpellChecker::CreateSpellCheckerFactoryInBackgroundThread() {
   DCHECK(!main_task_runner_->BelongsToCurrentThread());
@@ -348,15 +381,14 @@ void WindowsSpellChecker::FillSuggestionListInBackgroundThread(
 
   // Populate the vector of WideStrings.
   while (hr == S_OK) {
-    wchar_t* suggestion = nullptr;
+    base::win::ScopedCoMem<wchar_t> suggestion;
     hr = suggestions->Next(1, &suggestion, nullptr);
     if (hr == S_OK) {
       base::string16 utf16_suggestion;
-      if (base::WideToUTF16(suggestion, wcslen(suggestion),
+      if (base::WideToUTF16(suggestion.get(), wcslen(suggestion),
                             &utf16_suggestion)) {
         optional_suggestions->push_back(utf16_suggestion);
       }
-      CoTaskMemFree(suggestion);
     }
   }
 }
@@ -411,6 +443,71 @@ bool WindowsSpellChecker::IsLanguageSupportedInBackgroundThread(
                                                    &is_language_supported);
   return SUCCEEDED(hr) && is_language_supported;
 }
+
+#if BUILDFLAG(USE_WINDOWS_PREFERRED_LANGUAGES_FOR_SPELLCHECK)
+void WindowsSpellChecker::
+    RetrieveSupportedWindowsPreferredLanguagesInBackgroundThread(
+        RetrieveSupportedLanguagesCompleteCallback callback) {
+  DCHECK(!main_task_runner_->BelongsToCurrentThread());
+  std::vector<std::string> supported_languages;
+
+  if (IsSpellCheckerFactoryInitialized() &&
+      // IGlobalizationPreferencesStatics is only available on Win8 and above.
+      spellcheck::WindowsVersionSupportsSpellchecker() &&
+      // Using WinRT and HSTRING.
+      base::win::ResolveCoreWinRTDelayload() &&
+      base::win::ScopedHString::ResolveCoreWinRTStringDelayload()) {
+    Microsoft::WRL::ComPtr<
+        ABI::Windows::System::UserProfile::IGlobalizationPreferencesStatics>
+        globalization_preferences;
+
+    HRESULT hr = base::win::GetActivationFactory<
+        ABI::Windows::System::UserProfile::IGlobalizationPreferencesStatics,
+        RuntimeClass_Windows_System_UserProfile_GlobalizationPreferences>(
+        &globalization_preferences);
+    // Should always succeed under same conditions for which
+    // WindowsVersionSupportsSpellchecker returns true.
+    DCHECK(SUCCEEDED(hr));
+    // Retrieve a vector of Windows preferred languages (that is, installed
+    // language packs listed under system Language Settings).
+    Microsoft::WRL::ComPtr<
+        ABI::Windows::Foundation::Collections::IVectorView<HSTRING>>
+        preferred_languages;
+    hr = globalization_preferences->get_Languages(&preferred_languages);
+    DCHECK(SUCCEEDED(hr));
+    uint32_t count = 0;
+    hr = preferred_languages->get_Size(&count);
+    DCHECK(SUCCEEDED(hr));
+    // Expect at least one language pack to be installed by default.
+    DCHECK_GE(count, 0u);
+    for (uint32_t i = 0; i < count; ++i) {
+      HSTRING language;
+      hr = preferred_languages->GetAt(i, &language);
+      DCHECK(SUCCEEDED(hr));
+      base::win::ScopedHString language_scoped(language);
+      // Language tags obtained using Windows.Globalization API
+      // (zh-Hans-CN e.g.) need to be converted to locale names via
+      // ResolveLocaleName before being passed to spell checker API.
+      wchar_t locale_name[LOCALE_NAME_MAX_LENGTH];
+      // ResolveLocaleName can only fail if buffer size insufficient.
+      ::ResolveLocaleName(
+          base::as_wcstr(base::AsStringPiece16(language_scoped.Get())),
+          locale_name, LOCALE_NAME_MAX_LENGTH);
+      // See if the language has a dictionary available. Some preferred
+      // languages have no spellchecking support (zh-CN e.g.).
+      BOOL is_language_supported = FALSE;
+      hr = spell_checker_factory_->IsSupported(locale_name,
+                                               &is_language_supported);
+      DCHECK(SUCCEEDED(hr));
+      if (is_language_supported)
+        supported_languages.push_back(base::WideToUTF8(locale_name));
+    }
+  }
+
+  main_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), supported_languages));
+}
+#endif  // #if BUILDFLAG(USE_WINDOWS_PREFERRED_LANGUAGES_FOR_SPELLCHECK)
 
 bool WindowsSpellChecker::IsSpellCheckerFactoryInitialized() {
   return spell_checker_factory_ != nullptr;
@@ -505,6 +602,14 @@ void IgnoreWord(const base::string16& word) {
 void GetAvailableLanguages(std::vector<std::string>* spellcheck_languages) {
   // Not used in Windows
 }
+
+#if BUILDFLAG(USE_WINDOWS_PREFERRED_LANGUAGES_FOR_SPELLCHECK)
+void RetrieveSupportedWindowsPreferredLanguages(
+    RetrieveSupportedLanguagesCompleteCallback callback) {
+  GetWindowsSpellChecker()->RetrieveSupportedWindowsPreferredLanguages(
+      std::move(callback));
+}
+#endif  // BUILDFLAG(USE_WINDOWS_PREFERRED_LANGUAGES_FOR_SPELLCHECK
 
 int GetDocumentTag() {
   return 1;  // Not used in Windows
