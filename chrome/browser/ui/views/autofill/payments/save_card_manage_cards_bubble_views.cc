@@ -42,10 +42,11 @@ SaveCardManageCardsBubbleViews::SaveCardManageCardsBubbleViews(
     : SaveCardBubbleViews(anchor_view, web_contents, controller) {
   DialogDelegate::set_buttons(ui::DIALOG_BUTTON_OK);
   DialogDelegate::SetExtraView(CreateManageCardsButton(this));
+  DialogDelegate::SetFootnoteView(CreateSigninPromoView());
 }
 
 std::unique_ptr<views::View>
-SaveCardManageCardsBubbleViews::CreateFootnoteView() {
+SaveCardManageCardsBubbleViews::CreateSigninPromoView() {
 #if defined(OS_CHROMEOS)
   // ChromeOS does not show the signin promo.
   return nullptr;
