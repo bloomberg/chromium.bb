@@ -110,6 +110,20 @@ SSLBlockingPage* ChromeSecurityBlockingPageFactory::CreateSSLPage(
 }
 
 // static
+CaptivePortalBlockingPage*
+ChromeSecurityBlockingPageFactory::CreateCaptivePortalBlockingPage(
+    content::WebContents* web_contents,
+    const GURL& request_url,
+    const GURL& login_url,
+    std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
+    const net::SSLInfo& ssl_info,
+    int cert_error) {
+  return new CaptivePortalBlockingPage(web_contents, request_url, login_url,
+                                       std::move(ssl_cert_reporter), ssl_info,
+                                       cert_error);
+}
+
+// static
 void ChromeSecurityBlockingPageFactory::DoChromeSpecificSetup(
     SSLBlockingPageBase* page) {
   page->set_renderer_pref_callback(

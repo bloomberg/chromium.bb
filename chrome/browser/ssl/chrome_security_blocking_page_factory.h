@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_SSL_CHROME_SECURITY_BLOCKING_PAGE_FACTORY_H_
 
 #include "base/macros.h"
+#include "chrome/browser/ssl/captive_portal_blocking_page.h"
 #include "components/security_interstitials/content/ssl_blocking_page.h"
 #include "components/security_interstitials/content/ssl_blocking_page_base.h"
 
@@ -13,10 +14,9 @@
 // interstitial pages.
 class ChromeSecurityBlockingPageFactory {
  public:
-  // Creates an SSL blocking page. If the blocking page isn't shown, the caller
-  // is responsible for cleaning up the blocking page, otherwise the
-  // interstitial takes ownership when shown. |options_mask| must be a bitwise
-  // mask of SSLErrorUI::SSLErrorOptionsMask values.
+  // Creates an SSL blocking page. |options_mask| must be a bitwise mask of
+  // SSLErrorUI::SSLErrorOptionsMask values. The caller is responsible for
+  // ownership of the returned object.
   static SSLBlockingPage* CreateSSLPage(
       content::WebContents* web_contents,
       int cert_error,
@@ -26,6 +26,16 @@ class ChromeSecurityBlockingPageFactory {
       const base::Time& time_triggered,
       const GURL& support_url,
       std::unique_ptr<SSLCertReporter> ssl_cert_reporter);
+
+  // Creates a captive portal blocking page. The caller is responsible for
+  // ownership of the returned object.
+  static CaptivePortalBlockingPage* CreateCaptivePortalBlockingPage(
+      content::WebContents* web_contents,
+      const GURL& request_url,
+      const GURL& login_url,
+      std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
+      const net::SSLInfo& ssl_info,
+      int cert_error);
 
   // Does setup on |page| that is specific to the client (Chrome).
   static void DoChromeSpecificSetup(SSLBlockingPageBase* page);

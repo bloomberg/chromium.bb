@@ -22,6 +22,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/certificate_reporting_service_test_utils.h"
 #include "chrome/browser/ssl/certificate_reporting_test_utils.h"
+#include "chrome/browser/ssl/chrome_security_blocking_page_factory.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -119,10 +120,11 @@ CaptivePortalTestingNavigationThrottle::WillFailRequest() {
   ssl_info.cert =
       net::ImportCertFromFile(net::GetTestCertsDirectory(), "ok_cert.pem");
   ssl_info.cert_status = net::CERT_STATUS_COMMON_NAME_INVALID;
-  CaptivePortalBlockingPage* blocking_page = new CaptivePortalBlockingPage(
-      navigation_handle()->GetWebContents(), GURL(kBrokenSSL), login_url_,
-      std::move(ssl_cert_reporter_), ssl_info,
-      net::ERR_CERT_COMMON_NAME_INVALID);
+  CaptivePortalBlockingPage* blocking_page =
+      ChromeSecurityBlockingPageFactory::CreateCaptivePortalBlockingPage(
+          navigation_handle()->GetWebContents(), GURL(kBrokenSSL), login_url_,
+          std::move(ssl_cert_reporter_), ssl_info,
+          net::ERR_CERT_COMMON_NAME_INVALID);
   blocking_page->OverrideWifiInfoForTesting(is_wifi_connection_, wifi_ssid_);
 
   std::string html = blocking_page->GetHTMLContents();
@@ -421,9 +423,10 @@ class CaptivePortalBlockingPageIDNTest : public SecurityInterstitialIDNTest {
       const GURL& request_url) const override {
     net::SSLInfo empty_ssl_info;
     // Blocking page is owned by the interstitial.
-    CaptivePortalBlockingPage* blocking_page = new CaptivePortalBlockingPage(
-        contents, GURL(kBrokenSSL), request_url, nullptr, empty_ssl_info,
-        net::ERR_CERT_COMMON_NAME_INVALID);
+    CaptivePortalBlockingPage* blocking_page =
+        ChromeSecurityBlockingPageFactory::CreateCaptivePortalBlockingPage(
+            contents, GURL(kBrokenSSL), request_url, nullptr, empty_ssl_info,
+            net::ERR_CERT_COMMON_NAME_INVALID);
     blocking_page->OverrideWifiInfoForTesting(false, "");
     return blocking_page;
   }

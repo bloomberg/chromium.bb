@@ -395,9 +395,10 @@ CaptivePortalBlockingPage* CreateCaptivePortalBlockingPage(
   }
   net::SSLInfo ssl_info;
   ssl_info.cert = ssl_info.unverified_cert = CreateFakeCert();
-  CaptivePortalBlockingPage* blocking_page = new CaptivePortalBlockingPage(
-      web_contents, request_url, landing_url, nullptr, ssl_info,
-      net::ERR_CERT_COMMON_NAME_INVALID);
+  CaptivePortalBlockingPage* blocking_page =
+      ChromeSecurityBlockingPageFactory::CreateCaptivePortalBlockingPage(
+          web_contents, request_url, landing_url, nullptr, ssl_info,
+          net::ERR_CERT_COMMON_NAME_INVALID);
   blocking_page->OverrideWifiInfoForTesting(is_wifi_connection, wifi_ssid);
   return blocking_page;
 }
