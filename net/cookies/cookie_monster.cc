@@ -194,43 +194,6 @@ bool LRACookieSorter(const CookieMonster::CookieMap::iterator& it1,
   return it1->second->CreationDate() < it2->second->CreationDate();
 }
 
-// Our strategy to find duplicates is:
-// (1) Build a map from (cookiename, cookiepath) to
-//     {list of cookies with this signature, sorted by creation time}.
-// (2) For each list with more than 1 entry, keep the cookie having the
-//     most recent creation time, and delete the others.
-//
-// Two cookies are considered equivalent if they have the same domain,
-// name, and path.
-struct CookieSignature {
- public:
-  CookieSignature(const std::string& name,
-                  const std::string& domain,
-                  const std::string& path)
-      : name(name), domain(domain), path(path) {}
-
-  // To be a key for a map this class needs to be assignable, copyable,
-  // and have an operator<.  The default assignment operator
-  // and copy constructor are exactly what we want.
-
-  bool operator<(const CookieSignature& cs) const {
-    // Name compare dominates, then domain, then path.
-    int diff = name.compare(cs.name);
-    if (diff != 0)
-      return diff < 0;
-
-    diff = domain.compare(cs.domain);
-    if (diff != 0)
-      return diff < 0;
-
-    return path.compare(cs.path) < 0;
-  }
-
-  std::string name;
-  std::string domain;
-  std::string path;
-};
-
 // For a CookieItVector iterator range [|it_begin|, |it_end|),
 // sorts the first |num_sort| elements by LastAccessDate().
 void SortLeastRecentlyAccessed(CookieMonster::CookieItVector::iterator it_begin,
@@ -878,6 +841,12 @@ void CookieMonster::EnsureCookiesMapIsValid() {
   }
 }
 
+// Our strategy to find duplicates is:
+// (1) Build a map from cookie unique key to
+//     {list of cookies with this signature, sorted by creation time}.
+// (2) For each list with more than 1 entry, keep the cookie having the
+//     most recent creation time, and delete the others.
+//
 void CookieMonster::TrimDuplicateCookiesForKey(const std::string& key,
                                                CookieMap::iterator begin,
                                                CookieMap::iterator end) {
@@ -887,7 +856,7 @@ void CookieMonster::TrimDuplicateCookiesForKey(const std::string& key,
   typedef std::multiset<CookieMap::iterator, OrderByCreationTimeDesc> CookieSet;
 
   // Helper map we populate to find the duplicates.
-  typedef std::map<CookieSignature, CookieSet> EquivalenceMap;
+  typedef std::map<CanonicalCookie::UniqueCookieKey, CookieSet> EquivalenceMap;
   EquivalenceMap equivalent_cookies;
 
   // The number of duplicate cookies that have been found.
@@ -899,7 +868,7 @@ void CookieMonster::TrimDuplicateCookiesForKey(const std::string& key,
     DCHECK_EQ(key, it->first);
     CanonicalCookie* cookie = it->second.get();
 
-    CookieSignature signature(cookie->Name(), cookie->Domain(), cookie->Path());
+    CanonicalCookie::UniqueCookieKey signature(cookie->UniqueKey());
     CookieSet& set = equivalent_cookies[signature];
 
     // We found a duplicate!
@@ -922,7 +891,7 @@ void CookieMonster::TrimDuplicateCookiesForKey(const std::string& key,
   // and from the backing store.
   for (auto it = equivalent_cookies.begin(); it != equivalent_cookies.end();
        ++it) {
-    const CookieSignature& signature = it->first;
+    const CanonicalCookie::UniqueCookieKey& signature = it->first;
     CookieSet& dupes = it->second;
 
     if (dupes.size() <= 1)
@@ -937,8 +906,9 @@ void CookieMonster::TrimDuplicateCookiesForKey(const std::string& key,
     LOG(ERROR) << base::StringPrintf(
         "Found %d duplicate cookies for host='%s', "
         "with {name='%s', domain='%s', path='%s'}",
-        static_cast<int>(dupes.size()), key.c_str(), signature.name.c_str(),
-        signature.domain.c_str(), signature.path.c_str());
+        static_cast<int>(dupes.size()), key.c_str(),
+        std::get<0>(signature).c_str(), std::get<1>(signature).c_str(),
+        std::get<2>(signature).c_str());
 
     // Remove all the cookies identified by |dupes|. It is valid to delete our
     // list of iterators one at a time, since |cookies_| is a multimap (they
