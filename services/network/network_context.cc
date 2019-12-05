@@ -1921,9 +1921,10 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext(
   if (network_service_ && network_service_->quic_disabled())
     is_quic_force_disabled = true;
 
+  auto quic_context = std::make_unique<net::QuicContext>();
   network_session_configurator::ParseCommandLineAndFieldTrials(
       *base::CommandLine::ForCurrentProcess(), is_quic_force_disabled,
-      params_->quic_user_agent_id, &session_params);
+      params_->quic_user_agent_id, &session_params, quic_context->params());
 
   session_params.disable_idle_sockets_close_on_memory_pressure =
       params_->disable_idle_sockets_close_on_memory_pressure;
@@ -1938,6 +1939,7 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext(
           features::kSplitAuthCacheByNetworkIsolationKey);
 
   builder.set_http_network_session_params(session_params);
+  builder.set_quic_context(std::move(quic_context));
 
   builder.SetCreateHttpTransactionFactoryCallback(
       base::BindOnce([](net::HttpNetworkSession* session)

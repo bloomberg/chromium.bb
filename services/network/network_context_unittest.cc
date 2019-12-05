@@ -683,10 +683,9 @@ TEST_F(NetworkContextTest, QuicUserAgentId) {
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(std::move(context_params));
   EXPECT_EQ(kQuicUserAgentId, network_context->url_request_context()
-                                  ->http_transaction_factory()
-                                  ->GetSession()
+                                  ->quic_context()
                                   ->params()
-                                  .quic_params.user_agent_id);
+                                  ->user_agent_id);
 }
 
 TEST_F(NetworkContextTest, DataUrlSupport) {
@@ -835,11 +834,13 @@ TEST_F(NetworkContextTest, DefaultHttpNetworkSessionParams) {
           ->http_transaction_factory()
           ->GetSession()
           ->params();
+  const net::QuicParams* quic_params =
+      network_context->url_request_context()->quic_context()->params();
 
   EXPECT_TRUE(params.enable_http2);
   EXPECT_FALSE(params.enable_quic);
-  EXPECT_EQ(1350u, params.quic_params.max_packet_length);
-  EXPECT_TRUE(params.quic_params.origins_to_force_quic_on.empty());
+  EXPECT_EQ(1350u, quic_params->max_packet_length);
+  EXPECT_TRUE(quic_params->origins_to_force_quic_on.empty());
   EXPECT_FALSE(params.enable_user_alternate_protocol_ports);
   EXPECT_FALSE(params.ignore_certificate_errors);
   EXPECT_EQ(0, params.testing_fixed_http_port);
