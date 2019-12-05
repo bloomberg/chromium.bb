@@ -80,7 +80,7 @@ cca.views.BaseSettings.prototype.focus = function() {
  */
 cca.views.BaseSettings.prototype.openSubSettings = function(id) {
   // Dismiss master-settings if sub-settings was dimissed by background click.
-  cca.nav.open(id).then((cond) => cond && cond.bkgnd && this.leave());
+  cca.nav.open(id).then((cond) => cond && cond.bkgnd && this.leave(cond));
 };
 
 /**
