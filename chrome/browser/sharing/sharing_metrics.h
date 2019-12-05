@@ -112,6 +112,7 @@ void LogSharingDialogShown(SharingFeatureName feature, SharingDialogType type);
 // sending ack messages.
 void LogSendSharingMessageResult(
     chrome_browser_sharing::MessageType message_type,
+    SharingDevicePlatform receiver_device_platform,
     SharingSendMessageResult result);
 
 // Logs to UMA result of sendin an ack of a SharingMessage.
