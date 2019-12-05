@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ssl/chrome_ssl_blocking_page.h"
+#include "chrome/browser/ssl/chrome_security_blocking_page_factory.h"
 
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
@@ -47,7 +47,7 @@ std::unique_ptr<ChromeMetricsHelper> CreateSSLProblemMetricsHelper(
 }  // namespace
 
 // static
-SSLBlockingPage* ChromeSSLBlockingPage::Create(
+SSLBlockingPage* ChromeSecurityBlockingPageFactory::CreateSSLPage(
     content::WebContents* web_contents,
     int cert_error,
     const net::SSLInfo& ssl_info,
@@ -110,7 +110,8 @@ SSLBlockingPage* ChromeSSLBlockingPage::Create(
 }
 
 // static
-void ChromeSSLBlockingPage::DoChromeSpecificSetup(SSLBlockingPageBase* page) {
+void ChromeSecurityBlockingPageFactory::DoChromeSpecificSetup(
+    SSLBlockingPageBase* page) {
   page->set_renderer_pref_callback(
       base::BindRepeating([](content::WebContents* web_contents,
                              blink::mojom::RendererPreferences* prefs) {

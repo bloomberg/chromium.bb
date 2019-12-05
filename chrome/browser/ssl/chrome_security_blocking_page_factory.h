@@ -2,21 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SSL_CHROME_SSL_BLOCKING_PAGE_H_
-#define CHROME_BROWSER_SSL_CHROME_SSL_BLOCKING_PAGE_H_
+#ifndef CHROME_BROWSER_SSL_CHROME_SECURITY_BLOCKING_PAGE_FACTORY_H_
+#define CHROME_BROWSER_SSL_CHROME_SECURITY_BLOCKING_PAGE_FACTORY_H_
 
 #include "base/macros.h"
 #include "components/security_interstitials/content/ssl_blocking_page.h"
 #include "components/security_interstitials/content/ssl_blocking_page_base.h"
 
-// Contains utilities for Chrome-specific construction of SSL pages.
-class ChromeSSLBlockingPage {
+// Contains utilities for Chrome-specific construction of security-related
+// interstitial pages.
+class ChromeSecurityBlockingPageFactory {
  public:
   // Creates an SSL blocking page. If the blocking page isn't shown, the caller
   // is responsible for cleaning up the blocking page, otherwise the
   // interstitial takes ownership when shown. |options_mask| must be a bitwise
   // mask of SSLErrorUI::SSLErrorOptionsMask values.
-  static SSLBlockingPage* Create(
+  static SSLBlockingPage* CreateSSLPage(
       content::WebContents* web_contents,
       int cert_error,
       const net::SSLInfo& ssl_info,
@@ -30,7 +31,7 @@ class ChromeSSLBlockingPage {
   static void DoChromeSpecificSetup(SSLBlockingPageBase* page);
 
  private:
-  DISALLOW_IMPLICIT_CONSTRUCTORS(ChromeSSLBlockingPage);
+  DISALLOW_IMPLICIT_CONSTRUCTORS(ChromeSecurityBlockingPageFactory);
 };
 
-#endif  // CHROME_BROWSER_SSL_CHROME_SSL_BLOCKING_PAGE_H_
+#endif  // CHROME_BROWSER_SSL_CHROME_SECURITY_BLOCKING_PAGE_FACTORY_H_

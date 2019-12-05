@@ -14,7 +14,7 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/interstitials/chrome_metrics_helper.h"
-#include "chrome/browser/ssl/chrome_ssl_blocking_page.h"
+#include "chrome/browser/ssl/chrome_security_blocking_page_factory.h"
 #include "chrome/browser/ssl/ssl_error_controller_client.h"
 #include "components/captive_portal/captive_portal_detector.h"
 #include "components/captive_portal/captive_portal_metrics.h"
@@ -91,7 +91,7 @@ CaptivePortalBlockingPage::CaptivePortalBlockingPage(
       ssl_info_(ssl_info) {
   captive_portal::CaptivePortalMetrics::LogCaptivePortalBlockingPageEvent(
       captive_portal::CaptivePortalMetrics::SHOW_ALL);
-  ChromeSSLBlockingPage::DoChromeSpecificSetup(this);
+  ChromeSecurityBlockingPageFactory::DoChromeSpecificSetup(this);
 }
 
 CaptivePortalBlockingPage::~CaptivePortalBlockingPage() = default;
