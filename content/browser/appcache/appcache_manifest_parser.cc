@@ -348,6 +348,7 @@ AppCacheManifest::AppCacheManifest() = default;
 AppCacheManifest::~AppCacheManifest() = default;
 
 bool ParseManifest(const GURL& manifest_url,
+                   const std::string& manifest_scope,
                    const char* manifest_bytes,
                    int manifest_size,
                    ParseMode parse_mode,
@@ -358,6 +359,8 @@ bool ParseManifest(const GURL& manifest_url,
   DCHECK(manifest.explicit_urls.empty());
   DCHECK(manifest.fallback_namespaces.empty());
   DCHECK(manifest.online_whitelist_namespaces.empty());
+  DCHECK_EQ(manifest.parser_version, -1);
+  DCHECK_EQ(manifest.scope, "");
   DCHECK(!manifest.online_whitelist_all);
   DCHECK(!manifest.did_ignore_intercept_namespaces);
   DCHECK(!manifest.did_ignore_fallback_namespaces);
@@ -407,6 +410,15 @@ bool ParseManifest(const GURL& manifest_url,
   // The character after "CACHE MANIFEST" must be a whitespace character.
   if (!data.empty() && !IsWhiteSpace(data[0]))
     return false;
+
+  // Manifest parser version handling.
+  //
+  // Version 0: Pre-manifest scope, a manifest's scope for resources listed in
+  // the FALLBACK and CHROMIUM-INTERCEPT sections can span the entire origin.
+  //
+  // This code generates manifests with parser version 0.
+  manifest.parser_version = 0;
+  manifest.scope = manifest_scope;
 
   // The spec requires ignoring any characters on the first line after the
   // signature and its following whitespace.
