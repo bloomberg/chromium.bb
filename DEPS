@@ -176,7 +176,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '6d162b517d9ec830ba3bac6749e277fcb351a668',
+  'v8_revision': '1e65162c2a0b8ef004e8c82e97d333e4e8aace14',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -235,7 +235,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': 'c4a669a1bfc298b19d3c5b58e8a8b07122901c3a',
+  'catapult_revision': '989b6154e4ff3bc97ff85fc3c5620236bcb2d631',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
