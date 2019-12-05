@@ -17,6 +17,7 @@
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/geometry/dom_rect.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
+#include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/scroll/scroll_animator_base.h"
 #include "third_party/blink/renderer/core/scroll/scrollable_area.h"
@@ -75,6 +76,66 @@ TEST_F(FractionalScrollSimTest, GetBoundingClientRectAtFractional) {
   const float kOneLayoutUnit = 1.f / kFixedPointDenominator;
   EXPECT_NEAR(LayoutUnit(800.f - 700.5f), rect->left(), kOneLayoutUnit);
   EXPECT_NEAR(LayoutUnit(600.f - 500.6f), rect->top(), kOneLayoutUnit);
+}
+
+TEST_F(FractionalScrollSimTest, NoRepaintOnScrollFromSubpixel) {
+  WebView().MainFrameWidget()->Resize(WebSize(800, 600));
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      body {
+        height: 4000px;
+      }
+
+      #container {
+        will-change:transform;
+        margin-top: 300px;
+      }
+
+      #child {
+        height: 100px;
+        width: 100px;
+        transform: translateY(-0.5px);
+        background-color: coral;
+      }
+
+      #fixed {
+        position: fixed;
+        top: 0;
+        width: 100px;
+        height: 20px;
+        background-color: dodgerblue
+      }
+    </style>
+
+    <!-- Need fixed element because of PLSA::UpdateCompositingLayersAfterScroll
+         will invalidate compositing due to potential overlap changes. -->
+    <div id="fixed"></div>
+    <div id="container">
+        <div id="child"></div>
+    </div>
+  )HTML");
+  Compositor().BeginFrame();
+
+  auto* container_layer =
+      ToLayoutBoxModelObject(
+          GetDocument().getElementById("container")->GetLayoutObject())
+          ->Layer()
+          ->GraphicsLayerBacking();
+  container_layer->ResetTrackedRasterInvalidations();
+  GetDocument().View()->SetTracksRasterInvalidations(true);
+
+  // Scroll on the layout viewport.
+  GetDocument().View()->GetScrollableArea()->SetScrollOffset(
+      FloatSize(0.f, 100.5f), kProgrammaticScroll, kScrollBehaviorInstant);
+
+  Compositor().BeginFrame();
+  EXPECT_FALSE(
+      container_layer->GetRasterInvalidationTracking()->HasInvalidations());
+
+  GetDocument().View()->SetTracksRasterInvalidations(false);
 }
 
 class ScrollAnimatorSimTest : public SimTest {};

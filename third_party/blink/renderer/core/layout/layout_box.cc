@@ -1209,6 +1209,12 @@ LayoutSize LayoutBox::ScrolledContentOffset() const {
   return LayoutSize(GetScrollableArea()->GetScrollOffset());
 }
 
+LayoutSize LayoutBox::PixelSnappedScrolledContentOffset() const {
+  DCHECK(HasOverflowClip());
+  DCHECK(GetScrollableArea());
+  return LayoutSize(GetScrollableArea()->ScrollOffsetInt());
+}
+
 PhysicalRect LayoutBox::ClippingRect(const PhysicalOffset& location) const {
   PhysicalRect result(PhysicalRect::InfiniteIntRect());
   if (ShouldClipOverflow())
