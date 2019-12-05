@@ -3588,7 +3588,7 @@
     {
       "name": "scarlet",
       "reference_board_name": "scarlet",
-      "arch": "ARM_INTERNAL",
+      "arch": "UNKNOWN",
       "builder": "RELEASE",
       "experimental": false,
       "models": [
