@@ -309,11 +309,11 @@ public class PaymentRequestImpl
      * Rule 1: Non-autofill before autofill.
      * Rule 2: Complete instruments before incomplete intsruments.
      * Rule 3: Exact type matching instruments before non-exact type matching instruments.
-     * Rule 4: Preselectable instruments before non-preselectable instruments.
-     * Rule 5: When shipping address is requested instruments which will handle shipping address
+     * Rule 4: When shipping address is requested instruments which will handle shipping address
      * before others.
-     * Rule 6: When payer's contact information is requested instruments which will handle more
+     * Rule 5: When payer's contact information is requested instruments which will handle more
      * required contact fields (name, email, phone) come before others.
+     * Rule 6: Preselectable instruments before non-preselectable instruments.
      * Rule 7: Frequently and recently used instruments before rarely and non-recently used
      * instruments.
      */
@@ -330,14 +330,6 @@ public class PaymentRequestImpl
         int typeMatch = (b.isExactlyMatchingMerchantRequest() ? 1 : 0)
                 - (a.isExactlyMatchingMerchantRequest() ? 1 : 0);
         if (typeMatch != 0) return typeMatch;
-
-        // Preselectable instruments before non-preselectable instruments.
-        // Note that this only affects service worker payment apps' instruments for now
-        // since autofill payment instruments have already been sorted by preselect
-        // after sorting by completeness and typeMatch. And the other payment apps'
-        // instruments can always be preselected.
-        int canPreselect = (b.canPreselect() ? 1 : 0) - (a.canPreselect() ? 1 : 0);
-        if (canPreselect != 0) return canPreselect;
 
         // Payment apps which handle shipping address before others.
         if (mRequestShipping) {
@@ -364,6 +356,14 @@ public class PaymentRequestImpl
         if (bSupportedContactDelegationsNum != aSupportedContactDelegationsNum) {
             return bSupportedContactDelegationsNum - aSupportedContactDelegationsNum > 0 ? 1 : -1;
         }
+
+        // Preselectable instruments before non-preselectable instruments.
+        // Note that this only affects service worker payment apps' instruments for now
+        // since autofill payment instruments have already been sorted by preselect
+        // after sorting by completeness and typeMatch. And the other payment apps'
+        // instruments can always be preselected.
+        int canPreselect = (b.canPreselect() ? 1 : 0) - (a.canPreselect() ? 1 : 0);
+        if (canPreselect != 0) return canPreselect;
 
         // More frequently and recently used instruments first.
         return compareInstrumentsByFrecency(b, a);
@@ -683,15 +683,15 @@ public class PaymentRequestImpl
                 && SkipToGPayHelper.canActivateExperiment(mWebContents, methodData);
 
         mMethodData = getValidatedMethodData(methodData, googlePayBridgeActivated, mCardEditor);
-        if (googlePayBridgeActivated) {
-            PaymentMethodData data = mMethodData.get(MethodStrings.GOOGLE_PAY);
-            mSkipToGPayHelper = new SkipToGPayHelper(options, data.gpayBridgeData);
-        }
-
         if (mMethodData == null) {
             mJourneyLogger.setAborted(AbortReason.INVALID_DATA_FROM_RENDERER);
             disconnectFromClientWithDebugMessage(ErrorStrings.INVALID_PAYMENT_METHODS_OR_DATA);
             return;
+        }
+
+        if (googlePayBridgeActivated) {
+            PaymentMethodData data = mMethodData.get(MethodStrings.GOOGLE_PAY);
+            mSkipToGPayHelper = new SkipToGPayHelper(options, data.gpayBridgeData);
         }
 
         mQueryForQuota = new HashMap<>(mMethodData);
@@ -2287,13 +2287,16 @@ public class PaymentRequestImpl
     @Override
     public void complete(int result) {
         if (mClient == null) return;
-        mJourneyLogger.setCompleted();
-        if (!PaymentPreferencesUtil.isPaymentCompleteOnce()) {
-            PaymentPreferencesUtil.setPaymentCompleteOnce();
+
+        if (result != PaymentComplete.FAIL) {
+            mJourneyLogger.setCompleted();
+            if (!PaymentPreferencesUtil.isPaymentCompleteOnce()) {
+                PaymentPreferencesUtil.setPaymentCompleteOnce();
+            }
+            assert mRawTotal != null;
+            mJourneyLogger.recordTransactionAmount(
+                    mRawTotal.amount.currency, mRawTotal.amount.value, true /*completed*/);
         }
-        assert mRawTotal != null;
-        mJourneyLogger.recordTransactionAmount(
-                mRawTotal.amount.currency, mRawTotal.amount.value, true /*completed*/);
 
         /**
          * Update records of the used payment instrument for sorting payment apps and instruments
