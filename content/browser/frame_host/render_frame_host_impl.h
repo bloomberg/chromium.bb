@@ -1251,6 +1251,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
     browsing_instance_not_swapped_reason_ = reason;
   }
 
+  // Returns the parent RenderFrameHost, potentially going through nested
+  // WebContents. Returns nullptr for top-level RenderFrameHosts in topmost
+  // WebContents.
+  RenderFrameHostImpl* ParentOrOuterDelegateFrame();
+
   base::WeakPtr<RenderFrameHostImpl> GetWeakPtr();
 
   // blink::mojom::LocalFrameHost

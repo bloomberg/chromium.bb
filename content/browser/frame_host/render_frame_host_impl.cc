@@ -7985,4 +7985,19 @@ bool RenderFrameHostImpl::IsDOMContentLoaded() {
   return dom_content_loaded_;
 }
 
+RenderFrameHostImpl* RenderFrameHostImpl::ParentOrOuterDelegateFrame() {
+  // Find the parent in the FrameTree (iframe).
+  if (parent_)
+    return parent_;
+
+  // Find the parent in the WebContentsTree (GuestView or Portal).
+  FrameTreeNode* frame_in_embedder =
+      frame_tree_node()->render_manager()->GetOuterDelegateNode();
+  if (frame_in_embedder)
+    return frame_in_embedder->current_frame_host()->GetParent();
+
+  // No parent found.
+  return nullptr;
+}
+
 }  // namespace content
