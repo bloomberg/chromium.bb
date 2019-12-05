@@ -16048,6 +16048,8 @@ Called by update_net_error_codes.py.-->
   <int value="391" label="accda"/>
   <int value="392" label="cer"/>
   <int value="393" label="der"/>
+  <int value="394" label="fileloc"/>
+  <int value="395" label="webloc"/>
 </enum>
 
 <enum name="DownloadItem.DangerType">
@@ -55896,6 +55898,8 @@ Called by update_net_trust_anchors.py.-->
   <int value="391" label="ACCDA"/>
   <int value="392" label="CER"/>
   <int value="393" label="DER"/>
+  <int value="394" label="FILELOC"/>
+  <int value="395" label="WEBLOC"/>
 </enum>
 
 <enum name="SBClientDownloadIsSignedBinary">
