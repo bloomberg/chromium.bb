@@ -241,6 +241,7 @@ cr.define('settings_privacy_page', function() {
 
         // These elements should not even be present in the DOM
         assertFalse(!!page.$$('#safeBrowsingToggle'));
+        assertFalse(!!page.$$('#passwordsLeakDetectionToggle'));
         assertFalse(!!page.$$('#safeBrowsingReportingToggle'));
       });
 
@@ -364,6 +365,7 @@ cr.define('settings_privacy_page', function() {
         assertFalse(!!page.$$('#signinAllowedToggle'));
 
         assertVisible(page.$$('#safeBrowsingToggle'), true);
+        assertVisible(page.$$('#passwordsLeakDetectionToggle'), true);
         assertVisible(page.$$('#safeBrowsingReportingToggle'), true);
       });
     });
