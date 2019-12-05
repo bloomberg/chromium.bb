@@ -2112,7 +2112,6 @@ if (!is_android) {
         "../browser/chromeos/extensions/login_screen/login_state/login_state_apitest.cc",
         "../browser/chromeos/extensions/login_screen/login_state/session_state_changed_event_dispatcher_apitest.cc",
         "../browser/chromeos/extensions/login_screen/storage_apitest.cc",
-        "../browser/chromeos/extensions/printing/printing_apitest.cc",
         "../browser/chromeos/extensions/printing_metrics/print_job_finished_event_dispatcher_apitest.cc",
         "../browser/chromeos/extensions/printing_metrics/printing_metrics_apitest.cc",
         "../browser/chromeos/extensions/users_private/users_private_apitest.cc",
@@ -2421,6 +2420,10 @@ if (!is_android) {
         "base/interactive_test_utils_aura.h",
         "base/interactive_test_utils_views.cc",
       ]
+      if (use_cups) {
+        sources +=
+            [ "../browser/chromeos/extensions/printing/printing_apitest.cc" ]
+      }
       sources -= [
         "../../apps/load_and_launch_browsertest.cc",
         "../browser/policy/policy_startup_browsertest.cc",

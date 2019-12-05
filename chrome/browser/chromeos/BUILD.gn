@@ -2328,12 +2328,6 @@ source_set("chromeos") {
     "extensions/login_screen/login_state/session_state_changed_event_dispatcher.h",
     "extensions/media_player_api.cc",
     "extensions/media_player_api.h",
-    "extensions/printing/printing_api.cc",
-    "extensions/printing/printing_api.h",
-    "extensions/printing/printing_api_handler.cc",
-    "extensions/printing/printing_api_handler.h",
-    "extensions/printing/printing_api_utils.cc",
-    "extensions/printing/printing_api_utils.h",
     "extensions/printing_metrics/print_job_finished_event_dispatcher.cc",
     "extensions/printing_metrics/print_job_finished_event_dispatcher.h",
     "extensions/printing_metrics/print_job_info_idl_conversions.cc",
@@ -2362,6 +2356,12 @@ source_set("chromeos") {
       "//chrome/services/cups_proxy/public/mojom",
     ]
     sources += [
+      "extensions/printing/printing_api.cc",
+      "extensions/printing/printing_api.h",
+      "extensions/printing/printing_api_handler.cc",
+      "extensions/printing/printing_api_handler.h",
+      "extensions/printing/printing_api_utils.cc",
+      "extensions/printing/printing_api_utils.h",
       "printing/cups_print_job_manager_impl.cc",
       "printing/cups_proxy_service_delegate_impl.cc",
       "printing/cups_proxy_service_delegate_impl.h",
@@ -2682,8 +2682,6 @@ source_set("unit_tests") {
     "extensions/login_screen/login_state/login_state_api_unittest.cc",
     "extensions/login_screen/login_state/session_state_changed_event_dispatcher_unittest.cc",
     "extensions/permissions_updater_delegate_chromeos_unittest.cc",
-    "extensions/printing/printing_api_handler_unittest.cc",
-    "extensions/printing/printing_api_utils_unittest.cc",
     "extensions/printing_metrics/print_job_finished_event_dispatcher_unittest.cc",
     "extensions/printing_metrics/print_job_info_idl_conversions_unittest.cc",
     "extensions/printing_metrics/printing_metrics_api_unittest.cc",
@@ -3004,6 +3002,12 @@ source_set("unit_tests") {
     "../ui/webui/settings/chromeos/internet_handler_unittest.cc",
     "../ui/webui/settings/chromeos/multidevice_handler_unittest.cc",
   ]
+  if (use_cups) {
+    sources += [
+      "extensions/printing/printing_api_handler_unittest.cc",
+      "extensions/printing/printing_api_utils_unittest.cc",
+    ]
+  }
 
   public_deps = [
     ":chromeos",
