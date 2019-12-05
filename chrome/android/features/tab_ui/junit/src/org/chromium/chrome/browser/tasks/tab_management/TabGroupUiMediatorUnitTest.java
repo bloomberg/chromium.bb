@@ -311,7 +311,7 @@ public class TabGroupUiMediatorUnitTest {
         initAndAssertProperties(mTab2);
 
         View.OnClickListener listener =
-                mModel.get(TabStripToolbarViewProperties.EXPAND_CLICK_LISTENER);
+                mModel.get(TabStripToolbarViewProperties.LEFT_BUTTON_ON_CLICK_LISTENER);
         assertThat(listener, instanceOf(View.OnClickListener.class));
 
         listener.onClick(mView);
@@ -324,7 +324,7 @@ public class TabGroupUiMediatorUnitTest {
         initAndAssertProperties(mTab1);
 
         View.OnClickListener listener =
-                mModel.get(TabStripToolbarViewProperties.ADD_CLICK_LISTENER);
+                mModel.get(TabStripToolbarViewProperties.RIGHT_BUTTON_ON_CLICK_LISTENER);
         assertThat(listener, instanceOf(View.OnClickListener.class));
 
         listener.onClick(mView);
@@ -689,5 +689,31 @@ public class TabGroupUiMediatorUnitTest {
         mTabGroupModelFilterObserverArgumentCaptor.getValue().didMoveTabOutOfGroup(mTab3, 1);
 
         verifyResetStrip(false, null);
+    }
+
+    @Test
+    public void testSetLeftButtonDrawable() {
+        initAndAssertProperties(mTab3);
+        int drawableId = 321;
+
+        mModel.set(TabStripToolbarViewProperties.LEFT_BUTTON_DRAWABLE_ID, 0);
+
+        mTabGroupUiMediator.setupLeftButtonDrawable(drawableId);
+
+        assertThat(mModel.get(TabStripToolbarViewProperties.LEFT_BUTTON_DRAWABLE_ID),
+                equalTo(drawableId));
+    }
+
+    @Test
+    public void testSetLeftButtonOnClickListener() {
+        initAndAssertProperties(mTab3);
+        View.OnClickListener listener = v -> {};
+
+        mModel.set(TabStripToolbarViewProperties.LEFT_BUTTON_ON_CLICK_LISTENER, null);
+
+        mTabGroupUiMediator.setupLeftButtonOnClickListener(listener);
+
+        assertThat(mModel.get(TabStripToolbarViewProperties.LEFT_BUTTON_ON_CLICK_LISTENER),
+                equalTo(listener));
     }
 }
