@@ -21,6 +21,9 @@
 #include "net/http/http_request_headers.h"
 #include "net/http/http_status_code.h"
 #include "third_party/blink/public/common/scheduler/web_scheduler_tracked_feature.h"
+#if defined(OS_ANDROID)
+#include "content/public/browser/android/child_process_importance.h"
+#endif
 
 namespace content {
 
@@ -42,6 +45,31 @@ static constexpr int kDefaultTimeToLiveInBackForwardCacheInSeconds = 15;
 // Invalid |navigation_start| value, for calls to SetPageFrozenImpl where we
 // don't need |navigation_start|.
 constexpr base::TimeTicks kInvalidNavigationStart = base::TimeTicks();
+
+#if defined(OS_ANDROID)
+bool IsProcessBindingEnabled() {
+  const std::string process_binding_param =
+      base::GetFieldTrialParamValueByFeature(features::kBackForwardCache,
+                                             "process_binding_strength");
+  return process_binding_param.empty() || process_binding_param == "DISABLE";
+}
+
+// Association of ChildProcessImportance to corresponding string names.
+const base::FeatureParam<ChildProcessImportance>::Option
+    child_process_importance_options[] = {
+        {ChildProcessImportance::IMPORTANT, "IMPORTANT"},
+        {ChildProcessImportance::MODERATE, "MODERATE"},
+        {ChildProcessImportance::NORMAL, "NORMAL"}};
+
+// Defines the binding strength for a processes holding cached pages. The value
+// is read from an experiment parameter value. Ideally this would be lower than
+// the one for processes holding the foreground page and similar to that of
+// background tabs so that the OS will hopefully kill the foreground tab last.
+// The default importance is set to MODERATE.
+const base::FeatureParam<ChildProcessImportance> kChildProcessImportanceParam{
+    &features::kBackForwardCache, "process_binding_strength",
+    ChildProcessImportance::MODERATE, &child_process_importance_options};
+#endif
 
 void SetPageFrozenImpl(
     RenderFrameHostImpl* render_frame_host,
@@ -326,6 +354,21 @@ void BackForwardCacheImpl::StoreEntry(
     std::unique_ptr<BackForwardCacheImpl::Entry> entry) {
   TRACE_EVENT0("navigation", "BackForwardCache::StoreEntry");
   DCHECK(CanStoreDocument(entry->render_frame_host.get()));
+
+#if defined(OS_ANDROID)
+  if (!IsProcessBindingEnabled()) {
+    // Set the priority of the main frame on entering the back-forward cache to
+    // make sure the page gets evicted instead of foreground tab. This might not
+    // become the effective priority of the process if it owns other higher
+    // priority RenderWidgetHost. We don't need to reset the priority in
+    // RestoreEntry as it is taken care by WebContentsImpl::NotifyFrameSwapped
+    // on restoration.
+    RenderWidgetHostImpl* rwh = entry->render_frame_host->GetRenderWidgetHost();
+    ChildProcessImportance current_importance = rwh->importance();
+    rwh->SetImportance(
+        std::min(current_importance, kChildProcessImportanceParam.Get()));
+  }
+#endif
 
   entry->render_frame_host->EnterBackForwardCache();
   entries_.push_front(std::move(entry));
