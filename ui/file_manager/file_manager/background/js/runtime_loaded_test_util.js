@@ -759,6 +759,18 @@ test.util.sync.fakeDragAndDrop =
     };
 
 /**
+ * Sends a resize event to the content window.
+ *
+ * @param {Window} contentWindow Window to be tested.
+ * @return {boolean} True if the event was sent to the contentWindow.
+ */
+test.util.sync.fakeResizeEvent = (contentWindow) => {
+  const resize = contentWindow.document.createEvent('Event');
+  resize.initEvent('resize', false, false);
+  return contentWindow.dispatchEvent(resize);
+};
+
+/**
  * Focuses to the element specified by |targetQuery|. This method does not
  * provide any guarantee whether the element is actually focused or not.
  *
