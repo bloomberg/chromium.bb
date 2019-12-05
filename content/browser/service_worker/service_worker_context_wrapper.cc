@@ -1476,7 +1476,8 @@ void ServiceWorkerContextWrapper::InitOnCoreThread(
   DCHECK(!context_core_);
 
   if (quota_manager_proxy) {
-    quota_manager_proxy->RegisterClient(new ServiceWorkerQuotaClient(this));
+    quota_manager_proxy->RegisterClient(
+        base::MakeRefCounted<ServiceWorkerQuotaClient>(this));
   }
 
   context_core_ = std::make_unique<ServiceWorkerContextCore>(

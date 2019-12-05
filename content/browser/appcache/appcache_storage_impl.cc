@@ -305,10 +305,11 @@ void AppCacheStorageImpl::InitTask::RunCompleted() {
         kDelay);
   }
 
-  if (storage_->service()->quota_manager_proxy()) {
-    base::PostTask(FROM_HERE, {BrowserThread::IO},
-                   base::BindOnce(&AppCacheQuotaClient::NotifyAppCacheReady,
-                                  storage_->service()->quota_client()));
+  if (storage_->service()->quota_client()) {
+    base::PostTask(
+        FROM_HERE, {BrowserThread::IO},
+        base::BindOnce(&AppCacheQuotaClient::NotifyAppCacheReady,
+                       base::RetainedRef(storage_->service()->quota_client())));
   }
 }
 

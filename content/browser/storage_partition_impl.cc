@@ -1189,7 +1189,7 @@ void StoragePartitionImpl::Initialize() {
   // QuotaManager prior to the QuotaManager being used. We do them
   // all together here prior to handing out a reference to anything
   // that utilizes the QuotaManager.
-  quota_manager_ = new storage::QuotaManager(
+  quota_manager_ = base::MakeRefCounted<storage::QuotaManager>(
       is_in_memory_, partition_path_,
       base::CreateSingleThreadTaskRunner({BrowserThread::IO}).get(),
       browser_context_->GetSpecialStoragePolicy(),
