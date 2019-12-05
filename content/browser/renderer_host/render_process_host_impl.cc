@@ -689,10 +689,10 @@ class SpareRenderProcessHostManager : public RenderProcessHostObserver {
 // Forwards service requests to Service Manager since the renderer cannot launch
 // out-of-process services on is own.
 template <typename Interface>
-void ForwardRequest(const char* service_name,
-                    mojo::InterfaceRequest<Interface> request) {
+void ForwardReceiver(const char* service_name,
+                     mojo::PendingReceiver<Interface> receiver) {
   // TODO(beng): This should really be using the per-profile connector.
-  GetSystemConnector()->BindInterface(service_name, std::move(request));
+  GetSystemConnector()->BindInterface(service_name, std::move(receiver));
 }
 
 class RenderProcessHostIsReadyObserver : public RenderProcessHostObserver {
@@ -2067,28 +2067,28 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
 
   AddUIThreadInterface(
       registry.get(),
-      base::BindRepeating(&ForwardRequest<device::mojom::BatteryMonitor>,
+      base::BindRepeating(&ForwardReceiver<device::mojom::BatteryMonitor>,
                           device::mojom::kServiceName));
 
   AddUIThreadInterface(
       registry.get(),
-      base::BindRepeating(&ForwardRequest<device::mojom::TimeZoneMonitor>,
+      base::BindRepeating(&ForwardReceiver<device::mojom::TimeZoneMonitor>,
                           device::mojom::kServiceName));
 
   AddUIThreadInterface(
       registry.get(),
-      base::BindRepeating(&ForwardRequest<device::mojom::PowerMonitor>,
+      base::BindRepeating(&ForwardReceiver<device::mojom::PowerMonitor>,
                           device::mojom::kServiceName));
 
   AddUIThreadInterface(
       registry.get(),
-      base::BindRepeating(&ForwardRequest<ukm::mojom::UkmRecorderInterface>,
+      base::BindRepeating(&ForwardReceiver<ukm::mojom::UkmRecorderInterface>,
                           metrics::mojom::kMetricsServiceName));
 
   AddUIThreadInterface(
       registry.get(),
       base::BindRepeating(
-          &ForwardRequest<device::mojom::ScreenOrientationListener>,
+          &ForwardReceiver<device::mojom::ScreenOrientationListener>,
           device::mojom::kServiceName));
 
   AddUIThreadInterface(
