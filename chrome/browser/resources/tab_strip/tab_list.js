@@ -237,7 +237,12 @@ class TabListElement extends CustomElement {
     this.tabsApi_.getTabs().then(tabs => {
       this.tabStripEmbedderProxy_.reportTabDataReceivedDuration(
           tabs.length, Date.now() - getTabsStartTimestamp);
+
+      const createTabsStartTimestamp = Date.now();
       tabs.forEach(tab => this.onTabCreated_(tab));
+      this.tabStripEmbedderProxy_.reportTabCreationDuration(
+          tabs.length, Date.now() - createTabsStartTimestamp);
+
       addWebUIListener('tab-created', tab => this.onTabCreated_(tab));
       addWebUIListener(
           'tab-moved', (tabId, newIndex) => this.onTabMoved_(tabId, newIndex));
