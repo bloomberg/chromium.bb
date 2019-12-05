@@ -29,11 +29,10 @@ bool AppCache::CheckValidManifestScope(const GURL& manifest_url,
 }
 
 // static
-std::string AppCache::GetManifestScope(
-    base::Optional<std::string> optional_scope,
-    const GURL& manifest_url) {
-  if (optional_scope.has_value()) {
-    std::string scope = manifest_url.Resolve(optional_scope.value()).path();
+std::string AppCache::GetManifestScope(const GURL& manifest_url,
+                                       std::string optional_scope) {
+  if (!optional_scope.empty()) {
+    std::string scope = manifest_url.Resolve(optional_scope).path();
     if (CheckValidManifestScope(manifest_url, scope)) {
       return scope;
     }
