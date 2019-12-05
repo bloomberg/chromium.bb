@@ -100,6 +100,13 @@ class FilmGrain {
                                    int chroma_width, int chroma_height,
                                    GrainType* u_grain, GrainType* v_grain);
 
+  // Copies rows from |noise_stripes| to |noise_image|, skipping rows that are
+  // subject to overlap.
+  static void ConstructNoiseImage(const Array2DView<GrainType>* noise_stripes,
+                                  int width, int height, int subsampling_x,
+                                  int subsampling_y, int stripe_start_offset,
+                                  Array2D<GrainType>* noise_image);
+
   static void InitializeScalingLookupTable(int num_points,
                                            const uint8_t point_value[],
                                            const uint8_t point_scaling[],
@@ -125,9 +132,6 @@ class FilmGrain {
   void ConstructNoiseStripes();
 
   bool AllocateNoiseImage();
-
-  // Blends the noise stripes together to form a noise image.
-  void ConstructNoiseImage();
 
   // Blends the noise with the original image data.
   void BlendNoiseWithImage(
