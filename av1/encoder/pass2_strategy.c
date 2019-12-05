@@ -160,11 +160,16 @@ static void twopass_update_bpm_factor(TWO_PASS *twopass) {
   twopass->bpm_factor = AOMMAX(0.25, AOMMIN(4.0, twopass->bpm_factor));
 }
 
+static int qbpm_enumerator(int rate_err_tol) {
+  return 1350000 + ((300000 * AOMMIN(75, AOMMAX(rate_err_tol - 25, 0))) / 75);
+}
+
 // Similar to find_qindex_by_rate() function in ratectrl.c, but includes
 // calculation of a correction_factor.
 static int find_qindex_by_rate_with_correction(
     int desired_bits_per_mb, aom_bit_depth_t bit_depth, double error_per_mb,
-    double group_weight_factor, int best_qindex, int worst_qindex) {
+    double group_weight_factor, int rate_err_tol, int best_qindex,
+    int worst_qindex) {
   assert(best_qindex <= worst_qindex);
   int low = best_qindex;
   int high = worst_qindex;
@@ -173,7 +178,7 @@ static int find_qindex_by_rate_with_correction(
     const int mid = (low + high) >> 1;
     const double mid_factor = calc_correction_factor(error_per_mb, mid);
     const double q = av1_convert_qindex_to_q(mid, bit_depth);
-    const int enumerator = 1650000;
+    const int enumerator = qbpm_enumerator(rate_err_tol);
     const int mid_bits_per_mb =
         (int)((enumerator * mid_factor * group_weight_factor) / q);
 
@@ -206,13 +211,15 @@ static int get_twopass_worst_quality(AV1_COMP *cpi, const double section_err,
     const int target_norm_bits_per_mb =
         (int)((uint64_t)section_target_bandwidth << BPER_MB_NORMBITS) /
         active_mbs;
+    int rate_err_tol =
+        AOMMIN(cpi->oxcf.under_shoot_pct, cpi->oxcf.over_shoot_pct);
 
     twopass_update_bpm_factor(&cpi->twopass);
     // Try and pick a max Q that will be high enough to encode the
     // content at the given rate.
     int q = find_qindex_by_rate_with_correction(
         target_norm_bits_per_mb, cpi->common.seq_params.bit_depth,
-        av_err_per_mb, group_weight_factor, rc->best_quality,
+        av_err_per_mb, group_weight_factor, rate_err_tol, rc->best_quality,
         rc->worst_quality);
 
     // Restriction on active max q for constrained quality mode.
