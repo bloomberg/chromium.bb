@@ -45,6 +45,6 @@ public class SectionTitleViewHolder extends ListItemViewHolder {
                               R.string.download_manager_just_now)
                                             : UiUtils.dateToHeaderString(sectionItem.date));
 
-        mDivider.setVisibility(sectionItem.showDivider ? ViewGroup.VISIBLE : ViewGroup.GONE);
+        mDivider.setVisibility(sectionItem.showTopDivider ? ViewGroup.VISIBLE : ViewGroup.GONE);
     }
 }

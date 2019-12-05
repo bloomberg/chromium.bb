@@ -5,13 +5,12 @@
 package org.chromium.chrome.browser.download.home.list;
 
 import androidx.annotation.IntDef;
-import androidx.annotation.StringRes;
 
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.download.home.DownloadManagerUiConfig;
 import org.chromium.chrome.browser.download.home.filter.Filters.FilterType;
 import org.chromium.chrome.browser.download.home.list.ListItem.OfflineItemListItem;
 import org.chromium.chrome.browser.download.home.list.ListItem.ViewListItem;
+import org.chromium.components.offline_items_collection.LegacyHelpers;
 import org.chromium.components.offline_items_collection.OfflineItem;
 import org.chromium.components.offline_items_collection.OfflineItemFilter;
 import org.chromium.components.offline_items_collection.OfflineItemState;
@@ -116,26 +115,10 @@ public class ListUtils {
         return ViewType.GENERIC;
     }
 
-    /**
-     * @return The id of the string to be displayed as the section header for the given filter.
-     */
-    public static @StringRes int getTextForSection(int filter) {
-        switch (filter) {
-            case OfflineItemFilter.PAGE:
-                return R.string.download_manager_ui_pages;
-            case OfflineItemFilter.IMAGE:
-                return R.string.download_manager_ui_images;
-            case OfflineItemFilter.VIDEO:
-                return R.string.download_manager_ui_video;
-            case OfflineItemFilter.AUDIO:
-                return R.string.download_manager_ui_audio;
-            case OfflineItemFilter.OTHER:
-                return R.string.download_manager_ui_other;
-            case OfflineItemFilter.DOCUMENT:
-                return R.string.download_manager_ui_documents;
-            default:
-                return R.string.download_manager_ui_all_downloads;
-        }
+    /** @return Whether the given {@link ListItem} can be grouped inside a card. */
+    public static boolean canGroup(ListItem listItem) {
+        if (!(listItem instanceof OfflineItemListItem)) return false;
+        return LegacyHelpers.isLegacyContentIndexedItem(((OfflineItemListItem) listItem).item.id);
     }
 
     /**
