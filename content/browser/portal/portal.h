@@ -47,8 +47,6 @@ class CONTENT_EXPORT Portal : public blink::mojom::Portal,
 
   static bool IsEnabled();
 
-  static Portal* FromToken(const base::UnguessableToken& portal_token);
-
   static void BindPortalHostReceiver(
       RenderFrameHostImpl* frame,
       mojo::PendingAssociatedReceiver<blink::mojom::PortalHost>

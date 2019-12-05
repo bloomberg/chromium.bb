@@ -1306,6 +1306,15 @@ void RenderFrameHostImpl::OnPortalCreatedForTesting(
   portals_.insert(std::move(portal));
 }
 
+Portal* RenderFrameHostImpl::FindPortalByToken(
+    const base::UnguessableToken& portal_token) {
+  auto it =
+      std::find_if(portals_.begin(), portals_.end(), [&](const auto& portal) {
+        return portal->portal_token() == portal_token;
+      });
+  return it == portals_.end() ? nullptr : it->get();
+}
+
 void RenderFrameHostImpl::DestroyPortal(Portal* portal) {
   auto it = portals_.find(portal);
   CHECK(it != portals_.end());
@@ -4525,18 +4534,13 @@ void RenderFrameHostImpl::CreatePortal(
 void RenderFrameHostImpl::AdoptPortal(
     const base::UnguessableToken& portal_token,
     AdoptPortalCallback callback) {
-  Portal* portal = Portal::FromToken(portal_token);
+  Portal* portal = FindPortalByToken(portal_token);
   if (!portal) {
     mojo::ReportBadMessage("Unknown portal_token when adopting portal.");
     frame_host_associated_receiver_.reset();
     return;
   }
-  if (portal->owner_render_frame_host() != this) {
-    mojo::ReportBadMessage("AdoptPortal called from wrong frame.");
-    frame_host_associated_receiver_.reset();
-    return;
-  }
-  DCHECK(portals_.contains(portal));
+  DCHECK_EQ(portal->owner_render_frame_host(), this);
   RenderFrameProxyHost* proxy_host = portal->CreateProxyAndAttachPortal();
   std::move(callback).Run(
       proxy_host->GetRoutingID(),

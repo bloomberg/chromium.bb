@@ -1010,6 +1010,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // properly associated with the owning RenderFrameHost.
   void OnPortalCreatedForTesting(std::unique_ptr<Portal> portal);
 
+  // Look up a portal by its token (as received from the renderer process).
+  Portal* FindPortalByToken(const base::UnguessableToken& portal_token);
+
   // Called when a Portal needs to be destroyed.
   void DestroyPortal(Portal* portal);
 

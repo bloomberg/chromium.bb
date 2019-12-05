@@ -27,22 +27,11 @@
 
 namespace content {
 
-namespace {
-// TODO(jbroman): Replace the global map with iteration of the
-// per-RenderFrameHost set.
-using PortalTokenMap = std::
-    unordered_map<base::UnguessableToken, Portal*, base::UnguessableTokenHash>;
-base::LazyInstance<PortalTokenMap>::Leaky g_portal_token_map =
-    LAZY_INSTANCE_INITIALIZER;
-}  // namespace
-
 Portal::Portal(RenderFrameHostImpl* owner_render_frame_host)
     : WebContentsObserver(
           WebContents::FromRenderFrameHost(owner_render_frame_host)),
       owner_render_frame_host_(owner_render_frame_host),
       portal_token_(base::UnguessableToken::Create()) {
-  auto pair = g_portal_token_map.Get().emplace(portal_token_, this);
-  DCHECK(pair.second);
 }
 
 Portal::Portal(RenderFrameHostImpl* owner_render_frame_host,
@@ -61,8 +50,6 @@ Portal::~Portal() {
   if (outer_node)
     outer_node->RemoveObserver(this);
   portal_contents_impl_->set_portal(nullptr);
-
-  g_portal_token_map.Get().erase(portal_token_);
 }
 
 // static
@@ -70,13 +57,6 @@ bool Portal::IsEnabled() {
   return base::FeatureList::IsEnabled(blink::features::kPortals) ||
          base::CommandLine::ForCurrentProcess()->HasSwitch(
              switches::kEnableExperimentalWebPlatformFeatures);
-}
-
-// static
-Portal* Portal::FromToken(const base::UnguessableToken& portal_token) {
-  PortalTokenMap& portals = g_portal_token_map.Get();
-  auto it = portals.find(portal_token);
-  return it == portals.end() ? nullptr : it->second;
 }
 
 // static

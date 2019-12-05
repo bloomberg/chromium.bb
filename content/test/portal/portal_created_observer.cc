@@ -49,7 +49,7 @@ void PortalCreatedObserver::CreatePortal(
 void PortalCreatedObserver::AdoptPortal(
     const base::UnguessableToken& portal_token,
     AdoptPortalCallback callback) {
-  Portal* portal = Portal::FromToken(portal_token);
+  Portal* portal = render_frame_host_impl_->FindPortalByToken(portal_token);
   PortalInterceptorForTesting* portal_interceptor =
       PortalInterceptorForTesting::Create(render_frame_host_impl_, portal);
   portal_ = portal_interceptor->GetPortal();
