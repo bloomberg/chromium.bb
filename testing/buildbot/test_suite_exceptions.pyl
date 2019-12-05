@@ -517,11 +517,6 @@
           'shards': 2, # https://crbug.com/955853
         },
       },
-      'Linux Tests': {
-        'swarming': {
-          'idempotent': False, # https://crbug.com/1013093
-        },
-      },
       'Linux TSan Tests': {
         'swarming': {
           'shards': 15,
