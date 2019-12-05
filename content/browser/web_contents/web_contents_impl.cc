@@ -7135,7 +7135,7 @@ ForwardingAudioStreamFactory* WebContentsImpl::GetAudioStreamFactory() {
             ? static_cast<media::UserInputMonitorBase*>(
                   BrowserMainLoop::GetInstance()->user_input_monitor())
             : nullptr,
-        GetSystemConnector()->Clone(), AudioStreamBrokerFactory::CreateImpl());
+        AudioStreamBrokerFactory::CreateImpl());
   }
 
   return &*audio_stream_factory_;

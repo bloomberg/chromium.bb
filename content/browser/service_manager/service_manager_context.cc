@@ -47,7 +47,6 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
-#include "media/audio/audio_manager.h"
 #include "media/media_buildflags.h"
 #include "media/mojo/buildflags.h"
 #include "media/mojo/mojom/constants.mojom.h"
@@ -55,9 +54,6 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/platform/platform_channel.h"
 #include "mojo/public/cpp/system/invitation.h"
-#include "services/audio/public/mojom/constants.mojom.h"
-#include "services/audio/service.h"
-#include "services/audio/service_factory.h"
 #include "services/device/device_service.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/media_session/media_session_service.h"
@@ -229,13 +225,6 @@ class DeviceServiceURLLoaderFactory : public network::SharedURLLoaderFactory {
   DISALLOW_COPY_AND_ASSIGN(DeviceServiceURLLoaderFactory);
 };
 
-bool AudioServiceOutOfProcess() {
-  // Returns true iff kAudioServiceOutOfProcess feature is enabled and if the
-  // embedder does not provide its own in-process AudioManager.
-  return base::FeatureList::IsEnabled(features::kAudioServiceOutOfProcess) &&
-         !GetContentClient()->browser()->OverridesAudioManager();
-}
-
 using InProcessServiceFactory =
     base::RepeatingCallback<std::unique_ptr<service_manager::Service>(
         service_manager::mojom::ServiceRequest request)>;
@@ -274,36 +263,10 @@ void RegisterInProcessService(
       &LaunchInProcessService, std::move(task_runner), factory);
 }
 
-void CreateInProcessAudioService(
-    scoped_refptr<base::SequencedTaskRunner> task_runner,
-    service_manager::mojom::ServiceRequest request) {
-  // TODO(https://crbug.com/853254): Remove BrowserMainLoop::GetAudioManager().
-  task_runner->PostTask(
-      FROM_HERE, base::BindOnce(
-                     [](media::AudioManager* audio_manager,
-                        service_manager::mojom::ServiceRequest request) {
-                       service_manager::Service::RunAsyncUntilTermination(
-                           audio::CreateEmbeddedService(audio_manager,
-                                                        std::move(request)));
-                     },
-                     BrowserMainLoop::GetAudioManager(), std::move(request)));
-}
-
 std::unique_ptr<service_manager::Service> CreateMediaSessionService(
     service_manager::mojom::ServiceRequest request) {
   return std::make_unique<media_session::MediaSessionService>(
       std::move(request));
-}
-
-void RunServiceInstanceOnIOThread(
-    const service_manager::Identity& identity,
-    mojo::PendingReceiver<service_manager::mojom::Service>* receiver) {
-  if (!AudioServiceOutOfProcess() &&
-      identity.name() == audio::mojom::kServiceName) {
-    CreateInProcessAudioService(audio::Service::GetInProcessTaskRunner(),
-                                std::move(*receiver));
-    return;
-  }
 }
 
 // A ServiceProcessHost implementation which uses the Service Manager's builtin
@@ -365,10 +328,6 @@ class BrowserServiceManagerDelegate
       it->second.Run(std::move(receiver));
       return true;
     }
-
-    RunServiceInstanceOnIOThread(identity, &receiver);
-    if (!receiver)
-      return true;
 
     main_thread_task_runner_->PostTask(
         FROM_HERE, base::BindOnce(main_thread_request_handler_, identity,
