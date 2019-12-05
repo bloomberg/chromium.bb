@@ -30847,6 +30847,18 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="2" label="Dismissed"/>
 </enum>
 
+<enum name="HappinessTrackingSurveyShouldShowSurveyReasons">
+  <int value="0" label="Shown"/>
+  <int value="1" label="Offline"/>
+  <int value="2" label="Last session crashed"/>
+  <int value="3" label="Received survey in current milestone"/>
+  <int value="4" label="Profile too new"/>
+  <int value="5" label="Last survey too recent"/>
+  <int value="6" label="Below probability limit"/>
+  <int value="7" label="Trigger string mismatch"/>
+  <int value="8" label="Not regular browser"/>
+</enum>
+
 <enum name="HeapProfilingMode">
   <int value="0" label="None"/>
   <int value="1" label="Minimal"/>
