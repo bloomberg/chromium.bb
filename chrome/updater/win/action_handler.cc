@@ -78,7 +78,6 @@ ActionHandler::Result ActionHandler::RunCommand(
   const base::TimeDelta kMaxWaitTime = base::TimeDelta::FromSeconds(600);
   const bool succeeded =
       process.WaitForExitWithTimeout(kMaxWaitTime, &exit_code);
-  base::DeleteFile(exe_path, false);
   return Result{succeeded, exit_code, 0};
 }
 
