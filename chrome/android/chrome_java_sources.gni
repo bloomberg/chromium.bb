@@ -520,6 +520,8 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/download/home/DownloadManagerCoordinatorFactory.java",
   "java/src/org/chromium/chrome/browser/download/home/DownloadManagerCoordinatorImpl.java",
   "java/src/org/chromium/chrome/browser/download/home/DownloadManagerUiConfig.java",
+  "java/src/org/chromium/chrome/browser/download/home/FaviconProvider.java",
+  "java/src/org/chromium/chrome/browser/download/home/FaviconProviderImpl.java",
   "java/src/org/chromium/chrome/browser/download/home/JustNowProvider.java",
   "java/src/org/chromium/chrome/browser/download/home/OfflineItemSource.java",
   "java/src/org/chromium/chrome/browser/download/home/StableIds.java",
