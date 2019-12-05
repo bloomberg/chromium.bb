@@ -321,10 +321,6 @@
       status: "test",
     },
     {
-      name: "CompressionStreams",
-      status: "experimental",
-    },
-    {
       name: "ComputedAccessibilityInfo",
       status: "experimental",
     },
