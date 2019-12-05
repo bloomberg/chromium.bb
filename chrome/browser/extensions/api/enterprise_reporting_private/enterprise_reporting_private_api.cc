@@ -181,6 +181,7 @@ EnterpriseReportingPrivateGetPersistentSecretFunction::
 
 ExtensionFunction::ResponseAction
 EnterpriseReportingPrivateGetPersistentSecretFunction::Run() {
+  // TODO(pastarmovj): Consider keying the secret retrieval by extension id.
   base::PostTask(
       FROM_HERE,
       {base::ThreadPool(), base::MayBlock(),

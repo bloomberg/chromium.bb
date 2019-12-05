@@ -16,7 +16,7 @@ namespace enterprise.reportingPrivate {
   // Invoked by <code>getPersistentSecret</code> to return the secret.
   callback GetPersistentSecretCallback = void(ArrayBuffer secret);
 
-  // Invokde by <code>getDeviceDataCallback</code> to return the device data.
+  // Invoked by <code>getDeviceDataCallback</code> to return the device data.
   callback GetDeviceDataCallback = void(ArrayBuffer data);
 
   // Possible states a particular device setting can be in.
