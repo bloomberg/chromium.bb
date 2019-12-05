@@ -2875,6 +2875,7 @@ TEST_F(NetworkContextTest, ResolveHost_Async) {
   control_handle.set_disconnect_handler(connection_error_callback);
   run_loop.Run();
 
+  EXPECT_EQ(net::OK, response_client.top_level_result_error());
   EXPECT_EQ(net::OK, response_client.result_error());
   EXPECT_THAT(
       response_client.result_addresses().value().endpoints(),
@@ -2890,7 +2891,7 @@ TEST_F(NetworkContextTest, ResolveHost_Failure_Sync) {
       CreateContextWithParams(CreateContextParams());
 
   network_context->url_request_context()->set_host_resolver(resolver.get());
-  resolver->rules()->AddSimulatedFailure("example.com");
+  resolver->rules()->AddSimulatedTimeoutFailure("example.com");
   resolver->set_synchronous_mode(true);
 
   base::RunLoop run_loop;
@@ -2909,7 +2910,7 @@ TEST_F(NetworkContextTest, ResolveHost_Failure_Sync) {
 
   EXPECT_EQ(net::ERR_NAME_NOT_RESOLVED,
             response_client.top_level_result_error());
-  EXPECT_EQ(net::ERR_NAME_NOT_RESOLVED, response_client.result_error());
+  EXPECT_EQ(net::ERR_DNS_TIMED_OUT, response_client.result_error());
   EXPECT_FALSE(response_client.result_addresses());
   EXPECT_EQ(0u,
             network_context->GetNumOutstandingResolveHostRequestsForTesting());
@@ -2921,7 +2922,7 @@ TEST_F(NetworkContextTest, ResolveHost_Failure_Async) {
       CreateContextWithParams(CreateContextParams());
 
   network_context->url_request_context()->set_host_resolver(resolver.get());
-  resolver->rules()->AddSimulatedFailure("example.com");
+  resolver->rules()->AddSimulatedTimeoutFailure("example.com");
   resolver->set_synchronous_mode(false);
 
   base::RunLoop run_loop;
@@ -2943,7 +2944,9 @@ TEST_F(NetworkContextTest, ResolveHost_Failure_Async) {
   control_handle.set_disconnect_handler(connection_error_callback);
   run_loop.Run();
 
-  EXPECT_EQ(net::ERR_NAME_NOT_RESOLVED, response_client.result_error());
+  EXPECT_EQ(net::ERR_NAME_NOT_RESOLVED,
+            response_client.top_level_result_error());
+  EXPECT_EQ(net::ERR_DNS_TIMED_OUT, response_client.result_error());
   EXPECT_FALSE(response_client.result_addresses());
   EXPECT_TRUE(control_handle_closed);
   EXPECT_EQ(0u,
