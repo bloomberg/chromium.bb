@@ -1481,7 +1481,8 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
       cpi->sf.use_nonrd_altref_frame ? ALTREF_FRAME : GOLDEN_FRAME;
 
   if (cpi->rc.frames_since_golden == 0 && gf_temporal_ref) {
-    usable_ref_frame = LAST_FRAME;
+    skip_ref_find_pred[GOLDEN_FRAME] = 1;
+    if (!cpi->sf.use_nonrd_altref_frame) usable_ref_frame = LAST_FRAME;
   }
 
   const int mi_row = xd->mi_row;
@@ -2016,7 +2017,7 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
                                 intra_mode_list[i]);
       }
     } else {
-      for (ref_frame = LAST_FRAME; ref_frame <= GOLDEN_FRAME; ++ref_frame) {
+      for (ref_frame = LAST_FRAME; ref_frame <= usable_ref_frame; ++ref_frame) {
         PREDICTION_MODE this_mode;
         if (best_pickmode.best_ref_frame != ref_frame) continue;
         for (this_mode = NEARESTMV; this_mode <= NEWMV; ++this_mode) {
