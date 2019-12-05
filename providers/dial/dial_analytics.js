@@ -11,13 +11,6 @@ goog.provide('mr.DialAnalytics');
 goog.require('mr.Analytics');
 
 
-/**
- * Contains all analytics logic for the DIAL provider.
- * @const {*}
- */
-mr.DialAnalytics = {};
-
-
 /** @enum {string} */
 mr.DialAnalytics.Metric = {
   DEVICE_DESCRIPTION_FAILURE: 'MediaRouter.Dial.Device.Description.Failure',

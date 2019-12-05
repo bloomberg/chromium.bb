@@ -11,10 +11,6 @@ goog.provide('mr.webrtc.PeerConnectionAnalytics');
 goog.require('mr.Timing');
 
 
-/** @const {*} */
-mr.webrtc.PeerConnectionAnalytics = {};
-
-
 /**
  * Histogram name for time taken to gather ICE candidates, from the start of
  * candidate gethering to the time the last candidate is reported.
