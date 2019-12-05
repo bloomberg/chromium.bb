@@ -88,6 +88,11 @@ class MODULES_EXPORT ServiceWorkerEventQueue {
                       AbortCallback abort_callback,
                       base::Optional<base::TimeDelta> custom_timeout);
 
+  // Similar to EnqueueNormal(), but enqueues an Offline event.
+  void EnqueueOffline(StartCallback start_callback,
+                      AbortCallback abort_callback,
+                      base::Optional<base::TimeDelta> custom_timeout);
+
   // Returns true if |event_id| was started and hasn't ended.
   bool HasEvent(int event_id) const;
 
@@ -133,6 +138,11 @@ class MODULES_EXPORT ServiceWorkerEventQueue {
       // signalling that the browser decided not to terminate the
       // worker.
       Pending,
+      // An offline event. ServiceWorkerEventQueue never dispatches offline
+      // events while non-offfline events are being dispatched, and vice-versa.
+      // An offline event is only used in offline-capability-check fetch event
+      // dispatch, which will be added later.
+      Offline,
     };
 
     Event(Type type,
@@ -154,6 +164,9 @@ class MODULES_EXPORT ServiceWorkerEventQueue {
   // Enqueues the event to |queue_|, and run events in the queue or sometimes
   // later synchronously, depending on the type of events.
   void EnqueueEvent(std::unique_ptr<Event> event);
+
+  // Returns true if we can start |event|.
+  bool CanStartEvent(const Event& event) const;
 
   // Starts a single event.
   void StartEvent(std::unique_ptr<Event> event);
@@ -212,6 +225,9 @@ class MODULES_EXPORT ServiceWorkerEventQueue {
   // invoke |idle_callback_| or to re-enter ProcessEvents() when calling
   // ProcessEvents().
   bool processing_events_ = false;
+
+  // Set to true during running offline events.
+  bool running_offline_events_ = false;
 
   // The number of the living StayAwakeToken. See also class comments.
   int num_of_stay_awake_tokens_ = 0;

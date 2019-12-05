@@ -98,6 +98,23 @@ void ServiceWorkerEventQueue::EnqueuePending(
       std::move(abort_callback), std::move(custom_timeout)));
 }
 
+void ServiceWorkerEventQueue::EnqueueOffline(
+    StartCallback start_callback,
+    AbortCallback abort_callback,
+    base::Optional<base::TimeDelta> custom_timeout) {
+  EnqueueEvent(std::make_unique<ServiceWorkerEventQueue::Event>(
+      ServiceWorkerEventQueue::Event::Type::Offline, std::move(start_callback),
+      std::move(abort_callback), std::move(custom_timeout)));
+}
+
+bool ServiceWorkerEventQueue::CanStartEvent(const Event& event) const {
+  if (!HasInflightEvent())
+    return true;
+  if (event.type == Event::Type::Offline)
+    return running_offline_events_;
+  return !running_offline_events_;
+}
+
 void ServiceWorkerEventQueue::EnqueueEvent(std::unique_ptr<Event> event) {
   DCHECK(event->type != Event::Type::Pending || did_idle_timeout());
   bool can_start_processing_events =
@@ -115,7 +132,7 @@ void ServiceWorkerEventQueue::EnqueueEvent(std::unique_ptr<Event> event) {
 void ServiceWorkerEventQueue::ProcessEvents() {
   DCHECK(!processing_events_);
   processing_events_ = true;
-  while (!queue_.IsEmpty()) {
+  while (!queue_.IsEmpty() && CanStartEvent(*queue_.front())) {
     StartEvent(queue_.TakeFirst());
   }
   processing_events_ = false;
@@ -129,6 +146,8 @@ void ServiceWorkerEventQueue::ProcessEvents() {
 }
 
 void ServiceWorkerEventQueue::StartEvent(std::unique_ptr<Event> event) {
+  DCHECK(CanStartEvent(*event));
+  running_offline_events_ = event->type == Event::Type::Offline;
   idle_time_ = base::TimeTicks();
   const int event_id = NextEventId();
   DCHECK(!HasEvent(event_id));
@@ -211,6 +230,13 @@ bool ServiceWorkerEventQueue::MaybeTriggerIdleTimer() {
 
 void ServiceWorkerEventQueue::OnNoInflightEvent() {
   DCHECK(!HasInflightEvent());
+  running_offline_events_ = false;
+  // There might be events in the queue because offline (or non-offline) events
+  // can be enqueued during running non-offline (or offline) events.
+  if (!queue_.IsEmpty()) {
+    ProcessEvents();
+    return;
+  }
   idle_time_ = tick_clock_->NowTicks() + kIdleDelay;
   MaybeTriggerIdleTimer();
 }

@@ -54,6 +54,13 @@ class MockEvent {
         custom_timeout);
   }
 
+  void EnqueueOfflineTo(ServiceWorkerEventQueue* event_queue) {
+    event_queue->EnqueueOffline(
+        WTF::Bind(&MockEvent::Start, weak_factory_.GetWeakPtr()),
+        WTF::Bind(&MockEvent::Abort, weak_factory_.GetWeakPtr()),
+        base::nullopt);
+  }
+
   void EnqueuePendingDispatchingEventTo(ServiceWorkerEventQueue* event_queue,
                                         String tag,
                                         Vector<String>* out_tags) {
@@ -446,6 +453,141 @@ TEST_F(ServiceWorkerEventQueueTest, SetIdleTimerDelayToZero) {
     // EndEvent() immediately triggers the idle callback when no tokens exist.
     EXPECT_TRUE(is_idle);
   }
+}
+
+TEST_F(ServiceWorkerEventQueueTest, EnqueuOffline) {
+  ServiceWorkerEventQueue event_queue(base::DoNothing(),
+                                      task_runner()->GetMockTickClock());
+  event_queue.Start();
+
+  MockEvent event_1;
+  event_1.EnqueueTo(&event_queue);
+  // State:
+  // - inflight_events: {1 (normal)}
+  // - queue: []
+  EXPECT_TRUE(event_1.Started());
+
+  MockEvent event_2;
+  event_2.EnqueueTo(&event_queue);
+  // |event_queue| should start |event_2| because both 1 and 2 are normal
+  // events.
+  //
+  // State:
+  // - inflight_events: {1 (normal), 2 (normal)}
+  // - queue: []
+  EXPECT_TRUE(event_2.Started());
+
+  MockEvent event_3;
+  event_3.EnqueueOfflineTo(&event_queue);
+  // |event_queue| should not start an offline |event_3| because non-offline
+  // events are running.
+  //
+  // State:
+  // - inflight_events: {1 (normal), 2 (normal)}
+  // - queue: [3 (offline)]
+  EXPECT_FALSE(event_3.Started());
+
+  MockEvent event_4;
+  event_4.EnqueueOfflineTo(&event_queue);
+  // State:
+  // - inflight_events: {1 (normal), 2 (normal)}
+  // - queue: [3 (offline), 4 (offline)]
+  EXPECT_FALSE(event_3.Started());
+  EXPECT_FALSE(event_4.Started());
+
+  MockEvent event_5;
+  event_5.EnqueueTo(&event_queue);
+  // |event_queue| should not start a normal |event_5| because an offline event
+  // is already enqueued.
+  //
+  // State:
+  // - inflight_events: {1 (normal), 2 (normal)}
+  // - queue: [3 (offline), 4 (offline), 5 (normal)]
+  EXPECT_FALSE(event_3.Started());
+  EXPECT_FALSE(event_4.Started());
+  EXPECT_FALSE(event_5.Started());
+
+  event_queue.EndEvent(event_1.event_id());
+  // |event_1| is finished, but there ia still an inflight event, |event_2|.
+  // Events in the queue are not processed.
+  //
+  // State:
+  // - inflight_events: {2 (normal)}
+  // - queue: [3 (offline), 4 (offline), 5 (normal)]
+  EXPECT_FALSE(event_3.Started());
+  EXPECT_FALSE(event_4.Started());
+  EXPECT_FALSE(event_5.Started());
+
+  event_queue.EndEvent(event_2.event_id());
+  // All inflight events are finished. |event_queue| starts processing
+  // events in the queue. As a result, |event_3| and |event_4| are started, but
+  // |event_5| are not.
+  //
+  // State:
+  // - inflight_events: {3 (offline), 4 (offline)}
+  // - queue: [5 (normal)]
+  EXPECT_TRUE(event_3.Started());
+  EXPECT_TRUE(event_4.Started());
+  EXPECT_FALSE(event_5.Started());
+
+  event_queue.EndEvent(event_3.event_id());
+  // State:
+  // - inflight_events: {4 (offline)}
+  // - queue: [5 (normal)]
+  EXPECT_FALSE(event_5.Started());
+
+  event_queue.EndEvent(event_4.event_id());
+  // State:
+  // - inflight_events: {5 (normal)}
+  // - queue: []
+  EXPECT_TRUE(event_5.Started());
+}
+
+TEST_F(ServiceWorkerEventQueueTest, IdleTimerWithOfflineEvents) {
+  const base::TimeDelta kIdleInterval =
+      ServiceWorkerEventQueue::kIdleDelay +
+      ServiceWorkerEventQueue::kUpdateInterval +
+      base::TimeDelta::FromSeconds(1);
+
+  bool is_idle = false;
+  ServiceWorkerEventQueue event_queue(CreateReceiverWithCalledFlag(&is_idle),
+                                      task_runner()->GetMockTickClock());
+  event_queue.Start();
+
+  MockEvent event1;
+  event1.EnqueueTo(&event_queue);
+  // State:
+  // - inflight_events: {1 (normal)}
+  // - queue: []
+  EXPECT_TRUE(event1.Started());
+  task_runner()->FastForwardBy(kIdleInterval);
+  EXPECT_FALSE(is_idle);
+
+  MockEvent event2;
+  event2.EnqueueOfflineTo(&event_queue);
+  task_runner()->FastForwardBy(kIdleInterval);
+  // State:
+  // - inflight_events: {1 (normal)}
+  // - queue: [2 (offline)]
+  EXPECT_FALSE(event2.Started());
+  EXPECT_FALSE(is_idle);
+
+  event_queue.EndEvent(event1.event_id());
+  task_runner()->FastForwardBy(kIdleInterval);
+  // State:
+  // - inflight_events: {2 (offline)}
+  // - queue: []
+  EXPECT_TRUE(event2.Started());
+  EXPECT_FALSE(is_idle);
+
+  event_queue.EndEvent(event2.event_id());
+  // State:
+  // - inflight_events: {}
+  // - queue: []
+  EXPECT_FALSE(is_idle);
+  task_runner()->FastForwardBy(kIdleInterval);
+  // |idle_callback| should be fired.
+  EXPECT_TRUE(is_idle);
 }
 
 }  // namespace blink
