@@ -121,6 +121,10 @@ class PredictionManager
   // Override |clock_| for testing.
   void SetClockForTesting(const base::Clock* clock);
 
+  // Clear host model features from the in memory host model features map and
+  // from the models and features store.
+  void ClearHostModelFeatures();
+
  protected:
   // Return the prediction model for the optimization target used by this
   // PredictionManager for testing.

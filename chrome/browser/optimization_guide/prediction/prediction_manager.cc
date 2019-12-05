@@ -661,7 +661,6 @@ bool PredictionManager::ProcessAndStoreHostModelFeatures(
   }
   if (model_features_for_host.size() == 0)
     return false;
-
   host_model_features_map_[host_model_features.host()] =
       model_features_for_host;
   return true;
@@ -719,6 +718,12 @@ void PredictionManager::SetLastModelAndFeaturesFetchAttemptTime(
 
 void PredictionManager::SetClockForTesting(const base::Clock* clock) {
   clock_ = clock;
+}
+
+void PredictionManager::ClearHostModelFeatures() {
+  host_model_features_map_.clear();
+  if (model_and_features_store_)
+    model_and_features_store_->ClearHostModelFeaturesFromDatabase();
 }
 
 }  // namespace optimization_guide

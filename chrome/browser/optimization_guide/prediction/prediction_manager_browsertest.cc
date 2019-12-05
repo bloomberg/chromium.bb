@@ -184,6 +184,28 @@ enum class PredictionModelsFetcherRemoteResponseType {
   kUnsuccessful = 3,
 };
 
+// A WebContentsObserver that asks whether an optimization target can be
+// applied.
+class OptimizationGuideConsumerWebContentsObserver
+    : public content::WebContentsObserver {
+ public:
+  OptimizationGuideConsumerWebContentsObserver(
+      content::WebContents* web_contents)
+      : content::WebContentsObserver(web_contents) {}
+  ~OptimizationGuideConsumerWebContentsObserver() override = default;
+
+  // contents::WebContentsObserver implementation:
+  void DidFinishNavigation(
+      content::NavigationHandle* navigation_handle) override {
+    OptimizationGuideKeyedService* service =
+        OptimizationGuideKeyedServiceFactory::GetForProfile(
+            Profile::FromBrowserContext(web_contents()->GetBrowserContext()));
+    service->ShouldTargetNavigation(
+        navigation_handle,
+        optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD);
+  }
+};
+
 }  // namespace
 
 namespace optimization_guide {
@@ -220,6 +242,11 @@ class PredictionManagerBrowserTest : public InProcessBrowserTest {
     ASSERT_TRUE(https_server_->Start());
     https_url_with_content_ = https_server_->GetURL("/english_page.html");
     https_url_without_content_ = https_server_->GetURL("/empty.html");
+
+    // Set up an OptimizationGuideKeyedService consumer.
+    consumer_.reset(new OptimizationGuideConsumerWebContentsObserver(
+        browser()->tab_strip_model()->GetActiveWebContents()));
+
     InProcessBrowserTest::SetUpOnMainThread();
   }
 
@@ -275,11 +302,11 @@ class PredictionManagerBrowserTest : public InProcessBrowserTest {
     // POST.
     EXPECT_EQ(request.method, net::test_server::METHOD_POST);
     response->set_code(net::HTTP_OK);
-
     std::unique_ptr<optimization_guide::proto::GetModelsResponse>
         get_models_response = BuildGetModelsResponse(
-            {"example1.com"}, {optimization_guide::proto::
-                                   CLIENT_MODEL_FEATURE_SITE_ENGAGEMENT_SCORE});
+            {"example1.com", https_server_->GetURL("/").host()},
+            {optimization_guide::proto::
+                 CLIENT_MODEL_FEATURE_SITE_ENGAGEMENT_SCORE});
     if (response_type_ == PredictionModelsFetcherRemoteResponseType::
                               kSuccessfulWithFeaturesAndNoModels) {
       get_models_response->clear_models();
@@ -304,6 +331,7 @@ class PredictionManagerBrowserTest : public InProcessBrowserTest {
   PredictionModelsFetcherRemoteResponseType response_type_ =
       PredictionModelsFetcherRemoteResponseType::
           kSuccessfulWithModelsAndFeatures;
+  std::unique_ptr<OptimizationGuideConsumerWebContentsObserver> consumer_;
 
   DISALLOW_COPY_AND_ASSIGN(PredictionManagerBrowserTest);
 };
@@ -456,6 +484,54 @@ IN_PROC_BROWSER_TEST_F(
       "OptimizationGuide.PredictionManager.HostModelFeaturesStored", 0);
   histogram_tester.ExpectTotalCount(
       "OptimizationGuide.PredictionManager.PredictionModelsStored", 0);
+}
+
+IN_PROC_BROWSER_TEST_F(
+    PredictionManagerBrowserTest,
+    DISABLE_ON_WIN_MAC_CHROMEOS(HostModelFeaturesClearedOnHistoryClear)) {
+  base::HistogramTester histogram_tester;
+  OptimizationGuideKeyedService* keyed_service =
+      OptimizationGuideKeyedServiceFactory::GetForProfile(browser()->profile());
+
+  PredictionManager* prediction_manager = keyed_service->GetPredictionManager();
+  EXPECT_TRUE(prediction_manager);
+  RegisterWithKeyedService();
+
+  // Wait until histograms have been updated before performing checks for
+  // correct behavior based on the response.
+  EXPECT_GE(
+      RetryForHistogramUntilCountReached(
+          &histogram_tester,
+          "OptimizationGuide.PredictionModelFetcher.GetModelsResponse.Status",
+          1),
+      1);
+
+  EXPECT_GE(
+      RetryForHistogramUntilCountReached(
+          &histogram_tester,
+          "OptimizationGuide.PredictionManager.HostModelFeaturesStored", 1),
+      1);
+  EXPECT_GE(
+      RetryForHistogramUntilCountReached(
+          &histogram_tester,
+          "OptimizationGuide.PredictionManager.PredictionModelsStored", 1),
+      1);
+
+  ui_test_utils::NavigateToURL(browser(), https_url_with_content());
+
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.PredictionManager.HasHostModelFeaturesForHost", true,
+      1);
+
+  // Wipe the browser history - clears all the host model features.
+  browser()->profile()->Wipe();
+  histogram_tester.ExpectBucketCount(
+      "OptimizationGuide.ClearHostModelFeatures.StoreAvailable", true, 1);
+
+  ui_test_utils::NavigateToURL(browser(), https_url_with_content());
+  histogram_tester.ExpectBucketCount(
+      "OptimizationGuide.PredictionManager.HasHostModelFeaturesForHost", false,
+      1);
 }
 
 }  // namespace optimization_guide
