@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.settings;
+package org.chromium.chrome.browser.settings.accessibility;
 
 import android.content.Context;
 import android.support.v7.preference.PreferenceViewHolder;
@@ -13,6 +13,7 @@ import android.widget.TextView;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.accessibility.FontSizePrefs;
 import org.chromium.chrome.browser.accessibility.FontSizePrefs.FontSizePrefsObserver;
+import org.chromium.chrome.browser.settings.SeekBarPreference;
 
 /**
  * Preference that allows the user to change the scaling factor that's applied to web page text.
@@ -80,5 +81,4 @@ public class TextScalePreference extends SeekBarPreference {
                     smallestStandardWebPageFontSize * mFontSizePrefs.getFontScaleFactor());
         }
     }
-
 }

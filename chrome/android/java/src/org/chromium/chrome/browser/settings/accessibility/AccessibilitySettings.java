@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.settings;
+package org.chromium.chrome.browser.settings.accessibility;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -18,6 +18,8 @@ import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
+import org.chromium.chrome.browser.settings.ChromeBaseCheckBoxPreference;
+import org.chromium.chrome.browser.settings.SettingsUtils;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
 
 import java.text.NumberFormat;
@@ -25,7 +27,7 @@ import java.text.NumberFormat;
 /**
  * Fragment to keep track of all the accessibility related preferences.
  */
-public class AccessibilityPreferences
+public class AccessibilitySettings
         extends PreferenceFragmentCompat implements Preference.OnPreferenceChangeListener {
     static final String PREF_TEXT_SCALE = "text_scale";
     static final String PREF_FORCE_ENABLE_ZOOM = "force_enable_zoom";
