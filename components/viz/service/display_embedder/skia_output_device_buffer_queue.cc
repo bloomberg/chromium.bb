@@ -190,6 +190,7 @@ SkiaOutputDeviceBufferQueue::SkiaOutputDeviceBufferQueue(
     scoped_refptr<gl::GLSurface> gl_surface,
     SkiaOutputSurfaceDependency* deps,
     const DidSwapBufferCompleteCallback& did_swap_buffer_complete_callback,
+    gpu::MemoryTracker* memory_tracker,
     uint32_t shared_image_usage)
     : SkiaOutputDevice(false /*need_swap_semaphore */,
                        did_swap_buffer_complete_callback),
@@ -202,12 +203,12 @@ SkiaOutputDeviceBufferQueue::SkiaOutputDeviceBufferQueue(
                             deps->GetMailboxManager(),
                             deps->GetSharedImageManager(),
                             deps->GetGpuImageFactory(),
-                            nullptr,
+                            memory_tracker,
                             true),
       shared_image_usage_(shared_image_usage) {
   shared_image_representation_factory_ =
       std::make_unique<gpu::SharedImageRepresentationFactory>(
-          deps->GetSharedImageManager(), nullptr);
+          deps->GetSharedImageManager(), memory_tracker);
 
 #if defined(USE_OZONE)
   image_format_ = GetResourceFormat(display::DisplaySnapshot::PrimaryFormat());
@@ -225,10 +226,12 @@ SkiaOutputDeviceBufferQueue::SkiaOutputDeviceBufferQueue(
 SkiaOutputDeviceBufferQueue::SkiaOutputDeviceBufferQueue(
     scoped_refptr<gl::GLSurface> gl_surface,
     SkiaOutputSurfaceDependency* deps,
-    const DidSwapBufferCompleteCallback& did_swap_buffer_complete_callback)
+    const DidSwapBufferCompleteCallback& did_swap_buffer_complete_callback,
+    gpu::MemoryTracker* memory_tracker)
     : SkiaOutputDeviceBufferQueue(gl_surface,
                                   deps,
                                   did_swap_buffer_complete_callback,
+                                  memory_tracker,
                                   kSharedImageUsage) {}
 
 SkiaOutputDeviceBufferQueue::~SkiaOutputDeviceBufferQueue() {
@@ -239,7 +242,8 @@ SkiaOutputDeviceBufferQueue::~SkiaOutputDeviceBufferQueue() {
 std::unique_ptr<SkiaOutputDeviceBufferQueue>
 SkiaOutputDeviceBufferQueue::Create(
     SkiaOutputSurfaceDependency* deps,
-    const DidSwapBufferCompleteCallback& did_swap_buffer_complete_callback) {
+    const DidSwapBufferCompleteCallback& did_swap_buffer_complete_callback,
+    gpu::MemoryTracker* memory_tracker) {
 #if defined(OS_ANDROID)
   if (!features::IsAndroidSurfaceControlEnabled())
     return nullptr;
@@ -264,7 +268,8 @@ SkiaOutputDeviceBufferQueue::Create(
   }
 
   return std::make_unique<SkiaOutputDeviceBufferQueue>(
-      std::move(gl_surface), deps, did_swap_buffer_complete_callback);
+      std::move(gl_surface), deps, did_swap_buffer_complete_callback,
+      memory_tracker);
 #else
   return nullptr;
 #endif
