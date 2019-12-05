@@ -40,6 +40,7 @@ CPPFLAGS += -I$(top_srcdir)
 LDFLAGS += -static
 
 TESTS = \
+	fallocate \
 	sigtimedwait \
 	unlink \
 

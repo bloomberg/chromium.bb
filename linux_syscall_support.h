@@ -3630,7 +3630,10 @@ struct kernel_statfs {
       LSS_BODY(4, int, fallocate, LSS_SYSCALL_ARG(f), LSS_SYSCALL_ARG(mode),
                                   (uint64_t)(offset), (uint64_t)(len));
     }
-    #elif defined(__i386__) || (defined(__s390__) && !defined(__s390x__))
+    #elif (defined(__i386__) || (defined(__s390__) && !defined(__s390x__)) \
+           || defined(__ARM_ARCH_3__) || defined(__ARM_EABI__) \
+           || (defined(__mips__) && _MIPS_SIM == _MIPS_SIM_ABI32) \
+           || defined(__PPC__))
     #define __NR__fallocate __NR_fallocate
     LSS_INLINE _syscall6(int, _fallocate, int, fd,
                          int, mode,
