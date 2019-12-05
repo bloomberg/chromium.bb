@@ -5,9 +5,9 @@
 mojom = "//media/fuchsia/mojom/fuchsia_cdm_provider.mojom"
 os_whitelist = [ "fuchsia" ]
 public_headers = [ "fuchsia/media/drm/cpp/fidl.h" ]
-traits_headers = [ "//media/fuchsia/mojom/cdm_request_mojom_traits.h" ]
+traits_headers = [ "//media/fuchsia/mojom/fuchsia_cdm_provider_mojom_traits.h" ]
 sources = [
-  "//media/fuchsia/mojom/cdm_request_mojom_traits.h",
+  "//media/fuchsia/mojom/fuchsia_cdm_provider_mojom_traits.h",
 ]
 public_deps = [
   "//fuchsia/mojom:traits",
