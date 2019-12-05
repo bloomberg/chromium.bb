@@ -874,7 +874,9 @@ typedef struct SPEED_FEATURES {
 
   // prune palette search
   // 0: No pruning
-  // 1: Perform 2 way palette search from max colors to min colors (and min
+  // 1: Perform coarse search to prune the palette colors. For winner colors,
+  // neighbors are also evaluated using a finer search.
+  // 2: Perform 2 way palette search from max colors to min colors (and min
   // colors to remaining colors) and terminate the search if current number of
   // palette colors is not the winner.
   int prune_palette_search_level;

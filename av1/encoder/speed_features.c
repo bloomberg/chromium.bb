@@ -343,6 +343,7 @@ static void set_good_speed_features_framesize_independent(
     sf->reduce_inter_modes = boosted ? 1 : 2;
     sf->tx_type_search.prune_mode = PRUNE_2D_FAST;
     sf->prune_comp_type_by_model_rd = boosted ? 0 : 1;
+    sf->prune_palette_search_level = 1;
   }
 
   if (speed >= 2) {
@@ -417,9 +418,7 @@ static void set_good_speed_features_framesize_independent(
                                                                          : 2;
     sf->tx_type_search.use_skip_flag_prediction =
         cm->allow_screen_content_tools ? 1 : 2;
-    // TODO(any): Experiment with binary search and extend for all frame types
-    // and speed = 1 and 2
-    sf->prune_palette_search_level = 1;
+    sf->prune_palette_search_level = 2;
   }
 
   if (speed >= 4) {
