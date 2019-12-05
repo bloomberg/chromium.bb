@@ -93,7 +93,8 @@ bool IsSameOriginWithAncestors(const Frame* frame) {
       frame->GetSecurityContext()->GetSecurityOrigin();
   while (current->Tree().Parent()) {
     current = current->Tree().Parent();
-    if (!origin->CanAccess(current->GetSecurityContext()->GetSecurityOrigin()))
+    if (!origin->IsSameOriginWith(
+            current->GetSecurityContext()->GetSecurityOrigin()))
       return false;
   }
   return true;
