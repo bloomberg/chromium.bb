@@ -57533,6 +57533,9 @@ Called by update_net_trust_anchors.py.-->
   <int value="24" label="Save card bubble"/>
   <int value="25" label="Manage cards bubble"/>
   <int value="27" label="Sync and Google services settings"/>
+  <int value="28" label="Re-signin from sync error card in settings"/>
+  <int value="29" label="Forced sign-in"/>
+  <int value="30" label="Re-signin after an account rename"/>
 </enum>
 
 <enum name="SigninAccountEquality">
