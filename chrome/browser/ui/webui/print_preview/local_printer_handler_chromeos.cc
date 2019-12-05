@@ -15,6 +15,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/task/post_task.h"
 #include "base/values.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/printing/cups_print_job_manager.h"
 #include "chrome/browser/chromeos/printing/cups_print_job_manager_factory.h"
 #include "chrome/browser/chromeos/printing/cups_printers_manager.h"
@@ -69,7 +70,8 @@ void AddPrintersToList(const std::vector<chromeos::Printer>& printers,
 base::Value FetchCapabilitiesAsync(const std::string& device_name,
                                    const PrinterBasicInfo& basic_info,
                                    bool has_secure_protocol) {
-  auto print_backend = PrintBackend::CreateInstance(nullptr);
+  auto print_backend = PrintBackend::CreateInstance(
+      nullptr, g_browser_process->GetApplicationLocale());
   return GetSettingsOnBlockingTaskRunner(
       device_name, basic_info, PrinterSemanticCapsAndDefaults::Papers(),
       has_secure_protocol, print_backend);
