@@ -591,7 +591,7 @@ android_assets("monochrome_webview_assets") {
   } else {
     deps += [ "//v8:v8_external_startup_data_assets" ]
   }
-  if (android_64bit_target_cpu && build_apk_secondary_abi) {
+  if (android_64bit_target_cpu) {
     deps += [ ":v8_snapshot_secondary_abi_assets" ]
   }
 }
