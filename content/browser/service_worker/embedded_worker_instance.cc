@@ -1057,10 +1057,16 @@ EmbeddedWorkerInstance::CreateFactoryBundleOnUI(
   network::mojom::URLLoaderFactoryOverridePtr factory_override;
   bool bypass_redirect_checks = false;
 
+  DCHECK(factory_type ==
+             ContentBrowserClient::URLLoaderFactoryType::kServiceWorkerScript ||
+         factory_type == ContentBrowserClient::URLLoaderFactoryType::
+                             kServiceWorkerSubResource);
+
   // See if the default factory needs to be tweaked by the embedder.
   GetContentClient()->browser()->WillCreateURLLoaderFactory(
       rph->GetBrowserContext(), nullptr /* frame_host */, rph->GetID(),
-      factory_type, origin, &default_factory_receiver, &default_header_client,
+      factory_type, origin, base::nullopt /* navigation_id */,
+      &default_factory_receiver, &default_header_client,
       &bypass_redirect_checks, &factory_override);
   devtools_instrumentation::WillCreateURLLoaderFactoryForServiceWorker(
       rph, routing_id, &default_factory_receiver);

@@ -283,8 +283,8 @@ SharedWorkerHost::CreateNetworkFactoryForSubresources(
       storage_partition_impl->browser_context(),
       /*frame=*/nullptr, worker_process_id_,
       ContentBrowserClient::URLLoaderFactoryType::kWorkerSubResource, origin,
-      &default_factory_receiver, &default_header_client, bypass_redirect_checks,
-      &factory_override);
+      /*navigation_id=*/base::nullopt, &default_factory_receiver,
+      &default_header_client, bypass_redirect_checks, &factory_override);
 
   // TODO(nhiroki): Call devtools_instrumentation::WillCreateURLLoaderFactory()
   // here.

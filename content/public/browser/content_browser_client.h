@@ -1279,6 +1279,9 @@ class CONTENT_EXPORT ContentBrowserClient {
   // TODO(lukasza): https://crbug.com/888079: Ensure that |request_initiator| is
   // always accurate.
   //
+  // |navigation_id| is valid iff |type| is |kNavigation|. It corresponds to the
+  // Navigation ID returned by NavigationHandle::GetNavigationId().
+  //
   // |*factory_receiver| is always valid upon entry and MUST be valid upon
   // return. The embedder may swap out the value of |*factory_receiver| for its
   // own, in which case it must return |true| to indicate that it's proxying
@@ -1330,6 +1333,7 @@ class CONTENT_EXPORT ContentBrowserClient {
       int render_process_id,
       URLLoaderFactoryType type,
       const url::Origin& request_initiator,
+      base::Optional<int64_t> navigation_id,
       mojo::PendingReceiver<network::mojom::URLLoaderFactory>* factory_receiver,
       mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>*
           header_client,

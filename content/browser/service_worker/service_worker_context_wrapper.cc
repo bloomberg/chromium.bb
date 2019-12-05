@@ -1864,8 +1864,9 @@ void ServiceWorkerContextWrapper::SetUpLoaderFactoryForUpdateCheckOnUI(
       storage_partition_->browser_context(), /*frame=*/nullptr,
       ChildProcessHost::kInvalidUniqueID,
       ContentBrowserClient::URLLoaderFactoryType::kServiceWorkerScript,
-      url::Origin::Create(scope), &pending_receiver, &header_client,
-      &bypass_redirect_checks, /*factory_override=*/nullptr);
+      url::Origin::Create(scope), /*navigation_id=*/base::nullopt,
+      &pending_receiver, &header_client, &bypass_redirect_checks,
+      /*factory_override=*/nullptr);
   if (header_client) {
     NavigationURLLoaderImpl::CreateURLLoaderFactoryWithHeaderClient(
         std::move(header_client), std::move(pending_receiver),

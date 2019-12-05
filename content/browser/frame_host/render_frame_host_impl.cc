@@ -5271,8 +5271,8 @@ void RenderFrameHostImpl::CommitNavigation(
               browser_context, this, GetProcess()->GetID(),
               ContentBrowserClient::URLLoaderFactoryType::kDocumentSubResource,
               main_world_origin_for_url_loader_factory,
-              &appcache_proxied_receiver, nullptr /* header_client */,
-              nullptr /* bypass_redirect_checks */,
+              base::nullopt /* navigation_id */, &appcache_proxied_receiver,
+              nullptr /* header_client */, nullptr /* bypass_redirect_checks */,
               nullptr /* factory_override */);
       if (use_proxy) {
         appcache_remote->Clone(std::move(appcache_proxied_receiver));
@@ -5312,7 +5312,8 @@ void RenderFrameHostImpl::CommitNavigation(
       GetContentClient()->browser()->WillCreateURLLoaderFactory(
           browser_context, this, GetProcess()->GetID(),
           ContentBrowserClient::URLLoaderFactoryType::kDocumentSubResource,
-          main_world_origin_for_url_loader_factory, &factory_receiver,
+          main_world_origin_for_url_loader_factory,
+          base::nullopt /* navigation_id */, &factory_receiver,
           nullptr /* header_client */, nullptr /* bypass_redirect_checks */,
           nullptr /* factory_override */);
       CreateWebUIURLLoaderBinding(this, scheme, std::move(factory_receiver));
@@ -5435,7 +5436,8 @@ void RenderFrameHostImpl::CommitNavigation(
       GetContentClient()->browser()->WillCreateURLLoaderFactory(
           browser_context, this, GetProcess()->GetID(),
           ContentBrowserClient::URLLoaderFactoryType::kDocumentSubResource,
-          main_world_origin_for_url_loader_factory, &factory_receiver,
+          main_world_origin_for_url_loader_factory,
+          base::nullopt /* navigation_id */, &factory_receiver,
           nullptr /* header_client */, nullptr /* bypass_redirect_checks */,
           nullptr /* factory_override */);
       // Keep DevTools proxy last, i.e. closest to the network.
@@ -6127,8 +6129,8 @@ bool RenderFrameHostImpl::CreateNetworkServiceDefaultFactoryInternal(
   GetContentClient()->browser()->WillCreateURLLoaderFactory(
       context, this, GetProcess()->GetID(),
       ContentBrowserClient::URLLoaderFactoryType::kDocumentSubResource, origin,
-      &default_factory_receiver, &header_client, &bypass_redirect_checks,
-      &factory_override);
+      base::nullopt /* navigation_id */, &default_factory_receiver,
+      &header_client, &bypass_redirect_checks, &factory_override);
 
   // Keep DevTools proxy last, i.e. closest to the network.
   devtools_instrumentation::WillCreateURLLoaderFactory(

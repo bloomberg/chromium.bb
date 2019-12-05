@@ -28,6 +28,7 @@
 #include "content/browser/devtools/devtools_instrumentation.h"
 #include "content/browser/file_system/file_system_url_loader_factory.h"
 #include "content/browser/frame_host/frame_tree_node.h"
+#include "content/browser/frame_host/navigation_request.h"
 #include "content/browser/frame_host/navigation_request_info.h"
 #include "content/browser/loader/file_url_loader_factory.h"
 #include "content/browser/loader/navigation_loader_interceptor.h"
@@ -1296,11 +1297,14 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
   std::string scheme = new_request->url.scheme();
   mojo::PendingRemote<network::mojom::URLLoaderFactory> factory_for_webui;
   if (base::Contains(schemes, scheme)) {
+    DCHECK(frame_tree_node);
+    DCHECK(frame_tree_node->navigation_request());
     auto factory_receiver = factory_for_webui.InitWithNewPipeAndPassReceiver();
     GetContentClient()->browser()->WillCreateURLLoaderFactory(
         partition->browser_context(), frame_tree_node->current_frame_host(),
         frame_tree_node->current_frame_host()->GetProcess()->GetID(),
         ContentBrowserClient::URLLoaderFactoryType::kNavigation, url::Origin(),
+        frame_tree_node->navigation_request()->GetNavigationId(),
         &factory_receiver, nullptr /* header_client */,
         nullptr /* bypass_redirect_checks */, nullptr /* factory_override */);
     CreateWebUIURLLoaderBinding(frame_tree_node->current_frame_host(), scheme,
@@ -1314,6 +1318,8 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
       header_client;
   bool bypass_redirect_checks = false;
   if (frame_tree_node) {
+    DCHECK(frame_tree_node->navigation_request());
+
     // |frame_tree_node| may be null in some unit test environments.
     GetContentClient()
         ->browser()
@@ -1332,6 +1338,7 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
         partition->browser_context(), frame_tree_node->current_frame_host(),
         frame_tree_node->current_frame_host()->GetProcess()->GetID(),
         ContentBrowserClient::URLLoaderFactoryType::kNavigation, url::Origin(),
+        frame_tree_node->navigation_request()->GetNavigationId(),
         &factory_receiver, &header_client, &bypass_redirect_checks,
         nullptr /* factory_override */);
     if (devtools_instrumentation::WillCreateURLLoaderFactory(
@@ -1529,11 +1536,15 @@ void NavigationURLLoaderImpl::BindNonNetworkURLLoaderFactoryReceiver(
 
   FrameTreeNode* frame_tree_node =
       FrameTreeNode::GloballyFindByID(frame_tree_node_id);
+  DCHECK(frame_tree_node);
+  DCHECK(frame_tree_node->navigation_request());
+
   auto* frame = frame_tree_node->current_frame_host();
   GetContentClient()->browser()->WillCreateURLLoaderFactory(
       frame->GetSiteInstance()->GetBrowserContext(), frame,
       frame->GetProcess()->GetID(),
       ContentBrowserClient::URLLoaderFactoryType::kNavigation, url::Origin(),
+      frame_tree_node->navigation_request()->GetNavigationId(),
       &factory_receiver, nullptr /* header_client */,
       nullptr /* bypass_redirect_checks */, nullptr /* factory_override */);
   it->second->Clone(std::move(factory_receiver));

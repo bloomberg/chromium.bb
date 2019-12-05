@@ -314,8 +314,9 @@ void WorkerScriptFetchInitiator::CreateScriptLoader(
         storage_partition->browser_context(), creator_render_frame_host,
         worker_process_id,
         ContentBrowserClient::URLLoaderFactoryType::kWorkerMainResource,
-        *resource_request->request_initiator, &default_factory_receiver,
-        &default_header_client, &bypass_redirect_checks, &factory_override);
+        *resource_request->request_initiator, /*navigation_id=*/base::nullopt,
+        &default_factory_receiver, &default_header_client,
+        &bypass_redirect_checks, &factory_override);
     factory_bundle_for_browser_info->set_bypass_redirect_checks(
         bypass_redirect_checks);
 
