@@ -506,9 +506,9 @@ RTCRtpSenderOnlyTransceiver::RTCRtpSenderOnlyTransceiver(
 
 RTCRtpSenderOnlyTransceiver::~RTCRtpSenderOnlyTransceiver() {}
 
-blink::WebRTCRtpTransceiverImplementationType
+RTCRtpTransceiverPlatformImplementationType
 RTCRtpSenderOnlyTransceiver::ImplementationType() const {
-  return blink::WebRTCRtpTransceiverImplementationType::kPlanBSenderOnly;
+  return RTCRtpTransceiverPlatformImplementationType::kPlanBSenderOnly;
 }
 
 uintptr_t RTCRtpSenderOnlyTransceiver::Id() const {

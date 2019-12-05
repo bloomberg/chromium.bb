@@ -207,9 +207,9 @@ FakeRTCRtpTransceiverImpl::FakeRTCRtpTransceiverImpl(
 
 FakeRTCRtpTransceiverImpl::~FakeRTCRtpTransceiverImpl() {}
 
-blink::WebRTCRtpTransceiverImplementationType
+RTCRtpTransceiverPlatformImplementationType
 FakeRTCRtpTransceiverImpl::ImplementationType() const {
-  return blink::WebRTCRtpTransceiverImplementationType::kFullTransceiver;
+  return RTCRtpTransceiverPlatformImplementationType::kFullTransceiver;
 }
 
 uintptr_t FakeRTCRtpTransceiverImpl::Id() const {

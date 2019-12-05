@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_RTC_RTP_TRANSCEIVER_H_
-#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_RTC_RTP_TRANSCEIVER_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_PEERCONNECTION_RTC_RTP_TRANSCEIVER_PLATFORM_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_PEERCONNECTION_RTC_RTP_TRANSCEIVER_PLATFORM_H_
 
 #include <memory>
 
 #include "base/optional.h"
-#include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_rtc_rtp_receiver.h"
 #include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/webrtc/api/rtp_transceiver_interface.h"
 
 namespace blink {
@@ -18,13 +18,14 @@ namespace blink {
 class RTCRtpSenderPlatform;
 
 // In Unified Plan transceivers exist and a full implementation of
-// WebRTCRtpTransceiver is required.
+// RTCRtpTransceiverPlatform is required.
 // In Plan B, the same methods that would be used to surface transceivers only
 // surface the sender or receiver component.
-// To make the Plan B -> Unified Plan transition easier, WebRTCRtpTransceiver
-// is used in both cases and ImplementationType indicates which methods are
-// applicable for the WebRTCRtpTransceiver implementation.
-enum class WebRTCRtpTransceiverImplementationType {
+// To make the Plan B -> Unified Plan transition easier,
+// RTCRtpTransceiverPlatform is used in both cases and ImplementationType
+// indicates which methods are applicable for the RTCRtpTransceiverPlatform
+// implementation.
+enum class RTCRtpTransceiverPlatformImplementationType {
   // Unified Plan: All methods implemented.
   kFullTransceiver,
   // Plan B: Only Sender() is implemented.
@@ -37,16 +38,17 @@ enum class WebRTCRtpTransceiverImplementationType {
 // TODO(hbos): [Onion Soup] Remove the content layer versions of this class and
 // rely on webrtc directly from blink. Requires coordination with senders and
 // receivers. https://crbug.com/787254
-class BLINK_PLATFORM_EXPORT WebRTCRtpTransceiver {
+class PLATFORM_EXPORT RTCRtpTransceiverPlatform {
  public:
-  virtual ~WebRTCRtpTransceiver();
+  virtual ~RTCRtpTransceiverPlatform();
 
   // Which methods (other than ImplementationType()) is guaranteed to be
   // implemented.
-  virtual WebRTCRtpTransceiverImplementationType ImplementationType() const = 0;
+  virtual RTCRtpTransceiverPlatformImplementationType ImplementationType()
+      const = 0;
 
-  // Identifies the webrtc-layer transceiver. Multiple WebRTCRtpTransceiver can
-  // exist for the same webrtc-layer transceiver.
+  // Identifies the webrtc-layer transceiver. Multiple RTCRtpTransceiverPlatform
+  // can exist for the same webrtc-layer transceiver.
   virtual uintptr_t Id() const = 0;
   virtual WebString Mid() const = 0;
   virtual void SetMid(base::Optional<WebString>) {}
@@ -67,4 +69,4 @@ class BLINK_PLATFORM_EXPORT WebRTCRtpTransceiver {
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_RTC_RTP_TRANSCEIVER_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_PEERCONNECTION_RTC_RTP_TRANSCEIVER_PLATFORM_H_

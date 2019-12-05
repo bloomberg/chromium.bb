@@ -174,17 +174,17 @@ class MockPeerConnectionTracker : public PeerConnectionTracker {
   MOCK_METHOD4(TrackAddTransceiver,
                void(RTCPeerConnectionHandler* pc_handler,
                     TransceiverUpdatedReason reason,
-                    const blink::WebRTCRtpTransceiver& transceiver,
+                    const RTCRtpTransceiverPlatform& transceiver,
                     size_t transceiver_index));
   MOCK_METHOD4(TrackModifyTransceiver,
                void(RTCPeerConnectionHandler* pc_handler,
                     TransceiverUpdatedReason reason,
-                    const blink::WebRTCRtpTransceiver& transceiver,
+                    const RTCRtpTransceiverPlatform& transceiver,
                     size_t transceiver_index));
   MOCK_METHOD4(TrackRemoveTransceiver,
                void(RTCPeerConnectionHandler* pc_handler,
                     TransceiverUpdatedReason reason,
-                    const blink::WebRTCRtpTransceiver& transceiver,
+                    const RTCRtpTransceiverPlatform& transceiver,
                     size_t transceiver_index));
   MOCK_METHOD1(TrackOnIceComplete, void(RTCPeerConnectionHandler* pc_handler));
   MOCK_METHOD3(TrackCreateDataChannel,
@@ -408,7 +408,7 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
       if (error_or_transceiver.ok()) {
         DCHECK_EQ(
             error_or_transceiver.value()->ImplementationType(),
-            blink::WebRTCRtpTransceiverImplementationType::kPlanBSenderOnly);
+            RTCRtpTransceiverPlatformImplementationType::kPlanBSenderOnly);
         auto sender = error_or_transceiver.value()->Sender();
         senders_.push_back(std::unique_ptr<blink::RTCRtpSenderImpl>(
             static_cast<blink::RTCRtpSenderImpl*>(sender.release())));
@@ -420,7 +420,7 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
       if (error_or_transceiver.ok()) {
         DCHECK_EQ(
             error_or_transceiver.value()->ImplementationType(),
-            blink::WebRTCRtpTransceiverImplementationType::kPlanBSenderOnly);
+            RTCRtpTransceiverPlatformImplementationType::kPlanBSenderOnly);
         auto sender = error_or_transceiver.value()->Sender();
         senders_.push_back(std::unique_ptr<blink::RTCRtpSenderImpl>(
             static_cast<blink::RTCRtpSenderImpl*>(sender.release())));

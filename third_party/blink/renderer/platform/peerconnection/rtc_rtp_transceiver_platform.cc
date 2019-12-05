@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/public/platform/web_rtc_rtp_transceiver.h"
+#include "third_party/blink/renderer/platform/peerconnection/rtc_rtp_transceiver_platform.h"
 
 namespace blink {
 
-WebRTCRtpTransceiver::~WebRTCRtpTransceiver() = default;
+RTCRtpTransceiverPlatform::~RTCRtpTransceiverPlatform() = default;
 
 }  // namespace blink

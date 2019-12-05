@@ -9,13 +9,13 @@
 #include "third_party/blink/public/platform/web_media_stream.h"
 #include "third_party/blink/public/platform/web_media_stream_source.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
-#include "third_party/blink/public/platform/web_rtc_rtp_transceiver.h"
 #include "third_party/blink/public/platform/web_rtc_stats.h"
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_dtmf_sender_handler.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_ice_candidate_platform.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_rtp_sender_platform.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_rtp_source.h"
+#include "third_party/blink/renderer/platform/peerconnection/rtc_rtp_transceiver_platform.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_session_description_platform.h"
 #include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
 #include "third_party/webrtc/api/stats/rtc_stats.h"
@@ -155,8 +155,8 @@ class DummyWebRTCRtpReceiver : public WebRTCRtpReceiver {
 
 uintptr_t DummyWebRTCRtpReceiver::last_id_ = 0;
 
-// Having a refcounted helper class allows multiple DummyWebRTCRtpTransceivers
-// to share the same internal states.
+// Having a refcounted helper class allows multiple
+// DummyRTCRtpTransceiverPlatforms to share the same internal states.
 class DummyTransceiverInternal
     : public WTF::ThreadSafeRefCounted<DummyTransceiverInternal> {
  private:
@@ -198,21 +198,22 @@ uintptr_t DummyTransceiverInternal::last_id_ = 0;
 
 }  // namespace
 
-class MockWebRTCPeerConnectionHandler::DummyWebRTCRtpTransceiver
-    : public WebRTCRtpTransceiver {
+class MockWebRTCPeerConnectionHandler::DummyRTCRtpTransceiverPlatform
+    : public RTCRtpTransceiverPlatform {
  public:
-  DummyWebRTCRtpTransceiver(WebMediaStreamSource::Type type,
-                            WebMediaStreamTrack track)
+  DummyRTCRtpTransceiverPlatform(WebMediaStreamSource::Type type,
+                                 WebMediaStreamTrack track)
       : internal_(base::MakeRefCounted<DummyTransceiverInternal>(type, track)) {
   }
-  DummyWebRTCRtpTransceiver(const DummyWebRTCRtpTransceiver& other)
+  DummyRTCRtpTransceiverPlatform(const DummyRTCRtpTransceiverPlatform& other)
       : internal_(other.internal_) {}
-  ~DummyWebRTCRtpTransceiver() override {}
+  ~DummyRTCRtpTransceiverPlatform() override {}
 
   scoped_refptr<DummyTransceiverInternal> internal() const { return internal_; }
 
-  WebRTCRtpTransceiverImplementationType ImplementationType() const override {
-    return WebRTCRtpTransceiverImplementationType::kFullTransceiver;
+  RTCRtpTransceiverPlatformImplementationType ImplementationType()
+      const override {
+    return RTCRtpTransceiverPlatformImplementationType::kFullTransceiver;
   }
   uintptr_t Id() const override { return internal_->id(); }
   WebString Mid() const override { return WebString(); }
@@ -252,13 +253,13 @@ bool MockWebRTCPeerConnectionHandler::Initialize(
   return true;
 }
 
-WebVector<std::unique_ptr<WebRTCRtpTransceiver>>
+WebVector<std::unique_ptr<RTCRtpTransceiverPlatform>>
 MockWebRTCPeerConnectionHandler::CreateOffer(RTCSessionDescriptionRequest*,
                                              const WebMediaConstraints&) {
   return {};
 }
 
-WebVector<std::unique_ptr<WebRTCRtpTransceiver>>
+WebVector<std::unique_ptr<RTCRtpTransceiverPlatform>>
 MockWebRTCPeerConnectionHandler::CreateOffer(RTCSessionDescriptionRequest*,
                                              RTCOfferOptionsPlatform*) {
   return {};
@@ -335,44 +336,44 @@ void MockWebRTCPeerConnectionHandler::GetStats(
     blink::WebRTCStatsReportCallback,
     const WebVector<webrtc::NonStandardGroupId>&) {}
 
-webrtc::RTCErrorOr<std::unique_ptr<WebRTCRtpTransceiver>>
+webrtc::RTCErrorOr<std::unique_ptr<RTCRtpTransceiverPlatform>>
 MockWebRTCPeerConnectionHandler::AddTransceiverWithTrack(
     const WebMediaStreamTrack& track,
     const webrtc::RtpTransceiverInit&) {
-  transceivers_.push_back(std::unique_ptr<DummyWebRTCRtpTransceiver>(
-      new DummyWebRTCRtpTransceiver(track.Source().GetType(), track)));
-  std::unique_ptr<DummyWebRTCRtpTransceiver> copy(
-      new DummyWebRTCRtpTransceiver(*transceivers_.back()));
-  return std::unique_ptr<WebRTCRtpTransceiver>(std::move(copy));
+  transceivers_.push_back(std::unique_ptr<DummyRTCRtpTransceiverPlatform>(
+      new DummyRTCRtpTransceiverPlatform(track.Source().GetType(), track)));
+  std::unique_ptr<DummyRTCRtpTransceiverPlatform> copy(
+      new DummyRTCRtpTransceiverPlatform(*transceivers_.back()));
+  return std::unique_ptr<RTCRtpTransceiverPlatform>(std::move(copy));
 }
 
-webrtc::RTCErrorOr<std::unique_ptr<WebRTCRtpTransceiver>>
+webrtc::RTCErrorOr<std::unique_ptr<RTCRtpTransceiverPlatform>>
 MockWebRTCPeerConnectionHandler::AddTransceiverWithKind(
     std::string kind,
     const webrtc::RtpTransceiverInit&) {
-  transceivers_.push_back(
-      std::unique_ptr<DummyWebRTCRtpTransceiver>(new DummyWebRTCRtpTransceiver(
+  transceivers_.push_back(std::unique_ptr<DummyRTCRtpTransceiverPlatform>(
+      new DummyRTCRtpTransceiverPlatform(
           kind == "audio" ? WebMediaStreamSource::Type::kTypeAudio
                           : WebMediaStreamSource::Type::kTypeVideo,
           WebMediaStreamTrack())));
-  std::unique_ptr<DummyWebRTCRtpTransceiver> copy(
-      new DummyWebRTCRtpTransceiver(*transceivers_.back()));
-  return std::unique_ptr<WebRTCRtpTransceiver>(std::move(copy));
+  std::unique_ptr<DummyRTCRtpTransceiverPlatform> copy(
+      new DummyRTCRtpTransceiverPlatform(*transceivers_.back()));
+  return std::unique_ptr<RTCRtpTransceiverPlatform>(std::move(copy));
 }
 
-webrtc::RTCErrorOr<std::unique_ptr<WebRTCRtpTransceiver>>
+webrtc::RTCErrorOr<std::unique_ptr<RTCRtpTransceiverPlatform>>
 MockWebRTCPeerConnectionHandler::AddTrack(const WebMediaStreamTrack& track,
                                           const WebVector<WebMediaStream>&) {
-  transceivers_.push_back(std::unique_ptr<DummyWebRTCRtpTransceiver>(
-      new DummyWebRTCRtpTransceiver(track.Source().GetType(), track)));
-  std::unique_ptr<DummyWebRTCRtpTransceiver> copy(
-      new DummyWebRTCRtpTransceiver(*transceivers_.back()));
-  return std::unique_ptr<WebRTCRtpTransceiver>(std::move(copy));
+  transceivers_.push_back(std::unique_ptr<DummyRTCRtpTransceiverPlatform>(
+      new DummyRTCRtpTransceiverPlatform(track.Source().GetType(), track)));
+  std::unique_ptr<DummyRTCRtpTransceiverPlatform> copy(
+      new DummyRTCRtpTransceiverPlatform(*transceivers_.back()));
+  return std::unique_ptr<RTCRtpTransceiverPlatform>(std::move(copy));
 }
 
-webrtc::RTCErrorOr<std::unique_ptr<WebRTCRtpTransceiver>>
+webrtc::RTCErrorOr<std::unique_ptr<RTCRtpTransceiverPlatform>>
 MockWebRTCPeerConnectionHandler::RemoveTrack(RTCRtpSenderPlatform* sender) {
-  const DummyWebRTCRtpTransceiver* transceiver_of_sender = nullptr;
+  const DummyRTCRtpTransceiverPlatform* transceiver_of_sender = nullptr;
   for (const auto& transceiver : transceivers_) {
     if (transceiver->Sender()->Id() == sender->Id()) {
       transceiver_of_sender = transceiver.get();
@@ -381,9 +382,9 @@ MockWebRTCPeerConnectionHandler::RemoveTrack(RTCRtpSenderPlatform* sender) {
   }
   transceiver_of_sender->internal()->sender()->internal()->set_track(
       WebMediaStreamTrack());
-  std::unique_ptr<DummyWebRTCRtpTransceiver> copy(
-      new DummyWebRTCRtpTransceiver(*transceiver_of_sender));
-  return std::unique_ptr<WebRTCRtpTransceiver>(std::move(copy));
+  std::unique_ptr<DummyRTCRtpTransceiverPlatform> copy(
+      new DummyRTCRtpTransceiverPlatform(*transceiver_of_sender));
+  return std::unique_ptr<RTCRtpTransceiverPlatform>(std::move(copy));
 }
 
 scoped_refptr<webrtc::DataChannelInterface>

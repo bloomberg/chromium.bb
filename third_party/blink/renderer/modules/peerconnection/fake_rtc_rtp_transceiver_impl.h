@@ -13,11 +13,11 @@
 #include "third_party/blink/public/platform/web_media_stream_source.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/blink/public/platform/web_rtc_rtp_receiver.h"
-#include "third_party/blink/public/platform/web_rtc_rtp_transceiver.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_audio_source.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_dtmf_sender_handler.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_rtp_sender_platform.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_rtp_source.h"
+#include "third_party/blink/renderer/platform/peerconnection/rtc_rtp_transceiver_platform.h"
 
 namespace blink {
 
@@ -88,7 +88,7 @@ class FakeRTCRtpReceiverImpl : public blink::WebRTCRtpReceiver {
   std::vector<std::string> stream_ids_;
 };
 
-class FakeRTCRtpTransceiverImpl : public blink::WebRTCRtpTransceiver {
+class FakeRTCRtpTransceiverImpl : public RTCRtpTransceiverPlatform {
  public:
   FakeRTCRtpTransceiverImpl(
       base::Optional<std::string> mid,
@@ -99,7 +99,7 @@ class FakeRTCRtpTransceiverImpl : public blink::WebRTCRtpTransceiver {
       base::Optional<webrtc::RtpTransceiverDirection> current_direction);
   ~FakeRTCRtpTransceiverImpl() override;
 
-  blink::WebRTCRtpTransceiverImplementationType ImplementationType()
+  RTCRtpTransceiverPlatformImplementationType ImplementationType()
       const override;
   uintptr_t Id() const override;
   blink::WebString Mid() const override;
