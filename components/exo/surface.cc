@@ -1052,8 +1052,7 @@ void Surface::AppendContentsToFrame(const gfx::Point& origin,
                              viz::SurfaceRange(first_embedded_surface_id_,
                                                latest_embedded_surface_id_),
                              background_color,
-                             /*stretch_content_to_fill_bounds=*/true,
-                             /*ignores_input_event=*/false);
+                             /*stretch_content_to_fill_bounds=*/true);
       }
       // A resource was still produced for this so we still need to release it
       // later.
