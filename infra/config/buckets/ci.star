@@ -403,12 +403,16 @@ chromium_builder(
 chromium_builder(
     name = 'win-archive-dbg',
     cores = 32,
+    goma_backend = goma.backend.RBE_PROD,
+    goma_enable_ats = True,
     os = os.WINDOWS_DEFAULT,
 )
 
 chromium_builder(
     name = 'win-archive-rel',
     cores = 32,
+    goma_backend = goma.backend.RBE_PROD,
+    goma_enable_ats = True,
     os = os.WINDOWS_DEFAULT,
 )
 
@@ -2230,6 +2234,8 @@ win_builder(
 win_builder(
     name = 'Win x64 Builder (dbg)',
     cores = 32,
+    goma_backend = goma.backend.RBE_PROD,
+    goma_enable_ats = True,
     os = os.WINDOWS_ANY,
 )
 
