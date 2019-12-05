@@ -269,11 +269,7 @@ void TreeBuilder::JoinDexMethodClasses(TreeNode* node) {
 
   // Bucket dex symbols by their class.
   for (TreeNode* child : node->children) {
-    // Unlike in .ndjson fields, Java classes loaded from .size files are just
-    // the classname, such as "android.support.v7.widget.toolbar".
-    // Method names contain the classname followed by the method definition,
-    // like "android.support.v7.widget.toolbar void onMeasure(int, int)".
-    const size_t split_index = child->id_path.path.find_first_of(' ');
+    const size_t split_index = child->id_path.path.find_first_of('#');
     // No return type / field type means it's a class node.
     const bool is_class_node =
         child->id_path.path.find_first_of(' ', child->short_name_index) ==
