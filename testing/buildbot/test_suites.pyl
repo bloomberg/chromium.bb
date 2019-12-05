@@ -2306,7 +2306,7 @@
           '--additional-env-var=LLVM_PROFILE_FILE=${ISOLATED_OUTDIR}/profraw/default-%2m.profraw',
         ],
         'linux_args': [ '--fuzzy-diff', ],
-        'isolate_name': 'blink_web_tests_exparchive',
+        'isolate_name': 'blink_web_tests',
         'merge': {
           'args': [
             '--verbose',
@@ -2614,7 +2614,7 @@
           '--num-retries=3',
         ],
         'linux_args': [ '--fuzzy-diff', ],
-        'isolate_name': 'blink_web_tests_exparchive',
+        'isolate_name': 'blink_web_tests',
         'merge': {
           'args': [
             '--verbose',
@@ -2649,7 +2649,7 @@
           '--num-retries=3',
         ],
         'linux_args': [ '--fuzzy-diff', ],
-        'isolate_name': 'blink_web_tests_exparchive',
+        'isolate_name': 'blink_web_tests',
         'merge': {
           'args': [
             '--verbose',
@@ -2836,7 +2836,7 @@
           '--num-retries=3',
         ],
         'linux_args': [ '--fuzzy-diff', ],
-        'isolate_name': 'blink_web_tests_exparchive',
+        'isolate_name': 'blink_web_tests',
         'merge': {
           'args': [
             '--verbose',
@@ -3376,7 +3376,7 @@
           '--additional-expectations=../../third_party/blink/web_tests/FlagExpectations/enable-gpu-rasterization',
           '--additional-expectations=../../third_party/blink/web_tests/FlagExpectations/use-gl=any',
         ],
-        'isolate_name': 'blink_web_tests_exparchive',
+        'isolate_name': 'blink_web_tests',
         'merge': {
           'args': [
             '--verbose',
@@ -3413,7 +3413,7 @@
           '--additional-expectations=../../third_party/blink/web_tests/FlagExpectations/enable-gpu-rasterization',
           '--additional-expectations=../../third_party/blink/web_tests/FlagExpectations/use-vulkan=native',
         ],
-        'isolate_name': 'blink_web_tests_exparchive',
+        'isolate_name': 'blink_web_tests',
         'merge': {
           'args': [
             '--verbose',
@@ -4170,7 +4170,7 @@
           ],
           'script': '//third_party/blink/tools/merge_web_test_results.py',
         },
-        'isolate_name': 'blink_web_tests_exparchive',
+        'isolate_name': 'blink_web_tests',
       },
     },
 
@@ -4317,7 +4317,7 @@
           '--num-retries=3',
           '--fuzzy-diff',
         ],
-        'isolate_name': 'blink_web_tests_exparchive',
+        'isolate_name': 'blink_web_tests',
         'merge': {
           'args': [
             '--verbose',
@@ -4800,7 +4800,7 @@
           '--skipped=always',
           '--test-list=../../testing/buildbot/filters/gpu.skiarenderer_vulkan_blink_web_tests.filter',
         ],
-        'isolate_name': 'blink_web_tests_exparchive',
+        'isolate_name': 'blink_web_tests',
         'merge': {
           'args': [
             '--verbose',
@@ -4829,7 +4829,7 @@
           '--additional-expectations=../../third_party/blink/web_tests/FlagExpectations/enable-gpu-rasterization',
           '--additional-expectations=../../third_party/blink/web_tests/FlagExpectations/use-vulkan=swiftshader',
         ],
-        'isolate_name': 'blink_web_tests_exparchive',
+        'isolate_name': 'blink_web_tests',
         'merge': {
           'args': [
             '--verbose',

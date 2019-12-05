@@ -175,7 +175,7 @@
           "--additional-driver-flag=--disable-gpu-sandbox",
           "--fuzzy-diff"
         ],
-        "isolate_name": "blink_web_tests_exparchive",
+        "isolate_name": "blink_web_tests",
         "merge": {
           "args": [
             "--verbose"
@@ -368,7 +368,7 @@
           "--additional-driver-flag=--disable-gpu-sandbox",
           "--fuzzy-diff"
         ],
-        "isolate_name": "blink_web_tests_exparchive",
+        "isolate_name": "blink_web_tests",
         "merge": {
           "args": [
             "--verbose"
@@ -809,7 +809,7 @@
           "--isolated-script-test-filter=wpt_internal/webgpu/*",
           "--platform=mac-mac10.13"
         ],
-        "isolate_name": "blink_web_tests_exparchive",
+        "isolate_name": "blink_web_tests",
         "merge": {
           "args": [
             "--verbose"
@@ -993,7 +993,7 @@
           "--isolated-script-test-filter=wpt_internal/webgpu/*",
           "--platform=mac-mac10.13"
         ],
-        "isolate_name": "blink_web_tests_exparchive",
+        "isolate_name": "blink_web_tests",
         "merge": {
           "args": [
             "--verbose"
@@ -1427,7 +1427,7 @@
           "--additional-driver-flag=--disable-gpu-sandbox",
           "--target=Release_x64"
         ],
-        "isolate_name": "blink_web_tests_exparchive",
+        "isolate_name": "blink_web_tests",
         "merge": {
           "args": [
             "--verbose"
@@ -1618,7 +1618,7 @@
           "--additional-driver-flag=--disable-gpu-sandbox",
           "--target=Release_x64"
         ],
-        "isolate_name": "blink_web_tests_exparchive",
+        "isolate_name": "blink_web_tests",
         "merge": {
           "args": [
             "--verbose"
@@ -2052,7 +2052,7 @@
           "--isolated-script-test-filter=wpt_internal/webgpu/*",
           "--additional-driver-flag=--disable-gpu-sandbox"
         ],
-        "isolate_name": "blink_web_tests_exparchive",
+        "isolate_name": "blink_web_tests",
         "merge": {
           "args": [
             "--verbose"
@@ -2242,7 +2242,7 @@
           "--isolated-script-test-filter=wpt_internal/webgpu/*",
           "--additional-driver-flag=--disable-gpu-sandbox"
         ],
-        "isolate_name": "blink_web_tests_exparchive",
+        "isolate_name": "blink_web_tests",
         "merge": {
           "args": [
             "--verbose"
