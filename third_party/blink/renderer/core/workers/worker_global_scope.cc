@@ -514,7 +514,7 @@ NOINLINE void WorkerGlobalScope::InitializeURL(const KURL& url) {
   if (GetSecurityOrigin()->IsOpaque()) {
     DCHECK(SecurityOrigin::Create(url)->IsOpaque());
   } else {
-    DCHECK(GetSecurityOrigin()->IsSameSchemeHostPort(
+    DCHECK(GetSecurityOrigin()->IsSameOriginWith(
         SecurityOrigin::Create(url).get()));
   }
   url_ = url;

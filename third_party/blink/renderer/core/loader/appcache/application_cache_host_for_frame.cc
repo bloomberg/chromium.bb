@@ -233,7 +233,7 @@ void ApplicationCacheHostForFrame::SelectCacheWithManifest(
   // Check for new 'master' entries.
   if (document_response_.AppCacheID() == mojom::blink::kAppCacheNoCacheId) {
     if (is_scheme_supported_ && is_get_method_ &&
-        SecurityOrigin::AreSameSchemeHostPort(manifest_kurl, document_url_)) {
+        SecurityOrigin::AreSameOrigin(manifest_kurl, document_url_)) {
       status_ = mojom::blink::AppCacheStatus::APPCACHE_STATUS_CHECKING;
       is_new_master_entry_ = NEW_ENTRY;
     } else {

@@ -198,7 +198,7 @@ bool CheckPublicKeySecurityRequirements(ScriptPromiseResolver* resolver,
   }
 
   auto cryptotoken_origin = SecurityOrigin::Create(KURL(kCryptotokenOrigin));
-  if (cryptotoken_origin->IsSameSchemeHostPort(origin)) {
+  if (cryptotoken_origin->IsSameOriginWith(origin)) {
     // Allow CryptoToken U2F extension to assert any origin, as cryptotoken
     // handles origin checking separately.
     return true;
@@ -564,7 +564,7 @@ ScriptPromise CredentialsContainer::get(
 
   if (options->hasPublicKey()) {
     auto cryptotoken_origin = SecurityOrigin::Create(KURL(kCryptotokenOrigin));
-    if (cryptotoken_origin->IsSameSchemeHostPort(
+    if (cryptotoken_origin->IsSameOriginWith(
             resolver->GetFrame()->GetSecurityContext()->GetSecurityOrigin())) {
       UseCounter::Count(resolver->GetExecutionContext(),
                         WebFeature::kU2FCryptotokenSign);
@@ -776,7 +776,7 @@ ScriptPromise CredentialsContainer::create(
   } else {
     DCHECK(options->hasPublicKey());
     auto cryptotoken_origin = SecurityOrigin::Create(KURL(kCryptotokenOrigin));
-    if (cryptotoken_origin->IsSameSchemeHostPort(
+    if (cryptotoken_origin->IsSameOriginWith(
             resolver->GetFrame()->GetSecurityContext()->GetSecurityOrigin())) {
       UseCounter::Count(resolver->GetExecutionContext(),
                         WebFeature::kU2FCryptotokenRegister);

@@ -6999,8 +6999,7 @@ TEST_F(WebFrameTest, SiteForCookiesForRedirect) {
 
   frame_test_helpers::WebViewHelper web_view_helper;
   web_view_helper.InitializeAndLoad(base_url_ + "first_party_redirect.html");
-  EXPECT_TRUE(
-      SecurityOrigin::AreSameSchemeHostPort(web_view_helper.GetWebView()
+  EXPECT_TRUE(SecurityOrigin::AreSameOrigin(web_view_helper.GetWebView()
                                                 ->MainFrameImpl()
                                                 ->GetDocument()
                                                 .SiteForCookies(),

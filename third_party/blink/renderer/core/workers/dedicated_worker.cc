@@ -76,7 +76,7 @@ void CountTopLevelScriptRequestUrlOriginType(
   WorkerTopLevelScriptOriginType origin_type;
   if (request_url.ProtocolIsData()) {
     origin_type = WorkerTopLevelScriptOriginType::kDataUrl;
-  } else if (context_origin.IsSameSchemeHostPort(
+  } else if (context_origin.IsSameOriginWith(
                  SecurityOrigin::Create(request_url).get())) {
     origin_type = WorkerTopLevelScriptOriginType::kSameOrigin;
   } else if (context_origin.Protocol() == "chrome-extension") {
@@ -397,8 +397,8 @@ void DedicatedWorker::OnFinished() {
     }
     const KURL script_response_url = classic_script_loader_->ResponseURL();
     DCHECK(script_request_url_ == script_response_url ||
-           SecurityOrigin::AreSameSchemeHostPort(script_request_url_,
-                                                 script_response_url));
+           SecurityOrigin::AreSameOrigin(script_request_url_,
+                                         script_response_url));
     ContinueStart(
         script_response_url, OffMainThreadWorkerScriptFetchOption::kDisabled,
         referrer_policy, classic_script_loader_->ResponseAddressSpace(),
