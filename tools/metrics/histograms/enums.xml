@@ -25651,6 +25651,7 @@ Called by update_net_error_codes.py.-->
   <int value="3111" label="InputElementValueAsDateSetter"/>
   <int value="3112" label="HTMLMetaElementReferrerPolicy"/>
   <int value="3113" label="NonWebbyMixedContent"/>
+  <int value="3114" label="V8SharedArrayBufferConstructed"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
