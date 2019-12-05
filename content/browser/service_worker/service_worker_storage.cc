@@ -2224,7 +2224,7 @@ void ServiceWorkerStorage::DidDeleteDatabase(
       FROM_HERE,
       {base::ThreadPool(), base::MayBlock(),
        base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
-      base::BindOnce(&base::DeleteFile, GetDiskCachePath(), true),
+      base::BindOnce(&base::DeleteFileRecursively, GetDiskCachePath()),
       base::BindOnce(&ServiceWorkerStorage::DidDeleteDiskCache,
                      weak_factory_.GetWeakPtr(), std::move(callback)));
 }

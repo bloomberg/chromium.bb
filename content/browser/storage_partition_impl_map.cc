@@ -156,7 +156,7 @@ void ObliterateOneDirectory(const base::FilePath& current_dir,
 
     switch (action) {
       case kDelete:
-        base::DeleteFile(to_delete, true);
+        base::DeleteFileRecursively(to_delete);
         break;
 
       case kEnqueue:
@@ -206,7 +206,7 @@ void BlockingObliteratePath(
   // root and be done with it.  Otherwise, signal garbage collection and do
   // a best-effort delete of the on-disk structures.
   if (valid_paths_to_keep.empty()) {
-    base::DeleteFile(root, true);
+    base::DeleteFileRecursively(root);
     return;
   }
   closure_runner->PostTask(FROM_HERE, on_gc_required);
