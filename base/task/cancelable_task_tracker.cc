@@ -39,7 +39,9 @@ const base::Feature kAllowOffSequenceTaskCancelation{
 // static
 const CancelableTaskTracker::TaskId CancelableTaskTracker::kBadTaskId = 0;
 
-CancelableTaskTracker::CancelableTaskTracker() = default;
+CancelableTaskTracker::CancelableTaskTracker() {
+  weak_this_ = weak_factory_.GetWeakPtr();
+}
 
 CancelableTaskTracker::~CancelableTaskTracker() {
   DCHECK(sequence_checker_.CalledOnValidSequence());
@@ -52,6 +54,7 @@ CancelableTaskTracker::TaskId CancelableTaskTracker::PostTask(
     const Location& from_here,
     OnceClosure task) {
   DCHECK(sequence_checker_.CalledOnValidSequence());
+  CHECK(weak_this_);
 
   return PostTaskAndReply(task_runner, from_here, std::move(task), DoNothing());
 }
@@ -62,6 +65,7 @@ CancelableTaskTracker::TaskId CancelableTaskTracker::PostTaskAndReply(
     OnceClosure task,
     OnceClosure reply) {
   DCHECK(sequence_checker_.CalledOnValidSequence());
+  CHECK(weak_this_);
 
   // We need a SequencedTaskRunnerHandle to run |reply|.
   DCHECK(SequencedTaskRunnerHandle::IsSet());
@@ -189,12 +193,14 @@ bool CancelableTaskTracker::IsCanceled(
 void CancelableTaskTracker::Track(TaskId id,
                                   scoped_refptr<TaskCancellationFlag> flag) {
   DCHECK(sequence_checker_.CalledOnValidSequence());
+  CHECK(weak_this_);
   bool success = task_flags_.insert(std::make_pair(id, std::move(flag))).second;
   DCHECK(success);
 }
 
 void CancelableTaskTracker::Untrack(TaskId id) {
   DCHECK(sequence_checker_.CalledOnValidSequence());
+  CHECK(weak_this_);
   size_t num = task_flags_.erase(id);
   DCHECK_EQ(1u, num);
 }
