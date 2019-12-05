@@ -516,6 +516,10 @@ void AppCacheUpdateJob::ContinueHandleManifestFetchCompleted(bool changed) {
     DCHECK_EQ(update_type_, UPGRADE_ATTEMPT);
     internal_state_ = NO_UPDATE;
 
+    // We should only ever allow AppCaches to remain unchanged if their parser
+    // version is 1 or higher.
+    DCHECK_GE(cached_manifest_parser_version_, 1);
+
     // No manifest update is planned.  Set the fetched manifest parser version
     // and scope to match their initial values.
     fetched_manifest_parser_version_ = cached_manifest_parser_version_;
@@ -1075,7 +1079,8 @@ void AppCacheUpdateJob::CheckIfManifestChanged() {
     return;
   }
 
-  if (fetched_manifest_scope_ != cached_manifest_scope_) {
+  if (fetched_manifest_scope_ != cached_manifest_scope_ ||
+      cached_manifest_parser_version_ < 1) {
     ContinueHandleManifestFetchCompleted(true);
     return;
   }
@@ -1092,6 +1097,7 @@ void AppCacheUpdateJob::CheckIfManifestChanged() {
 }
 
 void AppCacheUpdateJob::OnManifestDataReadComplete(int result) {
+  DCHECK_GE(cached_manifest_parser_version_, 1);
   DCHECK_EQ(fetched_manifest_scope_, cached_manifest_scope_);
   if (result > 0) {
     loaded_manifest_data_.append(read_manifest_buffer_->data(), result);
@@ -1351,7 +1357,7 @@ void AppCacheUpdateJob::OnResponseInfoLoaded(
 
   // Needed response info for a manifest fetch request.
   if (internal_state_ == FETCH_MANIFEST) {
-    if (http_info)
+    if (http_info && cached_manifest_parser_version_ > 0)
       manifest_fetcher_->set_existing_response_headers(
           http_info->headers.get());
     manifest_fetcher_->Start();
