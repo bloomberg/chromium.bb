@@ -62,6 +62,7 @@ const base::Feature* const kAllFeatures[] = {
     &kIPHFocusModeFeature,
     &kIPHGlobalMediaControlsFeature,
     &kIPHReopenTabFeature,
+    &kIPHWebUITabStripFeature,
 #if BUILDFLAG(ENABLE_LEGACY_DESKTOP_IN_PRODUCT_HELP)
     &kIPHBookmarkFeature,
     &kIPHIncognitoWindowFeature,
