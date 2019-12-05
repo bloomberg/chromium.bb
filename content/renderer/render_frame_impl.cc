@@ -4013,6 +4013,11 @@ WebExternalPopupMenu* RenderFrameImpl::CreateExternalPopupMenu(
 #endif
 }
 
+std::unique_ptr<blink::WebPrescientNetworking>
+RenderFrameImpl::CreatePrescientNetworking() {
+  return GetContentClient()->renderer()->CreatePrescientNetworking(this);
+}
+
 blink::BlameContext* RenderFrameImpl::GetFrameBlameContext() {
   DCHECK(blame_context_);
   return blame_context_.get();

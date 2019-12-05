@@ -106,7 +106,6 @@ class WebDedicatedWorker;
 class WebGraphicsContext3DProvider;
 class WebLocalFrame;
 class WebMediaCapabilitiesClient;
-class WebPrescientNetworking;
 class WebPublicSuffixList;
 class WebSandboxSupport;
 class WebSecurityOrigin;
@@ -285,9 +284,6 @@ class BLINK_PLATFORM_EXPORT Platform {
       scoped_refptr<network::SharedURLLoaderFactory> factory) {
     return nullptr;
   }
-
-  // May return null.
-  virtual WebPrescientNetworking* PrescientNetworking() { return nullptr; }
 
   // Returns the User-Agent string.
   virtual WebString UserAgent() { return WebString(); }
