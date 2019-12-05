@@ -641,7 +641,7 @@ ax::mojom::Role AXNodeObject::NativeRoleIgnoringAria() const {
   if (IsA<HTMLDetailsElement>(*GetNode()))
     return ax::mojom::Role::kDetails;
 
-  if (IsHTMLSummaryElement(*GetNode())) {
+  if (IsA<HTMLSummaryElement>(*GetNode())) {
     ContainerNode* parent = LayoutTreeBuilderTraversal::Parent(*GetNode());
     if (IsA<HTMLSlotElement>(parent))
       parent = LayoutTreeBuilderTraversal::Parent(*parent);
@@ -757,7 +757,7 @@ ax::mojom::Role AXNodeObject::NativeRoleIgnoringAria() const {
   if (IsA<HTMLLegendElement>(*GetNode()))
     return ax::mojom::Role::kLegend;
 
-  if (IsHTMLRubyElement(*GetNode()))
+  if (IsA<HTMLRubyElement>(*GetNode()))
     return ax::mojom::Role::kRuby;
 
   if (IsA<HTMLDListElement>(*GetNode()))
@@ -1413,7 +1413,7 @@ AccessibilityExpanded AXNodeObject::IsExpanded() const {
   if (!SupportsARIAExpanded())
     return kExpandedUndefined;
 
-  if (GetNode() && IsHTMLSummaryElement(*GetNode())) {
+  if (GetNode() && IsA<HTMLSummaryElement>(*GetNode())) {
     if (GetNode()->parentNode() &&
         IsA<HTMLDetailsElement>(GetNode()->parentNode()))
       return To<Element>(GetNode()->parentNode())
@@ -1770,7 +1770,7 @@ String AXNodeObject::GetText() const {
     return String();
 
   if (IsNativeTextControl() &&
-      (IsA<HTMLTextAreaElement>(*node) || IsHTMLInputElement(*node))) {
+      (IsA<HTMLTextAreaElement>(*node) || IsA<HTMLInputElement>(*node))) {
     // We should not simply return the "value" attribute because it might be
     // sanitized in some input control types, e.g. email fields. If we do that,
     // then "selectionStart" and "selectionEnd" indices will not match with the
@@ -3716,7 +3716,7 @@ String AXNodeObject::Description(ax::mojom::NameFrom name_from,
   // summary, 5.6.2 from:
   // http://rawgit.com/w3c/aria/master/html-aam/html-aam.html
   if (name_from != ax::mojom::NameFrom::kContents &&
-      IsHTMLSummaryElement(GetNode())) {
+      IsA<HTMLSummaryElement>(GetNode())) {
     description_from = ax::mojom::DescriptionFrom::kContents;
     if (description_sources) {
       description_sources->push_back(DescriptionSource(found_description));

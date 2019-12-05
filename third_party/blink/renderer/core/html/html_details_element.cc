@@ -55,7 +55,7 @@ HTMLDetailsElement::~HTMLDetailsElement() = default;
 // static
 bool HTMLDetailsElement::IsFirstSummary(const Node& node) {
   DCHECK(IsA<HTMLDetailsElement>(node.parentElement()));
-  if (!IsHTMLSummaryElement(node))
+  if (!IsA<HTMLSummaryElement>(node))
     return false;
   return node.parentElement() &&
          &node ==
@@ -106,7 +106,7 @@ Element* HTMLDetailsElement::FindMainSummary() const {
   CHECK(!element || IsA<HTMLSlotElement>(element));
   HTMLSlotElement* slot = To<HTMLSlotElement>(element);
   DCHECK(slot->firstChild());
-  CHECK(IsHTMLSummaryElement(*slot->firstChild()));
+  CHECK(IsA<HTMLSummaryElement>(*slot->firstChild()));
   return To<Element>(slot->firstChild());
 }
 
