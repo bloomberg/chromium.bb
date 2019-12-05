@@ -574,7 +574,7 @@ void PermissionRequestManager::RemoveObserver(Observer* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
-bool PermissionRequestManager::ShouldCurrentRequestUseQuietUI() {
+bool PermissionRequestManager::ShouldCurrentRequestUseQuietUI() const {
   if (!IsRequestInProgress())
     return false;
 
@@ -585,11 +585,11 @@ bool PermissionRequestManager::ShouldCurrentRequestUseQuietUI() {
 }
 
 PermissionRequestManager::QuietUiReason
-PermissionRequestManager::ReasonForUsingQuietUi() {
+PermissionRequestManager::ReasonForUsingQuietUi() const {
   return *current_request_quiet_ui_reason_;
 }
 
-bool PermissionRequestManager::IsRequestInProgress() {
+bool PermissionRequestManager::IsRequestInProgress() const {
   return !requests_.empty();
 }
 
