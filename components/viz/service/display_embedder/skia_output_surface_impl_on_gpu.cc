@@ -1656,8 +1656,8 @@ void SkiaOutputSurfaceImplOnGpu::RenderToOverlay(
   // BeginReadAccess.
   shared_image_overlay->NotifyOverlayPromotion(
       true, ToNearestRect(overlay.display_rect));
-  shared_image_overlay->BeginReadAccess();
-  shared_image_overlay->EndReadAccess();
+  gpu::SharedImageRepresentationOverlay::ScopedReadAccess scoped_access(
+      shared_image_overlay.get(), false /* needs_gl_image */);
 }
 #endif
 
