@@ -465,7 +465,7 @@ void PipelineIntegrationTestBase::CreateDemuxer(
 }
 
 std::unique_ptr<Renderer> PipelineIntegrationTestBase::CreateRenderer(
-    base::Optional<RendererFactorySelector::FactoryType> /* factory_type */) {
+    base::Optional<RendererFactoryType> /* factory_type */) {
   // Simulate a 60Hz rendering sink.
   video_sink_.reset(new NullVideoSink(
       clockless_playback_, base::TimeDelta::FromSecondsD(1.0 / 60),

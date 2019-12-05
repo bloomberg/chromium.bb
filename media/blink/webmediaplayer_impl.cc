@@ -96,9 +96,8 @@ namespace {
 
 const char kWatchTimeHistogram[] = "Media.WebMediaPlayerImpl.WatchTime";
 
-void RecordSimpleWatchTimeUMA(RendererFactorySelector::FactoryType type) {
-  UMA_HISTOGRAM_ENUMERATION(kWatchTimeHistogram, type,
-                            RendererFactorySelector::FACTORY_TYPE_MAX + 1);
+void RecordSimpleWatchTimeUMA(RendererFactoryType type) {
+  UMA_HISTOGRAM_ENUMERATION(kWatchTimeHistogram, type);
 }
 
 void SetSinkIdOnMediaThread(
@@ -315,7 +314,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
           params->IsBackgroundVideoPlaybackEnabled()),
       is_background_video_track_optimization_supported_(
           params->IsBackgroundVideoTrackOptimizationSupported()),
-      reported_renderer_type_(RendererFactorySelector::DEFAULT),
+      reported_renderer_type_(RendererFactoryType::kDefault),
       simple_watch_timer_(
           base::BindRepeating(&WebMediaPlayerImpl::OnSimpleWatchTimerTick,
                               base::Unretained(this)),
@@ -1735,7 +1734,7 @@ void WebMediaPlayerImpl::OnError(PipelineStatus status) {
         frame_url_is_cryptographic && !manifest_url_is_cryptographic);
 
     renderer_factory_selector_->SetBaseFactoryType(
-        RendererFactorySelector::FactoryType::MEDIA_PLAYER);
+        RendererFactoryType::kMediaPlayer);
 
     loaded_url_ = mb_data_source_->GetUrlAfterRedirects();
     DCHECK(data_source_);
@@ -2591,7 +2590,7 @@ void WebMediaPlayerImpl::MaybeSendOverlayInfoToDecoder() {
 }
 
 std::unique_ptr<Renderer> WebMediaPlayerImpl::CreateRenderer(
-    base::Optional<RendererFactorySelector::FactoryType> factory_type) {
+    base::Optional<RendererFactoryType> factory_type) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
   // Make sure that overlays are enabled if they're always allowed.
@@ -2605,7 +2604,8 @@ std::unique_ptr<Renderer> WebMediaPlayerImpl::CreateRenderer(
 #endif
 
   if (factory_type) {
-    DVLOG(1) << __func__ << ": factory_type=" << factory_type.value();
+    DVLOG(1) << __func__
+             << ": factory_type=" << static_cast<int>(factory_type.value());
     renderer_factory_selector_->SetBaseFactoryType(factory_type.value());
   }
 

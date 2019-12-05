@@ -545,9 +545,9 @@ void PipelineImpl::RendererWrapper::CreateRendererInternal(
   DCHECK(cdm_context_ || !HasEncryptedStream())
       << "CDM should be available now if has encrypted stream";
 
-  base::Optional<RendererFactorySelector::FactoryType> factory_type;
+  base::Optional<RendererFactoryType> factory_type;
   if (cdm_context_ && cdm_context_->RequiresMediaFoundationRenderer())
-    factory_type = RendererFactorySelector::FactoryType::MEDIA_FOUNDATION;
+    factory_type = RendererFactoryType::kMediaFoundation;
 
   // TODO(xhwang): During Resume(), the |default_renderer_| might already match
   // the |factory_type|, in which case we shouldn't need to create a new one.
@@ -1431,7 +1431,7 @@ const char* PipelineImpl::GetStateString(State state) {
 #undef RETURN_STRING
 
 void PipelineImpl::AsyncCreateRenderer(
-    base::Optional<RendererFactorySelector::FactoryType> factory_type,
+    base::Optional<RendererFactoryType> factory_type,
     RendererCreatedCB renderer_created_cb) {
   DVLOG(2) << __func__;
   DCHECK(thread_checker_.CalledOnValidThread());

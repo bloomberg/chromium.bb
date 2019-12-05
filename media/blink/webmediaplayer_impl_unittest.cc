@@ -351,7 +351,7 @@ class WebMediaPlayerImplTest : public testing::Test {
     renderer_factory_selector_ = factory_selector.get();
     decoder_factory_.reset(new media::DefaultDecoderFactory(nullptr));
     factory_selector->AddBaseFactory(
-        RendererFactorySelector::FactoryType::DEFAULT,
+        RendererFactoryType::kDefault,
         std::make_unique<DefaultRendererFactory>(
             media_log.get(), decoder_factory_.get(),
             DefaultRendererFactory::GetGpuFactoriesCB()));
@@ -1722,7 +1722,7 @@ TEST_F(WebMediaPlayerImplTest, FallbackToMediaFoundationRenderer) {
   // To avoid PreloadMetadataLazyLoad.
   wmpi_->SetPreload(blink::WebMediaPlayer::kPreloadAuto);
 
-  // Use MockRendererFactory for MEDIA_FOUNDATION where the created Renderer
+  // Use MockRendererFactory for kMediaFoundation where the created Renderer
   // will take the CDM, complete Renderer initialization and report HAVE_ENOUGH
   // so that WMPI can reach kReadyStateHaveCurrentData.
   auto mock_renderer_factory = std::make_unique<MockRendererFactory>();
@@ -1737,9 +1737,8 @@ TEST_F(WebMediaPlayerImplTest, FallbackToMediaFoundationRenderer) {
         return mock_renderer;
       })));
 
-  renderer_factory_selector_->AddFactory(
-      RendererFactorySelector::FactoryType::MEDIA_FOUNDATION,
-      std::move(mock_renderer_factory));
+  renderer_factory_selector_->AddFactory(RendererFactoryType::kMediaFoundation,
+                                         std::move(mock_renderer_factory));
 
   // Create and set CDM. The CDM doesn't support a Decryptor and requires Media
   // Foundation Renderer.

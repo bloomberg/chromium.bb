@@ -294,7 +294,7 @@ class PipelineImplTest : public ::testing::Test {
   }
 
   std::unique_ptr<Renderer> CreateRenderer(
-      base::Optional<RendererFactorySelector::FactoryType> /* factory_type */) {
+      base::Optional<RendererFactoryType> /* factory_type */) {
     return std::move(scoped_renderer_);
   }
 

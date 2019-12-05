@@ -145,7 +145,7 @@ class PipelineIntegrationTestBase : public Pipeline::Client {
   }
 
   std::unique_ptr<Renderer> CreateRenderer(
-      base::Optional<RendererFactorySelector::FactoryType> factory_type);
+      base::Optional<RendererFactoryType> factory_type);
 
  protected:
   NiceMock<MockMediaLog> media_log_;
