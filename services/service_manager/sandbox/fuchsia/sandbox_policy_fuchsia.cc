@@ -10,6 +10,7 @@
 
 #include <fuchsia/deprecatedtimezone/cpp/fidl.h>
 #include <fuchsia/fonts/cpp/fidl.h>
+#include <fuchsia/intl/cpp/fidl.h>
 #include <fuchsia/logger/cpp/fidl.h>
 #include <fuchsia/mediacodec/cpp/fidl.h>
 #include <fuchsia/net/cpp/fidl.h>
@@ -119,6 +120,7 @@ const SandboxConfig& GetConfigForSandboxType(SandboxType type) {
 // Services that are passed to all processes.
 constexpr base::span<const char* const> kDefaultServices = base::make_span(
     (const char* const[]){fuchsia::deprecatedtimezone::Timezone::Name_,
+                          fuchsia::intl::PropertyProvider::Name_,
                           fuchsia::logger::LogSink::Name_});
 
 }  // namespace
