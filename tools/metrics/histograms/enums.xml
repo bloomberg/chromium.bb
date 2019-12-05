@@ -54882,6 +54882,12 @@ Called by update_net_trust_anchors.py.-->
   <int value="3" label="Last redirect in URL chain"/>
 </enum>
 
+<enum name="SafeBrowsingAllowlistAsyncMatch">
+  <int value="0" label="ASYNC"/>
+  <int value="1" label="MATCH"/>
+  <int value="2" label="NO_MATCH"/>
+</enum>
+
 <enum name="SafeBrowsingAppOptIn">
   <int value="0" label="No opt-in preference in manifest"/>
   <int value="1" label="Explicit opt-in via manifest"/>
