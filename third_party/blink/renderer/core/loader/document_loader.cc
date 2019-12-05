@@ -1585,16 +1585,20 @@ void DocumentLoader::InstallNewDocument(
   if (!loading_url_as_javascript_)
     DidCommitNavigation();
 
-  // Determine if the load is from a document from the same origin to enable
-  // deferred commits to avoid white flash on load. We only want to delay
-  // commits on same origin loads to avoid confusing users. We also require
-  // that this be an html document served via http.
   if (initiator_origin) {
     const scoped_refptr<const SecurityOrigin> url_origin =
         SecurityOrigin::Create(Url());
-    document->SetDeferredCompositorCommitIsAllowed(
+
+    is_same_origin_navigation_ =
         initiator_origin->IsSameOriginWith(url_origin.get()) &&
-        Url().ProtocolIsInHTTPFamily() && document->IsHTMLDocument());
+        Url().ProtocolIsInHTTPFamily();
+
+    // If the load is from a document from the same origin then we enable
+    // deferred commits to avoid white flash on load. We only want to delay
+    // commits on same origin loads to avoid confusing users. We also require
+    // that this be an html document served via http.
+    document->SetDeferredCompositorCommitIsAllowed(is_same_origin_navigation_ &&
+                                                   document->IsHTMLDocument());
   } else {
     document->SetDeferredCompositorCommitIsAllowed(false);
   }
