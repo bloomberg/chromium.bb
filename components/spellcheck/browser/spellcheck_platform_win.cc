@@ -12,6 +12,7 @@
 #include <winnls.h>  // ResolveLocaleName
 #include <wrl/client.h>
 
+#include <algorithm>
 #include <codecvt>
 #include <locale>
 #include <string>
@@ -36,6 +37,9 @@
 
 namespace spellcheck_platform {
 
+typedef base::OnceCallback<void(const spellcheck::PerLanguageResult&)>
+    PlatformTextCheckCompleteCallback;
+
 namespace {
 // WindowsSpellChecker class is used to store all the COM objects and
 // control their lifetime. The class also provides wrappers for
@@ -52,9 +56,14 @@ class WindowsSpellChecker {
 
   void DisableSpellChecker(const std::string& lang_tag);
 
-  void RequestTextCheckForAllLanguages(int document_tag,
-                                       const base::string16& text,
-                                       TextCheckCompleteCallback callback);
+  void RequestTextCheckForAllLanguages(
+      int document_tag,
+      const base::string16& text,
+      bool fill_suggestions,
+      PlatformTextCheckCompleteCallback callback);
+
+  void GetPerLanguageSuggestions(const base::string16& word,
+                                 GetSuggestionsCallback callback);
 
   void AddWordForAllLanguages(const base::string16& word);
 
@@ -65,6 +74,9 @@ class WindowsSpellChecker {
   void RecordMissingLanguagePacksCount(
       const std::vector<std::string> spellcheck_locales,
       SpellCheckHostMetrics* metrics);
+
+  void IsLanguageSupported(const std::string& lang_tag,
+                           base::OnceCallback<void(bool)> callback);
 
 #if BUILDFLAG(USE_WINDOWS_PREFERRED_LANGUAGES_FOR_SPELLCHECK)
   // Retrieve language tags for installed Windows language packs that also have
@@ -92,7 +104,12 @@ class WindowsSpellChecker {
   void RequestTextCheckForAllLanguagesInBackgroundThread(
       int document_tag,
       const base::string16& text,
-      TextCheckCompleteCallback callback);
+      bool fill_suggestions,
+      PlatformTextCheckCompleteCallback callback);
+
+  void GetPerLanguageSuggestionsInBackgroundThread(
+      const base::string16& word,
+      GetSuggestionsCallback callback);
 
   // Fills the given vector |optional_suggestions| with a number (up to
   // kMaxSuggestions) of suggestions for the string |wrong_word| of language
@@ -108,10 +125,15 @@ class WindowsSpellChecker {
 
   void IgnoreWordForAllLanguagesInBackgroundThread(const base::string16& word);
 
-  // Returns true if spellchecker is available for the given language
-  // |current_language|. This function must run on the background thread.
-  bool IsLanguageSupportedInBackgroundThread(
-      const std::string& current_language);
+  // Returns true if a spellchecker is available for the given language
+  // |lang_tag|. This function must run on the background thread.
+  bool IsLanguageSupportedInBackgroundThread(const std::string& lang_tag);
+
+  // Checks if a spellchecker is available for the given language |lang_tag| and
+  // posts the result to a callback on the main thread.
+  void IsLanguageSupportedWithCallbackInBackgroundThread(
+      const std::string& lang_tag,
+      base::OnceCallback<void(bool)> callback);
 
   // Returns true if ISpellCheckerFactory has been initialized.
   bool IsSpellCheckerFactoryInitialized();
@@ -187,13 +209,24 @@ void WindowsSpellChecker::DisableSpellChecker(const std::string& lang_tag) {
 void WindowsSpellChecker::RequestTextCheckForAllLanguages(
     int document_tag,
     const base::string16& text,
-    TextCheckCompleteCallback callback) {
+    bool fill_suggestions,
+    PlatformTextCheckCompleteCallback callback) {
   background_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&WindowsSpellChecker::
                          RequestTextCheckForAllLanguagesInBackgroundThread,
                      weak_ptr_factory_.GetWeakPtr(), document_tag, text,
-                     std::move(callback)));
+                     fill_suggestions, std::move(callback)));
+}
+
+void WindowsSpellChecker::GetPerLanguageSuggestions(
+    const base::string16& word,
+    GetSuggestionsCallback callback) {
+  background_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          &WindowsSpellChecker::GetPerLanguageSuggestionsInBackgroundThread,
+          weak_ptr_factory_.GetWeakPtr(), word, std::move(callback)));
 }
 
 void WindowsSpellChecker::AddWordForAllLanguages(const base::string16& word) {
@@ -220,6 +253,17 @@ void WindowsSpellChecker::IgnoreWordForAllLanguages(
       base::BindOnce(
           &WindowsSpellChecker::IgnoreWordForAllLanguagesInBackgroundThread,
           weak_ptr_factory_.GetWeakPtr(), word));
+}
+
+void WindowsSpellChecker::IsLanguageSupported(
+    const std::string& lang_tag,
+    base::OnceCallback<void(bool)> callback) {
+  background_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&WindowsSpellChecker::
+                         IsLanguageSupportedWithCallbackInBackgroundThread,
+                     weak_ptr_factory_.GetWeakPtr(), lang_tag,
+                     std::move(callback)));
 }
 
 void WindowsSpellChecker::RecordMissingLanguagePacksCount(
@@ -299,25 +343,21 @@ void WindowsSpellChecker::DisableSpellCheckerInBackgroundThread(
 void WindowsSpellChecker::RequestTextCheckForAllLanguagesInBackgroundThread(
     int document_tag,
     const base::string16& text,
-    TextCheckCompleteCallback callback) {
+    bool fill_suggestions,
+    PlatformTextCheckCompleteCallback callback) {
   DCHECK(!main_task_runner_->BelongsToCurrentThread());
 
-  // Construct a map to store spellchecking results. The key of the map is a
-  // tuple which contains the start index and the word length of the misspelled
-  // word. The value of the map is a vector which contains suggestion lists for
-  // each available language.
-  std::map<std::tuple<ULONG, ULONG>, std::vector<std::vector<base::string16>>>
-      result_map;
+  spellcheck::PerLanguageResult results;
+  std::wstring word_to_check_wide(base::UTF16ToWide(text));
 
-  std::vector<SpellCheckResult> results;
   for (auto it = spell_checker_map_.begin(); it != spell_checker_map_.end();
        ++it) {
-    std::wstring word_to_check_wide(base::UTF16ToWide(text));
     Microsoft::WRL::ComPtr<IEnumSpellingError> spelling_errors;
 
     HRESULT hr = it->second->ComprehensiveCheck(word_to_check_wide.c_str(),
                                                 &spelling_errors);
     if (SUCCEEDED(hr) && spelling_errors) {
+      std::vector<SpellCheckResult> language_results;
       do {
         Microsoft::WRL::ComPtr<ISpellingError> spelling_error;
         ULONG start_index = 0;
@@ -331,40 +371,46 @@ void WindowsSpellChecker::RequestTextCheckForAllLanguagesInBackgroundThread(
             (action == CORRECTIVE_ACTION_GET_SUGGESTIONS ||
              action == CORRECTIVE_ACTION_REPLACE)) {
           std::vector<base::string16> suggestions;
-          FillSuggestionListInBackgroundThread(
-              it->first, text.substr(start_index, error_length), &suggestions);
-          result_map[std::tuple<ULONG, ULONG>(start_index, error_length)]
-              .push_back(suggestions);
+
+          if (fill_suggestions) {
+            FillSuggestionListInBackgroundThread(
+                it->first, text.substr(start_index, error_length),
+                &suggestions);
+          }
+
+          language_results.push_back(
+              SpellCheckResult(SpellCheckResult::Decoration::SPELLING,
+                               start_index, error_length, suggestions));
         }
       } while (hr == S_OK);
-    }
-  }
 
-  // Generates results vector from map. Remove entries if the word is not
-  // misspelled for all available laugages.
-  for (auto it = result_map.begin(); it != result_map.end();) {
-    if (it->second.size() < spell_checker_map_.size()) {
-      it = result_map.erase(it);
-    } else {
-      // Prepare results vector.
-      std::vector<base::string16> suggestions_result;
-      for (auto suggestions_list : it->second) {
-        for (auto suggestions : suggestions_list) {
-          suggestions_result.push_back(suggestions);
-        }
-      }
-
-      results.push_back(SpellCheckResult(
-          SpellCheckResult::Decoration::SPELLING, std::get<0>(it->first),
-          std::get<1>(it->first), suggestions_result));
-
-      ++it;
+      results.push_back(language_results);
     }
   }
 
   // Runs the callback on the main thread after spellcheck completed.
   main_task_runner_->PostTask(FROM_HERE,
                               base::BindOnce(std::move(callback), results));
+}
+
+void WindowsSpellChecker::GetPerLanguageSuggestionsInBackgroundThread(
+    const base::string16& word,
+    GetSuggestionsCallback callback) {
+  DCHECK(!main_task_runner_->BelongsToCurrentThread());
+  spellcheck::PerLanguageSuggestions suggestions;
+  std::vector<base::string16> language_suggestions;
+
+  for (auto it = spell_checker_map_.begin(); it != spell_checker_map_.end();
+       ++it) {
+    language_suggestions.clear();
+    FillSuggestionListInBackgroundThread(it->first, word,
+                                         &language_suggestions);
+    suggestions.push_back(language_suggestions);
+  }
+
+  // Runs the callback on the main thread after spellcheck completed.
+  main_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), std::move(suggestions)));
 }
 
 void WindowsSpellChecker::FillSuggestionListInBackgroundThread(
@@ -428,7 +474,7 @@ void WindowsSpellChecker::IgnoreWordForAllLanguagesInBackgroundThread(
 }
 
 bool WindowsSpellChecker::IsLanguageSupportedInBackgroundThread(
-    const std::string& current_language) {
+    const std::string& lang_tag) {
   DCHECK(!main_task_runner_->BelongsToCurrentThread());
 
   if (!IsSpellCheckerFactoryInitialized()) {
@@ -437,11 +483,21 @@ bool WindowsSpellChecker::IsLanguageSupportedInBackgroundThread(
   }
 
   BOOL is_language_supported = (BOOL) false;
-  std::wstring bcp47_language_tag = base::UTF8ToWide(current_language);
+  std::wstring bcp47_language_tag = base::UTF8ToWide(lang_tag);
 
   HRESULT hr = spell_checker_factory_->IsSupported(bcp47_language_tag.c_str(),
                                                    &is_language_supported);
   return SUCCEEDED(hr) && is_language_supported;
+}
+
+void WindowsSpellChecker::IsLanguageSupportedWithCallbackInBackgroundThread(
+    const std::string& lang_tag,
+    base::OnceCallback<void(bool)> callback) {
+  bool result = IsLanguageSupportedInBackgroundThread(lang_tag);
+
+  // Run the callback with result on the main thread.
+  main_task_runner_->PostTask(FROM_HERE,
+                              base::BindOnce(std::move(callback), result));
 }
 
 #if BUILDFLAG(USE_WINDOWS_PREFERRED_LANGUAGES_FOR_SPELLCHECK)
@@ -551,14 +607,75 @@ std::unique_ptr<WindowsSpellChecker>& GetWindowsSpellChecker() {
               {base::ThreadPool(), base::MayBlock()})));
   return *win_spell_checker;
 }
+
+void PlatformCheckComplete(
+    std::vector<SpellCheckResult> renderer_results,
+    bool fill_suggestions,
+    TextCheckCompleteCallback callback,
+    const spellcheck::PerLanguageResult& platform_results) {
+  // Merge renderer results and platform_results into a single map. The key of
+  // the map is a tuple which contains the start index and the word length of
+  // the misspelled word. The value of the map is a vector which contains
+  // suggestion lists for each available language. This allows to quickly see if
+  // all languages agree about a misspelling, and makes it easier to evenly pick
+  // suggestions from all the different languages.
+  std::vector<SpellCheckResult> final_results;
+  std::map<std::tuple<UINT, UINT>, std::vector<std::vector<base::string16>>>
+      result_map;
+  size_t language_count =
+      std::min(renderer_results.size(), size_t(1)) + platform_results.size();
+
+  for (const auto& language_results : platform_results) {
+    for (const auto& result : language_results) {
+      result_map[std::tuple<UINT, UINT>(result.location, result.length)]
+          .push_back(result.replacements);
+    }
+  }
+
+  for (const auto& result : renderer_results) {
+    result_map[std::tuple<UINT, UINT>(result.location, result.length)]
+        .push_back(result.replacements);
+  }
+
+  for (auto it = result_map.begin(); it != result_map.end();) {
+    if (it->second.size() < language_count) {
+      // Some languages considered this correctly spelled, so ignore this
+      // result.
+      it = result_map.erase(it);
+    } else {
+      if (fill_suggestions) {
+        std::vector<std::vector<base::string16>> per_language_suggestions;
+        for (auto& suggestions_list : it->second) {
+          per_language_suggestions.push_back(suggestions_list);
+        }
+
+        std::vector<base::string16> evenly_filled_suggestions;
+        spellcheck::FillSuggestions(per_language_suggestions,
+                                    &evenly_filled_suggestions);
+        final_results.push_back(SpellCheckResult(
+            SpellCheckResult::Decoration::SPELLING, std::get<0>(it->first),
+            std::get<1>(it->first), evenly_filled_suggestions));
+      } else {
+        final_results.push_back(
+            SpellCheckResult(SpellCheckResult::Decoration::SPELLING,
+                             std::get<0>(it->first), std::get<1>(it->first)));
+      }
+      ++it;
+    }
+  }
+
+  std::move(callback).Run(final_results);
+}
+
 }  // anonymous namespace
 
 bool SpellCheckerAvailable() {
   return true;
 }
 
-bool PlatformSupportsLanguage(const std::string& current_language) {
-  return true;
+void PlatformSupportsLanguage(const std::string& lang_tag,
+                              base::OnceCallback<void(bool)> callback) {
+  GetWindowsSpellChecker()->IsLanguageSupported(lang_tag, std::move(callback));
 }
 
 void SetLanguage(const std::string& lang_to_set,
@@ -584,8 +701,29 @@ void RequestTextCheck(int document_tag,
                       const base::string16& text,
                       TextCheckCompleteCallback callback) {
   GetWindowsSpellChecker()->RequestTextCheckForAllLanguages(
-      document_tag, text, std::move(callback));
+      document_tag, text, true,
+      base::BindOnce(&PlatformCheckComplete, std::vector<SpellCheckResult>(),
+                     true, std::move(callback)));
 }
+
+#if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+void RequestTextCheck(int document_tag,
+                      const base::string16& text,
+                      const std::vector<SpellCheckResult>& renderer_results,
+                      bool fill_suggestions,
+                      TextCheckCompleteCallback callback) {
+  GetWindowsSpellChecker()->RequestTextCheckForAllLanguages(
+      document_tag, text, fill_suggestions,
+      base::BindOnce(&PlatformCheckComplete, std::move(renderer_results),
+                     fill_suggestions, std::move(callback)));
+}
+
+void GetPerLanguageSuggestions(const base::string16& word,
+                               GetSuggestionsCallback callback) {
+  GetWindowsSpellChecker()->GetPerLanguageSuggestions(word,
+                                                      std::move(callback));
+}
+#endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
 
 void AddWord(const base::string16& word) {
   GetWindowsSpellChecker()->AddWordForAllLanguages(word);

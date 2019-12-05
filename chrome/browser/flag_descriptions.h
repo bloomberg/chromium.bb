@@ -1811,6 +1811,12 @@ extern const char kUseXpsForPrintingDescription[];
 #if BUILDFLAG(ENABLE_SPELLCHECK)
 extern const char kWinUseBrowserSpellCheckerName[];
 extern const char kWinUseBrowserSpellCheckerDescription[];
+
+#if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+extern const char kWinUseHybridSpellCheckerName[];
+extern const char kWinUseHybridSpellCheckerDescription[];
+#endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+
 #endif  // BUILDFLAG(ENABLE_SPELLCHECK)
 
 #endif  // defined(OS_WIN)

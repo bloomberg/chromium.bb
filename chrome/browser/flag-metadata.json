@@ -3690,9 +3690,14 @@
     "expiry_milestone": 82
   },
   {
+    "name": "win-use-hybrid-spellchecker",
+    "owners": [ "gujen@google.com", "chrome-language@google.com" ],
+    "expiry_milestone": 83
+  },
+  {
     "name": "win-use-native-spellchecker",
-    "owners": [ "gujen@google.com", "yyushkina@google.com" ],
-    "expiry_milestone": 81
+    "owners": [ "gujen@google.com", "chrome-language@google.com" ],
+    "expiry_milestone": 83
   },
   {
     "name": "windows-mixed-reality",

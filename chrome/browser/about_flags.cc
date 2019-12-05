@@ -4366,6 +4366,13 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kWinUseBrowserSpellCheckerName,
      flag_descriptions::kWinUseBrowserSpellCheckerDescription, kOsWin,
      FEATURE_VALUE_TYPE(spellcheck::kWinUseBrowserSpellChecker)},
+
+#if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+    {"win-use-hybrid-spellchecker",
+     flag_descriptions::kWinUseHybridSpellCheckerName,
+     flag_descriptions::kWinUseHybridSpellCheckerDescription, kOsWin,
+     FEATURE_VALUE_TYPE(spellcheck::kWinUseHybridSpellChecker)},
+#endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
 #endif  // BUILDFLAG(ENABLE_SPELLCHECK) && defined(OS_WIN)
 
     {"safety-tips", flag_descriptions::kSafetyTipName,

@@ -3093,10 +3093,23 @@ const char kUseXpsForPrintingDescription[] =
     "When enabled, use XPS printing API instead of the GDI print API.";
 
 #if BUILDFLAG(ENABLE_SPELLCHECK)
-const char kWinUseBrowserSpellCheckerName[] = "Use the Windows OS spellchecker";
+const char kWinUseBrowserSpellCheckerName[] =
+    "Use the Windows OS spell checker";
 const char kWinUseBrowserSpellCheckerDescription[] =
-    "Use the Windows OS spellchecker to find spelling mistakes and provide "
+    "Use the Windows OS spell checker to find spelling mistakes and provide "
     "spelling suggestions instead of using the Hunspell engine.";
+
+#if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+const char kWinUseHybridSpellCheckerName[] =
+    "Use hybrid spell checking on Windows";
+const char kWinUseHybridSpellCheckerDescription[] =
+    "Use both the Windows OS spell checker and the Hunspell engine to find "
+    "spelling mistakes and provide spelling suggestions. Use the Windows OS "
+    "spell checker first, but if a language isn't supported, fall back to the "
+    "Hunspell engine. The \"Use the Windows OS spell checker\" feature flag "
+    "must be enabled, otherwise this will have no effect.";
+#endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+
 #endif  // BUILDFLAG(ENABLE_SPELLCHECK)
 
 #endif  // defined(OS_WIN)

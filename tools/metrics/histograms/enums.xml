@@ -37980,6 +37980,7 @@ from previous Chrome versions.
   <int value="468959230"
       label="enable-non-validating-reload-on-refresh-content"/>
   <int value="470011024" label="NonValidatingReloadOnNormalReload:enabled"/>
+  <int value="471224152" label="WinUseHybridSpellChecker:enabled"/>
   <int value="471969274" label="MediaControlsExpandGesture:enabled"/>
   <int value="473958125" label="OmniboxWrapPopupPosition:enabled"/>
   <int value="474743272" label="material-design-ink-drop"/>
@@ -38749,6 +38750,7 @@ from previous Chrome versions.
   <int value="1459803015" label="WebRtcEnableCaptureMultiChannelApm:enabled"/>
   <int value="1460747747" label="GdiTextPrinting:enabled"/>
   <int value="1460958818" label="NTPForeignSessionsSuggestions:enabled"/>
+  <int value="1464028544" label="WinUseHybridSpellChecker:disabled"/>
   <int value="1465624446" label="disable-zero-copy"/>
   <int value="1466380480" label="enable-device-discovery-notifications"/>
   <int value="1466502102" label="DelayNavigation:disabled"/>
