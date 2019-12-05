@@ -7116,6 +7116,26 @@
             ]
         }
     ],
+    "VerifyHTMLFetchedFromAppCacheBeforeDelay": [
+        {
+            "platforms": [
+                "windows",
+                "mac",
+                "chromeos",
+                "linux",
+                "ios",
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "VerifyHTMLFetchedFromAppCacheBeforeDelay"
+                    ]
+                }
+            ]
+        }
+    ],
     "VideoCaptureService": [
         {
             "platforms": [
