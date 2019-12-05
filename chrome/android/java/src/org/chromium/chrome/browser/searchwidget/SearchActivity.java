@@ -142,7 +142,7 @@ public class SearchActivity extends AsyncInitializationActivity
 
     @Override
     protected void triggerLayoutInflation() {
-        mSnackbarManager = new SnackbarManager(this, null);
+        mSnackbarManager = new SnackbarManager(this, findViewById(android.R.id.content), null);
         mSearchBoxDataProvider = new SearchBoxDataProvider(getResources());
 
         mContentView = createContentView();

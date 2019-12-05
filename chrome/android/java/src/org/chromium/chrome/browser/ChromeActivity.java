@@ -429,7 +429,8 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
                 VrModuleProvider.getDelegate().maybeHandleVrIntentPreNative(this, intent);
             }
 
-            mSnackbarManager = new SnackbarManager(this, null);
+            mSnackbarManager = new SnackbarManager(
+                    this, findViewById(R.id.bottom_container), getWindowAndroid());
 
             mAssistStatusHandler = createAssistStatusHandler();
             if (mAssistStatusHandler != null) {
@@ -1425,7 +1426,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             View sheet = coordinator.findViewById(R.id.bottom_sheet);
 
             mBottomSheetSnackbarManager = new SnackbarManager(
-                    this, sheet.findViewById(R.id.bottom_sheet_snackbar_container));
+                    this, sheet.findViewById(R.id.bottom_sheet_snackbar_container), null);
 
             return sheet;
         };

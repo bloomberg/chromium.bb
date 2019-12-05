@@ -16,6 +16,7 @@ import org.chromium.base.ApplicationStatus;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager.FullscreenListener;
 import org.chromium.chrome.browser.snackbar.Snackbar;
+import org.chromium.ui.base.WindowAndroid;
 
 /**
  * Manager for one-off snackbar showing at the top of activity.
@@ -79,7 +80,11 @@ public class TopSnackbarManager
         mActivity = activity;
         mSnackbar = snackbar;
 
-        mSnackbarView = new TopSnackbarView(activity, this, mSnackbar, null);
+        WindowAndroid windowAndroid = null;
+        if (activity instanceof ChromeActivity) {
+            windowAndroid = ((ChromeActivity) activity).getWindowAndroid();
+        }
+        mSnackbarView = new TopSnackbarView(activity, this, mSnackbar, windowAndroid);
         mSnackbarView.show();
         mSnackbarView.announceforAccessibility();
         mDismissSnackbarHandler.removeCallbacks(mDismissSnackbarRunnable);
