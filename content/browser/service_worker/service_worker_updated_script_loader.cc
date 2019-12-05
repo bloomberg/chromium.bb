@@ -27,7 +27,7 @@
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/cert/cert_status_flags.h"
-#include "services/network/public/cpp/resource_response.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "third_party/blink/public/common/loader/throttling_url_loader.h"
 #include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 
@@ -346,9 +346,9 @@ int ServiceWorkerUpdatedScriptLoader::WillWriteInfo(
       response_info->response_data_size);
   // Don't pass SSLInfo to the client when the original request doesn't ask
   // to send it.
-  if (response.head.ssl_info.has_value() &&
+  if (response.head->ssl_info.has_value() &&
       !(options_ & network::mojom::kURLLoadOptionSendSSLInfoWithResponse)) {
-    response.head.ssl_info.reset();
+    response.head->ssl_info.reset();
   }
 
   client_->OnReceiveResponse(std::move(response.head));

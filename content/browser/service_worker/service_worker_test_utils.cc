@@ -228,9 +228,10 @@ void ServiceWorkerRemoteProviderEndpoint::BindForWindow(
       navigation_client_.BindNewPipeAndPassReceiver());
   navigation_client_->CommitNavigation(
       CreateCommonNavigationParams(), CreateCommitNavigationParams(),
-      network::ResourceResponseHead(), mojo::ScopedDataPipeConsumerHandle(),
-      nullptr, nullptr, base::nullopt, nullptr, std::move(info),
-      mojo::NullRemote(), base::UnguessableToken::Create(),
+      network::mojom::URLResponseHead::New(),
+      mojo::ScopedDataPipeConsumerHandle(), nullptr, nullptr, base::nullopt,
+      nullptr, std::move(info), mojo::NullRemote(),
+      base::UnguessableToken::Create(),
       base::BindOnce(
           [](std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params>
                  validated_params,
