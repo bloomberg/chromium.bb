@@ -164,7 +164,7 @@ static int ComputeEditFlags(Document& selected_document, Editor& editor) {
 
 static ContextMenuDataInputFieldType ComputeInputFieldType(
     HitTestResult& result) {
-  if (auto* input = ToHTMLInputElementOrNull(result.InnerNode())) {
+  if (auto* input = DynamicTo<HTMLInputElement>(result.InnerNode())) {
     if (input->type() == input_type_names::kPassword)
       return ContextMenuDataInputFieldType::kPassword;
     if (input->type() == input_type_names::kNumber)

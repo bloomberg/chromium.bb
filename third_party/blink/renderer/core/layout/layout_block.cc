@@ -1671,7 +1671,7 @@ bool LayoutBlock::HasLineIfEmpty() const {
     return true;
 
   if (auto* shadow_root = DynamicTo<ShadowRoot>(GetNode())) {
-    if (IsHTMLInputElement(shadow_root->host()))
+    if (IsA<HTMLInputElement>(shadow_root->host()))
       return true;
   }
 

@@ -408,7 +408,7 @@ class ShadowBoundaryAdjuster final {
   }
 
   static bool IsSelectionBoundary(const Node& node) {
-    return IsHTMLTextAreaElement(node) || IsHTMLInputElement(node) ||
+    return IsHTMLTextAreaElement(node) || IsA<HTMLInputElement>(node) ||
            IsA<HTMLSelectElement>(node);
   }
 

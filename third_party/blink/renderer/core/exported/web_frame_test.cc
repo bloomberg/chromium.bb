@@ -11917,8 +11917,7 @@ TEST_F(WebFrameSimTest, ScrollFocusedSelectionIntoView) {
   Compositor().BeginFrame();
   WebView().AdvanceFocus(false);
 
-  HTMLInputElement* input =
-      ToHTMLInputElement(GetDocument().getElementById("target"));
+  auto* input = To<HTMLInputElement>(GetDocument().getElementById("target"));
   input->select();
 
   // Simulate the keyboard being shown and resizing the widget. Cause a scroll

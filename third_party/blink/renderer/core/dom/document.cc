@@ -4296,7 +4296,7 @@ void Document::DispatchUnloadEvents(
 
   if (load_event_progress_ <= kUnloadEventInProgress) {
     Element* current_focused_element = FocusedElement();
-    if (auto* input = ToHTMLInputElementOrNull(current_focused_element))
+    if (auto* input = DynamicTo<HTMLInputElement>(current_focused_element))
       input->EndEditing();
     if (load_event_progress_ < kPageHideInProgress) {
       load_event_progress_ = kPageHideInProgress;

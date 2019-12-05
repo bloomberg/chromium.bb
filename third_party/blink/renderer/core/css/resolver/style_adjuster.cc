@@ -310,7 +310,7 @@ static void AdjustStyleForHTMLElement(ComputedStyle& style,
     if (IsA<HTMLBRElement>(element) || IsHTMLWBRElement(element) ||
         IsA<HTMLMeterElement>(element) || IsA<HTMLProgressElement>(element) ||
         IsA<HTMLCanvasElement>(element) || IsHTMLMediaElement(element) ||
-        IsHTMLInputElement(element) || IsHTMLTextAreaElement(element) ||
+        IsA<HTMLInputElement>(element) || IsHTMLTextAreaElement(element) ||
         IsA<HTMLSelectElement>(element)) {
       style.SetDisplay(EDisplay::kNone);
     }

@@ -244,7 +244,7 @@ int LegacyDOMSnapshotAgent::VisitNode(Node* node,
     if (auto* textarea_element = ToHTMLTextAreaElementOrNull(*element))
       value->setTextValue(textarea_element->value());
 
-    if (auto* input_element = ToHTMLInputElementOrNull(*element)) {
+    if (auto* input_element = DynamicTo<HTMLInputElement>(*element)) {
       value->setInputValue(input_element->value());
       if ((input_element->type() == input_type_names::kRadio) ||
           (input_element->type() == input_type_names::kCheckbox)) {

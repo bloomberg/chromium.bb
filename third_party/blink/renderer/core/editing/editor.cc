@@ -96,7 +96,8 @@ namespace blink {
 namespace {
 
 bool IsInPasswordFieldWithUnrevealedPassword(const Position& position) {
-  if (auto* input = ToHTMLInputElementOrNull(EnclosingTextControl(position))) {
+  if (auto* input =
+          DynamicTo<HTMLInputElement>(EnclosingTextControl(position))) {
     return (input->type() == input_type_names::kPassword) &&
            !input->ShouldRevealPassword();
   }
@@ -553,7 +554,7 @@ static void CountEditingEvent(ExecutionContext* execution_context,
     return;
   }
 
-  if (IsHTMLInputElement(node)) {
+  if (IsA<HTMLInputElement>(node)) {
     UseCounter::Count(execution_context, feature_on_input);
     return;
   }
@@ -564,7 +565,7 @@ static void CountEditingEvent(ExecutionContext* execution_context,
   }
 
   TextControlElement* control = EnclosingTextControl(node);
-  if (IsHTMLInputElement(control)) {
+  if (IsA<HTMLInputElement>(control)) {
     UseCounter::Count(execution_context, feature_on_input);
     return;
   }

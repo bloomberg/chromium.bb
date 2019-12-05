@@ -454,7 +454,7 @@ int InspectorDOMSnapshotAgent::VisitNode(Node* node, int parent_index) {
       SetRare(nodes->getTextValue(nullptr), index, textarea_element->value());
     }
 
-    if (auto* input_element = ToHTMLInputElementOrNull(*element)) {
+    if (auto* input_element = DynamicTo<HTMLInputElement>(*element)) {
       SetRare(nodes->getInputValue(nullptr), index, input_element->value());
       if ((input_element->type() == input_type_names::kRadio) ||
           (input_element->type() == input_type_names::kCheckbox)) {

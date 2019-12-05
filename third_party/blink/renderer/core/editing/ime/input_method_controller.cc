@@ -196,7 +196,7 @@ AtomicString GetInputModeAttribute(Element* element) {
     return AtomicString();
 
   bool query_attribute = false;
-  if (auto* input = ToHTMLInputElementOrNull(*element)) {
+  if (auto* input = DynamicTo<HTMLInputElement>(*element)) {
     query_attribute = input->SupportsInputModeAttribute();
   } else if (IsHTMLTextAreaElement(*element)) {
     query_attribute = true;
@@ -219,7 +219,7 @@ AtomicString GetEnterKeyHintAttribute(Element* element) {
     return AtomicString();
 
   bool query_attribute = false;
-  if (auto* input = ToHTMLInputElementOrNull(*element)) {
+  if (auto* input = DynamicTo<HTMLInputElement>(*element)) {
     query_attribute = input->SupportsInputModeAttribute();
   } else if (IsHTMLTextAreaElement(*element)) {
     query_attribute = true;
@@ -344,7 +344,7 @@ int ComputeAutocapitalizeFlags(const Element* element) {
   // We set the autocapitalization flag corresponding to the "used
   // autocapitalization hint" for the focused element:
   // https://html.spec.whatwg.org/C/#used-autocapitalization-hint
-  if (auto* input = ToHTMLInputElementOrNull(*html_element)) {
+  if (auto* input = DynamicTo<HTMLInputElement>(*html_element)) {
     const AtomicString& input_type = input->type();
     if (input_type == input_type_names::kEmail ||
         input_type == input_type_names::kUrl ||
@@ -454,7 +454,7 @@ bool IsTextTooLongAt(const Position& position) {
   const Element* element = EnclosingTextControl(position);
   if (!element)
     return false;
-  if (auto* input = ToHTMLInputElementOrNull(element))
+  if (auto* input = DynamicTo<HTMLInputElement>(element))
     return input->TooLong();
   if (auto* textarea = ToHTMLTextAreaElementOrNull(element))
     return textarea->TooLong();
@@ -1406,7 +1406,7 @@ int InputMethodController::TextInputFlags() const {
 
   flags |= ComputeAutocapitalizeFlags(element);
 
-  if (HTMLInputElement* input = ToHTMLInputElementOrNull(element)) {
+  if (auto* input = DynamicTo<HTMLInputElement>(element)) {
     if (input->HasBeenPasswordField())
       flags |= kWebTextInputFlagHasBeenPasswordField;
   }
@@ -1507,7 +1507,7 @@ WebTextInputType InputMethodController::TextInputType() const {
   if (!element)
     return kWebTextInputTypeNone;
 
-  if (auto* input = ToHTMLInputElementOrNull(*element)) {
+  if (auto* input = DynamicTo<HTMLInputElement>(*element)) {
     const AtomicString& type = input->type();
 
     if (input->IsDisabledOrReadOnly())
