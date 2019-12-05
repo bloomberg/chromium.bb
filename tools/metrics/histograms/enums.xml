@@ -25651,15 +25651,6 @@ Called by update_net_error_codes.py.-->
   <int value="3111" label="InputElementValueAsDateSetter"/>
   <int value="3112" label="HTMLMetaElementReferrerPolicy"/>
   <int value="3113" label="NonWebbyMixedContent"/>
-  <int value="3114" label="V8CallInDetachedWindowByNavigation"/>
-  <int value="3115" label="V8CallInDetachedWindowByNavigationAfter10s"/>
-  <int value="3116" label="V8CallInDetachedWindowByNavigationAfter1min"/>
-  <int value="3117" label="V8CallInDetachedWindowByClosing"/>
-  <int value="3118" label="V8CallInDetachedWindowByClosingAfter10s"/>
-  <int value="3119" label="V8CallInDetachedWindowByClosingAfter1min"/>
-  <int value="3120" label="V8CallInDetachedWindowByOtherReason"/>
-  <int value="3121" label="V8CallInDetachedWindowByOtherReasonAfter10s"/>
-  <int value="3122" label="V8CallInDetachedWindowByOtherReasonAfter1min"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">

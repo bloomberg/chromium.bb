@@ -2492,15 +2492,6 @@ enum WebFeature {
   kInputElementValueAsDateSetter = 3111,
   kHTMLMetaElementReferrerPolicy = 3112,
   kNonWebbyMixedContent = 3113,
-  kV8CallInDetachedWindowByNavigation = 3114,
-  kV8CallInDetachedWindowByNavigationAfter10s = 3115,
-  kV8CallInDetachedWindowByNavigationAfter1min = 3116,
-  kV8CallInDetachedWindowByClosing = 3117,
-  kV8CallInDetachedWindowByClosingAfter10s = 3118,
-  kV8CallInDetachedWindowByClosingAfter1min = 3119,
-  kV8CallInDetachedWindowByOtherReason = 3120,
-  kV8CallInDetachedWindowByOtherReasonAfter10s = 3121,
-  kV8CallInDetachedWindowByOtherReasonAfter1min = 3122,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.
