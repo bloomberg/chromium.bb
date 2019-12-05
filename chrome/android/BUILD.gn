@@ -509,13 +509,6 @@ group("jni_headers") {
   ]
 }
 
-android_library("bundle_canary_java") {
-  java_files = [ "//base/android/java/src/org/chromium/base/BundleCanary.java" ]
-  deps = [
-    "//base:base_java",
-  ]
-}
-
 action("chrome_android_java_google_api_keys_srcjar") {
   script = "//build/android/gyp/java_google_api_keys.py"
   _output_path = "$target_gen_dir/$target_name.srcjar"
@@ -2067,8 +2060,14 @@ if (enable_vr) {
 
     deps = [
       ":chrome_test_vr_java",
+      ":vr_test_module_desc_java",
       "//third_party/android_sdk:android_test_mock_java",
     ]
+  }
+
+  # This is necessary since vr tests simulate a bundle build.
+  module_desc_java("vr_test_module_desc_java") {
+    module_name = "vr"
   }
 
   android_apk("vr_nfc_simulator_apk") {
