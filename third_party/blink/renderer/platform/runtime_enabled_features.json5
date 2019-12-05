@@ -1273,9 +1273,7 @@
     },
     {
       name: "PeriodicBackgroundSync",
-      origin_trial_feature_name: "PeriodicBackgroundSync",
-      settable_from_internals: true,
-      status: "test",
+      status: "stable",
     },
     {
       name: "PerMethodCanMakePaymentQuota",

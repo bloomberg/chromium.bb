@@ -4879,6 +4879,12 @@ interface PerformanceTiming
     getter unloadEventStart
     method constructor
     method toJSON
+interface PeriodicSyncManager
+    attribute @@toStringTag
+    method constructor
+    method getTags
+    method register
+    method unregister
 interface PeriodicWave
     attribute @@toStringTag
     method constructor
@@ -6671,6 +6677,7 @@ interface ServiceWorkerRegistration : EventTarget
     getter navigationPreload
     getter onupdatefound
     getter paymentManager
+    getter periodicSync
     getter pushManager
     getter scope
     getter sync

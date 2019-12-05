@@ -1652,10 +1652,6 @@ const char kPercentBasedScrollingDescription[] =
     "If enabled, mousewheel and keyboard scrolls will scroll by a percentage "
     "of the scroller size.";
 
-const char kPeriodicBackgroundSyncName[] = "Periodic Background Sync";
-const char kPeriodicBackgroundSyncDescription[] =
-    "If enabled, web apps can periodically sync content in the background.";
-
 const char kPerMethodCanMakePaymentQuotaName[] =
     "Per-method canMakePayment() quota.";
 const char kPerMethodCanMakePaymentQuotaDescription[] =

@@ -982,6 +982,16 @@ interface PerformanceServerTiming
     getter name
     method constructor
     method toJSON
+interface PeriodicSyncEvent : ExtendableEvent
+    attribute @@toStringTag
+    getter tag
+    method constructor
+interface PeriodicSyncManager
+    attribute @@toStringTag
+    method constructor
+    method getTags
+    method register
+    method unregister
 interface PermissionStatus : EventTarget
     attribute @@toStringTag
     getter onchange
@@ -1125,6 +1135,7 @@ interface ServiceWorkerRegistration : EventTarget
     getter navigationPreload
     getter onupdatefound
     getter paymentManager
+    getter periodicSync
     getter pushManager
     getter scope
     getter sync
@@ -2662,6 +2673,7 @@ interface WritableStreamDefaultWriter
     getter onnotificationclick
     getter onnotificationclose
     getter onpaymentrequest
+    getter onperiodicsync
     getter onpush
     getter onsync
     getter registration
@@ -2681,6 +2693,7 @@ interface WritableStreamDefaultWriter
     setter onnotificationclick
     setter onnotificationclose
     setter onpaymentrequest
+    setter onperiodicsync
     setter onpush
     setter onsync
 PASS Verify the interface of ServiceWorkerGlobalScope

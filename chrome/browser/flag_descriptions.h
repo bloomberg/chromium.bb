@@ -987,9 +987,6 @@ extern const char kForcedColorsDescription[];
 extern const char kPercentBasedScrollingName[];
 extern const char kPercentBasedScrollingDescription[];
 
-extern const char kPeriodicBackgroundSyncName[];
-extern const char kPeriodicBackgroundSyncDescription[];
-
 extern const char kPerMethodCanMakePaymentQuotaName[];
 extern const char kPerMethodCanMakePaymentQuotaDescription[];
 

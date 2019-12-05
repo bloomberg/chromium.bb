@@ -36770,7 +36770,6 @@ from previous Chrome versions.
       label="SupervisedUserCommittedInterstitials:enabled"/>
   <int value="-1096595907" label="disable-new-virtual-keyboard-behavior"/>
   <int value="-1095947169" label="ModalPermissionDialogView:disabled"/>
-  <int value="-1093104008" label="PeriodicBackgroundSync:disabled"/>
   <int value="-1088804127" label="DuetTabStripIntegrationAndroid:disabled"/>
   <int value="-1086728979" label="kids-management-url-classification:enabled"/>
   <int value="-1085492638" label="FetchKeepaliveTimeoutSetting:enabled"/>
@@ -36950,7 +36949,6 @@ from previous Chrome versions.
       label="OmniboxEnableClipboardProviderTextSuggestions:enabled"/>
   <int value="-874602599" label="HorizontalTabSwitcherAndroid:enabled"/>
   <int value="-872764392" label="ContextualSuggestionsBottomSheet:disabled"/>
-  <int value="-872302695" label="PeriodicBackgroundSync:enabled"/>
   <int value="-871520682"
       label="AccessibilityInternalsPageImprovements:enabled"/>
   <int value="-870120067" label="EnableSearchBoxSelection:enabled"/>
