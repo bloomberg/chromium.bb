@@ -230,10 +230,10 @@ base::WeakPtr<storage::BlobStorageContext> BlobStorageContextGetterForBrowser(
 // static
 void BrowserContext::AsyncObliterateStoragePartition(
     BrowserContext* browser_context,
-    const GURL& site,
+    const std::string& partition_domain,
     const base::Closure& on_gc_required) {
   GetStoragePartitionMap(browser_context)
-      ->AsyncObliterate(site, on_gc_required);
+      ->AsyncObliterate(partition_domain, on_gc_required);
 }
 
 // static

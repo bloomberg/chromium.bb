@@ -141,7 +141,7 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
                                       const StoragePartitionCallback& callback);
   static void AsyncObliterateStoragePartition(
       BrowserContext* browser_context,
-      const GURL& site,
+      const std::string& partition_domain,
       const base::Closure& on_gc_required);
 
   // This function clears the contents of |active_paths| but does not take

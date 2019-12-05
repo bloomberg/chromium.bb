@@ -363,18 +363,8 @@ StoragePartitionImpl* StoragePartitionImplMap::Get(
 }
 
 void StoragePartitionImplMap::AsyncObliterate(
-    const GURL& site,
+    const std::string& partition_domain,
     const base::Closure& on_gc_required) {
-  // This method should avoid creating any StoragePartition (which would
-  // create more open file handles) so that it can delete as much of the
-  // data off disk as possible.
-  std::string partition_domain;
-  std::string partition_name;
-  bool in_memory = false;
-  GetContentClient()->browser()->GetStoragePartitionConfigForSite(
-      browser_context_, site, false, &partition_domain,
-      &partition_name, &in_memory);
-
   // Find the active partitions for the domain. Because these partitions are
   // active, it is not possible to just delete the directories that contain
   // the backing data structures without causing the browser to crash. Instead,
