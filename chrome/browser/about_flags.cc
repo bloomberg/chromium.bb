@@ -1313,13 +1313,15 @@ const FeatureEntry::FeatureVariation
 const FeatureEntry::FeatureParam
     kQuietNotificationPromptsWithAdaptiveActivation[] = {
         {QuietNotificationPermissionUiConfig::kEnableAdaptiveActivation,
+         "true"},
+        {QuietNotificationPermissionUiConfig::kEnableCrowdDenyTriggering,
          "true"}};
 
 // The default "Enabled" option has the semantics of showing the quiet UI
 // (animated location bar indicator on Desktop, and mini-infobars on Android),
 // but only when the user directly turns it on in Settings. In addition to that,
 // expose an option to also enable adaptively turning on the quiet UI after
-// three consecutive denies.
+// three consecutive denies or based on crowd deny verdicts.
 const FeatureEntry::FeatureVariation kQuietNotificationPromptsVariations[] = {
     {"(with adaptive activation)",
      kQuietNotificationPromptsWithAdaptiveActivation,

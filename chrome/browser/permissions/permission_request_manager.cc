@@ -16,6 +16,7 @@
 #include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "chrome/browser/permissions/adaptive_quiet_notification_permission_ui_enabler.h"
+#include "chrome/browser/permissions/contextual_notification_permission_ui_selector.h"
 #include "chrome/browser/permissions/notification_permission_ui_selector.h"
 #include "chrome/browser/permissions/permission_decision_auto_blocker.h"
 #include "chrome/browser/permissions/permission_request.h"
@@ -40,35 +41,6 @@
 #endif
 
 namespace {
-
-class NotificationPermissionUiSelectorBasedOnPrefs
-    : public NotificationPermissionUiSelector {
- public:
-  explicit NotificationPermissionUiSelectorBasedOnPrefs(Profile* profile)
-      : profile_(profile) {}
-  ~NotificationPermissionUiSelectorBasedOnPrefs() override = default;
-
-  // NotificationPermissionUiSelector:
-  void SelectUiToUse(PermissionRequest* request,
-                     DecisionMadeCallback callback) override {
-    if (QuietNotificationPermissionUiConfig::UiFlavorToUse() !=
-            QuietNotificationPermissionUiConfig::NONE &&
-        QuietNotificationPermissionUiState::IsQuietUiEnabledInPrefs(profile_)) {
-      std::move(callback).Run(UiToUse::kQuietUi,
-                              QuietUiReason::kEnabledInPrefs);
-    } else {
-      std::move(callback).Run(UiToUse::kNormalUi, base::nullopt);
-    }
-  }
-
- private:
-  NotificationPermissionUiSelectorBasedOnPrefs(
-      const NotificationPermissionUiSelectorBasedOnPrefs&) = delete;
-  const NotificationPermissionUiSelectorBasedOnPrefs& operator=(
-      NotificationPermissionUiSelectorBasedOnPrefs&) = delete;
-
-  Profile* profile_;
-};
 
 bool IsMessageTextEqual(PermissionRequest* a,
                         PermissionRequest* b) {
@@ -383,10 +355,10 @@ PermissionRequestManager::PermissionRequestManager(
       view_(nullptr),
       tab_is_hidden_(web_contents->GetVisibility() ==
                      content::Visibility::HIDDEN),
-      auto_response_for_test_(NONE) {
-  notification_permission_ui_selector_ =
-      std::make_unique<NotificationPermissionUiSelectorBasedOnPrefs>(
-          Profile::FromBrowserContext(web_contents->GetBrowserContext()));
+      auto_response_for_test_(NONE),
+      notification_permission_ui_selector_(
+          std::make_unique<ContextualNotificationPermissionUiSelector>(
+              Profile::FromBrowserContext(web_contents->GetBrowserContext()))) {
 }
 
 void PermissionRequestManager::ScheduleShowBubble() {

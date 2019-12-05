@@ -11,6 +11,10 @@
 const char QuietNotificationPermissionUiConfig::kEnableAdaptiveActivation[] =
     "enable_adaptive_activation";
 
+// static
+const char QuietNotificationPermissionUiConfig::kEnableCrowdDenyTriggering[] =
+    "enable_crowd_deny_triggering";
+
 QuietNotificationPermissionUiConfig::UiFlavor
 QuietNotificationPermissionUiConfig::UiFlavorToUse() {
   if (!base::FeatureList::IsEnabled(features::kQuietNotificationPrompts))
@@ -30,5 +34,15 @@ bool QuietNotificationPermissionUiConfig::IsAdaptiveActivationEnabled() {
 
   return base::GetFieldTrialParamByFeatureAsBool(
       features::kQuietNotificationPrompts, kEnableAdaptiveActivation,
+      false /* default */);
+}
+
+// static
+bool QuietNotificationPermissionUiConfig::IsCrowdDenyTriggeringEnabled() {
+  if (!base::FeatureList::IsEnabled(features::kQuietNotificationPrompts))
+    return false;
+
+  return base::GetFieldTrialParamByFeatureAsBool(
+      features::kQuietNotificationPrompts, kEnableCrowdDenyTriggering,
       false /* default */);
 }

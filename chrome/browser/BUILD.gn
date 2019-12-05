@@ -1175,6 +1175,8 @@ jumbo_static_library("browser") {
     "permissions/adaptive_quiet_notification_permission_ui_enabler.h",
     "permissions/chooser_context_base.cc",
     "permissions/chooser_context_base.h",
+    "permissions/contextual_notification_permission_ui_selector.cc",
+    "permissions/contextual_notification_permission_ui_selector.h",
     "permissions/crowd_deny_preload_data.cc",
     "permissions/crowd_deny_preload_data.h",
     "permissions/crowd_deny_safe_browsing_request.cc",
