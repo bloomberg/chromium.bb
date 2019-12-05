@@ -897,6 +897,39 @@ IN_PROC_BROWSER_TEST_P(WebBundleFileBrowserTest, ParseResponseCrash) {
       console_delegate.message());
 }
 
+IN_PROC_BROWSER_TEST_P(WebBundleFileBrowserTest, Variants) {
+  const GURL test_data_url =
+      GetTestUrlForFile(GetTestDataPath("variants_test.wbn"));
+  NavigateToBundleAndWaitForReady(
+      test_data_url, web_bundle_utils::GetSynthesizedUrlForWebBundle(
+                         test_data_url, GURL(kTestPageUrl)));
+  ExecuteScriptAndWaitForTitle(R"(
+    (async function() {
+      const headers = {Accept: 'application/octet-stream'};
+      const resp = await fetch('/data', {headers});
+      const data = await resp.json();
+      document.title = data.text;
+    })();)",
+                               "octet-stream");
+  ExecuteScriptAndWaitForTitle(R"(
+    (async function() {
+      const headers = {Accept: 'application/json'};
+      const resp = await fetch('/data', {headers});
+      const data = await resp.json();
+      document.title = data.text;
+    })();)",
+                               "json");
+  ExecuteScriptAndWaitForTitle(R"(
+    (async function() {
+      const headers = {Accept: 'foo/bar'};
+      const resp = await fetch('/data', {headers});
+      const data = await resp.json();
+      document.title = data.text;
+    })();)",
+                               "octet-stream");
+  // TODO(crbug/1029406): Test Accept-Language negotiation.
+}
+
 INSTANTIATE_TEST_SUITE_P(WebBundleFileBrowserTest,
                          WebBundleFileBrowserTest,
                          testing::Values(TestFilePathMode::kNormalFilePath
