@@ -21,7 +21,6 @@ from chromite.cbuildbot import manifest_version
 from chromite.cbuildbot import patch_series
 from chromite.cbuildbot import trybot_patch_pool
 from chromite.cbuildbot.stages import generic_stages
-from chromite.cbuildbot.stages import build_stages
 from chromite.lib import config_lib
 from chromite.lib import constants
 from chromite.lib import commandline
@@ -368,32 +367,6 @@ class SyncStage(generic_stages.BuilderStage):
       # http://crbug/921407
       self.repo.FetchAll()
 
-  def RunPrePatchBuild(self):
-    """Run through a pre-patch build to prepare for incremental build.
-
-    This function runs though the InitSDKStage, SetupBoardStage, and
-    BuildPackagesStage. It is intended to be called before applying
-    any patches under test, to prepare the chroot and sysroot in a state
-    corresponding to ToT prior to an incremental build.
-
-    Returns:
-      True if all stages were successful, False if any of them failed.
-    """
-    suffix = ' (pre-Patch)'
-    try:
-      build_stages.InitSDKStage(
-          self._run, self.buildstore, chroot_replace=True, suffix=suffix).Run()
-      for builder_run in self._run.GetUngroupedBuilderRuns():
-        for board in builder_run.config.boards:
-          build_stages.SetupBoardStage(
-              builder_run, self.buildstore, board=board, suffix=suffix).Run()
-          build_stages.BuildPackagesStage(
-              builder_run, self.buildstore, board=board, suffix=suffix).Run()
-    except failures_lib.StepFailure:
-      return False
-
-    return True
-
   @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
   def PerformStage(self):
     self.Initialize()
@@ -418,12 +391,6 @@ class SyncStage(generic_stages.BuilderStage):
         logging.PrintBuildbotStepText('(From scratch)')
       elif self._run.options.buildbot:
         lkgm_manager.GenerateBlameList(self.repo, old_filename)
-
-      # Incremental builds request an additional build before patching changes.
-      if self._run.config.build_before_patching:
-        pre_build_passed = self.RunPrePatchBuild()
-        if not pre_build_passed:
-          logging.PrintBuildbotStepText('Pre-patch build failed.')
 
 
 class ManifestVersionedSyncStage(SyncStage):

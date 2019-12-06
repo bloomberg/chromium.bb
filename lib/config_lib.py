@@ -753,17 +753,6 @@ def DefaultSettings():
       # specify 'buildtools'.
       manifest=constants.DEFAULT_MANIFEST,
 
-      # Applies only to paladin builders. If true, Sync to the manifest
-      # without applying any test patches, then do a fresh build in a new
-      # chroot. Then, apply the patches and build in the existing chroot.
-      build_before_patching=False,
-
-      # Applies only to paladin builders. If True, Sync to the master manifest
-      # without applying any of the test patches, rather than running
-      # CommitQueueSync. This is basically ToT immediately prior to the
-      # current commit queue run.
-      do_not_apply_cq_patches=False,
-
       # emerge use flags to use while setting up the board, building packages,
       # making images, etc.
       useflags=[],

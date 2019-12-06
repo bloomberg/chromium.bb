@@ -462,9 +462,6 @@ class DistributedBuilder(SimpleBuilder):
       assert False, 'Pre-CQ no longer supported'
     elif config_lib.IsCQType(self._run.config.build_type):
       assert False, 'Legacy CQ no longer supported'
-      if self._run.config.do_not_apply_cq_patches:
-        sync_stage = self._GetStageInstance(
-            sync_stages.MasterSlaveLKGMSyncStage)
     elif config_lib.IsCanaryType(self._run.config.build_type):
       sync_stage = self._GetStageInstance(
           sync_stages.ManifestVersionedSyncStage)
