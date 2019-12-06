@@ -23,10 +23,11 @@ class MdnsSender {
   MdnsSender(MdnsSender&& other) noexcept = delete;
   MdnsSender& operator=(const MdnsSender& other) = delete;
   MdnsSender& operator=(MdnsSender&& other) noexcept = delete;
-  ~MdnsSender() = default;
+  virtual ~MdnsSender() = default;
 
-  Error SendMulticast(const MdnsMessage& message);
-  Error SendUnicast(const MdnsMessage& message, const IPEndpoint& endpoint);
+  virtual Error SendMulticast(const MdnsMessage& message);
+  virtual Error SendUnicast(const MdnsMessage& message,
+                            const IPEndpoint& endpoint);
 
  private:
   UdpSocket* const socket_;

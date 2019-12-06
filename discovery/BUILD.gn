@@ -106,6 +106,7 @@ source_set("unittests") {
     "mdns/mdns_reader_unittest.cc",
     "mdns/mdns_receiver_unittest.cc",
     "mdns/mdns_records_unittest.cc",
+    "mdns/mdns_responder_unittest.cc",
     "mdns/mdns_sender_unittest.cc",
     "mdns/mdns_trackers_unittest.cc",
     "mdns/mdns_writer_unittest.cc",

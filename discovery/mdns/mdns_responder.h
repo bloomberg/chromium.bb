@@ -25,10 +25,20 @@ class MdnsRecordChangedCallback;
 class MdnsSender;
 class MdnsQuerier;
 
+// This class is responsible for responding to any incoming mDNS Queries
+// received via the OnMessageReceived() method. When responding, the generated
+// MdnsMessage will contain the requested record(s) in the answers section, or
+// an NSEC record to specify that the requested record was not found in the case
+// of a query with DnsType aside from ANY. In the case where records are found,
+// the additional records field may be populated with additional records, as
+// specified in RFCs 6762 and 6763.
 class MdnsResponder {
  public:
   // Class to handle querying for existing records.
   class RecordHandler {
+   public:
+    virtual ~RecordHandler();
+
     // Returns whether the provided name is exclusively owned by this endpoint.
     virtual bool IsExclusiveOwner(const DomainName& name) = 0;
 
@@ -45,15 +55,12 @@ class MdnsResponder {
                                                          DnsClass clazz) = 0;
   };
 
-  // |record_handler|, |sender|, |receiver|, |querier|, |task_runner|, and
-  // |random_delay| are expected to persist for the duration of this instance's
-  // lifetime.
+  // |record_handler|, |sender|, |receiver|, |task_runner|, and |random_delay|
+  // are expected to persist for the duration of this instance's lifetime.
   MdnsResponder(RecordHandler* record_handler,
                 MdnsSender* sender,
                 MdnsReceiver* receiver,
-                MdnsQuerier* querier,
                 TaskRunner* task_runner,
-                ClockNowFunctionPtr now_function,
                 MdnsRandom* random_delay);
   ~MdnsResponder();
 
@@ -62,13 +69,16 @@ class MdnsResponder {
  private:
   void OnMessageReceived(const MdnsMessage& message, const IPEndpoint& src);
 
+  void SendResponse(const MdnsQuestion& question,
+                    std::function<void(const MdnsMessage&)> send_response);
+
   RecordHandler* const record_handler_;
   MdnsSender* const sender_;
   MdnsReceiver* const receiver_;
-  MdnsQuerier* const querier_;
   TaskRunner* const task_runner_;
-  const ClockNowFunctionPtr now_function_;
   MdnsRandom* const random_delay_;
+
+  friend class MdnsResponderTest;
 };
 
 }  // namespace discovery
