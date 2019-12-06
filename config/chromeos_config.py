@@ -3231,6 +3231,13 @@ def BranchScheduleConfig():
   # (<branch>, [<android PFQs>], <chrome PFQ>)
 
   RELEASES = [
+      ('release-R80-12739.B',
+       ['gandof-android-nyc-pre-flight-branch',
+        'grunt-android-pi-pre-flight-branch'],
+       'chell-chrome-pre-flight-branch',
+       ['orderfile-generate-toolchain',
+        'orderfile-verify-toolchain']),
+
       ('release-R79-12607.B',
        ['gandof-android-nyc-pre-flight-branch',
         'grunt-android-pi-pre-flight-branch'],
@@ -3244,12 +3251,6 @@ def BranchScheduleConfig():
        'chell-chrome-pre-flight-branch',
        ['orderfile-generate-toolchain',
         'orderfile-verify-toolchain']),
-
-      ('release-R77-12371.B',
-       ['gandof-android-nyc-pre-flight-branch',
-        'grunt-android-pi-pre-flight-branch'],
-       'samus-chrome-pre-flight-branch',
-       None),
   ]
 
   RELEASE_SCHEDULES = [
