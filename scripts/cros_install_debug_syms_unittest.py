@@ -12,6 +12,7 @@ import os
 
 from chromite.lib import cros_test_lib
 from chromite.scripts import cros_install_debug_syms
+from chromite.utils import outcap
 
 
 SimpleIndex = namedtuple('SimpleIndex', 'header packages')
@@ -78,3 +79,31 @@ class InstallDebugSymsTest(cros_test_lib.MockTestCase):
                          '/paladin1234/shill-0-r1.debug.tbz2')
     self.assertEqual(cros_install_debug_syms.ListBinhost(binhost),
                      {'chromeos-base/shill-0-r1': debug_symbols_url})
+
+
+class InstallArgsTest(cros_test_lib.MockTestCase):
+  """Test InstallArgs utility funcs."""
+
+  def testListInstallArgs(self):
+    """Check ListInstallArgs behavior."""
+    parser = cros_install_debug_syms.GetParser()
+    opts = parser.parse_args(['--board', 'betty', 'sys-fs/fuse'])
+    self.PatchObject(cros_install_debug_syms, 'GetInstallArgs', return_value=[
+        ('a/b-1', 'gs://bucket/b-1.tbz2'),
+        ('c/d-1', 'gs://bucket/d-1.tbz2'),
+    ])
+    with outcap.OutputCapturer() as cap:
+      cros_install_debug_syms.ListInstallArgs(opts, '/foo')
+    self.assertEqual('a/b-1 gs://bucket/b-1.tbz2\nc/d-1 gs://bucket/d-1.tbz2\n',
+                     cap.GetStdout())
+
+  def testGetInstallArgsList(self):
+    """Check GetInstallArgsList behavior."""
+    stdout = ('sys-apps/which-2.21 gs://bucket/board/which-2.21.debug.tbz2\n'
+              'dev-libs/foo-1-r1 gs://bucket/board/foo-1-r1.debug.tbz2\n')
+    rc = self.StartPatcher(cros_test_lib.RunCommandMock())
+    rc.AddCmdResult(cmd=['foo', '--list'], stdout=stdout)
+    self.assertEqual(
+        [['sys-apps/which-2.21', 'gs://bucket/board/which-2.21.debug.tbz2'],
+         ['dev-libs/foo-1-r1', 'gs://bucket/board/foo-1-r1.debug.tbz2']],
+        cros_install_debug_syms.GetInstallArgsList(['foo']))

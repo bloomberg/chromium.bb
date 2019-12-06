@@ -158,7 +158,7 @@ def GetPackageIndex(binhost, binhost_cache=None):
   key = key.rstrip('/').split('/')
 
   if binhost_cache and binhost_cache.Lookup(key).Exists():
-    with open(binhost_cache.Lookup(key).path) as f:
+    with open(binhost_cache.Lookup(key).path, 'rb') as f:
       return pickle.load(f)
 
   pkgindex = binpkg.GrabRemotePackageIndex(binhost, quiet=True)
@@ -294,7 +294,7 @@ def ListInstallArgs(options, sysroot):
 def GetInstallArgsList(argv):
   """Get the install args from the --list reexec of the command."""
   cmd = argv + ['--list']
-  result = cros_build_lib.RunCommand(cmd, capture_output=True)
+  result = cros_build_lib.run(cmd, capture_output=True, encoding='utf-8')
   lines = result.output.splitlines()
   return [line.split() for line in lines if line]
 
