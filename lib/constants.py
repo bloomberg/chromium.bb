@@ -34,6 +34,7 @@ BOOTSTRAP_DIR = os.path.join(CHROMITE_DIR, 'bootstrap')
 DEPOT_TOOLS_DIR = os.path.join(SOURCE_ROOT, DEPOT_TOOLS_SUBPATH)
 CHROMITE_BIN_SUBDIR = 'chromite/bin'
 CHROMITE_BIN_DIR = os.path.join(CHROMITE_DIR, 'bin')
+CHROMITE_SCRIPTS_DIR = os.path.join(CHROMITE_DIR, 'scripts')
 PATH_TO_CBUILDBOT = os.path.join(CHROMITE_BIN_SUBDIR, 'cbuildbot')
 DEFAULT_CHROOT_DIR = 'chroot'
 DEFAULT_CHROOT_PATH = os.path.join(SOURCE_ROOT, DEFAULT_CHROOT_DIR)

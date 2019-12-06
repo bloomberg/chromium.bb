@@ -1059,15 +1059,14 @@ def FindCompressor(compression, chroot=None):
   Raises:
     ValueError: If compression is unknown.
   """
-  if compression == COMP_GZIP:
+  if compression == COMP_XZ:
+    return os.path.join(constants.CHROMITE_SCRIPTS_DIR, 'xz_auto')
+  elif compression == COMP_GZIP:
     std = 'gzip'
     para = 'pigz'
   elif compression == COMP_BZIP2:
     std = 'bzip2'
     para = 'pbzip2'
-  elif compression == COMP_XZ:
-    std = 'xz'
-    para = 'pixz'
   elif compression == COMP_NONE:
     return 'cat'
   else:
