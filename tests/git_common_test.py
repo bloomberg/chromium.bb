@@ -453,6 +453,20 @@ class GitMutableFunctionsTest(git_test_utils.GitRepoReadWriteTestBase,
 
     self.assertEqual('catfood', self.repo.run(self.gc.root))
 
+  def testRoot(self):
+    origin_schema = git_test_utils.GitRepoSchema("""
+    A B C
+      B D
+    """, self.getRepoContent)
+    origin = origin_schema.reify()
+    # Set the default branch to branch_D instead of master.
+    origin.git('checkout', 'branch_D')
+
+    self.repo.git('remote', 'add', 'origin', origin.repo_path)
+    self.repo.git('fetch', 'origin')
+    self.repo.git('remote', 'set-head', 'origin', '-a')
+    self.assertEqual('origin/branch_D', self.repo.run(self.gc.root))
+
   def testUpstream(self):
     self.repo.git('commit', '--allow-empty', '-am', 'foooooo')
     self.assertEqual(self.repo.run(self.gc.upstream, 'bobly'), None)

@@ -63,7 +63,7 @@ Restoration::
   `git rebase-update` checks out the branch that you started on, and 'thaws' it,
   if necessary (see linkgit:git-thaw[1]). If the branch you started on got
   cleaned up, `git rebase-update` will checkout the 'root' ref (defaults to
-  'origin/master', as configured by `depot-tools.upstream`, see
+  'origin''s default branch, as configured by `depot-tools.upstream`, see
   linkgit:git-new-branch[1]).
 
 

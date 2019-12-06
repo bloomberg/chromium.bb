@@ -665,8 +665,16 @@ def repo_root():
   return run('rev-parse', '--show-toplevel')
 
 
+def upstream_default():
+  """Returns the default branch name of the origin repository."""
+  try:
+    return run('rev-parse', '--abbrev-ref', 'origin/HEAD')
+  except subprocess2.CalledProcessError:
+    return 'origin/master'
+
+
 def root():
-  return get_config('depot-tools.upstream', 'origin/master')
+  return get_config('depot-tools.upstream', upstream_default())
 
 
 @contextlib.contextmanager
