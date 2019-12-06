@@ -1177,19 +1177,15 @@ static void get_intra_q_and_bounds_two_pass(const AV1_COMP *cpi, int width,
   *active_worst = active_worst_quality;
 }
 
-// Does some final adjustments to the q value and bounds. This does not apply to
-// AOM_Q mode unless it is an INTRA_ONLY_FRAME.
-static void postprocess_q_and_bounds(const AV1_COMP *cpi, int width, int height,
-                                     int *active_worst, int *active_best,
-                                     int *q_out, int is_intrl_arf_boost) {
+static void adjust_active_best_and_worst_quality(const AV1_COMP *cpi,
+                                                 const int is_intrl_arf_boost,
+                                                 int *active_worst,
+                                                 int *active_best) {
   const AV1_COMMON *const cm = &cpi->common;
   const RATE_CONTROL *const rc = &cpi->rc;
-  const AV1EncoderConfig *oxcf = &cpi->oxcf;
   const int bit_depth = cpi->common.seq_params.bit_depth;
   int active_best_quality = *active_best;
   int active_worst_quality = *active_worst;
-  int q;
-
   // Extension to max or min Q if undershoot or overshoot is outside
   // the permitted range.
   if (cpi->oxcf.rc_mode != AOM_Q) {
@@ -1229,7 +1225,18 @@ static void postprocess_q_and_bounds(const AV1_COMP *cpi, int width, int height,
   active_worst_quality =
       clamp(active_worst_quality, active_best_quality, rc->worst_quality);
 
-  if (oxcf->rc_mode == AOM_Q ||
+  *active_best = active_best_quality;
+  *active_worst = active_worst_quality;
+}
+
+static int get_q(const AV1_COMP *cpi, const int width, const int height,
+                 const int active_worst_quality,
+                 const int active_best_quality) {
+  const AV1_COMMON *const cm = &cpi->common;
+  const RATE_CONTROL *const rc = &cpi->rc;
+  int q;
+
+  if (cpi->oxcf.rc_mode == AOM_Q ||
       (frame_is_intra_only(cm) && !rc->this_key_frame_forced &&
        cpi->twopass.kf_zeromotion_pct >= STATIC_KF_GROUP_THRESH &&
        rc->frames_to_key > 1)) {
@@ -1243,32 +1250,26 @@ static void postprocess_q_and_bounds(const AV1_COMP *cpi, int width, int height,
       q = AOMMIN(rc->last_boosted_qindex,
                  (active_best_quality + active_worst_quality) / 2);
     }
+    q = clamp(q, active_best_quality, active_worst_quality);
   } else {
     q = av1_rc_regulate_q(cpi, rc->this_frame_target, active_best_quality,
                           active_worst_quality, width, height);
     if (q > active_worst_quality) {
       // Special case when we are targeting the max allowed rate.
-      if (rc->this_frame_target >= rc->max_frame_bandwidth)
-        active_worst_quality = q;
-      else
+      if (rc->this_frame_target < rc->max_frame_bandwidth) {
         q = active_worst_quality;
+      }
     }
+    q = AOMMAX(q, active_best_quality);
   }
-  q = clamp(q, active_best_quality, active_worst_quality);
-
-  *active_best = active_best_quality;
-  *active_worst = active_worst_quality;
-  *q_out = q;
+  return q;
 }
 
 // Returns |active_best_quality| for an inter frame.
 // The |active_best_quality| depends on different rate control modes:
 // VBR, Q, CQ, CBR.
 // The returning active_best_quality could further be adjusted in
-// postprocess_q_and_bounds().
-// TODO(chengchen): consider consolidate the logic here, so that
-// |active_best_quality| and |active_worst_quality| are constant after this
-// function call.
+// adjust_active_best_and_worst_quality().
 static int get_active_best_quality(const AV1_COMP *const cpi,
                                    const int active_worst_quality,
                                    const int cq_level, const int gf_index) {
@@ -1357,8 +1358,15 @@ static int rc_pick_q_and_bounds_two_pass(const AV1_COMP *cpi, int width,
         get_active_best_quality(cpi, active_worst_quality, cq_level, gf_index);
   }
 
-  postprocess_q_and_bounds(cpi, width, height, &active_worst_quality,
-                           &active_best_quality, &q, is_intrl_arf_boost);
+  adjust_active_best_and_worst_quality(
+      cpi, is_intrl_arf_boost, &active_worst_quality, &active_best_quality);
+  q = get_q(cpi, width, height, active_worst_quality, active_best_quality);
+
+  // Special case when we are targeting the max allowed rate.
+  if (rc->this_frame_target >= rc->max_frame_bandwidth &&
+      q > active_worst_quality) {
+    active_worst_quality = q;
+  }
 
   *top_index = active_worst_quality;
   *bottom_index = active_best_quality;
