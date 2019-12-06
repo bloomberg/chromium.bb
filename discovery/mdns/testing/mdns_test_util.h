@@ -15,6 +15,19 @@ namespace discovery {
 
 TxtRecordRdata MakeTxtRecord(std::initializer_list<absl::string_view> strings);
 
+// Methods to create fake MdnsRecord entities for use in UnitTests.
+MdnsRecord GetFakePtrRecord(const DomainName& target,
+                            std::chrono::seconds ttl = std::chrono::seconds(0));
+MdnsRecord GetFakeSrvRecord(const DomainName& name,
+                            std::chrono::seconds ttl = std::chrono::seconds(0));
+MdnsRecord GetFakeTxtRecord(const DomainName& name,
+                            std::chrono::seconds ttl = std::chrono::seconds(0));
+MdnsRecord GetFakeARecord(const DomainName& name,
+                          std::chrono::seconds ttl = std::chrono::seconds(0));
+MdnsRecord GetFakeAAAARecord(
+    const DomainName& name,
+    std::chrono::seconds ttl = std::chrono::seconds(0));
+
 }  // namespace discovery
 }  // namespace openscreen
 
