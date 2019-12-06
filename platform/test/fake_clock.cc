@@ -4,6 +4,8 @@
 
 #include "platform/test/fake_clock.h"
 
+#include <algorithm>
+
 #include "platform/test/fake_task_runner.h"
 #include "util/logging.h"
 

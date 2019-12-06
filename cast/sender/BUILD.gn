@@ -14,6 +14,7 @@ source_set("channel") {
 
   deps = [
     "../../util",
+    "../common:channel",
     "../common/certificate/proto:certificate_proto",
     "../common/channel/proto:channel_proto",
   ]

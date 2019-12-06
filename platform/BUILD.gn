@@ -4,26 +4,11 @@
 
 import("//build_overrides/build.gni")
 
-source_set("platform") {
+# Source files that depend on nothing (all your base/ are belong to us).
+source_set("base") {
   defines = []
 
   sources = [
-    "api/logging.h",
-    "api/network_interface.h",
-    "api/scoped_wake_lock.cc",
-    "api/scoped_wake_lock.h",
-    "api/socket.h",
-    "api/task_runner.h",
-    "api/time.h",
-    "api/tls_connection.cc",
-    "api/tls_connection.h",
-    "api/tls_connection_factory.cc",
-    "api/tls_connection_factory.h",
-    "api/trace_logging_platform.cc",
-    "api/trace_logging_platform.h",
-    "api/udp_read_callback.h",
-    "api/udp_socket.cc",
-    "api/udp_socket.h",
     "base/error.cc",
     "base/error.h",
     "base/interface_info.cc",
@@ -46,82 +31,127 @@ source_set("platform") {
     "base/udp_packet.h",
   ]
 
+  public_configs = [ "../build:openscreen_include_dirs" ]
+}
+
+# Public API source files. These may depend on nothing except :base.
+source_set("api") {
+  defines = []
+
+  sources = [
+    "api/export.h",
+    "api/logging.h",
+    "api/network_interface.h",
+    "api/scoped_wake_lock.cc",
+    "api/scoped_wake_lock.h",
+    "api/task_runner.h",
+    "api/time.h",
+    "api/tls_connection.cc",
+    "api/tls_connection.h",
+    "api/tls_connection_factory.cc",
+    "api/tls_connection_factory.h",
+    "api/trace_logging_platform.cc",
+    "api/trace_logging_platform.h",
+    "api/udp_socket.cc",
+    "api/udp_socket.h",
+  ]
+
   public_deps = [
+    ":base",
+  ]
+}
+
+# The following target is only activated in standalone builds (see :platform).
+source_set("standalone_impl") {
+  defines = []
+
+  sources = [
+    "impl/logging.h",
+    "impl/socket_handle.h",
+    "impl/socket_handle_waiter.cc",
+    "impl/socket_handle_waiter.h",
+    "impl/stream_socket.h",
+    "impl/task_runner.cc",
+    "impl/task_runner.h",
+    "impl/text_trace_logging_platform.cc",
+    "impl/text_trace_logging_platform.h",
+    "impl/time.cc",
+    "impl/tls_write_buffer.cc",
+    "impl/tls_write_buffer.h",
+    "impl/weak_ptr.h",
+  ]
+
+  if (is_linux) {
+    sources += [ "impl/network_interface_linux.cc" ]
+  } else if (is_mac) {
+    defines += [
+      # Required, to use the new IPv6 Sockets options introduced by RFC 3542.
+      "__APPLE_USE_RFC_3542",
+    ]
+
+    libs = [
+      "CoreFoundation.framework",
+      "IOKit.framework",
+    ]
+
+    sources += [
+      "impl/network_interface_mac.cc",
+      "impl/scoped_wake_lock_mac.cc",
+      "impl/scoped_wake_lock_mac.h",
+    ]
+  }
+
+  if (is_posix) {
+    sources += [
+      "impl/logging_posix.cc",
+      "impl/platform_client_posix.cc",
+      "impl/platform_client_posix.h",
+      "impl/scoped_pipe.h",
+      "impl/socket_address_posix.cc",
+      "impl/socket_address_posix.h",
+      "impl/socket_handle_posix.cc",
+      "impl/socket_handle_posix.h",
+      "impl/socket_handle_waiter_posix.cc",
+      "impl/socket_handle_waiter_posix.h",
+      "impl/stream_socket_posix.cc",
+      "impl/stream_socket_posix.h",
+      "impl/timeval_posix.cc",
+      "impl/timeval_posix.h",
+      "impl/tls_connection_factory_posix.cc",
+      "impl/tls_connection_factory_posix.h",
+      "impl/tls_connection_posix.cc",
+      "impl/tls_connection_posix.h",
+      "impl/tls_data_router_posix.cc",
+      "impl/tls_data_router_posix.h",
+      "impl/udp_socket_posix.cc",
+      "impl/udp_socket_posix.h",
+      "impl/udp_socket_reader_posix.cc",
+      "impl/udp_socket_reader_posix.h",
+    ]
+  }
+
+  deps = [
+    ":api",
     "../third_party/abseil",
     "../third_party/boringssl",
     "../util",
   ]
+}
 
-  public_configs = [ "../build:openscreen_include_dirs" ]
-
+# The main target, which either assumes an embedder will link-in the platform
+# API implementation elsewhere, or links-in the :standalone_impl in the build.
+source_set("platform") {
+  public_deps = [
+    ":api",
+  ]
   if (!build_with_chromium) {
-    sources += [
-      "impl/logging.h",
-      "impl/socket_handle.h",
-      "impl/socket_handle_waiter.cc",
-      "impl/socket_handle_waiter.h",
-      "impl/task_runner.cc",
-      "impl/task_runner.h",
-      "impl/text_trace_logging_platform.cc",
-      "impl/text_trace_logging_platform.h",
-      "impl/time.cc",
-      "impl/tls_write_buffer.cc",
-      "impl/tls_write_buffer.h",
-      "impl/weak_ptr.h",
+    deps = [
+      ":standalone_impl",
     ]
-
-    if (is_linux) {
-      sources += [ "impl/network_interface_linux.cc" ]
-    } else if (is_mac) {
-      defines += [
-        # Required, to use the new IPv6 Sockets options introduced by RFC 3542.
-        "__APPLE_USE_RFC_3542",
-      ]
-
-      libs = [
-        "CoreFoundation.framework",
-        "IOKit.framework",
-      ]
-
-      sources += [
-        "impl/network_interface_mac.cc",
-        "impl/scoped_wake_lock_mac.cc",
-        "impl/scoped_wake_lock_mac.h",
-      ]
-    }
-
-    if (is_posix) {
-      sources += [
-        "impl/logging_posix.cc",
-        "impl/platform_client_posix.cc",
-        "impl/platform_client_posix.h",
-        "impl/scoped_pipe.h",
-        "impl/socket_address_posix.cc",
-        "impl/socket_address_posix.h",
-        "impl/socket_handle_posix.cc",
-        "impl/socket_handle_posix.h",
-        "impl/socket_handle_waiter_posix.cc",
-        "impl/socket_handle_waiter_posix.h",
-        "impl/stream_socket.h",
-        "impl/stream_socket_posix.cc",
-        "impl/stream_socket_posix.h",
-        "impl/timeval_posix.cc",
-        "impl/timeval_posix.h",
-        "impl/tls_connection_factory_posix.cc",
-        "impl/tls_connection_factory_posix.h",
-        "impl/tls_connection_posix.cc",
-        "impl/tls_connection_posix.h",
-        "impl/tls_data_router_posix.cc",
-        "impl/tls_data_router_posix.h",
-        "impl/udp_socket_posix.cc",
-        "impl/udp_socket_posix.h",
-        "impl/udp_socket_reader_posix.cc",
-        "impl/udp_socket_reader_posix.h",
-      ]
-    }
   }
 }
 
+# Test helpers, referenced in other Open Screen BUILD.gn test targets.
 source_set("test") {
   testonly = true
   sources = [
@@ -137,7 +167,9 @@ source_set("test") {
 
   deps = [
     ":platform",
+    "../third_party/abseil",
     "../third_party/googletest:gmock",
+    "../util",
   ]
 }
 
@@ -145,6 +177,7 @@ source_set("unittests") {
   testonly = true
 
   sources = [
+    "api/socket_integration_unittest.cc",
     "api/time_unittest.cc",
     "base/error_unittest.cc",
     "base/ip_address_unittest.cc",
@@ -155,9 +188,6 @@ source_set("unittests") {
   # Exclude them if an embedder is providing the implementation.
   if (!build_with_chromium) {
     sources += [
-      # TODO(jophba): move over to general sources when UDP socket create
-      # is implemented in Chromium, as part of the NetworkRunner work.
-      "api/socket_integration_unittest.cc",
       "impl/task_runner_unittest.cc",
       "impl/time_unittest.cc",
       "impl/weak_ptr_unittest.cc",
@@ -178,7 +208,11 @@ source_set("unittests") {
 
   deps = [
     ":platform",
+    ":test",
+    "../third_party/abseil",
+    "../third_party/boringssl",
     "../third_party/googletest:gmock",
     "../third_party/googletest:gtest",
+    "../util",
   ]
 }

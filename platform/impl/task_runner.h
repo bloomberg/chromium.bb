@@ -82,7 +82,7 @@ class TaskRunnerImpl final : public TaskRunner {
     // used. This simplifies switching between 'Task' and 'TaskWithMetadata'
     // based on the compilation flag.
     TaskWithMetadata(Task task)
-        : task_(std::move(task)), trace_ids_(TRACE_HIERARCHY){};
+        : task_(std::move(task)), trace_ids_(TRACE_HIERARCHY) {}
 
     void operator()() {
       TRACE_SET_HIERARCHY(trace_ids_);
