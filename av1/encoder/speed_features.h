@@ -869,6 +869,9 @@ typedef struct SPEED_FEATURES {
   // Use interpolation filter search in non-RD mode decision.
   int use_nonrd_filter_search;
 
+  // Use simplified RD model for interpolation search and Intra
+  int use_simple_rd_model;
+
   // If set forces interpolation filter to EIGHTTAP_REGULAR
   int skip_interp_filter_search;
 

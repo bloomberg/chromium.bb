@@ -692,6 +692,7 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->adaptive_mode_search = 2;
     sf->force_tx_search_off = 1;
     sf->num_inter_modes_for_tx_search = 5;
+    sf->use_simple_rd_model = 1;
   }
   if (speed >= 7) {
     sf->lpf_pick = LPF_PICK_FROM_Q;
@@ -866,6 +867,7 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
   sf->motion_mode_for_winner_cand = 0;
   sf->num_inter_modes_for_tx_search = INT_MAX;
   sf->prune_palette_search_level = 0;
+  sf->use_simple_rd_model = 0;
 
   for (i = 0; i < TX_SIZES; i++) {
     sf->intra_y_mode_mask[i] = INTRA_ALL;

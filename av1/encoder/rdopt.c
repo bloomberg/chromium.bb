@@ -3175,7 +3175,6 @@ static AOM_INLINE void model_rd_with_curvfit(const AV1_COMP *const cpi,
   const double sse_norm = (double)sse / num_samples;
   const double qstepsqr = (double)qstep * qstep;
   const double xqr = log2(sse_norm / qstepsqr);
-
   double rate_f, dist_by_sse_norm_f;
   av1_model_rd_curvfit(plane_bsize, sse_norm, xqr, &rate_f,
                        &dist_by_sse_norm_f);
@@ -4474,7 +4473,8 @@ static int64_t intra_model_yrd(const AV1_COMP *const cpi, MACROBLOCK *const x,
     }
   }
   // RD estimation.
-  model_rd_sb_fn[MODELRD_TYPE_INTRA](
+  model_rd_sb_fn[cpi->sf.use_simple_rd_model ? MODELRD_LEGACY
+                                             : MODELRD_TYPE_INTRA](
       cpi, bsize, x, xd, 0, 0, &this_rd_stats.rate, &this_rd_stats.dist,
       &this_rd_stats.skip, &temp_sse, NULL, NULL, NULL);
   if (av1_is_directional_mode(mbmi->mode) && av1_use_angle_delta(bsize)) {
@@ -8892,7 +8892,8 @@ static INLINE void interp_model_rd_eval(
                                   plane_from, plane_to);
   }
 
-  model_rd_sb_fn[MODELRD_TYPE_INTERP_FILTER](
+  model_rd_sb_fn[cpi->sf.use_simple_rd_model ? MODELRD_LEGACY
+                                             : MODELRD_TYPE_INTERP_FILTER](
       cpi, bsize, x, xd, plane_from, plane_to, &tmp_rd_stats.rate,
       &tmp_rd_stats.dist, &tmp_rd_stats.skip, &tmp_rd_stats.sse, NULL, NULL,
       NULL);
