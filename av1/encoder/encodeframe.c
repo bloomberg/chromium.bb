@@ -1652,7 +1652,7 @@ static AOM_INLINE void encode_b(const AV1_COMP *const cpi,
                                       cm->allow_warped_motion)
                 : SIMPLE_TRANSLATION;
         if (mbmi->ref_frame[1] != INTRA_FRAME &&
-            motion_allowed == OBMC_CAUSAL) {
+            motion_allowed >= OBMC_CAUSAL) {
           td->rd_counts.obmc_used[bsize][mbmi->motion_mode == OBMC_CAUSAL]++;
         }
       }
