@@ -5,14 +5,14 @@
 #include "util/json/json_value.h"
 
 #include "gtest/gtest.h"
-#include "util/json/json_reader.h"
+#include "platform/base/error.h"
+#include "util/json/json_serialization.h"
 
 namespace openscreen {
 
 TEST(JsonValueTest, GetInt) {
   absl::string_view obj(R"!({"key1": 17, "key2": 32.3, "key3": "asdf"})!");
-  JsonReader reader;
-  ErrorOr<Json::Value> value_or_error = reader.Read(obj);
+  ErrorOr<Json::Value> value_or_error = json::Parse(obj);
   ASSERT_TRUE(value_or_error);
   Json::Value& value = value_or_error.value();
   absl::optional<int> result1 =
@@ -30,8 +30,7 @@ TEST(JsonValueTest, GetInt) {
 
 TEST(JsonValueTest, GetString) {
   absl::string_view obj(R"!({"key1": 17, "key2": 32.3, "key3": "asdf"})!");
-  JsonReader reader;
-  ErrorOr<Json::Value> value_or_error = reader.Read(obj);
+  ErrorOr<Json::Value> value_or_error = json::Parse(obj);
   ASSERT_TRUE(value_or_error);
   Json::Value& value = value_or_error.value();
   absl::optional<absl::string_view> result1 =

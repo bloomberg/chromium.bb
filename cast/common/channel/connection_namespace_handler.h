@@ -6,7 +6,7 @@
 #define CAST_COMMON_CHANNEL_CONNECTION_NAMESPACE_HANDLER_H_
 
 #include "cast/common/channel/cast_message_handler.h"
-#include "util/json/json_reader.h"
+#include "util/json/json_serialization.h"
 
 namespace cast {
 namespace channel {
@@ -55,7 +55,6 @@ class ConnectionNamespaceHandler final : public CastMessageHandler {
 
   VirtualConnectionManager* const vc_manager_;
   VirtualConnectionPolicy* const vc_policy_;
-  openscreen::JsonReader json_reader_;
 };
 
 }  // namespace channel

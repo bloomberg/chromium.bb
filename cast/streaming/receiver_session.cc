@@ -174,7 +174,8 @@ void ReceiverSession::SelectStreams(const AudioStream* audio,
 void ReceiverSession::OnMessage(absl::string_view sender_id,
                                 absl::string_view namespace_,
                                 absl::string_view message) {
-  openscreen::ErrorOr<Json::Value> message_json = json_reader_.Read(message);
+  openscreen::ErrorOr<Json::Value> message_json =
+      openscreen::json::Parse(message);
 
   if (!message_json) {
     client_->OnError(this, openscreen::Error::Code::kJsonParseError);

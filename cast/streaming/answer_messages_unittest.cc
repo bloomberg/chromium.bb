@@ -6,7 +6,7 @@
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "util/json/json_writer.h"
+#include "util/json/json_serialization.h"
 
 namespace cast {
 namespace streaming {

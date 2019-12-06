@@ -12,8 +12,8 @@
 #include "cast/common/channel/virtual_connection_router.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "util/json/json_serialization.h"
 #include "util/json/json_value.h"
-#include "util/json/json_writer.h"
 #include "util/logging.h"
 
 namespace cast {
@@ -66,8 +66,7 @@ CastMessage MakeConnectMessage(
     }
     message[kMessageKeyProtocolVersionList] = std::move(list);
   }
-  openscreen::JsonWriter json_writer;
-  ErrorOr<std::string> result = json_writer.Write(message);
+  ErrorOr<std::string> result = openscreen::json::Stringify(message);
   OSP_DCHECK(result);
   connect_message.set_payload_utf8(std::move(result.value()));
   return connect_message;
@@ -83,8 +82,7 @@ void VerifyConnectionMessage(const CastMessage& message,
 }
 
 Json::Value ParseConnectionMessage(const CastMessage& message) {
-  openscreen::JsonReader json_reader;
-  ErrorOr<Json::Value> result = json_reader.Read(message.payload_utf8());
+  ErrorOr<Json::Value> result = openscreen::json::Parse(message.payload_utf8());
   OSP_CHECK(result) << message.payload_utf8();
   return result.value();
 }

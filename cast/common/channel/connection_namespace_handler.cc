@@ -13,8 +13,8 @@
 #include "cast/common/channel/virtual_connection.h"
 #include "cast/common/channel/virtual_connection_manager.h"
 #include "cast/common/channel/virtual_connection_router.h"
+#include "util/json/json_serialization.h"
 #include "util/json/json_value.h"
-#include "util/json/json_writer.h"
 #include "util/logging.h"
 
 namespace cast {
@@ -95,7 +95,7 @@ void ConnectionNamespaceHandler::OnMessage(VirtualConnectionRouter* router,
       CastMessage_PayloadType::CastMessage_PayloadType_STRING) {
     return;
   }
-  ErrorOr<Json::Value> result = json_reader_.Read(message.payload_utf8());
+  ErrorOr<Json::Value> result = openscreen::json::Parse(message.payload_utf8());
   if (result.is_error()) {
     return;
   }
@@ -225,8 +225,7 @@ void ConnectionNamespaceHandler::SendClose(VirtualConnectionRouter* router,
   Json::Value close_message(Json::ValueType::objectValue);
   close_message[kMessageKeyType] = kMessageTypeClose;
 
-  openscreen::JsonWriter json_writer;
-  ErrorOr<std::string> result = json_writer.Write(close_message);
+  ErrorOr<std::string> result = openscreen::json::Stringify(close_message);
   if (result.is_error()) {
     return;
   }
@@ -245,8 +244,7 @@ void ConnectionNamespaceHandler::SendConnectedResponse(
   connected_message[kMessageKeyProtocolVersion] =
       static_cast<int>(max_protocol_version);
 
-  openscreen::JsonWriter json_writer;
-  ErrorOr<std::string> result = json_writer.Write(connected_message);
+  ErrorOr<std::string> result = openscreen::json::Stringify(connected_message);
   if (result.is_error()) {
     return;
   }

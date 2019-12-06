@@ -14,7 +14,7 @@
 #include "cast/streaming/receiver.h"
 #include "cast/streaming/receiver_packet_router.h"
 #include "cast/streaming/session_config.h"
-#include "util/json/json_reader.h"
+#include "util/json/json_serialization.h"
 
 namespace cast {
 
@@ -126,7 +126,6 @@ class ReceiverSession final : public MessagePort::Client {
   const Preferences preferences_;
 
   ReceiverPacketRouter packet_router_;
-  openscreen::JsonReader json_reader_ = {};
 };
 
 }  // namespace streaming

@@ -14,7 +14,7 @@
 #include "cast/streaming/constants.h"
 #include "platform/base/error.h"
 #include "util/big_endian.h"
-#include "util/json/json_reader.h"
+#include "util/json/json_serialization.h"
 #include "util/logging.h"
 
 namespace cast {

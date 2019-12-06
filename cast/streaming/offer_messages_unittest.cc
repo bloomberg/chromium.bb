@@ -7,7 +7,7 @@
 #include "cast/streaming/rtp_defines.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "util/json/json_reader.h"
+#include "util/json/json_serialization.h"
 
 using ::testing::ElementsAre;
 
@@ -84,8 +84,7 @@ const std::string kValidOffer = R"({
 })";
 
 void ExpectFailureOnParse(absl::string_view body) {
-  openscreen::JsonReader reader;
-  openscreen::ErrorOr<Json::Value> root = reader.Read(body);
+  openscreen::ErrorOr<Json::Value> root = openscreen::json::Parse(body);
   ASSERT_TRUE(root.is_value());
   EXPECT_TRUE(Offer::Parse(std::move(root.value())).is_error());
 }
@@ -107,8 +106,7 @@ TEST(OfferTest, ErrorOnMissingMandatoryFields) {
 }
 
 TEST(OfferTest, CanParseValidButStreamlessOffer) {
-  openscreen::JsonReader reader;
-  openscreen::ErrorOr<Json::Value> root = reader.Read(R"({
+  openscreen::ErrorOr<Json::Value> root = openscreen::json::Parse(R"({
     "castMode": "mirroring",
     "supportedStreams": []
   })");
@@ -145,8 +143,7 @@ TEST(OfferTest, ErrorOnMissingAudioStreamMandatoryField) {
 }
 
 TEST(OfferTest, CanParseValidButMinimalAudioOffer) {
-  openscreen::JsonReader reader;
-  openscreen::ErrorOr<Json::Value> root = reader.Read(R"({
+  openscreen::ErrorOr<Json::Value> root = openscreen::json::Parse(R"({
     "castMode": "mirroring",
     "supportedStreams": [{
       "index": 2,
@@ -243,8 +240,7 @@ TEST(OfferTest, ErrorOnMissingVideoStreamMandatoryField) {
 }
 
 TEST(OfferTest, CanParseValidButMinimalVideoOffer) {
-  openscreen::JsonReader reader;
-  openscreen::ErrorOr<Json::Value> root = reader.Read(R"({
+  openscreen::ErrorOr<Json::Value> root = openscreen::json::Parse(R"({
     "castMode": "mirroring",
     "supportedStreams": [{
       "index": 2,
@@ -266,8 +262,7 @@ TEST(OfferTest, CanParseValidButMinimalVideoOffer) {
 }
 
 TEST(OfferTest, CanParseValidOffer) {
-  openscreen::JsonReader reader;
-  openscreen::ErrorOr<Json::Value> root = reader.Read(kValidOffer);
+  openscreen::ErrorOr<Json::Value> root = openscreen::json::Parse(kValidOffer);
   ASSERT_TRUE(root.is_value());
   openscreen::ErrorOr<Offer> offer = Offer::Parse(std::move(root.value()));
 
