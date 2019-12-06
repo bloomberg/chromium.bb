@@ -191,6 +191,146 @@ class CopyPathInTest(cros_test_lib.TempDirTestCase):
       self.assertFalse(new_path.startswith(self.tempdir))
 
 
+class SyncDirsTest(cros_test_lib.TempDirTestCase):
+  """Tests for sync_dirs."""
+
+  def setUp(self):
+    D = cros_test_lib.Directory
+    filesystem = (
+        D('chroot', (
+            D('tmp', (
+                D('tempdir', ()),
+            )),
+        )),
+        D('sources', (
+            D('single_file', ('single_file.txt',)),
+            D('nested_directories', (
+                'basedir_file.log',
+                D('nested1', (
+                    'nested1.txt',
+                    D('nested2', ('nested2.txt',)),
+                )),
+            )),
+        )),
+    )
+    cros_test_lib.CreateOnDiskHierarchy(self.tempdir, filesystem)
+
+    self.chroot = os.path.join(self.tempdir, 'chroot')
+    self.chroot_tmp = os.path.join(self.chroot, 'tmp')
+    self.destination = os.path.join(self.chroot_tmp, 'tempdir')
+    self.inside_path = '/tmp/tempdir'
+
+    self.single_file_src = os.path.join(self.tempdir, 'sources', 'single_file')
+    self.sf_src_file = os.path.join(self.single_file_src, 'single_file.txt')
+    self.sf_dest_file = os.path.join(self.destination, 'single_file.txt')
+
+    self.nested_dirs_src = (
+        os.path.join(self.tempdir, 'sources', 'nested_directories'))
+    self.nested_src_files = (
+        os.path.join(self.nested_dirs_src, 'basedir_file.log'),
+        os.path.join(self.nested_dirs_src, 'nested1', 'nested1.txt'),
+        os.path.join(self.nested_dirs_src, 'nested1', 'nested2', 'nested2.txt'),
+    )
+    self.nested_dest_files = (
+        os.path.join(self.destination, 'basedir_file.log'),
+        os.path.join(self.destination, 'nested1', 'nested1.txt'),
+        os.path.join(self.destination, 'nested1', 'nested2', 'nested2.txt'),
+    )
+
+    self.message = build_api_test_pb2.TestRequestMessage()
+
+  def _assertExist(self, files):
+    for f in files:
+      self.assertExists(f)
+
+  def _assertNotExist(self, files):
+    for f in files:
+      self.assertNotExists(f)
+
+  def testSingleFileTransfer(self):
+    """Single source file syncs."""
+    self.message.synced_dir.dir = self.single_file_src
+
+    # Verify source files exist and destination files do not.
+    self.assertExists(self.sf_src_file)
+    self.assertNotExists(self.sf_dest_file)
+
+    with field_handler.sync_dirs(self.message, self.destination, self.chroot):
+      # Verify the prefix is getting correctly stripped.
+      self.assertEqual(self.message.synced_dir.dir, self.inside_path)
+      # Verify the files have all been correctly copied in.
+      self.assertExists(self.sf_dest_file)
+
+    self.assertEqual(self.message.synced_dir.dir, self.single_file_src)
+    # Verify the files have all been copied out.
+    self.assertExists(self.sf_src_file)
+
+  def testNestedFileSync(self):
+    """Nested directories and files sync."""
+    self.message.synced_dir.dir = self.nested_dirs_src
+
+    self._assertExist(self.nested_src_files)
+    self._assertNotExist(self.nested_dest_files)
+
+    with field_handler.sync_dirs(self.message, self.destination, self.chroot):
+      self.assertEqual(self.message.synced_dir.dir, self.inside_path)
+      self._assertExist(self.nested_dest_files)
+
+    self.assertEqual(self.message.synced_dir.dir, self.nested_dirs_src)
+    self._assertExist(self.nested_src_files)
+
+  def testDeletion(self):
+    """Test file deletions are exported correctly."""
+    self.message.synced_dir.dir = self.nested_dirs_src
+
+    deleted_src = os.path.join(self.nested_dirs_src, 'nested1', 'nested1.txt')
+    deleted_dest = os.path.join(self.destination, 'nested1', 'nested1.txt')
+
+    self._assertExist(self.nested_src_files)
+    self._assertNotExist(self.nested_dest_files)
+
+    with field_handler.sync_dirs(self.message, self.destination, self.chroot):
+      self._assertExist(self.nested_dest_files)
+      osutils.SafeUnlink(deleted_dest)
+
+    self._assertExist(set(self.nested_src_files) - {deleted_src})
+    self.assertNotExists(deleted_src)
+
+  def testCreation(self):
+    """Test file creations are exported correctly."""
+    self.message.synced_dir.dir = self.nested_dirs_src
+
+    new_src = os.path.join(self.nested_dirs_src, 'new_dir', 'new_file')
+    new_dest = os.path.join(self.destination, 'new_dir', 'new_file')
+
+    self._assertExist(self.nested_src_files)
+    self._assertNotExist(self.nested_dest_files)
+
+    with field_handler.sync_dirs(self.message, self.destination, self.chroot):
+      self._assertExist(self.nested_dest_files)
+      osutils.Touch(new_dest, makedirs=True)
+
+    self._assertExist(self.nested_src_files)
+    self.assertExists(new_src)
+
+  def testModification(self):
+    """Test file modifications are exported correctly."""
+    self.message.synced_dir.dir = self.single_file_src
+
+    self.assertExists(self.sf_src_file)
+    self.assertNotExists(self.sf_dest_file)
+
+    self.assertEqual('', osutils.ReadFile(self.sf_src_file))
+    file_content = 'Content!'
+
+    with field_handler.sync_dirs(self.message, self.destination, self.chroot):
+      self.assertExists(self.sf_dest_file)
+      osutils.WriteFile(self.sf_dest_file, file_content)
+
+    self.assertExists(self.sf_src_file)
+    self.assertEqual(file_content, osutils.ReadFile(self.sf_src_file))
+
+
 class ExtractResultsTest(cros_test_lib.TempDirTestCase):
   """Tests for extract_results."""
 

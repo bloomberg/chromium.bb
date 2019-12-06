@@ -166,13 +166,49 @@ class PathHandler(object):
       self.field.CopyFrom(self._original_message)
 
 
+class SyncedDirHandler(object):
+  """Handler for syncing directories across the chroot boundary."""
+
+  def __init__(self, field, destination, prefix):
+    self.field = field
+    self.prefix = prefix
+
+    self.source = self.field.dir
+    if not self.source.endswith(os.sep):
+      self.source += os.sep
+
+    self.destination = destination
+    if not self.destination.endswith(os.sep):
+      self.destination += os.sep
+
+    # For resetting the message later.
+    self._original_message = common_pb2.SyncedDir()
+    self._original_message.CopyFrom(self.field)
+
+  def _sync(self, src, dest):
+    logging.info('Syncing %s to %s')
+    # TODO: This would probably be more efficient with rsync.
+    osutils.EmptyDir(dest)
+    osutils.CopyDirContents(src, dest)
+
+  def sync_in(self):
+    """Sync files from the source directory to the destination directory."""
+    self._sync(self.source, self.destination)
+    self.field.dir = '/%s' % os.path.relpath(self.destination, self.prefix)
+
+  def sync_out(self):
+    """Sync files from the destination directory to the source directory."""
+    self._sync(self.destination, self.source)
+    self.field.CopyFrom(self._original_message)
+
+
 @contextlib.contextmanager
 def copy_paths_in(message, destination, delete=True, prefix=None):
   """Context manager function to transfer and cleanup all Path messages.
 
   Args:
     message (Message): A message whose Path messages should be transferred.
-    destination (str): A base destination path.
+    destination (str): The base destination path.
     delete (bool): Whether the file(s) should be deleted.
     prefix (str|None): A prefix path to remove from the final destination path
       in the Path message (i.e. remove the chroot path).
@@ -182,7 +218,8 @@ def copy_paths_in(message, destination, delete=True, prefix=None):
   """
   assert destination
 
-  handlers = _extract_handlers(message, destination, delete, prefix, reset=True)
+  handlers = _extract_handlers(message, destination, prefix, delete=delete,
+                               reset=True)
 
   for handler in handlers:
     handler.transfer(PathHandler.INSIDE)
@@ -192,6 +229,40 @@ def copy_paths_in(message, destination, delete=True, prefix=None):
   finally:
     for handler in handlers:
       handler.cleanup()
+
+
+@contextlib.contextmanager
+def sync_dirs(message, destination, prefix):
+  """Context manager function to handle SyncedDir messages.
+
+  The sync semantics are effectively:
+    rsync -r --del source/ destination/
+    * The endpoint runs. *
+    rsync -r --del destination/ source/
+
+  Args:
+    message (Message): A message whose SyncedPath messages should be synced.
+    destination (str): The destination path.
+    prefix (str): A prefix path to remove from the final destination path
+      in the Path message (i.e. remove the chroot path).
+
+  Returns:
+    list[SyncedDirHandler]: The handlers.
+  """
+  assert destination
+
+  handlers = _extract_handlers(message, destination, prefix=prefix,
+                               delete=False, reset=True,
+                               message_type=common_pb2.SyncedDir)
+
+  for handler in handlers:
+    handler.sync_in()
+
+  try:
+    yield handlers
+  finally:
+    for handler in handlers:
+      handler.sync_out()
 
 
 def extract_results(request_message, response_message, chroot):
@@ -215,17 +286,21 @@ def extract_results(request_message, response_message, chroot):
     return
 
   destination = result_path_message.path.path
-  handlers = _extract_handlers(response_message, destination, delete=False,
-                               prefix=chroot.path, reset=False)
+  handlers = _extract_handlers(response_message, destination, chroot.path,
+                               delete=False, reset=False)
 
   for handler in handlers:
     handler.transfer(PathHandler.OUTSIDE)
     handler.cleanup()
 
 
-def _extract_handlers(message, destination, delete, prefix, reset,
-                      field_name=None):
+def _extract_handlers(message, destination, prefix, delete=False, reset=False,
+                      field_name=None, message_type=None):
   """Recursive helper for handle_paths to extract Path messages."""
+  message_type = message_type or common_pb2.Path
+  is_path_target = message_type is common_pb2.Path
+  is_synced_target = message_type is common_pb2.SyncedDir
+
   is_message = isinstance(message, protobuf_message.Message)
   is_result_path = isinstance(message, common_pb2.ResultPath)
   if not is_message or is_result_path:
@@ -233,7 +308,7 @@ def _extract_handlers(message, destination, delete, prefix, reset,
     # There's nothing we can do with scalar values.
     # Skip ResultPath instances to avoid unnecessary file copying.
     return []
-  elif isinstance(message, common_pb2.Path):
+  elif is_path_target and isinstance(message, common_pb2.Path):
     # Base case: Create handler for this message.
     if not message.path or not message.location:
       logging.debug('Skipping %s; incomplete.', field_name or 'message')
@@ -241,6 +316,13 @@ def _extract_handlers(message, destination, delete, prefix, reset,
 
     handler = PathHandler(message, destination, delete=delete, prefix=prefix,
                           reset=reset)
+    return [handler]
+  elif is_synced_target and isinstance(message, common_pb2.SyncedDir):
+    if not message.dir:
+      logging.debug('Skipping %s; no directory given.', field_name or 'message')
+      return []
+
+    handler = SyncedDirHandler(message, destination, prefix)
     return [handler]
 
   # Iterate through each field and recurse.
@@ -255,8 +337,9 @@ def _extract_handlers(message, destination, delete, prefix, reset,
     if isinstance(field, protobuf_message.Message):
       # Recurse for nested Paths.
       handlers.extend(
-          _extract_handlers(field, destination, delete, prefix, reset,
-                            field_name=new_field_name))
+          _extract_handlers(field, destination, prefix, delete, reset,
+                            field_name=new_field_name,
+                            message_type=message_type))
     else:
       # If it's iterable it may be a repeated field, try each element.
       try:
@@ -267,7 +350,8 @@ def _extract_handlers(message, destination, delete, prefix, reset,
 
       for element in iterator:
         handlers.extend(
-            _extract_handlers(element, destination, delete, prefix, reset,
-                              field_name=new_field_name))
+            _extract_handlers(element, destination, prefix, delete, reset,
+                              field_name=new_field_name,
+                              message_type=message_type))
 
   return handlers

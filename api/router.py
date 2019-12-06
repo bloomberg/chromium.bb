@@ -247,48 +247,49 @@ class Router(object):
     chroot = field_handler.handle_chroot(input_msg)
 
     with field_handler.copy_paths_in(input_msg, chroot.tmp, prefix=chroot.path):
-      with chroot.tempdir() as tempdir:
-        new_input = os.path.join(tempdir, self.REEXEC_INPUT_FILE)
-        chroot_input = '/%s' % os.path.relpath(new_input, chroot.path)
-        new_output = os.path.join(tempdir, self.REEXEC_OUTPUT_FILE)
-        chroot_output = '/%s' % os.path.relpath(new_output, chroot.path)
+      with chroot.tempdir() as tempdir, chroot.tempdir() as sync_tmp:
+        with field_handler.sync_dirs(input_msg, sync_tmp, prefix=chroot.path):
+          new_input = os.path.join(tempdir, self.REEXEC_INPUT_FILE)
+          chroot_input = '/%s' % os.path.relpath(new_input, chroot.path)
+          new_output = os.path.join(tempdir, self.REEXEC_OUTPUT_FILE)
+          chroot_output = '/%s' % os.path.relpath(new_output, chroot.path)
 
-        logging.info('Writing input message to: %s', new_input)
-        osutils.WriteFile(new_input, json_format.MessageToJson(input_msg))
-        osutils.Touch(new_output)
+          logging.info('Writing input message to: %s', new_input)
+          osutils.WriteFile(new_input, json_format.MessageToJson(input_msg))
+          osutils.Touch(new_output)
 
-        cmd = ['build_api', '%s/%s' % (service_name, method_name),
-               '--input-json', chroot_input, '--output-json', chroot_output]
+          cmd = ['build_api', '%s/%s' % (service_name, method_name),
+                 '--input-json', chroot_input, '--output-json', chroot_output]
 
-        if config.validate_only:
-          cmd.append('--validate-only')
+          if config.validate_only:
+            cmd.append('--validate-only')
 
-        try:
-          result = cros_build_lib.run(
-              cmd,
-              enter_chroot=True,
-              chroot_args=chroot.get_enter_args(),
-              error_code_ok=True,
-              extra_env=chroot.env)
-        except cros_build_lib.RunCommandError:
-          # A non-zero return code will not result in an error, but one is still
-          # thrown when the command cannot be run in the first place. This is
-          # known to happen at least when the PATH does not include the chromite
-          # bin dir.
-          raise CrosSdkNotRunError('Unable to enter the chroot.')
+          try:
+            result = cros_build_lib.run(
+                cmd,
+                enter_chroot=True,
+                chroot_args=chroot.get_enter_args(),
+                error_code_ok=True,
+                extra_env=chroot.env)
+          except cros_build_lib.RunCommandError:
+            # A non-zero return code will not result in an error, but one
+            # is still thrown when the command cannot be run in the first
+            # place. This is known to happen at least when the PATH does
+            # not include the chromite bin dir.
+            raise CrosSdkNotRunError('Unable to enter the chroot.')
 
-        logging.info('Endpoint execution completed, return code: %d',
-                     result.returncode)
+          logging.info('Endpoint execution completed, return code: %d',
+                       result.returncode)
 
-        # Transfer result files out of the chroot.
-        output_content = osutils.ReadFile(new_output)
-        if output_content:
-          json_format.Parse(output_content, output_msg)
-          field_handler.extract_results(input_msg, output_msg, chroot)
+          # Transfer result files out of the chroot.
+          output_content = osutils.ReadFile(new_output)
+          if output_content:
+            json_format.Parse(output_content, output_msg)
+            field_handler.extract_results(input_msg, output_msg, chroot)
 
-        osutils.WriteFile(output_path, json_format.MessageToJson(output_msg))
+          osutils.WriteFile(output_path, json_format.MessageToJson(output_msg))
 
-        return result.returncode
+          return result.returncode
 
   def _GetMethod(self, module_name, method_name):
     """Get the implementation of the method for the service module.
