@@ -52,9 +52,11 @@ class CrosUpdateTest(cros_test_lib.RunCommandTestCase):
                      return_value=cros_build_lib.CommandResult(output='output'))
   def test_QuickProvision(self, run_command_call, _):
     """Tests launching quick provision."""
-    cmd = ('curl -o /tmp/quick-provision foo-static/quick-provision && '
-           'bash /tmp/quick-provision --status_url foo-url foo-build-name '
-           'foo-static')
+    cmd = ('mkdir -p /usr/local/tmp && '
+           'curl -o /usr/local/tmp/quick-provision '
+           'foo-static/quick-provision && '
+           'bash /usr/local/tmp/quick-provision --status_url foo-url '
+           'foo-build-name foo-static')
     device = remote_access.RemoteDevice('fake-hostname')
     self._cros_update_trigger._QuickProvision(device)
     run_command_call.assert_called_with(cmd, log_output=True, shell=True,
