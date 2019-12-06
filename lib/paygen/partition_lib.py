@@ -37,7 +37,8 @@ def ExtractPartition(filename, partition, out_part):
   offset = int(part_info.start)
   length = int(part_info.size)
 
-  filelib.CopyFileSegment(filename, 'r', length, out_part, 'w', in_seek=offset)
+  filelib.CopyFileSegment(filename, 'rb', length, out_part, 'wb',
+                          in_seek=offset)
 
 
 def Ext2FileSystemSize(ext2_file):
@@ -48,7 +49,8 @@ def Ext2FileSystemSize(ext2_file):
   """
   # dumpe2fs is normally installed in /sbin but doesn't require root.
   dump = cros_build_lib.run(['/sbin/dumpe2fs', '-h', ext2_file],
-                            print_cmd=False, capture_output=True).output
+                            print_cmd=False, capture_output=True,
+                            encoding='utf-8').stdout
   fs_blocks = 0
   fs_blocksize = 0
   for line in dump.split('\n'):
@@ -77,7 +79,7 @@ def PatchKernel(image, kern_file):
     cros_build_lib.run(
         ['e2cp', '%s:/vmlinuz_hd.vblock' % state_out, vblock])
     filelib.CopyFileSegment(
-        vblock, 'r', os.path.getsize(vblock), kern_file, 'r+')
+        vblock, 'rb', os.path.getsize(vblock), kern_file, 'r+b')
 
 
 def ExtractKernel(image, kern_out):
@@ -88,7 +90,7 @@ def ExtractKernel(image, kern_out):
     kern_out: The output kernel file.
   """
   ExtractPartition(image, constants.PART_KERN_B, kern_out)
-  with open(kern_out, 'r') as kern:
+  with open(kern_out, 'rb') as kern:
     if not any(kern.read(65536)):
       logging.warn('%s: Kernel B is empty, patching kernel A.', image)
       ExtractPartition(image, constants.PART_KERN_A, kern_out)
@@ -112,7 +114,7 @@ def ExtractRoot(image, root_out, truncate=True):
   # gpt script. So we need to truncated it to the file system size if asked for.
   root_out_size = Ext2FileSystemSize(root_out)
   if root_out_size:
-    with open(root_out, 'a') as root:
+    with open(root_out, 'ab') as root:
       root.truncate(root_out_size)
     logging.info('Truncated root to %d bytes.', root_out_size)
   else:
