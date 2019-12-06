@@ -112,19 +112,30 @@ void ApplyTypedQueryResults(MdnsMessage* message,
       const DomainName& name =
           absl::get<PtrRecordRdata>(record.rdata()).ptr_domain();
       AddAdditionalRecords(message, record_handler, name, DnsType::kSRV, clazz);
+      auto start_it = message->additional_records().begin();
+      auto end_it = message->additional_records().end();
+      for (auto it = start_it; it != end_it; it++) {
+        const DomainName target =
+            absl::get<SrvRecordRdata>(it->rdata()).target();
+        AddAdditionalRecords(message, record_handler, target, DnsType::kA,
+                             clazz);
+        AddAdditionalRecords(message, record_handler, target, DnsType::kAAAA,
+                             clazz);
+      }
       AddAdditionalRecords(message, record_handler, name, DnsType::kTXT, clazz);
-      AddAdditionalRecords(message, record_handler, name, DnsType::kA, clazz);
-      AddAdditionalRecords(message, record_handler, name, DnsType::kAAAA,
-                           clazz);
     }
   } else {
     if (AddResponseRecords(message, record_handler, domain, type, clazz,
                            true)) {
       if (type == DnsType::kSRV) {
-        AddAdditionalRecords(message, record_handler, domain, DnsType::kA,
-                             clazz);
-        AddAdditionalRecords(message, record_handler, domain, DnsType::kAAAA,
-                             clazz);
+        for (const auto& srv_record : message->answers()) {
+          const DomainName target =
+              absl::get<SrvRecordRdata>(srv_record.rdata()).target();
+          AddAdditionalRecords(message, record_handler, target, DnsType::kA,
+                               clazz);
+          AddAdditionalRecords(message, record_handler, target, DnsType::kAAAA,
+                               clazz);
+        }
       } else if (type == DnsType::kA) {
         AddAdditionalRecords(message, record_handler, domain, DnsType::kAAAA,
                              clazz);
