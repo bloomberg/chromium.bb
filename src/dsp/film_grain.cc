@@ -623,7 +623,7 @@ bool FilmGrain<bitdepth>::AllocateNoiseStripes() {
   // ceil(half_height / 16.0)
   const int max_luma_num = DivideBy16(half_height + 15);
   constexpr int kNoiseStripeHeight = 34;
-  size_t noise_buffer_size = 0;
+  size_t noise_buffer_size = kNoiseStripePadding;
   if (params_.num_y_points > 0) {
     noise_buffer_size += max_luma_num * kNoiseStripeHeight * width_;
   }
@@ -873,10 +873,10 @@ bool FilmGrain<bitdepth>::AllocateNoiseImage() {
 }
 
 template <int bitdepth, typename GrainType>
-inline void WriteOverlapLine(const GrainType* noise_stripe_row,
-                             const GrainType* noise_stripe_row_prev,
-                             int plane_width, int grain_coeff, int old_coeff,
-                             GrainType* noise_image_row) {
+inline void WriteOverlapLine_C(const GrainType* noise_stripe_row,
+                               const GrainType* noise_stripe_row_prev,
+                               int plane_width, int grain_coeff, int old_coeff,
+                               GrainType* noise_image_row) {
   int x = 0;
   do {
     int grain = noise_stripe_row[x];
@@ -908,13 +908,13 @@ void ConstructNoiseImageOverlap_C(const void* noise_stripes_buffer, int width,
       const GrainType* noise_stripe = (*noise_stripes)[luma_num];
       const GrainType* noise_stripe_prev = (*noise_stripes)[luma_num - 1];
       // First overlap row.
-      WriteOverlapLine<bitdepth>(noise_stripe,
-                                 &noise_stripe_prev[32 * plane_width],
-                                 plane_width, 17, 27, (*noise_image)[y]);
+      WriteOverlapLine_C<bitdepth>(noise_stripe,
+                                   &noise_stripe_prev[32 * plane_width],
+                                   plane_width, 17, 27, (*noise_image)[y]);
       // Second overlap row.
-      WriteOverlapLine<bitdepth>(&noise_stripe[plane_width],
-                                 &noise_stripe_prev[(32 + 1) * plane_width],
-                                 plane_width, 27, 17, (*noise_image)[y + 1]);
+      WriteOverlapLine_C<bitdepth>(&noise_stripe[plane_width],
+                                   &noise_stripe_prev[(32 + 1) * plane_width],
+                                   plane_width, 27, 17, (*noise_image)[y + 1]);
     }
     // End complete stripes section.
 
@@ -927,15 +927,15 @@ void ConstructNoiseImageOverlap_C(const void* noise_stripes_buffer, int width,
     }
     const GrainType* noise_stripe = (*noise_stripes)[luma_num];
     const GrainType* noise_stripe_prev = (*noise_stripes)[luma_num - 1];
-    WriteOverlapLine<bitdepth>(noise_stripe,
-                               &noise_stripe_prev[32 * plane_width],
-                               plane_width, 17, 27, (*noise_image)[y]);
+    WriteOverlapLine_C<bitdepth>(noise_stripe,
+                                 &noise_stripe_prev[32 * plane_width],
+                                 plane_width, 17, 27, (*noise_image)[y]);
 
     // Check if second overlap row is in the image.
     if (remaining_height > 1) {
-      WriteOverlapLine<bitdepth>(&noise_stripe[plane_width],
-                                 &noise_stripe_prev[(32 + 1) * plane_width],
-                                 plane_width, 27, 17, (*noise_image)[y + 1]);
+      WriteOverlapLine_C<bitdepth>(&noise_stripe[plane_width],
+                                   &noise_stripe_prev[(32 + 1) * plane_width],
+                                   plane_width, 27, 17, (*noise_image)[y + 1]);
     }
   } else {  // |subsampling_y| == 1
     // No special checks needed for partial stripes, because if one exists, the
@@ -943,9 +943,9 @@ void ConstructNoiseImageOverlap_C(const void* noise_stripes_buffer, int width,
     for (; y < plane_height; ++luma_num, y += stripe_height) {
       const GrainType* noise_stripe = (*noise_stripes)[luma_num];
       const GrainType* noise_stripe_prev = (*noise_stripes)[luma_num - 1];
-      WriteOverlapLine<bitdepth>(noise_stripe,
-                                 &noise_stripe_prev[16 * plane_width],
-                                 plane_width, 22, 23, (*noise_image)[y]);
+      WriteOverlapLine_C<bitdepth>(noise_stripe,
+                                   &noise_stripe_prev[16 * plane_width],
+                                   plane_width, 22, 23, (*noise_image)[y]);
     }
   }
 }
