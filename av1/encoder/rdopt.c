@@ -12083,8 +12083,21 @@ static AOM_INLINE void init_mode_skip_mask(mode_skip_mask_t *mask,
 
   int min_pred_mv_sad = INT_MAX;
   MV_REFERENCE_FRAME ref_frame;
-  for (ref_frame = LAST_FRAME; ref_frame <= ALTREF_FRAME; ++ref_frame)
-    min_pred_mv_sad = AOMMIN(min_pred_mv_sad, x->pred_mv_sad[ref_frame]);
+  if (ref_set == REF_SET_REALTIME) {
+    // For real-time encoding, we only look at a subset of ref frames. So the
+    // threshold for pruning should be computed from this subset as well.
+    const int num_rt_refs =
+        sizeof(real_time_ref_combos) / sizeof(*real_time_ref_combos);
+    for (int r_idx = 0; r_idx < num_rt_refs; r_idx++) {
+      const MV_REFERENCE_FRAME ref = real_time_ref_combos[r_idx][0];
+      if (ref != INTRA_FRAME) {
+        min_pred_mv_sad = AOMMIN(min_pred_mv_sad, x->pred_mv_sad[ref]);
+      }
+    }
+  } else {
+    for (ref_frame = LAST_FRAME; ref_frame <= ALTREF_FRAME; ++ref_frame)
+      min_pred_mv_sad = AOMMIN(min_pred_mv_sad, x->pred_mv_sad[ref_frame]);
+  }
 
   for (ref_frame = LAST_FRAME; ref_frame <= ALTREF_FRAME; ++ref_frame) {
     if (!(cpi->ref_frame_flags & av1_ref_frame_flag_list[ref_frame])) {
