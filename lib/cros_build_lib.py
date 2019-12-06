@@ -703,6 +703,11 @@ def run(cmd, print_cmd=True, stdout=None, stderr=None,
 
   if mute_output is None:
     mute_output = logging.getLogger().getEffectiveLevel() > debug_level
+  if mute_output or log_output:
+    if stdout is None:
+      stdout = True
+    if stderr is None:
+      stderr = True
 
   # Force the timeout to float; in the process, if it's not convertible,
   # a self-explanatory exception will be thrown.
@@ -733,8 +738,9 @@ def run(cmd, print_cmd=True, stdout=None, stderr=None,
     log_stdout_to_file = True
   elif stdout_to_pipe:
     popen_stdout = subprocess.PIPE
-  elif stdout or mute_output or log_output:
-    popen_stdout = _get_tempfile()
+  elif isinstance(stdout, bool):
+    if stdout:
+      popen_stdout = _get_tempfile()
 
   log_stderr_to_file = False
   if stderr == subprocess.STDOUT:
@@ -742,8 +748,9 @@ def run(cmd, print_cmd=True, stdout=None, stderr=None,
   elif hasattr(stderr, 'fileno'):
     popen_stderr = stderr
     log_stderr_to_file = True
-  elif stderr or mute_output or log_output:
-    popen_stderr = _get_tempfile()
+  elif isinstance(stderr, bool):
+    if stderr:
+      popen_stderr = _get_tempfile()
 
   # If subprocesses have direct access to stdout or stderr, they can bypass
   # our buffers, so we need to flush to ensure that output is not interleaved.
