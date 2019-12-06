@@ -149,8 +149,6 @@ uint32_t drv_bo_get_width(struct bo *bo);
 
 uint32_t drv_bo_get_height(struct bo *bo);
 
-uint32_t drv_bo_get_stride_or_tiling(struct bo *bo);
-
 size_t drv_bo_get_num_planes(struct bo *bo);
 
 union bo_handle drv_bo_get_plane_handle(struct bo *bo, size_t plane);

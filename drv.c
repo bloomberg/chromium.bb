@@ -542,11 +542,6 @@ uint32_t drv_bo_get_height(struct bo *bo)
 	return bo->meta.height;
 }
 
-uint32_t drv_bo_get_stride_or_tiling(struct bo *bo)
-{
-	return bo->meta.tiling ? bo->meta.tiling : drv_bo_get_plane_stride(bo, 0);
-}
-
 size_t drv_bo_get_num_planes(struct bo *bo)
 {
 	return bo->meta.num_planes;

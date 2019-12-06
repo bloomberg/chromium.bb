@@ -238,6 +238,39 @@ enum gbm_bo_flags {
     * Buffer is linear, i.e. not tiled.
     */
    GBM_BO_USE_LINEAR = (1 << 4),
+   /**
+    * The buffer will be used as a texture that will be sampled from.
+    */
+   GBM_BO_USE_TEXTURING    = (1 << 5),
+   /**
+    * The buffer will be written to by a camera subsystem.
+    */
+   GBM_BO_USE_CAMERA_WRITE = (1 << 6),
+   /**
+    * The buffer will be read from by a camera subsystem.
+    */
+   GBM_BO_USE_CAMERA_READ = (1 << 7),
+   /**
+    * Buffer inaccessible to unprivileged users.
+    */
+   GBM_BO_USE_PROTECTED = (1 << 8),
+   /**
+    * These flags specify the frequency of software access. These flags do not
+    * guarantee the buffer is linear, but do guarantee gbm_bo_map(..) will
+    * present a linear view.
+    */
+   GBM_BO_USE_SW_READ_OFTEN = (1 << 9),
+   GBM_BO_USE_SW_READ_RARELY = (1 << 10),
+   GBM_BO_USE_SW_WRITE_OFTEN = (1 << 11),
+   GBM_BO_USE_SW_WRITE_RARELY = (1 << 12),
+   /**
+    * The buffer will be written by a video decode accelerator.
+    */
+   GBM_BO_USE_HW_VIDEO_DECODER = (1 << 13),
+   /**
+    * The buffer will be read by a video encode accelerator.
+    */
+   GBM_BO_USE_HW_VIDEO_ENCODER = (1 << 14),
 };
 
 int
@@ -275,7 +308,9 @@ gbm_bo_create_with_modifiers(struct gbm_device *gbm,
 #define GBM_BO_IMPORT_WL_BUFFER         0x5501
 #define GBM_BO_IMPORT_EGL_IMAGE         0x5502
 #define GBM_BO_IMPORT_FD                0x5503
-#define GBM_BO_IMPORT_FD_MODIFIER       0x5504
+// Deprecated. Use GBM_BO_IMPORT_FD_MODIFIER instead.
+#define GBM_BO_IMPORT_FD_PLANAR         0x5504
+#define GBM_BO_IMPORT_FD_MODIFIER       0x5505
 
 struct gbm_import_fd_data {
    int fd;
@@ -329,11 +364,6 @@ enum gbm_bo_transfer_flags {
    GBM_BO_TRANSFER_READ_WRITE = (GBM_BO_TRANSFER_READ | GBM_BO_TRANSFER_WRITE),
 };
 
-void *
-gbm_bo_map(struct gbm_bo *bo,
-           uint32_t x, uint32_t y, uint32_t width, uint32_t height,
-           uint32_t flags, uint32_t *stride, void **map_data);
-
 void
 gbm_bo_unmap(struct gbm_bo *bo, void *map_data);
 
@@ -347,7 +377,7 @@ uint32_t
 gbm_bo_get_stride(struct gbm_bo *bo);
 
 uint32_t
-gbm_bo_get_stride_for_plane(struct gbm_bo *bo, int plane);
+gbm_bo_get_stride_for_plane(struct gbm_bo *bo, size_t plane);
 
 uint32_t
 gbm_bo_get_format(struct gbm_bo *bo);
@@ -356,7 +386,7 @@ uint32_t
 gbm_bo_get_bpp(struct gbm_bo *bo);
 
 uint32_t
-gbm_bo_get_offset(struct gbm_bo *bo, int plane);
+gbm_bo_get_offset(struct gbm_bo *bo, size_t plane);
 
 struct gbm_device *
 gbm_bo_get_device(struct gbm_bo *bo);
@@ -374,7 +404,7 @@ int
 gbm_bo_get_plane_count(struct gbm_bo *bo);
 
 union gbm_bo_handle
-gbm_bo_get_handle_for_plane(struct gbm_bo *bo, int plane);
+gbm_bo_get_handle_for_plane(struct gbm_bo *bo, size_t plane);
 
 int
 gbm_bo_write(struct gbm_bo *bo, const void *buf, size_t count);
@@ -415,6 +445,41 @@ gbm_surface_destroy(struct gbm_surface *surface);
 
 char *
 gbm_format_get_name(uint32_t gbm_format, struct gbm_format_name_desc *desc);
+
+
+#ifndef MINIGBM
+#define MINIGBM
+#endif
+/*
+ * The following functions are not deprecated, but not in the Mesa the gbm
+ * header. The main difference is minigbm allows for the possibility of
+ * disjoint YUV images, while Mesa GBM does not.
+ */
+uint32_t
+gbm_bo_get_plane_size(struct gbm_bo *bo, size_t plane);
+
+int
+gbm_bo_get_plane_fd(struct gbm_bo *bo, size_t plane);
+
+void *
+gbm_bo_map(struct gbm_bo *bo,
+           uint32_t x, uint32_t y, uint32_t width, uint32_t height,
+           uint32_t flags, uint32_t *stride, void **map_data, size_t plane);
+
+/*
+ * The following functions are deprecated. They can be removed * once crbug.com/946907 is fixed.
+ */
+size_t
+gbm_bo_get_num_planes(struct gbm_bo *bo);
+
+union gbm_bo_handle
+gbm_bo_get_plane_handle(struct gbm_bo *bo, size_t plane);
+
+uint32_t
+gbm_bo_get_plane_offset(struct gbm_bo *bo, size_t plane);
+
+uint32_t
+gbm_bo_get_plane_stride(struct gbm_bo *bo, size_t plane);
 
 #ifdef __cplusplus
 }
