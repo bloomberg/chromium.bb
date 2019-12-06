@@ -7061,8 +7061,6 @@ static AOM_INLINE void choose_intra_uv_mode(
   xd->cfl.is_chroma_reference =
       is_chroma_reference(mi_row, mi_col, bsize, cm->seq_params.subsampling_x,
                           cm->seq_params.subsampling_y);
-  bsize = scale_chroma_bsize(bsize, xd->plane[AOM_PLANE_U].subsampling_x,
-                             xd->plane[AOM_PLANE_U].subsampling_y);
   // Only store reconstructed luma when there's chroma RDO. When there's no
   // chroma RDO, the reconstructed luma will be stored in encode_superblock().
   xd->cfl.store_y = store_cfl_required_rdo(cm, x);
