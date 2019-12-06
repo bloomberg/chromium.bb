@@ -686,7 +686,7 @@ static INLINE void dec_build_inter_predictors(const AV1_COMMON *cm,
     // block size
     const int b4_w = block_size_wide[bsize] >> ss_x;
     const int b4_h = block_size_high[bsize] >> ss_y;
-    const BLOCK_SIZE plane_bsize = get_scaled_plane_bsize(bsize, ss_x, ss_y);
+    const BLOCK_SIZE plane_bsize = get_plane_block_size(bsize, ss_x, ss_y);
     const int b8_w = block_size_wide[plane_bsize];
     const int b8_h = block_size_high[plane_bsize];
     assert(!is_compound);
@@ -1240,7 +1240,7 @@ static AOM_INLINE void decode_token_recon_block(AV1Decoder *const pbi,
             if (!is_chroma_reference(mi_row, mi_col, bsize, ss_x, ss_y))
               continue;
             const BLOCK_SIZE plane_bsize =
-                get_scaled_plane_bsize(bsize, ss_x, ss_y);
+                get_plane_block_size(bsize, ss_x, ss_y);
             const TX_SIZE max_tx_size =
                 get_vartx_max_txsize(xd, plane_bsize, plane);
             const int bh_var_tx = tx_size_high_unit[max_tx_size];

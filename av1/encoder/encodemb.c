@@ -506,7 +506,7 @@ void av1_encode_sb(const struct AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
       continue;
 
     const BLOCK_SIZE plane_bsize =
-        get_scaled_plane_bsize(bsize, subsampling_x, subsampling_y);
+        get_plane_block_size(bsize, subsampling_x, subsampling_y);
     assert(plane_bsize < BLOCK_SIZES_ALL);
     const int mi_width = block_size_wide[plane_bsize] >> tx_size_wide_log2[0];
     const int mi_height = block_size_high[plane_bsize] >> tx_size_high_log2[0];

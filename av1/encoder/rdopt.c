@@ -5652,7 +5652,7 @@ static int super_block_uvrd(const AV1_COMP *const cpi, MACROBLOCK *x,
   const int is_inter = is_inter_block(mbmi);
   int64_t this_rd = 0, skip_rd = 0;
   const BLOCK_SIZE plane_bsize =
-      get_scaled_plane_bsize(bsize, pd->subsampling_x, pd->subsampling_y);
+      get_plane_block_size(bsize, pd->subsampling_x, pd->subsampling_y);
 
   if (is_inter && is_cost_valid) {
     for (plane = 1; plane < MAX_MB_PLANE; ++plane)

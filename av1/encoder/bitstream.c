@@ -1392,7 +1392,7 @@ static AOM_INLINE void write_inter_txb_coeff(
   assert(bsize < BLOCK_SIZES_ALL);
   const int ss_x = pd->subsampling_x;
   const int ss_y = pd->subsampling_y;
-  const BLOCK_SIZE plane_bsize = get_scaled_plane_bsize(bsize, ss_x, ss_y);
+  const BLOCK_SIZE plane_bsize = get_plane_block_size(bsize, ss_x, ss_y);
   assert(plane_bsize < BLOCK_SIZES_ALL);
   const TX_SIZE max_tx_size = get_vartx_max_txsize(xd, plane_bsize, plane);
   const int step =

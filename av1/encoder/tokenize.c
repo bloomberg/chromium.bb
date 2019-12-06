@@ -211,7 +211,7 @@ void av1_tokenize_sb_vartx(const AV1_COMP *cpi, ThreadData *td,
     if (!is_chroma_reference(mi_row, mi_col, bsize, ss_x, ss_y)) {
       continue;
     }
-    const BLOCK_SIZE plane_bsize = get_scaled_plane_bsize(bsize, ss_x, ss_y);
+    const BLOCK_SIZE plane_bsize = get_plane_block_size(bsize, ss_x, ss_y);
     assert(plane_bsize < BLOCK_SIZES_ALL);
     const int mi_width = block_size_wide[plane_bsize] >> tx_size_wide_log2[0];
     const int mi_height = block_size_high[plane_bsize] >> tx_size_high_log2[0];

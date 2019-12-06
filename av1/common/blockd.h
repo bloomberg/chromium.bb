@@ -805,49 +805,6 @@ static INLINE BLOCK_SIZE get_plane_block_size(BLOCK_SIZE bsize,
   return ss_size_lookup[bsize][subsampling_x][subsampling_y];
 }
 
-// Consider special handling of chroma block size for sub 8X8 partitio blocks.
-static INLINE BLOCK_SIZE get_scaled_plane_bsize(BLOCK_SIZE bsize,
-                                                int subsampling_x,
-                                                int subsampling_y) {
-  assert(subsampling_x >= 0 && subsampling_x < 2);
-  assert(subsampling_y >= 0 && subsampling_y < 2);
-
-  if (!subsampling_x && !subsampling_y) return bsize;
-
-  switch (bsize) {
-    case BLOCK_4X4: return BLOCK_4X4;
-    case BLOCK_4X8:
-      if (subsampling_x == 1 && subsampling_y == 1)
-        return BLOCK_4X4;
-      else if (subsampling_x == 1)
-        return BLOCK_4X8;
-      else
-        return BLOCK_4X4;
-    case BLOCK_8X4:
-      if (subsampling_x == 1 && subsampling_y == 1)
-        return BLOCK_4X4;
-      else if (subsampling_x == 1)
-        return BLOCK_4X4;
-      else
-        return BLOCK_8X4;
-    case BLOCK_4X16:
-      if (subsampling_x == 1 && subsampling_y == 1)
-        return BLOCK_4X8;
-      else if (subsampling_x == 1)
-        return BLOCK_4X16;
-      else
-        return BLOCK_4X8;
-    case BLOCK_16X4:
-      if (subsampling_x == 1 && subsampling_y == 1)
-        return BLOCK_8X4;
-      else if (subsampling_x == 1)
-        return BLOCK_8X4;
-      else
-        return BLOCK_16X4;
-    default: return ss_size_lookup[bsize][subsampling_x][subsampling_y];
-  }
-}
-
 /*
  * Logic to generate the lookup tables:
  *
