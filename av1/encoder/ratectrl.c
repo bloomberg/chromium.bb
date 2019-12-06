@@ -1083,8 +1083,8 @@ static int rc_pick_q_and_bounds_one_pass_cq(const AV1_COMP *cpi, int width,
 #define STATIC_MOTION_THRESH 95
 static void get_intra_q_and_bounds_two_pass(const AV1_COMP *cpi, int width,
                                             int height, int *active_best,
-                                            int *active_worst, int *arf_q,
-                                            int cq_level, int is_fwd_kf) {
+                                            int *active_worst, int cq_level,
+                                            int is_fwd_kf) {
   const AV1_COMMON *const cm = &cpi->common;
   const RATE_CONTROL *const rc = &cpi->rc;
   const AV1EncoderConfig *const oxcf = &cpi->oxcf;
@@ -1107,8 +1107,6 @@ static void get_intra_q_and_bounds_two_pass(const AV1_COMP *cpi, int width,
     const int delta_qindex = av1_compute_qdelta(
         rc, last_boosted_q, last_boosted_q * 0.25, bit_depth);
     active_best_quality = AOMMAX(qindex + delta_qindex, rc->best_quality);
-    // Update the arf_q since the forward keyframe is replacing the ALTREF
-    *arf_q = active_best_quality;
   } else if (rc->this_key_frame_forced) {
     // Handle the special case for key frames forced when we have reached
     // the maximum key frame interval. Here force the Q to a range
@@ -1273,8 +1271,7 @@ static void postprocess_q_and_bounds(const AV1_COMP *cpi, int width, int height,
 // function call.
 static int get_active_best_quality(const AV1_COMP *const cpi,
                                    const int active_worst_quality,
-                                   const int cq_level, const int gf_index,
-                                   int *arf_q) {
+                                   const int cq_level, const int gf_index) {
   const AV1_COMMON *const cm = &cpi->common;
   const int bit_depth = cm->seq_params.bit_depth;
   const RATE_CONTROL *const rc = &cpi->rc;
@@ -1302,6 +1299,7 @@ static int get_active_best_quality(const AV1_COMP *const cpi,
     return active_best_quality;
   }
 
+  // TODO(chengchen): can we remove this condition?
   if (rc_mode == AOM_Q && !cpi->refresh_alt_ref_frame && !is_intrl_arf_boost) {
     return cq_level;
   }
@@ -1322,38 +1320,20 @@ static int get_active_best_quality(const AV1_COMP *const cpi,
   const int min_boost = get_gf_high_motion_quality(q, bit_depth);
   const int boost = min_boost - active_best_quality;
   active_best_quality = min_boost - (int)(boost * rc->arf_boost_factor);
-  if (rc_mode == AOM_VBR || rc_mode == AOM_CBR) {
-    if (is_intrl_arf_boost) {
-      int this_height = gf_group_pyramid_level(gf_group, gf_index);
-      while (this_height > 1) {
-        active_best_quality =
-            (active_best_quality + active_worst_quality + 1) / 2;
-        --this_height;
-      }
-    }
-    return active_best_quality;
-  }
+  if (!is_intrl_arf_boost) return active_best_quality;
 
-  // AOM_Q and AOM_CQ mode.
-  if (gf_group->update_type[gf_index] == ARF_UPDATE) {
-    *arf_q = active_best_quality;
-  } else if (is_intrl_arf_boost) {
-    assert(rc->arf_q >= 0);  // Ensure it is set to a valid value.
-    active_best_quality = rc->arf_q;
-    int this_height = gf_group_pyramid_level(gf_group, gf_index);
-    while (this_height > 1) {
-      active_best_quality =
-          (active_best_quality + active_worst_quality + 1) / 2;
-      --this_height;
-    }
+  if (rc_mode == AOM_Q || rc_mode == AOM_CQ) active_best_quality = rc->arf_q;
+  int this_height = gf_group_pyramid_level(gf_group, gf_index);
+  while (this_height > 1) {
+    active_best_quality = (active_best_quality + active_worst_quality + 1) / 2;
+    --this_height;
   }
   return active_best_quality;
 }
 
 static int rc_pick_q_and_bounds_two_pass(const AV1_COMP *cpi, int width,
                                          int height, int gf_index,
-                                         int *bottom_index, int *top_index,
-                                         int *arf_q) {
+                                         int *bottom_index, int *top_index) {
   const AV1_COMMON *const cm = &cpi->common;
   const RATE_CONTROL *const rc = &cpi->rc;
   const AV1EncoderConfig *const oxcf = &cpi->oxcf;
@@ -1371,11 +1351,10 @@ static int rc_pick_q_and_bounds_two_pass(const AV1_COMP *cpi, int width,
     const int is_fwd_kf =
         cm->current_frame.frame_type == KEY_FRAME && cm->show_frame == 0;
     get_intra_q_and_bounds_two_pass(cpi, width, height, &active_best_quality,
-                                    &active_worst_quality, arf_q, cq_level,
-                                    is_fwd_kf);
+                                    &active_worst_quality, cq_level, is_fwd_kf);
   } else {
-    active_best_quality = get_active_best_quality(cpi, active_worst_quality,
-                                                  cq_level, gf_index, arf_q);
+    active_best_quality =
+        get_active_best_quality(cpi, active_worst_quality, cq_level, gf_index);
   }
 
   postprocess_q_and_bounds(cpi, width, height, &active_worst_quality,
@@ -1414,10 +1393,8 @@ int av1_rc_pick_q_and_bounds(const AV1_COMP *cpi, RATE_CONTROL *rc, int width,
       q = rc_pick_q_and_bounds_one_pass_vbr(cpi, width, height, bottom_index,
                                             top_index);
   } else {
-    int arf_q = -1;  // Initialize to invalid value, for sanity check later.
-
     q = rc_pick_q_and_bounds_two_pass(cpi, width, height, gf_index,
-                                      bottom_index, top_index, &arf_q);
+                                      bottom_index, top_index);
   }
   if (gf_group->update_type[gf_index] == ARF_UPDATE) rc->arf_q = q;
 
