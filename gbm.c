@@ -41,6 +41,12 @@ PUBLIC int gbm_device_is_format_supported(struct gbm_device *gbm, uint32_t forma
 	return (drv_get_combination(gbm->drv, format, use_flags) != NULL);
 }
 
+PUBLIC int gbm_device_get_format_modifier_plane_count(struct gbm_device *gbm, uint32_t format,
+						      uint64_t modifier)
+{
+	return 0;
+}
+
 PUBLIC struct gbm_device *gbm_create_device(int fd)
 {
 	struct gbm_device *gbm;
@@ -76,9 +82,15 @@ PUBLIC struct gbm_surface *gbm_surface_create(struct gbm_device *gbm, uint32_t w
 	return surface;
 }
 
-PUBLIC void gbm_surface_destroy(struct gbm_surface *surface)
+PUBLIC struct gbm_surface *gbm_surface_create_with_modifiers(struct gbm_device *gbm, uint32_t width,
+							     uint32_t height, uint32_t format,
+							     const uint64_t *modifiers,
+							     const unsigned int count)
 {
-	free(surface);
+	if (count != 0 || modifiers != NULL)
+		return NULL;
+
+	return gbm_surface_create(gbm, width, height, format, 0);
 }
 
 PUBLIC struct gbm_bo *gbm_surface_lock_front_buffer(struct gbm_surface *surface)
@@ -88,6 +100,16 @@ PUBLIC struct gbm_bo *gbm_surface_lock_front_buffer(struct gbm_surface *surface)
 
 PUBLIC void gbm_surface_release_buffer(struct gbm_surface *surface, struct gbm_bo *bo)
 {
+}
+
+PUBLIC int gbm_surface_has_free_buffers(struct gbm_surface *surface)
+{
+	return 0;
+}
+
+PUBLIC void gbm_surface_destroy(struct gbm_surface *surface)
+{
+	free(surface);
 }
 
 static struct gbm_bo *gbm_bo_new(struct gbm_device *gbm, uint32_t format)
@@ -263,6 +285,11 @@ PUBLIC uint32_t gbm_bo_get_format(struct gbm_bo *bo)
 	return bo->gbm_format;
 }
 
+PUBLIC uint32_t gbm_bo_get_bpp(struct gbm_bo *bo)
+{
+	return drv_bytes_per_pixel_from_format(drv_bo_get_format(bo->bo), 0);
+}
+
 PUBLIC uint64_t gbm_bo_get_modifier(struct gbm_bo *bo)
 {
 	return drv_bo_get_plane_format_modifier(bo->bo, 0);
@@ -313,6 +340,38 @@ PUBLIC void gbm_bo_set_user_data(struct gbm_bo *bo, void *data,
 PUBLIC void *gbm_bo_get_user_data(struct gbm_bo *bo)
 {
 	return bo->user_data;
+}
+
+/* The two GBM_BO_FORMAT_[XA]RGB8888 formats alias the GBM_FORMAT_*
+ * formats of the same name. We want to accept them whenever someone
+ * has a GBM format, but never return them to the user.
+ */
+static uint32_t gbm_format_canonicalize(uint32_t gbm_format)
+{
+	switch (gbm_format) {
+	case GBM_BO_FORMAT_XRGB8888:
+		return GBM_FORMAT_XRGB8888;
+	case GBM_BO_FORMAT_ARGB8888:
+		return GBM_FORMAT_ARGB8888;
+	default:
+		return gbm_format;
+	}
+}
+
+/**
+ * Returns a string representing the fourcc format name.
+ */
+PUBLIC char *gbm_format_get_name(uint32_t gbm_format, struct gbm_format_name_desc *desc)
+{
+	gbm_format = gbm_format_canonicalize(gbm_format);
+
+	desc->name[0] = gbm_format;
+	desc->name[1] = gbm_format >> 8;
+	desc->name[2] = gbm_format >> 16;
+	desc->name[3] = gbm_format >> 24;
+	desc->name[4] = 0;
+
+	return desc->name;
 }
 
 /*
