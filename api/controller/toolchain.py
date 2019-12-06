@@ -45,9 +45,12 @@ def PrepareForBuild(input_proto, output_proto, _config):
 
   The handlers (from _TOOLCHAIN_ARTIFACT_HANDLERS above) are called with:
       artifact_name (str): name of the artifact type.
-  They use their knowledge of the source tree layout and __file__ to get locate
-  and modify any ebuilds and/or source required for the artifact being created,
-  then return a value from toolchain_util.PrepareForBuildReturn.
+      chroot_path (str):  chroot path (absolute path)
+      sysroot_path (str): sysroot path inside the chroot (e.g., /build/atlas)
+      build_target_name (str): name of the build target (e.g., atlas)
+
+  They locate and modify any ebuilds and/or source required for the artifact
+  being created, then return a value from toolchain_util.PrepareForBuildReturn.
 
   Args:
     input_proto (PrepareForToolchainBuildRequest): The input proto
@@ -59,7 +62,9 @@ def PrepareForBuild(input_proto, output_proto, _config):
     # Ignore any artifact_types not handled.
     handler = _TOOLCHAIN_ARTIFACT_HANDLERS.get(artifact_type)
     if handler and handler.prepare:
-      results.add(handler.prepare(handler.name))
+      results.add(handler.prepare(
+          handler.name, input_proto.chroot.path, input_proto.sysroot.path,
+          input_proto.sysroot.build_target.name))
 
   # Translate the returns from the handlers we called.
   #   If any NEEDED => NEEDED
@@ -86,7 +91,7 @@ def BundleArtifacts(input_proto, output_proto, _config):
   """Bundle toolchain artifacts.
 
   The handlers (from _TOOLCHAIN_ARTIFACT_HANDLERS above) are called with:
-      artifact_name (str): name of artifact type
+      artifact_name (str): name of the artifact type
       chroot_path (str):  chroot path (absolute path)
       sysroot_path (str): sysroot path inside the chroot (e.g., /build/atlas)
       build_target_name (str): name of the build target (e.g., atlas)
@@ -100,7 +105,11 @@ def BundleArtifacts(input_proto, output_proto, _config):
     output_proto (BundleToolchainResponse): The output proto
     _config (api_config.ApiConfig): The API call config.
   """
-  resp_artifact = toolchain_pb2.BundleToolchainResponse.ArtifactInfo
+  # TODO(crbug/1019868): This is moving, handle both cases.
+  resp_artifact = (
+      getattr(toolchain_pb2.BundleToolchainResponse, 'ArtifactInfo', None) or
+      getattr(toolchain_pb2, 'ArtifactInfo'))
+  # resp_artifact = toolchain_pb2.ArtifactInfo
 
   for artifact_type in input_proto.artifact_types:
     # Ignore any artifact_types not handled.

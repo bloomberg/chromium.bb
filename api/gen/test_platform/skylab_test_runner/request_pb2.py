@@ -20,12 +20,49 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='test_platform.skylab_test_runner',
   syntax='proto3',
   serialized_options=_b('ZJgo.chromium.org/chromiumos/infra/proto/go/test_platform/skylab_test_runner'),
-  serialized_pb=_b('\n.test_platform/skylab_test_runner/request.proto\x12 test_platform.skylab_test_runner\x1a\x1btest_platform/request.proto\"\xfa\x03\n\x07Request\x12@\n\x06prejob\x18\x01 \x01(\x0b\x32\x30.test_platform.skylab_test_runner.Request.Prejob\x12<\n\x04test\x18\x02 \x01(\x0b\x32..test_platform.skylab_test_runner.Request.Test\x1aY\n\x06Prejob\x12O\n\x15software_dependencies\x18\x01 \x03(\x0b\x32\x30.test_platform.Request.Params.SoftwareDependency\x1a\x93\x02\n\x04Test\x12K\n\x08\x61utotest\x18\x01 \x01(\x0b\x32\x37.test_platform.skylab_test_runner.Request.Test.AutotestH\x00\x1a\xb2\x01\n\x08\x41utotest\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x11\n\ttest_args\x18\x02 \x01(\t\x12U\n\x07keyvals\x18\x03 \x03(\x0b\x32\x44.test_platform.skylab_test_runner.Request.Test.Autotest.KeyvalsEntry\x1a.\n\x0cKeyvalsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\x42\t\n\x07harnessBLZJgo.chromium.org/chromiumos/infra/proto/go/test_platform/skylab_test_runnerb\x06proto3')
+  serialized_pb=_b('\n.test_platform/skylab_test_runner/request.proto\x12 test_platform.skylab_test_runner\x1a\x1btest_platform/request.proto\"\xa4\x05\n\x07Request\x12@\n\x06prejob\x18\x01 \x01(\x0b\x32\x30.test_platform.skylab_test_runner.Request.Prejob\x12<\n\x04test\x18\x02 \x01(\x0b\x32..test_platform.skylab_test_runner.Request.Test\x1a\x82\x02\n\x06Prejob\x12S\n\x15software_dependencies\x18\x01 \x03(\x0b\x32\x30.test_platform.Request.Params.SoftwareDependencyB\x02\x18\x01\x12g\n\x14provisionable_labels\x18\x02 \x03(\x0b\x32I.test_platform.skylab_test_runner.Request.Prejob.ProvisionableLabelsEntry\x1a:\n\x18ProvisionableLabelsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\x1a\x93\x02\n\x04Test\x12K\n\x08\x61utotest\x18\x01 \x01(\x0b\x32\x37.test_platform.skylab_test_runner.Request.Test.AutotestH\x00\x1a\xb2\x01\n\x08\x41utotest\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x11\n\ttest_args\x18\x02 \x01(\t\x12U\n\x07keyvals\x18\x03 \x03(\x0b\x32\x44.test_platform.skylab_test_runner.Request.Test.Autotest.KeyvalsEntry\x1a.\n\x0cKeyvalsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\x42\t\n\x07harnessBLZJgo.chromium.org/chromiumos/infra/proto/go/test_platform/skylab_test_runnerb\x06proto3')
   ,
   dependencies=[test__platform_dot_request__pb2.DESCRIPTOR,])
 
 
 
+
+_REQUEST_PREJOB_PROVISIONABLELABELSENTRY = _descriptor.Descriptor(
+  name='ProvisionableLabelsEntry',
+  full_name='test_platform.skylab_test_runner.Request.Prejob.ProvisionableLabelsEntry',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='key', full_name='test_platform.skylab_test_runner.Request.Prejob.ProvisionableLabelsEntry.key', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='value', full_name='test_platform.skylab_test_runner.Request.Prejob.ProvisionableLabelsEntry.value', index=1,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=_b('8\001'),
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=454,
+  serialized_end=512,
+)
 
 _REQUEST_PREJOB = _descriptor.Descriptor(
   name='Prejob',
@@ -40,11 +77,18 @@ _REQUEST_PREJOB = _descriptor.Descriptor(
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
+      serialized_options=_b('\030\001'), file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='provisionable_labels', full_name='test_platform.skylab_test_runner.Request.Prejob.provisionable_labels', index=1,
+      number=2, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
-  nested_types=[],
+  nested_types=[_REQUEST_PREJOB_PROVISIONABLELABELSENTRY, ],
   enum_types=[
   ],
   serialized_options=None,
@@ -53,8 +97,8 @@ _REQUEST_PREJOB = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=253,
-  serialized_end=342,
+  serialized_start=254,
+  serialized_end=512,
 )
 
 _REQUEST_TEST_AUTOTEST_KEYVALSENTRY = _descriptor.Descriptor(
@@ -90,8 +134,8 @@ _REQUEST_TEST_AUTOTEST_KEYVALSENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=563,
-  serialized_end=609,
+  serialized_start=733,
+  serialized_end=779,
 )
 
 _REQUEST_TEST_AUTOTEST = _descriptor.Descriptor(
@@ -134,8 +178,8 @@ _REQUEST_TEST_AUTOTEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=431,
-  serialized_end=609,
+  serialized_start=601,
+  serialized_end=779,
 )
 
 _REQUEST_TEST = _descriptor.Descriptor(
@@ -167,8 +211,8 @@ _REQUEST_TEST = _descriptor.Descriptor(
       name='harness', full_name='test_platform.skylab_test_runner.Request.Test.harness',
       index=0, containing_type=None, fields=[]),
   ],
-  serialized_start=345,
-  serialized_end=620,
+  serialized_start=515,
+  serialized_end=790,
 )
 
 _REQUEST = _descriptor.Descriptor(
@@ -205,10 +249,12 @@ _REQUEST = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=114,
-  serialized_end=620,
+  serialized_end=790,
 )
 
+_REQUEST_PREJOB_PROVISIONABLELABELSENTRY.containing_type = _REQUEST_PREJOB
 _REQUEST_PREJOB.fields_by_name['software_dependencies'].message_type = test__platform_dot_request__pb2._REQUEST_PARAMS_SOFTWAREDEPENDENCY
+_REQUEST_PREJOB.fields_by_name['provisionable_labels'].message_type = _REQUEST_PREJOB_PROVISIONABLELABELSENTRY
 _REQUEST_PREJOB.containing_type = _REQUEST
 _REQUEST_TEST_AUTOTEST_KEYVALSENTRY.containing_type = _REQUEST_TEST_AUTOTEST
 _REQUEST_TEST_AUTOTEST.fields_by_name['keyvals'].message_type = _REQUEST_TEST_AUTOTEST_KEYVALSENTRY
@@ -226,6 +272,13 @@ _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 Request = _reflection.GeneratedProtocolMessageType('Request', (_message.Message,), dict(
 
   Prejob = _reflection.GeneratedProtocolMessageType('Prejob', (_message.Message,), dict(
+
+    ProvisionableLabelsEntry = _reflection.GeneratedProtocolMessageType('ProvisionableLabelsEntry', (_message.Message,), dict(
+      DESCRIPTOR = _REQUEST_PREJOB_PROVISIONABLELABELSENTRY,
+      __module__ = 'test_platform.skylab_test_runner.request_pb2'
+      # @@protoc_insertion_point(class_scope:test_platform.skylab_test_runner.Request.Prejob.ProvisionableLabelsEntry)
+      ))
+    ,
     DESCRIPTOR = _REQUEST_PREJOB,
     __module__ = 'test_platform.skylab_test_runner.request_pb2'
     # @@protoc_insertion_point(class_scope:test_platform.skylab_test_runner.Request.Prejob)
@@ -258,11 +311,14 @@ Request = _reflection.GeneratedProtocolMessageType('Request', (_message.Message,
   ))
 _sym_db.RegisterMessage(Request)
 _sym_db.RegisterMessage(Request.Prejob)
+_sym_db.RegisterMessage(Request.Prejob.ProvisionableLabelsEntry)
 _sym_db.RegisterMessage(Request.Test)
 _sym_db.RegisterMessage(Request.Test.Autotest)
 _sym_db.RegisterMessage(Request.Test.Autotest.KeyvalsEntry)
 
 
 DESCRIPTOR._options = None
+_REQUEST_PREJOB_PROVISIONABLELABELSENTRY._options = None
+_REQUEST_PREJOB.fields_by_name['software_dependencies']._options = None
 _REQUEST_TEST_AUTOTEST_KEYVALSENTRY._options = None
 # @@protoc_insertion_point(module_scope)
