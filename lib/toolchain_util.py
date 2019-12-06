@@ -963,6 +963,85 @@ def _WarnSheriffAboutKernelProfileExpiration(kver, profile):
       message=alert_msg)
 
 
+# TODO(crbug/1019868): implement the various endpoints.
+# pylint: disable=unused-argument
+def PrepareForBuild(name, chroot_path, sysroot_path, build_target, available):
+  """Prepare for building artifacts.
+
+  This code is called INSIDE the chroot, after it is set up.
+
+  Args:
+    name: artifact name
+    chroot_path: path to chroot.
+    sysroot_path: path to sysroot, relative to chroot path.
+    build_target: name of build target
+    available: dict of available artifacts.
+
+  Returns:
+    PrepareForBuildReturn
+  """
+
+  if name == 'UnverifiedOrderingFile':
+    # The orderfile-generate builder
+    return PrepareForBuildReturn.NEEDED
+  elif name == 'VerifiedOrderingFile':
+    # The orderfile-verify builder
+    if OrderfileUpdateChromeEbuild(build_target):
+      return PrepareForBuildReturn.NEEDED
+    else:
+      return PrepareForBuildReturn.POINTLESS
+  elif name == 'ChromeClangWarningsFile':
+    # The clang-tidy builder
+    return PrepareForBuildReturn.UNKNOWN
+  elif name == 'UnverifiedLlvmPgoFile':
+    return PrepareForBuildReturn.UNKNOWN
+  elif name == 'UnverifiedChromeAfdoFile':
+    return PrepareForBuildReturn.UNKNOWN
+  elif name == 'VerifiedChromeAfdoFile':
+    return PrepareForBuildReturn.UNKNOWN
+  elif name == 'VerifiedKernelAfdoFile':
+    return PrepareForBuildReturn.UNKNOWN
+
+
+def BundleArtifacts(name, chroot_path, sysroot_path, build_target, output_dir):
+  """Prepare for building artifacts.
+
+  This code is called OUTSIDE the chroot, after it is set up.
+
+  Args:
+    name: artifact name
+    chroot_path: path to chroot.
+    sysroot_path: path to sysroot, relative to chroot path.
+    build_target: name of build target
+    output_dir: path in which to place the artifacts.
+
+  Returns:
+    list of artifacts, relative to output_dir.
+  """
+
+  if name == 'UnverifiedOrderingFile':
+    # The orderfile-generate builder
+    pass
+  elif name == 'VerifiedOrderingFile':
+    # The orderfile-verify builder
+    pass
+  elif name == 'ChromeClangWarningsFile':
+    # The clang-tidy builder
+    pass
+  elif name == 'UnverifiedLlvmPgoFile':
+    pass
+  elif name == 'UnverifiedChromeAfdoFile':
+    pass
+  elif name == 'VerifiedChromeAfdoFile':
+    pass
+  elif name == 'VerifiedKernelAfdoFile':
+    pass
+
+  return []
+# TODO(crbug/1019868): implement the various endpoints.
+# pylint: enable=unused-argument
+
+
 def OrderfileUpdateChromeEbuild(board):
   """Update Chrome ebuild with latest unvetted orderfile.
 

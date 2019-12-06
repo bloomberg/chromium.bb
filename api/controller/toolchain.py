@@ -21,7 +21,7 @@ _TOOLCHAIN_ARTIFACT_HANDLERS = {
     BuilderConfig.Artifacts.UNVERIFIED_ORDERING_FILE:
         _Handlers('UnverifiedOrderingFile', None, None),
     BuilderConfig.Artifacts.VERIFIED_ORDERING_FILE:
-        _Handlers('VerifedOrderingFile', None, None),
+        _Handlers('VerifiedOrderingFile', None, None),
     BuilderConfig.Artifacts.CHROME_CLANG_WARNINGS_FILE:
         _Handlers('ChromeClangWarningsFile', None, None),
     BuilderConfig.Artifacts.UNVERIFIED_LLVM_PGO_FILE:
@@ -38,7 +38,8 @@ _TOOLCHAIN_ARTIFACT_HANDLERS = {
 # TODO(crbug/1031213): When @faux is expanded to have more than success/failure,
 # this should be changed.
 @faux.all_empty
-@validate.require('artifact_types')
+@validate.require('chroot.path', 'sysroot.path', 'sysroot.build_target.name',
+                  'artifact_types')
 @validate.validation_complete
 def PrepareForBuild(input_proto, output_proto, _config):
   """Prepare to build toolchain artifacts.
@@ -58,6 +59,7 @@ def PrepareForBuild(input_proto, output_proto, _config):
     _config (api_config.ApiConfig): The API call config.
   """
   results = set()
+
   for artifact_type in input_proto.artifact_types:
     # Ignore any artifact_types not handled.
     handler = _TOOLCHAIN_ARTIFACT_HANDLERS.get(artifact_type)
@@ -85,8 +87,9 @@ def PrepareForBuild(input_proto, output_proto, _config):
 # TODO(crbug/1031213): When @faux is expanded to have more than success/failure,
 # this should be changed.
 @faux.all_empty
-@validate.require('artifact_types')
-@validate.require('output_dir')
+@validate.require('chroot.path', 'sysroot.path', 'sysroot.build_target.name',
+                  'output_dir', 'artifact_types')
+@validate.exists('output_dir')
 def BundleArtifacts(input_proto, output_proto, _config):
   """Bundle toolchain artifacts.
 
@@ -105,11 +108,7 @@ def BundleArtifacts(input_proto, output_proto, _config):
     output_proto (BundleToolchainResponse): The output proto
     _config (api_config.ApiConfig): The API call config.
   """
-  # TODO(crbug/1019868): This is moving, handle both cases.
-  resp_artifact = (
-      getattr(toolchain_pb2.BundleToolchainResponse, 'ArtifactInfo', None) or
-      getattr(toolchain_pb2, 'ArtifactInfo'))
-  # resp_artifact = toolchain_pb2.ArtifactInfo
+  resp_artifact = toolchain_pb2.ArtifactInfo
 
   for artifact_type in input_proto.artifact_types:
     # Ignore any artifact_types not handled.

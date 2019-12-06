@@ -9,8 +9,10 @@ from __future__ import print_function
 
 from chromite.api import api_config
 from chromite.api.controller import toolchain
+from chromite.api.gen.chromite.api import sysroot_pb2
 from chromite.api.gen.chromite.api import toolchain_pb2
 from chromite.api.gen.chromiumos.builder_config_pb2 import BuilderConfig
+from chromite.api.gen.chromiumos import common_pb2
 
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
@@ -169,7 +171,7 @@ class UploadVettedFDOArtifactsTest(UpdateEbuildWithAFDOArtifactsTest):
     self.command.assert_called_once_with('chrome_afdo', self.board)
 
 
-class PrepareForBuildTest(cros_test_lib.MockTestCase,
+class PrepareForBuildTest(cros_test_lib.MockTempDirTestCase,
                           api_config.ApiConfigMixin):
   """Unittests for PrepareForBuild."""
 
@@ -179,8 +181,12 @@ class PrepareForBuildTest(cros_test_lib.MockTestCase,
   def _GetRequest(self, artifact_types=None):
     if artifact_types is None:
       artifact_types = []
+    chroot = common_pb2.Chroot(path=self.tempdir)
+    sysroot = sysroot_pb2.Sysroot(
+        path='/build/board', build_target=common_pb2.BuildTarget(name='board'))
     return toolchain_pb2.PrepareForToolchainBuildRequest(
         artifact_types=artifact_types,
+        chroot=chroot, sysroot=sysroot,
     )
 
   def testReturnsUnknownForUnknown(self):
@@ -198,9 +204,13 @@ class BundleToolchainTest(cros_test_lib.MockTempDirTestCase,
     self.response = toolchain_pb2.BundleToolchainResponse()
 
   def _GetRequest(self, artifact_types=None):
+    chroot = common_pb2.Chroot(path=self.tempdir)
+    sysroot = sysroot_pb2.Sysroot(
+        path='/build/board', build_target=common_pb2.BuildTarget(name='board'))
     return toolchain_pb2.BundleToolchainRequest(
-        artifact_types=artifact_types,
+        chroot=chroot, sysroot=sysroot,
         output_dir=self.tempdir,
+        artifact_types=artifact_types,
     )
 
   def testReturnsUnknownForUnknown(self):
