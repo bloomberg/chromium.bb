@@ -640,8 +640,8 @@ static AOM_INLINE void calc_proj_params_r0_r1_avx2(
   const uint8_t *src = src8;
   const uint8_t *dat = dat8;
   __m256i h00, h01, h11, c0, c1;
-  h00 = _mm256_setzero_si256();
-  h01 = h11 = c0 = c1 = h00;
+  const __m256i zero = _mm256_setzero_si256();
+  h01 = h11 = c0 = c1 = h00 = zero;
 
   for (int i = 0; i < height; ++i) {
     for (int j = 0; j < width; j += 8) {
@@ -688,46 +688,36 @@ static AOM_INLINE void calc_proj_params_r0_r1_avx2(
       c1 = _mm256_add_epi64(c1, c1_odd);
     }
   }
-  const __m128i h00_128bit = _mm_add_epi64(_mm256_extracti128_si256(h00, 1),
-                                           _mm256_castsi256_si128(h00));
-  const __m128i h00_val =
-      _mm_add_epi64(h00_128bit, _mm_srli_si128(h00_128bit, 8));
 
-  const __m128i h01_128bit = _mm_add_epi64(_mm256_extracti128_si256(h01, 1),
-                                           _mm256_castsi256_si128(h01));
-  const __m128i h01_val =
-      _mm_add_epi64(h01_128bit, _mm_srli_si128(h01_128bit, 8));
+  __m256i c_low = _mm256_unpacklo_epi64(c0, c1);
+  const __m256i c_high = _mm256_unpackhi_epi64(c0, c1);
+  c_low = _mm256_add_epi64(c_low, c_high);
+  const __m128i c_128bit = _mm_add_epi64(_mm256_extracti128_si256(c_low, 1),
+                                         _mm256_castsi256_si128(c_low));
 
-  const __m128i h11_128bit = _mm_add_epi64(_mm256_extracti128_si256(h11, 1),
-                                           _mm256_castsi256_si128(h11));
-  const __m128i h11_val =
-      _mm_add_epi64(h11_128bit, _mm_srli_si128(h11_128bit, 8));
+  __m256i h0x_low = _mm256_unpacklo_epi64(h00, h01);
+  const __m256i h0x_high = _mm256_unpackhi_epi64(h00, h01);
+  h0x_low = _mm256_add_epi64(h0x_low, h0x_high);
+  const __m128i h0x_128bit = _mm_add_epi64(_mm256_extracti128_si256(h0x_low, 1),
+                                           _mm256_castsi256_si128(h0x_low));
 
-  const __m128i c0_128bit = _mm_add_epi64(_mm256_extracti128_si256(c0, 1),
-                                          _mm256_castsi256_si128(c0));
-  const __m128i c0_val = _mm_add_epi64(c0_128bit, _mm_srli_si128(c0_128bit, 8));
+  // Using the symmetric properties of H,  calculations of H[1][0] are not
+  // needed.
+  __m256i h1x_low = _mm256_unpacklo_epi64(zero, h11);
+  const __m256i h1x_high = _mm256_unpackhi_epi64(zero, h11);
+  h1x_low = _mm256_add_epi64(h1x_low, h1x_high);
+  const __m128i h1x_128bit = _mm_add_epi64(_mm256_extracti128_si256(h1x_low, 1),
+                                           _mm256_castsi256_si128(h1x_low));
 
-  const __m128i c1_128bit = _mm_add_epi64(_mm256_extracti128_si256(c1, 1),
-                                          _mm256_castsi256_si128(c1));
-  const __m128i c1_val = _mm_add_epi64(c1_128bit, _mm_srli_si128(c1_128bit, 8));
-
-#if ARCH_X86_64
-  H[0][0] = _mm_extract_epi64(h00_val, 0);
-  H[0][1] = _mm_extract_epi64(h01_val, 0);
-  H[1][1] = _mm_extract_epi64(h11_val, 0);
-  C[0] = _mm_extract_epi64(c0_val, 0);
-  C[1] = _mm_extract_epi64(c1_val, 0);
-#else
-  xx_storel_64(&H[0][0], h00_val);
-  xx_storel_64(&H[0][1], h01_val);
-  xx_storel_64(&H[1][1], h11_val);
-  xx_storel_64(&C[0], c0_val);
-  xx_storel_64(&C[1], c1_val);
-#endif
+  xx_storeu_128(C, c_128bit);
+  xx_storeu_128(H[0], h0x_128bit);
+  xx_storeu_128(H[1], h1x_128bit);
 
   H[0][0] /= size;
   H[0][1] /= size;
   H[1][1] /= size;
+
+  // Since H is a symmetric matrix
   H[1][0] = H[0][1];
   C[0] /= size;
   C[1] /= size;
@@ -745,8 +735,8 @@ static AOM_INLINE void calc_proj_params_r0_avx2(const uint8_t *src8, int width,
   const uint8_t *src = src8;
   const uint8_t *dat = dat8;
   __m256i h00, c0;
-  h00 = _mm256_setzero_si256();
-  c0 = h00;
+  const __m256i zero = _mm256_setzero_si256();
+  c0 = h00 = zero;
 
   for (int i = 0; i < height; ++i) {
     for (int j = 0; j < width; j += 8) {
@@ -782,13 +772,11 @@ static AOM_INLINE void calc_proj_params_r0_avx2(const uint8_t *src8, int width,
                                           _mm256_castsi256_si128(c0));
   const __m128i c0_val = _mm_add_epi64(c0_128bit, _mm_srli_si128(c0_128bit, 8));
 
-#if ARCH_X86_64
-  H[0][0] = _mm_extract_epi64(h00_val, 0);
-  C[0] = _mm_extract_epi64(c0_val, 0);
-#else
-  xx_storel_64(&H[0][0], h00_val);
-  xx_storel_64(&C[0], c0_val);
-#endif
+  const __m128i c = _mm_unpacklo_epi64(c0_val, _mm256_castsi256_si128(zero));
+  const __m128i h0x = _mm_unpacklo_epi64(h00_val, _mm256_castsi256_si128(zero));
+
+  xx_storeu_128(C, c);
+  xx_storeu_128(H[0], h0x);
 
   H[0][0] /= size;
   C[0] /= size;
@@ -806,8 +794,8 @@ static AOM_INLINE void calc_proj_params_r1_avx2(const uint8_t *src8, int width,
   const uint8_t *src = src8;
   const uint8_t *dat = dat8;
   __m256i h11, c1;
-  h11 = _mm256_setzero_si256();
-  c1 = h11;
+  const __m256i zero = _mm256_setzero_si256();
+  c1 = h11 = zero;
 
   for (int i = 0; i < height; ++i) {
     for (int j = 0; j < width; j += 8) {
@@ -844,13 +832,11 @@ static AOM_INLINE void calc_proj_params_r1_avx2(const uint8_t *src8, int width,
                                           _mm256_castsi256_si128(c1));
   const __m128i c1_val = _mm_add_epi64(c1_128bit, _mm_srli_si128(c1_128bit, 8));
 
-#if ARCH_X86_64
-  H[1][1] = _mm_extract_epi64(h11_val, 0);
-  C[1] = _mm_extract_epi64(c1_val, 0);
-#else
-  xx_storel_64(&H[1][1], h11_val);
-  xx_storel_64(&C[1], c1_val);
-#endif
+  const __m128i c = _mm_unpacklo_epi64(_mm256_castsi256_si128(zero), c1_val);
+  const __m128i h1x = _mm_unpacklo_epi64(_mm256_castsi256_si128(zero), h11_val);
+
+  xx_storeu_128(C, c);
+  xx_storeu_128(H[1], h1x);
 
   H[1][1] /= size;
   C[1] /= size;
