@@ -122,7 +122,7 @@ static int aiff_write_header(AVFormatContext *s)
 
     /* First verify if format is ok */
     if (!par->codec_tag)
-        return -1;
+        return AVERROR(EINVAL);
     if (par->codec_tag != MKTAG('N','O','N','E'))
         aifc = 1;
 
@@ -135,7 +135,7 @@ static int aiff_write_header(AVFormatContext *s)
     if (aifc) { // compressed audio
         if (!par->block_align) {
             av_log(s, AV_LOG_ERROR, "block align not set\n");
-            return -1;
+            return AVERROR(EINVAL);
         }
         /* Version chunk */
         ffio_wfourcc(pb, "FVER");
@@ -166,7 +166,7 @@ static int aiff_write_header(AVFormatContext *s)
         par->bits_per_coded_sample = av_get_bits_per_sample(par->codec_id);
     if (!par->bits_per_coded_sample) {
         av_log(s, AV_LOG_ERROR, "could not compute bits per sample\n");
-        return -1;
+        return AVERROR(EINVAL);
     }
     if (!par->block_align)
         par->block_align = (par->bits_per_coded_sample * par->channels) >> 3;
@@ -260,7 +260,7 @@ static int aiff_write_trailer(AVFormatContext *s)
         /* Write ID3 tags */
         if (aiff->write_id3v2)
             if ((ret = put_id3v2_tags(s, aiff)) < 0)
-                goto free;
+                return ret;
 
         /* File length */
         file_size = avio_tell(pb);
@@ -270,10 +270,14 @@ static int aiff_write_trailer(AVFormatContext *s)
         avio_flush(pb);
     }
 
-free:
-    ff_packet_list_free(&aiff->pict_list, &aiff->pict_list_end);
-
     return ret;
+}
+
+static void aiff_deinit(AVFormatContext *s)
+{
+    AIFFOutputContext *aiff = s->priv_data;
+
+    ff_packet_list_free(&aiff->pict_list, &aiff->pict_list_end);
 }
 
 #define OFFSET(x) offsetof(AIFFOutputContext, x)
@@ -304,6 +308,7 @@ AVOutputFormat ff_aiff_muxer = {
     .write_header      = aiff_write_header,
     .write_packet      = aiff_write_packet,
     .write_trailer     = aiff_write_trailer,
+    .deinit            = aiff_deinit,
     .codec_tag         = (const AVCodecTag* const []){ ff_codec_aiff_tags, 0 },
     .priv_class        = &aiff_muxer_class,
 };
