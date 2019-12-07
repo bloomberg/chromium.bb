@@ -6,10 +6,10 @@
 """Generate an HTML file containing license info for all installed packages.
 
 Documentation on this script is also available here:
-https://dev.chromium.org/chromium-os/licensing-for-chromiumos-developers
+https://dev.chromium.org/chromium-os/licensing/licensing-for-chromiumos-developers
 
 End user (i.e. package owners) documentation is here:
-https://dev.chromium.org/chromium-os/licensing-for-chromiumos-package-owners
+https://dev.chromium.org/chromium-os/licensing/licensing-for-chromiumos-package-owners
 
 Usage:
 For this script to work, you must have built the architecture
@@ -28,7 +28,7 @@ Recommended build:
   # configure. Configure will fail due to aclocal macros missing in
   # /build/x86-alex/usr/share/aclocal (those are generated during build).
   # This will take about 10mn on a Z620.
-  ./build_packages --board=$BOARD --nowithautotest --nowithtest --nowithdev
+  ./build_packages --board=$BOARD --nowithautotest --nowithtest --nowithdev \
                    --nowithfactory
   cd ~/trunk/chromite/licensing
   # This removes left over packages from an earlier build that could cause
@@ -59,7 +59,7 @@ licenses.
 
 You can check the licenses and/or generate a HTML file for a list of
 packages using --package or -p:
-  %(prog)s --package "dev-libs/libatomic_ops-7.2d" --package
+  %(prog)s --package "dev-libs/libatomic_ops-7.2d" --package \
   "net-misc/wget-1.14" --board $BOARD -o out.html
 
 Note that you'll want to use --generate to force regeneration of the licensing
@@ -71,8 +71,7 @@ this script with --all-packages.
 
 By default, when no package is specified, this script processes all
 packages for $BOARD. The output HTML file is meant to update
-http://src.chromium.org/viewvc/chrome/trunk/src/chrome/browser/resources/ +
-  chromeos/about_os_credits.html?view=log
+https://src.chromium.org/viewvc/chrome/trunk/src/chrome/browser/resources/chromeos/about_os_credits.html?view=log
 (gclient config svn://svn.chromium.org/chrome/trunk/src)
 For an example CL, see https://codereview.chromium.org/13496002/
 
