@@ -16,7 +16,6 @@ import time
 
 from six.moves import urllib
 
-from chromite.lib import config_lib
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
@@ -49,16 +48,6 @@ class SrcCheckOutException(Exception):
 def IsARepoRoot(directory):
   """Returns True if directory is the root of a repo checkout."""
   return os.path.exists(os.path.join(directory, '.repo'))
-
-
-def IsInternalRepoCheckout(root):
-  """Returns whether root houses an internal 'repo' checkout."""
-  manifest_dir = os.path.join(root, '.repo', 'manifests')
-  manifest_url = git.RunGit(
-      manifest_dir, ['config', 'remote.origin.url']).output.strip()
-  return (os.path.splitext(os.path.basename(manifest_url))[0] ==
-          os.path.splitext(os.path.basename(
-              config_lib.GetSiteParams().MANIFEST_INT_URL))[0])
 
 
 def _IsLocalPath(url):

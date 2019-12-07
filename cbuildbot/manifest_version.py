@@ -431,37 +431,6 @@ def OfficialBuildSpecPath(version_info):
       '%s.xml' % version_info.VersionString())
 
 
-def CandidateBuildSpecPath(version_info,
-                           category,
-                           manifest_versions):
-  """Generate a unique candidate build spec path.
-
-  This probes manifest versions for previously created buildspec candidates,
-  and creates a new name for a unique one.
-
-  Args:
-    version_info: VersionInfo instance describing the current version.
-    category: String, manifest_versions subdir specific to a build group.
-              Ex: 'full', 'paladin', etc.
-    manifest_versions: Directory that holds a manifest-version
-                       checkout of previous buildspecs for the category.
-
-  Returns:
-    Path for buildspec, relative to manifest_versions root.
-  """
-  rc_version = 0
-  while True:
-    rc_version += 1
-    spec_path = os.path.join(
-        category,
-        'buildspecs',
-        str(version_info.chrome_branch),
-        '%s-rc%d.xml' % (version_info.VersionString(), rc_version))
-
-    if not os.path.exists(os.path.join(manifest_versions, spec_path)):
-      return spec_path
-
-
 @retry_util.WithRetry(max_retry=20)
 def _CommitAndPush(manifest_repo, git_url, buildspec, contents, dryrun):
   """Helper for committing and pushing buildspecs.
@@ -573,45 +542,6 @@ def GenerateAndPublishOfficialBuildSpec(
   version_info.UpdateVersionFile(msg, dryrun)
 
   build_spec_path = OfficialBuildSpecPath(version_info)
-
-  logging.info('Creating buildspec: %s', build_spec_path)
-  PopulateAndPublishBuildSpec(
-      build_spec_path,
-      repo.ExportManifest(mark_revision=True),
-      manifest_versions_int,
-      manifest_versions_ext,
-      dryrun)
-
-  return build_spec_path
-
-def GenerateAndPublishReleaseCandidateBuildSpec(
-    repo,
-    category,
-    manifest_versions_int,
-    manifest_versions_ext=None,
-    dryrun=True):
-  """Create build spec based on current source checkout.
-
-  This assumes that the current checkout is 100% clean, and that local SHAs
-  exist in GoB.
-
-  The new buildspec is created in manifest_versions and pushed remotely.
-
-  Args:
-    repo: Repository.RepoRepository instance.
-    category: String, manifest_versions subdir specific to a build group.
-              Ex: 'full', 'paladin', etc.
-    manifest_versions_int: Path to manifest-versions-internal checkout.
-    manifest_versions_ext: Path to manifest-versions checkout (public).
-    dryrun: Git push --dry-run if set to True.
-
-  Returns:
-    Path for buildspec, relative to manifest_versions root.
-  """
-  version_info = VersionInfo.from_repo(repo.directory)
-
-  build_spec_path = CandidateBuildSpecPath(
-      version_info, category, manifest_versions_int)
 
   logging.info('Creating buildspec: %s', build_spec_path)
   PopulateAndPublishBuildSpec(

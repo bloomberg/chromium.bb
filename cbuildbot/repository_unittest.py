@@ -26,30 +26,6 @@ from chromite.lib import cros_build_lib
 class RepositoryTests(cros_test_lib.RunCommandTestCase):
   """Test cases related to repository checkout methods."""
 
-  def testExternalRepoCheckout(self):
-    """Test we detect external checkouts properly."""
-    tests = [
-        'https://chromium.googlesource.com/chromiumos/manifest.git',
-        'test@abcdef.bla.com:39291/bla/manifest.git',
-        'test@abcdef.bla.com:39291/bla/manifest',
-        'test@abcdef.bla.com:39291/bla/Manifest-internal',
-    ]
-
-    for test in tests:
-      self.rc.SetDefaultCmdResult(output=test)
-      self.assertFalse(repository.IsInternalRepoCheckout('.'))
-
-  def testInternalRepoCheckout(self):
-    """Test we detect internal checkouts properly."""
-    tests = [
-        'https://chrome-internal.googlesource.com/chromeos/manifest-internal',
-        'test@abcdef.bla.com:39291/bla/manifest-internal.git',
-    ]
-
-    for test in tests:
-      self.rc.SetDefaultCmdResult(output=test)
-      self.assertTrue(repository.IsInternalRepoCheckout('.'))
-
   def testIsLocalPath(self):
     """test IsLocalPath."""
     self.assertTrue(repository._IsLocalPath('/tmp/chromiumos/'))

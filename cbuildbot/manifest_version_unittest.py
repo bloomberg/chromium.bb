@@ -248,28 +248,6 @@ class BuildSpecFunctionsTest(cros_test_lib.MockTempDirTestCase):
     result = manifest_version.OfficialBuildSpecPath(self.version_info)
     self.assertEqual(result, 'buildspecs/11/1.2.3.xml')
 
-  def testCandidateBuildSpecPathEmptyCategory(self):
-    """Test CandidateBuildSpecPath, with no existing candidates."""
-    result = manifest_version.CandidateBuildSpecPath(
-        self.version_info, 'new_cat', self.manifest_versions_int)
-    self.assertEqual(result, 'new_cat/buildspecs/11/1.2.3-rc1.xml')
-
-  def testCandidateBuildSpecPathExistingCandidates(self):
-    """Test CandidateBuildSpecPath, with existing candidates."""
-    # Create some preexisting build specs.
-    osutils.Touch(
-        os.path.join(self.manifest_versions_int,
-                     'cat/buildspecs/11/1.2.3-rc1.xml'),
-        makedirs=True)
-    osutils.Touch(
-        os.path.join(self.manifest_versions_int,
-                     'cat/buildspecs/11/1.2.3-rc2.xml'),
-        makedirs=True)
-
-    result = manifest_version.CandidateBuildSpecPath(
-        self.version_info, 'cat', self.manifest_versions_int)
-    self.assertEqual(result, 'cat/buildspecs/11/1.2.3-rc3.xml')
-
   def testPopulateAndPublishBuildSpec(self):
     """Test PopulateAndPublishBuildSpec."""
     commitMock = self.PatchObject(manifest_version, '_CommitAndPush')
