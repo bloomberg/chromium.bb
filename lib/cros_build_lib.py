@@ -663,8 +663,7 @@ def run(cmd, print_cmd=True, stdout=None, stderr=None,
     if kwargs.pop('combine_stdout_stderr'):
       stderr = subprocess.STDOUT
   if 'log_stdout_to_file' in kwargs:
-    # TODO(vapier): Enable this warning once chromite & users migrate.
-    # logging.warning('run: log_stdout_to_file=X is now stdout=X')
+    logging.warning('run: log_stdout_to_file=X is now stdout=X')
     log_stdout_to_file = kwargs.pop('log_stdout_to_file')
     if log_stdout_to_file is not None:
       stdout = log_stdout_to_file
@@ -1151,7 +1150,7 @@ def CompressFile(infile, outfile):
     run(cmd)
   else:
     cmd = [comp, '-c', infile]
-    run(cmd, log_stdout_to_file=outfile)
+    run(cmd, stdout=outfile)
 
 
 def UncompressFile(infile, outfile):
@@ -1172,7 +1171,7 @@ def UncompressFile(infile, outfile):
     run(cmd)
   else:
     cmd = [comp, '-dc', infile]
-    run(cmd, log_stdout_to_file=outfile)
+    run(cmd, stdout=outfile)
 
 
 class CreateTarballError(RunCommandError):

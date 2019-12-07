@@ -94,7 +94,7 @@ def GenerateBreakpadSymbol(elf_file, debug_file=None, breakpad_dir=None,
     else:
       run_command = cros_build_lib.run
     return run_command(
-        cmd_base + cmd_args, redirect_stderr=True, log_stdout_to_file=temp.name,
+        cmd_base + cmd_args, redirect_stderr=True, stdout=temp.name,
         error_code_ok=True, debug_level=logging.DEBUG)
 
   def _CrashCheck(ret, msg):

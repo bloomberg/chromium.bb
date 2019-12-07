@@ -290,7 +290,7 @@ def ArchiveChromeEbuildEnv(sysroot, output_dir):
     bzip2 = cros_build_lib.FindCompressor(cros_build_lib.COMP_BZIP2)
     tempdir_tar_path = os.path.join(tempdir, constants.CHROME_ENV_FILE)
     cros_build_lib.run([bzip2, '-d', env_bzip, '-c'],
-                       log_stdout_to_file=tempdir_tar_path)
+                       stdout=tempdir_tar_path)
 
     cros_build_lib.CreateTarball(result_path, tempdir)
 

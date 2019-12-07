@@ -694,7 +694,7 @@ class TestRunCommandOutput(cros_test_lib.TempDirTestCase,
   @_ForceLoggingLevel
   def testLogStdoutToFile(self):
     log = os.path.join(self.tempdir, 'output')
-    ret = cros_build_lib.run(['echo', 'monkeys'], log_stdout_to_file=log)
+    ret = cros_build_lib.run(['echo', 'monkeys'], stdout=log)
     self.assertEqual(osutils.ReadFile(log), 'monkeys\n')
     self.assertIs(ret.output, None)
     self.assertIs(ret.error, None)
@@ -702,7 +702,7 @@ class TestRunCommandOutput(cros_test_lib.TempDirTestCase,
     os.unlink(log)
     ret = cros_build_lib.run(
         ['sh', '-c', 'echo monkeys3 >&2'],
-        log_stdout_to_file=log, redirect_stderr=True)
+        stdout=log, redirect_stderr=True)
     self.assertEqual(ret.error, b'monkeys3\n')
     self.assertExists(log)
     self.assertEqual(os.path.getsize(log), 0)
@@ -710,7 +710,7 @@ class TestRunCommandOutput(cros_test_lib.TempDirTestCase,
     os.unlink(log)
     ret = cros_build_lib.run(
         ['sh', '-c', 'echo monkeys4; echo monkeys5 >&2'],
-        log_stdout_to_file=log, combine_stdout_stderr=True)
+        stdout=log, combine_stdout_stderr=True)
     self.assertIs(ret.output, None)
     self.assertIs(ret.error, None)
     self.assertEqual(osutils.ReadFile(log), 'monkeys4\nmonkeys5\n')
@@ -719,20 +719,20 @@ class TestRunCommandOutput(cros_test_lib.TempDirTestCase,
   @_ForceLoggingLevel
   def testLogStdoutToFileWithOrWithoutAppend(self):
     log = os.path.join(self.tempdir, 'output')
-    ret = cros_build_lib.run(['echo', 'monkeys'], log_stdout_to_file=log)
+    ret = cros_build_lib.run(['echo', 'monkeys'], stdout=log)
     self.assertEqual(osutils.ReadFile(log), 'monkeys\n')
     self.assertIs(ret.output, None)
     self.assertIs(ret.error, None)
 
     # Without append
-    ret = cros_build_lib.run(['echo', 'monkeys2'], log_stdout_to_file=log)
+    ret = cros_build_lib.run(['echo', 'monkeys2'], stdout=log)
     self.assertEqual(osutils.ReadFile(log), 'monkeys2\n')
     self.assertIs(ret.output, None)
     self.assertIs(ret.error, None)
 
     # With append
     ret = cros_build_lib.run(
-        ['echo', 'monkeys3'], append_to_file=True, log_stdout_to_file=log)
+        ['echo', 'monkeys3'], append_to_file=True, stdout=log)
     self.assertEqual(osutils.ReadFile(log), 'monkeys2\nmonkeys3\n')
     self.assertIs(ret.output, None)
     self.assertIs(ret.error, None)

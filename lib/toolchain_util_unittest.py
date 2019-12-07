@@ -422,7 +422,7 @@ class GenerateChromeOrderfileTest(cros_test_lib.MockTempDirTestCase):
     self.test_obj._GenerateChromeNM()
     cros_build_lib.run.assert_called_with(
         cmd,
-        log_stdout_to_file=output,
+        stdout=output,
         enter_chroot=True,
         chroot_args=self.chroot_args)
 
@@ -1214,7 +1214,7 @@ class UploadReleaseChromeAFDOTest(cros_test_lib.MockTempDirTestCase):
                   print_cmd=True),
         mock.call(['redact_textual_afdo_profile'],
                   input=mock_file_obj,
-                  log_stdout_to_file=redacted_temp,
+                  stdout=redacted_temp,
                   enter_chroot=True,
                   print_cmd=True),
         mock.call([

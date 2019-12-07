@@ -197,7 +197,7 @@ def Dumper(flag, infile, outfile):
   """
   result = cros_build_lib.run(
       [CompilerTool('objdump'), flag, infile],
-      log_stdout_to_file=outfile, **kwargs)
+      stdout=outfile, **kwargs)
   if result.returncode:
     sys.exit()
 

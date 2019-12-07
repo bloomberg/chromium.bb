@@ -562,7 +562,7 @@ def _RedactAFDOProfile(input_path, output_path):
   with open(input_to_text_temp) as f:
     cros_build_lib.run(['redact_textual_afdo_profile'],
                        input=f,
-                       log_stdout_to_file=redacted_temp,
+                       stdout=redacted_temp,
                        enter_chroot=True,
                        print_cmd=True)
 
@@ -653,7 +653,7 @@ class GenerateChromeOrderfile(object):
     try:
       cros_build_lib.run(
           cmd,
-          log_stdout_to_file=result_out_chroot,
+          stdout=result_out_chroot,
           enter_chroot=True,
           chroot_args=self.chroot_args)
     except cros_build_lib.RunCommandError:

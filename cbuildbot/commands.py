@@ -1933,7 +1933,7 @@ def GenerateStackTraces(buildroot, board, test_results_dir, archive_dir,
                            error_code_ok=True,
                            redirect_stderr=True,
                            debug_level=logging.DEBUG,
-                           log_stdout_to_file=processed_file_path)
+                           stdout=processed_file_path)
       # Process asan log.
       else:
         # Prepend '/chrome/$board' path to the stack trace in log.
@@ -1961,7 +1961,7 @@ def GenerateStackTraces(buildroot, board, test_results_dir, archive_dir,
                            debug_level=logging.DEBUG,
                            cwd=buildroot,
                            redirect_stderr=True,
-                           log_stdout_to_file=processed_file_path)
+                           stdout=processed_file_path)
         # Break the bot if asan_log found. This is because some asan
         # crashes may not fail any test so the bot stays green.
         # Ex: crbug.com/167497

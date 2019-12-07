@@ -184,7 +184,7 @@ class SimpleChromeArtifactsStage(generic_stages.BoardSpecificBuilderStage,
       bzip2 = cros_build_lib.FindCompressor(cros_build_lib.COMP_BZIP2)
       cros_build_lib.run(
           [bzip2, '-d', env_bzip, '-c'],
-          log_stdout_to_file=os.path.join(tempdir, constants.CHROME_ENV_FILE))
+          stdout=os.path.join(tempdir, constants.CHROME_ENV_FILE))
       env_tar = os.path.join(self.archive_path, constants.CHROME_ENV_TAR)
       cros_build_lib.CreateTarball(env_tar, tempdir)
       self._upload_queue.put([os.path.basename(env_tar)])
@@ -269,7 +269,7 @@ class TestSimpleChromeWorkflowStage(generic_stages.BoardSpecificBuilderStage,
       ninja_env_path = os.path.join(goma.goma_log_dir, 'ninja_env')
       sdk_cmd.Run(['env', '--null'],
                   run_args={'extra_env': extra_env,
-                            'log_stdout_to_file': ninja_env_path})
+                            'stdout': ninja_env_path})
       osutils.WriteFile(os.path.join(goma.goma_log_dir, 'ninja_cwd'),
                         sdk_cmd.cwd)
       osutils.WriteFile(os.path.join(goma.goma_log_dir, 'ninja_command'),

@@ -294,7 +294,7 @@ def _BuildChrome(sdk_cmd, chrome_root, out_board_dir, goma):
     ninja_env_path = os.path.join(goma.goma_log_dir, 'ninja_env')
     sdk_cmd.Run(['env', '--null'],
                 run_args={'extra_env': extra_env,
-                          'log_stdout_to_file': ninja_env_path})
+                          'stdout': ninja_env_path})
     osutils.WriteFile(os.path.join(goma.goma_log_dir, 'ninja_cwd'),
                       sdk_cmd.cwd)
     osutils.WriteFile(os.path.join(goma.goma_log_dir, 'ninja_command'),

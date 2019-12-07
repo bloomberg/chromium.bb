@@ -250,7 +250,7 @@ class ChromiumOSUpdater(BaseUpdater):
 
     if log_file:
       log_kwargs = {
-          'log_stdout_to_file': log_file,
+          'stdout': log_file,
           'append_to_file': True,
           'combine_stdout_stderr': True,
       }
