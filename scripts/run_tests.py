@@ -613,6 +613,14 @@ def main(argv):
                        ' (should be 0:0)\nFix with: sudo chown 0:0 /' %
                        (st.st_uid, st.st_gid))
 
+  # Sanity check the settings to avoid bitrot.
+  for test in SPECIAL_TESTS:
+    if not os.path.exists(test):
+      cros_build_lib.Die('SPECIAL_TESTS is stale: delete old %s' % test)
+  for test in SLOW_TESTS:
+    if not os.path.exists(test):
+      cros_build_lib.Die('SLOW_TESTS is stale: delete old %s' % test)
+
   if opts.quick:
     SPECIAL_TESTS.update(SLOW_TESTS)
 
