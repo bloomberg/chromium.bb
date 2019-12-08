@@ -189,7 +189,6 @@ class RunTests(cros_test_lib.RunCommandTestCase):
             '--cache-dir', '/root/repository/.cache',
             # The duplication is a bug, but not harmful.
             '--cache-dir', '/root/repository/.cache',
-            '--ts-mon-task-num', '1',
         ],
         extra_env={'PATH': mock.ANY},
         cwd='/root/repository',
@@ -289,7 +288,6 @@ class RunTests(cros_test_lib.RunCommandTestCase):
             'Aic3RhdHVzIjogImZhaWwifQ==',
             '--workspace', '/root/workspace',
             '--cache-dir', '/cache',
-            '--ts-mon-task-num', '1',
         ],
         extra_env={'PATH': mock.ANY},
         cwd='/root/repository',

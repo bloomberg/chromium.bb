@@ -198,10 +198,6 @@ class BootstrapStage(PatchChangesStage):
     if minor >= 2 and options.cache_dir_specified:
       args += ['--cache-dir', options.cache_dir]
 
-    if minor >= constants.REEXEC_API_TSMON_TASK_NUM:
-      # Increment the ts-mon task_num so the metrics don't collide.
-      args.extend(['--ts-mon-task-num', str(options.ts_mon_task_num + 1)])
-
     return args
 
   @classmethod

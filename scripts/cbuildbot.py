@@ -454,10 +454,6 @@ def _CreateParser():
                                'tool. Bootstrap the projects based on the git '
                                'cache files instead of fetching them directly '
                                'from the GoB servers.')
-  group.add_remote_option('--sanity-check-build', action='store_true',
-                          default=False, dest='sanity_check_build',
-                          api=constants.REEXEC_API_SANITY_CHECK_BUILD,
-                          help='Run the build as a sanity check build.')
   group.add_remote_option('--debug-cidb', action='store_true', default=False,
                           help='Force Debug CIDB to be used.')
   # cbuildbot ChromeOS Findit options
@@ -512,11 +508,6 @@ def _CreateParser():
   group.add_option('--remote-version', type='int', default=3,
                    help='Deprecated and ignored.')
   group.add_option('--sourceroot', type='path', default=constants.SOURCE_ROOT)
-  group.add_option('--ts-mon-task-num', type='int', default=0,
-                   api=constants.REEXEC_API_TSMON_TASK_NUM,
-                   help='The task number of this process. Defaults to 0. '
-                        'This argument is useful for running multiple copies '
-                        'of cbuildbot without their metrics colliding.')
   group.add_remote_option('--test-bootstrap', action='store_true',
                           default=False,
                           help='Causes cbuildbot to bootstrap itself twice, '
