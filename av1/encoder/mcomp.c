@@ -1753,30 +1753,62 @@ int av1_diamond_search_sad_c(MACROBLOCK *x, const search_site_config *cfg,
     const search_site *ss = cfg->ss[step];
     best_site = 0;
 
-    // TODO(jingning): Bring back sdx4df optimization for speed later.
-    for (int idx = 1; idx <= cfg->searches_per_step[step]; ++idx) {
-      // Trap illegal vectors
-      const MV this_mv = { best_mv->row + ss[idx].mv.row,
-                           best_mv->col + ss[idx].mv.col };
+    int all_in = 1, j;
+    // Trap illegal vectors
+    all_in &= best_mv->row + ss[1].mv.row >= x->mv_limits.row_min;
+    all_in &= best_mv->row + ss[2].mv.row <= x->mv_limits.row_max;
+    all_in &= best_mv->col + ss[3].mv.col >= x->mv_limits.col_min;
+    all_in &= best_mv->col + ss[4].mv.col <= x->mv_limits.col_max;
 
-      if (is_mv_in(&x->mv_limits, &this_mv)) {
-        const uint8_t *const check_here = ss[idx].offset + best_address;
-        unsigned int thissad;
+    // TODO(anyone): Implement 4 points search for msdf&sdaf
+    if (all_in && !mask && !second_pred) {
+      for (int idx = 1; idx <= cfg->searches_per_step[step]; idx += 4) {
+        unsigned char const *block_offset[4];
+        unsigned int sads[4];
 
-        if (mask)
-          thissad = fn_ptr->msdf(what, what_stride, check_here, in_what_stride,
-                                 second_pred, mask, mask_stride, inv_mask);
-        else if (second_pred)
-          thissad = fn_ptr->sdaf(what, what_stride, check_here, in_what_stride,
-                                 second_pred);
-        else
-          thissad = fn_ptr->sdf(what, what_stride, check_here, in_what_stride);
+        for (j = 0; j < 4; j++)
+          block_offset[j] = ss[idx + j].offset + best_address;
 
-        if (thissad < bestsad) {
-          thissad += mvsad_err_cost(x, &this_mv, &fcenter_mv, sad_per_bit);
+        fn_ptr->sdx4df(what, what_stride, block_offset, in_what_stride, sads);
+        for (j = 0; j < 4; j++) {
+          if (sads[j] < bestsad) {
+            const MV this_mv = { best_mv->row + ss[idx + j].mv.row,
+                                 best_mv->col + ss[idx + j].mv.col };
+            unsigned int thissad =
+                sads[j] + mvsad_err_cost(x, &this_mv, &fcenter_mv, sad_per_bit);
+            if (thissad < bestsad) {
+              bestsad = thissad;
+              best_site = idx + j;
+            }
+          }
+        }
+      }
+    } else {
+      for (int idx = 1; idx <= cfg->searches_per_step[step]; idx++) {
+        const MV this_mv = { best_mv->row + ss[idx].mv.row,
+                             best_mv->col + ss[idx].mv.col };
+
+        if (is_mv_in(&x->mv_limits, &this_mv)) {
+          const uint8_t *const check_here = ss[idx].offset + best_address;
+          unsigned int thissad;
+
+          if (mask)
+            thissad =
+                fn_ptr->msdf(what, what_stride, check_here, in_what_stride,
+                             second_pred, mask, mask_stride, inv_mask);
+          else if (second_pred)
+            thissad = fn_ptr->sdaf(what, what_stride, check_here,
+                                   in_what_stride, second_pred);
+          else
+            thissad =
+                fn_ptr->sdf(what, what_stride, check_here, in_what_stride);
+
           if (thissad < bestsad) {
-            bestsad = thissad;
-            best_site = idx;
+            thissad += mvsad_err_cost(x, &this_mv, &fcenter_mv, sad_per_bit);
+            if (thissad < bestsad) {
+              bestsad = thissad;
+              best_site = idx;
+            }
           }
         }
       }
