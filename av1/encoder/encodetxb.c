@@ -657,8 +657,8 @@ void av1_write_coeffs_mb(const AV1_COMMON *const cm, MACROBLOCK *x, int mi_row,
   const int max_blocks_wide = max_block_wide(xd, bsize, 0);
   const int max_blocks_high = max_block_high(xd, bsize, 0);
   const BLOCK_SIZE max_unit_bsize = BLOCK_64X64;
-  int mu_blocks_wide = block_size_wide[max_unit_bsize] >> tx_size_wide_log2[0];
-  int mu_blocks_high = block_size_high[max_unit_bsize] >> tx_size_high_log2[0];
+  int mu_blocks_wide = mi_size_wide[max_unit_bsize];
+  int mu_blocks_high = mi_size_high[max_unit_bsize];
   mu_blocks_wide = AOMMIN(max_blocks_wide, mu_blocks_wide);
   mu_blocks_high = AOMMIN(max_blocks_high, mu_blocks_high);
 

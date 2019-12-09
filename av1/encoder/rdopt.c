@@ -2190,7 +2190,6 @@ static AOM_INLINE void get_txb_dimensions(const MACROBLOCKD *xd, int plane,
   const int txb_height = block_size_high[tx_bsize];
   const int txb_width = block_size_wide[tx_bsize];
   const struct macroblockd_plane *const pd = &xd->plane[plane];
-  const int tx_unit_size = tx_size_wide_log2[0];
 
   // TODO(aconverse@google.com): Investigate using crop_width/height here rather
   // than the MI size
@@ -2201,7 +2200,7 @@ static AOM_INLINE void get_txb_dimensions(const MACROBLOCKD *xd, int plane,
     const int block_rows =
         (xd->mb_to_bottom_edge >> (3 + pd->subsampling_y)) + block_height;
     *visible_height =
-        clamp(block_rows - (blk_row << tx_unit_size), 0, txb_height);
+        clamp(block_rows - (blk_row << MI_SIZE_LOG2), 0, txb_height);
   }
   if (height) *height = txb_height;
 
@@ -2212,7 +2211,7 @@ static AOM_INLINE void get_txb_dimensions(const MACROBLOCKD *xd, int plane,
     const int block_cols =
         (xd->mb_to_right_edge >> (3 + pd->subsampling_x)) + block_width;
     *visible_width =
-        clamp(block_cols - (blk_col << tx_unit_size), 0, txb_width);
+        clamp(block_cols - (blk_col << MI_SIZE_LOG2), 0, txb_width);
   }
   if (width) *width = txb_width;
 }
@@ -2266,17 +2265,15 @@ static INLINE int64_t pixel_diff_dist(const MACROBLOCK *x, int plane,
   int txb_width = block_size_wide[tx_bsize];
   if (x->using_dist_8x8 && plane == 0) {
     const int src_stride = x->plane[plane].src.stride;
-    const int src_idx = (blk_row * src_stride + blk_col)
-                        << tx_size_wide_log2[0];
-    const int diff_idx = (blk_row * diff_stride + blk_col)
-                         << tx_size_wide_log2[0];
+    const int src_idx = (blk_row * src_stride + blk_col) << MI_SIZE_LOG2;
+    const int diff_idx = (blk_row * diff_stride + blk_col) << MI_SIZE_LOG2;
     const uint8_t *src = &x->plane[plane].src.buf[src_idx];
     return dist_8x8_diff(x, src, src_stride, diff + diff_idx, diff_stride,
                          txb_width, txb_height, visible_cols, visible_rows,
                          x->qindex);
   }
 #endif
-  diff += ((blk_row * diff_stride + blk_col) << tx_size_wide_log2[0]);
+  diff += ((blk_row * diff_stride + blk_col) << MI_SIZE_LOG2);
   uint64_t sse =
       aom_sum_squares_2d_i16(diff, diff_stride, visible_cols, visible_rows);
   if (block_mse_q8 != NULL) {
@@ -2342,8 +2339,7 @@ static AOM_INLINE void inverse_transform_block_facade(MACROBLOCKD *xd,
   const TX_TYPE tx_type = av1_get_tx_type(xd, plane_type, blk_row, blk_col,
                                           tx_size, reduced_tx_set);
   const int dst_stride = pd->dst.stride;
-  uint8_t *dst =
-      &pd->dst.buf[(blk_row * dst_stride + blk_col) << tx_size_wide_log2[0]];
+  uint8_t *dst = &pd->dst.buf[(blk_row * dst_stride + blk_col) << MI_SIZE_LOG2];
   av1_inverse_transform_block(xd, dqcoeff, plane, tx_type, tx_size, dst,
                               dst_stride, eob, reduced_tx_set);
 }
@@ -2417,8 +2413,8 @@ static INLINE int64_t dist_block_px_domain(const AV1_COMP *cpi, MACROBLOCK *x,
   const int src_stride = x->plane[plane].src.stride;
   const int dst_stride = xd->plane[plane].dst.stride;
   // Scale the transform block index to pixel unit.
-  const int src_idx = (blk_row * src_stride + blk_col) << tx_size_wide_log2[0];
-  const int dst_idx = (blk_row * dst_stride + blk_col) << tx_size_wide_log2[0];
+  const int src_idx = (blk_row * src_stride + blk_col) << MI_SIZE_LOG2;
+  const int dst_idx = (blk_row * dst_stride + blk_col) << MI_SIZE_LOG2;
   const uint8_t *src = &x->plane[plane].src.buf[src_idx];
   const uint8_t *dst = &xd->plane[plane].dst.buf[dst_idx];
   const tran_low_t *dqcoeff = pd->dqcoeff + BLOCK_OFFSET(block);
@@ -2718,10 +2714,10 @@ static AOM_INLINE void PrintTransformUnitStats(
 
   const int src_stride = p->src.stride;
   const uint8_t *const src =
-      &p->src.buf[(blk_row * src_stride + blk_col) << tx_size_wide_log2[0]];
+      &p->src.buf[(blk_row * src_stride + blk_col) << MI_SIZE_LOG2];
   const int dst_stride = pd->dst.stride;
   const uint8_t *const dst =
-      &pd->dst.buf[(blk_row * dst_stride + blk_col) << tx_size_wide_log2[0]];
+      &pd->dst.buf[(blk_row * dst_stride + blk_col) << MI_SIZE_LOG2];
   unsigned int sse;
   cpi->fn_ptr[tx_bsize].vf(src, src_stride, dst, dst_stride, &sse);
   const double sse_norm = (double)sse / num_samples;
@@ -2734,7 +2730,7 @@ static AOM_INLINE void PrintTransformUnitStats(
 
   const int diff_stride = block_size_wide[plane_bsize];
   const int16_t *const src_diff =
-      &p->src_diff[(blk_row * diff_stride + blk_col) << tx_size_wide_log2[0]];
+      &p->src_diff[(blk_row * diff_stride + blk_col) << MI_SIZE_LOG2];
 
   double sse_norm_arr[4], sad_norm_arr[4];
   get_2x2_normalized_sses_and_sads(cpi, tx_bsize, src, src_stride, dst,
@@ -3740,8 +3736,7 @@ static AOM_INLINE void block_rd_txfm(int plane, int block, int blk_row,
   av1_set_txb_context(x, plane, block, tx_size, a, l);
 
   const int blk_idx =
-      blk_row * (block_size_wide[plane_bsize] >> tx_size_wide_log2[0]) +
-      blk_col;
+      blk_row * (block_size_wide[plane_bsize] >> MI_SIZE_LOG2) + blk_col;
 
   if (plane == 0)
     set_blk_skip(x, plane, blk_idx, x->plane[plane].eobs[block] == 0);
@@ -3981,7 +3976,7 @@ static AOM_INLINE void choose_smallest_tx_size(const AV1_COMP *const cpi,
 }
 
 static INLINE int bsize_to_num_blk(BLOCK_SIZE bsize) {
-  int num_blk = 1 << (num_pels_log2_lookup[bsize] - 2 * tx_size_wide_log2[0]);
+  int num_blk = 1 << (num_pels_log2_lookup[bsize] - 2 * MI_SIZE_LOG2);
   return num_blk;
 }
 
@@ -5844,7 +5839,7 @@ static AOM_INLINE void try_tx_block_no_split(
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = xd->mi[0];
   struct macroblock_plane *const p = &x->plane[0];
-  const int bw = block_size_wide[plane_bsize] >> tx_size_wide_log2[0];
+  const int bw = mi_size_wide[plane_bsize];
 
   no_split->rd = INT64_MAX;
   no_split->txb_entropy_ctx = 0;
@@ -5970,7 +5965,7 @@ static AOM_INLINE void select_tx_block(
   const int max_blocks_wide = max_block_wide(xd, plane_bsize, 0);
   if (blk_row >= max_blocks_high || blk_col >= max_blocks_wide) return;
 
-  const int bw = block_size_wide[plane_bsize] >> tx_size_wide_log2[0];
+  const int bw = mi_size_wide[plane_bsize];
   MB_MODE_INFO *const mbmi = xd->mi[0];
   const int ctx = txfm_partition_context(tx_above + blk_col, tx_left + blk_row,
                                          mbmi->sb_type, tx_size);
@@ -6193,7 +6188,7 @@ static AOM_INLINE void tx_block_yrd(
     rd_stats->zero_rate = zero_blk_rate;
     tx_type_rd(cpi, x, tx_size, blk_row, blk_col, 0, block, plane_bsize,
                &txb_ctx, rd_stats, ftxs_mode, ref_best_rd, NULL);
-    const int mi_width = block_size_wide[plane_bsize] >> tx_size_wide_log2[0];
+    const int mi_width = mi_size_wide[plane_bsize];
     if (RDCOST(x->rdmult, rd_stats->rate, rd_stats->dist) >=
             RDCOST(x->rdmult, zero_blk_rate, rd_stats->sse) ||
         rd_stats->skip == 1) {

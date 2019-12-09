@@ -1401,12 +1401,10 @@ static AOM_INLINE void write_inter_txb_coeff(
   const int bkh = tx_size_high_unit[max_tx_size];
   const BLOCK_SIZE max_unit_bsize =
       get_plane_block_size(BLOCK_64X64, ss_x, ss_y);
-  const int num_4x4_w = block_size_wide[plane_bsize] >> tx_size_wide_log2[0];
-  const int num_4x4_h = block_size_high[plane_bsize] >> tx_size_high_log2[0];
-  const int mu_blocks_wide =
-      block_size_wide[max_unit_bsize] >> tx_size_wide_log2[0];
-  const int mu_blocks_high =
-      block_size_high[max_unit_bsize] >> tx_size_high_log2[0];
+  const int num_4x4_w = mi_size_wide[plane_bsize];
+  const int num_4x4_h = mi_size_high[plane_bsize];
+  const int mu_blocks_wide = mi_size_wide[max_unit_bsize];
+  const int mu_blocks_high = mi_size_high[max_unit_bsize];
   const int unit_height = AOMMIN(mu_blocks_high + (row >> ss_y), num_4x4_h);
   const int unit_width = AOMMIN(mu_blocks_wide + (col >> ss_x), num_4x4_w);
   for (int blk_row = row >> ss_y; blk_row < unit_height; blk_row += bkh) {
@@ -1438,8 +1436,8 @@ static AOM_INLINE void write_tokens_b(AV1_COMP *cpi, aom_writer *w,
     int block[MAX_MB_PLANE] = { 0 };
     assert(bsize == get_plane_block_size(bsize, xd->plane[0].subsampling_x,
                                          xd->plane[0].subsampling_y));
-    const int num_4x4_w = block_size_wide[bsize] >> tx_size_wide_log2[0];
-    const int num_4x4_h = block_size_high[bsize] >> tx_size_high_log2[0];
+    const int num_4x4_w = mi_size_wide[bsize];
+    const int num_4x4_h = mi_size_high[bsize];
     TOKEN_STATS token_stats;
     init_token_stats(&token_stats);
 
@@ -1447,11 +1445,8 @@ static AOM_INLINE void write_tokens_b(AV1_COMP *cpi, aom_writer *w,
     assert(max_unit_bsize == get_plane_block_size(BLOCK_64X64,
                                                   xd->plane[0].subsampling_x,
                                                   xd->plane[0].subsampling_y));
-    int mu_blocks_wide =
-        block_size_wide[max_unit_bsize] >> tx_size_wide_log2[0];
-    int mu_blocks_high =
-        block_size_high[max_unit_bsize] >> tx_size_high_log2[0];
-
+    int mu_blocks_wide = mi_size_wide[max_unit_bsize];
+    int mu_blocks_high = mi_size_high[max_unit_bsize];
     mu_blocks_wide = AOMMIN(num_4x4_w, mu_blocks_wide);
     mu_blocks_high = AOMMIN(num_4x4_h, mu_blocks_high);
 
@@ -1533,8 +1528,8 @@ static AOM_INLINE void write_modes_b(AV1_COMP *cpi, const TileInfo *const tile,
       const TX_SIZE max_tx_size = get_vartx_max_txsize(xd, bsize, 0);
       const int txbh = tx_size_high_unit[max_tx_size];
       const int txbw = tx_size_wide_unit[max_tx_size];
-      const int width = block_size_wide[bsize] >> tx_size_wide_log2[0];
-      const int height = block_size_high[bsize] >> tx_size_high_log2[0];
+      const int width = mi_size_wide[bsize];
+      const int height = mi_size_high[bsize];
       for (int idy = 0; idy < height; idy += txbh) {
         for (int idx = 0; idx < width; idx += txbw) {
           write_tx_size_vartx(xd, mbmi, max_tx_size, 0, idy, idx, w);

@@ -213,22 +213,20 @@ void av1_tokenize_sb_vartx(const AV1_COMP *cpi, ThreadData *td,
     }
     const BLOCK_SIZE plane_bsize = get_plane_block_size(bsize, ss_x, ss_y);
     assert(plane_bsize < BLOCK_SIZES_ALL);
-    const int mi_width = block_size_wide[plane_bsize] >> tx_size_wide_log2[0];
-    const int mi_height = block_size_high[plane_bsize] >> tx_size_high_log2[0];
+    const int mi_width = mi_size_wide[plane_bsize];
+    const int mi_height = mi_size_high[plane_bsize];
     const TX_SIZE max_tx_size = get_vartx_max_txsize(xd, plane_bsize, plane);
     const BLOCK_SIZE txb_size = txsize_to_bsize[max_tx_size];
-    const int bw = block_size_wide[txb_size] >> tx_size_wide_log2[0];
-    const int bh = block_size_high[txb_size] >> tx_size_high_log2[0];
+    const int bw = mi_size_wide[txb_size];
+    const int bh = mi_size_high[txb_size];
     int block = 0;
     const int step =
         tx_size_wide_unit[max_tx_size] * tx_size_high_unit[max_tx_size];
 
     const BLOCK_SIZE max_unit_bsize =
         get_plane_block_size(BLOCK_64X64, ss_x, ss_y);
-    int mu_blocks_wide =
-        block_size_wide[max_unit_bsize] >> tx_size_wide_log2[0];
-    int mu_blocks_high =
-        block_size_high[max_unit_bsize] >> tx_size_high_log2[0];
+    int mu_blocks_wide = mi_size_wide[max_unit_bsize];
+    int mu_blocks_high = mi_size_high[max_unit_bsize];
 
     mu_blocks_wide = AOMMIN(mi_width, mu_blocks_wide);
     mu_blocks_high = AOMMIN(mi_height, mu_blocks_high);

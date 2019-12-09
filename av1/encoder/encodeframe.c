@@ -1473,10 +1473,8 @@ static AOM_INLINE void restore_context(MACROBLOCK *x,
                                        const int num_planes) {
   MACROBLOCKD *xd = &x->e_mbd;
   int p;
-  const int num_4x4_blocks_wide =
-      block_size_wide[bsize] >> tx_size_wide_log2[0];
-  const int num_4x4_blocks_high =
-      block_size_high[bsize] >> tx_size_high_log2[0];
+  const int num_4x4_blocks_wide = mi_size_wide[bsize];
+  const int num_4x4_blocks_high = mi_size_high[bsize];
   int mi_width = mi_size_wide[bsize];
   int mi_height = mi_size_high[bsize];
   for (p = 0; p < num_planes; p++) {
@@ -1509,10 +1507,6 @@ static AOM_INLINE void save_context(const MACROBLOCK *x,
                                     const int num_planes) {
   const MACROBLOCKD *xd = &x->e_mbd;
   int p;
-  const int num_4x4_blocks_wide =
-      block_size_wide[bsize] >> tx_size_wide_log2[0];
-  const int num_4x4_blocks_high =
-      block_size_high[bsize] >> tx_size_high_log2[0];
   int mi_width = mi_size_wide[bsize];
   int mi_height = mi_size_high[bsize];
 
@@ -1520,14 +1514,12 @@ static AOM_INLINE void save_context(const MACROBLOCK *x,
   for (p = 0; p < num_planes; ++p) {
     int tx_col = mi_col;
     int tx_row = mi_row & MAX_MIB_MASK;
-    memcpy(ctx->a + num_4x4_blocks_wide * p,
+    memcpy(ctx->a + mi_width * p,
            xd->above_context[p] + (tx_col >> xd->plane[p].subsampling_x),
-           (sizeof(ENTROPY_CONTEXT) * num_4x4_blocks_wide) >>
-               xd->plane[p].subsampling_x);
-    memcpy(ctx->l + num_4x4_blocks_high * p,
+           (sizeof(ENTROPY_CONTEXT) * mi_width) >> xd->plane[p].subsampling_x);
+    memcpy(ctx->l + mi_height * p,
            xd->left_context[p] + (tx_row >> xd->plane[p].subsampling_y),
-           (sizeof(ENTROPY_CONTEXT) * num_4x4_blocks_high) >>
-               xd->plane[p].subsampling_y);
+           (sizeof(ENTROPY_CONTEXT) * mi_height) >> xd->plane[p].subsampling_y);
   }
   memcpy(ctx->sa, xd->above_seg_context + mi_col,
          sizeof(*xd->above_seg_context) * mi_width);
@@ -5597,8 +5589,8 @@ static AOM_INLINE void tx_partition_count_update(
     const AV1_COMMON *const cm, MACROBLOCK *x, BLOCK_SIZE plane_bsize,
     int mi_row, int mi_col, FRAME_COUNTS *td_counts, uint8_t allow_update_cdf) {
   MACROBLOCKD *xd = &x->e_mbd;
-  const int mi_width = block_size_wide[plane_bsize] >> tx_size_wide_log2[0];
-  const int mi_height = block_size_high[plane_bsize] >> tx_size_high_log2[0];
+  const int mi_width = mi_size_wide[plane_bsize];
+  const int mi_height = mi_size_high[plane_bsize];
   const TX_SIZE max_tx_size = get_vartx_max_txsize(xd, plane_bsize, 0);
   const int bh = tx_size_high_unit[max_tx_size];
   const int bw = tx_size_wide_unit[max_tx_size];
@@ -5656,20 +5648,21 @@ static AOM_INLINE void tx_partition_set_contexts(const AV1_COMMON *const cm,
                                                  MACROBLOCKD *xd,
                                                  BLOCK_SIZE plane_bsize,
                                                  int mi_row, int mi_col) {
-  const int mi_width = block_size_wide[plane_bsize] >> tx_size_wide_log2[0];
-  const int mi_height = block_size_high[plane_bsize] >> tx_size_high_log2[0];
+  const int mi_width = mi_size_wide[plane_bsize];
+  const int mi_height = mi_size_high[plane_bsize];
   const TX_SIZE max_tx_size = get_vartx_max_txsize(xd, plane_bsize, 0);
   const int bh = tx_size_high_unit[max_tx_size];
   const int bw = tx_size_wide_unit[max_tx_size];
-  int idx, idy;
 
   xd->above_txfm_context = cm->above_txfm_context[xd->tile.tile_row] + mi_col;
   xd->left_txfm_context =
       xd->left_txfm_context_buffer + (mi_row & MAX_MIB_MASK);
 
-  for (idy = 0; idy < mi_height; idy += bh)
-    for (idx = 0; idx < mi_width; idx += bw)
+  for (int idy = 0; idy < mi_height; idy += bh) {
+    for (int idx = 0; idx < mi_width; idx += bw) {
       set_txfm_context(xd, max_tx_size, idy, idx);
+    }
+  }
 }
 
 static AOM_INLINE void encode_superblock(const AV1_COMP *const cpi,

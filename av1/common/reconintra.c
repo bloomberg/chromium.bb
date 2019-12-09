@@ -198,7 +198,7 @@ static int has_top_right(const AV1_COMMON *cm, BLOCK_SIZE bsize, int mi_row,
                          int col_off, int ss_x, int ss_y) {
   if (!top_available || !right_available) return 0;
 
-  const int bw_unit = block_size_wide[bsize] >> tx_size_wide_log2[0];
+  const int bw_unit = mi_size_wide[bsize];
   const int plane_bw_unit = AOMMAX(bw_unit >> ss_x, 1);
   const int top_right_count_unit = tx_size_wide_unit[txsz];
 
@@ -405,7 +405,7 @@ static int has_bottom_left(const AV1_COMMON *cm, BLOCK_SIZE bsize, int mi_row,
     // Bottom-left pixels are in the bottom-left block, which is not available.
     return 0;
   } else {
-    const int bh_unit = block_size_high[bsize] >> tx_size_high_log2[0];
+    const int bh_unit = mi_size_high[bsize];
     const int plane_bh_unit = AOMMAX(bh_unit >> ss_y, 1);
     const int bottom_left_count_unit = tx_size_high_unit[txsz];
 
@@ -422,10 +422,9 @@ static int has_bottom_left(const AV1_COMMON *cm, BLOCK_SIZE bsize, int mi_row,
     // and/or bottom-left superblocks. But only the left superblock is
     // available, so check if all required pixels fall in that superblock.
     if (blk_col_in_sb == 0) {
-      const int blk_start_row_off = blk_row_in_sb
-                                        << (bh_in_mi_log2 + MI_SIZE_LOG2 -
-                                            tx_size_wide_log2[0]) >>
-                                    ss_y;
+      const int blk_start_row_off =
+          blk_row_in_sb << (bh_in_mi_log2 + MI_SIZE_LOG2 - MI_SIZE_LOG2) >>
+          ss_y;
       const int row_off_in_sb = blk_start_row_off + row_off;
       const int sb_height_unit = sb_mi_size >> ss_y;
       return row_off_in_sb + bottom_left_count_unit < sb_height_unit;
@@ -1565,8 +1564,8 @@ void av1_predict_intra_block(
   const MB_MODE_INFO *const mbmi = xd->mi[0];
   const int txwpx = tx_size_wide[tx_size];
   const int txhpx = tx_size_high[tx_size];
-  const int x = col_off << tx_size_wide_log2[0];
-  const int y = row_off << tx_size_high_log2[0];
+  const int x = col_off << MI_SIZE_LOG2;
+  const int y = row_off << MI_SIZE_LOG2;
 
   if (use_palette) {
     int r, c;
@@ -1662,8 +1661,7 @@ void av1_predict_intra_block_facade(const AV1_COMMON *cm, MACROBLOCKD *xd,
   const MB_MODE_INFO *const mbmi = xd->mi[0];
   struct macroblockd_plane *const pd = &xd->plane[plane];
   const int dst_stride = pd->dst.stride;
-  uint8_t *dst =
-      &pd->dst.buf[(blk_row * dst_stride + blk_col) << tx_size_wide_log2[0]];
+  uint8_t *dst = &pd->dst.buf[(blk_row * dst_stride + blk_col) << MI_SIZE_LOG2];
   const PREDICTION_MODE mode =
       (plane == AOM_PLANE_Y) ? mbmi->mode : get_uv_mode(mbmi->uv_mode);
   const int use_palette = mbmi->palette_mode_info.palette_size[plane != 0] > 0;

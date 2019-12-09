@@ -62,12 +62,10 @@ void av1_subtract_txb(MACROBLOCK *x, int plane, BLOCK_SIZE plane_bsize,
   const int dst_stride = pd->dst.stride;
   const int tx1d_width = tx_size_wide[tx_size];
   const int tx1d_height = tx_size_high[tx_size];
-  uint8_t *dst =
-      &pd->dst.buf[(blk_row * dst_stride + blk_col) << tx_size_wide_log2[0]];
-  uint8_t *src =
-      &p->src.buf[(blk_row * src_stride + blk_col) << tx_size_wide_log2[0]];
+  uint8_t *dst = &pd->dst.buf[(blk_row * dst_stride + blk_col) << MI_SIZE_LOG2];
+  uint8_t *src = &p->src.buf[(blk_row * src_stride + blk_col) << MI_SIZE_LOG2];
   int16_t *src_diff =
-      &p->src_diff[(blk_row * diff_stride + blk_col) << tx_size_wide_log2[0]];
+      &p->src_diff[(blk_row * diff_stride + blk_col) << MI_SIZE_LOG2];
   av1_subtract_block(xd, tx1d_height, tx1d_width, src_diff, diff_stride, src,
                      src_stride, dst, dst_stride);
 }
@@ -139,7 +137,7 @@ void av1_xform_quant(MACROBLOCK *x, int plane, int block, int blk_row,
   const int diff_stride = block_size_wide[plane_bsize];
 
   const int src_offset = (blk_row * diff_stride + blk_col);
-  const int16_t *src_diff = &p->src_diff[src_offset << tx_size_wide_log2[0]];
+  const int16_t *src_diff = &p->src_diff[src_offset << MI_SIZE_LOG2];
 
   av1_fwd_txfm(src_diff, coeff, diff_stride, txfm_param);
 
@@ -236,9 +234,8 @@ static void encode_block(int plane, int block, int blk_row, int blk_col,
   ENTROPY_CONTEXT *a, *l;
   int dummy_rate_cost = 0;
 
-  const int bw = block_size_wide[plane_bsize] >> tx_size_wide_log2[0];
-  dst = &pd->dst
-             .buf[(blk_row * pd->dst.stride + blk_col) << tx_size_wide_log2[0]];
+  const int bw = mi_size_wide[plane_bsize];
+  dst = &pd->dst.buf[(blk_row * pd->dst.stride + blk_col) << MI_SIZE_LOG2];
 
   a = &args->ta[blk_col];
   l = &args->tl[blk_row];
@@ -393,8 +390,8 @@ void av1_foreach_transformed_block_in_plane(
   const int max_blocks_high = max_block_high(xd, plane_bsize, plane);
   const BLOCK_SIZE max_unit_bsize =
       get_plane_block_size(BLOCK_64X64, pd->subsampling_x, pd->subsampling_y);
-  int mu_blocks_wide = block_size_wide[max_unit_bsize] >> tx_size_wide_log2[0];
-  int mu_blocks_high = block_size_high[max_unit_bsize] >> tx_size_high_log2[0];
+  int mu_blocks_wide = mi_size_wide[max_unit_bsize];
+  int mu_blocks_high = mi_size_high[max_unit_bsize];
   mu_blocks_wide = AOMMIN(max_blocks_wide, mu_blocks_wide);
   mu_blocks_high = AOMMIN(max_blocks_high, mu_blocks_high);
 
@@ -448,8 +445,7 @@ static void encode_block_pass1(int plane, int block, int blk_row, int blk_col,
   tran_low_t *const dqcoeff = pd->dqcoeff + BLOCK_OFFSET(block);
 
   uint8_t *dst;
-  dst = &pd->dst
-             .buf[(blk_row * pd->dst.stride + blk_col) << tx_size_wide_log2[0]];
+  dst = &pd->dst.buf[(blk_row * pd->dst.stride + blk_col) << MI_SIZE_LOG2];
 
   TxfmParam txfm_param;
   QUANT_PARAM quant_param;
@@ -508,12 +504,12 @@ void av1_encode_sb(const struct AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
     const BLOCK_SIZE plane_bsize =
         get_plane_block_size(bsize, subsampling_x, subsampling_y);
     assert(plane_bsize < BLOCK_SIZES_ALL);
-    const int mi_width = block_size_wide[plane_bsize] >> tx_size_wide_log2[0];
-    const int mi_height = block_size_high[plane_bsize] >> tx_size_high_log2[0];
+    const int mi_width = mi_size_wide[plane_bsize];
+    const int mi_height = mi_size_high[plane_bsize];
     const TX_SIZE max_tx_size = get_vartx_max_txsize(xd, plane_bsize, plane);
     const BLOCK_SIZE txb_size = txsize_to_bsize[max_tx_size];
-    const int bw = block_size_wide[txb_size] >> tx_size_wide_log2[0];
-    const int bh = block_size_high[txb_size] >> tx_size_high_log2[0];
+    const int bw = mi_size_wide[txb_size];
+    const int bh = mi_size_high[txb_size];
     int block = 0;
     const int step =
         tx_size_wide_unit[max_tx_size] * tx_size_high_unit[max_tx_size];
@@ -523,10 +519,8 @@ void av1_encode_sb(const struct AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
     arg.tl = ctx.tl[plane];
     const BLOCK_SIZE max_unit_bsize =
         get_plane_block_size(BLOCK_64X64, subsampling_x, subsampling_y);
-    int mu_blocks_wide =
-        block_size_wide[max_unit_bsize] >> tx_size_wide_log2[0];
-    int mu_blocks_high =
-        block_size_high[max_unit_bsize] >> tx_size_high_log2[0];
+    int mu_blocks_wide = mi_size_wide[max_unit_bsize];
+    int mu_blocks_high = mi_size_high[max_unit_bsize];
     mu_blocks_wide = AOMMIN(mi_width, mu_blocks_wide);
     mu_blocks_high = AOMMIN(mi_height, mu_blocks_high);
 
@@ -574,14 +568,13 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
   PLANE_TYPE plane_type = get_plane_type(plane);
   uint16_t *eob = &p->eobs[block];
   const int dst_stride = pd->dst.stride;
-  uint8_t *dst =
-      &pd->dst.buf[(blk_row * dst_stride + blk_col) << tx_size_wide_log2[0]];
+  uint8_t *dst = &pd->dst.buf[(blk_row * dst_stride + blk_col) << MI_SIZE_LOG2];
   int dummy_rate_cost = 0;
 
   av1_predict_intra_block_facade(cm, xd, plane, blk_col, blk_row, tx_size);
 
   TX_TYPE tx_type = DCT_DCT;
-  const int bw = block_size_wide[plane_bsize] >> tx_size_wide_log2[0];
+  const int bw = mi_size_wide[plane_bsize];
   if (plane == 0 && is_blk_skip(x, plane, blk_row * bw + blk_col)) {
     *eob = 0;
     p->txb_entropy_ctx[block] = 0;

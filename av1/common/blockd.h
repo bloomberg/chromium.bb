@@ -361,9 +361,9 @@ static INLINE void mi_to_pixel_loc(int *pixel_c, int *pixel_r, int mi_col,
                                    int mi_row, int tx_blk_col, int tx_blk_row,
                                    int subsampling_x, int subsampling_y) {
   *pixel_c = ((mi_col >> subsampling_x) << MI_SIZE_LOG2) +
-             (tx_blk_col << tx_size_wide_log2[0]);
+             (tx_blk_col << MI_SIZE_LOG2);
   *pixel_r = ((mi_row >> subsampling_y) << MI_SIZE_LOG2) +
-             (tx_blk_row << tx_size_high_log2[0]);
+             (tx_blk_row << MI_SIZE_LOG2);
 }
 #endif
 
@@ -414,8 +414,7 @@ typedef struct macroblockd_plane {
   qm_val_t *seg_qmatrix[MAX_SEGMENTS][TX_SIZES_ALL];
 } MACROBLOCKD_PLANE;
 
-#define BLOCK_OFFSET(i) \
-  ((i) * (1 << (tx_size_wide_log2[0] + tx_size_high_log2[0])))
+#define BLOCK_OFFSET(i) ((i) << 4)
 
 typedef struct {
   DECLARE_ALIGNED(16, InterpKernel, vfilter);

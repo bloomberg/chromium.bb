@@ -1047,32 +1047,34 @@ static INLINE int max_block_wide(const MACROBLOCKD *xd, BLOCK_SIZE bsize,
                                  int plane) {
   assert(bsize < BLOCK_SIZES_ALL);
   int max_blocks_wide = block_size_wide[bsize];
-  const struct macroblockd_plane *const pd = &xd->plane[plane];
 
-  if (xd->mb_to_right_edge < 0)
+  if (xd->mb_to_right_edge < 0) {
+    const struct macroblockd_plane *const pd = &xd->plane[plane];
     max_blocks_wide += xd->mb_to_right_edge >> (3 + pd->subsampling_x);
+  }
 
   // Scale the width in the transform block unit.
-  return max_blocks_wide >> tx_size_wide_log2[0];
+  return max_blocks_wide >> MI_SIZE_LOG2;
 }
 
 static INLINE int max_block_high(const MACROBLOCKD *xd, BLOCK_SIZE bsize,
                                  int plane) {
   int max_blocks_high = block_size_high[bsize];
-  const struct macroblockd_plane *const pd = &xd->plane[plane];
 
-  if (xd->mb_to_bottom_edge < 0)
+  if (xd->mb_to_bottom_edge < 0) {
+    const struct macroblockd_plane *const pd = &xd->plane[plane];
     max_blocks_high += xd->mb_to_bottom_edge >> (3 + pd->subsampling_y);
+  }
 
   // Scale the height in the transform block unit.
-  return max_blocks_high >> tx_size_high_log2[0];
+  return max_blocks_high >> MI_SIZE_LOG2;
 }
 
 static INLINE int max_intra_block_width(const MACROBLOCKD *xd,
                                         BLOCK_SIZE plane_bsize, int plane,
                                         TX_SIZE tx_size) {
   const int max_blocks_wide = max_block_wide(xd, plane_bsize, plane)
-                              << tx_size_wide_log2[0];
+                              << MI_SIZE_LOG2;
   return ALIGN_POWER_OF_TWO(max_blocks_wide, tx_size_wide_log2[tx_size]);
 }
 
@@ -1080,7 +1082,7 @@ static INLINE int max_intra_block_height(const MACROBLOCKD *xd,
                                          BLOCK_SIZE plane_bsize, int plane,
                                          TX_SIZE tx_size) {
   const int max_blocks_high = max_block_high(xd, plane_bsize, plane)
-                              << tx_size_high_log2[0];
+                              << MI_SIZE_LOG2;
   return ALIGN_POWER_OF_TWO(max_blocks_high, tx_size_high_log2[tx_size]);
 }
 

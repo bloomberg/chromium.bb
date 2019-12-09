@@ -228,8 +228,7 @@ static AOM_INLINE void predict_and_reconstruct_intra_block(
       // tx_type was read out in av1_read_coeffs_txb.
       const TX_TYPE tx_type = av1_get_tx_type(xd, plane_type, row, col, tx_size,
                                               cm->reduced_tx_set_used);
-      uint8_t *dst =
-          &pd->dst.buf[(row * pd->dst.stride + col) << tx_size_wide_log2[0]];
+      uint8_t *dst = &pd->dst.buf[(row * pd->dst.stride + col) << MI_SIZE_LOG2];
       inverse_transform_block(xd, plane, tx_type, tx_size, dst, pd->dst.stride,
                               cm->reduced_tx_set_used);
     }
@@ -252,8 +251,7 @@ static AOM_INLINE void inverse_transform_inter_block(
                                           tx_size, cm->reduced_tx_set_used);
 
   uint8_t *dst =
-      &pd->dst
-           .buf[(blk_row * pd->dst.stride + blk_col) << tx_size_wide_log2[0]];
+      &pd->dst.buf[(blk_row * pd->dst.stride + blk_col) << MI_SIZE_LOG2];
   inverse_transform_block(xd, plane, tx_type, tx_size, dst, pd->dst.stride,
                           cm->reduced_tx_set_used);
 #if CONFIG_MISMATCH_DEBUG
@@ -1171,10 +1169,8 @@ static AOM_INLINE void decode_token_recon_block(AV1Decoder *const pbi,
     const int max_blocks_wide = max_block_wide(xd, bsize, 0);
     const int max_blocks_high = max_block_high(xd, bsize, 0);
     const BLOCK_SIZE max_unit_bsize = BLOCK_64X64;
-    int mu_blocks_wide =
-        block_size_wide[max_unit_bsize] >> tx_size_wide_log2[0];
-    int mu_blocks_high =
-        block_size_high[max_unit_bsize] >> tx_size_high_log2[0];
+    int mu_blocks_wide = mi_size_wide[max_unit_bsize];
+    int mu_blocks_high = mi_size_high[max_unit_bsize];
     mu_blocks_wide = AOMMIN(max_blocks_wide, mu_blocks_wide);
     mu_blocks_high = AOMMIN(max_blocks_high, mu_blocks_high);
 
@@ -1223,10 +1219,8 @@ static AOM_INLINE void decode_token_recon_block(AV1Decoder *const pbi,
       assert(max_unit_bsize ==
              get_plane_block_size(BLOCK_64X64, xd->plane[0].subsampling_x,
                                   xd->plane[0].subsampling_y));
-      int mu_blocks_wide =
-          block_size_wide[max_unit_bsize] >> tx_size_wide_log2[0];
-      int mu_blocks_high =
-          block_size_high[max_unit_bsize] >> tx_size_high_log2[0];
+      int mu_blocks_wide = mi_size_wide[max_unit_bsize];
+      int mu_blocks_high = mi_size_high[max_unit_bsize];
 
       mu_blocks_wide = AOMMIN(max_blocks_wide, mu_blocks_wide);
       mu_blocks_high = AOMMIN(max_blocks_high, mu_blocks_high);
@@ -1435,8 +1429,8 @@ static AOM_INLINE void parse_decode_block(AV1Decoder *const pbi,
     const TX_SIZE max_tx_size = max_txsize_rect_lookup[bsize];
     const int bh = tx_size_high_unit[max_tx_size];
     const int bw = tx_size_wide_unit[max_tx_size];
-    const int width = block_size_wide[bsize] >> tx_size_wide_log2[0];
-    const int height = block_size_high[bsize] >> tx_size_high_log2[0];
+    const int width = mi_size_wide[bsize];
+    const int height = mi_size_high[bsize];
 
     for (int idy = 0; idy < height; idy += bh)
       for (int idx = 0; idx < width; idx += bw)
