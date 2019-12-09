@@ -17,6 +17,13 @@ persistent=yes
 # List of plugins (as comma separated values of python modules names) to load,
 # usually to register additional checkers.
 load-plugins=
+    pylint_quotes
+
+
+# Configure quote preferences.
+string-quote = single-avoid-escape
+triple-quote = double
+docstring-quote = double
 
 
 [MESSAGES CONTROL]
@@ -103,6 +110,9 @@ disable=
     eval-used,
     function-redefined,
     import-error,
+    invalid-docstring-quote,
+    invalid-string-quote,
+    invalid-triple-quote,
     locally-enabled,
     misplaced-comparison-constant,
     misplaced-bare-raise,
