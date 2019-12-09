@@ -1921,7 +1921,7 @@ void av1_get_one_pass_rt_params(AV1_COMP *cpi,
   int target;
   // Turn this on to explicitly set the reference structure rather than
   // relying on internal/default structure.
-  const int set_reference_structure = 0;
+  const int set_reference_structure = 1;
   if (cpi->use_svc) {
     av1_update_temporal_layer_framerate(cpi);
     av1_restore_layer_context(cpi);
@@ -1996,8 +1996,7 @@ void av1_get_one_pass_rt_params(AV1_COMP *cpi,
   }
   av1_rc_set_frame_target(cpi, target, cm->width, cm->height);
   rc->base_frame_target = target;
-  // For 1 layer nonrd allow option to set reference structure.
-  if (set_reference_structure && cpi->sf.use_nonrd_pick_mode &&
+  if (set_reference_structure && cpi->oxcf.speed >= 6 &&
       cm->number_spatial_layers == 1 && cm->number_temporal_layers == 1)
     set_reference_structure_one_pass_rt(cpi);
 }
