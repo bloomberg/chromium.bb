@@ -11132,6 +11132,14 @@ Called by update_net_error_codes.py.-->
   <int value="2" label="Host prefix"/>
 </enum>
 
+<enum name="CookieRequestScheme">
+  <int value="0" label="Unset Cookie Scheme"/>
+  <int value="1" label="Nonsecurely Set Cookie Nonsecure Request"/>
+  <int value="2" label="Securely Set Cookie Secure Request"/>
+  <int value="3" label="Nonsecurely Set Cookie Secure Request"/>
+  <int value="4" label="Securely Set Cookie Nonsecure Request"/>
+</enum>
+
 <enum name="CookieSameSiteString">
   <int value="0" label="No SameSite attribute is present."/>
   <int value="1" label="SameSite attribute is specified but has no value."/>
