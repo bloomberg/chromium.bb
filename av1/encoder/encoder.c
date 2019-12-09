@@ -934,21 +934,11 @@ static void update_reference_segmentation_map(AV1_COMP *cpi) {
   }
 }
 
-static void alloc_raw_frame_buffers(AV1_COMP *cpi) {
+static void alloc_altref_frame_buffer(AV1_COMP *cpi) {
   AV1_COMMON *cm = &cpi->common;
   const SequenceHeader *const seq_params = &cm->seq_params;
   const AV1EncoderConfig *oxcf = &cpi->oxcf;
   int is_scale = (oxcf->resize_mode || oxcf->superres_mode);
-
-  if (!cpi->lookahead) {
-    cpi->lookahead = av1_lookahead_init(
-        oxcf->width, oxcf->height, seq_params->subsampling_x,
-        seq_params->subsampling_y, seq_params->use_highbitdepth,
-        oxcf->lag_in_frames, oxcf->border_in_pixels, is_scale);
-  }
-  if (!cpi->lookahead)
-    aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
-                       "Failed to allocate lag buffers");
 
   // TODO(agrange) Check if ARF is enabled and skip allocation if not.
   // (yunqing)Here use same border as lookahead buffers.
@@ -4107,8 +4097,8 @@ static void init_ref_frame_bufs(AV1_COMP *cpi) {
   }
 }
 
-static void check_initial_width(AV1_COMP *cpi, int use_highbitdepth,
-                                int subsampling_x, int subsampling_y) {
+void av1_check_initial_width(AV1_COMP *cpi, int use_highbitdepth,
+                             int subsampling_x, int subsampling_y) {
   AV1_COMMON *const cm = &cpi->common;
   SequenceHeader *const seq_params = &cm->seq_params;
 
@@ -4119,7 +4109,7 @@ static void check_initial_width(AV1_COMP *cpi, int use_highbitdepth,
     seq_params->subsampling_y = subsampling_y;
     seq_params->use_highbitdepth = use_highbitdepth;
 
-    alloc_raw_frame_buffers(cpi);
+    alloc_altref_frame_buffer(cpi);
     init_ref_frame_bufs(cpi);
     alloc_util_frame_buffers(cpi);
 
@@ -4135,9 +4125,9 @@ static void check_initial_width(AV1_COMP *cpi, int use_highbitdepth,
 int av1_set_size_literal(AV1_COMP *cpi, int width, int height) {
   AV1_COMMON *cm = &cpi->common;
   const int num_planes = av1_num_planes(cm);
-  check_initial_width(cpi, cm->seq_params.use_highbitdepth,
-                      cm->seq_params.subsampling_x,
-                      cm->seq_params.subsampling_y);
+  av1_check_initial_width(cpi, cm->seq_params.use_highbitdepth,
+                          cm->seq_params.subsampling_x,
+                          cm->seq_params.subsampling_y);
 
   if (width <= 0 || height <= 0) return 1;
 
@@ -6251,8 +6241,6 @@ int av1_receive_raw_frame(AV1_COMP *cpi, aom_enc_frame_flags_t frame_flags,
   const int subsampling_x = sd->subsampling_x;
   const int subsampling_y = sd->subsampling_y;
   const int use_highbitdepth = (sd->flags & YV12_FLAG_HIGHBITDEPTH) != 0;
-
-  check_initial_width(cpi, use_highbitdepth, subsampling_x, subsampling_y);
 
 #if CONFIG_INTERNAL_STATS
   struct aom_usec_timer timer;

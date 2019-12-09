@@ -1896,7 +1896,25 @@ static aom_codec_err_t encoder_encode(aom_codec_alg_priv_t *ctx,
 
     if (img != NULL) {
       YV12_BUFFER_CONFIG sd;
+      int use_highbitdepth, subsampling_x, subsampling_y;
       res = image2yuvconfig(img, &sd);
+      use_highbitdepth = (sd.flags & YV12_FLAG_HIGHBITDEPTH) != 0;
+      subsampling_x = sd.subsampling_x;
+      subsampling_y = sd.subsampling_y;
+
+      if (!cpi->lookahead) {
+        cpi->lookahead = av1_lookahead_init(
+            cpi->oxcf.width, cpi->oxcf.height, subsampling_x, subsampling_y,
+            use_highbitdepth, cpi->oxcf.lag_in_frames,
+            cpi->oxcf.border_in_pixels,
+            (cpi->oxcf.resize_mode || cpi->oxcf.superres_mode));
+      }
+      if (!cpi->lookahead)
+        aom_internal_error(&cpi->common.error, AOM_CODEC_MEM_ERROR,
+                           "Failed to allocate lag buffers");
+
+      av1_check_initial_width(cpi, use_highbitdepth, subsampling_x,
+                              subsampling_y);
 
       // Store the original flags in to the frame buffer. Will extract the
       // key frame flag when we actually encode this frame.

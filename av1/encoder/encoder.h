@@ -1166,6 +1166,9 @@ void av1_remove_compressor(AV1_COMP *cpi);
 
 void av1_change_config(AV1_COMP *cpi, const AV1EncoderConfig *oxcf);
 
+void av1_check_initial_width(AV1_COMP *cpi, int use_highbitdepth,
+                             int subsampling_x, int subsampling_y);
+
 // receive a frames worth of data. caller can assume that a copy of this
 // frame is made and not just a copy of the pointer..
 int av1_receive_raw_frame(AV1_COMP *cpi, aom_enc_frame_flags_t frame_flags,
