@@ -444,22 +444,20 @@ class TestCalculateRootfsHash(cros_test_lib.RunCommandTempDirTestCase):
         rootfs_hash.calculated_kernel_cmdline.Format())
 
 
-class TestClearResignFlag(cros_test_lib.RunCommandTempDirTestCase):
+class TestClearResignFlag(cros_test_lib.MockTempDirTestCase):
   """Test ClearResignFlag function and its supporting functions."""
 
   def setUp(self):
-    self.rc.SetDefaultCmdResult()
     self.image = image_lib_unittest.LoopbackPartitionsMock(
         'outfile', self.tempdir)
 
   def testUnlinksFile(self):
     self.PatchObject(os.path, 'exists', return_value=True)
+    unlink_mock = self.PatchObject(osutils, 'SafeUnlink')
     imagefile.ClearResignFlag(self.image)
-    self.assertEqual(1, self.rc.call_count)
-    self.rc.assertCommandCalled(
-        ['sudo', '--', 'rm', '--',
-         '%s/dir-3/root/.need_to_be_signed' % self.image.destination],
-        stderr=True, print_cmd=False)
+    unlink_mock.assert_called_once_with(
+        os.path.join(self.image.destination, 'dir-3/root/.need_to_be_signed'),
+        sudo=True)
 
 
 class TestUpdateRootfsHash(cros_test_lib.RunCommandTempDirTestCase):

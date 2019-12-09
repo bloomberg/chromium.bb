@@ -328,23 +328,19 @@ def SafeUnlink(path, sudo=False):
   Returns:
     True if the file existed and was removed, False if it didn't exist.
   """
-  if sudo:
-    try:
-      cros_build_lib.sudo_run(
-          ['rm', '--', path], print_cmd=False, stderr=True)
-      return True
-    except cros_build_lib.RunCommandError:
-      if os.path.exists(path):
-        # Technically racey, but oh well; very hard to actually hit...
-        raise
-      return False
   try:
     os.unlink(path)
     return True
   except EnvironmentError as e:
-    if e.errno != errno.ENOENT:
+    if e.errno == errno.ENOENT:
+      return False
+
+    if not sudo:
       raise
-  return False
+
+  # If we're still here, we're falling back to sudo.
+  cros_build_lib.sudo_run(['rm', '--', path], print_cmd=False, stderr=True)
+  return True
 
 
 def SafeMakedirs(path, mode=0o775, sudo=False, user='root'):
@@ -502,23 +498,27 @@ def RmDir(path, ignore_missing=False, sudo=False):
     ignore_missing: Do not error when path does not exist.
     sudo: Remove directories as root.
   """
-  if sudo:
-    try:
-      cros_build_lib.sudo_run(
-          ['rm', '-r%s' % ('f' if ignore_missing else '',), '--', path],
-          debug_level=logging.DEBUG,
-          stdout=True, stderr=True)
-    except cros_build_lib.RunCommandError as e:
-      if not ignore_missing or os.path.exists(path):
-        # If we're not ignoring the rm ENOENT equivalent, throw it;
-        # if the pathway still exists, something failed, thus throw it.
-        raise
-  else:
-    try:
-      shutil.rmtree(path)
-    except EnvironmentError as e:
-      if not ignore_missing or e.errno != errno.ENOENT:
-        raise
+  # Using `sudo` is a bit expensive, so try to delete everything natively first.
+  try:
+    shutil.rmtree(path)
+    return
+  except EnvironmentError as e:
+    if ignore_missing and e.errno == errno.ENOENT:
+      return
+
+    if not sudo:
+      raise
+
+  # If we're still here, we're falling back to sudo.
+  try:
+    cros_build_lib.sudo_run(
+        ['rm', '-r%s' % ('f' if ignore_missing else '',), '--', path],
+        debug_level=logging.DEBUG, stdout=True, stderr=True)
+  except cros_build_lib.RunCommandError as e:
+    if not ignore_missing or os.path.exists(path):
+      # If we're not ignoring the rm ENOENT equivalent, throw it;
+      # if the pathway still exists, something failed, thus throw it.
+      raise
 
 
 class EmptyDirNonExistentException(BadPathsException):
