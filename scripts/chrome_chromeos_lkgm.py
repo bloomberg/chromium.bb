@@ -95,7 +95,8 @@ class ChromeLKGMCommitter(object):
     for open_issue in gerrit_helper.Query(**query_params):
       logging.info(
           'Closing old LKGM roll crrev.com/c/%s', open_issue.gerrit_number)
-      gerrit_helper.AbandonChange(open_issue)
+      gerrit_helper.AbandonChange(
+          open_issue, msg='Superceded by LKGM %s' % self._lkgm)
 
   def UpdateLKGM(self):
     """Updates the LKGM file with the new version."""

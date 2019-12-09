@@ -440,12 +440,12 @@ class GerritHelper(object):
       rev = None
     gob_util.SubmitChange(self.host, self._to_changenum(change), revision=rev)
 
-  def AbandonChange(self, change, dryrun=False):
+  def AbandonChange(self, change, msg='', dryrun=False):
     """Mark a gerrit change as 'Abandoned'."""
     if dryrun:
       logging.info('Would have abandoned change %s', change)
       return
-    gob_util.AbandonChange(self.host, self._to_changenum(change))
+    gob_util.AbandonChange(self.host, self._to_changenum(change), msg=msg)
 
   def RestoreChange(self, change, dryrun=False):
     """Re-activate a previously abandoned gerrit change."""
