@@ -88,30 +88,49 @@ class RemoteDeviceUpdaterTest(cros_test_lib.MockTempDirTestCase):
                    stdout='CHROMEOS_RELEASE_BOARD=board')
     m.SetDefaultCmdResult()
 
+  def _ExistsMock(self, path, ret=True):
+    """Mock function for os.path.exists.
+
+    os.path.exists is used a lot; we only want to mock it for devserver/static,
+    and actually check if the file exists in all other cases (using os.access).
+
+    Args:
+      path: path to check.
+      ret: return value of mock.
+
+    Returns:
+      ret for paths under devserver/static, and the expected value of
+      os.path.exists otherwise.
+    """
+    if path.startswith(flash.DEVSERVER_STATIC_DIR):
+      return ret
+    return os.access(path, os.F_OK)
+
   def testUpdateAll(self):
     """Tests that update methods are called correctly."""
-    with mock.patch('os.path.exists', return_value=True):
+    with mock.patch('os.path.exists', side_effect=self._ExistsMock):
       flash.Flash(self.DEVICE, self.IMAGE)
       self.assertTrue(self.updater_mock.patched['UpdateStateful'].called)
       self.assertTrue(self.updater_mock.patched['UpdateRootfs'].called)
 
   def testUpdateStateful(self):
     """Tests that update methods are called correctly."""
-    with mock.patch('os.path.exists', return_value=True):
+    with mock.patch('os.path.exists', side_effect=self._ExistsMock):
       flash.Flash(self.DEVICE, self.IMAGE, rootfs_update=False)
       self.assertTrue(self.updater_mock.patched['UpdateStateful'].called)
       self.assertFalse(self.updater_mock.patched['UpdateRootfs'].called)
 
   def testUpdateRootfs(self):
     """Tests that update methods are called correctly."""
-    with mock.patch('os.path.exists', return_value=True):
+    with mock.patch('os.path.exists', side_effect=self._ExistsMock):
       flash.Flash(self.DEVICE, self.IMAGE, stateful_update=False)
       self.assertFalse(self.updater_mock.patched['UpdateStateful'].called)
       self.assertTrue(self.updater_mock.patched['UpdateRootfs'].called)
 
   def testMissingPayloads(self):
     """Tests we raise FlashError when payloads are missing."""
-    with mock.patch('os.path.exists', return_value=False):
+    with mock.patch('os.path.exists',
+                    side_effect=lambda p: self._ExistsMock(p, ret=False)):
       self.assertRaises(auto_updater_transfer.ChromiumOSTransferError,
                         flash.Flash, self.DEVICE, self.IMAGE)
 
@@ -122,7 +141,7 @@ class RemoteDeviceUpdaterTest(cros_test_lib.MockTempDirTestCase):
         'GetImagePathWithXbuddy',
         return_value=('translated/xbuddy/path',
                       'resolved/xbuddy/path')) as mock_xbuddy:
-      with mock.patch('os.path.exists', return_value=True):
+      with mock.patch('os.path.exists', side_effect=self._ExistsMock):
         flash.Flash(self.DEVICE, self.IMAGE)
 
       # Call to download full_payload and stateful. No other calls.
@@ -141,7 +160,7 @@ class RemoteDeviceUpdaterTest(cros_test_lib.MockTempDirTestCase):
         side_effect=(dev_server_wrapper.ImagePathError,
                      ('translated/xbuddy/path',
                       'resolved/xbuddy/path'))) as mock_xbuddy:
-      with mock.patch('os.path.exists', return_value=True):
+      with mock.patch('os.path.exists', side_effect=self._ExistsMock):
         flash.Flash(self.DEVICE, self.IMAGE)
 
       # Call to download full_payload and image. No other calls.
