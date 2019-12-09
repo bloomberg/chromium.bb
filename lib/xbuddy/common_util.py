@@ -250,7 +250,8 @@ def GetFileHashes(file_path, do_sha256=False, do_md5=False):
 
 def GetFileSha256(file_path):
   """Returns the SHA256 checksum of the file given (base64 encoded)."""
-  return base64.b64encode(GetFileHashes(file_path, do_sha256=True)['sha256'])
+  return base64.b64encode(
+      GetFileHashes(file_path, do_sha256=True)['sha256']).decode('utf-8')
 
 
 def CopyFile(source, dest):
