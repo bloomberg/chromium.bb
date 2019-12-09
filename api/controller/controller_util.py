@@ -65,12 +65,20 @@ def ParseChroot(chroot_message):
     elif chroot_message.goma.goma_approach == common_pb2.GomaConfig.RBE_STAGING:
       goma_approach = goma_util.GomaApproach('?staging',
                                              'staging-goma.chromium.org', True)
+
+    log_dir = chroot_message.goma.log_dir.dir or None
+    stats_filename = chroot_message.goma.stats_file or None
+    counterz_filename = chroot_message.goma.counterz_file or None
+
     goma = goma_util.Goma(chroot_message.goma.goma_dir,
                           chroot_message.goma.goma_client_json,
                           stage_name='BuildAPI',
                           chromeos_goma_dir=chromeos_goma_dir,
                           chroot_dir=path,
-                          goma_approach=goma_approach)
+                          goma_approach=goma_approach,
+                          log_dir=log_dir,
+                          stats_filename=stats_filename,
+                          counterz_filename=counterz_filename)
 
   return Chroot(path=path, cache_dir=cache_dir, chrome_root=chrome_root,
                 env=env, goma=goma)
