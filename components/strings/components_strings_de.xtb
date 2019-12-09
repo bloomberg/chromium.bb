@@ -9,7 +9,6 @@
 <translation id="1036348656032585052">Deaktivieren</translation>
 <translation id="1038842779957582377">Unbekannter Name</translation>
 <translation id="1039626062703039346">Mithilfe von Chrome können Sie Ihr Google-Konto schützen und Ihr Passwort ändern. Dadurch wird Google über diese Website informiert.</translation>
-<translation id="1044897699341250361">Was das bedeutet</translation>
 <translation id="1050038467049342496">Andere Apps schließen</translation>
 <translation id="1055184225775184556">&amp;Hinzufügen rückgängig machen</translation>
 <translation id="1056898198331236512">Warnung</translation>
@@ -184,7 +183,6 @@
 <translation id="1745880797583122200">Ihr Browser wird verwaltet</translation>
 <translation id="17513872634828108">Geöffnete Tabs</translation>
 <translation id="1753706481035618306">Seitennummer</translation>
-<translation id="175838129965056221">Chrome hat festgestellt, dass Ihre Internetverbindung überwacht wird</translation>
 <translation id="1763864636252898013">Dieser Server konnte nicht beweisen, dass er <ph name="DOMAIN" /> ist. Sein Sicherheitszertifikat wird vom Betriebssystem Ihres Geräts als nicht vertrauenswürdig eingestuft. Mögliche Gründe sind eine fehlerhafte Konfiguration oder ein Angreifer, der Ihre Verbindung abfängt.</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Versuchen Sie, die Windows-Netzwerkdiagnose auszuführen.<ph name="END_LINK" /></translation>
 <translation id="1778646502362731194">JIS B0</translation>
@@ -253,7 +251,6 @@
 <translation id="2119867082804433120">Lochung unten rechts</translation>
 <translation id="2129079103035905234">Bewegungssensoren</translation>
 <translation id="2130448033692577677">Die von Ihnen angegebenen Vorlagen können nicht angewendet werden, weil die Richtlinie "DnsOverHttpsMode" nicht konfiguriert ist.</translation>
-<translation id="2131277894177304644">Chromium hat festgestellt, dass Ihre Internetverbindung überwacht wird</translation>
 <translation id="213826338245044447">Mobile Lesezeichen</translation>
 <translation id="214556005048008348">Zahlung abbrechen</translation>
 <translation id="2147827593068025794">Hintergrundsynchronisierung</translation>
@@ -399,7 +396,6 @@
 <translation id="2799020568854403057">Die Website, die Sie aufrufen möchten, enthält schädliche Apps</translation>
 <translation id="2799223571221894425">Neu starten</translation>
 <translation id="2803306138276472711">Google Safe Browsing hat kürzlich <ph name="BEGIN_LINK" />Malware<ph name="END_LINK" /> auf <ph name="SITE" /> gefunden. Websites, die in der Regel sicher sind, können gelegentlich mit Malware infiziert sein.</translation>
-<translation id="281585763351939989">Chromium hat festgestellt, dass Ihre Internetverbindung überwacht wird.</translation>
 <translation id="2824775600643448204">Adress- und Suchleiste</translation>
 <translation id="2826760142808435982">Die Verbindung ist mit <ph name="CIPHER" /> verschlüsselt und authentifiziert und verwendet <ph name="KX" /> als Mechanismus für den Schlüsselaustausch.</translation>
 <translation id="2835170189407361413">Formular leeren</translation>
@@ -444,7 +440,6 @@
 <translation id="3024663005179499861">Falscher Richtlinientyp</translation>
 <translation id="3037605927509011580">Oh nein!</translation>
 <translation id="3041612393474885105">Zertifikatinformationen</translation>
-<translation id="304755864151473094">Warum das geschieht</translation>
 <translation id="3057676462092457419">Der DnsOverHttps-Modus "<ph name="SECURE_DNS_MODE_SECURE" />" wird noch nicht unterstützt. Der Modus wurde deshalb auf "<ph name="SECURE_DNS_MODE_OFF" />" festgelegt.</translation>
 <translation id="3060227939791841287">C9 (Umschlag)</translation>
 <translation id="3061707000357573562">Patchdienst</translation>
@@ -725,7 +720,6 @@
 <translation id="4372948949327679948">Erwarteter <ph name="VALUE_TYPE" />-Wert</translation>
 <translation id="4377125064752653719">Sie haben versucht, auf <ph name="DOMAIN" /> zuzugreifen, das vom Server übermittelte Zertifikat wurde jedoch vom entsprechenden Aussteller widerrufen. Das bedeutet, dass die vom Server übermittelten Sicherheitsinformationen nicht vertrauenswürdig sind. Möglicherweise kommunizieren Sie mit einem Hacker.</translation>
 <translation id="4378154925671717803">Telefon</translation>
-<translation id="437847259914972036">Ihre Aktivitäten im Internet und alle Informationen, die Sie eingeben, werden beobachtet. Inhalte können ohne Ihr Wissen verändert werden.</translation>
 <translation id="4398334096870680409">Diese Funktion ist auf Ihrem Gerät nicht verfügbar.</translation>
 <translation id="4406896451731180161">Suchergebnisse</translation>
 <translation id="4408413947728134509">Cookies <ph name="NUM_COOKIES" /></translation>
@@ -765,7 +759,6 @@
 <translation id="4594403342090139922">&amp;Löschen rückgängig machen</translation>
 <translation id="4597348597567598915">Größe 8</translation>
 <translation id="4600854749408232102">C6/C5 (Umschlag)</translation>
-<translation id="4613966523036881546">Google Chrome vertraut dem Zertifikat dieser Verbindung nicht, da es Netzwerke unterbrechen und überwachen kann.</translation>
 <translation id="4635654612248442824">Die Website <ph name="ORIGIN" /> verlangt, dass für alle ihre Anfragen eine Ursprungsrichtlinie gilt.
     Diese Richtlinie kann jedoch momentan nicht angewandt werden.</translation>
 <translation id="464342062220857295">Suchfunktionen</translation>
@@ -1163,7 +1156,6 @@
 <translation id="6547208576736763147">Doppelte Lochung links</translation>
 <translation id="6554795675067793129">Ihr Konto wird von <ph name="ENROLLMENT_DOMAIN" /> verwaltet.</translation>
 <translation id="6556866813142980365">Wiederholen</translation>
-<translation id="6559565319173126218">Chrome vertraut dem Zertifikat dieser Verbindung nicht, da es Netzwerke unterbrechen und überwachen kann.</translation>
 <translation id="6569060085658103619">Dies ist eine Erweiterungsseite</translation>
 <translation id="6573200754375280815">Doppelte Lochung rechts</translation>
 <translation id="6578796323535178455">C2 (Umschlag)</translation>
@@ -1197,7 +1189,6 @@
 <translation id="6710594484020273272">&lt;Suchbegriff eingeben&gt;</translation>
 <translation id="671076103358959139">Registrierungstoken:</translation>
 <translation id="6711464428925977395">Mit dem Proxyserver ist ein Problem aufgetreten oder die Adresse ist falsch.</translation>
-<translation id="6721811549156553509">Angreifer, die das Netzwerk überwachen, können sich als die von Ihnen besuchten Websites ausgeben und Ihre Aktivitäten sowie alle eingegebenen Informationen sehen (beispielsweise Passwörter, Nachrichten oder Kreditkartendaten). Seien Sie besonders vorsichtig, wenn Sie im Internet vertrauliche Dinge tun, da Angreifer diese Aktivitäten sehen und die Inhalte der von Ihnen besuchten Seiten manipulieren können. Dazu zählen auch Aktivitäten in anderen Browsern und Programmen, die das Internet nutzen.</translation>
 <translation id="6738516213925468394">Ihre Daten wurden am <ph name="TIME" /> mit Ihrer <ph name="BEGIN_LINK" />Synchronisierungspassphrase<ph name="END_LINK" /> verschlüsselt. Geben Sie diese ein, um die Synchronisierung zu starten.</translation>
 <translation id="674375294223700098">Fehler wegen unbekanntem Serverzertifikat</translation>
 <translation id="6744009308914054259">Während Sie auf eine Verbindung warten, können Sie "Downloads" aufrufen und Offline-Artikel lesen.</translation>
@@ -1282,7 +1273,6 @@
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Weitere Informationen<ph name="END_LINK" /> zu diesem Problem.</translation>
 <translation id="7219179957768738017">Die Verbindung verwendet <ph name="SSL_VERSION" />.</translation>
 <translation id="7220786058474068424">Verarbeitung läuft</translation>
-<translation id="7239736667463137521">Chrome hat festgestellt, dass Ihre Internetverbindung überwacht wird.</translation>
 <translation id="7243010569062352439"><ph name="PASSWORDS" />; <ph name="SIGNIN_DATA" /></translation>
 <translation id="724691107663265825">Malware auf nachfolgender Website</translation>
 <translation id="724975217298816891">Geben Sie das Gültigkeitsdatum und den CVC für <ph name="CREDIT_CARD" /> ein, um Ihre Kartendetails zu aktualisieren. Nach erfolgter Bestätigung werden die Kartendetails an diese Website weitergegeben.</translation>
@@ -1309,7 +1299,6 @@ Weitere Details:
 <translation id="7346048084945669753">Ist verknüpft:</translation>
 <translation id="7349430561505560861">A4-Extra</translation>
 <translation id="7353601530677266744">Befehlszeile</translation>
-<translation id="7353776484425559055">Chromium vertraut dem Zertifikat dieser Verbindung nicht, da es Netzwerke unterbrechen und überwachen kann. Sie sehen diesen Fehler möglicherweise aufgrund eines Zertifikats, das auf Ihrem Gerät installiert ist. Beim Herstellen von sicheren Verbindungen vertraut Chromium Zertifikaten, die lokal auf dem Computer oder Mobilgerät eines Nutzers installiert sind. Nutzer können so Tools verwenden, um beispielsweise bei der Webentwicklung die Verbindung zu prüfen und Fehler zu beheben oder in Unternehmensumgebungen den internen Traffic abzufangen und zu überwachen. Falls diese Möglichkeit missbraucht wird, um Traffic im öffentlichen Internet abzufangen, zeigt Chrome eine Warnmeldung an.</translation>
 <translation id="7372973238305370288">Suchergebnis</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378594059915113390">Mediensteuerelemente</translation>
@@ -1371,7 +1360,6 @@ Weitere Details:
 <translation id="7592362899630581445">Das Serverzertifikat verstößt gegen Namensbeschränkungen.</translation>
 <translation id="7598391785903975535">Weniger als <ph name="UPPER_ESTIMATE" /></translation>
 <translation id="759889825892636187"><ph name="HOST_NAME" /> kann diese Anfrage momentan nicht verarbeiten.</translation>
-<translation id="7599841999395223597">Chrome vertraut dem Zertifikat dieser Verbindung nicht, da es Netzwerke unterbrechen und überwachen kann. Sie sehen diesen Fehler möglicherweise aufgrund eines Zertifikats, das auf Ihrem Gerät installiert ist. Beim Herstellen von sicheren Verbindungen vertraut Chrome Zertifikaten, die lokal auf dem Computer oder Mobilgerät eines Nutzers installiert sind. Nutzer können so Tools verwenden, um beispielsweise bei der Webentwicklung die Verbindung zu prüfen und Fehler zu beheben oder in Unternehmensumgebungen den internen Traffic abzufangen und zu überwachen. Falls diese Möglichkeit missbraucht wird, um Traffic im öffentlichen Internet abzufangen, zeigt Chrome eine Warnmeldung an.</translation>
 <translation id="7600965453749440009"><ph name="LANGUAGE" /> nie übersetzen</translation>
 <translation id="7610193165460212391">Wert liegt außerhalb des zulässigen Bereichs (<ph name="VALUE" />).</translation>
 <translation id="7613889955535752492">Gültig bis: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
@@ -1481,7 +1469,6 @@ Weitere Details:
 <translation id="8103161714697287722">Zahlungsmethode</translation>
 <translation id="8105368624971345109">Deaktivieren</translation>
 <translation id="8118489163946903409">Zahlungsmethode</translation>
-<translation id="8124023448510659215">Chromium vertraut dem Zertifikat dieser Verbindung nicht, da es Netzwerke unterbrechen und überwachen kann.</translation>
 <translation id="8127301229239896662">"<ph name="SOFTWARE_NAME" />" war nicht ordnungsgemäß auf Ihrem Computer oder im Netzwerk installiert. Bitten Sie Ihren IT-Administrator, das Problem zu lösen.</translation>
 <translation id="8131740175452115882">Bestätigen</translation>
 <translation id="8149426793427495338">Ihr Computer ist im Ruhemodus.</translation>
@@ -1526,6 +1513,7 @@ Weitere Details:
 <translation id="8308427013383895095">Die Übersetzung ist aufgrund eines Problems mit der Netzwerkverbindung fehlgeschlagen.</translation>
 <translation id="831207732689920588">Diese Seite ist verdächtig (von Chrome gemeldet).</translation>
 <translation id="8332188693563227489">Der Zugriff auf <ph name="HOST_NAME" /> wurde verweigert</translation>
+<translation id="833262891116910667">Markieren</translation>
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">Wenn Sie die Sicherheitsrisiken kennen, können Sie <ph name="BEGIN_LINK" />diese Website aufrufen<ph name="END_LINK" />, bevor die schädlichen Programme entfernt wurden.</translation>
 <translation id="8349305172487531364">Lesezeichenleiste</translation>
@@ -1624,8 +1612,6 @@ Weitere Details:
 <translation id="8957210676456822347">Erfassungsportal-Autorisierung</translation>
 <translation id="8962950042226115166">Verdächtige Website</translation>
 <translation id="8968766641738584599">Karte speichern</translation>
-<translation id="8969267497192857913">Alles, was Sie eingeben, alle Seiten, die Sie besuchen, und alle sonstigen Aktivitäten im Internet werden beobachtet. Inhalte von Websites können ohne Ihr Wissen verändert werden.
-    <ph name="BEGIN_LEARN_MORE_LINK" />Weitere Informationen<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="8971063699422889582">Das Serverzertifikat ist abgelaufen.</translation>
 <translation id="8975012916872825179">Enthält Informationen wie Telefonnummern, E-Mail-Adressen und Lieferadressen</translation>
 <translation id="8975263830901772334">Namen von Dateien, die Sie drucken</translation>

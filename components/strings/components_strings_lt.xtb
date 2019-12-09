@@ -9,7 +9,6 @@
 <translation id="1036348656032585052">Išjungti</translation>
 <translation id="1038842779957582377">nežinomas pavadinimas</translation>
 <translation id="1039626062703039346">„Chrome“ gali padėti apsaugoti „Google“ paskyrą ir pakeisti slaptažodį. Bus pranešama „Google“ apie šią svetainę.</translation>
-<translation id="1044897699341250361">Ką tai reiškia</translation>
 <translation id="1050038467049342496">Uždarykite kitas programas</translation>
 <translation id="1055184225775184556">&amp;Anuliuoti pridėjimą</translation>
 <translation id="1056898198331236512">Įspėjimas</translation>
@@ -184,7 +183,6 @@
 <translation id="1745880797583122200">Jūsų naršyklė tvarkoma</translation>
 <translation id="17513872634828108">Atidaryti skirtukai</translation>
 <translation id="1753706481035618306">Puslapio numeris</translation>
-<translation id="175838129965056221">„Chrome“ aptiko, kad jūsų ryšys stebimas</translation>
 <translation id="1763864636252898013">Šiam serveriui nepavyko patvirtinti, kad tai yra <ph name="DOMAIN" />; jo saugos sertifikatas nėra patikimas įrenginio operacinei sistemai. Taip gali nutikti dėl netinkamos konfigūracijos ar dėl ryšį pertraukusio užgrobėjo.</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Pabandykite paleisti „Windows Network Diagnostics“<ph name="END_LINK" />.</translation>
 <translation id="1778646502362731194">JIS B0</translation>
@@ -253,7 +251,6 @@
 <translation id="2119867082804433120">Skylė apačioje dešinėje</translation>
 <translation id="2129079103035905234">Judesio jutikliai</translation>
 <translation id="2130448033692577677">Jūsų nurodyti šablonai gali būti netaikomi dėl to, kad nenustatyta „DnsOverHttpsMode“ politika.</translation>
-<translation id="2131277894177304644">„Chromium“ aptiko, kad jūsų ryšys stebimas</translation>
 <translation id="213826338245044447">Žymės mobiliesiems</translation>
 <translation id="214556005048008348">Atšaukti mokėjimą</translation>
 <translation id="2147827593068025794">Fono sinchronizavimas</translation>
@@ -405,7 +402,6 @@
 <translation id="2799020568854403057">Pateiktoje svetainėje yra kenkėjiškų programų</translation>
 <translation id="2799223571221894425">Paleisti iš naujo</translation>
 <translation id="2803306138276472711">„Google“ saugaus naršymo sistema neseniai <ph name="BEGIN_LINK" />aptiko kenkėjiškų programų<ph name="END_LINK" /> svetainėje <ph name="SITE" />. Kartais svetainės, kurios paprastai yra saugios, užkrečiamos kenkėjiškomis programomis.</translation>
-<translation id="281585763351939989">„Chromium“ aptiko, kad jūsų ryšys stebimas.</translation>
 <translation id="2824775600643448204">Adreso ir paieškos juosta</translation>
 <translation id="2826760142808435982">Ryšys užšifruotas ir tapatybė nustatyta naudojant <ph name="CIPHER" />. <ph name="KX" /> naudojamas kaip pagrindinis mainų mechanizmas.</translation>
 <translation id="2835170189407361413">Valyti formą</translation>
@@ -450,7 +446,6 @@
 <translation id="3024663005179499861">Netinkamas politikos tipas</translation>
 <translation id="3037605927509011580">Oi!</translation>
 <translation id="3041612393474885105">Sertifikato informacija</translation>
-<translation id="304755864151473094">Kodėl tai vyksta</translation>
 <translation id="3057676462092457419">„DnsOverHttps“ režimas <ph name="SECURE_DNS_MODE_SECURE" /> kol kas nepalaikomas. Režimas nustatytas kaip <ph name="SECURE_DNS_MODE_OFF" />.</translation>
 <translation id="3060227939791841287">C9 (vokas)</translation>
 <translation id="3061707000357573562">Pataisos paslauga</translation>
@@ -737,7 +732,6 @@
 <translation id="4372948949327679948">Numatyta „<ph name="VALUE_TYPE" />“ vertė.</translation>
 <translation id="4377125064752653719">Bandėte pasiekti svetainę „<ph name="DOMAIN" />“, bet sertifikatą, kurį pateikė serveris, anuliavo jo išdavėjas. Tai reiškia, kad saugos kredencialais, kuriuos pateikė serveris, visiškai negalima pasitikėti. Galbūt bendraujate su užpuoliku.</translation>
 <translation id="4378154925671717803">Telefonas</translation>
-<translation id="437847259914972036">Jūsų veikla žiniatinklyje ir bet kokia įvedama informacija stebima ir gali būti keičiamas turinys jums to nežinant.</translation>
 <translation id="4398334096870680409">Ši funkcija jūsų įrenginyje nepasiekiama.</translation>
 <translation id="4406896451731180161">paieškos rezultatai</translation>
 <translation id="4408413947728134509">Slapukai <ph name="NUM_COOKIES" /></translation>
@@ -777,7 +771,6 @@
 <translation id="4594403342090139922">&amp;Anuliuoti ištrynimą</translation>
 <translation id="4597348597567598915">Dydis: 8</translation>
 <translation id="4600854749408232102">C6 / C5 (vokas)</translation>
-<translation id="4613966523036881546">Šio ryšio sertifikatas nėra patikimas sistemoje „Google Chrome“, nes žinoma, jog jis naudojamas tinklui perimti ir stebėti.</translation>
 <translation id="4635654612248442824">Svetainė (<ph name="ORIGIN" />) pateikė užklausą taikyti pradinę politiką
     visoms jos užklausoms, bet šiuo metu šios politikos taikyti negalima.</translation>
 <translation id="464342062220857295">Paieškos funkcijos</translation>
@@ -1175,7 +1168,6 @@
 <translation id="6547208576736763147">Dvi skylės kairėje</translation>
 <translation id="6554795675067793129">Jūsų paskyrą tvarko <ph name="ENROLLMENT_DOMAIN" />.</translation>
 <translation id="6556866813142980365">Grąžinti</translation>
-<translation id="6559565319173126218">Šio ryšio sertifikatas nėra patikimas sistemoje „Chrome“, nes žinoma, jog jis naudojamas tinklui perimti ir stebėti.</translation>
 <translation id="6569060085658103619">Peržiūrite plėtinio puslapį</translation>
 <translation id="6573200754375280815">Dvi skylės dešinėje</translation>
 <translation id="6578796323535178455">C2 (vokas)</translation>
@@ -1209,7 +1201,6 @@
 <translation id="6710594484020273272">&lt;Įveskite paieškos terminą&gt;</translation>
 <translation id="671076103358959139">Registracijos prieigos raktas:</translation>
 <translation id="6711464428925977395">Kažkas negerai su tarpiniu serveriu arba adresas netinkamas.</translation>
-<translation id="6721811549156553509">Tinklo stebėtojas gali apsimesti svetainėmis, kuriose lankotės, ir peržiūrėti jūsų veiklą bei bet kokią jūsų įvedamą informaciją (pvz., slaptažodžius, pranešimus ar kredito kortelių duomenis). Turėtumėte būti atidūs prisijungę naudodami neskelbtinus duomenis, nes juos matys tinklo stebėtojas ir jis gali pakeisti turinį puslapiuose, kuriuose lankotės. Tai apima veiklą kitose naršyklėse ir internetą pasiekiančias programas.</translation>
 <translation id="6738516213925468394"><ph name="TIME" /> duomenys buvo užšifruoti naudojant <ph name="BEGIN_LINK" />sinchronizavimo slaptafrazę<ph name="END_LINK" />. Įveskite ją, kad pradėtumėte sinchronizuoti.</translation>
 <translation id="674375294223700098">Nežinoma serverio sertifikato klaida.</translation>
 <translation id="6744009308914054259">Laukdami ryšio galite apsilankyti skiltyje „Atsisiuntimai“ ir perskaityti neprisijungus pasiekiamus straipsnius.</translation>
@@ -1294,7 +1285,6 @@
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Sužinokite daugiau<ph name="END_LINK" /> apie šią problemą.</translation>
 <translation id="7219179957768738017">Ryšiui naudojama <ph name="SSL_VERSION" />.</translation>
 <translation id="7220786058474068424">Apdorojama</translation>
-<translation id="7239736667463137521">„Chrome“ aptiko, kad jūsų ryšys stebimas.</translation>
 <translation id="7243010569062352439"><ph name="PASSWORDS" />; <ph name="SIGNIN_DATA" /></translation>
 <translation id="724691107663265825">Svetainėje, kurioje ketinate apsilankyti, yra kenkėjiškų programų</translation>
 <translation id="724975217298816891">Jei norite atnaujinti išsamią kortelės informaciją, įveskite „<ph name="CREDIT_CARD" />“ galiojimo pabaigos datą ir kortelės saugos kodą (CVC). Kai patvirtinsite, išsami kortelės informacija bus bendrinama su šia svetaine.</translation>
@@ -1321,7 +1311,6 @@ Papildoma išsami informacija:
 <translation id="7346048084945669753">Susietas:</translation>
 <translation id="7349430561505560861">A4-Extra</translation>
 <translation id="7353601530677266744">Komandos eilutė</translation>
-<translation id="7353776484425559055">Šio ryšio sertifikatas nėra patikimas sistemoje „Chromium“, nes žinoma, jog jis naudojamas tinklui perimti ir stebėti. Ši klaida gali būti rodoma dėl įrenginyje įdiegto sertifikato. Užmezgant saugius ryšius sistemoje „Chromium“ pasitikima sertifikatais, kurie buvo vietiniu mastu įdiegti naudotojo kompiuteryje ar mobiliajame įrenginyje. Tada naudotojai gali paleisti įrankius, kad patikrintų ir suderintų savo ryšius, kurdami svetaines, arba įmonės aplinkoje, kai norima nuskaityti ir stebėti vidinį srautą. Tais atvejais, kai tuo piktnaudžiaujama siekiant nuskaityti srautą viešajame internete, „Chromium“ rodo įspėjimą.</translation>
 <translation id="7372973238305370288">paieškos rezultatas</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378594059915113390">Medijos valdikliai</translation>
@@ -1383,7 +1372,6 @@ Papildoma išsami informacija:
 <translation id="7592362899630581445">Serverio sertifikatas pažeidžia pavadinimų apribojimus.</translation>
 <translation id="7598391785903975535">Mažiau nei <ph name="UPPER_ESTIMATE" /></translation>
 <translation id="759889825892636187"><ph name="HOST_NAME" /> šiuo metu negalima apdoroti šios užklausos.</translation>
-<translation id="7599841999395223597">Šio ryšio sertifikatas nėra patikimas sistemoje „Chrome“, nes žinoma, jog jis naudojamas tinklui perimti ir stebėti. Ši klaida gali būti rodoma dėl įrenginyje įdiegto sertifikato. Užmezgant saugius ryšius sistemoje „Chrome“ pasitikima sertifikatais, kurie buvo vietiniu mastu įdiegti naudotojo kompiuteryje ar mobiliajame įrenginyje. Tada naudotojai gali paleisti įrankius, kad patikrintų ir suderintų savo ryšius, kurdami svetaines, arba įmonės aplinkoje, kai norima nuskaityti ir stebėti vidinį srautą. Tais atvejais, kai tuo piktnaudžiaujama siekiant nuskaityti srautą viešajame internete, „Chrome“ rodo įspėjimą.</translation>
 <translation id="7600965453749440009">Niekada neversti <ph name="LANGUAGE" /></translation>
 <translation id="7610193165460212391">Vertė nepatenka į diapazoną <ph name="VALUE" />.</translation>
 <translation id="7613889955535752492">Galioja iki: <ph name="EXPIRATION_YEAR" />-<ph name="EXPIRATION_MONTH" /></translation>
@@ -1493,7 +1481,6 @@ Papildoma išsami informacija:
 <translation id="8103161714697287722">Mokėjimo metodas</translation>
 <translation id="8105368624971345109">Išjungti</translation>
 <translation id="8118489163946903409">Mokėjimo metodas</translation>
-<translation id="8124023448510659215">Šio ryšio sertifikatas nėra patikimas sistemoje „Chromium“, nes žinoma, jog jis naudojamas tinklui perimti ir stebėti.</translation>
 <translation id="8127301229239896662">„<ph name="SOFTWARE_NAME" />“ nebuvo tinkamai įdiegta kompiuteryje ar tinkle. Kreipkitės į IT administratorių, kad ši problema būtų išspręsta.</translation>
 <translation id="8131740175452115882">Patvirtinti</translation>
 <translation id="8149426793427495338">Įjungta kompiuterio miego būsena.</translation>
@@ -1538,6 +1525,7 @@ Papildoma išsami informacija:
 <translation id="8308427013383895095">Vertimas nepavyko dėl tinklo ryšio problemos.</translation>
 <translation id="831207732689920588">Šis puslapis įtartinas (pažymėta naršyklėje „Chrome“).</translation>
 <translation id="8332188693563227489">Prieiga prie <ph name="HOST_NAME" /> atmesta</translation>
+<translation id="833262891116910667">Paryškinti</translation>
 <translation id="8340095855084055290"><ph name="EXPIRATION_YEAR" />/<ph name="EXPIRATION_MONTH" /></translation>
 <translation id="834457929814110454">Jei suprantate, kokia rizika gali kilti jūsų saugai, galite <ph name="BEGIN_LINK" />apsilankyti šioje svetainėje<ph name="END_LINK" />, kol iš jos dar nepašalintos kenkėjiškos programos.</translation>
 <translation id="8349305172487531364">Žymių juosta</translation>
@@ -1636,8 +1624,6 @@ Papildoma išsami informacija:
 <translation id="8957210676456822347">Fiksuotojo portalo autorizavimas</translation>
 <translation id="8962950042226115166">Įtartina svetainė</translation>
 <translation id="8968766641738584599">Išsaugoti kortelę</translation>
-<translation id="8969267497192857913">Visas vedamas tekstas, visi peržiūrimi puslapiai ar bet kokia kita veikla žiniatinklyje stebima ir gali būti keičiamas svetainių turinys jums to nežinant.
-    <ph name="BEGIN_LEARN_MORE_LINK" />Sužinokite daugiau<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="8971063699422889582">Baigėsi serverio sertifikato galiojimo laikas.</translation>
 <translation id="8975012916872825179">Įtraukiama tokia informacija kaip telefono numeriai, el. pašto adresai ir pristatymo adresai</translation>
 <translation id="8975263830901772334">Jūsų spausdinamų failų pavadinimai</translation>

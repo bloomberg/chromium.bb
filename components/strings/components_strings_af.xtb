@@ -9,7 +9,6 @@
 <translation id="1036348656032585052">Skakel af</translation>
 <translation id="1038842779957582377">onbekende naam</translation>
 <translation id="1039626062703039346">Chrome kan jou help om jou Google-rekening te beskerm en jou wagwoord te verander. Dit sal Google oor hierdie werf in kennis stel.</translation>
-<translation id="1044897699341250361">Wat dit beteken</translation>
 <translation id="1050038467049342496">Maak ander programme toe</translation>
 <translation id="1055184225775184556">Ontdoen byvoeging</translation>
 <translation id="1056898198331236512">Waarskuwing</translation>
@@ -184,7 +183,6 @@
 <translation id="1745880797583122200">Jou blaaier word bestuur</translation>
 <translation id="17513872634828108">Oop oortjies</translation>
 <translation id="1753706481035618306">Bladsynommer</translation>
-<translation id="175838129965056221">Chrome het bespeur dat jou verbinding tans gemonitor word</translation>
 <translation id="1763864636252898013">Hierdie bediener kon nie bewys dat dit <ph name="DOMAIN" /> is nie; sy sekuriteitsertifikaat word nie deur jou toestel se bedryfstelsel vertrou nie. Dit kan veroorsaak word deur 'n wanopstelling of 'n aanvaller wat jou verbinding onderskep.</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Probeer Windows Network Diagnostics uitvoer<ph name="END_LINK" />.</translation>
 <translation id="1778646502362731194">JIS B0</translation>
@@ -253,7 +251,6 @@
 <translation id="2119867082804433120">Pons regs onder</translation>
 <translation id="2129079103035905234">Bewegingensors</translation>
 <translation id="2130448033692577677">Die template wat jy gespesifiseer het, kan dalk nie toegepas word die omdat die DnsOverHttpsMode-beleid nie gestel is nie.</translation>
-<translation id="2131277894177304644">Chromium het bespeur dat jou verbinding tans gemonitor word</translation>
 <translation id="213826338245044447">Mobiele boekmerke</translation>
 <translation id="214556005048008348">Kanselleer betaling</translation>
 <translation id="2147827593068025794">Agtergrondsinkronisering</translation>
@@ -405,7 +402,6 @@
 <translation id="2799020568854403057">Die werf voor bevat skadelike programme</translation>
 <translation id="2799223571221894425">Begin weer</translation>
 <translation id="2803306138276472711">Google Veiligblaai het onlangs <ph name="BEGIN_LINK" />wanware bespeur<ph name="END_LINK" /> op <ph name="SITE" />. Webwerwe wat gewoonlik veilig is, word soms met wanware besmet.</translation>
-<translation id="281585763351939989">Chromium het bespeur dat jou verbinding tans gemonitor word.</translation>
 <translation id="2824775600643448204">Adres- en soekbalk</translation>
 <translation id="2826760142808435982">Die verbinding is geënkripteer en gestaaf deur <ph name="CIPHER" /> te gebruik, en gebruik <ph name="KX" /> as die sleuteluitruilmeganisme.</translation>
 <translation id="2835170189407361413">Maak vorm skoon</translation>
@@ -450,7 +446,6 @@
 <translation id="3024663005179499861">Verkeerde beleidtipe</translation>
 <translation id="3037605927509011580">O, mapstieks!</translation>
 <translation id="3041612393474885105">Sertifikaatinligting</translation>
-<translation id="304755864151473094">Hoekom dit gebeur</translation>
 <translation id="3057676462092457419">Die DnsOverHttps-modus <ph name="SECURE_DNS_MODE_SECURE" /> word nog nie gesteun nie. Die modus is gestel op <ph name="SECURE_DNS_MODE_OFF" />.</translation>
 <translation id="3060227939791841287">C9 (Envelope)</translation>
 <translation id="3061707000357573562">Regstellingdiens</translation>
@@ -637,7 +632,7 @@
 <translation id="397105322502079400">Bereken tans …</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> is geblokkeer</translation>
 <translation id="3981540111851280311"><ph name="ENROLLMENT_DOMAIN" /> het Chrome Enterprise se bedreigingbeskerming op jou blaaier geaktiveer. Chrome Enterprise se bedreigingbeskerming het toegang tot sommige van jou data.</translation>
-<translation id="3987405730340719549">Chome het bepaal dat hierdie werf dalk vals of bedrieglik is.
+<translation id="3987405730340719549">Chrome het bepaal dat hierdie werf dalk vals of bedrieglik is.
 
     Besoek https://bugs.chromium.org/p/chromium/issues/entry?template=Safety+Tips+Appeals as jy meen dat dit verkeerdelik gewys word.</translation>
 <translation id="3987940399970879459">Minder as 1 MB</translation>
@@ -736,7 +731,6 @@
 <translation id="4372948949327679948">Verwagte <ph name="VALUE_TYPE" />-waarde.</translation>
 <translation id="4377125064752653719">Jy het probeer om <ph name="DOMAIN" /> te bereik, maar die sertifikaat wat die bediener voorgehou het, is deur sy uitreiker herroep. Dit beteken dat die sekuriteitseiebewyse wat die bediener uitgereik het, onder geen omstandighede vertrou mag word nie. Jy kommunikeer dalk met 'n aanvaller.</translation>
 <translation id="4378154925671717803">Foon</translation>
-<translation id="437847259914972036">Jou aktiwiteit op die web en enige inligting wat jy invoer, word dopgehou, en inhoud kan verander word sonder dat jy dit weet.</translation>
 <translation id="4398334096870680409">Hierdie kenmerk is nie op jou toestel beskikbaar nie.</translation>
 <translation id="4406896451731180161">soekresultate</translation>
 <translation id="4408413947728134509">Webkoekies <ph name="NUM_COOKIES" /></translation>
@@ -776,7 +770,6 @@
 <translation id="4594403342090139922">Ontdoen uitvee</translation>
 <translation id="4597348597567598915">Grootte 8</translation>
 <translation id="4600854749408232102">C6/C5 (Envelope)</translation>
-<translation id="4613966523036881546">Die sertifikaat vir hierdie verbinding word nie deur Google Chrome vertrou nie omdat dit bekend is dat dit gebruik word vir netwerkonderskepping en -monitering.</translation>
 <translation id="4635654612248442824">Die werf <ph name="ORIGIN" /> het versoek dat 'n oorsprongbeleid
     op al sy versoeke toegepas sal word, maar hierdie beleid kan nie op die oomblik toegepas word nie.</translation>
 <translation id="464342062220857295">Soekkenmerke</translation>
@@ -1174,7 +1167,6 @@
 <translation id="6547208576736763147">Dubbelpons links</translation>
 <translation id="6554795675067793129">Jou rekening word bestuur deur <ph name="ENROLLMENT_DOMAIN" />.</translation>
 <translation id="6556866813142980365">Herdoen</translation>
-<translation id="6559565319173126218">Chrome vertrou nie die sertifikaat wat vir hierdie verbinding aangebied word nie omdat dit bekend is dat dit vir netwerkonderskepping en -monitering gebruik word.</translation>
 <translation id="6569060085658103619">Jy bekyk tans 'n uitbreidingbladsy</translation>
 <translation id="6573200754375280815">Dubbelpons regs</translation>
 <translation id="6578796323535178455">C2 (Envelope)</translation>
@@ -1208,7 +1200,6 @@
 <translation id="6710594484020273272">&lt;Tik soekterm in&gt;</translation>
 <translation id="671076103358959139">Inskrywingtoken:</translation>
 <translation id="6711464428925977395">Daar is iets verkeerd met hierdie instaanbediener of die adres is verkeerd.</translation>
-<translation id="6721811549156553509">Die netwerkmonitor kan voorgee om die werwe te wees wat jy besoek en kan jou aktiwiteit en enige inligting wat jy invoer (byvoorbeeld, wagwoorde, boodskappe en kredietkaarte), sien. Jy moet versigtig wees wanneer jy enigiets sensitiefs aanlyn doen, want die netwerkmonitor sal dit kan sien, en die netwerkmonitor kan die inhoud verander van die bladsye wat jy besoek. Dit sluit aktiwiteit in in ander blaaiers en programme wat toegang tot die internet kry.</translation>
 <translation id="6738516213925468394">Jou data is om <ph name="TIME" /> met jou <ph name="BEGIN_LINK" />sinkroniseringwagfrase<ph name="END_LINK" /> geënkripeer. Voer dit in om sinkronisering te begin.</translation>
 <translation id="674375294223700098">Onbekende bedienersertifikaatfout.</translation>
 <translation id="6744009308914054259">Terwyl jy vir 'n verbinding wag, kan jy Aflaaie besoek om vanlyn artikels te lees.</translation>
@@ -1293,7 +1284,6 @@
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Kom meer te wete<ph name="END_LINK" /> oor hierdie probleem.</translation>
 <translation id="7219179957768738017">Die verbinding gebruik <ph name="SSL_VERSION" />.</translation>
 <translation id="7220786058474068424">Verwerk tans</translation>
-<translation id="7239736667463137521">Chrome het bespeur dat jou verbinding tans gemonitor word.</translation>
 <translation id="7243010569062352439"><ph name="PASSWORDS" />; <ph name="SIGNIN_DATA" /></translation>
 <translation id="724691107663265825">Die werf hier voor bevat wanware</translation>
 <translation id="724975217298816891">Voer die vervaldatum en CVC vir <ph name="CREDIT_CARD" /> in om jou kaartbesonderhede op te dateer. Nadat jy bevestig het, sal jou besonderhede met hierdie werf gedeel word.</translation>
@@ -1320,7 +1310,6 @@ Bykomende besonderhede:
 <translation id="7346048084945669753">Is geaffilieer:</translation>
 <translation id="7349430561505560861">A4-Extra</translation>
 <translation id="7353601530677266744">Bevellyn</translation>
-<translation id="7353776484425559055">Chromium vertrou nie die sertifikaat vir hierdie verbinding nie omdat dit bekend is dat dit vir netwerkonderskepping en -monitering gebruik word. Jy sien dalk hierdie fout weens 'n sertifikaat wat jy op jou toestel geïnstalleer het. Wanneer Chromium veilige verbindings maak, vertrou dit sertifikate wat plaaslik op 'n gebruiker se rekenaar of mobiele toestel geïnstalleer is. Dit maak dit vir gebruikers moonlik om nutsgoed te gebruik om hul verbindings tydens webwerfontwikkeling te ondersoek en te ontfout, of vir korporatiewe omgewings om interne verkeer te onderskep en te monitor. Chromium wys 'n waarskuwing in gevalle waar dit misbruik word om vekeer op die publieke internet te onderskep.</translation>
 <translation id="7372973238305370288">soekresultaat</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> – <ph name="FULL_DATE" /></translation>
 <translation id="7378594059915113390">Media-kontroles</translation>
@@ -1382,7 +1371,6 @@ om uit te vind hoe om die sagteware permanent van jou rekenaar te verwyder&lt;/o
 <translation id="7592362899630581445">Bedienersertifikaat oortree naambeperkings.</translation>
 <translation id="7598391785903975535">Minder as <ph name="UPPER_ESTIMATE" /></translation>
 <translation id="759889825892636187"><ph name="HOST_NAME" /> kan tans nie hierdie versoek hanteer nie.</translation>
-<translation id="7599841999395223597">Chrome vertrou nie die sertifikaat vir hierdie verbinding nie omdat dit bekend is dat dit vir netwerkonderskepping en -monitering gebruik word. Jy sien dalk hierdie fout weens 'n sertifikaat wat jy op jou toestel geïnstalleer het. Wanneer Chrome veilige verbindings maak, vertrou dit sertifikate wat plaaslik op 'n gebruiker se rekenaar of mobiele toestel geïnstalleer is. Dit maak dit vir gebruikers moonlik om nutsgoed te gebruik om hul verbindings tydens webwerfontwikkeling te ondersoek en te ontfout, of vir korporatiewe omgewings om interne verkeer te onderskep en te monitor. Chrome wys 'n waarskuwing in gevalle waar dit misbruik word om vekeer op die publieke internet te onderskep.</translation>
 <translation id="7600965453749440009">Moet nooit <ph name="LANGUAGE" /> vertaal nie</translation>
 <translation id="7610193165460212391">Waarde is buite die reeks <ph name="VALUE" />.</translation>
 <translation id="7613889955535752492">Verval: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
@@ -1492,7 +1480,6 @@ om uit te vind hoe om die sagteware permanent van jou rekenaar te verwyder&lt;/o
 <translation id="8103161714697287722">Betaalmetode</translation>
 <translation id="8105368624971345109">Skakel af</translation>
 <translation id="8118489163946903409">Betalingmetode</translation>
-<translation id="8124023448510659215">Die sertifikaat vir hierdie verbinding word nie deur Chromium vertrou nie omdat dit bekend is dat dit gebruik word vir netwerkonderskepping en -monitering.</translation>
 <translation id="8127301229239896662">"<ph name="SOFTWARE_NAME" />" is nie behoorlik op jou rekenaar of netwerk geïnstalleer nie. Vra jou IT-administrateur om hierdie probleem op te los.</translation>
 <translation id="8131740175452115882">Bevestig</translation>
 <translation id="8149426793427495338">Jou rekenaar het gaan slaap.</translation>
@@ -1537,6 +1524,7 @@ om uit te vind hoe om die sagteware permanent van jou rekenaar te verwyder&lt;/o
 <translation id="8308427013383895095">Die vertaling het misluk weens 'n probleem met die netwerkverbinding.</translation>
 <translation id="831207732689920588">Hierdie bladsy is verdag (gevlag deur Chrome).</translation>
 <translation id="8332188693563227489">Toegang tot <ph name="HOST_NAME" /> is geweier</translation>
+<translation id="833262891116910667">Merk</translation>
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">As jy die gevare vir jou veiligheid verstaan, kan jy <ph name="BEGIN_LINK" />hierdie werf besoek<ph name="END_LINK" /> voordat die skadelike programme verwyder is.</translation>
 <translation id="8349305172487531364">Boekmerkebalk</translation>
@@ -1634,8 +1622,6 @@ Bykomende besonderhede:
 <translation id="8957210676456822347">Gevangeportaal-magtiging</translation>
 <translation id="8962950042226115166">Verdagte werf</translation>
 <translation id="8968766641738584599">Stoor kaart</translation>
-<translation id="8969267497192857913">Enigiets wat jy tik, enige bladsye wat jy bekyk of enige ander aktiwiteit op die web word dopgehou, én inhoud op werwe kan sonder jou wete verander word.
-    <ph name="BEGIN_LEARN_MORE_LINK" />Kom meer te wete<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="8971063699422889582">Bediener se sertifikaat het verstryk.</translation>
 <translation id="8975012916872825179">Sluit inligting soos foonnommers, e-posadresse en versendingadresse in</translation>
 <translation id="8975263830901772334">Name van lêers wat jy druk</translation>

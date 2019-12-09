@@ -9,7 +9,6 @@
 <translation id="1036348656032585052">አጥፋ</translation>
 <translation id="1038842779957582377">ያልታወቀ ስም</translation>
 <translation id="1039626062703039346">Chrome የGoogle መለያዎን እንዲጠብቁ እና የይለፍ ቃልዎን እንዲቀይሩት ያግዘዎታል። ይህ ስለጣቢያው Googleን ያሳውቀዋል።</translation>
-<translation id="1044897699341250361">ይህ ምን ማለት እንደሆነ</translation>
 <translation id="1050038467049342496">ሌሎች መተግበሪያዎችን ይዝጉ</translation>
 <translation id="1055184225775184556">&amp;አክልን ቀልብስ</translation>
 <translation id="1056898198331236512">ማስጠንቀቂያ</translation>
@@ -184,7 +183,6 @@
 <translation id="1745880797583122200">የእርስዎ አሳሽ ይተዳደራል</translation>
 <translation id="17513872634828108">ትሮችን ክፈት</translation>
 <translation id="1753706481035618306">የገጽ ቁጥር</translation>
-<translation id="175838129965056221">Chrome የእርስዎ ግንኙነት ክትትል እየተደረገበት እንደሆነ ደርሶበታል</translation>
 <translation id="1763864636252898013">ይህ አገልጋይ <ph name="DOMAIN" /> መሆኑን ሊያረጋግጥ አልቻለም፤ የደህንነት እውቅና ማረጋገጫው በመሣሪያዎ ስርዓተ ክወና የሚታመን አይደለም። ይሄ በተሳሳተ አወቃቀር ወይም አንድ አጥቂ ግንኙነትዎን በመጥለፉ የተከሰተ ሊሆን ይችላል።</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />የWindows አውታረ መረብ መመርመሪያውን ለማሄድ ይሞክሩ<ph name="END_LINK" />።</translation>
 <translation id="1778646502362731194">JIS B0</translation>
@@ -253,7 +251,6 @@
 <translation id="2119867082804433120">ከታች በቀን በኩል ብስ</translation>
 <translation id="2129079103035905234">የእንቅስቃሴ ዳሳሾች</translation>
 <translation id="2130448033692577677">የDnsOverHttpsMode መመሪያው ባለመዋቀሩ ምክንያት እርስዎ የገለጿቸው ቅንብር ደንቦች ላይተገበሩ ይችላሉ።</translation>
-<translation id="2131277894177304644">Chromium የእርስዎ ግንኙነት ክትትል እየተደረገበት እንደሆነ ደርሶበታል</translation>
 <translation id="213826338245044447">የተንቀሳቃሽ ስልክ ዕልባቶች</translation>
 <translation id="214556005048008348">ክፍያን ሰርዝ</translation>
 <translation id="2147827593068025794">የጀርባ ስምረት</translation>
@@ -401,7 +398,6 @@
 <translation id="2799020568854403057">ቀጥሎ ያለው ጣቢያ ጎጂ መተግበሪያዎች አሉት</translation>
 <translation id="2799223571221894425">ዳግም አስጀምር</translation>
 <translation id="2803306138276472711">Google የጥንቃቄ አሰሳ በቅርብ ጊዜ <ph name="SITE" /> ላይ <ph name="BEGIN_LINK" />ተንኮል-አዘል ዌር<ph name="END_LINK" /> አግኝቷል። በመደበኛ ጊዜ ደህንነታቸው የተጠበቁ ድር ጣቢያዎች አንዳንድ ጊዜ በተንኮል-አዘል ዌር ይጠቃሉ።</translation>
-<translation id="281585763351939989">Chromium የእርስዎ ግንኙነት ክትትል እየተደረገበት እንደሆነ ደርሶበታል።</translation>
 <translation id="2824775600643448204">የአድራሻ እና ፍለጋ አሞሌ</translation>
 <translation id="2826760142808435982">ግንኙነቱ የተመሰጠረ እና <ph name="CIPHER" />ን በመጠቀም የተረጋገጠ ነው፣ እና <ph name="KX" />ን እንደ የቁልፍ መቀያየሪያ ስልት ይጠቀምበታል።</translation>
 <translation id="2835170189407361413">ቅጽ አጽዳ</translation>
@@ -446,7 +442,6 @@
 <translation id="3024663005179499861">የተሳሳተ የመምሪያ አይነት</translation>
 <translation id="3037605927509011580">ውይ፣ ተሰናከለ!</translation>
 <translation id="3041612393474885105">የሰርቲፊኬት መረጃ</translation>
-<translation id="304755864151473094">ለምን ይህ እየተፈጠረ እንዳለ</translation>
 <translation id="3057676462092457419">የDnsOverHttps ሁነታ <ph name="SECURE_DNS_MODE_SECURE" /> ገና አይደገፍም፣ ሁነታው ወደ <ph name="SECURE_DNS_MODE_OFF" /> ተቀናብሯል።</translation>
 <translation id="3060227939791841287">C9 (የደብዳቤ ፖስታ)</translation>
 <translation id="3061707000357573562">የመጠገኛ አገልግሎት</translation>
@@ -729,7 +724,6 @@
 <translation id="4372948949327679948">የተጠበቀው የ<ph name="VALUE_TYPE" /> ዋጋ ነው።</translation>
 <translation id="4377125064752653719"><ph name="DOMAIN" />ን ለመድረስ ሞክረዋል፣ ነገር ግን አገልጋዩ ያቀረበው የእውቅና ማረጋገጫ በሰጪው ተሽሯል። ይህ ማለት አገልጋዩ ያቀረበው የደህንነት ምስክርነቶች ፈጽሞ ሊታመኑ አይገባም። ከአጥቂ ጋር እየተገናኙ ሊሆን ይችላል።</translation>
 <translation id="4378154925671717803">ስልክ</translation>
-<translation id="437847259914972036">የእርስዎ በድር ላይ ያለ እንቅስቃሴ እና ማናቸውም እርስዎ የሚያስገቡት መረጃ እየታየ ነው፣ እና ይዘት ያለ እርስዎ ዕውቀት ሊለወጥ ይችል ይሆናል።</translation>
 <translation id="4398334096870680409">ይህ ባህሪ በእርስዎ መሣሪያ ላይ አይገኝም።</translation>
 <translation id="4406896451731180161">የፍለጋ ውጤቶች</translation>
 <translation id="4408413947728134509">ኩኪዎች <ph name="NUM_COOKIES" /></translation>
@@ -769,7 +763,6 @@
 <translation id="4594403342090139922">&amp;ሰርዝን ቀልብስ</translation>
 <translation id="4597348597567598915">መጠን 8</translation>
 <translation id="4600854749408232102">C6/C5 (የደብዳቤ ፖስታ)</translation>
-<translation id="4613966523036881546">ለአውታረ መረብ ማቋረጥ እና ክትትል ጥቅም ላይ እንደሚውል ስለሚታወቅ የዚህ ግንኙነት የዕውቅና ማረጋገጫ በChrome የታመነ አይደለም።</translation>
 <translation id="4635654612248442824">ጣቢያ <ph name="ORIGIN" /> የመጀመሪያ መመሪያ
     በሁሉም የእሱ ጥያቄ ላይ ተፈጻሚ እንዲሆን ጠይቋል ሆኖም ግን ይህ መመሪያ አሁን ላይ ተፈጻሚ ሊሆን አይችልም።</translation>
 <translation id="464342062220857295">ባህሪያትን ይፈልጉ</translation>
@@ -1167,7 +1160,6 @@
 <translation id="6547208576736763147">በግራ በኩል ብሳ</translation>
 <translation id="6554795675067793129">የእርስዎ መለያ በ<ph name="ENROLLMENT_DOMAIN" /> ነው የሚተዳደረው።</translation>
 <translation id="6556866813142980365">ድገም</translation>
-<translation id="6559565319173126218">ለአውታረ መረብ ማቋረጥ እና ክትትል ጥቅም ላይ እንደሚውል ስለሚታወቅ የዚህ ግንኙነት የዕውቅና ማረጋገጫ በChrome የታመነ አይደለም።</translation>
 <translation id="6569060085658103619">የቅጥያ ገጽ እየተመለከቱ ነው</translation>
 <translation id="6573200754375280815">ድርብ ብስ ቀኝ</translation>
 <translation id="6578796323535178455">C2 (የደብዳቤ ፖስታ)</translation>
@@ -1201,7 +1193,6 @@
 <translation id="6710594484020273272">&lt;የፍለጋ ቃል ይተይቡ&gt;</translation>
 <translation id="671076103358959139">የምዝገባ ማስመሰያ፦</translation>
 <translation id="6711464428925977395">በተኪ አገልጋዩ ላይ የሆነ ችግር አለ ወይም አድራሻው ትክክል አይደለም።</translation>
-<translation id="6721811549156553509">የአውታረ መረብ ተቆጣጣሪው እርስዎ የሚጎበኙዋቸው ጣቢያዎችን አስመስሎ ሊቀርብ እና የእርስዎን እንቅስቃሴ እና ማናቸውንም እርስዎ የሚያስገቡትን መረጃ (ለምሳሌ፣ የይለፍ ቃሎችን፣ መልዕክቶችን ወይም ክሬዲት ካርዶችን) ሊመለከት ይችላል። በመስመር ላይ አደጋ ውስጥ ሊከት የሚችል ማናቸውንም ነገር በሚያደርጉበት ጊዜ ለአውታረ መረብ ተቆጣጣሪው ሊታአው ስለሚችል እና አውታረ መረብ ተቆጣጣሪው እርስዎ የሚጎበኙዋቸውን ገጾች ይዘት መለወጥ ስለሚችል መጠንቀቅ ይኖርብዎታል። ይህ በይነ መረቡን በሚደርሱ ሌሎች አሳሾች እና ፕሮግራሞች ውስጥ ያለን እንቅስቃሴ ያካትታል።</translation>
 <translation id="6738516213925468394">የእርስዎ ውሂብ በ<ph name="TIME" /> ላይ በእርስዎ <ph name="BEGIN_LINK" />የስምረት ይለፍ ሐረግ<ph name="END_LINK" /> ተመስጥሯል። ስምረትን ለመጀመር ያስገቡት።</translation>
 <translation id="674375294223700098">ያልታወቀ የአገልጋይ እውቅና ማረጋገጫ ስህተት።</translation>
 <translation id="6744009308914054259">ግንኙነትን እየተጠባበቁ ሳሉ የመስመር ውጪ ጽሑፎችን ለማንበብ ውርዶችን መጎብኘት ይችላሉ።</translation>
@@ -1286,7 +1277,6 @@
 <translation id="721197778055552897">ስለዚህ ችግር <ph name="BEGIN_LINK" />ተጨማሪ ለመረዳት<ph name="END_LINK" /> ።</translation>
 <translation id="7219179957768738017">ግንኙነቱ <ph name="SSL_VERSION" />ን ይጠቀማል።</translation>
 <translation id="7220786058474068424">በማስሄድ ላይ</translation>
-<translation id="7239736667463137521">Chrome የእርስዎ ግንኙነት ክትትል እየተደረገበት እንደሆነ ደርሶበታል።</translation>
 <translation id="7243010569062352439"><ph name="PASSWORDS" />፤ <ph name="SIGNIN_DATA" /></translation>
 <translation id="724691107663265825">ፊት ያለው ጣቢያ ተንኮል-አዘል ዌር አለው</translation>
 <translation id="724975217298816891">የካርድ ዝርዝሮችዎን ለማዘመን የ<ph name="CREDIT_CARD" /> ጊዜ ማለፊያ ቀን እና ሲቪሲ ያስገቡ። አንዴ ካረጋገጡ በኋላ የካርድ ዝርዝሮችዎ ለዚህ ጣቢያ ይጋራሉ።</translation>
@@ -1313,7 +1303,6 @@
 <translation id="7346048084945669753">ከዚህ ጋር ግንኙነት አለው፦</translation>
 <translation id="7349430561505560861">A4-ተጨማሪ</translation>
 <translation id="7353601530677266744">የትእዛዝ መስመር</translation>
-<translation id="7353776484425559055">ለአውታረ መረብ ማቋረጥ እና ክትትል ጥቅም ላይ እንደሚውል ስለሚታወቅ የዚህ ግንኙነት የዕውቅና ማረጋገጫ በChromium የታመነ አይደለም። በእርስዎ መሣሪያ ላይ በጫኑት የዕውቅና ማረጋገጫ ምክንያት ምናልባት ይህን ስሕተት እየተመለከቱ ይሆናል። ደህንነታቸው የተጠበቁ ግንኙነቶችን በማድረግ ጊዜ Chromium በተጠቃሚ ኮምፒውተር ወይም ሞባይል መሣሪያ ላይ በአካባቢ የተጫኑ የዕውቅና ማረጋገጫዎችን ያምናል። ይህ ተጠቃሚዎች በድር ጣቢያ ግንባታ ወቅት የእነርሱን ግንኙነቶች እንዲመረምሩ እና ሳንካ እንዲጠግኑ ወይም ለድርጅት አካባቢዎች ውስጣዊ ትራፊክን እንዲያቋርጡ እና እንዲከታተሉ የሚያስችሏቸውን መሣሪያዎች እንዲያስኬዱ ይፈቅድላቸዋል። ይህ በይፋዊ በይነ መረብ ላይ ትራፊክን እንዲያቋርጥ አላግባብ ሲደረግ፣ Chromium ማስጠንቀቂያ ያሳያል።</translation>
 <translation id="7372973238305370288">የፍለጋ ውጤት</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378594059915113390">የሚዲያ መቆጣጠሪያዎች</translation>
@@ -1375,7 +1364,6 @@
 <translation id="7592362899630581445">የአገልጋዩ እውቅና ማረጋገጫ አንዳንድ ገደቦችን ይጥሳል።</translation>
 <translation id="7598391785903975535">ከ<ph name="UPPER_ESTIMATE" /> በታች</translation>
 <translation id="759889825892636187"><ph name="HOST_NAME" /> በአሁኑ ጊዜ ይህን ጥያቄ ተቀብሎ ለማስተናገድ አይችልም።</translation>
-<translation id="7599841999395223597">ለአውታረ መረብ ማቋረጥ እና ክትትል ጥቅም ላይ እንደሚውል ስለሚታወቅ የዚህ ግንኙነት የዕውቅና ማረጋገጫ በChrome የታመነ አይደለም። በእርስዎ መሣሪያ ላይ በጫኑት የዕውቅና ማረጋገጫ ምክንያት ምናልባት ይህን ስሕተት እየተመለከቱ ይሆናል። ደህንነታቸው የተጠበቁ ግንኙነቶችን በማድረግ ጊዜ Chrome በተጠቃሚ ኮምፒውተር ወይም ሞባይል መሣሪያ ላይ በአካባቢ የተጫኑ የዕውቅና ማረጋገጫዎችን ያምናል። ይህ ተጠቃሚዎች በድር ጣቢያ ግንባታ ወቅት የእነርሱን ግንኙነቶች እንዲመረምሩ እና ሳንካ እንዲጠግኑ ወይም ለድርጅት አካባቢዎች ውስጣዊ ትራፊክን እንዲያቋርጡ እና እንዲከታተሉ የሚያስችሏቸውን መሣሪያዎች እንዲያስኬዱ ይፈቅድላቸዋል። ይህ በይፋዊ በይነ መረብ ላይ ትራፊክን እንዲያቋርጥ አላግባብ ሲደረግ፣ Chrome ማስጠንቀቂያ ያሳያል።</translation>
 <translation id="7600965453749440009"><ph name="LANGUAGE" />ን በጭራሽ አትተርጉም</translation>
 <translation id="7610193165460212391">እሴት ከክልል <ph name="VALUE" /> ውጪ ነው።</translation>
 <translation id="7613889955535752492">የሚያበቃበት ጊዜ፦ <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
@@ -1485,7 +1473,6 @@
 <translation id="8103161714697287722">የክፍያ ስልት</translation>
 <translation id="8105368624971345109">አጥፋ</translation>
 <translation id="8118489163946903409">የመክፈያ ዘዴ</translation>
-<translation id="8124023448510659215">ለአውታረ መረብ ማቋረጥ እና ክትትል ጥቅም ላይ እንደሚውል ስለሚታወቅ የዚህ ግንኙነት የዕውቅና ማረጋገጫ በChromium የታመነ አይደለም።</translation>
 <translation id="8127301229239896662">«<ph name="SOFTWARE_NAME" />» በእርስዎ ኮምፒውተር ወይም አውታረ መረብ ላይ በአግባቡ አልተጫነም። አስተዳዳሪዎ ይህን ችግር እንዲፈታ ይጠይቁ።</translation>
 <translation id="8131740175452115882">አረጋግጥ</translation>
 <translation id="8149426793427495338">የእርስዎ ኮምፒውተ ተኝቷል።</translation>
@@ -1530,6 +1517,7 @@
 <translation id="8308427013383895095">በአውታረመረብ ግንኙነት ችግር ምክንያት የትርጉም ስራው ተሰናክሏል።</translation>
 <translation id="831207732689920588">ይህ ገጽ አጠራጣሪ ነው (በChrome የተጠቆመ)።</translation>
 <translation id="8332188693563227489">የ<ph name="HOST_NAME" /> መዳረሻ ተከልክሏል</translation>
+<translation id="833262891116910667">አድምቅ</translation>
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">በእርስዎ ደህንነት ላይ የሚያመጣቸውን ስጋቶች ከተረዱ አደገኛ ፕሮግራሞቹ ከመወገዳቸው በፊት <ph name="BEGIN_LINK" />ይህን ጣቢያ መጎብኘት<ph name="END_LINK" /> ይችላሉ።</translation>
 <translation id="8349305172487531364">የዕልባቶች አሞሌ</translation>
@@ -1628,8 +1616,6 @@
 <translation id="8957210676456822347">የተያዥ መግቢያ ፈቀዳ</translation>
 <translation id="8962950042226115166">አጠራጣሪ ጣቢያ</translation>
 <translation id="8968766641738584599">ካርድ አስቀምጥ</translation>
-<translation id="8969267497192857913">ማናቸውም እርስዎ የሚተይቡት፣ የሚመለከቱት ማናቸውም ገጽ፣ ወይም ማናቸውም በድር ላይ ያለ ሌላ እንቅስቃሴ እየታየ ነው እና በጣቢያዎች ላይ ያለ ይዘት እርስዎ ሳያውቁት ሊለወጥ ይችላል።
-    <ph name="BEGIN_LEARN_MORE_LINK" />የበለጠ ለመረዳት<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="8971063699422889582">የአገልጋይ እውቅና ማረጋገጫ ጊዜው አልፎበታል።</translation>
 <translation id="8975012916872825179">እንደ ስልክ ቁጥሮች፣ ኢሜይል አድራሻዎች እና የመላኪያ አድራሻዎች ያሉ መረጃዎችን ያካትታል</translation>
 <translation id="8975263830901772334">እርስዎ የሚያትሟቸው የፋይሎች ስም</translation>

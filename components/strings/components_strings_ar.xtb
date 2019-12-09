@@ -9,7 +9,6 @@
 <translation id="1036348656032585052">إيقاف</translation>
 <translation id="1038842779957582377">اسم غير معروف</translation>
 <translation id="1039626062703039346">‏يمكن أن يساعدك Chrome على حماية حسابك على Google وتغيير كلمة المرور. سيؤدي هذا الإجراء إلى إشعار Google بموقع الويب هذا.</translation>
-<translation id="1044897699341250361">المقصود بذلك</translation>
 <translation id="1050038467049342496">إغلاق التطبيقات الأخرى</translation>
 <translation id="1055184225775184556">تراجع عن الإ&amp;ضافة</translation>
 <translation id="1056898198331236512">تحذير</translation>
@@ -184,7 +183,6 @@
 <translation id="1745880797583122200">إدارة متصفِّحك</translation>
 <translation id="17513872634828108">علامات التبويب المفتوحة</translation>
 <translation id="1753706481035618306">رقم الصفحة</translation>
-<translation id="175838129965056221">‏رصد Chrome أنه تمت مراقبة اتصالك</translation>
 <translation id="1763864636252898013">هذا الخادم لم يتمكن من إثبات أن ذلك <ph name="DOMAIN" />؛ بل إنه شهادة أمان غير موثوقة من خلال نظام تشغيل جهازك. وربما يكون السبب في ذلك خطأ في التكوين أو مهاجمًا يعترض الاتصال.</translation>
 <translation id="1768211456781949159">‏<ph name="BEGIN_LINK" />تجربة تشغيل بيانات التشخيص لشبكة Windows<ph name="END_LINK" />.</translation>
 <translation id="1778646502362731194">JIS B0</translation>
@@ -253,7 +251,6 @@
 <translation id="2119867082804433120">عمل ثقب أسفل اليمين</translation>
 <translation id="2129079103035905234">مستشعرات الحركة</translation>
 <translation id="2130448033692577677">‏قد لا يتم تطبيق النماذج التي حدّدتها بسبب عدم ضبط سياسة DnsOverHttpsMode.</translation>
-<translation id="2131277894177304644">‏رصد Chromium أنه تمت مراقبة اتصالك</translation>
 <translation id="213826338245044447">الإشارات المرجعية على الجوّال</translation>
 <translation id="214556005048008348">إلغاء الدفع</translation>
 <translation id="2147827593068025794">المزامنة في الخلفية</translation>
@@ -405,7 +402,6 @@
 <translation id="2799020568854403057">يحتوي موقع الويب المقصود على تطبيقات ضارة</translation>
 <translation id="2799223571221894425">إعادة تشغيل</translation>
 <translation id="2803306138276472711">‏اكتشف التصفح الآمن من Google مؤخرًا <ph name="BEGIN_LINK" />برامج ضارة<ph name="END_LINK" /> على <ph name="SITE" />. أحيانًا تصاب مواقع الويب الآمنة في الوضع العادي ببرامج ضارة.</translation>
-<translation id="281585763351939989">‏رصد Chromium أنه تمت مراقبة اتصالك.</translation>
 <translation id="2824775600643448204">شريط العناوين والبحث</translation>
 <translation id="2826760142808435982">تم تشفير الاتصال ومصادقته باستخدام <ph name="CIPHER" />، ويستخدم <ph name="KX" /> كآلية التبادل الرئيسية.</translation>
 <translation id="2835170189407361413">محو النموذج</translation>
@@ -450,7 +446,6 @@
 <translation id="3024663005179499861">نوع السياسة غير صحيح</translation>
 <translation id="3037605927509011580">عذرًا!</translation>
 <translation id="3041612393474885105">معلومات الشهادة</translation>
-<translation id="304755864151473094">سبب حدوث ذلك</translation>
 <translation id="3057676462092457419">‏لا يتوفر وضع DnsOverHttps <ph name="SECURE_DNS_MODE_SECURE" /> بعد، تم ضبط الوضع على <ph name="SECURE_DNS_MODE_OFF" />.</translation>
 <translation id="3060227939791841287">‏C9 (مغلف)</translation>
 <translation id="3061707000357573562">خدمة رمز التصحيح</translation>
@@ -653,7 +648,7 @@
 <translation id="4075941231477579656">رقم التعريف باللمس</translation>
 <translation id="4079302484614802869">‏تم تعيين تهيئة الخادم الوكيل لاستخدام عنوان URL نص برمجي ‎.pac وليس الخوادم الوكيلة الثابتة.</translation>
 <translation id="4082393374666368382">الإعدادات - الإدارة</translation>
-<translation id="4098354747657067197">موقع مخادع في انتظارك</translation>
+<translation id="4098354747657067197">أمامك موقع مخادع</translation>
 <translation id="4103249731201008433">الرقم التسلسلي للجهاز غير صالح</translation>
 <translation id="4103763322291513355">‏انتقل إلى &lt;strong&gt;chrome://policy&lt;/strong&gt; لمشاهدة قائمة بعناوين URL المضافة إلى القائمة السوداء والسياسات الأخرى التي فرضها مشرف النظام.</translation>
 <translation id="4108231218301530806">استخدام بصمة الإصبع لإثبات ملكيتك لهذه البطاقة المرة القادمة.</translation>
@@ -719,7 +714,7 @@
 <translation id="4305817255990598646">تبديل</translation>
 <translation id="4312613361423056926">B2</translation>
 <translation id="4312866146174492540">حظر (تلقائي)</translation>
-<translation id="4318312030194671742">‏خدمة "Paint Preview Compositor"</translation>
+<translation id="4318312030194671742">‏خدمة Paint Preview Compositor</translation>
 <translation id="4318566738941496689">اسم جهازك وعنوان الشبكة</translation>
 <translation id="4325863107915753736">تعذّر العثور على المقالة</translation>
 <translation id="4326324639298822553">تحقق من تاريخ انتهاء الصلاحية وأعِد المحاولة مرة أخرى</translation>
@@ -736,7 +731,6 @@
 <translation id="4372948949327679948">القيمة <ph name="VALUE_TYPE" /> المتوقعة.</translation>
 <translation id="4377125064752653719">لقد حاولت الوصول إلى <ph name="DOMAIN" />، ولكن جهة إصدار الشهادة التي قدمها الخادم قد أبطلت الشهادة. وهذا يعني أن بيانات اعتماد الأمان التي قدمها الخادم يجب عدم الوثوق بها مطلقًا. فقد تكون على اتصال بأحد المهاجمين.</translation>
 <translation id="4378154925671717803">هاتف</translation>
-<translation id="437847259914972036">تتم مراقبة نشاطك على الإنترنت وأي معلومات تدخلها، ويمكن أن يتم تغيير المحتوى بدون معرفتك.</translation>
 <translation id="4398334096870680409">لا تتوفر هذه الميزة على جهازك.</translation>
 <translation id="4406896451731180161">نتائج البحث</translation>
 <translation id="4408413947728134509"><ph name="NUM_COOKIES" /> من ملفات تعريف الارتباط</translation>
@@ -776,7 +770,6 @@
 <translation id="4594403342090139922">تراجع عن الحذ&amp;ف</translation>
 <translation id="4597348597567598915">الحجم 8</translation>
 <translation id="4600854749408232102">‏C6/C5 (مغلف)</translation>
-<translation id="4613966523036881546">‏لا يثق Google Chrome بشهادة هذا الاتصال، فمن المعروف أنها تُستخدم لاعتراض الشبكة ومراقبتها.</translation>
 <translation id="4635654612248442824">لقد طلب الموقع الإلكتروني <ph name="ORIGIN" /> تطبيق سياسة المصدر
     على جميع طلباته، ولكن لا يمكن تطبيق هذه السياسة حاليًا.</translation>
 <translation id="464342062220857295">ميزات البحث</translation>
@@ -1174,7 +1167,6 @@
 <translation id="6547208576736763147">عمل ثقبَين يسارًا</translation>
 <translation id="6554795675067793129">يدير <ph name="ENROLLMENT_DOMAIN" /> حسابك.</translation>
 <translation id="6556866813142980365">إعادة</translation>
-<translation id="6559565319173126218">‏لا يثق Chrome بشهادة هذا الاتصال، فمن المعروف أنها تُستخدَم لاعتراض الشبكة ومراقبتها.</translation>
 <translation id="6569060085658103619">أنت تعرض صفحة إضافة</translation>
 <translation id="6573200754375280815">عمل ثقبَين يمينًا</translation>
 <translation id="6578796323535178455">‏C2 (مغلف)</translation>
@@ -1208,7 +1200,6 @@
 <translation id="6710594484020273272">&lt;إدخال عبارة البحث&gt;</translation>
 <translation id="671076103358959139">الرمز المميّز للتسجيل:</translation>
 <translation id="6711464428925977395">هناك خطأ ما في الخادم الوكيل، أو العنوان غير صحيح.</translation>
-<translation id="6721811549156553509">يمكن أن تتظاهر أداة مراقبة الشبكة بأنها المواقع الإلكترونية التي تزورها، ويمكنها الاطّلاع على نشاطك وأي معلومات تُدخلها (مثلاً، كلمات المرور أو الرسائل أو بطاقات الائتمان). يجب توخي الحذر عند تنفيذ أي مهام حسّاسة على الإنترنت، لأنها ستصبح مرئية لأداة مراقبة الشبكة، ويمكن لها تغيير المحتوى في الصفحات التي تزورها. وتتضمّن أداة مراقبة الشبكة النشاط في المتصفحات الأخرى والبرامج التي يمكنها الدخول إلى الإنترنت.</translation>
 <translation id="6738516213925468394">تم تشفير بياناتك باستخدام <ph name="BEGIN_LINK" />عبارة مرور المزامنة<ph name="END_LINK" /> في <ph name="TIME" />. يُرجى إدخالها لبدء المزامنة.</translation>
 <translation id="674375294223700098">حدث خطأ غير معروف في شهادة الخادم.</translation>
 <translation id="6744009308914054259">أثناء انتظار اتصال، يمكنك الانتقال إلى "التنزيلات" للاطِّلاع على المقالات بلا اتصال بالإنترنت.</translation>
@@ -1293,7 +1284,6 @@
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />مزيد من المعلومات<ph name="END_LINK" /> حول هذه المشكلة.</translation>
 <translation id="7219179957768738017">الاتصال يستخدم <ph name="SSL_VERSION" />.</translation>
 <translation id="7220786058474068424">جارٍ المعالجة</translation>
-<translation id="7239736667463137521">‏رصد Chrome أنه تمت مراقبة اتصالك.</translation>
 <translation id="7243010569062352439"><ph name="PASSWORDS" />، <ph name="SIGNIN_DATA" /></translation>
 <translation id="724691107663265825">يحتوي موقع الويب المقصود على برامج ضارة</translation>
 <translation id="724975217298816891">‏أدخل تاريخ انتهاء الصلاحية ورمز التحقق من البطاقة (CVC) لـ <ph name="CREDIT_CARD" /> لتحديث تفاصيل بطاقتك. بعد تأكيدك، ستتم مشاركة تفاصيل بطاقتك مع هذا الموقع.</translation>
@@ -1320,7 +1310,6 @@
 <translation id="7346048084945669753">تابع إلى:</translation>
 <translation id="7349430561505560861">A4-Extra</translation>
 <translation id="7353601530677266744">سطر الأوامر</translation>
-<translation id="7353776484425559055">‏لا يثق Chromium بشهادة هذا الاتصال، فمن المعروف أنها تُستخدَم لاعتراض الشبكة ومراقبتها. قد يظهر لك هذا الخطأ بسبب شهادة ثبّتها على جهازك. عند إجراء اتصالات آمنة، يثق Chromium بالشهادات التي تم تثبيتها محليًا على جهاز الجوّال أو جهاز الكمبيوتر لمستخدم. ويتيح هذا للمستخدمين تشغيل الأدوات لفحص الاتصالات وتصحيح الأخطاء بها أثناء تطوير الموقع الإلكتروني أو السماح لبيئات الشركات باعتراض عدد الزيارات الداخلية ومراقبتها. يعرض Chromium تحذيرًا للحالات التي تتم فيها إساءة الاستخدام لاعتراض عدد الزيارات على شبكة الإنترنت المتاحة للجميع.</translation>
 <translation id="7372973238305370288">نتيجة البحث</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" />‏ - <ph name="FULL_DATE" /></translation>
 <translation id="7378594059915113390">عناصر التحكم في الوسائط</translation>
@@ -1382,7 +1371,6 @@
 <translation id="7592362899630581445">تنتهك شهادة الخادم القيود المفروضة على الاسم.</translation>
 <translation id="7598391785903975535">أقل من <ph name="UPPER_ESTIMATE" /></translation>
 <translation id="759889825892636187">يتعذر على <ph name="HOST_NAME" /> معالجة هذا الطلب حاليًا.</translation>
-<translation id="7599841999395223597">‏لا يثق Chrome بشهادة هذا الاتصال، فمن المعروف أنها تُستخدَم لاعتراض الشبكة ومراقبتها. قد يظهر لك هذا الخطأ بسبب شهادة ثبّتها على جهازك. عند إجراء اتصالات آمنة، يثق Chrome بالشهادات التي تم تثبيتها محليًا على جهاز الجوّال أو جهاز الكمبيوتر لمستخدم. ويتيح هذا للمستخدمين تشغيل الأدوات لفحص الاتصالات وتصحيح الأخطاء بها أثناء تطوير الموقع الإلكتروني أو السماح لبيئات الشركات باعتراض عدد الزيارات الداخلية ومراقبتها. يعرض Chrome تحذيرًا للحالات التي يتم فيها إساءة الاستخدام لاعتراض عدد الزيارات على شبكة الإنترنت المتاحة للجميع.</translation>
 <translation id="7600965453749440009">عدم الترجمة مطلقًا من اللغة <ph name="LANGUAGE" /></translation>
 <translation id="7610193165460212391">القيمة خارج النطاق <ph name="VALUE" />.</translation>
 <translation id="7613889955535752492">تاريخ انتهاء الصلاحية: <ph name="EXPIRATION_MONTH" /> / <ph name="EXPIRATION_YEAR" /></translation>
@@ -1492,7 +1480,6 @@
 <translation id="8103161714697287722">طريقة الدفع</translation>
 <translation id="8105368624971345109">إيقاف</translation>
 <translation id="8118489163946903409">طريقة الدفع</translation>
-<translation id="8124023448510659215">‏لا يثق Chromium بشهادة هذا الاتصال، فمن المعروف أنها تُستخدم لاعتراض الشبكة ومراقبتها.</translation>
 <translation id="8127301229239896662">لم يتم تثبيت "<ph name="SOFTWARE_NAME" />" بطريقة صحيحة على جهاز الكمبيوتر أو الشبكة. اطلب من مشرف تقنية المعلومات حل هذه المشكلة.</translation>
 <translation id="8131740175452115882">التأكيد</translation>
 <translation id="8149426793427495338">خضع جهاز الكمبيوتر إلى وضع السكون.</translation>
@@ -1537,6 +1524,7 @@
 <translation id="8308427013383895095">تعذّرت الترجمة بسبب حدوث مشكلة في الاتصال بالشبكة.</translation>
 <translation id="831207732689920588">‏هذه الصفحة مريبة (تم وضع علامة عليها من خلال Chrome).</translation>
 <translation id="8332188693563227489">تم رفض الدخول إلى <ph name="HOST_NAME" />.</translation>
+<translation id="833262891116910667">تمييز</translation>
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">إذا كنت على دراية بالمخاطر التي تهدد أمانك، يمكنك <ph name="BEGIN_LINK" />زيارة هذا الموقع<ph name="END_LINK" /> قبل أن تتم إزالة البرامج الضارة.</translation>
 <translation id="8349305172487531364">شريط الإشارات</translation>
@@ -1635,8 +1623,6 @@
 <translation id="8957210676456822347">تفويض المدخل المقيد</translation>
 <translation id="8962950042226115166">موقع إلكتروني مريب</translation>
 <translation id="8968766641738584599">حفظ البطاقة</translation>
-<translation id="8969267497192857913">تتم مراقبة أي نص تكتبه أو أي صفحات تطّلع عليها أو أي نشاط آخر تجريه على الإنترنت، ويمكن أن يتم تغيير المحتوى على المواقع الإلكترونية بدون معرفتك.
-    <ph name="BEGIN_LEARN_MORE_LINK" />مزيد من المعلومات<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="8971063699422889582">انتهت صلاحية شهادة الخادم.</translation>
 <translation id="8975012916872825179">تتضمّن معلومات مثل أرقام الهواتف وعناوين البريد الإلكتروني وعناوين الشحن.</translation>
 <translation id="8975263830901772334">أسماء الملفات التي طبعتها</translation>

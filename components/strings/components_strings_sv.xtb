@@ -9,7 +9,6 @@
 <translation id="1036348656032585052">Inaktivera</translation>
 <translation id="1038842779957582377">okänt namn</translation>
 <translation id="1039626062703039346">Du kan skydda Google-kontot genom att byta lösenord. Google meddelas då om den här webbplatsen.</translation>
-<translation id="1044897699341250361">Vad innebär det?</translation>
 <translation id="1050038467049342496">Stäng andra appar</translation>
 <translation id="1055184225775184556">&amp;Ångra Lägg till</translation>
 <translation id="1056898198331236512">Varning</translation>
@@ -184,7 +183,6 @@
 <translation id="1745880797583122200">Din webbläsare hanteras</translation>
 <translation id="17513872634828108">Öppna flikar</translation>
 <translation id="1753706481035618306">Sidnummer</translation>
-<translation id="175838129965056221">Chrome har upptäckt att din anslutning övervakas</translation>
 <translation id="1763864636252898013">Servern kunde inte bevisa att den är <ph name="DOMAIN" /> eftersom enhetens operativsystem inte litar på dess säkerhetscertifikat. Detta kan orsakas av en felaktig konfigurering eller att någon spärrar anslutningen.</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Testa att köra nätverksdiagnostik för Windows<ph name="END_LINK" />.</translation>
 <translation id="1778646502362731194">JIS B0</translation>
@@ -253,7 +251,6 @@
 <translation id="2119867082804433120">Hål nere till höger</translation>
 <translation id="2129079103035905234">Rörelsesensorer</translation>
 <translation id="2130448033692577677">Det går inte att tillämpa de angivna mallarna eftersom principen DnsOverHttpsMode inte har ställts in.</translation>
-<translation id="2131277894177304644">Chromium har upptäckt att din anslutning övervakas</translation>
 <translation id="213826338245044447">Bokmärken i mobilen</translation>
 <translation id="214556005048008348">Avbryt betalningen</translation>
 <translation id="2147827593068025794">Bakgrundssynkronisering</translation>
@@ -405,7 +402,6 @@
 <translation id="2799020568854403057">Det finns skadliga appar på webbplatsen du är på väg till</translation>
 <translation id="2799223571221894425">Starta om</translation>
 <translation id="2803306138276472711">Google Säker webbsökning upptäckte nyligen <ph name="BEGIN_LINK" />skadlig programvara<ph name="END_LINK" /> på <ph name="SITE" />. Ibland förekommer det skadlig programvara på webbplatser som vanligtvis är säkra.</translation>
-<translation id="281585763351939989">Chromium har upptäckt att din anslutning övervakas.</translation>
 <translation id="2824775600643448204">Adress- och sökfält</translation>
 <translation id="2826760142808435982">Anslutningen är krypterad och verifieras med <ph name="CIPHER" /> och använder <ph name="KX" /> som nyckelutbytesmekanism.</translation>
 <translation id="2835170189407361413">Rensa formuläret</translation>
@@ -450,7 +446,6 @@
 <translation id="3024663005179499861">Felaktig policytyp</translation>
 <translation id="3037605927509011580">Oj, ett fel har uppstått!</translation>
 <translation id="3041612393474885105">Certifikatinformation</translation>
-<translation id="304755864151473094">Varför detta händer</translation>
 <translation id="3057676462092457419">Läget <ph name="SECURE_DNS_MODE_SECURE" /> stöds inte ännu för DnsOverHttps. Inställningen <ph name="SECURE_DNS_MODE_OFF" /> används i stället.</translation>
 <translation id="3060227939791841287">C9 (kuvert)</translation>
 <translation id="3061707000357573562">Tjänst för programkorrigering</translation>
@@ -736,7 +731,6 @@
 <translation id="4372948949327679948">Ett <ph name="VALUE_TYPE" />-värde förväntades.</translation>
 <translation id="4377125064752653719">Du försökte öppna <ph name="DOMAIN" />, men servern visade ett certifikat som har återkallats av utfärdaren. Det innebär att säkerhetsuppgifterna som servern visar inte är absolut tillförlitliga. Du kanske kommunicerar med en skadlig server.</translation>
 <translation id="4378154925671717803">Mobil</translation>
-<translation id="437847259914972036">Din aktivitet på webben och alla uppgifter som du anger övervakas. Innehållet kan ändras utan din vetskap.</translation>
 <translation id="4398334096870680409">Funktionen är inte tillgänglig på din enhet.</translation>
 <translation id="4406896451731180161">sökresultat</translation>
 <translation id="4408413947728134509">Cookies <ph name="NUM_COOKIES" /></translation>
@@ -776,7 +770,6 @@
 <translation id="4594403342090139922">&amp;Ångra Ta bort</translation>
 <translation id="4597348597567598915">Storlek 8</translation>
 <translation id="4600854749408232102">C6/C5 (kuvert)</translation>
-<translation id="4613966523036881546">Certifikatet för anslutningen är inte betrott i Google Chrome eftersom det ibland används för kapning och övervakning av nätverk.</translation>
 <translation id="4635654612248442824">Webbplatsen <ph name="ORIGIN" /> har begärt att en ursprungsprincip
     ska gälla för varje begäran som ställs till den, men denna princip går inte att tillämpa just nu.</translation>
 <translation id="464342062220857295">Sökfunktioner</translation>
@@ -1174,7 +1167,6 @@
 <translation id="6547208576736763147">Två hål till vänster</translation>
 <translation id="6554795675067793129">Kontot hanteras av <ph name="ENROLLMENT_DOMAIN" />.</translation>
 <translation id="6556866813142980365">Upprepa</translation>
-<translation id="6559565319173126218">Certifikatet för anslutningen är inte betrott i Chrome eftersom det ibland används till kapning och övervakning av nätverk.</translation>
 <translation id="6569060085658103619">Du visar en tilläggssida</translation>
 <translation id="6573200754375280815">Två hål till höger</translation>
 <translation id="6578796323535178455">C2 (kuvert)</translation>
@@ -1208,7 +1200,6 @@
 <translation id="6710594484020273272">&lt;Ange sökterm&gt;</translation>
 <translation id="671076103358959139">Registreringstoken:</translation>
 <translation id="6711464428925977395">Något är fel med proxyservern eller så är adressen felaktig.</translation>
-<translation id="6721811549156553509">Nätverksövervakaren kan imitera webbplatser du besöker och se din aktivitet och alla uppgifter du anger (t.ex. lösenord, meddelanden och kreditkort). Var försiktig när du hanterar känsliga uppgifter online, eftersom de kan vara synliga för nätverksövervakaren. Nätverksövervakaren kan även ändra innehåll på de sidor du besöker. Detta gäller även aktivitet i andra webbläsare och program med åtkomst till internet.</translation>
 <translation id="6738516213925468394">Din data krypterades med din <ph name="BEGIN_LINK" />lösenfras för synkronisering<ph name="END_LINK" /> den <ph name="TIME" />. Ange den om du vill starta synkroniseringen.</translation>
 <translation id="674375294223700098">Fel - okänt servercertifikat.</translation>
 <translation id="6744009308914054259">Du kan öppna Nedladdningar och läsa artiklar offline medan du väntar på anslutningen.</translation>
@@ -1293,7 +1284,6 @@
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Läs mer<ph name="END_LINK" /> om problemet.</translation>
 <translation id="7219179957768738017">För anslutningen används <ph name="SSL_VERSION" />.</translation>
 <translation id="7220786058474068424">Bearbetning pågår</translation>
-<translation id="7239736667463137521">Chrome har upptäckt att din anslutning övervakas.</translation>
 <translation id="7243010569062352439"><ph name="PASSWORDS" />; <ph name="SIGNIN_DATA" /></translation>
 <translation id="724691107663265825">Det förekommer skadlig programvara på följande sida</translation>
 <translation id="724975217298816891">Ange utgångsdatum och CVC-kod för <ph name="CREDIT_CARD" /> om du vill uppdatera kortinformationen. När du bekräftar delas kortinformationen med den här webbplatsen.</translation>
@@ -1320,7 +1310,6 @@ Mer information.
 <translation id="7346048084945669753">Är anknuten:</translation>
 <translation id="7349430561505560861">A4-Extra</translation>
 <translation id="7353601530677266744">Kommandorad</translation>
-<translation id="7353776484425559055">Certifikatet för anslutningen är inte betrott i Chromium eftersom det ibland används till kapning och övervakning av nätverk. Detta fel kan visas på grund av att du har installerat ett certifikat på enheten. När säkra anslutningar upprättas litar Chromium på certifikat som har installerats på användarens dator eller mobila enhet. På så sätt kan användare köra verktyg för att granska eller felsöka sina anslutningar under webbplatsutveckling, och intern trafik kan fångas upp och övervakas i företagsmiljöer. När detta missbrukas i syfte att fånga upp offentlig trafik på internet visas en varning i Chromium.</translation>
 <translation id="7372973238305370288">sökresultat</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378594059915113390">Mediereglage</translation>
@@ -1382,7 +1371,6 @@ Mer information.
 <translation id="7592362899630581445">Serverns certifikat strider mot namnrestriktionerna.</translation>
 <translation id="7598391785903975535">Mindre än <ph name="UPPER_ESTIMATE" /></translation>
 <translation id="759889825892636187"><ph name="HOST_NAME" /> kan för närvarande inte hantera förfrågan.</translation>
-<translation id="7599841999395223597">Certifikatet för anslutningen är inte betrott i Chrome eftersom det ibland används till kapning och övervakning av nätverk. Detta fel kan visas på grund av att du har installerat ett certifikat på enheten. När säkra anslutningar upprättas litar Chrome på certifikat som har installerats på användarens dator eller mobila enhet. På så sätt kan användare köra verktyg för att granska eller felsöka sina anslutningar under webbplatsutveckling, och intern trafik kan fångas upp och övervakas i företagsmiljöer. När detta missbrukas i syfte att fånga upp offentlig trafik på internet visas en varning i Chrome.</translation>
 <translation id="7600965453749440009">Översätt aldrig från <ph name="LANGUAGE" /></translation>
 <translation id="7610193165460212391">Värdet är utanför intervallet <ph name="VALUE" />.</translation>
 <translation id="7613889955535752492">Upphör: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
@@ -1492,7 +1480,6 @@ Mer information.
 <translation id="8103161714697287722">Betalningsmetod</translation>
 <translation id="8105368624971345109">Inaktivera</translation>
 <translation id="8118489163946903409">Betalningsmetod</translation>
-<translation id="8124023448510659215">Certifikatet för anslutningen är inte betrott i Chromium eftersom det ibland används till kapning och övervakning av nätverk.</translation>
 <translation id="8127301229239896662"><ph name="SOFTWARE_NAME" /> har inte installerats korrekt på datorn eller nätverket. Be IT-administratören om hjälp med problemet.</translation>
 <translation id="8131740175452115882">Bekräfta</translation>
 <translation id="8149426793427495338">Datorn gick i viloläge.</translation>
@@ -1537,6 +1524,7 @@ Mer information.
 <translation id="8308427013383895095">Det gick inte att översätta på grund av ett nätverksfel.</translation>
 <translation id="831207732689920588">Sidan är misstänkt (flaggas av Chrome).</translation>
 <translation id="8332188693563227489">Åtkomst nekades till <ph name="HOST_NAME" />.</translation>
+<translation id="833262891116910667">Markera</translation>
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">Om du är medveten om säkerhetsriskerna kan du <ph name="BEGIN_LINK" />besöka den här osäkra webbplatsen<ph name="END_LINK" /> innan de skadliga programmen har tagits bort.</translation>
 <translation id="8349305172487531364">Bokmärkesfältet</translation>
@@ -1635,8 +1623,6 @@ Mer information:
 <translation id="8957210676456822347">Auktorisering av infångstportal</translation>
 <translation id="8962950042226115166">Misstänkt webbplats</translation>
 <translation id="8968766641738584599">Spara kortet</translation>
-<translation id="8969267497192857913">Allt du skriver, sidor du visar och all annan aktivitet på webben övervakas. Innehåll på webbplatser kan ändras utan din vetskap.
-    <ph name="BEGIN_LEARN_MORE_LINK" />Läs mer<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="8971063699422889582">Servercertifikatet har gått ut.</translation>
 <translation id="8975012916872825179">Gäller uppgifter som telefonnummer, e-postadresser och leveransadresser</translation>
 <translation id="8975263830901772334">Namn på filer du skriver ut</translation>
