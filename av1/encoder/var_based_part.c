@@ -399,7 +399,10 @@ static AOM_INLINE void set_vbp_thresholds(AV1_COMP *cpi, int64_t thresholds[],
     thresholds[0] = threshold_base;
     thresholds[1] = threshold_base;
     thresholds[2] = threshold_base >> 2;
-    thresholds[3] = threshold_base >> 2;
+    thresholds[3] =
+        cpi->sf.hybrid_intra_pickmode && cpi->oxcf.rc_mode == AOM_CBR
+            ? threshold_base << 1
+            : threshold_base >> 2;
     thresholds[4] = threshold_base << 2;
   } else {
     // Increase base variance threshold based on content_state/sum_diff level.
