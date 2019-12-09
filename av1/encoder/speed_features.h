@@ -566,6 +566,9 @@ typedef struct SPEED_FEATURES {
   // TRANSLATION and AFFINE(based on number of warp neighbors)
   int prune_warp_using_wmtype;
 
+  // Prune warped motion search using previous frame stats.
+  int prune_warped_prob_thresh;
+
   // Enable/disable interintra wedge search.
   int disable_wedge_interintra_search;
 

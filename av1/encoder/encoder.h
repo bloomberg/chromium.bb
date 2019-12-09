@@ -610,6 +610,7 @@ typedef struct RD_COUNTS {
   int skip_mode_used_flag;
   int tx_type_used[TX_SIZES_ALL][TX_TYPES];
   int obmc_used[BLOCK_SIZES_ALL][2];
+  int warped_used[2];
 } RD_COUNTS;
 
 typedef struct ThreadData {
@@ -986,6 +987,7 @@ typedef struct AV1_COMP {
   BLOCK_SIZE vbp_bsize_min;
 
   int obmc_probs[FRAME_UPDATE_TYPES][BLOCK_SIZES_ALL];
+  int warped_probs[FRAME_UPDATE_TYPES];
   int tx_type_probs[FRAME_UPDATE_TYPES][TX_SIZES_ALL][TX_TYPES];
   int tx_type_probs_thresh[FRAME_UPDATE_TYPES];
 

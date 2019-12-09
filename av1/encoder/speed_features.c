@@ -230,6 +230,14 @@ static void set_good_speed_feature_framesize_dependent(
 
     sf->prune_obmc_prob_thresh = 16;
   }
+
+  if (speed >= 5) {
+    if (is_720p_or_larger) {
+      sf->prune_warped_prob_thresh = 16;
+    } else if (is_480p_or_larger) {
+      sf->prune_warped_prob_thresh = 8;
+    }
+  }
 }
 
 static void set_rt_speed_feature_framesize_dependent(const AV1_COMP *const cpi,
@@ -944,6 +952,7 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
   sf->nonrd_merge_partition = 0;
   sf->disable_interinter_wedge = 0;
   sf->prune_ref_mv_idx_search = 0;
+  sf->prune_warped_prob_thresh = 0;
 
   if (oxcf->mode == GOOD)
     set_good_speed_features_framesize_independent(cpi, sf, speed);

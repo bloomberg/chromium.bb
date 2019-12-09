@@ -247,6 +247,9 @@ const int default_obmc_probs[FRAME_UPDATE_TYPES][BLOCK_SIZES_ALL] = {
     35, 32, 19, 16,  16, 0,  0,  49, 55, 29, 19 }
 };
 
+const int default_warped_probs[FRAME_UPDATE_TYPES] = { 64, 64, 64, 64,
+                                                       64, 64, 64 };
+
 static INLINE void Scale2Ratio(AOM_SCALING mode, int *hr, int *hs) {
   switch (mode) {
     case NORMAL:
@@ -5044,6 +5047,10 @@ static int encode_with_recode_loop(AV1_COMP *cpi, size_t *size, uint8_t *dest) {
   if (!cpi->sf.disable_obmc && cpi->sf.prune_obmc_prob_thresh > 0 &&
       cm->current_frame.frame_type == KEY_FRAME) {
     av1_copy(cpi->obmc_probs, default_obmc_probs);
+  }
+  if (cpi->sf.prune_warped_prob_thresh > 0 &&
+      cm->current_frame.frame_type == KEY_FRAME) {
+    av1_copy(cpi->warped_probs, default_warped_probs);
   }
 
   // Loop variables
