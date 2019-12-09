@@ -436,6 +436,28 @@ def _generate_platform_c_files(replication_config, chroot):
   return generated_files
 
 
+def _get_private_overlay_package_root(ref, package):
+  """Returns the absolute path to the root of a given private overlay.
+
+  Args:
+    ref (uprev_lib.GitRef): GitRef for the private overlay.
+    package (str): Path to the package in the overlay.
+  """
+  # There might be a cleaner way to map from package -> path within the source
+  # tree. For now, just use string patterns.
+  private_overlay_ref_pattern = r'chromeos\/overlays\/overlay-([\w-]+)-private'
+  match = re.match(private_overlay_ref_pattern, ref.path)
+  if not match:
+    raise ValueError('ref.path must match the pattern: %s. Actual ref: %s' %
+                     (private_overlay_ref_pattern, ref))
+
+  overlay = match.group(1)
+
+  return os.path.join(constants.SOURCE_ROOT,
+                      'src/private-overlays/overlay-%s-private' % overlay,
+                      package)
+
+
 @uprevs_versioned_package('chromeos-base/chromeos-config-bsp-coral-private')
 def replicate_private_config(_build_targets, refs, chroot):
   """Replicate a private cros_config change to the corresponding public config.
@@ -449,7 +471,7 @@ def replicate_private_config(_build_targets, refs, chroot):
     raise ValueError('Expected exactly one ref, actual %s' % refs)
 
   # Expect a replication_config.jsonpb in the package root.
-  package_root = os.path.join(constants.SOURCE_ROOT, refs[0].path, package)
+  package_root = _get_private_overlay_package_root(refs[0], package)
   replication_config_path = os.path.join(package_root,
                                          'replication_config.jsonpb')
 

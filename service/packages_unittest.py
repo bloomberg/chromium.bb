@@ -110,9 +110,11 @@ class ReplicatePrivateConfigTest(cros_test_lib.RunCommandTempDirTestCase):
   def setUp(self):
     # Set up fake public and private chromeos-config overlays.
     private_package_root = (
-        'overlay-coral-private/chromeos-base/chromeos-config-bsp-coral-private')
+        'src/private-overlays/overlay-coral-private/chromeos-base/'
+        'chromeos-config-bsp-coral-private'
+    )
     self.public_package_root = (
-        'overlay-coral/chromeos-base/chromeos-config-bsp-coral')
+        'src/overlays/overlay-coral/chromeos-base/chromeos-config-bsp-coral')
     file_layout = (
         D(os.path.join(private_package_root, 'files'), ['build_config.json']),
         D(private_package_root, ['replication_config.jsonpb']),
@@ -190,7 +192,12 @@ class ReplicatePrivateConfigTest(cros_test_lib.RunCommandTempDirTestCase):
 
   def test_replicate_private_config(self):
     """Basic replication test."""
-    refs = [GitRef(path='overlay-coral-private', ref='master', revision='123')]
+    refs = [
+        GitRef(
+            path='chromeos/overlays/overlay-coral-private',
+            ref='master',
+            revision='123')
+    ]
     chroot = Chroot()
     result = packages.replicate_private_config(
         _build_targets=None, refs=refs, chroot=chroot)
@@ -243,7 +250,12 @@ class ReplicatePrivateConfigTest(cros_test_lib.RunCommandTempDirTestCase):
     osutils.WriteFile(self.replication_config_path,
                       json_format.MessageToJson(replication_config))
 
-    refs = [GitRef(path='overlay-coral-private', ref='master', revision='123')]
+    refs = [
+        GitRef(
+            path='chromeos/overlays/overlay-coral-private',
+            ref='master',
+            revision='123')
+    ]
     result = packages.replicate_private_config(
         _build_targets=None, refs=refs, chroot=Chroot())
 
@@ -270,7 +282,12 @@ class ReplicatePrivateConfigTest(cros_test_lib.RunCommandTempDirTestCase):
     osutils.WriteFile(self.replication_config_path,
                       json_format.MessageToJson(replication_config))
 
-    refs = [GitRef(path='overlay-coral-private', ref='master', revision='123')]
+    refs = [
+        GitRef(
+            path='chromeos/overlays/overlay-coral-private',
+            ref='master',
+            revision='123')
+    ]
     with self.assertRaisesRegex(
         ValueError, 'Expected at most one build_config.json destination path.'):
       packages.replicate_private_config(
@@ -281,7 +298,12 @@ class ReplicatePrivateConfigTest(cros_test_lib.RunCommandTempDirTestCase):
     self.rc.SetDefaultCmdResult(
         side_effect=self._write_incorrect_generated_c_files)
 
-    refs = [GitRef(path='overlay-coral-private', ref='master', revision='123')]
+    refs = [
+        GitRef(
+            path='chromeos/overlays/overlay-coral-private',
+            ref='master',
+            revision='123')
+    ]
     chroot = Chroot()
 
     with self.assertRaisesRegex(packages.GeneratedCrosConfigFilesError,
@@ -310,7 +332,22 @@ class ReplicatePrivateConfigTest(cros_test_lib.RunCommandTempDirTestCase):
         ValueError, 'Expected ReplicationConfig missing at %s' %
         self.replication_config_path):
       refs = [
-          GitRef(path='overlay-coral-private', ref='master', revision='123')
+          GitRef(
+              path='chromeos/overlays/overlay-coral-private',
+              ref='master',
+              revision='123')
+      ]
+      packages.replicate_private_config(
+          _build_targets=None, refs=refs, chroot=None)
+
+  def test_replicate_private_config_wrong_git_ref_path(self):
+    """An error is thrown if the git ref doesn't point to a private overlay."""
+    with self.assertRaisesRegex(ValueError, 'ref.path must match the pattern'):
+      refs = [
+          GitRef(
+              path='a/b/c',
+              ref='master',
+              revision='123')
       ]
       packages.replicate_private_config(
           _build_targets=None, refs=refs, chroot=None)
