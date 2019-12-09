@@ -14,6 +14,7 @@
     - [Xcode builds](#xcode-builds)
     - [Emscripten builds](#emscripten-builds)
     - [Extra Build Flags](#extra-build-flags)
+    - [Build with VMAF support](#build-with-vmaf)
 2. [Testing the library](#testing-the-av1-codec)
     - [Basics](#testing-basics)
         - [Unit tests](#1_unit-tests)
@@ -293,6 +294,24 @@ These flags can be used, for example, to enable asserts in a release build:
         -DCMAKE_BUILD_TYPE=Release \
         -DAOM_EXTRA_C_FLAGS=-UNDEBUG \
         -DAOM_EXTRA_CXX_FLAGS=-UNDEBUG
+~~~
+
+### Build with VMAF support
+
+After installing
+[libvmaf.a](https://github.com/Netflix/vmaf/blob/master/resource/doc/libvmaf.md),
+you can use it with the encoder:
+
+~~~
+    $ cmake path/to/aom -DCONFIG_TUNE_VMAF=1
+~~~
+
+Please note that the default VMAF model
+("/usr/local/share/model/vmaf_v0.6.1.pkl")
+will be used unless you set the following flag when running the encoder:
+
+~~~
+    # --vmaf-model-path=path/to/model
 ~~~
 
 ## Testing the AV1 codec

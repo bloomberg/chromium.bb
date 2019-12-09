@@ -47,6 +47,7 @@ struct av1_extracfg {
   unsigned int max_gf_interval;
   unsigned int gf_max_pyr_height;
   aom_tune_metric tuning;
+  const char *vmaf_model_path;
   unsigned int cq_level;  // constrained quality level
   unsigned int rc_max_intra_bitrate_pct;
   unsigned int rc_max_inter_bitrate_pct;
@@ -152,39 +153,40 @@ struct av1_extracfg {
 };
 
 static struct av1_extracfg default_extra_cfg = {
-  0,                       // cpu_used
-  1,                       // enable_auto_alt_ref
-  0,                       // enable_auto_bwd_ref
-  0,                       // noise_sensitivity
-  CONFIG_SHARP_SETTINGS,   // sharpness
-  0,                       // static_thresh
-  1,                       // row_mt
-  0,                       // tile_columns
-  0,                       // tile_rows
-  1,                       // enable_tpl_model
-  1,                       // enable_keyframe_filtering
-  7,                       // arnr_max_frames
-  5,                       // arnr_strength
-  0,                       // min_gf_interval; 0 -> default decision
-  0,                       // max_gf_interval; 0 -> default decision
-  4,                       // gf_max_pyr_height
-  AOM_TUNE_PSNR,           // tuning
-  10,                      // cq_level
-  0,                       // rc_max_intra_bitrate_pct
-  0,                       // rc_max_inter_bitrate_pct
-  0,                       // gf_cbr_boost_pct
-  0,                       // lossless
-  !CONFIG_SHARP_SETTINGS,  // enable_cdef
-  1,                       // enable_restoration
-  1,                       // force_video_mode
-  1,                       // enable_obmc
-  3,                       // disable_trellis_quant
-  0,                       // enable_qm
-  DEFAULT_QM_Y,            // qm_y
-  DEFAULT_QM_U,            // qm_u
-  DEFAULT_QM_V,            // qm_v
-  DEFAULT_QM_FIRST,        // qm_min
-  DEFAULT_QM_LAST,         // qm_max
+  0,                      // cpu_used
+  1,                      // enable_auto_alt_ref
+  0,                      // enable_auto_bwd_ref
+  0,                      // noise_sensitivity
+  CONFIG_SHARP_SETTINGS,  // sharpness
+  0,                      // static_thresh
+  1,                      // row_mt
+  0,                      // tile_columns
+  0,                      // tile_rows
+  1,                      // enable_tpl_model
+  1,                      // enable_keyframe_filtering
+  7,                      // arnr_max_frames
+  5,                      // arnr_strength
+  0,                      // min_gf_interval; 0 -> default decision
+  0,                      // max_gf_interval; 0 -> default decision
+  4,                      // gf_max_pyr_height
+  AOM_TUNE_PSNR,          // tuning
+  "/usr/local/share/model/vmaf_v0.6.1.pkl",  // VMAF model path
+  10,                                        // cq_level
+  0,                                         // rc_max_intra_bitrate_pct
+  0,                                         // rc_max_inter_bitrate_pct
+  0,                                         // gf_cbr_boost_pct
+  0,                                         // lossless
+  !CONFIG_SHARP_SETTINGS,                    // enable_cdef
+  1,                                         // enable_restoration
+  1,                                         // force_video_mode
+  1,                                         // enable_obmc
+  3,                                         // disable_trellis_quant
+  0,                                         // enable_qm
+  DEFAULT_QM_Y,                              // qm_y
+  DEFAULT_QM_U,                              // qm_u
+  DEFAULT_QM_V,                              // qm_v
+  DEFAULT_QM_FIRST,                          // qm_min
+  DEFAULT_QM_LAST,                           // qm_max
 #if CONFIG_DIST_8X8
   0,
 #endif
@@ -474,7 +476,10 @@ static aom_codec_err_t validate_config(aom_codec_alg_priv_t *ctx,
               AOM_CICP_MC_ICTCP);
   RANGE_CHECK(extra_cfg, color_range, 0, 1);
 
-#if CONFIG_DIST_8X8
+#if CONFIG_TUNE_VMAF
+  RANGE_CHECK(extra_cfg, tuning, AOM_TUNE_PSNR,
+              AOM_TUNE_VMAF_WITHOUT_PREPROCESSING);
+#elif CONFIG_DIST_8X8
   RANGE_CHECK(extra_cfg, tuning, AOM_TUNE_PSNR, AOM_TUNE_DAALA_DIST);
 #else
   RANGE_CHECK(extra_cfg, tuning, AOM_TUNE_PSNR, AOM_TUNE_SSIM);
@@ -824,6 +829,7 @@ static aom_codec_err_t set_encoder_config(AV1EncoderConfig *oxcf,
   oxcf->gf_max_pyr_height = extra_cfg->gf_max_pyr_height;
 
   oxcf->tuning = extra_cfg->tuning;
+  oxcf->vmaf_model_path = extra_cfg->vmaf_model_path;
   oxcf->content = extra_cfg->content;
   oxcf->cdf_update_mode = (uint8_t)extra_cfg->cdf_update_mode;
   oxcf->superblock_size = extra_cfg->superblock_size;
@@ -1598,6 +1604,13 @@ static aom_codec_err_t ctrl_set_mv_cost_upd_freq(aom_codec_alg_priv_t *ctx,
                                                  va_list args) {
   struct av1_extracfg extra_cfg = ctx->extra_cfg;
   extra_cfg.mv_cost_upd_freq = CAST(AV1E_SET_MV_COST_UPD_FREQ, args);
+  return update_extra_cfg(ctx, &extra_cfg);
+}
+
+static aom_codec_err_t ctrl_set_vmaf_model_path(aom_codec_alg_priv_t *ctx,
+                                                va_list args) {
+  struct av1_extracfg extra_cfg = ctx->extra_cfg;
+  extra_cfg.vmaf_model_path = CAST(AV1E_SET_VMAF_MODEL_PATH, args);
   return update_extra_cfg(ctx, &extra_cfg);
 }
 
@@ -2519,6 +2532,7 @@ static aom_codec_ctrl_fn_map_t encoder_ctrl_maps[] = {
   { AV1E_SET_RENDER_SIZE, ctrl_set_render_size },
   { AV1E_SET_SUPERBLOCK_SIZE, ctrl_set_superblock_size },
   { AV1E_SET_SINGLE_TILE_DECODING, ctrl_set_single_tile_decoding },
+  { AV1E_SET_VMAF_MODEL_PATH, ctrl_set_vmaf_model_path },
   { AV1E_SET_FILM_GRAIN_TEST_VECTOR, ctrl_set_film_grain_test_vector },
   { AV1E_SET_FILM_GRAIN_TABLE, ctrl_set_film_grain_table },
   { AV1E_SET_DENOISE_NOISE_LEVEL, ctrl_set_denoise_noise_level },

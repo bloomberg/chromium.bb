@@ -394,6 +394,10 @@ static const struct arg_enum_list tuning_enum[] = {
   { "cdef-dist", AOM_TUNE_CDEF_DIST },
   { "daala-dist", AOM_TUNE_DAALA_DIST },
 #endif
+#if CONFIG_TUNE_VMAF
+  { "vmaf_with_preprocessing", AOM_TUNE_VMAF_WITH_PREPROCESSING },
+  { "vmaf_without_preprocessing", AOM_TUNE_VMAF_WITHOUT_PREPROCESSING },
+#endif
   { NULL, 0 }
 };
 static const arg_def_t tune_metric =
@@ -612,6 +616,10 @@ static const arg_def_t timing_info =
                  "Signal timing info in the bitstream (model unly works for no "
                  "hidden frames, no super-res yet):",
                  timing_info_enum);
+#if CONFIG_TUNE_VMAF
+static const arg_def_t vmaf_model_path =
+    ARG_DEF(NULL, "vmaf-model-path", 1, "Path to the VMAF model file");
+#endif
 static const arg_def_t film_grain_test =
     ARG_DEF(NULL, "film-grain-test", 1,
             "Film grain test vectors (0: none (default), 1: test-1  2: test-2, "
@@ -900,6 +908,9 @@ static const arg_def_t *av1_args[] = { &cpu_used_av1,
                                        &sframe_dist,
                                        &sframe_mode,
                                        &save_as_annexb,
+#if CONFIG_TUNE_VMAF
+                                       &vmaf_model_path,
+#endif
                                        NULL };
 static const int av1_arg_ctrl_map[] = { AOME_SET_CPUUSED,
                                         AOME_SET_ENABLEAUTOALTREF,
@@ -998,6 +1009,9 @@ static const int av1_arg_ctrl_map[] = { AOME_SET_CPUUSED,
                                         AV1E_SET_TARGET_SEQ_LEVEL_IDX,
                                         AV1E_SET_TIER_MASK,
                                         AV1E_SET_MIN_CR,
+#if CONFIG_TUNE_VMAF
+                                        AV1E_SET_VMAF_MODEL_PATH,
+#endif
                                         0 };
 #endif  // CONFIG_AV1_ENCODER
 
@@ -1072,6 +1086,9 @@ struct stream_config {
   int write_ivf;
   // whether to use 16bit internal buffers
   int use_16bit_internal;
+#if CONFIG_TUNE_VMAF
+  const char *vmaf_model_path;
+#endif
 };
 
 struct stream_state {
@@ -1564,6 +1581,10 @@ static int parse_stream_params(struct AvxEncoderConfig *global,
     } else if (arg_match(&arg, &tile_height, argi)) {
       config->cfg.tile_height_count =
           arg_parse_list(&arg, config->cfg.tile_heights, MAX_TILE_HEIGHTS);
+#if CONFIG_TUNE_VMAF
+    } else if (arg_match(&arg, &vmaf_model_path, argi)) {
+      config->vmaf_model_path = arg.val;
+#endif
     } else if (global->usage == AOM_USAGE_REALTIME &&
                arg_match(&arg, &enable_restoration, argi)) {
       if (arg_parse_uint(&arg) == 1) {
@@ -1870,6 +1891,14 @@ static void initialize_encoder(struct stream_state *stream,
 
     ctx_exit_on_error(&stream->encoder, "Failed to control codec");
   }
+
+#if CONFIG_TUNE_VMAF
+  if (stream->config.vmaf_model_path) {
+    aom_codec_control_(&stream->encoder, AV1E_SET_VMAF_MODEL_PATH,
+                       stream->config.vmaf_model_path);
+  }
+#endif
+
   if (stream->config.film_grain_filename) {
     aom_codec_control_(&stream->encoder, AV1E_SET_FILM_GRAIN_TABLE,
                        stream->config.film_grain_filename);

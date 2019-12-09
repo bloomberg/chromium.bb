@@ -343,6 +343,7 @@ typedef struct AV1EncoderConfig {
   aom_fixed_buf_t two_pass_stats_in;
 
   aom_tune_metric tuning;
+  const char *vmaf_model_path;
   aom_tune_content content;
   int use_highbitdepth;
   aom_color_primaries_t color_primaries;

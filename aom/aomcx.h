@@ -1176,7 +1176,12 @@ enum aome_enc_control_id {
   /*!\brief Codec control function to set reference frame config:
    * the ref_idx and the refresh flags for each buffer slot.
    */
-  AV1E_SET_SVC_REF_FRAME_CONFIG = 152
+  AV1E_SET_SVC_REF_FRAME_CONFIG = 152,
+
+  /*!\brief Codec control function to set the path to the VMAF model used when
+   * tuning the encoder for VMAF.
+   */
+  AV1E_SET_VMAF_MODEL_PATH = 153,
 };
 
 /*!\brief aom 1-D scaling mode
@@ -1263,7 +1268,9 @@ typedef enum {
   AOM_TUNE_PSNR,
   AOM_TUNE_SSIM,
   AOM_TUNE_CDEF_DIST,
-  AOM_TUNE_DAALA_DIST
+  AOM_TUNE_DAALA_DIST,
+  AOM_TUNE_VMAF_WITH_PREPROCESSING,
+  AOM_TUNE_VMAF_WITHOUT_PREPROCESSING,
 } aom_tune_metric;
 
 #define AOM_MAX_LAYERS 32   /**< Max number of layers */
@@ -1582,6 +1589,9 @@ AOM_CTRL_USE_TYPE(AV1E_SET_SINGLE_TILE_DECODING, unsigned int)
 
 AOM_CTRL_USE_TYPE(AV1E_ENABLE_MOTION_VECTOR_UNIT_TEST, unsigned int)
 #define AOM_CTRL_AV1E_ENABLE_MOTION_VECTOR_UNIT_TEST
+
+AOM_CTRL_USE_TYPE(AV1E_SET_VMAF_MODEL_PATH, const char *)
+#define AOM_CTRL_AV1E_SET_VMAF_MODEL_PATH
 
 AOM_CTRL_USE_TYPE(AV1E_SET_FILM_GRAIN_TEST_VECTOR, int)
 #define AOM_CTRL_AV1E_SET_FILM_GRAIN_TEST_VECTOR
