@@ -5607,25 +5607,29 @@ static AOM_INLINE void update_txfm_count(MACROBLOCK *x, MACROBLOCKD *xd,
   }
 }
 
-static AOM_INLINE void tx_partition_count_update(
-    const AV1_COMMON *const cm, MACROBLOCK *x, BLOCK_SIZE plane_bsize,
-    int mi_row, int mi_col, FRAME_COUNTS *td_counts, uint8_t allow_update_cdf) {
+static AOM_INLINE void tx_partition_count_update(const AV1_COMMON *const cm,
+                                                 MACROBLOCK *x,
+                                                 BLOCK_SIZE plane_bsize,
+                                                 FRAME_COUNTS *td_counts,
+                                                 uint8_t allow_update_cdf) {
   MACROBLOCKD *xd = &x->e_mbd;
   const int mi_width = mi_size_wide[plane_bsize];
   const int mi_height = mi_size_high[plane_bsize];
   const TX_SIZE max_tx_size = get_vartx_max_txsize(xd, plane_bsize, 0);
   const int bh = tx_size_high_unit[max_tx_size];
   const int bw = tx_size_wide_unit[max_tx_size];
-  int idx, idy;
 
-  xd->above_txfm_context = cm->above_txfm_context[xd->tile.tile_row] + mi_col;
+  xd->above_txfm_context =
+      cm->above_txfm_context[xd->tile.tile_row] + xd->mi_col;
   xd->left_txfm_context =
-      xd->left_txfm_context_buffer + (mi_row & MAX_MIB_MASK);
+      xd->left_txfm_context_buffer + (xd->mi_row & MAX_MIB_MASK);
 
-  for (idy = 0; idy < mi_height; idy += bh)
-    for (idx = 0; idx < mi_width; idx += bw)
+  for (int idy = 0; idy < mi_height; idy += bh) {
+    for (int idx = 0; idx < mi_width; idx += bw) {
       update_txfm_count(x, xd, td_counts, max_tx_size, 0, idy, idx,
                         allow_update_cdf);
+    }
+  }
 }
 
 static AOM_INLINE void set_txfm_context(MACROBLOCKD *xd, TX_SIZE tx_size,
@@ -5668,17 +5672,17 @@ static AOM_INLINE void set_txfm_context(MACROBLOCKD *xd, TX_SIZE tx_size,
 
 static AOM_INLINE void tx_partition_set_contexts(const AV1_COMMON *const cm,
                                                  MACROBLOCKD *xd,
-                                                 BLOCK_SIZE plane_bsize,
-                                                 int mi_row, int mi_col) {
+                                                 BLOCK_SIZE plane_bsize) {
   const int mi_width = mi_size_wide[plane_bsize];
   const int mi_height = mi_size_high[plane_bsize];
   const TX_SIZE max_tx_size = get_vartx_max_txsize(xd, plane_bsize, 0);
   const int bh = tx_size_high_unit[max_tx_size];
   const int bw = tx_size_wide_unit[max_tx_size];
 
-  xd->above_txfm_context = cm->above_txfm_context[xd->tile.tile_row] + mi_col;
+  xd->above_txfm_context =
+      cm->above_txfm_context[xd->tile.tile_row] + xd->mi_col;
   xd->left_txfm_context =
-      xd->left_txfm_context_buffer + (mi_row & MAX_MIB_MASK);
+      xd->left_txfm_context_buffer + (xd->mi_row & MAX_MIB_MASK);
 
   for (int idy = 0; idy < mi_height; idy += bh) {
     for (int idx = 0; idx < mi_width; idx += bw) {
@@ -5718,8 +5722,7 @@ static AOM_INLINE void encode_superblock(const AV1_COMP *const cpi,
     mbmi->skip = 1;
     for (int plane = 0; plane < num_planes; ++plane) {
       av1_encode_intra_block_plane(cpi, x, bsize, plane,
-                                   cpi->optimize_seg_arr[mbmi->segment_id],
-                                   mi_row, mi_col);
+                                   cpi->optimize_seg_arr[mbmi->segment_id]);
     }
 
     // If there is at least one lossless segment, force the skip for intra
@@ -5745,7 +5748,7 @@ static AOM_INLINE void encode_superblock(const AV1_COMP *const cpi,
       }
     }
 
-    av1_update_txb_context(cpi, td, dry_run, bsize, rate, mi_row, mi_col,
+    av1_update_txb_context(cpi, td, dry_run, bsize,
                            tile_data->allow_update_cdf);
   } else {
     int ref;
@@ -5787,8 +5790,8 @@ static AOM_INLINE void encode_superblock(const AV1_COMP *const cpi,
     (void)num_planes;
 #endif
 
-    av1_encode_sb(cpi, x, bsize, mi_row, mi_col, dry_run);
-    av1_tokenize_sb_vartx(cpi, td, dry_run, mi_row, mi_col, bsize, rate,
+    av1_encode_sb(cpi, x, bsize, dry_run);
+    av1_tokenize_sb_vartx(cpi, td, dry_run, bsize, rate,
                           tile_data->allow_update_cdf);
   }
 
@@ -5798,7 +5801,7 @@ static AOM_INLINE void encode_superblock(const AV1_COMP *const cpi,
         !xd->lossless[mbmi->segment_id] && mbmi->sb_type > BLOCK_4X4 &&
         !(is_inter && (mbmi->skip || seg_skip))) {
       if (is_inter) {
-        tx_partition_count_update(cm, x, bsize, mi_row, mi_col, td->counts,
+        tx_partition_count_update(cm, x, bsize, td->counts,
                                   tile_data->allow_update_cdf);
       } else {
         if (mbmi->tx_size != max_txsize_rect_lookup[bsize])
@@ -5844,7 +5847,7 @@ static AOM_INLINE void encode_superblock(const AV1_COMP *const cpi,
   if (x->tx_mode_search_type == TX_MODE_SELECT &&
       block_signals_txsize(mbmi->sb_type) && is_inter &&
       !(mbmi->skip || seg_skip) && !xd->lossless[mbmi->segment_id]) {
-    if (dry_run) tx_partition_set_contexts(cm, xd, bsize, mi_row, mi_col);
+    if (dry_run) tx_partition_set_contexts(cm, xd, bsize);
   } else {
     TX_SIZE tx_size = mbmi->tx_size;
     // The new intra coding scheme requires no change of transform size

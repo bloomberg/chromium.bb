@@ -218,9 +218,7 @@ void av1_setup_qmatrix(const AV1_COMMON *cm, MACROBLOCK *x, int plane,
 
 static void encode_block(int plane, int block, int blk_row, int blk_col,
                          BLOCK_SIZE plane_bsize, TX_SIZE tx_size, void *arg,
-                         int mi_row, int mi_col, RUN_TYPE dry_run) {
-  (void)mi_row;
-  (void)mi_col;
+                         RUN_TYPE dry_run) {
   (void)dry_run;
   struct encode_b_args *const args = arg;
   const AV1_COMMON *const cm = &args->cpi->common;
@@ -307,8 +305,8 @@ static void encode_block(int plane, int block, int blk_row, int blk_col,
     BLOCK_SIZE bsize = txsize_to_bsize[tx_size];
     int blk_w = block_size_wide[bsize];
     int blk_h = block_size_high[bsize];
-    mi_to_pixel_loc(&pixel_c, &pixel_r, mi_col, mi_row, blk_col, blk_row,
-                    pd->subsampling_x, pd->subsampling_y);
+    mi_to_pixel_loc(&pixel_c, &pixel_r, xd->mi_col, xd->mi_row, blk_col,
+                    blk_row, pd->subsampling_x, pd->subsampling_y);
     mismatch_record_block_tx(dst, pd->dst.stride, cm->current_frame.order_hint,
                              plane, pixel_c, pixel_r, blk_w, blk_h,
                              xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH);
@@ -318,10 +316,7 @@ static void encode_block(int plane, int block, int blk_row, int blk_col,
 
 static void encode_block_inter(int plane, int block, int blk_row, int blk_col,
                                BLOCK_SIZE plane_bsize, TX_SIZE tx_size,
-                               void *arg, int mi_row, int mi_col,
-                               RUN_TYPE dry_run) {
-  (void)mi_row;
-  (void)mi_col;
+                               void *arg, RUN_TYPE dry_run) {
   struct encode_b_args *const args = arg;
   MACROBLOCK *const x = args->x;
   MACROBLOCKD *const xd = &x->e_mbd;
@@ -344,7 +339,7 @@ static void encode_block_inter(int plane, int block, int blk_row, int blk_col,
 
   if (tx_size == plane_tx_size || plane) {
     encode_block(plane, block, blk_row, blk_col, plane_bsize, tx_size, arg,
-                 mi_row, mi_col, dry_run);
+                 dry_run);
   } else {
     assert(tx_size < TX_SIZES_ALL);
     const TX_SIZE sub_txs = sub_tx_size_map[tx_size];
@@ -364,7 +359,7 @@ static void encode_block_inter(int plane, int block, int blk_row, int blk_col,
         if (offsetr >= max_blocks_high || offsetc >= max_blocks_wide) continue;
 
         encode_block_inter(plane, block, offsetr, offsetc, plane_bsize, sub_txs,
-                           arg, mi_row, mi_col, dry_run);
+                           arg, dry_run);
         block += step;
       }
     }
@@ -414,16 +409,18 @@ void av1_foreach_transformed_block_in_plane(
 }
 
 void av1_foreach_transformed_block(const MACROBLOCKD *const xd,
-                                   BLOCK_SIZE bsize, int mi_row, int mi_col,
+                                   BLOCK_SIZE bsize,
                                    foreach_transformed_block_visitor visit,
                                    void *arg, const int num_planes) {
   for (int plane = 0; plane < num_planes; ++plane) {
     const struct macroblockd_plane *const pd = &xd->plane[plane];
-    const int ss_x = xd->plane[plane].subsampling_x;
-    const int ss_y = xd->plane[plane].subsampling_y;
-    if (!is_chroma_reference(mi_row, mi_col, bsize, ss_x, ss_y)) continue;
-    const BLOCK_SIZE plane_bsize =
-        get_plane_block_size(bsize, pd->subsampling_x, pd->subsampling_y);
+    const int ss_x = pd->subsampling_x;
+    const int ss_y = pd->subsampling_y;
+    if (plane &&
+        !is_chroma_reference(xd->mi_row, xd->mi_col, bsize, ss_x, ss_y)) {
+      continue;
+    }
+    const BLOCK_SIZE plane_bsize = get_plane_block_size(bsize, ss_x, ss_y);
     av1_foreach_transformed_block_in_plane(xd, plane_bsize, plane, visit, arg);
   }
 }
@@ -475,7 +472,7 @@ void av1_encode_sby_pass1(AV1_COMMON *cm, MACROBLOCK *x, BLOCK_SIZE bsize) {
 }
 
 void av1_encode_sb(const struct AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
-                   int mi_row, int mi_col, RUN_TYPE dry_run) {
+                   RUN_TYPE dry_run) {
   assert(bsize < BLOCK_SIZES_ALL);
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *mbmi = xd->mi[0];
@@ -492,15 +489,16 @@ void av1_encode_sb(const struct AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
                                cpi->optimize_seg_arr[mbmi->segment_id] };
   const AV1_COMMON *const cm = &cpi->common;
   const int num_planes = av1_num_planes(cm);
-
+  const int mi_row = xd->mi_row;
+  const int mi_col = xd->mi_col;
   for (int plane = 0; plane < num_planes; ++plane) {
     const struct macroblockd_plane *const pd = &xd->plane[plane];
     const int subsampling_x = pd->subsampling_x;
     const int subsampling_y = pd->subsampling_y;
-    if (!is_chroma_reference(mi_row, mi_col, bsize, subsampling_x,
-                             subsampling_y))
+    if (plane && !is_chroma_reference(mi_row, mi_col, bsize, subsampling_x,
+                                      subsampling_y)) {
       continue;
-
+    }
     const BLOCK_SIZE plane_bsize =
         get_plane_block_size(bsize, subsampling_x, subsampling_y);
     assert(plane_bsize < BLOCK_SIZES_ALL);
@@ -532,7 +530,7 @@ void av1_encode_sb(const struct AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
         for (blk_row = idy; blk_row < unit_height; blk_row += bh) {
           for (blk_col = idx; blk_col < unit_width; blk_col += bw) {
             encode_block_inter(plane, block, blk_row, blk_col, plane_bsize,
-                               max_tx_size, &arg, mi_row, mi_col, dry_run);
+                               max_tx_size, &arg, dry_run);
             block += step;
           }
         }
@@ -642,22 +640,23 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
 
 void av1_encode_intra_block_plane(const struct AV1_COMP *cpi, MACROBLOCK *x,
                                   BLOCK_SIZE bsize, int plane,
-                                  int enable_optimize_b, int mi_row,
-                                  int mi_col) {
+                                  int enable_optimize_b) {
   assert(bsize < BLOCK_SIZES_ALL);
   const MACROBLOCKD *const xd = &x->e_mbd;
   const struct macroblockd_plane *const pd = &xd->plane[plane];
   const int ss_x = pd->subsampling_x;
   const int ss_y = pd->subsampling_y;
-  if (plane && !is_chroma_reference(mi_row, mi_col, bsize, ss_x, ss_y)) return;
+  if (plane &&
+      !is_chroma_reference(xd->mi_row, xd->mi_col, bsize, ss_x, ss_y)) {
+    return;
+  }
 
   ENTROPY_CONTEXT ta[MAX_MIB_SIZE] = { 0 };
   ENTROPY_CONTEXT tl[MAX_MIB_SIZE] = { 0 };
   struct encode_b_args arg = {
     cpi, x, NULL, &(xd->mi[0]->skip), ta, tl, enable_optimize_b
   };
-  const BLOCK_SIZE plane_bsize =
-      get_plane_block_size(bsize, pd->subsampling_x, pd->subsampling_y);
+  const BLOCK_SIZE plane_bsize = get_plane_block_size(bsize, ss_x, ss_y);
   if (enable_optimize_b) {
     av1_get_entropy_contexts(plane_bsize, pd, ta, tl);
   }

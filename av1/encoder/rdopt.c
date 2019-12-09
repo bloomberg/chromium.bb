@@ -7215,8 +7215,7 @@ static AOM_INLINE void choose_intra_uv_mode(
   if (xd->cfl.store_y) {
     // Restore reconstructed luma values.
     av1_encode_intra_block_plane(cpi, x, mbmi->sb_type, AOM_PLANE_Y,
-                                 cpi->optimize_seg_arr[mbmi->segment_id],
-                                 mi_row, mi_col);
+                                 cpi->optimize_seg_arr[mbmi->segment_id]);
     xd->cfl.store_y = 0;
   }
   rd_pick_intra_sbuv_mode(cpi, x, rate_uv, rate_uv_tokenonly, dist_uv, skip_uv,
@@ -11759,8 +11758,7 @@ void av1_rd_pick_intra_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
              sizeof(x->blk_skip[0]) * ctx->num_4x4_blk);
       av1_copy_array(xd->tx_type_map, ctx->tx_type_map, ctx->num_4x4_blk);
       av1_encode_intra_block_plane(cpi, x, bsize, AOM_PLANE_Y,
-                                   cpi->optimize_seg_arr[mbmi->segment_id],
-                                   mi_row, mi_col);
+                                   cpi->optimize_seg_arr[mbmi->segment_id]);
       av1_copy_array(ctx->tx_type_map, xd->tx_type_map, ctx->num_4x4_blk);
       xd->cfl.store_y = 0;
     }

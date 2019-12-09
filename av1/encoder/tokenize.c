@@ -186,21 +186,22 @@ static void tokenize_vartx(ThreadData *td, RUN_TYPE dry_run, TX_SIZE tx_size,
 }
 
 void av1_tokenize_sb_vartx(const AV1_COMP *cpi, ThreadData *td,
-                           RUN_TYPE dry_run, int mi_row, int mi_col,
-                           BLOCK_SIZE bsize, int *rate,
+                           RUN_TYPE dry_run, BLOCK_SIZE bsize, int *rate,
                            uint8_t allow_update_cdf) {
+  assert(bsize < BLOCK_SIZES_ALL);
   const AV1_COMMON *const cm = &cpi->common;
-  const int num_planes = av1_num_planes(cm);
   MACROBLOCK *const x = &td->mb;
   MACROBLOCKD *const xd = &x->e_mbd;
-  MB_MODE_INFO *const mbmi = xd->mi[0];
-  struct tokenize_b_args arg = { cpi, td, 0, allow_update_cdf };
+  const int mi_row = xd->mi_row;
+  const int mi_col = xd->mi_col;
   if (mi_row >= cm->mi_rows || mi_col >= cm->mi_cols) return;
 
-  assert(bsize < BLOCK_SIZES_ALL);
+  const int num_planes = av1_num_planes(cm);
+  MB_MODE_INFO *const mbmi = xd->mi[0];
+  struct tokenize_b_args arg = { cpi, td, 0, allow_update_cdf };
 
   if (mbmi->skip) {
-    av1_reset_skip_context(xd, mi_row, mi_col, bsize, num_planes);
+    av1_reset_skip_context(xd, bsize, num_planes);
     return;
   }
 

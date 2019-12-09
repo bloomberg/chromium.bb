@@ -63,8 +63,8 @@ void av1_write_coeffs_mb(const AV1_COMMON *const cm, MACROBLOCK *x, int mi_row,
 int av1_get_txb_entropy_context(const tran_low_t *qcoeff,
                                 const SCAN_ORDER *scan_order, int eob);
 void av1_update_txb_context(const AV1_COMP *cpi, ThreadData *td,
-                            RUN_TYPE dry_run, BLOCK_SIZE bsize, int *rate,
-                            int mi_row, int mi_col, uint8_t allow_update_cdf);
+                            RUN_TYPE dry_run, BLOCK_SIZE bsize,
+                            uint8_t allow_update_cdf);
 
 void av1_update_txb_context_b(int plane, int block, int blk_row, int blk_col,
                               BLOCK_SIZE plane_bsize, TX_SIZE tx_size,

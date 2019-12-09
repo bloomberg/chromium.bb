@@ -998,8 +998,8 @@ static INLINE TX_SIZE av1_get_tx_size(int plane, const MACROBLOCKD *xd) {
                                pd->subsampling_y);
 }
 
-void av1_reset_skip_context(MACROBLOCKD *xd, int mi_row, int mi_col,
-                            BLOCK_SIZE bsize, const int num_planes);
+void av1_reset_skip_context(MACROBLOCKD *xd, BLOCK_SIZE bsize,
+                            const int num_planes);
 
 void av1_reset_loop_filter_delta(MACROBLOCKD *xd, int num_planes);
 

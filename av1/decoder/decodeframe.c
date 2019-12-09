@@ -1265,8 +1265,7 @@ static AOM_INLINE void decode_token_recon_block(AV1Decoder *const pbi,
     td->cfl_store_inter_block_visit(cm, xd);
   }
 
-  av1_visit_palette(pbi, xd, mi_row, mi_col, r, bsize,
-                    set_color_index_map_offset);
+  av1_visit_palette(pbi, xd, r, bsize, set_color_index_map_offset);
 }
 
 static AOM_INLINE void set_inter_tx_size(MB_MODE_INFO *mbmi, int stride_log2,
@@ -1417,8 +1416,7 @@ static AOM_INLINE void parse_decode_block(AV1Decoder *const pbi,
   MACROBLOCKD *const xd = &td->xd;
   decode_mbmi_block(pbi, xd, mi_row, mi_col, r, partition, bsize);
 
-  av1_visit_palette(pbi, xd, mi_row, mi_col, r, bsize,
-                    av1_decode_palette_tokens);
+  av1_visit_palette(pbi, xd, r, bsize, av1_decode_palette_tokens);
 
   AV1_COMMON *cm = &pbi->common;
   const int num_planes = av1_num_planes(cm);
@@ -1492,7 +1490,7 @@ static AOM_INLINE void parse_decode_block(AV1Decoder *const pbi,
       }
     }
   }
-  if (mbmi->skip) av1_reset_skip_context(xd, mi_row, mi_col, bsize, num_planes);
+  if (mbmi->skip) av1_reset_skip_context(xd, bsize, num_planes);
 
   decode_token_recon_block(pbi, td, mi_row, mi_col, r, bsize);
 }

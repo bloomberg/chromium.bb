@@ -46,14 +46,14 @@ enum {
 } UENUM1BYTE(AV1_XFORM_QUANT);
 
 void av1_encode_sb(const struct AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
-                   int mi_row, int mi_col, RUN_TYPE dry_run);
+                   RUN_TYPE dry_run);
 
 void av1_foreach_transformed_block_in_plane(
     const MACROBLOCKD *const xd, BLOCK_SIZE plane_bsize, int plane,
     foreach_transformed_block_visitor visit, void *arg);
 
 void av1_foreach_transformed_block(const MACROBLOCKD *const xd,
-                                   BLOCK_SIZE bsize, int mi_row, int mi_col,
+                                   BLOCK_SIZE bsize,
                                    foreach_transformed_block_visitor visit,
                                    void *arg, const int num_planes);
 
@@ -97,8 +97,7 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
 
 void av1_encode_intra_block_plane(const struct AV1_COMP *cpi, MACROBLOCK *x,
                                   BLOCK_SIZE bsize, int plane,
-                                  int enable_optimize_b, int mi_row,
-                                  int mi_col);
+                                  int enable_optimize_b);
 
 #ifdef __cplusplus
 }  // extern "C"
