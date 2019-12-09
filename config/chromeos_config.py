@@ -3167,7 +3167,7 @@ def BranchScheduleConfig():
   ]
 
   # The three active release branches.
-  # (<branch>, [<android PFQs>], <chrome PFQ>)
+  # (<branch>, [<android PFQs>], <chrome PFQ>, [<orderfiles>], [<Chrome AFDOs>])
 
   RELEASES = [
       ('release-R80-12739.B',
@@ -3175,21 +3175,27 @@ def BranchScheduleConfig():
         'grunt-android-pi-pre-flight-branch'],
        'chell-chrome-pre-flight-branch',
        ['orderfile-generate-toolchain',
-        'orderfile-verify-toolchain']),
+        'orderfile-verify-toolchain'],
+       ['benchmark-afdo-generate',
+        'chrome-silvermont-release-afdo-verify',
+        'chrome-airmont-release-afdo-verify',
+        'chrome-broadwell-release-afdo-verify']),
 
       ('release-R79-12607.B',
        ['gandof-android-nyc-pre-flight-branch',
         'grunt-android-pi-pre-flight-branch'],
        'chell-chrome-pre-flight-branch',
        ['orderfile-generate-toolchain',
-        'orderfile-verify-toolchain']),
+        'orderfile-verify-toolchain'],
+       None),
 
       ('release-R78-12499.B',
        ['gandof-android-nyc-pre-flight-branch',
         'grunt-android-pi-pre-flight-branch'],
        'chell-chrome-pre-flight-branch',
        ['orderfile-generate-toolchain',
-        'orderfile-verify-toolchain']),
+        'orderfile-verify-toolchain'],
+       None),
   ]
 
   RELEASE_SCHEDULES = [
@@ -3210,7 +3216,17 @@ def BranchScheduleConfig():
       '0 0/12 * * *',
   ]
 
-  for ((branch, android_pfq, chrome_pfq, orderfile),
+  AFDO_SCHEDULES = [
+      # Start at a different time than the master AFDO generate, as it might
+      # increase lab pressure on chell boards
+      '0 8/12 * * *',
+      # Start verification builders after 7 hours
+      '0 3/12 * * *',
+      '0 3/12 * * *',
+      '0 3/12 * * *',
+  ]
+
+  for ((branch, android_pfq, chrome_pfq, orderfile, afdo),
        schedule, android_schedule) in zip(
            RELEASES, RELEASE_SCHEDULES, PFQ_SCHEDULE):
     branch_builds.append([branch, 'master-release',
@@ -3232,6 +3248,12 @@ def BranchScheduleConfig():
 
     if orderfile:
       for b, s in zip(orderfile, ORDERFILE_SCHEDULES):
+        branch_builds.append([branch, b,
+                              config_lib.DISPLAY_LABEL_RELEASE,
+                              s, None])
+
+    if afdo:
+      for b, s in zip(afdo, AFDO_SCHEDULES):
         branch_builds.append([branch, b,
                               config_lib.DISPLAY_LABEL_RELEASE,
                               s, None])
