@@ -333,7 +333,7 @@ void av1_first_pass(AV1_COMP *cpi, const int64_t ts_duration) {
   const int alt_offset = 16 - (current_frame->frame_number % 16);
   if (alt_offset < 16) {
     const struct lookahead_entry *const alt_buf =
-        av1_lookahead_peek(cpi->lookahead, alt_offset);
+        av1_lookahead_peek(cpi->lookahead, alt_offset, ENCODE_STAGE);
     if (alt_buf != NULL) {
       alt_yv12 = &alt_buf->img;
     }

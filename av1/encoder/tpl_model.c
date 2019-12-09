@@ -571,7 +571,8 @@ static YV12_BUFFER_CONFIG *get_framebuf(
     const GF_GROUP *gf_group = &cpi->gf_group;
     const int frame_disp_idx = gf_group->frame_disp_idx[frame_idx];
     struct lookahead_entry *buf = av1_lookahead_peek(
-        cpi->lookahead, frame_disp_idx - cpi->num_gf_group_show_frames);
+        cpi->lookahead, frame_disp_idx - cpi->num_gf_group_show_frames,
+        ENCODE_STAGE);
     return &buf->img;
   }
 }
@@ -805,8 +806,8 @@ static AOM_INLINE void init_gop_frames_for_tpl(
       int frame_display_index = gf_index == gf_group->size
                                     ? cpi->rc.baseline_gf_interval
                                     : gf_group->frame_disp_idx[gf_index];
-      struct lookahead_entry *buf =
-          av1_lookahead_peek(cpi->lookahead, frame_display_index - 1);
+      struct lookahead_entry *buf = av1_lookahead_peek(
+          cpi->lookahead, frame_display_index - 1, ENCODE_STAGE);
       if (buf == NULL) break;
       tpl_frame->gf_picture = &buf->img;
       // frame display index = frame offset within the gf group + start frame of
@@ -848,8 +849,8 @@ static AOM_INLINE void init_gop_frames_for_tpl(
         frame_update_type == INTNL_OVERLAY_UPDATE;
     frame_params.frame_type = INTER_FRAME;
 
-    struct lookahead_entry *buf =
-        av1_lookahead_peek(cpi->lookahead, frame_display_index - 1);
+    struct lookahead_entry *buf = av1_lookahead_peek(
+        cpi->lookahead, frame_display_index - 1, ENCODE_STAGE);
 
     if (buf == NULL) break;
 

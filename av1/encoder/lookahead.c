@@ -60,6 +60,8 @@ struct lookahead_ctx *av1_lookahead_init(
     const int legacy_byte_alignment = 0;
     unsigned int i;
     ctx->max_sz = depth;
+    ctx->read_ctxs[ENCODE_STAGE].pop_sz = ctx->max_sz - MAX_PRE_FRAMES;
+    ctx->read_ctxs[ENCODE_STAGE].valid = 1;
     ctx->buf = calloc(depth, sizeof(*ctx->buf));
     if (!ctx->buf) goto fail;
     for (i = 0; i < depth; i++)
@@ -102,8 +104,10 @@ int av1_lookahead_push(struct lookahead_ctx *ctx, YV12_BUFFER_CONFIG *src,
   int subsampling_y = src->subsampling_y;
   int larger_dimensions, new_dimensions;
 
-  if (ctx->sz + 1 + MAX_PRE_FRAMES > ctx->max_sz) return 1;
-  ctx->sz++;
+  assert(ctx->read_ctxs[ENCODE_STAGE].valid == 1);
+  if (ctx->read_ctxs[ENCODE_STAGE].sz + 1 + MAX_PRE_FRAMES > ctx->max_sz)
+    return 1;
+  ctx->read_ctxs[ENCODE_STAGE].sz++;
   buf = pop(ctx, &ctx->write_idx);
 
   new_dimensions = width != buf->img.y_crop_width ||
@@ -186,35 +190,41 @@ int av1_lookahead_push(struct lookahead_ctx *ctx, YV12_BUFFER_CONFIG *src,
   return 0;
 }
 
-struct lookahead_entry *av1_lookahead_pop(struct lookahead_ctx *ctx,
-                                          int drain) {
+struct lookahead_entry *av1_lookahead_pop(struct lookahead_ctx *ctx, int drain,
+                                          COMPRESSOR_STAGE stage) {
   struct lookahead_entry *buf = NULL;
-
-  if (ctx && ctx->sz && (drain || ctx->sz == ctx->max_sz - MAX_PRE_FRAMES)) {
-    buf = pop(ctx, &ctx->read_idx);
-    ctx->sz--;
+  if (ctx) {
+    struct read_ctx *read_ctx = &ctx->read_ctxs[stage];
+    assert(read_ctx->valid == 1);
+    if (read_ctx->sz && (drain || read_ctx->sz == read_ctx->pop_sz)) {
+      buf = pop(ctx, &read_ctx->read_idx);
+      read_ctx->sz--;
+    }
   }
   return buf;
 }
 
-struct lookahead_entry *av1_lookahead_peek(struct lookahead_ctx *ctx,
-                                           int index) {
+struct lookahead_entry *av1_lookahead_peek(struct lookahead_ctx *ctx, int index,
+                                           COMPRESSOR_STAGE stage) {
   struct lookahead_entry *buf = NULL;
-
+  struct read_ctx *read_ctx = NULL;
   if (ctx == NULL) {
     return buf;
   }
+
+  read_ctx = &ctx->read_ctxs[stage];
+  assert(read_ctx->valid == 1);
   if (index >= 0) {
     // Forward peek
-    if (index < ctx->sz) {
-      index += ctx->read_idx;
+    if (index < read_ctx->sz) {
+      index += read_ctx->read_idx;
       if (index >= ctx->max_sz) index -= ctx->max_sz;
       buf = ctx->buf + index;
     }
   } else if (index < 0) {
     // Backward peek
     if (-index <= MAX_PRE_FRAMES) {
-      index += (int)(ctx->read_idx);
+      index += (int)(read_ctx->read_idx);
       if (index < 0) index += (int)(ctx->max_sz);
       buf = ctx->buf + index;
     }
@@ -223,7 +233,12 @@ struct lookahead_entry *av1_lookahead_peek(struct lookahead_ctx *ctx,
   return buf;
 }
 
-unsigned int av1_lookahead_depth(struct lookahead_ctx *ctx) {
+unsigned int av1_lookahead_depth(struct lookahead_ctx *ctx,
+                                 COMPRESSOR_STAGE stage) {
+  struct read_ctx *read_ctx = NULL;
   assert(ctx != NULL);
-  return ctx->sz;
+
+  read_ctx = &ctx->read_ctxs[stage];
+  assert(read_ctx->valid == 1);
+  return read_ctx->sz;
 }

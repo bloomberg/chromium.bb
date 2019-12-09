@@ -31,12 +31,20 @@ struct lookahead_entry {
 // The max of past frames we want to keep in the queue.
 #define MAX_PRE_FRAMES 1
 
+enum { ENCODE_STAGE, MAX_STAGES } UENUM1BYTE(COMPRESSOR_STAGE);
+
+struct read_ctx {
+  int sz;       /* Number of buffers currently in the queue */
+  int read_idx; /* Read index */
+  int pop_sz;   /* Size to check for pop condition */
+  int valid;    /* Is this ctx valid? */
+};
+
 struct lookahead_ctx {
-  int max_sz;                  /* Absolute size of the queue */
-  int sz;                      /* Number of buffers currently in the queue */
-  int read_idx;                /* Read index */
-  int write_idx;               /* Write index */
-  struct lookahead_entry *buf; /* Buffer list */
+  int max_sz;                            /* Absolute size of the queue */
+  int write_idx;                         /* Write index */
+  struct read_ctx read_ctxs[MAX_STAGES]; /* Read context */
+  struct lookahead_entry *buf;           /* Buffer list */
 };
 
 /**\brief Initializes the lookahead stage
@@ -82,7 +90,8 @@ int av1_lookahead_push(struct lookahead_ctx *ctx, YV12_BUFFER_CONFIG *src,
  * \retval NULL, if drain set and queue is empty
  * \retval NULL, if drain not set and queue not of the configured depth
  */
-struct lookahead_entry *av1_lookahead_pop(struct lookahead_ctx *ctx, int drain);
+struct lookahead_entry *av1_lookahead_pop(struct lookahead_ctx *ctx, int drain,
+                                          COMPRESSOR_STAGE stage);
 
 /**\brief Get a future source buffer to encode
  *
@@ -91,14 +100,15 @@ struct lookahead_entry *av1_lookahead_pop(struct lookahead_ctx *ctx, int drain);
  *
  * \retval NULL, if no buffer exists at the specified index
  */
-struct lookahead_entry *av1_lookahead_peek(struct lookahead_ctx *ctx,
-                                           int index);
+struct lookahead_entry *av1_lookahead_peek(struct lookahead_ctx *ctx, int index,
+                                           COMPRESSOR_STAGE stage);
 
 /**\brief Get the number of frames currently in the lookahead queue
  *
  * \param[in] ctx       Pointer to the lookahead context
  */
-unsigned int av1_lookahead_depth(struct lookahead_ctx *ctx);
+unsigned int av1_lookahead_depth(struct lookahead_ctx *ctx,
+                                 COMPRESSOR_STAGE stage);
 
 #ifdef __cplusplus
 }  // extern "C"
