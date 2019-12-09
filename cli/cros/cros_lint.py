@@ -179,8 +179,7 @@ def _PylintFile(path, output_format, debug, interp):
       'EPYTHON': interp,
       'PYTHONPATH': ':'.join(_GetPythonPath([path])),
   }
-  return _LinterRunCommand(cmd, debug, extra_env=extra_env,
-                           redirect_stderr=True)
+  return _LinterRunCommand(cmd, debug, extra_env=extra_env)
 
 
 def _Pylint2File(path, output_format, debug):
