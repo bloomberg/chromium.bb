@@ -224,24 +224,46 @@ class GomaTest(cros_test_lib.TempDirTestCase):
     goma_client_json = os.path.join(self.tempdir, 'goma_client.json')
     chroot_dir = os.path.join(self.tempdir, 'chroot')
     chroot_tmp = os.path.join(chroot_dir, 'tmp')
+    log_dir = os.path.join(chroot_tmp, 'log_dir')
+    stats_filename = 'stats_filename'
+    counterz_filename = 'counterz_filename'
+
     osutils.Touch(goma_client_json)
     osutils.SafeMakedirs(goma_dir)
     osutils.SafeMakedirs(chroot_tmp)
 
-    goma = goma_util.Goma(goma_dir, goma_client_json, chroot_dir=chroot_dir)
+    goma = goma_util.Goma(goma_dir, goma_client_json, chroot_dir=chroot_dir,
+                          log_dir=log_dir, stats_filename=stats_filename,
+                          counterz_filename=counterz_filename)
 
     env = goma.GetExtraEnv()
     chroot_env = goma.GetChrootExtraEnv()
 
     # Make sure the chroot paths got translated.
     self.assertStartsWith(chroot_env['GOMA_TMP_DIR'], '/tmp')
-    self.assertStartsWith(chroot_env['GLOG_log_dir'], '/tmp')
+    self.assertStartsWith(chroot_env['GLOG_log_dir'], '/tmp/log_dir')
     # Make sure the non-chroot paths didn't get translated.
     self.assertStartsWith(env['GOMA_TMP_DIR'], chroot_tmp)
-    self.assertStartsWith(env['GLOG_log_dir'], chroot_tmp)
+    self.assertStartsWith(env['GLOG_log_dir'], log_dir)
     # Make sure they're based on the same path.
     self.assertEndsWith(env['GOMA_TMP_DIR'], chroot_env['GOMA_TMP_DIR'])
     self.assertEndsWith(env['GLOG_log_dir'], chroot_env['GLOG_log_dir'])
+    # Make sure the stats file gets set correctly.
+    self.assertStartsWith(env['GOMA_DUMP_STATS_FILE'], log_dir)
+    self.assertEndsWith(env['GOMA_DUMP_STATS_FILE'], stats_filename)
+    self.assertStartsWith(chroot_env['GOMA_DUMP_STATS_FILE'], '/tmp/log_dir')
+    self.assertEndsWith(chroot_env['GOMA_DUMP_STATS_FILE'], stats_filename)
+    self.assertEndsWith(env['GOMA_DUMP_STATS_FILE'],
+                        chroot_env['GOMA_DUMP_STATS_FILE'])
+    # Make sure the counterz file gets set correctly.
+    self.assertStartsWith(env['GOMA_DUMP_COUNTERZ_FILE'], log_dir)
+    self.assertEndsWith(env['GOMA_DUMP_COUNTERZ_FILE'], counterz_filename)
+    self.assertStartsWith(chroot_env['GOMA_DUMP_COUNTERZ_FILE'], '/tmp/log_dir')
+    self.assertEndsWith(chroot_env['GOMA_DUMP_COUNTERZ_FILE'],
+                        counterz_filename)
+    self.assertEndsWith(env['GOMA_DUMP_COUNTERZ_FILE'],
+                        chroot_env['GOMA_DUMP_COUNTERZ_FILE'])
+
 
   def testExtraEnvGomaApproach(self):
     """Test the chroot env building with a goma approach."""
