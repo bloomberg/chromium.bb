@@ -160,7 +160,7 @@ class SDKFetcher(object):
 
   def _RemoveOldCacheDir(self):
     """Deletes old cache directory."""
-    checkout = path_util.DetermineCheckout(os.getcwd())
+    checkout = path_util.DetermineCheckout()
     if checkout.type == path_util.CHECKOUT_TYPE_GCLIENT:
       old_path = os.path.join(checkout.root, path_util.OLD_CHROME_CACHE_DIR)
       osutils.RmDir(old_path, ignore_missing=True)
@@ -228,7 +228,7 @@ class SDKFetcher(object):
       Version number in format '10171.0.0'.
     """
     if not chrome_src_dir:
-      chrome_src_dir = path_util.DetermineCheckout(os.getcwd()).chrome_src_dir
+      chrome_src_dir = path_util.DetermineCheckout().chrome_src_dir
     if not chrome_src_dir:
       return None
     lkgm_file = os.path.join(chrome_src_dir, constants.PATH_TO_CHROME_LKGM)

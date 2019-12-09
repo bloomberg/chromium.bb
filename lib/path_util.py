@@ -281,7 +281,7 @@ class ChrootPathResolver(object):
     return self._ConvertPath(path, self._GetHostPath)
 
 
-def DetermineCheckout(cwd):
+def DetermineCheckout(cwd=None):
   """Gather information on the checkout we are in.
 
   There are several checkout types, as defined by CHECKOUT_TYPE_XXX variables.
@@ -298,6 +298,7 @@ def DetermineCheckout(cwd):
   checkout_type = CHECKOUT_TYPE_UNKNOWN
   root, path = None, None
 
+  cwd = cwd or os.getcwd()
   for path in osutils.IteratePathParents(cwd):
     gclient_file = os.path.join(path, '.gclient')
     if os.path.exists(gclient_file):
@@ -321,8 +322,7 @@ def DetermineCheckout(cwd):
 
 def FindCacheDir():
   """Returns the cache directory location based on the checkout type."""
-  cwd = os.getcwd()
-  checkout = DetermineCheckout(cwd)
+  checkout = DetermineCheckout()
   path = None
   if checkout.type == CHECKOUT_TYPE_REPO:
     path = os.path.join(checkout.root, GENERAL_CACHE_DIR)
