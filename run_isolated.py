@@ -205,8 +205,6 @@ TaskData = collections.namedtuple(
         'switch_to_account',
         # Context manager dir => CipdInfo, see install_client_and_packages.
         'install_packages_fn',
-        # Create tree with symlinks instead of hardlinks.
-        'use_symlinks',
         # Use go isolated client.
         'use_go_isolated',
         # Cache directory for go isolated client.
@@ -573,7 +571,7 @@ def _fetch_and_map_with_go(isolated_hash, storage, cache, outdir, go_cache_dir,
 
 
 # TODO(crbug.com/932396): remove this function.
-def fetch_and_map(isolated_hash, storage, cache, outdir, use_symlinks):
+def fetch_and_map(isolated_hash, storage, cache, outdir):
   """Fetches an isolated tree, create the tree and returns (bundle, stats)."""
   start = time.time()
   bundle = isolateserver.fetch_isolated(
@@ -581,7 +579,7 @@ def fetch_and_map(isolated_hash, storage, cache, outdir, use_symlinks):
       storage=storage,
       cache=cache,
       outdir=outdir,
-      use_symlinks=use_symlinks)
+      use_symlinks=False)
   hot = (collections.Counter(cache.used) -
          collections.Counter(cache.added)).elements()
   return bundle, {
@@ -795,8 +793,7 @@ def map_and_run(data, constant_run_path):
               isolated_hash=data.isolated_hash,
               storage=data.storage,
               cache=data.isolate_cache,
-              outdir=run_dir,
-              use_symlinks=data.use_symlinks)
+              outdir=run_dir)
         isolated_stats['download'].update(stats)
         change_tree_read_only(run_dir, bundle.read_only)
         # Inject the command
@@ -1128,9 +1125,6 @@ def create_option_parser():
       help='Cleans the cache, trimming it necessary and remove corrupted items '
            'and returns without executing anything; use with -v to know what '
            'was done')
-  parser.add_option(
-      '--use-symlinks', action='store_true',
-      help='Use symlinks instead of hardlinks')
   parser.add_option(
       '--use-go-isolated',
       action='store_true',
@@ -1505,7 +1499,6 @@ def main(args):
       bot_file=options.bot_file,
       switch_to_account=options.switch_to_account,
       install_packages_fn=install_packages_fn,
-      use_symlinks=bool(options.use_symlinks),
       use_go_isolated=bool(options.use_go_isolated),
       go_cache_dir=options.go_cache_dir,
       env=options.env,
