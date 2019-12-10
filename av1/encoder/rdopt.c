@@ -10066,9 +10066,9 @@ static int64_t motion_mode_rd(
     const AV1_COMP *const cpi, TileDataEnc *tile_data, MACROBLOCK *const x,
     BLOCK_SIZE bsize, RD_STATS *rd_stats, RD_STATS *rd_stats_y,
     RD_STATS *rd_stats_uv, int *disable_skip, HandleInterModeArgs *const args,
-    int64_t ref_best_rd, const int *refs, int *rate_mv,
-    const BUFFER_SET *orig_dst, int64_t *best_est_rd, int do_tx_search,
-    InterModesInfo *inter_modes_info, int eval_motion_mode) {
+    int64_t ref_best_rd, int *rate_mv, const BUFFER_SET *orig_dst,
+    int64_t *best_est_rd, int do_tx_search, InterModesInfo *inter_modes_info,
+    int eval_motion_mode) {
   const AV1_COMMON *const cm = &cpi->common;
   const int num_planes = av1_num_planes(cm);
   MACROBLOCKD *xd = &x->e_mbd;
@@ -10222,15 +10222,13 @@ static int64_t motion_mode_rd(
 
           // Keep the refined MV and WM parameters.
           if (mv0.as_int != mbmi->mv[0].as_int) {
-            const int ref = refs[0];
             const int_mv ref_mv = av1_get_ref_mv(x, 0);
             tmp_rate_mv = av1_mv_bit_cost(&mbmi->mv[0].as_mv, &ref_mv.as_mv,
                                           x->nmv_vec_cost, x->mv_cost_stack,
                                           MV_COST_WEIGHT);
-
-            if (cpi->sf.adaptive_motion_search)
-              x->pred_mv[ref] = mbmi->mv[0].as_mv;
-
+            if (cpi->sf.adaptive_motion_search) {
+              x->pred_mv[mbmi->ref_frame[0]] = mbmi->mv[0].as_mv;
+            }
             tmp_rate2 = rate2_nocoeff - rate_mv0 + tmp_rate_mv;
           } else {
             // Restore the old MV and WM parameters.
@@ -11178,8 +11176,8 @@ static int64_t handle_inter_mode(AV1_COMP *const cpi, TileDataEnc *tile_data,
   const int is_comp_pred = has_second_ref(mbmi);
   const PREDICTION_MODE this_mode = mbmi->mode;
   int i;
-  int refs[2] = { mbmi->ref_frame[0],
-                  (mbmi->ref_frame[1] < 0 ? 0 : mbmi->ref_frame[1]) };
+  const int refs[2] = { mbmi->ref_frame[0],
+                        (mbmi->ref_frame[1] < 0 ? 0 : mbmi->ref_frame[1]) };
   int rate_mv = 0;
   int64_t rd = INT64_MAX;
   // do first prediction into the destination buffer. Do the next
@@ -11484,7 +11482,7 @@ static int64_t handle_inter_mode(AV1_COMP *const cpi, TileDataEnc *tile_data,
 #endif
     int rate2_nocoeff = rd_stats->rate;
     ret_val = motion_mode_rd(cpi, tile_data, x, bsize, rd_stats, rd_stats_y,
-                             rd_stats_uv, disable_skip, args, ref_best_rd, refs,
+                             rd_stats_uv, disable_skip, args, ref_best_rd,
                              &rate_mv, &orig_dst, best_est_rd, do_tx_search,
                              inter_modes_info, 0);
 #if CONFIG_COLLECT_COMPONENT_TIMING
@@ -13388,8 +13386,6 @@ static AOM_INLINE void evaluate_motion_mode_for_winner_candidates(
     x->skip = 0;
     const int mode_index = get_prediction_mode_idx(
         mbmi->mode, mbmi->ref_frame[0], mbmi->ref_frame[1]);
-    int refs[2] = { mbmi->ref_frame[0],
-                    (mbmi->ref_frame[1] < 0 ? 0 : mbmi->ref_frame[1]) };
     struct macroblockd_plane *p = xd->plane;
     const BUFFER_SET orig_dst = {
       { p[0].dst.buf, p[1].dst.buf, p[2].dst.buf },
@@ -13409,7 +13405,7 @@ static AOM_INLINE void evaluate_motion_mode_for_winner_candidates(
 
     int64_t ret_value = motion_mode_rd(
         cpi, tile_data, x, bsize, &rd_stats, &rd_stats_y, &rd_stats_uv,
-        &disable_skip, args, search_state->best_rd, refs, &rate_mv, &orig_dst,
+        &disable_skip, args, search_state->best_rd, &rate_mv, &orig_dst,
         best_est_rd, do_tx_search, inter_modes_info, 1);
 
     if (ret_value != INT64_MAX) {
