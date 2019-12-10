@@ -4,13 +4,18 @@
 
 #include "discovery/mdns/mdns_publisher.h"
 
+#include <chrono>
 #include <vector>
 
+#include "discovery/mdns/mdns_sender.h"
 #include "discovery/mdns/testing/mdns_test_util.h"
 #include "platform/test/fake_task_runner.h"
 #include "platform/test/fake_udp_socket.h"
 
+using testing::_;
+using testing::Invoke;
 using testing::Return;
+using testing::StrictMock;
 
 namespace openscreen {
 namespace discovery {
@@ -26,6 +31,15 @@ bool ContainsRecord(const std::vector<MdnsRecord::ConstRef>& records,
 
 }  // namespace
 
+class MockMdnsSender : public MdnsSender {
+ public:
+  MockMdnsSender(UdpSocket* socket) : MdnsSender(socket) {}
+
+  MOCK_METHOD1(SendMulticast, Error(const MdnsMessage& message));
+  MOCK_METHOD2(SendUnicast,
+               Error(const MdnsMessage& message, const IPEndpoint& endpoint));
+};
+
 class MdnsPublisherTesting : public MdnsPublisher {
  public:
   using MdnsPublisher::MdnsPublisher;
@@ -37,7 +51,7 @@ class MdnsPublisherTesting : public MdnsPublisher {
     bool is_owned = IsOwned(name);
 
     if (is_owned && records_.find(name) == records_.end()) {
-      records_.emplace(name, std::vector<MdnsRecord>{});
+      records_.emplace(name, std::vector<std::unique_ptr<RecordAnnouncer>>{});
     }
 
     return is_owned;
@@ -65,9 +79,46 @@ class MdnsPublisherTest : public testing::Test {
   MdnsPublisherTest()
       : clock_(Clock::now()),
         task_runner_(&clock_),
-        publisher_(nullptr, nullptr, &task_runner_, nullptr) {}
+        socket_(FakeUdpSocket::CreateDefault()),
+        sender_(socket_.get()),
+        publisher_(nullptr, &sender_, &task_runner_, nullptr, FakeClock::now) {}
 
  protected:
+  Error IsAnnounced(const MdnsRecord& original, const MdnsMessage& message) {
+    EXPECT_EQ(message.type(), MessageType::Response);
+    EXPECT_EQ(message.questions().size(), size_t{0});
+    EXPECT_EQ(message.authority_records().size(), size_t{0});
+    EXPECT_EQ(message.additional_records().size(), size_t{0});
+    EXPECT_EQ(message.answers().size(), size_t{1});
+
+    const MdnsRecord& sent = message.answers()[0];
+    EXPECT_EQ(original.name(), sent.name());
+    EXPECT_EQ(original.dns_type(), sent.dns_type());
+    EXPECT_EQ(original.dns_class(), sent.dns_class());
+    EXPECT_EQ(original.record_type(), sent.record_type());
+    EXPECT_EQ(original.rdata(), sent.rdata());
+    EXPECT_EQ(original.ttl(), sent.ttl());
+    return Error::None();
+  }
+
+  Error IsGoodbyeRecord(const MdnsRecord& original,
+                        const MdnsMessage& message) {
+    EXPECT_EQ(message.type(), MessageType::Response);
+    EXPECT_EQ(message.questions().size(), size_t{0});
+    EXPECT_EQ(message.authority_records().size(), size_t{0});
+    EXPECT_EQ(message.additional_records().size(), size_t{0});
+    EXPECT_EQ(message.answers().size(), size_t{1});
+
+    const MdnsRecord& sent = message.answers()[0];
+    EXPECT_EQ(original.name(), sent.name());
+    EXPECT_EQ(original.dns_type(), sent.dns_type());
+    EXPECT_EQ(original.dns_class(), sent.dns_class());
+    EXPECT_EQ(original.record_type(), sent.record_type());
+    EXPECT_EQ(original.rdata(), sent.rdata());
+    EXPECT_EQ(std::chrono::seconds(0), sent.ttl());
+    return Error::None();
+  }
+
   void TestUniqueRecordRegistrationWorkflow(MdnsRecord record,
                                             MdnsRecord record2) {
     EXPECT_CALL(publisher_, IsOwned(domain_)).WillRepeatedly(Return(true));
@@ -78,9 +129,14 @@ class MdnsPublisherTest : public testing::Test {
     auto records = publisher_.GetNonPtrRecords(domain_, type);
     ASSERT_EQ(publisher_.GetRecordCount(), size_t{0});
     ASSERT_EQ(records.size(), size_t{0});
+    ASSERT_NE(record, record2);
     ASSERT_TRUE(records.empty());
 
     // Register a new record.
+    EXPECT_CALL(sender_, SendMulticast(_))
+        .WillOnce([this, &record](const MdnsMessage& message) -> Error {
+          return IsAnnounced(record, message);
+        });
     EXPECT_TRUE(publisher_.RegisterRecord(record).ok());
     EXPECT_EQ(publisher_.GetRecordCount(), size_t{1});
     records = publisher_.GetNonPtrRecords(domain_, type);
@@ -108,6 +164,10 @@ class MdnsPublisherTest : public testing::Test {
     EXPECT_TRUE(publisher_.IsMappedAsExclusiveOwner(domain_));
 
     // Update an existing record.
+    EXPECT_CALL(sender_, SendMulticast(_))
+        .WillOnce([this, &record2](const MdnsMessage& message) -> Error {
+          return IsAnnounced(record2, message);
+        });
     EXPECT_TRUE(publisher_.UpdateRegisteredRecord(record, record2).ok());
     EXPECT_EQ(publisher_.GetRecordCount(), size_t{1});
     records = publisher_.GetNonPtrRecords(domain_, type);
@@ -117,6 +177,10 @@ class MdnsPublisherTest : public testing::Test {
     EXPECT_TRUE(publisher_.IsMappedAsExclusiveOwner(domain_));
 
     // Add back the original record
+    EXPECT_CALL(sender_, SendMulticast(_))
+        .WillOnce([this, &record](const MdnsMessage& message) -> Error {
+          return IsAnnounced(record, message);
+        });
     EXPECT_TRUE(publisher_.RegisterRecord(record).ok());
     EXPECT_EQ(publisher_.GetRecordCount(), size_t{2});
     records = publisher_.GetNonPtrRecords(domain_, type);
@@ -126,6 +190,10 @@ class MdnsPublisherTest : public testing::Test {
     EXPECT_TRUE(publisher_.IsMappedAsExclusiveOwner(domain_));
 
     // Delete an existing record.
+    EXPECT_CALL(sender_, SendMulticast(_))
+        .WillOnce([this, &record2](const MdnsMessage& message) -> Error {
+          return IsGoodbyeRecord(record2, message);
+        });
     EXPECT_TRUE(publisher_.UnregisterRecord(record2).ok());
     EXPECT_EQ(publisher_.GetRecordCount(), size_t{1});
     records = publisher_.GetNonPtrRecords(domain_, type);
@@ -144,6 +212,10 @@ class MdnsPublisherTest : public testing::Test {
     EXPECT_TRUE(publisher_.IsMappedAsExclusiveOwner(domain_));
 
     // Delete the last record
+    EXPECT_CALL(sender_, SendMulticast(_))
+        .WillOnce([this, &record](const MdnsMessage& message) -> Error {
+          return IsGoodbyeRecord(record, message);
+        });
     EXPECT_TRUE(publisher_.UnregisterRecord(record).ok());
     EXPECT_EQ(publisher_.GetRecordCount(), size_t{0});
     records = publisher_.GetNonPtrRecords(domain_, type);
@@ -155,6 +227,8 @@ class MdnsPublisherTest : public testing::Test {
 
   FakeClock clock_;
   FakeTaskRunner task_runner_;
+  std::unique_ptr<FakeUdpSocket> socket_;
+  StrictMock<MockMdnsSender> sender_;
   MdnsPublisherTesting publisher_;
 
   DomainName domain_{"instance", "_googlecast", "_tcp", "local"};
@@ -195,6 +269,10 @@ TEST_F(MdnsPublisherTest, PTRRecordRegistrationWorkflow) {
       GetFakePtrRecord(domain_, std::chrono::seconds(1000));
 
   // Register a new record.
+  EXPECT_CALL(sender_, SendMulticast(_))
+      .WillOnce([this, &record1](const MdnsMessage& message) -> Error {
+        return IsAnnounced(record1, message);
+      });
   EXPECT_TRUE(publisher_.RegisterRecord(record1).ok());
   EXPECT_EQ(publisher_.GetRecordCount(), size_t{1});
   auto* record = publisher_.GetPtrRecord(record1.name());
@@ -211,6 +289,10 @@ TEST_F(MdnsPublisherTest, PTRRecordRegistrationWorkflow) {
   EXPECT_TRUE(publisher_.IsMappedAsExclusiveOwner(domain_));
 
   // Delete an existing record.
+  EXPECT_CALL(sender_, SendMulticast(_))
+      .WillOnce([this, record](const MdnsMessage& message) -> Error {
+        return IsGoodbyeRecord(*record, message);
+      });
   EXPECT_TRUE(publisher_.UnregisterRecord(record1).ok());
   EXPECT_EQ(publisher_.GetRecordCount(), size_t{0});
   record = publisher_.GetPtrRecord(record1.name());
@@ -225,6 +307,94 @@ TEST_F(MdnsPublisherTest, RegisteringUnownedRecordsFail) {
   EXPECT_FALSE(publisher_.RegisterRecord(GetFakeTxtRecord(domain_)).ok());
   EXPECT_FALSE(publisher_.RegisterRecord(GetFakeARecord(domain_)).ok());
   EXPECT_FALSE(publisher_.RegisterRecord(GetFakeAAAARecord(domain_)).ok());
+}
+
+TEST_F(MdnsPublisherTest, RegistrationAnnouncesEightTimes) {
+  EXPECT_CALL(publisher_, IsOwned(domain_)).WillRepeatedly(Return(true));
+  constexpr Clock::duration kOneSecond =
+      std::chrono::duration_cast<Clock::duration>(std::chrono::seconds(1));
+
+  // First announce, at registration.
+  const MdnsRecord record = GetFakeARecord(domain_);
+  EXPECT_CALL(sender_, SendMulticast(_))
+      .WillOnce([this, &record](const MdnsMessage& message) -> Error {
+        return IsAnnounced(record, message);
+      });
+  EXPECT_TRUE(publisher_.RegisterRecord(record).ok());
+
+  // Second announce, at 2 seconds.
+  testing::Mock::VerifyAndClearExpectations(&sender_);
+  EXPECT_CALL(sender_, SendMulticast(_))
+      .WillOnce([this, &record](const MdnsMessage& message) -> Error {
+        return IsAnnounced(record, message);
+      });
+  clock_.Advance(kOneSecond);
+  testing::Mock::VerifyAndClearExpectations(&sender_);
+
+  // Third announce, at 4 seconds.
+  clock_.Advance(kOneSecond);
+  EXPECT_CALL(sender_, SendMulticast(_))
+      .WillOnce([this, &record](const MdnsMessage& message) -> Error {
+        return IsAnnounced(record, message);
+      });
+  clock_.Advance(kOneSecond);
+  testing::Mock::VerifyAndClearExpectations(&sender_);
+
+  // Fourth announce, at 8 seconds.
+  clock_.Advance(kOneSecond * 3);
+  EXPECT_CALL(sender_, SendMulticast(_))
+      .WillOnce([this, &record](const MdnsMessage& message) -> Error {
+        return IsAnnounced(record, message);
+      });
+  clock_.Advance(kOneSecond);
+  testing::Mock::VerifyAndClearExpectations(&sender_);
+
+  // Fifth announce, at 16 seconds.
+  clock_.Advance(kOneSecond * 7);
+  EXPECT_CALL(sender_, SendMulticast(_))
+      .WillOnce([this, &record](const MdnsMessage& message) -> Error {
+        return IsAnnounced(record, message);
+      });
+  clock_.Advance(kOneSecond);
+  testing::Mock::VerifyAndClearExpectations(&sender_);
+
+  // Sixth announce, at 32 seconds.
+  clock_.Advance(kOneSecond * 15);
+  EXPECT_CALL(sender_, SendMulticast(_))
+      .WillOnce([this, &record](const MdnsMessage& message) -> Error {
+        return IsAnnounced(record, message);
+      });
+  clock_.Advance(kOneSecond);
+  testing::Mock::VerifyAndClearExpectations(&sender_);
+
+  // Seventh announce, at 64 seconds.
+  clock_.Advance(kOneSecond * 31);
+  EXPECT_CALL(sender_, SendMulticast(_))
+      .WillOnce([this, &record](const MdnsMessage& message) -> Error {
+        return IsAnnounced(record, message);
+      });
+  clock_.Advance(kOneSecond);
+  testing::Mock::VerifyAndClearExpectations(&sender_);
+
+  // Eighth announce, at 128 seconds.
+  clock_.Advance(kOneSecond * 63);
+  EXPECT_CALL(sender_, SendMulticast(_))
+      .WillOnce([this, &record](const MdnsMessage& message) -> Error {
+        return IsAnnounced(record, message);
+      });
+  clock_.Advance(kOneSecond);
+  testing::Mock::VerifyAndClearExpectations(&sender_);
+
+  // No more announcements
+  clock_.Advance(kOneSecond * 1024);
+  testing::Mock::VerifyAndClearExpectations(&sender_);
+
+  // Sends goodbye message when removed.
+  EXPECT_CALL(sender_, SendMulticast(_))
+      .WillOnce([this, &record](const MdnsMessage& message) -> Error {
+        return IsGoodbyeRecord(record, message);
+      });
+  EXPECT_TRUE(publisher_.UnregisterRecord(record).ok());
 }
 
 }  // namespace discovery
