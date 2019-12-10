@@ -119,7 +119,11 @@ static uint32_t motion_estimation(AV1_COMP *cpi, MACROBLOCK *x,
   uint32_t sse;
   int cost_list[5];
   const MvLimits tmp_mv_limits = x->mv_limits;
-  search_site_config ss_cfg;
+  // We hash the ss_cfgs based on the reference's stride to avoid having to to
+  // compute ss_cfg everytime this function is called.
+  // TODO(chiyotsai@google.com): Make this non-static to prepare for tpl
+  // multi-threading.
+  static search_site_config ss_cfgs[11];
 
   MV best_ref_mv1 = { 0, 0 };
   MV best_ref_mv1_full; /* full-pixel value of best_ref_mv1 */
@@ -138,11 +142,14 @@ static uint32_t motion_estimation(AV1_COMP *cpi, MACROBLOCK *x,
 
   av1_set_mv_search_range(&x->mv_limits, &best_ref_mv1);
 
-  av1_init3smotion_compensation(&ss_cfg, stride_ref);
+  search_site_config *ss_cfg = &ss_cfgs[stride_ref % 11];
+  if (ss_cfg->stride != stride_ref) {
+    av1_init3smotion_compensation(ss_cfg, stride_ref);
+  }
   av1_full_pixel_search(cpi, x, bsize, &best_ref_mv1_full, step_param, 1,
                         search_method, 0, sadpb, cond_cost_list(cpi, cost_list),
                         &best_ref_mv1, INT_MAX, 0, (MI_SIZE * mi_col),
-                        (MI_SIZE * mi_row), 0, &ss_cfg, 0);
+                        (MI_SIZE * mi_row), 0, ss_cfg, 0);
 
   /* restore UMV window */
   x->mv_limits = tmp_mv_limits;
