@@ -201,6 +201,9 @@ struct lookahead_entry *av1_lookahead_peek(struct lookahead_ctx *ctx,
                                            int index) {
   struct lookahead_entry *buf = NULL;
 
+  if (ctx == NULL) {
+    return buf;
+  }
   if (index >= 0) {
     // Forward peek
     if (index < ctx->sz) {
@@ -220,4 +223,7 @@ struct lookahead_entry *av1_lookahead_peek(struct lookahead_ctx *ctx,
   return buf;
 }
 
-unsigned int av1_lookahead_depth(struct lookahead_ctx *ctx) { return ctx->sz; }
+unsigned int av1_lookahead_depth(struct lookahead_ctx *ctx) {
+  assert(ctx != NULL);
+  return ctx->sz;
+}
