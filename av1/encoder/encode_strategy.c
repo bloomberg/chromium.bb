@@ -232,10 +232,10 @@ static int get_ref_frame_flags(const AV1_COMP *const cpi) {
     const RefCntBuffer *const this_ref = ref_frames[i];
     // If this_ref has appeared before, mark the corresponding ref frame as
     // invalid. For nonrd mode, only disable GOLDEN_FRAME if it's the same
-    // as LAST_FRAME.
+    // as LAST_FRAME or ALTREF_FRAME (if ALTREF is being used in nonrd).
     int index = (cpi->sf.use_nonrd_pick_mode &&
                  ref_frame_priority_order[i] == GOLDEN_FRAME)
-                    ? 1
+                    ? (1 + cpi->sf.use_nonrd_altref_frame)
                     : i;
     for (int j = 0; j < index; ++j) {
       if (this_ref == ref_frames[j]) {
