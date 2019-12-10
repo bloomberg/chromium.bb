@@ -100,3 +100,24 @@ class FlattenDepTreeTest(cros_test_lib.TestCase):
     }
     self.assertEqual(
         cros_extract_deps.FlattenDepTree(dep_tree), flatten_dep_tree)
+
+
+class GetCPEFromCPVTest(cros_test_lib.RunCommandTestCase):
+  """Tests for cros_extract_deps.GetCPEFromCPV."""
+
+  def testGetCPEFromCPV(self):
+    """Check GetCPEFromCPV behavior."""
+    stdout = """Remote-ID:   cpe:/a:curl:curl ID: cpe
+Remote-ID:   cpe:/a:curl:libcurl ID: cpe
+Remote-ID:   cpe:/a:haxx:curl ID: cpe
+Remote-ID:   cpe:/a:haxx:libcurl ID: cpe
+Homepage:    https://curl.haxx.se/
+License:     MIT
+"""
+    self.rc.AddCmdResult(['equery', 'm', '-U', 'net-misc/curl'], stdout=stdout)
+    self.assertEqual([
+        'cpe:/a:curl:curl:7.3.0',
+        'cpe:/a:curl:libcurl:7.3.0',
+        'cpe:/a:haxx:curl:7.3.0',
+        'cpe:/a:haxx:libcurl:7.3.0',
+    ], cros_extract_deps.GetCPEFromCPV('net-misc', 'curl', '7.3.0'))
