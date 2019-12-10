@@ -811,9 +811,25 @@ Affects:
     libavformat/matroskadec.c
 
 ------------------------------------------------------------------
-commit 4b66da7fe6876b0b8092bbf3fadd0749c1486b2f
+commit 959599020fad0ecfb28e56a477793279974b9834
 Author: Thomas Guilbert <tguilbert@chromium.org>
-Date:   Tue Dec 3 16:00:03 2019 -0800
+Date:   Wed Dec 4 16:34:00 2019 -0800
+
+    Fix null pointer addition error
+
+    Clusterfuzz uncovered a scenario in which 0 is added to a null pointer,
+    which is undefined behavior. This CL fixes the issue by checking the
+    pointer is null before incrementing it.
+
+    BUG= 1027047, 1028812
+
+Affects:
+    libavformat/utils.c
+
+------------------------------------------------------------------
+commit e30ef377648b2f6bb9a96353b42cfe9d9fdec09d
+Author: Thomas Guilbert <tguilbert@chromium.org>
+Date:   Fri Dec 6 17:25:16 2019 -0800
 
     Fix null pointer arithmetic
 
@@ -823,6 +839,11 @@ Date:   Tue Dec 3 16:00:03 2019 -0800
     to avoid the issue.
 
     This will be reported upstream, and a better fix might come out.
+
+    Bug: 1027044, 1028506, 1028511
+    Change-Id: I838282097e69f08bb14d8da1d931f01add438066
+    Reviewed-on: https://chromium-review.googlesource.com/c/chromium/third_party/ffmpeg/+/1956356
+    Reviewed-by: Ted Meyer <tmathmeyer@chromium.org>
 
 Affects:
     libavcodec/h264dec.c
