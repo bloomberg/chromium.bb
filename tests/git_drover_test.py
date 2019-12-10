@@ -70,7 +70,7 @@ class GitDroverTest(unittest.TestCase):
          self._target_repo),
     ]
     self.LAND_COMMAND = [
-        (['git', 'cl', 'land', '--bypass-hooks'], self._target_repo),
+        (['git', 'cl', 'set-commit'], self._target_repo),
     ]
     if os.name == 'nt':
       self.BRANCH_CLEANUP_COMMANDS = [

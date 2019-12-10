@@ -293,9 +293,9 @@ class _Drover(object):
                           error_message='Upload failed',
                           interactive=True)
 
-    if not self._confirm('About to land on %s.' % self._branch):
+    if not self._confirm('About to start CQ on %s.' % self._branch):
       return False
-    self._run_git_command(['cl', 'land', '--bypass-hooks'], interactive=True)
+    self._run_git_command(['cl', 'set-commit'], interactive=True)
     return True
 
   def _run_git_command(self, args, error_message=None, interactive=False):
