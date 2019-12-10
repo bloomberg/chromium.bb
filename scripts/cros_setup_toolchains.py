@@ -855,9 +855,9 @@ def FileIsCrosSdkElf(elf):
     data = f.read(20)
     # Check the magic number, EI_CLASS, EI_DATA, and e_machine.
     return (data[0:4] == b'\x7fELF' and
-            data[4] == b'\x02' and
-            data[5] == b'\x01' and
-            data[18] == b'\x3e')
+            data[4:5] == b'\x02' and
+            data[5:6] == b'\x01' and
+            data[18:19] == b'\x3e')
 
 
 def IsPathPackagable(ptype, path):
