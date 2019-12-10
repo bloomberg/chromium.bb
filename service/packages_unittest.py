@@ -215,10 +215,13 @@ class ReplicatePrivateConfigTest(cros_test_lib.RunCommandTempDirTestCase):
     self.assertEqual(len(result.modified), 1)
     # The public build_config.json and generated C files were modified.
     expected_modified_files = [
-        self.public_config_path,
-        os.path.join(self.public_package_root, 'files', 'config.c'),
-        os.path.join(self.public_package_root, 'files', 'ec_config.c'),
-        os.path.join(self.public_package_root, 'files', 'ec_config.h'),
+        os.path.join(self.tempdir, self.public_config_path),
+        os.path.join(self.tempdir, self.public_package_root, 'files',
+                     'config.c'),
+        os.path.join(self.tempdir, self.public_package_root, 'files',
+                     'ec_config.c'),
+        os.path.join(self.tempdir, self.public_package_root, 'files',
+                     'ec_config.h'),
     ]
     self.assertEqual(result.modified[0].files, expected_modified_files)
     self.assertEqual(result.modified[0].new_version, '123')
@@ -260,7 +263,8 @@ class ReplicatePrivateConfigTest(cros_test_lib.RunCommandTempDirTestCase):
         _build_targets=None, refs=refs, chroot=Chroot())
 
     self.assertEqual(len(result.modified), 1)
-    self.assertEqual(result.modified[0].files, [modified_destination_path])
+    self.assertEqual(result.modified[0].files,
+                     [os.path.join(self.tempdir, modified_destination_path)])
 
   def test_replicate_private_config_multiple_build_configs(self):
     """An error is thrown if there is more than one build config."""

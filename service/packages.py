@@ -499,6 +499,12 @@ def replicate_private_config(_build_targets, refs, chroot):
   # Use the private repo's commit hash as the new version.
   new_private_version = refs[0].revision
 
+  # modified_files should contain only relative paths at this point, but the
+  # returned UprevVersionedPackageResult must contain only absolute paths.
+  for i, modified_file in enumerate(modified_files):
+    assert not os.path.isabs(modified_file)
+    modified_files[i] = os.path.join(constants.SOURCE_ROOT, modified_file)
+
   return UprevVersionedPackageResult().add_result(new_private_version,
                                                   modified_files)
 
