@@ -5,11 +5,13 @@
 #import "ios/chrome/browser/ui/infobars/coordinators/infobar_translate_coordinator.h"
 
 #include "base/strings/sys_string_conversions.h"
+#include "components/strings/grit/components_strings.h"
 #include "components/translate/core/browser/translate_infobar_delegate.h"
 #include "ios/chrome/browser/infobars/infobar_controller_delegate.h"
 #import "ios/chrome/browser/infobars/infobar_type.h"
 #import "ios/chrome/browser/translate/translate_constants.h"
 #import "ios/chrome/browser/translate/translate_infobar_delegate_observer_bridge.h"
+#import "ios/chrome/browser/ui/commands/snackbar_commands.h"
 #import "ios/chrome/browser/ui/infobars/banners/infobar_banner_presentation_state.h"
 #import "ios/chrome/browser/ui/infobars/banners/infobar_banner_view_controller.h"
 #import "ios/chrome/browser/ui/infobars/coordinators/infobar_coordinator_implementation.h"
@@ -19,12 +21,19 @@
 #import "ios/chrome/browser/ui/infobars/modals/infobar_translate_language_selection_table_view_controller.h"
 #import "ios/chrome/browser/ui/infobars/modals/infobar_translate_modal_delegate.h"
 #import "ios/chrome/browser/ui/infobars/modals/infobar_translate_table_view_controller.h"
+#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
+#import "ios/third_party/material_components_ios/src/components/Snackbar/src/MaterialSnackbar.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+namespace {
+NSString* const kTranslateNotificationSnackbarCategory =
+    @"TranslateNotificationSnackbarCategory";
+}  // namespace
 
 @interface TranslateInfobarCoordinator () <InfobarCoordinatorImplementation,
                                            TranslateInfobarDelegateObserving,
@@ -125,9 +134,11 @@
 
       break;
     }
+    case translate::TranslateStep::TRANSLATE_STEP_TRANSLATE_ERROR:
+      [self showErrorSnackbar];
+      break;
     case translate::TranslateStep::TRANSLATE_STEP_BEFORE_TRANSLATE:
     case translate::TranslateStep::TRANSLATE_STEP_NEVER_TRANSLATE:
-    case translate::TranslateStep::TRANSLATE_STEP_TRANSLATE_ERROR:
       break;
   }
 }
@@ -466,6 +477,16 @@
                       "this state.";
       return nil;
   }
+}
+
+- (void)showErrorSnackbar {
+  MDCSnackbarMessage* message = [MDCSnackbarMessage
+      messageWithText:l10n_util::GetNSString(IDS_TRANSLATE_NOTIFICATION_ERROR)];
+  message.category = kTranslateNotificationSnackbarCategory;
+  TriggerHapticFeedbackForNotification(UINotificationFeedbackTypeSuccess);
+  id<SnackbarCommands> snackbarDispatcher =
+      static_cast<id<SnackbarCommands>>(self.dispatcher);
+  [snackbarDispatcher showSnackbarMessage:message];
 }
 
 @end
