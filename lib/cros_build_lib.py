@@ -480,11 +480,6 @@ def sudo_run(cmd, user='root', preserve_env=False, **kwargs):
   return run(sudo_cmd, **kwargs)
 
 
-def SudoRunCommand(cmd, **kwargs):
-  """Backwards compat API."""
-  return sudo_run(cmd, **kwargs)
-
-
 def _KillChildProcess(proc, int_timeout, kill_timeout, cmd, original_handler,
                       signum, frame):
   """Used as a signal handler by run.
