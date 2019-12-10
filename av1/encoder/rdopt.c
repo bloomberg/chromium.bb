@@ -4565,6 +4565,8 @@ static void store_winner_mode_stats(const AV1_COMMON *const cm, MACROBLOCK *x,
   int is_palette_mode = mbmi->palette_mode_info.palette_size[PLANE_TYPE_Y] > 0;
   // Mode stat is not required when multiwinner mode processing is disabled
   if (!enable_multiwinner_mode_process) return;
+  // Ignore mode with maximum rd
+  if (this_rd == INT64_MAX) return;
   // TODO(any): Winner mode processing is currently not applicable for palette
   // mode in Inter frames. Clean-up the following code, once support is added
   if (!frame_is_intra_only(cm) && is_palette_mode) return;
@@ -13941,12 +13943,10 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
         &intra_rd_stats, &intra_rd_stats_y, &intra_rd_stats_uv);
     // Collect mode stats for multiwinner mode processing
     const int txfm_search_done = 1;
-    if (intra_rd_stats.rdcost != INT64_MAX) {
-      store_winner_mode_stats(
-          &cpi->common, x, mbmi, &intra_rd_stats, &intra_rd_stats_y,
-          &intra_rd_stats_uv, mode_enum, NULL, bsize, intra_rd_stats.rdcost,
-          cpi->sf.enable_multiwinner_mode_process, txfm_search_done);
-    }
+    store_winner_mode_stats(
+        &cpi->common, x, mbmi, &intra_rd_stats, &intra_rd_stats_y,
+        &intra_rd_stats_uv, mode_enum, NULL, bsize, intra_rd_stats.rdcost,
+        cpi->sf.enable_multiwinner_mode_process, txfm_search_done);
     if (intra_rd_stats.rdcost < search_state.best_rd) {
       update_search_state(&search_state, rd_cost, ctx, &intra_rd_stats,
                           &intra_rd_stats_y, &intra_rd_stats_uv, mode_enum, x,
