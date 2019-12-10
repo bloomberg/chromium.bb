@@ -917,6 +917,10 @@ NavigationRequest::NavigationRequest(
   common_params_->referrer = Referrer::SanitizeForRequest(
       common_params_->url, *common_params_->referrer);
 
+  if (frame_tree_node_->IsMainFrame()) {
+    loading_mem_tracker_ = PeakGpuMemoryTracker::Create(base::DoNothing());
+  }
+
   if (from_begin_navigation_) {
     // This is needed to have data URLs commit in the same SiteInstance as the
     // initiating renderer.
@@ -3914,6 +3918,11 @@ void NavigationRequest::RestartBackForwardCachedNavigationImpl() {
     return;
 
   controller->GoToIndex(nav_index);
+}
+
+std::unique_ptr<PeakGpuMemoryTracker>
+NavigationRequest::TakePeakGpuMemoryTracker() {
+  return std::move(loading_mem_tracker_);
 }
 
 }  // namespace content
