@@ -771,7 +771,7 @@ static INLINE int is_almost_static(double gf_zero_motion, int kf_zero_motion) {
 #define GROUP_ADAPTIVE_MAXQ 1
 #if GROUP_ADAPTIVE_MAXQ
 #define RC_FACTOR_MIN 0.75
-#define RC_FACTOR_MAX 1.75
+#define RC_FACTOR_MAX 1.25
 #endif  // GROUP_ADAPTIVE_MAXQ
 #define MIN_FWD_KF_INTERVAL 8
 
@@ -1206,13 +1206,20 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
     int tmp_q;
     // rc factor is a weight factor that corrects for local rate control drift.
     double rc_factor = 1.0;
-    if (rc->rate_error_estimate > 0) {
-      rc_factor = AOMMAX(RC_FACTOR_MIN,
-                         (double)(100 - rc->rate_error_estimate) / 100.0);
-    } else {
-      rc_factor = AOMMIN(RC_FACTOR_MAX,
-                         (double)(100 - rc->rate_error_estimate) / 100.0);
+    int64_t bits = AOMMIN(rc->total_actual_bits, cpi->twopass.bits_left);
+
+    if (bits > 0) {
+      int rate_error;
+
+      rate_error = (int)((rc->vbr_bits_off_target * 100) / bits);
+      rate_error = clamp(rate_error, -100, 100);
+      if (rate_error > 0) {
+        rc_factor = AOMMAX(RC_FACTOR_MIN, (double)(100 - rate_error) / 100.0);
+      } else {
+        rc_factor = AOMMIN(RC_FACTOR_MAX, (double)(100 - rate_error) / 100.0);
+      }
     }
+
     tmp_q = get_twopass_worst_quality(
         cpi, group_av_err, (group_av_skip_pct + group_av_inactive_zone),
         vbr_group_bits_per_frame, rc_factor);
