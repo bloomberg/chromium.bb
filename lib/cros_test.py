@@ -253,7 +253,7 @@ class CrOSTest(object):
 
     if self._device.log_level == 'debug':
       cmd += ['-verbose']
-    cmd += ['run', '-build=false', '-waituntilready',]
+    cmd += ['run', '-build=false', '-waituntilready', '-failfortests',]
     if not need_chroot:
       # The test runner needs to be pointed to the location of the test files
       # when we're using those in the SimpleChrome cache.
