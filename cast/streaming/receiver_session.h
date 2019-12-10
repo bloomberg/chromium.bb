@@ -38,10 +38,15 @@ class ReceiverSession final : public MessagePort::Client {
     // In practice, we may have 0, 1, or 2 receivers configured, depending
     // on if the device supports audio and video, and if we were able to
     // successfully negotiate a receiver configuration.
+
+    // NOTES ON LIFETIMES: The audio and video receiver pointers are expected
+    // to be valid until the OnReceiversDestroyed event is fired, at which
+    // point they become invalid and need to replaced by the results of
+    // the ensuing OnNegotiated call.
     ConfiguredReceivers(
-        std::unique_ptr<Receiver> audio_receiver,
+        Receiver* audio_receiver,
         const absl::optional<SessionConfig> audio_receiver_config,
-        std::unique_ptr<Receiver> video_receiver,
+        Receiver* video_receiver,
         const absl::optional<SessionConfig> video_receiver_config);
     ConfiguredReceivers(const ConfiguredReceivers&) = delete;
     ConfiguredReceivers(ConfiguredReceivers&&) noexcept;
@@ -51,19 +56,19 @@ class ReceiverSession final : public MessagePort::Client {
 
     // If the receiver is audio- or video-only, either of the receivers
     // may be nullptr. However, in the majority of cases they will be populated.
-    Receiver* audio_receiver() const { return audio_receiver_.get(); }
+    Receiver* audio_receiver() const { return audio_receiver_; }
     const absl::optional<SessionConfig>& audio_session_config() const {
       return audio_receiver_config_;
     }
-    Receiver* video_receiver() const { return video_receiver_.get(); }
+    Receiver* video_receiver() const { return video_receiver_; }
     const absl::optional<SessionConfig>& video_session_config() const {
       return video_receiver_config_;
     }
 
    private:
-    std::unique_ptr<Receiver> audio_receiver_;
+    Receiver* audio_receiver_;
     absl::optional<SessionConfig> audio_receiver_config_;
-    std::unique_ptr<Receiver> video_receiver_;
+    Receiver* video_receiver_;
     absl::optional<SessionConfig> video_receiver_config_;
   };
 
@@ -71,8 +76,13 @@ class ReceiverSession final : public MessagePort::Client {
   // When a connection is established, the OnNegotiated callback is called.
   class Client {
    public:
+    // This method is called when a new set of receivers has been negotiated.
     virtual void OnNegotiated(ReceiverSession* session,
                               ConfiguredReceivers receivers) = 0;
+
+    // This method is called immediately preceding the invalidation of
+    // this session's receivers.
+    virtual void OnReceiversDestroyed(ReceiverSession* session) = 0;
     virtual void OnError(ReceiverSession* session, openscreen::Error error) = 0;
   };
 
@@ -151,6 +161,9 @@ class ReceiverSession final : public MessagePort::Client {
 
   void SendMessage(Message* message);
 
+  // Handles resetting receivers and notifying the client.
+  void ResetReceivers();
+
   Client* const client_;
   const std::unique_ptr<Environment> environment_;
   const std::unique_ptr<MessagePort> message_port_;
@@ -159,6 +172,9 @@ class ReceiverSession final : public MessagePort::Client {
   CastMode cast_mode_;
   bool supports_wifi_status_reporting_ = false;
   ReceiverPacketRouter packet_router_;
+
+  std::unique_ptr<Receiver> current_audio_receiver_;
+  std::unique_ptr<Receiver> current_video_receiver_;
 };
 
 }  // namespace streaming

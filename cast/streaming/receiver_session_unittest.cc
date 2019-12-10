@@ -204,6 +204,7 @@ class FakeClient : public ReceiverSession::Client {
               OnNegotiated,
               (ReceiverSession*, ReceiverSession::ConfiguredReceivers),
               (override));
+  MOCK_METHOD(void, OnReceiversDestroyed, (ReceiverSession*), (override));
   MOCK_METHOD(void,
               OnError,
               (ReceiverSession*, openscreen::Error error),
@@ -279,6 +280,7 @@ TEST_F(ReceiverSessionTest, CanNegotiateWithDefaultPreferences) {
         EXPECT_EQ(cr.video_session_config().value().channels, 1);
         EXPECT_EQ(cr.video_session_config().value().rtp_timebase, 90000);
       });
+  EXPECT_CALL(client, OnReceiversDestroyed(&session)).Times(1);
 
   raw_port->ReceiveMessage(kValidOfferMessage);
 
@@ -340,6 +342,7 @@ TEST_F(ReceiverSessionTest, CanNegotiateWithCustomCodecPreferences) {
         EXPECT_EQ(cr.video_session_config().value().channels, 1);
         EXPECT_EQ(cr.video_session_config().value().rtp_timebase, 90000);
       });
+  EXPECT_CALL(client, OnReceiversDestroyed(&session)).Times(1);
   raw_port->ReceiveMessage(kValidOfferMessage);
 }
 
@@ -366,6 +369,7 @@ TEST_F(ReceiverSessionTest, CanNegotiateWithCustomConstraints) {
                                    std::move(display)});
 
   EXPECT_CALL(client, OnNegotiated(&session, _)).Times(1);
+  EXPECT_CALL(client, OnReceiversDestroyed(&session)).Times(1);
   raw_port->ReceiveMessage(kValidOfferMessage);
 
   const auto& messages = raw_port->posted_messages();
@@ -422,6 +426,7 @@ TEST_F(ReceiverSessionTest, HandlesNoValidAudioStream) {
                           ReceiverSession::Preferences{});
 
   EXPECT_CALL(client, OnNegotiated(&session, _)).Times(1);
+  EXPECT_CALL(client, OnReceiversDestroyed(&session)).Times(1);
 
   raw_port->ReceiveMessage(kNoAudioOfferMessage);
   const auto& messages = raw_port->posted_messages();
@@ -447,6 +452,7 @@ TEST_F(ReceiverSessionTest, HandlesNoValidVideoStream) {
                           ReceiverSession::Preferences{});
 
   EXPECT_CALL(client, OnNegotiated(&session, _)).Times(1);
+  EXPECT_CALL(client, OnReceiversDestroyed(&session)).Times(1);
 
   raw_port->ReceiveMessage(kNoVideoOfferMessage);
   const auto& messages = raw_port->posted_messages();
@@ -473,6 +479,7 @@ TEST_F(ReceiverSessionTest, HandlesNoValidStreams) {
 
   // We shouldn't call OnNegotiated if we failed to negotiate any streams.
   EXPECT_CALL(client, OnNegotiated(&session, _)).Times(0);
+  EXPECT_CALL(client, OnReceiversDestroyed(&session)).Times(0);
 
   raw_port->ReceiveMessage(kNoAudioOrVideoOfferMessage);
   const auto& messages = raw_port->posted_messages();
@@ -493,6 +500,7 @@ TEST_F(ReceiverSessionTest, HandlesMalformedOffer) {
   // Note that unlike when we simply don't select any streams, when the offer
   // is actually completely invalid we call OnError.
   EXPECT_CALL(client, OnNegotiated(&session, _)).Times(0);
+  EXPECT_CALL(client, OnReceiversDestroyed(&session)).Times(0);
   EXPECT_CALL(client,
               OnError(&session, openscreen::Error(
                                     openscreen::Error::Code::kJsonParseError)))
@@ -501,5 +509,18 @@ TEST_F(ReceiverSessionTest, HandlesMalformedOffer) {
   raw_port->ReceiveMessage(kInvalidJsonOfferMessage);
 }
 
+TEST_F(ReceiverSessionTest, NotifiesReceiverDestruction) {
+  auto message_port = std::make_unique<SimpleMessagePort>();
+  SimpleMessagePort* raw_port = message_port.get();
+  StrictMock<FakeClient> client;
+  ReceiverSession session(&client, std::move(env_), std::move(message_port),
+                          ReceiverSession::Preferences{});
+
+  EXPECT_CALL(client, OnNegotiated(&session, _)).Times(2);
+  EXPECT_CALL(client, OnReceiversDestroyed(&session)).Times(2);
+
+  raw_port->ReceiveMessage(kNoAudioOfferMessage);
+  raw_port->ReceiveMessage(kValidOfferMessage);
+}
 }  // namespace streaming
 }  // namespace cast

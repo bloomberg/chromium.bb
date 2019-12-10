@@ -78,13 +78,13 @@ const Stream* SelectStream(const std::vector<Codec>& preferred_codecs,
 }  // namespace
 
 ReceiverSession::ConfiguredReceivers::ConfiguredReceivers(
-    std::unique_ptr<Receiver> audio_receiver,
+    Receiver* audio_receiver,
     absl::optional<SessionConfig> audio_receiver_config,
-    std::unique_ptr<Receiver> video_receiver,
+    Receiver* video_receiver,
     absl::optional<SessionConfig> video_receiver_config)
-    : audio_receiver_(std::move(audio_receiver)),
+    : audio_receiver_(audio_receiver),
       audio_receiver_config_(std::move(audio_receiver_config)),
-      video_receiver_(std::move(video_receiver)),
+      video_receiver_(video_receiver),
       video_receiver_config_(std::move(video_receiver_config)) {}
 
 ConfiguredReceivers::ConfiguredReceivers(ConfiguredReceivers&&) noexcept =
@@ -127,6 +127,7 @@ ReceiverSession::ReceiverSession(Client* const client,
 }
 
 ReceiverSession::~ReceiverSession() {
+  ResetReceivers();
   message_port_->SetClient(nullptr);
 }
 
@@ -229,25 +230,33 @@ openscreen::ErrorOr<ConfiguredReceivers> ReceiverSession::TrySpawningReceivers(
     return openscreen::Error::Code::kParameterInvalid;
   }
 
+  ResetReceivers();
+
   absl::optional<SessionConfig> audio_config;
-  std::unique_ptr<Receiver> audio_receiver;
   if (audio) {
     auto audio_pair = ConstructReceiver(audio->stream);
     audio_config = std::move(audio_pair.first);
-    audio_receiver = std::move(audio_pair.second);
+    current_audio_receiver_ = std::move(audio_pair.second);
   }
 
   absl::optional<SessionConfig> video_config;
-  std::unique_ptr<Receiver> video_receiver;
   if (video) {
     auto video_pair = ConstructReceiver(video->stream);
     video_config = std::move(video_pair.first);
-    video_receiver = std::move(video_pair.second);
+    current_video_receiver_ = std::move(video_pair.second);
   }
 
-  return ConfiguredReceivers{std::move(audio_receiver), std::move(audio_config),
-                             std::move(video_receiver),
-                             std::move(video_config)};
+  return ConfiguredReceivers{
+      current_audio_receiver_.get(), std::move(audio_config),
+      current_video_receiver_.get(), std::move(video_config)};
+}
+
+void ReceiverSession::ResetReceivers() {
+  if (current_video_receiver_ || current_audio_receiver_) {
+    client_->OnReceiversDestroyed(this);
+    current_audio_receiver_.reset();
+    current_video_receiver_.reset();
+  }
 }
 
 Answer ReceiverSession::ConstructAnswer(
