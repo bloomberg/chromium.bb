@@ -62,6 +62,7 @@ source_set("translate") {
     ":coordinators",
     ":translate_public",
     "//base",
+    "//components/metrics",
     "//components/strings:components_strings_grit",
     "//components/translate/core/browser",
     "//ios/chrome/app/strings:ios_strings_grit",

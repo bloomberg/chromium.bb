@@ -4,13 +4,17 @@
 
 #import "ios/chrome/browser/ui/infobars/coordinators/infobar_translate_coordinator.h"
 
+#include "base/metrics/histogram_macros.h"
+#include "base/metrics/sparse_histogram.h"
 #include "base/strings/sys_string_conversions.h"
+#include "components/metrics/metrics_log.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/translate/core/browser/translate_infobar_delegate.h"
 #include "ios/chrome/browser/infobars/infobar_controller_delegate.h"
 #import "ios/chrome/browser/infobars/infobar_type.h"
 #import "ios/chrome/browser/translate/translate_constants.h"
 #import "ios/chrome/browser/translate/translate_infobar_delegate_observer_bridge.h"
+#import "ios/chrome/browser/translate/translate_infobar_metrics_recorder.h"
 #import "ios/chrome/browser/ui/commands/snackbar_commands.h"
 #import "ios/chrome/browser/ui/infobars/banners/infobar_banner_presentation_state.h"
 #import "ios/chrome/browser/ui/infobars/banners/infobar_banner_view_controller.h"
@@ -71,6 +75,9 @@ NSString* const kTranslateNotificationSnackbarCategory =
 
 // YES if a "Show Original" banner can be presented.
 @property(nonatomic, assign) BOOL displayShowOriginalBanner;
+// Tracks the total number of translations in a page, including reverts to
+// original.
+@property(nonatomic, assign) NSUInteger translationsCount;
 
 @end
 
@@ -92,6 +99,9 @@ NSString* const kTranslateNotificationSnackbarCategory =
             infoBarDelegate, self);
     _userAction = UserActionNone;
     _currentStep = translate::TranslateStep::TRANSLATE_STEP_BEFORE_TRANSLATE;
+    // Legacy TranslateInfobarController logs this impression metric on init, so
+    // log the impression here instead of in start() for consistency purposes.
+    [self recordInfobarEvent:InfobarEvent::INFOBAR_IMPRESSION];
   }
   return self;
 }
@@ -115,6 +125,9 @@ NSString* const kTranslateNotificationSnackbarCategory =
       [self.badgeDelegate infobarWasAccepted:self.infobarType
                                  forWebState:self.webState];
 
+      // Log action for both manual and automatic translations.
+      [self incrementAndRecordTranslationsCount];
+
       // If the Infobar hasn't been accepted but |step| changed to
       // TRANSLATE_STEP_AFTER_TRANSLATE it means that this was triggered by auto
       // translate.
@@ -135,6 +148,8 @@ NSString* const kTranslateNotificationSnackbarCategory =
       break;
     }
     case translate::TranslateStep::TRANSLATE_STEP_TRANSLATE_ERROR:
+      // Match TranslateInfobarController, which logs this for errrors.
+      [self incrementAndRecordTranslationsCount];
       [self showErrorSnackbar];
       break;
     case translate::TranslateStep::TRANSLATE_STEP_BEFORE_TRANSLATE:
@@ -224,6 +239,14 @@ NSString* const kTranslateNotificationSnackbarCategory =
   self.modalViewController.title =
       l10n_util::GetNSString(IDS_IOS_TRANSLATE_INFOBAR_MODAL_TITLE);
   self.mediator.modalConsumer = self.modalViewController;
+  MobileMessagesTranslateModalPresent modalPresent =
+      self.currentStep ==
+              translate::TranslateStep::TRANSLATE_STEP_BEFORE_TRANSLATE
+          ? MobileMessagesTranslateModalPresent::
+                PresentedAfterTranslatePromptBanner
+          : MobileMessagesTranslateModalPresent::
+                PresentedAfterTranslateFinishedBanner;
+  [TranslateInfobarMetricsRecorder recordModalPresent:modalPresent];
   // TODO(crbug.com/1014959): Need to be able to toggle the modal button for
   // when translate is in progress.
   return YES;
@@ -254,6 +277,8 @@ NSString* const kTranslateNotificationSnackbarCategory =
   DCHECK(self.currentStep ==
          translate::TranslateStep::TRANSLATE_STEP_AFTER_TRANSLATE);
   [self performInfobarAction];
+  [TranslateInfobarMetricsRecorder
+      recordModalEvent:MobileMessagesTranslateModalEvent::ShowOriginal];
   [self dismissInfobarModal:self animated:YES completion:nil];
 }
 
@@ -265,6 +290,12 @@ NSString* const kTranslateNotificationSnackbarCategory =
 }
 
 - (void)showChangeSourceLanguageOptions {
+  [self recordInfobarEvent:InfobarEvent::INFOBAR_PAGE_NOT_IN];
+  [self recordLanguageDataHistogram:kLanguageHistogramPageNotInLanguage
+                       languageCode:self.translateInfobarDelegate
+                                        ->original_language_code()];
+  [TranslateInfobarMetricsRecorder
+      recordModalEvent:MobileMessagesTranslateModalEvent::ChangeSourceLanguage];
   InfobarTranslateLanguageSelectionTableViewController* languageSelectionTVC =
       [[InfobarTranslateLanguageSelectionTableViewController alloc]
                  initWithDelegate:self.mediator
@@ -279,6 +310,12 @@ NSString* const kTranslateNotificationSnackbarCategory =
 }
 
 - (void)showChangeTargetLanguageOptions {
+  [self recordInfobarEvent:InfobarEvent::INFOBAR_MORE_LANGUAGES];
+  [self recordLanguageDataHistogram:kLanguageHistogramMoreLanguages
+                       languageCode:self.translateInfobarDelegate
+                                        ->target_language_code()];
+  [TranslateInfobarMetricsRecorder
+      recordModalEvent:MobileMessagesTranslateModalEvent::ChangeTargetLanguage];
   InfobarTranslateLanguageSelectionTableViewController* languageSelectionTVC =
       [[InfobarTranslateLanguageSelectionTableViewController alloc]
                  initWithDelegate:self.mediator
@@ -295,7 +332,13 @@ NSString* const kTranslateNotificationSnackbarCategory =
 - (void)alwaysTranslateSourceLanguage {
   DCHECK(!self.translateInfobarDelegate->ShouldAlwaysTranslate());
   self.userAction |= UserActionAlwaysTranslate;
-  // TODO(crbug.com/1014959): Add metrics
+  [self recordInfobarEvent:InfobarEvent::INFOBAR_ALWAYS_TRANSLATE];
+  [self recordLanguageDataHistogram:kLanguageHistogramAlwaysTranslate
+                       languageCode:self.translateInfobarDelegate
+                                        ->original_language_code()];
+  [TranslateInfobarMetricsRecorder
+      recordModalEvent:MobileMessagesTranslateModalEvent::
+                           TappedAlwaysTranslate];
   self.translateInfobarDelegate->ToggleAlwaysTranslate();
 
   // Since toggle turned on always translate, translate now if not already
@@ -309,7 +352,7 @@ NSString* const kTranslateNotificationSnackbarCategory =
 
 - (void)undoAlwaysTranslateSourceLanguage {
   DCHECK(self.translateInfobarDelegate->ShouldAlwaysTranslate());
-  // TODO(crbug.com/1014959): Add metrics and new user action?
+  [self recordInfobarEvent:InfobarEvent::INFOBAR_ALWAYS_TRANSLATE_UNDO];
   self.translateInfobarDelegate->ToggleAlwaysTranslate();
   [self dismissInfobarModal:self animated:YES completion:nil];
 }
@@ -317,7 +360,13 @@ NSString* const kTranslateNotificationSnackbarCategory =
 - (void)neverTranslateSourceLanguage {
   DCHECK(self.translateInfobarDelegate->IsTranslatableLanguageByPrefs());
   self.userAction |= UserActionNeverTranslateLanguage;
-  // TODO(crbug.com/1014959): Add metrics
+  [self recordInfobarEvent:InfobarEvent::INFOBAR_NEVER_TRANSLATE];
+  [TranslateInfobarMetricsRecorder
+      recordModalEvent:MobileMessagesTranslateModalEvent::
+                           TappedNeverForSourceLanguage];
+  [self recordLanguageDataHistogram:kLanguageHistogramNeverTranslate
+                       languageCode:self.translateInfobarDelegate
+                                        ->original_language_code()];
   self.translateInfobarDelegate->ToggleTranslatableLanguageByPrefs();
   [self dismissInfobarModal:self
                    animated:YES
@@ -339,7 +388,10 @@ NSString* const kTranslateNotificationSnackbarCategory =
   DCHECK(!self.translateInfobarDelegate->IsSiteBlacklisted());
   self.userAction |= UserActionNeverTranslateSite;
   self.translateInfobarDelegate->ToggleSiteBlacklist();
-  // TODO(crbug.com/1014959): Add metrics
+  [self recordInfobarEvent:InfobarEvent::INFOBAR_NEVER_TRANSLATE_SITE];
+  [TranslateInfobarMetricsRecorder
+      recordModalEvent:MobileMessagesTranslateModalEvent::
+                           TappedNeverForThisSite];
   [self dismissInfobarModal:self
                    animated:YES
                  completion:^{
@@ -378,10 +430,20 @@ NSString* const kTranslateNotificationSnackbarCategory =
     case translate::TranslateStep::TRANSLATE_STEP_BEFORE_TRANSLATE: {
       self.userAction |= UserActionTranslate;
 
-      // TODO(crbug.com/1014959): Add metrics
+      [self recordInfobarEvent:InfobarEvent::INFOBAR_TARGET_TAB_TRANSLATE];
+      [self recordLanguageDataHistogram:kLanguageHistogramTranslate
+                           languageCode:self.translateInfobarDelegate
+                                            ->target_language_code()];
+      // TODO(crbug.com/1031184): Implement bannerActionWillBePerformed method
+      // and log this there.
+      if (self.baseViewController.presentedViewController &&
+          self.baseViewController.presentedViewController ==
+              self.bannerViewController) {
+        [TranslateInfobarMetricsRecorder
+            recordBannerEvent:MobileMessagesTranslateBannerEvent::Translate];
+      }
+
       if (self.translateInfobarDelegate->ShouldAutoAlwaysTranslate()) {
-        // TODO(crbug.com/1014959): Figure out if we should prompt user with
-        // snackbar to auto always translate.
         self.translateInfobarDelegate->ToggleAlwaysTranslate();
       }
       self.translateInfobarDelegate->Translate();
@@ -391,7 +453,19 @@ NSString* const kTranslateNotificationSnackbarCategory =
     case translate::TranslateStep::TRANSLATE_STEP_AFTER_TRANSLATE: {
       self.userAction |= UserActionRevert;
 
-      // TODO(crbug.com/1014959): Add metrics
+      // Log for just reverts since translates are covered in
+      // didChangeTranslateStep:.
+      [self incrementAndRecordTranslationsCount];
+
+      [self recordInfobarEvent:InfobarEvent::INFOBAR_REVERT];
+      // TODO(crbug.com/1031184): Implement bannerActionWillBePerformed method
+      // and log this there.
+      if (self.baseViewController.presentedViewController &&
+          self.baseViewController.presentedViewController ==
+              self.bannerViewController) {
+        [TranslateInfobarMetricsRecorder
+            recordBannerEvent:MobileMessagesTranslateBannerEvent::ShowOriginal];
+      }
 
       self.translateInfobarDelegate->RevertWithoutClosingInfobar();
       self.infobarAccepted = NO;
@@ -501,6 +575,28 @@ NSString* const kTranslateNotificationSnackbarCategory =
   id<SnackbarCommands> snackbarDispatcher =
       static_cast<id<SnackbarCommands>>(self.dispatcher);
   [snackbarDispatcher showSnackbarMessage:message];
+}
+
+// Records a histogram for |event|.
+- (void)recordInfobarEvent:(InfobarEvent)event {
+  UMA_HISTOGRAM_ENUMERATION(kEventHistogram, event);
+}
+
+// Records a histogram of |histogram| for |langCode|. This is used to log the
+// language distribution of certain Translate events.
+- (void)recordLanguageDataHistogram:(const std::string&)histogramName
+                       languageCode:(const std::string&)langCode {
+  // TODO(crbug.com/1025440): Use function version of macros here and in
+  // TranslateInfobarController.
+  base::SparseHistogram::FactoryGet(
+      histogramName, base::HistogramBase::kUmaTargetedHistogramFlag)
+      ->Add(metrics::MetricsLog::Hash(langCode));
+}
+
+// Increments the |kTranslationCountHistogram| histogram metric.
+- (void)incrementAndRecordTranslationsCount {
+  ++self.translationsCount;
+  UMA_HISTOGRAM_COUNTS_1M(kTranslationCountHistogram, self.translationsCount);
 }
 
 @end

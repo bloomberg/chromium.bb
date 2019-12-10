@@ -42193,6 +42193,25 @@ Called by update_use_counter_css.py.-->
   <int value="1" label="PresentedAfterUpdateBanner"/>
 </enum>
 
+<enum name="MobileMessagesTranslateBannerEvent">
+  <int value="0" label="Translate"/>
+  <int value="1" label="ShowOriginal"/>
+</enum>
+
+<enum name="MobileMessagesTranslateModalEvent">
+  <int value="0" label="ChangeSourceLanguage"/>
+  <int value="1" label="ChangeTargetLanguage"/>
+  <int value="2" label="ShowOriginal"/>
+  <int value="3" label="TappedAlwaysTranslate"/>
+  <int value="4" label="TappedNeverForSourceLanguage"/>
+  <int value="5" label="TappedNeverForThisSite"/>
+</enum>
+
+<enum name="MobileMessagesTranslateModalPresent">
+  <int value="0" label="PresentedAfterTranslatePromptBanner"/>
+  <int value="1" label="PresentedAfterTranslateFinishedBanner"/>
+</enum>
+
 <enum name="MobileSessionCallerApp">
   <int value="0" label="Google Search"/>
   <int value="1" label="Gmail"/>
