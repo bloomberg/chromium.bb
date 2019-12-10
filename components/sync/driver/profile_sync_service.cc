@@ -13,11 +13,13 @@
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/run_loop.h"
 #include "base/strings/strcat.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread.h"
+#include "base/time/time.h"
 #include "components/invalidation/public/invalidation_service.h"
 #include "components/signin/public/base/signin_metrics.h"
 #include "components/signin/public/identity_manager/account_info.h"
@@ -133,6 +135,12 @@ std::unique_ptr<HttpPostProviderFactory> CreateHttpBridgeFactory(
   return std::make_unique<HttpBridgeFactory>(
       user_agent, std::move(pending_url_loader_factory),
       network_time_update_callback);
+}
+
+void EmitUmaMetricWithEmitTimeMinutes(const std::string& histogram_name) {
+  base::Time::Exploded now_exploded;
+  base::Time::Now().UTCExplode(&now_exploded);
+  base::UmaHistogramExactLinear(histogram_name, now_exploded.minute, 60);
 }
 
 }  // namespace
@@ -254,6 +262,9 @@ void ProfileSyncService::Initialize() {
   if (HasDisableReason(DISABLE_REASON_ENTERPRISE_POLICY) ||
       (HasDisableReason(DISABLE_REASON_NOT_SIGNED_IN) &&
        auth_manager_->IsActiveAccountInfoFullyLoaded())) {
+    // TODO(crbug/1031162): Remove once traffic investigation is closed.
+    EmitUmaMetricWithEmitTimeMinutes(
+        "Sync.PeakAnalysis.StopOnSyncPermanentlyDisabled");
     StopImpl(CLEAR_DATA);
   }
 
@@ -312,6 +323,9 @@ void ProfileSyncService::AccountStateChanged() {
   if (!IsSignedIn()) {
     // The account was signed out, so shut down.
     sync_disabled_by_admin_ = false;
+    // TODO(crbug/1031162): Remove once traffic investigation is closed.
+    EmitUmaMetricWithEmitTimeMinutes(
+        "Sync.PeakAnalysis.StopAfterAccountStateChanged");
     StopImpl(CLEAR_DATA);
     DCHECK(!engine_);
   } else {
@@ -339,6 +353,9 @@ void ProfileSyncService::CredentialsChanged() {
   // then shut down. This happens when the user signs out on the web, i.e. we're
   // in the "Sync paused" state.
   if (!IsEngineAllowedToStart()) {
+    // TODO(crbug/1031162): Remove once traffic investigation is closed.
+    EmitUmaMetricWithEmitTimeMinutes(
+        "Sync.PeakAnalysis.StopAfterCredentialsChanged");
     // This will notify observers if appropriate.
     StopImpl(KEEP_DATA);
     return;
@@ -1487,6 +1504,9 @@ bool ProfileSyncService::IsEncryptionPendingForTest() const {
 void ProfileSyncService::OnSyncManagedPrefChange(bool is_sync_managed) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (is_sync_managed) {
+    // TODO(crbug/1031162): Remove once traffic investigation is closed.
+    EmitUmaMetricWithEmitTimeMinutes(
+        "Sync.PeakAnalysis.StopOnSyncManagedPrefChange");
     StopImpl(CLEAR_DATA);
   } else {
     // Sync is no longer disabled by policy. Try starting it up if appropriate.
