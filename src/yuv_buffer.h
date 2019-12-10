@@ -108,10 +108,10 @@ class YuvBuffer {
   int8_t subsampling_x() const { return subsampling_x_; }
   int8_t subsampling_y() const { return subsampling_y_; }
 
-  int width(int plane) const {
+  int aligned_width(int plane) const {
     return (plane == kPlaneY) ? y_width_ : uv_width_;
   }
-  int height(int plane) const {
+  int aligned_height(int plane) const {
     return (plane == kPlaneY) ? y_height_ : uv_height_;
   }
 

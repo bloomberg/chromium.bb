@@ -1064,7 +1064,7 @@ void PostFilter::ApplyLoopRestorationForSuperBlock(
   // The output of loop restoration is written into the source frame buffer with
   // a shift to the top left.
   Array2DView<Pixel> loop_restored_window(
-      source_buffer_->height(plane), src_stride / sizeof(Pixel),
+      source_buffer_->aligned_height(plane), src_stride / sizeof(Pixel),
       reinterpret_cast<Pixel*>(src_buffer + y * src_stride + x * pixel_size_ +
                                src_unit_buffer_offset));
   ApplyLoopRestorationForOneUnit<Pixel>(

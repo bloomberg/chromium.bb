@@ -391,8 +391,9 @@ Tile::Tile(
   delta_lf_all_zero_ = true;
   YuvBuffer* const buffer = current_frame->buffer();
   for (int plane = 0; plane < PlaneCount(); ++plane) {
-    buffer_[plane].Reset(buffer->height(plane) + buffer->bottom_border(plane),
-                         buffer->stride(plane), buffer->data(plane));
+    buffer_[plane].Reset(
+        buffer->aligned_height(plane) + buffer->bottom_border(plane),
+        buffer->stride(plane), buffer->data(plane));
     const int plane_height =
         RightShiftWithRounding(frame_header_.height, subsampling_y_[plane]);
     deblock_row_limit_[plane] =
