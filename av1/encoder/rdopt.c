@@ -11193,7 +11193,6 @@ static int64_t handle_inter_mode(AV1_COMP *const cpi, TileDataEnc *tile_data,
                                  tmp_buf + 2 * MAX_SB_SQUARE },
                                { MAX_SB_SIZE, MAX_SB_SIZE, MAX_SB_SIZE } };
 
-  int16_t mode_ctx;
   const int masked_compound_used = is_any_masked_compound_used(bsize) &&
                                    cm->seq_params.enable_masked_compound;
   int64_t ret_val = INT64_MAX;
@@ -11217,8 +11216,13 @@ static int64_t handle_inter_mode(AV1_COMP *const cpi, TileDataEnc *tile_data,
   // Save MV results from first 2 ref_mv_idx.
   int_mv save_mv[MAX_REF_MV_SEARCH - 1][2] = { { { 0 } } };
   int best_ref_mv_idx = -1;
-  int idx_mask = ref_mv_idx_to_search(cpi, x, rd_stats, args, ref_best_rd,
-                                      mode_info, bsize, ref_set);
+  const int idx_mask = ref_mv_idx_to_search(cpi, x, rd_stats, args, ref_best_rd,
+                                            mode_info, bsize, ref_set);
+  const int16_t mode_ctx =
+      av1_mode_context_analyzer(mbmi_ext->mode_context, mbmi->ref_frame);
+  const int ref_mv_cost = cost_mv_ref(x, this_mode, mode_ctx);
+  const int base_rate =
+      args->ref_frame_cost + args->single_comp_cost + ref_mv_cost;
   for (int ref_mv_idx = 0; ref_mv_idx < ref_set; ++ref_mv_idx) {
     mode_info[ref_mv_idx].mv.as_int = INVALID_MV;
     mode_info[ref_mv_idx].rd = INT64_MAX;
@@ -11233,14 +11237,11 @@ static int64_t handle_inter_mode(AV1_COMP *const cpi, TileDataEnc *tile_data,
     mbmi->compound_idx = 1;
     if (mbmi->ref_frame[1] == INTRA_FRAME) mbmi->ref_frame[1] = NONE_FRAME;
 
-    mode_ctx =
-        av1_mode_context_analyzer(mbmi_ext->mode_context, mbmi->ref_frame);
-
     mbmi->num_proj_ref = 0;
     mbmi->motion_mode = SIMPLE_TRANSLATION;
     mbmi->ref_mv_idx = ref_mv_idx;
 
-    rd_stats->rate += args->ref_frame_cost + args->single_comp_cost;
+    rd_stats->rate = base_rate;
     const int drl_cost =
         get_drl_cost(mbmi, mbmi_ext, x->drl_mode_cost0, ref_frame_type);
     rd_stats->rate += drl_cost;
@@ -11271,11 +11272,9 @@ static int64_t handle_inter_mode(AV1_COMP *const cpi, TileDataEnc *tile_data,
       end_timing(cpi, handle_newmv_time);
 #endif
 
-      if (newmv_ret_val != 0) {
-        continue;
-      } else {
-        rd_stats->rate += rate_mv;
-      }
+      if (newmv_ret_val != 0) continue;
+
+      rd_stats->rate += rate_mv;
 
       if (cpi->sf.skip_repeated_newmv) {
         if (!is_comp_pred && this_mode == NEWMV && ref_mv_idx > 0) {
@@ -11350,8 +11349,6 @@ static int64_t handle_inter_mode(AV1_COMP *const cpi, TileDataEnc *tile_data,
     for (i = 0; i < is_comp_pred + 1; ++i) {
       mbmi->mv[i].as_int = cur_mv[i].as_int;
     }
-    const int ref_mv_cost = cost_mv_ref(x, this_mode, mode_ctx);
-    rd_stats->rate += ref_mv_cost;
 
     if (RDCOST(x->rdmult, rd_stats->rate, 0) > ref_best_rd &&
         mbmi->mode != NEARESTMV && mbmi->mode != NEAREST_NEARESTMV) {
