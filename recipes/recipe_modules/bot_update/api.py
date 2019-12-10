@@ -188,9 +188,13 @@ class BotUpdateApi(recipe_api.RecipeApi):
       # However, here we ignore it if the config specified a revision.
       # This is necessary because existing builders rely on this behavior,
       # e.g. they want to force refs/heads/master at the config level.
-      main_repo_path = self._get_commit_repo_path(in_commit, cfg)
-      revisions[main_repo_path] = revisions.get(main_repo_path) or in_commit_rev
-      if in_commit.id and in_commit.ref:
+      in_commit_repo_path = self._get_commit_repo_path(in_commit, cfg)
+      revisions[in_commit_repo_path] = (
+          revisions.get(in_commit_repo_path) or in_commit_rev)
+      parsed_solution_urls = set(
+          self.m.gitiles.parse_repo_url(s.url) for s in cfg.solutions)
+      if (in_commit.id and in_commit.ref
+          and (in_commit.host, in_commit.project) in parsed_solution_urls):
         refs = [in_commit.ref] + refs
 
     # Guarantee that first solution has a revision.

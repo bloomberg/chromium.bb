@@ -90,13 +90,13 @@ def GenTests(api):
   def try_build(**kwargs):
     kwargs.setdefault(
         'git_repo', 'https://chromium.googlesource.com/chromium/src')
-    return api.buildbucket.try_build('chromium', 'linux', **kwargs)
+    return api.buildbucket.try_build('chromium/src', 'try', 'linux', **kwargs)
 
   def ci_build(**kwargs):
     kwargs.setdefault(
         'git_repo', 'https://chromium.googlesource.com/chromium/src')
     return (
-        api.buildbucket.ci_build('chromium', 'linux', **kwargs) +
+        api.buildbucket.ci_build('chromium/src', 'ci', 'linux', **kwargs) +
         api.properties(patch=False)
     )
 
