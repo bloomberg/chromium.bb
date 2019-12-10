@@ -49,17 +49,17 @@ class ChromeLKGMCommitter(object):
       'tools/translation/TRANSLATION_OWNERS',
   ]
 
-  def __init__(self, args):
-    self._committer = chrome_committer.ChromeCommitter(args)
+  def __init__(self, user_email, workdir, lkgm, dryrun=False):
+    self._committer = chrome_committer.ChromeCommitter(
+        user_email, workdir, dryrun)
 
     # Strip any chrome branch from the lkgm version.
-    self._lkgm = manifest_version.VersionInfo(args.lkgm).VersionString()
+    self._lkgm = manifest_version.VersionInfo(lkgm).VersionString()
     self._old_lkgm = None
 
     if not self._lkgm:
       raise LKGMNotValid('LKGM not provided.')
-
-    logging.info('lkgm=%s', self._lkgm)
+    logging.info('lkgm=%s', lkgm)
 
   def Run(self):
     self.CloseOldLKGMRolls()
@@ -133,14 +133,14 @@ class ChromeLKGMCommitter(object):
                            self.ComposeCommitMsg())
 
 
-def GetArgs(argv):
-  """Returns a dictionary of parsed args.
+def GetOpts(argv):
+  """Returns a dictionary of parsed options.
 
   Args:
     argv: raw command line.
 
   Returns:
-    Dictionary of parsed args.
+    Dictionary of parsed options.
   """
   committer_parser = chrome_committer.ChromeCommitter.GetParser()
   parser = commandline.ArgumentParser(description=__doc__,
@@ -151,5 +151,8 @@ def GetArgs(argv):
   return parser.parse_args(argv)
 
 def main(argv):
-  ChromeLKGMCommitter(GetArgs(argv)).Run()
+  opts = GetOpts(argv)
+  committer = ChromeLKGMCommitter(opts.user_email, opts.workdir,
+                                  opts.lkgm, opts.dryrun)
+  committer.Run()
   return 0

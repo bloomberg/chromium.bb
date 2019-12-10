@@ -18,14 +18,6 @@ class ChromeCommitterTester(cros_test_lib.RunCommandTestCase,
                             cros_test_lib.MockTempDirTestCase):
   """Test cros_chromeos_lkgm.Committer."""
 
-  class Args(object):
-    """Class for ChromeComitter args."""
-    def __init__(self, workdir):
-      self.workdir = workdir
-      self.dryrun = False
-      self.user_email = 'user@test.org'
-
-
   def setUp(self):
     """Common set up method for all tests."""
     osutils.SafeMakedirs(os.path.join(self.tempdir, '.git', 'info'))
@@ -34,7 +26,7 @@ class ChromeCommitterTester(cros_test_lib.RunCommandTestCase,
     osutils.WriteFile(os.path.join(self.tempdir, 'chromeos', 'BUILD.gn'),
                       'assert(is_chromeos)')
     self.committer = chrome_committer.ChromeCommitter(
-        ChromeCommitterTester.Args(self.tempdir))
+        'user@test.org', self.tempdir)
 
   def _assertCommand(self, git_cmd):
     self.assertCommandContains(git_cmd.split(' '))

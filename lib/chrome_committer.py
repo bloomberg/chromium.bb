@@ -24,16 +24,14 @@ class CommitError(Exception):
 class ChromeCommitter(object):
   """Committer object responsible for committing a git change."""
 
-  def __init__(self, args):
-    self._checkout_dir = args.workdir
-    self._dryrun = args.dryrun
-    self._git_committer_args = ['-c', 'user.email=%s' % args.user_email,
-                                '-c', 'user.name=%s' % args.user_email]
+  def __init__(self, user_email, workdir, dryrun=False):
+    logging.info('user_email=%s, checkout_dir=%s', user_email, workdir)
+    self.author = user_email
+    self._checkout_dir = workdir
+    self._git_committer_args = ['-c', 'user.email=%s' % user_email,
+                                '-c', 'user.name=%s' % user_email]
     self._commit_msg = ''
-    self.author = args.user_email
-
-    logging.info('user_email=%s', args.user_email)
-    logging.info('checkout_dir=%s', args.workdir)
+    self._dryrun = dryrun
 
   def __del__(self):
     self.Cleanup()
@@ -129,7 +127,7 @@ class ChromeCommitter(object):
     """Returns parser for ChromeCommitter.
 
     Returns:
-      Dictionary of parsed command line args.
+      Parser for ChromeCommitter.
     """
     # We need to use the account used by the builder to upload git CLs when
     # generating CLs.
