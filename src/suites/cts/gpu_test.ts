@@ -87,14 +87,9 @@ export class GPUTest extends Fixture {
     return this.device.createShaderModule({ code });
   }
 
-  // TODO: add an expectContents for textures, which logs data: uris on failure
-
-  expectContents(src: GPUBuffer, expected: ArrayBufferView): void {
-    const exp = new Uint8Array(expected.buffer, expected.byteOffset, expected.byteLength);
-
-    const size = expected.buffer.byteLength;
+  createCopyForMapRead(src: GPUBuffer, size: number): GPUBuffer {
     const dst = this.device.createBuffer({
-      size: expected.buffer.byteLength,
+      size,
       usage: GPUBufferUsage.MAP_READ | GPUBufferUsage.COPY_DST,
     });
 
@@ -102,6 +97,38 @@ export class GPUTest extends Fixture {
     c.copyBufferToBuffer(src, 0, dst, 0, size);
 
     this.queue.submit([c.finish()]);
+
+    return dst;
+  }
+
+  handleErrorMessage(
+    actual: Uint8Array,
+    exp: Uint8Array,
+    size: number,
+    failedPixels: number,
+    lines: string[]
+  ): string | undefined {
+    if (size <= 256 && failedPixels > 0) {
+      const expHex = Array.from(exp)
+        .map(x => x.toString(16).padStart(2, '0'))
+        .join('');
+      const actHex = Array.from(actual)
+        .map(x => x.toString(16).padStart(2, '0'))
+        .join('');
+      lines.push('EXPECT: ' + expHex);
+      lines.push('ACTUAL: ' + actHex);
+    }
+    if (failedPixels) {
+      return lines.join('\n');
+    }
+    return undefined;
+  }
+
+  // TODO: add an expectContents for textures, which logs data: uris on failure
+
+  expectContents(src: GPUBuffer, expected: ArrayBufferView): void {
+    const exp = new Uint8Array(expected.buffer, expected.byteOffset, expected.byteLength);
+    const dst = this.createCopyForMapRead(src, expected.buffer.byteLength);
 
     this.eventualAsyncExpectation(async niceStack => {
       const actual = new Uint8Array(await dst.mapReadAsync());
@@ -138,19 +165,6 @@ export class GPUTest extends Fixture {
         lines.push(`at [${i}], expected ${exp[i]}, got ${actual[i]}`);
       }
     }
-    if (size <= 256 && failedPixels > 0) {
-      const expHex = Array.from(exp)
-        .map(x => x.toString(16).padStart(2, '0'))
-        .join('');
-      const actHex = Array.from(actual)
-        .map(x => x.toString(16).padStart(2, '0'))
-        .join('');
-      lines.push('EXPECT: ' + expHex);
-      lines.push('ACTUAL: ' + actHex);
-    }
-    if (failedPixels) {
-      return lines.join('\n');
-    }
-    return undefined;
+    return this.handleErrorMessage(actual, exp, size, failedPixels, lines);
   }
 }
