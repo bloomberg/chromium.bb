@@ -334,7 +334,7 @@ const base::FeatureParam<int> kForceDarkBackgroundLightnessThresholdParam{
 
 // Instructs WebRTC to honor the Min/Max Video Encode Accelerator dimensions.
 const base::Feature kWebRtcUseMinMaxVEADimensions{
-    "WebRtcUseMinMaxVEADimensions", base::FEATURE_ENABLED_BY_DEFAULT};
+    "WebRtcUseMinMaxVEADimensions", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Blink garbage collection.
 // Enables compaction of backing stores on Blink's heap.
