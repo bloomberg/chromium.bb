@@ -100,8 +100,8 @@ def CommonChecks(input_api, output_api, tests_to_black_list, run_on_python3):
   rel_file = lambda rel: input_api.os_path.join(root, rel)
   cipd_manifests = set(rel_file(input_api.os_path.join(*x)) for x in (
     ('cipd_manifest.txt',),
-    ('bootstrap', 'win', 'manifest.txt'),
-    ('bootstrap', 'win', 'manifest_bleeding_edge.txt'),
+    ('bootstrap', 'manifest.txt'),
+    ('bootstrap', 'manifest_bleeding_edge.txt'),
 
     # Also generate a file for the cipd client itself.
     ('cipd_client_version',),
