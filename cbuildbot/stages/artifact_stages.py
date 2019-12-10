@@ -740,7 +740,7 @@ class DevInstallerPrebuiltsStage(UploadPrebuiltsStage):
 
   @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
   def PerformStage(self):
-    generated_args = self.GenerateCommonArgs()
+    generated_args = self.GenerateCommonArgs(inc_chrome_ver=False)
     prebuilts.UploadDevInstallerPrebuilts(
         binhost_bucket=self._run.config.binhost_bucket,
         binhost_key=self._run.config.binhost_key,
