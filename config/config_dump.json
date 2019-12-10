@@ -23870,6 +23870,7 @@
         ],
         "hw_tests": [],
         "hw_tests_override": [],
+        "important": false,
         "models": [
             "{\n    \"enable_skylab\": true,\n    \"lab_board_name\": \"jacuzzi\",\n    \"name\": \"damu\",\n    \"test_suites\": []\n}",
             "{\n    \"enable_skylab\": true,\n    \"lab_board_name\": \"jacuzzi\",\n    \"name\": \"jacuzzi\",\n    \"test_suites\": []\n}",

@@ -2467,7 +2467,7 @@
       "reference_board_name": "jacuzzi",
       "arch": "ARM_INTERNAL",
       "builder": "RELEASE",
-      "experimental": false,
+      "experimental": true,
       "models": [
         {
           "board_name": "jacuzzi",
