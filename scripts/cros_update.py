@@ -31,6 +31,7 @@ import traceback
 
 from chromite.lib import auto_updater
 from chromite.lib import commandline
+from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import cros_update_logging
@@ -66,6 +67,9 @@ class CrOSUpdateTrigger(object):
 
   This class is used for running all CrOS auto-update trigger logic.
   """
+  # The path to dev directory
+  DEV_DIR = 'src/platform/dev'
+
   def __init__(self, host_name, build_name, static_dir, progress_tracker=None,
                log_file=None, au_tempdir=None, force_update=False,
                full_update=False, original_build=None, payload_filename=None,
@@ -222,7 +226,7 @@ class CrOSUpdateTrigger(object):
 
         chromeos_AU = auto_updater.ChromiumOSUpdater(
             device, self.build_name, payload_dir,
-            dev_dir=os.path.abspath(os.path.dirname(__file__)),
+            dev_dir=os.path.join(constants.SOURCE_ROOT, self.DEV_DIR),
             tempdir=self.au_tempdir,
             log_file=self.log_file,
             original_payload_dir=original_payload_dir,
