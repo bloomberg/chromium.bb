@@ -545,6 +545,7 @@ class UpdateChromeosLKGMStage(generic_stages.BuilderStage):
     if not self._build_threshold_successful():
       logging.info('Insufficient number of successful builders. '
                    'Skipping LKGM update.')
+      return
 
     manager = self._run.attrs.manifest_manager
     cmd = ['chrome_chromeos_lkgm', '--lkgm=%s' % manager.current_version]
