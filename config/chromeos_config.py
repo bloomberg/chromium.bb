@@ -1539,6 +1539,9 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
           site_config.templates.qt_android_pfq,
           vm_tests=[config_lib.VMTestConfig(constants.VM_SUITE_TEST_TYPE,
                                             test_suite='smoke')],
+          # b/145158370: It blocks qt-android-pfq for months and is not really
+          # that important anymore since we have eve-arcnext tested.
+          important=False,
       )
   )
 

@@ -6227,6 +6227,7 @@
         "boards": [
             "betty-qt-arc"
         ],
+        "important": false,
         "manifest": "official.xml",
         "useflags": [
             "chrome_internal"
