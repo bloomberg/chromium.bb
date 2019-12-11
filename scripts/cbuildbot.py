@@ -735,8 +735,7 @@ def _SetupConnections(options, build_config):
 
   if run_type == _ENVIRONMENT_PROD:
     cidb.CIDBConnectionFactory.SetupProdCidb()
-    context = ts_mon_config.SetupTsMonGlobalState(
-        'cbuildbot', indirect=True, task_num=options.ts_mon_task_num)
+    context = ts_mon_config.SetupTsMonGlobalState('cbuildbot', indirect=True)
   elif run_type == _ENVIRONMENT_DEBUG:
     cidb.CIDBConnectionFactory.SetupDebugCidb()
     context = ts_mon_config.TrivialContextManager()
