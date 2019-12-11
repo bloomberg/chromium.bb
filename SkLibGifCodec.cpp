@@ -36,7 +36,6 @@
 #include "src/codec/SkCodecPriv.h"
 #include "src/codec/SkColorTable.h"
 #include "src/codec/SkSwizzler.h"
-#include "src/core/SkMakeUnique.h"
 
 #include <algorithm>
 
