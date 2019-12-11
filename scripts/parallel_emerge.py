@@ -148,6 +148,4 @@ def main(argv):
   emerge_args.append('--jobs=%s' % parsed_args['jobs'])
   emerge_args.append('--rebuild-exclude=chromeos-base/chromeos-chrome')
 
-  # TODO(cjmcdonald): Change the exec target back to just 'emerge' once
-  #                   python3 is the default in the SDK.
-  os.execvp('/usr/lib64/python-exec/python3.6/emerge', ['emerge'] + emerge_args)
+  os.execvp('emerge', ['emerge'] + emerge_args)
