@@ -4,5 +4,5 @@
 :: found in the LICENSE file.
 
 @call "%~dp0\cipd_bin_setup.bat" > null 2>&1
-@call python.bat %~dp0\.cipd_bin\goma_ctl.py %*
+@call vpython.bat %~dp0\.cipd_bin\goma_ctl.py %*
 exit /b
