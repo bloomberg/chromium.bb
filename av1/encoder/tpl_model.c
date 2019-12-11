@@ -111,6 +111,7 @@ static uint32_t motion_estimation(AV1_COMP *cpi, MACROBLOCK *x,
   AV1_COMMON *cm = &cpi->common;
   MACROBLOCKD *const xd = &x->e_mbd;
   MV_SPEED_FEATURES *const mv_sf = &cpi->sf.mv;
+  TPL_SPEED_FEATURES *tpl_sf = &cpi->sf.tpl_sf;
   const SEARCH_METHODS search_method = NSTEP;
   int step_param;
   int sadpb = x->sadperbit16;
@@ -137,7 +138,7 @@ static uint32_t motion_estimation(AV1_COMP *cpi, MACROBLOCK *x,
   xd->plane[0].pre[0].buf = ref_frame_buf;
   xd->plane[0].pre[0].stride = stride_ref;
 
-  step_param = mv_sf->reduce_first_step_size;
+  step_param = mv_sf->reduce_first_step_size + tpl_sf->reduce_first_step_size;
   step_param = AOMMIN(step_param, MAX_MVSEARCH_STEPS - 2);
 
   av1_set_mv_search_range(&x->mv_limits, &best_ref_mv1);

@@ -252,6 +252,9 @@ typedef struct TPL_SPEED_FEATURES {
   // modes from DC_PRED to PAETH_PRED. If set to one, we only search DC_PRED and
   // the direction modes
   int prune_intra_modes;
+
+  // This parameter controls which step in the n-step process we start at.
+  int reduce_first_step_size;
 } TPL_SPEED_FEATURES;
 
 #define MAX_MESH_STEP 4
