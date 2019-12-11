@@ -289,10 +289,8 @@
     eve-arcvm-mesa-virgl-next-release
     eve-arcvm-release
     eve-arm64-release
-    eve-campfire-release
     eve-kvm-release
     eve-release
-    eve-swap-release
     eve-userdebug-release
     excelsior-release
     expresso-release
@@ -889,11 +887,6 @@
   eve-arm64-llvm-toolchain-tryjob
   eve-arm64-release-tryjob
   eve-arm64-unittest-stress
-  eve-campfire-full-tryjob
-  eve-campfire-llvm-next-toolchain-tryjob
-  eve-campfire-llvm-toolchain-tryjob
-  eve-campfire-release-tryjob
-  eve-campfire-unittest-stress
   eve-factory-eve-9667.B-factorybranch-tryjob
   eve-full-tryjob
   eve-kvm-full-tryjob
@@ -911,11 +904,6 @@
   eve-release-afdo-tryjob
   eve-release-afdo-use-tryjob
   eve-release-tryjob
-  eve-swap-full-tryjob
-  eve-swap-llvm-next-toolchain-tryjob
-  eve-swap-llvm-toolchain-tryjob
-  eve-swap-release-tryjob
-  eve-swap-unittest-stress
   eve-unittest-stress
   eve-userdebug-full-tryjob
   eve-userdebug-llvm-next-toolchain-tryjob
@@ -1619,10 +1607,8 @@
     eve-arcvm-mesa-virgl-next-release-tryjob
     eve-arcvm-release-tryjob
     eve-arm64-release-tryjob
-    eve-campfire-release-tryjob
     eve-kvm-release-tryjob
     eve-release-tryjob
-    eve-swap-release-tryjob
     eve-userdebug-release-tryjob
     excelsior-release-tryjob
     expresso-release-tryjob
