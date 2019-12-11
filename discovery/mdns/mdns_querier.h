@@ -49,6 +49,11 @@ class MdnsQuerier {
                  DnsClass dns_class,
                  MdnsRecordChangedCallback* callback);
 
+  // Re-initializes the process of service discovery for the provided domain
+  // name. All ongoing queries for this domain are restarted and any previously
+  // received query results are discarded.
+  void ReinitializeQueries(const DomainName& name);
+
  private:
   struct CallbackInfo {
     MdnsRecordChangedCallback* const callback;

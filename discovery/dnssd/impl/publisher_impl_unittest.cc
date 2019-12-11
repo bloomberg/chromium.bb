@@ -21,14 +21,21 @@ class MockMdnsService : public MdnsService {
                   DnsType dns_type,
                   DnsClass dns_class,
                   MdnsRecordChangedCallback* callback) override {
-    OSP_UNIMPLEMENTED();
+    FAIL();
   }
 
   void StopQuery(const DomainName& name,
                  DnsType dns_type,
                  DnsClass dns_class,
                  MdnsRecordChangedCallback* callback) override {
-    OSP_UNIMPLEMENTED();
+    FAIL();
+  }
+
+  void ReinitializeQueries(const DomainName& name) override { FAIL(); }
+
+  void UpdateRegisteredRecord(const MdnsRecord& old_record,
+                              const MdnsRecord& new_record) override {
+    FAIL();
   }
 
   MOCK_METHOD1(RegisterRecord, void(const MdnsRecord& record));

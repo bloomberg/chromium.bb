@@ -36,6 +36,7 @@ class QuerierImpl : public DnsSdQuerier, public MdnsRecordChangedCallback {
   // DnsSdQuerier overrides.
   void StartQuery(absl::string_view service, Callback* callback) override;
   void StopQuery(absl::string_view service, Callback* callback) override;
+  void ReinitializeQueries(absl::string_view service) override;
 
   // MdnsRecordChangedCallback overrides.
   // TODO(rwkeane): Ensure this is run on the TaskRunner thread once the

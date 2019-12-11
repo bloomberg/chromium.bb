@@ -132,6 +132,10 @@ void MdnsQuerier::StopQuery(const DomainName& name,
   // be configurable by the caller.
 }
 
+void MdnsQuerier::ReinitializeQueries(const DomainName& name) {
+  // TODO(rwkeane): Implement this method.
+}
+
 void MdnsQuerier::OnMessageReceived(const MdnsMessage& message) {
   OSP_DCHECK(task_runner_->IsRunningOnTaskRunner());
   OSP_DCHECK(message.type() == MessageType::Response);

@@ -21,6 +21,7 @@ class PublisherImpl : public DnsSdPublisher {
 
   // DnsSdPublisher overrides.
   Error Register(const DnsSdInstanceRecord& record) override;
+  Error UpdateRegistration(const DnsSdInstanceRecord& record) override;
   size_t DeregisterAll(absl::string_view service) override;
 
  private:

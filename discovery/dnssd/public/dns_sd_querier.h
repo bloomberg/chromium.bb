@@ -45,6 +45,11 @@ class DnsSdQuerier {
   // NOTE: The provided service value is expected to be valid, as defined by the
   // IsServiceValid() method.
   virtual void StopQuery(absl::string_view service, Callback* cb) = 0;
+
+  // Re-initializes the process of service discovery for the provided service
+  // id. All ongoing queries for this domain are restarted and any previously
+  // received query results are discarded.
+  virtual void ReinitializeQueries(absl::string_view service) = 0;
 };
 
 }  // namespace discovery

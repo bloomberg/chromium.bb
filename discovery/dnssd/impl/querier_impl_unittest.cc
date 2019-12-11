@@ -41,6 +41,13 @@ class MockMdnsService : public MdnsService {
   void RegisterRecord(const MdnsRecord& record) override { FAIL(); }
 
   void DeregisterRecord(const MdnsRecord& record) override { FAIL(); }
+
+  void ReinitializeQueries(const DomainName& name) override { FAIL(); }
+
+  void UpdateRegisteredRecord(const MdnsRecord& old_record,
+                              const MdnsRecord& new_record) override {
+    FAIL();
+  }
 };
 
 SrvRecordRdata CreateSrvRecord() {

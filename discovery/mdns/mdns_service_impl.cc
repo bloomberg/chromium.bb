@@ -16,22 +16,31 @@ void MdnsServiceImpl::StartQuery(const DomainName& name,
                                  DnsType dns_type,
                                  DnsClass dns_class,
                                  MdnsRecordChangedCallback* callback) {
-  // TODO(yakimakha): Implement this method
+  // TODO(rwkeane): Implement this method.
 }
 
 void MdnsServiceImpl::StopQuery(const DomainName& name,
                                 DnsType dns_type,
                                 DnsClass dns_class,
                                 MdnsRecordChangedCallback* callback) {
-  // TODO(yakimakha): Implement this method
+  // TODO(rwkeane): Implement this method.
+}
+
+void MdnsServiceImpl::ReinitializeQueries(const DomainName& name) {
+  // TODO(rwkeane): Implement this method.
 }
 
 void MdnsServiceImpl::RegisterRecord(const MdnsRecord& record) {
-  // TODO(yakimakha): Implement this method
+  // TODO(rwkeane): Implement this method.
+}
+
+void MdnsServiceImpl::UpdateRegisteredRecord(const MdnsRecord& old_record,
+                                             const MdnsRecord& new_record) {
+  // TODO(rwkeane): Implement this method.
 }
 
 void MdnsServiceImpl::DeregisterRecord(const MdnsRecord& record) {
-  // TODO(yakimakha): Implement this method
+  // TODO(rwkeane): Implement this method.
 }
 
 }  // namespace discovery

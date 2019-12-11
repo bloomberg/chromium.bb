@@ -75,6 +75,10 @@ void QuerierImpl::StopQuery(absl::string_view service, Callback* callback) {
   }
 }
 
+void QuerierImpl::ReinitializeQueries(absl::string_view service) {
+  // TODO(rwkeane): Implement this method.
+}
+
 void QuerierImpl::OnRecordChanged(const MdnsRecord& record,
                                   RecordChangedEvent event) {
   IsPtrRecord(record) ? HandlePtrRecordChange(record, event)

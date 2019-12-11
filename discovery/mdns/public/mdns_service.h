@@ -38,7 +38,12 @@ class MdnsService {
                          DnsClass dns_class,
                          MdnsRecordChangedCallback* callback) = 0;
 
+  virtual void ReinitializeQueries(const DomainName& name) = 0;
+
   virtual void RegisterRecord(const MdnsRecord& record) = 0;
+
+  virtual void UpdateRegisteredRecord(const MdnsRecord& old_record,
+                                      const MdnsRecord& new_record) = 0;
 
   virtual void DeregisterRecord(const MdnsRecord& record) = 0;
 };
