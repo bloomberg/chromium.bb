@@ -2771,6 +2771,8 @@ def ApplyCustomOverrides(site_config):
 
       'dedede-release': {
           'sign_types': ['recovery', 'factory'],
+          'hw_tests': [],
+          'hw_tests_override': []
       },
 
       'flapjack-release': {
