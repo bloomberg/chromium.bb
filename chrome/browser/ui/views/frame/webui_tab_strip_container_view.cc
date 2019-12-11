@@ -24,7 +24,9 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/view_ids.h"
+#include "chrome/browser/ui/views/chrome_view_class_properties.h"
 #include "chrome/browser/ui/views/feature_promos/feature_promo_bubble_view.h"
+#include "chrome/browser/ui/views/feature_promos/feature_promo_colors.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_button.h"
 #include "chrome/browser/ui/views/toolbar/webui_tab_counter_button.h"
@@ -250,6 +252,7 @@ void WebUITabStripContainerView::SetContainerTargetVisibility(
       tab_counter_promo_->GetWidget()->CloseWithReason(
           views::Widget::ClosedReason::kUnspecified);
       tab_counter_promo_ = nullptr;
+      tab_counter_->SetProperty(kHasInProductHelpPromoKey, false);
       iph_tracker_->Dismissed(feature_engagement::kIPHWebUITabStripFeature);
     }
   } else {
@@ -394,6 +397,7 @@ void WebUITabStripContainerView::ButtonPressed(views::Button* sender,
     if (iph_tracker_->ShouldTriggerHelpUI(
             feature_engagement::kIPHWebUITabStripFeature)) {
       DCHECK(tab_counter_);
+      tab_counter_->SetProperty(kHasInProductHelpPromoKey, true);
       tab_counter_promo_ = FeaturePromoBubbleView::CreateOwned(
           tab_counter_, views::BubbleBorder::TOP_RIGHT,
           FeaturePromoBubbleView::ActivationAction::DO_NOT_ACTIVATE,
@@ -442,6 +446,7 @@ void WebUITabStripContainerView::OnWidgetDestroying(views::Widget* widget) {
   tab_counter_promo_ = nullptr;
   widget_observer_.Remove(widget);
 
+  tab_counter_->SetProperty(kHasInProductHelpPromoKey, false);
   iph_tracker_->Dismissed(feature_engagement::kIPHWebUITabStripFeature);
 }
 
