@@ -31,8 +31,8 @@ import("//build_overrides/build.gni")
 # If any test run-time options are present (dict or libfuzzer_options), then a
 # config (.options file) file would be generated or modified in root output
 # dir (next to test).
-template("fuzzer_test") {
-  if (is_clang) {
+template("openscreen_fuzzer_test") {
+  if (is_clang && !build_with_chromium) {
     assert(defined(invoker.sources), "Need sources in $target_name.")
 
     test_deps = [ "//testing/libfuzzer:fuzzing_engine_main" ]

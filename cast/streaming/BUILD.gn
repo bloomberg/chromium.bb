@@ -132,7 +132,7 @@ source_set("unittests") {
   ]
 }
 
-fuzzer_test("compound_rtcp_parser_fuzzer") {
+openscreen_fuzzer_test("compound_rtcp_parser_fuzzer") {
   sources = [
     "compound_rtcp_parser_fuzzer.cc",
   ]
@@ -148,7 +148,7 @@ fuzzer_test("compound_rtcp_parser_fuzzer") {
   libfuzzer_options = [ "max_len=1500" ]
 }
 
-fuzzer_test("rtp_packet_parser_fuzzer") {
+openscreen_fuzzer_test("rtp_packet_parser_fuzzer") {
   sources = [
     "rtp_packet_parser_fuzzer.cc",
   ]
@@ -164,7 +164,7 @@ fuzzer_test("rtp_packet_parser_fuzzer") {
   libfuzzer_options = [ "max_len=1500" ]
 }
 
-fuzzer_test("sender_report_parser_fuzzer") {
+openscreen_fuzzer_test("sender_report_parser_fuzzer") {
   sources = [
     "sender_report_parser_fuzzer.cc",
   ]
