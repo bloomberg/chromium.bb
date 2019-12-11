@@ -131,6 +131,8 @@ static bool is_ubwc_fmt(uint32_t format)
 	switch (format) {
 	case DRM_FORMAT_XBGR8888:
 	case DRM_FORMAT_ABGR8888:
+	case DRM_FORMAT_XRGB8888:
+	case DRM_FORMAT_ARGB8888:
 	case DRM_FORMAT_NV12:
 		return 1;
 	default:
@@ -186,10 +188,10 @@ static int msm_init(struct driver *drv)
 	texture_use_flags &= ~sw_flags;
 
 	msm_add_ubwc_combinations(drv, render_target_formats, ARRAY_SIZE(render_target_formats),
-				  &metadata, render_use_flags);
+				  &metadata, render_use_flags | BO_USE_SCANOUT);
 
 	msm_add_ubwc_combinations(drv, texture_source_formats, ARRAY_SIZE(texture_source_formats),
-				  &metadata, texture_use_flags);
+				  &metadata, texture_use_flags | BO_USE_SCANOUT);
 
 	return 0;
 }
