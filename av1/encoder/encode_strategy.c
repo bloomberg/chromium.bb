@@ -932,7 +932,7 @@ static int denoise_and_encode(AV1_COMP *const cpi, uint8_t *const dest,
                                  frame_input->source->y_stride, EDGE_THRESHOLD);
   }
   const int apply_filtering =
-      oxcf->pass != 1 && frame_params->frame_type == KEY_FRAME &&
+      !is_stat_generation_stage(cpi) && frame_params->frame_type == KEY_FRAME &&
       !frame_params->show_existing_frame &&
       cpi->rc.frames_to_key > NUM_KEY_FRAME_DENOISING && noise_level > 0 &&
       !is_lossless_requested(oxcf) && oxcf->arnr_max_frames > 0;
