@@ -93,9 +93,11 @@ void WebKioskController::OnNetworkConfigRequested() {
       MaybeShowNetworkConfigureUI();
       break;
     case AppState::INSTALLING:
-      // TODO(crbug.com/1006230): Implement network config on the
-      // installation step.
-      NOTIMPLEMENTED();
+      // When requesting to show network configure UI, we should cancel current
+      // installation and restart it as soon as the network is configured.
+      // This is identical to what happens when we lose network connection
+      // during installation.
+      OnNetworkStateChanged(/*online*/ false);
       break;
     case AppState::LAUNCHED:
       // We do nothing since the splash screen is soon to be destroyed.
@@ -143,9 +145,11 @@ void WebKioskController::OnNetworkStateChanged(bool online) {
   }
 
   if (app_state_ == AppState::INSTALLING) {
-    // TODO(crbug.com/1006230): Implement case when network changes during
-    // installation.
-    NOTIMPLEMENTED();
+    if (!online) {
+      app_launcher_->CancelCurrentInstallation();
+      app_state_ = AppState::INIT_NETWORK;
+      ShowNetworkConfigureUI();
+    }
   }
 }
 
