@@ -37,6 +37,7 @@ from chromite.utils import attrs_freezer
 
 
 DEVICE_SCHEME_FILE = 'file'
+DEVICE_SCHEME_SERVO = 'servo'
 DEVICE_SCHEME_SSH = 'ssh'
 DEVICE_SCHEME_USB = 'usb'
 
@@ -169,18 +170,20 @@ def NormalizeUri(value):
 
 
 # A Device object holds information parsed from the command line input:
-#   scheme: DEVICE_SCHEME_SSH, DEVICE_SCHEME_USB, or DEVICE_SCHEME_FILE.
+#   scheme: DEVICE_SCHEME_SSH, DEVICE_SCHEME_USB, DEVICE_SCHEME_SERVO,
+#     or DEVICE_SCHEME_FILE.
 #   username: String SSH username or None.
 #   hostname: String SSH hostname or None.
-#   port: Int SSH port or None.
+#   port: Int SSH or Servo port or None.
 #   path: String USB/file path or None.
 #   raw: String raw input from the command line.
+#   serial_number: String Servo serial number or None.
 # For now this is a superset of all information for USB, SSH, or file devices.
 # If functionality diverges based on type, it may be useful to split this into
 # separate device classes instead.
 Device = cros_collections.Collection(
     'Device', scheme=None, username=None, hostname=None, port=None, path=None,
-    raw=None)
+    raw=None, serial_number=None)
 
 
 class DeviceParser(object):
@@ -198,6 +201,9 @@ class DeviceParser(object):
     - [ssh://][username@]hostname[:port].
     - usb://[path].
     - file://path or /absolute_path.
+    - servo:port[:port] to use a port via dut-control, e.g. servo:port:1234.
+    - servo:serial:serial-number to use the servo's serial number,
+        e.g. servo:serial:641220-00057 servo:serial:C1230024192.
     - [ssh://]:vm:.
 
   The last item above is an alias for ssh'ing into a virtual machine on a
@@ -333,8 +339,49 @@ class DeviceParser(object):
       if not path:
         raise ValueError('Path is required for "%s"' % value)
       return Device(scheme=scheme, path=path, raw=value)
+    elif scheme == DEVICE_SCHEME_SERVO:
+      # Parse the identifier type and value.
+      servo_type, _, servo_id = parsed.path.partition(':')
+      # Don't want to do the netloc before the split in case of serial number.
+      servo_type = servo_type.lower()
+
+      return self._parse_servo(servo_type, servo_id)
     else:
       raise ValueError('Unknown device scheme "%s" in "%s"' % (scheme, value))
+
+  @staticmethod
+  def _parse_servo(servo_type, servo_id):
+    """Parse a servo device from the parsed servo uri info.
+
+    Args:
+      servo_type: The servo identifier type, either port or serial.
+      servo_id: The servo identifier, either the port number it is
+        communicating through or its serial number.
+    """
+    servo_port = None
+    serial_number = None
+    if servo_type == 'serial':
+      if servo_id:
+        serial_number = servo_id
+      else:
+        raise ValueError('No serial number given.')
+    elif servo_type == 'port':
+      if servo_id:
+        # Parse and validate when given.
+        try:
+          servo_port = int(servo_id)
+        except ValueError:
+          raise ValueError('Invalid servo port value: %s' % servo_id)
+        if servo_port <= 0 or servo_port > 65535:
+          raise ValueError(
+              'Invalid port, must be 1-65535: %d given.' % servo_port)
+    else:
+      raise ValueError('Invalid servo type given: %s' % servo_type)
+
+    return Device(
+        scheme=DEVICE_SCHEME_SERVO,
+        port=servo_port,
+        serial_number=serial_number)
 
 
 class _AppendOption(argparse.Action):

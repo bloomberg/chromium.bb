@@ -149,6 +149,10 @@ class CliCommand(object):
                           'use brackets (e.g. [::1]).')
     if commandline.DEVICE_SCHEME_USB in schemes:
       help_strings.append('Target removable media with usb://[path].')
+    if commandline.DEVICE_SCHEME_SERVO in schemes:
+      help_strings.append('Target a servo by port or serial number with '
+                          'servo:port[:port] or servo:serial:serial-number. '
+                          'e.g. servo:port:1234 or servo:serial:C1230024192.')
     if commandline.DEVICE_SCHEME_FILE in schemes:
       help_strings.append('Target a local file with file://path.')
     parser.add_argument('device',

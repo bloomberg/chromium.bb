@@ -121,20 +121,22 @@ class DeviceParseTest(cros_test_lib.OutputTestCase):
   """Test device parsing functionality."""
 
   _ALL_SCHEMES = (commandline.DEVICE_SCHEME_FILE,
+                  commandline.DEVICE_SCHEME_SERVO,
                   commandline.DEVICE_SCHEME_SSH,
                   commandline.DEVICE_SCHEME_USB)
 
   def _CheckDeviceParse(self, device_input, scheme, username=None,
-                        hostname=None, port=None, path=None):
+                        hostname=None, port=None, path=None, serial=None):
     """Checks that parsing a device input gives the expected result.
 
     Args:
-      device_input: String input specifying a device.
-      scheme: String expected scheme.
-      username: String expected username or None.
-      hostname: String expected hostname or None.
-      port: Int expected port or None.
-      path: String expected path or None.
+      device_input (str): Input specifying a device.
+      scheme (str): Expected scheme.
+      username (str|None): Expected username.
+      hostname (str|None): Expected hostname.
+      port (int|None): Expected port.
+      path (str|None): Expected path.
+      serial (str|None): Expected serial number.
     """
     parser = commandline.ArgumentParser()
     parser.add_argument('device', type=commandline.DeviceParser(scheme))
@@ -144,6 +146,7 @@ class DeviceParseTest(cros_test_lib.OutputTestCase):
     self.assertEqual(device.hostname, hostname)
     self.assertEqual(device.port, port)
     self.assertEqual(device.path, path)
+    self.assertEqual(device.serial_number, serial)
 
   def _CheckDeviceParseFails(self, device_input, schemes=_ALL_SCHEMES):
     """Checks that parsing a device input fails.
@@ -193,6 +196,53 @@ class DeviceParseTest(cros_test_lib.OutputTestCase):
                            username='me',
                            hostname='foo_host',
                            port=4500)
+
+  def testEmptyServoScheme(self):
+    """Test empty servo scheme."""
+    # Everything should be None so the underlying programs (e.g. dut-control)
+    # can use their defaults.
+    self._CheckDeviceParseFails('servo:')
+
+  def testServoPort(self):
+    """Test valid servo port values."""
+    self._CheckDeviceParse('servo:port',
+                           scheme=commandline.DEVICE_SCHEME_SERVO,
+                           port=None)
+    self._CheckDeviceParse('servo:port:1',
+                           scheme=commandline.DEVICE_SCHEME_SERVO,
+                           port=1)
+    self._CheckDeviceParse('servo:port:12345',
+                           scheme=commandline.DEVICE_SCHEME_SERVO,
+                           port=12345)
+    self._CheckDeviceParse('servo:port:65535',
+                           scheme=commandline.DEVICE_SCHEME_SERVO,
+                           port=65535)
+
+  def testInvalidServoPort(self):
+    """Invalid port provided."""
+    self._CheckDeviceParseFails('servo:port:0')
+    self._CheckDeviceParseFails('servo:port:65536')
+    # Some serial numbers.
+    self._CheckDeviceParseFails('servo:port:C1234567890')
+    self._CheckDeviceParseFails('servo:port:123456-12345')
+
+  def testServoSerialNumber(self):
+    """Test servo serial number."""
+    # Some known serial number formats.
+    self._CheckDeviceParse('servo:serial:C1234567890',
+                           scheme=commandline.DEVICE_SCHEME_SERVO,
+                           serial='C1234567890')
+    self._CheckDeviceParse('servo:serial:123456-12345',
+                           scheme=commandline.DEVICE_SCHEME_SERVO,
+                           serial='123456-12345')
+    # Make sure we don't fall back to a port when it looks like one.
+    self._CheckDeviceParse('servo:serial:12345',
+                           scheme=commandline.DEVICE_SCHEME_SERVO,
+                           serial='12345')
+
+  def testInvalidServoSerialNumber(self):
+    """Invalid serial number value provided."""
+    self._CheckDeviceParseFails('servo:serial:')
 
   def testUsbScheme(self):
     """Test USB scheme-only device specification."""
