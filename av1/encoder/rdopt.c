@@ -12109,11 +12109,12 @@ static AOM_INLINE void refine_winner_mode_tx(
         av1_init_rd_stats(&rd_stats_uv);
       }
 
-      if (RDCOST(x->rdmult,
+      if (is_inter_mode(mbmi->mode) &&
+          RDCOST(x->rdmult,
                  x->skip_cost[skip_ctx][0] + rd_stats_y.rate + rd_stats_uv.rate,
                  (rd_stats_y.dist + rd_stats_uv.dist)) >
-          RDCOST(x->rdmult, x->skip_cost[skip_ctx][1],
-                 (rd_stats_y.sse + rd_stats_uv.sse))) {
+              RDCOST(x->rdmult, x->skip_cost[skip_ctx][1],
+                     (rd_stats_y.sse + rd_stats_uv.sse))) {
         skip_blk = 1;
         rd_stats_y.rate = x->skip_cost[skip_ctx][1];
         rd_stats_uv.rate = 0;
