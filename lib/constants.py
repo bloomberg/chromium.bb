@@ -41,6 +41,8 @@ DEFAULT_CHROOT_PATH = os.path.join(SOURCE_ROOT, DEFAULT_CHROOT_DIR)
 TERMINA_TOOLS_DIR = os.path.join(
     SOURCE_ROOT, 'src/platform/container-guest-tools/termina')
 
+STATEFUL_DIR = '/mnt/stateful_partition'
+
 # These constants are defined and used in the die_hook that logs failed
 # packages: 'cros_log_failed_packages' in profiles/base/profile.bashrc in
 # chromiumos-overlay. The status file is generated in CROS_METRICS_DIR, and

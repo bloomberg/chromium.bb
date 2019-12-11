@@ -910,11 +910,19 @@ class RemoteDevice(object):
     """Copy path to working directory on the device."""
     return self.CopyToDevice(src, os.path.join(self.work_dir, dest), **kwargs)
 
-  def IfFileExists(self, path, **kwargs):
-    """Check if the given path exists on the device."""
+  def _TestPath(self, path, option, **kwargs):
+    """Tests a given path for specific options."""
     kwargs.setdefault('check', False)
-    result = self.RunCommand(['test -f %s' % path], **kwargs)
+    result = self.RunCommand(['test', option, path], **kwargs)
     return result.returncode == 0
+
+  def IfFileExists(self, path, **kwargs):
+    """Check if the given file exists on the device."""
+    return self._TestPath(path, '-f', **kwargs)
+
+  def IfPathExists(self, path, **kwargs):
+    """Check if the given path exists on the device."""
+    return self._TestPath(path, '-e', **kwargs)
 
   def IsDirWritable(self, path):
     """Checks if the given directory is writable on the device.
