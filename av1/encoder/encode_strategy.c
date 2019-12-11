@@ -1122,7 +1122,7 @@ int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
   memset(&frame_results, 0, sizeof(frame_results));
 
   // TODO(sarahparker) finish bit allocation for one pass pyramid
-  if (oxcf->pass == 0 && oxcf->rc_mode != AOM_Q)
+  if (has_no_stats_stage(cpi) && oxcf->rc_mode != AOM_Q)
     cpi->oxcf.gf_max_pyr_height = USE_ALTREF_FOR_ONE_PASS;
 
   if (!is_stat_generation_stage(cpi)) {
@@ -1207,7 +1207,8 @@ int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
 #if CONFIG_REALTIME_ONLY
   av1_get_one_pass_rt_params(cpi, &frame_params, *frame_flags);
 #else
-  if (oxcf->pass == 0 && oxcf->mode == REALTIME && oxcf->lag_in_frames == 0)
+  if (has_no_stats_stage(cpi) && oxcf->mode == REALTIME &&
+      oxcf->lag_in_frames == 0)
     av1_get_one_pass_rt_params(cpi, &frame_params, *frame_flags);
   else if (!is_stat_generation_stage(cpi))
     av1_get_second_pass_params(cpi, &frame_params, *frame_flags);
@@ -1232,7 +1233,7 @@ int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
   frame_params.speed = oxcf->speed;
 
   // Work out some encoding parameters specific to the pass:
-  if (cpi->oxcf.pass == 0 && cpi->oxcf.aq_mode == CYCLIC_REFRESH_AQ) {
+  if (has_no_stats_stage(cpi) && cpi->oxcf.aq_mode == CYCLIC_REFRESH_AQ) {
     av1_cyclic_refresh_update_parameters(cpi);
   } else if (is_stat_generation_stage(cpi)) {
     cpi->td.mb.e_mbd.lossless[0] = is_lossless_requested(&cpi->oxcf);

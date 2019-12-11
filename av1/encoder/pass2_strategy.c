@@ -879,7 +879,7 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
   aom_clear_system_state();
   av1_zero(next_frame);
 
-  if (oxcf->pass == 0) {
+  if (has_no_stats_stage(cpi)) {
     define_gf_group_pass0(cpi, frame_params);
     return;
   }
@@ -1643,7 +1643,7 @@ static void find_next_key_frame(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
 }
 
 static int is_skippable_frame(const AV1_COMP *cpi) {
-  if (cpi->oxcf.pass == 0) return 0;
+  if (has_no_stats_stage(cpi)) return 0;
   // If the current frame does not have non-zero motion vector detected in the
   // first  pass, and so do its previous and forward frames, then this frame
   // can be skipped for partition check, and the partition size is assigned
@@ -1732,7 +1732,7 @@ static void setup_target_rate(AV1_COMP *cpi) {
 
   int target_rate = gf_group->bit_allocation[gf_group->index];
 
-  if (cpi->oxcf.pass == 0) {
+  if (has_no_stats_stage(cpi)) {
     av1_rc_set_frame_target(cpi, target_rate, cpi->common.width,
                             cpi->common.height);
   }

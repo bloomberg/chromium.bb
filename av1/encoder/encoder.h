@@ -1368,6 +1368,11 @@ static INLINE int is_stat_generation_stage(const AV1_COMP *const cpi) {
   return (cpi->oxcf.pass == 1);
 }
 
+// Check if the current stage has statistics
+static INLINE int has_no_stats_stage(const AV1_COMP *const cpi) {
+  return (cpi->oxcf.pass == 0);
+}
+
 // TODO(zoeliu): To set up cpi->oxcf.enable_auto_brf
 
 static INLINE void set_ref_ptrs(const AV1_COMMON *cm, MACROBLOCKD *xd,

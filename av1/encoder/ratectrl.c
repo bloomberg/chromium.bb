@@ -612,7 +612,7 @@ int av1_rc_regulate_q(const AV1_COMP *cpi, int target_bits_per_frame,
       find_closest_qindex_by_rate(target_bits_per_mb, cpi, correction_factor,
                                   active_best_quality, active_worst_quality);
 
-  if (cpi->oxcf.rc_mode == AOM_CBR && cpi->oxcf.pass == 0)
+  if (cpi->oxcf.rc_mode == AOM_CBR && has_no_stats_stage(cpi))
     return adjust_q_cbr(cpi, q);
 
   return q;
@@ -1388,7 +1388,7 @@ int av1_rc_pick_q_and_bounds(const AV1_COMP *cpi, RATE_CONTROL *rc, int width,
   const GF_GROUP *gf_group = &cpi->gf_group;
   if ((cpi->oxcf.rc_mode != AOM_Q ||
        gf_group->update_type[gf_index] == ARF_UPDATE) &&
-      cpi->oxcf.pass == 0) {
+      has_no_stats_stage(cpi)) {
     if (cpi->oxcf.rc_mode == AOM_CBR)
       q = rc_pick_q_and_bounds_one_pass_cbr(cpi, width, height, bottom_index,
                                             top_index);
@@ -1655,7 +1655,7 @@ void av1_rc_set_gf_interval_range(const AV1_COMP *const cpi,
   const AV1EncoderConfig *const oxcf = &cpi->oxcf;
 
   // Special case code for 1 pass fixed Q mode tests
-  if ((oxcf->pass == 0) && (oxcf->rc_mode == AOM_Q)) {
+  if ((has_no_stats_stage(cpi)) && (oxcf->rc_mode == AOM_Q)) {
     rc->max_gf_interval = FIXED_GF_INTERVAL;
     rc->min_gf_interval = FIXED_GF_INTERVAL;
     rc->static_scene_max_gf_interval = FIXED_GF_INTERVAL;
