@@ -44,6 +44,8 @@ extern "C" {
 #define MIN_PYRAMID_LVL 0
 #define MAX_PYRAMID_LVL 4
 
+#define MAX_ARF_LAYERS 5
+
 #define MIN_GF_INTERVAL 4
 #define MAX_GF_INTERVAL 16
 #define FIXED_GF_INTERVAL 8  // Used in some testing modes only
@@ -55,10 +57,12 @@ typedef struct {
 } size_params_type;
 
 enum {
-  INTER_NORMAL,
-  GF_ARF_LOW,
-  GF_ARF_STD,
-  KF_STD,
+  KF_STD = 0,          // Key frame (layer 0)
+  GF_ARF_LAYER_1 = 1,  // Alt-ref frame (layer 1)
+  GF_ARF_LAYER_2 = 2,  // Frames at hierarchical layer 2
+  GF_ARF_LAYER_3 = 3,  // Frames at hierarchical layer 3
+  GF_ARF_LAYER_4 = 4,  // Frames at hierarchical layer 4
+  INTER_LEAF = 5,      // Leaf frames (layer 5)
   RATE_FACTOR_LEVELS
 } UENUM1BYTE(RATE_FACTOR_LEVEL);
 
@@ -87,6 +91,13 @@ typedef struct {
   int gfu_boost;
   int kf_boost;
 
+  // The number of frames so-far at each layer.
+  int frame_count_pyramid[RATE_FACTOR_LEVELS];
+  // Rate correction factor at each layer for a group of picture.
+  // Layer 0 stands for key frame, not used.
+  // Layer 1 has 1 frame only. Layer 5 has 8 frames (leaf frames).
+  double rate_correction_factors_pyramid[RATE_FACTOR_LEVELS][8];
+  // The average factor for each layer.
   double rate_correction_factors[RATE_FACTOR_LEVELS];
 
   int frames_since_golden;
