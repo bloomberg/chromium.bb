@@ -394,9 +394,9 @@ void ConvolveHorizontal_C(const void* const reference,
     do {
       int sum = 0;
       for (int k = 0; k < kSubPixelTaps; ++k) {
-        sum += kSubPixelFilters[filter_index][filter_id][k] * src[x + k];
+        sum += kHalfSubPixelFilters[filter_index][filter_id][k] * src[x + k];
       }
-      sum = RightShiftWithRounding(sum, kRoundBitsHorizontal);
+      sum = RightShiftWithRounding(sum, kRoundBitsHorizontal - 1);
       dest[x] = static_cast<Pixel>(
           Clip3(RightShiftWithRounding(sum, bits), 0, max_pixel_value));
     } while (++x < width);
@@ -447,11 +447,11 @@ void ConvolveVertical_C(const void* const reference,
     do {
       int sum = 0;
       for (int k = 0; k < kSubPixelTaps; ++k) {
-        sum += kSubPixelFilters[filter_index][filter_id][k] *
+        sum += kHalfSubPixelFilters[filter_index][filter_id][k] *
                src[k * src_stride + x];
       }
-      dest[x] = static_cast<Pixel>(
-          Clip3(RightShiftWithRounding(sum, kFilterBits), 0, max_pixel_value));
+      dest[x] = static_cast<Pixel>(Clip3(
+          RightShiftWithRounding(sum, kFilterBits - 1), 0, max_pixel_value));
     } while (++x < width);
 
     src += src_stride;

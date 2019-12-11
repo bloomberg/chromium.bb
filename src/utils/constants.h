@@ -705,6 +705,8 @@ extern const int16_t kWarpedFilters[3 * kWarpedPixelPrecisionShifts + 1][8];
 
 extern const int16_t kSubPixelFilters[6][16][8];
 
+extern const int8_t kHalfSubPixelFilters[6][16][8];
+
 extern const int16_t kDirectionalIntraPredictorDerivative[44];
 
 extern const uint8_t kDeblockFilterLevelIndex[kMaxPlanes][kNumLoopFilterTypes];
