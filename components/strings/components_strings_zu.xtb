@@ -474,7 +474,6 @@
 <translation id="320323717674993345">Khansela inkokhelo</translation>
 <translation id="3207960819495026254">Kubekwe uphawu lokubekisa</translation>
 <translation id="3209034400446768650">Ikhasi lingakhokhisa imali</translation>
-<translation id="3209080785413271048">Sebenzisa i-Windows Hello ukuze uqinisekise izindlela zakho zokukhokha ezilondoloziwe.</translation>
 <translation id="3212581601480735796">Umsebenzi wakho ku-<ph name="HOSTNAME" /> ugadiwe</translation>
 <translation id="3215092763954878852">Ayikwazanga ukusebenzisa i-WebAuthn</translation>
 <translation id="3225919329040284222">Iseva iphrezenthe isitifiketi esingafani nokulindelekile okwakhelwe ngaphakathi. Lokhu okulindelekile kuyafakwa kumawebhusayithi athile, anokuvikeleka okuphezulu ukuze kuvikelwe wena.</translation>
@@ -488,7 +487,6 @@
 <translation id="3262069459091978471">I-<ph name="LOOKALIKE_DOMAIN" /> ibonakala ifana ne-<ph name="SUGGESTED_DOMAIN" />. Abahlaseli kwesinye isikhathi balingisa amasayithi basebenzisa ama-URL afanayo.</translation>
 <translation id="3270847123878663523">&amp;Hlehlisa ukuhlela kabusha</translation>
 <translation id="3274521967729236597">Pa-Kai</translation>
-<translation id="3281668902344226640">Sebenzisa i-ID yokuthinta ukuze uqinisekise izindlela zakho zokukhokha.</translation>
 <translation id="3282497668470633863">Engeza igama kukhadi</translation>
 <translation id="3287510313208355388">Landa uma uxhumeke ku-inthanethi</translation>
 <translation id="3293642807462928945">Funda kabanzi mayelana nenqubomgomo ye-<ph name="POLICY_NAME" /></translation>
@@ -628,7 +626,6 @@
 <translation id="3964661563329879394">{COUNT,plural, =0{Lutho}=1{Kusukela kusayithi elingu-1 }one{Kusukela kumasayithi angu-# }other{Kusukela kumasayithi angu-# }}</translation>
 <translation id="397105322502079400">Iyabala...</translation>
 <translation id="3973234410852337861">I-<ph name="HOST_NAME" /> ivinjiwe</translation>
-<translation id="3981540111851280311"><ph name="ENROLLMENT_DOMAIN" /> inike amandla i-Chrome Enterprise Threat Protection kusiphequluli sakho. I-Chrome Enterprise Threat Protection inokufinyelela kwenye idatha yakho.</translation>
 <translation id="3987405730340719549">I-Chrome inqume ukuthi leli sayithi lingaba ukukhwabanisa noma libe umgunyathi.
 
     Uma ukholwa ukuthi lokhu kuboniswa ngephutha sicela uvakashele ku-https://bugs.chromium.org/p/chromium/issues/entry?template=Safety+Tips+Appeals.</translation>
@@ -693,7 +690,6 @@
 <translation id="4226937834893929579"><ph name="BEGIN_LINK" />Zama ukuqalisa ukuxilongwa kwenethiwekhi<ph name="END_LINK" />.</translation>
 <translation id="4234495348042597185"><ph name="BEGIN_LINK" />Qhubekela ku-<ph name="SITE" /><ph name="END_LINK" /></translation>
 <translation id="4235360514405112390">Lungile</translation>
-<translation id="4248776159690739358">Yabelana ngedatha mayelana nemicimbi yakho yokuphepha lawo amakwe nge-Chrome Enterprise Threat Protection ngomlawuli wakho. Lokhu kungafaka ama-URL amakhasi owavakashele, amagama amafayela noma ethemathada, kanye negama lomsebenzisi olisebenzisela ukungena ngfemvume kudivayisi yakho naku-Chrome.</translation>
 <translation id="4250431568374086873">UKuxhumeka kwakho kuleli sayithi akuvikelekile ngokugcwele</translation>
 <translation id="4250680216510889253">Cha</translation>
 <translation id="425582637250725228">Ushintsho olwenzile kungenzeka lungalondolozwa.</translation>
@@ -728,7 +724,6 @@
 <translation id="4372948949327679948">Inani elilindelwe elingu-<ph name="VALUE_TYPE" />.</translation>
 <translation id="4377125064752653719">Uzame ukufinyelela ku-<ph name="DOMAIN" />, kodwa isitifiketi esiphrezentwe yiseva sihoxisiwe ngokukhishwa kwaso. Lokhu kusho ukuthi izifakazelo zokuvikela eziphrezentwe yiseva akumele zithenjwe sanhlobo. Kungenzeka ukuthi uxhumana nesihlaseli.</translation>
 <translation id="4378154925671717803">Ifoni</translation>
-<translation id="4398334096870680409">Lesi sici asitholakali kudivayisi yakho.</translation>
 <translation id="4406896451731180161">imiphumela yokusesha</translation>
 <translation id="4408413947728134509">Amakhukhi <ph name="NUM_COOKIES" /></translation>
 <translation id="4415426530740016218">Ikheli lokuthathwa</translation>
@@ -1192,7 +1187,6 @@
 <translation id="6685834062052613830">Phuma ngemvume bese uqedele ukusetha</translation>
 <translation id="6689271823431384964">I-Chrome inikeza ngokulondoloza amakhadi akho ku-akhawunti yakho ye-Google ngoba ungene ngemvume. Ungashintsha le mpatho kuzilungiselelo. Igama lomnikazi wekhadi livela ku-akhawunti yakho.</translation>
 <translation id="6704582573942289642">Ingabe leli isayithi elilungile?</translation>
-<translation id="6707256370811247129">Skena okuqukethwe kwenqolobane namafayela owalandayo noma owalayisha ku-Chrome.</translation>
 <translation id="6710213216561001401">Okwedlule</translation>
 <translation id="6710594484020273272">&lt;Thayipha itemu lokusesha&gt;</translation>
 <translation id="671076103358959139">Ithokheni yokubhaliswa:</translation>
@@ -1338,7 +1332,6 @@ Imininingwane engeziwe:
 <translation id="7460618730930299168">ukuskrina kuhlukile kusukela kulokho okukhethile. Qhubeka?</translation>
 <translation id="7473891865547856676">Cha ngiyabonga</translation>
 <translation id="7481312909269577407">Dlulisela</translation>
-<translation id="748406663033922918">Sebenzisa ukukhiya isikrini ukuze uqinisekise izindlela zakho zokukhokha ezilondoloziwe.</translation>
 <translation id="7485870689360869515">Ayikho idatha etholiwe.</translation>
 <translation id="7495290002932347110">Ukuphula isivumelwano sedatha kusayitih noma kuhlelo lokusebenza kudalule iphasiwedi yakho. I-Chrome incoma ukuhlola amaphasiwedi alondoloziwe nokushintsha amaphasiwedi akho ku-<ph name="ORIGIN" /> manje.</translation>
 <translation id="7498234416455752244">Qhubeka nokuhlela</translation>
@@ -1372,7 +1365,6 @@ Imininingwane engeziwe:
 <translation id="7610193165460212391">Inani lingaphandle kwebanga elingu-<ph name="VALUE" />.</translation>
 <translation id="7613889955535752492">Iphelelwa isikhathi: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">Usuvele unedatha ebetheliwe esebenzisa inguqulo ehlukile yephasiwedi yakho ye-Akhawunti ye-Google. Sicela uyifake ngezansi.</translation>
-<translation id="7625784245512586808">I-Chrome Enterprise Threat Protection</translation>
 <translation id="7633909222644580952">Idatha yokusebenza nemibiko yokusaphazeka</translation>
 <translation id="7637571805876720304">Susa ikhadi lesikweletu kusukela ku-Chromium?</translation>
 <translation id="7638605456503525968">Izimbobo ze-serial</translation>
@@ -1460,7 +1452,6 @@ Imininingwane engeziwe:
 <translation id="8041940743680923270">Sebenzisa okuzenzakalelayo komhlaba jikelele (Buza)</translation>
 <translation id="8042918947222776840">Khetha indlela yokulandwa</translation>
 <translation id="8057711352706143257">"<ph name="SOFTWARE_NAME" />" ayilungisiwe kahle. Ukukhipha i-"<ph name="SOFTWARE_NAME" />" ngokuvamile kulungisa inkinga. <ph name="FURTHER_EXPLANATION" /></translation>
-<translation id="8062224330780487419">Ngeke udinge ukufaka ikhodi yokuphepha yekhadi kusuka manje</translation>
 <translation id="8066955247577885446">Uxolo, kukhona okungahambanga kahle.</translation>
 <translation id="8074253406171541171">10x13 (Envelope)</translation>
 <translation id="8078141288243656252">Ayikwazi ukuchasisa uma izungezisiwe</translation>
@@ -1652,7 +1643,6 @@ Imininingwane engeziwe:
 <translation id="9080712759204168376">Isifinyezo se-oda</translation>
 <translation id="9089260154716455634">Inqubomgomo engekho kumahora:</translation>
 <translation id="9095388113577226029">Izilimi eziningi...</translation>
-<translation id="9098981495403789647">Umlawuli wakho unike amandla i-Chrome Enterprise Threat Protection kusiphequli sakho. I-Chrome Enterprise Threat Protection inokufinyelela kwenye idatha yakho.</translation>
 <translation id="9103872766612412690">I-<ph name="SITE" /> ngokuvamile isebenzisa ukubethela ukuvikela ulwazi lwakho. Uma i-Chromium izame ukuxhuma ku-<ph name="SITE" /> ngalesi sikhathi, iwebhusayithi ithumele emuva imininingwane engavamile nengalungile. Lokhu kungenzeka uma umhlaseli ezama ukuzenza i-<ph name="SITE" />, noma isikrini sokungena se-Wi-Fi siphazamise uxhumo. Ulwazi lwakho lusaphephile ngoba i-Chromium imise uxhumo ngaphambi kokuthi idatha ishintshwe.</translation>
 <translation id="9106062320799175032">Engeza ikheli lokukhokha</translation>
 <translation id="9114524666733003316">Iqinisekisa ikhadi...</translation>

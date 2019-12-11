@@ -473,7 +473,6 @@
 <translation id="320323717674993345">To‘lovni bekor qilish</translation>
 <translation id="3207960819495026254">Xatcho‘plarga qo‘shildi</translation>
 <translation id="3209034400446768650">Sahifa pul yechib olishi mumkin</translation>
-<translation id="3209080785413271048">Saqlangan toʻlov usullarini Windows Hello orqali tasdiqlash.</translation>
 <translation id="3212581601480735796"><ph name="HOSTNAME" /> saytidagi harakatlaringiz kuzatuv ostida</translation>
 <translation id="3215092763954878852">WebAuthn ishlatib boʻlmadi</translation>
 <translation id="3225919329040284222">Serverdagi sertifikat ba’zi saytlardagi yuqori darajali havfsizlik ichki parametrlariga mos kelmaydi.</translation>
@@ -487,7 +486,6 @@
 <translation id="3262069459091978471"><ph name="LOOKALIKE_DOMAIN" /> <ph name="SUGGESTED_DOMAIN" /> domeniga oʻxsharkan. Odatda shubhali kimsalar URL manzillarga kichik oʻzgarishlar kiritib, saytlarga soxta nusxalar yasaydi.</translation>
 <translation id="3270847123878663523">&amp;Qayta tartiblashni bekor qilish</translation>
 <translation id="3274521967729236597">Pa-Kai</translation>
-<translation id="3281668902344226640">Saqlangan toʻlov usullarini Touch ID yordamida tasdiqlash.</translation>
 <translation id="3282497668470633863">Karta egasining ismini kiriting</translation>
 <translation id="3287510313208355388">Internet ulanganda yuklab olish</translation>
 <translation id="3293642807462928945"><ph name="POLICY_NAME" /> parametri haqida batafsil axborot olish</translation>
@@ -626,7 +624,6 @@
 <translation id="3964661563329879394">{COUNT,plural, =0{Yo‘q}=1{1 ta saytdan }other{# ta saytdan }}</translation>
 <translation id="397105322502079400">Hisoblanmoqda...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> saytiga kirish taqiqlangan</translation>
-<translation id="3981540111851280311">Brauzeringizda <ph name="ENROLLMENT_DOMAIN" /> tomonidan Chrome Enterprise himoya tizimi faollashtirildi. Chrome Enterprise himoya tizimida ayrim maʼlumotlaringizga ruxsat bor.</translation>
 <translation id="3987405730340719549">Chrome bu saytni soxta yoki firibgarlarniki deb hisoblaydi.
 
     Bu ogohlantirish xato chiqqan boʻlsa, https://bugs.chromium.org/p/chromium/issues/entry?template=Safety+Tips+Appeals sahifasini oching.</translation>
@@ -691,7 +688,6 @@
 <translation id="4226937834893929579"><ph name="BEGIN_LINK" />Tarmoq diagnostikasi bilan tekshirib ko‘ring<ph name="END_LINK" /></translation>
 <translation id="4234495348042597185"><ph name="BEGIN_LINK" /><ph name="SITE" /> saytini ochish<ph name="END_LINK" /></translation>
 <translation id="4235360514405112390">Haqiqiy</translation>
-<translation id="4248776159690739358">Chrome Enterprise himoya tizimi xavfli boʻlishi mumkin deb aniqlagan xavfsizlikka oid hodisalar haqida administratorga xabar qilib turing. Bu ochilgan sahifalarning URL manzillari, fayl nomlari yoki meta axborotlar, qurilma va Chrome foydalanuvchilari nomlaridan iborat boʻlishi mumkin.</translation>
 <translation id="4250431568374086873">Bu sayt bilan o‘rnatilgan aloqa himoyalanmagan.</translation>
 <translation id="4250680216510889253">Yo‘q</translation>
 <translation id="425582637250725228">Kiritilgan o‘zgarishlar saqlanmasligi mumkin.</translation>
@@ -726,7 +722,6 @@
 <translation id="4372948949327679948">Kutilgan <ph name="VALUE_TYPE" /> qiymati.</translation>
 <translation id="4377125064752653719">Siz <ph name="DOMAIN" /> saytiga o‘tmoqchi bo‘ldingiz, lekin server taqdim qilgan sertifikat noshiri tomonidan bekor qilingan. Bu server bergan havfsizlik hisob ma’lumotlari ishonchsizligini bildiradi. Siz firibgarlar saytiga kirgan bo‘lishingiz mumkin.</translation>
 <translation id="4378154925671717803">Telefon</translation>
-<translation id="4398334096870680409">Bu funksiya qurilmangizda ishlamaydi.</translation>
 <translation id="4406896451731180161">qidiruv natijalari</translation>
 <translation id="4408413947728134509"><ph name="NUM_COOKIES" /> cookie fayllari</translation>
 <translation id="4415426530740016218">Olib ketish manzili</translation>
@@ -1189,7 +1184,6 @@
 <translation id="6685834062052613830">Hisobdan chiqing va sozlash jarayonini nihoyasiga yetkazing</translation>
 <translation id="6689271823431384964">Hisobingizga kirganingiz uchun Chrome kartalarni Google hisobingizga saqlashni taklif qilmoqda. Buni sozlamalar orqali oʻzgartirish mumkin. Karta egasining ismi hisobingizdan olinadi.</translation>
 <translation id="6704582573942289642">Bu aynan kerakli saytmi?</translation>
-<translation id="6707256370811247129">Chrome brauzerida yuklab olingan va yuklangan fayllar hamda keshlangan maʼlumotlarni skanerlash</translation>
 <translation id="6710213216561001401">Avvalgi</translation>
 <translation id="6710594484020273272">&lt;Qidiruv so‘rovini kiriting&gt;</translation>
 <translation id="671076103358959139">Qaydnoma tokeni:</translation>
@@ -1335,7 +1329,6 @@ Batafsil axborot:
 <translation id="7460618730930299168">Bu seans sozlamalari siz tanlagandan farqli. Davom ettirilsinmi?</translation>
 <translation id="7473891865547856676">Yo‘q, rahmat</translation>
 <translation id="7481312909269577407">Oldinga</translation>
-<translation id="748406663033922918">Saqlangan toʻlov usullarini ekran qulfi yordamida tasdiqlash.</translation>
 <translation id="7485870689360869515">Ma‘lumotlar topilmadi.</translation>
 <translation id="7495290002932347110">Siz ishlatadigan sayt yoki ilovadagi parolingiz oshkor etilgan. Chrome hoziroq saqlangan parollaringizni tekshirishni va <ph name="ORIGIN" /> parolingizni yangilashni tavsiya qiladi.</translation>
 <translation id="7498234416455752244">Tahrirlashda davom etish</translation>
@@ -1369,7 +1362,6 @@ Batafsil axborot:
 <translation id="7610193165460212391">Diapazondan tashqaridagi qiymat: <ph name="VALUE" />.</translation>
 <translation id="7613889955535752492">Muddati: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">Sizda allaqachon boshqa Google hisobi paroli orqali shifrlangan ma’lumotlar mavjud. O‘sha parolni quyida kiriting.</translation>
-<translation id="7625784245512586808">Chrome Enterprise himoya tizimi</translation>
 <translation id="7633909222644580952">Foydalanish statistikasi va ishdan chiqishlar hisoboti</translation>
 <translation id="7637571805876720304">Bu kredit karta Chromium’dan o‘chirib tashlansinmi?</translation>
 <translation id="7638605456503525968">Ketma-ket portlar</translation>
@@ -1457,7 +1449,6 @@ Batafsil axborot:
 <translation id="8041940743680923270">Global parametrdan foydalanish (so‘ralsin)</translation>
 <translation id="8042918947222776840">Olib ketish usulini tanlang</translation>
 <translation id="8057711352706143257">“<ph name="SOFTWARE_NAME" />” noto‘g‘ri sozlangan. “<ph name="SOFTWARE_NAME" />” dasturini o‘chirib ko‘ring. <ph name="FURTHER_EXPLANATION" /></translation>
-<translation id="8062224330780487419">Endi kartaning xavfsizlik kodini kiritish kerak emas</translation>
 <translation id="8066955247577885446">Xatolik yuz berdi.</translation>
 <translation id="8074253406171541171">10x13 (Envelope)</translation>
 <translation id="8078141288243656252">Aylantirilganda izohlanmaydi</translation>
@@ -1649,7 +1640,6 @@ Batafsil axborot:
 <translation id="9080712759204168376">Buyurtma axboroti</translation>
 <translation id="9089260154716455634">Qoidalar amal qilmaydigan vaqt:</translation>
 <translation id="9095388113577226029">Boshqa tillar...</translation>
-<translation id="9098981495403789647">Brauzeringizda administrator tomonidan Chrome Enterprise himoya tizimi faollashtirdi. Chrome Enterprise himoya tizimida ayrim maʼlumotlaringizga ruxsat bor.</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> sayti ma’lumotlaringizni himoyalash uchun shifrlashdan foydalanadi, lekin hozir Chromium <ph name="SITE" /> saytiga ulanish uchun uringanda, ushbu sayt shubhali va noto‘g‘ri tasdiqlash ma’lumotlarini qaytarmoqda. Bunday holat zararli sayt o‘zini <ph name="SITE" /> o‘rnida ko‘rsatayotganda yoki Wi-Fi ulanishi uzilib qolganda yuz berishi mumkin. Shaxsiy ma’lumotlaringizga hech qanday xavf tug‘ilgani yo‘q, chunki Chromium aloqani ma’lumotlar almashinuvidan oldin uzib qo‘ydi.</translation>
 <translation id="9106062320799175032">To‘lov manzilini kiriting</translation>
 <translation id="9114524666733003316">Karta tasdiqlanmoqda...</translation>

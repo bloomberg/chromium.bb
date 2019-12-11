@@ -593,7 +593,7 @@
 <translation id="1910704279188129272">Permite establecer restricciones de uso según la app.
         Se pueden aplicar restricciones de uso a las apps instaladas en <ph name="PRODUCT_OS_NAME" /> para un usuario determinado.
         Las restricciones se deben especificar en la lista |app_limits|. Solo se permite una entrada por app. Las apps que no se incluyan en la lista no tendrán restricciones.
-        Si no es posible bloquear apps que son fundamentales para el funcionamiento del sistema operativo, se ignorarán las restricciones para estas apps.
+        No es posible bloquear apps que son fundamentales para el funcionamiento del sistema operativo; se ignorarán las restricciones que se especifiquen para estas apps.
         La app se identifica unívocamente por su |app_id|. Dado que distintos tipos de apps pueden usar formatos de identificación diferentes, debe especificarse |app_type| junto a |app_id|.
         Actualmente, los límites de tiempo por app solo admiten las apps |ARC|. Se usa el nombre del paquete de Android como |app_id|.
         En el futuro se admitirán otros tipos de apps; por el momento se pueden especificar en la política, aunque las restricciones no tendrán efecto.
@@ -2731,7 +2731,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
       Si se establece como verdadera, o no se establece, el usuario podrá utilizar Crostini, siempre que otras opciones de configuración también lo permitan.
       Para que pueda ejecutarse Crostini, deben establecerse las tres políticas (VirtualMachinesAllowed, CrostiniAllowed y DeviceUnaffiliatedCrostiniAllowed) como verdaderas.
       Si se cambia esta política a falsa, se aplicará a contenedores nuevos de Crostini, pero no se apagarán los que ya estén en ejecución.</translation>
-<translation id="5278367296164377827">Esta política empresarial es una adaptación por corto plazo y se quitará en M82.
+<translation id="5278367296164377827">Esta política es una adaptación por corto plazo y se quitará en M82.
 
       Para fortalecer la política del referente predeterminado de Chrome, su valor actual de "sin referente cuando cambia a una versión inferior" cambia al valor más seguro "origen estricto cuando el origen es cruzado" mediante un lanzamiento gradual que apunta a la versión M80 estable.
 

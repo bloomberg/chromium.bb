@@ -464,7 +464,6 @@
 <translation id="320323717674993345">取消付款</translation>
 <translation id="3207960819495026254">已加书签</translation>
 <translation id="3209034400446768650">此网页可能会收取费用</translation>
-<translation id="3209080785413271048">使用 Windows Hello 验证您保存的付款方式。</translation>
 <translation id="3212581601480735796">您在 <ph name="HOSTNAME" /> 上的活动正被监控</translation>
 <translation id="3215092763954878852">无法使用 WebAuthn</translation>
 <translation id="3225919329040284222">服务器提供的证书与内置预期证书不匹配。这些预期证书是针对某些高安全性网站提供的，以便为您提供保护。</translation>
@@ -478,7 +477,6 @@
 <translation id="3262069459091978471"><ph name="LOOKALIKE_DOMAIN" /> 看起来和 <ph name="SUGGESTED_DOMAIN" /> 很相似。攻击者有时会使用类似的网址来仿冒网站。</translation>
 <translation id="3270847123878663523">撤消顺序调整(&amp;U)</translation>
 <translation id="3274521967729236597">Pa-Kai</translation>
-<translation id="3281668902344226640">使用 Touch ID 验证您保存的付款方式。</translation>
 <translation id="3282497668470633863">添加持卡人姓名</translation>
 <translation id="3287510313208355388">联网时下载</translation>
 <translation id="3293642807462928945">详细了解“<ph name="POLICY_NAME" />”政策</translation>
@@ -612,7 +610,6 @@
 <translation id="3964661563329879394">{COUNT,plural, =0{无}=1{来自 1 个网站}other{来自 # 个网站}}</translation>
 <translation id="397105322502079400">正在计算...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> 已被屏蔽</translation>
-<translation id="3981540111851280311"><ph name="ENROLLMENT_DOMAIN" /> 已在您的浏览器中启用了 Chrome 企业版威胁防护功能。Chrome 企业版威胁防护功能可以访问您的部分数据。</translation>
 <translation id="3987405730340719549">Chrome 已确定此网站可能是虚假网站或欺诈性网站。
 
     如果您认为系统不该向您显示这条提示，请访问 https://bugs.chromium.org/p/chromium/issues/entry?template=Safety+Tips+Appeals。</translation>
@@ -677,7 +674,6 @@
 <translation id="4226937834893929579"><ph name="BEGIN_LINK" />尝试运行网络诊断<ph name="END_LINK" />。</translation>
 <translation id="4234495348042597185"><ph name="BEGIN_LINK" />继续前往 <ph name="SITE" /><ph name="END_LINK" /></translation>
 <translation id="4235360514405112390">有效</translation>
-<translation id="4248776159690739358">与您的管理员分享 Chrome 企业级威胁防护功能所报告的安全性事件的相关数据。这可能包括您所访问的网页的网址、文件名或元数据，以及您在登录设备和 Chrome 时使用的用户名。</translation>
 <translation id="4250431568374086873">您与此网站之间建立的连接并非完全安全</translation>
 <translation id="4250680216510889253">否</translation>
 <translation id="425582637250725228">系统可能不会保存您所做的更改。</translation>
@@ -712,7 +708,6 @@
 <translation id="4372948949327679948">应使用<ph name="VALUE_TYPE" />值。</translation>
 <translation id="4377125064752653719">您尝试访问的是 <ph name="DOMAIN" />，但服务器出示的证书已被其颁发者吊销。这表明绝对不应该信任此服务器出示的安全凭据。您可能正在与攻击者进行通信。</translation>
 <translation id="4378154925671717803">电话机</translation>
-<translation id="4398334096870680409">您的设备不支持此功能。</translation>
 <translation id="4406896451731180161">搜索结果</translation>
 <translation id="4408413947728134509"><ph name="NUM_COOKIES" />Cookie</translation>
 <translation id="4415426530740016218">取货地址</translation>
@@ -1174,7 +1169,6 @@
 <translation id="6685834062052613830">请退出并完成设置</translation>
 <translation id="6689271823431384964">Chrome 正在询问是否要将卡保存到您的 Google 帐号中，因为您已登录。您可在“设置”中更改此行为。持卡人姓名来自您的帐号。</translation>
 <translation id="6704582573942289642">确定是这个网站吗？</translation>
-<translation id="6707256370811247129">扫描您在 Chrome 中下载或上传的缓存和文件的内容。</translation>
 <translation id="6710213216561001401">上一个</translation>
 <translation id="6710594484020273272">&lt;输入搜索字词&gt;</translation>
 <translation id="671076103358959139">注册令牌：</translation>
@@ -1320,7 +1314,6 @@
 <translation id="7460618730930299168">此处显示的放映时间不同于您的选择。继续？</translation>
 <translation id="7473891865547856676">不，谢谢</translation>
 <translation id="7481312909269577407">前进</translation>
-<translation id="748406663033922918">使用“屏幕锁定”功能验证您保存的付款方式。</translation>
 <translation id="7485870689360869515">找不到数据。</translation>
 <translation id="7495290002932347110">某个网站或应用发生了数据泄露，导致您的密码外泄。Chrome 建议您立即检查并更改您在<ph name="ORIGIN" />上保存的密码。</translation>
 <translation id="7498234416455752244">继续修改</translation>
@@ -1354,7 +1347,6 @@
 <translation id="7610193165460212391">值超出了范围 (<ph name="VALUE" />)。</translation>
 <translation id="7613889955535752492">过期时间：<ph name="EXPIRATION_YEAR" /> 年 <ph name="EXPIRATION_MONTH" /> 月</translation>
 <translation id="7615602087246926389">您已经使用不同版本的 Google 帐号密码加密了数据。请在下方输入。</translation>
-<translation id="7625784245512586808">Chrome 企业版威胁防护</translation>
 <translation id="7633909222644580952">性能数据和崩溃报告</translation>
 <translation id="7637571805876720304">要从 Chromium 中移除信用卡吗？</translation>
 <translation id="7638605456503525968">串行端口</translation>
@@ -1442,7 +1434,6 @@
 <translation id="8041940743680923270">使用全局默认设置（询问）</translation>
 <translation id="8042918947222776840">选择取货方式</translation>
 <translation id="8057711352706143257">“<ph name="SOFTWARE_NAME" />”的配置有误。卸载“<ph name="SOFTWARE_NAME" />”通常可解决此问题。<ph name="FURTHER_EXPLANATION" /></translation>
-<translation id="8062224330780487419">从现在起您无需再输入银行卡的安全码了</translation>
 <translation id="8066955247577885446">抱歉，出了点问题。</translation>
 <translation id="8074253406171541171">10x13 (Envelope)</translation>
 <translation id="8078141288243656252">无法在旋转后添加注释</translation>
@@ -1635,7 +1626,6 @@
 <translation id="9080712759204168376">订单摘要</translation>
 <translation id="9089260154716455634">“非工作时间”政策：</translation>
 <translation id="9095388113577226029">更多语言…</translation>
-<translation id="9098981495403789647">您的管理员已在您的浏览器中启用了 Chrome 企业版威胁防护功能。Chrome 企业版威胁防护功能可以访问您的部分数据。</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> 通常会使用加密技术来保护您的信息。Chromium 此次尝试连接到 <ph name="SITE" /> 时，此网站发回了异常的错误凭据。这可能是因为有攻击者在试图冒充 <ph name="SITE" />，或 Wi-Fi 登录屏幕中断了此次连接。请放心，您的信息仍然是安全的，因为 Chromium 尚未进行任何数据交换便停止了连接。</translation>
 <translation id="9106062320799175032">添加帐单邮寄地址</translation>
 <translation id="9114524666733003316">正在确认信用卡…</translation>

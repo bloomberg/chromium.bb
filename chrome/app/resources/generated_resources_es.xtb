@@ -759,7 +759,7 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="2078019350989722914">Avisar antes de salir (<ph name="KEY_EQUIVALENT" />)</translation>
 <translation id="2079053412993822885">Si eliminas uno de tus propios certificados, ya no podrás utilizarlo para identificarte.</translation>
 <translation id="2079545284768500474">Deshacer</translation>
-<translation id="2080070583977670716">Más opciones</translation>
+<translation id="2080070583977670716">Más ajustes</translation>
 <translation id="2087822576218954668">Imprimir: <ph name="PRINT_NAME" /></translation>
 <translation id="2089566709556890888">Navega de forma segura con Google Chrome</translation>
 <translation id="2089795179672254991">Preguntar cuando un sitio web quiera ver el texto y las imágenes que se hayan copiado en el portapapeles (recomendado)</translation>
@@ -1401,7 +1401,7 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="29488703364906173">Un navegador web rápido, seguro y fácil de usar creado para la Web actual.</translation>
 <translation id="2949289451367477459">Usar ubicación. Permite que los servicios y aplicaciones con permiso de ubicación utilicen la ubicación de este dispositivo. Es posible que Google recopile datos de ubicación periódicamente y que los utilice de forma anónima para mejorar la precisión de la ubicación y los servicios basados en la ubicación. <ph name="BEGIN_LINK1" />Más información<ph name="END_LINK1" /></translation>
 <translation id="2956070239128776395">Sección anidada dentro de un grupo: <ph name="ERROR_LINE" /></translation>
-<translation id="2957117904572187936">No permitir a ningún sitio web editar archivos o carpetas que haya en tu dispositivo</translation>
+<translation id="2957117904572187936">No permitir a ningún sitio web editar archivos o carpetas de tu dispositivo</translation>
 <translation id="2958721676848865875">Advertencia sobre el empaquetado de extensión</translation>
 <translation id="2959842337402130152">No se ha podido restablecer porque falta espacio de almacenamiento. Libera <ph name="SPACE_REQUIRED" /> de espacio del dispositivo e inténtalo de nuevo.</translation>
 <translation id="296026337010986570">Se ha eliminado el software dañino. Para volver a activar las extensiones, ve a &lt;a href="chrome://extensions"&gt;Extensiones&lt;/a&gt;.</translation>
@@ -2747,7 +2747,7 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="4933484234309072027">insertada en <ph name="URL" /></translation>
 <translation id="493571969993549666">Añadir usuario supervisado</translation>
 <translation id="4939805055470675027">No se ha podido conectar con <ph name="CARRIER_NAME" /></translation>
-<translation id="4940364377601827259">Hay <ph name="PRINTER_COUNT" /> impresoras disponibles para guardar.</translation>
+<translation id="4940364377601827259">Hay <ph name="PRINTER_COUNT" /> impresoras que se pueden guardar.</translation>
 <translation id="4941246025622441835">Utiliza esta solicitud de dispositivo al registrar el dispositivo para la administración empresarial:</translation>
 <translation id="4941627891654116707">Tamaño de la fuente</translation>
 <translation id="494286511941020793">Ayuda para la configuración de proxy</translation>
@@ -2820,7 +2820,7 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="5052499409147950210">Editar sitio web</translation>
 <translation id="5053604404986157245">La contraseña de TPM generada de forma aleatoria no está disponible. Esto es normal después de un Powerwash.</translation>
 <translation id="5057110919553308744">Al hacer clic en la extensión</translation>
-<translation id="5060332552815861872">Hay 1 impresora disponible para guardar.</translation>
+<translation id="5060332552815861872">Hay 1 impresora que se puede guardar.</translation>
 <translation id="5061347216700970798">{NUM_BOOKMARKS,plural, =1{Esta carpeta contiene un marcador. ¿Seguro que quieres eliminarla?}other{Esta carpeta contiene # marcadores. ¿Seguro que quieres eliminarla?}}</translation>
 <translation id="5062930723426326933">Se ha producido un error al iniciar sesión. Conéctate a Internet y vuelve a intentarlo.</translation>
 <translation id="5063480226653192405">Uso</translation>
@@ -4563,7 +4563,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="7607002721634913082">En pausa</translation>
 <translation id="7609148976235050828">Conéctate a Internet y vuelve a intentarlo.</translation>
 <translation id="7611008212562900400">Busca en tu dispositivo, aplicaciones, páginas web…</translation>
-<translation id="7614260613810441905">Preguntar cuando un sitio web quiera editar archivos o carpetas que haya en tu dispositivo (recomendado)</translation>
+<translation id="7614260613810441905">Preguntar cuando un sitio web quiera editar archivos o carpetas de tu dispositivo (recomendado)</translation>
 <translation id="7616214729753637086">Registrando dispositivo...</translation>
 <translation id="7617366389578322136">Se está estableciendo conexión con "<ph name="DEVICE_NAME" />"</translation>
 <translation id="7621382409404463535">El sistema no ha podido guardar la configuración del dispositivo.</translation>
@@ -4917,7 +4917,7 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="8054921503121346576">Teclado USB conectado</translation>
 <translation id="8058655154417507695">Año de caducidad</translation>
 <translation id="8059417245945632445">&amp;Inspeccionar dispositivos</translation>
-<translation id="8059456211585183827">No hay ninguna impresora disponible para guardar.</translation>
+<translation id="8059456211585183827">No hay ninguna impresora disponible que guardar.</translation>
 <translation id="8063235345342641131">Avatar verde predeterminado</translation>
 <translation id="8064671687106936412">Clave:</translation>
 <translation id="8068253693380742035">Toca para iniciar sesión</translation>
@@ -5143,7 +5143,7 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="8390449457866780408">Servidor no disponible</translation>
 <translation id="8391218455464584335">Vinilo</translation>
 <translation id="8391712576156218334">La imagen no está disponible. Inténtalo de nuevo más tarde.</translation>
-<translation id="8392364544846746346">Preguntar cuando un sitio web quiera editar archivos o carpetas que haya en tu dispositivo</translation>
+<translation id="8392364544846746346">Preguntar cuando un sitio web quiera editar archivos o carpetas de tu dispositivo</translation>
 <translation id="8392451568018454956">Menú de opciones de <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8393511274964623038">Detener complemento</translation>
 <translation id="8393700583063109961">Enviar mensaje</translation>

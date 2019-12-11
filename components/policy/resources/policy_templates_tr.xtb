@@ -1543,7 +1543,7 @@
 
           Bu politika "InsecureContentAllowedForUrls" ve "InsecureContentBlockedForUrls" politikaları kullanılarak belirli URL kalıpları için geçersiz kılınabilir.
 
-          Bu politika ayarlanmadan bırakılırsa kullanıcıların engellenebilir karma içeriğe izin vermek için istisnalar eklemelerine ve isteğe bağlı olarak engellenebilir karma içerik için otomatik yükseltmeleri devre dışı bırakmalarına izin verilir.</translation>
+          Bu politika ayarlanmadan bırakılırsa kullanıcıların, engellenebilir karma içeriğe izin vermek için istisnalar eklemelerine ve isteğe bağlı olarak engellenebilir karma içerik için otomatik yükseltmeleri devre dışı bırakmalarına izin verilir.</translation>
 <translation id="3307971460556020865">Büyük yüklemeleri ve indirilenleri engelle</translation>
 <translation id="3312206664202507568">chrome://password-change konumunda, SAML kullanıcılarının oturum açmış durumdayken SAML şifrelerini değiştirmelerine izin veren ve SAML şifresi ile cihaz ekran kilidi şifresinin senkronize durumda tutulmasını sağlayan bir sayfayı etkinleştirir.
 

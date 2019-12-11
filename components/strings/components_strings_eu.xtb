@@ -383,7 +383,7 @@
 <translation id="2721148159707890343">Eskaera behar bezala egin da</translation>
 <translation id="272451190272506600">Ordaintzeko, sakatu sentsorea</translation>
 <translation id="2728127805433021124">Zerbitzariaren ziurtagiria segurua ez den sinadura-algoritmo batekin dago sinatuta.</translation>
-<translation id="2730326759066348565"><ph name="BEGIN_LINK" />Konexio-diagnostikoak abiarazten<ph name="END_LINK" /></translation>
+<translation id="2730326759066348565"><ph name="BEGIN_LINK" />Konexioen diagnostikoak abiarazten<ph name="END_LINK" /></translation>
 <translation id="2734544361860335147">Eginbide hauek gaituz gero, baliteke arakatzaileko datuak galtzea, edo segurtasuna edo pribatutasuna arriskuan jartzea. Arakatzailea darabilten pertsona guztiek izango dituzte erabilgarri gaitzen diren eginbideak.</translation>
 <translation id="2735043616039983645">Balio gatazkatsuak dituzten iturburu bat baino gehiago daude gidalerro honetan.</translation>
 <translation id="2738330467931008676">Aukeratu jasotze-helbidea</translation>
@@ -452,7 +452,7 @@
 <translation id="3109728660330352905">Ez duzu baimenik orri hau ikusteko.</translation>
 <translation id="3116158981186517402">Laminatu</translation>
 <translation id="3120730422813725195">Elo</translation>
-<translation id="31207688938192855"><ph name="BEGIN_LINK" />Abiarazi konexio-diagnostikoak<ph name="END_LINK" />.</translation>
+<translation id="31207688938192855"><ph name="BEGIN_LINK" />Abiarazi Konexioen diagnostikoak<ph name="END_LINK" />.</translation>
 <translation id="3121994479408824897">Joan <ph name="DOMAIN" /> domeinura</translation>
 <translation id="3137507986424712703">{COUNT,plural, =0{Bat ere ez}=1{kontu bateko saio-hasierari buruzko datuak}other{# kontutako saio-hasierari buruzko datuak}}</translation>
 <translation id="3145945101586104090">Ezin izan da deskodetu erantzuna</translation>
@@ -469,7 +469,6 @@
 <translation id="320323717674993345">Utzi bertan behera ordainketa</translation>
 <translation id="3207960819495026254">Laster-marka gisa gordea</translation>
 <translation id="3209034400446768650">Baliteke orriak dirua kobratzea</translation>
-<translation id="3209080785413271048">Erabili Windows Hello gordetako ordainketa-metodoak egiaztatzeko.</translation>
 <translation id="3212581601480735796"><ph name="HOSTNAME" /> webgunean egiten ari zarena gainbegiratzen ari dira</translation>
 <translation id="3215092763954878852">Ezin izan da erabili WebAuthn</translation>
 <translation id="3225919329040284222">Zerbitzariak aurkeztu duen ziurtagiria ez dator bat integratutako eskakizunekin. Eskakizun horiek segurtasun handiko webgune batzuek egiten dituzte erabiltzaileak babesteko.</translation>
@@ -483,7 +482,6 @@
 <translation id="3262069459091978471"><ph name="LOOKALIKE_DOMAIN" /> eta <ph name="SUGGESTED_DOMAIN" /> antzekoak dira. Batzuetan, erasotzaileek beste webgune batzuen plantak egiten dituzte antzeko URLak erabilita.</translation>
 <translation id="3270847123878663523">&amp;Desegin berrantolatzea</translation>
 <translation id="3274521967729236597">Pa-Kai</translation>
-<translation id="3281668902344226640">Erabili Touch ID gordetako ordainketa-metodoak egiaztatzeko.</translation>
 <translation id="3282497668470633863">Gehitu titularra</translation>
 <translation id="3287510313208355388">Deskargatu konektatuta dagoenean</translation>
 <translation id="3293642807462928945">Lortu informazio gehiago <ph name="POLICY_NAME" /> gidalerroari buruz</translation>
@@ -621,7 +619,6 @@
 <translation id="3964661563329879394">{COUNT,plural, =0{Bat ere ez}=1{1 webgunetatik }other{# webgunetatik }}</translation>
 <translation id="397105322502079400">Kalkulatzen…</translation>
 <translation id="3973234410852337861">Blokeatuta dago <ph name="HOST_NAME" /></translation>
-<translation id="3981540111851280311"><ph name="ENROLLMENT_DOMAIN" /> domeinuak Chrome-ren Enpresetarako mehatxuen aurkako babesa gaitu dizu arakatzailean. Chrome-ren Enpresetarako mehatxuen aurkako babesa eginbideak zure datu batzuk atzi ditzake.</translation>
 <translation id="3987405730340719549">Webgune hau faltsua edo iruzurrezkoa izan litekeela zehaztu du Chrome-k.
 
     Abisu honek dioena oker dagoela uste baduzu, joan https://bugs.chromium.org/p/chromium/issues/entry?template=Safety+Tips+Appeals helbidera.</translation>
@@ -674,7 +671,7 @@
     &lt;/ol&gt;
     &lt;h4&gt;2. urratsa: ireki web-orria ezkutuko moduan (ordenagailuan bakarrik)&lt;/h4&gt;
     &lt;p&gt;Ireki bisitatu nahi duzun web-orria ezkutuko leiho batean.&lt;/p&gt;
-    &lt;p&gt;Web-orria irekitzen bada, Chrome-ren luzapen batek ez du ondo funtzionatzen. Errorea konpontzeko, desaktibatu luzapena.&lt;/p&gt;
+    &lt;p&gt;Web-orria irekitzen bada, Chrome-rako luzapen batek ez du ondo funtzionatzen. Errorea konpontzeko, desaktibatu luzapena.&lt;/p&gt;
     &lt;h4&gt;3. urratsa: eguneratu sistema eragilea&lt;/h4&gt;
     &lt;p&gt;Ziurtatu gailua eguneratuta dagoela.&lt;/p&gt;
     &lt;h4&gt;4. urratsa: desaktibatu antibirusa aldi baterako&lt;/h4&gt;
@@ -686,7 +683,6 @@
 <translation id="4226937834893929579"><ph name="BEGIN_LINK" />Abiarazi sare-diagnostikoak<ph name="END_LINK" />.</translation>
 <translation id="4234495348042597185"><ph name="BEGIN_LINK" />Joan <ph name="SITE" /> webgunera<ph name="END_LINK" /></translation>
 <translation id="4235360514405112390">Balio du</translation>
-<translation id="4248776159690739358">Partekatu administratzailearekin Chrome-ren Enpresetarako mehatxuen aurkako babesa eginbideak aurkitutako segurtasun-gertaerei buruzko datuak. Datu horien artean baliteke hauek agertzea: bisitatzen dituzun orrien URLak, fitxategien izenak edo metadatuak, eta gailuan nahiz Chrome-n saioa hasteko erabiltzen duzun erabiltzaile-izena.</translation>
 <translation id="4250431568374086873">Webgune honetarako konexioa ez da guztiz segurua</translation>
 <translation id="4250680216510889253">Ez</translation>
 <translation id="425582637250725228">Baliteke egindako aldaketak ez gordetzea.</translation>
@@ -721,7 +717,6 @@
 <translation id="4372948949327679948"><ph name="VALUE_TYPE" /> balioa espero zen.</translation>
 <translation id="4377125064752653719"><ph name="DOMAIN" /> domeinura konektatzen saiatu zara baina zerbitzariak aurkeztutako ziurtagiria baliogabetu egin du bere jaulkitzaileak. Horrek esan nahi du ez zarela inolaz ere fidatu behar zerbitzariak aurkeztutako segurtasun-kredentzialez. Agian erasotzaile batekin komunikatzen ari zara.</translation>
 <translation id="4378154925671717803">Telefonoa</translation>
-<translation id="4398334096870680409">Eginbidea ez dago erabilgarri zure gailuan.</translation>
 <translation id="4406896451731180161">bilaketa-emaitza</translation>
 <translation id="4408413947728134509">Cookieak: <ph name="NUM_COOKIES" /></translation>
 <translation id="4415426530740016218">Jasotzeko helbidea</translation>
@@ -1184,7 +1179,6 @@
 <translation id="6685834062052613830">Amaitu saioa eta osatu konfigurazioa</translation>
 <translation id="6689271823431384964">Saioa hasita duzunez, txartelak Google-ko kontuan gordetzeko aukera ematen dizu Chrome-k. Aukera hori aldatzeko, joan Ezarpenak atalera. Txartelaren titularraren izena kontutik hartu da.</translation>
 <translation id="6704582573942289642">Hau al da webgunea?</translation>
-<translation id="6707256370811247129">Aztertu Chrome bidez deskargatzen edo kargatzen dituzun fitxategien cacheko edukia.</translation>
 <translation id="6710213216561001401">Aurrekoa</translation>
 <translation id="6710594484020273272">&lt;Idatzi bilaketa-hitza&gt;</translation>
 <translation id="671076103358959139">Izena emateko tokena:</translation>
@@ -1330,7 +1324,6 @@ Xehetasun gehiago:
 <translation id="7460618730930299168">Bideoaren bistaratze-xehetasunak ez datoz bat hautatu dituzunekin. Aurrera egin nahi duzu?</translation>
 <translation id="7473891865547856676">Ez, eskerrik asko</translation>
 <translation id="7481312909269577407">Aurrera</translation>
-<translation id="748406663033922918">Erabili pantailaren blokeoa gordetako ordainketa-metodoak egiaztatzeko.</translation>
 <translation id="7485870689360869515">Ez da daturik aurkitu</translation>
 <translation id="7495290002932347110">Erabiltzen duzun webgune edo aplikazio batean datuen isilpekotasuna urratu denez, zure pasahitza atzitzeko aukera izan dute. Gordetako pasahitzak seguru daudela egiaztatzea eta <ph name="ORIGIN" /> webguneko pasahitza berehala aldatzea gomendatzen du Chrome-k.</translation>
 <translation id="7498234416455752244">Jarraitu editatzen</translation>
@@ -1364,7 +1357,6 @@ Xehetasun gehiago:
 <translation id="7610193165460212391">Balioa barrutitik kanpo dago: <ph name="VALUE" />.</translation>
 <translation id="7613889955535752492">Iraungitze-data: <ph name="EXPIRATION_YEAR" />/<ph name="EXPIRATION_MONTH" /></translation>
 <translation id="7615602087246926389">Badituzu Google-ko kontuaren pasahitzaren beste bertsio bat erabilita enkriptatu diren datuak. Idatzi pasahitza hemen behean.</translation>
-<translation id="7625784245512586808">Chrome-ren Enpresetarako mehatxuen aurkako babesa</translation>
 <translation id="7633909222644580952">Errendimenduaren datuak eta hutsegite-txostenak</translation>
 <translation id="7637571805876720304">Kreditu-txartela Chromium-etik kendu nahi duzu?</translation>
 <translation id="7638605456503525968">Serie-atakak</translation>
@@ -1452,7 +1444,6 @@ Xehetasun gehiago:
 <translation id="8041940743680923270">Erabili balio lehenetsi orokorra (galdetzea)</translation>
 <translation id="8042918947222776840">Aukeratu jasotze-metodoa</translation>
 <translation id="8057711352706143257">"<ph name="SOFTWARE_NAME" />" ez dago behar bezala konfiguratuta. "<ph name="SOFTWARE_NAME" />" desinstalatuta konpondu ohi da arazo hori. <ph name="FURTHER_EXPLANATION" /></translation>
-<translation id="8062224330780487419">Aurrerantzean, ez duzu txartelaren segurtasun-koderik idatzi beharko</translation>
 <translation id="8066955247577885446">Arazoren bat izan da.</translation>
 <translation id="8074253406171541171">10x13 (gutun-azala)</translation>
 <translation id="8078141288243656252">Ezin da oharpenik egin dokumentua biratuta dagoenean</translation>
@@ -1644,7 +1635,6 @@ Xehetasun gehiago:
 <translation id="9080712759204168376">Eskaeraren laburpena</translation>
 <translation id="9089260154716455634">Gidalerroak zorroztasun txikiagoa duen denbora tartea:</translation>
 <translation id="9095388113577226029">Hizkuntza gehiago…</translation>
-<translation id="9098981495403789647">Administratzaileak Chrome-ren Enpresetarako mehatxuen aurkako babesa gaitu dizu arakatzailean. Chrome-ren Enpresetarako mehatxuen aurkako babesa eginbideak zure datu batzuk atzi ditzake.</translation>
 <translation id="9103872766612412690">Eskuarki, <ph name="SITE" /> webguneak enkriptatzea erabiltzen du informazioa babesteko. Chromium <ph name="SITE" /> webgunera konektatzen saiatu denean, webguneak kredentzial desegokiak eta ezohikoak bidali ditu. Erasotzaile bat <ph name="SITE" /> webgunearen plantak egiten ari delako gerta daiteke hori, edo Wi-Fi sarean saioa hasteko pantailak konexioa eten duelako. Zure informazioa seguru dago, datuak trukatu aurretik eten baitu Chromium-ek konexioa.</translation>
 <translation id="9106062320799175032">Gehitu fakturazio-helbidea</translation>
 <translation id="9114524666733003316">Txartela berresten…</translation>

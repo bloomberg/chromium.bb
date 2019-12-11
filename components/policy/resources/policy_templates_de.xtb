@@ -421,9 +421,9 @@ Wenn die Richtlinie "EnableMediaRouter" auf "false" gesetzt ist, hat der Wert di
 <translation id="1654087023995670109">Gastmodus im Browser erzwingen</translation>
 <translation id="1655229863189977773">Cache-Größe für Datenträger in Byte festlegen</translation>
 <translation id="166427968280387991">Proxyserver</translation>
-<translation id="1667071842533245879">Mit dieser Richtlinie können Sie eine Liste von URL-Mustern festlegen, die Websites angeben, auf denen blockierbare (aktive) gemischte Inhalte (HTTP-Inhalte auf HTTPS-Websites) nicht angezeigt werden dürfen und optional blockierbare (passive) gemischte Inhalte aktualisiert werden.
+<translation id="1667071842533245879">Mit dieser Richtlinie können Sie eine Liste von URL-Mustern festlegen, die Websites angeben, auf denen blockierbare (aktive) gemischte Inhalte (HTTP-Inhalte auf HTTPS-Websites) nicht angezeigt werden dürfen und optional blockierbare (passive) gemischte Inhalte auf HTTPS geändert werden.
 
-          Wenn Sie diese Richtlinie nicht konfigurieren, werden blockierbare gemischte Inhalte gesperrt und optional blockierbare gemischte Inhalte aktualisiert. Nutzer können jedoch Ausnahmen für bestimmte Websites festlegen.</translation>
+          Wenn Sie diese Richtlinie nicht konfigurieren, werden blockierbare gemischte Inhalte gesperrt und optional blockierbare gemischte Inhalte auf HTTPS geändert. Nutzer können jedoch Ausnahmen für bestimmte Websites festlegen.</translation>
 <translation id="1667877109169174750">Ist diese Richtlinie auf "true" gesetzt, werden die Optionen für Bedienungshilfen immer im Taskleistenmenü angezeigt.
 
           Wenn sie auf "false" gesetzt ist, werden die Optionen für Bedienungshilfen nie im Taskleistenmenü angezeigt.
@@ -565,9 +565,9 @@ Wenn die Richtlinie "EnableMediaRouter" auf "false" gesetzt ist, hat der Wert di
       Ist die Richtlinie nicht konfiguriert, wird die Netzwerkvorhersage aktiviert, kann jedoch vom Nutzer geändert werden.</translation>
 <translation id="1865417998205858223">Hauptberechtigungen</translation>
 <translation id="186719019195685253">Auszuführende Aktion beim Erreichen der Leerlaufverzögerung während des Wechselstrombetriebs</translation>
-<translation id="1875371246345730828">Mit dieser Richtlinie wird festgelegt, welche URLs während der SAML-Abfolge auf dem Anmeldebildschirm die Remote-Attestierung der Geräteidentität verwenden dürfen.
+<translation id="1875371246345730828">Mit dieser Richtlinie wird festgelegt, welche URLs während des SAML-Flows auf dem Anmeldebildschirm die Remote-Attestierung der Geräteidentität verwenden dürfen.
 
-      Eine URL darf HTTP-Header mit einer Antwort auf die Identitätsbestätigung durch eine Remote-Attestierung empfangen, wenn sie mit einem der in dieser Richtlinie festgelegten Muster übereinstimmt. Dadurch werden die Geräteidentität und der Gerätestatus bestätigt.
+      Eine URL darf HTTP-Header mit einer Antwort auf eine Remote-Nachweisabfrage zur Identitätsbestätigung empfangen, wenn sie mit einem der in dieser Richtlinie festgelegten Muster übereinstimmt. Dadurch werden die Geräteidentität und der Gerätestatus bestätigt.
 
       Wenn diese Richtlinie nicht konfiguriert oder eine leere Liste festgelegt ist, darf keine URL die Remote-Attestierung auf dem Anmeldebildschirm verwenden.
 
@@ -1519,7 +1519,7 @@ Wenn Sie "Letzte Sitzung wiederherstellen" wählen, werden die URLs, die beim le
 
           Die Richtlinie kann für bestimmte URL-Muster überschrieben werden. Hierfür stehen die Richtlinien "InsecureContentAllowedForUrls" und "InsecureContentBlockedForUrls" zur Verfügung.
 
-          Ist diese Richtlinie nicht konfiguriert, dürfen Nutzer Ausnahmen hinzufügen, um blockierbare gemischte Inhalte zuzulassen und die automatische Aktualisierung optional blockierbarer gemischter Inhalte zu deaktivieren.</translation>
+          Ist diese Richtlinie nicht konfiguriert, dürfen Nutzer Ausnahmen hinzufügen, um blockierbare gemischte Inhalte zuzulassen und das automatische Upgrade auf HTTPS von optional blockierbaren gemischten Inhalten zu deaktivieren.</translation>
 <translation id="3307971460556020865">Große Dateiuploads und -downloads blockieren</translation>
 <translation id="3312206664202507568">Aktiviert eine Seite auf "chrome://password-change", auf der SAML-Nutzer ihre SAML-Passwörter bei laufender Sitzung ändern können. Hierdurch wird dafür gesorgt, dass das SAML-Passwort und das Passwort für den Sperrbildschirm des Geräts synchronisiert bleiben.
 
@@ -2740,11 +2740,11 @@ Ist die Richtlinie auf "false" gesetzt, wird Crostini nicht für den Nutzer akti
 Ist die Richtlinie auf "true" gesetzt oder nicht festgelegt, ist Crostini für den Nutzer aktiviert, sofern dies nicht durch andere Einstellungen verhindert wird.
 Alle drei Richtlinien (VirtualMachinesAllowed, CrostiniAllowed und DeviceUnaffiliatedCrostiniAllowed) müssen auf "true" gesetzt sein, wenn sie angewendet werden, damit Crostini ausgeführt werden darf.
 Wenn diese Richtlinie zu "false" geändert wird, wirkt sich dies auf den Start neuer Crostini-Container aus. Container, die bereits laufen, werden aber nicht beendet.</translation>
-<translation id="5278367296164377827">Diese Unternehmensrichtlinie gilt nur übergangsweise und wird in M82 entfernt.
+<translation id="5278367296164377827">Diese Unternehmensrichtlinie kann nur übergangsweise verwendet werden und wird in M82 entfernt.
 
       Die standardmäßige Verweisrichtlinie in Chrome wird verstärkt. Hierzu wird der Standardwert von "no-referrer-when-downgrade" zum sichereren Wert "strict-origin-when-cross-origin" geändert. Die Umstellung erfolgt graduell und soll mit M80 (stabil) abgeschlossen sein.
 
-      Bis zur Einführung hat diese Unternehmensrichtlinie keine Auswirkungen. Wird die Unternehmensrichtlinie nach der Einführung aktiviert, wird die standardmäßige Verweisrichtlinie in Chrome wieder auf den Wert aus den Versionen vor M80 zurückgesetzt, also auf "no-referrer-when-downgrade".
+      Bis zur Einführung hat diese Unternehmensrichtlinie keine Auswirkungen. Wird diese Unternehmensrichtlinie nach der Einführung aktiviert, wird die standardmäßige Verweisrichtlinie in Chrome wieder auf den Wert aus den Versionen vor M80 zurückgesetzt, also auf "no-referrer-when-downgrade".
 
       Diese Unternehmensrichtlinie ist standardmäßig deaktiviert.</translation>
 <translation id="5283457834853986457">Plug-in-Suchfunktion deaktivieren (eingestellt)</translation>
@@ -4135,17 +4135,17 @@ Die Richtlinienwerte sollten in % angegeben werden und zwischen 0 und 100 liegen
 
       Eine passive Authentifizierung ist eine HTTP-Authentifizierung mit Standardanmeldedaten. Sie wird durchgeführt, wenn keine spezifischen Anmeldedaten über ein Challenge-Response-Verfahren (NTLM, Kerberos oder Negotiate) angegeben werden.
 
-      Wenn Sie die Option "<ph name="REGULAR_ONLY_OPTION_NAME" />" festlegen (Wert: 0), wird die passive Authentifizierung ausschließlich für reguläre Sitzungen aktiviert. Inkognito- und Gastsitzungen dürfen dann nicht passiv authentifiziert werden.
+      Wenn Sie die Option "<ph name="REGULAR_ONLY_OPTION_NAME" />" festlegen (Wert: 0), ist die passive Authentifizierung ausschließlich für reguläre Sitzungen zulässig. Inkognito- und Gastsitzungen dürfen dann nicht passiv authentifiziert werden.
 
-      Wenn Sie die Option "<ph name="INCOGNITO_AND_REGULAR_OPTION_NAME" />" festlegen (Wert: 1), wird die passive Authentifizierung für Inkognito- und reguläre Sitzungen aktiviert. Gastsitzungen dürfen dann nicht passiv authentifiziert werden.
+      Wenn Sie die Option "<ph name="INCOGNITO_AND_REGULAR_OPTION_NAME" />" festlegen (Wert: 1), ist die passive Authentifizierung für Inkognito- und reguläre Sitzungen zulässig. Gastsitzungen dürfen dann nicht passiv authentifiziert werden.
 
-      Wenn Sie die Option "<ph name="GUEST_AND_REGULAR_OPTION_NAME" />" festlegen (Wert: 2), wird die passive Authentifizierung für Gast- und reguläre Sitzungen aktiviert. Inkognitositzungen dürfen dann nicht passiv authentifiziert werden.
+      Wenn Sie die Option "<ph name="GUEST_AND_REGULAR_OPTION_NAME" />" festlegen (Wert: 2), ist die passive Authentifizierung für Gast- und reguläre Sitzungen zulässig. Inkognitositzungen dürfen dann nicht passiv authentifiziert werden.
 
-      Wenn Sie die Option "<ph name="ALL_OPTION_NAME" />" festlegen (Wert: 3), wird die passive Authentifizierung für alle Sitzungen aktiviert.
+      Wenn Sie die Option "<ph name="ALL_OPTION_NAME" />" festlegen (Wert: 3), ist die passive Authentifizierung für alle Sitzungen zulässig.
 
-      Für reguläre Profile ist die passive Authentifizierung immer aktiviert.
+      Für reguläre Profile ist die passive Authentifizierung immer zulässig.
 
-      Wenn Sie die Richtlinie nicht konfigurieren, ist für Inkognito- und Gastsitzungen in zukünftigen Versionen von <ph name="PRODUCT_NAME" /> keine passive Authentifizierung möglich, da sie dann nicht mehr zulässig sind.</translation>
+      Wenn Sie die Richtlinie nicht konfigurieren, ist für Inkognito- und Gastsitzungen in zukünftigen Versionen von <ph name="PRODUCT_NAME" /> keine passive Authentifizierung möglich, da diese für Inkognito- und Gastsitzungen dann nicht mehr zulässig ist.</translation>
 <translation id="7687943045976362719">Wenn diese Richtlinie konfiguriert ist, wird für alle angegebenen Inhaltstypen <ph name="PRODUCT_FRAME_NAME" /> verwendet.
 
           Ist die Richtlinie nicht konfiguriert, kommt der Standardrenderer für alle Websites zum Einsatz. Anhand der Richtlinie "<ph name="CHROME_FRAME_RENDERER_SETTINGS_POLICY_NAME" />" kann der Standardrenderer konfiguriert werden.</translation>
@@ -4426,9 +4426,9 @@ Die Richtlinie wird nur angewendet, wenn die <ph name="CHROME_REPORTING_EXTENSIO
 <translation id="8186911565834244165">Nutzerfeedback zulassen</translation>
 <translation id="8214600119442850823">Konfiguriert den Passwortmanager.</translation>
 <translation id="8217516105848565518">Diese Richtlinie wurde eingestellt. Bitte verwenden Sie stattdessen "RemoteAccessHostDomainList".</translation>
-<translation id="8236323460664833038">Mit dieser Richtlinie können Sie eine Liste von URL-Mustern festlegen, die Websites angeben, auf denen blockierbare (aktive) gemischte Inhalte (HTTP-Inhalte auf HTTPS-Websites) angezeigt werden dürfen und optional blockierbare gemischte Inhalte nicht aktualisiert werden.
+<translation id="8236323460664833038">Mit dieser Richtlinie können Sie eine Liste von URL-Mustern festlegen, die Websites angeben, auf denen blockierbare (aktive) gemischte Inhalte (HTTP-Inhalte auf HTTPS-Websites) angezeigt werden dürfen und optional blockierbare gemischte Inhalte nicht auf HTTPS geändert werden.
 
-          Ist diese Richtlinie nicht konfiguriert, werden blockierbare gemischte Inhalte gesperrt und optional blockierbare gemischte Inhalte aktualisiert. Nutzer können Ausnahmen für bestimmte Websites festlegen.</translation>
+          Ist diese Richtlinie nicht konfiguriert, werden blockierbare gemischte Inhalte gesperrt und optional blockierbare gemischte Inhalte auf HTTPS geändert. Nutzer können Ausnahmen für bestimmte Websites festlegen.</translation>
 <translation id="8244171102276095471">RC4-Verschlüsselungssammlungen in TLS aktivieren</translation>
 <translation id="8244525275280476362">Maximale Abrufverzögerung nach der Außerkraftsetzung einer Richtlinie</translation>
 <translation id="8256688113167012935">Gibt an, welchen Kontonamen <ph name="PRODUCT_OS_NAME" /> für das entsprechende lokale Gerätekonto auf der Anmeldeseite anzeigt.

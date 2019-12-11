@@ -476,7 +476,6 @@
 <translation id="320323717674993345">Төлөмдү жокко чыгаруу</translation>
 <translation id="3207960819495026254">Кыстармаланды</translation>
 <translation id="3209034400446768650">Барак төлөм өндүрүшү мүмкүн</translation>
-<translation id="3209080785413271048">Сакталган төлөм ыкмаларыңызды ырастоо үчүн Windows Hello'ну колдонуңуз.</translation>
 <translation id="3212581601480735796"><ph name="HOSTNAME" /> сайтындагы аракеттериңиз көзөмөлдөнүүдө</translation>
 <translation id="3215092763954878852">WebAuthn'ди колдонуу мүмкүн эмес</translation>
 <translation id="3225919329040284222">Сервер кыналган күтүүлөргө дал келбеген тастыктама тапшырды. Бул күтүүлөр сиздин коопсуздугуңузду камсыз кылган ишенимдүү вебсайттарда камтылган.</translation>
@@ -490,7 +489,6 @@
 <translation id="3262069459091978471"><ph name="LOOKALIKE_DOMAIN" /> сайты <ph name="SUGGESTED_DOMAIN" /> сайтына окшош көрүнөт. Чабуулчулар кээ бир учурларда окшош URL даректерин колдонуп, сайттарды туурашат.</translation>
 <translation id="3270847123878663523">Иреттештирүүнү &amp;жасабоо</translation>
 <translation id="3274521967729236597">Pa-Kai</translation>
-<translation id="3281668902344226640">Сакталган төлөм ыкмаларыңызды ырастоо үчүн Touch ID функциясын колдонуңуз.</translation>
 <translation id="3282497668470633863">Картадагы ысымды кошуу</translation>
 <translation id="3287510313208355388">Интернетке туташканда жүктөлүп алынсын</translation>
 <translation id="3293642807462928945"><ph name="POLICY_NAME" /> саясаты жөнүндө кеңири маалымат</translation>
@@ -630,7 +628,6 @@
 <translation id="3964661563329879394">{COUNT,plural, =0{Бирөө да жок}=1{1 сайт }other{# сайт }}</translation>
 <translation id="397105322502079400">Эсептелүүдө…</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> сайты бөгөттөлгөн</translation>
-<translation id="3981540111851280311"><ph name="ENROLLMENT_DOMAIN" /> Chrome Enterprise Threat Protection кызматын иштетти. Chrome Enterprise Threat Protection кызматынын айрым дайындарыңызга кирүүгө мүмкүнчүлүгү бар.</translation>
 <translation id="3987405730340719549">Chrome бул жалган сайт болушу мүмкүн экенин аныктады.
 
     Эгер бул жаңылыш көрсөтүлүп жатат деп ойлосоңуз, https://bugs.chromium.org/p/chromium/issues/entry?template=Safety+Tips+Appeals баракчасына баш багыңыз.</translation>
@@ -695,7 +692,6 @@
 <translation id="4226937834893929579"><ph name="BEGIN_LINK" />Тармак мүчүлүштүгүн аныктоону иштетип көрүңүз<ph name="END_LINK" />.</translation>
 <translation id="4234495348042597185"><ph name="BEGIN_LINK" /><ph name="SITE" /> сайтына улантуу<ph name="END_LINK" /></translation>
 <translation id="4235360514405112390">Жарактуу</translation>
-<translation id="4248776159690739358">Chrome Enterprise Threat Protection системасы кооптуу деп тапкан коопсуздук иш-чараларына байланыштуу маалымат администраторуңузга жөнөтүлөт. Анда сиз ачкан барактардын URL даректери, файлдардын аталыштары же метадайындар, ошондой эле түзмөгүңүзгө жана Chrome'го кирүүдө колдонгон колдонуучунун аты камтылат.</translation>
 <translation id="4250431568374086873">Бул сайтка туташуу толугу менен коопсуз эмес</translation>
 <translation id="4250680216510889253">Жок</translation>
 <translation id="425582637250725228">Киргизген өзгөртүүлөрүңүз сакталбай калышы мүмкүн.</translation>
@@ -730,7 +726,6 @@
 <translation id="4372948949327679948">Күтүлгөн <ph name="VALUE_TYPE" /> мааниси.</translation>
 <translation id="4377125064752653719"><ph name="DOMAIN" /> жетүүгө аракет кылдыңыз, бирок сервердин тастыктамасын аны чыгарган жак жокко чыгарды. Демек, сервердин далдаштырма дайындарына таптакыр ишенбешиңиз керек, себеби ал зыянкеч чабуулчу болушу да мүмкүн.</translation>
 <translation id="4378154925671717803">Телефон</translation>
-<translation id="4398334096870680409">Бул функция түзмөгүңүздө иштебейт.</translation>
 <translation id="4406896451731180161">издөө натыйжалары</translation>
 <translation id="4408413947728134509"><ph name="NUM_COOKIES" /> куки</translation>
 <translation id="4415426530740016218">Алып кете турган жердин дарегин тандоо</translation>
@@ -1194,7 +1189,6 @@
 <translation id="6685834062052613830">Каттоо эсебинен чыгып, жөндөөнү аягына чыгарыңыз</translation>
 <translation id="6689271823431384964">Аккаунтуңузга кирип турганыңыздан улам, Chrome карталарыңызды Google аккаунтуңузга сактап коюуну сунуштап жатат. Бул параметрди жөндөөлөргө өтүп, өзгөртүп койсоңуз болот. Картанын ээси – аккаунттун ээси болуп эсептелет.</translation>
 <translation id="6704582573942289642">Бул сайт туурабы?</translation>
-<translation id="6707256370811247129">Кештин жана сиз Chrome'дон жүктөп алган же ага жүктөп берген файлдардын мазмундарын текшерүү.</translation>
 <translation id="6710213216561001401">Мурунку</translation>
 <translation id="6710594484020273272">&lt;Изделүүчү сөздү териңиз&gt;</translation>
 <translation id="671076103358959139">Катталуу токени:</translation>
@@ -1340,7 +1334,6 @@
 <translation id="7460618730930299168">Сеанстын форматы сиз тандагандан башкача экен. Уланта бересизби?</translation>
 <translation id="7473891865547856676">Жок, рахмат</translation>
 <translation id="7481312909269577407">Багыттоо</translation>
-<translation id="748406663033922918">Сакталган төлөм ыкмаларыңызды ырастоо үчүн экранды бөгөттөө функциясын колдонуңуз.</translation>
 <translation id="7485870689360869515">Дайындар табылган жок.</translation>
 <translation id="7495290002932347110">Сайттагы же колдонмодогу сырсөзүңүздү кимдир-бирөө билип алды. Chrome сакталган сырсөздөрүңүздү текшерүүнү же <ph name="ORIGIN" /> сайтында колдонгон сырсөзүңүздү азыр өзгөртүүнү сунуштайт.</translation>
 <translation id="7498234416455752244">Түзөтүүнү улантуу</translation>
@@ -1374,7 +1367,6 @@
 <translation id="7610193165460212391">Маани <ph name="VALUE" /> аралыгынан чыгып кетти.</translation>
 <translation id="7613889955535752492">Мөөнөтү бүтөт: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">Дайындарыңызды Google Каттоо эсебиңиздин башка версиясынын сырсөзүн колдонуп шифрлеп коюптурсуз. Аны төмөнкүгө киргизиңиз.</translation>
-<translation id="7625784245512586808">Chrome Enterprise коргоо тутуму</translation>
 <translation id="7633909222644580952">Майнаптуулук дайындары жана ката жөнүндө кабарлоолор</translation>
 <translation id="7637571805876720304">Насыя картасы Chromium'дан алынып салынсынбы?</translation>
 <translation id="7638605456503525968">Сериялык порттор</translation>
@@ -1462,7 +1454,6 @@
 <translation id="8041940743680923270">Дүйнөлүк демейкини колдонуу (Суроо)</translation>
 <translation id="8042918947222776840">Алып кетүү ыкмасын тандоо</translation>
 <translation id="8057711352706143257">"<ph name="SOFTWARE_NAME" />" программасы туура конфигурацияланган эмес. Адатта, мындай көйгөй "<ph name="SOFTWARE_NAME" />" программасын чыгарып салуу менен чечилет. <ph name="FURTHER_EXPLANATION" /></translation>
-<translation id="8062224330780487419">Картанын коопсуздук кодун мындан ары киргизбей эле койсоңуз болот</translation>
 <translation id="8066955247577885446">Кечиресиз, бир жерден ката кетти.</translation>
 <translation id="8074253406171541171">10x13 (Конверт)</translation>
 <translation id="8078141288243656252">Документ бурулуп турганда, Аннотация режимин колдонууга болбойт</translation>
@@ -1654,7 +1645,6 @@
 <translation id="9080712759204168376">Буйрутма тууралуу маалымат</translation>
 <translation id="9089260154716455634">Саясат иштебей турган убакыт:</translation>
 <translation id="9095388113577226029">Дагы тилдер...</translation>
-<translation id="9098981495403789647">Администраторуңуз Chrome Enterprise Threat Protection кызматын серепчиңизден иштетти. Chrome Enterprise Threat Protection кызматынын айрым дайындарыңызга кирүүгө мүмкүнчүлүгү бар.</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> сайты маалыматыңызды коргоо үчүн адатта шифрлөөнү колдонот. Chromium бул жолу <ph name="SITE" /> сайтына туташууга аракет кылганда, вебсайт адаттан тышкары жана туура эмес эсептик дайындарды жөнөттү. Бул чабуулчу өзүн <ph name="SITE" /> катары көрсөткөнгө аракет кылып жатканда же Wi-Fi'дын кирүү экраны туташууну үзгүлтүккө учуратканда орун алышы мүмкүн. Chromium дайындар алмашылганга чейин туташууну үзүп койгондуктан, маалыматыңыздын коопсуздугу бузулган жок.</translation>
 <translation id="9106062320799175032">Төлөмдүн дарегин кошуу</translation>
 <translation id="9114524666733003316">Карта текшерилүүдө…</translation>

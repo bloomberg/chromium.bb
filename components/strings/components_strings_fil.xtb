@@ -468,7 +468,6 @@
 <translation id="320323717674993345">Kanselahin ang Pagbabayad</translation>
 <translation id="3207960819495026254">Naka-bookmark</translation>
 <translation id="3209034400446768650">Puwedeng maningil ang page</translation>
-<translation id="3209080785413271048">Gamitin ang Windows Hello para i-verify ang iyong mga naka-save na paraan ng pagbabayad.</translation>
 <translation id="3212581601480735796">Sinusubaybayan ang iyong aktibidad sa <ph name="HOSTNAME" /></translation>
 <translation id="3215092763954878852">Hindi magamit ang WebAuthn</translation>
 <translation id="3225919329040284222">Nagpakita ang server ng certificate na hindi tumutugma sa mga built-in na inaasahan. Ang mga inaasahang ito ay isinama para sa ilang partikular na website na may mataas na antas ng seguridad upang maprotektahan ka.</translation>
@@ -482,7 +481,6 @@
 <translation id="3262069459091978471">Mukhang katulad ng <ph name="LOOKALIKE_DOMAIN" /> ang <ph name="SUGGESTED_DOMAIN" />. Kung minsan, ginagaya ng mga attacker ang mga site sa pamamagitan ng paggamit ng mga katulad na URL.</translation>
 <translation id="3270847123878663523">&amp;I-undo ang Pagbabago sa Ayos</translation>
 <translation id="3274521967729236597">Pa-Kai</translation>
-<translation id="3281668902344226640">Gamitin ang Touch ID para i-verify ang iyong mga naka-save na paraan ng pagbabayad.</translation>
 <translation id="3282497668470633863">Magdagdag ng pangalan sa card</translation>
 <translation id="3287510313208355388">I-download kapag online</translation>
 <translation id="3293642807462928945">Matuto pa tungkol sa patakarang <ph name="POLICY_NAME" /></translation>
@@ -618,7 +616,6 @@
 <translation id="3964661563329879394">{COUNT,plural, =0{Wala}=1{Mula sa 1 site }one{Mula sa # site }other{Mula sa # na site }}</translation>
 <translation id="397105322502079400">Kinakalkula...</translation>
 <translation id="3973234410852337861">Naka-block ang <ph name="HOST_NAME" /></translation>
-<translation id="3981540111851280311">Na-enable ng <ph name="ENROLLMENT_DOMAIN" /> ang Proteksyon Laban sa Banta ng Chrome Enterprise sa iyong browser. May access ang Proteksyon Laban sa Banta ng Chrome Enterprise sa ilan sa iyong data.</translation>
 <translation id="3987405730340719549">Natukoy ng Chrome na posibleng peke o mapanloko ang site na ito.
 
     Kung naniniwala kang mali ang pagpapakita nito, pakibisita ang https://bugs.chromium.org/p/chromium/issues/entry?template=Safety+Tips+Appeals.</translation>
@@ -683,7 +680,6 @@
 <translation id="4226937834893929579"><ph name="BEGIN_LINK" />Subukang magpatakbo ng Network Diagnostics<ph name="END_LINK" />.</translation>
 <translation id="4234495348042597185"><ph name="BEGIN_LINK" />Magpatuloy sa <ph name="SITE" /><ph name="END_LINK" /></translation>
 <translation id="4235360514405112390">Wasto</translation>
-<translation id="4248776159690739358">Ibahagi ang data tungkol sa mga pangyayari sa seguridad na na-flag ng Threat Protection ng Chrome Enterprise sa iyong Administrator. Posibleng kabilang dito ang mga URL ng mga page na binibisita mo, mga pangalan ng file o metadata, at ang username na ginagamit mo para mag-sign sa iyong device at sa Chrome.</translation>
 <translation id="4250431568374086873">Hindi ganap na ligtas ang iyong koneksyon sa site na ito</translation>
 <translation id="4250680216510889253">Hindi</translation>
 <translation id="425582637250725228">Maaaring hindi ma-save ang mga pagbabagong ginawa mo.</translation>
@@ -718,7 +714,6 @@
 <translation id="4372948949327679948">Inaasahang <ph name="VALUE_TYPE" /> na halaga.</translation>
 <translation id="4377125064752653719">Tinangka mong maabot ang <ph name="DOMAIN" />, subalit ang certificate na ipinakita ng server ay binawi ng nagbigay nito. Nangangahulugan ito na ang mga kredensyal sa seguridad na ipinakita ng server ay talagang hindi dapat pagkatiwalaan. Maaaring nakikipag-ugnay ka sa isang nang-aatake.</translation>
 <translation id="4378154925671717803">Telepono</translation>
-<translation id="4398334096870680409">Hindi available ang feature na ito sa iyong device</translation>
 <translation id="4406896451731180161">mga resulta ng paghahanap</translation>
 <translation id="4408413947728134509">Cookies <ph name="NUM_COOKIES" /></translation>
 <translation id="4415426530740016218">Address sa Pag-pick up</translation>
@@ -1181,7 +1176,6 @@
 <translation id="6685834062052613830">Mag-sign out at kumpletuhin ang setup</translation>
 <translation id="6689271823431384964">Nag-aalok ang Chrome na i-save ang iyong mga card sa Google Account mo dahil naka-sign in ka. Puwede mong baguhin ang gawing ito sa mga setting. Mula sa iyong account ang pangalan ng cardholder.</translation>
 <translation id="6704582573942289642">Ito ba ang tamang site?</translation>
-<translation id="6707256370811247129">I-scan ang mga content ng cache at mga file na ida-download o ia-upload mo sa Chrome.</translation>
 <translation id="6710213216561001401">Nakaraan</translation>
 <translation id="6710594484020273272">&lt;I-type ang termino para sa paghahanap&gt;</translation>
 <translation id="671076103358959139">Token sa Pag-enroll</translation>
@@ -1327,7 +1321,6 @@ Mga karagdagang detalye:
 <translation id="7460618730930299168">Iba ang screening sa napili mo. Magpatuloy?</translation>
 <translation id="7473891865547856676">Hindi, Salamat</translation>
 <translation id="7481312909269577407">Sumulong</translation>
-<translation id="748406663033922918">Gamitin ang lock ng screen para i-verify ang iyong mga naka-save na paraan ng pagbabayad.</translation>
 <translation id="7485870689360869515">Walang nahanap na data.</translation>
 <translation id="7495290002932347110">Na-expose ang iyong password dahil sa isang paglabag sa data sa isang site o app. Inirerekomenda ng Chrome na suriin mo ngayon ang iyong mga naka-save na password at palitan ang password mo sa <ph name="ORIGIN" />.</translation>
 <translation id="7498234416455752244">Magpatuloy sa pag-edit</translation>
@@ -1361,7 +1354,6 @@ Mga karagdagang detalye:
 <translation id="7610193165460212391">Wala sa sakop ang halaga <ph name="VALUE" />.</translation>
 <translation id="7613889955535752492">Exp: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">Mayroon ka nang data na na-encrypt gamit ang ibang bersyon ng iyong password ng Google Account. Pakilagay ito sa ibaba.</translation>
-<translation id="7625784245512586808">Proteksyon Laban sa Banta ng Chrome Enterprise</translation>
 <translation id="7633909222644580952">Date ng performance at mga ulat ng pag-crash</translation>
 <translation id="7637571805876720304">Gusto mo bang alisin ang credit card sa Chromium?</translation>
 <translation id="7638605456503525968">Mga serial port</translation>
@@ -1449,7 +1441,6 @@ Mga karagdagang detalye:
 <translation id="8041940743680923270">Gamitin ang pangkalahatang default (Tanungin)</translation>
 <translation id="8042918947222776840">Pumili ng Paraan ng Pag-pick up</translation>
 <translation id="8057711352706143257">Hindi maayos na naka-configure ang "<ph name="SOFTWARE_NAME" />." Kadalasang naaayos ang problema kapag in-uninstall ang "<ph name="SOFTWARE_NAME" />." <ph name="FURTHER_EXPLANATION" /></translation>
-<translation id="8062224330780487419">Hindi mo na kailangang maglagay ng security code ng card simula ngayon</translation>
 <translation id="8066955247577885446">Paumanhin, nagkaproblema.</translation>
 <translation id="8074253406171541171">10x13 (Envelope)</translation>
 <translation id="8078141288243656252">Hindi maaaring i-annotate kapag naka-rotate</translation>
@@ -1641,7 +1632,6 @@ Mga karagdagang detalye:
 <translation id="9080712759204168376">Buod ng Order</translation>
 <translation id="9089260154716455634">Patakaran sa Mga Off Hour:</translation>
 <translation id="9095388113577226029">Higit pang wika...</translation>
-<translation id="9098981495403789647">Na-enable ng iyong administrator ang Proteksyon Laban sa Banta ng Chrome Enterprise sa browser mo. May access ang Proteksyon Laban sa Banta ng Chrome Enterprise sa ilan sa iyong data.</translation>
 <translation id="9103872766612412690">Karaniwang gumagamit ang <ph name="SITE" /> ng pag-encrypt upang protektahan ang iyong impormasyon. Noong sinubukang kumonekta ng Chromium sa <ph name="SITE" /> sa pagkakataong ito, nagbalik ang website ng mga hindi pangkaraniwan at maling kredensyal. Maaari itong mangyari kapag sinusubukan ng isang attacker na magpanggap bilang <ph name="SITE" />, o naputol ang koneksyon dahil sa isang screen ng pag-sign in sa Wi-Fi. Secure pa rin ang iyong impormasyon dahil inihinto ng Chromium ang koneksyon bago magkaroon ng palitan ng anumang data.</translation>
 <translation id="9106062320799175032">Magdagdag ng Billing Address</translation>
 <translation id="9114524666733003316">Kinukumpirma ang card...</translation>

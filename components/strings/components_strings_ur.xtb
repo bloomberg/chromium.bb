@@ -473,7 +473,6 @@
 <translation id="320323717674993345">ادائیگی منسوخ کریں</translation>
 <translation id="3207960819495026254">بُک مارک بنایا ہوا</translation>
 <translation id="3209034400446768650">صفحہ پیسے چارج کر سکتا ہے</translation>
-<translation id="3209080785413271048">‏اپنے محفوظ کردہ ادائیگی کے طریقوں کی توثیق کرنے کیلئے Windows Hello استعمال کریں۔</translation>
 <translation id="3212581601480735796"><ph name="HOSTNAME" /> پر آپ کی سرگرمی پر نظر رکھی جا رہی ہے</translation>
 <translation id="3215092763954878852">‏WebAuthn کا استعمال نہیں کیا جا سکا</translation>
 <translation id="3225919329040284222">سرور نے ایک سرٹیفکیٹ پیش کیا ہے جو پہلے سے موجود توقعات سے مماثل نہیں ہے۔ آپ کے تحفظ کیلئے یہ توقعات مخصوص، انتہائی سیکیورٹی والی ویب سائٹس کیلئے شامل کی جاتی ہیں۔</translation>
@@ -487,7 +486,6 @@
 <translation id="3262069459091978471">‏<ph name="LOOKALIKE_DOMAIN" /> <ph name="SUGGESTED_DOMAIN" /> کے مماثل لگ رہا ہے۔ بعض اوقات حملہ آور مماثل URLs کا استعمال کر کے سائٹس کی نقل کرتے ہیں۔</translation>
 <translation id="3270847123878663523">دوبارہ ترتیب &amp;کالعدم کریں</translation>
 <translation id="3274521967729236597">Pa-Kai</translation>
-<translation id="3281668902344226640">‏اپنے محفوظ کردہ ادائیگی کے طریقوں کی توثیق کرنے کیلئے ٹچ ID استعمال کریں۔</translation>
 <translation id="3282497668470633863">کارڈ پر نام شامل کریں</translation>
 <translation id="3287510313208355388">آن لائن ہونے پر ڈاؤن لوڈ کریں</translation>
 <translation id="3293642807462928945"><ph name="POLICY_NAME" /> پالیسی کے بارے میں مزید جانیں</translation>
@@ -623,7 +621,6 @@
 <translation id="3964661563329879394">{COUNT,plural, =0{کوئی سائٹ نہیں}=1{1 سائٹ سے }other{# سائٹس سے }}</translation>
 <translation id="397105322502079400">حساب لگایا جا رہا ہے…</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> مسدود ہے</translation>
-<translation id="3981540111851280311">‏<ph name="ENROLLMENT_DOMAIN" /> نے آپ کے براؤزر پر Chrome انٹرپرائز تھریٹ پروٹیکشن کو فعال کر دیا ہے۔ Chrome انٹرپرائز تھریٹ پروٹیکشن کو آپ کے کچھ ڈیٹا تک رسائی حاصل ہے۔</translation>
 <translation id="3987405730340719549">‏Chrome اس نتیجے پر پہنچا ہے کہ یہ سائٹ جعلی یا پُر فریب ہو سکتی ہے۔
 
     اگر آپ کو لگتا ہے کہ یہ غلطی سے دکھایا جا رہا ہے تو https://bugs.chromium.org/p/chromium/issues/entry?template=Safety+Tips+Appeals ملاحظہ کریں۔</translation>
@@ -688,7 +685,6 @@
 <translation id="4226937834893929579"><ph name="BEGIN_LINK" />نیٹ ورک کی تشخیصات چلانے کی کوشش کریں<ph name="END_LINK" />۔</translation>
 <translation id="4234495348042597185"><ph name="BEGIN_LINK" /><ph name="SITE" /> کی طرف بڑھیں<ph name="END_LINK" /></translation>
 <translation id="4235360514405112390">درست</translation>
-<translation id="4248776159690739358">‏ان سیکیورٹی ایونٹس سے متعلق ڈیٹا کا اشتراک کریں جن کی اطلاع Chrome انٹرپرائز تھریٹ پروٹیکشن نے آپ کے منتظم کو دی تھی۔ اس میں آپ کے ذریعے ملاحظہ کیے جانے والے صفحات کے URLs، فائل کے نام یا میٹا ڈیٹا، اور وہ صارف نام جس کا استعمال آپ اپنے آلہ اور Chrome میں سائن ان کرنے کے لیے استعمال کرتے ہیں، شامل ہو سکتے ہیں۔</translation>
 <translation id="4250431568374086873">اس سائٹ سے آپ کا کنکشن پوری طرح سے محفوظ نہیں ہے</translation>
 <translation id="4250680216510889253">نہیں</translation>
 <translation id="425582637250725228">ممکن ہے کہ آپ کی تبدیلیاں محفوظ نہ ہوں۔</translation>
@@ -723,7 +719,6 @@
 <translation id="4372948949327679948">متوقع <ph name="VALUE_TYPE" /> قدر۔</translation>
 <translation id="4377125064752653719">آپ نے <ph name="DOMAIN" /> تک رسائی کی کوشش کی، لیکن سرور کے ذریعے پیش کردہ سرٹیفیکیٹ کو اس کے جاری کنندہ نے منسوخ کر دیا ہے۔ اس کا مطلب ہے کہ سرور کے ذریعے پیش کردہ سیکیورٹی اسنادات پر مطلق طور پر بھروسہ نہیں کیا جانا چاہیے۔ ممکن ہے کہ آپ کی مواصلت ایک حملہ آور کے ساتھ ہو رہی ہو۔</translation>
 <translation id="4378154925671717803">فون</translation>
-<translation id="4398334096870680409">یہ خصوصیت آپ کے آلے پر دستیاب نہیں ہے۔</translation>
 <translation id="4406896451731180161">تلاش کے نتائج</translation>
 <translation id="4408413947728134509">کوکیز <ph name="NUM_COOKIES" /></translation>
 <translation id="4415426530740016218">پک اپ کا پتہ</translation>
@@ -1187,7 +1182,6 @@
 <translation id="6685834062052613830">سائن آؤٹ کریں اور سیٹ اپ مکمل کریں</translation>
 <translation id="6689271823431384964">‏آپ کے سائن ان ہونے کی وجہ سے Chrome آپ کے کارڈز کو آپ کے Google اکاؤنٹ میں محفوظ کرنے کی پیشکش کر رہا ہے۔ آپ اس برتاؤ کو ترتیبات میں تبدیل کر سکتے ہیں۔ کارڈ ہولڈر کے نام کا تعلق آپ کے اکاؤنٹ سے ہے۔</translation>
 <translation id="6704582573942289642">کیا یہ درست سائٹ ہے؟</translation>
-<translation id="6707256370811247129">‏کیش اور ان فائلوں کا مواد اسکین کریں جنہیں آپ Chrome میں ڈاؤن لوڈ یا اپ لوڈ کرتے ہیں۔</translation>
 <translation id="6710213216561001401">گزشتہ</translation>
 <translation id="6710594484020273272">&lt;تلاش کی اصطلاح ٹائپ کریں&gt;</translation>
 <translation id="671076103358959139">اندراج کا ٹوکن:</translation>
@@ -1333,7 +1327,6 @@
 <translation id="7460618730930299168">اسکریننگ آپ کی منتخب کردہ تفصیلات سے مختلف ہے۔ جاری رکھیں؟</translation>
 <translation id="7473891865547856676">نہیں شکریہ</translation>
 <translation id="7481312909269577407">فارورڈ کریں</translation>
-<translation id="748406663033922918">اپنے محفوظ کردہ ادائیگی کے طریقوں کی توثیق کرنے کیلئے اسکرین لاک استعمال کریں۔</translation>
 <translation id="7485870689360869515">کوئی ڈیٹا نہیں ملا۔</translation>
 <translation id="7495290002932347110">‏سائٹ یا ایپ میں ڈیٹا کی خلاف ورزی نے آپ کے پاس ورڈ کو ظاہر کر دیا۔ Chrome آپ کے محفوظ کردہ پاس ورڈز کو چیک کرنے اور ابھی <ph name="ORIGIN" /> پر آپ کے پاس ورڈ کو تبدیل کرنے کی تجویز کرتا ہے۔</translation>
 <translation id="7498234416455752244">ترمیم جاری رکھیں</translation>
@@ -1367,7 +1360,6 @@
 <translation id="7610193165460212391">قدر رینج سے باہر کی ہے <ph name="VALUE" />۔</translation>
 <translation id="7613889955535752492">‏اختتامی تاریخ: ‎<ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" />‎</translation>
 <translation id="7615602087246926389">‏آپ کے پاس پہلے ہی ایسا ڈیٹا ہے جسے آپ کے Google اکاؤنٹ کے پاس ورڈ کا مختلف ورژن استعمال کر کے مرموز کر دیا گیا ہے۔ براہ کرم اسے ذیل میں داخل کریں۔</translation>
-<translation id="7625784245512586808">‏Chrome انٹرپرائز تھریٹ پروٹیکشن</translation>
 <translation id="7633909222644580952">کارکردگی کا ڈیٹا اور کریش رپورٹس</translation>
 <translation id="7637571805876720304">‏Chromium سے کریڈٹ کارڈ ہٹائیں؟</translation>
 <translation id="7638605456503525968">سیریل پورٹس</translation>
@@ -1455,7 +1447,6 @@
 <translation id="8041940743680923270">عالمی ڈیفالٹ استعمال کریں (پوچھیں)</translation>
 <translation id="8042918947222776840">پِک اپ کا طریقہ منتخب کریں</translation>
 <translation id="8057711352706143257">"<ph name="SOFTWARE_NAME" />" صحیح طور پر کنفیگر کردہ نہیں ہے۔ عام طور سے "<ph name="SOFTWARE_NAME" />" کو ان انسٹال کرنے سے یہ مسئلہ حل ہو جاتا ہے۔ <ph name="FURTHER_EXPLANATION" /></translation>
-<translation id="8062224330780487419">اب سے آپ کو کارڈ سیکیورٹی کوڈ داخل کرنے کی ضرورت نہیں ہوگی</translation>
 <translation id="8066955247577885446">معذرت، کچھ غلط ہو گیا۔</translation>
 <translation id="8074253406171541171">10x13 ‎(Envelope‎)‎</translation>
 <translation id="8078141288243656252">گھماتے وقت تشریح نہیں کی جا سکتی</translation>
@@ -1647,7 +1638,6 @@
 <translation id="9080712759204168376">آرڈر کا خلاصہ</translation>
 <translation id="9089260154716455634">بند اوقات سے متعلق پالیسی:</translation>
 <translation id="9095388113577226029">مزید زبانیں...</translation>
-<translation id="9098981495403789647">‏آپ کے منتظم نے آپ کے براؤزر پر Chrome انٹرپرائز تھریٹ پروٹیکشن کو فعال کر دیا ہے۔ Chrome انٹرپرائز تھریٹ پروٹیکشن کو آپ کے کچھ ڈیٹا تک رسائی حاصل ہے۔</translation>
 <translation id="9103872766612412690">‏<ph name="SITE" /> عام طور پر آپ کی معلومات کے تحفظ کیلئے مرموز کاری کا استعمال کرتی ہے۔ اس بار جب Chromium نے <ph name="SITE" /> سے منسلک ہونے کی کوشش کی تو ویب سائٹ
 نے خلاف معمول اور غلط اسناد واپس بھیجے۔ یہ اس وقت ہو سکتا ہے جب کوئی حملہ آور <ph name="SITE" /> بننے کا بھیس بنا رہا ہو یا ایک Wi-Fi سائن ان اسکرین نے کنکشن میں خلل ڈالا ہو۔ آپ کی معلومات اب بھی محفوظ ہے کیونکہ Chromium نے کسی ڈیٹا کا تبادلہ ہونے سے پہلے کنکشن روک دیا۔</translation>
 <translation id="9106062320799175032">بلنگ پتہ شامل کریں</translation>

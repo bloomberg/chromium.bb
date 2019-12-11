@@ -475,7 +475,6 @@
 <translation id="320323717674993345">Төлемнен бас тарту</translation>
 <translation id="3207960819495026254">Бетбелгі қойылған</translation>
 <translation id="3209034400446768650">Бұл бет ақылы болуы мүмкін</translation>
-<translation id="3209080785413271048">Сақталған төлеу әдістерін растау үшін Windows Hello функциясын пайдаланыңыз.</translation>
 <translation id="3212581601480735796"><ph name="HOSTNAME" /> хостында әрекетіңіз бақыланады</translation>
 <translation id="3215092763954878852">WebAuthn қолдану мүмкін болмады</translation>
 <translation id="3225919329040284222">Сервер ендірілген параметрлерге сәйкес келмейтін сертификатты ұсынды. Бұл параметрлер сізді қорғау үшін аса қауіпсіз белгілі бір веб-сайттар үшін қамтылған.</translation>
@@ -489,7 +488,6 @@
 <translation id="3262069459091978471"><ph name="LOOKALIKE_DOMAIN" /> домені <ph name="SUGGESTED_DOMAIN" /> атауына ұқсас. Шабуылдаушылар ұқсас URL мекенжайларын пайдаланып, сайттардың атауын аздап өзгертіп қояды.</translation>
 <translation id="3270847123878663523">&amp;Қайта тәртіпке келтіруді болдырмау</translation>
 <translation id="3274521967729236597">Pa-Kai</translation>
-<translation id="3281668902344226640">Сақталған төлеу әдістерін растау үшін Touch ID пайдаланыңыз.</translation>
 <translation id="3282497668470633863">Картада көрсетілген атты енгізу</translation>
 <translation id="3287510313208355388">Онлайн болған кезде жүктеп алу</translation>
 <translation id="3293642807462928945"><ph name="POLICY_NAME" /> саясаты туралы қосымша ақпарат</translation>
@@ -630,7 +628,6 @@
 <translation id="3964661563329879394">{COUNT,plural, =0{Жоқ}=1{1 сайттан }other{# сайттан }}</translation>
 <translation id="397105322502079400">Есептелуде…</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> бөгелген</translation>
-<translation id="3981540111851280311"><ph name="ENROLLMENT_DOMAIN" /> браузеріңіздегі "Chrome Enterprise қауіптен қорғау" функциясын қосты. "Chrome Enterprise қауіптен қорғау" функциясы кейбір деректеріңізді пайдалануы мүмкін.</translation>
 <translation id="3987405730340719549">Chrome бұл сайттың жалған немесе алаяқтық болуы мүмкін екенін анықтады.
 
     Бұл хабар қателікпен көрсетілді деп ойласаңыз, мына бетке өтіңіз: https://bugs.chromium.org/p/chromium/issues/entry?template=Safety+Tips+Appeals.</translation>
@@ -695,7 +692,6 @@
 <translation id="4226937834893929579"><ph name="BEGIN_LINK" />Network Diagnostics құралын пайдаланып көріңіз<ph name="END_LINK" />.</translation>
 <translation id="4234495348042597185"><ph name="BEGIN_LINK" /><ph name="SITE" /> сайтына өту<ph name="END_LINK" /></translation>
 <translation id="4235360514405112390">Жарамды</translation>
-<translation id="4248776159690739358">Chrome Enterprise қауіптен қорғау функциясы анықтаған қауіпсіздік мәселелері туралы деректерді әкімшіңізге жіберіңіз. Мұндай деректерге сіз кіретін беттердің URL мекенжайлары, файл атаулары немесе метадеректер, құрылғыға және Chrome браузеріне кіруге пайдаланылатын пайдаланушы аты жатуы мүмкін.</translation>
 <translation id="4250431568374086873">Бұл сайтпен байланысыңыз толықтай қауіпсіз емес</translation>
 <translation id="4250680216510889253">Жоқ</translation>
 <translation id="425582637250725228">Енгізілген өзгертулер сақталмауы мүмкін.</translation>
@@ -730,7 +726,6 @@
 <translation id="4372948949327679948"><ph name="VALUE_TYPE" /> мәні қажет.</translation>
 <translation id="4377125064752653719"><ph name="DOMAIN" /> доменіне қол жеткізуге әрекет еттіңіз, бірақ сервер ұсынған сертификатты оны шығарған орган қайтарып алды. Бұл сервер ұсынған қауіпсіздік деректеріне сенуге болмайтынын білдіреді. Қаскүнеммен байланысып жатқан болуыңыз мүмкін.</translation>
 <translation id="4378154925671717803">Телефон</translation>
-<translation id="4398334096870680409">Бұл мүмкіндік құрылғыда жоқ.</translation>
 <translation id="4406896451731180161">іздеу нәтижелері</translation>
 <translation id="4408413947728134509">Cookie файлдары: <ph name="NUM_COOKIES" /></translation>
 <translation id="4415426530740016218">Алып кету мекенжайы</translation>
@@ -1194,7 +1189,6 @@
 <translation id="6685834062052613830">Жүйеден шығып, орнатуды аяқтаңыз</translation>
 <translation id="6689271823431384964">Сіз есептік жазбаға кіргендіктен, Chrome браузері карталарыңызды Google есептік жазбасына сақтауды ұсынып отыр. Мұны "Параметрлер" бөлімінен өзгертуіңізге болады. Карта иесінің аты-жөнін есептік жазбаңыздан алынады.</translation>
 <translation id="6704582573942289642">Бұл дұрыс сайт па?</translation>
-<translation id="6707256370811247129">Chrome браузерінде жүктеп алатын және жүктеп салатын кэш пен файлдардың мазмұнын сканерлеңіз.</translation>
 <translation id="6710213216561001401">Алдыңғы</translation>
 <translation id="6710594484020273272">&lt;Іздеу терминін теру&gt;</translation>
 <translation id="671076103358959139">Тіркеу таңбалауышы:</translation>
@@ -1340,7 +1334,6 @@
 <translation id="7460618730930299168">Таңдағаныңыздан басқаша көрсетіледі. Жалғастырасыз ба?</translation>
 <translation id="7473891865547856676">Жоқ, рақмет</translation>
 <translation id="7481312909269577407">Басқаға жіберу</translation>
-<translation id="748406663033922918">Сақталған төлеу әдістерін растау үшін экран құлпын пайдаланыңыз.</translation>
 <translation id="7485870689360869515">Деректер табылмады.</translation>
 <translation id="7495290002932347110">Сіз пайдаланатын сайттағы немесе қолданбадағы деректер қолды болды. Chrome браузері сақталған құпия сөздеріңізді тексеруді және <ph name="ORIGIN" /> сайтындағы құпия сөзді дереу өзгертуді ұсынады.</translation>
 <translation id="7498234416455752244">Әрі қарай өзгерту</translation>
@@ -1374,7 +1367,6 @@
 <translation id="7610193165460212391">Мән <ph name="VALUE" /> ауқымынан тыс.</translation>
 <translation id="7613889955535752492">Мерзімі бітеді: <ph name="EXPIRATION_MONTH" /> / <ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">Google есептік жазба құпия сөзінің басқа нұсқасын пайдалану арқылы шифрланған дерек сізде бұрыннан бар. Оны осы жерге енгізіңіз.</translation>
-<translation id="7625784245512586808">Chrome Enterprise қауіптен қорғау</translation>
 <translation id="7633909222644580952">Жұмыс өнімділігі туралы дерек және жаңылыс туралы есеп</translation>
 <translation id="7637571805876720304">Несие картасын Chromium жүйесінен алып тастау керек пе?</translation>
 <translation id="7638605456503525968">Сериялық порттар</translation>
@@ -1462,7 +1454,6 @@
 <translation id="8041940743680923270">Ғаламдық әдепкі мәнді (Сұрау) пайдалану</translation>
 <translation id="8042918947222776840">Алып кету әдісін таңдау</translation>
 <translation id="8057711352706143257">"<ph name="SOFTWARE_NAME" />" дұрыс конфигурацияланған. Әдетте "<ph name="SOFTWARE_NAME" />" жойылғанда, мәселе шешіледі. <ph name="FURTHER_EXPLANATION" /></translation>
-<translation id="8062224330780487419">Енді картаның қауіпсіздік кодын енгізудің қажеті жоқ.</translation>
 <translation id="8066955247577885446">Кешіріңіз, бірдеңе дұрыс болмады.</translation>
 <translation id="8074253406171541171">10x13 (Envelope)</translation>
 <translation id="8078141288243656252">Құжат бұрылып тұрғанда, аннотация қосу мүмкін емес.</translation>
@@ -1654,7 +1645,6 @@
 <translation id="9080712759204168376">Тапсырыстың жиынтық мәліметтері</translation>
 <translation id="9089260154716455634">Жұмыс істемейтін уақыт туралы саясат:</translation>
 <translation id="9095388113577226029">Басқа тілдер…</translation>
-<translation id="9098981495403789647">Әкімшіңіз браузеріңіздегі "Chrome Enterprise қауіптен қорғау" функциясын іске қосты. "Chrome Enterprise қауіптен қорғау" функциясы кейбір деректеріңізді пайдалануы мүмкін.</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> әдетте ақпаратыңызды қорғау үшін шифрлауды қолданады. Осы жолы Chromium <ph name="SITE" /> сайтына қосылуға әрекет еткенде, веб-сайт әдеттен тыс және қате тіркелгі деректерін жіберді. Бұл жағдай қаскүнем <ph name="SITE" /> болып көрінгісі келгенде немесе Wi-Fi кіру экраны байланысқа кедергі болғанда пайда болуы мүмкін. Ақпаратыңыз қауіпсіз күйде, себебі Chromium ешқандай дерек алмасу болмай тұрып байланысты үзді.</translation>
 <translation id="9106062320799175032">Төлем мекенжайын қосу</translation>
 <translation id="9114524666733003316">Карта расталуда...</translation>

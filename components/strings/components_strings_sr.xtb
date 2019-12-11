@@ -476,7 +476,6 @@
 <translation id="320323717674993345">Откажи плаћање</translation>
 <translation id="3207960819495026254">Обележено</translation>
 <translation id="3209034400446768650">Страница може да наплаћује</translation>
-<translation id="3209080785413271048">Користите Windows Hello за верификовање сачуваних начина плаћања.</translation>
 <translation id="3212581601480735796">Ваше активности на <ph name="HOSTNAME" /> се прате</translation>
 <translation id="3215092763954878852">Коришћење веб-стандарда WebAuthn није успело</translation>
 <translation id="3225919329040284222">Сервер је приказао сертификат који се не подудара са уграђеним очекивањима. Та очекивања су обухваћена за одређене веб-сајтове са јаким безбедносним мерама како би вас заштитила.</translation>
@@ -490,7 +489,6 @@
 <translation id="3262069459091978471"><ph name="LOOKALIKE_DOMAIN" /> изгледа слично као <ph name="SUGGESTED_DOMAIN" />. Нападачи понекад имитирају сајтове тако што користе сличне URL-ове.</translation>
 <translation id="3270847123878663523">&amp;Опозови промену редоследа</translation>
 <translation id="3274521967729236597">Pa-Kai</translation>
-<translation id="3281668902344226640">Користите Touch ID за верификовање сачуваних начина плаћања.</translation>
 <translation id="3282497668470633863">Додајте име на картици</translation>
 <translation id="3287510313208355388">Преузми када сам онлајн</translation>
 <translation id="3293642807462928945">Сазнајте више о смерницама <ph name="POLICY_NAME" /></translation>
@@ -631,7 +629,6 @@
 <translation id="3964661563329879394">{COUNT,plural, =0{None}=1{Са 1 сајта }one{Са # сајта }few{Са # сајта }other{Са # сајтова }}</translation>
 <translation id="397105322502079400">Израчунавање...</translation>
 <translation id="3973234410852337861">Хост <ph name="HOST_NAME" /> је блокиран</translation>
-<translation id="3981540111851280311"><ph name="ENROLLMENT_DOMAIN" /> је у прегледачу омогућио Chrome заштиту од претњи за предузећа. Chrome заштита од претњи за предузећа има приступ неким вашим подацима.</translation>
 <translation id="3987405730340719549">Chrome је утврдио да је овај сајт можда лажан или служи за превару.
 
     Ако мислите да се ово приказује грешком, посетите https://bugs.chromium.org/p/chromium/issues/entry?template=Safety+Tips+Appeals.</translation>
@@ -696,7 +693,6 @@
 <translation id="4226937834893929579"><ph name="BEGIN_LINK" />Покушајте да покренете дијагностику мреже<ph name="END_LINK" />.</translation>
 <translation id="4234495348042597185"><ph name="BEGIN_LINK" />Наставите на <ph name="SITE" /><ph name="END_LINK" /></translation>
 <translation id="4235360514405112390">Важећи</translation>
-<translation id="4248776159690739358">Делите са администатором податке о безбедносним догађајима које је пријавила Chrome заштита од претњи за предузећа. То може да обухвата URL-ове страница које посећујете, називе или метаподатке датотека и корисничко име помоћу ког се пријављујете на уређај и у Chrome.</translation>
 <translation id="4250431568374086873">Веза са овим сајтом није потпуно безбедна</translation>
 <translation id="4250680216510889253">Не</translation>
 <translation id="425582637250725228">Промене које сте унели можда неће бити сачуване.</translation>
@@ -731,7 +727,6 @@
 <translation id="4372948949327679948">Очекивана вредност je <ph name="VALUE_TYPE" />.</translation>
 <translation id="4377125064752653719">Покушали сте да контактирате <ph name="DOMAIN" />, али је издавач опозвао сертификат који је сервер навео. То значи да никако не треба имати поверења у безбедносне акредитиве које је сервер навео. Могуће је да комуницирате са нападачем.</translation>
 <translation id="4378154925671717803">Телефон</translation>
-<translation id="4398334096870680409">Ова функција није доступна на уређају.</translation>
 <translation id="4406896451731180161">резултати претраге</translation>
 <translation id="4408413947728134509">Колачићи (<ph name="NUM_COOKIES" />)</translation>
 <translation id="4415426530740016218">Адреса преузимања</translation>
@@ -1194,7 +1189,6 @@
 <translation id="6685834062052613830">Одјавите се и довршите подешавање</translation>
 <translation id="6689271823431384964">Chrome вам нуди чување картица на Google налогу зато што сте пријављени. То можете да промените у подешавањима. Име власника картице смо узели са налога.</translation>
 <translation id="6704582573942289642">Да ли је ово тачан сајт?</translation>
-<translation id="6707256370811247129">Скенирајте садржај кеша и датотека које преузимате или отпремате у Chrome-у.</translation>
 <translation id="6710213216561001401">Претходно</translation>
 <translation id="6710594484020273272">&lt;Унесите термин за претрагу&gt;</translation>
 <translation id="671076103358959139">Токен за регистрацију:</translation>
@@ -1340,7 +1334,6 @@
 <translation id="7460618730930299168">Приказ се разликује од онога што сте изабрали. Желите ли да наставите?</translation>
 <translation id="7473891865547856676">Не, хвала</translation>
 <translation id="7481312909269577407">Проследи</translation>
-<translation id="748406663033922918">Користите закључавање екрана за верификовање сачуваних начина плаћања.</translation>
 <translation id="7485870689360869515">Нису пронађени подаци.</translation>
 <translation id="7495290002932347110">Ваша лозинка је откривена при упаду у податке на сајту или у апликацији. Chrome препоручује да проверите сачуване лозинке и да одмах промените лозинку на <ph name="ORIGIN" />.</translation>
 <translation id="7498234416455752244">Наставите са изменама</translation>
@@ -1374,7 +1367,6 @@
 <translation id="7610193165460212391">Вредност је изван опсега <ph name="VALUE" />.</translation>
 <translation id="7613889955535752492">Истиче: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">Већ имате податке који су шифровани помоћу друге верзије лозинке за Google налог. Унесите је у наставку.</translation>
-<translation id="7625784245512586808">Chrome заштита од претњи за предузећа</translation>
 <translation id="7633909222644580952">Подаци о учинку и извештаји о отказивању</translation>
 <translation id="7637571805876720304">Желите ли да уклоните кредитну картицу из Chromium-а?</translation>
 <translation id="7638605456503525968">Серијски портови</translation>
@@ -1462,7 +1454,6 @@
 <translation id="8041940743680923270">Користи глобалну подразумевану вредност (Питај)</translation>
 <translation id="8042918947222776840">Одаберите начин преузимања</translation>
 <translation id="8057711352706143257">Софтвер „<ph name="SOFTWARE_NAME" />“ није правилно конфигурисан. Деинсталирање софтвера „<ph name="SOFTWARE_NAME" />“ обично решава проблем. <ph name="FURTHER_EXPLANATION" /></translation>
-<translation id="8062224330780487419">Од сада нећете морати да уносите безбедносни кôд картице</translation>
 <translation id="8066955247577885446">Жао нам је, дошло је до грешке.</translation>
 <translation id="8074253406171541171">10x13 (коверат)</translation>
 <translation id="8078141288243656252">Додавање напомене није могуће када је ротиран</translation>
@@ -1655,7 +1646,6 @@
 <translation id="9080712759204168376">Резиме поруџбине</translation>
 <translation id="9089260154716455634">Смернице са временским распоредом:</translation>
 <translation id="9095388113577226029">Још језика...</translation>
-<translation id="9098981495403789647">Администратор је у прегледачу омогућио Chrome заштиту од претњи за предузећа. Chrome заштита од претњи за предузећа има приступ неким вашим подацима.</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> обично користи шифровање да би заштитио информације. Када је Chromium овог пута покушао да се повеже са <ph name="SITE" />, веб-сајт је вратио необичне и нетачне акредитиве. Или нападач покушава да се представи као <ph name="SITE" /> или је екран за Wi-Fi пријављивање прекинуо везу. Информације су и даље безбедне зато што је Chromium прекинуо везу пре него што су размењени било какви подаци.</translation>
 <translation id="9106062320799175032">Додајте адресу за обрачун</translation>
 <translation id="9114524666733003316">Картица се потврђује...</translation>

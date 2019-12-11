@@ -474,7 +474,6 @@
 <translation id="320323717674993345">Cancelar pago</translation>
 <translation id="3207960819495026254">Engadida a marcadores</translation>
 <translation id="3209034400446768650">Nesta páxina pódense aplicar cargos</translation>
-<translation id="3209080785413271048">Utiliza Windows Hello para verificar os teus métodos de pago gardados.</translation>
 <translation id="3212581601480735796">Estase supervisando a túa actividade en <ph name="HOSTNAME" /></translation>
 <translation id="3215092763954878852">Non se puido utilizar WebAuthn</translation>
 <translation id="3225919329040284222">O servidor presentou un certificado que non coincide coas expectativas integradas. Estas expectativas inclúense para determinados sitios web de alta seguranza co fin de protexerte.</translation>
@@ -488,7 +487,6 @@
 <translation id="3262069459091978471"><ph name="LOOKALIKE_DOMAIN" /> é similar a <ph name="SUGGESTED_DOMAIN" />. Ás veces, os atacantes crean copias de sitios utilizando URL similares.</translation>
 <translation id="3270847123878663523">&amp;Desfacer de cambio de orde</translation>
 <translation id="3274521967729236597">Pa-Kai</translation>
-<translation id="3281668902344226640">Utiliza Touch ID para verificar os teus métodos de pago gardados.</translation>
 <translation id="3282497668470633863">Engadir o nome que aparece na tarxeta</translation>
 <translation id="3287510313208355388">Descargar a páxina cando estea en liña</translation>
 <translation id="3293642807462928945">Máis información acerca da política de <ph name="POLICY_NAME" /></translation>
@@ -629,7 +627,6 @@
 <translation id="3964661563329879394">{COUNT,plural, =0{Ningún}=1{De 1 sitio }other{De # sitios }}</translation>
 <translation id="397105322502079400">Calculando...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> está bloqueado</translation>
-<translation id="3981540111851280311"><ph name="ENROLLMENT_DOMAIN" /> activou no teu navegador a Protección de Chrome contra ameazas para empresas. Esta función ten acceso a algúns dos teus datos.</translation>
 <translation id="3987405730340719549">Chrome determinou que este sitio podería ser falso ou fraudulento.
 
     Se cres que se trata dun erro, visita https://bugs.chromium.org/p/chromium/issues/entry?template=Safety+Tips+Appeals.</translation>
@@ -694,7 +691,6 @@
 <translation id="4226937834893929579"><ph name="BEGIN_LINK" />Proba a executar diagnósticos da rede<ph name="END_LINK" />.</translation>
 <translation id="4234495348042597185"><ph name="BEGIN_LINK" />Ir a <ph name="SITE" /><ph name="END_LINK" /></translation>
 <translation id="4235360514405112390">Válido</translation>
-<translation id="4248776159690739358">Comparte co teu administrador datos sobre os eventos de seguranza detectados pola Protección de Chrome contra ameazas para empresas. Pódense incluír URL de páxinas que visitas, nomes de ficheiros ou metadatos e o nome de usuario que utilizas para iniciar sesión no teu dispositivo e en Chrome.</translation>
 <translation id="4250431568374086873">A túa conexión a este sitio non é completamente segura</translation>
 <translation id="4250680216510889253">Non</translation>
 <translation id="425582637250725228">É posible que non se gardasen os cambios que fixeches.</translation>
@@ -729,7 +725,6 @@
 <translation id="4372948949327679948">Valor <ph name="VALUE_TYPE" /> esperado.</translation>
 <translation id="4377125064752653719">Tentaches acceder a <ph name="DOMAIN" />, pero este emisor revogou o certificado presentado polo servidor. Isto significa que as credenciais de seguranza presentadas polo servidor non son de confianza. É posible que te esteas comunicando cun hacker.</translation>
 <translation id="4378154925671717803">Teléfono</translation>
-<translation id="4398334096870680409">Esta función non está dispoñible no teu dispositivo.</translation>
 <translation id="4406896451731180161">Resultados da busca</translation>
 <translation id="4408413947728134509">Cookies: <ph name="NUM_COOKIES" /></translation>
 <translation id="4415426530740016218">Enderezo de recollida</translation>
@@ -1193,7 +1188,6 @@
 <translation id="6685834062052613830">Pecha sesión e finaliza o proceso de configuración</translation>
 <translation id="6689271823431384964">Chrome permíteche gardar as túas tarxetas na túa Conta de Google porque tes a sesión iniciada. Podes cambiar esta opción na configuración cando queiras. O nome do titular da tarxeta procede da túa conta.</translation>
 <translation id="6704582573942289642">Este sitio é correcto?</translation>
-<translation id="6707256370811247129">Analiza os contidos da memoria caché e os ficheiros que descargas ou cargas en Chrome.</translation>
 <translation id="6710213216561001401">Anterior</translation>
 <translation id="6710594484020273272">&lt;Escribe un termo de busca&gt;</translation>
 <translation id="671076103358959139">Token de inscrición:</translation>
@@ -1339,7 +1333,6 @@ Detalles adicionais:
 <translation id="7460618730930299168">O filtro é distinto do que seleccionaches. Queres continuar?</translation>
 <translation id="7473891865547856676">Non, grazas</translation>
 <translation id="7481312909269577407">Adiante</translation>
-<translation id="748406663033922918">Utiliza o bloqueo de pantalla para verificar os teus métodos de pago gardados.</translation>
 <translation id="7485870689360869515">Non se atoparon datos.</translation>
 <translation id="7495290002932347110">O teu contrasinal está en risco debido a unha violación da seguranza dos datos dun sitio ou aplicación. Chrome recoméndache que comprobes os teus contrasinais gardados e que cambies o de <ph name="ORIGIN" /> agora.</translation>
 <translation id="7498234416455752244">Seguir editando</translation>
@@ -1373,7 +1366,6 @@ Detalles adicionais:
 <translation id="7610193165460212391">O valor está fóra do rango de <ph name="VALUE" />.</translation>
 <translation id="7613889955535752492">Caducidade: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">Anteriormente, utilizaches outra versión do contrasinal da túa conta de Google para o cifrado de datos. Introdúcea a continuación.</translation>
-<translation id="7625784245512586808">Protección de Chrome contra ameazas para empresas</translation>
 <translation id="7633909222644580952">Datos de rendemento e informes de fallos</translation>
 <translation id="7637571805876720304">Queres eliminar a túa tarxeta de crédito de Chromium?</translation>
 <translation id="7638605456503525968">Portos de serie</translation>
@@ -1461,7 +1453,6 @@ Detalles adicionais:
 <translation id="8041940743680923270">Usar configuración predeterminada global (Preguntar)</translation>
 <translation id="8042918947222776840">Escoller método de recollida</translation>
 <translation id="8057711352706143257"><ph name="SOFTWARE_NAME" /> non está configurado correctamente. Ao desinstalar <ph name="SOFTWARE_NAME" /> adoita solucionarse o problema. <ph name="FURTHER_EXPLANATION" /></translation>
-<translation id="8062224330780487419">Non terás que introducir o código de seguranza da tarxeta de agora en adiante</translation>
 <translation id="8066955247577885446">Produciuse un erro.</translation>
 <translation id="8074253406171541171">10x13 (sobre)</translation>
 <translation id="8078141288243656252">Non se poden realizar anotacións ao xirar o documento</translation>
@@ -1653,7 +1644,6 @@ Detalles adicionais:
 <translation id="9080712759204168376">Resumo do pedido</translation>
 <translation id="9089260154716455634">Política fóra do horario:</translation>
 <translation id="9095388113577226029">Máis idiomas…</translation>
-<translation id="9098981495403789647">O teu administrador activou no teu navegador a Protección de Chrome contra ameazas para empresas. Esta función ten acceso a algúns dos teus datos.</translation>
 <translation id="9103872766612412690">Normalmente, <ph name="SITE" /> encripta a túa información para protexela. Nesta ocasión, cando Chromium tentou conectar con <ph name="SITE" />, o sitio web devolveu credenciais estrañas e incorrectas. É posible que un atacante tentase facerse pasar por <ph name="SITE" /> ou que a pantalla de inicio de sesión de wifi interrompese a conexión. Non obstante, a túa información segue a salvo porque Chromium detivo a conexión antes de intercambiar datos.</translation>
 <translation id="9106062320799175032">Engade un enderezo de facturación</translation>
 <translation id="9114524666733003316">Confirmando tarxeta…</translation>

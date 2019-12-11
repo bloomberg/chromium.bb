@@ -2648,7 +2648,7 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4804756772600045300">Hvis du fortsætter, aktiveres ADB-fejlretning til oprettelse og test af Android-apps. Bemærk! ADB-fejlretning giver mulighed for at installere testapps, der ikke er blevet bekræftet af Google.</translation>
 <translation id="4804818685124855865">Afbryd</translation>
 <translation id="4804827417948292437">Avocado</translation>
-<translation id="4805077164141082536">Vii anbefaler, at du sikkerhedskopierer din aktuelle Linux-container, før du opgraderer.</translation>
+<translation id="4805077164141082536">Vi anbefaler, at du sikkerhedskopierer din aktuelle Linux-container, før du opgraderer.</translation>
 <translation id="4807098396393229769">Navn på kort</translation>
 <translation id="4808319664292298116">Vil du starte VR fra <ph name="DOMAIN" />?</translation>
 <translation id="4808667324955055115">Pop op-vinduer er blokeret:</translation>

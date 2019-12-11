@@ -208,7 +208,7 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 <translation id="1291880496936992484">경고: 버전 52(2016년 9월경)부터 <ph name="PRODUCT_NAME" />에서 RC4가 완전히 제거되며, 이후 이 정책은 적용되지 않습니다.
 
       이 정책이 설정되지 않았거나 'false'로 설정된 경우 TLS RC4 암호화 기술이 사용되지 않습니다. 그렇지 않으면 정책을 'true'로 설정해 오래된 서버와의 호환성을 유지할 수 있습니다. 이는 임시 조치이며 서버는 다시 구성해야 합니다.</translation>
-<translation id="1294263471858445589">시크릿 모드와 일반 세션에서 앰비언트 인증을 사용 설정합니다.</translation>
+<translation id="1294263471858445589">시크릿 모드와 일반 세션에서 수동 인증을 사용 설정합니다.</translation>
 <translation id="1295737447968372331">로그인 화면에서 음성기록 사용</translation>
 <translation id="1297182715641689552">.pac 프록시 스크립트 사용</translation>
 <translation id="1297961932043741908">단일 Chrome 인스턴스에서 사용할 수 있는 메모리(메가바이트 단위) 제한을 설정합니다.</translation>
@@ -428,14 +428,14 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 <translation id="166427968280387991">프록시 서버</translation>
 <translation id="1667071842533245879">차단 가능한(능동) 혼합 콘텐츠(HTTPS 사이트의 HTTP 콘텐츠) 표시를 차단하고 선택적으로 차단 가능한(수동) 혼합 콘텐츠를 업그레이드할 사이트를 지정하는 URL 패턴 목록을 설정할 수 있습니다.
 
-          정책을 설정하지 않으면 차단 가능한 혼합 콘텐츠는 차단되고 선택적으로 차단 가능한 혼합 콘텐츠는 업그레이드되지만 사용자는 예외를 설정하여 특정 사이트에서 콘텐츠를 허용할 수 있습니다.</translation>
+          정책을 설정하지 않으면 차단 가능한 혼합 콘텐츠는 차단되고 선택적으로 차단 가능한 혼합 콘텐츠는 업그레이드되지만 사용자는 예외를 설정하여 특정 사이트에서 혼합 콘텐츠를 허용할 수 있습니다.</translation>
 <translation id="1667877109169174750">이 정책을 true로 설정하면 작업 표시줄 메뉴에 접근성 옵션이 항상 표시됩니다.
 
           정책을 false로 설정하면 작업 표시줄 메뉴에 접근성 옵션이 표시되지 않습니다.
 
           정책이 설정되면 사용자가 변경하거나 재정의할 수 없습니다.
 
-          정책을 설정하지 않으면 작업 표시줄 메뉴에 접근성 옵션이 표시되지 않지만 사용자가 설정 페이지에서 접근성 옵션이 표시되도록 설정할 수 있습니다.
+          정책을 설정하지 않으면 작업 표시줄 메뉴에 접근성 옵션이 표시되지 않지만, 사용자가 설정 페이지에서 접근성 옵션이 표시되도록 설정할 수 있습니다.
 
           다른 방법으로 접근성 기능이 사용 설정되면(예: 키 조합을 눌러 사용 설정) 접근성 옵션이 작업 표시줄 메뉴에 항상 표시됩니다.</translation>
 <translation id="1668836044817793277">무지연 자동 실행 키오스크 앱에서 <ph name="PRODUCT_OS_NAME" /> 버전을 관리하도록 허용할지 여부입니다.
@@ -1544,7 +1544,7 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
           이 정책을 설정하지 않으면 <ph name="ATTRIBUTE_SAMESITE_NAME" /> 속성을 지정하지 않은 쿠키의 기본 <ph name="ATTRIBUTE_SAMESITE_NAME" /> 동작이 <ph name="FEATURE_NAME_SAMESITE_BY_DEFAULT_COOKIES" /> 기능에 관한 사용자의 개인 설정에 따라 달라지며, 이러한 설정은 필드 평가판에서 설정하거나 플래그 <ph name="FLAG_NAME_SAMESITE_BY_DEFAULT_COOKIES" /> 플래그를 사용 또는 사용 중지하여 설정할 수 있습니다.</translation>
 <translation id="3304662785258434098">사용자가 특정 사이트에 혼합 콘텐츠를 허용하는 예외를 추가할 수 있도록 할지 결정합니다.
 
-          'InsecureContentAllowedForUrls' 정책 및 'InsecureContentBlockedForUrls' 정책을 사용하는 특정 URL 패턴은 이 정책보다 우선 적용됩니다.
+          'InsecureContentAllowedForUrls' 정책 및 'InsecureContentBlockedForUrls' 정책을 사용하는 특정 URL 패턴의 경우, 이 정책을 재정의할 수 있습니다.
 
           정책이 설정되어 있지 않으면 사용자는 차단 가능한 혼합 콘텐츠를 허용하는 예외를 추가하고 선택적으로 차단 가능한 혼합 콘텐츠의 자동 업그레이드를 사용 중지할 수 있습니다.</translation>
 <translation id="3307971460556020865">대용량 파일 업로드 및 다운로드 차단</translation>
@@ -1981,7 +1981,7 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 
       이 정책이 'true'로 설정된 경우 모니터링 네트워크 패킷(소위 <ph name="HEARTBEATS_TERM" />)이 전송되며
       'false'로 설정되거나 설정되지 않으면 패킷이 전송되지 않습니다.</translation>
-<translation id="3950110092991281616">일반 세션에서만 앰비언트 인증을 사용 설정합니다.</translation>
+<translation id="3950110092991281616">일반 세션에서만 수동 인증을 사용 설정합니다.</translation>
 <translation id="3950239119790560549">시간제한 업데이트</translation>
 <translation id="3956686688560604829">이전 브라우저 지원에 Internet Explorer의 SiteList 정책을 사용합니다.</translation>
 <translation id="3958586912393694012">Smart Lock 사용 허용</translation>
@@ -2317,7 +2317,7 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 <translation id="4449545651113180484">화면을 시계 방향으로 270도 회전</translation>
 <translation id="445270821089253489">보고되는 사용자 및 기기 정보 유형을 제어합니다.</translation>
 <translation id="4453913621209182880">배경 그래픽을 포함한 경우에만 인쇄 허용</translation>
-<translation id="4454586530530448054">정책이 설정되면 지정된 모든 데이터 유형이 Google 동기화와 로밍 프로필 동기화 모두에서 제외됩니다. 이렇게 하면 로밍 프로필의 크기를 줄이고 Google 동기화 서버에 업로드되는 데이터의 유형을 제한하는 데 도움이 될 수 있습니다.
+<translation id="4454586530530448054">정책이 설정되면 지정된 모든 데이터 유형이 Google 동기화와 로밍 프로필 동기화 모두에서 제외됩니다. 이렇게 하면 로밍 프로필의 크기를 줄이거나 Google 동기화 서버에 업로드되는 데이터의 유형을 제한하는 데 도움이 될 수 있습니다.
 
       이 정책의 현재 데이터 유형은 'bookmarks', 'preferences', 'passwords', 'autofill', 'themes', 'typedUrls', 'extensions', 'apps', 'tabs', 'wifiConfiguration'입니다. 이름은 대소문자를 구분합니다.</translation>
 <translation id="4454820008017317557"><ph name="PRODUCT_NAME" /> 툴바 아이콘 표시</translation>
@@ -2813,7 +2813,7 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 
       Chrome의 기본 리퍼러 정책은 M80 공개 버전을 대상으로 하는 점진적 출시를 통해 현재 값인 no-referrer-when-downgrade에서 더욱 안전한 strict-origin-when-cross-origin으로 강화되는 중입니다.
 
-      출시 전에는 이 기업 정책이 적용되지 않습니다. 출시 후 이 기업 정책을 사용 설정하면 Chrome의 기본 리퍼러 정책이 M80 이전 값인 no-referrer-when-downgrade로 설정됩니다.
+      출시 전에는 이 기업 정책이 적용되지 않습니다. 출시 후 기업 정책을 사용 설정하면 Chrome의 기본 리퍼러 정책이 M80 이전 값인 no-referrer-when-downgrade로 설정됩니다.
 
       이 기업 정책은 기본적으로 사용 중지되어 있습니다.</translation>
 <translation id="5283457834853986457">플러그인 Finder 사용 중지(지원 중단됨)</translation>
@@ -3623,13 +3623,13 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 <translation id="6652197835259177259">로컬 관리 사용자 설정</translation>
 <translation id="6658245400435704251">업데이트를 처음 서버로 푸시한 시점부터 기기가 몇 초까지 임의로 업데이트의 다운로드를 지연시킬 수 있는지 지정합니다. 기기가 이 시간의 일부를 일반 시계 시간 기준으로, 그리고 나머지 시간을 업데이트 확인 횟수 기준으로 지연시킵니다. 모든 경우, 기기가 고착되어 업데이트 다운로드를 계속 기다리지 않도록 분산의 상한이 일정 시간으로 제한되어 있습니다.</translation>
 <translation id="6665670272107384733">빠른 잠금 해제를 사용하기 위해 사용자가 비밀번호를 얼마나 자주 입력해야 하는지 설정</translation>
-<translation id="6672630473862787247">일반, 시크릿 모드, 게스트 세션에서 앰비언트 인증을 사용 설정합니다.</translation>
+<translation id="6672630473862787247">일반, 시크릿 모드, 게스트 세션에서 수동 인증을 사용 설정합니다.</translation>
 <translation id="6681229465468164801">사용자에게 USB 기기 액세스 권한 허용을 요청하지 못하도록 차단된 사이트를 지정하는 URL 패턴 목록을 설정하도록 허용합니다.
 
           이 정책을 설정하지 않으면 'DefaultWebUsbGuardSetting' 정책(설정된 경우) 또는 사용자 개인 설정의 전체 기본값이 모든 사이트에 사용됩니다.
 
           이 정책의 URL 패턴은 WebUsbAskForUrls를 통해 구성된 패턴과 충돌해서는 안 됩니다. URL이 두 정책과 모두 일치할 때 어떤 정책이 우선 적용되는지 지정되어 있지 않습니다.</translation>
-<translation id="6685903773201985073">게스트 세션과 일반 세션에서 앰비언트 인증을 사용 설정합니다.</translation>
+<translation id="6685903773201985073">게스트 세션과 일반 세션에서 수동 인증을 사용 설정합니다.</translation>
 <translation id="6689792153960219308">하드웨어 상태 보고</translation>
 <translation id="6698632841807204978">단색 인쇄 사용 설정</translation>
 <translation id="6699880231565102694">원격 액세스 호스트를 위한 2단계 인증 사용</translation>
@@ -4256,21 +4256,21 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
       이 정책은 연결되지 않은 사용자에게만 영향을 미칩니다.
       </translation>
 <translation id="7683777542468165012">동적 정책 새로고침</translation>
-<translation id="7684516445147212248">이 정책을 설정하면 <ph name="PRODUCT_NAME" />의 시크릿 모드와 게스트 프로필에서 앰비언트 인증을 허용/금지할 수 있습니다.
+<translation id="7684516445147212248">이 정책을 설정하면 <ph name="PRODUCT_NAME" />의 시크릿 모드와 게스트 프로필에서 수동 인증을 허용/금지할 수 있습니다.
 
-      앰비언트 인증은 명시적인 사용자 인증 정보가 자격 확인/응답 유형의 NTLM/Kerberos/Negotiate 스키마를 통해 제공되지 않는 경우 기본 사용자 인증 정보를 사용하는 HTTP 인증입니다.
+      수동 인증은 명시적인 사용자 인증 정보가 자격 확인/응답 유형의 NTLM/Kerberos/Negotiate 방식을 통해 제공되지 않는 경우 기본 사용자 인증 정보를 사용하는 HTTP 인증입니다.
 
-      <ph name="REGULAR_ONLY_OPTION_NAME" />(값 0)를 설정하면 일반 세션에만 앰비언트 인증을 사용할 수 있습니다. 시크릿 모드와 게스트 세션에서는 앰비언트 인증을 사용할 수 없습니다.
+      <ph name="REGULAR_ONLY_OPTION_NAME" />(값 0)를 설정하면 일반 세션에만 수동 인증을 사용할 수 있습니다. 시크릿 모드와 게스트 세션에서는 수동 인증을 사용할 수 없습니다.
 
-      <ph name="INCOGNITO_AND_REGULAR_OPTION_NAME" />(값 1)를 설정하면 시크릿 모드와 일반 세션에서 앰비언트 인증을 사용할 수 있습니다 게스트 세션에서는 앰비언트 인증을 사용할 수 없습니다.
+      <ph name="INCOGNITO_AND_REGULAR_OPTION_NAME" />(값 1)를 설정하면 시크릿 모드와 일반 세션에서 수동 인증을 사용할 수 있습니다 게스트 세션에서는 수동 인증을 사용할 수 없습니다.
 
-      <ph name="GUEST_AND_REGULAR_OPTION_NAME" />(값 2)를 설정하면 게스트 세션과 일반 세션에서 앰비언트 인증을 사용할 수 있습니다. 시크릿 모드 세션에서는 앰비언트 인증을 사용할 수 없습니다.
+      <ph name="GUEST_AND_REGULAR_OPTION_NAME" />(값 2)를 설정하면 게스트 세션과 일반 세션에서 수동 인증을 사용할 수 있습니다. 시크릿 모드 세션에서는 수동 인증을 사용할 수 없습니다.
 
-      <ph name="ALL_OPTION_NAME" />(값 3)을 설정하면 모든 세션에서 앰비언트 인증을 사용할 수 있습니다.
+      <ph name="ALL_OPTION_NAME" />(값 3)을 설정하면 모든 세션에서 수동 인증을 사용할 수 있습니다.
 
-      일반 프로필에서는 앰비언트 인증을 항상 사용할 수 있습니다.
+      일반 프로필에서는 수동 인증을 항상 사용할 수 있습니다.
 
-      정책을 설정하지 않으면 향후 <ph name="PRODUCT_NAME" /> 버전에서 허용되지 않으므로 시크릿 모드와 게스트 세션에서 앰비언트 인증을 사용할 수 없게 됩니다.</translation>
+      정책을 설정하지 않으면 향후 <ph name="PRODUCT_NAME" /> 버전에서 허용되지 않으므로 시크릿 모드와 게스트 세션에서 수동 인증을 사용할 수 없게 됩니다.</translation>
 <translation id="7687943045976362719">이 정책이 설정되면 특정 콘텐츠 유형은 <ph name="PRODUCT_FRAME_NAME" />에서 처리됩니다.
 
           이 정책이 설정되지 않으면 모든 사이트에서 기본 렌더기가 사용됩니다. 기본 렌더기 설정 시 <ph name="CHROME_FRAME_RENDERER_SETTINGS_POLICY_NAME" /> 정책이 사용됩니다.</translation>
@@ -4305,7 +4305,7 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
           이 설정을 사용 중지하거나 설정하지 않으면 2단계 인증이 사용되지 않으며 사용자 지정 PIN의 기본 동작이 사용됩니다.</translation>
 <translation id="7750991880413385988">새 탭 페이지 열기</translation>
 <translation id="7754704193130578113">다운로드 전에 각 파일의 저장 위치 확인</translation>
-<translation id="7758378441185523981">프로필 유형에 앰비언트 인증을 사용 설정합니다.</translation>
+<translation id="7758378441185523981">프로필 유형에 수동 인증을 사용 설정합니다.</translation>
 <translation id="7761446981238915769">로그인 화면에서 설치된 앱 목록 구성</translation>
 <translation id="7763614521440615342">새 탭 페이지에 콘텐츠 추천 표시</translation>
 <translation id="7765879851993224640">Smart Lock을 사용하도록 허용합니다.</translation>
@@ -4559,7 +4559,7 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 <translation id="8217516105848565518">이 정책은 지원이 중단되었습니다. RemoteAccessHostDomainList를 사용하세요.</translation>
 <translation id="8236323460664833038">차단 가능한(능동) 혼합 콘텐츠(HTTPS 사이트의 HTTP 콘텐츠) 표시를 허용하고 선택적으로 차단 가능한 혼합 콘텐츠 업그레이드를 사용 중지할 사이트를 지정하는 URL 패턴 목록을 설정할 수 있습니다.
 
-          정책을 설정하지 않으면 차단 가능한 혼합 콘텐츠는 차단되고 선택적으로 차단 가능한 혼합 콘텐츠는 업그레이드되며 사용자는 예외를 설정해 특정 사이트에서 콘텐츠를 허용할 수 있습니다.</translation>
+          정책을 설정하지 않으면 차단 가능한 혼합 콘텐츠는 차단되고 선택적으로 차단 가능한 혼합 콘텐츠는 업그레이드되며 사용자는 예외를 설정해 특정 사이트에서 혼합 콘텐츠를 허용할 수 있습니다.</translation>
 <translation id="8244171102276095471">TLS에서 RC4 암호화 기술을 사용 설정합니다.</translation>
 <translation id="8244525275280476362">정책 무효화 후 최대 가져오기 지연</translation>
 <translation id="8256688113167012935">계정 이름 <ph name="PRODUCT_OS_NAME" />을(를) 해당 기기 로컬 계정의 로그인 화면에 표시할 것인지 제어합니다.

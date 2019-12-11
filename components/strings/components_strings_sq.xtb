@@ -466,7 +466,6 @@
 <translation id="320323717674993345">Anulo pagesën</translation>
 <translation id="3207960819495026254">Regjistruar në faqeshënues</translation>
 <translation id="3209034400446768650">Faqja mund të tarifojë para</translation>
-<translation id="3209080785413271048">Përdor Windows Hello për të verifikuar mënyrat e ruajtura të pagesës.</translation>
 <translation id="3212581601480735796">Aktiviteti yt në <ph name="HOSTNAME" /> po monitorohet</translation>
 <translation id="3215092763954878852">WebAuthn nuk mund të përdorej</translation>
 <translation id="3225919329040284222">Serveri paraqiti një certifikatë që nuk përputhet me pritshmëritë e integruara. Këto pritshmëri përfshihen për uebsajte të caktuara të sigurisë së lartë, me qëllim që të të mbrojnë.</translation>
@@ -480,7 +479,6 @@
 <translation id="3262069459091978471"><ph name="LOOKALIKE_DOMAIN" /> duket i ngjashëm me <ph name="SUGGESTED_DOMAIN" />. Sulmuesit ndonjëherë i imitojnë sajtet duke përdorur URL të ngjashme.</translation>
 <translation id="3270847123878663523">&amp;Zhbëj rirenditjen</translation>
 <translation id="3274521967729236597">Pa-Kai</translation>
-<translation id="3281668902344226640">Përdor Touch ID për të verifikuar mënyrat e ruajtura të pagesës.</translation>
 <translation id="3282497668470633863">Shto emrin në kartë</translation>
 <translation id="3287510313208355388">Shkarko kur të jetë në linjë</translation>
 <translation id="3293642807462928945">Mëso më shumë për politikën <ph name="POLICY_NAME" /></translation>
@@ -616,7 +614,6 @@
 <translation id="3964661563329879394">{COUNT,plural, =0{Asnjë}=1{Nga 1 sajt }other{Nga # sajte }}</translation>
 <translation id="397105322502079400">Po llogarit...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> është bllokuar</translation>
-<translation id="3981540111851280311"><ph name="ENROLLMENT_DOMAIN" /> ka aktivizuar "Mbrojtjen ndaj kërcënimeve" të Chrome Enterprise në shfletuesin tënd. "Mbrojtja ndaj kërcënimeve" e Chrome Enterprise ka qasje te disa nga të dhënat e tua.</translation>
 <translation id="3987405730340719549">Chrome ka përcaktuar se ky sajt mund të jetë i rremë ose mashtrues.
 
     Nëse beson se kjo është shfaqur gabimisht, vizito https://bugs.chromium.org/p/chromium/issues/entry?template=Safety+Tips+Appeals.</translation>
@@ -681,7 +678,6 @@
 <translation id="4226937834893929579"><ph name="BEGIN_LINK" />Provo të ekzekutosh diagnostikimin e rrjetit<ph name="END_LINK" />.</translation>
 <translation id="4234495348042597185"><ph name="BEGIN_LINK" />Vazhdo te <ph name="SITE" /><ph name="END_LINK" /></translation>
 <translation id="4235360514405112390">I vlefshëm</translation>
-<translation id="4248776159690739358">Ndaj me administratorin tënd të dhëna për ngjarjet e sigurisë që janë raportuar nga "Mbrojtja ndaj kërcënimeve" e Chrome Enterprise. Kjo mund të përfshijë URL-të e faqeve që viziton ti, emrat e skedarëve ose të dhënat meta dhe emrin e përdoruesit që përdor për t'u identifikuar në pajisjen tënde dhe në Chrome.</translation>
 <translation id="4250431568374086873">Lidhja jote me këtë sajt nuk është plotësisht e sigurt</translation>
 <translation id="4250680216510889253">Jo</translation>
 <translation id="425582637250725228">Ndryshimet që ke bërë mund të mos ruhen.</translation>
@@ -716,7 +712,6 @@
 <translation id="4372948949327679948">Pritet një vlerë <ph name="VALUE_TYPE" />.</translation>
 <translation id="4377125064752653719">U përpoqe të arrije domenin <ph name="DOMAIN" />, por certifikata që paraqiti serveri është revokuar nga lëshuesi i saj. Kjo do të thotë se kredencialet e sigurisë që paraqiti serveri nuk duhet të besohen në mënyrë absolute. Mund të jesh duke komunikuar me ndonjë sulmues.</translation>
 <translation id="4378154925671717803">Telefoni</translation>
-<translation id="4398334096870680409">Kjo veçori nuk ofrohet në pajisjen tënde.</translation>
 <translation id="4406896451731180161">rezultatet e kërkimit</translation>
 <translation id="4408413947728134509">Kukit <ph name="NUM_COOKIES" /></translation>
 <translation id="4415426530740016218">Adresa e marrjes</translation>
@@ -1178,7 +1173,6 @@
 <translation id="6685834062052613830">Dil dhe përfundo konfigurimin</translation>
 <translation id="6689271823431384964">Chrome po ofron që të ruash kartat e tua në "Llogarinë tënde të Google" sepse je identifikuar. Mund ta ndryshosh këtë sjellje te cilësimet. Emri i mbajtësit të kartës vjen nga llogaria jote.</translation>
 <translation id="6704582573942289642">A është ky sajti i duhur?</translation>
-<translation id="6707256370811247129">Skano përmbajtjet e memories specifike dhe skedarët që shkarkon ose ngarkon në Chrome.</translation>
 <translation id="6710213216561001401">Prapa</translation>
 <translation id="6710594484020273272">&lt;Shkruaj termin e kërkimit&gt;</translation>
 <translation id="671076103358959139">Tokeni i regjistrimit:</translation>
@@ -1324,7 +1318,6 @@ Detaje shtesë:
 <translation id="7460618730930299168">Shfaqja është ndryshe nga ajo që zgjodhe. Dëshiron të vazhdosh?</translation>
 <translation id="7473891865547856676">Jo, faleminderit</translation>
 <translation id="7481312909269577407">Përpara</translation>
-<translation id="748406663033922918">Përdor kyçjen e ekranit për të verifikuar mënyrat e ruajtura të pagesës.</translation>
 <translation id="7485870689360869515">Nuk u gjetën të dhëna.</translation>
 <translation id="7495290002932347110">Një nxjerrje e paautorizuar e të dhënave në një sajt ose aplikacion ka ekspozuar fjalëkalimin tënd. Chrome rekomandon që të kontrollosh fjalëkalimet e tua të ruajtura dhe të ndryshosh fjalëkalimin tënd në <ph name="ORIGIN" /> tani.</translation>
 <translation id="7498234416455752244">Vazhdo redaktimin</translation>
@@ -1358,7 +1351,6 @@ Detaje shtesë:
 <translation id="7610193165460212391">Vlera është jashtë gamës <ph name="VALUE" />.</translation>
 <translation id="7613889955535752492">Data e skadimit: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">Ke tashmë të dhëna që janë të enkriptuara me një version të ndryshëm të fjalëkalimit tënd të Llogarisë Google. Futi ato më poshtë.</translation>
-<translation id="7625784245512586808">"Mbrojtja ndaj kërcënimeve" e Chrome Enterprise</translation>
 <translation id="7633909222644580952">Raportet e të dhënave të cilësisë së funksionimit dhe të ndërprerjeve aksidentale</translation>
 <translation id="7637571805876720304">Të hiqet karta e kreditit nga Chromium?</translation>
 <translation id="7638605456503525968">Portat seriale</translation>
@@ -1446,7 +1438,6 @@ Detaje shtesë:
 <translation id="8041940743680923270">Përdor parazgjedhjen globale (pyet)</translation>
 <translation id="8042918947222776840">Zgjidh mënyrën e marrjes</translation>
 <translation id="8057711352706143257">"<ph name="SOFTWARE_NAME" />" nuk është konfiguruar mirë. Zakonisht këtë problem e zgjidh çinstalimi i "<ph name="SOFTWARE_NAME" />". <ph name="FURTHER_EXPLANATION" /></translation>
-<translation id="8062224330780487419">Nuk do të jetë nevoja të vendosësh kod sigurie nga tani e tutje</translation>
 <translation id="8066955247577885446">Na vjen keq! Diçka shkoi keq.</translation>
 <translation id="8074253406171541171">10x13 (Zarf)</translation>
 <translation id="8078141288243656252">Nuk mund të shënosh kur rrotullohet</translation>
@@ -1638,7 +1629,6 @@ Detaje shtesë:
 <translation id="9080712759204168376">Përmbledhja e porosisë</translation>
 <translation id="9089260154716455634">Politika për jashtë orarit:</translation>
 <translation id="9095388113577226029">Gjuhë të tjera...</translation>
-<translation id="9098981495403789647">Administratori yt ka aktivizuar "Mbrojtjen ndaj kërcënimeve" të Chrome Enterprise në shfletuesin tënd. "Mbrojtja ndaj kërcënimeve" e Chrome Enterprise ka qasje te disa nga të dhënat e tua.</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> përdor zakonisht enkriptimin për mbrojtjen e informacioneve të tua. Kur Chromium u përpoq të lidhej me <ph name="SITE" /> këtë herë, sajti i uebit dërgoi prapa kredenciale të pazakonta dhe të pasakta. Kjo mund të ndodhë kur një sulmues pretendon se është <ph name="SITE" /> ose kur lidhja është ndërprerë nga një ekran i identifikimit të Wi-Fi. Informacionet e tua janë ende të sigurta sepse Chromium e ndaloi lidhjen përpara se të shkëmbeheshin të dhënat.</translation>
 <translation id="9106062320799175032">Shto adresë faturimi</translation>
 <translation id="9114524666733003316">Karta po konfirmohet…</translation>
