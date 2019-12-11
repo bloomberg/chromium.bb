@@ -132,6 +132,21 @@ void DeleteGrBackendTexture(SharedContextState* context_state,
 #endif
 }
 
+void DeleteSkImage(SharedContextState* context_state, sk_sp<SkImage> sk_image) {
+  DCHECK(sk_image && sk_image->unique());
+  if (!context_state->GrContextIsVulkan())
+    return;
+
+#if BUILDFLAG(ENABLE_VULKAN)
+  auto* fence_helper =
+      context_state->vk_context_provider()->GetDeviceQueue()->GetFenceHelper();
+  fence_helper->EnqueueCleanupTaskForSubmittedWork(base::BindOnce(
+      [](const sk_sp<GrContext>& gr_context, sk_sp<SkImage> sk_image,
+         gpu::VulkanDeviceQueue* device_queue, bool is_lost) {},
+      sk_ref_sp(context_state->gr_context()), std::move(sk_image)));
+#endif
+}
+
 #if BUILDFLAG(ENABLE_VULKAN)
 
 GrVkYcbcrConversionInfo CreateGrVkYcbcrConversionInfo(
