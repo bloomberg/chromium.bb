@@ -572,6 +572,15 @@
   betty-arcnext-llvm-toolchain-tryjob
   betty-arcnext-release-tryjob
   betty-arcnext-unittest-stress
+  betty-arcvm-master-full-tryjob
+  betty-arcvm-master-llvm-next-toolchain-tryjob
+  betty-arcvm-master-llvm-toolchain-tryjob
+  betty-arcvm-master-payloads-tryjob
+  betty-arcvm-master-release-afdo-generate-tryjob
+  betty-arcvm-master-release-afdo-tryjob
+  betty-arcvm-master-release-afdo-use-tryjob
+  betty-arcvm-master-release-tryjob
+  betty-arcvm-master-unittest-stress
   betty-arcvm-pi-full-tryjob
   betty-arcvm-pi-llvm-next-toolchain-tryjob
   betty-arcvm-pi-llvm-toolchain-tryjob
