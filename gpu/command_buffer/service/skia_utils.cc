@@ -39,6 +39,22 @@ void CleanupAfterSkiaFlush(void* context) {
   delete flush_context;
 }
 
+template <class T>
+void DeleteSkObject(SharedContextState* context_state, sk_sp<T> sk_object) {
+  DCHECK(sk_object && sk_object->unique());
+  if (!context_state->GrContextIsVulkan())
+    return;
+
+#if BUILDFLAG(ENABLE_VULKAN)
+  auto* fence_helper =
+      context_state->vk_context_provider()->GetDeviceQueue()->GetFenceHelper();
+  fence_helper->EnqueueCleanupTaskForSubmittedWork(base::BindOnce(
+      [](const sk_sp<GrContext>& gr_context, sk_sp<T> sk_object,
+         gpu::VulkanDeviceQueue* device_queue, bool is_lost) {},
+      sk_ref_sp(context_state->gr_context()), std::move(sk_object)));
+#endif
+}
+
 }  // namespace
 
 GLuint GetGrGLBackendTextureFormat(const gles2::FeatureInfo* feature_info,
@@ -133,18 +149,12 @@ void DeleteGrBackendTexture(SharedContextState* context_state,
 }
 
 void DeleteSkImage(SharedContextState* context_state, sk_sp<SkImage> sk_image) {
-  DCHECK(sk_image && sk_image->unique());
-  if (!context_state->GrContextIsVulkan())
-    return;
+  DeleteSkObject(context_state, std::move(sk_image));
+}
 
-#if BUILDFLAG(ENABLE_VULKAN)
-  auto* fence_helper =
-      context_state->vk_context_provider()->GetDeviceQueue()->GetFenceHelper();
-  fence_helper->EnqueueCleanupTaskForSubmittedWork(base::BindOnce(
-      [](const sk_sp<GrContext>& gr_context, sk_sp<SkImage> sk_image,
-         gpu::VulkanDeviceQueue* device_queue, bool is_lost) {},
-      sk_ref_sp(context_state->gr_context()), std::move(sk_image)));
-#endif
+void DeleteSkSurface(SharedContextState* context_state,
+                     sk_sp<SkSurface> sk_surface) {
+  DeleteSkObject(context_state, std::move(sk_surface));
 }
 
 #if BUILDFLAG(ENABLE_VULKAN)
