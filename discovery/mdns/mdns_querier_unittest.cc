@@ -4,6 +4,8 @@
 
 #include "discovery/mdns/mdns_querier.h"
 
+#include <memory>
+
 #include "discovery/mdns/mdns_random.h"
 #include "discovery/mdns/mdns_receiver.h"
 #include "discovery/mdns/mdns_record_changed_callback.h"
@@ -321,6 +323,34 @@ TEST_F(MdnsQuerierTest, SameCallerDifferentQuestions) {
   EXPECT_CALL(callback, OnRecordChanged(_, _)).Times(2);
   receiver_.OnRead(&socket_, CreatePacketWithRecord(record0_created_));
   receiver_.OnRead(&socket_, CreatePacketWithRecord(record1_created_));
+}
+
+TEST_F(MdnsQuerierTest, ReinitializeQueries) {
+  std::unique_ptr<MdnsQuerier> querier = CreateQuerier();
+  MockRecordChangedCallback callback;
+
+  querier->StartQuery(DomainName{"testing", "local"}, DnsType::kA,
+                      DnsClass::kIN, &callback);
+
+  EXPECT_CALL(callback, OnRecordChanged(_, RecordChangedEvent::kCreated))
+      .WillOnce(WithArgs<0>(PartialCompareRecords(record0_created_)));
+
+  receiver_.OnRead(&socket_, CreatePacketWithRecord(record0_created_));
+  // Receiving the same record should only reset TTL, no callback
+  receiver_.OnRead(&socket_, CreatePacketWithRecord(record0_created_));
+  testing::Mock::VerifyAndClearExpectations(&receiver_);
+
+  // Queries should still be ongoing but all received records should have been
+  // deleted.
+  querier->ReinitializeQueries(DomainName{"testing", "local"});
+  EXPECT_CALL(callback, OnRecordChanged(_, RecordChangedEvent::kCreated))
+      .WillOnce(WithArgs<0>(PartialCompareRecords(record0_created_)));
+  receiver_.OnRead(&socket_, CreatePacketWithRecord(record0_created_));
+  testing::Mock::VerifyAndClearExpectations(&receiver_);
+
+  // Reinitializing a different domain should not affect other queries.
+  querier->ReinitializeQueries(DomainName{"testing2", "local"});
+  receiver_.OnRead(&socket_, CreatePacketWithRecord(record0_created_));
 }
 
 }  // namespace discovery

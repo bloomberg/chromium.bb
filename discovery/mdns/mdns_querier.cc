@@ -133,7 +133,24 @@ void MdnsQuerier::StopQuery(const DomainName& name,
 }
 
 void MdnsQuerier::ReinitializeQueries(const DomainName& name) {
-  // TODO(rwkeane): Implement this method.
+  OSP_DCHECK(task_runner_->IsRunningOnTaskRunner());
+
+  // Get the ongoing queries and their callbacks.
+  std::vector<CallbackInfo> callbacks;
+  auto its = callbacks_.equal_range(name);
+  for (auto it = its.first; it != its.second; it++) {
+    callbacks.push_back(std::move(it->second));
+  }
+  callbacks_.erase(name);
+
+  // Remove all known questions and answers.
+  questions_.erase(name);
+  records_.erase(name);
+
+  // Restart the queries.
+  for (const auto& cb : callbacks) {
+    StartQuery(name, cb.dns_type, cb.dns_class, cb.callback);
+  }
 }
 
 void MdnsQuerier::OnMessageReceived(const MdnsMessage& message) {
