@@ -498,6 +498,7 @@ void PermissionWizard::Impl::OnPermissionCheckResult(bool result) {
   [self.window makeKeyAndOrderFront:NSApp];
   [self.window center];
   [self showWindow:nil];
+  [NSApp activateIgnoringOtherApps:YES];
 }
 
 @end
