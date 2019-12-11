@@ -24,9 +24,9 @@ if sys.version_info < (2, 7, 5):
   print('%s: chromite: error: Python-2.7.5+ is required' % (sys.argv[0],),
         file=sys.stderr)
   sys.exit(1)
-elif sys.version_info.major == 3 and sys.version_info < (3, 5):
-  # We don't actually test <Python-3.6.  Hope for the best!
-  print('%s: chromite: error: Python-3.5+ is required' % (sys.argv[0],),
+elif sys.version_info.major == 3 and sys.version_info < (3, 6):
+  # We only test Python-3.6+.
+  print('%s: chromite: error: Python-3.6+ is required' % (sys.argv[0],),
         file=sys.stderr)
   sys.exit(1)
 
