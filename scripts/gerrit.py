@@ -24,6 +24,7 @@ from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import gerrit
 from chromite.lib import gob_util
+from chromite.lib import parallel
 from chromite.lib import terminal
 from chromite.lib import uri_lib
 from chromite.utils import memoize
@@ -32,6 +33,12 @@ from chromite.utils import memoize
 # Locate actions that are exposed to the user.  All functions that start
 # with "UserAct" are fair game.
 ACTION_PREFIX = 'UserAct'
+
+
+# How many connections we'll use in parallel.  We don't want this to be too high
+# so we don't go over our per-user quota.  Pick 10 somewhat arbitrarily as that
+# seems to be good enough for users.
+CONNECTION_LIMIT = 10
 
 
 COLOR = None
@@ -68,6 +75,13 @@ def green(s):
 
 def blue(s):
   return COLOR.Color(terminal.Color.BLUE, s)
+
+
+def _run_parallel_tasks(task, *args):
+  """Small wrapper around BackgroundTaskRunner to enforce job count."""
+  with parallel.BackgroundTaskRunner(task, processes=CONNECTION_LIMIT) as q:
+    for arg in args:
+      q.put([arg])
 
 
 def limits(cls):
@@ -359,10 +373,11 @@ UserActInspect.usage = '<CLs...>'
 def UserActAutosubmit(opts, *args):
   """Mark CLs with the Auto-Submit label"""
   num = args[-1]
-  for arg in args[:-1]:
+  def task(arg):
     helper, cl = GetGerrit(opts, arg)
     helper.SetReview(cl, labels={'Auto-Submit': num},
                      dryrun=opts.dryrun, notify=opts.notify)
+  _run_parallel_tasks(task, *args[:-1])
 UserActAutosubmit.arg_min = 2
 UserActAutosubmit.usage = '<CLs...> <0|1>'
 
@@ -370,10 +385,11 @@ UserActAutosubmit.usage = '<CLs...> <0|1>'
 def UserActReview(opts, *args):
   """Mark CLs with a code review status"""
   num = args[-1]
-  for arg in args[:-1]:
+  def task(arg):
     helper, cl = GetGerrit(opts, arg)
     helper.SetReview(cl, labels={'Code-Review': num},
                      dryrun=opts.dryrun, notify=opts.notify)
+  _run_parallel_tasks(task, *args[:-1])
 UserActReview.arg_min = 2
 UserActReview.usage = '<CLs...> <-2|-1|0|1|2>'
 
@@ -381,10 +397,11 @@ UserActReview.usage = '<CLs...> <-2|-1|0|1|2>'
 def UserActVerify(opts, *args):
   """Mark CLs with a verified status"""
   num = args[-1]
-  for arg in args[:-1]:
+  def task(arg):
     helper, cl = GetGerrit(opts, arg)
     helper.SetReview(cl, labels={'Verified': num},
                      dryrun=opts.dryrun, notify=opts.notify)
+  _run_parallel_tasks(task, *args[:-1])
 UserActVerify.arg_min = 2
 UserActVerify.usage = '<CLs...> <-1|0|1>'
 
@@ -392,35 +409,39 @@ UserActVerify.usage = '<CLs...> <-1|0|1>'
 def UserActReady(opts, *args):
   """Mark CLs with CQ dryrun (1) or ready (2) status"""
   num = args[-1]
-  for arg in args[:-1]:
+  def task(arg):
     helper, cl = GetGerrit(opts, arg)
     helper.SetReview(cl, labels={'Commit-Queue': num},
                      dryrun=opts.dryrun, notify=opts.notify)
+  _run_parallel_tasks(task, *args[:-1])
 UserActReady.arg_min = 2
 UserActReady.usage = '<CLs...> <0|1|2>'
 
 
 def UserActSubmit(opts, *args):
   """Submit CLs"""
-  for arg in args:
+  def task(arg):
     helper, cl = GetGerrit(opts, arg)
     helper.SubmitChange(cl, dryrun=opts.dryrun)
+  _run_parallel_tasks(task, *args)
 UserActSubmit.usage = '<CLs...>'
 
 
 def UserActAbandon(opts, *args):
   """Abandon CLs"""
-  for arg in args:
+  def task(arg):
     helper, cl = GetGerrit(opts, arg)
     helper.AbandonChange(cl, dryrun=opts.dryrun)
+  _run_parallel_tasks(task, *args)
 UserActAbandon.usage = '<CLs...>'
 
 
 def UserActRestore(opts, *args):
   """Restore CLs that were abandoned"""
-  for arg in args:
+  def task(arg):
     helper, cl = GetGerrit(opts, arg)
     helper.RestoreChange(cl, dryrun=opts.dryrun)
+  _run_parallel_tasks(task, *args)
 UserActRestore.usage = '<CLs...>'
 
 
@@ -466,9 +487,10 @@ UserActMessage.usage = '<CL> <message>'
 
 def UserActTopic(opts, topic, *args):
   """Set a topic for one or more CLs"""
-  for arg in args:
+  def task(arg):
     helper, arg = GetGerrit(opts, arg)
     helper.SetTopic(arg, topic, dryrun=opts.dryrun)
+  _run_parallel_tasks(task, *args)
 UserActTopic.usage = '<topic> <CLs...>'
 
 
@@ -501,9 +523,10 @@ UserActSethashtags.usage = '<CL> <hashtags...>'
 
 def UserActDeletedraft(opts, *args):
   """Delete draft CLs"""
-  for arg in args:
+  def task(arg):
     helper, cl = GetGerrit(opts, arg)
     helper.DeleteDraft(cl, dryrun=opts.dryrun)
+  _run_parallel_tasks(task, *args)
 UserActDeletedraft.usage = '<CLs...>'
 
 
