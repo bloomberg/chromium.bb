@@ -187,7 +187,6 @@ static AOM_INLINE void mode_estimation(
 
   int64_t best_intra_cost = INT64_MAX;
   int64_t intra_cost;
-  PREDICTION_MODE mode;
   PREDICTION_MODE best_mode = DC_PRED;
 
   int mb_y_offset = mi_row * MI_SIZE * xd->cur_buf->y_stride + mi_col * MI_SIZE;
@@ -232,7 +231,10 @@ static AOM_INLINE void mode_estimation(
 #endif
   }
 
-  for (mode = DC_PRED; mode <= PAETH_PRED; ++mode) {
+  const PREDICTION_MODE last_intra_mode =
+      cpi->sf.tpl_sf.prune_intra_modes ? DIR_MODE_END : INTRA_MODE_END;
+  for (PREDICTION_MODE mode = INTRA_MODE_START; mode < last_intra_mode;
+       ++mode) {
     uint8_t *src;
     uint8_t *dst;
     int dst_stride;

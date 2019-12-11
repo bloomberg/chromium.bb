@@ -247,6 +247,13 @@ typedef struct MV_SPEED_FEATURES {
   SUBPEL_FORCE_STOP subpel_force_stop;
 } MV_SPEED_FEATURES;
 
+typedef struct TPL_SPEED_FEATURES {
+  // Prune the intra modes search by tpl. If set to 0, we will search all intra
+  // modes from DC_PRED to PAETH_PRED. If set to one, we only search DC_PRED and
+  // the direction modes
+  int prune_intra_modes;
+} TPL_SPEED_FEATURES;
+
 #define MAX_MESH_STEP 4
 
 typedef struct MESH_PATTERN {
@@ -319,6 +326,9 @@ typedef struct SPEED_FEATURES {
   // backgrounds very to cheap to encode, and the segmentation we have
   // adds overhead.
   int static_segmentation;
+
+  // Speed features related to how tpl's searches are done.
+  TPL_SPEED_FEATURES tpl_sf;
 
   /*
    * Global motion speed features:

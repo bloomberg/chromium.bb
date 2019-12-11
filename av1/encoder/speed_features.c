@@ -493,6 +493,7 @@ static void set_good_speed_features_framesize_independent(
     sf->disable_interinter_wedge = 1;
     sf->disable_smooth_interintra = 1;
     sf->disable_onesided_comp = 1;
+    sf->tpl_sf.prune_intra_modes = 1;
   }
 }
 
@@ -922,6 +923,7 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
   sf->skip_repeated_newmv = 0;
   // TODO(any) Cleanup this speed feature
   sf->prune_single_motion_modes_by_simple_trans = 0;
+  sf->tpl_sf.prune_intra_modes = 0;
 
   // Set decoder side speed feature to use less dual sgr modes
   sf->dual_sgr_penalty_level = 0;
