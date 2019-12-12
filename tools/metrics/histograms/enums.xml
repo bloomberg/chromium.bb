@@ -4290,6 +4290,8 @@ Unknown properties are collapsed to zero. -->
   <int value="30" label="The popup was suppressed"/>
   <int value="31" label="The popup was suppressed (once)"/>
   <int value="32" label="The form was parsed"/>
+  <int value="33" label="The user hide the suggestions"/>
+  <int value="34" label="The user hide the suggestions (once)"/>
 </enum>
 
 <enum name="AutofillFormSubmittedState">
