@@ -5027,11 +5027,12 @@ static int encode_with_recode_loop(AV1_COMP *cpi, size_t *size, uint8_t *dest) {
     }
   }
 
-  if (!cpi->sf.disable_obmc && cpi->sf.prune_obmc_prob_thresh > 0 &&
+  if (!cpi->sf.inter_sf.disable_obmc &&
+      cpi->sf.inter_sf.prune_obmc_prob_thresh > 0 &&
       cm->current_frame.frame_type == KEY_FRAME) {
     av1_copy(cpi->obmc_probs, default_obmc_probs);
   }
-  if (cpi->sf.prune_warped_prob_thresh > 0 &&
+  if (cpi->sf.inter_sf.prune_warped_prob_thresh > 0 &&
       cm->current_frame.frame_type == KEY_FRAME) {
     av1_copy(cpi->warped_probs, default_warped_probs);
   }

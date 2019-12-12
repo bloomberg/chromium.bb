@@ -1486,8 +1486,8 @@ static const MV_REFERENCE_FRAME disable_order[] = {
 
 static INLINE int get_max_allowed_ref_frames(const AV1_COMP *cpi) {
   const unsigned int max_allowed_refs_for_given_speed =
-      (cpi->sf.selective_ref_frame >= 3) ? INTER_REFS_PER_FRAME - 1
-                                         : INTER_REFS_PER_FRAME;
+      (cpi->sf.inter_sf.selective_ref_frame >= 3) ? INTER_REFS_PER_FRAME - 1
+                                                  : INTER_REFS_PER_FRAME;
   return AOMMIN(max_allowed_refs_for_given_speed,
                 cpi->oxcf.max_reference_frames);
 }

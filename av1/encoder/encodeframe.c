@@ -767,7 +767,7 @@ static AOM_INLINE void pick_sb_modes(AV1_COMP *const cpi,
 
   // If the threshold for disabling wedge search is zero, it means the feature
   // should not be used. Use a value that will always succeed in the check.
-  if (cpi->sf.disable_wedge_search_edge_thresh == 0) {
+  if (cpi->sf.inter_sf.disable_wedge_search_edge_thresh == 0) {
     x->edge_strength = UINT16_MAX;
     x->edge_strength_x = UINT16_MAX;
     x->edge_strength_y = UINT16_MAX;
@@ -1636,8 +1636,10 @@ static AOM_INLINE void encode_b(const AV1_COMP *const cpi,
     }
 
     // Gather obmc and warped motion count to update the probability.
-    if ((!cpi->sf.disable_obmc && cpi->sf.prune_obmc_prob_thresh > 0) ||
-        (cm->allow_warped_motion && cpi->sf.prune_warped_prob_thresh > 0)) {
+    if ((!cpi->sf.inter_sf.disable_obmc &&
+         cpi->sf.inter_sf.prune_obmc_prob_thresh > 0) ||
+        (cm->allow_warped_motion &&
+         cpi->sf.inter_sf.prune_warped_prob_thresh > 0)) {
       const int inter_block = is_inter_block(mbmi);
       const int seg_ref_active =
           segfeature_active(&cm->seg, mbmi->segment_id, SEG_LVL_REF_FRAME);
@@ -2793,7 +2795,7 @@ BEGIN_PARTITION_SEARCH:
     if (none_rd) *none_rd = this_rdc.rdcost;
     cur_none_rd = this_rdc.rdcost;
     if (this_rdc.rate != INT_MAX) {
-      if (cpi->sf.prune_ref_frame_for_rect_partitions) {
+      if (cpi->sf.inter_sf.prune_ref_frame_for_rect_partitions) {
         const int ref_type = av1_ref_frame_type(ctx_none->mic.ref_frame);
         update_picked_ref_frames_mask(x, ref_type, bsize,
                                       cm->seq_params.mib_size, mi_row, mi_col);
@@ -4251,7 +4253,7 @@ static AOM_INLINE void encode_sb_row(AV1_COMP *cpi, ThreadData *td,
         if (mi_col != tile_info->mi_col_start) break;
         AOM_FALLTHROUGH_INTENDED;
       case COST_UPD_SB:  // SB level
-        if (cpi->sf.disable_sb_level_coeff_cost_upd &&
+        if (cpi->sf.inter_sf.disable_sb_level_coeff_cost_upd &&
             mi_col != tile_info->mi_col_start)
           break;
         av1_fill_coeff_costs(&td->mb, xd->tile_ctx, num_planes);
@@ -4280,7 +4282,7 @@ static AOM_INLINE void encode_sb_row(AV1_COMP *cpi, ThreadData *td,
         if (mi_col != tile_info->mi_col_start) break;
         AOM_FALLTHROUGH_INTENDED;
       case COST_UPD_SB:  // SB level
-        if (cpi->sf.disable_sb_level_mv_cost_upd &&
+        if (cpi->sf.inter_sf.disable_sb_level_mv_cost_upd &&
             mi_col != tile_info->mi_col_start)
           break;
         av1_fill_mv_costs(xd->tile_ctx, cm->cur_frame_force_integer_mv,
@@ -4423,7 +4425,8 @@ static AOM_INLINE void encode_sb_row(AV1_COMP *cpi, ThreadData *td,
     }
 
     // TODO(angiebird): Let inter_mode_rd_model_estimation support multi-tile.
-    if (!use_nonrd_mode && cpi->sf.inter_mode_rd_model_estimation == 1 &&
+    if (!use_nonrd_mode &&
+        cpi->sf.inter_sf.inter_mode_rd_model_estimation == 1 &&
         cm->tile_cols == 1 && cm->tile_rows == 1) {
       av1_inter_mode_data_fit(tile_data, x->rdmult);
     }
@@ -5103,9 +5106,11 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
 
   cm->allow_intrabc &= (cpi->oxcf.enable_intrabc);
 
-  if (cm->allow_warped_motion && cpi->sf.prune_warped_prob_thresh > 0) {
+  if (cm->allow_warped_motion &&
+      cpi->sf.inter_sf.prune_warped_prob_thresh > 0) {
     const FRAME_UPDATE_TYPE update_type = get_frame_update_type(&cpi->gf_group);
-    if (cpi->warped_probs[update_type] < cpi->sf.prune_warped_prob_thresh)
+    if (cpi->warped_probs[update_type] <
+        cpi->sf.inter_sf.prune_warped_prob_thresh)
       cm->allow_warped_motion = 0;
   }
 
@@ -5402,7 +5407,8 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
     }
   }
 
-  if (!cpi->sf.disable_obmc && cpi->sf.prune_obmc_prob_thresh > 0) {
+  if (!cpi->sf.inter_sf.disable_obmc &&
+      cpi->sf.inter_sf.prune_obmc_prob_thresh > 0) {
     const FRAME_UPDATE_TYPE update_type = get_frame_update_type(&cpi->gf_group);
 
     for (i = 0; i < BLOCK_SIZES_ALL; i++) {
@@ -5416,7 +5422,8 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
     }
   }
 
-  if (cm->allow_warped_motion && cpi->sf.prune_warped_prob_thresh > 0) {
+  if (cm->allow_warped_motion &&
+      cpi->sf.inter_sf.prune_warped_prob_thresh > 0) {
     const FRAME_UPDATE_TYPE update_type = get_frame_update_type(&cpi->gf_group);
     int sum = 0;
     for (i = 0; i < 2; i++) sum += cpi->td.rd_counts.warped_used[i];

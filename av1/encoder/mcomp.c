@@ -2868,7 +2868,7 @@ int av1_obmc_full_pixel_search(const AV1_COMP *cpi, MACROBLOCK *x, MV *mvp_full,
                                const aom_variance_fn_ptr_t *fn_ptr,
                                const MV *ref_mv, MV *dst_mv, int is_second,
                                const search_site_config *cfg) {
-  if (cpi->sf.obmc_full_pixel_search_level == 0) {
+  if (cpi->sf.inter_sf.obmc_full_pixel_search_level == 0) {
     return obmc_full_pixel_diamond(cpi, x, mvp_full, step_param, sadpb,
                                    further_steps, do_refine, fn_ptr, ref_mv,
                                    dst_mv, is_second, cfg);

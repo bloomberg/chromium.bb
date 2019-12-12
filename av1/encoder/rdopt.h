@@ -384,13 +384,13 @@ static INLINE int prune_ref_by_selective_ref_frame(
     const unsigned int *const ref_display_order_hint,
     const unsigned int cur_frame_display_order_hint) {
   const SPEED_FEATURES *const sf = &cpi->sf;
-  if (sf->selective_ref_frame) {
+  if (sf->inter_sf.selective_ref_frame) {
     const AV1_COMMON *const cm = &cpi->common;
     const OrderHintInfo *const order_hint_info =
         &cm->seq_params.order_hint_info;
     const int comp_pred = ref_frame[1] > INTRA_FRAME;
-    if (sf->selective_ref_frame >= 2 ||
-        (sf->selective_ref_frame == 1 && comp_pred)) {
+    if (sf->inter_sf.selective_ref_frame >= 2 ||
+        (sf->inter_sf.selective_ref_frame == 1 && comp_pred)) {
       if (ref_frame[0] == LAST3_FRAME || ref_frame[1] == LAST3_FRAME) {
         if (av1_encoder_get_relative_dist(
                 order_hint_info,
@@ -408,7 +408,8 @@ static INLINE int prune_ref_by_selective_ref_frame(
     }
 
     // One-sided compound is used only when all reference frames are one-sided.
-    if (sf->selective_ref_frame >= 2 && comp_pred && !cpi->all_one_sided_refs) {
+    if (sf->inter_sf.selective_ref_frame >= 2 && comp_pred &&
+        !cpi->all_one_sided_refs) {
       unsigned int ref_offsets[2];
       for (int i = 0; i < 2; ++i) {
         const RefCntBuffer *const buf = get_ref_frame_buf(cm, ref_frame[i]);
@@ -425,7 +426,7 @@ static INLINE int prune_ref_by_selective_ref_frame(
       }
     }
 
-    if (sf->selective_ref_frame >= 3) {
+    if (sf->inter_sf.selective_ref_frame >= 3) {
       if (ref_frame[0] == ALTREF2_FRAME || ref_frame[1] == ALTREF2_FRAME)
         if (av1_encoder_get_relative_dist(
                 order_hint_info,
@@ -440,7 +441,7 @@ static INLINE int prune_ref_by_selective_ref_frame(
           return 1;
     }
 
-    if (sf->selective_ref_frame >= 4 && comp_pred) {
+    if (sf->inter_sf.selective_ref_frame >= 4 && comp_pred) {
       // Check if one of the reference is ALTREF2_FRAME and BWDREF_FRAME is a
       // valid reference.
       if ((ref_frame[0] == ALTREF2_FRAME || ref_frame[1] == ALTREF2_FRAME) &&

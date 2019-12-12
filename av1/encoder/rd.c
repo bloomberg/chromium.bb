@@ -1107,7 +1107,7 @@ void av1_set_rd_speed_thresholds(AV1_COMP *cpi) {
   // Set baseline threshold values.
   for (i = 0; i < MAX_MODES; ++i) rd->thresh_mult[i] = cpi->oxcf.mode == 0;
 
-  if (sf->adaptive_rd_thresh) {
+  if (sf->inter_sf.adaptive_rd_thresh) {
     rd->thresh_mult[THR_NEARESTMV] = 300;
     rd->thresh_mult[THR_NEARESTL2] = 300;
     rd->thresh_mult[THR_NEARESTL3] = 300;

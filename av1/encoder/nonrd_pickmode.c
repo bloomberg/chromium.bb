@@ -1150,8 +1150,9 @@ static INLINE void update_thresh_freq_fact(AV1_COMP *cpi, MACROBLOCK *x,
   if (thr_mode_idx == best_mode_idx) {
     *freq_fact -= (*freq_fact >> 4);
   } else {
-    *freq_fact = AOMMIN(*freq_fact + RD_THRESH_INC,
-                        cpi->sf.adaptive_rd_thresh * RD_THRESH_MAX_FACT);
+    *freq_fact =
+        AOMMIN(*freq_fact + RD_THRESH_INC,
+               cpi->sf.inter_sf.adaptive_rd_thresh * RD_THRESH_MAX_FACT);
   }
 }
 
@@ -2078,7 +2079,7 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
                         pd->dst.stride, 0, 0, 0, 0, bw, bh);
     }
   }
-  if (cpi->sf.adaptive_rd_thresh) {
+  if (cpi->sf.inter_sf.adaptive_rd_thresh) {
     THR_MODES best_mode_idx =
         mode_idx[best_pickmode.best_ref_frame][mode_offset(mi->mode)];
     if (best_pickmode.best_ref_frame == INTRA_FRAME) {
