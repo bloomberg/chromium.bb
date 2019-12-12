@@ -2624,6 +2624,12 @@ def ApplyCustomOverrides(site_config):
       },
 
       # No tests for ARCVM builders.
+      'betty-arcvm-master-release': {
+          'hw_tests': [],
+          'hw_tests_override': [],
+          'vm_tests': [],
+          'vm_tests_override': []
+      },
       'betty-arcvm-pi-release': {
           'hw_tests': [],
           'hw_tests_override': [],
