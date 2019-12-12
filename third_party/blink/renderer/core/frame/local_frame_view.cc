@@ -2823,8 +2823,6 @@ void LocalFrameView::PushPaintArtifactToCompositor() {
     viewport_properties.overscroll_elasticity_transform =
         viewport.GetOverscrollElasticityTransformNode();
     viewport_properties.page_scale = viewport.GetPageScaleNode();
-    viewport_properties.inner_scroll_translation =
-        viewport.GetScrollTranslationNode();
 
     if (const auto* root_scroller =
             GetPage()->GlobalRootScrollerController().GlobalRootScroller()) {
@@ -2835,6 +2833,8 @@ void LocalFrameView::PushPaintArtifactToCompositor() {
             viewport_properties.outer_clip = paint_properties->OverflowClip();
             viewport_properties.outer_scroll_translation =
                 paint_properties->ScrollTranslation();
+            viewport_properties.inner_scroll_translation =
+                viewport.GetScrollTranslationNode();
           }
         }
       }
