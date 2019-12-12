@@ -13,6 +13,7 @@ from __future__ import print_function
 
 from chromite.api import faux
 from chromite.api import validate
+from chromite.api.controller import controller_util
 from chromite.lib import portage_util
 from chromite.service import dependency
 
@@ -67,7 +68,9 @@ def GetBuildDependencyGraph(input_proto, output_proto, _config):
     _config (api_config.ApiConfig): The API call config.
   """
   board = input_proto.build_target.name
+  packages = [
+      controller_util.PackageInfoToCPV(x) for x in input_proto.packages]
 
-  json_map, sdk_json_map = dependency.GetBuildDependency(board)
+  json_map, sdk_json_map = dependency.GetBuildDependency(board, packages)
   AugmentDepGraphProtoFromJsonMap(json_map, output_proto.dep_graph)
   AugmentDepGraphProtoFromJsonMap(sdk_json_map, output_proto.sdk_dep_graph)
