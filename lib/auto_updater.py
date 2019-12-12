@@ -55,6 +55,7 @@ from chromite.lib import operation
 from chromite.lib import osutils
 from chromite.lib import remote_access
 from chromite.lib import retry_util
+from chromite.lib import stateful_updater
 from chromite.lib import timeout_util
 
 from chromite.utils import key_value_store
@@ -120,8 +121,6 @@ class BaseUpdater(object):
 
 class ChromiumOSUpdater(BaseUpdater):
   """Used to update DUT with image."""
-  # Stateful update files.
-  REMOTE_STATEFUL_UPDATE_PATH = '/usr/local/bin/stateful_update'
 
   # Nebraska files.
   LOCAL_NEBRASKA_LOG_FILENAME = 'nebraska.log'
@@ -239,7 +238,6 @@ class ChromiumOSUpdater(BaseUpdater):
     self.device_payload_dir = os.path.join(self.device.work_dir,
                                            self.PAYLOAD_DIR_NAME)
     self.device_restore_dir = os.path.join(self.device.work_dir, 'old')
-    self.stateful_update_bin = None
     # autoupdate_EndToEndTest uses exact payload filename for update
     self.payload_filename = payload_filename
     if send_payload_in_parallel:
@@ -433,26 +431,9 @@ class ChromiumOSUpdater(BaseUpdater):
     """Clear any pending stateful update request."""
     logging.debug('Resetting stateful partition...')
     try:
-      self.device.RunCommand(['bash', self.stateful_update_bin,
-                              '--stateful_change=reset'],
-                             **self._cmd_kwargs)
-    except cros_build_lib.RunCommandError as e:
-      if self.is_au_endtoendtest and not self.device.HasRsync():
-        # If we have updated backwards from a build with ext4 crytpo to a
-        # build without ext4 crypto the DUT gets powerwashed. So the stateful
-        # bin, payloads, and nebraska files are no longer accessible.
-        # See crbug.com/689105. Rsync will no longer be available either so we
-        # will need to use scp for the rest of the update.
-        logging.warning('Exception while resetting stateful: %s', e)
-        if self.CheckRestoreStateful():
-          logging.info('Stateful files and nebraska code now back on '
-                       'the device. Trying to reset stateful again.')
-          self.device.RunCommand(['bash', self.stateful_update_bin,
-                                  '--stateful_change=reset'],
-                                 **self._cmd_kwargs)
-
-      else:
-        raise
+      stateful_updater.StatefulUpdater(self.device).Reset()
+    except stateful_updater.Error as e:
+      raise StatefulUpdateError(e)
 
   def RevertBootPartition(self):
     """Revert the boot partition."""
@@ -574,26 +555,22 @@ class ChromiumOSUpdater(BaseUpdater):
       use_original_build: True if we use stateful.tgz of original build for
         stateful update, otherwise, as default, False.
     """
-    msg = 'Updating stateful partition'
     if self.original_payload_dir and use_original_build:
       payload_dir = self.device_restore_dir
     else:
       payload_dir = self.device.work_dir
-    cmd = ['bash',
-           self.stateful_update_bin,
-           os.path.join(payload_dir, auto_updater_transfer.STATEFUL_FILENAME)]
 
-    if self._clobber_stateful:
-      cmd.append('--stateful_change=clean')
-      msg += ' with clobber enabled'
-
-    logging.info('%s...', msg)
     try:
-      self.device.RunCommand(cmd, **self._cmd_kwargs)
-    except cros_build_lib.RunCommandError:
-      logging.exception('Stateful update failed.')
+      updater = stateful_updater.StatefulUpdater(self.device)
+      updater.Update(
+          os.path.join(payload_dir, auto_updater_transfer.STATEFUL_FILENAME),
+          update_type=(stateful_updater.StatefulUpdater.UPDATE_TYPE_CLOBBER if
+                       self._clobber_stateful else None))
+    except stateful_updater.Error as e:
+      error_msg = 'Stateful update failed with error: %s' % str(e)
+      logging.exception(error_msg)
       self.ResetStatefulPartition()
-      raise StatefulUpdateError('Stateful partition update failed.')
+      raise StatefulUpdateError(error_msg)
 
   def _FixPayloadPropertiesFile(self):
     """Fix the update payload properties file so nebraska can use it.
@@ -664,7 +641,7 @@ class ChromiumOSUpdater(BaseUpdater):
     1. Copy files to remote device needed by stateful update.
     2. Do stateful update.
     """
-    self.stateful_update_bin = self._transfer_obj.TransferStatefulUpdate()
+    self._transfer_obj.TransferStatefulUpdate()
     self.UpdateStateful()
 
   def RebootAndVerify(self):
@@ -1033,7 +1010,7 @@ class ChromiumOSUpdater(BaseUpdater):
     TODO (sanikak): Once this method is removed, remove corresponding tests in
     chromite.lib.auto_updater_unittest.
     """
-    self.stateful_update_bin = self._transfer_obj.TransferStatefulUpdate()
+    self._transfer_obj.TransferStatefulUpdate()
 
   def PreSetupCrOSUpdate(self):
     """Pre-setup for whole auto-update process for cros_host.
@@ -1130,7 +1107,7 @@ class ChromiumOSUpdater(BaseUpdater):
     """Restore stateful partition for device."""
     logging.warning('Restoring the stateful partition.')
     self.PreSetupStatefulUpdate()
-    self.stateful_update_bin = self._transfer_obj.TransferStatefulUpdate()
+    self._transfer_obj.TransferStatefulUpdate()
     self.ResetStatefulPartition()
     use_original_build = bool(self.original_payload_dir)
     self.UpdateStateful(use_original_build=use_original_build)

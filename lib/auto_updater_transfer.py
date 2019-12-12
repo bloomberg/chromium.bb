@@ -49,7 +49,6 @@ from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import nebraska_wrapper
 from chromite.lib import osutils
-from chromite.lib import path_util
 from chromite.lib import retry_util
 
 # Naming conventions for global variables:
@@ -68,7 +67,6 @@ _DELAY_SEC_FOR_RETRY = 5
 # Update file names for rootfs+kernel and stateful partitions.
 ROOTFS_FILENAME = 'update.gz'
 STATEFUL_FILENAME = 'stateful.tgz'
-_STATEFUL_UPDATE_FILENAME = 'stateful_update'
 
 
 class Error(Exception):
@@ -137,7 +135,6 @@ class Transfer(six.with_metaclass(abc.ABCMeta, object)):
     self._original_payload_dir = original_payload_dir
     self._transfer_stateful_update = transfer_stateful_update
     self._transfer_rootfs_update = transfer_rootfs_update
-    self._stateful_update_bin = None
     self._local_payload_props_path = None
 
   @abc.abstractmethod
@@ -175,7 +172,6 @@ class Transfer(six.with_metaclass(abc.ABCMeta, object)):
         _MAX_RETRY,
         self._TransferStatefulUpdate,
         delay_sec=_DELAY_SEC_FOR_RETRY)
-    return self._stateful_update_bin
 
   def _EnsureDeviceDirectory(self, directory):
     """Mkdir the directory no matther whether this directory exists on host.
@@ -200,11 +196,6 @@ class Transfer(six.with_metaclass(abc.ABCMeta, object)):
 
 class LocalTransfer(Transfer):
   """Abstracts logic that handles transferring local files to the DUT."""
-
-  # Stateful update files.
-  LOCAL_STATEFUL_UPDATE_FILENAME = _STATEFUL_UPDATE_FILENAME
-  LOCAL_CHROOT_STATEFUL_UPDATE_PATH = '/usr/bin/stateful_update'
-  REMOTE_STATEFUL_UPDATE_PATH = '/usr/local/bin/stateful_update'
 
   def __init__(self, *args, **kwargs):
     """Initialize LocalTransfer to handle transferring files from local to DUT.
@@ -264,60 +255,12 @@ class LocalTransfer(Transfer):
                                mode=self._payload_mode,
                                log_output=True, **self._cmd_kwargs)
 
-  def _GetStatefulUpdateScript(self):
-    """Returns the path to the stateful_update_bin on the target.
-
-    Returns:
-      (need_transfer, path):
-      need_transfer is True if stateful_update_bin is found in local path,
-      False if we directly use stateful_update_bin on the host.
-      path: If need_transfer is True, it represents the local path of
-      stateful_update_bin, and is used for further transferring. Otherwise,
-      it refers to the host path.
-    """
-    # We attempt to load the local stateful update path in 2 different
-    # ways. If this doesn't exist, we attempt to use the Chromium OS
-    # Chroot path to the installed script. If all else fails, we use the
-    # stateful update script on the host.
-    stateful_update_path = path_util.FromChrootPath(
-        self.LOCAL_CHROOT_STATEFUL_UPDATE_PATH)
-
-    if not os.path.exists(stateful_update_path):
-      logging.warning('Could not find chroot stateful_update script in %s, '
-                      'falling back to the client copy.', stateful_update_path)
-      stateful_update_path = os.path.join(self._dev_dir,
-                                          self.LOCAL_STATEFUL_UPDATE_FILENAME)
-      if os.path.exists(stateful_update_path):
-        logging.debug('Use stateful_update script in devserver path: %s',
-                      stateful_update_path)
-        return True, stateful_update_path
-
-      logging.debug('Cannot find stateful_update script, will use the script '
-                    'on the host')
-      return False, self.REMOTE_STATEFUL_UPDATE_PATH
-    else:
-      return True, stateful_update_path
-
   def _TransferStatefulUpdate(self):
     """Transfer files for stateful update.
 
-    The stateful update bin and the corresponding payloads are copied to the
-    target remote device for stateful update.
+    The stateful update payloads are copied to the target remote device for
+    stateful update.
     """
-    logging.debug('Checking whether file stateful_update_bin needs to be '
-                  'transferred to device...')
-    need_transfer, stateful_update_bin = self._GetStatefulUpdateScript()
-    if need_transfer:
-      logging.info('Copying stateful_update binary to device...')
-      # stateful_update is a tiny uncompressed text file, so use rsync.
-      self._device.CopyToWorkDir(stateful_update_bin, mode='rsync',
-                                 log_output=True, **self._cmd_kwargs)
-      self._stateful_update_bin = os.path.join(
-          self._device.work_dir,
-          os.path.basename(self.LOCAL_CHROOT_STATEFUL_UPDATE_PATH))
-    else:
-      self._stateful_update_bin = stateful_update_bin
-
     if self._original_payload_dir:
       logging.info('Copying original stateful payload to device...')
       original_payload = os.path.join(
@@ -481,18 +424,10 @@ class LabTransfer(Transfer):
     """
     self._EnsureDeviceDirectory(self._device_payload_dir)
 
-    logging.info('Copying stateful_update binary to device...')
-
     # TODO(crbug.com/1024639): Another way to make the payloads available is
     # to make update_engine download it directly from the staging_server. This
     # will avoid a disk copy but has the potential to be harder to debug if
     # update engine does not report the error clearly.
-
-    self._device.RunCommand(self._GetCurlCmdForPayloadDownload(
-        payload_dir=self._device_payload_dir,
-        payload_filename=_STATEFUL_UPDATE_FILENAME))
-    self._stateful_update_bin = os.path.join(
-        self._device_payload_dir, _STATEFUL_UPDATE_FILENAME)
 
     if self._original_payload_dir:
       logging.info('Copying original stateful payload to device...')

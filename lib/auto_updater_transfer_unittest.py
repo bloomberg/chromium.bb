@@ -22,7 +22,6 @@ from chromite.lib import auto_updater_transfer
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import partial_mock
-from chromite.lib import path_util
 from chromite.lib import remote_access
 from chromite.lib import retry_util
 
@@ -72,8 +71,7 @@ class CrOSLocalTransferPrivateMock(partial_mock.PartialCmdMock):
   """Mock out all transfer functions in auto_updater_transfer.LocalTransfer."""
   TARGET = 'chromite.lib.auto_updater_transfer.LocalTransfer'
   ATTRS = ('_TransferStatefulUpdate', '_TransferRootfsUpdate',
-           '_TransferUpdateUtilsPackage', '_GetStatefulUpdateScript',
-           '_EnsureDeviceDirectory')
+           '_TransferUpdateUtilsPackage', '_EnsureDeviceDirectory')
 
   def __init__(self):
     partial_mock.PartialCmdMock.__init__(self)
@@ -86,10 +84,6 @@ class CrOSLocalTransferPrivateMock(partial_mock.PartialCmdMock):
 
   def _TransferUpdateUtilsPackage(self, _inst, *_args, **_kwargs):
     """Mock auto_updater_transfer.LocalTransfer._TransferUpdateUtilsPackage."""
-
-  def _GetStatefulUpdateScript(self, _inst, *_args, **_kwargs):
-    """Mock auto_updater_transfer.LocalTransfer._GetStatefulUpdateScript."""
-    return True, ''
 
   def _EnsureDeviceDirectory(self, _inst, *_args, **_kwargs):
     """Mock auto_updater_transfer.LocalTransfer._EnsureDeviceDirectory."""
@@ -153,16 +147,9 @@ class CrosLocalTransferTest(cros_test_lib.MockTempDirTestCase):
   def testTransferStatefulUpdateNeedsTransfer(self):
     """Test transfer functions for stateful update.
 
-    Test whether auto_updater_transfer.LocalTransfer._GetStatefulUpdateScript()
-    and auto_updater_transfer.LocalTransfer._EnsureDeviceDirectory() are being
-    called correctly. Test the value if the instance variable
-    auto_updater_transfer.LocalTransfer._stateful_update_bin is set correctly
-    when auto_updater_transfer.LocalTransfer._original_payload_dir is set to
-    None.
+    Test whether auto_updater_transfer.LocalTransfer._EnsureDeviceDirectory()
+    are being called correctly.
     """
-    self.PatchObject(auto_updater_transfer.LocalTransfer,
-                     '_GetStatefulUpdateScript',
-                     return_value=[False, 'test_stateful_update_bin'])
     self.PatchObject(auto_updater_transfer.LocalTransfer,
                      '_EnsureDeviceDirectory')
     self.PatchObject(auto_updater_transfer, 'STATEFUL_FILENAME',
@@ -170,39 +157,7 @@ class CrosLocalTransferTest(cros_test_lib.MockTempDirTestCase):
     with remote_access.ChromiumOSDeviceHandler(remote_access.TEST_IP) as device:
       CrOS_LocalTransfer = CreateLocalTransferInstance(device)
       CrOS_LocalTransfer._TransferStatefulUpdate()
-      self.assertTrue(
-          auto_updater_transfer.LocalTransfer._GetStatefulUpdateScript.called)
-      self.assertEqual(
-          CrOS_LocalTransfer._stateful_update_bin, 'test_stateful_update_bin')
       self.assertFalse(
-          auto_updater_transfer.LocalTransfer._EnsureDeviceDirectory.called)
-
-  def testTransferStatefulUpdateNoNeedsTransfer(self):
-    """Test transfer functions for stateful update.
-
-    Test whether auto_updater_transfer.LocalTransfer._GetStatefulUpdateScript()
-    and auto_updater_transfer.LocalTransfer._EnsureDeviceDirectory() are being
-    called correctly. Test the value if the instance variable
-    auto_updater_transfer.LocalTransfer._stateful_update_bin is set correctly
-    when auto_updater_transfer.LocalTransfer._original_payload_dir is set to
-    'test_dir'.
-    """
-    self.PatchObject(auto_updater_transfer.LocalTransfer,
-                     '_GetStatefulUpdateScript',
-                     return_value=[True, 'test_stateful_update_bin'])
-    self.PatchObject(auto_updater_transfer.LocalTransfer,
-                     '_EnsureDeviceDirectory')
-    self.PatchObject(auto_updater_transfer, 'STATEFUL_FILENAME',
-                     'test_stateful.tgz')
-    with remote_access.ChromiumOSDeviceHandler(remote_access.TEST_IP) as device:
-      CrOS_LocalTransfer = CreateLocalTransferInstance(
-          device, original_payload_dir='test_dir')
-      CrOS_LocalTransfer._TransferStatefulUpdate()
-      self.assertTrue(
-          auto_updater_transfer.LocalTransfer._GetStatefulUpdateScript.called)
-      self.assertEqual(CrOS_LocalTransfer._stateful_update_bin,
-                       os.path.join(device.work_dir, 'stateful_update'))
-      self.assertTrue(
           auto_updater_transfer.LocalTransfer._EnsureDeviceDirectory.called)
 
   def testLocalTransferCheckPayloadsError(self):
@@ -229,47 +184,6 @@ class CrosLocalTransferTest(cros_test_lib.MockTempDirTestCase):
       CrOS_LocalTransfer = CreateLocalTransferInstance(device,
                                                        payload_name='exists')
       CrOS_LocalTransfer.CheckPayloads()
-
-  def testGetStatefulUpdateScriptLocalChroot(self):
-    """Test auto_updater_transfer.LocalTransfer._GetStatefulUpdateScript().
-
-    Test if method returns correct responses when os.path.exists() is set to
-    return True for the path returned by the path_util.FromChrootPath() call.
-    """
-    self.PatchObject(path_util, 'FromChrootPath', return_value='test_path')
-    with remote_access.ChromiumOSDeviceHandler(remote_access.TEST_IP) as device:
-      CrOS_LocalTransfer = CreateLocalTransferInstance(device)
-      with self.PatchObject(os.path, 'exists', side_effect=[True]):
-        self.assertTrue(CrOS_LocalTransfer._GetStatefulUpdateScript(),
-                        (True, 'test_path'))
-
-  def testGetStatefulUpdateScriptLocalStatefulUpdateFile(self):
-    """Test auto_updater_transfer.LocalTransfer._GetStatefulUpdateScript().
-
-    Test if method returns correct responses when os.path.exists() is set to
-    return True for the path returned by the os.path.join() call that joins
-    _dev_dir and LOCAL_STATEFUL_UPDATE_FILENAME.
-    """
-    self.PatchObject(path_util, 'FromChrootPath', return_value='test_path')
-    with remote_access.ChromiumOSDeviceHandler(remote_access.TEST_IP) as device:
-      CrOS_LocalTransfer = CreateLocalTransferInstance(device)
-      with self.PatchObject(os.path, 'exists', side_effect=[False, True]):
-        self.assertEqual(CrOS_LocalTransfer._GetStatefulUpdateScript(),
-                         (True, 'stateful_update'))
-
-  def testGetStatefulUpdateScriptRemoteStatefulUpdatePath(self):
-    """Test auto_updater_transfer.LocalTransfer._GetStatefulUpdateScript().
-
-    Test if method returns correct responses when os.path.exists() is set to
-    return False for all its calls and _GetStatefulUpdateScript() is made to
-    rely on default return values.
-    """
-    self.PatchObject(path_util, 'FromChrootPath', return_value='test_path')
-    with remote_access.ChromiumOSDeviceHandler(remote_access.TEST_IP) as device:
-      CrOS_LocalTransfer = CreateLocalTransferInstance(device)
-      with self.PatchObject(os.path, 'exists', side_effect=[False, False]):
-        self.assertEqual(CrOS_LocalTransfer._GetStatefulUpdateScript(),
-                         (False, '/usr/local/bin/stateful_update'))
 
   def testGetPayloadPropsLocal(self):
     """Tests LocalTransfer.GetPayloadProps().
@@ -414,14 +328,10 @@ class CrosLabTransferTest(cros_test_lib.MockTempDirTestCase):
           device, device_payload_dir='/test/device/payload/dir')
       lab_xfer = auto_updater_transfer.LabTransfer
 
-      self.PatchObject(auto_updater_transfer, '_STATEFUL_UPDATE_FILENAME',
-                       'test_stateful_update')
       self.PatchObject(lab_xfer, '_EnsureDeviceDirectory')
       self.PatchObject(lab_xfer, '_GetCurlCmdForPayloadDownload')
       self.PatchObject(remote_access.ChromiumOSDevice, 'RunCommand')
       expected = [
-          {'payload_dir': CrOS_LabTransfer._device_payload_dir,
-           'payload_filename': auto_updater_transfer._STATEFUL_UPDATE_FILENAME},
           {'payload_dir': device.work_dir,
            'payload_filename': 'stateful.tgz',
            'build_id': ''}]
@@ -441,8 +351,6 @@ class CrosLabTransferTest(cros_test_lib.MockTempDirTestCase):
       CrOS_LabTransfer = CreateLabTransferInstance(device)
       lab_xfer = auto_updater_transfer.LabTransfer
       expected = [
-          ['curl', '-o', 'stateful_update',
-           'http://0.0.0.0:8000/static/stateful_update'],
           ['curl', '-o', '/test/work/dir/stateful.tgz',
            'http://0.0.0.0:8000/static/stateful.tgz']]
 
@@ -490,15 +398,11 @@ class CrosLabTransferTest(cros_test_lib.MockTempDirTestCase):
 
       self.PatchObject(auto_updater_transfer, 'STATEFUL_FILENAME',
                        'test_stateful.tgz')
-      self.PatchObject(auto_updater_transfer, '_STATEFUL_UPDATE_FILENAME',
-                       'test_stateful_update')
       self.PatchObject(lab_xfer, '_EnsureDeviceDirectory')
       self.PatchObject(lab_xfer, '_GetCurlCmdForPayloadDownload')
       self.PatchObject(remote_access.ChromiumOSDevice, 'RunCommand')
 
       expected = [
-          {'payload_dir': CrOS_LabTransfer._device_payload_dir,
-           'payload_filename': auto_updater_transfer._STATEFUL_UPDATE_FILENAME},
           {'payload_dir': CrOS_LabTransfer._device_restore_dir,
            'payload_filename': auto_updater_transfer.STATEFUL_FILENAME,
            'build_id': CrOS_LabTransfer._original_payload_dir},
@@ -523,8 +427,6 @@ class CrosLabTransferTest(cros_test_lib.MockTempDirTestCase):
           device, original_payload_dir='/test/original/payload/dir')
       lab_xfer = auto_updater_transfer.LabTransfer
       expected = [
-          ['curl', '-o', 'stateful_update',
-           'http://0.0.0.0:8000/static/stateful_update'],
           ['curl', '-o', 'stateful.tgz',
            'http://0.0.0.0:8000/test/original/payload/dir/stateful.tgz'],
           ['curl', '-o', '/test/work/dir/stateful.tgz',

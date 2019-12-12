@@ -29,6 +29,7 @@ from chromite.lib import osutils
 from chromite.lib import partial_mock
 from chromite.lib import remote_access
 from chromite.lib import remote_access_unittest
+from chromite.lib import stateful_updater
 
 
 class ChromiumOSBaseUpdaterMock(partial_mock.PartialCmdMock):
@@ -608,8 +609,7 @@ class ChromiumOSUpdaterRunErrorTest(ChromiumOSErrorTest):
   def testStatefulUpdateCmdError(self):
     """Test ChromiumOSUpdater.UpdateStateful with raising exception.
 
-    StatefulUpdateError is raised if device fails to run stateful update
-    command 'stateful_update ...'.
+    StatefulUpdateError is raised if device fails to update stateful partition.
     """
     with remote_access.ChromiumOSDeviceHandler(
         remote_access.TEST_IP) as device:
@@ -617,10 +617,11 @@ class ChromiumOSUpdaterRunErrorTest(ChromiumOSErrorTest):
           device, None, self._payload_dir, do_rootfs_update=False)
       self.PatchObject(remote_access.ChromiumOSDevice, 'RunCommand',
                        side_effect=cros_build_lib.RunCommandError('fail'))
-      self.PatchObject(auto_updater.ChromiumOSUpdater,
-                       'ResetStatefulPartition')
-      with mock.patch('os.path.join', return_value=''):
-        self.assertRaises(auto_updater.StatefulUpdateError, CrOS_AU.RunUpdate)
+      self.PatchObject(stateful_updater.StatefulUpdater, 'Update',
+                       side_effect=stateful_updater.Error())
+      self.PatchObject(stateful_updater.StatefulUpdater, 'Reset',
+                       side_effect=stateful_updater.Error())
+      self.assertRaises(auto_updater.StatefulUpdateError, CrOS_AU.RunUpdate)
 
   def testVerifyErrorWithSameRootDev(self):
     """Test RebootAndVerify fails with raising AutoUpdateVerifyError."""
@@ -665,6 +666,8 @@ class ChromiumOSUpdaterRunErrorTest(ChromiumOSErrorTest):
       self.PatchObject(remote_access.ChromiumOSDevice, 'RunCommand')
       self.PatchObject(auto_updater.ChromiumOSUpdater, 'GetRootDev',
                        return_value=None)
+      self.PatchObject(stateful_updater.StatefulUpdater, 'Update')
+
       try:
         CrOS_AU.RunUpdate()
       except auto_updater.AutoUpdateVerifyError:
