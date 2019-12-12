@@ -61,7 +61,7 @@ def _UpdateAlternatesDir(alternates_root, reference_maps, projects):
   for reference in reference_maps:
     base = os.path.join(reference, '.repo', 'manifests.git')
     result = git.RunGit(base, ['config', '--local', '--get', 'repo.mirror'],
-                        error_code_ok=True)
+                        check=False)
     is_mirror[reference] = (result.returncode == 0 and
                             result.output.strip() == 'true')
 
@@ -215,7 +215,7 @@ def WalkReferences(repo_root, max_depth=5, suppress=()):
     seen.add(repo_root)
     base = os.path.join(repo_root, '.repo', 'manifests.git')
     result = git.RunGit(
-        base, ['config', 'repo.reference'], error_code_ok=True)
+        base, ['config', 'repo.reference'], check=False)
 
     if result.returncode not in (0, 1):
       raise Failed('Unexpected returncode %i from examining %s git '

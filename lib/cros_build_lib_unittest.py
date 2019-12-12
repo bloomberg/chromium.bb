@@ -34,7 +34,7 @@ class RunCommandErrorStrTest(cros_test_lib.TestCase):
 
   def testNonUTF8Characters(self):
     """Test that non-UTF8 characters do not kill __str__"""
-    result = cros_build_lib.run(['ls', '/does/not/exist'], error_code_ok=True)
+    result = cros_build_lib.run(['ls', '/does/not/exist'], check=False)
     rce = cros_build_lib.RunCommandError('\x81', result)
     str(rce)
 
@@ -159,15 +159,15 @@ class TestRunCommandNoMock(cros_test_lib.TestCase):
 
   def testErrorCodeNotRaisesError(self):
     """Don't raise exception when command returns non-zero exit code."""
-    result = cros_build_lib.run(['ls', '/does/not/exist'], error_code_ok=True)
+    result = cros_build_lib.run(['ls', '/does/not/exist'], check=False)
     self.assertTrue(result.returncode != 0)
 
   def testMissingCommandRaisesError(self):
     """Raise error when command is not found."""
     self.assertRaises(cros_build_lib.RunCommandError, cros_build_lib.run,
-                      ['/does/not/exist'], error_code_ok=False)
+                      ['/does/not/exist'], check=True)
     self.assertRaises(cros_build_lib.RunCommandError, cros_build_lib.run,
-                      ['/does/not/exist'], error_code_ok=True)
+                      ['/does/not/exist'], check=False)
 
   def testInputBytes(self):
     """Verify input argument when it is bytes."""
@@ -491,7 +491,7 @@ class TestRunCommand(cros_test_lib.MockTestCase):
                            ignore_sigint=ignore_sigint):
       self.assertRaises(cros_build_lib.RunCommandError,
                         cros_build_lib.run, cmd, shell=True,
-                        ignore_sigint=ignore_sigint, error_code_ok=False)
+                        ignore_sigint=ignore_sigint, check=True)
 
   @_ForceLoggingLevel
   def testSubprocessCommunicateExceptionRaisesError(self, ignore_sigint=False):
@@ -782,7 +782,7 @@ class TestRunCommandOutput(cros_test_lib.TempDirTestCase,
     # Needed by cros_sdk and brillo/cros chroot.
     with self.OutputCapturer():
       cros_build_lib.run(['echo', 'foo'], mute_output=False,
-                         error_code_ok=True, print_cmd=False,
+                         check=False, print_cmd=False,
                          debug_level=logging.NOTICE)
     self.AssertOutputContainsLine('foo')
 

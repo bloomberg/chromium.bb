@@ -113,7 +113,7 @@ class CommandVMTest(object):
       return
     cros_build_lib.run(['./cros_vm', '--stop', '--ssh-port=%d' % self.port],
                        cwd=constants.CHROMITE_BIN_DIR,
-                       error_code_ok=True)
+                       check=False)
 
   @TestCommandDecorator('shell')
   def TestShell(self):
@@ -128,7 +128,7 @@ class CommandVMTest(object):
     logging.info('Test to use shell command to write a file to the VM device.')
     write_cmd = cmd + ['--', 'echo "%s" > %s' % (content, path)]
     result = cros_build_lib.run(write_cmd, capture_output=True,
-                                error_code_ok=True)
+                                check=False)
     if result.returncode:
       logging.error('Failed to write the file to the VM device.')
       raise CommandError(result.error)
@@ -136,7 +136,7 @@ class CommandVMTest(object):
     logging.info('Test to use shell command to read a file on the VM device.')
     read_cmd = cmd + ['--', 'cat %s' % path]
     result = cros_build_lib.run(read_cmd, capture_output=True,
-                                error_code_ok=True)
+                                check=False)
     if result.returncode or result.output.rstrip() != content:
       logging.error('Failed to read the file on the VM device.')
       raise CommandError(result.error)
@@ -144,7 +144,7 @@ class CommandVMTest(object):
     logging.info('Test to use shell command to remove a file on the VM device.')
     remove_cmd = cmd + ['--', 'rm %s' % path]
     result = cros_build_lib.run(remove_cmd, capture_output=True,
-                                error_code_ok=True)
+                                check=False)
     if result.returncode:
       logging.error('Failed to remove the file on the VM device.')
       raise CommandError(result.error)
@@ -157,7 +157,7 @@ class CommandVMTest(object):
     start_cmd = self.BuildCommand('debug', device=self.device_addr,
                                   opt_args=['--exe', exe_path])
     result = cros_build_lib.run(start_cmd, capture_output=True,
-                                error_code_ok=True, input='\n')
+                                check=False, input='\n')
     if result.returncode:
       logging.error('Failed to start and debug a new process on the VM device.')
       raise CommandError(result.error)
@@ -174,7 +174,7 @@ class CommandVMTest(object):
       attach_cmd = self.BuildCommand('debug', device=self.device_addr,
                                      opt_args=['--pid', str(pid)])
       result = cros_build_lib.run(attach_cmd, capture_output=True,
-                                  error_code_ok=True, input='\n')
+                                  check=False, input='\n')
       if result.returncode:
         logging.error('Failed to attach a running process on the VM device.')
         raise CommandError(result.error)
@@ -190,7 +190,7 @@ class CommandVMTest(object):
                             opt_args=['--no-wipe', '--no-reboot'])
 
     logging.info('Test to flash the VM device with the latest image.')
-    result = cros_build_lib.run(cmd, capture_output=True, error_code_ok=True)
+    result = cros_build_lib.run(cmd, capture_output=True, check=False)
     if result.returncode:
       logging.error('Failed to flash the VM device.')
       raise CommandError(result.error)
@@ -207,7 +207,7 @@ class CommandVMTest(object):
 
     logging.info('Test to uninstall packages on the VM device.')
     with outcap.OutputCapturer() as output:
-      result = cros_build_lib.run(cmd + ['--unmerge'], error_code_ok=True)
+      result = cros_build_lib.run(cmd + ['--unmerge'], check=False)
 
     if result.returncode:
       logging.error('Failed to uninstall packages on the VM device.')
@@ -223,7 +223,7 @@ class CommandVMTest(object):
 
     logging.info('Test to install packages on the VM device.')
     with outcap.OutputCapturer() as output:
-      result = cros_build_lib.run(cmd, error_code_ok=True)
+      result = cros_build_lib.run(cmd, check=False)
 
     if result.returncode:
       logging.error('Failed to install packages on the VM device.')

@@ -645,8 +645,7 @@ def run(cmd, print_cmd=True, stdout=None, stderr=None,
   """
   # Handle backwards compatible settings.
   if 'error_code_ok' in kwargs:
-    # TODO(vapier): Enable this warning once chromite & users migrate.
-    # logging.warning('run: error_code_ok= is renamed/inverted to check=')
+    logging.warning('run: error_code_ok= is renamed/inverted to check=')
     check = not kwargs.pop('error_code_ok')
   if 'redirect_stdout' in kwargs:
     # TODO(vapier): Enable this warning once chromite & users migrate.

@@ -242,7 +242,7 @@ class USBImager(object):
     # Ignore errors because sfdisk (util-linux < v2.32) isn't always happy to
     # fix GPT sanity issues.
     cros_build_lib.sudo_run(['sfdisk', device], input='write\n',
-                            error_code_ok=True,
+                            check=False,
                             debug_level=self.debug_level)
 
     cros_build_lib.sudo_run(['partx', '-u', device],

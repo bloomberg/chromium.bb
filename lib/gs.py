@@ -579,7 +579,7 @@ class GSContext(object):
     # If we can list it's contents, we have valid authentication.
     cmd = ['ls', AUTHENTICATION_BUCKET]
     result = self.DoCommand(cmd, retries=0, debug_level=logging.DEBUG,
-                            redirect_stderr=True, error_code_ok=True)
+                            redirect_stderr=True, check=False)
 
     # Did we fail with an authentication error?
     if (result.returncode == 1 and

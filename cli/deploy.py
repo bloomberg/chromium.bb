@@ -911,7 +911,7 @@ def _Unmerge(device, pkg, root):
   cmd = ['qmerge', '--yes']
   # Check if qmerge is available on the device. If not, use emerge.
   if device.RunCommand(
-      ['qmerge', '--version'], error_code_ok=True).returncode != 0:
+      ['qmerge', '--version'], check=False).returncode != 0:
     cmd = ['emerge']
 
   cmd.extend(['--unmerge', pkg, '--root=%s' % root])
@@ -1025,7 +1025,7 @@ def _GetDLCInfo(device, pkg_path, from_dut):
     # On DUT, |pkg_path| is the directory which contains environment file.
     environment_path = os.path.join(pkg_path, _ENVIRONMENT_FILENAME)
     result = device.RunCommand(['test', '-f', environment_path],
-                               error_code_ok=True)
+                               check=False)
     if result.returncode == 1:
       # The package is not installed on DUT yet. Skip extracting info.
       return None, None

@@ -822,7 +822,7 @@ def _RunTestSuiteUsingChromite(board,
 
   # Give tests 10 minutes to clean up before shutting down.
   result = cros_build_lib.run(
-      cmd, error_code_ok=True, kill_timeout=10 * 60, enter_chroot=True)
+      cmd, check=False, kill_timeout=10 * 60, enter_chroot=True)
   if result.returncode:
     results_dir_in_chroot = os.path.join(constants.SOURCE_ROOT,
                                          constants.DEFAULT_CHROOT_DIR,
@@ -881,7 +881,7 @@ def _RunTestSuiteUsingCtest(buildroot,
 
   # Give tests 10 minutes to clean up before shutting down.
   result = cros_build_lib.run(
-      cmd, cwd=cwd, error_code_ok=True, kill_timeout=10 * 60)
+      cmd, cwd=cwd, check=False, kill_timeout=10 * 60)
   if result.returncode:
     if os.path.exists(results_dir_in_chroot):
       error = '%s exited with code %d' % (' '.join(cmd), result.returncode)

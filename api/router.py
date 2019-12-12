@@ -269,7 +269,7 @@ class Router(object):
                 cmd,
                 enter_chroot=True,
                 chroot_args=chroot.get_enter_args(),
-                error_code_ok=True,
+                check=False,
                 extra_env=chroot.env)
           except cros_build_lib.RunCommandError:
             # A non-zero return code will not result in an error, but one

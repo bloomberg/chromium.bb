@@ -247,7 +247,7 @@ def EnterChroot(chroot_path, cache_dir, chrome_root, chrome_root_mount,
   # ThinLTO opens lots of files at the same time.
   resource.setrlimit(resource.RLIMIT_NOFILE, (32768, 32768))
   ret = cros_build_lib.run(
-      cmd, print_cmd=False, error_code_ok=True, mute_output=False)
+      cmd, print_cmd=False, check=False, mute_output=False)
   # If we were in interactive mode, ignore the exit code; it'll be whatever
   # they last ran w/in the chroot and won't matter to us one way or another.
   # Note this does allow chroot entrance to fail and be ignored during
@@ -399,7 +399,7 @@ def RestoreChrootSnapshot(snapshot_name, chroot_vg, chroot_lv):
   chroot_lv_path = '%s/%s' % (chroot_vg, chroot_lv)
   cmd = ['lvchange', '-kn', chroot_lv_path]
   cros_build_lib.run(
-      cmd, print_cmd=False, capture_output=True, error_code_ok=True)
+      cmd, print_cmd=False, capture_output=True, check=False)
 
   # Activate the LV in case the lvchange above was needed.  Activating an LV
   # that is already active shouldn't do anything, so this is safe to run even if

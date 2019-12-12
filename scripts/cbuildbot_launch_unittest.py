@@ -112,7 +112,7 @@ class RunTests(cros_test_lib.RunCommandTestCase):
 
     self.assertCommandCalled(
         expected_cmd, extra_env={'PATH': mock.ANY},
-        cwd='/cbuildbot_buildroot', error_code_ok=True)
+        cwd='/cbuildbot_buildroot', check=False)
 
   def testCbuildbotSimple(self):
     """Ensure we invoke cbuildbot correctly."""
@@ -192,7 +192,7 @@ class RunTests(cros_test_lib.RunCommandTestCase):
         ],
         extra_env={'PATH': mock.ANY},
         cwd='/root/repository',
-        error_code_ok=True)
+        check=False)
 
     # Ensure we saved the final state, as expected.
     self.assertEqual(expected_build_state.status,
@@ -291,7 +291,7 @@ class RunTests(cros_test_lib.RunCommandTestCase):
         ],
         extra_env={'PATH': mock.ANY},
         cwd='/root/repository',
-        error_code_ok=True)
+        check=False)
 
     # Ensure we write the final build state, as expected.
     final_state = build_summary.BuildSummary(

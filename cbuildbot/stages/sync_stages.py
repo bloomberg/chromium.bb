@@ -288,7 +288,7 @@ class BootstrapStage(PatchChangesStage):
 
     cmd += extra_params
     result_obj = cros_build_lib.run(
-        cmd, cwd=self.tempdir, kill_timeout=30, error_code_ok=True)
+        cmd, cwd=self.tempdir, kill_timeout=30, check=False)
     self.returncode = result_obj.returncode
 
   def PerformStage(self):

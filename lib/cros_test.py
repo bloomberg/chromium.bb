@@ -314,7 +314,7 @@ class CrOSTest(object):
         extra_env['CHROMIUM_OUTPUT_DIR'] = self.build_dir
       # Don't raise an exception if the command fails.
       result = self._device.RunCommand(
-          self.args, error_code_ok=True, extra_env=extra_env)
+          self.args, check=False, extra_env=extra_env)
     elif self.catapult_tests:
       result = self._RunCatapultTests()
     elif self.autotest:
@@ -342,7 +342,7 @@ class CrOSTest(object):
     for src in self.results_src:
       logging.info('Fetching %s to %s', src, self.results_dest_dir)
       self._device.remote.CopyFromDevice(src=src, dest=self.results_dest_dir,
-                                         mode='scp', error_code_ok=True,
+                                         mode='scp', check=False,
                                          debug_level=logging.INFO)
 
   def _RunDeviceCmd(self):

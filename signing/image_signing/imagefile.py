@@ -461,7 +461,7 @@ def UpdateLegacyBootloader(image, loop_kern):
     ret = cros_build_lib.sudo_run(
         ['sed', '-iE',
          r's/\broot_hexdigest=[a-z0-9]+/root_hexdigest=%s/g' % root_digest] +
-        files, error_code_ok=True)
+        files, check=False)
     if ret.returncode:
       logging.error('Updating bootloader configs failed: %s', ' '.join(files))
       raise SignImageError('Updating bootloader configs failed')

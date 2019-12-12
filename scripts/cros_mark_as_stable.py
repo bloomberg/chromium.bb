@@ -65,7 +65,7 @@ def CleanStalePackages(srcroot, boards, package_atoms):
         # If nothing was found to be unmerged, emerge will exit(1).
         result = runcmd([emerge, '-q', '--unmerge'] + list(package_atoms),
                         enter_chroot=True, extra_env={'CLEAN_DELAY': '0'},
-                        error_code_ok=True, cwd=srcroot)
+                        check=False, cwd=srcroot)
         if result.returncode not in (0, 1):
           raise cros_build_lib.RunCommandError('unexpected error', result)
       runcmd([eclean, '-d', 'packages'],

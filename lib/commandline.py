@@ -867,7 +867,7 @@ def _RestartInChroot(cmd, chroot_args, extra_env):
     extra_env: Dictionary of environmental variables to set inside the
         chroot (or None).
   """
-  return cros_build_lib.run(cmd, error_code_ok=True, enter_chroot=True,
+  return cros_build_lib.run(cmd, check=False, enter_chroot=True,
                             chroot_args=chroot_args, extra_env=extra_env,
                             cwd=constants.SOURCE_ROOT,
                             mute_output=False).returncode

@@ -116,7 +116,7 @@ def GetCPEFromCPV(category, package, version):
     ["cpe:/a:curl:curl:7.30.0", "cpe:/a:curl:libcurl:7.30.0"]
   """
   equery_cmd = ['equery', 'm', '-U', '%s/%s' % (category, package)]
-  lines = cros_build_lib.run(equery_cmd, error_code_ok=True, print_cmd=False,
+  lines = cros_build_lib.run(equery_cmd, check=False, print_cmd=False,
                              stdout=True, encoding='utf-8').stdout.splitlines()
   # Look for lines like "Remote-ID:   cpe:/a:kernel:linux-pam ID: cpe"
   # and extract the cpe URI.

@@ -75,7 +75,7 @@ def Login(service_account_json=None):
       cmd,
       print_cmd=True,
       mute_output=False,
-      error_code_ok=True)
+      check=False)
 
   if result.returncode:
     raise AccessTokenError('Failed at  logging in to chrome-infra-auth: %s,'

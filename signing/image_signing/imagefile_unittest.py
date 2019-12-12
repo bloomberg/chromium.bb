@@ -120,8 +120,8 @@ class TestGetKernelConfig(cros_test_lib.RunCommandTestCase):
     self.assertTrue(isinstance(ret, six.string_types))
     self.assertEqual(SAMPLE_KERNEL_CONFIG.strip(), ret)
 
-  def testCallsPassesErrorCodeOk(self):
-    """Verify that it passes error_code_ok."""
+  def testCallsPassesCheck(self):
+    """Verify that it passes check."""
     ret = imagefile.GetKernelConfig('/dev/loop9999p4', check=555)
     expected_rc = [
         mock.call(['sudo', '--', 'dump_kernel_config', '/dev/loop9999p4'],
@@ -152,7 +152,7 @@ class TestGetKernelCmdLine(cros_test_lib.MockTestCase):
     self.assertEqual(SAMPLE_KERNEL_CONFIG.strip(), ret.Format())
 
   def testCallsPassesErrorCodeOk(self):
-    """Verify that it passes error_code_ok."""
+    """Verify that it passes check."""
     gkc = self.PatchObject(imagefile, 'GetKernelConfig',
                            return_value=SAMPLE_KERNEL_CONFIG.strip())
     ret = imagefile._GetKernelCmdLine('/dev/loop9999p4', check=555)
@@ -704,7 +704,7 @@ class TestUpdateLegacyBootloader(cros_test_lib.RunCommandTempDirTestCase):
         (['sudo', '--', 'sed', '-iE',
           's/\\broot_hexdigest=[a-z0-9]+/root_hexdigest=9999999999999999999'
           '999999999999999999999/g'] + sorted(uefi['sys_cfgs']), ), sed_args)
-    self.assertEqual({'error_code_ok': True}, sed_command[1])
+    self.assertEqual({'check': False}, sed_command[1])
 
   def testNoSyslinux(self):
     """Test with no syslinux/."""
@@ -721,7 +721,7 @@ class TestUpdateLegacyBootloader(cros_test_lib.RunCommandTempDirTestCase):
         (['sudo', '--', 'sed', '-iE', 's/\\broot_hexdigest=[a-z0-9]+/root_h'
           'exdigest=9999999999999999999999999999999999999999/g'] +
          sorted(uefi['sys_cfgs']), ), sed_args)
-    self.assertEqual({'error_code_ok': True}, sed_command[1])
+    self.assertEqual({'check': False}, sed_command[1])
 
   def testNoGrubCfg(self):
     """Test with no efi/boot/grub.cfg."""
@@ -738,7 +738,7 @@ class TestUpdateLegacyBootloader(cros_test_lib.RunCommandTempDirTestCase):
         (['sudo', '--', 'sed', '-iE', 's/\\broot_hexdigest=[a-z0-9]+/root_h'
           'exdigest=9999999999999999999999999999999999999999/g'] +
          sorted(uefi['sys_cfgs']), ), sed_args)
-    self.assertEqual({'error_code_ok': True}, sed_command[1])
+    self.assertEqual({'check': False}, sed_command[1])
 
   def testNoSyslinuxSedFails(self):
     """Test no syslinux/"""
@@ -757,7 +757,7 @@ class TestUpdateLegacyBootloader(cros_test_lib.RunCommandTempDirTestCase):
         (['sudo', '--', 'sed', '-iE', 's/\\broot_hexdigest=[a-z0-9]+/root_h'
           'exdigest=9999999999999999999999999999999999999999/g'] +
          sorted(uefi['sys_cfgs']), ), sed_args)
-    self.assertEqual({'error_code_ok': True}, sed_command[1])
+    self.assertEqual({'check': False}, sed_command[1])
 
   def testNoGrubCfgSedFails(self):
     """Test the normal path"""
@@ -776,7 +776,7 @@ class TestUpdateLegacyBootloader(cros_test_lib.RunCommandTempDirTestCase):
         (['sudo', '--', 'sed', '-iE', 's/\\broot_hexdigest=[a-z0-9]+/root_h'
           'exdigest=9999999999999999999999999999999999999999/g'] +
          sorted(uefi['sys_cfgs']), ), sed_args)
-    self.assertEqual({'error_code_ok': True}, sed_command[1])
+    self.assertEqual({'check': False}, sed_command[1])
 
   def testNoKernelConfig(self):
     """Test the normal path"""

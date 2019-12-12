@@ -728,7 +728,7 @@ PORTAGE_BINHOST="$PORTAGE_BINHOST $POSTSUBMIT_BINHOST"
       if not os.fork():
         # Child process, just delete the sysroot root and _exit.
         result = cros_build_lib.sudo_run(rm + [tempdir], quiet=True,
-                                         error_code_ok=True)
+                                         check=False)
         if result.returncode:
           # Log it so it can be handled manually.
           logging.warning('Unable to delete old sysroot now at %s: %s', tempdir,

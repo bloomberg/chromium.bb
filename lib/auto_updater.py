@@ -226,7 +226,7 @@ class ChromiumOSUpdater(BaseUpdater):
 
     # Update setting
     self._cmd_kwargs = {}
-    self._cmd_kwargs_omit_error = {'error_code_ok': True}
+    self._cmd_kwargs_omit_error = {'check': False}
     self._do_stateful_update = do_stateful_update
     self._do_rootfs_update = do_rootfs_update
     self._disable_verification = disable_verification

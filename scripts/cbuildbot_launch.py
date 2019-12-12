@@ -410,7 +410,7 @@ def Cbuildbot(buildroot, depot_tools_path, argv):
 
   with boto_compat.FixBotoCerts(activate=fix_boto):
     result = cros_build_lib.run(
-        cmd, extra_env=extra_env, error_code_ok=True, cwd=buildroot)
+        cmd, extra_env=extra_env, check=False, cwd=buildroot)
 
   return result.returncode
 
@@ -430,10 +430,10 @@ def CleanupChroot(buildroot):
     except timeout_util.TimeoutError:
       logging.exception('Cleaning up chroot timed out')
       # Dump debug info to help https://crbug.com/1000034.
-      cros_build_lib.run(['mount'], error_code_ok=False)
-      cros_build_lib.run(['uname', '-a'], error_code_ok=False)
-      cros_build_lib.sudo_run(['losetup', '-a'], error_code_ok=False)
-      cros_build_lib.run(['dmesg'], error_code_ok=False)
+      cros_build_lib.run(['mount'], check=True)
+      cros_build_lib.run(['uname', '-a'], check=True)
+      cros_build_lib.sudo_run(['losetup', '-a'], check=True)
+      cros_build_lib.run(['dmesg'], check=True)
       logging.warning('Assuming the bot is going to reboot, so ignoring this '
                       'failure; see https://crbug.com/1000034')
 

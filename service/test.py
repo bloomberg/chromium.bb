@@ -78,7 +78,7 @@ def BuildTargetUnitTest(build_target, chroot, blacklist=None, was_built=True):
     result = cros_build_lib.run(cmd, enter_chroot=True,
                                 extra_env=extra_env,
                                 chroot_args=chroot.get_enter_args(),
-                                error_code_ok=True)
+                                check=False)
 
     failed_pkgs = portage_util.ParseDieHookStatusFile(tempdir)
 
@@ -101,7 +101,7 @@ def BuildTargetUnitTestTarball(chroot, sysroot, result_path):
 
   result = cros_build_lib.CreateTarball(tarball_path, cwd, chroot=chroot.path,
                                         compression=cros_build_lib.COMP_NONE,
-                                        error_code_ok=True)
+                                        check=False)
 
   return tarball_path if result.returncode == 0 else None
 
@@ -116,7 +116,7 @@ def DebugInfoTest(sysroot_path):
     bool: True iff all tests passed, False otherwise.
   """
   cmd = ['debug_info_test', os.path.join(sysroot_path, 'usr/lib/debug')]
-  result = cros_build_lib.run(cmd, enter_chroot=True, error_code_ok=True)
+  result = cros_build_lib.run(cmd, enter_chroot=True, check=False)
 
   return result.returncode == 0
 

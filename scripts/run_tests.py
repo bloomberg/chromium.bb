@@ -160,7 +160,7 @@ def RunTest(test, interp, cmd, tmpfile, finished, total):
 
   with cros_build_lib.TimedSection() as timer:
     ret = cros_build_lib.run(
-        cmd, capture_output=True, error_code_ok=True,
+        cmd, capture_output=True, check=False,
         combine_stdout_stderr=True, debug_level=logging.DEBUG,
         int_timeout=SIGINT_TIMEOUT)
 

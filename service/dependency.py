@@ -189,7 +189,7 @@ def GenerateSourcePathMapping(packages, board):
   results = {}
 
   packages_to_ebuild_paths = portage_util.FindEbuildsForPackages(
-      packages, sysroot=cros_build_lib.GetSysroot(board), error_code_ok=False)
+      packages, sysroot=cros_build_lib.GetSysroot(board), check=True)
 
   # Source paths which are the directory of ebuild files.
   for package, ebuild_path in packages_to_ebuild_paths.items():

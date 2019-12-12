@@ -582,7 +582,7 @@ class ManifestCheckoutTest(cros_test_lib.TempDirTestCase):
         val = locals()[key]
         key = 'branch.default.%s' % key
         if val is None:
-          git.RunGit(manifest, ['config', '--unset', key], error_code_ok=True)
+          git.RunGit(manifest, ['config', '--unset', key], check=False)
         else:
           git.RunGit(manifest, ['config', key, val])
 

@@ -48,8 +48,8 @@ class GitMock(partial_mock.PartialCmdMock):
     try:
       return self._results['RunGit'].LookupResult(args, kwargs=kwargs)
     except cros_build_lib.RunCommandError as e:
-      # Copy the logic of error_code_ok from run.
-      if kwargs.get('error_code_ok'):
+      # Copy the logic of check from run.
+      if not kwargs.get('check', True):
         return e.result
       raise e
 
@@ -348,9 +348,9 @@ class TestGitBisector(cros_test_lib.MockTempDirTestCase):
 
     self.assertEqual(
         [mock.call(self.repo_dir, ['checkout', self.GOOD_COMMIT_SHA1],
-                   error_code_ok=True),
+                   check=False),
          mock.call(self.repo_dir, ['checkout', self.BAD_COMMIT_SHA1],
-                   error_code_ok=True)],
+                   check=False)],
         git_mock.call_args_list)
     build_deploy_eval_mock.assert_called()
 

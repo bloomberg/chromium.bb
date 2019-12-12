@@ -488,7 +488,7 @@ class Upgrader(object):
     emerge = self._GetBoardCmd(self.EMERGE_CMD)
     cmd = [emerge, '-p'] + ['=' + cpv for cpv in cpvlist]
     result = cros_build_lib.run(
-        cmd, error_code_ok=True, extra_env=envvars, print_cmd=False,
+        cmd, check=False, extra_env=envvars, print_cmd=False,
         redirect_stdout=True, combine_stdout_stderr=True, encoding='utf-8')
 
     return (result.returncode == 0, ' '.join(cmd), result.output)
@@ -500,7 +500,7 @@ class Upgrader(object):
     equery = self._GetBoardCmd(self.EQUERY_CMD)
     cmd = [equery, '-C', 'which', pkg]
     cmd_result = cros_build_lib.run(
-        cmd, error_code_ok=True, extra_env=envvars, print_cmd=False,
+        cmd, check=False, extra_env=envvars, print_cmd=False,
         redirect_stdout=True, combine_stdout_stderr=True, encoding='utf-8')
 
     if cmd_result.returncode == 0:
@@ -518,7 +518,7 @@ class Upgrader(object):
     equery = self._GetBoardCmd('equery')
     cmd = [equery, '-qCN', 'list', '-F', '$mask|$cpv:$slot', '-op', cpv]
     result = cros_build_lib.run(
-        cmd, error_code_ok=True, extra_env=envvars, print_cmd=False,
+        cmd, check=False, extra_env=envvars, print_cmd=False,
         redirect_stdout=True, combine_stdout_stderr=True, encoding='utf-8')
 
     output = result.output
@@ -560,7 +560,7 @@ class Upgrader(object):
     equery = self._GetBoardCmd(self.EQUERY_CMD)
     cmd = [equery, '-C', 'which', '--include-masked', cpv]
     result = cros_build_lib.run(
-        cmd, error_code_ok=True, extra_env=envvars, print_cmd=False,
+        cmd, check=False, extra_env=envvars, print_cmd=False,
         redirect_stdout=True, combine_stdout_stderr=True, encoding='utf-8')
 
     ebuild_path = result.output.strip()
@@ -604,7 +604,7 @@ class Upgrader(object):
     equery = self._GetBoardCmd(self.EQUERY_CMD)
     cmd = [equery, '-C', '--no-pipe', 'which', cpv]
     result = cros_build_lib.run(
-        cmd, error_code_ok=True, extra_env=envvars, print_cmd=False,
+        cmd, check=False, extra_env=envvars, print_cmd=False,
         redirect_stdout=True, combine_stdout_stderr=True, encoding='utf-8')
 
     if result.returncode != 0:
@@ -827,7 +827,7 @@ class Upgrader(object):
 
     manifest_cmd = ['ebuild', os.path.join(pkgdir, ebuild), 'manifest']
     manifest_result = cros_build_lib.run(
-        manifest_cmd, error_code_ok=True, print_cmd=False,
+        manifest_cmd, check=False, print_cmd=False,
         redirect_stdout=True, combine_stdout_stderr=True, encoding='utf-8')
 
     if manifest_result.returncode != 0:

@@ -969,7 +969,7 @@ def EnterSysrootShell():
       command,
       extra_env=GetFuzzExtraEnv(),
       debug_level=logging.INFO,
-      error_code_ok=True).returncode
+      check=False).returncode
 
 
 def StripFuzzerPrefixes(fuzzer_name):

@@ -126,7 +126,7 @@ def CleanStalePackages(boards, package_atoms, chroot):
         result = runcmd([emerge, '-q', '--unmerge'] + list(package_atoms),
                         enter_chroot=True, chroot_args=chroot_args,
                         extra_env={'CLEAN_DELAY': '0'},
-                        error_code_ok=True, cwd=constants.SOURCE_ROOT)
+                        check=False, cwd=constants.SOURCE_ROOT)
         if result.returncode not in (0, 1):
           raise cros_build_lib.RunCommandError('unexpected error', result)
       runcmd([eclean, '-d', 'packages'],

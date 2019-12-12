@@ -484,7 +484,7 @@ class VM(device.Device):
     """Kill the VM process."""
     pid = self._GetVMPid()
     if pid:
-      self.RunCommand(['kill', '-9', str(pid)], error_code_ok=True)
+      self.RunCommand(['kill', '-9', str(pid)], check=False)
 
   def Stop(self):
     """Stop the VM."""

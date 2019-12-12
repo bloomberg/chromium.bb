@@ -118,7 +118,7 @@ class Device(object):
     if self.dry_run:
       return self._dry_run(cmd)
     else:
-      kwargs.setdefault('error_code_ok', True)
+      kwargs.setdefault('check', False)
       if stream_output:
         kwargs.setdefault('capture_output', False)
       else:

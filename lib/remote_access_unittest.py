@@ -173,16 +173,16 @@ class RemoteShTest(RemoteAccessTest):
     self.SetRemoteShResult(returncode=1)
     self.assertRemoteShRaises()
     self.assertRemoteShRaises(ssh_error_ok=True)
-    self.host.RemoteSh(self.TEST_CMD, error_code_ok=True)
-    self.host.RemoteSh(self.TEST_CMD, ssh_error_ok=True, error_code_ok=True)
+    self.host.RemoteSh(self.TEST_CMD, check=False)
+    self.host.RemoteSh(self.TEST_CMD, ssh_error_ok=True, check=False)
 
   def testSshFailure(self):
     """Test failure in ssh command."""
     self.SetRemoteShResult(returncode=remote_access.SSH_ERROR_CODE)
     self.assertRemoteShRaisesSSHConnectionError()
-    self.assertRemoteShRaisesSSHConnectionError(error_code_ok=True)
+    self.assertRemoteShRaisesSSHConnectionError(check=False)
     self.host.RemoteSh(self.TEST_CMD, ssh_error_ok=True)
-    self.host.RemoteSh(self.TEST_CMD, ssh_error_ok=True, error_code_ok=True)
+    self.host.RemoteSh(self.TEST_CMD, ssh_error_ok=True, check=False)
 
   def testEnvLcMessagesSet(self):
     """Test that LC_MESSAGES is set to 'C' for an SSH command."""

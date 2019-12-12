@@ -111,7 +111,7 @@ class RemoteNebraskaWrapper(multiprocessing.Process):
   def _PortFileExists(self):
     """Checks whether the port file exists in the remove device or not."""
     result = self._RemoteCommand(
-        ['test', '-f', self._port_file], error_code_ok=True)
+        ['test', '-f', self._port_file], check=False)
     return result.returncode == 0
 
   def _ReadPortNumber(self):
@@ -140,7 +140,7 @@ class RemoteNebraskaWrapper(multiprocessing.Process):
     # Running curl through SSH because the port on the device is not accessible
     # by default.
     result = self._RemoteCommand(
-        ['curl', url, '-o', '/dev/null'], error_code_ok=True)
+        ['curl', url, '-o', '/dev/null'], check=False)
     return result.returncode == 0
 
   def _WaitUntilStarted(self):
@@ -205,7 +205,7 @@ class RemoteNebraskaWrapper(multiprocessing.Process):
     """
     logging.debug('Stopping nebraska instance with pid %s', self._pid)
     if self.is_alive():
-      self._RemoteCommand(['kill', str(self._pid)], error_code_ok=True)
+      self._RemoteCommand(['kill', str(self._pid)], check=False)
     else:
       logging.debug('Nebraska is not running, stopping nothing!')
       return
@@ -246,7 +246,7 @@ class RemoteNebraskaWrapper(multiprocessing.Process):
   def PrintLog(self):
     """Print Nebraska log to stdout."""
     if self._RemoteCommand(
-        ['test', '-f', self._log_file], error_code_ok=True).returncode != 0:
+        ['test', '-f', self._log_file], check=False).returncode != 0:
       logging.error('Nebraska log file %s does not exist on the device.',
                     self._log_file)
       return

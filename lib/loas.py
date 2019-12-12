@@ -69,7 +69,7 @@ class Loas(object):
     cmd = ['prodcertstatus', '--check_loas_cert_location', 'sslenrolled']
     result = cros_build_lib.sudo_run(cmd,
                                      user=self.user,
-                                     error_code_ok=True,
+                                     check=False,
                                      redirect_stdout=True,
                                      encoding='utf-8')
 

@@ -838,7 +838,7 @@ class TempDir(object):
           # common cause.
           mount_results = cros_build_lib.run(
               ['mount'], redirect_stdout=True, combine_stdout_stderr=True,
-              error_code_ok=True)
+              check=False)
           logging.error('Mounts were:')
           logging.error('  %s', mount_results.output)
 

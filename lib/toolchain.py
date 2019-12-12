@@ -286,7 +286,7 @@ class ToolchainInstaller(object):
     with osutils.TempDir(sudo_rm=True) as tempdir:
       # Extract to the temporary directory.
       cmd = ['tar', '-I', compressor, '-xpf', libc_path, '-C', tempdir]
-      result = cros_build_lib.sudo_run(cmd, error_code_ok=True,
+      result = cros_build_lib.sudo_run(cmd, check=False,
                                        combine_stdout_stderr=True)
       if result.returncode:
         raise ToolchainInstallError('Error extracting libc: %s' % result.output,
@@ -296,7 +296,7 @@ class ToolchainInstaller(object):
       # Trailing / on source to sync contents instead of the directory itself.
       source = os.path.join(tempdir, 'usr', board_chost)
       cmd = ['rsync', '--archive', '%s/' % source, '%s/' % sysroot.path]
-      result = cros_build_lib.sudo_run(cmd, error_code_ok=True,
+      result = cros_build_lib.sudo_run(cmd, check=False,
                                        combine_stdout_stderr=True)
       if result.returncode:
         raise ToolchainInstallError('Error installing libc: %s' % result.output,
@@ -308,7 +308,7 @@ class ToolchainInstaller(object):
       # Sync the debug files to the debug directory.
       source = os.path.join(tempdir, 'usr/lib/debug/usr', board_chost)
       cmd = ['rsync', '--archive', '%s/' % source, '%s/' % debug_dir]
-      result = cros_build_lib.sudo_run(cmd, error_code_ok=True,
+      result = cros_build_lib.sudo_run(cmd, check=False,
                                        combine_stdout_stderr=True)
       if result.returncode:
         logging.warning('libc debug info not copied: %s', result.output)

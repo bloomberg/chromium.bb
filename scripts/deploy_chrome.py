@@ -132,7 +132,7 @@ class DeployChrome(object):
   def _ChromeFileInUse(self):
     result = self.device.RunCommand(LSOF_COMMAND_CHROME %
                                     (self.options.target_dir,),
-                                    error_code_ok=True, capture_output=True)
+                                    check=False, capture_output=True)
     return result.returncode == 0
 
   def _Reboot(self):
@@ -157,7 +157,7 @@ class DeployChrome(object):
     cmd = ('/usr/share/vboot/bin/make_dev_ssd.sh --partitions %d '
            '--remove_rootfs_verification --force')
     for partition in (KERNEL_A_PARTITION, KERNEL_B_PARTITION):
-      self.device.RunCommand(cmd % partition, error_code_ok=True)
+      self.device.RunCommand(cmd % partition, check=False)
 
     self._Reboot()
 
@@ -165,7 +165,7 @@ class DeployChrome(object):
     self._KillProcsIfNeeded()
 
     # Make sure the rootfs is writable now.
-    self._MountRootfsAsWritable(error_code_ok=False)
+    self._MountRootfsAsWritable(check=True)
 
     return True
 
@@ -198,7 +198,7 @@ class DeployChrome(object):
           logging.warning('Killing chrome and session_manager processes...\n')
 
           self.device.RunCommand("pkill 'chrome|session_manager'",
-                                 error_code_ok=True)
+                                 check=False)
           # Wait for processes to actually terminate
           time.sleep(POST_KILL_WAIT)
           logging.info('Rechecking the chrome binary...')
@@ -208,18 +208,17 @@ class DeployChrome(object):
              % self.options.process_timeout)
       raise DeployFailure(msg)
 
-  def _MountRootfsAsWritable(self, error_code_ok=True):
+  def _MountRootfsAsWritable(self, check=False):
     """Mounts the rootfs as writable.
 
     If the command fails and the root dir is not writable then this function
     sets self._root_dir_is_still_readonly.
 
     Args:
-      error_code_ok: See remote.RemoteAccess.RemoteSh for details.
+      check: See remote.RemoteAccess.RemoteSh for details.
     """
     # TODO: Should migrate to use the remount functions in remote_access.
-    result = self.device.RunCommand(MOUNT_RW_COMMAND,
-                                    error_code_ok=error_code_ok,
+    result = self.device.RunCommand(MOUNT_RW_COMMAND, check=check,
                                     capture_output=True, encoding='utf-8')
     if result.returncode and not self.device.IsDirWritable('/'):
       self._root_dir_is_still_readonly.set()
@@ -297,7 +296,7 @@ class DeployChrome(object):
     # pick up major changes (bus type, logging, etc.), but all we care about is
     # getting the latest policy from /opt/google/chrome/dbus so that Chrome will
     # be authorized to take ownership of its service names.
-    self.device.RunCommand(DBUS_RELOAD_COMMAND, error_code_ok=True)
+    self.device.RunCommand(DBUS_RELOAD_COMMAND, check=False)
 
     if self.options.startui:
       logging.info('Starting UI...')

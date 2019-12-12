@@ -2310,7 +2310,7 @@ class VerifyPackageTest(CpuTestBase):
     mocked_upgrader._GenPortageEnvvars.assert_called_once_with(
         mocked_upgrader._curr_arch, unstable_ok=False)
     run_mock.assert_called_once_with(
-        ['equery', '-C', 'which', '--include-masked', cpv], error_code_ok=True,
+        ['equery', '-C', 'which', '--include-masked', cpv], check=False,
         extra_env=envvars, print_cmd=False, redirect_stdout=True,
         combine_stdout_stderr=True, encoding='utf-8')
 
@@ -2359,7 +2359,7 @@ class VerifyPackageTest(CpuTestBase):
         mocked_upgrader._curr_arch, unstable_ok=False)
     run_mock.assert_called_once_with(
         ['equery', '-qCN', 'list', '-F', '$mask|$cpv:$slot', '-op', cpv],
-        error_code_ok=True, extra_env='envvars', print_cmd=False,
+        check=False, extra_env='envvars', print_cmd=False,
         redirect_stdout=True, combine_stdout_stderr=True, encoding='utf-8')
 
   def testGetMaskBitsUnmaskedStable(self):

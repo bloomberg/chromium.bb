@@ -162,7 +162,7 @@ Quoting can be tricky; the rules are the same as with ssh:
     return self.device.BaseRunCommand(
         self.command,
         connect_settings=self._ConnectSettings(),
-        error_code_ok=True,
+        check=False,
         mute_output=False,
         redirect_stderr=True,
         capture_output=False).returncode

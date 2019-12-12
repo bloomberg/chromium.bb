@@ -134,7 +134,7 @@ def RefreshManifestCheckout(manifest_dir, manifest_repo):
   reinitialize = True
   if os.path.exists(manifest_dir):
     result = git.RunGit(manifest_dir, ['config', 'remote.origin.url'],
-                        error_code_ok=True)
+                        check=False)
     if (result.returncode == 0 and
         result.output.rstrip() == manifest_repo):
       logging.info('Updating manifest-versions checkout.')

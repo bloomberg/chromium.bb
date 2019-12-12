@@ -246,7 +246,7 @@ def RevertChrootToSnapshot(buildroot, snapshot_name):
   """Wrapper around cros_sdk --snapshot-restore."""
   cmd = ['cros_sdk', '--snapshot-restore', snapshot_name]
 
-  result = RunBuildScript(buildroot, cmd, chromite_cmd=True, error_code_ok=True)
+  result = RunBuildScript(buildroot, cmd, chromite_cmd=True, check=False)
   return result.returncode == 0
 
 
@@ -254,7 +254,7 @@ def CreateChrootSnapshot(buildroot, snapshot_name):
   """Wrapper around cros_sdk --snapshot-create."""
   cmd = ['cros_sdk', '--snapshot-create', snapshot_name]
 
-  result = RunBuildScript(buildroot, cmd, chromite_cmd=True, error_code_ok=True)
+  result = RunBuildScript(buildroot, cmd, chromite_cmd=True, check=False)
   return result.returncode == 0
 
 
@@ -262,7 +262,7 @@ def DeleteChrootSnapshot(buildroot, snapshot_name):
   """Wrapper around cros_sdk --snapshot-delete."""
   cmd = ['cros_sdk', '--snapshot-delete', snapshot_name]
 
-  result = RunBuildScript(buildroot, cmd, chromite_cmd=True, error_code_ok=True)
+  result = RunBuildScript(buildroot, cmd, chromite_cmd=True, check=False)
   return result.returncode == 0
 
 
@@ -773,7 +773,7 @@ def RunCrosConfigHost(buildroot, board, args, log_output=True):
       encoding='utf-8',
       log_output=log_output,
       cwd=buildroot,
-      error_code_ok=True)
+      check=False)
   if result.returncode:
     # Show the output for debugging purposes.
     if 'No such file or directory' not in result.error:
@@ -1930,7 +1930,7 @@ def GenerateStackTraces(buildroot, board, test_results_dir, archive_dir,
         cros_build_lib.run(['minidump_stackwalk', minidump, symbol_dir],
                            cwd=cwd,
                            enter_chroot=True,
-                           error_code_ok=True,
+                           check=False,
                            redirect_stderr=True,
                            debug_level=logging.DEBUG,
                            stdout=processed_file_path)
@@ -3055,7 +3055,7 @@ def BuildAutotestServerPackageTarball(buildroot, cwd, tarball_dir):
       tarball,
       cwd=cwd,
       extra_args=transforms,
-      error_code_ok=True)
+      check=False)
   return tarball
 
 
@@ -3183,7 +3183,7 @@ def BuildFullAutotestTarball(buildroot, board, tarball_dir):
       os.path.join(buildroot, 'chroot', 'build', board,
                    constants.AUTOTEST_BUILD_PATH, '..'))
   result = BuildTarball(
-      buildroot, ['autotest'], tarball, cwd=cwd, error_code_ok=True)
+      buildroot, ['autotest'], tarball, cwd=cwd, check=False)
 
   # Emerging the autotest package to the factory test image while this is
   # running modifies the timestamp on /build/autotest/server by
@@ -3213,7 +3213,7 @@ def BuildUnitTestTarball(buildroot, board, tarball_dir):
       tarball_path,
       cwd=cwd,
       compressed=False,
-      error_code_ok=True)
+      check=False)
   return tarball
 
 
@@ -3894,7 +3894,7 @@ def GetTargetChromiteApiVersion(buildroot, validate_version=True):
         [constants.PATH_TO_CBUILDBOT, '--reexec-api-version'],
         cwd=buildroot, check=False, encoding='utf-8', capture_output=True)
   except cros_build_lib.RunCommandError:
-    # Although error_code_ok=True was used, this exception will still be raised
+    # Although check=False was used, this exception will still be raised
     # if the executible did not exist.
     full_cbuildbot_path = os.path.join(buildroot, constants.PATH_TO_CBUILDBOT)
     if not os.path.exists(full_cbuildbot_path):

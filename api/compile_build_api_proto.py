@@ -105,7 +105,7 @@ def _GenerateFiles(source, output):
 
   cmd = [_PROTOC, '--python_out', output, '--proto_path', source] + targets
   result = cros_build_lib.run(
-      cmd, cwd=source, print_cmd=False, error_code_ok=True)
+      cmd, cwd=source, print_cmd=False, check=False)
 
   if result.returncode:
     raise GenerationError('Error compiling the proto. See the output for a '

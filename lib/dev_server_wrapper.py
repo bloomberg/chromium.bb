@@ -487,7 +487,7 @@ class DevServerWrapper(multiprocessing.Process):
                            path_resolver.ToChroot(constants.CHROMITE_BIN_DIR))}
     result = self._RunCommand(
         cmd, enter_chroot=True, chroot_args=chroot_args,
-        cwd=constants.SOURCE_ROOT, extra_env=extra_env, error_code_ok=True,
+        cwd=constants.SOURCE_ROOT, extra_env=extra_env, check=False,
         redirect_stdout=True, combine_stdout_stderr=True, encoding='utf-8')
     if result.returncode != 0:
       msg = ('Devserver failed to start!\n'
@@ -515,7 +515,7 @@ class DevServerWrapper(multiprocessing.Process):
 
     logging.debug('Stopping devserver instance with pid %s', self._pid)
     if self.is_alive():
-      self._RunCommand(['kill', self._pid], error_code_ok=True)
+      self._RunCommand(['kill', self._pid], check=False)
     else:
       logging.debug('Devserver not running')
       return
@@ -537,7 +537,7 @@ class DevServerWrapper(multiprocessing.Process):
     fname = self.log_file
     # We use self._RunCommand here to check the existence of the log file.
     if self._RunCommand(
-        ['test', '-f', fname], error_code_ok=True).returncode == 0:
+        ['test', '-f', fname], check=False).returncode == 0:
       result = self._RunCommand(['tail', '-n', str(num_lines), fname],
                                 capture_output=True, encoding='utf-8')
       output = '--- Start output from %s ---' % fname

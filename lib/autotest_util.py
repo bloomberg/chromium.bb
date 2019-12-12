@@ -103,7 +103,7 @@ class AutotestTarballBuilder(object):
 
     tarball = os.path.join(self.output_directory, self._SERVER_PACKAGE_ARCHIVE)
     self._BuildTarball(autotest_files + tast_files, tarball,
-                       extra_args=transforms, error_code_ok=True)
+                       extra_args=transforms, check=False)
     return tarball
 
   def _BuildTarball(self, input_list, tarball_output, compressed=True,

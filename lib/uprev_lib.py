@@ -477,7 +477,7 @@ def clean_stale_packages(new_package_atoms, build_targets, chroot=None):
         result = runcmd(
             [emerge, '-q', '--unmerge'] + new_package_atoms,
             extra_env={'CLEAN_DELAY': '0'},
-            error_code_ok=True,
+            check=False,
             cwd=constants.SOURCE_ROOT)
         if result.returncode not in (0, 1):
           raise cros_build_lib.RunCommandError('unexpected error', result)

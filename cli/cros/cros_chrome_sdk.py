@@ -1450,6 +1450,6 @@ class ChromeSDKCommand(command.CliCommand):
 
         cmd_result = cros_build_lib.run(
             bash_cmd, print_cmd=False, debug_level=logging.CRITICAL,
-            error_code_ok=True, extra_env=extra_env, cwd=self.options.cwd)
+            check=False, extra_env=extra_env, cwd=self.options.cwd)
         if self.options.cmd:
           return cmd_result.returncode

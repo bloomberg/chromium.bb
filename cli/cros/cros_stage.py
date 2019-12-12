@@ -250,7 +250,7 @@ NOTES:
       # from the developer's system.
       res = device.RunCommand(['curl', '--fail',
                                cros_build_lib.ShellQuote(stage_url)],
-                              error_code_ok=True)
+                              check=False)
       if res.returncode == 0:
         logging.info('\n\nStaging Completed!')
         logging.info('Image is staged on Moblab as %s',

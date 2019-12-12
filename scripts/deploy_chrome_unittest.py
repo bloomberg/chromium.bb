@@ -201,9 +201,9 @@ class TestMount(DeployTest):
     self.assertTrue(self.deploy._root_dir_is_still_readonly.is_set())
 
   def testMountRwFailure(self):
-    """Test that mount failure raises an exception if error_code_ok=False."""
+    """Test that mount failure raises an exception if check=True."""
     self.assertRaises(cros_build_lib.RunCommandError,
-                      self.deploy._MountRootfsAsWritable, error_code_ok=False)
+                      self.deploy._MountRootfsAsWritable, check=True)
     self.assertFalse(self.deploy._root_dir_is_still_readonly.is_set())
 
   def testMountTempDir(self):

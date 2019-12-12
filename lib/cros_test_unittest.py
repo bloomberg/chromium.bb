@@ -199,7 +199,7 @@ class CrOSTesterMiscTests(CrOSTesterBase):
     # exception is not raised if it fails.
     self.assertCommandCalled(
         ['tast', 'run', 'localhost:9222', 'ui.ChromeLogin'],
-        error_code_ok=True,
+        check=False,
         extra_env={'CHROMIUM_OUTPUT_DIR': '/some/chromium/dir'})
     # Ensure that --host-cmd does not invoke ssh since it runs on the host.
     self.assertCommandContains(['ssh', 'tast'], expected=False)

@@ -187,7 +187,7 @@ def RunLocal(options):
 
   # Run the tryjob.
   result = cros_build_lib.run(cmd, debug_level=logging.CRITICAL,
-                              error_code_ok=True, cwd=options.buildroot)
+                              check=False, cwd=options.buildroot)
   return result.returncode
 
 
@@ -214,7 +214,7 @@ def RunCbuildbot(options):
 
   # Run the tryjob.
   result = cros_build_lib.run(cmd, debug_level=logging.CRITICAL,
-                              error_code_ok=True, cwd=options.buildroot)
+                              check=False, cwd=options.buildroot)
   return result.returncode
 
 

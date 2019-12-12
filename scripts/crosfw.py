@@ -123,7 +123,7 @@ family = None
 in_chroot = True
 
 logging.basicConfig(format='%(message)s')
-kwargs = {'print_cmd': False, 'error_code_ok': True,
+kwargs = {'print_cmd': False, 'check': False,
           'debug_level': logging.getLogger().getEffectiveLevel()}
 
 outdir = ''

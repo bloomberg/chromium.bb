@@ -191,7 +191,7 @@ def DowngradePackageVersion(portage_root, package_cp,
   if os.path.abspath(source_directory) == os.path.abspath(destination_path):
     return True
   command = ['mv', source_directory, destination_path]
-  code = cros_build_lib.sudo_run(command, error_code_ok=True).returncode
+  code = cros_build_lib.sudo_run(command, check=False).returncode
   return code == 0
 
 

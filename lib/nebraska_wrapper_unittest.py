@@ -62,7 +62,7 @@ class RemoteNebraskaWrapperTest(cros_test_lib.MockTempDirTestCase):
     self.assertTrue(self._nebraska.IsReady())
     run_command_mock.assert_called_once_with(
         ['curl', 'http://127.0.0.1:10/check_health', '-o', '/dev/null'],
-        error_code_ok=True)
+        check=False)
 
   def test_ReadPortNumber(self):
     """Tests ReadPortNumber."""
@@ -94,7 +94,7 @@ class RemoteNebraskaWrapperTest(cros_test_lib.MockTempDirTestCase):
     self.assertTrue(self._nebraska._PortFileExists())
     run_command_mock.assert_called_once_with(
         ['test', '-f', '/run/nebraska/port'],
-        error_code_ok=True)
+        check=False)
 
     # Failure to run the command case.
     run_command_mock = self._PatchRemoteCommand(return_code=1)
@@ -126,7 +126,7 @@ class RemoteNebraskaWrapperTest(cros_test_lib.MockTempDirTestCase):
                                                 return_code=1)
     log = self._nebraska.PrintLog()
     run_command_mock.assert_called_once_with(
-        ['test', '-f', '/tmp/nebraska.log'], error_code_ok=True)
+        ['test', '-f', '/tmp/nebraska.log'], check=False)
     self.assertIsNone(log)
 
     run_command_mock = self._PatchRemoteCommand(output='blah blah')

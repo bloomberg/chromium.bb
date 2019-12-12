@@ -577,7 +577,7 @@ class MountTests(cros_test_lib.TestCase):
       finally:
         if not cleaned:
           cros_build_lib.sudo_run(['umount', '-lf', tempdir],
-                                  error_code_ok=True)
+                                  check=False)
 
   def testUnmountTree(self):
     with osutils.TempDir(prefix='chromite.test.osutils') as tempdir:

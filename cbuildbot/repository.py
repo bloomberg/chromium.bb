@@ -311,7 +311,7 @@ class RepoRepository(object):
         if os.path.isdir(repo_git_store):
           cmd = ['branch', '-D'] + list(constants.CREATED_BRANCHES)
           # Ignore errors, since we delete branches without checking existence.
-          git.RunGit(repo_git_store, cmd, error_code_ok=True)
+          git.RunGit(repo_git_store, cmd, check=False)
 
         if os.path.isdir(path):
           # Above we deleted refs/heads/<branch> for each created branch, now
@@ -319,7 +319,7 @@ class RepoRepository(object):
           for ref in constants.CREATED_BRANCHES:
             # Ignore errors, since we delete branches without checking
             # existence.
-            git.RunGit(path, ['update-ref', '-d', ref], error_code_ok=True)
+            git.RunGit(path, ['update-ref', '-d', ref], check=False)
 
     # Cleanup all of the directories.
     dirs = [[attrs['name'], os.path.join(self.directory, attrs['path'])]
@@ -625,7 +625,7 @@ class RepoRepository(object):
     if detach:
       cmd.append('--detach')
 
-    cros_build_lib.run(cmd, cwd=self.directory, error_code_ok=True)
+    cros_build_lib.run(cmd, cwd=self.directory, check=False)
 
   def GetRelativePath(self, path):
     """Returns full path including source directory of path in repo."""

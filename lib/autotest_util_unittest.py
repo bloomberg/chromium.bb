@@ -97,4 +97,4 @@ class BuildTarballTests(cros_test_lib.RunCommandTempDirTestCase):
     self.builder.BuildAutotestServerPackageTarball()
 
     tar_mock.assert_called_once_with(expected_files, tar_path,
-                                     extra_args=mock.ANY, error_code_ok=True)
+                                     extra_args=mock.ANY, check=False)

@@ -84,7 +84,7 @@ class SudoKeepAlive(cros_build_lib.MasterPidContextManager):
     # need to prompt the user for their password.
     for idx, cmd in enumerate(cmds):
       ret = cros_build_lib.run(
-          cmd, print_cmd=False, shell=True, error_code_ok=True)
+          cmd, print_cmd=False, shell=True, check=False)
 
       if ret.returncode != 0:
         tty_msg = 'Please disable tty_tickets using these instructions: %s'

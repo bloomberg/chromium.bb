@@ -227,13 +227,13 @@ class _BackgroundTask(multiprocessing.Process):
         ('lsof', '-p', pid),
     )
     for cmd in commands:
-      cls._DebugRunCommand(cmd, debug_level=log_level, error_code_ok=True,
+      cls._DebugRunCommand(cmd, debug_level=log_level, check=False,
                            log_output=True)
 
     stdin = '\n'.join(['echo \\n>>> %s\\n\n%s' % (x, x)
                        for x in cls.GDB_COMMANDS])
     cmd = ('gdb', '--nx', '-q', '-p', pid, '-ex', 'set prompt',)
-    cls._DebugRunCommand(cmd, debug_level=log_level, error_code_ok=True,
+    cls._DebugRunCommand(cmd, debug_level=log_level, check=False,
                          log_output=True, input=stdin)
 
   def Kill(self, sig, log_level, first=False):
@@ -255,7 +255,7 @@ class _BackgroundTask(multiprocessing.Process):
         ppid = str(self.pid)
         output = self._DebugRunCommand(
             ('pgrep', '-P', ppid), debug_level=log_level, print_cmd=False,
-            error_code_ok=True, capture_output=True)
+            check=False, capture_output=True)
         for pid in [ppid] + output.splitlines():
           self._DumpDebugPid(log_level, pid)
 

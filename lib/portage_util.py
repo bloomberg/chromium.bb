@@ -1838,7 +1838,7 @@ def FindEbuildForBoardPackage(pkg_str, board,
 
 
 def FindEbuildsForPackages(packages_list, sysroot, include_masked=False,
-                           extra_env=None, error_code_ok=True):
+                           extra_env=None, check=False):
   """Returns paths to the ebuilds for the packages in |packages_list|.
 
   Args:
@@ -1848,7 +1848,7 @@ def FindEbuildsForPackages(packages_list, sysroot, include_masked=False,
     include_masked: True iff we should include masked ebuilds in our query.
     extra_env: optional dictionary of extra string/string pairs to use as the
       environment of equery command.
-    error_code_ok: If true, do not raise an exception when run returns
+    check: If False, do not raise an exception when run returns
       a non-zero exit code.
       If any package does not exist causing the run to fail, we will
       return information for none of the packages, i.e: return an
@@ -1867,7 +1867,7 @@ def FindEbuildsForPackages(packages_list, sysroot, include_masked=False,
 
   result = cros_build_lib.run(
       cmd, extra_env=extra_env, print_cmd=False, capture_output=True,
-      check=not error_code_ok, encoding='utf-8')
+      check=check, encoding='utf-8')
 
   if result.returncode:
     return {}
@@ -1891,7 +1891,7 @@ def FindEbuildsForPackages(packages_list, sysroot, include_masked=False,
 
 
 def FindEbuildForPackage(pkg_str, sysroot, include_masked=False,
-                         extra_env=None, error_code_ok=True):
+                         extra_env=None, check=False):
   """Returns a path to an ebuild responsible for package matching |pkg_str|.
 
   Args:
@@ -1900,15 +1900,14 @@ def FindEbuildForPackage(pkg_str, sysroot, include_masked=False,
     include_masked: True iff we should include masked ebuilds in our query.
     extra_env: optional dictionary of extra string/string pairs to use as the
       environment of equery command.
-    error_code_ok: If true, do not raise an exception when run returns
+    check: If False, do not raise an exception when run returns
       a non-zero exit code. Instead, return None.
 
   Returns:
     Path to ebuild for this package.
   """
   ebuilds_map = FindEbuildsForPackages(
-      [pkg_str], sysroot, include_masked, extra_env,
-      error_code_ok=error_code_ok)
+      [pkg_str], sysroot, include_masked, extra_env, check=check)
   if not ebuilds_map:
     return None
   return ebuilds_map[pkg_str]
@@ -1933,7 +1932,7 @@ def GetInstalledPackageUseFlags(pkg_str, board=None,
 
   cmd += ['-CqU', pkg_str]
   result = cros_build_lib.run(
-      cmd, enter_chroot=True, capture_output=True, error_code_ok=True,
+      cmd, enter_chroot=True, capture_output=True, check=False,
       encoding='utf-8', cwd=buildroot)
 
   use_flags = {}
@@ -2075,7 +2074,7 @@ def _CheckHasTest(cp, sysroot):
     raises a RunCommandError
   """
   try:
-    path = FindEbuildForPackage(cp, sysroot, error_code_ok=False)
+    path = FindEbuildForPackage(cp, sysroot, check=True)
   except cros_build_lib.RunCommandError as e:
     logging.error('FindEbuildForPackage error %s', e)
     raise failures_lib.PackageBuildFailure(e, 'equery', cp)
@@ -2136,7 +2135,7 @@ def HasPrebuilt(atom, board=None, extra_env=None):
       cmd,
       enter_chroot=True,
       extra_env=extra_env,
-      error_code_ok=True,
+      check=False,
       quiet=True)
   return not result.returncode
 
@@ -2274,7 +2273,7 @@ def PortageqHasVersion(category_package, root='/', board=None):
   # Exit codes 0/1+ indicate "have"/"don't have".
   # Normalize them into True/False values.
   result = _Portageq(['has_version', root, category_package], board=board,
-                     error_code_ok=True)
+                     check=False)
   return not result.returncode
 
 

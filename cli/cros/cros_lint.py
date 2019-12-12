@@ -112,7 +112,7 @@ SHLINT_OUTPUT_FORMAT_MAP = {
 
 def _LinterRunCommand(cmd, debug, **kwargs):
   """Run the linter with common run args set as higher levels expect."""
-  return cros_build_lib.run(cmd, error_code_ok=True, print_cmd=debug,
+  return cros_build_lib.run(cmd, check=False, print_cmd=debug,
                             debug_level=logging.NOTICE, **kwargs)
 
 
