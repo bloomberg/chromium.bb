@@ -34,7 +34,6 @@
 #include "av1/encoder/firstpass.h"
 #include "av1/encoder/level.h"
 #include "av1/encoder/lookahead.h"
-#include "av1/encoder/mbgraph.h"
 #include "av1/encoder/mcomp.h"
 #include "av1/encoder/ratectrl.h"
 #include "av1/encoder/rd.h"
@@ -851,9 +850,7 @@ typedef struct AV1_COMP {
 
   struct aom_codec_pkt_list *output_pkt_list;
 
-  MBGRAPH_FRAME_STATS mbgraph_stats[MAX_LAG_BUFFERS];
-  int mbgraph_n_frames;  // number of frames filled in the above
-  int static_mb_pct;     // % forced skip mbs by segmentation
+  int static_mb_pct;  // % forced skip mbs by segmentation
   int ref_frame_flags;
   int ext_ref_frame_flags;
 

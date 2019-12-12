@@ -62,7 +62,6 @@
 #include "av1/encoder/firstpass.h"
 #include "av1/encoder/grain_test_vectors.h"
 #include "av1/encoder/hash_motion.h"
-#include "av1/encoder/mbgraph.h"
 #include "av1/encoder/pass2_strategy.h"
 #include "av1/encoder/picklpf.h"
 #include "av1/encoder/pickrst.h"
@@ -817,12 +816,6 @@ static void configure_static_seg_features(AV1_COMP *cpi) {
     // Disable segmentation and individual segment features by default
     av1_disable_segmentation(seg);
     av1_clearall_segfeatures(seg);
-
-#if !CONFIG_REALTIME_ONLY
-    // Scan frames from current to arf frame.
-    // This function re-enables segmentation if appropriate.
-    av1_update_mbgraph_stats(cpi);
-#endif
 
     // If segmentation was enabled set those features needed for the
     // arf itself.
@@ -2840,7 +2833,6 @@ void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
 
 AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf,
                                 BufferPool *const pool) {
-  unsigned int i;
   AV1_COMP *volatile const cpi = aom_memalign(32, sizeof(AV1_COMP));
   AV1_COMMON *volatile const cm = cpi != NULL ? &cpi->common : NULL;
 
@@ -2891,13 +2883,6 @@ AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf,
   cpi->tile_data = NULL;
   cpi->last_show_frame_buf = NULL;
   realloc_segmentation_maps(cpi);
-
-  for (i = 0; i < (sizeof(cpi->mbgraph_stats) / sizeof(cpi->mbgraph_stats[0]));
-       i++) {
-    CHECK_MEM_ERROR(
-        cm, cpi->mbgraph_stats[i].mb_stats,
-        aom_calloc(cm->MBs * sizeof(*cpi->mbgraph_stats[i].mb_stats), 1));
-  }
 
   cpi->refresh_alt_ref_frame = 0;
 
@@ -3456,11 +3441,6 @@ void av1_remove_compressor(AV1_COMP *cpi) {
   }
 
   dealloc_compressor_data(cpi);
-
-  for (i = 0; i < sizeof(cpi->mbgraph_stats) / sizeof(cpi->mbgraph_stats[0]);
-       ++i) {
-    aom_free(cpi->mbgraph_stats[i].mb_stats);
-  }
 
 #if CONFIG_INTERNAL_STATS
   aom_free(cpi->ssim_vars);

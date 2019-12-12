@@ -171,8 +171,6 @@ list(APPEND AOM_AV1_ENCODER_SOURCES
             "${AOM_ROOT}/av1/encoder/level.h"
             "${AOM_ROOT}/av1/encoder/lookahead.c"
             "${AOM_ROOT}/av1/encoder/lookahead.h"
-            "${AOM_ROOT}/av1/encoder/mbgraph.c"
-            "${AOM_ROOT}/av1/encoder/mbgraph.h"
             "${AOM_ROOT}/av1/encoder/mcomp.c"
             "${AOM_ROOT}/av1/encoder/mcomp.h"
             "${AOM_ROOT}/av1/encoder/ml.c"
