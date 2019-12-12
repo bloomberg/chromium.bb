@@ -418,7 +418,7 @@ proto_library("system_api-patchpanel-protos") {
   proto_in_dir = "dbus/patchpanel"
   proto_out_dir = "include/patchpanel/proto_bindings"
   sources = [
-    "${proto_in_dir}/patchpanel-service.proto",
+    "${proto_in_dir}/patchpanel_service.proto",
   ]
   standalone = true
   use_pic = true
