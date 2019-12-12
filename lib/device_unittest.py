@@ -105,7 +105,7 @@ class DeviceTester(cros_test_lib.RunCommandTestCase):
     self.CreateDevice('190.0.2.130', False)
 
   def testDryRunError(self):
-    """Verify _DryRunCommand can only be called when dry_run is True."""
+    """Verify _dry_run can only be called when dry_run is True."""
     self._device.dry_run = False
-    self.assertRaises(AssertionError, self._device._DryRunCommand,
+    self.assertRaises(AssertionError, self._device._dry_run,
                       cmd=['echo', 'Hello'])

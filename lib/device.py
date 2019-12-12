@@ -77,7 +77,12 @@ class Device(object):
     if result.returncode != 0:
       raise DeviceError('WaitForBoot failed: %s.' % result.error)
 
+  # TODO(vapier): Delete this shim once chromite & users migrate.
   def RunCommand(self, cmd, **kwargs):
+    """Backwards compat API."""
+    return self.run(cmd, **kwargs)
+
+  def run(self, cmd, **kwargs):
     """Use sudo_run or run as necessary.
 
     Args:
@@ -88,13 +93,18 @@ class Device(object):
       cros_build_lib.CommandResult object.
     """
     if self.dry_run:
-      return self._DryRunCommand(cmd)
+      return self._dry_run(cmd)
     elif self.use_sudo:
       return cros_build_lib.sudo_run(cmd, **kwargs)
     else:
       return cros_build_lib.run(cmd, **kwargs)
 
-  def RemoteCommand(self, cmd, stream_output=False, **kwargs):
+  # TODO(vapier): Delete this shim once chromite & users migrate.
+  def RemoteCommand(self, cmd, **kwargs):
+    """Backwards compat API."""
+    return self.remote_run(cmd, **kwargs)
+
+  def remote_run(self, cmd, stream_output=False, **kwargs):
     """Run a remote command.
 
     Args:
@@ -106,7 +116,7 @@ class Device(object):
       cros_build_lib.CommandResult object.
     """
     if self.dry_run:
-      return self._DryRunCommand(cmd)
+      return self._dry_run(cmd)
     else:
       kwargs.setdefault('error_code_ok', True)
       if stream_output:
@@ -116,7 +126,7 @@ class Device(object):
         kwargs.setdefault('log_output', True)
       return self.remote.RunCommand(cmd, debug_level=logging.INFO, **kwargs)
 
-  def _DryRunCommand(self, cmd):
+  def _dry_run(self, cmd):
     """Print a command for dry_run.
 
     Args:

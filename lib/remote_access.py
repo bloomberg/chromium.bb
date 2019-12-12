@@ -1028,7 +1028,12 @@ class RemoteDevice(object):
     """Reboot the device."""
     return self.GetAgent().RemoteReboot(timeout_sec=timeout_sec)
 
+  # TODO(vapier): Delete this shim once chromite & users migrate.
   def BaseRunCommand(self, cmd, **kwargs):
+    """Backwards compat API."""
+    return self.base_run(cmd, **kwargs)
+
+  def base_run(self, cmd, **kwargs):
     """Executes a shell command on the device with output captured by default.
 
     Args:
@@ -1044,7 +1049,12 @@ class RemoteDevice(object):
       logging.error('Error connecting to device %s', self.hostname)
       raise
 
+  # TODO(vapier): Delete this shim once chromite & users migrate.
   def RunCommand(self, cmd, **kwargs):
+    """Backwards compat API."""
+    return self.run(cmd, **kwargs)
+
+  def run(self, cmd, **kwargs):
     """Executes a shell command on the device with output captured by default.
 
     Also sets environment variables using dictionary provided by
@@ -1255,7 +1265,12 @@ class ChromiumOSDevice(RemoteDevice):
 
     return not self._RootfsIsReadOnly()
 
+  # TODO(vapier): Delete this shim once chromite & users migrate.
   def RunCommand(self, cmd, **kwargs):
+    """Backwards compat API."""
+    return self.run(cmd, **kwargs)
+
+  def run(self, cmd, **kwargs):
     """Executes a shell command on the device with output captured by default.
 
     Also makes sure $PATH is set correctly by adding DEV_BIN_PATHS to
@@ -1276,4 +1291,4 @@ class ChromiumOSDevice(RemoteDevice):
     if path_env is not None:
       extra_env['PATH'] = path_env
     kwargs['extra_env'] = extra_env
-    return super(ChromiumOSDevice, self).RunCommand(cmd, **kwargs)
+    return super(ChromiumOSDevice, self).run(cmd, **kwargs)
