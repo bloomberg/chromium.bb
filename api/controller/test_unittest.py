@@ -61,6 +61,26 @@ class DebugInfoTestTest(cros_test_lib.MockTempDirTestCase,
                                   self.validate_only_config)
     patch.assert_not_called()
 
+  def testMockError(self):
+    """Test mock error call does not execute any logic, returns error."""
+    patch = self.PatchObject(test_service, 'DebugInfoTest')
+
+    input_msg = self._GetInput(sysroot_path=self.full_sysroot_path)
+    rc = test_controller.DebugInfoTest(input_msg, self._GetOutput(),
+                                       self.mock_error_config)
+    patch.assert_not_called()
+    self.assertEqual(controller.RETURN_CODE_COMPLETED_UNSUCCESSFULLY, rc)
+
+  def testMockCall(self):
+    """Test mock call does not execute any logic, returns success."""
+    patch = self.PatchObject(test_service, 'DebugInfoTest')
+
+    input_msg = self._GetInput(sysroot_path=self.full_sysroot_path)
+    rc = test_controller.DebugInfoTest(input_msg, self._GetOutput(),
+                                       self.mock_call_config)
+    patch.assert_not_called()
+    self.assertEqual(controller.RETURN_CODE_SUCCESS, rc)
+
   def testNoBuildTargetNoSysrootFails(self):
     """Test missing build target name and sysroot path fails."""
     input_msg = self._GetInput()
@@ -120,7 +140,7 @@ class BuildTargetUnitTestTest(cros_test_lib.MockTempDirTestCase,
                      os.path.join(input_msg.result_path, 'unit_tests.tar'))
 
   def testMockError(self):
-    """Test that a mock error does not execute logic, returns mocked value."""
+    """Test that a mock error does not execute logic, returns error."""
     patch = self.PatchObject(test_service, 'BuildTargetUnitTest')
 
     input_msg = self._GetInput(board='board', result_path=self.tempdir)

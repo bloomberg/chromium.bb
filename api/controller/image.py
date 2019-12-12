@@ -65,7 +65,7 @@ def _CreateResponse(_input_proto, output_proto, _config):
 
 
 @faux.success(_CreateResponse)
-@faux.empty_error
+@faux.empty_completed_unsuccessfully_error
 @validate.require('build_target.name')
 @validate.validation_complete
 @metrics.collect_metrics
@@ -201,7 +201,7 @@ def _SignerTestResponse(_input_proto, output_proto, _config):
 
 
 @faux.success(_SignerTestResponse)
-@faux.empty_error
+@faux.empty_completed_unsuccessfully_error
 @validate.exists('image.path')
 @validate.validation_complete
 def SignerTest(input_proto, output_proto, _config):
@@ -229,7 +229,7 @@ def _TestResponse(_input_proto, output_proto, _config):
 
 
 @faux.success(_TestResponse)
-@faux.empty_error
+@faux.empty_completed_unsuccessfully_error
 @validate.require('build_target.name', 'result.directory')
 @validate.exists('image.path')
 def Test(input_proto, output_proto, config):

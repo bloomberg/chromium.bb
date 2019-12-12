@@ -23,7 +23,8 @@ _VALID_IMAGE_PAIRS = (('src_signed_image', 'tgt_signed_image'),
 # We have more fields we might validate however, they're either
 # 'oneof' or allowed to be the empty value by design. If @validate
 # gets more complex in the future we can add more here.
-@faux.all_empty
+@faux.empty_success
+@faux.empty_completed_unsuccessfully_error
 @validate.require('bucket')
 def GeneratePayload(input_proto, output_proto, config):
   """Generate a update payload ('do paygen').

@@ -55,3 +55,21 @@ class PayloadApiTests(cros_test_lib.MockTestCase, api_config.ApiConfigMixin):
     self.PatchObject(paygen_payload_lib, 'PaygenPayload')
     res = payload.GeneratePayload(self.req, self.result, self.api_config)
     self.assertEqual(res, controller.RETURN_CODE_SUCCESS)
+
+  def testMockError(self):
+    """Test mock error call does not execute any logic, returns error."""
+    patch = self.PatchObject(paygen_payload_lib, 'PaygenPayload')
+
+    res = payload.GeneratePayload(self.req, self.result,
+                                  self.mock_error_config)
+    patch.assert_not_called()
+    self.assertEqual(controller.RETURN_CODE_COMPLETED_UNSUCCESSFULLY, res)
+
+  def testMockCall(self):
+    """Test mock call does not execute any logic, returns success."""
+    patch = self.PatchObject(paygen_payload_lib, 'PaygenPayload')
+
+    res = payload.GeneratePayload(self.req, self.result,
+                                  self.mock_call_config)
+    patch.assert_not_called()
+    self.assertEqual(controller.RETURN_CODE_SUCCESS, res)

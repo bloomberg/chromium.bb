@@ -32,7 +32,8 @@ from chromite.utils import key_value_store
 from chromite.utils import metrics
 
 
-@faux.all_empty
+@faux.empty_success
+@faux.empty_completed_unsuccessfully_error
 def DebugInfoTest(input_proto, _output_proto, config):
   """Run the debug info tests."""
   sysroot_path = input_proto.sysroot.path
