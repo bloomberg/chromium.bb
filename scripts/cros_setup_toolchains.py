@@ -1023,6 +1023,7 @@ def _BuildInitialPackageRoot(output_dir, paths, elfs, ldpaths,
   libdir = os.path.join(output_dir, 'lib')
   osutils.SafeMakedirs(libdir)
   donelibs = set()
+  basenamelibs = set()
   glibc_re = re.compile(r'/lib(c|pthread)-[0-9.]+\.so$')
   for elf in elfs:
     e = lddtree.ParseELF(elf, root=root, ldpaths=ldpaths)
@@ -1041,15 +1042,31 @@ def _BuildInitialPackageRoot(output_dir, paths, elfs, ldpaths,
         link = sym_paths[elf]
         GeneratePathWrapper(output_dir, link, elf)
 
-    for lib, lib_data in e['libs'].items():
-      if lib in donelibs:
-        continue
+    # TODO(crbug.com/917193): Drop this hack once libopcodes linkage is fixed.
+    if os.path.basename(elf).startswith('libopcodes-'):
+      continue
 
+    for lib, lib_data in e['libs'].items():
       src = path = lib_data['path']
       if path is None:
         logging.warning('%s: could not locate %s', elf, lib)
         continue
-      donelibs.add(lib)
+
+      # No need to try and copy the same source lib multiple times.
+      if path in donelibs:
+        continue
+      donelibs.add(path)
+
+      # Die if we try to normalize different source libs with the same basename.
+      if lib in basenamelibs:
+        logging.error('Multiple sources detected for %s:\n  new: %s\n  old: %s',
+                      os.path.join('/lib', lib), path,
+                      ' '.join(x for x in donelibs
+                               if x != path and os.path.basename(x) == lib))
+        # TODO(crbug.com/917193): Make this fatal.
+        # cros_build_lib.Die('Unable to resolve lib conflicts')
+        continue
+      basenamelibs.add(lib)
 
       # Needed libs are the SONAME, but that is usually a symlink, not a
       # real file.  So link in the target rather than the symlink itself.
