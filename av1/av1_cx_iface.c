@@ -1788,7 +1788,7 @@ static void destroy_context_and_bufferpool(AV1_COMP *cpi,
                                            BufferPool *buffer_pool) {
   av1_remove_compressor(cpi);
 #if CONFIG_MULTITHREAD
-  pthread_mutex_destroy(&buffer_pool->pool_mutex);
+  if (buffer_pool) pthread_mutex_destroy(&buffer_pool->pool_mutex);
 #endif
   aom_free(buffer_pool);
 }
