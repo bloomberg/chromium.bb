@@ -465,6 +465,10 @@ void *
 gbm_bo_map(struct gbm_bo *bo,
            uint32_t x, uint32_t y, uint32_t width, uint32_t height,
            uint32_t flags, uint32_t *stride, void **map_data, size_t plane);
+void *
+gbm_bo_map2(struct gbm_bo *bo,
+	   uint32_t x, uint32_t y, uint32_t width, uint32_t height,
+	   uint32_t flags, uint32_t *stride, void **map_data, int plane);
 
 /*
  * The following functions are deprecated. They can be removed * once crbug.com/946907 is fixed.

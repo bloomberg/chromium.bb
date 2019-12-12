@@ -392,6 +392,12 @@ PUBLIC int gbm_bo_get_plane_fd(struct gbm_bo *bo, size_t plane)
 PUBLIC void *gbm_bo_map(struct gbm_bo *bo, uint32_t x, uint32_t y, uint32_t width, uint32_t height,
 			uint32_t transfer_flags, uint32_t *stride, void **map_data, size_t plane)
 {
+	return gbm_bo_map2(bo, x, y, width, height, transfer_flags, stride, map_data, plane);
+}
+
+PUBLIC void *gbm_bo_map2(struct gbm_bo *bo, uint32_t x, uint32_t y, uint32_t width, uint32_t height,
+			 uint32_t transfer_flags, uint32_t *stride, void **map_data, int plane)
+{
 	void *addr;
 	off_t offset;
 	uint32_t map_flags;
