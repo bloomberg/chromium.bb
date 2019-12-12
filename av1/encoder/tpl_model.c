@@ -138,7 +138,7 @@ static uint32_t motion_estimation(AV1_COMP *cpi, MACROBLOCK *x,
   xd->plane[0].pre[0].buf = ref_frame_buf;
   xd->plane[0].pre[0].stride = stride_ref;
 
-  step_param = mv_sf->reduce_first_step_size + tpl_sf->reduce_first_step_size;
+  step_param = tpl_sf->reduce_first_step_size;
   step_param = AOMMIN(step_param, MAX_MVSEARCH_STEPS - 2);
 
   av1_set_mv_search_range(&x->mv_limits, &best_ref_mv1);

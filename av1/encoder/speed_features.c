@@ -680,7 +680,6 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
       sf->intra_uv_mode_mask[i] = UV_INTRA_DC_CFL;
     }
     sf->partition_search_breakout_rate_thr = 500;
-    sf->mv.reduce_first_step_size = 1;
     sf->simple_model_rd_from_var = 1;
     sf->lpf_pick = LPF_PICK_FROM_Q;
     sf->mv.subpel_force_stop = QUARTER_PEL;
@@ -804,7 +803,6 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
   }
   sf->gm_erroradv_type = GM_ERRORADV_TR_0;
   sf->disable_adaptive_warp_error_thresh = 1;
-  sf->mv.reduce_first_step_size = 0;
   sf->mv.auto_mv_step_size = 0;
   sf->comp_inter_joint_search_thresh = BLOCK_4X4;
   sf->adaptive_rd_thresh = 0;
