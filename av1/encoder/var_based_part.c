@@ -539,7 +539,7 @@ void av1_set_variance_partition_thresholds(AV1_COMP *cpi, int q,
   AV1_COMMON *const cm = &cpi->common;
   SPEED_FEATURES *const sf = &cpi->sf;
   const int is_key_frame = frame_is_intra_only(cm);
-  if (sf->partition_search_type != VAR_BASED_PARTITION) {
+  if (sf->part_sf.partition_search_type != VAR_BASED_PARTITION) {
     return;
   } else {
     set_vbp_thresholds(cpi, cpi->vbp_thresholds, q, content_state);

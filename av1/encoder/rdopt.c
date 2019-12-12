@@ -12340,7 +12340,7 @@ static AOM_INLINE void init_mode_skip_mask(mode_skip_mask_t *mask,
         mask->pred_modes[GOLDEN_FRAME] |= INTER_ALL;
   }
 
-  if (bsize > sf->max_intra_bsize) {
+  if (bsize > sf->part_sf.max_intra_bsize) {
     disable_reference(INTRA_FRAME, mask->ref_combo);
   }
 

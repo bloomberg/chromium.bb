@@ -253,6 +253,89 @@ typedef struct TPL_SPEED_FEATURES {
   int reduce_first_step_size;
 } TPL_SPEED_FEATURES;
 
+typedef struct PARTITION_SPEED_FEATURES {
+  PARTITION_SEARCH_TYPE partition_search_type;
+
+  // Used if partition_search_type = FIXED_SIZE_PARTITION
+  BLOCK_SIZE always_this_block_size;
+
+  // Prune extended partition types search
+  // Can take values 0 - 2, 0 referring to no pruning, and 1 - 2 increasing
+  // aggressiveness of pruning in order.
+  int prune_ext_partition_types_search_level;
+
+  // Use a ML model to prune horz and vert partitions
+  int ml_prune_rect_partition;
+
+  // Use a ML model to prune horz_a, horz_b, vert_a and vert_b partitions.
+  int ml_prune_ab_partition;
+
+  // Use a ML model to prune horz4 and vert4 partitions.
+  int ml_prune_4_partition;
+
+  // Use a ML model to adaptively terminate partition search after trying
+  // PARTITION_SPLIT. Can take values 0 - 2, 0 meaning not being enabled, and
+  // 1 - 2 increasing aggressiveness in order.
+  int ml_early_term_after_part_split_level;
+
+  // Skip rectangular partition test when partition type none gives better
+  // rd than partition type split. Can take values 0 - 2, 0 referring to no
+  // skipping, and 1 - 2 increasing aggressiveness of skipping in order.
+  int less_rectangular_check_level;
+
+  // Use square partition only beyond this block size.
+  BLOCK_SIZE use_square_partition_only_threshold;
+
+  // Sets min and max square partition levels for this superblock based on
+  // motion vector and prediction error distribution produced from 16x16
+  // simple motion search
+  MAX_PART_PRED_MODE auto_max_partition_based_on_simple_motion;
+  int auto_min_partition_based_on_simple_motion;
+
+  // Min and max square partition size we enable (block_size) as per auto
+  // min max, but also used by adjust partitioning, and pick_partitioning.
+  BLOCK_SIZE default_min_partition_size;
+  BLOCK_SIZE default_max_partition_size;
+
+  // Whether or not we allow partitions one smaller or one greater than the last
+  // frame's partitioning. Only used if use_lastframe_partitioning is set.
+  int adjust_partitioning_from_last_frame;
+
+  // Partition search early breakout thresholds.
+  int64_t partition_search_breakout_dist_thr;
+  int partition_search_breakout_rate_thr;
+
+  // Thresholds for ML based partition search breakout.
+  int ml_partition_search_breakout_thresh[PARTITION_BLOCK_SIZES];
+
+  // Allow skipping partition search for still image frame
+  int allow_partition_search_skip;
+
+  // The aggresiveness of pruning with simple_motion_search.
+  // Currently 0 is the lowest, and 2 the highest.
+  int simple_motion_search_prune_agg;
+
+  // Perform simple_motion_search on each possible subblock and use it to prune
+  // PARTITION_HORZ and PARTITION_VERT.
+  int simple_motion_search_prune_rect;
+
+  // Perform simple motion search before none_partition to decide if we
+  // want to remove all partitions other than PARTITION_SPLIT. If set to 0, this
+  // model is disabled. If set to 1, the model attempts to perform
+  // PARTITION_SPLIT only. If set to 2, the model also attempts to prune
+  // PARTITION_SPLIT.
+  int simple_motion_search_split;
+
+  // Use features from simple_motion_search to terminate prediction block
+  // partition after PARTITION_NONE
+  int simple_motion_search_early_term_none;
+
+  // This variable controls the maximum block size where intra blocks can be
+  // used in inter frames.
+  // TODO(aconverse): Fold this into one of the other many mode skips
+  BLOCK_SIZE max_intra_bsize;
+} PARTITION_SPEED_FEATURES;
+
 #define MAX_MESH_STEP 4
 
 typedef struct MESH_PATTERN {
@@ -356,81 +439,7 @@ typedef struct SPEED_FEATURES {
   /*
    * Partition search speed features:
    */
-  PARTITION_SEARCH_TYPE partition_search_type;
-
-  // Used if partition_search_type = FIXED_SIZE_PARTITION
-  BLOCK_SIZE always_this_block_size;
-
-  // Prune extended partition types search
-  // Can take values 0 - 2, 0 referring to no pruning, and 1 - 2 increasing
-  // aggressiveness of pruning in order.
-  int prune_ext_partition_types_search_level;
-
-  // Use a ML model to prune horz and vert partitions
-  int ml_prune_rect_partition;
-
-  // Use a ML model to prune horz_a, horz_b, vert_a and vert_b partitions.
-  int ml_prune_ab_partition;
-
-  // Use a ML model to prune horz4 and vert4 partitions.
-  int ml_prune_4_partition;
-
-  // Use a ML model to adaptively terminate partition search after trying
-  // PARTITION_SPLIT. Can take values 0 - 2, 0 meaning not being enabled, and
-  // 1 - 2 increasing aggressiveness in order.
-  int ml_early_term_after_part_split_level;
-
-  // Skip rectangular partition test when partition type none gives better
-  // rd than partition type split. Can take values 0 - 2, 0 referring to no
-  // skipping, and 1 - 2 increasing aggressiveness of skipping in order.
-  int less_rectangular_check_level;
-
-  // Use square partition only beyond this block size.
-  BLOCK_SIZE use_square_partition_only_threshold;
-
-  // Sets min and max square partition levels for this superblock based on
-  // motion vector and prediction error distribution produced from 16x16
-  // simple motion search
-  MAX_PART_PRED_MODE auto_max_partition_based_on_simple_motion;
-  int auto_min_partition_based_on_simple_motion;
-
-  // Min and max square partition size we enable (block_size) as per auto
-  // min max, but also used by adjust partitioning, and pick_partitioning.
-  BLOCK_SIZE default_min_partition_size;
-  BLOCK_SIZE default_max_partition_size;
-
-  // Whether or not we allow partitions one smaller or one greater than the last
-  // frame's partitioning. Only used if use_lastframe_partitioning is set.
-  int adjust_partitioning_from_last_frame;
-
-  // Partition search early breakout thresholds.
-  int64_t partition_search_breakout_dist_thr;
-  int partition_search_breakout_rate_thr;
-
-  // Thresholds for ML based partition search breakout.
-  int ml_partition_search_breakout_thresh[PARTITION_BLOCK_SIZES];
-
-  // Allow skipping partition search for still image frame
-  int allow_partition_search_skip;
-
-  // The aggresiveness of pruning with simple_motion_search.
-  // Currently 0 is the lowest, and 2 the highest.
-  int simple_motion_search_prune_agg;
-
-  // Perform simple_motion_search on each possible subblock and use it to prune
-  // PARTITION_HORZ and PARTITION_VERT.
-  int simple_motion_search_prune_rect;
-
-  // Perform simple motion search before none_partition to decide if we
-  // want to remove all partitions other than PARTITION_SPLIT. If set to 0, this
-  // model is disabled. If set to 1, the model attempts to perform
-  // PARTITION_SPLIT only. If set to 2, the model also attempts to prune
-  // PARTITION_SPLIT.
-  int simple_motion_search_split;
-
-  // Use features from simple_motion_search to terminate prediction block
-  // partition after PARTITION_NONE
-  int simple_motion_search_early_term_none;
+  PARTITION_SPEED_FEATURES part_sf;
 
   /*
    * Motion search speed features:
@@ -658,11 +667,6 @@ typedef struct SPEED_FEATURES {
   // transform size separately.
   int intra_y_mode_mask[TX_SIZES];
   int intra_uv_mode_mask[TX_SIZES];
-
-  // This variable controls the maximum block size where intra blocks can be
-  // used in inter frames.
-  // TODO(aconverse): Fold this into one of the other many mode skips
-  BLOCK_SIZE max_intra_bsize;
 
   // flag to allow skipping intra mode for inter frame prediction
   int skip_intra_in_interframe;

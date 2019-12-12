@@ -1965,9 +1965,10 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
     if (bsize >= BLOCK_32X32) best_early_term = 0;
   }
 
-  if (best_rdc.rdcost == INT64_MAX || (perform_intra_pred && !best_early_term &&
-                                       best_rdc.rdcost > inter_mode_thresh &&
-                                       bsize <= cpi->sf.max_intra_bsize)) {
+  if (best_rdc.rdcost == INT64_MAX ||
+      (perform_intra_pred && !best_early_term &&
+       best_rdc.rdcost > inter_mode_thresh &&
+       bsize <= cpi->sf.part_sf.max_intra_bsize)) {
     int64_t this_sse = INT64_MAX;
     struct estimate_block_intra_args args = { cpi, x, DC_PRED, 1, 0 };
     PRED_BUFFER *const best_pred = best_pickmode.best_pred;
