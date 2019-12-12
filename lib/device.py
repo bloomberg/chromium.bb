@@ -69,7 +69,7 @@ class Device(object):
       result = retry_util.RetryException(
           exception=remote_access.SSHConnectionError,
           max_retry=10,
-          functor=lambda: self.RemoteCommand(cmd=['true']),
+          functor=lambda: self.remote_run(cmd=['true']),
           sleep=sleep)
     except remote_access.SSHConnectionError:
       raise DeviceError(
@@ -77,11 +77,6 @@ class Device(object):
 
     if result.returncode != 0:
       raise DeviceError('WaitForBoot failed: %s.' % result.error)
-
-  # TODO(vapier): Delete this shim once chromite & users migrate.
-  def RunCommand(self, cmd, **kwargs):
-    """Backwards compat API."""
-    return self.run(cmd, **kwargs)
 
   def run(self, cmd, **kwargs):
     """Use sudo_run or run as necessary.
@@ -100,18 +95,13 @@ class Device(object):
     else:
       return cros_build_lib.run(cmd, **kwargs)
 
-  # TODO(vapier): Delete this shim once chromite & users migrate.
-  def RemoteCommand(self, cmd, **kwargs):
-    """Backwards compat API."""
-    return self.remote_run(cmd, **kwargs)
-
   def remote_run(self, cmd, stream_output=False, **kwargs):
     """Run a remote command.
 
     Args:
       cmd: command to run.
       stream_output: Stream output of long-running commands.
-      kwargs: additional args (see documentation for RemoteDevice.RunCommand).
+      kwargs: additional args (see documentation for RemoteDevice.run).
 
     Returns:
       cros_build_lib.CommandResult object.
@@ -125,7 +115,7 @@ class Device(object):
       else:
         kwargs.setdefault('stderr', subprocess.STDOUT)
         kwargs.setdefault('log_output', True)
-      return self.remote.RunCommand(cmd, debug_level=logging.INFO, **kwargs)
+      return self.remote.run(cmd, debug_level=logging.INFO, **kwargs)
 
   def _dry_run(self, cmd):
     """Print a command for dry_run.

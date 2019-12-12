@@ -121,8 +121,7 @@ class CrOSTest(object):
       return
 
     build_target = self.chrome_test_target or 'chromiumos_preflight'
-    self._device.RunCommand(['autoninja', '-C', self.build_dir,
-                             build_target])
+    self._device.run(['autoninja', '-C', self.build_dir, build_target])
 
   def _Deploy(self):
     """Deploy binary files to device."""
@@ -152,7 +151,7 @@ class CrOSTest(object):
       deploy_cmd += ['--nostrip']
     if self.mount:
       deploy_cmd += ['--mount']
-    self._device.RunCommand(deploy_cmd)
+    self._device.run(deploy_cmd)
     self._device.WaitForBoot()
 
   def _DeployChromeTest(self):
@@ -195,7 +194,7 @@ class CrOSTest(object):
     """
 
     browser = 'system-guest' if self.guest else 'system'
-    return self._device.RemoteCommand([
+    return self._device.remote_run([
         'python',
         '/usr/local/telemetry/src/third_party/catapult/telemetry/bin/run_tests',
         '--browser=%s' % browser,
@@ -228,7 +227,7 @@ class CrOSTest(object):
     else:
       cmd += [self._device.device]
     cmd += self.autotest
-    return self._device.RunCommand(
+    return self._device.run(
         cmd, enter_chroot=not cros_build_lib.IsInsideChroot())
 
   def _RunTastTests(self):
@@ -294,7 +293,7 @@ class CrOSTest(object):
     else:
       cmd += [self._device.device]
     cmd += self.tast
-    return self._device.RunCommand(
+    return self._device.run(
         cmd, enter_chroot=need_chroot and not cros_build_lib.IsInsideChroot())
 
   def _RunTests(self):
@@ -313,7 +312,7 @@ class CrOSTest(object):
       if self.build_dir:
         extra_env['CHROMIUM_OUTPUT_DIR'] = self.build_dir
       # Don't raise an exception if the command fails.
-      result = self._device.RunCommand(
+      result = self._device.run(
           self.args, check=False, extra_env=extra_env)
     elif self.catapult_tests:
       result = self._RunCatapultTests()
@@ -324,7 +323,7 @@ class CrOSTest(object):
     elif self.chrome_test:
       result = self._RunChromeTest()
     else:
-      result = self._device.RemoteCommand(
+      result = self._device.remote_run(
           ['/usr/local/autotest/bin/vm_sanity.py'], stream_output=True)
 
     self._FetchResults()
@@ -379,44 +378,44 @@ class CrOSTest(object):
     cwd = self.cwd
     if files and not (cwd and os.path.isabs(cwd)):
       cwd = os.path.join(DEST_BASE, cwd) if cwd else DEST_BASE
-      self._device.RemoteCommand(['mkdir', '-p', cwd])
+      self._device.remote_run(['mkdir', '-p', cwd])
 
     if self.as_chronos:
       # This authorizes the test ssh keys with chronos.
-      self._device.RemoteCommand(['cp', '-r', '/root/.ssh/',
-                                  '/home/chronos/user/'])
+      self._device.remote_run(['cp', '-r', '/root/.ssh/',
+                               '/home/chronos/user/'])
       if files:
         # The trailing ':' after the user also changes the group to the user's
         # primary group.
-        self._device.RemoteCommand(['chown', '-R', 'chronos:', DEST_BASE])
+        self._device.remote_run(['chown', '-R', 'chronos:', DEST_BASE])
 
     user = 'chronos' if self.as_chronos else None
     if cwd:
       # Run the remote command with cwd.
       cmd = '"cd %s && %s"' % (cwd, ' '.join(self.args))
       # Pass shell=True because of && in the cmd.
-      result = self._device.RemoteCommand(cmd, stream_output=True, shell=True,
-                                          remote_user=user)
+      result = self._device.remote_run(cmd, stream_output=True, shell=True,
+                                       remote_user=user)
     else:
-      result = self._device.RemoteCommand(self.args, stream_output=True,
-                                          remote_user=user)
+      result = self._device.remote_run(self.args, stream_output=True,
+                                       remote_user=user)
 
     # Cleanup.
     if files:
-      self._device.RemoteCommand(['rm', '-rf', DEST_BASE])
+      self._device.remote_run(['rm', '-rf', DEST_BASE])
 
     return result
 
   def _RunChromeTest(self):
     # Stop UI in case the test needs to grab GPU.
-    self._device.RemoteCommand('stop ui')
+    self._device.remote_run('stop ui')
 
     # Send a user activity ping to powerd to light up the display.
-    self._device.RemoteCommand(['dbus-send', '--system', '--type=method_call',
-                                '--dest=org.chromium.PowerManager',
-                                '/org/chromium/PowerManager',
-                                'org.chromium.PowerManager.HandleUserActivity',
-                                'int32:0'])
+    self._device.remote_run(['dbus-send', '--system', '--type=method_call',
+                             '--dest=org.chromium.PowerManager',
+                             '/org/chromium/PowerManager',
+                             'org.chromium.PowerManager.HandleUserActivity',
+                             'int32:0'])
 
     # Run test.
     chrome_src_dir = os.path.dirname(os.path.dirname(self.build_dir))
@@ -425,7 +424,7 @@ class CrOSTest(object):
     test_args = self.args[1:]
     command = 'cd %s && su chronos -c -- "%s %s"' % \
         (self.chrome_test_deploy_target_dir, test_binary, ' '.join(test_args))
-    result = self._device.RemoteCommand(command, stream_output=True)
+    result = self._device.remote_run(command, stream_output=True)
     return result
 
 
