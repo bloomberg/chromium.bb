@@ -284,7 +284,7 @@ def uprev_versioned_package(package, build_targets, refs, chroot):
     raise UnknownPackageError(
         'Package "%s" does not have a registered handler.' % package.cp)
 
-  return _UPREV_FUNCS[package.cp](build_targets, refs, chroot)
+  return _UPREV_FUNCS[package.cp](build_targets, refs, chroot, package.cp)
 
 
 # TODO(evanhernandez): Remove this. Only a quick hack for testing.
@@ -345,7 +345,7 @@ def uprev_kernel_afdo(*_args, **_kwargs):
 
 
 @uprevs_versioned_package(constants.CHROME_CP)
-def uprev_chrome(build_targets, refs, chroot):
+def uprev_chrome(build_targets, refs, chroot, *_args, **_kwargs):
   """Uprev chrome and its related packages.
 
   See: uprev_versioned_package.
@@ -459,14 +459,11 @@ def _get_private_overlay_package_root(ref, package):
 
 
 @uprevs_versioned_package('chromeos-base/chromeos-config-bsp-coral-private')
-def replicate_private_config(_build_targets, refs, chroot):
+def replicate_private_config(_build_targets, refs, chroot, package):
   """Replicate a private cros_config change to the corresponding public config.
 
     See uprev_versioned_package for args
   """
-  # TODO(crbug.com/1020262): Generalize this to other packages.
-  package = 'chromeos-base/chromeos-config-bsp-coral-private'
-
   if len(refs) != 1:
     raise ValueError('Expected exactly one ref, actual %s' % refs)
 
