@@ -61,6 +61,14 @@ Polymer({
     pageVisibility: Object,
 
     /** @private */
+    passwordsLeakDetectionEnabled_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('passwordsLeakDetectionEnabled');
+      },
+    },
+
+    /** @private */
     isGuest_: {
       type: Boolean,
       value: function() {
