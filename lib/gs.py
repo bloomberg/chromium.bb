@@ -13,6 +13,7 @@ import datetime
 import errno
 import fnmatch
 import getpass
+import glob
 import hashlib
 import os
 import re
@@ -412,7 +413,7 @@ class GSContext(object):
     # Try to build it once.
     flag = os.path.join(src_root, '.chromite.tried.build')
     if os.path.exists(flag):
-      return False
+      return
     # Flag things now regardless of how the attempt below works out.
     try:
       osutils.Touch(flag)
@@ -422,48 +423,49 @@ class GSContext(object):
       if e.errno == errno.EACCES:
         logging.debug('Skipping gsutil crcmod compile due to permissions')
         cros_build_lib.sudo_run(['touch', flag], debug_level=logging.DEBUG)
-        return False
+        return
       else:
         raise
 
     # See if the system includes one in which case we're done.
-    try:
-      import crcmod
-      if (getattr(crcmod, 'crcmod', None) and
-          getattr(crcmod.crcmod, '_usingExtension', None)):
-        return True
-    except ImportError:
-      pass
+    # We probe `python` as that's what gsutil uses for its shebang.
+    result = cros_build_lib.run(
+        ['python', '-c', 'from crcmod.crcmod import _usingExtension; '
+         'exit(0 if _usingExtension else 1)'], check=False, capture_output=True)
+    if result.returncode == 0:
+      return
 
     # See if the local copy has one.
-    mod_path = os.path.join(src_root, 'python2', 'crcmod', '_crcfunext.so')
-    if os.path.exists(mod_path):
-      return True
+    for pyver in ('python2', 'python3'):
+      logging.debug('Attempting to compile local crcmod for %s gsutil', pyver)
+      with osutils.TempDir(prefix='chromite.gsutil.crcmod') as tempdir:
+        result = cros_build_lib.run(
+            [pyver, 'setup.py', 'build', '--build-base', tempdir,
+             '--build-platlib', tempdir],
+            cwd=src_root, capture_output=True, check=False,
+            debug_level=logging.DEBUG)
+        if result.returncode:
+          continue
 
-    logging.debug('Attempting to compile local crcmod for gsutil')
-    with osutils.TempDir(prefix='chromite.gsutil.crcmod') as tempdir:
-      result = cros_build_lib.run(
-          ['python', './setup.py', 'build', '--build-base', tempdir,
-           '--build-platlib', tempdir],
-          cwd=src_root, capture_output=True, error_code_ok=True,
-          debug_level=logging.DEBUG)
-      if result.returncode:
-        return False
+        # Locate the module in the build dir.
+        copied = False
+        for mod_path in glob.glob(
+            os.path.join(tempdir, 'crcmod', '_crcfunext*.so')):
+          dst_mod_path = os.path.join(src_root, pyver, 'crcmod',
+                                      os.path.basename(mod_path))
+          try:
+            shutil.copy2(mod_path, dst_mod_path)
+            copied = True
+          except shutil.Error:
+            pass
 
-      # Locate the module in the build dir.
-      temp_mod_path = os.path.join(tempdir, 'crcmod', '_crcfunext.so')
-      # If the module compile failed (missing compiler/headers/whatever),
-      # then the setup.py build command above would have passed, but there
-      # won't actually be a _crcfunext.so module.  Check for it here to
-      # disambiguate other errors from shutil.copy2.
-      if not os.path.exists(temp_mod_path):
-        logging.debug('No crcmod module produced (missing host compiler?)')
-        return False
-      try:
-        shutil.copy2(temp_mod_path, mod_path)
-        return True
-      except shutil.Error:
-        return False
+        if not copied:
+          # If the module compile failed (missing compiler/headers/whatever),
+          # then the setup.py build command above would have passed, but there
+          # won't actually be a _crcfunext.so module.  Check for it here to
+          # disambiguate other errors from shutil.copy2.
+          logging.debug('No crcmod module produced (missing host compiler?)')
+          continue
 
   def __init__(self, boto_file=None, cache_dir=None, acl=None,
                dry_run=False, gsutil_bin=None, init_boto=False, retries=None,
