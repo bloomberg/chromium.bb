@@ -140,13 +140,25 @@ message StartPluginVmRequest {
 
   // The IPv4 address to assign to the VM in network-byte order.  Must be in the
   // 100.115.92.128/28 subnet and must not be already assigned to another VM.
+  // If unspecified, a /29 subnet will be dynamically allocated
+  // from 100.115.93.0/24.
+  // Note: this field will be deprecated.
   fixed32 guest_ipv4_address = 5;
 
   // The EUI-48 MAC address to assign to the host side of the ethernet interface
   // to the VM. Must be exactly 6 bytes and must not be in use by another VM.
   // Must have the locally administered bit (0x02) set and the multicast bit
   // (0x01) unset.
+  // If empty, a random MAC address will be generated and assigned.
+  // Note: this field will be deprecated.
   bytes host_mac_address = 6;
+
+  // Indicates that a specific /29 subnet should be allocated from
+  // 100.115.93.0/24 for use by this VM; and if it is not available, then the
+  // request should fail.
+  // This field is only used if |guest_ipv4_address| is empty.
+  // Valid values are 1 - 32, inclusive.
+  uint32 subnet_index = 7;
 }
 
 // Information that must be included with every StartArcVm request.
