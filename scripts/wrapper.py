@@ -13,6 +13,7 @@ lots of places.
 
 from __future__ import print_function
 
+import importlib
 import os
 import sys
 
@@ -75,12 +76,7 @@ class ChromiteImporter(object):
     sys.path.insert(0, path)
     self._loading = True
     try:
-      # This violates PEP302 slightly because __import__ will return the
-      # cached module from sys.modules rather than reloading it from disk.
-      # But the imp module does not work cleanly with meta_path currently
-      # which makes it hard to use.  Until that is fixed, we won't bother
-      # trying to address the edge case since it doesn't matter to us.
-      return __import__(mod)
+      return importlib.import_module(mod)
     finally:
       # We can't pop by index as the import might have changed sys.path.
       sys.path.remove(path)
@@ -92,7 +88,6 @@ sys.meta_path.insert(0, ChromiteImporter())
 # We have to put these imports after our meta-importer above.
 # pylint: disable=wrong-import-position
 from chromite.lib import commandline
-from chromite.lib import cros_import
 
 
 def FindTarget(target):
@@ -155,7 +150,7 @@ def FindTarget(target):
       target.insert(2, 'scripts')
 
     try:
-      module = cros_import.ImportModule(target)
+      module = importlib.import_module('.'.join(target))
     except ImportError as e:
       print(
           '%s: could not import chromite module: %s: %s' % (sys.argv[0],

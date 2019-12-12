@@ -8,11 +8,11 @@
 from __future__ import print_function
 
 import argparse
+import importlib
 import os
 
 from chromite.cli import command
 from chromite.lib import commandline
-from chromite.lib import cros_import
 from chromite.lib import cros_test_lib
 from chromite.lib import partial_mock
 
@@ -107,10 +107,10 @@ class CommandTest(cros_test_lib.MockTestCase):
   def testLoadCommands(self):
     """Tests import commands correctly."""
     fake_module = 'cros_command_test'
-    module_path = ['chromite', 'cli', 'cros', fake_module]
+    module_path = 'chromite.cli.cros.%s' % fake_module
 
     # The code doesn't use the return value, so stub it out lazy-like.
-    load_mock = self.PatchObject(cros_import, 'ImportModule', return_value=None)
+    load_mock = self.PatchObject(importlib, 'import_module', return_value=None)
 
     command._commands['command-test'] = 123
     self.assertEqual(command.ImportCommand('command-test'), 123)

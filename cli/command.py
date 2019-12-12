@@ -16,12 +16,12 @@ ListCommands() function.
 
 from __future__ import print_function
 
+import importlib
 import os
 
 from chromite.lib import constants
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
-from chromite.lib import cros_import
 from chromite.lib import cros_logging as logging
 
 
@@ -60,7 +60,8 @@ def ImportCommand(name):
                              'cros_%s' % (name.replace('-', '_'),))
   import_path = os.path.relpath(os.path.realpath(module_path),
                                 os.path.dirname(constants.CHROMITE_DIR))
-  cros_import.ImportModule(import_path.split(os.path.sep))
+  module_parts = import_path.split(os.path.sep)
+  importlib.import_module('.'.join(module_parts))
   return _commands[name]
 
 
