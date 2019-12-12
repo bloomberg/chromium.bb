@@ -422,7 +422,7 @@ static double get_rate_correction_factor(const AV1_COMP *cpi, int width,
 
   if (cpi->common.current_frame.frame_type == KEY_FRAME) {
     rcf = rc->rate_correction_factors[KF_STD];
-  } else if (cpi->oxcf.pass == 2) {
+  } else if (is_stat_consumption_stage(cpi)) {
     const RATE_FACTOR_LEVEL rf_lvl = get_rate_factor_level(&cpi->gf_group);
     rcf = rc->rate_correction_factors[rf_lvl];
   } else {
@@ -448,7 +448,7 @@ static void set_rate_correction_factor(AV1_COMP *cpi, double factor, int width,
 
   if (cpi->common.current_frame.frame_type == KEY_FRAME) {
     rc->rate_correction_factors[KF_STD] = factor;
-  } else if (cpi->oxcf.pass == 2) {
+  } else if (is_stat_consumption_stage(cpi)) {
     const RATE_FACTOR_LEVEL rf_lvl = get_rate_factor_level(&cpi->gf_group);
     rc->rate_correction_factors[rf_lvl] = factor;
   } else {
@@ -1115,7 +1115,7 @@ static void get_intra_q_and_bounds_two_pass(const AV1_COMP *cpi, int width,
     int delta_qindex;
     int qindex;
 
-    if (oxcf->pass == 2 &&
+    if (is_stat_consumption_stage_twopass(cpi) &&
         cpi->twopass.last_kfgroup_zeromotion_pct >= STATIC_MOTION_THRESH) {
       qindex = AOMMIN(rc->last_kf_qindex, rc->last_boosted_qindex);
       active_best_quality = qindex;
@@ -1140,7 +1140,7 @@ static void get_intra_q_and_bounds_two_pass(const AV1_COMP *cpi, int width,
     active_best_quality =
         get_kf_active_quality(rc, active_worst_quality, bit_depth);
 
-    if (oxcf->pass == 2 &&
+    if (is_stat_consumption_stage_twopass(cpi) &&
         cpi->twopass.kf_zeromotion_pct >= STATIC_KF_GROUP_THRESH) {
       active_best_quality /= 3;
     }
@@ -1151,7 +1151,7 @@ static void get_intra_q_and_bounds_two_pass(const AV1_COMP *cpi, int width,
     }
 
     // Make a further adjustment based on the kf zero motion measure.
-    if (oxcf->pass == 2)
+    if (is_stat_consumption_stage_twopass(cpi))
       q_adj_factor += 0.05 - (0.001 * (double)cpi->twopass.kf_zeromotion_pct);
 
     // Convert the adjustment factor to a qindex delta

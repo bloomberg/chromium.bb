@@ -364,7 +364,7 @@ int av1_compute_rd_mult_based_on_qindex(const AV1_COMP *cpi, int qindex) {
 
 int av1_compute_rd_mult(const AV1_COMP *cpi, int qindex) {
   int64_t rdmult = av1_compute_rd_mult_based_on_qindex(cpi, qindex);
-  if (cpi->oxcf.pass == 2 &&
+  if (is_stat_consumption_stage(cpi) &&
       (cpi->common.current_frame.frame_type != KEY_FRAME)) {
     const GF_GROUP *const gf_group = &cpi->gf_group;
     const FRAME_UPDATE_TYPE frame_type = gf_group->update_type[gf_group->index];
@@ -413,7 +413,7 @@ int av1_get_adaptive_rdmult(const AV1_COMP *cpi, double beta) {
       break;
   }
 
-  if (cpi->oxcf.pass == 2 &&
+  if (is_stat_consumption_stage(cpi) &&
       (cpi->common.current_frame.frame_type != KEY_FRAME)) {
     const GF_GROUP *const gf_group = &cpi->gf_group;
     const FRAME_UPDATE_TYPE frame_type = gf_group->update_type[gf_group->index];

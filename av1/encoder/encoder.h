@@ -1367,6 +1367,15 @@ static INLINE int is_altref_enabled(const AV1_COMP *const cpi) {
 static INLINE int is_stat_generation_stage(const AV1_COMP *const cpi) {
   return (cpi->oxcf.pass == 1);
 }
+// Check if statistics consumption stage
+static INLINE int is_stat_consumption_stage_twopass(const AV1_COMP *const cpi) {
+  return (cpi->oxcf.pass == 2);
+}
+
+// Check if statistics consumption stage
+static INLINE int is_stat_consumption_stage(const AV1_COMP *const cpi) {
+  return (is_stat_consumption_stage_twopass(cpi));
+}
 
 // Check if the current stage has statistics
 static INLINE int has_no_stats_stage(const AV1_COMP *const cpi) {

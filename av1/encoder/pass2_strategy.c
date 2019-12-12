@@ -1747,7 +1747,7 @@ void av1_get_second_pass_params(AV1_COMP *cpi,
   TWO_PASS *const twopass = &cpi->twopass;
   GF_GROUP *const gf_group = &cpi->gf_group;
 
-  if (cpi->oxcf.pass == 2 && !twopass->stats_in) return;
+  if (is_stat_consumption_stage(cpi) && !twopass->stats_in) return;
 
   if (rc->frames_till_gf_update_due > 0 && !(frame_flags & FRAMEFLAGS_KEY)) {
     assert(gf_group->index < gf_group->size);
@@ -1767,7 +1767,8 @@ void av1_get_second_pass_params(AV1_COMP *cpi,
 
       // Do the firstpass stats indicate that this frame is skippable for the
       // partition search?
-      if (cpi->sf.allow_partition_search_skip && cpi->oxcf.pass == 2) {
+      if (cpi->sf.allow_partition_search_skip &&
+          is_stat_consumption_stage_twopass(cpi)) {
         cpi->partition_search_skippable_frame = is_skippable_frame(cpi);
       }
 
@@ -1781,7 +1782,7 @@ void av1_get_second_pass_params(AV1_COMP *cpi,
   FIRSTPASS_STATS this_frame;
   av1_zero(this_frame);
   // call above fn
-  if (cpi->oxcf.pass == 2) {
+  if (is_stat_consumption_stage(cpi)) {
     process_first_pass_stats(cpi, &this_frame);
   } else {
     rc->active_worst_quality = cpi->oxcf.cq_level;
@@ -1859,7 +1860,8 @@ void av1_get_second_pass_params(AV1_COMP *cpi,
 
   // Do the firstpass stats indicate that this frame is skippable for the
   // partition search?
-  if (cpi->sf.allow_partition_search_skip && cpi->oxcf.pass == 2) {
+  if (cpi->sf.allow_partition_search_skip &&
+      is_stat_consumption_stage_twopass(cpi)) {
     cpi->partition_search_skippable_frame = is_skippable_frame(cpi);
   }
 

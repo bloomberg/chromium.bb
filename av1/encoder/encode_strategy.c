@@ -1245,7 +1245,7 @@ int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
     } else {
       frame_params.frame_type = INTER_FRAME;
     }
-  } else if (oxcf->pass == 2) {
+  } else if (is_stat_consumption_stage(cpi)) {
 #if CONFIG_MISMATCH_DEBUG
     mismatch_move_frame_idx_w();
 #endif

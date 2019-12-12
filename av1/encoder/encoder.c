@@ -2954,7 +2954,7 @@ AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf,
 #if !CONFIG_REALTIME_ONLY
   if (is_stat_generation_stage(cpi)) {
     av1_init_first_pass(cpi);
-  } else if (oxcf->pass == 2) {
+  } else if (is_stat_consumption_stage(cpi)) {
     const size_t packet_sz = sizeof(FIRSTPASS_STATS);
     const int packets = (int)(oxcf->two_pass_stats_in.sz / packet_sz);
 
@@ -3998,7 +3998,6 @@ static int determine_frame_high_precision_mv(const AV1_COMP *cpi, int qindex) {
 static void set_size_dependent_vars(AV1_COMP *cpi, int *q, int *bottom_index,
                                     int *top_index) {
   AV1_COMMON *const cm = &cpi->common;
-  const AV1EncoderConfig *const oxcf = &cpi->oxcf;
 
   // Setup variables that depend on the dimensions of the frame.
   av1_set_speed_features_framesize_dependent(cpi, cpi->speed);
@@ -4026,7 +4025,7 @@ static void set_size_dependent_vars(AV1_COMP *cpi, int *q, int *bottom_index,
   // static regions if indicated.
   // Only allowed in the second pass of a two pass encode, as it requires
   // lagged coding, and if the relevant speed feature flag is set.
-  if (oxcf->pass == 2 && cpi->sf.static_segmentation)
+  if (is_stat_consumption_stage_twopass(cpi) && cpi->sf.static_segmentation)
     configure_static_seg_features(cpi);
 }
 
@@ -4165,7 +4164,7 @@ void av1_set_frame_size(AV1_COMP *cpi, int width, int height) {
     cm->all_lossless = cm->coded_lossless && !av1_superres_scaled(cm);
   }
 
-  if (cpi->oxcf.pass == 2) {
+  if (is_stat_consumption_stage(cpi)) {
     av1_set_target_rate(cpi, cm->width, cm->height);
   }
 
@@ -5010,7 +5009,8 @@ static int encode_with_recode_loop(AV1_COMP *cpi, size_t *size, uint8_t *dest) {
   assert(IMPLIES(cpi->oxcf.min_cr > 0, allow_recode));
 
   set_size_independent_vars(cpi);
-  if (cpi->oxcf.pass == 2 && cpi->sf.adaptive_interp_filter_search)
+  if (is_stat_consumption_stage_twopass(cpi) &&
+      cpi->sf.adaptive_interp_filter_search)
     cpi->interp_filter_search_mask = setup_interp_filter_search_mask(cpi);
   cpi->source->buf_8bit_valid = 0;
 
@@ -6014,7 +6014,8 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
   }
   cm->timing_info_present &= !seq_params->reduced_still_picture_hdr;
 
-  if (cpi->oxcf.pass == 2 && cpi->oxcf.enable_tpl_model == 2 &&
+  if (is_stat_consumption_stage_twopass(cpi) &&
+      cpi->oxcf.enable_tpl_model == 2 &&
       current_frame->frame_type == INTER_FRAME) {
     if (!cm->show_frame) {
       assert(cpi->tpl_model_pass == 0);
@@ -6087,7 +6088,7 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
   }
 #define EXT_TILE_DEBUG 0
 #if EXT_TILE_DEBUG
-  if (cm->large_scale_tile && oxcf->pass == 2) {
+  if (cm->large_scale_tile && is_stat_consumption_stage(cpi)) {
     char fn[20] = "./fc";
     fn[4] = current_frame->frame_number / 100 + '0';
     fn[5] = (current_frame->frame_number % 100) / 10 + '0';
