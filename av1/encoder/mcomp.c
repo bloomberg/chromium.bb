@@ -2030,8 +2030,8 @@ int av1_refining_search_8p_c(MACROBLOCK *x, int error_per_bit, int search_range,
 static int is_exhaustive_allowed(const AV1_COMP *const cpi, MACROBLOCK *x,
                                  int max_exhaustive_pct) {
   const SPEED_FEATURES *const sf = &cpi->sf;
-  int is_allowed = sf->allow_exhaustive_searches &&
-                   (sf->exhaustive_searches_thresh < INT_MAX) &&
+  int is_allowed = sf->mv_sf.allow_exhaustive_searches &&
+                   (sf->mv_sf.exhaustive_searches_thresh < INT_MAX) &&
                    !cpi->rc.is_src_frame_alt_ref;
   if (x->m_search_count_ptr != NULL && x->ex_search_count_ptr != NULL) {
     const int max_ex =
@@ -2307,11 +2307,11 @@ int av1_full_pixel_search(const AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
   // Pick the threshold for decision on the evaluation of exhaustive search
   // based on the toolset (intraBC or non-intraBC)
   const int max_exhaustive_pct = use_intrabc_mesh_pattern
-                                     ? sf->intrabc_max_exhaustive_pct
-                                     : sf->max_exhaustive_pct;
+                                     ? sf->mv_sf.intrabc_max_exhaustive_pct
+                                     : sf->mv_sf.max_exhaustive_pct;
   if (!run_mesh_search && method == NSTEP && use_var &&
       is_exhaustive_allowed(cpi, x, max_exhaustive_pct)) {
-    int exhuastive_thr = sf->exhaustive_searches_thresh;
+    int exhuastive_thr = sf->mv_sf.exhaustive_searches_thresh;
     exhuastive_thr >>=
         10 - (mi_size_wide_log2[bsize] + mi_size_high_log2[bsize]);
     // Threshold variance for an exhaustive full search.
@@ -2323,9 +2323,9 @@ int av1_full_pixel_search(const AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
     MV tmp_mv_ex;
     // Pick the mesh pattern for exhaustive search based on the toolset (intraBC
     // or non-intraBC)
-    const MESH_PATTERN *const mesh_patterns = use_intrabc_mesh_pattern
-                                                  ? sf->intrabc_mesh_patterns
-                                                  : sf->mesh_patterns;
+    const MESH_PATTERN *const mesh_patterns =
+        use_intrabc_mesh_pattern ? sf->mv_sf.intrabc_mesh_patterns
+                                 : sf->mv_sf.mesh_patterns;
     var_ex =
         full_pixel_exhaustive(x, &x->best_mv.as_mv, error_per_bit, cost_list,
                               fn_ptr, ref_mv, &tmp_mv_ex, mesh_patterns);
@@ -3009,7 +3009,7 @@ void av1_simple_motion_search(AV1_COMP *const cpi, MACROBLOCK *x, int mi_row,
   MV ref_mv = { 0, 0 };
   const int step_param = cpi->mv_step_param;
   const MvLimits tmp_mv_limits = x->mv_limits;
-  const SEARCH_METHODS search_methods = cpi->sf.mv.search_method;
+  const SEARCH_METHODS search_methods = cpi->sf.mv_sf.search_method;
   const int do_mesh_search = 0;
   const int sadpb = x->sadperbit16;
   int cost_list[5];
@@ -3041,20 +3041,20 @@ void av1_simple_motion_search(AV1_COMP *const cpi, MACROBLOCK *x, int mi_row,
   }
   if (use_subpel_search) {
     int not_used = 0;
-    if (cpi->sf.use_accurate_subpel_search) {
+    if (cpi->sf.mv_sf.use_accurate_subpel_search) {
       const int pw = block_size_wide[bsize];
       const int ph = block_size_high[bsize];
       cpi->find_fractional_mv_step(
           x, cm, mi_row, mi_col, &ref_mv, cm->allow_high_precision_mv,
-          x->errorperbit, &cpi->fn_ptr[bsize], cpi->sf.mv.subpel_force_stop,
-          cpi->sf.mv.subpel_iters_per_step, cond_cost_list(cpi, cost_list),
+          x->errorperbit, &cpi->fn_ptr[bsize], cpi->sf.mv_sf.subpel_force_stop,
+          cpi->sf.mv_sf.subpel_iters_per_step, cond_cost_list(cpi, cost_list),
           x->nmv_vec_cost, x->mv_cost_stack, &not_used, &x->pred_sse[ref], NULL,
-          NULL, 0, 0, pw, ph, cpi->sf.use_accurate_subpel_search, 1);
+          NULL, 0, 0, pw, ph, cpi->sf.mv_sf.use_accurate_subpel_search, 1);
     } else {
       cpi->find_fractional_mv_step(
           x, cm, mi_row, mi_col, &ref_mv, cm->allow_high_precision_mv,
-          x->errorperbit, &cpi->fn_ptr[bsize], cpi->sf.mv.subpel_force_stop,
-          cpi->sf.mv.subpel_iters_per_step, cond_cost_list(cpi, cost_list),
+          x->errorperbit, &cpi->fn_ptr[bsize], cpi->sf.mv_sf.subpel_force_stop,
+          cpi->sf.mv_sf.subpel_iters_per_step, cond_cost_list(cpi, cost_list),
           x->nmv_vec_cost, x->mv_cost_stack, &not_used, &x->pred_sse[ref], NULL,
           NULL, 0, 0, 0, 0, 0, 1);
     }

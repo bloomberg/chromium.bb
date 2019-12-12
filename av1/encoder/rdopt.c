@@ -7447,9 +7447,9 @@ static AOM_INLINE void joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
       bestsme = cpi->find_fractional_mv_step(
           x, cm, mi_row, mi_col, &ref_mv[id].as_mv,
           cpi->common.allow_high_precision_mv, x->errorperbit,
-          &cpi->fn_ptr[bsize], 0, cpi->sf.mv.subpel_iters_per_step, NULL,
+          &cpi->fn_ptr[bsize], 0, cpi->sf.mv_sf.subpel_iters_per_step, NULL,
           x->nmv_vec_cost, x->mv_cost_stack, &dis, &sse, second_pred, mask,
-          mask_stride, id, pw, ph, cpi->sf.use_accurate_subpel_search, 1);
+          mask_stride, id, pw, ph, cpi->sf.mv_sf.use_accurate_subpel_search, 1);
     }
 
     // Restore the pointer to the first prediction buffer.
@@ -7721,7 +7721,7 @@ static AOM_INLINE void single_motion_search(const AV1_COMP *const cpi,
   // Work out the size of the first step in the mv step search.
   // 0 here is maximum length first step. 1 is AOMMAX >> 1 etc.
   int step_param;
-  if (cpi->sf.mv.auto_mv_step_size && cm->show_frame) {
+  if (cpi->sf.mv_sf.auto_mv_step_size && cm->show_frame) {
     // Take the weighted average of the step_params based on the last frame's
     // max mv magnitude and that based on the best ref mvs of the current
     // block for the given reference.
@@ -7732,14 +7732,14 @@ static AOM_INLINE void single_motion_search(const AV1_COMP *const cpi,
     step_param = cpi->mv_step_param;
   }
 
-  if (cpi->sf.adaptive_motion_search && bsize < cm->seq_params.sb_size) {
+  if (cpi->sf.mv_sf.adaptive_motion_search && bsize < cm->seq_params.sb_size) {
     int boffset =
         2 * (mi_size_wide_log2[cm->seq_params.sb_size] -
              AOMMIN(mi_size_high_log2[bsize], mi_size_wide_log2[bsize]));
     step_param = AOMMAX(step_param, boffset);
   }
 
-  if (cpi->sf.adaptive_motion_search) {
+  if (cpi->sf.mv_sf.adaptive_motion_search) {
     int bwl = mi_size_wide_log2[bsize];
     int bhl = mi_size_high_log2[bsize];
     int tlevel = x->pred_mv_sad[ref] >> (bwl + bhl + 4);
@@ -7789,8 +7789,8 @@ static AOM_INLINE void single_motion_search(const AV1_COMP *const cpi,
   switch (mbmi->motion_mode) {
     case SIMPLE_TRANSLATION:
       bestsme = av1_full_pixel_search(
-          cpi, x, bsize, &mvp_full, step_param, 1, cpi->sf.mv.search_method, 0,
-          sadpb, cond_cost_list(cpi, cost_list), &ref_mv, INT_MAX, 1,
+          cpi, x, bsize, &mvp_full, step_param, 1, cpi->sf.mv_sf.search_method,
+          0, sadpb, cond_cost_list(cpi, cost_list), &ref_mv, INT_MAX, 1,
           (MI_SIZE * mi_col), (MI_SIZE * mi_row), 0, &cpi->ss_cfg[SS_CFG_SRC],
           0);
       break;
@@ -7822,17 +7822,19 @@ static AOM_INLINE void single_motion_search(const AV1_COMP *const cpi,
     int dis; /* TODO: use dis in distortion calculation later. */
     switch (mbmi->motion_mode) {
       case SIMPLE_TRANSLATION:
-        if (cpi->sf.use_accurate_subpel_search) {
+        if (cpi->sf.mv_sf.use_accurate_subpel_search) {
           const int try_second = x->second_best_mv.as_int != INVALID_MV &&
                                  x->second_best_mv.as_int != x->best_mv.as_int;
           const int pw = block_size_wide[bsize];
           const int ph = block_size_high[bsize];
           const int best_mv_var = cpi->find_fractional_mv_step(
               x, cm, mi_row, mi_col, &ref_mv, cm->allow_high_precision_mv,
-              x->errorperbit, &cpi->fn_ptr[bsize], cpi->sf.mv.subpel_force_stop,
-              cpi->sf.mv.subpel_iters_per_step, cond_cost_list(cpi, cost_list),
-              x->nmv_vec_cost, x->mv_cost_stack, &dis, &x->pred_sse[ref], NULL,
-              NULL, 0, 0, pw, ph, cpi->sf.use_accurate_subpel_search, 1);
+              x->errorperbit, &cpi->fn_ptr[bsize],
+              cpi->sf.mv_sf.subpel_force_stop,
+              cpi->sf.mv_sf.subpel_iters_per_step,
+              cond_cost_list(cpi, cost_list), x->nmv_vec_cost, x->mv_cost_stack,
+              &dis, &x->pred_sse[ref], NULL, NULL, 0, 0, pw, ph,
+              cpi->sf.mv_sf.use_accurate_subpel_search, 1);
 
           if (try_second) {
             const int minc =
@@ -7853,11 +7855,11 @@ static AOM_INLINE void single_motion_search(const AV1_COMP *const cpi,
               const int this_var = cpi->find_fractional_mv_step(
                   x, cm, mi_row, mi_col, &ref_mv, cm->allow_high_precision_mv,
                   x->errorperbit, &cpi->fn_ptr[bsize],
-                  cpi->sf.mv.subpel_force_stop,
-                  cpi->sf.mv.subpel_iters_per_step,
+                  cpi->sf.mv_sf.subpel_force_stop,
+                  cpi->sf.mv_sf.subpel_iters_per_step,
                   cond_cost_list(cpi, cost_list), x->nmv_vec_cost,
                   x->mv_cost_stack, &dis, &x->pred_sse[ref], NULL, NULL, 0, 0,
-                  pw, ph, cpi->sf.use_accurate_subpel_search, 0);
+                  pw, ph, cpi->sf.mv_sf.use_accurate_subpel_search, 0);
               if (this_var < best_mv_var) best_mv = x->best_mv.as_mv;
             }
             x->best_mv.as_mv = best_mv;
@@ -7865,19 +7867,21 @@ static AOM_INLINE void single_motion_search(const AV1_COMP *const cpi,
         } else {
           cpi->find_fractional_mv_step(
               x, cm, mi_row, mi_col, &ref_mv, cm->allow_high_precision_mv,
-              x->errorperbit, &cpi->fn_ptr[bsize], cpi->sf.mv.subpel_force_stop,
-              cpi->sf.mv.subpel_iters_per_step, cond_cost_list(cpi, cost_list),
-              x->nmv_vec_cost, x->mv_cost_stack, &dis, &x->pred_sse[ref], NULL,
-              NULL, 0, 0, 0, 0, 0, 1);
+              x->errorperbit, &cpi->fn_ptr[bsize],
+              cpi->sf.mv_sf.subpel_force_stop,
+              cpi->sf.mv_sf.subpel_iters_per_step,
+              cond_cost_list(cpi, cost_list), x->nmv_vec_cost, x->mv_cost_stack,
+              &dis, &x->pred_sse[ref], NULL, NULL, 0, 0, 0, 0, 0, 1);
         }
         break;
       case OBMC_CAUSAL:
         av1_find_best_obmc_sub_pixel_tree_up(
             x, cm, mi_row, mi_col, &x->best_mv.as_mv, &ref_mv,
             cm->allow_high_precision_mv, x->errorperbit, &cpi->fn_ptr[bsize],
-            cpi->sf.mv.subpel_force_stop, cpi->sf.mv.subpel_iters_per_step,
-            x->nmv_vec_cost, x->mv_cost_stack, &dis, &x->pred_sse[ref], 0,
-            cpi->sf.use_accurate_subpel_search);
+            cpi->sf.mv_sf.subpel_force_stop,
+            cpi->sf.mv_sf.subpel_iters_per_step, x->nmv_vec_cost,
+            x->mv_cost_stack, &dis, &x->pred_sse[ref], 0,
+            cpi->sf.mv_sf.use_accurate_subpel_search);
         break;
       default: assert(0 && "Invalid motion mode!\n");
     }
@@ -7885,7 +7889,8 @@ static AOM_INLINE void single_motion_search(const AV1_COMP *const cpi,
   *rate_mv = av1_mv_bit_cost(&x->best_mv.as_mv, &ref_mv, x->nmv_vec_cost,
                              x->mv_cost_stack, MV_COST_WEIGHT);
 
-  if (cpi->sf.adaptive_motion_search && mbmi->motion_mode == SIMPLE_TRANSLATION)
+  if (cpi->sf.mv_sf.adaptive_motion_search &&
+      mbmi->motion_mode == SIMPLE_TRANSLATION)
     x->pred_mv[ref] = x->best_mv.as_mv;
 }
 
@@ -8037,9 +8042,10 @@ static AOM_INLINE void compound_single_motion_search(
     bestsme = cpi->find_fractional_mv_step(
         x, cm, mi_row, mi_col, &ref_mv.as_mv,
         cpi->common.allow_high_precision_mv, x->errorperbit,
-        &cpi->fn_ptr[bsize], 0, cpi->sf.mv.subpel_iters_per_step, NULL,
+        &cpi->fn_ptr[bsize], 0, cpi->sf.mv_sf.subpel_iters_per_step, NULL,
         x->nmv_vec_cost, x->mv_cost_stack, &dis, &sse, second_pred, mask,
-        mask_stride, ref_idx, pw, ph, cpi->sf.use_accurate_subpel_search, 1);
+        mask_stride, ref_idx, pw, ph, cpi->sf.mv_sf.use_accurate_subpel_search,
+        1);
   }
 
   // Restore the pointer to the first unscaled prediction buffer.
@@ -10225,7 +10231,7 @@ static int64_t motion_mode_rd(
             tmp_rate_mv = av1_mv_bit_cost(&mbmi->mv[0].as_mv, &ref_mv.as_mv,
                                           x->nmv_vec_cost, x->mv_cost_stack,
                                           MV_COST_WEIGHT);
-            if (cpi->sf.adaptive_motion_search) {
+            if (cpi->sf.mv_sf.adaptive_motion_search) {
               x->pred_mv[mbmi->ref_frame[0]] = mbmi->mv[0].as_mv;
             }
             tmp_rate2 = rate2_nocoeff - rate_mv0 + tmp_rate_mv;
@@ -11649,7 +11655,7 @@ static int64_t rd_pick_intrabc_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
     const int sadpb = x->sadperbit16;
     int cost_list[5];
     const int bestsme = av1_full_pixel_search(
-        cpi, x, bsize, &mvp_full, step_param, 1, cpi->sf.mv.search_method, 0,
+        cpi, x, bsize, &mvp_full, step_param, 1, cpi->sf.mv_sf.search_method, 0,
         sadpb, cond_cost_list(cpi, cost_list), &dv_ref.as_mv, INT_MAX, 1,
         (MI_SIZE * mi_col), (MI_SIZE * mi_row), 1,
         &cpi->ss_cfg[SS_CFG_LOOKAHEAD], 1);

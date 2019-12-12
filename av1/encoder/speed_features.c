@@ -251,7 +251,7 @@ static void set_rt_speed_feature_framesize_dependent(const AV1_COMP *const cpi,
 
   if (!is_480p_or_larger) {
     if (speed >= 8) {
-      sf->mv.subpel_search_method = SUBPEL_TREE;
+      sf->mv_sf.subpel_search_method = SUBPEL_TREE;
       sf->estimate_motion_for_var_based_partition = 1;
     }
   }
@@ -277,7 +277,7 @@ static void set_good_speed_features_framesize_independent(
   sf->model_based_prune_tx_search_level = 1;
   sf->model_based_post_interp_filter_breakout = 1;
   // TODO(any): Clean-up code related to hash_me in inter frames
-  sf->disable_hash_me = frame_is_intra_only(cm) ? 0 : 1;
+  sf->mv_sf.disable_hash_me = frame_is_intra_only(cm) ? 0 : 1;
 
   // TODO(debargha): Test, tweak and turn on either 1 or 2
   sf->inter_mode_rd_model_estimation = 1;
@@ -317,7 +317,7 @@ static void set_good_speed_features_framesize_independent(
     sf->adaptive_txb_search_level = 2;
     sf->use_intra_txb_hash = 1;
     sf->dual_sgr_penalty_level = 1;
-    sf->use_accurate_subpel_search = USE_4_TAPS;
+    sf->mv_sf.use_accurate_subpel_search = USE_4_TAPS;
     sf->reuse_inter_intra_mode = 1;
     sf->prune_comp_search_by_single_result = 1;
     sf->skip_repeated_newmv = 1;
@@ -366,8 +366,8 @@ static void set_good_speed_features_framesize_independent(
     // clips (e.g. 5% loss on dinner_1080p). We need to examine the sequence a
     // bit more closely to figure out why.
     sf->adaptive_rd_thresh = 1;
-    sf->mv.auto_mv_step_size = 1;
-    sf->mv.subpel_iters_per_step = 1;
+    sf->mv_sf.auto_mv_step_size = 1;
+    sf->mv_sf.subpel_iters_per_step = 1;
     sf->disable_filter_search_var_thresh = 100;
     sf->comp_inter_joint_search_thresh = BLOCK_SIZES_ALL;
 
@@ -396,7 +396,7 @@ static void set_good_speed_features_framesize_independent(
     // See aomedia:1778.
     // sf->adaptive_motion_search = 1;
     sf->recode_loop = ALLOW_RECODE_KFARFGF;
-    sf->use_accurate_subpel_search = USE_2_TAPS;
+    sf->mv_sf.use_accurate_subpel_search = USE_2_TAPS;
     if (cpi->oxcf.enable_smooth_interintra)
       sf->disable_smooth_interintra = boosted ? 0 : 1;
     sf->gm_search_type = GM_DISABLE_SEARCH;
@@ -418,7 +418,7 @@ static void set_good_speed_features_framesize_independent(
         cm->allow_screen_content_tools ? 0 : 1;
     sf->reduce_wiener_window_size = is_boosted_arf2_bwd_type ? 0 : 1;
     sf->prune_sgr_based_on_wiener = cm->allow_screen_content_tools ? 0 : 2;
-    sf->mv.subpel_search_method = SUBPEL_TREE_PRUNED;
+    sf->mv_sf.subpel_search_method = SUBPEL_TREE_PRUNED;
     sf->part_sf.simple_motion_search_prune_agg = 1;
     sf->disable_sb_level_mv_cost_upd = 1;
     sf->motion_mode_for_winner_cand =
@@ -446,7 +446,7 @@ static void set_good_speed_features_framesize_independent(
     sf->skip_sharp_interp_filter_search = 1;
     sf->perform_coeff_opt = is_boosted_arf2_bwd_type ? 2 : 4;
     sf->adaptive_txb_search_level = boosted ? 2 : 3;
-    sf->mv.subpel_search_method = SUBPEL_TREE_PRUNED_MORE;
+    sf->mv_sf.subpel_search_method = SUBPEL_TREE_PRUNED_MORE;
     sf->enable_winner_mode_for_tx_size_srch = 1;
     // TODO(any): Extend multi-winner mode processing support for inter frames
     sf->enable_multiwinner_mode_process =
@@ -566,7 +566,7 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->use_intra_txb_hash = 1;
     sf->optimize_b_precheck = 1;
     sf->dual_sgr_penalty_level = 1;
-    sf->use_accurate_subpel_search = USE_4_TAPS;
+    sf->mv_sf.use_accurate_subpel_search = USE_4_TAPS;
     sf->reuse_inter_intra_mode = 1;
     sf->prune_comp_search_by_single_result = 1;
     sf->skip_repeated_newmv = 1;
@@ -597,8 +597,8 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->cdef_pick_method = CDEF_FAST_SEARCH;
 
     sf->adaptive_rd_thresh = 1;
-    sf->mv.auto_mv_step_size = 1;
-    sf->mv.subpel_iters_per_step = 1;
+    sf->mv_sf.auto_mv_step_size = 1;
+    sf->mv_sf.subpel_iters_per_step = 1;
     sf->disable_filter_search_var_thresh = 100;
     sf->comp_inter_joint_search_thresh = BLOCK_SIZES_ALL;
 
@@ -625,7 +625,7 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
     // sf->adaptive_motion_search = 1;
     sf->recode_loop = ALLOW_RECODE_KFARFGF;
     sf->tx_domain_dist_level = 1;
-    sf->use_accurate_subpel_search = USE_2_TAPS;
+    sf->mv_sf.use_accurate_subpel_search = USE_2_TAPS;
     sf->adaptive_rd_thresh = 2;
     sf->tx_type_search.prune_mode = PRUNE_2D_FAST;
     sf->gm_search_type = GM_DISABLE_SEARCH;
@@ -644,7 +644,7 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->tx_type_search.fast_intra_tx_type_search = 1;
     sf->tx_type_search.fast_inter_tx_type_search = 1;
     sf->tx_size_search_level = frame_is_intra_only(cm) ? 0 : 2;
-    sf->mv.subpel_search_method = SUBPEL_TREE_PRUNED;
+    sf->mv_sf.subpel_search_method = SUBPEL_TREE_PRUNED;
     sf->adaptive_mode_search = 1;
     sf->alt_ref_search_fp = 1;
     sf->skip_sharp_interp_filter_search = 1;
@@ -659,8 +659,8 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->intra_y_mode_mask[TX_16X16] = INTRA_DC_H_V;
     sf->intra_uv_mode_mask[TX_16X16] = UV_INTRA_DC_H_V_CFL;
     sf->tx_size_search_level = 2;
-    sf->mv.search_method = BIGDIA;
-    sf->mv.subpel_search_method = SUBPEL_TREE_PRUNED_MORE;
+    sf->mv_sf.search_method = BIGDIA;
+    sf->mv_sf.subpel_search_method = SUBPEL_TREE_PRUNED_MORE;
     sf->adaptive_rd_thresh = 4;
     sf->mode_search_skip_flags =
         (cm->current_frame.frame_type == KEY_FRAME)
@@ -684,11 +684,11 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->part_sf.partition_search_breakout_rate_thr = 500;
     sf->simple_model_rd_from_var = 1;
     sf->lpf_pick = LPF_PICK_FROM_Q;
-    sf->mv.subpel_force_stop = QUARTER_PEL;
+    sf->mv_sf.subpel_force_stop = QUARTER_PEL;
     sf->part_sf.default_max_partition_size = BLOCK_128X128;
     sf->part_sf.default_min_partition_size = BLOCK_8X8;
     sf->frame_parameter_update = 0;
-    sf->mv.search_method = FAST_DIAMOND;
+    sf->mv_sf.search_method = FAST_DIAMOND;
     sf->part_sf.partition_search_type = VAR_BASED_PARTITION;
     sf->mode_search_skip_flags |= FLAG_SKIP_INTRA_DIRMISMATCH;
     sf->use_real_time_ref_set = 1;
@@ -707,11 +707,11 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
   }
   if (speed >= 7) {
     sf->lpf_pick = LPF_PICK_FROM_Q;
-    sf->mv.subpel_force_stop = QUARTER_PEL;
+    sf->mv_sf.subpel_force_stop = QUARTER_PEL;
     sf->part_sf.default_max_partition_size = BLOCK_128X128;
     sf->part_sf.default_min_partition_size = BLOCK_8X8;
     sf->frame_parameter_update = 0;
-    sf->mv.search_method = FAST_DIAMOND;
+    sf->mv_sf.search_method = FAST_DIAMOND;
     sf->part_sf.partition_search_type = VAR_BASED_PARTITION;
     sf->mode_search_skip_flags |= FLAG_SKIP_INTRA_DIRMISMATCH;
     sf->use_nonrd_pick_mode = 1;
@@ -725,7 +725,7 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->nonrd_use_blockyrd_interp_filter = 1;
     sf->nonrd_merge_partition = 1;
     sf->use_nonrd_altref_frame = 1;
-    sf->mv.subpel_search_method = SUBPEL_TREE;
+    sf->mv_sf.subpel_search_method = SUBPEL_TREE;
   }
   if (speed >= 8) {
     sf->nonrd_merge_partition = 0;
@@ -745,7 +745,7 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
   }
 }
 
-static AOM_INLINE void init_part_sfs(PARTITION_SPEED_FEATURES *part_sf) {
+static AOM_INLINE void init_part_sf(PARTITION_SPEED_FEATURES *part_sf) {
   part_sf->partition_search_type = SEARCH_PARTITION;
   part_sf->less_rectangular_check_level = 0;
   part_sf->use_square_partition_only_threshold = BLOCK_128X128;
@@ -777,6 +777,17 @@ static AOM_INLINE void init_part_sfs(PARTITION_SPEED_FEATURES *part_sf) {
   part_sf->simple_motion_search_early_term_none = 0;
 }
 
+static AOM_INLINE void init_mv_sf(MV_SPEED_FEATURES *mv_sf) {
+  mv_sf->search_method = NSTEP;
+  mv_sf->subpel_search_method = SUBPEL_TREE;
+  mv_sf->subpel_iters_per_step = 2;
+  mv_sf->subpel_force_stop = EIGHTH_PEL;
+  mv_sf->auto_mv_step_size = 0;
+  mv_sf->adaptive_motion_search = 0;
+  mv_sf->use_accurate_subpel_search = USE_8_TAPS;
+  mv_sf->disable_hash_me = 0;
+}
+
 void av1_set_speed_features_framesize_dependent(AV1_COMP *cpi, int speed) {
   SPEED_FEATURES *const sf = &cpi->sf;
   const AV1EncoderConfig *const oxcf = &cpi->oxcf;
@@ -802,6 +813,7 @@ void av1_set_speed_features_framesize_dependent(AV1_COMP *cpi, int speed) {
   x->min_partition_size = AOMMIN(x->min_partition_size, cm->seq_params.sb_size);
   x->max_partition_size = AOMMIN(x->max_partition_size, cm->seq_params.sb_size);
 }
+
 void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
   AV1_COMMON *const cm = &cpi->common;
   SPEED_FEATURES *const sf = &cpi->sf;
@@ -811,11 +823,7 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
 
   // best quality defaults
   sf->frame_parameter_update = 1;
-  sf->mv.search_method = NSTEP;
   sf->recode_loop = ALLOW_RECODE;
-  sf->mv.subpel_search_method = SUBPEL_TREE;
-  sf->mv.subpel_iters_per_step = 2;
-  sf->mv.subpel_force_stop = EIGHTH_PEL;
   if (cpi->oxcf.disable_trellis_quant == 3) {
     sf->optimize_coefficients = !is_lossless_requested(&cpi->oxcf)
                                     ? NO_ESTIMATE_YRD_TRELLIS_OPT
@@ -836,7 +844,6 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
   }
   sf->gm_erroradv_type = GM_ERRORADV_TR_0;
   sf->disable_adaptive_warp_error_thresh = 1;
-  sf->mv.auto_mv_step_size = 0;
   sf->comp_inter_joint_search_thresh = BLOCK_4X4;
   sf->adaptive_rd_thresh = 0;
   // TODO(sarahparker) Pair this with a speed setting once experiments are done
@@ -850,7 +857,6 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
   sf->model_based_post_interp_filter_breakout = 0;
   sf->reduce_inter_modes = 0;
   sf->selective_ref_gm = 1;
-  sf->adaptive_motion_search = 0;
   sf->adaptive_mode_search = 0;
   sf->alt_ref_search_fp = 0;
   sf->part_sf.partition_search_type = SEARCH_PARTITION;
@@ -875,7 +881,6 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
   sf->mode_search_skip_flags = 0;
   sf->disable_filter_search_var_thresh = 0;
   sf->part_sf.allow_partition_search_skip = 0;
-  sf->use_accurate_subpel_search = USE_8_TAPS;
   sf->disable_wedge_search_edge_thresh = 0;
   sf->disable_wedge_search_var_thresh = 0;
   sf->disable_loop_restoration_chroma = 0;
@@ -890,7 +895,6 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
   sf->use_intra_txb_hash = 0;
   sf->use_inter_txb_hash = 1;
   sf->use_mb_rd_hash = 1;
-  sf->disable_hash_me = 0;
   sf->optimize_b_precheck = 0;
   sf->use_dist_wtd_comp_flag = DIST_WTD_COMP_ENABLED;
   sf->reuse_inter_intra_mode = 0;
@@ -990,7 +994,8 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
   sf->prune_ref_mv_idx_search = 0;
   sf->prune_warped_prob_thresh = 0;
 
-  init_part_sfs(&sf->part_sf);
+  init_part_sf(&sf->part_sf);
+  init_mv_sf(&sf->mv_sf);
 
   if (oxcf->mode == GOOD)
     set_good_speed_features_framesize_independent(cpi, sf, speed);
@@ -1009,21 +1014,22 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
         2 * (MAX_SB_SIZE_LOG2 - 6);
   }
 
-  sf->allow_exhaustive_searches = 1;
+  sf->mv_sf.allow_exhaustive_searches = 1;
 
   const int mesh_speed = AOMMIN(speed, MAX_MESH_SPEED);
   if (cpi->twopass.fr_content_type == FC_GRAPHICS_ANIMATION)
-    sf->exhaustive_searches_thresh = (1 << 24);
+    sf->mv_sf.exhaustive_searches_thresh = (1 << 24);
   else
-    sf->exhaustive_searches_thresh = (1 << 25);
-  sf->max_exhaustive_pct = good_quality_max_mesh_pct[mesh_speed];
+    sf->mv_sf.exhaustive_searches_thresh = (1 << 25);
+  sf->mv_sf.max_exhaustive_pct = good_quality_max_mesh_pct[mesh_speed];
   if (mesh_speed > 0)
-    sf->exhaustive_searches_thresh = sf->exhaustive_searches_thresh << 1;
+    sf->mv_sf.exhaustive_searches_thresh = sf->mv_sf.exhaustive_searches_thresh
+                                           << 1;
 
   for (i = 0; i < MAX_MESH_STEP; ++i) {
-    sf->mesh_patterns[i].range =
+    sf->mv_sf.mesh_patterns[i].range =
         good_quality_mesh_patterns[mesh_speed][i].range;
-    sf->mesh_patterns[i].interval =
+    sf->mv_sf.mesh_patterns[i].interval =
         good_quality_mesh_patterns[mesh_speed][i].interval;
   }
 
@@ -1031,12 +1037,12 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
   // Though intraBC mesh pattern is populated for all frame types, it is used
   // only for intra frames of screen contents
   for (i = 0; i < MAX_MESH_STEP; ++i) {
-    sf->intrabc_mesh_patterns[i].range =
+    sf->mv_sf.intrabc_mesh_patterns[i].range =
         intrabc_mesh_patterns[mesh_speed][i].range;
-    sf->intrabc_mesh_patterns[i].interval =
+    sf->mv_sf.intrabc_mesh_patterns[i].interval =
         intrabc_mesh_patterns[mesh_speed][i].interval;
   }
-  sf->intrabc_max_exhaustive_pct = intrabc_max_mesh_pct[mesh_speed];
+  sf->mv_sf.intrabc_max_exhaustive_pct = intrabc_max_mesh_pct[mesh_speed];
 
   // Slow quant, dct and trellis not worthwhile for first pass
   // so make sure they are always turned off.
@@ -1045,13 +1051,13 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
   // No recode or trellis for 1 pass.
   if (oxcf->pass == 0) sf->recode_loop = DISALLOW_RECODE;
 
-  if (sf->mv.subpel_search_method == SUBPEL_TREE) {
+  if (sf->mv_sf.subpel_search_method == SUBPEL_TREE) {
     cpi->find_fractional_mv_step = av1_find_best_sub_pixel_tree;
-  } else if (sf->mv.subpel_search_method == SUBPEL_TREE_PRUNED) {
+  } else if (sf->mv_sf.subpel_search_method == SUBPEL_TREE_PRUNED) {
     cpi->find_fractional_mv_step = av1_find_best_sub_pixel_tree_pruned;
-  } else if (sf->mv.subpel_search_method == SUBPEL_TREE_PRUNED_MORE) {
+  } else if (sf->mv_sf.subpel_search_method == SUBPEL_TREE_PRUNED_MORE) {
     cpi->find_fractional_mv_step = av1_find_best_sub_pixel_tree_pruned_more;
-  } else if (sf->mv.subpel_search_method == SUBPEL_TREE_PRUNED_EVENMORE) {
+  } else if (sf->mv_sf.subpel_search_method == SUBPEL_TREE_PRUNED_EVENMORE) {
     cpi->find_fractional_mv_step = av1_find_best_sub_pixel_tree_pruned_evenmore;
   }
 

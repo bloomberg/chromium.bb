@@ -889,7 +889,7 @@ static int temporal_filter_find_matching_mb_c(
     int step_param) {
   MACROBLOCK *const x = &cpi->td.mb;
   MACROBLOCKD *const xd = &x->e_mbd;
-  const MV_SPEED_FEATURES *const mv_sf = &cpi->sf.mv;
+  const MV_SPEED_FEATURES *const mv_sf = &cpi->sf.mv_sf;
   int sadpb = x->sadperbit16;
   int bestsme = INT_MAX;
   int distortion;

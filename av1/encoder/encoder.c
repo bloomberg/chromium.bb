@@ -3763,7 +3763,7 @@ static void set_mv_search_params(AV1_COMP *cpi) {
   // Default based on max resolution.
   cpi->mv_step_param = av1_init_search_range(max_mv_def);
 
-  if (cpi->sf.mv.auto_mv_step_size) {
+  if (cpi->sf.mv_sf.auto_mv_step_size) {
     if (frame_is_intra_only(cm)) {
       // Initialize max_mv_magnitude for use in the first INTER frame
       // after a key/intra-only frame.
@@ -4029,7 +4029,7 @@ static void init_motion_estimation(AV1_COMP *cpi) {
     return;
   }
 
-  if (cpi->sf.mv.search_method == DIAMOND) {
+  if (cpi->sf.mv_sf.search_method == DIAMOND) {
     av1_init_dsmotion_compensation(&cpi->ss_cfg[SS_CFG_SRC], y_stride);
     av1_init_dsmotion_compensation(&cpi->ss_cfg[SS_CFG_LOOKAHEAD],
                                    y_stride_src);

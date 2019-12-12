@@ -1276,7 +1276,8 @@ static INLINE int frame_is_kf_gf_arf(const AV1_COMP *cpi) {
 
 // TODO(huisu@google.com, youzhou@microsoft.com): enable hash-me for HBD.
 static INLINE int av1_use_hash_me(const AV1_COMP *const cpi) {
-  return (cpi->common.allow_screen_content_tools && !cpi->sf.disable_hash_me);
+  return (cpi->common.allow_screen_content_tools &&
+          !cpi->sf.mv_sf.disable_hash_me);
 }
 
 static INLINE hash_table *av1_get_ref_frame_hash_map(
@@ -1396,7 +1397,7 @@ static INLINE int get_chessboard_index(int frame_index) {
 }
 
 static INLINE int *cond_cost_list(const struct AV1_COMP *cpi, int *cost_list) {
-  return cpi->sf.mv.subpel_search_method != SUBPEL_TREE ? cost_list : NULL;
+  return cpi->sf.mv_sf.subpel_search_method != SUBPEL_TREE ? cost_list : NULL;
 }
 
 // Compression ratio of current frame.

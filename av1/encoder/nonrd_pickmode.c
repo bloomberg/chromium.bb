@@ -160,7 +160,7 @@ static int combined_motion_search(AV1_COMP *cpi, MACROBLOCK *x,
     center_mv = tmp_mv->as_mv;
 
   av1_full_pixel_search(
-      cpi, x, bsize, &mvp_full, step_param, 1, cpi->sf.mv.search_method, 0,
+      cpi, x, bsize, &mvp_full, step_param, 1, cpi->sf.mv_sf.search_method, 0,
       sadpb, cond_cost_list(cpi, cost_list), &center_mv, INT_MAX, 0,
       (MI_SIZE * mi_col), (MI_SIZE * mi_row), 0, &cpi->ss_cfg[SS_CFG_SRC], 0);
 
@@ -177,11 +177,11 @@ static int combined_motion_search(AV1_COMP *cpi, MACROBLOCK *x,
   rv = !(RDCOST(x->rdmult, (*rate_mv), 0) > best_rd_sofar);
 
   if (rv && search_subpel) {
-    SUBPEL_FORCE_STOP subpel_force_stop = cpi->sf.mv.subpel_force_stop;
+    SUBPEL_FORCE_STOP subpel_force_stop = cpi->sf.mv_sf.subpel_force_stop;
     cpi->find_fractional_mv_step(
         x, cm, mi_row, mi_col, &ref_mv, cpi->common.allow_high_precision_mv,
         x->errorperbit, &cpi->fn_ptr[bsize], subpel_force_stop,
-        cpi->sf.mv.subpel_iters_per_step, cond_cost_list(cpi, cost_list),
+        cpi->sf.mv_sf.subpel_iters_per_step, cond_cost_list(cpi, cost_list),
         x->nmv_vec_cost, x->mv_cost_stack, &dis, &x->pred_sse[ref], NULL, NULL,
         0, 0, 0, 0, 0, 1);
     *tmp_mv = x->best_mv;
@@ -235,8 +235,8 @@ static int search_new_mv(AV1_COMP *cpi, MACROBLOCK *x,
 
     cpi->find_fractional_mv_step(
         x, cm, mi_row, mi_col, &ref_mv, cm->allow_high_precision_mv,
-        x->errorperbit, &cpi->fn_ptr[bsize], cpi->sf.mv.subpel_force_stop,
-        cpi->sf.mv.subpel_iters_per_step, cond_cost_list(cpi, cost_list),
+        x->errorperbit, &cpi->fn_ptr[bsize], cpi->sf.mv_sf.subpel_force_stop,
+        cpi->sf.mv_sf.subpel_iters_per_step, cond_cost_list(cpi, cost_list),
         x->nmv_vec_cost, x->mv_cost_stack, &dis, &x->pred_sse[ref_frame], NULL,
         NULL, 0, 0, 0, 0, 0, 1);
     frame_mv[NEWMV][ref_frame].as_int = x->best_mv.as_int;

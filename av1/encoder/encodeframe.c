@@ -2405,7 +2405,7 @@ static int rd_try_subblock(AV1_COMP *const cpi, ThreadData *td,
   setup_block_rdmult(cpi, x, mi_row, mi_col, subsize, NO_AQ, NULL);
 
   av1_rd_cost_update(x->rdmult, &best_rdcost);
-  if (cpi->sf.adaptive_motion_search) load_pred_mv(x, prev_ctx);
+  if (cpi->sf.mv_sf.adaptive_motion_search) load_pred_mv(x, prev_ctx);
 
   RD_STATS rdcost_remaining;
   av1_rd_stats_subtraction(x->rdmult, &best_rdcost, sum_rdc, &rdcost_remaining);
@@ -2861,7 +2861,7 @@ BEGIN_PARTITION_SEARCH:
   }
 
   // store estimated motion vector
-  if (cpi->sf.adaptive_motion_search) store_pred_mv(x, ctx_none);
+  if (cpi->sf.mv_sf.adaptive_motion_search) store_pred_mv(x, ctx_none);
 
   // PARTITION_SPLIT
   int64_t part_split_rd = INT64_MAX;
@@ -2886,7 +2886,7 @@ BEGIN_PARTITION_SEARCH:
       if (mi_row + y_idx >= cm->mi_rows || mi_col + x_idx >= cm->mi_cols)
         continue;
 
-      if (cpi->sf.adaptive_motion_search) load_pred_mv(x, ctx_none);
+      if (cpi->sf.mv_sf.adaptive_motion_search) load_pred_mv(x, ctx_none);
 
       pc_tree->split[idx]->index = idx;
       int64_t *p_split_rd = &split_rd[idx];
@@ -2981,7 +2981,7 @@ BEGIN_PARTITION_SEARCH:
       !is_gt_max_sq_part) {
     av1_init_rd_stats(&sum_rdc);
     subsize = get_partition_subsize(bsize, PARTITION_HORZ);
-    if (cpi->sf.adaptive_motion_search) load_pred_mv(x, ctx_none);
+    if (cpi->sf.mv_sf.adaptive_motion_search) load_pred_mv(x, ctx_none);
     sum_rdc.rate = partition_cost[PARTITION_HORZ];
     sum_rdc.rdcost = RDCOST(x->rdmult, sum_rdc.rate, 0);
     RD_STATS best_remain_rdcost;
@@ -3019,7 +3019,7 @@ BEGIN_PARTITION_SEARCH:
       update_state(cpi, td, ctx_h, mi_row, mi_col, subsize, 1);
       encode_superblock(cpi, tile_data, td, tp, DRY_RUN_NORMAL, subsize, NULL);
 
-      if (cpi->sf.adaptive_motion_search) load_pred_mv(x, ctx_h);
+      if (cpi->sf.mv_sf.adaptive_motion_search) load_pred_mv(x, ctx_h);
 
       av1_rd_stats_subtraction(x->rdmult, &best_rdc, &sum_rdc,
                                &best_remain_rdcost);
@@ -3067,7 +3067,7 @@ BEGIN_PARTITION_SEARCH:
     av1_init_rd_stats(&sum_rdc);
     subsize = get_partition_subsize(bsize, PARTITION_VERT);
 
-    if (cpi->sf.adaptive_motion_search) load_pred_mv(x, ctx_none);
+    if (cpi->sf.mv_sf.adaptive_motion_search) load_pred_mv(x, ctx_none);
 
     sum_rdc.rate = partition_cost[PARTITION_VERT];
     sum_rdc.rdcost = RDCOST(x->rdmult, sum_rdc.rate, 0);
@@ -3104,7 +3104,7 @@ BEGIN_PARTITION_SEARCH:
       update_state(cpi, td, &pc_tree->vertical[0], mi_row, mi_col, subsize, 1);
       encode_superblock(cpi, tile_data, td, tp, DRY_RUN_NORMAL, subsize, NULL);
 
-      if (cpi->sf.adaptive_motion_search) load_pred_mv(x, ctx_none);
+      if (cpi->sf.mv_sf.adaptive_motion_search) load_pred_mv(x, ctx_none);
 
       av1_rd_stats_subtraction(x->rdmult, &best_rdc, &sum_rdc,
                                &best_remain_rdcost);
