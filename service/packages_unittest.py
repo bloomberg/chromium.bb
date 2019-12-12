@@ -111,9 +111,10 @@ class ReplicatePrivateConfigTest(cros_test_lib.RunCommandTempDirTestCase):
     # Set up fake public and private chromeos-config overlays.
     private_package_root = (
         'src/private-overlays/overlay-coral-private/chromeos-base/'
-        'chromeos-config-bsp-coral-private')
+        'chromeos-config-bsp'
+    )
     self.public_package_root = (
-        'src/overlays/overlay-coral/chromeos-base/chromeos-config-bsp-coral')
+        'src/overlays/overlay-coral/chromeos-base/chromeos-config-bsp')
     file_layout = (
         D(os.path.join(private_package_root, 'files'), ['build_config.json']),
         D(private_package_root, ['replication_config.jsonpb']),
@@ -199,10 +200,7 @@ class ReplicatePrivateConfigTest(cros_test_lib.RunCommandTempDirTestCase):
     ]
     chroot = Chroot()
     result = packages.replicate_private_config(
-        _build_targets=None,
-        refs=refs,
-        chroot=chroot,
-        package='chromeos-base/chromeos-config-bsp-coral-private')
+        _build_targets=None, refs=refs, chroot=chroot)
 
     self.assertCommandContains([
         'cros_config_schema', '-m',
@@ -262,10 +260,7 @@ class ReplicatePrivateConfigTest(cros_test_lib.RunCommandTempDirTestCase):
             revision='123')
     ]
     result = packages.replicate_private_config(
-        _build_targets=None,
-        refs=refs,
-        chroot=Chroot(),
-        package='chromeos-base/chromeos-config-bsp-coral-private')
+        _build_targets=None, refs=refs, chroot=Chroot())
 
     self.assertEqual(len(result.modified), 1)
     self.assertEqual(result.modified[0].files,
@@ -300,10 +295,7 @@ class ReplicatePrivateConfigTest(cros_test_lib.RunCommandTempDirTestCase):
     with self.assertRaisesRegex(
         ValueError, 'Expected at most one build_config.json destination path.'):
       packages.replicate_private_config(
-          _build_targets=None,
-          refs=refs,
-          chroot=Chroot(),
-          package='chromeos-base/chromeos-config-bsp-coral-private')
+          _build_targets=None, refs=refs, chroot=Chroot())
 
   def test_replicate_private_config_generated_files_incorrect(self):
     """An error is thrown if generated C files are missing."""
@@ -321,19 +313,13 @@ class ReplicatePrivateConfigTest(cros_test_lib.RunCommandTempDirTestCase):
     with self.assertRaisesRegex(packages.GeneratedCrosConfigFilesError,
                                 'Expected to find generated C files'):
       packages.replicate_private_config(
-          _build_targets=None,
-          refs=refs,
-          chroot=chroot,
-          package='chromeos-base/chromeos-config-bsp-coral-private')
+          _build_targets=None, refs=refs, chroot=chroot)
 
   def test_replicate_private_config_wrong_number_of_refs(self):
     """An error is thrown if there is not exactly one ref."""
     with self.assertRaisesRegex(ValueError, 'Expected exactly one ref'):
       packages.replicate_private_config(
-          _build_targets=None,
-          refs=[],
-          chroot=None,
-          package='chromeos-base/chromeos-config-bsp-coral-private')
+          _build_targets=None, refs=[], chroot=None)
 
     with self.assertRaisesRegex(ValueError, 'Expected exactly one ref'):
       refs = [
@@ -341,10 +327,7 @@ class ReplicatePrivateConfigTest(cros_test_lib.RunCommandTempDirTestCase):
           GitRef(path='a', ref='master', revision='2')
       ]
       packages.replicate_private_config(
-          _build_targets=None,
-          refs=refs,
-          chroot=None,
-          package='chromeos-base/chromeos-config-bsp-coral-private')
+          _build_targets=None, refs=refs, chroot=None)
 
   def test_replicate_private_config_replication_config_missing(self):
     """An error is thrown if there is not a replication config."""
@@ -359,20 +342,19 @@ class ReplicatePrivateConfigTest(cros_test_lib.RunCommandTempDirTestCase):
               revision='123')
       ]
       packages.replicate_private_config(
-          _build_targets=None,
-          refs=refs,
-          chroot=None,
-          package='chromeos-base/chromeos-config-bsp-coral-private')
+          _build_targets=None, refs=refs, chroot=None)
 
   def test_replicate_private_config_wrong_git_ref_path(self):
     """An error is thrown if the git ref doesn't point to a private overlay."""
     with self.assertRaisesRegex(ValueError, 'ref.path must match the pattern'):
-      refs = [GitRef(path='a/b/c', ref='master', revision='123')]
+      refs = [
+          GitRef(
+              path='a/b/c',
+              ref='master',
+              revision='123')
+      ]
       packages.replicate_private_config(
-          _build_targets=None,
-          refs=refs,
-          chroot=None,
-          package='chromeos-base/chromeos-config-bsp-coral-private')
+          _build_targets=None, refs=refs, chroot=None)
 
 
 class GetBestVisibleTest(cros_test_lib.TestCase):
