@@ -261,11 +261,16 @@ class RunIsolatedTest(RunIsolatedTestBase):
 
     cmd = [
         '--no-log',
-        '--isolated', isolated_hash,
-        '--cache', os.path.join(self.tempdir, 'isolated_cache'),
-        '--named-cache-root', os.path.join(self.tempdir, 'named_cache'),
-        '--isolate-server', 'https://localhost',
-        '--root-dir', self.tempdir,
+        '--isolated',
+        isolated_hash,
+        '--cache',
+        os.path.join(self.tempdir, 'isolated_cache_python'),
+        '--named-cache-root',
+        os.path.join(self.tempdir, 'named_cache'),
+        '--isolate-server',
+        'https://localhost',
+        '--root-dir',
+        self.tempdir,
     ]
     ret = run_isolated.main(cmd)
     self.assertEqual(0, ret)
@@ -294,11 +299,16 @@ class RunIsolatedTest(RunIsolatedTestBase):
 
     cmd = [
         '--no-log',
-        '--isolated', isolated_hash,
-        '--cache', os.path.join(self.tempdir, 'isolated_cache'),
-        '--isolate-server', 'https://localhost',
-        '--named-cache-root', os.path.join(self.tempdir, 'named_cache'),
-        '--root-dir', self.tempdir,
+        '--isolated',
+        isolated_hash,
+        '--cache',
+        os.path.join(self.tempdir, 'isolated_cache_python'),
+        '--isolate-server',
+        'https://localhost',
+        '--named-cache-root',
+        os.path.join(self.tempdir, 'named_cache'),
+        '--root-dir',
+        self.tempdir,
         '--',
         '--extraargs',
         'bar',
@@ -497,11 +507,16 @@ class RunIsolatedTest(RunIsolatedTestBase):
 
     cmd = [
         '--no-log',
-        '--isolated', isolated_hash,
-        '--cache', os.path.join(self.tempdir, 'isolated_cache'),
-        '--isolate-server', 'https://localhost',
-        '--named-cache-root', os.path.join(self.tempdir, 'named_cache'),
-        '--root-dir', self.tempdir,
+        '--isolated',
+        isolated_hash,
+        '--cache',
+        os.path.join(self.tempdir, 'isolated_cache_python'),
+        '--isolate-server',
+        'https://localhost',
+        '--named-cache-root',
+        os.path.join(self.tempdir, 'named_cache'),
+        '--root-dir',
+        self.tempdir,
     ]
     ret = run_isolated.main(cmd)
     self.assertEqual(1, ret)
@@ -524,14 +539,16 @@ class RunIsolatedTest(RunIsolatedTestBase):
   def test_main_naked_without_isolated(self):
     self.mock_popen_with_oserr()
     cmd = [
-      '--no-log',
-      '--cache', os.path.join(self.tempdir, 'isolated_cache'),
-      '--named-cache-root', os.path.join(self.tempdir, 'named_cache'),
-      '--raw-cmd',
-      '--',
-      '/bin/echo',
-      'hello',
-      'world',
+        '--no-log',
+        '--cache',
+        os.path.join(self.tempdir, 'isolated_cache_python'),
+        '--named-cache-root',
+        os.path.join(self.tempdir, 'named_cache'),
+        '--raw-cmd',
+        '--',
+        '/bin/echo',
+        'hello',
+        'world',
     ]
     ret = run_isolated.main(cmd)
     self.assertEqual(1, ret)
@@ -554,15 +571,18 @@ class RunIsolatedTest(RunIsolatedTestBase):
     self.capture_luci_ctx = True
     self.mock_popen_with_oserr()
     cmd = [
-      '--no-log',
-      '--cache', os.path.join(self.tempdir, 'isolated_cache'),
-      '--named-cache-root', os.path.join(self.tempdir, 'named_cache'),
-      '--switch-to-account', 'task',
-      '--raw-cmd',
-      '--',
-      '/bin/echo',
-      'hello',
-      'world',
+        '--no-log',
+        '--cache',
+        os.path.join(self.tempdir, 'isolated_cache_python'),
+        '--named-cache-root',
+        os.path.join(self.tempdir, 'named_cache'),
+        '--switch-to-account',
+        'task',
+        '--raw-cmd',
+        '--',
+        '/bin/echo',
+        'hello',
+        'world',
     ]
     root_ctx = {
       'accounts': [{'id': 'bot'}, {'id': 'task'}],
@@ -581,15 +601,18 @@ class RunIsolatedTest(RunIsolatedTestBase):
     self.capture_luci_ctx = True
     self.mock_popen_with_oserr()
     cmd = [
-      '--no-log',
-      '--cache', os.path.join(self.tempdir, 'isolated_cache'),
-      '--named-cache-root', os.path.join(self.tempdir, 'named_cache'),
-      '--switch-to-account', 'task',
-      '--raw-cmd',
-      '--',
-      '/bin/echo',
-      'hello',
-      'world',
+        '--no-log',
+        '--cache',
+        os.path.join(self.tempdir, 'isolated_cache_python'),
+        '--named-cache-root',
+        os.path.join(self.tempdir, 'named_cache'),
+        '--switch-to-account',
+        'task',
+        '--raw-cmd',
+        '--',
+        '/bin/echo',
+        'hello',
+        'world',
     ]
     root_ctx = {
       'accounts': [{'id': 'bot'}],  # only 'bot', there's no 'task'
@@ -608,16 +631,19 @@ class RunIsolatedTest(RunIsolatedTestBase):
     workdir = tempfile.mkdtemp()
     try:
       cmd = [
-        '--no-log',
-        '--cache', os.path.join(self.tempdir, 'isolated_cache'),
-        '--root-dir', workdir,
-        '--leak-temp-dir',
-        '--named-cache-root', os.path.join(self.tempdir, 'named_cache'),
-        '--raw-cmd',
-        '--',
-        '/bin/echo',
-        'hello',
-        'world',
+          '--no-log',
+          '--cache',
+          os.path.join(self.tempdir, 'isolated_cache_python'),
+          '--root-dir',
+          workdir,
+          '--leak-temp-dir',
+          '--named-cache-root',
+          os.path.join(self.tempdir, 'named_cache'),
+          '--raw-cmd',
+          '--',
+          '/bin/echo',
+          'hello',
+          'world',
       ]
       ret = run_isolated.main(cmd)
       self.assertEqual(0, ret)
@@ -667,20 +693,28 @@ class RunIsolatedTest(RunIsolatedTestBase):
     self.popen_fakes.append(fake_ensure)
     cipd_cache = os.path.join(self.tempdir, 'cipd_cache')
     cmd = [
-      '--no-log',
-      '--cache', os.path.join(self.tempdir, 'isolated_cache'),
-      '--cipd-client-version', 'git:wowza',
-      '--cipd-package', 'bin:infra/tools/echo/${platform}:latest',
-      '--cipd-package', '.:infra/data/x:latest',
-      '--cipd-package', '.:infra/data/y:canary',
-      '--cipd-server', self.cipd_server.url,
-      '--cipd-cache', cipd_cache,
-      '--named-cache-root', os.path.join(self.tempdir, 'named_cache'),
-      '--raw-cmd',
-      '--',
-      'bin/echo${EXECUTABLE_SUFFIX}',
-      'hello',
-      'world',
+        '--no-log',
+        '--cache',
+        os.path.join(self.tempdir, 'isolated_cache_python'),
+        '--cipd-client-version',
+        'git:wowza',
+        '--cipd-package',
+        'bin:infra/tools/echo/${platform}:latest',
+        '--cipd-package',
+        '.:infra/data/x:latest',
+        '--cipd-package',
+        '.:infra/data/y:canary',
+        '--cipd-server',
+        self.cipd_server.url,
+        '--cipd-cache',
+        cipd_cache,
+        '--named-cache-root',
+        os.path.join(self.tempdir, 'named_cache'),
+        '--raw-cmd',
+        '--',
+        'bin/echo${EXECUTABLE_SUFFIX}',
+        'hello',
+        'world',
     ]
     ret = run_isolated.main(cmd)
     self.assertEqual(0, ret)
@@ -724,19 +758,25 @@ class RunIsolatedTest(RunIsolatedTestBase):
 
     cipd_cache = os.path.join(self.tempdir, 'cipd_cache')
     cmd = [
-      '--no-log',
-      '--cache', os.path.join(self.tempdir, 'isolated_cache'),
-      '--cipd-enabled',
-      '--cipd-client-version', 'git:wowza',
-      '--cipd-server', self.cipd_server.url,
-      '--cipd-cache', cipd_cache,
-      '--named-cache-root', os.path.join(self.tempdir, 'named_cache'),
-      '--raw-cmd',
-      '--relative-cwd', 'a',
-      '--',
-      'bin/echo${EXECUTABLE_SUFFIX}',
-      'hello',
-      'world',
+        '--no-log',
+        '--cache',
+        os.path.join(self.tempdir, 'isolated_cache_python'),
+        '--cipd-enabled',
+        '--cipd-client-version',
+        'git:wowza',
+        '--cipd-server',
+        self.cipd_server.url,
+        '--cipd-cache',
+        cipd_cache,
+        '--named-cache-root',
+        os.path.join(self.tempdir, 'named_cache'),
+        '--raw-cmd',
+        '--relative-cwd',
+        'a',
+        '--',
+        'bin/echo${EXECUTABLE_SUFFIX}',
+        'hello',
+        'world',
     ]
 
     pins = {
@@ -843,17 +883,26 @@ class RunIsolatedTest(RunIsolatedTestBase):
     self.mock(local_caching, 'trim_caches', trim_caches)
     nc = os.path.join(self.tempdir, 'named_cache')
     cmd = [
-      '--no-log',
-      '--leak-temp-dir',
-      '--cache', os.path.join(self.tempdir, 'isolated_cache'), '100',
-      '--named-cache-root', nc,
-      '--named-cache', 'cache_foo', 'foo', '100',
-      '--named-cache', 'cache_bar', 'bar', '1000',
-      '--raw-cmd',
-      '--',
-      'bin/echo${EXECUTABLE_SUFFIX}',
-      'hello',
-      'world',
+        '--no-log',
+        '--leak-temp-dir',
+        '--cache',
+        os.path.join(self.tempdir, 'isolated_cache_python'),
+        '100',
+        '--named-cache-root',
+        nc,
+        '--named-cache',
+        'cache_foo',
+        'foo',
+        '100',
+        '--named-cache',
+        'cache_bar',
+        'bar',
+        '1000',
+        '--raw-cmd',
+        '--',
+        'bin/echo${EXECUTABLE_SUFFIX}',
+        'hello',
+        'world',
     ]
     ret = run_isolated.main(cmd)
     self.assertEqual(0, ret)
@@ -1553,12 +1602,18 @@ class RunIsolatedJsonTest(RunIsolatedTestBase):
     out = os.path.join(self.tempdir, 'res.json')
     cmd = [
         '--no-log',
-        '--isolated', isolated_in_hash,
-        '--cache', os.path.join(self.tempdir, 'isolated_cache'),
-        '--isolate-server', 'http://localhost:1',
-        '--named-cache-root', os.path.join(self.tempdir, 'named_cache'),
-        '--json', out,
-        '--root-dir', self.tempdir,
+        '--isolated',
+        isolated_in_hash,
+        '--cache',
+        os.path.join(self.tempdir, 'isolated_cache_python'),
+        '--isolate-server',
+        'http://localhost:1',
+        '--named-cache-root',
+        os.path.join(self.tempdir, 'named_cache'),
+        '--json',
+        out,
+        '--root-dir',
+        self.tempdir,
     ]
     ret = run_isolated.main(cmd)
     self.assertEqual(0, ret)
