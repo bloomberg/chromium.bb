@@ -14,6 +14,7 @@ namespace discovery {
 
 using testing::_;
 using testing::Return;
+using testing::StrictMock;
 
 class MockMdnsService : public MdnsService {
  public:
@@ -33,11 +34,8 @@ class MockMdnsService : public MdnsService {
 
   void ReinitializeQueries(const DomainName& name) override { FAIL(); }
 
-  void UpdateRegisteredRecord(const MdnsRecord& old_record,
-                              const MdnsRecord& new_record) override {
-    FAIL();
-  }
-
+  MOCK_METHOD2(UpdateRegisteredRecord,
+               void(const MdnsRecord&, const MdnsRecord&));
   MOCK_METHOD1(RegisterRecord, void(const MdnsRecord& record));
   MOCK_METHOD1(DeregisterRecord, void(const MdnsRecord& record));
 };
@@ -49,12 +47,12 @@ class PublisherTesting : public PublisherImpl {
   MockMdnsService& mdns_service() { return mock_service_; }
 
  private:
-  MockMdnsService mock_service_;
+  StrictMock<MockMdnsService> mock_service_;
 };
 
 TEST(DnsSdPublisherImplTests, TestRegisterAndDeregister) {
   PublisherTesting publisher;
-  IPAddress address = IPAddress(std::array<uint8_t, 4>{{192, 168, 0, 0}});
+  IPAddress address = IPAddress(192, 168, 0, 0);
   DnsSdInstanceRecord record("instance", "_service._udp", "domain",
                              {address, 80}, {});
 
@@ -97,6 +95,42 @@ TEST(DnsSdPublisherImplTests, TestRegisterAndDeregister) {
       });
   publisher.DeregisterAll("_service._udp");
   EXPECT_EQ(seen, 2);
+}
+
+TEST(DnsSdPublisherImplTests, TestUpdate) {
+  PublisherTesting publisher;
+  IPAddress address = IPAddress{192, 168, 0, 0};
+  DnsSdTxtRecord txt;
+  txt.SetFlag("id", true);
+  DnsSdInstanceRecord record("instance", "_service._udp", "domain",
+                             {address, 80}, std::move(txt));
+  EXPECT_NE(publisher.UpdateRegistration(record), Error::None());
+
+  EXPECT_CALL(publisher.mdns_service(), RegisterRecord(_)).Times(4);
+  EXPECT_EQ(publisher.Register(record), Error::None());
+  testing::Mock::VerifyAndClearExpectations(&publisher.mdns_service());
+
+  EXPECT_NE(publisher.UpdateRegistration(record), Error::None());
+
+  IPAddress address2 = IPAddress(1, 2, 3, 4, 5, 6, 7, 8);
+  DnsSdTxtRecord txt2;
+  txt2.SetFlag("id2", true);
+  DnsSdInstanceRecord record2("instance", "_service._udp", "domain",
+                              {address2, 80}, std::move(txt2));
+  EXPECT_CALL(publisher.mdns_service(), RegisterRecord(_))
+      .WillOnce([](const MdnsRecord& record) {
+        EXPECT_EQ(record.dns_type(), DnsType::kAAAA);
+      });
+  EXPECT_CALL(publisher.mdns_service(), DeregisterRecord(_))
+      .WillOnce([](const MdnsRecord& record) {
+        EXPECT_EQ(record.dns_type(), DnsType::kA);
+      });
+  EXPECT_CALL(publisher.mdns_service(), UpdateRegisteredRecord(_, _))
+      .WillOnce([](const MdnsRecord& record, const MdnsRecord& record2) {
+        EXPECT_EQ(record.dns_type(), DnsType::kTXT);
+        EXPECT_EQ(record2.dns_type(), DnsType::kTXT);
+      });
+  EXPECT_EQ(publisher.UpdateRegistration(record2), Error::None());
 }
 
 }  // namespace discovery

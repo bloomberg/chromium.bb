@@ -4,6 +4,12 @@
 
 #include "discovery/dnssd/impl/publisher_impl.h"
 
+#include <map>
+#include <utility>
+#include <vector>
+
+#include "absl/types/optional.h"
+#include "discovery/mdns/public/mdns_constants.h"
 #include "platform/base/error.h"
 
 namespace openscreen {
@@ -28,7 +34,60 @@ Error PublisherImpl::Register(const DnsSdInstanceRecord& record) {
 }
 
 Error PublisherImpl::UpdateRegistration(const DnsSdInstanceRecord& record) {
-  // TODO(rwkeane): Implement this method.
+  auto it = std::find_if(published_records_.begin(), published_records_.end(),
+                         [&record](const DnsSdInstanceRecord& other) {
+                           return record.instance_id() == other.instance_id() &&
+                                  record.service_id() == other.service_id() &&
+                                  record.domain_id() == other.domain_id();
+                         });
+
+  // Check preconditions called out in header. Specifically, the updated record
+  // must be making changes to an already published record.
+  if (it == published_records_.end() || *it == record) {
+    return Error::Code::kParameterInvalid;
+  }
+
+  // Get all records which have changed.
+  // First in each pair is the old records, second is the new record.
+  std::map<DnsType,
+           std::pair<absl::optional<MdnsRecord>, absl::optional<MdnsRecord>>>
+      changed_records;
+  std::vector<MdnsRecord> old_records = GetDnsRecords(*it);
+  std::vector<MdnsRecord> new_records = GetDnsRecords(record);
+
+  for (size_t i = 0; i < old_records.size(); i++) {
+    auto key = old_records[i].dns_type();
+    OSP_DCHECK(changed_records.find(key) == changed_records.end());
+    auto value = std::make_pair(std::move(old_records[i]), absl::nullopt);
+    changed_records.emplace(key, std::move(value));
+  }
+
+  for (size_t i = 0; i < new_records.size(); i++) {
+    auto key = new_records[i].dns_type();
+    auto find_it = changed_records.find(key);
+    if (find_it == changed_records.end()) {
+      std::pair<absl::optional<MdnsRecord>, absl::optional<MdnsRecord>> value(
+          absl::nullopt, std::move(new_records[i]));
+      changed_records.emplace(key, std::move(value));
+    } else {
+      find_it->second.second = std::move(new_records[i]);
+    }
+  }
+
+  // Apply record changes.
+  for (const auto& pair : changed_records) {
+    OSP_DCHECK(pair.second.first != absl::nullopt ||
+               pair.second.second != absl::nullopt);
+    if (pair.second.first == absl::nullopt) {
+      mdns_publisher_->RegisterRecord(pair.second.second.value());
+    } else if (pair.second.second == absl::nullopt) {
+      mdns_publisher_->DeregisterRecord(pair.second.first.value());
+    } else if (pair.second.first.value() != pair.second.second.value()) {
+      mdns_publisher_->UpdateRegisteredRecord(pair.second.first.value(),
+                                              pair.second.second.value());
+    }
+  }
+
   return Error::None();
 }
 
