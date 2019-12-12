@@ -9,7 +9,9 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/task/post_task.h"
+#include "base/time/default_clock.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/permissions/crowd_deny_preload_data.h"
 #include "chrome/browser/permissions/permission_request.h"
@@ -24,13 +26,31 @@ namespace {
 using UiToUse = ContextualNotificationPermissionUiSelector::UiToUse;
 using QuietUiReason = ContextualNotificationPermissionUiSelector::QuietUiReason;
 
+// Records a histogram sample for NotificationUserExperienceQuality.
+void RecordNotificationUserExperienceQuality(
+    CrowdDenyPreloadData::SiteReputation::NotificationUserExperienceQuality
+        value) {
+  // Cannot use either base::UmaHistogramEnumeration() overload here because
+  // ARRAYSIZE is defined as MAX+1 but also as type `int`.
+  base::UmaHistogramExactLinear(
+      "Permissions.CrowdDeny.PreloadData.NotificationUxQuality",
+      static_cast<int>(value),
+      CrowdDenyPreloadData::SiteReputation::
+          NotificationUserExperienceQuality_ARRAYSIZE);
+}
+
 // Attempts to decide which UI to use based on preloaded site reputation data,
 // or returns base::nullopt if not possible. |site_reputation| can be nullptr.
 base::Optional<UiToUse> GetUiToUseBasedOnSiteReputation(
     const CrowdDenyPreloadData::SiteReputation* site_reputation) {
-  if (!site_reputation)
+  if (!site_reputation) {
+    RecordNotificationUserExperienceQuality(
+        CrowdDenyPreloadData::SiteReputation::UNKNOWN);
     return base::nullopt;
+  }
 
+  RecordNotificationUserExperienceQuality(
+      site_reputation->notification_ux_quality());
   switch (site_reputation->notification_ux_quality()) {
     case CrowdDenyPreloadData::SiteReputation::ACCEPTABLE:
       return UiToUse::kNormalUi;
@@ -112,7 +132,8 @@ void ContextualNotificationPermissionUiSelector::EvaluateCrowdDenyTrigger(
   // It is fine to use base::Unretained() here, as |safe_browsing_request_|
   // guarantees not to fire the callback after its destruction.
   safe_browsing_request_.emplace(
-      g_browser_process->safe_browsing_service()->database_manager(), origin,
+      g_browser_process->safe_browsing_service()->database_manager(),
+      base::DefaultClock::GetInstance(), origin,
       base::BindOnce(&ContextualNotificationPermissionUiSelector::
                          OnSafeBrowsingVerdictReceived,
                      base::Unretained(this)));

@@ -12411,6 +12411,17 @@ Called by update_net_error_codes.py.-->
   <int value="2" label="Connect to Linux Clicked"/>
 </enum>
 
+<enum name="CrowdDenyNotificationUxQuality">
+  <int value="0" label="Uknown"/>
+  <int value="1" label="Accceptable"/>
+  <int value="2" label="Unsolicited prompts"/>
+</enum>
+
+<enum name="CrowdDenySafeBrowsingVerdict">
+  <int value="0" label="Acceptable"/>
+  <int value="1" label="Unsolicited notification prompts"/>
+</enum>
+
 <enum name="CryptAuthApiCallResult">
   <int value="0" label="Success"/>
   <int value="1" label="Timeout"/>
