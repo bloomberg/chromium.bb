@@ -38,11 +38,11 @@ class MockMdnsService : public MdnsService {
       StopQuery,
       void(const DomainName&, DnsType, DnsClass, MdnsRecordChangedCallback*));
 
+  MOCK_METHOD1(ReinitializeQueries, void(const DomainName& name));
+
   void RegisterRecord(const MdnsRecord& record) override { FAIL(); }
 
   void DeregisterRecord(const MdnsRecord& record) override { FAIL(); }
-
-  void ReinitializeQueries(const DomainName& name) override { FAIL(); }
 
   void UpdateRegisteredRecord(const MdnsRecord& old_record,
                               const MdnsRecord& new_record) override {
@@ -328,6 +328,35 @@ TEST_F(DnsSdQuerierImplTest, OnlyOldRecordValid) {
 
   EXPECT_CALL(callback, OnInstanceDeleted(_)).Times(1);
   querier.OnRecordChanged(a_record, RecordChangedEvent::kExpired);
+}
+
+TEST_F(DnsSdQuerierImplTest, HardRefresh) {
+  const std::string service2 = "_service2._udp";
+
+  DnsDataAccessor dns_data = querier.CreateDnsData(instance, service, domain);
+  dns_data.set_srv(CreateSrvRecord());
+  dns_data.set_txt(MakeTxtRecord({}));
+  dns_data.set_a(CreateARecord());
+  dns_data.set_aaaa(CreateAAAARecord());
+  DnsDataAccessor dns_data2 = querier.CreateDnsData(instance, service2, domain);
+  dns_data2.set_srv(CreateSrvRecord());
+
+  EXPECT_CALL(callback, OnInstanceCreated(_)).Times(1);
+  querier.StartQuery(service, &callback);
+  EXPECT_TRUE(querier.IsQueryRunning(service));
+
+  const DomainName ptr_domain{"_service", "_udp", "local"};
+  const DomainName instance_domain{"instance", "_service", "_udp", "local"};
+  EXPECT_CALL(*querier.service(), ReinitializeQueries(ptr_domain));
+  EXPECT_CALL(*querier.service(), ReinitializeQueries(instance_domain));
+  querier.ReinitializeQueries(service);
+
+  absl::optional<DnsDataAccessor> data =
+      querier.GetDnsData(instance, service, domain);
+  EXPECT_EQ(data, absl::nullopt);
+  data = querier.GetDnsData(instance, service2, domain);
+  EXPECT_NE(data, absl::nullopt);
+  EXPECT_TRUE(querier.IsQueryRunning(service));
 }
 
 }  // namespace discovery

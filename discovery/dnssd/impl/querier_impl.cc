@@ -76,7 +76,21 @@ void QuerierImpl::StopQuery(absl::string_view service, Callback* callback) {
 }
 
 void QuerierImpl::ReinitializeQueries(absl::string_view service) {
-  // TODO(rwkeane): Implement this method.
+  const ServiceKey key(service, kLocalDomain);
+
+  mdns_querier_->ReinitializeQueries(GetPtrQueryInfo(key).name);
+
+  // Restart instance-specific queries and erase all instance data received so
+  // far.
+  for (auto it = received_records_.begin(); it != received_records_.end();) {
+    if (it->first.IsInstanceOf(key)) {
+      const DomainName query_id = GetInstanceQueryInfo(it->first).name;
+      it = received_records_.erase(it);
+      mdns_querier_->ReinitializeQueries(query_id);
+    } else {
+      it++;
+    }
+  }
 }
 
 void QuerierImpl::OnRecordChanged(const MdnsRecord& record,
