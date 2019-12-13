@@ -29,6 +29,7 @@
 #include "chrome/browser/ui/webui/management_ui.h"
 #include "chrome/browser/ui/webui/policy_indicator_localized_strings_provider.h"
 #include "chrome/browser/ui/webui/webui_util.h"
+#include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
@@ -60,6 +61,7 @@
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_service_utils.h"
 #include "components/sync/driver/sync_user_settings.h"
+#include "components/version_info/version_info.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/common/content_features.h"
@@ -149,6 +151,16 @@ bool IsDeviceManaged() {
 
 bool IsProfileManaged(Profile* profile) {
   return profile->GetProfilePolicyConnector()->IsManaged();
+}
+
+bool ShouldEnableArcAdbSideloading() {
+  // Only enable on supported devices per USE flag.
+  if (!base::FeatureList::IsEnabled(
+          chromeos::features::kArcAdbSideloadingFeature)) {
+    return false;
+  }
+
+  return chrome::GetChannel() < version_info::Channel::BETA;
 }
 #endif
 
@@ -626,8 +638,7 @@ void AddCrostiniStrings(content::WebUIDataSource* html_source,
       "showCrostiniExportImport",
       crostini::CrostiniFeatures::Get()->IsExportImportUIAllowed(profile));
   html_source->AddBoolean("ArcAdbSideloadingSupported",
-                          base::FeatureList::IsEnabled(
-                              chromeos::features::kArcAdbSideloadingFeature));
+                          ShouldEnableArcAdbSideloading());
   html_source->AddBoolean("isOwnerProfile",
                           chromeos::ProfileHelper::IsOwnerProfile(profile));
   html_source->AddBoolean("isEnterpriseManaged",
