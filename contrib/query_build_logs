@@ -1,0 +1,88 @@
+#!/bin/bash
+# Copyright 2019 The Chromium OS Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# A helper to query build_log data contained in internal analysis_service
+# events.
+
+when="last3days"
+string_data=""
+limit=30
+verbose=0
+
+print_usage() {
+  cat <<HELP_USAGE
+  $0 -s|--string <search_string> [-w|-when} <when_string>
+     [-l|--limit] <limit_string> [--field_limit <field_limit>]
+     [--verbose] [--usage|-u|--help|-h]
+
+     search_string : What to search for in build_cmd logs.
+     when_string : Which dremel table, such as last7days, last1days, etc.
+                   Default is last3days.
+     limit_string: Limits numbers of rows to this value (default=30).
+     field_limit: Show only first <field_limit> characters of stdout if set.
+     verbose: Show dremel query before executing it.
+HELP_USAGE
+  exit 0
+}
+
+logging_dremel() {
+  if [ "${verbose}" -eq 1 ]; then
+    tee | dremel --min_completion_ratio 1
+  else
+    cat | dremel --min_completion_ratio 1
+  fi
+}
+
+while (( "$#" )); do
+  case "$1" in
+    -s|--string)
+      string_data=$2
+      shift 2
+      ;;
+    -w|--when)
+      when=$2
+      shift 2
+      ;;
+    -l|--limit)
+      limit=$2
+      shift 2
+      ;;
+    --field_limit)
+      field_limit=$2
+      shift 2
+      ;;
+    --verbose)
+      verbose=1
+      shift
+      ;;
+    --usage|-u|--help|-h)
+      print_usage
+      shift
+      ;;
+    *)
+      echo "Unknown arg: $1"
+      print_usage
+      shift
+  esac
+done
+
+if [ -z "${string_data}" ]
+then
+  echo "No search string specified. -s|--string <search_string> is required."
+  exit 1
+fi
+
+if [ -z "${field_limit}" ]
+then
+  select_field="stdout"
+else
+  select_field="SUBSTR(stdout, 1, ${field_limit})"
+fi
+
+logging_dremel << SQLtoHERE
+SELECT ${select_field}
+FROM chromeos_ci_eng.analysis_event_log.${when}
+WHERE stdout LIKE "%${string_data}%" LIMIT ${limit};
+SQLtoHERE
