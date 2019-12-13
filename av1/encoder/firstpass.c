@@ -59,7 +59,7 @@ static AOM_INLINE void output_stats(FIRSTPASS_STATS *stats,
   pkt.kind = AOM_CODEC_STATS_PKT;
   pkt.data.twopass_stats.buf = stats;
   pkt.data.twopass_stats.sz = sizeof(FIRSTPASS_STATS);
-  aom_codec_pkt_list_add(pktlist, &pkt);
+  if (pktlist != NULL) aom_codec_pkt_list_add(pktlist, &pkt);
 
 // TEMP debug code
 #if OUTPUT_FPF

@@ -45,11 +45,19 @@ void av1_lookahead_destroy(struct lookahead_ctx *ctx) {
 struct lookahead_ctx *av1_lookahead_init(
     unsigned int width, unsigned int height, unsigned int subsampling_x,
     unsigned int subsampling_y, int use_highbitdepth, unsigned int depth,
-    const int border_in_pixels, int is_scale) {
+    const int border_in_pixels, int is_scale, int num_lap_buffers) {
   struct lookahead_ctx *ctx = NULL;
+  int lag_in_frames = depth;
 
   // Clamp the lookahead queue depth
-  depth = clamp(depth, 1, MAX_LAG_BUFFERS);
+  depth = clamp(depth, 0, MAX_LAG_BUFFERS);
+
+  // Clamp the LAP lag
+  num_lap_buffers = clamp(num_lap_buffers, 0, MAX_LAP_BUFFERS);
+
+  // Add the lags to depth and clamp
+  depth += num_lap_buffers;
+  depth = clamp(depth, 1, MAX_TOTAL_BUFFERS);
 
   // Allocate memory to keep previous source frames available.
   depth += MAX_PRE_FRAMES;
@@ -62,6 +70,11 @@ struct lookahead_ctx *av1_lookahead_init(
     ctx->max_sz = depth;
     ctx->read_ctxs[ENCODE_STAGE].pop_sz = ctx->max_sz - MAX_PRE_FRAMES;
     ctx->read_ctxs[ENCODE_STAGE].valid = 1;
+    if (num_lap_buffers) {
+      // TODO(Mufaddal): explore if stat generation stage lag can be reduced.
+      ctx->read_ctxs[LAP_STAGE].pop_sz = lag_in_frames;
+      ctx->read_ctxs[LAP_STAGE].valid = 1;
+    }
     ctx->buf = calloc(depth, sizeof(*ctx->buf));
     if (!ctx->buf) goto fail;
     for (i = 0; i < depth; i++)
@@ -108,6 +121,9 @@ int av1_lookahead_push(struct lookahead_ctx *ctx, YV12_BUFFER_CONFIG *src,
   if (ctx->read_ctxs[ENCODE_STAGE].sz + 1 + MAX_PRE_FRAMES > ctx->max_sz)
     return 1;
   ctx->read_ctxs[ENCODE_STAGE].sz++;
+  if (ctx->read_ctxs[LAP_STAGE].valid) {
+    ctx->read_ctxs[LAP_STAGE].sz++;
+  }
   buf = pop(ctx, &ctx->write_idx);
 
   new_dimensions = width != buf->img.y_crop_width ||

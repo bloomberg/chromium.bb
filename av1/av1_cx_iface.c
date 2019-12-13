@@ -28,6 +28,8 @@
 
 #define MAG_SIZE (4)
 #define MAX_NUM_ENHANCEMENT_LAYERS 3
+// The lag between encode stage and the look ahead stage
+#define MIN_LAP_LAG 35
 
 struct av1_extracfg {
   int cpu_used;
@@ -299,7 +301,13 @@ struct aom_codec_alg_priv {
   unsigned int fixed_kf_cntr;
   // BufferPool that holds all reference frames.
   BufferPool *buffer_pool;
+
+  // lookahead instance variables
+  BufferPool *buffer_pool_lap;
+  AV1_COMP *cpi_lap;
   FIRSTPASS_STATS *frame_stats_buffer;
+  // Number of stats buffers required for look ahead
+  int num_lap_buffers;
 };
 
 static INLINE int gcd(int64_t a, int b) {
@@ -983,6 +991,10 @@ static aom_codec_err_t encoder_set_config(aom_codec_alg_priv_t *ctx,
   // config.
   if (cfg->g_lag_in_frames > ctx->cfg.g_lag_in_frames)
     ERROR("Cannot increase lag_in_frames");
+  // Prevent changing lag_in_frames if Lookahead Processing is enabled
+  if (cfg->g_lag_in_frames != ctx->cfg.g_lag_in_frames &&
+      ctx->num_lap_buffers > 0)
+    ERROR("Cannot change lag_in_frames if LAP is enabled");
 
   res = validate_config(ctx, cfg, &ctx->extra_cfg);
 
@@ -1736,8 +1748,8 @@ static aom_codec_err_t ctrl_set_min_cr(aom_codec_alg_priv_t *ctx,
 
 static aom_codec_err_t create_context_and_bufferpool(
     AV1_COMP **p_cpi, BufferPool **p_buffer_pool, AV1EncoderConfig *oxcf,
-    struct aom_codec_pkt_list *pkt_list_head,
-    FIRSTPASS_STATS *frame_stats_buf) {
+    struct aom_codec_pkt_list *pkt_list_head, FIRSTPASS_STATS *frame_stats_buf,
+    COMPRESSOR_STAGE stage, int num_lap_buffers) {
   aom_codec_err_t res = AOM_CODEC_OK;
 
   *p_buffer_pool = (BufferPool *)aom_calloc(1, sizeof(BufferPool));
@@ -1748,7 +1760,8 @@ static aom_codec_err_t create_context_and_bufferpool(
     return AOM_CODEC_MEM_ERROR;
   }
 #endif
-  *p_cpi = av1_create_compressor(oxcf, *p_buffer_pool, frame_stats_buf);
+  *p_cpi = av1_create_compressor(oxcf, *p_buffer_pool, frame_stats_buf, stage,
+                                 num_lap_buffers);
   if (*p_cpi == NULL)
     res = AOM_CODEC_MEM_ERROR;
   else
@@ -1784,18 +1797,34 @@ static aom_codec_err_t encoder_init(aom_codec_ctx_t *ctx,
     res = validate_config(priv, &priv->cfg, &priv->extra_cfg);
 
     if (res == AOM_CODEC_OK) {
+      int *num_lap_buffers = &priv->num_lap_buffers;
+      *num_lap_buffers = 0;
       priv->timestamp_ratio.den = priv->cfg.g_timebase.den;
       priv->timestamp_ratio.num =
           (int64_t)priv->cfg.g_timebase.num * TICKS_PER_SEC;
       reduce_ratio(&priv->timestamp_ratio);
 
       set_encoder_config(&priv->oxcf, &priv->cfg, &priv->extra_cfg);
+      if (((int)priv->cfg.g_lag_in_frames - priv->oxcf.lag_in_frames) >=
+              MIN_LAP_LAG &&
+          priv->oxcf.rc_mode == AOM_Q && priv->oxcf.pass == 0 &&
+          priv->oxcf.mode == GOOD) {
+        // Enable look ahead
+        *num_lap_buffers = priv->cfg.g_lag_in_frames - priv->oxcf.lag_in_frames;
+      }
       priv->oxcf.use_highbitdepth =
           (ctx->init_flags & AOM_CODEC_USE_HIGHBITDEPTH) ? 1 : 0;
 
-      res = create_context_and_bufferpool(&priv->cpi, &priv->buffer_pool,
-                                          &priv->oxcf, &priv->pkt_list.head,
-                                          priv->frame_stats_buffer);
+      res = create_context_and_bufferpool(
+          &priv->cpi, &priv->buffer_pool, &priv->oxcf, &priv->pkt_list.head,
+          priv->frame_stats_buffer, ENCODE_STAGE, *num_lap_buffers);
+
+      // Create another compressor if look ahead is enabled
+      if (res == AOM_CODEC_OK && *num_lap_buffers) {
+        res = create_context_and_bufferpool(
+            &priv->cpi_lap, &priv->buffer_pool_lap, &priv->oxcf, NULL,
+            priv->frame_stats_buffer, LAP_STAGE, *num_lap_buffers);
+      }
     }
   }
 
@@ -1815,6 +1844,13 @@ static aom_codec_err_t encoder_destroy(aom_codec_alg_priv_t *ctx) {
   free(ctx->cx_data);
   destroy_context_and_bufferpool(ctx->cpi, ctx->buffer_pool);
   aom_free(ctx->frame_stats_buffer);
+  if (ctx->cpi_lap) {
+    // As both cpi and cpi_lap have the same lookahead_ctx, it is already freed
+    // when destroy is called on cpi. Thus, setting lookahead_ctx to null here,
+    // so that it doesn't attempt to free it again.
+    ctx->cpi_lap->lookahead = NULL;
+    destroy_context_and_bufferpool(ctx->cpi_lap, ctx->buffer_pool_lap);
+  }
   aom_free(ctx);
   return AOM_CODEC_OK;
 }
@@ -1833,6 +1869,8 @@ static aom_codec_frame_flags_t get_frame_pkt_flags(const AV1_COMP *cpi,
   return flags;
 }
 
+// TODO(Mufaddal): Check feasibility of abstracting functions related to LAP
+// into a separate function.
 static aom_codec_err_t encoder_encode(aom_codec_alg_priv_t *ctx,
                                       const aom_image_t *img,
                                       aom_codec_pts_t pts,
@@ -1843,8 +1881,13 @@ static aom_codec_err_t encoder_encode(aom_codec_alg_priv_t *ctx,
   AV1_COMP *const cpi = ctx->cpi;
   const aom_rational64_t *const timestamp_ratio = &ctx->timestamp_ratio;
   volatile aom_codec_pts_t ptsvol = pts;
+  // LAP context
+  AV1_COMP *cpi_lap = ctx->cpi_lap;
 
   if (cpi == NULL) return AOM_CODEC_INVALID_PARAM;
+
+  if (cpi->lap_enabled && cpi_lap == NULL && cpi->oxcf.pass == 0)
+    return AOM_CODEC_INVALID_PARAM;
 
   if (img != NULL) {
     res = validate_img(ctx, img);
@@ -1889,11 +1932,23 @@ static aom_codec_err_t encoder_encode(aom_codec_alg_priv_t *ctx,
     return res;
   }
   cpi->common.error.setjmp = 1;
+  if (cpi_lap != NULL) {
+    if (setjmp(cpi_lap->common.error.jmp)) {
+      cpi_lap->common.error.setjmp = 0;
+      res = update_error_state(ctx, &cpi_lap->common.error);
+      aom_clear_system_state();
+      return res;
+    }
+    cpi_lap->common.error.setjmp = 1;
+  }
 
   // Note(yunqing): While applying encoding flags, always start from enabling
   // all, and then modifying according to the flags. Previous frame's flags are
   // overwritten.
   av1_apply_encoding_flags(cpi, flags);
+  if (cpi_lap != NULL) {
+    av1_apply_encoding_flags(cpi_lap, flags);
+  }
 
   // Handle fixed keyframe intervals
   if (ctx->cfg.kf_mode == AOM_KF_AUTO &&
@@ -1926,7 +1981,8 @@ static aom_codec_err_t encoder_encode(aom_codec_alg_priv_t *ctx,
             cpi->oxcf.width, cpi->oxcf.height, subsampling_x, subsampling_y,
             use_highbitdepth, cpi->oxcf.lag_in_frames,
             cpi->oxcf.border_in_pixels,
-            (cpi->oxcf.resize_mode || cpi->oxcf.superres_mode));
+            (cpi->oxcf.resize_mode || cpi->oxcf.superres_mode),
+            ctx->num_lap_buffers);
       }
       if (!cpi->lookahead)
         aom_internal_error(&cpi->common.error, AOM_CODEC_MEM_ERROR,
@@ -1934,6 +1990,11 @@ static aom_codec_err_t encoder_encode(aom_codec_alg_priv_t *ctx,
 
       av1_check_initial_width(cpi, use_highbitdepth, subsampling_x,
                               subsampling_y);
+      if (cpi_lap != NULL) {
+        cpi_lap->lookahead = cpi->lookahead;
+        av1_check_initial_width(cpi_lap, use_highbitdepth, subsampling_x,
+                                subsampling_y);
+      }
 
       // Store the original flags in to the frame buffer. Will extract the
       // key frame flag when we actually encode this frame.
@@ -1970,6 +2031,26 @@ static aom_codec_err_t encoder_encode(aom_codec_alg_priv_t *ctx,
     int is_frame_visible = 0;
     int index_size = 0;
     int has_fwd_keyframe = 0;
+
+    // Call for LAP stage
+    if (cpi_lap != NULL) {
+      int status;
+      aom_rational64_t timestamp_ratio_la = *timestamp_ratio;
+      int64_t dst_time_stamp_la = dst_time_stamp;
+      int64_t dst_end_time_stamp_la = dst_end_time_stamp;
+      status = av1_get_compressed_data(
+          cpi_lap, &lib_flags, &frame_size, NULL, &dst_time_stamp_la,
+          &dst_end_time_stamp_la, !img, &timestamp_ratio_la);
+      if (status != -1) {
+        if (status != AOM_CODEC_OK) {
+          aom_internal_error(&cpi_lap->common.error, AOM_CODEC_ERROR, NULL);
+        }
+        cpi_lap->seq_params_locked = 1;
+      }
+      lib_flags = 0;
+      frame_size = 0;
+    }
+
     // invisible frames get packed with the next visible frame
     while (cx_data_sz - index_size >= ctx->cx_data_sz / 2 &&
            !is_frame_visible) {

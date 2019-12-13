@@ -20,6 +20,8 @@ extern "C" {
 #endif
 
 #define MAX_LAG_BUFFERS 25
+#define MAX_LAP_BUFFERS 35
+#define MAX_TOTAL_BUFFERS (MAX_LAG_BUFFERS + MAX_LAP_BUFFERS)
 
 struct lookahead_entry {
   YV12_BUFFER_CONFIG img;
@@ -31,7 +33,7 @@ struct lookahead_entry {
 // The max of past frames we want to keep in the queue.
 #define MAX_PRE_FRAMES 1
 
-enum { ENCODE_STAGE, MAX_STAGES } UENUM1BYTE(COMPRESSOR_STAGE);
+enum { ENCODE_STAGE, LAP_STAGE, MAX_STAGES } UENUM1BYTE(COMPRESSOR_STAGE);
 
 struct read_ctx {
   int sz;       /* Number of buffers currently in the queue */
@@ -55,7 +57,7 @@ struct lookahead_ctx {
 struct lookahead_ctx *av1_lookahead_init(
     unsigned int width, unsigned int height, unsigned int subsampling_x,
     unsigned int subsampling_y, int use_highbitdepth, unsigned int depth,
-    const int border_in_pixels, int is_scale);
+    const int border_in_pixels, int is_scale, int num_lap_buffers);
 
 /**\brief Destroys the lookahead stage
  */
