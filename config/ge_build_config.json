@@ -710,18 +710,6 @@
       ]
     },
     {
-      "name": "hatch-diskswap",
-      "configs": [
-        {
-          "builder": "RELEASE",
-          "experimental": true,
-          "leader_board": false,
-          "board_group": "hatch",
-          "arch": "X86_INTERNAL"
-        }
-      ]
-    },
-    {
       "name": "heli",
       "configs": [
         {
@@ -2446,6 +2434,87 @@
           "cq_test_enabled": false,
           "release_builder_test_pool": "bvt",
           "board_id": 372,
+          "is_active": true
+        }
+      ]
+    },
+    {
+      "name": "hatch-diskswap",
+      "reference_board_name": "hatch-diskswap",
+      "arch": "X86_INTERNAL",
+      "builder": "RELEASE",
+      "experimental": true,
+      "models": [
+        {
+          "board_name": "hatch-diskswap",
+          "name": "akemi",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt",
+          "board_id": 424,
+          "is_active": true
+        },
+        {
+          "board_name": "hatch-diskswap",
+          "name": "dragonair",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt",
+          "board_id": 424,
+          "is_active": true
+        },
+        {
+          "board_name": "hatch-diskswap",
+          "name": "dratini",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt",
+          "board_id": 424,
+          "is_active": true
+        },
+        {
+          "board_name": "hatch-diskswap",
+          "name": "hatch",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt",
+          "board_id": 424,
+          "is_active": true
+        },
+        {
+          "board_name": "hatch-diskswap",
+          "name": "helios",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt",
+          "board_id": 424,
+          "is_active": true
+        },
+        {
+          "board_name": "hatch-diskswap",
+          "name": "kindred",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt",
+          "board_id": 424,
+          "is_active": true
+        },
+        {
+          "board_name": "hatch-diskswap",
+          "name": "kled",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt",
+          "board_id": 424,
+          "is_active": true
+        },
+        {
+          "board_name": "hatch-diskswap",
+          "name": "kohaku",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt",
+          "board_id": 424,
+          "is_active": true
+        },
+        {
+          "board_name": "hatch-diskswap",
+          "name": "unprovisioned_dratini",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt",
+          "board_id": 424,
           "is_active": true
         }
       ]
