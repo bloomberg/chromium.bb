@@ -1077,6 +1077,7 @@ test("content_browsertests") {
   deps = [
     ":browsertest_support",
     ":content_test_mojo_bindings",
+    ":test_interfaces",
     ":test_support",
     ":web_test_support",
     ":web_ui_test_mojo_bindings",
