@@ -13,5 +13,7 @@
 #define ALIGN(A, B) (((A) + (B)-1) & ~((B)-1))
 #define IS_ALIGNED(A, B) (ALIGN((A), (B)) == (A))
 #define DIV_ROUND_UP(n, d) (((n) + (d)-1) / (d))
+#define STRINGIZE_NO_EXPANSION(x) #x
+#define STRINGIZE(x) STRINGIZE_NO_EXPANSION(x)
 
 #endif
