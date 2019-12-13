@@ -11615,8 +11615,6 @@ static int64_t rd_pick_intrabc_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
 
   MB_MODE_INFO best_mbmi = *mbmi;
   RD_STATS best_rdstats = *rd_stats;
-  int best_skip = x->skip;
-
   uint8_t best_blk_skip[MAX_MIB_SIZE * MAX_MIB_SIZE] = { 0 };
   uint8_t best_tx_type_map[MAX_MIB_SIZE * MAX_MIB_SIZE];
   av1_copy_array(best_tx_type_map, xd->tx_type_map, ctx->num_4x4_blk);
@@ -11690,7 +11688,6 @@ static int64_t rd_pick_intrabc_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
     mbmi->mv[0].as_mv = dv;
     mbmi->interp_filters = av1_broadcast_interp_filter(BILINEAR);
     mbmi->skip = 0;
-    x->skip = 0;
     av1_enc_build_inter_predictor(cm, xd, mi_row, mi_col, NULL, bsize, 0,
                                   av1_num_planes(cm) - 1);
 
@@ -11710,7 +11707,6 @@ static int64_t rd_pick_intrabc_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
     if (rd_stats_yuv.rdcost < best_rd) {
       best_rd = rd_stats_yuv.rdcost;
       best_mbmi = *mbmi;
-      best_skip = mbmi->skip;
       best_rdstats = rd_stats_yuv;
       memcpy(best_blk_skip, x->blk_skip,
              sizeof(x->blk_skip[0]) * xd->n4_h * xd->n4_w);
@@ -11719,7 +11715,6 @@ static int64_t rd_pick_intrabc_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
   }
   *mbmi = best_mbmi;
   *rd_stats = best_rdstats;
-  x->skip = best_skip;
   memcpy(x->blk_skip, best_blk_skip,
          sizeof(x->blk_skip[0]) * xd->n4_h * xd->n4_w);
   av1_copy_array(xd->tx_type_map, best_tx_type_map, ctx->num_4x4_blk);
@@ -11795,7 +11790,7 @@ void av1_rd_pick_intra_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
   if (rd_cost->rate != INT_MAX && rd_cost->rdcost < best_rd)
     best_rd = rd_cost->rdcost;
   if (rd_pick_intrabc_mode_sb(cpi, x, ctx, rd_cost, bsize, best_rd) < best_rd) {
-    ctx->rd_stats.skip = x->skip;
+    ctx->rd_stats.skip = mbmi->skip;
     memcpy(ctx->blk_skip, x->blk_skip,
            sizeof(x->blk_skip[0]) * ctx->num_4x4_blk);
     assert(rd_cost->rate != INT_MAX);
