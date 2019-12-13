@@ -18908,6 +18908,7 @@ Called by update_net_error_codes.py.-->
   <int value="650" label="AmbientAuthenticationInPrivateModesEnabled"/>
   <int value="651" label="PaymentMethodQueryEnabled"/>
   <int value="652" label="StricterMixedContentTreatmentEnabled"/>
+  <int value="653" label="NTPCustomBackgroundEnabled"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
