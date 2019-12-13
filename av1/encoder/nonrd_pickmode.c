@@ -2088,8 +2088,7 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
     if (best_pickmode.best_ref_frame == INTRA_FRAME) {
       // Only consider the modes that are included in the intra_mode_list.
       int intra_modes = sizeof(intra_mode_list) / sizeof(PREDICTION_MODE);
-      int i;
-      for (i = 0; i < intra_modes; i++) {
+      for (int i = 0; i < intra_modes; i++) {
         update_thresh_freq_fact(cpi, x, bsize, INTRA_FRAME, best_mode_idx,
                                 intra_mode_list[i]);
       }
