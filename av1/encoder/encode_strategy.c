@@ -416,7 +416,7 @@ static struct lookahead_entry *setup_arf_frame(
   *code_arf = 0;
 
   struct lookahead_entry *source =
-      av1_lookahead_peek(cpi->lookahead, arf_src_index, ENCODE_STAGE);
+      av1_lookahead_peek(cpi->lookahead, arf_src_index, cpi->compressor_stage);
 
   if (source != NULL) {
     cm->showable_frame = 1;
@@ -452,10 +452,11 @@ static struct lookahead_entry *setup_arf_frame(
 
 // Determine whether there is a forced keyframe pending in the lookahead buffer
 static int is_forced_keyframe_pending(struct lookahead_ctx *lookahead,
-                                      const int up_to_index) {
+                                      const int up_to_index,
+                                      const COMPRESSOR_STAGE compressor_stage) {
   for (int i = 0; i <= up_to_index; i++) {
     const struct lookahead_entry *e =
-        av1_lookahead_peek(lookahead, i, ENCODE_STAGE);
+        av1_lookahead_peek(lookahead, i, compressor_stage);
     if (e == NULL) {
       // We have reached the end of the lookahead buffer and not early-returned
       // so there isn't a forced key-frame pending.
@@ -483,8 +484,8 @@ static struct lookahead_entry *choose_frame_source(
 
   // Should we encode an alt-ref frame.
   int arf_src_index = get_arf_src_index(&cpi->gf_group, cpi->oxcf.pass);
-  if (arf_src_index &&
-      is_forced_keyframe_pending(cpi->lookahead, arf_src_index)) {
+  if (arf_src_index && is_forced_keyframe_pending(cpi->lookahead, arf_src_index,
+                                                  cpi->compressor_stage)) {
     arf_src_index = 0;
     *flush = 1;
   }
@@ -496,10 +497,11 @@ static struct lookahead_entry *choose_frame_source(
   if (!source) {
     // Get last frame source.
     if (cm->current_frame.frame_number > 0) {
-      *last_source = av1_lookahead_peek(cpi->lookahead, -1, ENCODE_STAGE);
+      *last_source =
+          av1_lookahead_peek(cpi->lookahead, -1, cpi->compressor_stage);
     }
     // Read in the source frame.
-    source = av1_lookahead_pop(cpi->lookahead, *flush, ENCODE_STAGE);
+    source = av1_lookahead_pop(cpi->lookahead, *flush, cpi->compressor_stage);
     if (source == NULL) return NULL;
     frame_params->show_frame = 1;
 
@@ -517,7 +519,7 @@ static int allow_show_existing(const AV1_COMP *const cpi,
   if (cpi->common.current_frame.frame_number == 0) return 0;
 
   const struct lookahead_entry *lookahead_src =
-      av1_lookahead_peek(cpi->lookahead, 0, ENCODE_STAGE);
+      av1_lookahead_peek(cpi->lookahead, 0, cpi->compressor_stage);
   if (lookahead_src == NULL) return 1;
 
   const int is_error_resilient =
@@ -1151,7 +1153,7 @@ int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
   struct lookahead_entry *source = NULL;
   struct lookahead_entry *last_source = NULL;
   if (frame_params.show_existing_frame) {
-    source = av1_lookahead_pop(cpi->lookahead, flush, ENCODE_STAGE);
+    source = av1_lookahead_pop(cpi->lookahead, flush, cpi->compressor_stage);
     frame_params.show_frame = 1;
   } else {
     int show_existing_alt_ref = 0;
