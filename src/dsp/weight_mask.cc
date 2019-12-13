@@ -46,105 +46,105 @@ void WeightMask_C(const uint16_t* prediction_0, ptrdiff_t stride_0,
   }
 }
 
-#define INIT_WEIGHT_MASK(width, height, bitdepth, w_index, h_index, b_index) \
-  dsp->weight_mask[w_index][h_index][b_index][0] =                           \
-      WeightMask_C<width, height, bitdepth, 0>;                              \
-  dsp->weight_mask[w_index][h_index][b_index][1] =                           \
+#define INIT_WEIGHT_MASK(width, height, bitdepth, w_index, h_index) \
+  dsp->weight_mask[w_index][h_index][0] =                           \
+      WeightMask_C<width, height, bitdepth, 0>;                     \
+  dsp->weight_mask[w_index][h_index][1] =                           \
       WeightMask_C<width, height, bitdepth, 1>
 
 void Init8bpp() {
   Dsp* const dsp = dsp_internal::GetWritableDspTable(8);
   assert(dsp != nullptr);
 #if LIBGAV1_ENABLE_ALL_DSP_FUNCTIONS
-  INIT_WEIGHT_MASK(4, 4, 8, 0, 0, 0);
-  INIT_WEIGHT_MASK(4, 8, 8, 0, 1, 0);
-  INIT_WEIGHT_MASK(4, 16, 8, 0, 2, 0);
-  INIT_WEIGHT_MASK(8, 4, 8, 1, 0, 0);
-  INIT_WEIGHT_MASK(8, 8, 8, 1, 1, 0);
-  INIT_WEIGHT_MASK(8, 16, 8, 1, 2, 0);
-  INIT_WEIGHT_MASK(8, 32, 8, 1, 3, 0);
-  INIT_WEIGHT_MASK(16, 4, 8, 2, 0, 0);
-  INIT_WEIGHT_MASK(16, 8, 8, 2, 1, 0);
-  INIT_WEIGHT_MASK(16, 16, 8, 2, 2, 0);
-  INIT_WEIGHT_MASK(16, 32, 8, 2, 3, 0);
-  INIT_WEIGHT_MASK(16, 64, 8, 2, 4, 0);
-  INIT_WEIGHT_MASK(32, 8, 8, 3, 1, 0);
-  INIT_WEIGHT_MASK(32, 16, 8, 3, 2, 0);
-  INIT_WEIGHT_MASK(32, 32, 8, 3, 3, 0);
-  INIT_WEIGHT_MASK(32, 64, 8, 3, 4, 0);
-  INIT_WEIGHT_MASK(64, 16, 8, 4, 2, 0);
-  INIT_WEIGHT_MASK(64, 32, 8, 4, 3, 0);
-  INIT_WEIGHT_MASK(64, 64, 8, 4, 4, 0);
-  INIT_WEIGHT_MASK(64, 128, 8, 4, 5, 0);
-  INIT_WEIGHT_MASK(128, 64, 8, 5, 4, 0);
-  INIT_WEIGHT_MASK(128, 128, 8, 5, 5, 0);
+  INIT_WEIGHT_MASK(4, 4, 8, 0, 0);
+  INIT_WEIGHT_MASK(4, 8, 8, 0, 1);
+  INIT_WEIGHT_MASK(4, 16, 8, 0, 2);
+  INIT_WEIGHT_MASK(8, 4, 8, 1, 0);
+  INIT_WEIGHT_MASK(8, 8, 8, 1, 1);
+  INIT_WEIGHT_MASK(8, 16, 8, 1, 2);
+  INIT_WEIGHT_MASK(8, 32, 8, 1, 3);
+  INIT_WEIGHT_MASK(16, 4, 8, 2, 0);
+  INIT_WEIGHT_MASK(16, 8, 8, 2, 1);
+  INIT_WEIGHT_MASK(16, 16, 8, 2, 2);
+  INIT_WEIGHT_MASK(16, 32, 8, 2, 3);
+  INIT_WEIGHT_MASK(16, 64, 8, 2, 4);
+  INIT_WEIGHT_MASK(32, 8, 8, 3, 1);
+  INIT_WEIGHT_MASK(32, 16, 8, 3, 2);
+  INIT_WEIGHT_MASK(32, 32, 8, 3, 3);
+  INIT_WEIGHT_MASK(32, 64, 8, 3, 4);
+  INIT_WEIGHT_MASK(64, 16, 8, 4, 2);
+  INIT_WEIGHT_MASK(64, 32, 8, 4, 3);
+  INIT_WEIGHT_MASK(64, 64, 8, 4, 4);
+  INIT_WEIGHT_MASK(64, 128, 8, 4, 5);
+  INIT_WEIGHT_MASK(128, 64, 8, 5, 4);
+  INIT_WEIGHT_MASK(128, 128, 8, 5, 5);
 #else  // !LIBGAV1_ENABLE_ALL_DSP_FUNCTIONS
   static_cast<void>(dsp);
 #ifndef LIBGAV1_Dsp8bpp_WeightMask8_4x4
-  INIT_WEIGHT_MASK(4, 4, 8, 0, 0, 0);
+  INIT_WEIGHT_MASK(4, 4, 8, 0, 0);
 #endif
 #ifndef LIBGAV1_Dsp8bpp_WeightMask8_4x8
-  INIT_WEIGHT_MASK(4, 8, 8, 0, 1, 0);
+  INIT_WEIGHT_MASK(4, 8, 8, 0, 1);
 #endif
 #ifndef LIBGAV1_Dsp8bpp_WeightMask8_4x16
-  INIT_WEIGHT_MASK(4, 16, 8, 0, 2, 0);
+  INIT_WEIGHT_MASK(4, 16, 8, 0, 2);
 #endif
 #ifndef LIBGAV1_Dsp8bpp_WeightMask8_8x4
-  INIT_WEIGHT_MASK(8, 4, 8, 1, 0, 0);
+  INIT_WEIGHT_MASK(8, 4, 8, 1, 0);
 #endif
 #ifndef LIBGAV1_Dsp8bpp_WeightMask8_8x8
-  INIT_WEIGHT_MASK(8, 8, 8, 1, 1, 0);
+  INIT_WEIGHT_MASK(8, 8, 8, 1, 1);
 #endif
 #ifndef LIBGAV1_Dsp8bpp_WeightMask8_8x16
-  INIT_WEIGHT_MASK(8, 16, 8, 1, 2, 0);
+  INIT_WEIGHT_MASK(8, 16, 8, 1, 2);
 #endif
 #ifndef LIBGAV1_Dsp8bpp_WeightMask8_8x32
-  INIT_WEIGHT_MASK(8, 32, 8, 1, 3, 0);
+  INIT_WEIGHT_MASK(8, 32, 8, 1, 3);
 #endif
 #ifndef LIBGAV1_Dsp8bpp_WeightMask8_16x4
-  INIT_WEIGHT_MASK(16, 4, 8, 2, 0, 0);
+  INIT_WEIGHT_MASK(16, 4, 8, 2, 0);
 #endif
 #ifndef LIBGAV1_Dsp8bpp_WeightMask8_16x8
-  INIT_WEIGHT_MASK(16, 8, 8, 2, 1, 0);
+  INIT_WEIGHT_MASK(16, 8, 8, 2, 1);
 #endif
 #ifndef LIBGAV1_Dsp8bpp_WeightMask8_16x16
-  INIT_WEIGHT_MASK(16, 16, 8, 2, 2, 0);
+  INIT_WEIGHT_MASK(16, 16, 8, 2, 2);
 #endif
 #ifndef LIBGAV1_Dsp8bpp_WeightMask8_16x32
-  INIT_WEIGHT_MASK(16, 32, 8, 2, 3, 0);
+  INIT_WEIGHT_MASK(16, 32, 8, 2, 3);
 #endif
 #ifndef LIBGAV1_Dsp8bpp_WeightMask8_16x64
-  INIT_WEIGHT_MASK(16, 64, 8, 2, 4, 0);
+  INIT_WEIGHT_MASK(16, 64, 8, 2, 4);
 #endif
 #ifndef LIBGAV1_Dsp8bpp_WeightMask8_32x8
-  INIT_WEIGHT_MASK(32, 8, 8, 3, 1, 0);
+  INIT_WEIGHT_MASK(32, 8, 8, 3, 1);
 #endif
 #ifndef LIBGAV1_Dsp8bpp_WeightMask8_32x16
-  INIT_WEIGHT_MASK(32, 16, 8, 3, 2, 0);
+  INIT_WEIGHT_MASK(32, 16, 8, 3, 2);
 #endif
 #ifndef LIBGAV1_Dsp8bpp_WeightMask8_32x32
-  INIT_WEIGHT_MASK(32, 32, 8, 3, 3, 0);
+  INIT_WEIGHT_MASK(32, 32, 8, 3, 3);
 #endif
 #ifndef LIBGAV1_Dsp8bpp_WeightMask8_32x64
-  INIT_WEIGHT_MASK(32, 64, 8, 3, 4, 0);
+  INIT_WEIGHT_MASK(32, 64, 8, 3, 4);
 #endif
 #ifndef LIBGAV1_Dsp8bpp_WeightMask8_64x16
-  INIT_WEIGHT_MASK(64, 16, 8, 4, 2, 0);
+  INIT_WEIGHT_MASK(64, 16, 8, 4, 2);
 #endif
 #ifndef LIBGAV1_Dsp8bpp_WeightMask8_64x32
-  INIT_WEIGHT_MASK(64, 32, 8, 4, 3, 0);
+  INIT_WEIGHT_MASK(64, 32, 8, 4, 3);
 #endif
 #ifndef LIBGAV1_Dsp8bpp_WeightMask8_64x64
-  INIT_WEIGHT_MASK(64, 64, 8, 4, 4, 0);
+  INIT_WEIGHT_MASK(64, 64, 8, 4, 4);
 #endif
 #ifndef LIBGAV1_Dsp8bpp_WeightMask8_64x128
-  INIT_WEIGHT_MASK(64, 128, 8, 4, 5, 0);
+  INIT_WEIGHT_MASK(64, 128, 8, 4, 5);
 #endif
 #ifndef LIBGAV1_Dsp8bpp_WeightMask8_128x64
-  INIT_WEIGHT_MASK(128, 64, 8, 5, 4, 0);
+  INIT_WEIGHT_MASK(128, 64, 8, 5, 4);
 #endif
 #ifndef LIBGAV1_Dsp8bpp_WeightMask8_128x128
-  INIT_WEIGHT_MASK(128, 128, 8, 5, 5, 0);
+  INIT_WEIGHT_MASK(128, 128, 8, 5, 5);
 #endif
 #endif  // LIBGAV1_ENABLE_ALL_DSP_FUNCTIONS
 }
@@ -154,183 +154,95 @@ void Init10bpp() {
   Dsp* const dsp = dsp_internal::GetWritableDspTable(10);
   assert(dsp != nullptr);
 #if LIBGAV1_ENABLE_ALL_DSP_FUNCTIONS
-  INIT_WEIGHT_MASK(4, 4, 8, 0, 0, 0);
-  INIT_WEIGHT_MASK(4, 8, 8, 0, 1, 0);
-  INIT_WEIGHT_MASK(4, 16, 8, 0, 2, 0);
-  INIT_WEIGHT_MASK(8, 4, 8, 1, 0, 0);
-  INIT_WEIGHT_MASK(8, 8, 8, 1, 1, 0);
-  INIT_WEIGHT_MASK(8, 16, 8, 1, 2, 0);
-  INIT_WEIGHT_MASK(8, 32, 8, 1, 3, 0);
-  INIT_WEIGHT_MASK(16, 4, 8, 2, 0, 0);
-  INIT_WEIGHT_MASK(16, 8, 8, 2, 1, 0);
-  INIT_WEIGHT_MASK(16, 16, 8, 2, 2, 0);
-  INIT_WEIGHT_MASK(16, 32, 8, 2, 3, 0);
-  INIT_WEIGHT_MASK(16, 64, 8, 2, 4, 0);
-  INIT_WEIGHT_MASK(32, 8, 8, 3, 1, 0);
-  INIT_WEIGHT_MASK(32, 16, 8, 3, 2, 0);
-  INIT_WEIGHT_MASK(32, 32, 8, 3, 3, 0);
-  INIT_WEIGHT_MASK(32, 64, 8, 3, 4, 0);
-  INIT_WEIGHT_MASK(64, 16, 8, 4, 2, 0);
-  INIT_WEIGHT_MASK(64, 32, 8, 4, 3, 0);
-  INIT_WEIGHT_MASK(64, 64, 8, 4, 4, 0);
-  INIT_WEIGHT_MASK(64, 128, 8, 4, 5, 0);
-  INIT_WEIGHT_MASK(128, 64, 8, 5, 4, 0);
-  INIT_WEIGHT_MASK(128, 128, 8, 5, 5, 0);
-  INIT_WEIGHT_MASK(4, 4, 10, 0, 0, 1);
-  INIT_WEIGHT_MASK(4, 8, 10, 0, 1, 1);
-  INIT_WEIGHT_MASK(4, 16, 10, 0, 2, 1);
-  INIT_WEIGHT_MASK(8, 4, 10, 1, 0, 1);
-  INIT_WEIGHT_MASK(8, 8, 10, 1, 1, 1);
-  INIT_WEIGHT_MASK(8, 16, 10, 1, 2, 1);
-  INIT_WEIGHT_MASK(8, 32, 10, 1, 3, 1);
-  INIT_WEIGHT_MASK(16, 4, 10, 2, 0, 1);
-  INIT_WEIGHT_MASK(16, 8, 10, 2, 1, 1);
-  INIT_WEIGHT_MASK(16, 16, 10, 2, 2, 1);
-  INIT_WEIGHT_MASK(16, 32, 10, 2, 3, 1);
-  INIT_WEIGHT_MASK(16, 64, 10, 2, 4, 1);
-  INIT_WEIGHT_MASK(32, 8, 10, 3, 1, 1);
-  INIT_WEIGHT_MASK(32, 16, 10, 3, 2, 1);
-  INIT_WEIGHT_MASK(32, 32, 10, 3, 3, 1);
-  INIT_WEIGHT_MASK(32, 64, 10, 3, 4, 1);
-  INIT_WEIGHT_MASK(64, 16, 10, 4, 2, 1);
-  INIT_WEIGHT_MASK(64, 32, 10, 4, 3, 1);
-  INIT_WEIGHT_MASK(64, 64, 10, 4, 4, 1);
-  INIT_WEIGHT_MASK(64, 128, 10, 4, 5, 1);
-  INIT_WEIGHT_MASK(128, 64, 10, 5, 4, 1);
-  INIT_WEIGHT_MASK(128, 128, 10, 5, 5, 1);
+  INIT_WEIGHT_MASK(4, 4, 10, 0, 0);
+  INIT_WEIGHT_MASK(4, 8, 10, 0, 1);
+  INIT_WEIGHT_MASK(4, 16, 10, 0, 2);
+  INIT_WEIGHT_MASK(8, 4, 10, 1, 0);
+  INIT_WEIGHT_MASK(8, 8, 10, 1, 1);
+  INIT_WEIGHT_MASK(8, 16, 10, 1, 2);
+  INIT_WEIGHT_MASK(8, 32, 10, 1, 3);
+  INIT_WEIGHT_MASK(16, 4, 10, 2, 0);
+  INIT_WEIGHT_MASK(16, 8, 10, 2, 1);
+  INIT_WEIGHT_MASK(16, 16, 10, 2, 2);
+  INIT_WEIGHT_MASK(16, 32, 10, 2, 3);
+  INIT_WEIGHT_MASK(16, 64, 10, 2, 4);
+  INIT_WEIGHT_MASK(32, 8, 10, 3, 1);
+  INIT_WEIGHT_MASK(32, 16, 10, 3, 2);
+  INIT_WEIGHT_MASK(32, 32, 10, 3, 3);
+  INIT_WEIGHT_MASK(32, 64, 10, 3, 4);
+  INIT_WEIGHT_MASK(64, 16, 10, 4, 2);
+  INIT_WEIGHT_MASK(64, 32, 10, 4, 3);
+  INIT_WEIGHT_MASK(64, 64, 10, 4, 4);
+  INIT_WEIGHT_MASK(64, 128, 10, 4, 5);
+  INIT_WEIGHT_MASK(128, 64, 10, 5, 4);
+  INIT_WEIGHT_MASK(128, 128, 10, 5, 5);
 #else  // !LIBGAV1_ENABLE_ALL_DSP_FUNCTIONS
   static_cast<void>(dsp);
-#ifndef LIBGAV1_Dsp10bpp_WeightMask8_4x4
-  INIT_WEIGHT_MASK(4, 4, 8, 0, 0, 0);
-#endif
-#ifndef LIBGAV1_Dsp10bpp_WeightMask8_4x8
-  INIT_WEIGHT_MASK(4, 8, 8, 0, 1, 0);
-#endif
-#ifndef LIBGAV1_Dsp10bpp_WeightMask8_4x16
-  INIT_WEIGHT_MASK(4, 16, 8, 0, 2, 0);
-#endif
-#ifndef LIBGAV1_Dsp10bpp_WeightMask8_8x4
-  INIT_WEIGHT_MASK(8, 4, 8, 1, 0, 0);
-#endif
-#ifndef LIBGAV1_Dsp10bpp_WeightMask8_8x8
-  INIT_WEIGHT_MASK(8, 8, 8, 1, 1, 0);
-#endif
-#ifndef LIBGAV1_Dsp10bpp_WeightMask8_8x16
-  INIT_WEIGHT_MASK(8, 16, 8, 1, 2, 0);
-#endif
-#ifndef LIBGAV1_Dsp10bpp_WeightMask8_8x32
-  INIT_WEIGHT_MASK(8, 32, 8, 1, 3, 0);
-#endif
-#ifndef LIBGAV1_Dsp10bpp_WeightMask8_16x4
-  INIT_WEIGHT_MASK(16, 4, 8, 2, 0, 0);
-#endif
-#ifndef LIBGAV1_Dsp10bpp_WeightMask8_16x8
-  INIT_WEIGHT_MASK(16, 8, 8, 2, 1, 0);
-#endif
-#ifndef LIBGAV1_Dsp10bpp_WeightMask8_16x16
-  INIT_WEIGHT_MASK(16, 16, 8, 2, 2, 0);
-#endif
-#ifndef LIBGAV1_Dsp10bpp_WeightMask8_16x32
-  INIT_WEIGHT_MASK(16, 32, 8, 2, 3, 0);
-#endif
-#ifndef LIBGAV1_Dsp10bpp_WeightMask8_16x64
-  INIT_WEIGHT_MASK(16, 64, 8, 2, 4, 0);
-#endif
-#ifndef LIBGAV1_Dsp10bpp_WeightMask8_32x8
-  INIT_WEIGHT_MASK(32, 8, 8, 3, 1, 0);
-#endif
-#ifndef LIBGAV1_Dsp10bpp_WeightMask8_32x16
-  INIT_WEIGHT_MASK(32, 16, 8, 3, 2, 0);
-#endif
-#ifndef LIBGAV1_Dsp10bpp_WeightMask8_32x32
-  INIT_WEIGHT_MASK(32, 32, 8, 3, 3, 0);
-#endif
-#ifndef LIBGAV1_Dsp10bpp_WeightMask8_32x64
-  INIT_WEIGHT_MASK(32, 64, 8, 3, 4, 0);
-#endif
-#ifndef LIBGAV1_Dsp10bpp_WeightMask8_64x16
-  INIT_WEIGHT_MASK(64, 16, 8, 4, 2, 0);
-#endif
-#ifndef LIBGAV1_Dsp10bpp_WeightMask8_64x32
-  INIT_WEIGHT_MASK(64, 32, 8, 4, 3, 0);
-#endif
-#ifndef LIBGAV1_Dsp10bpp_WeightMask8_64x64
-  INIT_WEIGHT_MASK(64, 64, 8, 4, 4, 0);
-#endif
-#ifndef LIBGAV1_Dsp10bpp_WeightMask8_64x128
-  INIT_WEIGHT_MASK(64, 128, 8, 4, 5, 0);
-#endif
-#ifndef LIBGAV1_Dsp10bpp_WeightMask8_128x64
-  INIT_WEIGHT_MASK(128, 64, 8, 5, 4, 0);
-#endif
-#ifndef LIBGAV1_Dsp10bpp_WeightMask8_128x128
-  INIT_WEIGHT_MASK(128, 128, 8, 5, 5, 0);
-#endif
 #ifndef LIBGAV1_Dsp10bpp_WeightMask10_4x4
-  INIT_WEIGHT_MASK(4, 4, 10, 0, 0, 1);
+  INIT_WEIGHT_MASK(4, 4, 10, 0, 0);
 #endif
 #ifndef LIBGAV1_Dsp10bpp_WeightMask10_4x8
-  INIT_WEIGHT_MASK(4, 8, 10, 0, 1, 1);
+  INIT_WEIGHT_MASK(4, 8, 10, 0, 1);
 #endif
 #ifndef LIBGAV1_Dsp10bpp_WeightMask10_4x16
-  INIT_WEIGHT_MASK(4, 16, 10, 0, 2, 1);
+  INIT_WEIGHT_MASK(4, 16, 10, 0, 2);
 #endif
 #ifndef LIBGAV1_Dsp10bpp_WeightMask10_8x4
-  INIT_WEIGHT_MASK(8, 4, 10, 1, 0, 1);
+  INIT_WEIGHT_MASK(8, 4, 10, 1, 0);
 #endif
 #ifndef LIBGAV1_Dsp10bpp_WeightMask10_8x8
-  INIT_WEIGHT_MASK(8, 8, 10, 1, 1, 1);
+  INIT_WEIGHT_MASK(8, 8, 10, 1, 1);
 #endif
 #ifndef LIBGAV1_Dsp10bpp_WeightMask10_8x16
-  INIT_WEIGHT_MASK(8, 16, 10, 1, 2, 1);
+  INIT_WEIGHT_MASK(8, 16, 10, 1, 2);
 #endif
 #ifndef LIBGAV1_Dsp10bpp_WeightMask10_8x32
-  INIT_WEIGHT_MASK(8, 32, 10, 1, 3, 1);
+  INIT_WEIGHT_MASK(8, 32, 10, 1, 3);
 #endif
 #ifndef LIBGAV1_Dsp10bpp_WeightMask10_16x4
-  INIT_WEIGHT_MASK(16, 4, 10, 2, 0, 1);
+  INIT_WEIGHT_MASK(16, 4, 10, 2, 0);
 #endif
 #ifndef LIBGAV1_Dsp10bpp_WeightMask10_16x8
-  INIT_WEIGHT_MASK(16, 8, 10, 2, 1, 1);
+  INIT_WEIGHT_MASK(16, 8, 10, 2, 1);
 #endif
 #ifndef LIBGAV1_Dsp10bpp_WeightMask10_16x16
-  INIT_WEIGHT_MASK(16, 16, 10, 2, 2, 1);
+  INIT_WEIGHT_MASK(16, 16, 10, 2, 2);
 #endif
 #ifndef LIBGAV1_Dsp10bpp_WeightMask10_16x32
-  INIT_WEIGHT_MASK(16, 32, 10, 2, 3, 1);
+  INIT_WEIGHT_MASK(16, 32, 10, 2, 3);
 #endif
 #ifndef LIBGAV1_Dsp10bpp_WeightMask10_16x64
-  INIT_WEIGHT_MASK(16, 64, 10, 2, 4, 1);
+  INIT_WEIGHT_MASK(16, 64, 10, 2, 4);
 #endif
 #ifndef LIBGAV1_Dsp10bpp_WeightMask10_32x8
-  INIT_WEIGHT_MASK(32, 8, 10, 3, 1, 1);
+  INIT_WEIGHT_MASK(32, 8, 10, 3, 1);
 #endif
 #ifndef LIBGAV1_Dsp10bpp_WeightMask10_32x16
-  INIT_WEIGHT_MASK(32, 16, 10, 3, 2, 1);
+  INIT_WEIGHT_MASK(32, 16, 10, 3, 2);
 #endif
 #ifndef LIBGAV1_Dsp10bpp_WeightMask10_32x32
-  INIT_WEIGHT_MASK(32, 32, 10, 3, 3, 1);
+  INIT_WEIGHT_MASK(32, 32, 10, 3, 3);
 #endif
 #ifndef LIBGAV1_Dsp10bpp_WeightMask10_32x64
-  INIT_WEIGHT_MASK(32, 64, 10, 3, 4, 1);
+  INIT_WEIGHT_MASK(32, 64, 10, 3, 4);
 #endif
 #ifndef LIBGAV1_Dsp10bpp_WeightMask10_64x16
-  INIT_WEIGHT_MASK(64, 16, 10, 4, 2, 1);
+  INIT_WEIGHT_MASK(64, 16, 10, 4, 2);
 #endif
 #ifndef LIBGAV1_Dsp10bpp_WeightMask10_64x32
-  INIT_WEIGHT_MASK(64, 32, 10, 4, 3, 1);
+  INIT_WEIGHT_MASK(64, 32, 10, 4, 3);
 #endif
 #ifndef LIBGAV1_Dsp10bpp_WeightMask10_64x64
-  INIT_WEIGHT_MASK(64, 64, 10, 4, 4, 1);
+  INIT_WEIGHT_MASK(64, 64, 10, 4, 4);
 #endif
 #ifndef LIBGAV1_Dsp10bpp_WeightMask10_64x128
-  INIT_WEIGHT_MASK(64, 128, 10, 4, 5, 1);
+  INIT_WEIGHT_MASK(64, 128, 10, 4, 5);
 #endif
 #ifndef LIBGAV1_Dsp10bpp_WeightMask10_128x64
-  INIT_WEIGHT_MASK(128, 64, 10, 5, 4, 1);
+  INIT_WEIGHT_MASK(128, 64, 10, 5, 4);
 #endif
 #ifndef LIBGAV1_Dsp10bpp_WeightMask10_128x128
-  INIT_WEIGHT_MASK(128, 128, 10, 5, 5, 1);
+  INIT_WEIGHT_MASK(128, 128, 10, 5, 5);
 #endif
 #endif  // LIBGAV1_ENABLE_ALL_DSP_FUNCTIONS
 }

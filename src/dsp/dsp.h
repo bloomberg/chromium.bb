@@ -433,9 +433,8 @@ using WeightMaskFunc = void (*)(const uint16_t* prediction_0,
 // Weight mask functions signature. The dimensions (in order) are:
 //   * Width index (4 => 0, 8 => 1, 16 => 2 and so on).
 //   * Height index (4 => 0, 8 => 1, 16 => 2 and so on).
-//   * Bitdepth index (8 => 0, 10 => 1, 12 => 2).
 //   * mask_is_inverse.
-using WeightMaskFuncs = WeightMaskFunc[6][6][3][2];
+using WeightMaskFuncs = WeightMaskFunc[6][6][2];
 
 // Average blending function signature.
 // Two predictors are averaged to generate the output.
