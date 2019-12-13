@@ -559,6 +559,8 @@
 <translation id="177336675152937177">Dati app in hosting</translation>
 <translation id="1776712937009046120">Aggiungi utente</translation>
 <translation id="1776883657531386793"><ph name="OID" />: <ph name="INFO" /></translation>
+<translation id="1777310661937894236">Questo dispositivo è gestito da <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />.
+    Fai clic su "Avanti" per continuare ad accedere al tuo account <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />.</translation>
 <translation id="1779652936965200207">Inserisci questa passkey su "<ph name="DEVICE_NAME" />":</translation>
 <translation id="1780152987505130652">Chiudi gruppo</translation>
 <translation id="1781291988450150470">PIN attuale</translation>
@@ -746,6 +748,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="2048653237708779538">Azione non disponibile</translation>
 <translation id="2050339315714019657">Verticale</translation>
 <translation id="2053312383184521053">Dati sullo stato di inattività</translation>
+<translation id="2055585478631012616">Uscirai da questi siti (schede aperte incluse)</translation>
 <translation id="205560151218727633">Logo dell'Assistente Google</translation>
 <translation id="2058456167109518507">Dispositivo rilevato</translation>
 <translation id="2059913712424898428">Fuso orario</translation>
@@ -1288,6 +1291,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="2800760947029405028">Carica un'immagine</translation>
 <translation id="2803375539583399270">Inserisci PIN</translation>
 <translation id="2804043232879091219">Impossibile aprire il browser alternativo</translation>
+<translation id="2804667941345577550">Uscirai da questo sito (schede aperte incluse)</translation>
 <translation id="2804680522274557040">Fotocamera disattivata</translation>
 <translation id="2805646850212350655">Crittografia file system Microsoft</translation>
 <translation id="2805756323405976993">App</translation>
@@ -2194,6 +2198,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="407520071244661467">Scala</translation>
 <translation id="4075639477629295004">Impossibile trasmettere <ph name="FILE_NAME" />.</translation>
 <translation id="4077917118009885966">Annunci bloccati su questo sito</translation>
+<translation id="4077919383365622693">Tutti i dati e i cookie memorizzati da <ph name="SITE" /> verranno cancellati.</translation>
 <translation id="4079140982534148664">Usa il controllo ortografico avanzato</translation>
 <translation id="4081242589061676262">Impossibile trasmettere il file.</translation>
 <translation id="4084682180776658562">Aggiungi ai Preferiti</translation>
@@ -2568,6 +2573,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="4665446389743427678">Tutti i dati memorizzati da <ph name="SITE" /> saranno eliminati.</translation>
 <translation id="4668721319092543482">Fai clic per attivare <ph name="PLUGIN_NAME" /></translation>
 <translation id="4672657274720418656">Pagina Distill</translation>
+<translation id="46733273239502219">Verranno cancellati anche i dati offline nelle app installate</translation>
 <translation id="4673442866648850031">Apri strumenti stilo quando lo stilo viene rimosso</translation>
 <translation id="4677585247300749148"><ph name="URL" /> vuole rispondere agli eventi di accessibilità</translation>
 <translation id="4677772697204437347">Memoria GPU</translation>
@@ -3258,6 +3264,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="5687326903064479980">Fuso orario</translation>
 <translation id="5689516760719285838">Posizione</translation>
 <translation id="56907980372820799">Collega dati</translation>
+<translation id="5691180005790455277">Tutti i dati e i cookie memorizzati da <ph name="SITE_GROUP_NAME" /> e da eventuali siti al suo interno verranno cancellati.</translation>
 <translation id="5691511426247308406">Famiglia</translation>
 <translation id="5692183275898619210">Stampa completata</translation>
 <translation id="5696143504434933566">Segnala illecito per "<ph name="EXTENSION_NAME" />"</translation>
@@ -3885,6 +3892,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="6602956230557165253">Utilizza i tasti freccia sinistra e destra per spostarti.</translation>
 <translation id="6605847144724004692">Nessuna valutazione disponibile.</translation>
 <translation id="6607831829715835317">A&amp;ltri strumenti</translation>
+<translation id="6611972847767394631">Trova le tue schede qui</translation>
 <translation id="6612358246767739896">Contenuti protetti</translation>
 <translation id="6615455863669487791">Mostrami</translation>
 <translation id="6618097958368085618">Mantieni comunque</translation>
@@ -5706,6 +5714,7 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="9188732951356337132">Invia dati diagnostici e sull'utilizzo. Questo dispositivo attualmente invia a Google dati diagnostici e sull'utilizzo delle app e del dispositivo. Non verranno utilizzati per identificare tuo figlio e contribuiranno alla stabilità di app e sistema, nonché ad altri miglioramenti. Alcuni dati aggregati saranno utili anche alle app e ai partner di Google, ad esempio agli sviluppatori Android. Se l'impostazione Attività web e app aggiuntiva è attiva per tuo figlio, questi dati potrebbero essere salvati nel suo Account Google. <ph name="BEGIN_LINK2" />Ulteriori informazioni<ph name="END_LINK2" /></translation>
 <translation id="9190063653747922532">L2TP/IPSec + chiave precondivisa</translation>
 <translation id="920045321358709304">Cerca su <ph name="SEARCH_ENGINE" /></translation>
+<translation id="9201023452444595544">I dati offline verranno cancellati</translation>
 <translation id="9201220332032049474">Opzioni di blocco schermo</translation>
 <translation id="9203398526606335860">&amp;Profiling attivato</translation>
 <translation id="9203904171912129171">Seleziona un dispositivo</translation>
@@ -5718,6 +5727,7 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="9220525904950070496">Rimuovi account</translation>
 <translation id="9220820413868316583">Solleva, quindi riprova.</translation>
 <translation id="923467487918828349">Mostra tutte</translation>
+<translation id="929117907539171075">Verranno cancellati anche i dati offline nell'app installata</translation>
 <translation id="930268624053534560">Timestamp dettagliati</translation>
 <translation id="932327136139879170">Home page</translation>
 <translation id="932508678520956232">Impossibile inizializzare la stampa.</translation>

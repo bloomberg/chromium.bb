@@ -556,6 +556,8 @@
 <translation id="177336675152937177">අනුග්‍රහය සහිත යෙදුම් දත්ත</translation>
 <translation id="1776712937009046120">පරිශීලකයකු එක් කරන්න</translation>
 <translation id="1776883657531386793"><ph name="OID" />: <ph name="INFO" /></translation>
+<translation id="1777310661937894236">උපාංගය <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> විසින් කළමනා කෙරේ.
+    ඔබේ <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> ගිණුමට පුරන්නට "මිළඟ" ක්ලික් කරන්න</translation>
 <translation id="1779652936965200207">කරුණාකර මෙම රහස් යතුර "<ph name="DEVICE_NAME" />" හි ඇතුළු කරන්න:</translation>
 <translation id="1780152987505130652">කණ්ඩායම වසන්න</translation>
 <translation id="1781291988450150470">වත්මන් රහස් අංකය</translation>
@@ -743,6 +745,7 @@
 <translation id="2048653237708779538">ක්‍රියාව ලබා ගත නොහැක</translation>
 <translation id="2050339315714019657">සිරස්</translation>
 <translation id="2053312383184521053">නිහඬ තත්වයේ දත්ත</translation>
+<translation id="2055585478631012616">ඔබ විවෘත පටිති ඇතුළුව මෙම වෙබ් අඩවිවලින් වරනු ලැබේ</translation>
 <translation id="205560151218727633">Google සහායක ලාංඡනය</translation>
 <translation id="2058456167109518507">උපාංගය අනාවරණය කර ඇත</translation>
 <translation id="2059913712424898428">වේලා කලාපය</translation>
@@ -1286,6 +1289,7 @@
 <translation id="2800760947029405028">රූපයක් උඩුගත කරන්න</translation>
 <translation id="2803375539583399270">PIN අංකය ඇතුළත් කරන්න</translation>
 <translation id="2804043232879091219">වෛකල්පික බ්‍රවුසරය විවෘත කළ නොහැකි විය</translation>
+<translation id="2804667941345577550">ඔබ විවෘත පටිති ඇතුළුව මෙම වෙබ් අඩවියෙන් වරනු ලැබේ.</translation>
 <translation id="2804680522274557040">කැමරාව අක්‍රියයි</translation>
 <translation id="2805646850212350655">Microsoft සංකේතනය කිරීමේ ගොනු පද්ධතිය</translation>
 <translation id="2805756323405976993">යෙදුම්</translation>
@@ -2193,6 +2197,7 @@ Linux ස්ථාපනය කිරීම දත්තවලින් <ph name
 <translation id="407520071244661467">පරිමාණය</translation>
 <translation id="4075639477629295004"><ph name="FILE_NAME" /> විකාශය කිරීමට නොහැකිය.</translation>
 <translation id="4077917118009885966">මෙම අඩවිය මත වෙළඳ දැන්වීම් අවහිරයි</translation>
+<translation id="4077919383365622693"><ph name="SITE" /> ගබඩා කර ඇති සියලුම දත්ත සහ කුකී හිස් කෙරේ.</translation>
 <translation id="4079140982534148664">උසස් අක්‍ෂර පරීක්‍ෂාව භාවිත කරන්න</translation>
 <translation id="4081242589061676262">ගොනුව විකාශය කළ නොහැකිය.</translation>
 <translation id="4084682180776658562">පිටු සලකුණ</translation>
@@ -2567,6 +2572,7 @@ Linux ස්ථාපනය කිරීම දත්තවලින් <ph name
 <translation id="4665446389743427678"><ph name="SITE" /> විසින් ගබඩා කර ඇති සියලු දත්ත මකනු ඇත.</translation>
 <translation id="4668721319092543482"><ph name="PLUGIN_NAME" /> සබල කිරීමට ක්ලික් කරන්න</translation>
 <translation id="4672657274720418656">පෙරා ගත් පිටුව</translation>
+<translation id="46733273239502219">ස්ථාපිත යෙදුම්වල නොබැඳි දත්ත ද හිස් කෙරේ</translation>
 <translation id="4673442866648850031">පන්හිඳ ඉවත් කළ විට පන්හිඳ මෙවලම් විවෘත කරන්න</translation>
 <translation id="4677585247300749148"><ph name="URL" /> හට ප්‍රවේශ්‍යතා සිදුවීම්වලට ප්‍රතිචාර දැක්වීමට අවශ්‍යයි</translation>
 <translation id="4677772697204437347">GPU මතකය</translation>
@@ -3258,6 +3264,7 @@ Linux ස්ථාපනය කිරීම දත්තවලින් <ph name
 <translation id="5687326903064479980">වේලා කලාපය</translation>
 <translation id="5689516760719285838">ස්ථානය</translation>
 <translation id="56907980372820799">සබැඳි දත්ත</translation>
+<translation id="5691180005790455277"><ph name="SITE_GROUP_NAME" /> විසින් ගබඩා කරනු ලැබ ඇති සියලුම දත්ත සහ කුකී සහ එහි යටතේ ඇති ඕනෑම වෙබ් අඩවියක් හිස් කෙරේ.</translation>
 <translation id="5691511426247308406">පවුල</translation>
 <translation id="5692183275898619210">මුද්‍රණ කිරීම සම්පූර්ණයි</translation>
 <translation id="5696143504434933566">"<ph name="EXTENSION_NAME" />" වෙතින් අයථා පරිහරණය වාර්තා කරන්න</translation>
@@ -3883,6 +3890,7 @@ Linux ස්ථාපනය කිරීම දත්තවලින් <ph name
 <translation id="6602956230557165253">ගවේශනය කිරීම වම් හා දකුණු ඊතල යතුරු භාවිත කරන්න.</translation>
 <translation id="6605847144724004692">තවමත් කිසිදු පරිශීලකයෙකු විසින් අගයා නැත.</translation>
 <translation id="6607831829715835317">තව මෙවලම්</translation>
+<translation id="6611972847767394631">ඔබගේ පටිති මෙහි සොයන්න</translation>
 <translation id="6612358246767739896">ආරක්ෂිත අන්තර්ගතය</translation>
 <translation id="6615455863669487791">මට පෙන්වන්න</translation>
 <translation id="6618097958368085618">කෙසේ වුවත් තබා ගන්න</translation>
@@ -5703,6 +5711,7 @@ Linux ස්ථාපනය කිරීම දත්තවලින් <ph name
 <translation id="9188732951356337132">භාවිත සහ දෝෂ නිර්ණ දත්ත යවන්න. මෙම උපාංගය ස්වයංක්‍රියව රෝග විනිශ්චය, උපාංග සහ යෙදුම් භාවිත දත්ත Google වෙත යවයි. මෙය ඔබේ දරුවා හඳුනා ගැනීමට භාවිත නොකෙරෙන අතර, පද්ධති සහ යෙදුම් ස්ථායිතාවට සහ අනෙකුත් වැඩිදියුණු කිරීම්වලට උදවු කරයි. සමහර එකතු කළ දත්ත Google යෙදුම්වලට සහ Android සංවර්ධකයින් වැනි හවුල්කරුවන්ට ද උදවු කරති. ඔබේ දරුවා සඳහා අමතර වෙබ් සහ යෙදුම් ක්‍රියාකාරකම් සැකසීම සක්‍රීය කර තිබේ නම්, මෙම දත්ත ඔවුන්ගේ Google ගිණුමට සුරැකිය හැක. <ph name="BEGIN_LINK2" />තවත් දැන ගන්න<ph name="END_LINK2" /></translation>
 <translation id="9190063653747922532">L2TP/IPsec + පෙර-හවුල්කළ යතුර</translation>
 <translation id="920045321358709304"><ph name="SEARCH_ENGINE" /> සෙවීම</translation>
+<translation id="9201023452444595544">නොබැඳි දත්ත කිසිවක් හිස් කෙරේ</translation>
 <translation id="9201220332032049474">තිර අගුළු විකල්ප</translation>
 <translation id="9203398526606335860">පැතිකඩකරණය සක්‍රීයයි (&amp;P)</translation>
 <translation id="9203904171912129171">උපාංගයක් තෝරන්න</translation>
@@ -5715,6 +5724,7 @@ Linux ස්ථාපනය කිරීම දත්තවලින් <ph name
 <translation id="9220525904950070496">ගිනුම ඉවත් කරන්න</translation>
 <translation id="9220820413868316583">ඔසවා යළි උත්සාහ කරන්න.</translation>
 <translation id="923467487918828349">සියල්ල පෙන්වන්න</translation>
+<translation id="929117907539171075">ස්ථාපිත යෙදුමේ නොබැඳි දත්ත ද හිස් කෙරේ</translation>
 <translation id="930268624053534560">විස්තරාත්මක කාල මුද්‍රා</translation>
 <translation id="932327136139879170">මුල් පිටුව</translation>
 <translation id="932508678520956232">මුද්‍රණය කිරීම ඇරඹිය නොහැකි විය.</translation>

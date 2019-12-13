@@ -5,6 +5,7 @@
 <translation id="1010200102790553230">Laai bladsy later</translation>
 <translation id="1015730422737071372">Verskaf bykomende besonderhede</translation>
 <translation id="1021110881106174305">Aanvaarde kaarte</translation>
+<translation id="1021753677514347426">Hierdie probleem word veroorsaak deur 'n sertifikaat wat jy of iemand anders op jou toestel geïnstalleer het. Dit is bekend dat hierdie sertifikaat gebruik word om netwerke te monitor en te onderskep, en dit word nie deur Chromium vertrou nie. Terwyl sommige wettige gevalle vir monitering wel bestaan, soos op 'n skool- of maatskappynetwerk, wil Chromium seker maak dat jy weet dit gebeur, selfs al kan jy dit nie keer nie. Monitering kan in enige blaaier of program met toegang tot die web plaasvind.</translation>
 <translation id="1032854598605920125">Draai kloksgewys</translation>
 <translation id="1036348656032585052">Skakel af</translation>
 <translation id="1038842779957582377">onbekende naam</translation>
@@ -68,6 +69,7 @@
 <translation id="1264126396475825575">Omvalverslag om <ph name="CRASH_TIME" /> vasgevang (nog nie opgedateer of geïgnoreer nie)</translation>
 <translation id="1270502636509132238">Oplaaimetode</translation>
 <translation id="1285320974508926690">Moet nooit hierdie werf vertaal nie</translation>
+<translation id="1285400217480592994">Skandeer die inhoud van die lêers wat jy in Chrome aflaai of oplaai.</translation>
 <translation id="1292701964462482250">"Sagteware op jou rekenaar verhoed dat Chrome veilig aan die web koppel" (Net Windows-rekenaars)</translation>
 <translation id="1294154142200295408">Bevellynvariasies</translation>
 <translation id="129553762522093515">Onlangs toegemaak</translation>
@@ -284,6 +286,7 @@
 <translation id="2270484714375784793">Foonnommer</translation>
 <translation id="2277103315734023688">Soek vorentoe</translation>
 <translation id="2283340219607151381">Stoor en vul adresse in</translation>
+<translation id="2288422996159078444">Enigiets wat jy tik, enige bladsye wat jy bekyk of enige ander aktiwiteit op die web word dopgehou. Inhoud op werwe kan sonder jou wete verander word.</translation>
 <translation id="2289385804009217824">Knip</translation>
 <translation id="2292556288342944218">Jou internettoegang is geblokkeer</translation>
 <translation id="2297722699537546652">B5 (Envelope)</translation>
@@ -438,6 +441,7 @@
 <translation id="2989742184762224133">Dubbelkram bo</translation>
 <translation id="2991174974383378012">Deling met webwerwe</translation>
 <translation id="2991571918955627853">Jy kan nie <ph name="SITE" /> nou onmiddellik besoek nie omdat die webwerf HSTS gebruik. Netwerkfoute en -aanvalle is gewoonlik tydelik en daarom sal hierdie bladsy waarskynlik later werk.</translation>
+<translation id="2996674880327704673">Voorstelle deur Google</translation>
 <translation id="3005723025932146533">Wys die kopie wat gestoor is</translation>
 <translation id="3008447029300691911">Voer die CVC vir <ph name="CREDIT_CARD" /> in. Nadat jy bevestig het, sal jou kaartbesonderhede met hierdie werf gedeel word.</translation>
 <translation id="3010559122411665027">Lysinskrywing "<ph name="ENTRY_INDEX" />": <ph name="ERROR" /></translation>
@@ -450,6 +454,7 @@
 <translation id="3060227939791841287">C9 (Envelope)</translation>
 <translation id="3061707000357573562">Regstellingdiens</translation>
 <translation id="3064966200440839136">Verlaat incognito-modus om via 'n eksterne program te betaal. Gaan voort?</translation>
+<translation id="3086579638707268289">Jou aktiwiteit op die web word gemonitor</translation>
 <translation id="3095940652251934233">Verklaring</translation>
 <translation id="3096100844101284527">Voeg oplaaiadres by</translation>
 <translation id="3105172416063519923">Bate-ID:</translation>
@@ -503,6 +508,7 @@
 <translation id="3369192424181595722">Horlosiefout</translation>
 <translation id="337363190475750230">Onvoorsien</translation>
 <translation id="3377188786107721145">Beleidontleedfout</translation>
+<translation id="3377736046129930310">Gebruik skermslot om kaarte vinniger te bevestig</translation>
 <translation id="3380365263193509176">Onbekende fout</translation>
 <translation id="3380864720620200369">Kliënt-ID:</translation>
 <translation id="3387261909427947069">Betaalmetodes</translation>
@@ -670,6 +676,7 @@
 <translation id="4194250254487269611">Jou kaart kan nie nou gestoor word nie</translation>
 <translation id="4196861286325780578">Herdoen skuif</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Die brandmuur- en antivirus-opstellings nagaan<ph name="END_LINK" /></translation>
+<translation id="4214357935346142455">aanmeldskermprofiel</translation>
 <translation id="4215751373031079683">7x9 (Envelope)</translation>
 <translation id="4220128509585149162">Omvalle</translation>
 <translation id="422022731706691852">Aanvallers op <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> kan jou dalk probeer mislei om programme te installeer wat jou blaai-ervaring kan benadeel (byvoorbeeld, deur jou tuisblad te verander of ekstra advertensies te wys op werwe wat jy besoek). <ph name="BEGIN_LEARN_MORE_LINK" />Kom meer te wete<ph name="END_LEARN_MORE_LINK" /></translation>
@@ -752,6 +759,7 @@
 <translation id="4515275063822566619">Kaarte en adresse kom uit Chrome en jou Google-rekening (<ph name="ACCOUNT_EMAIL" />). Jy kan hulle in <ph name="BEGIN_LINK" />Instellings<ph name="END_LINK" /> bestuur.</translation>
 <translation id="4517607026994743406">Comm-10 (Envelope)</translation>
 <translation id="4522570452068850558">Besonderhede</translation>
+<translation id="4524138615196389145">Gebruik van nou af WebAuthn om jou kaarte vinniger te bevestig</translation>
 <translation id="4524805452350978254">Bestuur kaarte</translation>
 <translation id="455113658016510503">A9</translation>
 <translation id="4552089082226364758">Flits</translation>
@@ -863,6 +871,7 @@
 <translation id="5112422516732747637">A5</translation>
 <translation id="5115216390227830982">European-Edp</translation>
 <translation id="5115563688576182185">(64 bis)</translation>
+<translation id="5121469660360593280">Deel data oor sekuriteitsvoorvalle wat Chrome Enterprise se gebruikerbeskerming by jou administrateur gevlag het. Dit kan insluit: URL'e van bladsye wat jy besoek, lêername of metadata, en die gebruikernaam wat jy gebruik om op jou toestel en by Chrome aan te meld.</translation>
 <translation id="5125394840236832993">B-Plus</translation>
 <translation id="5126510351761255129">Verifieer jou kaart</translation>
 <translation id="5135404736266831032">Bestuur adresse …</translation>
@@ -874,6 +883,7 @@
 <translation id="5159010409087891077">Maak bladsy in 'n nuwe incognitovenster oop (⇧⌘N)</translation>
 <translation id="516920405563544094">Voer die CVC vir <ph name="CREDIT_CARD" /> in. Nadat jy bevestig het, sal kaartbesonderhede vanaf jou Google-rekening met hierdie werf gedeel word.</translation>
 <translation id="5169827969064885044">Jy kan toegang tot jou organisasie se rekening verloor of identiteitdiefstal ervaar. Chrome beveel aan dat jy jou wagwoord nou verander.</translation>
+<translation id="5170017743895942767">Chrome Enterprise se gebruikerbeskerming</translation>
 <translation id="5171045022955879922">Soek of tik URL in</translation>
 <translation id="5171689220826475070">Fanfold-European</translation>
 <translation id="5172758083709347301">Masjien</translation>
@@ -995,6 +1005,7 @@
 <translation id="5730040223043577876">Chrome beveel aan dat jy jou wagwoord terugstel as jy dit ook op ander werwe gebruik het.</translation>
 <translation id="5737183892635480227">{NUM_CARDS,plural, =1{Stoor kaart in jou Google-rekening}other{Stoor kaarte in jou Google-rekening}}</translation>
 <translation id="5763042198335101085">Voer 'n geldige e-posadres in</translation>
+<translation id="5763703224595565476">Jou administrateur het Chrome Enterprise se gebruikerbeskerming op jou blaaier geaktiveer. Chrome Enterprise se gebruikerbeskerming het toegang tot van jou data.</translation>
 <translation id="5765072501007116331">Kies 'n adres om afleweringmetodes en -vereistes te sien</translation>
 <translation id="5778550464785688721">MIDI-toestelle volle beheer</translation>
 <translation id="5781136890105823427">Eksperiment is geaktiveer</translation>
@@ -1089,6 +1100,7 @@
 <translation id="6221345481584921695">Google Veiligblaai het onlangs <ph name="BEGIN_LINK" />wanware bespeur<ph name="END_LINK" /> op <ph name="SITE" />. Webwerwe wat gewoonlik veilig is, word soms met wanware besmet. Die kwaadwillige inhoud kom van <ph name="SUBRESOURCE_HOST" />, 'n bekende verspreider van wanware, af.</translation>
 <translation id="6234122620015464377">Knip ná elke dokument</translation>
 <translation id="6240447795304464094">Google Pay-logo</translation>
+<translation id="6241121617266208201">Versteek voorstelle</translation>
 <translation id="6251924700383757765">Privaatheidbeleid</translation>
 <translation id="6254436959401408446">Nie genoeg berging om hierdie bladsy oop te maak nie</translation>
 <translation id="625755898061068298">Jy het gekies om sekuriteitwaarskuwings vir hierdie werf te deaktiveer.</translation>
@@ -1135,6 +1147,7 @@
 <translation id="6409754798200046165">Jy het sopas jou wagwoord op 'n misleidende werf ingevoer. Chrome beveel aan dat jy jou wagwoord nou verander.</translation>
 <translation id="6410264514553301377">Voer die vervaldatum en CVC vir <ph name="CREDIT_CARD" /> in</translation>
 <translation id="6415778972515849510">Chromium kan jou help om jou Google-rekening te beskerm en jou wagwoord te verander.</translation>
+<translation id="6423385022588644828">Gebruik van nou af Touch ID om jou kaarte vinniger te bevestig</translation>
 <translation id="6427730057873428458">Uitvoublad</translation>
 <translation id="6433490469411711332">Wysig kontakinligting</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> het geweier om te koppel.</translation>
@@ -1205,6 +1218,7 @@
 <translation id="6786747875388722282">Uitbreidings</translation>
 <translation id="6790428901817661496">Speel</translation>
 <translation id="679355240208270552">Geïgnoreer, want versteksoektog is nie deur beleid geaktiveer nie.</translation>
+<translation id="6794951432696553238">Gebruik van nou af Windows Hello om jou kaarte vinniger te bevestig</translation>
 <translation id="681021252041861472">Vereiste veld</translation>
 <translation id="6810899417690483278">Pasmaking-ID</translation>
 <translation id="6825578344716086703">Jy het probeer om <ph name="DOMAIN" /> te bereik, maar die bediener het 'n sertifikaat voorgehou wat met 'n swak handtekening-algoritme onderteken is (soos SHA-1). Dit beteken dat die sekuriteiteiebewyse wat die bediener voorgehou het, vervals kon gewees het en dat die bediener dalk nie die bediener is wat jy verwag het nie (jy kommunikeer dalk met 'n aanvaller).</translation>
@@ -1239,6 +1253,7 @@
 <translation id="6989763994942163495">Wys gevorderde instellings …</translation>
 <translation id="6993898126790112050">6x9 (Envelope)</translation>
 <translation id="6996312675313362352">Vertaal <ph name="ORIGINAL_LANGUAGE" /> altyd</translation>
+<translation id="7004583254764674281">Gebruik Windows Hello om kaarte vinniger te bevestig</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7016992613359344582">Hierdie heffings kan eenmalig of herhalend wees en is dalk nie ooglopend nie.</translation>
 <translation id="7029809446516969842">Wagwoorde</translation>
@@ -1249,6 +1264,7 @@
 <translation id="7064851114919012435">Kontakinligting</translation>
 <translation id="7075452647191940183">Versoek is te groot</translation>
 <translation id="7079718277001814089">Hierdie werf bevat wanware</translation>
+<translation id="7081308185095828845">Hierdie kenmerk is nie op jou toestel beskikbaar nie</translation>
 <translation id="7087282848513945231">Land</translation>
 <translation id="7090678807593890770">Deursoek Google vir <ph name="LINK" /></translation>
 <translation id="7108338896283013870">Versteek</translation>
@@ -1302,9 +1318,11 @@ Bykomende besonderhede:
 <translation id="733923710415886693">Hierdie bediener se sertifikaat is nie via sertifikaatdeursigtigheid openbaar gemaak nie.</translation>
 <translation id="734600844861828519">11x15</translation>
 <translation id="7346048084945669753">Is geaffilieer:</translation>
+<translation id="73479065977517481"><ph name="ENROLLMENT_DOMAIN" /> het Chrome Enterprise se gebruikerbeskerming op jou blaaier geaktiveer. Chrome Enterprise se gebruikerbeskerming het toegang tot van jou data.</translation>
 <translation id="7349430561505560861">A4-Extra</translation>
 <translation id="7353601530677266744">Bevellyn</translation>
 <translation id="7372973238305370288">soekresultaat</translation>
+<translation id="7374733840632556089">Hierdie probleem word veroorsaak deur 'n sertifikaat wat jy of iemand anders op jou toestel geïnstalleer het. Dit is bekend dat hierdie sertifikaat gebruik word om netwerke te monitor en te onderskep, en dit word nie deur Chrome vertrou nie. Terwyl sommige wettige gevalle vir monitering wel bestaan, soos op 'n skool- of maatskappynetwerk, wil Chrome seker maak dat jy weet dit gebeur, selfs al kan jy dit nie keer nie. Monitering kan in enige blaaier of program met toegang tot die web plaasvind.</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> – <ph name="FULL_DATE" /></translation>
 <translation id="7378594059915113390">Media-kontroles</translation>
 <translation id="7378627244592794276">Nee</translation>
@@ -1554,6 +1572,7 @@ Bykomende besonderhede:
 <translation id="8559762987265718583">'n Private verbinding aan <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> kan nie gevestig word nie omdat jou toestel se datum en tyd (<ph name="DATE_AND_TIME" />) verkeerd is.</translation>
 <translation id="8564985650692024650">Chromium beveel aan dat jy jou <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" />-wagwoord terugstel as jy dit ook op ander werwe gebruik het.</translation>
 <translation id="8571890674111243710">Die bladsy word tans na <ph name="LANGUAGE" /> vertaal …</translation>
+<translation id="8574899947864779331">Gebruik Touch ID om kaarte vinniger te bevestig</translation>
 <translation id="858637041960032120">Voeg foonnommer by</translation>
 <translation id="860043288473659153">Kaarthouernaam</translation>
 <translation id="8616822740383114808">Hierdie instelling word deur "<ph name="ENFORCING_SETTING" />" afgedwing in "<ph name="SETTINGS_PAGE" />"</translation>
