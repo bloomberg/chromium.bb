@@ -1578,6 +1578,8 @@ jumbo_static_library("browser") {
     "sharing/click_to_call/click_to_call_message_handler_android.h",
     "sharing/click_to_call/feature.cc",
     "sharing/click_to_call/feature.h",
+    "sharing/fake_device_info.cc",
+    "sharing/fake_device_info.h",
     "sharing/features.cc",
     "sharing/features.h",
     "sharing/ping_message_handler.cc",
