@@ -50,6 +50,9 @@ class BLPWTK2_EXPORT ToolkitDelegate {
     // patch section: devtools integration
 
 
+    // patch section: msg interception
+
+
 
 };
 
