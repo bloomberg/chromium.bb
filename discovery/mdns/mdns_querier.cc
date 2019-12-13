@@ -157,9 +157,27 @@ void MdnsQuerier::OnMessageReceived(const MdnsMessage& message) {
   OSP_DCHECK(task_runner_->IsRunningOnTaskRunner());
   OSP_DCHECK(message.type() == MessageType::Response);
 
-  // TODO(crbug.com/openscreen/83): Drop answers and additional records if
-  // answer records do not answer any existing questions
-  // TODO(crbug.com/openscreen/83): Check authority records
+  // Drop the message if its answers don't correspond to any existing question.
+  bool is_relevant_answer = false;
+  for (const MdnsRecord& answer : message.answers()) {
+    const auto range = questions_.equal_range(answer.name());
+    const auto it =
+        std::find_if(range.first, range.second, [&answer](const auto& pair) {
+          return (pair.second->question().dns_type() == DnsType::kANY ||
+                  pair.second->question().dns_type() == answer.dns_type()) &&
+                 (pair.second->question().dns_class() == DnsClass::kANY ||
+                  pair.second->question().dns_class() == answer.dns_class());
+        });
+    if (it != range.second) {
+      is_relevant_answer = true;
+      break;
+    }
+  }
+  if (!is_relevant_answer) {
+    return;
+  }
+
+  // TODO(crbug.com/openscreen/83): Check authority records.
   // TODO(crbug.com/openscreen/84): Cap size of cache, to avoid memory blowups
   // when publishers misbehave.
   ProcessRecords(message.answers());

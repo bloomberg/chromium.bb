@@ -110,14 +110,20 @@ class MdnsQuerierTest : public testing::Test {
   }
 
  protected:
-  UdpPacket CreatePacketWithRecord(const MdnsRecord& record) {
+  UdpPacket CreatePacketWithRecords(std::vector<MdnsRecord::ConstRef> records) {
     MdnsMessage message(CreateMessageId(), MessageType::Response);
-    message.AddAnswer(record);
+    for (auto record : records) {
+      message.AddAnswer(record);
+    }
     UdpPacket packet(message.MaxWireSize());
     MdnsWriter writer(packet.data(), packet.size());
     writer.Write(message);
     packet.resize(writer.offset());
     return packet;
+  }
+
+  UdpPacket CreatePacketWithRecord(const MdnsRecord& record) {
+    return CreatePacketWithRecords({MdnsRecord::ConstRef(record)});
   }
 
   FakeClock clock_;
@@ -351,6 +357,30 @@ TEST_F(MdnsQuerierTest, ReinitializeQueries) {
   // Reinitializing a different domain should not affect other queries.
   querier->ReinitializeQueries(DomainName{"testing2", "local"});
   receiver_.OnRead(&socket_, CreatePacketWithRecord(record0_created_));
+}
+
+TEST_F(MdnsQuerierTest, MessagesForUnknownQueriesDropped) {
+  std::unique_ptr<MdnsQuerier> querier = CreateQuerier();
+  MockRecordChangedCallback callback;
+
+  // Message for unknown query does not get processed.
+  querier->StartQuery(DomainName{"testing", "local"}, DnsType::kA,
+                      DnsClass::kIN, &callback);
+  receiver_.OnRead(&socket_, CreatePacketWithRecord(record1_created_));
+  querier->StartQuery(DomainName{"poking", "local"}, DnsType::kA, DnsClass::kIN,
+                      &callback);
+  testing::Mock::VerifyAndClearExpectations(&callback);
+
+  querier->StopQuery(DomainName{"poking", "local"}, DnsType::kA, DnsClass::kIN,
+                     &callback);
+
+  // Message is processed when at least one record is known.
+  EXPECT_CALL(callback, OnRecordChanged(_, RecordChangedEvent::kCreated))
+      .Times(2);
+  receiver_.OnRead(
+      &socket_, CreatePacketWithRecords({record0_created_, record1_created_}));
+  querier->StartQuery(DomainName{"poking", "local"}, DnsType::kA, DnsClass::kIN,
+                      &callback);
 }
 
 }  // namespace discovery
