@@ -1129,16 +1129,25 @@ void Tile::BlockInterPrediction(
   const ptrdiff_t output_stride =
       (is_compound || is_inter_intra) ? prediction_stride : dest_stride;
   assert(output != nullptr);
-  dsp::ConvolveFunc convolve_func =
-      is_scaled ? dsp_.convolve_scale[is_compound || is_inter_intra]
-                : dsp_.convolve[reference_frame_index == -1]
-                               [is_compound || is_inter_intra]
-                               [has_vertical_filter][has_horizontal_filter];
-  assert(convolve_func != nullptr);
+  if (is_scaled) {
+    dsp::ConvolveScaleFunc convolve_func =
+        dsp_.convolve_scale[is_compound || is_inter_intra];
+    assert(convolve_func != nullptr);
 
-  convolve_func(block_start, convolve_buffer_stride, horizontal_filter_index,
-                vertical_filter_index, round_bits, start_x, start_y, step_x,
-                step_y, width, height, output, output_stride);
+    convolve_func(block_start, convolve_buffer_stride, horizontal_filter_index,
+                  vertical_filter_index, round_bits, start_x, start_y, step_x,
+                  step_y, width, height, output, output_stride);
+  } else {
+    dsp::ConvolveFunc convolve_func =
+        dsp_.convolve[reference_frame_index == -1]
+                     [is_compound || is_inter_intra][has_vertical_filter]
+                     [has_horizontal_filter];
+    assert(convolve_func != nullptr);
+
+    convolve_func(block_start, convolve_buffer_stride, horizontal_filter_index,
+                  vertical_filter_index, round_bits, start_x, start_y, width,
+                  height, output, output_stride);
+  }
 }
 
 void Tile::BlockWarpProcess(const Block& block, const Plane plane,

@@ -370,7 +370,6 @@ using LoopRestorationFuncs = LoopRestorationFunc[2];
 // filtering (7 or 11). kInterRoundBitsHorizontal &
 // kInterRoundBitsHorizontal12bpp can be used after the horizontal pass.
 // |subpixel_x| and |subpixel_y| are starting positions in units of 1/1024.
-// |step_x| and |step_y| are step sizes in units of 1/1024 of a pixel.
 // |width| and |height| are width and height of the block to be filtered.
 // |ref_last_x| and |ref_last_y| are the last pixel of the reference frame in
 // x/y direction.
@@ -379,9 +378,8 @@ using ConvolveFunc = void (*)(const void* reference, ptrdiff_t reference_stride,
                               int horizontal_filter_index,
                               int vertical_filter_index,
                               int inter_round_bits_vertical, int subpixel_x,
-                              int subpixel_y, int step_x, int step_y, int width,
-                              int height, void* prediction,
-                              ptrdiff_t pred_stride);
+                              int subpixel_y, int width, int height,
+                              void* prediction, ptrdiff_t pred_stride);
 
 // Convolve functions signature. Each points to one convolve function with
 // a specific setting:
@@ -394,9 +392,31 @@ using ConvolveFunc = void (*)(const void* reference, ptrdiff_t reference_stride,
 //   12bpp: [0, 62007]
 using ConvolveFuncs = ConvolveFunc[2][2][2][2];
 
+// Convolve + scale function signature. Section 7.11.3.4.
+// This function applies a horizontal filter followed by a vertical filter.
+// |reference| is the input block (reference frame buffer). |reference_stride|
+// is the corresponding frame stride.
+// |vertical_filter_index|/|horizontal_filter_index| is the index to
+// retrieve the type of filter to be applied for vertical/horizontal direction
+// from the filter lookup table 'kSubPixelFilters'.
+// |inter_round_bits_vertical| is the rounding precision used after vertical
+// filtering (7 or 11). kInterRoundBitsHorizontal &
+// kInterRoundBitsHorizontal12bpp can be used after the horizontal pass.
+// |subpixel_x| and |subpixel_y| are starting positions in units of 1/1024.
+// |step_x| and |step_y| are step sizes in units of 1/1024 of a pixel.
+// |width| and |height| are width and height of the block to be filtered.
+// |ref_last_x| and |ref_last_y| are the last pixel of the reference frame in
+// x/y direction.
+// |prediction| is the output block (output frame buffer).
+using ConvolveScaleFunc = void (*)(
+    const void* reference, ptrdiff_t reference_stride,
+    int horizontal_filter_index, int vertical_filter_index,
+    int inter_round_bits_vertical, int subpixel_x, int subpixel_y, int step_x,
+    int step_y, int width, int height, void* prediction, ptrdiff_t pred_stride);
+
 // Convolve functions signature for scaling version.
 // 0: single predictor. 1: compound predictor.
-using ConvolveScaleFuncs = ConvolveFunc[2];
+using ConvolveScaleFuncs = ConvolveScaleFunc[2];
 
 // Weight mask function signature. Section 7.11.3.12.
 // |prediction_0| is the first input block.
