@@ -33,15 +33,17 @@ import org.chromium.chrome.browser.download.home.list.DateOrderedListCoordinator
 import org.chromium.chrome.browser.download.home.list.DateOrderedListCoordinator.DeleteController;
 import org.chromium.chrome.browser.download.home.list.mutator.CardPaginator;
 import org.chromium.chrome.browser.download.home.list.mutator.DateLabelAdder;
+import org.chromium.chrome.browser.download.home.list.mutator.DateListPaginator;
 import org.chromium.chrome.browser.download.home.list.mutator.DateOrderedListMutator;
 import org.chromium.chrome.browser.download.home.list.mutator.DateOrderedListMutator.LabelAdder;
+import org.chromium.chrome.browser.download.home.list.mutator.DateOrderedListMutator.ListPaginator;
 import org.chromium.chrome.browser.download.home.list.mutator.DateOrderedListMutator.Sorter;
 import org.chromium.chrome.browser.download.home.list.mutator.DateSorter;
 import org.chromium.chrome.browser.download.home.list.mutator.DateSorterForCards;
 import org.chromium.chrome.browser.download.home.list.mutator.GroupCardLabelAdder;
 import org.chromium.chrome.browser.download.home.list.mutator.ListItemPropertySetter;
 import org.chromium.chrome.browser.download.home.list.mutator.NoopLabelAdder;
-import org.chromium.chrome.browser.download.home.list.mutator.Paginator;
+import org.chromium.chrome.browser.download.home.list.mutator.PrefetchListPaginator;
 import org.chromium.chrome.browser.download.home.metrics.OfflineItemStartupLogger;
 import org.chromium.chrome.browser.download.home.metrics.UmaUtils;
 import org.chromium.chrome.browser.download.home.metrics.UmaUtils.ViewAction;
@@ -123,7 +125,8 @@ class DateOrderedListMediator {
     private final TypeOfflineItemFilter mTypeFilter;
     private final SearchOfflineItemFilter mSearchFilter;
 
-    private final Paginator mPaginator;
+    private final ListPaginator mDefaultListPaginator;
+    private final ListPaginator mPrefetchListPaginator;
     private final CardPaginator mCardPaginator;
 
     private final Sorter mDefaultDateSorter;
@@ -208,7 +211,9 @@ class DateOrderedListMediator {
         mTypeFilter = new TypeOfflineItemFilter(mSearchFilter);
 
         JustNowProvider justNowProvider = new JustNowProvider(config);
-        mPaginator = new Paginator();
+        mDefaultListPaginator = mUiConfig.showPaginationHeaders ? new DateListPaginator() : null;
+        mPrefetchListPaginator =
+                mUiConfig.showPaginationHeaders ? new PrefetchListPaginator() : null;
         mCardPaginator = new CardPaginator();
         mDefaultDateSorter = new DateSorter(justNowProvider);
         mDefaultDateLabelAdder = new DateLabelAdder(config, justNowProvider);
@@ -216,9 +221,9 @@ class DateOrderedListMediator {
         mPrefetchLabelAdder = new GroupCardLabelAdder(mCardPaginator);
         mNoopLabelAdder = new NoopLabelAdder();
 
-        mListMutator =
-                new DateOrderedListMutator(mTypeFilter, mModel, justNowProvider, mDefaultDateSorter,
-                        mDefaultDateLabelAdder, new ListItemPropertySetter(mUiConfig), mPaginator);
+        mListMutator = new DateOrderedListMutator(mTypeFilter, mModel, justNowProvider,
+                mDefaultDateSorter, mDefaultDateLabelAdder, new ListItemPropertySetter(mUiConfig),
+                mDefaultListPaginator);
 
         new OfflineItemStartupLogger(config, mInvalidStateFilter);
 
@@ -259,17 +264,20 @@ class DateOrderedListMediator {
      * @see TypeOfflineItemFilter#onFilterSelected(int)
      */
     public void onFilterTypeSelected(@FilterType int filter) {
-        mPaginator.reset();
+        if (mDefaultListPaginator != null) mDefaultListPaginator.reset();
+        if (mPrefetchListPaginator != null) mPrefetchListPaginator.reset();
         mCardPaginator.reset();
 
         Sorter sorter = mDefaultDateSorter;
         LabelAdder labelAdder = mDefaultDateLabelAdder;
+        ListPaginator listPaginator = mDefaultListPaginator;
         if (filter == FilterType.PREFETCHED) {
             if (mUiConfig.supportsGrouping) sorter = mPrefetchSorter;
             labelAdder = mUiConfig.supportsGrouping ? mPrefetchLabelAdder : mNoopLabelAdder;
+            listPaginator = mPrefetchListPaginator;
         }
 
-        mListMutator.setMutators(sorter, labelAdder);
+        mListMutator.setMutators(sorter, labelAdder, listPaginator);
         try (AnimationDisableClosable closeable = new AnimationDisableClosable()) {
             mTypeFilter.onFilterSelected(filter);
         }

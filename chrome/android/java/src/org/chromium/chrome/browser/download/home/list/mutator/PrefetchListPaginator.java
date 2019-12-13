@@ -10,40 +10,40 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Handles pagination for the list and adds a pagination header at the end, if the list is longer
- * than the desired length. Tracks the number of pages currently being displayed to the user.
+ * Handles pagination for the prefetch tab. Always ensures that the items in a card are displayed
+ * fully even if the total item count might exceed the desired limit.
  */
-public class Paginator {
+public class PrefetchListPaginator implements DateOrderedListMutator.ListPaginator {
     private static final int DEFAULT_PAGE_SIZE = 25;
 
     private int mCurrentPageIndex;
 
-    /** Constructor. */
-    public Paginator() {}
-
-    /**
-     * Increments the currently displayed page count. Called when the pagination header is clicked.
-     */
+    @Override
     public void loadMorePages() {
         mCurrentPageIndex++;
     }
 
-    /**
-     * Given an input list, generates an output list to be displayed with a pagination header at
-     * the end.
-     */
+    @Override
     public List<ListItem> getPaginatedList(List<ListItem> inputList) {
         List<ListItem> outputList = new ArrayList<>();
 
         boolean showPagination = false;
+        boolean seenCardHeader = false;
         for (ListItem item : inputList) {
-            boolean isDateHeader = item instanceof ListItem.SectionHeaderListItem;
-            if (isDateHeader) {
-                if (outputList.size() >= (mCurrentPageIndex + 1) * DEFAULT_PAGE_SIZE) {
+            boolean reachedMax = outputList.size() >= (mCurrentPageIndex + 1) * DEFAULT_PAGE_SIZE;
+
+            if (reachedMax) {
+                if (!seenCardHeader) {
                     showPagination = true;
                     break;
                 }
             }
+
+            seenCardHeader |= item instanceof ListItem.CardHeaderListItem;
+            if (isCardFooter(item)) {
+                seenCardHeader = false;
+            }
+
             outputList.add(item);
         }
 
@@ -52,9 +52,13 @@ public class Paginator {
         return outputList;
     }
 
-    /**
-     * Resets the pagination tracking. To be called when the filter type of the list is changed.
-     */
+    private boolean isCardFooter(ListItem listItem) {
+        if (!(listItem instanceof ListItem.CardDividerListItem)) return false;
+        ListItem.CardDividerListItem item = (ListItem.CardDividerListItem) listItem;
+        return item.position == ListItem.CardDividerListItem.Position.BOTTOM;
+    }
+
+    @Override
     public void reset() {
         mCurrentPageIndex = 0;
     }

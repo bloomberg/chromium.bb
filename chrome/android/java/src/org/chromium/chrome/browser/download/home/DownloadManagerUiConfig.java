@@ -57,6 +57,9 @@ public class DownloadManagerUiConfig {
     /** Whether or not grouping items into a single card is supported. */
     public final boolean supportsGrouping;
 
+    /** Whether or not to show the pagination headers in the list. */
+    public final boolean showPaginationHeaders;
+
     /** Constructor. */
     private DownloadManagerUiConfig(Builder builder) {
         isOffTheRecord = builder.mIsOffTheRecord;
@@ -70,6 +73,7 @@ public class DownloadManagerUiConfig {
         justNowThresholdSeconds = builder.mJustNowThresholdSeconds;
         isRenameEnabled = builder.mIsRenameEnabled;
         supportsGrouping = builder.mSupportsGrouping;
+        showPaginationHeaders = builder.mShowPaginationHeaders;
     }
 
     /** Helper class for building a {@link DownloadManagerUiConfig}. */
@@ -90,6 +94,7 @@ public class DownloadManagerUiConfig {
         private long mJustNowThresholdSeconds;
         private boolean mIsRenameEnabled;
         private boolean mSupportsGrouping;
+        private boolean mShowPaginationHeaders;
 
         public Builder() {
             readParamsFromFinch();
@@ -137,6 +142,11 @@ public class DownloadManagerUiConfig {
 
         public Builder setMaxThumbnailScaleFactor(float maxThumbnailScaleFactor) {
             mMaxThumbnailScaleFactor = maxThumbnailScaleFactor;
+            return this;
+        }
+
+        public Builder setShowPaginationHeaders(boolean showPaginationHeaders) {
+            mShowPaginationHeaders = showPaginationHeaders;
             return this;
         }
 
