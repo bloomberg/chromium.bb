@@ -23030,6 +23030,8 @@
         "boards": [
             "hatch-diskswap"
         ],
+        "chrome_sdk_build_chrome": false,
+        "important": false,
         "vm_tests": [],
         "vm_tests_override": null
     },
@@ -23157,6 +23159,7 @@
         "boards": [
             "hatch-diskswap"
         ],
+        "chrome_sdk_build_chrome": false,
         "debug": true,
         "display_label": "tryjob",
         "hw_tests": [
@@ -30460,6 +30463,7 @@
             "guado_labstation-release",
             "hana-kernelnext-release",
             "hana-release",
+            "hatch-diskswap-release",
             "hatch-release",
             "heli-release",
             "jacuzzi-release",
@@ -30639,6 +30643,7 @@
             "guado_labstation-release-tryjob",
             "hana-kernelnext-release-tryjob",
             "hana-release-tryjob",
+            "hatch-diskswap-release-tryjob",
             "hatch-release-tryjob",
             "heli-release-tryjob",
             "jacuzzi-release-tryjob",

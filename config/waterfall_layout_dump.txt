@@ -313,6 +313,7 @@
     guado_labstation-release
     hana-kernelnext-release
     hana-release
+    hatch-diskswap-release
     hatch-release
     heli-release
     jacuzzi-release
@@ -1640,6 +1641,7 @@
     guado_labstation-release-tryjob
     hana-kernelnext-release-tryjob
     hana-release-tryjob
+    hatch-diskswap-release-tryjob
     hatch-release-tryjob
     heli-release-tryjob
     jacuzzi-release-tryjob

@@ -710,6 +710,18 @@
       ]
     },
     {
+      "name": "hatch-diskswap",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": true,
+          "leader_board": false,
+          "board_group": "hatch",
+          "arch": "X86_INTERNAL"
+        }
+      ]
+    },
+    {
       "name": "heli",
       "configs": [
         {
