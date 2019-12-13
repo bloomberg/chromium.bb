@@ -594,6 +594,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/download/home/list/mutator/DateLabelAdder.java",
   "java/src/org/chromium/chrome/browser/download/home/list/mutator/DateOrderedListMutator.java",
   "java/src/org/chromium/chrome/browser/download/home/list/mutator/GroupCardLabelAdder.java",
+  "java/src/org/chromium/chrome/browser/download/home/list/mutator/NoopLabelAdder.java",
   "java/src/org/chromium/chrome/browser/download/home/list/mutator/Paginator.java",
   "java/src/org/chromium/chrome/browser/download/home/list/mutator/ListItemPropertySetter.java",
   "java/src/org/chromium/chrome/browser/download/home/list/mutator/ScoreComparator.java",

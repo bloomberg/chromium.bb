@@ -65,6 +65,7 @@ public class DateOrderedListMutatorTest {
         Map<String, Boolean> testFeatures = new HashMap<>();
         testFeatures.put(ChromeFeatureList.DOWNLOAD_OFFLINE_CONTENT_PROVIDER, true);
         testFeatures.put(ChromeFeatureList.DOWNLOAD_RENAME, false);
+        testFeatures.put(ChromeFeatureList.CONTENT_INDEXING_DOWNLOAD_HOME, false);
         ChromeFeatureList.setTestFeatures(testFeatures);
     }
 

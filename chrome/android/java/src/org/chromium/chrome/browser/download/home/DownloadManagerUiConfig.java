@@ -54,6 +54,9 @@ public class DownloadManagerUiConfig {
     /** Whether or not rename feature should be shown in UI. */
     public final boolean isRenameEnabled;
 
+    /** Whether or not grouping items into a single card is supported. */
+    public final boolean supportsGrouping;
+
     /** Constructor. */
     private DownloadManagerUiConfig(Builder builder) {
         isOffTheRecord = builder.mIsOffTheRecord;
@@ -66,6 +69,7 @@ public class DownloadManagerUiConfig {
         maxThumbnailScaleFactor = builder.mMaxThumbnailScaleFactor;
         justNowThresholdSeconds = builder.mJustNowThresholdSeconds;
         isRenameEnabled = builder.mIsRenameEnabled;
+        supportsGrouping = builder.mSupportsGrouping;
     }
 
     /** Helper class for building a {@link DownloadManagerUiConfig}. */
@@ -85,6 +89,7 @@ public class DownloadManagerUiConfig {
         private float mMaxThumbnailScaleFactor = 1.5f; /* hdpi scale factor. */
         private long mJustNowThresholdSeconds;
         private boolean mIsRenameEnabled;
+        private boolean mSupportsGrouping;
 
         public Builder() {
             readParamsFromFinch();
@@ -142,6 +147,8 @@ public class DownloadManagerUiConfig {
         private void readParamsFromFinch() {
             mJustNowThresholdSeconds = JUST_NOW_THRESHOLD_SECONDS;
             mIsRenameEnabled = ChromeFeatureList.isEnabled(ChromeFeatureList.DOWNLOAD_RENAME);
+            mSupportsGrouping =
+                    ChromeFeatureList.isEnabled(ChromeFeatureList.CONTENT_INDEXING_DOWNLOAD_HOME);
         }
     }
 }

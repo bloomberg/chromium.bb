@@ -123,6 +123,8 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kChromeSmartSelection,
     &kCommandLineOnNonRooted,
     &kContactsPickerSelectAll,
+    &kContentIndexingDownloadHome,
+    &kContentIndexingNTP,
     &kContentSuggestionsScrollToLoad,
     &kContextMenuSearchWithGoogleLens,
     &kContextualSearchDefinitions,
@@ -153,7 +155,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kNewPhotoPicker,
     &kNotificationSuspender,
     &kNTPLaunchAfterInactivity,
-    &kOfflineHome,
     &kOfflineIndicatorV2,
     &kOmniboxSpareRenderer,
     &kOverlayNewLayout,
@@ -372,6 +373,12 @@ const base::Feature kCommandLineOnNonRooted{"CommandLineOnNonRooted",
 const base::Feature kContactsPickerSelectAll{"ContactsPickerSelectAll",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kContentIndexingDownloadHome{
+    "ContentIndexingDownloadHome", base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kContentIndexingNTP{"ContentIndexingNTP",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kContentSuggestionsScrollToLoad{
     "ContentSuggestionsScrollToLoad", base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -475,9 +482,6 @@ const base::Feature kNotificationSuspender{"NotificationSuspender",
 
 const base::Feature kNTPLaunchAfterInactivity{
     "NTPLaunchAfterInactivity", base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kOfflineHome{"OfflineHome",
-                                 base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kOfflineIndicatorV2{"OfflineIndicatorV2",
                                         base::FEATURE_DISABLED_BY_DEFAULT};

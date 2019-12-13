@@ -40,6 +40,7 @@ import org.chromium.chrome.browser.download.home.list.mutator.DateSorter;
 import org.chromium.chrome.browser.download.home.list.mutator.DateSorterForCards;
 import org.chromium.chrome.browser.download.home.list.mutator.GroupCardLabelAdder;
 import org.chromium.chrome.browser.download.home.list.mutator.ListItemPropertySetter;
+import org.chromium.chrome.browser.download.home.list.mutator.NoopLabelAdder;
 import org.chromium.chrome.browser.download.home.list.mutator.Paginator;
 import org.chromium.chrome.browser.download.home.metrics.OfflineItemStartupLogger;
 import org.chromium.chrome.browser.download.home.metrics.UmaUtils;
@@ -130,6 +131,7 @@ class DateOrderedListMediator {
 
     private final Sorter mPrefetchSorter;
     private final LabelAdder mPrefetchLabelAdder;
+    private final LabelAdder mNoopLabelAdder;
 
     /**
      * A selection observer that correctly updates the selection state for each item in the list.
@@ -212,6 +214,7 @@ class DateOrderedListMediator {
         mDefaultDateLabelAdder = new DateLabelAdder(config, justNowProvider);
         mPrefetchSorter = new DateSorterForCards();
         mPrefetchLabelAdder = new GroupCardLabelAdder(mCardPaginator);
+        mNoopLabelAdder = new NoopLabelAdder();
 
         mListMutator =
                 new DateOrderedListMutator(mTypeFilter, mModel, justNowProvider, mDefaultDateSorter,
@@ -262,8 +265,8 @@ class DateOrderedListMediator {
         Sorter sorter = mDefaultDateSorter;
         LabelAdder labelAdder = mDefaultDateLabelAdder;
         if (filter == FilterType.PREFETCHED) {
-            sorter = mPrefetchSorter;
-            labelAdder = mPrefetchLabelAdder;
+            if (mUiConfig.supportsGrouping) sorter = mPrefetchSorter;
+            labelAdder = mUiConfig.supportsGrouping ? mPrefetchLabelAdder : mNoopLabelAdder;
         }
 
         mListMutator.setMutators(sorter, labelAdder);
