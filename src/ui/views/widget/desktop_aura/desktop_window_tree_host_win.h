@@ -220,7 +220,8 @@ class VIEWS_EXPORT DesktopWindowTreeHostWin
                            NMHDR* l_param,
                            LRESULT* l_result) override;
   void HandleMenuLoop(bool in_menu_loop) override;
-  bool PreHandleMSG(UINT message,
+  bool PreHandleMSG(HWND window,
+                    UINT message,
                     WPARAM w_param,
                     LPARAM l_param,
                     LRESULT* result) override;
