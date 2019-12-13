@@ -1206,7 +1206,7 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
     int tmp_q;
     // rc factor is a weight factor that corrects for local rate control drift.
     double rc_factor = 1.0;
-    int64_t bits = AOMMIN(rc->total_actual_bits, cpi->twopass.bits_left);
+    int64_t bits = cpi->oxcf.target_bandwidth;
 
     if (bits > 0) {
       int rate_error;
