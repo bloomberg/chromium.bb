@@ -1066,6 +1066,13 @@ void OverviewItem::OnPostWindowStateTypeChange(WindowState* window_state,
   overview_item_view_->SetShowPreview(minimized);
   if (!minimized)
     EnsureVisible();
+
+  // Ensures the item widget is visible. |item_widget_| opacity is set to 0.f
+  // and shown at either |SetBounds| or |OnStartingAnimationComplete| based on
+  // the minimized state. It's possible the minimized state changes in between
+  // for ARC apps, so just force show it here.
+  item_widget_->GetLayer()->SetOpacity(1.f);
+
   overview_grid_->PositionWindows(/*animate=*/false);
 }
 
