@@ -1359,6 +1359,10 @@ void OverviewItem::HandleGestureEndEvent() {
   if (!IsDragItem())
     return;
 
+  // Gesture end events come from a long press getting canceled. Long press
+  // alters the stacking order, so on gesture end, make sure we restore the
+  // stacking order on the next reposition.
+  set_should_restack_on_animation_end(true);
   overview_session_->ResetDraggedWindowGesture();
 }
 
