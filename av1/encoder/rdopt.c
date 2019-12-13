@@ -10363,6 +10363,7 @@ static int64_t motion_mode_rd(
                               rd_stats->rdcost, rd_stats, rd_stats_y,
                               rd_stats_uv, mbmi);
       }
+      mbmi->skip = 0;
     } else {
       if (!txfm_search(cpi, tile_data, x, bsize, rd_stats, rd_stats_y,
                        rd_stats_uv, rd_stats->rate, ref_best_rd)) {
@@ -10407,7 +10408,7 @@ static int64_t motion_mode_rd(
                sizeof(x->blk_skip[0]) * xd->n4_h * xd->n4_w);
         av1_copy_array(simple_states->tx_type_map, xd->tx_type_map,
                        xd->n4_h * xd->n4_w);
-        simple_states->skip = x->skip;
+        simple_states->skip = mbmi->skip;
         simple_states->disable_skip = *disable_skip;
       }
     }
@@ -10421,9 +10422,11 @@ static int64_t motion_mode_rd(
       memcpy(best_blk_skip, x->blk_skip,
              sizeof(x->blk_skip[0]) * xd->n4_h * xd->n4_w);
       av1_copy_array(best_tx_type_map, xd->tx_type_map, xd->n4_h * xd->n4_w);
-      best_xskip = x->skip;
+      best_xskip = mbmi->skip;
       best_disable_skip = *disable_skip;
-      if (best_xskip) break;
+      // TODO(anyone): evaluate the quality and speed trade-off of the early
+      // termination logic below.
+      // if (best_xskip) break;
     }
   }
   mbmi->ref_frame[1] = ref_frame_1;
@@ -13717,7 +13720,7 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
     }
 
     // Did this mode help, i.e., is it the new best mode
-    if (this_rd < search_state.best_rd || x->skip) {
+    if (this_rd < search_state.best_rd) {
       assert(IMPLIES(comp_pred,
                      cm->current_frame.reference_mode != SINGLE_REFERENCE));
       search_state.best_pred_sse = x->pred_sse[ref_frame];
@@ -13786,7 +13789,9 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
         search_state.best_pred_rd[REFERENCE_MODE_SELECT] = hybrid_rd;
     }
 
-    if (x->skip && !comp_pred) break;
+    // TODO(anyone): evaluate the quality and speed trade-off of the early
+    // termination logic below.
+    // if (x->skip && !comp_pred) break;
   }
 
   if (cpi->sf.motion_mode_for_winner_cand) {
