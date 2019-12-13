@@ -7633,7 +7633,7 @@ static AOM_INLINE void store_coding_context(
 
   // Take a snapshot of the coding context so it can be
   // restored if we decide to encode this way
-  ctx->rd_stats.skip = x->skip;
+  ctx->rd_stats.skip = x->force_skip;
   ctx->skippable = skippable;
 #if CONFIG_INTERNAL_STATS
   ctx->best_mode_index = mode_index;
@@ -10292,7 +10292,7 @@ static int64_t motion_mode_rd(
       }
     }
 
-    x->skip = 0;
+    x->force_skip = 0;
     rd_stats->dist = 0;
     rd_stats->sse = 0;
     rd_stats->skip = 1;
@@ -10443,7 +10443,7 @@ static int64_t motion_mode_rd(
   memcpy(x->blk_skip, best_blk_skip,
          sizeof(x->blk_skip[0]) * xd->n4_h * xd->n4_w);
   av1_copy_array(xd->tx_type_map, best_tx_type_map, xd->n4_h * xd->n4_w);
-  x->skip = best_xskip;
+  x->force_skip = best_xskip;
   *disable_skip = best_disable_skip;
 
   restore_dst_buf(xd, *orig_dst, num_planes);
@@ -11522,7 +11522,7 @@ static int64_t handle_inter_mode(AV1_COMP *const cpi, TileDataEnc *tile_data,
         best_rd = tmp_rd;
         best_mbmi = *mbmi;
         best_disable_skip = *disable_skip;
-        best_xskip = x->skip;
+        best_xskip = x->force_skip;
         memcpy(best_blk_skip, x->blk_skip,
                sizeof(best_blk_skip[0]) * xd->n4_h * xd->n4_w);
         av1_copy_array(best_tx_type_map, xd->tx_type_map, xd->n4_h * xd->n4_w);
@@ -11546,7 +11546,7 @@ static int64_t handle_inter_mode(AV1_COMP *const cpi, TileDataEnc *tile_data,
   *rd_stats_uv = best_rd_stats_uv;
   *mbmi = best_mbmi;
   *disable_skip = best_disable_skip;
-  x->skip = best_xskip;
+  x->force_skip = best_xskip;
   assert(IMPLIES(mbmi->comp_group_idx == 1,
                  mbmi->interinter_comp.type != COMPOUND_AVERAGE));
   memcpy(x->blk_skip, best_blk_skip,
@@ -12004,7 +12004,7 @@ static AOM_INLINE void rd_pick_skip_mode(
     search_state->best_skip2 = 1;
     search_state->best_mode_skippable = 1;
 
-    x->skip = 1;
+    x->force_skip = 1;
   }
 }
 
@@ -13394,7 +13394,7 @@ static AOM_INLINE void evaluate_motion_mode_for_winner_candidates(
     // Continue if the best candidate is compound.
     if (!is_inter_singleref_mode(mbmi->mode)) continue;
 
-    x->skip = 0;
+    x->force_skip = 0;
     const int mode_index = get_prediction_mode_idx(
         mbmi->mode, mbmi->ref_frame[0], mbmi->ref_frame[1]);
     struct macroblockd_plane *p = xd->plane;
@@ -13633,7 +13633,7 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
 
     init_mbmi(mbmi, this_mode, ref_frames, cm);
 
-    x->skip = 0;
+    x->force_skip = 0;
     set_ref_ptrs(cm, xd, ref_frame, second_ref_frame);
 
     if (search_state.best_rd < search_state.mode_threshold[mode_enum]) continue;
@@ -13791,7 +13791,7 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
 
     // TODO(anyone): evaluate the quality and speed trade-off of the early
     // termination logic below.
-    // if (x->skip && !comp_pred) break;
+    // if (x->force_skip && !comp_pred) break;
   }
 
   if (cpi->sf.motion_mode_for_winner_cand) {
@@ -13830,7 +13830,7 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
       int64_t curr_est_rd = inter_modes_info->est_rd_arr[data_idx];
       if (curr_est_rd * 0.80 > top_est_rd) break;
 
-      x->skip = 0;
+      x->force_skip = 0;
       set_ref_ptrs(cm, xd, mbmi->ref_frame[0], mbmi->ref_frame[1]);
 
       // Select prediction reference frames.
@@ -13929,7 +13929,7 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
     assert(av1_mode_defs[mode_enum].ref_frame[0] == INTRA_FRAME);
     assert(av1_mode_defs[mode_enum].ref_frame[1] == NONE_FRAME);
     init_mbmi(mbmi, this_mode, av1_mode_defs[mode_enum].ref_frame, cm);
-    x->skip = 0;
+    x->force_skip = 0;
 
     if (this_mode != DC_PRED) {
       // Only search the oblique modes if the best so far is
@@ -14031,7 +14031,7 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
 
   // macroblock modes
   *mbmi = search_state.best_mbmode;
-  x->skip |= search_state.best_skip2;
+  x->force_skip |= search_state.best_skip2;
 
   // Note: this section is needed since the mode may have been forced to
   // GLOBALMV by the all-zero mode handling of ref-mv.
@@ -14054,7 +14054,7 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
     }
   }
 
-  x->skip |= search_state.best_mode_skippable;
+  x->force_skip |= search_state.best_mode_skippable;
 
   assert(search_state.best_mode_index != THR_INVALID);
 
@@ -14126,7 +14126,7 @@ void av1_rd_pick_inter_mode_sb_seg_skip(const AV1_COMP *cpi,
                            cm->cur_frame_force_integer_mv)
           .as_int;
   mbmi->tx_size = max_txsize_lookup[bsize];
-  x->skip = 1;
+  x->force_skip = 1;
 
   mbmi->ref_mv_idx = 0;
 

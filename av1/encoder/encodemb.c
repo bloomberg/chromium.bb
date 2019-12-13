@@ -477,7 +477,7 @@ void av1_encode_sb(const struct AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *mbmi = xd->mi[0];
   mbmi->skip = 1;
-  if (x->skip) return;
+  if (x->force_skip) return;
 
   struct optimize_ctx ctx;
   struct encode_b_args arg = { cpi,

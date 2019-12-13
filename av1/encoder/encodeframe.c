@@ -467,7 +467,7 @@ static AOM_INLINE void reset_tx_size(MACROBLOCK *x, MB_MODE_INFO *mbmi,
            bw * sizeof(xd->tx_type_map[0]));
   }
   av1_zero(x->blk_skip);
-  x->skip = 0;
+  x->force_skip = 0;
 }
 
 static AOM_INLINE void update_state(const AV1_COMP *const cpi, ThreadData *td,
@@ -498,7 +498,7 @@ static AOM_INLINE void update_state(const AV1_COMP *const cpi, ThreadData *td,
 
   memcpy(x->blk_skip, ctx->blk_skip, sizeof(x->blk_skip[0]) * ctx->num_4x4_blk);
 
-  x->skip = ctx->rd_stats.skip;
+  x->force_skip = ctx->rd_stats.skip;
 
   xd->tx_type_map = ctx->tx_type_map;
   xd->tx_type_map_stride = mi_size_wide[bsize];
@@ -531,7 +531,7 @@ static AOM_INLINE void update_state(const AV1_COMP *const cpi, ThreadData *td,
     if (cpi->oxcf.aq_mode == CYCLIC_REFRESH_AQ) {
       av1_cyclic_refresh_update_segment(cpi, mi_addr, mi_row, mi_col, bsize,
                                         ctx->rd_stats.rate, ctx->rd_stats.dist,
-                                        x->skip);
+                                        x->force_skip);
     }
     if (mi_addr->uv_mode == UV_CFL_PRED && !is_cfl_allowed(xd))
       mi_addr->uv_mode = UV_DC_PRED;

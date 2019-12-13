@@ -323,7 +323,8 @@ struct macroblock {
   uint8_t blk_skip[MAX_MIB_SIZE * MAX_MIB_SIZE];
   uint8_t tx_type_map[MAX_MIB_SIZE * MAX_MIB_SIZE];
 
-  int skip;
+  // Force the coding block to skip transform and quantization.
+  int force_skip;
   int skip_chroma_rd;
   int skip_cost[SKIP_CONTEXTS][2];
 
