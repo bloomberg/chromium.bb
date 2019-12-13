@@ -197,6 +197,14 @@ void getWebViewPosition(HWND hwnd, int *left, int *top, int *width, int *height)
     *height = rect.bottom - URLBAR_HEIGHT;
 }
 
+class ToolkitDelegate : public blpwtk2::ToolkitDelegate {
+
+  public:
+    ToolkitDelegate()
+    {
+    }
+};
+
 class Shell : public blpwtk2::WebViewDelegate {
 public:
     static std::set<Shell*> s_shells;
@@ -862,6 +870,7 @@ int main(int, const char**)
         toolkitParams.setThreadMode(blpwtk2::ThreadMode::RENDERER_MAIN);
         toolkitParams.setInProcessResourceLoader(createInProcessResourceLoader());
         toolkitParams.setHostChannel(hostChannel);
+        toolkitParams.setDelegate(new ToolkitDelegate());
         if (!g_in_process_renderer) {
             toolkitParams.disableInProcessRenderer();
         }
