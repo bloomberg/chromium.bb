@@ -653,8 +653,9 @@ class DiskContentAddressedCache(ContentAddressedCache):
         self._lru = lru.LRUDict.load(self.state_file)
       except ValueError as err:
         logging.error('Failed to load cache state: %s' % (err,))
-        # Don't want to keep broken state file.
-        file_path.try_remove(self.state_file)
+        # Don't want to keep broken cache dir.
+        file_path.rmtree(self.cache_dir)
+        fs.makedirs(self.cache_dir)
     if time_fn:
       self._lru.time_fn = time_fn
     if trim:

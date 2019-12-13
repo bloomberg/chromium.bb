@@ -267,9 +267,12 @@ class DiskContentAddressedCacheTest(TestCase, ContentAddressedCacheTestMixin):
     # administrator access right.
     self.assertEqual(True, file_path.enable_symlink())
 
+  def cache_dir(self):
+    return os.path.join(self.tempdir, 'cache')
+
   def get_cache(self, policies):
     return local_caching.DiskContentAddressedCache(
-        os.path.join(self.tempdir, 'cache'), policies, trim=True)
+        self.cache_dir(), policies, trim=True)
 
   def test_write_policies_free_disk(self):
     cache = self.get_cache(_get_policies(min_free_space=1000))
@@ -460,6 +463,18 @@ class DiskContentAddressedCacheTest(TestCase, ContentAddressedCacheTestMixin):
     self.assertFalse(cache.touch(h_a, 1))
     # 'touch' evicted the entry.
     self.assertEqual([], list(cache))
+
+  def test_invalid_state(self):
+    file_path.ensure_tree(self.cache_dir())
+    statefile = os.path.join(self.cache_dir(),
+                             local_caching.DiskContentAddressedCache.STATE_FILE)
+    with open(statefile, 'w') as f:
+      f.write('invalid')
+    with open(os.path.join(self.cache_dir(), 'invalid'), 'w') as f:
+      f.write('invalid')
+
+    _ = self.get_cache(_get_policies())
+    self.assertEqual(fs.listdir(self.cache_dir()), ['state.json'])
 
 
 class NamedCacheTest(TestCase, CacheTestMixin):
