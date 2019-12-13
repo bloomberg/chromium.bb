@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser.download.home.list.mutator;
 
-import android.support.annotation.Nullable;
-
 import org.chromium.base.CollectionUtil;
 import org.chromium.chrome.browser.download.home.JustNowProvider;
 import org.chromium.chrome.browser.download.home.filter.OfflineItemFilterObserver;
@@ -17,59 +15,26 @@ import org.chromium.components.offline_items_collection.OfflineItem;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Comparator;
-import java.util.List;
 
 /**
  * A class responsible for turning a {@link Collection} of {@link OfflineItem}s into a list meant
  * to be displayed in the download home UI.  This list has the following properties:
- * - Sorted, according to a given {@link Comparator}.
- * - Separated by labels, such as date header, pagination header or domain header.
  * - Converts changes in the form of {@link Collection}s to delta changes on the list.
+ * - Sorting, and adding headers is done by the downstream {@link ListConsumer}s.
  */
 public class DateOrderedListMutator implements OfflineItemFilterObserver {
-    /**
-     * Sorts a list of {@link ListItem}.
-     */
-    public interface Sorter {
-        /**
-         * Sorts a given list as per display requirements.
-         * @param list The input list to be sorted.
-         * @return The sorted output list.
-         */
-        ArrayList<ListItem> sort(ArrayList<ListItem> list);
-    }
-
-    /**
-     * Given a sorted list of offline items, generates a list of {@link ListItem} with
-     * appropriate labels inserted at the right positions as per the display requirements.
-     */
-    public interface LabelAdder {
-        /**
-         * Inserts various labels to the given list as per display requirements.
-         * @param sortedList The input list to be displayed.
-         * @return The output list to be displayed on screen.
-         */
-        List<ListItem> addLabels(List<ListItem> sortedList);
-    }
 
     /**
      * Handles pagination for the list and adds a pagination header at the end, if the list is
      * longer than the desired length. Tracks the number of pages currently being displayed to the
      * user.
      */
-    public interface ListPaginator {
+    public interface ListPaginator extends ListConsumer {
         /**
          * Increments the currently displayed page count. Called when the pagination header is
          * clicked.
          */
         void loadMorePages();
-
-        /**
-         * Given an input list, generates an output list to be displayed with a pagination header at
-         * the end.
-         */
-        List<ListItem> getPaginatedList(List<ListItem> inputList);
 
         /**
          * Resets the pagination tracking. To be called when the filter type of the list is changed.
@@ -80,63 +45,34 @@ public class DateOrderedListMutator implements OfflineItemFilterObserver {
     private final OfflineItemFilterSource mSource;
     private final JustNowProvider mJustNowProvider;
     private final ListItemModel mModel;
+    private ListConsumer mListConsumer;
     private ArrayList<ListItem> mSortedItems = new ArrayList<>();
-
-    private Sorter mSorter;
-    private LabelAdder mLabelAdder;
-    private ListItemPropertySetter mPropertySetter;
-    private @Nullable ListPaginator mListPaginator;
 
     /**
      * Creates an DateOrderedList instance that will reflect {@code source}.
      * @param source The source of data for this list.
      * @param model  The model that will be the storage for the updated list.
      * @param justNowProvider The provider for Just Now section.
-     * @param sorter The default sorter to use for sorting the list.
-     * @param labelAdder The label adder used for producing the final list.
-     * @param listPaginator The paginator to handle pagination.
      */
-    public DateOrderedListMutator(OfflineItemFilterSource source, ListItemModel model,
-            JustNowProvider justNowProvider, Sorter sorter, LabelAdder labelAdder,
-            ListItemPropertySetter propertySetter, @Nullable ListPaginator listPaginator) {
+    public DateOrderedListMutator(
+            OfflineItemFilterSource source, ListItemModel model, JustNowProvider justNowProvider) {
         mSource = source;
         mModel = model;
         mJustNowProvider = justNowProvider;
-        mPropertySetter = propertySetter;
-        mListPaginator = listPaginator;
         mSource.addObserver(this);
-        setMutators(sorter, labelAdder, listPaginator);
         onItemsAdded(mSource.getItems());
     }
 
-    /**
-     * Called when the desired sorting order has changed.
-     * @param sorter The sorter to use for sorting the list.
-     * @param labelAdder The label adder used for producing the final list.
-     * @param listPaginator The paginator to bue used to show pagination labels.
-     */
-    public void setMutators(Sorter sorter, LabelAdder labelAdder, ListPaginator listPaginator) {
-        if (mSorter == sorter && mLabelAdder == labelAdder && mListPaginator == listPaginator) {
-            return;
-        }
-        mSorter = sorter;
-        mLabelAdder = labelAdder;
-        mListPaginator = listPaginator;
-        mSortedItems = mSorter.sort(mSortedItems);
-    }
-
-    /**
-     * Called to add more pages to show in the list.
-     */
-    public void loadMorePages() {
-        assert mListPaginator != null;
-        mListPaginator.loadMorePages();
-        pushItemsToModel();
+    /** Sets a {@link ListConsumer} to be notified whenever the list changes. */
+    public ListConsumer setListConsumer(ListConsumer consumer) {
+        mListConsumer = consumer;
+        return mListConsumer;
     }
 
     /** Called to reload the list and display. */
     public void reload() {
-        pushItemsToModel();
+        if (mListConsumer == null) return;
+        mListConsumer.onListUpdated(mSortedItems);
     }
 
     // OfflineItemFilterObserver implementation.
@@ -146,8 +82,8 @@ public class DateOrderedListMutator implements OfflineItemFilterObserver {
             OfflineItemListItem listItem = new OfflineItemListItem(offlineItem);
             mSortedItems.add(listItem);
         }
-        mSortedItems = mSorter.sort(mSortedItems);
-        pushItemsToModel();
+
+        reload();
     }
 
     @Override
@@ -158,7 +94,8 @@ public class DateOrderedListMutator implements OfflineItemFilterObserver {
                 if (itemToRemove.id.equals(offlineItem.id)) mSortedItems.remove(i);
             }
         }
-        pushItemsToModel();
+
+        reload();
     }
 
     @Override
@@ -197,12 +134,5 @@ public class DateOrderedListMutator implements OfflineItemFilterObserver {
                 break;
             }
         }
-    }
-
-    private void pushItemsToModel() {
-        List<ListItem> listItems = mLabelAdder.addLabels(mSortedItems);
-        mPropertySetter.setProperties(listItems);
-        mModel.set(mListPaginator == null ? listItems : mListPaginator.getPaginatedList(listItems));
-        mModel.dispatchLastEvent();
     }
 }

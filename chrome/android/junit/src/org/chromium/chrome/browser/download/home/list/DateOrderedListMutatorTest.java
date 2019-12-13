@@ -28,11 +28,8 @@ import org.chromium.chrome.browser.download.home.StableIds;
 import org.chromium.chrome.browser.download.home.filter.OfflineItemFilterSource;
 import org.chromium.chrome.browser.download.home.list.ListItem.OfflineItemListItem;
 import org.chromium.chrome.browser.download.home.list.ListItem.SectionHeaderListItem;
-import org.chromium.chrome.browser.download.home.list.mutator.DateLabelAdder;
-import org.chromium.chrome.browser.download.home.list.mutator.DateListPaginator;
 import org.chromium.chrome.browser.download.home.list.mutator.DateOrderedListMutator;
-import org.chromium.chrome.browser.download.home.list.mutator.DateSorter;
-import org.chromium.chrome.browser.download.home.list.mutator.ListItemPropertySetter;
+import org.chromium.chrome.browser.download.home.list.mutator.ListMutationController;
 import org.chromium.components.offline_items_collection.OfflineItem;
 import org.chromium.components.offline_items_collection.OfflineItemFilter;
 import org.chromium.components.offline_items_collection.OfflineItemState;
@@ -890,17 +887,19 @@ public class DateOrderedListMutatorTest {
                 return false;
             }
         };
-        return new DateOrderedListMutator(mSource, mModel, justNowProvider,
-                new DateSorter(justNowProvider), new DateLabelAdder(config, justNowProvider),
-                new ListItemPropertySetter(config), new DateListPaginator());
+        DateOrderedListMutator mutator =
+                new DateOrderedListMutator(mSource, mModel, justNowProvider);
+        new ListMutationController(config, justNowProvider, mutator, mModel);
+        return mutator;
     }
 
     private DateOrderedListMutator createMutatorWithJustNowProvider() {
         DownloadManagerUiConfig config = new DownloadManagerUiConfig.Builder().build();
         JustNowProvider justNowProvider = new JustNowProvider(config);
-        return new DateOrderedListMutator(mSource, mModel, justNowProvider,
-                new DateSorter(justNowProvider), new DateLabelAdder(config, justNowProvider),
-                new ListItemPropertySetter(config), new DateListPaginator());
+        DateOrderedListMutator mutator =
+                new DateOrderedListMutator(mSource, mModel, justNowProvider);
+        new ListMutationController(config, justNowProvider, mutator, mModel);
+        return mutator;
     }
 
     private static void assertDatesAreEqual(Date date, Calendar calendar) {

@@ -16,7 +16,14 @@ import java.util.List;
 public class DateListPaginator implements DateOrderedListMutator.ListPaginator {
     private static final int DEFAULT_PAGE_SIZE = 25;
 
+    private ListConsumer mListConsumer;
     private int mCurrentPageIndex;
+
+    @Override
+    public ListConsumer setListConsumer(ListConsumer consumer) {
+        mListConsumer = consumer;
+        return mListConsumer;
+    }
 
     @Override
     public void loadMorePages() {
@@ -24,7 +31,21 @@ public class DateListPaginator implements DateOrderedListMutator.ListPaginator {
     }
 
     @Override
-    public List<ListItem> getPaginatedList(List<ListItem> inputList) {
+    public void reset() {
+        mCurrentPageIndex = 0;
+    }
+
+    @Override
+    public void onListUpdated(List<ListItem> inputList) {
+        if (mListConsumer == null) return;
+        mListConsumer.onListUpdated(getPaginatedList(inputList));
+    }
+
+    /**
+     * Given an input list, generates an output list to be displayed with a pagination header at
+     * the end.
+     */
+    private List<ListItem> getPaginatedList(List<ListItem> inputList) {
         List<ListItem> outputList = new ArrayList<>();
 
         boolean showPagination = false;
@@ -42,10 +63,5 @@ public class DateListPaginator implements DateOrderedListMutator.ListPaginator {
         if (showPagination) outputList.add(new ListItem.PaginationListItem());
 
         return outputList;
-    }
-
-    @Override
-    public void reset() {
-        mCurrentPageIndex = 0;
     }
 }

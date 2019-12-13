@@ -16,7 +16,20 @@ import java.util.List;
 public class PrefetchListPaginator implements DateOrderedListMutator.ListPaginator {
     private static final int DEFAULT_PAGE_SIZE = 25;
 
+    private ListConsumer mListConsumer;
     private int mCurrentPageIndex;
+
+    @Override
+    public ListConsumer setListConsumer(ListConsumer consumer) {
+        mListConsumer = consumer;
+        return mListConsumer;
+    }
+
+    @Override
+    public void onListUpdated(List<ListItem> inputList) {
+        if (mListConsumer == null) return;
+        mListConsumer.onListUpdated(getPaginatedList(inputList));
+    }
 
     @Override
     public void loadMorePages() {
@@ -24,7 +37,11 @@ public class PrefetchListPaginator implements DateOrderedListMutator.ListPaginat
     }
 
     @Override
-    public List<ListItem> getPaginatedList(List<ListItem> inputList) {
+    public void reset() {
+        mCurrentPageIndex = 0;
+    }
+
+    private List<ListItem> getPaginatedList(List<ListItem> inputList) {
         List<ListItem> outputList = new ArrayList<>();
 
         boolean showPagination = false;
@@ -56,10 +73,5 @@ public class PrefetchListPaginator implements DateOrderedListMutator.ListPaginat
         if (!(listItem instanceof ListItem.CardDividerListItem)) return false;
         ListItem.CardDividerListItem item = (ListItem.CardDividerListItem) listItem;
         return item.position == ListItem.CardDividerListItem.Position.BOTTOM;
-    }
-
-    @Override
-    public void reset() {
-        mCurrentPageIndex = 0;
     }
 }

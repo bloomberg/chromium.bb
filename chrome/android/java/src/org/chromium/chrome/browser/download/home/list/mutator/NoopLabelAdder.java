@@ -11,11 +11,24 @@ import java.util.List;
 /**
  * Implementation of {@link LabelAdder} that doesn't add any labels.
  */
-public class NoopLabelAdder implements DateOrderedListMutator.LabelAdder {
+public class NoopLabelAdder implements ListConsumer {
+    private ListConsumer mListConsumer;
+
     public NoopLabelAdder() {}
 
     @Override
-    public List<ListItem> addLabels(List<ListItem> sortedList) {
+    public ListConsumer setListConsumer(ListConsumer consumer) {
+        mListConsumer = consumer;
+        return mListConsumer;
+    }
+
+    @Override
+    public void onListUpdated(List<ListItem> inputList) {
+        if (mListConsumer == null) return;
+        mListConsumer.onListUpdated(addLabels(inputList));
+    }
+
+    private List<ListItem> addLabels(List<ListItem> sortedList) {
         return sortedList;
     }
 }
