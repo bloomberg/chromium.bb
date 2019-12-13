@@ -36,10 +36,11 @@
 namespace ash {
 namespace {
 
-constexpr std::array<int, 6> kIdsOfContainersThatWontHideAppList = {
-    kShellWindowId_AppListContainer,     kShellWindowId_HomeScreenContainer,
-    kShellWindowId_MenuContainer,        kShellWindowId_SettingBubbleContainer,
-    kShellWindowId_ShelfBubbleContainer, kShellWindowId_ShelfContainer,
+constexpr std::array<int, 8> kIdsOfContainersThatWontHideAppList = {
+    kShellWindowId_AppListContainer,      kShellWindowId_HomeScreenContainer,
+    kShellWindowId_MenuContainer,         kShellWindowId_SettingBubbleContainer,
+    kShellWindowId_ShelfBubbleContainer,  kShellWindowId_ShelfContainer,
+    kShellWindowId_ShelfControlContainer, kShellWindowId_StatusContainer,
 };
 
 inline ui::Layer* GetLayer(views::Widget* widget) {
@@ -441,14 +442,20 @@ void AppListPresenterImpl::OnWindowFocused(aura::Window* gained_focus,
       !base::Contains(kIdsOfContainersThatWontHideAppList,
                       gained_focus_container_id);
 
+  const bool app_list_gained_focus = applist_window->Contains(gained_focus);
   const bool app_list_lost_focus =
       gained_focus ? gained_focus_hides_app_list
                    : (lost_focus && applist_container->Contains(lost_focus));
+  // Either the app list has just gained focus, in which case it is already
+  // visible or will very soon be, or it has neither gained nor lost focus
+  // and it might still be partially visible just because the focused window
+  // doesn't occlude it completely.
+  const bool visible = app_list_gained_focus ||
+                       (IsAtLeastPartiallyVisible() && !app_list_lost_focus);
 
   if (delegate_->IsTabletMode()) {
-    const bool is_shown = !app_list_lost_focus;
-    if (is_shown != delegate_->IsVisible()) {
-      if (is_shown) {
+    if (visible != delegate_->IsVisible()) {
+      if (app_list_gained_focus) {
         view_->OnHomeLauncherGainingFocusWithoutAnimation();
       } else {
         // In tablet mode, when |AppList| lost focus after other new App window
@@ -457,12 +464,12 @@ void AppListPresenterImpl::OnWindowFocused(aura::Window* gained_focus,
         view_->Back();
       }
 
-      OnVisibilityWillChange(is_shown, GetDisplayId());
-      OnVisibilityChanged(is_shown, GetDisplayId());
+      OnVisibilityWillChange(visible, GetDisplayId());
+      OnVisibilityChanged(visible, GetDisplayId());
     }
   }
 
-  if (applist_window->Contains(gained_focus))
+  if (app_list_gained_focus)
     base::RecordAction(base::UserMetricsAction("AppList_WindowFocused"));
 
   if (app_list_lost_focus && !switches::ShouldNotDismissOnBlur() &&
