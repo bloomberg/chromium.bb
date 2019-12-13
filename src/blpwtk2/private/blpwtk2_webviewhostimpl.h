@@ -71,11 +71,17 @@ class WebViewHostImpl final : private WebViewImplClient
         bool pendingAck;
     };
 
+    struct MessageInterceptState {
+        bool pendingUpdate;
+        bool pendingAck;
+    };
+
     // DATA
     mojom::WebViewClientPtr d_clientPtr;
     base::OnceCallback<void(int32_t)> d_loadUrlCallback;
     WebViewImpl *d_impl;
     DragState d_dragState;
+    MessageInterceptState d_messageInterceptState;
 
     scoped_refptr<ProcessHostImpl::Impl> d_processHost;
         // This object is not used within this class.  This refptr merely
@@ -113,9 +119,11 @@ class WebViewHostImpl final : private WebViewImplClient
                    int      numberOfMatches,
                    int      activeMatchOrdinal,
                    bool     finalUpdate) override;
+    void didInterceptMessage(WebView *source) override;
 
     // Mojo callbacks
     void onNCDragAck();
+    void onInterceptMessageAck();
 
     // mojom::WebViewHost overrides
     void loadUrl(

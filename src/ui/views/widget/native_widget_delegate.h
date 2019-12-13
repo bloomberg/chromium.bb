@@ -132,6 +132,12 @@ class VIEWS_EXPORT NativeWidgetDelegate {
 
   virtual void OnNCDoubleClick() = 0;
 
+  virtual bool OnPreHandleMessage(unsigned window,
+                                  unsigned message,
+                                  unsigned w_param,
+                                  long l_param,
+                                  long *result) = 0;
+
   // Returns the non-client component (see ui/base/hit_test.h) containing
   // |point|, in client coordinates.
   virtual int GetNonClientComponent(const gfx::Point& point) = 0;
