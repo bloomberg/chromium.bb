@@ -1356,6 +1356,18 @@ static int rc_pick_q_and_bounds_two_pass(const AV1_COMP *cpi, int width,
   } else {
     active_best_quality =
         get_active_best_quality(cpi, active_worst_quality, cq_level, gf_index);
+
+    // For alt_ref and GF frames (including internal arf frames) adjust the
+    // worst allowed quality as well. This insures that even on hard
+    // sections we dont clamp the Q at the same value for arf frames and
+    // leaf (non arf) frames. This is important to the TPL model which assumes
+    // Q drops with each arf level.
+    if (!(rc->is_src_frame_alt_ref) &&
+        (cpi->refresh_golden_frame || cpi->refresh_alt_ref_frame ||
+         is_intrl_arf_boost)) {
+      active_worst_quality =
+          (active_best_quality + (3 * active_worst_quality) + 2) / 4;
+    }
   }
 
   adjust_active_best_and_worst_quality(
