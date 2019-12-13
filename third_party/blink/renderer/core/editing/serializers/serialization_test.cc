@@ -27,5 +27,22 @@ TEST(SerializationTest, CantCreateFragmentCrash) {
   EXPECT_TRUE(sanitized.IsEmpty());
 }
 
+// Regression test for https://crbug.com/1032389
+TEST(SerializationTest, SVGForeignObjectCrash) {
+  const String markup =
+      "<svg>"
+      "  <foreignObject>"
+      "    <br>"
+      "    <div style=\"height: 50px;\"></div>"
+      "  </foreignObject>"
+      "</svg>"
+      "<span>\u00A0</span>";
+  const String sanitized =
+      SanitizeMarkupWithContext(markup, 0, markup.length());
+  // This is a crash test. We don't verify the content of the sanitized markup
+  // as it's too verbose and not interesting.
+  EXPECT_FALSE(sanitized.IsEmpty());
+}
+
 }  // namespace
 }  // namespace blink
