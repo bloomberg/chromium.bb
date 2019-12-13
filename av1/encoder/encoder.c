@@ -2834,8 +2834,8 @@ void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
     av1_update_layer_context_change_config(cpi, oxcf->target_bandwidth);
 }
 
-AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf,
-                                BufferPool *const pool) {
+AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf, BufferPool *const pool,
+                                FIRSTPASS_STATS *frame_stats_buf) {
   AV1_COMP *volatile const cpi = aom_memalign(32, sizeof(AV1_COMP));
   AV1_COMMON *volatile const cm = cpi != NULL ? &cpi->common : NULL;
 
@@ -2938,6 +2938,9 @@ AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf,
 #ifdef OUTPUT_YUV_REC
   yuv_rec_file = fopen("rec.yuv", "wb");
 #endif
+
+  for (int i = 0; i < MAX_LAG_BUFFERS; i++)
+    cpi->twopass.frame_stats_arr[i] = &frame_stats_buf[i];
 
 #if !CONFIG_REALTIME_ONLY
   if (is_stat_generation_stage(cpi)) {

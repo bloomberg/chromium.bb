@@ -786,7 +786,7 @@ void av1_first_pass(AV1_COMP *cpi, const int64_t ts_duration) {
   }
 
   FIRSTPASS_STATS *this_frame_stats =
-      &twopass->frame_stats_arr[twopass->frame_stats_next_idx];
+      twopass->frame_stats_arr[twopass->frame_stats_next_idx];
   {
     FIRSTPASS_STATS fps;
     // The minimum error here insures some bit allocation to frames even
