@@ -437,7 +437,6 @@ void FilterHorizontal(const uint8_t* src, const ptrdiff_t src_stride,
                   &src[x], v_tap);
           v_sum = vrshlq_u16(v_sum, v_inter_round_bits_0);
           if (!is_2d) {
-            // TODO(slavarnway): Invesitgate consolidating the two shifts.
             v_sum = vrshlq_u16(v_sum, v_inter_round_vertical_shift);
             v_sum = vaddq_u16(v_sum, v_compound_round_offset);
           }
