@@ -226,6 +226,11 @@ list(APPEND AOM_AV1_ENCODER_SOURCES
             "${AOM_ROOT}/av1/encoder/dwt.c"
             "${AOM_ROOT}/av1/encoder/dwt.h")
 
+if(CONFIG_TUNE_VMAF)
+  list(APPEND AOM_AV1_ENCODER_SOURCES "${AOM_ROOT}/av1/encoder/tune_vmaf.c"
+              "${AOM_ROOT}/av1/encoder/tune_vmaf.h")
+endif()
+
 list(APPEND AOM_AV1_COMMON_INTRIN_SSE2
             "${AOM_ROOT}/av1/common/cdef_block_sse2.c"
             "${AOM_ROOT}/av1/common/x86/cfl_sse2.c"

@@ -30,9 +30,6 @@
 #if CONFIG_INTERNAL_STATS
 #include "aom_dsp/ssim.h"
 #endif
-#if CONFIG_TUNE_VMAF
-#include "aom_dsp/vmaf.h"
-#endif
 #include "aom_ports/aom_timer.h"
 #include "aom_ports/mem.h"
 #include "aom_ports/system_state.h"
@@ -78,6 +75,10 @@
 #include "av1/encoder/tpl_model.h"
 #include "av1/encoder/reconinter_enc.h"
 #include "av1/encoder/var_based_part.h"
+
+#if CONFIG_TUNE_VMAF
+#include "av1/encoder/tune_vmaf.h"
+#endif
 
 #define DEFAULT_EXPLICIT_ORDER_HINT_BITS 7
 
@@ -5942,15 +5943,10 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
 
   if (oxcf->tuning == AOM_TUNE_SSIM) set_mb_ssim_rdmult_scaling(cpi);
 
-#if CONFIG_TUNE_VMAF
-  if (oxcf->tuning == AOM_TUNE_VMAF_WITH_PREPROCESSING ||
-      oxcf->tuning == AOM_TUNE_VMAF_WITHOUT_PREPROCESSING) {
-    double vmaf;
-    aom_calc_vmaf(oxcf->vmaf_model_path, cpi->source, cpi->source, &vmaf);
-    printf("Tune for VMAF is still a WIP.\n");
+  if (oxcf->tuning == AOM_TUNE_VMAF_WITHOUT_PREPROCESSING) {
+    printf("Tune for VMAF without preprocessing is still a WIP.\n");
     exit(0);
   }
-#endif
 
   aom_clear_system_state();
 
@@ -6242,6 +6238,13 @@ int av1_receive_raw_frame(AV1_COMP *cpi, aom_enc_frame_flags_t frame_flags,
   const int subsampling_x = sd->subsampling_x;
   const int subsampling_y = sd->subsampling_y;
   const int use_highbitdepth = (sd->flags & YV12_FLAG_HIGHBITDEPTH) != 0;
+
+#if CONFIG_TUNE_VMAF
+  if (!is_stat_generation_stage(cpi) &&
+      cpi->oxcf.tuning == AOM_TUNE_VMAF_WITH_PREPROCESSING) {
+    av1_vmaf_preprocessing(cpi, sd);
+  }
+#endif
 
 #if CONFIG_INTERNAL_STATS
   struct aom_usec_timer timer;

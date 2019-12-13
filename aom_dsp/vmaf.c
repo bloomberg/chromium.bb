@@ -74,7 +74,7 @@ int aom_calc_vmaf(const char *model_path, const YV12_BUFFER_CONFIG *source,
                    /*log_path=*/NULL, /*log_fmt=*/NULL, /*disable_clip=*/0,
                    /*disable_avx=*/0, /*enable_transform=*/0,
                    /*phone_model=*/0, /*do_psnr=*/0, /*do_ssim=*/0,
-                   /*do_ms_ssim=*/0, /*pool_method=*/NULL, /*n_thread=*/1,
+                   /*do_ms_ssim=*/0, /*pool_method=*/NULL, /*n_thread=*/0,
                    /*n_subsample=*/1, /*enable_conf_interval=*/0);
 
   aom_clear_system_state();
