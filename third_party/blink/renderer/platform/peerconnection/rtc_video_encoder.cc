@@ -907,7 +907,7 @@ bool RTCVideoEncoder::Impl::CreateBlackGpuMemoryBufferFrame(
   memset(static_cast<uint8_t*>(gmb->memory(0)), 0x0,
          gmb->stride(0) * gmb_size.height());
   memset(static_cast<uint8_t*>(gmb->memory(1)), 0x80,
-         gmb->stride(1) * gmb_size.height());
+         gmb->stride(1) * gmb_size.height() / 2);
   gmb->Unmap();
 
   gpu::MailboxHolder empty_mailboxes[media::VideoFrame::kMaxPlanes];
