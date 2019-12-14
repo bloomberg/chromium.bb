@@ -2103,7 +2103,7 @@ void FilterVertical(const uint8_t* src, const ptrdiff_t src_stride,
 
       const int16x8_t sums =
           SumOnePassTaps<filter_index, negative_outside_taps>(srcs, taps);
-      const uint8x8_t results = vqrshrun_n_s16(sums, kFilterBits);
+      const uint8x8_t results = vqrshrun_n_s16(sums, kFilterBits - 1);
 
       vst1_u8(dst + x + y * dst_stride, results);
 
@@ -2150,7 +2150,7 @@ void FilterVertical4xH(const uint8_t* src, const ptrdiff_t src_stride,
 
       const int16x8_t sums =
           SumOnePassTaps<filter_index, negative_outside_taps>(srcs, taps);
-      const uint8x8_t results = vqrshrun_n_s16(sums, kFilterBits);
+      const uint8x8_t results = vqrshrun_n_s16(sums, kFilterBits - 1);
 
       StoreLo4(dst, results);
       dst += dst_stride;
@@ -2183,7 +2183,7 @@ void FilterVertical4xH(const uint8_t* src, const ptrdiff_t src_stride,
 
       const int16x8_t sums =
           SumOnePassTaps<filter_index, negative_outside_taps>(srcs, taps);
-      const uint8x8_t results = vqrshrun_n_s16(sums, kFilterBits);
+      const uint8x8_t results = vqrshrun_n_s16(sums, kFilterBits - 1);
 
       StoreLo4(dst, results);
       dst += dst_stride;
@@ -2224,7 +2224,7 @@ void FilterVertical4xH(const uint8_t* src, const ptrdiff_t src_stride,
 
       const int16x8_t sums =
           SumOnePassTaps<filter_index, negative_outside_taps>(srcs, taps);
-      const uint8x8_t results = vqrshrun_n_s16(sums, kFilterBits);
+      const uint8x8_t results = vqrshrun_n_s16(sums, kFilterBits - 1);
 
       StoreLo4(dst, results);
       dst += dst_stride;
@@ -2273,7 +2273,7 @@ void FilterVertical4xH(const uint8_t* src, const ptrdiff_t src_stride,
 
       const int16x8_t sums =
           SumOnePassTaps<filter_index, negative_outside_taps>(srcs, taps);
-      const uint8x8_t results = vqrshrun_n_s16(sums, kFilterBits);
+      const uint8x8_t results = vqrshrun_n_s16(sums, kFilterBits - 1);
 
       StoreLo4(dst, results);
       dst += dst_stride;
@@ -2355,7 +2355,7 @@ void FilterVertical2xH(const uint8_t* src, const ptrdiff_t src_stride,
       } else {
         const int16x8_t sums =
             SumOnePassTaps<filter_index, negative_outside_taps>(srcs, taps);
-        const uint8x8_t results = vqrshrun_n_s16(sums, kFilterBits);
+        const uint8x8_t results = vqrshrun_n_s16(sums, kFilterBits - 1);
 
         Store2<0>(dst8, results);
         dst8 += dst_stride;
@@ -2414,7 +2414,7 @@ void FilterVertical2xH(const uint8_t* src, const ptrdiff_t src_stride,
       } else {
         const int16x8_t sums =
             SumOnePassTaps<filter_index, negative_outside_taps>(srcs, taps);
-        const uint8x8_t results = vqrshrun_n_s16(sums, kFilterBits);
+        const uint8x8_t results = vqrshrun_n_s16(sums, kFilterBits - 1);
 
         Store2<0>(dst8, results);
         dst8 += dst_stride;
@@ -2484,7 +2484,7 @@ void FilterVertical2xH(const uint8_t* src, const ptrdiff_t src_stride,
       } else {
         const int16x8_t sums =
             SumOnePassTaps<filter_index, negative_outside_taps>(srcs, taps);
-        const uint8x8_t results = vqrshrun_n_s16(sums, kFilterBits);
+        const uint8x8_t results = vqrshrun_n_s16(sums, kFilterBits - 1);
 
         Store2<0>(dst8, results);
         dst8 += dst_stride;
@@ -2561,7 +2561,7 @@ void FilterVertical2xH(const uint8_t* src, const ptrdiff_t src_stride,
       } else {
         const int16x8_t sums =
             SumOnePassTaps<filter_index, negative_outside_taps>(srcs, taps);
-        const uint8x8_t results = vqrshrun_n_s16(sums, kFilterBits);
+        const uint8x8_t results = vqrshrun_n_s16(sums, kFilterBits - 1);
 
         Store2<0>(dst8, results);
         dst8 += dst_stride;
@@ -2620,7 +2620,7 @@ void ConvolveVertical_NEON(const void* const reference,
   uint8x8_t taps[8];
   for (int k = 0; k < kSubPixelTaps; ++k) {
     taps[k] = vreinterpret_u8_s8(
-        vabs_s8(vdup_n_s8(kSubPixelFilters[filter_index][filter_id][k])));
+        vabs_s8(vdup_n_s8(kHalfSubPixelFilters[filter_index][filter_id][k])));
   }
 
   if (filter_index == 0) {  // 6 tap.
