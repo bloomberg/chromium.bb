@@ -410,6 +410,21 @@ class CompilationUnit {
   // Reads the DWARF2/3 abbreviations for this compilation unit
   void ReadAbbrevs();
 
+  // Read the abbreviation offset for this compilation unit
+  int ReadAbbrevOffset(const uint8_t *headerptr);
+
+  // Read the address size for this compilation unit
+  int ReadAddressSize(const uint8_t *headerptr);
+
+  // Read the DWO id from a split or skeleton compilation unit header
+  int ReadDwoId(const uint8_t *headerptr);
+
+  // Read the type signature from a type or split type compilation unit header
+  int ReadTypeSignature(const uint8_t *headerptr);
+
+  // Read the DWO id from a split or skeleton compilation unit header
+  int ReadTypeOffset(const uint8_t *headerptr);
+
   // Processes a single DIE for this compilation unit and return a new
   // pointer just past the end of it
   const uint8_t *ProcessDIE(uint64 dieoffset,
@@ -563,6 +578,12 @@ class CompilationUnit {
 
   // The value of the DW_AT_GNU_dwo_id attribute, if any.
   uint64 dwo_id_;
+
+  // The value of the DW_AT_GNU_type_signature attribute, if any.
+  uint64 type_signature_;
+
+  // The value of the DW_AT_GNU_type_offset attribute, if any.
+  size_t type_offset_;
 
   // The value of the DW_AT_GNU_dwo_name attribute, if any.
   const char* dwo_name_;

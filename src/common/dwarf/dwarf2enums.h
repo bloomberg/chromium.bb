@@ -686,7 +686,7 @@ enum DwarfLanguage
     DW_LANG_ObjC_plus_plus           =0x0011,
     DW_LANG_UPC                      =0x0012,
     DW_LANG_D                        =0x0013,
-    DW_LANG__Python                  =0x0014,
+    DW_LANG_Python                   =0x0014,
     DW_LANG_OpenCL                   =0x0015,
     DW_LANG_Go                       =0x0016,
     DW_LANG_Modula3                  =0x0017,
