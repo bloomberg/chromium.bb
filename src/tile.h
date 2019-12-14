@@ -380,14 +380,16 @@ class Tile : public Allocable {
   void ScaleMotionVector(const MotionVector& mv, Plane plane,
                          int reference_frame_index, int x, int y, int* start_x,
                          int* start_y, int* step_x, int* step_y);  // 7.11.3.3.
-  bool GetReferenceBlockPosition(int reference_frame_index, bool is_scaled,
-                                 int width, int height, int ref_start_x,
-                                 int ref_last_x, int ref_start_y,
-                                 int ref_last_y, int start_x, int start_y,
-                                 int step_x, int step_y, int left_border,
-                                 int right_border, int top_border,
-                                 int bottom_border, int* ref_block_start_x,
-                                 int* ref_block_start_y, int* ref_block_end_x);
+  // If the method returns false, the caller only uses the output parameters
+  // *ref_block_start_x and *ref_block_start_y. If the method returns true, the
+  // caller uses all three output parameters.
+  static bool GetReferenceBlockPosition(
+      int reference_frame_index, bool is_scaled, int width, int height,
+      int ref_start_x, int ref_last_x, int ref_start_y, int ref_last_y,
+      int start_x, int start_y, int step_x, int step_y, int left_border,
+      int right_border, int top_border, int bottom_border,
+      int* ref_block_start_x, int* ref_block_start_y, int* ref_block_end_x);
+
   template <typename Pixel>
   void BuildConvolveBlock(Plane plane, int reference_frame_index,
                           bool is_scaled, int height, int ref_start_x,

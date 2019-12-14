@@ -903,9 +903,7 @@ void Tile::DistanceWeightedPrediction(
                                height, dest, dest_stride);
 }
 
-// If the method returns false, the caller only uses the output parameters
-// *ref_block_start_x and *ref_block_start_y. If the method returns true, the
-// caller uses all three output parameters.
+// static.
 bool Tile::GetReferenceBlockPosition(
     const int reference_frame_index, const bool is_scaled, const int width,
     const int height, const int ref_start_x, const int ref_last_x,
