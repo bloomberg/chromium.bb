@@ -20,6 +20,7 @@
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
+#include <memory>
 
 #include "src/gav1/frame_buffer.h"
 #include "src/utils/constants.h"
@@ -28,15 +29,13 @@ namespace libgav1 {
 
 class YuvBuffer {
  public:
-  // If the memory was allocated by YuvBuffer directly, the memory is freed.
-  ~YuvBuffer();
-
   // Allocates the buffer. Returns true on success. Returns false on failure.
   //
   // * |width| and |height| are the image dimensions in pixels.
   // * |subsampling_x| and |subsampling_y| (either 0 or 1) specify the
   //   subsampling of the width and height of the chroma planes, respectively.
   // * |border| is the size of the borders (on all four sides) in pixels.
+  //   |border| must be a multiple of 2.
   // * |byte_alignment| specifies the additional alignment requirement of the
   //   data buffers of the Y, U, and V planes. If |byte_alignment| is 0, there
   //   is no additional alignment requirement. Otherwise, |byte_alignment|
@@ -79,10 +78,7 @@ class YuvBuffer {
   // purpose of this step is unknown. We should be able to remove this step.
   //
   // Realloc() then adds a border of 2 pixels around this region. The border
-  // pixels are shown as capital 'B'. NOTE: This example uses a tiny border of
-  // 2 pixels to keep the diagram small. The current implementation of
-  // Realloc() actually requires that |border| be a multiple of 32. We should
-  // be able to only require that |border| be a multiple of 2.
+  // pixels are shown as capital 'B'.
   //
   // Each row is now padded to a multiple of the default alignment in bytes,
   // which is 16. The padding bytes are shown as lowercase 'p'. (Since
@@ -211,7 +207,7 @@ class YuvBuffer {
 
   // buffer_alloc_ and buffer_alloc_size_ are only used if the
   // get_frame_buffer callback is null and we allocate the buffer ourselves.
-  uint8_t* buffer_alloc_ = nullptr;
+  std::unique_ptr<uint8_t[]> buffer_alloc_;
   size_t buffer_alloc_size_ = 0;
 
   int8_t subsampling_x_ = 0;  // 0 or 1.

@@ -14,12 +14,13 @@
 
 #include "src/yuv_buffer.h"
 
+#include <algorithm>
 #include <cassert>
 #include <cstddef>
+#include <new>
 
 #include "src/utils/common.h"
 #include "src/utils/logging.h"
-#include "src/utils/memory.h"
 
 namespace libgav1 {
 namespace {
@@ -31,8 +32,6 @@ uint8_t* AlignAddr(uint8_t* const addr, const size_t align) {
 }
 
 }  // namespace
-
-YuvBuffer::~YuvBuffer() { AlignedFree(buffer_alloc_); }
 
 // Size conventions:
 // * Widths, heights, and border sizes are in pixels.
@@ -49,14 +48,19 @@ bool YuvBuffer::Realloc(int bitdepth, bool is_monochrome, int width, int height,
                         GetFrameBufferCallback get_frame_buffer,
                         void* private_data, FrameBuffer* frame_buffer) {
   // Only support allocating buffers that have a border that's a multiple of
-  // 32. The border restriction is required to get 16-byte alignment of the
-  // start of the chroma rows.
-  if ((border & 31) != 0) return false;
+  // 2. The border restriction is required because we may subsample the border
+  // for the chroma planes.
+  if ((border & 1) != 0) return false;
 
   assert(byte_alignment == 0 || byte_alignment >= 16);
   const int byte_align = (byte_alignment == 0) ? 1 : byte_alignment;
   // byte_align must be a power of 2.
   assert((byte_align & (byte_align - 1)) == 0);
+  // Every row in the plane buffers needs to be 16-byte aligned. In addition,
+  // the plane buffers need to be |byte_align|-byte aligned. Since the strides
+  // are multiples of 16 bytes, it suffices to just align the plane buffers to
+  // the larger of 16 and |byte_align|.
+  const int plane_align = std::max(16, byte_align);
 
   // aligned_width and aligned_height are width and height padded to a
   // multiple of 8 pixels.
@@ -72,8 +76,7 @@ bool YuvBuffer::Realloc(int bitdepth, bool is_monochrome, int width, int height,
   // Size of the Y plane in bytes.
   const uint64_t y_plane_size =
       (aligned_height + 2 * border) * static_cast<uint64_t>(y_stride) +
-      byte_alignment;
-  assert((y_plane_size & 15) == 0);
+      (plane_align - 1);
 
   const int uv_width = is_monochrome ? 0 : aligned_width >> subsampling_x;
   const int uv_height = is_monochrome ? 0 : aligned_height >> subsampling_y;
@@ -91,51 +94,43 @@ bool YuvBuffer::Realloc(int bitdepth, bool is_monochrome, int width, int height,
       is_monochrome ? 0
                     : (uv_height + 2 * uv_border_height) *
                               static_cast<uint64_t>(uv_stride) +
-                          byte_alignment;
-  assert((uv_plane_size & 15) == 0);
+                          (plane_align - 1);
 
-  // Allocate y_buffer, u_buffer, and v_buffer with 16-byte alignment.
+  // Allocate unaligned y_buffer, u_buffer, and v_buffer.
   uint8_t* y_buffer = nullptr;
   uint8_t* u_buffer = nullptr;
   uint8_t* v_buffer = nullptr;
 
   if (get_frame_buffer != nullptr) {
-    // |get_frame_buffer| allocates unaligned memory. Ask it to allocate 15
-    // extra bytes so we can align the buffers to 16-byte boundaries.
-    const int align_addr_extra_size = 15;
-    const uint64_t external_y_plane_size = y_plane_size + align_addr_extra_size;
-    const uint64_t external_uv_plane_size =
-        is_monochrome ? 0 : uv_plane_size + align_addr_extra_size;
-
     assert(frame_buffer != nullptr);
 
-    if (external_y_plane_size != static_cast<size_t>(external_y_plane_size) ||
-        external_uv_plane_size != static_cast<size_t>(external_uv_plane_size)) {
+    if (y_plane_size != static_cast<size_t>(y_plane_size) ||
+        uv_plane_size != static_cast<size_t>(uv_plane_size)) {
       return false;
     }
 
     // Allocation to hold larger frame, or first allocation.
-    if (get_frame_buffer(
-            private_data, static_cast<size_t>(external_y_plane_size),
-            static_cast<size_t>(external_uv_plane_size), frame_buffer) < 0) {
+    if (get_frame_buffer(private_data, static_cast<size_t>(y_plane_size),
+                         static_cast<size_t>(uv_plane_size),
+                         frame_buffer) < 0) {
       return false;
     }
 
     if (frame_buffer->data[0] == nullptr ||
-        frame_buffer->size[0] < external_y_plane_size ||
-        (external_uv_plane_size != 0 && frame_buffer->data[1] == nullptr) ||
-        frame_buffer->size[1] < external_uv_plane_size ||
-        (external_uv_plane_size != 0 && frame_buffer->data[2] == nullptr) ||
-        frame_buffer->size[2] < external_uv_plane_size) {
+        frame_buffer->size[0] < y_plane_size ||
+        (uv_plane_size != 0 && frame_buffer->data[1] == nullptr) ||
+        frame_buffer->size[1] < uv_plane_size ||
+        (uv_plane_size != 0 && frame_buffer->data[2] == nullptr) ||
+        frame_buffer->size[2] < uv_plane_size) {
       assert(0 && "The get_frame_buffer callback malfunctioned.");
       LIBGAV1_DLOG(ERROR, "The get_frame_buffer callback malfunctioned.");
       return false;
     }
 
-    y_buffer = AlignAddr(frame_buffer->data[0], 16);
+    y_buffer = frame_buffer->data[0];
     if (!is_monochrome) {
-      u_buffer = AlignAddr(frame_buffer->data[1], 16);
-      v_buffer = AlignAddr(frame_buffer->data[2], 16);
+      u_buffer = frame_buffer->data[1];
+      v_buffer = frame_buffer->data[2];
     }
   } else {
     assert(private_data == nullptr);
@@ -146,9 +141,8 @@ bool YuvBuffer::Realloc(int bitdepth, bool is_monochrome, int width, int height,
       // Allocation to hold larger frame, or first allocation.
       if (frame_size != static_cast<size_t>(frame_size)) return false;
 
-      AlignedFree(buffer_alloc_);
-      buffer_alloc_ = static_cast<uint8_t*>(
-          AlignedAlloc(16, static_cast<size_t>(frame_size)));
+      buffer_alloc_.reset(new (std::nothrow)
+                              uint8_t[static_cast<size_t>(frame_size)]);
       if (buffer_alloc_ == nullptr) {
         buffer_alloc_size_ = 0;
         return false;
@@ -157,10 +151,10 @@ bool YuvBuffer::Realloc(int bitdepth, bool is_monochrome, int width, int height,
       buffer_alloc_size_ = static_cast<size_t>(frame_size);
     }
 
-    y_buffer = buffer_alloc_;
+    y_buffer = buffer_alloc_.get();
     if (!is_monochrome) {
-      u_buffer = buffer_alloc_ + y_plane_size;
-      v_buffer = buffer_alloc_ + y_plane_size + uv_plane_size;
+      u_buffer = y_buffer + y_plane_size;
+      v_buffer = u_buffer + uv_plane_size;
     }
   }
 
@@ -197,13 +191,13 @@ bool YuvBuffer::Realloc(int bitdepth, bool is_monochrome, int width, int height,
   }
 #endif
   buffer_[kPlaneY] =
-      AlignAddr(y_buffer + (border * y_stride) + border_bytes, byte_align);
+      AlignAddr(y_buffer + (border * y_stride) + border_bytes, plane_align);
   buffer_[kPlaneU] = AlignAddr(
       u_buffer + (uv_border_height * uv_stride) + uv_border_width_bytes,
-      byte_align);
+      plane_align);
   buffer_[kPlaneV] = AlignAddr(
       v_buffer + (uv_border_height * uv_stride) + uv_border_width_bytes,
-      byte_align);
+      plane_align);
   assert(!is_monochrome || buffer_[kPlaneU] == nullptr);
   assert(!is_monochrome || buffer_[kPlaneV] == nullptr);
 
