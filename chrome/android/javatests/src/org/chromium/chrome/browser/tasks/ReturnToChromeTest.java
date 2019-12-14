@@ -64,7 +64,7 @@ public class ReturnToChromeTest {
 
         EmbeddedTestServer testServer =
                 EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
-        mUrl = testServer.getURL("/chrome/test/data/android/navigate/simple.html");
+        mUrl = testServer.getURL("/chrome/test/data/android/about.html");
 
         mActivityTestRule.startMainActivityOnBlankPage();
     }
