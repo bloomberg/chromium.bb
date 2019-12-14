@@ -42,18 +42,8 @@ constexpr int kHorizontalOffset = 3;
 constexpr int kFilterIndexShift = 6;
 
 // Multiply every entry in |src[]| by the corresponding entry in |taps[]| and
-// sum. The sum of the filters in |taps[]| is always 128. In some situations
-// negative values are used. This creates a situation where the positive taps
-// sum to more than 128. An example is:
-// {-4, 10, -24, 100, 60, -20, 8, -2}
-// The negative taps never sum to < -128
-// The center taps are always positive. The remaining positive taps never sum
-// to > 128.
-// Summing these naively can overflow int16_t. This can be avoided by adding the
-// center taps last and saturating the result.
-// We do not need to expand to int32_t because later in the function the value
-// is shifted by |kFilterBits| (7) and saturated to uint8_t. This means any
-// value over 255 << 7 (32576 because of rounding) is clamped.
+// sum. The filters in |taps[]| are pre-shifted by 1. This prevents the final
+// sum from outranging int16_t.
 template <int filter_index, bool negative_outside_taps = false>
 int16x8_t SumOnePassTaps(const uint8x8_t* const src,
                          const uint8x8_t* const taps) {
@@ -64,26 +54,18 @@ int16x8_t SumOnePassTaps(const uint8x8_t* const src,
     // Unsigned overflow will result in a valid int16_t value.
     sum = vmlsl_u8(sum, src[1], taps[1]);
     sum = vmlal_u8(sum, src[2], taps[2]);
+    sum = vmlal_u8(sum, src[3], taps[3]);
     sum = vmlsl_u8(sum, src[4], taps[4]);
-    sum = vmlal_u8(sum, src[5], taps[5]);
-    // Only one of the center taps needs to be saturated. Unlike the 8 tap
-    // filter the sum of the positive taps and one of the center taps is capped
-    // at 128.
-    const uint16x8_t temp = vmull_u8(src[3], taps[3]);
-    return vqaddq_s16(vreinterpretq_s16_u16(sum), vreinterpretq_s16_u16(temp));
+    return vreinterpretq_s16_u16(vmlal_u8(sum, src[5], taps[5]));
   } else if (filter_index == 1 && negative_outside_taps) {
     // 6 taps. - + + + + -
     // Set a base we can subtract from.
     sum = vmull_u8(src[1], taps[1]);
     sum = vmlsl_u8(sum, src[0], taps[0]);
     sum = vmlal_u8(sum, src[2], taps[2]);
+    sum = vmlal_u8(sum, src[3], taps[3]);
     sum = vmlal_u8(sum, src[4], taps[4]);
-    sum = vmlsl_u8(sum, src[5], taps[5]);
-    // Only one of the center taps needs to be saturated. Unlike the 8 tap
-    // filter the sum of the positive taps and one of the center taps is always
-    // less than 128.
-    const uint16x8_t temp = vmull_u8(src[3], taps[3]);
-    return vqaddq_s16(vreinterpretq_s16_u16(sum), vreinterpretq_s16_u16(temp));
+    return vreinterpretq_s16_u16(vmlsl_u8(sum, src[5], taps[5]));
   } else if (filter_index == 1) {
     // 6 taps. All are positive.
     sum = vmull_u8(src[0], taps[0]);
@@ -97,20 +79,11 @@ int16x8_t SumOnePassTaps(const uint8x8_t* const src,
     sum = vmull_u8(src[1], taps[1]);
     sum = vmlsl_u8(sum, src[0], taps[0]);
     sum = vmlsl_u8(sum, src[2], taps[2]);
+    sum = vmlal_u8(sum, src[3], taps[3]);
+    sum = vmlal_u8(sum, src[4], taps[4]);
     sum = vmlsl_u8(sum, src[5], taps[5]);
     sum = vmlal_u8(sum, src[6], taps[6]);
-    sum = vmlsl_u8(sum, src[7], taps[7]);
-    // Both of these need to be saturated when summing. Either could sum to more
-    // than 128 with the other positive taps. For example:
-    // kSubPixelFilters[2][1] = {-2, 2, -6, 126, 8, -2, 2, 0}
-    // 2 + 126 + 2 = 130
-    // kSubPixelFilters[2][14] = {-2, 4, -6, 16, 124, -12, 6, -2},
-    // 4 + 124 + 6 = 134
-    const uint16x8_t temp0 = vmull_u8(src[3], taps[3]);
-    const uint16x8_t temp1 = vmull_u8(src[4], taps[4]);
-    const int16x8_t sum_s =
-        vqaddq_s16(vreinterpretq_s16_u16(sum), vreinterpretq_s16_u16(temp0));
-    return vqaddq_s16(sum_s, vreinterpretq_s16_u16(temp1));
+    return vreinterpretq_s16_u16(vmlsl_u8(sum, src[7], taps[7]));
   } else if (filter_index == 3) {
     // 2 taps. All are positive.
     sum = vmull_u8(src[0], taps[0]);
@@ -119,10 +92,8 @@ int16x8_t SumOnePassTaps(const uint8x8_t* const src,
     // 4 taps. - + + -
     sum = vmull_u8(src[1], taps[1]);
     sum = vmlsl_u8(sum, src[0], taps[0]);
-    sum = vmlsl_u8(sum, src[3], taps[3]);
-    // Only one of the center taps needs to be saturated. Neither tap is > 128.
-    const uint16x8_t temp = vmull_u8(src[2], taps[2]);
-    return vqaddq_s16(vreinterpretq_s16_u16(sum), vreinterpretq_s16_u16(temp));
+    sum = vmlal_u8(sum, src[2], taps[2]);
+    return vreinterpretq_s16_u16(vmlsl_u8(sum, src[3], taps[3]));
   } else if (filter_index == 5) {
     // 4 taps. All are positive.
     sum = vmull_u8(src[0], taps[0]);
