@@ -2091,6 +2091,30 @@ bool ObuParser::ParseFrameHeader() {
   return true;
 }
 
+bool ObuParser::ParsePadding(const uint8_t* data, size_t size) {
+  // The spec allows a padding OBU to be header-only (i.e., obu_size = 0). So
+  // check trailing bits only if size > 0.
+  if (size > 0) {
+    // The payload of a padding OBU is byte aligned. Therefore the first
+    // trailing byte should be 0x80. See https://crbug.com/aomedia/2393.
+    const int i = GetLastNonzeroByteIndex(data, size);
+    if (i < 0) {
+      LIBGAV1_DLOG(ERROR, "Trailing bit is missing.");
+      return false;
+    }
+    if (data[i] != 0x80) {
+      LIBGAV1_DLOG(
+          ERROR,
+          "The last nonzero byte of the payload data is 0x%x, should be 0x80.",
+          data[i]);
+      return false;
+    }
+    // Skip all bits before the trailing bit.
+    bit_reader_->SkipBytes(i);
+  }
+  return true;
+}
+
 bool ObuParser::ParseMetadataScalability() {
   int64_t scratch;
   // scalability_mode_idc
@@ -2654,8 +2678,10 @@ StatusCode ObuParser::ParseOneFrame() {
         LIBGAV1_DLOG(ERROR, "Decoding of tile list OBUs is not supported.");
         return kLibgav1StatusUnimplemented;
       case kObuPadding:
-        bit_reader_->SkipBytes(obu_size);
-        obu_skipped = true;
+        if (!ParsePadding(&data[obu_start_position >> 3], obu_size)) {
+          LIBGAV1_DLOG(ERROR, "Failed to parse Padding OBU.");
+          return kLibgav1StatusBitstreamError;
+        }
         break;
       case kObuMetadata:
         if (!ParseMetadata(&data[obu_start_position >> 3], obu_size)) {

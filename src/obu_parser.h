@@ -494,8 +494,14 @@ class ObuParser : public Allocable {
   bool ParseFilmGrainParameters();     // 5.9.30.
   bool ParseTileInfoSyntax();          // 5.9.15.
   bool ParseFrameHeader();             // 5.9.
-  bool ParseMetadataScalability();     // 5.8.5 and 5.8.6.
-  bool ParseMetadataTimecode();        // 5.8.7.
+  // |data| and |size| specify the payload data of the padding OBU.
+  // NOTE: Although the payload data is available in the bit_reader_ member,
+  // it is also passed to ParsePadding() as function parameters so that
+  // ParsePadding() can find the trailing bit of the OBU and skip over the
+  // payload data as an opaque chunk of data.
+  bool ParsePadding(const uint8_t* data, size_t size);  // 5.7.
+  bool ParseMetadataScalability();                      // 5.8.5 and 5.8.6.
+  bool ParseMetadataTimecode();                         // 5.8.7.
   // |data| and |size| specify the payload data of the metadata OBU.
   // NOTE: Although the payload data is available in the bit_reader_ member,
   // it is also passed to ParseMetadata() as function parameters so that
