@@ -134,8 +134,9 @@ struct LoopRestorationFuncs_C {
                            int width, int height, RestorationBuffer* buffer);
   // |stride| for box filter processing is in Pixels.
   static void BoxFilterPreProcess(const RestorationUnitInfo& restoration_info,
-                                  const Pixel* src, ptrdiff_t stride, int width,
-                                  int height, int pass,
+                                  const uint16_t* integral_image,
+                                  const uint32_t* square_integral_image,
+                                  int width, int height, int pass,
                                   RestorationBuffer* buffer);
   static void BoxFilterProcess(const RestorationUnitInfo& restoration_info,
                                const Pixel* src, ptrdiff_t stride, int width,
@@ -383,8 +384,8 @@ void LoopRestorationFuncs_C<bitdepth, Pixel>::WienerFilter(
 
 template <int bitdepth, typename Pixel>
 void LoopRestorationFuncs_C<bitdepth, Pixel>::BoxFilterPreProcess(
-    const RestorationUnitInfo& restoration_info, const Pixel* const src,
-    ptrdiff_t stride, int width, int height, int pass,
+    const RestorationUnitInfo& restoration_info, const uint16_t* integral_image,
+    const uint32_t* square_integral_image, int width, int height, int pass,
     RestorationBuffer* const buffer) {
   const int sgr_proj_index = restoration_info.sgr_proj_info.index;
   const uint8_t radius = kSgrProjParams[sgr_proj_index][pass * 2];
@@ -399,6 +400,8 @@ void LoopRestorationFuncs_C<bitdepth, Pixel>::BoxFilterPreProcess(
   const uint32_t s = kSgrScaleParameter[sgr_proj_index][pass];
   assert(s != 0);
   const ptrdiff_t array_stride = buffer->box_filter_process_intermediate_stride;
+  const ptrdiff_t integral_image_stride =
+      kRestorationProcessingUnitSizeWithBorders + 1;
   // The size of the intermediate result buffer is the size of the filter area
   // plus horizontal (3) and vertical (3) padding. The processing start point
   // is the filter area start point -1 row and -1 column. Therefore we need to
@@ -412,59 +415,11 @@ void LoopRestorationFuncs_C<bitdepth, Pixel>::BoxFilterPreProcess(
       buffer->box_filter_process_intermediate[1] + intermediate_buffer_offset -
           array_stride};
 
-  // We calculate intermediate values for the region (width + 1) x (height + 1).
-  // The region we can access is (width + 1 + radius) x (height + 1 + radius).
-  // The max radius is 2. width = height =
-  // kRestorationProcessingUnitSizeWithBorders.
-  // For the integral_image, we need one row before the accessible region,
-  // so the stride is kRestorationProcessingUnitSizeWithBorders + 1.
-  // We fix the first row and first column of integral image be 0 to facilitate
-  // computation.
-
-  // Note that the max sum = (2 ^ bitdepth - 1) *
-  // kRestorationProcessingUnitSizeWithBorders *
-  // kRestorationProcessingUnitSizeWithBorders.
-  // The max sum is larger than 2^16.
-  // Case 8 bit and 10 bit:
-  // The final box sum has at most 25 pixels, which is within 16 bits. So
-  // keeping truncated 16-bit values is enough.
-  // Case 12 bit, radius 1:
-  // The final box sum has 9 pixels, which is within 16 bits. So keeping
-  // truncated 16-bit values is enough.
-  // Case 12 bit, radius 2:
-  // The final box sum has 25 pixels. It can be calculated by calculating the
-  // top 15 pixels and the bottom 10 pixels separately, and adding them
-  // together. So keeping truncated 16-bit values is enough.
-  // If it is slower than using 32-bit for specific CPU targets, please split
-  // into 2 paths.
-  uint16_t integral_image[(kRestorationProcessingUnitSizeWithBorders + 1) *
-                          (kRestorationProcessingUnitSizeWithBorders + 1)];
-
-  // Note that the max squared sum =
-  // (2 ^ bitdepth - 1) * (2 ^ bitdepth - 1) *
-  // kRestorationProcessingUnitSizeWithBorders *
-  // kRestorationProcessingUnitSizeWithBorders.
-  // For 8 bit, 32-bit is enough. For 10 bit and up, the sum could be larger
-  // than 2^32. However, the final box sum has at most 25 squares, which is
-  // within 32 bits. So keeping truncated 32-bit values is enough.
-  uint32_t
-      square_integral_image[(kRestorationProcessingUnitSizeWithBorders + 1) *
-                            (kRestorationProcessingUnitSizeWithBorders + 1)];
-  const ptrdiff_t integral_image_stride =
-      kRestorationProcessingUnitSizeWithBorders + 1;
-  ComputeIntegralImage<Pixel>(
-      src - kRestorationBorder * stride - kRestorationBorder, stride,
-      width + 2 * kRestorationBorder, height + 2 * kRestorationBorder,
-      integral_image, square_integral_image, integral_image_stride);
-
   // Calculate intermediate results, including one-pixel border, for example,
   // if unit size is 64x64, we calculate 66x66 pixels.
-  for (int y = -1; y <= height; ++y) {
-    if (pass == 0 && ((y & 1) == 0)) {
-      intermediate_result[0] += array_stride;
-      intermediate_result[1] += array_stride;
-      continue;
-    }
+  const int step = (pass == 0) ? 2 : 1;
+  const ptrdiff_t intermediate_stride = step * array_stride;
+  for (int y = -1; y <= height; y += step) {
     for (int x = -1; x <= width; ++x) {
       // The integral image helps to calculate the sum of the square
       // centered at (x, y).
@@ -481,15 +436,10 @@ void LoopRestorationFuncs_C<bitdepth, Pixel>::BoxFilterPreProcess(
       const int top_left =
           (y + kRestorationBorder - radius) * integral_image_stride + x +
           kRestorationBorder - radius;
-      const int top_right =
-          (y + kRestorationBorder - radius) * integral_image_stride + x +
-          kRestorationBorder + 1 + radius;
+      const int top_right = top_left + 2 * radius + 1;
       const int bottom_left =
-          (y + kRestorationBorder + 1 + radius) * integral_image_stride + x +
-          kRestorationBorder - radius;
-      const int bottom_right =
-          (y + kRestorationBorder + 1 + radius) * integral_image_stride + x +
-          kRestorationBorder + 1 + radius;
+          top_left + (2 * radius + 1) * integral_image_stride;
+      const int bottom_right = bottom_left + 2 * radius + 1;
       uint32_t a = square_integral_image[bottom_right] -
                    square_integral_image[bottom_left] -
                    square_integral_image[top_right] +
@@ -547,8 +497,8 @@ void LoopRestorationFuncs_C<bitdepth, Pixel>::BoxFilterPreProcess(
       intermediate_result[1][x] =
           RightShiftWithRounding(b2, kSgrProjReciprocalBits);
     }
-    intermediate_result[0] += array_stride;
-    intermediate_result[1] += array_stride;
+    intermediate_result[0] += intermediate_stride;
+    intermediate_result[1] += intermediate_stride;
   }
 }
 
@@ -557,54 +507,117 @@ void LoopRestorationFuncs_C<bitdepth, Pixel>::BoxFilterProcess(
     const RestorationUnitInfo& restoration_info, const Pixel* src,
     ptrdiff_t stride, int width, int height, RestorationBuffer* const buffer) {
   const int sgr_proj_index = restoration_info.sgr_proj_info.index;
+
+  // We calculate intermediate values for the region (width + 1) x (height + 1).
+  // The region we can access is (width + 1 + radius) x (height + 1 + radius).
+  // The max radius is 2. width = height =
+  // kRestorationProcessingUnitSizeWithBorders.
+  // For the integral_image, we need one row before the accessible region,
+  // so the stride is kRestorationProcessingUnitSizeWithBorders + 1.
+  // We fix the first row and first column of integral image be 0 to facilitate
+  // computation.
+
+  // Note that the max sum = (2 ^ bitdepth - 1) *
+  // kRestorationProcessingUnitSizeWithBorders *
+  // kRestorationProcessingUnitSizeWithBorders.
+  // The max sum is larger than 2^16.
+  // Case 8 bit and 10 bit:
+  // The final box sum has at most 25 pixels, which is within 16 bits. So
+  // keeping truncated 16-bit values is enough.
+  // Case 12 bit, radius 1:
+  // The final box sum has 9 pixels, which is within 16 bits. So keeping
+  // truncated 16-bit values is enough.
+  // Case 12 bit, radius 2:
+  // The final box sum has 25 pixels. It can be calculated by calculating the
+  // top 15 pixels and the bottom 10 pixels separately, and adding them
+  // together. So keeping truncated 16-bit values is enough.
+  // If it is slower than using 32-bit for specific CPU targets, please split
+  // into 2 paths.
+  uint16_t integral_image[(kRestorationProcessingUnitSizeWithBorders + 1) *
+                          (kRestorationProcessingUnitSizeWithBorders + 1)];
+
+  // Note that the max squared sum =
+  // (2 ^ bitdepth - 1) * (2 ^ bitdepth - 1) *
+  // kRestorationProcessingUnitSizeWithBorders *
+  // kRestorationProcessingUnitSizeWithBorders.
+  // For 8 bit, 32-bit is enough. For 10 bit and up, the sum could be larger
+  // than 2^32. However, the final box sum has at most 25 squares, which is
+  // within 32 bits. So keeping truncated 32-bit values is enough.
+  uint32_t
+      square_integral_image[(kRestorationProcessingUnitSizeWithBorders + 1) *
+                            (kRestorationProcessingUnitSizeWithBorders + 1)];
+  const ptrdiff_t integral_image_stride =
+      kRestorationProcessingUnitSizeWithBorders + 1;
+  const ptrdiff_t filtered_output_stride =
+      buffer->box_filter_process_output_stride;
+  const ptrdiff_t intermediate_stride =
+      buffer->box_filter_process_intermediate_stride;
+  const ptrdiff_t intermediate_buffer_offset =
+      kRestorationBorder * intermediate_stride + kRestorationBorder;
+
+  ComputeIntegralImage<Pixel>(
+      src - kRestorationBorder * stride - kRestorationBorder, stride,
+      width + 2 * kRestorationBorder, height + 2 * kRestorationBorder,
+      integral_image, square_integral_image, integral_image_stride);
+
   for (int pass = 0; pass < 2; ++pass) {
     const uint8_t radius = kSgrProjParams[sgr_proj_index][pass * 2];
-    const Pixel* src_ptr = src;
     if (radius == 0) continue;
     LoopRestorationFuncs_C<bitdepth, Pixel>::BoxFilterPreProcess(
-        restoration_info, src_ptr, stride, width, height, pass, buffer);
+        restoration_info, integral_image, square_integral_image, width, height,
+        pass, buffer);
 
-    int* filtered_output = buffer->box_filter_process_output[pass];
-    const ptrdiff_t filtered_output_stride =
-        buffer->box_filter_process_output_stride;
-    const ptrdiff_t intermediate_stride =
-        buffer->box_filter_process_intermediate_stride;
+    const Pixel* src_ptr = src;
     // Set intermediate buffer start point to the actual start point of
     // filtering.
-    const ptrdiff_t intermediate_buffer_offset =
-        kRestorationBorder * intermediate_stride + kRestorationBorder;
+    const uint32_t* array_start[2] = {
+        buffer->box_filter_process_intermediate[0] + intermediate_buffer_offset,
+        buffer->box_filter_process_intermediate[1] +
+            intermediate_buffer_offset};
+    int* filtered_output = buffer->box_filter_process_output[pass];
     for (int y = 0; y < height; ++y) {
       const int shift = (pass == 0 && (y & 1) != 0) ? 4 : 5;
-      uint32_t* const array_start[2] = {
-          buffer->box_filter_process_intermediate[0] +
-              intermediate_buffer_offset + y * intermediate_stride,
-          buffer->box_filter_process_intermediate[1] +
-              intermediate_buffer_offset + y * intermediate_stride};
+      // array_start[0]: range [1, 256].
+      // array_start[1] < 2^20.
       for (int x = 0; x < width; ++x) {
-        uint32_t a = 0;
-        uint32_t b = 0;
-        uint32_t* intermediate_result[2] = {
-            array_start[0] - intermediate_stride,
-            array_start[1] - intermediate_stride};
-        for (int dy = -1; dy <= 1; ++dy) {
-          for (int dx = -1; dx <= 1; ++dx) {
-            int weight;
-            if (pass == 0) {
-              if (((y + dy) & 1) != 0) {
-                weight = (dx == 0) ? 6 : 5;
-              } else {
-                continue;
-              }
-            } else {
-              weight = ((dx & dy) == 0) ? 4 : 3;
-            }
-            // intermediate_result[0]: range [1, 256].
-            // intermediate_result[1] < 2^20.
-            a += weight * intermediate_result[0][x + dx];
-            b += weight * intermediate_result[1][x + dx];
+        uint32_t a, b;
+        if (pass == 0) {
+          if ((y & 1) == 0) {
+            a = 5 * (array_start[0][-intermediate_stride + x - 1] +
+                     array_start[0][-intermediate_stride + x + 1] +
+                     array_start[0][intermediate_stride + x - 1] +
+                     array_start[0][intermediate_stride + x + 1]) +
+                6 * (array_start[0][-intermediate_stride + x] +
+                     array_start[0][intermediate_stride + x]);
+            b = 5 * (array_start[1][-intermediate_stride + x - 1] +
+                     array_start[1][-intermediate_stride + x + 1] +
+                     array_start[1][intermediate_stride + x - 1] +
+                     array_start[1][intermediate_stride + x + 1]) +
+                6 * (array_start[1][-intermediate_stride + x] +
+                     array_start[1][intermediate_stride + x]);
+          } else {
+            a = 5 * (array_start[0][x - 1] + array_start[0][x + 1]) +
+                6 * array_start[0][x];
+            b = 5 * (array_start[1][x - 1] + array_start[1][x + 1]) +
+                6 * array_start[1][x];
           }
-          intermediate_result[0] += intermediate_stride;
-          intermediate_result[1] += intermediate_stride;
+        } else {
+          a = 3 * (array_start[0][-intermediate_stride + x - 1] +
+                   array_start[0][-intermediate_stride + x + 1] +
+                   array_start[0][intermediate_stride + x - 1] +
+                   array_start[0][intermediate_stride + x + 1]) +
+              4 * (array_start[0][-intermediate_stride + x] +
+                   array_start[0][x - 1] + array_start[0][x] +
+                   array_start[0][x + 1] +
+                   array_start[0][intermediate_stride + x]);
+          b = 3 * (array_start[1][-intermediate_stride + x - 1] +
+                   array_start[1][-intermediate_stride + x + 1] +
+                   array_start[1][intermediate_stride + x - 1] +
+                   array_start[1][intermediate_stride + x + 1]) +
+              4 * (array_start[1][-intermediate_stride + x] +
+                   array_start[1][x - 1] + array_start[1][x] +
+                   array_start[1][x + 1] +
+                   array_start[1][intermediate_stride + x]);
         }
         // v < 2^32. All intermediate calculations are positive.
         const uint32_t v = a * src_ptr[x] + b;
@@ -612,6 +625,8 @@ void LoopRestorationFuncs_C<bitdepth, Pixel>::BoxFilterProcess(
             v, kSgrProjSgrBits + shift - kSgrProjRestoreBits);
       }
       src_ptr += stride;
+      array_start[0] += intermediate_stride;
+      array_start[1] += intermediate_stride;
       filtered_output += filtered_output_stride;
     }
   }
@@ -629,11 +644,12 @@ void LoopRestorationFuncs_C<bitdepth, Pixel>::SelfGuidedFilter(
   const int w1 = restoration_info.sgr_proj_info.multiplier[1];
   const int w2 = (1 << kSgrProjPrecisionBits) - w0 - w1;
   const int index = restoration_info.sgr_proj_info.index;
-  const uint8_t r0 = kSgrProjParams[index][0];
-  const uint8_t r1 = kSgrProjParams[index][2];
+  const int radius_pass_0 = kSgrProjParams[index][0];
+  const int radius_pass_1 = kSgrProjParams[index][2];
   const ptrdiff_t array_stride = buffer->box_filter_process_output_stride;
-  int* box_filter_process_output[2] = {buffer->box_filter_process_output[0],
-                                       buffer->box_filter_process_output[1]};
+  const int* box_filter_process_output[2] = {
+      buffer->box_filter_process_output[0],
+      buffer->box_filter_process_output[1]};
   const auto* src = static_cast<const Pixel*>(source);
   auto* dst = static_cast<Pixel*>(dest);
   source_stride /= sizeof(Pixel);
@@ -644,17 +660,17 @@ void LoopRestorationFuncs_C<bitdepth, Pixel>::SelfGuidedFilter(
     for (int x = 0; x < width; ++x) {
       const int u = src[x] << kSgrProjRestoreBits;
       int v = w1 * u;
-      if (r0 != 0) {
+      if (radius_pass_0 != 0) {
         v += w0 * box_filter_process_output[0][x];
       } else {
         v += w0 * u;
       }
-      if (r1 != 0) {
+      if (radius_pass_1 != 0) {
         v += w2 * box_filter_process_output[1][x];
       } else {
         v += w2 * u;
       }
-      // if r0 == 0 and r1 == 0, the range of v is:
+      // if radius_pass_0 == 0 and radius_pass_1 == 0, the range of v is:
       // bits(u) + bits(w0/w1/w2) + 2 = bitdepth + 13.
       // Then, range of s is bitdepth + 2. This is a rough estimation, taking
       // the maximum value of each element.
