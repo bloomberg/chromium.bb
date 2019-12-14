@@ -57,8 +57,7 @@ void HorizontalFilter(const int sx4, const int16_t alpha,
     filter[x] = vld1q_s16(kWarpedFilters[offset]);
     sx += alpha;
   }
-  Transpose8x8(&filter[0], &filter[1], &filter[2], &filter[3], &filter[4],
-               &filter[5], &filter[6], &filter[7]);
+  Transpose8x8(filter);
   // For 8 bit, the range of sum is within uint16_t, if we add a horizontal
   // offset. horizontal_offset guarantees sum is nonnegative.
   //
@@ -330,8 +329,7 @@ void Warp_NEON(const void* const source, const ptrdiff_t source_stride,
             filter[x] = vld1q_s16(kWarpedFilters[offset]);
             sy += gamma;
           }
-          Transpose8x8(&filter[0], &filter[1], &filter[2], &filter[3],
-                       &filter[4], &filter[5], &filter[6], &filter[7]);
+          Transpose8x8(filter);
           int32x4_t sum_low = vdupq_n_s32(vertical_offset);
           int32x4_t sum_high = sum_low;
           for (int k = 0; k < 8; ++k) {
@@ -452,8 +450,7 @@ void Warp_NEON(const void* const source, const ptrdiff_t source_stride,
           filter[x] = vld1q_s16(kWarpedFilters[offset]);
           sy += gamma;
         }
-        Transpose8x8(&filter[0], &filter[1], &filter[2], &filter[3], &filter[4],
-                     &filter[5], &filter[6], &filter[7]);
+        Transpose8x8(filter);
         // Similar to horizontal_offset, vertical_offset guarantees sum before
         // shifting is nonnegative.
         //
