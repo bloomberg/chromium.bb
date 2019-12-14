@@ -540,13 +540,13 @@ inline uint32x4_t Sum2DVerticalTaps4(const int16x4_t* const src,
   // need to treat these as signed so that they sign extend properly.
   const int16x4_t taps_lo = vget_low_s16(taps);
   const int16x4_t taps_hi = vget_high_s16(taps);
-  // An offset to guarantee the sum is non negative. Captures 56 * -4590 =
-  // 257040 (worst case negative value from horizontal pass). It should be
-  // possible to use 1 << 18 (262144) instead of 1 << 19 but there probably
+  // An offset to guarantee the sum is non negative. Captures 28 * -4590 =
+  // 128520 (worst case negative value from horizontal pass). It should be
+  // possible to use 1 << 17 (131072) instead of 1 << 18 but there probably
   // isn't any benefit.
-  // |offset_bits| = bitdepth + 2 * kFilterBits - kInterRoundBitsHorizontal ==
-  // 19
-  int32x4_t sum = vdupq_n_s32(1 << 19);
+  // |offset_bits| = bitdepth + 2 * kFilterBits - kInterRoundBitsHorizontal - 1
+  // == 18
+  int32x4_t sum = vdupq_n_s32(1 << 18);
   if (num_taps == 8) {
     sum = vmlal_lane_s16(sum, src[0], taps_lo, 0);
     sum = vmlal_lane_s16(sum, src[1], taps_lo, 1);
@@ -586,13 +586,13 @@ uint32x4x2_t Sum2DVerticalTaps(const int16x8_t* const src,
   // need to treat these as signed so that they sign extend properly.
   const int16x4_t taps_lo = vget_low_s16(taps);
   const int16x4_t taps_hi = vget_high_s16(taps);
-  // An offset to guarantee the sum is non negative. Captures 56 * -4590 =
-  // 257040 (worst case negative value from horizontal pass). It should be
-  // possible to use 1 << 18 (262144) instead of 1 << 19 but there probably
+  // An offset to guarantee the sum is non negative. Captures 28 * -4590 =
+  // 128520 (worst case negative value from horizontal pass). It should be
+  // possible to use 1 << 17 (131072) instead of 1 << 18 but there probably
   // isn't any benefit.
-  // |offset_bits| = bitdepth + 2 * kFilterBits - kInterRoundBitsHorizontal
-  // == 19.
-  int32x4_t sum_lo = vdupq_n_s32(1 << 19);
+  // |offset_bits| = bitdepth + 2 * kFilterBits - kInterRoundBitsHorizontal - 1
+  // == 18
+  int32x4_t sum_lo = vdupq_n_s32(1 << 18);
   int32x4_t sum_hi = sum_lo;
   if (num_taps == 8) {
     sum_lo = vmlal_lane_s16(sum_lo, vget_low_s16(src[0]), taps_lo, 0);
@@ -658,7 +658,7 @@ void Filter2DVertical(const uint16_t* src, void* const dst,
   assert(width >= 8);
   constexpr int next_row = num_taps - 1;
   const int32x4_t v_inter_round_bits_vertical =
-      vdupq_n_s32(-inter_round_bits_vertical);
+      vdupq_n_s32(-(inter_round_bits_vertical - 1));
   // The Horizontal pass uses |width| as |stride| for the intermediate buffer.
   const ptrdiff_t src_stride = width;
 
@@ -702,9 +702,9 @@ void Filter2DVertical(const uint16_t* src, void* const dst,
             vmovn_u32(vqrshlq_u32(sums.val[1], v_inter_round_bits_vertical)));
         vst1q_u16(dst16 + x + y * dst_stride, results);
       } else {
-        const uint16x8_t first_shift =
-            vcombine_u16(vqrshrn_n_u32(sums.val[0], kInterRoundBitsVertical),
-                         vqrshrn_n_u32(sums.val[1], kInterRoundBitsVertical));
+        const uint16x8_t first_shift = vcombine_u16(
+            vqrshrn_n_u32(sums.val[0], kInterRoundBitsVertical - 1),
+            vqrshrn_n_u32(sums.val[1], kInterRoundBitsVertical - 1));
         // |single_round_offset| == (1 << bitdepth) + (1 << (bitdepth - 1)) ==
         // 384
         const uint8x8_t results =
@@ -738,7 +738,7 @@ void Filter2DVertical4xH(const uint16_t* src, void* const dst,
                          const int16x8_t taps,
                          const int inter_round_bits_vertical) {
   const int32x4_t v_inter_round_bits_vertical =
-      vdupq_n_s32(-inter_round_bits_vertical);
+      vdupq_n_s32(-(inter_round_bits_vertical - 1));
 
   auto* dst8 = static_cast<uint8_t*>(dst);
   auto* dst16 = static_cast<uint16_t*>(dst);
@@ -780,8 +780,8 @@ void Filter2DVertical4xH(const uint16_t* src, void* const dst,
       dst16 += dst_stride;
     } else {
       const uint16x8_t first_shift =
-          vcombine_u16(vqrshrn_n_u32(sums.val[0], kInterRoundBitsVertical),
-                       vqrshrn_n_u32(sums.val[1], kInterRoundBitsVertical));
+          vcombine_u16(vqrshrn_n_u32(sums.val[0], kInterRoundBitsVertical - 1),
+                       vqrshrn_n_u32(sums.val[1], kInterRoundBitsVertical - 1));
       // |single_round_offset| == (1 << bitdepth) + (1 << (bitdepth - 1)) ==
       // 384
       const uint8x8_t results =
@@ -818,7 +818,7 @@ void Filter2DVertical2xH(const uint16_t* src, void* const dst,
                          const int inter_round_bits_vertical) {
   constexpr int next_row = (num_taps < 6) ? 4 : 8;
   const int32x4_t v_inter_round_bits_vertical =
-      vdupq_n_s32(-inter_round_bits_vertical);
+      vdupq_n_s32(-(inter_round_bits_vertical - 1));
 
   auto* dst8 = static_cast<uint8_t*>(dst);
   auto* dst16 = static_cast<uint16_t*>(dst);
@@ -874,8 +874,8 @@ void Filter2DVertical2xH(const uint16_t* src, void* const dst,
       dst16 += dst_stride;
     } else {
       const uint16x8_t first_shift =
-          vcombine_u16(vqrshrn_n_u32(sums.val[0], kInterRoundBitsVertical),
-                       vqrshrn_n_u32(sums.val[1], kInterRoundBitsVertical));
+          vcombine_u16(vqrshrn_n_u32(sums.val[0], kInterRoundBitsVertical - 1),
+                       vqrshrn_n_u32(sums.val[1], kInterRoundBitsVertical - 1));
       // |single_round_offset| == (1 << bitdepth) + (1 << (bitdepth - 1)) ==
       // 384
       const uint8x8_t results =
@@ -1018,7 +1018,7 @@ void Convolve2D_NEON(const void* const reference,
   const ptrdiff_t dest_stride = pred_stride;
   const int filter_id = ((subpixel_y & 1023) >> 6) & kSubPixelMask;
   const int16x8_t taps =
-      vld1q_s16(kSubPixelFilters[vert_filter_index][filter_id]);
+      vmovl_s8(vld1_s8(kHalfSubPixelFilters[vert_filter_index][filter_id]));
 
   if (vertical_taps == 8) {
     if (width == 2) {
@@ -1634,7 +1634,7 @@ void ConvolveVerticalScale4xH(const int16_t* src, const int subpixel_y,
                               const int filter_index, const int step_y,
                               const int height, void* dest,
                               const ptrdiff_t dest_stride) {
-  const int32x4_t v_inter_round_bits = vdupq_n_s32(-inter_round_bits);
+  const int32x4_t v_inter_round_bits = vdupq_n_s32(-(inter_round_bits - 1));
   const uint16x4_t single_round_offset =
       vdup_n_u16((1 << kBitdepth8) + (1 << (kBitdepth8 - 1)));
   constexpr ptrdiff_t src_stride = kIntermediateStride;
@@ -1654,7 +1654,8 @@ void ConvolveVerticalScale4xH(const int16_t* src, const int subpixel_y,
       s[i] = vld1_s16(src_y + i * src_stride);
     }
     int filter_id = (p >> 6) & kSubPixelMask;
-    int16x8_t filter = vld1q_s16(kSubPixelFilters[filter_index][filter_id]);
+    int16x8_t filter =
+        vmovl_s8(vld1_s8(kHalfSubPixelFilters[filter_index][filter_id]));
     uint32x4_t sums = Sum2DVerticalTaps4<num_taps>(s, filter);
     uint16x4_t result = vmovn_u32(vrshlq_u32(sums, v_inter_round_bits));
     if (is_compound) {
@@ -1685,7 +1686,7 @@ void ConvolveVerticalScale4xH(const int16_t* src, const int subpixel_y,
     dest_y += dest_stride;
 
     filter_id = (p >> 6) & kSubPixelMask;
-    filter = vld1q_s16(kSubPixelFilters[filter_index][filter_id]);
+    filter = vmovl_s8(vld1_s8(kHalfSubPixelFilters[filter_index][filter_id]));
     sums = Sum2DVerticalTaps4<num_taps>(&s[p_diff], filter);
     result = vmovn_u32(vrshlq_u32(sums, v_inter_round_bits));
     if (is_compound) {
@@ -1719,7 +1720,7 @@ inline void ConvolveVerticalScale(const int16_t* src, const int width,
                                   const int filter_index, const int step_y,
                                   const int height, void* dest,
                                   const ptrdiff_t dest_stride) {
-  const int32x4_t v_inter_round_bits = vdupq_n_s32(-inter_round_bits);
+  const int32x4_t v_inter_round_bits = vdupq_n_s32(-(inter_round_bits - 1));
   constexpr ptrdiff_t src_stride = kIntermediateStride;
   const uint16x8_t single_round_offset =
       vdupq_n_u16((1 << kBitdepth8) + (1 << (kBitdepth8 - 1)));
@@ -1747,7 +1748,8 @@ inline void ConvolveVerticalScale(const int16_t* src, const int width,
         s[i] = vld1q_s16(src_y + i * src_stride);
       }
       int filter_id = (p >> 6) & kSubPixelMask;
-      int16x8_t filter = vld1q_s16(kSubPixelFilters[filter_index][filter_id]);
+      int16x8_t filter =
+          vmovl_s8(vld1_s8(kHalfSubPixelFilters[filter_index][filter_id]));
       uint32x4x2_t sums = Sum2DVerticalTaps<num_taps>(s, filter);
       uint16x8_t result =
           vcombine_u16(vmovn_u32(vrshlq_u32(sums.val[0], v_inter_round_bits)),
@@ -1772,7 +1774,7 @@ inline void ConvolveVerticalScale(const int16_t* src, const int width,
       dest_y += dest_stride;
 
       filter_id = (p >> 6) & kSubPixelMask;
-      filter = vld1q_s16(kSubPixelFilters[filter_index][filter_id]);
+      filter = vmovl_s8(vld1_s8(kHalfSubPixelFilters[filter_index][filter_id]));
       sums = Sum2DVerticalTaps<num_taps>(&s[p_diff], filter);
       result =
           vcombine_u16(vmovn_u32(vrshlq_u32(sums.val[0], v_inter_round_bits)),
@@ -3012,7 +3014,7 @@ void ConvolveCompound2D_NEON(const void* const reference,
 
   const ptrdiff_t dest_stride = pred_stride;
   const int16x8_t taps =
-      vld1q_s16(kSubPixelFilters[vert_filter_index][filter_id]);
+      vmovl_s8(vld1_s8(kHalfSubPixelFilters[vert_filter_index][filter_id]));
 
   if (vertical_taps == 8) {
     if (width == 2) {
