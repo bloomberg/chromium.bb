@@ -151,7 +151,7 @@ class ScrollingCoordinatorTest : public testing::Test,
   }
 
   const cc::Layer* FrameScrollingContentsLayer(const LocalFrame& frame) const {
-    return CcLayerByScrollElementId(
+    return ScrollingContentsCcLayerByScrollElementId(
         RootCcLayer(), frame.View()->LayoutViewport()->GetScrollElementId());
   }
 
@@ -169,8 +169,8 @@ class ScrollingCoordinatorTest : public testing::Test,
                                       ->GetDocument()
                                       ->getElementById(element_id)
                                       ->GetScrollableArea();
-    return CcLayerByScrollElementId(RootCcLayer(),
-                                    scrollable_area->GetScrollElementId());
+    return ScrollingContentsCcLayerByScrollElementId(
+        RootCcLayer(), scrollable_area->GetScrollElementId());
   }
 
  protected:
