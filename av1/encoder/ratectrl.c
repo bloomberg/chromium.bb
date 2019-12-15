@@ -322,12 +322,6 @@ void av1_rc_init(const AV1EncoderConfig *oxcf, int pass, RATE_CONTROL *rc) {
     rc->rate_correction_factors[i] = 0.7;
   }
   rc->rate_correction_factors[KF_STD] = 1.0;
-  for (i = 0; i < RATE_FACTOR_LEVELS; ++i) {
-    rc->frame_count_pyramid[i] = 0;
-    for (int j = 0; j < 8; ++j) {
-      rc->rate_correction_factors_pyramid[i][j] = 0;
-    }
-  }
   rc->min_gf_interval = oxcf->min_gf_interval;
   rc->max_gf_interval = oxcf->max_gf_interval;
   if (rc->min_gf_interval == 0)
@@ -405,55 +399,20 @@ static int adjust_q_cbr(const AV1_COMP *cpi, int q) {
   return AOMMAX(AOMMIN(q, cpi->rc.worst_quality), cpi->rc.best_quality);
 }
 
+static const RATE_FACTOR_LEVEL rate_factor_levels[FRAME_UPDATE_TYPES] = {
+  KF_STD,        // KF_UPDATE
+  INTER_NORMAL,  // LF_UPDATE
+  GF_ARF_STD,    // GF_UPDATE
+  GF_ARF_STD,    // ARF_UPDATE
+  INTER_NORMAL,  // OVERLAY_UPDATE
+  INTER_NORMAL,  // INTNL_OVERLAY_UPDATE
+  GF_ARF_LOW,    // INTNL_ARF_UPDATE
+};
+
 static RATE_FACTOR_LEVEL get_rate_factor_level(const GF_GROUP *const gf_group) {
   const FRAME_UPDATE_TYPE update_type = gf_group->update_type[gf_group->index];
   assert(update_type < FRAME_UPDATE_TYPES);
-  if (update_type == OVERLAY_UPDATE || update_type == INTNL_OVERLAY_UPDATE) {
-    return INTER_LEAF;
-  }
-
-  if (update_type == KF_UPDATE) return KF_STD;
-  if (update_type == GF_UPDATE) return GF_ARF_LAYER_1;
-
-  const int layer_depth = gf_group->layer_depth[gf_group->index];
-  return layer_depth;
-}
-
-// The number of frames for each layer in the hierarchical structure.
-// index 0: key frame.
-// layer 1: arfs. layer 5: leaf nodes.
-static int num_frames_in_layers[MAX_ARF_LAYERS + 1] = { 1, 1, 1, 2, 4, 8 };
-
-// Store previous frames' rate_correction_factor at each layer.
-// The average factor is computed and used.
-static void set_rate_factors_in_pyramid(RATE_CONTROL *const rc,
-                                        const int frame_update_type,
-                                        const int layer_depth,
-                                        const double factor) {
-  if (frame_update_type == OVERLAY_UPDATE ||
-      frame_update_type == INTNL_OVERLAY_UPDATE) {
-    return;
-  }
-
-  int frame_count = rc->frame_count_pyramid[layer_depth];
-  if (frame_count >= num_frames_in_layers[layer_depth]) {
-    for (int i = 0; i < frame_count - 1; ++i) {
-      rc->rate_correction_factors_pyramid[layer_depth][i] =
-          rc->rate_correction_factors_pyramid[layer_depth][i + 1];
-    }
-    rc->rate_correction_factors_pyramid[layer_depth][frame_count - 1] = factor;
-  } else {
-    rc->rate_correction_factors_pyramid[layer_depth][frame_count] = factor;
-    ++frame_count;
-    ++rc->frame_count_pyramid[layer_depth];
-  }
-  double avg_rate_correction_factor = 0;
-  for (int i = 0; i < frame_count; ++i) {
-    avg_rate_correction_factor +=
-        rc->rate_correction_factors_pyramid[layer_depth][i];
-  }
-  avg_rate_correction_factor /= frame_count;
-  rc->rate_correction_factors[layer_depth] = avg_rate_correction_factor;
+  return rate_factor_levels[update_type];
 }
 
 static double get_rate_correction_factor(const AV1_COMP *cpi, int width,
@@ -470,9 +429,9 @@ static double get_rate_correction_factor(const AV1_COMP *cpi, int width,
     if ((cpi->refresh_alt_ref_frame || cpi->refresh_golden_frame) &&
         !rc->is_src_frame_alt_ref && !cpi->use_svc &&
         (cpi->oxcf.rc_mode != AOM_CBR || cpi->oxcf.gf_cbr_boost_pct > 20))
-      rcf = rc->rate_correction_factors[GF_ARF_LAYER_1];
+      rcf = rc->rate_correction_factors[GF_ARF_STD];
     else
-      rcf = rc->rate_correction_factors[INTER_LEAF];
+      rcf = rc->rate_correction_factors[INTER_NORMAL];
   }
   rcf *= resize_rate_factor(cpi, width, height);
   return fclamp(rcf, MIN_BPB_FACTOR, MAX_BPB_FACTOR);
@@ -490,19 +449,15 @@ static void set_rate_correction_factor(AV1_COMP *cpi, double factor, int width,
   if (cpi->common.current_frame.frame_type == KEY_FRAME) {
     rc->rate_correction_factors[KF_STD] = factor;
   } else if (is_stat_consumption_stage(cpi)) {
-    const GF_GROUP *const gf_group = &cpi->gf_group;
-    const FRAME_UPDATE_TYPE frame_update_type =
-        gf_group->update_type[gf_group->index];
-    const int layer_depth = gf_group->layer_depth[gf_group->index];
-    assert(layer_depth >= 0 && layer_depth <= MAX_ARF_LAYERS);
-    set_rate_factors_in_pyramid(rc, frame_update_type, layer_depth, factor);
+    const RATE_FACTOR_LEVEL rf_lvl = get_rate_factor_level(&cpi->gf_group);
+    rc->rate_correction_factors[rf_lvl] = factor;
   } else {
     if ((cpi->refresh_alt_ref_frame || cpi->refresh_golden_frame) &&
         !rc->is_src_frame_alt_ref && !cpi->use_svc &&
         (cpi->oxcf.rc_mode != AOM_CBR || cpi->oxcf.gf_cbr_boost_pct > 20))
-      rc->rate_correction_factors[GF_ARF_LAYER_1] = factor;
+      rc->rate_correction_factors[GF_ARF_STD] = factor;
     else
-      rc->rate_correction_factors[INTER_LEAF] = factor;
+      rc->rate_correction_factors[INTER_NORMAL] = factor;
   }
 }
 
@@ -1083,18 +1038,22 @@ static int rc_pick_q_and_bounds_one_pass_vbr(const AV1_COMP *cpi, int width,
 }
 
 static const double rate_factor_deltas[RATE_FACTOR_LEVELS] = {
+  1.00,  // INTER_NORMAL
+  1.50,  // GF_ARF_LOW
+  2.00,  // GF_ARF_STD
   2.00,  // KF_STD
-  2.00,  // GF_ARF_LAYER_1
-  1.75,  // GF_ARF_LAYER_2
-  1.50,  // GF_ARF_LAYER_3
-  1.25,  // GF_ARF_LAYER_4
-  1.00,  // INTER_LEAF
 };
 
 int av1_frame_type_qdelta(const AV1_COMP *cpi, int q) {
   const RATE_FACTOR_LEVEL rf_lvl = get_rate_factor_level(&cpi->gf_group);
   const FRAME_TYPE frame_type = (rf_lvl == KF_STD) ? KEY_FRAME : INTER_FRAME;
-  const double rate_factor = rate_factor_deltas[rf_lvl];
+  double rate_factor;
+
+  rate_factor = rate_factor_deltas[rf_lvl];
+  if (rf_lvl == GF_ARF_LOW) {
+    rate_factor -= (cpi->gf_group.layer_depth[cpi->gf_group.index] - 2) * 0.2;
+    rate_factor = AOMMAX(rate_factor, 1.0);
+  }
   return av1_compute_qdelta_by_rate(&cpi->rc, frame_type, q, rate_factor,
                                     cpi->common.seq_params.bit_depth);
 }
