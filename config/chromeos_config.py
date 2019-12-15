@@ -496,7 +496,7 @@ def GeneralTemplates(site_config):
       manifest=constants.OFFICIAL_MANIFEST,
       manifest_version=True,
       images=['base', 'recovery', 'test', 'factory_install'],
-      sign_types=['recovery'],
+      sign_types=['recovery', 'accessory_rwsig'],
       push_image=True,
       upload_symbols=True,
       run_cpeexport=True,

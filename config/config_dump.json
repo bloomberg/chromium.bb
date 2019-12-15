@@ -787,7 +787,8 @@
             "run_build_configs_export": true,
             "run_cpeexport": true,
             "sign_types": [
-                "recovery"
+                "recovery",
+                "accessory_rwsig"
             ],
             "signer_tests": true,
             "suite_scheduling": true,
