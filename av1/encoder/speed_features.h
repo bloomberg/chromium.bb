@@ -551,9 +551,9 @@ typedef struct INTER_MODE_SPEED_FEATURES {
 } INTER_MODE_SPEED_FEATURES;
 
 typedef struct TPL_SPEED_FEATURES {
-  // Prune the intra modes search by tpl. If set to 0, we will search all intra
-  // modes from DC_PRED to PAETH_PRED. If set to one, we only search DC_PRED and
-  // the direction modes
+  // Prune the intra modes search by tpl.
+  // If set to 0, we will search all intra modes from DC_PRED to PAETH_PRED.
+  // If set to 1, we only search DC_PRED, V_PRED, and H_PRED.
   int prune_intra_modes;
 
   // This parameter controls which step in the n-step process we start at.

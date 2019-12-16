@@ -232,18 +232,15 @@ static AOM_INLINE void mode_estimation(
 #endif
   }
 
+  // if cpi->sf.tpl_sf.prune_intra_modes is on, then search only DC_PRED,
+  // H_PRED, and V_PRED
   const PREDICTION_MODE last_intra_mode =
-      cpi->sf.tpl_sf.prune_intra_modes ? DIR_MODE_END : INTRA_MODE_END;
+      cpi->sf.tpl_sf.prune_intra_modes ? D45_PRED : INTRA_MODE_END;
   for (PREDICTION_MODE mode = INTRA_MODE_START; mode < last_intra_mode;
        ++mode) {
-    uint8_t *src;
-    uint8_t *dst;
-    int dst_stride;
-
-    src = src_mb_buffer;
-
-    dst = predictor;
-    dst_stride = bw;
+    const uint8_t *src = src_mb_buffer;
+    uint8_t *dst = predictor;
+    const int dst_stride = bw;
 
     av1_predict_intra_block(cm, xd, block_size_wide[bsize],
                             block_size_high[bsize], tx_size, mode, 0, 0,
