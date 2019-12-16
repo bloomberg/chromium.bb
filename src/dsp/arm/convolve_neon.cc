@@ -447,7 +447,8 @@ void FilterHorizontal(const uint8_t* src, const ptrdiff_t src_stride,
   auto* dest8 = static_cast<uint8_t*>(dest);
   auto* dest16 = static_cast<uint16_t*>(dest);
 
-  if (width > 4) {
+  // 4 tap filters are never used when width > 4.
+  if (num_taps != 4 && width > 4) {
     int y = 0;
     do {
       int x = 0;
@@ -478,41 +479,40 @@ void FilterHorizontal(const uint8_t* src, const ptrdiff_t src_stride,
     return;
   }
 
-  if (width == 4) {
-    int y = 0;
-    do {
-      if (is_2d) {
-        uint16x8_t v_sum =
-            SumHorizontalTaps<num_taps, filter_index, negative_outside_taps>(
-                &src[0], v_tap);
-        v_sum = vrshlq_u16(v_sum, v_inter_round_bits_0);
-        vst1_u16(&dest16[0], vget_low_u16(v_sum));
-      } else if (is_compound) {
-        const uint16x8_t v_sum =
-            CompoundHorizontalTaps<filter_index, negative_outside_taps>(
-                src, v_tap, inter_round_bits_vertical);
-        vst1_u16(dest16, vget_low_u16(v_sum));
-      } else {
-        const uint8x8_t result =
-            SimpleHorizontalTaps<filter_index, negative_outside_taps>(src,
-                                                                      v_tap);
-        StoreLo4(&dest8[0], result);
-      }
-      src += src_stride;
-      dest8 += pred_stride;
-      dest16 += pred_stride;
-    } while (++y < height);
-    return;
-  }
-
   // Horizontal passes only needs to account for |num_taps| 2 and 4 when
-  // |width| == 2.
-  assert(width == 2);
+  // |width| <= 4.
+  assert(width <= 4);
   assert(num_taps <= 4);
-
-  constexpr int positive_offset_bits = kBitdepth8 + kFilterBits - 2;
-
   if (num_taps <= 4) {
+    if (width == 4) {
+      int y = 0;
+      do {
+        if (is_2d) {
+          uint16x8_t v_sum =
+              SumHorizontalTaps<num_taps, filter_index, negative_outside_taps>(
+                  &src[0], v_tap);
+          v_sum = vrshlq_u16(v_sum, v_inter_round_bits_0);
+          vst1_u16(&dest16[0], vget_low_u16(v_sum));
+        } else if (is_compound) {
+          const uint16x8_t v_sum =
+              CompoundHorizontalTaps<filter_index, negative_outside_taps>(
+                  src, v_tap, inter_round_bits_vertical);
+          vst1_u16(dest16, vget_low_u16(v_sum));
+        } else {
+          const uint8x8_t result =
+              SimpleHorizontalTaps<filter_index, negative_outside_taps>(src,
+                                                                        v_tap);
+          StoreLo4(&dest8[0], result);
+        }
+        src += src_stride;
+        dest8 += pred_stride;
+        dest16 += pred_stride;
+      } while (++y < height);
+      return;
+    }
+
+    constexpr int positive_offset_bits = kBitdepth8 + kFilterBits - 2;
+
     int y = 0;
     do {
       if (is_2d) {
