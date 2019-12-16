@@ -253,7 +253,11 @@ class CrOSTest(object):
 
     if self._device.log_level == 'debug':
       cmd += ['-verbose']
-    cmd += ['run', '-build=false', '-waituntilready', '-failfortests',]
+    cmd += ['run', '-build=false', '-waituntilready',]
+    # If the tests are not informational, then fail on test failure.
+    # TODO(dhanyaganesh@): Make this less hack-y crbug.com/1034403.
+    if '!informational' in self.tast:
+      cmd += ['-failfortests']
     if not need_chroot:
       # The test runner needs to be pointed to the location of the test files
       # when we're using those in the SimpleChrome cache.
