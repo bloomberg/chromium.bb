@@ -113,7 +113,7 @@ g.test('wait/timed promise', async t => {
     const fence = t.queue.createFence();
     timeout(() => t.queue.signal(fence, 2), 100)
     fence.onCompletion(2).then(() => {
-      t.expect(fence.getCompletedValue() == 2);
+      t.expect(fence.getCompletedValue() === 2);
       resolve()
     })
     rejectOnTimeout(1000, '')
