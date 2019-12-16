@@ -9829,18 +9829,21 @@ static int handle_inter_intra_mode(const AV1_COMP *const cpi,
                                    HandleInterModeArgs *args,
                                    int64_t ref_best_rd, int *rate_mv,
                                    int *tmp_rate2, const BUFFER_SET *orig_dst) {
-  const AV1_COMMON *const cm = &cpi->common;
-  const int num_planes = av1_num_planes(cm);
-  MACROBLOCKD *xd = &x->e_mbd;
+  const int try_smooth_interintra = cpi->oxcf.enable_smooth_interintra &&
+                                    !cpi->sf.inter_sf.disable_smooth_interintra;
+  const int is_wedge_used = is_interintra_wedge_used(bsize);
+  const int try_wedge_interintra =
+      is_wedge_used && enable_wedge_interintra_search(x, cpi);
+  if (!try_smooth_interintra && !try_wedge_interintra) return -1;
 
-  INTERINTRA_MODE best_interintra_mode = II_DC_PRED;
+  const AV1_COMMON *const cm = &cpi->common;
+  MACROBLOCKD *xd = &x->e_mbd;
   int64_t rd = INT64_MAX;
-  int64_t best_interintra_rd = INT64_MAX;
   int rmode, rate_sum;
   int64_t dist_sum;
   int tmp_rate_mv = 0;
   int tmp_skip_txfm_sb;
-  int bw = block_size_wide[bsize];
+  const int bw = block_size_wide[bsize];
   int64_t tmp_skip_sse_sb;
   DECLARE_ALIGNED(16, uint8_t, tmp_buf_[2 * MAX_INTERINTRA_SB_SQUARE]);
   DECLARE_ALIGNED(16, uint8_t, intrapred_[2 * MAX_INTERINTRA_SB_SQUARE]);
@@ -9849,8 +9852,6 @@ static int handle_inter_intra_mode(const AV1_COMP *const cpi,
   const int *const interintra_mode_cost =
       x->interintra_mode_cost[size_group_lookup[bsize]];
   const int_mv mv0 = mbmi->mv[0];
-  const int is_wedge_used = is_interintra_wedge_used(bsize);
-  int rwedge = is_wedge_used ? x->wedge_interintra_cost[bsize][0] : 0;
   mbmi->ref_frame[1] = NONE_FRAME;
   xd->plane[0].dst.buf = tmp_buf;
   xd->plane[0].dst.stride = bw;
@@ -9858,13 +9859,14 @@ static int handle_inter_intra_mode(const AV1_COMP *const cpi,
   const int mi_col = xd->mi_col;
   av1_enc_build_inter_predictor(cm, xd, mi_row, mi_col, NULL, bsize,
                                 AOM_PLANE_Y, AOM_PLANE_Y);
-
+  const int num_planes = av1_num_planes(cm);
   restore_dst_buf(xd, *orig_dst, num_planes);
   mbmi->ref_frame[1] = INTRA_FRAME;
-  best_interintra_mode = args->inter_intra_mode[mbmi->ref_frame[0]];
+  INTERINTRA_MODE best_interintra_mode =
+      args->inter_intra_mode[mbmi->ref_frame[0]];
 
-  if (cpi->oxcf.enable_smooth_interintra &&
-      !cpi->sf.inter_sf.disable_smooth_interintra) {
+  int64_t best_interintra_rd_nowedge = INT64_MAX;
+  if (try_smooth_interintra) {
     mbmi->use_wedge_interintra = 0;
     int j = 0;
     if (cpi->sf.inter_sf.reuse_inter_intra_mode == 0 ||
@@ -9883,8 +9885,8 @@ static int handle_inter_intra_mode(const AV1_COMP *const cpi,
             cpi, bsize, x, xd, 0, 0, &rate_sum, &dist_sum, &tmp_skip_txfm_sb,
             &tmp_skip_sse_sb, NULL, NULL, NULL);
         rd = RDCOST(x->rdmult, tmp_rate_mv + rate_sum + rmode, dist_sum);
-        if (rd < best_interintra_rd) {
-          best_interintra_rd = rd;
+        if (rd < best_interintra_rd_nowedge) {
+          best_interintra_rd_nowedge = rd;
           best_interintra_mode = mbmi->interintra_mode;
         }
       }
@@ -9905,140 +9907,132 @@ static int handle_inter_intra_mode(const AV1_COMP *const cpi,
     const int64_t rd_thresh = get_rd_thresh_from_best_rd(
         ref_best_rd, (1 << INTER_INTRA_RD_THRESH_SHIFT),
         INTER_INTRA_RD_THRESH_SCALE);
-    const int64_t mode_rd = RDCOST(x->rdmult, *rate_mv + rmode + rwedge, 0);
+    const int rwedge = is_wedge_used ? x->wedge_interintra_cost[bsize][0] : 0;
+    const int total_mode_rate = *rate_mv + rmode + rwedge;
+    const int64_t mode_rd = RDCOST(x->rdmult, total_mode_rate, 0);
     const int64_t tmp_rd_thresh = rd_thresh - mode_rd;
     rd = estimate_yrd_for_sb(cpi, bsize, x, tmp_rd_thresh, &rd_stats);
     if (rd != INT64_MAX) {
-      rd = RDCOST(x->rdmult, *rate_mv + rmode + rd_stats.rate + rwedge,
-                  rd_stats.dist);
+      rd = RDCOST(x->rdmult, total_mode_rate + rd_stats.rate, rd_stats.dist);
+    } else {
+      return -1;
     }
-    best_interintra_rd = rd;
+    best_interintra_rd_nowedge = rd;
     if (ref_best_rd < INT64_MAX &&
-        ((((best_interintra_rd >> INTER_INTRA_RD_THRESH_SHIFT) *
-           INTER_INTRA_RD_THRESH_SCALE) > ref_best_rd) ||
-         (best_interintra_rd == INT64_MAX))) {
+        (best_interintra_rd_nowedge >> INTER_INTRA_RD_THRESH_SHIFT) *
+                INTER_INTRA_RD_THRESH_SCALE >
+            ref_best_rd) {
       return -1;
     }
   }
-  if (is_wedge_used) {
-    int64_t best_interintra_rd_nowedge = rd;
-    int64_t best_interintra_rd_wedge = INT64_MAX;
-    int_mv tmp_mv;
-    if (enable_wedge_interintra_search(x, cpi)) {
-      mbmi->use_wedge_interintra = 1;
 
-      rwedge = av1_cost_literal(get_interintra_wedge_bits(bsize)) +
-               x->wedge_interintra_cost[bsize][1];
+  int64_t best_interintra_rd_wedge = INT64_MAX;
+  if (try_wedge_interintra) {
+    mbmi->use_wedge_interintra = 1;
+    if (!try_smooth_interintra) {
+      if (best_interintra_mode == INTERINTRA_MODES) {
+        mbmi->interintra_mode = INTERINTRA_MODES - 1;
+        best_interintra_mode = INTERINTRA_MODES - 1;
+        av1_build_intra_predictors_for_interintra(cm, xd, bsize, 0, orig_dst,
+                                                  intrapred, bw);
+        best_interintra_rd_wedge =
+            pick_interintra_wedge(cpi, x, bsize, intrapred_, tmp_buf_);
 
-      if (!cpi->oxcf.enable_smooth_interintra ||
-          cpi->sf.inter_sf.disable_smooth_interintra) {
-        if (best_interintra_mode == INTERINTRA_MODES) {
-          mbmi->interintra_mode = INTERINTRA_MODES - 1;
-          best_interintra_mode = INTERINTRA_MODES - 1;
+        for (int j = 0; j < INTERINTRA_MODES; ++j) {
+          mbmi->interintra_mode = (INTERINTRA_MODE)j;
+          rmode = interintra_mode_cost[mbmi->interintra_mode];
           av1_build_intra_predictors_for_interintra(cm, xd, bsize, 0, orig_dst,
                                                     intrapred, bw);
-          best_interintra_rd_wedge =
-              pick_interintra_wedge(cpi, x, bsize, intrapred_, tmp_buf_);
-
-          int j = 0;
-          for (j = 0; j < INTERINTRA_MODES; ++j) {
-            mbmi->interintra_mode = (INTERINTRA_MODE)j;
-            rmode = interintra_mode_cost[mbmi->interintra_mode];
-            av1_build_intra_predictors_for_interintra(cm, xd, bsize, 0,
-                                                      orig_dst, intrapred, bw);
-            av1_combine_interintra(xd, bsize, 0, tmp_buf, bw, intrapred, bw);
-            model_rd_sb_fn[MODELRD_TYPE_INTERINTRA](
-                cpi, bsize, x, xd, 0, 0, &rate_sum, &dist_sum,
-                &tmp_skip_txfm_sb, &tmp_skip_sse_sb, NULL, NULL, NULL);
-            rd = RDCOST(x->rdmult, tmp_rate_mv + rate_sum + rmode, dist_sum);
-            if (rd < best_interintra_rd) {
-              best_interintra_rd_wedge = rd;
-              best_interintra_mode = mbmi->interintra_mode;
-            }
+          av1_combine_interintra(xd, bsize, 0, tmp_buf, bw, intrapred, bw);
+          model_rd_sb_fn[MODELRD_TYPE_INTERINTRA](
+              cpi, bsize, x, xd, 0, 0, &rate_sum, &dist_sum, &tmp_skip_txfm_sb,
+              &tmp_skip_sse_sb, NULL, NULL, NULL);
+          rd = RDCOST(x->rdmult, tmp_rate_mv + rate_sum + rmode, dist_sum);
+          if (rd < best_interintra_rd_wedge) {
+            best_interintra_rd_wedge = rd;
+            best_interintra_mode = mbmi->interintra_mode;
           }
-          args->inter_intra_mode[mbmi->ref_frame[0]] = best_interintra_mode;
-          mbmi->interintra_mode = best_interintra_mode;
+        }
+        args->inter_intra_mode[mbmi->ref_frame[0]] = best_interintra_mode;
+        mbmi->interintra_mode = best_interintra_mode;
 
-          if (best_interintra_mode != INTERINTRA_MODES - 1) {
-            av1_build_intra_predictors_for_interintra(cm, xd, bsize, 0,
-                                                      orig_dst, intrapred, bw);
-          }
-        } else {
-          mbmi->interintra_mode = best_interintra_mode;
+        if (best_interintra_mode != INTERINTRA_MODES - 1) {
           av1_build_intra_predictors_for_interintra(cm, xd, bsize, 0, orig_dst,
                                                     intrapred, bw);
-          best_interintra_rd_wedge =
-              pick_interintra_wedge(cpi, x, bsize, intrapred_, tmp_buf_);
         }
       } else {
+        mbmi->interintra_mode = best_interintra_mode;
+        av1_build_intra_predictors_for_interintra(cm, xd, bsize, 0, orig_dst,
+                                                  intrapred, bw);
         best_interintra_rd_wedge =
             pick_interintra_wedge(cpi, x, bsize, intrapred_, tmp_buf_);
       }
+    } else {
+      best_interintra_rd_wedge =
+          pick_interintra_wedge(cpi, x, bsize, intrapred_, tmp_buf_);
+    }
 
-      rmode = interintra_mode_cost[mbmi->interintra_mode];
-      best_interintra_rd_wedge +=
-          RDCOST(x->rdmult, rmode + *rate_mv + rwedge, 0);
-      rd = INT64_MAX;
-      // Refine motion vector.
-      if (have_newmv_in_inter_mode(mbmi->mode)) {
-        // get negative of mask
-        const uint8_t *mask = av1_get_contiguous_soft_mask(
-            mbmi->interintra_wedge_index, 1, bsize);
-        tmp_mv = mbmi->mv[0];
-        compound_single_motion_search(cpi, x, bsize, &tmp_mv.as_mv, intrapred,
-                                      mask, bw, &tmp_rate_mv, 0);
-        if (mbmi->mv[0].as_int != tmp_mv.as_int) {
-          mbmi->mv[0].as_int = tmp_mv.as_int;
-          av1_enc_build_inter_predictor(cm, xd, mi_row, mi_col, orig_dst, bsize,
-                                        AOM_PLANE_Y, AOM_PLANE_Y);
-          model_rd_sb_fn[MODELRD_TYPE_MASKED_COMPOUND](
-              cpi, bsize, x, xd, 0, 0, &rate_sum, &dist_sum, &tmp_skip_txfm_sb,
-              &tmp_skip_sse_sb, NULL, NULL, NULL);
-          rd = RDCOST(x->rdmult, tmp_rate_mv + rmode + rate_sum + rwedge,
-                      dist_sum);
-        }
-      }
-      if (rd >= best_interintra_rd_wedge) {
-        tmp_mv.as_int = mv0.as_int;
-        tmp_rate_mv = *rate_mv;
-        av1_combine_interintra(xd, bsize, 0, tmp_buf, bw, intrapred, bw);
-      }
-      // Evaluate closer to true rd
-      RD_STATS rd_stats;
-      const int64_t mode_rd =
-          RDCOST(x->rdmult, rmode + tmp_rate_mv + rwedge, 0);
-      const int64_t tmp_rd_thresh = best_interintra_rd_nowedge - mode_rd;
-      rd = estimate_yrd_for_sb(cpi, bsize, x, tmp_rd_thresh, &rd_stats);
-      if (rd != INT64_MAX) {
-        rd = RDCOST(x->rdmult, rmode + tmp_rate_mv + rwedge + rd_stats.rate,
-                    rd_stats.dist);
-      }
-      best_interintra_rd_wedge = rd;
-      if ((!cpi->oxcf.enable_smooth_interintra ||
-           cpi->sf.inter_sf.disable_smooth_interintra ||
-           best_interintra_rd_nowedge == INT64_MAX) &&
-          best_interintra_rd_wedge == INT64_MAX)
-        return -1;
-      if (best_interintra_rd_wedge < best_interintra_rd_nowedge) {
-        mbmi->use_wedge_interintra = 1;
+    const int rate_overhead =
+        interintra_mode_cost[mbmi->interintra_mode] +
+        av1_cost_literal(get_interintra_wedge_bits(bsize)) +
+        x->wedge_interintra_cost[bsize][1];
+    best_interintra_rd_wedge += RDCOST(x->rdmult, rate_overhead + *rate_mv, 0);
+
+    int_mv tmp_mv;
+    rd = INT64_MAX;
+    // Refine motion vector.
+    if (have_newmv_in_inter_mode(mbmi->mode)) {
+      // get negative of mask
+      const uint8_t *mask =
+          av1_get_contiguous_soft_mask(mbmi->interintra_wedge_index, 1, bsize);
+      tmp_mv = mbmi->mv[0];
+      compound_single_motion_search(cpi, x, bsize, &tmp_mv.as_mv, intrapred,
+                                    mask, bw, &tmp_rate_mv, 0);
+      if (mbmi->mv[0].as_int != tmp_mv.as_int) {
         mbmi->mv[0].as_int = tmp_mv.as_int;
-        *tmp_rate2 += tmp_rate_mv - *rate_mv;
-        *rate_mv = tmp_rate_mv;
-      } else {
-        mbmi->use_wedge_interintra = 0;
-        mbmi->mv[0].as_int = mv0.as_int;
         av1_enc_build_inter_predictor(cm, xd, mi_row, mi_col, orig_dst, bsize,
                                       AOM_PLANE_Y, AOM_PLANE_Y);
+        model_rd_sb_fn[MODELRD_TYPE_MASKED_COMPOUND](
+            cpi, bsize, x, xd, 0, 0, &rate_sum, &dist_sum, &tmp_skip_txfm_sb,
+            &tmp_skip_sse_sb, NULL, NULL, NULL);
+        rd =
+            RDCOST(x->rdmult, tmp_rate_mv + rate_overhead + rate_sum, dist_sum);
       }
-    } else {
-      if (!cpi->oxcf.enable_smooth_interintra ||
-          cpi->sf.inter_sf.disable_smooth_interintra)
-        return -1;
-      mbmi->use_wedge_interintra = 0;
     }
-  } else {
-    if (best_interintra_rd == INT64_MAX) return -1;
+    if (rd >= best_interintra_rd_wedge) {
+      tmp_mv.as_int = mv0.as_int;
+      tmp_rate_mv = *rate_mv;
+      av1_combine_interintra(xd, bsize, 0, tmp_buf, bw, intrapred, bw);
+    }
+    // Evaluate closer to true rd
+    RD_STATS rd_stats;
+    const int64_t mode_rd = RDCOST(x->rdmult, rate_overhead + tmp_rate_mv, 0);
+    const int64_t tmp_rd_thresh = best_interintra_rd_nowedge - mode_rd;
+    rd = estimate_yrd_for_sb(cpi, bsize, x, tmp_rd_thresh, &rd_stats);
+    if (rd != INT64_MAX) {
+      rd = RDCOST(x->rdmult, rate_overhead + tmp_rate_mv + rd_stats.rate,
+                  rd_stats.dist);
+    } else {
+      if (best_interintra_rd_nowedge == INT64_MAX) return -1;
+    }
+    best_interintra_rd_wedge = rd;
+    if (best_interintra_rd_wedge < best_interintra_rd_nowedge) {
+      mbmi->mv[0].as_int = tmp_mv.as_int;
+      *tmp_rate2 += tmp_rate_mv - *rate_mv;
+      *rate_mv = tmp_rate_mv;
+    } else {
+      mbmi->use_wedge_interintra = 0;
+      mbmi->mv[0].as_int = mv0.as_int;
+      av1_enc_build_inter_predictor(cm, xd, mi_row, mi_col, orig_dst, bsize,
+                                    AOM_PLANE_Y, AOM_PLANE_Y);
+    }
   }
+
+  if (best_interintra_rd_nowedge == INT64_MAX &&
+      best_interintra_rd_wedge == INT64_MAX) {
+    return -1;
+  }
+
   if (num_planes > 1) {
     av1_enc_build_inter_predictor(cm, xd, mi_row, mi_col, orig_dst, bsize,
                                   AOM_PLANE_U, num_planes - 1);
