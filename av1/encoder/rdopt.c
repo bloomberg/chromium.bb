@@ -4783,7 +4783,8 @@ static AOM_INLINE int perform_top_color_palette_search(
                  skippable, beat_best_rd, ctx, best_blk_skip, tx_type_map,
                  &beat_best_pallette_rd);
     // Break if current palette colors is not winning
-    if ((cpi->sf.prune_palette_search_level == 2) && !beat_best_pallette_rd)
+    if ((cpi->sf.intra_sf.prune_palette_search_level == 2) &&
+        !beat_best_pallette_rd)
       return n;
     n += step_size;
     if (n == end_n) break;
@@ -4820,7 +4821,8 @@ static AOM_INLINE int perform_k_means_palette_search(
                  skippable, beat_best_rd, ctx, best_blk_skip, tx_type_map,
                  &beat_best_pallette_rd);
     // Break if current palette colors is not winning
-    if ((cpi->sf.prune_palette_search_level == 2) && !beat_best_pallette_rd)
+    if ((cpi->sf.intra_sf.prune_palette_search_level == 2) &&
+        !beat_best_pallette_rd)
       return n;
     n += step_size;
     if (n == end_n) break;
@@ -4952,7 +4954,7 @@ static void rd_pick_palette_intra_sby(
     // Try the dominant colors directly.
     // TODO(huisu@google.com): Try to avoid duplicate computation in cases
     // where the dominant colors and the k-means results are similar.
-    if ((cpi->sf.prune_palette_search_level == 1) &&
+    if ((cpi->sf.intra_sf.prune_palette_search_level == 1) &&
         (colors > PALETTE_MIN_SIZE)) {
       const int end_n = AOMMIN(colors, PALETTE_MAX_SIZE);
       assert(PALETTE_MAX_SIZE == 8);
@@ -5471,8 +5473,9 @@ static int64_t rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
   bmode_costs = x->y_mode_costs[above_ctx][left_ctx];
 
   mbmi->angle_delta[PLANE_TYPE_Y] = 0;
-  if (cpi->sf.intra_pruning_with_hog) {
-    prune_intra_mode_with_hog(x, bsize, cpi->sf.intra_pruning_with_hog_thresh,
+  if (cpi->sf.intra_sf.intra_pruning_with_hog) {
+    prune_intra_mode_with_hog(x, bsize,
+                              cpi->sf.intra_sf.intra_pruning_with_hog_thresh,
                               directional_mode_skip_mask);
   }
   mbmi->filter_intra_mode_info.use_filter_intra = 0;
@@ -5495,7 +5498,8 @@ static int64_t rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
     int this_rate, this_rate_tokenonly, s;
     int64_t this_distortion, this_rd;
     mbmi->mode = intra_rd_search_mode_order[mode_idx];
-    if ((!cpi->oxcf.enable_smooth_intra || cpi->sf.disable_smooth_intra) &&
+    if ((!cpi->oxcf.enable_smooth_intra ||
+         cpi->sf.intra_sf.disable_smooth_intra) &&
         (mbmi->mode == SMOOTH_PRED || mbmi->mode == SMOOTH_H_PRED ||
          mbmi->mode == SMOOTH_V_PRED))
       continue;
@@ -7112,7 +7116,7 @@ static int64_t rd_pick_intra_sbuv_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
     RD_STATS tokenonly_rd_stats;
     UV_PREDICTION_MODE mode = uv_rd_search_mode_order[mode_idx];
     const int is_directional_mode = av1_is_directional_mode(get_uv_mode(mode));
-    if (!(cpi->sf.intra_uv_mode_mask[txsize_sqr_up_map[max_tx_size]] &
+    if (!(cpi->sf.intra_sf.intra_uv_mode_mask[txsize_sqr_up_map[max_tx_size]] &
           (1 << mode)))
       continue;
     if (!cpi->oxcf.enable_smooth_intra && mode >= UV_SMOOTH_PRED &&
@@ -9856,7 +9860,8 @@ static int handle_inter_intra_mode(const AV1_COMP *const cpi,
     if (cpi->sf.inter_sf.reuse_inter_intra_mode == 0 ||
         best_interintra_mode == INTERINTRA_MODES) {
       for (j = 0; j < INTERINTRA_MODES; ++j) {
-        if ((!cpi->oxcf.enable_smooth_intra || cpi->sf.disable_smooth_intra) &&
+        if ((!cpi->oxcf.enable_smooth_intra ||
+             cpi->sf.intra_sf.disable_smooth_intra) &&
             (INTERINTRA_MODE)j == II_SMOOTH_PRED)
           continue;
         mbmi->interintra_mode = (INTERINTRA_MODE)j;
@@ -12360,7 +12365,7 @@ static AOM_INLINE void init_mode_skip_mask(mode_skip_mask_t *mask,
   }
 
   mask->pred_modes[INTRA_FRAME] |=
-      ~(sf->intra_y_mode_mask[max_txsize_lookup[bsize]]);
+      ~(sf->intra_sf.intra_y_mode_mask[max_txsize_lookup[bsize]]);
 }
 
 // Please add/modify parameter setting in this function, making it consistent
@@ -12873,8 +12878,10 @@ static int64_t handle_intra_mode(InterModeSearchState *search_state,
   const int is_directional_mode = av1_is_directional_mode(mode);
   if (is_directional_mode && av1_use_angle_delta(bsize) &&
       cpi->oxcf.enable_angle_delta) {
-    if (sf->intra_pruning_with_hog && !search_state->angle_stats_ready) {
-      prune_intra_mode_with_hog(x, bsize, cpi->sf.intra_pruning_with_hog_thresh,
+    if (sf->intra_sf.intra_pruning_with_hog &&
+        !search_state->angle_stats_ready) {
+      prune_intra_mode_with_hog(x, bsize,
+                                cpi->sf.intra_sf.intra_pruning_with_hog_thresh,
                                 search_state->directional_mode_skip_mask);
       search_state->angle_stats_ready = 1;
     }
@@ -13042,7 +13049,7 @@ static int64_t handle_intra_mode(InterModeSearchState *search_state,
     search_state->best_intra_mode = mode;
   }
 
-  if (sf->skip_intra_in_interframe) {
+  if (sf->intra_sf.skip_intra_in_interframe) {
     if (search_state->best_rd < (INT64_MAX / 2) &&
         this_rd > (search_state->best_rd + (search_state->best_rd >> 1)))
       search_state->skip_intra_modes = 1;
@@ -13548,7 +13555,7 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
   const int mi_col = xd->mi_col;
   const int do_pruning =
       (AOMMIN(cm->width, cm->height) > 480 && cpi->speed <= 1) ? 0 : 1;
-  if (do_pruning && sf->skip_intra_in_interframe) {
+  if (do_pruning && sf->intra_sf.skip_intra_in_interframe) {
     // Only consider full SB.
     int len = tpl_blocks_in_sb(cm->seq_params.sb_size);
     if (len == x->valid_cost_b) {
@@ -13653,7 +13660,8 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
             : 0;
 
     if (ref_frame == INTRA_FRAME) {
-      if ((!cpi->oxcf.enable_smooth_intra || sf->disable_smooth_intra) &&
+      if ((!cpi->oxcf.enable_smooth_intra ||
+           sf->intra_sf.disable_smooth_intra) &&
           (mbmi->mode == SMOOTH_PRED || mbmi->mode == SMOOTH_H_PRED ||
            mbmi->mode == SMOOTH_V_PRED))
         continue;
@@ -13889,8 +13897,8 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
 
   // Gate intra mode evaluation if best of inter is skip except when source
   // variance is extremely low
-  if (sf->skip_intra_in_interframe &&
-      (x->source_variance > sf->src_var_thresh_intra_skip)) {
+  if (sf->intra_sf.skip_intra_in_interframe &&
+      (x->source_variance > sf->intra_sf.src_var_thresh_intra_skip)) {
     if (inter_cost >= 0 && intra_cost >= 0) {
       aom_clear_system_state();
       const NN_CONFIG *nn_config = (AOMMIN(cm->width, cm->height) <= 480)
@@ -13915,14 +13923,15 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
 
       if (probs[1] > 0.8) search_state.skip_intra_modes = 1;
     } else if ((search_state.best_mbmode.skip) &&
-               (sf->skip_intra_in_interframe >= 2)) {
+               (sf->intra_sf.skip_intra_in_interframe >= 2)) {
       search_state.skip_intra_modes = 1;
     }
   }
 
   const int intra_ref_frame_cost = ref_costs_single[INTRA_FRAME];
   for (int j = 0; j < intra_mode_num; ++j) {
-    if (sf->skip_intra_in_interframe && search_state.skip_intra_modes) break;
+    if (sf->intra_sf.skip_intra_in_interframe && search_state.skip_intra_modes)
+      break;
     const THR_MODES mode_enum = intra_mode_idx_ls[j];
     const MODE_DEFINITION *mode_def = &av1_mode_defs[mode_enum];
     const PREDICTION_MODE this_mode = mode_def->mode;

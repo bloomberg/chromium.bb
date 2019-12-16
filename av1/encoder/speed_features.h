@@ -591,6 +591,38 @@ typedef struct INTERP_FILTER_SPEED_FEATURES {
   int adaptive_interp_filter_search;
 } INTERP_FILTER_SPEED_FEATURES;
 
+typedef struct INTRA_MODE_SPEED_FEATURES {
+  // These bit masks allow you to enable or disable intra modes for each
+  // transform size separately.
+  int intra_y_mode_mask[TX_SIZES];
+  int intra_uv_mode_mask[TX_SIZES];
+
+  // flag to allow skipping intra mode for inter frame prediction
+  int skip_intra_in_interframe;
+
+  // variance threshold for intra mode gating when inter turned out to be skip
+  // in inter frame prediction
+  unsigned int src_var_thresh_intra_skip;
+
+  // Prune intra mode candidates based on source block histogram of gradient.
+  int intra_pruning_with_hog;
+
+  // TODO(anyone): tune intra_pruning_with_hog_thresh for various speeds.
+  float intra_pruning_with_hog_thresh;
+
+  // Enable/disable smooth intra modes.
+  int disable_smooth_intra;
+
+  // prune palette search
+  // 0: No pruning
+  // 1: Perform coarse search to prune the palette colors. For winner colors,
+  // neighbors are also evaluated using a finer search.
+  // 2: Perform 2 way palette search from max colors to min colors (and min
+  // colors to remaining colors) and terminate the search if current number of
+  // palette colors is not the winner.
+  int prune_palette_search_level;
+} INTRA_MODE_SPEED_FEATURES;
+
 typedef struct REAL_TIME_SPEED_FEATURES {
   // check intra prediction for non-RD mode.
   int check_intra_pred_nonrd;
@@ -737,35 +769,7 @@ typedef struct SPEED_FEATURES {
   /*
    * Intra mode search speed features:
    */
-  // These bit masks allow you to enable or disable intra modes for each
-  // transform size separately.
-  int intra_y_mode_mask[TX_SIZES];
-  int intra_uv_mode_mask[TX_SIZES];
-
-  // flag to allow skipping intra mode for inter frame prediction
-  int skip_intra_in_interframe;
-
-  // variance threshold for intra mode gating when inter turned out to be skip
-  // in inter frame prediction
-  unsigned int src_var_thresh_intra_skip;
-
-  // Prune intra mode candidates based on source block histogram of gradient.
-  int intra_pruning_with_hog;
-
-  // TODO(anyone): tune intra_pruning_with_hog_thresh for various speeds.
-  float intra_pruning_with_hog_thresh;
-
-  // Enable/disable smooth intra modes.
-  int disable_smooth_intra;
-
-  // prune palette search
-  // 0: No pruning
-  // 1: Perform coarse search to prune the palette colors. For winner colors,
-  // neighbors are also evaluated using a finer search.
-  // 2: Perform 2 way palette search from max colors to min colors (and min
-  // colors to remaining colors) and terminate the search if current number of
-  // palette colors is not the winner.
-  int prune_palette_search_level;
+  INTRA_MODE_SPEED_FEATURES intra_sf;
 
   /*
    * Transform size/type search speed features:
