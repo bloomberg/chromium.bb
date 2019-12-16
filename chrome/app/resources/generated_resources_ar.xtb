@@ -559,6 +559,8 @@
 <translation id="177336675152937177">بيانات التطبيق المستضافة</translation>
 <translation id="1776712937009046120">إضافة مستخدم</translation>
 <translation id="1776883657531386793"><ph name="OID" />: <ph name="INFO" /></translation>
+<translation id="1777310661937894236">يخضع هذا الجهاز لإدارة <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />.
+    يُرجى النقر على "التالي" لمواصلة تسجيل الدخول إلى حسابك على <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />.</translation>
 <translation id="1779652936965200207">يُرجى إدخال مفتاح المرور هذا على "<ph name="DEVICE_NAME" />":</translation>
 <translation id="1780152987505130652">إغلاق المجموعة</translation>
 <translation id="1781291988450150470">رمز رقم التعريف الشخصي الحالي</translation>
@@ -746,6 +748,7 @@
 <translation id="2048653237708779538">الإجراء غير متاح</translation>
 <translation id="2050339315714019657">رأسي</translation>
 <translation id="2053312383184521053">بيانات حالة الخمول</translation>
+<translation id="2055585478631012616">سيتم تسجيل خروجك من هذه المواقع الإلكترونية، بما في ذلك علامات التبويب المفتوحة.</translation>
 <translation id="205560151218727633">‏شعار مساعد Google</translation>
 <translation id="2058456167109518507">تم رصد جهاز للاتصال</translation>
 <translation id="2059913712424898428">المنطقة الزمنية</translation>
@@ -1289,6 +1292,7 @@
 <translation id="2800760947029405028">تحميل صورة</translation>
 <translation id="2803375539583399270">أدخل رقم التعريف الشخصي</translation>
 <translation id="2804043232879091219">تعذَّر فتح المتصفّح البديل</translation>
+<translation id="2804667941345577550">سيتم تسجيل خروجك من هذا الموقع الإلكتروني، بما في ذلك علامات التبويب المفتوحة.</translation>
 <translation id="2804680522274557040">تم إيقاف الكاميرا</translation>
 <translation id="2805646850212350655">‏نظام تشفير الملفات لـ Microsoft</translation>
 <translation id="2805756323405976993">التطبيقات</translation>
@@ -2192,6 +2196,7 @@
 <translation id="407520071244661467">تغيير الحجم</translation>
 <translation id="4075639477629295004">يتعذَر إرسال <ph name="FILE_NAME" />.</translation>
 <translation id="4077917118009885966">حظر الإعلانات على هذا الموقع</translation>
+<translation id="4077919383365622693">سيتم محو جميع البيانات وملفات تعريف الارتباط المُخزّنة من خلال <ph name="SITE" />.</translation>
 <translation id="4079140982534148664">استخدام التدقيق الإملائي المُحسَّن</translation>
 <translation id="4081242589061676262">يتعذَّر إرسال الملف.</translation>
 <translation id="4084682180776658562">إشارة</translation>
@@ -2566,6 +2571,7 @@
 <translation id="4665446389743427678">سيتم حذف جميع البيانات المُخزَّنة من خلال <ph name="SITE" />.</translation>
 <translation id="4668721319092543482">انقر لتمكين <ph name="PLUGIN_NAME" /></translation>
 <translation id="4672657274720418656">صفحة التنقية</translation>
+<translation id="46733273239502219">سيتم أيضًا محو البيانات المتوفرة بلا اتصال إنترنت في التطبيقات المثبّتة.</translation>
 <translation id="4673442866648850031">فتح أدوات قلم الشاشة عندما تتم إزالة قلم الشاشة</translation>
 <translation id="4677585247300749148">يريد <ph name="URL" /> الاستجابة لأحداث إمكانية الوصول.</translation>
 <translation id="4677772697204437347">ذاكرة وحدة معالج الرسومات</translation>
@@ -2698,6 +2704,7 @@
 <translation id="4876273079589074638">ساعد مهندسينا في تحري هذا العطل وإصلاحه. واسرد الخطوات الدقيقة إذا كان ذلك ممكنًا. لا توجد تفاصيل صغيرة جدًا!</translation>
 <translation id="4876895919560854374">قفل الشاشة وإلغاء قفلها</translation>
 <translation id="4877276003880815204">فحص العناصر</translation>
+<translation id="4878653975845355462">أوقف المشرف الخلفيات المخصّصة.</translation>
 <translation id="4879491255372875719">الإعداد التلقائي (تلقائي)</translation>
 <translation id="4880328057631981605">اسم نقطة الدخول</translation>
 <translation id="4880827082731008257">سجلّ البحث</translation>
@@ -3256,6 +3263,7 @@
 <translation id="5687326903064479980">المنطقة الزمنية</translation>
 <translation id="5689516760719285838">الموقع الجغرافي</translation>
 <translation id="56907980372820799">ربط البيانات</translation>
+<translation id="5691180005790455277">سيتم محو جميع البيانات وملفات تعريف الارتباط المُخزّنة من خلال<ph name="SITE_GROUP_NAME" /> وأي مواقع إلكترونية ضمنها.</translation>
 <translation id="5691511426247308406">العائلة</translation>
 <translation id="5692183275898619210">اكتملت الطباعة</translation>
 <translation id="5696143504434933566">الإبلاغ عن إساءة الاستخدام من "<ph name="EXTENSION_NAME" />"</translation>
@@ -3884,6 +3892,7 @@
 <translation id="6602956230557165253">استخدام مفتاحي السهمين لليمين واليسار للتنقل.</translation>
 <translation id="6605847144724004692">لم يتم التقييم بواسطة أي مستخدمين بعد.</translation>
 <translation id="6607831829715835317">المزيد من &amp;الأدوات</translation>
+<translation id="6611972847767394631">ستجد علامات التبويب هنا</translation>
 <translation id="6612358246767739896">المحتوى المحمي</translation>
 <translation id="6615455863669487791">عرضه</translation>
 <translation id="6618097958368085618">الاحتفاظ به على أيّ حال</translation>
@@ -5706,6 +5715,7 @@
 <translation id="9188732951356337132">‏يمكنك إرسال بيانات الاستخدام والتشخيص. يرسل هذا الجهاز حاليًا بيانات استخدام التطبيق والجهاز والتشخيص تلقائيًا إلى Google. لن يتم استخدام هذا لتعريف حسابك الفرعي وسيساعد في استقرار عمل النظام والتطبيقات، بالإضافة إلى التحسينات الأخرى. كما ستساعد بعض البيانات المجمّعة تطبيقات Google وشركائها، مثل مطوّري برامج نظام التشغيل Android. في حال تفعيل إعداد "النشاط الإضافي على الويب وفي التطبيقات" لحسابك الفرعي، قد يتم حفظ هذه البيانات في حسابك على Google. <ph name="BEGIN_LINK2" />مزيد من المعلومات<ph name="END_LINK2" /></translation>
 <translation id="9190063653747922532">‏L2TP/IPSec + المفتاح المشترك مسبقًا</translation>
 <translation id="920045321358709304">البحث في <ph name="SEARCH_ENGINE" /></translation>
+<translation id="9201023452444595544">سيتم محو أي بيانات متوفرة بلا اتصال إنترنت.</translation>
 <translation id="9201220332032049474">خيارات قفل الشاشة</translation>
 <translation id="9203398526606335860">&amp;التوصيف مفعّل</translation>
 <translation id="9203904171912129171">اختيار جهاز</translation>
@@ -5718,6 +5728,7 @@
 <translation id="9220525904950070496">إزالة الحساب</translation>
 <translation id="9220820413868316583">ارفع إصبعك ثم أعد المحاولة.</translation>
 <translation id="923467487918828349">إظهار الكل</translation>
+<translation id="929117907539171075">سيتم أيضًا محو البيانات المتوفرة بلا اتصال إنترنت في التطبيق المثبّت.</translation>
 <translation id="930268624053534560">الطوابع الزمنية المفصلة</translation>
 <translation id="932327136139879170">الصفحة الرئيسية</translation>
 <translation id="932508678520956232">تعذر بدء الطباعة.</translation>

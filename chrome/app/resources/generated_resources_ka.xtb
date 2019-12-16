@@ -559,6 +559,8 @@
 <translation id="177336675152937177">ჰოსტის პროგრამის მონაცემები</translation>
 <translation id="1776712937009046120">მომხმარებლის დამატება</translation>
 <translation id="1776883657531386793"><ph name="OID" />: <ph name="INFO" /></translation>
+<translation id="1777310661937894236">ამ მოწყობილობას მართავს <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />.
+    თქვენს <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> ანგარიშში შესვლის გასაგრძელებლად დაწკაპუნებით აირჩიეთ „შემდეგი“.</translation>
 <translation id="1779652936965200207">შეიყვანეთ ეს კოდი „<ph name="DEVICE_NAME" />“-ში:</translation>
 <translation id="1780152987505130652">ჯგუფის დახურვა</translation>
 <translation id="1781291988450150470">ამჟამინდელი PIN-კოდი</translation>
@@ -746,6 +748,7 @@
 <translation id="2048653237708779538">ქმედება მიუწვდომელია</translation>
 <translation id="2050339315714019657">პორტრეტი</translation>
 <translation id="2053312383184521053">უმოქმედო მდგომარეობის მონაცემები</translation>
+<translation id="2055585478631012616">თქვენ გამოხვალთ ამ საიტებიდან, მათ შორის, გახსნილ ჩანართებზე</translation>
 <translation id="205560151218727633">Google ასისტენტის ლოგო</translation>
 <translation id="2058456167109518507">აღმოჩენილია მოწყობილობა</translation>
 <translation id="2059913712424898428">სასაათო სარტყელი</translation>
@@ -1288,6 +1291,7 @@
 <translation id="2800760947029405028">სურათის ატვირთვა</translation>
 <translation id="2803375539583399270">შეიყვანეთ PIN-კოდი</translation>
 <translation id="2804043232879091219">ალტერნატიული ბრაუზერის გახსნა ვერ მოხერხდა</translation>
+<translation id="2804667941345577550">თქვენ გამოხვალთ ამ საიტიდან, მათ შორის, გახსნილ ჩანართებზე</translation>
 <translation id="2804680522274557040">კამერა გამორთულია</translation>
 <translation id="2805646850212350655">Microsoft დაშიფვრის ფაილის სისტემა</translation>
 <translation id="2805756323405976993">პროგრამები</translation>
@@ -2194,6 +2198,7 @@
 <translation id="407520071244661467">მასშტაბირება</translation>
 <translation id="4075639477629295004"><ph name="FILE_NAME" /> ვერ ტრანსლირდება.</translation>
 <translation id="4077917118009885966">რეკლამა დაბლოკილია ამ საიტზე</translation>
+<translation id="4077919383365622693">გასუფთავდება <ph name="SITE" />-ის მიერ შენახული ყველა მონაცემი და ქუქი-ჩანაწერი.</translation>
 <translation id="4079140982534148664">მართლწერის გაძლიერებული შემოწმების გამოყენება</translation>
 <translation id="4081242589061676262">ფაილის ტრანსლირება ვერ ხერხდება.</translation>
 <translation id="4084682180776658562">სანიშნე</translation>
@@ -2568,6 +2573,7 @@
 <translation id="4665446389743427678"><ph name="SITE" />-ის მიერ შენახული ყველა მონაცემი ამოიშლება.</translation>
 <translation id="4668721319092543482">დააწკაპუნეთ, რათა ჩართოთ <ph name="PLUGIN_NAME" /></translation>
 <translation id="4672657274720418656">გვერდის გასუფთავება</translation>
+<translation id="46733273239502219">გასუფთავდება დაინსტალირებულ აპებში არსებული ხაზგარეშე მონაცემებიც</translation>
 <translation id="4673442866648850031">სტილუსის ამოღებისას სტილუსის ხელსაწყოების გახსნა</translation>
 <translation id="4677585247300749148"><ph name="URL" /> ითხოვს მარტივ წვდომასთან დაკავშირებულ მოვლენებზე რეაგირების ნებართვა</translation>
 <translation id="4677772697204437347">GPU მეხსიერება</translation>
@@ -2700,6 +2706,7 @@
 <translation id="4876273079589074638">ხელი შეუწყვეთ ჩვენს ინჟინრებს, შეისწავლონ და გამოასწორონ ავარიულად გათიშვის მიზეზი. შეძლებისდაგვარად, ზუსტად ჩამოთვალეთ ყველა ეტაპი. ყოველი დეტალი მნიშვნელოვანია!</translation>
 <translation id="4876895919560854374">ეკრანის ჩაკეტვა და გახსნა</translation>
 <translation id="4877276003880815204">ელემენტების შემოწმება</translation>
+<translation id="4878653975845355462">მორგებული ფონები გამორთულია თქვენი ადმინისტრატორის მიერ</translation>
 <translation id="4879491255372875719">ავტომატური (ნაგულისხმევი)</translation>
 <translation id="4880328057631981605">წვდომის წერტილის სახელი</translation>
 <translation id="4880827082731008257">ძიების ისტორია</translation>
@@ -3258,6 +3265,7 @@
 <translation id="5687326903064479980">დროის სარტყელი</translation>
 <translation id="5689516760719285838">მდებარეობა</translation>
 <translation id="56907980372820799">მონაცემების მიბმა</translation>
+<translation id="5691180005790455277">გასუფთავდება <ph name="SITE_GROUP_NAME" />-ისა და მისი ქვესაიტების მიერ შენახული ყველა მონაცემი და ქუქი-ჩანაწერი.</translation>
 <translation id="5691511426247308406">ოჯახი</translation>
 <translation id="5692183275898619210">ბეჭდვა დასრულდა</translation>
 <translation id="5696143504434933566">„<ph name="EXTENSION_NAME" />“-ის მხრიდან დარღვევის შესახებ შეტყობინება</translation>
@@ -3885,6 +3893,7 @@
 <translation id="6602956230557165253">ნავიგაციისთვის გამოიყენეთ მარცხენა და მარჯვენა ღილაკები.</translation>
 <translation id="6605847144724004692">მომხმარებლებს ჯერ არ შეუფასებიათ.</translation>
 <translation id="6607831829715835317">დამატებითი ხე&amp;ლსაწყოები</translation>
+<translation id="6611972847767394631">იპოვეთ თქვენი ჩანართი აქ</translation>
 <translation id="6612358246767739896">დაცული შიგთავსი</translation>
 <translation id="6615455863669487791">მაჩვენე</translation>
 <translation id="6618097958368085618">მაინც შენარჩუნება</translation>
@@ -5705,6 +5714,7 @@
 <translation id="9188732951356337132">გამოყენებისა და დიაგნოსტიკის მონაცემების გაგზავნა. ეს მოწყობილობა ამჟამად ავტომატურად უგზავნის Google-ს დიაგნოსტიკისა და მოწყობილობის/აპების გამოყენების მონაცემებს. აღნიშნული მონაცემები არ იქნება გამოყენებული თქვენი შვილის ვინაობის დასადგენად, არამედ დაგვეხმარება სისტემის/აპების სტაბილურობისა და სხვა ფუნქციების გაუმჯობესებაში. გარდა ამისა, გაერთიანებული მონაცემების ნაწილი ხელს შეუწყობს Google აპებსა და პარტნიორებს, მაგალითად, Android-ის დეველოპერებს. თუ თქვენი შვილისთვის ჩართულია ვებსა და აპებში დამატებითი აქტივობის პარამეტრი, აღნიშნული მონაცემები შესაძლოა შეინახოს მის Google ანგარიშში. <ph name="BEGIN_LINK2" />შეიტყვეთ მეტი<ph name="END_LINK2" /></translation>
 <translation id="9190063653747922532">L2TP/IPsec + წინასწარ გაზიარებული გასაღები</translation>
 <translation id="920045321358709304"><ph name="SEARCH_ENGINE" />-ში ძიება</translation>
+<translation id="9201023452444595544">გასუფთავდება ხაზგარეშე მონაცემები</translation>
 <translation id="9201220332032049474">ეკრანის დაბლოკვის ვარიანტები</translation>
 <translation id="9203398526606335860">&amp;პროფილირება ჩართულია</translation>
 <translation id="9203904171912129171">აირჩიეთ მოწყობილობა</translation>
@@ -5717,6 +5727,7 @@
 <translation id="9220525904950070496">ანგარიშის წაშლა</translation>
 <translation id="9220820413868316583">ასწიეთ და ცადეთ ხელახლა.</translation>
 <translation id="923467487918828349">ყველას ჩვენება</translation>
+<translation id="929117907539171075">გასუფთავდება დაინსტალირებულ აპში არსებული ხაზგარეშე მონაცემებიც</translation>
 <translation id="930268624053534560">დეტალური დროის ანაბეჭდი</translation>
 <translation id="932327136139879170">საწყისი გვერდი</translation>
 <translation id="932508678520956232">ბეჭდვის ინიციალიზაცია ვერ მოხერხდა.</translation>

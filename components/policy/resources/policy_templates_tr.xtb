@@ -2623,6 +2623,9 @@ politikayı geçersiz kılamaz.
 <translation id="5056708224511062314">Ekran büyüteci devre dışı</translation>
 <translation id="5058573563327660283">Otomatik temizlik sırasında disk alanı boşaltmak için kullanılan stratejiyi seç (kullanımdan kaldırıldı)</translation>
 <translation id="5067143124345820993">Kullanıcı beyaz listesine giriş yap</translation>
+<translation id="5073609397321802133">Politika false (yanlış) değerine ayarlanırsa Yeni Sekme sayfası kullanıcıların arka planı özelleştirmesine izin vermez. Mevcut herhangi bir özel arka plan, politika daha sonra true (doğru) değerine ayarlansa bile, kalıcı olarak kaldırılacaktır.
+
+      Politika true (doğru) değerine ayarlanırsa veya ayarlanmamış olarak bırakılırsa kullanıcılar Yeni Sekme sayfasındaki arka planı özelleştirebilirler.</translation>
 <translation id="5075834892754086022">Bu politika ayarlanırsa, yapılandırılmış minimum PIN uzunluğu
           uygulanır. (Mutlak minimum PIN uzunluğu 1'dir; 1'den küçük değerler
           1 olarak değerlendirilir.)
@@ -3608,6 +3611,7 @@ Bu ayar devre dışı bırakılır veya herhangi bir değer belirlenmezse <ph na
 <translation id="6652197835259177259">Yerel olarak yönetilen kullanıcıların ayarları</translation>
 <translation id="6658245400435704251">Bir güncelleme sunucuya ilk gönderildiği andan itibaren bir cihazın rastgele şekilde güncelleme yüklemesini geciktirebileceği süreyi saniye olarak belirtir. Cihaz bu sürenin bir kısmında gerçek zaman olarak, geri kalan kısmında ise güncelleme denetlemelerinin sayısınca bekleyebilir. Cihazın bir güncellemeyi sürekli bekler durumda kalmaması için, dağılım her durumda üst sınır olarak sabit bir süre ile kısıtlıdır.</translation>
 <translation id="6665670272107384733">Hızlı kilit açmayı kullanmak için kullanıcının şifreyi hangi sıklıkta girmesi gerektiğini ayarla</translation>
+<translation id="6672070613706645316">Kullanıcıların Yeni Sekme sayfasındaki arka planı özelleştirmelerin izin ver.</translation>
 <translation id="6672630473862787247">Ambiyans kimlik doğrulamasını normal, gizli ve misafir oturumlarında etkinleştir.</translation>
 <translation id="6681229465468164801">USB cihazlarına erişmek için kullanıcıdan izin istemesi engellenen sitelerin belirtildiği URL kalıpları listesini ayarlamanıza olanak sağlar.
 

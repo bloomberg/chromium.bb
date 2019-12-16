@@ -2568,6 +2568,9 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="5056708224511062314">La lupa está inhabilitada.</translation>
 <translation id="5058573563327660283">Seleccionar la estrategia utilizada para liberar espacio en el disco durante el proceso de limpieza automática (dejó de estar disponible)</translation>
 <translation id="5067143124345820993">Lista de usuarios con permiso para iniciar sesión</translation>
+<translation id="5073609397321802133">Si se establece la política como falsa, los usuarios no podrán personalizar el fondo en la página Nueva pestaña. En caso de que haya un fondo personalizado, este se quitará de forma permanente, incluso si más tarde se establece la política como verdadera.
+
+      Si se establece la política como verdadera o no se establece, los usuarios podrán personalizar el fondo en la página Nueva pestaña.</translation>
 <translation id="5075834892754086022">Si se configura la política, se aplicará la extensión mínima de PIN configurada. (El valor absoluto de la extensión mínima del PIN es 1; los valores menores que 1 se considerarán como 1).
 
           Si no se configura la política, se aplicará una extensión mínima del PIN de 6 dígitos. Esta es la extensión mínima recomendada.</translation>
@@ -3536,6 +3539,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="6652197835259177259">Configuración de los usuarios administrados localmente</translation>
 <translation id="6658245400435704251">Especifica la cantidad máxima de segundos que un dispositivo puede retrasar aleatoriamente la descarga de una actualización desde el momento en el que la descarga se envío al servidor por primera vez. El dispositivo puede dedicar una parte de este tiempo al proceso de actualización y el resto a realizar las comprobaciones necesarias. En cualquier caso, el límite superior de la dispersión es un período de tiempo constante, para que el dispositivo no se quede bloqueado mientras espera descargar una actualización.</translation>
 <translation id="6665670272107384733">Establecer la frecuencia con la que el usuario debe ingresar la contraseña para usar el desbloqueo rápido</translation>
+<translation id="6672070613706645316">Permite que los usuarios personalicen el fondo en la página Nueva pestaña</translation>
 <translation id="6672630473862787247">Permite la autenticación ambiental en sesiones comunes, de incógnito y de invitado.</translation>
 <translation id="6681229465468164801">Te permite establecer una lista de patrones de URL que especifica los sitios que no pueden solicitarle al usuario acceso a un dispositivo USB.
 

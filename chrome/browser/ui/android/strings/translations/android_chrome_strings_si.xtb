@@ -88,7 +88,7 @@
 <translation id="1620510694547887537">කැමරාව</translation>
 <translation id="1623104350909869708">මෙම පිටුව අමතර දෙබස්කවුළු සෑදීම වළක්වන්න</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{තෝරාගත් අයිතම 1ක් ඉවත් කරන්න}one{තෝරාගත් අයිතම #ක් ඉවත් කරන්න}other{තෝරාගත් අයිතම #ක් ඉවත් කරන්න}}</translation>
-<translation id="164269334534774161">ඔබ <ph name="CREATION_TIME" /> වෙතින් මෙම පිටුසනෙහි නොබැ﻿ඳි පිටපතක් බලමින්</translation>
+<translation id="164269334534774161">ඔබ <ph name="CREATION_TIME" /> වෙතින් මෙම පිටුසනෙහි නොබැඳි පිටපතක් බලමින්</translation>
 <translation id="1644574205037202324">ඉතිහාසය</translation>
 <translation id="1647391597548383849">ඔබේ කැමරාව වෙත ප්‍රවේශ වන්න</translation>
 <translation id="1660204651932907780">අඩවිවලට ශබ්දය වාදනය කිරීමට ඉඩ දෙන්න (නිර්දේශිතයි)</translation>
@@ -213,7 +213,7 @@
 <translation id="2523184218357549926">Google වෙත ඔබ පිවිසෙන පිටු URL යවයි</translation>
 <translation id="2532336938189706096">ජාල දර්ශනය</translation>
 <translation id="2534155362429831547">අයිතම <ph name="NUMBER_OF_ITEMS" />ක් මකන ලදි</translation>
-<translation id="2536728043171574184">මෙම පිටුවෙහි නොබැ﻿ඳි පිටපතක් බලමින්</translation>
+<translation id="2536728043171574184">මෙම පිටුවෙහි නොබැඳි පිටපතක් බලමින්</translation>
 <translation id="2537178555904266562">මුරපද සමමුහු කිරීමේ දෝෂයකි</translation>
 <translation id="2546283357679194313">කුකීස් සහ අඩවි දත්ත</translation>
 <translation id="2567385386134582609">රූපය</translation>

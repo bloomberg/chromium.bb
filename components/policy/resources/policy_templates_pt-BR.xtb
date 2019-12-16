@@ -440,7 +440,7 @@ Cada item da lista da política é uma string que contém um código de extensã
 
           Se esta política for definida como "Tela cheia", a lupa estará sempre ativa no modo tela cheia na tela de login.
 
-          Se esta política for definida como "Dispositivo na base", a lupa estará sempre ativada no modo lupa ancorada na tela de login.
+          Se esta política for definida como "Dispositivo na base", a lupa estará sempre ativada no modo lupa em área fixa na tela de login.
 
           Se esta política for definida como "Nenhum", a lupa estará sempre desativada na tela de login.
 
@@ -1157,7 +1157,7 @@ Se você desativar esta configuração ou deixá-la sem definição, todas as p�
 <translation id="267596348720209223">Especifica a codificação de caracteres suportados pelo mecanismo de pesquisa. Codificações são nomes de código da página como UTF-8, GB2312 e ISO-8859-1. Eles são testados na ordem fornecida. Esta política é opcional. Se não for definida, será utilizado o padrão, UTF-8. Esta política só é respeitada se a política "DefaultSearchProviderEnabled" estiver ativada.</translation>
 <translation id="268577405881275241">Ativar o recurso de proxy de compactação de dados</translation>
 <translation id="2693108589792503178">Configure o URL de alteração de senha.</translation>
-<translation id="2694143893026486692">Lupa ancorada ativada</translation>
+<translation id="2694143893026486692">Lupa em área fixa ativada</translation>
 <translation id="2694188263972877487">Configurar o tipo de download que o <ph name="PRODUCT_NAME" /> bloqueará totalmente sem permitir que os usuários substituam a decisão de segurança.
 
       Se você definir esta política, o <ph name="PRODUCT_NAME" /> impedirá certos tipos de downloads e não permitirá que o usuário ignore os avisos de segurança.
@@ -2559,6 +2559,9 @@ O campo <ph name="PROXY_MODE_PROXY_SETTINGS_FIELD" /> permite que você especifi
 <translation id="5056708224511062314">Lupa desativada</translation>
 <translation id="5058573563327660283">Selecionar a estratégia usada para liberar espaço em disco durante a limpeza automática (obsoleta)</translation>
 <translation id="5067143124345820993">Lista de permissões de login de usuário</translation>
+<translation id="5073609397321802133">Se a política for definida como falsa, a página "Nova guia" não permitirá que os usuários personalizem o plano de fundo. Qualquer plano de fundo personalizado já existente será removido permanentemente, mesmo que a política seja definida como verdadeira mais tarde.
+
+      Se a política for definida como verdadeira ou não for definida, os usuários poderão personalizar o plano de fundo da página "Nova guia".</translation>
 <translation id="5075834892754086022">Se a política estiver definida, o tamanho máximo configurado para o PIN será imposto. O tamanho mínimo absoluto do PIN é 1. Valores menores que esse serão tratados como 1.
 
           Se a política não for definida, um tamanho mínimo de PIN de seis dígitos será imposto. Esse é o mínimo recomendado.</translation>
@@ -3520,6 +3523,7 @@ Se esta configuração estiver desativada ou se nenhum valor for definido, o Mod
 <translation id="6652197835259177259">Configurações de usuários gerenciados localmente</translation>
 <translation id="6658245400435704251">Especifica o número de segundos que um dispositivo pode chegar a atrasar aleatoriamente o download de uma atualização a partir do momento em que a atualização foi lançada no servidor. O dispositivo pode esperar uma parte desse intervalo de tempo em tempo cronológico e o restante contado em número de verificações de atualizações. Em todo caso, a dispersão tem como limite máximo uma quantidade constante de tempo para que o dispositivo nunca fique parado indefinidamente esperando para fazer o download de uma atualização.</translation>
 <translation id="6665670272107384733">Definir com que frequência o usuário precisa digitar a senha para usar o desbloqueio rápido</translation>
+<translation id="6672070613706645316">Permitir que usuários personalizem o plano de fundo na página "Nova guia"</translation>
 <translation id="6672630473862787247">Ativar a autenticação pelo SO em sessões normais, anônimas e de visitante.</translation>
 <translation id="6681229465468164801">Permite definir uma lista de padrões de URL que especificam quais sites não podem pedir que o usuário conceda acesso a um dispositivo USB.
 

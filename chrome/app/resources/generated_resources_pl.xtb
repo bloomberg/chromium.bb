@@ -559,6 +559,8 @@
 <translation id="177336675152937177">Dane udostępnianych aplikacji</translation>
 <translation id="1776712937009046120">Dodaj użytkownika</translation>
 <translation id="1776883657531386793"><ph name="OID" />: <ph name="INFO" /></translation>
+<translation id="1777310661937894236">Tym urządzeniem zarządza domena <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />.
+    Kliknij „Dalej”, by kontynuować logowanie się na konto w domenie <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />.</translation>
 <translation id="1779652936965200207">Wpisz ten klucz na urządzeniu „<ph name="DEVICE_NAME" />”:</translation>
 <translation id="1780152987505130652">Zamknij grupę</translation>
 <translation id="1781291988450150470">Obecny kod PIN</translation>
@@ -746,6 +748,7 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="2048653237708779538">Czynność niedostępna</translation>
 <translation id="2050339315714019657">Pionowo</translation>
 <translation id="2053312383184521053">Dane o stanie bezczynności</translation>
+<translation id="2055585478631012616">Wylogujemy Cię z tych stron, także na otwartych kartach</translation>
 <translation id="205560151218727633">Logo Asystenta Google</translation>
 <translation id="2058456167109518507">Wykryto urządzenie</translation>
 <translation id="2059913712424898428">Strefa czasowa</translation>
@@ -1289,6 +1292,7 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="2800760947029405028">Prześlij obraz</translation>
 <translation id="2803375539583399270">Wpisz kod PIN</translation>
 <translation id="2804043232879091219">Nie udało się otworzyć alternatywnej przeglądarki</translation>
+<translation id="2804667941345577550">Wylogujemy Cię z tej strony, także na otwartych kartach</translation>
 <translation id="2804680522274557040">Kamera wyłączona</translation>
 <translation id="2805646850212350655">System szyfrowania plików firmy Microsoft</translation>
 <translation id="2805756323405976993">Aplikacje</translation>
@@ -2195,6 +2199,7 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="407520071244661467">Skala</translation>
 <translation id="4075639477629295004">Nie udało się przesłać pliku <ph name="FILE_NAME" />.</translation>
 <translation id="4077917118009885966">Reklamy zostały zablokowane na tej stronie</translation>
+<translation id="4077919383365622693">Wszystkie dane i pliki cookie zapisane przez stronę <ph name="SITE" /> zostaną wyczyszczone.</translation>
 <translation id="4079140982534148664">Używaj ulepszonego sprawdzania pisowni</translation>
 <translation id="4081242589061676262">Nie można przesłać pliku.</translation>
 <translation id="4084682180776658562">Dodaj do zakładek</translation>
@@ -2569,6 +2574,7 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="4665446389743427678">Wszystkie dane przechowywane przez stronę <ph name="SITE" /> zostaną usunięte.</translation>
 <translation id="4668721319092543482">Kliknij, by włączyć wtyczkę <ph name="PLUGIN_NAME" /></translation>
 <translation id="4672657274720418656">Zbadaj stronę</translation>
+<translation id="46733273239502219">Dane offline w zainstalowanych aplikacjach też zostaną wyczyszczone</translation>
 <translation id="4673442866648850031">Po wyjęciu rysika otwórz jego narzędzia</translation>
 <translation id="4677585247300749148"><ph name="URL" /> chce odpowiadać na zdarzenia dotyczące ułatwień dostępu</translation>
 <translation id="4677772697204437347">Pamięć GPU</translation>
@@ -2701,6 +2707,7 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="4876273079589074638">Pomóż naszym inżynierom zbadać i naprawić tę awarię. Jeśli możesz, dokładnie opisz poszczególne czynności. Każdy szczegół jest ważny.</translation>
 <translation id="4876895919560854374">Blokowanie i odblokowywanie ekranu</translation>
 <translation id="4877276003880815204">Sprawdź elementy</translation>
+<translation id="4878653975845355462">Niestandardowe tła wyłączył administrator</translation>
 <translation id="4879491255372875719">Automatycznie (domyślnie)</translation>
 <translation id="4880328057631981605">Nazwa punktu dostępu</translation>
 <translation id="4880827082731008257">Przeszukaj historię</translation>
@@ -3259,6 +3266,7 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="5687326903064479980">Strefa czasowa</translation>
 <translation id="5689516760719285838">Lokalizacja</translation>
 <translation id="56907980372820799">Połącz dane</translation>
+<translation id="5691180005790455277">Wszystkie dane i pliki cookie przechowywane przez grupę <ph name="SITE_GROUP_NAME" /> oraz wszystkie należące do niej strony zostaną wyczyszczone.</translation>
 <translation id="5691511426247308406">Rodzina</translation>
 <translation id="5692183275898619210">Drukowanie zakończone</translation>
 <translation id="5696143504434933566">Zgłoś nadużycie dotyczące rozszerzenia „<ph name="EXTENSION_NAME" />”</translation>
@@ -3886,6 +3894,7 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="6602956230557165253">Nawiguj za pomocą strzałek w lewo i w prawo.</translation>
 <translation id="6605847144724004692">Nikt jeszcze tego nie ocenił</translation>
 <translation id="6607831829715835317">Więcej narzę&amp;dzi</translation>
+<translation id="6611972847767394631">Tu znajdziesz karty</translation>
 <translation id="6612358246767739896">Treść chroniona</translation>
 <translation id="6615455863669487791">Pokaż mi</translation>
 <translation id="6618097958368085618">Zachowaj mimo to</translation>
@@ -5708,6 +5717,7 @@ Przechowuj plik klucza w bezpiecznym miejscu. Będzie on potrzebny do utworzenia
 <translation id="9188732951356337132">Wysyłaj dane diagnostyczne oraz informacje o użyciu. To urządzenie automatycznie wysyła do Google dane diagnostyczne oraz informacje o używaniu urządzenia i aplikacji. Nie zostaną one użyte do zidentyfikowania Twojego dziecka. Wykorzystamy je, by poprawić stabilność systemu i aplikacji oraz wprowadzić inne ulepszenia. Niektóre dane zbiorcze pomogą nam też udoskonalić aplikacje Google lub zostaną wykorzystane przez naszych partnerów, na przykład deweloperów aplikacji na Androida. Jeśli na koncie Google dziecka włączysz ustawienie Dodatkowa aktywność w internecie i aplikacjach, te dane mogą być zapisywane na tym koncie. <ph name="BEGIN_LINK2" />Więcej informacji<ph name="END_LINK2" /></translation>
 <translation id="9190063653747922532">L2TP/IPSec + klucz wstępny</translation>
 <translation id="920045321358709304">Szukaj w: <ph name="SEARCH_ENGINE" /></translation>
+<translation id="9201023452444595544">Wszystkie dane offline zostaną wyczyszczone</translation>
 <translation id="9201220332032049474">Opcje blokady ekranu</translation>
 <translation id="9203398526606335860">&amp;Profilowanie włączone</translation>
 <translation id="9203904171912129171">Wybierz urządzenie</translation>
@@ -5720,6 +5730,7 @@ Przechowuj plik klucza w bezpiecznym miejscu. Będzie on potrzebny do utworzenia
 <translation id="9220525904950070496">Usuń konto</translation>
 <translation id="9220820413868316583">Unieś i spróbuj ponownie.</translation>
 <translation id="923467487918828349">Pokaż wszystko</translation>
+<translation id="929117907539171075">Dane offline w zainstalowanej aplikacji też zostaną wyczyszczone</translation>
 <translation id="930268624053534560">Szczegółowe sygnatury czasowe</translation>
 <translation id="932327136139879170">Strona główna</translation>
 <translation id="932508678520956232">Nie można zainicjować drukowania.</translation>

@@ -559,6 +559,7 @@
 <translation id="177336675152937177">హోస్ట్ చేసిన యాప్‌ డేటా</translation>
 <translation id="1776712937009046120">వినియోగదారును జోడించు</translation>
 <translation id="1776883657531386793"><ph name="OID" />: <ph name="INFO" /></translation>
+<translation id="1777310661937894236">ఈ పరికరం <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> ద్వారా నిర్వహించబడుతోంది. దయచేసి మీ <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> ఖాతాకు సైన్ ఇన్ చేయడం కొనసాగించడానికి "త‌ర్వాత‌" క్లిక్ చేయండి.</translation>
 <translation id="1779652936965200207">దయచేసి "<ph name="DEVICE_NAME" />"లో ఈ పాస్‌కీని నమోదు చేయండి:</translation>
 <translation id="1780152987505130652">సమూహాన్ని మూసివేయి</translation>
 <translation id="1781291988450150470">ప్రస్తుత పిన్‌</translation>
@@ -746,6 +747,7 @@
 <translation id="2048653237708779538">చర్య అందుబాటులో లేదు</translation>
 <translation id="2050339315714019657">పోర్ట్రెయిట్</translation>
 <translation id="2053312383184521053">నిష్క్రియ స్థితి డేటా</translation>
+<translation id="2055585478631012616">అలాగే మీరు తెరిచిన ట్యాబ్‌లతో సహా, ఆయా సైట్‌ల నుండి పూర్తిగా సైన్ అవుట్ చేయబడతారు</translation>
 <translation id="205560151218727633">Google సహాయకం లోగో</translation>
 <translation id="2058456167109518507">పరికరం కనుగొనబడింది</translation>
 <translation id="2059913712424898428">సమయ మండలి</translation>
@@ -1289,6 +1291,7 @@
 <translation id="2800760947029405028">చిత్రాన్ని అప్‌లోడ్ చేయండి</translation>
 <translation id="2803375539583399270">PINను నమోదు చేయండి</translation>
 <translation id="2804043232879091219">ప్రత్యామ్నాయ బ్రౌజర్‌ను తెరవడం సాధ్యపడలేదు</translation>
+<translation id="2804667941345577550">అలాగే మీరు తెరిచిన ట్యాబ్‌లతో సహా, ఈ సైట్‌ నుండి పూర్తిగా సైన్ అవుట్ చేయబడతారు.</translation>
 <translation id="2804680522274557040">కెమెరా ఆఫ్ చేయబడింది</translation>
 <translation id="2805646850212350655">Microsoft Encrypting File System</translation>
 <translation id="2805756323405976993">యాప్స్</translation>
@@ -2195,6 +2198,7 @@
 <translation id="407520071244661467">ప్రమాణం</translation>
 <translation id="4075639477629295004"><ph name="FILE_NAME" />ని ప్రసారం చేయడం సాధ్యపడలేదు.</translation>
 <translation id="4077917118009885966">ఈ సైట్‌లో ప్రకటనలు బ్లాక్ చేయబడ్డాయి</translation>
+<translation id="4077919383365622693"><ph name="SITE" /> ద్వారా నిల్వ చేయబడిన డేటా మరియు కుక్కీలన్నీ తొలగించబడతాయి.</translation>
 <translation id="4079140982534148664">మెరుగైన స్పెల్ చెక్‌ను ఉపయోగించు</translation>
 <translation id="4081242589061676262">ఫైల్‌ని ప్రసారం చేయడం సాధ్యపడలేదు.</translation>
 <translation id="4084682180776658562">బుక్‌మార్క్ చేయి</translation>
@@ -2569,6 +2573,7 @@
 <translation id="4665446389743427678"><ph name="SITE" /> ద్వారా నిల్వ చేయబడిన మొత్తం డేటా తొలగించబడుతుంది.</translation>
 <translation id="4668721319092543482"><ph name="PLUGIN_NAME" />ను ప్రారంభించడానికి క్లిక్ చేయండి</translation>
 <translation id="4672657274720418656">పేజీని డిస్టిల్ చేయి</translation>
+<translation id="46733273239502219">ఇన్‌స్టాల్ చేసిన యాప్‌లలో ఆఫ్‌లైన్ డేటా కూడా తీసివేయబడుతుంది</translation>
 <translation id="4673442866648850031">స్టైలస్‌ను బయటకు తీసినప్పుడు స్టైలస్ సాధనాలను తెరుస్తుంది</translation>
 <translation id="4677585247300749148">యాక్సెసిబిలిటీ ఈవెంట్‌లకు <ph name="URL" /> ప్రతిస్పందించాలని అనుకుంటోంది</translation>
 <translation id="4677772697204437347">GPU మెమరీ</translation>
@@ -2701,6 +2706,7 @@
 <translation id="4876273079589074638">క్రాష్ ఎందుకు జరిగిందన్నది తెలుసుకోవడానికి, పరిష్కరించడానికి మా ఇంజినీర్‌లకు సహాయం చేయండి. మీకు సాధ్యమైతే విషయాన్ని క్రమ పద్ధతిలో దశల వారీగా పేర్కొనండి. వివరణ ఏదీ మరీ చిన్నగా ఉండకూడదు!</translation>
 <translation id="4876895919560854374">స్క్రీన్‌ను లాక్ చేయండి మరియు అన్‌లాక్ చేయండి</translation>
 <translation id="4877276003880815204">మూలకాలను పర్యవేక్షించు</translation>
+<translation id="4878653975845355462">మీ నిర్వాహకుడి ద్వారా అనుకూల నేపథ్యాలు ఆపివేయబడ్డాయి</translation>
 <translation id="4879491255372875719">ఆటోమేటిక్ (డిఫాల్ట్)</translation>
 <translation id="4880328057631981605">యాక్సెస్ స్థానం పేరు</translation>
 <translation id="4880827082731008257">శోధన చరిత్ర</translation>
@@ -3259,6 +3265,7 @@
 <translation id="5687326903064479980">సమయ మండలి</translation>
 <translation id="5689516760719285838">స్థానం</translation>
 <translation id="56907980372820799">డేటాను జోడించు</translation>
+<translation id="5691180005790455277"><ph name="SITE_GROUP_NAME" /> ద్వారా లేదా దానిలో ఉండే ఏవైనా సైట్‌ల ద్వారా నిల్వ చేయబడిన డేటా మరియు కుక్కీలన్నీ తొలగించబడతాయి.</translation>
 <translation id="5691511426247308406">కుటుంబం</translation>
 <translation id="5692183275898619210">ముద్రణ పూర్తయింది</translation>
 <translation id="5696143504434933566">"<ph name="EXTENSION_NAME" />" నుండి దుర్వినియోగాన్ని నివేదించు</translation>
@@ -3886,6 +3893,7 @@
 <translation id="6602956230557165253">నావిగేట్ చేయడానికి ఎడమ మరియు కుడి బాణం కీలను ఉపయోగించండి.</translation>
 <translation id="6605847144724004692">ఇంకా ఏ వినియోగదారులు రేట్ చేయలేదు.</translation>
 <translation id="6607831829715835317">మరిన్ని సాధనా&amp;లు</translation>
+<translation id="6611972847767394631">మీ ట్యాబ్‌లను ఇక్కడ కనుగొనండి</translation>
 <translation id="6612358246767739896">రక్షిత కంటెంట్</translation>
 <translation id="6615455863669487791">నాకు చూపించు</translation>
 <translation id="6618097958368085618">ఏదేమైనా ఉంచు</translation>
@@ -5704,6 +5712,7 @@
 <translation id="9188732951356337132">వినియోగం &amp; విశ్లేషణల డేటాను పంపండి. ఈ పరికరం ప్రస్తుతం సమస్య విశ్లేషణ, అలాగే పరికర, యాప్ వినియోగ డేటాను ఆటోమేటిక్‌గా Googleకి పంపుతుంది. ఇది మీ చిన్నారి గురించి గుర్తించడానికి ఉపయోగించబడదు, ఇది కేవలం సిస్టమ్, యాప్ స్థిరత్వానికి, అలాగే ఇతర మెరుగుదలలకు సహాయపడుతుంది. కొంత సముదాయ డేటా కూడా Google యాప్‌లకు, అలాగే Android డెవలపర్‌ల లాంటి భాగస్వాములకు సహాయపడుతుంది. మీ చిన్నారి కోసం అదనపు వెబ్ &amp; యాప్ కార్యకలాపం సెట్టింగ్‌ను ఆన్ చేసినట్లయితే, ఈ డేటా వారి Google ఖాతాలో సేవ్ చేయబడవచ్చు. <ph name="BEGIN_LINK2" />మరింత తెలుసుకోండి<ph name="END_LINK2" /></translation>
 <translation id="9190063653747922532">L2TP/IPsec + ముందుగా భాగస్వామ్యం చేసిన కీ</translation>
 <translation id="920045321358709304"><ph name="SEARCH_ENGINE" />ని వెతుకు</translation>
+<translation id="9201023452444595544">ఏదైనా ఆఫ్‌లైన్ డేటా ఉంటే తీసివేయబడుతుంది</translation>
 <translation id="9201220332032049474">స్క్రీన్ లాక్ ఎంపికలు</translation>
 <translation id="9203398526606335860">&amp;ప్రొఫైలింగ్ అనుమతించబడింది</translation>
 <translation id="9203904171912129171">ఒక పరికరాన్ని ఎంచుకోండి</translation>
@@ -5716,6 +5725,7 @@
 <translation id="9220525904950070496">ఖాతాను తీసివేయండి</translation>
 <translation id="9220820413868316583">వేలిని తీసివేసి, మళ్లీ పెట్టండి.</translation>
 <translation id="923467487918828349">అన్నీ చూపించు</translation>
+<translation id="929117907539171075">ఇన్‌స్టాల్ చేసిన యాప్‌లో ఆఫ్‌లైన్ డేటా కూడా తీసివేయబడుతుంది</translation>
 <translation id="930268624053534560">వివరణాత్మక సమయముద్రలు</translation>
 <translation id="932327136139879170">హోమ్</translation>
 <translation id="932508678520956232">ముద్రించడాన్ని ప్రారంభించడం సాధ్యం కాలేదు.</translation>

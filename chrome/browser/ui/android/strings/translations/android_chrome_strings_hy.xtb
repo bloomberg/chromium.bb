@@ -692,7 +692,7 @@
 <translation id="6111020039983847643">օգտագործվել է</translation>
 <translation id="6112702117600201073">Էջի թարմացում</translation>
 <translation id="6127379762771434464">Տարրը հեռացվեց</translation>
-<translation id="6140912465461743537">Երկիր/Տարածաշրջան</translation>
+<translation id="6140912465461743537">Երկիր/տարածաշրջան</translation>
 <translation id="614940544461990577">Փորձեք՝</translation>
 <translation id="6154478581116148741">Այս սարքից ձեր գաղտնաբառերն արտահանելու համար կարգավորումներում միացրեք էկրանի կողպումը։</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> տվյալների խնայում</translation>
@@ -755,6 +755,7 @@
 <translation id="6545017243486555795">Մաքրել բոլոր տվյալները</translation>
 <translation id="6545864417968258051">Bluetooth սարքերի որոնում</translation>
 <translation id="6560414384669816528">Որոնել Sogou որոնման համակարգով</translation>
+<translation id="656065428026159829">Տեսնել ավելին</translation>
 <translation id="6566259936974865419">Chrome-ը խնայել է <ph name="GIGABYTES" /> ԳԲ տարածք</translation>
 <translation id="6573096386450695060">Միշտ թույլատրել</translation>
 <translation id="6573431926118603307">Ձեր մյուս սարքերում Chrome-ով բացված ներդիրները կտեսնեք այստեղ:</translation>
@@ -851,6 +852,7 @@
 <translation id="7293171162284876153">Սկսելու համար միացրեք «Համաժամացնել Chrome-ի տվյալները» կարգավորումը:</translation>
 <translation id="729975465115245577">Ձեր սարքը գաղտնաբառերի ֆայլ պահելու հավելված չունի:</translation>
 <translation id="7302081693174882195">Տեղեկություններ․ տեսակավորված է ըստ պահված տվյալների ծավալի</translation>
+<translation id="7302486331832100261">Դուք սովորաբար արգելափակում եք ծանուցումները։ Թույլատրելու համար սեղմեք «Մանրամասներ»։</translation>
 <translation id="7328017930301109123">Lite ռեժիմում Chrome-ն ավելի արագ է բեռնում էջերը և օգտագործում է մինչև 60 տոկոս պակաս թրաֆիկ:</translation>
 <translation id="7333031090786104871">Դեռ նախորդ կայքն է ավելացվում</translation>
 <translation id="7352939065658542140">ՏԵՍԱՆՅՈՒԹ</translation>

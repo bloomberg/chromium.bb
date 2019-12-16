@@ -559,6 +559,8 @@
 <translation id="177336675152937177">Hostede appdata</translation>
 <translation id="1776712937009046120">Tilføj bruger</translation>
 <translation id="1776883657531386793"><ph name="OID" />: <ph name="INFO" /></translation>
+<translation id="1777310661937894236">Denne enhed administreres af <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />.
+    Klik på "Næste" for at fortsætte med at logge ind på din konto på din <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />-konto.</translation>
 <translation id="1779652936965200207">Angiv denne adgangsnøgle på "<ph name="DEVICE_NAME" />":</translation>
 <translation id="1780152987505130652">Luk gruppe</translation>
 <translation id="1781291988450150470">Aktuel pinkode</translation>
@@ -720,7 +722,7 @@
 <translation id="2016430552235416146">Traditionelt</translation>
 <translation id="2017334798163366053">Deaktiver registrering af data om ydeevne</translation>
 <translation id="2017836877785168846">Nulstiller historikken og autofuldførelser i adresselinjen.</translation>
-<translation id="2018352199541442911">Vi beklager, men din eksterne lagringsenhed understøttes ikke på nuværende tidspunkt.</translation>
+<translation id="2018352199541442911">Vi beklager, men din eksterne lagerenhed understøttes ikke på nuværende tidspunkt.</translation>
 <translation id="2019718679933488176">&amp;Åbn lyd på ny fane</translation>
 <translation id="2020183425253392403">Vis indstillinger for netværksadresser</translation>
 <translation id="2022953316617983419">QR-kode</translation>
@@ -746,6 +748,7 @@ Du kan administrere indstillingerne for denne konto ved at installere Family Lin
 <translation id="2048653237708779538">Handlingen er ikke tilgængelig</translation>
 <translation id="2050339315714019657">Stående</translation>
 <translation id="2053312383184521053">Data for inaktiv tilstand</translation>
+<translation id="2055585478631012616">Du logges ud af disse websites, også i åbne faner</translation>
 <translation id="205560151218727633">Google Assistent-logo</translation>
 <translation id="2058456167109518507">Der blev registreret en enhed</translation>
 <translation id="2059913712424898428">Tidszone</translation>
@@ -1289,6 +1292,7 @@ Du kan administrere indstillingerne for denne konto ved at installere Family Lin
 <translation id="2800760947029405028">Upload et billede</translation>
 <translation id="2803375539583399270">Angiv pinkode</translation>
 <translation id="2804043232879091219">Den alternative browser kunne ikke åbnes</translation>
+<translation id="2804667941345577550">Du logges ud af dette website, også i åbne faner.</translation>
 <translation id="2804680522274557040">Kameraet er deaktiveret</translation>
 <translation id="2805646850212350655">Filsystem til Microsoft-kryptering</translation>
 <translation id="2805756323405976993">Apps</translation>
@@ -2195,6 +2199,7 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="407520071244661467">Skaler</translation>
 <translation id="4075639477629295004"><ph name="FILE_NAME" /> kunne ikke castes.</translation>
 <translation id="4077917118009885966">Annoncer er blokeret på dette website</translation>
+<translation id="4077919383365622693">Alle data og cookies, der gemmes af <ph name="SITE" />, ryddes.</translation>
 <translation id="4079140982534148664">Brug forbedret stavekontrol</translation>
 <translation id="4081242589061676262">Filen kunne ikke castes.</translation>
 <translation id="4084682180776658562">Bogmærke</translation>
@@ -2569,6 +2574,7 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4665446389743427678">Alle data, der gemmes af <ph name="SITE" />, slettes.</translation>
 <translation id="4668721319092543482">Klik for at aktivere <ph name="PLUGIN_NAME" /></translation>
 <translation id="4672657274720418656">Destiller side</translation>
+<translation id="46733273239502219">Offlinedata i installerede apps ryddes også</translation>
 <translation id="4673442866648850031">Åbn styluspenværktøjer, når styluspennen fjernes</translation>
 <translation id="4677585247300749148"><ph name="URL" /> anmoder om at reagere på handlinger foretaget i hjælpetilstand</translation>
 <translation id="4677772697204437347">GPU-hukommelse</translation>
@@ -2701,6 +2707,7 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4876273079589074638">Hjælp vores softwareudviklere med at undersøge og løse dette nedbrud. Angiv så vidt muligt præcist, hvad du gjorde. Alle detaljer er vigtige.</translation>
 <translation id="4876895919560854374">Låse skærmen/låse skærmen op</translation>
 <translation id="4877276003880815204">Inspect Elements (Undersøg elementer)</translation>
+<translation id="4878653975845355462">Tilpassede baggrunde er blevet deaktiveret af din administrator</translation>
 <translation id="4879491255372875719">Automatisk (standard)</translation>
 <translation id="4880328057631981605">Navn på adgangspunkt</translation>
 <translation id="4880827082731008257">Søg i historikken</translation>
@@ -3057,7 +3064,7 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5419405654816502573">Voice Match</translation>
 <translation id="5420438158931847627">Bestemmer skarpheden af tekst og billeder</translation>
 <translation id="5422221874247253874">Adgangspunkt</translation>
-<translation id="5422781158178868512">Vi beklager, men din eksterne lagringsenhed kunne ikke genkendes.</translation>
+<translation id="5422781158178868512">Vi beklager, men din eksterne lagerenhed kunne ikke genkendes.</translation>
 <translation id="5423829801105537712">Grundlæggende stavekontrol</translation>
 <translation id="5423849171846380976">Aktiveret</translation>
 <translation id="5425042808445046667">Fortsæt download</translation>
@@ -3259,6 +3266,7 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5687326903064479980">Tidszone</translation>
 <translation id="5689516760719285838">Placering</translation>
 <translation id="56907980372820799">Link data</translation>
+<translation id="5691180005790455277">Alle data og cookies, der gemmes af <ph name="SITE_GROUP_NAME" />, og eventuelle sider under denne gruppe af websites ryddes.</translation>
 <translation id="5691511426247308406">Familie</translation>
 <translation id="5692183275898619210">Udskrivning er gennemført</translation>
 <translation id="5696143504434933566">Rapportér misbrug fra "<ph name="EXTENSION_NAME" />"</translation>
@@ -3887,6 +3895,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="6602956230557165253">Brug venstre og højre piletast til at navigere.</translation>
 <translation id="6605847144724004692">Endnu ikke bedømt af nogen brugere.</translation>
 <translation id="6607831829715835317">F&amp;lere værktøjer</translation>
+<translation id="6611972847767394631">Find dine faner her</translation>
 <translation id="6612358246767739896">Beskyttet indhold</translation>
 <translation id="6615455863669487791">Vis mig</translation>
 <translation id="6618097958368085618">Behold alligevel</translation>
@@ -5709,6 +5718,7 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="9188732951356337132">Send brugs- og diagnosticeringsdata. Denne enhed sender i øjeblikket automatisk diagnosticerings- og enhedsdata samt data om brug af apps til Google. Disse data bruges ikke til at identificere dit barn. De bruges kun til forbedring af bl.a. systemets og appens stabilitet. Visse samlede data hjælper også Google-apps og -partnere, f.eks. Android-udviklere. Hvis indstillingen til yderligere web- og appaktivitet er aktiveret for dit barn, gemmes disse data muligvis på barnets Google-konto. <ph name="BEGIN_LINK2" />Få flere oplysninger<ph name="END_LINK2" /></translation>
 <translation id="9190063653747922532">L2TP/IPsec + forhåndsdelt nøgle</translation>
 <translation id="920045321358709304">Søg via <ph name="SEARCH_ENGINE" /></translation>
+<translation id="9201023452444595544">Alle offlinedata ryddes</translation>
 <translation id="9201220332032049474">Valgmuligheder for skærmlås</translation>
 <translation id="9203398526606335860">&amp;Profilering aktiveret</translation>
 <translation id="9203904171912129171">Vælg en enhed</translation>
@@ -5721,6 +5731,7 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="9220525904950070496">Fjern konto</translation>
 <translation id="9220820413868316583">Løft fingeren, og prøv igen.</translation>
 <translation id="923467487918828349">Vis alle</translation>
+<translation id="929117907539171075">Offlinedata i den installerede app ryddes også</translation>
 <translation id="930268624053534560">Detaljerede tidsstempler</translation>
 <translation id="932327136139879170">Start</translation>
 <translation id="932508678520956232">Udskrivningen blev ikke startet.</translation>

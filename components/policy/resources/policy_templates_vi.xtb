@@ -2633,6 +2633,9 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="5056708224511062314">Đã tắt kính lúp màn hình</translation>
 <translation id="5058573563327660283">Lựa chọn chiến lược dùng để giải phóng dung lượng đĩa trong khi dọn sạch tự động (không dùng nữa)</translation>
 <translation id="5067143124345820993">Danh sách trắng những người dùng được phép đăng nhập</translation>
+<translation id="5073609397321802133">Nếu bạn đặt chính sách này thành false, thì trang Tab mới sẽ không cho phép người dùng tùy chỉnh nền. Các nền tùy chỉnh hiện có sẽ bị xóa vĩnh viễn ngay cả khi sau này, bạn đặt chính sách này thành true.
+
+      Nếu bạn không đặt hoặc đặt chính sách này thành true, thì người dùng có thể tùy chỉnh nền trên trang Tab mới.</translation>
 <translation id="5075834892754086022">Nếu bạn đặt chính sách này, độ dài tối thiểu đã định cấu hình của mã PIN sẽ được
           thực thi. (Độ dài tối thiểu tuyệt đối của mã PIN là 1; các giá trị nhỏ hơn 1
           sẽ được coi là 1.)
@@ -3633,6 +3636,7 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
 <translation id="6652197835259177259">Cài đặt người dùng được quản lý cục bộ</translation>
 <translation id="6658245400435704251">Chỉ định số giây tối đa mà thiết bị có thể ngẫu nhiên trì hoãn việc tải xuống bản cập nhật từ thời điểm bản cập nhật được đưa lên máy chủ lần đầu tiên. Thiết bị có thể đợi một phần số thời gian này là thời gian thực và phần thời gian còn lại là thời gian kiểm tra bản cập nhật. Trong bất kỳ trường hợp nào, việc phân tán bị chặn trên ở lượng thời gian cố định để thiết bị không bao giờ phải chờ mãi để tải xuống bản cập nhật.</translation>
 <translation id="6665670272107384733">Đặt tần suất người dùng phải nhập mật khẩu để sử dụng tính năng mở khóa nhanh</translation>
+<translation id="6672070613706645316">Cho phép người dùng tùy chỉnh nền trên trang Tab mới</translation>
 <translation id="6672630473862787247">Bật quy trình xác thực môi trường xung quanh trong các phiên khách, phiên thông thường và phiên ẩn danh.</translation>
 <translation id="6681229465468164801">Cho phép bạn đặt danh sách mẫu URL để chỉ định các trang web không được phép yêu cầu người dùng cấp quyền truy cập vào thiết bị USB.
 

@@ -558,6 +558,8 @@
 <translation id="177336675152937177">Datos da aplicación aloxada</translation>
 <translation id="1776712937009046120">Engadir usuario</translation>
 <translation id="1776883657531386793"><ph name="OID" />: <ph name="INFO" /></translation>
+<translation id="1777310661937894236"><ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> xestiona este dispositivo.
+    Para seguir iniciando sesión na túa conta de <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />, fai clic en Seguinte.</translation>
 <translation id="1779652936965200207">Introduce esta clave de acceso en "<ph name="DEVICE_NAME" />":</translation>
 <translation id="1780152987505130652">Pechar grupo</translation>
 <translation id="1781291988450150470">PIN actual</translation>
@@ -745,6 +747,7 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="2048653237708779538">Acción non dispoñible</translation>
 <translation id="2050339315714019657">Vertical</translation>
 <translation id="2053312383184521053">Datos do estado inactivo</translation>
+<translation id="2055585478631012616">Ademais, pecharase sesión nestes sitios aínda que os teñas abertos en pestanas</translation>
 <translation id="205560151218727633">Logotipo do Asistente de Google</translation>
 <translation id="2058456167109518507">Detectouse un dispositivo</translation>
 <translation id="2059913712424898428">Fuso horario</translation>
@@ -1288,6 +1291,7 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="2800760947029405028">Subir unha imaxe</translation>
 <translation id="2803375539583399270">Introduce o PIN</translation>
 <translation id="2804043232879091219">Non se puido abrir o navegador alternativo</translation>
+<translation id="2804667941345577550">Pecharase sesión neste sitio, aínda que o teñas aberto en pestanas</translation>
 <translation id="2804680522274557040">Desactivouse a cámara</translation>
 <translation id="2805646850212350655">Sistema de ficheiros de cifrado de Microsoft</translation>
 <translation id="2805756323405976993">Aplicacións</translation>
@@ -2194,6 +2198,7 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="407520071244661467">Escala</translation>
 <translation id="4075639477629295004">Non se puido emitir <ph name="FILE_NAME" />.</translation>
 <translation id="4077917118009885966">Os anuncios están bloqueados neste sitio</translation>
+<translation id="4077919383365622693">Borraranse todos os datos e as cookies almacenados por <ph name="SITE" />.</translation>
 <translation id="4079140982534148664">Utilizar corrector ortográfico mellorado</translation>
 <translation id="4081242589061676262">Non se pode emitir o ficheiro.</translation>
 <translation id="4084682180776658562">Marcador</translation>
@@ -2568,6 +2573,7 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="4665446389743427678">Eliminaranse todos os datos almacenados por <ph name="SITE" />.</translation>
 <translation id="4668721319092543482">Fai clic para activar <ph name="PLUGIN_NAME" /></translation>
 <translation id="4672657274720418656">Converter páxina</translation>
+<translation id="46733273239502219">Tamén se borrarán os datos gardados sen conexión das aplicacións instaladas</translation>
 <translation id="4673442866648850031">Abre as ferramentas do lapis óptico ao extraelo</translation>
 <translation id="4677585247300749148">O URL <ph name="URL" /> quere responder a eventos de accesibilidade</translation>
 <translation id="4677772697204437347">Memoria da GPU</translation>
@@ -2700,6 +2706,7 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="4876273079589074638">Indica exactamente o que aconteceu paso a paso para axudar aos nosos enxeñeiros a investigar e solucionar este fallo. Calquera detalle é importante.</translation>
 <translation id="4876895919560854374">Bloquear e desbloquear a pantalla</translation>
 <translation id="4877276003880815204">Inspeccionar elementos</translation>
+<translation id="4878653975845355462">O teu administrador desactivou os fondos personalizados</translation>
 <translation id="4879491255372875719">Automático (opción predeterminada)</translation>
 <translation id="4880328057631981605">Nome do punto de acceso</translation>
 <translation id="4880827082731008257">Historial de busca</translation>
@@ -3258,6 +3265,7 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="5687326903064479980">Fuso horario</translation>
 <translation id="5689516760719285838">Localización</translation>
 <translation id="56907980372820799">Ligar datos</translation>
+<translation id="5691180005790455277">Borraranse todos os datos e as cookies que almacenase<ph name="SITE_GROUP_NAME" /> e todos os sitios que formen parte dese grupo.</translation>
 <translation id="5691511426247308406">Familia</translation>
 <translation id="5692183275898619210">Finalizou a impresión</translation>
 <translation id="5696143504434933566">Informar dun uso inadecuado de <ph name="EXTENSION_NAME" /></translation>
@@ -3885,6 +3893,7 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="6602956230557165253">Utiliza as teclas de frecha cara á esquerda e cara á dereita para desprazarte.</translation>
 <translation id="6605847144724004692">Ningún usuario valorou a extensión.</translation>
 <translation id="6607831829715835317">Máis &amp;ferramentas</translation>
+<translation id="6611972847767394631">Atopa aquí as túas pestanas</translation>
 <translation id="6612358246767739896">Contido protexido</translation>
 <translation id="6615455863669487791">Mostrar</translation>
 <translation id="6618097958368085618">Conservar igualmente</translation>
@@ -5706,6 +5715,7 @@ Mantén o ficheiro de clave nun lugar seguro, xa que o precisarás para crear no
 <translation id="9188732951356337132">Enviar datos de uso e de diagnóstico. Este dispositivo envía automaticamente datos de diagnóstico e de uso do dispositivo e das aplicacións a Google. Esta información non se utilizará para identificar o teu fillo, senón co obxectivo de aumentar a estabilidade do sistema e das aplicacións, e de realizar outras melloras. Algúns datos agregados tamén serán útiles para as aplicacións e os socios de Google, como os programadores de Android. Se está activada a opción de configuración Actividade web e das aplicacións adicional para o teu fillo, estes datos pódense gardar na súa Conta de Google <ph name="BEGIN_LINK2" />Máis información<ph name="END_LINK2" /></translation>
 <translation id="9190063653747922532">L2TP/IPsec + clave precompartida</translation>
 <translation id="920045321358709304">Realizar a busca en <ph name="SEARCH_ENGINE" /></translation>
+<translation id="9201023452444595544">Borraranse os datos que se gardaron sen conexión</translation>
 <translation id="9201220332032049474">Opcións de bloqueo da pantalla</translation>
 <translation id="9203398526606335860">Creación de &amp;perfís activada</translation>
 <translation id="9203904171912129171">Seleccionar un dispositivo</translation>
@@ -5718,6 +5728,7 @@ Mantén o ficheiro de clave nun lugar seguro, xa que o precisarás para crear no
 <translation id="9220525904950070496">Quitar conta</translation>
 <translation id="9220820413868316583">Levanta o dedo e téntao de novo.</translation>
 <translation id="923467487918828349">Mostrar todo</translation>
+<translation id="929117907539171075">Tamén se borrarán os datos gardados sen conexión da aplicación instalada</translation>
 <translation id="930268624053534560">Marcas de tempo detalladas</translation>
 <translation id="932327136139879170">Inicio</translation>
 <translation id="932508678520956232">Non se puido empezar a imprimir.</translation>

@@ -556,6 +556,8 @@
 <translation id="177336675152937177">Datos de aplicaciones alojadas</translation>
 <translation id="1776712937009046120">Agregar usuario</translation>
 <translation id="1776883657531386793"><ph name="OID" />: <ph name="INFO" /></translation>
+<translation id="1777310661937894236"><ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> administra este dispositivo.
+    Haz clic en "Siguiente" para continuar con el acceso a tu cuenta de <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />.</translation>
 <translation id="1779652936965200207">Ingresa esta clave de acceso en "<ph name="DEVICE_NAME" />":</translation>
 <translation id="1780152987505130652">Cerrar grupo</translation>
 <translation id="1781291988450150470">PIN actual</translation>
@@ -743,6 +745,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="2048653237708779538">La acción no está disponible</translation>
 <translation id="2050339315714019657">Vertical</translation>
 <translation id="2053312383184521053">Datos de estado de inactividad</translation>
+<translation id="2055585478631012616">Saldrás de estos sitios, incluidas las pestañas abiertas</translation>
 <translation id="205560151218727633">Logotipo del Asistente de Google</translation>
 <translation id="2058456167109518507">Se detectó un dispositivo</translation>
 <translation id="2059913712424898428">Zona horaria</translation>
@@ -1286,6 +1289,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="2800760947029405028">Cargar una imagen</translation>
 <translation id="2803375539583399270">Ingresar PIN</translation>
 <translation id="2804043232879091219">No se pudo abrir el otro navegador</translation>
+<translation id="2804667941345577550">Saldrás de este sitio, incluidas las pestañas abiertas</translation>
 <translation id="2804680522274557040">Se desactivó la cámara</translation>
 <translation id="2805646850212350655">Sistema de encriptación de archivos de Microsoft</translation>
 <translation id="2805756323405976993">Aplicaciones</translation>
@@ -2192,6 +2196,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="407520071244661467">Escala</translation>
 <translation id="4075639477629295004">No se puede transmitir <ph name="FILE_NAME" />.</translation>
 <translation id="4077917118009885966">Anuncios bloqueados en este sitio</translation>
+<translation id="4077919383365622693">Se borrarán todos los datos y las cookies de <ph name="SITE" />.</translation>
 <translation id="4079140982534148664">Usar el corrector ortográfico mejorado</translation>
 <translation id="4081242589061676262">No se puede transmitir el archivo</translation>
 <translation id="4084682180776658562">Marcador</translation>
@@ -2566,6 +2571,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="4665446389743427678">Se borrarán todos los datos que almacene <ph name="SITE" />.</translation>
 <translation id="4668721319092543482">Hacer clic para habilitar <ph name="PLUGIN_NAME" /></translation>
 <translation id="4672657274720418656">Filtrar página</translation>
+<translation id="46733273239502219">También se borrarán los datos sin conexión de las apps instaladas</translation>
 <translation id="4673442866648850031">Abrir las herramientas de pluma stylus al quitarla</translation>
 <translation id="4677585247300749148"><ph name="URL" /> desea responder a los eventos de accesibilidad</translation>
 <translation id="4677772697204437347">Memoria de la GPU</translation>
@@ -2698,6 +2704,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="4876273079589074638">¡Ayuda a que nuestros ingenieros investiguen y solucionen este fallo! Enumera los pasos exactos si es posible. No omitas ningún detalle.</translation>
 <translation id="4876895919560854374">Bloquear y desbloquear la pantalla</translation>
 <translation id="4877276003880815204">Analizar elementos</translation>
+<translation id="4878653975845355462">El administrador desactivó los fondos personalizados</translation>
 <translation id="4879491255372875719">Automático (predeterminado)</translation>
 <translation id="4880328057631981605">Nombre de punto de acceso</translation>
 <translation id="4880827082731008257">Buscar historial</translation>
@@ -3256,6 +3263,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="5687326903064479980">Zona horaria</translation>
 <translation id="5689516760719285838">Ubicación</translation>
 <translation id="56907980372820799">Vincular datos</translation>
+<translation id="5691180005790455277">Se borrarán todos los datos y cookies que almacenó <ph name="SITE_GROUP_NAME" /> y los sitios secundarios.</translation>
 <translation id="5691511426247308406">Familia</translation>
 <translation id="5692183275898619210">Se completó la impresión</translation>
 <translation id="5696143504434933566">Informar abuso de "<ph name="EXTENSION_NAME" />"</translation>
@@ -3883,6 +3891,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="6602956230557165253">Utiliza las teclas de flecha hacia la izquierda y derecha para navegar.</translation>
 <translation id="6605847144724004692">Todavía no tiene una calificación de los usuarios.</translation>
 <translation id="6607831829715835317">Más herramientas</translation>
+<translation id="6611972847767394631">Encuentra tus pestañas aquí</translation>
 <translation id="6612358246767739896">Contenido protegido</translation>
 <translation id="6615455863669487791">Mostrarme</translation>
 <translation id="6618097958368085618">Conservar de todos modos</translation>
@@ -5705,6 +5714,7 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="9188732951356337132">Envía datos de uso y diagnóstico. De forma automática, este dispositivo está enviando a Google datos de diagnóstico y sobre el uso del dispositivo y las apps. Esta información no se usará para identificar a tu hijo y ayudará a lograr la estabilidad de las apps y el sistema, entre otras mejoras. Algunos datos agregados también ayudarán a las apps y los socios de Google, como los desarrolladores de Android. Si habilitaste la "Actividad de web y de aplicaciones adicional" en la Cuenta de Google de tu hijo, es posible que se almacenen estos datos en esa cuenta. <ph name="BEGIN_LINK2" />Más información<ph name="END_LINK2" /></translation>
 <translation id="9190063653747922532">L2TP/IPsec + clave previamente compartida</translation>
 <translation id="920045321358709304">Buscar en <ph name="SEARCH_ENGINE" /></translation>
+<translation id="9201023452444595544">Se borrarán los datos sin conexión</translation>
 <translation id="9201220332032049474">Opciones de bloqueo de pantalla</translation>
 <translation id="9203398526606335860">&amp;Perfiles activados</translation>
 <translation id="9203904171912129171">Seleccionar un dispositivo</translation>
@@ -5717,6 +5727,7 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="9220525904950070496">Eliminar cuenta</translation>
 <translation id="9220820413868316583">Levanta el dedo y vuelve a intentarlo.</translation>
 <translation id="923467487918828349">Mostrar todo</translation>
+<translation id="929117907539171075">También se borrarán los datos sin conexión de la app instalada</translation>
 <translation id="930268624053534560">Marcas de tiempo detalladas</translation>
 <translation id="932327136139879170">Página principal</translation>
 <translation id="932508678520956232">No se pudo iniciar la impresión.</translation>

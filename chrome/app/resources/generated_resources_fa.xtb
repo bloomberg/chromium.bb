@@ -556,6 +556,8 @@
 <translation id="177336675152937177">داده های برنامه میزبانی شده</translation>
 <translation id="1776712937009046120">افزودن کاربر</translation>
 <translation id="1776883657531386793"><ph name="OID" />: <ph name="INFO" /></translation>
+<translation id="1777310661937894236">این دستگاه را <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> مدیریت می‌کند.
+    برای ادامه ورود به سیستم در حساب <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> خود، لطفاً روی «بعدی» کلیک کنید.</translation>
 <translation id="1779652936965200207">لطفاً این کلیدواژه را در "<ph name="DEVICE_NAME" />" وارد کنید:</translation>
 <translation id="1780152987505130652">بستن گروه</translation>
 <translation id="1781291988450150470">پین کنونی</translation>
@@ -743,6 +745,7 @@
 <translation id="2048653237708779538">کنش دردسترس نیست</translation>
 <translation id="2050339315714019657">عمودی</translation>
 <translation id="2053312383184521053">داده‌های حالت بیکار</translation>
+<translation id="2055585478631012616">از سیستم این سایت‌ها (ازجمله در برگه‌های باز) خارج خواهید شد</translation>
 <translation id="205560151218727633">‏نشان‌واره «دستیار Google»</translation>
 <translation id="2058456167109518507">دستگاه شناسایی شد</translation>
 <translation id="2059913712424898428">منطقه زمانی</translation>
@@ -1286,6 +1289,7 @@
 <translation id="2800760947029405028">بارگذاری تصویر</translation>
 <translation id="2803375539583399270">پین را وارد کنید</translation>
 <translation id="2804043232879091219">مرورگر جایگزین باز نشد</translation>
+<translation id="2804667941345577550">از سیستم این سایت (ازجمله در برگه‌های باز) خارج خواهید شد</translation>
 <translation id="2804680522274557040">دوربین خاموش است</translation>
 <translation id="2805646850212350655">‏سیستم فایل رمزگذاری Microsoft</translation>
 <translation id="2805756323405976993">برنامه‌ها</translation>
@@ -2192,6 +2196,7 @@
 <translation id="407520071244661467">مقیاس</translation>
 <translation id="4075639477629295004">ارسال محتوای <ph name="FILE_NAME" /> امکان‌پذیر نیست.</translation>
 <translation id="4077917118009885966">آگهی‌های این سایت مسدود شدند</translation>
+<translation id="4077919383365622693">همه داده‌ها و کوکی‌هایی را که <ph name="SITE" /> ذخیره کرده است حذف خواهد شد.</translation>
 <translation id="4079140982534148664">استفاده از غلط‌گیر املای بهبودیافته</translation>
 <translation id="4081242589061676262">نمی‌توان محتوای فایل را ارسال کرد.</translation>
 <translation id="4084682180776658562">نشانک</translation>
@@ -2566,6 +2571,7 @@
 <translation id="4665446389743427678">همه داده‌های ذخیره‌شده توسط <ph name="SITE" /> حذف خواهد شد.</translation>
 <translation id="4668721319092543482">برای فعال کردن <ph name="PLUGIN_NAME" /> کلیک کنید</translation>
 <translation id="4672657274720418656">صفحه فشرده</translation>
+<translation id="46733273239502219">داده‌های آفلاین برنامه‌های نصب‌شده هم حذف خواهد شد</translation>
 <translation id="4673442866648850031">وقتی قلم برداشته می‌شود، ابزار قلم باز می‌شود</translation>
 <translation id="4677585247300749148"><ph name="URL" /> می‌خواهد به رویدادهای مربوط به دسترس‌پذیری پاسخ دهد</translation>
 <translation id="4677772697204437347">‏حافظه GPU</translation>
@@ -2698,6 +2704,7 @@
 <translation id="4876273079589074638">به مهندسان ما کمک کنید این خرابی را بررسی و برطرف کنند. در صورت امکان مراحل را دقیق فهرست کنید. هیچ جزئیاتی بی‌اهمیت نیست!</translation>
 <translation id="4876895919560854374">قفل و باز کردن قفل صفحه</translation>
 <translation id="4877276003880815204">بازرسی عناصر</translation>
+<translation id="4878653975845355462">سرپرستتان پس‌زمینه سفارشی را خاموش کرده است</translation>
 <translation id="4879491255372875719">خودکار (پیش‌فرض)</translation>
 <translation id="4880328057631981605">نام نقطه دسترسی</translation>
 <translation id="4880827082731008257">سابقه جستجو</translation>
@@ -3256,6 +3263,7 @@
 <translation id="5687326903064479980">منطقه زمانی</translation>
 <translation id="5689516760719285838">مکان</translation>
 <translation id="56907980372820799">داده‌های پیوند</translation>
+<translation id="5691180005790455277">همه داده‌ها و کوکی‌هایی را که <ph name="SITE_GROUP_NAME" /> ذخیره کرده است و سایت‌های زیرمجموعه آن حذف خواهند شد.</translation>
 <translation id="5691511426247308406">خانواده</translation>
 <translation id="5692183275898619210">چاپ کامل شد</translation>
 <translation id="5696143504434933566">گزارش سوء‌استفاده از «<ph name="EXTENSION_NAME" />»</translation>
@@ -3883,6 +3891,7 @@
 <translation id="6602956230557165253">از کلیدهای پیکان سمت راست و چپ برای پیمایش استفاده کنید.</translation>
 <translation id="6605847144724004692">قبلاً هیچ کاربری رتبه‌بندی نکرده است.</translation>
 <translation id="6607831829715835317">ا&amp;بزارهای بیشتر</translation>
+<translation id="6611972847767394631">برگه‌هایتان را در اینجا پیدا کنید</translation>
 <translation id="6612358246767739896">محتوای محافظت‌شده</translation>
 <translation id="6615455863669487791">به من نشان بده</translation>
 <translation id="6618097958368085618">درهرصورت حفظ شود</translation>
@@ -5705,6 +5714,7 @@
 <translation id="9188732951356337132">‏داده‌های استفاده و عیب‌یابی را ارسال کنید. این دستگاه درحال‌حاضر به‌صورت‌ خودکار داده‌های عیب‌یابی و داده‌های استفاده از دستگاه و برنامه را برای Google ارسال می‌کند. این داده‌ها برای شناسایی فرزندتان استفاده نخواهند شد و به بهبود پایداری سیستم و برنامه و موارد دیگر کمک خواهد کرد. بعضی داده‌های انبوه نیز به برنامه‌ها و شرکای Google (مانند برنامه‌نویس‌های Android) کمک می‌کند. اگر تنظیم «فعالیت وب و برنامه» تکمیلی برای فرزندتان روشن باشد، ممکن است این داده‌ها در حساب Google او ذخیره شود. <ph name="BEGIN_LINK2" />بیشتر بدانید<ph name="END_LINK2" /></translation>
 <translation id="9190063653747922532">‏L2TP/IPSec + کلید از قبل مشترک شده</translation>
 <translation id="920045321358709304">جستجوی <ph name="SEARCH_ENGINE" /></translation>
+<translation id="9201023452444595544">هرنوع داده آفلاینی حذف خواهد شد</translation>
 <translation id="9201220332032049474">گزینه‌های قفل صفحه</translation>
 <translation id="9203398526606335860">&amp;نمایه سازی فعال شد</translation>
 <translation id="9203904171912129171">انتخاب دستگاه</translation>
@@ -5717,6 +5727,7 @@
 <translation id="9220525904950070496">حذف حساب</translation>
 <translation id="9220820413868316583">انگشتتان را بردارید سپس دوباره امتحان کنید.</translation>
 <translation id="923467487918828349">نمایش همه</translation>
+<translation id="929117907539171075">داده‌های آفلاین برنامه‌های نصب‌شده هم حذف خواهد شد</translation>
 <translation id="930268624053534560">مهرهای زمان با جزئیات</translation>
 <translation id="932327136139879170">منزل</translation>
 <translation id="932508678520956232">نمی‌توان چاپ کردن را آغاز کرد.</translation>

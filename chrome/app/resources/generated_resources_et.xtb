@@ -559,6 +559,8 @@
 <translation id="177336675152937177">Hostitud rakenduste andmed</translation>
 <translation id="1776712937009046120">Lisa kasutaja</translation>
 <translation id="1776883657531386793"><ph name="OID" />: <ph name="INFO" /></translation>
+<translation id="1777310661937894236">Seda seadet haldab <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />.
+    Domeeni <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> kontole sisselogimise jätkamiseks klõpsake valikul „Järgmine”.</translation>
 <translation id="1779652936965200207">Sisestage seadmesse „<ph name="DEVICE_NAME" />” pääsukood:</translation>
 <translation id="1780152987505130652">Grupi sulgemine</translation>
 <translation id="1781291988450150470">Praegune PIN-kood</translation>
@@ -746,6 +748,7 @@ Selle konto seadete haldamiseks installige oma seadmesse Family Link.  Saatsime 
 <translation id="2048653237708779538">Toiming pole saadaval</translation>
 <translation id="2050339315714019657">Vertikaalpaigutus</translation>
 <translation id="2053312383184521053">Jõudeoleku andmed</translation>
+<translation id="2055585478631012616">Teid logitakse nendelt saitidelt (sh avatud vahelehtedel) välja</translation>
 <translation id="205560151218727633">Google'i assistendi logo</translation>
 <translation id="2058456167109518507">Tuvastati seade</translation>
 <translation id="2059913712424898428">Ajavöönd</translation>
@@ -1289,6 +1292,7 @@ Selle konto seadete haldamiseks installige oma seadmesse Family Link.  Saatsime 
 <translation id="2800760947029405028">Laadige üles pilt</translation>
 <translation id="2803375539583399270">Sisestage PIN-kood</translation>
 <translation id="2804043232879091219">Alternatiivset brauserit ei õnnestunud avada</translation>
+<translation id="2804667941345577550">Teid logitakse sellelt saidilt (sh avatud vahelehtedel) välja</translation>
 <translation id="2804680522274557040">Kaamera on välja lülitatud</translation>
 <translation id="2805646850212350655">Microsofti failisüsteemi krüptimine</translation>
 <translation id="2805756323405976993">Rakendused</translation>
@@ -2195,6 +2199,7 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME" />.
 <translation id="407520071244661467">Skaleeri</translation>
 <translation id="4075639477629295004">Faili <ph name="FILE_NAME" /> ei saa üle kanda.</translation>
 <translation id="4077917118009885966">Reklaamid on sellel saidil blokeeritud</translation>
+<translation id="4077919383365622693">Kõik saidi <ph name="SITE" /> salvestatud andmed ja küpsisefailid kustutatakse.</translation>
 <translation id="4079140982534148664">Kasuta täiustatud õigekirjakontrolli</translation>
 <translation id="4081242589061676262">Faili ei saa üle kanda.</translation>
 <translation id="4084682180776658562">Järjehoidja</translation>
@@ -2569,6 +2574,7 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME" />.
 <translation id="4665446389743427678">Kõik saidi <ph name="SITE" /> salvestatud andmed kustutatakse.</translation>
 <translation id="4668721319092543482">Pistikprogrammi <ph name="PLUGIN_NAME" /> lubamiseks klõpsake</translation>
 <translation id="4672657274720418656">Lehe teisendamine</translation>
+<translation id="46733273239502219">Kustutatakse ka installitud rakenduste võrguühenduseta andmed</translation>
 <translation id="4673442866648850031">Ava elektronpliiatsi tööriistad, kui elektronpliiats eemaldatakse</translation>
 <translation id="4677585247300749148"><ph name="URL" /> soovib vastata juurdepääsetavuse sündmustele</translation>
 <translation id="4677772697204437347">GPU-mälu</translation>
@@ -2701,6 +2707,7 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME" />.
 <translation id="4876273079589074638">Aidake meie inseneridel seda kokkujooksmist uurida ja see parandada. Võimaluse korral loetlege täpselt tehtud toimingud. Ükski pisiasi pole liiga väike!</translation>
 <translation id="4876895919560854374">Ekraani lukustamine ja avamine</translation>
 <translation id="4877276003880815204">Elementide uurimine</translation>
+<translation id="4878653975845355462">Administraator lülitas kohandatud taustad välja</translation>
 <translation id="4879491255372875719">Automaatne (vaikimisi)</translation>
 <translation id="4880328057631981605">Pääsupunkti nimi</translation>
 <translation id="4880827082731008257">Otsi ajaloost</translation>
@@ -3259,6 +3266,7 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME" />.
 <translation id="5687326903064479980">Ajavöönd</translation>
 <translation id="5689516760719285838">Asukoht</translation>
 <translation id="56907980372820799">Lingi andmed</translation>
+<translation id="5691180005790455277">Kõik grupi <ph name="SITE_GROUP_NAME" /> ning selle alla kuuluvate saitide salvestatud andmed ja küpsisefailid kustutatakse.</translation>
 <translation id="5691511426247308406">Perekond</translation>
 <translation id="5692183275898619210">Printimine on lõpetatud</translation>
 <translation id="5696143504434933566">Teata laienduse „<ph name="EXTENSION_NAME" />” väärkasutusest</translation>
@@ -3886,6 +3894,7 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME" />.
 <translation id="6602956230557165253">Kasutage navigeerimiseks vasak- ja paremnooleklahve.</translation>
 <translation id="6605847144724004692">Kasutajate hinnanguid veel pole.</translation>
 <translation id="6607831829715835317">Rohkem töö&amp;riistu</translation>
+<translation id="6611972847767394631">Oma vahekaardid leiate siit</translation>
 <translation id="6612358246767739896">Kaitstud sisu</translation>
 <translation id="6615455863669487791">Kuva mulle</translation>
 <translation id="6618097958368085618">Säilita ikkagi</translation>
@@ -5708,6 +5717,7 @@ Hoidke oma võtmefail kindlas kohas. Teil läheb seda oma laiendi uute versiooni
 <translation id="9188732951356337132">Saada kasutus- ja diagnostikaandmeid. See seade saadab Google'ile praegu automaatselt seadme teavet ning rakenduse kasutus- ja  diagnostikaandmeid. Neid andmeid ei kasutata teie lapse isiku tuvastamiseks ning need aitavad parandada süsteemi ja rakenduse stabiilsust ning muud. Teatud koondandmed on abiks ka Google'i rakendustele ja partneritele, näiteks Androidi arendajatele. Kui täiendavad veebi- ja rakendustegevused on teie lapse jaoks sisse lülitatud, võidakse need andmed salvestada tema Google'i kontole. <ph name="BEGIN_LINK2" />Lisateave<ph name="END_LINK2" /></translation>
 <translation id="9190063653747922532">L2TP/IPSec + eeljagatud võti</translation>
 <translation id="920045321358709304">Otsi teenusest <ph name="SEARCH_ENGINE" /></translation>
+<translation id="9201023452444595544">Kõik võrguühenduseta andmed kustutatakse</translation>
 <translation id="9201220332032049474">Ekraaniluku valikud</translation>
 <translation id="9203398526606335860">&amp;Profileerimine lubatud</translation>
 <translation id="9203904171912129171">Valige seade</translation>
@@ -5720,6 +5730,7 @@ Hoidke oma võtmefail kindlas kohas. Teil läheb seda oma laiendi uute versiooni
 <translation id="9220525904950070496">Konto eemaldamine</translation>
 <translation id="9220820413868316583">Tõstke sõrm andurilt ja proovige uuesti.</translation>
 <translation id="923467487918828349">Kuva kõik</translation>
+<translation id="929117907539171075">Kustutatakse ka installitud rakenduse võrguühenduseta andmed</translation>
 <translation id="930268624053534560">Üksikasjalikud ajatemplid</translation>
 <translation id="932327136139879170">Kodu</translation>
 <translation id="932508678520956232">Printimist ei saanud alustada.</translation>

@@ -556,6 +556,8 @@
 <translation id="177336675152937177">Appdata på vertstjener</translation>
 <translation id="1776712937009046120">Legg til bruker</translation>
 <translation id="1776883657531386793"><ph name="OID" />: <ph name="INFO" /></translation>
+<translation id="1777310661937894236">Denne enheten administreres av <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />.
+    Klikk på «Neste» for å fortsette med å logge på <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />-kontoen din.</translation>
 <translation id="1779652936965200207">Skriv inn dette passordet på «<ph name="DEVICE_NAME" />»:</translation>
 <translation id="1780152987505130652">Lukk gruppen</translation>
 <translation id="1781291988450150470">Gjeldende PIN-kode</translation>
@@ -743,6 +745,7 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="2048653237708779538">Handlingen er ikke tilgjengelig</translation>
 <translation id="2050339315714019657">Stående</translation>
 <translation id="2053312383184521053">Data om hviletilstand</translation>
+<translation id="2055585478631012616">Du blir logget av disse nettstedene – inkludert i åpne faner</translation>
 <translation id="205560151218727633">Google Assistent-logo</translation>
 <translation id="2058456167109518507">Enhet oppdaget</translation>
 <translation id="2059913712424898428">Tidssone</translation>
@@ -1286,6 +1289,7 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="2800760947029405028">Last opp et bilde</translation>
 <translation id="2803375539583399270">Skriv inn PIN-koden</translation>
 <translation id="2804043232879091219">Kunne ikke åpne den alternative nettleseren</translation>
+<translation id="2804667941345577550">Du blir logget av dette nettstedet, også i faner som er åpne</translation>
 <translation id="2804680522274557040">Kameraet er slått av</translation>
 <translation id="2805646850212350655">Microsoft Encrypting File System</translation>
 <translation id="2805756323405976993">Apper</translation>
@@ -2190,6 +2194,7 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="407520071244661467">Skalér</translation>
 <translation id="4075639477629295004">Kunne ikke caste <ph name="FILE_NAME" />.</translation>
 <translation id="4077917118009885966">Annonser er blokkert på dette nettstedet</translation>
+<translation id="4077919383365622693">Alle data og informasjonskapsler som er lagret for <ph name="SITE" />, slettes.</translation>
 <translation id="4079140982534148664">Bruk forbedret stavekontroll</translation>
 <translation id="4081242589061676262">Kan ikke caste filen.</translation>
 <translation id="4084682180776658562">Legg til bokmerke</translation>
@@ -2564,6 +2569,7 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="4665446389743427678">Alle data som lagres av <ph name="SITE" />, blir slettet.</translation>
 <translation id="4668721319092543482">Klikk for å slå på <ph name="PLUGIN_NAME" /></translation>
 <translation id="4672657274720418656">Destiller siden</translation>
+<translation id="46733273239502219">Frakoblede data i installerte apper blir også slettet</translation>
 <translation id="4673442866648850031">Åpne pekepennverktøyene når pekepennen fjernes</translation>
 <translation id="4677585247300749148"><ph name="URL" /> ber om å svare på tilgjengelighetshendelser</translation>
 <translation id="4677772697204437347">GPU-minne</translation>
@@ -2696,6 +2702,7 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="4876273079589074638">Hjelp teknikerne våre med å undersøke og fikse denne feilen. Legg inn den nøyaktige fremgangsmåten om du kan. Ingen detaljer er ubetydelige.</translation>
 <translation id="4876895919560854374">låse og låse opp skjermen</translation>
 <translation id="4877276003880815204">Undersøk elementer</translation>
+<translation id="4878653975845355462">Administratoren har slått av egendefinerte bakgrunner</translation>
 <translation id="4879491255372875719">Automatisk (standard)</translation>
 <translation id="4880328057631981605">Navn på tilgangspunkt</translation>
 <translation id="4880827082731008257">Søk i loggen</translation>
@@ -3254,6 +3261,7 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="5687326903064479980">Tidssone</translation>
 <translation id="5689516760719285838">Sted</translation>
 <translation id="56907980372820799">Koble sammen data</translation>
+<translation id="5691180005790455277">Alle data og informasjonskapsler som er lagret av <ph name="SITE_GROUP_NAME" /> og eventuelle underordnede nettsteder, blir slettet.</translation>
 <translation id="5691511426247308406">Familie</translation>
 <translation id="5692183275898619210">Utskriften er fullført</translation>
 <translation id="5696143504434933566">Rapportér misbruk fra «<ph name="EXTENSION_NAME" />»</translation>
@@ -3881,6 +3889,7 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="6602956230557165253">Bruk venstre og høyre piltast for å navigere.</translation>
 <translation id="6605847144724004692">Ikke vurdert av noen brukere ennå.</translation>
 <translation id="6607831829715835317">Flere verktøy</translation>
+<translation id="6611972847767394631">Se fanene dine her</translation>
 <translation id="6612358246767739896">Beskyttet innhold</translation>
 <translation id="6615455863669487791">Vis meg</translation>
 <translation id="6618097958368085618">Behold likevel</translation>
@@ -5703,6 +5712,7 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="9188732951356337132">Send bruks- og diagnostikkdata. Denne enheten sender for øyeblikket diagnostikk-, enhets- og appbruksdata til Google automatisk. Disse dataene brukes ikke til å identifisere barnet ditt, men bidrar til å gjøre systemet og appene bedre og mer stabile. Noen aggregerte data hjelper også Google-apper og -partnere, for eksempel Android-utviklere. Hvis du har slått på innstillingen for annen nett- og appaktivitet for barnet ditt, kan disse dataene bli lagret i barnets Google-konto. <ph name="BEGIN_LINK2" />Finn ut mer<ph name="END_LINK2" /></translation>
 <translation id="9190063653747922532">L2TP/IPsec + forhåndsdelt nøkkel</translation>
 <translation id="920045321358709304">Søk med <ph name="SEARCH_ENGINE" /></translation>
+<translation id="9201023452444595544">Eventuelle frakoblede data blir slettet.</translation>
 <translation id="9201220332032049474">Alternativer for skjermlås</translation>
 <translation id="9203398526606335860">&amp;Profilering aktivert</translation>
 <translation id="9203904171912129171">Velg enhet</translation>
@@ -5715,6 +5725,7 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="9220525904950070496">Fjern konto</translation>
 <translation id="9220820413868316583">Løft fingeren, og prøv deretter på nytt.</translation>
 <translation id="923467487918828349">Vis alle</translation>
+<translation id="929117907539171075">Frakoblede data i installerte apper blir også slettet</translation>
 <translation id="930268624053534560">Detaljerte tidsstempler</translation>
 <translation id="932327136139879170">Gå til startsiden</translation>
 <translation id="932508678520956232">Kan ikke starte utskrift.</translation>

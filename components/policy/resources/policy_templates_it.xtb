@@ -2540,6 +2540,9 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 <translation id="5056708224511062314">Ingrandimento dello schermo disattivato</translation>
 <translation id="5058573563327660283">Seleziona la strategia da utilizzare per liberare spazio su disco durante la pulizia automatica (obsoleta)</translation>
 <translation id="5067143124345820993">Whitelist di utenti con accesso</translation>
+<translation id="5073609397321802133">Se il criterio viene impostato su false, gli utenti non possono personalizzare lo sfondo della pagina Nuova scheda. L'eventuale sfondo personalizzato esistente viene rimosso definitivamente anche se il criterio viene impostato su true in un secondo momento.
+
+      Se il criterio viene impostato su true o non viene impostato, gli utenti possono personalizzare lo sfondo della pagina Nuova scheda.</translation>
 <translation id="5075834892754086022">Se la norma viene impostata, viene applicata la lunghezza di PIN minima
           configurata. (La lunghezza minima assoluta dei codici PIN è 1; i valori inferiori a 1
           vengono considerati pari a 1).
@@ -3507,6 +3510,7 @@ Se questa norma non viene impostata o se l'elenco è vuoto, sarà possibile acce
 <translation id="6652197835259177259">Impostazioni degli utenti gestiti localmente</translation>
 <translation id="6658245400435704251">Consente di specificare il numero di secondi massimo per cui un dispositivo può ritardare in modo casuale il download di un suo aggiornamento dal momento della pubblicazione dell'aggiornamento sul server. Il dispositivo può attendere una parte di questo tempo in termini di tempo reale e la parte rimanente in termini di numero di controlli della disponibilità di aggiornamenti. In ogni caso, la dispersione ha un limite massimo pari a un periodo di tempo costante in modo che un dispositivo non si blocchi mai in attesa di scaricare un aggiornamento.</translation>
 <translation id="6665670272107384733">Imposta la frequenza di inserimento della password per poter usare lo sblocco rapido</translation>
+<translation id="6672070613706645316">Consenti agli utenti di personalizzare lo sfondo della pagina Nuova scheda</translation>
 <translation id="6672630473862787247">Attiva l'autenticazione ambientale nelle sessioni standard, Ospite e in modalità in incognito.</translation>
 <translation id="6681229465468164801">Consente di impostare un elenco di pattern URL che specificano i siti che non possono richiedere all'utente l'accesso al dispositivo USB.
 

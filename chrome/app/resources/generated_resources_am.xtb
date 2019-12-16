@@ -1870,7 +1870,7 @@
 <translation id="3649505501900178324">ዝማኔ ጊዜው ደርሶ አልፏል</translation>
 <translation id="3650845953328929506">የምዝግብ ማስታወሻ ሰቀላ በመጠባበቅ ላይ።</translation>
 <translation id="3650952250015018111">«<ph name="APP_NAME" />» ይህን እንዲደርስ ይፍቀዱ፦</translation>
-<translation id="3651488188562686558">ከWi-Fi አላቅቅ</translation>
+<translation id="3651488188562686558">ከWi-Fi ግንኙነት አቋርጥ</translation>
 <translation id="3652817283076144888">በማስጀመር ላይ</translation>
 <translation id="3653160965917900914">የአውታረ መረብ ፋይል ማጋራቶች</translation>
 <translation id="3653842108912548333">የእርስዎን ረዳት በVoice Match ይድረሱበት</translation>
@@ -1985,7 +1985,7 @@
 <translation id="3788401245189148511">ይህንን ሊያደርግ ይችላል፦</translation>
 <translation id="3789841737615482174">ጫን  </translation>
 <translation id="379082410132524484">የእርስዎ ካርድ የአገልግሎት ጊዜው አብቅቷል</translation>
-<translation id="3792890930871100565">አታሚዎችን ያላቅቁ</translation>
+<translation id="3792890930871100565">አታሚዎችን ግንኙነት አቋርጥ</translation>
 <translation id="3793395331556663376">ከልክ በላይ በርካታ የሥርዓት ፋይሎች ተከፍተዋል።</translation>
 <translation id="3796648294839530037">ተወዳጅ አውታረ መረቦች፦</translation>
 <translation id="3797739167230984533">የእርስዎ <ph name="BEGIN_LINK" /><ph name="DEVICE_TYPE" /> የሚተዳደረው<ph name="END_LINK" /> በእርስዎ ድርጅት ነው</translation>
@@ -2704,6 +2704,7 @@
 <translation id="4876273079589074638">መሐንዲሶቻችን ይህን ስንክል እንዲመረምሩና እንዲጠግኑት ያግዟቸው። ከቻሉ የተከተሏቸውን ደረጃዎች በሙሉ በትክክል ይግለጹ። ምንም አይረባም የሚባል ዝርዝር የለም!</translation>
 <translation id="4876895919560854374">ማያ ገጹን ይከፍተዋል እና ይዘገዋል</translation>
 <translation id="4877276003880815204">አባለ ነገሮችን መርምር</translation>
+<translation id="4878653975845355462">ብጁ በስተጀርባዎች በእርስዎ አስተዳዳሪ ጠፍተዋል</translation>
 <translation id="4879491255372875719">ራስ-ሰር (ነባሪ)</translation>
 <translation id="4880328057631981605">የመዳረሻ ነጥብ ስም</translation>
 <translation id="4880827082731008257">የፍለጋ ታሪክ</translation>
