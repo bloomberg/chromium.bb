@@ -9045,7 +9045,7 @@ static INLINE INTERP_PRED_TYPE is_pred_filter_search_allowed(
   const int mi_row = xd->mi_row;
   const int mi_col = xd->mi_col;
   int pred_filter_enable =
-      cpi->sf.cb_pred_filter_search
+      cpi->sf.interp_sf.cb_pred_filter_search
           ? (((mi_row + mi_col) >> bsl) +
              get_chessboard_index(cm->current_frame.frame_number)) &
                 0x1
@@ -9202,7 +9202,7 @@ static INLINE void find_best_non_dual_interp_filter(
       // This assert tells that (filter_x == filter_y) for non-dual filter case
       assert(filter_sets[filter_idx].as_filters.x_filter ==
              filter_sets[filter_idx].as_filters.y_filter);
-      if (cpi->sf.adaptive_interp_filter_search &&
+      if (cpi->sf.interp_sf.adaptive_interp_filter_search &&
           !(get_interp_filter_allowed_mask(cpi->interp_filter_search_mask,
                                            filter_idx))) {
         return;
@@ -9237,7 +9237,7 @@ static INLINE void find_best_non_dual_interp_filter(
     // REG_REG filter type is evaluated beforehand, hence skip it
     set_interp_filter_allowed_mask(&allowed_interp_mask, SHARP_SHARP);
     set_interp_filter_allowed_mask(&allowed_interp_mask, SMOOTH_SMOOTH);
-    if (cpi->sf.adaptive_interp_filter_search)
+    if (cpi->sf.interp_sf.adaptive_interp_filter_search)
       allowed_interp_mask &= cpi->interp_filter_search_mask;
 
     find_best_interp_rd_facade(x, cpi, tile_data, bsize, orig_dst, rd,
@@ -9251,7 +9251,7 @@ static INLINE void find_best_non_dual_interp_filter(
       // This assert tells that (filter_x == filter_y) for non-dual filter case
       assert(filter_sets[i].as_filters.x_filter ==
              filter_sets[i].as_filters.y_filter);
-      if (cpi->sf.adaptive_interp_filter_search &&
+      if (cpi->sf.interp_sf.adaptive_interp_filter_search &&
           !(get_interp_filter_allowed_mask(cpi->interp_filter_search_mask,
                                            i))) {
         continue;
@@ -9264,7 +9264,7 @@ static INLINE void find_best_non_dual_interp_filter(
       // sharp filter evaluation is skipped
       // TODO(any): Refine this gating based on modelled rd only (i.e., by not
       // accounting switchable filter rate)
-      if (cpi->sf.skip_sharp_interp_filter_search &&
+      if (cpi->sf.interp_sf.skip_sharp_interp_filter_search &&
           skip_pred != cpi->default_interp_skip_flags) {
         if (mbmi->interp_filters.as_int == filter_sets[SMOOTH_SMOOTH].as_int)
           break;
@@ -9443,10 +9443,10 @@ static INLINE int find_interp_filter_match(
     INTERPOLATION_FILTER_STATS *interp_filter_stats,
     int interp_filter_stats_idx) {
   int match_found_idx = -1;
-  if (cpi->sf.use_interp_filter && need_search)
-    match_found_idx = find_interp_filter_in_stats(mbmi, interp_filter_stats,
-                                                  interp_filter_stats_idx,
-                                                  cpi->sf.use_interp_filter);
+  if (cpi->sf.interp_sf.use_interp_filter && need_search)
+    match_found_idx = find_interp_filter_in_stats(
+        mbmi, interp_filter_stats, interp_filter_stats_idx,
+        cpi->sf.interp_sf.use_interp_filter);
 
   if (!need_search || match_found_idx == -1)
     set_default_interp_filters(mbmi, assign_filter);
@@ -9607,7 +9607,7 @@ static int64_t interpolation_filter_search(
   const BUFFER_SET *dst_bufs[2] = { tmp_dst, orig_dst };
   // Evaluate dual interp filters
   if (cm->seq_params.enable_dual_filter) {
-    if (cpi->sf.use_fast_interpolation_filter_search) {
+    if (cpi->sf.interp_sf.use_fast_interpolation_filter_search) {
       fast_dual_interp_filter_rd(x, cpi, tile_data, bsize, orig_dst, rd,
                                  &rd_stats_luma, &rd_stats, switchable_rate,
                                  dst_bufs, switchable_ctx, skip_hor, skip_ver);
@@ -9643,7 +9643,7 @@ static int64_t interpolation_filter_search(
   x->pred_sse[ref_frame] = (unsigned int)(rd_stats_luma.sse >> 4);
 
   // save search results
-  if (cpi->sf.use_interp_filter) {
+  if (cpi->sf.interp_sf.use_interp_filter) {
     assert(match_found_idx == -1);
     args->interp_filter_stats_idx = save_interp_filter_search_stat(
         mbmi, *rd, x->pred_sse[ref_frame], args->interp_filter_stats,
@@ -14149,7 +14149,8 @@ void av1_rd_pick_inter_mode_sb_seg_skip(const AV1_COMP *cpi,
   } else {
     best_filter = EIGHTTAP_REGULAR;
     if (av1_is_interp_needed(xd) &&
-        x->source_variance >= cpi->sf.disable_filter_search_var_thresh) {
+        x->source_variance >=
+            cpi->sf.interp_sf.disable_filter_search_var_thresh) {
       int rs;
       int best_rs = INT_MAX;
       for (i = 0; i < SWITCHABLE_FILTERS; ++i) {

@@ -564,6 +564,33 @@ typedef struct TPL_SPEED_FEATURES {
   int reduce_first_step_size;
 } TPL_SPEED_FEATURES;
 
+typedef struct INTERP_FILTER_SPEED_FEATURES {
+  // A source variance threshold below which filter search is disabled
+  // Choose a very large value (UINT_MAX) to use 8-tap always
+  unsigned int disable_filter_search_var_thresh;
+
+  // Do limited interpolation filter search for dual filters, since best choice
+  // usually includes EIGHTTAP_REGULAR.
+  int use_fast_interpolation_filter_search;
+
+  // Disable dual filter
+  int disable_dual_filter;
+
+  // Save results of interpolation_filter_search for a block
+  // Check mv and ref_frames before search, if they are very close with previous
+  // saved results, filter search can be skipped.
+  int use_interp_filter;
+
+  // skip sharp_filter evaluation based on regular and smooth filter rd for
+  // dual_filter=0 case
+  int skip_sharp_interp_filter_search;
+
+  int cb_pred_filter_search;
+
+  // adaptive interp_filter search to allow skip of certain filter types.
+  int adaptive_interp_filter_search;
+} INTERP_FILTER_SPEED_FEATURES;
+
 typedef struct REAL_TIME_SPEED_FEATURES {
   // check intra prediction for non-RD mode.
   int check_intra_pred_nonrd;
@@ -705,30 +732,7 @@ typedef struct SPEED_FEATURES {
   /*
    * Interpolation filter search speed features:
    */
-  // A source variance threshold below which filter search is disabled
-  // Choose a very large value (UINT_MAX) to use 8-tap always
-  unsigned int disable_filter_search_var_thresh;
-
-  // Do limited interpolation filter search for dual filters, since best choice
-  // usually includes EIGHTTAP_REGULAR.
-  int use_fast_interpolation_filter_search;
-
-  // Disable dual filter
-  int disable_dual_filter;
-
-  // Save results of interpolation_filter_search for a block
-  // Check mv and ref_frames before search, if they are very close with previous
-  // saved results, filter search can be skipped.
-  int use_interp_filter;
-
-  // skip sharp_filter evaluation based on regular and smooth filter rd for
-  // dual_filter=0 case
-  int skip_sharp_interp_filter_search;
-
-  int cb_pred_filter_search;
-
-  // adaptive interp_filter search to allow skip of certain filter types.
-  int adaptive_interp_filter_search;
+  INTERP_FILTER_SPEED_FEATURES interp_sf;
 
   /*
    * Intra mode search speed features:
