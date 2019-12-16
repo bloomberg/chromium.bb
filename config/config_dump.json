@@ -4085,6 +4085,7 @@
         ],
         "hw_tests": [],
         "hw_tests_override": [],
+        "important": false,
         "vm_tests": [],
         "vm_tests_override": null
     },
@@ -22327,6 +22328,7 @@
             "betty-arc64-release",
             "betty-arcmaster-release",
             "betty-arcnext-release",
+            "betty-arcvm-master-release",
             "betty-arcvm-pi-release",
             "betty-kernelnext-release",
             "betty-pi-arc-release",
@@ -22507,6 +22509,7 @@
             "betty-arc64-release-tryjob",
             "betty-arcmaster-release-tryjob",
             "betty-arcnext-release-tryjob",
+            "betty-arcvm-master-release-tryjob",
             "betty-arcvm-pi-release-tryjob",
             "betty-kernelnext-release-tryjob",
             "betty-pi-arc-release-tryjob",
