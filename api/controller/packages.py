@@ -189,7 +189,9 @@ def _HasChromePrebuiltSuccess(_input_proto, output_proto, _config):
 def HasChromePrebuilt(input_proto, output_proto, _config):
   """Checks if the most recent version of Chrome has a prebuilt."""
   build_target = controller_util.ParseBuildTarget(input_proto.build_target)
-  exists = packages.has_prebuilt(constants.CHROME_CP, build_target=build_target)
+  useflags = 'chrome_internal' if input_proto.chrome else None
+  exists = packages.has_prebuilt(constants.CHROME_CP, build_target=build_target,
+                                 useflags=useflags)
 
   output_proto.has_prebuilt = exists
 

@@ -2124,7 +2124,7 @@ def ParseDieHookStatusFile(metrics_dir):
     return failed_pkgs
 
 
-def HasPrebuilt(atom, board=None):
+def HasPrebuilt(atom, board=None, extra_env=None):
   """Check if the atom's best visible version has a prebuilt available."""
   best = PortageqBestVisible(atom, board=board)
 
@@ -2133,7 +2133,11 @@ def HasPrebuilt(atom, board=None):
   # disabled by default when you use -K, so turn it back on.
   cmd = [emerge, '-gKOpq', '--binpkg-respect-use=y', '=%s' % best.cpf]
   result = cros_build_lib.run(
-      cmd, enter_chroot=True, error_code_ok=True, quiet=True)
+      cmd,
+      enter_chroot=True,
+      extra_env=extra_env,
+      error_code_ok=True,
+      quiet=True)
   return not result.returncode
 
 

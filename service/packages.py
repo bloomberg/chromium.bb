@@ -15,6 +15,8 @@ import os
 import re
 import sys
 
+import six
+
 from google.protobuf import json_format
 
 from chromite.api.gen.config import replication_config_pb2
@@ -522,18 +524,29 @@ def get_best_visible(atom, build_target=None):
   return portage_util.PortageqBestVisible(atom, board=board)
 
 
-def has_prebuilt(atom, build_target=None):
+def has_prebuilt(atom, build_target=None, useflags=None):
   """Check if a prebuilt exists.
 
   Args:
     atom (str): The package whose prebuilt is being queried.
     build_target (build_target_util.BuildTarget): The build target whose
         sysroot should be searched, or the SDK if not provided.
+    useflags: Any additional USE flags that should be set. May be a string
+        of properly formatted USE flags, or an iterable of individual flags.
   """
   assert atom
 
   board = build_target.name if build_target else None
-  return portage_util.HasPrebuilt(atom, board=board)
+  extra_env = None
+  if useflags:
+    new_flags = useflags
+    if not isinstance(useflags, six.string_types):
+      new_flags = ' '.join(useflags)
+
+    existing = os.environ.get('USE', '')
+    final_flags = '%s %s' % (existing, new_flags)
+    extra_env = {'USE': final_flags.strip()}
+  return portage_util.HasPrebuilt(atom, board=board, extra_env=extra_env)
 
 
 def builds(atom, build_target, packages=None):

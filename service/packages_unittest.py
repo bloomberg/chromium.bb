@@ -365,12 +365,37 @@ class GetBestVisibleTest(cros_test_lib.TestCase):
       packages.get_best_visible('')
 
 
-class HasPrebuiltTest(cros_test_lib.TestCase):
+class HasPrebuiltTest(cros_test_lib.MockTestCase):
   """has_prebuilt tests."""
 
   def test_empty_atom_fails(self):
+    """Test an empty atom results in an error."""
     with self.assertRaises(AssertionError):
       packages.has_prebuilt('')
+
+  def test_use_flags(self):
+    """Test use flags get propagated correctly."""
+    # We don't really care about the result, just the env handling.
+    patch = self.PatchObject(portage_util, 'HasPrebuilt', return_value=True)
+
+    packages.has_prebuilt('cat/pkg-1.2.3', useflags='useflag')
+    patch.assert_called_with('cat/pkg-1.2.3', board=None,
+                             extra_env={'USE': 'useflag'})
+
+  def test_env_use_flags(self):
+    """Test env use flags get propagated correctly with passed useflags."""
+    # We don't really care about the result, just the env handling.
+    patch = self.PatchObject(portage_util, 'HasPrebuilt', return_value=True)
+    # Add some flags to the environment.
+    existing_flags = 'already set flags'
+    self.PatchObject(os.environ, 'get', return_value=existing_flags)
+
+    new_flags = 'useflag'
+    packages.has_prebuilt('cat/pkg-1.2.3', useflags=new_flags)
+    expected = '%s %s' % (existing_flags, new_flags)
+    patch.assert_called_with('cat/pkg-1.2.3', board=None,
+                             extra_env={'USE': expected})
+
 
 
 class AndroidVersionsTest(cros_test_lib.MockTestCase):
