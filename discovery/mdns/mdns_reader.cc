@@ -246,6 +246,9 @@ bool MdnsReader::Read(MdnsMessage* out) {
     // and for messages that were read successfully but are non-conforming.
     *out = MdnsMessage(header.id, GetMessageType(header.flags), questions,
                        answers, authority_records, additional_records);
+    if (IsMessageTruncated(header.flags)) {
+      out->set_truncated();
+    }
     cursor.Commit();
     return true;
   }

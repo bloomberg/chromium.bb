@@ -386,9 +386,13 @@ class MdnsMessage {
   void AddAuthorityRecord(MdnsRecord record);
   void AddAdditionalRecord(MdnsRecord record);
 
+  // Sets the truncated bit (TC), as specified in RFC 1035 Section 4.1.1.
+  void set_truncated() { is_truncated_ = true; }
+
   size_t MaxWireSize() const;
   uint16_t id() const { return id_; }
   MessageType type() const { return type_; }
+  bool is_truncated() const { return is_truncated_; }
   const std::vector<MdnsQuestion>& questions() const { return questions_; }
   const std::vector<MdnsRecord>& answers() const { return answers_; }
   const std::vector<MdnsRecord>& authority_records() const {
@@ -409,6 +413,7 @@ class MdnsMessage {
   // The mDNS header is 12 bytes long
   size_t max_wire_size_ = sizeof(Header);
   uint16_t id_ = 0;
+  bool is_truncated_ = false;
   MessageType type_ = MessageType::Query;
   std::vector<MdnsQuestion> questions_;
   std::vector<MdnsRecord> answers_;

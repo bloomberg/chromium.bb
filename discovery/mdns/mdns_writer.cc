@@ -229,7 +229,7 @@ bool MdnsWriter::Write(const MdnsMessage& message) {
   Cursor cursor(this);
   Header header;
   header.id = message.id();
-  header.flags = MakeFlags(message.type());
+  header.flags = MakeFlags(message.type(), message.is_truncated());
   header.question_count = message.questions().size();
   header.answer_count = message.answers().size();
   header.authority_record_count = message.authority_records().size();

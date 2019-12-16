@@ -148,9 +148,18 @@ constexpr MessageType GetMessageType(uint16_t flags) {
   return (flags & kFlagResponse) ? MessageType::Response : MessageType::Query;
 }
 
-constexpr uint16_t MakeFlags(MessageType type) {
+constexpr bool IsMessageTruncated(uint16_t flags) {
+  return flags & kFlagTC;
+}
+
+constexpr uint16_t MakeFlags(MessageType type, bool is_truncated) {
   // RFC 6762 Section 18.2 and Section 18.4
-  return (type == MessageType::Response) ? (kFlagResponse | kFlagAA) : 0;
+  uint16_t flags =
+      (type == MessageType::Response) ? (kFlagResponse | kFlagAA) : 0;
+  if (is_truncated) {
+    flags |= kFlagTC;
+  }
+  return flags;
 }
 
 constexpr bool IsValidFlagsSection(uint16_t flags) {

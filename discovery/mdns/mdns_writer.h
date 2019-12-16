@@ -59,7 +59,7 @@ class MdnsWriter : public BigEndianWriter {
 
   // Domain name compression dictionary.
   // Maps hashes of previously written domain (sub)names
-  // to the label pointers of the first occurences in the underlying buffer.
+  // to the label pointers of the first occurrences in the underlying buffer.
   // Compression of multiple domain names is supported on the same instance of
   // the MdnsWriter. Underlying buffer may contain other data in addition to the
   // domain names. The compression dictionary persists between calls to
