@@ -111,15 +111,15 @@ g.test('wait/many/parallel', async t => {
 g.test('wait/timed promise', async t => {
   return new Promise<void>((resolve, reject) => {
     const fence = t.queue.createFence();
-    timeout(() => t.queue.signal(fence, 2), 10)
+    timeout(() => t.queue.signal(fence, 2), 10);
 
     fence.onCompletion(2).then(() => {
       t.expect(fence.getCompletedValue() === 2);
-      resolve()
-    })
+      resolve();
+    });
 
-    rejectOnTimeout(100, 'The fence has not been resolved within time limit.').catch(reject)
-  })
+    rejectOnTimeout(100, 'The fence has not been resolved within time limit.').catch(reject);
+  });
 });
 
 // Test dropping references to the fence and onCompletion promise does not crash.
