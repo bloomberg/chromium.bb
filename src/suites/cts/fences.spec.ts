@@ -118,7 +118,7 @@ g.test('wait/timed promise', async t => {
       resolve()
     })
 
-    rejectOnTimeout(100, 'The fence has not been resolved in a time limit').catch(reject)
+    rejectOnTimeout(100, 'The fence has not been resolved within time limit.').catch(reject)
   })
 });
 
