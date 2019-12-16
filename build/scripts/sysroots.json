@@ -1,0 +1,13 @@
+{
+    "sid_arm": {
+        "Sha1Sum": "917c75b57e18baf9e34c8dfd493bcf555df4f183",
+        "SysrootDir": "debian_sid_arm-sysroot",
+        "Tarball": "debian_sid_arm_sysroot.tar.xz"
+    },
+    "sid_arm64": {
+        "Sha1Sum": "2ee3fb715f031df95b079ce6d2c8f5e8ba2cc6e4",
+        "SysrootDir": "debian_sid_arm64-sysroot",
+        "Tarball": "debian_sid_arm64_sysroot.tar.xz"
+    }
+
+}

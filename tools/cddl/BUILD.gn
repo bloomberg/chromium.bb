@@ -19,8 +19,14 @@ if (current_toolchain == host_toolchain) {
     ]
 
     deps = [
-      "../../third_party/abseil",
+      "../../third_party/abseil:abseil_always_host_toolchain",
     ]
+
+    # As this executable is ran on the host machine, we shouldn't
+    # use the runtime libraries for cross compilation.
+    if (!build_with_chromium) {
+      configs -= [ "//build/config:sysroot_runtime_libraries" ]
+    }
 
     configs += [ "../../build:openscreen_include_dirs" ]
   }

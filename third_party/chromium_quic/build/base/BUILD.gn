@@ -547,7 +547,11 @@ source_set("base") {
     "synchronization/synchronization_buildflags.h",
   ]
 
-  if (is_posix || is_linux || is_mac) {
+  if (is_posix) {
+    if (target_cpu == "arm") {
+      cflags_cc = [ "-D_FILE_OFFSET_BITS=64" ]
+    }
+
     sources += [
       "../../src/base/base_paths_posix.h",
       "../../src/base/debug/debugger_posix.cc",

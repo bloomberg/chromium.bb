@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build_overrides/build.gni")
+
 config("protobuf_config") {
   include_dirs = [ "src/src" ]
   defines = [
@@ -80,66 +82,68 @@ source_set("protobuf_lite") {
   public_configs = [ ":protobuf_config" ]
 }
 
+full_sources =
+    lite_sources + [
+      "src/src/google/protobuf/any.cc",
+      "src/src/google/protobuf/any.pb.cc",
+      "src/src/google/protobuf/api.pb.cc",
+      "src/src/google/protobuf/compiler/importer.cc",
+      "src/src/google/protobuf/compiler/parser.cc",
+      "src/src/google/protobuf/descriptor.cc",
+      "src/src/google/protobuf/descriptor.pb.cc",
+      "src/src/google/protobuf/descriptor_database.cc",
+      "src/src/google/protobuf/duration.pb.cc",
+      "src/src/google/protobuf/dynamic_message.cc",
+      "src/src/google/protobuf/empty.pb.cc",
+      "src/src/google/protobuf/extension_set_heavy.cc",
+      "src/src/google/protobuf/field_mask.pb.cc",
+      "src/src/google/protobuf/generated_message_reflection.cc",
+      "src/src/google/protobuf/generated_message_table_driven.cc",
+      "src/src/google/protobuf/io/gzip_stream.cc",
+      "src/src/google/protobuf/io/printer.cc",
+      "src/src/google/protobuf/io/tokenizer.cc",
+      "src/src/google/protobuf/map_field.cc",
+      "src/src/google/protobuf/message.cc",
+      "src/src/google/protobuf/reflection_ops.cc",
+      "src/src/google/protobuf/service.cc",
+      "src/src/google/protobuf/source_context.pb.cc",
+      "src/src/google/protobuf/struct.pb.cc",
+      "src/src/google/protobuf/stubs/mathlimits.cc",
+      "src/src/google/protobuf/stubs/substitute.cc",
+      "src/src/google/protobuf/text_format.cc",
+      "src/src/google/protobuf/timestamp.pb.cc",
+      "src/src/google/protobuf/type.pb.cc",
+      "src/src/google/protobuf/unknown_field_set.cc",
+      "src/src/google/protobuf/util/delimited_message_util.cc",
+      "src/src/google/protobuf/util/field_comparator.cc",
+      "src/src/google/protobuf/util/field_mask_util.cc",
+      "src/src/google/protobuf/util/internal/datapiece.cc",
+      "src/src/google/protobuf/util/internal/default_value_objectwriter.cc",
+      "src/src/google/protobuf/util/internal/error_listener.cc",
+      "src/src/google/protobuf/util/internal/field_mask_utility.cc",
+      "src/src/google/protobuf/util/internal/json_escaping.cc",
+      "src/src/google/protobuf/util/internal/json_objectwriter.cc",
+      "src/src/google/protobuf/util/internal/json_stream_parser.cc",
+      "src/src/google/protobuf/util/internal/object_writer.cc",
+      "src/src/google/protobuf/util/internal/proto_writer.cc",
+      "src/src/google/protobuf/util/internal/protostream_objectsource.cc",
+      "src/src/google/protobuf/util/internal/protostream_objectwriter.cc",
+      "src/src/google/protobuf/util/internal/type_info.cc",
+      "src/src/google/protobuf/util/internal/type_info_test_helper.cc",
+      "src/src/google/protobuf/util/internal/utility.cc",
+      "src/src/google/protobuf/util/json_util.cc",
+      "src/src/google/protobuf/util/message_differencer.cc",
+      "src/src/google/protobuf/util/time_util.cc",
+      "src/src/google/protobuf/util/type_resolver_util.cc",
+      "src/src/google/protobuf/wire_format.cc",
+      "src/src/google/protobuf/wrappers.pb.cc",
+    ]
+
 # This is the full, heavy protobuf lib that's needed for c++ .protos that don't
 # specify the LITE_RUNTIME option. The protocol compiler itself (protoc) falls
 # into that category. Do not use in normal code.
 static_library("protobuf_full") {
-  sources =
-      lite_sources + [
-        "src/src/google/protobuf/any.cc",
-        "src/src/google/protobuf/any.pb.cc",
-        "src/src/google/protobuf/api.pb.cc",
-        "src/src/google/protobuf/compiler/importer.cc",
-        "src/src/google/protobuf/compiler/parser.cc",
-        "src/src/google/protobuf/descriptor.cc",
-        "src/src/google/protobuf/descriptor.pb.cc",
-        "src/src/google/protobuf/descriptor_database.cc",
-        "src/src/google/protobuf/duration.pb.cc",
-        "src/src/google/protobuf/dynamic_message.cc",
-        "src/src/google/protobuf/empty.pb.cc",
-        "src/src/google/protobuf/extension_set_heavy.cc",
-        "src/src/google/protobuf/field_mask.pb.cc",
-        "src/src/google/protobuf/generated_message_reflection.cc",
-        "src/src/google/protobuf/generated_message_table_driven.cc",
-        "src/src/google/protobuf/io/gzip_stream.cc",
-        "src/src/google/protobuf/io/printer.cc",
-        "src/src/google/protobuf/io/tokenizer.cc",
-        "src/src/google/protobuf/map_field.cc",
-        "src/src/google/protobuf/message.cc",
-        "src/src/google/protobuf/reflection_ops.cc",
-        "src/src/google/protobuf/service.cc",
-        "src/src/google/protobuf/source_context.pb.cc",
-        "src/src/google/protobuf/struct.pb.cc",
-        "src/src/google/protobuf/stubs/mathlimits.cc",
-        "src/src/google/protobuf/stubs/substitute.cc",
-        "src/src/google/protobuf/text_format.cc",
-        "src/src/google/protobuf/timestamp.pb.cc",
-        "src/src/google/protobuf/type.pb.cc",
-        "src/src/google/protobuf/unknown_field_set.cc",
-        "src/src/google/protobuf/util/delimited_message_util.cc",
-        "src/src/google/protobuf/util/field_comparator.cc",
-        "src/src/google/protobuf/util/field_mask_util.cc",
-        "src/src/google/protobuf/util/internal/datapiece.cc",
-        "src/src/google/protobuf/util/internal/default_value_objectwriter.cc",
-        "src/src/google/protobuf/util/internal/error_listener.cc",
-        "src/src/google/protobuf/util/internal/field_mask_utility.cc",
-        "src/src/google/protobuf/util/internal/json_escaping.cc",
-        "src/src/google/protobuf/util/internal/json_objectwriter.cc",
-        "src/src/google/protobuf/util/internal/json_stream_parser.cc",
-        "src/src/google/protobuf/util/internal/object_writer.cc",
-        "src/src/google/protobuf/util/internal/proto_writer.cc",
-        "src/src/google/protobuf/util/internal/protostream_objectsource.cc",
-        "src/src/google/protobuf/util/internal/protostream_objectwriter.cc",
-        "src/src/google/protobuf/util/internal/type_info.cc",
-        "src/src/google/protobuf/util/internal/type_info_test_helper.cc",
-        "src/src/google/protobuf/util/internal/utility.cc",
-        "src/src/google/protobuf/util/json_util.cc",
-        "src/src/google/protobuf/util/message_differencer.cc",
-        "src/src/google/protobuf/util/time_util.cc",
-        "src/src/google/protobuf/util/type_resolver_util.cc",
-        "src/src/google/protobuf/wire_format.cc",
-        "src/src/google/protobuf/wrappers.pb.cc",
-      ]
+  sources = full_sources
 
   deps = [
     "../zlib",
@@ -152,6 +156,33 @@ static_library("protobuf_full") {
   public_configs = [ ":protobuf_config" ]
 
   defines = [ "HAVE_ZLIB" ]
+
+  visibility = [
+    ":protoc_lib",
+    "../chromium_quic/src/third_party:quic_trace",
+  ]
+}
+
+static_library("protobuf_full_always_host_toolchain") {
+  sources = full_sources
+
+  deps = [
+    "../zlib",
+  ]
+
+  configs += [
+    ":protobuf_warnings",
+    "../zlib:zlib_config",
+  ]
+  public_configs = [ ":protobuf_config" ]
+
+  defines = [ "HAVE_ZLIB" ]
+
+  # As this executable is ran on the host machine, we shouldn't
+  # use the runtime libraries for cross compilation.
+  if (!build_with_chromium) {
+    configs -= [ "//build/config:sysroot_runtime_libraries" ]
+  }
 
   visibility = [
     ":protoc_lib",
@@ -252,8 +283,14 @@ if (current_toolchain == host_toolchain) {
     public_configs = [ ":protobuf_config" ]
 
     public_deps = [
-      ":protobuf_full",
+      ":protobuf_full_always_host_toolchain",
     ]
+
+    # As this executable is ran on the host machine, we shouldn't
+    # use the runtime libraries for cross compilation.
+    if (!build_with_chromium) {
+      configs -= [ "//build/config:sysroot_runtime_libraries" ]
+    }
   }
 
   executable("protoc") {
@@ -267,5 +304,11 @@ if (current_toolchain == host_toolchain) {
 
     configs += [ ":protobuf_warnings" ]
     public_configs = [ ":protobuf_config" ]
+
+    # As this executable is ran on the host machine, we shouldn't
+    # use the runtime libraries for cross compilation.
+    if (!build_with_chromium) {
+      configs -= [ "//build/config:sysroot_runtime_libraries" ]
+    }
   }
 }
