@@ -342,6 +342,10 @@ typedef struct PARTITION_SPEED_FEATURES {
   // used in inter frames.
   // TODO(aconverse): Fold this into one of the other many mode skips
   BLOCK_SIZE max_intra_bsize;
+
+  // Use CNN with luma pixels on source frame on each of the 64x64 subblock to
+  // perform split/no_split decision on intra-frames.
+  int intra_cnn_split;
 } PARTITION_SPEED_FEATURES;
 
 typedef struct MV_SPEED_FEATURES {
@@ -684,10 +688,6 @@ typedef struct SPEED_FEATURES {
 
   // TODO(anyone): tune intra_pruning_with_hog_thresh for various speeds.
   float intra_pruning_with_hog_thresh;
-
-  // Use CNN with luma pixels on source frame on each of the 64x64 subblock to
-  // perform split/no_split decision on intra-frames.
-  int intra_cnn_split;
 
   // Enable/disable smooth intra modes.
   int disable_smooth_intra;

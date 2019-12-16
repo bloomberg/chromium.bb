@@ -341,7 +341,7 @@ static void set_good_speed_features_framesize_independent(
         (frame_is_intra_only(&cpi->common) || (cm->allow_screen_content_tools))
             ? 0
             : (boosted ? 1 : 2);
-    sf->intra_cnn_split = 1;
+    sf->part_sf.intra_cnn_split = 1;
 
     sf->enable_sgr_ep_pruning = 1;
     sf->inter_tx_size_search_init_depth_rect = 1;
@@ -776,6 +776,7 @@ static AOM_INLINE void init_part_sf(PARTITION_SPEED_FEATURES *part_sf) {
   part_sf->simple_motion_search_split = 0;
   part_sf->simple_motion_search_prune_rect = 0;
   part_sf->simple_motion_search_early_term_none = 0;
+  part_sf->intra_cnn_split = 0;
 }
 
 static AOM_INLINE void init_mv_sf(MV_SPEED_FEATURES *mv_sf) {
@@ -896,7 +897,6 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
   sf->tx_size_search_lgr_block = 0;
   sf->model_based_prune_tx_search_level = 0;
   sf->selective_ref_gm = 1;
-  sf->part_sf.partition_search_type = SEARCH_PARTITION;
   sf->tx_type_search.prune_mode = PRUNE_2D_ACCURATE;
   sf->tx_type_search.ml_tx_split_thresh = 8500;
   sf->tx_type_search.use_skip_flag_prediction = 1;
@@ -906,16 +906,8 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
   sf->tx_type_search.skip_tx_search = 0;
   sf->tx_type_search.prune_tx_type_using_stats = 0;
   sf->tx_type_search.enable_winner_mode_tx_type_pruning = 0;
-  sf->part_sf.less_rectangular_check_level = 0;
-  sf->part_sf.use_square_partition_only_threshold = BLOCK_128X128;
-  sf->part_sf.auto_max_partition_based_on_simple_motion = NOT_IN_USE;
-  sf->part_sf.auto_min_partition_based_on_simple_motion = 0;
-  sf->part_sf.default_max_partition_size = BLOCK_LARGEST;
-  sf->part_sf.default_min_partition_size = BLOCK_4X4;
-  sf->part_sf.adjust_partitioning_from_last_frame = 0;
   sf->mode_search_skip_flags = 0;
   sf->disable_filter_search_var_thresh = 0;
-  sf->part_sf.allow_partition_search_skip = 0;
   sf->disable_loop_restoration_chroma = 0;
   sf->prune_sgr_based_on_wiener = 0;
   sf->enable_sgr_ep_pruning = 0;
@@ -948,29 +940,9 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
   sf->lpf_pick = LPF_PICK_FROM_FULL_IMAGE;
   sf->cdef_pick_method = CDEF_FULL_SEARCH;
   sf->use_fast_coef_costing = 0;
-  sf->part_sf.max_intra_bsize = BLOCK_LARGEST;
-  // This setting only takes effect when partition_search_type is set
-  // to FIXED_PARTITION.
-  sf->part_sf.always_this_block_size = BLOCK_16X16;
   // Recode loop tolerance %.
   sf->recode_tolerance = 25;
-  sf->part_sf.partition_search_breakout_dist_thr = 0;
-  sf->part_sf.partition_search_breakout_rate_thr = 0;
   sf->simple_model_rd_from_var = 0;
-  sf->part_sf.prune_ext_partition_types_search_level = 0;
-  sf->part_sf.ml_prune_rect_partition = 0;
-  sf->part_sf.ml_prune_ab_partition = 0;
-  sf->part_sf.ml_prune_4_partition = 0;
-  sf->part_sf.ml_early_term_after_part_split_level = 0;
-  for (i = 0; i < PARTITION_BLOCK_SIZES; ++i) {
-    sf->part_sf.ml_partition_search_breakout_thresh[i] =
-        -1;  // -1 means not enabled.
-  }
-  sf->part_sf.simple_motion_search_prune_agg = 0;
-  sf->part_sf.simple_motion_search_split = 0;
-  sf->part_sf.simple_motion_search_prune_rect = 0;
-  sf->part_sf.simple_motion_search_early_term_none = 0;
-  sf->intra_cnn_split = 0;
 
   // Set this at the appropriate speed levels
   sf->tx_size_search_level = USE_FULL_RD;
