@@ -1,7 +1,8 @@
 export const description = ``;
 
 import { attemptGarbageCollection } from '../../framework/collect_garbage.js';
-import { TestGroup } from '../../framework/index.js';
+import { TestGroup, rejectOnTimeout } from '../../framework/index.js';
+import { timeout } from '../../framework/util/timeout.js';
 
 import { GPUTest } from './gpu_test.js';
 
@@ -106,16 +107,16 @@ g.test('wait/many/parallel', async t => {
   t.expect(fence.getCompletedValue() === 20);
 });
 
-// Test promise resolving with a time limit
+// Test promise resolving with a time limit.
 g.test('wait/timed promise', async t => {
   return new Promise<void>((resolve, reject) => {
     const fence = t.queue.createFence();
-    setTimeout(() => t.queue.signal(fence, 2), 100)
+    timeout(() => t.queue.signal(fence, 2), 100)
     fence.onCompletion(2).then(() => {
       t.expect(fence.getCompletedValue() == 2);
       resolve()
     })
-    setTimeout(() => reject(), 1000)
+    rejectOnTimeout(1000, '')
   })
 });
 
