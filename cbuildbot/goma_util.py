@@ -229,17 +229,21 @@ class Goma(object):
         GLOG_log_dir=self.goma_log_dir)
     if self.goma_client_json:
       result['GOMA_SERVICE_ACCOUNT_JSON_FILE'] = self.goma_client_json
+
     if self.goma_cache:
       result['GOMA_CACHE_DIR'] = self.goma_cache
+
     if self.goma_approach:
       result['GOMA_RPC_EXTRA_PARAMS'] = self.goma_approach.rpc_extra_params
       result['GOMA_SERVER_HOST'] = self.goma_approach.server_host
       result['GOMA_ARBITRARY_TOOLCHAIN_SUPPORT'] = (
           'true' if self.goma_approach.arbitrary_toolchain_support else 'false')
+
     if self._stats_file:
       result['GOMA_DUMP_STATS_FILE'] = self._stats_file
     if self._counterz_file:
       result['GOMA_DUMP_COUNTERZ_FILE'] = self._counterz_file
+
     return result
 
   def GetChrootExtraEnv(self):
@@ -259,6 +263,12 @@ class Goma(object):
     if self.goma_cache:
       result['GOMA_CACHE_DIR'] = os.path.join(
           goma_dir, os.path.relpath(self.goma_cache, self.chromeos_goma_dir))
+
+    if self.goma_approach:
+      result['GOMA_RPC_EXTRA_PARAMS'] = self.goma_approach.rpc_extra_params
+      result['GOMA_SERVER_HOST'] = self.goma_approach.server_host
+      result['GOMA_ARBITRARY_TOOLCHAIN_SUPPORT'] = (
+          'true' if self.goma_approach.arbitrary_toolchain_support else 'false')
 
     if self._chroot_stats_file:
       result['GOMA_DUMP_STATS_FILE'] = self._chroot_stats_file
