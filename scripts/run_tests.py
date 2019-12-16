@@ -329,7 +329,7 @@ def BuildTestSets(tests, chroot_available, network, config_skew, jobs=1,
 
 def RunTests(tests, jobs=1, chroot_available=True, network=False,
              config_skew=False, dryrun=False, failfast=False, pyver=None):
-  """Execute |paths| with |jobs| in parallel (including |network| tests).
+  """Execute |tests| with |jobs| in parallel (including |network| tests).
 
   Args:
     tests: The tests to run.
