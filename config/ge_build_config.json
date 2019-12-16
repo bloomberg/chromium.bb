@@ -2575,7 +2575,7 @@
     {
       "name": "kalista",
       "reference_board_name": "kalista",
-      "arch": "X86_INTERNAL",
+      "arch": "UNKNOWN",
       "builder": "RELEASE",
       "experimental": false,
       "models": [
