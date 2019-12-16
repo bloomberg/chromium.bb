@@ -153,23 +153,23 @@ struct av1_extracfg {
 };
 
 static struct av1_extracfg default_extra_cfg = {
-  0,                      // cpu_used
-  1,                      // enable_auto_alt_ref
-  0,                      // enable_auto_bwd_ref
-  0,                      // noise_sensitivity
-  CONFIG_SHARP_SETTINGS,  // sharpness
-  0,                      // static_thresh
-  1,                      // row_mt
-  0,                      // tile_columns
-  0,                      // tile_rows
-  1,                      // enable_tpl_model
-  1,                      // enable_keyframe_filtering
-  7,                      // arnr_max_frames
-  5,                      // arnr_strength
-  0,                      // min_gf_interval; 0 -> default decision
-  0,                      // max_gf_interval; 0 -> default decision
-  4,                      // gf_max_pyr_height
-  AOM_TUNE_PSNR,          // tuning
+  0,              // cpu_used
+  1,              // enable_auto_alt_ref
+  0,              // enable_auto_bwd_ref
+  0,              // noise_sensitivity
+  0,              // sharpness
+  0,              // static_thresh
+  1,              // row_mt
+  0,              // tile_columns
+  0,              // tile_rows
+  1,              // enable_tpl_model
+  1,              // enable_keyframe_filtering
+  7,              // arnr_max_frames
+  5,              // arnr_strength
+  0,              // min_gf_interval; 0 -> default decision
+  0,              // max_gf_interval; 0 -> default decision
+  4,              // gf_max_pyr_height
+  AOM_TUNE_PSNR,  // tuning
   "/usr/local/share/model/vmaf_v0.6.1.pkl",  // VMAF model path
   10,                                        // cq_level
   0,                                         // rc_max_intra_bitrate_pct
