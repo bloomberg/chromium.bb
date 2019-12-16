@@ -462,8 +462,8 @@ static AOM_INLINE void set_low_temp_var_flag(
   // variance_low for the block. The variance threshold can be adjusted, the
   // higher the more aggressive.
   if (ref_frame_partition == LAST_FRAME &&
-      (cpi->sf.short_circuit_low_temp_var == 1 ||
-       (cpi->sf.estimate_motion_for_var_based_partition &&
+      (cpi->sf.rt_sf.short_circuit_low_temp_var == 1 ||
+       (cpi->sf.rt_sf.estimate_motion_for_var_based_partition &&
         xd->mi[0]->mv[0].as_mv.col < mv_thr &&
         xd->mi[0]->mv[0].as_mv.col > -mv_thr &&
         xd->mi[0]->mv[0].as_mv.row < mv_thr &&
@@ -487,10 +487,11 @@ static AOM_INLINE void set_low_temp_var_flag(
         if ((*mi_64)->sb_type == BLOCK_64X64 ||
             (*mi_64)->sb_type == BLOCK_64X32 ||
             (*mi_64)->sb_type == BLOCK_32X64) {
-          int64_t threshold_64x64 = (cpi->sf.short_circuit_low_temp_var == 1 ||
-                                     cpi->sf.short_circuit_low_temp_var == 3)
-                                        ? ((5 * thresholds[1]) >> 3)
-                                        : (thresholds[1] >> 1);
+          int64_t threshold_64x64 =
+              (cpi->sf.rt_sf.short_circuit_low_temp_var == 1 ||
+               cpi->sf.rt_sf.short_circuit_low_temp_var == 3)
+                  ? ((5 * thresholds[1]) >> 3)
+                  : (thresholds[1] >> 1);
           if (vt->split[i].part_variances.none.variance < threshold_64x64)
             x->variance_low[1 + i] = 1;
         } else {
@@ -504,14 +505,14 @@ static AOM_INLINE void set_low_temp_var_flag(
               continue;
             if ((*mi_32)->sb_type == BLOCK_32X32) {
               int64_t threshold_32x32 =
-                  (cpi->sf.short_circuit_low_temp_var == 1 ||
-                   cpi->sf.short_circuit_low_temp_var == 3)
+                  (cpi->sf.rt_sf.short_circuit_low_temp_var == 1 ||
+                   cpi->sf.rt_sf.short_circuit_low_temp_var == 3)
                       ? ((5 * thresholds[2]) >> 3)
                       : (thresholds[2] >> 1);
               if (vt->split[i].split[k].part_variances.none.variance <
                   threshold_32x32)
                 x->variance_low[5 + (i << 2) + k] = 1;
-            } else if (cpi->sf.short_circuit_low_temp_var >= 2) {
+            } else if (cpi->sf.rt_sf.short_circuit_low_temp_var >= 2) {
               if ((*mi_32)->sb_type == BLOCK_16X16 ||
                   (*mi_32)->sb_type == BLOCK_32X16 ||
                   (*mi_32)->sb_type == BLOCK_16X32) {
@@ -650,7 +651,7 @@ int av1_choose_var_based_partitioning(AV1_COMP *cpi, const TileInfo *const tile,
 
   if (cpi->oxcf.aq_mode == CYCLIC_REFRESH_AQ && cm->seg.enabled &&
       cyclic_refresh_segment_id_boosted(segment_id) &&
-      cpi->sf.use_nonrd_pick_mode) {
+      cpi->sf.rt_sf.use_nonrd_pick_mode) {
     int q = av1_get_qindex(&cm->seg, segment_id, cm->base_qindex);
     set_vbp_thresholds(cpi, thresholds, q, content_state);
   } else {
@@ -687,7 +688,7 @@ int av1_choose_var_based_partitioning(AV1_COMP *cpi, const TileInfo *const tile,
     // For non-SVC GOLDEN is another temporal reference. Check if it should be
     // used as reference for partitioning.
     if (!cpi->use_svc && (cpi->ref_frame_flags & AOM_GOLD_FLAG) &&
-        cpi->sf.use_nonrd_pick_mode) {
+        cpi->sf.rt_sf.use_nonrd_pick_mode) {
       yv12_g = get_ref_frame_yv12_buf(cm, GOLDEN_FRAME);
       if (yv12_g && yv12_g != yv12) {
         av1_setup_pre_planes(xd, 0, yv12_g, mi_row, mi_col,
@@ -706,7 +707,7 @@ int av1_choose_var_based_partitioning(AV1_COMP *cpi, const TileInfo *const tile,
     mi->sb_type = cm->seq_params.sb_size;
     mi->mv[0].as_int = 0;
     mi->interp_filters = av1_broadcast_interp_filter(BILINEAR);
-    if (cpi->sf.estimate_motion_for_var_based_partition) {
+    if (cpi->sf.rt_sf.estimate_motion_for_var_based_partition) {
       if (xd->mb_to_right_edge >= 0 && xd->mb_to_bottom_edge >= 0) {
         const MV dummy_mv = { 0, 0 };
         y_sad = av1_int_pro_motion_estimation(cpi, x, cm->seq_params.sb_size,
@@ -733,7 +734,7 @@ int av1_choose_var_based_partitioning(AV1_COMP *cpi, const TileInfo *const tile,
       x->pred_mv[LAST_FRAME] = mi->mv[0].as_mv;
       ref_frame_partition = LAST_FRAME;
       x->nonrd_reduce_golden_mode_search =
-          cpi->sf.nonrd_reduce_golden_mode_search;
+          cpi->sf.rt_sf.nonrd_reduce_golden_mode_search;
     }
 
     set_ref_ptrs(cm, xd, mi->ref_frame[0], mi->ref_frame[1]);
@@ -995,7 +996,7 @@ int av1_choose_var_based_partitioning(AV1_COMP *cpi, const TileInfo *const tile,
     }
   }
 
-  if (cpi->sf.short_circuit_low_temp_var && !is_small_sb) {
+  if (cpi->sf.rt_sf.short_circuit_low_temp_var && !is_small_sb) {
     set_low_temp_var_flag(cpi, x, xd, vt, thresholds, ref_frame_partition,
                           mi_col, mi_row);
   }

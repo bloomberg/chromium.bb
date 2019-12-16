@@ -611,7 +611,7 @@ void av1_initialize_rd_consts(AV1_COMP *cpi) {
 
   set_block_thresholds(cm, rd);
 
-  if ((!cpi->sf.use_nonrd_pick_mode &&
+  if ((!cpi->sf.rt_sf.use_nonrd_pick_mode &&
        cpi->oxcf.mv_cost_upd_freq != COST_UPD_OFF) ||
       frame_is_intra_only(cm) || (cm->current_frame.frame_number & 0x07) == 1)
     av1_fill_mv_costs(cm->fc, cm->cur_frame_force_integer_mv,

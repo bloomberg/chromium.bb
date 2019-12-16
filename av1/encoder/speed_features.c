@@ -252,7 +252,7 @@ static void set_rt_speed_feature_framesize_dependent(const AV1_COMP *const cpi,
   if (!is_480p_or_larger) {
     if (speed >= 8) {
       sf->mv_sf.subpel_search_method = SUBPEL_TREE;
-      sf->estimate_motion_for_var_based_partition = 1;
+      sf->rt_sf.estimate_motion_for_var_based_partition = 1;
     }
   }
 }
@@ -302,8 +302,8 @@ static void set_good_speed_features_framesize_independent(
   sf->inter_sf.disable_wedge_search_edge_thresh = 0;
   sf->inter_sf.prune_motion_mode_level = 1;
   sf->cb_pred_filter_search = 0;
-  sf->use_nonrd_pick_mode = 0;
-  sf->use_real_time_ref_set = 0;
+  sf->rt_sf.use_nonrd_pick_mode = 0;
+  sf->rt_sf.use_real_time_ref_set = 0;
 
   if (speed >= 1) {
     sf->inter_sf.selective_ref_frame = 2;
@@ -542,16 +542,16 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
   sf->inter_sf.disable_wedge_search_edge_thresh = 0;
   sf->inter_sf.prune_motion_mode_level = 1;
   sf->cb_pred_filter_search = 0;
-  sf->use_nonrd_pick_mode = 0;
-  sf->use_real_time_ref_set = 0;
-  sf->reuse_inter_pred_nonrd = 0;
-  sf->estimate_motion_for_var_based_partition = 1;
-  sf->use_comp_ref_nonrd = 1;
-  sf->check_intra_pred_nonrd = 1;
-  sf->use_nonrd_filter_search = 1;
-  sf->nonrd_use_blockyrd_interp_filter = 0;
-  sf->nonrd_reduce_golden_mode_search = 0;
-  sf->hybrid_intra_pickmode = 0;
+  sf->rt_sf.use_nonrd_pick_mode = 0;
+  sf->rt_sf.use_real_time_ref_set = 0;
+  sf->rt_sf.reuse_inter_pred_nonrd = 0;
+  sf->rt_sf.estimate_motion_for_var_based_partition = 1;
+  sf->rt_sf.use_comp_ref_nonrd = 1;
+  sf->rt_sf.check_intra_pred_nonrd = 1;
+  sf->rt_sf.use_nonrd_filter_search = 1;
+  sf->rt_sf.nonrd_use_blockyrd_interp_filter = 0;
+  sf->rt_sf.nonrd_reduce_golden_mode_search = 0;
+  sf->rt_sf.hybrid_intra_pickmode = 0;
 
   if (speed >= 1) {
     sf->gm_erroradv_type = GM_ERRORADV_TR_1;
@@ -663,7 +663,7 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->mv_sf.search_method = BIGDIA;
     sf->mv_sf.subpel_search_method = SUBPEL_TREE_PRUNED_MORE;
     sf->inter_sf.adaptive_rd_thresh = 4;
-    sf->mode_search_skip_flags =
+    sf->rt_sf.mode_search_skip_flags =
         (cm->current_frame.frame_type == KEY_FRAME)
             ? 0
             : FLAG_SKIP_INTRA_DIRMISMATCH | FLAG_SKIP_INTRA_BESTINTER |
@@ -691,20 +691,20 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->frame_parameter_update = 0;
     sf->mv_sf.search_method = FAST_DIAMOND;
     sf->part_sf.partition_search_type = VAR_BASED_PARTITION;
-    sf->mode_search_skip_flags |= FLAG_SKIP_INTRA_DIRMISMATCH;
-    sf->use_real_time_ref_set = 1;
+    sf->rt_sf.mode_search_skip_flags |= FLAG_SKIP_INTRA_DIRMISMATCH;
+    sf->rt_sf.use_real_time_ref_set = 1;
     sf->tx_type_search.prune_mode = PRUNE_2D_MORE;
     sf->tx_size_search_level = 1;
-    sf->use_comp_ref_nonrd = 0;
+    sf->rt_sf.use_comp_ref_nonrd = 0;
     sf->inter_sf.inter_mode_rd_model_estimation = 2;
     sf->cdef_pick_method = CDEF_PICK_FROM_Q;
     sf->part_sf.max_intra_bsize = BLOCK_32X32;
     sf->use_inter_txb_hash = 0;
-    sf->skip_interp_filter_search = 1;
+    sf->rt_sf.skip_interp_filter_search = 1;
     sf->inter_sf.adaptive_mode_search = 2;
-    sf->force_tx_search_off = 1;
-    sf->num_inter_modes_for_tx_search = 5;
-    sf->use_simple_rd_model = 1;
+    sf->rt_sf.force_tx_search_off = 1;
+    sf->rt_sf.num_inter_modes_for_tx_search = 5;
+    sf->rt_sf.use_simple_rd_model = 1;
   }
   if (speed >= 7) {
     sf->lpf_pick = LPF_PICK_FROM_Q;
@@ -714,29 +714,29 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->frame_parameter_update = 0;
     sf->mv_sf.search_method = FAST_DIAMOND;
     sf->part_sf.partition_search_type = VAR_BASED_PARTITION;
-    sf->mode_search_skip_flags |= FLAG_SKIP_INTRA_DIRMISMATCH;
-    sf->use_nonrd_pick_mode = 1;
-    sf->use_comp_ref_nonrd = 0;
+    sf->rt_sf.mode_search_skip_flags |= FLAG_SKIP_INTRA_DIRMISMATCH;
+    sf->rt_sf.use_nonrd_pick_mode = 1;
+    sf->rt_sf.use_comp_ref_nonrd = 0;
     sf->inter_sf.inter_mode_rd_model_estimation = 2;
     sf->cdef_pick_method = CDEF_PICK_FROM_Q;
-    sf->skip_interp_filter_search = 0;
-    sf->short_circuit_low_temp_var = 0;
-    sf->reuse_inter_pred_nonrd = 0;
-    sf->nonrd_reduce_golden_mode_search = 0;
-    sf->nonrd_use_blockyrd_interp_filter = 1;
-    sf->nonrd_merge_partition = 1;
-    sf->use_nonrd_altref_frame = 1;
+    sf->rt_sf.skip_interp_filter_search = 0;
+    sf->rt_sf.short_circuit_low_temp_var = 0;
+    sf->rt_sf.reuse_inter_pred_nonrd = 0;
+    sf->rt_sf.nonrd_reduce_golden_mode_search = 0;
+    sf->rt_sf.nonrd_use_blockyrd_interp_filter = 1;
+    sf->rt_sf.nonrd_merge_partition = 1;
+    sf->rt_sf.use_nonrd_altref_frame = 1;
     sf->mv_sf.subpel_search_method = SUBPEL_TREE;
   }
   if (speed >= 8) {
-    sf->nonrd_merge_partition = 0;
-    sf->estimate_motion_for_var_based_partition = 0;
-    sf->short_circuit_low_temp_var = 1;
-    sf->reuse_inter_pred_nonrd = 1;
-    sf->nonrd_use_blockyrd_interp_filter = 0;
-    sf->use_nonrd_altref_frame = 0;
-    sf->nonrd_reduce_golden_mode_search = 1;
-    sf->hybrid_intra_pickmode = 1;
+    sf->rt_sf.nonrd_merge_partition = 0;
+    sf->rt_sf.estimate_motion_for_var_based_partition = 0;
+    sf->rt_sf.short_circuit_low_temp_var = 1;
+    sf->rt_sf.reuse_inter_pred_nonrd = 1;
+    sf->rt_sf.nonrd_use_blockyrd_interp_filter = 0;
+    sf->rt_sf.use_nonrd_altref_frame = 0;
+    sf->rt_sf.nonrd_reduce_golden_mode_search = 1;
+    sf->rt_sf.hybrid_intra_pickmode = 1;
 // TODO(kyslov) Enable when better model is available
 // It gives +5% speedup and 11% overall BDRate degradation
 // So, can not enable now until better CurvFit is there
@@ -832,6 +832,15 @@ static AOM_INLINE void init_inter_sf(INTER_MODE_SPEED_FEATURES *inter_sf) {
   inter_sf->prune_warped_prob_thresh = 0;
 }
 
+static AOM_INLINE void init_rt_sf(REAL_TIME_SPEED_FEATURES *rt_sf) {
+  rt_sf->mode_search_skip_flags = 0;
+  rt_sf->skip_interp_filter_search = 0;
+  rt_sf->force_tx_search_off = 0;
+  rt_sf->num_inter_modes_for_tx_search = INT_MAX;
+  rt_sf->use_simple_rd_model = 0;
+  rt_sf->nonrd_merge_partition = 0;
+}
+
 void av1_set_speed_features_framesize_dependent(AV1_COMP *cpi, int speed) {
   SPEED_FEATURES *const sf = &cpi->sf;
   const AV1EncoderConfig *const oxcf = &cpi->oxcf;
@@ -906,7 +915,6 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
   sf->tx_type_search.skip_tx_search = 0;
   sf->tx_type_search.prune_tx_type_using_stats = 0;
   sf->tx_type_search.enable_winner_mode_tx_type_pruning = 0;
-  sf->mode_search_skip_flags = 0;
   sf->disable_filter_search_var_thresh = 0;
   sf->disable_loop_restoration_chroma = 0;
   sf->prune_sgr_based_on_wiener = 0;
@@ -926,12 +934,8 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
   sf->disable_overlay_frames = 0;
   // TODO(yunqing): turn it on for speed 0 if there is gain.
   sf->adaptive_overlay_encoding = 1;
-  sf->skip_interp_filter_search = 0;
-  sf->force_tx_search_off = 0;
   sf->motion_mode_for_winner_cand = 0;
-  sf->num_inter_modes_for_tx_search = INT_MAX;
   sf->prune_palette_search_level = 0;
-  sf->use_simple_rd_model = 0;
 
   for (i = 0; i < TX_SIZES; i++) {
     sf->intra_y_mode_mask[i] = INTRA_ALL;
@@ -968,11 +972,11 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
   sf->enable_winner_mode_for_use_tx_domain_dist = 0;
   sf->enable_multiwinner_mode_process = 0;
   sf->disable_smooth_intra = 0;
-  sf->nonrd_merge_partition = 0;
 
   init_part_sf(&sf->part_sf);
   init_mv_sf(&sf->mv_sf);
   init_inter_sf(&sf->inter_sf);
+  init_rt_sf(&sf->rt_sf);
 
   if (oxcf->mode == GOOD)
     set_good_speed_features_framesize_independent(cpi, sf, speed);

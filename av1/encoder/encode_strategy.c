@@ -233,9 +233,9 @@ static int get_ref_frame_flags(const AV1_COMP *const cpi) {
     // If this_ref has appeared before, mark the corresponding ref frame as
     // invalid. For nonrd mode, only disable GOLDEN_FRAME if it's the same
     // as LAST_FRAME or ALTREF_FRAME (if ALTREF is being used in nonrd).
-    int index = (cpi->sf.use_nonrd_pick_mode &&
+    int index = (cpi->sf.rt_sf.use_nonrd_pick_mode &&
                  ref_frame_priority_order[i] == GOLDEN_FRAME)
-                    ? (1 + cpi->sf.use_nonrd_altref_frame)
+                    ? (1 + cpi->sf.rt_sf.use_nonrd_altref_frame)
                     : i;
     for (int j = 0; j < index; ++j) {
       if (this_ref == ref_frames[j]) {
@@ -695,7 +695,7 @@ void av1_update_ref_frame_map(AV1_COMP *cpi,
       stack_push(ref_buffer_stack->gld_stack, &ref_buffer_stack->gld_stack_size,
                  ref_map_index);
       // For nonrd_mode: update LAST as well on GF_UPDATE frame.
-      if (cpi->sf.use_nonrd_pick_mode)
+      if (cpi->sf.rt_sf.use_nonrd_pick_mode)
         stack_push(ref_buffer_stack->lst_stack,
                    &ref_buffer_stack->lst_stack_size, ref_map_index);
       break;

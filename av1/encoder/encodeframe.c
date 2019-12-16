@@ -673,7 +673,7 @@ static void hybrid_intra_mode_search(AV1_COMP *cpi, MACROBLOCK *const x,
                                      PICK_MODE_CONTEXT *ctx) {
   // TODO(jianj): Investigate the failure of ScalabilityTest in AOM_Q mode,
   // which sets base_qindex to 0 on keyframe.
-  if (cpi->oxcf.rc_mode != AOM_CBR || !cpi->sf.hybrid_intra_pickmode ||
+  if (cpi->oxcf.rc_mode != AOM_CBR || !cpi->sf.rt_sf.hybrid_intra_pickmode ||
       bsize < BLOCK_16X16)
     av1_rd_pick_intra_mode_sb(cpi, x, rd_cost, bsize, ctx, INT64_MAX);
   else
@@ -2216,7 +2216,7 @@ static AOM_INLINE void nonrd_use_partition(AV1_COMP *cpi, ThreadData *td,
       }
       break;
     case PARTITION_SPLIT:
-      if (cpi->sf.nonrd_merge_partition &&
+      if (cpi->sf.rt_sf.nonrd_merge_partition &&
           is_leaf_split_partition(cm, mi_row, mi_col, bsize) &&
           !frame_is_intra_only(cm)) {
         RD_SEARCH_MACROBLOCK_CONTEXT x_ctx;
@@ -4524,7 +4524,8 @@ void av1_encode_sb_row(AV1_COMP *cpi, ThreadData *td, int tile_row,
                 cm->seq_params.mib_size_log2 + MI_SIZE_LOG2, num_planes);
   cpi->tplist[tile_row][tile_col][sb_row_in_tile].start = tok;
 
-  encode_sb_row(cpi, td, this_tile, mi_row, &tok, cpi->sf.use_nonrd_pick_mode);
+  encode_sb_row(cpi, td, this_tile, mi_row, &tok,
+                cpi->sf.rt_sf.use_nonrd_pick_mode);
 
   cpi->tplist[tile_row][tile_col][sb_row_in_tile].stop = tok;
   cpi->tplist[tile_row][tile_col][sb_row_in_tile].count =
@@ -4549,7 +4550,7 @@ void av1_encode_tile(AV1_COMP *cpi, ThreadData *td, int tile_row,
   const TileInfo *const tile_info = &this_tile->tile_info;
   int mi_row;
 
-  if (!cpi->sf.use_nonrd_pick_mode) av1_inter_mode_data_init(this_tile);
+  if (!cpi->sf.rt_sf.use_nonrd_pick_mode) av1_inter_mode_data_init(this_tile);
 
   av1_zero_above_context(cm, &td->mb.e_mbd, tile_info->mi_col_start,
                          tile_info->mi_col_end, tile_row);
@@ -5082,7 +5083,7 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
   x->tune_metric = cpi->oxcf.tuning;
 #endif
 
-  if (!cpi->sf.use_nonrd_pick_mode) {
+  if (!cpi->sf.rt_sf.use_nonrd_pick_mode) {
     cm->setup_mi(cm);
   }
 
@@ -5115,7 +5116,7 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
   }
 
   if (!is_stat_generation_stage(cpi) && av1_use_hash_me(cpi) &&
-      !cpi->sf.use_nonrd_pick_mode) {
+      !cpi->sf.rt_sf.use_nonrd_pick_mode) {
     // add to hash table
     const int pic_width = cpi->source->y_crop_width;
     const int pic_height = cpi->source->y_crop_height;
@@ -5773,7 +5774,7 @@ static AOM_INLINE void encode_superblock(const AV1_COMP *const cpi,
       av1_setup_pre_planes(xd, ref, cfg, mi_row, mi_col,
                            xd->block_ref_scale_factors[ref], num_planes);
     }
-    int start_plane = (cpi->sf.reuse_inter_pred_nonrd) ? 1 : 0;
+    int start_plane = (cpi->sf.rt_sf.reuse_inter_pred_nonrd) ? 1 : 0;
     av1_enc_build_inter_predictor(cm, xd, mi_row, mi_col, NULL, bsize,
                                   start_plane, av1_num_planes(cm) - 1);
     if (mbmi->motion_mode == OBMC_CAUSAL) {

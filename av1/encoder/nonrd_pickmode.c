@@ -1248,15 +1248,15 @@ static void search_filter_ref(AV1_COMP *cpi, MACROBLOCK *x, RD_STATS *this_rdc,
     av1_enc_build_inter_predictor(cm, xd, mi_row, mi_col, NULL, bsize,
                                   AOM_PLANE_Y, AOM_PLANE_Y);
     if (use_model_yrd_large)
-      model_skip_for_sb_y_large(cpi, bsize, mi_row, mi_col, x, xd, &pf_rate[i],
-                                &pf_dist[i], &pf_var[i], &pf_sse[i],
-                                this_early_term,
-                                !cpi->sf.nonrd_use_blockyrd_interp_filter);
+      model_skip_for_sb_y_large(
+          cpi, bsize, mi_row, mi_col, x, xd, &pf_rate[i], &pf_dist[i],
+          &pf_var[i], &pf_sse[i], this_early_term,
+          !cpi->sf.rt_sf.nonrd_use_blockyrd_interp_filter);
     else
       model_rd_for_sb_y(cpi, bsize, x, xd, &pf_rate[i], &pf_dist[i],
                         &skip_txfm[i], NULL, &pf_var[i], &pf_sse[i],
-                        !cpi->sf.nonrd_use_blockyrd_interp_filter);
-    if (cpi->sf.nonrd_use_blockyrd_interp_filter) {
+                        !cpi->sf.rt_sf.nonrd_use_blockyrd_interp_filter);
+    if (cpi->sf.rt_sf.nonrd_use_blockyrd_interp_filter) {
       int64_t this_sse = (int64_t)pf_sse[i];
       block_yrd(cpi, x, mi_row, mi_col, &this_rdc_fil, &is_skippable, &this_sse,
                 bsize, mi->tx_size);
@@ -1480,7 +1480,7 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
   PRED_BUFFER tmp[4];
   DECLARE_ALIGNED(16, uint8_t, pred_buf[3 * 128 * 128]);
   PRED_BUFFER *this_mode_pred = NULL;
-  const int reuse_inter_pred = cpi->sf.reuse_inter_pred_nonrd;
+  const int reuse_inter_pred = cpi->sf.rt_sf.reuse_inter_pred_nonrd;
   const int bh = block_size_high[bsize];
   const int bw = block_size_wide[bsize];
   const int pixels_in_block = bh * bw;
@@ -1491,7 +1491,7 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
   int intra_cost_penalty = av1_get_intra_cost_penalty(
       cm->base_qindex, cm->y_dc_delta_q, cm->seq_params.bit_depth);
   int64_t inter_mode_thresh = RDCOST(x->rdmult, intra_cost_penalty, 0);
-  const int perform_intra_pred = cpi->sf.check_intra_pred_nonrd;
+  const int perform_intra_pred = cpi->sf.rt_sf.check_intra_pred_nonrd;
 
   (void)best_rd_so_far;
 
@@ -1517,7 +1517,7 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
   av1_count_overlappable_neighbors(cm, xd);
 
   estimate_single_ref_frame_costs(cm, xd, x, segment_id, ref_costs_single);
-  if (cpi->sf.use_comp_ref_nonrd)
+  if (cpi->sf.rt_sf.use_comp_ref_nonrd)
     estimate_comp_ref_frame_costs(cm, xd, x, segment_id, ref_costs_comp);
 
   memset(&mode_checked[0][0], 0, MB_MODE_COUNT * REF_FRAMES);
@@ -1549,23 +1549,23 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
   mi->ref_frame[1] = NONE_FRAME;
 
   usable_ref_frame =
-      cpi->sf.use_nonrd_altref_frame ? ALTREF_FRAME : GOLDEN_FRAME;
+      cpi->sf.rt_sf.use_nonrd_altref_frame ? ALTREF_FRAME : GOLDEN_FRAME;
 
   if (cpi->rc.frames_since_golden == 0 && gf_temporal_ref) {
     skip_ref_find_pred[GOLDEN_FRAME] = 1;
-    if (!cpi->sf.use_nonrd_altref_frame) usable_ref_frame = LAST_FRAME;
+    if (!cpi->sf.rt_sf.use_nonrd_altref_frame) usable_ref_frame = LAST_FRAME;
   }
 
   const int mi_row = xd->mi_row;
   const int mi_col = xd->mi_col;
-  if (cpi->sf.short_circuit_low_temp_var &&
+  if (cpi->sf.rt_sf.short_circuit_low_temp_var &&
       x->nonrd_reduce_golden_mode_search) {
     force_skip_low_temp_var =
         get_force_skip_low_temp_var(&x->variance_low[0], mi_row, mi_col, bsize);
     // If force_skip_low_temp_var is set, and for short circuit mode = 1 and 3,
     // skip golden reference.
-    if ((cpi->sf.short_circuit_low_temp_var == 1 ||
-         cpi->sf.short_circuit_low_temp_var == 3) &&
+    if ((cpi->sf.rt_sf.short_circuit_low_temp_var == 1 ||
+         cpi->sf.rt_sf.short_circuit_low_temp_var == 3) &&
         force_skip_low_temp_var) {
       usable_ref_frame = LAST_FRAME;
     }
@@ -1800,7 +1800,7 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
 #if COLLECT_PICK_MODE_STAT
     ms_stat.num_nonskipped_searches[bsize][this_mode]++;
 #endif
-    if (cpi->sf.use_nonrd_filter_search &&
+    if (cpi->sf.rt_sf.use_nonrd_filter_search &&
         ((mi->mv[0].as_mv.row & 0x07) || (mi->mv[0].as_mv.col & 0x07)) &&
         (ref_frame == LAST_FRAME || !x->nonrd_reduce_golden_mode_search)) {
       search_filter_ref(cpi, x, &this_rdc, mi_row, mi_col, tmp, bsize,
@@ -1813,7 +1813,7 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
                                : av1_broadcast_interp_filter(filter_ref);
       av1_enc_build_inter_predictor(cm, xd, mi_row, mi_col, NULL, bsize,
                                     AOM_PLANE_Y, AOM_PLANE_Y);
-      if (cpi->sf.use_modeled_non_rd_cost) {
+      if (cpi->sf.rt_sf.use_modeled_non_rd_cost) {
         model_rd_for_sb_y(cpi, bsize, x, xd, &this_rdc.rate, &this_rdc.dist,
                           &this_rdc.skip, NULL, &var_y, &sse_y, 1);
       } else {
@@ -1838,7 +1838,7 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
     const int skip_cost = x->skip_cost[skip_ctx][1];
     const int no_skip_cost = x->skip_cost[skip_ctx][0];
     if (!this_early_term) {
-      if (cpi->sf.use_modeled_non_rd_cost) {
+      if (cpi->sf.rt_sf.use_modeled_non_rd_cost) {
         if (this_rdc.skip) {
           this_rdc.rate = skip_cost;
         } else {
