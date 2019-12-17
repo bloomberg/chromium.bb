@@ -3613,17 +3613,12 @@
     "expiry_milestone": 83
   },
   {
-   "name": "use-xps-for-printing",
+    "name": "use-xps-for-printing",
     "owners": [ "awscreen", "thestig" ],
     "expiry_milestone": 83
   },
   {
-    "name": "username-first-flow-filling",
-    "owners": [ "dvadym" ],
-    "expiry_milestone": 84
-  },
-  {
-    "name": "username-first-flow-saving",
+    "name": "username-first-flow",
     "owners": [ "dvadym" ],
     "expiry_milestone": 84
   },
