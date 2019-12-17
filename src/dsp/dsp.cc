@@ -16,6 +16,7 @@
 
 #include <mutex>  // NOLINT (unapproved c++11 header)
 
+#include "src/dsp/arm/weight_mask_neon.h"
 #include "src/dsp/average_blend.h"
 #include "src/dsp/cdef.h"
 #include "src/dsp/convolve.h"
@@ -106,6 +107,7 @@ void DspInit() {
     MaskBlendInit_NEON();
     ObmcInit_NEON();
     WarpInit_NEON();
+    WeightMaskInit_NEON();
 #endif  // LIBGAV1_ENABLE_NEON
   });
 }
