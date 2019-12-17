@@ -982,6 +982,8 @@ jumbo_source_set("browser") {
     "gpu/gpu_data_manager_impl.h",
     "gpu/gpu_data_manager_impl_private.cc",
     "gpu/gpu_data_manager_impl_private.h",
+    "gpu/gpu_error_message_observer.cc",
+    "gpu/gpu_error_message_observer.h",
     "gpu/gpu_feature_checker_impl.cc",
     "gpu/gpu_feature_checker_impl.h",
     "gpu/gpu_internals_ui.cc",
