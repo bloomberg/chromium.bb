@@ -3,7 +3,7 @@ error scope validation tests.
 `;
 
 import { getGPU } from '../../../framework/gpu/implementation.js';
-import { Fixture, TestGroup, rejectOnTimeout } from '../../../framework/index.js';
+import { Fixture, TestGroup, raceWithRejectOnTimeout } from '../../../framework/index.js';
 
 class F extends Fixture {
   device: GPUDevice = undefined!;
@@ -42,10 +42,11 @@ class F extends Fixture {
 
       fn();
 
-      return Promise.race([
+      return raceWithRejectOnTimeout(
         promise,
-        rejectOnTimeout(TIMEOUT_IN_MS, 'Timeout occurred waiting for uncaptured error'),
-      ]);
+        TIMEOUT_IN_MS,
+        'Timeout occurred waiting for uncaptured error'
+      );
     });
   }
 }

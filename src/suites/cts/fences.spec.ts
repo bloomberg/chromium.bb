@@ -1,8 +1,7 @@
 export const description = ``;
 
 import { attemptGarbageCollection } from '../../framework/collect_garbage.js';
-import { TestGroup, rejectOnTimeout } from '../../framework/index.js';
-import { timeout } from '../../framework/util/timeout.js';
+import { TestGroup, raceWithRejectOnTimeout } from '../../framework/index.js';
 
 import { GPUTest } from './gpu_test.js';
 
@@ -107,19 +106,19 @@ g.test('wait/many/parallel', async t => {
   t.expect(fence.getCompletedValue() === 20);
 });
 
-// Test promise resolving with a time limit.
-g.test('wait/timed promise', async t => {
-  return new Promise<void>((resolve, reject) => {
-    const fence = t.queue.createFence();
-    timeout(() => t.queue.signal(fence, 2), 10);
+// Test onCompletion promise resolves within a time limit.
+g.test('wait/resolves within timeout', t => {
+  const fence = t.queue.createFence();
+  t.queue.signal(fence, 2);
 
-    fence.onCompletion(2).then(() => {
+  return raceWithRejectOnTimeout(
+    (async () => {
+      await fence.onCompletion(2);
       t.expect(fence.getCompletedValue() === 2);
-      resolve();
-    });
-
-    rejectOnTimeout(100, 'The fence has not been resolved within time limit.').catch(reject);
-  });
+    })(),
+    100,
+    'The fence has not been resolved within time limit.'
+  );
 });
 
 // Test dropping references to the fence and onCompletion promise does not crash.
