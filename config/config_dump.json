@@ -17061,7 +17061,8 @@
         ],
         "sign_types": [
             "recovery",
-            "factory"
+            "factory",
+            "accessory_rwsig"
         ],
         "vm_tests": [],
         "vm_tests_override": null
@@ -17103,7 +17104,8 @@
         "push_image": false,
         "sign_types": [
             "recovery",
-            "factory"
+            "factory",
+            "accessory_rwsig"
         ],
         "suite_scheduling": false,
         "vm_tests": [],
