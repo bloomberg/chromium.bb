@@ -676,6 +676,7 @@
   celes-payloads-tryjob
   celes-release-tryjob
   celes-unittest-stress
+  chell-chrome-no-afdo-uprev-pre-flight-branch-tryjob
   chell-chrome-pre-flight-branch-tryjob
   chell-factory-glados-7657.B-factorybranch-tryjob
   chell-factory-glados-7828.B-factorybranch-tryjob
@@ -1711,7 +1712,6 @@
   romer-llvm-toolchain-tryjob
   romer-release-tryjob
   romer-unittest-stress
-  samus-chrome-pre-flight-branch-tryjob
   samus-full-tryjob
   samus-kernelnext-full-tryjob
   samus-kernelnext-llvm-next-toolchain-tryjob
