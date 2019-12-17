@@ -8,6 +8,7 @@
 from __future__ import print_function
 
 import os
+import subprocess
 import unittest
 
 from chromite.lib import cros_build_lib
@@ -119,7 +120,7 @@ class CrosSdkSnapshotTest(cros_test_lib.TempDirTestCase):
     try:
       result = cros_build_lib.run(
           cmd, print_cmd=False, capture_output=True, check=False,
-          combine_stdout_stderr=True)
+          stderr=subprocess.STDOUT)
     except cros_build_lib.RunCommandError as e:
       raise SystemExit('Running %r failed!: %s' % (cmd, e))
 

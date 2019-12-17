@@ -105,6 +105,7 @@ import glob
 import multiprocessing
 import os
 import re
+import subprocess
 import sys
 
 from chromite.lib import constants
@@ -511,7 +512,7 @@ def RunBuild(options, base, target, queue):
       mtarget = 'config'
     cmd = base + ['%s_%s' % (uboard, mtarget)]
     result = cros_build_lib.run(cmd, capture_output=True,
-                                combine_stdout_stderr=True, **kwargs)
+                                stderr=subprocess.STDOUT, **kwargs)
     if result.returncode:
       print("cmd: '%s', output: '%s'" % (result.cmdstr, result.output))
       sys.exit(result.returncode)
@@ -519,7 +520,7 @@ def RunBuild(options, base, target, queue):
   # Do the actual build.
   if options.build:
     result = cros_build_lib.run(base + [target], capture_output=True,
-                                combine_stdout_stderr=True, **kwargs)
+                                stderr=subprocess.STDOUT, **kwargs)
     if result.returncode:
       # The build failed, so output the results to stderr.
       print("cmd: '%s', output: '%s'" % (result.cmdstr, result.output),

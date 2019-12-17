@@ -12,6 +12,7 @@ import collections
 import os
 import random
 import re
+import subprocess
 import time
 
 import six
@@ -1666,7 +1667,7 @@ class LocalPatch(GitRepoPatch):
     # Depending on git/gerrit/weather, the URL might be written to stdout or
     # stderr.  Just combine them so we don't have to worry about it.
     result = git.RunGit(self.project_url, cmd, capture_output=True,
-                        combine_stdout_stderr=True)
+                        stderr=subprocess.STDOUT)
     lines = result.output.splitlines()
     urls = []
     for num, line in enumerate(lines):

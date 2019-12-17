@@ -548,9 +548,8 @@ class GSContext(object):
         cmd = ['-q', 'version']
 
         # gsutil has been known to return version to stderr in the past, so
-        # use combine_stdout_stderr=True.
-        result = self.DoCommand(cmd, combine_stdout_stderr=True,
-                                redirect_stdout=True)
+        # use stderr=subprocess.STDOUT.
+        result = self.DoCommand(cmd, stdout=True, stderr=subprocess.STDOUT)
 
         # Expect output like: 'gsutil version 3.35' or 'gsutil version: 4.5'.
         match = re.search(r'^\s*gsutil\s+version:?\s+([\d.]+)', result.output,
@@ -579,7 +578,7 @@ class GSContext(object):
     # If we can list it's contents, we have valid authentication.
     cmd = ['ls', AUTHENTICATION_BUCKET]
     result = self.DoCommand(cmd, retries=0, debug_level=logging.DEBUG,
-                            redirect_stderr=True, check=False)
+                            stderr=True, check=False)
 
     # Did we fail with an authentication error?
     if (result.returncode == 1 and
@@ -841,7 +840,7 @@ class GSContext(object):
       A RunCommandResult object.
     """
     kwargs = kwargs.copy()
-    kwargs.setdefault('redirect_stderr', True)
+    kwargs.setdefault('stderr', True)
     kwargs.setdefault('encoding', 'utf-8')
 
     cmd = [self.gsutil_bin]

@@ -20,6 +20,7 @@ import multiprocessing
 import os
 import signal
 import stat
+import subprocess
 import sys
 import tempfile
 
@@ -161,7 +162,7 @@ def RunTest(test, interp, cmd, tmpfile, finished, total):
   with cros_build_lib.TimedSection() as timer:
     ret = cros_build_lib.run(
         cmd, capture_output=True, check=False,
-        combine_stdout_stderr=True, debug_level=logging.DEBUG,
+        stderr=subprocess.STDOUT, debug_level=logging.DEBUG,
         int_timeout=SIGINT_TIMEOUT)
 
   with finished.get_lock():

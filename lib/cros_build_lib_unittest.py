@@ -710,7 +710,7 @@ class TestRunCommandOutput(cros_test_lib.TempDirTestCase,
     os.unlink(log)
     ret = cros_build_lib.run(
         ['sh', '-c', 'echo monkeys4; echo monkeys5 >&2'],
-        stdout=log, combine_stdout_stderr=True)
+        stdout=log, stderr=subprocess.STDOUT)
     self.assertIs(ret.output, None)
     self.assertIs(ret.error, None)
     self.assertEqual(osutils.ReadFile(log), 'monkeys4\nmonkeys5\n')

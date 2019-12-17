@@ -10,6 +10,7 @@ from __future__ import print_function
 import json
 import os
 import shutil
+import subprocess
 import tempfile
 
 import mock
@@ -245,7 +246,7 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
         expected_cmd,
         redirect_stdout=True,
         enter_chroot=True,
-        combine_stdout_stderr=True)
+        stderr=subprocess.STDOUT)
 
     self.assertIn(mock_result.output,
                   osutils.ReadFile(os.path.join(self.tempdir, 'delta.log'),

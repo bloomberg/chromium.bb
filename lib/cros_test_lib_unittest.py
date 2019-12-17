@@ -8,6 +8,7 @@
 from __future__ import print_function
 
 import os
+import subprocess
 import sys
 import time
 import unittest
@@ -304,3 +305,13 @@ class RunCommandTestCase(cros_test_lib.RunCommandTestCase):
     result = cros_build_lib.run(['/x'], capture_output=True, encoding='utf-8')
     self.assertEqual(u'Yes\u20a0', result.stdout)
     self.assertEqual(u'abc\x00', result.stderr)
+
+  def testPopenMockCombiningStderr(self):
+    """Verify combining stderr into stdout works."""
+    self.rc.AddCmdResult(['/x'], stderr='err', stdout='out')
+    result = cros_build_lib.run(['/x'], stdout=True, stderr=True)
+    self.assertEqual(b'err', result.stderr)
+    self.assertEqual(b'out', result.stdout)
+    result = cros_build_lib.run(['/x'], stdout=True, stderr=subprocess.STDOUT)
+    self.assertEqual(None, result.stderr)
+    self.assertEqual(b'outerr', result.stdout)

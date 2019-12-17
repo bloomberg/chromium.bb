@@ -12,6 +12,7 @@ import datetime
 import json
 import os
 import shutil
+import subprocess
 import tempfile
 
 from chromite.lib import chroot_util
@@ -353,7 +354,7 @@ class PaygenPayload(object):
           cmd,
           redirect_stdout=True,
           enter_chroot=True,
-          combine_stdout_stderr=True)
+          stderr=subprocess.STDOUT)
     except cros_build_lib.RunCommandError as e:
       # Dump error output and re-raise the exception.
       logging.error('Nonzero exit code (%d), dumping command output:\n%s',

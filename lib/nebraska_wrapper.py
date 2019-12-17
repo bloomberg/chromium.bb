@@ -12,6 +12,7 @@ import base64
 import os
 import shutil
 import multiprocessing
+import subprocess
 
 from six.moves import urllib
 
@@ -183,7 +184,7 @@ class RemoteNebraskaWrapper(multiprocessing.Process):
       cmd += ['--install-payloads-address', self._install_payloads_address]
 
     try:
-      self._RemoteCommand(cmd, redirect_stdout=True, combine_stdout_stderr=True)
+      self._RemoteCommand(cmd, redirect_stdout=True, stderr=subprocess.STDOUT)
     except cros_build_lib.RunCommandError as err:
       msg = 'Remote nebraska failed (to start): %s' % str(err)
       logging.error(msg)
@@ -306,7 +307,7 @@ class RemoteNebraskaWrapper(multiprocessing.Process):
     # Try to capture the output from the command so we can dump it in the case
     # of errors. Note that this will not work if we were requested to redirect
     # logs to a |log_file|.
-    cmd_kwargs = {'capture_output': True, 'combine_stdout_stderr': True}
+    cmd_kwargs = {'capture_output': True, 'stderr': subprocess.STDOUT}
     cmd = ['python', self._nebraska_bin, '--help']
     logging.info('Checking if we can run nebraska on the device...')
     try:

@@ -20,6 +20,7 @@ import pwd
 import re
 import shutil
 import stat
+import subprocess
 import tempfile
 
 import six
@@ -837,7 +838,7 @@ class TempDir(object):
           # Log all mounts at the time of the failure, since that's the most
           # common cause.
           mount_results = cros_build_lib.run(
-              ['mount'], redirect_stdout=True, combine_stdout_stderr=True,
+              ['mount'], redirect_stdout=True, stderr=subprocess.STDOUT,
               check=False)
           logging.error('Mounts were:')
           logging.error('  %s', mount_results.output)

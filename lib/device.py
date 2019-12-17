@@ -9,6 +9,7 @@ from __future__ import print_function
 
 import argparse
 import os
+import subprocess
 
 from chromite.cli.cros import cros_chrome_sdk
 from chromite.lib import commandline
@@ -122,7 +123,7 @@ class Device(object):
       if stream_output:
         kwargs.setdefault('capture_output', False)
       else:
-        kwargs.setdefault('combine_stdout_stderr', True)
+        kwargs.setdefault('stderr', subprocess.STDOUT)
         kwargs.setdefault('log_output', True)
       return self.remote.RunCommand(cmd, debug_level=logging.INFO, **kwargs)
 

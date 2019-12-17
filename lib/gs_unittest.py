@@ -850,7 +850,7 @@ class GSDoCommandTest(cros_test_lib.TestCase):
           ctx._RetryFilter, retries,
           cros_build_lib.run,
           cmd, sleep=sleep,
-          redirect_stderr=True,
+          stderr=True,
           capture_output=True,
           encoding='utf-8',
           extra_env=mock.ANY)

@@ -17,6 +17,7 @@ import multiprocessing
 import os
 import re
 import shutil
+import subprocess
 import sys
 import tempfile
 
@@ -1710,7 +1711,7 @@ def _HWTestCreate(cmd, debug=False, **kwargs):
         cmd=start_cmd,
         capture_output=True,
         encoding='utf-8',
-        combine_stdout_stderr=True,
+        stderr=subprocess.STDOUT,
         **kwargs)
     # If the command succeeds, result.task_summary_json
     # should have the right content.
@@ -1749,7 +1750,7 @@ def _HWTestWait(cmd, job_id, **kwargs):
         cmd=wait_cmd,
         capture_output=True,
         encoding='utf-8',
-        combine_stdout_stderr=True,
+        stderr=subprocess.STDOUT,
         **kwargs)
     pass_hwtest = True
   except cros_build_lib.RunCommandError as e:
@@ -1806,7 +1807,7 @@ def _HWTestDumpJson(cmd, job_id, **kwargs):
       cmd=dump_json_cmd,
       capture_output=True,
       encoding='utf-8',
-      combine_stdout_stderr=True,
+      stderr=subprocess.STDOUT,
       **kwargs)
   for output in result.GetValue('outputs', ''):
     sys.stdout.write(output)

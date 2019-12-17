@@ -41,6 +41,7 @@ from __future__ import print_function
 import json
 import os
 import re
+import subprocess
 import tempfile
 import time
 
@@ -252,7 +253,7 @@ class ChromiumOSUpdater(BaseUpdater):
       log_kwargs = {
           'stdout': log_file,
           'append_to_file': True,
-          'combine_stdout_stderr': True,
+          'stderr': subprocess.STDOUT,
       }
       self._cmd_kwargs.update(log_kwargs)
       self._cmd_kwargs_omit_error.update(log_kwargs)

@@ -8,6 +8,7 @@
 from __future__ import print_function
 
 import os
+import subprocess
 
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
@@ -287,7 +288,7 @@ class ToolchainInstaller(object):
       # Extract to the temporary directory.
       cmd = ['tar', '-I', compressor, '-xpf', libc_path, '-C', tempdir]
       result = cros_build_lib.sudo_run(cmd, check=False,
-                                       combine_stdout_stderr=True)
+                                       stderr=subprocess.STDOUT)
       if result.returncode:
         raise ToolchainInstallError('Error extracting libc: %s' % result.output,
                                     result)
@@ -297,7 +298,7 @@ class ToolchainInstaller(object):
       source = os.path.join(tempdir, 'usr', board_chost)
       cmd = ['rsync', '--archive', '%s/' % source, '%s/' % sysroot.path]
       result = cros_build_lib.sudo_run(cmd, check=False,
-                                       combine_stdout_stderr=True)
+                                       stderr=subprocess.STDOUT)
       if result.returncode:
         raise ToolchainInstallError('Error installing libc: %s' % result.output,
                                     result)
@@ -309,7 +310,7 @@ class ToolchainInstaller(object):
       source = os.path.join(tempdir, 'usr/lib/debug/usr', board_chost)
       cmd = ['rsync', '--archive', '%s/' % source, '%s/' % debug_dir]
       result = cros_build_lib.sudo_run(cmd, check=False,
-                                       combine_stdout_stderr=True)
+                                       stderr=subprocess.STDOUT)
       if result.returncode:
         logging.warning('libc debug info not copied: %s', result.output)
 

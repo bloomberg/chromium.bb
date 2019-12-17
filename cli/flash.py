@@ -11,6 +11,7 @@ from __future__ import print_function
 import os
 import re
 import shutil
+import subprocess
 import tempfile
 
 from chromite.lib import constants
@@ -216,7 +217,7 @@ class USBImager(object):
     cros_build_lib.sudo_run(cmd,
                             print_cmd=True,
                             debug_level=logging.NOTICE,
-                            combine_stdout_stderr=True,
+                            stderr=subprocess.STDOUT,
                             log_output=True)
 
   def CopyImageToDevice(self, image, device):

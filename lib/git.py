@@ -15,6 +15,7 @@ import hashlib
 import os
 import re
 import string
+import subprocess
 from xml import sax
 
 import six
@@ -1302,7 +1303,7 @@ def UploadCL(git_repo, remote, branch, local_branch='HEAD', draft=False,
     ref = ref + '%'+ ','.join(reviewer_list)
   remote_ref = RemoteRef(remote, ref)
   kwargs.setdefault('capture_output', False)
-  kwargs.setdefault('combine_stdout_stderr', True)
+  kwargs.setdefault('stderr', subprocess.STDOUT)
   return GitPush(git_repo, local_branch, remote_ref, **kwargs)
 
 
