@@ -35,8 +35,9 @@ class InvalidResultPathError(Error):
 class ChrootHandler(object):
   """Translate a Chroot message to chroot enter arguments and env."""
 
-  def __init__(self, clear_field):
+  def __init__(self, clear_field, parse_goma):
     self.clear_field = clear_field
+    self.parse_goma = parse_goma
 
   def handle(self, message):
     """Parse a message for a chroot field."""
@@ -54,16 +55,17 @@ class ChrootHandler(object):
 
   def parse_chroot(self, chroot_message):
     """Parse a Chroot message instance."""
-    return controller_util.ParseChroot(chroot_message)
+    return controller_util.ParseChroot(chroot_message,
+                                       parse_goma=self.parse_goma)
 
 
-def handle_chroot(message, clear_field=True):
+def handle_chroot(message, clear_field=True, parse_goma=True):
   """Find and parse the chroot field, returning the Chroot instance.
 
   Returns:
     chroot_lib.Chroot
   """
-  handler = ChrootHandler(clear_field)
+  handler = ChrootHandler(clear_field, parse_goma)
   chroot = handler.handle(message)
   if chroot:
     return chroot
@@ -186,7 +188,7 @@ class SyncedDirHandler(object):
     self._original_message.CopyFrom(self.field)
 
   def _sync(self, src, dest):
-    logging.info('Syncing %s to %s')
+    logging.info('Syncing %s to %s', src, dest)
     # TODO: This would probably be more efficient with rsync.
     osutils.EmptyDir(dest)
     osutils.CopyDirContents(src, dest)

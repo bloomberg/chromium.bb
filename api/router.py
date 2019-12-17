@@ -243,12 +243,18 @@ class Router(object):
       method_name (str): The name of the method to run.
       config (api_config.ApiConfig): The optional call configs.
     """
-    # Parse the chroot and clear the chroot field in the input message.
-    chroot = field_handler.handle_chroot(input_msg)
+    # TODO(saklein): Fix the chroot/goma handling.
+
+    # First parse is just the chroot itself so we can use the tempdir.
+    chroot = field_handler.handle_chroot(input_msg, clear_field=False,
+                                         parse_goma=False)
 
     with field_handler.copy_paths_in(input_msg, chroot.tmp, prefix=chroot.path):
       with chroot.tempdir() as tempdir, chroot.tempdir() as sync_tmp:
         with field_handler.sync_dirs(input_msg, sync_tmp, prefix=chroot.path):
+          # Parse the chroot and clear the chroot field in the input message.
+          chroot = field_handler.handle_chroot(input_msg)
+          # import pdb; pdb.set_trace();
           new_input = os.path.join(tempdir, self.REEXEC_INPUT_FILE)
           chroot_input = '/%s' % os.path.relpath(new_input, chroot.path)
           new_output = os.path.join(tempdir, self.REEXEC_OUTPUT_FILE)

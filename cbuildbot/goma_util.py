@@ -33,6 +33,7 @@ GomaApproach = collections.namedtuple(
                      'arbitrary_toolchain_support'])
 
 
+# TODO(crbug.com/1035114) Refactor.
 class Goma(object):
   """Interface to use goma on bots."""
 
@@ -107,7 +108,9 @@ class Goma(object):
       goma_approach: Indicates some extra environment variables to set when
         testing alternative goma approaches.
       log_dir: Allows explicitly setting the log directory. Used for the
-        Build API for extracting the logs afterwords.
+        Build API for extracting the logs afterwords. Should be the log
+        directory inside the chroot, based on the chroot path when
+        outside the chroot.
       stats_filename: The name of the file to use for the GOMA_DUMP_STATS_FILE
         setting. The file will be created in the log directory.
       counterz_filename: The name of the file to use for the

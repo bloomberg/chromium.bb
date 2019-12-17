@@ -54,6 +54,7 @@ class ParseChrootTest(cros_test_lib.MockTestCase):
     goma_test_json_string = 'goma_json'
     chromeos_goma_test_dir = '/chromeos/goma/test/dir'
     log_dir = '/log/dir'
+    chroot_log_dir = '/chroot/path/log/dir'
     stats_filename = 'stats_filename'
     counterz_filename = 'counterz_filename'
 
@@ -143,7 +144,8 @@ class ParseChrootTest(cros_test_lib.MockTestCase):
     patch.assert_called_with(goma_test_dir, goma_test_json_string,
                              stage_name='BuildAPI', chromeos_goma_dir=None,
                              chroot_dir=path, goma_approach=None,
-                             log_dir=log_dir, stats_filename=stats_filename,
+                             log_dir=chroot_log_dir,
+                             stats_filename=stats_filename,
                              counterz_filename=counterz_filename)
 
   def testWrongMessage(self):
