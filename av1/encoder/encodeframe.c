@@ -4294,7 +4294,7 @@ static AOM_INLINE void encode_sb_row(AV1_COMP *cpi, ThreadData *td,
     x->color_sensitivity[1] = 0;
 
     // Reset hash state for transform/mode rd hash information
-    reset_hash_records(x, cpi->sf.use_inter_txb_hash);
+    reset_hash_records(x, cpi->sf.tx_sf.use_inter_txb_hash);
 
     if (!use_nonrd_mode) {
       av1_zero(x->picked_ref_frames_mask);
@@ -5385,7 +5385,7 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
   assert(cpi->oxcf.enable_tx64 || tx_search_type != USE_LARGESTALL);
   cm->tx_mode = select_tx_mode(cpi, tx_search_type);
 
-  if (cpi->sf.tx_type_search.prune_tx_type_using_stats) {
+  if (cpi->sf.tx_sf.tx_type_search.prune_tx_type_using_stats) {
     const FRAME_UPDATE_TYPE update_type = get_frame_update_type(&cpi->gf_group);
 
     for (i = 0; i < TX_SIZES_ALL; i++) {

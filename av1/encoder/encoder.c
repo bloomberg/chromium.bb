@@ -5022,7 +5022,7 @@ static int encode_with_recode_loop(AV1_COMP *cpi, size_t *size, uint8_t *dest) {
   q_low = bottom_index;
   q_high = top_index;
 
-  if (cpi->sf.tx_type_search.prune_tx_type_using_stats &&
+  if (cpi->sf.tx_sf.tx_type_search.prune_tx_type_using_stats &&
       cm->current_frame.frame_type == KEY_FRAME) {
     av1_copy(cpi->tx_type_probs, default_tx_type_probs);
 
@@ -5030,7 +5030,7 @@ static int encode_with_recode_loop(AV1_COMP *cpi, size_t *size, uint8_t *dest) {
     for (int f = 0; f < FRAME_UPDATE_TYPES; f++) {
       int kf_arf_update = (f == KF_UPDATE || f == ARF_UPDATE);
       cpi->tx_type_probs_thresh[f] =
-          thr[cpi->sf.tx_type_search.prune_tx_type_using_stats - 1]
+          thr[cpi->sf.tx_sf.tx_type_search.prune_tx_type_using_stats - 1]
              [kf_arf_update];
     }
   }

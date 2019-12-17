@@ -241,7 +241,7 @@ static INLINE void set_tx_type_prune(const SPEED_FEATURES *sf, MACROBLOCK *x,
                                      int enable_winner_mode_tx_type_pruning,
                                      int is_winner_mode) {
   // Populate prune transform mode appropriately
-  x->prune_mode = sf->tx_type_search.prune_mode;
+  x->prune_mode = sf->tx_sf.tx_type_search.prune_mode;
   if (enable_winner_mode_tx_type_pruning) {
     if (is_winner_mode)
       x->prune_mode = NO_PRUNE;
@@ -281,11 +281,11 @@ static INLINE int is_winner_mode_processing_enabled(
   // TODO(any): Move block independent condition checks to frame level
   if (is_inter_block(mbmi)) {
     if (is_inter_mode(best_mode) &&
-        sf->tx_type_search.fast_inter_tx_type_search &&
+        sf->tx_sf.tx_type_search.fast_inter_tx_type_search &&
         !cpi->oxcf.use_inter_dct_only)
       return 1;
   } else {
-    if (sf->tx_type_search.fast_intra_tx_type_search &&
+    if (sf->tx_sf.tx_type_search.fast_intra_tx_type_search &&
         !cpi->oxcf.use_intra_default_tx_only && !cpi->oxcf.use_intra_dct_only)
       return 1;
   }
@@ -324,10 +324,10 @@ static INLINE void set_mode_eval_params(const struct AV1_COMP *cpi,
       break;
     case MODE_EVAL:
       x->use_default_intra_tx_type =
-          (cpi->sf.tx_type_search.fast_intra_tx_type_search ||
+          (cpi->sf.tx_sf.tx_type_search.fast_intra_tx_type_search ||
            cpi->oxcf.use_intra_default_tx_only);
       x->use_default_inter_tx_type =
-          cpi->sf.tx_type_search.fast_inter_tx_type_search;
+          cpi->sf.tx_sf.tx_type_search.fast_inter_tx_type_search;
       x->predict_skip_level = cpi->predict_skip_level[MODE_EVAL];
 
       // Set transform domain distortion type for mode evaluation
@@ -344,7 +344,8 @@ static INLINE void set_mode_eval_params(const struct AV1_COMP *cpi,
                                 0);
       // Set transform type prune for mode evaluation
       set_tx_type_prune(
-          sf, x, sf->tx_type_search.enable_winner_mode_tx_type_pruning, 0);
+          sf, x, sf->tx_sf.tx_type_search.enable_winner_mode_tx_type_pruning,
+          0);
       break;
     case WINNER_MODE_EVAL:
       x->use_default_inter_tx_type = 0;
@@ -365,14 +366,15 @@ static INLINE void set_mode_eval_params(const struct AV1_COMP *cpi,
                                 1);
       // Set default transform type prune mode for winner mode evaluation
       set_tx_type_prune(
-          sf, x, sf->tx_type_search.enable_winner_mode_tx_type_pruning, 1);
+          sf, x, sf->tx_sf.tx_type_search.enable_winner_mode_tx_type_pruning,
+          1);
 
       // Reset hash state for winner mode processing. Winner mode and subsequent
       // transform/mode evaluations (palette/IntraBC) cann't reuse old data as
       // the decisions would have been sub-optimal
       // TODO(any): Move the evaluation of palette/IntraBC modes before winner
       // mode is processed and clean-up the code below
-      reset_hash_records(x, cpi->sf.use_inter_txb_hash);
+      reset_hash_records(x, cpi->sf.tx_sf.use_inter_txb_hash);
 
       break;
     default: assert(0);

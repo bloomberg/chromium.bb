@@ -3281,8 +3281,8 @@ static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
   skip_trellis |=
       cpi->optimize_seg_arr[mbmi->segment_id] == NO_TRELLIS_OPT ||
       cpi->optimize_seg_arr[mbmi->segment_id] == FINAL_PASS_TRELLIS_OPT;
-  if (within_border && cpi->sf.use_intra_txb_hash && frame_is_intra_only(cm) &&
-      !is_inter && plane == 0 &&
+  if (within_border && cpi->sf.tx_sf.use_intra_txb_hash &&
+      frame_is_intra_only(cm) && !is_inter && plane == 0 &&
       tx_size_wide[tx_size] == tx_size_high[tx_size]) {
     const uint32_t intra_hash =
         get_intra_txb_hash(x, plane, blk_row, blk_col, plane_bsize, tx_size);
@@ -3348,7 +3348,7 @@ static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
           ? fimode_to_intradir[mbmi->filter_intra_mode_info.filter_intra_mode]
           : mbmi->mode;
   const uint16_t ext_tx_used_flag =
-      cpi->sf.tx_type_search.use_reduced_intra_txset &&
+      cpi->sf.tx_sf.tx_type_search.use_reduced_intra_txset &&
               tx_set_type == EXT_TX_SET_DTT4_IDTX_1DDCT
           ? av1_reduced_intra_tx_used_flag[intra_dir]
           : av1_ext_tx_used_flag[tx_set_type];
@@ -3373,7 +3373,7 @@ static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
     const int *tx_type_probs = cpi->tx_type_probs[update_type][tx_size];
     int i;
 
-    if (cpi->sf.tx_type_search.prune_tx_type_using_stats) {
+    if (cpi->sf.tx_sf.tx_type_search.prune_tx_type_using_stats) {
       const int thresh = cpi->tx_type_probs_thresh[update_type];
       uint16_t prune = 0;
       int max_prob = -1;
@@ -3609,8 +3609,8 @@ static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
     }
 #endif  // COLLECT_TX_SIZE_DATA
 
-    if (cpi->sf.adaptive_txb_search_level) {
-      if ((best_rd - (best_rd >> cpi->sf.adaptive_txb_search_level)) >
+    if (cpi->sf.tx_sf.adaptive_txb_search_level) {
+      if ((best_rd - (best_rd >> cpi->sf.tx_sf.adaptive_txb_search_level)) >
           ref_best_rd) {
         break;
       }
@@ -3618,7 +3618,7 @@ static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
 
     // Skip transform type search when we found the block has been quantized to
     // all zero and at the same time, it has better rdcost than doing transform.
-    if (cpi->sf.tx_type_search.skip_tx_search && !best_eob) break;
+    if (cpi->sf.tx_sf.tx_type_search.skip_tx_search && !best_eob) break;
   }
 
   assert(best_rd != INT64_MAX);
@@ -3985,18 +3985,20 @@ static int get_search_init_depth(int mi_width, int mi_height, int is_inter,
                                  int tx_size_search_method) {
   if (tx_size_search_method == USE_LARGESTALL) return MAX_VARTX_DEPTH;
 
-  if (sf->tx_size_search_lgr_block) {
+  if (sf->tx_sf.tx_size_search_lgr_block) {
     if (mi_width > mi_size_wide[BLOCK_64X64] ||
         mi_height > mi_size_high[BLOCK_64X64])
       return MAX_VARTX_DEPTH;
   }
 
   if (is_inter) {
-    return (mi_height != mi_width) ? sf->inter_tx_size_search_init_depth_rect
-                                   : sf->inter_tx_size_search_init_depth_sqr;
+    return (mi_height != mi_width)
+               ? sf->tx_sf.inter_tx_size_search_init_depth_rect
+               : sf->tx_sf.inter_tx_size_search_init_depth_sqr;
   } else {
-    return (mi_height != mi_width) ? sf->intra_tx_size_search_init_depth_rect
-                                   : sf->intra_tx_size_search_init_depth_sqr;
+    return (mi_height != mi_width)
+               ? sf->tx_sf.intra_tx_size_search_init_depth_rect
+               : sf->tx_sf.intra_tx_size_search_init_depth_sqr;
   }
 }
 
@@ -5992,21 +5994,21 @@ static AOM_INLINE void select_tx_block(
                           plane_bsize, ta, tl, ctx, rd_stats, ref_best_rd,
                           ftxs_mode, rd_info_node, &no_split);
 
-    if (cpi->sf.adaptive_txb_search_level &&
+    if (cpi->sf.tx_sf.adaptive_txb_search_level &&
         (no_split.rd -
-         (no_split.rd >> (1 + cpi->sf.adaptive_txb_search_level))) >
+         (no_split.rd >> (1 + cpi->sf.tx_sf.adaptive_txb_search_level))) >
             ref_best_rd) {
       *is_cost_valid = 0;
       return;
     }
 
-    if (cpi->sf.txb_split_cap) {
+    if (cpi->sf.tx_sf.txb_split_cap) {
       if (p->eobs[block] == 0) try_split = 0;
     }
 
-    if (cpi->sf.adaptive_txb_search_level &&
+    if (cpi->sf.tx_sf.adaptive_txb_search_level &&
         (no_split.rd -
-         (no_split.rd >> (2 + cpi->sf.adaptive_txb_search_level))) >
+         (no_split.rd >> (2 + cpi->sf.tx_sf.adaptive_txb_search_level))) >
             prev_level_rd) {
       try_split = 0;
     }
@@ -6014,7 +6016,7 @@ static AOM_INLINE void select_tx_block(
 
   if (x->e_mbd.bd == 8 && try_split &&
       !(ref_best_rd == INT64_MAX && no_split.rd == INT64_MAX)) {
-    const int threshold = cpi->sf.tx_type_search.ml_tx_split_thresh;
+    const int threshold = cpi->sf.tx_sf.tx_type_search.ml_tx_split_thresh;
     if (threshold >= 0) {
       const int split_score =
           ml_predict_tx_split(x, plane_bsize, blk_row, blk_col, tx_size);
@@ -6588,7 +6590,8 @@ static AOM_INLINE void pick_tx_size_type_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
 
   av1_invalid_rd_stats(rd_stats);
 
-  if (cpi->sf.model_based_prune_tx_search_level && ref_best_rd != INT64_MAX) {
+  if (cpi->sf.tx_sf.model_based_prune_tx_search_level &&
+      ref_best_rd != INT64_MAX) {
     int model_rate;
     int64_t model_dist;
     int model_skip;
@@ -6599,12 +6602,13 @@ static AOM_INLINE void pick_tx_size_type_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
     // If the modeled rd is a lot worse than the best so far, breakout.
     // TODO(debargha, urvang): Improve the model and make the check below
     // tighter.
-    assert(cpi->sf.model_based_prune_tx_search_level >= 0 &&
-           cpi->sf.model_based_prune_tx_search_level <= 2);
+    assert(cpi->sf.tx_sf.model_based_prune_tx_search_level >= 0 &&
+           cpi->sf.tx_sf.model_based_prune_tx_search_level <= 2);
     static const int prune_factor_by8[] = { 3, 5 };
     if (!model_skip &&
         ((model_rd *
-          prune_factor_by8[cpi->sf.model_based_prune_tx_search_level - 1]) >>
+          prune_factor_by8[cpi->sf.tx_sf.model_based_prune_tx_search_level -
+                           1]) >>
          3) > ref_best_rd)
       return;
   }
@@ -6651,7 +6655,8 @@ static AOM_INLINE void pick_tx_size_type_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
   // store and reuse rate and distortion values to speed up TX size search.
   TXB_RD_INFO_NODE matched_rd_info[4 + 16 + 64];
   int found_rd_info = 0;
-  if (ref_best_rd != INT64_MAX && within_border && cpi->sf.use_inter_txb_hash) {
+  if (ref_best_rd != INT64_MAX && within_border &&
+      cpi->sf.tx_sf.use_inter_txb_hash) {
     found_rd_info = find_tx_size_rd_records(x, bsize, matched_rd_info);
   }
 

@@ -623,6 +623,45 @@ typedef struct INTRA_MODE_SPEED_FEATURES {
   int prune_palette_search_level;
 } INTRA_MODE_SPEED_FEATURES;
 
+typedef struct TX_SPEED_FEATURES {
+  // Init search depth for square and rectangular transform partitions.
+  // Values:
+  // 0 - search full tree, 1: search 1 level, 2: search the highest level only
+  int inter_tx_size_search_init_depth_sqr;
+  int inter_tx_size_search_init_depth_rect;
+  int intra_tx_size_search_init_depth_sqr;
+  int intra_tx_size_search_init_depth_rect;
+
+  // If any dimension of a coding block size above 64, always search the
+  // largest transform only, since the largest transform block size is 64x64.
+  int tx_size_search_lgr_block;
+
+  TX_TYPE_SEARCH tx_type_search;
+
+  // Skip split transform block partition when the collocated bigger block
+  // is selected as all zero coefficients.
+  int txb_split_cap;
+
+  // Shortcut the transform block partition and type search when the target
+  // rdcost is relatively lower.
+  // Values are 0 (not used) , or 1 - 2 with progressively increasing
+  // aggressiveness
+  int adaptive_txb_search_level;
+
+  // Prune level for tx_size_type search for inter based on rd model
+  // 0: no pruning
+  // 1-2: progressively increasing aggressiveness of pruning
+  int model_based_prune_tx_search_level;
+
+  // Use hash table to store intra(keyframe only) txb transform search results
+  // to avoid repeated search on the same residue signal.
+  int use_intra_txb_hash;
+
+  // Use hash table to store inter txb transform search results
+  // to avoid repeated search on the same residue signal.
+  int use_inter_txb_hash;
+} TX_SPEED_FEATURES;
+
 typedef struct REAL_TIME_SPEED_FEATURES {
   // check intra prediction for non-RD mode.
   int check_intra_pred_nonrd;
@@ -774,42 +813,7 @@ typedef struct SPEED_FEATURES {
   /*
    * Transform size/type search speed features:
    */
-  // Init search depth for square and rectangular transform partitions.
-  // Values:
-  // 0 - search full tree, 1: search 1 level, 2: search the highest level only
-  int inter_tx_size_search_init_depth_sqr;
-  int inter_tx_size_search_init_depth_rect;
-  int intra_tx_size_search_init_depth_sqr;
-  int intra_tx_size_search_init_depth_rect;
-
-  // If any dimension of a coding block size above 64, always search the
-  // largest transform only, since the largest transform block size is 64x64.
-  int tx_size_search_lgr_block;
-
-  TX_TYPE_SEARCH tx_type_search;
-
-  // Skip split transform block partition when the collocated bigger block
-  // is selected as all zero coefficients.
-  int txb_split_cap;
-
-  // Shortcut the transform block partition and type search when the target
-  // rdcost is relatively lower.
-  // Values are 0 (not used) , or 1 - 2 with progressively increasing
-  // aggressiveness
-  int adaptive_txb_search_level;
-
-  // Prune level for tx_size_type search for inter based on rd model
-  // 0: no pruning
-  // 1-2: progressively increasing aggressiveness of pruning
-  int model_based_prune_tx_search_level;
-
-  // Use hash table to store intra(keyframe only) txb transform search results
-  // to avoid repeated search on the same residue signal.
-  int use_intra_txb_hash;
-
-  // Use hash table to store inter txb transform search results
-  // to avoid repeated search on the same residue signal.
-  int use_inter_txb_hash;
+  TX_SPEED_FEATURES tx_sf;
 
   /*
    * RD calculation speed features:
