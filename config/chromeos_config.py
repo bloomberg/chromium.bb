@@ -2602,6 +2602,13 @@ def ApplyCustomOverrides(site_config):
       },
 
 
+      # No hw tests for any veyron_rialto builders. See http://b/141387161.
+      'veyron_rialto-release': {
+          'hw_tests': [],
+          'hw_tests_override': []
+      },
+
+
       # No hw_tests for arkham, whirlwind, gale, mistral.  See b/140317527.
       'arkham-release': {
           'hw_tests': [],
