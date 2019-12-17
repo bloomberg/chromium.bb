@@ -225,6 +225,14 @@ void WebContentsDelegate::RequestPpapiBrokerPermission(
   std::move(callback).Run(false);
 }
 
+bool WebContentsDelegate::ShouldSetKeyboardFocusOnMouseDown() {
+  return true;
+}
+
+bool WebContentsDelegate::ShouldSetLogicalFocusOnMouseDown() {
+  return true;
+}
+
 WebContentsDelegate::~WebContentsDelegate() {
   while (!attached_contents_.empty()) {
     WebContents* web_contents = *attached_contents_.begin();

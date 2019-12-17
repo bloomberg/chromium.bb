@@ -170,6 +170,10 @@ class VIEWS_EXPORT WidgetDelegate {
   // manage the positions by ourselves.
   virtual bool WillProcessWorkAreaChange() const;
 
+  // Called to get the default activation window.  Returning NULL will use
+  // the widget's root view's window.
+  virtual aura::Window* GetDefaultActivationWindow();
+
   // Returns true if window has a hit-test mask.
   virtual bool WidgetHasHitTestMask() const;
 
