@@ -31,8 +31,9 @@
 #include "av1/encoder/reconinter_enc.h"
 #include "av1/encoder/tpl_model.h"
 
-static AOM_INLINE void get_quantize_error(MACROBLOCK *x, int plane,
-                                          tran_low_t *coeff, tran_low_t *qcoeff,
+static AOM_INLINE void get_quantize_error(const MACROBLOCK *x, int plane,
+                                          const tran_low_t *coeff,
+                                          tran_low_t *qcoeff,
                                           tran_low_t *dqcoeff, TX_SIZE tx_size,
                                           uint16_t *eob, int64_t *recon_error,
                                           int64_t *sse) {
@@ -52,7 +53,7 @@ static AOM_INLINE void get_quantize_error(MACROBLOCK *x, int plane,
   *sse = AOMMAX(*sse, 1);
 }
 
-static AOM_INLINE void wht_fwd_txfm(int16_t *src_diff, int bw,
+static AOM_INLINE void tpl_fwd_txfm(const int16_t *src_diff, int bw,
                                     tran_low_t *coeff, TX_SIZE tx_size,
                                     int bit_depth, int is_hbd) {
   TxfmParam txfm_param;
@@ -66,7 +67,22 @@ static AOM_INLINE void wht_fwd_txfm(int16_t *src_diff, int bw,
   av1_fwd_txfm(src_diff, coeff, bw, &txfm_param);
 }
 
-static int rate_estimator(tran_low_t *qcoeff, int eob, TX_SIZE tx_size) {
+static AOM_INLINE int64_t tpl_get_satd_cost(const MACROBLOCK *x,
+                                            int16_t *src_diff, int diff_stride,
+                                            const uint8_t *src, int src_stride,
+                                            const uint8_t *dst, int dst_stride,
+                                            tran_low_t *coeff, int bw, int bh,
+                                            TX_SIZE tx_size) {
+  const MACROBLOCKD *xd = &x->e_mbd;
+  const int pix_num = bw * bh;
+
+  av1_subtract_block(xd, bh, bw, src_diff, diff_stride, src, src_stride, dst,
+                     dst_stride);
+  tpl_fwd_txfm(src_diff, bw, coeff, tx_size, xd->bd, is_cur_buf_hbd(xd));
+  return aom_satd(coeff, pix_num);
+}
+
+static int rate_estimator(const tran_low_t *qcoeff, int eob, TX_SIZE tx_size) {
   const SCAN_ORDER *const scan_order = &av1_default_scan_orders[tx_size];
 
   assert((1 << num_pels_log2_lookup[txsize_to_bsize[tx_size]]) >= eob);
@@ -82,7 +98,7 @@ static int rate_estimator(tran_low_t *qcoeff, int eob, TX_SIZE tx_size) {
 }
 
 static AOM_INLINE void txfm_quant_rdcost(
-    MACROBLOCK *x, int16_t *src_diff, int diff_stride, uint8_t *src,
+    const MACROBLOCK *x, int16_t *src_diff, int diff_stride, uint8_t *src,
     int src_stride, uint8_t *dst, int dst_stride, tran_low_t *coeff,
     tran_low_t *qcoeff, tran_low_t *dqcoeff, int bw, int bh, TX_SIZE tx_size,
     int *rate_cost, int64_t *recon_error, int64_t *sse) {
@@ -90,7 +106,7 @@ static AOM_INLINE void txfm_quant_rdcost(
   uint16_t eob;
   av1_subtract_block(xd, bh, bw, src_diff, diff_stride, src, src_stride, dst,
                      dst_stride);
-  wht_fwd_txfm(src_diff, diff_stride, coeff, tx_size, xd->bd,
+  tpl_fwd_txfm(src_diff, diff_stride, coeff, tx_size, xd->bd,
                is_cur_buf_hbd(xd));
 
   get_quantize_error(x, 0, coeff, qcoeff, dqcoeff, tx_size, &eob, recon_error,
@@ -179,7 +195,6 @@ static AOM_INLINE void mode_estimation(
 
   const int bw = 4 << mi_size_wide_log2[bsize];
   const int bh = 4 << mi_size_high_log2[bsize];
-  const int pix_num = bw * bh;
   const int_interpfilters kernel =
       av1_broadcast_interp_filter(EIGHTTAP_REGULAR);
 
@@ -246,18 +261,13 @@ static AOM_INLINE void mode_estimation(
       cpi->sf.tpl_sf.prune_intra_modes ? D45_PRED : INTRA_MODE_END;
   for (PREDICTION_MODE mode = INTRA_MODE_START; mode < last_intra_mode;
        ++mode) {
-    const uint8_t *src = src_mb_buffer;
-    const int dst_stride = bw;
-
     av1_predict_intra_block(cm, xd, block_size_wide[bsize],
                             block_size_high[bsize], tx_size, mode, 0, 0,
                             FILTER_INTRA_MODES, dst_buffer, dst_buffer_stride,
-                            predictor, dst_stride, 0, 0, 0);
+                            predictor, bw, 0, 0, 0);
 
-    av1_subtract_block(xd, bh, bw, src_diff, bw, src, src_stride, predictor,
-                       dst_stride);
-    wht_fwd_txfm(src_diff, bw, coeff, tx_size, xd->bd, is_cur_buf_hbd(xd));
-    intra_cost = aom_satd(coeff, pix_num);
+    intra_cost = tpl_get_satd_cost(x, src_diff, bw, src_mb_buffer, src_stride,
+                                   predictor, bw, coeff, bw, bh, tx_size);
 
     if (intra_cost < best_intra_cost) {
       best_intra_cost = intra_cost;
@@ -301,11 +311,8 @@ static AOM_INLINE void mode_estimation(
     av1_build_inter_predictor(predictor, bw, &x->best_mv.as_mv,
                               &inter_pred_params);
 
-    av1_subtract_block(xd, bh, bw, src_diff, bw, src_mb_buffer, src_stride,
-                       predictor, bw);
-    wht_fwd_txfm(src_diff, bw, coeff, tx_size, xd->bd, is_cur_buf_hbd(xd));
-
-    inter_cost = aom_satd(coeff, pix_num);
+    inter_cost = tpl_get_satd_cost(x, src_diff, bw, src_mb_buffer, src_stride,
+                                   predictor, bw, coeff, bw, bh, tx_size);
 
     if (inter_cost < best_inter_cost) {
       memcpy(best_coeff, coeff, sizeof(best_coeff));
@@ -1041,7 +1048,7 @@ static AOM_INLINE void get_tpl_forward_stats(AV1_COMP *cpi, MACROBLOCK *x,
           aom_subtract_block(bh, bw, src_diff, bw, src_buf, src_stride, dst_buf,
                              dst_stride);
 #endif
-          wht_fwd_txfm(src_diff, bw, coeff, tx_size, xd->bd,
+          tpl_fwd_txfm(src_diff, bw, coeff, tx_size, xd->bd,
                        is_cur_buf_hbd(xd));
 
           intra_cost = aom_satd(coeff, pix_num);
@@ -1098,7 +1105,7 @@ static AOM_INLINE void get_tpl_forward_stats(AV1_COMP *cpi, MACROBLOCK *x,
         aom_subtract_block(bh, bw, src_diff, bw, src->y_buffer + mb_y_offset,
                            src->y_stride, predictor, bw);
 #endif
-        wht_fwd_txfm(src_diff, bw, coeff, tx_size, xd->bd, is_cur_buf_hbd(xd));
+        tpl_fwd_txfm(src_diff, bw, coeff, tx_size, xd->bd, is_cur_buf_hbd(xd));
         inter_cost = aom_satd(coeff, pix_num);
       } else {
         int64_t sse;
