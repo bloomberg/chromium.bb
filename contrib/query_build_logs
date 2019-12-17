@@ -12,8 +12,10 @@ limit=30
 verbose=0
 
 print_usage() {
-  cat <<HELP_USAGE
-  $0 -s|--string <search_string> [-w|-when} <when_string>
+  cat  <<HELP_USAGE
+
+Usage:  $0 -s|--string <search_string> [-w|-when} <when_string>
+
      [-l|--limit] <limit_string> [--field_limit <field_limit>]
      [--verbose] [--usage|-u|--help|-h]
 
@@ -71,7 +73,7 @@ done
 if [ -z "${string_data}" ]
 then
   echo "No search string specified. -s|--string <search_string> is required."
-  exit 1
+  print_usage
 fi
 
 if [ -z "${field_limit}" ]
