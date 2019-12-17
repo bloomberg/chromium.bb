@@ -556,6 +556,10 @@ void WebRuntimeFeatures::EnableVideoFullscreenDetection(bool enable) {
   RuntimeEnabledFeatures::SetVideoFullscreenDetectionEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnableVideoPlaybackQuality(bool enable) {
+  RuntimeEnabledFeatures::SetVideoPlaybackQualityEnabled(enable);
+}
+
 void WebRuntimeFeatures::EnableMediaControlsOverlayPlayButton(bool enable) {
   RuntimeEnabledFeatures::SetMediaControlsOverlayPlayButtonEnabled(enable);
 }
