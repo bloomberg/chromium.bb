@@ -227,17 +227,14 @@ class Goma(object):
         GOMA_DIR=self.linux_goma_dir,
         GOMA_TMP_DIR=self.goma_tmp_dir,
         GLOG_log_dir=self.goma_log_dir)
+
+    self._AddCommonExtraEnv(result)
+
     if self.goma_client_json:
       result['GOMA_SERVICE_ACCOUNT_JSON_FILE'] = self.goma_client_json
 
     if self.goma_cache:
       result['GOMA_CACHE_DIR'] = self.goma_cache
-
-    if self.goma_approach:
-      result['GOMA_RPC_EXTRA_PARAMS'] = self.goma_approach.rpc_extra_params
-      result['GOMA_SERVER_HOST'] = self.goma_approach.server_host
-      result['GOMA_ARBITRARY_TOOLCHAIN_SUPPORT'] = (
-          'true' if self.goma_approach.arbitrary_toolchain_support else 'false')
 
     if self._stats_file:
       result['GOMA_DUMP_STATS_FILE'] = self._stats_file
@@ -256,6 +253,9 @@ class Goma(object):
         GOMA_DIR=goma_dir,
         GOMA_TMP_DIR=self.chroot_goma_tmp_dir,
         GLOG_log_dir=self.chroot_goma_log_dir)
+
+    self._AddCommonExtraEnv(result)
+
     if self.goma_client_json:
       result['GOMA_SERVICE_ACCOUNT_JSON_FILE'] = (
           '/creds/service_accounts/service-account-goma-client.json')
@@ -264,18 +264,20 @@ class Goma(object):
       result['GOMA_CACHE_DIR'] = os.path.join(
           goma_dir, os.path.relpath(self.goma_cache, self.chromeos_goma_dir))
 
-    if self.goma_approach:
-      result['GOMA_RPC_EXTRA_PARAMS'] = self.goma_approach.rpc_extra_params
-      result['GOMA_SERVER_HOST'] = self.goma_approach.server_host
-      result['GOMA_ARBITRARY_TOOLCHAIN_SUPPORT'] = (
-          'true' if self.goma_approach.arbitrary_toolchain_support else 'false')
-
     if self._chroot_stats_file:
       result['GOMA_DUMP_STATS_FILE'] = self._chroot_stats_file
     if self._chroot_counterz_file:
       result['GOMA_DUMP_COUNTERZ_FILE'] = self._chroot_counterz_file
 
     return result
+
+  def _AddCommonExtraEnv(self, result):
+    """Sets extra env vars to use goma common to in / out chroot."""
+    if self.goma_approach:
+      result['GOMA_RPC_EXTRA_PARAMS'] = self.goma_approach.rpc_extra_params
+      result['GOMA_SERVER_HOST'] = self.goma_approach.server_host
+      result['GOMA_ARBITRARY_TOOLCHAIN_SUPPORT'] = (
+          'true' if self.goma_approach.arbitrary_toolchain_support else 'false')
 
   def _RunGomaCtl(self, command):
     goma_ctl = os.path.join(self.linux_goma_dir, 'goma_ctl.py')
