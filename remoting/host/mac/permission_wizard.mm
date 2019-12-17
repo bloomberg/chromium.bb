@@ -160,6 +160,14 @@ void PermissionWizard::Impl::OnPermissionCheckResult(bool result) {
   NSButton* _nextButton;
   NSButton* _okButton;
 
+  // This class modifies the NSApplicationActivationPolicy in order to show a
+  // Dock icon when presenting the dialog window. This is needed because the
+  // native-messaging host sets LSUIElement=YES in its plist to hide the Dock
+  // icon. This field stores the previous setting so it can be restored when
+  // the window is closed (so this class will still do the right thing if it is
+  // instantiated from an app that normally shows a Dock icon).
+  NSApplicationActivationPolicy _originalActivationPolicy;
+
   // The page of the wizard being shown.
   WizardPage _page;
 
@@ -192,10 +200,12 @@ void PermissionWizard::Impl::OnPermissionCheckResult(bool result) {
     _page = WizardPage::ACCESSIBILITY;
     _autoAdvance = YES;
   }
+  _originalActivationPolicy = [NSApp activationPolicy];
   return self;
 }
 
 - (void)hide {
+  [NSApp setActivationPolicy:_originalActivationPolicy];
   [self close];
 }
 
@@ -546,6 +556,9 @@ void PermissionWizard::Impl::OnPermissionCheckResult(bool result) {
   [self.window center];
   [self showWindow:nil];
   [NSApp activateIgnoringOtherApps:YES];
+
+  // Show the application icon in the dock.
+  [NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
 }
 
 @end
