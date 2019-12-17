@@ -45164,6 +45164,12 @@ Called by update_net_trust_anchors.py.-->
   <int value="4" label="Stylus ejected"/>
 </enum>
 
+<enum name="NewTabPage.ExploreOffline.Action">
+  <int value="0" label="Displayed explore offline card on NTP"/>
+  <int value="1" label="Clicked confirm button"/>
+  <int value="2" label="Clicked cancel button"/>
+</enum>
+
 <enum name="NewTabPageActionAndroid">
   <obsolete>
     Deprecated as of 01/2017. Replaced by NewTabPageActionAndroid2.
