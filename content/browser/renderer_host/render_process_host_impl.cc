@@ -4421,6 +4421,15 @@ void RenderProcessHostImpl::ResetIPC() {
   // away first, since deleting the channel proxy will post a
   // OnChannelClosed() to IPC::ChannelProxy::Context on the IO thread.
   ResetChannelProxy();
+
+  // The PermissionServiceContext holds PermissionSubscriptions originating from
+  // service workers. These subscriptions observe the PermissionControllerImpl
+  // that is owned by the Profile corresponding to |this|. At this point, IPC
+  // are unbound so no new subscriptions can be made. Existing subscriptions
+  // need to be released here, as the Profile, and with it, the
+  // PermissionControllerImpl, can be destroyed anytime after
+  // RenderProcessHostImpl::Cleanup() returns.
+  permission_service_context_.reset();
 }
 
 size_t RenderProcessHost::GetActiveViewCount() {
