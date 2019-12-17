@@ -70,7 +70,7 @@ class Loas(object):
     result = cros_build_lib.sudo_run(cmd,
                                      user=self.user,
                                      check=False,
-                                     redirect_stdout=True,
+                                     stdout=True,
                                      encoding='utf-8')
 
     # Figure out how many days are left.  The command should display:

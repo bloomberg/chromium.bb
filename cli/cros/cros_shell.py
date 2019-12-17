@@ -164,7 +164,7 @@ Quoting can be tricky; the rules are the same as with ssh:
         connect_settings=self._ConnectSettings(),
         check=False,
         mute_output=False,
-        redirect_stderr=True,
+        stderr=True,
         capture_output=False).returncode
 
   def Run(self):

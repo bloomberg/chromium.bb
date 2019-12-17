@@ -352,7 +352,7 @@ class PaygenPayload(object):
       # Run the command.
       result = cros_build_lib.run(
           cmd,
-          redirect_stdout=True,
+          stdout=True,
           enter_chroot=True,
           stderr=subprocess.STDOUT)
     except cros_build_lib.RunCommandError as e:

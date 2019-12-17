@@ -439,7 +439,7 @@ def ListChrootSnapshots(chroot_vg, chroot_lv):
   ]
   try:
     result = cros_build_lib.run(
-        cmd, print_cmd=False, redirect_stdout=True)
+        cmd, print_cmd=False, stdout=True)
   except cros_build_lib.RunCommandError:
     raise SystemExit('Running %r failed!' % cmd)
 

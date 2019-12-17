@@ -251,7 +251,7 @@ class GenerateCoverageReportTest(cros_test_lib.RunCommandTestCase):
         output_dir_option,
     ]
     self.assertCommandCalled(
-        expected_command, redirect_stderr=True, debug_level=logging.DEBUG)
+        expected_command, stderr=True, debug_level=logging.DEBUG)
 
   def testNoSharedLibraries(self):
     """Tests the right coverage command is used without shared libraries."""
@@ -264,7 +264,7 @@ class GenerateCoverageReportTest(cros_test_lib.RunCommandTestCase):
         instr_profile_option, output_dir_option
     ]
     self.assertCommandCalled(
-        expected_command, redirect_stderr=True, debug_level=logging.DEBUG)
+        expected_command, stderr=True, debug_level=logging.DEBUG)
 
 
 class RunSysrootCommandTest(cros_test_lib.RunCommandTestCase):

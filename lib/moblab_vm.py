@@ -515,7 +515,7 @@ def _CreateTapDevice(suffix):
   # creation to complete.
   @retry_util.WithRetry(max_retry=3, sleep=0.2, exception=RetriableError)
   def _VerifyDeviceCreated(name):
-    result = cros_build_lib.run(['ip', 'tuntap', 'show'], redirect_stdout=True)
+    result = cros_build_lib.run(['ip', 'tuntap', 'show'], stdout=True)
     if name not in result.output:
       raise RetriableError('Device %s not found in output "%s".' %
                            (name, result.output))

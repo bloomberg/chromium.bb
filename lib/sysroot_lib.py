@@ -189,7 +189,7 @@ def _CreateWrapper(wrapper_path, template, **kwargs):
   osutils.WriteFile(wrapper_path, template.format(**kwargs), makedirs=True,
                     sudo=True)
   cros_build_lib.sudo_run(['chmod', '+x', wrapper_path], print_cmd=False,
-                          redirect_stderr=True)
+                          stderr=True)
 
 
 def _NotEmpty(filepath):
@@ -716,7 +716,7 @@ PORTAGE_BINHOST="$PORTAGE_BINHOST $POSTSUBMIT_BINHOST"
       try:
         result = cros_build_lib.sudo_run(['mktemp', '-d', '-p', cwd],
                                          print_cmd=False, encoding='utf-8',
-                                         redirect_stdout=True, cwd=cwd)
+                                         stdout=True, cwd=cwd)
       except cros_build_lib.RunCommandError:
         # Fall back to a synchronous delete just in case.
         logging.notice('Error deleting sysroot asynchronously. Deleting '

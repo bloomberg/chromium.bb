@@ -127,7 +127,7 @@ def IsSquashfsImage(image):
     # -s: Display file system superblock.
     cros_build_lib.run(
         ['unsquashfs', '-s', path_util.ToChrootPath(image)],
-        redirect_stdout=True,
+        stdout=True,
         enter_chroot=True)
     return True
   except cros_build_lib.RunCommandError:
@@ -139,7 +139,7 @@ def IsExt4Image(image):
   try:
     # -l: Listing the content of the superblock structure.
     cros_build_lib.sudo_run(
-        ['tune2fs', '-l', path_util.ToChrootPath(image)], redirect_stdout=True,
+        ['tune2fs', '-l', path_util.ToChrootPath(image)], stdout=True,
         enter_chroot=True)
     return True
   except cros_build_lib.RunCommandError:

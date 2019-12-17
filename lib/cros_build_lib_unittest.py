@@ -702,7 +702,7 @@ class TestRunCommandOutput(cros_test_lib.TempDirTestCase,
     os.unlink(log)
     ret = cros_build_lib.run(
         ['sh', '-c', 'echo monkeys3 >&2'],
-        stdout=log, redirect_stderr=True)
+        stdout=log, stderr=True)
     self.assertEqual(ret.error, b'monkeys3\n')
     self.assertExists(log)
     self.assertEqual(os.path.getsize(log), 0)
@@ -789,7 +789,7 @@ class TestRunCommandOutput(cros_test_lib.TempDirTestCase,
   def testRunCommandRedirectStdoutStderrOnCommandError(self):
     """Tests that stderr is captured when run raises."""
     with self.assertRaises(cros_build_lib.RunCommandError) as cm:
-      cros_build_lib.run(['cat', '/'], redirect_stderr=True)
+      cros_build_lib.run(['cat', '/'], stderr=True)
     self.assertIsNotNone(cm.exception.result.error)
     self.assertNotEqual('', cm.exception.result.error)
 

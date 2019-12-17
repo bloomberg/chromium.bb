@@ -261,7 +261,7 @@ class SkylabHWLabCommandsTest(cros_test_lib.RunCommandTestCase):
     self.assertEqual(result.to_raise, None)
     self.assertEqual(result.json_dump_result, None)
 
-    self.rc.assertCommandCalled(create_cmd, redirect_stdout=True)
+    self.rc.assertCommandCalled(create_cmd, stdout=True)
     self.assertEqual(self.rc.call_count, 1)
 
   def testCreateSuiteAndWait(self):
@@ -298,8 +298,8 @@ class SkylabHWLabCommandsTest(cros_test_lib.RunCommandTestCase):
     self.assertEqual(result.to_raise, None)
     self.assertEqual(result.json_dump_result, None)
 
-    self.rc.assertCommandCalled(create_cmd, redirect_stdout=True)
-    self.rc.assertCommandCalled(wait_cmd, redirect_stdout=True)
+    self.rc.assertCommandCalled(create_cmd, stdout=True)
+    self.rc.assertCommandCalled(wait_cmd, stdout=True)
     self.assertEqual(self.rc.call_count, 2)
 
   def testSuiteFailure(self):
@@ -375,7 +375,7 @@ class SkylabHWLabCommandsTest(cros_test_lib.RunCommandTestCase):
     self.assertEqual(result.json_dump_result, None)
 
     self.rc.assertCommandCalled(
-        create_cmd, redirect_stdout=True, input=test_plan)
+        create_cmd, stdout=True, input=test_plan)
     self.assertEqual(self.rc.call_count, 1)
 
 
@@ -1890,7 +1890,7 @@ class GenerateAFDOArtifactsTests(
 
     self.mock_command.assert_called_once_with(
         self.buildroot, cmd,
-        chromite_cmd=True, redirect_stdout=True)
+        chromite_cmd=True, stdout=True)
 
     # Verify the input proto has all the information
     input_proto = json.loads(osutils.ReadFile(input_proto_file))
@@ -1949,7 +1949,7 @@ class VerifyAFDOArtifactsTests(
 
     self.mock_command.assert_called_once_with(
         self.buildroot, cmd,
-        chromite_cmd=True, redirect_stdout=True)
+        chromite_cmd=True, stdout=True)
 
     # Verify the input proto has all the information
     input_proto = json.loads(osutils.ReadFile(input_proto_file))

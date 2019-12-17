@@ -469,7 +469,7 @@ class Cgroup(object):
 
     result = cros_build_lib.sudo_run(
         ['find', path, '-depth', '-type', 'd', '-exec', 'rmdir', '{}', '+'],
-        redirect_stderr=True, check=strict,
+        stderr=True, check=strict,
         print_cmd=False, strict=sudo_strict)
     if result.returncode == 0:
       return True
@@ -547,7 +547,7 @@ class Cgroup(object):
     def _SignalPids(pids, signum):
       cros_build_lib.sudo_run(
           ['kill', '-%i' % signum] + sorted(pids),
-          print_cmd=False, check=False, redirect_stdout=True,
+          print_cmd=False, check=False, stdout=True,
           stderr=subprocess.STDOUT)
 
     # First sigterm what we can, exiting after 2 runs w/out seeing pids.

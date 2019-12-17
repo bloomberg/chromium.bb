@@ -94,7 +94,7 @@ class PackageInfraGoBinariesStage(generic_stages.BuilderStage,
     """
     cmd = ['equery', '--no-color', '--quiet', 'f', '--filter=obj,cmd', package]
     result = commands.RunBuildScript(self._build_root, cmd, enter_chroot=True,
-                                     redirect_stdout=True)
+                                     stdout=True)
     return result.output.splitlines()
 
   def _BuildCIPDPackage(self, package_path, package, staging_dir):

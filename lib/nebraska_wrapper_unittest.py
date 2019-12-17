@@ -160,7 +160,7 @@ class RemoteNebraskaWrapperTest(cros_test_lib.MockTempDirTestCase):
     run_command_mock.assert_called_once_with(
         ['python', nebraska_wrapper.RemoteNebraskaWrapper.NEBRASKA_PATH,
          '--update-metadata', '/path/to/dir'],
-        redirect_stdout=True, stderr=subprocess.STDOUT)
+        stdout=True, stderr=subprocess.STDOUT)
 
   def testGetURL(self):
     """Tests different configurations of the GetURL function."""

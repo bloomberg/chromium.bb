@@ -184,7 +184,7 @@ class RemoteNebraskaWrapper(multiprocessing.Process):
       cmd += ['--install-payloads-address', self._install_payloads_address]
 
     try:
-      self._RemoteCommand(cmd, redirect_stdout=True, stderr=subprocess.STDOUT)
+      self._RemoteCommand(cmd, stdout=True, stderr=subprocess.STDOUT)
     except cros_build_lib.RunCommandError as err:
       msg = 'Remote nebraska failed (to start): %s' % str(err)
       logging.error(msg)

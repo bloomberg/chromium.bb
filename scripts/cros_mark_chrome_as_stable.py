@@ -109,7 +109,7 @@ def _GetTipOfTrunkVersionFile(root):
   try:
     chrome_version_info = cros_build_lib.run(
         ['cat', version_file],
-        redirect_stdout=True).stdout
+        stdout=True).stdout
   except cros_build_lib.RunCommandError as e:
     e.msg += '\nCould not read version file at %s.' % version_file
     raise e

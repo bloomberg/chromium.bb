@@ -1022,7 +1022,7 @@ class CollectPGOProfilesStage(generic_stages.BoardSpecificBuilderStage,
 
   def _CollectLLVMMetadata(self):
     def check_chroot_output(command):
-      cmd = cros_build_lib.run(command, enter_chroot=True, redirect_stdout=True)
+      cmd = cros_build_lib.run(command, enter_chroot=True, stdout=True)
       return cmd.output
 
     # The baked-in clang should be the one we're looking for. If not, yell.

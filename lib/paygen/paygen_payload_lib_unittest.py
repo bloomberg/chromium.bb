@@ -244,7 +244,7 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
 
     run_mock.assert_called_once_with(
         expected_cmd,
-        redirect_stdout=True,
+        stdout=True,
         enter_chroot=True,
         stderr=subprocess.STDOUT)
 

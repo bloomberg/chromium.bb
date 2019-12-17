@@ -567,18 +567,18 @@ class CollectPGOProfilesStageTest(generic_stages_unittest.AbstractStageTestCase,
     self.assertEqual(actual_sha, self._VALID_CLANG_VERSION_SHA)
 
   def _MetadataMultiDispatch(self, equery_uses_fn, clang_version_fn):
-    def result(command, enter_chroot, redirect_stdout):
+    def result(command, enter_chroot, stdout):
       self.assertTrue(enter_chroot)
-      self.assertTrue(redirect_stdout)
+      self.assertTrue(stdout)
 
       if command == ['equery', '-C', '-N', 'uses', 'sys-devel/llvm']:
-        stdout = equery_uses_fn()
+        output = equery_uses_fn()
       elif command == ['clang', '--version']:
-        stdout = clang_version_fn()
+        output = clang_version_fn()
       else:
         raise ValueError('Unexpected command: %s' % command)
 
-      return cros_build_lib.CommandResult(output=stdout)
+      return cros_build_lib.CommandResult(stdout=output)
 
     return result
 

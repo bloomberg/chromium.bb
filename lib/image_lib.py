@@ -201,7 +201,7 @@ class LoopbackPartitions(object):
     cros_build_lib.sudo_run(
         ['dd', 'of=%s' % dev, 'seek=%d' % ro_compat_ofs,
          'conv=notrunc,fsync', 'count=1', 'bs=1'],
-        input=b'\0', debug_level=logging.DEBUG, redirect_stderr=True)
+        input=b'\0', debug_level=logging.DEBUG, stderr=True)
 
   def DisableRwMount(self, part_id, offset=0):
     """Disable RW mounts of the specified partition."""
@@ -218,7 +218,7 @@ class LoopbackPartitions(object):
     cros_build_lib.sudo_run(
         ['dd', 'of=%s' % dev, 'seek=%d' % ro_compat_ofs,
          'conv=notrunc,fsync', 'count=1', 'bs=1'],
-        input=b'\xff', debug_level=logging.DEBUG, redirect_stderr=True)
+        input=b'\xff', debug_level=logging.DEBUG, stderr=True)
 
   def _Mount(self, part, mount_opts):
     if not self.destination:

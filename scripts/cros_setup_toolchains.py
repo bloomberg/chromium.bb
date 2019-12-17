@@ -228,7 +228,7 @@ class Crossdev(object):
         cmd.extend(['-t', target])
         # Catch output of crossdev.
         out = cros_build_lib.run(
-            cmd, print_cmd=False, redirect_stdout=True,
+            cmd, print_cmd=False, stdout=True,
             encoding='utf-8').stdout.splitlines()
         # List of tuples split at the first '=', converted into dict.
         conf = dict((k, cros_build_lib.ShellUnquote(v))
@@ -303,7 +303,7 @@ class Crossdev(object):
       if config_only:
         # In this case we want to just quietly reinit
         cmd.append('--init-target')
-        cros_build_lib.run(cmd, print_cmd=False, redirect_stdout=True)
+        cros_build_lib.run(cmd, print_cmd=False, stdout=True)
       else:
         cros_build_lib.run(cmd)
 
@@ -643,7 +643,7 @@ def SelectActiveToolchains(targets, suffixes, root='/'):
         extra_env['ROOT'] = root
       cmd = ['%s-config' % package, '-c', target]
       result = cros_build_lib.run(
-          cmd, print_cmd=False, redirect_stdout=True, encoding='utf-8',
+          cmd, print_cmd=False, stdout=True, encoding='utf-8',
           extra_env=extra_env)
       current = result.output.splitlines()[0]
 

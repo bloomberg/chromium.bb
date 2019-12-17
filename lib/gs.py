@@ -608,7 +608,7 @@ class GSContext(object):
 
   def Cat(self, path, **kwargs):
     """Returns the contents of a GS object."""
-    kwargs.setdefault('redirect_stdout', True)
+    kwargs.setdefault('stdout', True)
     kwargs.setdefault('encoding', None)
     if not PathIsGs(path):
       # gsutil doesn't support cat-ting a local path, so read it ourselves.
@@ -1031,7 +1031,7 @@ class GSContext(object):
 
     # We always request the extended details as the overhead compared to a plain
     # listing is negligible.
-    kwargs['redirect_stdout'] = True
+    kwargs['stdout'] = True
     lines = self.DoCommand(cmd, **kwargs).output.splitlines()
 
     if details:
@@ -1202,7 +1202,7 @@ class GSContext(object):
       Assorted GSContextException exceptions.
     """
     try:
-      res = self.DoCommand(['stat', '--', path], redirect_stdout=True, **kwargs)
+      res = self.DoCommand(['stat', '--', path], stdout=True, **kwargs)
     except GSCommandError as e:
       # Because the 'gsutil stat' command logs errors itself (instead of
       # raising errors internally like other commands), we have to look

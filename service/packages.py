@@ -170,7 +170,7 @@ def uprev_android(tracking_branch, android_package, android_build_branch,
   if android_gts_build_branch:
     command.append('--android_gts_build_branch=%s' % android_gts_build_branch)
 
-  result = cros_build_lib.run(command, redirect_stdout=True,
+  result = cros_build_lib.run(command, stdout=True,
                               enter_chroot=True,
                               chroot_args=chroot.get_enter_args())
 

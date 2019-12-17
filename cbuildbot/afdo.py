@@ -833,7 +833,7 @@ def UpdateChromeEbuildAFDOFile(board, profiles):
 
   equery_cmd = [equery_prog, 'w', 'chromeos-chrome']
   ebuild_file = cros_build_lib.run(
-      equery_cmd, enter_chroot=True, redirect_stdout=True).output.rstrip()
+      equery_cmd, enter_chroot=True, stdout=True).output.rstrip()
 
   # Patch the ebuild file with the names of the available afdo_files.
   PatchChromeEbuildAFDOFile(ebuild_file, profiles)

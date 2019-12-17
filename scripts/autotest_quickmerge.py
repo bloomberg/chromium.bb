@@ -292,7 +292,7 @@ def RsyncQuickmerge(source_path, sysroot_autotest_path,
 
   command += [source_path, sysroot_autotest_path]
 
-  return cros_build_lib.sudo_run(command, redirect_stdout=True)
+  return cros_build_lib.sudo_run(command, stdout=True)
 
 
 def ParseArguments(argv):

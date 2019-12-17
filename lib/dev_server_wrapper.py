@@ -398,7 +398,7 @@ class DevServerWrapper(multiprocessing.Process):
 
     cros_build_lib.sudo_run(
         cmd, enter_chroot=True, print_cmd=False, stderr=subprocess.STDOUT,
-        redirect_stdout=True, redirect_stderr=True, cwd=constants.SOURCE_ROOT)
+        stdout=True, cwd=constants.SOURCE_ROOT)
 
   def _ReadPortNumber(self):
     """Read port number from file."""
@@ -489,7 +489,7 @@ class DevServerWrapper(multiprocessing.Process):
     result = self._RunCommand(
         cmd, enter_chroot=True, chroot_args=chroot_args,
         cwd=constants.SOURCE_ROOT, extra_env=extra_env, check=False,
-        redirect_stdout=True, stderr=subprocess.STDOUT, encoding='utf-8')
+        stdout=True, stderr=subprocess.STDOUT, encoding='utf-8')
     if result.returncode != 0:
       msg = ('Devserver failed to start!\n'
              '--- Start output from the devserver startup command ---\n'

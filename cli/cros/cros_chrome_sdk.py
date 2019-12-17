@@ -1330,7 +1330,7 @@ class ChromeSDKCommand(command.CliCommand):
           with osutils.ChdirContext(tempdir):
             try:
               result = retry_util.RunCurl(['--fail', self._GOMA_DOWNLOAD_URL],
-                                          redirect_stdout=True)
+                                          stdout=True)
               if result.returncode:
                 raise GomaError('Failed to fetch Goma Download URL')
               download_url = result.output.strip()

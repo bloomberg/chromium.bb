@@ -459,7 +459,7 @@ class TestClearResignFlag(cros_test_lib.RunCommandTempDirTestCase):
     self.rc.assertCommandCalled(
         ['sudo', '--', 'rm', '--',
          '%s/dir-3/root/.need_to_be_signed' % self.image.destination],
-        redirect_stderr=True, print_cmd=False)
+        stderr=True, print_cmd=False)
 
 
 class TestUpdateRootfsHash(cros_test_lib.RunCommandTempDirTestCase):

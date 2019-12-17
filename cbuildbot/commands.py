@@ -239,7 +239,7 @@ def ListChrootSnapshots(buildroot):
   cmd = ['cros_sdk', '--snapshot-list']
 
   cmd_snapshots = RunBuildScript(
-      buildroot, cmd, chromite_cmd=True, redirect_stdout=True)
+      buildroot, cmd, chromite_cmd=True, stdout=True)
   return cmd_snapshots.output.splitlines()
 
 
@@ -1309,7 +1309,7 @@ def RunSkylabHWTest(build,
                                timeout_mins, tags, keyvals, test_args)
   try:
     result = cros_build_lib.run(
-        [skylab_path, 'create-test'] + args, redirect_stdout=True)
+        [skylab_path, 'create-test'] + args, stdout=True)
     return HWTestSuiteResult(None, None)
   except cros_build_lib.RunCommandError as e:
     result = e.result
@@ -1392,7 +1392,7 @@ def RunSkylabHWTestSuite(
       quota_account=quota_account)
 
   try:
-    output = cros_build_lib.run(cmd, redirect_stdout=True)
+    output = cros_build_lib.run(cmd, stdout=True)
     report = json.loads(output.output)
     task_id = report['task_id']
     task_url = report['task_url']
@@ -1404,7 +1404,7 @@ def RunSkylabHWTestSuite(
 
     wait_cmd = [skylab_tool, 'wait-task'] + _GetSkylabWaitTaskArgs(
         task_id, timeout_mins=timeout_mins)
-    output = cros_build_lib.run(wait_cmd, redirect_stdout=True)
+    output = cros_build_lib.run(wait_cmd, stdout=True)
     try:
       report = json.loads(output.output)
     except:
@@ -1495,7 +1495,7 @@ def RunSkylabHWTestPlan(test_plan=None,
   try:
     result = cros_build_lib.run(
         [skylab_path, 'create-testplan'] + args,
-        redirect_stdout=True,
+        stdout=True,
         input=test_plan)
 
     task_url = ''
@@ -1932,7 +1932,7 @@ def GenerateStackTraces(buildroot, board, test_results_dir, archive_dir,
                            cwd=cwd,
                            enter_chroot=True,
                            check=False,
-                           redirect_stderr=True,
+                           stderr=True,
                            debug_level=logging.DEBUG,
                            stdout=processed_file_path)
       # Process asan log.
@@ -1961,7 +1961,7 @@ def GenerateStackTraces(buildroot, board, test_results_dir, archive_dir,
                            input=raw.output,
                            debug_level=logging.DEBUG,
                            cwd=buildroot,
-                           redirect_stderr=True,
+                           stderr=True,
                            stdout=processed_file_path)
         # Break the bot if asan_log found. This is because some asan
         # crashes may not fail any test so the bot stays green.
@@ -2102,7 +2102,7 @@ def MarkChromeAsStable(buildroot,
   portage_atom_string = cros_build_lib.run(
       command + [chrome_rev],
       cwd=cwd,
-      redirect_stdout=True,
+      stdout=True,
       enter_chroot=True,
       chroot_args=chroot_args,
       extra_env=extra_env).output.rstrip()
@@ -3479,7 +3479,7 @@ def CallBuildApiWithInputProto(buildroot, build_api_command, input_proto):
     cmd += [
         '--input-json', input_proto_file, '--output-json', output_proto_file
     ]
-    RunBuildScript(buildroot, cmd, chromite_cmd=True, redirect_stdout=True)
+    RunBuildScript(buildroot, cmd, chromite_cmd=True, stdout=True)
     return json.loads(osutils.ReadFile(output_proto_file))
 
 

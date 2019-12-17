@@ -125,7 +125,7 @@ class DeployChrome(object):
 
   def _GetStagingDirSize(self):
     result = cros_build_lib.dbg_run(['du', '-ks', self.staging_dir],
-                                    redirect_stdout=True, capture_output=True,
+                                    stdout=True, capture_output=True,
                                     encoding='utf-8')
     return int(result.output.split()[0])
 

@@ -555,8 +555,8 @@ class _Popen(subprocess.Popen):
         # delivered).  This isn't particularly informative, but we still
         # need that info to decide what to do, thus the check=False.
         ret = sudo_run(['kill', '-%i' % sig, str(self.pid)],
-                       print_cmd=False, redirect_stdout=True,
-                       redirect_stderr=True, check=False)
+                       print_cmd=False, stdout=True,
+                       stderr=True, check=False)
         if ret.returncode == 1:
           # The kill binary doesn't distinguish between permission denied,
           # and the pid is missing.  Denied can only occur under weird
@@ -648,12 +648,10 @@ def run(cmd, print_cmd=True, stdout=None, stderr=None,
     logging.warning('run: error_code_ok= is renamed/inverted to check=')
     check = not kwargs.pop('error_code_ok')
   if 'redirect_stdout' in kwargs:
-    # TODO(vapier): Enable this warning once chromite & users migrate.
-    # logging.warning('run: redirect_stdout=True is now stdout=True')
+    logging.warning('run: redirect_stdout=True is now stdout=True')
     stdout = True if kwargs.pop('redirect_stdout') else None
   if 'redirect_stderr' in kwargs:
-    # TODO(vapier): Enable this warning once chromite & users migrate.
-    # logging.warning('run: redirect_stderr=True is now stderr=True')
+    logging.warning('run: redirect_stderr=True is now stderr=True')
     stderr = True if kwargs.pop('redirect_stderr') else None
   if 'combine_stdout_stderr' in kwargs:
     logging.warning('run: combine_stdout_stderr=True is now '

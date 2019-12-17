@@ -76,7 +76,7 @@ def IsSubmoduleCheckoutRoot(path, remote, url):
   if os.path.isdir(path):
     remote_url = cros_build_lib.run(
         ['git', '--git-dir', path, 'config', 'remote.%s.url' % remote],
-        redirect_stdout=True, debug_level=logging.DEBUG,
+        stdout=True, debug_level=logging.DEBUG,
         check=False, encoding='utf-8').output.strip()
     if remote_url == url:
       return True
@@ -854,10 +854,10 @@ def ShallowFetch(git_repo, git_url, sparse_checkout=None):
   start = utcnow()
   # Only fetch TOT git metadata without revision history.
   RunGit(git_repo, ['fetch', '--depth=1'],
-         print_cmd=True, redirect_stderr=True, capture_output=False)
+         print_cmd=True, stderr=True, capture_output=False)
   # Pull the files in sparse_checkout.
   RunGit(git_repo, ['pull', 'origin', 'master'],
-         print_cmd=True, redirect_stderr=True, capture_output=False)
+         print_cmd=True, stderr=True, capture_output=False)
   logging.info('ShallowFetch completed in %s.', utcnow() - start)
 
 

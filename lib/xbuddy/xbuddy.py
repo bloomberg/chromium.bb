@@ -364,7 +364,7 @@ class XBuddy(build_util.BuildObject):
     """
     if list_subdirectory:
       return self._ctx.DoCommand(
-          ['ls', '-d', '--', path], redirect_stdout=True).output.splitlines()
+          ['ls', '-d', '--', path], stdout=True).output.splitlines()
     else:
       return self._ctx.LS(path)
 

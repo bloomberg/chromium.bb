@@ -70,7 +70,7 @@ def CleanStalePackages(srcroot, boards, package_atoms):
           raise cros_build_lib.RunCommandError('unexpected error', result)
       runcmd([eclean, '-d', 'packages'],
              cwd=srcroot, enter_chroot=True,
-             redirect_stdout=True, redirect_stderr=True)
+             stdout=True, stderr=True)
 
   tasks = []
   for board in boards:
