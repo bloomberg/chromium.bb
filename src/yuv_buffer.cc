@@ -43,14 +43,18 @@ uint8_t* AlignAddr(uint8_t* const addr, const size_t align) {
 // from scratch. In particular, Realloc() must not rely on the initial values
 // of data members set by the YuvBuffer constructor.
 bool YuvBuffer::Realloc(int bitdepth, bool is_monochrome, int width, int height,
-                        int8_t subsampling_x, int8_t subsampling_y, int border,
-                        int byte_alignment,
+                        int8_t subsampling_x, int8_t subsampling_y,
+                        int left_border, int right_border, int top_border,
+                        int bottom_border, int byte_alignment,
                         GetFrameBufferCallback get_frame_buffer,
                         void* private_data, FrameBuffer* frame_buffer) {
-  // Only support allocating buffers that have a border that's a multiple of
-  // 2. The border restriction is required because we may subsample the border
-  // for the chroma planes.
-  if ((border & 1) != 0) return false;
+  // Only support allocating buffers that have borders that are a multiple of
+  // 2. The border restriction is required because we may subsample the
+  // borders in the chroma planes.
+  if ((left_border & 1) != 0 || (right_border & 1) != 0 ||
+      (top_border & 1) != 0 || (bottom_border & 1) != 0) {
+    return false;
+  }
 
   assert(byte_alignment == 0 || byte_alignment >= 16);
   const int byte_align = (byte_alignment == 0) ? 1 : byte_alignment;
@@ -68,23 +72,26 @@ bool YuvBuffer::Realloc(int bitdepth, bool is_monochrome, int width, int height,
   const int aligned_height = Align(height, 8);
 
   // Calculate y_stride (in bytes). It is padded to a multiple of 16 bytes.
-  int y_stride = aligned_width + 2 * border;
+  int y_stride = aligned_width + left_border + right_border;
 #if LIBGAV1_MAX_BITDEPTH >= 10
   if (bitdepth > 8) y_stride *= sizeof(uint16_t);
 #endif
   y_stride = Align(y_stride, 16);
   // Size of the Y plane in bytes.
-  const uint64_t y_plane_size =
-      (aligned_height + 2 * border) * static_cast<uint64_t>(y_stride) +
-      (plane_align - 1);
+  const uint64_t y_plane_size = (aligned_height + top_border + bottom_border) *
+                                    static_cast<uint64_t>(y_stride) +
+                                (plane_align - 1);
 
   const int uv_width = is_monochrome ? 0 : aligned_width >> subsampling_x;
   const int uv_height = is_monochrome ? 0 : aligned_height >> subsampling_y;
-  const int uv_border_width = is_monochrome ? 0 : border >> subsampling_x;
-  const int uv_border_height = is_monochrome ? 0 : border >> subsampling_y;
+  const int uv_left_border = is_monochrome ? 0 : left_border >> subsampling_x;
+  const int uv_right_border = is_monochrome ? 0 : right_border >> subsampling_x;
+  const int uv_top_border = is_monochrome ? 0 : top_border >> subsampling_y;
+  const int uv_bottom_border =
+      is_monochrome ? 0 : bottom_border >> subsampling_y;
 
   // Calculate uv_stride (in bytes). It is padded to a multiple of 16 bytes.
-  int uv_stride = uv_width + 2 * uv_border_width;
+  int uv_stride = uv_width + uv_left_border + uv_right_border;
 #if LIBGAV1_MAX_BITDEPTH >= 10
   if (bitdepth > 8) uv_stride *= sizeof(uint16_t);
 #endif
@@ -92,7 +99,7 @@ bool YuvBuffer::Realloc(int bitdepth, bool is_monochrome, int width, int height,
   // Size of the U or V plane in bytes.
   const uint64_t uv_plane_size =
       is_monochrome ? 0
-                    : (uv_height + 2 * uv_border_height) *
+                    : (uv_height + uv_top_border + uv_bottom_border) *
                               static_cast<uint64_t>(uv_stride) +
                           (plane_align - 1);
 
@@ -163,8 +170,10 @@ bool YuvBuffer::Realloc(int bitdepth, bool is_monochrome, int width, int height,
   y_width_ = aligned_width;
   y_height_ = aligned_height;
   stride_[kPlaneY] = y_stride;
-  left_border_[kPlaneY] = right_border_[kPlaneY] = top_border_[kPlaneY] =
-      bottom_border_[kPlaneY] = border;
+  left_border_[kPlaneY] = left_border;
+  right_border_[kPlaneY] = right_border;
+  top_border_[kPlaneY] = top_border;
+  bottom_border_[kPlaneY] = bottom_border;
 
   uv_crop_width_ = is_monochrome ? 0 : (width + subsampling_x) >> subsampling_x;
   uv_crop_height_ =
@@ -172,32 +181,32 @@ bool YuvBuffer::Realloc(int bitdepth, bool is_monochrome, int width, int height,
   uv_width_ = uv_width;
   uv_height_ = uv_height;
   stride_[kPlaneU] = stride_[kPlaneV] = uv_stride;
-  left_border_[kPlaneU] = right_border_[kPlaneU] = uv_border_width;
-  top_border_[kPlaneU] = bottom_border_[kPlaneU] = uv_border_height;
-  left_border_[kPlaneV] = right_border_[kPlaneV] = uv_border_width;
-  top_border_[kPlaneV] = bottom_border_[kPlaneV] = uv_border_height;
+  left_border_[kPlaneU] = left_border_[kPlaneV] = uv_left_border;
+  right_border_[kPlaneU] = right_border_[kPlaneV] = uv_right_border;
+  top_border_[kPlaneU] = top_border_[kPlaneV] = uv_top_border;
+  bottom_border_[kPlaneU] = bottom_border_[kPlaneV] = uv_bottom_border;
 
   subsampling_x_ = subsampling_x;
   subsampling_y_ = subsampling_y;
 
   bitdepth_ = bitdepth;
   is_monochrome_ = is_monochrome;
-  int border_bytes = border;
-  int uv_border_width_bytes = uv_border_width;
+  int left_border_bytes = left_border;
+  int uv_left_border_bytes = uv_left_border;
 #if LIBGAV1_MAX_BITDEPTH >= 10
   if (bitdepth > 8) {
-    border_bytes *= sizeof(uint16_t);
-    uv_border_width_bytes *= sizeof(uint16_t);
+    left_border_bytes *= sizeof(uint16_t);
+    uv_left_border_bytes *= sizeof(uint16_t);
   }
 #endif
-  buffer_[kPlaneY] =
-      AlignAddr(y_buffer + (border * y_stride) + border_bytes, plane_align);
-  buffer_[kPlaneU] = AlignAddr(
-      u_buffer + (uv_border_height * uv_stride) + uv_border_width_bytes,
-      plane_align);
-  buffer_[kPlaneV] = AlignAddr(
-      v_buffer + (uv_border_height * uv_stride) + uv_border_width_bytes,
-      plane_align);
+  buffer_[kPlaneY] = AlignAddr(
+      y_buffer + (top_border * y_stride) + left_border_bytes, plane_align);
+  buffer_[kPlaneU] =
+      AlignAddr(u_buffer + (uv_top_border * uv_stride) + uv_left_border_bytes,
+                plane_align);
+  buffer_[kPlaneV] =
+      AlignAddr(v_buffer + (uv_top_border * uv_stride) + uv_left_border_bytes,
+                plane_align);
   assert(!is_monochrome || buffer_[kPlaneU] == nullptr);
   assert(!is_monochrome || buffer_[kPlaneV] == nullptr);
 

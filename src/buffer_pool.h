@@ -53,7 +53,9 @@ class RefCountedBuffer {
   // * |width| and |height| are the image dimensions in pixels.
   // * |subsampling_x| and |subsampling_y| (either 0 or 1) specify the
   //   subsampling of the width and height of the chroma planes, respectively.
-  // * |border| is the size of the borders (on all four sides) in pixels.
+  // * |left_border|, |right_border|, |top_border|, and |bottom_border| are
+  //   the sizes (in pixels) of the borders on the left, right, top, and
+  //   bottom sides, respectively.
   // * |byte_alignment| specifies the additional alignment requirement of the
   //   data buffers of the Y, U, and V planes. If |byte_alignment| is 0, there
   //   is no additional alignment requirement. Otherwise, |byte_alignment|
@@ -62,7 +64,8 @@ class RefCountedBuffer {
   //   each plane is aligned to |byte_alignment|. Subsequent rows are only
   //   16-byte aligned.
   bool Realloc(int bitdepth, bool is_monochrome, int width, int height,
-               int subsampling_x, int subsampling_y, int border,
+               int subsampling_x, int subsampling_y, int left_border,
+               int right_border, int top_border, int bottom_border,
                int byte_alignment);
 
   YuvBuffer* buffer() { return &yuv_buffer_; }

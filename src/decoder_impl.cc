@@ -238,7 +238,8 @@ StatusCode DecoderImpl::DequeueFrame(const DecoderBuffer** out_ptr) {
                   displayable_frame->frame_height(),
                   displayable_frame->buffer()->subsampling_x(),
                   displayable_frame->buffer()->subsampling_y(),
-                  /*border=*/kBorderPixelsFilmGrain,
+                  kBorderPixelsFilmGrain, kBorderPixelsFilmGrain,
+                  kBorderPixelsFilmGrain, kBorderPixelsFilmGrain,
                   /*byte_alignment=*/0)) {
             LIBGAV1_DLOG(ERROR, "film_grain_frame->Realloc() failed.");
             return kLibgav1StatusOutOfMemory;
@@ -291,15 +292,16 @@ StatusCode DecoderImpl::DequeueFrame(const DecoderBuffer** out_ptr) {
 }
 
 bool DecoderImpl::AllocateCurrentFrame(const ObuFrameHeader& frame_header,
-                                       int border) {
+                                       int left_border, int right_border,
+                                       int top_border, int bottom_border) {
   const ColorConfig& color_config = state_.sequence_header.color_config;
   state_.current_frame->set_chroma_sample_position(
       color_config.chroma_sample_position);
   return state_.current_frame->Realloc(
       color_config.bitdepth, color_config.is_monochrome,
       frame_header.upscaled_width, frame_header.height,
-      color_config.subsampling_x, color_config.subsampling_y, border,
-      /*byte_alignment=*/0);
+      color_config.subsampling_x, color_config.subsampling_y, left_border,
+      right_border, top_border, bottom_border, /*byte_alignment=*/0);
 }
 
 StatusCode DecoderImpl::CopyFrameToOutputBuffer(
@@ -389,10 +391,11 @@ StatusCode DecoderImpl::DecodeTiles(const ObuParser* obu) {
   const bool do_restoration =
       PostFilter::DoRestoration(obu->frame_header().loop_restoration,
                                 settings_.post_filter_mask, num_planes);
-  if (!AllocateCurrentFrame(obu->frame_header(),
-                            (do_cdef && do_restoration)
-                                ? kBorderPixelsCdefAndLoopRestoration
-                                : kBorderPixels)) {
+  const int border = (do_cdef && do_restoration)
+                         ? kBorderPixelsCdefAndLoopRestoration
+                         : kBorderPixels;
+  if (!AllocateCurrentFrame(obu->frame_header(), border, border, border,
+                            border)) {
     LIBGAV1_DLOG(ERROR, "Failed to allocate memory for the decoder buffer.");
     return kLibgav1StatusOutOfMemory;
   }
@@ -552,8 +555,8 @@ StatusCode DecoderImpl::DecodeTiles(const ObuParser* obu) {
             obu->sequence_header().color_config.is_monochrome,
             obu->frame_header().upscaled_width, num_deblock_units,
             obu->sequence_header().color_config.subsampling_x,
-            /*subsampling_y=*/0, kBorderPixels,
-            /*byte_alignment=*/0, nullptr, nullptr, nullptr)) {
+            /*subsampling_y=*/0, kBorderPixels, kBorderPixels, kBorderPixels,
+            kBorderPixels, /*byte_alignment=*/0, nullptr, nullptr, nullptr)) {
       return kLibgav1StatusOutOfMemory;
     }
   }

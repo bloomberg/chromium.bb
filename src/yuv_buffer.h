@@ -34,8 +34,10 @@ class YuvBuffer {
   // * |width| and |height| are the image dimensions in pixels.
   // * |subsampling_x| and |subsampling_y| (either 0 or 1) specify the
   //   subsampling of the width and height of the chroma planes, respectively.
-  // * |border| is the size of the borders (on all four sides) in pixels.
-  //   |border| must be a multiple of 2.
+  // * |left_border|, |right_border|, |top_border|, and |bottom_border| are
+  //   the sizes (in pixels) of the borders on the left, right, top, and
+  //   bottom sides, respectively. The four border sizes must all be a
+  //   multiple of 2.
   // * |byte_alignment| specifies the additional alignment requirement of the
   //   data buffers of the Y, U, and V planes. If |byte_alignment| is 0, there
   //   is no additional alignment requirement. Otherwise, |byte_alignment|
@@ -48,8 +50,9 @@ class YuvBuffer {
   //   and ignores the |private_data| and |frame_buffer| parameters, which
   //   should be null.
   //
-  // Example: bitdepth=8 width=20 height=6 border=2. The diagram below shows
-  // how Realloc() allocates the data buffer for the Y plane.
+  // Example: bitdepth=8 width=20 height=6 left/right/top/bottom_border=2. The
+  // diagram below shows how Realloc() allocates the data buffer for the Y
+  // plane.
   //
   //   16-byte aligned
   //          |
@@ -93,7 +96,8 @@ class YuvBuffer {
   // TODO(wtc): Add a check for width and height limits to defend against
   // invalid bitstreams.
   bool Realloc(int bitdepth, bool is_monochrome, int width, int height,
-               int8_t subsampling_x, int8_t subsampling_y, int border,
+               int8_t subsampling_x, int8_t subsampling_y, int left_border,
+               int right_border, int top_border, int bottom_border,
                int byte_alignment, GetFrameBufferCallback get_frame_buffer,
                void* private_data, FrameBuffer* frame_buffer);
 
