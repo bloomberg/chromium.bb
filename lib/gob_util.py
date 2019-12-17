@@ -30,6 +30,7 @@ from six.moves import http_client as httplib
 from six.moves import http_cookiejar as cookielib
 from six.moves import urllib
 
+from chromite.lib import auth
 from chromite.lib import constants
 from chromite.lib import cros_logging as logging
 from chromite.lib import git
@@ -191,11 +192,19 @@ def CreateHttpConn(host, path, reqtype='GET', headers=None, body=None):
     except httplib2.ServerNotFoundError as e:
       pass
 
-  if 'Cookie' not in headers:
-    cookies = GetCookies(host, path)
+  cookies = GetCookies(host, path)
+  if 'Cookie' not in headers and cookies:
     headers['Cookie'] = '; '.join('%s=%s' % (n, v) for n, v in cookies.items())
   elif 'Authorization' not in headers:
-    logging.debug('No gitcookies file or Appengine credentials found.')
+    try:
+      git_creds = auth.GitCreds()
+    except auth.AccessTokenError:
+      git_creds = None
+    if git_creds:
+      headers.setdefault('Authorization', 'Bearer %s' % git_creds)
+    else:
+      logging.debug(
+          'No gitcookies file, Appengine credentials, or LUCI git creds found.')
 
   if 'User-Agent' not in headers:
     # We may not be in a git repository.
