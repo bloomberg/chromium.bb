@@ -158,6 +158,7 @@ const char kCryptohomeGetCurrentSpaceForGid[] = "GetCurrentSpaceForGid";
 const char kCryptohomeLockToSingleUserMountUntilReboot[] =
     "LockToSingleUserMountUntilReboot";
 const char kCryptohomeGetRsuDeviceId[] = "GetRsuDeviceId";
+const char kCryptohomeCheckHealth[] = "CheckHealth";
 
 // Signals of the |kCryptohomeInterface| interface:
 const char kSignalAsyncCallStatus[] = "AsyncCallStatus";

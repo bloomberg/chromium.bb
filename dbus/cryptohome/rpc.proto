@@ -530,3 +530,17 @@ message AddDataRestoreKeyReply {
   // 256 bits data restore key in raw bytes
   optional bytes data_restore_key= 1;
 }
+
+// Request parameters for cryptohome's health check.
+// In the future could be extended to have possibility
+// requesting partial status
+message CheckHealthRequest {}
+
+// Returns cryptohome's health status
+message CheckHealthReply {
+  extend BaseReply {
+    optional CheckHealthReply reply = 1015;
+  }
+  // Flag indicating powerwash request
+  optional bool requires_powerwash = 1;
+}
