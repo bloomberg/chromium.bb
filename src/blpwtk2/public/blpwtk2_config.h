@@ -69,6 +69,7 @@
 // feature 25
 // feature 26
 // feature 27
+#define BLPWTK2_FEATURE_RENDERER_UI
 // feature 28
 // feature 29
 // feature 30
