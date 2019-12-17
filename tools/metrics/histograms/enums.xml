@@ -57340,6 +57340,13 @@ Called by update_net_trust_anchors.py.-->
   <int value="3" label="Error dialog"/>
 </enum>
 
+<enum name="SharingMajorVersionComparison">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Sender version is lower"/>
+  <int value="2" label="Sender and receiver versions are same"/>
+  <int value="3" label="Sender version is higher"/>
+</enum>
+
 <enum name="SharingMessageType">
   <int value="0" label="Unknown"/>
   <int value="1" label="Ping"/>
