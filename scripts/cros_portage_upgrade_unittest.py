@@ -10,6 +10,7 @@ from __future__ import print_function
 import filecmp
 import os
 import re
+import subprocess
 import tempfile
 import unittest
 
@@ -583,8 +584,8 @@ class CopyUpstreamTest(CpuTestBase):
 
       # Recreate the Manifests using the ebuild utility.
       cmd = ['ebuild', ebuild_path, 'manifest']
-      cros_build_lib.run(cmd, print_cmd=False, redirect_stdout=True,
-                         combine_stdout_stderr=True)
+      cros_build_lib.run(cmd, print_cmd=False, stdout=True,
+                         stderr=subprocess.STDOUT)
 
     # If requested, remove the eclass.
     if missing:
@@ -841,7 +842,7 @@ class CopyUpstreamTest(CpuTestBase):
     # Add test-specific mocks/stubs.
     def CheckRunCommand(cmd, **kwargs):
       self.assertEqual(cmd, ['ebuild', ebuild_path, 'manifest'])
-      self.assertTrue(kwargs.get('redirect_stdout'))
+      self.assertTrue(kwargs.get('stdout'))
       return cros_build_lib.CommandResult(returncode=0, output='')
 
     self.PatchObject(cros_build_lib, 'run').side_effect = CheckRunCommand
@@ -1234,7 +1235,7 @@ class PortageStableTest(CpuTestBase):
       self.assertTrue(expect_err, 'Unexpected RuntimeError: %s' % str(ex))
 
     mocked_upgrader._RunGit.assert_called_once_with(
-        mocked_upgrader._stable_repo, ['branch'], redirect_stdout=True)
+        mocked_upgrader._stable_repo, ['branch'], stdout=True)
 
   def testCheckStableRepoOnBranchNoBranch(self):
     """Should fail due to 'git branch' saying 'no branch'"""
@@ -1273,7 +1274,7 @@ class PortageStableTest(CpuTestBase):
     # Verify.
     cpu.Upgrader._SaveStatusOnStableRepo(mocked_upgrader)
     mocked_upgrader._RunGit.assert_called_once_with(
-        mocked_upgrader._stable_repo, ['status', '-s'], redirect_stdout=True)
+        mocked_upgrader._stable_repo, ['status', '-s'], stdout=True)
 
     self.assertFalse(mocked_upgrader._stable_repo_stashed)
     return mocked_upgrader._stable_repo_status
@@ -1349,8 +1350,8 @@ class PortageStableTest(CpuTestBase):
     # Verify.
     cpu.Upgrader._StashChanges(mocked_upgrader)
     mocked_upgrader._RunGit.assert_called_once_with(
-        mocked_upgrader._stable_repo, ['stash', 'save'], redirect_stdout=True,
-        combine_stdout_stderr=True)
+        mocked_upgrader._stable_repo, ['stash', 'save'], stdout=True,
+        stderr=subprocess.STDOUT)
 
     self.assertTrue(mocked_upgrader._stable_repo_stashed)
 
@@ -1370,7 +1371,7 @@ class PortageStableTest(CpuTestBase):
     if stashed:
       mocked_upgrader._RunGit.assert_called_once_with(
           mocked_upgrader._stable_repo, ['stash', 'pop', '--index'],
-          redirect_stdout=True, combine_stdout_stderr=True)
+          stdout=True, stderr=subprocess.STDOUT)
 
     self.assertFalse(mocked_upgrader._stable_repo_stashed)
 
@@ -1394,7 +1395,7 @@ class PortageStableTest(CpuTestBase):
     if stashed:
       mocked_upgrader._RunGit.assert_called_once_with(
           mocked_upgrader._stable_repo, ['stash', 'drop'],
-          redirect_stdout=True, combine_stdout_stderr=True)
+          stdout=True, stderr=subprocess.STDOUT)
 
     self.assertFalse(mocked_upgrader._stable_repo_stashed)
 
@@ -1728,7 +1729,7 @@ class RunBoardTest(CpuTestBase):
                    '+refs/heads/master:refs/remotes/origin/master']),
         mock.call(self.upstream_tmp_repo, ['remote', 'update']),
         mock.call(self.upstream_tmp_repo, ['checkout', '-f', 'origin/master'],
-                  combine_stdout_stderr=True, redirect_stdout=True),
+                  stderr=subprocess.STDOUT, stdout=True),
     ])
 
   def testPrepareToRunUpstreamRepoNew(self):
@@ -2106,8 +2107,8 @@ class UpgradePackageTest(CpuTestBase):
           ]
           cmd = ['egencache', '--update', '--repo=portage-stable',
                  pinfo.package]
-          run_calls.append(mock.call(cmd, print_cmd=False, redirect_stdout=True,
-                                     combine_stdout_stderr=True,
+          run_calls.append(mock.call(cmd, print_cmd=False, stdout=True,
+                                     stderr=subprocess.STDOUT,
                                      encoding='utf-8'))
 
     # Verify.
@@ -2311,8 +2312,8 @@ class VerifyPackageTest(CpuTestBase):
         mocked_upgrader._curr_arch, unstable_ok=False)
     run_mock.assert_called_once_with(
         ['equery', '-C', 'which', '--include-masked', cpv], check=False,
-        extra_env=envvars, print_cmd=False, redirect_stdout=True,
-        combine_stdout_stderr=True, encoding='utf-8')
+        extra_env=envvars, print_cmd=False, stdout=True,
+        stderr=subprocess.STDOUT, encoding='utf-8')
 
   def testVerifyEbuildOverlayGood(self):
     cpv = 'foo/bar-2'
@@ -2360,7 +2361,7 @@ class VerifyPackageTest(CpuTestBase):
     run_mock.assert_called_once_with(
         ['equery', '-qCN', 'list', '-F', '$mask|$cpv:$slot', '-op', cpv],
         check=False, extra_env='envvars', print_cmd=False,
-        redirect_stdout=True, combine_stdout_stderr=True, encoding='utf-8')
+        stdout=True, stderr=subprocess.STDOUT, encoding='utf-8')
 
   def testGetMaskBitsUnmaskedStable(self):
     output = '  |foo/bar-2.7.0:0'
