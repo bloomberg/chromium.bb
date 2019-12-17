@@ -559,7 +559,6 @@ typedef struct TPL_SPEED_FEATURES {
   // If set to 0, we will search all intra modes from DC_PRED to PAETH_PRED.
   // If set to 1, we only search DC_PRED, V_PRED, and H_PRED.
   int prune_intra_modes;
-
   // This parameter controls which step in the n-step process we start at.
   int reduce_first_step_size;
 } TPL_SPEED_FEATURES;
@@ -661,6 +660,46 @@ typedef struct TX_SPEED_FEATURES {
   // to avoid repeated search on the same residue signal.
   int use_inter_txb_hash;
 } TX_SPEED_FEATURES;
+
+typedef struct RD_CALC_SPEED_FEATURES {
+  // This feature controls whether we do the expensive context update and
+  // calculation in the rd coefficient costing loop.
+  int use_fast_coef_costing;
+
+  // Fast approximation of av1_model_rd_from_var_lapndz
+  int simple_model_rd_from_var;
+
+  // Whether to compute distortion in the image domain (slower but
+  // more accurate), or in the transform domain (faster but less acurate).
+  // 0: use image domain
+  // 1: use transform domain in tx_type search, and use image domain for
+  // RD_STATS
+  // 2: use transform domain
+  int tx_domain_dist_level;
+
+  // Transform domain distortion threshold level
+  int tx_domain_dist_thres_level;
+
+  // Trellis (dynamic programming) optimization of quantized values
+  TRELLIS_OPT_TYPE optimize_coefficients;
+
+  // Use a hash table to store previously computed optimized qcoeffs from
+  // expensive calls to optimize_txb.
+  int use_hash_based_trellis;
+
+  // Use hash table to store macroblock RD search results
+  // to avoid repeated search on the same residue signal.
+  int use_mb_rd_hash;
+
+  // Flag used to control the speed of the eob selection in trellis.
+  int trellis_eob_fast;
+
+  // Calculate RD cost before doing optimize_b, and skip if the cost is large.
+  int optimize_b_precheck;
+
+  // Flag used to control the extent of coeff R-D optimization
+  int perform_coeff_opt;
+} RD_CALC_SPEED_FEATURES;
 
 typedef struct REAL_TIME_SPEED_FEATURES {
   // check intra prediction for non-RD mode.
@@ -818,43 +857,7 @@ typedef struct SPEED_FEATURES {
   /*
    * RD calculation speed features:
    */
-  // This feature controls whether we do the expensive context update and
-  // calculation in the rd coefficient costing loop.
-  int use_fast_coef_costing;
-
-  // Fast approximation of av1_model_rd_from_var_lapndz
-  int simple_model_rd_from_var;
-
-  // Whether to compute distortion in the image domain (slower but
-  // more accurate), or in the transform domain (faster but less acurate).
-  // 0: use image domain
-  // 1: use transform domain in tx_type search, and use image domain for
-  // RD_STATS
-  // 2: use transform domain
-  int tx_domain_dist_level;
-
-  // Transform domain distortion threshold level
-  int tx_domain_dist_thres_level;
-
-  // Trellis (dynamic programming) optimization of quantized values
-  TRELLIS_OPT_TYPE optimize_coefficients;
-
-  // Use a hash table to store previously computed optimized qcoeffs from
-  // expensive calls to optimize_txb.
-  int use_hash_based_trellis;
-
-  // Use hash table to store macroblock RD search results
-  // to avoid repeated search on the same residue signal.
-  int use_mb_rd_hash;
-
-  // Flag used to control the speed of the eob selection in trellis.
-  int trellis_eob_fast;
-
-  // Calculate RD cost before doing optimize_b, and skip if the cost is large.
-  int optimize_b_precheck;
-
-  // Flag used to control the extent of coeff R-D optimization
-  int perform_coeff_opt;
+  RD_CALC_SPEED_FEATURES rd_sf;
 
   /*
    * Two-pass mode evaluation features:

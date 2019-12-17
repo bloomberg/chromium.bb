@@ -336,9 +336,9 @@ static void set_good_speed_features_framesize_independent(
     sf->inter_sf.prune_motion_mode_level = 2;
     sf->gm_search_type = GM_REDUCED_REF_SEARCH_SKIP_L2_L3_ARF2;
     sf->disable_adaptive_warp_error_thresh = 0;
-    sf->tx_domain_dist_level = boosted ? 1 : 2;
-    sf->tx_domain_dist_thres_level = 1;
-    sf->perform_coeff_opt = boosted ? 1 : 2;
+    sf->rd_sf.tx_domain_dist_level = boosted ? 1 : 2;
+    sf->rd_sf.tx_domain_dist_thres_level = 1;
+    sf->rd_sf.perform_coeff_opt = boosted ? 1 : 2;
     sf->inter_sf.prune_ref_frame_for_rect_partitions =
         (frame_is_intra_only(&cpi->common) || (cm->allow_screen_content_tools))
             ? 0
@@ -385,7 +385,7 @@ static void set_good_speed_features_framesize_independent(
 
     // TODO(Sachin): Enable/Enhance this speed feature for speed 2 & 3
     sf->interp_sf.adaptive_interp_filter_search = 1;
-    sf->perform_coeff_opt = is_boosted_arf2_bwd_type ? 2 : 3;
+    sf->rd_sf.perform_coeff_opt = is_boosted_arf2_bwd_type ? 2 : 3;
 
     sf->inter_sf.prune_warp_using_wmtype = 1;
     sf->intra_sf.disable_smooth_intra =
@@ -447,7 +447,7 @@ static void set_good_speed_features_framesize_independent(
     sf->inter_sf.adaptive_mode_search = 1;
     sf->inter_sf.alt_ref_search_fp = 1;
     sf->interp_sf.skip_sharp_interp_filter_search = 1;
-    sf->perform_coeff_opt = is_boosted_arf2_bwd_type ? 2 : 4;
+    sf->rd_sf.perform_coeff_opt = is_boosted_arf2_bwd_type ? 2 : 4;
     sf->tx_sf.adaptive_txb_search_level = boosted ? 2 : 3;
     sf->mv_sf.subpel_search_method = SUBPEL_TREE_PRUNED_MORE;
     sf->enable_winner_mode_for_tx_size_srch = 1;
@@ -486,7 +486,7 @@ static void set_good_speed_features_framesize_independent(
     //     FLAG_SKIP_COMP_BESTINTRA | FLAG_SKIP_INTRA_LOWVAR |
     //     FLAG_EARLY_TERMINATE;
     // sf->tx_domain_dist_level = 2;
-    sf->tx_domain_dist_thres_level = 2;
+    sf->rd_sf.tx_domain_dist_thres_level = 2;
     sf->part_sf.simple_motion_search_prune_agg = 2;
     sf->interp_sf.use_interp_filter = 2;
     sf->inter_sf.prune_ref_mv_idx_search = 1;
@@ -567,7 +567,7 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->tx_sf.tx_type_search.ml_tx_split_thresh = 4000;
     sf->tx_sf.adaptive_txb_search_level = 2;
     sf->tx_sf.use_intra_txb_hash = 1;
-    sf->optimize_b_precheck = 1;
+    sf->rd_sf.optimize_b_precheck = 1;
     sf->dual_sgr_penalty_level = 1;
     sf->mv_sf.use_accurate_subpel_search = USE_4_TAPS;
     sf->inter_sf.reuse_inter_intra_mode = 1;
@@ -587,8 +587,8 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->inter_sf.prune_motion_mode_level = 2;
     sf->gm_search_type = GM_REDUCED_REF_SEARCH_SKIP_L2_L3_ARF2;
     sf->interp_sf.cb_pred_filter_search = 1;
-    sf->tx_domain_dist_level = boosted ? 0 : 1;
-    sf->tx_domain_dist_thres_level = 1;
+    sf->rd_sf.tx_domain_dist_level = boosted ? 0 : 1;
+    sf->rd_sf.tx_domain_dist_thres_level = 1;
   }
 
   if (speed >= 2) {
@@ -627,7 +627,7 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
     // See aomedia:1778.
     // sf->adaptive_motion_search = 1;
     sf->recode_loop = ALLOW_RECODE_KFARFGF;
-    sf->tx_domain_dist_level = 1;
+    sf->rd_sf.tx_domain_dist_level = 1;
     sf->mv_sf.use_accurate_subpel_search = USE_2_TAPS;
     sf->inter_sf.adaptive_rd_thresh = 2;
     sf->tx_sf.tx_type_search.prune_mode = PRUNE_2D_FAST;
@@ -643,7 +643,7 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
 
   if (speed >= 4) {
     sf->tx_sf.use_intra_txb_hash = 0;
-    sf->use_mb_rd_hash = 0;
+    sf->rd_sf.use_mb_rd_hash = 0;
     sf->tx_sf.tx_type_search.fast_intra_tx_type_search = 1;
     sf->tx_sf.tx_type_search.fast_inter_tx_type_search = 1;
     sf->tx_size_search_level = frame_is_intra_only(cm) ? 0 : 2;
@@ -672,20 +672,20 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
                   FLAG_SKIP_COMP_BESTINTRA | FLAG_SKIP_INTRA_LOWVAR |
                   FLAG_EARLY_TERMINATE;
     sf->interp_sf.disable_filter_search_var_thresh = 200;
-    sf->use_fast_coef_costing = 1;
+    sf->rd_sf.use_fast_coef_costing = 1;
     sf->part_sf.partition_search_breakout_rate_thr = 300;
-    sf->tx_domain_dist_level = 2;
-    sf->tx_domain_dist_thres_level = 2;
+    sf->rd_sf.tx_domain_dist_level = 2;
+    sf->rd_sf.tx_domain_dist_thres_level = 2;
   }
 
   if (speed >= 6) {
-    sf->optimize_coefficients = NO_TRELLIS_OPT;
+    sf->rd_sf.optimize_coefficients = NO_TRELLIS_OPT;
     for (int i = 0; i < TX_SIZES; ++i) {
       sf->intra_sf.intra_y_mode_mask[i] = INTRA_DC;
       sf->intra_sf.intra_uv_mode_mask[i] = UV_INTRA_DC_CFL;
     }
     sf->part_sf.partition_search_breakout_rate_thr = 500;
-    sf->simple_model_rd_from_var = 1;
+    sf->rd_sf.simple_model_rd_from_var = 1;
     sf->lpf_pick = LPF_PICK_FROM_Q;
     sf->mv_sf.subpel_force_stop = QUARTER_PEL;
     sf->part_sf.default_max_partition_size = BLOCK_128X128;
@@ -878,6 +878,39 @@ static AOM_INLINE void init_tx_sf(TX_SPEED_FEATURES *tx_sf) {
   tx_sf->use_inter_txb_hash = 1;
 }
 
+static AOM_INLINE void init_rd_sf(RD_CALC_SPEED_FEATURES *rd_sf,
+                                  const AV1_COMP *cpi) {
+  if (cpi->oxcf.disable_trellis_quant == 3) {
+    rd_sf->optimize_coefficients = !is_lossless_requested(&cpi->oxcf)
+                                       ? NO_ESTIMATE_YRD_TRELLIS_OPT
+                                       : NO_TRELLIS_OPT;
+  } else if (cpi->oxcf.disable_trellis_quant == 2) {
+    rd_sf->optimize_coefficients = !is_lossless_requested(&cpi->oxcf)
+                                       ? FINAL_PASS_TRELLIS_OPT
+                                       : NO_TRELLIS_OPT;
+  } else if (cpi->oxcf.disable_trellis_quant == 0) {
+    if (is_lossless_requested(&cpi->oxcf)) {
+      rd_sf->optimize_coefficients = NO_TRELLIS_OPT;
+    } else {
+      rd_sf->optimize_coefficients = FULL_TRELLIS_OPT;
+    }
+  } else if (cpi->oxcf.disable_trellis_quant == 1) {
+    rd_sf->optimize_coefficients = NO_TRELLIS_OPT;
+  } else {
+    assert(0 && "Invalid disable_trellis_quant value");
+  }
+  // TODO(sarahparker) Pair this with a speed setting once experiments are done
+  rd_sf->trellis_eob_fast = 0;
+  rd_sf->use_mb_rd_hash = 1;
+  rd_sf->optimize_b_precheck = 0;
+  rd_sf->use_fast_coef_costing = 0;
+  rd_sf->simple_model_rd_from_var = 0;
+  rd_sf->tx_domain_dist_level = 0;
+  rd_sf->tx_domain_dist_thres_level = 0;
+  rd_sf->use_hash_based_trellis = 0;
+  rd_sf->perform_coeff_opt = 0;
+}
+
 static AOM_INLINE void init_rt_sf(REAL_TIME_SPEED_FEATURES *rt_sf) {
   rt_sf->mode_search_skip_flags = 0;
   rt_sf->skip_interp_filter_search = 0;
@@ -923,35 +956,13 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
   // best quality defaults
   sf->frame_parameter_update = 1;
   sf->recode_loop = ALLOW_RECODE;
-  if (cpi->oxcf.disable_trellis_quant == 3) {
-    sf->optimize_coefficients = !is_lossless_requested(&cpi->oxcf)
-                                    ? NO_ESTIMATE_YRD_TRELLIS_OPT
-                                    : NO_TRELLIS_OPT;
-  } else if (cpi->oxcf.disable_trellis_quant == 2) {
-    sf->optimize_coefficients = !is_lossless_requested(&cpi->oxcf)
-                                    ? FINAL_PASS_TRELLIS_OPT
-                                    : NO_TRELLIS_OPT;
-  } else if (cpi->oxcf.disable_trellis_quant == 0) {
-    if (is_lossless_requested(&cpi->oxcf))
-      sf->optimize_coefficients = NO_TRELLIS_OPT;
-    else
-      sf->optimize_coefficients = FULL_TRELLIS_OPT;
-  } else if (cpi->oxcf.disable_trellis_quant == 1) {
-    sf->optimize_coefficients = NO_TRELLIS_OPT;
-  } else {
-    assert(0 && "Invalid disable_trellis_quant value");
-  }
   sf->gm_erroradv_type = GM_ERRORADV_TR_0;
   sf->disable_adaptive_warp_error_thresh = 1;
-  // TODO(sarahparker) Pair this with a speed setting once experiments are done
-  sf->trellis_eob_fast = 0;
   sf->selective_ref_gm = 1;
   sf->disable_loop_restoration_chroma = 0;
   sf->prune_sgr_based_on_wiener = 0;
   sf->enable_sgr_ep_pruning = 0;
   sf->reduce_wiener_window_size = 0;
-  sf->use_mb_rd_hash = 1;
-  sf->optimize_b_precheck = 0;
   sf->reduce_high_precision_mv_usage = 0;
   sf->disable_overlay_frames = 0;
   // TODO(yunqing): turn it on for speed 0 if there is gain.
@@ -959,26 +970,20 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
   sf->motion_mode_for_winner_cand = 0;
   sf->lpf_pick = LPF_PICK_FROM_FULL_IMAGE;
   sf->cdef_pick_method = CDEF_FULL_SEARCH;
-  sf->use_fast_coef_costing = 0;
   // Recode loop tolerance %.
   sf->recode_tolerance = 25;
-  sf->simple_model_rd_from_var = 0;
 
   // Set this at the appropriate speed levels
   sf->tx_size_search_level = USE_FULL_RD;
-  sf->tx_domain_dist_level = 0;
-  sf->tx_domain_dist_thres_level = 0;
   sf->gm_search_type = GM_FULL_SEARCH;
   sf->gm_disable_recode = 0;
   sf->prune_ref_frame_for_gm_search = 0;
-  sf->use_hash_based_trellis = 0;
   sf->tpl_sf.prune_intra_modes = 0;
   sf->tpl_sf.reduce_first_step_size = 0;
 
   // Set decoder side speed feature to use less dual sgr modes
   sf->dual_sgr_penalty_level = 0;
   sf->disable_lr_filter = 0;
-  sf->perform_coeff_opt = 0;
   sf->enable_winner_mode_for_coeff_opt = 0;
   sf->enable_winner_mode_for_tx_size_srch = 0;
   sf->enable_winner_mode_for_use_tx_domain_dist = 0;
@@ -990,6 +995,7 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
   init_interp_sf(&sf->interp_sf);
   init_intra_sf(&sf->intra_sf);
   init_tx_sf(&sf->tx_sf);
+  init_rd_sf(&sf->rd_sf, cpi);
   init_rt_sf(&sf->rt_sf);
 
   if (oxcf->mode == GOOD)
@@ -1042,7 +1048,8 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
 
   // Slow quant, dct and trellis not worthwhile for first pass
   // so make sure they are always turned off.
-  if (is_stat_generation_stage(cpi)) sf->optimize_coefficients = NO_TRELLIS_OPT;
+  if (is_stat_generation_stage(cpi))
+    sf->rd_sf.optimize_coefficients = NO_TRELLIS_OPT;
 
   // No recode or trellis for 1 pass.
   if (oxcf->pass == 0) sf->recode_loop = DISALLOW_RECODE;
@@ -1075,15 +1082,16 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
       comp_type_rd_threshold_div[sf->inter_sf.prune_comp_type_by_comp_avg];
 
   // assert ensures that tx_domain_dist_level is accessed correctly
-  assert(cpi->sf.tx_domain_dist_thres_level >= 0 &&
-         cpi->sf.tx_domain_dist_thres_level < 3);
+  assert(cpi->sf.rd_sf.tx_domain_dist_thres_level >= 0 &&
+         cpi->sf.rd_sf.tx_domain_dist_thres_level < 3);
   memcpy(cpi->tx_domain_dist_threshold,
-         tx_domain_dist_thresholds[cpi->sf.tx_domain_dist_thres_level],
+         tx_domain_dist_thresholds[cpi->sf.rd_sf.tx_domain_dist_thres_level],
          sizeof(cpi->tx_domain_dist_threshold));
 
-  assert(cpi->sf.tx_domain_dist_level >= 0 && cpi->sf.tx_domain_dist_level < 3);
+  assert(cpi->sf.rd_sf.tx_domain_dist_level >= 0 &&
+         cpi->sf.rd_sf.tx_domain_dist_level < 3);
   memcpy(cpi->use_transform_domain_distortion,
-         tx_domain_dist_types[cpi->sf.tx_domain_dist_level],
+         tx_domain_dist_types[cpi->sf.rd_sf.tx_domain_dist_level],
          sizeof(cpi->use_transform_domain_distortion));
 
   // Update the number of winner motion modes to be used appropriately
@@ -1092,9 +1100,10 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
   assert(cpi->num_winner_motion_modes <= MAX_WINNER_MOTION_MODES);
 
   // assert ensures that coeff_opt_dist_thresholds is accessed correctly
-  assert(cpi->sf.perform_coeff_opt >= 0 && cpi->sf.perform_coeff_opt < 5);
+  assert(cpi->sf.rd_sf.perform_coeff_opt >= 0 &&
+         cpi->sf.rd_sf.perform_coeff_opt < 5);
   memcpy(cpi->coeff_opt_dist_threshold,
-         coeff_opt_dist_thresholds[cpi->sf.perform_coeff_opt],
+         coeff_opt_dist_thresholds[cpi->sf.rd_sf.perform_coeff_opt],
          sizeof(cpi->coeff_opt_dist_threshold));
 
   // assert ensures that predict_skip_levels is accessed correctly

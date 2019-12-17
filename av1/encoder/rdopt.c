@@ -2025,7 +2025,7 @@ static AOM_INLINE void model_rd_from_sse(const AV1_COMP *const cpi,
   const int dequant_shift = (is_cur_buf_hbd(xd)) ? xd->bd - 5 : 3;
 
   // Fast approximate the modelling function.
-  if (cpi->sf.simple_model_rd_from_var) {
+  if (cpi->sf.rd_sf.simple_model_rd_from_var) {
     const int64_t square_error = sse;
     int quantizer = p->dequant_QTX[1] >> dequant_shift;
     if (quantizer < 120)
@@ -3483,7 +3483,7 @@ static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
                     &quant_param);
 
     if (quant_param.use_optimize_b) {
-      if (cpi->sf.optimize_b_precheck && best_rd < INT64_MAX &&
+      if (cpi->sf.rd_sf.optimize_b_precheck && best_rd < INT64_MAX &&
           eobs_ptr[block] >= 4) {
         // Calculate distortion quickly in transform domain.
         dist_block_tx_domain(x, plane, block, tx_size, &this_rd_stats.dist,
@@ -3495,7 +3495,7 @@ static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
         if (dist_cost_estimate - (dist_cost_estimate >> 3) > best_rd_) continue;
       }
       av1_optimize_b(cpi, x, plane, block, tx_size, tx_type, txb_ctx,
-                     cpi->sf.trellis_eob_fast, &rate_cost);
+                     cpi->sf.rd_sf.trellis_eob_fast, &rate_cost);
     } else {
       rate_cost =
           av1_cost_coeffs(x, plane, block, tx_size, tx_type, txb_ctx,
@@ -3672,7 +3672,7 @@ RECON_INTRA:
                       &txfm_param_intra, &quant_param_intra);
       if (quant_param_intra.use_optimize_b) {
         av1_optimize_b(cpi, x, plane, block, tx_size, best_tx_type, txb_ctx,
-                       cpi->sf.trellis_eob_fast, &rate_cost);
+                       cpi->sf.rd_sf.trellis_eob_fast, &rate_cost);
       }
     }
 
@@ -3853,9 +3853,9 @@ static int64_t txfm_yrd(const AV1_COMP *const cpi, MACROBLOCK *x,
   if (is_inter) skip_rd = RDCOST(x->rdmult, s1, 0);
 
   mbmi->tx_size = tx_size;
-  txfm_rd_in_plane(x, cpi, rd_stats, ref_best_rd, AOMMIN(this_rd, skip_rd),
-                   AOM_PLANE_Y, bs, tx_size, cpi->sf.use_fast_coef_costing,
-                   ftxs_mode, skip_trellis);
+  txfm_rd_in_plane(
+      x, cpi, rd_stats, ref_best_rd, AOMMIN(this_rd, skip_rd), AOM_PLANE_Y, bs,
+      tx_size, cpi->sf.rd_sf.use_fast_coef_costing, ftxs_mode, skip_trellis);
   if (rd_stats->rate == INT_MAX) return INT64_MAX;
 
   // rdstats->rate should include all the rate except skip/non-skip cost as the
@@ -3958,7 +3958,7 @@ static AOM_INLINE void choose_largest_tx_size(const AV1_COMP *const cpi,
 
   txfm_rd_in_plane(x, cpi, rd_stats, ref_best_rd, AOMMIN(this_rd, skip_rd),
                    AOM_PLANE_Y, bs, mbmi->tx_size,
-                   cpi->sf.use_fast_coef_costing, FTXS_NONE, 0);
+                   cpi->sf.rd_sf.use_fast_coef_costing, FTXS_NONE, 0);
 }
 
 static AOM_INLINE void choose_smallest_tx_size(const AV1_COMP *const cpi,
@@ -3972,7 +3972,7 @@ static AOM_INLINE void choose_smallest_tx_size(const AV1_COMP *const cpi,
   mbmi->tx_size = TX_4X4;
   // TODO(any) : Pass this_rd based on skip/non-skip cost
   txfm_rd_in_plane(x, cpi, rd_stats, ref_best_rd, 0, 0, bs, mbmi->tx_size,
-                   cpi->sf.use_fast_coef_costing, FTXS_NONE, 0);
+                   cpi->sf.rd_sf.use_fast_coef_costing, FTXS_NONE, 0);
 }
 
 static INLINE int bsize_to_num_blk(BLOCK_SIZE bsize) {
@@ -4288,7 +4288,7 @@ static AOM_INLINE void super_block_yrd(const AV1_COMP *const cpi, MACROBLOCK *x,
                             mi_col >= xd->tile.mi_col_start &&
                             (mi_col + mi_size_wide[bs] < xd->tile.mi_col_end);
   const int is_mb_rd_hash_enabled =
-      (within_border && cpi->sf.use_mb_rd_hash && is_inter);
+      (within_border && cpi->sf.rd_sf.use_mb_rd_hash && is_inter);
   const int n4 = bsize_to_num_blk(bs);
   if (is_mb_rd_hash_enabled) {
     hash = get_block_residue_hash(x, bs);
@@ -5676,8 +5676,8 @@ static int super_block_uvrd(const AV1_COMP *const cpi, MACROBLOCK *x,
           is_inter && chroma_ref_best_rd != INT64_MAX)
         chroma_ref_best_rd = ref_best_rd - AOMMIN(this_rd, skip_rd);
       txfm_rd_in_plane(x, cpi, &pn_rd_stats, chroma_ref_best_rd, 0, plane,
-                       plane_bsize, uv_tx_size, cpi->sf.use_fast_coef_costing,
-                       FTXS_NONE, 0);
+                       plane_bsize, uv_tx_size,
+                       cpi->sf.rd_sf.use_fast_coef_costing, FTXS_NONE, 0);
       if (pn_rd_stats.rate == INT_MAX) {
         is_cost_valid = 0;
         break;
@@ -6623,7 +6623,8 @@ static AOM_INLINE void pick_tx_size_type_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
       (mi_row + mi_size_high[bsize] < xd->tile.mi_row_end) &&
       mi_col >= xd->tile.mi_col_start &&
       (mi_col + mi_size_wide[bsize] < xd->tile.mi_col_end);
-  const int is_mb_rd_hash_enabled = (within_border && cpi->sf.use_mb_rd_hash);
+  const int is_mb_rd_hash_enabled =
+      (within_border && cpi->sf.rd_sf.use_mb_rd_hash);
   const int n4 = bsize_to_num_blk(bsize);
   if (is_mb_rd_hash_enabled) {
     hash = get_block_residue_hash(x, bsize);
@@ -7022,7 +7023,8 @@ static int cfl_rd_pick_alpha(MACROBLOCK *const x, const AV1_COMP *const cpi,
         mbmi->cfl_alpha_idx = 0;
         mbmi->cfl_alpha_signs = joint_sign;
         txfm_rd_in_plane(x, cpi, &rd_stats, best_rd, 0, plane + 1, plane_bsize,
-                         tx_size, cpi->sf.use_fast_coef_costing, FTXS_NONE, 0);
+                         tx_size, cpi->sf.rd_sf.use_fast_coef_costing,
+                         FTXS_NONE, 0);
         if (rd_stats.rate == INT_MAX) break;
       }
       const int alpha_rate = x->cfl_cost[joint_sign][plane][0];
@@ -7051,7 +7053,7 @@ static int cfl_rd_pick_alpha(MACROBLOCK *const x, const AV1_COMP *const cpi,
             mbmi->cfl_alpha_signs = joint_sign;
             txfm_rd_in_plane(x, cpi, &rd_stats, best_rd, 0, plane + 1,
                              plane_bsize, tx_size,
-                             cpi->sf.use_fast_coef_costing, FTXS_NONE, 0);
+                             cpi->sf.rd_sf.use_fast_coef_costing, FTXS_NONE, 0);
             if (rd_stats.rate == INT_MAX) break;
           }
           const int alpha_rate = x->cfl_cost[joint_sign][plane][c];
