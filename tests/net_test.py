@@ -391,7 +391,6 @@ class TestNetFunctions(auto_stub.TestCase):
       ('https://foo.com/a/', 'https://foo.com/a'),
       ('https://foo.com:8080/a/', 'https://foo.com:8080/a'),
       ('foo.com', 'https://foo.com'),
-      ('foo.com:8080', 'https://foo.com:8080'),
       ('foo.com/', 'https://foo.com'),
       ('foo.com/a/', 'https://foo.com/a'),
     ]
