@@ -178,7 +178,7 @@ static struct av1_extracfg default_extra_cfg = {
   0,                                         // rc_max_inter_bitrate_pct
   0,                                         // gf_cbr_boost_pct
   0,                                         // lossless
-  !CONFIG_SHARP_SETTINGS,                    // enable_cdef
+  1,                                         // enable_cdef
   1,                                         // enable_restoration
   1,                                         // force_video_mode
   1,                                         // enable_obmc
