@@ -84,6 +84,18 @@ static int input_stats(TWO_PASS *p, FIRSTPASS_STATS *fps) {
   return 1;
 }
 
+static int input_stats_lap(TWO_PASS *p, FIRSTPASS_STATS *fps) {
+  if (p->stats_in >= p->stats_buf_ctx->stats_in_end) return EOF;
+
+  *fps = *p->stats_in;
+  /* Move old stats[0] out to accommodate for next frame stats  */
+  memmove(p->frame_stats_arr[0], p->frame_stats_arr[1],
+          (p->stats_buf_ctx->stats_in_end - p->stats_in - 1) *
+              sizeof(FIRSTPASS_STATS));
+  p->stats_buf_ctx->stats_in_end--;
+  return 1;
+}
+
 // Read frame stats at an offset from the current position.
 static const FIRSTPASS_STATS *read_frame_stats(const TWO_PASS *p, int offset) {
   if ((offset >= 0 && p->stats_in + offset >= p->stats_buf_ctx->stats_in_end) ||
@@ -1706,7 +1718,13 @@ static void process_first_pass_stats(AV1_COMP *cpi,
     rc->avg_frame_qindex[KEY_FRAME] = rc->last_q[KEY_FRAME];
   }
 
-  if (EOF == input_stats(twopass, this_frame)) return;
+  int err = 0;
+  if (cpi->lap_enabled) {
+    err = input_stats_lap(twopass, this_frame);
+  } else {
+    err = input_stats(twopass, this_frame);
+  }
+  if (err == EOF) return;
 
   {
     const int num_mbs = (cpi->oxcf.resize_mode != RESIZE_NONE)

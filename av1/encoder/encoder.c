@@ -2959,10 +2959,14 @@ AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf, BufferPool *const pool,
     const size_t packet_sz = sizeof(FIRSTPASS_STATS);
     const int packets = (int)(oxcf->two_pass_stats_in.sz / packet_sz);
 
-    cpi->twopass.stats_buf_ctx->stats_in_start = oxcf->two_pass_stats_in.buf;
-    cpi->twopass.stats_in = cpi->twopass.stats_buf_ctx->stats_in_start;
-    cpi->twopass.stats_buf_ctx->stats_in_end =
-        &cpi->twopass.stats_buf_ctx->stats_in_start[packets - 1];
+    if (!cpi->lap_enabled) {
+      /*Re-initialize to stats buffer, populated by application in the case of
+       * two pass*/
+      cpi->twopass.stats_buf_ctx->stats_in_start = oxcf->two_pass_stats_in.buf;
+      cpi->twopass.stats_in = cpi->twopass.stats_buf_ctx->stats_in_start;
+      cpi->twopass.stats_buf_ctx->stats_in_end =
+          &cpi->twopass.stats_buf_ctx->stats_in_start[packets - 1];
+    }
 
     av1_init_second_pass(cpi);
   }
