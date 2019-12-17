@@ -2945,7 +2945,8 @@ AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf, BufferPool *const pool,
 #endif
 
   assert(MAX_LAP_BUFFERS >= MAX_LAG_BUFFERS);
-  for (int i = 0; i < MAX_LAG_BUFFERS; i++)
+  int size = get_stats_buf_size(num_lap_buffers, MAX_LAG_BUFFERS);
+  for (int i = 0; i < size; i++)
     cpi->twopass.frame_stats_arr[i] = &frame_stats_buf[i];
 
   cpi->twopass.stats_buf_ctx = stats_buf_context;

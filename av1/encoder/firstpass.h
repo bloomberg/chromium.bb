@@ -140,7 +140,7 @@ typedef struct {
   // Circular queue of first pass stats stored for most recent frames.
   // cpi->output_pkt_list[i].data.twopass_stats.buf points to actual data stored
   // here.
-  FIRSTPASS_STATS *frame_stats_arr[MAX_LAP_BUFFERS];
+  FIRSTPASS_STATS *frame_stats_arr[MAX_LAP_BUFFERS + 1];
   int frame_stats_next_idx;  // Index to next unused element in frame_stats_arr.
   const FIRSTPASS_STATS *stats_in;
   STATS_BUFFER_CTX *stats_buf_ctx;

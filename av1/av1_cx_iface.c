@@ -1747,16 +1747,19 @@ static aom_codec_err_t ctrl_set_min_cr(aom_codec_alg_priv_t *ctx,
   return update_extra_cfg(ctx, &extra_cfg);
 }
 static aom_codec_err_t create_frame_stats_buffer(
-    FIRSTPASS_STATS **frame_stats_buffer, STATS_BUFFER_CTX *stats_buf_context) {
+    FIRSTPASS_STATS **frame_stats_buffer, STATS_BUFFER_CTX *stats_buf_context,
+    int num_lap_buffers) {
   aom_codec_err_t res = AOM_CODEC_OK;
+
+  int size = get_stats_buf_size(num_lap_buffers, MAX_LAG_BUFFERS);
   *frame_stats_buffer =
-      (FIRSTPASS_STATS *)aom_calloc(MAX_LAG_BUFFERS, sizeof(FIRSTPASS_STATS));
+      (FIRSTPASS_STATS *)aom_calloc(size, sizeof(FIRSTPASS_STATS));
   if (*frame_stats_buffer == NULL) return AOM_CODEC_MEM_ERROR;
 
   stats_buf_context->stats_in_start = *frame_stats_buffer;
   stats_buf_context->stats_in_end = stats_buf_context->stats_in_start;
   stats_buf_context->stats_in_buf_end =
-      stats_buf_context->stats_in_start + MAX_LAG_BUFFERS;
+      stats_buf_context->stats_in_start + size;
   return res;
 }
 
@@ -1794,10 +1797,6 @@ static aom_codec_err_t encoder_init(aom_codec_ctx_t *ctx,
     aom_codec_alg_priv_t *const priv = aom_calloc(1, sizeof(*priv));
     if (priv == NULL) return AOM_CODEC_MEM_ERROR;
 
-    res = create_frame_stats_buffer(&priv->frame_stats_buffer,
-                                    &priv->stats_buf_context);
-    if (res != AOM_CODEC_OK) return AOM_CODEC_MEM_ERROR;
-
     ctx->priv = (aom_codec_priv_t *)priv;
     ctx->priv->init_flags = ctx->init_flags;
     ctx->priv->enc.total_encoders = 1;
@@ -1831,6 +1830,11 @@ static aom_codec_err_t encoder_init(aom_codec_ctx_t *ctx,
       }
       priv->oxcf.use_highbitdepth =
           (ctx->init_flags & AOM_CODEC_USE_HIGHBITDEPTH) ? 1 : 0;
+
+      res =
+          create_frame_stats_buffer(&priv->frame_stats_buffer,
+                                    &priv->stats_buf_context, *num_lap_buffers);
+      if (res != AOM_CODEC_OK) return AOM_CODEC_MEM_ERROR;
 
       res = create_context_and_bufferpool(
           &priv->cpi, &priv->buffer_pool, &priv->oxcf, &priv->pkt_list.head,
