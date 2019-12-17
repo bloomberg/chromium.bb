@@ -142,6 +142,12 @@ int WebViewProxy::loadUrl(const StringRef& url)
     return 0;
 }
 
+void WebViewProxy::rootWindowCompositionChanged()
+{
+    DCHECK(Statics::isInApplicationMainThread());
+    d_client->proxy()->rootWindowCompositionChanged();
+}
+
 void WebViewProxy::loadInspector(unsigned int pid, int routingId)
 {
     DCHECK(Statics::isInApplicationMainThread());
