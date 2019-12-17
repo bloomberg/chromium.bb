@@ -36,11 +36,11 @@
 namespace ash {
 namespace {
 
-constexpr std::array<int, 8> kIdsOfContainersThatWontHideAppList = {
+constexpr std::array<int, 7> kIdsOfContainersThatWontHideAppList = {
     kShellWindowId_AppListContainer,      kShellWindowId_HomeScreenContainer,
     kShellWindowId_MenuContainer,         kShellWindowId_SettingBubbleContainer,
     kShellWindowId_ShelfBubbleContainer,  kShellWindowId_ShelfContainer,
-    kShellWindowId_ShelfControlContainer, kShellWindowId_StatusContainer,
+    kShellWindowId_ShelfControlContainer,
 };
 
 inline ui::Layer* GetLayer(views::Widget* widget) {
