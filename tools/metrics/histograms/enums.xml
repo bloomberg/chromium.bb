@@ -56710,6 +56710,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="4" label="CONNECTION_ERROR"/>
   <int value="5" label="RESPONSE_READER_ERROR"/>
   <int value="6" label="META_DATA_SENDER_ERROR"/>
+  <int value="7" label="NO_CONTEXT_ERROR"/>
 </enum>
 
 <enum name="ServiceWorkerMainResourceRequestDestination">
