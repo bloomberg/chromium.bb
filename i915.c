@@ -23,14 +23,16 @@
 #define I915_CACHELINE_SIZE 64
 #define I915_CACHELINE_MASK (I915_CACHELINE_SIZE - 1)
 
-static const uint32_t render_target_formats[] = { DRM_FORMAT_ABGR16161616F, DRM_FORMAT_ABGR2101010,
-						  DRM_FORMAT_ABGR8888,      DRM_FORMAT_ARGB2101010,
-						  DRM_FORMAT_ARGB8888,      DRM_FORMAT_RGB565,
-						  DRM_FORMAT_XBGR2101010,   DRM_FORMAT_XBGR8888,
-						  DRM_FORMAT_XRGB2101010,   DRM_FORMAT_XRGB8888 };
+static const uint32_t scanout_render_formats[] = { DRM_FORMAT_ABGR2101010, DRM_FORMAT_ABGR8888,
+						   DRM_FORMAT_ARGB2101010, DRM_FORMAT_ARGB8888,
+						   DRM_FORMAT_RGB565,	   DRM_FORMAT_XBGR2101010,
+						   DRM_FORMAT_XBGR8888,	   DRM_FORMAT_XRGB2101010,
+						   DRM_FORMAT_XRGB8888 };
 
-static const uint32_t texture_source_formats[] = { DRM_FORMAT_R8, DRM_FORMAT_NV12, DRM_FORMAT_P010,
-						   DRM_FORMAT_YVU420, DRM_FORMAT_YVU420_ANDROID };
+static const uint32_t render_formats[] = { DRM_FORMAT_ABGR16161616F };
+
+static const uint32_t texture_only_formats[] = { DRM_FORMAT_R8, DRM_FORMAT_NV12, DRM_FORMAT_P010,
+						 DRM_FORMAT_YVU420, DRM_FORMAT_YVU420_ANDROID };
 
 struct i915_device {
 	uint32_t gen;
@@ -49,109 +51,49 @@ static uint32_t i915_get_gen(int device_id)
 	return 4;
 }
 
-/*
- * We allow allocation of ARGB formats for SCANOUT if the corresponding XRGB
- * formats supports it. It's up to the caller (chrome ozone) to ultimately not
- * scan out ARGB if the display controller only supports XRGB, but we'll allow
- * the allocation of the bo here.
- */
-static bool format_compatible(const struct combination *combo, uint32_t format)
+static uint64_t unset_flags(uint64_t current_flags, uint64_t mask)
 {
-	if (combo->format == format)
-		return true;
-
-	switch (format) {
-	case DRM_FORMAT_XRGB8888:
-		return combo->format == DRM_FORMAT_ARGB8888;
-	case DRM_FORMAT_XBGR8888:
-		return combo->format == DRM_FORMAT_ABGR8888;
-	case DRM_FORMAT_RGBX8888:
-		return combo->format == DRM_FORMAT_RGBA8888;
-	case DRM_FORMAT_BGRX8888:
-		return combo->format == DRM_FORMAT_BGRA8888;
-	case DRM_FORMAT_XRGB2101010:
-		return combo->format == DRM_FORMAT_ARGB2101010;
-	case DRM_FORMAT_XBGR2101010:
-		return combo->format == DRM_FORMAT_ABGR2101010;
-	default:
-		return false;
-	}
-}
-
-static int i915_add_kms_item(struct driver *drv, const struct kms_item *item)
-{
-	uint32_t i;
-	struct combination *combo;
-
-	/*
-	 * Older hardware can't scanout Y-tiled formats. Newer devices can, and
-	 * report this functionality via format modifiers.
-	 */
-	for (i = 0; i < drv_array_size(drv->combos); i++) {
-		combo = (struct combination *)drv_array_at_idx(drv->combos, i);
-		if (!format_compatible(combo, item->format))
-			continue;
-
-		if (item->modifier == DRM_FORMAT_MOD_LINEAR &&
-		    combo->metadata.tiling == I915_TILING_X) {
-			/*
-			 * FIXME: drv_query_kms() does not report the available modifiers
-			 * yet, but we know that all hardware can scanout from X-tiled
-			 * buffers, so let's add this to our combinations, except for
-			 * cursor, which must not be tiled.
-			 */
-			combo->use_flags |= item->use_flags & ~BO_USE_CURSOR;
-		}
-
-		/* If we can scanout NV12, we support all tiling modes. */
-		if (item->format == DRM_FORMAT_NV12)
-			combo->use_flags |= item->use_flags;
-
-		if (combo->metadata.modifier == item->modifier)
-			combo->use_flags |= item->use_flags;
-	}
-
-	return 0;
+	uint64_t value = current_flags & ~mask;
+	return value;
 }
 
 static int i915_add_combinations(struct driver *drv)
 {
-	int ret;
-	uint32_t i;
-	struct drv_array *kms_items;
 	struct format_metadata metadata;
-	uint64_t render_use_flags, texture_use_flags;
+	uint64_t render, scanout_and_render, texture_only;
 
-	render_use_flags = BO_USE_RENDER_MASK;
-	texture_use_flags = BO_USE_TEXTURE_MASK;
+	scanout_and_render = BO_USE_RENDER_MASK | BO_USE_SCANOUT;
+	render = BO_USE_RENDER_MASK;
+	texture_only = BO_USE_TEXTURE_MASK;
+	uint64_t linear_mask = BO_USE_RENDERSCRIPT | BO_USE_LINEAR | BO_USE_PROTECTED |
+			       BO_USE_SW_READ_OFTEN | BO_USE_SW_WRITE_OFTEN;
 
 	metadata.tiling = I915_TILING_NONE;
 	metadata.priority = 1;
 	metadata.modifier = DRM_FORMAT_MOD_LINEAR;
 
-	drv_add_combinations(drv, render_target_formats, ARRAY_SIZE(render_target_formats),
-			     &metadata, render_use_flags);
+	drv_add_combinations(drv, scanout_render_formats, ARRAY_SIZE(scanout_render_formats),
+			     &metadata, scanout_and_render);
 
-	drv_add_combinations(drv, texture_source_formats, ARRAY_SIZE(texture_source_formats),
-			     &metadata, texture_use_flags);
+	drv_add_combinations(drv, render_formats, ARRAY_SIZE(render_formats), &metadata, render);
 
+	drv_add_combinations(drv, texture_only_formats, ARRAY_SIZE(texture_only_formats), &metadata,
+			     texture_only);
+
+	drv_modify_linear_combinations(drv);
 	/*
 	 * Chrome uses DMA-buf mmap to write to YV12 buffers, which are then accessed by the
 	 * Video Encoder Accelerator (VEA). It could also support NV12 potentially in the future.
 	 */
 	drv_modify_combination(drv, DRM_FORMAT_YVU420, &metadata, BO_USE_HW_VIDEO_ENCODER);
+	/* IPU3 camera ISP supports only NV12 output. */
 	drv_modify_combination(drv, DRM_FORMAT_NV12, &metadata,
-			       BO_USE_HW_VIDEO_ENCODER | BO_USE_HW_VIDEO_DECODER);
+			       BO_USE_HW_VIDEO_ENCODER | BO_USE_HW_VIDEO_DECODER |
+				   BO_USE_CAMERA_READ | BO_USE_CAMERA_WRITE | BO_USE_SCANOUT);
 
 	/* Android CTS tests require this. */
 	drv_add_combination(drv, DRM_FORMAT_BGR888, &metadata, BO_USE_SW_MASK);
 
-	drv_modify_combination(drv, DRM_FORMAT_XRGB8888, &metadata, BO_USE_CURSOR | BO_USE_SCANOUT);
-	drv_modify_combination(drv, DRM_FORMAT_ARGB8888, &metadata, BO_USE_CURSOR | BO_USE_SCANOUT);
-
-	/* IPU3 camera ISP supports only NV12 output. */
-	drv_modify_combination(drv, DRM_FORMAT_NV12, &metadata,
-			       BO_USE_CAMERA_READ | BO_USE_CAMERA_WRITE);
 	/*
 	 * R8 format is used for Android's HAL_PIXEL_FORMAT_BLOB and is used for JPEG snapshots
 	 * from camera.
@@ -159,51 +101,37 @@ static int i915_add_combinations(struct driver *drv)
 	drv_modify_combination(drv, DRM_FORMAT_R8, &metadata,
 			       BO_USE_CAMERA_READ | BO_USE_CAMERA_WRITE);
 
-	render_use_flags &= ~BO_USE_RENDERSCRIPT;
-	render_use_flags &= ~BO_USE_SW_WRITE_OFTEN;
-	render_use_flags &= ~BO_USE_SW_READ_OFTEN;
-	render_use_flags &= ~BO_USE_LINEAR;
-	render_use_flags &= ~BO_USE_PROTECTED;
-
-	texture_use_flags &= ~BO_USE_RENDERSCRIPT;
-	texture_use_flags &= ~BO_USE_SW_WRITE_OFTEN;
-	texture_use_flags &= ~BO_USE_SW_READ_OFTEN;
-	texture_use_flags &= ~BO_USE_LINEAR;
-	texture_use_flags &= ~BO_USE_PROTECTED;
+	render = unset_flags(render, linear_mask);
+	scanout_and_render = unset_flags(scanout_and_render, linear_mask);
 
 	metadata.tiling = I915_TILING_X;
 	metadata.priority = 2;
 	metadata.modifier = I915_FORMAT_MOD_X_TILED;
 
-	drv_add_combinations(drv, render_target_formats, ARRAY_SIZE(render_target_formats),
-			     &metadata, render_use_flags);
+	drv_add_combinations(drv, render_formats, ARRAY_SIZE(render_formats), &metadata, render);
+	drv_add_combinations(drv, scanout_render_formats, ARRAY_SIZE(scanout_render_formats),
+			     &metadata, scanout_and_render);
 
 	metadata.tiling = I915_TILING_Y;
 	metadata.priority = 3;
 	metadata.modifier = I915_FORMAT_MOD_Y_TILED;
 
-	drv_add_combinations(drv, render_target_formats, ARRAY_SIZE(render_target_formats),
-			     &metadata, render_use_flags);
-
-	/* Support y-tiled NV12 and P010 for libva */
+	scanout_and_render = unset_flags(scanout_and_render, BO_USE_SW_READ_RARELY | BO_USE_SW_WRITE_RARELY);
+/* Support y-tiled NV12 and P010 for libva */
+#ifdef I915_SCANOUT_Y_TILED
+	drv_add_combination(drv, DRM_FORMAT_NV12, &metadata,
+			    BO_USE_TEXTURE | BO_USE_HW_VIDEO_DECODER | BO_USE_SCANOUT);
+#else
 	drv_add_combination(drv, DRM_FORMAT_NV12, &metadata,
 			    BO_USE_TEXTURE | BO_USE_HW_VIDEO_DECODER);
+#endif
+	scanout_and_render = unset_flags(scanout_and_render, BO_USE_SCANOUT);
 	drv_add_combination(drv, DRM_FORMAT_P010, &metadata,
 			    BO_USE_TEXTURE | BO_USE_HW_VIDEO_DECODER);
 
-	kms_items = drv_query_kms(drv);
-	if (!kms_items)
-		return 0;
-
-	for (i = 0; i < drv_array_size(kms_items); i++) {
-		ret = i915_add_kms_item(drv, (struct kms_item *)drv_array_at_idx(kms_items, i));
-		if (ret) {
-			drv_array_destroy(kms_items);
-			return ret;
-		}
-	}
-
-	drv_array_destroy(kms_items);
+	drv_add_combinations(drv, render_formats, ARRAY_SIZE(render_formats), &metadata, render);
+	drv_add_combinations(drv, scanout_render_formats, ARRAY_SIZE(scanout_render_formats),
+			     &metadata, scanout_and_render);
 	return 0;
 }
 
