@@ -413,18 +413,18 @@ static void set_good_speed_features_framesize_independent(
     sf->inter_sf.perform_best_rd_based_gating_for_chroma = 1;
     // TODO(any): Refactor the code related to following winner mode speed
     // features
-    sf->enable_winner_mode_for_coeff_opt = 1;
+    sf->winner_mode_sf.enable_winner_mode_for_coeff_opt = 1;
     // TODO(any): Experiment with this speed feature by enabling for key frames
-    sf->enable_winner_mode_for_tx_size_srch =
+    sf->winner_mode_sf.enable_winner_mode_for_tx_size_srch =
         frame_is_intra_only(&cpi->common) ? 0 : 1;
-    sf->enable_winner_mode_for_use_tx_domain_dist =
+    sf->winner_mode_sf.enable_winner_mode_for_use_tx_domain_dist =
         cm->allow_screen_content_tools ? 0 : 1;
     sf->reduce_wiener_window_size = is_boosted_arf2_bwd_type ? 0 : 1;
     sf->prune_sgr_based_on_wiener = cm->allow_screen_content_tools ? 0 : 2;
     sf->mv_sf.subpel_search_method = SUBPEL_TREE_PRUNED;
     sf->part_sf.simple_motion_search_prune_agg = 1;
     sf->inter_sf.disable_sb_level_mv_cost_upd = 1;
-    sf->motion_mode_for_winner_cand =
+    sf->winner_mode_sf.motion_mode_for_winner_cand =
         boosted
             ? 0
             : gf_group->update_type[gf_group->index] == INTNL_ARF_UPDATE ? 1
@@ -450,9 +450,9 @@ static void set_good_speed_features_framesize_independent(
     sf->rd_sf.perform_coeff_opt = is_boosted_arf2_bwd_type ? 2 : 4;
     sf->tx_sf.adaptive_txb_search_level = boosted ? 2 : 3;
     sf->mv_sf.subpel_search_method = SUBPEL_TREE_PRUNED_MORE;
-    sf->enable_winner_mode_for_tx_size_srch = 1;
+    sf->winner_mode_sf.enable_winner_mode_for_tx_size_srch = 1;
     // TODO(any): Extend multi-winner mode processing support for inter frames
-    sf->enable_multiwinner_mode_process =
+    sf->winner_mode_sf.enable_multiwinner_mode_process =
         frame_is_intra_only(&cpi->common) ? 1 : 0;
     sf->tx_sf.tx_type_search.enable_winner_mode_tx_type_pruning = 1;
     // TODO(any): Experiment with this speed feature set to 2 for higher quality
@@ -620,7 +620,7 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
 
   if (speed >= 3) {
     sf->inter_sf.selective_ref_frame = 4;
-    sf->tx_size_search_level = boosted ? 0 : 2;
+    sf->winner_mode_sf.tx_size_search_level = boosted ? 0 : 2;
     sf->part_sf.less_rectangular_check_level = 2;
     // adaptive_motion_search breaks encoder multi-thread tests.
     // The values in x->pred_mv[] differ for single and multi-thread cases.
@@ -646,7 +646,7 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->rd_sf.use_mb_rd_hash = 0;
     sf->tx_sf.tx_type_search.fast_intra_tx_type_search = 1;
     sf->tx_sf.tx_type_search.fast_inter_tx_type_search = 1;
-    sf->tx_size_search_level = frame_is_intra_only(cm) ? 0 : 2;
+    sf->winner_mode_sf.tx_size_search_level = frame_is_intra_only(cm) ? 0 : 2;
     sf->mv_sf.subpel_search_method = SUBPEL_TREE_PRUNED;
     sf->inter_sf.adaptive_mode_search = 1;
     sf->inter_sf.alt_ref_search_fp = 1;
@@ -661,7 +661,7 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->intra_sf.intra_uv_mode_mask[TX_32X32] = UV_INTRA_DC_H_V_CFL;
     sf->intra_sf.intra_y_mode_mask[TX_16X16] = INTRA_DC_H_V;
     sf->intra_sf.intra_uv_mode_mask[TX_16X16] = UV_INTRA_DC_H_V_CFL;
-    sf->tx_size_search_level = 2;
+    sf->winner_mode_sf.tx_size_search_level = 2;
     sf->mv_sf.search_method = BIGDIA;
     sf->mv_sf.subpel_search_method = SUBPEL_TREE_PRUNED_MORE;
     sf->inter_sf.adaptive_rd_thresh = 4;
@@ -696,7 +696,7 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->rt_sf.mode_search_skip_flags |= FLAG_SKIP_INTRA_DIRMISMATCH;
     sf->rt_sf.use_real_time_ref_set = 1;
     sf->tx_sf.tx_type_search.prune_mode = PRUNE_2D_MORE;
-    sf->tx_size_search_level = 1;
+    sf->winner_mode_sf.tx_size_search_level = 1;
     sf->rt_sf.use_comp_ref_nonrd = 0;
     sf->inter_sf.inter_mode_rd_model_estimation = 2;
     sf->cdef_pick_method = CDEF_PICK_FROM_Q;
@@ -911,6 +911,17 @@ static AOM_INLINE void init_rd_sf(RD_CALC_SPEED_FEATURES *rd_sf,
   rd_sf->perform_coeff_opt = 0;
 }
 
+static AOM_INLINE void init_winner_mode_sf(
+    WINNER_MODE_SPEED_FEATURES *winner_mode_sf) {
+  winner_mode_sf->motion_mode_for_winner_cand = 0;
+  // Set this at the appropriate speed levels
+  winner_mode_sf->tx_size_search_level = USE_FULL_RD;
+  winner_mode_sf->enable_winner_mode_for_coeff_opt = 0;
+  winner_mode_sf->enable_winner_mode_for_tx_size_srch = 0;
+  winner_mode_sf->enable_winner_mode_for_use_tx_domain_dist = 0;
+  winner_mode_sf->enable_multiwinner_mode_process = 0;
+}
+
 static AOM_INLINE void init_rt_sf(REAL_TIME_SPEED_FEATURES *rt_sf) {
   rt_sf->mode_search_skip_flags = 0;
   rt_sf->skip_interp_filter_search = 0;
@@ -967,14 +978,11 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
   sf->disable_overlay_frames = 0;
   // TODO(yunqing): turn it on for speed 0 if there is gain.
   sf->adaptive_overlay_encoding = 1;
-  sf->motion_mode_for_winner_cand = 0;
   sf->lpf_pick = LPF_PICK_FROM_FULL_IMAGE;
   sf->cdef_pick_method = CDEF_FULL_SEARCH;
   // Recode loop tolerance %.
   sf->recode_tolerance = 25;
 
-  // Set this at the appropriate speed levels
-  sf->tx_size_search_level = USE_FULL_RD;
   sf->gm_search_type = GM_FULL_SEARCH;
   sf->gm_disable_recode = 0;
   sf->prune_ref_frame_for_gm_search = 0;
@@ -984,10 +992,6 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
   // Set decoder side speed feature to use less dual sgr modes
   sf->dual_sgr_penalty_level = 0;
   sf->disable_lr_filter = 0;
-  sf->enable_winner_mode_for_coeff_opt = 0;
-  sf->enable_winner_mode_for_tx_size_srch = 0;
-  sf->enable_winner_mode_for_use_tx_domain_dist = 0;
-  sf->enable_multiwinner_mode_process = 0;
 
   init_part_sf(&sf->part_sf);
   init_mv_sf(&sf->mv_sf);
@@ -996,6 +1000,7 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
   init_intra_sf(&sf->intra_sf);
   init_tx_sf(&sf->tx_sf);
   init_rd_sf(&sf->rd_sf, cpi);
+  init_winner_mode_sf(&sf->winner_mode_sf);
   init_rt_sf(&sf->rt_sf);
 
   if (oxcf->mode == GOOD)
@@ -1096,7 +1101,8 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
 
   // Update the number of winner motion modes to be used appropriately
   cpi->num_winner_motion_modes =
-      num_winner_motion_modes[cpi->sf.motion_mode_for_winner_cand];
+      num_winner_motion_modes[cpi->sf.winner_mode_sf
+                                  .motion_mode_for_winner_cand];
   assert(cpi->num_winner_motion_modes <= MAX_WINNER_MOTION_MODES);
 
   // assert ensures that coeff_opt_dist_thresholds is accessed correctly
@@ -1115,9 +1121,10 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
          sizeof(cpi->predict_skip_level));
 
   // assert ensures that tx_size_search_level is accessed correctly
-  assert(cpi->sf.tx_size_search_level >= 0 && cpi->sf.tx_size_search_level < 3);
+  assert(cpi->sf.winner_mode_sf.tx_size_search_level >= 0 &&
+         cpi->sf.winner_mode_sf.tx_size_search_level < 3);
   memcpy(cpi->tx_size_search_methods,
-         tx_size_search_methods[cpi->sf.tx_size_search_level],
+         tx_size_search_methods[cpi->sf.winner_mode_sf.tx_size_search_level],
          sizeof(cpi->tx_size_search_methods));
 
 #if CONFIG_DIST_8X8

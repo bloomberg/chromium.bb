@@ -701,6 +701,35 @@ typedef struct RD_CALC_SPEED_FEATURES {
   int perform_coeff_opt;
 } RD_CALC_SPEED_FEATURES;
 
+typedef struct WINNER_MODE_SPEED_FEATURES {
+  // Flag used to control the winner mode processing for better R-D optimization
+  // of quantized coeffs
+  int enable_winner_mode_for_coeff_opt;
+
+  // Flag used to control the winner mode processing for transform size
+  // search method
+  int enable_winner_mode_for_tx_size_srch;
+
+  // Control transform size search level
+  // Eval type: Default       Mode        Winner
+  // Level 0  : FULL RD     LARGEST ALL   FULL RD
+  // Level 1  : FAST RD     LARGEST ALL   FULL RD
+  // Level 2  : LARGEST ALL LARGEST ALL   FULL RD
+  int tx_size_search_level;
+
+  // Flag used to control the winner mode processing for use transform
+  // domain distortion
+  int enable_winner_mode_for_use_tx_domain_dist;
+
+  // Flag used to enable processing of multiple winner modes
+  int enable_multiwinner_mode_process;
+
+  // Motion mode for winner candidates:
+  // 0: speed feature OFF
+  // 1 / 2 : Use configured number of winner candidates
+  int motion_mode_for_winner_cand;
+} WINNER_MODE_SPEED_FEATURES;
+
 typedef struct REAL_TIME_SPEED_FEATURES {
   // check intra prediction for non-RD mode.
   int check_intra_pred_nonrd;
@@ -862,32 +891,7 @@ typedef struct SPEED_FEATURES {
   /*
    * Two-pass mode evaluation features:
    */
-  // Flag used to control the winner mode processing for better R-D optimization
-  // of quantized coeffs
-  int enable_winner_mode_for_coeff_opt;
-
-  // Flag used to control the winner mode processing for transform size
-  // search method
-  int enable_winner_mode_for_tx_size_srch;
-
-  // Control transform size search level
-  // Eval type: Default       Mode        Winner
-  // Level 0  : FULL RD     LARGEST ALL   FULL RD
-  // Level 1  : FAST RD     LARGEST ALL   FULL RD
-  // Level 2  : LARGEST ALL LARGEST ALL   FULL RD
-  int tx_size_search_level;
-
-  // Flag used to control the winner mode processing for use transform
-  // domain distortion
-  int enable_winner_mode_for_use_tx_domain_dist;
-
-  // Flag used to enable processing of multiple winner modes
-  int enable_multiwinner_mode_process;
-
-  // Motion mode for winner candidates:
-  // 0: speed feature OFF
-  // 1 / 2 : Use configured number of winner candidates
-  int motion_mode_for_winner_cand;
+  WINNER_MODE_SPEED_FEATURES winner_mode_sf;
 
   /*
    * In-loop filter speed features:

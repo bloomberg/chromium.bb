@@ -291,11 +291,11 @@ static INLINE int is_winner_mode_processing_enabled(
   }
 
   // Check speed feature related to winner mode processing
-  if (sf->enable_winner_mode_for_coeff_opt &&
+  if (sf->winner_mode_sf.enable_winner_mode_for_coeff_opt &&
       cpi->optimize_seg_arr[mbmi->segment_id] != NO_TRELLIS_OPT &&
       cpi->optimize_seg_arr[mbmi->segment_id] != FINAL_PASS_TRELLIS_OPT)
     return 1;
-  if (sf->enable_winner_mode_for_tx_size_srch) return 1;
+  if (sf->winner_mode_sf.enable_winner_mode_for_tx_size_srch) return 1;
 
   return 0;
 }
@@ -332,16 +332,17 @@ static INLINE void set_mode_eval_params(const struct AV1_COMP *cpi,
 
       // Set transform domain distortion type for mode evaluation
       set_tx_domain_dist_params(
-          cpi, x, sf->enable_winner_mode_for_use_tx_domain_dist, 0);
+          cpi, x, sf->winner_mode_sf.enable_winner_mode_for_use_tx_domain_dist,
+          0);
 
       // Get threshold for R-D optimization of coefficients during mode
       // evaluation
-      x->coeff_opt_dist_threshold =
-          get_rd_opt_coeff_thresh(cpi->coeff_opt_dist_threshold,
-                                  sf->enable_winner_mode_for_coeff_opt, 0);
+      x->coeff_opt_dist_threshold = get_rd_opt_coeff_thresh(
+          cpi->coeff_opt_dist_threshold,
+          sf->winner_mode_sf.enable_winner_mode_for_coeff_opt, 0);
       // Set the transform size search method for mode evaluation
-      set_tx_size_search_method(cpi, x, sf->enable_winner_mode_for_tx_size_srch,
-                                0);
+      set_tx_size_search_method(
+          cpi, x, sf->winner_mode_sf.enable_winner_mode_for_tx_size_srch, 0);
       // Set transform type prune for mode evaluation
       set_tx_type_prune(
           sf, x, sf->tx_sf.tx_type_search.enable_winner_mode_tx_type_pruning,
@@ -354,16 +355,17 @@ static INLINE void set_mode_eval_params(const struct AV1_COMP *cpi,
 
       // Set transform domain distortion type for winner mode evaluation
       set_tx_domain_dist_params(
-          cpi, x, sf->enable_winner_mode_for_use_tx_domain_dist, 1);
+          cpi, x, sf->winner_mode_sf.enable_winner_mode_for_use_tx_domain_dist,
+          1);
 
       // Get threshold for R-D optimization of coefficients for winner mode
       // evaluation
-      x->coeff_opt_dist_threshold =
-          get_rd_opt_coeff_thresh(cpi->coeff_opt_dist_threshold,
-                                  sf->enable_winner_mode_for_coeff_opt, 1);
+      x->coeff_opt_dist_threshold = get_rd_opt_coeff_thresh(
+          cpi->coeff_opt_dist_threshold,
+          sf->winner_mode_sf.enable_winner_mode_for_coeff_opt, 1);
       // Set the transform size search method for winner mode evaluation
-      set_tx_size_search_method(cpi, x, sf->enable_winner_mode_for_tx_size_srch,
-                                1);
+      set_tx_size_search_method(
+          cpi, x, sf->winner_mode_sf.enable_winner_mode_for_tx_size_srch, 1);
       // Set default transform type prune mode for winner mode evaluation
       set_tx_type_prune(
           sf, x, sf->tx_sf.tx_type_search.enable_winner_mode_tx_type_pruning,

@@ -5377,9 +5377,10 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
   }
 
   // Set the transform size appropriately before bitstream creation
-  const MODE_EVAL_TYPE eval_type = cpi->sf.enable_winner_mode_for_tx_size_srch
-                                       ? WINNER_MODE_EVAL
-                                       : DEFAULT_EVAL;
+  const MODE_EVAL_TYPE eval_type =
+      cpi->sf.winner_mode_sf.enable_winner_mode_for_tx_size_srch
+          ? WINNER_MODE_EVAL
+          : DEFAULT_EVAL;
   const TX_SIZE_SEARCH_METHOD tx_search_type =
       cpi->tx_size_search_methods[eval_type];
   assert(cpi->oxcf.enable_tx64 || tx_search_type != USE_LARGESTALL);
@@ -5721,8 +5722,8 @@ static AOM_INLINE void encode_superblock(const AV1_COMP *const cpi,
   const int is_inter = is_inter_block(mbmi);
 
   // Initialize tx_mode and tx_size_search_method
-  set_tx_size_search_method(cpi, x, cpi->sf.enable_winner_mode_for_tx_size_srch,
-                            1);
+  set_tx_size_search_method(
+      cpi, x, cpi->sf.winner_mode_sf.enable_winner_mode_for_tx_size_srch, 1);
 
   const int mi_row = xd->mi_row;
   const int mi_col = xd->mi_col;

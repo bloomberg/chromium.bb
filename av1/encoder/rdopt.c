@@ -4681,7 +4681,8 @@ static AOM_INLINE void palette_rd_y(
   const int txfm_search_done = 1;
   store_winner_mode_stats(
       &cpi->common, x, mbmi, NULL, NULL, NULL, THR_DC, color_map, bsize,
-      this_rd, cpi->sf.enable_multiwinner_mode_process, txfm_search_done);
+      this_rd, cpi->sf.winner_mode_sf.enable_multiwinner_mode_process,
+      txfm_search_done);
   if (this_rd < *best_rd) {
     *best_rd = this_rd;
     // Setting beat_best_rd flag because current mode rd is better than best_rd.
@@ -5106,7 +5107,8 @@ static int rd_pick_filter_intra_sby(const AV1_COMP *const cpi, MACROBLOCK *x,
     const int txfm_search_done = 1;
     store_winner_mode_stats(
         &cpi->common, x, mbmi, NULL, NULL, NULL, 0, NULL, bsize, this_rd,
-        cpi->sf.enable_multiwinner_mode_process, txfm_search_done);
+        cpi->sf.winner_mode_sf.enable_multiwinner_mode_process,
+        txfm_search_done);
     if (this_rd < *best_rd) {
       *best_rd = this_rd;
       best_tx_size = mbmi->tx_size;
@@ -5493,7 +5495,7 @@ static int64_t rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
   const int txfm_search_done = 1;
   store_winner_mode_stats(
       &cpi->common, x, mbmi, NULL, NULL, NULL, 0, NULL, bsize, best_rd,
-      cpi->sf.enable_multiwinner_mode_process, txfm_search_done);
+      cpi->sf.winner_mode_sf.enable_multiwinner_mode_process, txfm_search_done);
   /* Y Search for intra prediction mode */
   for (int mode_idx = INTRA_MODE_START; mode_idx < INTRA_MODE_END; ++mode_idx) {
     RD_STATS this_rd_stats;
@@ -5545,7 +5547,8 @@ static int64_t rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
     // Collect mode stats for multiwinner mode processing
     store_winner_mode_stats(
         &cpi->common, x, mbmi, NULL, NULL, NULL, 0, NULL, bsize, this_rd,
-        cpi->sf.enable_multiwinner_mode_process, txfm_search_done);
+        cpi->sf.winner_mode_sf.enable_multiwinner_mode_process,
+        txfm_search_done);
     if (this_rd < best_rd) {
       best_mbmi = *mbmi;
       best_rd = this_rd;
@@ -5584,7 +5587,7 @@ static int64_t rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
   // In multi-winner mode processing, perform tx search for few best modes
   // identified during mode evaluation. Winner mode processing uses best tx
   // configuration for tx search.
-  if (cpi->sf.enable_multiwinner_mode_process) {
+  if (cpi->sf.winner_mode_sf.enable_multiwinner_mode_process) {
     int best_mode_idx = 0;
     int block_width, block_height;
     uint8_t *color_map_dst = xd->plane[PLANE_TYPE_Y].color_index_map;
@@ -10074,7 +10077,7 @@ static INLINE void update_mode_start_end_index(const AV1_COMP *const cpi,
                                                int eval_motion_mode) {
   *mode_index_start = (int)SIMPLE_TRANSLATION;
   *mode_index_end = (int)last_motion_mode_allowed + interintra_allowed;
-  if (cpi->sf.motion_mode_for_winner_cand) {
+  if (cpi->sf.winner_mode_sf.motion_mode_for_winner_cand) {
     if (!eval_motion_mode) {
       *mode_index_end = (int)SIMPLE_TRANSLATION;
     } else {
@@ -11362,7 +11365,8 @@ static int64_t handle_inter_mode(AV1_COMP *const cpi, TileDataEnc *tile_data,
             store_winner_mode_stats(
                 &cpi->common, x, &best_mbmi, &best_rd_stats, &best_rd_stats_y,
                 &best_rd_stats_uv, mode_enum, NULL, bsize, best_rd,
-                cpi->sf.enable_multiwinner_mode_process, do_tx_search);
+                cpi->sf.winner_mode_sf.enable_multiwinner_mode_process,
+                do_tx_search);
             args->modelled_rd[this_mode][ref_mv_idx][refs[0]] =
                 args->modelled_rd[this_mode][i][refs[0]];
             args->simple_rd[this_mode][ref_mv_idx][refs[0]] =
@@ -11524,10 +11528,10 @@ static int64_t handle_inter_mode(AV1_COMP *const cpi, TileDataEnc *tile_data,
       const THR_MODES mode_enum = get_prediction_mode_idx(
           mbmi->mode, mbmi->ref_frame[0], mbmi->ref_frame[1]);
       // Collect mode stats for multiwinner mode processing
-      store_winner_mode_stats(&cpi->common, x, mbmi, rd_stats, rd_stats_y,
-                              rd_stats_uv, mode_enum, NULL, bsize, tmp_rd,
-                              cpi->sf.enable_multiwinner_mode_process,
-                              do_tx_search);
+      store_winner_mode_stats(
+          &cpi->common, x, mbmi, rd_stats, rd_stats_y, rd_stats_uv, mode_enum,
+          NULL, bsize, tmp_rd,
+          cpi->sf.winner_mode_sf.enable_multiwinner_mode_process, do_tx_search);
       if (tmp_rd < best_rd) {
         best_rd_stats = *rd_stats;
         best_rd_stats_y = *rd_stats_y;
@@ -12084,7 +12088,7 @@ static AOM_INLINE void refine_winner_mode_tx(
     MB_MODE_INFO *winner_mbmi = get_winner_mode_stats(
         x, best_mbmode, rd_cost, best_rate_y, best_rate_uv, best_mode_index,
         &winner_rd_stats, &winner_rate_y, &winner_rate_uv, &winner_mode_index,
-        cpi->sf.enable_multiwinner_mode_process, mode_idx);
+        cpi->sf.winner_mode_sf.enable_multiwinner_mode_process, mode_idx);
 
     if (xd->lossless[winner_mbmi->segment_id] == 0 &&
         winner_mode_index != THR_INVALID &&
@@ -13442,7 +13446,7 @@ static AOM_INLINE void evaluate_motion_mode_for_winner_candidates(
       store_winner_mode_stats(
           &cpi->common, x, mbmi, &rd_stats, &rd_stats_y, &rd_stats_uv,
           mode_enum, NULL, bsize, rd_stats.rdcost,
-          cpi->sf.enable_multiwinner_mode_process, do_tx_search);
+          cpi->sf.winner_mode_sf.enable_multiwinner_mode_process, do_tx_search);
       if (rd_stats.rdcost < search_state->best_rd) {
         update_search_state(search_state, rd_cost, ctx, &rd_stats, &rd_stats_y,
                             &rd_stats_uv, mode_enum, x, do_tx_search);
@@ -13595,9 +13599,10 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
   // Initialize best mode stats for winner mode processing
   av1_zero(x->winner_mode_stats);
   x->winner_mode_count = 0;
-  store_winner_mode_stats(&cpi->common, x, mbmi, NULL, NULL, NULL, THR_INVALID,
-                          NULL, bsize, best_rd_so_far,
-                          cpi->sf.enable_multiwinner_mode_process, 0);
+  store_winner_mode_stats(
+      &cpi->common, x, mbmi, NULL, NULL, NULL, THR_INVALID, NULL, bsize,
+      best_rd_so_far, cpi->sf.winner_mode_sf.enable_multiwinner_mode_process,
+      0);
 
   // Here midx is just an interator index that should not be used by itself
   // except to keep track of the number of modes searched. It should be used
@@ -13743,7 +13748,7 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
       update_search_state(&search_state, rd_cost, ctx, &rd_stats, &rd_stats_y,
                           &rd_stats_uv, mode_enum, x, do_tx_search);
     }
-    if (cpi->sf.motion_mode_for_winner_cand) {
+    if (cpi->sf.winner_mode_sf.motion_mode_for_winner_cand) {
       const int num_motion_mode_cand =
           best_motion_mode_cands.num_motion_mode_cand;
       int valid_motion_mode_cand_loc =
@@ -13810,7 +13815,7 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
     // if (x->force_skip && !comp_pred) break;
   }
 
-  if (cpi->sf.motion_mode_for_winner_cand) {
+  if (cpi->sf.winner_mode_sf.motion_mode_for_winner_cand) {
     // For the single ref winner candidates, evaluate other motion modes (non
     // simple translation).
     evaluate_motion_mode_for_winner_candidates(
@@ -13830,7 +13835,8 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
     x->winner_mode_count = 0;
     store_winner_mode_stats(
         &cpi->common, x, mbmi, NULL, NULL, NULL, THR_INVALID, NULL, bsize,
-        best_rd_so_far, cpi->sf.enable_multiwinner_mode_process, do_tx_search);
+        best_rd_so_far, cpi->sf.winner_mode_sf.enable_multiwinner_mode_process,
+        do_tx_search);
     inter_modes_info->num =
         inter_modes_info->num < cpi->sf.rt_sf.num_inter_modes_for_tx_search
             ? inter_modes_info->num
@@ -13886,7 +13892,8 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
       store_winner_mode_stats(
           &cpi->common, x, mbmi, &rd_stats, &rd_stats_y, &rd_stats_uv,
           mode_enum, NULL, bsize, rd_stats.rdcost,
-          cpi->sf.enable_multiwinner_mode_process, txfm_search_done);
+          cpi->sf.winner_mode_sf.enable_multiwinner_mode_process,
+          txfm_search_done);
 
       if (rd_stats.rdcost < search_state.best_rd) {
         update_search_state(&search_state, rd_cost, ctx, &rd_stats, &rd_stats_y,
@@ -13972,7 +13979,8 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
     store_winner_mode_stats(
         &cpi->common, x, mbmi, &intra_rd_stats, &intra_rd_stats_y,
         &intra_rd_stats_uv, mode_enum, NULL, bsize, intra_rd_stats.rdcost,
-        cpi->sf.enable_multiwinner_mode_process, txfm_search_done);
+        cpi->sf.winner_mode_sf.enable_multiwinner_mode_process,
+        txfm_search_done);
     if (intra_rd_stats.rdcost < search_state.best_rd) {
       update_search_state(&search_state, rd_cost, ctx, &intra_rd_stats,
                           &intra_rd_stats_y, &intra_rd_stats_uv, mode_enum, x,
@@ -13983,8 +13991,9 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
   end_timing(cpi, handle_intra_mode_time);
 #endif
 
-  int winner_mode_count =
-      cpi->sf.enable_multiwinner_mode_process ? x->winner_mode_count : 1;
+  int winner_mode_count = cpi->sf.winner_mode_sf.enable_multiwinner_mode_process
+                              ? x->winner_mode_count
+                              : 1;
   // In effect only when fast tx search speed features are enabled.
   refine_winner_mode_tx(
       cpi, x, rd_cost, bsize, ctx, &search_state.best_mode_index,
