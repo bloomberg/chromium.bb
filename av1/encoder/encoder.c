@@ -2836,7 +2836,8 @@ void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
 
 AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf, BufferPool *const pool,
                                 FIRSTPASS_STATS *frame_stats_buf,
-                                COMPRESSOR_STAGE stage, int num_lap_buffers) {
+                                COMPRESSOR_STAGE stage, int num_lap_buffers,
+                                STATS_BUFFER_CTX *stats_buf_context) {
   AV1_COMP *volatile const cpi = aom_memalign(32, sizeof(AV1_COMP));
   AV1_COMMON *volatile const cm = cpi != NULL ? &cpi->common : NULL;
 
@@ -2947,6 +2948,9 @@ AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf, BufferPool *const pool,
   for (int i = 0; i < MAX_LAG_BUFFERS; i++)
     cpi->twopass.frame_stats_arr[i] = &frame_stats_buf[i];
 
+  cpi->twopass.stats_buf_ctx = stats_buf_context;
+  cpi->twopass.stats_in = cpi->twopass.stats_buf_ctx->stats_in_start;
+
 #if !CONFIG_REALTIME_ONLY
   if (is_stat_generation_stage(cpi)) {
     av1_init_first_pass(cpi);
@@ -2954,9 +2958,10 @@ AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf, BufferPool *const pool,
     const size_t packet_sz = sizeof(FIRSTPASS_STATS);
     const int packets = (int)(oxcf->two_pass_stats_in.sz / packet_sz);
 
-    cpi->twopass.stats_in_start = oxcf->two_pass_stats_in.buf;
-    cpi->twopass.stats_in = cpi->twopass.stats_in_start;
-    cpi->twopass.stats_in_end = &cpi->twopass.stats_in[packets - 1];
+    cpi->twopass.stats_buf_ctx->stats_in_start = oxcf->two_pass_stats_in.buf;
+    cpi->twopass.stats_in = cpi->twopass.stats_buf_ctx->stats_in_start;
+    cpi->twopass.stats_buf_ctx->stats_in_end =
+        &cpi->twopass.stats_buf_ctx->stats_in_start[packets - 1];
 
     av1_init_second_pass(cpi);
   }

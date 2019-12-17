@@ -2315,11 +2315,12 @@ static AOM_INLINE void nonrd_use_partition(AV1_COMP *cpi, ThreadData *td,
 #if !CONFIG_REALTIME_ONLY
 static const FIRSTPASS_STATS *read_one_frame_stats(const TWO_PASS *p, int frm) {
   assert(frm >= 0);
-  if (frm < 0 || p->stats_in_start + frm > p->stats_in_end) {
+  if (frm < 0 ||
+      p->stats_buf_ctx->stats_in_start + frm > p->stats_buf_ctx->stats_in_end) {
     return NULL;
   }
 
-  return &p->stats_in_start[frm];
+  return &p->stats_buf_ctx->stats_in_start[frm];
 }
 // Checks to see if a super block is on a horizontal image edge.
 // In most cases this is the "real" edge unless there are formatting

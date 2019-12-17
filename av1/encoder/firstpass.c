@@ -785,8 +785,7 @@ void av1_first_pass(AV1_COMP *cpi, const int64_t ts_duration) {
         AOMMAX(0, intra_skip_count - (image_data_start_row * cm->mb_cols * 2));
   }
 
-  FIRSTPASS_STATS *this_frame_stats =
-      twopass->frame_stats_arr[twopass->frame_stats_next_idx];
+  FIRSTPASS_STATS *this_frame_stats = twopass->stats_buf_ctx->stats_in_end;
   {
     FIRSTPASS_STATS fps;
     // The minimum error here insures some bit allocation to frames even
@@ -853,9 +852,14 @@ void av1_first_pass(AV1_COMP *cpi, const int64_t ts_duration) {
     *this_frame_stats = fps;
     output_stats(this_frame_stats, cpi->output_pkt_list);
     accumulate_stats(&twopass->total_stats, &fps);
-    // Update circular index.
-    twopass->frame_stats_next_idx =
-        (twopass->frame_stats_next_idx + 1) % MAX_LAG_BUFFERS;
+    /*In the case of two pass, first pass uses it as a circular buffer,
+     * when LAP is enabled it is used as a linear buffer*/
+    twopass->stats_buf_ctx->stats_in_end++;
+    if ((cpi->oxcf.pass == 1) && (twopass->stats_buf_ctx->stats_in_end >=
+                                  twopass->stats_buf_ctx->stats_in_buf_end)) {
+      twopass->stats_buf_ctx->stats_in_end =
+          twopass->stats_buf_ctx->stats_in_start;
+    }
   }
 
   // Copy the previous Last Frame back into gf buffer if the prediction is good

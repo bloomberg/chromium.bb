@@ -129,6 +129,12 @@ typedef struct {
 } GF_GROUP;
 
 typedef struct {
+  FIRSTPASS_STATS *stats_in_start;
+  FIRSTPASS_STATS *stats_in_end;
+  FIRSTPASS_STATS *stats_in_buf_end;
+} STATS_BUFFER_CTX;
+
+typedef struct {
   unsigned int section_intra_rating;
   FIRSTPASS_STATS total_stats;
   // Circular queue of first pass stats stored for most recent frames.
@@ -137,8 +143,7 @@ typedef struct {
   FIRSTPASS_STATS *frame_stats_arr[MAX_LAP_BUFFERS];
   int frame_stats_next_idx;  // Index to next unused element in frame_stats_arr.
   const FIRSTPASS_STATS *stats_in;
-  const FIRSTPASS_STATS *stats_in_start;
-  const FIRSTPASS_STATS *stats_in_end;
+  STATS_BUFFER_CTX *stats_buf_ctx;
   FIRSTPASS_STATS total_left_stats;
   int first_pass_done;
   int64_t bits_left;

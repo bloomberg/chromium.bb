@@ -308,6 +308,7 @@ struct aom_codec_alg_priv {
   FIRSTPASS_STATS *frame_stats_buffer;
   // Number of stats buffers required for look ahead
   int num_lap_buffers;
+  STATS_BUFFER_CTX stats_buf_context;
 };
 
 static INLINE int gcd(int64_t a, int b) {
@@ -1745,11 +1746,25 @@ static aom_codec_err_t ctrl_set_min_cr(aom_codec_alg_priv_t *ctx,
   extra_cfg.min_cr = CAST(AV1E_SET_MIN_CR, args);
   return update_extra_cfg(ctx, &extra_cfg);
 }
+static aom_codec_err_t create_frame_stats_buffer(
+    FIRSTPASS_STATS **frame_stats_buffer, STATS_BUFFER_CTX *stats_buf_context) {
+  aom_codec_err_t res = AOM_CODEC_OK;
+  *frame_stats_buffer =
+      (FIRSTPASS_STATS *)aom_calloc(MAX_LAG_BUFFERS, sizeof(FIRSTPASS_STATS));
+  if (*frame_stats_buffer == NULL) return AOM_CODEC_MEM_ERROR;
+
+  stats_buf_context->stats_in_start = *frame_stats_buffer;
+  stats_buf_context->stats_in_end = stats_buf_context->stats_in_start;
+  stats_buf_context->stats_in_buf_end =
+      stats_buf_context->stats_in_start + MAX_LAG_BUFFERS;
+  return res;
+}
 
 static aom_codec_err_t create_context_and_bufferpool(
     AV1_COMP **p_cpi, BufferPool **p_buffer_pool, AV1EncoderConfig *oxcf,
     struct aom_codec_pkt_list *pkt_list_head, FIRSTPASS_STATS *frame_stats_buf,
-    COMPRESSOR_STAGE stage, int num_lap_buffers) {
+    COMPRESSOR_STAGE stage, int num_lap_buffers,
+    STATS_BUFFER_CTX *stats_buf_context) {
   aom_codec_err_t res = AOM_CODEC_OK;
 
   *p_buffer_pool = (BufferPool *)aom_calloc(1, sizeof(BufferPool));
@@ -1761,7 +1776,7 @@ static aom_codec_err_t create_context_and_bufferpool(
   }
 #endif
   *p_cpi = av1_create_compressor(oxcf, *p_buffer_pool, frame_stats_buf, stage,
-                                 num_lap_buffers);
+                                 num_lap_buffers, stats_buf_context);
   if (*p_cpi == NULL)
     res = AOM_CODEC_MEM_ERROR;
   else
@@ -1777,9 +1792,11 @@ static aom_codec_err_t encoder_init(aom_codec_ctx_t *ctx,
 
   if (ctx->priv == NULL) {
     aom_codec_alg_priv_t *const priv = aom_calloc(1, sizeof(*priv));
-    priv->frame_stats_buffer =
-        (FIRSTPASS_STATS *)aom_calloc(MAX_LAG_BUFFERS, sizeof(FIRSTPASS_STATS));
     if (priv == NULL) return AOM_CODEC_MEM_ERROR;
+
+    res = create_frame_stats_buffer(&priv->frame_stats_buffer,
+                                    &priv->stats_buf_context);
+    if (res != AOM_CODEC_OK) return AOM_CODEC_MEM_ERROR;
 
     ctx->priv = (aom_codec_priv_t *)priv;
     ctx->priv->init_flags = ctx->init_flags;
@@ -1817,13 +1834,15 @@ static aom_codec_err_t encoder_init(aom_codec_ctx_t *ctx,
 
       res = create_context_and_bufferpool(
           &priv->cpi, &priv->buffer_pool, &priv->oxcf, &priv->pkt_list.head,
-          priv->frame_stats_buffer, ENCODE_STAGE, *num_lap_buffers);
+          priv->frame_stats_buffer, ENCODE_STAGE, *num_lap_buffers,
+          &priv->stats_buf_context);
 
       // Create another compressor if look ahead is enabled
       if (res == AOM_CODEC_OK && *num_lap_buffers) {
         res = create_context_and_bufferpool(
             &priv->cpi_lap, &priv->buffer_pool_lap, &priv->oxcf, NULL,
-            priv->frame_stats_buffer, LAP_STAGE, *num_lap_buffers);
+            priv->frame_stats_buffer, LAP_STAGE, *num_lap_buffers,
+            &priv->stats_buf_context);
       }
     }
   }
@@ -1831,6 +1850,9 @@ static aom_codec_err_t encoder_init(aom_codec_ctx_t *ctx,
   return res;
 }
 
+static void destroy_frame_stats_buffer(FIRSTPASS_STATS *frame_stats_buffer) {
+  aom_free(frame_stats_buffer);
+}
 static void destroy_context_and_bufferpool(AV1_COMP *cpi,
                                            BufferPool *buffer_pool) {
   av1_remove_compressor(cpi);
@@ -1843,7 +1865,6 @@ static void destroy_context_and_bufferpool(AV1_COMP *cpi,
 static aom_codec_err_t encoder_destroy(aom_codec_alg_priv_t *ctx) {
   free(ctx->cx_data);
   destroy_context_and_bufferpool(ctx->cpi, ctx->buffer_pool);
-  aom_free(ctx->frame_stats_buffer);
   if (ctx->cpi_lap) {
     // As both cpi and cpi_lap have the same lookahead_ctx, it is already freed
     // when destroy is called on cpi. Thus, setting lookahead_ctx to null here,
@@ -1851,6 +1872,7 @@ static aom_codec_err_t encoder_destroy(aom_codec_alg_priv_t *ctx) {
     ctx->cpi_lap->lookahead = NULL;
     destroy_context_and_bufferpool(ctx->cpi_lap, ctx->buffer_pool_lap);
   }
+  destroy_frame_stats_buffer(ctx->frame_stats_buffer);
   aom_free(ctx);
   return AOM_CODEC_OK;
 }

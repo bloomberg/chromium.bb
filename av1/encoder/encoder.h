@@ -1167,7 +1167,8 @@ struct AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf,
                                        BufferPool *const pool,
                                        FIRSTPASS_STATS *frame_stats_buf,
                                        COMPRESSOR_STAGE stage,
-                                       int num_lap_buffers);
+                                       int num_lap_buffers,
+                                       STATS_BUFFER_CTX *stats_buf_context);
 void av1_remove_compressor(AV1_COMP *cpi);
 
 void av1_change_config(AV1_COMP *cpi, const AV1EncoderConfig *oxcf);
