@@ -202,6 +202,10 @@ IPC_MESSAGE_ROUTED2(ViewMsg_AnimateDoubleTapZoom,
 // based on the rect provided.
 IPC_MESSAGE_ROUTED1(ViewMsg_ZoomToFindInPageRect, gfx::Rect /*rect_to_zoom */)
 
+// Tells the renderer to enable/disable alt-mousedrag rubberbanding.
+IPC_MESSAGE_ROUTED1(ViewMsg_EnableAltDragRubberbanding,
+                    bool /* enable */)
+
 // -----------------------------------------------------------------------------
 // Messages sent from the renderer to the browser.
 
@@ -288,6 +292,13 @@ IPC_MESSAGE_CONTROL1(ViewHostMsg_UserMetricsRecordAction,
 // Notifies the browser of an event occurring in the media pipeline.
 IPC_MESSAGE_CONTROL1(ViewHostMsg_MediaLogEvents,
                      std::vector<media::MediaLogEvent> /* events */)
+
+// Instructs the browser to draw the rubberband rect.
+IPC_MESSAGE_ROUTED1(ViewHostMsg_SetRubberbandRect,
+                    gfx::Rect /* rect */)
+
+// Instructs the browser to stop drawing the rubberband rect.
+IPC_MESSAGE_ROUTED0(ViewHostMsg_HideRubberbandRect)
 
 // Adding a new message? Stick to the sort order above: first platform
 // independent ViewMsg, then ifdefs for platform specific ViewMsg, then platform
