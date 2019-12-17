@@ -107,7 +107,12 @@ def GetParser():
 def _ParseArgs(argv, router):
   """Parse and validate arguments."""
   parser = GetParser()
-  opts = parser.parse_args(argv)
+  opts, unknown = parser.parse_known_args(
+      argv, namespace=commandline.ArgumentNamespace())
+  parser.DoPostParseSetup(opts, unknown)
+
+  if unknown:
+    logging.warning('Unknown args ignored: %s', ' '.join(unknown))
 
   methods = router.ListMethods()
 
