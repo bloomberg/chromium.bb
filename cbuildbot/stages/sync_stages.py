@@ -812,14 +812,15 @@ class MasterSlaveLKGMSyncStage(ManifestVersionedSyncStage):
     ManifestVersionedSyncStage.PerformStage(self)
 
     # Generate blamelist
-    cros_version = self.GetLastChromeOSVersion()
-    if cros_version:
-      old_filename = self.manifest_manager.GetBuildSpecFilePath(
-          cros_version.milestone, cros_version.platform)
-      if not os.path.exists(old_filename):
-        logging.error(
-            'Could not generate blamelist, '
-            'manifest file does not exist: %s', old_filename)
-      else:
-        logging.debug('Generate blamelist against: %s', old_filename)
-        lkgm_manager.GenerateBlameList(self.repo, old_filename)
+    # TODO(crbug.com/1034118): Delete this if no one complains.
+    # cros_version = self.GetLastChromeOSVersion()
+    # if cros_version:
+    #   old_filename = self.manifest_manager.GetBuildSpecFilePath(
+    #       cros_version.milestone, cros_version.platform)
+    #   if not os.path.exists(old_filename):
+    #     logging.error(
+    #         'Could not generate blamelist, '
+    #         'manifest file does not exist: %s', old_filename)
+    #   else:
+    #     logging.debug('Generate blamelist against: %s', old_filename)
+    #     lkgm_manager.GenerateBlameList(self.repo, old_filename)
