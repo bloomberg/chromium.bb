@@ -1736,10 +1736,13 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
                          ? rd_threshes[mode_index] << 1
                          : rd_threshes[mode_index];
 
-    // Increase mode_rd_thresh value for GOLDEN_FRAME for improved encoding
+    // Increase mode_rd_thresh value for non-LAST for improved encoding
     // speed
-    if (ref_frame != LAST_FRAME && cpi->rc.frames_since_golden > 4)
-      mode_rd_thresh = mode_rd_thresh << 3;
+    if (ref_frame != LAST_FRAME) {
+      mode_rd_thresh = mode_rd_thresh << 1;
+      if (ref_frame == GOLDEN_FRAME && cpi->rc.frames_since_golden > 4)
+        mode_rd_thresh = mode_rd_thresh << 1;
+    }
 
     if (rd_less_than_thresh(best_rdc.rdcost, mode_rd_thresh,
                             rd_thresh_freq_fact[mode_index]))
