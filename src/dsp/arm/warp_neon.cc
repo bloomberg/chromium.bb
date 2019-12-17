@@ -43,18 +43,19 @@ constexpr int kWarpedDiffPrecisionBits = 10;
 // Applies the horizontal filter to one source row and stores the result in
 // |intermediate_result_row|. |intermediate_result_row| is a row in the 15x8
 // |intermediate_result| two-dimensional array.
+//
+// src_row_centered contains 16 "centered" samples of a source row. (We center
+// the samples by subtracting 128 from the samples.)
 void HorizontalFilter(const int sx4, const int16_t alpha,
                       const int horizontal_offset,
-                      const int16x8_t src_row_low_s16,
-                      const int16x8_t src_row_high_s16,
+                      const int8x16_t src_row_centered,
                       int16_t intermediate_result_row[8]) {
   int sx = sx4 - MultiplyBy4(alpha);
-  int16x8_t filter[8];
+  int8x8_t filter[8];
   for (int x = 0; x < 8; ++x) {
     const int offset = RightShiftWithRounding(sx, kWarpedDiffPrecisionBits) +
                        kWarpedPixelPrecisionShifts;
-    // TODO(wtc): kWarpedFilters fit in int8.
-    filter[x] = vld1q_s16(kWarpedFilters[offset]);
+    filter[x] = vld1_s8(kWarpedFilters8[offset]);
     sx += alpha;
   }
   Transpose8x8(filter);
@@ -81,35 +82,39 @@ void HorizontalFilter(const int sx4, const int16_t alpha,
   //
   // We can do signed int16_t arithmetic and just treat the final result as
   // uint16_t when we shift it right.
-  int16x8_t sum = vdupq_n_s16(horizontal_offset);
+  //
+  // We add 128 * 128 to horizontal_offset to undo the centering of the source
+  // row samples. Every centered sample is smaller than the actual sample by
+  // 128, and the sum of the filter coefficients is 128.
+  int16x8_t sum = vdupq_n_s16(horizontal_offset + 128 * 128);
   // Unrolled k = 0..7 loop. We need to manually unroll the loop because the
-  // third argument (an index value) to vextq_s16() must be a constant
-  // (immediate).
+  // third argument (an index value) to vextq_s8() must be a constant
+  // (immediate). src_row_window is a sliding window of length 8 into
+  // src_row_centered.
   // k = 0.
-  int16x8_t src_row_v_s16 = src_row_low_s16;
-  // TODO(wtc): use vmlal_s8 here.
-  sum = vmlaq_s16(sum, filter[0], src_row_v_s16);
+  int8x8_t src_row_window = vget_low_s8(src_row_centered);
+  sum = vmlal_s8(sum, filter[0], src_row_window);
   // k = 1.
-  src_row_v_s16 = vextq_s16(src_row_low_s16, src_row_high_s16, 1);
-  sum = vmlaq_s16(sum, filter[1], src_row_v_s16);
+  src_row_window = vget_low_s8(vextq_s8(src_row_centered, src_row_centered, 1));
+  sum = vmlal_s8(sum, filter[1], src_row_window);
   // k = 2.
-  src_row_v_s16 = vextq_s16(src_row_low_s16, src_row_high_s16, 2);
-  sum = vmlaq_s16(sum, filter[2], src_row_v_s16);
+  src_row_window = vget_low_s8(vextq_s8(src_row_centered, src_row_centered, 2));
+  sum = vmlal_s8(sum, filter[2], src_row_window);
   // k = 3.
-  src_row_v_s16 = vextq_s16(src_row_low_s16, src_row_high_s16, 3);
-  sum = vmlaq_s16(sum, filter[3], src_row_v_s16);
+  src_row_window = vget_low_s8(vextq_s8(src_row_centered, src_row_centered, 3));
+  sum = vmlal_s8(sum, filter[3], src_row_window);
   // k = 4.
-  src_row_v_s16 = vextq_s16(src_row_low_s16, src_row_high_s16, 4);
-  sum = vmlaq_s16(sum, filter[4], src_row_v_s16);
+  src_row_window = vget_low_s8(vextq_s8(src_row_centered, src_row_centered, 4));
+  sum = vmlal_s8(sum, filter[4], src_row_window);
   // k = 5.
-  src_row_v_s16 = vextq_s16(src_row_low_s16, src_row_high_s16, 5);
-  sum = vmlaq_s16(sum, filter[5], src_row_v_s16);
+  src_row_window = vget_low_s8(vextq_s8(src_row_centered, src_row_centered, 5));
+  sum = vmlal_s8(sum, filter[5], src_row_window);
   // k = 6.
-  src_row_v_s16 = vextq_s16(src_row_low_s16, src_row_high_s16, 6);
-  sum = vmlaq_s16(sum, filter[6], src_row_v_s16);
+  src_row_window = vget_low_s8(vextq_s8(src_row_centered, src_row_centered, 6));
+  sum = vmlal_s8(sum, filter[6], src_row_window);
   // k = 7.
-  src_row_v_s16 = vextq_s16(src_row_low_s16, src_row_high_s16, 7);
-  sum = vmlaq_s16(sum, filter[7], src_row_v_s16);
+  src_row_window = vget_low_s8(vextq_s8(src_row_centered, src_row_centered, 7));
+  sum = vmlal_s8(sum, filter[7], src_row_window);
   // End of unrolled k = 0..7 loop.
   // Treat sum as unsigned for the right shift.
   sum = vreinterpretq_s16_u16(
@@ -391,17 +396,14 @@ void Warp_NEON(const void* const source, const ptrdiff_t source_stride,
         // has left and right borders of at least 13 bytes that extend the
         // frame boundary pixels. We also assume there is at least one extra
         // padding byte after the right border of the last source row.
-        //
-        // TODO(wtc): Convert src_row_u8 to int8 (subtract 128).
-        const uint8x16_t src_row_u8 = vld1q_u8(&src_row[ix4 - 7]);
-        const int16x8_t src_row_low_s16 =
-            vreinterpretq_s16_u16(vmovl_u8(vget_low_u8(src_row_u8)));
-        const int16x8_t src_row_high_s16 =
-            vreinterpretq_s16_u16(vmovl_u8(vget_high_u8(src_row_u8)));
+        const uint8x16_t src_row_v = vld1q_u8(&src_row[ix4 - 7]);
+        // Convert src_row_v to int8 (subtract 128).
+        const int8x16_t src_row_centered =
+            vreinterpretq_s8_u8(vsubq_u8(src_row_v, vdupq_n_u8(128)));
         int sx4 = (x4 & ((1 << kWarpedModelPrecisionBits) - 1)) - beta * 7;
         for (int y = -7; y < 8; ++y) {
-          HorizontalFilter(sx4, alpha, horizontal_offset, src_row_low_s16,
-                           src_row_high_s16, intermediate_result[y + 7]);
+          HorizontalFilter(sx4, alpha, horizontal_offset, src_row_centered,
+                           intermediate_result[y + 7]);
           sx4 += beta;
         }
       } else {
@@ -422,15 +424,12 @@ void Warp_NEON(const void* const source, const ptrdiff_t source_stride,
           // has left and right borders of at least 13 bytes that extend the
           // frame boundary pixels. We also assume there is at least one extra
           // padding byte after the right border of the last source row.
-          //
-          // TODO(wtc): Convert src_row_u8 to int8 (subtract 128).
-          const uint8x16_t src_row_u8 = vld1q_u8(&src_row[ix4 - 7]);
-          const int16x8_t src_row_low_s16 =
-              vreinterpretq_s16_u16(vmovl_u8(vget_low_u8(src_row_u8)));
-          const int16x8_t src_row_high_s16 =
-              vreinterpretq_s16_u16(vmovl_u8(vget_high_u8(src_row_u8)));
-          HorizontalFilter(sx4, alpha, horizontal_offset, src_row_low_s16,
-                           src_row_high_s16, intermediate_result[y + 7]);
+          const uint8x16_t src_row_v = vld1q_u8(&src_row[ix4 - 7]);
+          // Convert src_row_v to int8 (subtract 128).
+          const int8x16_t src_row_centered =
+              vreinterpretq_s8_u8(vsubq_u8(src_row_v, vdupq_n_u8(128)));
+          HorizontalFilter(sx4, alpha, horizontal_offset, src_row_centered,
+                           intermediate_result[y + 7]);
           sx4 += beta;
         }
       }
