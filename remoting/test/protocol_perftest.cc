@@ -155,9 +155,6 @@ class ProtocolPerfTest
   protocol::CursorShapeStub* GetCursorShapeStub() override {
     return &cursor_shape_stub_;
   }
-  protocol::KeyboardLayoutStub* GetKeyboardLayoutStub() override {
-    return nullptr;
-  }
 
   // protocol::FrameConsumer interface.
   std::unique_ptr<webrtc::DesktopFrame> AllocateFrame(

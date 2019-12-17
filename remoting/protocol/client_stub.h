@@ -13,7 +13,6 @@
 #include "base/macros.h"
 #include "remoting/protocol/clipboard_stub.h"
 #include "remoting/protocol/cursor_shape_stub.h"
-#include "remoting/protocol/keyboard_layout_stub.h"
 
 namespace remoting {
 namespace protocol {
@@ -24,8 +23,7 @@ class PairingResponse;
 class VideoLayout;
 
 class ClientStub : public ClipboardStub,
-                   public CursorShapeStub,
-                   public KeyboardLayoutStub {
+                   public CursorShapeStub {
  public:
   ClientStub() {}
   ~ClientStub() override {}
