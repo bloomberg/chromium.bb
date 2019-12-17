@@ -186,6 +186,27 @@ class VIEWS_EXPORT HWNDMessageHandlerDelegate {
   // size.
   virtual void HandleClientSizeChanged(const gfx::Size& new_size) = 0;
 
+  // Called when the window requests a hit test.  Return true if the delegate
+  // handles it, and if so, store the hit test code in |result|.
+  virtual bool HandleNCHitTest(LRESULT* result, const gfx::Point& point) = 0;
+
+  // Called when the user starts dragging in a non-client region.  Return true
+  // if the delegate will handle the non-client drag, in which case, the mouse
+  // will be captured and HandleNCDragMove will be called continuously until
+  // HandleNCDragEnd is called.  Returning false means the default Windows
+  // dragging will be performed.
+  virtual bool HandleNCDragBegin(int hit_test_code) = 0;
+
+  // Invoked while the mouse moves during a non-client drag event.  This gets
+  // called only if the previous call to HandleNCDragBegin returned true.
+  virtual void HandleNCDragMove() = 0;
+
+  // Invoked when a non-client drag event ends.  This gets called only if the
+  // previous call to HandleNCDragBegin returned true.
+  virtual void HandleNCDragEnd() = 0;
+
+  virtual void HandleNCDoubleClick() = 0;
+
   // Called when the window's frame has changed.
   virtual void HandleFrameChanged() = 0;
 
