@@ -420,6 +420,7 @@ class VM(device.Device):
         '-cpu', self.qemu_cpu,
         '-device', 'virtio-net,netdev=eth0',
         '-device', 'virtio-scsi-pci,id=scsi',
+        '-device', 'virtio-rng',
         '-device', 'scsi-hd,drive=hd',
         '-drive', 'if=none,id=hd,file=%s,cache=unsafe,format=%s'
         % (self.image_path, self.image_format),
