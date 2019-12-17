@@ -252,6 +252,12 @@ def Update(arguments):
   cmd = [os.path.join(constants.CROSUTILS_DIR, 'update_chroot')]
   cmd.extend(arguments.GetArgList())
 
-  cros_build_lib.run(cmd)
+  # The sdk update uses splitdebug instead of separatedebug. Make sure
+  # separatedebug is disabled and enable splitdebug.
+  existing = os.environ.get('FEATURES', '')
+  features = ' '.join((existing, '-separatedebug splitdebug')).strip()
+  extra_env = {'FEATURES': features}
+
+  cros_build_lib.run(cmd, extra_env=extra_env)
 
   return GetChrootVersion()
