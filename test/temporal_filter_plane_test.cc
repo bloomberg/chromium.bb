@@ -198,11 +198,24 @@ TEST_P(TemporalFilterTest, DISABLED_Speed) {
 }
 
 #if HAVE_AVX2
-TestTemporal_FilterPlane Temporal_filter_test[] = { TestTemporal_FilterPlane(
-    &av1_temporal_filter_plane_c, &av1_temporal_filter_plane_avx2) };
+TestTemporal_FilterPlane Temporal_filter_test_avx2[] = {
+  TestTemporal_FilterPlane(&av1_temporal_filter_plane_c,
+                           &av1_temporal_filter_plane_avx2)
+};
 INSTANTIATE_TEST_CASE_P(AVX2, TemporalFilterTest,
-                        Combine(ValuesIn(Temporal_filter_test),
+                        Combine(ValuesIn(Temporal_filter_test_avx2),
                                 Range(64, 65, 4)));
 #endif  // HAVE_AVX2
+
+#if HAVE_SSE2
+TestTemporal_FilterPlane Temporal_filter_test_sse2[] = {
+  TestTemporal_FilterPlane(&av1_temporal_filter_plane_c,
+                           &av1_temporal_filter_plane_sse2)
+};
+INSTANTIATE_TEST_CASE_P(SSE2, TemporalFilterTest,
+                        Combine(ValuesIn(Temporal_filter_test_sse2),
+                                Range(64, 65, 4)));
+#endif  // HAVE_SSE2
+
 }  // namespace
 #endif
