@@ -4061,6 +4061,8 @@ static void init_motion_estimation(AV1_COMP *cpi) {
     av1_init3smotion_compensation(&cpi->ss_cfg[SS_CFG_SRC], y_stride);
     av1_init3smotion_compensation(&cpi->ss_cfg[SS_CFG_LOOKAHEAD], y_stride_src);
   }
+
+  av1_init_motion_fpf(&cpi->ss_cfg[SS_CFG_FPF], y_stride);
 }
 
 #define COUPLED_CHROMA_FROM_LUMA_RESTORATION 0

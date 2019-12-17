@@ -44,9 +44,10 @@ typedef struct search_site {
 } search_site;
 
 typedef struct search_site_config {
-  search_site ss[MAX_MVSEARCH_STEPS][16 + 1];
+  search_site ss[MAX_MVSEARCH_STEPS * 2][16 + 1];
   int ss_count;
-  int searches_per_step[MAX_MVSEARCH_STEPS];
+  int searches_per_step[MAX_MVSEARCH_STEPS * 2];
+  int radius[MAX_MVSEARCH_STEPS * 2];
   int stride;
 } search_site_config;
 
@@ -56,6 +57,7 @@ typedef struct {
 } search_neighbors;
 
 void av1_init_dsmotion_compensation(search_site_config *cfg, int stride);
+void av1_init_motion_fpf(search_site_config *cfg, int stride);
 void av1_init3smotion_compensation(search_site_config *cfg, int stride);
 
 void av1_set_mv_search_range(MvLimits *mv_limits, const MV *mv);

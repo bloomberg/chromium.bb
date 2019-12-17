@@ -155,7 +155,8 @@ typedef enum {
 enum {
   SS_CFG_SRC = 0,
   SS_CFG_LOOKAHEAD = 1,
-  SS_CFG_TOTAL = 2
+  SS_CFG_FPF = 2,
+  SS_CFG_TOTAL = 3
 } UENUM1BYTE(SS_CFG_OFFSET);
 
 #define MAX_LENGTH_TPL_FRAME_STATS (27 + 9)

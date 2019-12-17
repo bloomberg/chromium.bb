@@ -123,6 +123,7 @@ void av1_init_dsmotion_compensation(search_site_config *cfg, int stride) {
       ss->offset = ss->mv.row * stride + ss->mv.col;
     }
     cfg->searches_per_step[stage_index] = 4;
+    cfg->radius[stage_index] = len;
     --stage_index;
     ++ss_count;
   }
@@ -130,7 +131,7 @@ void av1_init_dsmotion_compensation(search_site_config *cfg, int stride) {
   cfg->ss_count = ss_count;
 }
 
-void av1_init3smotion_compensation(search_site_config *cfg, int stride) {
+void av1_init_motion_fpf(search_site_config *cfg, int stride) {
   int ss_count = 0;
   int stage_index = MAX_MVSEARCH_STEPS - 1;
 
@@ -167,8 +168,47 @@ void av1_init3smotion_compensation(search_site_config *cfg, int stride) {
       ss->offset = ss->mv.row * stride + ss->mv.col;
     }
     cfg->searches_per_step[stage_index] = num_search_pts;
+    cfg->radius[stage_index] = radius;
     --stage_index;
     ++ss_count;
+  }
+  cfg->ss_count = ss_count;
+}
+
+void av1_init3smotion_compensation(search_site_config *cfg, int stride) {
+  int ss_count = 0;
+  int stage_index = 0;
+  cfg->stride = stride;
+  int radius = 1;
+  for (stage_index = 0; stage_index < 15; ++stage_index) {
+    int tan_radius = AOMMAX((int)(0.41 * radius), 1);
+    int num_search_pts = 12;
+    if (radius == 1) num_search_pts = 8;
+    const MV ss_mvs[13] = {
+      { 0, 0 },
+      { -radius, 0 },
+      { radius, 0 },
+      { 0, -radius },
+      { 0, radius },
+      { -radius, -tan_radius },
+      { radius, tan_radius },
+      { -tan_radius, radius },
+      { tan_radius, -radius },
+      { -radius, tan_radius },
+      { radius, -tan_radius },
+      { tan_radius, radius },
+      { -tan_radius, -radius },
+    };
+
+    for (int i = 0; i <= num_search_pts; ++i) {
+      search_site *const ss = &cfg->ss[stage_index][i];
+      ss->mv = ss_mvs[i];
+      ss->offset = ss->mv.row * stride + ss->mv.col;
+    }
+    cfg->searches_per_step[stage_index] = num_search_pts;
+    cfg->radius[stage_index] = radius;
+    ++ss_count;
+    radius = (int)AOMMAX((radius * 1.4 + 0.5), radius + 1);
   }
   cfg->ss_count = ss_count;
 }
