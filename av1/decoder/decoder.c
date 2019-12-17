@@ -247,7 +247,7 @@ void av1_decoder_remove(AV1Decoder *pbi) {
   aom_accounting_clear(&pbi->accounting);
 #endif
   av1_free_mc_tmp_buf(&pbi->td);
-
+  aom_img_metadata_array_free(pbi->metadata);
   aom_free(pbi);
 }
 

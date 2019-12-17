@@ -11,6 +11,8 @@
 #ifndef AOM_AV1_AV1_IFACE_COMMON_H_
 #define AOM_AV1_AV1_IFACE_COMMON_H_
 
+#include <assert.h>
+
 #include "aom_ports/mem.h"
 #include "aom_scale/yv12config.h"
 
@@ -74,7 +76,8 @@ static void yuvconfig2image(aom_image_t *img, const YV12_BUFFER_CONFIG *yv12,
   img->img_data_owner = 0;
   img->self_allocd = 0;
   img->sz = yv12->frame_size;
-  img->metadata = yv12->metadata;
+  assert(!yv12->metadata);
+  img->metadata = NULL;
 }
 
 static aom_codec_err_t image2yuvconfig(const aom_image_t *img,

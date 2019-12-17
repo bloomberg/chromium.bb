@@ -290,21 +290,17 @@ int aom_img_plane_height(const aom_image_t *img, int plane) {
 
 aom_metadata_t *aom_img_metadata_alloc(uint32_t type, const uint8_t *data,
                                        size_t sz) {
-  aom_metadata_t *metadata =
-      (aom_metadata_t *)calloc(1, sizeof(aom_metadata_t));
+  if (!data || sz == 0) return NULL;
+  aom_metadata_t *metadata = (aom_metadata_t *)malloc(sizeof(aom_metadata_t));
   if (!metadata) return NULL;
   metadata->type = type;
-  if (sz > 0) {
-    metadata->payload = (uint8_t *)calloc(sz, sizeof(uint8_t));
-    if (!metadata->payload) {
-      free(metadata);
-      return NULL;
-    }
-    if (data) {
-      memcpy(metadata->payload, data, sz);
-      metadata->sz = sz;
-    }
+  metadata->payload = (uint8_t *)malloc(sz);
+  if (!metadata->payload) {
+    free(metadata);
+    return NULL;
   }
+  memcpy(metadata->payload, data, sz);
+  metadata->sz = sz;
   return metadata;
 }
 
@@ -378,4 +374,19 @@ void aom_img_remove_metadata(aom_image_t *img) {
     aom_img_metadata_array_free(img->metadata);
     img->metadata = NULL;
   }
+}
+
+const aom_metadata_t *aom_img_get_metadata(const aom_image_t *img,
+                                           size_t index) {
+  if (!img) return NULL;
+  const aom_metadata_array_t *array = img->metadata;
+  if (array && index < array->sz) {
+    return array->metadata_array[index];
+  }
+  return NULL;
+}
+
+size_t aom_img_num_metadata(const aom_image_t *img) {
+  if (!img || !img->metadata) return 0;
+  return img->metadata->sz;
 }

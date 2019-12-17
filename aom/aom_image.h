@@ -30,7 +30,7 @@ extern "C" {
  * types, removing or reassigning enums, adding/removing/rearranging
  * fields to structures
  */
-#define AOM_IMAGE_ABI_VERSION (6) /**<\hideinitializer*/
+#define AOM_IMAGE_ABI_VERSION (7) /**<\hideinitializer*/
 
 #define AOM_IMG_FMT_PLANAR 0x100  /**< Image is a planar format. */
 #define AOM_IMG_FMT_UV_FLIP 0x200 /**< V plane precedes U in memory. */
@@ -351,6 +351,33 @@ int aom_img_plane_height(const aom_image_t *img, int plane);
 int aom_img_add_metadata(aom_image_t *img, uint32_t type, const uint8_t *data,
                          size_t sz);
 
+/*!\brief Return a metadata payload stored within the image metadata array.
+ *
+ * Gets the metadata (aom_metadata_t) at the indicated index in the image
+ * metadata array.
+ *
+ * \param[in] img          Pointer to image descriptor to get metadata from
+ * \param[in] index        Metadata index to get from metadata array
+ *
+ * \return Returns a const pointer to the selected metadata, if img and/or index
+ * is invalid, it returns NULL.
+ */
+const aom_metadata_t *aom_img_get_metadata(const aom_image_t *img,
+                                           size_t index);
+
+/*!\brief Return the number of metadata blocks within the image.
+ *
+ * Gets the number of metadata blocks contained within the provided image
+ * metadata array.
+ *
+ * \param[in] img          Pointer to image descriptor to get metadata number
+ * from.
+ *
+ * \return Returns the size of the metadata array. If img or metadata is NULL,
+ * it returns 0.
+ */
+size_t aom_img_num_metadata(const aom_image_t *img);
+
 /*!\brief Remove metadata from image.
  *
  * Removes all metadata in image metadata list and sets metadata list pointer
@@ -362,12 +389,9 @@ void aom_img_remove_metadata(aom_image_t *img);
 
 /*!\brief Allocate memory for aom_metadata struct.
  *
- * Allocates memory for aom_metadata struct and sets its type. Optionally
- * allocates storage for the metadata payload and copies the payload data
- * into the aom_metadata struct:
- *   - When sz is > 0 and data is NULL, allocates metadata payload buffer of sz.
- *   - When sz is > 0 and data is non-NULL, a metadata payload buffer of sz
- *     is allocated and sz bytes are copied from data into the payload buffer.
+ * Allocates storage for the metadata payload, sets its type and copies the
+ * payload data into the aom_metadata struct. A metadata payload buffer of size
+ * sz is allocated and sz bytes are copied from data into the payload buffer.
  *
  * \param[in]    type      Metadata type
  * \param[in]    data      Metadata data pointer
