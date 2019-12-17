@@ -1189,7 +1189,6 @@
 <translation id="2665919335226618153">Қап! Пішімдеу кезінде қате пайда болды.</translation>
 <translation id="2666990579225592931">Қонаққа арналған терезені ашу</translation>
 <translation id="2667463864537187133">Орфографиялық сөздікті басқару</translation>
-<translation id="2669093958999339774">Кедергі келтіретін хабарландыруларды бөгеу және хабарларды дыбыссыз алу</translation>
 <translation id="2670102641511624474"><ph name="APP_NAME" /> қолданбасы Chrome қойындысын бөлісуде.</translation>
 <translation id="2670429602441959756">Бұл бетте VR режимінде қолдау көрсетілмейтін мүмкіндіктер бар. Шығуда...</translation>
 <translation id="2671451824761031126">Бетбелгілер мен параметрлер дайын</translation>
@@ -1962,7 +1961,6 @@
 <translation id="37613671848467444">&amp;Инкогнито терезесінде ашу</translation>
 <translation id="3764583730281406327">{NUM_DEVICES,plural, =1{USB құрылғысы арқылы байланысу}other{# USB құрылғысы арқылы байланысу}}</translation>
 <translation id="3765246971671567135">Офлайн демо режиміндегі саясат оқылмады.</translation>
-<translation id="3767376082821709728">Сіз кірген жаңа сайттар хабарландырулар жібере алмайды.</translation>
 <translation id="3768037234834996183">Параметрлеріңіз синхрондалуда…</translation>
 <translation id="377050016711188788">Балмұздақ</translation>
 <translation id="3771294271822695279">Бейне файлдары</translation>
@@ -4912,7 +4910,6 @@
 <translation id="8044899503464538266">Баяу</translation>
 <translation id="8045253504249021590">Синхрондау Google бақылау тақтасы арқылы тоқтатылды.</translation>
 <translation id="8045923671629973368">Қолданба идентификаторын немесе вебдүкеннің URL мекенжайын енгізіңіз</translation>
-<translation id="8046278916126163020">Сіз кірген жаңа сайттар хабарландырулар жіберуге рұқсат сұрайды.</translation>
 <translation id="804786196054284061">Түпкі пайдаланушының лицензия туралы келісімі</translation>
 <translation id="8049705080247101012">Google қызметі "<ph name="EXTENSION_NAME" />" кеңейтімін зиянды деп белгілегендіктен, ол орнатылмады</translation>
 <translation id="8050038245906040378">Microsoft Commercial Code Signing</translation>

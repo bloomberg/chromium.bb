@@ -1192,7 +1192,6 @@
 <translation id="2665919335226618153">แย่จัง! เกิดข้อผิดพลาดในระหว่างการจัดรูปแบบ</translation>
 <translation id="2666990579225592931">เปิดหน้าต่างผู้มาเยือน</translation>
 <translation id="2667463864537187133">จัดการการตรวจตัวสะกด</translation>
-<translation id="2669093958999339774">บล็อกข้อความแจ้งเตือนไม่ให้รบกวนคุณ และใช้ข้อความแบบไม่ส่งเสียงแทน</translation>
 <translation id="2670102641511624474"><ph name="APP_NAME" /> กำลังแชร์แท็บใน Chrome</translation>
 <translation id="2670429602441959756">หน้านี้มีฟีเจอร์ที่ยังไม่รองรับใน VR กำลังออกจากโหมดนี้...</translation>
 <translation id="2671451824761031126">บุ๊กมาร์กและการตั้งค่าของคุณพร้อมแล้ว</translation>
@@ -1965,7 +1964,6 @@
 <translation id="37613671848467444">เปิดใน&amp;หน้าต่างที่ไม่ระบุตัวตน</translation>
 <translation id="3764583730281406327">{NUM_DEVICES,plural, =1{สื่อสารกับอุปกรณ์ USB 1 เครื่อง}other{สื่อสารกับอุปกรณ์ USB # เครื่อง}}</translation>
 <translation id="3765246971671567135">อ่านนโยบายโหมดสาธิตออฟไลน์ไม่ได้</translation>
-<translation id="3767376082821709728">เว็บไซต์ใหม่ที่คุณเข้าชมจะส่งการแจ้งเตือนให้คุณไม่ได้</translation>
 <translation id="3768037234834996183">กำลังซิงค์ค่ากำหนดของคุณ...</translation>
 <translation id="377050016711188788">ไอศกรีม</translation>
 <translation id="3771294271822695279">ไฟล์วิดีโอ</translation>
@@ -4916,7 +4914,6 @@
 <translation id="8044899503464538266">ช้า</translation>
 <translation id="8045253504249021590">หยุดการซิงค์ผ่าน Google แดชบอร์ดแล้ว</translation>
 <translation id="8045923671629973368">ป้อนรหัสแอปพลิเคชันหรือ URL เว็บสโตร์</translation>
-<translation id="8046278916126163020">เว็บไซต์ใหม่ที่คุณเข้าชมจะขอส่งการแจ้งเตือนให้คุณ</translation>
 <translation id="804786196054284061">ข้อตกลงใบอนุญาตผู้ใช้ปลายทาง</translation>
 <translation id="8049705080247101012">Google ได้ตั้งค่าสถานะ "<ph name="EXTENSION_NAME" />" ว่าเป็นอันตราย และป้องกันไม่ให้มีการติดตั้งแล้ว</translation>
 <translation id="8050038245906040378">การรับรองรหัสเชิงพาณิชย์ของ Microsoft</translation>

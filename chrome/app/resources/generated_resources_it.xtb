@@ -1191,7 +1191,6 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="2665919335226618153">Uffa! Si è verificato un errore durante la formattazione.</translation>
 <translation id="2666990579225592931">Apri finestra Ospite</translation>
 <translation id="2667463864537187133">Gestisci controllo ortografico</translation>
-<translation id="2669093958999339774">Non farti interrompere da messaggi di notifica; usa invece un messaggio più discreto</translation>
 <translation id="2670102641511624474"><ph name="APP_NAME" /> condivide una scheda Chrome.</translation>
 <translation id="2670429602441959756">Questa pagina contiene funzioni non ancora supportate nella realtà virtuale. Uscita in corso...</translation>
 <translation id="2671451824761031126">Preferiti e impostazioni sono pronti</translation>
@@ -1964,7 +1963,6 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="37613671848467444">Apri in finestra di navigazione in &amp;incognito</translation>
 <translation id="3764583730281406327">{NUM_DEVICES,plural, =1{Comunicazione con un dispositivo USB}other{Comunicazione con # dispositivi USB}}</translation>
 <translation id="3765246971671567135">Impossibile leggere le norme offline relative alla modalità demo.</translation>
-<translation id="3767376082821709728">I nuovi siti visitati non possono inviarti notifiche</translation>
 <translation id="3768037234834996183">Sincronizzazione delle preferenze...</translation>
 <translation id="377050016711188788">Gelato</translation>
 <translation id="3771294271822695279">File video</translation>
@@ -2442,7 +2440,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="4469477701382819144">Bloccati sui siti che mostrano annunci invasivi o fuorvianti</translation>
 <translation id="4469762931504673593"><ph name="ORIGIN" /> può modificare i file nella cartella <ph name="FOLDERNAME" /></translation>
 <translation id="4470957202018033307">Preferenze dello spazio di archiviazione esterno</translation>
-<translation id="447252321002412580">Contribuisci a migliorare le funzioni e le prestazioni di Chrome</translation>
+<translation id="447252321002412580">Contribuisci a migliorare le funzionalità e le prestazioni di Chrome</translation>
 <translation id="4474155171896946103">Aggiungi tutte le schede ai Preferiti...</translation>
 <translation id="4474461121892222090">Potrebbero essere necessari fino a 15 minuti per completare l'attivazione dei dati mobili.</translation>
 <translation id="4475552974751346499">Cerca tra i file scaricati</translation>
@@ -4915,7 +4913,6 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="8044899503464538266">Lento</translation>
 <translation id="8045253504249021590">La sincronizzazione è stata interrotta tramite Google Dashboard.</translation>
 <translation id="8045923671629973368">Inserisci l'ID applicazione o l'URL del webstore</translation>
-<translation id="8046278916126163020">I nuovi siti visitati possono chiedere di inviarti notifiche</translation>
 <translation id="804786196054284061">Contratto di licenza con l'utente finale</translation>
 <translation id="8049705080247101012">Google ha contrassegnato l'estensione "<ph name="EXTENSION_NAME" />" come dannosa ed è stata impedita l'installazione</translation>
 <translation id="8050038245906040378">Firma codice commerciale Microsoft</translation>

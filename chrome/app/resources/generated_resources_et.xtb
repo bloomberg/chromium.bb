@@ -1192,7 +1192,6 @@ Selle konto seadete haldamiseks installige oma seadmesse Family Link.  Saatsime 
 <translation id="2665919335226618153">Ups, ebaõnn! Vormindamisel ilmnes viga.</translation>
 <translation id="2666990579225592931">Ava külalise aken</translation>
 <translation id="2667463864537187133">Õigekirjakontrolli haldamine</translation>
-<translation id="2669093958999339774">Blokeeri häirivad märguandeviibad ja kasuta nende asemel vaiksemat sõnumit</translation>
 <translation id="2670102641511624474">Rakendus <ph name="APP_NAME" /> jagab Chrome'i vahelehte.</translation>
 <translation id="2670429602441959756">See leht sisaldab funktsioone, mida VR veel ei toeta. Väljumine …</translation>
 <translation id="2671451824761031126">Järjehoidjad ja seaded on valmis</translation>
@@ -1965,7 +1964,6 @@ Selle konto seadete haldamiseks installige oma seadmesse Family Link.  Saatsime 
 <translation id="37613671848467444">&amp;Ava inkognito aknas</translation>
 <translation id="3764583730281406327">{NUM_DEVICES,plural, =1{Ühendus USB-seadmega}other{Ühendus # USB-seadmega}}</translation>
 <translation id="3765246971671567135">Võrguühenduseta demorežiimi reeglit ei saanud lugeda.</translation>
-<translation id="3767376082821709728">Uued saidid, mida külastate, ei saa teile märguandeid saata</translation>
 <translation id="3768037234834996183">Eelistuste sünkroonimine ...</translation>
 <translation id="377050016711188788">Jäätis</translation>
 <translation id="3771294271822695279">Videofailid</translation>
@@ -4916,7 +4914,6 @@ Hoidke oma võtmefail kindlas kohas. Teil läheb seda oma laiendi uute versiooni
 <translation id="8044899503464538266">Aeglane</translation>
 <translation id="8045253504249021590">Sünkroonimine on Google Dashboardi kaudu peatatud.</translation>
 <translation id="8045923671629973368">Sisestage rakenduse ID või veebipoe URL</translation>
-<translation id="8046278916126163020">Uued saidid, mida külastate, saavad paluda luba märguannete saatmiseks</translation>
 <translation id="804786196054284061">Lõppkasutaja litsentsileping</translation>
 <translation id="8049705080247101012">Google märgistas laienduse „<ph name="EXTENSION_NAME" />” pahatahtlikuks ja installimine blokeeriti</translation>
 <translation id="8050038245906040378">Microsofti äriline koodsigneerimine</translation>

@@ -1189,7 +1189,6 @@
 <translation id="2665919335226618153">हे भगवान! फ़ॉर्मेटिंग के दौरान गड़बड़ी आई.</translation>
 <translation id="2666990579225592931">मेहमान विंडो खोलें</translation>
 <translation id="2667463864537187133">वर्तनी जाँच प्रबंधित करें</translation>
-<translation id="2669093958999339774">साइटों को आवाज़ वाले मैसेज भेजने से रोकें. इसके बजाय, बिना आवाज़ वाले मैसेज पाने का विकल्प चुनें</translation>
 <translation id="2670102641511624474"><ph name="APP_NAME" />, Chrome टैब को शेयर कर रहा है.</translation>
 <translation id="2670429602441959756">इस पेज में ऐसी सुविधाएं मौजूद हैं जो अभी तक VR में काम नहीं करती हैं. बाहर निकाला जा रहा है...</translation>
 <translation id="2671451824761031126">आपके बुकमार्क और सेटिंग तैयार हैं</translation>
@@ -1533,7 +1532,7 @@
 <translation id="3154429428035006212">एक माह से ज़्यादा समय से ऑफ़लाइन</translation>
 <translation id="3154736273843608862"><ph name="IDS_SHORT_PRODUCT_NAME" /> पर आपके अभिभावक ने जो सीमा तय की थी वह खत्म हो गई.</translation>
 <translation id="3156531245809797194">Chrome का इस्तेमाल करने के लिए, कृपया साइन इन करें</translation>
-<translation id="3157931365184549694">पुनर्स्थापित करें</translation>
+<translation id="3157931365184549694">वापस लाएं</translation>
 <translation id="3158033540161634471">अपना फ़िंगरप्रिंट सेट अप करें</translation>
 <translation id="3159493096109238499">मटमैला</translation>
 <translation id="3160842278951476457"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />] (हार्डवेयर समर्थित)</translation>
@@ -1961,7 +1960,6 @@
 <translation id="37613671848467444">&amp;गुप्त विंडों में खोलें</translation>
 <translation id="3764583730281406327">{NUM_DEVICES,plural, =1{किसी USB डिवाइस से संचार करें}one{# USB डिवाइस से संचार करें}other{# USB डिवाइस से संचार करें}}</translation>
 <translation id="3765246971671567135">ऑफ़लाइन डेमो मोड नीति पढ़ी नहीं जा सकी.</translation>
-<translation id="3767376082821709728">आप जिन नई साइटों पर जाएंगे वे आपको सूचनाएं नहीं दिखाएंगी</translation>
 <translation id="3768037234834996183">आपकी प्राथमिकताएं समन्‍वयित की जा रही हैं...</translation>
 <translation id="377050016711188788">आइसक्रीम</translation>
 <translation id="3771294271822695279">वीडियो फ़ाइलें</translation>
@@ -4905,7 +4903,6 @@
 <translation id="8044899503464538266">धीमा</translation>
 <translation id="8045253504249021590">सिंक को Google डैशबोर्ड के माध्यम से बंद कर दिया गया है.</translation>
 <translation id="8045923671629973368">ऐप्लिकेशन आईडी या वेबस्टोर यूआरएल डालें</translation>
-<translation id="8046278916126163020">आप जिन नई साइटों पर जाएंगे वे आपसे पूछ सकती हैं कि आपको सूचनाएं भेजी जाएं या नहीं</translation>
 <translation id="804786196054284061">असली उपयोगकर्ता के लाइसेंस का समझौता</translation>
 <translation id="8049705080247101012">Google ने <ph name="EXTENSION_NAME" /> को नुकसान पहुंचाने वाले के रूप में फ़्लैग किया है और इंस्टॉलेशन रोक दिया गया है</translation>
 <translation id="8050038245906040378">Microsoft Commercial Code Signing</translation>
@@ -5121,7 +5118,7 @@
 <translation id="8352772353338965963">एक से ज़्यादा साइन-इन के लिए कोई खाता जोड़ें. सभी साइन इन किए गए खातों को पासवर्ड के बिना एक्सेस किया जा सकता है, इसलिए इस सुविधा का इस्तेमाल सिर्फ़ विश्वसनीय खातों के साथ किया जाना चाहिए.</translation>
 <translation id="8353683614194668312">यह निम्न कर सकता है:</translation>
 <translation id="8356197132883132838"><ph name="TITLE" /> - <ph name="COUNT" /></translation>
-<translation id="8358685469073206162">पृष्ठों को पुनर्स्थापित करें?</translation>
+<translation id="8358685469073206162">सभी पेज वापस लाएं?</translation>
 <translation id="8358912028636606457">टैब ऑडियो कास्ट करने की सुविधा इस डिवाइस पर काम नहीं करती.</translation>
 <translation id="8363095875018065315">स्‍थिर</translation>
 <translation id="8363142353806532503">माइक्रोफ़ोन ब्लॉक किया गया है</translation>

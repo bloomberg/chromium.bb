@@ -1191,7 +1191,6 @@ Pots gestionar la configuració d'aquest compte instal·lant l'aplicació Family
 <translation id="2665919335226618153">S'ha produït un error durant la formatació.</translation>
 <translation id="2666990579225592931">Obre la finestra de convidat</translation>
 <translation id="2667463864537187133">Gestiona el corrector ortogràfic</translation>
-<translation id="2669093958999339774">Bloqueja les sol·licituds de notificacions per evitar interrupcions i utilitza un missatge més silenciós</translation>
 <translation id="2670102641511624474"><ph name="APP_NAME" /> està compartint una pestanya de Chrome.</translation>
 <translation id="2670429602441959756">Aquesta pàgina conté funcions que encara no s'admeten en RV. Se n'està sortint...</translation>
 <translation id="2671451824761031126">Les adreces d'interès i la configuració estan preparades</translation>
@@ -1963,7 +1962,6 @@ en almenys <ph name="INSTALL_SIZE" /> d'espai lliure. Per alliberar espai, supri
 <translation id="37613671848467444">Obre en una &amp;finestra d'incògnit</translation>
 <translation id="3764583730281406327">{NUM_DEVICES,plural, =1{Es comunica amb un dispositiu USB}other{Es comunica amb # dispositius USB}}</translation>
 <translation id="3765246971671567135">No s'ha pogut llegir la política del mode de demostració sense connexió.</translation>
-<translation id="3767376082821709728">Els llocs web nous que visitis no et poden enviar notificacions</translation>
 <translation id="3768037234834996183">S'estan sincronitzant les preferències...</translation>
 <translation id="377050016711188788">Gelat</translation>
 <translation id="3771294271822695279">Fitxers de vídeo</translation>
@@ -4915,7 +4913,6 @@ Deseu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="8044899503464538266">Lent</translation>
 <translation id="8045253504249021590">La sincronització s'ha aturat a través del Tauler de control de Google.</translation>
 <translation id="8045923671629973368">Introdueix l'identificador de l'aplicació o l'URL de Web Store</translation>
-<translation id="8046278916126163020">Pot ser que els llocs web nous que visitis et preguntin si et poden enviar notificacions</translation>
 <translation id="804786196054284061">Acord de llicència d'usuari final</translation>
 <translation id="8049705080247101012">Google ha marcat l'extensió <ph name="EXTENSION_NAME" /> com a maliciosa i, per tant, s'ha evitat que s'instal·lés</translation>
 <translation id="8050038245906040378">Signatura de codi comercial de Microsoft</translation>

@@ -1191,7 +1191,6 @@ Ak chcete spravovať nastavenia tohto účtu, nainštalujte si do zariadenia apl
 <translation id="2665919335226618153">Ojoj! Pri formátovaní sa vyskytla chyba.</translation>
 <translation id="2666990579225592931">Otvoriť okno hosťa</translation>
 <translation id="2667463864537187133">Správa kontroly pravopisu</translation>
-<translation id="2669093958999339774">Zabrániť vyrušovaniu upozorneniami a používať namiesto nich tiché správy</translation>
 <translation id="2670102641511624474"><ph name="APP_NAME" /> zdieľa kartu Chromu.</translation>
 <translation id="2670429602441959756">Táto stránka obsahuje funkcie, ktoré zatiaľ nie sú podporované v režime VR. Režim sa ukončuje…</translation>
 <translation id="2671451824761031126">Vaše záložky a nastavenia sú k dispozícii</translation>
@@ -1964,7 +1963,6 @@ Ak chcete spravovať nastavenia tohto účtu, nainštalujte si do zariadenia apl
 <translation id="37613671848467444">Otvoriť v &amp;okne inkognito</translation>
 <translation id="3764583730281406327">{NUM_DEVICES,plural, =1{Komunikujte so zariadením USB}few{Komunikujte s # zariadeniami USB}many{Komunikujte s # zariadením USB}other{Komunikujte s # zariadeniami USB}}</translation>
 <translation id="3765246971671567135">Pravidlo pre režim offline ukážky sa nepodarilo načítať.</translation>
-<translation id="3767376082821709728">Nové weby, ktoré navštívite, vám nemôžu odosielať upozornenia</translation>
 <translation id="3768037234834996183">Synchronizujú sa predvoľby...</translation>
 <translation id="377050016711188788">Zmrzlina</translation>
 <translation id="3771294271822695279">Súbory videa</translation>
@@ -4915,7 +4913,6 @@ Súbor kľúča uložte na bezpečné miesto. Budete ho potrebovať na vytvoreni
 <translation id="8044899503464538266">Pomalé</translation>
 <translation id="8045253504249021590">Synchronizácia bola zastavená prostredníctvom Informačného panela Google.</translation>
 <translation id="8045923671629973368">Zadajte ID aplikácie alebo adresu webového obchodu</translation>
-<translation id="8046278916126163020">Nové weby, ktoré navštívite, vás môžu žiadať o odosielanie upozornení</translation>
 <translation id="804786196054284061">Licenčná zmluva koncového používateľa</translation>
 <translation id="8049705080247101012">Google označil rozšírenie <ph name="EXTENSION_NAME" /> ako škodlivé a jeho inštalácia bola zakázaná</translation>
 <translation id="8050038245906040378">Komerčné podpisovanie kódu Microsoft</translation>

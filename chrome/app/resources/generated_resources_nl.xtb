@@ -1192,7 +1192,6 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="2665919335226618153">Er is een fout opgetreden tijdens het formatteren.</translation>
 <translation id="2666990579225592931">Gastvenster openen</translation>
 <translation id="2667463864537187133">Spellingcontrole beheren</translation>
-<translation id="2669093958999339774">Meldingsprompts blokkeren zodat ze je niet storen en in plaats daarvan een zachter bericht gebruiken</translation>
 <translation id="2670102641511624474"><ph name="APP_NAME" /> deelt een Chrome-tabblad.</translation>
 <translation id="2670429602441959756">Deze pagina bevat functies die nog niet worden ondersteund in de VR-modus. Afsluiten...</translation>
 <translation id="2671451824761031126">Je bladwijzers en instellingen zijn gereed</translation>
@@ -1965,7 +1964,6 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="37613671848467444">Openen in &amp;incognitovenster</translation>
 <translation id="3764583730281406327">{NUM_DEVICES,plural, =1{Communiceren met een USB-apparaat}other{Communiceren met # USB-apparaten}}</translation>
 <translation id="3765246971671567135">Kan beleid voor offline demomodus niet lezen.</translation>
-<translation id="3767376082821709728">Nieuwe sites die je bezoekt, kunnen je geen meldingen sturen</translation>
 <translation id="3768037234834996183">Je voorkeuren worden gesynchroniseerd…</translation>
 <translation id="377050016711188788">IJs</translation>
 <translation id="3771294271822695279">Videobestanden</translation>
@@ -4915,7 +4913,6 @@ Bewaar je sleutelbestand op een veilige plaats. Je hebt het bestand nodig om nie
 <translation id="8044899503464538266">Langzaam</translation>
 <translation id="8045253504249021590">Synchronisatie is gestopt via het Google Dashboard.</translation>
 <translation id="8045923671629973368">Geef de app-ID of URL voor Web Store op</translation>
-<translation id="8046278916126163020">Nieuwe sites die je bezoekt, kunnen vragen of ze je meldingen mogen sturen</translation>
 <translation id="804786196054284061">Licentieovereenkomst voor eindgebruikers</translation>
 <translation id="8049705080247101012">Google heeft <ph name="EXTENSION_NAME" /> als schadelijk gemarkeerd en de installatie is geblokkeerd</translation>
 <translation id="8050038245906040378">Commerciële handtekening bij programmacode van Microsoft</translation>

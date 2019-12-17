@@ -748,7 +748,7 @@ Vous pouvez gérer les paramètres de ce compte en installant l'application Fami
 <translation id="2048653237708779538">Action non disponible</translation>
 <translation id="2050339315714019657">Portrait</translation>
 <translation id="2053312383184521053">Données sur l'état de veille</translation>
-<translation id="2055585478631012616">Vous allez être déconnecté de ces sites, onglets ouverts inclus</translation>
+<translation id="2055585478631012616">Vous allez être déconnecté de ce site, y compris dans les onglets ouverts</translation>
 <translation id="205560151218727633">Logo de l'Assistant Google</translation>
 <translation id="2058456167109518507">Appareil détecté</translation>
 <translation id="2059913712424898428">Fuseau horaire</translation>
@@ -1192,7 +1192,6 @@ Vous pouvez gérer les paramètres de ce compte en installant l'application Fami
 <translation id="2665919335226618153">Petit problème… Une erreur s'est produite lors du formatage.</translation>
 <translation id="2666990579225592931">Ouvrir une fenêtre de navigation en tant qu'invité</translation>
 <translation id="2667463864537187133">Gérer le correcteur orthographique</translation>
-<translation id="2669093958999339774">Empêcher les invites liées aux notifications de vous interrompre, et les remplacer par un message plus discret</translation>
 <translation id="2670102641511624474"><ph name="APP_NAME" /> partage un onglet Chrome.</translation>
 <translation id="2670429602441959756">Cette page contient des fonctionnalités non compatibles avec la RV. Fermeture…</translation>
 <translation id="2671451824761031126">Vos favoris et vos paramètres sont prêts</translation>
@@ -1292,7 +1291,7 @@ Vous pouvez gérer les paramètres de ce compte en installant l'application Fami
 <translation id="2800760947029405028">Importer une image</translation>
 <translation id="2803375539583399270">Saisir le code</translation>
 <translation id="2804043232879091219">Impossible d'ouvrir le navigateur secondaire</translation>
-<translation id="2804667941345577550">Vous allez être déconnecté de ce site, onglets ouverts inclus</translation>
+<translation id="2804667941345577550">Vous allez être déconnecté de ce site, y compris dans les onglets ouverts</translation>
 <translation id="2804680522274557040">Caméra désactivée</translation>
 <translation id="2805646850212350655">Système de fichiers de chiffrement Microsoft </translation>
 <translation id="2805756323405976993">Applications</translation>
@@ -1965,7 +1964,6 @@ Vous pouvez gérer les paramètres de ce compte en installant l'application Fami
 <translation id="37613671848467444">Ouvrir dans une fenêtre de &amp;navigation privée</translation>
 <translation id="3764583730281406327">{NUM_DEVICES,plural, =1{Communication avec un appareil USB}one{Communication avec # appareil USB}other{Communication avec # appareils USB}}</translation>
 <translation id="3765246971671567135">Impossible de lire la règle du mode de démonstration hors connexion.</translation>
-<translation id="3767376082821709728">Les sites que vous consultez pour la première fois ne sont pas autorisés à vous envoyer des notifications</translation>
 <translation id="3768037234834996183">Synchronisation des préférences en cours…</translation>
 <translation id="377050016711188788">Glace</translation>
 <translation id="3771294271822695279">Fichiers vidéo</translation>
@@ -4917,7 +4915,6 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="8044899503464538266">Lente</translation>
 <translation id="8045253504249021590">La synchronisation a été arrêtée via Google Dashboard.</translation>
 <translation id="8045923671629973368">Saisissez l'ID de l'application ou l'URL du Chrome Web Store</translation>
-<translation id="8046278916126163020">Les sites que vous consultez pour la première fois peuvent demander l'autorisation de vous envoyer des notifications</translation>
 <translation id="804786196054284061">Contrat de licence utilisateur final</translation>
 <translation id="8049705080247101012">Google a signalé l'extension <ph name="EXTENSION_NAME" /> comme malveillante et a bloqué son installation</translation>
 <translation id="8050038245906040378">Signature du code commercial Microsoft</translation>

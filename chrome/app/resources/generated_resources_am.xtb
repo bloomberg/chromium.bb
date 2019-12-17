@@ -1191,7 +1191,6 @@
 <translation id="2665919335226618153">ኧረ ቴች! ቅርጸት በሚሰራለት ጊዜ የሆነ ስህተት ነበር።</translation>
 <translation id="2666990579225592931">የእንግዳ መስኮትን ክፈት</translation>
 <translation id="2667463864537187133">ፊደል አራሚን ያቀናብሩ</translation>
-<translation id="2669093958999339774">የማሳወቂያ ጥያቄዎች እርስዎን እንዳያቋርጥዎት ያግዱ እና በምትኩ ጸጥ ያለ መልዕክትን ይጠቀሙ</translation>
 <translation id="2670102641511624474"><ph name="APP_NAME" /> የChrome ትር እያጋራ ነው።</translation>
 <translation id="2670429602441959756">ይህ ገጽ እስካሁን በVR ውስጥ የማይደገፉ ባህሪያትን ይዟል። በመውጣት ላይ...</translation>
 <translation id="2671451824761031126">የእርስዎ ዕልባቶች እና ቅንብሮች ዝግጁ ናቸው</translation>
@@ -1964,7 +1963,6 @@
 <translation id="37613671848467444">&amp;ማንነትን በማያሳውቅ መስኮት ውስጥ ክፈት</translation>
 <translation id="3764583730281406327">{NUM_DEVICES,plural, =1{በዩኤስቢ መሣሪያ መልዕክት ይለዋወጡ}one{በ# ዩኤስቢ መሣሪያዎች መልዕክት ይለዋወጡ}other{በ# ዩኤስቢ መሣሪያዎች መልዕክት ይለዋወጡ}}</translation>
 <translation id="3765246971671567135">የቅንጭብ ማሳያ ሁነታ መመሪያን ከመስመር ውጭ ማንበብ አልተቻለም።</translation>
-<translation id="3767376082821709728">እርስዎ የሚጎበኙዋቸው አዳዲስ ጣቢያዎች ለእርስዎ ማሳወቂያዎችን መላክ አይችሉም</translation>
 <translation id="3768037234834996183">የእርስዎን ምርጫዎች በማመሳሰል ላይ...</translation>
 <translation id="377050016711188788">አይስክሬም</translation>
 <translation id="3771294271822695279">የቪዲዮ ፋይሎች</translation>
@@ -4918,7 +4916,6 @@ nil</translation>
 <translation id="8044899503464538266">ቀስ</translation>
 <translation id="8045253504249021590">ስምረት በGoogle ዳሽቦርዱ በኩል ቆሟል።</translation>
 <translation id="8045923671629973368">የመተግበሪያ መታወቂያ ወይም የድር መደብር ዩአርኤል ያስገቡ</translation>
-<translation id="8046278916126163020">እርስዎ የጎበኙዋቸው አዳዲስ ጣቢያዎች ማሳወቂያዎችን ለእርስዎ ለመላክ ሊጠይቁ ይችላሉ</translation>
 <translation id="804786196054284061">የመጨረሻ ተጠቃሚ የፍቃድ ስምምነት</translation>
 <translation id="8049705080247101012">Google «<ph name="EXTENSION_NAME" />»ን ተንኮል-አዘል ብሎ ጠቁሞታል፣ እና እንዳይጫን ተከልክሏል</translation>
 <translation id="8050038245906040378">Microsoft Commercial Code Signing</translation>

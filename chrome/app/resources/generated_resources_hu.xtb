@@ -1192,7 +1192,6 @@ Ha kezelni szeretné a fiók beállításait, telepítse eszközére a Family Li
 <translation id="2665919335226618153">Ajjaj! Hiba történt formázás közben.</translation>
 <translation id="2666990579225592931">Vendég módú ablak megnyitása</translation>
 <translation id="2667463864537187133">Helyesírás-ellenőrzés kezelése</translation>
-<translation id="2669093958999339774">Letilthatja a zavaró értesítési engedélykéréseket, és kérhet helyettük kevésbé zavaró üzenetet</translation>
 <translation id="2670102641511624474">A(z) <ph name="APP_NAME" /> megosztja a Chrome egy lapját.</translation>
 <translation id="2670429602441959756">Ez az oldal olyan funkciókat tartalmaz, amelyeket a virtuális valóság még nem támogat. Kilépés a virtuális valóság módból…</translation>
 <translation id="2671451824761031126">Könyvjelzői és beállításai mostantól rendelkezésre állnak</translation>
@@ -1965,7 +1964,6 @@ Ha kezelni szeretné a fiók beállításait, telepítse eszközére a Family Li
 <translation id="37613671848467444">Megnyitás &amp;inkognitóablakban</translation>
 <translation id="3764583730281406327">{NUM_DEVICES,plural, =1{Kommunikáció egy USB-eszközzel}other{Kommunikáció # USB-eszközzel}}</translation>
 <translation id="3765246971671567135">Nem sikerült a demó mód offline házirendjének olvasása.</translation>
-<translation id="3767376082821709728">Az újonnan meglátogatott webhelyek nem küldhetnek értesítéseket</translation>
 <translation id="3768037234834996183">Beállítások szinkronizálása…</translation>
 <translation id="377050016711188788">Jégkrém</translation>
 <translation id="3771294271822695279">Videofájlok</translation>
@@ -4917,7 +4915,6 @@ A kulcsfájlt tartsa biztonságos helyen. Szüksége lesz rá ahhoz, hogy új ve
 <translation id="8044899503464538266">Lassú</translation>
 <translation id="8045253504249021590">A szinkronizálást a Google Irányítópulton keresztül leállították.</translation>
 <translation id="8045923671629973368">Adja meg az alkalmazás azonosítóját vagy internetes áruházi URL-jét</translation>
-<translation id="8046278916126163020">Az újonnan meglátogatott webhelyek engedélyt kérhetnek, hogy értesítéseket küldjenek</translation>
 <translation id="804786196054284061">Végfelhasználói licencszerződés</translation>
 <translation id="8049705080247101012">A Google rosszindulatúként jelölte meg a(z) „<ph name="EXTENSION_NAME" />” bővítményt, és megakadályozta a telepítést</translation>
 <translation id="8050038245906040378">Microsoft kereskedelmi kódaláírás</translation>

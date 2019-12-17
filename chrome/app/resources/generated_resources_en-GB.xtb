@@ -1192,7 +1192,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="2665919335226618153">Oh no! There was an error during formatting.</translation>
 <translation id="2666990579225592931">Open Guest window</translation>
 <translation id="2667463864537187133">Manage spell check</translation>
-<translation id="2669093958999339774">Block notification prompts from interrupting you, and use a quieter message instead</translation>
 <translation id="2670102641511624474"><ph name="APP_NAME" /> is sharing a Chrome tab.</translation>
 <translation id="2670429602441959756">This page contains features not yet supported in VR. Exiting...</translation>
 <translation id="2671451824761031126">Your bookmarks and settings are ready</translation>
@@ -1965,7 +1964,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="37613671848467444">Open in &amp;Incognito Window</translation>
 <translation id="3764583730281406327">{NUM_DEVICES,plural, =1{Communicate with a USB device}other{Communicate with # USB devices}}</translation>
 <translation id="3765246971671567135">Could not read offline demo mode policy.</translation>
-<translation id="3767376082821709728">New sites that you visit can't send you notifications</translation>
 <translation id="3768037234834996183">Syncing your preferences...</translation>
 <translation id="377050016711188788">Ice-cream</translation>
 <translation id="3771294271822695279">Video Files</translation>
@@ -4916,7 +4914,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8044899503464538266">Slow</translation>
 <translation id="8045253504249021590">Sync has been stopped via the Google Dashboard.</translation>
 <translation id="8045923671629973368">Enter application ID or web store URL</translation>
-<translation id="8046278916126163020">New sites that you visit can ask to send you notifications</translation>
 <translation id="804786196054284061">End User Licence Agreement</translation>
 <translation id="8049705080247101012">Google has flagged '<ph name="EXTENSION_NAME" />' as malicious, and installation has been prevented</translation>
 <translation id="8050038245906040378">Microsoft Commercial Code Signing</translation>

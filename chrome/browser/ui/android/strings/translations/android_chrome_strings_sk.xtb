@@ -232,7 +232,6 @@
 <translation id="2650751991977523696">Stiahnuť súbor znova?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# zvukový súbor}few{# zvukové súbory}many{# Audio files}other{# zvukových súborov}}</translation>
 <translation id="2653659639078652383">Odoslať</translation>
-<translation id="2669093958999339774">Zabrániť vyrušovaniu upozorneniami a používať namiesto nich tiché správy</translation>
 <translation id="2677748264148917807">Odísť</translation>
 <translation id="2704606927547763573">Skopírované</translation>
 <translation id="2707726405694321444">Obnoviť stránku</translation>
@@ -367,7 +366,6 @@
 <translation id="3739899004075612870">Pridané do záložiek <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111561329211289">Synchronizácia na pozadí</translation>
 <translation id="3749259744154402564">Nepodporované</translation>
-<translation id="3767376082821709728">Nové weby, ktoré navštívite, vám nemôžu odosielať upozornenia</translation>
 <translation id="3771001275138982843">Aktualizáciu sa nepodarilo stiahnuť</translation>
 <translation id="3771033907050503522">Karty inkognito</translation>
 <translation id="3773755127849930740">Povoľte párovanie <ph name="BEGIN_LINK" />zapnutím rozhrania Bluetooth<ph name="END_LINK" /></translation>
@@ -959,7 +957,6 @@ Web NEZÍSKA prístup k fotoaparátu. Obrázky fotoaparátu sú viditeľné iba
 <translation id="8035133914807600019">Nový priečinok…</translation>
 <translation id="8037750541064988519">Zostáva: <ph name="DAYS" /> d</translation>
 <translation id="804335162455518893">SD karta sa nenašla</translation>
-<translation id="8046278916126163020">Nové weby, ktoré navštívite, vás môžu žiadať o odosielanie upozornení</translation>
 <translation id="805047784848435650">Na základe vašej histórie prehliadania</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB k dispozícii</translation>
 <translation id="8058746566562539958">Otvoriť v Chrome na novej karte</translation>
