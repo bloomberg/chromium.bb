@@ -526,7 +526,8 @@ TEST_F(IndexedDBBackingStoreTest, PutGetConsistency) {
         {
           IndexedDBBackingStore::Transaction transaction1(
               backing_store()->AsWeakPtr(),
-              blink::mojom::IDBTransactionDurability::Relaxed);
+              blink::mojom::IDBTransactionDurability::Relaxed,
+              blink::mojom::IDBTransactionMode::ReadWrite);
           transaction1.Begin(CreateDummyLock());
           IndexedDBBackingStore::RecordIdentifier record;
           leveldb::Status s = backing_store()->PutRecord(&transaction1, 1, 1,
@@ -544,7 +545,8 @@ TEST_F(IndexedDBBackingStoreTest, PutGetConsistency) {
         {
           IndexedDBBackingStore::Transaction transaction2(
               backing_store()->AsWeakPtr(),
-              blink::mojom::IDBTransactionDurability::Relaxed);
+              blink::mojom::IDBTransactionDurability::Relaxed,
+              blink::mojom::IDBTransactionMode::ReadWrite);
           transaction2.Begin(CreateDummyLock());
           IndexedDBValue result_value;
           EXPECT_TRUE(backing_store()
@@ -577,7 +579,8 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, PutGetConsistencyWithBlobs) {
         // Initiate transaction1 - writing blobs.
         transaction1 = std::make_unique<IndexedDBBackingStore::Transaction>(
             backing_store()->AsWeakPtr(),
-            blink::mojom::IDBTransactionDurability::Relaxed);
+            blink::mojom::IDBTransactionDurability::Relaxed,
+            blink::mojom::IDBTransactionMode::ReadWrite);
         transaction1->Begin(CreateDummyLock());
         IndexedDBBackingStore::RecordIdentifier record;
         EXPECT_TRUE(
@@ -603,7 +606,8 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, PutGetConsistencyWithBlobs) {
         // Initiate transaction2, reading blobs.
         IndexedDBBackingStore::Transaction transaction2(
             backing_store()->AsWeakPtr(),
-            blink::mojom::IDBTransactionDurability::Relaxed);
+            blink::mojom::IDBTransactionDurability::Relaxed,
+            blink::mojom::IDBTransactionMode::ReadWrite);
         transaction2.Begin(CreateDummyLock());
         IndexedDBValue result_value;
         EXPECT_TRUE(backing_store()
@@ -625,7 +629,8 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, PutGetConsistencyWithBlobs) {
         // Initiate transaction3, deleting blobs.
         transaction3 = std::make_unique<IndexedDBBackingStore::Transaction>(
             backing_store()->AsWeakPtr(),
-            blink::mojom::IDBTransactionDurability::Relaxed);
+            blink::mojom::IDBTransactionDurability::Relaxed,
+            blink::mojom::IDBTransactionMode::ReadWrite);
         transaction3->Begin(CreateDummyLock());
         EXPECT_TRUE(backing_store()
                         ->DeleteRange(transaction3.get(), 1, 1,
@@ -694,7 +699,8 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, DeleteRange) {
           // Initiate transaction1 - write records.
           transaction1 = std::make_unique<IndexedDBBackingStore::Transaction>(
               backing_store()->AsWeakPtr(),
-              blink::mojom::IDBTransactionDurability::Relaxed);
+              blink::mojom::IDBTransactionDurability::Relaxed,
+              blink::mojom::IDBTransactionMode::ReadWrite);
           transaction1->Begin(CreateDummyLock());
           IndexedDBBackingStore::RecordIdentifier record;
           for (size_t i = 0; i < values.size(); ++i) {
@@ -722,7 +728,8 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, DeleteRange) {
           // Initiate transaction 2 - delete range.
           transaction2 = std::make_unique<IndexedDBBackingStore::Transaction>(
               backing_store()->AsWeakPtr(),
-              blink::mojom::IDBTransactionDurability::Relaxed);
+              blink::mojom::IDBTransactionDurability::Relaxed,
+              blink::mojom::IDBTransactionMode::ReadWrite);
           transaction2->Begin(CreateDummyLock());
           IndexedDBValue result_value;
           EXPECT_TRUE(backing_store()
@@ -802,7 +809,8 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, DeleteRangeEmptyRange) {
           // Initiate transaction1 - write records.
           transaction1 = std::make_unique<IndexedDBBackingStore::Transaction>(
               backing_store()->AsWeakPtr(),
-              blink::mojom::IDBTransactionDurability::Relaxed);
+              blink::mojom::IDBTransactionDurability::Relaxed,
+              blink::mojom::IDBTransactionMode::ReadWrite);
           transaction1->Begin(CreateDummyLock());
 
           IndexedDBBackingStore::RecordIdentifier record;
@@ -830,7 +838,8 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, DeleteRangeEmptyRange) {
           // Initiate transaction 2 - delete range.
           transaction2 = std::make_unique<IndexedDBBackingStore::Transaction>(
               backing_store()->AsWeakPtr(),
-              blink::mojom::IDBTransactionDurability::Relaxed);
+              blink::mojom::IDBTransactionDurability::Relaxed,
+              blink::mojom::IDBTransactionMode::ReadWrite);
           transaction2->Begin(CreateDummyLock());
           IndexedDBValue result_value;
           EXPECT_TRUE(backing_store()
@@ -874,7 +883,8 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, BlobJournalInterleavedTransactions) {
         // Initiate transaction1.
         transaction1 = std::make_unique<IndexedDBBackingStore::Transaction>(
             backing_store()->AsWeakPtr(),
-            blink::mojom::IDBTransactionDurability::Relaxed);
+            blink::mojom::IDBTransactionDurability::Relaxed,
+            blink::mojom::IDBTransactionMode::ReadWrite);
         transaction1->Begin(CreateDummyLock());
         IndexedDBBackingStore::RecordIdentifier record1;
         EXPECT_TRUE(
@@ -900,7 +910,8 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, BlobJournalInterleavedTransactions) {
         // Initiate transaction2.
         transaction2 = std::make_unique<IndexedDBBackingStore::Transaction>(
             backing_store()->AsWeakPtr(),
-            blink::mojom::IDBTransactionDurability::Relaxed);
+            blink::mojom::IDBTransactionDurability::Relaxed,
+            blink::mojom::IDBTransactionMode::ReadWrite);
         transaction2->Begin(CreateDummyLock());
         IndexedDBBackingStore::RecordIdentifier record2;
         EXPECT_TRUE(
@@ -948,7 +959,8 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, ActiveBlobJournal) {
       FROM_HERE, base::BindLambdaForTesting([&]() {
         transaction1 = std::make_unique<IndexedDBBackingStore::Transaction>(
             backing_store()->AsWeakPtr(),
-            blink::mojom::IDBTransactionDurability::Relaxed);
+            blink::mojom::IDBTransactionDurability::Relaxed,
+            blink::mojom::IDBTransactionMode::ReadWrite);
         transaction1->Begin(CreateDummyLock());
         IndexedDBBackingStore::RecordIdentifier record;
         EXPECT_TRUE(
@@ -972,7 +984,8 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, ActiveBlobJournal) {
 
         IndexedDBBackingStore::Transaction transaction2(
             backing_store()->AsWeakPtr(),
-            blink::mojom::IDBTransactionDurability::Relaxed);
+            blink::mojom::IDBTransactionDurability::Relaxed,
+            blink::mojom::IDBTransactionMode::ReadWrite);
         transaction2.Begin(CreateDummyLock());
         EXPECT_TRUE(
             backing_store()
@@ -994,7 +1007,8 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, ActiveBlobJournal) {
 
         transaction3 = std::make_unique<IndexedDBBackingStore::Transaction>(
             backing_store()->AsWeakPtr(),
-            blink::mojom::IDBTransactionDurability::Relaxed);
+            blink::mojom::IDBTransactionDurability::Relaxed,
+            blink::mojom::IDBTransactionMode::ReadWrite);
         transaction3->Begin(CreateDummyLock());
         EXPECT_TRUE(backing_store()
                         ->DeleteRange(transaction3.get(), 1, 1,
@@ -1068,7 +1082,8 @@ TEST_F(IndexedDBBackingStoreTest, HighIds) {
         {
           IndexedDBBackingStore::Transaction transaction1(
               backing_store()->AsWeakPtr(),
-              blink::mojom::IDBTransactionDurability::Relaxed);
+              blink::mojom::IDBTransactionDurability::Relaxed,
+              blink::mojom::IDBTransactionMode::ReadWrite);
           transaction1.Begin(CreateDummyLock());
           IndexedDBBackingStore::RecordIdentifier record;
           leveldb::Status s = backing_store()->PutRecord(
@@ -1098,7 +1113,8 @@ TEST_F(IndexedDBBackingStoreTest, HighIds) {
         {
           IndexedDBBackingStore::Transaction transaction2(
               backing_store()->AsWeakPtr(),
-              blink::mojom::IDBTransactionDurability::Relaxed);
+              blink::mojom::IDBTransactionDurability::Relaxed,
+              blink::mojom::IDBTransactionMode::ReadWrite);
           transaction2.Begin(CreateDummyLock());
           IndexedDBValue result_value;
           leveldb::Status s = backing_store()->GetRecord(
@@ -1152,7 +1168,8 @@ TEST_F(IndexedDBBackingStoreTest, InvalidIds) {
 
         IndexedDBBackingStore::Transaction transaction1(
             backing_store()->AsWeakPtr(),
-            blink::mojom::IDBTransactionDurability::Relaxed);
+            blink::mojom::IDBTransactionDurability::Relaxed,
+            blink::mojom::IDBTransactionMode::ReadWrite);
         transaction1.Begin(CreateDummyLock());
 
         IndexedDBBackingStore::RecordIdentifier record;
@@ -1244,7 +1261,8 @@ TEST_F(IndexedDBBackingStoreTest, CreateDatabase) {
 
           IndexedDBBackingStore::Transaction transaction(
               backing_store()->AsWeakPtr(),
-              blink::mojom::IDBTransactionDurability::Relaxed);
+              blink::mojom::IDBTransactionDurability::Relaxed,
+              blink::mojom::IDBTransactionMode::ReadWrite);
           transaction.Begin(CreateDummyLock());
 
           IndexedDBObjectStoreMetadata object_store;
@@ -1446,7 +1464,8 @@ TEST_F(IndexedDBBackingStoreTest, SchemaUpgradeWithoutBlobsSurvives) {
 
           IndexedDBBackingStore::Transaction transaction(
               backing_store()->AsWeakPtr(),
-              blink::mojom::IDBTransactionDurability::Relaxed);
+              blink::mojom::IDBTransactionDurability::Relaxed,
+              blink::mojom::IDBTransactionMode::ReadWrite);
           transaction.Begin(CreateDummyLock());
 
           IndexedDBObjectStoreMetadata object_store;
@@ -1474,7 +1493,8 @@ TEST_F(IndexedDBBackingStoreTest, SchemaUpgradeWithoutBlobsSurvives) {
         // Save a value.
         IndexedDBBackingStore::Transaction transaction1(
             backing_store()->AsWeakPtr(),
-            blink::mojom::IDBTransactionDurability::Relaxed);
+            blink::mojom::IDBTransactionDurability::Relaxed,
+            blink::mojom::IDBTransactionMode::ReadWrite);
         transaction1.Begin(CreateDummyLock());
         IndexedDBBackingStore::RecordIdentifier record;
         leveldb::Status s = backing_store()->PutRecord(
@@ -1508,7 +1528,8 @@ TEST_F(IndexedDBBackingStoreTest, SchemaUpgradeWithoutBlobsSurvives) {
 
         IndexedDBBackingStore::Transaction transaction2(
             backing_store()->AsWeakPtr(),
-            blink::mojom::IDBTransactionDurability::Relaxed);
+            blink::mojom::IDBTransactionDurability::Relaxed,
+            blink::mojom::IDBTransactionMode::ReadWrite);
         transaction2.Begin(CreateDummyLock());
         IndexedDBValue result_value;
         EXPECT_TRUE(backing_store()
@@ -1576,7 +1597,8 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, SchemaUpgradeWithBlobsCorrupt) {
 
           IndexedDBBackingStore::Transaction transaction(
               backing_store()->AsWeakPtr(),
-              blink::mojom::IDBTransactionDurability::Relaxed);
+              blink::mojom::IDBTransactionDurability::Relaxed,
+              blink::mojom::IDBTransactionMode::ReadWrite);
           transaction.Begin(CreateDummyLock());
 
           IndexedDBObjectStoreMetadata object_store;
@@ -1602,7 +1624,8 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, SchemaUpgradeWithBlobsCorrupt) {
         // Initiate transaction1 - writing blobs.
         transaction1 = std::make_unique<IndexedDBBackingStore::Transaction>(
             backing_store()->AsWeakPtr(),
-            blink::mojom::IDBTransactionDurability::Relaxed);
+            blink::mojom::IDBTransactionDurability::Relaxed,
+            blink::mojom::IDBTransactionMode::ReadWrite);
         transaction1->Begin(CreateDummyLock());
         IndexedDBBackingStore::RecordIdentifier record;
         EXPECT_TRUE(backing_store()

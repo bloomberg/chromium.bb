@@ -841,10 +841,11 @@ V2SchemaCorruptionStatus IndexedDBBackingStore::HasV2SchemaCorruption() {
 
 std::unique_ptr<IndexedDBBackingStore::Transaction>
 IndexedDBBackingStore::CreateTransaction(
-    blink::mojom::IDBTransactionDurability durability) {
+    blink::mojom::IDBTransactionDurability durability,
+    blink::mojom::IDBTransactionMode mode) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
   return std::make_unique<IndexedDBBackingStore::Transaction>(
-      weak_factory_.GetWeakPtr(), durability);
+      weak_factory_.GetWeakPtr(), durability, mode);
 }
 
 // static
@@ -2694,7 +2695,11 @@ bool IndexKeyCursorImpl::LoadCurrentRow(Status* s) {
     return false;
   }
   if (!found) {
-    *s = transaction_->transaction()->Remove(iterator_->Key());
+    // If the version numbers don't match, that means this is an obsolete index
+    // entry (a 'tombstone') that can be cleaned up. This removal can only
+    // happen in non-read-only transactions.
+    if (cursor_options_.mode != blink::mojom::IDBTransactionMode::ReadOnly)
+      *s = transaction_->transaction()->Remove(iterator_->Key());
     return false;
   }
   if (result.empty()) {
@@ -2818,7 +2823,11 @@ bool IndexCursorImpl::LoadCurrentRow(Status* s) {
     return false;
   }
   if (!found) {
-    *s = transaction_->transaction()->Remove(iterator_->Key());
+    // If the version numbers don't match, that means this is an obsolete index
+    // entry (a 'tombstone') that can be cleaned up. This removal can only
+    // happen in non-read-only transactions.
+    if (cursor_options_.mode != blink::mojom::IDBTransactionMode::ReadOnly)
+      *s = transaction_->transaction()->Remove(iterator_->Key());
     return false;
   }
   if (result.empty()) {
@@ -2835,7 +2844,11 @@ bool IndexCursorImpl::LoadCurrentRow(Status* s) {
   }
 
   if (object_store_data_version != index_data_version) {
-    *s = transaction_->transaction()->Remove(iterator_->Key());
+    // If the version numbers don't match, that means this is an obsolete index
+    // entry (a 'tombstone') that can be cleaned up. This removal can only
+    // happen in non-read-only transactions.
+    if (cursor_options_.mode != blink::mojom::IDBTransactionMode::ReadOnly)
+      *s = transaction_->transaction()->Remove(iterator_->Key());
     return false;
   }
 
@@ -2858,6 +2871,7 @@ IndexedDBBackingStore::OpenObjectStoreCursor(
   TransactionalLevelDBTransaction* leveldb_transaction =
       transaction->transaction();
   IndexedDBBackingStore::Cursor::CursorOptions cursor_options;
+  cursor_options.mode = transaction->mode();
   // TODO(cmumford): Handle this error (crbug.com/363397)
   if (!ObjectStoreCursorOptions(leveldb_transaction, database_id,
                                 object_store_id, range, direction,
@@ -2886,6 +2900,7 @@ IndexedDBBackingStore::OpenObjectStoreKeyCursor(
   TransactionalLevelDBTransaction* leveldb_transaction =
       transaction->transaction();
   IndexedDBBackingStore::Cursor::CursorOptions cursor_options;
+  cursor_options.mode = transaction->mode();
   // TODO(cmumford): Handle this error (crbug.com/363397)
   if (!ObjectStoreCursorOptions(leveldb_transaction, database_id,
                                 object_store_id, range, direction,
@@ -2916,6 +2931,7 @@ IndexedDBBackingStore::OpenIndexKeyCursor(
   TransactionalLevelDBTransaction* leveldb_transaction =
       transaction->transaction();
   IndexedDBBackingStore::Cursor::CursorOptions cursor_options;
+  cursor_options.mode = transaction->mode();
   if (!IndexCursorOptions(leveldb_transaction, database_id, object_store_id,
                           index_id, range, direction, &cursor_options, s))
     return std::unique_ptr<IndexedDBBackingStore::Cursor>();
@@ -2942,6 +2958,7 @@ IndexedDBBackingStore::OpenIndexCursor(
   TransactionalLevelDBTransaction* leveldb_transaction =
       transaction->transaction();
   IndexedDBBackingStore::Cursor::CursorOptions cursor_options;
+  cursor_options.mode = transaction->mode();
   if (!IndexCursorOptions(leveldb_transaction, database_id, object_store_id,
                           index_id, range, direction, &cursor_options, s))
     return std::unique_ptr<IndexedDBBackingStore::Cursor>();
@@ -2966,14 +2983,16 @@ void IndexedDBBackingStore::ForceRunBlobCleanup() {
 // |backing_store| can be null in unittests (see FakeTransaction).
 IndexedDBBackingStore::Transaction::Transaction(
     base::WeakPtr<IndexedDBBackingStore> backing_store,
-    blink::mojom::IDBTransactionDurability durability)
+    blink::mojom::IDBTransactionDurability durability,
+    blink::mojom::IDBTransactionMode mode)
     : backing_store_(std::move(backing_store)),
       transactional_leveldb_factory_(
           backing_store_ ? backing_store_->transactional_leveldb_factory_
                          : nullptr),
       database_id_(-1),
       committing_(false),
-      durability_(durability) {
+      durability_(durability),
+      mode_(mode) {
   DCHECK(!backing_store_ ||
          backing_store_->task_runner()->RunsTasksInCurrentSequence());
 }
