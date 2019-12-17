@@ -59,6 +59,18 @@ source_set("channel") {
   ]
 }
 
+source_set("discovery") {
+  sources = [
+    "discovery/service_info.h",
+  ]
+
+  deps = []
+
+  public_deps = [
+    "../../platform",
+  ]
+}
+
 source_set("test_helpers") {
   testonly = true
   sources = [

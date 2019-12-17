@@ -90,9 +90,10 @@ class IPAddress {
 struct IPEndpoint {
  public:
   IPAddress address;
-  uint16_t port;
-};
+  uint16_t port = 0;
 
+  explicit operator bool() const;
+};
 bool operator==(const IPEndpoint& a, const IPEndpoint& b);
 bool operator!=(const IPEndpoint& a, const IPEndpoint& b);
 

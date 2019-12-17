@@ -203,6 +203,10 @@ ErrorOr<IPAddress> IPAddress::ParseV6(const std::string& s) {
   return IPAddress(hextets);
 }
 
+IPEndpoint::operator bool() const {
+  return address || port;
+}
+
 bool operator==(const IPEndpoint& a, const IPEndpoint& b) {
   return (a.address == b.address) && (a.port == b.port);
 }

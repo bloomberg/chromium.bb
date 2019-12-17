@@ -11,6 +11,7 @@ group("gn_all") {
   deps = [
     "cast/common:certificate",
     "cast/common:channel",
+    "cast/common:discovery",
     "cast/sender:channel",
     "cast/streaming:receiver",
     "cast/streaming:sender",

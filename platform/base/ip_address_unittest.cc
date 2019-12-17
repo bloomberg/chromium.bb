@@ -257,4 +257,26 @@ TEST(IPAddressTest, V6ParseThreeDigitValue) {
                                        0x01, 0x23}));
 }
 
+TEST(IPAddressTest, IPEndpointBoolOperator) {
+  IPEndpoint endpoint;
+  if (endpoint) {
+    FAIL();
+  }
+
+  endpoint = IPEndpoint{{192, 168, 0, 1}, 80};
+  if (!endpoint) {
+    FAIL();
+  }
+
+  endpoint = IPEndpoint{{192, 168, 0, 1}, 0};
+  if (!endpoint) {
+    FAIL();
+  }
+
+  endpoint = IPEndpoint{{}, 80};
+  if (!endpoint) {
+    FAIL();
+  }
+}
+
 }  // namespace openscreen
