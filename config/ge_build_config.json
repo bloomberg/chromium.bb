@@ -2314,7 +2314,18 @@
         {
           "board_name": "hatch",
           "name": "akemi",
-          "cq_test_enabled": false,
+          "test_suites": [
+            "sanity",
+            "bvt-inline",
+            "bvt-tast-cq",
+            "bvt-installer",
+            "bvt-arc",
+            "au",
+            "bvt-cq",
+            "bvt-perbuild",
+            "bvt-tast-informational"
+          ],
+          "cq_test_enabled": true,
           "release_builder_test_pool": "bvt",
           "board_id": 372,
           "is_active": true
@@ -3794,7 +3805,7 @@
       "reference_board_name": "volteer",
       "arch": "X86_INTERNAL",
       "builder": "RELEASE",
-      "experimental": true,
+      "experimental": false,
       "models": [
         {
           "board_name": "volteer",
