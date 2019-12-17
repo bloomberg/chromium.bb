@@ -517,6 +517,9 @@ void PermissionWizard::Impl::OnPermissionCheckResult(bool result) {
     // Update the whole UI, not just the "Next" button, in case a different page
     // was previously shown.
     [self updateUI];
+
+    // Bring the window to the front again, to prompt the user to hit Next.
+    [self presentWindow];
   } else {
     // Permission denied, so turn off auto-advance for this page, and present
     // the dialog to the user if needed. After the user grants this permission,
@@ -526,6 +529,10 @@ void PermissionWizard::Impl::OnPermissionCheckResult(bool result) {
     // shown when a permission-check fails.
     _autoAdvance = NO;
     if (![self window].visible) {
+      // Only present the window if it was previously hidden. This method will
+      // bring the window on top of other windows, which should not happen
+      // during regular polling for permission status, as the user is focused on
+      // the System Preferences applet.
       [self presentWindow];
     }
 
