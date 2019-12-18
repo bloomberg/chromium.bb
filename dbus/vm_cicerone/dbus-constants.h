@@ -37,6 +37,7 @@ const char kCancelImportLxdContainerMethod[] = "CancelImportLxdContainer";
 const char kApplyAnsiblePlaybookMethod[] = "ApplyAnsiblePlaybook";
 const char kUpgradeContainerMethod[] = "UpgradeContainer";
 const char kCancelUpgradeContainerMethod[] = "CancelUpgradeContainer";
+const char kConfigureForArcSideloadMethod[] = "ConfigureForArcSideload";
 
 // Methods to be called from chunneld.
 const char kConnectChunnelMethod[] = "ConnectChunnel";
@@ -47,8 +48,7 @@ const char kGetDebugInformationMethod[] = "GetDebugInformation";
 // Signals.
 const char kContainerStartedSignal[] = "ContainerStarted";
 const char kContainerShutdownSignal[] = "ContainerShutdown";
-const char kInstallLinuxPackageProgressSignal[] =
-    "InstallLinuxPackageProgress";
+const char kInstallLinuxPackageProgressSignal[] = "InstallLinuxPackageProgress";
 const char kUninstallPackageProgressSignal[] = "UninstallPackageProgress";
 const char kLxdContainerCreatedSignal[] = "LxdContainerCreated";
 const char kLxdContainerDeletedSignal[] = "LxdContainerDeleted";
@@ -64,6 +64,5 @@ const char kUpgradeContainerProgressSignal[] = "UpgradeContainerProgress";
 
 }  // namespace cicerone
 }  // namespace vm_tools
-
 
 #endif  // SYSTEM_API_DBUS_VM_CICERONE_DBUS_CONSTANTS_H_

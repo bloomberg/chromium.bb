@@ -810,12 +810,12 @@ message SetUpLxdContainerUserResponse {
 }
 
 // Request for debug information about virtual machine and container state.
-message GetDebugInformationRequest {
-}
+message GetDebugInformationRequest {}
 
 // Response for debug information about virtual machine and container state.
 message GetDebugInformationResponse {
-  // Debug information about virtual machine and container state in arbitrary format.
+  // Debug information about virtual machine and container state in arbitrary
+  // format.
   string debug_information = 1;
 }
 
@@ -1124,6 +1124,7 @@ message ApplyAnsiblePlaybookRequest {
 
 message ApplyAnsiblePlaybookResponse {
   enum Status {
+    // The status is unknown.
     UNKNOWN = 0;
 
     // Application process was successfully started, all further updates will be
@@ -1151,6 +1152,7 @@ message ApplyAnsiblePlaybookProgressSignal {
   string owner_id = 3;
 
   enum Status {
+    // The signal has unknown status.
     UNKNOWN = 0;
 
     // Application has completed and was successfull. No further signals will be
@@ -1170,6 +1172,36 @@ message ApplyAnsiblePlaybookProgressSignal {
 
   // Contains a textual reason for the failure in case of a FAILED status.
   string failure_details = 5;
+}
+
+message ConfigureForArcSideloadRequest {
+  // Name of the VM to target.
+  string vm_name = 1;
+
+  // Name of the container within the VM to target.
+  string container_name = 2;
+
+  // The owner of the VM and container.
+  string owner_id = 3;
+}
+
+message ConfigureForArcSideloadResponse {
+  enum Status {
+    // The status is unknown.
+    UNKNOWN = 0;
+
+    // The configuration succeeded.
+    SUCCEEDED = 2;
+
+    // The configuration failed.
+    FAILED = 3;
+  }
+
+  // Status of the request.
+  Status status = 1;
+
+  // If status is FAILED, contains the reason the request failed.
+  string failure_reason = 2;
 }
 
 // Request for a container to create a tunnel to a prepared port on the host.
