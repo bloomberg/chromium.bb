@@ -233,6 +233,8 @@ def main(args):
   doGenerateMap = True
   doMakeDebug = True
   doMakeRelease = True
+  doMakeStaticCRT = True
+  doMakeDynamicCRT = True
   version = None
 
   for i in range(len(args)):
@@ -252,6 +254,10 @@ def main(args):
       doMakeDebug = False
     elif args[i] == '--norelease':
       doMakeRelease = False
+    elif args[i] == '--nostaticcrt':
+      doMakeStaticCRT = False
+    elif args[i] == '--nodynamiccrt':
+      doMakeDynamicCRT = False
     elif args[i] == '--version':
       version = args[i+1]
     elif args[i].startswith('-'):
@@ -303,27 +309,52 @@ def main(args):
     return rc
 
   if doMakeDebug:
-    print("Building Debug...")
-    sys.stdout.flush()
-    rc = bbutil.shellExecNoPipe('python build/blpwtk2.py static debug --bb_version')
-    if rc != 0:
-      return rc
+    if doMakeStaticCRT:
+      print("Building Debug with static CRT...")
+      sys.stdout.flush()
+      rc = bbutil.shellExecNoPipe('python build/blpwtk2.py static debug static_crt --bb_version')
+      if rc != 0:
+        return rc
 
-    rc = bbutil.shellExecNoPipe('ninja.exe -C out/static_debug blpwtk2_all')
-    if rc != 0:
-      return rc
+      rc = bbutil.shellExecNoPipe('ninja.exe -C out/static_debug blpwtk2_all')
+      if rc != 0:
+        return rc
+
+    if doMakeDynamicCRT:
+      print("Building Debug with dynamic CRT...")
+      sys.stdout.flush()
+      rc = bbutil.shellExecNoPipe('python build/blpwtk2.py static debug dynamic_crt --bb_version')
+      if rc != 0:
+        return rc
+
+      rc = bbutil.shellExecNoPipe('ninja.exe -C out/static_debug_md blpwtk2_all')
+      if rc != 0:
+        return rc
 
   if doMakeRelease:
-    print("Building Release...")
-    sys.stdout.flush()
     applyVariableToEnvironment('GN_DEFINES', 'is_official_build', 'true')
-    rc = bbutil.shellExecNoPipe('python build/blpwtk2.py static release --bb_version')
-    if rc != 0:
-      return rc
 
-    rc = bbutil.shellExecNoPipe('ninja.exe -C out/static_release blpwtk2_all')
-    if rc != 0:
-      return rc
+    print("Building Release with static CRT...")
+    if doMakeStaticCRT:
+      sys.stdout.flush()
+      rc = bbutil.shellExecNoPipe('python build/blpwtk2.py static release static_crt --bb_version')
+      if rc != 0:
+        return rc
+
+      rc = bbutil.shellExecNoPipe('ninja.exe -C out/static_release blpwtk2_all')
+      if rc != 0:
+        return rc
+
+    if doMakeDynamicCRT:
+      print("Building Release with dynamic CRT...")
+      sys.stdout.flush()
+      rc = bbutil.shellExecNoPipe('python build/blpwtk2.py static release dynamic_crt --bb_version')
+      if rc != 0:
+        return rc
+
+      rc = bbutil.shellExecNoPipe('ninja.exe -C out/static_release_md blpwtk2_all')
+      if rc != 0:
+        return rc
 
   os.chdir("..")
 
@@ -337,16 +368,30 @@ def main(args):
   configs = []
 
   if doMakeDebug:
-    os.mkdir(os.path.join(destDir, 'bin', 'debug'))
-    os.mkdir(os.path.join(destDir, 'lib', 'debug'))
-    os.mkdir(os.path.join(destDir, 'bin', 'debug', swiftFolderName))
-    configs.append('debug')
+    if doMakeStaticCRT:
+      os.mkdir(os.path.join(destDir, 'bin', 'debug'))
+      os.mkdir(os.path.join(destDir, 'lib', 'debug'))
+      os.mkdir(os.path.join(destDir, 'bin', 'debug', swiftFolderName))
+      configs.append('debug')
+
+    if doMakeDynamicCRT:
+      os.mkdir(os.path.join(destDir, 'bin', 'debug_md'))
+      os.mkdir(os.path.join(destDir, 'lib', 'debug_md'))
+      os.mkdir(os.path.join(destDir, 'bin', 'debug_md', swiftFolderName))
+      configs.append('debug_md')
 
   if doMakeRelease:
-    os.mkdir(os.path.join(destDir, 'bin', 'release'))
-    os.mkdir(os.path.join(destDir, 'lib', 'release'))
-    os.mkdir(os.path.join(destDir, 'bin', 'release', swiftFolderName))
-    configs.append('release')
+    if doMakeStaticCRT:
+      os.mkdir(os.path.join(destDir, 'bin', 'release'))
+      os.mkdir(os.path.join(destDir, 'lib', 'release'))
+      os.mkdir(os.path.join(destDir, 'bin', 'release', swiftFolderName))
+      configs.append('release')
+
+    if doMakeDynamicCRT:
+      os.mkdir(os.path.join(destDir, 'bin', 'release_md'))
+      os.mkdir(os.path.join(destDir, 'lib', 'release_md'))
+      os.mkdir(os.path.join(destDir, 'bin', 'release_md', swiftFolderName))
+      configs.append('release_md')
 
   if doGenerateMap:
     generateMsvsMapFiles(version, configs)
