@@ -8,12 +8,14 @@
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/utility/transformer_util.h"
 #include "ash/wm/cursor_manager_test_api.h"
 #include "base/command_line.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/viz/common/features.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/env.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/test/test_windows.h"
@@ -23,7 +25,9 @@
 #include "ui/display/display_switches.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/test/display_manager_test_api.h"
+#include "ui/display/types/display_constants.h"
 #include "ui/events/test/event_generator.h"
+#include "ui/gfx/overlay_transform.h"
 
 namespace ash {
 
@@ -130,18 +134,30 @@ TEST_F(MirrorOnBootTest, MirrorOnBoot) {
   EXPECT_EQ(1U, test_api.GetHosts().size());
 }
 
-// Test that the mirror window matches the size of the host display.
-TEST_F(MirrorUsingSurfaceLayersTest, MirrorSize) {
+class MirrorWindowControllerRotationAndPanelOrientationTest
+    : public MirrorWindowControllerTest,
+      public testing::WithParamInterface<
+          std::tuple<display::Display::Rotation, display::PanelOrientation>> {};
+
+// Test that the mirror display matches the size and rotation of the source.
+TEST_P(MirrorWindowControllerRotationAndPanelOrientationTest, MirrorSize) {
   const int64_t primary_id = 1;
   const int64_t mirror_id = 2;
+
+  const display::Display::Rotation active_rotation = std::get<0>(GetParam());
+  const display::PanelOrientation panel_orientation = std::get<1>(GetParam());
 
   // Run the test with and without display scaling.
   int scale_factors[] = {1, 2};
   for (int scale : scale_factors) {
-    const display::ManagedDisplayInfo primary_display_info =
-        CreateDisplayInfo(primary_id, gfx::Rect(0, 0, 400, 400), scale);
+    display::ManagedDisplayInfo primary_display_info =
+        CreateDisplayInfo(primary_id, gfx::Rect(0, 0, 400, 300), scale);
+    primary_display_info.set_panel_orientation(panel_orientation);
+    primary_display_info.SetRotation(active_rotation,
+                                     display::Display::RotationSource::ACTIVE);
+
     const display::ManagedDisplayInfo mirror_display_info =
-        CreateDisplayInfo(mirror_id, gfx::Rect(400, 0, 600, 600), scale);
+        CreateDisplayInfo(mirror_id, gfx::Rect(400, 0, 600, 500), scale);
     std::vector<display::ManagedDisplayInfo> display_info_list = {
         primary_display_info, mirror_display_info};
 
@@ -160,7 +176,24 @@ TEST_F(MirrorUsingSurfaceLayersTest, MirrorSize) {
     aura::Window* mirror_window = root_window->children()[0];
     EXPECT_EQ(primary_display.GetSizeInPixel(), root_window->bounds().size());
     EXPECT_EQ(primary_display.GetSizeInPixel(), mirror_window->bounds().size());
+
+    // Mirror should have a display transform hint that matches the active
+    // rotation (excluding the panel orientation) of the source.
+    EXPECT_EQ(DisplayRotationToOverlayTransform(active_rotation),
+              root_window->GetHost()->compositor()->display_transform_hint());
   }
 }
+
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    MirrorWindowControllerRotationAndPanelOrientationTest,
+    testing::Combine(testing::Values(display::Display::ROTATE_0,
+                                     display::Display::ROTATE_90,
+                                     display::Display::ROTATE_180,
+                                     display::Display::ROTATE_270),
+                     testing::Values(display::PanelOrientation::kNormal,
+                                     display::PanelOrientation::kBottomUp,
+                                     display::PanelOrientation::kLeftUp,
+                                     display::PanelOrientation::kRightUp)));
 
 }  // namespace ash

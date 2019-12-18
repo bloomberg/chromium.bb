@@ -15,6 +15,7 @@
 #include "ash/host/root_window_transformer.h"
 #include "ash/root_window_settings.h"
 #include "ash/shell.h"
+#include "ash/utility/transformer_util.h"
 #include "ash/window_factory.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -271,9 +272,13 @@ void MirrorWindowController::UpdateWindow(
                                             ->layout_store()
                                             ->forced_mirror_mode_for_tablet();
       if (!should_undo_rotation) {
+        // Use the rotation from source display without panel orientation
+        // applied instead of the display transform hint in |source_compositor|
+        // so that panel orientation is not applied to the mirror host.
         mirroring_host_info->ash_host->AsWindowTreeHost()
-            ->SetDisplayTransformHint(
-                source_compositor->display_transform_hint());
+            ->SetDisplayTransformHint(DisplayRotationToOverlayTransform(
+                display_manager->GetDisplayInfo(reflecting_source_id_)
+                    .GetActiveRotation()));
       }
 
       aura::Window* mirror_window = mirroring_host_info->mirror_window;
