@@ -198,10 +198,46 @@ void getWebViewPosition(HWND hwnd, int *left, int *top, int *width, int *height)
 }
 
 class ToolkitDelegate : public blpwtk2::ToolkitDelegate {
+    unsigned d_interceptKey;
 
   public:
-    ToolkitDelegate()
+    ToolkitDelegate(unsigned intercept_key = 0)
+        : d_interceptKey(intercept_key)
     {
+    }
+
+    bool onPreHandleMessage(unsigned window,
+                            unsigned message,
+                            unsigned w_param,
+                            long l_param,
+                            long *result) override
+    {
+        if (!d_interceptKey) {
+            return false;
+        }
+
+        switch (message) {
+        case WM_KEYDOWN:
+            std::cout << "Key down: " << w_param << ", " << l_param << std::endl;
+            if (w_param == d_interceptKey) {
+                return true;
+            }
+            break;
+        case WM_KEYUP:
+            std::cout << "Key up: " << w_param << ", " << l_param << std::endl;
+            if (w_param == d_interceptKey) {
+                return true;
+            }
+            break;
+        case WM_CHAR:
+            std::cout << "Char: " << w_param << ", " << l_param << std::endl;
+            if (w_param == d_interceptKey) {
+                return true;
+            }
+            break;
+        }
+
+        return false;
     }
 };
 
@@ -240,6 +276,7 @@ public:
             blpwtk2::WebViewCreateParams params;
             params.setJavascriptCanAccessClipboard(true);
             params.setDOMPasteEnabled(true);
+            params.setMessageInterceptionEnabled(true);
             if (g_in_process_renderer && d_profile == g_profile && !useExternalRenderer) {
                 params.setRendererAffinity(::GetCurrentProcessId());
             }
@@ -511,6 +548,11 @@ public:
                   << endPoint.y << ")" << std::endl;
     }
 
+    void didInterceptMessage(blpwtk2::WebView *source) override
+    {
+        std::cout << "DELEGATE: didInterceptMessage" << std::endl;
+    }
+
     void find()
     {
         char buf[200];
@@ -780,6 +822,7 @@ int main(int, const char**)
     bool isProcessHost = false;
     blpwtk2::ThreadMode host = blpwtk2::ThreadMode::ORIGINAL;
     int proxyPort = -1;
+    int intercept_key = 0;
     bool noRendererIOThread = false;
 
     {
@@ -821,6 +864,11 @@ int main(int, const char**)
                 char buf[1024];
                 sprintf_s(buf, sizeof(buf), "%S", argv[i]+14);
                 proxyPort = atoi(buf);
+            }
+            else if (0 == wcsncmp(L"--intercept-key=", argv[i], 16)) {
+                char buf[1024];
+                sprintf_s(buf, sizeof(buf), "%S", argv[i]+16);
+                intercept_key = atoi(buf);
             }
             else if (argv[i][0] != '-') {
                 char buf[1024];
@@ -870,7 +918,7 @@ int main(int, const char**)
         toolkitParams.setThreadMode(blpwtk2::ThreadMode::RENDERER_MAIN);
         toolkitParams.setInProcessResourceLoader(createInProcessResourceLoader());
         toolkitParams.setHostChannel(hostChannel);
-        toolkitParams.setDelegate(new ToolkitDelegate());
+        toolkitParams.setDelegate(new ToolkitDelegate(intercept_key));
         if (!g_in_process_renderer) {
             toolkitParams.disableInProcessRenderer();
         }

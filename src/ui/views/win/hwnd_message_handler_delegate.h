@@ -256,7 +256,8 @@ class VIEWS_EXPORT HWNDMessageHandlerDelegate {
   // message was consumed by the delegate and should not be processed further
   // by the HWNDMessageHandler. In this case, |result| is returned. |result| is
   // not modified otherwise.
-  virtual bool PreHandleMSG(UINT message,
+  virtual bool PreHandleMSG(HWND window,
+                            UINT message,
                             WPARAM w_param,
                             LPARAM l_param,
                             LRESULT* result) = 0;

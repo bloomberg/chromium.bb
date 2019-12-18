@@ -959,7 +959,7 @@ LRESULT HWNDMessageHandler::OnWndProc(UINT message,
   HWND window = hwnd();
   LRESULT result = 0;
 
-  if (delegate_ && delegate_->PreHandleMSG(message, w_param, l_param, &result))
+  if (delegate_ && delegate_->PreHandleMSG(window, message, w_param, l_param, &result))
     return result;
 
   // Otherwise we handle everything else.
