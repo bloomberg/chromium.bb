@@ -274,6 +274,22 @@ LRESULT RenderWebView::windowProcedure(UINT   uMsg,
                                        WPARAM wParam,
                                        LPARAM lParam)
 {
+#if defined(BLPWTK2_FEATURE_MSGINTERCEPT)
+    auto *toolkitDelegate = Statics::toolkitDelegate;
+    long result;
+
+    if (toolkitDelegate) {
+        if (toolkitDelegate->onPreHandleMessage(reinterpret_cast<unsigned>(d_hwnd.get()),
+                                                uMsg,
+                                                wParam,
+                                                lParam,
+                                                &result)) {
+            d_delegate->didInterceptMessage(this);
+            return result;
+        }
+    }
+#endif
+
     switch (uMsg) {
     case WM_NCDESTROY: {
         if (d_gotRenderViewInfo) {
