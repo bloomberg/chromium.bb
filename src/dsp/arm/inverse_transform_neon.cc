@@ -1252,7 +1252,8 @@ LIBGAV1_ALWAYS_INLINE void Adst4_NEON(void* dest, const void* source,
   }
 }
 
-constexpr int16_t kAdst4DcOnlyMultiplier[4] = {1321, 2482, 3344, 2482};
+alignas(8) constexpr int16_t kAdst4DcOnlyMultiplier[4] = {1321, 2482, 3344,
+                                                          2482};
 
 LIBGAV1_ALWAYS_INLINE bool Adst4DcOnly(void* dest, const void* source,
                                        int non_zero_coeff_count,
