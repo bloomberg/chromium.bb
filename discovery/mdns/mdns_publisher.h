@@ -21,12 +21,13 @@ class TaskRunner;
 namespace discovery {
 
 // This class is responsible for both tracking what records have been registered
-// to mDNS as well as publishing new mDNS Records to the network.
+// to mDNS as well as publishing new mDNS records to the network.
 // When a new record is published, it will be announced 8 times, starting at an
 // interval of 1 second, with the interval doubling each successive
 // announcement. This same announcement process is followed when an existing
 // record is updated. When it is removed, a Goodbye message must be sent if the
 // record is unique.
+//
 // Prior to publishing a record, the domain name for this service instance must
 // be claimed using the ClaimExclusiveOwnership() function. This function probes
 // the network to determine whether the chosen name exists, modifying the
