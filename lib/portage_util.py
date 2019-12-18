@@ -1913,6 +1913,57 @@ def FindEbuildForPackage(pkg_str, sysroot, include_masked=False,
   return ebuilds_map[pkg_str]
 
 
+def GetFlattenedDepsForPackage(pkg_str, sysroot='/', depth=0):
+  """Returns a depth-limited list of the dependencies for a given package.
+
+  Args:
+    pkg_str: The package name with optional category, version, and slot.
+    sysroot: The root directory being inspected.
+    depth: The depth of the transitive dependency tree to explore. 0 for
+      unlimited.
+
+  Returns:
+    List[str]: A list of the dependencies of the package. Includes the package
+      itself.
+  """
+  if not pkg_str:
+    raise ValueError('pkg_str must be non-empty')
+
+  cmd = [
+      cros_build_lib.GetSysrootToolPath(sysroot, 'equery'),
+      '-CNq',
+      'depgraph',
+      '--depth=%d' % depth,
+  ]
+
+  cmd += [pkg_str]
+
+  result = cros_build_lib.run(
+      cmd, print_cmd=False, capture_output=True, check=True, encoding='utf-8')
+
+  return _ParseDepTreeOutput(result.output)
+
+
+def _ParseDepTreeOutput(equery_output):
+  """Parses the output of `equery -CQn depgraph` in to a list of package CPVs.
+
+  Args:
+    equery_output: A string containing the output of the `equery depgraph`
+      command as formatted by the -C/--nocolor and -q/--quiet command line
+      options. The contents should roughly resemble:
+      ```
+      app-editors/vim-8.1.1486:
+      [  0]  app-editors/vim-8.1.1486
+      [  1]  app-eselect/eselect-vi-1.1.9
+      ```
+
+  Returns:
+    List[str]: A list of package CPVs parsed from the command output.
+  """
+  equery_output_regex = r'\[[\d ]+\]\s*([^\s]+)'
+  return re.findall(equery_output_regex, equery_output)
+
+
 def GetInstalledPackageUseFlags(pkg_str, board=None,
                                 buildroot=constants.SOURCE_ROOT):
   """Gets the list of USE flags for installed packages matching |pkg_str|.

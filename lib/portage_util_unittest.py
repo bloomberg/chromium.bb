@@ -1713,3 +1713,34 @@ class FindEbuildTest(cros_test_lib.RunCommandTestCase):
         output=equery_output, returncode=1)
     self.assertEqual(portage_util.FindEbuildForPackage(
         'foo', sysroot='/build/nami'), None)
+
+_EQUERY_OUTPUT_CORPUS = """
+
+virtual/editor-0:
+ [  0]  virtual/editor-0   
+ [  1]  app-editors/nano-4.2   
+ [  1]  app-editors/emacs-26.1-r3   
+ [  1]  app-editors/qemacs-0.4.1_pre20170225   
+ [  1]  app-editors/vim-8.1.1486   
+ [  1]  app-misc/mc-4.8.10   
+ [  1]  sys-apps/busybox-1.29.3   
+ [  1]  sys-apps/ed-1.14.2   
+"""
+
+
+class DepTreeTest(cros_test_lib.TestCase):
+  """Tests for GetDepTreeForPackage & parsing"""
+
+  def testParseDepTreeOutput(self):
+    expected = [
+        'virtual/editor-0',
+        'app-editors/nano-4.2',
+        'app-editors/emacs-26.1-r3',
+        'app-editors/qemacs-0.4.1_pre20170225',
+        'app-editors/vim-8.1.1486',
+        'app-misc/mc-4.8.10',
+        'sys-apps/busybox-1.29.3',
+        'sys-apps/ed-1.14.2',
+    ]
+    self.assertEqual(expected,
+                     portage_util._ParseDepTreeOutput(_EQUERY_OUTPUT_CORPUS))
