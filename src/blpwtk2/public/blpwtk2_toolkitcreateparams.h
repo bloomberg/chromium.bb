@@ -52,6 +52,9 @@ class BLPWTK2_EXPORT ToolkitDelegate {
     virtual void onDebugResume() = 0;
 
 
+    // patch section: msg interception
+
+
 
 };
 
