@@ -992,11 +992,17 @@ void DesktopWindowTreeHostWin::HandleMenuLoop(bool in_menu_loop) {
   }
 }
 
-bool DesktopWindowTreeHostWin::PreHandleMSG(UINT message,
+bool DesktopWindowTreeHostWin::PreHandleMSG(HWND window,
+                                            UINT message,
                                             WPARAM w_param,
                                             LPARAM l_param,
                                             LRESULT* result) {
-  return false;
+  return native_widget_delegate_->OnPreHandleMessage(
+          reinterpret_cast<unsigned>(window),
+          message,
+          w_param,
+          l_param,
+          result);
 }
 
 void DesktopWindowTreeHostWin::PostHandleMSG(UINT message,
