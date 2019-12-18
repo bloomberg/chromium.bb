@@ -98,7 +98,6 @@ const char kWifiHiddenSsid[] = "WiFi.HiddenSSID";
 const char kWifiPhyMode[] = "WiFi.PhyMode";
 const char kWifiChannelProperty[] = "WiFi.Channel";
 const char kWifiPreferredDeviceProperty[] = "WiFi.PreferredDevice";
-const char kWifiRoamThresholdProperty[] = "WiFi.RoamThreshold";
 const char kWifiFTEnabled[] = "WiFi.FTEnabled";
 
 // Flimflam EAP property names.
@@ -166,7 +165,6 @@ const char kPoweredProperty[] = "Powered";
 const char kScanIntervalProperty[] = "ScanInterval";
 const char kBgscanMethodProperty[] = "BgscanMethod";
 const char kBgscanShortIntervalProperty[] = "BgscanShortInterval";
-const char kRoamThresholdProperty[] = "RoamThreshold";
 const char kDBusObjectProperty[] = "DBus.Object";
 const char kDBusServiceProperty[] = "DBus.Service";
 const char kBgscanSignalThresholdProperty[] = "BgscanSignalThreshold";
