@@ -9577,7 +9577,34 @@ static int handle_inter_intra_mode(const AV1_COMP *const cpi,
   int64_t best_interintra_rd_wedge = INT64_MAX;
   if (try_wedge_interintra) {
     mbmi->use_wedge_interintra = 1;
-    if (!try_smooth_interintra) {
+    if (!cpi->sf.inter_sf.fast_interintra_wedge_search) {
+      // Exhaustive search of all wedge and mode combinations.
+      int best_mode = 0;
+      int best_wedge_index = 0;
+      int64_t best_total_rd = INT64_MAX;
+      for (int j = 0; j < INTERINTRA_MODES; ++j) {
+        mbmi->interintra_mode = (INTERINTRA_MODE)j;
+        av1_build_intra_predictors_for_interintra(cm, xd, bsize, 0, orig_dst,
+                                                  intrapred, bw);
+        rd = pick_interintra_wedge(cpi, x, bsize, intrapred_, tmp_buf_);
+        const int rate_overhead =
+            interintra_mode_cost[mbmi->interintra_mode] +
+            x->wedge_idx_cost[bsize][mbmi->interintra_wedge_index];
+        const int64_t total_rd = rd + RDCOST(x->rdmult, rate_overhead, 0);
+        if (total_rd < best_total_rd) {
+          best_total_rd = total_rd;
+          best_interintra_rd_wedge = rd;
+          best_mode = mbmi->interintra_mode;
+          best_wedge_index = mbmi->interintra_wedge_index;
+        }
+      }
+      mbmi->interintra_mode = best_mode;
+      mbmi->interintra_wedge_index = best_wedge_index;
+      if (best_mode != INTERINTRA_MODES - 1) {
+        av1_build_intra_predictors_for_interintra(cm, xd, bsize, 0, orig_dst,
+                                                  intrapred, bw);
+      }
+    } else if (!try_smooth_interintra) {
       if (best_interintra_mode == INTERINTRA_MODES) {
         mbmi->interintra_mode = INTERINTRA_MODES - 1;
         best_interintra_mode = INTERINTRA_MODES - 1;
@@ -9670,6 +9697,7 @@ static int handle_inter_intra_mode(const AV1_COMP *const cpi,
       *rate_mv = tmp_rate_mv;
     } else {
       mbmi->use_wedge_interintra = 0;
+      mbmi->interintra_mode = best_interintra_mode;
       mbmi->mv[0].as_int = mv0.as_int;
       av1_enc_build_inter_predictor(cm, xd, mi_row, mi_col, orig_dst, bsize,
                                     AOM_PLANE_Y, AOM_PLANE_Y);

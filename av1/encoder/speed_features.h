@@ -575,6 +575,9 @@ typedef struct INTER_MODE_SPEED_FEATURES {
   // Enable/disable interintra wedge search.
   int disable_wedge_interintra_search;
 
+  // De-couple wedge and mode search during interintra RDO.
+  int fast_interintra_wedge_search;
+
   // Only enable wedge search if the edge strength is greater than
   // this threshold. A value of 0 signals that this check is disabled.
   unsigned int disable_wedge_search_edge_thresh;
