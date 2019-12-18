@@ -290,6 +290,7 @@ enum class DnsType : uint16_t {
   kTXT = 16,
   kAAAA = 28,
   kSRV = 33,
+  kNSEC = 47,
   kANY = 255,  // Only allowed for QTYPE
 };
 

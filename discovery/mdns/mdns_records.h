@@ -5,6 +5,7 @@
 #ifndef DISCOVERY_MDNS_MDNS_RECORDS_H_
 #define DISCOVERY_MDNS_MDNS_RECORDS_H_
 
+#include <algorithm>
 #include <chrono>  // NOLINT
 #include <functional>
 #include <initializer_list>
@@ -260,12 +261,59 @@ class TxtRecordRdata {
   std::vector<std::string> texts_;
 };
 
+// NSEC record format (https://tools.ietf.org/html/rfc4034#section-4).
+// In mDNS, this record type is used for representing negative responses to
+// queries.
+//
+// next_domain_name: The next domain to process. In mDNS, this value is expected
+// to match the record-level domain name in a negative response.
+class NsecRecordRdata {
+ public:
+  NsecRecordRdata();
+
+  // Constructor that takes an arbitrary number of DnsType parameters.
+  // NOTE: If `types...` provide a valid set of parameters for an
+  // std::vector<DnsType> ctor call, this will compile. Do not use this ctor
+  // except to provide multiple DnsType parameters.
+  template <typename... Types>
+  NsecRecordRdata(DomainName next_domain_name, Types... types)
+      : NsecRecordRdata(std::move(next_domain_name),
+                        std::vector<DnsType>{types...}) {}
+  NsecRecordRdata(DomainName next_domain_name_, std::vector<DnsType> types);
+  NsecRecordRdata(const NsecRecordRdata& other);
+  NsecRecordRdata(NsecRecordRdata&& other);
+
+  NsecRecordRdata& operator=(const NsecRecordRdata& rhs);
+  NsecRecordRdata& operator=(NsecRecordRdata&& rhs);
+  bool operator==(const NsecRecordRdata& rhs) const;
+  bool operator!=(const NsecRecordRdata& rhs) const;
+
+  size_t MaxWireSize() const;
+
+  const DomainName& next_domain_name() const { return next_domain_name_; }
+  const std::vector<DnsType>& types() const { return types_; }
+
+  template <typename H>
+  friend H AbslHashValue(H h, const NsecRecordRdata& rdata) {
+    return H::combine(std::move(h), rdata.types_, rdata.next_domain_name_);
+  }
+
+ private:
+  std::vector<DnsType> types_;
+  DomainName next_domain_name_;
+
+  // If no domain or types are provided, then the max wire size is the same as
+  // that of an empty domain.
+  size_t max_wire_size_ = 1;
+};
+
 using Rdata = absl::variant<RawRecordRdata,
                             SrvRecordRdata,
                             ARecordRdata,
                             AAAARecordRdata,
                             PtrRecordRdata,
-                            TxtRecordRdata>;
+                            TxtRecordRdata,
+                            NsecRecordRdata>;
 
 // Resource record top level format (http://www.ietf.org/rfc/rfc1035.txt):
 // name: the name of the node to which this resource record pertains.

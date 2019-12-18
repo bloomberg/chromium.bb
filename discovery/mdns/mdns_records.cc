@@ -298,6 +298,67 @@ size_t TxtRecordRdata::MaxWireSize() const {
   return max_wire_size_;
 }
 
+NsecRecordRdata::NsecRecordRdata() = default;
+
+NsecRecordRdata::NsecRecordRdata(DomainName next_domain_name,
+                                 std::vector<DnsType> types)
+    : types_(std::move(types)), next_domain_name_(std::move(next_domain_name)) {
+  // Sort the types_ array for easier comparison later.
+  std::sort(types_.begin(), types_.end());
+
+  max_wire_size_ = next_domain_name_.MaxWireSize();
+
+  // Calculate the bit map size as described in RFC 4034 Section 4.1.2.
+  int current_block = -1;
+  size_t current_bitfield_byte = 0;
+  for (DnsType type : types_) {
+    // Representation of the DnsType as a 16-bit integer. Our currently
+    // supported DnsType values are all < 0xFF, but to stick with the RFC a
+    // 16 bit integer is used.
+    const uint16_t type_as_int = static_cast<uint16_t>(type);
+
+    // This is the block being examined, or the high order byte of the 2 present
+    // in the above 16 bit integer.
+    const int type_block = type_as_int >> 8;
+
+    // Each of the possible lower-order integers (0-255) is represented as a
+    // single bit, divided into 8 bit-bytes int eh standard way. This represents
+    // the largest byte needed to hold one such lower-order integer in this
+    // encoding format.
+    const size_t type_bitfield_byte = (type_as_int & 0xF0) >> 4;
+    if (type_block > current_block) {
+      current_block = type_block;
+      current_bitfield_byte = 0;
+      max_wire_size_ += 3;  // 1 from window, 1 from size, 1 from bitfield.
+    }
+    if (type_bitfield_byte > current_bitfield_byte) {
+      max_wire_size_ += type_bitfield_byte - current_bitfield_byte;
+      current_bitfield_byte = type_bitfield_byte;
+    }
+  }
+}
+
+NsecRecordRdata::NsecRecordRdata(const NsecRecordRdata& other) = default;
+
+NsecRecordRdata::NsecRecordRdata(NsecRecordRdata&& other) = default;
+
+NsecRecordRdata& NsecRecordRdata::operator=(const NsecRecordRdata& rhs) =
+    default;
+
+NsecRecordRdata& NsecRecordRdata::operator=(NsecRecordRdata&& rhs) = default;
+
+bool NsecRecordRdata::operator==(const NsecRecordRdata& rhs) const {
+  return types_ == rhs.types_ && next_domain_name_ == rhs.next_domain_name_;
+}
+
+bool NsecRecordRdata::operator!=(const NsecRecordRdata& rhs) const {
+  return !(*this == rhs);
+}
+
+size_t NsecRecordRdata::MaxWireSize() const {
+  return max_wire_size_;
+}
+
 MdnsRecord::MdnsRecord() = default;
 
 MdnsRecord::MdnsRecord(DomainName name,
@@ -324,6 +385,8 @@ MdnsRecord::MdnsRecord(DomainName name,
               absl::holds_alternative<PtrRecordRdata>(rdata_)) ||
              (dns_type == DnsType::kTXT &&
               absl::holds_alternative<TxtRecordRdata>(rdata_)) ||
+             (dns_type == DnsType::kNSEC &&
+              absl::holds_alternative<NsecRecordRdata>(rdata_)) ||
              absl::holds_alternative<RawRecordRdata>(rdata_));
 }
 

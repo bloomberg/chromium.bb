@@ -201,6 +201,12 @@ bool MdnsWriter::Write(const TxtRecordRdata& rdata) {
   return true;
 }
 
+bool MdnsWriter::Write(const NsecRecordRdata& rdata) {
+  // TODO(rwkeane): Implement this method.
+
+  return false;
+}
+
 bool MdnsWriter::Write(const MdnsRecord& record) {
   Cursor cursor(this);
   if (Write(record.name()) && Write(static_cast<uint16_t>(record.dns_type())) &&

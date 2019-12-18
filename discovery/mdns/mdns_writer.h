@@ -31,6 +31,7 @@ class MdnsWriter : public BigEndianWriter {
   bool Write(const AAAARecordRdata& rdata);
   bool Write(const PtrRecordRdata& rdata);
   bool Write(const TxtRecordRdata& rdata);
+  bool Write(const NsecRecordRdata& rdata);
   // Writes a DNS resource record with its RDATA.
   // The correct type of RDATA to be written is contained in the type
   // specified in the record.

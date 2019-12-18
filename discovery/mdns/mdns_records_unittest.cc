@@ -306,6 +306,41 @@ TEST(MdnsTxtRecordRdataTest, CopyAndMove) {
   TestCopyAndMove(MakeTxtRecord({"foo=1", "bar=2"}));
 }
 
+TEST(MdnsNsecRecordRdataTest, Construct) {
+  const DomainName domain{"testing", "local"};
+  const NsecRecordRdata rdata1(domain);
+  EXPECT_EQ(rdata1.MaxWireSize(), domain.MaxWireSize());
+  EXPECT_EQ(rdata1.next_domain_name(), domain);
+
+  const NsecRecordRdata rdata2(domain, DnsType::kA, DnsType::kSRV);
+  EXPECT_EQ(rdata2.MaxWireSize(), domain.MaxWireSize() + 5);
+  EXPECT_EQ(rdata2.next_domain_name(), domain);
+}
+
+TEST(MdnsNsecRecordRdataTest, Compare) {
+  const DomainName domain{"testing", "local"};
+  const NsecRecordRdata rdata1(domain, DnsType::kA, DnsType::kSRV);
+  const NsecRecordRdata rdata2(domain, DnsType::kSRV, DnsType::kA);
+  const NsecRecordRdata rdata3(domain, DnsType::kSRV, DnsType::kA,
+                               DnsType::kAAAA);
+  const NsecRecordRdata rdata4(domain, DnsType::kSRV, DnsType::kAAAA);
+
+  // Ensure equal Rdata values are evaluated as equal.
+  EXPECT_EQ(rdata1, rdata1);
+  EXPECT_EQ(rdata1, rdata2);
+  EXPECT_EQ(rdata2, rdata1);
+
+  // Ensure different Rdata values are not.
+  EXPECT_NE(rdata1, rdata3);
+  EXPECT_NE(rdata1, rdata4);
+  EXPECT_NE(rdata3, rdata4);
+}
+
+TEST(MdnsNsecRecordRdataTest, CopyAndMove) {
+  TestCopyAndMove(NsecRecordRdata(DomainName{"testing", "local"}, DnsType::kA,
+                                  DnsType::kSRV));
+}
+
 TEST(MdnsRecordTest, Construct) {
   MdnsRecord record1;
   EXPECT_EQ(record1.MaxWireSize(), UINT64_C(11));
