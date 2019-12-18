@@ -73,3 +73,20 @@ def GetBuildDependencyGraph(input_proto, output_proto, _config):
   json_map, sdk_json_map = dependency.GetBuildDependency(board, packages)
   AugmentDepGraphProtoFromJsonMap(json_map, output_proto.dep_graph)
   AugmentDepGraphProtoFromJsonMap(sdk_json_map, output_proto.sdk_dep_graph)
+
+
+def _DummyGetToolchainPathsResponse(_input_proto, output_proto, _config):
+  """Create a fake successful response for GetToolchainPaths."""
+  dummy_entry = output_proto.paths.add()
+  dummy_entry.path = 'src/third_party/dummy-package'
+
+
+@faux.success(_DummyGetToolchainPathsResponse)
+@faux.empty_error
+@validate.validation_complete
+def GetToolchainPaths(_input_proto, output_proto, _config):
+  """Get a list of paths that affect the toolchain."""
+  toolchain_paths = dependency.DetermineToolchainSourcePaths()
+  for p in toolchain_paths:
+    source_path = output_proto.paths.add()
+    source_path.path = p
