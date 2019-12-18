@@ -112,12 +112,9 @@ def _ZipResources(resource_dirs, zip_path, ignore_pattern):
   for index, resource_dir in enumerate(resource_dirs):
     for path, archive_path in resource_utils.IterResourceFilesInDirectories(
         [resource_dir], ignore_pattern):
+      files_to_zip_without_generated[archive_path] = path
       resource_dir_name = os.path.basename(resource_dir)
       archive_path = '{}_{}/{}'.format(index, resource_dir_name, archive_path)
-      # We want the original resource dirs in the .info file rather than the
-      # generated overridden path.
-      if not path.startswith('/tmp'):
-        files_to_zip_without_generated[archive_path] = path
       files_to_zip[archive_path] = path
   resource_utils.CreateResourceInfoFile(files_to_zip_without_generated,
                                         zip_path)
