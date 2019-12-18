@@ -260,6 +260,10 @@ void ProfileImpl::createWebView(WebViewDelegate            *delegate,
             params.javascriptCanAccessClipboard();
         properties.rerouteMouseWheelToAnyRelatedWindow =
             params.rerouteMouseWheelToAnyRelatedWindow();
+#if defined(BLPWTK2_FEATURE_MSGINTERCEPT)
+        properties.messageInterceptionEnabled =
+            params.messageInterceptionEnabled();
+#endif
 
         // Create a new instance of RenderWebView:
         RenderWebView *renderWebView = new RenderWebView(
