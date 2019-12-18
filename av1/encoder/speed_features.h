@@ -730,6 +730,38 @@ typedef struct WINNER_MODE_SPEED_FEATURES {
   int motion_mode_for_winner_cand;
 } WINNER_MODE_SPEED_FEATURES;
 
+typedef struct LOOP_FILTER_SPEED_FEATURES {
+  // This feature controls how the loop filter level is determined.
+  LPF_PICK_METHOD lpf_pick;
+
+  // Control how the CDEF strength is determined.
+  CDEF_PICK_METHOD cdef_pick_method;
+
+  // Decoder side speed feature to add penalty for use of dual-sgr filters.
+  // Takes values 0 - 10, 0 indicating no penalty and each additional level
+  // adding a penalty of 1%
+  int dual_sgr_penalty_level;
+
+  // prune sgr ep using binary search like mechanism
+  int enable_sgr_ep_pruning;
+
+  // Disable loop restoration for Chroma plane
+  int disable_loop_restoration_chroma;
+
+  // Prune self-guided loop restoration based on wiener search results
+  // 0 : no pruning
+  // 1 : pruning based on rdcost ratio of RESTORE_WIENER and RESTORE_NONE
+  // 2 : pruning based on winner restoration type among RESTORE_WIENER and
+  // RESTORE_NONE
+  int prune_sgr_based_on_wiener;
+
+  // Reduce the wiener filter win size for luma
+  int reduce_wiener_window_size;
+
+  // Disable loop restoration filter
+  int disable_lr_filter;
+} LOOP_FILTER_SPEED_FEATURES;
+
 typedef struct REAL_TIME_SPEED_FEATURES {
   // check intra prediction for non-RD mode.
   int check_intra_pred_nonrd;
@@ -896,35 +928,7 @@ typedef struct SPEED_FEATURES {
   /*
    * In-loop filter speed features:
    */
-  // This feature controls how the loop filter level is determined.
-  LPF_PICK_METHOD lpf_pick;
-
-  // Control how the CDEF strength is determined.
-  CDEF_PICK_METHOD cdef_pick_method;
-
-  // Decoder side speed feature to add penalty for use of dual-sgr filters.
-  // Takes values 0 - 10, 0 indicating no penalty and each additional level
-  // adding a penalty of 1%
-  int dual_sgr_penalty_level;
-
-  // prune sgr ep using binary search like mechanism
-  int enable_sgr_ep_pruning;
-
-  // Disable loop restoration for Chroma plane
-  int disable_loop_restoration_chroma;
-
-  // Prune self-guided loop restoration based on wiener search results
-  // 0 : no pruning
-  // 1 : pruning based on rdcost ratio of RESTORE_WIENER and RESTORE_NONE
-  // 2 : pruning based on winner restoration type among RESTORE_WIENER and
-  // RESTORE_NONE
-  int prune_sgr_based_on_wiener;
-
-  // Reduce the wiener filter win size for luma
-  int reduce_wiener_window_size;
-
-  // Disable loop restoration filter
-  int disable_lr_filter;
+  LOOP_FILTER_SPEED_FEATURES lpf_sf;
 
   /*
    * Real-time mode speed features:

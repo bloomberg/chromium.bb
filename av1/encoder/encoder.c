@@ -4581,7 +4581,7 @@ static void cdef_restoration_frame(AV1_COMP *cpi, AV1_COMMON *cm,
 #endif
     // Find CDEF parameters
     av1_cdef_search(&cm->cur_frame->buf, cpi->source, cm, xd,
-                    cpi->sf.cdef_pick_method, cpi->td.mb.rdmult);
+                    cpi->sf.lpf_sf.cdef_pick_method, cpi->td.mb.rdmult);
 
     // Apply the filter
     av1_cdef_frame(&cm->cur_frame->buf, cm, xd);
@@ -4644,7 +4644,7 @@ static void loopfilter_frame(AV1_COMP *cpi, AV1_COMMON *cm) {
 #endif
   if (use_loopfilter) {
     aom_clear_system_state();
-    av1_pick_filter_level(cpi->source, cpi, cpi->sf.lpf_pick);
+    av1_pick_filter_level(cpi->source, cpi, cpi->sf.lpf_sf.lpf_pick);
   } else {
     lf->filter_level[0] = 0;
     lf->filter_level[1] = 0;

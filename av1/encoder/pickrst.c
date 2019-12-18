@@ -886,7 +886,7 @@ static AOM_INLINE void search_sgrproj(const RestorationTileLimits *limits,
       dgd_start, limits->h_end - limits->h_start,
       limits->v_end - limits->v_start, rsc->dgd_stride, src_start,
       rsc->src_stride, highbd, bit_depth, procunit_width, procunit_height,
-      tmpbuf, rsc->sf->enable_sgr_ep_pruning);
+      tmpbuf, rsc->sf->lpf_sf.enable_sgr_ep_pruning);
 
   RestorationUnitInfo rui;
   rui.restoration_type = RESTORE_SGRPROJ;
@@ -903,7 +903,8 @@ static AOM_INLINE void search_sgrproj(const RestorationTileLimits *limits,
   double cost_sgr =
       RDCOST_DBL(x->rdmult, bits_sgr >> 4, rusi->sse[RESTORE_SGRPROJ]);
   if (rusi->sgrproj.ep < 10)
-    cost_sgr *= (1 + DUAL_SGR_PENALTY_MULT * rsc->sf->dual_sgr_penalty_level);
+    cost_sgr *=
+        (1 + DUAL_SGR_PENALTY_MULT * rsc->sf->lpf_sf.dual_sgr_penalty_level);
 
   RestorationType rtype =
       (cost_sgr < cost_none) ? RESTORE_SGRPROJ : RESTORE_NONE;
@@ -1443,7 +1444,7 @@ static AOM_INLINE void search_wiener(const RestorationTileLimits *limits,
       (rsc->plane == AOM_PLANE_Y) ? WIENER_WIN : WIENER_WIN_CHROMA;
 
   int reduced_wiener_win = wiener_win;
-  if (rsc->sf->reduce_wiener_window_size) {
+  if (rsc->sf->lpf_sf.reduce_wiener_window_size) {
     reduced_wiener_win =
         (rsc->plane == AOM_PLANE_Y) ? WIENER_WIN_REDUCED : WIENER_WIN_CHROMA;
   }
@@ -1477,7 +1478,7 @@ static AOM_INLINE void search_wiener(const RestorationTileLimits *limits,
     rsc->sse += rusi->sse[RESTORE_NONE];
     rusi->best_rtype[RESTORE_WIENER - 1] = RESTORE_NONE;
     rusi->sse[RESTORE_WIENER] = INT64_MAX;
-    if (rsc->sf->prune_sgr_based_on_wiener == 2) rusi->skip_sgr_eval = 1;
+    if (rsc->sf->lpf_sf.prune_sgr_based_on_wiener == 2) rusi->skip_sgr_eval = 1;
     return;
   }
 
@@ -1496,7 +1497,7 @@ static AOM_INLINE void search_wiener(const RestorationTileLimits *limits,
     rsc->sse += rusi->sse[RESTORE_NONE];
     rusi->best_rtype[RESTORE_WIENER - 1] = RESTORE_NONE;
     rusi->sse[RESTORE_WIENER] = INT64_MAX;
-    if (rsc->sf->prune_sgr_based_on_wiener == 2) rusi->skip_sgr_eval = 1;
+    if (rsc->sf->lpf_sf.prune_sgr_based_on_wiener == 2) rusi->skip_sgr_eval = 1;
     return;
   }
 
@@ -1529,9 +1530,9 @@ static AOM_INLINE void search_wiener(const RestorationTileLimits *limits,
 
   // Set 'skip_sgr_eval' based on rdcost ratio of RESTORE_WIENER and
   // RESTORE_NONE or based on best_rtype
-  if (rsc->sf->prune_sgr_based_on_wiener == 1) {
+  if (rsc->sf->lpf_sf.prune_sgr_based_on_wiener == 1) {
     rusi->skip_sgr_eval = cost_wiener > (1.01 * cost_none);
-  } else if (rsc->sf->prune_sgr_based_on_wiener == 2) {
+  } else if (rsc->sf->lpf_sf.prune_sgr_based_on_wiener == 2) {
     rusi->skip_sgr_eval = rusi->best_rtype[RESTORE_WIENER - 1] == RESTORE_NONE;
   }
 
@@ -1606,7 +1607,8 @@ static AOM_INLINE void search_switchable(const RestorationTileLimits *limits,
     const int64_t bits = x->switchable_restore_cost[r] + coeff_bits;
     double cost = RDCOST_DBL(x->rdmult, bits >> 4, sse);
     if (r == RESTORE_SGRPROJ && rusi->sgrproj.ep < 10)
-      cost *= (1 + DUAL_SGR_PENALTY_MULT * rsc->sf->dual_sgr_penalty_level);
+      cost *=
+          (1 + DUAL_SGR_PENALTY_MULT * rsc->sf->lpf_sf.dual_sgr_penalty_level);
     if (r == 0 || cost < best_cost) {
       best_cost = cost;
       best_bits = bits;
@@ -1687,7 +1689,7 @@ void av1_pick_filter_restoration(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi) {
     RestorationType best_rtype = RESTORE_NONE;
 
     const int highbd = rsc.cm->seq_params.use_highbitdepth;
-    if (!cpi->sf.disable_loop_restoration_chroma || !plane) {
+    if (!cpi->sf.lpf_sf.disable_loop_restoration_chroma || !plane) {
       av1_extend_frame(rsc.dgd_buffer, rsc.plane_width, rsc.plane_height,
                        rsc.dgd_stride, RESTORATION_BORDER, RESTORATION_BORDER,
                        highbd);
