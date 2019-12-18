@@ -15,6 +15,8 @@ import static org.mockito.Mockito.verify;
 
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_FAKE_SEARCH_BOX_VISIBLE;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_INCOGNITO;
+import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_INCOGNITO_DESCRIPTION_INITIALIZED;
+import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_INCOGNITO_DESCRIPTION_VISIBLE;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_TAB_CAROUSEL_VISIBLE;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_VOICE_RECOGNITION_BUTTON_VISIBLE;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.MV_TILES_VISIBLE;
@@ -54,6 +56,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tasks.TasksSurfaceProperties;
 import org.chromium.chrome.browser.tasks.tab_management.TabSwitcher;
 import org.chromium.chrome.browser.tasks.tab_management.TabSwitcher.OverviewModeObserver;
+import org.chromium.chrome.features.start_surface.StartSurfaceMediator.SecondaryTasksSurfaceInitializer;
 import org.chromium.chrome.features.start_surface.StartSurfaceMediator.SurfaceMode;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -87,7 +90,7 @@ public class StartSurfaceMediatorUnitTest {
     @Mock
     private LocationBarVoiceRecognitionHandler mLocationBarVoiceRecognitionHandler;
     @Mock
-    private StartSurfaceMediator.SecondaryTasksSurfaceInitializer mSecondaryTasksSurfaceInitializer;
+    private SecondaryTasksSurfaceInitializer mSecondaryTasksSurfaceInitializer;
     @Mock
     private TabSwitcher.Controller mSecondaryTasksSurfaceController;
     @Captor
@@ -111,6 +114,7 @@ public class StartSurfaceMediatorUnitTest {
         mSecondaryTasksSurfacePropertyModel = new PropertyModel(allProperties);
 
         doReturn(mNormalTabModel).when(mTabModelSelector).getModel(false);
+        doReturn(mIncognitoTabModel).when(mTabModelSelector).getModel(true);
         doReturn(false).when(mNormalTabModel).isIncognito();
         doReturn(true).when(mIncognitoTabModel).isIncognito();
         doReturn(mSecondaryTasksSurfaceController)
@@ -725,6 +729,138 @@ public class StartSurfaceMediatorUnitTest {
         mediator.showOverview(false);
         assertThat(mPropertyModel.get(BOTTOM_BAR_HEIGHT), equalTo(0));
         assertThat(mSecondaryTasksSurfacePropertyModel.get(BOTTOM_BAR_HEIGHT), equalTo(0));
+    }
+
+    @Test
+    public void setIncognitoDescriptionShowTasksOnly() {
+        doReturn(false).when(mTabModelSelector).isIncognitoSelected();
+        doReturn(mLocationBarVoiceRecognitionHandler)
+                .when(mFakeBoxDelegate)
+                .getLocationBarVoiceRecognitionHandler();
+        doReturn(true).when(mLocationBarVoiceRecognitionHandler).isVoiceSearchEnabled();
+
+        StartSurfaceMediator mediator = createStartSurfaceMediator(SurfaceMode.TASKS_ONLY);
+        mediator.showOverview(false);
+        verify(mTabModelSelector).addObserver(mTabModelSelectorObserverCaptor.capture());
+
+        assertThat(mPropertyModel.get(IS_INCOGNITO_DESCRIPTION_INITIALIZED), equalTo(false));
+        assertThat(mPropertyModel.get(IS_INCOGNITO_DESCRIPTION_VISIBLE), equalTo(false));
+        doReturn(0).when(mIncognitoTabModel).getCount();
+        mTabModelSelectorObserverCaptor.getValue().onTabModelSelected(
+                mIncognitoTabModel, mNormalTabModel);
+        assertThat(mPropertyModel.get(IS_INCOGNITO_DESCRIPTION_INITIALIZED), equalTo(true));
+        assertThat(mPropertyModel.get(IS_INCOGNITO_DESCRIPTION_VISIBLE), equalTo(true));
+
+        mTabModelSelectorObserverCaptor.getValue().onTabModelSelected(
+                mNormalTabModel, mIncognitoTabModel);
+        assertThat(mPropertyModel.get(IS_INCOGNITO_DESCRIPTION_INITIALIZED), equalTo(true));
+        assertThat(mPropertyModel.get(IS_INCOGNITO_DESCRIPTION_VISIBLE), equalTo(false));
+
+        mediator.hideOverview(true);
+    }
+
+    @Test
+    public void setIncognitoDescriptionHideTasksOnly() {
+        doReturn(false).when(mTabModelSelector).isIncognitoSelected();
+        doReturn(mLocationBarVoiceRecognitionHandler)
+                .when(mFakeBoxDelegate)
+                .getLocationBarVoiceRecognitionHandler();
+        doReturn(true).when(mLocationBarVoiceRecognitionHandler).isVoiceSearchEnabled();
+
+        StartSurfaceMediator mediator = createStartSurfaceMediator(SurfaceMode.TASKS_ONLY);
+        mediator.showOverview(false);
+        verify(mTabModelSelector).addObserver(mTabModelSelectorObserverCaptor.capture());
+
+        assertThat(mPropertyModel.get(IS_INCOGNITO_DESCRIPTION_INITIALIZED), equalTo(false));
+        assertThat(mPropertyModel.get(IS_INCOGNITO_DESCRIPTION_VISIBLE), equalTo(false));
+        doReturn(1).when(mIncognitoTabModel).getCount();
+        mTabModelSelectorObserverCaptor.getValue().onTabModelSelected(
+                mIncognitoTabModel, mNormalTabModel);
+        assertThat(mPropertyModel.get(IS_INCOGNITO_DESCRIPTION_INITIALIZED), equalTo(false));
+        assertThat(mPropertyModel.get(IS_INCOGNITO_DESCRIPTION_VISIBLE), equalTo(false));
+
+        mTabModelSelectorObserverCaptor.getValue().onTabModelSelected(
+                mNormalTabModel, mIncognitoTabModel);
+        assertThat(mPropertyModel.get(IS_INCOGNITO_DESCRIPTION_INITIALIZED), equalTo(false));
+        assertThat(mPropertyModel.get(IS_INCOGNITO_DESCRIPTION_VISIBLE), equalTo(false));
+
+        mediator.hideOverview(true);
+    }
+
+    @Test
+    public void setIncognitoDescriptionShowSinglePane() {
+        doReturn(false).when(mTabModelSelector).isIncognitoSelected();
+        doReturn(mLocationBarVoiceRecognitionHandler)
+                .when(mFakeBoxDelegate)
+                .getLocationBarVoiceRecognitionHandler();
+        doReturn(true).when(mLocationBarVoiceRecognitionHandler).isVoiceSearchEnabled();
+
+        StartSurfaceMediator mediator = createStartSurfaceMediator(SurfaceMode.SINGLE_PANE);
+        mediator.showOverview(false);
+        verify(mTabModelSelector).addObserver(mTabModelSelectorObserverCaptor.capture());
+
+        assertThat(mPropertyModel.get(IS_INCOGNITO_DESCRIPTION_INITIALIZED), equalTo(false));
+        assertThat(mPropertyModel.get(IS_INCOGNITO_DESCRIPTION_VISIBLE), equalTo(false));
+        assertThat(mSecondaryTasksSurfacePropertyModel.get(IS_INCOGNITO_DESCRIPTION_INITIALIZED),
+                equalTo(false));
+        assertThat(mSecondaryTasksSurfacePropertyModel.get(IS_INCOGNITO_DESCRIPTION_VISIBLE),
+                equalTo(false));
+
+        mediator.setSecondaryTasksSurfacePropertyModel(mSecondaryTasksSurfacePropertyModel);
+        doReturn(0).when(mIncognitoTabModel).getCount();
+        mTabModelSelectorObserverCaptor.getValue().onTabModelSelected(
+                mIncognitoTabModel, mNormalTabModel);
+        assertThat(mSecondaryTasksSurfacePropertyModel.get(IS_INCOGNITO_DESCRIPTION_INITIALIZED),
+                equalTo(true));
+        assertThat(mSecondaryTasksSurfacePropertyModel.get(IS_INCOGNITO_DESCRIPTION_VISIBLE),
+                equalTo(true));
+
+        mTabModelSelectorObserverCaptor.getValue().onTabModelSelected(
+                mNormalTabModel, mIncognitoTabModel);
+        assertThat(mSecondaryTasksSurfacePropertyModel.get(IS_INCOGNITO_DESCRIPTION_INITIALIZED),
+                equalTo(true));
+        assertThat(mSecondaryTasksSurfacePropertyModel.get(IS_INCOGNITO_DESCRIPTION_VISIBLE),
+                equalTo(false));
+
+        mediator.hideOverview(true);
+    }
+
+    @Test
+    public void setIncognitoDescriptionHideSinglePane() {
+        doReturn(false).when(mTabModelSelector).isIncognitoSelected();
+        doReturn(mLocationBarVoiceRecognitionHandler)
+                .when(mFakeBoxDelegate)
+                .getLocationBarVoiceRecognitionHandler();
+        doReturn(true).when(mLocationBarVoiceRecognitionHandler).isVoiceSearchEnabled();
+
+        StartSurfaceMediator mediator = createStartSurfaceMediator(SurfaceMode.SINGLE_PANE);
+        mediator.showOverview(false);
+        verify(mTabModelSelector).addObserver(mTabModelSelectorObserverCaptor.capture());
+
+        assertThat(mPropertyModel.get(IS_INCOGNITO_DESCRIPTION_INITIALIZED), equalTo(false));
+        assertThat(mPropertyModel.get(IS_INCOGNITO_DESCRIPTION_VISIBLE), equalTo(false));
+        assertThat(mSecondaryTasksSurfacePropertyModel.get(IS_INCOGNITO_DESCRIPTION_INITIALIZED),
+                equalTo(false));
+        assertThat(mSecondaryTasksSurfacePropertyModel.get(IS_INCOGNITO_DESCRIPTION_VISIBLE),
+                equalTo(false));
+
+        mediator.setSecondaryTasksSurfacePropertyModel(mSecondaryTasksSurfacePropertyModel);
+        doReturn(1).when(mIncognitoTabModel).getCount();
+        mTabModelSelectorObserverCaptor.getValue().onTabModelSelected(
+                mIncognitoTabModel, mNormalTabModel);
+        assertThat(mSecondaryTasksSurfacePropertyModel.get(IS_INCOGNITO_DESCRIPTION_INITIALIZED),
+                equalTo(false));
+        assertThat(mSecondaryTasksSurfacePropertyModel.get(IS_INCOGNITO_DESCRIPTION_VISIBLE),
+                equalTo(false));
+
+        mTabModelSelectorObserverCaptor.getValue().onTabModelSelected(
+                mNormalTabModel, mIncognitoTabModel);
+        assertThat(mSecondaryTasksSurfacePropertyModel.get(IS_INCOGNITO_DESCRIPTION_INITIALIZED),
+                equalTo(false));
+        assertThat(mSecondaryTasksSurfacePropertyModel.get(IS_INCOGNITO_DESCRIPTION_VISIBLE),
+                equalTo(false));
+
+        mediator.hideOverview(true);
     }
 
     private StartSurfaceMediator createStartSurfaceMediator(@SurfaceMode int mode) {
