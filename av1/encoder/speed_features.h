@@ -261,6 +261,38 @@ enum {
   ADAPT_PRED
 } UENUM1BYTE(MAX_PART_PRED_MODE);
 
+typedef struct TPL_SPEED_FEATURES {
+  // Prune the intra modes search by tpl.
+  // If set to 0, we will search all intra modes from DC_PRED to PAETH_PRED.
+  // If set to 1, we only search DC_PRED, V_PRED, and H_PRED.
+  int prune_intra_modes;
+  // This parameter controls which step in the n-step process we start at.
+  int reduce_first_step_size;
+} TPL_SPEED_FEATURES;
+
+typedef struct GLOBAL_MOTION_SPEED_FEATURES {
+  // Global motion warp error threshold
+  GM_ERRORADV_TYPE gm_erroradv_type;
+
+  // Disable adaptive threshold for global motion warp error
+  int disable_adaptive_warp_error_thresh;
+
+  // Do not compute the global motion parameters for a LAST2_FRAME or
+  // LAST3_FRAME if the GOLDEN_FRAME is closer and it has a non identity
+  // global model.
+  int selective_ref_gm;
+
+  GM_SEARCH_TYPE gm_search_type;
+
+  // whether to disable the global motion recode loop
+  int gm_disable_recode;
+
+  // During global motion estimation, prune remaining reference frames in a
+  // given direction(past/future), if the evaluated ref_frame in that direction
+  // yields gm_type as INVALID/TRANSLATION/IDENTITY
+  int prune_ref_frame_for_gm_search;
+} GLOBAL_MOTION_SPEED_FEATURES;
+
 typedef struct PARTITION_SPEED_FEATURES {
   PARTITION_SEARCH_TYPE partition_search_type;
 
@@ -553,15 +585,6 @@ typedef struct INTER_MODE_SPEED_FEATURES {
   // 1: use model based rd breakout
   int model_based_post_interp_filter_breakout;
 } INTER_MODE_SPEED_FEATURES;
-
-typedef struct TPL_SPEED_FEATURES {
-  // Prune the intra modes search by tpl.
-  // If set to 0, we will search all intra modes from DC_PRED to PAETH_PRED.
-  // If set to 1, we only search DC_PRED, V_PRED, and H_PRED.
-  int prune_intra_modes;
-  // This parameter controls which step in the n-step process we start at.
-  int reduce_first_step_size;
-} TPL_SPEED_FEATURES;
 
 typedef struct INTERP_FILTER_SPEED_FEATURES {
   // A source variance threshold below which filter search is disabled
@@ -864,26 +887,7 @@ typedef struct SPEED_FEATURES {
   /*
    * Global motion speed features:
    */
-  // Global motion warp error threshold
-  GM_ERRORADV_TYPE gm_erroradv_type;
-
-  // Disable adaptive threshold for global motion warp error
-  int disable_adaptive_warp_error_thresh;
-
-  // Do not compute the global motion parameters for a LAST2_FRAME or
-  // LAST3_FRAME if the GOLDEN_FRAME is closer and it has a non identity
-  // global model.
-  int selective_ref_gm;
-
-  GM_SEARCH_TYPE gm_search_type;
-
-  // whether to disable the global motion recode loop
-  int gm_disable_recode;
-
-  // During global motion estimation, prune remaining reference frames in a
-  // given direction(past/future), if the evaluated ref_frame in that direction
-  // yields gm_type as INVALID/TRANSLATION/IDENTITY
-  int prune_ref_frame_for_gm_search;
+  GLOBAL_MOTION_SPEED_FEATURES gm_sf;
 
   /*
    * Partition search speed features:

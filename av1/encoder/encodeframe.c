@@ -4686,7 +4686,7 @@ static int gm_get_params_cost(const WarpedMotionParams *gm,
 
 static int do_gm_search_logic(SPEED_FEATURES *const sf, int frame) {
   (void)frame;
-  switch (sf->gm_search_type) {
+  switch (sf->gm_sf.gm_search_type) {
     case GM_FULL_SEARCH: return 1;
     case GM_REDUCED_REF_SEARCH_SKIP_L2_L3:
       return !(frame == LAST2_FRAME || frame == LAST3_FRAME);
@@ -4859,9 +4859,9 @@ static AOM_INLINE void set_default_interp_skip_flags(AV1_COMP *cpi) {
 // TODO(Remya): Can include erroradv_prod_tr[] for threshold calculation
 static INLINE int64_t calc_erroradv_threshold(AV1_COMP *cpi,
                                               int64_t ref_frame_error) {
-  if (!cpi->sf.disable_adaptive_warp_error_thresh)
-    return (int64_t)(ref_frame_error * erroradv_tr[cpi->sf.gm_erroradv_type] +
-                     0.5);
+  if (!cpi->sf.gm_sf.disable_adaptive_warp_error_thresh)
+    return (int64_t)(
+        ref_frame_error * erroradv_tr[cpi->sf.gm_sf.gm_erroradv_type] + 0.5);
   else
     return INT64_MAX;
 }
@@ -4985,7 +4985,7 @@ static void compute_global_motion_for_ref_frame(
             (double)best_warp_error / ref_frame_error,
             gm_get_params_cost(&cm->global_motion[frame], ref_params,
                                cm->allow_high_precision_mv),
-            cpi->sf.gm_erroradv_type)) {
+            cpi->sf.gm_sf.gm_erroradv_type)) {
       cm->global_motion[frame] = default_warp_params;
     }
 
@@ -5028,7 +5028,7 @@ static INLINE void update_valid_ref_frames_for_gm(
         !prune_ref_by_selective_ref_frame(
             cpi, ref_frame, cm->cur_frame->ref_display_order_hint,
             cm->current_frame.display_order_hint) &&
-        !(cpi->sf.selective_ref_gm && skip_gm_frame(cm, frame))) {
+        !(cpi->sf.gm_sf.selective_ref_gm && skip_gm_frame(cm, frame))) {
       assert(ref_buf[frame] != NULL);
       int relative_frame_dist = av1_encoder_get_relative_dist(
           order_hint_info, buf->display_order_hint,
@@ -5099,7 +5099,7 @@ static INLINE void compute_global_motion_for_references(
     // the remaining ref frames in that direction. The below exit is disabled
     // when ref frame distance w.r.t. current frame is zero. E.g.:
     // source_alt_ref_frame w.r.t. ARF frames
-    if (cpi->sf.prune_ref_frame_for_gm_search &&
+    if (cpi->sf.gm_sf.prune_ref_frame_for_gm_search &&
         reference_frame[frame].distance != 0 &&
         cm->global_motion[ref_frame].wmtype != ROTZOOM)
       break;

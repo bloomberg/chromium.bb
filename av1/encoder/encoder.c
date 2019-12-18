@@ -5171,7 +5171,7 @@ static int encode_with_recode_loop(AV1_COMP *cpi, size_t *size, uint8_t *dest) {
       loop = 0;
     }
 
-    if (allow_recode && !cpi->sf.gm_disable_recode &&
+    if (allow_recode && !cpi->sf.gm_sf.gm_disable_recode &&
         recode_loop_test_global_motion(cpi)) {
       loop = 1;
     }

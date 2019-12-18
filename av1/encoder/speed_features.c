@@ -291,8 +291,8 @@ static void set_good_speed_features_framesize_independent(
           ? 0
           : (is_boosted_arf2_bwd_type ? 1 : 2);
   sf->part_sf.less_rectangular_check_level = 1;
-  sf->gm_search_type = GM_REDUCED_REF_SEARCH_SKIP_L2_L3;
-  sf->gm_disable_recode = 1;
+  sf->gm_sf.gm_search_type = GM_REDUCED_REF_SEARCH_SKIP_L2_L3;
+  sf->gm_sf.gm_disable_recode = 1;
   sf->interp_sf.use_fast_interpolation_filter_search = 1;
   sf->tx_sf.intra_tx_size_search_init_depth_sqr = 1;
   sf->intra_sf.intra_pruning_with_hog = 1;
@@ -310,7 +310,7 @@ static void set_good_speed_features_framesize_independent(
   if (speed >= 1) {
     sf->inter_sf.selective_ref_frame = 2;
 
-    sf->prune_ref_frame_for_gm_search = boosted ? 0 : 1;
+    sf->gm_sf.prune_ref_frame_for_gm_search = boosted ? 0 : 1;
     sf->tx_sf.intra_tx_size_search_init_depth_rect = 1;
 
     sf->interp_sf.use_interp_filter = 1;
@@ -334,8 +334,8 @@ static void set_good_speed_features_framesize_independent(
     sf->inter_sf.disable_interinter_wedge_newmv_search = boosted ? 0 : 1;
     sf->inter_sf.prune_comp_type_by_comp_avg = 1;
     sf->inter_sf.prune_motion_mode_level = 2;
-    sf->gm_search_type = GM_REDUCED_REF_SEARCH_SKIP_L2_L3_ARF2;
-    sf->disable_adaptive_warp_error_thresh = 0;
+    sf->gm_sf.gm_search_type = GM_REDUCED_REF_SEARCH_SKIP_L2_L3_ARF2;
+    sf->gm_sf.disable_adaptive_warp_error_thresh = 0;
     sf->rd_sf.tx_domain_dist_level = boosted ? 1 : 2;
     sf->rd_sf.tx_domain_dist_thres_level = 1;
     sf->rd_sf.perform_coeff_opt = boosted ? 1 : 2;
@@ -358,7 +358,7 @@ static void set_good_speed_features_framesize_independent(
   }
 
   if (speed >= 2) {
-    sf->gm_erroradv_type = GM_ERRORADV_TR_2;
+    sf->gm_sf.gm_erroradv_type = GM_ERRORADV_TR_2;
 
     sf->inter_sf.selective_ref_frame = 3;
     sf->lpf_sf.prune_sgr_based_on_wiener =
@@ -403,7 +403,7 @@ static void set_good_speed_features_framesize_independent(
     sf->mv_sf.use_accurate_subpel_search = USE_2_TAPS;
     if (cpi->oxcf.enable_smooth_interintra)
       sf->inter_sf.disable_smooth_interintra = boosted ? 0 : 1;
-    sf->gm_search_type = GM_DISABLE_SEARCH;
+    sf->gm_sf.gm_search_type = GM_DISABLE_SEARCH;
     sf->inter_sf.prune_comp_search_by_single_result = boosted ? 4 : 2;
     sf->inter_sf.prune_motion_mode_level = boosted ? 2 : 3;
     // TODO(yunqing): evaluate this speed feature for speed 1 & 2, and combine
@@ -533,8 +533,8 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
 
   sf->inter_sf.prune_ref_frame_for_rect_partitions = !boosted;
   sf->part_sf.less_rectangular_check_level = 1;
-  sf->gm_search_type = GM_REDUCED_REF_SEARCH_SKIP_L2_L3;
-  sf->gm_disable_recode = 1;
+  sf->gm_sf.gm_search_type = GM_REDUCED_REF_SEARCH_SKIP_L2_L3;
+  sf->gm_sf.gm_disable_recode = 1;
   sf->interp_sf.use_fast_interpolation_filter_search = 1;
   sf->tx_sf.intra_tx_size_search_init_depth_sqr = 1;
   sf->intra_sf.intra_pruning_with_hog = 1;
@@ -558,7 +558,7 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
   sf->rt_sf.hybrid_intra_pickmode = 0;
 
   if (speed >= 1) {
-    sf->gm_erroradv_type = GM_ERRORADV_TR_1;
+    sf->gm_sf.gm_erroradv_type = GM_ERRORADV_TR_1;
     sf->inter_sf.selective_ref_frame = 2;
 
     sf->tx_sf.intra_tx_size_search_init_depth_rect = 1;
@@ -587,14 +587,14 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->inter_sf.disable_wedge_search_edge_thresh = 0;
     sf->inter_sf.prune_comp_type_by_comp_avg = 1;
     sf->inter_sf.prune_motion_mode_level = 2;
-    sf->gm_search_type = GM_REDUCED_REF_SEARCH_SKIP_L2_L3_ARF2;
+    sf->gm_sf.gm_search_type = GM_REDUCED_REF_SEARCH_SKIP_L2_L3_ARF2;
     sf->interp_sf.cb_pred_filter_search = 1;
     sf->rd_sf.tx_domain_dist_level = boosted ? 0 : 1;
     sf->rd_sf.tx_domain_dist_thres_level = 1;
   }
 
   if (speed >= 2) {
-    sf->gm_erroradv_type = GM_ERRORADV_TR_2;
+    sf->gm_sf.gm_erroradv_type = GM_ERRORADV_TR_2;
 
     sf->inter_sf.selective_ref_frame = 3;
     sf->tx_sf.inter_tx_size_search_init_depth_rect = 1;
@@ -633,7 +633,7 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->mv_sf.use_accurate_subpel_search = USE_2_TAPS;
     sf->inter_sf.adaptive_rd_thresh = 2;
     sf->tx_sf.tx_type_search.prune_mode = PRUNE_2D_FAST;
-    sf->gm_search_type = GM_DISABLE_SEARCH;
+    sf->gm_sf.gm_search_type = GM_DISABLE_SEARCH;
     sf->inter_sf.prune_comp_search_by_single_result = 2;
     sf->inter_sf.prune_motion_mode_level = boosted ? 2 : 3;
     sf->inter_sf.prune_warp_using_wmtype = 1;
@@ -748,6 +748,15 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->use_modeled_non_rd_cost = 1;
 #endif
   }
+}
+
+static AOM_INLINE void init_gm_sf(GLOBAL_MOTION_SPEED_FEATURES *gm_sf) {
+  gm_sf->gm_erroradv_type = GM_ERRORADV_TR_0;
+  gm_sf->disable_adaptive_warp_error_thresh = 1;
+  gm_sf->selective_ref_gm = 1;
+  gm_sf->gm_search_type = GM_FULL_SEARCH;
+  gm_sf->gm_disable_recode = 0;
+  gm_sf->prune_ref_frame_for_gm_search = 0;
 }
 
 static AOM_INLINE void init_part_sf(PARTITION_SPEED_FEATURES *part_sf) {
@@ -981,9 +990,6 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
   // best quality defaults
   sf->frame_parameter_update = 1;
   sf->recode_loop = ALLOW_RECODE;
-  sf->gm_erroradv_type = GM_ERRORADV_TR_0;
-  sf->disable_adaptive_warp_error_thresh = 1;
-  sf->selective_ref_gm = 1;
   sf->reduce_high_precision_mv_usage = 0;
   sf->disable_overlay_frames = 0;
   // TODO(yunqing): turn it on for speed 0 if there is gain.
@@ -991,12 +997,10 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
   // Recode loop tolerance %.
   sf->recode_tolerance = 25;
 
-  sf->gm_search_type = GM_FULL_SEARCH;
-  sf->gm_disable_recode = 0;
-  sf->prune_ref_frame_for_gm_search = 0;
   sf->tpl_sf.prune_intra_modes = 0;
   sf->tpl_sf.reduce_first_step_size = 0;
 
+  init_gm_sf(&sf->gm_sf);
   init_part_sf(&sf->part_sf);
   init_mv_sf(&sf->mv_sf);
   init_inter_sf(&sf->inter_sf);
