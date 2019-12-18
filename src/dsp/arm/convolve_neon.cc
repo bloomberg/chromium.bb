@@ -1073,7 +1073,7 @@ inline uint8x8x3_t LoadSrcVals(const uint8_t* src_x) {
 // Positive indicates that the outputs can be used with vmlal_u8.
 inline uint8x16_t GetPositive2TapFilter(const int tap_index) {
   assert(tap_index < 2);
-  static constexpr uint8_t kSubPixel2TapFilterColumns[2][16] = {
+  alignas(16) static constexpr uint8_t kSubPixel2TapFilterColumns[2][16] = {
       {128, 120, 112, 104, 96, 88, 80, 72, 64, 56, 48, 40, 32, 24, 16, 8},
       {0, 8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96, 104, 112, 120}};
 
@@ -1186,7 +1186,8 @@ inline void ConvolveKernelHorizontal2Tap(const uint8_t* src,
 // Positive indicates that the outputs can be used with vmlal_u8.
 inline uint8x16_t GetPositive4TapFilter(const int tap_index) {
   assert(tap_index < 4);
-  static constexpr uint8_t kSubPixel4TapPositiveFilterColumns[4][16] = {
+  alignas(
+      16) static constexpr uint8_t kSubPixel4TapPositiveFilterColumns[4][16] = {
       {0, 30, 26, 22, 20, 18, 16, 14, 12, 12, 10, 8, 6, 4, 4, 2},
       {128, 62, 62, 62, 60, 58, 56, 54, 52, 48, 46, 44, 42, 40, 36, 34},
       {0, 34, 36, 40, 42, 44, 46, 48, 52, 54, 56, 58, 60, 62, 62, 62},
@@ -1263,7 +1264,8 @@ inline uint8x16_t GetSigned4TapFilter(const int tap_index) {
   // The first and fourth taps of each filter are negative. However
   // 128 does not fit in an 8-bit signed integer. Thus we use subtraction to
   // keep everything unsigned.
-  static constexpr uint8_t kSubPixel4TapSignedFilterColumns[4][16] = {
+  alignas(
+      16) static constexpr uint8_t kSubPixel4TapSignedFilterColumns[4][16] = {
       {0, 4, 8, 10, 12, 12, 14, 12, 12, 10, 10, 10, 8, 6, 4, 2},
       {128, 126, 122, 116, 110, 102, 94, 84, 76, 66, 58, 48, 38, 28, 18, 8},
       {0, 8, 18, 28, 38, 48, 58, 66, 76, 84, 94, 102, 110, 116, 122, 126},
@@ -1339,7 +1341,8 @@ inline uint8x16_t GetSigned6TapFilter(const int tap_index) {
   // The second and fourth taps of each filter are negative. However
   // 128 does not fit in an 8-bit signed integer. Thus we use subtraction to
   // keep everything unsigned.
-  static constexpr uint8_t kSubPixel6TapSignedFilterColumns[6][16] = {
+  alignas(
+      16) static constexpr uint8_t kSubPixel6TapSignedFilterColumns[6][16] = {
       {0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0},
       {0, 6, 10, 12, 14, 14, 16, 14, 14, 12, 12, 12, 10, 8, 4, 2},
       {128, 126, 122, 116, 110, 102, 94, 84, 76, 66, 58, 48, 38, 28, 18, 8},
@@ -1425,7 +1428,8 @@ inline void ConvolveKernelHorizontalSigned6Tap(
 // its tap columns divided between positive and mixed treatment.
 inline uint8x16_t GetPositive6TapFilter(const int tap_index) {
   assert(tap_index < 6);
-  static constexpr uint8_t kSubPixel6TapPositiveFilterColumns[4][16] = {
+  alignas(
+      16) static constexpr uint8_t kSubPixel6TapPositiveFilterColumns[4][16] = {
       {0, 28, 26, 22, 20, 18, 16, 16, 14, 12, 10, 8, 6, 4, 4, 2},
       {128, 62, 62, 62, 60, 58, 56, 54, 52, 48, 46, 44, 42, 40, 36, 34},
       {0, 34, 36, 40, 42, 44, 46, 48, 52, 54, 56, 58, 60, 62, 62, 62},
@@ -1438,7 +1442,7 @@ inline uint8x16_t GetPositive6TapFilter(const int tap_index) {
 // outputs should be used with vmlal_s8.
 inline int8x16_t GetMixed6TapFilter(const int tap_index) {
   assert(tap_index < 2);
-  static constexpr int8_t kSubPixel6TapMixedFilterColumns[2][16] = {
+  alignas(16) static constexpr int8_t kSubPixel6TapMixedFilterColumns[2][16] = {
       {0, 2, 0, 0, 0, 0, 0, -2, -2, 0, 0, 0, 0, 0, 0, 0},
       {0, 0, 0, 0, 0, 0, 0, 0, -2, -2, 0, 0, 0, 0, 0, 2}};
 
@@ -1528,7 +1532,8 @@ inline uint8x16_t GetSigned8TapFilter(const int tap_index) {
   // The first and fourth taps of each filter are negative. However
   // 128 does not fit in an 8-bit signed integer. Thus we use subtraction to
   // keep everything unsigned.
-  static constexpr uint8_t kSubPixel8TapSignedFilterColumns[8][16] = {
+  alignas(
+      16) static constexpr uint8_t kSubPixel8TapSignedFilterColumns[8][16] = {
       {0, 2, 2, 2, 4, 4, 4, 4, 4, 2, 2, 2, 2, 2, 2, 0},
       {0, 2, 6, 8, 10, 10, 10, 10, 12, 10, 8, 8, 6, 6, 4, 2},
       {0, 6, 12, 18, 22, 22, 24, 24, 24, 22, 20, 18, 14, 10, 6, 2},
