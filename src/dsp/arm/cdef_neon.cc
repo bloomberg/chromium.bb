@@ -36,12 +36,14 @@ namespace {
 
 // CdefDirection:
 // Mirror values and pad to 16 elements.
-constexpr uint32_t kDivisionTable[] = {840, 420, 280, 210, 168, 140, 120, 105,
-                                       120, 140, 168, 210, 280, 420, 840, 0};
+alignas(16) constexpr uint32_t kDivisionTable[] = {840, 420, 280, 210, 168, 140,
+                                                   120, 105, 120, 140, 168, 210,
+                                                   280, 420, 840, 0};
 
 // Used when calculating odd |cost[x]| values to mask off unwanted elements.
 // Holds elements 1 3 5 X 5 3 1 X
-constexpr uint32_t kDivisionTableOdd[] = {420, 210, 140, 0, 140, 210, 420, 0};
+alignas(16) constexpr uint32_t kDivisionTableOdd[] = {420, 210, 140, 0,
+                                                      140, 210, 420, 0};
 
 // Expand |a| to int8x16_t, left shift it by |shift| and sum the low
 // and high values with |b| and |c| respectively.
