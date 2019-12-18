@@ -149,8 +149,12 @@ bool MaybeAddCommandLineArgsFromConfig(const base::Value& config,
     return true;
 
   static const base::StringPiece kAllowedArgs[] = {
-      switches::kRendererProcessLimit,
+      switches::kEnableFeatures,
+      switches::kEnableFuchsiaAudioConsumer,
+      switches::kEnableLowEndDeviceMode,
+      switches::kForceGpuMemAvailableMb,
       switches::kMinHeightForGpuRasterTile,
+      switches::kRendererProcessLimit,
   };
 
   for (const auto& arg : args->DictItems()) {
