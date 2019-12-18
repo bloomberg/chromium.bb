@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include <chrono>
+#include <string>
 #include <vector>
 
 #include "absl/strings/string_view.h"
@@ -33,6 +34,10 @@ ErrorOr<std::vector<uint8_t>> ExportCertificate(const X509& certificate);
 // Parses a DER-encoded X509 certificate from its binary form.
 ErrorOr<bssl::UniquePtr<X509>> ImportCertificate(const uint8_t* der_x509_cert,
                                                  int der_x509_cert_length);
+
+std::string GetSpkiTlv(X509* cert);
+
+ErrorOr<uint64_t> ParseDerUint64(ASN1_INTEGER* asn1int);
 
 }  // namespace openscreen
 

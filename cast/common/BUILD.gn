@@ -73,16 +73,20 @@ source_set("discovery") {
 
 source_set("test_helpers") {
   testonly = true
+
+  # TODO(btolsch): Move to testing/ folders.
   sources = [
     "certificate/test_helpers.cc",
     "certificate/test_helpers.h",
     "channel/test/fake_cast_socket.h",
     "channel/test/mock_cast_message_handler.h",
+    "channel/test/mock_socket_error_handler.h",
   ]
   public_deps = [
     ":certificate",
     ":channel",
     "../../platform:test",
+    "../../third_party/abseil",
     "../../third_party/boringssl",
     "../../third_party/googletest:gmock",
   ]
@@ -110,6 +114,7 @@ source_set("unittests") {
     ":channel",
     ":test_helpers",
     "../../platform",
+    "../../testing/util",
     "../../third_party/boringssl",
     "../../third_party/googletest:gmock",
     "../../third_party/googletest:gtest",

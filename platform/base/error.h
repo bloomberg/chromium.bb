@@ -155,6 +155,8 @@ class Error {
     kCastV2PingTimeout,
     kCastV2ChannelPolicyMismatch,
 
+    kCreateSignatureFailed,
+
     // Generic errors.
     kUnknownError,
     kNotImplemented,

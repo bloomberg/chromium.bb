@@ -1,0 +1,208 @@
+// Copyright 2019 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include <stdio.h>
+
+#include "cast/common/certificate/test_helpers.h"
+#include "cast/common/channel/cast_socket.h"
+#include "cast/common/channel/proto/cast_channel.pb.h"
+#include "cast/common/channel/test/fake_cast_socket.h"
+#include "cast/common/channel/test/mock_socket_error_handler.h"
+#include "cast/common/channel/virtual_connection_manager.h"
+#include "cast/common/channel/virtual_connection_router.h"
+#include "cast/receiver/channel/device_auth_namespace_handler.h"
+#include "cast/receiver/channel/testing/device_auth_test_helpers.h"
+#include "cast/sender/channel/cast_auth_util.h"
+#include "cast/sender/channel/message_util.h"
+#include "gtest/gtest.h"
+#include "testing/util/read_file.h"
+
+namespace cast {
+namespace channel {
+namespace {
+
+using ::testing::_;
+using ::testing::Invoke;
+
+using openscreen::ErrorOr;
+
+#define TEST_DATA_PREFIX OPENSCREEN_TEST_DATA_DIR "cast/receiver/channel/"
+
+class DeviceAuthTest : public ::testing::Test {
+ public:
+  void SetUp() override {
+    socket_ = fake_cast_socket_pair_.socket.get();
+    router_.TakeSocket(&mock_error_handler_,
+                       std::move(fake_cast_socket_pair_.socket));
+    router_.AddHandlerForLocalId(kPlatformReceiverId, &auth_handler_);
+  }
+
+ protected:
+  void RunAuthTest(std::string serialized_crl,
+                   certificate::TrustStore* fake_crl_trust_store,
+                   bool should_succeed = true,
+                   bool record_this_test = false) {
+    bssl::UniquePtr<X509> parsed_cert;
+    certificate::TrustStore fake_trust_store;
+    InitStaticCredentialsFromFiles(&creds_, &parsed_cert, &fake_trust_store,
+                                   TEST_DATA_PREFIX "device_key.pem",
+                                   TEST_DATA_PREFIX "device_chain.pem",
+                                   TEST_DATA_PREFIX "device_tls.pem");
+    creds_.device_creds.serialized_crl = std::move(serialized_crl);
+
+    // Send an auth challenge.  |auth_handler_| will automatically respond
+    // via |router_| and we will catch the result in |challenge_reply|.
+    AuthContext auth_context = AuthContext::Create();
+    CastMessage auth_challenge = CreateAuthChallengeMessage(auth_context);
+    if (record_this_test) {
+      std::string output;
+      DeviceAuthMessage auth_message;
+      ASSERT_EQ(auth_challenge.payload_type(), CastMessage_PayloadType_BINARY);
+      ASSERT_TRUE(
+          auth_message.ParseFromString(auth_challenge.payload_binary()));
+      ASSERT_TRUE(auth_message.has_challenge());
+      ASSERT_FALSE(auth_message.has_response());
+      ASSERT_FALSE(auth_message.has_error());
+      ASSERT_TRUE(auth_challenge.SerializeToString(&output));
+
+      FILE* fd = fopen(TEST_DATA_PREFIX "auth_challenge.pb", "wb");
+      ASSERT_TRUE(fd);
+      ASSERT_EQ(fwrite(output.data(), 1, output.size(), fd), output.size());
+      fclose(fd);
+    }
+    CastMessage challenge_reply;
+    EXPECT_CALL(fake_cast_socket_pair_.mock_peer_client, OnMessage(_, _))
+        .WillOnce(
+            Invoke([&challenge_reply](CastSocket* socket, CastMessage message) {
+              challenge_reply = std::move(message);
+            }));
+    fake_cast_socket_pair_.peer_socket->SendMessage(std::move(auth_challenge));
+
+    if (record_this_test) {
+      std::string output;
+      DeviceAuthMessage auth_message;
+      ASSERT_EQ(challenge_reply.payload_type(), CastMessage_PayloadType_BINARY);
+      ASSERT_TRUE(
+          auth_message.ParseFromString(challenge_reply.payload_binary()));
+      ASSERT_TRUE(auth_message.has_response());
+      ASSERT_FALSE(auth_message.has_challenge());
+      ASSERT_FALSE(auth_message.has_error());
+      ASSERT_TRUE(auth_message.response().SerializeToString(&output));
+
+      FILE* fd = fopen(TEST_DATA_PREFIX "auth_response.pb", "wb");
+      ASSERT_TRUE(fd);
+      ASSERT_EQ(fwrite(output.data(), 1, output.size(), fd), output.size());
+      fclose(fd);
+    }
+
+    certificate::DateTime December2019 = {};
+    December2019.year = 2019;
+    December2019.month = 12;
+    December2019.day = 17;
+    const ErrorOr<CastDeviceCertPolicy> error_or_policy =
+        AuthenticateChallengeReplyForTest(
+            challenge_reply, parsed_cert.get(), auth_context,
+            fake_crl_trust_store ? certificate::CRLPolicy::kCrlRequired
+                                 : certificate::CRLPolicy::kCrlOptional,
+            &fake_trust_store, fake_crl_trust_store, December2019);
+    EXPECT_EQ(error_or_policy.is_value(), should_succeed);
+  }
+
+  FakeCastSocketPair fake_cast_socket_pair_;
+  MockSocketErrorHandler mock_error_handler_;
+  CastSocket* socket_;
+
+  StaticCredentialsProvider creds_;
+  VirtualConnectionManager manager_;
+  VirtualConnectionRouter router_{&manager_};
+  DeviceAuthNamespaceHandler auth_handler_{&creds_};
+};
+
+}  // namespace
+
+TEST_F(DeviceAuthTest, MANUAL_SerializeTestData) {
+  if (::testing::GTEST_FLAG(filter) ==
+      "DeviceAuthTest.MANUAL_SerializeTestData") {
+    RunAuthTest(std::string(), nullptr, true, true);
+  }
+}
+
+TEST_F(DeviceAuthTest, AuthIntegration) {
+  RunAuthTest(std::string(), nullptr);
+}
+
+TEST_F(DeviceAuthTest, GoodCrl) {
+  std::unique_ptr<certificate::TrustStore> fake_crl_trust_store =
+      certificate::testing::CreateTrustStoreFromPemFile(TEST_DATA_PREFIX
+                                                        "crl_root.pem");
+  RunAuthTest(
+      openscreen::ReadEntireFileToString(TEST_DATA_PREFIX "good_crl.pb"),
+      fake_crl_trust_store.get());
+}
+
+TEST_F(DeviceAuthTest, InvalidCrlTime) {
+  std::unique_ptr<certificate::TrustStore> fake_crl_trust_store =
+      certificate::testing::CreateTrustStoreFromPemFile(TEST_DATA_PREFIX
+                                                        "crl_root.pem");
+  RunAuthTest(openscreen::ReadEntireFileToString(TEST_DATA_PREFIX
+                                                 "invalid_time_crl.pb"),
+              fake_crl_trust_store.get(), false);
+}
+
+TEST_F(DeviceAuthTest, IssuerRevoked) {
+  std::unique_ptr<certificate::TrustStore> fake_crl_trust_store =
+      certificate::testing::CreateTrustStoreFromPemFile(TEST_DATA_PREFIX
+                                                        "crl_root.pem");
+  RunAuthTest(openscreen::ReadEntireFileToString(TEST_DATA_PREFIX
+                                                 "issuer_revoked_crl.pb"),
+              fake_crl_trust_store.get(), false);
+}
+
+TEST_F(DeviceAuthTest, DeviceRevoked) {
+  std::unique_ptr<certificate::TrustStore> fake_crl_trust_store =
+      certificate::testing::CreateTrustStoreFromPemFile(TEST_DATA_PREFIX
+                                                        "crl_root.pem");
+  RunAuthTest(openscreen::ReadEntireFileToString(TEST_DATA_PREFIX
+                                                 "device_revoked_crl.pb"),
+              fake_crl_trust_store.get(), false);
+}
+
+TEST_F(DeviceAuthTest, IssuerSerialRevoked) {
+  std::unique_ptr<certificate::TrustStore> fake_crl_trust_store =
+      certificate::testing::CreateTrustStoreFromPemFile(TEST_DATA_PREFIX
+                                                        "crl_root.pem");
+  RunAuthTest(openscreen::ReadEntireFileToString(
+                  TEST_DATA_PREFIX "issuer_serial_revoked_crl.pb"),
+              fake_crl_trust_store.get(), false);
+}
+
+TEST_F(DeviceAuthTest, DeviceSerialRevoked) {
+  std::unique_ptr<certificate::TrustStore> fake_crl_trust_store =
+      certificate::testing::CreateTrustStoreFromPemFile(TEST_DATA_PREFIX
+                                                        "crl_root.pem");
+  RunAuthTest(openscreen::ReadEntireFileToString(
+                  TEST_DATA_PREFIX "device_serial_revoked_crl.pb"),
+              fake_crl_trust_store.get(), false);
+}
+
+TEST_F(DeviceAuthTest, BadCrlSignerCert) {
+  std::unique_ptr<certificate::TrustStore> fake_crl_trust_store =
+      certificate::testing::CreateTrustStoreFromPemFile(TEST_DATA_PREFIX
+                                                        "crl_root.pem");
+  RunAuthTest(openscreen::ReadEntireFileToString(TEST_DATA_PREFIX
+                                                 "bad_signer_cert_crl.pb"),
+              fake_crl_trust_store.get(), false);
+}
+
+TEST_F(DeviceAuthTest, BadCrlSignature) {
+  std::unique_ptr<certificate::TrustStore> fake_crl_trust_store =
+      certificate::testing::CreateTrustStoreFromPemFile(TEST_DATA_PREFIX
+                                                        "crl_root.pem");
+  RunAuthTest(openscreen::ReadEntireFileToString(TEST_DATA_PREFIX
+                                                 "bad_signature_crl.pb"),
+              fake_crl_trust_store.get(), false);
+}
+
+}  // namespace channel
+}  // namespace cast

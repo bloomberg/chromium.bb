@@ -12,6 +12,7 @@ group("gn_all") {
     "cast/common:certificate",
     "cast/common:channel",
     "cast/common:discovery",
+    "cast/receiver:channel",
     "cast/sender:channel",
     "cast/streaming:receiver",
     "cast/streaming:sender",
@@ -65,8 +66,10 @@ source_set("openscreen_unittests_all") {
   testonly = true
   public_deps = [
     "cast/common:unittests",
+    "cast/receiver:unittests",
     "cast/sender:unittests",
     "cast/streaming:unittests",
+    "cast/test:unittests",
     "discovery:unittests",
     "osp:unittests",
     "osp/msgs:unittests",

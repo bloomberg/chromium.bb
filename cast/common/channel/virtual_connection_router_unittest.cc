@@ -8,8 +8,8 @@
 #include "cast/common/channel/proto/cast_channel.pb.h"
 #include "cast/common/channel/test/fake_cast_socket.h"
 #include "cast/common/channel/test/mock_cast_message_handler.h"
+#include "cast/common/channel/test/mock_socket_error_handler.h"
 #include "cast/common/channel/virtual_connection_manager.h"
-#include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
 namespace cast {
@@ -18,16 +18,6 @@ namespace {
 
 using ::testing::_;
 using ::testing::Invoke;
-
-class MockSocketErrorHandler
-    : public VirtualConnectionRouter::SocketErrorHandler {
- public:
-  MOCK_METHOD(void, OnClose, (CastSocket * socket), (override));
-  MOCK_METHOD(void,
-              OnError,
-              (CastSocket * socket, openscreen::Error error),
-              (override));
-};
 
 class VirtualConnectionRouterTest : public ::testing::Test {
  public:

@@ -7,6 +7,7 @@
 #include "cast/common/channel/cast_socket.h"
 #include "cast/common/channel/message_util.h"
 #include "cast/common/channel/test/fake_cast_socket.h"
+#include "cast/common/channel/test/mock_socket_error_handler.h"
 #include "cast/common/channel/virtual_connection.h"
 #include "cast/common/channel/virtual_connection_manager.h"
 #include "cast/common/channel/virtual_connection_router.h"
@@ -25,16 +26,6 @@ using ::testing::Invoke;
 using ::testing::NiceMock;
 
 using openscreen::ErrorOr;
-
-class MockSocketErrorHandler
-    : public VirtualConnectionRouter::SocketErrorHandler {
- public:
-  MOCK_METHOD(void, OnClose, (CastSocket * socket), (override));
-  MOCK_METHOD(void,
-              OnError,
-              (CastSocket * socket, openscreen::Error error),
-              (override));
-};
 
 class MockVirtualConnectionPolicy
     : public ConnectionNamespaceHandler::VirtualConnectionPolicy {

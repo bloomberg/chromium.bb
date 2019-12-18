@@ -121,4 +121,28 @@ ErrorOr<bssl::UniquePtr<X509>> ImportCertificate(const uint8_t* der_x509_cert,
   return certificate;
 }
 
+std::string GetSpkiTlv(X509* cert) {
+  int len = i2d_X509_PUBKEY(cert->cert_info->key, nullptr);
+  if (len <= 0) {
+    return {};
+  }
+  std::string x(len, 0);
+  uint8_t* data = reinterpret_cast<uint8_t*>(&x[0]);
+  if (!i2d_X509_PUBKEY(cert->cert_info->key, &data)) {
+    return {};
+  }
+  return x;
+}
+
+ErrorOr<uint64_t> ParseDerUint64(ASN1_INTEGER* asn1int) {
+  if (asn1int->length > 8 || asn1int->length == 0) {
+    return Error::Code::kParameterInvalid;
+  }
+  uint64_t result = 0;
+  for (int i = 0; i < asn1int->length; ++i) {
+    result = (result << 8) | asn1int->data[i];
+  }
+  return result;
+}
+
 }  // namespace openscreen

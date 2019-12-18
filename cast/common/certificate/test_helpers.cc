@@ -4,65 +4,69 @@
 
 #include "cast/common/certificate/test_helpers.h"
 
+#include <openssl/bytestring.h>
 #include <openssl/pem.h>
+#include <openssl/rsa.h>
 #include <stdio.h>
 #include <string.h>
 
+#include "absl/strings/match.h"
 #include "util/logging.h"
 
 namespace cast {
 namespace certificate {
 namespace testing {
 
-std::string ReadEntireFileToString(const std::string& filename) {
-  FILE* file = fopen(filename.c_str(), "r");
-  if (file == nullptr) {
-    return {};
-  }
-  fseek(file, 0, SEEK_END);
-  long file_size = ftell(file);
-  fseek(file, 0, SEEK_SET);
-  std::string contents(file_size, 0);
-  int bytes_read = 0;
-  while (bytes_read < file_size) {
-    size_t ret = fread(&contents[bytes_read], 1, file_size - bytes_read, file);
-    if (ret == 0 && ferror(file)) {
-      return {};
-    } else {
-      bytes_read += ret;
-    }
-  }
-  fclose(file);
-
-  return contents;
-}
-
 std::vector<std::string> ReadCertificatesFromPemFile(
-    const std::string& filename) {
-  FILE* fp = fopen(filename.c_str(), "r");
+    absl::string_view filename) {
+  FILE* fp = fopen(filename.data(), "r");
   if (!fp) {
     return {};
   }
   std::vector<std::string> certs;
-#define STRCMP_LITERAL(s, l) strncmp(s, l, sizeof(l))
-  for (;;) {
-    char* name;
-    char* header;
-    unsigned char* data;
-    long length;
-    if (PEM_read(fp, &name, &header, &data, &length) == 1) {
-      if (STRCMP_LITERAL(name, "CERTIFICATE") == 0) {
-        certs.emplace_back((char*)data, length);
-      }
-      OPENSSL_free(name);
-      OPENSSL_free(header);
-      OPENSSL_free(data);
-    } else {
-      break;
+  char* name;
+  char* header;
+  unsigned char* data;
+  long length;
+  while (PEM_read(fp, &name, &header, &data, &length) == 1) {
+    if (absl::StartsWith(name, "CERTIFICATE")) {
+      certs.emplace_back((char*)data, length);
     }
+    OPENSSL_free(name);
+    OPENSSL_free(header);
+    OPENSSL_free(data);
   }
   fclose(fp);
   return certs;
+}
+
+bssl::UniquePtr<EVP_PKEY> ReadKeyFromPemFile(absl::string_view filename) {
+  FILE* fp = fopen(filename.data(), "r");
+  if (!fp) {
+    return nullptr;
+  }
+  bssl::UniquePtr<EVP_PKEY> pkey;
+  char* name;
+  char* header;
+  unsigned char* data;
+  long length;
+  while (PEM_read(fp, &name, &header, &data, &length) == 1) {
+    if (absl::StartsWith(name, "RSA PRIVATE KEY")) {
+      OSP_DCHECK(!pkey);
+      CBS cbs;
+      CBS_init(&cbs, data, length);
+      RSA* rsa = RSA_parse_private_key(&cbs);
+      if (rsa) {
+        pkey.reset(EVP_PKEY_new());
+        EVP_PKEY_assign_RSA(pkey.get(), rsa);
+      }
+    }
+    OPENSSL_free(name);
+    OPENSSL_free(header);
+    OPENSSL_free(data);
+  }
+  fclose(fp);
+  return pkey;
 }
 
 SignatureTestData::SignatureTestData()
@@ -74,36 +78,32 @@ SignatureTestData::~SignatureTestData() {
   OPENSSL_free(const_cast<uint8_t*>(sha256.data));
 }
 
-SignatureTestData ReadSignatureTestData(const std::string& filename) {
-  FILE* fp = fopen(filename.c_str(), "r");
+SignatureTestData ReadSignatureTestData(absl::string_view filename) {
+  FILE* fp = fopen(filename.data(), "r");
   OSP_DCHECK(fp);
   SignatureTestData result = {};
-  for (;;) {
-    char* name;
-    char* header;
-    unsigned char* data;
-    long length;
-    if (PEM_read(fp, &name, &header, &data, &length) == 1) {
-      if (strcmp(name, "MESSAGE") == 0) {
-        OSP_DCHECK(!result.message.data);
-        result.message.data = data;
-        result.message.length = length;
-      } else if (strcmp(name, "SIGNATURE SHA1") == 0) {
-        OSP_DCHECK(!result.sha1.data);
-        result.sha1.data = data;
-        result.sha1.length = length;
-      } else if (strcmp(name, "SIGNATURE SHA256") == 0) {
-        OSP_DCHECK(!result.sha256.data);
-        result.sha256.data = data;
-        result.sha256.length = length;
-      } else {
-        OPENSSL_free(data);
-      }
-      OPENSSL_free(name);
-      OPENSSL_free(header);
+  char* name;
+  char* header;
+  unsigned char* data;
+  long length;
+  while (PEM_read(fp, &name, &header, &data, &length) == 1) {
+    if (strcmp(name, "MESSAGE") == 0) {
+      OSP_DCHECK(!result.message.data);
+      result.message.data = data;
+      result.message.length = length;
+    } else if (strcmp(name, "SIGNATURE SHA1") == 0) {
+      OSP_DCHECK(!result.sha1.data);
+      result.sha1.data = data;
+      result.sha1.length = length;
+    } else if (strcmp(name, "SIGNATURE SHA256") == 0) {
+      OSP_DCHECK(!result.sha256.data);
+      result.sha256.data = data;
+      result.sha256.length = length;
     } else {
-      break;
+      OPENSSL_free(data);
     }
+    OPENSSL_free(name);
+    OPENSSL_free(header);
   }
   OSP_DCHECK(result.message.data);
   OSP_DCHECK(result.sha1.data);
@@ -113,7 +113,7 @@ SignatureTestData ReadSignatureTestData(const std::string& filename) {
 }
 
 std::unique_ptr<TrustStore> CreateTrustStoreFromPemFile(
-    const std::string& filename) {
+    absl::string_view filename) {
   std::unique_ptr<TrustStore> store = std::make_unique<TrustStore>();
 
   std::vector<std::string> certs =

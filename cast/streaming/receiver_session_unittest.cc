@@ -222,7 +222,7 @@ void ExpectIsErrorAnswerMessage(
 
   const Json::Value& error = message["error"];
   EXPECT_TRUE(error.isObject());
-  EXPECT_EQ(83, error["code"].asInt());
+  EXPECT_GT(error["code"].asInt(), 0);
   EXPECT_EQ("", error["description"].asString());
 }
 

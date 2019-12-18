@@ -22,6 +22,8 @@ source_set("channel") {
   public_deps = [
     "../../platform",
     "../../third_party/boringssl",
+    "../common:certificate",
+    "../common:channel",
   ]
 }
 
@@ -34,6 +36,7 @@ source_set("unittests") {
   deps = [
     ":channel",
     "../../platform",
+    "../../testing/util",
     "../../third_party/googletest:gtest",
     "../common/certificate/proto:certificate_proto",
     "../common/certificate/proto:certificate_unittest_proto",

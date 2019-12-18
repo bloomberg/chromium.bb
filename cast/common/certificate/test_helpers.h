@@ -5,9 +5,12 @@
 #ifndef CAST_COMMON_CERTIFICATE_TEST_HELPERS_H_
 #define CAST_COMMON_CERTIFICATE_TEST_HELPERS_H_
 
+#include <openssl/evp.h>
+
 #include <string>
 #include <vector>
 
+#include "absl/strings/string_view.h"
 #include "cast/common/certificate/cast_cert_validator_internal.h"
 #include "cast/common/certificate/types.h"
 
@@ -15,9 +18,9 @@ namespace cast {
 namespace certificate {
 namespace testing {
 
-std::string ReadEntireFileToString(const std::string& filename);
 std::vector<std::string> ReadCertificatesFromPemFile(
-    const std::string& filename);
+    absl::string_view filename);
+bssl::UniquePtr<EVP_PKEY> ReadKeyFromPemFile(absl::string_view filename);
 
 class SignatureTestData {
  public:
@@ -29,10 +32,10 @@ class SignatureTestData {
   ConstDataSpan sha256;
 };
 
-SignatureTestData ReadSignatureTestData(const std::string& filename);
+SignatureTestData ReadSignatureTestData(absl::string_view filename);
 
 std::unique_ptr<TrustStore> CreateTrustStoreFromPemFile(
-    const std::string& filename);
+    absl::string_view filename);
 
 }  // namespace testing
 }  // namespace certificate

@@ -116,6 +116,7 @@ include_rules = [
     '+platform/api',
     '+platform/base',
     '+platform/test',
+    '+testing/util',
     '+third_party',
 
     # Don't include abseil from the root so the path can change via include_dirs

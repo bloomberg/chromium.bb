@@ -12,6 +12,8 @@ source_set("util") {
     "big_endian.h",
     "crypto/certificate_utils.cc",
     "crypto/certificate_utils.h",
+    "crypto/digest_sign.cc",
+    "crypto/digest_sign.h",
     "crypto/openssl_util.cc",
     "crypto/openssl_util.h",
     "crypto/rsa_private_key.cc",

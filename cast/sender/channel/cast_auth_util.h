@@ -7,10 +7,10 @@
 
 #include <openssl/x509.h>
 
+#include <chrono>
 #include <string>
 
 #include "cast/common/certificate/cast_cert_validator.h"
-#include "cast/common/channel/proto/cast_channel.pb.h"
 #include "platform/base/error.h"
 
 namespace cast {
@@ -61,6 +61,19 @@ ErrorOr<CastDeviceCertPolicy> AuthenticateChallengeReply(
     X509* peer_cert,
     const AuthContext& auth_context);
 
+// Exposed for testing only.
+//
+// Overloaded version of AuthenticateChallengeReply that allows modifying the
+// crl policy, trust stores, and verification times.
+ErrorOr<CastDeviceCertPolicy> AuthenticateChallengeReplyForTest(
+    const CastMessage& challenge_reply,
+    X509* peer_cert,
+    const AuthContext& auth_context,
+    certificate::CRLPolicy crl_policy,
+    certificate::TrustStore* cast_trust_store,
+    certificate::TrustStore* crl_trust_store,
+    const certificate::DateTime& verification_time);
+
 // Performs a quick check of the TLS certificate for time validity requirements.
 openscreen::Error VerifyTLSCertificateValidity(
     X509* peer_cert,
@@ -77,8 +90,8 @@ ErrorOr<CastDeviceCertPolicy> VerifyCredentials(
 
 // Exposed for testing only.
 //
-// Overloaded version of VerifyCredentials that allows modifying
-// the crl policy, trust stores, and verification times.
+// Overloaded version of VerifyCredentials that allows modifying the crl policy,
+// trust stores, and verification times.
 ErrorOr<CastDeviceCertPolicy> VerifyCredentialsForTest(
     const AuthResponse& response,
     const std::string& signature_input,

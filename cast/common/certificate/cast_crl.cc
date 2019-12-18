@@ -13,6 +13,7 @@
 #include "cast/common/certificate/cast_cert_validator_internal.h"
 #include "cast/common/certificate/proto/revocation.pb.h"
 #include "platform/base/macros.h"
+#include "util/crypto/certificate_utils.h"
 #include "util/crypto/sha2.h"
 #include "util/logging.h"
 
@@ -134,39 +135,12 @@ bool VerifyCRL(const Crl& crl,
   return true;
 }
 
-std::string GetSpkiTlv(X509* cert) {
-  int len = i2d_X509_PUBKEY(cert->cert_info->key, nullptr);
-  if (len <= 0) {
-    return {};
-  }
-  std::string x(len, 0);
-  uint8_t* data = reinterpret_cast<uint8_t*>(&x[0]);
-  if (!i2d_X509_PUBKEY(cert->cert_info->key, &data)) {
-    return {};
-  }
-  size_t actual_size = data - reinterpret_cast<uint8_t*>(&x[0]);
-  OSP_DCHECK_EQ(actual_size, x.size());
-  x.resize(actual_size);
-  return x;
-}
-
-bool ParseDerUint64(ASN1_INTEGER* asn1int, uint64_t* result) {
-  if (asn1int->length > 8 || asn1int->length == 0) {
-    return false;
-  }
-  *result = 0;
-  for (int i = 0; i < asn1int->length; ++i) {
-    *result = (*result << 8) | asn1int->data[i];
-  }
-  return true;
-}
-
 }  // namespace
 
 CastCRL::CastCRL(const TbsCrl& tbs_crl, const DateTime& overall_not_after) {
   // Parse the validity information.
-  // Assume ConvertTimeSeconds will succeed. Successful call to VerifyCRL
-  // means that these calls were successful.
+  // Assume DateTimeFromSeconds will succeed. Successful call to VerifyCRL means
+  // that these calls were successful.
   DateTimeFromSeconds(tbs_crl.not_before_seconds(), &not_before_);
   DateTimeFromSeconds(tbs_crl.not_after_seconds(), &not_after_);
   if (overall_not_after < not_after_) {
@@ -205,7 +179,7 @@ bool CastCRL::CheckRevocation(const std::vector<X509*>& trusted_chain,
   // Check revocation. This loop iterates over both certificates AND then the
   // trust anchor after exhausting the certs.
   for (size_t i = 0; i < trusted_chain.size(); ++i) {
-    std::string spki_tlv = GetSpkiTlv(trusted_chain[i]);
+    std::string spki_tlv = openscreen::GetSpkiTlv(trusted_chain[i]);
     if (spki_tlv.empty()) {
       return false;
     }
@@ -226,10 +200,12 @@ bool CastCRL::CheckRevocation(const std::vector<X509*>& trusted_chain,
 
         // Only Google generated device certificates will be revoked by range.
         // These will always be less than 64 bits in length.
-        if (!ParseDerUint64(subordinate->cert_info->serialNumber,
-                            &serial_number)) {
+        openscreen::ErrorOr<uint64_t> maybe_serial =
+            openscreen::ParseDerUint64(subordinate->cert_info->serialNumber);
+        if (!maybe_serial) {
           continue;
         }
+        serial_number = maybe_serial.value();
         for (const auto& revoked_serial : issuer_iter->second) {
           if (revoked_serial.first_serial <= serial_number &&
               revoked_serial.last_serial >= serial_number) {

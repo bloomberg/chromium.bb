@@ -11,6 +11,7 @@
 #include "cast/common/certificate/cast_cert_validator.h"
 #include "cast/common/certificate/cast_cert_validator_internal.h"
 #include "cast/common/certificate/cast_crl.h"
+#include "cast/common/channel/proto/cast_channel.pb.h"
 #include "platform/api/time.h"
 #include "platform/base/error.h"
 #include "util/logging.h"
@@ -222,18 +223,31 @@ openscreen::Error VerifyTLSCertificateValidity(
   return openscreen::Error::None();
 }
 
-ErrorOr<CastDeviceCertPolicy> AuthenticateChallengeReply(
+ErrorOr<CastDeviceCertPolicy> VerifyCredentialsImpl(
+    const AuthResponse& response,
+    const std::string& signature_input,
+    const certificate::CRLPolicy& crl_policy,
+    certificate::TrustStore* cast_trust_store,
+    certificate::TrustStore* crl_trust_store,
+    const certificate::DateTime& verification_time,
+    bool enforce_sha256_checking);
+
+ErrorOr<CastDeviceCertPolicy> AuthenticateChallengeReplyImpl(
     const CastMessage& challenge_reply,
     X509* peer_cert,
-    const AuthContext& auth_context) {
+    const AuthContext& auth_context,
+    const certificate::CRLPolicy& crl_policy,
+    certificate::TrustStore* cast_trust_store,
+    certificate::TrustStore* crl_trust_store,
+    const certificate::DateTime& verification_time) {
   DeviceAuthMessage auth_message;
   openscreen::Error result = ParseAuthMessage(challenge_reply, &auth_message);
   if (!result.ok()) {
     return result;
   }
 
-  result = VerifyTLSCertificateValidity(
-      peer_cert, openscreen::GetWallTimeSinceUnixEpoch());
+  result = VerifyTLSCertificateValidity(peer_cert,
+                                        DateTimeToSeconds(verification_time));
   if (!result.ok()) {
     return result;
   }
@@ -261,7 +275,35 @@ ErrorOr<CastDeviceCertPolicy> AuthenticateChallengeReply(
   OSP_DCHECK_EQ(actual_size, peer_cert_der.size());
   peer_cert_der.resize(actual_size);
 
-  return VerifyCredentials(response, nonce_response + peer_cert_der);
+  return VerifyCredentialsImpl(response, nonce_response + peer_cert_der,
+                               crl_policy, cast_trust_store, crl_trust_store,
+                               verification_time, false);
+}
+
+ErrorOr<CastDeviceCertPolicy> AuthenticateChallengeReply(
+    const CastMessage& challenge_reply,
+    X509* peer_cert,
+    const AuthContext& auth_context) {
+  certificate::DateTime now = {};
+  OSP_CHECK(certificate::DateTimeFromSeconds(
+      openscreen::GetWallTimeSinceUnixEpoch().count(), &now));
+  certificate::CRLPolicy policy = certificate::CRLPolicy::kCrlOptional;
+  return AuthenticateChallengeReplyImpl(
+      challenge_reply, peer_cert, auth_context, policy,
+      /* cast_trust_store */ nullptr, /* crl_trust_store */ nullptr, now);
+}
+
+ErrorOr<CastDeviceCertPolicy> AuthenticateChallengeReplyForTest(
+    const CastMessage& challenge_reply,
+    X509* peer_cert,
+    const AuthContext& auth_context,
+    certificate::CRLPolicy crl_policy,
+    certificate::TrustStore* cast_trust_store,
+    certificate::TrustStore* crl_trust_store,
+    const certificate::DateTime& verification_time) {
+  return AuthenticateChallengeReplyImpl(
+      challenge_reply, peer_cert, auth_context, crl_policy, cast_trust_store,
+      crl_trust_store, verification_time);
 }
 
 // This function does the following
@@ -301,8 +343,8 @@ ErrorOr<CastDeviceCertPolicy> VerifyCredentialsImpl(
   std::vector<std::string> cert_chain;
   cert_chain.push_back(response.client_auth_certificate());
   cert_chain.insert(cert_chain.end(),
-                    response.intermediate_certificate().begin(),
-                    response.intermediate_certificate().end());
+                    response.intermediate_certificates().begin(),
+                    response.intermediate_certificates().end());
 
   // Parse the CRL.
   std::unique_ptr<certificate::CastCRL> crl;
