@@ -885,7 +885,9 @@ typedef struct SPEED_FEATURES {
    */
   HIGH_LEVEL_SPEED_FEATURES hl_sf;
 
-  // Speed features related to how tpl's searches are done.
+  /*
+   * Speed features related to how tpl's searches are done.
+   */
   TPL_SPEED_FEATURES tpl_sf;
 
   /*
