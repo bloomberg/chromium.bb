@@ -475,8 +475,7 @@ body._10sec #toggle-timer:checked {
   background-image: url(../images/camera_button_mic_off.svg);
 }
 
-body:not(.multi-fps) #toggle-fps,
-body:not(.video) #toggle-fps {
+#toggle-fps {
   display: none;
 }
 
