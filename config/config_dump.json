@@ -13176,6 +13176,26 @@
         "suite_scheduling": false,
         "workspace_branch": "firmware-servo-11011.B"
     },
+    "firmware-servo-12768.B-firmwarebranch": {
+        "_template": "firmwarebranch",
+        "boards": [
+            "octopus"
+        ],
+        "schedule": "with 168h interval",
+        "workspace_branch": "firmware-servo-12768.B"
+    },
+    "firmware-servo-12768.B-firmwarebranch-tryjob": {
+        "_template": "firmwarebranch",
+        "boards": [
+            "octopus"
+        ],
+        "debug": true,
+        "display_label": "tryjob",
+        "luci_builder": "Try",
+        "push_image": false,
+        "suite_scheduling": false,
+        "workspace_branch": "firmware-servo-12768.B"
+    },
     "firmware-smaug-7900.B-firmwarebranch": {
         "_template": "firmwarebranch",
         "boards": [

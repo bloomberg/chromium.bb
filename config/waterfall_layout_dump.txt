@@ -174,6 +174,7 @@
   firmware-sarien-12200.B-firmwarebranch
   firmware-scarlet-10388.B-firmwarebranch
   firmware-servo-11011.B-firmwarebranch
+  firmware-servo-12768.B-firmwarebranch
   firmware-smaug-7900.B-firmwarebranch
   firmware-strago-7287.B-firmwarebranch
   firmware-sumo-5216.382.B-firmwarebranch
@@ -1024,6 +1025,7 @@
   firmware-sarien-12200.B-firmwarebranch-tryjob
   firmware-scarlet-10388.B-firmwarebranch-tryjob
   firmware-servo-11011.B-firmwarebranch-tryjob
+  firmware-servo-12768.B-firmwarebranch-tryjob
   firmware-smaug-7900.B-firmwarebranch-tryjob
   firmware-strago-7287.B-firmwarebranch-tryjob
   firmware-sumo-5216.382.B-firmwarebranch-tryjob
