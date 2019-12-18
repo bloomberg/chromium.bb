@@ -5015,7 +5015,7 @@ static INLINE void update_valid_ref_frames_for_gm(
     cm->global_motion[frame] = default_warp_params;
     // Skip global motion estimation for invalid ref frames
     if (buf == NULL ||
-        (ref_disabled && cpi->sf.recode_loop != DISALLOW_RECODE)) {
+        (ref_disabled && cpi->sf.hl_sf.recode_loop != DISALLOW_RECODE)) {
       cpi->gmparams_cost[frame] = 0;
       continue;
     } else {
@@ -5543,7 +5543,7 @@ void av1_encode_frame(AV1_COMP *cpi) {
   (void)num_planes;
 #endif
 
-  if (cpi->sf.frame_parameter_update) {
+  if (cpi->sf.hl_sf.frame_parameter_update) {
     RD_COUNTS *const rdc = &cpi->td.rd_counts;
 
     if (frame_is_intra_only(cm))

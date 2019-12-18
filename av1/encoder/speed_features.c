@@ -399,7 +399,7 @@ static void set_good_speed_features_framesize_independent(
     // The values in x->pred_mv[] differ for single and multi-thread cases.
     // See aomedia:1778.
     // sf->adaptive_motion_search = 1;
-    sf->recode_loop = ALLOW_RECODE_KFARFGF;
+    sf->hl_sf.recode_loop = ALLOW_RECODE_KFARFGF;
     sf->mv_sf.use_accurate_subpel_search = USE_2_TAPS;
     if (cpi->oxcf.enable_smooth_interintra)
       sf->inter_sf.disable_smooth_interintra = boosted ? 0 : 1;
@@ -628,7 +628,7 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
     // The values in x->pred_mv[] differ for single and multi-thread cases.
     // See aomedia:1778.
     // sf->adaptive_motion_search = 1;
-    sf->recode_loop = ALLOW_RECODE_KFARFGF;
+    sf->hl_sf.recode_loop = ALLOW_RECODE_KFARFGF;
     sf->rd_sf.tx_domain_dist_level = 1;
     sf->mv_sf.use_accurate_subpel_search = USE_2_TAPS;
     sf->inter_sf.adaptive_rd_thresh = 2;
@@ -656,7 +656,7 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
   }
 
   if (speed >= 5) {
-    sf->recode_loop = ALLOW_RECODE_KFMAXBW;
+    sf->hl_sf.recode_loop = ALLOW_RECODE_KFMAXBW;
     sf->intra_sf.intra_y_mode_mask[TX_64X64] = INTRA_DC_H_V;
     sf->intra_sf.intra_uv_mode_mask[TX_64X64] = UV_INTRA_DC_H_V_CFL;
     sf->intra_sf.intra_y_mode_mask[TX_32X32] = INTRA_DC_H_V;
@@ -692,7 +692,7 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->mv_sf.subpel_force_stop = QUARTER_PEL;
     sf->part_sf.default_max_partition_size = BLOCK_128X128;
     sf->part_sf.default_min_partition_size = BLOCK_8X8;
-    sf->frame_parameter_update = 0;
+    sf->hl_sf.frame_parameter_update = 0;
     sf->mv_sf.search_method = FAST_DIAMOND;
     sf->part_sf.partition_search_type = VAR_BASED_PARTITION;
     sf->rt_sf.mode_search_skip_flags |= FLAG_SKIP_INTRA_DIRMISMATCH;
@@ -715,7 +715,7 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->mv_sf.subpel_force_stop = QUARTER_PEL;
     sf->part_sf.default_max_partition_size = BLOCK_128X128;
     sf->part_sf.default_min_partition_size = BLOCK_8X8;
-    sf->frame_parameter_update = 0;
+    sf->hl_sf.frame_parameter_update = 0;
     sf->mv_sf.search_method = FAST_DIAMOND;
     sf->part_sf.partition_search_type = VAR_BASED_PARTITION;
     sf->rt_sf.mode_search_skip_flags |= FLAG_SKIP_INTRA_DIRMISMATCH;
@@ -748,6 +748,18 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->use_modeled_non_rd_cost = 1;
 #endif
   }
+}
+
+static AOM_INLINE void init_hl_sf(HIGH_LEVEL_SPEED_FEATURES *hl_sf) {
+  // best quality defaults
+  hl_sf->frame_parameter_update = 1;
+  hl_sf->recode_loop = ALLOW_RECODE;
+  hl_sf->reduce_high_precision_mv_usage = 0;
+  hl_sf->disable_overlay_frames = 0;
+  // TODO(yunqing): turn it on for speed 0 if there is gain.
+  hl_sf->adaptive_overlay_encoding = 1;
+  // Recode loop tolerance %.
+  hl_sf->recode_tolerance = 25;
 }
 
 static AOM_INLINE void init_gm_sf(GLOBAL_MOTION_SPEED_FEATURES *gm_sf) {
@@ -987,19 +999,10 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
   const AV1EncoderConfig *const oxcf = &cpi->oxcf;
   int i;
 
-  // best quality defaults
-  sf->frame_parameter_update = 1;
-  sf->recode_loop = ALLOW_RECODE;
-  sf->reduce_high_precision_mv_usage = 0;
-  sf->disable_overlay_frames = 0;
-  // TODO(yunqing): turn it on for speed 0 if there is gain.
-  sf->adaptive_overlay_encoding = 1;
-  // Recode loop tolerance %.
-  sf->recode_tolerance = 25;
-
   sf->tpl_sf.prune_intra_modes = 0;
   sf->tpl_sf.reduce_first_step_size = 0;
 
+  init_hl_sf(&sf->hl_sf);
   init_gm_sf(&sf->gm_sf);
   init_part_sf(&sf->part_sf);
   init_mv_sf(&sf->mv_sf);
@@ -1066,7 +1069,7 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
     sf->rd_sf.optimize_coefficients = NO_TRELLIS_OPT;
 
   // No recode or trellis for 1 pass.
-  if (oxcf->pass == 0) sf->recode_loop = DISALLOW_RECODE;
+  if (oxcf->pass == 0) sf->hl_sf.recode_loop = DISALLOW_RECODE;
 
   if (sf->mv_sf.subpel_search_method == SUBPEL_TREE) {
     cpi->find_fractional_mv_step = av1_find_best_sub_pixel_tree;

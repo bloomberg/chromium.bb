@@ -1134,7 +1134,7 @@ int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
       frame_params.show_existing_frame = 1;
     } else {
       frame_params.show_existing_frame =
-          ((oxcf->enable_overlay == 0 || cpi->sf.disable_overlay_frames ||
+          ((oxcf->enable_overlay == 0 || cpi->sf.hl_sf.disable_overlay_frames ||
             cpi->show_existing_alt_ref) &&
            gf_group->update_type[gf_group->index] == OVERLAY_UPDATE) ||
           gf_group->update_type[gf_group->index] == INTNL_OVERLAY_UPDATE;

@@ -1338,7 +1338,7 @@ static FRAME_DIFF temporal_filter_iterate_c(
         }
       }
 
-      if (!is_key_frame && cpi->sf.adaptive_overlay_encoding) {
+      if (!is_key_frame && cpi->sf.hl_sf.adaptive_overlay_encoding) {
         // Calculate the difference(dist) between source and filtered source.
         dst1 = cpi->alt_ref_buffer.y_buffer + mb_y_offset;
         stride = cpi->alt_ref_buffer.y_stride;
@@ -1594,7 +1594,7 @@ int av1_temporal_filter(AV1_COMP *cpi, int distance,
     start_frame = distance + frames_to_blur_forward;
     cpi->common.showable_frame =
         (strength == 0 && frames_to_blur == 1) ||
-        (cpi->oxcf.enable_overlay == 0 || cpi->sf.disable_overlay_frames);
+        (cpi->oxcf.enable_overlay == 0 || cpi->sf.hl_sf.disable_overlay_frames);
   }
 
   // Setup frame pointers, NULL indicates frame not included in filter.
@@ -1624,7 +1624,8 @@ int av1_temporal_filter(AV1_COMP *cpi, int distance,
 
   if (distance < 0) return 1;
 
-  if (show_existing_alt_ref != NULL && cpi->sf.adaptive_overlay_encoding) {
+  if (show_existing_alt_ref != NULL &&
+      cpi->sf.hl_sf.adaptive_overlay_encoding) {
     AV1_COMMON *const cm = &cpi->common;
     int top_index = 0, bottom_index = 0;
 

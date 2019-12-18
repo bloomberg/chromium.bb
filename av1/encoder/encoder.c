@@ -3669,8 +3669,9 @@ static int recode_loop_test(AV1_COMP *cpi, int high_limit, int low_limit, int q,
   int force_recode = 0;
 
   if ((rc->projected_frame_size >= rc->max_frame_bandwidth) ||
-      (cpi->sf.recode_loop == ALLOW_RECODE) ||
-      (frame_is_kfgfarf && (cpi->sf.recode_loop == ALLOW_RECODE_KFARFGF))) {
+      (cpi->sf.hl_sf.recode_loop == ALLOW_RECODE) ||
+      (frame_is_kfgfarf &&
+       (cpi->sf.hl_sf.recode_loop == ALLOW_RECODE_KFARFGF))) {
     // TODO(agrange) high_limit could be greater than the scale-down threshold.
     if ((rc->projected_frame_size > high_limit && q < maxq) ||
         (rc->projected_frame_size < low_limit && q > minq)) {
@@ -3988,9 +3989,9 @@ static void process_tpl_stats_frame(AV1_COMP *cpi) {
 
 static int determine_frame_high_precision_mv(const AV1_COMP *cpi, int qindex) {
   (void)cpi;
-  if (cpi->sf.reduce_high_precision_mv_usage == 2)
+  if (cpi->sf.hl_sf.reduce_high_precision_mv_usage == 2)
     return 0;
-  else if (cpi->sf.reduce_high_precision_mv_usage == 1)
+  else if (cpi->sf.hl_sf.reduce_high_precision_mv_usage == 1)
     return qindex < HIGH_PRECISION_MV_QTHRESH / 2;
   else
     return qindex < HIGH_PRECISION_MV_QTHRESH;
@@ -4026,7 +4027,8 @@ static void set_size_dependent_vars(AV1_COMP *cpi, int *q, int *bottom_index,
   // static regions if indicated.
   // Only allowed in the second pass of a two pass encode, as it requires
   // lagged coding, and if the relevant speed feature flag is set.
-  if (is_stat_consumption_stage_twopass(cpi) && cpi->sf.static_segmentation)
+  if (is_stat_consumption_stage_twopass(cpi) &&
+      cpi->sf.hl_sf.static_segmentation)
     configure_static_seg_features(cpi);
 }
 
@@ -5005,7 +5007,7 @@ static uint16_t setup_interp_filter_search_mask(AV1_COMP *cpi) {
 static int encode_with_recode_loop(AV1_COMP *cpi, size_t *size, uint8_t *dest) {
   AV1_COMMON *const cm = &cpi->common;
   RATE_CONTROL *const rc = &cpi->rc;
-  const int allow_recode = (cpi->sf.recode_loop != DISALLOW_RECODE);
+  const int allow_recode = (cpi->sf.hl_sf.recode_loop != DISALLOW_RECODE);
   // Must allow recode if minimum compression ratio is set.
   assert(IMPLIES(cpi->oxcf.min_cr > 0, allow_recode));
 
@@ -5146,9 +5148,10 @@ static int encode_with_recode_loop(AV1_COMP *cpi, size_t *size, uint8_t *dest) {
     // Dummy pack of the bitstream using up to date stats to get an
     // accurate estimate of output frame size to determine if we need
     // to recode.
-    const int do_dummy_pack = (cpi->sf.recode_loop >= ALLOW_RECODE_KFARFGF &&
-                               cpi->oxcf.rc_mode != AOM_Q) ||
-                              cpi->oxcf.min_cr > 0;
+    const int do_dummy_pack =
+        (cpi->sf.hl_sf.recode_loop >= ALLOW_RECODE_KFARFGF &&
+         cpi->oxcf.rc_mode != AOM_Q) ||
+        cpi->oxcf.min_cr > 0;
     if (do_dummy_pack) {
       finalize_encoded_frame(cpi);
       int largest_tile_id = 0;  // Output from bitstream: unused here

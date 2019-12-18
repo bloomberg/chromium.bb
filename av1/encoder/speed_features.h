@@ -261,6 +261,38 @@ enum {
   ADAPT_PRED
 } UENUM1BYTE(MAX_PART_PRED_MODE);
 
+typedef struct HIGH_LEVEL_SPEED_FEATURES {
+  // Frame level coding parameter update
+  int frame_parameter_update;
+
+  RECODE_LOOP_TYPE recode_loop;
+
+  // This feature controls the tolerence vs target used in deciding whether to
+  // recode a frame. It has no meaning if recode is disabled.
+  int recode_tolerance;
+
+  // Use reduced 1/8th pel mv usage, in the range 0 - 2, where
+  // 0: maximizes quality and does not reduce mv precision
+  // 1: more aggressive reduced usage of high precision MV
+  // 2: use only quarter pel motion
+  int reduce_high_precision_mv_usage;
+
+  // Whether to disable overlay frames for filtered Altref frames,
+  // overiding oxcf->enable_overlay flag set as 1.
+  int disable_overlay_frames;
+
+  // Enable/disable adaptively deciding whether or not to encode ALTREF overlay
+  // frame.
+  int adaptive_overlay_encoding;
+
+  // Always set to 0. If on it enables 0 cost background transmission
+  // (except for the initial transmission of the segmentation). The feature is
+  // disabled because the addition of very large block sizes make the
+  // backgrounds very to cheap to encode, and the segmentation we have
+  // adds overhead.
+  int static_segmentation;
+} HIGH_LEVEL_SPEED_FEATURES;
+
 typedef struct TPL_SPEED_FEATURES {
   // Prune the intra modes search by tpl.
   // If set to 0, we will search all intra modes from DC_PRED to PAETH_PRED.
@@ -851,35 +883,7 @@ typedef struct SPEED_FEATURES {
   /*
    * Sequence/frame level speed features:
    */
-  // Frame level coding parameter update
-  int frame_parameter_update;
-
-  RECODE_LOOP_TYPE recode_loop;
-
-  // This feature controls the tolerence vs target used in deciding whether to
-  // recode a frame. It has no meaning if recode is disabled.
-  int recode_tolerance;
-
-  // Use reduced 1/8th pel mv usage, in the range 0 - 2, where
-  // 0: maximizes quality and does not reduce mv precision
-  // 1: more aggressive reduced usage of high precision MV
-  // 2: use only quarter pel motion
-  int reduce_high_precision_mv_usage;
-
-  // Whether to disable overlay frames for filtered Altref frames,
-  // overiding oxcf->enable_overlay flag set as 1.
-  int disable_overlay_frames;
-
-  // Enable/disable adaptively deciding whether or not to encode ALTREF overlay
-  // frame.
-  int adaptive_overlay_encoding;
-
-  // Always set to 0. If on it enables 0 cost background transmission
-  // (except for the initial transmission of the segmentation). The feature is
-  // disabled because the addition of very large block sizes make the
-  // backgrounds very to cheap to encode, and the segmentation we have
-  // adds overhead.
-  int static_segmentation;
+  HIGH_LEVEL_SPEED_FEATURES hl_sf;
 
   // Speed features related to how tpl's searches are done.
   TPL_SPEED_FEATURES tpl_sf;
