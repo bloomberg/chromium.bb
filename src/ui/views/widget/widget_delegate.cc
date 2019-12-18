@@ -185,6 +185,14 @@ bool WidgetDelegate::OnNCDragBegin(int hit_test_code) {
   return false;
 }
 
+bool WidgetDelegate::OnPreHandleMessage(unsigned window,
+                                        unsigned message,
+                                        unsigned w_param,
+                                        long l_param,
+                                        long *result) {
+  return false;
+}
+
 void WidgetDelegate::GetWidgetHitTestMask(SkPath* mask) const {
   DCHECK(mask);
 }

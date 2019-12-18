@@ -218,6 +218,22 @@ void NativeViewWidget::OnNCDoubleClick()
         d_delegate->OnNCDoubleClick();
 }
 
+bool NativeViewWidget::OnPreHandleMessage(unsigned window,
+                                          unsigned message,
+                                          unsigned w_param,
+                                          long l_param,
+                                          long *result)
+{
+    if (d_delegate)
+        return d_delegate->OnPreHandleMessage(window,
+                                              message,
+                                              w_param,
+                                              l_param,
+                                              result);
+
+    return false;
+}
+
 }  // close namespace blpwtk2
 
 // vim: ts=4 et

@@ -115,12 +115,14 @@ class BLPWTK2_EXPORT WebViewDelegate {
         // find-on-page status update.
 
     virtual void didParentStatus(WebView *source, int status, NativeView parent);
-        // Invoked when the call to parent the webview specified by 'source' to the 
+        // Invoked when the call to parent the webview specified by 'source' to the
         // given parent is done
         // If successful, status 0 will be returned, otherwise error code from GetLassError()
         // will be return as status
 
-    
+    virtual void didInterceptMessage(WebView *source);
+
+
 
     // patch section: devtools integration
     virtual void devToolsAgentHostAttached(WebView *source);
@@ -146,7 +148,6 @@ class BLPWTK2_EXPORT WebViewDelegate {
 
     virtual void validateClientFailed(WebView* source);
         // Notify the embedder that the source webview failed in validating its client.
-
 };
 
 }  // close namespace blpwtk2

@@ -196,6 +196,12 @@ class VIEWS_EXPORT WidgetDelegate {
 
   virtual void OnNCDoubleClick() {}
 
+  virtual bool OnPreHandleMessage(unsigned window,
+                                  unsigned message,
+                                  unsigned w_param,
+                                  long l_param,
+                                  long *result);
+
   // Provides the hit-test mask if HasHitTestMask above returns true.
   virtual void GetWidgetHitTestMask(SkPath* mask) const;
 

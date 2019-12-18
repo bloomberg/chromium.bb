@@ -1247,6 +1247,18 @@ void Widget::OnNCDoubleClick() {
   return widget_delegate_->OnNCDoubleClick();
 }
 
+bool Widget::OnPreHandleMessage(unsigned window,
+                                unsigned message,
+                                unsigned w_param,
+                                long l_param,
+                                long *result) {
+  return widget_delegate_->OnPreHandleMessage(window,
+                                              message,
+                                              w_param,
+                                              l_param,
+                                              result);
+}
+
 int Widget::GetNonClientComponent(const gfx::Point& point) {
   int component = non_client_view_ ?
       non_client_view_->NonClientHitTest(point) :

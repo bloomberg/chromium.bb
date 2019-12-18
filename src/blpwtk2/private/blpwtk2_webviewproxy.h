@@ -151,6 +151,7 @@ class WebViewProxy final : public WebView
     void devToolsAgentHostAttached() override;
     void devToolsAgentHostDetached() override;
     void didParentStatus(int status, NativeView parent) override;
+    void didInterceptMessage() override;
 };
 
 }  // close namespace blpwtk2

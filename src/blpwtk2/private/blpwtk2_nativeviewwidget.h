@@ -69,6 +69,11 @@ class NativeViewWidget : private views::WidgetDelegateView {
     void OnNCDragMove() override;
     void OnNCDragEnd() override;
     void OnNCDoubleClick() override;
+    bool OnPreHandleMessage(unsigned window,
+                            unsigned message,
+                            unsigned w_param,
+                            long l_param,
+                            long *result) override;
 
   private:
     NativeViewWidgetDelegate* d_delegate;  // held, not owned

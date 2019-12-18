@@ -865,6 +865,11 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   void OnNCDragMove() override;
   void OnNCDragEnd() override;
   void OnNCDoubleClick() override;
+  bool OnPreHandleMessage(unsigned window,
+                          unsigned message,
+                          unsigned w_param,
+                          long l_param,
+                          long *result) override;
   int GetNonClientComponent(const gfx::Point& point) override;
   void OnKeyEvent(ui::KeyEvent* event) override;
   void OnMouseEvent(ui::MouseEvent* event) override;
