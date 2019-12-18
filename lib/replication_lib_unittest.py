@@ -281,3 +281,20 @@ class ReplicateTest(cros_test_lib.MockTempDirTestCase):
 
     self.assertTempFileContents(audio_dst_path,
                                 '[Speaker B Settings (Updated)]')
+
+  def testReplicateJsonTrailingNewline(self):
+    """Test JSON payloads have a trailing newline."""
+    build_config_dst_path = os.path.join('dst', 'build_config.json')
+
+    replication_config = ReplicationConfig(file_replication_rules=[
+        FileReplicationRule(
+            source_path=self.build_config_path,
+            destination_path=build_config_dst_path,
+            file_type=FILE_TYPE_JSON,
+            replication_type=REPLICATION_TYPE_FILTER,
+            destination_fields=FieldMask(paths=['name', 'field2'])),
+    ])
+
+    replication_lib.Replicate(replication_config)
+
+    self.assertEqual(self.ReadTempFile(build_config_dst_path)[-1], '\n')
