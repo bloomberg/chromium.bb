@@ -626,7 +626,16 @@ class GenerateCpeExportTest(cros_test_lib.RunCommandTempDirTestCase):
     result = artifacts.GenerateCpeReport(self.chroot, self.sysroot,
                                          self.output_dir)
 
+    expected_cmd = ['cros_extract_deps', '--sysroot', '/build/board',
+                    '--format', 'cpe', 'virtual/target-os', '--output-path',
+                    self.result_file]
+    self.assertCommandCalled(expected_cmd, capture_output=True,
+                             chroot_args=['--chroot', mock.ANY],
+                             enter_chroot=True)
+
     self.assertEqual(self.result_file, result.report)
     self.assertEqual(self.warnings_file, result.warnings)
-    self.assertFileContents(self.result_file, report)
+    # We cannot assert that self.result_file exists and check contents since we
+    # are mocking  cros_extract_deps, but we verified the args to
+    # cros_extract_deps.
     self.assertFileContents(self.warnings_file, warnings)
