@@ -207,8 +207,10 @@ cr.define('settings_privacy_page', function() {
         page.prefs = {
           signin: {
             allowed_on_next_startup:
-                {type: chrome.settingsPrivate.PrefType.BOOLEAN, value: true},
+                {type: chrome.settingsPrivate.PrefType.BOOLEAN, value: true}
           },
+          safebrowsing:
+              {enabled: {value: true}, scout_reporting_enabled: {value: true}},
         };
         document.body.appendChild(page);
         return testSyncBrowserProxy.whenCalled('getSyncStatus');
@@ -351,7 +353,13 @@ cr.define('settings_privacy_page', function() {
       setup(function() {
         PolymerTest.clearBody();
         page = document.createElement('settings-privacy-page');
+        page.prefs = {
+          profile: {password_manager_leak_detection: {value: true}},
+          safebrowsing:
+              {enabled: {value: true}, scout_reporting_enabled: {value: true}},
+        };
         document.body.appendChild(page);
+        Polymer.dom.flush();
       });
 
       teardown(function() {
@@ -368,6 +376,28 @@ cr.define('settings_privacy_page', function() {
         assertVisible(page.$$('#safeBrowsingToggle'), true);
         assertVisible(page.$$('#passwordsLeakDetectionToggle'), true);
         assertVisible(page.$$('#safeBrowsingReportingToggle'), true);
+      });
+
+      test('safeBrowsingReportingToggle', function() {
+        const safeBrowsingToggle = page.$$('#safeBrowsingToggle');
+        const safeBrowsingReportingToggle =
+            page.$$('#safeBrowsingReportingToggle');
+        assertTrue(safeBrowsingToggle.checked);
+        assertFalse(safeBrowsingReportingToggle.disabled);
+        assertTrue(safeBrowsingReportingToggle.checked);
+        safeBrowsingToggle.click();
+        Polymer.dom.flush();
+
+        assertFalse(safeBrowsingToggle.checked);
+        assertTrue(safeBrowsingReportingToggle.disabled);
+        assertFalse(safeBrowsingReportingToggle.checked);
+        assertTrue(page.prefs.safebrowsing.scout_reporting_enabled.value);
+        safeBrowsingToggle.click();
+        Polymer.dom.flush();
+
+        assertTrue(safeBrowsingToggle.checked);
+        assertFalse(safeBrowsingReportingToggle.disabled);
+        assertTrue(safeBrowsingReportingToggle.checked);
       });
     });
   }
@@ -770,9 +800,7 @@ cr.define('settings_privacy_page', function() {
       }
 
       setup(() => {
-        loadTimeData.overrideValues({
-          enableBlockAutoplayContentSetting: true
-        });
+        loadTimeData.overrideValues({enableBlockAutoplayContentSetting: true});
 
         testBrowserProxy = new TestPrivacyPageBrowserProxy();
         settings.PrivacyPageBrowserProxyImpl.instance_ = testBrowserProxy;
