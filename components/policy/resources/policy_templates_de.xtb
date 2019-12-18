@@ -2409,6 +2409,11 @@ Wenn die Richtlinie auf "FALSE" gesetzt oder nicht festgelegt wird, führt die T
       Wenn diese Richtlinie deaktiviert oder nicht festgelegt ist, dürfen Websites neue Fenster oder Tabs nicht gleichzeitig mit der Navigation öffnen.</translation>
 <translation id="4680961954980851756">AutoFill aktivieren</translation>
 <translation id="4693779768620889402">Erweiterungsbasierte Ziele</translation>
+<translation id="4699592681017489215">Mit dieser Richtlinie kann ein lokaler Parameter konfiguriert werden, der dazu dient, DNS-Abfangprüfungen zu deaktivieren. Durch die Prüfungen wird ermittelt, ob sich der Browser hinter einem Proxy befindet, der unbekannte Hostnamen weiterleitet.
+
+      Diese Erkennung ist in einer Enterprise-Umgebung, in der die Netzwerkkonfiguration bekannt ist, möglicherweise nicht erforderlich, denn sie verursacht einen gewissen DNS- und HTTP-Datenverkehr beim Start und bei jeder Änderung der DNS-Konfiguration.
+
+      Wenn diese Richtlinie nicht konfiguriert oder aktiviert ist, werden die DNS-Abfangprüfungen durchgeführt. Nur, wenn sie ausdrücklich deaktiviert ist, finden sie nicht statt.</translation>
 <translation id="4703402283970867140">Intelligentem Dimmmodell erlauben, den Zeitraum bis zum Dimmen des Bildschirms zu verlängern</translation>
 <translation id="4722122254122249791">Website-Isolierung für angegebene Ursprünge aktivieren</translation>
 <translation id="4722399051042571387">Wenn "false" eingestellt ist, können Nutzer keine schwache PIN festlegen, die leicht zu erraten ist.
@@ -3702,6 +3707,7 @@ Wenn Sie diese Richtlinie konfigurieren, wird das angegebene Verzeichnis auch da
 Unter https://www.chromium.org/administrators/policy-list-3/user-data-directory-finden Sie eine Liste mit Variablen, die verwendet werden können.
 
 Wird diese Richtlinie nicht konfiguriert, wird der standardmäßige Profilpfad verwendet und der Nutzer kann ihn mit der Befehlszeilenmarkierung "--user-data-dir" ändern.</translation>
+<translation id="7008308728445338159">DNS-Abfangprüfungen aktiviert</translation>
 <translation id="7027785306666625591">Hiermit wird die Energieverwaltung in <ph name="PRODUCT_OS_NAME" /> konfiguriert.
 
       Mit diesen Richtlinien können Sie festlegen, wie <ph name="PRODUCT_OS_NAME" /> sich verhalten soll, wenn der Nutzer für einen bestimmten Zeitraum inaktiv ist.</translation>

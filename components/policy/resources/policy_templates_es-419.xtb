@@ -2406,6 +2406,11 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
       Si se inhabilita o no se establece, no se podrá navegar en los sitios ni abrir ventanas o pestañas nuevas al mismo tiempo.</translation>
 <translation id="4680961954980851756">Habilitar Autocompletar</translation>
 <translation id="4693779768620889402">Destinos basados en extensiones</translation>
+<translation id="4699592681017489215">Esta política configura un switch local que se puede usar para inhabilitar las revisiones de intercepción de DNS. Las revisiones intentan detectar si el navegador está detrás de un proxy que redirige nombres de host desconocidos.
+
+      Es posible que esta detección no sea necesaria en un entorno empresarial (donde se conoce la configuración de la red), dado que genera una cierta cantidad de tráfico de DNS y HTTP en el inicio y cambia la configuración de cada DNS.
+
+      Si no se establece esta política, o está habilitada, se llevarán a cabo las revisiones de intercepción de DNS. Si se inhabilita explícitamente, no se llevarán a cabo.</translation>
 <translation id="4703402283970867140">Habilitar un modelo de atenuación inteligente para extender el tiempo de atenuación de la pantalla</translation>
 <translation id="4722122254122249791">Permite el aislamiento de sitios específicos</translation>
 <translation id="4722399051042571387">Si esta política es falsa, los usuarios no podrán establecer PIN poco seguros y fáciles de adivinar.
@@ -3706,6 +3711,7 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
       Consulta https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables para obtener una lista de las variables que se pueden usar.
 
       Si no estableces esta política, se usará la ruta de perfil predeterminada, y el usuario podrá anularlo con la marca '--user-data-dir' en la línea de comandos.</translation>
+<translation id="7008308728445338159">Revisiones habilitadas de la intercepción de DNS</translation>
 <translation id="7027785306666625591">Configura la administración de energía en <ph name="PRODUCT_OS_NAME" />.
 
       Estas políticas te permiten configurar el comportamiento de <ph name="PRODUCT_OS_NAME" /> cuando el usuario permanece inactivo durante cierta cantidad de tiempo.</translation>

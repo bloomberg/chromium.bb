@@ -2356,6 +2356,11 @@
       如果您停用了或未设置此政策，网站将无法在导航的同时打开新窗口/标签页。</translation>
 <translation id="4680961954980851756">启用自动填充</translation>
 <translation id="4693779768620889402">基于扩展程序的目的地</translation>
+<translation id="4699592681017489215">借助此政策，您可以配置一个用于停用 DNS 拦截检查功能的本地开关。该检查功能旨在尝试检测浏览器是否使用了会重定向不明主机名的代理。
+
+      在具有已知网络配置的企业环境中，可能没必要使用这项检测功能，因为如果在此类环境中使用该功能，那么每当该功能启动时以及每当 DNS 配置有变时，都会产生一些 DNS 和 HTTP 流量。
+
+      如果未设置或启用了此政策，系统会执行 DNS 拦截检查。如果明确停用了此政策，系统便不会执行 DNS 拦截检查。</translation>
 <translation id="4703402283970867140">启用智能调暗模式，以最大限度地推迟屏幕变暗时间</translation>
 <translation id="4722122254122249791">为指定的来源启用网站隔离功能</translation>
 <translation id="4722399051042571387">如果设为 false，用户将无法设置安全系数低且易于猜中的 PIN 码。
@@ -3633,6 +3638,7 @@
       有关可用变量的列表，请访问 https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables。
 
       如果未设置此政策，则系统将使用默认个人资料路径，而且日后用户将可以通过“--disk-cache-dir”命令行标记来替换此目录。</translation>
+<translation id="7008308728445338159">启用 DNS 拦截检查功能</translation>
 <translation id="7027785306666625591">配置<ph name="PRODUCT_OS_NAME" />中的电源管理设置。
 
       这些政策可让您配置在用户停止操作一定时间后<ph name="PRODUCT_OS_NAME" />的行为。</translation>

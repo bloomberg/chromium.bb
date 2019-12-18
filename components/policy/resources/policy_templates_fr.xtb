@@ -2468,6 +2468,11 @@ Si cette règle n'est pas configurée, l'utilisateur peut décider d'afficher ou
       Si cette règle est désactivée ou n'est pas définie, les sites ne sont pas autorisés à parcourir et à ouvrir une nouvelle fenêtre ou un nouvel onglet simultanément.</translation>
 <translation id="4680961954980851756">Activer la saisie automatique</translation>
 <translation id="4693779768620889402">Destinations basées sur des extensions</translation>
+<translation id="4699592681017489215">Cette règle configure un interrupteur local pouvant être utilisé pour désactiver les contrôles d'interception des requêtes DNS. Ces contrôles ont pour but de déterminer si le navigateur est situé derrière un proxy qui redirige les noms d'hôte inconnus.
+
+      Ils ne sont pas forcément nécessaires dans un environnement d'entreprise où la configuration réseau est connue, car cela engendre un certain volume de trafic DNS et HTTP au démarrage, et que chaque configuration DNS change.
+
+      Si cette règle n'est pas configurée ou si elle est activée, les contrôles d'interception des requêtes DNS ont lieu. Si elle est explicitement désactivée, les contrôles n'ont pas lieu.</translation>
 <translation id="4703402283970867140">Activer le modèle de réduction intelligente de la luminosité pour augmenter le délai d'assombrissement de l'écran</translation>
 <translation id="4722122254122249791">Activer l'isolation des sites pour des origines définies</translation>
 <translation id="4722399051042571387">Si la règle est configurée sur "false", les utilisateurs ne pourront pas définir un code faible et facile à deviner.
@@ -3805,6 +3810,7 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
       Consultez la page https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables pour obtenir la liste des variables pouvant être utilisées.
 
       Si cette règle n'est pas définie, le chemin de profil par défaut sera utilisé, et l'utilisateur pourra le remplacer avec l'indicateur de ligne de commande "--user-data-dir".</translation>
+<translation id="7008308728445338159">Contrôles d'interception des requêtes DNS activés</translation>
 <translation id="7027785306666625591">Configurer la gestion de l'alimentation dans <ph name="PRODUCT_OS_NAME" />
 
       Ces règles vous permettent de configurer le comportement du système d'exploitation "<ph name="PRODUCT_OS_NAME" />" lorsque l'utilisateur est inactif pendant un certain temps.</translation>

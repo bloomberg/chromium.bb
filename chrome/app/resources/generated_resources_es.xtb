@@ -3344,7 +3344,7 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="5804241973901381774">Permisos</translation>
 <translation id="5805697420284793859">Administrador de ventanas</translation>
 <translation id="5806773519584576205">0° (Predeterminado)</translation>
-<translation id="5811750797187914944">Listo</translation>
+<translation id="5811750797187914944">Todo listo</translation>
 <translation id="5812674658566766066">Mostrar todo</translation>
 <translation id="5814126672212206791">Tipo de conexión</translation>
 <translation id="5815645614496570556">Dirección X.400</translation>
@@ -5196,7 +5196,7 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="8463215747450521436">Es posible que el administrador haya eliminado o inhabilitado este usuario supervisado. Ponte en contacto con el administrador si quieres seguir iniciando sesión como este usuario.</translation>
 <translation id="846374874681391779">Barra de descargas</translation>
 <translation id="8463955938112983119"><ph name="PLUGIN_NAME" /> inhabilitado.</translation>
-<translation id="8464132254133862871">Esta cuenta de usuario no es apta para este servicio.</translation>
+<translation id="8464132254133862871">Esta cuenta de usuario no es apta para utilizar este servicio.</translation>
 <translation id="8465252176946159372">No válido</translation>
 <translation id="8465444703385715657"><ph name="PLUGIN_NAME" /> necesita tu permiso para ejecutarse</translation>
 <translation id="8466417995783206254">En esta pestaña se está reproduciendo un vídeo en modo imagen en imagen.</translation>
@@ -5512,7 +5512,7 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="8888432776533519951">Color:</translation>
 <translation id="8889651696183044030"><ph name="ORIGIN" /> puede editar los siguientes archivos y carpetas</translation>
 <translation id="8890516388109605451">Fuentes</translation>
-<translation id="8892168913673237979">¡Listo!</translation>
+<translation id="8892168913673237979">¡Todo listo!</translation>
 <translation id="8892226765772586656"><ph name="ORIGIN" /> podrá editar <ph name="FILENAME" /> hasta que cierres esta pestaña</translation>
 <translation id="8893801527741465188">Desinstalación completada</translation>
 <translation id="8893928184421379330">No se ha podido reconocer el dispositivo <ph name="DEVICE_LABEL" />.</translation>

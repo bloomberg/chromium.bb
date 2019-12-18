@@ -2447,6 +2447,11 @@
       Als dit beleid is uitgeschakeld of niet is ingesteld, kunnen sites niet tegelijkertijd navigeren en nieuwe vensters/tabbladen openen.</translation>
 <translation id="4680961954980851756">Automatisch aanvullen inschakelen</translation>
 <translation id="4693779768620889402">Op extensies gebaseerde bestemmingen</translation>
+<translation id="4699592681017489215">Met dit beleid wordt een lokale schakelaar geconfigureerd die kan worden gebruikt om controles voor DNS-onderschepping uit te schakelen. Deze controles proberen te achterhalen of er een proxy achter de browser zit die als omleiding naar onbekende hostnamen dient.
+
+      In een bedrijfsomgeving waar de netwerkconfiguratie bekend is, is het misschien niet nodig om dit te controleren, omdat er bij het opstarten en bij elke wijziging van de DNS-configuratie een beperkte hoeveelheid DNS- en HTTP-verkeer wordt gegenereerd.
+
+      Als dit beleid niet is ingesteld of als het is ingeschakeld, worden de controles voor DNS-onderschepping uitgevoerd. Als het beleid expliciet is uitgeschakeld, is dit niet het geval.</translation>
 <translation id="4703402283970867140">Slim dimmodel inschakelen, zodat het langer duurt tot het scherm wordt gedimd</translation>
 <translation id="4722122254122249791">Site-isolatie inschakelen voor gespecificeerde herkomsten</translation>
 <translation id="4722399051042571387">Als dit is ingesteld op 'false', kunnen gebruikers geen pincodes instellen die als zwak worden beschouwd en gemakkelijk kunnen worden geraden.
@@ -3775,6 +3780,7 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
       Raadpleeg https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables voor een lijst met variabelen die kunnen worden gebruikt.
 
       Als dit beleid niet wordt ingesteld, wordt de standaardcachedirectory gebruikt en kan de gebruiker deze overschrijven met de opdrachtregelmarkering '--user-data-dir'.</translation>
+<translation id="7008308728445338159">Controles voor DNS-onderschepping ingeschakeld</translation>
 <translation id="7027785306666625591">Energiebeheer in <ph name="PRODUCT_OS_NAME" /> configureren.
 
       Met dit beleid kun je configureren hoe <ph name="PRODUCT_OS_NAME" /> zich gedraagt wanneer de gebruiker enige tijd inactief is.</translation>

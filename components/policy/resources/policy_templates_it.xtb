@@ -2374,6 +2374,11 @@ Se questa norma non viene impostata, l'impostazione verrà attivata ma gli utent
       Se questa norma viene disattivata o non viene impostata, ai siti non sarà concesso di navigare e aprire nuove finestre/schede contemporaneamente.</translation>
 <translation id="4680961954980851756">Abilita Compilazione automatica</translation>
 <translation id="4693779768620889402">Destinazioni basate su estensioni</translation>
+<translation id="4699592681017489215">Questo criterio consente di configurare un'opzione locale che permette di disattivare i controlli dell'intercettazione DNS. Lo scopo dei controlli è cercare di scoprire se il browser è protetto da un proxy che reindirizza i nomi host sconosciuti.
+
+      Questo rilevamento potrebbe non essere necessario in un ambiente aziendale in cui la configurazione di rete è nota, perché causa del traffico DNS e HTTP all'avvio e a ogni modifica della configurazione DNS.
+
+      Se questo criterio non viene impostato o viene attivato, i controlli dell'intercettazione DNS vengono eseguiti. Se viene disattivato i controlli non vengono eseguiti.</translation>
 <translation id="4703402283970867140">Attiva il modello di oscuramento smart per ritardare l'oscuramento dello schermo</translation>
 <translation id="4722122254122249791">Attiva isolamento sito per origini specificate</translation>
 <translation id="4722399051042571387">Se questa norma viene impostata su false, gli utenti non potranno impostare PIN non sicuri e facili da intuire.
@@ -3677,6 +3682,7 @@ Se questa norma è impostata su True o non è impostata, il modello di oscuramen
       Vai alla pagina https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables per consultare un elenco delle variabili che possono essere utilizzate.
 
       Se la norma non viene impostata, viene utilizzato il percorso profilo predefinito e l'utente può ignorarla con il flag della riga di comando "--user-data-dir".</translation>
+<translation id="7008308728445338159">Controlli intercettazione DNS attivi</translation>
 <translation id="7027785306666625591">Configura la gestione dell'alimentazione in <ph name="PRODUCT_OS_NAME" />.
 
       Queste norme consentono di configurare il comportamento di <ph name="PRODUCT_OS_NAME" /> quando l'utente rimane inattivo per un determinato periodo di tempo.</translation>

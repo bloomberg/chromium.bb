@@ -3299,7 +3299,7 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="5739458112391494395">Molt gran</translation>
 <translation id="574209121243317957">To</translation>
 <translation id="5746169159649715125">Desa com a PDF</translation>
-<translation id="5747552184818312860">Data de caducitat</translation>
+<translation id="5747552184818312860">Caduca el dia</translation>
 <translation id="5747785204778348146">Desenvolupador: inestable</translation>
 <translation id="5747809636523347288">Engan&amp;xa i ves a <ph name="URL" /></translation>
 <translation id="5750324801516359607">Lluny</translation>
@@ -5329,7 +5329,7 @@ Deseu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="8660174278198826384">Contacta amb l'administrador del dispositiu de la teva organització</translation>
 <translation id="8661290697478713397">Obre l'enllaç en una finestra d'incò&amp;gnit</translation>
 <translation id="8662671328352114214">Connecta't a una xarxa <ph name="TYPE" /></translation>
-<translation id="8662795692588422978">Usuaris</translation>
+<translation id="8662795692588422978">Persones</translation>
 <translation id="8662811608048051533">Et tanca la sessió de la majoria de llocs.</translation>
 <translation id="8662911384982557515">Canviar la pàgina d'inici per: <ph name="HOME_PAGE" /></translation>
 <translation id="8662978096466608964">Chrome no pot establir un fons de pantalla.</translation>

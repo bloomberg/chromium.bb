@@ -432,13 +432,13 @@ Secara default, tidak ada mode buka kunci cepat yang tersedia untuk perangkat ya
 
           Jika kebijakan ini ditetapkan ke "Layar penuh", kaca pembesar layar akan selalu diaktifkan dalam mode kaca pembesar layar penuh di layar login.
 
-          Jika kebijakan ini ditetapkan ke "Dipasang ke dok", kaca pembesar layar akan selalu diaktifkan dalam mode kaca pembesar yang dipasang ke dok di layar login.
+          Jika kebijakan ini ditetapkan ke "Tersemat", kaca pembesar layar akan selalu diaktifkan dalam mode kaca pembesar disematkan di layar login.
 
           Jika kebijakan ini ditetapkan ke "Tidak ada", kaca pembesar layar akan selalu dinonaktifkan di layar login.
 
           Jika kebijakan ini ditetapkan, pengguna tidak dapat mengubah atau menggantinya.
 
-          Jika kebijakan ini tidak ditetapkan, dikte mula-mula akan dinonaktifkan di layar login, tetapi dapat diaktifkan oleh pengguna kapan saja.</translation>
+          Jika kebijakan ini tidak ditetapkan, fitur dikte mula-mula akan dinonaktifkan di layar login, tetapi dapat diaktifkan oleh pengguna kapan saja.</translation>
 <translation id="1675002386741412210">Didukung di:</translation>
 <translation id="1695708467571967752">Kebijakan ini mengendalikan apakah pengguna dapat memutar media saat perangkat terkunci.
 
@@ -1159,7 +1159,7 @@ Jika kebijakan ini tidak disetel, setelan kebijakan berarti diaktifkan, lihat de
 <translation id="267596348720209223">Menentukan penyandiaksaraan karakter yang didukung oleh penyedia penelusuran. Penyandiaksaraan adalah nama-nama halaman kode seperti UTF-8, GB2312, dan ISO-8859-1. Kode tersebut dicoba dalam urutan yang disediakan. Kebijakan ini bersifat opsional. Jika tidak disetel, default yang akan digunakan adalah UTF-8. Kebijakan ini hanya dipatuhi jika kebijakan 'DefaultSearchProviderEnabled' diaktifkan.</translation>
 <translation id="268577405881275241">Aktifkan fitur proxy kompresi data</translation>
 <translation id="2693108589792503178">Mengonfigurasi URL ubah sandi.</translation>
-<translation id="2694143893026486692">Kaca pembesar yang dipasang ke dok diaktifkan</translation>
+<translation id="2694143893026486692">Kaca pembesar tersemat diaktifkan</translation>
 <translation id="2694188263972877487">Mengonfigurasi jenis download yang akan sepenuhnya diblokir oleh <ph name="PRODUCT_NAME" />, tanpa mengizinkan pengguna mengganti keputusan keamanan.
 
       Jika kebijakan ini ditetapkan, <ph name="PRODUCT_NAME" /> akan mencegah jenis download tertentu, dan tidak akan mengizinkan pengguna mengabaikan peringatan keamanan.
@@ -2408,6 +2408,11 @@ Jika kebijakan ini diaktifkan, situs akan diizinkan untuk menavigasi dan membuka
 Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat menavigasi dan membuka jendela/tab baru secara bersamaan.</translation>
 <translation id="4680961954980851756">Aktifkan IsiOtomatis</translation>
 <translation id="4693779768620889402">Tujuan berbasis ekstensi</translation>
+<translation id="4699592681017489215">Kebijakan ini mengonfigurasi tombol lokal yang dapat digunakan untuk menonaktifkan pemeriksaan intersepsi DNS. Pemeriksaan ini berupaya mencari tahu apakah browser berada di balik proxy yang mengalihkan nama host tidak dikenal.
+
+      Deteksi ini mungkin tidak diperlukan dalam lingkungan perusahaan yang konfigurasi jaringannya dikenal, karena kebijakan ini menyebabkan adanya sejumlah traffic DNS dan HTTP pada saat proses memulai dan setiap perubahan konfigurasi DNS.
+
+      Saat kebijakan ini tidak ditetapkan, atau diaktifkan, pemeriksaan intersepsi DNS akan dilakukan. Pemeriksaan tidak dilakukan ketika kebijakan dinonaktifkan secara eksplisit.</translation>
 <translation id="4703402283970867140">Aktifkan model redup smart untuk memperpanjang waktu hingga layar diredupkan</translation>
 <translation id="4722122254122249791">Aktifkan Isolasi Situs untuk asal yang ditetapkan</translation>
 <translation id="4722399051042571387">Jika "false", pengguna tidak dapat menyetel PIN yang lemah dan mudah ditebak.
@@ -3694,6 +3699,7 @@ Kebijakan ini hanya berlaku jika dukungan aplikasi Linux diaktifkan.</translatio
       Lihat https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables untuk mengetahui daftar variabel yang dapat digunakan.
 
       Jika kebijakan ini tidak disetel, jalur profil default akan digunakan dan pengguna dapat menggantinya dengan tanda baris perintah '--user-data-dir'.</translation>
+<translation id="7008308728445338159">Pemeriksaan intersepsi DNS diaktifkan</translation>
 <translation id="7027785306666625591">Mengonfigurasi pengelolaan daya di <ph name="PRODUCT_OS_NAME" />.
 
       Kebijakan ini memungkinkan Anda mengonfigurasi cara <ph name="PRODUCT_OS_NAME" /> berperilaku saat pengguna tetap menganggur dalam beberapa waktu.</translation>

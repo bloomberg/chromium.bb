@@ -2468,6 +2468,11 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
       Si se inhabilita esta política o no se configura, los sitios web no podrán abrir ventanas ni pestañas nuevas ni navegar de forma simultánea.</translation>
 <translation id="4680961954980851756">Habilitar Autocompletar</translation>
 <translation id="4693779768620889402">Destinos basados en extensiones</translation>
+<translation id="4699592681017489215">Esta política configura un interruptor local que puede usarse para inhabilitar las comprobaciones de interceptación de DNS. Con las comprobaciones, se intenta averiguar si el navegador está detrás de un proxy que redirige nombres de host desconocidos.
+
+      Es posible que la detección no sea necesaria en un entorno empresarial en el que se conoce la configuración de la red, ya que causa cierta cantidad de tráfico DNS y HTTP al iniciar el navegador y con cada cambio en la configuración de DNS.
+
+      Si esta política se habilita o no se establece, se realizarán las comprobaciones de interceptación de DNS. Si se inhabilita, no se realizarán las comprobaciones.</translation>
 <translation id="4703402283970867140">Habilitar el modelo de atenuación inteligente para alargar el tiempo que pasa hasta que la pantalla se atenúe.</translation>
 <translation id="4722122254122249791">Habilitar el aislamiento de sitios web específicos</translation>
 <translation id="4722399051042571387">Si se le asigna el valor false, los usuarios no podrán definir ningún PIN que no se considere seguro y que sea fácil de adivinar.
@@ -3812,6 +3817,7 @@ Si la política está establecida en False, no se informará sobre los usuarios.
       Para consultar una lista de variables que se pueden utilizar, accede a la página https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.
 
       Si no se establece esta política, se utilizará la ruta de perfil predeterminada y el usuario podrá anularla con el indicador de línea de comando "--user-data-dir".</translation>
+<translation id="7008308728445338159">Comprobaciones de interceptación de DNS habilitadas</translation>
 <translation id="7027785306666625591">Configura la administración de energía en <ph name="PRODUCT_OS_NAME" />.
 
 Estas políticas te permiten configurar el comportamiento de <ph name="PRODUCT_OS_NAME" /> cuando el usuario permanece inactivo durante un periodo de tiempo determinado.</translation>

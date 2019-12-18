@@ -2454,6 +2454,11 @@ politikayı geçersiz kılamaz.
       Bu politika devre dışı bırakılır veya ayarlanmazsa sitelerin eşzamanlı olarak gezinmesine ve yeni bir pencere/sekme açmasına izin verilmez.</translation>
 <translation id="4680961954980851756">Otomatik Doldurmayı etkinleştir</translation>
 <translation id="4693779768620889402">Uzantı tabanlı hedefler</translation>
+<translation id="4699592681017489215">Bu politika, DNS müdahale kontrollerin devre dışı bırakmak için kullanılabilen yerel bir anahtarı yapılandırır. Kontroller, tarayıcının bilinmeyen ana bilgisayar adlarına yönlendirme yapan bir proxy'nin arkasında olup olmadığını anlamaya çalışır.
+
+      Bu tespit, ağ yapılandırmasının bilindiği kurumsal ortamlarda gerekli olmayabilir. Zira bu işlem başlangıçta ve DNS yapılandırması her değiştiğinde bir miktar DNS ve HTTP trafiğine neden olur.
+
+      Bu politika ayarlanmadığında veya etkinken DNS müdahale kontrolleri yapılır. Açıkça devre dışı bırakıldığında kontrol yapılmaz.</translation>
 <translation id="4703402283970867140">Ekranın karartma süresini uzatmak için akıllı karartma modelini etkinleştir</translation>
 <translation id="4722122254122249791">Site İzolasyonu'nu belirtilen kaynaklar için etkinleştirme</translation>
 <translation id="4722399051042571387">False (yanlış) değerinde, kullanıcılar zayıf ve kolayca tahmin edilebilecek PIN'ler ayarlayamaz.
@@ -3783,6 +3788,7 @@ Bu ayar devre dışı bırakılır veya herhangi bir değer belirlenmezse <ph na
       Kullanılabilecek değişkenlerin bir listesi için https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables adresine bakın.
 
       Bu politika ayarlanmadan bırakılırsa varsayılan profil yolu kullanılır ve kullanıcı, "--user-data-dir" komut satırı bayrağıyla bunu geçersiz kılabilir.</translation>
+<translation id="7008308728445338159">DNS müdahale kontrolü etkin</translation>
 <translation id="7027785306666625591"><ph name="PRODUCT_OS_NAME" /> sisteminde güç yönetimini yapılandırın.
 
       Bu politikalar, kullanıcı belirli bir süre boyunca hiçbir şey yapmadığında <ph name="PRODUCT_OS_NAME" /> sisteminin çalışma biçimini yapılandırmanıza olanak verir.</translation>

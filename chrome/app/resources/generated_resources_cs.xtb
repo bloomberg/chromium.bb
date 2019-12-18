@@ -795,7 +795,7 @@ Chcete-li spravovat nastavení tohoto účtu, nainstalujte si do zařízení apl
 <translation id="2129825002735785149">Aktualizovat plugin</translation>
 <translation id="2131077480075264">Aplikaci <ph name="APP_NAME" /> nelze nainstalovat, protože není povolena rozhraním <ph name="IMPORT_NAME" /></translation>
 <translation id="21354425047973905">Skrýt kódy PIN</translation>
-<translation id="2135456203358955318">Zadokovaná lupa</translation>
+<translation id="2135456203358955318">Zabudovaná lupa</translation>
 <translation id="2135787500304447609">&amp;Obnovit</translation>
 <translation id="2136372518715274136">Zadejte nové heslo</translation>
 <translation id="2136476978468204130">Zadaná heslová fráze není správná</translation>
@@ -4389,7 +4389,7 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="7328867076235380839">Neplatná kombinace</translation>
 <translation id="7329154610228416156">Přihlášení se nezdařilo, protože bylo nakonfigurováno k použití nezabezpečené adresy URL (<ph name="BLOCKED_URL" />). Obraťte se na svého administrátora.</translation>
 <translation id="7334190995941642545">Smart Lock aktuálně není k dispozici. Zkuste to znovu později.</translation>
-<translation id="7334274148831027933">Zapnout zadokovanou lupu</translation>
+<translation id="7334274148831027933">Zapnout zabudovanou lupu</translation>
 <translation id="7335974957018254119">Používat kontrolu pravopisu pro</translation>
 <translation id="7336799713063880535">Oznámení jsou blokována.</translation>
 <translation id="7338630283264858612">Sériové číslo zařízení je neplatné.</translation>

@@ -1906,7 +1906,7 @@ Ha kezelni szeretné a fiók beállításait, telepítse eszközére a Family Li
 <translation id="3693415264595406141">Jelszó:</translation>
 <translation id="3694027410380121301">Előző lap kiválasztása</translation>
 <translation id="369489984217678710">Jelszavak és más bejelentkezési adatok</translation>
-<translation id="3699624789011381381">E-mail cím</translation>
+<translation id="3699624789011381381">E-mail-cím</translation>
 <translation id="3699920817649120894">Kikapcsolja a szinkronizálást és a személyre szabást?</translation>
 <translation id="3700888195348409686">Prezentáció folyamatban (<ph name="PAGE_ORIGIN" />)</translation>
 <translation id="3701167022068948696">Javítás most</translation>
@@ -4312,7 +4312,7 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="7221855153210829124">Értesítéseket megjeleníteni</translation>
 <translation id="7221869452894271364">Az oldal újratöltése</translation>
 <translation id="7222204278952406003">A Chrome az alapértelmezett böngésző</translation>
-<translation id="7222232353993864120">E-mail cím</translation>
+<translation id="7222232353993864120">E-mail-cím</translation>
 <translation id="7225179976675429563">Hiányzik a hálózat típusa</translation>
 <translation id="7227028316978186866"><ph name="DEVICE_NAME" /> (gyártó: <ph name="VENDOR_ID" />, termék: <ph name="PRODUCT_ID" />)</translation>
 <translation id="7228479291753472782">Azon beállítások módosítása, amelyek meghatározzák, hogy a webhelyek használhatnak-e olyan funkciókat, mint a tartózkodási hely, a mikrofon, a webkamera stb.</translation>
