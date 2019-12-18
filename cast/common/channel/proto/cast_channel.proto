@@ -92,7 +92,7 @@ message AuthChallenge {
 message AuthResponse {
   required bytes signature = 1;
   required bytes client_auth_certificate = 2;
-  repeated bytes intermediate_certificates = 3;
+  repeated bytes intermediate_certificate = 3;
   optional SignatureAlgorithm signature_algorithm = 4
       [default = RSASSA_PKCS1v15];
   optional bytes sender_nonce = 5;

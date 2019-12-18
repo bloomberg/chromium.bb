@@ -108,8 +108,8 @@ TEST_F(DeviceAuthNamespaceHandlerTest, AuthResponse) {
             auth_response.hash_algorithm());
   EXPECT_EQ(expected_auth_response.crl(), auth_response.crl());
   EXPECT_THAT(
-      auth_response.intermediate_certificates(),
-      ElementsAreArray(expected_auth_response.intermediate_certificates()));
+      auth_response.intermediate_certificate(),
+      ElementsAreArray(expected_auth_response.intermediate_certificate()));
 }
 
 TEST_F(DeviceAuthNamespaceHandlerTest, BadNonce) {

@@ -343,8 +343,8 @@ ErrorOr<CastDeviceCertPolicy> VerifyCredentialsImpl(
   std::vector<std::string> cert_chain;
   cert_chain.push_back(response.client_auth_certificate());
   cert_chain.insert(cert_chain.end(),
-                    response.intermediate_certificates().begin(),
-                    response.intermediate_certificates().end());
+                    response.intermediate_certificate().begin(),
+                    response.intermediate_certificate().end());
 
   // Parse the CRL.
   std::unique_ptr<certificate::CastCRL> crl;

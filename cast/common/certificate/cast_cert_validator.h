@@ -70,7 +70,7 @@ class CertVerificationContext {
   OSP_DISALLOW_COPY_AND_ASSIGN(CertVerificationContext);
 };
 
-// Verifies a cast device certficate given a chain of DER-encoded certificates.
+// Verifies a cast device certificate given a chain of DER-encoded certificates.
 //
 // Inputs:
 //

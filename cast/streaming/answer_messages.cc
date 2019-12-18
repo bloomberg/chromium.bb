@@ -68,7 +68,7 @@ ErrorOr<Json::Value> AudioConstraints::ToJson() const {
   root["maxChannels"] = max_channels;
   root["minBitRate"] = min_bit_rate;
   root["maxBitRate"] = max_bit_rate;
-  root["maxDelay"] = max_delay.count();
+  root["maxDelay"] = Json::Value::Int64(max_delay.count());
   return root;
 }
 
@@ -113,7 +113,7 @@ ErrorOr<Json::Value> VideoConstraints::ToJson() const {
   root["maxDimensions"] = error_or_max_dim.value();
   root["minBitRate"] = min_bit_rate;
   root["maxBitRate"] = max_bit_rate;
-  root["maxDelay"] = max_delay.count();
+  root["maxDelay"] = Json::Value::Int64(max_delay.count());
   return root;
 }
 

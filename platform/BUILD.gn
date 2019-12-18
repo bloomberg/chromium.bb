@@ -62,80 +62,82 @@ source_set("api") {
 }
 
 # The following target is only activated in standalone builds (see :platform).
-source_set("standalone_impl") {
-  defines = []
+if (!build_with_chromium) {
+  source_set("standalone_impl") {
+    defines = []
 
-  sources = [
-    "impl/logging.h",
-    "impl/socket_handle.h",
-    "impl/socket_handle_waiter.cc",
-    "impl/socket_handle_waiter.h",
-    "impl/stream_socket.h",
-    "impl/task_runner.cc",
-    "impl/task_runner.h",
-    "impl/text_trace_logging_platform.cc",
-    "impl/text_trace_logging_platform.h",
-    "impl/time.cc",
-    "impl/tls_write_buffer.cc",
-    "impl/tls_write_buffer.h",
-    "impl/weak_ptr.h",
-  ]
-
-  if (is_linux) {
-    sources += [ "impl/network_interface_linux.cc" ]
-  } else if (is_mac) {
-    defines += [
-      # Required, to use the new IPv6 Sockets options introduced by RFC 3542.
-      "__APPLE_USE_RFC_3542",
+    sources = [
+      "impl/logging.h",
+      "impl/socket_handle.h",
+      "impl/socket_handle_waiter.cc",
+      "impl/socket_handle_waiter.h",
+      "impl/stream_socket.h",
+      "impl/task_runner.cc",
+      "impl/task_runner.h",
+      "impl/text_trace_logging_platform.cc",
+      "impl/text_trace_logging_platform.h",
+      "impl/time.cc",
+      "impl/tls_write_buffer.cc",
+      "impl/tls_write_buffer.h",
+      "impl/weak_ptr.h",
     ]
 
-    libs = [
-      "CoreFoundation.framework",
-      "IOKit.framework",
-    ]
+    if (is_linux) {
+      sources += [ "impl/network_interface_linux.cc" ]
+    } else if (is_mac) {
+      defines += [
+        # Required, to use the new IPv6 Sockets options introduced by RFC 3542.
+        "__APPLE_USE_RFC_3542",
+      ]
 
-    sources += [
-      "impl/network_interface_mac.cc",
-      "impl/scoped_wake_lock_mac.cc",
-      "impl/scoped_wake_lock_mac.h",
+      libs = [
+        "CoreFoundation.framework",
+        "IOKit.framework",
+      ]
+
+      sources += [
+        "impl/network_interface_mac.cc",
+        "impl/scoped_wake_lock_mac.cc",
+        "impl/scoped_wake_lock_mac.h",
+      ]
+    }
+
+    if (is_posix) {
+      sources += [
+        "impl/logging_posix.cc",
+        "impl/platform_client_posix.cc",
+        "impl/platform_client_posix.h",
+        "impl/scoped_pipe.h",
+        "impl/socket_address_posix.cc",
+        "impl/socket_address_posix.h",
+        "impl/socket_handle_posix.cc",
+        "impl/socket_handle_posix.h",
+        "impl/socket_handle_waiter_posix.cc",
+        "impl/socket_handle_waiter_posix.h",
+        "impl/stream_socket_posix.cc",
+        "impl/stream_socket_posix.h",
+        "impl/timeval_posix.cc",
+        "impl/timeval_posix.h",
+        "impl/tls_connection_factory_posix.cc",
+        "impl/tls_connection_factory_posix.h",
+        "impl/tls_connection_posix.cc",
+        "impl/tls_connection_posix.h",
+        "impl/tls_data_router_posix.cc",
+        "impl/tls_data_router_posix.h",
+        "impl/udp_socket_posix.cc",
+        "impl/udp_socket_posix.h",
+        "impl/udp_socket_reader_posix.cc",
+        "impl/udp_socket_reader_posix.h",
+      ]
+    }
+
+    deps = [
+      ":api",
+      "../third_party/abseil",
+      "../third_party/boringssl",
+      "../util",
     ]
   }
-
-  if (is_posix) {
-    sources += [
-      "impl/logging_posix.cc",
-      "impl/platform_client_posix.cc",
-      "impl/platform_client_posix.h",
-      "impl/scoped_pipe.h",
-      "impl/socket_address_posix.cc",
-      "impl/socket_address_posix.h",
-      "impl/socket_handle_posix.cc",
-      "impl/socket_handle_posix.h",
-      "impl/socket_handle_waiter_posix.cc",
-      "impl/socket_handle_waiter_posix.h",
-      "impl/stream_socket_posix.cc",
-      "impl/stream_socket_posix.h",
-      "impl/timeval_posix.cc",
-      "impl/timeval_posix.h",
-      "impl/tls_connection_factory_posix.cc",
-      "impl/tls_connection_factory_posix.h",
-      "impl/tls_connection_posix.cc",
-      "impl/tls_connection_posix.h",
-      "impl/tls_data_router_posix.cc",
-      "impl/tls_data_router_posix.h",
-      "impl/udp_socket_posix.cc",
-      "impl/udp_socket_posix.h",
-      "impl/udp_socket_reader_posix.cc",
-      "impl/udp_socket_reader_posix.h",
-    ]
-  }
-
-  deps = [
-    ":api",
-    "../third_party/abseil",
-    "../third_party/boringssl",
-    "../util",
-  ]
 }
 
 # The main target, which either assumes an embedder will link-in the platform

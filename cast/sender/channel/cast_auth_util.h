@@ -55,7 +55,7 @@ class AuthContext {
 
 // Authenticates the given |challenge_reply|:
 // 1. Signature contained in the reply is valid.
-// 2. Certficate used to sign is rooted to a trusted CA.
+// 2. certificate used to sign is rooted to a trusted CA.
 ErrorOr<CastDeviceCertPolicy> AuthenticateChallengeReply(
     const CastMessage& challenge_reply,
     X509* peer_cert,

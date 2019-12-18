@@ -95,7 +95,7 @@ void DeviceAuthNamespaceHandler::OnMessage(VirtualConnectionRouter* router,
   auth_response->set_client_auth_certificate(device_creds.certs[0]);
   for (auto it = device_creds.certs.begin() + 1; it != device_creds.certs.end();
        ++it) {
-    auth_response->add_intermediate_certificates(*it);
+    auth_response->add_intermediate_certificate(*it);
   }
   auth_response->set_signature_algorithm(RSASSA_PKCS1v15);
   auth_response->set_hash_algorithm(hash_alg);

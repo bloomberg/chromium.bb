@@ -125,7 +125,7 @@ class CastAuthUtilTest : public testing::Test {
 
     response.set_client_auth_certificate(chain[0]);
     for (size_t i = 1; i < chain.size(); ++i) {
-      response.add_intermediate_certificates(chain[i]);
+      response.add_intermediate_certificate(chain[i]);
     }
 
     response.set_hash_algorithm(digest_algorithm);
@@ -170,7 +170,7 @@ TEST_F(CastAuthUtilTest, VerifySuccess) {
 TEST_F(CastAuthUtilTest, VerifyBadCA) {
   std::string signed_data;
   AuthResponse auth_response = CreateAuthResponse(&signed_data, SHA256);
-  MangleString(auth_response.mutable_intermediate_certificates(0));
+  MangleString(auth_response.mutable_intermediate_certificate(0));
   ErrorOr<CastDeviceCertPolicy> result =
       VerifyCredentials(auth_response, signed_data);
   EXPECT_FALSE(result);
@@ -357,7 +357,7 @@ ErrorOr<CastDeviceCertPolicy> TestVerifyRevocation(
   if (certificate_chain.size() > 0) {
     response.set_client_auth_certificate(certificate_chain[0]);
     for (size_t i = 1; i < certificate_chain.size(); ++i) {
-      response.add_intermediate_certificates(certificate_chain[i]);
+      response.add_intermediate_certificate(certificate_chain[i]);
     }
   }
 
