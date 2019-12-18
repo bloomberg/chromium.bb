@@ -18910,6 +18910,7 @@ Called by update_net_error_codes.py.-->
   <int value="651" label="PaymentMethodQueryEnabled"/>
   <int value="652" label="StricterMixedContentTreatmentEnabled"/>
   <int value="653" label="NTPCustomBackgroundEnabled"/>
+  <int value="654" label="DNSInterceptionChecksEnabled"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
