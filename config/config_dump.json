@@ -17179,7 +17179,7 @@
             "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"enable_skylab\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"cts\",\n    \"priority\": \"CTS\",\n    \"quota_account\": null,\n    \"retry\": true,\n    \"suite\": \"arc-gts-qual\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 172800,\n    \"warn_only\": false\n}"
         ],
         "models": [
-            "{\n    \"enable_skylab\": true,\n    \"lab_board_name\": \"hatch\",\n    \"name\": \"akemi\",\n    \"test_suites\": [\n        \"sanity\",\n        \"bvt-inline\",\n        \"bvt-tast-cq\",\n        \"bvt-installer\",\n        \"bvt-arc\",\n        \"au\",\n        \"bvt-cq\",\n        \"bvt-perbuild\",\n        \"bvt-tast-informational\",\n        \"arc-cts-qual\",\n        \"arc-gts-qual\"\n    ]\n}",
+            "{\n    \"enable_skylab\": true,\n    \"lab_board_name\": \"hatch\",\n    \"name\": \"akemi\",\n    \"test_suites\": []\n}",
             "{\n    \"enable_skylab\": true,\n    \"lab_board_name\": \"hatch\",\n    \"name\": \"dragonair\",\n    \"test_suites\": []\n}",
             "{\n    \"enable_skylab\": true,\n    \"lab_board_name\": \"hatch\",\n    \"name\": \"dratini\",\n    \"test_suites\": []\n}",
             "{\n    \"enable_skylab\": true,\n    \"lab_board_name\": \"hatch\",\n    \"name\": \"hatch\",\n    \"test_suites\": []\n}",
@@ -17220,7 +17220,7 @@
         "hw_tests_override": null,
         "luci_builder": "Try",
         "models": [
-            "{\n    \"enable_skylab\": true,\n    \"lab_board_name\": \"hatch\",\n    \"name\": \"akemi\",\n    \"test_suites\": [\n        \"sanity\",\n        \"bvt-inline\",\n        \"bvt-tast-cq\",\n        \"bvt-installer\",\n        \"bvt-arc\",\n        \"au\",\n        \"bvt-cq\",\n        \"bvt-perbuild\",\n        \"bvt-tast-informational\",\n        \"arc-cts-qual\",\n        \"arc-gts-qual\"\n    ]\n}",
+            "{\n    \"enable_skylab\": true,\n    \"lab_board_name\": \"hatch\",\n    \"name\": \"akemi\",\n    \"test_suites\": []\n}",
             "{\n    \"enable_skylab\": true,\n    \"lab_board_name\": \"hatch\",\n    \"name\": \"dragonair\",\n    \"test_suites\": []\n}",
             "{\n    \"enable_skylab\": true,\n    \"lab_board_name\": \"hatch\",\n    \"name\": \"dratini\",\n    \"test_suites\": []\n}",
             "{\n    \"enable_skylab\": true,\n    \"lab_board_name\": \"hatch\",\n    \"name\": \"hatch\",\n    \"test_suites\": []\n}",
