@@ -247,6 +247,21 @@ message FinishEnrollReply {
   optional AttestationStatus status = 1;
 }
 
+// Goes through the entire enrollment process, including creating enroll
+// request, sending the request to the corresponding PCA server, and storing the
+// response from PCA server if success. The message field is identical to
+// |CreateEnrollRequestRequest|.
+message EnrollRequest {
+  // What kind of ACA to use.
+  optional ACAType aca_type = 1;
+  // No matter is the device is enrolled, (re-)enroll the device.
+  optional bool forced = 2;
+}
+
+message EnrollReply {
+  optional AttestationStatus status = 1;
+}
+
 // Create an attestation certificate request to be sent to the Privacy CA.
 // The request is a serialized AttestationCertificateRequest protobuf. The
 // certificate request process generates and certifies a key in the TPM and
@@ -292,6 +307,42 @@ message FinishCertificateRequestRequest {
 message FinishCertificateRequestReply {
   optional AttestationStatus status = 1;
   // The PCA issued certificate chain in PEM format.  By
+  // convention the certified key certificate is listed
+  // first followed by intermediate CA certificate(s).
+  // The PCA root certificate is not included.
+  optional bytes certificate = 2;
+}
+
+// Goes through the entire cert process, including creating cert, sending the
+// request to the corresponding PCA server, and storing the response from PCA
+// server if success. The message fields are basically the union of
+// |CreateCertificateRequestRequest| and |FinishCertificateRequestRequest|.
+message GetCertificateRequest {
+  // Type of certificate to be requested.
+  optional CertificateProfile certificate_profile = 1;
+  // The canonical username of the active user profile. Leave blank
+  // if not associated with the current user.
+  optional string username = 2;
+  // Some certificate requests require information about the origin
+  // of the request.  If no origin is needed, this can be empty.
+  optional string request_origin = 3;
+  // What kind of ACA to use.
+  optional ACAType aca_type = 4;
+  // The key algorithm of certified key.
+  optional KeyType key_type = 5;
+  // A name for the key.  If a key already exists with this name it
+  // will be destroyed and replaced with this one.
+  optional string key_label = 6;
+  // Ignores the current certificate if any and gets the new certificate.
+  optional bool forced = 7;
+  // If set to |true|, this request also triggers enrollment process if the
+  // device is not enrolled yet.
+  optional bool shall_trigger_enrollment = 8;
+}
+
+message GetCertificateReply {
+  optional AttestationStatus status = 1;
+  // The PCA issued certificate chain in PEM format. By
   // convention the certified key certificate is listed
   // first followed by intermediate CA certificate(s).
   // The PCA root certificate is not included.
