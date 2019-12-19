@@ -10,6 +10,7 @@
 #include <utility>
 #include <vector>
 
+#include "absl/types/optional.h"
 #include "discovery/mdns/mdns_records.h"
 #include "discovery/mdns/mdns_responder.h"
 #include "util/alarm.h"
@@ -32,6 +33,9 @@ namespace discovery {
 // be claimed using the ClaimExclusiveOwnership() function. This function probes
 // the network to determine whether the chosen name exists, modifying the
 // chosen name as described in RFC 6762 if a collision is found.
+//
+// NOTE: All MdnsPublisher instances must be run on the same task runner thread,
+// due to the shared announce + goodbye message queue.
 // TODO(rwkeane): Add ClaimExclusiveOwnership() API for claiming a DomainName as
 // described in RFC 6762 Section 8.1's probing phase.
 class MdnsPublisher : public MdnsResponder::RecordHandler {
@@ -73,11 +77,12 @@ class MdnsPublisher : public MdnsResponder::RecordHandler {
   // announcement messages will be sent 8 times, first at an interval of 1
   // second apart, and then with delay increasing by a factor of 2 with each
   // successive announcement.
-  // TODO(rwkeane): Batch announcement and goodbye messages.
+  // NOTE: |publisher| must be the MdnsPublisher instance from which this
+  // instance was created.
   class RecordAnnouncer {
    public:
     RecordAnnouncer(MdnsRecord record,
-                    MdnsSender* sender,
+                    MdnsPublisher* publisher,
                     TaskRunner* task_runner,
                     ClockNowFunctionPtr now_function);
     RecordAnnouncer(const RecordAnnouncer& other) = delete;
@@ -97,11 +102,16 @@ class MdnsPublisher : public MdnsResponder::RecordHandler {
     }
 
    private:
-    void SendGoodbye();
-    void SendAnnouncement();
+    // Gets the delay required before the next announcement message is sent.
     Clock::duration GetNextAnnounceDelay();
 
-    MdnsSender* const sender_;
+    // When announce + goodbye messages are ready to be sent, they are queued
+    // up. Every 20ms, if there are any messages to send out, these records are
+    // batched up and sent out.
+    void QueueGoodbye();
+    void QueueAnnouncement();
+
+    MdnsPublisher* const publisher_;
     TaskRunner* const task_runner_;
     const ClockNowFunctionPtr now_function_;
 
@@ -122,7 +132,7 @@ class MdnsPublisher : public MdnsResponder::RecordHandler {
 
   // Creates a new published from the provided record.
   std::unique_ptr<RecordAnnouncer> CreateAnnouncer(MdnsRecord record) {
-    return std::make_unique<RecordAnnouncer>(std::move(record), sender_,
+    return std::make_unique<RecordAnnouncer>(std::move(record), this,
                                              task_runner_, now_function_);
   }
 
@@ -141,6 +151,15 @@ class MdnsPublisher : public MdnsResponder::RecordHandler {
   Error RemoveNonPtrRecord(const MdnsRecord& record,
                            bool should_announce_deletion);
 
+  // Processes the |records_to_send_| queue, sending out the records together as
+  // a single MdnsMessage.
+  void ProcessRecordQueue();
+
+  // Adds a new record to the |records_to_send_| queue or ensures that the
+  // record with lower ttl is present if it differs from an existing record by
+  // only that one field.
+  void QueueRecord(MdnsRecord record);
+
   // MdnsResponder::RecordHandler overrides.
   bool IsExclusiveOwner(const DomainName& name) override;
   bool HasRecords(const DomainName& name,
@@ -155,6 +174,13 @@ class MdnsPublisher : public MdnsResponder::RecordHandler {
   TaskRunner* const task_runner_;
   MdnsRandom* const random_delay_;
   ClockNowFunctionPtr now_function_;
+
+  // Alarm to cancel batching of records when this class is destroyed, and
+  // instead send them immediately. Variable is only set when it is in use.
+  absl::optional<Alarm> batch_records_alarm_;
+
+  // The queue for announce and goodbye records to be sent periodically.
+  static std::vector<MdnsRecord>* records_to_send_;
 
   // Stores non-PTR mDNS records that have been published. The keys here are the
   // set of DomainNames for which this service is the exclusive owner, and the

@@ -32,6 +32,8 @@ class MdnsQuerier;
 // of a query with DnsType aside from ANY. In the case where records are found,
 // the additional records field may be populated with additional records, as
 // specified in RFCs 6762 and 6763.
+// TODO(rwkeane): Handle known answers, and waiting when the truncated (TC) bit
+// is set.
 class MdnsResponder {
  public:
   // Class to handle querying for existing records.

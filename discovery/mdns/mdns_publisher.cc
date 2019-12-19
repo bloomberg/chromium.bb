@@ -10,6 +10,7 @@
 #include "discovery/mdns/mdns_records.h"
 #include "discovery/mdns/mdns_sender.h"
 #include "platform/api/task_runner.h"
+#include "platform/base/trivial_clock_traits.h"
 
 namespace openscreen {
 namespace discovery {
@@ -29,7 +30,14 @@ constexpr int kIntervalIncreaseFactor = 2;
 // section 10.1.
 constexpr std::chrono::seconds kGoodbyeTtl{0};
 
+// Timespan between sending batches of announcement and goodbye records, in
+// microseconds.
+constexpr Clock::duration kDelayBetweenBatchedRecords{20 * 1000};
+
 inline MdnsRecord CreateGoodbyeRecord(const MdnsRecord& record) {
+  if (record.ttl() == kGoodbyeTtl) {
+    return record;
+  }
   return MdnsRecord(record.name(), record.dns_type(), record.dns_class(),
                     record.record_type(), kGoodbyeTtl, record.rdata());
 }
@@ -37,6 +45,35 @@ inline MdnsRecord CreateGoodbyeRecord(const MdnsRecord& record) {
 inline void ValidateRecord(const MdnsRecord& record) {
   OSP_DCHECK(record.dns_type() != DnsType::kANY);
   OSP_DCHECK(record.dns_class() != DnsClass::kANY);
+}
+
+// Tries to send the provided |message|, and splits it up and retries
+// recursively if it fails. In practice, it should never fail (with <= 5
+// records being sent, the message should be small), but since the message is
+// created from a static vector, that's not guaranteed.
+Error ProcessQueue(MdnsSender* sender, MdnsMessage* message) {
+  Error send_response = sender->SendMulticast(*message);
+  if (send_response.ok()) {
+    return Error::None();
+  } else if (message->answers().size() <= 1) {
+    return send_response;
+  }
+
+  MdnsMessage first(message->id(), message->type());
+  for (size_t i = 0; i < message->answers().size() / 2; i++) {
+    first.AddAnswer(std::move(message->answers()[i]));
+  }
+  Error first_result = ProcessQueue(sender, &first);
+  if (!first_result.ok()) {
+    return first_result;
+  }
+
+  MdnsMessage second(CreateMessageId(), message->type());
+  for (size_t i = message->answers().size() / 2; i < message->answers().size();
+       i++) {
+    second.AddAnswer(std::move(message->answers()[i]));
+  }
+  return ProcessQueue(sender, &second);
 }
 
 }  // namespace
@@ -59,7 +96,12 @@ MdnsPublisher::MdnsPublisher(MdnsQuerier* querier,
   OSP_DCHECK(task_runner_);
 }
 
-MdnsPublisher::~MdnsPublisher() = default;
+MdnsPublisher::~MdnsPublisher() {
+  if (batch_records_alarm_.has_value()) {
+    batch_records_alarm_.value().Cancel();
+    ProcessRecordQueue();
+  }
+}
 
 Error MdnsPublisher::RegisterRecord(const MdnsRecord& record) {
   OSP_DCHECK(task_runner_->IsRunningOnTaskRunner());
@@ -276,46 +318,106 @@ Error MdnsPublisher::RemoveNonPtrRecord(const MdnsRecord& record,
 
 MdnsPublisher::RecordAnnouncer::RecordAnnouncer(
     MdnsRecord record,
-    MdnsSender* sender,
+    MdnsPublisher* publisher,
     TaskRunner* task_runner,
     ClockNowFunctionPtr now_function)
-    : sender_(sender),
+    : publisher_(publisher),
       task_runner_(task_runner),
       now_function_(now_function),
       record_(std::move(record)),
       alarm_(now_function_, task_runner_) {
-  OSP_DCHECK(sender_);
+  OSP_DCHECK(publisher_);
   OSP_DCHECK(task_runner_);
 
-  SendAnnouncement();
+  QueueAnnouncement();
 }
 
 MdnsPublisher::RecordAnnouncer::~RecordAnnouncer() {
   alarm_.Cancel();
   if (should_send_goodbye_message_) {
-    SendGoodbye();
+    QueueGoodbye();
   }
 }
 
-void MdnsPublisher::RecordAnnouncer::SendGoodbye() {
+void MdnsPublisher::RecordAnnouncer::QueueGoodbye() {
   OSP_DCHECK(task_runner_->IsRunningOnTaskRunner());
 
-  MdnsMessage message(CreateMessageId(), MessageType::Response);
-  message.AddAnswer(CreateGoodbyeRecord(record_));
-  sender_->SendMulticast(message);
+  publisher_->QueueRecord(CreateGoodbyeRecord(record_));
 }
 
-void MdnsPublisher::RecordAnnouncer::SendAnnouncement() {
+void MdnsPublisher::RecordAnnouncer::QueueAnnouncement() {
   OSP_DCHECK(task_runner_->IsRunningOnTaskRunner());
 
-  MdnsMessage message(CreateMessageId(), MessageType::Response);
-  message.AddAnswer(record_);
-  sender_->SendMulticast(message);
+  publisher_->QueueRecord(record_);
 
   const Clock::duration new_delay = GetNextAnnounceDelay();
   if (++attempts_ < kMaxAnnounceAttempts) {
-    alarm_.ScheduleFromNow([this]() { SendAnnouncement(); }, new_delay);
+    alarm_.ScheduleFromNow([this]() { QueueAnnouncement(); }, new_delay);
   }
+}
+
+void MdnsPublisher::QueueRecord(MdnsRecord record) {
+  if (!records_to_send_) {
+    records_to_send_ = new std::vector<MdnsRecord>();
+    batch_records_alarm_.emplace(now_function_, task_runner_);
+    batch_records_alarm_.value().ScheduleFromNow(
+        [this]() { ProcessRecordQueue(); }, kDelayBetweenBatchedRecords);
+  }
+
+  // Check that we aren't announcing and goodbye'ing a record in the same batch.
+  // We expect to be sending no more than 5 records at a time, so don't worry
+  // about iterating across this vector for each insert.
+  auto goodbye = CreateGoodbyeRecord(record);
+  auto existing_record_it =
+      std::find_if(records_to_send_->begin(), records_to_send_->end(),
+                   [&goodbye](const MdnsRecord& record) {
+                     return goodbye == CreateGoodbyeRecord(record);
+                   });
+
+  // If we found it, only send the goodbye record. Else, simply add it to the
+  // queue.
+  if (existing_record_it == records_to_send_->end()) {
+    records_to_send_->push_back(std::move(record));
+  } else if (*existing_record_it == goodbye) {
+    // This means that the goodbye record is already queued to be sent. This
+    // means that there is no reason to also announce it, so exit early.
+    return;
+  } else if (record == goodbye) {
+    // This means that we are sending a goodbye record right as it would also
+    // be announced. Skip the announcement since the record is being
+    // unregistered.
+    *existing_record_it = std::move(record);
+  } else if (record == *existing_record_it) {
+    // This case shouldn't happen, but there is no work to do if it does. Log
+    // to surface that something weird is going on.
+    OSP_LOG_INFO << "Same record being announced multiple times.";
+  } else {
+    // This case should never occur. Support it just in case, but log to
+    // surface that something weird is happening.
+    OSP_LOG_INFO << "Updating the same record multiple times with multiple "
+                    "TTL values.";
+  }
+}
+
+// static
+std::vector<MdnsRecord>* MdnsPublisher::records_to_send_ = nullptr;
+
+void MdnsPublisher::ProcessRecordQueue() {
+  OSP_DCHECK(task_runner_->IsRunningOnTaskRunner());
+
+  if (!records_to_send_) {
+    return;
+  }
+
+  MdnsMessage message(CreateMessageId(), MessageType::Response);
+  for (MdnsRecord& record : *records_to_send_) {
+    message.AddAnswer(std::move(record));
+  }
+  ::openscreen::discovery::ProcessQueue(sender_, &message);
+
+  batch_records_alarm_ = absl::nullopt;
+  delete records_to_send_;
+  records_to_send_ = nullptr;
 }
 
 Clock::duration MdnsPublisher::RecordAnnouncer::GetNextAnnounceDelay() {

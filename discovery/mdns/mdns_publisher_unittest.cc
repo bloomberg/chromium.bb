@@ -21,6 +21,9 @@ namespace openscreen {
 namespace discovery {
 namespace {
 
+constexpr Clock::duration kAnnounceGoodbyeDelay =
+    std::chrono::duration_cast<Clock::duration>(std::chrono::milliseconds(25));
+
 bool ContainsRecord(const std::vector<MdnsRecord::ConstRef>& records,
                     MdnsRecord record) {
   return std::find_if(records.begin(), records.end(),
@@ -83,6 +86,12 @@ class MdnsPublisherTest : public testing::Test {
         sender_(socket_.get()),
         publisher_(nullptr, &sender_, &task_runner_, nullptr, FakeClock::now) {}
 
+  ~MdnsPublisherTest() {
+    // Clear out any remaining calls in the task runner queue.
+    clock_.Advance(
+        std::chrono::duration_cast<Clock::duration>(std::chrono::seconds(1)));
+  }
+
  protected:
   Error IsAnnounced(const MdnsRecord& original, const MdnsMessage& message) {
     EXPECT_EQ(message.type(), MessageType::Response);
@@ -138,6 +147,8 @@ class MdnsPublisherTest : public testing::Test {
           return IsAnnounced(record, message);
         });
     EXPECT_TRUE(publisher_.RegisterRecord(record).ok());
+    clock_.Advance(kAnnounceGoodbyeDelay);
+    testing::Mock::VerifyAndClearExpectations(&sender_);
     EXPECT_EQ(publisher_.GetRecordCount(), size_t{1});
     records = publisher_.GetNonPtrRecords(domain_, type);
     EXPECT_EQ(records.size(), size_t{1});
@@ -147,6 +158,8 @@ class MdnsPublisherTest : public testing::Test {
 
     // Re-register the same record.
     EXPECT_FALSE(publisher_.RegisterRecord(record).ok());
+    clock_.Advance(kAnnounceGoodbyeDelay);
+    testing::Mock::VerifyAndClearExpectations(&sender_);
     EXPECT_EQ(publisher_.GetRecordCount(), size_t{1});
     records = publisher_.GetNonPtrRecords(domain_, type);
     EXPECT_EQ(records.size(), size_t{1});
@@ -156,6 +169,8 @@ class MdnsPublisherTest : public testing::Test {
 
     // Update a record that doesn't exist
     EXPECT_FALSE(publisher_.UpdateRegisteredRecord(record2, record).ok());
+    clock_.Advance(kAnnounceGoodbyeDelay);
+    testing::Mock::VerifyAndClearExpectations(&sender_);
     EXPECT_EQ(publisher_.GetRecordCount(), size_t{1});
     records = publisher_.GetNonPtrRecords(domain_, type);
     EXPECT_EQ(records.size(), size_t{1});
@@ -169,6 +184,8 @@ class MdnsPublisherTest : public testing::Test {
           return IsAnnounced(record2, message);
         });
     EXPECT_TRUE(publisher_.UpdateRegisteredRecord(record, record2).ok());
+    clock_.Advance(kAnnounceGoodbyeDelay);
+    testing::Mock::VerifyAndClearExpectations(&sender_);
     EXPECT_EQ(publisher_.GetRecordCount(), size_t{1});
     records = publisher_.GetNonPtrRecords(domain_, type);
     EXPECT_EQ(records.size(), size_t{1});
@@ -182,6 +199,8 @@ class MdnsPublisherTest : public testing::Test {
           return IsAnnounced(record, message);
         });
     EXPECT_TRUE(publisher_.RegisterRecord(record).ok());
+    clock_.Advance(kAnnounceGoodbyeDelay);
+    testing::Mock::VerifyAndClearExpectations(&sender_);
     EXPECT_EQ(publisher_.GetRecordCount(), size_t{2});
     records = publisher_.GetNonPtrRecords(domain_, type);
     EXPECT_EQ(records.size(), size_t{2});
@@ -195,6 +214,8 @@ class MdnsPublisherTest : public testing::Test {
           return IsGoodbyeRecord(record2, message);
         });
     EXPECT_TRUE(publisher_.UnregisterRecord(record2).ok());
+    clock_.Advance(kAnnounceGoodbyeDelay);
+    testing::Mock::VerifyAndClearExpectations(&sender_);
     EXPECT_EQ(publisher_.GetRecordCount(), size_t{1});
     records = publisher_.GetNonPtrRecords(domain_, type);
     EXPECT_EQ(records.size(), size_t{1});
@@ -204,6 +225,8 @@ class MdnsPublisherTest : public testing::Test {
 
     // Delete a non-existing record.
     EXPECT_FALSE(publisher_.UnregisterRecord(record2).ok());
+    clock_.Advance(kAnnounceGoodbyeDelay);
+    testing::Mock::VerifyAndClearExpectations(&sender_);
     EXPECT_EQ(publisher_.GetRecordCount(), size_t{1});
     records = publisher_.GetNonPtrRecords(domain_, type);
     EXPECT_EQ(records.size(), size_t{1});
@@ -217,6 +240,8 @@ class MdnsPublisherTest : public testing::Test {
           return IsGoodbyeRecord(record, message);
         });
     EXPECT_TRUE(publisher_.UnregisterRecord(record).ok());
+    clock_.Advance(kAnnounceGoodbyeDelay);
+    testing::Mock::VerifyAndClearExpectations(&sender_);
     EXPECT_EQ(publisher_.GetRecordCount(), size_t{0});
     records = publisher_.GetNonPtrRecords(domain_, type);
     EXPECT_EQ(records.size(), size_t{0});
@@ -274,6 +299,8 @@ TEST_F(MdnsPublisherTest, PTRRecordRegistrationWorkflow) {
         return IsAnnounced(record1, message);
       });
   EXPECT_TRUE(publisher_.RegisterRecord(record1).ok());
+  clock_.Advance(kAnnounceGoodbyeDelay);
+  testing::Mock::VerifyAndClearExpectations(&sender_);
   EXPECT_EQ(publisher_.GetRecordCount(), size_t{1});
   auto* record = publisher_.GetPtrRecord(record1.name());
   ASSERT_NE(record, nullptr);
@@ -282,6 +309,8 @@ TEST_F(MdnsPublisherTest, PTRRecordRegistrationWorkflow) {
 
   // Register another record with the same domain name.
   EXPECT_FALSE(publisher_.RegisterRecord(record2).ok());
+  clock_.Advance(kAnnounceGoodbyeDelay);
+  testing::Mock::VerifyAndClearExpectations(&sender_);
   EXPECT_EQ(publisher_.GetRecordCount(), size_t{1});
   record = publisher_.GetPtrRecord(record1.name());
   ASSERT_NE(record, nullptr);
@@ -290,10 +319,12 @@ TEST_F(MdnsPublisherTest, PTRRecordRegistrationWorkflow) {
 
   // Delete an existing record.
   EXPECT_CALL(sender_, SendMulticast(_))
-      .WillOnce([this, record](const MdnsMessage& message) -> Error {
-        return IsGoodbyeRecord(*record, message);
+      .WillOnce([this, &record1](const MdnsMessage& message) -> Error {
+        return IsGoodbyeRecord(record1, message);
       });
   EXPECT_TRUE(publisher_.UnregisterRecord(record1).ok());
+  clock_.Advance(kAnnounceGoodbyeDelay);
+  testing::Mock::VerifyAndClearExpectations(&sender_);
   EXPECT_EQ(publisher_.GetRecordCount(), size_t{0});
   record = publisher_.GetPtrRecord(record1.name());
   ASSERT_EQ(record, nullptr);
@@ -321,6 +352,7 @@ TEST_F(MdnsPublisherTest, RegistrationAnnouncesEightTimes) {
         return IsAnnounced(record, message);
       });
   EXPECT_TRUE(publisher_.RegisterRecord(record).ok());
+  clock_.Advance(kAnnounceGoodbyeDelay);
 
   // Second announce, at 2 seconds.
   testing::Mock::VerifyAndClearExpectations(&sender_);
@@ -329,15 +361,18 @@ TEST_F(MdnsPublisherTest, RegistrationAnnouncesEightTimes) {
         return IsAnnounced(record, message);
       });
   clock_.Advance(kOneSecond);
+  clock_.Advance(kAnnounceGoodbyeDelay);
   testing::Mock::VerifyAndClearExpectations(&sender_);
 
   // Third announce, at 4 seconds.
   clock_.Advance(kOneSecond);
+  clock_.Advance(kAnnounceGoodbyeDelay);
   EXPECT_CALL(sender_, SendMulticast(_))
       .WillOnce([this, &record](const MdnsMessage& message) -> Error {
         return IsAnnounced(record, message);
       });
   clock_.Advance(kOneSecond);
+  clock_.Advance(kAnnounceGoodbyeDelay);
   testing::Mock::VerifyAndClearExpectations(&sender_);
 
   // Fourth announce, at 8 seconds.
@@ -347,6 +382,7 @@ TEST_F(MdnsPublisherTest, RegistrationAnnouncesEightTimes) {
         return IsAnnounced(record, message);
       });
   clock_.Advance(kOneSecond);
+  clock_.Advance(kAnnounceGoodbyeDelay);
   testing::Mock::VerifyAndClearExpectations(&sender_);
 
   // Fifth announce, at 16 seconds.
@@ -356,6 +392,7 @@ TEST_F(MdnsPublisherTest, RegistrationAnnouncesEightTimes) {
         return IsAnnounced(record, message);
       });
   clock_.Advance(kOneSecond);
+  clock_.Advance(kAnnounceGoodbyeDelay);
   testing::Mock::VerifyAndClearExpectations(&sender_);
 
   // Sixth announce, at 32 seconds.
@@ -365,6 +402,7 @@ TEST_F(MdnsPublisherTest, RegistrationAnnouncesEightTimes) {
         return IsAnnounced(record, message);
       });
   clock_.Advance(kOneSecond);
+  clock_.Advance(kAnnounceGoodbyeDelay);
   testing::Mock::VerifyAndClearExpectations(&sender_);
 
   // Seventh announce, at 64 seconds.
@@ -374,6 +412,7 @@ TEST_F(MdnsPublisherTest, RegistrationAnnouncesEightTimes) {
         return IsAnnounced(record, message);
       });
   clock_.Advance(kOneSecond);
+  clock_.Advance(kAnnounceGoodbyeDelay);
   testing::Mock::VerifyAndClearExpectations(&sender_);
 
   // Eighth announce, at 128 seconds.
@@ -383,10 +422,12 @@ TEST_F(MdnsPublisherTest, RegistrationAnnouncesEightTimes) {
         return IsAnnounced(record, message);
       });
   clock_.Advance(kOneSecond);
+  clock_.Advance(kAnnounceGoodbyeDelay);
   testing::Mock::VerifyAndClearExpectations(&sender_);
 
   // No more announcements
   clock_.Advance(kOneSecond * 1024);
+  clock_.Advance(kAnnounceGoodbyeDelay);
   testing::Mock::VerifyAndClearExpectations(&sender_);
 
   // Sends goodbye message when removed.
@@ -395,6 +436,7 @@ TEST_F(MdnsPublisherTest, RegistrationAnnouncesEightTimes) {
         return IsGoodbyeRecord(record, message);
       });
   EXPECT_TRUE(publisher_.UnregisterRecord(record).ok());
+  clock_.Advance(kAnnounceGoodbyeDelay);
 }
 
 }  // namespace discovery
