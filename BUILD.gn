@@ -195,7 +195,7 @@ proto_library("system_api-attestation-protos") {
   ]
   standalone = true
 
-  # system_api-chaps-protos" is used by a shared_library
+  # system_api-attestation-protos" is used by a shared_library
   # object, so we need to build it with "-fPIC" instead of "-fPIE".
   use_pic = true
 }
