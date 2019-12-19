@@ -78,6 +78,10 @@ class MdnsRecordTracker : public MdnsTracker {
   // Returns a reference to the tracked record.
   const MdnsRecord& record() const { return record_; }
 
+  // Returns true if half of the record's TTL has passed, and false otherwise.
+  // Half is used due to specifications in RFC 6762 section 7.1.
+  bool IsNearingExpiry();
+
  private:
   void SendQuery();
   Clock::time_point GetNextSendTime();
@@ -95,7 +99,11 @@ class MdnsRecordTracker : public MdnsTracker {
 // continuous monitoring with exponential back-off as described in RFC 6762
 class MdnsQuestionTracker : public MdnsTracker {
  public:
+  using KnownAnswerQuery = std::function<
+      std::vector<MdnsRecord::ConstRef>(const DomainName&, DnsType, DnsClass)>;
+
   MdnsQuestionTracker(MdnsQuestion question,
+                      KnownAnswerQuery query,
                       MdnsSender* sender,
                       TaskRunner* task_runner,
                       ClockNowFunctionPtr now_function,
@@ -116,15 +124,8 @@ class MdnsQuestionTracker : public MdnsTracker {
   // A delay between the currently scheduled and the next queries.
   Clock::duration send_delay_;
 
-  // Active record trackers, uniquely identified by domain name, DNS record type
-  // and DNS record class. MdnsRecordTracker instances are stored as unique_ptr
-  // so they are not moved around in memory when the collection is modified.
-  // This allows passing a pointer to MdnsRecordTracker to a task running on the
-  // TaskRunner.
-  std::unordered_map<RecordKey,
-                     std::unique_ptr<MdnsRecordTracker>,
-                     absl::Hash<RecordKey>>
-      record_trackers_;
+  // Query to retrieve known records for known record suppression.
+  KnownAnswerQuery known_answer_query_;
 };
 
 }  // namespace discovery

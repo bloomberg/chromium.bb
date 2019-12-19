@@ -126,6 +126,13 @@ class MdnsQuerierTest : public testing::Test {
     return CreatePacketWithRecords({MdnsRecord::ConstRef(record)});
   }
 
+  std::vector<MdnsRecord::ConstRef> GetKnownAnswers(MdnsQuerier* querier,
+                                                    const DomainName& name,
+                                                    DnsType type,
+                                                    DnsClass clazz) {
+    return querier->GetKnownAnswers(name, type, clazz);
+  }
+
   FakeClock clock_;
   FakeTaskRunner task_runner_;
   testing::NiceMock<MockUdpSocket> socket_;
@@ -381,6 +388,23 @@ TEST_F(MdnsQuerierTest, MessagesForUnknownQueriesDropped) {
       &socket_, CreatePacketWithRecords({record0_created_, record1_created_}));
   querier->StartQuery(DomainName{"poking", "local"}, DnsType::kA, DnsClass::kIN,
                       &callback);
+}
+
+TEST_F(MdnsQuerierTest, GetKnownAnswersRetrievesOnlyExpectedRecords) {
+  std::unique_ptr<MdnsQuerier> querier = CreateQuerier();
+  MockRecordChangedCallback callback;
+  const DomainName name{"testing", "local"};
+
+  querier->StartQuery(name, DnsType::kA, DnsClass::kIN, &callback);
+  EXPECT_CALL(callback, OnRecordChanged(_, RecordChangedEvent::kCreated))
+      .WillOnce(WithArgs<0>(PartialCompareRecords(record0_created_)));
+  receiver_.OnRead(
+      &socket_, CreatePacketWithRecords({record0_created_, record1_created_}));
+
+  std::vector<MdnsRecord::ConstRef> records =
+      GetKnownAnswers(querier.get(), name, DnsType::kANY, DnsClass::kANY);
+  ASSERT_EQ(records.size(), 1u);
+  EXPECT_EQ(records[0].get(), record0_created_);
 }
 
 }  // namespace discovery

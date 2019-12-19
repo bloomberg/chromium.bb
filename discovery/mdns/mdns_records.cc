@@ -512,6 +512,10 @@ void MdnsMessage::AddAdditionalRecord(MdnsRecord record) {
   additional_records_.emplace_back(std::move(record));
 }
 
+bool MdnsMessage::CanAddRecord(const MdnsRecord& record) {
+  return (max_wire_size_ + record.MaxWireSize()) < kMaxMulticastMessageSize;
+}
+
 uint16_t CreateMessageId() {
   static std::atomic<uint16_t> id(0);
   return id++;

@@ -61,6 +61,8 @@ class MdnsQuerier {
     const DnsClass dns_class;
   };
 
+  friend class MdnsQuerierTest;
+
   // Callback passed to MdnsReceiver
   void OnMessageReceived(const MdnsMessage& message);
 
@@ -74,6 +76,10 @@ class MdnsQuerier {
 
   void AddQuestion(const MdnsQuestion& question);
   void AddRecord(const MdnsRecord& record);
+
+  std::vector<MdnsRecord::ConstRef> GetKnownAnswers(const DomainName& name,
+                                                    DnsType type,
+                                                    DnsClass clazz);
 
   MdnsSender* const sender_;
   MdnsReceiver* const receiver_;

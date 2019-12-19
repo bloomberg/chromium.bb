@@ -434,6 +434,10 @@ class MdnsMessage {
   void AddAuthorityRecord(MdnsRecord record);
   void AddAdditionalRecord(MdnsRecord record);
 
+  // Returns false if adding a new record would push the size of this message
+  // beyond kMaxMulticastMessageSize, and true otherwise.
+  bool CanAddRecord(const MdnsRecord& record);
+
   // Sets the truncated bit (TC), as specified in RFC 1035 Section 4.1.1.
   void set_truncated() { is_truncated_ = true; }
 

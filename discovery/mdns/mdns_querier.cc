@@ -338,14 +338,16 @@ void MdnsQuerier::ProcessCallbacks(const MdnsRecord& record,
       callback_info.callback->OnRecordChanged(record, event);
     }
   }
-
-  // TODO(crbug.com/openscreen/83): Update known answers for relevant questions.
 }
 
 void MdnsQuerier::AddQuestion(const MdnsQuestion& question) {
+  const MdnsQuestionTracker::KnownAnswerQuery query(
+      [this](const DomainName& name, DnsType type, DnsClass clazz) {
+        return GetKnownAnswers(name, type, clazz);
+      });
   questions_.emplace(question.name(),
                      std::make_unique<MdnsQuestionTracker>(
-                         std::move(question), sender_, task_runner_,
+                         std::move(question), query, sender_, task_runner_,
                          now_function_, random_delay_));
 }
 
@@ -357,6 +359,24 @@ void MdnsQuerier::AddRecord(const MdnsRecord& record) {
                    std::make_unique<MdnsRecordTracker>(
                        std::move(record), sender_, task_runner_, now_function_,
                        random_delay_, expiration_callback));
+}
+
+std::vector<MdnsRecord::ConstRef> MdnsQuerier::GetKnownAnswers(
+    const DomainName& name,
+    DnsType type,
+    DnsClass clazz) {
+  std::vector<MdnsRecord::ConstRef> records;
+  auto its = records_.equal_range(name);
+  for (auto it = its.first; it != its.second; it++) {
+    const MdnsRecord& record = it->second->record();
+    if ((type == DnsType::kANY || type == record.dns_type()) &&
+        (clazz == DnsClass::kANY || clazz == record.dns_class()) &&
+        !it->second->IsNearingExpiry()) {
+      records.emplace_back(record);
+    }
+  }
+
+  return records;
 }
 
 }  // namespace discovery

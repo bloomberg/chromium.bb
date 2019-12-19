@@ -128,6 +128,10 @@ void MdnsRecordTracker::ExpireSoon() {
   send_alarm_.Schedule([this] { SendQuery(); }, GetNextSendTime());
 }
 
+bool MdnsRecordTracker::IsNearingExpiry() {
+  return (now_function_() - start_time_) > record_.ttl() / 2;
+}
+
 void MdnsRecordTracker::SendQuery() {
   const Clock::time_point expiration_time = start_time_ + record_.ttl();
   const bool is_expired = (now_function_() >= expiration_time);
@@ -160,13 +164,15 @@ Clock::time_point MdnsRecordTracker::GetNextSendTime() {
 }
 
 MdnsQuestionTracker::MdnsQuestionTracker(MdnsQuestion question,
+                                         KnownAnswerQuery query,
                                          MdnsSender* sender,
                                          TaskRunner* task_runner,
                                          ClockNowFunctionPtr now_function,
                                          MdnsRandom* random_delay)
     : MdnsTracker(sender, task_runner, now_function, random_delay),
       question_(std::move(question)),
-      send_delay_(kMinimumQueryInterval) {
+      send_delay_(kMinimumQueryInterval),
+      known_answer_query_(query) {
   // The initial query has to be sent after a random delay of 20-120
   // milliseconds.
   send_alarm_.ScheduleFromNow([this] { MdnsQuestionTracker::SendQuery(); },
@@ -176,9 +182,28 @@ MdnsQuestionTracker::MdnsQuestionTracker(MdnsQuestion question,
 void MdnsQuestionTracker::SendQuery() {
   MdnsMessage message(CreateMessageId(), MessageType::Query);
   message.AddQuestion(question_);
-  // TODO(yakimakha): Implement known-answer suppression by adding known
-  // answers to the question
+
+  // Send the message and additional known answer packets as needed.
+  std::vector<MdnsRecord::ConstRef> known_answers = known_answer_query_(
+      question_.name(), question_.dns_type(), question_.dns_class());
+  for (auto it = known_answers.begin(); it != known_answers.end();) {
+    if (message.CanAddRecord(*it)) {
+      message.AddAnswer(std::move(*it++));
+    } else if (message.questions().empty() && message.answers().empty()) {
+      // This case should never happen, because it means a record is too large
+      // to fit into its own message.
+      OSP_LOG << "Encountered unreasonably large message in cache. Skipping "
+              << "known answer in suppressions...";
+      it++;
+    } else {
+      message.set_truncated();
+      sender_->SendMulticast(message);
+      message = MdnsMessage(CreateMessageId(), MessageType::Query);
+    }
+  }
   sender_->SendMulticast(message);
+
+  // Reschedule this task to run again per FRC spec.
   send_alarm_.ScheduleFromNow([this] { MdnsQuestionTracker::SendQuery(); },
                               send_delay_);
   send_delay_ = send_delay_ * kIntervalIncreaseFactor;
