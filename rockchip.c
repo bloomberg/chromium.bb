@@ -23,12 +23,12 @@ struct rockchip_private_map_data {
 	void *gem_addr;
 };
 
-static const uint32_t render_target_formats[] = { DRM_FORMAT_ABGR8888, DRM_FORMAT_ARGB8888,
-						  DRM_FORMAT_BGR888,   DRM_FORMAT_RGB565,
-						  DRM_FORMAT_XBGR8888, DRM_FORMAT_XRGB8888 };
+static const uint32_t scanout_render_formats[] = { DRM_FORMAT_ABGR8888, DRM_FORMAT_ARGB8888,
+						   DRM_FORMAT_BGR888,	DRM_FORMAT_RGB565,
+						   DRM_FORMAT_XBGR8888, DRM_FORMAT_XRGB8888 };
 
-static const uint32_t texture_source_formats[] = { DRM_FORMAT_NV12, DRM_FORMAT_YVU420,
-						   DRM_FORMAT_YVU420_ANDROID };
+static const uint32_t texture_only_formats[] = { DRM_FORMAT_NV12, DRM_FORMAT_YVU420,
+						 DRM_FORMAT_YVU420_ANDROID };
 
 static int afbc_bo_from_format(struct bo *bo, uint32_t width, uint32_t height, uint32_t format)
 {
@@ -74,67 +74,31 @@ static int afbc_bo_from_format(struct bo *bo, uint32_t width, uint32_t height, u
 	return 0;
 }
 
-static int rockchip_add_kms_item(struct driver *drv, const struct kms_item *item)
-{
-	uint32_t i, j;
-	uint64_t use_flags;
-	struct combination *combo;
-	struct format_metadata metadata;
-
-	for (i = 0; i < drv_array_size(drv->combos); i++) {
-		combo = (struct combination *)drv_array_at_idx(drv->combos, i);
-		if (combo->format == item->format) {
-			if (item->modifier == DRM_FORMAT_MOD_CHROMEOS_ROCKCHIP_AFBC) {
-				use_flags = BO_USE_RENDERING | BO_USE_SCANOUT | BO_USE_TEXTURE;
-				metadata.modifier = item->modifier;
-				metadata.tiling = 0;
-				metadata.priority = 2;
-
-				for (j = 0; j < ARRAY_SIZE(texture_source_formats); j++) {
-					if (item->format == texture_source_formats[j])
-						use_flags &= ~BO_USE_RENDERING;
-				}
-
-				drv_add_combinations(drv, &item->format, 1, &metadata, use_flags);
-			} else {
-				combo->use_flags |= item->use_flags;
-			}
-		}
-	}
-
-	return 0;
-}
-
 static int rockchip_init(struct driver *drv)
 {
-	int ret;
-	uint32_t i;
-	struct drv_array *kms_items;
 	struct format_metadata metadata;
 
 	metadata.tiling = 0;
 	metadata.priority = 1;
 	metadata.modifier = DRM_FORMAT_MOD_LINEAR;
 
-	drv_add_combinations(drv, render_target_formats, ARRAY_SIZE(render_target_formats),
-			     &metadata, BO_USE_RENDER_MASK);
+	drv_add_combinations(drv, scanout_render_formats, ARRAY_SIZE(scanout_render_formats),
+			     &metadata, BO_USE_RENDER_MASK | BO_USE_SCANOUT);
 
-	drv_add_combinations(drv, texture_source_formats, ARRAY_SIZE(texture_source_formats),
-			     &metadata, BO_USE_TEXTURE_MASK);
+	drv_add_combinations(drv, texture_only_formats, ARRAY_SIZE(texture_only_formats), &metadata,
+			     BO_USE_TEXTURE_MASK);
 
 	/*
 	 * Chrome uses DMA-buf mmap to write to YV12 buffers, which are then accessed by the
 	 * Video Encoder Accelerator (VEA). It could also support NV12 potentially in the future.
 	 */
 	drv_modify_combination(drv, DRM_FORMAT_YVU420, &metadata, BO_USE_HW_VIDEO_ENCODER);
-	drv_modify_combination(drv, DRM_FORMAT_NV12, &metadata, BO_USE_HW_VIDEO_ENCODER);
-
-	drv_modify_combination(drv, DRM_FORMAT_XRGB8888, &metadata, BO_USE_CURSOR | BO_USE_SCANOUT);
-	drv_modify_combination(drv, DRM_FORMAT_ARGB8888, &metadata, BO_USE_CURSOR | BO_USE_SCANOUT);
-
 	/* Camera ISP supports only NV12 output. */
 	drv_modify_combination(drv, DRM_FORMAT_NV12, &metadata,
-			       BO_USE_CAMERA_READ | BO_USE_CAMERA_WRITE | BO_USE_HW_VIDEO_DECODER);
+			       BO_USE_CAMERA_READ | BO_USE_CAMERA_WRITE | BO_USE_HW_VIDEO_DECODER |
+				   BO_USE_HW_VIDEO_ENCODER | BO_USE_SCANOUT);
+
+	drv_modify_linear_combinations(drv);
 	/*
 	 * R8 format is used for Android's HAL_PIXEL_FORMAT_BLOB and is used for JPEG snapshots
 	 * from camera.
@@ -143,19 +107,6 @@ static int rockchip_init(struct driver *drv)
 			    BO_USE_CAMERA_READ | BO_USE_CAMERA_WRITE | BO_USE_SW_MASK |
 				BO_USE_LINEAR | BO_USE_PROTECTED);
 
-	kms_items = drv_query_kms(drv);
-	if (!kms_items)
-		return 0;
-
-	for (i = 0; i < drv_array_size(kms_items); i++) {
-		ret = rockchip_add_kms_item(drv, (struct kms_item *)drv_array_at_idx(kms_items, i));
-		if (ret) {
-			drv_array_destroy(kms_items);
-			return ret;
-		}
-	}
-
-	drv_array_destroy(kms_items);
 	return 0;
 }
 
