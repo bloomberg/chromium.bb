@@ -35,12 +35,6 @@ struct bo {
 	void *priv;
 };
 
-struct kms_item {
-	uint32_t format;
-	uint64_t modifier;
-	uint64_t use_flags;
-};
-
 struct format_metadata {
 	uint32_t priority;
 	uint32_t tiling;

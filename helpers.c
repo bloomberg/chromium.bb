@@ -11,7 +11,6 @@
 #include <string.h>
 #include <sys/mman.h>
 #include <xf86drm.h>
-#include <xf86drmMode.h>
 
 #include "drv_priv.h"
 #include "helpers.h"
@@ -568,137 +567,16 @@ void drv_modify_combination(struct driver *drv, uint32_t format, struct format_m
 	}
 }
 
-struct drv_array *drv_query_kms(struct driver *drv)
-{
-	struct drv_array *kms_items;
-	uint64_t plane_type = UINT64_MAX;
-	uint64_t use_flag;
-	uint32_t i, j, k;
-
-	drmModePlanePtr plane;
-	drmModePropertyPtr prop;
-	drmModePlaneResPtr resources;
-	drmModeObjectPropertiesPtr props;
-
-	kms_items = drv_array_init(sizeof(struct kms_item));
-	if (!kms_items)
-		goto out;
-
-	/*
-	 * The ability to return universal planes is only complete on
-	 * ChromeOS kernel versions >= v3.18.  The SET_CLIENT_CAP ioctl
-	 * therefore might return an error code, so don't check it.  If it
-	 * fails, it'll just return the plane list as overlay planes, which is
-	 * fine in our case (our drivers already have cursor bits set).
-	 * modetest in libdrm does the same thing.
-	 */
-	drmSetClientCap(drv->fd, DRM_CLIENT_CAP_UNIVERSAL_PLANES, 1);
-
-	resources = drmModeGetPlaneResources(drv->fd);
-	if (!resources)
-		goto out;
-
-	for (i = 0; i < resources->count_planes; i++) {
-		plane_type = UINT64_MAX;
-		plane = drmModeGetPlane(drv->fd, resources->planes[i]);
-		if (!plane)
-			goto out;
-
-		props = drmModeObjectGetProperties(drv->fd, plane->plane_id, DRM_MODE_OBJECT_PLANE);
-		if (!props)
-			goto out;
-
-		for (j = 0; j < props->count_props; j++) {
-			prop = drmModeGetProperty(drv->fd, props->props[j]);
-			if (prop) {
-				if (strcmp(prop->name, "type") == 0) {
-					plane_type = props->prop_values[j];
-				}
-
-				drmModeFreeProperty(prop);
-			}
-		}
-
-		switch (plane_type) {
-		case DRM_PLANE_TYPE_OVERLAY:
-		case DRM_PLANE_TYPE_PRIMARY:
-			use_flag = BO_USE_SCANOUT;
-			break;
-		case DRM_PLANE_TYPE_CURSOR:
-			use_flag = BO_USE_CURSOR;
-			break;
-		default:
-			assert(0);
-		}
-
-		for (j = 0; j < plane->count_formats; j++) {
-			bool found = false;
-			for (k = 0; k < drv_array_size(kms_items); k++) {
-				struct kms_item *item = drv_array_at_idx(kms_items, k);
-				if (item->format == plane->formats[j] &&
-				    item->modifier == DRM_FORMAT_MOD_LINEAR) {
-					item->use_flags |= use_flag;
-					found = true;
-					break;
-				}
-			}
-
-			if (!found) {
-				struct kms_item item = { .format = plane->formats[j],
-							 .modifier = DRM_FORMAT_MOD_LINEAR,
-							 .use_flags = use_flag };
-
-				drv_array_append(kms_items, &item);
-			}
-		}
-
-		drmModeFreeObjectProperties(props);
-		drmModeFreePlane(plane);
-	}
-
-	drmModeFreePlaneResources(resources);
-out:
-	if (kms_items && !drv_array_size(kms_items)) {
-		drv_array_destroy(kms_items);
-		return NULL;
-	}
-
-	return kms_items;
-}
-
 int drv_modify_linear_combinations(struct driver *drv)
 {
-	uint32_t i, j;
-	struct kms_item *item;
-	struct combination *combo;
-	struct drv_array *kms_items;
-
 	/*
 	 * All current drivers can scanout linear XRGB8888/ARGB8888 as a primary
-	 * plane and as a cursor. Some drivers don't support
-	 * drmModeGetPlaneResources, so add the combination here. Note that the
-	 * kernel disregards the alpha component of ARGB unless it's an overlay
-	 * plane.
+	 * plane and as a cursor.
 	 */
 	drv_modify_combination(drv, DRM_FORMAT_XRGB8888, &LINEAR_METADATA,
 			       BO_USE_CURSOR | BO_USE_SCANOUT);
 	drv_modify_combination(drv, DRM_FORMAT_ARGB8888, &LINEAR_METADATA,
 			       BO_USE_CURSOR | BO_USE_SCANOUT);
-
-	kms_items = drv_query_kms(drv);
-	if (!kms_items)
-		return 0;
-
-	for (i = 0; i < drv_array_size(kms_items); i++) {
-		item = (struct kms_item *)drv_array_at_idx(kms_items, i);
-		for (j = 0; j < drv_array_size(drv->combos); j++) {
-			combo = drv_array_at_idx(drv->combos, j);
-			if (item->format == combo->format)
-				combo->use_flags |= BO_USE_SCANOUT;
-		}
-	}
-
-	drv_array_destroy(kms_items);
 	return 0;
 }
 
