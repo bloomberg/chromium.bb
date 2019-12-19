@@ -1208,10 +1208,10 @@ void UiControllerAndroid::OnCollectUserDataOptionsChanged(
       env, jmodel,
       base::android::ConvertUTF8ToJavaString(
           env, collect_user_data_options->terms_require_review_text));
-  Java_AssistantCollectUserDataModel_setThirdPartyPrivacyNoticeText(
+  Java_AssistantCollectUserDataModel_setPrivacyNoticeText(
       env, jmodel,
       base::android::ConvertUTF8ToJavaString(
-          env, collect_user_data_options->thirdparty_privacy_notice_text));
+          env, collect_user_data_options->privacy_notice_text));
 
   Java_AssistantCollectUserDataModel_setPrependedSections(
       env, jmodel,

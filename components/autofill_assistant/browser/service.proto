@@ -1389,7 +1389,7 @@ message CollectUserDataProto {
   optional string terms_require_review_text = 20;
   // Privacy notice telling users that autofill assistant will send personal
   // data to a third party’s website.
-  optional string thirdparty_privacy_notice_text = 21;
+  optional string privacy_notice_text = 21;
   // Optionally allows confiriming through the given direct actions.
   optional DirectActionProto confirm_direct_action = 10;
   // Additional actions available to the user. This can be used for instance to

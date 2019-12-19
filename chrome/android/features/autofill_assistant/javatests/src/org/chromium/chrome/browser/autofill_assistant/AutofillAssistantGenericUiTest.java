@@ -141,7 +141,7 @@ public class AutofillAssistantGenericUiTest {
     @Test
     @MediumTest
     @DisableIf.Build(sdk_is_less_than = 21)
-    public void testRoundedRectangle() {
+    public void testStaticUserInterface() {
         DrawableProto roundedRect =
                 (DrawableProto) DrawableProto.newBuilder()
                         .setShape(
@@ -196,7 +196,7 @@ public class AutofillAssistantGenericUiTest {
                                          .setGenericUserInterface(
                                                  GenericUserInterfaceProto.newBuilder().setRootView(
                                                          rootView))
-                                         .setThirdpartyPrivacyNoticeText(
+                                         .setPrivacyNoticeText(
                                                  "Chrome will send selected data to example.com")
                                          .setRequestTermsAndConditions(false))
                          .build());

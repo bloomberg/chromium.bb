@@ -706,11 +706,8 @@ bool CollectUserDataAction::CreateOptionsFromProto() {
         collect_user_data.terms_require_review_text();
   }
 
-  if (collect_user_data.thirdparty_privacy_notice_text().empty()) {
-    return false;
-  }
-  collect_user_data_options_->thirdparty_privacy_notice_text =
-      collect_user_data.thirdparty_privacy_notice_text();
+  collect_user_data_options_->privacy_notice_text =
+      collect_user_data.privacy_notice_text();
 
   collect_user_data_options_->default_email =
       delegate_->GetAccountEmailAddress();

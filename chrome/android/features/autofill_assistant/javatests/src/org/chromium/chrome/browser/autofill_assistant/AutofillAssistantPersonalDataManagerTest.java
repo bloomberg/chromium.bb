@@ -98,7 +98,7 @@ public class AutofillAssistantPersonalDataManagerTest {
                                                                    .setRequestPayerName(true)
                                                                    .setRequestPayerEmail(true)
                                                                    .setRequestPayerPhone(false))
-                                        .setThirdpartyPrivacyNoticeText("3rd party privacy text")
+                                        .setPrivacyNoticeText("3rd party privacy text")
                                         .setRequestTermsAndConditions(false))
                         .build());
         list.add((ActionProto) ActionProto.newBuilder()
@@ -175,7 +175,7 @@ public class AutofillAssistantPersonalDataManagerTest {
                                                                    .setRequestPayerName(true)
                                                                    .setRequestPayerEmail(true)
                                                                    .setRequestPayerPhone(false))
-                                        .setThirdpartyPrivacyNoticeText("3rd party privacy text")
+                                        .setPrivacyNoticeText("3rd party privacy text")
                                         .setRequestTermsAndConditions(false))
                         .build());
         list.add(
@@ -224,12 +224,11 @@ public class AutofillAssistantPersonalDataManagerTest {
     public void testLiveInsertCreditCard() throws Exception {
         ArrayList<ActionProto> list = new ArrayList<>();
         list.add((ActionProto) ActionProto.newBuilder()
-                         .setCollectUserData(
-                                 CollectUserDataProto.newBuilder()
-                                         .setRequestPaymentMethod(true)
-                                         .addSupportedBasicCardNetworks("visa")
-                                         .setThirdpartyPrivacyNoticeText("3rd party privacy text")
-                                         .setRequestTermsAndConditions(false))
+                         .setCollectUserData(CollectUserDataProto.newBuilder()
+                                                     .setRequestPaymentMethod(true)
+                                                     .addSupportedBasicCardNetworks("visa")
+                                                     .setPrivacyNoticeText("3rd party privacy text")
+                                                     .setRequestTermsAndConditions(false))
                          .build());
         // No UseCreditCardAction, that is tested in PaymentTest.
         AutofillAssistantTestScript script = new AutofillAssistantTestScript(
@@ -269,7 +268,7 @@ public class AutofillAssistantPersonalDataManagerTest {
                                          .addSupportedBasicCardNetworks("visa")
                                          .setRequireBillingPostalCode(true)
                                          .setBillingPostalCodeMissingText("Missing Billing Code")
-                                         .setThirdpartyPrivacyNoticeText("3rd party privacy text")
+                                         .setPrivacyNoticeText("3rd party privacy text")
                                          .setRequestTermsAndConditions(false))
                          .build());
         AutofillAssistantTestScript script = new AutofillAssistantTestScript(
