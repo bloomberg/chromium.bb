@@ -1024,6 +1024,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="2445484935443597917">Crea un nuovo profilo</translation>
 <translation id="2446585455334014596"><ph name="APP_NAME" /> vuole verificare la tua identità</translation>
 <translation id="2448312741937722512">Tipo</translation>
+<translation id="2448734521821581858">I cookie sono file creati dai siti web che visiti. Esistono due tipi di cookie: i cookie originali, che vengono creati dal sito visitato. Il sito è visualizzato nella barra degli indirizzi. I cookie di terze parti, che vengono creati da altri siti. Questi siti sono proprietari di alcuni dei contenuti, ad esempio annunci o immagini, che vengono visualizzati sul sito web che visiti.</translation>
 <translation id="2450223707519584812">Non potrai aggiungere utenti perché mancano le chiavi dell'API di Google. Per informazioni dettagliate, visita la pagina <ph name="DETAILS_URL" />.</translation>
 <translation id="2450849356604136918">Nessuna visualizzazione attiva</translation>
 <translation id="2451298179137331965">2x</translation>
@@ -3126,6 +3127,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="5496587651328244253">Organizza</translation>
 <translation id="5499313591153584299">Questo file potrebbe essere dannoso per il computer.</translation>
 <translation id="5502500733115278303">Importati da Firefox</translation>
+<translation id="5505264765875738116">I siti non possono chiedere di inviare notifiche</translation>
 <translation id="5505307013568720083">Inchiostro esaurito</translation>
 <translation id="5507756662695126555">Non ripudio</translation>
 <translation id="5509693895992845810">S&amp;alva con nome...</translation>
@@ -3676,6 +3678,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="6267547857941397424">Rete <ph name="NETWORK_INDEX" /> di <ph name="NETWORK_COUNT" />, <ph name="PHONE_NAME" />, intensità del segnale <ph name="SIGNAL_STRENGTH" />%, batteria del telefono <ph name="BATTERY_STATUS" />%, connetti</translation>
 <translation id="6268252012308737255">Apri con <ph name="APP" /></translation>
 <translation id="6268718011101775129">NFC</translation>
+<translation id="6270391203985052864">I siti possono chiedere di inviare notifiche</translation>
 <translation id="6270770586500173387">Invia <ph name="BEGIN_LINK1" />informazioni relative al sistema/alle app<ph name="END_LINK1" /> e <ph name="BEGIN_LINK2" />metriche<ph name="END_LINK2" /></translation>
 <translation id="6272643420381259437">Si è verificato un errore (<ph name="ERROR" />) durante il download del plug-in</translation>
 <translation id="6273677812470008672">Qualità</translation>
@@ -3866,6 +3869,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="6555810572223193255">Pulizia al momento non disponibile</translation>
 <translation id="6556866813142980365">Ripeti</translation>
 <translation id="6557290421156335491">Le mie scorciatoie</translation>
+<translation id="6561560012278703671">Usa messaggi più discreti (i messaggi di notifica non ti interrompono)</translation>
 <translation id="6561726789132298588">invio</translation>
 <translation id="656293578423618167">Il percorso o il nome del file è troppo lungo. Salva il file con un nome più corto o in un'altra posizione.</translation>
 <translation id="6563469144985748109">Il tuo gestore non ha ancora approvato la richiesta</translation>

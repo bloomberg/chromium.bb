@@ -604,6 +604,7 @@ Da biste promijenili tu postavku, <ph name="BEGIN_LINK" />poništite sinkronizac
 <translation id="5487521232677179737">Izbriši podatke</translation>
 <translation id="5494752089476963479">Blokiraj oglase na web-lokacijama koje prikazuju ometajuće ili obmanjujuće oglase</translation>
 <translation id="5500777121964041360">Možda nije dostupno na vašoj lokaciji</translation>
+<translation id="5505264765875738116">Web-lokacije ne mogu postavljati pitanja o slanju obavijesti</translation>
 <translation id="5512137114520586844">Računom upravlja <ph name="PARENT_NAME" />.</translation>
 <translation id="5514904542973294328">Opciju je omogućio administrator ovog uređaja</translation>
 <translation id="5515439363601853141">Otključajte za prikaz zaporke</translation>
@@ -710,6 +711,7 @@ Da biste promijenili tu postavku, <ph name="BEGIN_LINK" />poništite sinkronizac
 Na primjer, neke web-lokacije na taj zahtjev mogu odgovoriti tako da vam prikažu oglase koji se ne temelje na drugim web-lokacijama koje ste posjetili. Mnoge web-lokacije i dalje će prikupljati i upotrebljavati vaše podatke o pregledavanju, primjerice, za poboljšanje sigurnosti, pružanje sadržaja, oglasa i preporuka, kao i za generiranje statističkih izvješća.</translation>
 <translation id="624789221780392884">Ažuriranje je spremno</translation>
 <translation id="6255999984061454636">Prijedlozi sadržaja</translation>
+<translation id="6270391203985052864">Web-lokacije mogu postavljati pitanja o slanju obavijesti</translation>
 <translation id="6277522088822131679">Pojavio se problem prilikom ispisivanja stranice. Pokušajte ponovo.</translation>
 <translation id="6295158916970320988">Sve web-lokacije</translation>
 <translation id="629730747756840877">Račun</translation>
@@ -754,6 +756,7 @@ Na primjer, neke web-lokacije na taj zahtjev mogu odgovoriti tako da vam prikaž
 <translation id="6545864417968258051">Traženje Bluetootha</translation>
 <translation id="6560414384669816528">Pretražujte na usluzi Sogou</translation>
 <translation id="656065428026159829">Prikaži više</translation>
+<translation id="6561560012278703671">Koristi tiše poruke (onemogućuje upitima za obavijesti da vas ometaju)</translation>
 <translation id="6566259936974865419">Chrome vam je uštedio <ph name="GIGABYTES" /> GB</translation>
 <translation id="6573096386450695060">Dopusti uvijek</translation>
 <translation id="6573431926118603307">Ovdje će se prikazati kartice koje ste otvorili u Chromeu na svojim ostalim uređajima.</translation>

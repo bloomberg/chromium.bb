@@ -1025,6 +1025,7 @@ Vous pouvez gérer les paramètres de ce compte en installant l'application Fami
 <translation id="2445484935443597917">Créer un profil</translation>
 <translation id="2446585455334014596"><ph name="APP_NAME" /> souhaite valider votre identité</translation>
 <translation id="2448312741937722512">Type</translation>
+<translation id="2448734521821581858">Les cookies sont des fichiers créés par les sites Web que vous consultez. Il en existe deux types : les cookies propriétaires et les cookies tiers. Les cookies propriétaires sont créés par le site que vous consultez et qui est indiqué dans la barre d'adresse. Les cookies tiers sont créés par d'autres sites, lesquels possèdent une partie du contenu, comme les annonces ou les images, que vous voyez sur le site Web que vous consultez.</translation>
 <translation id="2450223707519584812">Vous ne pourrez pas ajouter d'utilisateurs, car des clés API Google sont manquantes. Pour en savoir plus, rendez-vous sur <ph name="DETAILS_URL" />.</translation>
 <translation id="2450849356604136918">Aucune vue active</translation>
 <translation id="2451298179137331965">2x</translation>
@@ -3127,6 +3128,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="5496587651328244253">Organiser</translation>
 <translation id="5499313591153584299">Ce fichier peut être néfaste pour votre ordinateur.</translation>
 <translation id="5502500733115278303">Importés depuis Firefox</translation>
+<translation id="5505264765875738116">Les sites ne peuvent pas vous demander l'autorisation d'envoyer des notifications</translation>
 <translation id="5505307013568720083">À court d'encre</translation>
 <translation id="5507756662695126555">Non-répudiation</translation>
 <translation id="5509693895992845810">Enregistrer &amp;sous...</translation>
@@ -3678,6 +3680,7 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="6267547857941397424">Réseau <ph name="NETWORK_INDEX" /> sur <ph name="NETWORK_COUNT" />, <ph name="PHONE_NAME" />, force du signal : <ph name="SIGNAL_STRENGTH" /> %, batterie du téléphone à <ph name="BATTERY_STATUS" /> %, connexion</translation>
 <translation id="6268252012308737255">Ouvrir avec <ph name="APP" /></translation>
 <translation id="6268718011101775129">NFC</translation>
+<translation id="6270391203985052864">Les sites peuvent vous demander l'autorisation d'envoyer des notifications</translation>
 <translation id="6270770586500173387">Envoyer des <ph name="BEGIN_LINK1" />informations sur le système et l'application<ph name="END_LINK1" />, ainsi que des <ph name="BEGIN_LINK2" />statistiques<ph name="END_LINK2" /></translation>
 <translation id="6272643420381259437">Une erreur (<ph name="ERROR" />) s'est produite lors du téléchargement du plug-in.</translation>
 <translation id="6273677812470008672">Qualité</translation>
@@ -3868,6 +3871,7 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="6555810572223193255">Le nettoyage n'est pas disponible actuellement</translation>
 <translation id="6556866813142980365">Rétablir</translation>
 <translation id="6557290421156335491">Mes raccourcis</translation>
+<translation id="6561560012278703671">Activer l'affichage discret (permet d'empêcher les invites liées aux notifications de vous interrompre)</translation>
 <translation id="6561726789132298588">entrée</translation>
 <translation id="656293578423618167">Le chemin d'accès ou le nom du fichier est trop long. Veuillez le raccourcir ou changer d'emplacement.</translation>
 <translation id="6563469144985748109">Votre responsable ne l'a pas encore autorisé</translation>

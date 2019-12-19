@@ -1022,6 +1022,7 @@
 <translation id="2445484935443597917">නව පැතිකඩක් සාදන්න</translation>
 <translation id="2446585455334014596"><ph name="APP_NAME" /> හට ඔබගේ අනන්‍යතාව සත්‍යාපනය කිරීමට අවශ්‍යය</translation>
 <translation id="2448312741937722512">වර්ගය</translation>
+<translation id="2448734521821581858">කුකීස් යනු ඔබ පැමිණෙන වෙබ් අඩවිවලින් නිර්මාණ කෙරෙන ගොනු වේ. කුකී වර්ග දෙකක් තිබේ: පළවෙනි පාර්ශ්ව කුකී ඔබ පැමිණෙන වෙබ් අඩවියෙන් නිර්මාණ කෙරේ. වෙබ් අඩවිය ලිපින තීරුවේ පෙන්වනු ලැබේ. තෙවන පාර්ශ්ව කුකී වෙනත් වෙබ් අඩවිවලින් නිර්මාණ කෙරේ. මෙම වෙබ් අඩවිවලට ඔබ පැමිණෙන වෙබ් අඩවිය මත ඔබ දකින රූප හෝ දැන්වීම් වැනි සමහර අන්තර්ගත හිමි වේ.</translation>
 <translation id="2450223707519584812">Google API යතුරු අස්ථානගතව ඇති නිසා ඔබට පරිශීලකයන් එක් කළ නොහැකි වනු ඇත. විස්තර සඳහා <ph name="DETAILS_URL" /> බලන්න.</translation>
 <translation id="2450849356604136918">ක්‍රියාකාරී බැලීම් නැත</translation>
 <translation id="2451298179137331965">2x</translation>
@@ -3125,6 +3126,7 @@ Linux ස්ථාපනය කිරීම දත්තවලින් <ph name
 <translation id="5496587651328244253">සංවිධානය කරන්න</translation>
 <translation id="5499313591153584299">මෙම ගොනුව ඔබගේ පරිගණකයට හානිකර විය හැකියි.</translation>
 <translation id="5502500733115278303">Firefox වෙතින් ආයාත කෙරිණි</translation>
+<translation id="5505264765875738116">වෙබ් අඩවිවලට දැනුම්දීම් යැවීමට ඉල්ලිය නොහැක</translation>
 <translation id="5505307013568720083">තීන්ත නැත</translation>
 <translation id="5507756662695126555">නොපිළිගැනීම-නොමැති</translation>
 <translation id="5509693895992845810">ලෙස සුරකින්න (&amp;A)...</translation>
@@ -3676,6 +3678,7 @@ Linux ස්ථාපනය කිරීම දත්තවලින් <ph name
 <translation id="6267547857941397424"><ph name="NETWORK_COUNT" />න් <ph name="NETWORK_INDEX" /> වැනි ජාලය, <ph name="PHONE_NAME" />, සංඥා ප්‍රබලතාව <ph name="SIGNAL_STRENGTH" />%, දුරකථන බැටරිය <ph name="BATTERY_STATUS" />%, සබඳින්න</translation>
 <translation id="6268252012308737255"><ph name="APP" /> සමගින් විවෘත කරන්න</translation>
 <translation id="6268718011101775129">NFC</translation>
+<translation id="6270391203985052864">වෙබ් අඩවිවලට දැනුම්දීම් යැවීමට ඉල්ලිය හැක</translation>
 <translation id="6270770586500173387"><ph name="BEGIN_LINK1" />පද්ධති තොරතුරු<ph name="END_LINK1" /> සහ <ph name="BEGIN_LINK2" />මිතික<ph name="END_LINK2" /> යවන්න</translation>
 <translation id="6272643420381259437">පේනු මෘදුකාංගය බාගැනීමේදී දෝෂයක් (<ph name="ERROR" />) ඇති විය</translation>
 <translation id="6273677812470008672">තත්වය</translation>
@@ -3864,6 +3867,7 @@ Linux ස්ථාපනය කිරීම දත්තවලින් <ph name
 <translation id="6555810572223193255">පිරිසිදු කිරීම දැනට නොමැත</translation>
 <translation id="6556866813142980365">නැවත කරන්න</translation>
 <translation id="6557290421156335491">මගේ කෙටිමං</translation>
+<translation id="6561560012278703671">වඩා නිශ්ශබ්ද පණිවුඩකරණය භාවිත කරන්න (දැනුම්දීම් ප්‍රේරක ඔබට බාධා කිරීමෙන් අවහිර කරයි)</translation>
 <translation id="6561726789132298588">ඇතුල් කරන්න</translation>
 <translation id="656293578423618167">ගොනු නම හෝ මඟ ඉතා දිගුයි. කරුණාකර වෙනත් ස්ථානයක් වෙත සුරකින්න නැතහොත් කෙටි නමක් යොදන්න.</translation>
 <translation id="6563469144985748109">ඔබේ කළමනාකරු තවම එය අනුමත කර නැත</translation>

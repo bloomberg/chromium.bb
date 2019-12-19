@@ -1025,6 +1025,7 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="2445484935443597917">Búa til nýjan prófíl</translation>
 <translation id="2446585455334014596"><ph name="APP_NAME" /> vill staðfesta auðkenni þitt</translation>
 <translation id="2448312741937722512">Gerð</translation>
+<translation id="2448734521821581858">Fótspor eru skrár sem myndast á vefsvæðum sem þú heimsækir. Það eru tvær tegundir af fótsporum: Fótspor frá fyrsta aðila eru búin til af vefsvæðinu sem þú heimsækir. Vefsvæðið kemur fram á veffangastikunni. Fótspor frá þriðja aðila eru búin til af öðrum vefsvæðum. Þessi vefsvæði eiga eitthvað af efninu, eins og auglýsingar eða myndir, sem þú sérð á vefsvæðinu sem þú heimsækir.</translation>
 <translation id="2450223707519584812">Þú getur ekki bætt inn notendum vegna þess að það vantar Google forritaskil. Sjá frekari upplýsingar á <ph name="DETAILS_URL" />.</translation>
 <translation id="2450849356604136918">Engin virk yfirlit</translation>
 <translation id="2451298179137331965">2x</translation>
@@ -3127,6 +3128,7 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="5496587651328244253">Skipuleggja</translation>
 <translation id="5499313591153584299">Þessi skrá getur skaðað tölvuna þína.</translation>
 <translation id="5502500733115278303">Flutt inn úr Firefox</translation>
+<translation id="5505264765875738116">Vefsvæði geta ekki óskað eftir því að senda tilkynningar</translation>
 <translation id="5505307013568720083">Ekkert blek</translation>
 <translation id="5507756662695126555">Engin höfnun</translation>
 <translation id="5509693895992845810">Vist&amp;a sem...</translation>
@@ -3677,6 +3679,7 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="6267547857941397424">Netkerfi <ph name="NETWORK_INDEX" /> af <ph name="NETWORK_COUNT" />, <ph name="PHONE_NAME" />, <ph name="SIGNAL_STRENGTH" />% sendistyrkur, <ph name="BATTERY_STATUS" />% hleðsla á rafhlöðu símans, tengjast</translation>
 <translation id="6268252012308737255">Opna með <ph name="APP" /></translation>
 <translation id="6268718011101775129">NFC</translation>
+<translation id="6270391203985052864">Vefsvæði geta óskað eftir því að senda tilkynningar</translation>
 <translation id="6270770586500173387">Senda <ph name="BEGIN_LINK1" />kerfis- og forritsupplýsingar<ph name="END_LINK1" /> og <ph name="BEGIN_LINK2" />mælingar<ph name="END_LINK2" /></translation>
 <translation id="6272643420381259437">Villa kom upp (<ph name="ERROR" />) við að sækja viðbótina</translation>
 <translation id="6273677812470008672">Gæði</translation>
@@ -3867,6 +3870,7 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="6555810572223193255">Hreinsun er ekki tiltæk eins og er</translation>
 <translation id="6556866813142980365">Endurgera</translation>
 <translation id="6557290421156335491">Flýtileiðirnar mínar</translation>
+<translation id="6561560012278703671">Nota hljóðlátari skilaboð (útilokar truflun af tilkynningum)</translation>
 <translation id="6561726789132298588">enter</translation>
 <translation id="656293578423618167">Slóð eða heiti skráarinnar er of langt. Vistaðu undir styttra heiti eða á öðrum stað.</translation>
 <translation id="6563469144985748109">Umsjónarmaðurinn hefur enn ekki samþykkt þetta</translation>

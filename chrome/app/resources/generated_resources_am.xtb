@@ -1024,6 +1024,7 @@
 <translation id="2445484935443597917">አዲስ መገለጫ ፍጠር</translation>
 <translation id="2446585455334014596"><ph name="APP_NAME" /> የእርስዎን ማንነት ማረጋገጥ ይፈልጋል</translation>
 <translation id="2448312741937722512">አይነት</translation>
+<translation id="2448734521821581858">ኩኪዎች እርስዎ በሚጎበኙዋቸው የድርጣቢያዎች የሚፈጠሩ ፋይሎች ናቸው። ሁለት ዓይነት ኩኪዎች አሉ፦ የመጀመሪያ ወገን ኩኪዎች እርስዎ በሚጎበኙት ጣቢያ የሚፈጠሩ ናቸው። ይህ ጣቢያ በአድራሻ አሞሌው ላይ ይታያል። የሦስተኛ ወገን ኩኪዎች በሌሎች ጣቢያዎች የሚፈጠሩ ናቸው። እነዚህ ጣቢያዎች እንደ ማስታወቂያዎች ወይም ምስሎች የመሳሰሉ እርስዎ በሚጎበኙት ጣቢያ ላይ ያለ ይዘትን በባለቤትነት የያዙ ናቸው።</translation>
 <translation id="2450223707519584812">የGoogle ኤፒአይ ቁልፎች ስለጎደሉ ተጠቃሚዎችን ማከል አይችሉም። ለዝርዝሩ <ph name="DETAILS_URL" />ን ይመልከቱ።</translation>
 <translation id="2450849356604136918">ምንም ገቢር እይታዎች የሉም</translation>
 <translation id="2451298179137331965">2x</translation>
@@ -3124,6 +3125,7 @@
 <translation id="5496587651328244253">አደራጅ</translation>
 <translation id="5499313591153584299">ይህ ፋይል ለኮምፒዩተርዎ ጎጂ ሊሆን ይችላል።</translation>
 <translation id="5502500733115278303">ከFirefox የመጣ</translation>
+<translation id="5505264765875738116">ጣቢያዎች ማሳወቂያዎችን ለመላክ መጠየቅ አይችሉም</translation>
 <translation id="5505307013568720083">ቀለም ጨርሷል</translation>
 <translation id="5507756662695126555">ክህደት የሌለበት</translation>
 <translation id="5509693895992845810">አስቀምጥ &amp;እንደ…</translation>
@@ -3674,6 +3676,7 @@
 <translation id="6267547857941397424">አውታረ መረብ <ph name="NETWORK_INDEX" /> ከ<ph name="NETWORK_COUNT" />፣ <ph name="PHONE_NAME" />፣ የሲግናል ጥንካሬ <ph name="SIGNAL_STRENGTH" />%፣ የስልክ ባትሪ <ph name="BATTERY_STATUS" />%፣ አገናኝ</translation>
 <translation id="6268252012308737255">በ<ph name="APP" /> ክፈት</translation>
 <translation id="6268718011101775129">NFC</translation>
+<translation id="6270391203985052864">ጣቢያዎች ማሳወቂያዎችን ለመላክ መጠየቅ ይችላሉ</translation>
 <translation id="6270770586500173387"><ph name="BEGIN_LINK1" />የስርዓት እና መተግበሪያ መረጃ<ph name="END_LINK1" />፣ እና <ph name="BEGIN_LINK2" />መለኪያዎች<ph name="END_LINK2" />ን ላክ</translation>
 <translation id="6272643420381259437">ተሰኪውን በማውረድ ላይ ሳለ ስህተት (<ph name="ERROR" />) ነበር</translation>
 <translation id="6273677812470008672">ጥራት</translation>
@@ -3864,6 +3867,7 @@
 <translation id="6555810572223193255">ማጽዳት በአሁኑ ጊዜ አይገኝም</translation>
 <translation id="6556866813142980365">ድገም</translation>
 <translation id="6557290421156335491">የእኔ አቋራጮች</translation>
+<translation id="6561560012278703671">ይበልጥ ጸጥ ያለ መልዕክት አላላክ ይጠቀሙ (ማሳወቂያ ጥያቄዎች እርስዎን እንዳያቋርጡ ያግዳል)</translation>
 <translation id="6561726789132298588">ያስገቡ</translation>
 <translation id="656293578423618167">የፋይል ዱካው ወይም ስሙ በጣም ረጅም ነው። እባክዎ ባጠረ ስም ወይም ሌላ ቦታ ላይ ያስቀምጡ።</translation>
 <translation id="6563469144985748109">የእርስዎ አስተዳዳሪ ገና አላጸደቁትም</translation>

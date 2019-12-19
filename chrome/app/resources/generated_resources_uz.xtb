@@ -1023,6 +1023,7 @@ Oʻz qurilmangizda Family Link ilovasini oʻrnatib, bu hisob sozlamalarini boshq
 <translation id="2445484935443597917">Yangi profil yaratish</translation>
 <translation id="2446585455334014596"><ph name="APP_NAME" /> kimligingizni tekshirmoqchi</translation>
 <translation id="2448312741937722512">Turi</translation>
+<translation id="2448734521821581858">Cookielar saytlarga tashrif buyurilganda yaratiladigan fayllardir. Cookie fayllar ikki xil boʻladi: Ichkilari saytlarga kirganingizda yaratiladi. Saytlar manzillar qatorida chiqadi. Tashqi cookie fayllar boshqa saytlar tomonidan yaratiladi. Bunday saytlarga ochilgan sahifadagi kontent, reklama yoki rasmlar tegishli boʻlishi mumkin.</translation>
 <translation id="2450223707519584812">Foydalanuvchilarni qo‘sha olmaysiz, chunki Google API kalitlari yo‘q. Batafsil axborot uchun <ph name="DETAILS_URL" /> saytiga tashrif buyuring.</translation>
 <translation id="2450849356604136918">hech qanday faol ko‘rinish yo‘q</translation>
 <translation id="2451298179137331965">2x</translation>
@@ -3125,6 +3126,7 @@ Oʻz qurilmangizda Family Link ilovasini oʻrnatib, bu hisob sozlamalarini boshq
 <translation id="5496587651328244253">Boshqarish</translation>
 <translation id="5499313591153584299">Bu fayl kompyuteringiz uchun zararli bo‘lishi mumkin.</translation>
 <translation id="5502500733115278303">Firefox brauzeridan import qilinganlar</translation>
+<translation id="5505264765875738116">Saytlar bildirgi chiqarishga ruxsat soʻray olmaydi</translation>
 <translation id="5505307013568720083">Siyoh tugagan</translation>
 <translation id="5507756662695126555">Doim tasdiqlanishi</translation>
 <translation id="5509693895992845810">&amp;Saqlab olish...</translation>
@@ -3675,6 +3677,7 @@ Ochiq eksponenta (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bit):
 <translation id="6267547857941397424">Tarmoq: <ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" />, Telefon nomi: <ph name="PHONE_NAME" />, Signal darajasi: <ph name="SIGNAL_STRENGTH" />%, Telefon quvvati: <ph name="BATTERY_STATUS" />%, Ulanish</translation>
 <translation id="6268252012308737255"><ph name="APP" /> orqali ochish</translation>
 <translation id="6268718011101775129">NFC</translation>
+<translation id="6270391203985052864">Saytlar bildirgi chiqarishga ruxsat soʻray oladi</translation>
 <translation id="6270770586500173387"><ph name="BEGIN_LINK1" />Tizim, ilovalar<ph name="END_LINK1" /> va <ph name="BEGIN_LINK2" />statistika<ph name="END_LINK2" /> haqidagi axborotni yuborish</translation>
 <translation id="6272643420381259437">Plaginni yuklab olishda xatolik (<ph name="ERROR" />) yuz berdi</translation>
 <translation id="6273677812470008672">Sifat</translation>
@@ -3865,6 +3868,7 @@ Ochiq eksponenta (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bit):
 <translation id="6555810572223193255">Tozalash vositasi vaqtincha ish faoliyatida emas</translation>
 <translation id="6556866813142980365">Qaytarish</translation>
 <translation id="6557290421156335491">Yorliqlarim</translation>
+<translation id="6561560012278703671">Xabarlar tinchroq kelsin (bezovta qiluvchi bildirgilar bloklanadi)</translation>
 <translation id="6561726789132298588">enter</translation>
 <translation id="656293578423618167">Fayl nomi yoki joylashuvi juda uzun. Boshqa nom yoki jild tanlang.</translation>
 <translation id="6563469144985748109">Administrator tomonidan hali tasdiqlanmagan</translation>

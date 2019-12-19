@@ -1022,6 +1022,7 @@
 <translation id="2445484935443597917">Направи нов профил</translation>
 <translation id="2446585455334014596"><ph name="APP_NAME" /> жели да потврди ваш идентитет</translation>
 <translation id="2448312741937722512">Тип</translation>
+<translation id="2448734521821581858">Колачићи су датотеке које праве веб-сајтови које посећујете. Постоје два типа колачића: Колачиће прве стране прави сајт који посећујете. Сајт је приказан у траци за адресу. Колачиће треће стране праве други сајтови. Ти сајтови су власници делова садржаја који видите на посећеном веб-сајту, попут огласа или слика.</translation>
 <translation id="2450223707519584812">Нећете моћи да додајете кориснике зато што недостају шифре за Google API. Потражите детаље на <ph name="DETAILS_URL" />.</translation>
 <translation id="2450849356604136918">Нема активних приказа</translation>
 <translation id="2451298179137331965">2x</translation>
@@ -1288,7 +1289,7 @@
 <translation id="2800760947029405028">Отпреми слику</translation>
 <translation id="2803375539583399270">Унесите PIN</translation>
 <translation id="2804043232879091219">Нисмо успели да отворимо алтернативни прегледач</translation>
-<translation id="2804667941345577550">Одјавићете се са овог сајта, укључујући и оне на отвореним картицама</translation>
+<translation id="2804667941345577550">Одјавићете се са овог сајта, укључујући и инстанце на отвореним картицама</translation>
 <translation id="2804680522274557040">Дозвола за камеру је искључена</translation>
 <translation id="2805646850212350655">Microsoft систем за шифровање датотека</translation>
 <translation id="2805756323405976993">Апликације</translation>
@@ -3124,6 +3125,7 @@
 <translation id="5496587651328244253">Организовање</translation>
 <translation id="5499313591153584299">Ова датотека може бити штетна по рачунар.</translation>
 <translation id="5502500733115278303">Увезено из Firefox прегледача</translation>
+<translation id="5505264765875738116">Сајтови не могу да траже да шаљу обавештења</translation>
 <translation id="5505307013568720083">Нема мастила</translation>
 <translation id="5507756662695126555">Немогућност порицања</translation>
 <translation id="5509693895992845810">Сачувај &amp;као...</translation>
@@ -3262,7 +3264,7 @@
 <translation id="5687326903064479980">Временска зона</translation>
 <translation id="5689516760719285838">Локација</translation>
 <translation id="56907980372820799">Повежи податке</translation>
-<translation id="5691180005790455277">Бришу се сви подаци и колачићи које чувају <ph name="SITE_GROUP_NAME" /> и сви сајтови у оквиру те групе.</translation>
+<translation id="5691180005790455277">Бришу се сви подаци и колачићи које чува <ph name="SITE_GROUP_NAME" /> и сви сајтови у оквиру те групе.</translation>
 <translation id="5691511426247308406">Породица</translation>
 <translation id="5692183275898619210">Штампање је завршено</translation>
 <translation id="5696143504434933566">Пријави злоупотребу од „<ph name="EXTENSION_NAME" />“</translation>
@@ -3676,6 +3678,7 @@
 <translation id="6267547857941397424"><ph name="NETWORK_INDEX" />. мрежа од <ph name="NETWORK_COUNT" />, <ph name="PHONE_NAME" />, јачина сигнала <ph name="SIGNAL_STRENGTH" />%, батерија телефона <ph name="BATTERY_STATUS" />%, повежи</translation>
 <translation id="6268252012308737255">Отвори помоћу апликације <ph name="APP" /></translation>
 <translation id="6268718011101775129">NFC</translation>
+<translation id="6270391203985052864">Сајтови могу да траже да шаљу обавештења</translation>
 <translation id="6270770586500173387">Шаљи <ph name="BEGIN_LINK1" />информације о систему и апликацијама<ph name="END_LINK1" /> и <ph name="BEGIN_LINK2" />показатеље<ph name="END_LINK2" /></translation>
 <translation id="6272643420381259437">Дошло је до грешке (<ph name="ERROR" />) при преузимању додатне компоненте</translation>
 <translation id="6273677812470008672">Квалитет</translation>
@@ -3866,6 +3869,7 @@
 <translation id="6555810572223193255">Чишћење је тренутно недоступно</translation>
 <translation id="6556866813142980365">Понови</translation>
 <translation id="6557290421156335491">Моје пречице</translation>
+<translation id="6561560012278703671">Користите ненаметљиву размену порука (спречава упите са обавештењима да вас ометају)</translation>
 <translation id="6561726789132298588">enter</translation>
 <translation id="656293578423618167">Путања или назив датотеке су предугачки. Сачувајте са краћим називом или на другој локацији.</translation>
 <translation id="6563469144985748109">Менаџер га још увек није одобрио</translation>

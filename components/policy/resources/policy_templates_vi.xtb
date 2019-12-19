@@ -2463,6 +2463,11 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Nếu bạn đã tắt hoặc chưa đặt chính sách này, các trang web sẽ không được phép chuyển tới và mở cửa sổ/tab mới cùng một lúc.</translation>
 <translation id="4680961954980851756">Bật Tự động điền</translation>
 <translation id="4693779768620889402">Đích dựa trên tiện ích</translation>
+<translation id="4699592681017489215">Chính sách này định cấu hình một nút chuyển cục bộ có thể dùng để tắt các tùy chọn kiểm tra chặn hệ thống tên miền (DNS). Các tùy chọn kiểm tra dùng để khám phá xem trình duyệt có ở sau một proxy chuyển hướng các tên máy chủ không xác định không.
+
+      Tính năng phát hiện này có thể không cần thiết trong môi trường doanh nghiệp có cấu hình mạng xác định, do tạo ra một số lưu lượng truy cập HTTP và DNS khi khởi động cũng như mỗi khi thay đổi cấu hình DNS.
+
+      Khi bạn không đặt chính sách này hoặc đặt chính sách thành bật, các tùy chọn kiểm tra chặn DNS sẽ được áp dụng. Khi bạn tắt hoàn toàn chính sách này, các tùy chọn kiểm tra nói trên sẽ không được áp dụng.</translation>
 <translation id="4703402283970867140">Bật mô hình giảm độ sáng thông minh để kéo dài thời gian cho đến khi màn hình tối đi</translation>
 <translation id="4722122254122249791">Bật chính sách Cô lập trang web cho các nguồn gốc đã xác định</translation>
 <translation id="4722399051042571387">Nếu đặt thành false, người dùng sẽ không thể đặt các mã PIN yếu và dễ đoán.
@@ -3809,6 +3814,7 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
       Xem https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables để biết danh sách các biến có thể được sử dụng.
 
       Nếu chính sách này không được đặt thì đường dẫn hồ sơ mặc định sẽ được sử dụng và người dùng có thể ghi đè bằng cờ dòng lệnh '--user-data-dir'.</translation>
+<translation id="7008308728445338159">Đã bật các tùy chọn kiểm tra chặn hệ thống tên miền (DNS)</translation>
 <translation id="7027785306666625591">Định cấu hình việc quản lý nguồn trong <ph name="PRODUCT_OS_NAME" />.
 
       Những chính sách này cho phép bạn định cấu hình cách <ph name="PRODUCT_OS_NAME" /> hoạt động khi người dùng duy trì chế độ rảnh trong một khoảng thời gian.</translation>

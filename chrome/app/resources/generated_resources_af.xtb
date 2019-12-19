@@ -1025,6 +1025,7 @@ Jy kan hierdie rekening se instellings bestuur deur die Family Link-program op j
 <translation id="2445484935443597917">Skep 'n nuwe profiel</translation>
 <translation id="2446585455334014596"><ph name="APP_NAME" /> wil jou identiteit verifieer</translation>
 <translation id="2448312741937722512">Soort</translation>
+<translation id="2448734521821581858">Webkoekies is lêers wat geskep word deur webwerwe wat jy besoek. Daar is twee soorte webkoekies: Eersteparty-webkoekies word geskep deur die werf wat jy besoek. Die werf word in die adresbalk gewys. Derdeparty-webkoekies word deur ander webwerwe geskep. Hierdie werwe besit van die inhoud, soos advertensies of prente, wat jy sien op die webwerf wat jy besoek.</translation>
 <translation id="2450223707519584812">Jy sal nie gebruikers kan byvoeg nie omdat Google-API-sleutels ontbreek. Sien <ph name="DETAILS_URL" /> vir besonderhede.</translation>
 <translation id="2450849356604136918">Geen aktiewe aansigte nie</translation>
 <translation id="2451298179137331965">2x</translation>
@@ -3127,6 +3128,7 @@ Jy kan hierdie rekening se instellings bestuur deur die Family Link-program op j
 <translation id="5496587651328244253">Rangskik</translation>
 <translation id="5499313591153584299">Hierdie lêer kan skadelik vir jou rekenaar wees.</translation>
 <translation id="5502500733115278303">Van Firefox af ingevoer</translation>
+<translation id="5505264765875738116">Werwe kan nie vra om kennisgewings te stuur nie</translation>
 <translation id="5505307013568720083">Ink is op</translation>
 <translation id="5507756662695126555">Nie-verwerping</translation>
 <translation id="5509693895992845810">Stoor as …</translation>
@@ -3678,6 +3680,7 @@ Maak seker jy wys nie enige sensitiewe inligting nie.</translation>
 <translation id="6267547857941397424">Netwerk <ph name="NETWORK_INDEX" /> van <ph name="NETWORK_COUNT" />, <ph name="PHONE_NAME" />, seinsterkte <ph name="SIGNAL_STRENGTH" />%, foonbattery <ph name="BATTERY_STATUS" />%, koppel</translation>
 <translation id="6268252012308737255">Maak met <ph name="APP" /> oop</translation>
 <translation id="6268718011101775129">NFC</translation>
+<translation id="6270391203985052864">Werwe kan vra om kennisgewings te stuur</translation>
 <translation id="6270770586500173387">Stuur <ph name="BEGIN_LINK1" />stelsel- en programinligting<ph name="END_LINK1" /> en <ph name="BEGIN_LINK2" />maatstawwe<ph name="END_LINK2" /></translation>
 <translation id="6272643420381259437">Kon nie die inprop aflaai nie (<ph name="ERROR" />)</translation>
 <translation id="6273677812470008672">Gehalte</translation>
@@ -3868,6 +3871,7 @@ Maak seker jy wys nie enige sensitiewe inligting nie.</translation>
 <translation id="6555810572223193255">Kan nie tans skoonmaak nie</translation>
 <translation id="6556866813142980365">Herdoen</translation>
 <translation id="6557290421156335491">My kortpaaie</translation>
+<translation id="6561560012278703671">Gebruik stiller boodskappe (keer dat kennisgewingporboodskappe jou onderbreek)</translation>
 <translation id="6561726789132298588">voer in</translation>
 <translation id="656293578423618167">Die lêerpad of -naam is te lank. Stoor asseblief met 'n korter naam of na 'n ander ligging.</translation>
 <translation id="6563469144985748109">Jou bestuurder het dit nog nie goedgekeur nie</translation>

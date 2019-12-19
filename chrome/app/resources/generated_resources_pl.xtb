@@ -1025,6 +1025,7 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="2445484935443597917">Utwórz nowy profil</translation>
 <translation id="2446585455334014596">Aplikacja <ph name="APP_NAME" /> chce zweryfikować Twoją tożsamość</translation>
 <translation id="2448312741937722512">Typ</translation>
+<translation id="2448734521821581858">Pliki cookie są tworzone przez odwiedzane strony. Są dwa typy plików cookie: własne są zapisywane przez odwiedzoną stronę. Jej adres znajdziesz w pasku adresu. Pliki cookie innych firm są tworzone przez inne strony. Na stronach tych znajdują się niektóre treści, np. reklamy i obrazy, które wyświetlają się na odwiedzanej stronie.</translation>
 <translation id="2450223707519584812">Nie będzie można dodawać użytkowników, ponieważ brakuje kluczy Google API. Więcej szczegółów znajdziesz na <ph name="DETAILS_URL" />.</translation>
 <translation id="2450849356604136918">Brak aktywnych widoków</translation>
 <translation id="2451298179137331965">2x</translation>
@@ -3127,6 +3128,7 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="5496587651328244253">Organizuj</translation>
 <translation id="5499313591153584299">Ten plik może wyrządzić szkody na Twoim komputerze.</translation>
 <translation id="5502500733115278303">Zaimportowane z Firefoxa</translation>
+<translation id="5505264765875738116">Strony nie mogą prosić o zgodę na wysyłanie powiadomień</translation>
 <translation id="5505307013568720083">Brak tuszu</translation>
 <translation id="5507756662695126555">Niezaprzeczalność</translation>
 <translation id="5509693895992845810">Zapisz &amp;jako...</translation>
@@ -3677,6 +3679,7 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="6267547857941397424">Sieć <ph name="NETWORK_INDEX" /> z <ph name="NETWORK_COUNT" />, <ph name="PHONE_NAME" />, siła sygnału: <ph name="SIGNAL_STRENGTH" />%, bateria telefonu: <ph name="BATTERY_STATUS" />%, połącz</translation>
 <translation id="6268252012308737255">Otwórz w <ph name="APP" /></translation>
 <translation id="6268718011101775129">NFC</translation>
+<translation id="6270391203985052864">Strony mogą prosić o zgodę na wysyłanie powiadomień</translation>
 <translation id="6270770586500173387">Wysyłaj <ph name="BEGIN_LINK1" />informacje o systemie i aplikacjach<ph name="END_LINK1" /> oraz <ph name="BEGIN_LINK2" />dane<ph name="END_LINK2" /></translation>
 <translation id="6272643420381259437">Podczas pobierania wtyczki wystąpił błąd (<ph name="ERROR" />)</translation>
 <translation id="6273677812470008672">Jakość</translation>
@@ -3867,6 +3870,7 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="6555810572223193255">Czyszczenie jest obecnie niedostępne</translation>
 <translation id="6556866813142980365">Ponów</translation>
 <translation id="6557290421156335491">Moje skróty</translation>
+<translation id="6561560012278703671">Pokazuj wiadomości dyskretnie (blokuje powiadomienia, by Ci nie przeszkadzały)</translation>
 <translation id="6561726789132298588">wpisz</translation>
 <translation id="656293578423618167">Ścieżka do pliku lub jego nazwa jest zbyt długa. Zapisz pod krótszą nazwą lub w innej lokalizacji.</translation>
 <translation id="6563469144985748109">Twój menedżer jeszcze na to nie zezwolił</translation>

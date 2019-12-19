@@ -559,6 +559,8 @@
 <translation id="177336675152937177">होस्ट किया गया ऐप्लिकेशन डेटा</translation>
 <translation id="1776712937009046120">उपयोगकर्ता जोड़ें</translation>
 <translation id="1776883657531386793"><ph name="OID" />: <ph name="INFO" /></translation>
+<translation id="1777310661937894236"><ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> इस डिवाइस को प्रबंधित करता है.
+    कृपया अपने <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> खाते में साइन इन जारी रखने के लिए "आगे बढ़ें" पर क्लिक करें.</translation>
 <translation id="1779652936965200207">कृपया यह पासकुंजी "<ph name="DEVICE_NAME" />" पर दर्ज करें:</translation>
 <translation id="1780152987505130652">ग्रुप बंद करें</translation>
 <translation id="1781291988450150470">मौजूदा पिन</translation>
@@ -746,6 +748,7 @@
 <translation id="2048653237708779538">कार्रवाई उपलब्ध नहीं है</translation>
 <translation id="2050339315714019657">पोर्ट्रेट</translation>
 <translation id="2053312383184521053">निष्क्रिय स्थिति डेटा</translation>
+<translation id="2055585478631012616">आपको इन साइटों और खुले हुए टैब से साइन आउट कर दिया जाएगा</translation>
 <translation id="205560151218727633">Google Assistant लोगो</translation>
 <translation id="2058456167109518507">डिवाइस की पहचान हुई</translation>
 <translation id="2059913712424898428">समय क्षेत्र</translation>
@@ -1288,6 +1291,7 @@
 <translation id="2800760947029405028">एक इमेज अपलोड करें</translation>
 <translation id="2803375539583399270">पिन डालें</translation>
 <translation id="2804043232879091219">वैकल्पिक ब्राउज़र नहीं खोला जा सका</translation>
+<translation id="2804667941345577550">आपको इस साइट और खुले हुए टैब से साइन आउट कर दिया जाएगा</translation>
 <translation id="2804680522274557040">कैमरा बंद किया गया</translation>
 <translation id="2805646850212350655">Microsoft Encrypting File System</translation>
 <translation id="2805756323405976993">ऐप्स</translation>
@@ -2192,6 +2196,7 @@
 <translation id="407520071244661467">स्केल</translation>
 <translation id="4075639477629295004"><ph name="FILE_NAME" /> कास्ट नहीं हो पा रहा है.</translation>
 <translation id="4077917118009885966">इस साइट पर विज्ञापन ब्लॉक हैं</translation>
+<translation id="4077919383365622693"><ph name="SITE" /> ने जो भी डेटा और कुकी सेव की है उसे मिटा दिया जाएगा.</translation>
 <translation id="4079140982534148664">'बेहतर वर्तनी जाँच' का इस्तेमाल करें</translation>
 <translation id="4081242589061676262">फ़ाइल को कास्ट नहीं किया जा सका.</translation>
 <translation id="4084682180776658562">बुकमार्क</translation>
@@ -2566,6 +2571,7 @@
 <translation id="4665446389743427678"><ph name="SITE" /> ने जो भी डेटा सेव किया है उसे मिटा दिया जाएगा.</translation>
 <translation id="4668721319092543482"><ph name="PLUGIN_NAME" /> को चालू करने के लिए क्लिक करें</translation>
 <translation id="4672657274720418656">शुद्ध पेज</translation>
+<translation id="46733273239502219">इंस्टॉल किए गए ऐप्लिकेशन में मौजूद ऑफ़लाइन डेटा को भी मिटा दिया जाएगा</translation>
 <translation id="4673442866648850031">स्टाइलस निकाले जाने पर स्टाइलस टूल खोलें</translation>
 <translation id="4677585247300749148"><ph name="URL" /> सुलभता इवेंट का जवाब देना चाहता है</translation>
 <translation id="4677772697204437347">GPU मेमोरी</translation>
@@ -2698,6 +2704,7 @@
 <translation id="4876273079589074638">इस क्रैश की जाँच-पड़ताल करने और इसे ठीक करने में हमारे इंजीनियरों की सहायता करें. अगर हो सके तो सटीक चरणों की सूची बनाएं. कोई भी विवरण छोटा नहीं है!</translation>
 <translation id="4876895919560854374">स्क्रीन लॉक करना और अनलॉक करना</translation>
 <translation id="4877276003880815204">एलिमेंट जाँचें</translation>
+<translation id="4878653975845355462">आपके एडमिन ने बैकग्राउंड को पसंद के मुताबिक बनाने की सुविधा बंद कर दी है</translation>
 <translation id="4879491255372875719">अपने आप (डिफ़ॉल्ट)</translation>
 <translation id="4880328057631981605">एक्सेस पॉइंट नाम</translation>
 <translation id="4880827082731008257">खोज इतिहास</translation>
@@ -3256,6 +3263,7 @@
 <translation id="5687326903064479980">समय क्षेत्र</translation>
 <translation id="5689516760719285838">स्थान</translation>
 <translation id="56907980372820799">डेटा लिंक करें</translation>
+<translation id="5691180005790455277"><ph name="SITE_GROUP_NAME" /> ने जो भी डेटा और कुकी सेव की है उसे मिटा दिया जाएगा. इसमें इसके तहत आने वाली सभी साइटें भी शामिल हैं.</translation>
 <translation id="5691511426247308406">परिवार</translation>
 <translation id="5692183275898619210">प्रिंट हो गया</translation>
 <translation id="5696143504434933566">"<ph name="EXTENSION_NAME" />" से दुर्व्यवहार की रिपोर्ट करें</translation>
@@ -3883,6 +3891,7 @@
 <translation id="6602956230557165253">नेविगेट करने के लिए बाईं और दाईं 'तीर का निशान' वाली कुंजियों का इस्तेमाल करें.</translation>
 <translation id="6605847144724004692">किसी भी उपयोगकर्ता ने अभी तक रेट नहीं किया है.</translation>
 <translation id="6607831829715835317">ज़्यादा टू&amp;ल</translation>
+<translation id="6611972847767394631">अपने टैब यहां देखें</translation>
 <translation id="6612358246767739896">सुरक्षित सामग्री</translation>
 <translation id="6615455863669487791">मुझे दिखाएं</translation>
 <translation id="6618097958368085618">फिर भी रखें</translation>
@@ -5703,6 +5712,7 @@
 <translation id="9188732951356337132">इस्तेमाल और निदान से जुड़ा डेटा भेजें. यह डिवाइस फ़िलहाल Google को निदान, डिवाइस, और ऐप्लिकेशन के इस्तेमाल से जुड़ा डेटा अपने आप भेज रहा है. इसका इस्तेमाल आपके बच्चे की पहचान करने के लिए नहीं किया जाएगा. यह सिस्टम और ऐप्लिकेशन की स्थिरता और दूसरे सुधारों में मदद करेगा. कुछ एग्रीगेट डेटा Google ऐप्लिकेशन और पार्टनर, जैसे कि Android डेवलपरों की भी मदद करेगा. अगर आपके बच्चे के लिए दूसरी 'वेब और ऐप्लिकेशन गतिविधि' सेटिंग चालू है, तो यह डेटा उसके Google खाते में सेव किया जा सकता है. <ph name="BEGIN_LINK2" />ज़्यादा जानें<ph name="END_LINK2" /></translation>
 <translation id="9190063653747922532">L2TP/IPsec + पूर्व-शेयर कुंजी</translation>
 <translation id="920045321358709304"><ph name="SEARCH_ENGINE" /> खोजें</translation>
+<translation id="9201023452444595544">ऑफ़लाइन डेटा को मिटा दिया जाएगा</translation>
 <translation id="9201220332032049474">स्क्रीन लॉक विकल्प</translation>
 <translation id="9203398526606335860">&amp;प्रोफ़ाइलिंग सक्षम</translation>
 <translation id="9203904171912129171">डिवाइस चुनें</translation>
@@ -5715,6 +5725,7 @@
 <translation id="9220525904950070496">खाता हटाएं</translation>
 <translation id="9220820413868316583">उंगली उठाएं और फिर से कोशिश करें.</translation>
 <translation id="923467487918828349">सभी दिखाएं</translation>
+<translation id="929117907539171075">इंस्टॉल किए गए ऐप्लिकेशन में मौजूद ऑफ़लाइन डेटा को भी मिटा दिया जाएगा</translation>
 <translation id="930268624053534560">विवरणों के साथ टाइमस्टैम्प</translation>
 <translation id="932327136139879170">होम बटन</translation>
 <translation id="932508678520956232">प्रिंटिंग आरंभ नहीं कर सका.</translation>

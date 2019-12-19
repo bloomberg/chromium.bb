@@ -604,6 +604,7 @@
 <translation id="5487521232677179737">ውሂብን አጽዳ</translation>
 <translation id="5494752089476963479">ረባሽ ወይም አሳሳች ማስታወቂያዎችን ከሚያሳዩ ጣቢያዎች የሚመጡ ማስታወቂያዎችን አግድ</translation>
 <translation id="5500777121964041360">በአካባቢዎ ውስጥ ላይገኝ ይችላል</translation>
+<translation id="5505264765875738116">ጣቢያዎች ማሳወቂያዎችን ለመላክ መጠየቅ አይችሉም</translation>
 <translation id="5512137114520586844">ይህ መለያ የሚቀናበረው በ<ph name="PARENT_NAME" /> ነው።</translation>
 <translation id="5514904542973294328">በዚህ መሣሪያ አስተዳዳሪ ተሰናክሏል</translation>
 <translation id="5515439363601853141">የይለፍ ቃልዎን ለመመልከት ይክፈቱ</translation>
@@ -710,6 +711,7 @@
 ለምሳሌ፣ አንዳንድ ድር ጣቢያዎች ሌሎች በጎበኟቸው ድር ጣቢያዎች ላይ ያልተመሠረቱ ማስታወቂያዎችን በማሳየት ለዚህ ጥያቄ ምላሽ ሊሰጡ ይችላሉ። ብዙ ድር ጣቢያዎች አሁንም የአሰሳ ውሂብዎን ይሰበስቡና ይጠቀሙበታል — ለምሳሌ ደህንነትን ለማሻሻል፤ ይዘት፣ ማስታወቂያዎችና ምክሮች በድር ጣቢያዎች ላይ ለማቅረብ፤ እና የሪፖርት አደራረግ ስታቲስቲክስን ለማመንጨት።</translation>
 <translation id="624789221780392884">ማዘመኛ ዝግጁ ነው</translation>
 <translation id="6255999984061454636">የይዘት አስተያየት ጥቆማዎች</translation>
+<translation id="6270391203985052864">ጣቢያዎች ማሳወቂያዎችን ለመላክ መጠየቅ ይችላሉ</translation>
 <translation id="6277522088822131679">ገጹን ማተም ላይ ችግር ነበር። እባክዎ እንደገና ይሞክሩ።</translation>
 <translation id="6295158916970320988">ሁሉም ጣቢያዎች</translation>
 <translation id="629730747756840877">መለያ</translation>
@@ -754,6 +756,7 @@
 <translation id="6545864417968258051">የብሉቱዝ ቅኝት</translation>
 <translation id="6560414384669816528">ከSogou ጋር ይፈልጉ</translation>
 <translation id="656065428026159829">ተጨማሪ ይመልከቱ</translation>
+<translation id="6561560012278703671">ይበልጥ ጸጥ ያለ መልዕክት አላላክ ይጠቀሙ (ማሳወቂያ ጥያቄዎች እርስዎን እንዳያቋርጡ ያግዳል)</translation>
 <translation id="6566259936974865419">Chrome <ph name="GIGABYTES" /> ጊባ ቆጥቦልዎታል</translation>
 <translation id="6573096386450695060">ሁልጊዜ ፍቀድ</translation>
 <translation id="6573431926118603307">በሌሎች መሣሪያዎችዎ ላይ ባለ Chrome ላይ የከፈቷቸው ትሮች እዚህ ይመጣሉ።</translation>

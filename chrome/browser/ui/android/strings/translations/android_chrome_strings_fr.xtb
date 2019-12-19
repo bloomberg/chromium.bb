@@ -604,6 +604,7 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="5487521232677179737">Effacer les données</translation>
 <translation id="5494752089476963479">Bloquer les annonces sur les sites qui affichent des annonces intrusives ou trompeuses</translation>
 <translation id="5500777121964041360">Cette fonctionnalité n'est peut-être pas disponible dans votre pays</translation>
+<translation id="5505264765875738116">Les sites ne peuvent pas vous demander l'autorisation d'envoyer des notifications</translation>
 <translation id="5512137114520586844">Ce compte est géré par <ph name="PARENT_NAME" />.</translation>
 <translation id="5514904542973294328">Désactivé par l'administrateur de cet appareil</translation>
 <translation id="5515439363601853141">Déverrouillez pour afficher votre mot de passe</translation>
@@ -710,6 +711,7 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 Par exemple, certains sites Web peuvent répondre à cette demande en diffusant des annonces qui ne sont pas déterminées en fonction des autres sites Web que vous avez consultés. Toutefois, nombre d'entre eux recueillent et utilisent vos données de navigation afin, par exemple, d'améliorer la sécurité ou d'afficher du contenu, des services, des annonces et des recommandations, ou encore pour générer des rapports statistiques.</translation>
 <translation id="624789221780392884">Mise à jour prête</translation>
 <translation id="6255999984061454636">Recommandations de contenus</translation>
+<translation id="6270391203985052864">Les sites peuvent vous demander l'autorisation d'envoyer des notifications</translation>
 <translation id="6277522088822131679">Un problème est survenu lors de l'impression de la page. Veuillez réessayer.</translation>
 <translation id="6295158916970320988">Tous les sites</translation>
 <translation id="629730747756840877">Compte</translation>
@@ -754,6 +756,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="6545864417968258051">Recherche Bluetooth</translation>
 <translation id="6560414384669816528">Rechercher avec Sogou</translation>
 <translation id="656065428026159829">Voir plus</translation>
+<translation id="6561560012278703671">Activer l'affichage discret (permet d'empêcher les invites liées aux notifications de vous interrompre)</translation>
 <translation id="6566259936974865419">Chrome vous a permis de gagner <ph name="GIGABYTES" /> Go</translation>
 <translation id="6573096386450695060">Toujours autoriser</translation>
 <translation id="6573431926118603307">Les onglets que vous avez ouverts dans Chrome sur vos autres appareils s'affichent ici.</translation>

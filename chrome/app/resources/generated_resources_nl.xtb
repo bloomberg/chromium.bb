@@ -1025,6 +1025,7 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="2445484935443597917">Een nieuw profiel maken</translation>
 <translation id="2446585455334014596"><ph name="APP_NAME" /> wil je identiteit verifiëren</translation>
 <translation id="2448312741937722512">Type</translation>
+<translation id="2448734521821581858">Cookies zijn bestanden die worden gemaakt door websites die je bezoekt. Er zijn twee typen cookies: first party cookies worden gemaakt door de site die je bezoekt. De site wordt weergegeven in de adresbalk. Cookies van derden (third-party cookies) worden gemaakt door andere sites. Deze sites zijn eigenaar van een deel van de content (zoals advertenties of afbeeldingen) die je ziet op de website die je bezoekt.</translation>
 <translation id="2450223707519584812">Je kunt geen gebruikers toevoegen omdat Google API-sleutels ontbreken. Bekijk <ph name="DETAILS_URL" /> voor details.</translation>
 <translation id="2450849356604136918">Geen actieve weergaven</translation>
 <translation id="2451298179137331965">2x</translation>
@@ -3127,6 +3128,7 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="5496587651328244253">Organiseren</translation>
 <translation id="5499313591153584299">Dit bestand is mogelijk schadelijk voor je computer.</translation>
 <translation id="5502500733115278303">Geïmporteerd uit Firefox</translation>
+<translation id="5505264765875738116">Sites kunnen niet vragen of ze je meldingen mogen sturen</translation>
 <translation id="5505307013568720083">Inkt is op</translation>
 <translation id="5507756662695126555">Onweerlegbaarheid</translation>
 <translation id="5509693895992845810">Opslaan &amp;als...</translation>
@@ -3677,6 +3679,7 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="6267547857941397424">Netwerk <ph name="NETWORK_INDEX" /> van <ph name="NETWORK_COUNT" />, <ph name="PHONE_NAME" />, signaalsterkte <ph name="SIGNAL_STRENGTH" />%, telefoonbatterij <ph name="BATTERY_STATUS" />%, verbinden</translation>
 <translation id="6268252012308737255">Openen met <ph name="APP" /></translation>
 <translation id="6268718011101775129">NFC</translation>
+<translation id="6270391203985052864">Sites kunnen vragen of ze je meldingen mogen sturen</translation>
 <translation id="6270770586500173387"><ph name="BEGIN_LINK1" />Systeem- en app-gegevens<ph name="END_LINK1" /> en <ph name="BEGIN_LINK2" />statistieken<ph name="END_LINK2" /> verzenden</translation>
 <translation id="6272643420381259437">Er is een fout (<ph name="ERROR" />) opgetreden tijdens het downloaden van de plug-in.</translation>
 <translation id="6273677812470008672">Kwaliteit</translation>
@@ -3867,6 +3870,7 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="6555810572223193255">Opschonen is momenteel niet beschikbaar</translation>
 <translation id="6556866813142980365">Opnieuw</translation>
 <translation id="6557290421156335491">Mijn snelkoppelingen</translation>
+<translation id="6561560012278703671">Stillere meldingen gebruiken (zorgt ervoor dat je niet wordt gestoord door meldingprompts)</translation>
 <translation id="6561726789132298588">enter</translation>
 <translation id="656293578423618167">Het bestandspad of de bestandsnaam is te lang. Sla op met een kortere naam of op een andere locatie.</translation>
 <translation id="6563469144985748109">Je beheerder heeft dit nog niet goedgekeurd</translation>

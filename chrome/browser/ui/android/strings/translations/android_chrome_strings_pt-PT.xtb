@@ -604,6 +604,7 @@ Para alterar esta definição, <ph name="BEGIN_LINK" />reponha a sincronização
 <translation id="5487521232677179737">Limpar dados</translation>
 <translation id="5494752089476963479">Bloquear anúncios em sites que apresentam anúncios intrusivos ou enganadores</translation>
 <translation id="5500777121964041360">Pode não estar disponível na sua localização</translation>
+<translation id="5505264765875738116">Os sites não podem pedir para enviar notificações.</translation>
 <translation id="5512137114520586844">Esta conta é gerida por <ph name="PARENT_NAME" />.</translation>
 <translation id="5514904542973294328">Desativada pelo gestor do dispositivo</translation>
 <translation id="5515439363601853141">Desbloqueie para ver a palavra-passe.</translation>
@@ -710,6 +711,7 @@ Para alterar esta definição, <ph name="BEGIN_LINK" />reponha a sincronização
 Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios que não são baseados noutros Sites que tenha visitado. Ainda assim, muitos Sites continuam a recolher e a utilizar os seus dados de navegação para, por exemplo, melhorar a segurança, fornecer conteúdo, anúncios e recomendações, e gerar estatísticas de relatórios.</translation>
 <translation id="624789221780392884">Atualização pronta</translation>
 <translation id="6255999984061454636">Sugestões de conteúdo</translation>
+<translation id="6270391203985052864">Os sites podem pedir para enviar notificações.</translation>
 <translation id="6277522088822131679">Ocorreu um problema ao imprimir a página. Tente novamente.</translation>
 <translation id="6295158916970320988">Todos os sites</translation>
 <translation id="629730747756840877">Conta</translation>
@@ -754,6 +756,7 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="6545864417968258051">Procura de Bluetooth</translation>
 <translation id="6560414384669816528">Pesquisar com o Sogou</translation>
 <translation id="656065428026159829">Ver mais</translation>
+<translation id="6561560012278703671">Utilizar mensagens mais discretas (impede interrupções de pedidos de notificação)</translation>
 <translation id="6566259936974865419">O Chrome permitiu-lhe poupar <ph name="GIGABYTES" /> GB</translation>
 <translation id="6573096386450695060">Permitir sempre</translation>
 <translation id="6573431926118603307">Os separadores que abriu no Chrome nos seus outros dispositivos são apresentados aqui.</translation>

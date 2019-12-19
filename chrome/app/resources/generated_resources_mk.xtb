@@ -1025,6 +1025,7 @@
 <translation id="2445484935443597917">Создај нов профил</translation>
 <translation id="2446585455334014596"><ph name="APP_NAME" /> сака да го потврди вашиот идентитет</translation>
 <translation id="2448312741937722512">Тип</translation>
+<translation id="2448734521821581858">Колачињата се датотеки создадени од веб-сајтовите што ги посетувате. Има два типа колачиња. Колачиња создадени од сајтот што го посетувате. Сајтот се прикажува во лентата за адреси. Колачињата од трети страни се создадени од други сајтови. Овие сајтови се сопственици на дел од содржините, како рекламите или сликите, што ги гледате на веб-сајтот што го посетувате.</translation>
 <translation id="2450223707519584812">Нема да може да додадете корисници, затоа што недостасуваат клучевите на Google API. Видете ја <ph name="DETAILS_URL" /> за повеќе детали.</translation>
 <translation id="2450849356604136918">Нема активни прикази</translation>
 <translation id="2451298179137331965">2x</translation>
@@ -3127,6 +3128,7 @@
 <translation id="5496587651328244253">Организирај</translation>
 <translation id="5499313591153584299">Оваа датотека може да биде штетна за вашиот компјутер.</translation>
 <translation id="5502500733115278303">Увезени од Firefox</translation>
+<translation id="5505264765875738116">Сајтовите не можат да прашуваат дали да испраќаат известувања</translation>
 <translation id="5505307013568720083">Нема мастило</translation>
 <translation id="5507756662695126555">Неотповикливост</translation>
 <translation id="5509693895992845810">Зачувај &amp;како...</translation>
@@ -3677,6 +3679,7 @@
 <translation id="6267547857941397424">Мрежа <ph name="NETWORK_INDEX" /> од <ph name="NETWORK_COUNT" />, <ph name="PHONE_NAME" />, јачина на сигналот: <ph name="SIGNAL_STRENGTH" /> %, батерија на телефонот: <ph name="BATTERY_STATUS" /> %, поврзи</translation>
 <translation id="6268252012308737255">Отвори со <ph name="APP" /></translation>
 <translation id="6268718011101775129">NFC</translation>
+<translation id="6270391203985052864">Сајтовите можат да прашуваат дали да испраќаат известувања</translation>
 <translation id="6270770586500173387">Испрати <ph name="BEGIN_LINK1" />информации за системот и апликацијата<ph name="END_LINK1" /> и <ph name="BEGIN_LINK2" />метриката<ph name="END_LINK2" /></translation>
 <translation id="6272643420381259437">Грешка (<ph name="ERROR" />) при преземањето на приклучокот</translation>
 <translation id="6273677812470008672">Квалитет</translation>
@@ -3867,6 +3870,7 @@
 <translation id="6555810572223193255">Чистењето во моментов не е достапно</translation>
 <translation id="6556866813142980365">Повтори</translation>
 <translation id="6557290421156335491">Мои кратенки</translation>
+<translation id="6561560012278703671">Користете потивко испраќање пораки (не дозволува известувањата да ве попречуваат)</translation>
 <translation id="6561726789132298588">enter</translation>
 <translation id="656293578423618167">Патеката на датотеката или нејзиното име се многу долги. Зачувајте ја со пократко име или на друга локација.</translation>
 <translation id="6563469144985748109">Управникот уште не го одобрил</translation>

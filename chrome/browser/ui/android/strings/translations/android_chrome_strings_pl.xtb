@@ -604,6 +604,7 @@ Aby zmienić to ustawienie, <ph name="BEGIN_LINK" />zresetuj synchronizację<ph 
 <translation id="5487521232677179737">Wyczyść dane</translation>
 <translation id="5494752089476963479">Blokuj reklamy na stronach, które wyświetlają reklamy uciążliwe lub wprowadzające w błąd</translation>
 <translation id="5500777121964041360">Funkcja może być niedostępna w Twojej lokalizacji</translation>
+<translation id="5505264765875738116">Strony nie mogą prosić o zgodę na wysyłanie powiadomień</translation>
 <translation id="5512137114520586844">Tym kontem zarządza <ph name="PARENT_NAME" />.</translation>
 <translation id="5514904542973294328">Wyłączone przez administratora tego urządzenia</translation>
 <translation id="5515439363601853141">Odblokuj, by wyświetlić hasło</translation>
@@ -710,6 +711,7 @@ Aby zmienić to ustawienie, <ph name="BEGIN_LINK" />zresetuj synchronizację<ph 
 Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy bez związku ze stronami odwiedzonymi przez Ciebie wcześniej. Wiele stron będzie nadal gromadzić dane przeglądania i używać ich na przykład do poprawy bezpieczeństwa, pokazywania treści, reklam i rekomendacji oraz do generowania statystyk.</translation>
 <translation id="624789221780392884">Aktualizacja jest gotowa</translation>
 <translation id="6255999984061454636">Polecane treści</translation>
+<translation id="6270391203985052864">Strony mogą prosić o zgodę na wysyłanie powiadomień</translation>
 <translation id="6277522088822131679">Podczas drukowania strony wystąpił problem. Spróbuj ponownie.</translation>
 <translation id="6295158916970320988">Wszystkie witryny</translation>
 <translation id="629730747756840877">Konto</translation>
@@ -754,6 +756,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="6545864417968258051">Skanowanie Bluetooth</translation>
 <translation id="6560414384669816528">Szukaj w Sogou</translation>
 <translation id="656065428026159829">Pokaż więcej</translation>
+<translation id="6561560012278703671">Pokazuj wiadomości dyskretnie (blokuje powiadomienia, by Ci nie przeszkadzały)</translation>
 <translation id="6566259936974865419">Chrome pozwolił Ci zaoszczędzić <ph name="GIGABYTES" /> GB</translation>
 <translation id="6573096386450695060">Zawsze zezwalaj</translation>
 <translation id="6573431926118603307">Tutaj wyświetlą się karty otwarte w Chrome na innych urządzeniach.</translation>

@@ -1024,6 +1024,7 @@ Pode gerir as definições desta conta ao instalar a aplicação Family Link no 
 <translation id="2445484935443597917">Criar um novo perfil</translation>
 <translation id="2446585455334014596">A aplicação <ph name="APP_NAME" /> pretende validar a sua identidade</translation>
 <translation id="2448312741937722512">Tipo</translation>
+<translation id="2448734521821581858">Os cookies são ficheiros criados pelos Websites aos quais acedeu. Existem dois tipos de cookies: os cookies originais são criados pelo site ao qual acede. O site é apresentado na barra de endereço. Os cookies de terceiros são criados por outros sites. Estes sites possuem algum do conteúdo, tal como anúncios ou imagens, que vê no Website ao qual acede.</translation>
 <translation id="2450223707519584812">Não pode adicionar utilizadores porque as chaves da API do Google estão em falta. Consulte <ph name="DETAILS_URL" /> para obter detalhes.</translation>
 <translation id="2450849356604136918">Sem vistas ativas</translation>
 <translation id="2451298179137331965">2x</translation>
@@ -3127,6 +3128,7 @@ Pretende pará-lo?</translation>
 <translation id="5496587651328244253">Organizar</translation>
 <translation id="5499313591153584299">Este ficheiro pode ser prejudicial para o seu computador.</translation>
 <translation id="5502500733115278303">Importado do Firefox</translation>
+<translation id="5505264765875738116">Os sites não podem pedir para enviar notificações.</translation>
 <translation id="5505307013568720083">Sem tinta</translation>
 <translation id="5507756662695126555">Não repudiação</translation>
 <translation id="5509693895992845810">Guard&amp;ar Como...</translation>
@@ -3678,6 +3680,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="6267547857941397424">Rede <ph name="NETWORK_INDEX" /> de <ph name="NETWORK_COUNT" />, <ph name="PHONE_NAME" />, intensidade do sinal: <ph name="SIGNAL_STRENGTH" />%, bateria do telemóvel: <ph name="BATTERY_STATUS" />%, ligar</translation>
 <translation id="6268252012308737255">Abrir com <ph name="APP" /></translation>
 <translation id="6268718011101775129">NFC</translation>
+<translation id="6270391203985052864">Os sites podem pedir para enviar notificações.</translation>
 <translation id="6270770586500173387">Enviar <ph name="BEGIN_LINK1" />informações do sistema e da aplicação<ph name="END_LINK1" />, bem como <ph name="BEGIN_LINK2" />métricas<ph name="END_LINK2" /></translation>
 <translation id="6272643420381259437">Ocorreu um erro (<ph name="ERROR" />) ao transferir o plug-in</translation>
 <translation id="6273677812470008672">Qualidade</translation>
@@ -3868,6 +3871,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="6555810572223193255">A limpeza está atualmente indisponível.</translation>
 <translation id="6556866813142980365">Refazer</translation>
 <translation id="6557290421156335491">Os meus atalhos</translation>
+<translation id="6561560012278703671">Utilizar mensagens mais discretas (impede interrupções de pedidos de notificação)</translation>
 <translation id="6561726789132298588">introduzir</translation>
 <translation id="656293578423618167">O caminho ou nome do ficheiro é demasiado longo. Guarde com um nome mais curto ou noutra localização.</translation>
 <translation id="6563469144985748109">O seu gestor ainda não o aprovou</translation>

@@ -555,7 +555,7 @@
 <translation id="177336675152937177">ହୋଷ୍ଟ କରାଯାଇଥିବା ଆପ୍‍ ଡାଟା</translation>
 <translation id="1776712937009046120">ଉପଯୋଗକର୍ତ୍ତାଙ୍କୁ ଯୋଗ କରନ୍ତୁ</translation>
 <translation id="1776883657531386793"><ph name="OID" />: <ph name="INFO" /></translation>
-<translation id="1777310661937894236">ଏହି ଡିଭାଇସ୍ <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> ଙ୍କ ଦ୍ୱାରା ପରିଚାଳିତ ହେଉଛି।
+<translation id="1777310661937894236">ଏହି ଡିଭାଇସ୍ <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> ଦ୍ୱାରା ପରିଚାଳିତ ହେଉଛି।
     ଆପଣଙ୍କର <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> ଆକାଉଣ୍ଟରେ ସାଇନ୍ ଇନ୍ ଜାରି ରଖିବାକୁ, ଦୟାକରି "ପରବର୍ତ୍ତୀ"ରେ କ୍ଲିକ୍ କରନ୍ତୁ।</translation>
 <translation id="1779652936965200207">ଦୟାକରି ଏହି ପାସ୍‌କୀ "<ph name="DEVICE_NAME" />"ରେ ଲେଖନ୍ତୁ</translation>
 <translation id="1780152987505130652">ଗୋଷ୍ଠୀ ବନ୍ଦ କରନ୍ତୁ</translation>
@@ -744,7 +744,7 @@
 <translation id="2048653237708779538">କାର୍ଯ୍ୟ ଉପଲବ୍ଧ ନାହିଁ</translation>
 <translation id="2050339315714019657">ପୋଟ୍ରେଟ୍‌</translation>
 <translation id="2053312383184521053">ନିଷ୍କ୍ରିୟ ସ୍ଥିତିରେ ଥିବା ଡାଟା</translation>
-<translation id="2055585478631012616">ଖୋଲା ଥିବା ଟାବ୍‍ଗୁଡ଼ିକ ସହିତ, ଆପଣଙ୍କୁ ଏହି ସାଇଟ୍‍ଗୁଡ଼ିକରୁ ସାଇନ୍ ଆଉଟ୍ କରିଦିଆଯିବ</translation>
+<translation id="2055585478631012616">ଖୋଲାଥିବା ଟାବ୍‌ଗୁଡ଼ିକ ସମେତ ଆପଣ ଏହି ସାଇଟ୍‌ଗୁଡ଼ିକରୁ ସାଇନ୍ ଆଉଟ୍ ହୋଇଯିବେ।</translation>
 <translation id="205560151218727633">Google ଆସିଷ୍ଟାଣ୍ଟ ଲୋଗୋ</translation>
 <translation id="2058456167109518507">ଡିଭାଇସ୍ ଚିହ୍ନଟ କରାଯାଇଛି</translation>
 <translation id="2059913712424898428">ସମୟ କ୍ଷେତ୍ର</translation>
@@ -1286,7 +1286,7 @@
 <translation id="2800760947029405028">ଏକ ଛବି ଅପଲୋଡ୍ କରନ୍ତୁ</translation>
 <translation id="2803375539583399270">PIN ଲେଖନ୍ତୁ</translation>
 <translation id="2804043232879091219">ବିକଳ୍ପ ବ୍ରାଉଜର୍ ଖୋଲାଯାଇପାରିଲା ନାହିଁ</translation>
-<translation id="2804667941345577550">ଖୋଲା ଥିବା ଟାବ୍‍ଗୁଡ଼ିକ ସହିତ, ଆପଣଙ୍କୁ ଏହି ସାଇଟ୍‍ରୁ ସାଇନ୍ ଆଉଟ୍ କରିଦିଆଯିବ</translation>
+<translation id="2804667941345577550">ଖୋଲାଥିବା ଟାବ୍‌ଗୁଡ଼ିକ ସମେତ ଆପଣ ଏହି ସାଇଟ୍‌ରୁ ସାଇନ୍ ଆଉଟ୍ ହୋଇଯିବେ।</translation>
 <translation id="2804680522274557040">କ୍ୟାମେରା ବନ୍ଦ କରାଯାଇଛି</translation>
 <translation id="2805646850212350655">Microsoft ଏନ୍‌କ୍ରିପ୍ଟିଂ ଫାଇଲ୍ ସିଷ୍ଟମ୍</translation>
 <translation id="2805756323405976993">ଆପ୍ସ</translation>
@@ -2566,7 +2566,7 @@
 <translation id="4665446389743427678"><ph name="SITE" /> ଦ୍ୱାରା ଷ୍ଟୋର୍‌ କରାଯାଇଥିବା ସମସ୍ତ ଡାଟା ଡିଲିଟ୍‌ କରାଯିବ।</translation>
 <translation id="4668721319092543482"><ph name="PLUGIN_NAME" />କୁ ସକ୍ଷମ କରିବା ପାଇଁ କ୍ଲିକ୍ କରନ୍ତୁ</translation>
 <translation id="4672657274720418656">ଶୁଦ୍ଧ ପୃଷ୍ଠା</translation>
-<translation id="46733273239502219">ଇନଷ୍ଟଲ୍ କରାଯାଇଥିବା ଆପ୍‍ଗୁଡ଼ିକରୁ ଅଫ୍‍ଲାଇନ୍ ଡାଟା ଖାଲି କରାଯିବ</translation>
+<translation id="46733273239502219">ଇନଷ୍ଟଲ୍ କରାଯାଇଥିବା ଆପ୍‍ଗୁଡ଼ିକରୁ ଅଫ୍‍ଲାଇନ୍ ଡାଟା ମଧ୍ୟ ଖାଲି କରାଯିବ</translation>
 <translation id="4673442866648850031">ଷ୍ଟାଇଲସ୍ ବାହାର କରିବା ସମୟରେ ଷ୍ଟାଇଲସ୍ ଟୁଲ୍ ଖୋଲନ୍ତୁ</translation>
 <translation id="4677585247300749148"><ph name="URL" /> ଆକ୍ସେସିବିଲିଟୀ ଇଭେଣ୍ଟକୁ ପ୍ରତିକ୍ରିୟା ଦେବାକୁ ଚାହୁଁଛି</translation>
 <translation id="4677772697204437347">GPU ମେମୋରୀ</translation>

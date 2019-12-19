@@ -604,6 +604,7 @@ Per cambiare questa impostazione, <ph name="BEGIN_LINK" />reimposta la sincroniz
 <translation id="5487521232677179737">Cancella dati</translation>
 <translation id="5494752089476963479">Blocca gli annunci su siti che mostrano annunci invasivi o fuorvianti</translation>
 <translation id="5500777121964041360">Potrebbe non essere disponibile nel tuo paese</translation>
+<translation id="5505264765875738116">I siti non possono chiedere di inviare notifiche</translation>
 <translation id="5512137114520586844">Questo account è gestito da <ph name="PARENT_NAME" />.</translation>
 <translation id="5514904542973294328">Opzione disattivata dall'amministratore del dispositivo</translation>
 <translation id="5515439363601853141">Sblocca per visualizzare la password</translation>
@@ -710,6 +711,7 @@ Per cambiare questa impostazione, <ph name="BEGIN_LINK" />reimposta la sincroniz
 Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annunci non basati su altri siti web visitati. Molti siti web continueranno tuttavia a raccogliere e a utilizzare i dati di navigazione, ad esempio per aumentare la sicurezza, fornire contenuti, annunci e consigli, nonché per generare statistiche sui rapporti.</translation>
 <translation id="624789221780392884">Aggiornamento pronto</translation>
 <translation id="6255999984061454636">Contenuti suggeriti</translation>
+<translation id="6270391203985052864">I siti possono chiedere di inviare notifiche</translation>
 <translation id="6277522088822131679">Si è verificato un problema durante la stampa della pagina. Riprova.</translation>
 <translation id="6295158916970320988">Tutti i siti</translation>
 <translation id="629730747756840877">Account</translation>
@@ -754,6 +756,7 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="6545864417968258051">Scansione Bluetooth</translation>
 <translation id="6560414384669816528">Ricerche con Sogou</translation>
 <translation id="656065428026159829">Mostra altri</translation>
+<translation id="6561560012278703671">Usa messaggi più discreti (i messaggi di notifica non ti interrompono)</translation>
 <translation id="6566259936974865419">Chrome ti ha fatto risparmiare <ph name="GIGABYTES" /> GB</translation>
 <translation id="6573096386450695060">Consenti sempre</translation>
 <translation id="6573431926118603307">Le schede aperte in Chrome sugli altri dispositivi verranno visualizzate qui.</translation>

@@ -604,6 +604,7 @@ Untuk menukar tetapan ini, <ph name="BEGIN_LINK" />tetapkan semula penyegerakan<
 <translation id="5487521232677179737">Kosongkan data</translation>
 <translation id="5494752089476963479">Sekat iklan di tapak yang menyiarkan iklan yang mengganggu atau mengelirukan</translation>
 <translation id="5500777121964041360">Mungkin tidak tersedia di lokasi anda</translation>
+<translation id="5505264765875738116">Tapak tidak boleh meminta untuk menghantar pemberitahuan</translation>
 <translation id="5512137114520586844">Akaun ini diurus oleh <ph name="PARENT_NAME" />.</translation>
 <translation id="5514904542973294328">Dilumpuhkan oleh pentadbir peranti ini</translation>
 <translation id="5515439363601853141">Buka kunci untuk melihat kata laluan anda</translation>
@@ -710,6 +711,7 @@ Untuk menukar tetapan ini, <ph name="BEGIN_LINK" />tetapkan semula penyegerakan<
 Sebagai contoh, sesetengah tapak web mungkin memberi respons kepada permintaan ini dengan memaparkan iklan yang tidak berdasarkan tapak web lain yang anda lawati. Pelbagai tapak web masih akan mengumpul dan menggunakan data penyemakan imbas anda — contohnya, untuk meningkatkan keselamatan, untuk menyediakan kandungan, iklan dan cadangan serta untuk menjana statistik pelaporan.</translation>
 <translation id="624789221780392884">Kemaskini bersedia</translation>
 <translation id="6255999984061454636">Cadangan kandungan</translation>
+<translation id="6270391203985052864">Tapak boleh meminta untuk menghantar pemberitahuan</translation>
 <translation id="6277522088822131679">Terdapat masalah semasa mencetak halaman. Sila cuba sekali lagi.</translation>
 <translation id="6295158916970320988">Semua tapak</translation>
 <translation id="629730747756840877">Akaun</translation>
@@ -754,6 +756,7 @@ Sebagai contoh, sesetengah tapak web mungkin memberi respons kepada permintaan i
 <translation id="6545864417968258051">Pengimbasan Bluetooth</translation>
 <translation id="6560414384669816528">Cari dengan Sogou</translation>
 <translation id="656065428026159829">Lihat lagi</translation>
+<translation id="6561560012278703671">Gunakan pemesejan yang lebih senyap (menyekat gesaan pemberitahuan daripada mengganggu anda)</translation>
 <translation id="6566259936974865419">Chrome telah menjimatkan data anda sebanyak <ph name="GIGABYTES" /> GB</translation>
 <translation id="6573096386450695060">Sentiasa benarkan</translation>
 <translation id="6573431926118603307">Tab yang telah anda buka dalam Chrome pada peranti anda yang lain akan dipaparkan di sini.</translation>
@@ -850,7 +853,7 @@ Sebagai contoh, sesetengah tapak web mungkin memberi respons kepada permintaan i
 <translation id="7293171162284876153">Untuk memulakan penyegerakan, hidupkan "Segerakkan data Chrome anda".</translation>
 <translation id="729975465115245577">Peranti anda tiada apl untuk menyimpan fail kata laluan.</translation>
 <translation id="7302081693174882195">Butiran: Diisih mengikut jumlah penjimatan data</translation>
-<translation id="7302486331832100261">Anda biasanya menyekat pemberitahuan. Untuk membenarkan, ketik Butiran.</translation>
+<translation id="7302486331832100261">Anda biasanya menyekat pemberitahuan. Untuk membenarkan pemberitahuan, ketik Butiran.</translation>
 <translation id="7328017930301109123">Dalam mod Ringkas, Chrome memuatkan halaman lebih pantas dan mengurangkan penggunaan data sehingga 60 peratus.</translation>
 <translation id="7333031090786104871">Masih menambahkan tapak yang terdahulu</translation>
 <translation id="7352939065658542140">VIDEO</translation>

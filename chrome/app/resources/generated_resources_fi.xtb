@@ -1025,6 +1025,7 @@ Voit ylläpitää tilin asetuksia asentamalla laitteellesi Family Link ‑sovell
 <translation id="2445484935443597917">Luo uusi profiili</translation>
 <translation id="2446585455334014596"><ph name="APP_NAME" /> haluaa vahvistaa henkilöllisyytesi</translation>
 <translation id="2448312741937722512">Tyyppi</translation>
+<translation id="2448734521821581858">Evästeet ovat avaamiesi verkkosivustojen luomia tiedostoja. Evästeitä on kahdentyyppisiä: Ensimmäisen osapuolen evästeet luodaan sivustolla, jolla käyt. Sivusto näkyy osoitepalkissa. Kolmannen osapuolen evästeet luodaan muilla sivustoilla. Nämä sivustot omistavat mainoksia, kuvia tai muita sisältöjä, joita käytetään avaamallasi sivulla.</translation>
 <translation id="2450223707519584812">Et voi lisätä käyttäjiä, koska Google-sovellusliittymäavaimia ei löydy. Saat lisätietoja osoitteesta <ph name="DETAILS_URL" />.</translation>
 <translation id="2450849356604136918">Ei aktiivisia näkymiä</translation>
 <translation id="2451298179137331965">2x</translation>
@@ -2702,7 +2703,7 @@ Voit ylläpitää tilin asetuksia asentamalla laitteellesi Family Link ‑sovell
 <translation id="4876273079589074638">Auta tiimiämme tutkimaan kaatumista ja korjaamaan virheet. Kerro toimista niin tarkasti kuin mahdollista. Kaikista yksityiskohdista on hyötyä.</translation>
 <translation id="4876895919560854374">Lukitse näyttö ja poista sen lukitus</translation>
 <translation id="4877276003880815204">Tutki elementtejä</translation>
-<translation id="4878653975845355462">Järjestelmänvalvoja on poistanut yksilölliset taustakuvat käytöstä</translation>
+<translation id="4878653975845355462">Järjestelmänvalvoja on poistanut mukautetut taustakuvat käytöstä</translation>
 <translation id="4879491255372875719">Automaattinen (oletus)</translation>
 <translation id="4880328057631981605">Tukiaseman nimi</translation>
 <translation id="4880827082731008257">Haku historiasta</translation>
@@ -3124,6 +3125,7 @@ Voit ylläpitää tilin asetuksia asentamalla laitteellesi Family Link ‑sovell
 <translation id="5496587651328244253">Järjestä</translation>
 <translation id="5499313591153584299">Tämä tiedosto voi olla haitallinen tietokoneellesi.</translation>
 <translation id="5502500733115278303">Tuotu Firefoxista</translation>
+<translation id="5505264765875738116">Sivustot eivät saa pyytää lupaa lähettää ilmoituksia</translation>
 <translation id="5505307013568720083">Muste lopussa</translation>
 <translation id="5507756662695126555">Kiistämättömyys</translation>
 <translation id="5509693895992845810">T&amp;allenna nimellä...</translation>
@@ -3261,7 +3263,7 @@ Voit ylläpitää tilin asetuksia asentamalla laitteellesi Family Link ‑sovell
 <translation id="5687326903064479980">Aikavyöhyke</translation>
 <translation id="5689516760719285838">Sijainti</translation>
 <translation id="56907980372820799">Yhdistä tiedot</translation>
-<translation id="5691180005790455277">Tämä poistaa kaiken datan ja evästeet, jotka <ph name="SITE_GROUP_NAME" /> ja siihen kuuluvat sivustot tallensivat.</translation>
+<translation id="5691180005790455277">Tämä poistaa kaiken datan ja evästeet, jotka <ph name="SITE_GROUP_NAME" /> ja siihen kuuluvat sivustot ovat tallentaneet.</translation>
 <translation id="5691511426247308406">Perhe</translation>
 <translation id="5692183275898619210">Tulostus valmis</translation>
 <translation id="5696143504434933566">Ilmoita väärinkäytöstä: <ph name="EXTENSION_NAME" /></translation>
@@ -3676,6 +3678,7 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="6267547857941397424">Verkko <ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" />, <ph name="PHONE_NAME" />, signaalin vahvuus <ph name="SIGNAL_STRENGTH" /> %, puhelimen akun varaus <ph name="BATTERY_STATUS" /> %, yhdistä</translation>
 <translation id="6268252012308737255">Avaa sovelluksella <ph name="APP" /></translation>
 <translation id="6268718011101775129">NFC</translation>
+<translation id="6270391203985052864">Sivustot saavat pyytää lupaa lähettää ilmoituksia</translation>
 <translation id="6270770586500173387">Lähetä <ph name="BEGIN_LINK1" />järjestelmä- ja sovellustietoja<ph name="END_LINK1" /> ja <ph name="BEGIN_LINK2" />tilastoja<ph name="END_LINK2" /></translation>
 <translation id="6272643420381259437">Virhe (<ph name="ERROR" />) ladattaessa laajennusta</translation>
 <translation id="6273677812470008672">Laatu</translation>
@@ -3866,6 +3869,7 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="6555810572223193255">Poisto ei ole tällä hetkellä käytettävissä</translation>
 <translation id="6556866813142980365">Tee uudelleen</translation>
 <translation id="6557290421156335491">Omat pikakuvakkeet</translation>
+<translation id="6561560012278703671">Hiljaisemmat viestit (estää ilmoituksia häiritsemästä sinua)</translation>
 <translation id="6561726789132298588">enter</translation>
 <translation id="656293578423618167">Tiedostonimi tai -polku on liian pitkä. Lyhennä nimeä tai tallenna muuhun sijaintiin.</translation>
 <translation id="6563469144985748109">Ylläpitäjä ei ole hyväksynyt sitä vielä.</translation>
