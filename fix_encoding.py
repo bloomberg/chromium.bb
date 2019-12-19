@@ -84,6 +84,10 @@ def fix_win_sys_argv(encoding):
   if _SYS_ARGV_PROCESSED:
     return False
 
+  if sys.version_info.major == 3:
+    _SYS_ARGV_PROCESSED = True
+    return True
+
   # These types are available on linux but not Mac.
   # pylint: disable=no-name-in-module,F0401
   from ctypes import byref, c_int, POINTER, windll, WINFUNCTYPE
@@ -269,6 +273,9 @@ class WinUnicodeOutput(WinUnicodeOutputBase):
       if sys.version_info.major == 2 and isinstance(text, unicode):
         # Replace characters that cannot be printed instead of failing.
         text = text.encode(self.encoding, 'replace')
+      if sys.version_info.major == 3 and isinstance(text, bytes):
+        # Replace characters that cannot be printed instead of failing.
+        text = text.decode(self.encoding, 'replace')
       self._stream.write(text)
     except Exception as e:
       complain('%s.write: %r' % (self.name, e))

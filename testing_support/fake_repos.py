@@ -249,7 +249,7 @@ gclient_gn_args = [
 ]
 deps = {
   'src/repo2': {
-    'url': '%(git_base)srepo_2',
+    'url': %(git_base)r + 'repo_2',
     'condition': 'True',
   },
   'src/repo2/repo3': '/' + Var('DummyVariable') + '_3@%(hash3)s',
@@ -305,7 +305,7 @@ deps = {
     self._commit_git('repo_1', {
       'DEPS': """
 deps = {
-  'src/repo2': '%(git_base)srepo_2@%(hash)s',
+  'src/repo2': %(git_base)r + 'repo_2@%(hash)s',
   'src/repo2/repo_renamed': '/repo_3',
   'src/should_not_process': {
     'url': '/repo_4',
@@ -341,8 +341,8 @@ hooks = [
     self._commit_git('repo_5', {
       'DEPS': """
 deps = {
-  'src/repo1': '%(git_base)srepo_1@%(hash1)s',
-  'src/repo2': '%(git_base)srepo_2@%(hash2)s',
+  'src/repo1': %(git_base)r + 'repo_1@%(hash1)s',
+  'src/repo2': %(git_base)r + 'repo_2@%(hash2)s',
 }
 
 # Hooks to run after a project is processed but before its dependencies are
@@ -363,8 +363,8 @@ pre_deps_hooks = [
     self._commit_git('repo_5', {
       'DEPS': """
 deps = {
-  'src/repo1': '%(git_base)srepo_1@%(hash1)s',
-  'src/repo2': '%(git_base)srepo_2@%(hash2)s',
+  'src/repo1': %(git_base)r + 'repo_1@%(hash1)s',
+  'src/repo2': %(git_base)r + 'repo_2@%(hash2)s',
 }
 
 # Hooks to run after a project is processed but before its dependencies are
@@ -390,7 +390,7 @@ pre_deps_hooks = [
       'DEPS': """
 vars = {
   'DummyVariable': 'repo',
-  'git_base': '%(git_base)s',
+  'git_base': %(git_base)r,
   'hook1_contents': 'git_hooked1',
   'repo5_var': '/repo_5',
 
@@ -413,7 +413,7 @@ gclient_gn_args = [
 ]
 
 allowed_hosts = [
-  '%(git_base)s',
+  %(git_base)r,
 ]
 deps = {
   'src/repo2': {
@@ -718,13 +718,13 @@ class FakeRepoSkiaDEPS(FakeReposBase):
   NB_GIT_REPOS = 5
 
   DEPS_git_pre = """deps = {
-  'src/third_party/skia/gyp': '%(git_base)srepo_3',
-  'src/third_party/skia/include': '%(git_base)srepo_4',
-  'src/third_party/skia/src': '%(git_base)srepo_5',
+  'src/third_party/skia/gyp': %(git_base)r + 'repo_3',
+  'src/third_party/skia/include': %(git_base)r + 'repo_4',
+  'src/third_party/skia/src': %(git_base)r + 'repo_5',
 }"""
 
   DEPS_post = """deps = {
-  'src/third_party/skia': '%(git_base)srepo_1',
+  'src/third_party/skia': %(git_base)r + 'repo_1',
 }"""
 
   def populateGit(self):

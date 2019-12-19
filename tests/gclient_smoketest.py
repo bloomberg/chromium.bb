@@ -40,6 +40,7 @@ class GClientSmokeBase(fake_repos.FakeReposTestBase):
     self.env['DEPOT_TOOLS_METRICS'] = '0'
     # Suppress Python 3 warnings and other test undesirables.
     self.env['GCLIENT_TEST'] = '1'
+    self.maxDiff = None
 
   def gclient(self, cmd, cwd=None, error_ok=False):
     if not cwd:
@@ -193,75 +194,75 @@ class GClientSmoke(GClientSmokeBase):
       self.check(('', '', 0), results)
       mode = 'r' if sys.version_info.major == 3 else 'rU'
       with open(p, mode) as f:
-        self.checkString(expected, f.read())
+        actual = {}
+        exec(f.read(), {}, actual)
+        self.assertEqual(expected, actual)
 
-    test(['config', self.git_base + 'src/'],
-         ('solutions = [\n'
-          '  { "name"        : "src",\n'
-          '    "url"         : "%ssrc",\n'
-          '    "deps_file"   : "DEPS",\n'
-          '    "managed"     : True,\n'
-          '    "custom_deps" : {\n'
-          '    },\n'
-          '    "custom_vars": {},\n'
-          '  },\n'
-          ']\n' % self.git_base))
+    test(
+        ['config', self.git_base + 'src/'],
+        {
+            'solutions': [{
+                'name': 'src',
+                'url': self.git_base + 'src',
+                'deps_file': 'DEPS',
+                'managed': True,
+                'custom_deps': {},
+                'custom_vars': {},
+            }],
+        })
 
-    test(['config', self.git_base + 'repo_1', '--name', 'src',
+    test(['config', self.git_base + 'repo_1',
+          '--name', 'src',
           '--cache-dir', 'none'],
-         ('solutions = [\n'
-          '  { "name"        : "src",\n'
-          '    "url"         : "%srepo_1",\n'
-          '    "deps_file"   : "DEPS",\n'
-          '    "managed"     : True,\n'
-          '    "custom_deps" : {\n'
-          '    },\n'
-          '    "custom_vars": {},\n'
-          '  },\n'
-          ']\n'
-          'cache_dir = None\n') % self.git_base)
+         {'solutions': [{
+             'name': 'src',
+             'url': self.git_base + 'repo_1',
+             'deps_file': 'DEPS',
+             'managed': True,
+             'custom_deps': {},
+             'custom_vars': {},
+          }],
+          'cache_dir': None})
 
     test(['config', 'https://example.com/foo', 'faa',
           '--cache-dir', 'something'],
-         'solutions = [\n'
-         '  { "name"        : "foo",\n'
-         '    "url"         : "https://example.com/foo",\n'
-         '    "deps_file"   : "DEPS",\n'
-         '    "managed"     : True,\n'
-         '    "custom_deps" : {\n'
-         '    },\n'
-         '    "custom_vars": {},\n'
-         '  },\n'
-         ']\n'
-         'cache_dir = \'something\'\n')
+         {'solutions': [{
+             'name': 'foo',
+             'url': 'https://example.com/foo',
+             'deps_file': 'DEPS',
+             'managed': True,
+             'custom_deps': {},
+             'custom_vars': {},
+          }],
+          'cache_dir': 'something'})
 
-    test(['config', 'https://example.com/foo', '--deps', 'blah'],
-         'solutions = [\n'
-         '  { "name"        : "foo",\n'
-         '    "url"         : "https://example.com/foo",\n'
-         '    "deps_file"   : "blah",\n'
-         '    "managed"     : True,\n'
-         '    "custom_deps" : {\n'
-         '    },\n'
-         '    "custom_vars": {},\n'
-         '  },\n'
-         ']\n')
+    test(['config', 'https://example.com/foo',
+          '--deps', 'blah'],
+         {'solutions': [{
+             'name': 'foo',
+             'url': 'https://example.com/foo',
+             'deps_file': 'blah',
+             'managed': True,
+             'custom_deps': {},
+             'custom_vars': {},
+          }]})
 
     test(['config', self.git_base + 'src/',
           '--custom-var', 'bool_var=True',
           '--custom-var', 'str_var="abc"'],
-         ('solutions = [\n'
-          '  { "name"        : "src",\n'
-          '    "url"         : "%ssrc",\n'
-          '    "deps_file"   : "DEPS",\n'
-          '    "managed"     : True,\n'
-          '    "custom_deps" : {\n'
-          '    },\n'
-          '    "custom_vars": {\'bool_var\': True, \'str_var\': \'abc\'},\n'
-          '  },\n'
-          ']\n') % self.git_base)
+         {'solutions': [{
+             'name': 'src',
+             'url': self.git_base + 'src',
+             'deps_file': 'DEPS',
+             'managed': True,
+             'custom_deps': {},
+             'custom_vars': {
+                 'bool_var': True,
+                 'str_var': 'abc',
+             },
+          }]})
 
-    test(['config', '--spec', '["blah blah"]'], '["blah blah"]')
+    test(['config', '--spec', 'bah = ["blah blah"]'], {'bah': ["blah blah"]})
 
     os.remove(p)
     results = self.gclient(['config', 'foo', 'faa', 'fuu'], error_ok=True)
@@ -314,10 +315,10 @@ class GClientSmokeGIT(GClientSmokeBase):
     self.env['PATH'] = (os.path.join(ROOT_DIR, 'testing_support')
                         + os.pathsep + self.env['PATH'])
     self.enabled = self.FAKE_REPOS.set_up_git()
+    if not self.enabled:
+      self.skipTest('git fake repos not available')
 
   def testSync(self):
-    if not self.enabled:
-      return
     self.gclient(['config', self.git_base + 'repo_1', '--name', 'src'])
     # Test unversioned checkout.
     self.parseGclient(
@@ -386,7 +387,6 @@ class GClientSmokeGIT(GClientSmokeBase):
     with open(output_json) as f:
       output_json = json.load(f)
 
-    self.maxDiff = None
     out = {
         'solutions': {
             'src/': {
@@ -420,8 +420,6 @@ class GClientSmokeGIT(GClientSmokeBase):
 
   def testSyncIgnoredSolutionName(self):
     """TODO(maruel): This will become an error soon."""
-    if not self.enabled:
-      return
     self.gclient(['config', self.git_base + 'repo_1', '--name', 'src'])
     self.parseGclient(
         ['sync', '--deps', 'mac', '--jobs', '1',
@@ -437,8 +435,6 @@ class GClientSmokeGIT(GClientSmokeBase):
     self.assertTree(tree)
 
   def testSyncNoSolutionName(self):
-    if not self.enabled:
-      return
     # When no solution name is provided, gclient uses the first solution listed.
     self.gclient(['config', self.git_base + 'repo_1', '--name', 'src'])
     self.parseGclient(
@@ -461,8 +457,6 @@ class GClientSmokeGIT(GClientSmokeBase):
     self.assertTree(tree)
 
   def testSyncJobs(self):
-    if not self.enabled:
-      return
     self.gclient(['config', self.git_base + 'repo_1', '--name', 'src'])
     # Test unversioned checkout.
     self.parseGclient(
@@ -528,15 +522,11 @@ class GClientSmokeGIT(GClientSmokeBase):
     self.assertTree(tree)
 
   def testSyncFetch(self):
-    if not self.enabled:
-      return
     self.gclient(['config', self.git_base + 'repo_13', '--name', 'src'])
     self.gclient(
         ['sync', '-v', '-v', '-v', '--revision', self.githash('repo_13', 2)])
 
   def testSyncFetchUpdate(self):
-    if not self.enabled:
-      return
     self.gclient(['config', self.git_base + 'repo_13', '--name', 'src'])
 
     # Sync to an earlier revision first, one that doesn't refer to
@@ -549,18 +539,14 @@ class GClientSmokeGIT(GClientSmokeBase):
         ['sync', '-v', '-v', '-v', '--revision', self.githash('repo_13', 2)])
 
   def testSyncDirect(self):
-    if not self.enabled:
-      return
     self.gclient(['config', self.git_base + 'repo_12', '--name', 'src'])
     self.gclient(
         ['sync', '-v', '-v', '-v', '--revision', 'refs/changes/1212'])
 
   def testSyncUnmanaged(self):
-    if not self.enabled:
-      return
     self.gclient([
         'config', '--spec',
-        'solutions=[{"name":"src", "url": "%s", "managed": False}]' % (
+        'solutions=[{"name":"src", "url": %r, "managed": False}]' % (
             self.git_base + 'repo_5')])
     self.gclient([
         'sync', '--revision', 'src@' + self.githash('repo_5', 2)])
@@ -572,12 +558,9 @@ class GClientSmokeGIT(GClientSmokeBase):
                                 ('repo_1@1', 'src/repo1'),
                                 ('repo_2@1', 'src/repo2'))
     tree['src/git_pre_deps_hooked'] = 'git_pre_deps_hooked'
-    self.maxDiff = None
     self.assertTree(tree)
 
   def testSyncUrl(self):
-    if not self.enabled:
-      return
     self.gclient(['config', self.git_base + 'repo_1', '--name', 'src'])
     self.gclient([
         'sync', '-v', '-v', '-v',
@@ -594,8 +577,6 @@ class GClientSmokeGIT(GClientSmokeBase):
     self.assertTree(tree)
 
   def testSyncPatchRef(self):
-    if not self.enabled:
-      return
     self.gclient(['config', self.git_base + 'repo_1', '--name', 'src'])
     self.gclient([
         'sync', '-v', '-v', '-v',
@@ -618,8 +599,6 @@ class GClientSmokeGIT(GClientSmokeBase):
         self.gitrevparse(os.path.join(self.root_dir, 'src/repo2')))
 
   def testSyncPatchRefNoHooks(self):
-    if not self.enabled:
-      return
     self.gclient(['config', self.git_base + 'repo_1', '--name', 'src'])
     self.gclient([
         'sync', '-v', '-v', '-v',
@@ -641,8 +620,6 @@ class GClientSmokeGIT(GClientSmokeBase):
         self.gitrevparse(os.path.join(self.root_dir, 'src/repo2')))
 
   def testRunHooks(self):
-    if not self.enabled:
-      return
     self.gclient(['config', self.git_base + 'repo_1', '--name', 'src'])
     self.gclient(['sync', '--deps', 'mac'])
     tree = self.mangle_git_tree(('repo_1@2', 'src'),
@@ -667,8 +644,6 @@ class GClientSmokeGIT(GClientSmokeBase):
     self.assertTree(tree)
 
   def testRunHooksCondition(self):
-    if not self.enabled:
-      return
     self.gclient(['config', self.git_base + 'repo_7', '--name', 'src'])
     self.gclient(['sync', '--deps', 'mac'])
     tree = self.mangle_git_tree(('repo_7@1', 'src'))
@@ -676,8 +651,6 @@ class GClientSmokeGIT(GClientSmokeBase):
     self.assertTree(tree)
 
   def testPreDepsHooks(self):
-    if not self.enabled:
-      return
     self.gclient(['config', self.git_base + 'repo_5', '--name', 'src'])
     expectation = [
         ('running', self.root_dir),                 # git clone
@@ -728,17 +701,16 @@ class GClientSmokeGIT(GClientSmokeBase):
     self.assertTree(tree)
 
   def testPreDepsHooksError(self):
-    if not self.enabled:
-      return
     self.gclient(['config', self.git_base + 'repo_5', '--name', 'src'])
     expectated_stdout = [
         ('running', self.root_dir),                 # git clone
         ('running', self.root_dir),                 # pre-deps hook
         ('running', self.root_dir),                 # pre-deps hook (fails)
     ]
-    expected_stderr = ("Error: Command 'vpython -c import sys; "
+    vpython = 'vpython.bat' if sys.platform == 'win32' else 'vpython'
+    expected_stderr = ("Error: Command '%s -c import sys; "
                        "sys.exit(1)' returned non-zero exit status 1 in %s\n"
-                       % self.root_dir)
+                       % (vpython, self.root_dir))
     stdout, stderr, retcode = self.gclient(
         ['sync', '--deps', 'mac', '--jobs=1', '--revision',
          'src@' + self.githash('repo_5', 3)], error_ok=True)
@@ -747,8 +719,6 @@ class GClientSmokeGIT(GClientSmokeBase):
     self.checkBlock(stdout, expectated_stdout)
 
   def testRevInfo(self):
-    if not self.enabled:
-      return
     self.gclient(['config', self.git_base + 'repo_1', '--name', 'src'])
     self.gclient(['sync', '--deps', 'mac'])
     results = self.gclient(['revinfo', '--deps', 'mac'])
@@ -762,8 +732,6 @@ class GClientSmokeGIT(GClientSmokeBase):
     self.check((out, '', 0), results)
 
   def testRevInfoActual(self):
-    if not self.enabled:
-      return
     self.gclient(['config', self.git_base + 'repo_1', '--name', 'src'])
     self.gclient(['sync', '--deps', 'mac'])
     results = self.gclient(['revinfo', '--deps', 'mac', '--actual'])
@@ -779,8 +747,6 @@ class GClientSmokeGIT(GClientSmokeBase):
     self.check((out, '', 0), results)
 
   def testRevInfoFilterPath(self):
-    if not self.enabled:
-      return
     self.gclient(['config', self.git_base + 'repo_1', '--name', 'src'])
     self.gclient(['sync', '--deps', 'mac'])
     results = self.gclient(['revinfo', '--deps', 'mac', '--filter', 'src'])
@@ -791,8 +757,6 @@ class GClientSmokeGIT(GClientSmokeBase):
     self.check((out, '', 0), results)
 
   def testRevInfoFilterURL(self):
-    if not self.enabled:
-      return
     self.gclient(['config', self.git_base + 'repo_1', '--name', 'src'])
     self.gclient(['sync', '--deps', 'mac'])
     results = self.gclient(['revinfo', '--deps', 'mac',
@@ -805,8 +769,6 @@ class GClientSmokeGIT(GClientSmokeBase):
     self.check((out, '', 0), results)
 
   def testRevInfoFilterURLOrPath(self):
-    if not self.enabled:
-      return
     self.gclient(['config', self.git_base + 'repo_1', '--name', 'src'])
     self.gclient(['sync', '--deps', 'mac'])
     results = self.gclient(['revinfo', '--deps', 'mac', '--filter', 'src',
@@ -820,8 +782,6 @@ class GClientSmokeGIT(GClientSmokeBase):
     self.check((out, '', 0), results)
 
   def testRevInfoJsonOutput(self):
-    if not self.enabled:
-      return
     self.gclient(['config', self.git_base + 'repo_1', '--name', 'src'])
     self.gclient(['sync', '--deps', 'mac'])
     output_json = os.path.join(self.root_dir, 'output.json')
@@ -846,8 +806,6 @@ class GClientSmokeGIT(GClientSmokeBase):
     self.assertEqual(out, output_json)
 
   def testRevInfoJsonOutputSnapshot(self):
-    if not self.enabled:
-      return
     self.gclient(['config', self.git_base + 'repo_1', '--name', 'src'])
     self.gclient(['sync', '--deps', 'mac'])
     output_json = os.path.join(self.root_dir, 'output.json')
@@ -1015,10 +973,9 @@ class GClientSmokeGIT(GClientSmokeBase):
         'bar_rev',
     ], results[0].splitlines())
 
+  # TODO(crbug.com/1024683): Enable for windows.
+  @unittest.skipIf(sys.platform == 'win32', 'not yet fixed on win')
   def testFlatten(self):
-    if not self.enabled:
-      return
-
     output_deps = os.path.join(self.root_dir, 'DEPS.flattened')
     self.assertFalse(os.path.exists(output_deps))
 
@@ -1045,7 +1002,6 @@ class GClientSmokeGIT(GClientSmokeBase):
     with open(output_deps) as f:
       deps_contents = f.read()
 
-    self.maxDiff = None  # pylint: disable=attribute-defined-outside-init
     self.assertEqual([
         'gclient_gn_args_file = "src/repo2/gclient.args"',
         'gclient_gn_args = [\'false_var\', \'false_str_var\', \'true_var\', '
@@ -1227,10 +1183,9 @@ class GClientSmokeGIT(GClientSmokeBase):
         '# ' + self.git_base + 'repo_8, DEPS',
     ], deps_contents.splitlines())
 
+  # TODO(crbug.com/1024683): Enable for windows.
+  @unittest.skipIf(sys.platform == 'win32', 'not yet fixed on win')
   def testFlattenPinAllDeps(self):
-    if not self.enabled:
-      return
-
     output_deps = os.path.join(self.root_dir, 'DEPS.flattened')
     self.assertFalse(os.path.exists(output_deps))
 
@@ -1242,7 +1197,6 @@ class GClientSmokeGIT(GClientSmokeBase):
     with open(output_deps) as f:
       deps_contents = f.read()
 
-    self.maxDiff = None  # pylint: disable=attribute-defined-outside-init
     self.assertEqual([
         'gclient_gn_args_file = "src/repo2/gclient.args"',
         'gclient_gn_args = [\'false_var\', \'false_str_var\', \'true_var\', '
@@ -1438,10 +1392,9 @@ class GClientSmokeGIT(GClientSmokeBase):
             self.githash('repo_8', 1)),
     ], deps_contents.splitlines())
 
+  # TODO(crbug.com/1024683): Enable for windows.
+  @unittest.skipIf(sys.platform == 'win32', 'not yet fixed on win')
   def testFlattenRecursedeps(self):
-    if not self.enabled:
-      return
-
     output_deps = os.path.join(self.root_dir, 'DEPS.flattened')
     self.assertFalse(os.path.exists(output_deps))
 
@@ -1457,7 +1410,6 @@ class GClientSmokeGIT(GClientSmokeBase):
     with open(output_deps) as f:
       deps_contents = f.read()
 
-    self.maxDiff = None
     self.assertEqual([
         'gclient_gn_args_file = "src/repo8/gclient.args"',
         "gclient_gn_args = ['str_var']",
@@ -1543,10 +1495,9 @@ class GClientSmokeGIT(GClientSmokeBase):
                      ['src/repo9', self.git_base + 'repo_9']]},
     ], deps_files_contents)
 
+  # TODO(crbug.com/1024683): Enable for windows.
+  @unittest.skipIf(sys.platform == 'win32', 'not yet fixed on win')
   def testFlattenCipd(self):
-    if not self.enabled:
-      return
-
     output_deps = os.path.join(self.root_dir, 'DEPS.flattened')
     self.assertFalse(os.path.exists(output_deps))
 
@@ -1557,7 +1508,6 @@ class GClientSmokeGIT(GClientSmokeBase):
     with open(output_deps) as f:
       deps_contents = f.read()
 
-    self.maxDiff = None  # pylint: disable=attribute-defined-outside-init
     self.assertEqual([
         'deps = {',
         '  # src',
@@ -1613,11 +1563,12 @@ class GClientSmokeGITMutates(GClientSmokeBase):
   def setUp(self):
     super(GClientSmokeGITMutates, self).setUp()
     self.enabled = self.FAKE_REPOS.set_up_git()
-
-  def testRevertAndStatus(self):
     if not self.enabled:
-      return
+      self.skipTest('git fake repos not available')
 
+  # TODO(crbug.com/1024683): Enable for windows.
+  @unittest.skipIf(sys.platform == 'win32', 'not yet fixed on win')
+  def testRevertAndStatus(self):
     # Commit new change to repo to make repo_2's hash use a custom_var.
     cur_deps = self.FAKE_REPOS.git_hashes['repo_1'][-1][1]['DEPS']
     repo_2_hash = self.FAKE_REPOS.git_hashes['repo_2'][1][0][:7]
@@ -1629,14 +1580,14 @@ class GClientSmokeGITMutates(GClientSmokeBase):
       'origin': 'git/repo_1@3\n',
     })
 
-    config_template = (
-"""solutions = [{
-  "name"        : "src",
-  "url"         : "%(git_base)srepo_1",
-  "deps_file"   : "DEPS",
-  "managed"     : True,
-  "custom_vars" : %(custom_vars)s,
-}]""")
+    config_template = ''.join([
+        'solutions = [{'
+        '  "name"        : "src",'
+        '  "url"         : %(git_base)r + "repo_1",'
+        '  "deps_file"   : "DEPS",'
+        '  "managed"     : True,'
+        '  "custom_vars" : %(custom_vars)s,'
+        '}]'])
 
     self.gclient(['config', '--spec', config_template % {
       'git_base': self.git_base,
@@ -1693,8 +1644,6 @@ class GClientSmokeGITMutates(GClientSmokeBase):
     self.assertEqual(0, len(out))
 
   def testSyncNoHistory(self):
-    if not self.enabled:
-      return
     # Create an extra commit in repo_2 and point DEPS to its hash.
     cur_deps = self.FAKE_REPOS.git_hashes['repo_1'][-1][1]['DEPS']
     repo_2_hash_old = self.FAKE_REPOS.git_hashes['repo_2'][1][0][:7]
@@ -1709,13 +1658,13 @@ class GClientSmokeGITMutates(GClientSmokeBase):
       'origin': 'git/repo_1@4\n',
     })
 
-    config_template = (
-"""solutions = [{
-"name"        : "src",
-"url"         : "%(git_base)srepo_1",
-"deps_file"   : "DEPS",
-"managed"     : True,
-}]""")
+    config_template = ''.join([
+        'solutions = [{'
+        '  "name"        : "src",'
+        '  "url"         : %(git_base)r + "repo_1",'
+        '  "deps_file"   : "DEPS",'
+        '  "managed"     : True,'
+        '}]'])
 
     self.gclient(['config', '--spec', config_template % {
       'git_base': self.git_base
@@ -1742,18 +1691,17 @@ class SkiaDEPSTransitionSmokeTest(GClientSmokeBase):
   def setUp(self):
     super(SkiaDEPSTransitionSmokeTest, self).setUp()
     self.enabled = self.FAKE_REPOS.set_up_git()
+    if not self.enabled:
+      self.skipTest('git fake repos not available')
 
   def testSkiaDEPSChangeGit(self):
-    if not self.enabled:
-      return
-
     # Create an initial checkout:
     # - Single checkout at the root.
     # - Multiple checkouts in a shared subdirectory.
     self.gclient(['config', '--spec',
         'solutions=['
         '{"name": "src",'
-        ' "url": "' + self.git_base + 'repo_2",'
+        ' "url": ' + repr(self.git_base )+ '+ "repo_2",'
         '}]'])
 
     checkout_path = os.path.join(self.root_dir, 'src')
@@ -1828,6 +1776,8 @@ class BlinkDEPSTransitionSmokeTest(GClientSmokeBase):
   def setUp(self):
     super(BlinkDEPSTransitionSmokeTest, self).setUp()
     self.enabled = self.FAKE_REPOS.set_up_git()
+    if not self.enabled:
+      self.skipTest('git fake repos not available')
     self.checkout_path = os.path.join(self.root_dir, 'src')
     self.blink = os.path.join(self.checkout_path, 'third_party', 'WebKit')
     self.blink_git_url = self.FAKE_REPOS.git_base + 'repo_2'
@@ -1867,9 +1817,6 @@ class BlinkDEPSTransitionSmokeTest(GClientSmokeBase):
   def testBlinkDEPSChangeUsingGclient(self):
     """Checks that {src,blink} repos are consistent when syncing going back and
     forth using gclient sync src@revision."""
-    if not self.enabled:
-      return
-
     self.gclient(['config', '--spec',
         'solutions=['
         '{"name": "src",'
@@ -1893,9 +1840,6 @@ class BlinkDEPSTransitionSmokeTest(GClientSmokeBase):
   def testBlinkDEPSChangeUsingGit(self):
     """Like testBlinkDEPSChangeUsingGclient, but move the main project using
     directly git and not gclient sync."""
-    if not self.enabled:
-      return
-
     self.gclient(['config', '--spec',
         'solutions=['
         '{"name": "src",'
@@ -1926,9 +1870,6 @@ class BlinkDEPSTransitionSmokeTest(GClientSmokeBase):
   def testBlinkLocalBranchesArePreserved(self):
     """Checks that the state of local git branches are effectively preserved
     when going back and forth."""
-    if not self.enabled:
-      return
-
     self.gclient(['config', '--spec',
         'solutions=['
         '{"name": "src",'
@@ -1958,6 +1899,8 @@ class GClientSmokeCipd(GClientSmokeBase):
   def setUp(self):
     super(GClientSmokeCipd, self).setUp()
     self.enabled = self.FAKE_REPOS.set_up_git()
+    if not self.enabled:
+      self.skipTest('git fake repos not available')
     self.env['PATH'] = (os.path.join(ROOT_DIR, 'testing_support')
                         + os.pathsep + self.env['PATH'])
 

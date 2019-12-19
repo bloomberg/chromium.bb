@@ -1475,15 +1475,16 @@ class CipdRoot(object):
   @contextlib.contextmanager
   def _create_ensure_file(self):
     try:
+      contents = '$ParanoidMode CheckPresence\n\n'
+      for subdir, packages in sorted(self._packages_by_subdir.items()):
+        contents += '@Subdir %s\n' % subdir
+        for package in sorted(packages, key=lambda p: p.name):
+          contents += '%s %s\n' % (package.name, package.version)
+        contents += '\n'
       ensure_file = None
       with tempfile.NamedTemporaryFile(
-          suffix='.ensure', delete=False, mode='w') as ensure_file:
-        ensure_file.write('$ParanoidMode CheckPresence\n\n')
-        for subdir, packages in sorted(self._packages_by_subdir.items()):
-          ensure_file.write('@Subdir %s\n' % subdir)
-          for package in sorted(packages, key=lambda p: p.name):
-            ensure_file.write('%s %s\n' % (package.name, package.version))
-          ensure_file.write('\n')
+          suffix='.ensure', delete=False, mode='wb') as ensure_file:
+        ensure_file.write(contents.encode('utf-8', 'replace'))
       yield ensure_file.name
     finally:
       if ensure_file is not None and os.path.exists(ensure_file.name):
