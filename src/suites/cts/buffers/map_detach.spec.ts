@@ -1,6 +1,6 @@
 export const description = ``;
 
-import { TestGroup, pbool, pcombine } from '../../../framework/index.js';
+import { TestGroup } from '../../../framework/index.js';
 import { GPUTest } from '../gpu_test.js';
 
 class F extends GPUTest {
@@ -44,9 +44,7 @@ g.test('create mapped', async t => {
     size: 4,
     usage: GPUBufferUsage.MAP_WRITE,
   };
-  const [buffer, arrayBuffer] = t.params.async
-    ? await t.device.createBufferMappedAsync(desc)
-    : t.device.createBufferMapped(desc);
+  const [buffer, arrayBuffer] = t.device.createBufferMapped(desc);
 
   const view = new Uint8Array(arrayBuffer);
   t.expect(arrayBuffer.byteLength === 4);
@@ -56,13 +54,8 @@ g.test('create mapped', async t => {
   if (t.params.destroy) buffer.destroy();
   t.expect(arrayBuffer.byteLength === 0, 'ArrayBuffer should be detached');
   t.expect(view.byteLength === 0, 'ArrayBufferView should be detached');
-}).params(
-  pcombine(
-    pbool('async'), //
-    [
-      { unmap: true, destroy: false },
-      { unmap: false, destroy: true },
-      { unmap: true, destroy: true },
-    ]
-  )
-);
+}).params([
+  { unmap: true, destroy: false },
+  { unmap: false, destroy: true },
+  { unmap: true, destroy: true },
+]);
