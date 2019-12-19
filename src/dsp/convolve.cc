@@ -503,26 +503,22 @@ void ConvolveCompoundHorizontal_C(
   const ptrdiff_t src_stride = reference_stride / sizeof(Pixel);
   auto* dest = static_cast<uint16_t*>(prediction);
   const int filter_id = (subpixel_x >> 6) & kSubPixelMask;
-  const int compound_round_offset =
-      (1 << (bitdepth + 4)) + (1 << (bitdepth + 3));
   const int inter_round_vertical_shift =
       inter_round_bits_vertical - kFilterBits;
-  // Shift for horizontal and vertical.
-  const int right_shift = inter_round_vertical_shift + kRoundBitsHorizontal;
-  // Rounding for horizontal and vertical.
-  const int rounding =
-      (1 << (right_shift - 1)) +
-      (((right_shift != kRoundBitsHorizontal)) << (kRoundBitsHorizontal - 1));
+  // TODO(b/146439793): Remove this offset.
+  const int blend_offset = ((1 << (bitdepth + 4)) + (1 << (bitdepth + 3))) >>
+                           inter_round_vertical_shift;
   int y = 0;
   do {
     int x = 0;
     do {
       int sum = 0;
       for (int k = 0; k < kSubPixelTaps; ++k) {
-        sum += kSubPixelFilters[filter_index][filter_id][k] * src[x + k];
+        sum += kHalfSubPixelFilters[filter_index][filter_id][k] * src[x + k];
       }
-      sum = (sum + rounding) >> right_shift;
-      dest[x] = sum + (compound_round_offset >> inter_round_vertical_shift);
+      sum = RightShiftWithRounding(sum, kRoundBitsHorizontal - 1);
+      sum = RightShiftWithRounding(sum, inter_round_vertical_shift);
+      dest[x] = sum + blend_offset;
     } while (++x < width);
 
     src += src_stride;
@@ -554,20 +550,21 @@ void ConvolveCompoundVertical_C(const void* const reference,
   auto* dest = static_cast<uint16_t*>(prediction);
   const int filter_id = (subpixel_y >> 6) & kSubPixelMask;
   const int bits_shift = kFilterBits - kRoundBitsHorizontal;
-  const int compound_round_offset =
-      ((1 << (bitdepth + 4)) + (1 << (bitdepth + 3))) >>
-      (inter_round_bits_vertical - kFilterBits);
+  // TODO(b/146439793): Remove this offset.
+  const int blend_offset = ((1 << (bitdepth + 4)) + (1 << (bitdepth + 3))) >>
+                           (inter_round_bits_vertical - kFilterBits);
   int y = 0;
   do {
     int x = 0;
     do {
       int sum = 0;
       for (int k = 0; k < kSubPixelTaps; ++k) {
-        sum += kSubPixelFilters[filter_index][filter_id][k] *
+        sum += kHalfSubPixelFilters[filter_index][filter_id][k] *
                src[k * src_stride + x];
       }
-      sum = RightShiftWithRounding(sum, inter_round_bits_vertical - bits_shift);
-      dest[x] = sum + compound_round_offset;
+      sum = RightShiftWithRounding(sum,
+                                   inter_round_bits_vertical - bits_shift - 1);
+      dest[x] = sum + blend_offset;
     } while (++x < width);
     src += src_stride;
     dest += pred_stride;
