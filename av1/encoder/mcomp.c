@@ -1886,8 +1886,20 @@ static int full_pixel_diamond(MACROBLOCK *x, MV *mvp_full, int step_param,
   int bestsme = av1_diamond_search_sad_c(x, cfg, mvp_full, &temp_mv, step_param,
                                          sadpb, &n, fn_ptr, ref_mv, second_pred,
                                          mask, mask_stride, inv_mask);
-  if (bestsme < INT_MAX)
-    bestsme = av1_get_mvpred_var(x, &temp_mv, ref_mv, fn_ptr, use_var);
+
+  if (bestsme < INT_MAX) {
+    if (mask)
+      bestsme = av1_get_mvpred_mask_var(
+          x, &temp_mv, ref_mv, second_pred, mask, mask_stride, inv_mask, fn_ptr,
+          &x->plane[0].src, &x->e_mbd.plane[0].pre[0], use_var);
+    else if (second_pred)
+      bestsme = av1_get_mvpred_av_var(x, &temp_mv, ref_mv, second_pred, fn_ptr,
+                                      &x->plane[0].src,
+                                      &x->e_mbd.plane[0].pre[0], use_var);
+    else
+      bestsme = av1_get_mvpred_var(x, &temp_mv, ref_mv, fn_ptr, use_var);
+  }
+
   x->best_mv.as_mv = temp_mv;
 
   // If there won't be more n-step search, check to see if refining search is
@@ -1901,8 +1913,19 @@ static int full_pixel_diamond(MACROBLOCK *x, MV *mvp_full, int step_param,
       thissme = av1_diamond_search_sad_c(
           x, cfg, mvp_full, &temp_mv, step_param + n, sadpb, &num00, fn_ptr,
           ref_mv, second_pred, mask, mask_stride, inv_mask);
-      if (thissme < INT_MAX)
-        thissme = av1_get_mvpred_var(x, &temp_mv, ref_mv, fn_ptr, use_var);
+
+      if (thissme < INT_MAX) {
+        if (mask)
+          thissme = av1_get_mvpred_mask_var(
+              x, &temp_mv, ref_mv, second_pred, mask, mask_stride, inv_mask,
+              fn_ptr, &x->plane[0].src, &x->e_mbd.plane[0].pre[0], use_var);
+        else if (second_pred)
+          thissme = av1_get_mvpred_av_var(x, &temp_mv, ref_mv, second_pred,
+                                          fn_ptr, &x->plane[0].src,
+                                          &x->e_mbd.plane[0].pre[0], use_var);
+        else
+          thissme = av1_get_mvpred_var(x, &temp_mv, ref_mv, fn_ptr, use_var);
+      }
 
       if (thissme < bestsme) {
         bestsme = thissme;
