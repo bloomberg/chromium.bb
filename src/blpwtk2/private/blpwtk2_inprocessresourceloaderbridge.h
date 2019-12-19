@@ -39,6 +39,8 @@ namespace blpwtk2 {
 
 class InProcessResourceLoaderBridge : public content::ResourceLoaderBridge {
  public:
+  class InProcessResourceContext;
+
   InProcessResourceLoaderBridge(
       const content::ResourceRequestInfoProvider& request_info_provider);
   ~InProcessResourceLoaderBridge() final;
@@ -61,8 +63,8 @@ class InProcessResourceLoaderBridge : public content::ResourceLoaderBridge {
 
  private:
   class InProcessURLRequest;
-  class InProcessResourceContext;
   scoped_refptr<InProcessResourceContext> d_context;
+  int d_receiverID{0};
 
   DISALLOW_COPY_AND_ASSIGN(InProcessResourceLoaderBridge);
 };
