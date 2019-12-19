@@ -100,8 +100,6 @@ int16x8_t SumOnePassTaps(const uint8x8_t* const src,
     sum = vmlal_u8(sum, src[1], taps[1]);
     sum = vmlal_u8(sum, src[2], taps[2]);
     sum = vmlal_u8(sum, src[3], taps[3]);
-  } else {
-    sum = vdupq_n_u16(0);
   }
   return vreinterpretq_s16_u16(sum);
 }
