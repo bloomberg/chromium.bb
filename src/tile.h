@@ -74,7 +74,8 @@ class Tile : public Allocable {
            reference_frame_sign_bias,
        const std::array<RefCountedBufferPtr, kNumReferenceFrameTypes>&
            reference_frames,
-       Array2D<TemporalMotionVector>* motion_field_mv,
+       Array2D<MotionVector>* motion_field_mv,
+       Array2D<int>* motion_field_reference_offset,
        const std::array<uint8_t, kNumReferenceFrameTypes>& reference_order_hint,
        const WedgeMaskArray& wedge_masks,
        const SymbolDecoderContext& symbol_decoder_context,
@@ -579,7 +580,8 @@ class Tile : public Allocable {
   const std::array<bool, kNumReferenceFrameTypes>& reference_frame_sign_bias_;
   const std::array<RefCountedBufferPtr, kNumReferenceFrameTypes>&
       reference_frames_;
-  Array2D<TemporalMotionVector>* const motion_field_mv_;
+  Array2D<MotionVector>* const motion_field_mv_;
+  Array2D<int>* const motion_field_reference_offset_;
   const std::array<uint8_t, kNumReferenceFrameTypes>& reference_order_hint_;
   const WedgeMaskArray& wedge_masks_;
   DaalaBitReader reader_;

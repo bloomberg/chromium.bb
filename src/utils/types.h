@@ -49,12 +49,6 @@ struct CandidateMotionVector {
   int weight;
 };
 
-// Stores the motion vector used for motion field estimation.
-struct TemporalMotionVector : public Allocable {
-  MotionVector mv;
-  int reference_offset;
-};
-
 // MvContexts contains the contexts used to decode portions of an inter block
 // mode info to set the y_mode field in BlockParameters.
 //

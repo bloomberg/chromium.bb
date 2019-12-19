@@ -93,7 +93,8 @@ struct DecoderState {
   std::array<RefCountedBufferPtr, kNumReferenceFrameTypes> reference_frame;
   RefCountedBufferPtr current_frame;
   WedgeMaskArray wedge_masks;
-  Array2D<TemporalMotionVector> motion_field_mv;
+  Array2D<MotionVector> motion_field_mv;
+  Array2D<int> motion_field_reference_offset;
 };
 
 class DecoderImpl : public Allocable {
