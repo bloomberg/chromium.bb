@@ -1821,12 +1821,11 @@ static aom_codec_err_t encoder_init(aom_codec_ctx_t *ctx,
       reduce_ratio(&priv->timestamp_ratio);
 
       set_encoder_config(&priv->oxcf, &priv->cfg, &priv->extra_cfg);
-      if (((int)priv->cfg.g_lag_in_frames - priv->oxcf.lag_in_frames) >=
-              MIN_LAP_LAG &&
+      if (((int)priv->cfg.g_lag_in_frames - LAP_LAG_IN_FRAMES) >= MIN_LAP_LAG &&
           priv->oxcf.rc_mode == AOM_Q && priv->oxcf.pass == 0 &&
           priv->oxcf.mode == GOOD) {
         // Enable look ahead
-        *num_lap_buffers = priv->cfg.g_lag_in_frames - priv->oxcf.lag_in_frames;
+        *num_lap_buffers = priv->cfg.g_lag_in_frames - LAP_LAG_IN_FRAMES;
       }
       priv->oxcf.use_highbitdepth =
           (ctx->init_flags & AOM_CODEC_USE_HIGHBITDEPTH) ? 1 : 0;
@@ -2003,10 +2002,11 @@ static aom_codec_err_t encoder_encode(aom_codec_alg_priv_t *ctx,
       subsampling_y = sd.subsampling_y;
 
       if (!cpi->lookahead) {
+        int lag_in_frames = cpi_lap != NULL ? cpi_lap->oxcf.lag_in_frames
+                                            : cpi->oxcf.lag_in_frames;
         cpi->lookahead = av1_lookahead_init(
             cpi->oxcf.width, cpi->oxcf.height, subsampling_x, subsampling_y,
-            use_highbitdepth, cpi->oxcf.lag_in_frames,
-            cpi->oxcf.border_in_pixels,
+            use_highbitdepth, lag_in_frames, cpi->oxcf.border_in_pixels,
             (cpi->oxcf.resize_mode || cpi->oxcf.superres_mode),
             ctx->num_lap_buffers);
       }

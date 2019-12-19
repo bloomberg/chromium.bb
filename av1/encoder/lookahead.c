@@ -71,7 +71,6 @@ struct lookahead_ctx *av1_lookahead_init(
     ctx->read_ctxs[ENCODE_STAGE].pop_sz = ctx->max_sz - MAX_PRE_FRAMES;
     ctx->read_ctxs[ENCODE_STAGE].valid = 1;
     if (num_lap_buffers) {
-      // TODO(Mufaddal): explore if stat generation stage lag can be reduced.
       ctx->read_ctxs[LAP_STAGE].pop_sz = lag_in_frames;
       ctx->read_ctxs[LAP_STAGE].valid = 1;
     }
