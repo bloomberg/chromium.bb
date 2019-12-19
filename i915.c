@@ -24,17 +24,13 @@
 #define I915_CACHELINE_MASK (I915_CACHELINE_SIZE - 1)
 
 static const uint32_t render_target_formats[] = { DRM_FORMAT_ABGR16161616F, DRM_FORMAT_ABGR2101010,
-						  DRM_FORMAT_ABGR8888,	    DRM_FORMAT_ARGB1555,
-						  DRM_FORMAT_ARGB2101010,   DRM_FORMAT_ARGB8888,
-						  DRM_FORMAT_RGB565,	    DRM_FORMAT_XBGR2101010,
-						  DRM_FORMAT_XBGR8888,	    DRM_FORMAT_XRGB1555,
+						  DRM_FORMAT_ABGR8888,	    DRM_FORMAT_ARGB2101010,
+						  DRM_FORMAT_ARGB8888,	    DRM_FORMAT_RGB565,
+						  DRM_FORMAT_XBGR2101010,   DRM_FORMAT_XBGR8888,
 						  DRM_FORMAT_XRGB2101010,   DRM_FORMAT_XRGB8888 };
 
-static const uint32_t tileable_texture_source_formats[] = { DRM_FORMAT_GR88, DRM_FORMAT_R8,
-							    DRM_FORMAT_UYVY, DRM_FORMAT_YUYV };
-
-static const uint32_t texture_source_formats[] = { DRM_FORMAT_YVU420, DRM_FORMAT_YVU420_ANDROID,
-						   DRM_FORMAT_NV12, DRM_FORMAT_P010 };
+static const uint32_t texture_source_formats[] = { DRM_FORMAT_R8, DRM_FORMAT_NV12, DRM_FORMAT_P010,
+						   DRM_FORMAT_YVU420, DRM_FORMAT_YVU420_ANDROID };
 
 struct i915_device {
 	uint32_t gen;
@@ -139,10 +135,6 @@ static int i915_add_combinations(struct driver *drv)
 	drv_add_combinations(drv, texture_source_formats, ARRAY_SIZE(texture_source_formats),
 			     &metadata, texture_use_flags);
 
-	drv_add_combinations(drv, tileable_texture_source_formats,
-			     ARRAY_SIZE(tileable_texture_source_formats), &metadata,
-			     texture_use_flags);
-
 	/*
 	 * Chrome uses DMA-buf mmap to write to YV12 buffers, which are then accessed by the
 	 * Video Encoder Accelerator (VEA). It could also support NV12 potentially in the future.
@@ -186,20 +178,12 @@ static int i915_add_combinations(struct driver *drv)
 	drv_add_combinations(drv, render_target_formats, ARRAY_SIZE(render_target_formats),
 			     &metadata, render_use_flags);
 
-	drv_add_combinations(drv, tileable_texture_source_formats,
-			     ARRAY_SIZE(tileable_texture_source_formats), &metadata,
-			     texture_use_flags);
-
 	metadata.tiling = I915_TILING_Y;
 	metadata.priority = 3;
 	metadata.modifier = I915_FORMAT_MOD_Y_TILED;
 
 	drv_add_combinations(drv, render_target_formats, ARRAY_SIZE(render_target_formats),
 			     &metadata, render_use_flags);
-
-	drv_add_combinations(drv, tileable_texture_source_formats,
-			     ARRAY_SIZE(tileable_texture_source_formats), &metadata,
-			     texture_use_flags);
 
 	/* Support y-tiled NV12 and P010 for libva */
 	drv_add_combination(drv, DRM_FORMAT_NV12, &metadata,
