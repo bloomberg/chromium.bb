@@ -32,6 +32,39 @@ namespace content {
 ResourceRequestInfoProvider::ResourceRequestInfoProvider() = default;
 ResourceRequestInfoProvider::~ResourceRequestInfoProvider() = default;
 
+bool ResourceRequestInfoProvider::operator==(
+    const ResourceRequestInfoProvider& other) const {
+  if (this == &other) {
+    return true;
+  }
+  bool flag =
+      url_ == other.url_ &&
+      firstPartyForCookies_ == other.firstPartyForCookies_ &&
+      allowStoredCredentials_ == other.allowStoredCredentials_ &&
+      loadFlags_ == other.loadFlags_ && httpMethod_ == other.httpMethod_ &&
+      reportUploadProgress_ == other.reportUploadProgress_ &&
+      reportRawHeaders_ == other.reportRawHeaders_ &&
+      hasUserGesture_ == other.hasUserGesture_ &&
+      routingId_ == other.routingId_ &&
+      appCacheHostId_ == other.appCacheHostId_ &&
+      priority_ == other.priority_ && requestBody_ == other.requestBody_;
+  if (!flag) {
+    return flag;
+  }
+  const auto& headers = requestHeaders_.GetHeaderVector();
+  const auto& otherHeaders = other.requestHeaders_.GetHeaderVector();
+  if (headers.size() != otherHeaders.size()) {
+    return false;
+  }
+  for (std::size_t i = 0; i < headers.size(); ++i) {
+    if (headers[i].key != otherHeaders[i].key ||
+        headers[i].value != otherHeaders[i].value) {
+      return false;
+    }
+  }
+  return true;
+}
+
 const GURL& ResourceRequestInfoProvider::url() const {
   return url_;
 }
