@@ -15,6 +15,7 @@
 #include "aom_scale/yv12config.h"
 #include "av1/encoder/encoder.h"
 
-void av1_vmaf_preprocessing(const AV1_COMP *cpi, YV12_BUFFER_CONFIG *source);
+void av1_vmaf_preprocessing(const AV1_COMP *cpi, YV12_BUFFER_CONFIG *source,
+                            bool use_block_based_method);
 
 #endif  // AOM_AV1_ENCODER_TUNE_VMAF_H_

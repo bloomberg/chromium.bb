@@ -6242,7 +6242,7 @@ int av1_receive_raw_frame(AV1_COMP *cpi, aom_enc_frame_flags_t frame_flags,
 #if CONFIG_TUNE_VMAF
   if (!is_stat_generation_stage(cpi) &&
       cpi->oxcf.tuning == AOM_TUNE_VMAF_WITH_PREPROCESSING) {
-    av1_vmaf_preprocessing(cpi, sd);
+    av1_vmaf_preprocessing(cpi, sd, false);
   }
 #endif
 
