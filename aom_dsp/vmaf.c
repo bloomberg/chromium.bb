@@ -8,9 +8,8 @@
  * Media Patent License 1.0 was not distributed with this source code in the
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
-
 #include <assert.h>
-#include <libvmaf.h>
+#include <libvmaf/libvmaf.h>
 #include <stdlib.h>
 #include "aom_dsp/vmaf.h"
 #include "aom_ports/system_state.h"

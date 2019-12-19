@@ -384,7 +384,7 @@ if(CONFIG_AV1_ENCODER)
               ${AOM_ENCODER_TOOL_TARGETS})
 
   if(CONFIG_TUNE_VMAF)
-    find_library(VMAF vmaf)
+    find_library(VMAF libvmaf.a vmaf)
     if(NOT VMAF)
       message(FATAL_ERROR "VMAF library not found.")
     endif()
