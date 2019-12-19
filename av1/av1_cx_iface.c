@@ -1823,7 +1823,7 @@ static aom_codec_err_t encoder_init(aom_codec_ctx_t *ctx,
       set_encoder_config(&priv->oxcf, &priv->cfg, &priv->extra_cfg);
       if (((int)priv->cfg.g_lag_in_frames - LAP_LAG_IN_FRAMES) >= MIN_LAP_LAG &&
           priv->oxcf.rc_mode == AOM_Q && priv->oxcf.pass == 0 &&
-          priv->oxcf.mode == GOOD) {
+          priv->oxcf.mode == GOOD && priv->oxcf.fwd_kf_enabled == 0) {
         // Enable look ahead
         *num_lap_buffers = priv->cfg.g_lag_in_frames - LAP_LAG_IN_FRAMES;
       }
