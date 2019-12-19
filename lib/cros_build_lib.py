@@ -919,6 +919,7 @@ def run(cmd, print_cmd=True, stdout=None, stderr=None,
 
 def RunCommand(cmd, **kwargs):
   """Backwards compat API."""
+  logging.warning('RunCommand() has been renamed to run()')
   return run(cmd, **kwargs)
 
 

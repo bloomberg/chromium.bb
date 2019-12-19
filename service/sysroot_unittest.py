@@ -165,8 +165,7 @@ class CreateSimpleChromeSysrootTest(cros_test_lib.MockTempDirTestCase):
   """Tests for CreateSimpleChromeSysroot."""
 
   def setUp(self):
-    self.run_mock = self.PatchObject(cros_build_lib, 'RunCommand',
-                                     return_value=True)
+    self.run_mock = self.PatchObject(cros_build_lib, 'run', return_value=True)
     self.source_root = os.path.join(self.tempdir, 'source_root')
     osutils.SafeMakedirs(self.source_root)
     self.PatchObject(constants, 'SOURCE_ROOT', new=self.source_root)
@@ -176,7 +175,7 @@ class CreateSimpleChromeSysrootTest(cros_test_lib.MockTempDirTestCase):
     target = 'board'
     use_flags = ['cros-debug', 'chrome_internal']
 
-    # Call service, verify arguments passed to RunCommand.
+    # Call service, verify arguments passed to run.
     sysroot.CreateSimpleChromeSysroot(target, use_flags)
     self.run_mock.assert_called_with(
         ['cros_generate_sysroot', '--out-dir', mock.ANY, '--board', target,

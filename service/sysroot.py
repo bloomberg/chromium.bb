@@ -288,8 +288,8 @@ def CreateSimpleChromeSysroot(target, use_flags):
   with osutils.TempDir(delete=False) as tempdir:
     cmd = ['cros_generate_sysroot', '--out-dir', tempdir, '--board',
            target, '--deps-only', '--package', constants.CHROME_CP]
-    cros_build_lib.RunCommand(cmd, cwd=constants.SOURCE_ROOT, enter_chroot=True,
-                              extra_env=extra_env)
+    cros_build_lib.run(cmd, cwd=constants.SOURCE_ROOT, enter_chroot=True,
+                       extra_env=extra_env)
     sysroot_tar_path = os.path.join(tempdir, constants.CHROME_SYSROOT_TAR)
     return sysroot_tar_path
 
