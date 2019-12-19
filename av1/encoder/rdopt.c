@@ -8488,11 +8488,13 @@ static AOM_INLINE void get_inter_predictors_masked_compound(
 
 // Takes a backup of rate, distortion and model_rd for future reuse
 static INLINE void backup_stats(COMPOUND_TYPE cur_type, int32_t *comp_rate,
-                                int64_t *comp_dist, int64_t *comp_model_rd,
-                                RD_STATS *rd_stats, int64_t est_rd) {
+                                int64_t *comp_dist, int32_t *comp_model_rate,
+                                int64_t *comp_model_dist, int rate_sum,
+                                int64_t dist_sum, RD_STATS *rd_stats) {
   comp_rate[cur_type] = rd_stats->rate;
   comp_dist[cur_type] = rd_stats->dist;
-  comp_model_rd[cur_type] = est_rd;
+  comp_model_rate[cur_type] = rate_sum;
+  comp_model_dist[cur_type] = dist_sum;
 }
 
 static int64_t masked_compound_type_rd(
@@ -8501,8 +8503,9 @@ static int64_t masked_compound_type_rd(
     int rate_mv, const BUFFER_SET *ctx, int *out_rate_mv, uint8_t **preds0,
     uint8_t **preds1, int16_t *residual1, int16_t *diff10, int *strides,
     int mode_rate, int64_t rd_thresh, int *calc_pred_masked_compound,
-    int32_t *comp_rate, int64_t *comp_dist, int64_t *const comp_model_rd,
-    const int64_t comp_best_model_rd, int64_t *const comp_model_rd_cur) {
+    int32_t *comp_rate, int64_t *comp_dist, int32_t *comp_model_rate,
+    int64_t *comp_model_dist, const int64_t comp_best_model_rd,
+    int64_t *const comp_model_rd_cur) {
   const AV1_COMMON *const cm = &cpi->common;
   MACROBLOCKD *xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = xd->mi[0];
@@ -8648,8 +8651,8 @@ static int64_t masked_compound_type_rd(
       rd =
           RDCOST(x->rdmult, *rs2 + *out_rate_mv + rd_stats.rate, rd_stats.dist);
       // Backup rate and distortion for future reuse
-      backup_stats(compound_type, comp_rate, comp_dist, comp_model_rd,
-                   &rd_stats, *comp_model_rd_cur);
+      backup_stats(compound_type, comp_rate, comp_dist, comp_model_rate,
+                   comp_model_dist, rate_sum, dist_sum, &rd_stats);
     }
   } else {
     // Reuse data as matching record is found
@@ -8664,7 +8667,10 @@ static int64_t masked_compound_type_rd(
     // Calculate RD cost based on stored stats
     rd = RDCOST(x->rdmult, *rs2 + *out_rate_mv + comp_rate[compound_type],
                 comp_dist[compound_type]);
-    *comp_model_rd_cur = comp_model_rd[compound_type];
+    // Recalculate model rdcost with the updated rate
+    *comp_model_rd_cur =
+        RDCOST(x->rdmult, *rs2 + *out_rate_mv + comp_model_rate[compound_type],
+               comp_model_dist[compound_type]);
   }
   return rd;
 }
@@ -9312,12 +9318,10 @@ static INLINE int is_interp_filter_good_match(
 }
 
 // Checks if characteristics of search match
-static INLINE int is_comp_rd_match(const AV1_COMP *const cpi,
-                                   const MACROBLOCK *const x,
-                                   const COMP_RD_STATS *st,
-                                   const MB_MODE_INFO *const mi,
-                                   int32_t *comp_rate, int64_t *comp_dist,
-                                   int64_t *comp_model_rd) {
+static INLINE int is_comp_rd_match(
+    const AV1_COMP *const cpi, const MACROBLOCK *const x,
+    const COMP_RD_STATS *st, const MB_MODE_INFO *const mi, int32_t *comp_rate,
+    int64_t *comp_dist, int32_t *comp_model_rate, int64_t *comp_model_dist) {
   // TODO(ranjit): Ensure that compound type search use regular filter always
   // and check if following check can be removed
   // Check if interp filter matches with previous case
@@ -9339,7 +9343,8 @@ static INLINE int is_comp_rd_match(const AV1_COMP *const cpi,
        comp_type++) {
     comp_rate[comp_type] = st->rate[comp_type];
     comp_dist[comp_type] = st->dist[comp_type];
-    comp_model_rd[comp_type] = st->comp_model_rd[comp_type];
+    comp_model_rate[comp_type] = st->model_rate[comp_type];
+    comp_model_dist[comp_type] = st->model_dist[comp_type];
   }
 
   // For compound wedge/segment, reuse data only if NEWMV is not present in
@@ -9351,8 +9356,10 @@ static INLINE int is_comp_rd_match(const AV1_COMP *const cpi,
            sizeof(comp_rate[COMPOUND_WEDGE]) * 2);
     memcpy(&comp_dist[COMPOUND_WEDGE], &st->dist[COMPOUND_WEDGE],
            sizeof(comp_dist[COMPOUND_WEDGE]) * 2);
-    memcpy(&comp_model_rd[COMPOUND_WEDGE], &st->comp_model_rd[COMPOUND_WEDGE],
-           sizeof(comp_model_rd[COMPOUND_WEDGE]) * 2);
+    memcpy(&comp_model_rate[COMPOUND_WEDGE], &st->model_rate[COMPOUND_WEDGE],
+           sizeof(comp_model_rate[COMPOUND_WEDGE]) * 2);
+    memcpy(&comp_model_dist[COMPOUND_WEDGE], &st->model_dist[COMPOUND_WEDGE],
+           sizeof(comp_model_dist[COMPOUND_WEDGE]) * 2);
   }
   return 1;
 }
@@ -9394,10 +9401,11 @@ static INLINE int find_comp_rd_in_stats(const AV1_COMP *const cpi,
                                         const MACROBLOCK *x,
                                         const MB_MODE_INFO *const mbmi,
                                         int32_t *comp_rate, int64_t *comp_dist,
-                                        int64_t *comp_model_rd) {
+                                        int32_t *comp_model_rate,
+                                        int64_t *comp_model_dist) {
   for (int j = 0; j < x->comp_rd_stats_idx; ++j) {
     if (is_comp_rd_match(cpi, x, &x->comp_rd_stats[j], mbmi, comp_rate,
-                         comp_dist, comp_model_rd)) {
+                         comp_dist, comp_model_rate, comp_model_dist)) {
       return 1;
     }
   }
@@ -9423,19 +9431,17 @@ static INLINE int save_interp_filter_search_stat(
   return interp_filter_stats_idx;
 }
 
-static INLINE void save_comp_rd_search_stat(MACROBLOCK *x,
-                                            const MB_MODE_INFO *const mbmi,
-                                            const int32_t *comp_rate,
-                                            const int64_t *comp_dist,
-                                            const int64_t *comp_model_rd,
-                                            const int_mv *cur_mv) {
+static INLINE void save_comp_rd_search_stat(
+    MACROBLOCK *x, const MB_MODE_INFO *const mbmi, const int32_t *comp_rate,
+    const int64_t *comp_dist, const int32_t *comp_model_rate,
+    const int64_t *comp_model_dist, const int_mv *cur_mv) {
   const int offset = x->comp_rd_stats_idx;
   if (offset < MAX_COMP_RD_STATS) {
     COMP_RD_STATS *const rd_stats = x->comp_rd_stats + offset;
     memcpy(rd_stats->rate, comp_rate, sizeof(rd_stats->rate));
     memcpy(rd_stats->dist, comp_dist, sizeof(rd_stats->dist));
-    memcpy(rd_stats->comp_model_rd, comp_model_rd,
-           sizeof(rd_stats->comp_model_rd));
+    memcpy(rd_stats->model_rate, comp_model_rate, sizeof(rd_stats->model_rate));
+    memcpy(rd_stats->model_dist, comp_model_dist, sizeof(rd_stats->model_dist));
     memcpy(rd_stats->mv, cur_mv, sizeof(rd_stats->mv));
     memcpy(rd_stats->ref_frames, mbmi->ref_frame, sizeof(rd_stats->ref_frames));
     rd_stats->mode = mbmi->mode;
@@ -10648,8 +10654,8 @@ static INLINE void update_mask_best_mv(const MB_MODE_INFO *const mbmi,
 // Computes the valid compound_types to be evaluated
 static INLINE int compute_valid_comp_types(
     MACROBLOCK *x, const AV1_COMP *const cpi, int *try_average_and_distwtd_comp,
-    int32_t *comp_rate, BLOCK_SIZE bsize, int masked_compound_used,
-    int mode_search_mask, COMPOUND_TYPE *valid_comp_types) {
+    BLOCK_SIZE bsize, int masked_compound_used, int mode_search_mask,
+    COMPOUND_TYPE *valid_comp_types) {
   const AV1_COMMON *cm = &cpi->common;
   int valid_type_count = 0;
   int comp_type, valid_check;
@@ -10660,9 +10666,7 @@ static INLINE int compute_valid_comp_types(
       ((mode_search_mask & (1 << COMPOUND_DISTWTD)) &&
        cm->seq_params.order_hint_info.enable_dist_wtd_comp == 1 &&
        cpi->sf.inter_sf.use_dist_wtd_comp_flag != DIST_WTD_COMP_DISABLED);
-  *try_average_and_distwtd_comp = try_average_comp && try_distwtd_comp &&
-                                  comp_rate[COMPOUND_AVERAGE] == INT_MAX &&
-                                  comp_rate[COMPOUND_DISTWTD] == INT_MAX;
+  *try_average_and_distwtd_comp = try_average_comp && try_distwtd_comp;
 
   // Check if COMPOUND_AVERAGE and COMPOUND_DISTWTD are valid cases
   for (comp_type = COMPOUND_AVERAGE; comp_type <= COMPOUND_DISTWTD;
@@ -10688,6 +10692,25 @@ static INLINE int compute_valid_comp_types(
     }
   }
   return valid_type_count;
+}
+
+// Choose the better of the two COMPOUND_AVERAGE,
+// COMPOUND_DISTWTD based on modeled cost
+static int find_best_avg_distwtd_comp_type(MACROBLOCK *x, int *comp_model_rate,
+                                           int64_t *comp_model_dist,
+                                           int rate_mv, int64_t *best_rd) {
+  int64_t est_rd[2];
+  est_rd[COMPOUND_AVERAGE] =
+      RDCOST(x->rdmult, comp_model_rate[COMPOUND_AVERAGE] + rate_mv,
+             comp_model_dist[COMPOUND_AVERAGE]);
+  est_rd[COMPOUND_DISTWTD] =
+      RDCOST(x->rdmult, comp_model_rate[COMPOUND_DISTWTD] + rate_mv,
+             comp_model_dist[COMPOUND_DISTWTD]);
+  int best_type = (est_rd[COMPOUND_AVERAGE] <= est_rd[COMPOUND_DISTWTD])
+                      ? COMPOUND_AVERAGE
+                      : COMPOUND_DISTWTD;
+  *best_rd = est_rd[best_type];
+  return best_type;
 }
 
 static int compound_type_rd(
@@ -10724,11 +10747,12 @@ static int compound_type_rd(
   int64_t comp_dist[COMPOUND_TYPES] = { INT64_MAX, INT64_MAX, INT64_MAX,
                                         INT64_MAX };
   int32_t comp_rate[COMPOUND_TYPES] = { INT_MAX, INT_MAX, INT_MAX, INT_MAX };
-  int64_t comp_model_rd[COMPOUND_TYPES] = { INT64_MAX, INT64_MAX, INT64_MAX,
-                                            INT64_MAX };
-  const int match_found =
-      find_comp_rd_in_stats(cpi, x, mbmi, comp_rate, comp_dist, comp_model_rd);
-
+  int32_t comp_model_rate[COMPOUND_TYPES] = { INT_MAX, INT_MAX, INT_MAX,
+                                              INT_MAX };
+  int64_t comp_model_dist[COMPOUND_TYPES] = { INT64_MAX, INT64_MAX, INT64_MAX,
+                                              INT64_MAX };
+  const int match_found = find_comp_rd_in_stats(
+      cpi, x, mbmi, comp_rate, comp_dist, comp_model_rate, comp_model_dist);
   best_mv[0].as_int = cur_mv[0].as_int;
   best_mv[1].as_int = cur_mv[1].as_int;
   *rd = INT64_MAX;
@@ -10746,8 +10770,8 @@ static int compound_type_rd(
   // evaluated and populates the same in the local array valid_comp_types[].
   // It also sets the flag 'try_average_and_distwtd_comp'
   valid_type_count = compute_valid_comp_types(
-      x, cpi, &try_average_and_distwtd_comp, comp_rate, bsize,
-      masked_compound_used, mode_search_mask, valid_comp_types);
+      x, cpi, &try_average_and_distwtd_comp, bsize, masked_compound_used,
+      mode_search_mask, valid_comp_types);
 
   // The following context indices are independent of compound type
   const int comp_group_idx_ctx = get_comp_group_idx_context(xd);
@@ -10768,53 +10792,76 @@ static int compound_type_rd(
   // the two.
   if (try_average_and_distwtd_comp) {
     int est_rate[2];
-    int64_t est_dist[2], est_rd[2];
+    int64_t est_dist[2], est_rd;
     COMPOUND_TYPE best_type;
-
-    // Calculate model_rd for COMPOUND_AVERAGE and COMPOUND_DISTWTD
-    for (int comp_type = COMPOUND_AVERAGE; comp_type <= COMPOUND_DISTWTD;
-         comp_type++) {
-      update_mbmi_for_compound_type(mbmi, comp_type);
-      av1_enc_build_inter_predictor(cm, xd, mi_row, mi_col, orig_dst, bsize,
-                                    AOM_PLANE_Y, AOM_PLANE_Y);
-      model_rd_sb_fn[MODELRD_CURVFIT](
-          cpi, bsize, x, xd, 0, 0, &est_rate[comp_type], &est_dist[comp_type],
-          NULL, NULL, NULL, NULL, NULL);
-      est_rate[comp_type] += masked_type_cost[comp_type];
-      est_rd[comp_type] = RDCOST(x->rdmult, est_rate[comp_type] + *rate_mv,
-                                 est_dist[comp_type]);
-      if (comp_type == COMPOUND_AVERAGE) {
-        *is_luma_interp_done = 1;
-        restore_dst_buf(xd, *tmp_dst, 1);
+    // Since modelled rate and dist are separately stored,
+    // compute better of COMPOUND_AVERAGE and COMPOUND_DISTWTD
+    // using the stored stats.
+    if ((comp_model_rate[COMPOUND_AVERAGE] != INT_MAX) &&
+        comp_model_rate[COMPOUND_DISTWTD] != INT_MAX) {
+      // Choose the better of the COMPOUND_AVERAGE,
+      // COMPOUND_DISTWTD on modeled cost.
+      best_type = find_best_avg_distwtd_comp_type(
+          x, comp_model_rate, comp_model_dist, *rate_mv, &est_rd);
+      update_mbmi_for_compound_type(mbmi, best_type);
+      if (comp_rate[best_type] != INT_MAX)
+        best_rd_cur = RDCOST(
+            x->rdmult,
+            masked_type_cost[best_type] + *rate_mv + comp_rate[best_type],
+            comp_dist[best_type]);
+      comp_model_rd_cur = est_rd;
+      // Update stats for best compound type
+      if (best_rd_cur < *rd) {
+        update_best_info(mbmi, rd, &best_type_stats, best_rd_cur,
+                         comp_model_rd_cur, masked_type_cost[best_type]);
       }
-    }
-    // Choose the better of the two based on modeled cost and call
-    // estimate_yrd_for_sb() for that one.
-    best_type = (est_rd[COMPOUND_AVERAGE] <= est_rd[COMPOUND_DISTWTD])
-                    ? COMPOUND_AVERAGE
-                    : COMPOUND_DISTWTD;
-    update_mbmi_for_compound_type(mbmi, best_type);
-    if (best_type == COMPOUND_AVERAGE) restore_dst_buf(xd, *orig_dst, 1);
-    rs2 = masked_type_cost[best_type];
-    RD_STATS est_rd_stats;
-    const int64_t mode_rd = RDCOST(x->rdmult, rs2 + *rate_mv, 0);
-    const int64_t tmp_rd_thresh = AOMMIN(*rd, rd_thresh) - mode_rd;
-    const int64_t est_rd_ =
-        estimate_yrd_for_sb(cpi, bsize, x, tmp_rd_thresh, &est_rd_stats);
+      restore_dst_buf(xd, *tmp_dst, 1);
+    } else {
+      // Calculate model_rd for COMPOUND_AVERAGE and COMPOUND_DISTWTD
+      for (int comp_type = COMPOUND_AVERAGE; comp_type <= COMPOUND_DISTWTD;
+           comp_type++) {
+        update_mbmi_for_compound_type(mbmi, comp_type);
+        av1_enc_build_inter_predictor(cm, xd, mi_row, mi_col, orig_dst, bsize,
+                                      AOM_PLANE_Y, AOM_PLANE_Y);
+        model_rd_sb_fn[MODELRD_CURVFIT](
+            cpi, bsize, x, xd, 0, 0, &est_rate[comp_type], &est_dist[comp_type],
+            NULL, NULL, NULL, NULL, NULL);
+        est_rate[comp_type] += masked_type_cost[comp_type];
+        comp_model_rate[comp_type] = est_rate[comp_type];
+        comp_model_dist[comp_type] = est_dist[comp_type];
+        if (comp_type == COMPOUND_AVERAGE) {
+          *is_luma_interp_done = 1;
+          restore_dst_buf(xd, *tmp_dst, 1);
+        }
+      }
+      // Choose the better of the two based on modeled cost and call
+      // estimate_yrd_for_sb() for that one.
+      best_type = find_best_avg_distwtd_comp_type(
+          x, comp_model_rate, comp_model_dist, *rate_mv, &est_rd);
+      update_mbmi_for_compound_type(mbmi, best_type);
+      if (best_type == COMPOUND_AVERAGE) restore_dst_buf(xd, *orig_dst, 1);
+      rs2 = masked_type_cost[best_type];
+      RD_STATS est_rd_stats;
+      const int64_t mode_rd = RDCOST(x->rdmult, rs2 + *rate_mv, 0);
+      const int64_t tmp_rd_thresh = AOMMIN(*rd, rd_thresh) - mode_rd;
+      const int64_t est_rd_ =
+          estimate_yrd_for_sb(cpi, bsize, x, tmp_rd_thresh, &est_rd_stats);
 
-    if (est_rd_ != INT64_MAX) {
-      best_rd_cur = RDCOST(x->rdmult, rs2 + *rate_mv + est_rd_stats.rate,
-                           est_rd_stats.dist);
-      // Backup rate and distortion for future reuse
-      backup_stats(best_type, comp_rate, comp_dist, comp_model_rd,
-                   &est_rd_stats, est_rd[best_type]);
-      comp_model_rd_cur = est_rd[best_type];
-    }
-    if (best_type == COMPOUND_AVERAGE) restore_dst_buf(xd, *tmp_dst, 1);
-    // Update stats for best compound type
-    if (best_rd_cur < *rd) {
-      update_best_info(mbmi, rd, &best_type_stats, best_rd_cur,
-                       comp_model_rd_cur, rs2);
+      if (est_rd_ != INT64_MAX) {
+        best_rd_cur = RDCOST(x->rdmult, rs2 + *rate_mv + est_rd_stats.rate,
+                             est_rd_stats.dist);
+        // Backup rate and distortion for future reuse
+        backup_stats(best_type, comp_rate, comp_dist, comp_model_rate,
+                     comp_model_dist, est_rate[best_type], est_dist[best_type],
+                     &est_rd_stats);
+        comp_model_rd_cur = est_rd;
+      }
+      if (best_type == COMPOUND_AVERAGE) restore_dst_buf(xd, *tmp_dst, 1);
+      // Update stats for best compound type
+      if (best_rd_cur < *rd) {
+        update_best_info(mbmi, rd, &best_type_stats, best_rd_cur,
+                         comp_model_rd_cur, rs2);
+      }
     }
   }
 
@@ -10855,15 +10902,18 @@ static int compound_type_rd(
                 RDCOST(x->rdmult, rs2 + *rate_mv + rate_sum, dist_sum);
 
             // Backup rate and distortion for future reuse
-            backup_stats(cur_type, comp_rate, comp_dist, comp_model_rd,
-                         &est_rd_stats, comp_model_rd_cur);
+            backup_stats(cur_type, comp_rate, comp_dist, comp_model_rate,
+                         comp_model_dist, rate_sum, dist_sum, &est_rd_stats);
           }
         } else {
           // Calculate RD cost based on stored stats
           assert(comp_dist[cur_type] != INT64_MAX);
           best_rd_cur = RDCOST(x->rdmult, rs2 + *rate_mv + comp_rate[cur_type],
                                comp_dist[cur_type]);
-          comp_model_rd_cur = comp_model_rd[cur_type];
+          // Recalculate model rdcost with the updated rate
+          comp_model_rd_cur =
+              RDCOST(x->rdmult, rs2 + *rate_mv + comp_model_rate[cur_type],
+                     comp_model_dist[cur_type]);
         }
       }
       // use spare buffer for following compound type try
@@ -10883,7 +10933,7 @@ static int compound_type_rd(
             cpi, x, cur_mv, bsize, this_mode, &rs2, *rate_mv, orig_dst,
             &tmp_rate_mv, preds0, preds1, buffers->residual1, buffers->diff10,
             strides, rd_stats->rate, tmp_rd_thresh, &calc_pred_masked_compound,
-            comp_rate, comp_dist, comp_model_rd,
+            comp_rate, comp_dist, comp_model_rate, comp_model_dist,
             best_type_stats.comp_best_model_rd, &comp_model_rd_cur);
       }
     }
@@ -10920,8 +10970,8 @@ static int compound_type_rd(
   }
   restore_dst_buf(xd, *orig_dst, 1);
   if (!match_found)
-    save_comp_rd_search_stat(x, mbmi, comp_rate, comp_dist, comp_model_rd,
-                             cur_mv);
+    save_comp_rd_search_stat(x, mbmi, comp_rate, comp_dist, comp_model_rate,
+                             comp_model_dist, cur_mv);
   return best_type_stats.best_compmode_interinter_cost;
 }
 
