@@ -243,7 +243,11 @@ void mDNSPlatformSetDNSConfig(mDNS* const m,
                               mDNSBool setsearch,
                               domainname* const fqdn,
                               DNameListElem** RegDomains,
-                              DNameListElem** BrowseDomains) {}
+                              DNameListElem** BrowseDomains) {
+  if (fqdn) {
+    std::memset(fqdn, 0, sizeof(*fqdn));
+  }
+}
 
 mStatus mDNSPlatformGetPrimaryInterface(mDNS* const m,
                                         mDNSAddr* v4,
