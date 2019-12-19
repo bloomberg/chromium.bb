@@ -104,30 +104,33 @@ static int mvsad_err_cost(const MACROBLOCK *x, const MV *mv, const MV *ref,
 }
 
 void av1_init_dsmotion_compensation(search_site_config *cfg, int stride) {
-  int len, ss_count = 0;
+  int ss_count = 0;
   int stage_index = MAX_MVSEARCH_STEPS - 1;
 
   cfg->ss[stage_index][0].mv.col = cfg->ss[stage_index][0].mv.row = 0;
   cfg->ss[stage_index][0].offset = 0;
   cfg->stride = stride;
 
-  for (len = MAX_FIRST_STEP; len > 0; len /= 2) {
-    // Generate offsets for 4 search sites per step.
-    const MV ss_mvs[5] = {
-      { 0, 0 }, { -len, 0 }, { len, 0 }, { 0, -len }, { 0, len }
+  for (int radius = MAX_FIRST_STEP; radius > 0; radius /= 2) {
+    int num_search_pts = 8;
+
+    const MV ss_mvs[13] = {
+      { 0, 0 },           { -radius, 0 },      { radius, 0 },
+      { 0, -radius },     { 0, radius },       { -radius, -radius },
+      { radius, radius }, { -radius, radius }, { radius, -radius },
     };
+
     int i;
-    for (i = 0; i < 5; ++i) {
+    for (i = 0; i <= num_search_pts; ++i) {
       search_site *const ss = &cfg->ss[stage_index][i];
       ss->mv = ss_mvs[i];
       ss->offset = ss->mv.row * stride + ss->mv.col;
     }
-    cfg->searches_per_step[stage_index] = 4;
-    cfg->radius[stage_index] = len;
+    cfg->searches_per_step[stage_index] = num_search_pts;
+    cfg->radius[stage_index] = radius;
     --stage_index;
     ++ss_count;
   }
-
   cfg->ss_count = ss_count;
 }
 
@@ -180,7 +183,7 @@ void av1_init3smotion_compensation(search_site_config *cfg, int stride) {
   int stage_index = 0;
   cfg->stride = stride;
   int radius = 1;
-  for (stage_index = 0; stage_index < 15; ++stage_index) {
+  for (stage_index = 0; stage_index < 12; ++stage_index) {
     int tan_radius = AOMMAX((int)(0.41 * radius), 1);
     int num_search_pts = 12;
     if (radius == 1) num_search_pts = 8;
@@ -208,7 +211,7 @@ void av1_init3smotion_compensation(search_site_config *cfg, int stride) {
     cfg->searches_per_step[stage_index] = num_search_pts;
     cfg->radius[stage_index] = radius;
     ++ss_count;
-    radius = (int)AOMMAX((radius * 1.4 + 0.5), radius + 1);
+    radius = (int)AOMMAX((radius * 1.5 + 0.5), radius + 1);
   }
   cfg->ss_count = ss_count;
 }
@@ -2336,6 +2339,7 @@ int av1_full_pixel_search(const AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
                           fn_ptr, 1, ref_mv);
       break;
     case NSTEP:
+    case DIAMOND:
       var = full_pixel_diamond(x, mvp_full, step_param, use_var, error_per_bit,
                                cfg->ss_count - 1 - step_param, cost_list,
                                fn_ptr, ref_mv, cfg, NULL, NULL, 0, 0);

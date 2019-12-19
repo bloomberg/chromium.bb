@@ -4054,14 +4054,9 @@ static void init_motion_estimation(AV1_COMP *cpi) {
     av1_init_dsmotion_compensation(&cpi->ss_cfg[SS_CFG_LOOKAHEAD],
                                    y_stride_src);
   } else {
-    // Update the offsets in search_sites as y_stride can change due to scaled
-    // references. This update allows NSTEP to be used on scaled references as
-    // long as sf.mv.search_method is not DIAMOND. Currently in the codebae,
-    // sf.mv.search_method is never set to DIAMOND.
     av1_init3smotion_compensation(&cpi->ss_cfg[SS_CFG_SRC], y_stride);
     av1_init3smotion_compensation(&cpi->ss_cfg[SS_CFG_LOOKAHEAD], y_stride_src);
   }
-
   av1_init_motion_fpf(&cpi->ss_cfg[SS_CFG_FPF], y_stride);
 }
 
@@ -4115,6 +4110,9 @@ void av1_check_initial_width(AV1_COMP *cpi, int use_highbitdepth,
     seq_params->subsampling_x = subsampling_x;
     seq_params->subsampling_y = subsampling_y;
     seq_params->use_highbitdepth = use_highbitdepth;
+
+    av1_set_speed_features_framesize_independent(cpi, cpi->oxcf.speed);
+    av1_set_speed_features_framesize_dependent(cpi, cpi->oxcf.speed);
 
     alloc_altref_frame_buffer(cpi);
     init_ref_frame_bufs(cpi);

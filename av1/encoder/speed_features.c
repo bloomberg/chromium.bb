@@ -422,7 +422,7 @@ static void set_good_speed_features_framesize_independent(
     // sf->mv_sf.adaptive_motion_search = 1;
     sf->mv_sf.subpel_search_method = SUBPEL_TREE_PRUNED;
     sf->mv_sf.use_accurate_subpel_search = USE_2_TAPS;
-
+    sf->mv_sf.search_method = DIAMOND;
     sf->inter_sf.disable_sb_level_mv_cost_upd = 1;
     // TODO(yunqing): evaluate this speed feature for speed 1 & 2, and combine
     // it with cpi->sf.disable_wedge_search_var_thresh.
