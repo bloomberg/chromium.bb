@@ -1166,6 +1166,7 @@ TEST_F(PasswordStoreTest, SavingClearingProtectedPassword) {
   const base::string16 input = base::ASCIIToUTF16("123password");
   store->SaveGaiaPasswordHash(
       "sync_username", sync_password,
+      /*is_primary_account=*/true,
       metrics_util::GaiaPasswordHashChange::SAVED_ON_CHROME_SIGNIN);
   WaitForPasswordStore();
   EXPECT_TRUE(prefs.HasPrefPath(prefs::kPasswordHashDataList));
@@ -1185,6 +1186,7 @@ TEST_F(PasswordStoreTest, SavingClearingProtectedPassword) {
   // Save a non-sync Gaia password this time.
   const base::string16 gaia_password = base::ASCIIToUTF16("3password");
   store->SaveGaiaPasswordHash("other_gaia_username", gaia_password,
+                              /*is_primary_account=*/false,
                               GaiaPasswordHashChange::NOT_SYNC_PASSWORD_CHANGE);
   base::Optional<PasswordHashData> gaia_password_hash = GetPasswordFromPref(
       "other_gaia_username", /*is_gaia_password=*/true, &prefs);
@@ -1244,6 +1246,7 @@ TEST_F(PasswordStoreTest, SavingClearingProtectedPassword) {
   // Save a Gmail password this time.
   const base::string16 gmail_password = base::ASCIIToUTF16("gmailpass");
   store->SaveGaiaPasswordHash("username@gmail.com", gmail_password,
+                              /*is_primary_account=*/false,
                               GaiaPasswordHashChange::NOT_SYNC_PASSWORD_CHANGE);
   WaitForPasswordStore();
   EXPECT_TRUE(prefs.HasPrefPath(prefs::kPasswordHashDataList));
@@ -1263,6 +1266,7 @@ TEST_F(PasswordStoreTest, SavingClearingProtectedPassword) {
   const base::string16 non_sync_gaia_password = base::ASCIIToUTF16("3password");
   store->SaveGaiaPasswordHash("non_sync_gaia_password@gsuite.com",
                               non_sync_gaia_password,
+                              /*is_primary_account=*/false,
                               GaiaPasswordHashChange::NOT_SYNC_PASSWORD_CHANGE);
   base::Optional<PasswordHashData> non_sync_gaia_password_hash =
       GetPasswordFromPref("non_sync_gaia_password@gsuite.com",
@@ -1328,6 +1332,7 @@ TEST_F(PasswordStoreTest, ReportMetricsForAdvancedProtection) {
   const base::string16 sync_password = base::ASCIIToUTF16("password");
   const base::string16 input = base::ASCIIToUTF16("123password");
   store->SaveGaiaPasswordHash("sync_username", sync_password,
+                              /*is_primary_account=*/true,
                               GaiaPasswordHashChange::SAVED_ON_CHROME_SIGNIN);
   WaitForPasswordStore();
 
@@ -1363,6 +1368,7 @@ TEST_F(PasswordStoreTest, ReportMetricsForNonSyncPassword) {
   const base::string16 not_sync_password = base::ASCIIToUTF16("password");
   const base::string16 input = base::ASCIIToUTF16("123password");
   store->SaveGaiaPasswordHash("not_sync_username", not_sync_password,
+                              /*is_primary_account=*/false,
                               GaiaPasswordHashChange::NOT_SYNC_PASSWORD_CHANGE);
   WaitForPasswordStore();
 
