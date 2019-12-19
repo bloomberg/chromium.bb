@@ -1594,10 +1594,17 @@ class AXPosition {
     if (!text_position->IsIgnored() && !text_position->AtStartOfAnchor()) {
       std::unique_ptr<base::i18n::BreakIterator> grapheme_iterator =
           text_position->GetGraphemeIterator();
-      CHECK_GE(text_position->text_offset_, 0) << *this << '\n' << name_;
-      CHECK_LE(text_position->text_offset_, int{text_position->name_.length()})
-          << *this << '\n'
-          << name_;
+      // The following situation should not be possible but there are existing
+      // crashes in the field.
+      //
+      // TODO(nektar): Remove this workaround as soon as the source of the bug
+      // is identified.
+      if (text_position->text_offset_ > int{text_position->name_.length()})
+        return CreateNullPosition();
+
+      DCHECK_GE(text_position->text_offset_, 0);
+      DCHECK_LE(text_position->text_offset_,
+                int{text_position->name_.length()});
       while (
           !text_position->AtEndOfAnchor() &&
           (!gfx::IsValidCodePointIndex(text_position->name_,
