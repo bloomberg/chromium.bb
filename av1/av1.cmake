@@ -407,8 +407,6 @@ if(CONFIG_REALTIME_ONLY)
                    "${AOM_ROOT}/av1/encoder/firstpass.h"
                    "${AOM_ROOT}/av1/encoder/gop_structure.c"
                    "${AOM_ROOT}/av1/encoder/gop_structure.h"
-                   "${AOM_ROOT}/av1/encoder/mbgraph.c"
-                   "${AOM_ROOT}/av1/encoder/mbgraph.h"
                    "${AOM_ROOT}/av1/encoder/partition_cnn_weights.h"
                    "${AOM_ROOT}/av1/encoder/partition_model_weights.h"
                    "${AOM_ROOT}/av1/encoder/pass2_strategy.c"
