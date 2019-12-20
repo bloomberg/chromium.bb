@@ -9974,7 +9974,7 @@ static int handle_inter_intra_mode(const AV1_COMP *const cpi,
 
     const int rate_overhead =
         interintra_mode_cost[mbmi->interintra_mode] +
-        av1_cost_literal(get_interintra_wedge_bits(bsize)) +
+        x->wedge_idx_cost[bsize][mbmi->interintra_wedge_index] +
         x->wedge_interintra_cost[bsize][1];
     best_interintra_rd_wedge += RDCOST(x->rdmult, rate_overhead + *rate_mv, 0);
 
@@ -10319,7 +10319,7 @@ static int64_t motion_mode_rd(
               x->wedge_interintra_cost[bsize][mbmi->use_wedge_interintra];
           if (mbmi->use_wedge_interintra) {
             rd_stats->rate +=
-                av1_cost_literal(get_interintra_wedge_bits(bsize));
+                x->wedge_idx_cost[bsize][mbmi->interintra_wedge_index];
           }
         }
       }
