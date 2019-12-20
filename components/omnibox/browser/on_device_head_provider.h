@@ -9,6 +9,8 @@
 
 #include "base/callback_list.h"
 #include "base/files/file_path.h"
+#include "base/sequence_checker.h"
+#include "base/task/post_task.h"
 #include "components/omnibox/browser/autocomplete_provider.h"
 #include "components/omnibox/browser/autocomplete_provider_client.h"
 #include "components/omnibox/browser/on_device_head_model.h"
@@ -23,15 +25,15 @@ class AutocompleteProviderListener;
 // greater than 99, such that its matches will not show before any other
 // providers; However the relevance can be changed to any arbitrary value by
 // Finch when the input is not classified as a URL.
+// TODO(crbug.com/925072): make some cleanups after removing |model_| and |this|
+// in task postings from this class.
 class OnDeviceHeadProvider : public AutocompleteProvider {
  public:
   static OnDeviceHeadProvider* Create(AutocompleteProviderClient* client,
                                       AutocompleteProviderListener* listener);
 
-  // Adds a callback to on device head model updater listener which will create
-  // the model instance |model_| once the model is ready on disk.
-  // This function should not be called until the provider has at least one
-  // reference to avoid the binding error.
+  // Adds a callback to on device head model updater listener which will update
+  // |model_filename_| once the model is ready on disk.
   void AddModelUpdateCallback();
 
   void Start(const AutocompleteInput& input, bool minimal_changes) override;
@@ -54,9 +56,6 @@ class OnDeviceHeadProvider : public AutocompleteProvider {
   bool IsOnDeviceHeadProviderAllowed(const AutocompleteInput& input,
                                      const std::string& incognito_serve_mode);
 
-  void StartInternal(const AutocompleteInput& input,
-                     bool is_model_instance_ready);
-
   // Helper functions used for asynchronous search to the on device head model.
   // The Autocomplete input and output from the model will be passed from
   // DoSearch to SearchDone via the OnDeviceHeadProviderParams object.
@@ -71,28 +70,26 @@ class OnDeviceHeadProvider : public AutocompleteProvider {
   // is available.
   void OnModelUpdate(const std::string& new_model_filename);
 
-  // Resets |model_| if new model is available and cleans up the old model if
-  // it exists.
-  void ResetModelInstanceFromNewModel(const std::string& new_model_filename);
-
-  bool IsModelInstanceReady() const { return model_ != nullptr; }
-
   // Fetches suggestions matching the params from the given on device head
-  // model instance.
-  std::unique_ptr<OnDeviceHeadProviderParams> GetSuggestionsFromModel(
+  // model.
+  static std::unique_ptr<OnDeviceHeadProviderParams> GetSuggestionsFromModel(
+      const std::string& model_filename,
+      const size_t provider_max_matches,
       std::unique_ptr<OnDeviceHeadProviderParams> params);
 
   AutocompleteProviderClient* client_;
   AutocompleteProviderListener* listener_;
 
-  // The task runner dedicated for on device head model operations (including
-  // model instance creation, deletion and suggestions fetching) which is added
-  // to offload expensive operations out of the UI sequence.
+  // The task runner dedicated for on device head model operations which is
+  // added to offload expensive operations out of the UI sequence.
   scoped_refptr<base::SequencedTaskRunner> worker_task_runner_;
 
-  // The model instance which serves top suggestions matching the Autocomplete
-  // input and is only accessed in |worker_task_runner_|.
-  std::unique_ptr<OnDeviceHeadModel> model_;
+  // Sequence checker that ensure utocomplete request handling will only happen
+  // main thread.
+  SEQUENCE_CHECKER(main_sequence_checker_);
+
+  // The filename points to the on device head model on the disk.
+  std::string model_filename_;
 
   // The request id used to trace current request to the on device head model.
   // The id will be increased whenever a new request is received from the

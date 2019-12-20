@@ -13,7 +13,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/task_runner_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
@@ -74,6 +73,8 @@ struct OnDeviceHeadProvider::OnDeviceHeadProviderParams {
 OnDeviceHeadProvider* OnDeviceHeadProvider::Create(
     AutocompleteProviderClient* client,
     AutocompleteProviderListener* listener) {
+  DCHECK(client);
+  DCHECK(listener);
   return new OnDeviceHeadProvider(client, listener);
 }
 
@@ -86,11 +87,10 @@ OnDeviceHeadProvider::OnDeviceHeadProvider(
       worker_task_runner_(base::CreateSequencedTaskRunner(
           {base::ThreadPool(), base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN, base::MayBlock()})),
-      on_device_search_request_id_(0) {}
-
-OnDeviceHeadProvider::~OnDeviceHeadProvider() {
-  worker_task_runner_->DeleteSoon(FROM_HERE, std::move(model_));
+      on_device_search_request_id_(0) {
 }
+
+OnDeviceHeadProvider::~OnDeviceHeadProvider() {}
 
 void OnDeviceHeadProvider::AddModelUpdateCallback() {
   // Bail out if we have already subscribed.
@@ -109,6 +109,7 @@ void OnDeviceHeadProvider::AddModelUpdateCallback() {
 bool OnDeviceHeadProvider::IsOnDeviceHeadProviderAllowed(
     const AutocompleteInput& input,
     const std::string& incognito_serve_mode) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(main_sequence_checker_);
   // Only accept asynchronous request.
   if (!input.want_asynchronous_matches() ||
       input.type() == metrics::OmniboxInputType::EMPTY)
@@ -158,45 +159,34 @@ void OnDeviceHeadProvider::Start(const AutocompleteInput& input,
     return;
 
   matches_.clear();
-  if (!input.text().empty()) {
-    base::PostTaskAndReplyWithResult(
-        worker_task_runner_.get(), FROM_HERE,
-        base::BindOnce(&OnDeviceHeadProvider::IsModelInstanceReady, this),
-        base::BindOnce(&OnDeviceHeadProvider::StartInternal,
-                       weak_ptr_factory_.GetWeakPtr(), input));
-  }
-}
-
-void OnDeviceHeadProvider::StartInternal(const AutocompleteInput& input,
-                                         bool is_model_instance_ready) {
-  if (!is_model_instance_ready)
+  if (input.text().empty() || model_filename_.empty())
     return;
 
-  done_ = false;
-  // Note |on_device_search_request_id_| has already been changed in |Stop|
-  // so we don't need to change it again here to get a new id for this
-  // request.
+  // Note |on_device_search_request_id_| has already been changed in |Stop| so
+  // we don't need to change it again here to get a new id for this request.
   std::unique_ptr<OnDeviceHeadProviderParams> params = base::WrapUnique(
       new OnDeviceHeadProviderParams(on_device_search_request_id_, input));
 
+  done_ = false;
   // Since the On Device provider usually runs much faster than online
   // providers, it will be very likely users will see on device suggestions
   // first and then the Omnibox UI gets refreshed to show suggestions fetched
   // from server, if we issue both requests simultaneously.
-  // Therefore, we might want to delay the On Device suggest requests (and
-  // also apply a timeout to search default loader) to mitigate this issue.
-  // Note this delay is not needed for incognito where server suggestion is
-  // not served.
+  // Therefore, we might want to delay the On Device suggest requests (and also
+  // apply a timeout to search default loader) to mitigate this issue. Note this
+  // delay is not needed for incognito where server suggestion is not served.
   int delay = 0;
   if (!client()->IsOffTheRecord()) {
     delay = base::GetFieldTrialParamByFeatureAsInt(
-        omnibox::kOnDeviceHeadProvider, "DelayOnDeviceHeadSuggestRequestMs", 0);
+        omnibox::kOnDeviceHeadProvider, "DelayOnDeviceHeadSuggestRequestMs",
+        0);
   }
   base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&OnDeviceHeadProvider::DoSearch,
                      weak_ptr_factory_.GetWeakPtr(), std::move(params)),
-      delay > 0 ? base::TimeDelta::FromMilliseconds(delay) : base::TimeDelta());
+      delay > 0 ? base::TimeDelta::FromMilliseconds(delay)
+                : base::TimeDelta());
 }
 
 void OnDeviceHeadProvider::Stop(bool clear_cached_results,
@@ -205,6 +195,7 @@ void OnDeviceHeadProvider::Stop(bool clear_cached_results,
   // obsolete.
   on_device_search_request_id_ =
       (on_device_search_request_id_ + 1) % kMaxRequestId;
+  weak_ptr_factory_.InvalidateWeakPtrs();
 
   if (clear_cached_results)
     matches_.clear();
@@ -214,23 +205,20 @@ void OnDeviceHeadProvider::Stop(bool clear_cached_results,
 
 void OnDeviceHeadProvider::OnModelUpdate(
     const std::string& new_model_filename) {
-  worker_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&OnDeviceHeadProvider::ResetModelInstanceFromNewModel,
-                     this, new_model_filename));
+  DCHECK_CALLED_ON_VALID_SEQUENCE(main_sequence_checker_);
+  if (!new_model_filename.empty())
+    model_filename_ = new_model_filename;
 }
 
-void OnDeviceHeadProvider::ResetModelInstanceFromNewModel(
-    const std::string& new_model_filename) {
-  if (new_model_filename.empty())
-    return;
-  model_ = OnDeviceHeadModel::Create(new_model_filename, provider_max_matches_);
-}
-
+// TODO(crbug.com/925072): post OnDeviceHeadModel::GetSuggestionsForPrefix
+// directly and remove this function.
+// static
 std::unique_ptr<OnDeviceHeadProvider::OnDeviceHeadProviderParams>
 OnDeviceHeadProvider::GetSuggestionsFromModel(
+    const std::string& model_filename,
+    const size_t provider_max_matches,
     std::unique_ptr<OnDeviceHeadProviderParams> params) {
-  if (!IsModelInstanceReady() || !params) {
+  if (model_filename.empty() || !params) {
     if (params) {
       params->failed = true;
     }
@@ -240,7 +228,8 @@ OnDeviceHeadProvider::GetSuggestionsFromModel(
   params->creation_time = base::TimeTicks::Now();
   base::string16 trimmed_input;
   base::TrimWhitespace(params->input.text(), base::TRIM_ALL, &trimmed_input);
-  auto results = model_->GetSuggestionsForPrefix(
+  auto results = OnDeviceHeadModel::GetSuggestionsForPrefix(
+      model_filename, provider_max_matches,
       base::UTF16ToUTF8(base::i18n::ToLower(trimmed_input)));
   params->suggestions.clear();
   for (const auto& item : results) {
@@ -259,6 +248,7 @@ void OnDeviceHeadProvider::AddProviderInfo(ProvidersInfo* provider_info) const {
 
 void OnDeviceHeadProvider::DoSearch(
     std::unique_ptr<OnDeviceHeadProviderParams> params) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(main_sequence_checker_);
   if (!params || params->request_id != on_device_search_request_id_) {
     SearchDone(std::move(params));
     return;
@@ -266,14 +256,15 @@ void OnDeviceHeadProvider::DoSearch(
 
   base::PostTaskAndReplyWithResult(
       worker_task_runner_.get(), FROM_HERE,
-      base::BindOnce(&OnDeviceHeadProvider::GetSuggestionsFromModel, this,
-                     std::move(params)),
+      base::BindOnce(&OnDeviceHeadProvider::GetSuggestionsFromModel,
+                     model_filename_, provider_max_matches_, std::move(params)),
       base::BindOnce(&OnDeviceHeadProvider::SearchDone,
                      weak_ptr_factory_.GetWeakPtr()));
 }
 
 void OnDeviceHeadProvider::SearchDone(
     std::unique_ptr<OnDeviceHeadProviderParams> params) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(main_sequence_checker_);
   TRACE_EVENT0("omnibox", "OnDeviceHeadProvider::SearchDone");
   // Ignore this request if it has been stopped or a new one has already been
   // created.
