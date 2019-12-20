@@ -811,8 +811,7 @@ LIBGAV1_ALWAYS_INLINE void DoHorizontalPass(
   uint8x8_t v_tap[kSubPixelTaps];
   const int filter_id = (subpixel >> 6) & kSubPixelMask;
   for (int k = 0; k < kSubPixelTaps; ++k) {
-    v_tap[k] = vreinterpret_u8_s8(
-        vabs_s8(vdup_n_s8(kHalfSubPixelFilters[filter_index][filter_id][k])));
+    v_tap[k] = vdup_n_u8(kAbsHalfSubPixelFilters[filter_index][filter_id][k]);
   }
 
   if (filter_index == 2) {  // 8 tap.
@@ -2472,8 +2471,7 @@ void ConvolveVertical_NEON(const void* const reference,
 
   uint8x8_t taps[8];
   for (int k = 0; k < kSubPixelTaps; ++k) {
-    taps[k] = vreinterpret_u8_s8(
-        vabs_s8(vdup_n_s8(kHalfSubPixelFilters[filter_index][filter_id][k])));
+    taps[k] = vdup_n_u8(kAbsHalfSubPixelFilters[filter_index][filter_id][k]);
   }
 
   if (filter_index == 0) {  // 6 tap.
@@ -2730,8 +2728,7 @@ void ConvolveCompoundVertical_NEON(
 
   uint8x8_t taps[8];
   for (int k = 0; k < kSubPixelTaps; ++k) {
-    taps[k] = vreinterpret_u8_s8(
-        vabs_s8(vdup_n_s8(kHalfSubPixelFilters[filter_index][filter_id][k])));
+    taps[k] = vdup_n_u8(kAbsHalfSubPixelFilters[filter_index][filter_id][k]);
   }
 
   if (filter_index == 0) {  // 6 tap.
