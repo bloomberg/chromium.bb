@@ -65,6 +65,7 @@
 #include "av1/encoder/firstpass.h"
 #include "av1/encoder/grain_test_vectors.h"
 #include "av1/encoder/hash_motion.h"
+#include "av1/encoder/mv_prec.h"
 #include "av1/encoder/pass2_strategy.h"
 #include "av1/encoder/picklpf.h"
 #include "av1/encoder/pickrst.h"
@@ -86,9 +87,6 @@ FRAME_COUNTS aggregate_fc;
 
 #define AM_SEGMENT_ID_INACTIVE 7
 #define AM_SEGMENT_ID_ACTIVE 0
-
-// Q threshold for high precision mv.
-#define HIGH_PRECISION_MV_QTHRESH 128
 
 // #define OUTPUT_YUV_REC
 #ifdef OUTPUT_YUV_SKINMAP
@@ -451,21 +449,6 @@ static void analyze_hor_freq(const AV1_COMP *cpi, double *energy) {
   } else {
     for (int k = 1; k < 16; ++k) energy[k] = 1e+20;
   }
-}
-
-static void set_high_precision_mv(AV1_COMP *cpi, int allow_high_precision_mv,
-                                  int cur_frame_force_integer_mv) {
-  MACROBLOCK *const x = &cpi->td.mb;
-  cpi->common.allow_high_precision_mv =
-      allow_high_precision_mv && cur_frame_force_integer_mv == 0;
-  const int copy_hp =
-      cpi->common.allow_high_precision_mv && cur_frame_force_integer_mv == 0;
-  x->nmvcost[0] = &x->nmv_costs[0][MV_MAX];
-  x->nmvcost[1] = &x->nmv_costs[1][MV_MAX];
-  x->nmvcost_hp[0] = &x->nmv_costs_hp[0][MV_MAX];
-  x->nmvcost_hp[1] = &x->nmv_costs_hp[1][MV_MAX];
-  int *(*src)[2] = copy_hp ? &x->nmvcost_hp : &x->nmvcost;
-  x->mv_cost_stack = *src;
 }
 
 static BLOCK_SIZE select_sb_size(const AV1_COMP *const cpi) {
@@ -2758,7 +2741,7 @@ void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
   }
 
   av1_reset_segment_features(cm);
-  set_high_precision_mv(cpi, 1, 0);
+  av1_set_high_precision_mv(cpi, 1, 0);
 
   set_rc_buffer_sizes(rc, &cpi->oxcf);
 
@@ -3990,16 +3973,6 @@ static void process_tpl_stats_frame(AV1_COMP *cpi) {
 }
 #endif  // !CONFIG_REALTIME_ONLY
 
-static int determine_frame_high_precision_mv(const AV1_COMP *cpi, int qindex) {
-  (void)cpi;
-  if (cpi->sf.hl_sf.reduce_high_precision_mv_usage == 2)
-    return 0;
-  else if (cpi->sf.hl_sf.reduce_high_precision_mv_usage == 1)
-    return qindex < HIGH_PRECISION_MV_QTHRESH / 2;
-  else
-    return qindex < HIGH_PRECISION_MV_QTHRESH;
-}
-
 static void set_size_dependent_vars(AV1_COMP *cpi, int *q, int *bottom_index,
                                     int *top_index) {
   AV1_COMMON *const cm = &cpi->common;
@@ -4018,13 +3991,6 @@ static void set_size_dependent_vars(AV1_COMP *cpi, int *q, int *bottom_index,
   // Decide q and q bounds.
   *q = av1_rc_pick_q_and_bounds(cpi, &cpi->rc, cm->width, cm->height,
                                 cpi->gf_group.index, bottom_index, top_index);
-
-  if (!frame_is_intra_only(cm)) {
-    const int use_hp = cpi->common.cur_frame_force_integer_mv
-                           ? 0
-                           : determine_frame_high_precision_mv(cpi, *q);
-    set_high_precision_mv(cpi, use_hp, cpi->common.cur_frame_force_integer_mv);
-  }
 
   // Configure experimental use of segmentation for enhanced coding of
   // static regions if indicated.
@@ -5140,6 +5106,12 @@ static int encode_with_recode_loop(AV1_COMP *cpi, size_t *size, uint8_t *dest) {
 #if CONFIG_COLLECT_COMPONENT_TIMING
     start_timing(cpi, av1_encode_frame_time);
 #endif
+    // Set the motion vector precision based on mv stats from the last coded
+    // frame.
+    if (!frame_is_intra_only(cm)) {
+      av1_pick_and_set_high_precision_mv(cpi, q);
+    }
+
     // transform / motion compensation build reconstruction frame
     av1_encode_frame(cpi);
 #if CONFIG_COLLECT_COMPONENT_TIMING
@@ -5158,8 +5130,10 @@ static int encode_with_recode_loop(AV1_COMP *cpi, size_t *size, uint8_t *dest) {
     if (do_dummy_pack) {
       finalize_encoded_frame(cpi);
       int largest_tile_id = 0;  // Output from bitstream: unused here
-      if (av1_pack_bitstream(cpi, dest, size, &largest_tile_id) != AOM_CODEC_OK)
+      if (av1_pack_bitstream(cpi, dest, size, &largest_tile_id) !=
+          AOM_CODEC_OK) {
         return AOM_CODEC_ERROR;
+      }
 
       rc->projected_frame_size = (int)(*size) << 3;
     }
@@ -6452,7 +6426,7 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
   struct aom_usec_timer cmptimer;
   aom_usec_timer_start(&cmptimer);
 #endif
-  set_high_precision_mv(cpi, 1, 0);
+  av1_set_high_precision_mv(cpi, 1, 0);
 
   // Normal defaults
   cm->refresh_frame_context = oxcf->frame_parallel_decoding_mode
