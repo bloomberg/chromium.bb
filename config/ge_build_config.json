@@ -2384,6 +2384,14 @@
         },
         {
           "board_name": "hatch",
+          "name": "helios_diskswap",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt",
+          "board_id": 372,
+          "is_active": true
+        },
+        {
+          "board_name": "hatch",
           "name": "kindred",
           "test_suites": [
             "sanity",
@@ -2504,6 +2512,14 @@
         {
           "board_name": "hatch-diskswap",
           "name": "helios",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt",
+          "board_id": 424,
+          "is_active": true
+        },
+        {
+          "board_name": "hatch-diskswap",
+          "name": "helios_diskswap",
           "cq_test_enabled": false,
           "release_builder_test_pool": "bvt",
           "board_id": 424,
@@ -3265,6 +3281,14 @@
             "bvt-perbuild",
             "bvt-tast-informational"
           ],
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt",
+          "board_id": 354,
+          "is_active": true
+        },
+        {
+          "board_name": "octopus",
+          "name": "lick",
           "cq_test_enabled": false,
           "release_builder_test_pool": "bvt",
           "board_id": 354,
