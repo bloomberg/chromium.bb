@@ -168,7 +168,7 @@ constexpr char kInvalidJsonOfferMessage[] = R"({
 
 class SimpleMessagePort : public MessagePort {
  public:
-  ~SimpleMessagePort() override{};
+  ~SimpleMessagePort() override {}
   void SetClient(MessagePort::Client* client) override { client_ = client; }
 
   void ReceiveMessage(absl::string_view message) {
