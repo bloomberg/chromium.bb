@@ -267,6 +267,20 @@ class TxtRecordRdata {
 //
 // next_domain_name: The next domain to process. In mDNS, this value is expected
 // to match the record-level domain name in a negative response.
+//
+// An example of how the |types_| vector is serialized is as follows:
+// When encoding the following DNS types:
+// - A (value 1)
+// - MX (value 15)
+// - RRSIG (value 46)
+// - NSEC (value 47)
+// - TYPE1234 (value 1234)
+// The result would be:
+//          0x00 0x06 0x40 0x01 0x00 0x00 0x00 0x03
+//          0x04 0x1b 0x00 0x00 0x00 0x00 0x00 0x00
+//          0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00
+//          0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00
+//          0x00 0x00 0x00 0x00 0x20
 class NsecRecordRdata {
  public:
   NsecRecordRdata();
@@ -292,6 +306,7 @@ class NsecRecordRdata {
 
   const DomainName& next_domain_name() const { return next_domain_name_; }
   const std::vector<DnsType>& types() const { return types_; }
+  const std::vector<uint8_t>& encoded_types() const { return encoded_types_; }
 
   template <typename H>
   friend H AbslHashValue(H h, const NsecRecordRdata& rdata) {
@@ -299,12 +314,9 @@ class NsecRecordRdata {
   }
 
  private:
+  std::vector<uint8_t> encoded_types_;
   std::vector<DnsType> types_;
   DomainName next_domain_name_;
-
-  // If no domain or types are provided, then the max wire size is the same as
-  // that of an empty domain.
-  size_t max_wire_size_ = 1;
 };
 
 using Rdata = absl::variant<RawRecordRdata,
