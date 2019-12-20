@@ -286,6 +286,8 @@ void ScopedOverviewTransformWindow::SetOpacity(float opacity) {
 }
 
 void ScopedOverviewTransformWindow::SetClipping(const gfx::SizeF& size) {
+  has_aspect_ratio_clipping_ = !size.IsEmpty();
+
   // If width or height are 0, restore the overview clipping.
   if (size.IsEmpty()) {
     window_->layer()->SetClipRect(overview_clip_rect_);
@@ -296,6 +298,7 @@ void ScopedOverviewTransformWindow::SetClipping(const gfx::SizeF& size) {
   // account.
   gfx::Rect clip_rect;
   const gfx::Vector2dF scale = window_->layer()->GetTargetTransform().Scale2d();
+  clip_rect.set_y(GetTopInset());
   clip_rect.set_width(size.width() / scale.x());
   clip_rect.set_height(size.height() / scale.y());
   window_->layer()->SetClipRect(clip_rect);
@@ -424,7 +427,7 @@ void ScopedOverviewTransformWindow::UpdateRoundedCorners(bool show,
     return;
 
   const int top_inset = GetTopInset();
-  if (top_inset > 0) {
+  if (!has_aspect_ratio_clipping_ && top_inset > 0) {
     gfx::Rect clip_rect(window_->bounds().size());
     // We add 1 to the top_inset, because in some cases, the header is not
     // clipped fully due to what seems to be a rounding error.
