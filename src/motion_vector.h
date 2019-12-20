@@ -45,7 +45,7 @@ void FindMvStack(
     const Tile::Block& block, bool is_compound,
     const std::array<bool, kNumReferenceFrameTypes>& reference_frame_sign_bias,
     const Array2D<MotionVector>& motion_field_mv,
-    const Array2D<int>& motion_field_reference_offset,
+    const Array2D<int8_t>& motion_field_reference_offset,
     CandidateMotionVector ref_mv_stack[kMaxRefMvStackSize], int* num_mv_found,
     MvContexts* contexts,
     MotionVector global_mv[2]);  // 7.10.2
@@ -62,7 +62,7 @@ void SetupMotionField(
     const std::array<RefCountedBufferPtr, kNumReferenceFrameTypes>&
         reference_frames,
     Array2D<MotionVector>* motion_field_mv,
-    Array2D<int>* motion_field_reference_offset, int row4x4_start,
+    Array2D<int8_t>* motion_field_reference_offset, int row4x4_start,
     int row4x4_end, int column4x4_start, int column4x4_end);
 
 }  // namespace libgav1

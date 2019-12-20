@@ -317,7 +317,7 @@ Tile::Tile(
     const std::array<RefCountedBufferPtr, kNumReferenceFrameTypes>&
         reference_frames,
     Array2D<MotionVector>* const motion_field_mv,
-    Array2D<int>* const motion_field_reference_offset,
+    Array2D<int8_t>* const motion_field_reference_offset,
     const std::array<uint8_t, kNumReferenceFrameTypes>& reference_order_hint,
     const WedgeMaskArray& wedge_masks,
     const SymbolDecoderContext& symbol_decoder_context,

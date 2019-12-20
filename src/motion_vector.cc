@@ -320,7 +320,7 @@ void ScanPoint(const Tile::Block& block, int delta_row, int delta_column,
 void AddTemporalReferenceMvCandidate(
     const Tile::Block& block, int delta_row, int delta_column, bool is_compound,
     MotionVector global_mv[2], const Array2D<MotionVector>& motion_field_mv,
-    const Array2D<int>& motion_field_reference_offset,
+    const Array2D<int8_t>& motion_field_reference_offset,
     int* const zero_mv_context, int* const num_mv_found,
     CandidateMotionVector ref_mv_stack[kMaxRefMvStackSize]) {
   const int mv_row = (block.row4x4 + delta_row) | 1;
@@ -424,7 +424,7 @@ constexpr BitMaskSet kTemporalScanMask(kBlock8x8, kBlock8x16, kBlock8x32,
 void TemporalScan(const Tile::Block& block, bool is_compound,
                   MotionVector global_mv[2],
                   const Array2D<MotionVector>& motion_field_mv,
-                  const Array2D<int>& motion_field_reference_offset,
+                  const Array2D<int8_t>& motion_field_reference_offset,
                   int* const zero_mv_context, int* const num_mv_found,
                   CandidateMotionVector ref_mv_stack[kMaxRefMvStackSize]) {
   const int step_w = (block.width4x4 >= 16) ? 4 : 2;
@@ -720,8 +720,8 @@ bool MotionFieldProjection(
     const std::array<RefCountedBufferPtr, kNumReferenceFrameTypes>&
         reference_frames,
     Array2D<MotionVector>* const motion_field_mv,
-    Array2D<int>* const motion_field_reference_offset, int y8_start, int y8_end,
-    int x8_start, int x8_end) {
+    Array2D<int8_t>* const motion_field_reference_offset, int y8_start,
+    int y8_end, int x8_start, int x8_end) {
   const int source_index =
       frame_header.reference_frame_index[source - kReferenceFrameLast];
   auto* const source_frame = reference_frames[source_index].get();
@@ -801,7 +801,7 @@ void FindMvStack(
     const Tile::Block& block, bool is_compound,
     const std::array<bool, kNumReferenceFrameTypes>& reference_frame_sign_bias,
     const Array2D<MotionVector>& motion_field_mv,
-    const Array2D<int>& motion_field_reference_offset,
+    const Array2D<int8_t>& motion_field_reference_offset,
     CandidateMotionVector ref_mv_stack[kMaxRefMvStackSize],
     int* const num_mv_found, MvContexts* const contexts,
     MotionVector global_mv[2]) {
@@ -934,7 +934,7 @@ void SetupMotionField(
     const std::array<RefCountedBufferPtr, kNumReferenceFrameTypes>&
         reference_frames,
     Array2D<MotionVector>* const motion_field_mv,
-    Array2D<int>* const motion_field_reference_offset, int row4x4_start,
+    Array2D<int8_t>* const motion_field_reference_offset, int row4x4_start,
     int row4x4_end, int column4x4_start, int column4x4_end) {
   assert(frame_header.use_ref_frame_mvs);
   assert(sequence_header.enable_order_hint);

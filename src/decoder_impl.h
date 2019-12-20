@@ -94,7 +94,7 @@ struct DecoderState {
   RefCountedBufferPtr current_frame;
   WedgeMaskArray wedge_masks;
   Array2D<MotionVector> motion_field_mv;
-  Array2D<int> motion_field_reference_offset;
+  Array2D<int8_t> motion_field_reference_offset;
 };
 
 class DecoderImpl : public Allocable {
