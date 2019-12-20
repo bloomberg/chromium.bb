@@ -220,7 +220,6 @@
     betty-arc64-nyc-android-pfq
     betty-nyc-android-pfq
     gandof-nyc-android-pfq
-    veyron_mighty-nyc-android-pfq
     veyron_tiger-nyc-android-pfq
 
 == pi_android_pfq ==
@@ -1362,7 +1361,6 @@
     betty-arc64-nyc-android-pfq-tryjob
     betty-nyc-android-pfq-tryjob
     gandof-nyc-android-pfq-tryjob
-    veyron_mighty-nyc-android-pfq-tryjob
     veyron_tiger-nyc-android-pfq-tryjob
   master-pi-android-pfq-tryjob
     betty-pi-arc-pi-android-pfq-tryjob
@@ -1886,7 +1884,6 @@
   veyron_mighty-full-tryjob
   veyron_mighty-llvm-next-toolchain-tryjob
   veyron_mighty-llvm-toolchain-tryjob
-  veyron_mighty-nyc-android-pfq-tryjob
   veyron_mighty-payloads-tryjob
   veyron_mighty-release-tryjob
   veyron_mighty-unittest-stress

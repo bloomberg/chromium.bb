@@ -1421,7 +1421,6 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
   )
 
   _nyc_hwtest_boards = frozenset([
-      'veyron_mighty',
       'gandof',
   ])
   _nyc_hwtest_skylab_boards = frozenset([])
