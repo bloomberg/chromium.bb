@@ -13745,8 +13745,7 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
     if (cpi->sf.winner_mode_sf.motion_mode_for_winner_cand) {
       const int num_motion_mode_cand =
           best_motion_mode_cands.num_motion_mode_cand;
-      int valid_motion_mode_cand_loc =
-          (num_motion_mode_cand > 0) ? INT32_MAX : 0;
+      int valid_motion_mode_cand_loc = num_motion_mode_cand;
 
       // find the best location to insert new motion mode candidate
       for (int j = 0; j < num_motion_mode_cand; j++) {
