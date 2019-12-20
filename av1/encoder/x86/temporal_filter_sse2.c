@@ -21,16 +21,17 @@
 
 #if EXPERIMENT_TEMPORAL_FILTER
 
-DECLARE_ALIGNED(32, const uint32_t, sse_bytemask_2x4[4][2][4]) = {
+DECLARE_ALIGNED(32, static const uint32_t, sse_bytemask_2x4[4][2][4]) = {
   { { 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, { 0xFFFF, 0x0000, 0x0000, 0x0000 } },
   { { 0x0000, 0xFFFF, 0xFFFF, 0xFFFF }, { 0xFFFF, 0xFFFF, 0x0000, 0x0000 } },
   { { 0x0000, 0x0000, 0xFFFF, 0xFFFF }, { 0xFFFF, 0xFFFF, 0xFFFF, 0x0000 } },
   { { 0x0000, 0x0000, 0x0000, 0xFFFF }, { 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF } }
 };
 
-void get_squared_error(uint8_t *frame1, unsigned int stride, uint8_t *frame2,
-                       unsigned int stride2, int block_width, int block_height,
-                       uint16_t *frame_sse, unsigned int dst_stride) {
+static void get_squared_error(uint8_t *frame1, unsigned int stride,
+                              uint8_t *frame2, unsigned int stride2,
+                              int block_width, int block_height,
+                              uint16_t *frame_sse, unsigned int dst_stride) {
   uint8_t *src1 = frame1;
   uint8_t *src2 = frame2;
   uint16_t *dst = frame_sse;
@@ -68,7 +69,8 @@ void get_squared_error(uint8_t *frame1, unsigned int stride, uint8_t *frame2,
   }
 }
 
-void xx_load_and_pad(uint16_t *src, __m128i *dstvec, int col, int block_width) {
+static void xx_load_and_pad(uint16_t *src, __m128i *dstvec, int col,
+                            int block_width) {
   __m128i vtmp = _mm_loadu_si128((__m128i *)src);
   __m128i vzero = _mm_setzero_si128();
   __m128i vtmp1 = _mm_unpacklo_epi16(vtmp, vzero);
@@ -79,7 +81,7 @@ void xx_load_and_pad(uint16_t *src, __m128i *dstvec, int col, int block_width) {
   dstvec[1] = (col < block_width - 4) ? vtmp2 : _mm_shuffle_epi32(vtmp2, 0x54);
 }
 
-int32_t xx_mask_and_hadd(__m128i vsum1, __m128i vsum2, int i) {
+static int32_t xx_mask_and_hadd(__m128i vsum1, __m128i vsum2, int i) {
   __m128i veca, vecb;
   // Mask and obtain the required 5 values inside the vector
   veca = _mm_and_si128(vsum1, *(__m128i *)sse_bytemask_2x4[i][0]);

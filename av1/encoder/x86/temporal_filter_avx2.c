@@ -19,19 +19,19 @@
 #define SSE_STRIDE (BW + 2)
 
 #if EXPERIMENT_TEMPORAL_FILTER
-DECLARE_ALIGNED(32, const uint32_t, sse_bytemask[4][8]) = {
+DECLARE_ALIGNED(32, static const uint32_t, sse_bytemask[4][8]) = {
   { 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0x0000, 0x0000, 0x0000 },
   { 0x0000, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0x0000, 0x0000 },
   { 0x0000, 0x0000, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0x0000 },
   { 0x0000, 0x0000, 0x0000, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }
 };
 
-DECLARE_ALIGNED(32, const uint8_t, shufflemask_16b[2][16]) = {
+DECLARE_ALIGNED(32, static const uint8_t, shufflemask_16b[2][16]) = {
   { 0, 1, 0, 1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 },
   { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 10, 11, 10, 11 }
 };
 
-AOM_FORCE_INLINE void get_squared_error_16x16_avx2(
+static AOM_FORCE_INLINE void get_squared_error_16x16_avx2(
     uint8_t *frame1, unsigned int stride, uint8_t *frame2, unsigned int stride2,
     int block_width, int block_height, uint16_t *frame_sse,
     unsigned int sse_stride) {
@@ -59,7 +59,7 @@ AOM_FORCE_INLINE void get_squared_error_16x16_avx2(
   }
 }
 
-AOM_FORCE_INLINE void get_squared_error_32x32_avx2(
+static AOM_FORCE_INLINE void get_squared_error_32x32_avx2(
     uint8_t *frame1, unsigned int stride, uint8_t *frame2, unsigned int stride2,
     int block_width, int block_height, uint16_t *frame_sse,
     unsigned int sse_stride) {
@@ -94,8 +94,8 @@ AOM_FORCE_INLINE void get_squared_error_32x32_avx2(
   }
 }
 
-AOM_FORCE_INLINE __m256i xx_load_and_pad(uint16_t *src, int col,
-                                         int block_width) {
+static AOM_FORCE_INLINE __m256i xx_load_and_pad(uint16_t *src, int col,
+                                                int block_width) {
   __m128i v128tmp = _mm_loadu_si128((__m128i *)(src));
   if (col == 0) {
     // For the first column, replicate the first element twice to the left
@@ -108,7 +108,7 @@ AOM_FORCE_INLINE __m256i xx_load_and_pad(uint16_t *src, int col,
   return _mm256_cvtepi16_epi32(v128tmp);
 }
 
-AOM_FORCE_INLINE int32_t xx_mask_and_hadd(__m256i vsum, int i) {
+static AOM_FORCE_INLINE int32_t xx_mask_and_hadd(__m256i vsum, int i) {
   // Mask the required 5 values inside the vector
   __m256i vtmp = _mm256_and_si256(vsum, *(__m256i *)sse_bytemask[i]);
   __m128i v128a, v128b;
