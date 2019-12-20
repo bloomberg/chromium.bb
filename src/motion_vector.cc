@@ -31,7 +31,6 @@ constexpr int kMvBorder = 128;
 constexpr int kProjectionMvClamp = 16383;
 constexpr int kProjectionMvMaxVerticalOffset = 0;
 constexpr int kProjectionMvMaxHorizontalOffset = 8;
-constexpr int kInvalidMvValue = -32768;
 
 // Entry at index i is computed as:
 // Clip3(std::max(kBlockWidthPixels[i], kBlockHeightPixels[i], 16, 112)).
@@ -943,11 +942,6 @@ void SetupMotionField(
   const int x8_start = DivideBy2(column4x4_start);
   const int x8_end =
       std::min(DivideBy2(column4x4_end), DivideBy2(frame_header.columns4x4));
-  for (int y8 = y8_start; y8 < y8_end; ++y8) {
-    for (int x8 = x8_start; x8 < x8_end; ++x8) {
-      (*motion_field_mv)[y8][x8].mv[0] = kInvalidMvValue;
-    }
-  }
   const int current_gold_order_hint =
       current_frame.order_hint(kReferenceFrameGolden);
   const int last_index = frame_header.reference_frame_index[0];

@@ -34,6 +34,7 @@ constexpr bool kDeblockFilterBitMask = false;
 #endif  // defined(ENABLE_DEBLOCK_BIT_MASK)
 
 enum {
+  kInvalidMvValue = -32768,
   kCdfMaxProbability = 32768,
   kBlockWidthCount = 5,
   kMaxSegments = 8,

@@ -415,17 +415,28 @@ StatusCode DecoderImpl::DecodeTiles(const ObuParser* obu) {
     LIBGAV1_DLOG(ERROR, "Failed to allocate memory for inter_transform_sizes.");
     return kLibgav1StatusOutOfMemory;
   }
-  if (obu->frame_header().use_ref_frame_mvs &&
-      (!state_.motion_field_mv.Reset(DivideBy2(obu->frame_header().rows4x4),
-                                     DivideBy2(obu->frame_header().columns4x4),
-                                     /*zero_initialize=*/false) ||
-       !state_.motion_field_reference_offset.Reset(
-           DivideBy2(obu->frame_header().rows4x4),
-           DivideBy2(obu->frame_header().columns4x4),
-           /*zero_initialize=*/false))) {
-    LIBGAV1_DLOG(ERROR,
-                 "Failed to allocate memory for temporal motion vectors.");
-    return kLibgav1StatusOutOfMemory;
+  if (obu->frame_header().use_ref_frame_mvs) {
+    if (!state_.motion_field_mv.Reset(DivideBy2(obu->frame_header().rows4x4),
+                                      DivideBy2(obu->frame_header().columns4x4),
+                                      /*zero_initialize=*/false) ||
+        !state_.motion_field_reference_offset.Reset(
+            DivideBy2(obu->frame_header().rows4x4),
+            DivideBy2(obu->frame_header().columns4x4),
+            /*zero_initialize=*/false)) {
+      LIBGAV1_DLOG(ERROR,
+                   "Failed to allocate memory for temporal motion vectors.");
+      return kLibgav1StatusOutOfMemory;
+    }
+
+    // For each motion vector, only mv[0] needs to be initialized to
+    // kInvalidMvValue, mv[1] is not necessary to be initialized and can be
+    // set to an arbitrary value. For simplicity, mv[1] is set to 0.
+    MotionVector invalid_mv;
+    invalid_mv.mv[0] = kInvalidMvValue;
+    invalid_mv.mv[1] = 0;
+    MotionVector* const motion_field_mv = &state_.motion_field_mv[0][0];
+    std::fill(motion_field_mv, motion_field_mv + state_.motion_field_mv.size(),
+              invalid_mv);
   }
 
   // The addition of kMaxBlockHeight4x4 and kMaxBlockWidth4x4 is necessary so
