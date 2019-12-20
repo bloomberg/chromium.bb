@@ -340,8 +340,7 @@ class BundleTastFilesTest(BundleTestCase):
 
   def testBundleTastFiles(self):
     """BundleTastFiles calls service correctly."""
-    chroot = chroot_lib.Chroot(self.chroot_path,
-                               env={'FEATURES': 'separatedebug'})
+    chroot = chroot_lib.Chroot(self.chroot_path)
 
     expected_archive = os.path.join(self.output_dir,
                                     artifacts_svc.TAST_BUNDLE_NAME)

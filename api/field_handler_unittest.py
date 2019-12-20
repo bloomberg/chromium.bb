@@ -71,7 +71,7 @@ class ChrootHandlerTest(cros_test_lib.TestCase):
   def test_handle_empty_chroot_message(self):
     """Test handling of an empty chroot message."""
     message = build_api_test_pb2.TestRequestMessage()
-    empty_chroot = chroot_lib.Chroot(env={'FEATURES': 'separatedebug'})
+    empty_chroot = chroot_lib.Chroot()
 
     chroot_handler = field_handler.ChrootHandler(clear_field=False,
                                                  parse_goma=True)

@@ -55,8 +55,6 @@ def ParseChroot(chroot_message, parse_goma=True):
   if chrome_root:
     env['CHROME_ORIGIN'] = 'LOCAL_SOURCE'
 
-  # TODO(saklein) Remove the default when fully integrated in recipes.
-  env['FEATURES'] = 'separatedebug'
   if features:
     env['FEATURES'] = ' '.join(features)
 
