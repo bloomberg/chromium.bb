@@ -320,7 +320,7 @@ std::string CreateRandomSecret() {
 #elif defined(OS_MACOSX)  // defined(OS_WIN)
 
 constexpr char kServiceName[] = "Endpoint Verification Safe Storage";
-constexpr char kAccountName[] = "Endpoing Verificatin";
+constexpr char kAccountName[] = "Endpoint Verification";
 
 std::string AddRandomPasswordToKeychain(const crypto::AppleKeychain& keychain) {
   // Generate a password with 128 bits of randomness.
