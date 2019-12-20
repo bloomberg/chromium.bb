@@ -5275,6 +5275,20 @@ static int encode_with_recode_loop(AV1_COMP *cpi, size_t *size, uint8_t *dest) {
 
     // transform / motion compensation build reconstruction frame
     av1_encode_frame(cpi);
+
+#if !CONFIG_REALTIME_ONLY
+    // Reset the mv_stats in case we are interrupted by an intraframe or an
+    // overlay frame.
+    if (cpi->mv_stats.valid) {
+      av1_zero(cpi->mv_stats);
+    }
+    // Gather the mv_stats for the next frame
+    if (cpi->sf.hl_sf.high_precision_mv_usage == LAST_MV_DATA &&
+        av1_frame_allows_smart_mv(cpi)) {
+      av1_collect_mv_stats(cpi, q);
+    }
+#endif  // !CONFIG_REALTIME_ONLY
+
 #if CONFIG_COLLECT_COMPONENT_TIMING
     end_timing(cpi, av1_encode_frame_time);
 #endif

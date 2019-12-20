@@ -51,6 +51,24 @@ static INLINE MV_JOINT_TYPE av1_get_mv_joint(const MV *mv) {
   return (!!mv->col) | ((!!mv->row) << 1);
 }
 
+static INLINE int av1_mv_class_base(MV_CLASS_TYPE c) {
+  return c ? CLASS0_SIZE << (c + 2) : 0;
+}
+
+// If n != 0, returns the floor of log base 2 of n. If n == 0, returns 0.
+static INLINE uint8_t av1_log_in_base_2(unsigned int n) {
+  // get_msb() is only valid when n != 0.
+  return n == 0 ? 0 : get_msb(n);
+}
+
+static INLINE MV_CLASS_TYPE av1_get_mv_class(int z, int *offset) {
+  const MV_CLASS_TYPE c = (z >= CLASS0_SIZE * 4096)
+                              ? MV_CLASS_10
+                              : (MV_CLASS_TYPE)av1_log_in_base_2(z >> 3);
+  if (offset) *offset = z - av1_mv_class_base(c);
+  return c;
+}
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif

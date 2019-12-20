@@ -277,6 +277,9 @@ static void set_good_speed_features_framesize_independent(
   const int boosted = frame_is_boosted(cpi);
   const int is_boosted_arf2_bwd_type =
       boosted || gf_group->update_type[gf_group->index] == INTNL_ARF_UPDATE;
+  if (!cpi->oxcf.large_scale_tile) {
+    sf->hl_sf.high_precision_mv_usage = LAST_MV_DATA;
+  }
 
   // Speed 0 for all speed features that give neutral coding performance change.
   sf->gm_sf.gm_disable_recode = 1;
@@ -485,6 +488,8 @@ static void set_good_speed_features_framesize_independent(
   }
 
   if (speed >= 4) {
+    sf->hl_sf.high_precision_mv_usage = CURRENT_Q;
+
     sf->mv_sf.subpel_search_method = SUBPEL_TREE_PRUNED_MORE;
 
     sf->part_sf.simple_motion_search_prune_agg = 2;

@@ -762,6 +762,34 @@ typedef struct {
   int gld_stack_size;
 } RefBufferStack;
 
+typedef struct {
+  // Some misc info
+  int high_prec;
+  int q;
+  int order;
+
+  // MV counters
+  int inter_count;
+  int intra_count;
+  int default_mvs;
+  int mv_joint_count[4];
+  int last_bit_zero;
+  int last_bit_nonzero;
+
+  // Keep track of the rates
+  int total_mv_rate;
+  int hp_total_mv_rate;
+  int lp_total_mv_rate;
+
+  // Texture info
+  int horz_text;
+  int vert_text;
+  int diag_text;
+
+  // Whether the current struct contains valid data
+  int valid;
+} MV_STATS;
+
 typedef struct AV1_COMP {
   QUANTS quants;
   ThreadData td;
@@ -1136,6 +1164,10 @@ typedef struct AV1_COMP {
 
   int lap_enabled;
   COMPRESSOR_STAGE compressor_stage;
+
+  // Some motion vector stats from the last encoded frame to help us decide what
+  // precision to use to encode the current frame.
+  MV_STATS mv_stats;
 } AV1_COMP;
 
 typedef struct {

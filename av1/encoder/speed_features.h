@@ -264,7 +264,7 @@ enum {
 } UENUM1BYTE(MAX_PART_PRED_MODE);
 
 enum {
-  LAST_MV_DATA,  // Not implemented yet
+  LAST_MV_DATA,
   CURRENT_Q,
   QTR_ONLY,
 } UENUM1BYTE(MV_PREC_LOGIC);
