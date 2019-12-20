@@ -1418,7 +1418,7 @@ TEST_P(ShelfLayoutManagerTest, VisibleWhenLockScreenShowing) {
 
   UnlockScreen();
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
-  EXPECT_EQ(ShelfBackgroundType::kMaximized,
+  EXPECT_EQ(ShelfBackgroundType::kDefaultBg,
             GetShelfWidget()->GetBackgroundType());
 }
 
@@ -2637,8 +2637,8 @@ TEST_P(ShelfLayoutManagerTest, TabletModeTransitionWithAppListVisible) {
   EXPECT_EQ(ShelfBackgroundType::kInApp, GetShelfWidget()->GetBackgroundType());
 }
 
-// Verify that the auto-hide shelf has default background by default and has
-// maxmimized background when a window is maximized.
+// Verify that the auto-hide shelf has default background by default and still
+// has the default background when a window is maximized in clamshell mode.
 TEST_P(ShelfLayoutManagerTest, ShelfBackgroundColorAutoHide) {
   EXPECT_EQ(ShelfBackgroundType::kDefaultBg,
             GetShelfWidget()->GetBackgroundType());
@@ -2651,7 +2651,7 @@ TEST_P(ShelfLayoutManagerTest, ShelfBackgroundColorAutoHide) {
             GetShelfWidget()->GetBackgroundType());
 
   w1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
-  EXPECT_EQ(ShelfBackgroundType::kMaximized,
+  EXPECT_EQ(ShelfBackgroundType::kDefaultBg,
             GetShelfWidget()->GetBackgroundType());
 }
 
