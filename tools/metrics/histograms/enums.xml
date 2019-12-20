@@ -48131,6 +48131,13 @@ Called by update_net_trust_anchors.py.-->
   <int value="3" label="Clicked Ok"/>
 </enum>
 
+<enum name="PasswordLeakDetectionError">
+  <int value="0" label="Not signed in"/>
+  <int value="1" label="Token request error"/>
+  <int value="2" label="Hashing/encryption error"/>
+  <int value="3" label="Invalid server response"/>
+</enum>
+
 <enum name="PasswordLeakLookupResponseResult">
   <int value="0" label="Success"/>
   <int value="1" label="Network/server error"/>
