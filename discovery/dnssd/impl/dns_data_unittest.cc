@@ -112,15 +112,15 @@ TEST(DnsSdDnsDataTests, TestConvertDnsDataCorrectly) {
   ASSERT_TRUE(result.is_value());
 
   DnsSdInstanceRecord record = result.value();
-  ASSERT_TRUE(record.address_v4().has_value());
-  ASSERT_TRUE(record.address_v6().has_value());
+  ASSERT_TRUE(record.address_v4());
+  ASSERT_TRUE(record.address_v6());
   EXPECT_EQ(record.instance_id(), kInstanceName);
   EXPECT_EQ(record.service_id(), kServiceName);
   EXPECT_EQ(record.domain_id(), kDomainName);
-  EXPECT_EQ(record.address_v4().value().port, kServicePort);
-  EXPECT_EQ(record.address_v4().value().address, IPAddress(kV4AddressOctets));
-  EXPECT_EQ(record.address_v6().value().port, kServicePort);
-  EXPECT_EQ(record.address_v6().value().address, IPAddress(kV6AddressHextets));
+  EXPECT_EQ(record.address_v4().port, kServicePort);
+  EXPECT_EQ(record.address_v4().address, IPAddress(kV4AddressOctets));
+  EXPECT_EQ(record.address_v6().port, kServicePort);
+  EXPECT_EQ(record.address_v6().address, IPAddress(kV6AddressHextets));
   EXPECT_FALSE(record.txt().IsEmpty());
 }
 
@@ -158,10 +158,10 @@ TEST(DnsSdDnsDataTests, TestConvertDnsDataOneAddress) {
   ASSERT_TRUE(result.is_value());
 
   DnsSdInstanceRecord record = result.value();
-  EXPECT_FALSE(record.address_v6().has_value());
-  ASSERT_TRUE(record.address_v4().has_value());
-  EXPECT_EQ(record.address_v4().value().port, kServicePort);
-  EXPECT_EQ(record.address_v4().value().address, IPAddress(kV4AddressOctets));
+  EXPECT_FALSE(record.address_v6());
+  ASSERT_TRUE(record.address_v4());
+  EXPECT_EQ(record.address_v4().port, kServicePort);
+  EXPECT_EQ(record.address_v4().address, IPAddress(kV4AddressOctets));
 
   // Address v6.
   data = CreateFullyPopulatedData();
@@ -170,10 +170,10 @@ TEST(DnsSdDnsDataTests, TestConvertDnsDataOneAddress) {
   ASSERT_TRUE(result.is_value());
 
   record = result.value();
-  EXPECT_FALSE(record.address_v4().has_value());
-  ASSERT_TRUE(record.address_v6().has_value());
-  EXPECT_EQ(record.address_v6().value().port, kServicePort);
-  EXPECT_EQ(record.address_v6().value().address, IPAddress(kV6AddressHextets));
+  EXPECT_FALSE(record.address_v4());
+  ASSERT_TRUE(record.address_v6());
+  EXPECT_EQ(record.address_v6().port, kServicePort);
+  EXPECT_EQ(record.address_v6().address, IPAddress(kV6AddressHextets));
 }
 
 TEST(DnsSdDnsDataTests, TestConvertDnsDataBadTxt) {

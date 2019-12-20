@@ -22,7 +22,7 @@ class PublisherImpl : public DnsSdPublisher {
   // DnsSdPublisher overrides.
   Error Register(const DnsSdInstanceRecord& record) override;
   Error UpdateRegistration(const DnsSdInstanceRecord& record) override;
-  size_t DeregisterAll(absl::string_view service) override;
+  size_t DeregisterAll(const std::string& service) override;
 
  private:
   std::vector<DnsSdInstanceRecord> published_records_;

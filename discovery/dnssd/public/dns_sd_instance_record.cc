@@ -4,14 +4,13 @@
 
 #include "discovery/dnssd/public/dns_sd_instance_record.h"
 
-#include "absl/strings/ascii.h"
 #include "util/logging.h"
 
 namespace openscreen {
 namespace discovery {
 namespace {
 
-bool IsValidUtf8(absl::string_view string) {
+bool IsValidUtf8(const std::string& string) {
   for (size_t i = 0; i < string.size(); i++) {
     if (string[i] >> 5 == 0x06) {  // 110xxxxx 10xxxxxx
       if (i + 1 >= string.size() || string[++i] >> 6 != 0x02) {
@@ -34,7 +33,7 @@ bool IsValidUtf8(absl::string_view string) {
   return true;
 }
 
-bool HasControlCharacters(absl::string_view string) {
+bool HasControlCharacters(const std::string& string) {
   for (auto ch : string) {
     if ((ch >= 0x0 && ch <= 0x1F /* Ascii control characters */) ||
         ch == 0x7F /* DEL character */) {
@@ -42,6 +41,14 @@ bool HasControlCharacters(absl::string_view string) {
     }
   }
   return false;
+}
+
+bool IsDigit(uint8_t c) {
+  return c >= 48 && c <= 57;
+}
+
+bool IsAlpha(uint8_t c) {
+  return (c >= 65 && c <= 90) || (c >= 97 && c <= 122);
 }
 
 }  // namespace
@@ -55,6 +62,7 @@ DnsSdInstanceRecord::DnsSdInstanceRecord(std::string instance_id,
                           std::move(service_id),
                           std::move(domain_id),
                           std::move(txt)) {
+  OSP_CHECK(endpoint);
   if (endpoint.address.IsV4()) {
     address_v4_ = std::move(endpoint);
   } else if (endpoint.address.IsV6()) {
@@ -74,6 +82,8 @@ DnsSdInstanceRecord::DnsSdInstanceRecord(std::string instance_id,
                           std::move(service_id),
                           std::move(domain_id),
                           std::move(txt)) {
+  OSP_CHECK(ipv4_endpoint);
+  OSP_CHECK(ipv4_endpoint);
   OSP_CHECK(ipv4_endpoint.address.IsV4());
   OSP_CHECK(ipv6_endpoint.address.IsV6());
 
@@ -102,10 +112,10 @@ bool DnsSdInstanceRecord::operator==(const DnsSdInstanceRecord& other) const {
 }
 
 uint16_t DnsSdInstanceRecord::port() const {
-  if (address_v4_.has_value()) {
-    return address_v4_.value().port;
-  } else if (address_v6_.has_value()) {
-    return address_v6_.value().port;
+  if (address_v4_) {
+    return address_v4_.port;
+  } else if (address_v6_) {
+    return address_v6_.port;
   } else {
     OSP_NOTREACHED();
     return 0;
@@ -113,7 +123,7 @@ uint16_t DnsSdInstanceRecord::port() const {
 }
 
 // static
-bool IsInstanceValid(absl::string_view instance) {
+bool IsInstanceValid(const std::string& instance) {
   // According to RFC6763, Instance names must:
   // - Be encoded in Net-Unicode (which required UTF-8 formatting).
   // - NOT contain ASCII control characters
@@ -124,7 +134,7 @@ bool IsInstanceValid(absl::string_view instance) {
 }
 
 // static
-bool IsServiceValid(absl::string_view service) {
+bool IsServiceValid(const std::string& service) {
   // According to RFC6763, the service name "consists of a pair of DNS labels".
   // "The first label of the pair is an underscore character followed by the
   // Service Name" and "The second label is either '_tcp' [...] or '_udp'".
@@ -138,7 +148,7 @@ bool IsServiceValid(absl::string_view service) {
     return false;
   }
 
-  const absl::string_view protocol = service.substr(service.size() - 5);
+  const std::string protocol = service.substr(service.size() - 5);
   if (protocol != "._udp" && protocol != "._tcp") {
     return false;
   }
@@ -156,9 +166,9 @@ bool IsServiceValid(absl::string_view service) {
         return false;
       }
       last_char_hyphen = true;
-    } else if (absl::ascii_isalpha(service[i])) {
+    } else if (IsAlpha(service[i])) {
       seen_letter = true;
-    } else if (!absl::ascii_isdigit(service[i])) {
+    } else if (!IsDigit(service[i])) {
       return false;
     }
   }
@@ -167,7 +177,7 @@ bool IsServiceValid(absl::string_view service) {
 }
 
 // static
-bool IsDomainValid(absl::string_view domain) {
+bool IsDomainValid(const std::string& domain) {
   // As RFC6763 Section 4.1.3 provides no validation requirements for the domain
   // section, the following validations are used:
   // - All labels must be no longer than 63 characters

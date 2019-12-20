@@ -5,17 +5,15 @@
 #ifndef DISCOVERY_DNSSD_PUBLIC_DNS_SD_INSTANCE_RECORD_H_
 #define DISCOVERY_DNSSD_PUBLIC_DNS_SD_INSTANCE_RECORD_H_
 
-#include "absl/strings/string_view.h"
-#include "absl/types/optional.h"
 #include "discovery/dnssd/public/dns_sd_txt_record.h"
 #include "platform/base/ip_address.h"
 
 namespace openscreen {
 namespace discovery {
 
-bool IsInstanceValid(absl::string_view instance);
-bool IsServiceValid(absl::string_view service);
-bool IsDomainValid(absl::string_view domain);
+bool IsInstanceValid(const std::string& instance);
+bool IsServiceValid(const std::string& service);
+bool IsDomainValid(const std::string& domain);
 
 // Represents the data stored in DNS records of types SRV, TXT, A, and AAAA
 class DnsSdInstanceRecord {
@@ -47,8 +45,8 @@ class DnsSdInstanceRecord {
 
   // Returns the addess associated with this DNS-SD record. In any valid record,
   // at least one will be set.
-  const absl::optional<IPEndpoint>& address_v4() const { return address_v4_; }
-  const absl::optional<IPEndpoint>& address_v6() const { return address_v6_; }
+  const IPEndpoint& address_v4() const { return address_v4_; }
+  const IPEndpoint& address_v6() const { return address_v6_; }
 
   // Returns the TXT record associated with this DNS-SD record
   const DnsSdTxtRecord& txt() const { return txt_; }
@@ -71,8 +69,8 @@ class DnsSdInstanceRecord {
   std::string instance_id_;
   std::string service_id_;
   std::string domain_id_;
-  absl::optional<IPEndpoint> address_v4_;
-  absl::optional<IPEndpoint> address_v6_;
+  IPEndpoint address_v4_;
+  IPEndpoint address_v6_;
   DnsSdTxtRecord txt_;
 };
 

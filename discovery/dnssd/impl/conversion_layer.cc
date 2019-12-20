@@ -6,6 +6,8 @@
 
 #include "absl/strings/str_join.h"
 #include "absl/strings/str_split.h"
+#include "absl/types/optional.h"
+#include "absl/types/span.h"
 #include "discovery/dnssd/impl/constants.h"
 #include "discovery/dnssd/impl/instance_key.h"
 #include "discovery/dnssd/impl/service_key.h"
@@ -66,26 +68,26 @@ MdnsRecord CreateSrvRecord(const DnsSdInstanceRecord& record,
 
 absl::optional<MdnsRecord> CreateARecord(const DnsSdInstanceRecord& record,
                                          const DomainName& domain) {
-  if (!record.address_v4().has_value()) {
+  if (!record.address_v4()) {
     return absl::nullopt;
   }
 
   // TTL specified by RFC 6762 section 10.
   constexpr std::chrono::seconds ttl(120);
-  ARecordRdata data(record.address_v4().value().address);
+  ARecordRdata data(record.address_v4().address);
   return MdnsRecord(domain, DnsType::kA, DnsClass::kIN, RecordType::kUnique,
                     ttl, std::move(data));
 }
 
 absl::optional<MdnsRecord> CreateAAAARecord(const DnsSdInstanceRecord& record,
                                             const DomainName& domain) {
-  if (!record.address_v6().has_value()) {
+  if (!record.address_v6()) {
     return absl::nullopt;
   }
 
   // TTL specified by RFC 6762 section 10.
   constexpr std::chrono::seconds ttl(120);
-  AAAARecordRdata data(record.address_v6().value().address);
+  AAAARecordRdata data(record.address_v6().address);
   return MdnsRecord(domain, DnsType::kAAAA, DnsClass::kIN, RecordType::kUnique,
                     ttl, std::move(data));
 }
@@ -122,7 +124,8 @@ ErrorOr<DnsSdTxtRecord> CreateFromDnsTxt(const TxtRecordRdata& txt_data) {
       std::string value = text.substr(index_of_eq + 1);
       absl::Span<const uint8_t> data(
           reinterpret_cast<const uint8_t*>(value.c_str()), value.size());
-      const auto set_result = txt.SetValue(key, data);
+      const auto set_result =
+          txt.SetValue(key, std::vector<uint8_t>(data.begin(), data.end()));
       if (!set_result.ok()) {
         return set_result;
       }

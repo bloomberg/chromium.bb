@@ -5,7 +5,6 @@
 #ifndef DISCOVERY_DNSSD_PUBLIC_DNS_SD_QUERIER_H_
 #define DISCOVERY_DNSSD_PUBLIC_DNS_SD_QUERIER_H_
 
-#include "absl/strings/string_view.h"
 #include "discovery/dnssd/public/dns_sd_instance_record.h"
 
 namespace openscreen {
@@ -39,17 +38,17 @@ class DnsSdQuerier {
   // NOTE: The provided service value is expected to be valid, as defined by the
   // IsServiceValid() method.
   // NOTE: The callback must be called on the TaskRunner thread.
-  virtual void StartQuery(absl::string_view service, Callback* cb) = 0;
+  virtual void StartQuery(const std::string& service, Callback* cb) = 0;
 
   // Stops an already running query.
   // NOTE: The provided service value is expected to be valid, as defined by the
   // IsServiceValid() method.
-  virtual void StopQuery(absl::string_view service, Callback* cb) = 0;
+  virtual void StopQuery(const std::string& service, Callback* cb) = 0;
 
   // Re-initializes the process of service discovery for the provided service
   // id. All ongoing queries for this domain are restarted and any previously
   // received query results are discarded.
-  virtual void ReinitializeQueries(absl::string_view service) = 0;
+  virtual void ReinitializeQueries(const std::string& service) = 0;
 };
 
 }  // namespace discovery

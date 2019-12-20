@@ -5,14 +5,12 @@
 #ifndef DISCOVERY_DNSSD_PUBLIC_DNS_SD_TXT_RECORD_H_
 #define DISCOVERY_DNSSD_PUBLIC_DNS_SD_TXT_RECORD_H_
 
+#include <functional>
 #include <map>
 #include <set>
 #include <string>
 #include <vector>
 
-#include "absl/strings/string_view.h"
-#include "absl/types/optional.h"
-#include "absl/types/span.h"
 #include "platform/base/error.h"
 
 namespace openscreen {
@@ -20,14 +18,15 @@ namespace discovery {
 
 class DnsSdTxtRecord {
  public:
+  using ValueRef = std::reference_wrapper<const std::vector<uint8_t>>;
+
   // Sets the value currently stored in this DNS-SD TXT record. Returns error
   // if the provided key is already set or if either the key or value is
   // invalid, and Error::None() otherwise. Keys are case-insensitive. Setting a
   // value or flag which was already set will overwrite the previous one, and
   // setting a value with a key which was previously associated with a flag
   // erases the flag's value and vice versa.
-  Error SetValue(const std::string& key,
-                 const absl::Span<const uint8_t>& value);
+  Error SetValue(const std::string& key, std::vector<uint8_t> value);
   Error SetFlag(const std::string& key, bool value);
 
   // Reads the value associated with the provided key, or an error if the key
@@ -36,7 +35,7 @@ class DnsSdTxtRecord {
   // NOTE: If GetValue is called on a key assigned to a flag, an ItemNotFound
   // error will be returned. If GetFlag is called on a key assigned to a value,
   // 'false' will be returned.
-  ErrorOr<absl::Span<const uint8_t>> GetValue(const std::string& key) const;
+  ErrorOr<ValueRef> GetValue(const std::string& key) const;
   ErrorOr<bool> GetFlag(const std::string& key) const;
 
   // Clears an existing TxtRecord value associated with the given key. If the
@@ -75,7 +74,7 @@ class DnsSdTxtRecord {
   // Validations for keys and (key, value) pairs.
   bool IsKeyValid(const std::string& key) const;
   bool IsKeyValuePairValid(const std::string& key,
-                           const absl::Span<const uint8_t>& value) const;
+                           const std::vector<uint8_t>& value) const;
 
   // Set of (key, value) pairs associated with this TXT record.
   // NOTE: The same string name can only occur in one of key_value_txt_,

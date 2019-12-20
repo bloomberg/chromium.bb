@@ -41,9 +41,11 @@ TEST(DnsSdConversionLayerTest, TestCreateTxtValidKeyValue) {
 
   // EXPECT_STREQ is causing memory leaks
   std::string expected = "value";
-  ASSERT_EQ(record.value().GetValue("name").value().size(), expected.size());
+  ASSERT_TRUE(record.value().GetValue("name").is_value());
+  const std::vector<uint8_t>& value = record.value().GetValue("name").value();
+  ASSERT_EQ(value.size(), expected.size());
   for (size_t i = 0; i < expected.size(); i++) {
-    EXPECT_EQ(expected[i], record.value().GetValue("name").value()[i]);
+    EXPECT_EQ(expected[i], value[i]);
   }
 }
 
@@ -260,8 +262,7 @@ TEST(DnsSdConversionLayerTest, GetDnsRecordsAAAANotPresent) {
 
 TEST(DnsSdConversionLayerTest, GetDnsRecordsTxt) {
   DnsSdTxtRecord txt;
-  auto value =
-      absl::Span<const uint8_t>(reinterpret_cast<const uint8_t*>("value"), 5);
+  std::vector<uint8_t> value{'v', 'a', 'l', 'u', 'e'};
   txt.SetValue("name", value);
   txt.SetFlag("boolean", true);
   DnsSdInstanceRecord instance_record(

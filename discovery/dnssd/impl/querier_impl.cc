@@ -24,7 +24,7 @@ QuerierImpl::QuerierImpl(MdnsService* mdns_querier)
 
 QuerierImpl::~QuerierImpl() = default;
 
-void QuerierImpl::StartQuery(absl::string_view service, Callback* callback) {
+void QuerierImpl::StartQuery(const std::string& service, Callback* callback) {
   OSP_DCHECK(callback);
 
   ServiceKey key(service, kLocalDomain);
@@ -49,11 +49,11 @@ void QuerierImpl::StartQuery(absl::string_view service, Callback* callback) {
   callback_map_[key].push_back(callback);
 }
 
-bool QuerierImpl::IsQueryRunning(absl::string_view service) const {
+bool QuerierImpl::IsQueryRunning(const std::string& service) const {
   return IsQueryRunning(ServiceKey(service, kLocalDomain));
 }
 
-void QuerierImpl::StopQuery(absl::string_view service, Callback* callback) {
+void QuerierImpl::StopQuery(const std::string& service, Callback* callback) {
   OSP_DCHECK(callback);
 
   ServiceKey key(service, kLocalDomain);
@@ -75,7 +75,7 @@ void QuerierImpl::StopQuery(absl::string_view service, Callback* callback) {
   }
 }
 
-void QuerierImpl::ReinitializeQueries(absl::string_view service) {
+void QuerierImpl::ReinitializeQueries(const std::string& service) {
   const ServiceKey key(service, kLocalDomain);
 
   mdns_querier_->ReinitializeQueries(GetPtrQueryInfo(key).name);

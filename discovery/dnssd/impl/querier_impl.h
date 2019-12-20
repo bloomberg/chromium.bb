@@ -31,12 +31,12 @@ class QuerierImpl : public DnsSdQuerier, public MdnsRecordChangedCallback {
   explicit QuerierImpl(MdnsService* querier);
   ~QuerierImpl() override;
 
-  bool IsQueryRunning(absl::string_view service) const;
+  bool IsQueryRunning(const std::string& service) const;
 
   // DnsSdQuerier overrides.
-  void StartQuery(absl::string_view service, Callback* callback) override;
-  void StopQuery(absl::string_view service, Callback* callback) override;
-  void ReinitializeQueries(absl::string_view service) override;
+  void StartQuery(const std::string& service, Callback* callback) override;
+  void StopQuery(const std::string& service, Callback* callback) override;
+  void ReinitializeQueries(const std::string& service) override;
 
   // MdnsRecordChangedCallback overrides.
   // TODO(rwkeane): Ensure this is run on the TaskRunner thread once the

@@ -5,7 +5,6 @@
 #ifndef DISCOVERY_DNSSD_PUBLIC_DNS_SD_PUBLISHER_H_
 #define DISCOVERY_DNSSD_PUBLIC_DNS_SD_PUBLISHER_H_
 
-#include "absl/strings/string_view.h"
 #include "discovery/dnssd/public/dns_sd_instance_record.h"
 #include "platform/base/error.h"
 
@@ -34,7 +33,7 @@ class DnsSdPublisher {
   // Unpublishes any PTR, SRV, TXT, A, and AAAA records associated with this
   // service id. If no such records are published, this operation will be a
   // no-op. Returns the number of records which were removed.
-  virtual size_t DeregisterAll(absl::string_view service) = 0;
+  virtual size_t DeregisterAll(const std::string& service) = 0;
 };
 
 }  // namespace discovery
