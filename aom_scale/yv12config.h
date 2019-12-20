@@ -158,7 +158,7 @@ void aom_remove_metadata_from_frame_buffer(YV12_BUFFER_CONFIG *ybf);
  * \param[in]    arr       Metadata array struct pointer
  */
 int aom_copy_metadata_to_frame_buffer(YV12_BUFFER_CONFIG *ybf,
-                                      aom_metadata_array_t *arr);
+                                      const aom_metadata_array_t *arr);
 
 #ifdef __cplusplus
 }
