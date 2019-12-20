@@ -6559,6 +6559,25 @@
             ]
         }
     ],
+    "TextFragmentAnchor": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_20191216",
+                    "enable_features": [
+                        "TextFragmentAnchor"
+                    ]
+                }
+            ]
+        }
+    ],
     "ThirdPartyModulesBlocking": [
         {
             "platforms": [
