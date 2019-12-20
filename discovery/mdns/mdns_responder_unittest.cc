@@ -247,7 +247,7 @@ TEST_F(MdnsResponderTest, AnyQueryResultsAllApplied) {
   record_handler_.AddRecord(GetFakeARecord(domain_));
   record_handler_.AddRecord(GetFakeAAAARecord(domain_));
   EXPECT_CALL(sender_, SendMulticast(_))
-      .WillOnce(Invoke([](const MdnsMessage& message) -> Error {
+      .WillOnce([](const MdnsMessage& message) -> Error {
         EXPECT_EQ(message.questions().size(), size_t{0});
         EXPECT_EQ(message.authority_records().size(), size_t{0});
         EXPECT_EQ(message.additional_records().size(), size_t{0});
@@ -259,7 +259,7 @@ TEST_F(MdnsResponderTest, AnyQueryResultsAllApplied) {
         EXPECT_TRUE(ContainsRecordType(message.answers(), DnsType::kAAAA));
         EXPECT_FALSE(ContainsRecordType(message.answers(), DnsType::kPTR));
         return Error::None();
-      }));
+      });
 
   OnMessageReceived(message, endpoint_);
 }
@@ -280,7 +280,7 @@ TEST_F(MdnsResponderTest, PtrQueryResultsApplied) {
   record_handler_.AddRecord(GetFakeARecord(domain_));
   record_handler_.AddRecord(GetFakeAAAARecord(domain_));
   EXPECT_CALL(sender_, SendMulticast(_))
-      .WillOnce(Invoke([](const MdnsMessage& message) -> Error {
+      .WillOnce([](const MdnsMessage& message) -> Error {
         EXPECT_EQ(message.questions().size(), size_t{0});
         EXPECT_EQ(message.authority_records().size(), size_t{0});
         EXPECT_EQ(message.additional_records().size(), size_t{4});
@@ -297,7 +297,7 @@ TEST_F(MdnsResponderTest, PtrQueryResultsApplied) {
         EXPECT_FALSE(ContainsRecordType(records, DnsType::kPTR));
 
         return Error::None();
-      }));
+      });
 
   OnMessageReceived(message, endpoint_);
 }
@@ -317,7 +317,7 @@ TEST_F(MdnsResponderTest, SrvQueryResultsApplied) {
   record_handler_.AddRecord(GetFakeARecord(domain_));
   record_handler_.AddRecord(GetFakeAAAARecord(domain_));
   EXPECT_CALL(sender_, SendMulticast(_))
-      .WillOnce(Invoke([](const MdnsMessage& message) -> Error {
+      .WillOnce([](const MdnsMessage& message) -> Error {
         EXPECT_EQ(message.questions().size(), size_t{0});
         EXPECT_EQ(message.authority_records().size(), size_t{0});
         EXPECT_EQ(message.additional_records().size(), size_t{2});
@@ -334,7 +334,7 @@ TEST_F(MdnsResponderTest, SrvQueryResultsApplied) {
         EXPECT_FALSE(ContainsRecordType(records, DnsType::kPTR));
 
         return Error::None();
-      }));
+      });
 
   OnMessageReceived(message, endpoint_);
 }
@@ -354,7 +354,7 @@ TEST_F(MdnsResponderTest, AQueryResultsApplied) {
   record_handler_.AddRecord(GetFakeARecord(domain_));
   record_handler_.AddRecord(GetFakeAAAARecord(domain_));
   EXPECT_CALL(sender_, SendMulticast(_))
-      .WillOnce(Invoke([](const MdnsMessage& message) -> Error {
+      .WillOnce([](const MdnsMessage& message) -> Error {
         EXPECT_EQ(message.questions().size(), size_t{0});
         EXPECT_EQ(message.authority_records().size(), size_t{0});
         EXPECT_EQ(message.additional_records().size(), size_t{1});
@@ -371,7 +371,7 @@ TEST_F(MdnsResponderTest, AQueryResultsApplied) {
         EXPECT_FALSE(ContainsRecordType(records, DnsType::kPTR));
 
         return Error::None();
-      }));
+      });
 
   OnMessageReceived(message, endpoint_);
 }
@@ -391,7 +391,7 @@ TEST_F(MdnsResponderTest, AAAAQueryResultsApplied) {
   record_handler_.AddRecord(GetFakeARecord(domain_));
   record_handler_.AddRecord(GetFakeAAAARecord(domain_));
   EXPECT_CALL(sender_, SendMulticast(_))
-      .WillOnce(Invoke([](const MdnsMessage& message) -> Error {
+      .WillOnce([](const MdnsMessage& message) -> Error {
         EXPECT_EQ(message.questions().size(), size_t{0});
         EXPECT_EQ(message.authority_records().size(), size_t{0});
         EXPECT_EQ(message.additional_records().size(), size_t{1});
@@ -408,7 +408,56 @@ TEST_F(MdnsResponderTest, AAAAQueryResultsApplied) {
         EXPECT_FALSE(ContainsRecordType(records, DnsType::kPTR));
 
         return Error::None();
-      }));
+      });
+
+  OnMessageReceived(message, endpoint_);
+}
+
+TEST_F(MdnsResponderTest, MessageOnlySentIfAnswerNotKnown) {
+  MdnsQuestion question(domain_, DnsType::kAAAA, DnsClass::kANY,
+                        ResponseType::kMulticast);
+  MdnsRecord aaaa_record = GetFakeAAAARecord(domain_);
+  MdnsMessage message(0, MessageType::Query);
+  message.AddQuestion(question);
+  message.AddAnswer(aaaa_record);
+
+  EXPECT_CALL(record_handler_, IsExclusiveOwner(_))
+      .WillRepeatedly(Return(true));
+  EXPECT_CALL(record_handler_, HasRecords(_, _, _))
+      .WillRepeatedly(Return(true));
+  record_handler_.AddRecord(GetFakePtrRecord(domain_));
+  record_handler_.AddRecord(GetFakeSrvRecord(domain_));
+  record_handler_.AddRecord(GetFakeTxtRecord(domain_));
+  record_handler_.AddRecord(GetFakeARecord(domain_));
+  record_handler_.AddRecord(aaaa_record);
+
+  OnMessageReceived(message, endpoint_);
+}
+
+TEST_F(MdnsResponderTest, RecordOnlySentIfNotKnown) {
+  MdnsQuestion question(domain_, DnsType::kANY, DnsClass::kANY,
+                        ResponseType::kMulticast);
+  MdnsRecord aaaa_record = GetFakeAAAARecord(domain_);
+  MdnsMessage message(0, MessageType::Query);
+  message.AddQuestion(question);
+  message.AddAnswer(aaaa_record);
+
+  EXPECT_CALL(record_handler_, IsExclusiveOwner(_))
+      .WillRepeatedly(Return(true));
+  EXPECT_CALL(record_handler_, HasRecords(_, _, _))
+      .WillRepeatedly(Return(true));
+  record_handler_.AddRecord(GetFakeARecord(domain_));
+  record_handler_.AddRecord(aaaa_record);
+  EXPECT_CALL(sender_, SendMulticast(_))
+      .WillOnce([](const MdnsMessage& message) -> Error {
+        EXPECT_EQ(message.questions().size(), size_t{0});
+        EXPECT_EQ(message.authority_records().size(), size_t{0});
+        EXPECT_EQ(message.additional_records().size(), size_t{0});
+
+        EXPECT_EQ(message.answers().size(), size_t{1});
+        EXPECT_TRUE(ContainsRecordType(message.answers(), DnsType::kA));
+        return Error::None();
+      });
 
   OnMessageReceived(message, endpoint_);
 }

@@ -5,7 +5,6 @@
 #include "discovery/mdns/mdns_responder.h"
 
 #include <utility>
-#include <vector>
 
 #include "discovery/mdns/mdns_publisher.h"
 #include "discovery/mdns/mdns_querier.h"
@@ -18,81 +17,96 @@ namespace openscreen {
 namespace discovery {
 namespace {
 
+enum AddResult { kNonePresent = 0, kAdded, kAlreadyKnown };
+
 inline bool IsValidAdditionalRecordType(DnsType type) {
   return type == DnsType::kSRV || type == DnsType::kTXT ||
          type == DnsType::kA || type == DnsType::kAAAA;
 }
 
-bool AddRecords(std::function<void(MdnsRecord record)> add_func,
-                MdnsResponder::RecordHandler* record_handler,
-                const DomainName& domain,
-                DnsType type,
-                DnsClass clazz,
-                bool add_negative_on_unknown) {
-  const auto extra_records = record_handler->GetRecords(domain, type, clazz);
-  if (extra_records.size()) {
-    for (const MdnsRecord& record : extra_records) {
-      add_func(record);
+AddResult AddRecords(std::function<void(MdnsRecord record)> add_func,
+                     MdnsResponder::RecordHandler* record_handler,
+                     const DomainName& domain,
+                     const std::vector<MdnsRecord>& known_answers,
+                     DnsType type,
+                     DnsClass clazz,
+                     bool add_negative_on_unknown) {
+  const auto records = record_handler->GetRecords(domain, type, clazz);
+  if (records.size()) {
+    bool added_any_records = false;
+    for (const MdnsRecord& record : records) {
+      if (std::find(known_answers.begin(), known_answers.end(), record) ==
+          known_answers.end()) {
+        added_any_records = true;
+        add_func(record);
+      }
     }
-  } else if (add_negative_on_unknown) {
-    // TODO(rwkeane): Add negative response NSEC record.
+    return added_any_records ? AddResult::kAdded : AddResult::kAlreadyKnown;
+  } else {
+    if (add_negative_on_unknown) {
+      // TODO(rwkeane): Add negative response NSEC record.
+    }
+    return AddResult::kNonePresent;
   }
-
-  return !extra_records.empty();
 }
 
-inline bool AddAdditionalRecords(MdnsMessage* message,
-                                 MdnsResponder::RecordHandler* record_handler,
-                                 const DomainName& domain,
-                                 DnsType type,
-                                 DnsClass clazz) {
+inline AddResult AddAdditionalRecords(
+    MdnsMessage* message,
+    MdnsResponder::RecordHandler* record_handler,
+    const DomainName& domain,
+    const std::vector<MdnsRecord>& known_answers,
+    DnsType type,
+    DnsClass clazz) {
   OSP_DCHECK(IsValidAdditionalRecordType(type));
 
   auto add_func = [message](MdnsRecord record) {
     message->AddAdditionalRecord(std::move(record));
   };
-  return AddRecords(std::move(add_func), record_handler, domain, type, clazz,
-                    true);
+  return AddRecords(std::move(add_func), record_handler, domain, known_answers,
+                    type, clazz, true);
 }
 
-inline bool AddResponseRecords(MdnsMessage* message,
-                               MdnsResponder::RecordHandler* record_handler,
-                               const DomainName& domain,
-                               DnsType type,
-                               DnsClass clazz,
-                               bool add_negative_on_unknown) {
+inline AddResult AddResponseRecords(
+    MdnsMessage* message,
+    MdnsResponder::RecordHandler* record_handler,
+    const DomainName& domain,
+    const std::vector<MdnsRecord>& known_answers,
+    DnsType type,
+    DnsClass clazz,
+    bool add_negative_on_unknown) {
   OSP_DCHECK(type != DnsType::kANY);
 
   auto add_func = [message](MdnsRecord record) {
     message->AddAnswer(std::move(record));
   };
-  return AddRecords(std::move(add_func), record_handler, domain, type, clazz,
-                    add_negative_on_unknown);
+  return AddRecords(std::move(add_func), record_handler, domain, known_answers,
+                    type, clazz, add_negative_on_unknown);
 }
 
 void ApplyAnyQueryResults(MdnsMessage* message,
                           MdnsResponder::RecordHandler* record_handler,
                           const DomainName& domain,
+                          const std::vector<MdnsRecord>& known_answers,
                           DnsClass clazz) {
-  if (AddResponseRecords(message, record_handler, domain, DnsType::kPTR, clazz,
-                         false)) {
+  if (AddResponseRecords(message, record_handler, domain, known_answers,
+                         DnsType::kPTR, clazz, false)) {
     return;
   }
 
-  if (!AddResponseRecords(message, record_handler, domain, DnsType::kSRV, clazz,
-                          false)) {
+  if (!AddResponseRecords(message, record_handler, domain, known_answers,
+                          DnsType::kSRV, clazz, false)) {
     // TODO(rwkeane): Add negative response NSEC record to additional records.
   }
-  if (!AddResponseRecords(message, record_handler, domain, DnsType::kTXT, clazz,
-                          false)) {
+  if (!AddResponseRecords(message, record_handler, domain, known_answers,
+                          DnsType::kTXT, clazz, false)) {
     // TODO(rwkeane): Add negative response NSEC record to additional records.
   }
-  if (!AddResponseRecords(message, record_handler, domain, DnsType::kA, clazz,
-                          false)) {
+  if (!AddResponseRecords(message, record_handler, domain, known_answers,
+                          DnsType::kA, clazz, false)) {
     // TODO(rwkeane): Add negative response NSEC record to additional records.
   }
-  if (!AddResponseRecords(message, record_handler, domain, DnsType::kAAAA,
-                          clazz, false)) {
+  if (!AddResponseRecords(message, record_handler, domain, known_answers,
+                          DnsType::kAAAA, clazz, false)) {
     // TODO(rwkeane): Add negative response NSEC record to additional records.
   }
 }
@@ -100,6 +114,7 @@ void ApplyAnyQueryResults(MdnsMessage* message,
 void ApplyTypedQueryResults(MdnsMessage* message,
                             MdnsResponder::RecordHandler* record_handler,
                             const DomainName& domain,
+                            const std::vector<MdnsRecord>& known_answers,
                             DnsType type,
                             DnsClass clazz) {
   OSP_DCHECK(type != DnsType::kANY);
@@ -107,41 +122,48 @@ void ApplyTypedQueryResults(MdnsMessage* message,
   if (type == DnsType::kPTR) {
     auto response_records = record_handler->GetRecords(domain, type, clazz);
     for (const MdnsRecord& record : response_records) {
+      if (std::find(known_answers.begin(), known_answers.end(), record) !=
+          known_answers.end()) {
+        continue;
+      }
+
       message->AddAnswer(record);
 
       const DomainName& name =
           absl::get<PtrRecordRdata>(record.rdata()).ptr_domain();
-      AddAdditionalRecords(message, record_handler, name, DnsType::kSRV, clazz);
+      AddAdditionalRecords(message, record_handler, name, known_answers,
+                           DnsType::kSRV, clazz);
       auto start_it = message->additional_records().begin();
       auto end_it = message->additional_records().end();
       for (auto it = start_it; it != end_it; it++) {
-        const DomainName target =
+        const DomainName& target =
             absl::get<SrvRecordRdata>(it->rdata()).target();
-        AddAdditionalRecords(message, record_handler, target, DnsType::kA,
-                             clazz);
-        AddAdditionalRecords(message, record_handler, target, DnsType::kAAAA,
-                             clazz);
+        AddAdditionalRecords(message, record_handler, target, known_answers,
+                             DnsType::kA, clazz);
+        AddAdditionalRecords(message, record_handler, target, known_answers,
+                             DnsType::kAAAA, clazz);
       }
-      AddAdditionalRecords(message, record_handler, name, DnsType::kTXT, clazz);
+      AddAdditionalRecords(message, record_handler, name, known_answers,
+                           DnsType::kTXT, clazz);
     }
   } else {
-    if (AddResponseRecords(message, record_handler, domain, type, clazz,
-                           true)) {
+    if (AddResponseRecords(message, record_handler, domain, known_answers, type,
+                           clazz, true) == AddResult::kAdded) {
       if (type == DnsType::kSRV) {
         for (const auto& srv_record : message->answers()) {
-          const DomainName target =
+          const DomainName& target =
               absl::get<SrvRecordRdata>(srv_record.rdata()).target();
-          AddAdditionalRecords(message, record_handler, target, DnsType::kA,
-                               clazz);
-          AddAdditionalRecords(message, record_handler, target, DnsType::kAAAA,
-                               clazz);
+          AddAdditionalRecords(message, record_handler, target, known_answers,
+                               DnsType::kA, clazz);
+          AddAdditionalRecords(message, record_handler, target, known_answers,
+                               DnsType::kAAAA, clazz);
         }
       } else if (type == DnsType::kA) {
-        AddAdditionalRecords(message, record_handler, domain, DnsType::kAAAA,
-                             clazz);
+        AddAdditionalRecords(message, record_handler, domain, known_answers,
+                             DnsType::kAAAA, clazz);
       } else if (type == DnsType::kAAAA) {
-        AddAdditionalRecords(message, record_handler, domain, DnsType::kA,
-                             clazz);
+        AddAdditionalRecords(message, record_handler, domain, known_answers,
+                             DnsType::kA, clazz);
       }
     }
   }
@@ -182,6 +204,13 @@ void MdnsResponder::OnMessageReceived(const MdnsMessage& message,
   OSP_DCHECK(task_runner_->IsRunningOnTaskRunner());
   OSP_DCHECK(message.type() == MessageType::Query);
 
+  if (message.questions().empty()) {
+    // TODO(rwkeane): Support multi-packet known answer suppression.
+    return;
+  }
+
+  const std::vector<MdnsRecord>& known_answers = message.answers();
+
   for (const auto& question : message.questions()) {
     const bool is_exclusive_owner =
         record_handler_->IsExclusiveOwner(question.name());
@@ -201,12 +230,12 @@ void MdnsResponder::OnMessageReceived(const MdnsMessage& message,
       }
 
       if (is_exclusive_owner) {
-        SendResponse(question, std::move(send_response));
+        SendResponse(question, known_answers, std::move(send_response));
       } else {
         const auto delay = random_delay_->GetSharedRecordResponseDelay();
-        std::function<void()> response = [this, question,
+        std::function<void()> response = [this, question, known_answers,
                                           send = std::move(send_response)]() {
-          SendResponse(question, std::move(send));
+          SendResponse(question, known_answers, std::move(send));
         };
         task_runner_->PostTaskWithDelay(std::move(response), delay);
       }
@@ -216,6 +245,7 @@ void MdnsResponder::OnMessageReceived(const MdnsMessage& message,
 
 void MdnsResponder::SendResponse(
     const MdnsQuestion& question,
+    const std::vector<MdnsRecord>& known_answers,
     std::function<void(const MdnsMessage&)> send_response) {
   OSP_DCHECK(task_runner_->IsRunningOnTaskRunner());
 
@@ -223,10 +253,11 @@ void MdnsResponder::SendResponse(
 
   if (question.dns_type() == DnsType::kANY) {
     ApplyAnyQueryResults(&message, record_handler_, question.name(),
-                         question.dns_class());
+                         known_answers, question.dns_class());
   } else {
     ApplyTypedQueryResults(&message, record_handler_, question.name(),
-                           question.dns_type(), question.dns_class());
+                           known_answers, question.dns_type(),
+                           question.dns_class());
   }
 
   // Send the response only if there are any records we care about.
