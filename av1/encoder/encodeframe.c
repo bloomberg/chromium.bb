@@ -68,6 +68,10 @@
 #include "av1/encoder/tpl_model.h"
 #include "av1/encoder/var_based_part.h"
 
+#if CONFIG_TUNE_VMAF
+#include "av1/encoder/tune_vmaf.h"
+#endif
+
 static AOM_INLINE void encode_superblock(const AV1_COMP *const cpi,
                                          TileDataEnc *tile_data, ThreadData *td,
                                          TOKENEXTRA **t, RUN_TYPE dry_run,
@@ -338,6 +342,12 @@ static AOM_INLINE void setup_block_rdmult(const AV1_COMP *const cpi,
   if (cpi->oxcf.tuning == AOM_TUNE_SSIM) {
     set_ssim_rdmult(cpi, x, bsize, mi_row, mi_col, &x->rdmult);
   }
+#if CONFIG_TUNE_VMAF
+  if (cpi->oxcf.tuning == AOM_TUNE_VMAF_WITH_PREPROCESSING ||
+      cpi->oxcf.tuning == AOM_TUNE_VMAF_WITHOUT_PREPROCESSING) {
+    av1_set_vmaf_rdmult(cpi, x, bsize, mi_row, mi_col, &x->rdmult);
+  }
+#endif
 }
 
 static AOM_INLINE void set_offsets_without_segment_id(

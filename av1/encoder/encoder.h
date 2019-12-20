@@ -1113,6 +1113,10 @@ typedef struct AV1_COMP {
   double *tpl_sb_rdmult_scaling_factors;
   double *ssim_rdmult_scaling_factors;
 
+#if CONFIG_TUNE_VMAF
+  double *vmaf_rdmult_scaling_factors;
+#endif
+
   int use_svc;
   SVC svc;
 

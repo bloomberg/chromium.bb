@@ -280,3 +280,154 @@ void av1_vmaf_preprocessing(const AV1_COMP *const cpi,
   aom_free(best_unsharp_amounts);
   aom_clear_system_state();
 }
+
+// TODO(sdeng): replace it with the SIMD version.
+static AOM_INLINE double image_mse_c(const uint8_t *src, int src_stride,
+                                     const uint8_t *ref, int ref_stride, int w,
+                                     int h) {
+  double accum = 0.0;
+  int i, j;
+
+  for (i = 0; i < h; ++i) {
+    for (j = 0; j < w; ++j) {
+      double img1px = src[i * src_stride + j];
+      double img2px = ref[i * ref_stride + j];
+
+      accum += (img1px - img2px) * (img1px - img2px);
+    }
+  }
+
+  return accum / (double)(w * h);
+}
+
+void av1_set_mb_vmaf_rdmult_scaling(AV1_COMP *cpi) {
+  AV1_COMMON *cm = &cpi->common;
+  ThreadData *td = &cpi->td;
+  MACROBLOCK *x = &td->mb;
+  MACROBLOCKD *xd = &x->e_mbd;
+  uint8_t *const y_buffer = cpi->source->y_buffer;
+  const int y_stride = cpi->source->y_stride;
+  const int y_width = cpi->source->y_width;
+  const int y_height = cpi->source->y_height;
+  const int block_size = BLOCK_64X64;
+
+  const int num_mi_w = mi_size_wide[block_size];
+  const int num_mi_h = mi_size_high[block_size];
+  const int num_cols = (cm->mi_cols + num_mi_w - 1) / num_mi_w;
+  const int num_rows = (cm->mi_rows + num_mi_h - 1) / num_mi_h;
+  const int block_w = num_mi_w << 2;
+  const int block_h = num_mi_h << 2;
+  const int use_hbd = cpi->source->flags & YV12_FLAG_HIGHBITDEPTH;
+  // TODO(sdeng): Add high bit depth support.
+  if (use_hbd) {
+    printf("VMAF RDO for high bit depth videos is unsupported yet.\n");
+    exit(0);
+  }
+
+  aom_clear_system_state();
+  YV12_BUFFER_CONFIG fake_recon, blurred;
+  memset(&fake_recon, 0, sizeof(fake_recon));
+  memset(&blurred, 0, sizeof(blurred));
+  aom_alloc_frame_buffer(&fake_recon, y_width, y_height, 1, 1,
+                         cm->seq_params.use_highbitdepth,
+                         cpi->oxcf.border_in_pixels, cm->byte_alignment);
+  aom_alloc_frame_buffer(&blurred, y_width, y_height, 1, 1,
+                         cm->seq_params.use_highbitdepth,
+                         cpi->oxcf.border_in_pixels, cm->byte_alignment);
+
+  gaussian_blur(cpi, cpi->source, &blurred);
+
+  // baseline vmaf
+  double baseline_mse = 0.0, baseline_vmaf = 0.0;
+  aom_calc_vmaf(cpi->oxcf.vmaf_model_path, cpi->source, cpi->source,
+                &baseline_vmaf);
+  av1_copy_and_extend_frame(cpi->source, &fake_recon);
+
+  // Loop through each 'block_size' block.
+  for (int row = 0; row < num_rows; ++row) {
+    for (int col = 0; col < num_cols; ++col) {
+      const int mi_row = row * num_mi_h;
+      const int mi_col = col * num_mi_w;
+      const int index = row * num_cols + col;
+      const int row_offset_y = mi_row << 2;
+      const int col_offset_y = mi_col << 2;
+
+      uint8_t *const orig_buf =
+          y_buffer + row_offset_y * y_stride + col_offset_y;
+      uint8_t *const blurred_buf =
+          blurred.y_buffer + row_offset_y * blurred.y_stride + col_offset_y;
+      uint8_t *const fybuf = fake_recon.y_buffer +
+                             row_offset_y * fake_recon.y_stride + col_offset_y;
+
+      const int block_width = AOMMIN(y_width - col_offset_y, block_w);
+      const int block_height = AOMMIN(y_height - row_offset_y, block_h);
+
+      // Set the blurred block.
+      unsharp_rect(orig_buf, y_stride, blurred_buf, blurred.y_stride, fybuf,
+                   fake_recon.y_stride, block_width, block_height, -1.0);
+
+      double vmaf, mse;
+      aom_calc_vmaf(cpi->oxcf.vmaf_model_path, cpi->source, &fake_recon, &vmaf);
+      mse = image_mse_c(y_buffer, y_stride, fake_recon.y_buffer,
+                        fake_recon.y_stride, y_width, y_height);
+
+      double weight = 0.0;
+      const double dvmaf = baseline_vmaf - vmaf;
+      const double dmse = mse - baseline_mse;
+      const double eps = 0.01 / (num_rows * num_cols);
+
+      if (dvmaf < eps || dmse < eps) {
+        weight = 1.0;
+      } else {
+        weight = dmse / dvmaf;
+      }
+
+      // Normalize it with a data fitted model.
+      weight = 6.0 * (1.0 - exp(-0.05 * weight)) + 0.8;
+      cpi->vmaf_rdmult_scaling_factors[index] = weight;
+
+      // Reset blurred block.
+      unsharp_rect(orig_buf, y_stride, blurred_buf, blurred.y_stride, fybuf,
+                   fake_recon.y_stride, block_width, block_height, 0.0);
+    }
+  }
+
+  aom_free_frame_buffer(&fake_recon);
+  aom_free_frame_buffer(&blurred);
+  aom_clear_system_state();
+  (void)xd;
+}
+
+void av1_set_vmaf_rdmult(const AV1_COMP *const cpi, MACROBLOCK *const x,
+                         const BLOCK_SIZE bsize, const int mi_row,
+                         const int mi_col, int *const rdmult) {
+  const AV1_COMMON *const cm = &cpi->common;
+
+  const int bsize_base = BLOCK_64X64;
+  const int num_mi_w = mi_size_wide[bsize_base];
+  const int num_mi_h = mi_size_high[bsize_base];
+  const int num_cols = (cm->mi_cols + num_mi_w - 1) / num_mi_w;
+  const int num_rows = (cm->mi_rows + num_mi_h - 1) / num_mi_h;
+  const int num_bcols = (mi_size_wide[bsize] + num_mi_w - 1) / num_mi_w;
+  const int num_brows = (mi_size_high[bsize] + num_mi_h - 1) / num_mi_h;
+  int row, col;
+  double num_of_mi = 0.0;
+  double geom_mean_of_scale = 0.0;
+
+  aom_clear_system_state();
+  for (row = mi_row / num_mi_w;
+       row < num_rows && row < mi_row / num_mi_w + num_brows; ++row) {
+    for (col = mi_col / num_mi_h;
+         col < num_cols && col < mi_col / num_mi_h + num_bcols; ++col) {
+      const int index = row * num_cols + col;
+      geom_mean_of_scale += log(cpi->vmaf_rdmult_scaling_factors[index]);
+      num_of_mi += 1.0;
+    }
+  }
+  geom_mean_of_scale = exp(geom_mean_of_scale / num_of_mi);
+
+  *rdmult = (int)((double)(*rdmult) * geom_mean_of_scale + 0.5);
+  *rdmult = AOMMAX(*rdmult, 0);
+  set_error_per_bit(x, *rdmult);
+  aom_clear_system_state();
+}
