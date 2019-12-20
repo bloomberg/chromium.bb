@@ -61391,6 +61391,16 @@ would be helpful to identify which type is being sent.
   <int value="4" label="TRUSTED_VAULT_PASSPHRASE"/>
 </enum>
 
+<enum name="SyncPassphraseType2">
+  <int value="0" label="No active syncing profiles"/>
+  <int value="1" label="Inconsistent state across profiles"/>
+  <int value="2" label="Implicit passphrase"/>
+  <int value="3" label="Keystore passphrase"/>
+  <int value="4" label="Frozen implicit passphrase"/>
+  <int value="5" label="Custom passphrase"/>
+  <int value="6" label="Trusted vault passphrase"/>
+</enum>
+
 <enum name="SyncPositioningScheme">
   <int value="0" label="UNIQUE_POSITION"/>
   <int value="1" label="POSITION_IN_PARENT"/>
