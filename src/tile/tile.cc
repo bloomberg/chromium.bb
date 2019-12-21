@@ -316,8 +316,7 @@ Tile::Tile(
     const std::array<bool, kNumReferenceFrameTypes>& reference_frame_sign_bias,
     const std::array<RefCountedBufferPtr, kNumReferenceFrameTypes>&
         reference_frames,
-    Array2D<MotionVector>* const motion_field_mv,
-    Array2D<int8_t>* const motion_field_reference_offset,
+    TemporalMotionField* motion_field,
     const std::array<uint8_t, kNumReferenceFrameTypes>& reference_order_hint,
     const WedgeMaskArray& wedge_masks,
     const SymbolDecoderContext& symbol_decoder_context,
@@ -344,8 +343,7 @@ Tile::Tile(
       current_frame_(*current_frame),
       reference_frame_sign_bias_(reference_frame_sign_bias),
       reference_frames_(reference_frames),
-      motion_field_mv_(motion_field_mv),
-      motion_field_reference_offset_(motion_field_reference_offset),
+      motion_field_(motion_field),
       reference_order_hint_(reference_order_hint),
       wedge_masks_(wedge_masks),
       reader_(data_, size_, frame_header_.enable_cdf_update),
@@ -445,9 +443,8 @@ bool Tile::Init() {
   }
   if (frame_header_.use_ref_frame_mvs) {
     SetupMotionField(sequence_header_, frame_header_, current_frame_,
-                     reference_frames_, motion_field_mv_,
-                     motion_field_reference_offset_, row4x4_start_, row4x4_end_,
-                     column4x4_start_, column4x4_end_);
+                     reference_frames_, motion_field_, row4x4_start_,
+                     row4x4_end_, column4x4_start_, column4x4_end_);
   }
   ResetLoopRestorationParams();
   initialized_ = true;

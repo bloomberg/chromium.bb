@@ -416,10 +416,10 @@ StatusCode DecoderImpl::DecodeTiles(const ObuParser* obu) {
     return kLibgav1StatusOutOfMemory;
   }
   if (obu->frame_header().use_ref_frame_mvs) {
-    if (!state_.motion_field_mv.Reset(DivideBy2(obu->frame_header().rows4x4),
+    if (!state_.motion_field.mv.Reset(DivideBy2(obu->frame_header().rows4x4),
                                       DivideBy2(obu->frame_header().columns4x4),
                                       /*zero_initialize=*/false) ||
-        !state_.motion_field_reference_offset.Reset(
+        !state_.motion_field.reference_offset.Reset(
             DivideBy2(obu->frame_header().rows4x4),
             DivideBy2(obu->frame_header().columns4x4),
             /*zero_initialize=*/false)) {
@@ -434,8 +434,8 @@ StatusCode DecoderImpl::DecodeTiles(const ObuParser* obu) {
     MotionVector invalid_mv;
     invalid_mv.mv[0] = kInvalidMvValue;
     invalid_mv.mv[1] = 0;
-    MotionVector* const motion_field_mv = &state_.motion_field_mv[0][0];
-    std::fill(motion_field_mv, motion_field_mv + state_.motion_field_mv.size(),
+    MotionVector* const motion_field_mv = &state_.motion_field.mv[0][0];
+    std::fill(motion_field_mv, motion_field_mv + state_.motion_field.mv.size(),
               invalid_mv);
   }
 
@@ -634,11 +634,11 @@ StatusCode DecoderImpl::DecodeTiles(const ObuParser* obu) {
           tile_number, tile_group.data + byte_offset, tile_size,
           obu->sequence_header(), obu->frame_header(),
           state_.current_frame.get(), state_.reference_frame_sign_bias,
-          state_.reference_frame, &state_.motion_field_mv,
-          &state_.motion_field_reference_offset, state_.reference_order_hint,
-          state_.wedge_masks, symbol_decoder_context_,
-          &saved_symbol_decoder_context, prev_segment_ids, &post_filter,
-          &block_parameters_holder, &cdef_index_, &inter_transform_sizes_, dsp,
+          state_.reference_frame, &state_.motion_field,
+          state_.reference_order_hint, state_.wedge_masks,
+          symbol_decoder_context_, &saved_symbol_decoder_context,
+          prev_segment_ids, &post_filter, &block_parameters_holder,
+          &cdef_index_, &inter_transform_sizes_, dsp,
           threading_strategy_.row_thread_pool(tile_index++),
           residual_buffer_pool_.get(), &decoder_scratch_buffer_pool_,
           &pending_tiles));

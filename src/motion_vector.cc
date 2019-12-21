@@ -318,8 +318,7 @@ void ScanPoint(const Tile::Block& block, int delta_row, int delta_column,
 // not null, the function may set |*zero_mv_context|.
 void AddTemporalReferenceMvCandidate(
     const Tile::Block& block, int delta_row, int delta_column, bool is_compound,
-    MotionVector global_mv[2], const Array2D<MotionVector>& motion_field_mv,
-    const Array2D<int8_t>& motion_field_reference_offset,
+    MotionVector global_mv[2], const TemporalMotionField& motion_field,
     int* const zero_mv_context, int* const num_mv_found,
     CandidateMotionVector ref_mv_stack[kMaxRefMvStackSize]) {
   const int mv_row = (block.row4x4 + delta_row) | 1;
@@ -331,8 +330,8 @@ void AddTemporalReferenceMvCandidate(
     *zero_mv_context = 1;
   }
   const BlockParameters& bp = *block.bp;
-  const MotionVector& temporal_mv = motion_field_mv[y8][x8];
-  const int temporal_reference_offset = motion_field_reference_offset[y8][x8];
+  const MotionVector& temporal_mv = motion_field.mv[y8][x8];
+  const int temporal_reference_offset = motion_field.reference_offset[y8][x8];
   if (temporal_mv.mv[0] == kInvalidMvValue) return;
   if (is_compound) {
     MotionVector candidate_mv[2] = {};
@@ -422,8 +421,7 @@ constexpr BitMaskSet kTemporalScanMask(kBlock8x8, kBlock8x16, kBlock8x32,
 // not null, the function may set |*zero_mv_context|.
 void TemporalScan(const Tile::Block& block, bool is_compound,
                   MotionVector global_mv[2],
-                  const Array2D<MotionVector>& motion_field_mv,
-                  const Array2D<int8_t>& motion_field_reference_offset,
+                  const TemporalMotionField& motion_field,
                   int* const zero_mv_context, int* const num_mv_found,
                   CandidateMotionVector ref_mv_stack[kMaxRefMvStackSize]) {
   const int step_w = (block.width4x4 >= 16) ? 4 : 2;
@@ -433,10 +431,9 @@ void TemporalScan(const Tile::Block& block, bool is_compound,
     for (int column = 0;
          column < std::min(static_cast<int>(block.width4x4), 16);
          column += step_w) {
-      AddTemporalReferenceMvCandidate(
-          block, row, column, is_compound, global_mv, motion_field_mv,
-          motion_field_reference_offset, zero_mv_context, num_mv_found,
-          ref_mv_stack);
+      AddTemporalReferenceMvCandidate(block, row, column, is_compound,
+                                      global_mv, motion_field, zero_mv_context,
+                                      num_mv_found, ref_mv_stack);
     }
   }
   if (kTemporalScanMask.Contains(block.size)) {
@@ -448,10 +445,9 @@ void TemporalScan(const Tile::Block& block, bool is_compound,
       const int row = temporal_sample_position[0];
       const int column = temporal_sample_position[1];
       if (!IsWithinTheSame64x64Block(block, row, column)) continue;
-      AddTemporalReferenceMvCandidate(
-          block, row, column, is_compound, global_mv, motion_field_mv,
-          motion_field_reference_offset, zero_mv_context, num_mv_found,
-          ref_mv_stack);
+      AddTemporalReferenceMvCandidate(block, row, column, is_compound,
+                                      global_mv, motion_field, zero_mv_context,
+                                      num_mv_found, ref_mv_stack);
     }
   }
 }
@@ -718,9 +714,8 @@ bool MotionFieldProjection(
     const ObuFrameHeader& frame_header, const RefCountedBuffer& current_frame,
     const std::array<RefCountedBufferPtr, kNumReferenceFrameTypes>&
         reference_frames,
-    Array2D<MotionVector>* const motion_field_mv,
-    Array2D<int8_t>* const motion_field_reference_offset, int y8_start,
-    int y8_end, int x8_start, int x8_end) {
+    TemporalMotionField* const motion_field, int y8_start, int y8_end,
+    int x8_start, int x8_end) {
   const int source_index =
       frame_header.reference_frame_index[source - kReferenceFrameLast];
   auto* const source_frame = reference_frames[source_index].get();
@@ -786,8 +781,8 @@ bool MotionFieldProjection(
         // y8_end.
         continue;
       }
-      (*motion_field_mv)[position_y8][position_x8] = mv;
-      (*motion_field_reference_offset)[position_y8][position_x8] =
+      (motion_field->mv)[position_y8][position_x8] = mv;
+      (motion_field->reference_offset)[position_y8][position_x8] =
           reference_offset;
     }
   }
@@ -799,8 +794,7 @@ bool MotionFieldProjection(
 void FindMvStack(
     const Tile::Block& block, bool is_compound,
     const std::array<bool, kNumReferenceFrameTypes>& reference_frame_sign_bias,
-    const Array2D<MotionVector>& motion_field_mv,
-    const Array2D<int8_t>& motion_field_reference_offset,
+    const TemporalMotionField& motion_field,
     CandidateMotionVector ref_mv_stack[kMaxRefMvStackSize],
     int* const num_mv_found, MvContexts* const contexts,
     MotionVector global_mv[2]) {
@@ -826,8 +820,7 @@ void FindMvStack(
   }
   if (contexts != nullptr) contexts->zero_mv = 0;
   if (block.tile.frame_header().use_ref_frame_mvs) {
-    TemporalScan(block, is_compound, global_mv, motion_field_mv,
-                 motion_field_reference_offset,
+    TemporalScan(block, is_compound, global_mv, motion_field,
                  (contexts != nullptr) ? &contexts->zero_mv : nullptr,
                  num_mv_found, ref_mv_stack);
   }
@@ -932,9 +925,8 @@ void SetupMotionField(
     const ObuFrameHeader& frame_header, const RefCountedBuffer& current_frame,
     const std::array<RefCountedBufferPtr, kNumReferenceFrameTypes>&
         reference_frames,
-    Array2D<MotionVector>* const motion_field_mv,
-    Array2D<int8_t>* const motion_field_reference_offset, int row4x4_start,
-    int row4x4_end, int column4x4_start, int column4x4_end) {
+    TemporalMotionField* const motion_field, int row4x4_start, int row4x4_end,
+    int column4x4_start, int column4x4_end) {
   assert(frame_header.use_ref_frame_mvs);
   assert(sequence_header.enable_order_hint);
   const int y8_start = DivideBy2(row4x4_start);
@@ -950,8 +942,7 @@ void SetupMotionField(
   if (last_alternate_order_hint != current_gold_order_hint) {
     MotionFieldProjection(kReferenceFrameLast, -1, sequence_header,
                           frame_header, current_frame, reference_frames,
-                          motion_field_mv, motion_field_reference_offset,
-                          y8_start, y8_end, x8_start, x8_end);
+                          motion_field, y8_start, y8_end, x8_start, x8_end);
   }
   int ref_stamp = 1;
   if (GetRelativeDistance(current_frame.order_hint(kReferenceFrameBackward),
@@ -960,8 +951,7 @@ void SetupMotionField(
                           sequence_header.order_hint_bits) > 0 &&
       MotionFieldProjection(kReferenceFrameBackward, 1, sequence_header,
                             frame_header, current_frame, reference_frames,
-                            motion_field_mv, motion_field_reference_offset,
-                            y8_start, y8_end, x8_start, x8_end)) {
+                            motion_field, y8_start, y8_end, x8_start, x8_end)) {
     --ref_stamp;
   }
   if (GetRelativeDistance(current_frame.order_hint(kReferenceFrameAlternate2),
@@ -970,8 +960,7 @@ void SetupMotionField(
                           sequence_header.order_hint_bits) > 0 &&
       MotionFieldProjection(kReferenceFrameAlternate2, 1, sequence_header,
                             frame_header, current_frame, reference_frames,
-                            motion_field_mv, motion_field_reference_offset,
-                            y8_start, y8_end, x8_start, x8_end)) {
+                            motion_field, y8_start, y8_end, x8_start, x8_end)) {
     --ref_stamp;
   }
   if (ref_stamp >= 0 &&
@@ -981,15 +970,13 @@ void SetupMotionField(
                           sequence_header.order_hint_bits) > 0 &&
       MotionFieldProjection(kReferenceFrameAlternate, 1, sequence_header,
                             frame_header, current_frame, reference_frames,
-                            motion_field_mv, motion_field_reference_offset,
-                            y8_start, y8_end, x8_start, x8_end)) {
+                            motion_field, y8_start, y8_end, x8_start, x8_end)) {
     --ref_stamp;
   }
   if (ref_stamp >= 0) {
     MotionFieldProjection(kReferenceFrameLast2, -1, sequence_header,
                           frame_header, current_frame, reference_frames,
-                          motion_field_mv, motion_field_reference_offset,
-                          y8_start, y8_end, x8_start, x8_end);
+                          motion_field, y8_start, y8_end, x8_start, x8_end);
   }
 }
 
