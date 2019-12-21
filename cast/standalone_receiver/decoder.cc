@@ -4,8 +4,8 @@
 
 #include "util/logging.h"
 
+namespace openscreen {
 namespace cast {
-namespace streaming {
 
 Decoder::Buffer::Buffer() {
   Resize(0);
@@ -196,5 +196,5 @@ AVCodecID Decoder::Detect(const Buffer& buffer) {
   return AV_CODEC_ID_NONE;
 }
 
-}  // namespace streaming
 }  // namespace cast
+}  // namespace openscreen

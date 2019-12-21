@@ -12,8 +12,8 @@
 #include "cast/streaming/rtp_defines.h"
 #include "util/logging.h"
 
+namespace openscreen {
 namespace cast {
-namespace streaming {
 
 namespace {
 
@@ -156,5 +156,5 @@ void FrameCollector::Reset() {
 FrameCollector::PayloadChunk::PayloadChunk() = default;
 FrameCollector::PayloadChunk::~PayloadChunk() = default;
 
-}  // namespace streaming
 }  // namespace cast
+}  // namespace openscreen

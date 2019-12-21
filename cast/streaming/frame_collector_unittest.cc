@@ -15,8 +15,8 @@
 #include "cast/streaming/rtp_time.h"
 #include "gtest/gtest.h"
 
+namespace openscreen {
 namespace cast {
-namespace streaming {
 namespace {
 
 const FrameId kSomeFrameId = FrameId::first() + 39;
@@ -207,5 +207,5 @@ TEST(FrameCollectorTest, RejectsInvalidParts) {
 }
 
 }  // namespace
-}  // namespace streaming
 }  // namespace cast
+}  // namespace openscreen

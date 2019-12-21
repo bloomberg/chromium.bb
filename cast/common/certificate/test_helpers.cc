@@ -13,8 +13,8 @@
 #include "absl/strings/match.h"
 #include "util/logging.h"
 
+namespace openscreen {
 namespace cast {
-namespace certificate {
 namespace testing {
 
 std::vector<std::string> ReadCertificatesFromPemFile(
@@ -126,5 +126,5 @@ std::unique_ptr<TrustStore> CreateTrustStoreFromPemFile(
 }
 
 }  // namespace testing
-}  // namespace certificate
 }  // namespace cast
+}  // namespace openscreen

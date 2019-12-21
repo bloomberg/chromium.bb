@@ -11,13 +11,8 @@
 #include "platform/api/tls_connection_factory.h"
 #include "platform/base/ip_address.h"
 
+namespace openscreen {
 namespace cast {
-namespace channel {
-
-using openscreen::Error;
-using openscreen::IPEndpoint;
-using openscreen::TlsConnection;
-using openscreen::TlsConnectionFactory;
 
 class ReceiverSocketFactory final : public TlsConnectionFactory::Client {
  public:
@@ -49,7 +44,7 @@ class ReceiverSocketFactory final : public TlsConnectionFactory::Client {
   CastSocket::Client* const socket_client_;
 };
 
-}  // namespace channel
 }  // namespace cast
+}  // namespace openscreen
 
 #endif  // CAST_RECEIVER_CHANNEL_RECEIVER_SOCKET_FACTORY_H_

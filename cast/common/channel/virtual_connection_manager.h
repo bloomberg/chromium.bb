@@ -12,8 +12,8 @@
 #include "absl/types/optional.h"
 #include "cast/common/channel/virtual_connection.h"
 
+namespace openscreen {
 namespace cast {
-namespace channel {
 
 // Maintains a collection of open VirtualConnections and associated data.
 class VirtualConnectionManager {
@@ -22,7 +22,7 @@ class VirtualConnectionManager {
   ~VirtualConnectionManager();
 
   void AddConnection(VirtualConnection virtual_connection,
-                     VirtualConnection::AssociatedData&& associated_data);
+                     VirtualConnection::AssociatedData associated_data);
 
   // Returns true if a connection matching |virtual_connection| was found and
   // removed.
@@ -55,7 +55,7 @@ class VirtualConnectionManager {
       connections_;
 };
 
-}  // namespace channel
 }  // namespace cast
+}  // namespace openscreen
 
 #endif  // CAST_COMMON_CHANNEL_VIRTUAL_CONNECTION_MANAGER_H_

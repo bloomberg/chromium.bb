@@ -9,10 +9,8 @@
 #include "gtest/gtest.h"
 #include "util/std_util.h"
 
-using openscreen::SortAndDedupeElements;
-
+namespace openscreen {
 namespace cast {
-namespace streaming {
 namespace {
 
 TEST(SsrcTest, GeneratesUniqueAndPrioritizedSsrcs) {
@@ -53,5 +51,5 @@ TEST(SsrcTest, GeneratesUniqueAndPrioritizedSsrcs) {
 }
 
 }  // namespace
-}  // namespace streaming
 }  // namespace cast
+}  // namespace openscreen

@@ -8,18 +8,8 @@
 #include "platform/api/task_runner.h"
 #include "util/logging.h"
 
-using openscreen::Clock;
-using openscreen::ClockNowFunctionPtr;
-using openscreen::Error;
-using openscreen::ErrorOr;
-using openscreen::IPAddress;
-using openscreen::IPEndpoint;
-using openscreen::TaskRunner;
-using openscreen::UdpPacket;
-using openscreen::UdpSocket;
-
+namespace openscreen {
 namespace cast {
-namespace streaming {
 
 Environment::Environment(ClockNowFunctionPtr now_function,
                          TaskRunner* task_runner)
@@ -136,5 +126,5 @@ void Environment::OnRead(UdpSocket* socket,
       std::move(static_cast<std::vector<uint8_t>&>(packet)));
 }
 
-}  // namespace streaming
 }  // namespace cast
+}  // namespace openscreen

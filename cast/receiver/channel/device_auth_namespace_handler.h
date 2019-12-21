@@ -13,8 +13,8 @@
 #include "absl/types/span.h"
 #include "cast/common/channel/cast_message_handler.h"
 
+namespace openscreen {
 namespace cast {
-namespace channel {
 
 struct DeviceCredentials {
   // The device's certificate chain in DER form, where |certs[0]| is the
@@ -45,13 +45,13 @@ class DeviceAuthNamespaceHandler final : public CastMessageHandler {
   // CastMessageHandler overrides.
   void OnMessage(VirtualConnectionRouter* router,
                  CastSocket* socket,
-                 CastMessage&& message) override;
+                 ::cast::channel::CastMessage message) override;
 
  private:
   CredentialsProvider* const creds_provider_;
 };
 
-}  // namespace channel
 }  // namespace cast
+}  // namespace openscreen
 
 #endif  // CAST_RECEIVER_CHANNEL_DEVICE_AUTH_NAMESPACE_HANDLER_H_

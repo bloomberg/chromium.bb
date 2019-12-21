@@ -4,7 +4,7 @@
 
 syntax = "proto2";
 
-package cast.certificate;
+package openscreen.cast;
 
 option optimize_for = LITE_RUNTIME;
 

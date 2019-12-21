@@ -14,8 +14,8 @@
 #include "cast/standalone_receiver/avcodec_glue.h"
 #include "cast/streaming/frame_id.h"
 
+namespace openscreen {
 namespace cast {
-namespace streaming {
 
 // Wraps libavcodec to auto-detect and decode audio or video.
 class Decoder {
@@ -70,8 +70,8 @@ class Decoder {
   // of the FFMPEG decoder.
   FrameId DidReceiveFrameFromDecoder();
 
-  // Called when any transient or fatal error occurs, generating an
-  // openscreen::Error and notifying the Client of it.
+  // Called when any transient or fatal error occurs, generating an Error and
+  // notifying the Client of it.
   void OnError(const char* what, int av_errnum, FrameId frame_id);
 
   // Auto-detects the codec needed to decode the data in |buffer|.
@@ -90,7 +90,7 @@ class Decoder {
   std::vector<FrameId> frames_decoding_;
 };
 
-}  // namespace streaming
 }  // namespace cast
+}  // namespace openscreen
 
 #endif  // CAST_STANDALONE_RECEIVER_DECODER_H_

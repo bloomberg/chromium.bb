@@ -7,14 +7,13 @@
 #include <utility>
 
 #include "absl/strings/str_cat.h"
+#include "cast/streaming/message_util.h"
 #include "platform/base/error.h"
 #include "util/logging.h"
 
-using openscreen::Error;
-using openscreen::ErrorOr;
-
+namespace openscreen {
 namespace cast {
-namespace streaming {
+
 namespace {
 
 static constexpr char kMessageKeyType[] = "type";
@@ -49,10 +48,6 @@ Json::Value PrimitiveVectorToJson(const std::vector<T>& vec) {
   }
 
   return array;
-}
-
-Error CreateParameterError(std::string type) {
-  return Error(Error::Code::kParameterInvalid, "Invalid parameter: " + type);
 }
 
 }  // namespace
@@ -208,5 +203,5 @@ Json::Value CreateInvalidAnswer(Error error) {
   return message_root;
 }
 
-}  // namespace streaming
 }  // namespace cast
+}  // namespace openscreen

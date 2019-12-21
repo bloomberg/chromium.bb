@@ -9,8 +9,8 @@
 #include <cstdint>
 #include <string>
 
+namespace openscreen {
 namespace cast {
-namespace channel {
 
 // Transport system on top of CastSocket that allows routing messages over a
 // single socket to different virtual endpoints (e.g. system messages vs.
@@ -111,7 +111,7 @@ inline bool operator!=(const VirtualConnection& a, const VirtualConnection& b) {
   return !(a == b);
 }
 
-}  // namespace channel
 }  // namespace cast
+}  // namespace openscreen
 
 #endif  // CAST_COMMON_CHANNEL_VIRTUAL_CONNECTION_H_

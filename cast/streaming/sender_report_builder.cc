@@ -7,8 +7,8 @@
 #include "cast/streaming/packet_util.h"
 #include "util/logging.h"
 
+namespace openscreen {
 namespace cast {
-namespace streaming {
 
 SenderReportBuilder::SenderReportBuilder(RtcpSession* session)
     : session_(session) {
@@ -52,5 +52,5 @@ std::pair<absl::Span<uint8_t>, StatusReportId> SenderReportBuilder::BuildPacket(
       ToStatusReportId(ntp_timestamp));
 }
 
-}  // namespace streaming
 }  // namespace cast
+}  // namespace openscreen

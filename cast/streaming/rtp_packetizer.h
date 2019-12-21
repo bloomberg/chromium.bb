@@ -12,8 +12,8 @@
 #include "cast/streaming/rtp_defines.h"
 #include "cast/streaming/ssrc.h"
 
+namespace openscreen {
 namespace cast {
-namespace streaming {
 
 // Transforms a logical sequence of EncryptedFrames into RTP packets for
 // transmission. A single instance of RtpPacketizer should be used for all the
@@ -75,7 +75,7 @@ class RtpPacketizer {
       kBaseRtpHeaderSize + kAdaptiveLatencyHeaderSize;
 };
 
-}  // namespace streaming
 }  // namespace cast
+}  // namespace openscreen
 
 #endif  // CAST_STREAMING_RTP_PACKETIZER_H_

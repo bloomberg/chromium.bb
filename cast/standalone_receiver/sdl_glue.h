@@ -18,11 +18,10 @@
 #include "util/alarm.h"
 
 namespace openscreen {
+
 class TaskRunner;
-}  // namespace openscreen
 
 namespace cast {
-namespace streaming {
 
 template <uint32_t subsystem>
 class ScopedSDLSubSystem {
@@ -63,18 +62,18 @@ DEFINE_SDL_UNIQUE_PTR(Texture);
 // event is received.
 class SDLEventLoopProcessor {
  public:
-  SDLEventLoopProcessor(openscreen::TaskRunner* task_runner,
+  SDLEventLoopProcessor(TaskRunner* task_runner,
                         std::function<void()> quit_callback);
   ~SDLEventLoopProcessor();
 
  private:
   void ProcessPendingEvents();
 
-  openscreen::Alarm alarm_;
+  Alarm alarm_;
   std::function<void()> quit_callback_;
 };
 
-}  // namespace streaming
 }  // namespace cast
+}  // namespace openscreen
 
 #endif  // CAST_STANDALONE_RECEIVER_SDL_GLUE_H_

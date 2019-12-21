@@ -16,14 +16,8 @@ using std::chrono::duration_cast;
 using std::chrono::milliseconds;
 using std::chrono::seconds;
 
-using openscreen::Clock;
-using openscreen::ClockNowFunctionPtr;
-using openscreen::Error;
-using openscreen::ErrorOr;
-using openscreen::TaskRunner;
-
+namespace openscreen {
 namespace cast {
-namespace streaming {
 
 namespace {
 
@@ -207,8 +201,6 @@ void SDLAudioPlayer::Present() {
 
 // static
 SDL_AudioFormat SDLAudioPlayer::GetSDLAudioFormat(AVSampleFormat format) {
-  using openscreen::IsBigEndianArchitecture;
-
   switch (format) {
     case AV_SAMPLE_FMT_U8P:
     case AV_SAMPLE_FMT_U8:
@@ -234,5 +226,5 @@ SDL_AudioFormat SDLAudioPlayer::GetSDLAudioFormat(AVSampleFormat format) {
   return kSDLAudioFormatUnknown;
 }
 
-}  // namespace streaming
 }  // namespace cast
+}  // namespace openscreen

@@ -10,8 +10,8 @@
 
 #include "gtest/gtest.h"
 
+namespace openscreen {
 namespace cast {
-namespace streaming {
 namespace {
 
 TEST(FrameCryptoTest, EncryptsAndDecryptsFrames) {
@@ -76,5 +76,5 @@ TEST(FrameCryptoTest, EncryptsAndDecryptsFrames) {
 }
 
 }  // namespace
-}  // namespace streaming
 }  // namespace cast
+}  // namespace openscreen

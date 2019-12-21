@@ -15,8 +15,8 @@
 #include "cast/streaming/offer_messages.h"
 #include "util/logging.h"
 
+namespace openscreen {
 namespace cast {
-namespace streaming {
 
 // JSON message field values specific to the Receiver Session.
 static constexpr char kMessageTypeOffer[] = "OFFER";
@@ -134,11 +134,10 @@ ReceiverSession::~ReceiverSession() {
 void ReceiverSession::OnMessage(absl::string_view sender_id,
                                 absl::string_view message_namespace,
                                 absl::string_view message) {
-  openscreen::ErrorOr<Json::Value> message_json =
-      openscreen::json::Parse(message);
+  ErrorOr<Json::Value> message_json = json::Parse(message);
 
   if (!message_json) {
-    client_->OnError(this, openscreen::Error::Code::kJsonParseError);
+    client_->OnError(this, Error::Code::kJsonParseError);
     OSP_LOG_WARN << "Received an invalid message: " << message;
     return;
   }
@@ -168,13 +167,13 @@ void ReceiverSession::OnMessage(absl::string_view sender_id,
   }
 }
 
-void ReceiverSession::OnError(openscreen::Error error) {
+void ReceiverSession::OnError(Error error) {
   OSP_LOG_WARN << "ReceiverSession's MessagePump encountered an error:"
                << error;
 }
 
 void ReceiverSession::OnOffer(Message* message) {
-  openscreen::ErrorOr<Offer> offer = Offer::Parse(std::move(message->body));
+  ErrorOr<Offer> offer = Offer::Parse(std::move(message->body));
   if (!offer) {
     client_->OnError(this, offer.error());
     OSP_LOG_WARN << "Could not parse offer" << offer.error();
@@ -223,11 +222,11 @@ ReceiverSession::ConstructReceiver(const Stream& stream) {
   return std::make_pair(std::move(config), std::move(receiver));
 }
 
-openscreen::ErrorOr<ConfiguredReceivers> ReceiverSession::TrySpawningReceivers(
+ErrorOr<ConfiguredReceivers> ReceiverSession::TrySpawningReceivers(
     const AudioStream* audio,
     const VideoStream* video) {
   if (!audio && !video) {
-    return openscreen::Error::Code::kParameterInvalid;
+    return Error::Code::kParameterInvalid;
   }
 
   ResetReceivers();
@@ -302,7 +301,7 @@ void ReceiverSession::SendMessage(Message* message) {
   // All messages have the sequence number embedded.
   message->body[kSequenceNumber] = message->sequence_number;
 
-  auto body_or_error = openscreen::json::Stringify(message->body);
+  auto body_or_error = json::Stringify(message->body);
   if (body_or_error.is_value()) {
     message_port_->PostMessage(message->sender_id, message->message_namespace,
                                body_or_error.value());
@@ -310,5 +309,6 @@ void ReceiverSession::SendMessage(Message* message) {
     client_->OnError(this, body_or_error.error());
   }
 }
-}  // namespace streaming
+
 }  // namespace cast
+}  // namespace openscreen

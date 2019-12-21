@@ -7,8 +7,8 @@
 
 #include <stdint.h>
 
+namespace openscreen {
 namespace cast {
-namespace streaming {
 
 // Note: Cast Streaming uses a subset of the messages in the RTP/RTCP
 // specification, but also adds some of its own extensions. See:
@@ -339,7 +339,7 @@ constexpr int kRtcpReceiverReferenceTimeReportBlockSize = 8;
 // +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 constexpr int kRtcpPictureLossIndicatorHeaderSize = 8;
 
-}  // namespace streaming
 }  // namespace cast
+}  // namespace openscreen
 
 #endif  // CAST_STREAMING_RTP_DEFINES_H_

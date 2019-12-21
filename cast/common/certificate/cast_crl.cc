@@ -17,8 +17,8 @@
 #include "util/crypto/sha2.h"
 #include "util/logging.h"
 
+namespace openscreen {
 namespace cast {
-namespace certificate {
 namespace {
 
 enum CrlVersion {
@@ -77,7 +77,7 @@ bool VerifyCRL(const Crl& crl,
                TrustStore* trust_store,
                DateTime* overall_not_after) {
   CertificatePathResult result_path = {};
-  openscreen::Error error =
+  Error error =
       FindCertificatePath({crl.signer_cert()}, time, &result_path, trust_store);
   if (!error.ok()) {
     return false;
@@ -179,13 +179,12 @@ bool CastCRL::CheckRevocation(const std::vector<X509*>& trusted_chain,
   // Check revocation. This loop iterates over both certificates AND then the
   // trust anchor after exhausting the certs.
   for (size_t i = 0; i < trusted_chain.size(); ++i) {
-    std::string spki_tlv = openscreen::GetSpkiTlv(trusted_chain[i]);
+    std::string spki_tlv = GetSpkiTlv(trusted_chain[i]);
     if (spki_tlv.empty()) {
       return false;
     }
 
-    openscreen::ErrorOr<std::string> spki_hash =
-        openscreen::SHA256HashString(spki_tlv);
+    ErrorOr<std::string> spki_hash = SHA256HashString(spki_tlv);
     if (spki_hash.is_error() ||
         (revoked_hashes_.find(spki_hash.value()) != revoked_hashes_.end())) {
       return false;
@@ -200,8 +199,8 @@ bool CastCRL::CheckRevocation(const std::vector<X509*>& trusted_chain,
 
         // Only Google generated device certificates will be revoked by range.
         // These will always be less than 64 bits in length.
-        openscreen::ErrorOr<uint64_t> maybe_serial =
-            openscreen::ParseDerUint64(subordinate->cert_info->serialNumber);
+        ErrorOr<uint64_t> maybe_serial =
+            ParseDerUint64(subordinate->cert_info->serialNumber);
         if (!maybe_serial) {
           continue;
         }
@@ -249,5 +248,5 @@ std::unique_ptr<CastCRL> ParseAndVerifyCRL(const std::string& crl_proto,
   return nullptr;
 }
 
-}  // namespace certificate
 }  // namespace cast
+}  // namespace openscreen

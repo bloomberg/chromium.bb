@@ -8,10 +8,10 @@
 #include "platform/api/time.h"
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
-  using cast::streaming::RtcpSenderReport;
-  using cast::streaming::RtcpSession;
-  using cast::streaming::SenderReportParser;
-  using cast::streaming::Ssrc;
+  using openscreen::cast::RtcpSenderReport;
+  using openscreen::cast::RtcpSession;
+  using openscreen::cast::SenderReportParser;
+  using openscreen::cast::Ssrc;
 
   constexpr Ssrc kSenderSsrcInSeedCorpus = 1;
   constexpr Ssrc kReceiverSsrcInSeedCorpus = 2;

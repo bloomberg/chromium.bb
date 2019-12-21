@@ -4,8 +4,8 @@
 
 #include "cast/streaming/rtp_defines.h"
 
+namespace openscreen {
 namespace cast {
-namespace streaming {
 
 bool IsRtpPayloadType(uint8_t raw_byte) {
   switch (static_cast<RtpPayloadType>(raw_byte)) {
@@ -42,5 +42,5 @@ bool IsRtcpPacketType(uint8_t raw_byte) {
   return false;
 }
 
-}  // namespace streaming
 }  // namespace cast
+}  // namespace openscreen

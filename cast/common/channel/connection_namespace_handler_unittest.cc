@@ -17,15 +17,16 @@
 #include "util/json/json_value.h"
 #include "util/logging.h"
 
+namespace openscreen {
 namespace cast {
-namespace channel {
 namespace {
 
 using ::testing::_;
 using ::testing::Invoke;
 using ::testing::NiceMock;
 
-using openscreen::ErrorOr;
+using ::cast::channel::CastMessage;
+using ::cast::channel::CastMessage_ProtocolVersion;
 
 class MockVirtualConnectionPolicy
     : public ConnectionNamespaceHandler::VirtualConnectionPolicy {
@@ -38,13 +39,12 @@ class MockVirtualConnectionPolicy
               (const, override));
 };
 
-CastMessage MakeConnectMessage(
+CastMessage MakeVersionedConnectMessage(
     const std::string& source_id,
     const std::string& destination_id,
     absl::optional<CastMessage_ProtocolVersion> version,
     std::vector<CastMessage_ProtocolVersion> version_list) {
-  CastMessage connect_message =
-      channel::MakeConnectMessage(source_id, destination_id);
+  CastMessage connect_message = MakeConnectMessage(source_id, destination_id);
   Json::Value message(Json::ValueType::objectValue);
   message[kMessageKeyType] = kMessageTypeConnect;
   if (version) {
@@ -57,7 +57,7 @@ CastMessage MakeConnectMessage(
     }
     message[kMessageKeyProtocolVersionList] = std::move(list);
   }
-  ErrorOr<std::string> result = openscreen::json::Stringify(message);
+  ErrorOr<std::string> result = json::Stringify(message);
   OSP_DCHECK(result);
   connect_message.set_payload_utf8(std::move(result.value()));
   return connect_message;
@@ -69,11 +69,12 @@ void VerifyConnectionMessage(const CastMessage& message,
   EXPECT_EQ(message.source_id(), source_id);
   EXPECT_EQ(message.destination_id(), destination_id);
   EXPECT_EQ(message.namespace_(), kConnectionNamespace);
-  ASSERT_EQ(message.payload_type(), CastMessage_PayloadType_STRING);
+  ASSERT_EQ(message.payload_type(),
+            ::cast::channel::CastMessage_PayloadType_STRING);
 }
 
 Json::Value ParseConnectionMessage(const CastMessage& message) {
-  ErrorOr<Json::Value> result = openscreen::json::Parse(message.payload_utf8());
+  ErrorOr<Json::Value> result = json::Parse(message.payload_utf8());
   OSP_CHECK(result) << message.payload_utf8();
   return result.value();
 }
@@ -101,7 +102,7 @@ class ConnectionNamespaceHandlerTest : public ::testing::Test {
                                                        CastMessage message) {
           VerifyConnectionMessage(message, source_id, destination_id);
           Json::Value value = ParseConnectionMessage(message);
-          absl::optional<absl::string_view> type = openscreen::MaybeGetString(
+          absl::optional<absl::string_view> type = MaybeGetString(
               value, JSON_EXPAND_FIND_CONSTANT_ARGS(kMessageKeyType));
           ASSERT_TRUE(type) << message.payload_utf8();
           EXPECT_EQ(type.value(), kMessageTypeClose) << message.payload_utf8();
@@ -118,13 +119,13 @@ class ConnectionNamespaceHandlerTest : public ::testing::Test {
                              CastSocket* socket, CastMessage message) {
           VerifyConnectionMessage(message, source_id, destination_id);
           Json::Value value = ParseConnectionMessage(message);
-          absl::optional<absl::string_view> type = openscreen::MaybeGetString(
+          absl::optional<absl::string_view> type = MaybeGetString(
               value, JSON_EXPAND_FIND_CONSTANT_ARGS(kMessageKeyType));
           ASSERT_TRUE(type) << message.payload_utf8();
           EXPECT_EQ(type.value(), kMessageTypeConnected)
               << message.payload_utf8();
           if (version) {
-            absl::optional<int> message_version = openscreen::MaybeGetInt(
+            absl::optional<int> message_version = MaybeGetInt(
                 value,
                 JSON_EXPAND_FIND_CONSTANT_ARGS(kMessageKeyProtocolVersion));
             ASSERT_TRUE(message_version) << message.payload_utf8();
@@ -170,25 +171,29 @@ TEST_F(ConnectionNamespaceHandlerTest, PolicyDeniesConnection) {
 }
 
 TEST_F(ConnectionNamespaceHandlerTest, ConnectWithVersion) {
-  ExpectConnectedMessage(&fake_cast_socket_pair_.mock_peer_client, receiver_id_,
-                         sender_id_, CastMessage_ProtocolVersion_CASTV2_1_2);
+  ExpectConnectedMessage(
+      &fake_cast_socket_pair_.mock_peer_client, receiver_id_, sender_id_,
+      ::cast::channel::CastMessage_ProtocolVersion_CASTV2_1_2);
   connection_namespace_handler_.OnMessage(
       &router_, socket_,
-      MakeConnectMessage(sender_id_, receiver_id_,
-                         CastMessage_ProtocolVersion_CASTV2_1_2, {}));
+      MakeVersionedConnectMessage(
+          sender_id_, receiver_id_,
+          ::cast::channel::CastMessage_ProtocolVersion_CASTV2_1_2, {}));
   EXPECT_TRUE(vc_manager_.GetConnectionData(
       VirtualConnection{receiver_id_, sender_id_, socket_->socket_id()}));
 }
 
 TEST_F(ConnectionNamespaceHandlerTest, ConnectWithVersionList) {
-  ExpectConnectedMessage(&fake_cast_socket_pair_.mock_peer_client, receiver_id_,
-                         sender_id_, CastMessage_ProtocolVersion_CASTV2_1_3);
+  ExpectConnectedMessage(
+      &fake_cast_socket_pair_.mock_peer_client, receiver_id_, sender_id_,
+      ::cast::channel::CastMessage_ProtocolVersion_CASTV2_1_3);
   connection_namespace_handler_.OnMessage(
       &router_, socket_,
-      MakeConnectMessage(sender_id_, receiver_id_,
-                         CastMessage_ProtocolVersion_CASTV2_1_2,
-                         {CastMessage_ProtocolVersion_CASTV2_1_3,
-                          CastMessage_ProtocolVersion_CASTV2_1_0}));
+      MakeVersionedConnectMessage(
+          sender_id_, receiver_id_,
+          ::cast::channel::CastMessage_ProtocolVersion_CASTV2_1_2,
+          {::cast::channel::CastMessage_ProtocolVersion_CASTV2_1_3,
+           ::cast::channel::CastMessage_ProtocolVersion_CASTV2_1_0}));
   EXPECT_TRUE(vc_manager_.GetConnectionData(
       VirtualConnection{receiver_id_, sender_id_, socket_->socket_id()}));
 }
@@ -217,5 +222,5 @@ TEST_F(ConnectionNamespaceHandlerTest, CloseUnknown) {
       VirtualConnection{receiver_id_, sender_id_, socket_->socket_id()}));
 }
 
-}  // namespace channel
 }  // namespace cast
+}  // namespace openscreen
