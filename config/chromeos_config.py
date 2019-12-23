@@ -1342,6 +1342,9 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
       site_config.templates.master_android_pfq_mixin,
       schedule='with 150m interval'
   )
+  _vmmst_no_hwtest_boards = frozenset([
+      'betty-arcvm-master', # No HWTest, No VMTest.
+  ])
 
   # Android QT master.
   qt_master_config = site_config.Add(
@@ -1475,7 +1478,14 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
 
   # Android VMMST slaves.
   # No board to build for now (just roll). empty slave to pass test.
-  vmmst_master_config.AddSlaves([])
+  vmmst_master_config.AddSlaves(
+      site_config.AddForBoards(
+          'vmmst-android-pfq',
+          _vmmst_no_hwtest_boards,
+          board_configs,
+          site_config.templates.vmmst_android_pfq,
+      )
+  )
 
   # Android QT slaves.
   qt_master_config.AddSlaves(

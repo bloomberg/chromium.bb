@@ -424,6 +424,7 @@
 
 == vmmst_android_pfq ==
   master-vmmst-android-pfq
+    betty-arcvm-master-vmmst-android-pfq
 
 == vmpi_android_pfq ==
   master-vmpi-android-pfq
@@ -556,6 +557,7 @@
   betty-arcvm-master-payloads-tryjob
   betty-arcvm-master-release-tryjob
   betty-arcvm-master-unittest-stress
+  betty-arcvm-master-vmmst-android-pfq-tryjob
   betty-arcvm-pi-full-tryjob
   betty-arcvm-pi-llvm-next-toolchain-tryjob
   betty-arcvm-pi-llvm-toolchain-tryjob
@@ -1535,6 +1537,7 @@
     arm-llvm-next-toolchain-tryjob
     arm64-llvm-next-toolchain-tryjob
   master-vmmst-android-pfq-tryjob
+    betty-arcvm-master-vmmst-android-pfq-tryjob
   master-vmpi-android-pfq-tryjob
     eve-arcvm-mesa-virgl-next-vmpi-android-pfq-tryjob
     eve-arcvm-vmpi-android-pfq-tryjob

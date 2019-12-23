@@ -4125,6 +4125,30 @@
             "chrome_internal"
         ]
     },
+    "betty-arcvm-master-vmmst-android-pfq": {
+        "_template": "vmmst_android_pfq",
+        "boards": [
+            "betty-arcvm-master"
+        ],
+        "manifest": "official.xml",
+        "useflags": [
+            "chrome_internal"
+        ]
+    },
+    "betty-arcvm-master-vmmst-android-pfq-tryjob": {
+        "_template": "vmmst_android_pfq",
+        "boards": [
+            "betty-arcvm-master"
+        ],
+        "debug": true,
+        "display_label": "tryjob",
+        "luci_builder": "Try",
+        "manifest": "official.xml",
+        "uprev": true,
+        "useflags": [
+            "chrome_internal"
+        ]
+    },
     "betty-arcvm-pi-full": {
         "_template": "full",
         "boards": [
@@ -22902,7 +22926,9 @@
         "master": true,
         "push_overlays": "both",
         "schedule": "with 150m interval",
-        "slave_configs": []
+        "slave_configs": [
+            "betty-arcvm-master-vmmst-android-pfq"
+        ]
     },
     "master-vmmst-android-pfq-tryjob": {
         "_template": "vmmst_android_pfq",
@@ -22913,7 +22939,9 @@
         "luci_builder": "Try",
         "master": true,
         "push_overlays": "both",
-        "slave_configs": [],
+        "slave_configs": [
+            "betty-arcvm-master-vmmst-android-pfq-tryjob"
+        ],
         "uprev": true
     },
     "master-vmpi-android-pfq": {
