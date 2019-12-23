@@ -8,7 +8,9 @@
 from __future__ import print_function
 
 from chromite.api import api_config
+from chromite.api import controller
 from chromite.api.controller import toolchain
+from chromite.api.gen.chromite.api import artifacts_pb2
 from chromite.api.gen.chromite.api import sysroot_pb2
 from chromite.api.gen.chromite.api import toolchain_pb2
 from chromite.api.gen.chromiumos.builder_config_pb2 import BuilderConfig
@@ -18,6 +20,7 @@ from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import toolchain_util
 
+# pylint: disable=protected-access
 
 class UpdateEbuildWithAFDOArtifactsTest(cros_test_lib.MockTestCase,
                                         api_config.ApiConfigMixin):
@@ -177,6 +180,16 @@ class PrepareForBuildTest(cros_test_lib.MockTempDirTestCase,
 
   def setUp(self):
     self.response = toolchain_pb2.PrepareForToolchainBuildResponse()
+    self.prep = self.PatchObject(
+        toolchain_util, 'PrepareForBuild',
+        return_value=toolchain_util.PrepareForBuildReturn.NEEDED)
+    self.bundle = self.PatchObject(
+        toolchain_util, 'BundleArtifacts', return_value=[])
+    self.PatchObject(toolchain, '_TOOLCHAIN_ARTIFACT_HANDLERS', {
+        BuilderConfig.Artifacts.UNVERIFIED_ORDERING_FILE:
+            toolchain._Handlers('UnverifiedOrderingFile',
+                                self.prep, self.bundle),
+    })
 
   def _GetRequest(self, artifact_types=None):
     if artifact_types is None:
@@ -189,11 +202,50 @@ class PrepareForBuildTest(cros_test_lib.MockTempDirTestCase,
         chroot=chroot, sysroot=sysroot,
     )
 
-  def testReturnsUnknownForUnknown(self):
+  def testRaisesForUnknown(self):
     request = self._GetRequest([BuilderConfig.Artifacts.IMAGE_ARCHIVES])
+    self.assertRaises(
+        KeyError,
+        toolchain.PrepareForBuild, request, self.response, self.api_config)
+
+  def testAcceptsNone(self):
+    request = toolchain_pb2.PrepareForToolchainBuildRequest(
+        artifact_types=[BuilderConfig.Artifacts.UNVERIFIED_ORDERING_FILE],
+        chroot=None, sysroot=None)
     toolchain.PrepareForBuild(request, self.response, self.api_config)
-    self.assertEqual(toolchain_pb2.PrepareForToolchainBuildResponse.UNKNOWN,
-                     self.response.build_relevance)
+    self.prep.assert_called_once_with(
+        'UnverifiedOrderingFile', None, '', '', {})
+
+  def testHandlesUnknownInputArtifacts(self):
+    request = toolchain_pb2.PrepareForToolchainBuildRequest(
+        artifact_types=[BuilderConfig.Artifacts.UNVERIFIED_ORDERING_FILE],
+        chroot=None, sysroot=None, input_artifacts=[
+            BuilderConfig.Artifacts.InputArtifactInfo(
+                input_artifact_type=BuilderConfig.Artifacts.IMAGE_ZIP,
+                input_artifact_gs_locations=['path1']),
+        ])
+    toolchain.PrepareForBuild(request, self.response, self.api_config)
+    self.prep.assert_called_once_with(
+        'UnverifiedOrderingFile', None, '', '', {})
+
+  def testHandlesDuplicateInputArtifacts(self):
+    request = toolchain_pb2.PrepareForToolchainBuildRequest(
+        artifact_types=[BuilderConfig.Artifacts.UNVERIFIED_ORDERING_FILE],
+        chroot=None, sysroot=None, input_artifacts=[
+            BuilderConfig.Artifacts.InputArtifactInfo(
+                input_artifact_type=\
+                    BuilderConfig.Artifacts.UNVERIFIED_ORDERING_FILE,
+                input_artifact_gs_locations=['path1', 'path2']),
+            BuilderConfig.Artifacts.InputArtifactInfo(
+                input_artifact_type=\
+                    BuilderConfig.Artifacts.UNVERIFIED_ORDERING_FILE,
+                input_artifact_gs_locations=['path3']),
+        ])
+    toolchain.PrepareForBuild(request, self.response, self.api_config)
+    self.prep.assert_called_once_with(
+        'UnverifiedOrderingFile', None, '', '', {
+            'UnverifiedOrderingFile': [
+                'gs://path1', 'gs://path2', 'gs://path3']})
 
 
 class BundleToolchainTest(cros_test_lib.MockTempDirTestCase,
@@ -202,6 +254,16 @@ class BundleToolchainTest(cros_test_lib.MockTempDirTestCase,
 
   def setUp(self):
     self.response = toolchain_pb2.BundleToolchainResponse()
+    self.prep = self.PatchObject(
+        toolchain_util, 'PrepareForBuild',
+        return_value=toolchain_util.PrepareForBuildReturn.NEEDED)
+    self.bundle = self.PatchObject(
+        toolchain_util, 'BundleArtifacts', return_value=[])
+    self.PatchObject(toolchain, '_TOOLCHAIN_ARTIFACT_HANDLERS', {
+        BuilderConfig.Artifacts.UNVERIFIED_ORDERING_FILE:
+            toolchain._Handlers('UnverifiedOrderingFile',
+                                self.prep, self.bundle),
+    })
 
   def _GetRequest(self, artifact_types=None):
     chroot = common_pb2.Chroot(path=self.tempdir)
@@ -213,15 +275,29 @@ class BundleToolchainTest(cros_test_lib.MockTempDirTestCase,
         artifact_types=artifact_types,
     )
 
-  def testReturnsUnknownForUnknown(self):
+  def testRaisesForUnknown(self):
     request = self._GetRequest([BuilderConfig.Artifacts.IMAGE_ARCHIVES])
-    toolchain.BundleArtifacts(request, self.response, self.api_config)
-    self.assertEqual([], list(self.response.artifacts_info))
+    self.assertEqual(
+        controller.RETURN_CODE_UNRECOVERABLE,
+        toolchain.BundleArtifacts(request, self.response, self.api_config))
 
   def testValidateOnly(self):
     """Sanity check that a validate only call does not execute any logic."""
-    patch = self.PatchObject(toolchain_util, 'BundleArtifacts')
-    request = self._GetRequest([BuilderConfig.Artifacts.IMAGE_ARCHIVES])
+    request = self._GetRequest(
+        [BuilderConfig.Artifacts.UNVERIFIED_ORDERING_FILE])
     toolchain.BundleArtifacts(request, self.response,
                               self.validate_only_config)
-    patch.assert_not_called()
+    self.bundle.assert_not_called()
+
+  def testSetsArtifactsInfo(self):
+    request = self._GetRequest(
+        [BuilderConfig.Artifacts.UNVERIFIED_ORDERING_FILE])
+    self.bundle.return_value = ['artifact.xz']
+    toolchain.BundleArtifacts(request, self.response, self.api_config)
+    self.assertEqual(1, len(self.response.artifacts_info))
+    self.assertEqual(
+        self.response.artifacts_info[0],
+        toolchain_pb2.ArtifactInfo(
+            artifact_type=BuilderConfig.Artifacts.UNVERIFIED_ORDERING_FILE,
+            artifacts=[
+                artifacts_pb2.Artifact(path=self.bundle.return_value[0])]))

@@ -9,64 +9,98 @@ from __future__ import print_function
 
 import collections
 
+from chromite.api import controller
 from chromite.api import faux
 from chromite.api import validate
+from chromite.api.controller import controller_util
 from chromite.api.gen.chromite.api import toolchain_pb2
-from chromite.lib import toolchain_util
 from chromite.api.gen.chromiumos.builder_config_pb2 import BuilderConfig
+from chromite.lib import cros_logging as logging
+from chromite.lib import toolchain_util
 
 # TODO(crbug/1019868): Add handlers as needed.
 _Handlers = collections.namedtuple('_Handlers', ['name', 'prepare', 'bundle'])
 _TOOLCHAIN_ARTIFACT_HANDLERS = {
     BuilderConfig.Artifacts.UNVERIFIED_ORDERING_FILE:
-        _Handlers('UnverifiedOrderingFile', None, None),
+        _Handlers('UnverifiedOrderingFile',
+                  toolchain_util.PrepareForBuild,
+                  toolchain_util.BundleArtifacts),
     BuilderConfig.Artifacts.VERIFIED_ORDERING_FILE:
-        _Handlers('VerifiedOrderingFile', None, None),
+        _Handlers('VerifiedOrderingFile',
+                  toolchain_util.PrepareForBuild,
+                  toolchain_util.BundleArtifacts),
     BuilderConfig.Artifacts.CHROME_CLANG_WARNINGS_FILE:
-        _Handlers('ChromeClangWarningsFile', None, None),
+        _Handlers('ChromeClangWarningsFile',
+                  toolchain_util.PrepareForBuild, None),
     BuilderConfig.Artifacts.UNVERIFIED_LLVM_PGO_FILE:
-        _Handlers('UnverifiedLlvmPgoFile', None, None),
+        _Handlers('UnverifiedLlvmPgoFile',
+                  toolchain_util.PrepareForBuild, None),
     BuilderConfig.Artifacts.UNVERIFIED_CHROME_AFDO_FILE:
-        _Handlers('UnverifiedChromeAfdoFile', None, None),
+        _Handlers('UnverifiedChromeAfdoFile',
+                  toolchain_util.PrepareForBuild, None),
     BuilderConfig.Artifacts.VERIFIED_CHROME_AFDO_FILE:
-        _Handlers('VerifiedChromeAfdoFile', None, None),
+        _Handlers('VerifiedChromeAfdoFile',
+                  toolchain_util.PrepareForBuild, None),
     BuilderConfig.Artifacts.VERIFIED_KERNEL_AFDO_FILE:
-        _Handlers('VerifiedKernelAfdoFile', None, None),
+        _Handlers('VerifiedKernelAfdoFile',
+                  toolchain_util.PrepareForBuild, None),
 }
 
 
 # TODO(crbug/1031213): When @faux is expanded to have more than success/failure,
 # this should be changed.
 @faux.all_empty
-@validate.require('chroot.path', 'sysroot.path', 'sysroot.build_target.name',
-                  'artifact_types')
+@validate.require('artifact_types')
+# Note: chroot and sysroot are unspecified the first time that the build_target
+# recipe calls PrepareForBuild.  The second time, they are specified.  No
+# validation check because "all" values are valid.
 @validate.validation_complete
 def PrepareForBuild(input_proto, output_proto, _config):
   """Prepare to build toolchain artifacts.
 
   The handlers (from _TOOLCHAIN_ARTIFACT_HANDLERS above) are called with:
       artifact_name (str): name of the artifact type.
-      chroot_path (str):  chroot path (absolute path)
-      sysroot_path (str): sysroot path inside the chroot (e.g., /build/atlas)
-      build_target_name (str): name of the build target (e.g., atlas)
+      chroot (chroot_lib.Chroot): chroot.  Will be None if the chroot has not
+          yet been created.
+      sysroot_path (str): sysroot path inside the chroot (e.g., /build/atlas).
+          Will be an empty string if the sysroot has not yet been created.
+      build_target_name (str): name of the build target (e.g., atlas).  Will be
+          an empty string if the sysroot has not yet been created.
+      input_artifacts ({(str) name:[str gs_locations]}): locations for possible
+          input artifacts.  The handler is expected to know which keys it should
+          be using, and ignore any keys that it does not understand.
 
   They locate and modify any ebuilds and/or source required for the artifact
   being created, then return a value from toolchain_util.PrepareForBuildReturn.
+
+  This function sets output_proto.build_relevance to the result.
 
   Args:
     input_proto (PrepareForToolchainBuildRequest): The input proto
     output_proto (PrepareForToolchainBuildResponse): The output proto
     _config (api_config.ApiConfig): The API call config.
   """
-  results = set()
+  if input_proto.chroot.path:
+    chroot = controller_util.ParseChroot(input_proto.chroot)
+  else:
+    chroot = None
 
+  input_artifacts = collections.defaultdict(list)
+  for art in input_proto.input_artifacts:
+    item = _TOOLCHAIN_ARTIFACT_HANDLERS.get(art.input_artifact_type)
+    if item:
+      input_artifacts[item.name].extend(
+          ['gs://%s' % str(x) for x in art.input_artifact_gs_locations])
+
+  results = set()
+  sysroot_path = input_proto.sysroot.path
+  build_target = input_proto.sysroot.build_target.name
   for artifact_type in input_proto.artifact_types:
-    # Ignore any artifact_types not handled.
-    handler = _TOOLCHAIN_ARTIFACT_HANDLERS.get(artifact_type)
-    if handler and handler.prepare:
+    # Unknown artifact_types are an error.
+    handler = _TOOLCHAIN_ARTIFACT_HANDLERS[artifact_type]
+    if handler.prepare:
       results.add(handler.prepare(
-          handler.name, input_proto.chroot.path, input_proto.sysroot.path,
-          input_proto.sysroot.build_target.name))
+          handler.name, chroot, sysroot_path, build_target, input_artifacts))
 
   # Translate the returns from the handlers we called.
   #   If any NEEDED => NEEDED
@@ -82,6 +116,7 @@ def PrepareForBuild(input_proto, output_proto, _config):
     output_proto.build_relevance = proto_resp.POINTLESS
   else:
     output_proto.build_relevance = proto_resp.UNKNOWN
+  return controller.RETURN_CODE_SUCCESS
 
 
 # TODO(crbug/1031213): When @faux is expanded to have more than success/failure,
@@ -90,13 +125,15 @@ def PrepareForBuild(input_proto, output_proto, _config):
 @validate.require('chroot.path', 'sysroot.path', 'sysroot.build_target.name',
                   'output_dir', 'artifact_types')
 @validate.exists('output_dir')
+@validate.validation_complete
 def BundleArtifacts(input_proto, output_proto, _config):
   """Bundle toolchain artifacts.
 
   The handlers (from _TOOLCHAIN_ARTIFACT_HANDLERS above) are called with:
       artifact_name (str): name of the artifact type
-      chroot_path (str):  chroot path (absolute path)
+      chroot (chroot_lib.Chroot): chroot
       sysroot_path (str): sysroot path inside the chroot (e.g., /build/atlas)
+      chrome_root (str): path to chrome root. (e.g., /b/s/w/ir/k/chrome)
       build_target_name (str): name of the build target (e.g., atlas)
       output_dir (str): absolute path where artifacts are being bundled.
         (e.g., /b/s/w/ir/k/recipe_cleanup/artifactssptfMU)
@@ -108,18 +145,22 @@ def BundleArtifacts(input_proto, output_proto, _config):
     output_proto (BundleToolchainResponse): The output proto
     _config (api_config.ApiConfig): The API call config.
   """
-  resp_artifact = toolchain_pb2.ArtifactInfo
+  chroot = controller_util.ParseChroot(input_proto.chroot)
 
   for artifact_type in input_proto.artifact_types:
-    # Ignore any artifact_types not handled.
-    handler = _TOOLCHAIN_ARTIFACT_HANDLERS.get(artifact_type)
+    if artifact_type not in _TOOLCHAIN_ARTIFACT_HANDLERS:
+      logging.error('%s not understood', artifact_type)
+      return controller.RETURN_CODE_UNRECOVERABLE
+    handler = _TOOLCHAIN_ARTIFACT_HANDLERS[artifact_type]
     if handler and handler.bundle:
       artifacts = handler.bundle(
-          handler.name, input_proto.chroot.path, input_proto.sysroot.path,
+          handler.name, chroot, input_proto.sysroot.path,
           input_proto.sysroot.build_target.name, input_proto.output_dir)
       if artifacts:
-        output_proto.artifacts_info.append(
-            resp_artifact(artifact_type=artifact_type, artifacts=artifacts))
+        art_info = output_proto.artifacts_info.add()
+        art_info.artifact_type = artifact_type
+        for artifact in artifacts:
+          art_info.artifacts.add().path = artifact
 
 
 # TODO(crbug/1019868): Remove legacy code when cbuildbot builders are gone.

@@ -7,11 +7,14 @@
 
 from __future__ import print_function
 
+import base64
 import collections
 import datetime
+import glob
 import json
 import os
 import re
+import shutil
 
 from chromite.cbuildbot import afdo
 from chromite.lib import alerts
@@ -19,6 +22,7 @@ from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import git
+from chromite.lib import gob_util
 from chromite.lib import gs
 from chromite.lib import osutils
 from chromite.lib import path_util
@@ -99,6 +103,10 @@ AFDO_ALERT_RECIPIENTS = [
     'chromeos-toolchain-oncall1@google.com'
 ]
 
+# Full path to the chromiumos-overlay directory.
+_CHROMIUMOS_OVERLAY = os.path.join(
+    constants.CHROMITE_DIR, '..', constants.CHROMIUMOS_OVERLAY_DIR)
+
 # RegExps
 # NOTE: These regexp are copied from cbuildbot/afdo.py. Keep two copies
 # until deployed and then remove the one in cbuildbot/afdo.py.
@@ -169,6 +177,10 @@ CHROME_BENCHMARK_AFDO_FILE = '%s%s' % (CHROME_ARCH_VERSION, AFDO_SUFFIX)
 
 class Error(Exception):
   """Base module error class."""
+
+
+class PrepareForBuildHandlerError(Error):
+  """Error for PrepareForBuildHandler class."""
 
 
 class GenerateChromeOrderfileError(Error):
@@ -621,6 +633,7 @@ class GenerateChromeOrderfile(object):
     self.working_dir = os.path.join(self.chroot_path, 'tmp')
     self.working_dir_inchroot = '/tmp'
     self.chroot_args = chroot_args
+    self.tarballs = []
 
   def _CheckArguments(self):
     """Make sure the arguments received are correct."""
@@ -688,14 +701,19 @@ class GenerateChromeOrderfile(object):
     # Return path inside chroot
     return result
 
-  def Perform(self):
+  def Bundle(self):
     """Generate post-processed Chrome orderfile and create tarball."""
     self._CheckArguments()
     chrome_nm = self._GenerateChromeNM()
     orderfile = self._PostProcessOrderfile(chrome_nm)
-    tarballs = _CompressAFDOFiles([chrome_nm, orderfile], self.working_dir,
-                                  self.output_dir, XZ_COMPRESSION_SUFFIX)
-    for t in tarballs:
+    self.tarballs = _CompressAFDOFiles(
+        [chrome_nm, orderfile], self.working_dir, self.output_dir,
+        XZ_COMPRESSION_SUFFIX)
+
+  def Perform(self):
+    """Generate post-processed Chrome orderfile and create tarball."""
+    self.Bundle()
+    for t in self.tarballs:
       _UploadAFDOArtifactToGSBucket(ORDERFILE_GS_URL_UNVETTED, t)
 
 
@@ -966,85 +984,518 @@ def _WarnSheriffAboutKernelProfileExpiration(kver, profile):
       message=alert_msg)
 
 
-# TODO(crbug/1019868): implement the various endpoints.
-# pylint: disable=unused-argument
-def PrepareForBuild(name, chroot_path, sysroot_path, build_target, available):
+_EbuildInfo = collections.namedtuple('_EbuildInfo', ['path', 'CPV'])
+class _CommonPrepareBundle(object):
+  """Information about Ebuild files we care about."""
+  def __init__(self, artifact_name, chroot=None, sysroot_path=None,
+               build_target=None, input_artifacts=None):
+    self._gs_context = None
+    self.artifact_name = artifact_name
+    self.chroot = chroot
+    self.sysroot_path = sysroot_path
+    self.build_target = build_target
+    # Turn the input artifacts list into a dictionary.
+    self.input_artifacts = input_artifacts or []
+    self._ebuild_info = {}
+
+  @property
+  def gs_context(self):
+    """Get the current GS context.  May create one."""
+    if not self._gs_context:
+      self._gs_context = gs.GSContext()
+    return self._gs_context
+
+  @property
+  def chrome_branch(self):
+    """Return the branch number for chrome."""
+    pkg = constants.CHROME_PN
+    info = self._ebuild_info.get(pkg, self._GetEbuildInfo(pkg))
+    return info.CPV.version_no_rev.split('.')[0]
+
+  def _GetEbuildInfo(self, package, category=None):
+    """Get the ebuild info for a cataegory/package in chromiumos-overlay.
+
+    Args:
+      package (str): package name (e.g. chromeos-chrome or chromeos-kernel-4_4)
+      category (str): category (e.g. chromeos-base, or sys-kernel)
+
+    Returns:
+      _EbuildInfo for the stable ebuild.
+    """
+    if package in self._ebuild_info:
+      return self._ebuild_info[package]
+
+    if category is None:
+      if package == constants.CHROME_PN:
+        category = constants.CHROME_CN
+      else:
+        category = 'sys-kernel'
+
+    # The stable ebuild path has at least one '.' in the version.
+    paths = glob.glob(os.path.join(
+        _CHROMIUMOS_OVERLAY, category, package, '*-*.*.ebuild'))
+    if len(paths) == 1:
+      PV = os.path.splitext(os.path.split(paths[0])[1])[0]
+      info = _EbuildInfo(paths[0], portage_util.SplitCPV(
+          '%s/%s' % (category, PV)))
+      self._ebuild_info[constants.CHROME_PN] = info
+      return info
+    else:
+      raise PrepareForBuildHandlerError(
+          'Wrong number of %s/%s ebuilds found: %s'
+          % (category, package, ', '.join(paths)))
+
+  def _GetArtifactVersionInGob(self, arch):
+    """Find the version (name) of AFDO artifact from GoB.
+
+    Args:
+      arch: There are three AFDO profiles in chromium:
+           silvermont, broadwell, and airmont.
+
+    Returns:
+      The name of the AFDO artifact found on GoB, or None if not found.
+
+    Raises:
+      ValueError: when "arch" is not a supported.
+      RuntimeError: when the file containing AFDO profile name can't be found.
+    """
+    if arch not in list(CHROME_AFDO_VERIFIER_BOARDS.values()):
+      raise ValueError('Invalid architecture %s to use in AFDO profile' % arch)
+
+    chrome_info = self._GetEbuildInfo(constants.CHROME_PN)
+    rev = chrome_info.CPV.version_no_rev
+    if rev.endswith('_rc'):
+      rev = rev[:-3]
+    profile_path = (
+        'chromium/src/+/refs/tags/%s/chromeos/profiles/%s.afdo.newest.txt'
+        '?format=text' % (rev, arch))
+
+    contents = gob_util.FetchUrl(constants.EXTERNAL_GOB_HOST, profile_path)
+    if not contents:
+      raise RuntimeError(
+          'Could not fetch https://%s/%s' % (
+              constants.EXTERNAL_GOB_HOST, profile_path))
+
+    return base64.decodestring(contents)
+
+  def _GetArtifactVersionInEbuild(self, package, variable):
+    """Find the version (name) of AFDO artifact from the ebuild.
+
+    Args:
+      package: name of the package (such as, 'chromeos-chrome')
+      variable: name of the variable to find.
+
+    Returns:
+      The name of the AFDO artifact found in the ebuild, or None if not found.
+    """
+    info = self._GetEbuildInfo(package)
+    ebuild = info.path
+    pattern = re.compile(AFDO_ARTIFACT_EBUILD_REGEX % variable)
+    with open(ebuild) as f:
+      for line in f:
+        match = pattern.match(line)
+        if match:
+          ret = match.group('name')
+          if ret.startswith('"') and ret.endswith('"'):
+            return ret[1:-1]
+          return ret
+
+    logging.info('%s is not found in the ebuild: %s', variable, ebuild)
+    return None
+
+  def _GetOrderfileName(self):
+    """Get the name of the orderfile."""
+    benchmark_afdo, cwp_afdo = _ParseMergedProfileName(
+        self._GetArtifactVersionInGob(arch='silvermont'))
+    return 'chromeos-chrome-orderfile-%s.orderfile' % (
+        _GetCombinedAFDOName(cwp_afdo, 'field', benchmark_afdo))
+
+  def _FindLatestOrderfileArtifact(self, gs_url):
+    """Find the latest Ordering file artifact in a bucket.
+
+    Args:
+      gs_url: The full path to the GS bucket URL.
+
+    Returns:
+      The name of the latest eligible ordering file artifact.
+
+    Raises:
+      See _FindLatestAFDOArtifact.
+    """
+    return self._FindLatestAFDOArtifact(gs_url, self._RankValidOrderfiles)
+
+  def _FindLatestAFDOArtifact(self, gs_url, rank_func):
+    """Find the latest AFDO artifact in a bucket.
+
+    Args:
+      gs_url: The full path to the GS bucket URL.
+      rank_func: A function to compare two URLs.  It is passed two URLs, and
+          returns whether the first is more or less preferred than the second:
+            negative: less preferred.
+            zero: equally preferred.
+            positive: more preferred.
+
+    Returns:
+      The name of the latest eligible AFDO artifact.
+
+    Raises:
+      RuntimeError: If no files matches the regex in the bucket.
+      ValueError: if regex is not valid.
+    """
+
+    def _IsUrlOnBranch(url, branch):
+      """Return true if the url matches this branch."""
+      # Legacy PFQ results look like: latest-chromeos-chrome-amd64-79.afdo.
+      # The branch should appear in the name either as:
+      #   R78-12371.22-1566207135 for kernel/CWP profiles, OR
+      #   chromeos-chrome-amd64-78.0.3877.0 for benchmark profiles
+      return ('latest-' not in url and
+              ('R%s-' % branch in url or '-%s.' % branch in url))
+
+    # Obtain all files from gs_url and filter out those not match
+    # pattern. And filter out text files for legacy PFQ like
+    # latest-chromeos-chrome-amd64-79.afdo
+    all_files = self.gs_context.List(gs_url, details=True)
+    results = [
+        x for x in all_files if _IsUrlOnBranch(x.url, self.chrome_branch)]
+
+    if not results:
+      # If no results found, it's maybe because we just branched.
+      # Try to find the latest profile from last branch.
+      results = [
+          x
+          for x in all_files
+          if _IsUrlOnBranch(x.url, str(int(self.chrome_branch) - 1))]
+
+    if not results:
+      raise RuntimeError(
+          'No files found on %s for branch %s' % (gs_url, self.chrome_branch))
+
+    latest = None
+    for res in results:
+      rank = rank_func(res.url)
+      if rank and (not latest or [rank, ''] > latest):
+        latest = [rank, res.url]
+
+    if not latest:
+      raise RuntimeError('No valid latest artifact was found on %s'
+                         '(example invalid artifact: %s).' %
+                         (gs_url, results[0].url))
+
+    name = os.path.basename(latest[1])
+    logging.info('Latest AFDO artifact in %s is %s', gs_url, name)
+    return name
+
+  def _UpdateEbuildWithArtifacts(self, package, update_rules):
+    """Update a package ebuild file with artifacts.
+
+    Args:
+      package: name of package to update (no category.)
+      update_rules: dict{'variable': 'value'} to apply.
+    """
+    info = self._GetEbuildInfo(package)
+    self._PatchEbuild(info, update_rules, uprev=True)
+    CPV_9999 = '%s/%s-9999' % (info.CPV.category, info.CPV.package)
+    ebuild_9999 = os.path.join(
+        os.path.dirname(info.path), '%s-9999.ebuild' % package)
+    info_9999 = _EbuildInfo(ebuild_9999, portage_util.SplitCPV(CPV_9999))
+    self._PatchEbuild(info_9999, update_rules, uprev=False)
+
+  def _PatchEbuild(self, info, rules, uprev):
+    """Patch an ebuild file, possibly upreving it.
+
+    Args:
+      info: _EbuildInfo describing the ebuild file.
+      rules: dict of key:value pairs to apply to the ebuild.
+      uprev: whether to increment the revision.  Should be False for 9999
+          ebuilds, and True otherwise.
+
+    Returns:
+      Updated CPV for the ebuild.
+    """
+    logging.info('Patching %s with %s', info.path, str(rules))
+    old_name = info.path
+    new_name = '%s.new' % old_name
+
+    _Patterns = collections.namedtuple('_Patterns', ['match', 'sub'])
+    patterns = set(
+        _Patterns(re.compile(AFDO_ARTIFACT_EBUILD_REGEX % k),
+                  AFDO_ARTIFACT_EBUILD_REPL % v)
+        for k, v in rules.items())
+
+    want = patterns.copy()
+    with open(old_name) as old, open(new_name, 'w') as new:
+      for line in old:
+        for match, sub in patterns:
+          line, count = match.subn(sub, line, count=1)
+          if count:
+            want.remove((match, sub))
+            # Can only match one pattern.
+            break
+        new.write(line)
+      if want:
+        logging.info('Unable to update %s in the ebuild', [x.sub for x in want])
+        raise UpdateEbuildWithAFDOArtifactsError(
+            'Ebuild file does not have appropriate marker for AFDO/orderfile.')
+
+    CPV = info.CPV
+    if uprev:
+      assert CPV.version != '9999'
+      new_rev = 'r%d' % (int(CPV.rev[1:]) + 1) if CPV.rev else 'r1'
+      new_CPV = '%s/%s-%s-%s' % (
+          CPV.category, CPV.package, CPV.version_no_rev, new_rev)
+      new_path = os.path.join(
+          os.path.dirname(info.path), '%s.ebuild' % os.path.basename(new_CPV))
+      os.rename(new_name, new_path)
+      osutils.SafeUnlink(old_name)
+      ebuild_file = new_path
+      CPV = _EbuildInfo(new_path, portage_util.SplitCPV(new_CPV))
+    else:
+      assert CPV.version == '9999'
+      os.rename(new_name, old_name)
+      ebuild_file = old_name
+
+    if self.build_target:
+      ebuild_prog = 'ebuild-%s' % self.build_target
+      cmd = [ebuild_prog, path_util.ToChrootPath(ebuild_file, self.chroot.path),
+             'manifest', '--force']
+      cros_build_lib.run(cmd, enter_chroot=True)
+
+    return CPV
+
+  @staticmethod
+  def _RankValidOrderfiles(url):
+    """Rank the given URL for comparison."""
+    try:
+      bench, cwp = _ParseMergedProfileName(os.path.basename(url))
+      if bench.is_merged:
+        raise ValueError(
+            '-merged should not appear in orderfile or release AFDO name.')
+      return bench, cwp
+    except ProfilesNameHelperError:
+      return None
+
+  @staticmethod
+  def _RankValidBenchmarkProfiles(name):
+    """Calculate a value used to rank valid benchmark profiles.
+
+    Args:
+      name: A name or a full path of a possible benchmark profile.
+
+    Returns:
+      A BenchmarkProfileNamedTuple used for ranking if the name
+      is a valid benchmark profile. Otherwise, returns None.
+    """
+    try:
+      version = _ParseBenchmarkProfileName(os.path.basename(name))
+      # Filter out merged benchmark profiles.
+      if version.is_merged:
+        return None
+      return version
+    except ProfilesNameHelperError:
+      return None
+
+
+class PrepareForBuildHandler(_CommonPrepareBundle):
+  """Methods for updating ebuilds for toolchain artifacts."""
+
+  def __init__(self, artifact_name, chroot, sysroot_path, build_target,
+               input_artifacts):
+    super(PrepareForBuildHandler, self).__init__(
+        artifact_name, chroot, sysroot_path, build_target, input_artifacts)
+    self._prepare_func = getattr(self, '_Prepare' + artifact_name)
+
+  def Prepare(self):
+    return self._prepare_func()
+
+  def _PrepareUnverifiedOrderingFile(self):
+    """Prepare to build an unverified ordering file."""
+    orderfile_name = self._GetOrderfileName()
+
+    # If the (unverified) artifact already exists in our location, then the
+    # build is pointless.
+    loc = self.input_artifacts.get(
+        'UnverifiedOrderingFile', [ORDERFILE_GS_URL_UNVETTED])[0]
+    path = os.path.join(loc, orderfile_name + XZ_COMPRESSION_SUFFIX)
+    if self.gs_context.Exists(path):
+      # Artifact already created.
+      logging.info('Found %s.', path)
+      return PrepareForBuildReturn.POINTLESS
+
+    # No changes are needed in any ebuild, use flags take care of everything.
+
+    # We need this build.
+    logging.info('No UnverifiedOrderingFile found.')
+    return PrepareForBuildReturn.NEEDED
+
+  def _PrepareVerifiedOrderingFile(self):
+    """Prepare to verify an unvetted ordering file."""
+    # We will look for the input artifact in the given path, but we only check
+    # for the vetted artifact in the first location given.
+    locations = self.input_artifacts.get('UnverifiedOrderingFile',
+                                         [ORDERFILE_GS_URL_UNVETTED])
+    vetted_loc = os.path.join(os.path.dirname(locations[0]), 'vetted')
+    name = None
+    loc = None
+    for loc in locations:
+      try:
+        name = self._FindLatestOrderfileArtifact(loc)
+        break
+      except RuntimeError as err:
+        logging.warning('No unverified ordering file in %s: %s', loc, err)
+
+    if not name:
+      raise RuntimeError(str(err))
+
+    vetted_path = os.path.join(vetted_loc, name)
+    if self.gs_context.Exists(vetted_path):
+      # The latest unverified ordering file has already been verified.
+      logging.info('Pointless build: "%s" exists.', vetted_path)
+      return PrepareForBuildReturn.POINTLESS
+    # If we don't have an SDK, then we cannot update the manifest.  There is
+    # little benefit in patching the ebuild before we can update the manifest.
+    if self.chroot:
+      self._PatchEbuild(self._GetEbuildInfo(constants.CHROME_PN),
+                        {'UNVETTED_ORDERFILE': os.path.splitext(name)[0],
+                         'UNVETTED_ORDERFILE_LOCATION': loc}, uprev=True)
+    else:
+      logging.info('No chroot: not patching ebuild.')
+    return PrepareForBuildReturn.NEEDED
+
+  def _PrepareChromeClangWarningsFile(self):
+    # TODO(crbug/1019868): implement
+    return PrepareForBuildReturn.UNKNOWN
+
+  def _PrepareUnverifiedLlvmPgoFile(self):
+    # TODO(crbug/1019868): implement
+    return PrepareForBuildReturn.UNKNOWN
+
+  def _PrepareUnverifiedChromeAfdoFile(self):
+    # TODO(crbug/1019868): implement
+    return PrepareForBuildReturn.UNKNOWN
+
+  def _PrepareVerifiedChromeAfdoFile(self):
+    # TODO(crbug/1019868): implement
+    return PrepareForBuildReturn.UNKNOWN
+
+  def _PrepareVerifiedKernelAfdoFile(self):
+    # TODO(crbug/1019868): implement
+    return PrepareForBuildReturn.UNKNOWN
+
+
+class BundleArtifactHandler(_CommonPrepareBundle):
+  """Methods for updating ebuilds for toolchain artifacts."""
+
+  def __init__(self, artifact_name, chroot, sysroot_path, build_target,
+               output_dir):
+    super(BundleArtifactHandler, self).__init__(
+        artifact_name, chroot, sysroot_path, build_target)
+    self._bundle_func = getattr(self, '_Bundle' + artifact_name)
+    self.output_dir = output_dir
+
+  def Bundle(self):
+    return self._bundle_func()
+
+  def _BundleUnverifiedOrderingFile(self):
+    """Bundle to build an unverified ordering file."""
+    with self.chroot.tempdir() as tempdir:
+      GenerateChromeOrderfile(
+          board=self.build_target,
+          output_dir=tempdir,
+          chrome_root=self.chroot.chrome_root,
+          chroot_path=self.chroot.path,
+          chroot_args=self.chroot.get_enter_args()).Bundle()
+
+      files = []
+      for path in osutils.DirectoryIterator(tempdir):
+        if os.path.isfile(path):
+          rel_path = os.path.relpath(path, tempdir)
+          files.append(os.path.join(self.output_dir, rel_path))
+      osutils.CopyDirContents(tempdir, self.output_dir, allow_nonempty=True)
+
+    return files
+
+  def _BundleVerifiedOrderingFile(self):
+    """Bundle vetted ordering file."""
+    orderfile_name = self._GetArtifactVersionInEbuild(
+        constants.CHROME_PN, 'UNVETTED_ORDERFILE') + XZ_COMPRESSION_SUFFIX
+    # Strip the leading / from sysroot_path.
+    orderfile_path = os.path.join(
+        self.chroot.path, self.sysroot_path[1:],
+        'opt/google/chrome', orderfile_name)
+    verified_orderfile = os.path.join(self.output_dir, orderfile_name)
+    shutil.copy2(orderfile_path, verified_orderfile)
+    return [verified_orderfile]
+
+  def _BundleChromeClangWarningsFile(self):
+    # TODO(crbug/1019868): implement
+    return []
+
+  def _BundleUnverifiedLlvmPgoFile(self):
+    # TODO(crbug/1019868): implement
+    return []
+
+  def _BundleUnverifiedChromeAfdoFile(self):
+    # TODO(crbug/1019868): implement
+    return []
+
+  def _BundleVerifiedChromeAfdoFile(self):
+    # TODO(crbug/1019868): implement
+    return []
+
+  def _BundleVerifiedKernelAfdoFile(self):
+    # TODO(crbug/1019868): implement
+    return []
+
+
+def PrepareForBuild(artifact_name, chroot, sysroot_path, build_target,
+                    input_artifacts):
   """Prepare for building artifacts.
 
-  This code is called INSIDE the chroot, after it is set up.
+  This code is called OUTSIDE the chroot, before it is set up.
 
   Args:
-    name: artifact name
-    chroot_path: path to chroot.
-    sysroot_path: path to sysroot, relative to chroot path.
-    build_target: name of build target
-    available: dict of available artifacts.
+    artifact_name: artifact name
+    chroot: chroot_lib.Chroot instance for chroot.
+    sysroot_path: path to sysroot, relative to chroot path, or None.
+    build_target: name of build target, or None.
+    input_artifacts: List(InputArtifactInfo) of available artifact locations.
 
   Returns:
     PrepareForBuildReturn
   """
 
-  if name == 'UnverifiedOrderingFile':
-    # The orderfile-generate builder
-    return PrepareForBuildReturn.NEEDED
-  elif name == 'VerifiedOrderingFile':
-    # The orderfile-verify builder
-    if OrderfileUpdateChromeEbuild(build_target):
-      return PrepareForBuildReturn.NEEDED
-    else:
-      return PrepareForBuildReturn.POINTLESS
-  elif name == 'ChromeClangWarningsFile':
-    # The clang-tidy builder
-    return PrepareForBuildReturn.UNKNOWN
-  elif name == 'UnverifiedLlvmPgoFile':
-    return PrepareForBuildReturn.UNKNOWN
-  elif name == 'UnverifiedChromeAfdoFile':
-    return PrepareForBuildReturn.UNKNOWN
-  elif name == 'VerifiedChromeAfdoFile':
-    return PrepareForBuildReturn.UNKNOWN
-  elif name == 'VerifiedKernelAfdoFile':
-    return PrepareForBuildReturn.UNKNOWN
+  return PrepareForBuildHandler(
+      artifact_name, chroot, sysroot_path, build_target,
+      input_artifacts).Prepare()
 
 
-def BundleArtifacts(name, chroot_path, sysroot_path, build_target, output_dir):
+def BundleArtifacts(name, chroot, sysroot_path, build_target, output_dir):
   """Prepare for building artifacts.
 
   This code is called OUTSIDE the chroot, after it is set up.
 
   Args:
     name: artifact name
-    chroot_path: path to chroot.
+    chroot: chroot_lib.Chroot instance for chroot.
     sysroot_path: path to sysroot, relative to chroot path.
+    chrome_root: path to chrome root.
     build_target: name of build target
     output_dir: path in which to place the artifacts.
 
   Returns:
     list of artifacts, relative to output_dir.
   """
-
-  if name == 'UnverifiedOrderingFile':
-    # The orderfile-generate builder
-    pass
-  elif name == 'VerifiedOrderingFile':
-    # The orderfile-verify builder
-    pass
-  elif name == 'ChromeClangWarningsFile':
-    # The clang-tidy builder
-    pass
-  elif name == 'UnverifiedLlvmPgoFile':
-    pass
-  elif name == 'UnverifiedChromeAfdoFile':
-    pass
-  elif name == 'VerifiedChromeAfdoFile':
-    pass
-  elif name == 'VerifiedKernelAfdoFile':
-    pass
-
-  return []
-# TODO(crbug/1019868): implement the various endpoints.
-# pylint: enable=unused-argument
+  return BundleArtifactHandler(
+      name, chroot, sysroot_path, build_target, output_dir).Bundle()
 
 
+# ###########################################################################
+#
+# TODO(crbug/1019868): delete once cbuildbot is gone.
+# LEGACY CODE: used primarily by cbuildbot.
+#
+# ###########################################################################
 def OrderfileUpdateChromeEbuild(board):
   """Update Chrome ebuild with latest unvetted orderfile.
 
