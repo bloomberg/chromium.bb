@@ -557,15 +557,19 @@ class UpdateChromeosLKGMStage(generic_stages.BuilderStage):
 
   def _build_threshold_successful(self):
     """Whether the percentage of successful child builders exceeds threshold"""
-    all_builds = self.GetScheduledSlaveBuildbucketIds()
-    len_all_builds = float(len(all_builds))
-    len_child_failures = float(
-        len(self.buildstore.GetBuildsFailures(all_builds)))
-
-    pctn_succeeded = 100.0 * (
-        (len_all_builds - len_child_failures) / len_all_builds)
-    return pctn_succeeded >= constants.LKGM_THRESHOLD
-
+    ids = self.GetScheduledSlaveBuildbucketIds()
+    num_builds = 0
+    num_failures = 0
+    for status in self.buildstore.GetBuildStatuses(buildbucket_ids=ids):
+      if status.important:
+        num_builds += 1
+        if status.status != constants.BUILDER_STATUS_PASSED:
+          num_failures += 1
+    logging.info('%d of %d important builds failed.', num_failures, num_builds)
+    if num_builds > 0:
+      pct_succeeded = 100.0 * ((num_builds - num_failures) / float(num_builds))
+      return pct_succeeded >= constants.LKGM_THRESHOLD
+    return False
 
 class PublishUprevChangesStage(generic_stages.BuilderStage):
   """Makes CQ uprev changes live for developers.
