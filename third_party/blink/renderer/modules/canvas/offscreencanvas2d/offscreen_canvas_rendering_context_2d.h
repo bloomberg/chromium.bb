@@ -63,7 +63,8 @@ class MODULES_EXPORT OffscreenCanvasRenderingContext2D final
   bool IsComposited() const override { return false; }
   bool IsAccelerated() const override;
   void SetOffscreenCanvasGetContextResult(OffscreenRenderingContext&) final;
-  void SetIsHidden(bool) final { NOTREACHED(); }
+  void SetIsInHiddenPage(bool) final { NOTREACHED(); }
+  void SetIsBeingDisplayed(bool) final { NOTREACHED(); }
   void Stop() final { NOTREACHED(); }
   void SetCanvasGetContextResult(RenderingContext&) final {}
   void ClearRect(double x, double y, double width, double height) override {

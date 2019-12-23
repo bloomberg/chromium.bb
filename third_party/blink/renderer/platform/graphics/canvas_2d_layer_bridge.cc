@@ -62,6 +62,7 @@ Canvas2DLayerBridge::Canvas2DLayerBridge(const IntSize& size,
     : logger_(std::make_unique<Logger>()),
       have_recorded_draw_commands_(false),
       is_hidden_(false),
+      is_being_displayed_(false),
       software_rendering_while_hidden_(false),
       acceleration_mode_(acceleration_mode),
       color_params_(color_params),
@@ -353,7 +354,7 @@ void Canvas2DLayerBridge::UpdateFilterQuality() {
     layer_->SetNearestNeighbor(filter_quality == kNone_SkFilterQuality);
 }
 
-void Canvas2DLayerBridge::SetIsHidden(bool hidden) {
+void Canvas2DLayerBridge::SetIsInHiddenPage(bool hidden) {
   if (is_hidden_ == hidden)
     return;
 
@@ -401,6 +402,19 @@ void Canvas2DLayerBridge::SetIsHidden(bool hidden) {
   }
   if (!IsHidden() && IsHibernating())
     GetOrCreateResourceProvider();  // Rude awakening
+}
+
+void Canvas2DLayerBridge::SetIsBeingDisplayed(bool displayed) {
+  is_being_displayed_ = displayed;
+  // If the canvas is no longer being displayed, stop using the rate
+  // limiter.
+  if (!is_being_displayed_) {
+    frames_since_last_commit_ = 0;
+    if (rate_limiter_) {
+      rate_limiter_->Reset();
+      rate_limiter_.reset(nullptr);
+    }
+  }
 }
 
 void Canvas2DLayerBridge::DrawFullImage(const cc::PaintImage& image) {
@@ -584,6 +598,10 @@ void Canvas2DLayerBridge::FlushRecording() {
   have_recorded_draw_commands_ = false;
 }
 
+bool Canvas2DLayerBridge::HasRateLimiterForTesting() {
+  return !!rate_limiter_;
+}
+
 bool Canvas2DLayerBridge::IsValid() {
   return CheckResourceProviderValid();
 }
@@ -710,13 +728,16 @@ void Canvas2DLayerBridge::FinalizeFrame() {
     return;
 
   FlushRecording();
-  ++frames_since_last_commit_;
-  if (frames_since_last_commit_ >= 2) {
-    if (IsAccelerated() && !rate_limiter_) {
-      // Make sure the GPU is never more than two animation frames behind.
-      constexpr unsigned kMaxCanvasAnimationBacklog = 2;
-      rate_limiter_ = std::make_unique<SharedContextRateLimiter>(
-          kMaxCanvasAnimationBacklog);
+  if (is_being_displayed_) {
+    ++frames_since_last_commit_;
+    // Make sure the GPU is never more than two animation frames behind.
+    constexpr unsigned kMaxCanvasAnimationBacklog = 2;
+    if (frames_since_last_commit_ >=
+        static_cast<int>(kMaxCanvasAnimationBacklog)) {
+      if (IsAccelerated() && !rate_limiter_) {
+        rate_limiter_ = std::make_unique<SharedContextRateLimiter>(
+            kMaxCanvasAnimationBacklog);
+      }
     }
   }
 
