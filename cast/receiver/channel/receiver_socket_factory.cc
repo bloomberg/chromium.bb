@@ -6,8 +6,8 @@
 
 #include "util/logging.h"
 
+namespace openscreen {
 namespace cast {
-namespace channel {
 
 ReceiverSocketFactory::ReceiverSocketFactory(Client* client,
                                              CastSocket::Client* socket_client)
@@ -46,5 +46,5 @@ void ReceiverSocketFactory::OnError(TlsConnectionFactory* factory,
   client_->OnError(this, error);
 }
 
-}  // namespace channel
 }  // namespace cast
+}  // namespace openscreen

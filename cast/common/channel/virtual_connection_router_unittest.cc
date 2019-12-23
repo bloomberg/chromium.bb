@@ -12,10 +12,11 @@
 #include "cast/common/channel/virtual_connection_manager.h"
 #include "gtest/gtest.h"
 
+namespace openscreen {
 namespace cast {
-namespace channel {
 namespace {
 
+using ::cast::channel::CastMessage;
 using ::testing::_;
 using ::testing::Invoke;
 
@@ -49,7 +50,8 @@ TEST_F(VirtualConnectionRouterTest, LocalIdHandler) {
       {});
 
   CastMessage message;
-  message.set_protocol_version(CastMessage_ProtocolVersion_CASTV2_1_0);
+  message.set_protocol_version(
+      ::cast::channel::CastMessage_ProtocolVersion_CASTV2_1_0);
   message.set_namespace_("zrqvn");
   message.set_source_id("sender-9873");
   message.set_destination_id("receiver-1234");
@@ -73,7 +75,8 @@ TEST_F(VirtualConnectionRouterTest, RemoveLocalIdHandler) {
       {});
 
   CastMessage message;
-  message.set_protocol_version(CastMessage_ProtocolVersion_CASTV2_1_0);
+  message.set_protocol_version(
+      ::cast::channel::CastMessage_ProtocolVersion_CASTV2_1_0);
   message.set_namespace_("zrqvn");
   message.set_source_id("sender-9873");
   message.set_destination_id("receiver-1234");
@@ -94,7 +97,8 @@ TEST_F(VirtualConnectionRouterTest, SendMessage) {
       {});
 
   CastMessage message;
-  message.set_protocol_version(CastMessage_ProtocolVersion_CASTV2_1_0);
+  message.set_protocol_version(
+      ::cast::channel::CastMessage_ProtocolVersion_CASTV2_1_0);
   message.set_namespace_("zrqvn");
   message.set_source_id("receiver-1234");
   message.set_destination_id("sender-4321");
@@ -105,7 +109,8 @@ TEST_F(VirtualConnectionRouterTest, SendMessage) {
         EXPECT_EQ(message.namespace_(), "zrqvn");
         EXPECT_EQ(message.source_id(), "receiver-1234");
         EXPECT_EQ(message.destination_id(), "sender-4321");
-        ASSERT_EQ(message.payload_type(), CastMessage_PayloadType_STRING);
+        ASSERT_EQ(message.payload_type(),
+                  ::cast::channel::CastMessage_PayloadType_STRING);
         EXPECT_EQ(message.payload_utf8(), "cnlybnq");
       }));
   router_.SendMessage(
@@ -113,5 +118,5 @@ TEST_F(VirtualConnectionRouterTest, SendMessage) {
       std::move(message));
 }
 
-}  // namespace channel
 }  // namespace cast
+}  // namespace openscreen

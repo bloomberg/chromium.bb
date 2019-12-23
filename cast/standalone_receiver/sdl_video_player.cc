@@ -9,14 +9,8 @@
 #include "cast/standalone_receiver/avcodec_glue.h"
 #include "util/logging.h"
 
-using openscreen::Clock;
-using openscreen::ClockNowFunctionPtr;
-using openscreen::Error;
-using openscreen::ErrorOr;
-using openscreen::TaskRunner;
-
+namespace openscreen {
 namespace cast {
-namespace streaming {
 
 namespace {
 constexpr char kVideoMediaType[] = "video";
@@ -201,5 +195,5 @@ uint32_t SDLVideoPlayer::GetSDLPixelFormat(const AVFrame& picture) {
   return SDL_PIXELFORMAT_UNKNOWN;
 }
 
-}  // namespace streaming
 }  // namespace cast
+}  // namespace openscreen

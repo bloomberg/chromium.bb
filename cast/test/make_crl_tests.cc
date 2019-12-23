@@ -15,42 +15,37 @@
 
 #define TEST_DATA_PREFIX OPENSCREEN_TEST_DATA_DIR "cast/receiver/channel/"
 
+namespace openscreen {
 namespace cast {
 namespace {
 
-using certificate::ConstDataSpan;
-using certificate::DateTime;
-using openscreen::Error;
-using openscreen::ErrorOr;
-
-std::string* AddRevokedPublicKeyHash(certificate::TbsCrl* tbs_crl, X509* cert) {
+std::string* AddRevokedPublicKeyHash(TbsCrl* tbs_crl, X509* cert) {
   std::string* pubkey_hash = tbs_crl->add_revoked_public_key_hashes();
-  std::string pubkey_spki = openscreen::GetSpkiTlv(cert);
-  ErrorOr<std::string> hash_value = openscreen::SHA256HashString(pubkey_spki);
+  std::string pubkey_spki = GetSpkiTlv(cert);
+  ErrorOr<std::string> hash_value = SHA256HashString(pubkey_spki);
   OSP_DCHECK(hash_value.is_value());
   *pubkey_hash = std::move(hash_value.value());
   return pubkey_hash;
 }
 
-void AddSerialNumberRange(certificate::TbsCrl* tbs_crl,
+void AddSerialNumberRange(TbsCrl* tbs_crl,
                           X509* issuer,
                           uint64_t first,
                           uint64_t last) {
-  certificate::SerialNumberRange* serial_range =
-      tbs_crl->add_revoked_serial_number_ranges();
-  std::string issuer_spki = openscreen::GetSpkiTlv(issuer);
-  ErrorOr<std::string> issuer_hash = openscreen::SHA256HashString(issuer_spki);
+  SerialNumberRange* serial_range = tbs_crl->add_revoked_serial_number_ranges();
+  std::string issuer_spki = GetSpkiTlv(issuer);
+  ErrorOr<std::string> issuer_hash = SHA256HashString(issuer_spki);
   OSP_DCHECK(issuer_hash.is_value());
   serial_range->set_issuer_public_key_hash(std::move(issuer_hash.value()));
   serial_range->set_first_serial_number(first);
   serial_range->set_last_serial_number(last);
 }
 
-certificate::TbsCrl MakeTbsCrl(uint64_t not_before,
-                               uint64_t not_after,
-                               X509* device_cert,
-                               X509* inter_cert) {
-  certificate::TbsCrl tbs_crl;
+TbsCrl MakeTbsCrl(uint64_t not_before,
+                  uint64_t not_after,
+                  X509* device_cert,
+                  X509* inter_cert) {
+  TbsCrl tbs_crl;
   tbs_crl.set_version(0);
   tbs_crl.set_not_before_seconds(not_before);
   tbs_crl.set_not_after_seconds(not_after);
@@ -62,7 +57,7 @@ certificate::TbsCrl MakeTbsCrl(uint64_t not_before,
   // NOTE: Include default serial number range at device-level, which should not
   // include any of our certs.
   ErrorOr<uint64_t> maybe_serial =
-      openscreen::ParseDerUint64(device_cert->cert_info->serialNumber);
+      ParseDerUint64(device_cert->cert_info->serialNumber);
   OSP_DCHECK(maybe_serial);
   uint64_t serial = maybe_serial.value();
   OSP_DCHECK_LE(serial, UINT64_MAX - 200);
@@ -74,19 +69,19 @@ certificate::TbsCrl MakeTbsCrl(uint64_t not_before,
 // Pack into a CrlBundle and sign with |crl_inter_key|.  |crl_inter_der| must be
 // directly signed by a Cast CRL root CA (possibly distinct from Cast root CA).
 void PackCrlIntoFile(const char* filename,
-                     const certificate::TbsCrl& tbs_crl,
+                     const TbsCrl& tbs_crl,
                      const std::string& crl_inter_der,
                      EVP_PKEY* crl_inter_key) {
-  certificate::CrlBundle crl_bundle;
-  certificate::Crl* crl = crl_bundle.add_crls();
+  CrlBundle crl_bundle;
+  Crl* crl = crl_bundle.add_crls();
   std::string* tbs_crl_serial = crl->mutable_tbs_crl();
   tbs_crl.SerializeToString(tbs_crl_serial);
   crl->set_signer_cert(crl_inter_der);
-  ErrorOr<std::string> signature = openscreen::SignData(
-      EVP_sha256(), crl_inter_key,
-      absl::Span<const uint8_t>{
-          reinterpret_cast<const uint8_t*>(tbs_crl_serial->data()),
-          tbs_crl_serial->size()});
+  ErrorOr<std::string> signature =
+      SignData(EVP_sha256(), crl_inter_key,
+               absl::Span<const uint8_t>{
+                   reinterpret_cast<const uint8_t*>(tbs_crl_serial->data()),
+                   tbs_crl_serial->size()});
   OSP_DCHECK(signature);
   crl->set_signature(std::move(signature.value()));
 
@@ -100,20 +95,16 @@ void PackCrlIntoFile(const char* filename,
 
 int CastMain() {
   bssl::UniquePtr<EVP_PKEY> inter_key =
-      certificate::testing::ReadKeyFromPemFile(TEST_DATA_PREFIX
-                                               "inter_key.pem");
+      testing::ReadKeyFromPemFile(TEST_DATA_PREFIX "inter_key.pem");
   bssl::UniquePtr<EVP_PKEY> crl_inter_key =
-      certificate::testing::ReadKeyFromPemFile(TEST_DATA_PREFIX
-                                               "crl_inter_key.pem");
+      testing::ReadKeyFromPemFile(TEST_DATA_PREFIX "crl_inter_key.pem");
   OSP_DCHECK(inter_key);
   OSP_DCHECK(crl_inter_key);
 
   std::vector<std::string> chain_der =
-      certificate::testing::ReadCertificatesFromPemFile(TEST_DATA_PREFIX
-                                                        "device_chain.pem");
+      testing::ReadCertificatesFromPemFile(TEST_DATA_PREFIX "device_chain.pem");
   std::vector<std::string> crl_inter_der =
-      certificate::testing::ReadCertificatesFromPemFile(TEST_DATA_PREFIX
-                                                        "crl_inter.pem");
+      testing::ReadCertificatesFromPemFile(TEST_DATA_PREFIX "crl_inter.pem");
   OSP_DCHECK_EQ(chain_der.size(), 3u);
   OSP_DCHECK_EQ(crl_inter_der.size(), 1u);
 
@@ -145,11 +136,10 @@ int CastMain() {
   july2020.month = 7;
   july2020.year = 2020;
   july2020.day = 23;
-  std::chrono::seconds not_before = certificate::DateTimeToSeconds(july2019);
-  std::chrono::seconds not_after = certificate::DateTimeToSeconds(july2020);
-  certificate::TbsCrl tbs_crl =
-      MakeTbsCrl(not_before.count(), not_after.count(), device_cert.get(),
-                 inter_cert.get());
+  std::chrono::seconds not_before = DateTimeToSeconds(july2019);
+  std::chrono::seconds not_after = DateTimeToSeconds(july2020);
+  TbsCrl tbs_crl = MakeTbsCrl(not_before.count(), not_after.count(),
+                              device_cert.get(), inter_cert.get());
   PackCrlIntoFile(TEST_DATA_PREFIX "good_crl.pb", tbs_crl, crl_inter_der[0],
                   crl_inter_key.get());
 
@@ -159,19 +149,17 @@ int CastMain() {
     august2019.month = 8;
     august2019.year = 2019;
     august2019.day = 16;
-    std::chrono::seconds not_after = certificate::DateTimeToSeconds(august2019);
-    certificate::TbsCrl tbs_crl =
-        MakeTbsCrl(not_before.count(), not_after.count(), device_cert.get(),
-                   inter_cert.get());
+    std::chrono::seconds not_after = DateTimeToSeconds(august2019);
+    TbsCrl tbs_crl = MakeTbsCrl(not_before.count(), not_after.count(),
+                                device_cert.get(), inter_cert.get());
     PackCrlIntoFile(TEST_DATA_PREFIX "invalid_time_crl.pb", tbs_crl,
                     crl_inter_der[0], crl_inter_key.get());
   }
 
   // NOTE: Device's issuer revoked.
   {
-    certificate::TbsCrl tbs_crl =
-        MakeTbsCrl(not_before.count(), not_after.count(), device_cert.get(),
-                   inter_cert.get());
+    TbsCrl tbs_crl = MakeTbsCrl(not_before.count(), not_after.count(),
+                                device_cert.get(), inter_cert.get());
     AddRevokedPublicKeyHash(&tbs_crl, inter_cert.get());
     PackCrlIntoFile(TEST_DATA_PREFIX "issuer_revoked_crl.pb", tbs_crl,
                     crl_inter_der[0], crl_inter_key.get());
@@ -179,9 +167,8 @@ int CastMain() {
 
   // NOTE: Device revoked.
   {
-    certificate::TbsCrl tbs_crl =
-        MakeTbsCrl(not_before.count(), not_after.count(), device_cert.get(),
-                   inter_cert.get());
+    TbsCrl tbs_crl = MakeTbsCrl(not_before.count(), not_after.count(),
+                                device_cert.get(), inter_cert.get());
     AddRevokedPublicKeyHash(&tbs_crl, device_cert.get());
     PackCrlIntoFile(TEST_DATA_PREFIX "device_revoked_crl.pb", tbs_crl,
                     crl_inter_der[0], crl_inter_key.get());
@@ -189,11 +176,10 @@ int CastMain() {
 
   // NOTE: Issuer serial revoked.
   {
-    certificate::TbsCrl tbs_crl =
-        MakeTbsCrl(not_before.count(), not_after.count(), device_cert.get(),
-                   inter_cert.get());
+    TbsCrl tbs_crl = MakeTbsCrl(not_before.count(), not_after.count(),
+                                device_cert.get(), inter_cert.get());
     ErrorOr<uint64_t> maybe_serial =
-        openscreen::ParseDerUint64(inter_cert->cert_info->serialNumber);
+        ParseDerUint64(inter_cert->cert_info->serialNumber);
     OSP_DCHECK(maybe_serial);
     uint64_t serial = maybe_serial.value();
     OSP_DCHECK_GE(serial, 10);
@@ -205,11 +191,10 @@ int CastMain() {
 
   // NOTE: Device serial revoked.
   {
-    certificate::TbsCrl tbs_crl =
-        MakeTbsCrl(not_before.count(), not_after.count(), device_cert.get(),
-                   inter_cert.get());
+    TbsCrl tbs_crl = MakeTbsCrl(not_before.count(), not_after.count(),
+                                device_cert.get(), inter_cert.get());
     ErrorOr<uint64_t> maybe_serial =
-        openscreen::ParseDerUint64(device_cert->cert_info->serialNumber);
+        ParseDerUint64(device_cert->cert_info->serialNumber);
     OSP_DCHECK(maybe_serial);
     uint64_t serial = maybe_serial.value();
     OSP_DCHECK_GE(serial, 10);
@@ -221,18 +206,16 @@ int CastMain() {
 
   // NOTE: Bad |signer_cert| used for Crl (not issued by Cast CRL root).
   {
-    certificate::TbsCrl tbs_crl =
-        MakeTbsCrl(not_before.count(), not_after.count(), device_cert.get(),
-                   inter_cert.get());
+    TbsCrl tbs_crl = MakeTbsCrl(not_before.count(), not_after.count(),
+                                device_cert.get(), inter_cert.get());
     PackCrlIntoFile(TEST_DATA_PREFIX "bad_signer_cert_crl.pb", tbs_crl,
                     inter_der, inter_key.get());
   }
 
   // NOTE: Mismatched key for signature in Crl (just looks like bad signature).
   {
-    certificate::TbsCrl tbs_crl =
-        MakeTbsCrl(not_before.count(), not_after.count(), device_cert.get(),
-                   inter_cert.get());
+    TbsCrl tbs_crl = MakeTbsCrl(not_before.count(), not_after.count(),
+                                device_cert.get(), inter_cert.get());
     PackCrlIntoFile(TEST_DATA_PREFIX "bad_signature_crl.pb", tbs_crl,
                     crl_inter_der[0], inter_key.get());
   }
@@ -242,7 +225,8 @@ int CastMain() {
 
 }  // namespace
 }  // namespace cast
+}  // namespace openscreen
 
 int main() {
-  return cast::CastMain();
+  return openscreen::cast::CastMain();
 }

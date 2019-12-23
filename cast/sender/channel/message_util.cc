@@ -6,8 +6,12 @@
 
 #include "cast/sender/channel/cast_auth_util.h"
 
+namespace openscreen {
 namespace cast {
-namespace channel {
+
+using ::cast::channel::AuthChallenge;
+using ::cast::channel::CastMessage;
+using ::cast::channel::DeviceAuthMessage;
 
 CastMessage CreateAuthChallengeMessage(const AuthContext& auth_context) {
   CastMessage message;
@@ -15,7 +19,7 @@ CastMessage CreateAuthChallengeMessage(const AuthContext& auth_context) {
 
   AuthChallenge* challenge = auth_message.mutable_challenge();
   challenge->set_sender_nonce(auth_context.nonce());
-  challenge->set_hash_algorithm(SHA256);
+  challenge->set_hash_algorithm(::cast::channel::SHA256);
 
   std::string auth_message_string;
   auth_message.SerializeToString(&auth_message_string);
@@ -24,11 +28,11 @@ CastMessage CreateAuthChallengeMessage(const AuthContext& auth_context) {
   message.set_source_id(kPlatformSenderId);
   message.set_destination_id(kPlatformReceiverId);
   message.set_namespace_(kAuthNamespace);
-  message.set_payload_type(CastMessage_PayloadType_BINARY);
+  message.set_payload_type(::cast::channel::CastMessage_PayloadType_BINARY);
   message.set_payload_binary(auth_message_string);
 
   return message;
 }
 
-}  // namespace channel
 }  // namespace cast
+}  // namespace openscreen

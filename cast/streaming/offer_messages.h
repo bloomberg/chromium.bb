@@ -18,8 +18,8 @@
 
 // This file contains the implementation of the Cast V2 Mirroring Control
 // Protocol offer object definition.
+namespace openscreen {
 namespace cast {
-namespace streaming {
 
 // If the target delay provided by the sender is not bounded by
 // [kMinTargetDelay, kMaxTargetDelay], it will be set to
@@ -95,7 +95,7 @@ struct CastMode {
 };
 
 struct Offer {
-  static openscreen::ErrorOr<Offer> Parse(const Json::Value& root);
+  static ErrorOr<Offer> Parse(const Json::Value& root);
 
   CastMode cast_mode = {};
   // This field is poorly named in the spec (receiverGetStatus), so we use
@@ -105,7 +105,7 @@ struct Offer {
   std::vector<VideoStream> video_streams = {};
 };
 
-}  // namespace streaming
 }  // namespace cast
+}  // namespace openscreen
 
 #endif  // CAST_STREAMING_OFFER_MESSAGES_H_

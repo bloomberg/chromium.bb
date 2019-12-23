@@ -18,16 +18,12 @@
 #include "cast/streaming/session_config.h"
 #include "util/json/json_serialization.h"
 
+namespace openscreen {
 namespace cast {
 
-namespace channel {
 class CastSocket;
-class CastMessage;
 class VirtualConnectionRouter;
 class VirtualConnection;
-}  // namespace channel
-
-namespace streaming {
 
 class ReceiverSession final : public MessagePort::Client {
  public:
@@ -83,7 +79,8 @@ class ReceiverSession final : public MessagePort::Client {
     // This method is called immediately preceding the invalidation of
     // this session's receivers.
     virtual void OnReceiversDestroyed(ReceiverSession* session) = 0;
-    virtual void OnError(ReceiverSession* session, openscreen::Error error) = 0;
+
+    virtual void OnError(ReceiverSession* session, Error error) = 0;
   };
 
   // The embedder has the option of providing a list of prioritized
@@ -132,7 +129,7 @@ class ReceiverSession final : public MessagePort::Client {
   void OnMessage(absl::string_view sender_id,
                  absl::string_view message_namespace,
                  absl::string_view message) override;
-  void OnError(openscreen::Error error) override;
+  void OnError(Error error) override;
 
  private:
   struct Message {
@@ -150,9 +147,8 @@ class ReceiverSession final : public MessagePort::Client {
 
   // Either stream input to this method may be null, however if both
   // are null this method returns error.
-  openscreen::ErrorOr<ConfiguredReceivers> TrySpawningReceivers(
-      const AudioStream* audio,
-      const VideoStream* video);
+  ErrorOr<ConfiguredReceivers> TrySpawningReceivers(const AudioStream* audio,
+                                                    const VideoStream* video);
 
   // Callers of this method should ensure at least one stream is non-null.
   Answer ConstructAnswer(Message* message,
@@ -177,7 +173,7 @@ class ReceiverSession final : public MessagePort::Client {
   std::unique_ptr<Receiver> current_video_receiver_;
 };
 
-}  // namespace streaming
 }  // namespace cast
+}  // namespace openscreen
 
 #endif  // CAST_STREAMING_RECEIVER_SESSION_H_

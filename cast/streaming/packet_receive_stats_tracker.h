@@ -12,8 +12,8 @@
 #include "cast/streaming/rtp_time.h"
 #include "platform/api/time.h"
 
+namespace openscreen {
 namespace cast {
-namespace streaming {
 
 // Maintains statistics for RTP packet arrival timing, jitter, and loss rates;
 // and then uses these to compute and set the related fields in a RTCP Receiver
@@ -31,7 +31,7 @@ class PacketReceiveStatsTracker {
   // processing/parsing).
   void OnReceivedValidRtpPacket(uint16_t sequence_number,
                                 RtpTimeTicks rtp_timestamp,
-                                openscreen::Clock::time_point arrival_time);
+                                Clock::time_point arrival_time);
 
   // Populates *only* those fields in the given |report| that pertain to packet
   // loss, jitter, and the latest-known RTP packet sequence number.
@@ -88,7 +88,7 @@ class PacketReceiveStatsTracker {
 
   // The time the last RTP packet was received. This is used in the computation
   // that updates |jitter_|.
-  openscreen::Clock::time_point last_rtp_packet_arrival_time_;
+  Clock::time_point last_rtp_packet_arrival_time_;
 
   // The RTP timestamp of the last RTP packet received. This is used in the
   // computation that updates |jitter_|.
@@ -97,10 +97,10 @@ class PacketReceiveStatsTracker {
   // The interarrival jitter. See RFC 3550 spec, section 6.4.1. The Cast
   // Streaming spec diverges from the algorithm in the RFC spec in that it uses
   // different pieces of timing data to calculate this metric.
-  openscreen::Clock::duration jitter_;
+  Clock::duration jitter_;
 };
 
-}  // namespace streaming
 }  // namespace cast
+}  // namespace openscreen
 
 #endif  // CAST_STREAMING_PACKET_RECEIVE_STATS_TRACKER_H_

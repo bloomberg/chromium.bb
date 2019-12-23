@@ -14,11 +14,11 @@
 #include "util/big_endian.h"
 #include "util/std_util.h"
 
+namespace openscreen {
 namespace cast {
-namespace channel {
 namespace message_serialization {
 
-using openscreen::Error;
+using ::cast::channel::CastMessage;
 
 namespace {
 
@@ -149,5 +149,5 @@ TEST_F(CastFramerTest, TestUnparsableBodyProto) {
 }
 
 }  // namespace message_serialization
-}  // namespace channel
 }  // namespace cast
+}  // namespace openscreen

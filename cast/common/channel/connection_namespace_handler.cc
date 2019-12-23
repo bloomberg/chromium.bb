@@ -17,15 +17,16 @@
 #include "util/json/json_value.h"
 #include "util/logging.h"
 
+namespace openscreen {
 namespace cast {
-namespace channel {
 
-using openscreen::ErrorOr;
+using ::cast::channel::CastMessage;
+using ::cast::channel::CastMessage_PayloadType;
 
 namespace {
 
 bool IsValidProtocolVersion(int version) {
-  return CastMessage_ProtocolVersion_IsValid(version);
+  return ::cast::channel::CastMessage_ProtocolVersion_IsValid(version);
 }
 
 absl::optional<int> FindMaxProtocolVersion(const Json::Value* version,
@@ -35,7 +36,7 @@ absl::optional<int> FindMaxProtocolVersion(const Json::Value* version,
                 "Assuming ArrayIndex is integral");
   absl::optional<int> max_version;
   if (version_list && version_list->isArray()) {
-    max_version = CastMessage_ProtocolVersion_CASTV2_1_0;
+    max_version = ::cast::channel::CastMessage_ProtocolVersion_CASTV2_1_0;
     for (auto it = version_list->begin(), end = version_list->end(); it != end;
          ++it) {
       if (it->isInt()) {
@@ -50,7 +51,7 @@ absl::optional<int> FindMaxProtocolVersion(const Json::Value* version,
     int version_int = version->asInt();
     if (IsValidProtocolVersion(version_int)) {
       if (!max_version) {
-        max_version = CastMessage_ProtocolVersion_CASTV2_1_0;
+        max_version = ::cast::channel::CastMessage_ProtocolVersion_CASTV2_1_0;
       }
       if (version_int > max_version) {
         max_version = version_int;
@@ -64,7 +65,7 @@ VirtualConnection::CloseReason GetCloseReason(
     const Json::Value& parsed_message) {
   VirtualConnection::CloseReason reason =
       VirtualConnection::CloseReason::kClosedByPeer;
-  absl::optional<int> reason_code = openscreen::MaybeGetInt(
+  absl::optional<int> reason_code = MaybeGetInt(
       parsed_message, JSON_EXPAND_FIND_CONSTANT_ARGS(kMessageKeyReasonCode));
   if (reason_code) {
     int code = reason_code.value();
@@ -90,12 +91,12 @@ ConnectionNamespaceHandler::~ConnectionNamespaceHandler() = default;
 
 void ConnectionNamespaceHandler::OnMessage(VirtualConnectionRouter* router,
                                            CastSocket* socket,
-                                           CastMessage&& message) {
+                                           CastMessage message) {
   if (message.payload_type() !=
       CastMessage_PayloadType::CastMessage_PayloadType_STRING) {
     return;
   }
-  ErrorOr<Json::Value> result = openscreen::json::Parse(message.payload_utf8());
+  ErrorOr<Json::Value> result = json::Parse(message.payload_utf8());
   if (result.is_error()) {
     return;
   }
@@ -105,8 +106,8 @@ void ConnectionNamespaceHandler::OnMessage(VirtualConnectionRouter* router,
     return;
   }
 
-  absl::optional<absl::string_view> type = openscreen::MaybeGetString(
-      value, JSON_EXPAND_FIND_CONSTANT_ARGS(kMessageKeyType));
+  absl::optional<absl::string_view> type =
+      MaybeGetString(value, JSON_EXPAND_FIND_CONSTANT_ARGS(kMessageKeyType));
   if (!type) {
     // TODO(btolsch): Some of these paths should have error reporting.  One
     // possibility is to pass errors back through |router| so higher-level code
@@ -128,8 +129,8 @@ void ConnectionNamespaceHandler::OnMessage(VirtualConnectionRouter* router,
 
 void ConnectionNamespaceHandler::HandleConnect(VirtualConnectionRouter* router,
                                                CastSocket* socket,
-                                               CastMessage&& message,
-                                               Json::Value&& parsed_message) {
+                                               CastMessage message,
+                                               Json::Value parsed_message) {
   if (message.destination_id() == kBroadcastId ||
       message.source_id() == kBroadcastId) {
     return;
@@ -143,7 +144,7 @@ void ConnectionNamespaceHandler::HandleConnect(VirtualConnectionRouter* router,
     return;
   }
 
-  absl::optional<int> maybe_conn_type = openscreen::MaybeGetInt(
+  absl::optional<int> maybe_conn_type = MaybeGetInt(
       parsed_message, JSON_EXPAND_FIND_CONSTANT_ARGS(kMessageKeyConnType));
   VirtualConnection::Type conn_type = VirtualConnection::Type::kStrong;
   if (maybe_conn_type) {
@@ -160,7 +161,7 @@ void ConnectionNamespaceHandler::HandleConnect(VirtualConnectionRouter* router,
 
   data.type = conn_type;
 
-  absl::optional<absl::string_view> user_agent = openscreen::MaybeGetString(
+  absl::optional<absl::string_view> user_agent = MaybeGetString(
       parsed_message, JSON_EXPAND_FIND_CONSTANT_ARGS(kMessageKeyUserAgent));
   if (user_agent) {
     data.user_agent = std::string(user_agent.value());
@@ -203,8 +204,8 @@ void ConnectionNamespaceHandler::HandleConnect(VirtualConnectionRouter* router,
 
 void ConnectionNamespaceHandler::HandleClose(VirtualConnectionRouter* router,
                                              CastSocket* socket,
-                                             CastMessage&& message,
-                                             Json::Value&& parsed_message) {
+                                             CastMessage message,
+                                             Json::Value parsed_message) {
   VirtualConnection virtual_conn{std::move(message.destination_id()),
                                  std::move(message.source_id()),
                                  socket->socket_id()};
@@ -221,11 +222,11 @@ void ConnectionNamespaceHandler::HandleClose(VirtualConnectionRouter* router,
 }
 
 void ConnectionNamespaceHandler::SendClose(VirtualConnectionRouter* router,
-                                           VirtualConnection&& virtual_conn) {
+                                           VirtualConnection virtual_conn) {
   Json::Value close_message(Json::ValueType::objectValue);
   close_message[kMessageKeyType] = kMessageTypeClose;
 
-  ErrorOr<std::string> result = openscreen::json::Stringify(close_message);
+  ErrorOr<std::string> result = json::Stringify(close_message);
   if (result.is_error()) {
     return;
   }
@@ -244,7 +245,7 @@ void ConnectionNamespaceHandler::SendConnectedResponse(
   connected_message[kMessageKeyProtocolVersion] =
       static_cast<int>(max_protocol_version);
 
-  ErrorOr<std::string> result = openscreen::json::Stringify(connected_message);
+  ErrorOr<std::string> result = json::Stringify(connected_message);
   if (result.is_error()) {
     return;
   }
@@ -254,5 +255,5 @@ void ConnectionNamespaceHandler::SendConnectedResponse(
       MakeSimpleUTF8Message(kConnectionNamespace, std::move(result.value())));
 }
 
-}  // namespace channel
 }  // namespace cast
+}  // namespace openscreen

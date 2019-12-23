@@ -13,8 +13,8 @@
 
 using ::testing::ElementsAre;
 
+namespace openscreen {
 namespace cast {
-namespace streaming {
 
 namespace {
 
@@ -86,7 +86,7 @@ constexpr char kValidOffer[] = R"({
 })";
 
 void ExpectFailureOnParse(absl::string_view body) {
-  openscreen::ErrorOr<Json::Value> root = openscreen::json::Parse(body);
+  ErrorOr<Json::Value> root = json::Parse(body);
   ASSERT_TRUE(root.is_value());
   EXPECT_TRUE(Offer::Parse(std::move(root.value())).is_error());
 }
@@ -106,7 +106,7 @@ TEST(OfferTest, ErrorOnMissingMandatoryFields) {
 }
 
 TEST(OfferTest, CanParseValidButStreamlessOffer) {
-  openscreen::ErrorOr<Json::Value> root = openscreen::json::Parse(R"({
+  ErrorOr<Json::Value> root = json::Parse(R"({
     "castMode": "mirroring",
     "supportedStreams": []
   })");
@@ -143,7 +143,7 @@ TEST(OfferTest, ErrorOnMissingAudioStreamMandatoryField) {
 }
 
 TEST(OfferTest, CanParseValidButMinimalAudioOffer) {
-  openscreen::ErrorOr<Json::Value> root = openscreen::json::Parse(R"({
+  ErrorOr<Json::Value> root = json::Parse(R"({
     "castMode": "mirroring",
     "supportedStreams": [{
       "index": 2,
@@ -240,7 +240,7 @@ TEST(OfferTest, ErrorOnMissingVideoStreamMandatoryField) {
 }
 
 TEST(OfferTest, CanParseValidButMinimalVideoOffer) {
-  openscreen::ErrorOr<Json::Value> root = openscreen::json::Parse(R"({
+  ErrorOr<Json::Value> root = json::Parse(R"({
     "castMode": "mirroring",
     "supportedStreams": [{
       "index": 2,
@@ -262,9 +262,9 @@ TEST(OfferTest, CanParseValidButMinimalVideoOffer) {
 }
 
 TEST(OfferTest, CanParseValidOffer) {
-  openscreen::ErrorOr<Json::Value> root = openscreen::json::Parse(kValidOffer);
+  ErrorOr<Json::Value> root = json::Parse(kValidOffer);
   ASSERT_TRUE(root.is_value());
-  openscreen::ErrorOr<Offer> offer = Offer::Parse(std::move(root.value()));
+  ErrorOr<Offer> offer = Offer::Parse(std::move(root.value()));
 
   EXPECT_EQ(CastMode::Type::kMirroring, offer.value().cast_mode.type);
   EXPECT_EQ(true, offer.value().supports_wifi_status_reporting);
@@ -346,5 +346,5 @@ TEST(OfferTest, CanParseValidOffer) {
                           0xe4, 0x11, 0x6c, 0xaa, 0xef, 0xf6, 0xd1));
 }
 
-}  // namespace streaming
 }  // namespace cast
+}  // namespace openscreen

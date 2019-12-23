@@ -14,8 +14,8 @@
 #include <chrono>
 #include <ratio>
 
+namespace openscreen {
 namespace cast {
-namespace streaming {
 
 // Default target playout delay. The playout delay is the window of time between
 // capture from the source until presentation at the receiver.
@@ -38,7 +38,7 @@ constexpr int kMaxUnackedFrames = 120;
 // per second for video.
 using kVideoTimebase = std::ratio<1, 90000>;
 
-}  // namespace streaming
 }  // namespace cast
+}  // namespace openscreen
 
 #endif  // CAST_STREAMING_CONSTANTS_H_

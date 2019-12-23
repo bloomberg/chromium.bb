@@ -38,6 +38,7 @@ source_set("test_helpers") {
   ]
   deps = [
     "../../third_party/googletest:gtest",
+    "../common/channel/proto:channel_proto",
   ]
 }
 

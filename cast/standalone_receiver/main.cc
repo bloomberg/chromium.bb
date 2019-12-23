@@ -27,13 +27,8 @@
 #include "cast/standalone_receiver/dummy_player.h"
 #endif  // defined(CAST_STREAMING_HAVE_EXTERNAL_LIBS_FOR_DEMO_APPS)
 
-using openscreen::Clock;
-using openscreen::IPEndpoint;
-using openscreen::TaskRunner;
-using openscreen::TaskRunnerImpl;
-
+namespace openscreen {
 namespace cast {
-namespace streaming {
 namespace {
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -50,7 +45,7 @@ namespace {
 // environment reliability changes.
 constexpr std::chrono::milliseconds kDemoTargetPlayoutDelay{400};
 
-const cast::streaming::SessionConfig kSampleAudioAnswerConfig{
+const SessionConfig kSampleAudioAnswerConfig{
     /* .sender_ssrc = */ 1,
     /* .receiver_ssrc = */ 2,
 
@@ -67,7 +62,7 @@ const cast::streaming::SessionConfig kSampleAudioAnswerConfig{
      0x30, 0x20, 0x10, 0x00},
 };
 
-const cast::streaming::SessionConfig kSampleVideoAnswerConfig{
+const SessionConfig kSampleVideoAnswerConfig{
     /* .sender_ssrc = */ 50001,
     /* .receiver_ssrc = */ 50002,
     /* .rtp_timebase = */ static_cast<int>(kVideoTimebase::den),
@@ -87,12 +82,11 @@ constexpr int kCastStreamingPort = 2344;
 // End of Receiver Configuration.
 ////////////////////////////////////////////////////////////////////////////////
 
-void DemoMain(TaskRunnerImpl* task_runner) {
+void RunStandaloneReceiver(TaskRunnerImpl* task_runner) {
   // Create the Environment that holds the required injected dependencies
   // (clock, task runner) used throughout the system, and owns the UDP socket
   // over which all communication occurs with the Sender.
-  const IPEndpoint receive_endpoint{openscreen::IPAddress(),
-                                    kCastStreamingPort};
+  const IPEndpoint receive_endpoint{IPAddress(), kCastStreamingPort};
   Environment env(&Clock::now, task_runner, receive_endpoint);
 
   // Create the packet router that allows both the Audio Receiver and the Video
@@ -153,10 +147,14 @@ void DemoMain(TaskRunnerImpl* task_runner) {
 }
 
 }  // namespace
-}  // namespace streaming
 }  // namespace cast
+}  // namespace openscreen
 
 int main(int argc, const char* argv[]) {
+  using openscreen::Clock;
+  using openscreen::TaskRunner;
+  using openscreen::TaskRunnerImpl;
+
   class PlatformClientExposingTaskRunner
       : public openscreen::PlatformClientPosix {
    public:
@@ -173,7 +171,7 @@ int main(int argc, const char* argv[]) {
   auto* const platform_client = new PlatformClientExposingTaskRunner(
       std::make_unique<TaskRunnerImpl>(&Clock::now));
 
-  cast::streaming::DemoMain(static_cast<TaskRunnerImpl*>(
+  openscreen::cast::RunStandaloneReceiver(static_cast<TaskRunnerImpl*>(
       openscreen::PlatformClientPosix::GetInstance()->GetTaskRunner()));
 
   platform_client->ShutDown();  // Deletes |platform_client|.

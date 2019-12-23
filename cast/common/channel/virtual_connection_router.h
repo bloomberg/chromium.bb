@@ -11,9 +11,10 @@
 #include <string>
 
 #include "cast/common/channel/cast_socket.h"
+#include "cast/common/channel/proto/cast_channel.pb.h"
 
+namespace openscreen {
 namespace cast {
-namespace channel {
 
 class CastMessageHandler;
 struct VirtualConnection;
@@ -43,7 +44,7 @@ class VirtualConnectionRouter final : public CastSocket::Client {
   class SocketErrorHandler {
    public:
     virtual void OnClose(CastSocket* socket) = 0;
-    virtual void OnError(CastSocket* socket, openscreen::Error error) = 0;
+    virtual void OnError(CastSocket* socket, Error error) = 0;
   };
 
   explicit VirtualConnectionRouter(VirtualConnectionManager* vc_manager);
@@ -58,12 +59,13 @@ class VirtualConnectionRouter final : public CastSocket::Client {
                   std::unique_ptr<CastSocket> socket);
   void CloseSocket(uint32_t id);
 
-  openscreen::Error SendMessage(VirtualConnection virtual_conn,
-                                CastMessage&& message);
+  Error SendMessage(VirtualConnection virtual_conn,
+                    ::cast::channel::CastMessage message);
 
   // CastSocket::Client overrides.
-  void OnError(CastSocket* socket, openscreen::Error error) override;
-  void OnMessage(CastSocket* socket, CastMessage message) override;
+  void OnError(CastSocket* socket, Error error) override;
+  void OnMessage(CastSocket* socket,
+                 ::cast::channel::CastMessage message) override;
 
  private:
   struct SocketWithHandler {
@@ -76,7 +78,7 @@ class VirtualConnectionRouter final : public CastSocket::Client {
   std::map<std::string /* local_id */, CastMessageHandler*> endpoints_;
 };
 
-}  // namespace channel
 }  // namespace cast
+}  // namespace openscreen
 
 #endif  // CAST_COMMON_CHANNEL_VIRTUAL_CONNECTION_ROUTER_H_

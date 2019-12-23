@@ -8,8 +8,8 @@
 #include "absl/strings/string_view.h"
 #include "cast/common/channel/proto/cast_channel.pb.h"
 
+namespace openscreen {
 namespace cast {
-namespace channel {
 
 // Reserved message namespaces for internal messages.
 static constexpr char kCastInternalNamespacePrefix[] =
@@ -34,8 +34,9 @@ static constexpr char kPlatformReceiverId[] = "receiver-0";
 
 static constexpr char kBroadcastId[] = "*";
 
-static constexpr CastMessage_ProtocolVersion kDefaultOutgoingMessageVersion =
-    CastMessage_ProtocolVersion_CASTV2_1_0;
+static constexpr ::cast::channel::CastMessage_ProtocolVersion
+    kDefaultOutgoingMessageVersion =
+        ::cast::channel::CastMessage_ProtocolVersion_CASTV2_1_0;
 
 // JSON message key strings.
 static constexpr char kMessageKeyType[] = "type";
@@ -51,7 +52,7 @@ static constexpr char kMessageTypeConnect[] = "CONNECT";
 static constexpr char kMessageTypeClose[] = "CLOSE";
 static constexpr char kMessageTypeConnected[] = "CONNECTED";
 
-inline bool IsAuthMessage(const CastMessage& message) {
+inline bool IsAuthMessage(const ::cast::channel::CastMessage& message) {
   return message.namespace_() == kAuthNamespace;
 }
 
@@ -60,15 +61,18 @@ inline bool IsTransportNamespace(absl::string_view namespace_) {
          (namespace_.find_first_of(kTransportNamespacePrefix) == 0);
 }
 
-CastMessage MakeSimpleUTF8Message(const std::string& namespace_,
-                                  std::string payload);
+::cast::channel::CastMessage MakeSimpleUTF8Message(
+    const std::string& namespace_,
+    std::string payload);
 
-CastMessage MakeConnectMessage(const std::string& source_id,
-                               const std::string& destination_id);
-CastMessage MakeCloseMessage(const std::string& source_id,
-                             const std::string& destination_id);
+::cast::channel::CastMessage MakeConnectMessage(
+    const std::string& source_id,
+    const std::string& destination_id);
+::cast::channel::CastMessage MakeCloseMessage(
+    const std::string& source_id,
+    const std::string& destination_id);
 
-}  // namespace channel
 }  // namespace cast
+}  // namespace openscreen
 
 #endif  // CAST_COMMON_CHANNEL_MESSAGE_UTIL_H_

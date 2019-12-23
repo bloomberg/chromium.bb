@@ -11,8 +11,8 @@
 
 #include "platform/base/error.h"
 
+namespace openscreen {
 namespace cast {
-namespace certificate {
 
 struct TrustStore {
   std::vector<bssl::UniquePtr<X509>> certs;
@@ -47,12 +47,12 @@ struct CertificatePathResult {
   std::vector<X509*> path;
 };
 
-openscreen::Error FindCertificatePath(const std::vector<std::string>& der_certs,
-                                      const DateTime& time,
-                                      CertificatePathResult* result_path,
-                                      TrustStore* trust_store);
+Error FindCertificatePath(const std::vector<std::string>& der_certs,
+                          const DateTime& time,
+                          CertificatePathResult* result_path,
+                          TrustStore* trust_store);
 
-}  // namespace certificate
 }  // namespace cast
+}  // namespace openscreen
 
 #endif  // CAST_COMMON_CERTIFICATE_CAST_CERT_VALIDATOR_INTERNAL_H_

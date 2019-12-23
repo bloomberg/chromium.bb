@@ -11,16 +11,12 @@
 #include "platform/test/fake_clock.h"
 #include "platform/test/fake_task_runner.h"
 
-using openscreen::Clock;
-using openscreen::FakeClock;
-using openscreen::FakeTaskRunner;
-
 using ::testing::_;
 using ::testing::Invoke;
 using ::testing::StrictMock;
 
+namespace openscreen {
 namespace cast {
-namespace streaming {
 
 namespace {
 
@@ -177,7 +173,7 @@ class SimpleMessagePort : public MessagePort {
                        message);
   }
 
-  void ReceiveError(openscreen::Error error) {
+  void ReceiveError(Error error) {
     ASSERT_NE(client_, nullptr);
     client_->OnError(error);
   }
@@ -205,14 +201,10 @@ class FakeClient : public ReceiverSession::Client {
               (ReceiverSession*, ReceiverSession::ConfiguredReceivers),
               (override));
   MOCK_METHOD(void, OnReceiversDestroyed, (ReceiverSession*), (override));
-  MOCK_METHOD(void,
-              OnError,
-              (ReceiverSession*, openscreen::Error error),
-              (override));
+  MOCK_METHOD(void, OnError, (ReceiverSession*, Error error), (override));
 };
 
-void ExpectIsErrorAnswerMessage(
-    const openscreen::ErrorOr<Json::Value>& message_or_error) {
+void ExpectIsErrorAnswerMessage(const ErrorOr<Json::Value>& message_or_error) {
   EXPECT_TRUE(message_or_error.is_value());
   const Json::Value message = std::move(message_or_error.value());
   EXPECT_TRUE(message["answer"].isNull());
@@ -235,7 +227,7 @@ class ReceiverSessionTest : public ::testing::Test {
         task_runner_(&clock_),
         env_(std::make_unique<Environment>(&FakeClock::now,
                                            &task_runner_,
-                                           openscreen::IPEndpoint{})) {}
+                                           IPEndpoint{})) {}
 
   FakeClock clock_;
   FakeTaskRunner task_runner_;
@@ -287,7 +279,7 @@ TEST_F(ReceiverSessionTest, CanNegotiateWithDefaultPreferences) {
   const auto& messages = raw_port->posted_messages();
   ASSERT_EQ(1u, messages.size());
 
-  auto message_body = openscreen::json::Parse(messages[0]);
+  auto message_body = json::Parse(messages[0]);
   EXPECT_TRUE(message_body.is_value());
   const Json::Value answer = std::move(message_body.value());
 
@@ -375,7 +367,7 @@ TEST_F(ReceiverSessionTest, CanNegotiateWithCustomConstraints) {
   const auto& messages = raw_port->posted_messages();
   EXPECT_EQ(1u, messages.size());
 
-  auto message_body = openscreen::json::Parse(messages[0]);
+  auto message_body = json::Parse(messages[0]);
   ASSERT_TRUE(message_body.is_value());
   const Json::Value answer = std::move(message_body.value());
 
@@ -432,7 +424,7 @@ TEST_F(ReceiverSessionTest, HandlesNoValidAudioStream) {
   const auto& messages = raw_port->posted_messages();
   EXPECT_EQ(1u, messages.size());
 
-  auto message_body = openscreen::json::Parse(messages[0]);
+  auto message_body = json::Parse(messages[0]);
   EXPECT_TRUE(message_body.is_value());
   const Json::Value& answer_body = message_body.value()["answer"];
   EXPECT_TRUE(answer_body.isObject());
@@ -458,7 +450,7 @@ TEST_F(ReceiverSessionTest, HandlesNoValidVideoStream) {
   const auto& messages = raw_port->posted_messages();
   EXPECT_EQ(1u, messages.size());
 
-  auto message_body = openscreen::json::Parse(messages[0]);
+  auto message_body = json::Parse(messages[0]);
   EXPECT_TRUE(message_body.is_value());
   const Json::Value& answer_body = message_body.value()["answer"];
   EXPECT_TRUE(answer_body.isObject());
@@ -485,7 +477,7 @@ TEST_F(ReceiverSessionTest, HandlesNoValidStreams) {
   const auto& messages = raw_port->posted_messages();
   EXPECT_EQ(1u, messages.size());
 
-  auto message_body = openscreen::json::Parse(messages[0]);
+  auto message_body = json::Parse(messages[0]);
   ExpectIsErrorAnswerMessage(message_body);
 }
 
@@ -501,9 +493,7 @@ TEST_F(ReceiverSessionTest, HandlesMalformedOffer) {
   // is actually completely invalid we call OnError.
   EXPECT_CALL(client, OnNegotiated(&session, _)).Times(0);
   EXPECT_CALL(client, OnReceiversDestroyed(&session)).Times(0);
-  EXPECT_CALL(client,
-              OnError(&session, openscreen::Error(
-                                    openscreen::Error::Code::kJsonParseError)))
+  EXPECT_CALL(client, OnError(&session, Error(Error::Code::kJsonParseError)))
       .Times(1);
 
   raw_port->ReceiveMessage(kInvalidJsonOfferMessage);
@@ -522,5 +512,5 @@ TEST_F(ReceiverSessionTest, NotifiesReceiverDestruction) {
   raw_port->ReceiveMessage(kNoAudioOfferMessage);
   raw_port->ReceiveMessage(kValidOfferMessage);
 }
-}  // namespace streaming
 }  // namespace cast
+}  // namespace openscreen

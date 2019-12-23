@@ -10,8 +10,8 @@
 #include "gtest/gtest.h"
 #include "util/json/json_serialization.h"
 
+namespace openscreen {
 namespace cast {
-namespace streaming {
 
 namespace {
 
@@ -176,5 +176,5 @@ TEST(AnswerMessagesTest, InvalidUdpPortsCauseError) {
   EXPECT_TRUE(value_or_error.is_error());
 }
 
-}  // namespace streaming
 }  // namespace cast
+}  // namespace openscreen

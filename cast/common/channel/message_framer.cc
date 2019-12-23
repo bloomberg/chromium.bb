@@ -13,11 +13,9 @@
 #include "util/big_endian.h"
 #include "util/logging.h"
 
+namespace openscreen {
 namespace cast {
-namespace channel {
 namespace message_serialization {
-
-using openscreen::Error;
 
 namespace {
 
@@ -28,13 +26,14 @@ static constexpr size_t kMaxBodySize = 65536;
 
 }  // namespace
 
-ErrorOr<std::vector<uint8_t>> Serialize(const CastMessage& message) {
+ErrorOr<std::vector<uint8_t>> Serialize(
+    const ::cast::channel::CastMessage& message) {
   const size_t message_size = message.ByteSizeLong();
   if (message_size > kMaxBodySize || message_size == 0) {
     return Error::Code::kCastV2InvalidMessage;
   }
   std::vector<uint8_t> out(message_size + kHeaderSize, 0);
-  openscreen::WriteBigEndian<uint32_t>(message_size, out.data());
+  WriteBigEndian<uint32_t>(message_size, out.data());
   if (!message.SerializeToArray(&out[kHeaderSize], message_size)) {
     return Error::Code::kCastV2InvalidMessage;
   }
@@ -46,8 +45,7 @@ ErrorOr<DeserializeResult> TryDeserialize(absl::Span<uint8_t> input) {
     return Error::Code::kInsufficientBuffer;
   }
 
-  const uint32_t message_size =
-      openscreen::ReadBigEndian<uint32_t>(input.data());
+  const uint32_t message_size = ReadBigEndian<uint32_t>(input.data());
   if (message_size > kMaxBodySize) {
     return Error::Code::kCastV2InvalidMessage;
   }
@@ -67,5 +65,5 @@ ErrorOr<DeserializeResult> TryDeserialize(absl::Span<uint8_t> input) {
 }
 
 }  // namespace message_serialization
-}  // namespace channel
 }  // namespace cast
+}  // namespace openscreen

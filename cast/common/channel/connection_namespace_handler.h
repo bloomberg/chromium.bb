@@ -6,10 +6,11 @@
 #define CAST_COMMON_CHANNEL_CONNECTION_NAMESPACE_HANDLER_H_
 
 #include "cast/common/channel/cast_message_handler.h"
+#include "cast/common/channel/proto/cast_channel.pb.h"
 #include "util/json/json_serialization.h"
 
+namespace openscreen {
 namespace cast {
-namespace channel {
 
 struct VirtualConnection;
 class VirtualConnectionManager;
@@ -35,20 +36,20 @@ class ConnectionNamespaceHandler final : public CastMessageHandler {
   // CastMessageHandler overrides.
   void OnMessage(VirtualConnectionRouter* router,
                  CastSocket* socket,
-                 CastMessage&& message) override;
+                 ::cast::channel::CastMessage message) override;
 
  private:
   void HandleConnect(VirtualConnectionRouter* router,
                      CastSocket* socket,
-                     CastMessage&& message,
-                     Json::Value&& parsed_message);
+                     ::cast::channel::CastMessage message,
+                     Json::Value parsed_message);
   void HandleClose(VirtualConnectionRouter* router,
                    CastSocket* socket,
-                   CastMessage&& message,
-                   Json::Value&& parsed_message);
+                   ::cast::channel::CastMessage message,
+                   Json::Value parsed_message);
 
   void SendClose(VirtualConnectionRouter* router,
-                 VirtualConnection&& virtual_conn);
+                 VirtualConnection virtual_conn);
   void SendConnectedResponse(VirtualConnectionRouter* router,
                              const VirtualConnection& virtual_conn,
                              int max_protocol_version);
@@ -57,7 +58,7 @@ class ConnectionNamespaceHandler final : public CastMessageHandler {
   VirtualConnectionPolicy* const vc_policy_;
 };
 
-}  // namespace channel
 }  // namespace cast
+}  // namespace openscreen
 
 #endif  // CAST_COMMON_CHANNEL_CONNECTION_NAMESPACE_HANDLER_H_

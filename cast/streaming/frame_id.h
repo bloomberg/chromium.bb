@@ -11,8 +11,8 @@
 
 #include "cast/streaming/expanded_value_base.h"
 
+namespace openscreen {
 namespace cast {
-namespace streaming {
 
 // Forward declaration (see below).
 class FrameId;
@@ -104,7 +104,7 @@ class FrameId : public ExpandedValueBase<int64_t, FrameId> {
   constexpr int64_t value() const { return value_; }
 };
 
-}  // namespace streaming
 }  // namespace cast
+}  // namespace openscreen
 
 #endif  // CAST_STREAMING_FRAME_ID_H_

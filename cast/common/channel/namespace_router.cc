@@ -6,8 +6,8 @@
 
 #include "cast/common/channel/proto/cast_channel.pb.h"
 
+namespace openscreen {
 namespace cast {
-namespace channel {
 
 NamespaceRouter::NamespaceRouter() = default;
 NamespaceRouter::~NamespaceRouter() = default;
@@ -23,7 +23,7 @@ void NamespaceRouter::RemoveNamespaceHandler(const std::string& namespace_) {
 
 void NamespaceRouter::OnMessage(VirtualConnectionRouter* router,
                                 CastSocket* socket,
-                                CastMessage&& message) {
+                                ::cast::channel::CastMessage message) {
   const std::string& ns = message.namespace_();
   auto it = handlers_.find(ns);
   if (it != handlers_.end()) {
@@ -31,5 +31,5 @@ void NamespaceRouter::OnMessage(VirtualConnectionRouter* router,
   }
 }
 
-}  // namespace channel
 }  // namespace cast
+}  // namespace openscreen

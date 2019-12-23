@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 config("zlib_config") {
-  include_dirs = [ "." ]
+  include_dirs = [ "src" ]
 }
 
 config("zlib_internal_config") {

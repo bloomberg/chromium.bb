@@ -14,8 +14,8 @@
 #include "cast/streaming/rtcp_session.h"
 #include "cast/streaming/rtp_defines.h"
 
+namespace openscreen {
 namespace cast {
-namespace streaming {
 
 // Builds RTCP packets containing one Sender Report.
 class SenderReportBuilder {
@@ -39,7 +39,7 @@ class SenderReportBuilder {
   RtcpSession* const session_;
 };
 
-}  // namespace streaming
 }  // namespace cast
+}  // namespace openscreen
 
 #endif  // CAST_STREAMING_SENDER_REPORT_BUILDER_H_
