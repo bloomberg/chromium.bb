@@ -16,13 +16,13 @@
 #include "testing/util/read_file.h"
 #include "util/logging.h"
 
-namespace openscreen {
 namespace cast {
+namespace channel {
 namespace {
 
-using ::cast::channel::AuthResponse;
+using ErrorCode = openscreen::Error::Code;
 
-bool ConvertTimeSeconds(const DateTime& time, uint64_t* seconds) {
+bool ConvertTimeSeconds(const certificate::DateTime& time, uint64_t* seconds) {
   static constexpr uint64_t kDaysPerYear = 365;
   static constexpr uint64_t kHoursPerDay = 24;
   static constexpr uint64_t kMinutesPerHour = 60;
@@ -102,7 +102,7 @@ bool ConvertTimeSeconds(const DateTime& time, uint64_t* seconds) {
 
 #define TEST_DATA_PREFIX OPENSCREEN_TEST_DATA_DIR "cast/common/certificate/"
 
-class CastAuthUtilTest : public ::testing::Test {
+class CastAuthUtilTest : public testing::Test {
  public:
   CastAuthUtilTest() {}
   ~CastAuthUtilTest() override {}
@@ -110,15 +110,16 @@ class CastAuthUtilTest : public ::testing::Test {
   void SetUp() override {}
 
  protected:
-  static AuthResponse CreateAuthResponse(
-      std::string* signed_data,
-      ::cast::channel::HashAlgorithm digest_algorithm) {
-    std::vector<std::string> chain = testing::ReadCertificatesFromPemFile(
-        TEST_DATA_PREFIX "certificates/chromecast_gen1.pem");
+  static AuthResponse CreateAuthResponse(std::string* signed_data,
+                                         HashAlgorithm digest_algorithm) {
+    std::vector<std::string> chain =
+        certificate::testing::ReadCertificatesFromPemFile(
+            TEST_DATA_PREFIX "certificates/chromecast_gen1.pem");
     OSP_CHECK(!chain.empty());
 
-    testing::SignatureTestData signatures = testing::ReadSignatureTestData(
-        TEST_DATA_PREFIX "signeddata/2ZZBG9_FA8FCA3EF91A.pem");
+    certificate::testing::SignatureTestData signatures =
+        certificate::testing::ReadSignatureTestData(
+            TEST_DATA_PREFIX "signeddata/2ZZBG9_FA8FCA3EF91A.pem");
 
     AuthResponse response;
 
@@ -129,12 +130,12 @@ class CastAuthUtilTest : public ::testing::Test {
 
     response.set_hash_algorithm(digest_algorithm);
     switch (digest_algorithm) {
-      case ::cast::channel::SHA1:
+      case SHA1:
         response.set_signature(
             std::string(reinterpret_cast<const char*>(signatures.sha1.data),
                         signatures.sha1.length));
         break;
-      case ::cast::channel::SHA256:
+      case SHA256:
         response.set_signature(
             std::string(reinterpret_cast<const char*>(signatures.sha256.data),
                         signatures.sha256.length));
@@ -155,100 +156,96 @@ class CastAuthUtilTest : public ::testing::Test {
 // being verified doesn't expire until 2032.
 TEST_F(CastAuthUtilTest, VerifySuccess) {
   std::string signed_data;
-  AuthResponse auth_response =
-      CreateAuthResponse(&signed_data, ::cast::channel::SHA256);
-  DateTime now = {};
-  ASSERT_TRUE(DateTimeFromSeconds(GetWallTimeSinceUnixEpoch().count(), &now));
-  ErrorOr<CastDeviceCertPolicy> result =
-      VerifyCredentialsForTest(auth_response, signed_data,
-                               CRLPolicy::kCrlOptional, nullptr, nullptr, now);
+  AuthResponse auth_response = CreateAuthResponse(&signed_data, SHA256);
+  certificate::DateTime now = {};
+  ASSERT_TRUE(certificate::DateTimeFromSeconds(
+      openscreen::GetWallTimeSinceUnixEpoch().count(), &now));
+  ErrorOr<CastDeviceCertPolicy> result = VerifyCredentialsForTest(
+      auth_response, signed_data, certificate::CRLPolicy::kCrlOptional, nullptr,
+      nullptr, now);
   EXPECT_TRUE(result);
-  EXPECT_EQ(CastDeviceCertPolicy::kUnrestricted, result.value());
+  EXPECT_EQ(certificate::CastDeviceCertPolicy::kUnrestricted, result.value());
 }
 
 TEST_F(CastAuthUtilTest, VerifyBadCA) {
   std::string signed_data;
-  AuthResponse auth_response =
-      CreateAuthResponse(&signed_data, ::cast::channel::SHA256);
+  AuthResponse auth_response = CreateAuthResponse(&signed_data, SHA256);
   MangleString(auth_response.mutable_intermediate_certificate(0));
   ErrorOr<CastDeviceCertPolicy> result =
       VerifyCredentials(auth_response, signed_data);
   EXPECT_FALSE(result);
-  EXPECT_EQ(Error::Code::kErrCertsParse, result.error().code());
+  EXPECT_EQ(ErrorCode::kErrCertsParse, result.error().code());
 }
 
 TEST_F(CastAuthUtilTest, VerifyBadClientAuthCert) {
   std::string signed_data;
-  AuthResponse auth_response =
-      CreateAuthResponse(&signed_data, ::cast::channel::SHA256);
+  AuthResponse auth_response = CreateAuthResponse(&signed_data, SHA256);
   MangleString(auth_response.mutable_client_auth_certificate());
   ErrorOr<CastDeviceCertPolicy> result =
       VerifyCredentials(auth_response, signed_data);
   EXPECT_FALSE(result);
-  EXPECT_EQ(Error::Code::kErrCertsParse, result.error().code());
+  EXPECT_EQ(ErrorCode::kErrCertsParse, result.error().code());
 }
 
 TEST_F(CastAuthUtilTest, VerifyBadSignature) {
   std::string signed_data;
-  AuthResponse auth_response =
-      CreateAuthResponse(&signed_data, ::cast::channel::SHA256);
+  AuthResponse auth_response = CreateAuthResponse(&signed_data, SHA256);
   MangleString(auth_response.mutable_signature());
   ErrorOr<CastDeviceCertPolicy> result =
       VerifyCredentials(auth_response, signed_data);
   EXPECT_FALSE(result);
-  EXPECT_EQ(Error::Code::kCastV2SignedBlobsMismatch, result.error().code());
+  EXPECT_EQ(ErrorCode::kCastV2SignedBlobsMismatch, result.error().code());
 }
 
 TEST_F(CastAuthUtilTest, VerifyEmptySignature) {
   std::string signed_data;
-  AuthResponse auth_response =
-      CreateAuthResponse(&signed_data, ::cast::channel::SHA256);
+  AuthResponse auth_response = CreateAuthResponse(&signed_data, SHA256);
   auth_response.mutable_signature()->clear();
   ErrorOr<CastDeviceCertPolicy> result =
       VerifyCredentials(auth_response, signed_data);
   EXPECT_FALSE(result);
-  EXPECT_EQ(Error::Code::kCastV2SignatureEmpty, result.error().code());
+  EXPECT_EQ(ErrorCode::kCastV2SignatureEmpty, result.error().code());
 }
 
 TEST_F(CastAuthUtilTest, VerifyUnsupportedDigest) {
   std::string signed_data;
-  AuthResponse auth_response =
-      CreateAuthResponse(&signed_data, ::cast::channel::SHA1);
-  DateTime now = {};
-  ASSERT_TRUE(DateTimeFromSeconds(GetWallTimeSinceUnixEpoch().count(), &now));
+  AuthResponse auth_response = CreateAuthResponse(&signed_data, SHA1);
+  certificate::DateTime now = {};
+  ASSERT_TRUE(certificate::DateTimeFromSeconds(
+      openscreen::GetWallTimeSinceUnixEpoch().count(), &now));
   ErrorOr<CastDeviceCertPolicy> result = VerifyCredentialsForTest(
-      auth_response, signed_data, CRLPolicy::kCrlOptional, nullptr, nullptr,
-      now, true);
+      auth_response, signed_data, certificate::CRLPolicy::kCrlOptional, nullptr,
+      nullptr, now, true);
   EXPECT_FALSE(result);
-  EXPECT_EQ(Error::Code::kCastV2DigestUnsupported, result.error().code());
+  EXPECT_EQ(ErrorCode::kCastV2DigestUnsupported, result.error().code());
 }
 
 TEST_F(CastAuthUtilTest, VerifyBackwardsCompatibleDigest) {
   std::string signed_data;
-  AuthResponse auth_response =
-      CreateAuthResponse(&signed_data, ::cast::channel::SHA1);
-  DateTime now = {};
-  ASSERT_TRUE(DateTimeFromSeconds(GetWallTimeSinceUnixEpoch().count(), &now));
-  ErrorOr<CastDeviceCertPolicy> result =
-      VerifyCredentialsForTest(auth_response, signed_data,
-                               CRLPolicy::kCrlOptional, nullptr, nullptr, now);
+  AuthResponse auth_response = CreateAuthResponse(&signed_data, SHA1);
+  certificate::DateTime now = {};
+  ASSERT_TRUE(certificate::DateTimeFromSeconds(
+      openscreen::GetWallTimeSinceUnixEpoch().count(), &now));
+  ErrorOr<CastDeviceCertPolicy> result = VerifyCredentialsForTest(
+      auth_response, signed_data, certificate::CRLPolicy::kCrlOptional, nullptr,
+      nullptr, now);
   EXPECT_TRUE(result);
 }
 
 TEST_F(CastAuthUtilTest, VerifyBadPeerCert) {
   std::string signed_data;
-  AuthResponse auth_response =
-      CreateAuthResponse(&signed_data, ::cast::channel::SHA256);
+  AuthResponse auth_response = CreateAuthResponse(&signed_data, SHA256);
   MangleString(&signed_data);
   ErrorOr<CastDeviceCertPolicy> result =
       VerifyCredentials(auth_response, signed_data);
   EXPECT_FALSE(result);
-  EXPECT_EQ(Error::Code::kCastV2SignedBlobsMismatch, result.error().code());
+  EXPECT_EQ(ErrorCode::kCastV2SignedBlobsMismatch, result.error().code());
 }
 
 TEST_F(CastAuthUtilTest, VerifySenderNonceMatch) {
   AuthContext context = AuthContext::Create();
-  const Error result = context.VerifySenderNonce(context.nonce(), true);
+  const openscreen::Error result =
+      context.VerifySenderNonce(context.nonce(), true);
   EXPECT_TRUE(result.ok());
 }
 
@@ -259,7 +256,7 @@ TEST_F(CastAuthUtilTest, VerifySenderNonceMismatch) {
   ErrorOr<CastDeviceCertPolicy> result =
       context.VerifySenderNonce(received_nonce, true);
   EXPECT_FALSE(result);
-  EXPECT_EQ(Error::Code::kCastV2SenderNonceMismatch, result.error().code());
+  EXPECT_EQ(ErrorCode::kCastV2SenderNonceMismatch, result.error().code());
 }
 
 TEST_F(CastAuthUtilTest, VerifySenderNonceMissing) {
@@ -269,36 +266,40 @@ TEST_F(CastAuthUtilTest, VerifySenderNonceMissing) {
   ErrorOr<CastDeviceCertPolicy> result =
       context.VerifySenderNonce(received_nonce, true);
   EXPECT_FALSE(result);
-  EXPECT_EQ(Error::Code::kCastV2SenderNonceMismatch, result.error().code());
+  EXPECT_EQ(ErrorCode::kCastV2SenderNonceMismatch, result.error().code());
 }
 
 TEST_F(CastAuthUtilTest, VerifyTLSCertificateSuccess) {
-  std::vector<std::string> tls_cert_der = testing::ReadCertificatesFromPemFile(
-      TEST_DATA_PREFIX "certificates/test_tls_cert.pem");
+  std::vector<std::string> tls_cert_der =
+      certificate::testing::ReadCertificatesFromPemFile(
+          TEST_DATA_PREFIX "certificates/test_tls_cert.pem");
   std::string& der_cert = tls_cert_der[0];
   const uint8_t* data = (const uint8_t*)der_cert.data();
   X509* tls_cert = d2i_X509(nullptr, &data, der_cert.size());
-  DateTime not_before;
-  DateTime not_after;
-  ASSERT_TRUE(GetCertValidTimeRange(tls_cert, &not_before, &not_after));
+  certificate::DateTime not_before;
+  certificate::DateTime not_after;
+  ASSERT_TRUE(
+      certificate::GetCertValidTimeRange(tls_cert, &not_before, &not_after));
   uint64_t x;
   ASSERT_TRUE(ConvertTimeSeconds(not_before, &x));
   std::chrono::seconds s(x);
 
-  const Error result = VerifyTLSCertificateValidity(tls_cert, s);
+  const openscreen::Error result = VerifyTLSCertificateValidity(tls_cert, s);
   EXPECT_TRUE(result.ok());
   X509_free(tls_cert);
 }
 
 TEST_F(CastAuthUtilTest, VerifyTLSCertificateTooEarly) {
-  std::vector<std::string> tls_cert_der = testing::ReadCertificatesFromPemFile(
-      TEST_DATA_PREFIX "certificates/test_tls_cert.pem");
+  std::vector<std::string> tls_cert_der =
+      certificate::testing::ReadCertificatesFromPemFile(
+          TEST_DATA_PREFIX "certificates/test_tls_cert.pem");
   std::string& der_cert = tls_cert_der[0];
   const uint8_t* data = (const uint8_t*)der_cert.data();
   X509* tls_cert = d2i_X509(nullptr, &data, der_cert.size());
-  DateTime not_before;
-  DateTime not_after;
-  ASSERT_TRUE(GetCertValidTimeRange(tls_cert, &not_before, &not_after));
+  certificate::DateTime not_before;
+  certificate::DateTime not_after;
+  ASSERT_TRUE(
+      certificate::GetCertValidTimeRange(tls_cert, &not_before, &not_after));
   uint64_t x;
   ASSERT_TRUE(ConvertTimeSeconds(not_before, &x));
   std::chrono::seconds s(x - 1);
@@ -306,20 +307,22 @@ TEST_F(CastAuthUtilTest, VerifyTLSCertificateTooEarly) {
   ErrorOr<CastDeviceCertPolicy> result =
       VerifyTLSCertificateValidity(tls_cert, s);
   EXPECT_FALSE(result);
-  EXPECT_EQ(Error::Code::kCastV2TlsCertValidStartDateInFuture,
+  EXPECT_EQ(ErrorCode::kCastV2TlsCertValidStartDateInFuture,
             result.error().code());
   X509_free(tls_cert);
 }
 
 TEST_F(CastAuthUtilTest, VerifyTLSCertificateTooLate) {
-  std::vector<std::string> tls_cert_der = testing::ReadCertificatesFromPemFile(
-      TEST_DATA_PREFIX "certificates/test_tls_cert.pem");
+  std::vector<std::string> tls_cert_der =
+      certificate::testing::ReadCertificatesFromPemFile(
+          TEST_DATA_PREFIX "certificates/test_tls_cert.pem");
   std::string& der_cert = tls_cert_der[0];
   const uint8_t* data = (const uint8_t*)der_cert.data();
   X509* tls_cert = d2i_X509(nullptr, &data, der_cert.size());
-  DateTime not_before;
-  DateTime not_after;
-  ASSERT_TRUE(GetCertValidTimeRange(tls_cert, &not_before, &not_after));
+  certificate::DateTime not_before;
+  certificate::DateTime not_after;
+  ASSERT_TRUE(
+      certificate::GetCertValidTimeRange(tls_cert, &not_before, &not_after));
   uint64_t x;
   ASSERT_TRUE(ConvertTimeSeconds(not_after, &x));
   std::chrono::seconds s(x + 2);
@@ -327,7 +330,7 @@ TEST_F(CastAuthUtilTest, VerifyTLSCertificateTooLate) {
   ErrorOr<CastDeviceCertPolicy> result =
       VerifyTLSCertificateValidity(tls_cert, s);
   EXPECT_FALSE(result);
-  EXPECT_EQ(Error::Code::kCastV2TlsCertExpired, result.error().code());
+  EXPECT_EQ(ErrorCode::kCastV2TlsCertExpired, result.error().code());
   X509_free(tls_cert);
 }
 
@@ -345,10 +348,10 @@ enum TestStepResult {
 ErrorOr<CastDeviceCertPolicy> TestVerifyRevocation(
     const std::vector<std::string>& certificate_chain,
     const std::string& crl_bundle,
-    const DateTime& verification_time,
+    const certificate::DateTime& verification_time,
     bool crl_required,
-    TrustStore* cast_trust_store,
-    TrustStore* crl_trust_store) {
+    certificate::TrustStore* cast_trust_store,
+    certificate::TrustStore* crl_trust_store) {
   AuthResponse response;
 
   if (certificate_chain.size() > 0) {
@@ -360,9 +363,9 @@ ErrorOr<CastDeviceCertPolicy> TestVerifyRevocation(
 
   response.set_crl(crl_bundle);
 
-  CRLPolicy crl_policy = CRLPolicy::kCrlRequired;
+  certificate::CRLPolicy crl_policy = certificate::CRLPolicy::kCrlRequired;
   if (!crl_required && crl_bundle.empty())
-    crl_policy = CRLPolicy::kCrlOptional;
+    crl_policy = certificate::CRLPolicy::kCrlOptional;
   ErrorOr<CastDeviceCertPolicy> result =
       VerifyCredentialsForTest(response, "", crl_policy, cast_trust_store,
                                crl_trust_store, verification_time);
@@ -372,13 +375,13 @@ ErrorOr<CastDeviceCertPolicy> TestVerifyRevocation(
 }
 
 // Runs a single test case.
-bool RunTest(const DeviceCertTest& test_case) {
-  std::unique_ptr<TrustStore> crl_trust_store;
-  std::unique_ptr<TrustStore> cast_trust_store;
+bool RunTest(const certificate::DeviceCertTest& test_case) {
+  std::unique_ptr<certificate::TrustStore> crl_trust_store;
+  std::unique_ptr<certificate::TrustStore> cast_trust_store;
   if (test_case.use_test_trust_anchors()) {
-    crl_trust_store = testing::CreateTrustStoreFromPemFile(
+    crl_trust_store = certificate::testing::CreateTrustStoreFromPemFile(
         TEST_DATA_PREFIX "certificates/cast_crl_test_root_ca.pem");
-    cast_trust_store = testing::CreateTrustStoreFromPemFile(
+    cast_trust_store = certificate::testing::CreateTrustStoreFromPemFile(
         TEST_DATA_PREFIX "certificates/cast_test_root_ca.pem");
 
     EXPECT_FALSE(crl_trust_store->certs.empty());
@@ -391,49 +394,51 @@ bool RunTest(const DeviceCertTest& test_case) {
   }
 
   // CastAuthUtil verifies the CRL at the same time as the certificate.
-  DateTime verification_time;
+  certificate::DateTime verification_time;
   uint64_t cert_verify_time = test_case.cert_verification_time_seconds();
   if (!cert_verify_time) {
     cert_verify_time = test_case.crl_verification_time_seconds();
   }
-  OSP_DCHECK(DateTimeFromSeconds(cert_verify_time, &verification_time));
+  OSP_DCHECK(
+      certificate::DateTimeFromSeconds(cert_verify_time, &verification_time));
 
   std::string crl_bundle = test_case.crl_bundle();
-  ErrorOr<CastDeviceCertPolicy> result(CastDeviceCertPolicy::kUnrestricted);
+  ErrorOr<CastDeviceCertPolicy> result(
+      certificate::CastDeviceCertPolicy::kUnrestricted);
   switch (test_case.expected_result()) {
-    case PATH_VERIFICATION_FAILED:
+    case certificate::PATH_VERIFICATION_FAILED:
       result = TestVerifyRevocation(
           certificate_chain, crl_bundle, verification_time, false,
           cast_trust_store.get(), crl_trust_store.get());
       EXPECT_EQ(result.error().code(),
-                Error::Code::kCastV2CertNotSignedByTrustedCa);
+                ErrorCode::kCastV2CertNotSignedByTrustedCa);
       return result.error().code() ==
-             Error::Code::kCastV2CertNotSignedByTrustedCa;
-    case CRL_VERIFICATION_FAILED:
+             ErrorCode::kCastV2CertNotSignedByTrustedCa;
+    case certificate::CRL_VERIFICATION_FAILED:
     // Fall-through intended.
-    case REVOCATION_CHECK_FAILED_WITHOUT_CRL:
+    case certificate::REVOCATION_CHECK_FAILED_WITHOUT_CRL:
       result = TestVerifyRevocation(
           certificate_chain, crl_bundle, verification_time, true,
           cast_trust_store.get(), crl_trust_store.get());
-      EXPECT_EQ(result.error().code(), Error::Code::kErrCrlInvalid);
-      return result.error().code() == Error::Code::kErrCrlInvalid;
-    case CRL_EXPIRED_AFTER_INITIAL_VERIFICATION:
+      EXPECT_EQ(result.error().code(), ErrorCode::kErrCrlInvalid);
+      return result.error().code() == ErrorCode::kErrCrlInvalid;
+    case certificate::CRL_EXPIRED_AFTER_INITIAL_VERIFICATION:
       // By-pass this test because CRL is always verified at the time the
       // certificate is verified.
       return true;
-    case REVOCATION_CHECK_FAILED:
+    case certificate::REVOCATION_CHECK_FAILED:
       result = TestVerifyRevocation(
           certificate_chain, crl_bundle, verification_time, true,
           cast_trust_store.get(), crl_trust_store.get());
-      EXPECT_EQ(result.error().code(), Error::Code::kErrCertsRevoked);
-      return result.error().code() == Error::Code::kErrCertsRevoked;
-    case SUCCESS:
+      EXPECT_EQ(result.error().code(), ErrorCode::kErrCertsRevoked);
+      return result.error().code() == ErrorCode::kErrCertsRevoked;
+    case certificate::SUCCESS:
       result = TestVerifyRevocation(
           certificate_chain, crl_bundle, verification_time, false,
           cast_trust_store.get(), crl_trust_store.get());
-      EXPECT_EQ(result.error().code(), Error::Code::kCastV2SignedBlobsMismatch);
-      return result.error().code() == Error::Code::kCastV2SignedBlobsMismatch;
-    case UNSPECIFIED:
+      EXPECT_EQ(result.error().code(), ErrorCode::kCastV2SignedBlobsMismatch);
+      return result.error().code() == ErrorCode::kCastV2SignedBlobsMismatch;
+    case certificate::UNSPECIFIED:
       return false;
   }
   return false;
@@ -444,8 +449,9 @@ bool RunTest(const DeviceCertTest& test_case) {
 // To see the description of the test, execute the test.
 // These tests are generated by a test generator in google3.
 void RunTestSuite(const std::string& test_suite_file_name) {
-  std::string testsuite_raw = ReadEntireFileToString(test_suite_file_name);
-  DeviceCertTestSuite test_suite;
+  std::string testsuite_raw =
+      openscreen::ReadEntireFileToString(test_suite_file_name);
+  certificate::DeviceCertTestSuite test_suite;
   EXPECT_TRUE(test_suite.ParseFromString(testsuite_raw));
   uint16_t successes = 0;
 
@@ -464,5 +470,5 @@ TEST_F(CastAuthUtilTest, CRLTestSuite) {
 }
 
 }  // namespace
+}  // namespace channel
 }  // namespace cast
-}  // namespace openscreen

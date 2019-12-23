@@ -4,8 +4,8 @@
 
 #include "cast/streaming/session_config.h"
 
-namespace openscreen {
 namespace cast {
+namespace streaming {
 
 SessionConfig::SessionConfig(Ssrc sender_ssrc,
                              Ssrc receiver_ssrc,
@@ -22,5 +22,5 @@ SessionConfig::SessionConfig(Ssrc sender_ssrc,
       aes_secret_key(aes_secret_key),
       aes_iv_mask(aes_iv_mask) {}
 
+}  // namespace streaming
 }  // namespace cast
-}  // namespace openscreen

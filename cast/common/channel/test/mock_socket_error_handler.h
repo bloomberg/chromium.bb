@@ -9,8 +9,10 @@
 #include "gmock/gmock.h"
 #include "platform/base/error.h"
 
-namespace openscreen {
+using openscreen::Error;
+
 namespace cast {
+namespace channel {
 
 class MockSocketErrorHandler
     : public VirtualConnectionRouter::SocketErrorHandler {
@@ -19,7 +21,7 @@ class MockSocketErrorHandler
   MOCK_METHOD(void, OnError, (CastSocket * socket, Error error), (override));
 };
 
+}  // namespace channel
 }  // namespace cast
-}  // namespace openscreen
 
 #endif  // CAST_COMMON_CHANNEL_TEST_MOCK_SOCKET_ERROR_HANDLER_H_

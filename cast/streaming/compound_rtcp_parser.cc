@@ -11,8 +11,10 @@
 #include "util/logging.h"
 #include "util/std_util.h"
 
-namespace openscreen {
+using openscreen::Clock;
+
 namespace cast {
+namespace streaming {
 
 namespace {
 
@@ -183,7 +185,7 @@ bool CompoundRtcpParser::Parse(absl::Span<const uint8_t> buffer,
     client_->OnReceiverCheckpoint(checkpoint_frame_id, target_playout_delay);
   }
   if (!received_frames.empty()) {
-    OSP_DCHECK(AreElementsSortedAndUnique(received_frames));
+    OSP_DCHECK(openscreen::AreElementsSortedAndUnique(received_frames));
     client_->OnReceiverHasFrames(std::move(received_frames));
   }
   CanonicalizePacketNackVector(&packet_nacks);
@@ -336,7 +338,7 @@ bool CompoundRtcpParser::ParseExtendedReports(
         return false;  // Length field must always be 2 words.
       }
       *receiver_reference_time = session_->ntp_converter().ToLocalTime(
-          ReadBigEndian<uint64_t>(in.data()));
+          openscreen::ReadBigEndian<uint64_t>(in.data()));
     } else {
       // Ignore any other type of extended report.
     }
@@ -375,5 +377,5 @@ void CompoundRtcpParser::Client::OnReceiverHasFrames(
 void CompoundRtcpParser::Client::OnReceiverIsMissingPackets(
     std::vector<PacketNack> nacks) {}
 
+}  // namespace streaming
 }  // namespace cast
-}  // namespace openscreen

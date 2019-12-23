@@ -35,6 +35,18 @@
 #include "platform/test/fake_task_runner.h"
 #include "util/logging.h"
 
+using openscreen::Clock;
+using openscreen::ClockNowFunctionPtr;
+using openscreen::Error;
+using openscreen::ErrorOr;
+using openscreen::FakeClock;
+using openscreen::FakeTaskRunner;
+using openscreen::IPAddress;
+using openscreen::IPEndpoint;
+using openscreen::TaskRunner;
+using openscreen::UdpPacket;
+using openscreen::UdpSocket;
+
 using std::chrono::duration_cast;
 using std::chrono::microseconds;
 using std::chrono::milliseconds;
@@ -46,8 +58,8 @@ using testing::Gt;
 using testing::Invoke;
 using testing::SaveArg;
 
-namespace openscreen {
 namespace cast {
+namespace streaming {
 namespace {
 
 // Receiver configuration.
@@ -827,5 +839,5 @@ TEST_F(ReceiverTest, DropsLateFrames) {
 }
 
 }  // namespace
+}  // namespace streaming
 }  // namespace cast
-}  // namespace openscreen

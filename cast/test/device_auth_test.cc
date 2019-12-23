@@ -18,15 +18,14 @@
 #include "gtest/gtest.h"
 #include "testing/util/read_file.h"
 
-namespace openscreen {
 namespace cast {
+namespace channel {
 namespace {
-
-using ::cast::channel::CastMessage;
-using ::cast::channel::DeviceAuthMessage;
 
 using ::testing::_;
 using ::testing::Invoke;
+
+using openscreen::ErrorOr;
 
 #define TEST_DATA_PREFIX OPENSCREEN_TEST_DATA_DIR "cast/receiver/channel/"
 
@@ -41,11 +40,11 @@ class DeviceAuthTest : public ::testing::Test {
 
  protected:
   void RunAuthTest(std::string serialized_crl,
-                   TrustStore* fake_crl_trust_store,
+                   certificate::TrustStore* fake_crl_trust_store,
                    bool should_succeed = true,
                    bool record_this_test = false) {
     bssl::UniquePtr<X509> parsed_cert;
-    TrustStore fake_trust_store;
+    certificate::TrustStore fake_trust_store;
     InitStaticCredentialsFromFiles(&creds_, &parsed_cert, &fake_trust_store,
                                    TEST_DATA_PREFIX "device_key.pem",
                                    TEST_DATA_PREFIX "device_chain.pem",
@@ -59,8 +58,7 @@ class DeviceAuthTest : public ::testing::Test {
     if (record_this_test) {
       std::string output;
       DeviceAuthMessage auth_message;
-      ASSERT_EQ(auth_challenge.payload_type(),
-                ::cast::channel::CastMessage_PayloadType_BINARY);
+      ASSERT_EQ(auth_challenge.payload_type(), CastMessage_PayloadType_BINARY);
       ASSERT_TRUE(
           auth_message.ParseFromString(auth_challenge.payload_binary()));
       ASSERT_TRUE(auth_message.has_challenge());
@@ -84,8 +82,7 @@ class DeviceAuthTest : public ::testing::Test {
     if (record_this_test) {
       std::string output;
       DeviceAuthMessage auth_message;
-      ASSERT_EQ(challenge_reply.payload_type(),
-                ::cast::channel::CastMessage_PayloadType_BINARY);
+      ASSERT_EQ(challenge_reply.payload_type(), CastMessage_PayloadType_BINARY);
       ASSERT_TRUE(
           auth_message.ParseFromString(challenge_reply.payload_binary()));
       ASSERT_TRUE(auth_message.has_response());
@@ -99,15 +96,15 @@ class DeviceAuthTest : public ::testing::Test {
       fclose(fd);
     }
 
-    DateTime December2019 = {};
+    certificate::DateTime December2019 = {};
     December2019.year = 2019;
     December2019.month = 12;
     December2019.day = 17;
     const ErrorOr<CastDeviceCertPolicy> error_or_policy =
         AuthenticateChallengeReplyForTest(
             challenge_reply, parsed_cert.get(), auth_context,
-            fake_crl_trust_store ? CRLPolicy::kCrlRequired
-                                 : CRLPolicy::kCrlOptional,
+            fake_crl_trust_store ? certificate::CRLPolicy::kCrlRequired
+                                 : certificate::CRLPolicy::kCrlOptional,
             &fake_trust_store, fake_crl_trust_store, December2019);
     EXPECT_EQ(error_or_policy.is_value(), should_succeed);
   }
@@ -122,6 +119,8 @@ class DeviceAuthTest : public ::testing::Test {
   DeviceAuthNamespaceHandler auth_handler_{&creds_};
 };
 
+}  // namespace
+
 TEST_F(DeviceAuthTest, MANUAL_SerializeTestData) {
   if (::testing::GTEST_FLAG(filter) ==
       "DeviceAuthTest.MANUAL_SerializeTestData") {
@@ -134,63 +133,76 @@ TEST_F(DeviceAuthTest, AuthIntegration) {
 }
 
 TEST_F(DeviceAuthTest, GoodCrl) {
-  std::unique_ptr<TrustStore> fake_crl_trust_store =
-      testing::CreateTrustStoreFromPemFile(TEST_DATA_PREFIX "crl_root.pem");
-  RunAuthTest(ReadEntireFileToString(TEST_DATA_PREFIX "good_crl.pb"),
-              fake_crl_trust_store.get());
+  std::unique_ptr<certificate::TrustStore> fake_crl_trust_store =
+      certificate::testing::CreateTrustStoreFromPemFile(TEST_DATA_PREFIX
+                                                        "crl_root.pem");
+  RunAuthTest(
+      openscreen::ReadEntireFileToString(TEST_DATA_PREFIX "good_crl.pb"),
+      fake_crl_trust_store.get());
 }
 
 TEST_F(DeviceAuthTest, InvalidCrlTime) {
-  std::unique_ptr<TrustStore> fake_crl_trust_store =
-      testing::CreateTrustStoreFromPemFile(TEST_DATA_PREFIX "crl_root.pem");
-  RunAuthTest(ReadEntireFileToString(TEST_DATA_PREFIX "invalid_time_crl.pb"),
+  std::unique_ptr<certificate::TrustStore> fake_crl_trust_store =
+      certificate::testing::CreateTrustStoreFromPemFile(TEST_DATA_PREFIX
+                                                        "crl_root.pem");
+  RunAuthTest(openscreen::ReadEntireFileToString(TEST_DATA_PREFIX
+                                                 "invalid_time_crl.pb"),
               fake_crl_trust_store.get(), false);
 }
 
 TEST_F(DeviceAuthTest, IssuerRevoked) {
-  std::unique_ptr<TrustStore> fake_crl_trust_store =
-      testing::CreateTrustStoreFromPemFile(TEST_DATA_PREFIX "crl_root.pem");
-  RunAuthTest(ReadEntireFileToString(TEST_DATA_PREFIX "issuer_revoked_crl.pb"),
+  std::unique_ptr<certificate::TrustStore> fake_crl_trust_store =
+      certificate::testing::CreateTrustStoreFromPemFile(TEST_DATA_PREFIX
+                                                        "crl_root.pem");
+  RunAuthTest(openscreen::ReadEntireFileToString(TEST_DATA_PREFIX
+                                                 "issuer_revoked_crl.pb"),
               fake_crl_trust_store.get(), false);
 }
 
 TEST_F(DeviceAuthTest, DeviceRevoked) {
-  std::unique_ptr<TrustStore> fake_crl_trust_store =
-      testing::CreateTrustStoreFromPemFile(TEST_DATA_PREFIX "crl_root.pem");
-  RunAuthTest(ReadEntireFileToString(TEST_DATA_PREFIX "device_revoked_crl.pb"),
+  std::unique_ptr<certificate::TrustStore> fake_crl_trust_store =
+      certificate::testing::CreateTrustStoreFromPemFile(TEST_DATA_PREFIX
+                                                        "crl_root.pem");
+  RunAuthTest(openscreen::ReadEntireFileToString(TEST_DATA_PREFIX
+                                                 "device_revoked_crl.pb"),
               fake_crl_trust_store.get(), false);
 }
 
 TEST_F(DeviceAuthTest, IssuerSerialRevoked) {
-  std::unique_ptr<TrustStore> fake_crl_trust_store =
-      testing::CreateTrustStoreFromPemFile(TEST_DATA_PREFIX "crl_root.pem");
-  RunAuthTest(
-      ReadEntireFileToString(TEST_DATA_PREFIX "issuer_serial_revoked_crl.pb"),
-      fake_crl_trust_store.get(), false);
+  std::unique_ptr<certificate::TrustStore> fake_crl_trust_store =
+      certificate::testing::CreateTrustStoreFromPemFile(TEST_DATA_PREFIX
+                                                        "crl_root.pem");
+  RunAuthTest(openscreen::ReadEntireFileToString(
+                  TEST_DATA_PREFIX "issuer_serial_revoked_crl.pb"),
+              fake_crl_trust_store.get(), false);
 }
 
 TEST_F(DeviceAuthTest, DeviceSerialRevoked) {
-  std::unique_ptr<TrustStore> fake_crl_trust_store =
-      testing::CreateTrustStoreFromPemFile(TEST_DATA_PREFIX "crl_root.pem");
-  RunAuthTest(
-      ReadEntireFileToString(TEST_DATA_PREFIX "device_serial_revoked_crl.pb"),
-      fake_crl_trust_store.get(), false);
+  std::unique_ptr<certificate::TrustStore> fake_crl_trust_store =
+      certificate::testing::CreateTrustStoreFromPemFile(TEST_DATA_PREFIX
+                                                        "crl_root.pem");
+  RunAuthTest(openscreen::ReadEntireFileToString(
+                  TEST_DATA_PREFIX "device_serial_revoked_crl.pb"),
+              fake_crl_trust_store.get(), false);
 }
 
 TEST_F(DeviceAuthTest, BadCrlSignerCert) {
-  std::unique_ptr<TrustStore> fake_crl_trust_store =
-      testing::CreateTrustStoreFromPemFile(TEST_DATA_PREFIX "crl_root.pem");
-  RunAuthTest(ReadEntireFileToString(TEST_DATA_PREFIX "bad_signer_cert_crl.pb"),
+  std::unique_ptr<certificate::TrustStore> fake_crl_trust_store =
+      certificate::testing::CreateTrustStoreFromPemFile(TEST_DATA_PREFIX
+                                                        "crl_root.pem");
+  RunAuthTest(openscreen::ReadEntireFileToString(TEST_DATA_PREFIX
+                                                 "bad_signer_cert_crl.pb"),
               fake_crl_trust_store.get(), false);
 }
 
 TEST_F(DeviceAuthTest, BadCrlSignature) {
-  std::unique_ptr<TrustStore> fake_crl_trust_store =
-      testing::CreateTrustStoreFromPemFile(TEST_DATA_PREFIX "crl_root.pem");
-  RunAuthTest(ReadEntireFileToString(TEST_DATA_PREFIX "bad_signature_crl.pb"),
+  std::unique_ptr<certificate::TrustStore> fake_crl_trust_store =
+      certificate::testing::CreateTrustStoreFromPemFile(TEST_DATA_PREFIX
+                                                        "crl_root.pem");
+  RunAuthTest(openscreen::ReadEntireFileToString(TEST_DATA_PREFIX
+                                                 "bad_signature_crl.pb"),
               fake_crl_trust_store.get(), false);
 }
 
-}  // namespace
+}  // namespace channel
 }  // namespace cast
-}  // namespace openscreen

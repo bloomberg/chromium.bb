@@ -8,8 +8,11 @@
 #include "platform/api/time.h"
 #include "util/logging.h"
 
-namespace openscreen {
+using openscreen::Clock;
+using openscreen::TaskRunner;
+
 namespace cast {
+namespace streaming {
 
 SDLEventLoopProcessor::SDLEventLoopProcessor(
     TaskRunner* task_runner,
@@ -38,5 +41,5 @@ void SDLEventLoopProcessor::ProcessPendingEvents() {
   alarm_.ScheduleFromNow([this] { ProcessPendingEvents(); }, kEventPollPeriod);
 }
 
+}  // namespace streaming
 }  // namespace cast
-}  // namespace openscreen

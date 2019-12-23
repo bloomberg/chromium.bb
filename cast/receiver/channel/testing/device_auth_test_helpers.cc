@@ -6,19 +6,19 @@
 
 #include "gtest/gtest.h"
 
-namespace openscreen {
 namespace cast {
+namespace channel {
 
 void InitStaticCredentialsFromFiles(StaticCredentialsProvider* creds,
                                     bssl::UniquePtr<X509>* parsed_cert,
-                                    TrustStore* fake_trust_store,
+                                    certificate::TrustStore* fake_trust_store,
                                     absl::string_view privkey_filename,
                                     absl::string_view chain_filename,
                                     absl::string_view tls_filename) {
-  auto private_key = testing::ReadKeyFromPemFile(privkey_filename);
+  auto private_key = certificate::testing::ReadKeyFromPemFile(privkey_filename);
   ASSERT_TRUE(private_key);
   std::vector<std::string> certs =
-      testing::ReadCertificatesFromPemFile(chain_filename);
+      certificate::testing::ReadCertificatesFromPemFile(chain_filename);
   ASSERT_GT(certs.size(), 1u);
 
   // Use the root of the chain as the trust store for the test.
@@ -35,7 +35,7 @@ void InitStaticCredentialsFromFiles(StaticCredentialsProvider* creds,
       std::move(certs), std::move(private_key), std::string()};
 
   const std::vector<std::string> tls_cert =
-      testing::ReadCertificatesFromPemFile(tls_filename);
+      certificate::testing::ReadCertificatesFromPemFile(tls_filename);
   ASSERT_EQ(tls_cert.size(), 1u);
   data = reinterpret_cast<const uint8_t*>(tls_cert[0].data());
   if (parsed_cert) {
@@ -47,5 +47,5 @@ void InitStaticCredentialsFromFiles(StaticCredentialsProvider* creds,
   creds->tls_cert_der.assign(begin, begin + tls_cert[0].size());
 }
 
+}  // namespace channel
 }  // namespace cast
-}  // namespace openscreen

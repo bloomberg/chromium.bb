@@ -6,10 +6,11 @@
 
 #include "util/logging.h"
 
+using openscreen::Clock;
 using std::chrono::duration_cast;
 
-namespace openscreen {
 namespace cast {
+namespace streaming {
 
 namespace {
 
@@ -53,5 +54,5 @@ Clock::time_point NtpTimeConverter::ToLocalTime(NtpTimestamp timestamp) const {
   return seconds_since_start + remainder;
 }
 
+}  // namespace streaming
 }  // namespace cast
-}  // namespace openscreen

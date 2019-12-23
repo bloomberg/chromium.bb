@@ -8,11 +8,12 @@
 
 #include "util/logging.h"
 
-namespace openscreen {
 namespace cast {
+namespace streaming {
 
 namespace {
-constexpr Clock::time_point kNullTime = Clock::time_point::min();
+constexpr ClockDriftSmoother::Clock::time_point kNullTime =
+    ClockDriftSmoother::Clock::time_point::min();
 }
 
 ClockDriftSmoother::ClockDriftSmoother(Clock::duration time_constant)
@@ -24,7 +25,7 @@ ClockDriftSmoother::ClockDriftSmoother(Clock::duration time_constant)
 
 ClockDriftSmoother::~ClockDriftSmoother() = default;
 
-Clock::duration ClockDriftSmoother::Current() const {
+ClockDriftSmoother::Clock::duration ClockDriftSmoother::Current() const {
   OSP_DCHECK(last_update_time_ != kNullTime);
   const double rounded_estimate = std::round(estimated_tick_offset_);
   if (rounded_estimate < Clock::duration::min().count()) {
@@ -67,5 +68,5 @@ void ClockDriftSmoother::Update(Clock::time_point now,
 // static
 constexpr std::chrono::seconds ClockDriftSmoother::kDefaultTimeConstant;
 
+}  // namespace streaming
 }  // namespace cast
-}  // namespace openscreen

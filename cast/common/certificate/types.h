@@ -9,8 +9,8 @@
 
 #include <chrono>
 
-namespace openscreen {
 namespace cast {
+namespace certificate {
 
 struct ConstDataSpan {
   const uint8_t* data;
@@ -33,7 +33,7 @@ bool DateTimeFromSeconds(uint64_t seconds, DateTime* time);
 // |time| is assumed to be valid.
 std::chrono::seconds DateTimeToSeconds(const DateTime& time);
 
+}  // namespace certificate
 }  // namespace cast
-}  // namespace openscreen
 
 #endif  // CAST_COMMON_CERTIFICATE_TYPES_H_

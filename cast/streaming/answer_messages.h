@@ -19,8 +19,8 @@
 #include "json/value.h"
 #include "platform/base/error.h"
 
-namespace openscreen {
 namespace cast {
+namespace streaming {
 
 struct AudioConstraints {
   int max_sample_rate = 0;
@@ -30,7 +30,7 @@ struct AudioConstraints {
   int max_bit_rate = 0;
   std::chrono::milliseconds max_delay = {};
 
-  ErrorOr<Json::Value> ToJson() const;
+  openscreen::ErrorOr<Json::Value> ToJson() const;
 };
 
 struct Dimensions {
@@ -39,7 +39,7 @@ struct Dimensions {
   int frame_rate_numerator = 0;
   int frame_rate_denominator = 0;
 
-  ErrorOr<Json::Value> ToJson() const;
+  openscreen::ErrorOr<Json::Value> ToJson() const;
 };
 
 struct VideoConstraints {
@@ -51,14 +51,14 @@ struct VideoConstraints {
   int max_bit_rate = 0;
   std::chrono::milliseconds max_delay = {};
 
-  ErrorOr<Json::Value> ToJson() const;
+  openscreen::ErrorOr<Json::Value> ToJson() const;
 };
 
 struct Constraints {
   AudioConstraints audio;
   VideoConstraints video;
 
-  ErrorOr<Json::Value> ToJson() const;
+  openscreen::ErrorOr<Json::Value> ToJson() const;
 };
 
 // Decides whether the Sender scales and letterboxes content to 16:9, or if
@@ -78,7 +78,7 @@ struct DisplayDescription {
   AspectRatio aspect_ratio = {};
   AspectRatioConstraint aspect_ratio_constraint = {};
 
-  ErrorOr<Json::Value> ToJson() const;
+  openscreen::ErrorOr<Json::Value> ToJson() const;
 };
 
 struct Answer {
@@ -100,7 +100,7 @@ struct Answer {
 
   // ToJson performs a standard serialization, returning an error if this
   // instance failed to serialize properly.
-  ErrorOr<Json::Value> ToJson() const;
+  openscreen::ErrorOr<Json::Value> ToJson() const;
 
   // In constrast to ToJson, ToAnswerMessage performs a successful serialization
   // even if the answer object is malformed, by complying to the spec's
@@ -111,9 +111,9 @@ struct Answer {
 // Helper method that creates an invalid Answer response. Exposed publicly
 // here as it is called in ToAnswerMessage(), but can also be called by
 // the receiver session.
-Json::Value CreateInvalidAnswer(Error error);
+Json::Value CreateInvalidAnswer(openscreen::Error error);
 
+}  // namespace streaming
 }  // namespace cast
-}  // namespace openscreen
 
 #endif  // CAST_STREAMING_ANSWER_MESSAGES_H_

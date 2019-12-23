@@ -8,7 +8,11 @@
 #include "absl/strings/string_view.h"
 
 namespace openscreen {
+class Error;
+}
+
 namespace cast {
+namespace streaming {
 
 // This interface is intended to provide an abstraction for communicating
 // cast messages across a pipe with guaranteed delivery. This is used to
@@ -21,7 +25,7 @@ class MessagePort {
     virtual void OnMessage(absl::string_view sender_id,
                            absl::string_view message_namespace,
                            absl::string_view message) = 0;
-    virtual void OnError(Error error) = 0;
+    virtual void OnError(openscreen::Error error) = 0;
   };
 
   virtual ~MessagePort() = default;
@@ -31,7 +35,7 @@ class MessagePort {
                            absl::string_view message) = 0;
 };
 
+}  // namespace streaming
 }  // namespace cast
-}  // namespace openscreen
 
 #endif  // CAST_STREAMING_MESSAGE_PORT_H_

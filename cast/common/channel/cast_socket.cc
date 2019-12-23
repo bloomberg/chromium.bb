@@ -9,11 +9,13 @@
 #include "cast/common/channel/message_framer.h"
 #include "util/logging.h"
 
-namespace openscreen {
 namespace cast {
+namespace channel {
 
-using ::cast::channel::CastMessage;
 using message_serialization::DeserializeResult;
+using openscreen::Error;
+using openscreen::ErrorOr;
+using openscreen::TlsConnection;
 
 uint32_t GetNextSocketId() {
   static std::atomic<uint32_t> id(1);
@@ -60,7 +62,7 @@ void CastSocket::SetClient(Client* client) {
 }
 
 std::array<uint8_t, 2> CastSocket::GetSanitizedIpAddress() {
-  IPEndpoint remote = connection_->GetRemoteEndpoint();
+  openscreen::IPEndpoint remote = connection_->GetRemoteEndpoint();
   std::array<uint8_t, 2> result;
   uint8_t bytes[16];
   if (remote.address.IsV4()) {
@@ -116,5 +118,5 @@ void CastSocket::OnRead(TlsConnection* connection, std::vector<uint8_t> block) {
   client_->OnMessage(this, std::move(message_or_error.value().message));
 }
 
+}  // namespace channel
 }  // namespace cast
-}  // namespace openscreen

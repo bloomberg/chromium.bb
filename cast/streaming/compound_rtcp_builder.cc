@@ -14,8 +14,11 @@
 #include "util/logging.h"
 #include "util/std_util.h"
 
-namespace openscreen {
+using openscreen::AreElementsSortedAndUnique;
+using openscreen::Clock;
+
 namespace cast {
+namespace streaming {
 
 CompoundRtcpBuilder::CompoundRtcpBuilder(RtcpSession* session)
     : session_(session) {
@@ -290,7 +293,7 @@ void CompoundRtcpBuilder::AppendCastFeedbackAckFields(
         // Compute how many additional octets are needed.
         constexpr int kIncrement = sizeof(uint32_t);
         const int num_additional =
-            DividePositivesRoundingUp(
+            openscreen::DividePositivesRoundingUp(
                 (octet_index + 1) - num_ack_bitvector_octets, kIncrement) *
             kIncrement;
 
@@ -325,5 +328,5 @@ void CompoundRtcpBuilder::AppendCastFeedbackAckFields(
   acks_for_next_packet_.clear();
 }
 
+}  // namespace streaming
 }  // namespace cast
-}  // namespace openscreen

@@ -9,8 +9,10 @@
 #include "cast/streaming/constants.h"
 #include "gtest/gtest.h"
 
-namespace openscreen {
+using openscreen::Clock;
+
 namespace cast {
+namespace streaming {
 namespace {
 
 constexpr int kSomeRtpTimebase = static_cast<int>(kVideoTimebase::den);
@@ -204,5 +206,5 @@ TEST(PacketReceiveStatsTrackerTest, ComputesJitterCorrectly) {
 }
 
 }  // namespace
+}  // namespace streaming
 }  // namespace cast
-}  // namespace openscreen

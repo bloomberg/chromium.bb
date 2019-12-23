@@ -10,15 +10,14 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
-namespace openscreen {
 namespace cast {
-
-using ::cast::channel::CastMessage;
-
+namespace channel {
 namespace {
 
 using ::testing::_;
 using ::testing::Invoke;
+
+using openscreen::ErrorOr;
 
 class CastSocketTest : public ::testing::Test {
  public:
@@ -36,7 +35,9 @@ class CastSocketTest : public ::testing::Test {
   }
 
  protected:
-  MockTlsConnection& connection() { return *fake_socket_.connection; }
+  openscreen::MockTlsConnection& connection() {
+    return *fake_socket_.connection;
+  }
   MockCastSocketClient& mock_client() { return fake_socket_.mock_client; }
   CastSocket& socket() { return fake_socket_.socket; }
 
@@ -130,7 +131,7 @@ TEST_F(CastSocketTest, ErrorWhileEmptyingQueue) {
             frame_serial_,
             std::vector<uint8_t>(reinterpret_cast<const uint8_t*>(data),
                                  reinterpret_cast<const uint8_t*>(data) + len));
-        connection().OnError(Error::Code::kUnknownError);
+        connection().OnError(openscreen::Error::Code::kUnknownError);
       }));
   connection().OnWriteUnblocked();
 
@@ -143,14 +144,15 @@ TEST_F(CastSocketTest, SanitizedAddress) {
   EXPECT_EQ(result1[0], 1u);
   EXPECT_EQ(result1[1], 9u);
 
-  FakeCastSocket v6_socket(IPEndpoint{{1, 2, 3, 4}, 1025},
-                           IPEndpoint{{0x1819, 0x1a1b, 0x1c1d, 0x1e1f, 0x207b,
-                                       0x7c7d, 0x7e7f, 0x8081},
-                                      4321});
+  FakeCastSocket v6_socket(
+      openscreen::IPEndpoint{{1, 2, 3, 4}, 1025},
+      openscreen::IPEndpoint{
+          {0x1819, 0x1a1b, 0x1c1d, 0x1e1f, 0x207b, 0x7c7d, 0x7e7f, 0x8081},
+          4321});
   std::array<uint8_t, 2> result2 = v6_socket.socket.GetSanitizedIpAddress();
   EXPECT_EQ(result2[0], 128);
   EXPECT_EQ(result2[1], 129);
 }
 
+}  // namespace channel
 }  // namespace cast
-}  // namespace openscreen

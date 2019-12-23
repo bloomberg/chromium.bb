@@ -5,15 +5,18 @@
 #include "cast/sender/channel/sender_socket_factory.h"
 
 #include "cast/common/channel/cast_socket.h"
-#include "cast/common/channel/proto/cast_channel.pb.h"
 #include "cast/sender/channel/message_util.h"
 #include "platform/base/tls_connect_options.h"
 #include "util/crypto/certificate_utils.h"
 
-using ::cast::channel::CastMessage;
-
-namespace openscreen {
 namespace cast {
+namespace channel {
+
+using openscreen::Error;
+using openscreen::IPEndpoint;
+using openscreen::TlsConnection;
+using openscreen::TlsConnectionFactory;
+using openscreen::TlsConnectOptions;
 
 bool operator<(const std::unique_ptr<SenderSocketFactory::PendingAuth>& a,
                uint32_t b) {
@@ -65,8 +68,8 @@ void SenderSocketFactory::OnConnected(
   CastSocket::Client* client = it->client;
   pending_connections_.erase(it);
 
-  ErrorOr<bssl::UniquePtr<X509>> peer_cert =
-      ImportCertificate(der_x509_peer_cert.data(), der_x509_peer_cert.size());
+  ErrorOr<bssl::UniquePtr<X509>> peer_cert = openscreen::ImportCertificate(
+      der_x509_peer_cert.data(), der_x509_peer_cert.size());
   if (!peer_cert) {
     client_->OnError(this, endpoint, peer_cert.error());
     return;
@@ -167,5 +170,5 @@ void SenderSocketFactory::OnMessage(CastSocket* socket, CastMessage message) {
   client_->OnConnected(this, pending->endpoint, std::move(pending->socket));
 }
 
+}  // namespace channel
 }  // namespace cast
-}  // namespace openscreen

@@ -18,9 +18,11 @@
 #include "cast/common/certificate/cast_cert_validator_internal.h"
 #include "cast/common/certificate/cast_crl.h"
 
-namespace openscreen {
 namespace cast {
+namespace certificate {
 namespace {
+
+using CastCertError = openscreen::Error::Code;
 
 // -------------------------------------------------------------------------
 // Cast trust anchors.
@@ -47,8 +49,8 @@ const ConstDataSpan& AudioOnlyPolicyOid() {
 
 class CertVerificationContextImpl final : public CertVerificationContext {
  public:
-  CertVerificationContextImpl(bssl::UniquePtr<EVP_PKEY> cert,
-                              std::string common_name)
+  CertVerificationContextImpl(bssl::UniquePtr<EVP_PKEY>&& cert,
+                              std::string&& common_name)
       : public_key_{std::move(cert)}, common_name_(std::move(common_name)) {}
 
   ~CertVerificationContextImpl() override = default;
@@ -162,31 +164,33 @@ class CastTrustStore {
   OSP_DISALLOW_COPY_AND_ASSIGN(CastTrustStore);
 };
 
-Error VerifyDeviceCert(const std::vector<std::string>& der_certs,
-                       const DateTime& time,
-                       std::unique_ptr<CertVerificationContext>* context,
-                       CastDeviceCertPolicy* policy,
-                       const CastCRL* crl,
-                       CRLPolicy crl_policy,
-                       TrustStore* trust_store) {
+openscreen::Error VerifyDeviceCert(
+    const std::vector<std::string>& der_certs,
+    const DateTime& time,
+    std::unique_ptr<CertVerificationContext>* context,
+    CastDeviceCertPolicy* policy,
+    const CastCRL* crl,
+    CRLPolicy crl_policy,
+    TrustStore* trust_store) {
   if (!trust_store) {
     trust_store = CastTrustStore::GetInstance()->trust_store();
   }
 
   // Fail early if CRL is required but not provided.
   if (!crl && crl_policy == CRLPolicy::kCrlRequired) {
-    return Error::Code::kErrCrlInvalid;
+    return CastCertError::kErrCrlInvalid;
   }
 
   CertificatePathResult result_path = {};
-  Error error = FindCertificatePath(der_certs, time, &result_path, trust_store);
+  openscreen::Error error =
+      FindCertificatePath(der_certs, time, &result_path, trust_store);
   if (!error.ok()) {
     return error;
   }
 
   if (crl_policy == CRLPolicy::kCrlRequired &&
       !crl->CheckRevocation(result_path.path, time)) {
-    return Error::Code::kErrCertsRevoked;
+    return CastCertError::kErrCertsRevoked;
   }
 
   *policy = GetAudioPolicy(result_path.path);
@@ -199,7 +203,7 @@ Error VerifyDeviceCert(const std::vector<std::string>& der_certs,
   int len = X509_NAME_get_text_by_NID(target_subject, NID_commonName,
                                       &common_name[0], common_name.size());
   if (len == 0) {
-    return Error::Code::kErrCertsRestrictions;
+    return CastCertError::kErrCertsRestrictions;
   }
   common_name.resize(len);
 
@@ -207,8 +211,8 @@ Error VerifyDeviceCert(const std::vector<std::string>& der_certs,
       bssl::UniquePtr<EVP_PKEY>{X509_get_pubkey(result_path.target_cert.get())},
       std::move(common_name)));
 
-  return Error::Code::kNone;
+  return CastCertError::kNone;
 }
 
+}  // namespace certificate
 }  // namespace cast
-}  // namespace openscreen

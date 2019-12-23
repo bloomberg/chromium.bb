@@ -11,8 +11,8 @@
 
 #include "cast/streaming/ssrc.h"
 
-namespace openscreen {
 namespace cast {
+namespace streaming {
 
 // Common streaming configuration, established from the OFFER/ANSWER exchange,
 // that the Sender and Receiver are both assuming.
@@ -52,7 +52,7 @@ struct SessionConfig final {
   std::array<uint8_t, 16> aes_iv_mask{};
 };
 
+}  // namespace streaming
 }  // namespace cast
-}  // namespace openscreen
 
 #endif  // CAST_STREAMING_SESSION_CONFIG_H_

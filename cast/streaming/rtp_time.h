@@ -15,8 +15,8 @@
 #include "cast/streaming/expanded_value_base.h"
 #include "platform/api/time.h"
 
-namespace openscreen {
 namespace cast {
+namespace streaming {
 
 // Forward declarations (see below).
 class RtpTimeDelta;
@@ -262,7 +262,7 @@ class RtpTimeTicks : public ExpandedValueBase<int64_t, RtpTimeTicks> {
   constexpr int64_t value() const { return value_; }
 };
 
+}  // namespace streaming
 }  // namespace cast
-}  // namespace openscreen
 
 #endif  // CAST_STREAMING_RTP_TIME_H_

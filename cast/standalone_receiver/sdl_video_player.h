@@ -7,8 +7,8 @@
 
 #include "cast/standalone_receiver/sdl_player_base.h"
 
-namespace openscreen {
 namespace cast {
+namespace streaming {
 
 // Consumes frames from a Receiver, decodes them, and renders them to a
 // SDL_Renderer.
@@ -16,8 +16,8 @@ class SDLVideoPlayer : public SDLPlayerBase {
  public:
   // |error_callback| is run only if a fatal error occurs, at which point the
   // player has halted and set |error_status()|.
-  SDLVideoPlayer(ClockNowFunctionPtr now_function,
-                 TaskRunner* task_runner,
+  SDLVideoPlayer(openscreen::ClockNowFunctionPtr now_function,
+                 openscreen::TaskRunner* task_runner,
                  Receiver* receiver,
                  SDL_Renderer* renderer,
                  std::function<void()> error_callback);
@@ -32,7 +32,7 @@ class SDLVideoPlayer : public SDLPlayerBase {
 
   // Uploads the decoded picture in |frame| to a SDL texture and draws it using
   // the SDL |renderer_|.
-  ErrorOr<Clock::time_point> RenderNextFrame(
+  openscreen::ErrorOr<openscreen::Clock::time_point> RenderNextFrame(
       const SDLPlayerBase::PresentableFrame& frame) final;
 
   // Makes whatever is currently drawn to the SDL |renderer_| be presented
@@ -50,7 +50,7 @@ class SDLVideoPlayer : public SDLPlayerBase {
   SDLTextureUniquePtr texture_;
 };
 
+}  // namespace streaming
 }  // namespace cast
-}  // namespace openscreen
 
 #endif  // CAST_STANDALONE_RECEIVER_SDL_VIDEO_PLAYER_H_

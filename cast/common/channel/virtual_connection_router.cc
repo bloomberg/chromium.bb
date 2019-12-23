@@ -11,10 +11,10 @@
 #include "cast/common/channel/virtual_connection_manager.h"
 #include "util/logging.h"
 
-namespace openscreen {
 namespace cast {
+namespace channel {
 
-using ::cast::channel::CastMessage;
+using openscreen::Error;
 
 VirtualConnectionRouter::VirtualConnectionRouter(
     VirtualConnectionManager* vc_manager)
@@ -53,7 +53,7 @@ void VirtualConnectionRouter::CloseSocket(uint32_t id) {
 }
 
 Error VirtualConnectionRouter::SendMessage(VirtualConnection virtual_conn,
-                                           CastMessage message) {
+                                           CastMessage&& message) {
   // TODO(btolsch): Check for broadcast message.
   if (!IsTransportNamespace(message.namespace_()) &&
       !vc_manager_->GetConnectionData(virtual_conn)) {
@@ -95,5 +95,5 @@ void VirtualConnectionRouter::OnMessage(CastSocket* socket,
   }
 }
 
+}  // namespace channel
 }  // namespace cast
-}  // namespace openscreen

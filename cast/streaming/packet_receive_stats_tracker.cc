@@ -6,8 +6,10 @@
 
 #include <algorithm>
 
-namespace openscreen {
+using openscreen::Clock;
+
 namespace cast {
+namespace streaming {
 
 PacketReceiveStatsTracker::PacketReceiveStatsTracker(int rtp_timebase)
     : rtp_timebase_(rtp_timebase) {}
@@ -75,5 +77,5 @@ void PacketReceiveStatsTracker::PopulateNextReport(RtcpReportBlock* report) {
   report->jitter = RtpTimeDelta::FromDuration(jitter_, rtp_timebase_);
 }
 
+}  // namespace streaming
 }  // namespace cast
-}  // namespace openscreen

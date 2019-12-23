@@ -11,8 +11,11 @@
 #include "cast/streaming/receiver.h"
 #include "util/logging.h"
 
-namespace openscreen {
+using openscreen::Clock;
+using openscreen::IPEndpoint;
+
 namespace cast {
+namespace streaming {
 
 ReceiverPacketRouter::ReceiverPacketRouter(Environment* environment)
     : environment_(environment) {
@@ -112,5 +115,5 @@ ReceiverPacketRouter::ReceiverEntries::iterator ReceiverPacketRouter::FindEntry(
                       });
 }
 
+}  // namespace streaming
 }  // namespace cast
-}  // namespace openscreen

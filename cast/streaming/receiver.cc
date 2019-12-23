@@ -13,12 +13,14 @@
 #include "util/logging.h"
 #include "util/std_util.h"
 
+using openscreen::Clock;
+
 using std::chrono::duration_cast;
 using std::chrono::microseconds;
 using std::chrono::milliseconds;
 
-namespace openscreen {
 namespace cast {
+namespace streaming {
 
 // Conveniences for ensuring logging output includes the SSRC of the Receiver,
 // to help distinguish one out of multiple instances in a Cast Streaming
@@ -31,7 +33,7 @@ namespace cast {
 
 Receiver::Receiver(Environment* environment,
                    ReceiverPacketRouter* packet_router,
-                   const SessionConfig& config)
+                   const cast::streaming::SessionConfig& config)
     : now_(environment->now_function()),
       packet_router_(packet_router),
       rtcp_session_(config.sender_ssrc, config.receiver_ssrc, now_()),
@@ -386,7 +388,7 @@ void Receiver::RecordNewTargetPlayoutDelay(FrameId as_of_frame,
       [&](const auto& entry) { return entry.first > as_of_frame; });
   playout_delay_changes_.emplace(insert_it, as_of_frame, delay);
 
-  OSP_DCHECK(AreElementsSortedAndUnique(playout_delay_changes_));
+  OSP_DCHECK(openscreen::AreElementsSortedAndUnique(playout_delay_changes_));
 }
 
 milliseconds Receiver::ResolveTargetPlayoutDelay(FrameId frame_id) const {
@@ -478,5 +480,5 @@ constexpr milliseconds Receiver::kDefaultPlayerProcessingTime;
 constexpr int Receiver::kNoFramesReady;
 constexpr milliseconds Receiver::kNackFeedbackInterval;
 
+}  // namespace streaming
 }  // namespace cast
-}  // namespace openscreen

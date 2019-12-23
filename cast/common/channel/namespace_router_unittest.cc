@@ -13,11 +13,10 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
-namespace openscreen {
 namespace cast {
+namespace channel {
 namespace {
 
-using ::cast::channel::CastMessage;
 using ::testing::_;
 using ::testing::Invoke;
 
@@ -52,12 +51,12 @@ TEST_F(NamespaceRouterTest, MultipleHandlers) {
   EXPECT_CALL(media_handler, OnMessage(_, _, _)).Times(0);
   EXPECT_CALL(auth_handler, OnMessage(_, _, _))
       .WillOnce(Invoke([](VirtualConnectionRouter* router, CastSocket*,
-                          CastMessage message) {
+                          CastMessage&& message) {
         EXPECT_EQ(message.namespace_(), "auth");
       }));
   EXPECT_CALL(connection_handler, OnMessage(_, _, _))
       .WillOnce(Invoke([](VirtualConnectionRouter* router, CastSocket*,
-                          CastMessage message) {
+                          CastMessage&& message) {
         EXPECT_EQ(message.namespace_(), "connection");
       }));
 
@@ -81,9 +80,10 @@ TEST_F(NamespaceRouterTest, RemoveHandler) {
 
   EXPECT_CALL(handler1, OnMessage(_, _, _)).Times(0);
   EXPECT_CALL(handler2, OnMessage(_, _, _))
-      .WillOnce(Invoke(
-          [](VirtualConnectionRouter* router, CastSocket* socket,
-             CastMessage message) { EXPECT_EQ("two", message.namespace_()); }));
+      .WillOnce(Invoke([](VirtualConnectionRouter* router, CastSocket* socket,
+                          CastMessage&& message) {
+        EXPECT_EQ("two", message.namespace_());
+      }));
 
   CastMessage message1;
   message1.set_namespace_("one");
@@ -94,5 +94,5 @@ TEST_F(NamespaceRouterTest, RemoveHandler) {
   router_.OnMessage(&vc_router_, socket(), std::move(message2));
 }
 
+}  // namespace channel
 }  // namespace cast
-}  // namespace openscreen

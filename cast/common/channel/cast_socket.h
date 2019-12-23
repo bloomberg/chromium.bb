@@ -9,31 +9,31 @@
 #include <memory>
 #include <vector>
 
-#include "cast/common/channel/proto/cast_channel.pb.h"
 #include "platform/api/tls_connection.h"
 
-namespace openscreen {
 namespace cast {
+namespace channel {
+
+class CastMessage;
 
 uint32_t GetNextSocketId();
 
 // Represents a simple message-oriented socket for communicating with the Cast
 // V2 protocol.  It isn't thread-safe, so it should only be used on the same
 // TaskRunner thread as its TlsConnection.
-class CastSocket : public TlsConnection::Client {
+class CastSocket : public openscreen::TlsConnection::Client {
  public:
   class Client {
    public:
     virtual ~Client() = default;
 
     // Called when a terminal error on |socket| has occurred.
-    virtual void OnError(CastSocket* socket, Error error) = 0;
+    virtual void OnError(CastSocket* socket, openscreen::Error error) = 0;
 
-    virtual void OnMessage(CastSocket* socket,
-                           ::cast::channel::CastMessage message) = 0;
+    virtual void OnMessage(CastSocket* socket, CastMessage message) = 0;
   };
 
-  CastSocket(std::unique_ptr<TlsConnection> connection,
+  CastSocket(std::unique_ptr<openscreen::TlsConnection> connection,
              Client* client,
              uint32_t socket_id);
   ~CastSocket();
@@ -42,7 +42,7 @@ class CastSocket : public TlsConnection::Client {
   // write-blocked, in which case |message| will be queued.  An error will be
   // returned if |message| cannot be serialized for any reason, even while
   // write-blocked.
-  Error SendMessage(const ::cast::channel::CastMessage& message);
+  openscreen::Error SendMessage(const CastMessage& message);
 
   void SetClient(Client* client);
 
@@ -50,11 +50,13 @@ class CastSocket : public TlsConnection::Client {
 
   uint32_t socket_id() const { return socket_id_; }
 
-  // TlsConnection::Client overrides.
-  void OnWriteBlocked(TlsConnection* connection) override;
-  void OnWriteUnblocked(TlsConnection* connection) override;
-  void OnError(TlsConnection* connection, Error error) override;
-  void OnRead(TlsConnection* connection, std::vector<uint8_t> block) override;
+  // openscreen::TlsConnection::Client overrides.
+  void OnWriteBlocked(openscreen::TlsConnection* connection) override;
+  void OnWriteUnblocked(openscreen::TlsConnection* connection) override;
+  void OnError(openscreen::TlsConnection* connection,
+               openscreen::Error error) override;
+  void OnRead(openscreen::TlsConnection* connection,
+              std::vector<uint8_t> block) override;
 
  private:
   enum class State {
@@ -64,14 +66,14 @@ class CastSocket : public TlsConnection::Client {
   };
 
   Client* client_;  // May never be null.
-  const std::unique_ptr<TlsConnection> connection_;
+  const std::unique_ptr<openscreen::TlsConnection> connection_;
   std::vector<uint8_t> read_buffer_;
   const uint32_t socket_id_;
   State state_ = State::kOpen;
   std::vector<std::vector<uint8_t>> message_queue_;
 };
 
+}  // namespace channel
 }  // namespace cast
-}  // namespace openscreen
 
 #endif  // CAST_COMMON_CHANNEL_CAST_SOCKET_H_

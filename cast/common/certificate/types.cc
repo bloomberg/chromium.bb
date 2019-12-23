@@ -6,8 +6,8 @@
 
 #include "util/logging.h"
 
-namespace openscreen {
 namespace cast {
+namespace certificate {
 
 bool operator<(const DateTime& a, const DateTime& b) {
   if (a.year < b.year) {
@@ -83,5 +83,5 @@ std::chrono::seconds DateTimeToSeconds(const DateTime& time) {
   return std::chrono::seconds(mktime(&tm));
 }
 
+}  // namespace certificate
 }  // namespace cast
-}  // namespace openscreen

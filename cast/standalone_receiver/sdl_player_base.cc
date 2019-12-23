@@ -16,8 +16,14 @@
 using std::chrono::duration_cast;
 using std::chrono::milliseconds;
 
-namespace openscreen {
+using openscreen::Clock;
+using openscreen::ClockNowFunctionPtr;
+using openscreen::Error;
+using openscreen::ErrorOr;
+using openscreen::TaskRunner;
+
 namespace cast {
+namespace streaming {
 
 SDLPlayerBase::SDLPlayerBase(ClockNowFunctionPtr now_function,
                              TaskRunner* task_runner,
@@ -244,5 +250,5 @@ SDLPlayerBase::PendingFrame::PendingFrame(PendingFrame&&) noexcept = default;
 SDLPlayerBase::PendingFrame& SDLPlayerBase::PendingFrame::operator=(
     PendingFrame&&) noexcept = default;
 
+}  // namespace streaming
 }  // namespace cast
-}  // namespace openscreen

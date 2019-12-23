@@ -8,15 +8,14 @@
 #include "cast/common/channel/message_util.h"
 #include "cast/common/channel/proto/cast_channel.pb.h"
 
-namespace openscreen {
 namespace cast {
+namespace channel {
 
 class AuthContext;
 
-::cast::channel::CastMessage CreateAuthChallengeMessage(
-    const AuthContext& auth_context);
+CastMessage CreateAuthChallengeMessage(const AuthContext& auth_context);
 
+}  // namespace channel
 }  // namespace cast
-}  // namespace openscreen
 
 #endif  // CAST_SENDER_CHANNEL_MESSAGE_UTIL_H_

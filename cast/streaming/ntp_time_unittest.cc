@@ -6,12 +6,13 @@
 
 #include "gtest/gtest.h"
 
+using openscreen::Clock;
 using std::chrono::duration_cast;
 using std::chrono::microseconds;
 using std::chrono::milliseconds;
 
-namespace openscreen {
 namespace cast {
+namespace streaming {
 
 TEST(NtpTimestampTest, SplitsIntoParts) {
   // 1 Jan 1900.
@@ -72,7 +73,8 @@ TEST(NtpTimeConverterTest, ConvertsToNtpTimeAndBack) {
   // our core assumptions (or the design) about the time math are wrong and
   // should be looked into!
   const Clock::time_point steady_clock_start = Clock::now();
-  const std::chrono::seconds wall_clock_start = GetWallTimeSinceUnixEpoch();
+  const std::chrono::seconds wall_clock_start =
+      openscreen::GetWallTimeSinceUnixEpoch();
   SCOPED_TRACE(::testing::Message()
                << "steady_clock_start.time_since_epoch().count() is "
                << steady_clock_start.time_since_epoch().count()
@@ -104,5 +106,5 @@ TEST(NtpTimeConverterTest, ConvertsToNtpTimeAndBack) {
   }
 }
 
+}  // namespace streaming
 }  // namespace cast
-}  // namespace openscreen

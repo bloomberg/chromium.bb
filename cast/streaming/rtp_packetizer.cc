@@ -14,8 +14,10 @@
 #include "util/integer_division.h"
 #include "util/logging.h"
 
-namespace openscreen {
+using openscreen::Clock;
+
 namespace cast {
+namespace streaming {
 
 namespace {
 
@@ -122,7 +124,7 @@ absl::Span<uint8_t> RtpPacketizer::GeneratePacket(const EncryptedFrame& frame,
 int RtpPacketizer::ComputeNumberOfPackets(const EncryptedFrame& frame) const {
   // The total number of packets is computed by assuming the payload will be
   // split-up across as few packets as possible.
-  int num_packets = DividePositivesRoundingUp(
+  int num_packets = openscreen::DividePositivesRoundingUp(
       static_cast<int>(frame.data.size()), max_payload_size());
   // Edge case: There must always be at least one packet, even when there are no
   // payload bytes. Some audio codecs, for example, use zero bytes to represent
@@ -133,5 +135,5 @@ int RtpPacketizer::ComputeNumberOfPackets(const EncryptedFrame& frame) const {
   return num_packets <= int{kMaxAllowedFramePacketId} ? num_packets : -1;
 }
 
+}  // namespace streaming
 }  // namespace cast
-}  // namespace openscreen

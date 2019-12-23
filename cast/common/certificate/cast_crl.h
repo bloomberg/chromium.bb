@@ -17,8 +17,8 @@
 #include "cast/common/certificate/proto/revocation.pb.h"
 #include "platform/base/macros.h"
 
-namespace openscreen {
 namespace cast {
+namespace certificate {
 
 // This class represents the certificate revocation list information parsed from
 // the binary in a protobuf message.
@@ -81,7 +81,7 @@ std::unique_ptr<CastCRL> ParseAndVerifyCRL(const std::string& crl_proto,
                                            const DateTime& time,
                                            TrustStore* trust_store = nullptr);
 
+}  // namespace certificate
 }  // namespace cast
-}  // namespace openscreen
 
 #endif  // CAST_COMMON_CERTIFICATE_CAST_CRL_H_

@@ -16,14 +16,9 @@
 #include "gtest/gtest.h"
 #include "testing/util/read_file.h"
 
-namespace openscreen {
 namespace cast {
+namespace channel {
 namespace {
-
-using ::cast::channel::AuthResponse;
-using ::cast::channel::CastMessage;
-using ::cast::channel::DeviceAuthMessage;
-using ::cast::channel::SignatureAlgorithm;
 
 using ::testing::_;
 using ::testing::ElementsAreArray;
@@ -48,6 +43,8 @@ class DeviceAuthNamespaceHandlerTest : public ::testing::Test {
   VirtualConnectionRouter router_{&manager_};
   DeviceAuthNamespaceHandler auth_handler_{&creds_};
 };
+
+}  // namespace
 
 #define TEST_DATA_PREFIX OPENSCREEN_TEST_DATA_DIR "cast/receiver/channel/"
 
@@ -76,7 +73,7 @@ TEST_F(DeviceAuthNamespaceHandlerTest, AuthResponse) {
   // |router_| and we will catch the result in |challenge_reply|.
   CastMessage auth_challenge;
   const std::string auth_challenge_string =
-      ReadEntireFileToString(TEST_DATA_PREFIX "auth_challenge.pb");
+      openscreen::ReadEntireFileToString(TEST_DATA_PREFIX "auth_challenge.pb");
   ASSERT_TRUE(auth_challenge.ParseFromString(auth_challenge_string));
 
   CastMessage challenge_reply;
@@ -88,13 +85,12 @@ TEST_F(DeviceAuthNamespaceHandlerTest, AuthResponse) {
   fake_cast_socket_pair_.peer_socket->SendMessage(std::move(auth_challenge));
 
   const std::string auth_response_string =
-      ReadEntireFileToString(TEST_DATA_PREFIX "auth_response.pb");
+      openscreen::ReadEntireFileToString(TEST_DATA_PREFIX "auth_response.pb");
   AuthResponse expected_auth_response;
   ASSERT_TRUE(expected_auth_response.ParseFromString(auth_response_string));
 
   DeviceAuthMessage auth_message;
-  ASSERT_EQ(challenge_reply.payload_type(),
-            ::cast::channel::CastMessage_PayloadType_BINARY);
+  ASSERT_EQ(challenge_reply.payload_type(), CastMessage_PayloadType_BINARY);
   ASSERT_TRUE(auth_message.ParseFromString(challenge_reply.payload_binary()));
   ASSERT_TRUE(auth_message.has_response());
   ASSERT_FALSE(auth_message.has_challenge());
@@ -125,14 +121,13 @@ TEST_F(DeviceAuthNamespaceHandlerTest, BadNonce) {
   // |router_| and we will catch the result in |challenge_reply|.
   CastMessage auth_challenge;
   const std::string auth_challenge_string =
-      ReadEntireFileToString(TEST_DATA_PREFIX "auth_challenge.pb");
+      openscreen::ReadEntireFileToString(TEST_DATA_PREFIX "auth_challenge.pb");
   ASSERT_TRUE(auth_challenge.ParseFromString(auth_challenge_string));
 
   // Change the nonce to be different from what was used to record the correct
   // response originally.
   DeviceAuthMessage msg;
-  ASSERT_EQ(auth_challenge.payload_type(),
-            ::cast::channel::CastMessage_PayloadType_BINARY);
+  ASSERT_EQ(auth_challenge.payload_type(), CastMessage_PayloadType_BINARY);
   ASSERT_TRUE(msg.ParseFromString(auth_challenge.payload_binary()));
   ASSERT_TRUE(msg.has_challenge());
   std::string* nonce = msg.mutable_challenge()->mutable_sender_nonce();
@@ -150,13 +145,12 @@ TEST_F(DeviceAuthNamespaceHandlerTest, BadNonce) {
   fake_cast_socket_pair_.peer_socket->SendMessage(std::move(auth_challenge));
 
   const std::string auth_response_string =
-      ReadEntireFileToString(TEST_DATA_PREFIX "auth_response.pb");
+      openscreen::ReadEntireFileToString(TEST_DATA_PREFIX "auth_response.pb");
   AuthResponse expected_auth_response;
   ASSERT_TRUE(expected_auth_response.ParseFromString(auth_response_string));
 
   DeviceAuthMessage auth_message;
-  ASSERT_EQ(challenge_reply.payload_type(),
-            ::cast::channel::CastMessage_PayloadType_BINARY);
+  ASSERT_EQ(challenge_reply.payload_type(), CastMessage_PayloadType_BINARY);
   ASSERT_TRUE(auth_message.ParseFromString(challenge_reply.payload_binary()));
   ASSERT_TRUE(auth_message.has_response());
   ASSERT_FALSE(auth_message.has_challenge());
@@ -176,13 +170,12 @@ TEST_F(DeviceAuthNamespaceHandlerTest, UnsupportedSignatureAlgorithm) {
   // |router_| and we will catch the result in |challenge_reply|.
   CastMessage auth_challenge;
   const std::string auth_challenge_string =
-      ReadEntireFileToString(TEST_DATA_PREFIX "auth_challenge.pb");
+      openscreen::ReadEntireFileToString(TEST_DATA_PREFIX "auth_challenge.pb");
   ASSERT_TRUE(auth_challenge.ParseFromString(auth_challenge_string));
 
   // Change the signature algorithm an unsupported value.
   DeviceAuthMessage msg;
-  ASSERT_EQ(auth_challenge.payload_type(),
-            ::cast::channel::CastMessage_PayloadType_BINARY);
+  ASSERT_EQ(auth_challenge.payload_type(), CastMessage_PayloadType_BINARY);
   ASSERT_TRUE(msg.ParseFromString(auth_challenge.payload_binary()));
   ASSERT_TRUE(msg.has_challenge());
   msg.mutable_challenge()->set_signature_algorithm(
@@ -200,14 +193,12 @@ TEST_F(DeviceAuthNamespaceHandlerTest, UnsupportedSignatureAlgorithm) {
   fake_cast_socket_pair_.peer_socket->SendMessage(std::move(auth_challenge));
 
   DeviceAuthMessage auth_message;
-  ASSERT_EQ(challenge_reply.payload_type(),
-            ::cast::channel::CastMessage_PayloadType_BINARY);
+  ASSERT_EQ(challenge_reply.payload_type(), CastMessage_PayloadType_BINARY);
   ASSERT_TRUE(auth_message.ParseFromString(challenge_reply.payload_binary()));
   ASSERT_FALSE(auth_message.has_response());
   ASSERT_FALSE(auth_message.has_challenge());
   ASSERT_TRUE(auth_message.has_error());
 }
 
-}  // namespace
+}  // namespace channel
 }  // namespace cast
-}  // namespace openscreen

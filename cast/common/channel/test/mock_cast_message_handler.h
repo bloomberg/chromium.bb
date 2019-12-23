@@ -6,11 +6,10 @@
 #define CAST_COMMON_CHANNEL_TEST_MOCK_CAST_MESSAGE_HANDLER_H_
 
 #include "cast/common/channel/cast_message_handler.h"
-#include "cast/common/channel/proto/cast_channel.pb.h"
 #include "gmock/gmock.h"
 
-namespace openscreen {
 namespace cast {
+namespace channel {
 
 class MockCastMessageHandler final : public CastMessageHandler {
  public:
@@ -18,11 +17,11 @@ class MockCastMessageHandler final : public CastMessageHandler {
               OnMessage,
               (VirtualConnectionRouter * router,
                CastSocket* socket,
-               ::cast::channel::CastMessage message),
+               CastMessage&& message),
               (override));
 };
 
+}  // namespace channel
 }  // namespace cast
-}  // namespace openscreen
 
 #endif  // CAST_COMMON_CHANNEL_TEST_MOCK_CAST_MESSAGE_HANDLER_H_

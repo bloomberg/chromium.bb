@@ -20,8 +20,12 @@
 #include "util/json/json_serialization.h"
 #include "util/logging.h"
 
-namespace openscreen {
 namespace cast {
+namespace streaming {
+
+using openscreen::Error;
+using openscreen::ErrorOr;
+using ErrorCode = openscreen::Error::Code;
 
 namespace {
 
@@ -81,8 +85,8 @@ ErrorOr<std::array<uint8_t, 16>> ParseAesHexBytes(const Json::Value& parent,
       std::none_of(hex_string.value().begin(), hex_string.value().end(),
                    [](char c) { return std::isspace(c); })) {
     std::array<uint8_t, 16> bytes;
-    WriteBigEndian(quads[0], bytes.data());
-    WriteBigEndian(quads[1], bytes.data() + 8);
+    openscreen::WriteBigEndian(quads[0], bytes.data());
+    openscreen::WriteBigEndian(quads[1], bytes.data() + 8);
     return bytes;
   }
   return CreateParseError("AES hex string bytes");
@@ -282,7 +286,8 @@ std::string CastMode::ToString() const {
 ErrorOr<Offer> Offer::Parse(const Json::Value& root) {
   CastMode cast_mode = CastMode::Parse(root["castMode"].asString());
 
-  const ErrorOr<bool> get_status = ParseBool(root, "receiverGetStatus");
+  const openscreen::ErrorOr<bool> get_status =
+      ParseBool(root, "receiverGetStatus");
 
   Json::Value supported_streams = root[kSupportedStreams];
   if (!supported_streams.isArray()) {
@@ -317,5 +322,5 @@ ErrorOr<Offer> Offer::Parse(const Json::Value& root) {
                std::move(video_streams)};
 }
 
+}  // namespace streaming
 }  // namespace cast
-}  // namespace openscreen
