@@ -279,6 +279,12 @@ static int choose_primary_ref_frame(
     return PRIMARY_REF_NONE;
   }
 
+  // In large scale case, always use Last frame's frame contexts.
+  // Note(yunqing): In other cases, primary_ref_frame is chosen based on
+  // cpi->gf_group.layer_depth[cpi->gf_group.index], which also controls
+  // frame bit allocation.
+  if (cm->large_scale_tile) return (LAST_FRAME - LAST_FRAME);
+
   // Find the most recent reference frame with the same reference type as the
   // current frame
   FRAME_CONTEXT_INDEX current_ref_type =
