@@ -35,8 +35,7 @@
 extern "C" {
 #endif
 
-// Set to (1 << 5) if the 32-ary codebooks are used for any bock size
-#define MAX_WEDGE_TYPES (1 << 4)
+#define MAX_WEDGE_TYPES 16
 
 #define MAX_WEDGE_SIZE_LOG2 5  // 32x32
 #define MAX_WEDGE_SIZE (1 << MAX_WEDGE_SIZE_LOG2)
@@ -67,7 +66,7 @@ typedef struct {
 typedef uint8_t *wedge_masks_type[MAX_WEDGE_TYPES];
 
 typedef struct {
-  int bits;
+  int wedge_types;
   const wedge_code_type *codebook;
   uint8_t *signflip;
   wedge_masks_type *masks;
@@ -211,7 +210,7 @@ static INLINE int is_interinter_compound_used(COMPOUND_TYPE type,
     case COMPOUND_DISTWTD:
     case COMPOUND_DIFFWTD: return comp_allowed;
     case COMPOUND_WEDGE:
-      return comp_allowed && av1_wedge_params_lookup[sb_type].bits > 0;
+      return comp_allowed && av1_wedge_params_lookup[sb_type].wedge_types > 0;
     default: assert(0); return 0;
   }
 }
@@ -229,21 +228,12 @@ static INLINE int is_any_masked_compound_used(BLOCK_SIZE sb_type) {
   return 0;
 }
 
-static INLINE int get_wedge_bits_lookup(BLOCK_SIZE sb_type) {
-  return av1_wedge_params_lookup[sb_type].bits;
+static INLINE int get_wedge_types_lookup(BLOCK_SIZE sb_type) {
+  return av1_wedge_params_lookup[sb_type].wedge_types;
 }
 
-static INLINE int get_interinter_wedge_bits(BLOCK_SIZE sb_type) {
-  const int wbits = av1_wedge_params_lookup[sb_type].bits;
-  return (wbits > 0) ? wbits + 1 : 0;
-}
-
-static INLINE int is_interintra_wedge_used(BLOCK_SIZE sb_type) {
-  return av1_wedge_params_lookup[sb_type].bits > 0;
-}
-
-static INLINE int get_interintra_wedge_bits(BLOCK_SIZE sb_type) {
-  return av1_wedge_params_lookup[sb_type].bits;
+static INLINE int av1_is_wedge_used(BLOCK_SIZE sb_type) {
+  return av1_wedge_params_lookup[sb_type].wedge_types > 0;
 }
 
 void av1_make_inter_predictor(const uint8_t *src, int src_stride, uint8_t *dst,

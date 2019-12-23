@@ -272,19 +272,19 @@ const wedge_params_type av1_wedge_params_lookup[BLOCK_SIZES_ALL] = {
   { 0, NULL, NULL, NULL },
   { 0, NULL, NULL, NULL },
   { 0, NULL, NULL, NULL },
-  { 4, wedge_codebook_16_heqw, wedge_signflip_lookup[BLOCK_8X8],
+  { MAX_WEDGE_TYPES, wedge_codebook_16_heqw, wedge_signflip_lookup[BLOCK_8X8],
     wedge_masks[BLOCK_8X8] },
-  { 4, wedge_codebook_16_hgtw, wedge_signflip_lookup[BLOCK_8X16],
+  { MAX_WEDGE_TYPES, wedge_codebook_16_hgtw, wedge_signflip_lookup[BLOCK_8X16],
     wedge_masks[BLOCK_8X16] },
-  { 4, wedge_codebook_16_hltw, wedge_signflip_lookup[BLOCK_16X8],
+  { MAX_WEDGE_TYPES, wedge_codebook_16_hltw, wedge_signflip_lookup[BLOCK_16X8],
     wedge_masks[BLOCK_16X8] },
-  { 4, wedge_codebook_16_heqw, wedge_signflip_lookup[BLOCK_16X16],
+  { MAX_WEDGE_TYPES, wedge_codebook_16_heqw, wedge_signflip_lookup[BLOCK_16X16],
     wedge_masks[BLOCK_16X16] },
-  { 4, wedge_codebook_16_hgtw, wedge_signflip_lookup[BLOCK_16X32],
+  { MAX_WEDGE_TYPES, wedge_codebook_16_hgtw, wedge_signflip_lookup[BLOCK_16X32],
     wedge_masks[BLOCK_16X32] },
-  { 4, wedge_codebook_16_hltw, wedge_signflip_lookup[BLOCK_32X16],
+  { MAX_WEDGE_TYPES, wedge_codebook_16_hltw, wedge_signflip_lookup[BLOCK_32X16],
     wedge_masks[BLOCK_32X16] },
-  { 4, wedge_codebook_16_heqw, wedge_signflip_lookup[BLOCK_32X32],
+  { MAX_WEDGE_TYPES, wedge_codebook_16_heqw, wedge_signflip_lookup[BLOCK_32X32],
     wedge_masks[BLOCK_32X32] },
   { 0, NULL, NULL, NULL },
   { 0, NULL, NULL, NULL },
@@ -294,9 +294,9 @@ const wedge_params_type av1_wedge_params_lookup[BLOCK_SIZES_ALL] = {
   { 0, NULL, NULL, NULL },
   { 0, NULL, NULL, NULL },
   { 0, NULL, NULL, NULL },
-  { 4, wedge_codebook_16_hgtw, wedge_signflip_lookup[BLOCK_8X32],
+  { MAX_WEDGE_TYPES, wedge_codebook_16_hgtw, wedge_signflip_lookup[BLOCK_8X32],
     wedge_masks[BLOCK_8X32] },
-  { 4, wedge_codebook_16_hltw, wedge_signflip_lookup[BLOCK_32X8],
+  { MAX_WEDGE_TYPES, wedge_codebook_16_hltw, wedge_signflip_lookup[BLOCK_32X8],
     wedge_masks[BLOCK_32X8] },
   { 0, NULL, NULL, NULL },
   { 0, NULL, NULL, NULL },
@@ -313,8 +313,7 @@ static const uint8_t *get_wedge_mask_inplace(int wedge_index, int neg,
   const uint8_t wsignflip =
       av1_wedge_params_lookup[sb_type].signflip[wedge_index];
 
-  assert(wedge_index >= 0 &&
-         wedge_index < (1 << get_wedge_bits_lookup(sb_type)));
+  assert(wedge_index >= 0 && wedge_index < get_wedge_types_lookup(sb_type));
   woff = (a->x_offset * bw) >> 3;
   hoff = (a->y_offset * bh) >> 3;
   master = wedge_mask_obl[neg ^ wsignflip][a->direction] +
@@ -531,14 +530,13 @@ static AOM_INLINE void init_wedge_masks() {
   BLOCK_SIZE bsize;
   memset(wedge_masks, 0, sizeof(wedge_masks));
   for (bsize = BLOCK_4X4; bsize < BLOCK_SIZES_ALL; ++bsize) {
+    const wedge_params_type *wedge_params = &av1_wedge_params_lookup[bsize];
+    const int wtypes = wedge_params->wedge_types;
+    if (wtypes == 0) continue;
     const uint8_t *mask;
     const int bw = block_size_wide[bsize];
     const int bh = block_size_high[bsize];
-    const wedge_params_type *wedge_params = &av1_wedge_params_lookup[bsize];
-    const int wbits = wedge_params->bits;
-    const int wtypes = 1 << wbits;
     int w;
-    if (wbits == 0) continue;
     for (w = 0; w < wtypes; ++w) {
       mask = get_wedge_mask_inplace(w, 0, bsize);
       aom_convolve_copy(mask, MASK_MASTER_STRIDE, dst, bw, NULL, 0, NULL, 0, bw,
@@ -1088,7 +1086,7 @@ static AOM_INLINE void combine_interintra(
   const int bh = block_size_high[plane_bsize];
 
   if (use_wedge_interintra) {
-    if (is_interintra_wedge_used(bsize)) {
+    if (av1_is_wedge_used(bsize)) {
       const uint8_t *mask =
           av1_get_contiguous_soft_mask(wedge_index, wedge_sign, bsize);
       const int subw = 2 * mi_size_wide[bsize] == bw;
@@ -1116,7 +1114,7 @@ static AOM_INLINE void combine_interintra_highbd(
   const int bh = block_size_high[plane_bsize];
 
   if (use_wedge_interintra) {
-    if (is_interintra_wedge_used(bsize)) {
+    if (av1_is_wedge_used(bsize)) {
       const uint8_t *mask =
           av1_get_contiguous_soft_mask(wedge_index, wedge_sign, bsize);
       const int subh = 2 * mi_size_high[bsize] == bh;

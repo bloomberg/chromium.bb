@@ -1369,12 +1369,12 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
       mbmi->angle_delta[PLANE_TYPE_Y] = 0;
       mbmi->angle_delta[PLANE_TYPE_UV] = 0;
       mbmi->filter_intra_mode_info.use_filter_intra = 0;
-      if (is_interintra_wedge_used(bsize)) {
+      if (av1_is_wedge_used(bsize)) {
         mbmi->use_wedge_interintra = aom_read_symbol(
             r, ec_ctx->wedge_interintra_cdf[bsize], 2, ACCT_STR);
         if (mbmi->use_wedge_interintra) {
           mbmi->interintra_wedge_index = (int8_t)aom_read_symbol(
-              r, ec_ctx->wedge_idx_cdf[bsize], 16, ACCT_STR);
+              r, ec_ctx->wedge_idx_cdf[bsize], MAX_WEDGE_TYPES, ACCT_STR);
         }
       }
     }
@@ -1442,7 +1442,7 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
       if (mbmi->interinter_comp.type == COMPOUND_WEDGE) {
         assert(is_interinter_compound_used(COMPOUND_WEDGE, bsize));
         mbmi->interinter_comp.wedge_index = (int8_t)aom_read_symbol(
-            r, ec_ctx->wedge_idx_cdf[bsize], 16, ACCT_STR);
+            r, ec_ctx->wedge_idx_cdf[bsize], MAX_WEDGE_TYPES, ACCT_STR);
         mbmi->interinter_comp.wedge_sign = (int8_t)aom_read_bit(r, ACCT_STR);
       } else {
         assert(mbmi->interinter_comp.type == COMPOUND_DIFFWTD);

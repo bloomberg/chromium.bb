@@ -1154,12 +1154,12 @@ static AOM_INLINE void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
         aom_write_symbol(w, mbmi->interintra_mode,
                          ec_ctx->interintra_mode_cdf[bsize_group],
                          INTERINTRA_MODES);
-        if (is_interintra_wedge_used(bsize)) {
+        if (av1_is_wedge_used(bsize)) {
           aom_write_symbol(w, mbmi->use_wedge_interintra,
                            ec_ctx->wedge_interintra_cdf[bsize], 2);
           if (mbmi->use_wedge_interintra) {
             aom_write_symbol(w, mbmi->interintra_wedge_index,
-                             ec_ctx->wedge_idx_cdf[bsize], 16);
+                             ec_ctx->wedge_idx_cdf[bsize], MAX_WEDGE_TYPES);
           }
         }
       }
@@ -1210,7 +1210,7 @@ static AOM_INLINE void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
         if (mbmi->interinter_comp.type == COMPOUND_WEDGE) {
           assert(is_interinter_compound_used(COMPOUND_WEDGE, bsize));
           aom_write_symbol(w, mbmi->interinter_comp.wedge_index,
-                           ec_ctx->wedge_idx_cdf[bsize], 16);
+                           ec_ctx->wedge_idx_cdf[bsize], MAX_WEDGE_TYPES);
           aom_write_bit(w, mbmi->interinter_comp.wedge_sign);
         } else {
           assert(mbmi->interinter_comp.type == COMPOUND_DIFFWTD);

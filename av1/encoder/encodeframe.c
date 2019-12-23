@@ -1295,7 +1295,7 @@ static AOM_INLINE void update_stats(const AV1_COMMON *const cm, ThreadData *td,
 #endif
           update_cdf(fc->interintra_mode_cdf[bsize_group],
                      mbmi->interintra_mode, INTERINTRA_MODES);
-          if (is_interintra_wedge_used(bsize)) {
+          if (av1_is_wedge_used(bsize)) {
 #if CONFIG_ENTROPY_STATS
             counts->wedge_interintra[bsize][mbmi->use_wedge_interintra]++;
 #endif

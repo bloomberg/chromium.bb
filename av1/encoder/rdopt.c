@@ -6915,7 +6915,7 @@ static INLINE int get_interinter_compound_mask_rate(
   const COMPOUND_TYPE compound_type = mbmi->interinter_comp.type;
   // This function will be called only for COMPOUND_WEDGE and COMPOUND_DIFFWTD
   if (compound_type == COMPOUND_WEDGE) {
-    return get_interinter_wedge_bits(mbmi->sb_type) > 0
+    return av1_is_wedge_used(mbmi->sb_type)
                ? av1_cost_literal(1) +
                      x->wedge_idx_cost[mbmi->sb_type]
                                       [mbmi->interinter_comp.wedge_index]
@@ -7853,7 +7853,7 @@ static int64_t pick_wedge(const AV1_COMP *const cpi, const MACROBLOCK *const x,
   int64_t rd, best_rd = INT64_MAX;
   int8_t wedge_index;
   int8_t wedge_sign;
-  int8_t wedge_types = (1 << get_wedge_bits_lookup(bsize));
+  const int8_t wedge_types = get_wedge_types_lookup(bsize);
   const uint8_t *mask;
   uint64_t sse;
   const int hbd = is_cur_buf_hbd(xd);
@@ -7929,7 +7929,7 @@ static int64_t pick_wedge_fixed_sign(const AV1_COMP *const cpi,
   int64_t dist;
   int64_t rd, best_rd = INT64_MAX;
   int8_t wedge_index;
-  int8_t wedge_types = (1 << get_wedge_bits_lookup(bsize));
+  const int8_t wedge_types = get_wedge_types_lookup(bsize);
   const uint8_t *mask;
   uint64_t sse;
   const int hbd = is_cur_buf_hbd(xd);
@@ -8041,7 +8041,7 @@ static int64_t pick_interintra_wedge(const AV1_COMP *const cpi,
                                      const uint8_t *const p1) {
   const MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = xd->mi[0];
-  assert(is_interintra_wedge_used(bsize));
+  assert(av1_is_wedge_used(bsize));
   assert(cpi->common.seq_params.enable_interintra_compound);
 
   const struct buf_2d *const src = &x->plane[0].src;
@@ -9479,7 +9479,7 @@ static int handle_inter_intra_mode(const AV1_COMP *const cpi,
                                    int *tmp_rate2, const BUFFER_SET *orig_dst) {
   const int try_smooth_interintra = cpi->oxcf.enable_smooth_interintra &&
                                     !cpi->sf.inter_sf.disable_smooth_interintra;
-  const int is_wedge_used = is_interintra_wedge_used(bsize);
+  const int is_wedge_used = av1_is_wedge_used(bsize);
   const int try_wedge_interintra =
       is_wedge_used && enable_wedge_interintra_search(x, cpi);
   if (!try_smooth_interintra && !try_wedge_interintra) return -1;
@@ -9990,7 +9990,7 @@ static int64_t motion_mode_rd(
       if (mbmi->ref_frame[1] == INTRA_FRAME) {
         rd_stats->rate += x->interintra_mode_cost[size_group_lookup[bsize]]
                                                  [mbmi->interintra_mode];
-        if (is_interintra_wedge_used(bsize)) {
+        if (av1_is_wedge_used(bsize)) {
           rd_stats->rate +=
               x->wedge_interintra_cost[bsize][mbmi->use_wedge_interintra];
           if (mbmi->use_wedge_interintra) {
