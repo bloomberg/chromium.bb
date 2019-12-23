@@ -42,6 +42,7 @@
   factory-hatch-12692.B-buildspec
     hatch-factory-hatch-12692.B-factorybranch
   factory-kukui-12587.B-buildspec
+    jacuzzi-factory-kukui-12587.B-factorybranch
     kukui-factory-kukui-12587.B-factorybranch
   factory-mistral-12361.B-buildspec
     mistral-factory-mistral-12361.B-factorybranch
@@ -881,6 +882,7 @@
   factory-hatch-12692.B-buildspec-tryjob
     hatch-factory-hatch-12692.B-factorybranch-tryjob
   factory-kukui-12587.B-buildspec-tryjob
+    jacuzzi-factory-kukui-12587.B-factorybranch-tryjob
     kukui-factory-kukui-12587.B-factorybranch-tryjob
   factory-mistral-12361.B-buildspec-tryjob
     mistral-factory-mistral-12361.B-factorybranch-tryjob
@@ -1180,6 +1182,7 @@
   heli-payloads-tryjob
   heli-release-tryjob
   heli-unittest-stress
+  jacuzzi-factory-kukui-12587.B-factorybranch-tryjob
   jacuzzi-full-tryjob
   jacuzzi-llvm-next-toolchain-tryjob
   jacuzzi-llvm-toolchain-tryjob

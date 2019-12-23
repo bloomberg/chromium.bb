@@ -11467,6 +11467,7 @@
         "display_label": "factory",
         "schedule": "with 168h interval",
         "slave_configs": [
+            "jacuzzi-factory-kukui-12587.B-factorybranch",
             "kukui-factory-kukui-12587.B-factorybranch"
         ],
         "workspace_branch": "factory-kukui-12587.B"
@@ -11479,6 +11480,7 @@
         "display_label": "tryjob",
         "luci_builder": "Try",
         "slave_configs": [
+            "jacuzzi-factory-kukui-12587.B-factorybranch-tryjob",
             "kukui-factory-kukui-12587.B-factorybranch-tryjob"
         ],
         "workspace_branch": "factory-kukui-12587.B"
@@ -12709,7 +12711,8 @@
     "firmware-kukui-12573.B-firmwarebranch": {
         "_template": "firmwarebranch",
         "boards": [
-            "kukui"
+            "kukui",
+            "jacuzzi"
         ],
         "schedule": "with 168h interval",
         "workspace_branch": "firmware-kukui-12573.B"
@@ -12717,7 +12720,8 @@
     "firmware-kukui-12573.B-firmwarebranch-tryjob": {
         "_template": "firmwarebranch",
         "boards": [
-            "kukui"
+            "kukui",
+            "jacuzzi"
         ],
         "debug": true,
         "display_label": "tryjob",
@@ -17456,6 +17460,26 @@
         "useflags": [
             "chrome_internal"
         ]
+    },
+    "jacuzzi-factory-kukui-12587.B-factorybranch": {
+        "_template": "factorybranch",
+        "boards": [
+            "jacuzzi"
+        ],
+        "workspace_branch": "factory-kukui-12587.B"
+    },
+    "jacuzzi-factory-kukui-12587.B-factorybranch-tryjob": {
+        "_template": "factorybranch",
+        "boards": [
+            "jacuzzi"
+        ],
+        "debug": true,
+        "display_label": "tryjob",
+        "hw_tests_override": null,
+        "luci_builder": "Try",
+        "push_image": false,
+        "suite_scheduling": false,
+        "workspace_branch": "factory-kukui-12587.B"
     },
     "jacuzzi-full": {
         "_template": "full",

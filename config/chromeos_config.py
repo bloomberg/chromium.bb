@@ -2077,7 +2077,7 @@ def FirmwareBuilders(site_config, _boards_dict, _ge_build_config):
       (WEEKLY, 'firmware-atlas-11827.B', ['atlas'], {}),
       (WEEKLY, 'firmware-sarien-12200.B', ['sarien'], {}),
       (WEEKLY, 'firmware-mistral-12422.B', ['mistral'], {}),
-      (WEEKLY, 'firmware-kukui-12573.B', ['kukui'], {}),
+      (WEEKLY, 'firmware-kukui-12573.B', ['kukui', 'jacuzzi'], {}),
       (DAILY, 'firmware-hatch-12672.B', ['hatch'], {}),
   ]
 
@@ -2153,7 +2153,7 @@ def FactoryBuilders(site_config, _boards_dict, _ge_build_config):
       (WEEKLY, 'factory-atlas-11907.B', ['atlas']),
       (WEEKLY, 'factory-sarien-12033.B', ['sarien']),
       (WEEKLY, 'factory-mistral-12361.B', ['mistral']),
-      (WEEKLY, 'factory-kukui-12587.B', ['kukui']),
+      (WEEKLY, 'factory-kukui-12587.B', ['kukui', 'jacuzzi']),
       (WEEKLY, 'factory-hatch-12692.B', ['hatch']),
       # This is intended to create master branch tryjobs, NOT for production
       # builds. Update the associated list of boards as needed.
