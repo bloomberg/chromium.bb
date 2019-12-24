@@ -561,9 +561,9 @@ class UpdateChromeosLKGMStage(generic_stages.BuilderStage):
     num_builds = 0
     num_failures = 0
     for status in self.buildstore.GetBuildStatuses(buildbucket_ids=ids):
-      if status.important:
+      if status.get('important'):
         num_builds += 1
-        if status.status != constants.BUILDER_STATUS_PASSED:
+        if status.get('status') != constants.BUILDER_STATUS_PASSED:
           num_failures += 1
     logging.info('%d of %d important builds failed.', num_failures, num_builds)
     if num_builds > 0:
