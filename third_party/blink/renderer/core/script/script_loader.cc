@@ -573,7 +573,8 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
       // script CORS setting, and encoding.</spec>
       Document* document_for_origin = &element_document;
       if (base::FeatureList::IsEnabled(
-              features::kHtmlImportsRequestInitiatorLock)) {
+              features::kHtmlImportsRequestInitiatorLock) &&
+          element_document.ImportsController()) {
         document_for_origin = context_document;
       }
       FetchClassicScript(url, *document_for_origin, options, cross_origin,
