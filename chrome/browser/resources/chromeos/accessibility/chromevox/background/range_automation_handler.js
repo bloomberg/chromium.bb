@@ -56,8 +56,6 @@ RangeAutomationHandler.prototype = {
         newRange.start.node;
 
     this.addListener_(
-        EventType.ACTIVEDESCENDANTCHANGED, this.onActiveDescendantChanged);
-    this.addListener_(
         EventType.ARIA_ATTRIBUTE_CHANGED, this.onAriaAttributeChanged);
     this.addListener_(EventType.AUTOCORRECTION_OCCURED, this.onEventIfInRange);
     this.addListener_(
@@ -135,21 +133,6 @@ RangeAutomationHandler.prototype = {
         !evt.target.selected)
       return;
 
-    this.onEventIfInRange(evt);
-  },
-
-  /**
-   * Handles active descendant changes.
-   * @param {!AutomationEvent} evt
-   */
-  onActiveDescendantChanged: function(evt) {
-    if (!evt.target.activeDescendant || !evt.target.state.focused) {
-      return;
-    }
-
-    // Various events might come before a key press (which forces flushed
-    // speech) and this handler. Force output to be at least category flushed.
-    Output.forceModeForNextSpeechUtterance(QueueMode.CATEGORY_FLUSH);
     this.onEventIfInRange(evt);
   },
 
