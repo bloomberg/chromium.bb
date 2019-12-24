@@ -153,12 +153,11 @@ void AppShimController::FindOrLaunchChrome() {
   // Otherwise, launch Chrome.
   base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
   command_line.AppendSwitch(switches::kSilentLaunch);
-  command_line.AppendSwitchPath(switches::kProfileDirectory,
-                                params_.profile_dir);
   command_line.AppendSwitchPath(switches::kUserDataDir, params_.user_data_dir);
   chrome_launched_by_app_.reset(base::mac::OpenApplicationWithPath(
-      base::mac::OuterBundlePath(), command_line,
-      NSWorkspaceLaunchNewInstance));
+                                    base::mac::OuterBundlePath(), command_line,
+                                    NSWorkspaceLaunchNewInstance),
+                                base::scoped_policy::RETAIN);
   if (!chrome_launched_by_app_)
     LOG(FATAL) << "Failed to launch Chrome.";
 }
