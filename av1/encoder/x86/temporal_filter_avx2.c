@@ -139,7 +139,7 @@ void av1_temporal_filter_plane_avx2(uint8_t *frame1, unsigned int stride,
   (void)blk_fw;
   (void)use_32x32;
   const double decay = decay_control * exp(1 - sigma);
-  const double h = decay * sigma;
+  const double h = AOMMAX(decay * sigma, 0.1);
   const double beta = 1.0;
 
   uint16_t frame_sse[SSE_STRIDE * BH];
