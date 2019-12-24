@@ -37,6 +37,8 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/timer/elapsed_timer.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
+#include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
+#include "third_party/blink/public/mojom/ukm/ukm.mojom-blink.h"
 #include "third_party/blink/public/platform/web_focus_type.h"
 #include "third_party/blink/public/platform/web_insecure_request_policy.h"
 #include "third_party/blink/renderer/core/accessibility/axid.h"
@@ -1614,6 +1616,8 @@ class CORE_EXPORT Document : public ContainerNode,
   void ClearUseCounterForTesting(mojom::WebFeature);
   void SetSecurityOrigin(scoped_refptr<SecurityOrigin>) final;
 
+  void RecordCallInDetachedWindow(v8::Isolate::UseCounterFeature reason);
+
   // Bind Content Security Policy to this document. This will cause the
   // CSP to resolve the 'self' attribute and all policies will then be
   // applied to this document.
@@ -1810,6 +1814,12 @@ class CORE_EXPORT Document : public ContainerNode,
 
   void ProcessDisplayLockActivationObservation(
       const HeapVector<Member<IntersectionObserverEntry>>&);
+
+  void SetNavigationSourceId(int64_t source_id);
+
+  // TODO(bartekn): Remove after investigation is completed.
+  void EmitDetachedWindowsUkmEvent(
+      const HashSet<v8::Isolate::UseCounterFeature>& reasons);
 
   DocumentLifecycle lifecycle_;
 
@@ -2088,6 +2098,10 @@ class CORE_EXPORT Document : public ContainerNode,
   int64_t ukm_source_id_;
   bool needs_to_record_ukm_outlive_time_;
 
+  std::unique_ptr<mojo::AssociatedRemote<mojom::blink::UkmSourceIdFrameHost>>
+      ukm_binding_;
+  uint64_t navigation_source_id_ = ukm::kInvalidSourceId;
+
   // Tracks and reports UKM metrics of the number of attempted font family match
   // attempts (both successful and not successful) by the page.
   std::unique_ptr<FontMatchingMetrics> font_matching_metrics_;
@@ -2186,6 +2200,9 @@ class CORE_EXPORT Document : public ContainerNode,
       element_explicitly_set_attr_elements_map_;
 
   Member<IntersectionObserver> display_lock_activation_observer_;
+
+  HashSet<v8::Isolate::UseCounterFeature> calls_in_detached_window_orphaned_;
+  HashSet<v8::Isolate::UseCounterFeature> calls_in_detached_window_emitted_;
 };
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT Supplement<Document>;
