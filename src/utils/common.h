@@ -294,27 +294,27 @@ constexpr bool IsDirectionalMode(PredictionMode mode) {
 // actual value for |b|.)
 //
 // First, consider the order hints 2 and 6. For this simple case, we have
-//   GetRelativeDistance(2, 6, true, 4) = 2 - 6 = -4, and
-//   GetRelativeDistance(6, 2, true, 4) = 6 - 2 = 4.
+//   GetRelativeDistance(2, 6, 8) = 2 - 6 = -4, and
+//   GetRelativeDistance(6, 2, 8) = 6 - 2 = 4.
 //
 // On the other hand, consider the order hints 2 and 14. The order hints are
 // 12 (> 7) apart, so we need to use the actual values instead. The actual
 // values may be 34 (= 2 mod 16) and 30 (= 14 mod 16), respectively. Therefore
 // we have
-//   GetRelativeDistance(2, 14, true, 4) = 34 - 30 = 4, and
-//   GetRelativeDistance(14, 2, true, 4) = 30 - 34 = -4.
-inline int GetRelativeDistance(int a, int b, bool enable_order_hint,
-                               int order_hint_bits) {
-  if (!enable_order_hint) {
-    assert(order_hint_bits == 0);
-    return 0;
+//   GetRelativeDistance(2, 14, 8) = 34 - 30 = 4, and
+//   GetRelativeDistance(14, 2, 8) = 30 - 34 = -4.
+inline int GetRelativeDistance(const unsigned int a, const unsigned int b,
+                               const unsigned int order_hint_range) {
+  assert(order_hint_range <= 128);
+  if (order_hint_range == 0) {
+    assert(a == 0);
+    assert(b == 0);
+  } else {
+    assert(a < 2 * order_hint_range);
+    assert(b < 2 * order_hint_range);
   }
-  assert(order_hint_bits > 0);
-  assert(a >= 0 && a < (1 << order_hint_bits));
-  assert(b >= 0 && b < (1 << order_hint_bits));
   const int diff = a - b;
-  const int m = 1 << (order_hint_bits - 1);
-  return (diff & (m - 1)) - (diff & m);
+  return (diff & (order_hint_range - 1)) - (diff & order_hint_range);
 }
 
 inline bool IsBlockSmallerThan8x8(BlockSize size) {

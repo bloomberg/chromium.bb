@@ -442,9 +442,11 @@ bool Tile::Init() {
     }
   }
   if (frame_header_.use_ref_frame_mvs) {
-    SetupMotionField(sequence_header_, frame_header_, current_frame_,
-                     reference_frames_, motion_field_, row4x4_start_,
-                     row4x4_end_, column4x4_start_, column4x4_end_);
+    assert(sequence_header_.enable_order_hint);
+    SetupMotionField(frame_header_, current_frame_, reference_frames_,
+                     sequence_header_.order_hint_range, row4x4_start_,
+                     row4x4_end_, column4x4_start_, column4x4_end_,
+                     motion_field_);
   }
   ResetLoopRestorationParams();
   initialized_ = true;
@@ -2407,8 +2409,7 @@ void Tile::StoreMotionFieldMvsIntoCurrentFrame(const Block& block) {
             reference_order_hint_
                 [frame_header_.reference_frame_index[bp.reference_frame[i] -
                                                      kReferenceFrameLast]],
-            frame_header_.order_hint, sequence_header_.enable_order_hint,
-            sequence_header_.order_hint_bits) < 0) {
+            frame_header_.order_hint, sequence_header_.order_hint_range) < 0) {
       reference_frame_to_store = bp.reference_frame[i];
       mv_to_store = bp.mv[i];
       break;

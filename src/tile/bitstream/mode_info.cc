@@ -1100,12 +1100,10 @@ uint16_t* Tile::GetIsCompoundTypeAverageCdf(const Block& block) {
   const BlockParameters& bp = *block.bp;
   const int forward = std::abs(GetRelativeDistance(
       current_frame_.order_hint(bp.reference_frame[0]),
-      frame_header_.order_hint, sequence_header_.enable_order_hint,
-      sequence_header_.order_hint_bits));
+      frame_header_.order_hint, sequence_header_.order_hint_range));
   const int backward = std::abs(GetRelativeDistance(
       current_frame_.order_hint(bp.reference_frame[1]),
-      frame_header_.order_hint, sequence_header_.enable_order_hint,
-      sequence_header_.order_hint_bits));
+      frame_header_.order_hint, sequence_header_.order_hint_range));
   int context = (forward == backward) ? 3 : 0;
   if (block.top_available) {
     if (!block.IsTopSingle()) {

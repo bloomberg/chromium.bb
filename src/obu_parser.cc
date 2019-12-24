@@ -417,6 +417,8 @@ bool ObuParser::ParseSequenceHeader() {
     if (sequence_header.enable_order_hint) {
       OBU_READ_LITERAL_OR_FAIL(3);
       sequence_header.order_hint_bits = 1 + scratch;
+      sequence_header.order_hint_range =
+          (1 << sequence_header.order_hint_bits) >> 1;
     }
   }
   OBU_READ_BIT_OR_FAIL;
@@ -694,17 +696,15 @@ bool ObuParser::SetFrameReferences(const int8_t last_frame_idx,
   used_frame[last_frame_idx] = true;
   used_frame[gold_frame_idx] = true;
 
-  const int current_frame_hint = 1 << (sequence_header_.order_hint_bits - 1);
-
   // shifted_order_hints contains the expected output order shifted such that
-  // the current frame has hint equal to current_frame_hint.
+  // the current frame has hint equal to sequence_header_.order_hint_range.
   std::array<int, kNumReferenceFrameTypes> shifted_order_hints;
   for (int i = 0; i < kNumReferenceFrameTypes; ++i) {
-    const int reference_hint = decoder_state_.reference_order_hint[i];
     const int relative_distance = GetRelativeDistance(
-        reference_hint, frame_header_.order_hint,
-        sequence_header_.enable_order_hint, sequence_header_.order_hint_bits);
-    shifted_order_hints[i] = current_frame_hint + relative_distance;
+        decoder_state_.reference_order_hint[i], frame_header_.order_hint,
+        sequence_header_.order_hint_range);
+    shifted_order_hints[i] =
+        sequence_header_.order_hint_range + relative_distance;
   }
 
   // The expected output orders for kReferenceFrameLast and
@@ -714,16 +714,16 @@ bool ObuParser::SetFrameReferences(const int8_t last_frame_idx,
 
   // Section 7.8: It is a requirement of bitstream conformance that
   // lastOrderHint and goldOrderHint are strictly less than curFrameHint.
-  if (last_order_hint >= current_frame_hint ||
-      gold_order_hint >= current_frame_hint) {
+  if (last_order_hint >= sequence_header_.order_hint_range ||
+      gold_order_hint >= sequence_header_.order_hint_range) {
     return false;
   }
 
   // Find a backward reference to the frame with highest output order. If
   // found, set the kReferenceFrameAlternate reference to that backward
   // reference.
-  int ref = FindLatestBackwardReference(current_frame_hint, shifted_order_hints,
-                                        used_frame);
+  int ref = FindLatestBackwardReference(sequence_header_.order_hint_range,
+                                        shifted_order_hints, used_frame);
   if (ref >= 0) {
     frame_header_
         .reference_frame_index[kReferenceFrameAlternate - kReferenceFrameLast] =
@@ -733,8 +733,8 @@ bool ObuParser::SetFrameReferences(const int8_t last_frame_idx,
 
   // Find a backward reference to the closest frame. If found, set the
   // kReferenceFrameBackward reference to that backward reference.
-  ref = FindEarliestBackwardReference(current_frame_hint, shifted_order_hints,
-                                      used_frame);
+  ref = FindEarliestBackwardReference(sequence_header_.order_hint_range,
+                                      shifted_order_hints, used_frame);
   if (ref >= 0) {
     frame_header_
         .reference_frame_index[kReferenceFrameBackward - kReferenceFrameLast] =
@@ -744,8 +744,8 @@ bool ObuParser::SetFrameReferences(const int8_t last_frame_idx,
 
   // Set the kReferenceFrameAlternate2 reference to the next closest backward
   // reference.
-  ref = FindEarliestBackwardReference(current_frame_hint, shifted_order_hints,
-                                      used_frame);
+  ref = FindEarliestBackwardReference(sequence_header_.order_hint_range,
+                                      shifted_order_hints, used_frame);
   if (ref >= 0) {
     frame_header_.reference_frame_index[kReferenceFrameAlternate2 -
                                         kReferenceFrameLast] = ref;
@@ -761,8 +761,8 @@ bool ObuParser::SetFrameReferences(const int8_t last_frame_idx,
   for (const ReferenceFrameType ref_frame : kRefFrameList) {
     if (frame_header_.reference_frame_index[ref_frame - kReferenceFrameLast] <
         0) {
-      ref = FindLatestForwardReference(current_frame_hint, shifted_order_hints,
-                                       used_frame);
+      ref = FindLatestForwardReference(sequence_header_.order_hint_range,
+                                       shifted_order_hints, used_frame);
       if (ref >= 0) {
         frame_header_.reference_frame_index[ref_frame - kReferenceFrameLast] =
             ref;
@@ -1147,25 +1147,23 @@ bool ObuParser::IsSkipModeAllowed() {
   int forward_hint = -1;
   int backward_hint = -1;
   for (int i = 0; i < kNumInterReferenceFrameTypes; ++i) {
-    const int reference_hint =
+    const unsigned int reference_hint =
         decoder_state_
             .reference_order_hint[frame_header_.reference_frame_index[i]];
-    const int relative_distance = GetRelativeDistance(
-        reference_hint, frame_header_.order_hint,
-        sequence_header_.enable_order_hint, sequence_header_.order_hint_bits);
+    const int relative_distance =
+        GetRelativeDistance(reference_hint, frame_header_.order_hint,
+                            sequence_header_.order_hint_range);
     if (relative_distance < 0) {
       if (forward_index < 0 ||
           GetRelativeDistance(reference_hint, forward_hint,
-                              sequence_header_.enable_order_hint,
-                              sequence_header_.order_hint_bits) > 0) {
+                              sequence_header_.order_hint_range) > 0) {
         forward_index = i;
         forward_hint = reference_hint;
       }
     } else if (relative_distance > 0) {
       if (backward_index < 0 ||
           GetRelativeDistance(reference_hint, backward_hint,
-                              sequence_header_.enable_order_hint,
-                              sequence_header_.order_hint_bits) < 0) {
+                              sequence_header_.order_hint_range) < 0) {
         backward_index = i;
         backward_hint = reference_hint;
       }
@@ -1184,16 +1182,14 @@ bool ObuParser::IsSkipModeAllowed() {
   int second_forward_index = -1;
   int second_forward_hint = -1;
   for (int i = 0; i < kNumInterReferenceFrameTypes; ++i) {
-    const int reference_hint =
+    const unsigned int reference_hint =
         decoder_state_
             .reference_order_hint[frame_header_.reference_frame_index[i]];
     if (GetRelativeDistance(reference_hint, forward_hint,
-                            sequence_header_.enable_order_hint,
-                            sequence_header_.order_hint_bits) < 0) {
+                            sequence_header_.order_hint_range) < 0) {
       if (second_forward_index < 0 ||
           GetRelativeDistance(reference_hint, second_forward_hint,
-                              sequence_header_.enable_order_hint,
-                              sequence_header_.order_hint_bits) > 0) {
+                              sequence_header_.order_hint_range) > 0) {
         second_forward_index = i;
         second_forward_hint = reference_hint;
       }
@@ -2040,8 +2036,7 @@ bool ObuParser::ParseFrameParameters() {
       decoder_state_.current_frame->set_order_hint(reference_frame, hint);
       decoder_state_.reference_frame_sign_bias[reference_frame] =
           GetRelativeDistance(hint, frame_header_.order_hint,
-                              sequence_header_.enable_order_hint,
-                              sequence_header_.order_hint_bits) > 0;
+                              sequence_header_.order_hint_range) > 0;
     }
   }
   if (frame_header_.enable_cdf_update &&

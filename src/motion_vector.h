@@ -56,12 +56,11 @@ void FindWarpSamples(const Tile::Block& block, int* num_warp_samples,
 // Section 7.9.1 in the spec. But this is done per tile instead of for the whole
 // frame.
 void SetupMotionField(
-    const ObuSequenceHeader& sequence_header,
     const ObuFrameHeader& frame_header, const RefCountedBuffer& current_frame,
     const std::array<RefCountedBufferPtr, kNumReferenceFrameTypes>&
         reference_frames,
-    TemporalMotionField* motion_field, int row4x4_start, int row4x4_end,
-    int column4x4_start, int column4x4_end);
+    unsigned int order_hint_range, int row4x4_start, int row4x4_end,
+    int column4x4_start, int column4x4_end, TemporalMotionField* motion_field);
 
 }  // namespace libgav1
 
