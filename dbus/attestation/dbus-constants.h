@@ -36,6 +36,18 @@ constexpr char kResetIdentity[] = "ResetIdentity";
 constexpr char kGetEnrollmentId[] = "GetEnrollmentId";
 constexpr char kGetCertifiedNvIndex[] = "GetCertifiedNvIndex";
 
+namespace pca_agent {
+
+constexpr char kPcaAgentServiceInterface[] = "org.chromium.PcaAgent";
+constexpr char kPcaAgentServicePath[] = "/org/chromium/PcaAgent";
+constexpr char kPcaAgentServiceName[] = "org.chromium.PcaAgent";
+
+// Methods exported by |pca_agentd|.
+constexpr char kEnroll[] = "Enroll";
+constexpr char kGetCertificate[] = "GetCertificate";
+
+}  // namespace pca_agent
+
 }  // namespace attestation
 
 #endif  // SYSTEM_API_DBUS_ATTESTATION_DBUS_CONSTANTS_H_

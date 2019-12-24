@@ -194,6 +194,7 @@ proto_library("system_api-attestation-protos") {
     "${proto_in_dir}/attestation_ca.proto",
     "${proto_in_dir}/interface.proto",
     "${proto_in_dir}/keystore.proto",
+    "${proto_in_dir}/pca_agent.proto",
   ]
   standalone = true
 
