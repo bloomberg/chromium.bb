@@ -1022,6 +1022,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="2445484935443597917">Crear un perfil nuevo</translation>
 <translation id="2446585455334014596"><ph name="APP_NAME" /> quiere verificar tu identidad</translation>
 <translation id="2448312741937722512">Tipo</translation>
+<translation id="2448734521821581858">Las cookies son archivos que crean los sitios web que visitas. Existen dos tipos de cookies. Las propias son aquellas que crea el sitio que visitas (que se muestra en la barra de direcciones). Las cookies de terceros son las que se generan desde otros sitios, a los cuales pertenece parte del contenido que ves en el sitio web que visitas (como anuncios o imágenes).</translation>
 <translation id="2450223707519584812">No podrás agregar usuarios porque faltan las claves de la API de Google. Consulta <ph name="DETAILS_URL" /> para obtener más detalles.</translation>
 <translation id="2450849356604136918">No hay vistas activas</translation>
 <translation id="2451298179137331965">2x</translation>
@@ -2322,7 +2323,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="4275830172053184480">Reiniciar tu dispositivo</translation>
 <translation id="4278101229438943600">Tu Asistente está listo</translation>
 <translation id="4278390842282768270">Permitido</translation>
-<translation id="4281844954008187215">Condiciones del servicio</translation>
+<translation id="4281844954008187215">Condiciones del Servicio</translation>
 <translation id="4282196459431406533">Smart Lock está activado</translation>
 <translation id="4285418559658561636">Actualizar contraseña</translation>
 <translation id="4285498937028063278">No fijar</translation>
@@ -3124,6 +3125,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="5496587651328244253">Organizar</translation>
 <translation id="5499313591153584299">Este archivo puede dañar el equipo.</translation>
 <translation id="5502500733115278303">Importado desde Firefox</translation>
+<translation id="5505264765875738116">Los sitios no podrán preguntarte si quieres recibir notificaciones</translation>
 <translation id="5505307013568720083">Se agotó la tinta</translation>
 <translation id="5507756662695126555">No rechazo</translation>
 <translation id="5509693895992845810">Gu&amp;ardar como...</translation>
@@ -3641,7 +3643,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="6226777517901268232">Archivo de clave privada (opcional)</translation>
 <translation id="6228691855869374890">El sitio tiene el control total de los dispositivos MIDI</translation>
 <translation id="6228720835160974792">Generar código QR para esta imagen</translation>
-<translation id="6229890768313448549">No se pueden cargar las Condiciones del servicio de Google Play. Vuelve a intentarlo.</translation>
+<translation id="6229890768313448549">No se pueden cargar las Condiciones del Servicio de Google Play. Vuelve a intentarlo.</translation>
 <translation id="6231881193380278751">Agregar un parámetro de consulta en la URL para actualizar automáticamente la página: chrome://device-log/?refresh=&lt;sec&gt;</translation>
 <translation id="6232017090690406397">Batería</translation>
 <translation id="6232116551750539448">Se perdió la conexión a <ph name="NAME" />.</translation>
@@ -3663,7 +3665,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="624789221780392884">Actualización lista</translation>
 <translation id="6248988683584659830">Buscar en configuración</translation>
 <translation id="6251870443722440887">A cargo de GDI</translation>
-<translation id="6251889282623539337">Condiciones del servicio de <ph name="DOMAIN" /></translation>
+<translation id="6251889282623539337">Condiciones del Servicio de <ph name="DOMAIN" /></translation>
 <translation id="6254503684448816922">Compromiso de la clave</translation>
 <translation id="6257602895346497974">Activar la sincronización…</translation>
 <translation id="6259104249628300056">Mostrar los dispositivos de la red local</translation>
@@ -3674,6 +3676,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="6267547857941397424">Red <ph name="NETWORK_INDEX" /> de <ph name="NETWORK_COUNT" />, <ph name="PHONE_NAME" />, intensidad de la señal: <ph name="SIGNAL_STRENGTH" />%, nivel de la batería del teléfono: <ph name="BATTERY_STATUS" />%, conectar</translation>
 <translation id="6268252012308737255">Abrir con <ph name="APP" /></translation>
 <translation id="6268718011101775129">NFC</translation>
+<translation id="6270391203985052864">Los sitios podrán preguntarte si quieres recibir notificaciones</translation>
 <translation id="6270770586500173387">Enviar <ph name="BEGIN_LINK2" />métricas<ph name="END_LINK2" /> e <ph name="BEGIN_LINK1" />información de apps y el sistema<ph name="END_LINK1" /></translation>
 <translation id="6272643420381259437">Se produjo un error (<ph name="ERROR" />) al descargar el complemento</translation>
 <translation id="6273677812470008672">Calidad</translation>
@@ -3864,6 +3867,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="6555810572223193255">La limpieza no está disponible en este momento</translation>
 <translation id="6556866813142980365">Rehacer</translation>
 <translation id="6557290421156335491">Mis accesos directos</translation>
+<translation id="6561560012278703671">Usar un tipo de aviso más discreto (bloquear las notificaciones emergentes para evitar interrupciones)</translation>
 <translation id="6561726789132298588">ingresar</translation>
 <translation id="656293578423618167">La ruta de acceso o el nombre del archivo es demasiado largo. Guarda con un nombre más corto o en otra ubicación.</translation>
 <translation id="6563469144985748109">Tu administrador aún no lo aprobó</translation>

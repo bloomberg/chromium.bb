@@ -1024,6 +1024,7 @@
 <translation id="2445484935443597917">కొత్త ప్రొఫైల్‌ను సృష్టించు</translation>
 <translation id="2446585455334014596">మీ గుర్తింపుని ధృవీకరించాలని <ph name="APP_NAME" /> కోరుతోంది</translation>
 <translation id="2448312741937722512">రకం</translation>
+<translation id="2448734521821581858">కుక్కీలు అనేవి మీరు సందర్శించే వెబ్‌సైట్‌ల ఆధారంగా సృష్టించబడిన ఫైల్‌లు. రెండు రకాల కుక్కీలు ఉన్నాయి: మీరు సందర్శించే సైట్‌ల ఆధారంగా మొదటి పక్షం కుక్కీలు సృష్టించబడతాయి. చిరునామా బార్‌లో ఈ సైట్ చూపించబడుతుంది. మూడవ పక్షం కుక్కీల ఆధారంగా ఇతర సైట్‌లు సృష్టించబడతాయి. మీరు సందర్శించే వెబ్‌సైట్‌లో మీరు చూసే ప్రకటనలు లేదా చిత్రాల వంటి, కొంత కంటెంట్‌ను ఈ సైట్‌లు స్వంతంగా కలిగి ఉంటాయి.</translation>
 <translation id="2450223707519584812">Google API కీలు లేనందున మీరు వినియోగదారులను జోడించలేరు. వివరాల కోసం <ph name="DETAILS_URL" /> చూడండి.</translation>
 <translation id="2450849356604136918">సక్రియ వీక్షణలు లేవు</translation>
 <translation id="2451298179137331965">2x</translation>
@@ -3126,6 +3127,7 @@
 <translation id="5496587651328244253">క్రమంగా పేర్చు</translation>
 <translation id="5499313591153584299">ఈ ఫైల్ మీ కంప్యూటర్‌కు హానికరం కావచ్చు.</translation>
 <translation id="5502500733115278303">Firefox నుండి దిగుమతి చెయ్యబడింది</translation>
+<translation id="5505264765875738116">నోటిఫికేషన్‌లను పంపడానికి సైట్‌లు అడగవు</translation>
 <translation id="5505307013568720083">ఇంక్ లేదు</translation>
 <translation id="5507756662695126555">అంగీకరించడం</translation>
 <translation id="5509693895992845810">&amp;ఇలా సేవ్ చేయి...</translation>
@@ -3676,6 +3678,7 @@
 <translation id="6267547857941397424"><ph name="NETWORK_COUNT" />లో <ph name="NETWORK_INDEX" /> నెట్‌వర్క్, <ph name="PHONE_NAME" />, సిగ్నల్ సామర్థ్యం <ph name="SIGNAL_STRENGTH" />%, ఫోన్ బ్యాటరీ <ph name="BATTERY_STATUS" />%, కనెక్ట్ చేయండి</translation>
 <translation id="6268252012308737255"><ph name="APP" />తో తెరువు</translation>
 <translation id="6268718011101775129">NFC</translation>
+<translation id="6270391203985052864">నోటిఫికేషన్‌లను పంపడానికి సైట్‌లు అడుగగలవు</translation>
 <translation id="6270770586500173387"><ph name="BEGIN_LINK1" />సిస్టమ్, యాప్‌ సమాచారాన్ని<ph name="END_LINK1" /> మరియు <ph name="BEGIN_LINK2" />గణాంకాలను<ph name="END_LINK2" /> పంపు</translation>
 <translation id="6272643420381259437">ప్లగ్ఇన్‌‌ను డౌన్‌లోడ్ చేస్తున్నప్పుడు ఎర్రర్ (<ph name="ERROR" />) ఏర్పడింది</translation>
 <translation id="6273677812470008672">నాణ్యత</translation>
@@ -3866,6 +3869,7 @@
 <translation id="6555810572223193255">క్లీనప్ ప్రస్తుతం అందుబాటులో లేదు</translation>
 <translation id="6556866813142980365">మళ్లీ చేయి</translation>
 <translation id="6557290421156335491">నా షార్ట్‌కట్‌లు</translation>
+<translation id="6561560012278703671">నిశ్శబ్ద సందేశాలను ఉపయోగించండి (మీకు అంతరాయం కలిగించకుండా నోటిఫికేషన్ ప్రాంప్ట్‌లను బ్లాక్ చేస్తుంది)</translation>
 <translation id="6561726789132298588">enter</translation>
 <translation id="656293578423618167">ఫైల్ పాత్ లేదా పేరు చాలా పొడవుగా ఉంది. దయచేసి చిన్న పేరుతో, లేదా మరొక స్థానానికి సేవ్ చేయండి.</translation>
 <translation id="6563469144985748109">మీ నిర్వాహకుడు దీన్ని ఇంకా ఆమోదించలేదు</translation>

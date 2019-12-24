@@ -2378,7 +2378,7 @@ Se questa norma non viene impostata, l'impostazione verrà attivata ma gli utent
 
       Questo rilevamento potrebbe non essere necessario in un ambiente aziendale in cui la configurazione di rete è nota, perché causa del traffico DNS e HTTP all'avvio e a ogni modifica della configurazione DNS.
 
-      Se questo criterio non viene impostato o viene attivato, i controlli dell'intercettazione DNS vengono eseguiti. Se viene disattivato i controlli non vengono eseguiti.</translation>
+      Se questo criterio non viene impostato o viene attivato, i controlli dell'intercettazione DNS vengono eseguiti. Se viene disattivato, i controlli non vengono eseguiti.</translation>
 <translation id="4703402283970867140">Attiva il modello di oscuramento smart per ritardare l'oscuramento dello schermo</translation>
 <translation id="4722122254122249791">Attiva isolamento sito per origini specificate</translation>
 <translation id="4722399051042571387">Se questa norma viene impostata su false, gli utenti non potranno impostare PIN non sicuri e facili da intuire.

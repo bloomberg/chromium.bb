@@ -1021,6 +1021,7 @@
 <translation id="2445484935443597917">नयाँ प्रोफाइल बनाउनुहोस्</translation>
 <translation id="2446585455334014596"><ph name="APP_NAME" /> ले तपाईंको पहिचान पुष्टि गर्न चाहन्छ</translation>
 <translation id="2448312741937722512">प्रकार</translation>
+<translation id="2448734521821581858">कुकीहरू भनेका तपाईं जाने वेबसाइटहरूले सिर्जना गर्ने फाइल हुन्। कुकीहरू दुई प्रकारका हुन्छन्: तपाईं जाने साइटले प्रथम पक्षका कुकीहरू बनाउँछ। यो साइट ठेगाना पट्टीमा देखाइन्छ। अन्य साइटहरूले तेस्रो पक्षीय कुकीहरू सिर्जना गर्छन्। तपाईंले जाने वेबसाइटमा तपाईंले देख्ने विज्ञापन वा छविहरू जस्ता केही सामग्री यी साइटहरूको स्वामित्वमा रहन्छन्।</translation>
 <translation id="2450223707519584812">Google API कुञ्जीहरू छुटेको कारण तपाईं प्रयोगकर्ताहरू थप गर्न सक्षम हुनु हुने छैन। विवरणहरूको लागि <ph name="DETAILS_URL" /> हेर्नुहोस्।</translation>
 <translation id="2450849356604136918">कुनै सक्रीय दृश्य छैन</translation>
 <translation id="2451298179137331965">२ गुणा</translation>
@@ -3123,6 +3124,7 @@
 <translation id="5496587651328244253">सुव्यवस्थित गर्नुहोस्</translation>
 <translation id="5499313591153584299">यो फाइल तपाईंको कम्प्युटरका लागि हानिकारक हुन सक्छ।</translation>
 <translation id="5502500733115278303">Firefox बाट आयात गरिएको</translation>
+<translation id="5505264765875738116">साइटहरूले सूचनाहरू पठाउनका निम्ति अनुमति माग्न सक्दैनन्।</translation>
 <translation id="5505307013568720083">मसी सकियो</translation>
 <translation id="5507756662695126555">खण्डन-नगरिएको</translation>
 <translation id="5509693895992845810">यसको &amp;रूपमा बचत गर्नुहोस्...</translation>
@@ -3672,6 +3674,7 @@
 <translation id="6267547857941397424"><ph name="NETWORK_COUNT" />, <ph name="PHONE_NAME" /> मध्ये नेटवर्क <ph name="NETWORK_INDEX" />, सिग्नलको क्षमता <ph name="SIGNAL_STRENGTH" />%, फोनको ब्याट्री <ph name="BATTERY_STATUS" />%, जोड्नुहोस्</translation>
 <translation id="6268252012308737255"><ph name="APP" /> मार्फत खोल्नुहोस्</translation>
 <translation id="6268718011101775129">NFC</translation>
+<translation id="6270391203985052864">साइटहरूले सूचनाहरू पठाउनका निम्ति अनुमति माग्न सक्छन्।</translation>
 <translation id="6270770586500173387"><ph name="BEGIN_LINK1" />प्रणाली तथा अनुप्रयोग सम्बन्धी जानकारी<ph name="END_LINK1" /> र <ph name="BEGIN_LINK2" />मेट्रिक्स<ph name="END_LINK2" /> पठाउनुहोस्</translation>
 <translation id="6272643420381259437">प्लगइन डाउनलोड गर्दा त्रुटि (<ph name="ERROR" />) भयो</translation>
 <translation id="6273677812470008672">गुण</translation>
@@ -3862,6 +3865,7 @@
 <translation id="6555810572223193255">खाली गर्ने सुविधा अब उप्रान्त उपलब्ध छैन</translation>
 <translation id="6556866813142980365">फेरि गर्नुहोस्</translation>
 <translation id="6557290421156335491">मेरा सर्टकटहरू</translation>
+<translation id="6561560012278703671">सुटुक्क सन्देश पठाउने सुविधा प्रयोग गर्नुहोस् (यसले सूचनाका प्रम्प्टलाई आफूलाई बाधा पुर्‍याउनबाट रोक लगाउछ)</translation>
 <translation id="6561726789132298588">प्रविष्टि गर्नुहोस्</translation>
 <translation id="656293578423618167">फाइलको बाटो वा नाम निकै लामो छ । कृपया छोटो नाम दिएर वा अर्को स्थानमा बचत गर्नुहोस् ।</translation>
 <translation id="6563469144985748109">तपाईंको प्रबन्धकले अझै पनि यसलाई अनुमोदन गर्नुभएको छैन</translation>

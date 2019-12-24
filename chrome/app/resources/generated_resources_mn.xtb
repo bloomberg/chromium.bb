@@ -1020,6 +1020,7 @@
 <translation id="2445484935443597917">Шинэ профайл үүсгэх</translation>
 <translation id="2446585455334014596"><ph name="APP_NAME" /> таны аюулгүй байдлын түлхүүрийг баталгаажуулах хүсэлтэй байна</translation>
 <translation id="2448312741937722512">Төрөл</translation>
+<translation id="2448734521821581858">Күүки нь таны зочилдог вэб сайтуудын үүсгэдэг файл юм. Хоёр төрлийн күүки байдаг: Анхдагч талын күүкиг таны зочилдог сайт үүсгэдэг. Сайтыг хаяг оруулах хэсэгт харуулдаг. Гуравдагч талын күүкиг бусад сайт үүсгэдэг. Эдгээр сайт нь таны зочилдог вэб сайт дээрээ хардаг зар эсвэл зураг зэрэг контентын заримыг нь эзэмшдэг.</translation>
 <translation id="2450223707519584812">Google API-н түлхүүр байхгүй учир та хэрэглэгч нэмэх боломжгүй. Дэлгэрэнгүй мэдээлэл авахын тулд <ph name="DETAILS_URL" />-г хараарай.</translation>
 <translation id="2450849356604136918">Идэвхтэй харагдац алга</translation>
 <translation id="2451298179137331965">2x</translation>
@@ -3121,6 +3122,7 @@
 <translation id="5496587651328244253">Зохион байгуулах</translation>
 <translation id="5499313591153584299">Энэ файл нь таны компьютерт хор хөнөөлтэй байж болно.</translation>
 <translation id="5502500733115278303">Firefox-оос импортолж авсан</translation>
+<translation id="5505264765875738116">Сайтууд нь танд мэдэгдэл илгээх зөвшөөрөл асуух боломжгүй</translation>
 <translation id="5505307013568720083">Бэх дууссан</translation>
 <translation id="5507756662695126555">Үл цуцлах</translation>
 <translation id="5509693895992845810">... байдлаар хадгалах</translation>
@@ -3671,6 +3673,7 @@
 <translation id="6267547857941397424">Сүлжээ: <ph name="NETWORK_COUNT" />-н <ph name="NETWORK_INDEX" />, <ph name="PHONE_NAME" />, дохионы хүч <ph name="SIGNAL_STRENGTH" />%, утасны батарей <ph name="BATTERY_STATUS" />%, холбогдох</translation>
 <translation id="6268252012308737255"><ph name="APP" />-р нээх</translation>
 <translation id="6268718011101775129">NFC</translation>
+<translation id="6270391203985052864">Сайтууд нь танд мэдэгдэл илгээх зөвшөөрөл асуух боломжтой</translation>
 <translation id="6270770586500173387"><ph name="BEGIN_LINK1" />Систем, апп-ын мэдээлэл<ph name="END_LINK1" />, <ph name="BEGIN_LINK2" />хэмжигдэхүүн<ph name="END_LINK2" />-г илгээх</translation>
 <translation id="6272643420381259437">Залгаасыг татахад алдаа (<ph name="ERROR" />) гарлаа</translation>
 <translation id="6273677812470008672">Чанар</translation>
@@ -3861,6 +3864,7 @@
 <translation id="6555810572223193255">Одоогоор цэвэрлэх боломжгүй байна</translation>
 <translation id="6556866813142980365">Дахин хийх</translation>
 <translation id="6557290421156335491">Миний товчлол</translation>
+<translation id="6561560012278703671">Илүү чимээгүй зурвасыг ашиглах (мэдэгдлийн сануулгад танд саад болохыг хориглодог)</translation>
 <translation id="6561726789132298588">Оруул</translation>
 <translation id="656293578423618167">Файлын зам эсвэл нэр нь хэтэрхий урт байна. Илүү богино нэрээр эсвэл өөр газарт хадгална уу.</translation>
 <translation id="6563469144985748109">Таны менежер үүнийг одоогоор зөвшөөрөөгүй байна</translation>

@@ -1025,6 +1025,7 @@
 <translation id="2445484935443597917">បង្កើត​កម្រង​ព័ត៌មាន​ថ្មី</translation>
 <translation id="2446585455334014596"><ph name="APP_NAME" /> ចង់​ផ្ទៀងផ្ទាត់​អត្តសញ្ញាណ​របស់អ្នក</translation>
 <translation id="2448312741937722512">ប្រភេទ</translation>
+<translation id="2448734521821581858">ខូគី​ជាឯកសារ​ដែលបង្កើត​ដោយ​គេហទំព័រ​ដែលអ្នក​ចូលមើល។ ខូគី​មានពីរ​ប្រភេទ៖ ខូគី​ភាគីទីមួយ​បង្កើត​ដោយ​គេហទំព័រ​ដែលអ្នកមើល។ គេហទំព័រ​នេះ​បង្ហាញ​នៅលើ​របារអាសយដ្ឋាន។ ខូគី​ភាគីទីបី​បង្កើត​ដោយ​គេហទំព័រ​ផ្សេងទៀត។ គេហទំព័រ​ទាំងនេះ​គឺជាម្ចាស់​នៃខ្លឹមសារ​មួយចំនួន ​ដូចជា​ការផ្សាយពាណិជ្ជកម្ម ឬរូបភាព ដែលអ្នក​ឃើញ​នៅលើ​គេហទំព័រ​ដែលអ្នកចូលមើលជាដើម។</translation>
 <translation id="2450223707519584812">អ្នកនឹងមិនអាចបន្ថែមអ្នកប្រើបានទេ ពីព្រោះសោ Google API បានបាត់បង់។ សូមមើល <ph name="DETAILS_URL" /> សម្រាប់ព័ត៌មានលម្អិត។</translation>
 <translation id="2450849356604136918">មិនមាន​ទិដ្ឋភាព​សកម្ម​ទេ</translation>
 <translation id="2451298179137331965">2x</translation>
@@ -3127,6 +3128,7 @@
 <translation id="5496587651328244253">រៀបចំ</translation>
 <translation id="5499313591153584299">ឯកសារនេះអាចបង្កគ្រោះថ្នាក់ដល់កុំព្យូទ័ររបស់អ្នក។</translation>
 <translation id="5502500733115278303">បាននាំចូលពី Firefox</translation>
+<translation id="5505264765875738116">គេហទំព័រ​មិនអាច​ស្នើសុំ​ការអនុញ្ញាត​ដើម្បី​ផ្ញើ​ការជូន​ដំណឹង​បានទេ</translation>
 <translation id="5505307013568720083">អស់ទឹកថ្នាំ</translation>
 <translation id="5507756662695126555">ការមិនបដិសេធ</translation>
 <translation id="5509693895992845810">រក្សាទុកជា...</translation>
@@ -3265,7 +3267,7 @@
 <translation id="5687326903064479980">ល្វែងម៉ោង</translation>
 <translation id="5689516760719285838">ទីតាំង</translation>
 <translation id="56907980372820799">ភ្ជាប់ទិន្នន័យ</translation>
-<translation id="5691180005790455277">ទិន្នន័យ និង​ខូគី​ទាំងអស់​ដែល <ph name="SITE_GROUP_NAME" /> រក្សាទុក និង​គេហទំព័រ​ទាំងឡាយ​ដែល​ស្ថិតក្រោម​ការគ្រប់គ្រង​របស់វា​នឹង​ត្រូវ​សម្អាត​។</translation>
+<translation id="5691180005790455277">ទិន្នន័យ និង​ខូគី​ទាំងអស់​ដែលបានរក្សាទុកដោយ <ph name="SITE_GROUP_NAME" /> និង​គេហទំព័រ​ទាំងឡាយ​ដែល​ស្ថិតក្រោម​ការគ្រប់គ្រង​របស់វា​នឹង​ត្រូវ​សម្អាត​។</translation>
 <translation id="5691511426247308406">គ្រួសារ</translation>
 <translation id="5692183275898619210">បាន​បញ្ចប់​ការ​បោះពុម្ព​​</translation>
 <translation id="5696143504434933566">រាយការណ៍​ពី​ការបំពាន​ពី "<ph name="EXTENSION_NAME" />"</translation>
@@ -3678,6 +3680,7 @@
 <translation id="6267547857941397424">បណ្ដាញ <ph name="NETWORK_INDEX" /> នៃ <ph name="NETWORK_COUNT" />, <ph name="PHONE_NAME" />, កម្លាំង​រលកសញ្ញា <ph name="SIGNAL_STRENGTH" />%, ថ្មទូរសព្ទ <ph name="BATTERY_STATUS" />%, ភ្ជាប់</translation>
 <translation id="6268252012308737255">បើកដោយប្រើ <ph name="APP" /></translation>
 <translation id="6268718011101775129">NFC</translation>
+<translation id="6270391203985052864">គេហទំព័រ​អាច​ស្នើសុំ​ការអនុញ្ញាត​ដើម្បី​ផ្ញើ​ការជូន​ដំណឹង</translation>
 <translation id="6270770586500173387">ផ្ញើ <ph name="BEGIN_LINK1" />ព័ត៌មានប្រព័ន្ធ និងកម្មវិធី<ph name="END_LINK1" /> និង<ph name="BEGIN_LINK2" />ប្រព័ន្ធវាស់វែង<ph name="END_LINK2" /></translation>
 <translation id="6272643420381259437">មានបញ្ហា (<ph name="ERROR" />) ខណៈពេលទាញយកកម្មវិធីជំនួយនេះ</translation>
 <translation id="6273677812470008672">គុណភាព</translation>
@@ -3868,6 +3871,7 @@
 <translation id="6555810572223193255">មិន​អាច​ធ្វើការសម្អាតនៅពេល​នេះបាន​ទេ</translation>
 <translation id="6556866813142980365">ធ្វើវិញ</translation>
 <translation id="6557290421156335491">ផ្លូវកាត់​របស់ខ្ញុំ</translation>
+<translation id="6561560012278703671">ប្រើ​ការផ្ញើសារ​ស្ងាត់​ជាងមុន (ទប់ស្កាត់​សារ​ជូនដំណឹង​មិនឱ្យ​រំខាន​អ្នក)</translation>
 <translation id="6561726789132298588">បញ្ចូល</translation>
 <translation id="656293578423618167">ផ្លូវ និងឈ្មោះឯកសារវែងពេក។  សូមរក្សាទុកជាមួយឈ្មោះខ្លីជាងនេះ ឬទៅទីតាំងដ៏ទៃទៀត។</translation>
 <translation id="6563469144985748109">អ្នកគ្រប់គ្រងរបស់អ្នកមិនទាន់យល់ព្រមនៅឡើយទេ</translation>

@@ -1025,6 +1025,7 @@
 <translation id="2445484935443597917">Стварыць новы профіль</translation>
 <translation id="2446585455334014596"><ph name="APP_NAME" /> запытвае спраўджанне вашай асобы</translation>
 <translation id="2448312741937722512">Тып</translation>
+<translation id="2448734521821581858">Файлы cookie – гэта файлы, якія ствараюцца вэб-сайтамі, якія вы наведваеце. Ёсць два віды файлаў cookie. Асноўныя файлы cookie ствараюцца самім сайтам, які вы наведваеце. Ён паказваецца ў адрасным радку. Староннія файлы cookie ствараюцца іншымі сайтамі. Гэтым сайтам належыць пэўнае змесціва, такое як рэклама або відарысы, якое вы бачыце на вэб-сайце, які наведваеце.</translation>
 <translation id="2450223707519584812">Вы не зможаце дадаваць карыстальнікаў, бо адсутнічаюць ключы Google API. Даведацца больш: <ph name="DETAILS_URL" />.</translation>
 <translation id="2450849356604136918">Няма актыўных праглядаў</translation>
 <translation id="2451298179137331965">2х</translation>
@@ -3127,6 +3128,7 @@
 <translation id="5496587651328244253">Упарадкаванне</translation>
 <translation id="5499313591153584299">Гэты файл можа нанесці шкоду вашаму камп'ютару.</translation>
 <translation id="5502500733115278303">Імпартаваныя з браўзера Firefox</translation>
+<translation id="5505264765875738116">Сайтам забаронена запытваць дазвол на паказ апавяшчэнняў</translation>
 <translation id="5505307013568720083">Чарніла скончылася</translation>
 <translation id="5507756662695126555">Неабвержны</translation>
 <translation id="5509693895992845810">Захаваць &amp;як...</translation>
@@ -3677,6 +3679,7 @@
 <translation id="6267547857941397424">Сетка <ph name="NETWORK_INDEX" /> з <ph name="NETWORK_COUNT" />, <ph name="PHONE_NAME" />, магутнасць сігналу – <ph name="SIGNAL_STRENGTH" />%, зарад акумулятара тэлефона – <ph name="BATTERY_STATUS" />%, падключыцца</translation>
 <translation id="6268252012308737255">Адкрыць у праграме <ph name="APP" /></translation>
 <translation id="6268718011101775129">NFC</translation>
+<translation id="6270391203985052864">Сайтам дазволена запытваць дазвол на паказ апавяшчэнняў</translation>
 <translation id="6270770586500173387">Адправіць <ph name="BEGIN_LINK1" />звесткі пра сістэму і праграмы<ph name="END_LINK1" />, а таксама <ph name="BEGIN_LINK2" />паказчыкі<ph name="END_LINK2" /></translation>
 <translation id="6272643420381259437">Адбылася памылка (<ph name="ERROR" />) падчас спампоўкі ўбудовы</translation>
 <translation id="6273677812470008672">Якасць</translation>
@@ -3867,6 +3870,7 @@
 <translation id="6555810572223193255">Ачыстка пакуль што недаступная</translation>
 <translation id="6556866813142980365">Узнавіць</translation>
 <translation id="6557290421156335491">Мае ярлыкі</translation>
+<translation id="6561560012278703671">Забараніць сайтам адцягваць вашу ўвагу запытамі дазволу на паказ апавяшчэнняў. Паказваць замест іх індыкатар блакіроўкі ў адрасным радку</translation>
 <translation id="6561726789132298588">Enter</translation>
 <translation id="656293578423618167">Шлях да файла або яго назва занадта доўгія.  Зрабіце назву карацейшай або ўкажыце іншае месцазнаходжанне.</translation>
 <translation id="6563469144985748109">Ваш менеджар пакуль што не ўхваліў гэты сайт</translation>
