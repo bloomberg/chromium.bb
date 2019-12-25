@@ -36,6 +36,10 @@ enum VmErrorCode {
   VM_ERR_UNKNOWN = 1;
   // No valid license.
   VM_ERR_LIC_NOT_VALID = 2;
+  // License is expired.
+  VM_ERR_LIC_EXPIRED = 3;
+  // Unable to access web portal for license activation procedures.
+  VM_ERR_LIC_WEB_PORTAL_UNAVAILABLE = 4;
 }
 
 // Request to register VM residing at given path.
