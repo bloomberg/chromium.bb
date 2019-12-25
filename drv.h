@@ -33,8 +33,8 @@ extern "C" {
 #define BO_USE_SW_READ_RARELY	        (1ull << 10)
 #define BO_USE_SW_WRITE_OFTEN	        (1ull << 11)
 #define BO_USE_SW_WRITE_RARELY		(1ull << 12)
-#define BO_USE_HW_VIDEO_ENCODER         (1ull << 13)
-#define BO_USE_HW_VIDEO_DECODER         (1ull << 14)
+#define BO_USE_HW_VIDEO_DECODER         (1ull << 13)
+#define BO_USE_HW_VIDEO_ENCODER         (1ull << 14)
 #define BO_USE_RENDERSCRIPT		(1ull << 15)
 
 /* Quirks for allocating a buffer. */
