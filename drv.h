@@ -12,6 +12,7 @@ extern "C" {
 #endif
 
 #include <drm_fourcc.h>
+#include <stdbool.h>
 #include <stdint.h>
 
 #define DRV_MAX_PLANES 4
@@ -35,7 +36,8 @@ extern "C" {
 #define BO_USE_SW_WRITE_RARELY		(1ull << 12)
 #define BO_USE_HW_VIDEO_DECODER         (1ull << 13)
 #define BO_USE_HW_VIDEO_ENCODER         (1ull << 14)
-#define BO_USE_RENDERSCRIPT		(1ull << 15)
+#define BO_USE_TEST_ALLOC		(1ull << 15)
+#define BO_USE_RENDERSCRIPT		(1ull << 16)
 
 /* Quirks for allocating a buffer. */
 #define BO_QUIRK_NONE			0
@@ -124,7 +126,7 @@ const char *drv_get_name(struct driver *drv);
 struct combination *drv_get_combination(struct driver *drv, uint32_t format, uint64_t use_flags);
 
 struct bo *drv_bo_new(struct driver *drv, uint32_t width, uint32_t height, uint32_t format,
-		      uint64_t use_flags);
+		      uint64_t use_flags, bool is_test_buffer);
 
 struct bo *drv_bo_create(struct driver *drv, uint32_t width, uint32_t height, uint32_t format,
 			 uint64_t use_flags);
