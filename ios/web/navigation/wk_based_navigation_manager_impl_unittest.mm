@@ -1007,7 +1007,7 @@ TEST_F(WKBasedNavigationManagerDetachedModeTest, LoadIfNecessary) {
 
 // Tests that LoadURLWithParams from detached mode restores backward history and
 // adds the new item at the end.
-TEST_F(WKBasedNavigationManagerDetachedModeTest, DISABLED_LoadURLWithParams) {
+TEST_F(WKBasedNavigationManagerDetachedModeTest, LoadURLWithParams) {
   manager_->DetachFromWebView();
   delegate_.RemoveWebView();
 
