@@ -88,12 +88,12 @@ if [ "${only_stdout}" -eq 1 ]; then
   DATETIME(TIMESTAMP_SECONDS(request_time.seconds)) AS DateTime"
 else
   query="SELECT ${select_field} AS Stdout,
-  CONCAT('https://ci.chromium.org/b/',build_id) as BuildId,step_name,
+  CONCAT('https://ci.chromium.org/b/', CAST(build_id AS STRING)) as BuildId,step_name,
   DATETIME(TIMESTAMP_SECONDS(request_time.seconds)) AS DateTime"
 fi
 
 query="$query FROM chromeos_ci_eng.analysis_event_log.${when}
-WHERE stdout LIKE \"%${string_data}%\" ORDER BY DateTime LIMIT ${limit};"
+WHERE stdout LIKE \"%${string_data}%\" ORDER BY DateTime DESC LIMIT ${limit};"
 
 if [ "${verbose}" -eq 1 ]; then
   echo "QUERY: ${query}"
