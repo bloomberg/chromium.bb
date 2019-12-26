@@ -17,6 +17,7 @@ export class NativeLayerStub extends TestBrowserProxy {
       'getPrinters',
       'getPreview',
       'getPrinterCapabilities',
+      'getEulaUrl',
       'hidePreview',
       'print',
       'saveAppState',
@@ -76,6 +77,9 @@ export class NativeLayerStub extends TestBrowserProxy {
 
     /** @private {?PageLayoutInfo} Page layout information */
     this.pageLayoutInfo_ = null;
+
+    /** @private {string} license The PPD license of a destination. */
+    this.eulaUrl_ = '';
   }
 
   /** @param {number} pageCount The number of pages in the document. */
@@ -167,6 +171,13 @@ export class NativeLayerStub extends TestBrowserProxy {
     }
     return this.localDestinationCapabilities_.get(printerId) ||
         Promise.reject();
+  }
+
+  /** @override */
+  getEulaUrl(destinationId) {
+    this.methodCalled('getEulaUrl', {destinationId: destinationId});
+
+    return Promise.resolve(this.eulaUrl_);
   }
 
   /** @override */
@@ -288,5 +299,10 @@ export class NativeLayerStub extends TestBrowserProxy {
   /** @param {!PageLayoutInfo} pageLayoutInfo */
   setPageLayoutInfo(pageLayoutInfo) {
     this.pageLayoutInfo_ = pageLayoutInfo;
+  }
+
+  /** @param {string} eulaUrl The eulaUrl of the PPD. */
+  setEulaUrl(eulaUrl) {
+    this.eulaUrl_ = eulaUrl;
   }
 }
