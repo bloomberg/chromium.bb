@@ -36,6 +36,7 @@ class MdnsQuerier {
   // Starts an mDNS query with the given name, DNS type, and DNS class.  Updated
   // records are passed to |callback|.  The caller must ensure |callback|
   // remains alive while it is registered with a query.
+  // NOTE: NSEC records cannot be queried for.
   void StartQuery(const DomainName& name,
                   DnsType dns_type,
                   DnsClass dns_class,

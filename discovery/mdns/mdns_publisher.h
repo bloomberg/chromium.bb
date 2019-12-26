@@ -54,6 +54,7 @@ class MdnsPublisher : public MdnsResponder::RecordHandler {
   // ClaimExclusiveOwnership() method and for PTR records the name being pointed
   // to must have been claimed in the same fashion, but the domain name in the
   // top-level MdnsRecord entity does not.
+  // NOTE: NSEC records cannot be registered, and doing so will return an error.
   Error RegisterRecord(const MdnsRecord& record);
 
   // Updates the existing record with name matching the name of the new record.
