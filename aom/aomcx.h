@@ -1182,6 +1182,13 @@ enum aome_enc_control_id {
    * tuning the encoder for VMAF.
    */
   AV1E_SET_VMAF_MODEL_PATH = 153,
+
+  /*!\brief Codec control function to enable EXT_TILE_DEBUG in AV1 encoder.
+   * Please note that this is only used in lightfield example test.
+   *
+   * 0 : off, 1 : enable EXT_TILE_DEBUG
+   */
+  AV1E_ENABLE_EXT_TILE_DEBUG = 154,
 };
 
 /*!\brief aom 1-D scaling mode
@@ -1589,6 +1596,9 @@ AOM_CTRL_USE_TYPE(AV1E_SET_SINGLE_TILE_DECODING, unsigned int)
 
 AOM_CTRL_USE_TYPE(AV1E_ENABLE_MOTION_VECTOR_UNIT_TEST, unsigned int)
 #define AOM_CTRL_AV1E_ENABLE_MOTION_VECTOR_UNIT_TEST
+
+AOM_CTRL_USE_TYPE(AV1E_ENABLE_EXT_TILE_DEBUG, unsigned int)
+#define AOM_CTRL_AV1E_ENABLE_EXT_TILE_DEBUG
 
 AOM_CTRL_USE_TYPE(AV1E_SET_VMAF_MODEL_PATH, const char *)
 #define AOM_CTRL_AV1E_SET_VMAF_MODEL_PATH

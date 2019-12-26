@@ -5830,6 +5830,9 @@ static int hash_me_has_at_most_two_refs(RefCntBuffer *frame_bufs) {
 }
 #endif
 
+extern void av1_print_frame_contexts(const FRAME_CONTEXT *fc,
+                                     const char *filename);
+
 static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
                                      uint8_t *dest) {
   AV1_COMMON *const cm = &cpi->common;
@@ -6104,18 +6107,18 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
   if (!cm->large_scale_tile) {
     cm->cur_frame->frame_context = *cm->fc;
   }
-#define EXT_TILE_DEBUG 0
-#if EXT_TILE_DEBUG
-  if (cm->large_scale_tile && is_stat_consumption_stage(cpi)) {
-    char fn[20] = "./fc";
-    fn[4] = current_frame->frame_number / 100 + '0';
-    fn[5] = (current_frame->frame_number % 100) / 10 + '0';
-    fn[6] = (current_frame->frame_number % 10) + '0';
-    fn[7] = '\0';
-    av1_print_frame_contexts(cm->fc, fn);
+
+  if (cpi->oxcf.ext_tile_debug) {
+    // (yunqing) This test ensures the correctness of large scale tile coding.
+    if (cm->large_scale_tile && is_stat_consumption_stage(cpi)) {
+      char fn[20] = "./fc";
+      fn[4] = current_frame->frame_number / 100 + '0';
+      fn[5] = (current_frame->frame_number % 100) / 10 + '0';
+      fn[6] = (current_frame->frame_number % 10) + '0';
+      fn[7] = '\0';
+      av1_print_frame_contexts(cm->fc, fn);
+    }
   }
-#endif  // EXT_TILE_DEBUG
-#undef EXT_TILE_DEBUG
 
 #if CONFIG_COLLECT_COMPONENT_TIMING
   end_timing(cpi, encode_frame_to_data_rate_time);

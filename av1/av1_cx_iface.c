@@ -152,6 +152,7 @@ struct av1_extracfg {
   COST_UPDATE_TYPE coeff_cost_upd_freq;
   COST_UPDATE_TYPE mode_cost_upd_freq;
   COST_UPDATE_TYPE mv_cost_upd_freq;
+  unsigned int ext_tile_debug;
 };
 
 static struct av1_extracfg default_extra_cfg = {
@@ -277,6 +278,7 @@ static struct av1_extracfg default_extra_cfg = {
   COST_UPD_SB,  // coeff_cost_upd_freq
   COST_UPD_SB,  // mode_cost_upd_freq
   COST_UPD_SB,  // mv_cost_upd_freq
+  0,            // ext_tile_debug
 };
 
 struct aom_codec_alg_priv {
@@ -422,6 +424,7 @@ static aom_codec_err_t validate_config(aom_codec_alg_priv_t *ctx,
         "or kf_max_dist instead.");
 
   RANGE_CHECK_HI(extra_cfg, motion_vector_unit_test, 2);
+  RANGE_CHECK_HI(extra_cfg, ext_tile_debug, 1);
   RANGE_CHECK_HI(extra_cfg, enable_auto_alt_ref, 1);
   RANGE_CHECK_HI(extra_cfg, enable_auto_bwd_ref, 2);
   RANGE_CHECK(extra_cfg, cpu_used, 0, 8);
@@ -963,6 +966,7 @@ static aom_codec_err_t set_encoder_config(AV1EncoderConfig *oxcf,
 
   oxcf->frame_periodic_boost = extra_cfg->frame_periodic_boost;
   oxcf->motion_vector_unit_test = extra_cfg->motion_vector_unit_test;
+  oxcf->ext_tile_debug = extra_cfg->ext_tile_debug;
 
   oxcf->chroma_subsampling_x = extra_cfg->chroma_subsampling_x;
   oxcf->chroma_subsampling_y = extra_cfg->chroma_subsampling_y;
@@ -1721,6 +1725,13 @@ static aom_codec_err_t ctrl_enable_motion_vector_unit_test(
   struct av1_extracfg extra_cfg = ctx->extra_cfg;
   extra_cfg.motion_vector_unit_test =
       CAST(AV1E_ENABLE_MOTION_VECTOR_UNIT_TEST, args);
+  return update_extra_cfg(ctx, &extra_cfg);
+}
+
+static aom_codec_err_t ctrl_enable_ext_tile_debug(aom_codec_alg_priv_t *ctx,
+                                                  va_list args) {
+  struct av1_extracfg extra_cfg = ctx->extra_cfg;
+  extra_cfg.ext_tile_debug = CAST(AV1E_ENABLE_EXT_TILE_DEBUG, args);
   return update_extra_cfg(ctx, &extra_cfg);
 }
 
@@ -2655,6 +2666,7 @@ static aom_codec_ctrl_fn_map_t encoder_ctrl_maps[] = {
   { AV1E_SET_DENOISE_NOISE_LEVEL, ctrl_set_denoise_noise_level },
   { AV1E_SET_DENOISE_BLOCK_SIZE, ctrl_set_denoise_block_size },
   { AV1E_ENABLE_MOTION_VECTOR_UNIT_TEST, ctrl_enable_motion_vector_unit_test },
+  { AV1E_ENABLE_EXT_TILE_DEBUG, ctrl_enable_ext_tile_debug },
   { AV1E_SET_TARGET_SEQ_LEVEL_IDX, ctrl_set_target_seq_level_idx },
   { AV1E_SET_TIER_MASK, ctrl_set_tier_mask },
   { AV1E_SET_MIN_CR, ctrl_set_min_cr },

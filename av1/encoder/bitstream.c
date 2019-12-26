@@ -3437,6 +3437,9 @@ typedef struct {
   size_t total_length;
 } FrameHeaderInfo;
 
+extern void av1_print_uncompressed_frame_header(const uint8_t *data, int size,
+                                                const char *filename);
+
 static uint32_t write_tiles_in_tg_obus(AV1_COMP *const cpi, uint8_t *const dst,
                                        struct aom_write_bit_buffer *saved_wb,
                                        uint8_t obu_extension_header,
@@ -3481,9 +3484,8 @@ static uint32_t write_tiles_in_tg_obus(AV1_COMP *const cpi, uint8_t *const dst,
     data += frame_header_size;
     total_size += frame_header_size;
 
-#define EXT_TILE_DEBUG 0
-#if EXT_TILE_DEBUG
-    {
+    // (yunqing) This test ensures the correctness of large scale tile coding.
+    if (cpi->oxcf.ext_tile_debug) {
       char fn[20] = "./fh";
       fn[4] = cm->current_frame.frame_number / 100 + '0';
       fn[5] = (cm->current_frame.frame_number % 100) / 10 + '0';
@@ -3492,8 +3494,6 @@ static uint32_t write_tiles_in_tg_obus(AV1_COMP *const cpi, uint8_t *const dst,
       av1_print_uncompressed_frame_header(data - frame_header_size,
                                           frame_header_size, fn);
     }
-#endif  // EXT_TILE_DEBUG
-#undef EXT_TILE_DEBUG
 
     int tile_size_bytes = 0;
     int tile_col_size_bytes = 0;
