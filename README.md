@@ -179,12 +179,13 @@ the build flags available.
 openscreen uses [LUCI builders](https://ci.chromium.org/p/openscreen/builders)
 to monitor the build and test health of the library.  Current builders include:
 
-| Name                   | Arch   | OS                 | Toolchain | Build   | Notes        |
-|------------------------|--------|--------------------|-----------|---------|--------------|
-| linux64_debug          | x86-64 | Ubuntu Linux 16.04 | clang     | debug   | ASAN enabled |
-| linux64_gcc_debug      | x86-64 | Ubuntu Linux 18.04 | gcc-7     | debug   | |
-| linux64_tsan           | x86-64 | Ubuntu Linux 16.04 | clang     | release | TSAN enabled |
-| mac_debug              | x86-64 | Mac OS X/Xcode     | clang     | debug   | |
+| Name                   | Arch   | OS                 | Toolchain | Build   | Notes                 |
+|------------------------|--------|--------------------|-----------|---------|-----------------------|
+| linux64_debug          | x86-64 | Ubuntu Linux 16.04 | clang     | debug   | ASAN enabled          |
+| linux64_gcc_debug      | x86-64 | Ubuntu Linux 18.04 | gcc-7     | debug   |                       |
+| linux64_tsan           | x86-64 | Ubuntu Linux 16.04 | clang     | release | TSAN enabled          |
+| linux_arm64            | arm64  | Ubuntu Linux 16.04 | clang     | release | ARM v8 build          |
+| mac_debug              | x86-64 | Mac OS X/Xcode     | clang     | debug   |                       |
 | chromium_linux64_debug | x86-64 | Ubuntu Linux 16.04 | clang     | debug   | built within chromium |
 | chromium_mac_debug     | x86-64 | Mac OS X/Xcode     | clang     | debug   | built within chromium |
 
