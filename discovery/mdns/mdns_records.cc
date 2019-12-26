@@ -493,6 +493,11 @@ bool MdnsMessage::operator!=(const MdnsMessage& rhs) const {
   return !(*this == rhs);
 }
 
+bool MdnsMessage::IsProbeQuery() const {
+  // TODO(rwkeane): Implement this method.
+  return false;
+}
+
 size_t MdnsMessage::MaxWireSize() const {
   return max_wire_size_;
 }

@@ -4,6 +4,7 @@
 
 #include "discovery/mdns/mdns_responder.h"
 
+#include "discovery/mdns/mdns_probe_manager.h"
 #include "discovery/mdns/mdns_random.h"
 #include "discovery/mdns/mdns_receiver.h"
 #include "discovery/mdns/mdns_records.h"
@@ -37,7 +38,6 @@ class MockRecordHandler : public MdnsResponder::RecordHandler {
  public:
   void AddRecord(MdnsRecord record) { records_.push_back(record); }
 
-  MOCK_METHOD1(IsExclusiveOwner, bool(const DomainName& name));
   MOCK_METHOD3(HasRecords, bool(const DomainName&, DnsType, DnsClass));
 
   std::vector<MdnsRecord::ConstRef> GetRecords(const DomainName& name,
@@ -66,6 +66,13 @@ class MockMdnsSender : public MdnsSender {
                Error(const MdnsMessage& message, const IPEndpoint& endpoint));
 };
 
+class MockProbeManager : public MdnsProbeManager {
+ public:
+  MOCK_CONST_METHOD1(IsDomainClaimed, bool(const DomainName&));
+  MOCK_METHOD2(RespondToProbeQuery,
+               void(const MdnsMessage&, const IPEndpoint&));
+};
+
 class MdnsResponderTest : public testing::Test {
  public:
   MdnsResponderTest()
@@ -75,6 +82,7 @@ class MdnsResponderTest : public testing::Test {
         clock_(Clock::now()),
         task_runner_(&clock_),
         responder_(&record_handler_,
+                   &probe_manager_,
                    &sender_,
                    &receiver_,
                    &task_runner_,
@@ -119,6 +127,7 @@ class MdnsResponderTest : public testing::Test {
   std::unique_ptr<FakeUdpSocket> socket_;
   StrictMock<MockRecordHandler> record_handler_;
   StrictMock<MockMdnsSender> sender_;
+  StrictMock<MockProbeManager> probe_manager_;
   MdnsReceiver receiver_;
   FakeClock clock_;
   FakeTaskRunner task_runner_;
@@ -137,7 +146,7 @@ TEST_F(MdnsResponderTest, OwnedRecordsSentImmediately) {
   MdnsMessage message(0, MessageType::Query);
   message.AddQuestion(question);
 
-  EXPECT_CALL(record_handler_, IsExclusiveOwner(_)).WillOnce(Return(true));
+  EXPECT_CALL(probe_manager_, IsDomainClaimed(_)).WillOnce(Return(true));
   EXPECT_CALL(record_handler_, HasRecords(_, _, _))
       .WillRepeatedly(Return(true));
   record_handler_.AddRecord(GetFakeSrvRecord(domain_));
@@ -154,7 +163,7 @@ TEST_F(MdnsResponderTest, NonOwnedRecordsDelayed) {
   MdnsMessage message(0, MessageType::Query);
   message.AddQuestion(question);
 
-  EXPECT_CALL(record_handler_, IsExclusiveOwner(_)).WillOnce(Return(false));
+  EXPECT_CALL(probe_manager_, IsDomainClaimed(_)).WillOnce(Return(false));
   EXPECT_CALL(record_handler_, HasRecords(_, _, _))
       .WillRepeatedly(Return(true));
   record_handler_.AddRecord(GetFakeSrvRecord(domain_));
@@ -174,7 +183,7 @@ TEST_F(MdnsResponderTest, MultipleQuestionsProcessed) {
   message.AddQuestion(question);
   message.AddQuestion(question2);
 
-  EXPECT_CALL(record_handler_, IsExclusiveOwner(_))
+  EXPECT_CALL(probe_manager_, IsDomainClaimed(_))
       .WillOnce(Return(true))
       .WillOnce(Return(false));
   EXPECT_CALL(record_handler_, HasRecords(_, _, _))
@@ -194,7 +203,7 @@ TEST_F(MdnsResponderTest, NoRecordsNoMessageSent) {
   message.AddQuestion(question);
 
   EXPECT_CALL(sender_, SendMulticast(_)).Times(0);
-  EXPECT_CALL(record_handler_, IsExclusiveOwner(_)).WillOnce(Return(true));
+  EXPECT_CALL(probe_manager_, IsDomainClaimed(_)).WillOnce(Return(true));
   EXPECT_CALL(record_handler_, HasRecords(_, _, _))
       .WillRepeatedly(Return(true));
   OnMessageReceived(message, endpoint_);
@@ -209,7 +218,7 @@ TEST_F(MdnsResponderTest, UnicastMessageSentOverUnicast) {
   MdnsMessage message(0, MessageType::Query);
   message.AddQuestion(question);
 
-  EXPECT_CALL(record_handler_, IsExclusiveOwner(_)).WillOnce(Return(true));
+  EXPECT_CALL(probe_manager_, IsDomainClaimed(_)).WillOnce(Return(true));
   EXPECT_CALL(record_handler_, HasRecords(_, _, _))
       .WillRepeatedly(Return(true));
   record_handler_.AddRecord(GetFakeSrvRecord(domain_));
@@ -223,7 +232,7 @@ TEST_F(MdnsResponderTest, MulticastMessageSentOverMulticast) {
   MdnsMessage message(0, MessageType::Query);
   message.AddQuestion(question);
 
-  EXPECT_CALL(record_handler_, IsExclusiveOwner(_)).WillOnce(Return(true));
+  EXPECT_CALL(probe_manager_, IsDomainClaimed(_)).WillOnce(Return(true));
   EXPECT_CALL(record_handler_, HasRecords(_, _, _))
       .WillRepeatedly(Return(true));
   record_handler_.AddRecord(GetFakeSrvRecord(domain_));
@@ -239,7 +248,7 @@ TEST_F(MdnsResponderTest, AnyQueryResultsAllApplied) {
   MdnsMessage message(0, MessageType::Query);
   message.AddQuestion(question);
 
-  EXPECT_CALL(record_handler_, IsExclusiveOwner(_)).WillOnce(Return(true));
+  EXPECT_CALL(probe_manager_, IsDomainClaimed(_)).WillOnce(Return(true));
   EXPECT_CALL(record_handler_, HasRecords(_, _, _))
       .WillRepeatedly(Return(true));
   record_handler_.AddRecord(GetFakeSrvRecord(domain_));
@@ -271,7 +280,7 @@ TEST_F(MdnsResponderTest, PtrQueryResultsApplied) {
   MdnsMessage message(0, MessageType::Query);
   message.AddQuestion(question);
 
-  EXPECT_CALL(record_handler_, IsExclusiveOwner(_)).WillOnce(Return(true));
+  EXPECT_CALL(probe_manager_, IsDomainClaimed(_)).WillOnce(Return(true));
   EXPECT_CALL(record_handler_, HasRecords(_, _, _))
       .WillRepeatedly(Return(true));
   record_handler_.AddRecord(GetFakePtrRecord(domain_));
@@ -308,7 +317,7 @@ TEST_F(MdnsResponderTest, SrvQueryResultsApplied) {
   MdnsMessage message(0, MessageType::Query);
   message.AddQuestion(question);
 
-  EXPECT_CALL(record_handler_, IsExclusiveOwner(_)).WillOnce(Return(true));
+  EXPECT_CALL(probe_manager_, IsDomainClaimed(_)).WillOnce(Return(true));
   EXPECT_CALL(record_handler_, HasRecords(_, _, _))
       .WillRepeatedly(Return(true));
   record_handler_.AddRecord(GetFakePtrRecord(domain_));
@@ -345,7 +354,7 @@ TEST_F(MdnsResponderTest, AQueryResultsApplied) {
   MdnsMessage message(0, MessageType::Query);
   message.AddQuestion(question);
 
-  EXPECT_CALL(record_handler_, IsExclusiveOwner(_)).WillOnce(Return(true));
+  EXPECT_CALL(probe_manager_, IsDomainClaimed(_)).WillOnce(Return(true));
   EXPECT_CALL(record_handler_, HasRecords(_, _, _))
       .WillRepeatedly(Return(true));
   record_handler_.AddRecord(GetFakePtrRecord(domain_));
@@ -382,7 +391,7 @@ TEST_F(MdnsResponderTest, AAAAQueryResultsApplied) {
   MdnsMessage message(0, MessageType::Query);
   message.AddQuestion(question);
 
-  EXPECT_CALL(record_handler_, IsExclusiveOwner(_)).WillOnce(Return(true));
+  EXPECT_CALL(probe_manager_, IsDomainClaimed(_)).WillOnce(Return(true));
   EXPECT_CALL(record_handler_, HasRecords(_, _, _))
       .WillRepeatedly(Return(true));
   record_handler_.AddRecord(GetFakePtrRecord(domain_));
@@ -421,8 +430,7 @@ TEST_F(MdnsResponderTest, MessageOnlySentIfAnswerNotKnown) {
   message.AddQuestion(question);
   message.AddAnswer(aaaa_record);
 
-  EXPECT_CALL(record_handler_, IsExclusiveOwner(_))
-      .WillRepeatedly(Return(true));
+  EXPECT_CALL(probe_manager_, IsDomainClaimed(_)).WillRepeatedly(Return(true));
   EXPECT_CALL(record_handler_, HasRecords(_, _, _))
       .WillRepeatedly(Return(true));
   record_handler_.AddRecord(GetFakePtrRecord(domain_));
@@ -442,8 +450,7 @@ TEST_F(MdnsResponderTest, RecordOnlySentIfNotKnown) {
   message.AddQuestion(question);
   message.AddAnswer(aaaa_record);
 
-  EXPECT_CALL(record_handler_, IsExclusiveOwner(_))
-      .WillRepeatedly(Return(true));
+  EXPECT_CALL(probe_manager_, IsDomainClaimed(_)).WillRepeatedly(Return(true));
   EXPECT_CALL(record_handler_, HasRecords(_, _, _))
       .WillRepeatedly(Return(true));
   record_handler_.AddRecord(GetFakeARecord(domain_));

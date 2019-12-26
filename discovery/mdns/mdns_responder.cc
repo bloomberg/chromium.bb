@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "discovery/mdns/mdns_probe_manager.h"
 #include "discovery/mdns/mdns_publisher.h"
 #include "discovery/mdns/mdns_querier.h"
 #include "discovery/mdns/mdns_random.h"
@@ -172,16 +173,19 @@ void ApplyTypedQueryResults(MdnsMessage* message,
 }  // namespace
 
 MdnsResponder::MdnsResponder(RecordHandler* record_handler,
+                             MdnsProbeManager* ownership_handler,
                              MdnsSender* sender,
                              MdnsReceiver* receiver,
                              TaskRunner* task_runner,
                              MdnsRandom* random_delay)
     : record_handler_(record_handler),
+      ownership_handler_(ownership_handler),
       sender_(sender),
       receiver_(receiver),
       task_runner_(task_runner),
       random_delay_(random_delay) {
   OSP_DCHECK(record_handler_);
+  OSP_DCHECK(ownership_handler_);
   OSP_DCHECK(sender_);
   OSP_DCHECK(receiver_);
   OSP_DCHECK(task_runner_);
@@ -209,11 +213,16 @@ void MdnsResponder::OnMessageReceived(const MdnsMessage& message,
     return;
   }
 
+  if (message.IsProbeQuery()) {
+    ownership_handler_->RespondToProbeQuery(message, src);
+    return;
+  }
+
   const std::vector<MdnsRecord>& known_answers = message.answers();
 
   for (const auto& question : message.questions()) {
     const bool is_exclusive_owner =
-        record_handler_->IsExclusiveOwner(question.name());
+        ownership_handler_->IsDomainClaimed(question.name());
     if (is_exclusive_owner ||
         record_handler_->HasRecords(question.name(), question.dns_type(),
                                     question.dns_class())) {

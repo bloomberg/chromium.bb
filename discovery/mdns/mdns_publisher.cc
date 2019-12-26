@@ -7,6 +7,7 @@
 #include <chrono>
 #include <cmath>
 
+#include "discovery/mdns/mdns_probe_manager.h"
 #include "discovery/mdns/mdns_records.h"
 #include "discovery/mdns/mdns_sender.h"
 #include "platform/api/task_runner.h"
@@ -78,20 +79,15 @@ Error ProcessQueue(MdnsSender* sender, MdnsMessage* message) {
 
 }  // namespace
 
-MdnsPublisher::MdnsPublisher(MdnsQuerier* querier,
-                             MdnsSender* sender,
+MdnsPublisher::MdnsPublisher(MdnsSender* sender,
+                             MdnsProbeManager* ownership_manager,
                              TaskRunner* task_runner,
-                             MdnsRandom* random_delay,
                              ClockNowFunctionPtr now_function)
-    : querier_(querier),
-      sender_(sender),
+    : sender_(sender),
+      ownership_manager_(ownership_manager),
       task_runner_(task_runner),
-      random_delay_(random_delay),
       now_function_(now_function) {
-  // NOTE: |querier_| and |random_delay_| are intentionally not validated.
-  // These are provided for future use in the Probe workflow.
-  // As that feature is added and its requirements become clearer, these
-  // validations will be added.
+  OSP_DCHECK(ownership_manager_);
   OSP_DCHECK(sender_);
   OSP_DCHECK(task_runner_);
 }
@@ -171,12 +167,6 @@ size_t MdnsPublisher::GetRecordCount() const {
   return count;
 }
 
-bool MdnsPublisher::IsExclusiveOwner(const DomainName& name) {
-  OSP_DCHECK(task_runner_->IsRunningOnTaskRunner());
-
-  return records_.find(name) != records_.end();
-}
-
 bool MdnsPublisher::HasRecords(const DomainName& name,
                                DnsType type,
                                DnsClass clazz) {
@@ -218,16 +208,17 @@ Error MdnsPublisher::RegisterPtrRecord(const MdnsRecord& record) {
   OSP_DCHECK(record.dns_type() == DnsType::kPTR);
 
   const auto& ptr_data = absl::get<PtrRecordRdata>(record.rdata());
-  if (!IsExclusiveOwner(ptr_data.ptr_domain())) {
+  if (!ownership_manager_->IsDomainClaimed(ptr_data.ptr_domain())) {
     return Error::Code::kParameterInvalid;
   }
 
-  if (ptr_records_.find(record.name()) != ptr_records_.end()) {
+  auto pair = ptr_records_.emplace(record.name(), nullptr);
+  if (!pair.second) {
     return Error::Code::kItemAlreadyExists;
   }
 
-  ptr_records_.emplace(record.name(), CreateAnnouncer(std::move(record)));
-
+  auto announcer = CreateAnnouncer(std::move(record));
+  pair.first->second.swap(announcer);
   return Error::None();
 }
 
@@ -235,17 +226,19 @@ Error MdnsPublisher::RegisterNonPtrRecord(const MdnsRecord& record) {
   OSP_DCHECK(record.dns_type() != DnsType::kPTR);
 
   const DomainName& name = record.name();
-  if (!IsExclusiveOwner(name)) {
+  if (!ownership_manager_->IsDomainClaimed(name)) {
     return Error::Code::kParameterInvalid;
   }
 
-  for (const auto& publisher : records_[name]) {
+  auto pair =
+      records_.emplace(name, std::vector<std::unique_ptr<RecordAnnouncer>>{});
+  for (const auto& publisher : pair.first->second) {
     if (publisher->record() == record) {
       return Error::Code::kItemAlreadyExists;
     }
   }
 
-  records_[name].push_back(CreateAnnouncer(std::move(record)));
+  pair.first->second.push_back(CreateAnnouncer(std::move(record)));
 
   return Error::None();
 }
@@ -258,16 +251,6 @@ Error MdnsPublisher::UnregisterPtrRecord(const MdnsRecord& record) {
     return Error::Code::kItemNotFound;
   }
 
-  // If this was the last record referring to the pointed-to domain, release
-  // ownership of that name. A goodbye message will be sent for the removed
-  // record, per RFC 6762 section 10.1.
-  const DomainName& ptr_domain =
-      absl::get<PtrRecordRdata>(record.rdata()).ptr_domain();
-  const auto map_it = records_.find(ptr_domain);
-  if (map_it != records_.end() && map_it->second.empty()) {
-    records_.erase(map_it);
-  }
-
   return Error::None();
 }
 
@@ -276,28 +259,7 @@ Error MdnsPublisher::UnregisterNonPtrRecord(const MdnsRecord& record) {
 
   // Remove the Non-PTR record. A goodbye message will be sent for the removed
   // record, per RFC 6762 section 10.1.
-  const Error remove_result = RemoveNonPtrRecord(record, true);
-  if (!remove_result.ok()) {
-    return remove_result;
-  }
-
-  // If all records registered to this domain were removed and no PTR records
-  // point to this domain, release ownership over the name.
-  const auto it = records_.find(record.name());
-  if (it->second.empty()) {
-    for (auto ptr_it = ptr_records_.begin(); ptr_it != ptr_records_.end();
-         ptr_it++) {
-      const DomainName& ptr_domain =
-          absl::get<PtrRecordRdata>(ptr_it->second->record().rdata())
-              .ptr_domain();
-      if (ptr_domain == record.name()) {
-        return Error::None();
-      }
-    }
-    records_.erase(it);
-  }
-
-  return Error::None();
+  return RemoveNonPtrRecord(record, true);
 }
 
 Error MdnsPublisher::RemoveNonPtrRecord(const MdnsRecord& record,
@@ -323,7 +285,11 @@ Error MdnsPublisher::RemoveNonPtrRecord(const MdnsRecord& record,
   if (!should_announce_deletion) {
     (*records_it)->DisableGoodbyeMessageTransmission();
   }
+
   it->second.erase(records_it);
+  if (it->second.empty()) {
+    records_.erase(it);
+  }
 
   return Error::None();
 }

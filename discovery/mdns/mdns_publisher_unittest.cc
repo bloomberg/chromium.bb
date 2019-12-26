@@ -7,6 +7,7 @@
 #include <chrono>
 #include <vector>
 
+#include "discovery/mdns/mdns_probe_manager.h"
 #include "discovery/mdns/mdns_sender.h"
 #include "discovery/mdns/testing/mdns_test_util.h"
 #include "platform/test/fake_task_runner.h"
@@ -43,26 +44,17 @@ class MockMdnsSender : public MdnsSender {
                Error(const MdnsMessage& message, const IPEndpoint& endpoint));
 };
 
+class MockProbeManager : public MdnsProbeManager {
+ public:
+  MOCK_CONST_METHOD1(IsDomainClaimed, bool(const DomainName&));
+  MOCK_METHOD2(RespondToProbeQuery,
+               void(const MdnsMessage&, const IPEndpoint&));
+};
+
 class MdnsPublisherTesting : public MdnsPublisher {
  public:
   using MdnsPublisher::MdnsPublisher;
   ~MdnsPublisherTesting() override = default;
-
-  MOCK_METHOD1(IsOwned, bool(const DomainName&));
-
-  bool IsExclusiveOwner(const DomainName& name) override {
-    bool is_owned = IsOwned(name);
-
-    if (is_owned && records_.find(name) == records_.end()) {
-      records_.emplace(name, std::vector<std::unique_ptr<RecordAnnouncer>>{});
-    }
-
-    return is_owned;
-  }
-
-  bool IsMappedAsExclusiveOwner(const DomainName& name) {
-    return records_.find(name) != records_.end();
-  }
 
   const MdnsRecord* GetPtrRecord(const DomainName& domain) {
     std::vector<MdnsRecord::ConstRef> records =
@@ -75,6 +67,10 @@ class MdnsPublisherTesting : public MdnsPublisher {
                                                      DnsType type) {
     return GetRecords(domain, type, DnsClass::kANY);
   }
+
+  bool IsNonPtrRecordPresent(const DomainName& name) {
+    return records_.find(name) != records_.end();
+  }
 };
 
 class MdnsPublisherTest : public testing::Test {
@@ -84,7 +80,7 @@ class MdnsPublisherTest : public testing::Test {
         task_runner_(&clock_),
         socket_(FakeUdpSocket::CreateDefault()),
         sender_(socket_.get()),
-        publisher_(nullptr, &sender_, &task_runner_, nullptr, FakeClock::now) {}
+        publisher_(&sender_, &probe_manager_, &task_runner_, FakeClock::now) {}
 
   ~MdnsPublisherTest() {
     // Clear out any remaining calls in the task runner queue.
@@ -130,7 +126,8 @@ class MdnsPublisherTest : public testing::Test {
 
   void TestUniqueRecordRegistrationWorkflow(MdnsRecord record,
                                             MdnsRecord record2) {
-    EXPECT_CALL(publisher_, IsOwned(domain_)).WillRepeatedly(Return(true));
+    EXPECT_CALL(probe_manager_, IsDomainClaimed(domain_))
+        .WillRepeatedly(Return(true));
     DnsType type = record.dns_type();
 
     // Check preconditions.
@@ -154,7 +151,7 @@ class MdnsPublisherTest : public testing::Test {
     EXPECT_EQ(records.size(), size_t{1});
     EXPECT_TRUE(ContainsRecord(records, record));
     EXPECT_TRUE(!ContainsRecord(records, record2));
-    EXPECT_TRUE(publisher_.IsMappedAsExclusiveOwner(domain_));
+    EXPECT_TRUE(publisher_.IsNonPtrRecordPresent(domain_));
 
     // Re-register the same record.
     EXPECT_FALSE(publisher_.RegisterRecord(record).ok());
@@ -165,7 +162,7 @@ class MdnsPublisherTest : public testing::Test {
     EXPECT_EQ(records.size(), size_t{1});
     EXPECT_TRUE(ContainsRecord(records, record));
     EXPECT_TRUE(!ContainsRecord(records, record2));
-    EXPECT_TRUE(publisher_.IsMappedAsExclusiveOwner(domain_));
+    EXPECT_TRUE(publisher_.IsNonPtrRecordPresent(domain_));
 
     // Update a record that doesn't exist
     EXPECT_FALSE(publisher_.UpdateRegisteredRecord(record2, record).ok());
@@ -176,7 +173,7 @@ class MdnsPublisherTest : public testing::Test {
     EXPECT_EQ(records.size(), size_t{1});
     EXPECT_TRUE(ContainsRecord(records, record));
     EXPECT_TRUE(!ContainsRecord(records, record2));
-    EXPECT_TRUE(publisher_.IsMappedAsExclusiveOwner(domain_));
+    EXPECT_TRUE(publisher_.IsNonPtrRecordPresent(domain_));
 
     // Update an existing record.
     EXPECT_CALL(sender_, SendMulticast(_))
@@ -191,7 +188,7 @@ class MdnsPublisherTest : public testing::Test {
     EXPECT_EQ(records.size(), size_t{1});
     EXPECT_TRUE(!ContainsRecord(records, record));
     EXPECT_TRUE(ContainsRecord(records, record2));
-    EXPECT_TRUE(publisher_.IsMappedAsExclusiveOwner(domain_));
+    EXPECT_TRUE(publisher_.IsNonPtrRecordPresent(domain_));
 
     // Add back the original record
     EXPECT_CALL(sender_, SendMulticast(_))
@@ -206,7 +203,7 @@ class MdnsPublisherTest : public testing::Test {
     EXPECT_EQ(records.size(), size_t{2});
     EXPECT_TRUE(ContainsRecord(records, record));
     EXPECT_TRUE(ContainsRecord(records, record2));
-    EXPECT_TRUE(publisher_.IsMappedAsExclusiveOwner(domain_));
+    EXPECT_TRUE(publisher_.IsNonPtrRecordPresent(domain_));
 
     // Delete an existing record.
     EXPECT_CALL(sender_, SendMulticast(_))
@@ -221,7 +218,7 @@ class MdnsPublisherTest : public testing::Test {
     EXPECT_EQ(records.size(), size_t{1});
     EXPECT_TRUE(ContainsRecord(records, record));
     EXPECT_TRUE(!ContainsRecord(records, record2));
-    EXPECT_TRUE(publisher_.IsMappedAsExclusiveOwner(domain_));
+    EXPECT_TRUE(publisher_.IsNonPtrRecordPresent(domain_));
 
     // Delete a non-existing record.
     EXPECT_FALSE(publisher_.UnregisterRecord(record2).ok());
@@ -232,7 +229,7 @@ class MdnsPublisherTest : public testing::Test {
     EXPECT_EQ(records.size(), size_t{1});
     EXPECT_TRUE(ContainsRecord(records, record));
     EXPECT_TRUE(!ContainsRecord(records, record2));
-    EXPECT_TRUE(publisher_.IsMappedAsExclusiveOwner(domain_));
+    EXPECT_TRUE(publisher_.IsNonPtrRecordPresent(domain_));
 
     // Delete the last record
     EXPECT_CALL(sender_, SendMulticast(_))
@@ -247,13 +244,14 @@ class MdnsPublisherTest : public testing::Test {
     EXPECT_EQ(records.size(), size_t{0});
     EXPECT_TRUE(!ContainsRecord(records, record));
     EXPECT_TRUE(!ContainsRecord(records, record2));
-    EXPECT_FALSE(publisher_.IsMappedAsExclusiveOwner(domain_));
+    EXPECT_FALSE(publisher_.IsNonPtrRecordPresent(domain_));
   }
 
   FakeClock clock_;
   FakeTaskRunner task_runner_;
   std::unique_ptr<FakeUdpSocket> socket_;
   StrictMock<MockMdnsSender> sender_;
+  StrictMock<MockProbeManager> probe_manager_;
   MdnsPublisherTesting publisher_;
 
   DomainName domain_{"instance", "_googlecast", "_tcp", "local"};
@@ -288,7 +286,8 @@ TEST_F(MdnsPublisherTest, SRVRecordRegistrationWorkflow) {
 }
 
 TEST_F(MdnsPublisherTest, PTRRecordRegistrationWorkflow) {
-  EXPECT_CALL(publisher_, IsOwned(domain_)).WillRepeatedly(Return(true));
+  EXPECT_CALL(probe_manager_, IsDomainClaimed(domain_))
+      .WillRepeatedly(Return(true));
   const MdnsRecord record1 = GetFakePtrRecord(domain_);
   const MdnsRecord record2 =
       GetFakePtrRecord(domain_, std::chrono::seconds(1000));
@@ -305,7 +304,6 @@ TEST_F(MdnsPublisherTest, PTRRecordRegistrationWorkflow) {
   auto* record = publisher_.GetPtrRecord(record1.name());
   ASSERT_NE(record, nullptr);
   EXPECT_EQ(*record, record1);
-  EXPECT_TRUE(publisher_.IsMappedAsExclusiveOwner(domain_));
 
   // Register another record with the same domain name.
   EXPECT_FALSE(publisher_.RegisterRecord(record2).ok());
@@ -315,7 +313,6 @@ TEST_F(MdnsPublisherTest, PTRRecordRegistrationWorkflow) {
   record = publisher_.GetPtrRecord(record1.name());
   ASSERT_NE(record, nullptr);
   EXPECT_EQ(*record, record1);
-  EXPECT_TRUE(publisher_.IsMappedAsExclusiveOwner(domain_));
 
   // Delete an existing record.
   EXPECT_CALL(sender_, SendMulticast(_))
@@ -328,11 +325,11 @@ TEST_F(MdnsPublisherTest, PTRRecordRegistrationWorkflow) {
   EXPECT_EQ(publisher_.GetRecordCount(), size_t{0});
   record = publisher_.GetPtrRecord(record1.name());
   ASSERT_EQ(record, nullptr);
-  EXPECT_FALSE(publisher_.IsMappedAsExclusiveOwner(domain_));
 }
 
 TEST_F(MdnsPublisherTest, RegisteringUnownedRecordsFail) {
-  EXPECT_CALL(publisher_, IsOwned(domain_)).WillRepeatedly(Return(false));
+  EXPECT_CALL(probe_manager_, IsDomainClaimed(domain_))
+      .WillRepeatedly(Return(false));
   EXPECT_FALSE(publisher_.RegisterRecord(GetFakePtrRecord(domain_)).ok());
   EXPECT_FALSE(publisher_.RegisterRecord(GetFakeSrvRecord(domain_)).ok());
   EXPECT_FALSE(publisher_.RegisterRecord(GetFakeTxtRecord(domain_)).ok());
@@ -341,7 +338,8 @@ TEST_F(MdnsPublisherTest, RegisteringUnownedRecordsFail) {
 }
 
 TEST_F(MdnsPublisherTest, RegistrationAnnouncesEightTimes) {
-  EXPECT_CALL(publisher_, IsOwned(domain_)).WillRepeatedly(Return(true));
+  EXPECT_CALL(probe_manager_, IsDomainClaimed(domain_))
+      .WillRepeatedly(Return(true));
   constexpr Clock::duration kOneSecond =
       std::chrono::duration_cast<Clock::duration>(std::chrono::seconds(1));
 

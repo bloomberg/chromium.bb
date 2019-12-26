@@ -11,12 +11,14 @@
 namespace openscreen {
 namespace discovery {
 
-MdnsProbeManager::Callback::~Callback() = default;
+MdnsProbeManager::~MdnsProbeManager() = default;
 
-MdnsProbeManager::MdnsProbeManager(MdnsSender* sender,
-                                   MdnsQuerier* querier,
-                                   MdnsRandom* random_delay,
-                                   TaskRunner* task_runner)
+MdnsProbeManagerImpl::Callback::~Callback() = default;
+
+MdnsProbeManagerImpl::MdnsProbeManagerImpl(MdnsSender* sender,
+                                           MdnsQuerier* querier,
+                                           MdnsRandom* random_delay,
+                                           TaskRunner* task_runner)
     : sender_(sender),
       querier_(querier),
       random_delay_(random_delay),
@@ -27,11 +29,11 @@ MdnsProbeManager::MdnsProbeManager(MdnsSender* sender,
   OSP_DCHECK(random_delay_);
 }
 
-MdnsProbeManager::~MdnsProbeManager() = default;
+MdnsProbeManagerImpl::~MdnsProbeManagerImpl() = default;
 
-Error MdnsProbeManager::StartProbe(Callback* callback,
-                                   DomainName requested_name,
-                                   IPEndpoint endpoint) {
+Error MdnsProbeManagerImpl::StartProbe(Callback* callback,
+                                       DomainName requested_name,
+                                       IPEndpoint endpoint) {
   // TODO(rwkeane): Ensure the requested name isn't already being queried for.
 
   auto probe = CreateProbe(requested_name, std::move(endpoint));
@@ -40,22 +42,22 @@ Error MdnsProbeManager::StartProbe(Callback* callback,
   return Error::None();
 }
 
-Error MdnsProbeManager::StopProbe(const DomainName& requested_name) {
+Error MdnsProbeManagerImpl::StopProbe(const DomainName& requested_name) {
   // TODO(rwkeane): Implement this method.
   return Error::None();
 }
 
-bool MdnsProbeManager::IsDomainClaimed(const DomainName& domain) const {
+bool MdnsProbeManagerImpl::IsDomainClaimed(const DomainName& domain) const {
   // TODO(rwkeane): Implement this method.
   return true;
 }
 
-void MdnsProbeManager::RespondToProbeQuery(const MdnsQuestion& message,
-                                           const IPEndpoint& src) {
+void MdnsProbeManagerImpl::RespondToProbeQuery(const MdnsMessage& message,
+                                               const IPEndpoint& src) {
   // TODO(rwkeane): Implement this method.
 }
 
-void MdnsProbeManager::OnProbeSuccess(MdnsProbe* probe) {
+void MdnsProbeManagerImpl::OnProbeSuccess(MdnsProbe* probe) {
   // TODO(rwkeane): Validations.
 
   auto it = std::find_if(ongoing_probes_.begin(), ongoing_probes_.end(),
@@ -72,13 +74,14 @@ void MdnsProbeManager::OnProbeSuccess(MdnsProbe* probe) {
   }
 }
 
-void MdnsProbeManager::OnProbeFailure(MdnsProbe* probe) {
+void MdnsProbeManagerImpl::OnProbeFailure(MdnsProbe* probe) {
   // TODO(rwkeane): Implement this method.
 }
 
-MdnsProbeManager::OngoingProbe::OngoingProbe(std::unique_ptr<MdnsProbe> probe,
-                                             DomainName name,
-                                             Callback* callback)
+MdnsProbeManagerImpl::OngoingProbe::OngoingProbe(
+    std::unique_ptr<MdnsProbe> probe,
+    DomainName name,
+    Callback* callback)
     : probe(std::move(probe)),
       requested_name(std::move(name)),
       callback(callback) {}

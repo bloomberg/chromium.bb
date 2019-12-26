@@ -21,6 +21,11 @@ class TaskRunner;
 
 namespace discovery {
 
+class MdnsProbeManager;
+class MdnsRandom;
+class MdnsSender;
+class MdnsQuerier;
+
 // This class is responsible for both tracking what records have been registered
 // to mDNS as well as publishing new mDNS records to the network.
 // When a new record is published, it will be announced 8 times, starting at an
@@ -36,16 +41,13 @@ namespace discovery {
 //
 // NOTE: All MdnsPublisher instances must be run on the same task runner thread,
 // due to the shared announce + goodbye message queue.
-// TODO(rwkeane): Add ClaimExclusiveOwnership() API for claiming a DomainName as
-// described in RFC 6762 Section 8.1's probing phase.
 class MdnsPublisher : public MdnsResponder::RecordHandler {
  public:
-  // |querier|, |sender|, |task_runner|, and |random_delay| must all persist for
-  // the duration of this object's lifetime
-  MdnsPublisher(MdnsQuerier* querier,
-                MdnsSender* sender,
+  // |sender|, |ownership_manager|, and  |task_runner| must all persist for the
+  // duration of this object's lifetime
+  MdnsPublisher(MdnsSender* sender,
+                MdnsProbeManager* ownership_manager,
                 TaskRunner* task_runner,
-                MdnsRandom* random_delay,
                 ClockNowFunctionPtr now_function);
   ~MdnsPublisher() override;
 
@@ -62,9 +64,7 @@ class MdnsPublisher : public MdnsResponder::RecordHandler {
   Error UpdateRegisteredRecord(const MdnsRecord& old_record,
                                const MdnsRecord& new_record);
 
-  // Stops advertising the provided record. If no more records with the provided
-  // name are bing advertised after this call's completion, then ownership of
-  // the name is released.
+  // Stops advertising the provided record.
   Error UnregisterRecord(const MdnsRecord& record);
 
   // Returns the total number of records currently registered;
@@ -162,7 +162,6 @@ class MdnsPublisher : public MdnsResponder::RecordHandler {
   void QueueRecord(MdnsRecord record);
 
   // MdnsResponder::RecordHandler overrides.
-  bool IsExclusiveOwner(const DomainName& name) override;
   bool HasRecords(const DomainName& name,
                   DnsType type,
                   DnsClass clazz) override;
@@ -170,10 +169,9 @@ class MdnsPublisher : public MdnsResponder::RecordHandler {
                                                DnsType type,
                                                DnsClass clazz) override;
 
-  MdnsQuerier* const querier_;
   MdnsSender* const sender_;
+  MdnsProbeManager* const ownership_manager_;
   TaskRunner* const task_runner_;
-  MdnsRandom* const random_delay_;
   ClockNowFunctionPtr now_function_;
 
   // Alarm to cancel batching of records when this class is destroyed, and

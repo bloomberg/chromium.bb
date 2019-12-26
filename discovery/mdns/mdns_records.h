@@ -453,6 +453,12 @@ class MdnsMessage {
   // Sets the truncated bit (TC), as specified in RFC 1035 Section 4.1.1.
   void set_truncated() { is_truncated_ = true; }
 
+  // Returns true if the provided message is an mDNS probe query as described in
+  // RFC 6762 section 8.1. Specifically, it examines whether any question in
+  // the 'questions' section is a query for which answers are present in the
+  // 'authority records' section of the same message.
+  bool IsProbeQuery() const;
+
   size_t MaxWireSize() const;
   uint16_t id() const { return id_; }
   MessageType type() const { return type_; }

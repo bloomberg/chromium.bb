@@ -23,14 +23,35 @@ class MdnsQuerier;
 class MdnsRandom;
 class MdnsSender;
 
+// Interface for maintaining ownership of mDNS Domains.
+class MdnsProbeManager {
+ public:
+  virtual ~MdnsProbeManager();
+
+  // Returns whether the provided domain name has been claimed as owned by this
+  // mDNS Probe Manager.
+  virtual bool IsDomainClaimed(const DomainName& domain) const = 0;
+
+  // |message| is a considered a probe query for a specific domain if it
+  // contains a query for a specific domain which is answered by mDNS Records in
+  // the 'authority records' section of |message|. If a probe for the provided
+  // domain name is ongoing, an MdnsMessage is sent to the provided endpoint as
+  // described in RFC 6762 section 8.2 to allow for conflict resolution. If the
+  // requested name has already been claimed, a message to specify this will be
+  // sent as described in RFC 6762 section 8.1. The |src| argument is the
+  // address from which the message was originally sent, so that the response
+  // message may be sent as a unicast response.
+  virtual void RespondToProbeQuery(const MdnsMessage& message,
+                                   const IPEndpoint& src) = 0;
+};
+
 // This class is responsible for managing all ongoing probes for claiming domain
 // names, as described in RFC 6762 Section 8.1's probing phase. If one such
 // probe fails due to a conflict detection, this class will modify the domain
 // name as described in RFC 6762 section 9 and re-initiate probing for the new
 // name.
-// TODO(rwkeane): Integrate with MdnsResponder to receive incoming Probe
-// queries.
-class MdnsProbeManager : public MdnsProbe::Observer {
+class MdnsProbeManagerImpl : public MdnsProbe::Observer,
+                             public MdnsProbeManager {
  public:
   class Callback {
    public:
@@ -46,16 +67,16 @@ class MdnsProbeManager : public MdnsProbe::Observer {
 
   // |sender|, |querier|, |random_delay|, and |task_runner|, must all persist
   // for the duration of this object's lifetime.
-  MdnsProbeManager(MdnsSender* sender,
-                   MdnsQuerier* querier,
-                   MdnsRandom* random_delay,
-                   TaskRunner* task_runner);
-  MdnsProbeManager(const MdnsProbeManager& other) = delete;
-  MdnsProbeManager(MdnsProbeManager&& other) = delete;
-  ~MdnsProbeManager() override;
+  MdnsProbeManagerImpl(MdnsSender* sender,
+                       MdnsQuerier* querier,
+                       MdnsRandom* random_delay,
+                       TaskRunner* task_runner);
+  MdnsProbeManagerImpl(const MdnsProbeManager& other) = delete;
+  MdnsProbeManagerImpl(MdnsProbeManager&& other) = delete;
+  ~MdnsProbeManagerImpl() override;
 
-  MdnsProbeManager& operator=(const MdnsProbeManager& other) = delete;
-  MdnsProbeManager& operator=(MdnsProbeManager&& other) = delete;
+  MdnsProbeManagerImpl& operator=(const MdnsProbeManagerImpl& other) = delete;
+  MdnsProbeManagerImpl& operator=(MdnsProbeManagerImpl&& other) = delete;
 
   // Starts probing for a valid domain name based on the given one. This may
   // only be called once per MdnsProbe instance. |observer| must persist until
@@ -71,15 +92,10 @@ class MdnsProbeManager : public MdnsProbe::Observer {
   // Stops probing for the requested domain name.
   Error StopProbe(const DomainName& requested_name);
 
-  // Returns whether the provided domain name has been claimed as owned by this
-  // service instance.
-  bool IsDomainClaimed(const DomainName& domain) const;
-
-  // If a probe for the provided domain name is ongoing, an MdnsMessage is sent
-  // to the provided endpoint as described in RFC 6762 section 8.2. If the
-  // requested name has already been claimed, a message to specify this will be
-  // sent as described in RFC 6762 section 8.1.
-  void RespondToProbeQuery(const MdnsQuestion& message, const IPEndpoint& src);
+  // MdnsDomainOwnershipManager overrides.
+  bool IsDomainClaimed(const DomainName& domain) const override;
+  void RespondToProbeQuery(const MdnsMessage& message,
+                           const IPEndpoint& src) override;
 
  private:
   std::unique_ptr<MdnsProbe> CreateProbe(DomainName name, IPEndpoint endpoint) {
