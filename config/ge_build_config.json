@@ -3181,6 +3181,14 @@
         },
         {
           "board_name": "octopus",
+          "name": "dood",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt",
+          "board_id": 354,
+          "is_active": true
+        },
+        {
+          "board_name": "octopus",
           "name": "dorp",
           "test_suites": [
             "bvt-inline",
@@ -3418,6 +3426,14 @@
         {
           "board_name": "octopus",
           "name": "unprovisioned_casta",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt",
+          "board_id": 354,
+          "is_active": true
+        },
+        {
+          "board_name": "octopus",
+          "name": "unprovisioned_dood",
           "cq_test_enabled": false,
           "release_builder_test_pool": "bvt",
           "board_id": 354,
