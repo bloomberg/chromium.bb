@@ -91,7 +91,8 @@ class BuildPackagesRunConfig(object):
   """Value object to hold build packages run configs."""
 
   def __init__(self, event_file=None, usepkg=True, install_debug_symbols=False,
-               packages=None, use_flags=None, use_goma=False):
+               packages=None, use_flags=None, use_goma=False,
+               incremental_build=True):
     """Init method.
 
     Args:
@@ -104,6 +105,10 @@ class BuildPackagesRunConfig(object):
         install all packages for the target.
       use_flags (list[str]|None): A list of use flags to set.
       use_goma (bool): Whether to enable goma.
+      incremental_build (bool): Whether to treat the build as an incremental
+        build or a fresh build. Always treating it as an incremental build is
+        safe, but certain operations can be faster when we know we are doing
+        a fresh build.
     """
     self.event_file = event_file
     self.usepkg = usepkg
@@ -111,6 +116,7 @@ class BuildPackagesRunConfig(object):
     self.packages = packages
     self.use_flags = use_flags
     self.use_goma = use_goma
+    self.is_incremental = incremental_build
 
   def GetBuildPackagesArgs(self):
     """Get the build_packages script arguments."""
@@ -137,6 +143,9 @@ class BuildPackagesRunConfig(object):
 
     if self.use_goma:
       args.append('--run_goma')
+
+    if not self.is_incremental:
+      args.append('--nowithrevdeps')
 
     if self.packages:
       args.extend(self.packages)

@@ -142,7 +142,8 @@ def InstallPackages(input_proto, output_proto, _config):
       install_debug_symbols=True,
       packages=packages,
       use_flags=use_flags,
-      use_goma=use_goma)
+      use_goma=use_goma,
+      incremental_build=False)
 
   try:
     sysroot.BuildPackages(build_target, target_sysroot, build_packages_config)
