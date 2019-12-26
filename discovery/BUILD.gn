@@ -46,8 +46,6 @@ source_set("mdns") {
 }
 
 source_set("dnssd") {
-  defines = []
-
   sources = [
     "dnssd/impl/conversion_layer.cc",
     "dnssd/impl/conversion_layer.h",
@@ -74,6 +72,17 @@ source_set("dnssd") {
 
   public_deps = [
     ":mdns",
+  ]
+}
+
+source_set("public") {
+  sources = [
+    "public/dns_sd_service_watcher.h",
+    "public/temp.cc",
+  ]
+
+  public_deps = [
+    ":dnssd",
   ]
 }
 
