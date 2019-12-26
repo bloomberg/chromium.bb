@@ -859,10 +859,6 @@ IPC_MESSAGE_ROUTED2(FrameMsg_SetPepperVolume,
                     double /* volume */)
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
 
-// Tells the frame to suppress any further modal dialogs. This ensures that no
-// ScopedPageLoadDeferrer is on the stack for SwapOut.
-IPC_MESSAGE_ROUTED0(FrameMsg_SuppressFurtherDialogs)
-
 // Notifies a parent frame that the child frame requires information about
 // whether it is occluded or has visual effects applied.
 IPC_MESSAGE_ROUTED1(FrameMsg_SetNeedsOcclusionTracking,

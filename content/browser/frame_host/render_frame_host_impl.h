@@ -823,12 +823,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Returns the feature policy which should be enforced on this RenderFrame.
   blink::FeaturePolicy* feature_policy() { return feature_policy_.get(); }
 
-  // Tells the renderer that this RenderFrame will soon be swapped out, and thus
-  // not to create any new modal dialogs until it happens.  This must be done
-  // separately so that the ScopedPageLoadDeferrers of any current dialogs are
-  // no longer on the stack when we attempt to swap it out.
-  void SuppressFurtherDialogs();
-
   void ClearFocusedElement();
 
   // Returns the PreviewsState of the last successful navigation
