@@ -24,6 +24,7 @@
 #define INCLUDED_BLPWTK2_PROCESSHOSTIMPL_H
 
 #include <blpwtk2_config.h>
+#include <blpwtk2_string.h>
 #include <blpwtk2/private/blpwtk2_process.mojom.h>
 
 #include <base/compiler_specific.h>
@@ -41,6 +42,7 @@
 namespace blpwtk2 {
 class ProcessHostImplInternal;
 class BrowserContextImpl;
+class ProcessHostDelegate;
 
                         // =====================
                         // class ProcessHostImpl
@@ -59,6 +61,8 @@ class ProcessHostImpl final : public mojom::ProcessHost
     // DATA
     scoped_refptr<Impl> d_impl;
     scoped_refptr<base::SingleThreadTaskRunner> d_runner;
+    mojom::ProcessClientPtr processClientPtr;
+
     static std::map<base::ProcessId,scoped_refptr<Impl> > s_unboundHosts;
 
     explicit ProcessHostImpl(const scoped_refptr<base::SingleThreadTaskRunner>& runner);
@@ -111,6 +115,10 @@ class ProcessHostImpl final : public mojom::ProcessHost
 
     static void releaseAll();
 
+    // Send IPC to renderer async
+    static void opaqueMessageToRendererAsync(int pid, const StringRef &message);
+    static void setIPCDelegate(ProcessHostDelegate *delegate);
+
     // mojom::ProcessHost overrides
     void createHostChannel(
             unsigned int                     pid,
@@ -118,7 +126,9 @@ class ProcessHostImpl final : public mojom::ProcessHost
             const std::string&               profileDir,
             createHostChannelCallback callback) override;
 
-    void bindProcess(unsigned int pid, bool launchDevToolsServer) override;
+    void bindProcess(unsigned int pid,
+                     bool launchDevToolsServer,
+                     bindProcessCallback callback) override;
 
     void createWebView(
             mojom::WebViewHostRequest     hostRequest,
@@ -164,6 +174,12 @@ class ProcessHostImpl final : public mojom::ProcessHost
 
 
     // patch section: embedder ipc
+
+    // The following two functions are handlers for IPC from renderer
+    void opaqueMessageToBrowserAsync(const std::string& msg) override;
+    void opaqueMessageToBrowserSync(
+        const std::string&                 msg,
+        opaqueMessageToBrowserSyncCallback callback) override;
 
 
     // patch section: renderer ui
