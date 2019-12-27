@@ -760,6 +760,10 @@ void BrowserContext::ShutdownStoragePartitions() {
     RemoveUserData(kStoragePartitionMapKeyName);
 }
 
+bool BrowserContext::AllowDictionaryDownloads() {
+  return false;
+}
+
 std::string BrowserContext::GetMediaDeviceIDSalt() {
   return unique_id_;
 }
