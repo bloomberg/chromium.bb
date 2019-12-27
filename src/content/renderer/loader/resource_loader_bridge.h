@@ -49,6 +49,7 @@ class CONTENT_EXPORT ResourceRequestInfoProvider {
  public:
   ResourceRequestInfoProvider();
   virtual ~ResourceRequestInfoProvider();
+  bool operator==(const ResourceRequestInfoProvider& other) const;
 
   const GURL& url() const;
   const GURL& firstPartyForCookies() const;
