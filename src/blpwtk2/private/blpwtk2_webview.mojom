@@ -201,6 +201,10 @@ interface WebViewClient {
 
     didFailLoadForFrame(int32 routingId, string url);
         // Notify the client that loading a URL into an IFRAME failed.
+
+    didInterceptMessage() => ();
+        // Notify the client that the embedder on the host side intercepted
+        // a window message that would've been processed for this webview.
 };
 
 // vim: ts=4 et
