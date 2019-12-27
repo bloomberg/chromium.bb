@@ -117,7 +117,7 @@ static double convert_score_db(double _score, double _weight, int bit_depth) {
 static double calc_psnrhvs(const unsigned char *src, int _systride,
                            const unsigned char *dst, int _dystride, double _par,
                            int _w, int _h, int _step, const double _csf[8][8],
-                           uint32_t _shift, int buf_is_hbd) {
+                           uint32_t _shift, int buf_is_hbd, int luma) {
   double ret;
   const uint8_t *_src8 = src;
   const uint8_t *_dst8 = dst;
@@ -148,7 +148,7 @@ static double calc_psnrhvs(const unsigned char *src, int _systride,
       }
     }
   }
-  delt = (sum1 - sum2) / (_w * _h);
+  if (luma) delt = (sum1 - sum2) / (_w * _h);
   /*In the PSNR-HVS-M paper[1] the authors describe the construction of
    their masking table as "we have used the quantization table for the
    color component Y of JPEG [6] that has been also obtained on the
@@ -278,17 +278,18 @@ double aom_psnrhvs(const YV12_BUFFER_CONFIG *src, const YV12_BUFFER_CONFIG *dst,
 
   bd_shift = bd - in_bd;
 
-  *y_psnrhvs = calc_psnrhvs(
-      src->y_buffer, src->y_stride, dst->y_buffer, dst->y_stride, par,
-      src->y_crop_width, src->y_crop_height, step, csf_y, bd_shift, buf_is_hbd);
+  *y_psnrhvs =
+      calc_psnrhvs(src->y_buffer, src->y_stride, dst->y_buffer, dst->y_stride,
+                   par, src->y_crop_width, src->y_crop_height, step, csf_y,
+                   bd_shift, buf_is_hbd, 1);
   *u_psnrhvs =
       calc_psnrhvs(src->u_buffer, src->uv_stride, dst->u_buffer, dst->uv_stride,
                    par, src->uv_crop_width, src->uv_crop_height, step,
-                   csf_cb420, bd_shift, buf_is_hbd);
+                   csf_cb420, bd_shift, buf_is_hbd, 0);
   *v_psnrhvs =
       calc_psnrhvs(src->v_buffer, src->uv_stride, dst->v_buffer, dst->uv_stride,
                    par, src->uv_crop_width, src->uv_crop_height, step,
-                   csf_cr420, bd_shift, buf_is_hbd);
+                   csf_cr420, bd_shift, buf_is_hbd, 0);
   psnrhvs = (*y_psnrhvs) * .8 + .1 * ((*u_psnrhvs) + (*v_psnrhvs));
   return convert_score_db(psnrhvs, 1.0, in_bd);
 }
