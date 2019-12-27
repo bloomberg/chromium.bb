@@ -430,6 +430,10 @@ void DesktopWindowTreeHostWin::FrameTypeChanged() {
   SetWindowTransparency();
 }
 
+void DesktopWindowTreeHostWin::CompositionChanged() {
+  SetWindowTransparency();
+}
+
 void DesktopWindowTreeHostWin::SetFullscreen(bool fullscreen) {
   message_handler_->SetFullscreen(fullscreen);
   // TODO(sky): workaround for ScopedFullscreenVisibility showing window
