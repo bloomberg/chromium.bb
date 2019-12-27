@@ -134,6 +134,8 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   void SetRecordTabSwitchTimeRequest(base::TimeTicks start_time,
                                      bool destination_is_loaded,
                                      bool destination_is_frozen) final;
+  void SetRubberbandRect(const gfx::Rect& rect) override;
+  void HideRubberbandRect() override;
 
   // This only needs to be overridden by RenderWidgetHostViewBase subclasses
   // that handle content embedded within other RenderWidgetHostViews.
