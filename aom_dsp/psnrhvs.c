@@ -178,17 +178,11 @@ static double calc_psnrhvs(const unsigned char *src, int _systride,
       int i;
       int j;
       double s_means[4];
-      double d_means[4];
       double s_vars[4];
-      double d_vars[4];
       double s_gmean = 0;
-      double d_gmean = 0;
       double s_gvar = 0;
-      double d_gvar = 0;
       double s_mask = 0;
-      double d_mask = 0;
-      for (i = 0; i < 4; i++)
-        s_means[i] = d_means[i] = s_vars[i] = d_vars[i] = 0;
+      for (i = 0; i < 4; i++) s_means[i] = s_vars[i] = 0;
       for (i = 0; i < 8; i++) {
         for (j = 0; j < 8; j++) {
           int sub = ((i & 12) >> 2) + ((j & 12) >> 1);
@@ -201,34 +195,23 @@ static double calc_psnrhvs(const unsigned char *src, int _systride,
           }
           dct_d[i * 8 + j] += (int)(delt + 0.5f);
           s_gmean += dct_s[i * 8 + j];
-          d_gmean += dct_d[i * 8 + j];
           s_means[sub] += dct_s[i * 8 + j];
-          d_means[sub] += dct_d[i * 8 + j];
         }
       }
       s_gmean /= 64.f;
-      d_gmean /= 64.f;
       for (i = 0; i < 4; i++) s_means[i] /= 16.f;
-      for (i = 0; i < 4; i++) d_means[i] /= 16.f;
       for (i = 0; i < 8; i++) {
         for (j = 0; j < 8; j++) {
           int sub = ((i & 12) >> 2) + ((j & 12) >> 1);
           s_gvar += (dct_s[i * 8 + j] - s_gmean) * (dct_s[i * 8 + j] - s_gmean);
-          d_gvar += (dct_d[i * 8 + j] - d_gmean) * (dct_d[i * 8 + j] - d_gmean);
           s_vars[sub] += (dct_s[i * 8 + j] - s_means[sub]) *
                          (dct_s[i * 8 + j] - s_means[sub]);
-          d_vars[sub] += (dct_d[i * 8 + j] - d_means[sub]) *
-                         (dct_d[i * 8 + j] - d_means[sub]);
         }
       }
       s_gvar *= 1 / 63.f * 64;
-      d_gvar *= 1 / 63.f * 64;
       for (i = 0; i < 4; i++) s_vars[i] *= 1 / 15.f * 16;
-      for (i = 0; i < 4; i++) d_vars[i] *= 1 / 15.f * 16;
       if (s_gvar > 0)
         s_gvar = (s_vars[0] + s_vars[1] + s_vars[2] + s_vars[3]) / s_gvar;
-      if (d_gvar > 0)
-        d_gvar = (d_vars[0] + d_vars[1] + d_vars[2] + d_vars[3]) / d_gvar;
       if (!buf_is_hbd) {
         od_bin_fdct8x8(dct_s_coef, 8, dct_s, 8);
         od_bin_fdct8x8(dct_d_coef, 8, dct_d, 8);
@@ -239,12 +222,7 @@ static double calc_psnrhvs(const unsigned char *src, int _systride,
       for (i = 0; i < 8; i++)
         for (j = (i == 0); j < 8; j++)
           s_mask += dct_s_coef[i * 8 + j] * dct_s_coef[i * 8 + j] * mask[i][j];
-      for (i = 0; i < 8; i++)
-        for (j = (i == 0); j < 8; j++)
-          d_mask += dct_d_coef[i * 8 + j] * dct_d_coef[i * 8 + j] * mask[i][j];
       s_mask = sqrt(s_mask * s_gvar) / 32.f;
-      d_mask = sqrt(d_mask * d_gvar) / 32.f;
-      if (d_mask > s_mask) s_mask = d_mask;
       for (i = 0; i < 8; i++) {
         for (j = 0; j < 8; j++) {
           double err;
