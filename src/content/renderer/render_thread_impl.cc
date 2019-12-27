@@ -1878,11 +1878,16 @@ void RenderThreadImpl::CompositingModeFallbackToSoftware() {
 
 scoped_refptr<gpu::GpuChannelHost> RenderThreadImpl::EstablishGpuChannelSync() {
   TRACE_EVENT0("gpu", "RenderThreadImpl::EstablishGpuChannelSync");
+  if (is_gpu_compositing_disabled_) {
+    return nullptr;
+  }
 
   scoped_refptr<gpu::GpuChannelHost> gpu_channel =
       gpu_->EstablishGpuChannelSync();
   if (gpu_channel)
     GetContentClient()->SetGpuInfo(gpu_channel->gpu_info());
+  else
+    CompositingModeFallbackToSoftware();
   return gpu_channel;
 }
 
