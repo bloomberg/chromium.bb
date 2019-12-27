@@ -925,6 +925,7 @@ void SetupMotionField(
     const int row4x4_end, const int column4x4_start, const int column4x4_end,
     TemporalMotionField* const motion_field) {
   assert(frame_header.use_ref_frame_mvs);
+  assert(order_hint_range != 0);
   const int y8_start = DivideBy2(row4x4_start);
   const int y8_end = DivideBy2(std::min(row4x4_end, frame_header.rows4x4));
   const int x8_start = DivideBy2(column4x4_start);
