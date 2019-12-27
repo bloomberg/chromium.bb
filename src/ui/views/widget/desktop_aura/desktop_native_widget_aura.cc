@@ -729,6 +729,11 @@ void DesktopNativeWidgetAura::SetBoundsConstrained(const gfx::Rect& bounds) {
   SetBounds(NativeWidgetPrivate::ConstrainBoundsToDisplayWorkArea(bounds));
 }
 
+void DesktopNativeWidgetAura::SetBoundsNoDPIAdjustment(const gfx::Rect& bounds) {
+  if (content_window_)
+    desktop_window_tree_host_->AsWindowTreeHost()->SetBoundsInPixels(bounds);
+}
+
 void DesktopNativeWidgetAura::SetSize(const gfx::Size& size) {
   if (content_window_)
     desktop_window_tree_host_->SetSize(size);
