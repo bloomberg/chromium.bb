@@ -5,7 +5,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 
-#include "cast/common/certificate/proto/revocation.pb.h"
+#include "cast/common/certificate/cast_crl.h"
 #include "cast/common/certificate/test_helpers.h"
 #include "cast/common/certificate/types.h"
 #include "util/crypto/certificate_utils.h"
