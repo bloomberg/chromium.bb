@@ -123,7 +123,7 @@ ErrorOr<DnsSdTxtRecord> CreateFromDnsTxt(const TxtRecordRdata& txt_data) {
       std::string key = text.substr(0, index_of_eq);
       std::string value = text.substr(index_of_eq + 1);
       absl::Span<const uint8_t> data(
-          reinterpret_cast<const uint8_t*>(value.c_str()), value.size());
+          reinterpret_cast<const uint8_t*>(value.data()), value.size());
       const auto set_result =
           txt.SetValue(key, std::vector<uint8_t>(data.begin(), data.end()));
       if (!set_result.ok()) {

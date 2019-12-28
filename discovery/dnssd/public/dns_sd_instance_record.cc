@@ -4,6 +4,8 @@
 
 #include "discovery/dnssd/public/dns_sd_instance_record.h"
 
+#include <cctype>
+
 #include "util/logging.h"
 
 namespace openscreen {
@@ -43,14 +45,6 @@ bool HasControlCharacters(const std::string& string) {
   return false;
 }
 
-bool IsDigit(uint8_t c) {
-  return c >= 48 && c <= 57;
-}
-
-bool IsAlpha(uint8_t c) {
-  return (c >= 65 && c <= 90) || (c >= 97 && c <= 122);
-}
-
 }  // namespace
 
 DnsSdInstanceRecord::DnsSdInstanceRecord(std::string instance_id,
@@ -62,7 +56,7 @@ DnsSdInstanceRecord::DnsSdInstanceRecord(std::string instance_id,
                           std::move(service_id),
                           std::move(domain_id),
                           std::move(txt)) {
-  OSP_CHECK(endpoint);
+  OSP_DCHECK(endpoint);
   if (endpoint.address.IsV4()) {
     address_v4_ = std::move(endpoint);
   } else if (endpoint.address.IsV6()) {
@@ -82,10 +76,10 @@ DnsSdInstanceRecord::DnsSdInstanceRecord(std::string instance_id,
                           std::move(service_id),
                           std::move(domain_id),
                           std::move(txt)) {
-  OSP_CHECK(ipv4_endpoint);
-  OSP_CHECK(ipv4_endpoint);
-  OSP_CHECK(ipv4_endpoint.address.IsV4());
-  OSP_CHECK(ipv6_endpoint.address.IsV6());
+  OSP_DCHECK(ipv4_endpoint);
+  OSP_DCHECK(ipv4_endpoint);
+  OSP_DCHECK(ipv4_endpoint.address.IsV4());
+  OSP_DCHECK(ipv6_endpoint.address.IsV6());
 
   address_v4_ = std::move(ipv4_endpoint);
   address_v6_ = std::move(ipv6_endpoint);
@@ -166,9 +160,9 @@ bool IsServiceValid(const std::string& service) {
         return false;
       }
       last_char_hyphen = true;
-    } else if (IsAlpha(service[i])) {
+    } else if (std::isalpha(service[i])) {
       seen_letter = true;
-    } else if (!IsDigit(service[i])) {
+    } else if (!std::isdigit(service[i])) {
       return false;
     }
   }

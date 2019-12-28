@@ -91,8 +91,8 @@ Error PublisherImpl::UpdateRegistration(const DnsSdInstanceRecord& record) {
   return Error::None();
 }
 
-size_t PublisherImpl::DeregisterAll(const std::string& service) {
-  size_t removed_count = 0;
+int PublisherImpl::DeregisterAll(const std::string& service) {
+  int removed_count = 0;
   for (auto it = published_records_.begin(); it != published_records_.end();) {
     if (it->service_id() == service) {
       for (const auto& mdns_record : GetDnsRecords(*it)) {

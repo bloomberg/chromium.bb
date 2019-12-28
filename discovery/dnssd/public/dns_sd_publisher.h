@@ -33,7 +33,7 @@ class DnsSdPublisher {
   // Unpublishes any PTR, SRV, TXT, A, and AAAA records associated with this
   // service id. If no such records are published, this operation will be a
   // no-op. Returns the number of records which were removed.
-  virtual size_t DeregisterAll(const std::string& service) = 0;
+  virtual int DeregisterAll(const std::string& service) = 0;
 };
 
 }  // namespace discovery
