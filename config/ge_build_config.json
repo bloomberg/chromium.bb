@@ -2403,6 +2403,22 @@
         },
         {
           "board_name": "hatch",
+          "name": "jinlon",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt",
+          "board_id": 372,
+          "is_active": true
+        },
+        {
+          "board_name": "hatch",
+          "name": "jinlonlte",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt",
+          "board_id": 372,
+          "is_active": true
+        },
+        {
+          "board_name": "hatch",
           "name": "kindred",
           "test_suites": [
             "sanity",
@@ -2458,6 +2474,14 @@
         {
           "board_name": "hatch",
           "name": "unprovisioned_helios",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt",
+          "board_id": 372,
+          "is_active": true
+        },
+        {
+          "board_name": "hatch",
+          "name": "unprovisioned_jinlon",
           "cq_test_enabled": false,
           "release_builder_test_pool": "bvt",
           "board_id": 372,
@@ -2538,6 +2562,22 @@
         },
         {
           "board_name": "hatch-diskswap",
+          "name": "jinlon",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt",
+          "board_id": 424,
+          "is_active": true
+        },
+        {
+          "board_name": "hatch-diskswap",
+          "name": "jinlonlte",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt",
+          "board_id": 424,
+          "is_active": true
+        },
+        {
+          "board_name": "hatch-diskswap",
           "name": "kindred",
           "cq_test_enabled": false,
           "release_builder_test_pool": "bvt",
@@ -2563,6 +2603,14 @@
         {
           "board_name": "hatch-diskswap",
           "name": "unprovisioned_dratini",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt",
+          "board_id": 424,
+          "is_active": true
+        },
+        {
+          "board_name": "hatch-diskswap",
+          "name": "unprovisioned_jinlon",
           "cq_test_enabled": false,
           "release_builder_test_pool": "bvt",
           "board_id": 424,
